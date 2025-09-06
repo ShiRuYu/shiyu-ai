@@ -23,6 +23,8 @@ import org.springframework.ai.chat.model.ChatModel;
 import org.springframework.ai.chat.model.ChatResponse;
 import org.springframework.ai.chat.prompt.Prompt;
 import org.springframework.ai.mcp.SyncMcpToolCallbackProvider;
+import org.springframework.context.EnvironmentAware;
+import org.springframework.core.env.Environment;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
@@ -33,7 +35,7 @@ import java.util.Objects;
 
 @RestController
 @RequestMapping("openai")
-public class OpenAiChatModelController {
+public class OpenAiChatModelController implements EnvironmentAware {
 
     private final ChatModel openAiChatModel;
 
@@ -79,5 +81,10 @@ public class OpenAiChatModelController {
         return openAiChatClient.prompt(message).stream().content();
     }
 
+    private Environment environment1;
 
+    @Override
+    public void setEnvironment(Environment environment) {
+        this.environment1 = environment;
+    }
 }

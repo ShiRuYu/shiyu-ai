@@ -9,10 +9,15 @@
         <relativePath>../pom.xml</relativePath>
     </parent>
 
-    <groupId>com.shiyu.ai</groupId>
     <artifactId>shiyu-common</artifactId>
+    <packaging>pom</packaging>
 
     <name>shiyu-common</name>
     <description>shiyu-common</description>
+
+    <modules>
+        <module>shiyu-common-bom</module>
+        <module>shiyu-config-out</module>
+    </modules>
 
 </project>

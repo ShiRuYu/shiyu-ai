@@ -306,12 +306,15 @@
 
             <dependency>
                 <groupId>com.shiyu.ai</groupId>
-                <artifactId>shiyu-util</artifactId>
+                <artifactId>shiyu-common-bom</artifactId>
                 <version>${revision}</version>
+                <type>pom</type>
+                <scope>import</scope>
             </dependency>
+
             <dependency>
                 <groupId>com.shiyu.ai</groupId>
-                <artifactId>shiyu-common</artifactId>
+                <artifactId>shiyu-util</artifactId>
                 <version>${revision}</version>
             </dependency>
             <dependency>

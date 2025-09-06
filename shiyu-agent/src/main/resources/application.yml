@@ -3,7 +3,9 @@ shiyu:
   name: "shiyu-agent"
   # 版本
   version: ${revision}
-
+json:
+  config:
+    path: E:\Dev\IdeaProjects\shiyu-ai\config.json
 # 开发环境配置
 server:
   # 服务器的HTTP端口，默认为8080
