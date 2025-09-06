@@ -1,0 +1,10 @@
+server:
+  port: 8081
+spring:
+  application:
+    name: shiyu-mcp
+  ai:
+    mcp:
+      server:
+        name: shiyu-mcp-serve
+        version: 1.0.0
