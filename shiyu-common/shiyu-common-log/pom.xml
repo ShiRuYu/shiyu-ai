@@ -9,24 +9,21 @@
         <relativePath>../pom.xml</relativePath>
     </parent>
 
-    <artifactId>shiyu-config-out</artifactId>
+    <artifactId>shiyu-common-log</artifactId>
 
-    <name>shiyu-config-out</name>
-    <description>shiyu-config-out</description>
+    <name>shiyu-common-log</name>
+    <description>shiyu-common-log</description>
+
 
     <dependencies>
         <dependency>
             <groupId>org.springframework.boot</groupId>
-            <artifactId>spring-boot</artifactId>
+            <artifactId>spring-boot-starter-log4j2</artifactId>
         </dependency>
+
         <dependency>
-            <groupId>org.springframework.boot</groupId>
-            <artifactId>spring-boot-autoconfigure</artifactId>
-        </dependency>
-        <dependency>
-            <groupId>com.shiyu.ai</groupId>
-            <artifactId>shiyu-common-json</artifactId>
+            <groupId>org.projectlombok</groupId>
+            <artifactId>lombok</artifactId>
         </dependency>
     </dependencies>
-
 </project>

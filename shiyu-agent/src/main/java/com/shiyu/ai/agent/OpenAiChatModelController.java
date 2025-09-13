@@ -17,6 +17,9 @@
 
 package com.shiyu.ai.agent;
 
+import com.shiyu.ai.common.json.utils.JsonUtils;
+import lombok.extern.slf4j.Slf4j;
+import org.slf4j.LoggerFactory;
 import org.springframework.ai.chat.client.ChatClient;
 import org.springframework.ai.chat.client.advisor.SimpleLoggerAdvisor;
 import org.springframework.ai.chat.model.ChatModel;
@@ -35,6 +38,7 @@ import java.util.Objects;
 
 @RestController
 @RequestMapping("openai")
+@Slf4j
 public class OpenAiChatModelController implements EnvironmentAware {
 
     private final ChatModel openAiChatModel;
@@ -56,7 +60,6 @@ public class OpenAiChatModelController implements EnvironmentAware {
      */
     @GetMapping("chat-model/simple/chat")
     public String simpleChat(String message) {
-
         return openAiChatModel.call(new Prompt(message)).getResult().getOutput().getText();
     }
 

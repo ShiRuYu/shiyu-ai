@@ -6,6 +6,8 @@ target/
 
 .flattened-pom.xml
 
+.logs
+
 ### STS ###
 .apt_generated
 .classpath
