@@ -9,7 +9,6 @@
         <relativePath>../pom.xml</relativePath>
     </parent>
 
-    <groupId>com.shiyu.ai</groupId>
     <artifactId>shiyu-mcp</artifactId>
 
     <name>shiyu-mcp</name>

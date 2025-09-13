@@ -32,6 +32,25 @@ server:
       # 阻塞任务线程池, 当执行类似servlet请求阻塞操作, undertow会从这个线程池中取得线程,它的值设置取决于系统的负载
       worker: 256
 
+springdoc:
+  api-docs:
+    enabled: false               # 是否启用 API 文档
+    path: /v3/api-docs         # OpenAPI JSON 文档访问路径，默认 /v3/api-docs
+  #逗号分割
+  packages-to-scan: com.shiyu.ai.agent.controller
+  group-configs:
+    - group: 'default'
+      paths-to-match:
+        - '/**'
+      packages-to-scan:
+        - com.shiyu.ai.agent.controller
+  swagger-ui:
+    path: /swagger-ui/index.html      # Swagger UI 访问路径，默认 /swagger-ui/index.html
+    display-request-duration: true  # 显示请求耗时
+    operations-sorter: alpha     # 按字母排序接口
+    tags-sorter: alpha           # 按标签排序
+    default-model-rendering: example # 默认显示 model 示例
+
 # Spring配置
 spring:
   application:

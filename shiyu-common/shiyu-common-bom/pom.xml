@@ -19,12 +19,22 @@
         <dependencies>
             <dependency>
                 <groupId>com.shiyu.ai</groupId>
+                <artifactId>shiyu-common-core</artifactId>
+                <version>${revision}</version>
+            </dependency>
+            <dependency>
+                <groupId>com.shiyu.ai</groupId>
                 <artifactId>shiyu-common-json</artifactId>
                 <version>${revision}</version>
             </dependency>
             <dependency>
                 <groupId>com.shiyu.ai</groupId>
                 <artifactId>shiyu-common-log</artifactId>
+                <version>${revision}</version>
+            </dependency>
+            <dependency>
+                <groupId>com.shiyu.ai</groupId>
+                <artifactId>shiyu-common-web</artifactId>
                 <version>${revision}</version>
             </dependency>
             <dependency>

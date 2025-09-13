@@ -1,0 +1,3 @@
+com.shiyu.ai.common.web.config.FilterConfig
+com.shiyu.ai.common.web.config.ResourcesConfig
+com.shiyu.ai.common.web.config.OpenApiConfig

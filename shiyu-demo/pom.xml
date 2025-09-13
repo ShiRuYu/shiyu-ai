@@ -9,18 +9,25 @@
         <relativePath>../pom.xml</relativePath>
     </parent>
 
-    <groupId>com.shiyu.ai</groupId>
-    <artifactId>shiyu-util</artifactId>
+    <artifactId>shiyu-demo</artifactId>
 
-    <name>shiyu-util</name>
-    <description>shiyu-util</description>
+    <name>shiyu-demo</name>
+    <description>shiyu-demo</description>
 
     <dependencies>
         <dependency>
-            <groupId>org.springframework.boot</groupId>
-            <artifactId>spring-boot-starter</artifactId>
+            <groupId>com.shiyu.ai</groupId>
+            <artifactId>shiyu-common-web</artifactId>
         </dependency>
-
     </dependencies>
+
+    <build>
+        <plugins>
+            <plugin>
+                <groupId>org.springframework.boot</groupId>
+                <artifactId>spring-boot-maven-plugin</artifactId>
+            </plugin>
+        </plugins>
+    </build>
 
 </project>

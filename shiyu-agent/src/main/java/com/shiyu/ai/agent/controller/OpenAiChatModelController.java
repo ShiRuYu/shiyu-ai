@@ -15,11 +15,9 @@
  * limitations under the License.
  */
 
-package com.shiyu.ai.agent;
+package com.shiyu.ai.agent.controller;
 
-import com.shiyu.ai.common.json.utils.JsonUtils;
 import lombok.extern.slf4j.Slf4j;
-import org.slf4j.LoggerFactory;
 import org.springframework.ai.chat.client.ChatClient;
 import org.springframework.ai.chat.client.advisor.SimpleLoggerAdvisor;
 import org.springframework.ai.chat.model.ChatModel;
