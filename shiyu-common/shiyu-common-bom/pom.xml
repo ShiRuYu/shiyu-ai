@@ -24,6 +24,11 @@
             </dependency>
             <dependency>
                 <groupId>com.shiyu.ai</groupId>
+                <artifactId>shiyu-common-excel</artifactId>
+                <version>${revision}</version>
+            </dependency>
+            <dependency>
+                <groupId>com.shiyu.ai</groupId>
                 <artifactId>shiyu-common-json</artifactId>
                 <version>${revision}</version>
             </dependency>

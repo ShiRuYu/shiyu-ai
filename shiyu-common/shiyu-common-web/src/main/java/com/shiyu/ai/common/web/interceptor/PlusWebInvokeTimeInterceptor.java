@@ -19,10 +19,6 @@ import java.util.Map;
 
 /**
  * web的调用时间统计拦截器
- * dev环境有效
- *
- * @author Lion Li
- * @since 3.3.0
  */
 @Slf4j
 public class PlusWebInvokeTimeInterceptor implements HandlerInterceptor {
