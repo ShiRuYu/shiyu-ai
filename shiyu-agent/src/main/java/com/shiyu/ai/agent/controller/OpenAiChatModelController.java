@@ -17,6 +17,7 @@
 
 package com.shiyu.ai.agent.controller;
 
+import com.shiyu.ai.common.core.utils.ObjectUtils;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.ai.chat.client.ChatClient;
 import org.springframework.ai.chat.client.advisor.SimpleLoggerAdvisor;
@@ -30,8 +31,6 @@ import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 import reactor.core.publisher.Flux;
-
-import java.util.Objects;
 
 
 @RestController
@@ -74,7 +73,7 @@ public class OpenAiChatModelController implements EnvironmentAware {
 
     @GetMapping("chat-client/chat")
     public String clientChat(String message) {
-        return Objects.requireNonNull(openAiChatClient.prompt(new Prompt(message)).call().chatResponse()).getResult().getOutput().getText();
+        return ObjectUtils.requireNonNull(openAiChatClient.prompt(new Prompt(message)).call().chatResponse()).getResult().getOutput().getText();
     }
 
     @GetMapping("client/stream/chat")

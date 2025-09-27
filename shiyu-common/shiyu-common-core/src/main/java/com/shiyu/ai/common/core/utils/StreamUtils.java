@@ -55,7 +55,7 @@ public class StreamUtils {
         if (CollUtil.isEmpty(collection)) {
             return StringUtils.EMPTY;
         }
-        return collection.stream().map(function).filter(Objects::nonNull).collect(Collectors.joining(delimiter));
+        return collection.stream().map(function).filter(ObjectUtils::isNotNull).collect(Collectors.joining(delimiter));
     }
 
     /**
@@ -187,7 +187,7 @@ public class StreamUtils {
         return collection
             .stream()
             .map(function)
-            .filter(Objects::nonNull)
+            .filter(ObjectUtils::isNotNull)
             // 注意此处不要使用 .toList() 新语法 因为返回的是不可变List 会导致序列化问题
             .collect(Collectors.toList());
     }
@@ -209,7 +209,7 @@ public class StreamUtils {
         return collection
             .stream()
             .map(function)
-            .filter(Objects::nonNull)
+            .filter(ObjectUtils::isNotNull)
             .collect(Collectors.toSet());
     }
 

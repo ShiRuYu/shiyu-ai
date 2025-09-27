@@ -24,6 +24,11 @@
             </dependency>
             <dependency>
                 <groupId>com.shiyu.ai</groupId>
+                <artifactId>shiyu-common-dal</artifactId>
+                <version>${revision}</version>
+            </dependency>
+            <dependency>
+                <groupId>com.shiyu.ai</groupId>
                 <artifactId>shiyu-common-excel</artifactId>
                 <version>${revision}</version>
             </dependency>
@@ -35,6 +40,16 @@
             <dependency>
                 <groupId>com.shiyu.ai</groupId>
                 <artifactId>shiyu-common-log</artifactId>
+                <version>${revision}</version>
+            </dependency>
+            <dependency>
+                <groupId>com.shiyu.ai</groupId>
+                <artifactId>shiyu-common-mybatis</artifactId>
+                <version>${revision}</version>
+            </dependency>
+            <dependency>
+                <groupId>com.shiyu.ai</groupId>
+                <artifactId>shiyu-common-satoken</artifactId>
                 <version>${revision}</version>
             </dependency>
             <dependency>

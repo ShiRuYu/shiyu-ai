@@ -10,6 +10,7 @@ public class CharConstants {
     }
 
     // ========================= 标点符号 =========================
+    public static final String EMPTY = "";           // 空字符
     public static final String COMMA = ",";           // 逗号
     public static final String PERIOD = ".";          // 句号
     public static final String SEMICOLON = ";";      // 分号

@@ -311,7 +311,7 @@ public class StringUtils extends org.apache.commons.lang3.StringUtils {
         }
         return StrUtil.split(str, separator)
             .stream()
-            .filter(Objects::nonNull)
+            .filter(ObjectUtils::isNotNull)
             .map(mapper)
             .collect(Collectors.toList());
     }

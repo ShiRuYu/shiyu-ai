@@ -18,9 +18,12 @@
     <modules>
         <module>shiyu-common-bom</module>
         <module>shiyu-common-core</module>
+        <module>shiyu-common-dal</module>
         <module>shiyu-common-excel</module>
         <module>shiyu-common-json</module>
         <module>shiyu-common-log</module>
+        <module>shiyu-common-mybatis</module>
+        <module>shiyu-common-satoken</module>
         <module>shiyu-common-web</module>
         <module>shiyu-config-out</module>
     </modules>
