@@ -6,7 +6,6 @@ import com.baomidou.mybatisplus.core.handlers.MetaObjectHandler;
 import com.shiyu.ai.common.core.domain.LoginUser;
 import com.shiyu.ai.common.core.exception.ServiceException;
 import com.shiyu.ai.common.core.service.BaseContext;
-import com.shiyu.ai.common.core.service.UserContext;
 import com.shiyu.ai.common.core.utils.ObjectUtils;
 import com.shiyu.ai.common.mybatis.core.domain.BaseEntity;
 import lombok.extern.slf4j.Slf4j;
@@ -70,7 +69,7 @@ public class InjectionMetaObjectHandler implements MetaObjectHandler {
                 baseEntity.setUpdateTime(current);
 
                 // 获取当前登录用户的ID，并填充更新人信息
-                Long userId = UserContext.getLoginUser().getUserId();
+                Long userId = BaseContext.getLoginUser().getUserId();
                 if (ObjectUtil.isNotNull(userId)) {
                     baseEntity.setUpdateBy(userId);
                 }
@@ -90,8 +89,7 @@ public class InjectionMetaObjectHandler implements MetaObjectHandler {
     private LoginUser getLoginUser() {
         LoginUser loginUser;
         try {
-            String token = BaseContext.getCurrentToken();
-            loginUser = UserContext.getLoginUser();
+            loginUser = BaseContext.getLoginUser();
         } catch (Exception e) {
             log.warn("自动注入警告 => 用户未登录");
             return null;

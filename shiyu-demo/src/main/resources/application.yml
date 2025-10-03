@@ -1,11 +1,9 @@
 shiyu:
   # 名称
-  name: "shiyu-agent"
+  name: "shiyu-demo"
   # 版本
   version: ${revision}
-  config:
-    path:
-      json: E:\Dev\IdeaProjects\shiyu-ai\config.json
+
 # 开发环境配置
 server:
   # 服务器的HTTP端口，默认为8080
@@ -17,33 +15,19 @@ server:
       enabled: true
     # 应用的访问路径
     context-path: /
-  # undertow 配置
-  undertow:
-    # HTTP post内容的最大大小。当值为-1时，默认值为大小是无限的
-    max-http-post-size: -1
-    # 以下的配置会影响buffer,这些buffer会用于服务器连接的IO操作,有点类似netty的池化内存管理
-    # 每块buffer的空间大小,越小的空间被利用越充分
-    buffer-size: 512
-    # 是否分配的直接内存
-    direct-buffers: true
-    threads:
-      # 设置IO线程数, 它主要执行非阻塞的任务,它们会负责多个连接, 默认设置每个CPU核心一个线程
-      io: 8
-      # 阻塞任务线程池, 当执行类似servlet请求阻塞操作, undertow会从这个线程池中取得线程,它的值设置取决于系统的负载
-      worker: 256
 
 springdoc:
   api-docs:
     enabled: false               # 是否启用 API 文档
     path: /v3/api-docs         # OpenAPI JSON 文档访问路径，默认 /v3/api-docs
   #逗号分割
-  packages-to-scan: com.shiyu.ai.agent.controller
+  packages-to-scan: com.shiyu.ai.demo.controller
   group-configs:
     - group: 'default'
       paths-to-match:
         - '/**'
       packages-to-scan:
-        - com.shiyu.ai.agent.controller
+        - com.shiyu.ai.demo.controller
   swagger-ui:
     path: /swagger-ui/index.html      # Swagger UI 访问路径，默认 /swagger-ui/index.html
     display-request-duration: true  # 显示请求耗时
@@ -61,6 +45,9 @@ spring:
     basename: i18n/messages
   profiles:
     active: @profiles.active@
+    group:
+      dev: h2
+    default: @profiles.active@
   # 文件上传
   servlet:
     multipart:
@@ -82,18 +69,3 @@ spring:
     deserialization:
       # 允许对象忽略json中不存在的属性
       fail_on_unknown_properties: false
-  ai:
-    openai:
-      api-key: sk-loqlkwllyfseuttatsjqsndtwvaqzklexdwekwmjuhyuyavu
-      base-url: https://api.siliconflow.cn
-      chat:
-        options:
-          model: deepseek-ai/DeepSeek-V3
-    mcp:
-      client:
-        name: shiyu-ai-mcp
-        request-timeout: 300s
-        sse:
-          connections:
-            weather-mcp-server:
-              url: http://127.0.0.1:8081

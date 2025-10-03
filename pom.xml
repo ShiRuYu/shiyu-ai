@@ -34,6 +34,7 @@
         <commons-collections4.version>4.4</commons-collections4.version>
         <caffeine.version>3.1.8</caffeine.version>
 
+        <h2.version>2.4.240</h2.version>
 
         <mysql.version>8.0.33</mysql.version>
         <mybatis.version>3.5.16</mybatis.version>
@@ -240,6 +241,12 @@
             </dependency>
 
             <dependency>
+                <groupId>com.h2database</groupId>
+                <artifactId>h2</artifactId>
+                <version>${h2.version}</version>
+            </dependency>
+
+            <dependency>
                 <groupId>mysql</groupId>
                 <artifactId>mysql-connector-java</artifactId>
                 <version>${mysql.version}</version>
@@ -362,12 +369,17 @@
             <dependency>
                 <groupId>com.shiyu.ai</groupId>
                 <artifactId>shiyu-agent</artifactId>
-                <version>1.0.0</version>
+                <version>${revision}</version>
+            </dependency>
+            <dependency>
+                <groupId>com.shiyu.ai</groupId>
+                <artifactId>shiyu-demo</artifactId>
+                <version>${revision}</version>
             </dependency>
             <dependency>
                 <groupId>com.shiyu.ai</groupId>
                 <artifactId>shiyu-mcp</artifactId>
-                <version>1.0.0</version>
+                <version>${revision}</version>
             </dependency>
 
         </dependencies>

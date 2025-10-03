@@ -24,6 +24,7 @@ mybatis-plus:
       # 主键类型
       # AUTO 自增 NONE 空 INPUT 用户输入 ASSIGN_ID 雪花 ASSIGN_UUID 唯一 UUID
       idType: ASSIGN_ID
+      logicDeleteField: delFlag
       # 逻辑已删除值(可按需求随意修改)
       logicDeleteValue: 0
       # 逻辑未删除值

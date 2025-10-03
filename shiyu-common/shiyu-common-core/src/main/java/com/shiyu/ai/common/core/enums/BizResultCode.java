@@ -1,4 +1,4 @@
-package com.shiyu.ai.common.core.domain;
+package com.shiyu.ai.common.core.enums;
 
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;

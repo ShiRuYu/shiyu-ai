@@ -1,8 +1,6 @@
 package com.shiyu.ai.common.core.domain;
 
-import com.shiyu.ai.common.core.CharConstants;
-import com.shiyu.ai.common.core.utils.StreamUtils;
-import com.shiyu.ai.common.core.utils.StringUtils;
+import com.shiyu.ai.common.core.enums.BizResultCode;
 import lombok.Data;
 
 @Data

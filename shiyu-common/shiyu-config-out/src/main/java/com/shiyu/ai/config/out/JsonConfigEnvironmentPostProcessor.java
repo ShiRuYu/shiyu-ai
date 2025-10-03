@@ -12,7 +12,7 @@ public class JsonConfigEnvironmentPostProcessor implements EnvironmentPostProces
     public void postProcessEnvironment(ConfigurableEnvironment environment, SpringApplication application) {
 
         // 可以通过系统属性或环境变量指定 JSON 文件路径
-        Optional.ofNullable(environment.getProperty("json.config.path"))
+        Optional.ofNullable(environment.getProperty("shiyu.config.path.json"))
                 .ifPresent(jsonPath -> {
                     JsonConfigLoader loader = new JsonConfigLoader(environment);
                     loader.loadJsonFile(jsonPath);

@@ -17,6 +17,7 @@
 
     <dependencyManagement>
         <dependencies>
+            <!-- common 内部引用 -->
             <dependency>
                 <groupId>com.shiyu.ai</groupId>
                 <artifactId>shiyu-common-core</artifactId>
@@ -45,6 +46,11 @@
             <dependency>
                 <groupId>com.shiyu.ai</groupId>
                 <artifactId>shiyu-common-mybatis</artifactId>
+                <version>${revision}</version>
+            </dependency>
+            <dependency>
+                <groupId>com.shiyu.ai</groupId>
+                <artifactId>shiyu-common-mybatis-tenant</artifactId>
                 <version>${revision}</version>
             </dependency>
             <dependency>

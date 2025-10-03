@@ -117,12 +117,12 @@ public class LoginUser implements Serializable {
     /**
      * 关联角色类型
      */
-    private String kroleGroupType;
+    private String kRoleGroupType;
 
     /**
      * 关联角色id
      */
-    private String kroleGroupIds;
+    private String kRoleGroupIds;
 
     /**
      * 获取登录id

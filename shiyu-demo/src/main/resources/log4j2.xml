@@ -1,0 +1,162 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--日志级别从低到高优先级为：ALL < TRACE < DEBUG < INFO < WARN < ERROR < FATAL < OFF。-->
+<!--status：设置 log4j2 自身内部的信息输出，可以不设置-->
+<!--monitorInterval：监视配置文件变化间隔时间，单位秒，Log4j2 能够自动检测配置文件是否修改，同时更新配置-->
+<configuration monitorInterval="30">
+    <!--定义属性，在下方方便维护引用-->
+    <properties>
+        <!--项目名-->
+        <property name="project">shiyu-demo</property>
+        <!--当天文件保存目录-->
+        <property name="logDir">./.logs</property>
+        <!--历史文件保存目录-->
+        <property name="historyLogDir">./.logs/history</property>
+        <!--如果当天日志文件大于100MB，则存档-->
+        <property name="splitSize">100MB</property>
+        <!--文件保存个数，这里的30说明可保留30个，即30天-->
+        <property name="fileCount">30</property>
+        <!--输出格式-->
+        <property name="logPattern">%d{yyyy-MM-dd HH:mm:ss.SSS} => [%thread] => [%X{traceId}] %-5level %logger{50}:(%line) - %msg%n</property>
+    </properties>
+
+    <!--先定义所有的 appender 附加器-->
+    <appenders>
+        <!--控制台输出配置-->
+        <console name="Console" target="SYSTEM_OUT">
+            <filters>
+                <ThresholdFilter level="INFO" onMatch="ACCEPT" onMismatch="DENY"/>
+            </filters>
+            <!--输出日志的格式
+                %d表示日期时间，
+                %thread表示线程名，
+                %-5level：级别从左显示5个字符宽度
+                %logger{50} 表示logger名字最长50个字符，否则按照句点分割。
+                %line：表示行号
+                %msg：日志消息
+                %n是换行符-->
+            <PatternLayout pattern="${logPattern}" />
+        </console>
+
+        <!--文件存储文件设置-->
+        <!--fileName：文件存储路径及名称，可以是绝对路径或者相对路径; 存储的永远是最新的日志信息-->
+        <!--filePattern：当 fileName 指定的文件大小超过限制，就会根据此文件名规则新建存档目录与文件，同时将 fileName 文件中的
+         内容剪切到存档文件中，如下配置，会新建存档路径 logs/history/error-2023-03-26-1.log -->
+        <!--以下只保存debug信息-->
+        <RollingFile name="fileDebug" fileName="${logDir}/debug.log"
+                     filePattern="${historyLogDir}/${project}-debug-%d{yyyy-MM-dd}-%i.log">
+            <filters>
+                <ThresholdFilter level="INFO" onMatch="DENY" onMismatch="NEUTRAL" />
+                <ThresholdFilter level="DEBUG" onMatch="ACCEPT" onMismatch="DENY" />
+            </filters>
+            <PatternLayout pattern="${logPattern}" />
+            <Policies>
+                <TimeBasedTriggeringPolicy />
+                <!--日志文件大小超过多少时进行存档-->
+                <SizeBasedTriggeringPolicy size="${splitSize}" />
+            </Policies>
+            <DefaultRolloverStrategy max="${fileCount}" />
+        </RollingFile>
+
+        <!--以下只保存info信息-->
+        <RollingFile name="fileInfo" fileName="${logDir}/info.log"
+                     filePattern="${historyLogDir}/${project}-info-%d{yyyy-MM-dd}-%i.log">
+            <filters>
+                <ThresholdFilter level="WARN" onMatch="DENY" onMismatch="NEUTRAL" />
+                <ThresholdFilter level="INFO" onMatch="ACCEPT" onMismatch="DENY" />
+            </filters>
+            <PatternLayout pattern="${logPattern}" />
+            <Policies>
+                <TimeBasedTriggeringPolicy />
+                <SizeBasedTriggeringPolicy size="${splitSize}" />
+            </Policies>
+            <DefaultRolloverStrategy max="${fileCount}" />
+        </RollingFile>
+
+        <!--以下只保存warn信息-->
+        <RollingFile name="fileWarn" fileName="${logDir}/warn.log"
+                     filePattern="${historyLogDir}/${project}-warn-%d{yyyy-MM-dd}-%i.log">
+            <filters>
+                <ThresholdFilter level="ERROR" onMatch="DENY" onMismatch="NEUTRAL" />
+                <ThresholdFilter level="WARN" onMatch="ACCEPT" onMismatch="DENY" />
+            </filters>
+            <PatternLayout pattern="${logPattern}" />
+            <Policies>
+                <TimeBasedTriggeringPolicy />
+                <SizeBasedTriggeringPolicy size="${splitSize}" />
+            </Policies>
+            <DefaultRolloverStrategy max="${fileCount}" />
+        </RollingFile>
+
+        <!--以下只保存error信息-->
+        <RollingFile name="fileError" fileName="${logDir}/error.log"
+                     filePattern="${historyLogDir}/${project}-error-%d{yyyy-MM-dd}-%i.log">
+            <filters>
+                <ThresholdFilter level="ERROR" onMatch="ACCEPT" onMismatch="DENY" />
+            </filters>
+            <PatternLayout pattern="${logPattern}" />
+            <Policies>
+                <TimeBasedTriggeringPolicy />
+                <SizeBasedTriggeringPolicy size="${splitSize}" />
+            </Policies>
+            <DefaultRolloverStrategy max="${fileCount}" />
+        </RollingFile>
+
+        <!--以下保存api请求信息-->
+        <RollingFile name="webInfo" fileName="${logDir}/web.log"
+                     filePattern="${historyLogDir}/${project}-web-%d{yyyy-MM-dd}-%i.log">
+            <filters>
+                <ThresholdFilter level="INFO" onMatch="ACCEPT" onMismatch="DENY" />
+            </filters>
+            <PatternLayout pattern="${logPattern}" />
+            <Policies>
+                <TimeBasedTriggeringPolicy />
+                <SizeBasedTriggeringPolicy size="${splitSize}" />
+            </Policies>
+            <DefaultRolloverStrategy max="${fileCount}" />
+        </RollingFile>
+
+    </appenders>
+
+    <!--
+    1、root与logger是父子关系，没有特别定义logger的都默认为root。
+    2、任何一个类只会和一个logger对应，要么是定义的logger，要么是root，判断的关键在于找到这个logger，然后判断这个logger的appender和level。
+    3、appender-ref 用于引用上面定义好的 appender 日志追加器，只有引用了，上面的 appender 才能生效. -->
+    <loggers>
+        <logger name="COMMON_LOGGER" level="DEBUG" additivity="true">
+            <appender-ref ref="fileDebug" />
+            <appender-ref ref="fileInfo" />
+            <appender-ref ref="fileWarn" />
+            <appender-ref ref="fileError" />
+        </logger>
+
+        <logger name="WEB_LOGGER" level="DEBUG" additivity="true">
+            <appender-ref ref="fileDebug" />
+            <appender-ref ref="fileInfo" />
+            <appender-ref ref="fileWarn" />
+            <appender-ref ref="fileError" />
+            <appender-ref ref="webInfo" />
+        </logger>
+
+        <!--过滤掉 spring 和 mybatis 的一些无用的 DEBUG 信息;也可以单独指定自己的某个包-->
+        <!--以下包中ERROR级别以上日志在root中将被记录-->
+        <!--<logger name="org.springframework" level="ERROR"></logger>
+        <logger name="org.mybatis" level="ERROR"></logger>
+        <logger name="org.hibernate" level="ERROR"></logger>
+        <logger name="org.apache" level="ERROR"></logger>
+        <logger name="com.baomidou" level="ERROR"></logger>
+        <logger name="com.zaxxer" level="ERROR"></logger>
+        <logger name="springfox.documentation" level="ERROR"></logger>-->
+
+        <!--com.shiyu包中的DEBUG以上信息在以下的appender中输出，additivity所有日志还要向控制台和allLog中输出-->
+        <logger name="com.shiyu" level="DEBUG" additivity="true">
+            <appender-ref ref="fileDebug" />
+            <appender-ref ref="fileInfo" />
+            <appender-ref ref="fileWarn" />
+            <appender-ref ref="fileError" />
+        </logger>
+
+        <root level="INFO">
+            <appender-ref ref="Console" />
+        </root>
+    </loggers>
+</configuration>
