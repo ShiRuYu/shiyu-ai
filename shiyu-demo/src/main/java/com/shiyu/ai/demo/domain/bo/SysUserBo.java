@@ -1,37 +1,30 @@
-package com.shiyu.ai.demo.domain;
+package com.shiyu.ai.demo.domain.bo;
 
-import com.fasterxml.jackson.annotation.JsonIgnore;
-import com.fasterxml.jackson.annotation.JsonProperty;
+import com.shiyu.ai.common.core.xss.Xss;
 import io.github.linpeilie.annotations.AutoMapper;
+import jakarta.validation.constraints.Email;
+import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.Size;
 import lombok.Data;
-
-import java.io.Serial;
-import java.io.Serializable;
-import java.util.Date;
-import java.util.List;
-
+import lombok.EqualsAndHashCode;
+import lombok.NoArgsConstructor;
+import com.shiyu.ai.common.mybatis.core.domain.BaseEntity;
+import com.shiyu.ai.demo.domain.SysUser;
 
 /**
- * 用户信息视图对象 sys_user
- *
- * @author Michelle.Chung
+ * 用户信息业务对象 sys_user
  */
-@Data
-@AutoMapper(target = SysUser.class)
-public class SysUserVo implements Serializable {
 
-    @Serial
-    private static final long serialVersionUID = 1L;
+@Data
+@NoArgsConstructor
+@EqualsAndHashCode(callSuper = true)
+@AutoMapper(target = SysUser.class, reverseConvertGenerate = false)
+public class SysUserBo extends BaseEntity {
 
     /**
      * 用户ID
      */
     private Long userId;
-
-    /**
-     * 租户ID
-     */
-    private String tenantId;
 
     /**
      * 部门ID
@@ -41,16 +34,15 @@ public class SysUserVo implements Serializable {
     /**
      * 用户账号
      */
+    @Xss(message = "用户账号不能包含脚本字符")
+    @NotBlank(message = "用户账号不能为空")
+    @Size(min = 0, max = 30, message = "用户账号长度不能超过{max}个字符")
     private String userName;
-
-    /**
-     * 用户套餐
-     */
-    private String userPlan;
 
     /**
      * 用户昵称
      */
+    @Size(min = 0, max = 30, message = "用户昵称长度不能超过{max}个字符")
     private String nickName;
 
     /**
@@ -61,6 +53,8 @@ public class SysUserVo implements Serializable {
     /**
      * 用户邮箱
      */
+    @Email(message = "邮箱格式不正确")
+    @Size(min = 0, max = 50, message = "邮箱长度不能超过{max}个字符")
     private String email;
 
     /**
@@ -74,22 +68,15 @@ public class SysUserVo implements Serializable {
     private String sex;
 
     /**
-     * 头像地址
-     */
-    private String avatar;
-
-    /**
-     * 微信头像地址
-     */
-    private String wxAvatar;
-
-
-    /**
      * 密码
      */
-    @JsonIgnore
-    @JsonProperty
     private String password;
+
+
+    /**
+     * 用户套餐
+     */
+    private String userPlan;
 
     /**
      * 帐号状态（0正常 1停用）
@@ -97,14 +84,9 @@ public class SysUserVo implements Serializable {
     private String status;
 
     /**
-     * 最后登录IP
+     * 微信头像
      */
-    private String loginIp;
-
-    /**
-     * 最后登录时间
-     */
-    private Date loginDate;
+    private String avatar;
 
     /**
      * 备注
@@ -112,25 +94,9 @@ public class SysUserVo implements Serializable {
     private String remark;
 
     /**
-     * 创建时间
-     */
-    private Date createTime;
-
-    /**
-     * 部门对象
-     */
-    private String dept;
-
-    /**
      * 注册域名
      */
     private String domainName;
-
-    /**
-     * 角色对象
-     */
-    private List<String> roles;
-
     /**
      * 角色组
      */
@@ -147,6 +113,11 @@ public class SysUserVo implements Serializable {
     private Long roleId;
 
     /**
+     * 普通用户的标识,对当前开发者帐号唯一。一个openid对应一个公众号或小程序
+     */
+    private String openId;
+
+    /**
      * 用户等级
      */
     private String userGrade;
@@ -155,6 +126,14 @@ public class SysUserVo implements Serializable {
      * 用户余额
      */
     private Double userBalance;
+
+    public SysUserBo(Long userId) {
+        this.userId = userId;
+    }
+
+    public boolean isSuperAdmin() {
+        return false;
+    }
 
     /**
      * 知识库角色组类型（role/roleGroup）
@@ -165,4 +144,5 @@ public class SysUserVo implements Serializable {
      * 知识库角色组id（role/roleGroup）
      */
     private String kroleGroupIds;
+
 }

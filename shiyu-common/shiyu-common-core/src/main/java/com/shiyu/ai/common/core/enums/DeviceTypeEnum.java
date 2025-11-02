@@ -9,7 +9,7 @@ import lombok.Getter;
  */
 @Getter
 @AllArgsConstructor
-public enum DeviceType {
+public enum DeviceTypeEnum {
 
     /**
      * pc端

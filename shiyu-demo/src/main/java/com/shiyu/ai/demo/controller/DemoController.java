@@ -4,7 +4,7 @@ import com.shiyu.ai.common.core.domain.LoginUser;
 import com.shiyu.ai.common.core.domain.Result;
 import com.shiyu.ai.common.core.service.BaseContext;
 import com.shiyu.ai.demo.domain.SysUser;
-import com.shiyu.ai.demo.mapper.DemoMapper;
+import com.shiyu.ai.demo.mapper.SysUserMapper;
 import lombok.RequiredArgsConstructor;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RestController;
@@ -17,7 +17,7 @@ import java.util.List;
 @RestController
 @RequiredArgsConstructor
 public class DemoController {
-    private final DemoMapper demoMapper;
+    private final SysUserMapper sysUserMapper;
 
     /**
      * 插入一条数据
@@ -32,7 +32,7 @@ public class DemoController {
         sysUser.setUserName("admin");
         sysUser.setNickName("admin1");
         sysUser.setPassword("123456");
-        int insert = demoMapper.insert(sysUser);
+        int insert = sysUserMapper.insert(sysUser);
         return Result.success(insert);
     }
 
@@ -42,7 +42,7 @@ public class DemoController {
      */
     @GetMapping("get")
     public Result<List<SysUser>> get(){
-        List<SysUser> sysUsers = demoMapper.selectList();
+        List<SysUser> sysUsers = sysUserMapper.selectList();
         return Result.success(sysUsers);
     }
 }

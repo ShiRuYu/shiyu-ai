@@ -31,7 +31,11 @@
         </dependency>
         <dependency>
             <groupId>com.shiyu.ai</groupId>
-            <artifactId>shiyu-common-mybatis</artifactId>
+            <artifactId>shiyu-common-mybatis-tenant</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>com.shiyu.ai</groupId>
+            <artifactId>shiyu-common-excel</artifactId>
         </dependency>
         <dependency>
             <groupId>com.shiyu.ai</groupId>

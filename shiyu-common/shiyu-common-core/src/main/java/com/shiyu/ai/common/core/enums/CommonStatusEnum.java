@@ -4,11 +4,11 @@ import lombok.AllArgsConstructor;
 import lombok.Getter;
 
 /**
- * 用户状态
+ * 通用状态
  */
 @Getter
 @AllArgsConstructor
-public enum UserStatus {
+public enum CommonStatusEnum {
     /**
      * 正常
      */

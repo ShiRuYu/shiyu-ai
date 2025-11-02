@@ -1,7 +1,7 @@
 package com.shiyu.ai.common.core.domain;
 
-import com.shiyu.ai.common.core.enums.DeviceType;
-import com.shiyu.ai.common.core.enums.UserType;
+import com.shiyu.ai.common.core.enums.DeviceTypeEnum;
+import com.shiyu.ai.common.core.enums.UserTypeEnum;
 import lombok.AccessLevel;
 import lombok.NoArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -41,7 +41,7 @@ public class LoginHelper {
      *
      * @param loginUser 登录用户信息
      */
-    public static void loginByDevice(LoginUser loginUser, DeviceType deviceType) {
+    public static void loginByDevice(LoginUser loginUser, DeviceTypeEnum deviceType) {
     }
 
     /**
@@ -87,7 +87,7 @@ public class LoginHelper {
     /**
      * 获取用户类型
      */
-    public static UserType getUserType() {
+    public static UserTypeEnum getUserType() {
         return null;
     }
 

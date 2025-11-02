@@ -7,8 +7,6 @@ import lombok.EqualsAndHashCode;
 
 /**
  * 租户基类
- *
- * @author Michelle.Chung
  */
 @Data
 @EqualsAndHashCode(callSuper = true)

@@ -1,7 +1,7 @@
 package com.shiyu.ai.demo.domain;
 
 import com.baomidou.mybatisplus.annotation.*;
-import com.shiyu.ai.common.mybatis.core.domain.BaseEntity;
+import com.shiyu.ai.mybatis.tenant.core.TenantEntity;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
 import lombok.NoArgsConstructor;
@@ -16,7 +16,7 @@ import java.util.Date;
 @NoArgsConstructor
 @EqualsAndHashCode(callSuper = true)
 @TableName("sys_user")
-public class SysUser extends BaseEntity {
+public class SysUser extends TenantEntity {
 
     /**
      * 用户ID
@@ -80,7 +80,7 @@ public class SysUser extends BaseEntity {
     private String password;
 
     /**
-     * 帐号状态（0正常 1停用）
+     * 帐号状态（1正常 0停用）
      */
     private String status;
 
@@ -123,5 +123,23 @@ public class SysUser extends BaseEntity {
      * 用户等级
      */
     private String userGrade;
+
+    public SysUser(Long userId) {
+        this.userId = userId;
+    }
+
+    public boolean isSuperAdmin() {
+        return false;
+    }
+
+    /**
+     * 知识库角色组类型（role/roleGroup）
+     */
+    private String kRoleGroupType;
+
+    /**
+     * 知识库角色组id（role/roleGroup）
+     */
+    private String kRoleGroupIds;
 
 }

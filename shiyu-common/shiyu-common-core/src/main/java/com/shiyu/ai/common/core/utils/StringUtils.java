@@ -103,7 +103,7 @@ public class StringUtils extends org.apache.commons.lang3.StringUtils {
      * @param link 链接
      * @return 结果
      */
-    public static boolean ishttp(String link) {
+    public static boolean isHttp(String link) {
         return Validator.isUrl(link);
     }
 

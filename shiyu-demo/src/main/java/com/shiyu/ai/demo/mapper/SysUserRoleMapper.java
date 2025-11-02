@@ -1,0 +1,18 @@
+package com.shiyu.ai.demo.mapper;
+
+import org.apache.ibatis.annotations.Mapper;
+import com.shiyu.ai.common.mybatis.core.mapper.BaseMapperPlus;
+import com.shiyu.ai.demo.domain.SysUserRole;
+
+import java.util.List;
+
+/**
+ * 用户与角色关联表 数据层
+ *
+ */
+@Mapper
+public interface SysUserRoleMapper extends BaseMapperPlus<SysUserRole, SysUserRole> {
+
+    List<Long> selectUserIdsByRoleId(Long roleId);
+
+}

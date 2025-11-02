@@ -4,6 +4,7 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.shiyu.ai.common.core.utils.ObjectUtils;
+import com.shiyu.ai.common.core.utils.SpringUtils;
 import lombok.AccessLevel;
 import lombok.NoArgsConstructor;
 
@@ -16,7 +17,7 @@ import java.util.Map;
 @NoArgsConstructor(access = AccessLevel.PRIVATE)
 public class JsonUtils {
 
-    private static final ObjectMapper OBJECT_MAPPER = new ObjectMapper();
+    private static final ObjectMapper OBJECT_MAPPER = SpringUtils.getBean(ObjectMapper.class);
 
     public static ObjectMapper getObjectMapper() {
         return OBJECT_MAPPER;

@@ -8,7 +8,7 @@ import lombok.Getter;
  */
 @Getter
 @AllArgsConstructor
-public enum LoginUserType {
+public enum LoginUserTypeEnum {
 
     PC("1", "PC端用户"),
 
