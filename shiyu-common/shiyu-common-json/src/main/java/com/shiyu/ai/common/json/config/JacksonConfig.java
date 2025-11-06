@@ -19,7 +19,7 @@ import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.TimeZone;
 
-@AutoConfiguration(before = JacksonAutoConfiguration.class)
+//@AutoConfiguration(before = JacksonAutoConfiguration.class)
 public class JacksonConfig {
     Logger logger = LoggerFactory.getLogger(JacksonConfig.class);
 

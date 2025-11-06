@@ -96,4 +96,4 @@ spring:
         sse:
           connections:
             weather-mcp-server:
-              url: http://127.0.0.1:8081
+              url: http://127.0.0.1:9000
