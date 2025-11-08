@@ -39,10 +39,6 @@
         </dependency>
         <dependency>
             <groupId>com.shiyu.ai</groupId>
-            <artifactId>shiyu-common-json</artifactId>
-        </dependency>
-        <dependency>
-            <groupId>com.shiyu.ai</groupId>
             <artifactId>shiyu-common-log</artifactId>
         </dependency>
     </dependencies>

@@ -1,4 +1,4 @@
-package com.shiyu.ai.config.out;
+package com.shiyu.ai.common.core.utils;
 
 import java.util.HashMap;
 import java.util.Map;

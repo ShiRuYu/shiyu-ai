@@ -3,7 +3,7 @@ package com.shiyu.ai.common.web.interceptor;
 import cn.hutool.core.io.IoUtil;
 import cn.hutool.core.map.MapUtil;
 import com.alibaba.ttl.TransmittableThreadLocal;
-import com.shiyu.ai.common.json.utils.JsonUtils;
+import com.shiyu.ai.common.core.utils.JsonUtils;
 import com.shiyu.ai.common.web.filter.RepeatedlyRequestWrapper;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
