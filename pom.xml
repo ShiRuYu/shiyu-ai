@@ -16,6 +16,7 @@
         <revision>1.0.0</revision>
         <spring-boot.version>3.4.4</spring-boot.version>
         <spring-ai.version>1.0.1</spring-ai.version>
+
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
         <project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
         <java.version>21</java.version>
@@ -26,6 +27,7 @@
         <knife4j-openapi3.version>4.5.0</knife4j-openapi3.version>
 
         <satoken.version>1.34.0</satoken.version>
+        <liteflow.version>2.15.1</liteflow.version>
 
         <mapstruct-plus.version>1.2.1</mapstruct-plus.version>
         <mapstruct-plus.lombok.version>0.2.0</mapstruct-plus.lombok.version>
@@ -51,6 +53,7 @@
         <okhttp.version>5.2.1</okhttp.version>
         <redisson.version>3.52.0</redisson.version>
         <!-- ？？ -->
+        <timefold-solver.version>1.27.0</timefold-solver.version>
         <bouncycastle.version>1.72</bouncycastle.version>
         <alibaba-ttl.version>2.14.2</alibaba-ttl.version>
         <xxl-job.version>3.2.0</xxl-job.version>
@@ -106,6 +109,7 @@
     <modules>
         <module>shiyu-common</module>
         <module>shiyu-agent</module>
+        <module>shiyu-chat</module>
         <module>shiyu-demo</module>
         <module>shiyu-mcp</module>
     </modules>
@@ -127,6 +131,14 @@
                 <groupId>org.springframework.ai</groupId>
                 <artifactId>spring-ai-bom</artifactId>
                 <version>${spring-ai.version}</version>
+                <type>pom</type>
+                <scope>import</scope>
+            </dependency>
+
+            <dependency>
+                <groupId>ai.timefold.solver</groupId>
+                <artifactId>timefold-solver-bom</artifactId>
+                <version>${timefold-solver.version}</version>
                 <type>pom</type>
                 <scope>import</scope>
             </dependency>
@@ -228,6 +240,13 @@
                 <artifactId>velocity-engine-core</artifactId>
                 <version>${velocity.version}</version>
             </dependency>
+
+            <dependency>
+                <groupId>com.yomahub</groupId>
+                <artifactId>liteflow-spring-boot-starter</artifactId>
+                <version>${liteflow.version}</version>
+            </dependency>
+
 
             <!-- Sa-Token 权限认证, 在线文档：http://sa-token.dev33.cn/ -->
             <dependency>
@@ -382,6 +401,11 @@
             <dependency>
                 <groupId>com.shiyu.ai</groupId>
                 <artifactId>shiyu-agent</artifactId>
+                <version>${revision}</version>
+            </dependency>
+            <dependency>
+                <groupId>com.shiyu.ai</groupId>
+                <artifactId>shiyu-chat</artifactId>
                 <version>${revision}</version>
             </dependency>
             <dependency>

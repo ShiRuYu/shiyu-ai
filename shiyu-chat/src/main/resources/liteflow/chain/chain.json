@@ -1,0 +1,16 @@
+{
+  "chains": [
+    {"name": "chatFlow", "nodes": [
+      {"id": "INTENT"},
+      {"id": "STRATEGY_SELECT"},
+      {"id": "CHAIN_EXECUTE"}
+    ]},
+    {"name": "chain.tot", "nodes": [
+      {"id": "CHAT_TOT"},
+      {"id": "TOT_SOLVE"}
+    ]},
+    {"name": "chain.cot", "nodes": [
+      {"id": "CHAT_TOT"}
+    ]}
+  ]
+}
