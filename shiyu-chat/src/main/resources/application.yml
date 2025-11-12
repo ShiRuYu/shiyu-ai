@@ -70,5 +70,5 @@ spring:
       # 允许对象忽略json中不存在的属性
       fail_on_unknown_properties: false
 liteflow:
-  scan-package: liteflow.components
-  enable: true
+  #规则文件路径
+  rule-source: liteflow/chain/chain.json

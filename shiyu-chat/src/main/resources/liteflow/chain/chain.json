@@ -1,16 +1,18 @@
 {
-  "chains": [
-    {"name": "chatFlow", "nodes": [
-      {"id": "INTENT"},
-      {"id": "STRATEGY_SELECT"},
-      {"id": "CHAIN_EXECUTE"}
-    ]},
-    {"name": "chain.tot", "nodes": [
-      {"id": "CHAT_TOT"},
-      {"id": "TOT_SOLVE"}
-    ]},
-    {"name": "chain.cot", "nodes": [
-      {"id": "CHAT_TOT"}
-    ]}
-  ]
+  "flow": {
+    "chain": [
+      {
+        "name": "chatFlow",
+        "value": "THEN(INTENT, STRATEGY_SELECT, CHAIN_EXECUTE)"
+      },
+      {
+        "name": "chain.cot",
+        "value": "THEN(CHAT_COT)"
+      },
+      {
+        "name": "chain.tot",
+        "value": "THEN(CHAT_TOT, TOT_SOLVE)"
+      }
+    ]
+  }
 }
