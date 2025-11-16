@@ -7,7 +7,7 @@ shiyu:
 # 开发环境配置
 server:
   # 服务器的HTTP端口，默认为8080
-  port: 8081
+  port: 9001
   servlet:
     encoding:
       charset: UTF-8

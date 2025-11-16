@@ -3,15 +3,19 @@
     "chain": [
       {
         "name": "chatFlow",
-        "value": "THEN(INTENT, STRATEGY_SELECT, CHAIN_EXECUTE)"
+        "value": "THEN(INTENT, CHAIN_EXECUTE)"
       },
       {
-        "name": "chain.cot",
+        "name": "chatDirect",
+        "value": "THEN(CHAT_DIRECT)"
+      },
+      {
+        "name": "chatCoT",
         "value": "THEN(CHAT_COT)"
       },
       {
-        "name": "chain.tot",
-        "value": "THEN(CHAT_TOT, TOT_SOLVE)"
+        "name": "chatToT",
+        "value": "THEN(CHAT_TOT)"
       }
     ]
   }

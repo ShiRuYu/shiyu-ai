@@ -7,8 +7,8 @@ import com.yomahub.liteflow.annotation.LiteflowComponent;
 import com.yomahub.liteflow.core.NodeComponent;
 import jakarta.annotation.Resource;
 
-@LiteflowComponent("CHAT_COT")
-public class ChatCoTCmp extends NodeComponent {
+@LiteflowComponent("CHAT_DIRECT")
+public class ChatDirectCmp extends NodeComponent {
     @Resource
     private ChatEngine chatEngine;
 

@@ -9,7 +9,7 @@ shiyu:
 # 开发环境配置
 server:
   # 服务器的HTTP端口，默认为8080
-  port: 8080
+  port: 9000
   servlet:
     encoding:
       charset: UTF-8
@@ -61,6 +61,8 @@ spring:
     basename: i18n/messages
   profiles:
     active: @profiles.active@
+    group:
+      dev: ai,mcp
   # 文件上传
   servlet:
     multipart:
@@ -82,18 +84,3 @@ spring:
     deserialization:
       # 允许对象忽略json中不存在的属性
       fail_on_unknown_properties: false
-  ai:
-    openai:
-      api-key: sk-loqlkwllyfseuttatsjqsndtwvaqzklexdwekwmjuhyuyavu
-      base-url: https://api.siliconflow.cn
-      chat:
-        options:
-          model: deepseek-ai/DeepSeek-V3
-    mcp:
-      client:
-        name: shiyu-ai-mcp
-        request-timeout: 300s
-        sse:
-          connections:
-            weather-mcp-server:
-              url: http://127.0.0.1:9000
