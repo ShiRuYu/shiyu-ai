@@ -1,8 +1,6 @@
 package com.shiyu.ai.demo.controller;
 
-import com.shiyu.ai.common.core.domain.LoginUser;
-import com.shiyu.ai.common.core.domain.api.Result;
-import com.shiyu.ai.common.core.service.BaseContext;
+import com.shiyu.ai.common.core.api.Result;
 import com.shiyu.ai.demo.domain.SysUserDO;
 import com.shiyu.ai.demo.mapper.SysUserMapper;
 import lombok.RequiredArgsConstructor;
@@ -25,9 +23,6 @@ public class DemoController {
      */
     @GetMapping("put")
     public Result<Integer> insert(){
-        LoginUser loginUser = new LoginUser();
-        loginUser.setUserId(1974039142799511553L);
-        BaseContext.set(BaseContext.MapKey.LOGIN_USER.name(),loginUser);
         SysUserDO sysUser = new SysUserDO();
         sysUser.setUserName("admin");
         sysUser.setNickName("admin1");

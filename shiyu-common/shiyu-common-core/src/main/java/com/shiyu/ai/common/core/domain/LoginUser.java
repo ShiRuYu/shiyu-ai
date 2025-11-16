@@ -1,15 +1,17 @@
 package com.shiyu.ai.common.core.domain;
 
+import com.google.common.collect.Maps;
+import com.shiyu.ai.common.core.enums.DeviceTypeEnum;
+import com.shiyu.ai.common.core.enums.UserTypeEnum;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
 import java.io.Serial;
 import java.io.Serializable;
-import java.util.List;
-import java.util.Set;
+import java.util.Map;
 
 /**
- * 登录用户身份权限
+ * 登录用户
  */
 
 @Data
@@ -20,24 +22,9 @@ public class LoginUser implements Serializable {
     private static final long serialVersionUID = 1L;
 
     /**
-     * 租户ID
-     */
-    private String tenantId;
-
-    /**
      * 用户ID
      */
     private Long userId;
-
-    /**
-     * 部门ID
-     */
-    private Long deptId;
-
-    /**
-     * 部门名
-     */
-    private String deptName;
 
     /**
      * 用户唯一标识
@@ -47,7 +34,7 @@ public class LoginUser implements Serializable {
     /**
      * 用户类型
      */
-    private String userType;
+    private UserTypeEnum userType;
 
     /**
      * 登录时间
@@ -77,17 +64,7 @@ public class LoginUser implements Serializable {
     /**
      * 操作系统
      */
-    private String os;
-
-    /**
-     * 菜单权限
-     */
-    private Set<String> menuPermission;
-
-    /**
-     * 角色权限
-     */
-    private Set<String> rolePermission;
+    private DeviceTypeEnum os;
 
     /**
      * 用户名
@@ -100,41 +77,13 @@ public class LoginUser implements Serializable {
     private String nickName;
 
     /**
-     * 微信头像
+     * 头像
      */
     private String avatar;
 
     /**
-     * 角色对象
+     * 扩展信息
      */
-    private List<RoleDTO> roles;
-
-    /**
-     * 数据权限 当前角色ID
-     */
-    private Long roleId;
-
-    /**
-     * 关联角色类型
-     */
-    private String kRoleGroupType;
-
-    /**
-     * 关联角色id
-     */
-    private String kRoleGroupIds;
-
-    /**
-     * 获取登录id
-     */
-    public String getLoginId() {
-        if (userType == null) {
-            throw new IllegalArgumentException("用户类型不能为空");
-        }
-        if (userId == null) {
-            throw new IllegalArgumentException("用户ID不能为空");
-        }
-        return userType + ":" + userId;
-    }
+    private Map<String, Object> extInfo = Maps.newHashMap();
 
 }

@@ -1,12 +1,9 @@
 package com.shiyu.ai.common.core.domain;
 
-import com.shiyu.ai.common.core.enums.DeviceTypeEnum;
 import com.shiyu.ai.common.core.enums.UserTypeEnum;
 import lombok.AccessLevel;
 import lombok.NoArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-
-import java.util.Set;
 
 /**
  * 登录鉴权助手
@@ -22,6 +19,8 @@ import java.util.Set;
 @NoArgsConstructor(access = AccessLevel.PRIVATE)
 public class LoginHelper {
 
+
+
     public static final String LOGIN_USER_KEY = "loginUser";
     public static final String TENANT_KEY = "tenantId";
     public static final String USER_KEY = "userId";
@@ -32,49 +31,21 @@ public class LoginHelper {
      * @param loginUser 登录用户信息
      */
     public static void login(LoginUser loginUser) {
-        loginByDevice(loginUser, null);
+        UserGlobalContext.set(loginUser);
     }
 
     /**
-     * 登录系统 基于 设备类型
-     * 针对相同用户体系不同设备
-     *
-     * @param loginUser 登录用户信息
-     */
-    public static void loginByDevice(LoginUser loginUser, DeviceTypeEnum deviceType) {
-    }
-
-    /**
-     * 获取用户(多级缓存)
+     * 获取用户
      */
     public static LoginUser getLoginUser() {
-        return null;
-    }
-
-
-    public static <T extends LoginUser> T getLoginUser(String token) {
-        return null;
+        return UserGlobalContext.get();
     }
 
     /**
      * 获取用户id
      */
     public static Long getUserId() {
-        return null;
-    }
-
-    /**
-     * 获取租户ID
-     */
-    public static String getTenantId() {
-        return null;
-    }
-
-    /**
-     * 获取部门ID
-     */
-    public static Long getDeptId() {
-        return getLoginUser().getDeptId();
+        return getLoginUser().getUserId();
     }
 
     /**
@@ -88,35 +59,7 @@ public class LoginHelper {
      * 获取用户类型
      */
     public static UserTypeEnum getUserType() {
-        return null;
-    }
-
-    /**
-     * 是否为超级管理员
-     *
-     * @param userId 用户ID
-     * @return 结果
-     */
-    public static boolean isSuperAdmin(Long userId) {
-        return false;
-    }
-
-    public static boolean isSuperAdmin() {
-        return isSuperAdmin(getUserId());
-    }
-
-    /**
-     * 是否为超级管理员
-     *
-     * @param rolePermission 角色权限标识组
-     * @return 结果
-     */
-    public static boolean isTenantAdmin(Set<String> rolePermission) {
-        return false;
-    }
-
-    public static boolean isTenantAdmin() {
-        return isTenantAdmin(getLoginUser().getRolePermission());
+        return getLoginUser().getUserType();
     }
 
     /**

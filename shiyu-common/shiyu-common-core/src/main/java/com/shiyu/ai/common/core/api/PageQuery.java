@@ -1,4 +1,4 @@
-package com.shiyu.ai.common.core.domain.api;
+package com.shiyu.ai.common.core.api;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import lombok.Data;

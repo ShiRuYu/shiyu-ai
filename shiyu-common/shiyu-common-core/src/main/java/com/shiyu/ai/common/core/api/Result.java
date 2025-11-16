@@ -1,4 +1,4 @@
-package com.shiyu.ai.common.core.domain.api;
+package com.shiyu.ai.common.core.api;
 
 import com.shiyu.ai.common.core.enums.BizResultCode;
 import lombok.Data;
