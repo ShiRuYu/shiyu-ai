@@ -45,11 +45,6 @@
             </dependency>
             <dependency>
                 <groupId>com.shiyu.ai</groupId>
-                <artifactId>shiyu-common-mybatis-tenant</artifactId>
-                <version>${revision}</version>
-            </dependency>
-            <dependency>
-                <groupId>com.shiyu.ai</groupId>
                 <artifactId>shiyu-common-satoken</artifactId>
                 <version>${revision}</version>
             </dependency>

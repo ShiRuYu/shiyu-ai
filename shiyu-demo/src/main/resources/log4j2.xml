@@ -143,7 +143,6 @@
         <logger name="org.mybatis" level="ERROR"></logger>
         <logger name="org.hibernate" level="ERROR"></logger>
         <logger name="org.apache" level="ERROR"></logger>
-        <logger name="com.baomidou" level="ERROR"></logger>
         <logger name="com.zaxxer" level="ERROR"></logger>
         <logger name="springfox.documentation" level="ERROR"></logger>-->
 

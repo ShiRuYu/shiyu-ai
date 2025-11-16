@@ -1,14 +1,14 @@
 package com.shiyu.ai.demo.mapper;
 
 import org.apache.ibatis.annotations.Mapper;
-import com.shiyu.ai.common.mybatis.core.mapper.BaseMapperPlus;
-import com.shiyu.ai.demo.domain.SysUserPost;
+import com.shiyu.ai.common.mybatis.core.mapper.BaseMapperFlex;
+import com.shiyu.ai.demo.domain.SysUserPostDO;
 
 /**
  * 用户与岗位关联表 数据层
  *
  */
 @Mapper
-public interface SysUserPostMapper extends BaseMapperPlus<SysUserPost, SysUserPost> {
+public interface SysUserPostMapper extends BaseMapperFlex<SysUserPostDO, SysUserPostDO> {
 
 }

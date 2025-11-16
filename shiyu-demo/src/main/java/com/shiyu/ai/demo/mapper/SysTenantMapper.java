@@ -1,14 +1,14 @@
 package com.shiyu.ai.demo.mapper;
 
+import com.shiyu.ai.demo.domain.bo.SysTenantBO;
 import org.apache.ibatis.annotations.Mapper;
-import com.shiyu.ai.common.mybatis.core.mapper.BaseMapperPlus;
-import com.shiyu.ai.demo.domain.SysTenant;
-import com.shiyu.ai.demo.domain.vo.SysTenantVo;
+import com.shiyu.ai.common.mybatis.core.mapper.BaseMapperFlex;
+import com.shiyu.ai.demo.domain.SysTenantDO;
 
 /**
  * 租户Mapper接口
  */
 @Mapper
-public interface SysTenantMapper extends BaseMapperPlus<SysTenant, SysTenantVo> {
+public interface SysTenantMapper extends BaseMapperFlex<SysTenantDO, SysTenantBO> {
 
 }

@@ -1,9 +1,9 @@
 package com.shiyu.ai.demo.controller;
 
 import com.shiyu.ai.common.core.domain.LoginUser;
-import com.shiyu.ai.common.core.domain.Result;
+import com.shiyu.ai.common.core.domain.api.Result;
 import com.shiyu.ai.common.core.service.BaseContext;
-import com.shiyu.ai.demo.domain.SysUser;
+import com.shiyu.ai.demo.domain.SysUserDO;
 import com.shiyu.ai.demo.mapper.SysUserMapper;
 import lombok.RequiredArgsConstructor;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -28,7 +28,7 @@ public class DemoController {
         LoginUser loginUser = new LoginUser();
         loginUser.setUserId(1974039142799511553L);
         BaseContext.set(BaseContext.MapKey.LOGIN_USER.name(),loginUser);
-        SysUser sysUser = new SysUser();
+        SysUserDO sysUser = new SysUserDO();
         sysUser.setUserName("admin");
         sysUser.setNickName("admin1");
         sysUser.setPassword("123456");
@@ -41,8 +41,8 @@ public class DemoController {
      * @return
      */
     @GetMapping("get")
-    public Result<List<SysUser>> get(){
-        List<SysUser> sysUsers = sysUserMapper.selectList();
+    public Result<List<SysUserDO>> get(){
+        List<SysUserDO> sysUsers = sysUserMapper.selectAll();
         return Result.success(sysUsers);
     }
 }

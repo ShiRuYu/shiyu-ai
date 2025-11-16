@@ -1,6 +1,6 @@
 package com.shiyu.ai.common.mybatis.handler;
 
-import com.shiyu.ai.common.core.domain.Result;
+import com.shiyu.ai.common.core.domain.api.Result;
 import com.shiyu.ai.common.core.utils.StringUtils;
 import jakarta.servlet.http.HttpServletRequest;
 import lombok.extern.slf4j.Slf4j;

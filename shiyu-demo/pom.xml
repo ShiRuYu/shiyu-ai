@@ -15,6 +15,12 @@
     <description>shiyu-demo</description>
 
     <dependencies>
+        <!-- https://mvnrepository.com/artifact/com.alibaba/druid -->
+        <dependency>
+            <groupId>com.alibaba</groupId>
+            <artifactId>druid</artifactId>
+            <version>1.2.27</version>
+        </dependency>
         <dependency>
             <groupId>com.h2database</groupId>
             <artifactId>h2</artifactId>
@@ -31,7 +37,7 @@
         </dependency>
         <dependency>
             <groupId>com.shiyu.ai</groupId>
-            <artifactId>shiyu-common-mybatis-tenant</artifactId>
+            <artifactId>shiyu-common-mybatis</artifactId>
         </dependency>
         <dependency>
             <groupId>com.shiyu.ai</groupId>
