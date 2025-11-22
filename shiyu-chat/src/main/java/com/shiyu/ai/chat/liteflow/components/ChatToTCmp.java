@@ -2,7 +2,7 @@ package com.shiyu.ai.chat.liteflow.components;
 
 import com.shiyu.ai.chat.lm.ChatEngine;
 import com.shiyu.ai.chat.domain.GlobalContext;
-import com.shiyu.ai.chat.lm.model.ModelEnum;
+import com.shiyu.ai.chat.lm.ModelEnum;
 import com.yomahub.liteflow.annotation.LiteflowComponent;
 import com.yomahub.liteflow.core.NodeComponent;
 import jakarta.annotation.Resource;

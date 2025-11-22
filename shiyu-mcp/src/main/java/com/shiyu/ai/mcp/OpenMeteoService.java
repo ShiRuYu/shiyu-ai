@@ -1,17 +1,17 @@
 package com.shiyu.ai.mcp;
 
-import java.util.List;
-import java.time.LocalDate;
-import java.time.format.DateTimeFormatter;
-
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonProperty;
-
-import org.springframework.ai.tool.annotation.Tool;
+import org.springaicommunity.mcp.annotation.McpTool;
+import org.springaicommunity.mcp.annotation.McpToolParam;
 import org.springframework.ai.tool.annotation.ToolParam;
 import org.springframework.stereotype.Service;
 import org.springframework.web.client.RestClient;
 import org.springframework.web.client.RestClientException;
+
+import java.time.LocalDate;
+import java.time.format.DateTimeFormatter;
+import java.util.List;
 
 /**
  * 利用OpenMeteo的免费天气API提供天气服务
@@ -126,7 +126,7 @@ public class OpenMeteoService {
      * @return 指定位置的天气预报
      * @throws RestClientException 如果请求失败
      */
-    @Tool(description = "获取指定经纬度的天气预报")
+    @McpTool(name = "天气数据", description = "获取指定经纬度的天气预报")
     public String getWeatherForecastByLocation(double latitude, double longitude) {
         // 获取天气数据（当前和未来7天）
         var weatherData = restClient.get()
@@ -211,9 +211,9 @@ public class OpenMeteoService {
      * @param longitude 经度
      * @return 空气质量信息
      */
-    @Tool(description = "获取指定位置的空气质量信息（模拟数据）")
-    public String getAirQuality(@ToolParam(description = "纬度") double latitude,
-                                @ToolParam(description = "经度") double longitude) {
+    @McpTool(name = "天气模拟数据", description = "获取指定位置的空气质量信息（模拟数据）")
+    public String getAirQuality(@McpToolParam(description = "纬度") double latitude,
+                                @McpToolParam(description = "经度") double longitude) {
 
         try {
             // 从天气数据中获取基本信息

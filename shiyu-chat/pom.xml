@@ -15,6 +15,17 @@
     <description>shiyu-chat</description>
 
     <dependencies>
+
+        <dependency>
+            <groupId>org.springframework.ai</groupId>
+            <artifactId>spring-ai-starter-model-openai</artifactId>
+            <exclusions>
+                <exclusion>
+                    <artifactId>spring-boot-starter-logging</artifactId>
+                    <groupId>org.springframework.boot</groupId>
+                </exclusion>
+            </exclusions>
+        </dependency>
         <dependency>
             <groupId>org.springframework.ai</groupId>
             <artifactId>spring-ai-pdf-document-reader</artifactId>
@@ -39,6 +50,15 @@
         <dependency>
             <groupId>com.shiyu.ai</groupId>
             <artifactId>shiyu-common-web</artifactId>
+        </dependency>
+
+        <dependency>
+            <groupId>com.shiyu.ai</groupId>
+            <artifactId>shiyu-common-log</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>com.shiyu.ai</groupId>
+            <artifactId>shiyu-config-out</artifactId>
         </dependency>
     </dependencies>
 

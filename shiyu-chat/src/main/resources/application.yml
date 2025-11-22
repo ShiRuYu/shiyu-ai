@@ -3,6 +3,9 @@ shiyu:
   name: "shiyu-chat"
   # 版本
   version: ${revision}
+  config:
+    path:
+      json: E:\Dev\IdeaProjects\shiyu-ai\config.json
 
 # 开发环境配置
 server:
@@ -21,13 +24,13 @@ springdoc:
     enabled: false               # 是否启用 API 文档
     path: /v3/api-docs         # OpenAPI JSON 文档访问路径，默认 /v3/api-docs
   #逗号分割
-  packages-to-scan: com.shiyu.ai.demo.controller
+  packages-to-scan: com.shiyu.ai.chat.controller
   group-configs:
     - group: 'default'
       paths-to-match:
         - '/**'
       packages-to-scan:
-        - com.shiyu.ai.demo.controller
+        - com.shiyu.ai.chat.controller
   swagger-ui:
     path: /swagger-ui/index.html      # Swagger UI 访问路径，默认 /swagger-ui/index.html
     display-request-duration: true  # 显示请求耗时
@@ -46,7 +49,7 @@ spring:
   profiles:
     active: @profiles.active@
     group:
-      dev: h2
+      dev: ai
     default: @profiles.active@
   # 文件上传
   servlet:

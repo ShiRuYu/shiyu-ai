@@ -19,7 +19,7 @@ public class JsonConfigEnvironmentPostProcessor implements EnvironmentPostProces
         Optional.ofNullable(environment.getProperty("shiyu.config.path.json"))
                 .ifPresent(jsonPath -> {
                     Map<String, Object> configMap = JsonUtils.loadJsonFile(jsonPath);
-                    MapPropertySource propertySource = new MapPropertySource("json-property", FlattenUtil.flatten(configMap));
+                    MapPropertySource propertySource = new MapPropertySource("out-json-property", FlattenUtil.flatten(configMap));
                     environment.getPropertySources().addFirst(propertySource);
                 });
 

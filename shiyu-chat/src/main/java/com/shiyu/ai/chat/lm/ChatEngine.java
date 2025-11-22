@@ -2,56 +2,44 @@ package com.shiyu.ai.chat.lm;
 
 
 import com.shiyu.ai.chat.lm.model.ModelAdapter;
-import com.shiyu.ai.chat.lm.model.ModelConfig;
-import com.shiyu.ai.chat.lm.model.ModelEnum;
 import com.shiyu.ai.chat.lm.request.ModelRequest;
 import com.shiyu.ai.chat.lm.result.ModelResult;
 import jakarta.annotation.Resource;
-import org.springframework.beans.factory.InitializingBean;
 import org.springframework.stereotype.Service;
+import reactor.core.publisher.Flux;
 
-import java.util.EnumMap;
 import java.util.Map;
 
 @Service
-public class ChatEngine implements InitializingBean {
+public class ChatEngine {
 
     @Resource
-    private Map<String, ModelAdapter> modelAdapterName;
-
-    private final Map<ModelEnum, ModelAdapter> modelAdapterEnum = new EnumMap<>(ModelEnum.class);;
+    private Map<String, ModelAdapter> modelAdapterMap;
 
     public String call(String input, ModelEnum modelEnum) {
 
         ModelRequest request = new ModelRequest(input);
-        ModelConfig config = new ModelConfig(modelEnum, null, null, null, null);
 
-        ModelAdapter adapter = modelAdapterEnum.get(modelEnum);
+        ModelAdapter adapter = modelAdapterMap.get(modelEnum.getAdapterName());
         if (adapter == null) {
             throw new IllegalArgumentException("No ModelAdapter found for: " + modelEnum);
         }
 
-        ModelResult response = adapter.call(config, request);
+        ModelResult response = adapter.call(request);
         return response.getAnswer();
     }
 
-    /**
-     * Spring 会在 Bean 注入完成后自动调用这个方法
-     */
-    @Override
-    public void afterPropertiesSet() {
+    public Flux<String> stream(String input, ModelEnum modelEnum) {
 
-        for (Map.Entry<String, ModelAdapter> entry : modelAdapterName.entrySet()) {
-            String beanName = entry.getKey(); // Bean 名称，例如 "localModelAdapter"
-            ModelAdapter adapter = entry.getValue();
+        ModelRequest request = new ModelRequest(input);
 
-            try {
-                ModelEnum modelEnum = ModelEnum.fromName(beanName);
-                modelAdapterEnum.put(modelEnum, adapter);
-            } catch (IllegalArgumentException e) {
-                System.err.println("No ModelEnum found for bean: " + beanName);
-            }
+        ModelAdapter adapter = modelAdapterMap.get(modelEnum.getAdapterName());
+        if (adapter == null) {
+            throw new IllegalArgumentException("No ModelAdapter found for: " + modelEnum);
         }
+
+        ModelResult response = adapter.stream(request);
+        return response.getAnswerStream();
     }
 }
 

@@ -25,8 +25,6 @@ import org.springframework.ai.chat.model.ChatModel;
 import org.springframework.ai.chat.model.ChatResponse;
 import org.springframework.ai.chat.prompt.Prompt;
 import org.springframework.ai.mcp.SyncMcpToolCallbackProvider;
-import org.springframework.context.EnvironmentAware;
-import org.springframework.core.env.Environment;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
@@ -34,17 +32,17 @@ import reactor.core.publisher.Flux;
 
 
 @RestController
-@RequestMapping("test")
+@RequestMapping("/openRouter")
 @Slf4j
-public class OpenAiChatModel1Controller implements EnvironmentAware {
+public class OpenRouterChatModelController {
 
-    private final ChatModel openAiChatModel;
+    private final ChatModel chatModel;
 
-    private final ChatClient openAiChatClient;
+    private final ChatClient chatClient;
 
-    public OpenAiChatModel1Controller(ChatModel chatModel, SyncMcpToolCallbackProvider provider) {
-        this.openAiChatModel = chatModel;
-        this.openAiChatClient = ChatClient.builder(chatModel)
+    public OpenRouterChatModelController(ChatModel chatModel, SyncMcpToolCallbackProvider provider) {
+        this.chatModel = chatModel;
+        this.chatClient = ChatClient.builder(chatModel)
                 .defaultToolCallbacks(provider.getToolCallbacks())
                 .defaultAdvisors(new SimpleLoggerAdvisor())
                 .build();
@@ -55,9 +53,9 @@ public class OpenAiChatModel1Controller implements EnvironmentAware {
      *
      * @return String types.
      */
-    @GetMapping("chat-model/simple/chat")
+    @GetMapping("/chat-model/simple/chat")
     public String simpleChat(String message) {
-        return openAiChatModel.call(new Prompt(message)).getResult().getOutput().getText();
+        return chatModel.call(new Prompt(message)).getResult().getOutput().getText();
     }
 
     /**
@@ -65,26 +63,19 @@ public class OpenAiChatModel1Controller implements EnvironmentAware {
      *
      * @return Flux<String> types.
      */
-    @GetMapping("chat-model/stream/chat")
+    @GetMapping("/chat-model/stream/chat")
     public Flux<String> streamChat(String message) {
-        Flux<ChatResponse> chatResponseFlux = openAiChatModel.stream(new Prompt(message));
+        Flux<ChatResponse> chatResponseFlux = chatModel.stream(new Prompt(message));
         return chatResponseFlux.mapNotNull(resp -> resp.getResult().getOutput().getText());
     }
 
-    @GetMapping("chat-client/chat")
+    @GetMapping("/chat-client/chat")
     public String clientChat(String message) {
-        return ObjectUtils.requireNonNull(openAiChatClient.prompt(new Prompt(message)).call().chatResponse()).getResult().getOutput().getText();
+        return ObjectUtils.requireNonNull(chatClient.prompt(new Prompt(message)).call().chatResponse()).getResult().getOutput().getText();
     }
 
-    @GetMapping("client/stream/chat")
+    @GetMapping("/client/stream/chat")
     public Flux<String> clientStreamChat(String message) {
-        return openAiChatClient.prompt(message).stream().content();
-    }
-
-    private Environment environment1;
-
-    @Override
-    public void setEnvironment(Environment environment) {
-        this.environment1 = environment;
+        return chatClient.prompt(message).stream().content();
     }
 }

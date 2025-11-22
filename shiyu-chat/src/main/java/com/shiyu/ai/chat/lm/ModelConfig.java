@@ -1,4 +1,4 @@
-package com.shiyu.ai.chat.lm.model;
+package com.shiyu.ai.chat.lm;
 
 import java.util.Map;
 
