@@ -41,6 +41,7 @@
         <h2.version>2.4.240</h2.version>
 
         <mysql.version>9.4.0</mysql.version>
+        <druid.version>1.2.27</druid.version>
         <p6spy.version>3.9.1</p6spy.version>
         <mybatis.version>3.5.16</mybatis.version>
         <mybatis-flex.version>1.11.4</mybatis-flex.version>
@@ -107,6 +108,7 @@
         <module>shiyu-auth</module>
         <module>shiyu-chat</module>
         <module>shiyu-mcp</module>
+        <module>shiyu-tts</module>
     </modules>
 
     <!-- 依赖声明 -->
@@ -280,6 +282,11 @@
             </dependency>
 
             <dependency>
+                <groupId>com.alibaba</groupId>
+                <artifactId>druid</artifactId>
+                <version>${druid.version}</version>
+            </dependency>
+            <dependency>
                 <groupId>org.mybatis</groupId>
                 <artifactId>mybatis</artifactId>
                 <version>${mybatis.version}</version>
@@ -401,6 +408,11 @@
             <dependency>
                 <groupId>com.shiyu.ai</groupId>
                 <artifactId>shiyu-mcp</artifactId>
+                <version>${revision}</version>
+            </dependency>
+            <dependency>
+                <groupId>com.shiyu.ai</groupId>
+                <artifactId>shiyu-tts</artifactId>
                 <version>${revision}</version>
             </dependency>
 

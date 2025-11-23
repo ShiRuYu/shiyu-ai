@@ -1,4 +1,4 @@
-package com.shiyu.ai.common.core.tts;
+package com.shiyu.ai.tts.tts;
 
 import java.io.*;
 import java.nio.charset.StandardCharsets;
