@@ -104,8 +104,8 @@
     <modules>
         <module>shiyu-common</module>
         <module>shiyu-agent</module>
+        <module>shiyu-auth</module>
         <module>shiyu-chat</module>
-        <module>shiyu-demo</module>
         <module>shiyu-mcp</module>
     </modules>
 
@@ -390,12 +390,12 @@
             </dependency>
             <dependency>
                 <groupId>com.shiyu.ai</groupId>
-                <artifactId>shiyu-chat</artifactId>
+                <artifactId>shiyu-auth</artifactId>
                 <version>${revision}</version>
             </dependency>
             <dependency>
                 <groupId>com.shiyu.ai</groupId>
-                <artifactId>shiyu-demo</artifactId>
+                <artifactId>shiyu-chat</artifactId>
                 <version>${revision}</version>
             </dependency>
             <dependency>

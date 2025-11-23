@@ -1,0 +1,93 @@
+package com.shiyu.ai.auth.domain.bo;
+
+import cn.hutool.core.collection.CollUtil;
+import cn.hutool.core.lang.tree.Tree;
+import com.shiyu.ai.common.core.utils.TreeBuildUtils;
+import com.shiyu.ai.common.core.validate.AddGroup;
+import com.shiyu.ai.common.core.validate.EditGroup;
+import com.shiyu.ai.common.mybatis.core.domain.BaseEntity;
+import com.shiyu.ai.auth.domain.SysDeptDO;
+import io.github.linpeilie.annotations.AutoMapper;
+import jakarta.validation.constraints.Email;
+import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.NotNull;
+import jakarta.validation.constraints.Size;
+import lombok.Data;
+import lombok.EqualsAndHashCode;
+
+import java.util.List;
+
+/**
+ * 部门业务对象 sys_dept
+ */
+
+@Data
+@EqualsAndHashCode(callSuper = true)
+@AutoMapper(target = SysDeptDO.class, reverseConvertGenerate = false)
+public class SysDeptBO extends BaseEntity {
+
+    /**
+     * 部门id
+     */
+    @NotNull(message = "部门id不能为空", groups = { EditGroup.class })
+    private Long deptId;
+
+    /**
+     * 父部门ID
+     */
+    private Long parentId;
+
+    /**
+     * 部门名称
+     */
+    @NotBlank(message = "部门名称不能为空", groups = { AddGroup.class, EditGroup.class })
+    @Size(min = 0, max = 30, message = "部门名称长度不能超过{max}个字符")
+    private String deptName;
+
+    /**
+     * 显示顺序
+     */
+    @NotNull(message = "显示顺序不能为空")
+    private Integer orderNum;
+
+    /**
+     * 负责人
+     */
+    private String leader;
+
+    /**
+     * 联系电话
+     */
+    @Size(min = 0, max = 11, message = "联系电话长度不能超过{max}个字符")
+    private String phone;
+
+    /**
+     * 邮箱
+     */
+    @Email(message = "邮箱格式不正确")
+    @Size(min = 0, max = 50, message = "邮箱长度不能超过{max}个字符")
+    private String email;
+
+    /**
+     * 部门状态（0正常 1停用）
+     */
+    private String status;
+
+    /**
+     * 构建前端所需要下拉树结构
+     *
+     * @param depts 部门列表
+     * @return 下拉树结构列表
+     */
+    public List<Tree<Long>> buildDeptTreeSelect(List<SysDeptDO> depts) {
+        if (CollUtil.isEmpty(depts)) {
+            return CollUtil.newArrayList();
+        }
+        return TreeBuildUtils.build(depts, (dept, tree) ->
+                tree.setId(dept.getDeptId())
+                        .setParentId(dept.getParentId())
+                        .setName(dept.getDeptName())
+                        .setWeight(dept.getOrderNum()));
+    }
+
+}
