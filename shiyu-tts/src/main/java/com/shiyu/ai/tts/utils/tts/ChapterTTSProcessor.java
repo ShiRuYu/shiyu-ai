@@ -1,4 +1,4 @@
-package com.shiyu.ai.tts.tts;
+package com.shiyu.ai.tts.utils.tts;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.shiyu.ai.common.core.utils.UnifiedThreadPoolUtils;

@@ -69,3 +69,6 @@ spring:
     deserialization:
       # 允许对象忽略json中不存在的属性
       fail_on_unknown_properties: false
+
+tts:
+  websocket-url: "wss://speech.platform.bing.com/consumer/speech/synthesize/readaloud/voices/list"  # 示例，请根据实际获取

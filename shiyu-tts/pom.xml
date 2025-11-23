@@ -16,12 +16,24 @@
 
     <dependencies>
         <dependency>
-            <groupId>com.shiyu.ai</groupId>
-            <artifactId>shiyu-common-web</artifactId>
+            <groupId>io.github.rabidgremlin</groupId>
+            <artifactId>edge-tts-java</artifactId>
+            <version>1.0.8</version>
+        </dependency>
+
+        <dependency>
+            <groupId>javax.websocket</groupId>
+            <artifactId>javax.websocket-api</artifactId>
+            <version>1.1</version>
+        </dependency>
+        <dependency>
+            <groupId>org.glassfish.tyrus.bundles</groupId>
+            <artifactId>tyrus-standalone-client</artifactId>
+            <version>1.17</version>
         </dependency>
         <dependency>
             <groupId>com.shiyu.ai</groupId>
-            <artifactId>shiyu-common-log</artifactId>
+            <artifactId>shiyu-common-web</artifactId>
         </dependency>
     </dependencies>
 

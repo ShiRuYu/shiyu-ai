@@ -29,10 +29,6 @@
         </dependency>
         <dependency>
             <groupId>com.shiyu.ai</groupId>
-            <artifactId>shiyu-common-log</artifactId>
-        </dependency>
-        <dependency>
-            <groupId>com.shiyu.ai</groupId>
             <artifactId>shiyu-common-mybatis</artifactId>
         </dependency>
         <dependency>

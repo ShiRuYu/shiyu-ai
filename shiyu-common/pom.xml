@@ -20,7 +20,6 @@
         <module>shiyu-common-core</module>
         <module>shiyu-common-dal</module>
         <module>shiyu-common-excel</module>
-        <module>shiyu-common-log</module>
         <module>shiyu-common-mybatis</module>
         <module>shiyu-common-satoken</module>
         <module>shiyu-common-web</module>

@@ -1,4 +1,4 @@
-package com.shiyu.ai.common.log;
+package com.shiyu.ai.common.core.utils;
 
 import lombok.AllArgsConstructor;
 import lombok.Getter;
