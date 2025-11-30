@@ -1,8 +1,10 @@
 package com.shiyu.ai.common.core.config;
 
+import com.shiyu.ai.common.core.factory.YmlPropertySourceFactory;
 import lombok.Data;
 import lombok.Getter;
 import org.springframework.boot.context.properties.ConfigurationProperties;
+import org.springframework.context.annotation.PropertySource;
 import org.springframework.stereotype.Component;
 
 /**
@@ -12,6 +14,7 @@ import org.springframework.stereotype.Component;
 @Data
 @Component
 @ConfigurationProperties(prefix = "shiyu")
+@PropertySource(value = "classpath:shiyu-common.yml", factory = YmlPropertySourceFactory.class)
 public class ShiYuConfig {
 
     /**

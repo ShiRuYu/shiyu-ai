@@ -23,7 +23,6 @@
         <module>shiyu-common-mybatis</module>
         <module>shiyu-common-satoken</module>
         <module>shiyu-common-web</module>
-        <module>shiyu-config-out</module>
     </modules>
 
 </project>

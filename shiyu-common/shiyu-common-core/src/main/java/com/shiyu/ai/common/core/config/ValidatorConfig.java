@@ -5,6 +5,7 @@ import org.hibernate.validator.HibernateValidator;
 import org.springframework.boot.autoconfigure.AutoConfiguration;
 import org.springframework.context.MessageSource;
 import org.springframework.context.annotation.Bean;
+import org.springframework.context.annotation.Configuration;
 import org.springframework.validation.beanvalidation.LocalValidatorFactoryBean;
 
 import java.util.Properties;
@@ -12,7 +13,7 @@ import java.util.Properties;
 /**
  * 校验框架配置类
  */
-@AutoConfiguration
+@Configuration
 public class ValidatorConfig {
 
     /**

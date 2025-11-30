@@ -5,7 +5,7 @@ import com.shiyu.ai.common.core.exception.ServiceException;
 import org.springframework.aop.interceptor.AsyncUncaughtExceptionHandler;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
-import org.springframework.boot.autoconfigure.AutoConfiguration;
+import org.springframework.context.annotation.Configuration;
 import org.springframework.scheduling.annotation.AsyncConfigurer;
 import org.springframework.scheduling.annotation.EnableAsync;
 
@@ -17,7 +17,7 @@ import java.util.concurrent.ScheduledExecutorService;
  * 异步配置
  */
 @EnableAsync(proxyTargetClass = true)
-@AutoConfiguration
+@Configuration
 public class AsyncConfig implements AsyncConfigurer {
 
     @Autowired

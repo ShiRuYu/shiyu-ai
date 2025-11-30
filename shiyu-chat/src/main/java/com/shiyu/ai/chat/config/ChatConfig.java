@@ -48,9 +48,9 @@ public class ChatConfig {
             vectorStore.write(new TokenTextSplitter().transform(new TextReader(termsOfServiceDocs).read()));
 
             // 相似性搜索检测
-            vectorStore.similaritySearch("Cancelling Bookings").forEach(doc -> {
+            /*vectorStore.similaritySearch("Cancelling Bookings").forEach(doc -> {
                 log.info("Similar Document: {}", doc.getText());
-            });
+            });*/
         };
     }
 

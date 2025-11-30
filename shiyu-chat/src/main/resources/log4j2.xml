@@ -16,7 +16,7 @@
         <!--文件保存个数，这里的30说明可保留30个，即30天-->
         <property name="fileCount">30</property>
         <!--输出格式-->
-        <property name="logPattern">%d{yyyy-MM-dd HH:mm:ss.SSS} => [%thread] => [%X{traceId}] %-5level %logger{50}:(%line) - %msg%n</property>
+        <property name="logPattern">%d{yyyy-MM-dd HH:mm:ss.SSS} => [%thread] => [%X{traceId},%X{spanId}] %-5level %logger{50}:(%line) - %msg%n</property>
     </properties>
 
     <!--先定义所有的 appender 附加器-->

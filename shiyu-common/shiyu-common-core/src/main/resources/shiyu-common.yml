@@ -1,0 +1,8 @@
+management:
+  endpoints:
+    web:
+      exposure:
+        include: []   # 不暴露任何端点
+  tracing:
+    sampling:
+      probability: 1.0

@@ -11,13 +11,6 @@ shiyu:
 server:
   # 服务器的HTTP端口，默认为8080
   port: 9001
-  servlet:
-    encoding:
-      charset: UTF-8
-      force: true
-      enabled: true
-    # 应用的访问路径
-    context-path: /
 
 springdoc:
   api-docs:
@@ -51,27 +44,7 @@ spring:
     group:
       dev: ai
     default: @profiles.active@
-  # 文件上传
-  servlet:
-    multipart:
-      # 单个文件大小
-      max-file-size: 50MB
-      # 设置总上传的文件大小
-      max-request-size: 200MB
-  mvc:
-    format:
-      date-time: yyyy-MM-dd HH:mm:ss
-  jackson:
-    # 日期格式化
-    date-format: yyyy-MM-dd HH:mm:ss
-    serialization:
-      # 格式化输出
-      indent_output: false
-      # 忽略无法转换的对象
-      fail_on_empty_beans: false
-    deserialization:
-      # 允许对象忽略json中不存在的属性
-      fail_on_unknown_properties: false
+
 liteflow:
   #规则文件路径
   rule-source: liteflow/chain/chain.json
