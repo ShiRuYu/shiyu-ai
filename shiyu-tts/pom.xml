@@ -15,11 +15,6 @@
     <description>shiyu-tts</description>
 
     <dependencies>
-        <dependency>
-            <groupId>io.github.rabidgremlin</groupId>
-            <artifactId>edge-tts-java</artifactId>
-            <version>1.0.8</version>
-        </dependency>
 
         <dependency>
             <groupId>javax.websocket</groupId>
