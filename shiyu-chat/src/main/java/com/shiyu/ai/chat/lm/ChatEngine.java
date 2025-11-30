@@ -5,6 +5,7 @@ import com.shiyu.ai.chat.lm.model.ModelAdapter;
 import com.shiyu.ai.chat.lm.request.ModelRequest;
 import com.shiyu.ai.chat.lm.result.ModelResult;
 import jakarta.annotation.Resource;
+import org.springframework.ai.chat.client.ChatClient;
 import org.springframework.stereotype.Service;
 import reactor.core.publisher.Flux;
 
@@ -15,6 +16,10 @@ public class ChatEngine {
 
     @Resource
     private Map<String, ModelAdapter> modelAdapterMap;
+
+    public ChatClient getChatClient(ModelEnum modelEnum) {
+        return modelAdapterMap.get(modelEnum.getAdapterName()).getChatClient();
+    }
 
     public String call(String input, ModelEnum modelEnum) {
 

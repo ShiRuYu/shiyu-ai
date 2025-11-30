@@ -23,7 +23,7 @@ public class ChatController {
     private FlowExecutor flowExecutor;
 
     @GetMapping("/stream")
-    public Flux<String> stream(String text,String modelEnum) {
+    public Flux<String> stream(String text,@RequestParam(required = false,defaultValue = "SILICON_FLOW") String modelEnum) {
         return chatEngine.stream(text, ModelEnum.fromEnumName(modelEnum));
     }
 

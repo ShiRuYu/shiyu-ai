@@ -19,6 +19,12 @@ public class OpenRouterModelAdapter implements ModelAdapter {
     public ModelEnum getType() {
         return ModelEnum.OPEN_ROUTER;
     }
+
+    @Override
+    public ChatClient getChatClient() {
+        return this.chatClient;
+    }
+
     @Override
     public ModelResult call(ModelRequest request) {
         String content = chatClient.prompt(request.getPrompt()).call().content();

@@ -2,8 +2,18 @@ spring:
   ai:
     # 没有作用，是接入多个兼容openai api的平台
     openai:
-      api-key: sk-loqlkwllyfseuttatsjqsndtwvaqzklexdwekwmjuhyuyavu
+      api-key: xxxxxxxxxxxxxx
       base-url: https://api.siliconflow.cn
       chat:
         options:
           model: deepseek-ai/DeepSeek-V3
+    siliconflow:
+      api-key:
+      model: THUDM/GLM-Z1-9B-0414
+      embed_model: BAAI/bge-m3
+
+    openrouter:
+      base-url: https://openrouter.ai/api
+      api-key:
+      model: x-ai/grok-4.1-fast
+      embed_model: qwen/qwen3-embedding-8b

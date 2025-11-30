@@ -19,6 +19,12 @@ public class SiliconFlowModelAdapter implements ModelAdapter {
     public ModelEnum getType() {
         return ModelEnum.SILICON_FLOW;
     }
+
+    @Override
+    public ChatClient getChatClient() {
+        return this.chatClient;
+    }
+
     @Override
     public ModelResult call(ModelRequest request) {
         String content = chatClient.prompt(request.getPrompt()).call().content();

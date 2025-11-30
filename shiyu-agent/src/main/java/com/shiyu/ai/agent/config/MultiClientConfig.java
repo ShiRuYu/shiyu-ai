@@ -1,4 +1,4 @@
-package com.shiyu.ai.chat.lm.config;
+package com.shiyu.ai.agent.config;
 
 import org.springframework.ai.chat.client.ChatClient;
 import org.springframework.ai.chat.model.ChatModel;

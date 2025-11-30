@@ -36,11 +36,6 @@
             <groupId>com.shiyu.ai</groupId>
             <artifactId>shiyu-common-web</artifactId>
         </dependency>
-
-        <dependency>
-            <groupId>com.shiyu.ai</groupId>
-            <artifactId>shiyu-config-out</artifactId>
-        </dependency>
     </dependencies>
 
     <build>
