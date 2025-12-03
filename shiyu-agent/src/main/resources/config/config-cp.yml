@@ -1,0 +1,16 @@
+shiyu:
+  ai:
+    openai:
+      api-key: xxxx
+
+    openrouter:
+      base-url: https://openrouter.ai/api
+      api-key: xxxx
+      model: x-ai/grok-4.1-fast
+      embed_model: qwen/qwen3-embedding-8b
+
+    siliconflow:
+      base-url: https://api.siliconflow.cn
+      api-key: xxxx
+      model: THUDM/GLM-Z1-9B-0414
+      embed_model: BAAI/bge-m3

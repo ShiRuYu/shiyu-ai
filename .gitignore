@@ -8,6 +8,8 @@ target/
 
 .logs
 
+**/src/main/resources/config/config.yml
+
 ### STS ###
 .apt_generated
 .classpath
