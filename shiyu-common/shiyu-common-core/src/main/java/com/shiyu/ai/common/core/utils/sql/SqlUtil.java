@@ -8,7 +8,6 @@ import com.shiyu.ai.common.core.utils.StringUtils;
 /**
  * sql操作工具类
  */
-@NoArgsConstructor(access = AccessLevel.PRIVATE)
 public class SqlUtil {
 
     /**

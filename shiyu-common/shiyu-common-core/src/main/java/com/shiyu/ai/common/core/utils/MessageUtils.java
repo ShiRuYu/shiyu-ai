@@ -8,7 +8,6 @@ import org.springframework.context.i18n.LocaleContextHolder;
 /**
  * 获取i18n资源文件
  */
-@NoArgsConstructor(access = AccessLevel.PRIVATE)
 public class MessageUtils {
 
     private static final MessageSource MESSAGE_SOURCE = SpringUtils.getBean(MessageSource.class);

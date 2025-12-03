@@ -33,7 +33,6 @@ import java.util.Map;
 /**
  * Excel相关处理
  */
-@NoArgsConstructor(access = AccessLevel.PRIVATE)
 public class ExcelUtil {
 
     /**

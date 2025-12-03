@@ -28,7 +28,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.TimeZone;
 
-@NoArgsConstructor(access = AccessLevel.PRIVATE)
 public class JsonUtils {
 
     private static final ObjectMapper OBJECT_MAPPER = new ObjectMapper()

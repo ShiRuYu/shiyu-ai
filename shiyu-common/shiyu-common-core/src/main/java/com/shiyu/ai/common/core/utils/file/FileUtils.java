@@ -15,7 +15,6 @@ import java.util.UUID;
 /**
  * 文件处理工具类
  */
-@NoArgsConstructor(access = AccessLevel.PRIVATE)
 public class FileUtils extends FileUtil {
 
     private static final String FILE_EXTENTION_SPLIT = ".";

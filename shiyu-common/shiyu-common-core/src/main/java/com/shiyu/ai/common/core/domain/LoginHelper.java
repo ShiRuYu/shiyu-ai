@@ -16,7 +16,6 @@ import lombok.extern.slf4j.Slf4j;
  * 可以组成 多用户类型表与多设备类型 分别控制权限
  */
 @Slf4j
-@NoArgsConstructor(access = AccessLevel.PRIVATE)
 public class LoginHelper {
 
 

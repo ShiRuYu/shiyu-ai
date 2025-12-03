@@ -9,7 +9,6 @@ import java.util.function.Function;
 /**
  * 对象工具类
  */
-@NoArgsConstructor(access = AccessLevel.PRIVATE)
 public class ObjectUtils extends ObjectUtil {
     /**
      * 对象为null则报错

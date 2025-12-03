@@ -13,7 +13,6 @@ import java.util.Date;
 /**
  * 时间工具类
  */
-@NoArgsConstructor(access = AccessLevel.PRIVATE)
 public class DateUtils extends org.apache.commons.lang3.time.DateUtils {
 
     public static final String YYYY = "yyyy";

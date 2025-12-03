@@ -11,7 +11,6 @@ import java.util.Set;
 /**
  * Validator 校验框架工具
  */
-@NoArgsConstructor(access = AccessLevel.PRIVATE)
 public class ValidatorUtils {
 
     private static final Validator VALID = SpringUtils.getBean(Validator.class);
