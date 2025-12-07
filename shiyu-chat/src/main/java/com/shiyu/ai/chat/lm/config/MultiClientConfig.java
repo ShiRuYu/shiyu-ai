@@ -60,7 +60,7 @@ public class MultiClientConfig {
 
     @Bean
     public ChatModel openRouterChatModel(ModelProperties modelProperties) {
-        ModelProperties.SiliconFlowConfig openRouter = modelProperties.getSiliconflow();
+        ModelProperties.OpenRouterConfig openRouter = modelProperties.getOpenrouter();
         String baseUrl = openRouter.getBaseUrl();
         String apiKey = openRouter.getApiKey();
         String model = openRouter.getModel();
