@@ -54,7 +54,6 @@
         <fastjson2.version>2.0.59</fastjson2.version>
         <velocity.version>2.3</velocity.version>
         <okhttp.version>5.2.1</okhttp.version>
-        <redisson.version>3.52.0</redisson.version>
         <!-- ？？ -->
         <timefold-solver.version>1.27.0</timefold-solver.version>
         <bouncycastle.version>1.72</bouncycastle.version>
@@ -343,12 +342,6 @@
                 <groupId>software.amazon.awssdk</groupId>
                 <artifactId>s3</artifactId>
                 <version>${s3.version}</version>
-            </dependency>
-
-            <dependency>
-                <groupId>org.redisson</groupId>
-                <artifactId>redisson-spring-boot-starter</artifactId>
-                <version>${redisson.version}</version>
             </dependency>
 
             <!-- xxl-job-core -->

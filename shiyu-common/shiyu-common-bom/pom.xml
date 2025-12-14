@@ -45,6 +45,11 @@
             </dependency>
             <dependency>
                 <groupId>com.shiyu.ai</groupId>
+                <artifactId>shiyu-common-thread</artifactId>
+                <version>${revision}</version>
+            </dependency>
+            <dependency>
+                <groupId>com.shiyu.ai</groupId>
                 <artifactId>shiyu-common-web</artifactId>
                 <version>${revision}</version>
             </dependency>
