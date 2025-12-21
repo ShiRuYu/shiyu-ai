@@ -2,6 +2,7 @@ package com.shiyu.ai.common.mybatis.config;
 
 import com.mybatisflex.annotation.KeyType;
 import com.mybatisflex.core.FlexGlobalConfig;
+import com.shiyu.ai.common.mybatis.handler.MybatisExceptionHandler;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 
@@ -17,5 +18,10 @@ public class MybatisConfig {
 
         FlexGlobalConfig.getDefaultConfig().setKeyConfig(keyConfig);
         return FlexGlobalConfig.getDefaultConfig();
+    }
+
+    @Bean
+    public MybatisExceptionHandler mybatisExceptionHandler() {
+        return new MybatisExceptionHandler();
     }
 }

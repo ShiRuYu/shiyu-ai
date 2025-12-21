@@ -35,6 +35,15 @@ public class SafeExecutorService extends AbstractExecutorService {
     }
 
     /**
+     * 获取委托的执行器服务
+     * 
+     * @return 委托的执行器服务
+     */
+    public ExecutorService getDelegate() {
+        return delegate;
+    }
+
+    /**
      * 创建安全执行器服务
      * 
      * @param delegate 委托的执行器服务
