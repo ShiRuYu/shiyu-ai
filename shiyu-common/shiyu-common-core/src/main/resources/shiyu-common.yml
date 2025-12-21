@@ -2,10 +2,24 @@ management:
   endpoints:
     web:
       exposure:
-        include: []   # 不暴露任何端点
+        include: health,info,metrics,prometheus  # 只暴露必要的端点
+  endpoint:
+    health:
+      show-details: when-authorized # 仅授权用户可见详细信息
+    metrics:
+      enabled: true
+    prometheus:
+      enabled: true
   tracing:
     sampling:
       probability: 1.0
+  metrics:
+    export:
+      prometheus:
+        enabled: true
+    distribution:
+      percentiles-histogram:
+        http.server.requests: true
   observations:
     key-values:
       application: shiyu-ai

@@ -3,7 +3,7 @@ package com.shiyu.ai.common.thread.core;
 
 import com.shiyu.ai.common.thread.api.PoolType;
 
-import java.util.concurrent.Executor;
+import java.util.concurrent.ExecutorService;
 
 /**
  * 执行器工厂接口
@@ -18,5 +18,5 @@ public interface ExecutorFactory {
      * @param name 线程池名称
      * @return 线程池执行器
      */
-    Executor createExecutor(PoolType poolType, String name);
+    ExecutorService createExecutor(PoolType poolType, String name);
 }

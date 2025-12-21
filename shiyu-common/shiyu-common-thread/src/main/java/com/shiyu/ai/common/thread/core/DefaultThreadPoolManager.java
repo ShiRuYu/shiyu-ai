@@ -2,18 +2,13 @@
 package com.shiyu.ai.common.thread.core;
 
 import com.shiyu.ai.common.thread.api.PoolType;
+import com.shiyu.ai.common.thread.api.TaskDecorator;
 import com.shiyu.ai.common.thread.api.ThreadPoolManager;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.util.Map;
-import java.util.concurrent.ConcurrentHashMap;
-import java.util.concurrent.Executor;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
-import java.util.concurrent.ScheduledExecutorService;
-import java.util.concurrent.ThreadPoolExecutor;
-import java.util.concurrent.TimeUnit;
+import java.util.concurrent.*;
 
 /**
  * 默认线程池管理器实现
@@ -26,19 +21,22 @@ public class DefaultThreadPoolManager implements ThreadPoolManager {
     /**
      * 线程池存储映射
      */
-    private final Map<String, Executor> executorMap = new ConcurrentHashMap<>();
+    private final Map<String, ExecutorService> executorMap = new ConcurrentHashMap<>();
 
     /**
      * 线程池工厂
      */
     private final ExecutorFactory executorFactory;
 
-    public DefaultThreadPoolManager() {
-        this(new DefaultExecutorFactory());
+    private final TaskDecorator taskDecorator;
+
+    public DefaultThreadPoolManager(TaskDecorator taskDecorator) {
+        this(new DefaultExecutorFactory(), taskDecorator);
     }
 
-    public DefaultThreadPoolManager(ExecutorFactory executorFactory) {
+    public DefaultThreadPoolManager(ExecutorFactory executorFactory, TaskDecorator taskDecorator) {
         this.executorFactory = executorFactory;
+        this.taskDecorator = taskDecorator;
         // 初始化默认线程池
         initializeDefaultExecutors();
     }
@@ -61,13 +59,14 @@ public class DefaultThreadPoolManager implements ThreadPoolManager {
     }
 
     @Override
-    public Executor getExecutor(PoolType poolType, String name) {
+    public ExecutorService getExecutor(PoolType poolType, String name) {
         String key = poolType.getCode() + ":" + name;
-        return executorMap.computeIfAbsent(key, k -> {
-            Executor executor = executorFactory.createExecutor(poolType, name);
+        ExecutorService executor1 = executorMap.computeIfAbsent(key, k -> {
+            ExecutorService executor = executorFactory.createExecutor(poolType, name);
             logger.info("创建线程池: {}, 类型: {}", name, poolType.getDescription());
             return executor;
         });
+        return new SafeExecutorService(executor1, taskDecorator);
     }
 
     @Override
@@ -100,7 +99,7 @@ public class DefaultThreadPoolManager implements ThreadPoolManager {
 
     /**
      * 获取线程池信息
-     * 
+     *
      * @param name 线程池名称
      * @return 线程池信息
      */

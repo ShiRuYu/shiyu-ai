@@ -4,7 +4,6 @@ package com.shiyu.ai.common.thread.core;
 import com.shiyu.ai.common.thread.api.PoolType;
 
 import java.lang.reflect.Method;
-import java.util.concurrent.Executor;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ThreadFactory;
@@ -31,7 +30,7 @@ public class VirtualExecutorFactory implements ExecutorFactory {
     }
 
     @Override
-    public Executor createExecutor(PoolType poolType, String name) {
+    public ExecutorService createExecutor(PoolType poolType, String name) {
         if (!isSupported()) {
             throw new UnsupportedOperationException("当前JVM不支持虚拟线程，请使用Java 21或更高版本");
         }

@@ -41,9 +41,9 @@ public class ThreadingAutoConfiguration {
      */
     @Bean
     @ConditionalOnMissingBean(ThreadPoolManager.class)
-    public ThreadPoolManager threadPoolManager(ThreadingProperties properties) {
+    public ThreadPoolManager threadPoolManager(ThreadingProperties properties,OtelTaskDecorator otelTaskDecorator) {
         logger.info("创建默认线程池管理器");
-        return new DefaultThreadPoolManager();
+        return new DefaultThreadPoolManager(otelTaskDecorator);
     }
 
     /**

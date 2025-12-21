@@ -3,7 +3,6 @@ package com.shiyu.ai.common.thread.core;
 
 import com.shiyu.ai.common.thread.api.PoolType;
 
-import java.util.concurrent.Executor;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.LinkedBlockingQueue;
 import java.util.concurrent.PriorityBlockingQueue;
@@ -20,7 +19,7 @@ import java.util.concurrent.atomic.AtomicInteger;
 public class PlatformExecutorFactory implements ExecutorFactory {
 
     @Override
-    public Executor createExecutor(PoolType poolType, String name) {
+    public ExecutorService createExecutor(PoolType poolType, String name) {
         switch (poolType) {
             case DEFAULT:
                 return createDefaultExecutor(name);
