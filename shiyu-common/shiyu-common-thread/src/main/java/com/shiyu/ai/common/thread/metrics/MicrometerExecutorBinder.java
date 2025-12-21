@@ -1,10 +1,6 @@
 
 package com.shiyu.ai.common.thread.metrics;
 
-import com.shiyu.ai.common.thread.api.TaskDecorator;
-import com.shiyu.ai.common.thread.context.ContextAwareCallable;
-import com.shiyu.ai.common.thread.context.ContextAwareRunnable;
-import com.shiyu.ai.common.thread.context.TaskContext;
 import com.shiyu.ai.common.thread.core.SafeExecutorService;
 import io.micrometer.core.instrument.Gauge;
 import io.micrometer.core.instrument.MeterRegistry;
@@ -16,8 +12,6 @@ import org.slf4j.LoggerFactory;
 import java.util.concurrent.Executor;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.ThreadPoolExecutor;
-import java.util.concurrent.TimeUnit;
-import java.util.function.ToDoubleFunction;
 
 /**
  * Micrometer执行器绑定器
@@ -27,7 +21,7 @@ public class MicrometerExecutorBinder implements MeterBinder {
 
     private static final Logger logger = LoggerFactory.getLogger(MicrometerExecutorBinder.class);
 
-    private final Executor executor;
+    private final ExecutorService executor;
     private final String name;
 
     /**
@@ -36,14 +30,14 @@ public class MicrometerExecutorBinder implements MeterBinder {
      * @param executor 线程池执行器
      * @param name 线程池名称
      */
-    public MicrometerExecutorBinder(Executor executor, String name) {
+    public MicrometerExecutorBinder(ExecutorService executor, String name) {
         this.executor = executor;
         this.name = name;
     }
 
     @Override
     public void bindTo(MeterRegistry registry) {
-        Executor targetExecutor = executor;
+        ExecutorService targetExecutor = executor;
         // 如果是SafeExecutorService包装器，则尝试获取其委托的执行器
         if (executor instanceof SafeExecutorService safeExecutorService) {
             targetExecutor = safeExecutorService.getDelegate();
@@ -163,7 +157,7 @@ public class MicrometerExecutorBinder implements MeterBinder {
      * @param registry 指标注册表
      * @return 带指标收集的执行器
      */
-    public static Executor wrapWithMetrics(Executor executor, String name, MeterRegistry registry) {
+    public static Executor wrapWithMetrics(ExecutorService executor, String name, MeterRegistry registry) {
         Timer taskTimer = createTaskTimer(registry, name);
         Timer submissionTimer = createSubmissionTimer(registry, name);
 

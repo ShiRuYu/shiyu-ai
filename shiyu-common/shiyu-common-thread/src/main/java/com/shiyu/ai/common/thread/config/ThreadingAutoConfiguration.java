@@ -19,7 +19,7 @@ import org.springframework.boot.context.properties.EnableConfigurationProperties
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.PropertySource;
 
-import java.util.concurrent.Executor;
+import java.util.concurrent.ExecutorService;
 
 /**
  * 线程模块自动配置类
@@ -65,7 +65,7 @@ public class ThreadingAutoConfiguration {
 
         // 为所有线程池注册指标
         properties.getPools().forEach((name, poolProps) -> {
-            Executor executor = threadPoolManager.getExecutor(poolProps.getType(), name);
+            ExecutorService executor = threadPoolManager.getExecutor(poolProps.getType(), name);
             MicrometerExecutorBinder binder = new MicrometerExecutorBinder(executor, name);
             binder.bindTo(meterRegistry);
         });

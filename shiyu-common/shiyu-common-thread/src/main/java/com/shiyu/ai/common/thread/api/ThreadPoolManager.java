@@ -1,7 +1,7 @@
 
 package com.shiyu.ai.common.thread.api;
 
-import java.util.concurrent.Executor;
+import java.util.concurrent.ExecutorService;
 
 /**
  * 线程池管理器接口
@@ -15,7 +15,7 @@ public interface ThreadPoolManager {
      * @param poolType 线程池类型
      * @return 线程池执行器
      */
-    Executor getExecutor(PoolType poolType);
+    ExecutorService getExecutor(PoolType poolType);
 
     /**
      * 获取指定名称的线程池执行器
@@ -24,12 +24,12 @@ public interface ThreadPoolManager {
      * @param name 线程池名称
      * @return 线程池执行器
      */
-    Executor getExecutor(PoolType poolType, String name);
+    ExecutorService getExecutor(PoolType poolType, String name);
 
     /**
      * 获取默认线程池执行器
      * 
      * @return 默认线程池执行器
      */
-    Executor getDefaultExecutor();
+    ExecutorService getDefaultExecutor();
 }

@@ -54,7 +54,7 @@ public class DefaultThreadPoolManager implements ThreadPoolManager {
     }
 
     @Override
-    public Executor getExecutor(PoolType poolType) {
+    public ExecutorService getExecutor(PoolType poolType) {
         return getExecutor(poolType, poolType.getCode());
     }
 
@@ -70,7 +70,7 @@ public class DefaultThreadPoolManager implements ThreadPoolManager {
     }
 
     @Override
-    public Executor getDefaultExecutor() {
+    public ExecutorService getDefaultExecutor() {
         return getExecutor(PoolType.DEFAULT);
     }
 
@@ -103,7 +103,7 @@ public class DefaultThreadPoolManager implements ThreadPoolManager {
      * @return 线程池信息
      */
     public String getPoolInfo(String name) {
-        Executor executor = executorMap.get(name);
+        ExecutorService executor = executorMap.get(name);
         if (executor instanceof ThreadPoolExecutor pool) {
             return String.format("线程池信息: [核心线程数: %d, 最大线程数: %d, 活跃线程数: %d, 队列大小: %d, 已完成任务数: %d]",
                     pool.getCorePoolSize(),
