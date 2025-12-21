@@ -1,7 +1,10 @@
 
 package com.shiyu.ai.common.thread.metrics;
 
-import com.shiyu.ai.common.thread.core.SafeExecutorService;
+import com.shiyu.ai.common.thread.api.TaskDecorator;
+import com.shiyu.ai.common.thread.context.ContextAwareCallable;
+import com.shiyu.ai.common.thread.context.ContextAwareRunnable;
+import com.shiyu.ai.common.thread.context.TaskContext;
 import io.micrometer.core.instrument.Gauge;
 import io.micrometer.core.instrument.MeterRegistry;
 import io.micrometer.core.instrument.Timer;
@@ -41,7 +44,7 @@ public class MicrometerExecutorBinder implements MeterBinder {
     public void bindTo(MeterRegistry registry) {
         Executor targetExecutor = executor;
         // 如果是SafeExecutorService包装器，则尝试获取其委托的执行器
-        if (executor instanceof SafeExecutorService safeExecutorService) {
+        if (executor instanceof com.shiyu.ai.common.thread.core.SafeExecutorService safeExecutorService) {
             targetExecutor = safeExecutorService.getDelegate();
         }
         if (targetExecutor instanceof ThreadPoolExecutor) {

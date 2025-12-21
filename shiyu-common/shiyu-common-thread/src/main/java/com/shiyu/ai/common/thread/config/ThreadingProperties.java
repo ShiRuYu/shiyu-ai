@@ -1,5 +1,5 @@
 
-package com.shiyu.ai.common.thread.spring;
+package com.shiyu.ai.common.thread.config;
 
 import com.shiyu.ai.common.thread.api.PoolType;
 import lombok.Data;

@@ -1,7 +1,7 @@
 
 package com.shiyu.ai.common.thread.otel;
 
-import com.shiyu.ai.common.thread.api.TaskDecorator;
+import com.shiyu.ai.common.thread.context.TaskContext;
 import io.opentelemetry.api.trace.Span;
 import io.opentelemetry.api.trace.Tracer;
 import io.opentelemetry.context.Context;
@@ -14,7 +14,7 @@ import java.util.function.Supplier;
  * OpenTelemetry任务装饰器
  * 用于在异步任务中传递OpenTelemetry上下文
  */
-public class OtelTaskDecorator implements TaskDecorator {
+public class OtelTaskDecorator implements com.shiyu.ai.common.thread.api.TaskDecorator {
 
     private final Tracer tracer;
 

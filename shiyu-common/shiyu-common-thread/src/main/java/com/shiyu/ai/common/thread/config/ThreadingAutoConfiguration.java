@@ -1,5 +1,5 @@
 
-package com.shiyu.ai.common.thread.spring;
+package com.shiyu.ai.common.thread.config;
 
 import com.shiyu.ai.common.core.factory.YmlPropertySourceFactory;
 import com.shiyu.ai.common.thread.api.ThreadPoolManager;
@@ -11,7 +11,6 @@ import io.opentelemetry.api.OpenTelemetry;
 import io.opentelemetry.api.trace.Tracer;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.autoconfigure.AutoConfiguration;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnClass;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean;
@@ -41,7 +40,7 @@ public class ThreadingAutoConfiguration {
      */
     @Bean
     @ConditionalOnMissingBean(ThreadPoolManager.class)
-    public ThreadPoolManager threadPoolManager(ThreadingProperties properties,OtelTaskDecorator otelTaskDecorator) {
+    public ThreadPoolManager threadPoolManager(ThreadingProperties properties, com.shiyu.ai.common.thread.otel.OtelTaskDecorator otelTaskDecorator) {
         logger.info("创建默认线程池管理器");
         return new DefaultThreadPoolManager(otelTaskDecorator);
     }

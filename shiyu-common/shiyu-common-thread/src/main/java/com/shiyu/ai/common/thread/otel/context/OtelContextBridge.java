@@ -1,7 +1,6 @@
+package com.shiyu.ai.common.thread.otel.context;
 
-package com.shiyu.ai.common.thread.otel;
-
-import com.shiyu.ai.common.thread.api.TaskContext;
+import com.shiyu.ai.common.thread.context.TaskContext;
 import io.opentelemetry.api.trace.Span;
 import io.opentelemetry.api.trace.SpanContext;
 import io.opentelemetry.api.trace.TraceFlags;
@@ -32,10 +31,10 @@ public class OtelContextBridge {
             SpanContext spanContext = span.getSpanContext();
 
             // 提取追踪信息
-            taskContext.set(TRACE_ID_KEY, spanContext.getTraceId());
-            taskContext.set(SPAN_ID_KEY, spanContext.getSpanId());
-            taskContext.set(TRACE_FLAGS_KEY, spanContext.getTraceFlags());
-            taskContext.set(TRACE_STATE_KEY, spanContext.getTraceState());
+            taskContext.setAttribute(TRACE_ID_KEY, spanContext.getTraceId());
+            taskContext.setAttribute(SPAN_ID_KEY, spanContext.getSpanId());
+            taskContext.setAttribute(TRACE_FLAGS_KEY, spanContext.getTraceFlags());
+            taskContext.setAttribute(TRACE_STATE_KEY, spanContext.getTraceState());
         }
     }
 
@@ -45,11 +44,11 @@ public class OtelContextBridge {
      * @param taskContext 任务上下文
      * @return OpenTelemetry上下文
      */
-    public static Context restoreToOtel(TaskContext taskContext) {
-        Object traceId = taskContext.get(TRACE_ID_KEY);
-        Object spanId = taskContext.get(SPAN_ID_KEY);
-        Object traceFlags = taskContext.get(TRACE_FLAGS_KEY);
-        Object traceState = taskContext.get(TRACE_STATE_KEY);
+    public static Context restoreToOtel(com.shiyu.ai.common.thread.context.TaskContext taskContext) {
+        Object traceId = taskContext.getAttribute(TRACE_ID_KEY);
+        Object spanId = taskContext.getAttribute(SPAN_ID_KEY);
+        Object traceFlags = taskContext.getAttribute(TRACE_FLAGS_KEY);
+        Object traceState = taskContext.getAttribute(TRACE_STATE_KEY);
 
         if (traceId != null && spanId != null) {
             // 使用反射创建SpanContext，避免API版本兼容性问题
@@ -107,7 +106,7 @@ public class OtelContextBridge {
      * 
      * @param taskContext 任务上下文
      */
-    public static void syncContexts(TaskContext taskContext) {
+    public static void syncContexts(com.shiyu.ai.common.thread.context.TaskContext taskContext) {
         // 从OpenTelemetry提取到TaskContext
         extractFromOtel(taskContext);
     }

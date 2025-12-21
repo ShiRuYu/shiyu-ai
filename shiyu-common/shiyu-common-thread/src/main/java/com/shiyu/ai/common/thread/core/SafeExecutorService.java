@@ -1,18 +1,15 @@
 
 package com.shiyu.ai.common.thread.core;
 
-import com.shiyu.ai.common.thread.api.TaskContext;
 import com.shiyu.ai.common.thread.api.TaskDecorator;
+import com.shiyu.ai.common.thread.context.ContextAwareCallable;
+import com.shiyu.ai.common.thread.context.ContextAwareRunnable;
+import com.shiyu.ai.common.thread.context.TaskContext;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.util.List;
-import java.util.concurrent.AbstractExecutorService;
-import java.util.concurrent.Callable;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Future;
-import java.util.concurrent.RunnableFuture;
-import java.util.concurrent.TimeUnit;
+import java.util.concurrent.*;
 import java.util.concurrent.atomic.AtomicReference;
 
 /**
@@ -149,7 +146,7 @@ public class SafeExecutorService extends AbstractExecutorService {
     /**
      * 上下文任务装饰器
      */
-    private static class ContextTaskDecorator implements TaskDecorator {
+    private static class ContextTaskDecorator implements com.shiyu.ai.common.thread.api.TaskDecorator {
         @Override
         public Runnable decorate(Runnable runnable) {
             return new ContextAwareRunnable(runnable);
@@ -173,7 +170,7 @@ public class SafeExecutorService extends AbstractExecutorService {
     /**
      * 安全的FutureTask实现
      */
-    private static class SafeFutureTask<T> extends java.util.concurrent.FutureTask<T> {
+    private static class SafeFutureTask<T> extends FutureTask<T> {
 
         public SafeFutureTask(Runnable runnable, T result) {
             super(new ContextAwareRunnable(runnable), result);
@@ -196,28 +193,4 @@ public class SafeExecutorService extends AbstractExecutorService {
         }
     }
 
-    /**
-     * 上下文感知的Callable
-     */
-    private static class ContextAwareCallable<T> implements Callable<T> {
-
-        private final Callable<T> delegate;
-        private final TaskContext contextSnapshot;
-
-        public ContextAwareCallable(Callable<T> delegate) {
-            this.delegate = delegate;
-            this.contextSnapshot = TaskContext.current().snapshot();
-        }
-
-        @Override
-        public T call() throws Exception {
-            TaskContext originalContext = TaskContext.current();
-            try {
-                TaskContext.current().restore(contextSnapshot);
-                return delegate.call();
-            } finally {
-                TaskContext.current().restore(originalContext);
-            }
-        }
-    }
 }
