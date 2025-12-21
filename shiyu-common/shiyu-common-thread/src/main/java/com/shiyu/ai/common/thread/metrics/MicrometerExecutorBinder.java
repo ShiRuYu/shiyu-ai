@@ -5,6 +5,7 @@ import com.shiyu.ai.common.thread.api.TaskDecorator;
 import com.shiyu.ai.common.thread.context.ContextAwareCallable;
 import com.shiyu.ai.common.thread.context.ContextAwareRunnable;
 import com.shiyu.ai.common.thread.context.TaskContext;
+import com.shiyu.ai.common.thread.core.SafeExecutorService;
 import io.micrometer.core.instrument.Gauge;
 import io.micrometer.core.instrument.MeterRegistry;
 import io.micrometer.core.instrument.Timer;
@@ -44,13 +45,13 @@ public class MicrometerExecutorBinder implements MeterBinder {
     public void bindTo(MeterRegistry registry) {
         Executor targetExecutor = executor;
         // 如果是SafeExecutorService包装器，则尝试获取其委托的执行器
-        if (executor instanceof com.shiyu.ai.common.thread.core.SafeExecutorService safeExecutorService) {
+        if (executor instanceof SafeExecutorService safeExecutorService) {
             targetExecutor = safeExecutorService.getDelegate();
         }
-        if (targetExecutor instanceof ThreadPoolExecutor) {
-            bindThreadPoolExecutor((ThreadPoolExecutor) targetExecutor, registry);
-        } else if (targetExecutor instanceof ExecutorService) {
-            bindExecutorService((ExecutorService) targetExecutor, registry);
+        if (targetExecutor instanceof ThreadPoolExecutor threadPoolExecutor) {
+            bindThreadPoolExecutor(threadPoolExecutor, registry);
+        } else if (targetExecutor instanceof ExecutorService executorService) {
+            bindExecutorService(executorService, registry);
         } else {
             logger.warn("不支持的执行器类型: {}, 无法绑定指标", targetExecutor.getClass().getName());
         }

@@ -51,9 +51,8 @@ public class Threads {
      * 打印线程异常信息
      */
     public static void printException(Runnable r, Throwable t) {
-        if (t == null && r instanceof Future<?>) {
+        if (t == null && r instanceof Future<?> future) {
             try {
-                Future<?> future = (Future<?>) r;
                 if (future.isDone()) {
                     future.get();
                 }

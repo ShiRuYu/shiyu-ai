@@ -80,8 +80,7 @@ public class DefaultThreadPoolManager implements ThreadPoolManager {
     public void shutdownAll() {
         executorMap.forEach((name, executor) -> {
             try {
-                if (executor instanceof ExecutorService) {
-                    ExecutorService service = (ExecutorService) executor;
+                if (executor instanceof ExecutorService service) {
                     service.shutdown();
                     if (!service.awaitTermination(30, TimeUnit.SECONDS)) {
                         logger.warn("线程池 {} 在30秒内未能正常关闭，强制关闭", name);
@@ -105,8 +104,7 @@ public class DefaultThreadPoolManager implements ThreadPoolManager {
      */
     public String getPoolInfo(String name) {
         Executor executor = executorMap.get(name);
-        if (executor instanceof ThreadPoolExecutor) {
-            ThreadPoolExecutor pool = (ThreadPoolExecutor) executor;
+        if (executor instanceof ThreadPoolExecutor pool) {
             return String.format("线程池信息: [核心线程数: %d, 最大线程数: %d, 活跃线程数: %d, 队列大小: %d, 已完成任务数: %d]",
                     pool.getCorePoolSize(),
                     pool.getMaximumPoolSize(),

@@ -50,7 +50,7 @@ public class DefaultExcelListener<T> extends AnalysisEventListener<T> implements
      * @param context   Excel 上下文
      */
     @Override
-    public void onException(Exception exception, AnalysisContext context) throws Exception {
+    public void onException(Exception exception, AnalysisContext context) {
         String errMsg = null;
         if (exception instanceof ExcelDataConvertException excelDataConvertException) {
             // 如果是某一个单元格的转换异常 能获取到具体行号

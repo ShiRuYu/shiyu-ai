@@ -215,9 +215,8 @@ public class UnifiedThreadPoolUtils {
      * 用于线程池执行任务时捕获 Future 异常
      */
     public static void printException(Runnable r, Throwable t) {
-        if (t == null && r instanceof Future<?>) {
+        if (t == null && r instanceof Future<?> future) {
             try {
-                Future<?> future = (Future<?>) r;
                 if (future.isDone()) {
                     future.get(); // 主动触发可能的 ExecutionException
                 }

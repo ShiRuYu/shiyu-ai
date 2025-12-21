@@ -20,9 +20,9 @@ public class RepeatableFilter implements Filter {
     public void doFilter(ServletRequest request, ServletResponse response, FilterChain chain)
         throws IOException, ServletException {
         ServletRequest requestWrapper = null;
-        if (request instanceof HttpServletRequest
+        if (request instanceof HttpServletRequest httpServletRequest
             && StringUtils.startsWithIgnoreCase(request.getContentType(), MediaType.APPLICATION_JSON_VALUE)) {
-            requestWrapper = new RepeatedlyRequestWrapper((HttpServletRequest) request, response);
+            requestWrapper = new RepeatedlyRequestWrapper(httpServletRequest, response);
         }
         if (null == requestWrapper) {
             chain.doFilter(request, response);

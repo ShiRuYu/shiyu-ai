@@ -42,8 +42,8 @@ public enum LoggerUtil {
     private Throwable getThrowable(Object[] objects) {
         Throwable throwable = null;
         for (Object object : objects) {
-            if (object instanceof Throwable){
-                throwable = (Throwable) object;
+            if (object instanceof Throwable ofThrowable){
+                throwable = ofThrowable;
             }
         }
         return throwable;
