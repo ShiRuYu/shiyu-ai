@@ -8,14 +8,13 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.SerializationFeature;
 import com.fasterxml.jackson.databind.SerializerProvider;
 import com.fasterxml.jackson.databind.annotation.JacksonStdImpl;
+import com.fasterxml.jackson.databind.json.JsonMapper;
+import com.fasterxml.jackson.databind.module.SimpleModule;
 import com.fasterxml.jackson.databind.ser.std.NumberSerializer;
 import com.fasterxml.jackson.databind.ser.std.ToStringSerializer;
 import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
 import com.fasterxml.jackson.datatype.jsr310.deser.LocalDateTimeDeserializer;
 import com.fasterxml.jackson.datatype.jsr310.ser.LocalDateTimeSerializer;
-import lombok.AccessLevel;
-import lombok.NoArgsConstructor;
-import org.springframework.core.env.MapPropertySource;
 
 import java.io.File;
 import java.io.IOException;
@@ -30,9 +29,8 @@ import java.util.TimeZone;
 
 public class JsonUtils {
 
-    private static final ObjectMapper OBJECT_MAPPER = new ObjectMapper()
-            // 启用标准 JDK 序列化机制处理 java.time 类型（如 LocalDateTime）
-            .findAndRegisterModules()
+    private static final ObjectMapper OBJECT_MAPPER = JsonMapper.builder()
+            .findAndAddModules()
             // 禁止序列化时失败因未知属性导致的异常（兼容性更强）
             .disable(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES)
             // 禁止序列化时将空对象转换为空 JSON 对象时抛出异常
@@ -40,20 +38,21 @@ public class JsonUtils {
             // 时间格式输出为字符串而不是时间戳
             .disable(SerializationFeature.WRITE_DATES_AS_TIMESTAMPS)
             // 设置默认时区为系统默认
-            .setTimeZone(TimeZone.getDefault())
+            .defaultTimeZone(TimeZone.getDefault())
             // 设置默认的属性命名策略（如驼峰转下划线等，可选）
             // .setPropertyNamingStrategy(PropertyNamingStrategies.SNAKE_CASE)
             // 设置可见性规则（如允许序列化 private 字段，可选）
             // .setVisibility(PropertyAccessor.ALL, JsonAutoDetect.Visibility.ANY)
             // 注册 JavaTimeModule 并配置自定义序列化器
-            .registerModule(new JavaTimeModule()
+            .addModule(new JavaTimeModule()
                     .addSerializer(Long.class, BigNumberSerializer.INSTANCE)
                     .addSerializer(Long.TYPE, BigNumberSerializer.INSTANCE)
                     .addSerializer(BigInteger.class, BigNumberSerializer.INSTANCE)
                     .addSerializer(BigDecimal.class, ToStringSerializer.instance)
                     .addSerializer(LocalDateTime.class, new LocalDateTimeSerializer(DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss")))
                     .addDeserializer(LocalDateTime.class, new LocalDateTimeDeserializer(DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss")))
-            );
+            )
+            .build();
 
     public static ObjectMapper getObjectMapper() {
         return OBJECT_MAPPER;
