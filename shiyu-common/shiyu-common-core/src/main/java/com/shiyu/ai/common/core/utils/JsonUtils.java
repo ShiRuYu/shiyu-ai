@@ -1,23 +1,21 @@
 package com.shiyu.ai.common.core.utils;
 
-import com.fasterxml.jackson.core.JsonGenerator;
-import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.core.type.TypeReference;
-import com.fasterxml.jackson.databind.DeserializationFeature;
-import com.fasterxml.jackson.databind.ObjectMapper;
-import com.fasterxml.jackson.databind.SerializationFeature;
-import com.fasterxml.jackson.databind.SerializerProvider;
-import com.fasterxml.jackson.databind.annotation.JacksonStdImpl;
-import com.fasterxml.jackson.databind.json.JsonMapper;
-import com.fasterxml.jackson.databind.module.SimpleModule;
-import com.fasterxml.jackson.databind.ser.std.NumberSerializer;
-import com.fasterxml.jackson.databind.ser.std.ToStringSerializer;
-import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
-import com.fasterxml.jackson.datatype.jsr310.deser.LocalDateTimeDeserializer;
-import com.fasterxml.jackson.datatype.jsr310.ser.LocalDateTimeSerializer;
+import tools.jackson.core.JacksonException;
+import tools.jackson.core.JsonGenerator;
+import tools.jackson.core.type.TypeReference;
+import tools.jackson.databind.DeserializationFeature;
+import tools.jackson.databind.ObjectMapper;
+import tools.jackson.databind.SerializationContext;
+import tools.jackson.databind.SerializationFeature;
+import tools.jackson.databind.annotation.JacksonStdImpl;
+import tools.jackson.databind.ext.javatime.deser.LocalDateTimeDeserializer;
+import tools.jackson.databind.ext.javatime.ser.LocalDateTimeSerializer;
+import tools.jackson.databind.json.JsonMapper;
+import tools.jackson.databind.module.SimpleModule;
+import tools.jackson.databind.ser.jdk.NumberSerializer;
+import tools.jackson.databind.ser.std.ToStringSerializer;
 
 import java.io.File;
-import java.io.IOException;
 import java.math.BigDecimal;
 import java.math.BigInteger;
 import java.time.LocalDateTime;
@@ -36,7 +34,6 @@ public class JsonUtils {
             // 禁止序列化时将空对象转换为空 JSON 对象时抛出异常
             .disable(SerializationFeature.FAIL_ON_EMPTY_BEANS)
             // 时间格式输出为字符串而不是时间戳
-            .disable(SerializationFeature.WRITE_DATES_AS_TIMESTAMPS)
             // 设置默认时区为系统默认
             .defaultTimeZone(TimeZone.getDefault())
             // 设置默认的属性命名策略（如驼峰转下划线等，可选）
@@ -44,7 +41,7 @@ public class JsonUtils {
             // 设置可见性规则（如允许序列化 private 字段，可选）
             // .setVisibility(PropertyAccessor.ALL, JsonAutoDetect.Visibility.ANY)
             // 注册 JavaTimeModule 并配置自定义序列化器
-            .addModule(new JavaTimeModule()
+            .addModule(new SimpleModule()
                     .addSerializer(Long.class, BigNumberSerializer.INSTANCE)
                     .addSerializer(Long.TYPE, BigNumberSerializer.INSTANCE)
                     .addSerializer(BigInteger.class, BigNumberSerializer.INSTANCE)
@@ -64,7 +61,7 @@ public class JsonUtils {
         }
         try {
             return OBJECT_MAPPER.writeValueAsString(object);
-        } catch (JsonProcessingException e) {
+        } catch (JacksonException e) {
             throw new RuntimeException(e);
         }
     }
@@ -75,7 +72,7 @@ public class JsonUtils {
         }
         try {
             return OBJECT_MAPPER.readValue(text, clazz);
-        } catch (IOException e) {
+        } catch (JacksonException e) {
             throw new RuntimeException(e);
         }
     }
@@ -86,7 +83,7 @@ public class JsonUtils {
         }
         try {
             return OBJECT_MAPPER.readValue(bytes, clazz);
-        } catch (IOException e) {
+        } catch (JacksonException e) {
             throw new RuntimeException(e);
         }
     }
@@ -97,7 +94,7 @@ public class JsonUtils {
         }
         try {
             return OBJECT_MAPPER.readValue(text, typeReference);
-        } catch (IOException e) {
+        } catch (JacksonException e) {
             throw new RuntimeException(e);
         }
     }
@@ -108,7 +105,7 @@ public class JsonUtils {
         }
         try {
             return OBJECT_MAPPER.readValue(text, OBJECT_MAPPER.getTypeFactory().constructCollectionType(List.class, clazz));
-        } catch (IOException e) {
+        } catch (JacksonException e) {
             throw new RuntimeException(e);
         }
     }
@@ -116,7 +113,7 @@ public class JsonUtils {
     public static Map<String, Object> parseMap(File file) {
         try {
             return OBJECT_MAPPER.readValue(file, OBJECT_MAPPER.getTypeFactory().constructType(Map.class));
-        } catch (IOException e) {
+        } catch (JacksonException e) {
             throw new RuntimeException(e);
         }
     }
@@ -159,7 +156,7 @@ public class JsonUtils {
         }
 
         @Override
-        public void serialize(Number value, JsonGenerator gen, SerializerProvider provider) throws IOException {
+        public void serialize(Number value, JsonGenerator gen, SerializationContext provider) {
             // 超出范围 序列化位字符串
             if (value.longValue() > MIN_SAFE_INTEGER && value.longValue() < MAX_SAFE_INTEGER) {
                 super.serialize(value, gen, provider);
