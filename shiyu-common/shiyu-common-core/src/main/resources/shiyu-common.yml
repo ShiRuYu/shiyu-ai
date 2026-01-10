@@ -24,9 +24,7 @@ management:
     metrics:
       export:
         enabled:
-          false observations:
-            key-values:
-              application: shiyu-ai
+          false
   observations:
     key-values:
       application: shiyu-ai
