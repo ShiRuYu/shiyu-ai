@@ -20,6 +20,13 @@ management:
     distribution:
       percentiles-histogram:
         http.server.requests: true
+  otlp:
+    metrics:
+      export:
+        enabled:
+          false observations:
+            key-values:
+              application: shiyu-ai
   observations:
     key-values:
       application: shiyu-ai

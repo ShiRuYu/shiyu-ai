@@ -24,6 +24,9 @@ public class ResourcesConfig implements WebMvcConfigurer {
 
     @Override
     public void addResourceHandlers(ResourceHandlerRegistry registry) {
+        // 处理 favicon.ico 请求
+        registry.addResourceHandler("/favicon.ico")
+                .addResourceLocations("classpath:/static/", "classpath:/public/");
     }
 
     /**

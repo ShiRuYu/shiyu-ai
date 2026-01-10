@@ -41,8 +41,8 @@
         </dependency>
         <!-- OpenTelemetry 桥接 (推荐) -->
         <dependency>
-            <groupId>io.micrometer</groupId>
-            <artifactId>micrometer-tracing-bridge-otel</artifactId>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-opentelemetry</artifactId>
         </dependency>
         <!-- Prometheus 指标导出 -->
         <dependency>
