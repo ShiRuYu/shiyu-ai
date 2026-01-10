@@ -1,6 +1,6 @@
 package com.shiyu.ai.common.web.config;
 
-import com.shiyu.ai.common.web.interceptor.PlusWebInvokeTimeInterceptor;
+import com.shiyu.ai.common.web.interceptor.WebInvokeInterceptor;
 import org.springframework.boot.autoconfigure.AutoConfiguration;
 import org.springframework.context.annotation.Bean;
 import org.springframework.web.cors.CorsConfiguration;
@@ -19,7 +19,7 @@ public class ResourcesConfig implements WebMvcConfigurer {
     @Override
     public void addInterceptors(InterceptorRegistry registry) {
         // 全局访问性能拦截
-        registry.addInterceptor(new PlusWebInvokeTimeInterceptor());
+        registry.addInterceptor(new WebInvokeInterceptor());
     }
 
     @Override

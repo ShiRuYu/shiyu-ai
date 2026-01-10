@@ -137,14 +137,8 @@
             <appender-ref ref="webInfo" />
         </logger>
 
-        <!--过滤掉 spring 和 mybatis 的一些无用的 DEBUG 信息;也可以单独指定自己的某个包-->
         <!--以下包中ERROR级别以上日志在root中将被记录-->
-        <!--<logger name="org.springframework" level="ERROR"></logger>
-        <logger name="org.mybatis" level="ERROR"></logger>
-        <logger name="org.hibernate" level="ERROR"></logger>
-        <logger name="org.apache" level="ERROR"></logger>
-        <logger name="com.zaxxer" level="ERROR"></logger>
-        <logger name="springfox.documentation" level="ERROR"></logger>-->
+        <logger name="org.springframework.ai.vectorstore.SimpleVectorStore" level="ERROR"/>
 
         <!--com.shiyu包中的DEBUG以上信息在以下的appender中输出，additivity所有日志还要向控制台和allLog中输出-->
         <logger name="com.shiyu" level="DEBUG" additivity="true">
