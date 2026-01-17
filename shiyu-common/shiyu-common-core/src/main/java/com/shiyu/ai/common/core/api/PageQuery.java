@@ -5,6 +5,7 @@ import lombok.Data;
 
 import java.io.Serial;
 import java.io.Serializable;
+import java.util.List;
 
 /**
  * 分页查询实体类
@@ -26,14 +27,24 @@ public class PageQuery implements Serializable {
     private Integer pageNum;
 
     /**
-     * 排序列
+     * 排序列（单个）
      */
     private String orderByColumn;
 
     /**
-     * 排序的方向desc或者asc
+     * 排序的方向desc或者asc（单个）
      */
     private String isAsc;
+
+    /**
+     * 多个排序字段列表
+     */
+    private List<OrderField> orderFields;
+
+    /**
+     * 过滤条件列表
+     */
+    private List<FilterCondition> filterConditions;
 
     /**
      * 当前记录起始索引 默认值
@@ -51,9 +62,12 @@ public class PageQuery implements Serializable {
         return (pageNum - 1) * pageSize;
     }
 
+    public PageQuery() {
+        // 默认构造函数
+    }
+
     public PageQuery(Integer pageSize, Integer pageNum) {
         this.pageSize = pageSize;
         this.pageNum = pageNum;
     }
-
 }
