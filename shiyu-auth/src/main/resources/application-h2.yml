@@ -9,6 +9,6 @@ mybatis-flex:
     ds1:
       type: druid
       driverClassName: org.h2.Driver
-      url: jdbc:h2:file:./.data/demodb
+      url: jdbc:h2:file:./.data/demodb;MODE=MySQL;DB_CLOSE_DELAY=-1
       username: sa
       password:
