@@ -20,6 +20,18 @@
             <artifactId>shiyu-common-core</artifactId>
         </dependency>
 
+        <!-- 事务在 Boot 4 被明确定位为：“数据访问的横切能力，而不是基础设施能力”
+        事务能力只会通过 数据访问 starter 或你显式引入 spring-tx 才出现-->
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-jdbc</artifactId>
+            <exclusions>
+                <exclusion>
+                    <artifactId>spring-boot-starter-logging</artifactId>
+                    <groupId>org.springframework.boot</groupId>
+                </exclusion>
+            </exclusions>
+        </dependency>
         <dependency>
             <groupId>com.mybatis-flex</groupId>
             <artifactId>mybatis-flex-spring-boot3-starter</artifactId>
