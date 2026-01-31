@@ -1,15 +1,15 @@
 package com.shiyu.ai.common.excel.core;
 
 import cn.hutool.core.collection.CollUtil;
-import com.alibaba.excel.annotation.ExcelProperty;
-import com.alibaba.excel.metadata.Head;
-import com.alibaba.excel.write.merge.AbstractMergeStrategy;
 import com.shiyu.ai.common.core.utils.reflect.ReflectUtils;
 import com.shiyu.ai.common.excel.annotation.CellMerge;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.fesod.sheet.annotation.ExcelProperty;
+import org.apache.fesod.sheet.metadata.Head;
+import org.apache.fesod.sheet.write.merge.AbstractMergeStrategy;
 import org.apache.poi.ss.usermodel.Cell;
 import org.apache.poi.ss.usermodel.Sheet;
 import org.apache.poi.ss.util.CellRangeAddress;

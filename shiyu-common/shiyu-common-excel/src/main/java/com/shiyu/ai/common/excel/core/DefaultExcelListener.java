@@ -1,10 +1,6 @@
 package com.shiyu.ai.common.excel.core;
 
 import cn.hutool.core.util.StrUtil;
-import com.alibaba.excel.context.AnalysisContext;
-import com.alibaba.excel.event.AnalysisEventListener;
-import com.alibaba.excel.exception.ExcelAnalysisException;
-import com.alibaba.excel.exception.ExcelDataConvertException;
 import com.shiyu.ai.common.core.utils.StreamUtils;
 import com.shiyu.ai.common.core.utils.ValidatorUtils;
 import com.shiyu.ai.common.core.utils.JsonUtils;
@@ -12,6 +8,10 @@ import jakarta.validation.ConstraintViolation;
 import jakarta.validation.ConstraintViolationException;
 import lombok.NoArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.fesod.sheet.context.AnalysisContext;
+import org.apache.fesod.sheet.event.AnalysisEventListener;
+import org.apache.fesod.sheet.exception.ExcelAnalysisException;
+import org.apache.fesod.sheet.exception.ExcelDataConvertException;
 
 import java.util.Map;
 import java.util.Set;

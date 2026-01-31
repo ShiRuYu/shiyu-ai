@@ -3,13 +3,6 @@ package com.shiyu.ai.common.excel.utils;
 import cn.hutool.core.collection.CollUtil;
 import cn.hutool.core.io.resource.ClassPathResource;
 import cn.hutool.core.util.IdUtil;
-import com.alibaba.excel.EasyExcel;
-import com.alibaba.excel.ExcelWriter;
-import com.alibaba.excel.write.builder.ExcelWriterSheetBuilder;
-import com.alibaba.excel.write.metadata.WriteSheet;
-import com.alibaba.excel.write.metadata.fill.FillConfig;
-import com.alibaba.excel.write.metadata.fill.FillWrapper;
-import com.alibaba.excel.write.style.column.LongestMatchColumnWidthStyleStrategy;
 import com.shiyu.ai.common.core.CharConstants;
 import com.shiyu.ai.common.core.utils.file.FileUtils;
 import com.shiyu.ai.common.excel.convert.ExcelBigNumberConvert;
@@ -19,9 +12,14 @@ import com.shiyu.ai.common.excel.core.ExcelListener;
 import com.shiyu.ai.common.excel.core.ExcelResult;
 import jakarta.servlet.ServletOutputStream;
 import jakarta.servlet.http.HttpServletResponse;
-import lombok.AccessLevel;
-import lombok.NoArgsConstructor;
 import org.apache.commons.lang3.StringUtils;
+import org.apache.fesod.sheet.ExcelWriter;
+import org.apache.fesod.sheet.FesodSheet;
+import org.apache.fesod.sheet.write.builder.ExcelWriterSheetBuilder;
+import org.apache.fesod.sheet.write.metadata.WriteSheet;
+import org.apache.fesod.sheet.write.metadata.fill.FillConfig;
+import org.apache.fesod.sheet.write.metadata.fill.FillWrapper;
+import org.apache.fesod.sheet.write.style.column.LongestMatchColumnWidthStyleStrategy;
 
 import java.io.IOException;
 import java.io.InputStream;
@@ -42,7 +40,7 @@ public class ExcelUtil {
      * @return 转换后集合
      */
     public static <T> List<T> importExcel(InputStream is, Class<T> clazz) {
-        return EasyExcel.read(is).head(clazz).autoCloseStream(false).sheet().doReadSync();
+        return FesodSheet.read(is).head(clazz).autoCloseStream(false).sheet().doReadSync();
     }
 
 
@@ -56,7 +54,7 @@ public class ExcelUtil {
      */
     public static <T> ExcelResult<T> importExcel(InputStream is, Class<T> clazz, boolean isValidate) {
         DefaultExcelListener<T> listener = new DefaultExcelListener<>(isValidate);
-        EasyExcel.read(is, clazz, listener).sheet().doRead();
+        FesodSheet.read(is, clazz, listener).sheet().doRead();
         return listener.getExcelResult();
     }
 
@@ -69,7 +67,7 @@ public class ExcelUtil {
      * @return 转换后集合
      */
     public static <T> ExcelResult<T> importExcel(InputStream is, Class<T> clazz, ExcelListener<T> listener) {
-        EasyExcel.read(is, clazz, listener).sheet().doRead();
+        FesodSheet.read(is, clazz, listener).sheet().doRead();
         return listener.getExcelResult();
     }
 
@@ -132,7 +130,7 @@ public class ExcelUtil {
      * @param os        输出流
      */
     public static <T> void exportExcel(List<T> list, String sheetName, Class<T> clazz, boolean merge, OutputStream os) {
-        ExcelWriterSheetBuilder builder = EasyExcel.write(os, clazz)
+        ExcelWriterSheetBuilder builder = FesodSheet.write(os, clazz)
             .autoCloseStream(false)
             // 自动适配
             .registerWriteHandler(new LongestMatchColumnWidthStyleStrategy())
@@ -177,13 +175,13 @@ public class ExcelUtil {
      */
     public static void exportTemplate(List<Object> data, String templatePath, OutputStream os) {
         ClassPathResource templateResource = new ClassPathResource(templatePath);
-        ExcelWriter excelWriter = EasyExcel.write(os)
+        ExcelWriter excelWriter = FesodSheet.write(os)
             .withTemplate(templateResource.getStream())
             .autoCloseStream(false)
             // 大数值自动转换 防止失真
             .registerConverter(new ExcelBigNumberConvert())
             .build();
-        WriteSheet writeSheet = EasyExcel.writerSheet().build();
+        WriteSheet writeSheet = FesodSheet.writerSheet().build();
         if (CollUtil.isEmpty(data)) {
             throw new IllegalArgumentException("数据为空");
         }
@@ -225,13 +223,13 @@ public class ExcelUtil {
      */
     public static void exportTemplateMultiList(Map<String, Object> data, String templatePath, OutputStream os) {
         ClassPathResource templateResource = new ClassPathResource(templatePath);
-        ExcelWriter excelWriter = EasyExcel.write(os)
+        ExcelWriter excelWriter = FesodSheet.write(os)
             .withTemplate(templateResource.getStream())
             .autoCloseStream(false)
             // 大数值自动转换 防止失真
             .registerConverter(new ExcelBigNumberConvert())
             .build();
-        WriteSheet writeSheet = EasyExcel.writerSheet().build();
+        WriteSheet writeSheet = FesodSheet.writerSheet().build();
         if (CollUtil.isEmpty(data)) {
             throw new IllegalArgumentException("数据为空");
         }
