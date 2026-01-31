@@ -2,7 +2,7 @@ package com.shiyu.ai.common.web.interceptor;
 
 import cn.hutool.core.io.IoUtil;
 import cn.hutool.core.map.MapUtil;
-import com.shiyu.ai.common.core.utils.JsonUtils;
+import com.shiyu.ai.common.core.utils.JSONUtils;
 import com.shiyu.ai.common.web.filter.RepeatedlyRequestWrapper;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
@@ -37,7 +37,7 @@ public class WebInvokeInterceptor implements HandlerInterceptor {
         } else {
             Map<String, String[]> parameterMap = request.getParameterMap();
             if (MapUtil.isNotEmpty(parameterMap)) {
-                String parameters = JsonUtils.toJsonString(parameterMap);
+                String parameters = JSONUtils.toJsonString(parameterMap);
                 log.debug("开始请求 => URL[{}],参数类型[param],参数:[{}]", url, parameters);
             } else {
                 log.debug("开始请求 => URL[{}],无参数", url);

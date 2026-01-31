@@ -3,7 +3,7 @@ package com.shiyu.ai.chat.liteflow.components;
 import com.shiyu.ai.chat.service.IntentService;
 import com.shiyu.ai.chat.domain.GlobalContext;
 import com.shiyu.ai.chat.domain.node.Intent;
-import com.shiyu.ai.common.core.utils.JsonUtils;
+import com.shiyu.ai.common.core.utils.JSONUtils;
 import com.yomahub.liteflow.annotation.LiteflowComponent;
 import com.yomahub.liteflow.core.NodeComponent;
 import jakarta.annotation.Resource;
@@ -29,7 +29,7 @@ public class IntentCmp extends NodeComponent {
         context.set(GlobalContext.ChatBizKeyEnum.INTENT.getCode(), intent);
         context.set(GlobalContext.ChatBizKeyEnum.CHAIN.getCode(), intent.getChainToCall());
 
-        System.out.println("INTENT 节点执行完毕，intent=" + JsonUtils.toJsonString(intent));
+        System.out.println("INTENT 节点执行完毕，intent=" + JSONUtils.toJsonString(intent));
     }
 
     @Override

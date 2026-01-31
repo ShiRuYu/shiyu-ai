@@ -1,12 +1,12 @@
 package com.shiyu.ai.auth.domain.vo;
 
-import com.alibaba.excel.annotation.ExcelIgnoreUnannotated;
-import com.alibaba.excel.annotation.ExcelProperty;
 import com.shiyu.ai.common.excel.annotation.ExcelDictFormat;
 import com.shiyu.ai.common.excel.convert.ExcelDictConvert;
 import com.shiyu.ai.auth.domain.SysDeptDO;
 import io.github.linpeilie.annotations.AutoMapper;
 import lombok.Data;
+import org.apache.fesod.sheet.annotation.ExcelIgnoreUnannotated;
+import org.apache.fesod.sheet.annotation.ExcelProperty;
 
 import java.io.Serial;
 import java.io.Serializable;
