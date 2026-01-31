@@ -25,7 +25,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.TimeZone;
 
-public class JsonUtils {
+public class JSONUtils {
 
     private static final ObjectMapper OBJECT_MAPPER = JsonMapper.builder()
             .findAndAddModules()
@@ -128,7 +128,7 @@ public class JsonUtils {
                 throw new RuntimeException("JSON file not found at: " + absolutePath);
             }
 
-            return JsonUtils.parseMap(file);
+            return JSONUtils.parseMap(file);
         } catch (Exception e) {
             throw new RuntimeException("Failed to load JSON config", e);
         }
