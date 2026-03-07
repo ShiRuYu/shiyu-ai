@@ -29,4 +29,20 @@ public interface AuthService {
      * @return 用户信息
      */
     SysUserBO getUserByUsername(String username);
+
+    /**
+     * 验证 Token 是否有效
+     *
+     * @param token 访问令牌
+     * @return true-有效，false-无效
+     */
+    boolean validateToken(String token);
+
+    /**
+     * 刷新 Token
+     *
+     * @param oldToken 旧的访问令牌
+     * @return 新的访问令牌
+     */
+    String refreshToken(String oldToken);
 }

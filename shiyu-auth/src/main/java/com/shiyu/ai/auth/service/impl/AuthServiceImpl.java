@@ -6,6 +6,7 @@ import com.shiyu.ai.auth.domain.vo.LoginVO;
 import com.shiyu.ai.auth.domain.vo.SysUserVO;
 import com.shiyu.ai.auth.repository.SysUserRepository;
 import com.shiyu.ai.auth.service.AuthService;
+import com.shiyu.ai.auth.utils.JwtTokenUtil;
 import com.shiyu.ai.common.core.utils.MapstructUtils;
 import jakarta.annotation.Resource;
 import lombok.RequiredArgsConstructor;
@@ -58,8 +59,9 @@ public class AuthServiceImpl implements AuthService {
             // 5. 设置认证信息到安全上下文
             SecurityContextHolder.getContext().setAuthentication(authentication);
 
-            // 6. 生成访问令牌
-            String accessToken = generateToken(sysUserBO);
+            // 6. 生成访问令牌和刷新令牌
+            String accessToken = JwtTokenUtil.generateAccessToken(sysUserBO);
+            String refreshToken = JwtTokenUtil.generateRefreshToken(sysUserBO);
 
             // 7. 构建用户视图对象
             SysUserVO sysUserVO = convertToVO(sysUserBO);
@@ -67,6 +69,7 @@ public class AuthServiceImpl implements AuthService {
             // 8. 返回登录响应
             return LoginResponseVO.builder()
                     .accessToken(accessToken)
+                    .refreshToken(refreshToken)
                     .tokenType("Bearer")
                     .expiresIn(7200L) // 2 小时过期
                     .userInfo(sysUserVO)
@@ -96,6 +99,24 @@ public class AuthServiceImpl implements AuthService {
         return sysUserRepository.getByUsername(username);
     }
 
+    @Override
+    public boolean validateToken(String token) {
+        return JwtTokenUtil.validateToken(token);
+    }
+
+    @Override
+    public String refreshToken(String oldToken) {
+        if (!JwtTokenUtil.canTokenBeRefreshed(oldToken)) {
+            log.warn("Token 无法刷新：{}", oldToken);
+            return null;
+        }
+        
+        String newToken = JwtTokenUtil.refreshToken(oldToken);
+        log.info("Token 已刷新：{} -> {}", oldToken.substring(0, Math.min(20, oldToken.length())), 
+                newToken != null ? newToken.substring(0, Math.min(20, newToken.length())) : "null");
+        return newToken;
+    }
+
     /**
      * 将 BO 对象转换为 VO 对象
      *
@@ -104,19 +125,6 @@ public class AuthServiceImpl implements AuthService {
      */
     private SysUserVO convertToVO(SysUserBO sysUserBO) {
         return MapstructUtils.convert(sysUserBO, SysUserVO.class);
-    }
-
-    /**
-     * 生成访问令牌
-     * 注意：这是一个简单的实现示例，生产环境应该使用 JWT 或其他安全的令牌生成机制
-     *
-     * @param sysUserBO 用户业务对象
-     * @return 访问令牌
-     */
-    private String generateToken(SysUserBO sysUserBO) {
-        // 简单实现：使用时间戳 + UUID 生成令牌
-        // 生产环境建议使用 JJWT 或其他 JWT 库生成带有签名和过期时间的令牌
-        return UUID.randomUUID().toString().replace("-", "") + "_" + System.currentTimeMillis();
     }
 
     /**

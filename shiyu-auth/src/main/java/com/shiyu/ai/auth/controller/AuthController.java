@@ -47,4 +47,33 @@ public class AuthController {
         authService.logout();
         return Result.success();
     }
+
+    /**
+     * 刷新 Token
+     */
+    @Operation(summary = "刷新令牌", description = "使用刷新令牌获取新的访问令牌")
+    @PostMapping("/refresh")
+    public Result<LoginResponseVO> refreshToken(@RequestBody String refreshToken) {
+        if (refreshToken == null || refreshToken.trim().isEmpty()) {
+            return Result.fail("刷新令牌不能为空");
+        }
+        
+        // 移除 Bearer 前缀
+        String token = refreshToken.trim();
+        if (token.startsWith("Bearer ")) {
+            token = token.substring(7);
+        }
+        
+        String newAccessToken = authService.refreshToken(token);
+        if (newAccessToken != null) {
+            LoginResponseVO responseVO = LoginResponseVO.builder()
+                    .accessToken(newAccessToken)
+                    .tokenType("Bearer")
+                    .expiresIn(7200L)
+                    .build();
+            return Result.success(responseVO);
+        } else {
+            return Result.fail("刷新令牌失败，请重新登录");
+        }
+    }
 }
