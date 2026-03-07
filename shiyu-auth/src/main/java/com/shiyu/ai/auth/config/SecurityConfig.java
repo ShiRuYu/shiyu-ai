@@ -1,6 +1,8 @@
 package com.shiyu.ai.auth.config;
 
 import com.shiyu.ai.auth.filter.JwtAuthenticationFilter;
+import com.shiyu.ai.auth.handler.CustomAccessDeniedHandler;
+import com.shiyu.ai.auth.handler.CustomAuthenticationEntryPoint;
 import com.shiyu.ai.auth.service.security.CustomUserDetailsService;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -37,7 +39,9 @@ public class SecurityConfig {
     }
 
     @Bean
-    public SecurityFilterChain securityFilterChain(HttpSecurity http, JwtAuthenticationFilter jwtAuthenticationFilter) throws Exception {
+    public SecurityFilterChain securityFilterChain(HttpSecurity http, JwtAuthenticationFilter jwtAuthenticationFilter, 
+                                                    CustomAuthenticationEntryPoint customAuthenticationEntryPoint,
+                                                    CustomAccessDeniedHandler customAccessDeniedHandler) throws Exception {
         http
                 // 禁用 CSRF（适用于无状态的 REST API）
                 .csrf(AbstractHttpConfigurer::disable)
@@ -60,6 +64,11 @@ public class SecurityConfig {
                 .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
                 // 禁用 HTTP Basic 认证（使用自定义登录接口）
                 .httpBasic(Customizer.withDefaults())
+                // 配置异常处理
+                .exceptionHandling(exception -> exception
+                        .authenticationEntryPoint(customAuthenticationEntryPoint)
+                        .accessDeniedHandler(customAccessDeniedHandler)
+                )
                 // 添加 JWT 过滤器
                 .addFilterBefore(jwtAuthenticationFilter, UsernamePasswordAuthenticationFilter.class)
                 // 禁用表单登录（使用 REST 风格的登录接口）
