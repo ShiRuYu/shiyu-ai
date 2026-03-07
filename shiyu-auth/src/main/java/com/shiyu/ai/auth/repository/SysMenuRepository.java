@@ -1,8 +1,15 @@
 package com.shiyu.ai.auth.repository;
 
+import com.mybatisflex.core.query.QueryWrapper;
+import com.shiyu.ai.common.core.utils.MapstructUtils;
+import com.shiyu.ai.auth.domain.SysMenuDO;
+import com.shiyu.ai.auth.domain.bo.SysMenuBO;
 import com.shiyu.ai.auth.mapper.SysMenuMapper;
 import jakarta.annotation.Resource;
+import org.apache.commons.lang3.tuple.Pair;
 import org.springframework.stereotype.Component;
+
+import java.util.List;
 
 /**
  * 菜单数据仓储层
@@ -15,4 +22,35 @@ public class SysMenuRepository {
     @Resource
     private SysMenuMapper sysMenuMapper;
 
+    public Pair<Long, List<SysMenuBO>> getAll(Number pageNumber, Number pageSize) {
+        QueryWrapper queryWrapper = new QueryWrapper();
+        List<SysMenuDO> sysMenus = sysMenuMapper.selectListByQuery(queryWrapper);
+        long count = sysMenuMapper.selectCountByQuery(queryWrapper);
+        return Pair.of(count, MapstructUtils.convert(sysMenus, SysMenuBO.class));
+    }
+
+    public SysMenuBO getById(Long menuId) {
+        QueryWrapper queryWrapper = new QueryWrapper();
+        queryWrapper.eq(SysMenuDO::getMenuId, menuId);
+        SysMenuDO sysMenuDO = sysMenuMapper.selectOneByQuery(queryWrapper);
+        return MapstructUtils.convert(sysMenuDO, SysMenuBO.class);
+    }
+
+    public SysMenuBO create(SysMenuBO sysMenuBO) {
+        SysMenuDO sysMenuDO = MapstructUtils.convert(sysMenuBO, SysMenuDO.class);
+        sysMenuMapper.insert(sysMenuDO);
+        return MapstructUtils.convert(sysMenuDO, SysMenuBO.class);
+    }
+
+    public SysMenuBO update(SysMenuBO sysMenuBO) {
+        SysMenuDO sysMenuDO = MapstructUtils.convert(sysMenuBO, SysMenuDO.class);
+        sysMenuMapper.update(sysMenuDO);
+        return MapstructUtils.convert(sysMenuDO, SysMenuBO.class);
+    }
+
+    public void deleteById(Long menuId) {
+        QueryWrapper queryWrapper = new QueryWrapper();
+        queryWrapper.eq(SysMenuDO::getMenuId, menuId);
+        sysMenuMapper.deleteByQuery(queryWrapper);
+    }
 }

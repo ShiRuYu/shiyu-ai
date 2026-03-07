@@ -28,4 +28,29 @@ public class SysUserRepository {
         long count = sysUserMapper.selectCountByQuery(queryWrapper);
         return Pair.of(count, MapstructUtils.convert(sysUsers, SysUserBO.class));
     }
+
+    public SysUserBO getById(Long userId) {
+        QueryWrapper queryWrapper = new QueryWrapper();
+        queryWrapper.eq(SysUserDO::getUserId, userId);
+        SysUserDO sysUserDO = sysUserMapper.selectOneByQuery(queryWrapper);
+        return MapstructUtils.convert(sysUserDO, SysUserBO.class);
+    }
+
+    public SysUserBO create(SysUserBO sysUserBO) {
+        SysUserDO sysUserDO = MapstructUtils.convert(sysUserBO, SysUserDO.class);
+        sysUserMapper.insert(sysUserDO);
+        return MapstructUtils.convert(sysUserDO, SysUserBO.class);
+    }
+
+    public SysUserBO update(SysUserBO sysUserBO) {
+        SysUserDO sysUserDO = MapstructUtils.convert(sysUserBO, SysUserDO.class);
+        sysUserMapper.update(sysUserDO);
+        return MapstructUtils.convert(sysUserDO, SysUserBO.class);
+    }
+
+    public void deleteById(Long userId) {
+        QueryWrapper queryWrapper = new QueryWrapper();
+        queryWrapper.eq(SysUserDO::getUserId, userId);
+        sysUserMapper.deleteByQuery(queryWrapper);
+    }
 }
