@@ -23,7 +23,7 @@ import java.util.List;
 
 @Data
 @EqualsAndHashCode(callSuper = true)
-@AutoMapper(target = SysDeptDO.class, reverseConvertGenerate = false)
+@AutoMapper(target = SysDeptDO.class, reverseConvertGenerate = true)
 public class SysDeptBO extends BaseEntity {
 
     /**

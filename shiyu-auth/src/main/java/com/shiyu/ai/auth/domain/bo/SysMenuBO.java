@@ -26,7 +26,7 @@ import java.util.List;
 
 @Data
 @EqualsAndHashCode(callSuper = true)
-@AutoMapper(target = SysMenuDO.class, reverseConvertGenerate = false)
+@AutoMapper(target = SysMenuDO.class, reverseConvertGenerate = true)
 public class SysMenuBO extends BaseEntity {
 
     /**

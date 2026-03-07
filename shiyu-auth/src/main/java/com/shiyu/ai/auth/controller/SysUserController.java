@@ -2,6 +2,7 @@ package com.shiyu.ai.auth.controller;
 
 import com.shiyu.ai.common.core.api.Result;
 import com.shiyu.ai.auth.domain.bo.SysUserBO;
+import com.shiyu.ai.auth.domain.vo.SysUserVO;
 import com.shiyu.ai.auth.service.SysUserService;
 import lombok.RequiredArgsConstructor;
 import org.apache.commons.lang3.tuple.Pair;
@@ -33,7 +34,7 @@ public class SysUserController {
      * 获取用户列表
      */
     @GetMapping
-    public Result<Pair<Long, List<SysUserBO>>> getUsers(@RequestParam(defaultValue = "1") Number pageNumber,
+    public Result<Pair<Long, List<SysUserVO>>> getUsers(@RequestParam(defaultValue = "1") Number pageNumber,
                                                          @RequestParam(defaultValue = "10") Number pageSize) {
         return Result.success(sysUserService.getAll(pageNumber, pageSize));
     }
@@ -42,7 +43,7 @@ public class SysUserController {
      * 获取用户详情
      */
     @GetMapping("/{userId}")
-    public Result<SysUserBO> getUser(@PathVariable Long userId) {
+    public Result<SysUserVO> getUser(@PathVariable Long userId) {
         return Result.success(sysUserService.getById(userId));
     }
 
@@ -50,7 +51,7 @@ public class SysUserController {
      * 创建用户
      */
     @PostMapping
-    public Result<SysUserBO> createUser(@RequestBody SysUserBO sysUserBO) {
+    public Result<SysUserVO> createUser(@RequestBody SysUserBO sysUserBO) {
         return Result.success(sysUserService.create(sysUserBO));
     }
 
@@ -58,7 +59,7 @@ public class SysUserController {
      * 更新用户
      */
     @PutMapping("/{userId}")
-    public Result<SysUserBO> updateUser(@PathVariable Long userId, @RequestBody SysUserBO sysUserBO) {
+    public Result<SysUserVO> updateUser(@PathVariable Long userId, @RequestBody SysUserBO sysUserBO) {
         sysUserBO.setUserId(userId);
         return Result.success(sysUserService.update(sysUserBO));
     }

@@ -20,7 +20,7 @@ public interface SysUserService {
      * @param pageSize   每页数量
      * @return 用户列表
      */
-    Pair<Long, List<SysUserBO>> getAll(Number pageNumber, Number pageSize);
+    Pair<Long, List<SysUserVO>> getAll(Number pageNumber, Number pageSize);
 
     /**
      * 根据 ID 查询用户
@@ -28,7 +28,7 @@ public interface SysUserService {
      * @param userId 用户 ID
      * @return 用户信息
      */
-    SysUserBO getById(Long userId);
+    SysUserVO getById(Long userId);
 
     /**
      * 创建用户
@@ -36,7 +36,7 @@ public interface SysUserService {
      * @param sysUserBO 用户信息
      * @return 创建后的用户信息
      */
-    SysUserBO create(SysUserBO sysUserBO);
+    SysUserVO create(SysUserBO sysUserBO);
 
     /**
      * 更新用户
@@ -44,7 +44,7 @@ public interface SysUserService {
      * @param sysUserBO 用户信息
      * @return 更新后的用户信息
      */
-    SysUserBO update(SysUserBO sysUserBO);
+    SysUserVO update(SysUserBO sysUserBO);
 
     /**
      * 删除用户

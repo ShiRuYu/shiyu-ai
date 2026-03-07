@@ -17,7 +17,7 @@ import lombok.EqualsAndHashCode;
 
 @Data
 @EqualsAndHashCode(callSuper = true)
-@AutoMapper(target = SysPostDO.class, reverseConvertGenerate = false)
+@AutoMapper(target = SysPostDO.class, reverseConvertGenerate = true)
 public class SysPostBO extends BaseEntity {
 
     /**

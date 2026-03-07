@@ -2,7 +2,7 @@ package com.shiyu.ai.auth.domain.vo;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
-import com.shiyu.ai.auth.domain.SysUserDO;
+import com.shiyu.ai.auth.domain.bo.SysUserBO;
 import io.github.linpeilie.annotations.AutoMapper;
 import lombok.Data;
 
@@ -16,7 +16,7 @@ import java.util.List;
  * 用户信息视图对象 sys_user
  */
 @Data
-@AutoMapper(target = SysUserDO.class)
+@AutoMapper(target = SysUserBO.class)
 public class SysUserVO implements Serializable {
 
     @Serial
@@ -65,7 +65,7 @@ public class SysUserVO implements Serializable {
     /**
      * 手机号码
      */
-    private String phonenumber;
+    private String phone;
 
     /**
      * 用户性别（0男 1女 2未知）

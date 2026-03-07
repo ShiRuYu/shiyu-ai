@@ -19,7 +19,7 @@ import lombok.NoArgsConstructor;
 @Data
 @NoArgsConstructor
 @EqualsAndHashCode(callSuper = true)
-@AutoMapper(target = SysRoleDO.class, reverseConvertGenerate = false)
+@AutoMapper(target = SysRoleDO.class, reverseConvertGenerate = true)
 public class SysRoleBO extends BaseEntity {
 
     /**

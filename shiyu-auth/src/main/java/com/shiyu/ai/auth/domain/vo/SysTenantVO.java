@@ -1,8 +1,8 @@
 package com.shiyu.ai.auth.domain.vo;
 
+import com.shiyu.ai.auth.domain.bo.SysTenantBO;
 import com.shiyu.ai.common.excel.annotation.ExcelDictFormat;
 import com.shiyu.ai.common.excel.convert.ExcelDictConvert;
-import com.shiyu.ai.auth.domain.SysTenantDO;
 import io.github.linpeilie.annotations.AutoMapper;
 import lombok.Data;
 import org.apache.fesod.sheet.annotation.ExcelIgnoreUnannotated;
@@ -18,7 +18,7 @@ import java.util.Date;
  */
 @Data
 @ExcelIgnoreUnannotated
-@AutoMapper(target = SysTenantDO.class)
+@AutoMapper(target = SysTenantBO.class)
 public class SysTenantVO implements Serializable {
 
     @Serial

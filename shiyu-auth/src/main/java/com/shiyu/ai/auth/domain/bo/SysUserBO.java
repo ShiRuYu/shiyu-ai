@@ -18,7 +18,7 @@ import lombok.NoArgsConstructor;
 @Data
 @NoArgsConstructor
 @EqualsAndHashCode(callSuper = true)
-@AutoMapper(target = SysUserDO.class, reverseConvertGenerate = false)
+@AutoMapper(target = SysUserDO.class, reverseConvertGenerate = true)
 public class SysUserBO extends BaseEntity {
 
     /**
@@ -60,7 +60,7 @@ public class SysUserBO extends BaseEntity {
     /**
      * 手机号码
      */
-    private String phonenumber;
+    private String phone;
 
     /**
      * 用户性别（0男 1女 2未知）

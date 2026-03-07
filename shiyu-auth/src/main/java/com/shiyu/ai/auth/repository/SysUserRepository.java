@@ -53,4 +53,17 @@ public class SysUserRepository {
         queryWrapper.eq(SysUserDO::getUserId, userId);
         sysUserMapper.deleteByQuery(queryWrapper);
     }
+
+    /**
+     * 根据用户名查询用户
+     *
+     * @param username 用户名
+     * @return 用户信息
+     */
+    public SysUserBO getByUsername(String username) {
+        QueryWrapper queryWrapper = new QueryWrapper();
+        queryWrapper.eq(SysUserDO::getUserName, username);
+        SysUserDO sysUserDO = sysUserMapper.selectOneByQuery(queryWrapper);
+        return MapstructUtils.convert(sysUserDO, SysUserBO.class);
+    }
 }

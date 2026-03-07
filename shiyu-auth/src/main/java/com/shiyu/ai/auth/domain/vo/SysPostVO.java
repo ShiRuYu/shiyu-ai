@@ -1,8 +1,8 @@
 package com.shiyu.ai.auth.domain.vo;
 
+import com.shiyu.ai.auth.domain.bo.SysPostBO;
 import com.shiyu.ai.common.excel.annotation.ExcelDictFormat;
 import com.shiyu.ai.common.excel.convert.ExcelDictConvert;
-import com.shiyu.ai.auth.domain.SysPostDO;
 import io.github.linpeilie.annotations.AutoMapper;
 import lombok.Data;
 import org.apache.fesod.sheet.annotation.ExcelIgnoreUnannotated;
@@ -12,13 +12,12 @@ import java.io.Serial;
 import java.io.Serializable;
 import java.util.Date;
 
-
 /**
  * 岗位信息视图对象 sys_post
  */
 @Data
 @ExcelIgnoreUnannotated
-@AutoMapper(target = SysPostDO.class)
+@AutoMapper(target = SysPostBO.class)
 public class SysPostVO implements Serializable {
 
     @Serial

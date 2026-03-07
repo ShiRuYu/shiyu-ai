@@ -1,6 +1,6 @@
 package com.shiyu.ai.auth.domain.vo;
 
-import com.shiyu.ai.auth.domain.SysMenuDO;
+import com.shiyu.ai.auth.domain.bo.SysMenuBO;
 import io.github.linpeilie.annotations.AutoMapper;
 import lombok.Data;
 
@@ -10,12 +10,11 @@ import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 
-
 /**
  * 菜单权限视图对象 sys_menu
  */
 @Data
-@AutoMapper(target = SysMenuDO.class)
+@AutoMapper(target = SysMenuBO.class)
 public class SysMenuVO implements Serializable {
 
     @Serial
