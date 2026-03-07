@@ -37,27 +37,34 @@ public class AuthServiceImpl implements AuthService {
     @Override
     public LoginResponseVO login(LoginVO loginVO) {
         try {
-            // 1. 验证用户名和密码
+            // 1. 参数校验
+            validateLoginParams(loginVO);
+
+            // 2. 查询用户信息
+            SysUserBO sysUserBO = sysUserRepository.getByUsername(loginVO.getUsername());
+            if (sysUserBO == null) {
+                log.warn("登录失败：用户不存在 - {}", loginVO.getUsername());
+                throw new BadCredentialsException("用户名或密码错误");
+            }
+
+            // 3. 用户状态校验
+            validateUserStatus(sysUserBO);
+
+            // 4. 使用 Spring Security 进行认证
             Authentication authentication = authenticationManager.authenticate(
                     new UsernamePasswordAuthenticationToken(loginVO.getUsername(), loginVO.getPassword())
             );
 
-            // 2. 设置认证信息到安全上下文
+            // 5. 设置认证信息到安全上下文
             SecurityContextHolder.getContext().setAuthentication(authentication);
 
-            // 4. 转换为业务对象
-            SysUserBO sysUserBO = sysUserRepository.getByUsername(loginVO.getUsername());
-            if (sysUserBO == null) {
-                throw new BadCredentialsException("用户不存在");
-            }
+            // 6. 生成访问令牌
+            String accessToken = generateToken(sysUserBO);
 
-            // 5. 生成访问令牌 (简单 UUID 示例，生产环境建议使用 JWT)
-            String accessToken = generateToken(sysUserBO.getUserName());
-
-            // 6. 构建用户视图对象
+            // 7. 构建用户视图对象
             SysUserVO sysUserVO = convertToVO(sysUserBO);
 
-            // 7. 返回登录响应
+            // 8. 返回登录响应
             return LoginResponseVO.builder()
                     .accessToken(accessToken)
                     .tokenType("Bearer")
@@ -68,6 +75,9 @@ public class AuthServiceImpl implements AuthService {
         } catch (BadCredentialsException e) {
             log.warn("登录失败：用户名或密码错误 - {}", loginVO.getUsername());
             throw new BadCredentialsException("用户名或密码错误");
+        } catch (IllegalArgumentException e) {
+            log.warn("登录失败：{} - {}", e.getMessage(), loginVO.getUsername());
+            throw e;
         } catch (Exception e) {
             log.error("登录失败：{}", loginVO.getUsername(), e);
             throw new RuntimeException("登录失败：" + e.getMessage(), e);
@@ -100,12 +110,49 @@ public class AuthServiceImpl implements AuthService {
      * 生成访问令牌
      * 注意：这是一个简单的实现示例，生产环境应该使用 JWT 或其他安全的令牌生成机制
      *
-     * @param username 用户名
+     * @param sysUserBO 用户业务对象
      * @return 访问令牌
      */
-    private String generateToken(String username) {
+    private String generateToken(SysUserBO sysUserBO) {
         // 简单实现：使用时间戳 + UUID 生成令牌
         // 生产环境建议使用 JJWT 或其他 JWT 库生成带有签名和过期时间的令牌
         return UUID.randomUUID().toString().replace("-", "") + "_" + System.currentTimeMillis();
+    }
+
+    /**
+     * 校验登录参数
+     *
+     * @param loginVO 登录信息
+     */
+    private void validateLoginParams(LoginVO loginVO) {
+        if (loginVO.getUsername() == null || loginVO.getUsername().trim().isEmpty()) {
+            throw new IllegalArgumentException("用户名不能为空");
+        }
+        if (loginVO.getPassword() == null || loginVO.getPassword().trim().isEmpty()) {
+            throw new IllegalArgumentException("密码不能为空");
+        }
+        // TODO: 如果启用了验证码，可以在这里添加验证码校验逻辑
+        // if (captchaEnabled && !validateCaptcha(loginVO)) {
+        //     throw new IllegalArgumentException("验证码错误");
+        // }
+    }
+
+    /**
+     * 校验用户状态
+     *
+     * @param sysUserBO 用户业务对象
+     */
+    private void validateUserStatus(SysUserBO sysUserBO) {
+        // 检查用户是否被删除
+        if ("1".equals(sysUserBO.getDelFlag())) {
+            log.warn("用户已被删除：{}", sysUserBO.getUserName());
+            throw new BadCredentialsException("用户不存在或已被删除");
+        }
+
+        // 检查用户状态（1正常 0停用）
+        if ("0".equals(sysUserBO.getStatus())) {
+            log.warn("用户已被停用：{}", sysUserBO.getUserName());
+            throw new IllegalArgumentException("用户账号已被停用，请联系管理员");
+        }
     }
 }

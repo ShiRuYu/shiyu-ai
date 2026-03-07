@@ -12,6 +12,6 @@ mybatis-flex:
       tenant-column: tenantId
       logic-delete-column: delFlag
       # 逻辑已删除值(可按需求随意修改)
-      deleted-value-of-logic-delete: 0
+      deleted-value-of-logic-delete: 1
       # 逻辑未删除值
-      normal-value-of-logic-delete: 1
+      normal-value-of-logic-delete: 0

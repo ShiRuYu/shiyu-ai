@@ -22,12 +22,12 @@ import lombok.NoArgsConstructor;
 public class SysUserBO extends BaseEntity {
 
     /**
-     * 用户ID
+     * 用户 ID
      */
     private Long userId;
 
     /**
-     * 部门ID
+     * 部门 ID
      */
     private Long deptId;
 
@@ -46,7 +46,7 @@ public class SysUserBO extends BaseEntity {
     private String nickName;
 
     /**
-     * 用户类型（sys_user系统用户）
+     * 用户类型（sys_user 系统用户）
      */
     private String userType;
 
@@ -63,7 +63,7 @@ public class SysUserBO extends BaseEntity {
     private String phone;
 
     /**
-     * 用户性别（0男 1女 2未知）
+     * 用户性别（0 男 1 女 2 未知）
      */
     private String sex;
 
@@ -79,9 +79,14 @@ public class SysUserBO extends BaseEntity {
     private String userPlan;
 
     /**
-     * 帐号状态（0正常 1停用）
+     * 帐号状态（1正常 0停用）
      */
     private String status;
+
+    /**
+     * 删除标志（0 代表存在 1 代表删除）
+     */
+    private String delFlag;
 
     /**
      * 微信头像
@@ -108,12 +113,12 @@ public class SysUserBO extends BaseEntity {
     private Long[] postIds;
 
     /**
-     * 数据权限 当前角色ID
+     * 数据权限 当前角色 ID
      */
     private Long roleId;
 
     /**
-     * 普通用户的标识,对当前开发者帐号唯一。一个openid对应一个公众号或小程序
+     * 普通用户的标识，对当前开发者帐号唯一。一个 openid 对应一个公众号或小程序
      */
     private String openId;
 
@@ -141,7 +146,7 @@ public class SysUserBO extends BaseEntity {
     private String kRoleGroupType;
 
     /**
-     * 知识库角色组id（role/roleGroup）
+     * 知识库角色组 id（role/roleGroup）
      */
     private String kRoleGroupIds;
 

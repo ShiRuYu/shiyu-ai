@@ -54,12 +54,12 @@ public class SysRoleDO extends TenantEntity {
     private Boolean deptCheckStrictly;
 
     /**
-     * 角色状态（0正常 1停用）
+     * 角色状态（1正常 0停用）
      */
     private String status;
 
     /**
-     * 删除标志（1代表存在 9代表删除）
+     * 删除标志（0 代表存在 1 代表删除）
      */
     private String delFlag;
 

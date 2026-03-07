@@ -92,7 +92,7 @@ public class SysTenantDO extends BaseEntity {
     private String status;
 
     /**
-     * 删除标志（1代表存在 0代表删除）
+     * 删除标志（0 代表存在 1 代表删除）
      */
     private String delFlag;
 

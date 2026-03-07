@@ -36,7 +36,7 @@ public class InitTestData implements CommandLineRunner {
             adminUser.setPassword(passwordEncoder.encode("123456"));
             adminUser.setUserType("sys_user");
             adminUser.setStatus("1"); // 1 正常
-            adminUser.setDelFlag("1"); // 1 存在
+            adminUser.setDelFlag("0"); // 1 删除
             adminUser.setSex("0");
             adminUser.setEmail("admin@shiyu.ai");
             adminUser.setPhone("13800138000");
