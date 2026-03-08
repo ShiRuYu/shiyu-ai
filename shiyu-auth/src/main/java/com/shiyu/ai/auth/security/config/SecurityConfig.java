@@ -1,9 +1,9 @@
-package com.shiyu.ai.auth.config;
+package com.shiyu.ai.auth.security.config;
 
-import com.shiyu.ai.auth.filter.JwtAuthenticationFilter;
-import com.shiyu.ai.auth.handler.CustomAccessDeniedHandler;
-import com.shiyu.ai.auth.handler.CustomAuthenticationEntryPoint;
-import com.shiyu.ai.auth.service.security.CustomUserDetailsService;
+import com.shiyu.ai.auth.security.filter.JwtAuthenticationFilter;
+import com.shiyu.ai.auth.security.handler.CustomAccessDeniedHandler;
+import com.shiyu.ai.auth.security.handler.CustomAuthenticationEntryPoint;
+import com.shiyu.ai.auth.security.service.CustomUserDetailsService;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.security.authentication.AuthenticationManager;

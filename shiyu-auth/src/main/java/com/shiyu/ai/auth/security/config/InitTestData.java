@@ -1,4 +1,4 @@
-package com.shiyu.ai.auth.config;
+package com.shiyu.ai.auth.security.config;
 
 import com.shiyu.ai.auth.domain.SysUserDO;
 import com.shiyu.ai.auth.mapper.SysUserMapper;
