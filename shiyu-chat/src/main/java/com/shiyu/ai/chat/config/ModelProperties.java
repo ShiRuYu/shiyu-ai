@@ -1,4 +1,4 @@
-package com.shiyu.ai.chat.lm.config;
+package com.shiyu.ai.chat.config;
 
 import com.shiyu.ai.common.core.factory.YmlPropertySourceFactory;
 import lombok.Data;
