@@ -1,0 +1,74 @@
+### 对话功能测试集合
+### 使用 IDEA 内置的 HTTP Client 运行这些请求
+
+@baseUrl = http://localhost:9001/chat
+
+### 测试 1: 简单问候（应该触发 Direct 模式）
+POST {{baseUrl}}
+Content-Type: application/json
+
+{
+  "text": "你好，很高兴认识你"
+}
+
+### 测试 2: 逻辑推理问题（应该触发 CoT 模式）
+POST {{baseUrl}}
+Content-Type: application/json
+
+{
+  "text": "请证明勾股定理"
+}
+
+### 测试 3: 数学计算题（应该触发 CoT 模式）
+POST {{baseUrl}}
+Content-Type: application/json
+
+{
+  "text": "一个水池有进水管和出水管，单开进水管 6 小时可以注满，单开出水管 8 小时可以放完。如果两管齐开，几小时可以注满？"
+}
+
+### 测试 4: 多方案决策（应该触发 ToT 模式）
+POST {{baseUrl}}
+Content-Type: application/json
+
+{
+  "text": "我想学习编程，应该选择 Python 还是 Java？请从多个角度分析"
+}
+
+### 测试 5: 方案对比（应该触发 ToT 模式）
+POST {{baseUrl}}
+Content-Type: application/json
+
+{
+  "text": "创业和上班各有什么优缺点？我该如何选择？"
+}
+
+### 测试 6: GET 方式（兼容旧版本）
+GET {{baseUrl}}?text=你是谁
+
+### 测试 7: 流式输出 - 直接模式
+GET {{baseUrl}}/stream?text=讲一个简短的故事&modelEnum=SILICON_FLOW
+
+### 测试 8: 复杂推理问题
+POST {{baseUrl}}
+Content-Type: application/json
+
+{
+  "text": "有三个人住旅馆，每人付了 10 元，共 30 元。后来老板说今天优惠只要 25 元，让服务员退 5 元给她们。服务员偷偷藏了 2 元，只退了 3 元给她们，每人 1 元。这样算来，每人实际付了 9 元，三人共 27 元，加上服务员藏的 2 元，共 29 元。请问还有 1 元去哪了？"
+}
+
+### 测试 9: 创意写作（Direct 模式）
+POST {{baseUrl}}
+Content-Type: application/json
+
+{
+  "text": "请用 100 字描写春天的景色"
+}
+
+### 测试 10: 科学解释（CoT 模式）
+POST {{baseUrl}}
+Content-Type: application/json
+
+{
+  "text": "为什么天空是蓝色的？请详细解释"
+}

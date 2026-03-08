@@ -17,3 +17,29 @@ spring:
       api-key:
       model: x-ai/grok-4.1-fast
       embed_model: qwen/qwen3-embedding-8b
+
+# 意图识别配置
+shiyu:
+  intent:
+    categories:
+      default:
+        - id: "direct_greeting"
+          name: "问候寒暄"
+          type: "DIRECT"
+          content: "用于处理日常问候、寒暄等简单对话"
+          keywords: ["你好", "您好", "hello", "hi", "早上好", "下午好", "晚上好"]
+          chain-to-call: "chatDirect"
+        
+        - id: "cot_reasoning"
+          name: "逻辑推理"
+          type: "COT"
+          content: "需要逐步推理的问题，如数学题、逻辑题等"
+          keywords: ["为什么", "如何证明", "推理", "计算", "数学", "逻辑"]
+          chain-to-call: "chatCoT"
+        
+        - id: "tot_decision"
+          name: "多方案决策"
+          type: "TOT"
+          content: "需要从多个角度分析并提供多种解决方案的问题"
+          keywords: ["方案", "选择", "决策", "对比", "优缺点", "哪个更好"]
+          chain-to-call: "chatToT"
