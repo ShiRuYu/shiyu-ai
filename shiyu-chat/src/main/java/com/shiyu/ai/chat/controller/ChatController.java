@@ -3,6 +3,7 @@ package com.shiyu.ai.chat.controller;
 import com.shiyu.ai.chat.domain.GlobalContext;
 import com.shiyu.ai.chat.lm.ChatEngine;
 import com.shiyu.ai.chat.lm.ModelEnum;
+import com.shiyu.ai.common.core.utils.JSONUtils;
 import com.yomahub.liteflow.core.FlowExecutor;
 import jakarta.annotation.Resource;
 import org.springframework.web.bind.annotation.*;
@@ -44,8 +45,8 @@ public class ChatController {
             flowExecutor.execute2Resp("chatFlow", null, context);
             
             String result = context.get(GlobalContext.ChatBizKeyEnum.FINAL_ANSWER.getCode());
-            String intent = context.get(GlobalContext.ChatBizKeyEnum.INTENT.getCode()) != null ? 
-                    context.get(GlobalContext.ChatBizKeyEnum.INTENT.getCode()).toString() : null;
+            String intent = context.get(GlobalContext.ChatBizKeyEnum.INTENT.getCode()) != null ?
+                    JSONUtils.toJsonString(context.get(GlobalContext.ChatBizKeyEnum.INTENT.getCode())) : null;
             String chain = context.get(GlobalContext.ChatBizKeyEnum.CHAIN.getCode());
             
             Map<String, Object> response = new HashMap<>();

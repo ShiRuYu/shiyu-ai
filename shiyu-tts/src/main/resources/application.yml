@@ -1,26 +1,26 @@
 shiyu:
   # 名称
-  name: "shiyu-auth"
+  name: "shiyu-tts"
   # 版本
   version: ${revision}
 
 # 开发环境配置
 server:
   # 服务器的HTTP端口，默认为8080
-  port: 9002
+  port: 9004
 
 springdoc:
   api-docs:
     enabled: false               # 是否启用 API 文档
     path: /v3/api-docs         # OpenAPI JSON 文档访问路径，默认 /v3/api-docs
   #逗号分割
-  packages-to-scan: com.shiyu.ai.auth.controller
+  packages-to-scan: com.shiyu.ai.tts.controller
   group-configs:
     - group: 'default'
       paths-to-match:
         - '/**'
       packages-to-scan:
-        - com.shiyu.ai.auth.controller
+        - com.shiyu.ai.tts.controller
   swagger-ui:
     path: /swagger-ui/index.html      # Swagger UI 访问路径，默认 /swagger-ui/index.html
     display-request-duration: true  # 显示请求耗时
