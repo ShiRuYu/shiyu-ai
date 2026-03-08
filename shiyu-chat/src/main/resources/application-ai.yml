@@ -1,6 +1,6 @@
 spring:
   ai:
-    # 没有作用，是接入多个兼容openai api的平台
+    # 没有作用，是接入多个兼容 openai api 的平台
     openai:
       api-key: xxxxxxxxxxxxxx
       base-url: https://api.siliconflow.cn
@@ -43,3 +43,42 @@ shiyu:
           content: "需要从多个角度分析并提供多种解决方案的问题"
           keywords: ["方案", "选择", "决策", "对比", "优缺点", "哪个更好"]
           chain-to-call: "chatToT"
+
+# 大模型配置
+shiyu:
+  ai:
+    models:
+      # 默认模型
+      default-model: SILICON_FLOW
+      
+      # 各模型详细配置
+      configs:
+        silicon_flow:
+          enabled: true
+          model-name: THUDM/GLM-Z1-9B-0414
+          temperature: 0.7
+          max-tokens: 2048
+        
+        open_router:
+          enabled: true
+          model-name: x-ai/grok-4.1-fast
+          temperature: 0.8
+          max-tokens: 4096
+        
+        deepseek:
+          enabled: false
+          model-name: DeepSeek-V3
+          temperature: 0.7
+          max-tokens: 2048
+        
+        openai:
+          enabled: false
+          model-name: gpt-4
+          temperature: 0.7
+          max-tokens: 2048
+        
+        local:
+          enabled: false
+          model-name: local-model
+          temperature: 0.7
+          max-tokens: 2048

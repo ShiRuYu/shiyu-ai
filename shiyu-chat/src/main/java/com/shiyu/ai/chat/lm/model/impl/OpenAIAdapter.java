@@ -1,15 +1,19 @@
 package com.shiyu.ai.chat.lm.model.impl;
 
-import com.shiyu.ai.chat.lm.model.ModelAdapter;
 import com.shiyu.ai.chat.lm.ModelEnum;
+import com.shiyu.ai.chat.lm.model.AbstractModelAdapter;
 import com.shiyu.ai.chat.lm.request.ModelRequest;
-import com.shiyu.ai.chat.lm.result.ModelResult;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.ai.chat.client.ChatClient;
 import org.springframework.stereotype.Component;
 import reactor.core.publisher.Flux;
 
+/**
+ * OpenAI 模型适配器
+ */
+@Slf4j
 @Component("openAIModelAdapter")
-public class OpenAIAdapter implements ModelAdapter {
+public class OpenAIAdapter extends AbstractModelAdapter {
 
     @Override
     public ModelEnum getType() {
@@ -17,17 +21,20 @@ public class OpenAIAdapter implements ModelAdapter {
     }
 
     @Override
-    public ChatClient getChatClient() {
+    protected ChatClient doGetChatClient() {
+        // TODO: 配置实际的 ChatClient
         return null;
     }
 
     @Override
-    public ModelResult call(ModelRequest request) {
-        return new ModelResult("OpenAI response for: " + request.getPrompt());
+    protected String doCall(ChatClient client, ModelRequest request) {
+        // TODO: 实现实际的调用逻辑
+        return buildMockResponse(request.getPrompt());
     }
 
     @Override
-    public ModelResult stream(ModelRequest request) {
-        return new ModelResult(Flux.just("OpenAI response for: Flux"));
+    protected Flux<String> doStream(ChatClient client, ModelRequest request) {
+        // TODO: 实现实际的流式调用逻辑
+        return buildMockStream(request.getPrompt());
     }
 }

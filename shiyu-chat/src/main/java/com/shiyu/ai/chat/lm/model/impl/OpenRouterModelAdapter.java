@@ -1,16 +1,20 @@
 package com.shiyu.ai.chat.lm.model.impl;
 
-import com.shiyu.ai.chat.lm.model.ModelAdapter;
 import com.shiyu.ai.chat.lm.ModelEnum;
+import com.shiyu.ai.chat.lm.model.AbstractModelAdapter;
 import com.shiyu.ai.chat.lm.request.ModelRequest;
-import com.shiyu.ai.chat.lm.result.ModelResult;
 import jakarta.annotation.Resource;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.ai.chat.client.ChatClient;
 import org.springframework.stereotype.Component;
 import reactor.core.publisher.Flux;
 
+/**
+ * OpenRouter 模型适配器
+ */
+@Slf4j
 @Component("openRouterModelAdapter")
-public class OpenRouterModelAdapter implements ModelAdapter {
+public class OpenRouterModelAdapter extends AbstractModelAdapter {
 
     @Resource(name = "openRouterChatClient")
     private ChatClient chatClient;
@@ -21,21 +25,21 @@ public class OpenRouterModelAdapter implements ModelAdapter {
     }
 
     @Override
-    public ChatClient getChatClient() {
+    protected ChatClient doGetChatClient() {
         return this.chatClient;
     }
 
     @Override
-    public ModelResult call(ModelRequest request) {
-        String content = chatClient.prompt(request.getPrompt()).call().content();
-        return new ModelResult("OpenRouter response for: " + content);
+    protected String doCall(ChatClient client, ModelRequest request) {
+        return client.prompt(request.getPrompt())
+                .call()
+                .content();
     }
 
     @Override
-    public ModelResult stream(ModelRequest request) {
-        Flux<String> content = chatClient.prompt(request.getPrompt()).stream().content();
-        Flux<String> just = Flux.just("OpenRouter response for: Flux");
-        Flux<String> concat = Flux.concat(content, just);
-        return new ModelResult(concat);
+    protected Flux<String> doStream(ChatClient client, ModelRequest request) {
+        return client.prompt(request.getPrompt())
+                .stream()
+                .content();
     }
 }

@@ -1,15 +1,19 @@
 package com.shiyu.ai.chat.lm.model.impl;
 
-import com.shiyu.ai.chat.lm.model.ModelAdapter;
 import com.shiyu.ai.chat.lm.ModelEnum;
+import com.shiyu.ai.chat.lm.model.AbstractModelAdapter;
 import com.shiyu.ai.chat.lm.request.ModelRequest;
-import com.shiyu.ai.chat.lm.result.ModelResult;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.ai.chat.client.ChatClient;
 import org.springframework.stereotype.Component;
 import reactor.core.publisher.Flux;
 
+/**
+ * 本地大模型适配器
+ */
+@Slf4j
 @Component("localModelAdapter")
-public class LocalLLMAdapter implements ModelAdapter {
+public class LocalLLMAdapter extends AbstractModelAdapter {
 
     @Override
     public ModelEnum getType() {
@@ -17,17 +21,20 @@ public class LocalLLMAdapter implements ModelAdapter {
     }
 
     @Override
-    public ChatClient getChatClient() {
+    protected ChatClient doGetChatClient() {
+        // TODO: 配置本地运行的模型 ChatClient
         return null;
     }
 
     @Override
-    public ModelResult call(ModelRequest request) {
-        return new ModelResult("Local LLM response for: " + request.getPrompt());
+    protected String doCall(ChatClient client, ModelRequest request) {
+        // TODO: 实现本地模型的调用逻辑
+        return buildMockResponse(request.getPrompt());
     }
 
     @Override
-    public ModelResult stream(ModelRequest request) {
-        return new ModelResult(Flux.just("Local LLM response for: Flux"));
+    protected Flux<String> doStream(ChatClient client, ModelRequest request) {
+        // TODO: 实现本地模型的流式调用逻辑
+        return buildMockStream(request.getPrompt());
     }
 }
