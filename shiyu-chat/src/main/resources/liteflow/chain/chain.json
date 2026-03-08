@@ -3,7 +3,7 @@
     "chain": [
       {
         "name": "chatFlow",
-        "value": "THEN(INTENT, CHAIN_EXECUTE)"
+        "value": "THEN(MEMORY_LOAD, INTENT, CHAIN_EXECUTE, MEMORY_SAVE)"
       },
       {
         "name": "chatDirect",

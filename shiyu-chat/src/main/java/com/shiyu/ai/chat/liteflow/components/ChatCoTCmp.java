@@ -19,10 +19,13 @@ public class ChatCoTCmp extends NodeComponent {
         GlobalContext context = this.getContextBean(GlobalContext.class);
         String query = context.get(GlobalContext.ChatBizKeyEnum.QUERY.getCode(), "你能帮我什么？");
         
+        // 获取记忆上下文
+        Object memoryContextObj = context.get(GlobalContext.ChatBizKeyEnum.MEMORY_CONTEXT.getCode());
+        
         log.info("开始执行 CoT（Chain of Thought）思维链推理：{}", query);
         
-        // Step 1: 构建 CoT 提示词，引导模型逐步思考
-        String cotPrompt = buildCotPrompt(query);
+        // Step 1: 构建带记忆的 CoT 提示词
+        String cotPrompt = buildCotPrompt(query, memoryContextObj);
         
         // Step 2: 调用模型进行逐步推理
         String result = chatEngine.call(cotPrompt, ModelEnum.SILICON_FLOW);
@@ -40,8 +43,28 @@ public class ChatCoTCmp extends NodeComponent {
      * 构建思维链提示词
      * 引导模型按照"理解问题 -> 分析条件 -> 逐步推导 -> 得出结论"的流程思考
      */
-    private String buildCotPrompt(String query) {
+    private String buildCotPrompt(String query, Object memoryContextObj) {
         StringBuilder sb = new StringBuilder();
+        
+        // 添加记忆上下文
+        if (memoryContextObj instanceof com.shiyu.ai.chat.domain.memory.MemoryContext) {
+            com.shiyu.ai.chat.domain.memory.MemoryContext memoryContext = 
+                (com.shiyu.ai.chat.domain.memory.MemoryContext) memoryContextObj;
+            
+            if (memoryContext.getMemorySummary() != null && !memoryContext.getMemorySummary().isEmpty()) {
+                sb.append("【相关记忆】\n").append(memoryContext.getMemorySummary()).append("\n\n");
+            }
+            
+            if (memoryContext.getRecentHistories() != null && !memoryContext.getRecentHistories().isEmpty()) {
+                sb.append("【对话历史】\n");
+                for (int i = memoryContext.getRecentHistories().size() - 1; i >= 0; i--) {
+                    var h = memoryContext.getRecentHistories().get(i);
+                    sb.append("用户：").append(h.getUserQuery()).append("\n");
+                    sb.append("AI: ").append(h.getAiResponse()).append("\n\n");
+                }
+            }
+        }
+        
         sb.append("请按照以下步骤逐步思考和解答这个问题：\n\n");
         sb.append("【题目】").append(query).append("\n\n");
         sb.append("请按以下结构回答：\n");

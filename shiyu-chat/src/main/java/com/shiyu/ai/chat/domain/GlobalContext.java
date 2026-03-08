@@ -8,7 +8,6 @@ import org.springframework.stereotype.Component;
 import java.util.HashMap;
 import java.util.Map;
 
-@Component
 @Data
 public class GlobalContext {
     private Map<String, Object> contextMap = new HashMap<>();
@@ -62,8 +61,14 @@ public class GlobalContext {
         FINAL_ANSWER("finalAnswer", "最终回答"),
         INTENT("intent", "意图"),
         CHAIN("chain", "触发的链"),
-        TOT_THOUGHT_NODES("thoughtNodes", "ToT流程候选方案"),
-        TOT_FINAL_THOUGHT("finalThought", "ToT最终方案");
+        TOT_THOUGHT_NODES("thoughtNodes", "ToT 流程候选方案"),
+        TOT_FINAL_THOUGHT("finalThought", "ToT 最终方案"),
+                    
+        // 记忆相关
+        SESSION_ID("sessionId", "会话 ID"),
+        USER_ID("userId", "用户 ID"),
+        MEMORY_CONTEXT("memoryContext", "记忆上下文"),
+        CONVERSATION_HISTORY("conversationHistory", "对话历史");
 
         private final String code;
         private final String desc;

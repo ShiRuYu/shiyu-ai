@@ -23,11 +23,14 @@ class ChatToTCmp extends NodeComponent {
     public void process() {
         GlobalContext context = this.getContextBean(GlobalContext.class);
         String query = context.get(GlobalContext.ChatBizKeyEnum.QUERY.getCode(), "你能帮我什么？");
+        
+        // 获取记忆上下文
+        Object memoryContextObj = context.get(GlobalContext.ChatBizKeyEnum.MEMORY_CONTEXT.getCode());
 
         log.info("开始执行 ToT（Tree of Thoughts）思维树推理：{}", query);
 
         // Step 1: 生成多个候选方案（思维树分支）
-        List<CandidateThought> candidates = generateCandidateThoughts(query, 5);
+        List<CandidateThought> candidates = generateCandidateThoughts(query, 5, memoryContextObj);
         
         log.info("生成了 {} 个候选方案", candidates.size());
 
@@ -58,13 +61,24 @@ class ChatToTCmp extends NodeComponent {
     /**
      * 生成多个候选思维（发散阶段）
      */
-    private List<CandidateThought> generateCandidateThoughts(String query, int count) {
+    private List<CandidateThought> generateCandidateThoughts(String query, int count, Object memoryContextObj) {
         List<CandidateThought> thoughts = new ArrayList<>();
         
-        // 构建生成多个方案的提示词
+        // 构建带记忆的提示词
         StringBuilder prompt = new StringBuilder();
+        
+        // 添加记忆上下文
+        if (memoryContextObj instanceof com.shiyu.ai.chat.domain.memory.MemoryContext) {
+            com.shiyu.ai.chat.domain.memory.MemoryContext memoryContext = 
+                (com.shiyu.ai.chat.domain.memory.MemoryContext) memoryContextObj;
+            
+            if (memoryContext.getMemorySummary() != null && !memoryContext.getMemorySummary().isEmpty()) {
+                prompt.append("【相关记忆】\n").append(memoryContext.getMemorySummary()).append("\n\n");
+            }
+        }
+        
         prompt.append("请从不同角度思考以下问题，并提供 ").append(count).append(" 种不同的解决方案或思路。\n\n");
-        prompt.append("【问题】\").append(query).append(\n\n");
+        prompt.append("【问题】").append(query).append("\n\n");
         prompt.append("要求：\n");
         prompt.append("1. 每个方案应该有独特的视角或方法\n");
         prompt.append("2. 方案之间尽量差异化\n");

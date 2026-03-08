@@ -45,3 +45,13 @@ spring:
 liteflow:
   #规则文件路径
   rule-source: liteflow/chain/chain.json
+
+# 记忆功能配置
+shiyu:
+  memory:
+    enabled: true                    # 是否启用记忆功能
+    max-short-term-memories: 10      # 短期记忆最大数量
+    max-long-term-memories: 50       # 长期记忆最大数量
+    max-history-records: 5           # 对话历史最大保留数
+    short-term-expire-hours: 24      # 短期记忆过期时间（小时）
+    auto-extract-long-term: true     # 是否自动提取长期记忆
