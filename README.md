@@ -1,8 +1,8 @@
-# 识宇AI平台
+# ShiYu AI
 
 ## 项目简介
 
-识宇AI平台是一个基于Java的多模块系统，包含认证、聊天、代理、语音合成等多个功能模块。该项目使用Spring Boot框架，并整合了MyBatis、LiteFlow、Sa-Token等技术。
+ShiYu AI 是一个基于 Java 的多模块系统，包含认证、聊天、代理、语音合成等多个功能模块。该项目使用 Spring Boot 框架，并整合了 MyBatis、LiteFlow、Sa-Token 等技术。
 
 ## 模块说明
 
