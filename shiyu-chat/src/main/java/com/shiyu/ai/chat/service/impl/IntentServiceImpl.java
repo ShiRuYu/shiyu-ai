@@ -1,10 +1,10 @@
-package com.shiyu.ai.chat.service;
+package com.shiyu.ai.chat.service.impl;
 
 import com.shiyu.ai.chat.config.IntentConfig;
 import com.shiyu.ai.chat.domain.node.Intent;
 import com.shiyu.ai.chat.lm.ChatEngine;
 import com.shiyu.ai.chat.lm.ModelEnum;
-import com.shiyu.ai.common.core.utils.JSONUtils;
+import com.shiyu.ai.chat.service.IntentService;
 import jakarta.annotation.Resource;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;

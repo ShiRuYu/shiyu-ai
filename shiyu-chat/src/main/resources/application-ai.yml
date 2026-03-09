@@ -17,9 +17,53 @@ spring:
       api-key:
       model: x-ai/grok-4.1-fast
       embed_model: qwen/qwen3-embedding-8b
-
-# 意图识别配置
+# 大模型配置
 shiyu:
+  ai:
+    models:
+      # 默认模型
+      default-model: SILICON_FLOW
+
+      # 各模型详细配置
+      configs:
+        silicon_flow:
+          enabled: true
+          model-name: THUDM/GLM-Z1-9B-0414
+          temperature: 0.7
+          max-tokens: 2048
+
+        open_router:
+          enabled: true
+          model-name: x-ai/grok-4.1-fast
+          temperature: 0.8
+          max-tokens: 4096
+
+        deepseek:
+          enabled: false
+          model-name: DeepSeek-V3
+          temperature: 0.7
+          max-tokens: 2048
+
+        openai:
+          enabled: false
+          model-name: gpt-4
+          temperature: 0.7
+          max-tokens: 2048
+
+        local:
+          enabled: false
+          model-name: local-model
+          temperature: 0.7
+          max-tokens: 2048
+# 记忆功能配置
+  memory:
+    enabled: true                    # 是否启用记忆功能
+    max-short-term-memories: 10      # 短期记忆最大数量
+    max-long-term-memories: 50       # 长期记忆最大数量
+    max-history-records: 5           # 对话历史最大保留数
+    short-term-expire-hours: 24      # 短期记忆过期时间（小时）
+    auto-extract-long-term: true     # 是否自动提取长期记忆
+# 意图识别配置
   intent:
     categories:
       default:
@@ -44,41 +88,3 @@ shiyu:
           keywords: ["方案", "选择", "决策", "对比", "优缺点", "哪个更好"]
           chain-to-call: "chatToT"
 
-# 大模型配置
-shiyu:
-  ai:
-    models:
-      # 默认模型
-      default-model: SILICON_FLOW
-      
-      # 各模型详细配置
-      configs:
-        silicon_flow:
-          enabled: true
-          model-name: THUDM/GLM-Z1-9B-0414
-          temperature: 0.7
-          max-tokens: 2048
-        
-        open_router:
-          enabled: true
-          model-name: x-ai/grok-4.1-fast
-          temperature: 0.8
-          max-tokens: 4096
-        
-        deepseek:
-          enabled: false
-          model-name: DeepSeek-V3
-          temperature: 0.7
-          max-tokens: 2048
-        
-        openai:
-          enabled: false
-          model-name: gpt-4
-          temperature: 0.7
-          max-tokens: 2048
-        
-        local:
-          enabled: false
-          model-name: local-model
-          temperature: 0.7
-          max-tokens: 2048
