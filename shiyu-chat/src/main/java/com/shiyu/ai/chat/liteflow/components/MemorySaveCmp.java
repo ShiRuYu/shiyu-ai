@@ -1,10 +1,10 @@
 package com.shiyu.ai.chat.liteflow.components;
 
-import cn.hutool.core.util.IdUtil;
 import com.shiyu.ai.chat.domain.GlobalContext;
 import com.shiyu.ai.chat.domain.memory.ConversationHistory;
 import com.shiyu.ai.chat.domain.memory.Memory;
 import com.shiyu.ai.chat.service.MemoryService;
+import com.shiyu.ai.common.core.utils.JSONUtils;
 import com.yomahub.liteflow.annotation.LiteflowComponent;
 import com.yomahub.liteflow.core.NodeComponent;
 import jakarta.annotation.Resource;
@@ -30,8 +30,9 @@ public class MemorySaveCmp extends NodeComponent {
         String userId = context.get(GlobalContext.ChatBizKeyEnum.USER_ID.getCode());
         String query = context.get(GlobalContext.ChatBizKeyEnum.QUERY.getCode());
         String finalAnswer = context.get(GlobalContext.ChatBizKeyEnum.FINAL_ANSWER.getCode());
-        String intentType = context.get(GlobalContext.ChatBizKeyEnum.INTENT.getCode()) != null ? 
-                String.valueOf(context.get(GlobalContext.ChatBizKeyEnum.INTENT.getCode())) : null;
+
+        Object intentObj = context.get(GlobalContext.ChatBizKeyEnum.INTENT.getCode());
+        String intentType = intentObj != null ? JSONUtils.toJsonString(intentObj) : null;
         String chainUsed = context.get(GlobalContext.ChatBizKeyEnum.CHAIN.getCode());
         
         if (sessionId == null || query == null || finalAnswer == null) {
