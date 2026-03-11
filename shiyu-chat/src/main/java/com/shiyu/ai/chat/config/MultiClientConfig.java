@@ -12,18 +12,20 @@ import org.springframework.ai.openai.api.OpenAiApi;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.web.client.RestClient;
 
 @Configuration
 public class MultiClientConfig {
 
     @Bean
-    public ChatModel siliconFlowChatModel(ModelProperties modelProperties) {
+    public ChatModel siliconFlowChatModel(RestClient.Builder restClientBuilder, ModelProperties modelProperties) {
         ModelProperties.SiliconFlowConfig siliconflow = modelProperties.getSiliconflow();
         String baseUrl = siliconflow.getBaseUrl();
         String apiKey = siliconflow.getApiKey();
         String model = siliconflow.getModel();
         assert apiKey != null;
         OpenAiApi api = OpenAiApi.builder()
+                .restClientBuilder(restClientBuilder)
                 .baseUrl(baseUrl)
                 .apiKey(apiKey)
                 .build();
@@ -34,13 +36,14 @@ public class MultiClientConfig {
     }
 
     @Bean
-    public EmbeddingModel siliconFlowEmbeddingModel(ModelProperties modelProperties) {
+    public EmbeddingModel siliconFlowEmbeddingModel(RestClient.Builder restClientBuilder, ModelProperties modelProperties) {
         ModelProperties.SiliconFlowConfig siliconflow = modelProperties.getSiliconflow();
         String baseUrl = siliconflow.getBaseUrl();
         String apiKey = siliconflow.getApiKey();
         String embedModel = siliconflow.getEmbedModel();
         assert apiKey != null;
         OpenAiApi openAiApi = OpenAiApi.builder()
+                .restClientBuilder(restClientBuilder)
                 .baseUrl(baseUrl)
                 .apiKey(apiKey)
                 .build();
