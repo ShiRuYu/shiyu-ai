@@ -1,4 +1,4 @@
- package com.shiyu.ai.chat.lm.result;
+package com.shiyu.ai.chat.lm.result;
 
 import lombok.Data;
 import reactor.core.publisher.Flux;
@@ -9,7 +9,7 @@ import java.util.List;
  * 模型响应结果
  */
 @Data
-public class ModelResult {
+public class LmResult {
     
     /**
      * 回答内容
@@ -31,25 +31,25 @@ public class ModelResult {
      */
     private Flux<String> answerStream;
 
-    public ModelResult() {
+    public LmResult() {
     }
 
-    public ModelResult(String answer) {
+    public LmResult(String answer) {
         this.answer = answer;
         this.score = 0.0;
     }
     
-    public ModelResult(Flux<String> answerStream) {
+    public LmResult(Flux<String> answerStream) {
         this.answerStream = answerStream;
         this.score = 0.0;
     }
     
-    public ModelResult(String answer, double score) {
+    public LmResult(String answer, double score) {
         this.answer = answer;
         this.score = score;
     }
     
-    public ModelResult(String answer, double score, List<String> traces) {
+    public LmResult(String answer, double score, List<String> traces) {
         this.answer = answer;
         this.score = score;
         this.traces = traces;

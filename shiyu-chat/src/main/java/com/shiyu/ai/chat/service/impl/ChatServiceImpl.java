@@ -5,7 +5,7 @@ import com.shiyu.ai.chat.domain.ChatRequest;
 import com.shiyu.ai.chat.domain.GlobalContext;
 import com.shiyu.ai.chat.lm.ChatEngine;
 import com.shiyu.ai.chat.lm.PlatformEnum;
-import com.shiyu.ai.chat.lm.request.ModelRequest;
+import com.shiyu.ai.chat.lm.request.LmRequest;
 import com.shiyu.ai.chat.service.ChatService;
 import com.shiyu.ai.common.core.utils.JSONUtils;
 import com.yomahub.liteflow.core.FlowExecutor;
@@ -70,7 +70,7 @@ public class ChatServiceImpl implements ChatService {
     @Override
     public Flux<String> stream(String text, String platformEnum) {
         PlatformEnum modelType = PlatformEnum.fromEnumName(platformEnum);
-        ModelRequest request = new ModelRequest(text, modelType.getAdapterName(), null);
+        LmRequest request = new LmRequest(text, modelType.getAdapterName(), null);
         return chatEngine.stream(request);
     }
     

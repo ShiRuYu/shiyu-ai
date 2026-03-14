@@ -10,7 +10,7 @@ import java.util.Map;
  * 模型请求对象
  */
 @Data
-public class ModelRequest {
+public class LmRequest {
     
     /**
      * 提示词/问题
@@ -37,32 +37,32 @@ public class ModelRequest {
      */
     private List<Message> messages;
 
-    public ModelRequest() {
+    public LmRequest() {
     }
 
-    public ModelRequest(String prompt) {
+    public LmRequest(String prompt) {
         this.prompt = prompt;
     }
 
-    public ModelRequest(String prompt, String platform, String modelName) {
+    public LmRequest(String prompt, String platform, String modelName) {
         this.prompt = prompt;
         this.platform = platform;
         this.modelName = modelName;
     }
 
-    public ModelRequest(String prompt, Map<String, Object> meta) {
+    public LmRequest(String prompt, Map<String, Object> meta) {
         this.prompt = prompt;
         this.meta = meta;
     }
 
-    public ModelRequest(String prompt, String platform, String modelName, Map<String, Object> meta) {
+    public LmRequest(String prompt, String platform, String modelName, Map<String, Object> meta) {
         this.prompt = prompt;
         this.platform = platform;
         this.modelName = modelName;
         this.meta = meta;
     }
 
-    public ModelRequest(String prompt, String platform, String modelName, Map<String, Object> meta, List<Message> messages) {
+    public LmRequest(String prompt, String platform, String modelName, Map<String, Object> meta, List<Message> messages) {
         this.prompt = prompt;
         this.platform = platform;
         this.modelName = modelName;

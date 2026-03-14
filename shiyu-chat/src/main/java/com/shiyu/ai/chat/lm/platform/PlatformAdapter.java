@@ -1,7 +1,7 @@
-package com.shiyu.ai.chat.lm.model;
+package com.shiyu.ai.chat.lm.platform;
 
 import com.shiyu.ai.chat.lm.PlatformEnum;
-import com.shiyu.ai.chat.lm.request.ModelRequest;
+import com.shiyu.ai.chat.lm.request.LmRequest;
 import reactor.core.publisher.Flux;
 
 /**
@@ -21,12 +21,12 @@ public interface PlatformAdapter {
      * @param request 请求参数
      * @return 模型响应结果
      */
-    String call(ModelRequest request);
+    String call(LmRequest request);
     
     /**
      * 流式调用模型
      * @param request 请求参数
      * @return 流式响应
      */
-    Flux<String> stream(ModelRequest request);
+    Flux<String> stream(LmRequest request);
 }

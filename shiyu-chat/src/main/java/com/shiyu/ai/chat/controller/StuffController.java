@@ -3,7 +3,7 @@ package com.shiyu.ai.chat.controller;
 import com.shiyu.ai.chat.config.ChatResource;
 import com.shiyu.ai.chat.lm.ChatEngine;
 import com.shiyu.ai.chat.lm.PlatformEnum;
-import com.shiyu.ai.chat.lm.request.ModelRequest;
+import com.shiyu.ai.chat.lm.request.LmRequest;
 import jakarta.annotation.Resource;
 import org.springframework.ai.chat.client.ChatClient;
 import org.springframework.ai.chat.prompt.PromptTemplate;
@@ -48,7 +48,7 @@ public class StuffController {
         } else {
             map.put("context", "");
         }
-        ModelRequest request = new ModelRequest(message, platformEnum, null);
+        LmRequest request = new LmRequest(message, platformEnum, null);
         return chatEngine.stream(request);
         //return chatClient.prompt(promptTemplate.create(map)).stream().content();
     }

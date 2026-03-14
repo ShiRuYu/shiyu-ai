@@ -1,8 +1,8 @@
 package com.shiyu.ai.chat.lm;
 
 
-import com.shiyu.ai.chat.lm.model.PlatformAdapter;
-import com.shiyu.ai.chat.lm.request.ModelRequest;
+import com.shiyu.ai.chat.lm.platform.PlatformAdapter;
+import com.shiyu.ai.chat.lm.request.LmRequest;
 import jakarta.annotation.Resource;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
@@ -32,7 +32,7 @@ public class ChatEngine {
      * @param request 请求参数（包含 prompt、platform、modelName 等）
      * @return 模型响应
      */
-    public String call(ModelRequest request) {
+    public String call(LmRequest request) {
         PlatformEnum platformEnum = resolvePlatformEnum(request);
         log.debug("Calling model: {} with input: {}", platformEnum, request.getPrompt());
         
@@ -47,7 +47,7 @@ public class ChatEngine {
      * @param request 请求参数（包含 prompt、platform、modelName 等）
      * @return 流式响应
      */
-    public Flux<String> stream(ModelRequest request) {
+    public Flux<String> stream(LmRequest request) {
         PlatformEnum platformEnum = resolvePlatformEnum(request);
         log.debug("Streaming model: {} with input: {}", platformEnum, request.getPrompt());
         
@@ -58,12 +58,12 @@ public class ChatEngine {
     }
 
     /**
-     * 根据 ModelRequest 解析 PlatformEnum
+     * 根据 LmRequest 解析 PlatformEnum
      * 优先使用 platform 和 modelName 匹配，其次使用 meta 中的配置
      * @param request 请求参数
      * @return 平台类型
      */
-    private PlatformEnum resolvePlatformEnum(ModelRequest request) {
+    private PlatformEnum resolvePlatformEnum(LmRequest request) {
         // 如果有 platform 和 modelName，尝试匹配
         if (request.getPlatform() != null || request.getModelName() != null) {
             // 这里可以根据 platform 和 modelName 进行更精确的匹配

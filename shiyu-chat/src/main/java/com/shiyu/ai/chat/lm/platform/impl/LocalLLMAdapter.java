@@ -1,9 +1,9 @@
-package com.shiyu.ai.chat.lm.model.impl;
+package com.shiyu.ai.chat.lm.platform.impl;
 
 import com.shiyu.ai.chat.config.ModelProperties;
 import com.shiyu.ai.chat.lm.PlatformEnum;
-import com.shiyu.ai.chat.lm.model.AbstractPlatformAdapter;
-import com.shiyu.ai.chat.lm.request.ModelRequest;
+import com.shiyu.ai.chat.lm.platform.AbstractPlatformAdapter;
+import com.shiyu.ai.chat.lm.request.LmRequest;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.ai.chat.client.ChatClient;
 import org.springframework.ai.chat.model.ChatModel;
@@ -17,30 +17,28 @@ import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 
 /**
- * OpenRouter 模型适配器
+ * 本地大模型适配器
  */
 @Slf4j
-@Component("openRouterModelAdapter")
-public class OpenRouterModelAdapter extends AbstractPlatformAdapter {
+@Component("localModelAdapter")
+public class LocalLLMAdapter extends AbstractPlatformAdapter {
 
-    private final ModelProperties.OpenRouterConfig defaultConfig;
+    private static final String DEFAULT_BASE_URL = "http://localhost:11434";
+    private static final String DEFAULT_API_KEY = "ollama";
     
     /**
      * ChatClient 缓存（按 modelName 缓存）
      */
     private final Map<String, ChatClient> chatClientCache = new ConcurrentHashMap<>();
 
-    public OpenRouterModelAdapter(ModelProperties modelProperties) {
-        this.defaultConfig = modelProperties.getOpenrouter();
-        String baseUrl = defaultConfig.getBaseUrl();
-        String apiKey = defaultConfig.getApiKey();
-        String model = defaultConfig.getModel();
+    public LocalLLMAdapter(ModelProperties modelProperties) {
+        String modelName = System.getenv("LOCAL_MODEL_NAME");
         
-        if (apiKey == null || apiKey.isEmpty()) {
-            log.warn("OpenRouter API Key 未配置");
+        if (modelName == null || modelName.isEmpty()) {
+            log.warn("本地模型名称未配置，请设置环境变量 LOCAL_MODEL_NAME，使用 Mock 响应");
         } else {
-            createChatClient(model, baseUrl, apiKey);
-            log.info("OpenRouter 默认 ChatClient 初始化成功，baseUrl: {}, model: {}", baseUrl, model);
+            createChatClient(modelName, DEFAULT_BASE_URL, DEFAULT_API_KEY);
+            log.info("本地模型 ChatClient 初始化成功，baseUrl: {}, model: {}", DEFAULT_BASE_URL, modelName);
         }
     }
     
@@ -56,32 +54,43 @@ public class OpenRouterModelAdapter extends AbstractPlatformAdapter {
     }
     
     private ChatClient getOrCreateChatClient(String modelName) {
+        String envModelName = System.getenv("LOCAL_MODEL_NAME");
+        if (envModelName == null || envModelName.isEmpty()) {
+            return null;
+        }
+        
         if (modelName == null || modelName.isEmpty()) {
-            modelName = defaultConfig.getModel();
+            modelName = envModelName;
         }
         
         return chatClientCache.computeIfAbsent(modelName, key -> {
             log.debug("Creating ChatClient for model: {}", key);
-            return createChatClient(key, defaultConfig.getBaseUrl(), defaultConfig.getApiKey());
+            return createChatClient(key, DEFAULT_BASE_URL, DEFAULT_API_KEY);
         });
     }
 
     @Override
-    protected String doCall(ModelRequest request) {
+    protected String doCall(LmRequest request) {
         String modelName = request.getModelName();
         ChatClient client = getOrCreateChatClient(modelName);
+        if (client == null) {
+            throw new IllegalStateException("本地模型未配置");
+        }
         return client.prompt(request.getPrompt()).call().content();
     }
 
     @Override
-    protected Flux<String> doStream(ModelRequest request) {
+    protected Flux<String> doStream(LmRequest request) {
         String modelName = request.getModelName();
         ChatClient client = getOrCreateChatClient(modelName);
+        if (client == null) {
+            throw new IllegalStateException("本地模型未配置");
+        }
         return client.prompt(request.getPrompt()).stream().content();
     }
     
     @Override
     public PlatformEnum getType() {
-        return PlatformEnum.OPEN_ROUTER;
+        return PlatformEnum.LOCAL;
     }
 }

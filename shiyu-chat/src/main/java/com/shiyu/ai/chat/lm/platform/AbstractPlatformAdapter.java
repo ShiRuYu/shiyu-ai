@@ -1,6 +1,6 @@
-package com.shiyu.ai.chat.lm.model;
+package com.shiyu.ai.chat.lm.platform;
 
-import com.shiyu.ai.chat.lm.request.ModelRequest;
+import com.shiyu.ai.chat.lm.request.LmRequest;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.web.client.RestClient;
 import reactor.core.publisher.Flux;
@@ -17,15 +17,15 @@ public abstract class AbstractPlatformAdapter implements PlatformAdapter {
     /**
      * 执行同步调用（由子类提供具体实现）
      */
-    protected abstract String doCall(ModelRequest request);
+    protected abstract String doCall(LmRequest request);
 
     /**
      * 执行流式调用（由子类提供具体实现）
      */
-    protected abstract Flux<String> doStream(ModelRequest request);
+    protected abstract Flux<String> doStream(LmRequest request);
 
     @Override
-    public String call(ModelRequest request) {
+    public String call(LmRequest request) {
         try {
             log.debug("Calling model: {} with prompt: {}", getType(), request.getPrompt());
             String response = doCall(request);
@@ -39,7 +39,7 @@ public abstract class AbstractPlatformAdapter implements PlatformAdapter {
     }
 
     @Override
-    public Flux<String> stream(ModelRequest request) {
+    public Flux<String> stream(LmRequest request) {
         try {
             log.debug("Streaming model: {} with prompt: {}", getType(), request.getPrompt());
             Flux<String> response = doStream(request);

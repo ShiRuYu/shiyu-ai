@@ -4,7 +4,7 @@ import com.shiyu.ai.chat.config.IntentConfig;
 import com.shiyu.ai.chat.domain.node.Intent;
 import com.shiyu.ai.chat.lm.ChatEngine;
 import com.shiyu.ai.chat.lm.PlatformEnum;
-import com.shiyu.ai.chat.lm.request.ModelRequest;
+import com.shiyu.ai.chat.lm.request.LmRequest;
 import com.shiyu.ai.chat.service.IntentService;
 import jakarta.annotation.Resource;
 import lombok.extern.slf4j.Slf4j;
@@ -92,7 +92,7 @@ public class IntentServiceImpl implements IntentService {
 
         try {
             // 调用大模型进行意图识别
-            String result = chatEngine.call(new ModelRequest(prompt, PlatformEnum.SILICON_FLOW.getAdapterName(), null));
+            String result = chatEngine.call(new LmRequest(prompt, PlatformEnum.SILICON_FLOW.getAdapterName(), null));
             log.info("意图识别结果：{}", result);
 
             // 解析模型返回结果

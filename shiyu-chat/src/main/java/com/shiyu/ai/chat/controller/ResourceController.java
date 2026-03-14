@@ -3,7 +3,7 @@ package com.shiyu.ai.chat.controller;
 import com.shiyu.ai.chat.config.ChatResource;
 import com.shiyu.ai.chat.lm.ChatEngine;
 import com.shiyu.ai.chat.lm.PlatformEnum;
-import com.shiyu.ai.chat.lm.request.ModelRequest;
+import com.shiyu.ai.chat.lm.request.LmRequest;
 import jakarta.annotation.Resource;
 import org.springframework.ai.chat.client.ChatClient;
 import org.springframework.ai.chat.messages.Message;
@@ -49,7 +49,7 @@ public class ResourceController {
         Message systemMessage = systemPromptTemplate.createMessage(Map.of("name", name, "voice", voice));
 
         // 调用大模型
-        ModelRequest request = new ModelRequest(message, platformEnum, null);
+        LmRequest request = new LmRequest(message, platformEnum, null);
         return chatEngine.stream(request);
         //ChatClient chatClient = chatEngine.getChatClient(PlatformEnum.fromEnumName(platformEnum));
         //return chatClient.prompt(new Prompt(List.of(userMessage, systemMessage))).stream().content();
