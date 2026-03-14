@@ -6,15 +6,15 @@ import reactor.core.publisher.Flux;
 import java.util.List;
 
 /**
- * 模型响应结果
+ * 流式对话响应结果
  */
 @Data
-public class LmResult {
+public class StreamResult {
     
     /**
-     * 回答内容
+     * 流式回答内容
      */
-    private String answer;
+    private Flux<String> answer;
     
     /**
      * 置信度分数（可选）
@@ -25,31 +25,21 @@ public class LmResult {
      * 链路追踪信息（可选）
      */
     private List<String> traces;
-    
-    /**
-     * 流式回答（可选，与 answer 互斥）
-     */
-    private Flux<String> answerStream;
 
-    public LmResult() {
+    public StreamResult() {
     }
 
-    public LmResult(String answer) {
+    public StreamResult(Flux<String> answer) {
         this.answer = answer;
         this.score = 0.0;
     }
     
-    public LmResult(Flux<String> answerStream) {
-        this.answerStream = answerStream;
-        this.score = 0.0;
-    }
-    
-    public LmResult(String answer, double score) {
+    public StreamResult(Flux<String> answer, double score) {
         this.answer = answer;
         this.score = score;
     }
     
-    public LmResult(String answer, double score, List<String> traces) {
+    public StreamResult(Flux<String> answer, double score, List<String> traces) {
         this.answer = answer;
         this.score = score;
         this.traces = traces;
