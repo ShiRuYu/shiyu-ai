@@ -5,6 +5,7 @@ import com.shiyu.ai.chat.lm.result.ChatResult;
 import com.shiyu.ai.chat.lm.result.StreamResult;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.web.client.RestClient;
+import org.springframework.web.reactive.function.client.WebClient;
 import reactor.core.publisher.Flux;
 
 /**
@@ -15,6 +16,7 @@ import reactor.core.publisher.Flux;
 public abstract class AbstractPlatformAdapter implements PlatformAdapter {
 
     protected RestClient.Builder restClientBuilder;
+    protected WebClient.Builder webClientBuilder;
 
     /**
      * 执行同步调用（由子类提供具体实现）

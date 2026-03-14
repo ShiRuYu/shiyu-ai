@@ -1,6 +1,6 @@
 package com.shiyu.ai.chat.lm.platform.impl;
 
-import com.shiyu.ai.chat.config.PlateformProperties;
+import com.shiyu.ai.chat.config.PlatformProperties;
 import com.shiyu.ai.chat.lm.PlatformEnum;
 import com.shiyu.ai.chat.lm.platform.AbstractPlatformAdapter;
 import com.shiyu.ai.chat.lm.request.LmRequest;
@@ -12,7 +12,10 @@ import org.springframework.ai.chat.model.ChatModel;
 import org.springframework.ai.openai.OpenAiChatModel;
 import org.springframework.ai.openai.OpenAiChatOptions;
 import org.springframework.ai.openai.api.OpenAiApi;
+import org.springframework.beans.factory.ObjectProvider;
 import org.springframework.stereotype.Component;
+import org.springframework.web.client.RestClient;
+import org.springframework.web.reactive.function.client.WebClient;
 import reactor.core.publisher.Flux;
 
 import java.util.Map;
@@ -25,27 +28,32 @@ import java.util.concurrent.ConcurrentHashMap;
 @Component("openAIModelAdapter")
 public class OpenAIAdapter extends AbstractPlatformAdapter {
 
-    private final PlateformProperties.OpenAIConfig defaultConfig;
-    
+    private final PlatformProperties.OpenAIConfig defaultConfig;
+
     /**
      * ChatClient 缓存（按 modelName 缓存）
      */
     private final Map<String, ChatClient> chatClientCache = new ConcurrentHashMap<>();
 
-    public OpenAIAdapter(PlateformProperties modelProperties) {
-        this.defaultConfig = modelProperties.getOpenai();
+    public OpenAIAdapter(ObjectProvider<RestClient.Builder> restClientBuilderProvider,
+                         ObjectProvider<WebClient.Builder> webClientBuilderProvider,
+                         PlatformProperties platformProperties) {
+        this.defaultConfig = platformProperties.getOpenai();
         String baseUrl = defaultConfig.getBaseUrl();
         String apiKey = defaultConfig.getApiKey();
-        
+        String model = defaultConfig.getModel();
+        this.restClientBuilder = restClientBuilderProvider.getIfAvailable();
+        this.webClientBuilder = webClientBuilderProvider.getIfAvailable();
+
         if (apiKey == null || apiKey.isEmpty()) {
             log.warn("OpenAI API Key 未配置");
         } else {
             // 预创建默认模型的 ChatClient
-            createChatClient("gpt-3.5-turbo", baseUrl, apiKey);
+            createChatClient(model, baseUrl, apiKey);
             log.info("OpenAI 默认 ChatClient 初始化成功，baseUrl: {}", baseUrl);
         }
     }
-    
+
     /**
      * 创建 ChatClient 实例
      */
@@ -59,20 +67,20 @@ public class OpenAIAdapter extends AbstractPlatformAdapter {
                 .build();
         ChatModel chatModel = OpenAiChatModel.builder().openAiApi(api).defaultOptions(options).build();
         ChatClient client = ChatClient.builder(chatModel).build();
-        
+
         // 缓存 ChatClient
         chatClientCache.put(modelName, client);
         return client;
     }
-    
+
     /**
      * 获取或创建 ChatClient
      */
     private ChatClient getOrCreateChatClient(String modelName) {
         if (modelName == null || modelName.isEmpty()) {
-            modelName = "gpt-3.5-turbo";
+            modelName = defaultConfig.getModel();
         }
-        
+
         return chatClientCache.computeIfAbsent(modelName, key -> {
             log.debug("Creating ChatClient for model: {}", key);
             return createChatClient(key, defaultConfig.getBaseUrl(), defaultConfig.getApiKey());
@@ -98,7 +106,7 @@ public class OpenAIAdapter extends AbstractPlatformAdapter {
                 .content();
         return new StreamResult(response);
     }
-    
+
     @Override
     public PlatformEnum getType() {
         return PlatformEnum.OPENAI;

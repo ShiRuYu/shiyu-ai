@@ -18,7 +18,7 @@ public enum PlatformEnum {
     /**
      * 本地部署的大模型
      */
-    LOCAL("localModelAdapter"),
+    OLLAMA("ollamaAdapter"),
 
     /**
      * OpenAI 官方模型
@@ -59,14 +59,14 @@ public enum PlatformEnum {
      */
     public static PlatformEnum fromEnumName(String enumName) {
         if (enumName == null || enumName.isBlank()) {
-            return LOCAL;
+            return OLLAMA;
         }
         
         return ENUM_CACHE.computeIfAbsent(enumName.toUpperCase(), key -> 
             Arrays.stream(values())
                 .filter(platformEnum -> platformEnum.name().equalsIgnoreCase(key))
                 .findFirst()
-                .orElse(LOCAL)
+                .orElse(OLLAMA)
         );
     }
 
@@ -77,14 +77,14 @@ public enum PlatformEnum {
      */
     public static PlatformEnum fromAdapterName(String adapterName) {
         if (adapterName == null || adapterName.isBlank()) {
-            return LOCAL;
+            return OLLAMA;
         }
 
         return ADAPTER_CACHE.computeIfAbsent(adapterName.toLowerCase(), key ->
             Arrays.stream(values())
                 .filter(platformEnum -> platformEnum.getAdapterName().equalsIgnoreCase(key))
                 .findFirst()
-                .orElse(LOCAL)
+                .orElse(OLLAMA)
         );
     }
 }

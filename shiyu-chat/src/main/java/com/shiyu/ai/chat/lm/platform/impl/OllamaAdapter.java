@@ -1,6 +1,6 @@
 package com.shiyu.ai.chat.lm.platform.impl;
 
-import com.shiyu.ai.chat.config.PlateformProperties;
+import com.shiyu.ai.chat.config.PlatformProperties;
 import com.shiyu.ai.chat.lm.PlatformEnum;
 import com.shiyu.ai.chat.lm.platform.AbstractPlatformAdapter;
 import com.shiyu.ai.chat.lm.request.LmRequest;
@@ -12,7 +12,10 @@ import org.springframework.ai.chat.model.ChatModel;
 import org.springframework.ai.openai.OpenAiChatModel;
 import org.springframework.ai.openai.OpenAiChatOptions;
 import org.springframework.ai.openai.api.OpenAiApi;
+import org.springframework.beans.factory.ObjectProvider;
 import org.springframework.stereotype.Component;
+import org.springframework.web.client.RestClient;
+import org.springframework.web.reactive.function.client.WebClient;
 import reactor.core.publisher.Flux;
 
 import java.util.Map;
@@ -22,25 +25,31 @@ import java.util.concurrent.ConcurrentHashMap;
  * 本地大模型适配器
  */
 @Slf4j
-@Component("localModelAdapter")
-public class LocalLLMAdapter extends AbstractPlatformAdapter {
+@Component("ollamaAdapter")
+public class OllamaAdapter extends AbstractPlatformAdapter {
 
-    private static final String DEFAULT_BASE_URL = "http://localhost:11434";
-    private static final String DEFAULT_API_KEY = "ollama";
+    private final PlatformProperties.OllamaConfig defaultConfig;
     
     /**
      * ChatClient 缓存（按 modelName 缓存）
      */
     private final Map<String, ChatClient> chatClientCache = new ConcurrentHashMap<>();
 
-    public LocalLLMAdapter(PlateformProperties modelProperties) {
-        String modelName = System.getenv("LOCAL_MODEL_NAME");
-        
-        if (modelName == null || modelName.isEmpty()) {
+    public OllamaAdapter(ObjectProvider<RestClient.Builder> restClientBuilderProvider,
+                         ObjectProvider<WebClient.Builder> webClientBuilderProvider,
+                         PlatformProperties platformProperties) {
+        this.defaultConfig = platformProperties.getOllama();
+        String baseUrl = defaultConfig.getBaseUrl();
+        String apiKey = defaultConfig.getApiKey();
+        String model = defaultConfig.getModel();
+        this.restClientBuilder = restClientBuilderProvider.getIfAvailable();
+        this.webClientBuilder = webClientBuilderProvider.getIfAvailable();
+
+        if (model == null || model.isEmpty()) {
             log.warn("本地模型名称未配置，请设置环境变量 LOCAL_MODEL_NAME，使用 Mock 响应");
         } else {
-            createChatClient(modelName, DEFAULT_BASE_URL, DEFAULT_API_KEY);
-            log.info("本地模型 ChatClient 初始化成功，baseUrl: {}, model: {}", DEFAULT_BASE_URL, modelName);
+            createChatClient(model, baseUrl, apiKey);
+            log.info("本地模型 ChatClient 初始化成功，baseUrl: {}, model: {}", baseUrl, model);
         }
     }
     
@@ -56,18 +65,13 @@ public class LocalLLMAdapter extends AbstractPlatformAdapter {
     }
     
     private ChatClient getOrCreateChatClient(String modelName) {
-        String envModelName = System.getenv("LOCAL_MODEL_NAME");
-        if (envModelName == null || envModelName.isEmpty()) {
-            return null;
-        }
-        
         if (modelName == null || modelName.isEmpty()) {
-            modelName = envModelName;
+            modelName = defaultConfig.getModel();
         }
         
         return chatClientCache.computeIfAbsent(modelName, key -> {
             log.debug("Creating ChatClient for model: {}", key);
-            return createChatClient(key, DEFAULT_BASE_URL, DEFAULT_API_KEY);
+            return createChatClient(key, defaultConfig.getBaseUrl(), defaultConfig.getApiKey());
         });
     }
 
@@ -95,6 +99,6 @@ public class LocalLLMAdapter extends AbstractPlatformAdapter {
     
     @Override
     public PlatformEnum getType() {
-        return PlatformEnum.LOCAL;
+        return PlatformEnum.OLLAMA;
     }
 }

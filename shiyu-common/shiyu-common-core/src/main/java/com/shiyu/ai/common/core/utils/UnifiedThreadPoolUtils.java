@@ -1,5 +1,7 @@
 package com.shiyu.ai.common.core.utils;
 
+import lombok.extern.slf4j.Slf4j;
+
 import java.lang.reflect.Method;
 import java.util.Map;
 import java.util.concurrent.*;
@@ -12,6 +14,7 @@ import java.util.concurrent.atomic.AtomicInteger;
  * - JDK8~20: Use ThreadPoolExecutor
  * - Support multiple named pools
  */
+@Slf4j
 public class UnifiedThreadPoolUtils {
 
     /** Default global executor */
@@ -43,7 +46,7 @@ public class UnifiedThreadPoolUtils {
         try {
             DEFAULT_EXECUTOR.execute(wrapRunnable(task));
         } catch (Exception e) {
-            System.err.println("[ThreadPool] Failed to execute task: " + e.getMessage());
+            log.error("[ThreadPool] Failed to execute task: {}", e.getMessage());
             e.printStackTrace();
         }
     }
@@ -52,7 +55,7 @@ public class UnifiedThreadPoolUtils {
         try {
             return DEFAULT_EXECUTOR.submit(wrapCallable(task));
         } catch (Exception e) {
-            System.err.println("[ThreadPool] Failed to submit task: " + e.getMessage());
+            log.error("[ThreadPool] Failed to submit task: {}", e.getMessage());
             e.printStackTrace();
             return CompletableFuture.failedFuture(e);
         }
@@ -65,14 +68,14 @@ public class UnifiedThreadPoolUtils {
         ExecutorService executor = NAMED_EXECUTORS.remove(poolName);
         if (executor != null) {
             try {
-                System.out.println("[ThreadPool] Shutting down pool: " + poolName);
+                log.info("[ThreadPool] Shutting down pool: {}", poolName);
                 executor.shutdown();
             } catch (Exception e) {
-                System.err.println("[ThreadPool] Failed to shutdown pool: " + poolName + " , " + e.getMessage());
+                log.error("[ThreadPool] Failed to shutdown pool: {} , {}", poolName, e.getMessage());
                 e.printStackTrace();
             }
         } else {
-            System.out.println("[ThreadPool] No pool found with name: " + poolName);
+            log.info("[ThreadPool] No pool found with name: {}", poolName);
         }
     }
 
@@ -87,11 +90,11 @@ public class UnifiedThreadPoolUtils {
             // 查找是否存在于 NAMED_EXECUTORS
             NAMED_EXECUTORS.entrySet().removeIf(entry -> entry.getValue() == executor);
             if (executor == DEFAULT_EXECUTOR) {
-                System.out.println("[ThreadPool] Shutting down DEFAULT executor");
+                log.info("[ThreadPool] Shutting down DEFAULT executor");
             }
             executor.shutdown();
         } catch (Exception e) {
-            System.err.println("[ThreadPool] Failed to shutdown executor: " + e.getMessage());
+            log.error("[ThreadPool] Failed to shutdown executor: {}", e.getMessage());
             e.printStackTrace();
         }
     }
@@ -99,11 +102,11 @@ public class UnifiedThreadPoolUtils {
     public static void shutdown() {
         try {
             for (Map.Entry<String, ExecutorService> entry : NAMED_EXECUTORS.entrySet()) {
-                System.out.println("[ThreadPool] Shutting down pool: " + entry.getKey());
+                log.info("[ThreadPool] Shutting down pool: {}", entry.getKey());
                 entry.getValue().shutdown();
             }
         } catch (Exception e) {
-            System.err.println("[ThreadPool] Shutdown error: " + e.getMessage());
+            log.error("[ThreadPool] Shutdown error: {}", e.getMessage());
             e.printStackTrace();
         }
     }
@@ -127,7 +130,7 @@ public class UnifiedThreadPoolUtils {
             try {
                 task.run();
             } catch (Throwable t) {
-                System.err.println("[ThreadPool] Task error: " + t.getMessage());
+                log.error("[ThreadPool] Task error: {}" , t.getMessage());
                 t.printStackTrace();
             }
         };
@@ -139,7 +142,7 @@ public class UnifiedThreadPoolUtils {
             try {
                 return task.call();
             } catch (Throwable t) {
-                System.err.println("[ThreadPool] Task error: " + t.getMessage());
+                log.error("[ThreadPool] Task error: {}", t.getMessage());
                 t.printStackTrace();
                 throw t;
             }
@@ -198,7 +201,7 @@ public class UnifiedThreadPoolUtils {
         } catch (InterruptedException e) {
             // 恢复中断状态，保证上层代码能感知
             Thread.currentThread().interrupt();
-            System.err.println("[ThreadPool] Sleep interrupted: " + e.getMessage());
+            log.error("[ThreadPool] Sleep interrupted: {}", e.getMessage());
         }
     }
 
@@ -229,8 +232,7 @@ public class UnifiedThreadPoolUtils {
             }
         }
         if (t != null) {
-            System.err.println("[ThreadPool] Uncaught exception: " + t.getMessage());
-            t.printStackTrace(System.err);
+            log.error("[ThreadPool] Uncaught exception: {}", t.getMessage());
         }
     }
 

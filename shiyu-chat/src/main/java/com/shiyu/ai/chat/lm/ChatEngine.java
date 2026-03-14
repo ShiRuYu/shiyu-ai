@@ -73,7 +73,7 @@ public class ChatEngine {
         }
         
         // 如果没有指定，使用 LOCAL 平台
-        return PlatformEnum.LOCAL;
+        return PlatformEnum.OLLAMA;
     }
     
     /**
