@@ -2,7 +2,8 @@ package com.shiyu.ai.chat.controller;
 
 import com.shiyu.ai.chat.config.ChatResource;
 import com.shiyu.ai.chat.lm.ChatEngine;
-import com.shiyu.ai.chat.lm.ModelEnum;
+import com.shiyu.ai.chat.lm.PlatformEnum;
+import com.shiyu.ai.chat.lm.request.ModelRequest;
 import jakarta.annotation.Resource;
 import org.springframework.ai.chat.client.ChatClient;
 import org.springframework.ai.chat.prompt.PromptTemplate;
@@ -28,7 +29,7 @@ public class StuffController {
      * 演示使用特定的 prompt 上下文信息以增强大模型的回答。
      */
     @GetMapping(value = "/stuff")
-    public Flux<String> completion(@RequestParam(required = false,defaultValue = "SILICON_FLOW") String modelEnum,
+    public Flux<String> completion(@RequestParam(required = false,defaultValue = "SILICON_FLOW") String platformEnum,
                                    @RequestParam(
                                            value = "message",
                                            required = false,
@@ -47,9 +48,8 @@ public class StuffController {
         } else {
             map.put("context", "");
         }
-
-        ChatClient chatClient = chatEngine.getChatClient(ModelEnum.fromEnumName(modelEnum));
-        return chatClient.prompt(promptTemplate.create(map))
-                .stream().content();
+        ModelRequest request = new ModelRequest(message, platformEnum, null);
+        return chatEngine.stream(request);
+        //return chatClient.prompt(promptTemplate.create(map)).stream().content();
     }
 }

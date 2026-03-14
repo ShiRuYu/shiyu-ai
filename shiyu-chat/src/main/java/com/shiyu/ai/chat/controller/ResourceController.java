@@ -2,7 +2,8 @@ package com.shiyu.ai.chat.controller;
 
 import com.shiyu.ai.chat.config.ChatResource;
 import com.shiyu.ai.chat.lm.ChatEngine;
-import com.shiyu.ai.chat.lm.ModelEnum;
+import com.shiyu.ai.chat.lm.PlatformEnum;
+import com.shiyu.ai.chat.lm.request.ModelRequest;
 import jakarta.annotation.Resource;
 import org.springframework.ai.chat.client.ChatClient;
 import org.springframework.ai.chat.messages.Message;
@@ -30,7 +31,7 @@ public class ResourceController {
 
 
     @GetMapping("/stream")
-    public Flux<String> stream(@RequestParam(required = false,defaultValue = "SILICON_FLOW") String modelEnum,
+    public Flux<String> stream(@RequestParam(required = false,defaultValue = "SILICON_FLOW") String platformEnum,
                                @RequestParam(
                                        value = "message",
                                        required = false,
@@ -47,13 +48,11 @@ public class ResourceController {
         // 填充 System prompt 中的变量值
         Message systemMessage = systemPromptTemplate.createMessage(Map.of("name", name, "voice", voice));
 
-        ChatClient chatClient = chatEngine.getChatClient(ModelEnum.fromEnumName(modelEnum));
         // 调用大模型
-        return chatClient.prompt(
-                        new Prompt(List.of(
-                                userMessage,
-                                systemMessage)))
-                .stream().content();
+        ModelRequest request = new ModelRequest(message, platformEnum, null);
+        return chatEngine.stream(request);
+        //ChatClient chatClient = chatEngine.getChatClient(PlatformEnum.fromEnumName(platformEnum));
+        //return chatClient.prompt(new Prompt(List.of(userMessage, systemMessage))).stream().content();
     }
 
 }

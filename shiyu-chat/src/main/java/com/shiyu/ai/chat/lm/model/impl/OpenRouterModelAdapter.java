@@ -1,7 +1,7 @@
 package com.shiyu.ai.chat.lm.model.impl;
 
 import com.shiyu.ai.chat.config.ModelProperties;
-import com.shiyu.ai.chat.lm.ModelEnum;
+import com.shiyu.ai.chat.lm.PlatformEnum;
 import com.shiyu.ai.chat.lm.model.AbstractModelAdapter;
 import com.shiyu.ai.chat.lm.request.ModelRequest;
 import lombok.extern.slf4j.Slf4j;
@@ -81,7 +81,7 @@ public class OpenRouterModelAdapter extends AbstractModelAdapter {
     }
     
     @Override
-    public ModelEnum getType() {
-        return ModelEnum.OPEN_ROUTER;
+    public PlatformEnum getType() {
+        return PlatformEnum.OPEN_ROUTER;
     }
 }

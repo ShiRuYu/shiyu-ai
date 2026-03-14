@@ -25,7 +25,7 @@ public class ChatEngine {
     /**
      * 模型适配器缓存（避免重复从 Map 中获取）
      */
-    private final Map<ModelEnum, ModelAdapter> adapterCache = new ConcurrentHashMap<>();
+    private final Map<PlatformEnum, ModelAdapter> adapterCache = new ConcurrentHashMap<>();
 
     /**
      * 同步调用模型
@@ -33,12 +33,12 @@ public class ChatEngine {
      * @return 模型响应
      */
     public String call(ModelRequest request) {
-        ModelEnum modelEnum = resolveModelEnum(request);
-        log.debug("Calling model: {} with input: {}", modelEnum, request.getPrompt());
+        PlatformEnum platformEnum = resolvePlatformEnum(request);
+        log.debug("Calling model: {} with input: {}", platformEnum, request.getPrompt());
         
-        ModelAdapter adapter = getAdapter(modelEnum);
+        ModelAdapter adapter = getAdapter(platformEnum);
         String response = adapter.call(request);
-        log.debug("Model: {} responded successfully", modelEnum);
+        log.debug("Model: {} responded successfully", platformEnum);
         return response;
     }
 
@@ -48,40 +48,40 @@ public class ChatEngine {
      * @return 流式响应
      */
     public Flux<String> stream(ModelRequest request) {
-        ModelEnum modelEnum = resolveModelEnum(request);
-        log.debug("Streaming model: {} with input: {}", modelEnum, request.getPrompt());
+        PlatformEnum platformEnum = resolvePlatformEnum(request);
+        log.debug("Streaming model: {} with input: {}", platformEnum, request.getPrompt());
         
-        ModelAdapter adapter = getAdapter(modelEnum);
+        ModelAdapter adapter = getAdapter(platformEnum);
         Flux<String> response = adapter.stream(request);
-        log.debug("Model: {} streaming started", modelEnum);
+        log.debug("Model: {} streaming started", platformEnum);
         return response;
     }
 
     /**
-     * 根据 ModelRequest 解析 ModelEnum
+     * 根据 ModelRequest 解析 PlatformEnum
      * 优先使用 platform 和 modelName 匹配，其次使用 meta 中的配置
      * @param request 请求参数
-     * @return 模型类型
+     * @return 平台类型
      */
-    private ModelEnum resolveModelEnum(ModelRequest request) {
+    private PlatformEnum resolvePlatformEnum(ModelRequest request) {
         // 如果有 platform 和 modelName，尝试匹配
         if (request.getPlatform() != null || request.getModelName() != null) {
             // 这里可以根据 platform 和 modelName 进行更精确的匹配
             // 暂时返回默认模型或根据现有逻辑推断
-            return ModelEnum.fromAdapterName(request.getPlatform());
+            return PlatformEnum.fromAdapterName(request.getPlatform());
         }
         
-        // 如果没有指定，使用默认模型
-        return ModelEnum.defaultModel();
+        // 如果没有指定，使用 LOCAL 平台
+        return PlatformEnum.LOCAL;
     }
     
     /**
      * 获取模型适配器（带缓存）
-     * @param modelEnum 模型类型
+     * @param platformEnum 模型类型
      * @return 模型适配器
      */
-    private ModelAdapter getAdapter(ModelEnum modelEnum) {
-        return adapterCache.computeIfAbsent(modelEnum, key -> {
+    private ModelAdapter getAdapter(PlatformEnum platformEnum) {
+        return adapterCache.computeIfAbsent(platformEnum, key -> {
             ModelAdapter adapter = modelAdapterMap.get(key.getAdapterName());
             if (adapter == null) {
                 log.error("No ModelAdapter found for: {}", key);

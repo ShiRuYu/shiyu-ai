@@ -1,6 +1,6 @@
 package com.shiyu.ai.chat.lm.model;
 
-import com.shiyu.ai.chat.lm.ModelEnum;
+import com.shiyu.ai.chat.lm.PlatformEnum;
 import com.shiyu.ai.chat.lm.request.ModelRequest;
 import reactor.core.publisher.Flux;
 
@@ -14,7 +14,7 @@ public interface ModelAdapter {
      * 获取模型类型枚举
      * @return 模型类型
      */
-    ModelEnum getType();
+    PlatformEnum getType();
     
     /**
      * 同步调用模型

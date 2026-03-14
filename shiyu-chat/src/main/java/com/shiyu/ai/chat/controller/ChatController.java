@@ -4,7 +4,7 @@ import cn.hutool.core.util.IdUtil;
 import com.shiyu.ai.chat.domain.ChatRequest;
 import com.shiyu.ai.chat.domain.GlobalContext;
 import com.shiyu.ai.chat.lm.ChatEngine;
-import com.shiyu.ai.chat.lm.ModelEnum;
+import com.shiyu.ai.chat.lm.PlatformEnum;
 import com.shiyu.ai.chat.lm.request.ModelRequest;
 import com.shiyu.ai.common.core.utils.JSONUtils;
 import com.yomahub.liteflow.core.FlowExecutor;
@@ -30,8 +30,8 @@ public class ChatController {
      */
     @GetMapping("/stream")
     public Flux<String> stream(String text, 
-                               @RequestParam(required = false, defaultValue = "SILICON_FLOW") String modelEnum) {
-        ModelEnum modelType = ModelEnum.fromEnumName(modelEnum);
+                               @RequestParam(required = false, defaultValue = "SILICON_FLOW") String platformEnum) {
+        PlatformEnum modelType = PlatformEnum.fromEnumName(platformEnum);
         ModelRequest request = new ModelRequest(text, modelType.getAdapterName(), null);
         return chatEngine.stream(request);
     }

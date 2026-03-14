@@ -1,6 +1,5 @@
 package com.shiyu.ai.chat.lm.model;
 
-import com.shiyu.ai.chat.lm.ModelEnum;
 import com.shiyu.ai.chat.lm.request.ModelRequest;
 import lombok.extern.slf4j.Slf4j;
 import reactor.core.publisher.Flux;

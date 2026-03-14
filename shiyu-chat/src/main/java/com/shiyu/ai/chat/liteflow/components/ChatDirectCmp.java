@@ -2,7 +2,7 @@ package com.shiyu.ai.chat.liteflow.components;
 
 import com.shiyu.ai.chat.lm.ChatEngine;
 import com.shiyu.ai.chat.domain.GlobalContext;
-import com.shiyu.ai.chat.lm.ModelEnum;
+import com.shiyu.ai.chat.lm.PlatformEnum;
 import com.shiyu.ai.chat.lm.request.ModelRequest;
 import com.yomahub.liteflow.annotation.LiteflowComponent;
 import com.yomahub.liteflow.core.NodeComponent;
@@ -29,7 +29,7 @@ public class ChatDirectCmp extends NodeComponent {
         String promptWithMemory = buildPromptWithMemory(query, memoryContextObj);
         
         // 直接调用模型回答问题
-        ModelRequest request = new ModelRequest(promptWithMemory, ModelEnum.SILICON_FLOW.getAdapterName(), null);
+        ModelRequest request = new ModelRequest(promptWithMemory, PlatformEnum.SILICON_FLOW.getAdapterName(), null);
         String result = chatEngine.call(request);
         
         log.info("直接对话完成");
