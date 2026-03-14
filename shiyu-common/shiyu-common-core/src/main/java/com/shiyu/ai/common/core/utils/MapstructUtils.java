@@ -2,8 +2,6 @@ package com.shiyu.ai.common.core.utils;
 
 import com.google.common.collect.Lists;
 import io.github.linpeilie.Converter;
-import lombok.AccessLevel;
-import lombok.NoArgsConstructor;
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.collections4.MapUtils;
 

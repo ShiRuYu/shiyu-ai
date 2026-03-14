@@ -3,8 +3,6 @@ package com.shiyu.ai.common.core.utils.file;
 import cn.hutool.core.io.FileUtil;
 import com.shiyu.ai.common.core.utils.StringUtils;
 import jakarta.servlet.http.HttpServletResponse;
-import lombok.AccessLevel;
-import lombok.NoArgsConstructor;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.net.URLEncoder;

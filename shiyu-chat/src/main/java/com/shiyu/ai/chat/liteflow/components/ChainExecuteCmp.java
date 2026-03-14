@@ -25,7 +25,7 @@ public class ChainExecuteCmp extends NodeComponent {
             //调用子链（CoT/ToT/ReAct）
             this.invoke2Resp(chainToCall, context);
         } catch (Exception e) {
-            log.error("CHAIN_EXECUTE 异常: " + e.getMessage());
+            log.error("CHAIN_EXECUTE 异常: {}", e.getMessage());
         }
     }
 

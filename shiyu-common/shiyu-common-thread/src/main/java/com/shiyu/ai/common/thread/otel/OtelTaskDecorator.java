@@ -1,7 +1,6 @@
 
 package com.shiyu.ai.common.thread.otel;
 
-import com.shiyu.ai.common.thread.context.TaskContext;
 import io.opentelemetry.api.trace.Span;
 import io.opentelemetry.api.trace.Tracer;
 import io.opentelemetry.context.Context;

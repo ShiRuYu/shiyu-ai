@@ -1,6 +1,5 @@
 package com.shiyu.ai.common.core.api;
 
-import cn.hutool.http.HttpStatus;
 import com.shiyu.ai.common.core.enums.BizResultCode;
 import lombok.Data;
 import lombok.NoArgsConstructor;

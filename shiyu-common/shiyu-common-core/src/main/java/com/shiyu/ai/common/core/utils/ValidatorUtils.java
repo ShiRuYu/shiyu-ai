@@ -3,8 +3,6 @@ package com.shiyu.ai.common.core.utils;
 import jakarta.validation.ConstraintViolation;
 import jakarta.validation.ConstraintViolationException;
 import jakarta.validation.Validator;
-import lombok.AccessLevel;
-import lombok.NoArgsConstructor;
 
 import java.util.Set;
 

@@ -1,8 +1,6 @@
 package com.shiyu.ai.common.core.domain;
 
 import com.shiyu.ai.common.core.enums.UserTypeEnum;
-import lombok.AccessLevel;
-import lombok.NoArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 
 /**

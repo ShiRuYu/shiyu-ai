@@ -3,7 +3,6 @@ package com.shiyu.ai.chat.domain;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.Getter;
-import org.springframework.stereotype.Component;
 
 import java.util.HashMap;
 import java.util.Map;

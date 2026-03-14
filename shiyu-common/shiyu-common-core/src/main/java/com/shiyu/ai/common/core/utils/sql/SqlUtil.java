@@ -1,7 +1,5 @@
 package com.shiyu.ai.common.core.utils.sql;
 
-import lombok.AccessLevel;
-import lombok.NoArgsConstructor;
 import com.shiyu.ai.common.core.exception.UtilException;
 import com.shiyu.ai.common.core.utils.StringUtils;
 

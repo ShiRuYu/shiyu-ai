@@ -43,7 +43,7 @@ public class IntentCmp extends NodeComponent {
         context.set(GlobalContext.ChatBizKeyEnum.INTENT.getCode(), matchedIntent);
         context.set(GlobalContext.ChatBizKeyEnum.CHAIN.getCode(), matchedIntent.getChainToCall());
 
-        log.info("INTENT 节点执行完毕，intent=" + JSONUtils.toJsonString(matchedIntent));
+        log.info("INTENT 节点执行完毕，intent={}", JSONUtils.toJsonString(matchedIntent));
     }
 
     /**
