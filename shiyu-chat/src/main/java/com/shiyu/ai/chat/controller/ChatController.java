@@ -1,18 +1,11 @@
 package com.shiyu.ai.chat.controller;
 
-import cn.hutool.core.util.IdUtil;
 import com.shiyu.ai.chat.domain.ChatRequest;
-import com.shiyu.ai.chat.domain.GlobalContext;
-import com.shiyu.ai.chat.lm.ChatEngine;
-import com.shiyu.ai.chat.lm.PlatformEnum;
-import com.shiyu.ai.chat.lm.request.ModelRequest;
-import com.shiyu.ai.common.core.utils.JSONUtils;
-import com.yomahub.liteflow.core.FlowExecutor;
+import com.shiyu.ai.chat.service.ChatService;
 import jakarta.annotation.Resource;
 import org.springframework.web.bind.annotation.*;
 import reactor.core.publisher.Flux;
 
-import java.util.HashMap;
 import java.util.Map;
 
 @RestController
@@ -20,10 +13,7 @@ import java.util.Map;
 public class ChatController {
 
     @Resource
-    private ChatEngine chatEngine;
-
-    @Resource
-    private FlowExecutor flowExecutor;
+    private ChatService chatService;
 
     /**
      * 流式对话接口
@@ -31,9 +21,7 @@ public class ChatController {
     @GetMapping("/stream")
     public Flux<String> stream(String text, 
                                @RequestParam(required = false, defaultValue = "SILICON_FLOW") String platformEnum) {
-        PlatformEnum modelType = PlatformEnum.fromEnumName(platformEnum);
-        ModelRequest request = new ModelRequest(text, modelType.getAdapterName(), null);
-        return chatEngine.stream(request);
+        return chatService.stream(text, platformEnum);
     }
 
     /**
@@ -41,39 +29,7 @@ public class ChatController {
      */
     @PostMapping
     public Map<String, Object> chat(@RequestBody ChatRequest request) {
-        GlobalContext context = new GlobalContext();
-        try {
-            String query = request.text();
-            String sessionId = request.sessionId() != null ? request.sessionId() : generateSessionId();
-            String userId = request.userId();
-            
-            // 设置上下文信息
-            context.set(GlobalContext.ChatBizKeyEnum.QUERY.getCode(), query);
-            context.set(GlobalContext.ChatBizKeyEnum.SESSION_ID.getCode(), sessionId);
-            context.set(GlobalContext.ChatBizKeyEnum.USER_ID.getCode(), userId);
-            
-            // 执行主流程（包含记忆加载和保存）
-            flowExecutor.execute2Resp("chatFlow", null, context);
-            
-            String result = context.get(GlobalContext.ChatBizKeyEnum.FINAL_ANSWER.getCode());
-            Object intentObj = context.get(GlobalContext.ChatBizKeyEnum.INTENT.getCode());
-            String intent = intentObj != null ? JSONUtils.toJsonString(intentObj) : null;
-            String chain = context.get(GlobalContext.ChatBizKeyEnum.CHAIN.getCode());
-            
-            Map<String, Object> response = new HashMap<>();
-            response.put("result", result != null ? result : "no_solution");
-            response.put("intent", intent);
-            response.put("chain", chain);
-            response.put("sessionId", sessionId); // 返回 sessionId 用于后续对话
-            
-            return response;
-
-        } catch (Exception e) {
-            e.printStackTrace();
-            Map<String, Object> errorResponse = new HashMap<>();
-            errorResponse.put("error", e.getMessage());
-            return errorResponse;
-        }
+        return chatService.chat(request);
     }
 
     /**
@@ -85,13 +41,6 @@ public class ChatController {
             @RequestParam(required = false) String sessionId,
             @RequestParam(required = false) String userId) {
         ChatRequest request = new ChatRequest(text, sessionId, userId);
-        return chat(request);
-    }
-    
-    /**
-     * 生成会话 ID
-     */
-    private String generateSessionId() {
-        return IdUtil.fastSimpleUUID();
+        return chatService.chat(request);
     }
 }
