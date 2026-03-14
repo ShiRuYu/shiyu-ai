@@ -1,39 +1,20 @@
 package com.shiyu.ai.chat.config;
 
-import org.springframework.ai.chat.client.ChatClient;
-import org.springframework.ai.chat.model.ChatModel;
 import org.springframework.ai.document.MetadataMode;
 import org.springframework.ai.embedding.EmbeddingModel;
-import org.springframework.ai.openai.OpenAiChatModel;
-import org.springframework.ai.openai.OpenAiChatOptions;
 import org.springframework.ai.openai.OpenAiEmbeddingModel;
 import org.springframework.ai.openai.OpenAiEmbeddingOptions;
 import org.springframework.ai.openai.api.OpenAiApi;
-import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.web.client.RestClient;
 
+/**
+ * 多模型客户端配置
+ * 注意：ChatClient 的创建已迁移到各 ModelAdapter 实现类中
+ */
 @Configuration
 public class MultiClientConfig {
-
-    @Bean
-    public ChatModel siliconFlowChatModel(RestClient.Builder restClientBuilder, ModelProperties modelProperties) {
-        ModelProperties.SiliconFlowConfig siliconflow = modelProperties.getSiliconflow();
-        String baseUrl = siliconflow.getBaseUrl();
-        String apiKey = siliconflow.getApiKey();
-        String model = siliconflow.getModel();
-        assert apiKey != null;
-        OpenAiApi api = OpenAiApi.builder()
-                .restClientBuilder(restClientBuilder)
-                .baseUrl(baseUrl)
-                .apiKey(apiKey)
-                .build();
-        OpenAiChatOptions options = OpenAiChatOptions.builder()
-                .model(model)
-                .build();
-        return OpenAiChatModel.builder().openAiApi(api).defaultOptions(options).build();
-    }
 
     @Bean
     public EmbeddingModel siliconFlowEmbeddingModel(RestClient.Builder restClientBuilder, ModelProperties modelProperties) {
@@ -53,34 +34,6 @@ public class MultiClientConfig {
                 .build();
 
         return new OpenAiEmbeddingModel(openAiApi, MetadataMode.EMBED, openAiEmbeddingOptions);
-    }
-
-
-    @Bean
-    public ChatClient siliconFlowChatClient(@Qualifier("siliconFlowChatModel") ChatModel chatModel) {
-        return ChatClient.builder(chatModel).build();
-    }
-
-    @Bean
-    public ChatModel openRouterChatModel(ModelProperties modelProperties) {
-        ModelProperties.OpenRouterConfig openRouter = modelProperties.getOpenrouter();
-        String baseUrl = openRouter.getBaseUrl();
-        String apiKey = openRouter.getApiKey();
-        String model = openRouter.getModel();
-        assert apiKey != null;
-        OpenAiApi api = OpenAiApi.builder()
-                .baseUrl(baseUrl)
-                .apiKey(apiKey)
-                .build();
-        OpenAiChatOptions options = OpenAiChatOptions.builder()
-                .model(model)
-                .build();
-        return OpenAiChatModel.builder().openAiApi(api).defaultOptions(options).build();
-    }
-
-    @Bean
-    public ChatClient openRouterChatClient(@Qualifier("openRouterChatModel") ChatModel chatModel) {
-        return ChatClient.builder(chatModel).build();
     }
 
 }
