@@ -17,7 +17,7 @@ import java.util.List;
 
 @Slf4j
 @LiteflowComponent("CHAT_TOT")
-class ChatToTCmp extends NodeComponent {
+public class ChatToTCmp extends NodeComponent {
     @Resource
     private ChatEngine chatEngine;
 

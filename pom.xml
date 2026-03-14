@@ -236,6 +236,12 @@
                 <artifactId>liteflow-spring-boot-starter</artifactId>
                 <version>${liteflow-spring.version}</version>
             </dependency>
+            <dependency>
+                <groupId>com.yomahub</groupId>
+                <artifactId>liteflow-el-builder</artifactId>
+                <version>${liteflow-spring.version}</version>
+            </dependency>
+
 
             <dependency>
                 <groupId>com.h2database</groupId>

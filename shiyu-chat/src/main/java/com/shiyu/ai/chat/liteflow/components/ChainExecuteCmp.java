@@ -12,7 +12,7 @@ import lombok.extern.slf4j.Slf4j;
  */
 @Slf4j
 @LiteflowComponent("CHAIN_EXECUTE")
-class ChainExecuteCmp extends NodeComponent {
+public class ChainExecuteCmp extends NodeComponent {
     @Resource
     private FlowExecutor flowExecutor;
 
