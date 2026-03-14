@@ -11,7 +11,7 @@ import org.springframework.web.client.RestClient;
 
 /**
  * 多模型客户端配置
- * 注意：ChatClient 的创建已迁移到各 ModelAdapter 实现类中
+ * 注意：ChatClient 的创建已迁移到各 PlatformAdapter 实现类中
  */
 @Configuration
 public class MultiClientConfig {

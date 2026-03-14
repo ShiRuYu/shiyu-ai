@@ -42,7 +42,7 @@ public enum PlatformEnum {
     ;
 
     /**
-     * ModelAdapter Bean 名称
+     * PlatformAdapter Bean 名称
      */
     private final String adapterName;
 

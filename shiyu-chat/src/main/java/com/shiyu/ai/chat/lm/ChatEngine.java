@@ -1,7 +1,7 @@
 package com.shiyu.ai.chat.lm;
 
 
-import com.shiyu.ai.chat.lm.model.ModelAdapter;
+import com.shiyu.ai.chat.lm.model.PlatformAdapter;
 import com.shiyu.ai.chat.lm.request.ModelRequest;
 import jakarta.annotation.Resource;
 import lombok.extern.slf4j.Slf4j;
@@ -20,12 +20,12 @@ import java.util.concurrent.ConcurrentHashMap;
 public class ChatEngine {
 
     @Resource
-    private Map<String, ModelAdapter> modelAdapterMap;
+    private Map<String, PlatformAdapter> modelAdapterMap;
 
     /**
-     * 模型适配器缓存（避免重复从 Map 中获取）
+     * 平台适配器缓存（避免重复从 Map 中获取）
      */
-    private final Map<PlatformEnum, ModelAdapter> adapterCache = new ConcurrentHashMap<>();
+    private final Map<PlatformEnum, PlatformAdapter> adapterCache = new ConcurrentHashMap<>();
 
     /**
      * 同步调用模型
@@ -36,7 +36,7 @@ public class ChatEngine {
         PlatformEnum platformEnum = resolvePlatformEnum(request);
         log.debug("Calling model: {} with input: {}", platformEnum, request.getPrompt());
         
-        ModelAdapter adapter = getAdapter(platformEnum);
+        PlatformAdapter adapter = getAdapter(platformEnum);
         String response = adapter.call(request);
         log.debug("Model: {} responded successfully", platformEnum);
         return response;
@@ -51,7 +51,7 @@ public class ChatEngine {
         PlatformEnum platformEnum = resolvePlatformEnum(request);
         log.debug("Streaming model: {} with input: {}", platformEnum, request.getPrompt());
         
-        ModelAdapter adapter = getAdapter(platformEnum);
+        PlatformAdapter adapter = getAdapter(platformEnum);
         Flux<String> response = adapter.stream(request);
         log.debug("Model: {} streaming started", platformEnum);
         return response;
@@ -80,14 +80,14 @@ public class ChatEngine {
      * @param platformEnum 模型类型
      * @return 模型适配器
      */
-    private ModelAdapter getAdapter(PlatformEnum platformEnum) {
+    private PlatformAdapter getAdapter(PlatformEnum platformEnum) {
         return adapterCache.computeIfAbsent(platformEnum, key -> {
-            ModelAdapter adapter = modelAdapterMap.get(key.getAdapterName());
+            PlatformAdapter adapter = modelAdapterMap.get(key.getAdapterName());
             if (adapter == null) {
-                log.error("No ModelAdapter found for: {}", key);
-                throw new IllegalArgumentException("No ModelAdapter found for: " + key);
+                log.error("No PlatformAdapter found for: {}", key);
+                throw new IllegalArgumentException("No PlatformAdapter found for: " + key);
             }
-            log.info("Loaded ModelAdapter for: {} -> {}", key, adapter.getClass().getSimpleName());
+            log.info("Loaded PlatformAdapter for: {} -> {}", key, adapter.getClass().getSimpleName());
             return adapter;
         });
     }

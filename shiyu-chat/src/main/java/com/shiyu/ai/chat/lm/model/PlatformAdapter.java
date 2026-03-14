@@ -5,14 +5,14 @@ import com.shiyu.ai.chat.lm.request.ModelRequest;
 import reactor.core.publisher.Flux;
 
 /**
- * 大模型适配器接口
- * 用于适配不同的大语言模型提供商
+ * 平台适配器接口
+ * 用于适配不同的平台提供商
  */
-public interface ModelAdapter {
+public interface PlatformAdapter {
     
     /**
-     * 获取模型类型枚举
-     * @return 模型类型
+     * 获取平台类型枚举
+     * @return 平台类型
      */
     PlatformEnum getType();
     

@@ -2,7 +2,7 @@ package com.shiyu.ai.chat.lm.model.impl;
 
 import com.shiyu.ai.chat.config.ModelProperties;
 import com.shiyu.ai.chat.lm.PlatformEnum;
-import com.shiyu.ai.chat.lm.model.AbstractModelAdapter;
+import com.shiyu.ai.chat.lm.model.AbstractPlatformAdapter;
 import com.shiyu.ai.chat.lm.request.ModelRequest;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.ai.chat.client.ChatClient;
@@ -21,7 +21,7 @@ import java.util.concurrent.ConcurrentHashMap;
  */
 @Slf4j
 @Component("openAIModelAdapter")
-public class OpenAIAdapter extends AbstractModelAdapter {
+public class OpenAIAdapter extends AbstractPlatformAdapter {
 
     private final ModelProperties.OpenAIConfig defaultConfig;
     

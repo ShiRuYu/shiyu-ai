@@ -5,11 +5,11 @@ import lombok.extern.slf4j.Slf4j;
 import reactor.core.publisher.Flux;
 
 /**
- * 抽象模型适配器基类
+ * 抽象平台适配器基类
  * 提供通用的实现和错误处理逻辑，不包含客户端相关代码
  */
 @Slf4j
-public abstract class AbstractModelAdapter implements ModelAdapter {
+public abstract class AbstractPlatformAdapter implements PlatformAdapter {
 
     /**
      * 执行同步调用（由子类提供具体实现）

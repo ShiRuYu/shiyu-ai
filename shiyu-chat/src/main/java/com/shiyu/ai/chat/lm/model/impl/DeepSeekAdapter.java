@@ -2,7 +2,7 @@ package com.shiyu.ai.chat.lm.model.impl;
 
 import com.shiyu.ai.chat.config.ModelProperties;
 import com.shiyu.ai.chat.lm.PlatformEnum;
-import com.shiyu.ai.chat.lm.model.AbstractModelAdapter;
+import com.shiyu.ai.chat.lm.model.AbstractPlatformAdapter;
 import com.shiyu.ai.chat.lm.request.ModelRequest;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.ai.chat.client.ChatClient;
@@ -21,7 +21,7 @@ import java.util.concurrent.ConcurrentHashMap;
  */
 @Slf4j
 @Component("deepseekModelAdapter")
-public class DeepSeekAdapter extends AbstractModelAdapter {
+public class DeepSeekAdapter extends AbstractPlatformAdapter {
 
     private static final String DEFAULT_BASE_URL = "https://api.deepseek.com";
     private static final String DEFAULT_MODEL = "deepseek-chat";

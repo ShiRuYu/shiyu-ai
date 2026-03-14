@@ -2,7 +2,7 @@ package com.shiyu.ai.chat.lm.model.impl;
 
 import com.shiyu.ai.chat.config.ModelProperties;
 import com.shiyu.ai.chat.lm.PlatformEnum;
-import com.shiyu.ai.chat.lm.model.AbstractModelAdapter;
+import com.shiyu.ai.chat.lm.model.AbstractPlatformAdapter;
 import com.shiyu.ai.chat.lm.request.ModelRequest;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.ai.chat.client.ChatClient;
@@ -21,7 +21,7 @@ import java.util.concurrent.ConcurrentHashMap;
  */
 @Slf4j
 @Component("localModelAdapter")
-public class LocalLLMAdapter extends AbstractModelAdapter {
+public class LocalLLMAdapter extends AbstractPlatformAdapter {
 
     private static final String DEFAULT_BASE_URL = "http://localhost:11434";
     private static final String DEFAULT_API_KEY = "ollama";
