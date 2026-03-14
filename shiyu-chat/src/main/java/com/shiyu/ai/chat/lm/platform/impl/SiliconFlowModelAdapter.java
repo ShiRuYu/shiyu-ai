@@ -1,6 +1,6 @@
 package com.shiyu.ai.chat.lm.platform.impl;
 
-import com.shiyu.ai.chat.config.ModelProperties;
+import com.shiyu.ai.chat.config.PlateformProperties;
 import com.shiyu.ai.chat.lm.PlatformEnum;
 import com.shiyu.ai.chat.lm.platform.AbstractPlatformAdapter;
 import com.shiyu.ai.chat.lm.request.LmRequest;
@@ -27,14 +27,14 @@ import java.util.concurrent.ConcurrentHashMap;
 @Component("siliconFlowModelAdapter")
 public class SiliconFlowModelAdapter extends AbstractPlatformAdapter {
 
-    private final ModelProperties.SiliconFlowConfig defaultConfig;
+    private final PlateformProperties.SiliconFlowConfig defaultConfig;
     
     /**
      * ChatClient 缓存（按 modelName 缓存）
      */
     private final Map<String, ChatClient> chatClientCache = new ConcurrentHashMap<>();
 
-    public SiliconFlowModelAdapter(RestClient.Builder restClientBuilder, ModelProperties modelProperties) {
+    public SiliconFlowModelAdapter(RestClient.Builder restClientBuilder, PlateformProperties modelProperties) {
         this.defaultConfig = modelProperties.getSiliconflow();
         String baseUrl = defaultConfig.getBaseUrl();
         String apiKey = defaultConfig.getApiKey();

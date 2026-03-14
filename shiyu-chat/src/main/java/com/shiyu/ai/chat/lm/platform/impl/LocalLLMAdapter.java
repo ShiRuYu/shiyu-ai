@@ -1,6 +1,6 @@
 package com.shiyu.ai.chat.lm.platform.impl;
 
-import com.shiyu.ai.chat.config.ModelProperties;
+import com.shiyu.ai.chat.config.PlateformProperties;
 import com.shiyu.ai.chat.lm.PlatformEnum;
 import com.shiyu.ai.chat.lm.platform.AbstractPlatformAdapter;
 import com.shiyu.ai.chat.lm.request.LmRequest;
@@ -33,7 +33,7 @@ public class LocalLLMAdapter extends AbstractPlatformAdapter {
      */
     private final Map<String, ChatClient> chatClientCache = new ConcurrentHashMap<>();
 
-    public LocalLLMAdapter(ModelProperties modelProperties) {
+    public LocalLLMAdapter(PlateformProperties modelProperties) {
         String modelName = System.getenv("LOCAL_MODEL_NAME");
         
         if (modelName == null || modelName.isEmpty()) {

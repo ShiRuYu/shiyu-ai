@@ -10,7 +10,7 @@ import org.springframework.context.annotation.PropertySource;
 @Configuration
 @ConfigurationProperties(prefix = "shiyu.ai")
 @PropertySource(value = "classpath:/config/config.yml", factory = YmlPropertySourceFactory.class)
-public class ModelProperties {
+public class PlateformProperties {
     private OpenAIConfig openai;
     private OpenRouterConfig openrouter;
     private SiliconFlowConfig siliconflow;
@@ -38,4 +38,3 @@ public class ModelProperties {
     }
 
 }
-

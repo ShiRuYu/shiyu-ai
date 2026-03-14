@@ -1,6 +1,6 @@
 package com.shiyu.ai.chat.lm.platform.impl;
 
-import com.shiyu.ai.chat.config.ModelProperties;
+import com.shiyu.ai.chat.config.PlateformProperties;
 import com.shiyu.ai.chat.lm.PlatformEnum;
 import com.shiyu.ai.chat.lm.platform.AbstractPlatformAdapter;
 import com.shiyu.ai.chat.lm.request.LmRequest;
@@ -33,7 +33,7 @@ public class DeepSeekAdapter extends AbstractPlatformAdapter {
      */
     private final Map<String, ChatClient> chatClientCache = new ConcurrentHashMap<>();
 
-    public DeepSeekAdapter(ModelProperties modelProperties) {
+    public DeepSeekAdapter(PlateformProperties modelProperties) {
         String apiKey = System.getenv("DEEPSEEK_API_KEY");
         
         if (apiKey == null || apiKey.isEmpty()) {

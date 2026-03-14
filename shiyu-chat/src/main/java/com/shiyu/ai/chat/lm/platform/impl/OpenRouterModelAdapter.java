@@ -1,6 +1,6 @@
 package com.shiyu.ai.chat.lm.platform.impl;
 
-import com.shiyu.ai.chat.config.ModelProperties;
+import com.shiyu.ai.chat.config.PlateformProperties;
 import com.shiyu.ai.chat.lm.PlatformEnum;
 import com.shiyu.ai.chat.lm.platform.AbstractPlatformAdapter;
 import com.shiyu.ai.chat.lm.request.LmRequest;
@@ -25,14 +25,14 @@ import java.util.concurrent.ConcurrentHashMap;
 @Component("openRouterModelAdapter")
 public class OpenRouterModelAdapter extends AbstractPlatformAdapter {
 
-    private final ModelProperties.OpenRouterConfig defaultConfig;
+    private final PlateformProperties.OpenRouterConfig defaultConfig;
     
     /**
      * ChatClient 缓存（按 modelName 缓存）
      */
     private final Map<String, ChatClient> chatClientCache = new ConcurrentHashMap<>();
 
-    public OpenRouterModelAdapter(ModelProperties modelProperties) {
+    public OpenRouterModelAdapter(PlateformProperties modelProperties) {
         this.defaultConfig = modelProperties.getOpenrouter();
         String baseUrl = defaultConfig.getBaseUrl();
         String apiKey = defaultConfig.getApiKey();
