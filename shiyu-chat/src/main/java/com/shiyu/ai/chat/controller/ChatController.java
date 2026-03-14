@@ -5,6 +5,7 @@ import com.shiyu.ai.chat.domain.ChatRequest;
 import com.shiyu.ai.chat.domain.GlobalContext;
 import com.shiyu.ai.chat.lm.ChatEngine;
 import com.shiyu.ai.chat.lm.ModelEnum;
+import com.shiyu.ai.chat.lm.request.ModelRequest;
 import com.shiyu.ai.common.core.utils.JSONUtils;
 import com.yomahub.liteflow.core.FlowExecutor;
 import jakarta.annotation.Resource;
@@ -30,7 +31,9 @@ public class ChatController {
     @GetMapping("/stream")
     public Flux<String> stream(String text, 
                                @RequestParam(required = false, defaultValue = "SILICON_FLOW") String modelEnum) {
-        return chatEngine.stream(text, ModelEnum.fromEnumName(modelEnum));
+        ModelEnum modelType = ModelEnum.fromEnumName(modelEnum);
+        ModelRequest request = new ModelRequest(text, modelType.getAdapterName(), null);
+        return chatEngine.stream(request);
     }
 
     /**

@@ -6,6 +6,7 @@ import com.shiyu.ai.chat.domain.memory.ConversationHistory;
 import com.shiyu.ai.chat.domain.memory.MemoryContext;
 import com.shiyu.ai.chat.lm.ChatEngine;
 import com.shiyu.ai.chat.lm.ModelEnum;
+import com.shiyu.ai.chat.lm.request.ModelRequest;
 import com.shiyu.ai.chat.service.MemoryService;
 import jakarta.annotation.Resource;
 import lombok.extern.slf4j.Slf4j;
@@ -220,7 +221,7 @@ public class MemoryServiceImpl implements MemoryService {
                     "5. 保持简洁，每个要点不超过 50 字",
                     query, response);
             
-            String result = chatEngine.call(extractPrompt, ModelEnum.SILICON_FLOW);
+            String result = chatEngine.call(new ModelRequest(extractPrompt, ModelEnum.SILICON_FLOW.getAdapterName(), null));
             
             if (result != null && !result.trim().isEmpty() && !result.contains("无")) {
                 // 将提取的信息存储为长期记忆

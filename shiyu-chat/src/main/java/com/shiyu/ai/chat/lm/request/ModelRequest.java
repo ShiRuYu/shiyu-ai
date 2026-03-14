@@ -18,7 +18,17 @@ public class ModelRequest {
     private String prompt;
     
     /**
-     * 元数据配置（temperature, maxTokens, modelName 等）
+     * 平台名称（如：openRouter, siliconFlow 等）
+     */
+    private String platform;
+    
+    /**
+     * 模型名称（如：gpt-4, deepseek-chat 等）
+     */
+    private String modelName;
+    
+    /**
+     * 元数据配置（temperature, maxTokens 等）
      */
     private Map<String, Object> meta;
     
@@ -34,13 +44,28 @@ public class ModelRequest {
         this.prompt = prompt;
     }
 
+    public ModelRequest(String prompt, String platform, String modelName) {
+        this.prompt = prompt;
+        this.platform = platform;
+        this.modelName = modelName;
+    }
+
     public ModelRequest(String prompt, Map<String, Object> meta) {
         this.prompt = prompt;
         this.meta = meta;
     }
 
-    public ModelRequest(String prompt, Map<String, Object> meta, List<Message> messages) {
+    public ModelRequest(String prompt, String platform, String modelName, Map<String, Object> meta) {
         this.prompt = prompt;
+        this.platform = platform;
+        this.modelName = modelName;
+        this.meta = meta;
+    }
+
+    public ModelRequest(String prompt, String platform, String modelName, Map<String, Object> meta, List<Message> messages) {
+        this.prompt = prompt;
+        this.platform = platform;
+        this.modelName = modelName;
         this.meta = meta;
         this.messages = messages;
     }

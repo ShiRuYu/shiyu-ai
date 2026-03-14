@@ -40,16 +40,14 @@ public class ChatEngine {
 
     /**
      * 同步调用模型
-     * @param input 输入文本
-     * @param modelEnum 模型类型
+     * @param request 请求参数（包含 prompt、platform、modelName 等）
      * @return 模型响应
      */
-    public String call(String input, ModelEnum modelEnum) {
-        log.debug("Calling model: {} with input: {}", modelEnum, input);
+    public String call(ModelRequest request) {
+        ModelEnum modelEnum = resolveModelEnum(request);
+        log.debug("Calling model: {} with input: {}", modelEnum, request.getPrompt());
         
         ModelAdapter adapter = getAdapter(modelEnum);
-        ModelRequest request = new ModelRequest(input);
-        
         String response = adapter.call(request);
         log.debug("Model: {} responded successfully", modelEnum);
         return response;
@@ -57,21 +55,37 @@ public class ChatEngine {
 
     /**
      * 流式调用模型
-     * @param input 输入文本
-     * @param modelEnum 模型类型
+     * @param request 请求参数（包含 prompt、platform、modelName 等）
      * @return 流式响应
      */
-    public Flux<String> stream(String input, ModelEnum modelEnum) {
-        log.debug("Streaming model: {} with input: {}", modelEnum, input);
+    public Flux<String> stream(ModelRequest request) {
+        ModelEnum modelEnum = resolveModelEnum(request);
+        log.debug("Streaming model: {} with input: {}", modelEnum, request.getPrompt());
         
         ModelAdapter adapter = getAdapter(modelEnum);
-        ModelRequest request = new ModelRequest(input);
-        
         Flux<String> response = adapter.stream(request);
         log.debug("Model: {} streaming started", modelEnum);
         return response;
     }
 
+    /**
+     * 根据 ModelRequest 解析 ModelEnum
+     * 优先使用 platform 和 modelName 匹配，其次使用 meta 中的配置
+     * @param request 请求参数
+     * @return 模型类型
+     */
+    private ModelEnum resolveModelEnum(ModelRequest request) {
+        // 如果有 platform 和 modelName，尝试匹配
+        if (request.getPlatform() != null || request.getModelName() != null) {
+            // 这里可以根据 platform 和 modelName 进行更精确的匹配
+            // 暂时返回默认模型或根据现有逻辑推断
+            return ModelEnum.fromAdapterName(request.getPlatform());
+        }
+        
+        // 如果没有指定，使用默认模型
+        return ModelEnum.defaultModel();
+    }
+    
     /**
      * 获取模型适配器（带缓存）
      * @param modelEnum 模型类型

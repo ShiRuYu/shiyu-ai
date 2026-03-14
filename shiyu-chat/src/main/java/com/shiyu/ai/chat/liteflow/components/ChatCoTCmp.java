@@ -3,6 +3,7 @@ package com.shiyu.ai.chat.liteflow.components;
 import com.shiyu.ai.chat.lm.ChatEngine;
 import com.shiyu.ai.chat.domain.GlobalContext;
 import com.shiyu.ai.chat.lm.ModelEnum;
+import com.shiyu.ai.chat.lm.request.ModelRequest;
 import com.yomahub.liteflow.annotation.LiteflowComponent;
 import com.yomahub.liteflow.core.NodeComponent;
 import jakarta.annotation.Resource;
@@ -28,7 +29,8 @@ public class ChatCoTCmp extends NodeComponent {
         String cotPrompt = buildCotPrompt(query, memoryContextObj);
         
         // Step 2: 调用模型进行逐步推理
-        String result = chatEngine.call(cotPrompt, ModelEnum.SILICON_FLOW);
+        ModelRequest request = new ModelRequest(cotPrompt, ModelEnum.SILICON_FLOW.getAdapterName(), null);
+        String result = chatEngine.call(request);
         
         log.info("CoT 推理完成");
         
