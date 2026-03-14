@@ -11,9 +11,11 @@ import org.springframework.ai.openai.OpenAiChatModel;
 import org.springframework.ai.openai.OpenAiChatOptions;
 import org.springframework.ai.openai.api.OpenAiApi;
 import org.springframework.stereotype.Component;
+import org.springframework.web.client.RestClient;
 import reactor.core.publisher.Flux;
 
 import java.util.Map;
+import java.util.Objects;
 import java.util.concurrent.ConcurrentHashMap;
 
 /**
@@ -30,11 +32,14 @@ public class SiliconFlowModelAdapter extends AbstractPlatformAdapter {
      */
     private final Map<String, ChatClient> chatClientCache = new ConcurrentHashMap<>();
 
-    public SiliconFlowModelAdapter(ModelProperties modelProperties) {
+    public SiliconFlowModelAdapter(RestClient.Builder restClientBuilder, ModelProperties modelProperties) {
         this.defaultConfig = modelProperties.getSiliconflow();
         String baseUrl = defaultConfig.getBaseUrl();
         String apiKey = defaultConfig.getApiKey();
         String model = defaultConfig.getModel();
+        if (Objects.nonNull(restClientBuilder)){
+            this.restClientBuilder = restClientBuilder;
+        }
         
         if (apiKey == null || apiKey.isEmpty()) {
             log.warn("SiliconFlow API Key 未配置");
@@ -45,7 +50,7 @@ public class SiliconFlowModelAdapter extends AbstractPlatformAdapter {
     }
     
     private ChatClient createChatClient(String modelName, String baseUrl, String apiKey) {
-        OpenAiApi api = OpenAiApi.builder().baseUrl(baseUrl).apiKey(apiKey).build();
+        OpenAiApi api = OpenAiApi.builder().restClientBuilder(this.restClientBuilder).baseUrl(baseUrl).apiKey(apiKey).build();
         OpenAiChatOptions options = OpenAiChatOptions.builder().model(modelName).build();
         ChatModel chatModel = OpenAiChatModel.builder().openAiApi(api).defaultOptions(options).build();
         ChatClient client = ChatClient.builder(chatModel).build();

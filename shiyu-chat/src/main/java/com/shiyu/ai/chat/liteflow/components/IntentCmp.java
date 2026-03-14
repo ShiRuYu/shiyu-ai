@@ -14,8 +14,8 @@ import java.util.List;
 /**
  * 意图识别
  */
-@LiteflowComponent("INTENT")
 @Slf4j
+@LiteflowComponent("INTENT")
 public class IntentCmp extends NodeComponent {
 
     @Resource
@@ -43,7 +43,7 @@ public class IntentCmp extends NodeComponent {
         context.set(GlobalContext.ChatBizKeyEnum.INTENT.getCode(), matchedIntent);
         context.set(GlobalContext.ChatBizKeyEnum.CHAIN.getCode(), matchedIntent.getChainToCall());
 
-        System.out.println("INTENT 节点执行完毕，intent=" + JSONUtils.toJsonString(matchedIntent));
+        log.info("INTENT 节点执行完毕，intent=" + JSONUtils.toJsonString(matchedIntent));
     }
 
     /**
