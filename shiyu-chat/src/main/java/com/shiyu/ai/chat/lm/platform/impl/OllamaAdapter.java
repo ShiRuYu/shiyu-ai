@@ -9,6 +9,9 @@ import com.shiyu.ai.chat.lm.result.StreamResult;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.ai.chat.client.ChatClient;
 import org.springframework.ai.chat.model.ChatModel;
+import org.springframework.ai.ollama.OllamaChatModel;
+import org.springframework.ai.ollama.api.OllamaApi;
+import org.springframework.ai.ollama.api.OllamaChatOptions;
 import org.springframework.ai.openai.OpenAiChatModel;
 import org.springframework.ai.openai.OpenAiChatOptions;
 import org.springframework.ai.openai.api.OpenAiApi;
@@ -54,9 +57,9 @@ public class OllamaAdapter extends AbstractPlatformAdapter {
     }
     
     private ChatClient createChatClient(String modelName, String baseUrl, String apiKey) {
-        OpenAiApi api = OpenAiApi.builder().baseUrl(baseUrl).apiKey(apiKey).build();
-        OpenAiChatOptions options = OpenAiChatOptions.builder().model(modelName).build();
-        ChatModel chatModel = OpenAiChatModel.builder().openAiApi(api).defaultOptions(options).build();
+        OllamaApi api = OllamaApi.builder().baseUrl(baseUrl).build();
+        OllamaChatOptions options = OllamaChatOptions.builder().model(modelName).build();
+        OllamaChatModel chatModel = OllamaChatModel.builder().ollamaApi(api).defaultOptions(options).build();
         ChatClient client = ChatClient.builder(chatModel).build();
         
         // 缓存 ChatClient

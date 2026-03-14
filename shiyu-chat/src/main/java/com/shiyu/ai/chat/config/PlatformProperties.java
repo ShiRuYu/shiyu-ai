@@ -21,7 +21,7 @@ public class PlatformProperties {
     public static class OllamaConfig {
         private String baseUrl = "http://localhost:11434";
         private String apiKey = "";
-        private String model = "x-ai/grok-4.1-fast";
+        private String model = "gemma3:4b";
     }
 
     @Data
