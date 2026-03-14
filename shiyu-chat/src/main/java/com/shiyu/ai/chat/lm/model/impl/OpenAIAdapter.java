@@ -13,6 +13,9 @@ import org.springframework.ai.openai.api.OpenAiApi;
 import org.springframework.stereotype.Component;
 import reactor.core.publisher.Flux;
 
+import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
+
 /**
  * OpenAI 模型适配器
  */
@@ -21,6 +24,11 @@ import reactor.core.publisher.Flux;
 public class OpenAIAdapter extends AbstractModelAdapter {
 
     private final ModelProperties.OpenAIConfig defaultConfig;
+    
+    /**
+     * ChatClient 缓存（按 modelName 缓存）
+     */
+    private final Map<String, ChatClient> chatClientCache = new ConcurrentHashMap<>();
 
     public OpenAIAdapter(ModelProperties modelProperties) {
         this.defaultConfig = modelProperties.getOpenai();
@@ -48,36 +56,47 @@ public class OpenAIAdapter extends AbstractModelAdapter {
                 .model(modelName)
                 .build();
         ChatModel chatModel = OpenAiChatModel.builder().openAiApi(api).defaultOptions(options).build();
-        return ChatClient.builder(chatModel).build();
+        ChatClient client = ChatClient.builder(chatModel).build();
+        
+        // 缓存 ChatClient
+        chatClientCache.put(modelName, client);
+        return client;
     }
-
-    @Override
-    public ModelEnum getType() {
-        return ModelEnum.OPENAI;
-    }
-
-    @Override
-    protected ChatClient doGetChatClient(String modelName) {
+    
+    /**
+     * 获取或创建 ChatClient
+     */
+    private ChatClient getOrCreateChatClient(String modelName) {
         if (modelName == null || modelName.isEmpty()) {
-            // 使用默认配置
-            return createChatClient("gpt-3.5-turbo", defaultConfig.getBaseUrl(), defaultConfig.getApiKey());
+            modelName = "gpt-3.5-turbo";
         }
         
-        // 根据指定的模型名称创建 ChatClient
-        return createChatClient(modelName, defaultConfig.getBaseUrl(), defaultConfig.getApiKey());
+        return chatClientCache.computeIfAbsent(modelName, key -> {
+            log.debug("Creating ChatClient for model: {}", key);
+            return createChatClient(key, defaultConfig.getBaseUrl(), defaultConfig.getApiKey());
+        });
     }
 
     @Override
-    protected String doCall(ChatClient client, ModelRequest request) {
+    protected String doCall(ModelRequest request) {
+        String modelName = request.getModelName();
+        ChatClient client = getOrCreateChatClient(modelName);
         return client.prompt(request.getPrompt())
                 .call()
                 .content();
     }
 
     @Override
-    protected Flux<String> doStream(ChatClient client, ModelRequest request) {
+    protected Flux<String> doStream(ModelRequest request) {
+        String modelName = request.getModelName();
+        ChatClient client = getOrCreateChatClient(modelName);
         return client.prompt(request.getPrompt())
                 .stream()
                 .content();
+    }
+    
+    @Override
+    public ModelEnum getType() {
+        return ModelEnum.OPENAI;
     }
 }

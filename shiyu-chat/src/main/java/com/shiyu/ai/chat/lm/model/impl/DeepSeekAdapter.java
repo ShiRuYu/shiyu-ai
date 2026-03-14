@@ -13,6 +13,9 @@ import org.springframework.ai.openai.api.OpenAiApi;
 import org.springframework.stereotype.Component;
 import reactor.core.publisher.Flux;
 
+import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
+
 /**
  * DeepSeek 模型适配器
  */
@@ -22,6 +25,11 @@ public class DeepSeekAdapter extends AbstractModelAdapter {
 
     private static final String DEFAULT_BASE_URL = "https://api.deepseek.com";
     private static final String DEFAULT_MODEL = "deepseek-chat";
+    
+    /**
+     * ChatClient 缓存（按 modelName 缓存）
+     */
+    private final Map<String, ChatClient> chatClientCache = new ConcurrentHashMap<>();
 
     public DeepSeekAdapter(ModelProperties modelProperties) {
         String apiKey = System.getenv("DEEPSEEK_API_KEY");
@@ -38,34 +46,51 @@ public class DeepSeekAdapter extends AbstractModelAdapter {
         OpenAiApi api = OpenAiApi.builder().baseUrl(baseUrl).apiKey(apiKey).build();
         OpenAiChatOptions options = OpenAiChatOptions.builder().model(modelName).build();
         ChatModel chatModel = OpenAiChatModel.builder().openAiApi(api).defaultOptions(options).build();
-        return ChatClient.builder(chatModel).build();
+        ChatClient client = ChatClient.builder(chatModel).build();
+        
+        // 缓存 ChatClient
+        chatClientCache.put(modelName, client);
+        return client;
     }
-
-    @Override
-    public ModelEnum getType() {
-        return ModelEnum.DEEPSEEK;
-    }
-
-    @Override
-    protected ChatClient doGetChatClient(String modelName) {
+    
+    private ChatClient getOrCreateChatClient(String modelName) {
         String apiKey = System.getenv("DEEPSEEK_API_KEY");
         if (apiKey == null || apiKey.isEmpty()) {
             return null;
         }
         
         if (modelName == null || modelName.isEmpty()) {
-            return createChatClient(DEFAULT_MODEL, DEFAULT_BASE_URL, apiKey);
+            modelName = DEFAULT_MODEL;
         }
-        return createChatClient(modelName, DEFAULT_BASE_URL, apiKey);
+        
+        return chatClientCache.computeIfAbsent(modelName, key -> {
+            log.debug("Creating ChatClient for model: {}", key);
+            return createChatClient(key, DEFAULT_BASE_URL, apiKey);
+        });
     }
 
     @Override
-    protected String doCall(ChatClient client, ModelRequest request) {
+    protected String doCall(ModelRequest request) {
+        String modelName = request.getModelName();
+        ChatClient client = getOrCreateChatClient(modelName);
+        if (client == null) {
+            throw new IllegalStateException("DeepSeek API Key 未配置");
+        }
         return client.prompt(request.getPrompt()).call().content();
     }
 
     @Override
-    protected Flux<String> doStream(ChatClient client, ModelRequest request) {
+    protected Flux<String> doStream(ModelRequest request) {
+        String modelName = request.getModelName();
+        ChatClient client = getOrCreateChatClient(modelName);
+        if (client == null) {
+            throw new IllegalStateException("DeepSeek API Key 未配置");
+        }
         return client.prompt(request.getPrompt()).stream().content();
+    }
+    
+    @Override
+    public ModelEnum getType() {
+        return ModelEnum.DEEPSEEK;
     }
 }

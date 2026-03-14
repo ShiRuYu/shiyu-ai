@@ -5,7 +5,6 @@ import com.shiyu.ai.chat.lm.model.ModelAdapter;
 import com.shiyu.ai.chat.lm.request.ModelRequest;
 import jakarta.annotation.Resource;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.ai.chat.client.ChatClient;
 import org.springframework.stereotype.Service;
 import reactor.core.publisher.Flux;
 
@@ -27,16 +26,6 @@ public class ChatEngine {
      * 模型适配器缓存（避免重复从 Map 中获取）
      */
     private final Map<ModelEnum, ModelAdapter> adapterCache = new ConcurrentHashMap<>();
-
-    /**
-     * 获取 ChatClient 实例
-     * @param modelEnum 模型类型
-     * @return ChatClient
-     */
-    public ChatClient getChatClient(ModelEnum modelEnum) {
-        ModelAdapter adapter = getAdapter(modelEnum);
-        return adapter.getChatClient();
-    }
 
     /**
      * 同步调用模型

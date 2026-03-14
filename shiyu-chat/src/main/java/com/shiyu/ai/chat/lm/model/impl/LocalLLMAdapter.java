@@ -13,6 +13,9 @@ import org.springframework.ai.openai.api.OpenAiApi;
 import org.springframework.stereotype.Component;
 import reactor.core.publisher.Flux;
 
+import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
+
 /**
  * 本地大模型适配器
  */
@@ -22,6 +25,11 @@ public class LocalLLMAdapter extends AbstractModelAdapter {
 
     private static final String DEFAULT_BASE_URL = "http://localhost:11434";
     private static final String DEFAULT_API_KEY = "ollama";
+    
+    /**
+     * ChatClient 缓存（按 modelName 缓存）
+     */
+    private final Map<String, ChatClient> chatClientCache = new ConcurrentHashMap<>();
 
     public LocalLLMAdapter(ModelProperties modelProperties) {
         String modelName = System.getenv("LOCAL_MODEL_NAME");
@@ -38,34 +46,51 @@ public class LocalLLMAdapter extends AbstractModelAdapter {
         OpenAiApi api = OpenAiApi.builder().baseUrl(baseUrl).apiKey(apiKey).build();
         OpenAiChatOptions options = OpenAiChatOptions.builder().model(modelName).build();
         ChatModel chatModel = OpenAiChatModel.builder().openAiApi(api).defaultOptions(options).build();
-        return ChatClient.builder(chatModel).build();
+        ChatClient client = ChatClient.builder(chatModel).build();
+        
+        // 缓存 ChatClient
+        chatClientCache.put(modelName, client);
+        return client;
     }
-
-    @Override
-    public ModelEnum getType() {
-        return ModelEnum.LOCAL;
-    }
-
-    @Override
-    protected ChatClient doGetChatClient(String modelName) {
+    
+    private ChatClient getOrCreateChatClient(String modelName) {
         String envModelName = System.getenv("LOCAL_MODEL_NAME");
         if (envModelName == null || envModelName.isEmpty()) {
             return null;
         }
         
         if (modelName == null || modelName.isEmpty()) {
-            return createChatClient(envModelName, DEFAULT_BASE_URL, DEFAULT_API_KEY);
+            modelName = envModelName;
         }
-        return createChatClient(modelName, DEFAULT_BASE_URL, DEFAULT_API_KEY);
+        
+        return chatClientCache.computeIfAbsent(modelName, key -> {
+            log.debug("Creating ChatClient for model: {}", key);
+            return createChatClient(key, DEFAULT_BASE_URL, DEFAULT_API_KEY);
+        });
     }
 
     @Override
-    protected String doCall(ChatClient client, ModelRequest request) {
+    protected String doCall(ModelRequest request) {
+        String modelName = request.getModelName();
+        ChatClient client = getOrCreateChatClient(modelName);
+        if (client == null) {
+            throw new IllegalStateException("本地模型未配置");
+        }
         return client.prompt(request.getPrompt()).call().content();
     }
 
     @Override
-    protected Flux<String> doStream(ChatClient client, ModelRequest request) {
+    protected Flux<String> doStream(ModelRequest request) {
+        String modelName = request.getModelName();
+        ChatClient client = getOrCreateChatClient(modelName);
+        if (client == null) {
+            throw new IllegalStateException("本地模型未配置");
+        }
         return client.prompt(request.getPrompt()).stream().content();
+    }
+    
+    @Override
+    public ModelEnum getType() {
+        return ModelEnum.LOCAL;
     }
 }

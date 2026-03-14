@@ -2,7 +2,6 @@ package com.shiyu.ai.chat.lm.model;
 
 import com.shiyu.ai.chat.lm.ModelEnum;
 import com.shiyu.ai.chat.lm.request.ModelRequest;
-import org.springframework.ai.chat.client.ChatClient;
 import reactor.core.publisher.Flux;
 
 /**
@@ -16,12 +15,6 @@ public interface ModelAdapter {
      * @return 模型类型
      */
     ModelEnum getType();
-    
-    /**
-     * 获取 ChatClient 实例
-     * @return ChatClient
-     */
-    ChatClient getChatClient();
     
     /**
      * 同步调用模型

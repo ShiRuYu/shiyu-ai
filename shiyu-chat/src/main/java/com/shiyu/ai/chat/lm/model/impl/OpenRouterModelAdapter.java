@@ -13,6 +13,9 @@ import org.springframework.ai.openai.api.OpenAiApi;
 import org.springframework.stereotype.Component;
 import reactor.core.publisher.Flux;
 
+import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
+
 /**
  * OpenRouter 模型适配器
  */
@@ -21,6 +24,11 @@ import reactor.core.publisher.Flux;
 public class OpenRouterModelAdapter extends AbstractModelAdapter {
 
     private final ModelProperties.OpenRouterConfig defaultConfig;
+    
+    /**
+     * ChatClient 缓存（按 modelName 缓存）
+     */
+    private final Map<String, ChatClient> chatClientCache = new ConcurrentHashMap<>();
 
     public OpenRouterModelAdapter(ModelProperties modelProperties) {
         this.defaultConfig = modelProperties.getOpenrouter();
@@ -40,29 +48,40 @@ public class OpenRouterModelAdapter extends AbstractModelAdapter {
         OpenAiApi api = OpenAiApi.builder().baseUrl(baseUrl).apiKey(apiKey).build();
         OpenAiChatOptions options = OpenAiChatOptions.builder().model(modelName).build();
         ChatModel chatModel = OpenAiChatModel.builder().openAiApi(api).defaultOptions(options).build();
-        return ChatClient.builder(chatModel).build();
+        ChatClient client = ChatClient.builder(chatModel).build();
+        
+        // 缓存 ChatClient
+        chatClientCache.put(modelName, client);
+        return client;
     }
-
-    @Override
-    public ModelEnum getType() {
-        return ModelEnum.OPEN_ROUTER;
-    }
-
-    @Override
-    protected ChatClient doGetChatClient(String modelName) {
+    
+    private ChatClient getOrCreateChatClient(String modelName) {
         if (modelName == null || modelName.isEmpty()) {
-            return createChatClient(defaultConfig.getModel(), defaultConfig.getBaseUrl(), defaultConfig.getApiKey());
+            modelName = defaultConfig.getModel();
         }
-        return createChatClient(modelName, defaultConfig.getBaseUrl(), defaultConfig.getApiKey());
+        
+        return chatClientCache.computeIfAbsent(modelName, key -> {
+            log.debug("Creating ChatClient for model: {}", key);
+            return createChatClient(key, defaultConfig.getBaseUrl(), defaultConfig.getApiKey());
+        });
     }
 
     @Override
-    protected String doCall(ChatClient client, ModelRequest request) {
+    protected String doCall(ModelRequest request) {
+        String modelName = request.getModelName();
+        ChatClient client = getOrCreateChatClient(modelName);
         return client.prompt(request.getPrompt()).call().content();
     }
 
     @Override
-    protected Flux<String> doStream(ChatClient client, ModelRequest request) {
+    protected Flux<String> doStream(ModelRequest request) {
+        String modelName = request.getModelName();
+        ChatClient client = getOrCreateChatClient(modelName);
         return client.prompt(request.getPrompt()).stream().content();
+    }
+    
+    @Override
+    public ModelEnum getType() {
+        return ModelEnum.OPEN_ROUTER;
     }
 }
