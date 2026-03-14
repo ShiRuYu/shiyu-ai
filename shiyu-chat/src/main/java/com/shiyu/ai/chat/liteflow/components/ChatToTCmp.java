@@ -5,6 +5,7 @@ import com.shiyu.ai.chat.domain.GlobalContext;
 import com.shiyu.ai.chat.domain.thought.CandidateThought;
 import com.shiyu.ai.chat.lm.PlatformEnum;
 import com.shiyu.ai.chat.lm.request.LmRequest;
+import com.shiyu.ai.chat.lm.result.ChatResult;
 import com.yomahub.liteflow.annotation.LiteflowComponent;
 import com.yomahub.liteflow.core.NodeComponent;
 import jakarta.annotation.Resource;
@@ -85,10 +86,10 @@ class ChatToTCmp extends NodeComponent {
         prompt.append("2. 方案之间尽量差异化\n");
         prompt.append("3. 用'方案 1:'、'方案 2:'等格式标注每个方案\n");
         
-        String result = chatEngine.call(new LmRequest(prompt.toString(), PlatformEnum.SILICON_FLOW.getAdapterName(), null));
+        ChatResult result = chatEngine.call(new LmRequest(prompt.toString(), PlatformEnum.SILICON_FLOW.getAdapterName(), null));
         
         // 解析返回结果，提取各个方案
-        String[] parts = result.split("(?=方案\\d+:)");
+        String[] parts = result.getAnswer().split("(?=方案\\d+:)");
         for (String part : parts) {
             if (part.trim().startsWith("方案")) {
                 CandidateThought thought = new CandidateThought();
@@ -101,7 +102,7 @@ class ChatToTCmp extends NodeComponent {
         // 如果没有成功解析，至少创建一个默认方案
         if (thoughts.isEmpty()) {
             CandidateThought defaultThought = new CandidateThought();
-            defaultThought.setThought(result);
+            defaultThought.setThought(result.getAnswer());
             defaultThought.setScore(0.0);
             thoughts.add(defaultThought);
         }
@@ -122,10 +123,10 @@ class ChatToTCmp extends NodeComponent {
                                 "请只返回一个 0 到 1 之间的数字作为分数，保留两位小数。",
                         query, candidate.getThought());
                 
-                String scoreResult = chatEngine.call(new LmRequest(evalPrompt, PlatformEnum.SILICON_FLOW.getAdapterName(), null));
+                ChatResult scoreResult = chatEngine.call(new LmRequest(evalPrompt, PlatformEnum.SILICON_FLOW.getAdapterName(), null));
                 
                 // 解析分数
-                double score = parseScore(scoreResult);
+                double score = parseScore(scoreResult.getAnswer());
                 candidate.setScore(score);
                 
                 log.debug("方案评分：{} -> {}", score, candidate.getThought().substring(0, Math.min(50, candidate.getThought().length())));
@@ -185,6 +186,7 @@ class ChatToTCmp extends NodeComponent {
                         "请整合以上思路，给出结构清晰、逻辑严谨的最终答案。",
                 query, bestThought);
         
-        return chatEngine.call(new LmRequest(refinePrompt, PlatformEnum.SILICON_FLOW.getAdapterName(), null));
+        ChatResult result = chatEngine.call(new LmRequest(refinePrompt, PlatformEnum.SILICON_FLOW.getAdapterName(), null));
+        return result.getAnswer();
     }
 }

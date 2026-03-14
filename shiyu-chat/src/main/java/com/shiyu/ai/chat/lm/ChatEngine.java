@@ -3,10 +3,11 @@ package com.shiyu.ai.chat.lm;
 
 import com.shiyu.ai.chat.lm.platform.PlatformAdapter;
 import com.shiyu.ai.chat.lm.request.LmRequest;
+import com.shiyu.ai.chat.lm.result.ChatResult;
+import com.shiyu.ai.chat.lm.result.StreamResult;
 import jakarta.annotation.Resource;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
-import reactor.core.publisher.Flux;
 
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
@@ -30,14 +31,14 @@ public class ChatEngine {
     /**
      * 同步调用模型
      * @param request 请求参数（包含 prompt、platform、modelName 等）
-     * @return 模型响应
+     * @return 模型响应（ChatResult）
      */
-    public String call(LmRequest request) {
+    public ChatResult call(LmRequest request) {
         PlatformEnum platformEnum = resolvePlatformEnum(request);
         log.debug("Calling model: {} with input: {}", platformEnum, request.getPrompt());
         
         PlatformAdapter adapter = getAdapter(platformEnum);
-        String response = adapter.call(request);
+        ChatResult response = adapter.call(request);
         log.debug("Model: {} responded successfully", platformEnum);
         return response;
     }
@@ -45,14 +46,14 @@ public class ChatEngine {
     /**
      * 流式调用模型
      * @param request 请求参数（包含 prompt、platform、modelName 等）
-     * @return 流式响应
+     * @return 流式响应（StreamResult）
      */
-    public Flux<String> stream(LmRequest request) {
+    public StreamResult stream(LmRequest request) {
         PlatformEnum platformEnum = resolvePlatformEnum(request);
         log.debug("Streaming model: {} with input: {}", platformEnum, request.getPrompt());
         
         PlatformAdapter adapter = getAdapter(platformEnum);
-        Flux<String> response = adapter.stream(request);
+        StreamResult response = adapter.stream(request);
         log.debug("Model: {} streaming started", platformEnum);
         return response;
     }

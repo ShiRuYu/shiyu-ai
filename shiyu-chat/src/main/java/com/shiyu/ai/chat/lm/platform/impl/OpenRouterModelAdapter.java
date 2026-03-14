@@ -4,6 +4,8 @@ import com.shiyu.ai.chat.config.ModelProperties;
 import com.shiyu.ai.chat.lm.PlatformEnum;
 import com.shiyu.ai.chat.lm.platform.AbstractPlatformAdapter;
 import com.shiyu.ai.chat.lm.request.LmRequest;
+import com.shiyu.ai.chat.lm.result.ChatResult;
+import com.shiyu.ai.chat.lm.result.StreamResult;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.ai.chat.client.ChatClient;
 import org.springframework.ai.chat.model.ChatModel;
@@ -67,17 +69,19 @@ public class OpenRouterModelAdapter extends AbstractPlatformAdapter {
     }
 
     @Override
-    protected String doCall(LmRequest request) {
+    protected ChatResult doCall(LmRequest request) {
         String modelName = request.getModelName();
         ChatClient client = getOrCreateChatClient(modelName);
-        return client.prompt(request.getPrompt()).call().content();
+        String response = client.prompt(request.getPrompt()).call().content();
+        return new ChatResult(response);
     }
 
     @Override
-    protected Flux<String> doStream(LmRequest request) {
+    protected StreamResult doStream(LmRequest request) {
         String modelName = request.getModelName();
         ChatClient client = getOrCreateChatClient(modelName);
-        return client.prompt(request.getPrompt()).stream().content();
+        Flux<String> response = client.prompt(request.getPrompt()).stream().content();
+        return new StreamResult(response);
     }
     
     @Override

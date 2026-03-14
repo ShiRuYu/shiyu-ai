@@ -4,6 +4,7 @@ import com.shiyu.ai.chat.lm.ChatEngine;
 import com.shiyu.ai.chat.domain.GlobalContext;
 import com.shiyu.ai.chat.lm.PlatformEnum;
 import com.shiyu.ai.chat.lm.request.LmRequest;
+import com.shiyu.ai.chat.lm.result.ChatResult;
 import com.yomahub.liteflow.annotation.LiteflowComponent;
 import com.yomahub.liteflow.core.NodeComponent;
 import jakarta.annotation.Resource;
@@ -30,15 +31,15 @@ public class ChatCoTCmp extends NodeComponent {
         
         // Step 2: 调用模型进行逐步推理
         LmRequest request = new LmRequest(cotPrompt, PlatformEnum.SILICON_FLOW.getAdapterName(), null);
-        String result = chatEngine.call(request);
+        ChatResult result = chatEngine.call(request);
         
         log.info("CoT 推理完成");
         
         // Step 3: 提取最终答案
-        String finalAnswer = extractFinalAnswer(result);
+        String finalAnswer = extractFinalAnswer(result.getAnswer());
         
         context.set(GlobalContext.ChatBizKeyEnum.FINAL_ANSWER.getCode(), finalAnswer);
-        context.set(GlobalContext.ChatBizKeyEnum.TOT_FINAL_THOUGHT.getCode(), result);
+        context.set(GlobalContext.ChatBizKeyEnum.TOT_FINAL_THOUGHT.getCode(), result.getAnswer());
     }
 
     /**

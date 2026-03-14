@@ -2,10 +2,9 @@ package com.shiyu.ai.chat.controller;
 
 import com.shiyu.ai.chat.config.ChatResource;
 import com.shiyu.ai.chat.lm.ChatEngine;
-import com.shiyu.ai.chat.lm.PlatformEnum;
 import com.shiyu.ai.chat.lm.request.LmRequest;
+import com.shiyu.ai.chat.lm.result.StreamResult;
 import jakarta.annotation.Resource;
-import org.springframework.ai.chat.client.ChatClient;
 import org.springframework.ai.chat.prompt.PromptTemplate;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -49,7 +48,8 @@ public class StuffController {
             map.put("context", "");
         }
         LmRequest request = new LmRequest(message, platformEnum, null);
-        return chatEngine.stream(request);
+        StreamResult result = chatEngine.stream(request);
+        return result.getAnswer();
         //return chatClient.prompt(promptTemplate.create(map)).stream().content();
     }
 }

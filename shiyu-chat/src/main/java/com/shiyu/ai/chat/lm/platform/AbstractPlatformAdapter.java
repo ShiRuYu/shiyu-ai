@@ -1,6 +1,8 @@
 package com.shiyu.ai.chat.lm.platform;
 
 import com.shiyu.ai.chat.lm.request.LmRequest;
+import com.shiyu.ai.chat.lm.result.ChatResult;
+import com.shiyu.ai.chat.lm.result.StreamResult;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.web.client.RestClient;
 import reactor.core.publisher.Flux;
@@ -17,18 +19,18 @@ public abstract class AbstractPlatformAdapter implements PlatformAdapter {
     /**
      * 执行同步调用（由子类提供具体实现）
      */
-    protected abstract String doCall(LmRequest request);
+    protected abstract ChatResult doCall(LmRequest request);
 
     /**
      * 执行流式调用（由子类提供具体实现）
      */
-    protected abstract Flux<String> doStream(LmRequest request);
+    protected abstract StreamResult doStream(LmRequest request);
 
     @Override
-    public String call(LmRequest request) {
+    public ChatResult call(LmRequest request) {
         try {
             log.debug("Calling model: {} with prompt: {}", getType(), request.getPrompt());
-            String response = doCall(request);
+            ChatResult response = doCall(request);
             log.debug("Model: {} responded successfully", getType());
             return response;
             
@@ -39,16 +41,17 @@ public abstract class AbstractPlatformAdapter implements PlatformAdapter {
     }
 
     @Override
-    public Flux<String> stream(LmRequest request) {
+    public StreamResult stream(LmRequest request) {
         try {
             log.debug("Streaming model: {} with prompt: {}", getType(), request.getPrompt());
-            Flux<String> response = doStream(request);
+            StreamResult response = doStream(request);
             log.debug("Model: {} streaming started", getType());
             return response;
             
         } catch (Exception e) {
             log.error("Error streaming model: {}. Error: {}", getType(), e.getMessage(), e);
-            return Flux.error(new RuntimeException("Failed to stream model: " + getType().name(), e));
+            // 返回一个包含错误信息的 StreamResult
+            return new StreamResult(Flux.error(new RuntimeException("Failed to stream model: " + getType().name(), e)));
         }
     }
 }

@@ -4,6 +4,7 @@ import com.shiyu.ai.chat.lm.ChatEngine;
 import com.shiyu.ai.chat.domain.GlobalContext;
 import com.shiyu.ai.chat.lm.PlatformEnum;
 import com.shiyu.ai.chat.lm.request.LmRequest;
+import com.shiyu.ai.chat.lm.result.ChatResult;
 import com.yomahub.liteflow.annotation.LiteflowComponent;
 import com.yomahub.liteflow.core.NodeComponent;
 import jakarta.annotation.Resource;
@@ -30,10 +31,10 @@ public class ChatDirectCmp extends NodeComponent {
         
         // 直接调用模型回答问题
         LmRequest request = new LmRequest(promptWithMemory, PlatformEnum.SILICON_FLOW.getAdapterName(), null);
-        String result = chatEngine.call(request);
+        ChatResult result = chatEngine.call(request);
         
         log.info("直接对话完成");
-        context.set(GlobalContext.ChatBizKeyEnum.FINAL_ANSWER.getCode(), result);
+        context.set(GlobalContext.ChatBizKeyEnum.FINAL_ANSWER.getCode(), result.getAnswer());
     }
     
     /**
