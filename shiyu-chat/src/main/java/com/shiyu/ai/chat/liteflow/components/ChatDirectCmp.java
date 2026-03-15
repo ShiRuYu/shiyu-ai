@@ -69,20 +69,10 @@ public class ChatDirectCmp extends NodeComponent {
         StreamResult result = chatEngine.stream(request);
         Flux<String> flux = result.getAnswer();
         
-        // 将 Flux 存入全局上下文
+        // 将 Flux 存入全局上下文，由调用方订阅和处理
         context.set(GlobalContext.ChatBizKeyEnum.STREAM_FLUX.getCode(), flux);
-
-        // 收集完整答案用于后续保存记忆（非阻塞，仅订阅）
-        flux.reduce((a, b) -> a + b)
-            .subscribe(
-                fullAnswer -> {
-                    context.set(GlobalContext.ChatBizKeyEnum.FINAL_ANSWER.getCode(), fullAnswer);
-                    log.info("流式回答完成，已保存完整答案");
-                },
-                error -> log.error("收集流式答案失败：{}", error.getMessage())
-            );
         
-        log.info("直接对话完成（流式）");
+        log.info("直接对话完成（流式），Flux 已传递给调用方");
     }
     
     /**

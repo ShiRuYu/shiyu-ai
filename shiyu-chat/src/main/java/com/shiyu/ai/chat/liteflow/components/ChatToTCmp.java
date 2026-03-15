@@ -108,27 +108,14 @@ public class ChatToTCmp extends NodeComponent {
             StreamResult result = chatEngine.stream(request);
             Flux<String> flux = result.getAnswer();
             
-            // 将 Flux 存入全局上下文
+            // 将 Flux 存入全局上下文，由调用方订阅和处理
             context.set(GlobalContext.ChatBizKeyEnum.STREAM_FLUX.getCode(), flux);
             
-            // 收集完整答案用于后续保存记忆（非阻塞，仅订阅）
-            flux.reduce((a, b) -> a + b)
-                .subscribe(
-                    fullAnswer -> {
-                        context.set(GlobalContext.ChatBizKeyEnum.TOT_THOUGHT_NODES.getCode(), 
-                                candidates.stream().map(CandidateThought::getThought).toList());
-                        context.set(GlobalContext.ChatBizKeyEnum.TOT_FINAL_THOUGHT.getCode(), bestThought.getThought());
-                        context.set(GlobalContext.ChatBizKeyEnum.FINAL_ANSWER.getCode(), fullAnswer);
-                        log.info("ToT 推理完成（流式），已保存完整答案");
-                    },
-                    error -> log.error("收集流式答案失败：{}", error.getMessage())
-                );
+            log.info("ToT 推理完成（流式），Flux 已传递给调用方");
         } else {
             log.warn("未能选择到有效方案，使用默认回答");
             context.set(GlobalContext.ChatBizKeyEnum.FINAL_ANSWER.getCode(), "抱歉，我暂时无法解答这个问题。");
         }
-        
-        log.info("ToT 推理完成（流式）");
     }
 
     /**
