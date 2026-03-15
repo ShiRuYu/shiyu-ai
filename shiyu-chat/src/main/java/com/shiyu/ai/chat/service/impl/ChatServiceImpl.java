@@ -3,10 +3,6 @@ package com.shiyu.ai.chat.service.impl;
 import cn.hutool.core.util.IdUtil;
 import com.shiyu.ai.chat.domain.ChatRequest;
 import com.shiyu.ai.chat.domain.GlobalContext;
-import com.shiyu.ai.chat.lm.ChatEngine;
-import com.shiyu.ai.chat.lm.PlatformEnum;
-import com.shiyu.ai.chat.lm.request.LmRequest;
-import com.shiyu.ai.chat.lm.result.StreamResult;
 import com.shiyu.ai.chat.service.ChatService;
 import com.shiyu.ai.common.core.utils.JSONUtils;
 import com.yomahub.liteflow.core.FlowExecutor;
@@ -26,13 +22,10 @@ import java.util.Map;
 public class ChatServiceImpl implements ChatService {
 
     @Resource
-    private ChatEngine chatEngine;
-
-    @Resource
     private FlowExecutor flowExecutor;
 
     @Override
-    public Map<String, Object> chat(ChatRequest request) {
+    public Map<String, Object> call(ChatRequest request) {
         GlobalContext context = new GlobalContext();
         try {
             String query = request.text();
@@ -49,7 +42,7 @@ public class ChatServiceImpl implements ChatService {
             context.set(GlobalContext.ChatBizKeyEnum.MODEL_NAME.getCode(), modelName);
             
             // 执行主流程（包含记忆加载和保存）
-            flowExecutor.execute2Resp("chatFlow", null, context);
+            flowExecutor.execute2Resp("callFlow", null, context);
             
             String result = context.get(GlobalContext.ChatBizKeyEnum.FINAL_ANSWER.getCode());
             Object intentObj = context.get(GlobalContext.ChatBizKeyEnum.INTENT.getCode());

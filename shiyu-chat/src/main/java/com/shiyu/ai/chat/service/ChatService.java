@@ -15,7 +15,7 @@ public interface ChatService {
      * @param request 对话请求（包含 text、sessionId、userId、platform、modelName）
      * @return 对话响应（包含 result、intent、chain、sessionId 等）
      */
-    Map<String, Object> chat(ChatRequest request);
+    Map<String, Object> call(ChatRequest request);
     
     /**
      * 流式对话

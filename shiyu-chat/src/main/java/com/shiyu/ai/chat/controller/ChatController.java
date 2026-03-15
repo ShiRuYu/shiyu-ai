@@ -33,21 +33,21 @@ public class ChatController {
      * 普通对话接口（基于 LiteFlow，支持多轮对话和记忆）
      */
     @PostMapping
-    public Map<String, Object> chat(@RequestBody ChatRequest request) {
-        return chatService.chat(request);
+    public Map<String, Object> call(@RequestBody ChatRequest request) {
+        return chatService.call(request);
     }
 
     /**
      * GET 方式的对话接口（兼容旧版本）
      */
     @GetMapping
-    public Map<String, Object> chatGet(
+    public Map<String, Object> callGet(
             @RequestParam(required = false) String text,
             @RequestParam(required = false) String sessionId,
             @RequestParam(required = false) String userId,
             @RequestParam(required = false, defaultValue = "SILICON_FLOW") String platform,
             @RequestParam(required = false) String modelName) {
         ChatRequest request = new ChatRequest(text, sessionId, userId, platform, modelName);
-        return chatService.chat(request);
+        return chatService.call(request);
     }
 }

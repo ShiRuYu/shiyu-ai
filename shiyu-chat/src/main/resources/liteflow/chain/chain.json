@@ -2,7 +2,7 @@
   "flow": {
     "chain": [
       {
-        "name": "chatFlow",
+        "name": "callFlow",
         "value": "THEN(MEMORY_LOAD, INTENT, CHAIN_EXECUTE, MEMORY_SAVE)"
       },
       {
