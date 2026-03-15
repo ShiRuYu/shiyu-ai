@@ -38,11 +38,15 @@ public class ChatServiceImpl implements ChatService {
             String query = request.text();
             String sessionId = request.sessionId() != null ? request.sessionId() : generateSessionId();
             String userId = request.userId();
+            String platform = request.platform();
+            String modelName = request.modelName();
             
             // 设置上下文信息
             context.set(GlobalContext.ChatBizKeyEnum.QUERY.getCode(), query);
             context.set(GlobalContext.ChatBizKeyEnum.SESSION_ID.getCode(), sessionId);
             context.set(GlobalContext.ChatBizKeyEnum.USER_ID.getCode(), userId);
+            context.set(GlobalContext.ChatBizKeyEnum.PLATFORM.getCode(), platform);
+            context.set(GlobalContext.ChatBizKeyEnum.MODEL_NAME.getCode(), modelName);
             
             // 执行主流程（包含记忆加载和保存）
             flowExecutor.execute2Resp("chatFlow", null, context);
@@ -69,11 +73,33 @@ public class ChatServiceImpl implements ChatService {
     }
 
     @Override
-    public Flux<String> stream(String text, String platformEnum) {
-        PlatformEnum modelType = PlatformEnum.fromEnumName(platformEnum);
-        LmRequest request = new LmRequest(text, modelType.getAdapterName(), null);
-        StreamResult result = chatEngine.stream(request);
-        return result.getAnswer();
+    public Flux<String> stream(ChatRequest request) {
+        GlobalContext context = new GlobalContext();
+        try {
+            String query = request.text();
+            String sessionId = generateSessionId();
+            String userId = request.userId() != null ? request.userId() : "anonymous";
+            String platform = request.platform();
+            String modelName = request.modelName();
+            
+            // 设置上下文信息
+            context.set(GlobalContext.ChatBizKeyEnum.QUERY.getCode(), query);
+            context.set(GlobalContext.ChatBizKeyEnum.SESSION_ID.getCode(), sessionId);
+            context.set(GlobalContext.ChatBizKeyEnum.USER_ID.getCode(), userId);
+            context.set(GlobalContext.ChatBizKeyEnum.PLATFORM.getCode(), platform);
+            context.set(GlobalContext.ChatBizKeyEnum.MODEL_NAME.getCode(), modelName);
+            
+            // 执行流式调用流程
+            flowExecutor.execute2Resp("streamFlow", null, context);
+            
+            // 从上下文中获取流式响应
+            Flux<String> flux = context.get(GlobalContext.ChatBizKeyEnum.STREAM_FLUX.getCode());
+            return flux != null ? flux : Flux.error(new RuntimeException("流式调用失败，未获取到响应"));
+            
+        } catch (Exception e) {
+            log.error("流式对话处理失败", e);
+            return Flux.error(e);
+        }
     }
     
     /**

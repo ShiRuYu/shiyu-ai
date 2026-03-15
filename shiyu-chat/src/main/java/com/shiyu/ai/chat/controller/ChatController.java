@@ -19,9 +19,14 @@ public class ChatController {
      * 流式对话接口
      */
     @GetMapping("/stream")
-    public Flux<String> stream(String text, 
-                               @RequestParam(required = false, defaultValue = "SILICON_FLOW") String platformEnum) {
-        return chatService.stream(text, platformEnum);
+    public Flux<String> stream(
+            @RequestParam(required = false) String text,
+            @RequestParam(required = false) String sessionId,
+            @RequestParam(required = false) String userId,
+            @RequestParam(required = false, defaultValue = "SILICON_FLOW") String platform,
+            @RequestParam(required = false) String modelName) {
+        ChatRequest request = new ChatRequest(text, sessionId, userId, platform, modelName);
+        return chatService.stream(request);
     }
 
     /**
@@ -39,8 +44,10 @@ public class ChatController {
     public Map<String, Object> chatGet(
             @RequestParam(required = false) String text,
             @RequestParam(required = false) String sessionId,
-            @RequestParam(required = false) String userId) {
-        ChatRequest request = new ChatRequest(text, sessionId, userId);
+            @RequestParam(required = false) String userId,
+            @RequestParam(required = false, defaultValue = "SILICON_FLOW") String platform,
+            @RequestParam(required = false) String modelName) {
+        ChatRequest request = new ChatRequest(text, sessionId, userId, platform, modelName);
         return chatService.chat(request);
     }
 }

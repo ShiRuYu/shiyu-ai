@@ -16,6 +16,10 @@
       {
         "name": "chatToT",
         "value": "THEN(CHAT_TOT)"
+      },
+      {
+        "name": "streamFlow",
+        "value": "THEN(STREAM_EXECUTE)"
       }
     ]
   }

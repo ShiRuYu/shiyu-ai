@@ -67,7 +67,12 @@ public class GlobalContext {
         SESSION_ID("sessionId", "会话 ID"),
         USER_ID("userId", "用户 ID"),
         MEMORY_CONTEXT("memoryContext", "记忆上下文"),
-        CONVERSATION_HISTORY("conversationHistory", "对话历史");
+        CONVERSATION_HISTORY("conversationHistory", "对话历史"),
+        
+        // 平台和模型配置
+        PLATFORM("platform", "平台名称"),
+        MODEL_NAME("modelName", "模型名称"),
+        STREAM_FLUX("streamFlux", "流式响应 Flux");
 
         private final String code;
         private final String desc;

@@ -6,7 +6,9 @@ package com.shiyu.ai.chat.domain;
 public record ChatRequest(
     String text,
     String sessionId,
-    String userId
+    String userId,
+    String platform,
+    String modelName
 ) {
     public ChatRequest {
         // 默认值处理
@@ -18,6 +20,9 @@ public record ChatRequest(
         }
         if (userId == null || userId.trim().isEmpty()) {
             userId = "anonymous";
+        }
+        if (platform == null || platform.trim().isEmpty()) {
+            platform = "SILICON_FLOW";
         }
     }
 }
