@@ -1,15 +1,17 @@
 package com.shiyu.ai.chat.liteflow.components;
 
-import com.shiyu.ai.chat.lm.ChatEngine;
 import com.shiyu.ai.chat.domain.GlobalContext;
 import com.shiyu.ai.chat.domain.thought.CandidateThought;
+import com.shiyu.ai.chat.lm.ChatEngine;
 import com.shiyu.ai.chat.lm.PlatformEnum;
 import com.shiyu.ai.chat.lm.request.LmRequest;
 import com.shiyu.ai.chat.lm.result.ChatResult;
+import com.shiyu.ai.chat.lm.result.StreamResult;
 import com.yomahub.liteflow.annotation.LiteflowComponent;
 import com.yomahub.liteflow.core.NodeComponent;
 import jakarta.annotation.Resource;
 import lombok.extern.slf4j.Slf4j;
+import reactor.core.publisher.Flux;
 
 import java.util.ArrayList;
 import java.util.Comparator;
@@ -28,8 +30,22 @@ public class ChatToTCmp extends NodeComponent {
         
         // 获取记忆上下文
         Object memoryContextObj = context.get(GlobalContext.ChatBizKeyEnum.MEMORY_CONTEXT.getCode());
-
-        log.info("开始执行 ToT（Tree of Thoughts）思维树推理：{}", query);
+        
+        // 判断是否为流式模式
+        boolean isStream = "true".equals(context.get(GlobalContext.ChatBizKeyEnum.STREAM_MODE.getCode()));
+        
+        if (isStream) {
+            handleStream(context, query, memoryContextObj);
+        } else {
+            handleSync(context, query, memoryContextObj);
+        }
+    }
+    
+    /**
+     * 同步处理
+     */
+    private void handleSync(GlobalContext context, String query, Object memoryContextObj) {
+        log.info("开始执行 ToT（Tree of Thoughts）思维树推理（同步）：{}", query);
 
         // Step 1: 生成多个候选方案（思维树分支）
         List<CandidateThought> candidates = generateCandidateThoughts(query, 5, memoryContextObj);
@@ -57,7 +73,62 @@ public class ChatToTCmp extends NodeComponent {
             context.set(GlobalContext.ChatBizKeyEnum.FINAL_ANSWER.getCode(), "抱歉，我暂时无法解答这个问题。");
         }
         
-        log.info("ToT 推理完成");
+        log.info("ToT 推理完成（同步）");
+    }
+    
+    /**
+     * 流式处理（简化版：直接生成多个方案并流式输出最佳方案）
+     */
+    private void handleStream(GlobalContext context, String query, Object memoryContextObj) {
+        log.info("开始执行 ToT（Tree of Thoughts）思维树推理（流式）：{}", query);
+
+        // Step 1: 生成多个候选方案（思维树分支）
+        List<CandidateThought> candidates = generateCandidateThoughts(query, 3, memoryContextObj);
+        
+        log.info("生成了 {} 个候选方案", candidates.size());
+
+        // Step 2: 评估每个方案并打分
+        evaluateAndScoreCandidates(query, candidates);
+
+        // Step 3: 选择最优方案
+        CandidateThought bestThought = selectBestThought(candidates);
+
+        if (bestThought != null) {
+            log.info("选择最优方案：得分 {}", bestThought.getScore());
+            
+            // Step 4: 构建优化提示词进行流式输出
+            String refinePrompt = String.format(
+                    "基于以下思考方案，给出完整、清晰的最终答案。\n\n" +
+                            "【问题】%s\n\n【最佳方案】%s\n\n" +
+                            "请整合以上思路，给出结构清晰、逻辑严谨的最终答案。",
+                    query, bestThought.getThought());
+            
+            // Step 5: 执行流式调用
+            LmRequest request = new LmRequest(refinePrompt, PlatformEnum.SILICON_FLOW.getAdapterName(), null);
+            StreamResult result = chatEngine.stream(request);
+            Flux<String> flux = result.getAnswer();
+            
+            // 将 Flux 存入全局上下文
+            context.set(GlobalContext.ChatBizKeyEnum.STREAM_FLUX.getCode(), flux);
+            
+            // 收集完整答案用于后续保存记忆（非阻塞，仅订阅）
+            flux.reduce((a, b) -> a + b)
+                .subscribe(
+                    fullAnswer -> {
+                        context.set(GlobalContext.ChatBizKeyEnum.TOT_THOUGHT_NODES.getCode(), 
+                                candidates.stream().map(CandidateThought::getThought).toList());
+                        context.set(GlobalContext.ChatBizKeyEnum.TOT_FINAL_THOUGHT.getCode(), bestThought.getThought());
+                        context.set(GlobalContext.ChatBizKeyEnum.FINAL_ANSWER.getCode(), fullAnswer);
+                        log.info("ToT 推理完成（流式），已保存完整答案");
+                    },
+                    error -> log.error("收集流式答案失败：{}", error.getMessage())
+                );
+        } else {
+            log.warn("未能选择到有效方案，使用默认回答");
+            context.set(GlobalContext.ChatBizKeyEnum.FINAL_ANSWER.getCode(), "抱歉，我暂时无法解答这个问题。");
+        }
+        
+        log.info("ToT 推理完成（流式）");
     }
 
     /**

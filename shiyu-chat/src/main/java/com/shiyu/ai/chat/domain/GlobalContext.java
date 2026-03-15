@@ -72,7 +72,8 @@ public class GlobalContext {
         // 平台和模型配置
         PLATFORM("platform", "平台名称"),
         MODEL_NAME("modelName", "模型名称"),
-        STREAM_FLUX("streamFlux", "流式响应 Flux");
+        STREAM_FLUX("streamFlux", "流式响应 Flux"),
+        STREAM_MODE("streamMode", "流式模式标志");
 
         private final String code;
         private final String desc;

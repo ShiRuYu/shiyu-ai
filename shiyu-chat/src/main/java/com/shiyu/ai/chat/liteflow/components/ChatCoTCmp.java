@@ -1,14 +1,16 @@
 package com.shiyu.ai.chat.liteflow.components;
 
-import com.shiyu.ai.chat.lm.ChatEngine;
 import com.shiyu.ai.chat.domain.GlobalContext;
+import com.shiyu.ai.chat.lm.ChatEngine;
 import com.shiyu.ai.chat.lm.PlatformEnum;
 import com.shiyu.ai.chat.lm.request.LmRequest;
 import com.shiyu.ai.chat.lm.result.ChatResult;
+import com.shiyu.ai.chat.lm.result.StreamResult;
 import com.yomahub.liteflow.annotation.LiteflowComponent;
 import com.yomahub.liteflow.core.NodeComponent;
 import jakarta.annotation.Resource;
 import lombok.extern.slf4j.Slf4j;
+import reactor.core.publisher.Flux;
 
 @Slf4j
 @LiteflowComponent("CHAT_COT")
@@ -24,7 +26,21 @@ public class ChatCoTCmp extends NodeComponent {
         // 获取记忆上下文
         Object memoryContextObj = context.get(GlobalContext.ChatBizKeyEnum.MEMORY_CONTEXT.getCode());
         
-        log.info("开始执行 CoT（Chain of Thought）思维链推理：{}", query);
+        // 判断是否为流式模式
+        boolean isStream = "true".equals(context.get(GlobalContext.ChatBizKeyEnum.STREAM_MODE.getCode()));
+        
+        if (isStream) {
+            handleStream(context, query, memoryContextObj);
+        } else {
+            handleSync(context, query, memoryContextObj);
+        }
+    }
+    
+    /**
+     * 同步处理
+     */
+    private void handleSync(GlobalContext context, String query, Object memoryContextObj) {
+        log.info("开始执行 CoT（Chain of Thought）思维链推理（同步）：{}", query);
         
         // Step 1: 构建带记忆的 CoT 提示词
         String cotPrompt = buildCotPrompt(query, memoryContextObj);
@@ -33,13 +49,44 @@ public class ChatCoTCmp extends NodeComponent {
         LmRequest request = new LmRequest(cotPrompt, PlatformEnum.SILICON_FLOW.getAdapterName(), null);
         ChatResult result = chatEngine.call(request);
         
-        log.info("CoT 推理完成");
+        log.info("CoT 推理完成（同步）");
         
         // Step 3: 提取最终答案
         String finalAnswer = extractFinalAnswer(result.getAnswer());
         
         context.set(GlobalContext.ChatBizKeyEnum.FINAL_ANSWER.getCode(), finalAnswer);
         context.set(GlobalContext.ChatBizKeyEnum.TOT_FINAL_THOUGHT.getCode(), result.getAnswer());
+    }
+    
+    /**
+     * 流式处理
+     */
+    private void handleStream(GlobalContext context, String query, Object memoryContextObj) {
+        log.info("开始执行 CoT（Chain of Thought）思维链推理（流式）：{}", query);
+        
+        // Step 1: 构建带记忆的 CoT 提示词
+        String cotPrompt = buildCotPrompt(query, memoryContextObj);
+        
+        // Step 2: 执行流式调用
+        LmRequest request = new LmRequest(cotPrompt, PlatformEnum.SILICON_FLOW.getAdapterName(), null);
+        StreamResult result = chatEngine.stream(request);
+        Flux<String> flux = result.getAnswer();
+        
+        // 将 Flux 存入全局上下文
+        context.set(GlobalContext.ChatBizKeyEnum.STREAM_FLUX.getCode(), flux);
+        
+        // 收集完整答案用于后续保存记忆（非阻塞，仅订阅）
+        flux.reduce((a, b) -> a + b)
+            .subscribe(
+                fullAnswer -> {
+                    log.info("CoT 推理完成（流式）");
+                    String finalAnswer = extractFinalAnswer(fullAnswer);
+                    context.set(GlobalContext.ChatBizKeyEnum.FINAL_ANSWER.getCode(), finalAnswer);
+                    context.set(GlobalContext.ChatBizKeyEnum.TOT_FINAL_THOUGHT.getCode(), fullAnswer);
+                    log.info("流式回答完成，已保存完整答案");
+                },
+                error -> log.error("收集流式答案失败：{}", error.getMessage())
+            );
     }
 
     /**

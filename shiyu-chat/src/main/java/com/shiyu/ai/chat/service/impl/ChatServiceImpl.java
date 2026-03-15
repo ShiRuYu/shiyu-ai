@@ -77,7 +77,7 @@ public class ChatServiceImpl implements ChatService {
         GlobalContext context = new GlobalContext();
         try {
             String query = request.text();
-            String sessionId = generateSessionId();
+            String sessionId = request.sessionId() != null ? request.sessionId() : generateSessionId();
             String userId = request.userId() != null ? request.userId() : "anonymous";
             String platform = request.platform();
             String modelName = request.modelName();
@@ -89,7 +89,10 @@ public class ChatServiceImpl implements ChatService {
             context.set(GlobalContext.ChatBizKeyEnum.PLATFORM.getCode(), platform);
             context.set(GlobalContext.ChatBizKeyEnum.MODEL_NAME.getCode(), modelName);
             
-            // 执行流式调用流程
+            // 设置流式模式标志
+            context.set(GlobalContext.ChatBizKeyEnum.STREAM_MODE.getCode(), "true");
+            
+            // 执行流式调用流程（包含记忆加载和意图识别）
             flowExecutor.execute2Resp("streamFlow", null, context);
             
             // 从上下文中获取流式响应
