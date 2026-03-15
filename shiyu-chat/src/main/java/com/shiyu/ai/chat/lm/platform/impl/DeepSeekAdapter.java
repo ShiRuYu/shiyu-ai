@@ -8,6 +8,7 @@ import com.shiyu.ai.chat.lm.result.ChatResult;
 import com.shiyu.ai.chat.lm.result.StreamResult;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.ai.chat.client.ChatClient;
+import org.springframework.ai.chat.client.advisor.SimpleLoggerAdvisor;
 import org.springframework.ai.chat.model.ChatModel;
 import org.springframework.ai.openai.OpenAiChatModel;
 import org.springframework.ai.openai.OpenAiChatOptions;
@@ -57,7 +58,10 @@ public class DeepSeekAdapter extends AbstractPlatformAdapter {
         OpenAiApi api = OpenAiApi.builder().baseUrl(baseUrl).apiKey(apiKey).build();
         OpenAiChatOptions options = OpenAiChatOptions.builder().model(modelName).build();
         ChatModel chatModel = OpenAiChatModel.builder().openAiApi(api).defaultOptions(options).build();
-        ChatClient client = ChatClient.builder(chatModel).build();
+
+        // 使用 builder 模式创建 ChatClient，确保支持流式调用
+        ChatClient client = ChatClient.builder(chatModel)
+                .build();
 
         // 缓存 ChatClient
         chatClientCache.put(modelName, client);

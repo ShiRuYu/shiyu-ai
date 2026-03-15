@@ -71,7 +71,7 @@ public class ChatDirectCmp extends NodeComponent {
         
         // 将 Flux 存入全局上下文
         context.set(GlobalContext.ChatBizKeyEnum.STREAM_FLUX.getCode(), flux);
-        
+
         // 收集完整答案用于后续保存记忆（非阻塞，仅订阅）
         flux.reduce((a, b) -> a + b)
             .subscribe(

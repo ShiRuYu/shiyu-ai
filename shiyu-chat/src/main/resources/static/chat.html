@@ -1,0 +1,506 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AI 智能对话</title>
+    <script src="https://unpkg.com/vue@3/dist/vue.global.js"></script>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Microsoft YaHei', Arial, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 900px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 15px;
+            box-shadow: 0 10px 40px rgba(0, 0, 0, 0.2);
+            overflow: hidden;
+        }
+
+        .header {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 20px 30px;
+            text-align: center;
+        }
+
+        .header h1 {
+            font-size: 24px;
+            margin-bottom: 5px;
+        }
+
+        .settings {
+            display: flex;
+            gap: 15px;
+            padding: 20px 30px;
+            background: #f8f9fa;
+            border-bottom: 1px solid #e9ecef;
+            flex-wrap: wrap;
+        }
+
+        .form-group {
+            flex: 1;
+            min-width: 200px;
+        }
+
+        .form-group label {
+            display: block;
+            margin-bottom: 5px;
+            color: #495057;
+            font-weight: 500;
+        }
+
+        .form-control {
+            width: 100%;
+            padding: 10px 15px;
+            border: 1px solid #ced4da;
+            border-radius: 8px;
+            font-size: 14px;
+            transition: all 0.3s;
+        }
+
+        .form-control:focus {
+            outline: none;
+            border-color: #667eea;
+            box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+        }
+
+        .chat-container {
+            height: 500px;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .messages {
+            flex: 1;
+            overflow-y: auto;
+            padding: 20px 30px;
+            background: #fafbfc;
+        }
+
+        .message {
+            margin-bottom: 20px;
+            display: flex;
+            animation: fadeIn 0.3s ease;
+        }
+
+        @keyframes fadeIn {
+            from {
+                opacity: 0;
+                transform: translateY(10px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .message.user {
+            justify-content: flex-end;
+        }
+
+        .message-content {
+            max-width: 70%;
+            padding: 12px 18px;
+            border-radius: 12px;
+            line-height: 1.6;
+            word-wrap: break-word;
+        }
+
+        .message.user .message-content {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border-bottom-right-radius: 4px;
+        }
+
+        .message.ai .message-content {
+            background: white;
+            color: #333;
+            border: 1px solid #e9ecef;
+            border-bottom-left-radius: 4px;
+        }
+
+        .message-avatar {
+            width: 36px;
+            height: 36px;
+            border-radius: 50%;
+            margin: 0 10px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: bold;
+            color: white;
+            flex-shrink: 0;
+        }
+
+        .message.user .message-avatar {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            order: 1;
+        }
+
+        .message.ai .message-avatar {
+            background: linear-gradient(135deg, #11998e 0%, #38ef7d 100%);
+            order: -1;
+        }
+
+        .input-area {
+            padding: 20px 30px;
+            background: white;
+            border-top: 1px solid #e9ecef;
+            display: flex;
+            gap: 10px;
+        }
+
+        .input-area textarea {
+            flex: 1;
+            padding: 12px 15px;
+            border: 1px solid #ced4da;
+            border-radius: 8px;
+            resize: none;
+            font-family: inherit;
+            font-size: 14px;
+            transition: all 0.3s;
+        }
+
+        .input-area textarea:focus {
+            outline: none;
+            border-color: #667eea;
+            box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+        }
+
+        .btn {
+            padding: 12px 25px;
+            border: none;
+            border-radius: 8px;
+            font-size: 14px;
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.3s;
+            white-space: nowrap;
+        }
+
+        .btn-primary {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+        }
+
+        .btn-primary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(102, 126, 234, 0.4);
+        }
+
+        .btn-primary:disabled {
+            opacity: 0.6;
+            cursor: not-allowed;
+            transform: none;
+        }
+
+        .loading {
+            display: inline-block;
+            width: 20px;
+            height: 20px;
+            border: 3px solid rgba(255, 255, 255, 0.3);
+            border-radius: 50%;
+            border-top-color: white;
+            animation: spin 1s ease-in-out infinite;
+        }
+
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+
+        .typing-indicator {
+            display: flex;
+            gap: 5px;
+            padding: 10px;
+        }
+
+        .typing-dot {
+            width: 8px;
+            height: 8px;
+            background: #667eea;
+            border-radius: 50%;
+            animation: bounce 1.4s infinite;
+        }
+
+        .typing-dot:nth-child(2) {
+            animation-delay: 0.2s;
+        }
+
+        .typing-dot:nth-child(3) {
+            animation-delay: 0.4s;
+        }
+
+        @keyframes bounce {
+            0%, 60%, 100% {
+                transform: translateY(0);
+            }
+            30% {
+                transform: translateY(-10px);
+            }
+        }
+
+        .error-message {
+            background: #fee;
+            color: #c33;
+            padding: 10px 15px;
+            border-radius: 8px;
+            margin: 10px 0;
+            border-left: 4px solid #c33;
+        }
+    </style>
+</head>
+<body>
+    <div id="app">
+        <div class="container">
+            <div class="header">
+                <h1>🤖 AI 智能对话</h1>
+                <p>选择平台和模型，开始您的 AI 对话之旅</p>
+            </div>
+
+            <div class="settings">
+                <div class="form-group">
+                    <label>AI 平台</label>
+                    <select v-model="selectedPlatform" @change="loadModels" class="form-control">
+                        <option v-for="platform in platforms" :key="platform.name" :value="platform.name">
+                            {{ platform.displayName }}
+                        </option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label>模型</label>
+                    <select v-model="selectedModel" class="form-control">
+                        <option v-for="model in models" :key="model.name" :value="model.name">
+                            {{ model.displayName }} ({{ model.name }})
+                        </option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label>对话方式</label>
+                    <select v-model="conversationMode" class="form-control">
+                        <option value="stream">流式对话（实时显示）</option>
+                        <option value="call">普通对话（一次性返回）</option>
+                    </select>
+                </div>
+            </div>
+
+            <div class="chat-container">
+                <div class="messages" ref="messagesContainer">
+                    <div v-if="messages.length === 0" style="text-align: center; color: #999; margin-top: 50px;">
+                        <p>💬 开始和 AI 对话吧！</p>
+                    </div>
+                    <div v-else v-for="(message, index) in messages" :key="index" 
+                         :class="['message', message.role]">
+                        <div class="message-avatar">
+                            {{ message.role === 'user' ? '我' : 'AI' }}
+                        </div>
+                        <div class="message-content">
+                            {{ message.content }}
+                        </div>
+                    </div>
+                    <div v-if="isTyping" class="message ai">
+                        <div class="message-avatar">AI</div>
+                        <div class="message-content">
+                            <div class="typing-indicator">
+                                <div class="typing-dot"></div>
+                                <div class="typing-dot"></div>
+                                <div class="typing-dot"></div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="input-area">
+                <textarea 
+                    v-model="inputMessage"
+                    @keyup.enter.exact="sendMessage"
+                    placeholder="输入消息...（按 Enter 发送）"
+                    rows="3"
+                    :disabled="isLoading"
+                ></textarea>
+                <button @click="sendMessage" class="btn btn-primary" :disabled="isLoading || !inputMessage.trim()">
+                    <span v-if="!isLoading">发送</span>
+                    <span v-else class="loading"></span>
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const { createApp } = Vue;
+
+        createApp({
+            data() {
+                return {
+                    platforms: [],
+                    models: [],
+                    selectedPlatform: 'SILICON_FLOW',
+                    selectedModel: '',
+                    conversationMode: 'stream', // stream 或 call
+                    messages: [],
+                    inputMessage: '',
+                    isLoading: false,
+                    isTyping: false,
+                    sessionId: null
+                };
+            },
+            mounted() {
+                this.loadPlatforms();
+            },
+            methods: {
+                async loadPlatforms() {
+                    try {
+                        const response = await fetch('/chat/platforms');
+                        this.platforms = await response.json();
+                        if (this.platforms.length > 0) {
+                            await this.loadModels();
+                        }
+                    } catch (error) {
+                        console.error('加载平台失败:', error);
+                        this.showMessage('加载平台列表失败', 'error');
+                    }
+                },
+                async loadModels() {
+                    try {
+                        const response = await fetch(`/chat/platforms/${this.selectedPlatform}/models`);
+                        this.models = await response.json();
+                        if (this.models.length > 0 && !this.selectedModel) {
+                            this.selectedModel = this.models[0].name;
+                        }
+                    } catch (error) {
+                        console.error('加载模型失败:', error);
+                        this.showMessage('加载模型列表失败', 'error');
+                    }
+                },
+                async sendMessage() {
+                    if (!this.inputMessage.trim() || this.isLoading) return;
+
+                    const userMessage = this.inputMessage.trim();
+                    this.messages.push({
+                        role: 'user',
+                        content: userMessage
+                    });
+                    this.inputMessage = '';
+                    this.isLoading = true;
+                    this.isTyping = true;
+                    this.scrollToBottom();
+
+                    try {
+                        const params = new URLSearchParams({
+                            text: userMessage,
+                            platform: this.selectedPlatform,
+                            modelName: this.selectedModel
+                        });
+                        
+                        if (this.sessionId) {
+                            params.append('sessionId', this.sessionId);
+                        }
+
+                        // 根据对话模式选择不同的接口
+                        if (this.conversationMode === 'stream') {
+                            await this.sendStreamRequest(params);
+                        } else {
+                            await this.sendCallRequest(params);
+                        }
+
+                    } catch (error) {
+                        console.error('发送消息失败:', error);
+                        this.messages.push({
+                            role: 'ai',
+                            content: '❌ 抱歉，处理您的请求时出现错误，请稍后再试。'
+                        });
+                    } finally {
+                        this.isLoading = false;
+                        this.isTyping = false;
+                        this.scrollToBottom();
+                    }
+                },
+                
+                // 流式对话请求
+                async sendStreamRequest(params) {
+                    const response = await fetch(`/chat/stream?${params}`);
+                    
+                    if (!response.ok) {
+                        throw new Error(`HTTP error! status: ${response.status}`);
+                    }
+
+                    const reader = response.body.getReader();
+                    const decoder = new TextDecoder();
+                    let aiMessage = '';
+                    
+                    // 添加 AI 消息占位
+                    this.messages.push({
+                        role: 'ai',
+                        content: ''
+                    });
+                    const aiMessageIndex = this.messages.length - 1;
+
+                    while (true) {
+                        const { done, value } = await reader.read();
+                        if (done) break;
+
+                        const chunk = decoder.decode(value, { stream: true });
+                        aiMessage += chunk;
+                        this.messages[aiMessageIndex].content = aiMessage;
+                        this.scrollToBottom();
+                    }
+
+                    // 保存 session ID
+                    if (!this.sessionId) {
+                        this.sessionId = 'session_' + Date.now();
+                    }
+                },
+                
+                // 普通对话请求
+                async sendCallRequest(params) {
+                    const response = await fetch(`/chat?${params}`, {
+                        method: 'GET'
+                    });
+                    
+                    if (!response.ok) {
+                        throw new Error(`HTTP error! status: ${response.status}`);
+                    }
+
+                    const result = await response.json();
+                    const aiContent = result.result || '未收到回复';
+                    
+                    // 添加 AI 消息
+                    this.messages.push({
+                        role: 'ai',
+                        content: aiContent
+                    });
+
+                    // 保存 session ID
+                    if (!this.sessionId) {
+                        this.sessionId = 'session_' + Date.now();
+                    }
+                },
+                scrollToBottom() {
+                    this.$nextTick(() => {
+                        const container = this.$refs.messagesContainer;
+                        if (container) {
+                            container.scrollTop = container.scrollHeight;
+                        }
+                    });
+                },
+                showMessage(message, type = 'info') {
+                    // 简单的消息提示，可以扩展为 toast
+                    console.log(message);
+                }
+            }
+        }).mount('#app');
+    </script>
+</body>
+</html>

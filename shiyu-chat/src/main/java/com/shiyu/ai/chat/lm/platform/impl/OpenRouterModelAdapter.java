@@ -57,7 +57,10 @@ public class OpenRouterModelAdapter extends AbstractPlatformAdapter {
         OpenAiApi api = OpenAiApi.builder().baseUrl(baseUrl).apiKey(apiKey).build();
         OpenAiChatOptions options = OpenAiChatOptions.builder().model(modelName).build();
         ChatModel chatModel = OpenAiChatModel.builder().openAiApi(api).defaultOptions(options).build();
-        ChatClient client = ChatClient.builder(chatModel).build();
+
+        // 使用 builder 模式创建 ChatClient，确保支持流式调用
+        ChatClient client = ChatClient.builder(chatModel)
+                .build();
 
         // 缓存 ChatClient
         chatClientCache.put(modelName, client);
