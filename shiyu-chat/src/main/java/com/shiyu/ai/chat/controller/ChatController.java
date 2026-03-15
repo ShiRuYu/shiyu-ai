@@ -24,12 +24,12 @@ public class ChatController {
      */
     @GetMapping("/stream")
     public Flux<String> stream(
-            @RequestParam(required = false) String text,
+            @RequestParam(required = false) String query,
             @RequestParam(required = false) String sessionId,
             @RequestParam(required = false) String userId,
             @RequestParam(required = false, defaultValue = "SILICON_FLOW") String platform,
             @RequestParam(required = false) String modelName) {
-        ChatRequest request = new ChatRequest(text, sessionId, userId, platform, modelName);
+        ChatRequest request = new ChatRequest(query, sessionId, userId, platform, modelName);
         return chatService.stream(request);
     }
 
@@ -46,12 +46,12 @@ public class ChatController {
      */
     @GetMapping
     public Map<String, Object> callGet(
-            @RequestParam(required = false) String text,
+            @RequestParam(required = false) String query,
             @RequestParam(required = false) String sessionId,
             @RequestParam(required = false) String userId,
             @RequestParam(required = false, defaultValue = "SILICON_FLOW") String platform,
             @RequestParam(required = false) String modelName) {
-        ChatRequest request = new ChatRequest(text, sessionId, userId, platform, modelName);
+        ChatRequest request = new ChatRequest(query, sessionId, userId, platform, modelName);
         return chatService.call(request);
     }
 

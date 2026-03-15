@@ -36,7 +36,7 @@ public class ChatServiceImpl implements ChatService {
     public Map<String, Object> call(ChatRequest request) {
         GlobalContext context = new GlobalContext();
         try {
-            String query = request.text();
+            String query = request.query();
             String sessionId = request.sessionId() != null ? request.sessionId() : generateSessionId();
             String userId = request.userId();
             String platform = request.platform();
@@ -77,7 +77,7 @@ public class ChatServiceImpl implements ChatService {
     public Flux<String> stream(ChatRequest request) {
         GlobalContext context = new GlobalContext();
         try {
-            String query = request.text();
+            String query = request.query();
             String sessionId = request.sessionId() != null ? request.sessionId() : generateSessionId();
             String userId = request.userId() != null ? request.userId() : "anonymous";
             String platform = request.platform();
@@ -164,7 +164,7 @@ public class ChatServiceImpl implements ChatService {
             // 1. 保存对话历史
             ConversationHistory history = ConversationHistory.builder()
                     .sessionId(sessionId)
-                    .userId(userId != null ? userId : sessionId.split("_")[0])
+                    .userId(userId != null ? userId : "anonymous")
                     .userQuery(query)
                     .aiResponse(finalAnswer)
                     .intentType(intentType)
@@ -177,7 +177,7 @@ public class ChatServiceImpl implements ChatService {
             // 2. 添加短期记忆（用户问题和 AI 回答）
             Memory userMemory = Memory.builder()
                     .sessionId(sessionId)
-                    .userId(userId != null ? userId : sessionId.split("_")[0])
+                    .userId(userId != null ? userId : "anonymous")
                     .type(Memory.MemoryType.SHORT_TERM)
                     .content("用户：" + query)
                     .weight(0.9)
@@ -187,7 +187,7 @@ public class ChatServiceImpl implements ChatService {
             
             Memory aiMemory = Memory.builder()
                     .sessionId(sessionId)
-                    .userId(userId != null ? userId : sessionId.split("_")[0])
+                    .userId(userId != null ? userId : "anonymous")
                     .type(Memory.MemoryType.SHORT_TERM)
                     .content("AI: " + finalAnswer)
                     .weight(0.9)

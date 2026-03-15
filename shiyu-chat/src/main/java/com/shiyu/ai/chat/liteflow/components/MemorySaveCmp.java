@@ -75,7 +75,7 @@ public class MemorySaveCmp extends NodeComponent {
         // 1. 保存对话历史
         ConversationHistory history = ConversationHistory.builder()
                 .sessionId(sessionId)
-                .userId(userId != null ? userId : sessionId.split("_")[0])
+                .userId(userId != null ? userId : "anonymous")
                 .userQuery(query)
                 .aiResponse(finalAnswer)
                 .intentType(intentType)
@@ -88,7 +88,7 @@ public class MemorySaveCmp extends NodeComponent {
         // 2. 添加短期记忆（用户问题和 AI 回答）
         Memory userMemory = Memory.builder()
                 .sessionId(sessionId)
-                .userId(userId != null ? userId : sessionId.split("_")[0])
+                .userId(userId != null ? userId : "anonymous")
                 .type(Memory.MemoryType.SHORT_TERM)
                 .content("用户：" + query)
                 .weight(0.9)
@@ -98,7 +98,7 @@ public class MemorySaveCmp extends NodeComponent {
         
         Memory aiMemory = Memory.builder()
                 .sessionId(sessionId)
-                .userId(userId != null ? userId : sessionId.split("_")[0])
+                .userId(userId != null ? userId : "anonymous")
                 .type(Memory.MemoryType.SHORT_TERM)
                 .content("AI: " + finalAnswer)
                 .weight(0.9)

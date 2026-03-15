@@ -18,9 +18,9 @@ public interface IntentService {
     /**
      * 检测输入文本最匹配的意图
      *
-     * @param text    用户输入的文本内容
+     * @param query    用户输入的文本内容
      * @param intents 预定义的意图列表
      * @return 返回最匹配的意图对象，如果没有匹配则返回null
      */
-    Intent detect(String text, List<Intent> intents);
+    Intent detect(String query, List<Intent> intents);
 }

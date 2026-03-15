@@ -49,18 +49,18 @@ public class IntentCmp extends NodeComponent {
     /**
      * 通过关键词快速匹配意图
      */
-    private Intent matchByKeywords(String text, List<Intent> intents) {
-        if (text == null || text.trim().isEmpty()) {
+    private Intent matchByKeywords(String query, List<Intent> intents) {
+        if (query == null || query.trim().isEmpty()) {
             return null;
         }
 
-        String lowerText = text.toLowerCase();
+        String lowerQuery = query.toLowerCase();
         
         for (Intent intent : intents) {
             // 从配置中读取的关键词可能在 content 或 name 中
             // 这里做一个简单的关键词匹配
-            if ((intent.getName() != null && lowerText.contains(intent.getName().toLowerCase())) ||
-                (intent.getContent() != null && lowerText.contains(intent.getContent().toLowerCase()))) {
+            if ((intent.getName() != null && lowerQuery.contains(intent.getName().toLowerCase())) ||
+                (intent.getContent() != null && lowerQuery.contains(intent.getContent().toLowerCase()))) {
                 return intent;
             }
         }

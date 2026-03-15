@@ -82,14 +82,14 @@ public class IntentServiceImpl implements IntentService {
     }
 
     @Override
-    public Intent detect(String text, List<Intent> intents) {
-        if (text == null || text.trim().isEmpty()) {
+    public Intent detect(String query, List<Intent> intents) {
+        if (query == null || query.trim().isEmpty()) {
             log.warn("输入文本为空，无法进行意图识别");
             return getDefaultIntent(intents);
         }
 
         // 构建意图识别的 Prompt
-        String prompt = buildIntentDetectionPrompt(text, intents);
+        String prompt = buildIntentDetectionPrompt(query, intents);
 
         try {
             // 调用大模型进行意图识别
@@ -112,7 +112,7 @@ public class IntentServiceImpl implements IntentService {
     /**
      * 构建意图识别的 Prompt
      */
-    private String buildIntentDetectionPrompt(String text, List<Intent> intents) {
+    private String buildIntentDetectionPrompt(String query, List<Intent> intents) {
         StringBuilder sb = new StringBuilder();
         sb.append("你是一个意图识别助手。请分析用户输入的意图，并从以下选项中选择最匹配的一个：\n\n");
 
@@ -126,7 +126,7 @@ public class IntentServiceImpl implements IntentService {
                     intent.getContent()));
         }
 
-        sb.append("\n用户输入：").append(text).append("\n\n");
+        sb.append("\n用户输入：").append(query).append("\n\n");
         sb.append("请只返回最匹配的意图 ID，不要输出其他内容。");
 
         return sb.toString();
