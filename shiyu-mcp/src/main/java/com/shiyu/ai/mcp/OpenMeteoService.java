@@ -2,6 +2,7 @@ package com.shiyu.ai.mcp;
 
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonProperty;
+import lombok.extern.slf4j.Slf4j;
 import org.springaicommunity.mcp.annotation.McpTool;
 import org.springaicommunity.mcp.annotation.McpToolParam;
 import org.springframework.stereotype.Service;
@@ -17,6 +18,7 @@ import java.util.List;
  * 该API无需API密钥，可以直接使用
  */
 @Service
+@Slf4j
 public class OpenMeteoService {
 
     // OpenMeteo免费天气API基础URL
@@ -128,6 +130,7 @@ public class OpenMeteoService {
     @McpTool(name = "天气数据", description = "获取指定经纬度的天气预报")
     public String getWeatherForecastByLocation(double latitude, double longitude) {
         // 获取天气数据（当前和未来7天）
+        log.info("获取天气数据：latitude={}, longitude={}", latitude, longitude);
         var weatherData = restClient.get()
                 .uri("/forecast?latitude={latitude}&longitude={longitude}&current=temperature_2m,apparent_temperature,relative_humidity_2m,precipitation,weather_code,wind_speed_10m,wind_direction_10m&daily=temperature_2m_max,temperature_2m_min,precipitation_sum,weather_code,wind_speed_10m_max,wind_direction_10m_dominant&timezone=auto&forecast_days=7",
                         latitude, longitude)
@@ -213,7 +216,7 @@ public class OpenMeteoService {
     @McpTool(name = "天气模拟数据", description = "获取指定位置的空气质量信息（模拟数据）")
     public String getAirQuality(@McpToolParam(description = "纬度") double latitude,
                                 @McpToolParam(description = "经度") double longitude) {
-
+        log.info("获取指定位置的空气质量信息 (使用备用模拟数据)");
         try {
             // 从天气数据中获取基本信息
             var weatherData = restClient.get()

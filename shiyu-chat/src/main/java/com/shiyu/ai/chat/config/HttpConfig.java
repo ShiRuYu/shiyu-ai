@@ -1,5 +1,6 @@
 package com.shiyu.ai.chat.config;
 
+import io.micrometer.observation.ObservationRegistry;
 import io.netty.channel.ChannelOption;
 import org.springframework.boot.http.client.ClientHttpRequestFactoryBuilder;
 import org.springframework.boot.http.client.HttpClientSettings;
@@ -32,15 +33,17 @@ public class HttpConfig {
     private static final int CONNECTION_POOL_CLEANUP_INTERVAL_SECONDS = 60;
 
     @Bean
-    public RestClient.Builder restClientBuilder() {
+    public RestClient.Builder restClientBuilder(ObservationRegistry observationRegistry) {
         return RestClient.builder()
+                .observationRegistry(observationRegistry)
                 .requestFactory(createClientHttpRequestFactory());
     }
 
     @Bean
-    public WebClient.Builder webClientBuilder() {
+    public WebClient.Builder webClientBuilder(ObservationRegistry observationRegistry) {
         HttpClient httpClient = createReactorHttpClient();
         return WebClient.builder()
+                .observationRegistry(observationRegistry)
                 .clientConnector(new ReactorClientHttpConnector(httpClient));
     }
     

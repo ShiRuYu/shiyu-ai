@@ -11,11 +11,11 @@ import org.springframework.context.annotation.PropertySource;
 @ConfigurationProperties(prefix = "shiyu.ai")
 @PropertySource(value = "classpath:/config/config.yml", factory = YmlPropertySourceFactory.class)
 public class PlatformProperties {
-    private OllamaConfig ollama;
-    private DeepSeekConfig deepseek;
-    private OpenAIConfig openai;
-    private OpenRouterConfig openrouter;
-    private SiliconFlowConfig siliconflow;
+    private OllamaConfig ollama = new OllamaConfig();
+    private DeepSeekConfig deepseek = new DeepSeekConfig();
+    private OpenAIConfig openai = new OpenAIConfig();
+    private OpenRouterConfig openrouter = new OpenRouterConfig();
+    private SiliconFlowConfig siliconflow = new SiliconFlowConfig();
 
     @Data
     public static class OllamaConfig {

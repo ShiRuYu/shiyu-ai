@@ -1,8 +1,10 @@
 package com.shiyu.ai.common.web.config;
 
+import com.shiyu.ai.common.core.factory.YmlPropertySourceFactory;
 import com.shiyu.ai.common.web.interceptor.WebInvokeInterceptor;
 import org.springframework.boot.autoconfigure.AutoConfiguration;
 import org.springframework.context.annotation.Bean;
+import org.springframework.context.annotation.PropertySource;
 import org.springframework.web.cors.CorsConfiguration;
 import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
 import org.springframework.web.filter.CorsFilter;
@@ -14,6 +16,7 @@ import org.springframework.web.servlet.config.annotation.WebMvcConfigurer;
  * 通用配置
  */
 @AutoConfiguration
+@PropertySource(value = "classpath:shiyu-web.yml", factory = YmlPropertySourceFactory.class)
 public class ResourcesConfig implements WebMvcConfigurer {
 
     @Override
