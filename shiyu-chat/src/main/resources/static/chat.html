@@ -2,13 +2,10 @@
 <html lang="zh-CN">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-
-    <title>AI Console</title>
+    <title>AI Platform Console</title>
 
     <script src="https://unpkg.com/vue@3/dist/vue.global.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
-
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/highlight.js@11.9.0/styles/github.min.css">
     <script src="https://cdn.jsdelivr.net/npm/highlight.js@11.9.0/highlight.min.js"></script>
 
@@ -23,176 +20,188 @@
             overflow:hidden;
         }
 
-        .container{
+        .layout{
             display:flex;
             height:100vh;
         }
 
-        /* chat */
+        /* CHAT */
 
-        .chat-area{
+        .chat{
             flex:1;
             display:flex;
             flex-direction:column;
             background:white;
         }
 
-        .header{
-            padding:18px 30px;
-            border-bottom:1px solid #eee;
-            background:#fff;
-        }
+        /* SIDEBAR */
 
-        .settings{
+        .sidebar{
+            width:420px;
+            background:#f9fafc;
+            border-left:1px solid #eee;
             display:flex;
-            gap:12px;
-            padding:15px 30px;
-            border-bottom:1px solid #eee;
-            background:#fafafa;
+            flex-direction:column;
+            height:100vh;
+            overflow:hidden;
         }
 
-        .form-control{
-            padding:8px 12px;
-            border-radius:8px;
-            border:1px solid #ddd;
-            font-size:13px;
+        /* HEADER */
+
+        .header{
+            padding:14px 18px;
+            border-bottom:1px solid #eee;
+            display:flex;
+            justify-content:space-between;
+            align-items:center;
+            background:white;
         }
+
+        .controls{
+            display:flex;
+            gap:6px;
+            align-items:center;
+        }
+
+        .controls select,
+        .controls input{
+            padding:6px 10px;
+            border-radius:6px;
+            border:1px solid #ddd;
+            font-size:12px;
+        }
+
+        button{
+            background:#4f46e5;
+            color:white;
+            border:none;
+            padding:6px 12px;
+            border-radius:6px;
+            cursor:pointer;
+        }
+
+        /* MESSAGES */
 
         .messages{
             flex:1;
             overflow-y:auto;
-            padding:30px;
-            background:#fafbfc;
+            padding:20px;
+            background:#fafbff;
         }
 
         .message{
             display:flex;
-            margin-bottom:18px;
+            margin-bottom:14px;
         }
 
         .message.user{
             justify-content:flex-end;
         }
 
-        .message-content{
-            max-width:65%;
-            padding:14px 18px;
-            border-radius:14px;
-            line-height:1.7;
+        .bubble{
+            max-width:70%;
+            padding:12px 14px;
+            border-radius:12px;
             font-size:14px;
+            line-height:1.6;
             box-shadow:0 2px 8px rgba(0,0,0,0.05);
         }
 
-        .message.user .message-content{
-            background:#6366f1;
+        .message.user .bubble{
+            background:#4f46e5;
             color:white;
         }
 
-        .message.ai .message-content{
+        .message.ai .bubble{
             background:white;
             border:1px solid #eee;
         }
 
-        .input-area{
+        /* INPUT */
+
+        .input{
             border-top:1px solid #eee;
-            padding:20px;
+            padding:14px;
             display:flex;
             gap:10px;
-            background:white;
         }
 
         textarea{
             flex:1;
             border:1px solid #ddd;
-            border-radius:10px;
-            padding:12px;
-            font-size:14px;
+            border-radius:8px;
+            padding:10px;
             resize:none;
         }
 
-        button{
-            background:#6366f1;
-            border:none;
-            color:white;
-            padding:10px 18px;
-            border-radius:8px;
-            cursor:pointer;
-        }
+        /* SIDEBAR SECTIONS */
 
-        button.secondary{
-            background:#aaa;
-        }
-
-        /* sidebar */
-
-        .sidebar{
-            width:360px;
-            background:#fbfbfd;
-            border-left:1px solid #eee;
-            display:flex;
-            flex-direction:column;
-        }
-
-        .param-section{
-            padding:16px;
+        .section{
+            padding:14px;
             border-bottom:1px solid #eee;
+            flex-shrink:0;
+            max-height:180px;
+            overflow:auto;
         }
 
-        .param-item{
-            background:white;
-            border-radius:8px;
-            padding:10px;
-            margin-bottom:10px;
-            border:1px solid #eee;
-        }
-
-        .param-label{
-            font-size:11px;
-            color:#888;
-            margin-bottom:4px;
-        }
-
-        .param-value{
+        .section h3{
             font-size:13px;
+            margin-bottom:8px;
         }
 
-        .param-item input,
-        .param-item select{
+        /* EDITOR */
+
+        .editor{
             width:100%;
-            padding:6px;
-            border-radius:6px;
-            border:1px solid #ddd;
+            height:120px;
+            font-family:monospace;
             font-size:12px;
-            margin-top:4px;
+            border:1px solid #ddd;
+            border-radius:6px;
+            padding:8px;
+            resize:vertical;
+            overflow:auto;
         }
+
+        /* CURL */
+
+        .curl{
+            background:#111827;
+            color:#22c55e;
+            padding:8px;
+            border-radius:6px;
+            font-size:12px;
+            overflow:auto;
+            max-height:120px;
+            white-space:pre-wrap;
+            word-break:break-all;
+        }
+
+        /* LOGS */
 
         .logs{
             flex:1;
             overflow-y:auto;
-            padding:12px;
-            background:#111827;
-            color:white;
+            background:#0f172a;
+            color:#e5e7eb;
             font-family:monospace;
-        }
-
-        .log-item{
-            margin-bottom:12px;
-            padding-bottom:12px;
-            border-bottom:1px solid #333;
-        }
-
-        .log-url{
-            color:#22c55e;
-        }
-
-        .log-time{
-            color:#9ca3af;
+            padding:10px;
             font-size:12px;
         }
 
+        .log{
+            margin-bottom:10px;
+            padding-bottom:8px;
+            border-bottom:1px solid #1f2937;
+        }
+
+        .log-url{color:#22c55e}
+        .log-time{color:#9ca3af}
+
         .typing{
-            font-size:13px;
+            font-size:12px;
             color:#888;
+            padding:6px;
         }
 
     </style>
@@ -202,128 +211,95 @@
 
 <div id="app">
 
-    <div class="container">
+    <div class="layout">
 
-        <!-- Chat -->
-
-        <div class="chat-area">
+        <div class="chat">
 
             <div class="header">
-                <h1>🤖 AI 智能对话</h1>
-                <div style="font-size:12px;color:#777">
-                    Platform: {{selectedPlatform}} | Model: {{selectedModel}}
+
+                <h3>🤖 AI Platform Console</h3>
+
+                <div class="controls">
+
+                    <select v-model="platform" @change="loadModels">
+                        <option v-for="p in platforms" :value="p.name">
+                            {{p.displayName}}
+                        </option>
+                    </select>
+
+                    <select v-model="model">
+                        <option v-for="m in models" :value="m.name">
+                            {{m.displayName}}
+                        </option>
+                    </select>
+
+                    <select v-model="mode">
+                        <option value="stream">stream</option>
+                        <option value="call">call</option>
+                    </select>
+
+                    <input v-model="userId" placeholder="user">
+                    <input v-model="sessionId" placeholder="session">
+
+                    <button @click="clearChat">new</button>
+
                 </div>
-            </div>
-
-            <div class="settings">
-
-                <select v-model="selectedPlatform" @change="loadModels" class="form-control">
-                    <option v-for="p in platforms" :value="p.name">
-                        {{p.displayName}}
-                    </option>
-                </select>
-
-                <select v-model="selectedModel" class="form-control">
-                    <option v-for="m in models" :value="m.name">
-                        {{m.displayName}}
-                    </option>
-                </select>
-
-                <select v-model="mode" class="form-control">
-                    <option value="stream">流式</option>
-                    <option value="call">普通</option>
-                </select>
-
-                <button class="secondary" @click="clearChat">新会话</button>
-
             </div>
 
             <div class="messages" ref="messages">
 
-                <div v-for="(m,i) in messages" :key="i" :class="['message',m.role]">
-                    <div class="message-content" v-html="renderMarkdown(m.content)"></div>
+                <div v-for="m in messages" :class="['message',m.role]">
+                    <div class="bubble" v-html="render(m.content)"></div>
                 </div>
 
-                <div v-if="typing" class="typing">AI 正在思考...</div>
+                <div v-if="typing" class="typing">AI thinking...</div>
 
             </div>
 
-            <div class="input-area">
+            <div class="input">
 
-<textarea
-        v-model="input"
-        rows="2"
-        placeholder="输入消息..."
-        @keyup.enter.exact="send"
-></textarea>
+<textarea rows="2"
+          v-model="input"
+          @keyup.enter.exact="send"
+          placeholder="Type message"></textarea>
 
-                <button @click="send">发送</button>
+                <button @click="send">Send</button>
 
             </div>
 
         </div>
 
-        <!-- Sidebar -->
-
         <div class="sidebar">
 
-            <div class="param-section">
+            <div class="section">
+                <h3>Prompt</h3>
+                <textarea class="editor" v-model="prompt"></textarea>
+            </div>
 
-                <h3 style="margin-bottom:10px">请求参数</h3>
+            <div class="section">
+                <h3>Request JSON</h3>
+                <textarea class="editor" v-model="json"></textarea>
+            </div>
 
-                <div class="param-item">
-                    <div class="param-label">query</div>
-                    <div class="param-value">{{current.query}}</div>
-                </div>
+            <div class="section">
+                <h3>Curl</h3>
+                <div class="curl">{{curl}}</div>
+            </div>
 
-                <div class="param-item">
-                    <div class="param-label">platform</div>
-                    <div class="param-value">{{current.platform}}</div>
-                </div>
-
-                <div class="param-item">
-                    <div class="param-label">model</div>
-                    <div class="param-value">{{current.model}}</div>
-                </div>
-
-                <div class="param-item">
-
-                    <div class="param-label">sessionId</div>
-
-                    <input v-model="sessionId" placeholder="输入 sessionId">
-
-                    <select v-model="sessionId">
-                        <option value="">自动生成</option>
-                        <option v-for="s in defaultSessions" :value="s">{{s}}</option>
-                    </select>
-
-                </div>
-
-                <div class="param-item">
-
-                    <div class="param-label">userId</div>
-
-                    <input v-model="userId" placeholder="输入 userId">
-
-                    <select v-model="userId">
-                        <option v-for="u in defaultUserIds" :value="u">{{u}}</option>
-                    </select>
-
-                </div>
-
+            <div class="section">
+                <h3>Stats</h3>
+                <div>Latency: {{latency}} ms</div>
             </div>
 
             <div class="logs">
 
-                <div v-for="l in logs" class="log-item">
+                <div v-for="l in logs" class="log">
 
                     <div class="log-time">{{l.time}}</div>
-
                     <div class="log-url">{{l.url}}</div>
+                    <div>{{l.query}}</div>
 
-                    <div>query: {{l.query}}</div>
-                    <div>userId: {{l.userId}}</div>
-                    <div v-if="l.sessionId">sessionId: {{l.sessionId}}</div>
+                    <button @click="replay(l)">replay</button>
 
                 </div>
 
@@ -342,98 +318,153 @@
     createApp({
 
         data(){
+
             return{
 
                 platforms:[],
                 models:[],
 
-                selectedPlatform:"SILICON_FLOW",
-                selectedModel:"",
+                platform:"",
+                model:"",
 
                 mode:"stream",
 
                 messages:[],
                 input:"",
 
+                prompt:"You are a helpful assistant.",
+
+                json:`{
+"temperature":0.7,
+"maxTokens":2000
+}`,
+
                 typing:false,
 
-                sessionId:"",
                 userId:"anonymous",
+                sessionId:"",
 
-                defaultUserIds:[
-                    "anonymous",
-                    "user_1",
-                    "user_2",
-                    "admin"
-                ],
+                latency:0,
 
-                defaultSessions:[
-                    "session_demo",
-                    "session_test",
-                    "session_001"
-                ],
-
-                current:{},
                 logs:[]
+
             }
+
+        },
+
+        computed:{
+
+            requestBody(){
+
+                return {
+                    query:this.input,
+                    prompt:this.prompt,
+                    platform:this.platform,
+                    modelName:this.model,
+                    userId:this.userId,
+                    sessionId:this.sessionId,
+                    temperature:0.7,
+                    maxTokens:2000
+                }
+
+            },
+
+            curl(){
+
+                let body=this.requestBody
+
+                return `curl -X POST http://localhost:8080/chat/${this.mode} -H "Content-Type: application/json" -d '${JSON.stringify(body,null,2)}'`
+
+            }
+
         },
 
         mounted(){
+
             this.loadPlatforms()
+
+            this.updateJsonFromRequest()
+
         },
 
         methods:{
 
-            renderMarkdown(t){
-                return marked.parse(t||"")
+            render(t){
+
+                let html=marked.parse(t||"")
+
+                this.$nextTick(()=>{
+                    document.querySelectorAll("pre code").forEach((el)=>{
+                        hljs.highlightElement(el)
+                    })
+                })
+
+                return html
             },
 
             scroll(){
 
                 this.$nextTick(()=>{
-                    let el=this.$refs.messages
-                    el.scrollTop=el.scrollHeight
+                    let e=this.$refs.messages
+                    e.scrollTop=e.scrollHeight
                 })
 
             },
 
             clearChat(){
                 this.messages=[]
-                this.sessionId=""
-            },
-
-            async loadPlatforms(){
-
-                let r=await fetch("/chat/platforms")
-                this.platforms=await r.json()
-
-                if(this.platforms.length)
-                    this.loadModels()
-
-            },
-
-            async loadModels(){
-
-                let r=await fetch(`/chat/platforms/${this.selectedPlatform}/models`)
-                this.models=await r.json()
-
-                if(this.models.length)
-                    this.selectedModel=this.models[0].name
-
             },
 
             log(url,query){
 
                 this.logs.unshift({
-
                     time:new Date().toLocaleTimeString(),
-
                     url,
-                    query,
-                    userId:this.userId,
-                    sessionId:this.sessionId
-
+                    query
                 })
+
+            },
+
+            replay(l){
+                this.input=l.query
+            },
+
+            async loadPlatforms(){
+
+                let r=await fetch("/chat/platforms")
+                let data=await r.json()
+
+                this.platforms=data
+
+                if(data.length>0){
+                    this.platform=data[0].name
+                    this.loadModels()
+                }
+
+                this.updateJsonFromRequest()
+
+            },
+
+            async loadModels(){
+
+                if(!this.platform)return
+
+                let r=await fetch(`/chat/platforms/${this.platform}/models`)
+                let data=await r.json()
+
+                this.models=data
+
+                if(data.length>0){
+                    this.model=data[0].name
+                }
+
+                this.updateJsonFromRequest()
+
+            },
+
+            updateJsonFromRequest(){
+
+                this.json=JSON.stringify(this.requestBody,null,2)
 
             },
 
@@ -451,68 +482,85 @@
 
                 this.scroll()
 
-                let params=new URLSearchParams({
+                let body=this.requestBody
 
-                    query,
-                    platform:this.selectedPlatform,
-                    modelName:this.selectedModel,
-                    userId:this.userId
+                let start=Date.now()
 
-                })
+                try{
 
-                if(this.sessionId)
-                    params.append("sessionId",this.sessionId)
+                    if(this.mode==="stream"){
 
-                this.current={
-                    query,
-                    platform:this.selectedPlatform,
-                    model:this.selectedModel
-                }
+                        let r=await fetch("/chat/stream",{
 
-                this.log("/chat",query)
+                            method:"POST",
 
-                if(this.mode==="stream"){
+                            headers:{
+                                "Content-Type":"application/json"
+                            },
 
-                    let r=await fetch(`/chat/stream?${params}`)
+                            body:JSON.stringify(body)
 
-                    let reader=r.body.getReader()
+                        })
 
-                    let decoder=new TextDecoder()
+                        let reader=r.body.getReader()
 
-                    let ai=""
+                        let decoder=new TextDecoder()
 
-                    this.messages.push({role:"ai",content:""})
+                        let ai=""
 
-                    let idx=this.messages.length-1
+                        this.messages.push({role:"ai",content:""})
 
-                    while(true){
+                        let idx=this.messages.length-1
 
-                        let {done,value}=await reader.read()
+                        while(true){
 
-                        if(done)break
+                            let {done,value}=await reader.read()
 
-                        ai+=decoder.decode(value)
+                            if(done)break
 
-                        this.messages[idx].content=ai
+                            ai+=decoder.decode(value,{stream:true})
 
-                        this.scroll()
+                            this.messages[idx].content=ai
+
+                            this.scroll()
+
+                        }
+
+                    }else{
+
+                        let r=await fetch("/chat",{
+
+                            method:"POST",
+
+                            headers:{"Content-Type":"application/json"},
+
+                            body:JSON.stringify(body)
+
+                        })
+
+                        let j=await r.json()
+
+                        this.messages.push({
+                            role:"ai",
+                            content:j.result
+                        })
 
                     }
 
-                }else{
+                }catch(e){
 
-                    let r=await fetch(`/chat?${params}`)
-
-                    let j=await r.json()
-
-                    this.messages.push({role:"ai",content:j.result})
+                    this.messages.push({
+                        role:"ai",
+                        content:"❌ "+e
+                    })
 
                 }
 
+                this.latency=Date.now()-start
+
                 this.typing=false
 
-                if(!this.sessionId)
-                    this.sessionId="session_"+Date.now()
+                this.log("/chat",query)
 
                 this.scroll()
 

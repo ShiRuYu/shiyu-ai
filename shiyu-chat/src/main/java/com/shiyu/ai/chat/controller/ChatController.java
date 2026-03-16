@@ -22,14 +22,8 @@ public class ChatController {
     /**
      * 流式对话接口
      */
-    @GetMapping("/stream")
-    public Flux<String> stream(
-            @RequestParam(required = false) String query,
-            @RequestParam(required = false) String sessionId,
-            @RequestParam(required = false) String userId,
-            @RequestParam(required = false, defaultValue = "SILICON_FLOW") String platform,
-            @RequestParam(required = false) String modelName) {
-        ChatRequest request = new ChatRequest(query, sessionId, userId, platform, modelName);
+    @PostMapping("/stream")
+    public Flux<String> stream(@RequestBody ChatRequest request) {
         return chatService.stream(request);
     }
 
@@ -38,20 +32,6 @@ public class ChatController {
      */
     @PostMapping
     public Map<String, Object> call(@RequestBody ChatRequest request) {
-        return chatService.call(request);
-    }
-
-    /**
-     * GET 方式的对话接口（兼容旧版本）
-     */
-    @GetMapping
-    public Map<String, Object> callGet(
-            @RequestParam(required = false) String query,
-            @RequestParam(required = false) String sessionId,
-            @RequestParam(required = false) String userId,
-            @RequestParam(required = false, defaultValue = "SILICON_FLOW") String platform,
-            @RequestParam(required = false) String modelName) {
-        ChatRequest request = new ChatRequest(query, sessionId, userId, platform, modelName);
         return chatService.call(request);
     }
 
