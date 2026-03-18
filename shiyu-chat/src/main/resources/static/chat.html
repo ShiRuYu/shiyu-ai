@@ -10,7 +10,6 @@
     <script src="https://cdn.jsdelivr.net/npm/highlight.js@11.9.0/highlight.min.js"></script>
 
     <style>
-
         *{margin:0;padding:0;box-sizing:border-box}
 
         body{
@@ -25,16 +24,12 @@
             height:100vh;
         }
 
-        /* CHAT */
-
         .chat{
             flex:1;
             display:flex;
             flex-direction:column;
             background:white;
         }
-
-        /* SIDEBAR */
 
         .sidebar{
             width:420px;
@@ -45,8 +40,6 @@
             height:100vh;
             overflow:hidden;
         }
-
-        /* HEADER */
 
         .header{
             padding:14px 18px;
@@ -79,8 +72,6 @@
             border-radius:6px;
             cursor:pointer;
         }
-
-        /* MESSAGES */
 
         .messages{
             flex:1;
@@ -117,8 +108,6 @@
             border:1px solid #eee;
         }
 
-        /* INPUT */
-
         .input{
             border-top:1px solid #eee;
             padding:14px;
@@ -134,8 +123,6 @@
             resize:none;
         }
 
-        /* SIDEBAR SECTIONS */
-
         .section{
             padding:14px;
             border-bottom:1px solid #eee;
@@ -149,8 +136,6 @@
             margin-bottom:8px;
         }
 
-        /* EDITOR */
-
         .editor{
             width:100%;
             height:120px;
@@ -160,10 +145,7 @@
             border-radius:6px;
             padding:8px;
             resize:vertical;
-            overflow:auto;
         }
-
-        /* CURL */
 
         .curl{
             background:#111827;
@@ -176,8 +158,6 @@
             white-space:pre-wrap;
             word-break:break-all;
         }
-
-        /* LOGS */
 
         .logs{
             flex:1;
@@ -203,7 +183,6 @@
             color:#888;
             padding:6px;
         }
-
     </style>
 </head>
 
@@ -277,11 +256,6 @@
             </div>
 
             <div class="section">
-                <h3>Request JSON</h3>
-                <textarea class="editor" v-model="json"></textarea>
-            </div>
-
-            <div class="section">
                 <h3>Curl</h3>
                 <div class="curl">{{curl}}</div>
             </div>
@@ -318,97 +292,62 @@
     createApp({
 
         data(){
-
             return{
-
                 platforms:[],
                 models:[],
-
                 platform:"",
                 model:"",
-
                 mode:"stream",
-
                 messages:[],
                 input:"",
-
                 prompt:"You are a helpful assistant.",
-
-                json:`{
-"temperature":0.7,
-"maxTokens":2000
-}`,
-
                 typing:false,
-
                 userId:"anonymous",
                 sessionId:"",
-
                 latency:0,
-
                 logs:[]
-
             }
-
         },
 
         computed:{
-
-            requestBody(){
-
-                return {
-                    query:this.input,
-                    prompt:this.prompt,
-                    platform:this.platform,
-                    modelName:this.model,
-                    userId:this.userId,
-                    sessionId:this.sessionId,
-                    temperature:0.7,
-                    maxTokens:2000
-                }
-
-            },
-
             curl(){
-
-                let body=this.requestBody
-
+                let body=this.buildRequestBody(this.input || "your message")
                 return `curl -X POST http://localhost:8080/chat/${this.mode} -H "Content-Type: application/json" -d '${JSON.stringify(body,null,2)}'`
-
             }
-
         },
 
         mounted(){
-
             this.loadPlatforms()
-
-            this.updateJsonFromRequest()
-
         },
 
         methods:{
 
+            buildRequestBody(query){
+                return {
+                    query:query,
+                    prompt:this.prompt,
+                    platform:this.platform,
+                    modelName:this.model,
+                    userId:this.userId,
+                    sessionId:this.sessionId
+                }
+            },
+
             render(t){
-
                 let html=marked.parse(t||"")
-
                 this.$nextTick(()=>{
                     document.querySelectorAll("pre code").forEach((el)=>{
                         hljs.highlightElement(el)
                     })
                 })
-
                 return html
             },
 
             scroll(){
-
                 this.$nextTick(()=>{
                     let e=this.$refs.messages
                     e.scrollTop=e.scrollHeight
                 })
-
             },
 
             clearChat(){
@@ -416,13 +355,11 @@
             },
 
             log(url,query){
-
                 this.logs.unshift({
                     time:new Date().toLocaleTimeString(),
                     url,
                     query
                 })
-
             },
 
             replay(l){
@@ -430,42 +367,23 @@
             },
 
             async loadPlatforms(){
-
                 let r=await fetch("/chat/platforms")
                 let data=await r.json()
-
                 this.platforms=data
-
                 if(data.length>0){
                     this.platform=data[0].name
                     this.loadModels()
                 }
-
-                this.updateJsonFromRequest()
-
             },
 
             async loadModels(){
-
                 if(!this.platform)return
-
                 let r=await fetch(`/chat/platforms/${this.platform}/models`)
                 let data=await r.json()
-
                 this.models=data
-
                 if(data.length>0){
                     this.model=data[0].name
                 }
-
-                this.updateJsonFromRequest()
-
-            },
-
-            updateJsonFromRequest(){
-
-                this.json=JSON.stringify(this.requestBody,null,2)
-
             },
 
             async send(){
@@ -479,10 +397,9 @@
                 this.input=""
 
                 this.typing=true
-
                 this.scroll()
 
-                let body=this.requestBody
+                let body=this.buildRequestBody(query)
 
                 let start=Date.now()
 
@@ -491,51 +408,34 @@
                     if(this.mode==="stream"){
 
                         let r=await fetch("/chat/stream",{
-
                             method:"POST",
-
-                            headers:{
-                                "Content-Type":"application/json"
-                            },
-
+                            headers:{"Content-Type":"application/json"},
                             body:JSON.stringify(body)
-
                         })
 
                         let reader=r.body.getReader()
-
                         let decoder=new TextDecoder()
 
                         let ai=""
 
                         this.messages.push({role:"ai",content:""})
-
                         let idx=this.messages.length-1
 
                         while(true){
-
                             let {done,value}=await reader.read()
-
                             if(done)break
 
                             ai+=decoder.decode(value,{stream:true})
-
                             this.messages[idx].content=ai
-
                             this.scroll()
-
                         }
 
                     }else{
 
                         let r=await fetch("/chat",{
-
                             method:"POST",
-
                             headers:{"Content-Type":"application/json"},
-
                             body:JSON.stringify(body)
-
                         })
 
                         let j=await r.json()
@@ -544,26 +444,19 @@
                             role:"ai",
                             content:j.result
                         })
-
                     }
 
                 }catch(e){
-
                     this.messages.push({
                         role:"ai",
                         content:"❌ "+e
                     })
-
                 }
 
                 this.latency=Date.now()-start
-
                 this.typing=false
-
                 this.log("/chat",query)
-
                 this.scroll()
-
             }
 
         }
