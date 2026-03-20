@@ -4,7 +4,7 @@ spring:
       client:
         name: shiyu-ai-mcp
         request-timeout: 300s
-        sse:
+        streamable-http:
           connections:
             weather-mcp-server:
               url: http://127.0.0.1:9003

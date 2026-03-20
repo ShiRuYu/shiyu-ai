@@ -6,5 +6,6 @@ spring:
   ai:
     mcp:
       server:
+        protocol: STREAMABLE
         name: shiyu-mcp-serve
         version: 1.0.0
