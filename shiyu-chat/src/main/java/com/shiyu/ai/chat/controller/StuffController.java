@@ -47,7 +47,7 @@ public class StuffController {
         } else {
             map.put("context", "");
         }
-        LmRequest request = new LmRequest(message, platformEnum, null);
+        LmRequest request = new LmRequest(message, platformEnum, null, "StuffController");
         StreamResult result = chatEngine.stream(request);
         return result.getAnswer();
         //return chatClient.prompt(promptTemplate.create(map)).stream().content();

@@ -222,7 +222,7 @@ public class MemoryServiceImpl implements MemoryService {
                     "5. 保持简洁，每个要点不超过 50 字",
                     query, response);
             
-            ChatResult result = chatEngine.call(new LmRequest(extractPrompt, PlatformEnum.SILICON_FLOW.getAdapterName(), null));
+            ChatResult result = chatEngine.call(new LmRequest(extractPrompt, PlatformEnum.SILICON_FLOW.getAdapterName(), null, "MemoryService"));
             
             if (result != null && !result.getAnswer().trim().isEmpty() && !result.getAnswer().contains("无")) {
                 // 将提取的信息存储为长期记忆

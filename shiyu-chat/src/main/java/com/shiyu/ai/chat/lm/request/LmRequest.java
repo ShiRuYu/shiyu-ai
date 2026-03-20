@@ -36,37 +36,26 @@ public class LmRequest {
      * 消息列表（用于多轮对话）
      */
     private List<Message> messages;
+    
+    /**
+     * 调用来源（如：CHAT_DIRECT、CHAT_COT、CHAT_TOT、IntentService 等）
+     * 用于追踪模型调用的业务场景，便于日志分析和监控
+     */
+    private String source;
 
-    public LmRequest() {
-    }
-
-    public LmRequest(String prompt) {
-        this.prompt = prompt;
-    }
-
-    public LmRequest(String prompt, String platform, String modelName) {
-        this.prompt = prompt;
-        this.platform = platform;
-        this.modelName = modelName;
-    }
-
-    public LmRequest(String prompt, Map<String, Object> meta) {
-        this.prompt = prompt;
-        this.meta = meta;
-    }
-
-    public LmRequest(String prompt, String platform, String modelName, Map<String, Object> meta) {
+    public LmRequest(String prompt, String platform, String modelName, String source) {
         this.prompt = prompt;
         this.platform = platform;
         this.modelName = modelName;
-        this.meta = meta;
+        this.source = source;
     }
-
-    public LmRequest(String prompt, String platform, String modelName, Map<String, Object> meta, List<Message> messages) {
+    
+    public LmRequest(String prompt, String platform, String modelName, Map<String, Object> meta, List<Message> messages, String source) {
         this.prompt = prompt;
         this.platform = platform;
         this.modelName = modelName;
         this.meta = meta;
         this.messages = messages;
+        this.source = source;
     }
 }

@@ -46,7 +46,7 @@ public class ResourceController {
         Message systemMessage = systemPromptTemplate.createMessage(Map.of("name", name, "voice", voice));
 
         // 调用大模型
-        LmRequest request = new LmRequest(message, platformEnum, null);
+        LmRequest request = new LmRequest(message, platformEnum, null, "ResourceController");
         StreamResult result = chatEngine.stream(request);
         return result.getAnswer();
         //ChatClient chatClient = chatEngine.getChatClient(PlatformEnum.fromEnumName(platformEnum));

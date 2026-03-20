@@ -64,7 +64,7 @@ public class ChatCoTCmp extends NodeComponent {
         }
         
         // Step 2: 调用模型进行逐步推理
-        LmRequest request = new LmRequest(cotPrompt, platform, modelName);
+        LmRequest request = new LmRequest(cotPrompt, platform, modelName, "CHAT_COT");
         ChatResult result = chatEngine.call(request);
         
         log.info("CoT 推理完成（同步）");
@@ -100,7 +100,7 @@ public class ChatCoTCmp extends NodeComponent {
         }
         
         // Step 2: 执行流式调用
-        LmRequest request = new LmRequest(cotPrompt, platform, modelName);
+        LmRequest request = new LmRequest(cotPrompt, platform, modelName, "CHAT_COT");
         StreamResult result = chatEngine.stream(request);
         Flux<String> flux = result.getAnswer();
         

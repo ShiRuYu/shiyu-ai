@@ -35,7 +35,11 @@ public class ChatEngine {
      */
     public ChatResult call(LmRequest request) {
         PlatformEnum platformEnum = resolvePlatformEnum(request);
-        log.debug("Calling model: {} with input: {}", platformEnum, request.getPrompt());
+        log.info("[Sync Call] Source: {}, Platform: {}, Model: {}, Prompt: {}", 
+                request.getSource() != null ? request.getSource() : "unknown",
+                request.getPlatform() != null ? request.getPlatform() : "default",
+                request.getModelName() != null ? request.getModelName() : "default",
+                request.getPrompt());
         
         PlatformAdapter adapter = getAdapter(platformEnum);
         ChatResult response = adapter.call(request);
@@ -50,7 +54,11 @@ public class ChatEngine {
      */
     public StreamResult stream(LmRequest request) {
         PlatformEnum platformEnum = resolvePlatformEnum(request);
-        log.debug("Streaming model: {} with input: {}", platformEnum, request.getPrompt());
+        log.info("[Stream Call] Source: {}, Platform: {}, Model: {}, Prompt: {}", 
+                request.getSource() != null ? request.getSource() : "unknown",
+                request.getPlatform() != null ? request.getPlatform() : "default",
+                request.getModelName() != null ? request.getModelName() : "default",
+                request.getPrompt());
         
         PlatformAdapter adapter = getAdapter(platformEnum);
         StreamResult response = adapter.stream(request);

@@ -119,7 +119,7 @@ public class ChatToTCmp extends NodeComponent {
                 modelName = getDefaultModelForPlatform(platform);
             }
             
-            LmRequest request = new LmRequest(refinePrompt, platform, modelName);
+            LmRequest request = new LmRequest(refinePrompt, platform, modelName, "CHAT_TOT");
             StreamResult result = chatEngine.stream(request);
             Flux<String> flux = result.getAnswer();
             
@@ -159,7 +159,7 @@ public class ChatToTCmp extends NodeComponent {
         prompt.append("2. 方案之间尽量差异化\n");
         prompt.append("3. 用'方案 1:'、'方案 2:'等格式标注每个方案\n");
         
-        ChatResult result = chatEngine.call(new LmRequest(prompt.toString(), getDefaultPlatform(), getDefaultModel()));
+        ChatResult result = chatEngine.call(new LmRequest(prompt.toString(), getDefaultPlatform(), getDefaultModel(), "CHAT_TOT"));
         
         // 解析返回结果，提取各个方案
         String[] parts = result.getAnswer().split("(?=方案\\d+:)");
@@ -196,7 +196,7 @@ public class ChatToTCmp extends NodeComponent {
                                 "请只返回一个 0 到 1 之间的数字作为分数，保留两位小数。",
                         query, candidate.getThought());
                 
-                ChatResult scoreResult = chatEngine.call(new LmRequest(evalPrompt, getDefaultPlatform(), getDefaultModel()));
+                ChatResult scoreResult = chatEngine.call(new LmRequest(evalPrompt, getDefaultPlatform(), getDefaultModel(), "CHAT_TOT"));
                 
                 // 解析分数
                 double score = parseScore(scoreResult.getAnswer());
@@ -259,7 +259,7 @@ public class ChatToTCmp extends NodeComponent {
                         "请整合以上思路，给出结构清晰、逻辑严谨的最终答案。",
                 query, bestThought);
         
-        ChatResult result = chatEngine.call(new LmRequest(refinePrompt, getDefaultPlatform(), getDefaultModel()));
+        ChatResult result = chatEngine.call(new LmRequest(refinePrompt, getDefaultPlatform(), getDefaultModel(), "CHAT_TOT"));
         return result.getAnswer();
     }
     

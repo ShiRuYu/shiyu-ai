@@ -64,7 +64,7 @@ public class ChatDirectCmp extends NodeComponent {
         }
         
         // 直接调用模型回答问题
-        LmRequest request = new LmRequest(promptWithMemory, platform, modelName);
+        LmRequest request = new LmRequest(promptWithMemory, platform, modelName, "CHAT_DIRECT");
         ChatResult result = chatEngine.call(request);
         
         log.info("直接对话完成（同步）");
@@ -95,7 +95,7 @@ public class ChatDirectCmp extends NodeComponent {
         }
         
         // 构建模型请求
-        LmRequest request = new LmRequest(promptWithMemory, platform, modelName);
+        LmRequest request = new LmRequest(promptWithMemory, platform, modelName, "CHAT_DIRECT");
         
         // 执行流式调用
         StreamResult result = chatEngine.stream(request);

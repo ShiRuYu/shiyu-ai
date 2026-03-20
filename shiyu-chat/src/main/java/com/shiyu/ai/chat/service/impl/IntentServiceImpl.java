@@ -3,7 +3,6 @@ package com.shiyu.ai.chat.service.impl;
 import com.shiyu.ai.chat.config.IntentConfig;
 import com.shiyu.ai.chat.domain.node.Intent;
 import com.shiyu.ai.chat.lm.ChatEngine;
-import com.shiyu.ai.chat.lm.PlatformEnum;
 import com.shiyu.ai.chat.lm.request.LmRequest;
 import com.shiyu.ai.chat.lm.result.ChatResult;
 import com.shiyu.ai.chat.service.IntentService;
@@ -99,7 +98,7 @@ public class IntentServiceImpl implements IntentService {
 
         try {
             // 调用大模型进行意图识别，使用传入的平台和模型参数
-            ChatResult result = chatEngine.call(new LmRequest(prompt, platform, modelName, null));
+            ChatResult result = chatEngine.call(new LmRequest(prompt, platform, modelName, "IntentService"));
             log.info("意图识别结果：{}", result.getAnswer());
 
             // 解析模型返回结果
