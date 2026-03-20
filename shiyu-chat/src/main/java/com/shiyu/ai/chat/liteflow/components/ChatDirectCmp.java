@@ -6,6 +6,7 @@ import com.shiyu.ai.chat.lm.PlatformEnum;
 import com.shiyu.ai.chat.lm.request.LmRequest;
 import com.shiyu.ai.chat.lm.result.ChatResult;
 import com.shiyu.ai.chat.lm.result.StreamResult;
+import com.shiyu.ai.chat.config.PlatformProperties;
 import com.yomahub.liteflow.annotation.LiteflowComponent;
 import com.yomahub.liteflow.core.NodeComponent;
 import jakarta.annotation.Resource;
@@ -17,6 +18,9 @@ import reactor.core.publisher.Flux;
 public class ChatDirectCmp extends NodeComponent {
     @Resource
     private ChatEngine chatEngine;
+    
+    @Resource
+    private PlatformProperties platformProperties;
 
     @Override
     public void process() {
@@ -45,8 +49,22 @@ public class ChatDirectCmp extends NodeComponent {
         // 构建带记忆的提示词
         String promptWithMemory = buildPromptWithMemory(query, memoryContextObj);
         
+        // 从上下文中获取平台和模型信息，如果没有则使用默认值
+        String platform = context.get(GlobalContext.ChatBizKeyEnum.PLATFORM.getCode());
+        String modelName = context.get(GlobalContext.ChatBizKeyEnum.MODEL_NAME.getCode());
+        
+        // 如果 platform 为空，使用默认平台
+        if (platform == null || platform.trim().isEmpty()) {
+            platform = PlatformEnum.SILICON_FLOW.getAdapterName();
+        }
+        
+        // 如果 modelName 为空，根据 platform 获取默认模型
+        if (modelName == null || modelName.trim().isEmpty()) {
+            modelName = getDefaultModelForPlatform(platform);
+        }
+        
         // 直接调用模型回答问题
-        LmRequest request = new LmRequest(promptWithMemory, PlatformEnum.SILICON_FLOW.getAdapterName(), null);
+        LmRequest request = new LmRequest(promptWithMemory, platform, modelName);
         ChatResult result = chatEngine.call(request);
         
         log.info("直接对话完成（同步）");
@@ -62,8 +80,22 @@ public class ChatDirectCmp extends NodeComponent {
         // 构建带记忆的提示词
         String promptWithMemory = buildPromptWithMemory(query, memoryContextObj);
         
+        // 从上下文中获取平台和模型信息，如果没有则使用默认值
+        String platform = context.get(GlobalContext.ChatBizKeyEnum.PLATFORM.getCode());
+        String modelName = context.get(GlobalContext.ChatBizKeyEnum.MODEL_NAME.getCode());
+        
+        // 如果 platform 为空，使用默认平台
+        if (platform == null || platform.trim().isEmpty()) {
+            platform = PlatformEnum.SILICON_FLOW.getAdapterName();
+        }
+        
+        // 如果 modelName 为空，根据 platform 获取默认模型
+        if (modelName == null || modelName.trim().isEmpty()) {
+            modelName = getDefaultModelForPlatform(platform);
+        }
+        
         // 构建模型请求
-        LmRequest request = new LmRequest(promptWithMemory, PlatformEnum.SILICON_FLOW.getAdapterName(), null);
+        LmRequest request = new LmRequest(promptWithMemory, platform, modelName);
         
         // 执行流式调用
         StreamResult result = chatEngine.stream(request);
@@ -111,6 +143,29 @@ public class ChatDirectCmp extends NodeComponent {
         } catch (Exception e) {
             log.warn("构建记忆提示词失败，使用原始问题：{}", e.getMessage());
             return query;
+        }
+    }
+    
+    /**
+     * 根据平台获取默认模型
+     */
+    private String getDefaultModelForPlatform(String platform) {
+        if (platform == null) {
+            return platformProperties.getSiliconflow().getModel();
+        }
+        
+        switch (platform.toUpperCase()) {
+            case "OLLAMA":
+                return platformProperties.getOllama().getModel();
+            case "DEEPSEEK":
+                return platformProperties.getDeepseek().getModel();
+            case "OPENAI":
+                return platformProperties.getOpenai().getModel();
+            case "OPENROUTER":
+                return platformProperties.getOpenrouter().getModel();
+            case "SILICONFLOW":
+            default:
+                return platformProperties.getSiliconflow().getModel();
         }
     }
 }

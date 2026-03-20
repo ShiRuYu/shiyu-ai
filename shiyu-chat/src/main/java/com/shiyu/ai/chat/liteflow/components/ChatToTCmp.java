@@ -7,6 +7,7 @@ import com.shiyu.ai.chat.lm.PlatformEnum;
 import com.shiyu.ai.chat.lm.request.LmRequest;
 import com.shiyu.ai.chat.lm.result.ChatResult;
 import com.shiyu.ai.chat.lm.result.StreamResult;
+import com.shiyu.ai.chat.config.PlatformProperties;
 import com.yomahub.liteflow.annotation.LiteflowComponent;
 import com.yomahub.liteflow.core.NodeComponent;
 import jakarta.annotation.Resource;
@@ -22,6 +23,9 @@ import java.util.List;
 public class ChatToTCmp extends NodeComponent {
     @Resource
     private ChatEngine chatEngine;
+    
+    @Resource
+    private PlatformProperties platformProperties;
 
     @Override
     public void process() {
@@ -104,7 +108,18 @@ public class ChatToTCmp extends NodeComponent {
                     query, bestThought.getThought());
             
             // Step 5: 执行流式调用
-            LmRequest request = new LmRequest(refinePrompt, PlatformEnum.SILICON_FLOW.getAdapterName(), null);
+            String platform = context.get(GlobalContext.ChatBizKeyEnum.PLATFORM.getCode());
+            String modelName = context.get(GlobalContext.ChatBizKeyEnum.MODEL_NAME.getCode());
+            
+            if (platform == null || platform.trim().isEmpty()) {
+                platform = PlatformEnum.SILICON_FLOW.getAdapterName();
+            }
+            
+            if (modelName == null || modelName.trim().isEmpty()) {
+                modelName = getDefaultModelForPlatform(platform);
+            }
+            
+            LmRequest request = new LmRequest(refinePrompt, platform, modelName);
             StreamResult result = chatEngine.stream(request);
             Flux<String> flux = result.getAnswer();
             
@@ -144,7 +159,7 @@ public class ChatToTCmp extends NodeComponent {
         prompt.append("2. 方案之间尽量差异化\n");
         prompt.append("3. 用'方案 1:'、'方案 2:'等格式标注每个方案\n");
         
-        ChatResult result = chatEngine.call(new LmRequest(prompt.toString(), PlatformEnum.SILICON_FLOW.getAdapterName(), null));
+        ChatResult result = chatEngine.call(new LmRequest(prompt.toString(), getDefaultPlatform(), getDefaultModel()));
         
         // 解析返回结果，提取各个方案
         String[] parts = result.getAnswer().split("(?=方案\\d+:)");
@@ -181,7 +196,7 @@ public class ChatToTCmp extends NodeComponent {
                                 "请只返回一个 0 到 1 之间的数字作为分数，保留两位小数。",
                         query, candidate.getThought());
                 
-                ChatResult scoreResult = chatEngine.call(new LmRequest(evalPrompt, PlatformEnum.SILICON_FLOW.getAdapterName(), null));
+                ChatResult scoreResult = chatEngine.call(new LmRequest(evalPrompt, getDefaultPlatform(), getDefaultModel()));
                 
                 // 解析分数
                 double score = parseScore(scoreResult.getAnswer());
@@ -244,7 +259,44 @@ public class ChatToTCmp extends NodeComponent {
                         "请整合以上思路，给出结构清晰、逻辑严谨的最终答案。",
                 query, bestThought);
         
-        ChatResult result = chatEngine.call(new LmRequest(refinePrompt, PlatformEnum.SILICON_FLOW.getAdapterName(), null));
+        ChatResult result = chatEngine.call(new LmRequest(refinePrompt, getDefaultPlatform(), getDefaultModel()));
         return result.getAnswer();
+    }
+    
+    /**
+     * 获取默认平台
+     */
+    private String getDefaultPlatform() {
+        return PlatformEnum.SILICON_FLOW.getAdapterName();
+    }
+    
+    /**
+     * 获取默认模型
+     */
+    private String getDefaultModel() {
+        return platformProperties.getSiliconflow().getModel();
+    }
+    
+    /**
+     * 根据平台获取默认模型
+     */
+    private String getDefaultModelForPlatform(String platform) {
+        if (platform == null) {
+            return platformProperties.getSiliconflow().getModel();
+        }
+        
+        switch (platform.toUpperCase()) {
+            case "OLLAMA":
+                return platformProperties.getOllama().getModel();
+            case "DEEPSEEK":
+                return platformProperties.getDeepseek().getModel();
+            case "OPENAI":
+                return platformProperties.getOpenai().getModel();
+            case "OPENROUTER":
+                return platformProperties.getOpenrouter().getModel();
+            case "SILICONFLOW":
+            default:
+                return platformProperties.getSiliconflow().getModel();
+        }
     }
 }

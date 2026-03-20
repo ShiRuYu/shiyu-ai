@@ -6,6 +6,7 @@ import com.shiyu.ai.chat.lm.PlatformEnum;
 import com.shiyu.ai.chat.lm.request.LmRequest;
 import com.shiyu.ai.chat.lm.result.ChatResult;
 import com.shiyu.ai.chat.lm.result.StreamResult;
+import com.shiyu.ai.chat.config.PlatformProperties;
 import com.yomahub.liteflow.annotation.LiteflowComponent;
 import com.yomahub.liteflow.core.NodeComponent;
 import jakarta.annotation.Resource;
@@ -17,6 +18,9 @@ import reactor.core.publisher.Flux;
 public class ChatCoTCmp extends NodeComponent {
     @Resource
     private ChatEngine chatEngine;
+    
+    @Resource
+    private PlatformProperties platformProperties;
 
     @Override
     public void process() {
@@ -45,8 +49,22 @@ public class ChatCoTCmp extends NodeComponent {
         // Step 1: 构建带记忆的 CoT 提示词
         String cotPrompt = buildCotPrompt(query, memoryContextObj);
         
+        // 从上下文中获取平台和模型信息，如果没有则使用默认值
+        String platform = context.get(GlobalContext.ChatBizKeyEnum.PLATFORM.getCode());
+        String modelName = context.get(GlobalContext.ChatBizKeyEnum.MODEL_NAME.getCode());
+        
+        // 如果 platform 为空，使用默认平台
+        if (platform == null || platform.trim().isEmpty()) {
+            platform = PlatformEnum.SILICON_FLOW.getAdapterName();
+        }
+        
+        // 如果 modelName 为空，根据 platform 获取默认模型
+        if (modelName == null || modelName.trim().isEmpty()) {
+            modelName = getDefaultModelForPlatform(platform);
+        }
+        
         // Step 2: 调用模型进行逐步推理
-        LmRequest request = new LmRequest(cotPrompt, PlatformEnum.SILICON_FLOW.getAdapterName(), null);
+        LmRequest request = new LmRequest(cotPrompt, platform, modelName);
         ChatResult result = chatEngine.call(request);
         
         log.info("CoT 推理完成（同步）");
@@ -67,8 +85,22 @@ public class ChatCoTCmp extends NodeComponent {
         // Step 1: 构建带记忆的 CoT 提示词
         String cotPrompt = buildCotPrompt(query, memoryContextObj);
         
+        // 从上下文中获取平台和模型信息，如果没有则使用默认值
+        String platform = context.get(GlobalContext.ChatBizKeyEnum.PLATFORM.getCode());
+        String modelName = context.get(GlobalContext.ChatBizKeyEnum.MODEL_NAME.getCode());
+        
+        // 如果 platform 为空，使用默认平台
+        if (platform == null || platform.trim().isEmpty()) {
+            platform = PlatformEnum.SILICON_FLOW.getAdapterName();
+        }
+        
+        // 如果 modelName 为空，根据 platform 获取默认模型
+        if (modelName == null || modelName.trim().isEmpty()) {
+            modelName = getDefaultModelForPlatform(platform);
+        }
+        
         // Step 2: 执行流式调用
-        LmRequest request = new LmRequest(cotPrompt, PlatformEnum.SILICON_FLOW.getAdapterName(), null);
+        LmRequest request = new LmRequest(cotPrompt, platform, modelName);
         StreamResult result = chatEngine.stream(request);
         Flux<String> flux = result.getAnswer();
         
@@ -136,5 +168,28 @@ public class ChatCoTCmp extends NodeComponent {
 
         // 如果没有找到标记，返回完整推理过程
         return reasoningResult;
+    }
+    
+    /**
+     * 根据平台获取默认模型
+     */
+    private String getDefaultModelForPlatform(String platform) {
+        if (platform == null) {
+            return platformProperties.getSiliconflow().getModel();
+        }
+        
+        switch (platform.toUpperCase()) {
+            case "OLLAMA":
+                return platformProperties.getOllama().getModel();
+            case "DEEPSEEK":
+                return platformProperties.getDeepseek().getModel();
+            case "OPENAI":
+                return platformProperties.getOpenai().getModel();
+            case "OPENROUTER":
+                return platformProperties.getOpenrouter().getModel();
+            case "SILICONFLOW":
+            default:
+                return platformProperties.getSiliconflow().getModel();
+        }
     }
 }
