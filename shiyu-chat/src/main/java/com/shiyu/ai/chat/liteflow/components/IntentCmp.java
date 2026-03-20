@@ -21,11 +21,18 @@ public class IntentCmp extends NodeComponent {
     @Resource
     private IntentService intentService;
 
+    @Resource
+    private com.shiyu.ai.chat.config.IntentConfig intentConfig;
+
     @Override
     public void process() {
         // 使用 this.getContextBean 获取全局上下文
         GlobalContext context = this.getContextBean(GlobalContext.class);
         String query = context.get(GlobalContext.ChatBizKeyEnum.QUERY.getCode());
+        
+        // 从上下文中获取平台和模型信息
+        String platform = context.get(GlobalContext.ChatBizKeyEnum.PLATFORM.getCode());
+        String modelName = context.get(GlobalContext.ChatBizKeyEnum.MODEL_NAME.getCode());
         
         List<Intent> intentList = intentService.list("default");
         
@@ -35,7 +42,14 @@ public class IntentCmp extends NodeComponent {
         if (matchedIntent == null) {
             // Step 2: 如果没有关键词匹配，使用大模型识别
             log.info("关键词匹配失败，使用大模型进行意图识别");
-            matchedIntent = intentService.detect(query, intentList);
+            // 优先使用上下文中的平台和模型信息，如果没有则使用配置中的默认值
+            String finalPlatform = (platform != null && !platform.trim().isEmpty()) 
+                    ? platform 
+                    : intentConfig.getPlatform();
+            String finalModelName = (modelName != null && !modelName.trim().isEmpty()) 
+                    ? modelName 
+                    : intentConfig.getModel();
+            matchedIntent = intentService.detect(query, intentList, finalPlatform, finalModelName);
         } else {
             log.info("通过关键词匹配到意图：{}", matchedIntent.getName());
         }

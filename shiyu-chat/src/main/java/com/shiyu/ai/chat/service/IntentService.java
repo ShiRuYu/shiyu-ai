@@ -20,7 +20,18 @@ public interface IntentService {
      *
      * @param query    用户输入的文本内容
      * @param intents 预定义的意图列表
-     * @return 返回最匹配的意图对象，如果没有匹配则返回null
+     * @return 返回最匹配的意图对象，如果没有匹配则返回 null
      */
     Intent detect(String query, List<Intent> intents);
+    
+    /**
+     * 检测输入文本最匹配的意图（指定平台和模型）
+     *
+     * @param query    用户输入的文本内容
+     * @param intents 预定义的意图列表
+     * @param platform 平台名称
+     * @param modelName 模型名称
+     * @return 返回最匹配的意图对象，如果没有匹配则返回 null
+     */
+    Intent detect(String query, List<Intent> intents, String platform, String modelName);
 }

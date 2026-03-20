@@ -83,6 +83,12 @@ public class IntentServiceImpl implements IntentService {
 
     @Override
     public Intent detect(String query, List<Intent> intents) {
+        // 使用配置中的默认平台和模型
+        return detect(query, intents, intentConfig.getPlatform(), intentConfig.getModel());
+    }
+
+    @Override
+    public Intent detect(String query, List<Intent> intents, String platform, String modelName) {
         if (query == null || query.trim().isEmpty()) {
             log.warn("输入文本为空，无法进行意图识别");
             return getDefaultIntent(intents);
@@ -92,8 +98,8 @@ public class IntentServiceImpl implements IntentService {
         String prompt = buildIntentDetectionPrompt(query, intents);
 
         try {
-            // 调用大模型进行意图识别
-            ChatResult result = chatEngine.call(new LmRequest(prompt, PlatformEnum.SILICON_FLOW.getAdapterName(), null));
+            // 调用大模型进行意图识别，使用传入的平台和模型参数
+            ChatResult result = chatEngine.call(new LmRequest(prompt, platform, modelName, null));
             log.info("意图识别结果：{}", result.getAnswer());
 
             // 解析模型返回结果

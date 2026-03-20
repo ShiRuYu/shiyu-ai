@@ -19,6 +19,16 @@ import java.util.Map;
 public class IntentConfig {
 
     /**
+     * 意图识别使用的平台配置
+     */
+    private String platform = "SILICON_FLOW";
+
+    /**
+     * 意图识别使用的模型配置
+     */
+    private String model = "THUDM/GLM-Z1-9B-0414";
+
+    /**
      * 意图分类配置
      * key: 分类名称
      * value: 该分类下的意图列表

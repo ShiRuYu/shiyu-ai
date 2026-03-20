@@ -15,6 +15,10 @@ shiyu:
     auto-extract-long-term: true     # 是否自动提取长期记忆
   # 意图识别配置
   intent:
+    # 意图识别使用的平台配置（可选值：OLLAMA, OPENAI, OPEN_ROUTER, SILICON_FLOW, DEEPSEEK）
+    platform: "SILICON_FLOW"
+    # 意图识别使用的模型配置（如不配置则使用各平台默认模型）
+    model: "THUDM/GLM-Z1-9B-0414"
     categories:
       default:
         - id: "direct_greeting"
