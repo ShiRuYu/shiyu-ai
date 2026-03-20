@@ -11,7 +11,7 @@ server:
 
 springdoc:
   api-docs:
-    enabled: false               # 是否启用 API 文档
+    enabled: true               # 是否启用 API 文档
     path: /v3/api-docs         # OpenAPI JSON 文档访问路径，默认 /v3/api-docs
   #逗号分割
   packages-to-scan: com.shiyu.ai.auth.controller
