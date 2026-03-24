@@ -1,8 +1,5 @@
 spring:
   ai:
+    # 没有作用，是接入多个兼容 openai api 的平台
     openai:
-      api-key: sk-loqlkwllyfseuttatsjqsndtwvaqzklexdwekwmjuhyuyavu
-      base-url: https://api.siliconflow.cn
-      chat:
-        options:
-          model: deepseek-ai/DeepSeek-V3
+      api-key: xxxxxxxxxxxxxx

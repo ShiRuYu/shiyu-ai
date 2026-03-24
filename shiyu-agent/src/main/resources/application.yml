@@ -38,4 +38,4 @@ spring:
   profiles:
     active: @profiles.active@
     group:
-      dev: ai,mcp
+      dev: ai #,mcp
