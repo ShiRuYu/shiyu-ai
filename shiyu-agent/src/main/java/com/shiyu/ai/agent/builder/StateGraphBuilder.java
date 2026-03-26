@@ -1,150 +1,172 @@
 package com.shiyu.ai.agent.builder;
 
-import com.shiyu.ai.agent.config.NodeConfig;
 import com.shiyu.ai.agent.graph.Graph;
 import com.shiyu.ai.agent.node.BaseNode;
+import lombok.Builder;
 import lombok.extern.slf4j.Slf4j;
+import org.bsc.langgraph4j.GraphStateException;
 import org.bsc.langgraph4j.StateGraph;
+import org.bsc.langgraph4j.action.AsyncEdgeAction;
 import org.bsc.langgraph4j.state.AgentState;
+import org.bsc.langgraph4j.state.Channel;
 
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.function.Function;
+import java.util.concurrent.CompletableFuture;
+
+import static org.bsc.langgraph4j.action.AsyncNodeAction.node_async;
 
 /**
  * StateGraph 构建器
  * 用于将 Graph 对象转换为 langgraph4j 的 StateGraph
  */
 @Slf4j
+@Builder
 public class StateGraphBuilder {
-    
+
     /**
-     * 创建 StateGraphBuilder 实例
-     * @param stateFactory AgentState 工厂方法
-     * @return StateGraphBuilder
+     * 节点列表 (节点 ID -> 节点实例)
      */
-    public static StateGraphBuilder create(Function<Map<String, Object>, ? extends AgentState> stateFactory) {
-        return new StateGraphBuilder(stateFactory);
+    @Builder.Default
+    private Map<String, BaseNode> nodes = new HashMap<>();
+
+    /**
+     * 边列表 (源节点 ID -> 目标节点 ID 列表)
+     */
+    @Builder.Default
+    private Map<String, List<String>> edges = new HashMap<>();
+
+    /**
+     * 条件边列表 (源节点 ID -> (条件结果 -> 目标节点 ID))
+     */
+    @Builder.Default
+    private Map<String, Map<String, String>> conditionalEdgeMappings = new HashMap<>();
+
+    /**
+     * 条件函数列表 (源节点 ID -> 条件函数)
+     */
+    @Builder.Default
+    private Map<String, AsyncEdgeAction<AgentState>> conditionalFunctions = new HashMap<>();
+
+    /**
+     * 通道列表
+     */
+    @Builder.Default
+    private Map<String, Channel<?>> channels = new HashMap<>();
+
+    /**
+     * 起始节点 ID
+     */
+    @Builder.Default
+    private String startNode = "";
+
+    /**
+     * 结束节点 ID
+     */
+    @Builder.Default
+    private String endNode = "";
+
+    /**
+     * 从 Graph 对象构建 StateGraphBuilder
+     * @param graph Graph 对象
+     * @return StateGraphBuilder 实例
+     */
+    public static StateGraphBuilder fromGraph(Graph graph) {
+        log.info("开始从 Graph 构建 StateGraphBuilder: {}", graph.getName());
+        
+        return StateGraphBuilder.builder()
+                .nodes(graph.getNodes())
+                .edges(graph.getEdges())
+                .conditionalEdgeMappings(graph.getConditionalEdgeMappings())
+                .conditionalFunctions((Map<String, AsyncEdgeAction<AgentState>>) (Map<?, ?>) graph.getConditionalFunctions())
+                .startNode(graph.getStartNode())
+                .endNode(graph.getEndNode())
+                .build();
     }
-    
-    private final Function<Map<String, Object>, ? extends AgentState> stateFactory;
-    
+
     /**
-     * 构造函数
-     * @param stateFactory AgentState 工厂方法
+     * 构建并编译 StateGraph
+     * @return 编译后的 CompiledGraph
+     * @throws GraphStateException 图状态异常
      */
-    public StateGraphBuilder(Function<Map<String, Object>, ? extends AgentState> stateFactory) {
-        this.stateFactory = stateFactory;
-    }
-    
-    /**
-     * 构建 StateGraph
-     * @param graph 图配置
-     * @return StateGraph
-     */
-    public <T extends AgentState> StateGraph<T> build(Graph graph) {
-        // 创建状态图 (直接使用 AgentState)
-        StateGraph<T> stateGraph = new StateGraph<>((Class<T>) AgentState.class);
+    public org.bsc.langgraph4j.CompiledGraph<AgentState> build() throws GraphStateException {
+        log.info("开始构建 StateGraph，节点数：{}", nodes.size());
+        
+        // 创建 StateGraph 实例
+        StateGraph<AgentState> stateGraph = new StateGraph<>(AgentState::new);
         
         // 添加所有节点
-        addNodes(stateGraph, graph);
-        
-        // 添加所有边
-        addEdges(stateGraph, graph);
-        
-        // 添加条件边
-        addConditionalEdges(stateGraph, graph);
-        
-        // 设置起始和结束节点
-        setStartAndEndNodes(stateGraph, graph);
-        
-        log.info("StateGraph 构建完成：{}", graph.getName());
-        
-        return stateGraph;
-    }
-    
-    /**
-     * 添加节点到 StateGraph
-     * @param stateGraph StateGraph
-     * @param graph Graph 对象
-     */
-    private void addNodes(StateGraph<?> stateGraph, Graph graph) {
-        for (Map.Entry<String, BaseNode> entry : graph.getNodes().entrySet()) {
+        for (Map.Entry<String, BaseNode> entry : nodes.entrySet()) {
             String nodeId = entry.getKey();
             BaseNode node = entry.getValue();
-            NodeConfig config = graph.getNodeConfig(nodeId);
-            
-            // 应用节点配置
-            applyNodeConfig(node, config);
-            
-            // 添加节点
-            stateGraph.addNode(nodeId, node);
-            
+            try {
+                stateGraph.addNode(nodeId, node_async(node));
+            } catch (GraphStateException e) {
+                log.error("添加节点失败：{}", nodeId, e);
+                throw e;
+            }
             log.debug("添加节点：{}", nodeId);
         }
-    }
-    
-    /**
-     * 应用节点配置
-     * @param node 节点实例
-     * @param config 节点配置
-     */
-    private void applyNodeConfig(BaseNode node, NodeConfig config) {
-        if (config != null && config.getEnabled()) {
-            node.setConfig(config);
-            log.debug("应用节点配置：{}", config.getNodeName());
-        }
-    }
-    
-    /**
-     * 添加边到 StateGraph
-     * @param stateGraph StateGraph
-     * @param graph Graph 对象
-     */
-    private void addEdges(StateGraph<?> stateGraph, Graph graph) {
-        for (Map.Entry<String, List<String>> entry : graph.getEdges().entrySet()) {
+        
+        // 添加所有边
+        for (Map.Entry<String, List<String>> entry : edges.entrySet()) {
             String sourceId = entry.getKey();
-            List<String> targets = entry.getValue();
+            List<String> targetIds = entry.getValue();
             
-            for (String targetId : targets) {
-                stateGraph.addEdge(sourceId, targetId);
+            for (String targetId : targetIds) {
+                try {
+                    stateGraph.addEdge(sourceId, targetId);
+                } catch (GraphStateException e) {
+                    log.error("添加边失败：{} -> {}", sourceId, targetId, e);
+                    throw e;
+                }
                 log.debug("添加边：{} -> {}", sourceId, targetId);
             }
         }
-    }
-    
-    /**
-     * 添加条件边到 StateGraph
-     * @param stateGraph StateGraph
-     * @param graph Graph 对象
-     */
-    private void addConditionalEdges(StateGraph<?> stateGraph, Graph graph) {
-        if (graph.getConditionalEdges() != null && !graph.getConditionalEdges().isEmpty()) {
-            for (Map.Entry<String, Map<String, String>> entry : graph.getConditionalEdges().entrySet()) {
-                String sourceId = entry.getKey();
-                Map<String, String> conditionMap = entry.getValue();
-                
-                // 将条件映射添加到 stateGraph
-                stateGraph.addConditionalEdge(sourceId, conditionMap);
-                log.debug("添加条件边：{} -> {}", sourceId, conditionMap);
+        
+        // 添加条件边
+        for (Map.Entry<String, Map<String, String>> entry : conditionalEdgeMappings.entrySet()) {
+            String sourceId = entry.getKey();
+            Map<String, String> mappings = entry.getValue();
+            AsyncEdgeAction<AgentState> condition = 
+                conditionalFunctions.get(sourceId);
+            
+            if (condition != null && !mappings.isEmpty()) {
+                try {
+                    stateGraph.addConditionalEdges(sourceId, condition, mappings);
+                } catch (GraphStateException e) {
+                    log.error("添加条件边失败：{}", sourceId, e);
+                    throw e;
+                }
+                log.debug("添加条件边：{}", sourceId);
             }
         }
-    }
-    
-    /**
-     * 设置起始和结束节点
-     * @param stateGraph StateGraph
-     * @param graph Graph 对象
-     */
-    private void setStartAndEndNodes(StateGraph<?> stateGraph, Graph graph) {
-        if (graph.getStartNode() != null && !graph.getStartNode().isEmpty()) {
-            stateGraph.addEdge(StateGraph.START, graph.getStartNode());
-            log.debug("设置起始节点：{}", graph.getStartNode());
+        
+        // 添加起始边
+        if (startNode != null && !startNode.isEmpty()) {
+            try {
+                stateGraph.addEdge(StateGraph.START, startNode);
+            } catch (GraphStateException e) {
+                log.error("添加起始边失败：START -> {}", startNode, e);
+                throw e;
+            }
+            log.debug("添加起始边：START -> {}", startNode);
         }
         
-        if (graph.getEndNode() != null && !graph.getEndNode().isEmpty()) {
-            stateGraph.addEdge(graph.getEndNode(), StateGraph.END);
-            log.debug("设置结束节点：{}", graph.getEndNode());
+        // 添加结束边
+        if (endNode != null && !endNode.isEmpty()) {
+            try {
+                stateGraph.addEdge(endNode, StateGraph.END);
+            } catch (GraphStateException e) {
+                log.error("添加结束边失败：{} -> END", endNode, e);
+                throw e;
+            }
+            log.debug("添加结束边：{} -> END", endNode);
         }
+        
+        // 编译并返回
+        log.info("StateGraph 构建完成，开始编译...");
+        return stateGraph.compile();
     }
 }

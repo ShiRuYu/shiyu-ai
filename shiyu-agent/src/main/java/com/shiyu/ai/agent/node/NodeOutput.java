@@ -5,6 +5,7 @@ import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
+import java.util.HashMap;
 import java.util.Map;
 
 /**
@@ -16,12 +17,16 @@ import java.util.Map;
 @NoArgsConstructor
 @AllArgsConstructor
 public class NodeOutput {
+
+    private boolean success;
+
+    private String msg;
     
     /**
      * 输出结果 Map
      */
     @Builder.Default
-    private Map<String, Object> data = new java.util.HashMap<>();
+    private Map<String, Object> data = new HashMap<>();
     
     /**
      * 从 Map 创建 NodeOutput
@@ -30,7 +35,7 @@ public class NodeOutput {
      */
     public static NodeOutput fromMap(Map<String, Object> data) {
         return NodeOutput.builder()
-                .data(data != null ? data : new java.util.HashMap<>())
+                .data(data != null ? data : new HashMap<>())
                 .build();
     }
     
