@@ -1,4 +1,4 @@
-package com.shiyu.ai.agent.config;
+package com.shiyu.ai.agent.node;
 
 import lombok.AllArgsConstructor;
 import lombok.Builder;

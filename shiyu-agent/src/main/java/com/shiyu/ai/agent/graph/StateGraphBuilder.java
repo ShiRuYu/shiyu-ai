@@ -1,20 +1,19 @@
-package com.shiyu.ai.agent.builder;
+package com.shiyu.ai.agent.graph;
 
-import com.shiyu.ai.agent.graph.Graph;
 import com.shiyu.ai.agent.node.BaseNode;
 import lombok.Builder;
 import lombok.extern.slf4j.Slf4j;
+import org.bsc.langgraph4j.CompiledGraph;
 import org.bsc.langgraph4j.GraphStateException;
 import org.bsc.langgraph4j.StateGraph;
-import org.bsc.langgraph4j.action.AsyncEdgeAction;
 import org.bsc.langgraph4j.state.AgentState;
 import org.bsc.langgraph4j.state.Channel;
 
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.concurrent.CompletableFuture;
 
+import static org.bsc.langgraph4j.action.AsyncEdgeAction.edge_async;
 import static org.bsc.langgraph4j.action.AsyncNodeAction.node_async;
 
 /**
@@ -38,16 +37,10 @@ public class StateGraphBuilder {
     private Map<String, List<String>> edges = new HashMap<>();
 
     /**
-     * 条件边列表 (源节点 ID -> (条件结果 -> 目标节点 ID))
-     */
-    @Builder.Default
-    private Map<String, Map<String, String>> conditionalEdgeMappings = new HashMap<>();
-
-    /**
      * 条件函数列表 (源节点 ID -> 条件函数)
      */
     @Builder.Default
-    private Map<String, AsyncEdgeAction<AgentState>> conditionalFunctions = new HashMap<>();
+    private Map<String, ConditionEdge> conditionalEdges = new HashMap<>();
 
     /**
      * 通道列表
@@ -75,11 +68,13 @@ public class StateGraphBuilder {
     public static StateGraphBuilder fromGraph(Graph graph) {
         log.info("开始从 Graph 构建 StateGraphBuilder: {}", graph.getName());
         
+        // 先验证配置
+        graph.validate();
+        
         return StateGraphBuilder.builder()
                 .nodes(graph.getNodes())
                 .edges(graph.getEdges())
-                .conditionalEdgeMappings(graph.getConditionalEdgeMappings())
-                .conditionalFunctions((Map<String, AsyncEdgeAction<AgentState>>) (Map<?, ?>) graph.getConditionalFunctions())
+                .conditionalEdges(graph.getConditionalEdges())
                 .startNode(graph.getStartNode())
                 .endNode(graph.getEndNode())
                 .build();
@@ -90,7 +85,7 @@ public class StateGraphBuilder {
      * @return 编译后的 CompiledGraph
      * @throws GraphStateException 图状态异常
      */
-    public org.bsc.langgraph4j.CompiledGraph<AgentState> build() throws GraphStateException {
+    public CompiledGraph<AgentState> build() throws GraphStateException {
         log.info("开始构建 StateGraph，节点数：{}", nodes.size());
         
         // 创建 StateGraph 实例
@@ -126,15 +121,16 @@ public class StateGraphBuilder {
         }
         
         // 添加条件边
-        for (Map.Entry<String, Map<String, String>> entry : conditionalEdgeMappings.entrySet()) {
+        for (Map.Entry<String, ConditionEdge> entry : conditionalEdges.entrySet()) {
             String sourceId = entry.getKey();
-            Map<String, String> mappings = entry.getValue();
-            AsyncEdgeAction<AgentState> condition = 
-                conditionalFunctions.get(sourceId);
-            
-            if (condition != null && !mappings.isEmpty()) {
+            ConditionEdge conditionEdge = entry.getValue();
+
+            Map<String, String> mappings = conditionEdge.getNodeMappings();
+            if (!mappings.isEmpty()) {
                 try {
-                    stateGraph.addConditionalEdges(sourceId, condition, mappings);
+                    stateGraph.addConditionalEdges(sourceId,
+                            edge_async(state -> conditionEdge.getTarget(state.data()))
+                            , mappings);
                 } catch (GraphStateException e) {
                     log.error("添加条件边失败：{}", sourceId, e);
                     throw e;

@@ -1,6 +1,8 @@
 package com.shiyu.ai.agent.node.intent;
 
+import com.shiyu.ai.agent.node.NodeConfig;
 import lombok.Data;
+import lombok.EqualsAndHashCode;
 
 /**
  * 意图节点配置类
@@ -10,7 +12,8 @@ import lombok.Data;
  * @date 2026-03-26
  */
 @Data
-public class IntentConfig {
+@EqualsAndHashCode(callSuper = true)
+public class IntentConfig extends NodeConfig {
     
     /**
      * 意图类型

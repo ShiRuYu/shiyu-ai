@@ -24,12 +24,23 @@ import java.util.Map;
 public class IntentNode extends BaseNode {
 
     private IntentConfig config;
+    
+    /**
+     * 意图识别服务（可选的服务注入）
+     */
+    private Object intentRecognitionService;
 
     public IntentNode() {
         this.config = new IntentConfig();
     }
 
     public IntentNode(IntentConfig config) {
+        super(config);
+        this.config = config;
+    }
+
+    public void setIntentConfig(IntentConfig config) {
+        super.setConfig(config);
         this.config = config;
     }
 
@@ -98,6 +109,16 @@ public class IntentNode extends BaseNode {
      */
     private boolean meetsConfidenceThreshold(Double confidence) {
         return confidence != null && confidence >= config.getConfidenceThreshold();
+    }
+    
+    /**
+     * 注册意图识别服务
+     * 
+     * @param service 意图识别服务实例
+     */
+    public void registerIntentRecognitionService(Object service) {
+        this.intentRecognitionService = service;
+        log.info("已注册意图识别服务到节点：{}", config.getNodeId());
     }
 
 }
