@@ -27,7 +27,7 @@ springdoc:
     tags-sorter: alpha           # 按标签排序
     default-model-rendering: example # 默认显示 model 示例
 
-# Spring配置
+# Spring 配置
 spring:
   application:
     name: ${shiyu.name}
