@@ -39,7 +39,7 @@ public class NodeConfig {
      * 节点类型
      */
     @Builder.Default
-    private String nodeType = "DEFAULT";
+    private NodeType nodeType = NodeType.DEFAULT;
     
     /**
      * 是否启用

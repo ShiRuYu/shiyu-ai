@@ -37,7 +37,7 @@ class NodeFactoryTest {
         NodeConfig config = NodeConfig.builder()
                 .nodeId("test-node-001")
                 .nodeName("测试意图节点")
-                .nodeType("INTENT")
+                .nodeType(NodeType.INTENT)
                 .description("测试用节点")
                 .enabled(true)
                 .build();
@@ -48,7 +48,7 @@ class NodeFactoryTest {
         // 3. 验证节点创建成功
         assertNotNull(node, "节点不应该为空");
         assertEquals("test-node-001", config.getNodeId(), "节点 ID 应该匹配");
-        assertEquals("INTENT", config.getNodeType(), "节点类型应该匹配");
+        assertEquals(NodeType.INTENT, config.getNodeType(), "节点类型应该匹配");
     }
 
     @Test
@@ -60,13 +60,13 @@ class NodeFactoryTest {
         NodeConfig config1 = NodeConfig.builder()
                 .nodeId("node-001")
                 .nodeName("节点 1")
-                .nodeType("INTENT")
+                .nodeType(NodeType.INTENT)
                 .build();
         
         NodeConfig config2 = NodeConfig.builder()
                 .nodeId("node-002")
                 .nodeName("节点 2")
-                .nodeType("INTENT")
+                .nodeType(NodeType.INTENT)
                 .build();
         
         configs.put(config1.getNodeId(), config1);
@@ -88,7 +88,7 @@ class NodeFactoryTest {
         NodeConfig config = NodeConfig.builder()
                 .nodeId("service-test-node")
                 .nodeName("服务测试节点")
-                .nodeType("INTENT")
+                .nodeType(NodeType.INTENT)
                 .build();
         
         BaseNode node = nodeFactory.createNode(config);
@@ -114,7 +114,7 @@ class NodeFactoryTest {
         NodeConfig config = NodeConfig.builder()
                 .nodeId("get-test-node")
                 .nodeName("获取测试节点")
-                .nodeType("INTENT")
+                .nodeType(NodeType.INTENT)
                 .build();
         
         nodeFactory.createNode(config);
@@ -134,7 +134,7 @@ class NodeFactoryTest {
         NodeConfig config = NodeConfig.builder()
                 .nodeId("remove-test-node")
                 .nodeName("移除测试节点")
-                .nodeType("INTENT")
+                .nodeType(NodeType.INTENT)
                 .build();
         
         nodeFactory.createNode(config);
@@ -148,22 +148,24 @@ class NodeFactoryTest {
     }
 
     @Test
-    @DisplayName("测试创建不存在的节点类型")
-    void testCreateUnknownNodeType() {
-        // 1. 创建未知类型的节点配置
+    @DisplayName("测试创建空节点类型")
+    void testCreateNullNodeType() {
+        // 1. 创建节点配置
         NodeConfig config = NodeConfig.builder()
-                .nodeId("unknown-node")
-                .nodeName("未知节点")
-                .nodeType("UNKNOWN_TYPE")
+                .nodeId("null-type-node")
+                .nodeName("空类型节点")
                 .build();
 
-        // 2. 验证应该抛出异常
+        // 2. 手动设置为 null
+        config.setNodeType(null);
+
+        // 3. 验证应该抛出异常
         Exception exception = assertThrows(IllegalArgumentException.class, 
                 () -> nodeFactory.createNode(config),
-                "创建未知节点类型应该抛出异常");
+                "创建空节点类型应该抛出异常");
         
-        assertTrue(exception.getMessage().contains("不支持的节点类型"), 
-                "异常消息应该包含'不支持的节点类型'");
+        assertTrue(exception.getMessage().contains("节点类型不能为空"), 
+                "异常消息应该包含'节点类型不能为空'");
     }
 
     @Test
@@ -173,7 +175,7 @@ class NodeFactoryTest {
         IntentConfig intentConfig = new IntentConfig();
         intentConfig.setNodeId("intent-config-test");
         intentConfig.setNodeName("意图配置测试");
-        intentConfig.setNodeType("INTENT");
+        intentConfig.setNodeType(NodeType.INTENT);
         intentConfig.setConfidenceThreshold(0.85);
         intentConfig.setMaxRetries(5);
 

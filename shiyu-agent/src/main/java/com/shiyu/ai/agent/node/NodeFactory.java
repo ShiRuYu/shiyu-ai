@@ -22,13 +22,13 @@ public class NodeFactory {
 
     /**
      * 节点类型映射表
-     * key: 节点类型标识
+     * key: 节点类型枚举
      * value: 节点创建函数
      */
-    private final Map<String, Function<NodeConfig, BaseNode>> nodeCreators;
+    private final Map<NodeType, Function<NodeConfig, BaseNode>> nodeCreators;
 
     /**
-     * 已注册的节点实例
+     * 已注册的节点实例 id -> 节点实例
      */
     private final Map<String, BaseNode> registeredNodes;
 
@@ -44,19 +44,19 @@ public class NodeFactory {
      */
     private void registerDefaultNodeTypes() {
         // 注册意图识别节点
-        registerNodeType("INTENT", IntentConfig.class::cast, IntentNode::new);
+        registerNodeType(NodeType.INTENT, IntentConfig.class::cast, IntentNode::new);
     }
 
     /**
      * 注册节点类型
      *
-     * @param nodeType       节点类型标识
+     * @param nodeType       节点类型
      * @param configConverter 配置转换器
      * @param nodeCreator    节点创建器
      * @param <T>            配置类型
      */
     public <T extends NodeConfig> void registerNodeType(
-            String nodeType,
+            NodeType nodeType,
             Function<NodeConfig, T> configConverter,
             NodeCreator<T> nodeCreator
     ) {
@@ -64,10 +64,10 @@ public class NodeFactory {
             try {
                 T convertedConfig = configConverter.apply(config);
                 BaseNode node = nodeCreator.create(convertedConfig);
-                log.info("成功创建节点：{} (类型：{})", config.getNodeId(), nodeType);
+                log.info("成功创建节点：{} (类型：{})", config.getNodeId(), nodeType.getName());
                 return node;
             } catch (Exception e) {
-                log.error("创建节点失败：{} (类型：{})", config.getNodeId(), nodeType, e);
+                log.error("创建节点失败：{} (类型：{})", config.getNodeId(), nodeType.getName(), e);
                 throw new RuntimeException("创建节点失败：" + config.getNodeId(), e);
             }
         });
@@ -84,14 +84,14 @@ public class NodeFactory {
             throw new IllegalArgumentException("节点配置不能为空");
         }
 
-        String nodeType = config.getNodeType();
-        if (nodeType == null || nodeType.isEmpty()) {
+        NodeType nodeType = config.getNodeType();
+        if (nodeType == null) {
             throw new IllegalArgumentException("节点类型不能为空");
         }
 
         Function<NodeConfig, BaseNode> creator = nodeCreators.get(nodeType);
         if (creator == null) {
-            throw new IllegalArgumentException("不支持的节点类型：" + nodeType);
+            throw new IllegalArgumentException("不支持的节点类型：" + nodeType.getName());
         }
 
         BaseNode node = creator.apply(config);
@@ -102,7 +102,7 @@ public class NodeFactory {
         // 注册节点实例
         if (config.getNodeId() != null && !config.getNodeId().isEmpty()) {
             registeredNodes.put(config.getNodeId(), node);
-            log.debug("节点已注册：{} (ID: {})", nodeType, config.getNodeId());
+            log.debug("节点已注册：{} (ID: {})", nodeType.getName(), config.getNodeId());
         }
 
         return node;

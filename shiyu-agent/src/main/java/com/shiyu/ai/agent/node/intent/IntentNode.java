@@ -1,8 +1,10 @@
 package com.shiyu.ai.agent.node.intent;
 
 import com.shiyu.ai.agent.node.BaseNode;
+import com.shiyu.ai.agent.node.NodeConfig;
 import com.shiyu.ai.agent.node.NodeInput;
 import com.shiyu.ai.agent.node.NodeOutput;
+import com.shiyu.ai.agent.node.NodeType;
 import lombok.Getter;
 import lombok.Setter;
 import lombok.extern.slf4j.Slf4j;
@@ -32,11 +34,15 @@ public class IntentNode extends BaseNode {
 
     public IntentNode() {
         this.config = new IntentConfig();
+        // 设置节点类型为 INTENT
+        this.config.setNodeType(NodeType.INTENT);
     }
 
     public IntentNode(IntentConfig config) {
         super(config);
         this.config = config;
+        // 设置节点类型为 INTENT
+        this.config.setNodeType(NodeType.INTENT);
     }
 
     public void setIntentConfig(IntentConfig config) {
