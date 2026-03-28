@@ -11,6 +11,7 @@ import org.springframework.stereotype.Service;
 import reactor.core.publisher.Flux;
 import reactor.core.scheduler.Schedulers;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.CompletableFuture;
@@ -212,5 +213,12 @@ public class AgentServiceImpl implements AgentService {
         
         log.debug("Agent 版本列表：agentId={}, count={}", agentId, versions.size());
         return versions;
+    }
+    
+    @Override
+    public List<AgentDefinition> listAgents() {
+        List<AgentDefinition> agents = new ArrayList<>(agentDefinitions.values());
+        log.debug("已注册 Agent 数量：{}", agents.size());
+        return agents;
     }
 }

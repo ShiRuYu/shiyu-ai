@@ -93,4 +93,10 @@ public interface AgentService {
      * @return 版本号列表
      */
     java.util.List<String> listVersions(String agentId);
+    
+    /**
+     * 列出所有已注册的 Agent
+     * @return AgentDefinition 列表
+     */
+    java.util.List<AgentDefinition> listAgents();
 }
