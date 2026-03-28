@@ -14,9 +14,7 @@ import reactor.core.scheduler.Schedulers;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
-import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ConcurrentHashMap;
-import java.util.stream.Collectors;
 
 /**
  * Agent Service 实现类
@@ -154,20 +152,6 @@ public class AgentServiceImpl implements AgentService {
     }
     
     @Override
-    public CompletableFuture<Map<String, Object>> executeAsync(String agentId, Map<String, Object> input) throws Exception {
-        log.info("开始异步执行 Agent：agentId={}", agentId);
-        
-        return CompletableFuture.supplyAsync(() -> {
-            try {
-                return execute(agentId, input);
-            } catch (Exception e) {
-                log.error("异步执行失败：agentId={}", agentId, e);
-                throw new RuntimeException("异步执行失败：" + e.getMessage(), e);
-            }
-        });
-    }
-    
-    @Override
     public boolean switchVersion(String agentId, String version) {
         log.info("切换 Agent 版本：agentId={}, targetVersion={}", agentId, version);
         
@@ -185,36 +169,7 @@ public class AgentServiceImpl implements AgentService {
         }
         return success;
     }
-    
-    @Override
-    public String getCurrentVersion(String agentId) {
-        AgentDefinition definition = getAgent(agentId);
-        if (definition == null) {
-            log.warn("Agent 不存在：agentId={}", agentId);
-            return null;
-        }
-        
-        String currentVersion = definition.getCurrentVersion();
-        log.debug("Agent 当前版本：agentId={}, version={}", agentId, currentVersion);
-        return currentVersion;
-    }
-    
-    @Override
-    public List<String> listVersions(String agentId) {
-        AgentDefinition definition = getAgent(agentId);
-        if (definition == null) {
-            log.warn("Agent 不存在：agentId={}", agentId);
-            return List.of();
-        }
-        
-        List<String> versions = definition.getVersions().stream()
-                .map(AgentVersion::getVersionNumber)
-                .collect(Collectors.toList());
-        
-        log.debug("Agent 版本列表：agentId={}, count={}", agentId, versions.size());
-        return versions;
-    }
-    
+
     @Override
     public List<AgentDefinition> listAgents() {
         List<AgentDefinition> agents = new ArrayList<>(agentDefinitions.values());

@@ -11,7 +11,9 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import reactor.core.publisher.Flux;
 
-import java.util.*;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 
 /**
  * Agent Controller
@@ -108,7 +110,7 @@ public class AgentController {
      * @param agentId Agent ID
      * @return 删除结果
      */
-    @DeleteMapping("/{agentId}")
+    @PostMapping("/{agentId}")
     public ResponseEntity<Map<String, Object>> deleteAgent(@PathVariable String agentId) {
         log.info("收到 Agent 删除请求：agentId={}", agentId);
         

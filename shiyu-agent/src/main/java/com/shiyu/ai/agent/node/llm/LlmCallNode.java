@@ -272,7 +272,7 @@ public class LlmCallNode extends BaseNode {
      */
     private String getPlatform(NodeInput input) {
         // 优先使用输入中的平台配置
-        String platform = input.getParameter("platform", "");
+        String platform = input.getParameter("platform", "SILICON_FLOW");
         if (platform != null && !platform.trim().isEmpty()) {
             return platform;
         }
@@ -283,7 +283,7 @@ public class LlmCallNode extends BaseNode {
         }
         
         // 使用默认平台
-        return "openai"; // 默认使用 openai
+        return "SILICON_FLOW"; // 默认使用 SILICON_FLOW
     }
     
     /**

@@ -1,11 +1,10 @@
 package com.shiyu.ai.agent.service;
 
 import com.shiyu.ai.agent.domain.AgentDefinition;
-import org.bsc.langgraph4j.state.AgentState;
 import reactor.core.publisher.Flux;
 
+import java.util.List;
 import java.util.Map;
-import java.util.concurrent.CompletableFuture;
 
 /**
  * Agent Service 接口
@@ -62,16 +61,7 @@ public interface AgentService {
      * @throws Exception 执行异常
      */
     Flux<Map<String, Object>> executeStream(String agentId, Map<String, Object> input) throws Exception;
-    
-    /**
-     * 执行 Agent（异步）
-     * @param agentId Agent ID
-     * @param input 输入数据
-     * @return CompletableFuture，包含执行结果
-     * @throws Exception 执行异常
-     */
-    CompletableFuture<Map<String, Object>> executeAsync(String agentId, Map<String, Object> input) throws Exception;
-    
+
     /**
      * 切换 Agent 当前版本
      * @param agentId Agent ID
@@ -79,24 +69,10 @@ public interface AgentService {
      * @return true-切换成功，false-切换失败
      */
     boolean switchVersion(String agentId, String version);
-    
-    /**
-     * 获取 Agent 的当前版本
-     * @param agentId Agent ID
-     * @return 当前版本号
-     */
-    String getCurrentVersion(String agentId);
-    
-    /**
-     * 列出 Agent 的所有版本
-     * @param agentId Agent ID
-     * @return 版本号列表
-     */
-    java.util.List<String> listVersions(String agentId);
-    
+
     /**
      * 列出所有已注册的 Agent
      * @return AgentDefinition 列表
      */
-    java.util.List<AgentDefinition> listAgents();
+    List<AgentDefinition> listAgents();
 }
