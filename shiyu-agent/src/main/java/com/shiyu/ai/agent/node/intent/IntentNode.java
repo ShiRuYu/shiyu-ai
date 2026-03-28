@@ -91,16 +91,16 @@ public class IntentNode extends BaseNode {
     /**
      * 验证意图是否在支持的列表中
      *
-     * @param intent 识别的意图
+     * @param intentDefinition 识别的意图定义
      * @return 是否支持
      */
-    private boolean isSupportedIntent(String intent) {
+    private boolean isSupportedIntent(IntentDefinition intentDefinition) {
         if (config.getSupportedIntents() == null || config.getSupportedIntents().length == 0) {
             return true;
         }
         
-        for (String supportedIntent : config.getSupportedIntents()) {
-            if (supportedIntent.equals(intent)) {
+        for (IntentDefinition supportedIntent : config.getSupportedIntents()) {
+            if (supportedIntent.getCode().equals(intentDefinition.getCode())) {
                 return true;
             }
         }

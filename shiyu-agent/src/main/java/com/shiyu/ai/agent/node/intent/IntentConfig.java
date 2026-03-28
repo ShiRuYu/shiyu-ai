@@ -16,9 +16,14 @@ import lombok.EqualsAndHashCode;
 public class IntentConfig extends NodeConfig {
     
     /**
-     * 意图类型
+     * 意图类型（使用枚举）
      */
-    private String intentType;
+    private IntentType intentType;
+    
+    /**
+     * 意图类型代码（字符串形式，便于配置）
+     */
+    private String intentTypeCode;
     
     /**
      * 置信度阈值（默认 0.75）
@@ -28,7 +33,7 @@ public class IntentConfig extends NodeConfig {
     /**
      * 支持的意图列表
      */
-    private String[] supportedIntents;
+    private IntentDefinition[] supportedIntents;
     
     /**
      * 是否启用模糊匹配（默认 false）
