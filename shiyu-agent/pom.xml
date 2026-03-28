@@ -44,6 +44,10 @@
             <groupId>dev.langchain4j</groupId>
             <artifactId>langchain4j</artifactId>
         </dependency>
+        <dependency>
+            <groupId>dev.langchain4j</groupId>
+            <artifactId>langchain4j-reactor</artifactId>
+        </dependency>
 
         <!-- OpenAI -->
         <dependency>
@@ -57,10 +61,5 @@
             <artifactId>langchain4j-ollama</artifactId>
         </dependency>
 
-        <!-- Reactor for streaming -->
-        <dependency>
-            <groupId>io.projectreactor</groupId>
-            <artifactId>reactor-core</artifactId>
-        </dependency>
     </dependencies>
 </project>

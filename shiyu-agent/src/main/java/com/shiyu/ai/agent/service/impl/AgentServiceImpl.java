@@ -83,34 +83,34 @@ public class AgentServiceImpl implements AgentService {
     
     @Override
     public Map<String, Object> execute(String agentId, String version, Map<String, Object> input) throws Exception {
-        log.info("开始执行 Agent：agentId={}, version={}, inputSize={}", 
+        log.info("开始执行 Agent：agentId={}, version={}, inputSize={}",
                 agentId, version, input != null ? input.size() : 0);
-        
+
         // 1. 从 Agent 定义中获取版本
         AgentDefinition definition = getAgent(agentId);
         if (definition == null) {
             throw new IllegalStateException("Agent 不存在：" + agentId);
         }
-        
+
         AgentVersion agentVersion = definition.getVersion(version);
         if (agentVersion == null) {
-            throw new IllegalStateException("Agent 版本不存在：" + 
+            throw new IllegalStateException("Agent 版本不存在：" +
                     (version != null ? version : definition.getCurrentVersion()));
         }
-        
-        log.info("获取到 Agent 版本：agentId={}, version={}, compiled={}", 
+
+        log.info("获取到 Agent 版本：agentId={}, version={}, compiled={}",
                 agentId, agentVersion.getVersionNumber(), agentVersion.isCompiled());
-        
+
         // 2. 从版本中拿到 graph 进行编译
         CompiledGraph<AgentState> compiledGraph;
         try {
             compiledGraph = agentVersion.getOrCompileGraph();
         } catch (GraphStateException e) {
-            log.error("Graph 编译失败：agentId={}, version={}", agentId, 
+            log.error("Graph 编译失败：agentId={}, version={}", agentId,
                     agentVersion.getVersionNumber(), e);
             throw new Exception("Graph 编译失败：" + e.getMessage(), e);
         }
-        
+
         // 3. 执行编译后的 graph
         try {
             log.info("开始执行 CompiledGraph: agentId={}, version={}", agentId, 
@@ -135,15 +135,56 @@ public class AgentServiceImpl implements AgentService {
             throw new Exception("Agent 执行失败：" + e.getMessage(), e);
         }
     }
-    
+
     @Override
     public Flux<Map<String, Object>> executeStream(String agentId, Map<String, Object> input) throws Exception {
-        log.info("开始流式执行 Agent：agentId={}", agentId);
-        
+        return executeStream(agentId, null, input);
+    }
+
+    @Override
+    public Flux<Map<String, Object>> executeStream(String agentId, String version, Map<String, Object> input) throws Exception {
+        log.info("开始执行 Agent：agentId={}, version={}, inputSize={}",
+                agentId, version, input != null ? input.size() : 0);
+
+        // 1. 从 Agent 定义中获取版本
+        AgentDefinition definition = getAgent(agentId);
+        if (definition == null) {
+            throw new IllegalStateException("Agent 不存在：" + agentId);
+        }
+
+        AgentVersion agentVersion = definition.getVersion(version);
+        if (agentVersion == null) {
+            throw new IllegalStateException("Agent 版本不存在：" +
+                    (version != null ? version : definition.getCurrentVersion()));
+        }
+
+        log.info("获取到 Agent 版本：agentId={}, version={}, compiled={}",
+                agentId, agentVersion.getVersionNumber(), agentVersion.isCompiled());
+
+        // 2. 从版本中拿到 graph 进行编译
+        CompiledGraph<AgentState> compiledGraph;
+        try {
+            compiledGraph = agentVersion.getOrCompileGraph();
+        } catch (GraphStateException e) {
+            log.error("Graph 编译失败：agentId={}, version={}", agentId,
+                    agentVersion.getVersionNumber(), e);
+            throw new Exception("Graph 编译失败：" + e.getMessage(), e);
+        }
+
+        // 执行图并获取结果 (返回 Optional<AgentState>)
+        var resultOptional = compiledGraph.invoke(input);
+
+        // 从 Optional 中获取结果
+        var result = resultOptional.orElseThrow(() ->
+                new IllegalStateException("Agent 执行返回空结果：" + agentId));
+
+        log.info("Agent 执行完成：agentId={}, version={}", agentId,
+                agentVersion.getVersionNumber());
+
+        // 返回结果数据
         return Flux.defer(() -> {
             try {
-                Map<String, Object> result = execute(agentId, input);
-                return Flux.just(result);
+                return Flux.just(result.data());
             } catch (Exception e) {
                 log.error("流式执行失败：agentId={}", agentId, e);
                 return Flux.error(e);

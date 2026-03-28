@@ -63,6 +63,16 @@ public interface AgentService {
     Flux<Map<String, Object>> executeStream(String agentId, Map<String, Object> input) throws Exception;
 
     /**
+     * 执行 Agent（指定版本，流式）
+     * @param agentId Agent ID
+     * @param version 版本号
+     * @param input 输入数据
+     * @return 流式输出
+     * @throws Exception 执行异常
+     */
+    Flux<Map<String, Object>> executeStream(String agentId, String version, Map<String, Object> input) throws Exception;
+
+    /**
      * 切换 Agent 当前版本
      * @param agentId Agent ID
      * @param version 版本号
