@@ -2,6 +2,8 @@ package com.shiyu.ai.agent.service;
 
 import com.shiyu.ai.agent.domain.Lc4jRequest;
 import com.shiyu.ai.agent.domain.Lc4jResponse;
+import dev.langchain4j.model.chat.ChatModel;
+import dev.langchain4j.model.chat.StreamingChatModel;
 import reactor.core.publisher.Flux;
 
 /**
@@ -23,4 +25,20 @@ public interface Lc4jService {
      * @return 流式响应
      */
     Flux<String> stream(Lc4jRequest request);
+    
+    /**
+     * 获取 ChatModel 实例
+     * @param platformType 平台类型（如：OPENROUTER, OLLAMA 等）
+     * @param modelName 模型名称，为空时使用默认模型
+     * @return ChatModel 实例
+     */
+    ChatModel getChatModel(String platformType, String modelName);
+    
+    /**
+     * 获取 StreamingChatModel 实例
+     * @param platformType 平台类型（如：OPENROUTER, OLLAMA 等）
+     * @param modelName 模型名称，为空时使用默认模型
+     * @return StreamingChatModel 实例
+     */
+    StreamingChatModel getStreamingChatModel(String platformType, String modelName);
 }

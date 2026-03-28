@@ -8,9 +8,13 @@ import com.shiyu.ai.agent.node.NodeInput;
 import com.shiyu.ai.agent.node.NodeOutput;
 import com.shiyu.ai.agent.node.NodeType;
 import com.shiyu.ai.agent.service.Lc4jService;
+import dev.langchain4j.model.chat.StreamingChatModel;
 import lombok.Getter;
 import lombok.Setter;
 import lombok.extern.slf4j.Slf4j;
+import org.bsc.langgraph4j.langchain4j.generators.StreamingChatGenerator;
+import org.bsc.langgraph4j.state.AgentState;
+import org.bsc.langgraph4j.streaming.StreamingOutput;
 import reactor.core.publisher.Flux;
 
 import java.util.Map;
@@ -171,20 +175,19 @@ public class LlmCallNode extends BaseNode {
     private NodeOutput executeStream(Lc4jRequest request) {
         // 收集所有流式块
         StringBuilder fullContent = new StringBuilder();
-        
-        Flux<String> stream = lc4jService.stream(request);
-        
-        // 阻塞收集所有块（在图执行层面应该是非阻塞的）
-        Objects.requireNonNull(stream.collectList().block())
-                .forEach(fullContent::append);
-        
+        StreamingChatGenerator<AgentState> generator = StreamingChatGenerator.builder()
+                .mapResult(r -> Map.of("content", r.aiMessage().text()))
+                .build();
+        StreamingChatModel streamingChatModel = lc4jService.getStreamingChatModel(request.getPlatform(), request.getModel());
+        streamingChatModel.chat(request.getPrompt(), generator.handler());
+
         NodeOutput output = new NodeOutput();
         output.setSuccess(true);
         output.setMsg("LLM 流式调用成功");
         output.addData("content", fullContent.toString());
         output.addData("platform", request.getPlatform());
         output.addData("model", request.getModel());
-        output.addData("messages", fullContent.toString());
+        output.addData("streamingChatGenerator", generator);
         output.addData("stream", true);
         output.addData("chatType", ChatType.STREAM.name());
         
