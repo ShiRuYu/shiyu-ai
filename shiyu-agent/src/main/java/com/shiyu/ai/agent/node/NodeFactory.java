@@ -1,13 +1,35 @@
 package com.shiyu.ai.agent.node;
 
+import com.shiyu.ai.agent.node.condition.ConditionConfig;
+import com.shiyu.ai.agent.node.condition.ConditionNode;
 import com.shiyu.ai.agent.node.intent.IntentConfig;
 import com.shiyu.ai.agent.node.intent.IntentNode;
+import com.shiyu.ai.agent.node.llm.LlmCallConfig;
+import com.shiyu.ai.agent.node.llm.LlmCallNode;
+import com.shiyu.ai.agent.node.memory.LongTermMemoryConfig;
+import com.shiyu.ai.agent.node.memory.LongTermMemoryNode;
+import com.shiyu.ai.agent.node.memory.MemoryRetrievalConfig;
+import com.shiyu.ai.agent.node.memory.MemoryRetrievalNode;
+import com.shiyu.ai.agent.node.memory.ShortTermMemoryConfig;
+import com.shiyu.ai.agent.node.memory.ShortTermMemoryNode;
+import com.shiyu.ai.agent.node.output.OutputFormatConfig;
+import com.shiyu.ai.agent.node.output.OutputFormatNode;
+import com.shiyu.ai.agent.node.rag.RagEnhancementConfig;
+import com.shiyu.ai.agent.node.rag.RagEnhancementNode;
+import com.shiyu.ai.agent.node.rag.RagRetrievalConfig;
+import com.shiyu.ai.agent.node.rag.RagRetrievalNode;
+import com.shiyu.ai.agent.node.tool.ToolCallConfig;
+import com.shiyu.ai.agent.node.tool.ToolCallNode;
+import com.shiyu.ai.agent.node.transform.TransformConfig;
+import com.shiyu.ai.agent.node.transform.TransformNode;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Component;
 
 import java.util.HashMap;
 import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.function.Function;
+import java.util.function.Supplier;
 
 /**
  * 节点工厂类
@@ -23,18 +45,16 @@ public class NodeFactory {
     /**
      * 节点类型映射表
      * key: 节点类型枚举
-     * value: 节点创建函数
+     * value: 节点创建器
      */
-    private final Map<NodeType, Function<NodeConfig, BaseNode>> nodeCreators;
+    private final Map<NodeType, NodeCreatorInfo> nodeCreators = new ConcurrentHashMap<>();
 
     /**
      * 已注册的节点实例 id -> 节点实例
      */
-    private final Map<String, BaseNode> registeredNodes;
+    private final Map<String, BaseNode> registeredNodes = new ConcurrentHashMap<>();
 
     public NodeFactory() {
-        this.nodeCreators = new HashMap<>();
-        this.registeredNodes = new HashMap<>();
         // 注册默认节点类型
         registerDefaultNodeTypes();
     }
@@ -43,34 +63,58 @@ public class NodeFactory {
      * 注册默认的节点类型
      */
     private void registerDefaultNodeTypes() {
+        // 注册默认节点
+        registerNodeType(NodeType.DEFAULT, NodeConfig.class, DefaultNode::new);
+
         // 注册意图识别节点
-        registerNodeType(NodeType.INTENT, IntentConfig.class::cast, IntentNode::new);
+        registerNodeType(NodeType.INTENT, IntentConfig.class, IntentNode::new);
+        
+        // 注册 RAG 相关节点
+        registerNodeType(NodeType.RAG_RETRIEVAL, RagRetrievalConfig.class, RagRetrievalNode::new);
+        registerNodeType(NodeType.RAG_ENHANCEMENT, RagEnhancementConfig.class, RagEnhancementNode::new);
+        
+        // 注册记忆相关节点
+        registerNodeType(NodeType.MEMORY_SHORT_TERM, ShortTermMemoryConfig.class, ShortTermMemoryNode::new);
+        registerNodeType(NodeType.MEMORY_LONG_TERM, LongTermMemoryConfig.class, LongTermMemoryNode::new);
+        registerNodeType(NodeType.MEMORY_RETRIEVAL, MemoryRetrievalConfig.class, MemoryRetrievalNode::new);
+        
+        // 注册 LLM 调用节点
+        registerNodeType(NodeType.LLM_CALL, LlmCallConfig.class, LlmCallNode::new);
+        
+        // 注册工具调用节点
+        registerNodeType(NodeType.TOOL_CALL, ToolCallConfig.class, ToolCallNode::new);
+        
+        // 注册条件判断节点
+        registerNodeType(NodeType.CONDITION, ConditionConfig.class, ConditionNode::new);
+        
+        // 注册数据转换节点
+        registerNodeType(NodeType.TRANSFORM, TransformConfig.class, TransformNode::new);
+        
+        // 注册输出格式化节点
+        registerNodeType(NodeType.OUTPUT_FORMAT, OutputFormatConfig.class, OutputFormatNode::new);
     }
 
     /**
      * 注册节点类型
      *
      * @param nodeType       节点类型
-     * @param configConverter 配置转换器
+     * @param configClass    配置类
      * @param nodeCreator    节点创建器
      * @param <T>            配置类型
      */
     public <T extends NodeConfig> void registerNodeType(
             NodeType nodeType,
-            Function<NodeConfig, T> configConverter,
+            Class<T> configClass,
             NodeCreator<T> nodeCreator
     ) {
-        nodeCreators.put(nodeType, config -> {
-            try {
-                T convertedConfig = configConverter.apply(config);
-                BaseNode node = nodeCreator.create(convertedConfig);
-                log.info("成功创建节点：{} (类型：{})", config.getNodeId(), nodeType.getName());
-                return node;
-            } catch (Exception e) {
-                log.error("创建节点失败：{} (类型：{})", config.getNodeId(), nodeType.getName(), e);
-                throw new RuntimeException("创建节点失败：" + config.getNodeId(), e);
-            }
-        });
+        nodeCreators.put(nodeType, new NodeCreatorInfo<>(configClass, nodeCreator));
+        log.info("已注册节点类型：{} ({})", nodeType.getCode(), nodeType.getName());
+    }
+
+    /**
+         * 节点创建器信息类
+         */
+        private record NodeCreatorInfo<T extends NodeConfig>(Class<T> configClass, NodeCreator<T> nodeCreator) {
     }
 
     /**
@@ -79,6 +123,7 @@ public class NodeFactory {
      * @param config 节点配置
      * @return 节点实例
      */
+    @SuppressWarnings("unchecked")
     public BaseNode createNode(NodeConfig config) {
         if (config == null) {
             throw new IllegalArgumentException("节点配置不能为空");
@@ -89,23 +134,101 @@ public class NodeFactory {
             throw new IllegalArgumentException("节点类型不能为空");
         }
 
-        Function<NodeConfig, BaseNode> creator = nodeCreators.get(nodeType);
-        if (creator == null) {
+        NodeCreatorInfo<?> creatorInfo = nodeCreators.get(nodeType);
+        if (creatorInfo == null) {
             throw new IllegalArgumentException("不支持的节点类型：" + nodeType.getName());
         }
 
-        BaseNode node = creator.apply(config);
-        
-        // 设置配置到节点
-        node.setConfig(config);
+        try {
+            // 检查配置类型是否匹配
+            if (!creatorInfo.configClass.isInstance(config)) {
+                // 尝试转换配置
+                config = convertConfig(config, creatorInfo.configClass);
+            }
 
-        // 注册节点实例
-        if (config.getNodeId() != null && !config.getNodeId().isEmpty()) {
-            registeredNodes.put(config.getNodeId(), node);
-            log.debug("节点已注册：{} (ID: {})", nodeType.getName(), config.getNodeId());
+            // 使用对应的创建器创建节点
+            BaseNode node = ((NodeCreatorInfo<NodeConfig>) creatorInfo).nodeCreator.create(config);
+
+            // 确保节点配置已设置
+            if (node.getConfig() == null) {
+                node.setConfig(config);
+            }
+
+            // 注册节点实例
+            if (config.getNodeId() != null && !config.getNodeId().isEmpty()) {
+                registeredNodes.put(config.getNodeId(), node);
+                log.debug("节点已注册：{} (ID: {})", nodeType.getName(), config.getNodeId());
+            }
+
+            log.info("成功创建节点：{} (类型：{}, ID: {})", 
+                    node.getClass().getSimpleName(), nodeType.getName(), config.getNodeId());
+            return node;
+
+        } catch (Exception e) {
+            log.error("创建节点失败：{} (类型：{})", config.getNodeId(), nodeType.getName(), e);
+            throw new RuntimeException("创建节点失败：" + config.getNodeId(), e);
         }
+    }
 
-        return node;
+    /**
+     * 转换配置类型
+     *
+     * @param sourceConfig 源配置
+     * @param targetClass  目标配置类
+     * @return 转换后的配置
+     */
+    @SuppressWarnings("unchecked")
+    private <T extends NodeConfig> T convertConfig(NodeConfig sourceConfig, Class<T> targetClass) {
+        try {
+            // 如果已经是目标类型，直接返回
+            if (targetClass.isInstance(sourceConfig)) {
+                return (T) sourceConfig;
+            }
+
+            // 创建新的配置实例
+            T targetConfig = targetClass.getDeclaredConstructor().newInstance();
+
+            // 复制公共属性
+            copyProperties(sourceConfig, targetConfig);
+
+            log.debug("配置类型已转换：{} -> {}", 
+                    sourceConfig.getClass().getSimpleName(), targetClass.getSimpleName());
+            return targetConfig;
+
+        } catch (Exception e) {
+            log.error("配置转换失败：{} -> {}", 
+                    sourceConfig.getClass().getSimpleName(), targetClass.getSimpleName(), e);
+            throw new RuntimeException("配置转换失败", e);
+        }
+    }
+
+    /**
+     * 复制对象属性
+     *
+     * @param source 源对象
+     * @param target 目标对象
+     */
+    private void copyProperties(Object source, Object target) {
+        try {
+            var sourceFields = source.getClass().getDeclaredFields();
+            for (var sourceField : sourceFields) {
+                try {
+                    var fieldName = sourceField.getName();
+                    sourceField.setAccessible(true);
+                    var value = sourceField.get(source);
+
+                    var targetField = target.getClass().getDeclaredField(fieldName);
+                    if (targetField != null) {
+                        targetField.setAccessible(true);
+                        targetField.set(target, value);
+                    }
+                } catch (NoSuchFieldException e) {
+                    // 忽略目标类没有的字段
+                }
+            }
+        } catch (Exception e) {
+            log.warn("属性复制失败", e);
+        }
     }
 
     /**
@@ -230,6 +353,56 @@ public class NodeFactory {
      */
     public Map<String, BaseNode> getAllRegisteredNodes() {
         return new HashMap<>(registeredNodes);
+    }
+
+    /**
+     * 根据节点类型和配置创建节点
+     * 便捷方法，自动创建对应的 Config
+     *
+     * @param nodeType   节点类型
+     * @param nodeId     节点 ID
+     * @param nodeName   节点名称
+     * @param initializer 配置初始化器
+     * @return 节点实例
+     */
+    public BaseNode createNode(NodeType nodeType, String nodeId, String nodeName,
+                               java.util.function.Consumer<NodeConfig> initializer) {
+        NodeCreatorInfo<?> creatorInfo = nodeCreators.get(nodeType);
+        if (creatorInfo == null) {
+            throw new IllegalArgumentException("不支持的节点类型：" + nodeType.getName());
+        }
+
+        try {
+            // 创建对应的 Config 实例
+            NodeConfig config = creatorInfo.configClass.getDeclaredConstructor().newInstance();
+            config.setNodeId(nodeId);
+            config.setNodeName(nodeName);
+            config.setNodeType(nodeType);
+
+            // 应用初始化器
+            if (initializer != null) {
+                initializer.accept(config);
+            }
+
+            return createNode(config);
+
+        } catch (Exception e) {
+            log.error("创建节点失败：{} (类型：{})", nodeId, nodeType.getName(), e);
+            throw new RuntimeException("创建节点失败：" + nodeId, e);
+        }
+    }
+
+    /**
+     * 根据节点类型创建节点（简化版）
+     * 使用默认配置创建节点
+     *
+     * @param nodeType   节点类型
+     * @param nodeId     节点 ID
+     * @param nodeName   节点名称
+     * @return 节点实例
+     */
+    public BaseNode createNode(NodeType nodeType, String nodeId, String nodeName) {
+        return createNode(nodeType, nodeId, nodeName, null);
     }
 
     /**
