@@ -1,16 +1,15 @@
 package com.shiyu.ai.agent.node.intent;
 
 import com.shiyu.ai.agent.node.BaseNode;
-import com.shiyu.ai.agent.node.NodeConfig;
 import com.shiyu.ai.agent.node.NodeInput;
 import com.shiyu.ai.agent.node.NodeOutput;
 import com.shiyu.ai.agent.node.NodeType;
+import com.shiyu.ai.agent.service.IntentService;
 import lombok.Getter;
 import lombok.Setter;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.stereotype.Component;
 
-import java.util.Map;
+import java.util.List;
 
 /**
  * 意图识别节点
@@ -22,32 +21,81 @@ import java.util.Map;
 @Setter
 @Getter
 @Slf4j
-@Component
 public class IntentNode extends BaseNode {
 
     private IntentConfig config;
     
     /**
-     * 意图识别服务（可选的服务注入）
+     * 意图识别服务（必须依赖）
      */
-    private Object intentRecognitionService;
+    private final IntentService intentService;
 
-    public IntentNode() {
-        this.config = new IntentConfig();
+    /**
+     * 私有构造函数，强制使用 Builder 模式
+     * @param config 节点配置
+     * @param intentService 意图识别服务
+     */
+    private IntentNode(IntentConfig config, IntentService intentService) {
+        super(config != null ? config : new IntentConfig());
+        this.config = config != null ? config : new IntentConfig();
         // 设置节点类型为 INTENT
         this.config.setNodeType(NodeType.INTENT);
+        this.intentService = intentService;
     }
 
-    public IntentNode(IntentConfig config) {
-        super(config);
-        this.config = config;
-        // 设置节点类型为 INTENT
-        this.config.setNodeType(NodeType.INTENT);
+    /**
+     * 获取 Builder 实例
+     * @return Builder 实例
+     */
+    public static Builder builder() {
+        return new Builder();
     }
 
-    public void setIntentConfig(IntentConfig config) {
-        super.setConfig(config);
-        this.config = config;
+    /**
+     * Builder 类，用于构建 IntentNode 实例
+     */
+    public static class Builder {
+        private IntentConfig config;
+        private IntentService intentService;
+
+        /**
+         * 设置节点配置
+         * @param config 节点配置
+         * @return Builder 实例
+         */
+        public Builder config(IntentConfig config) {
+            this.config = config;
+            return this;
+        }
+
+        /**
+         * 设置意图识别服务
+         * @param intentService 意图识别服务
+         * @return Builder 实例
+         */
+        public Builder intentService(IntentService intentService) {
+            this.intentService = intentService;
+            return this;
+        }
+
+        /**
+         * 构建并返回 IntentNode 实例
+         * 在构建前会进行必要的校验
+         * @return IntentNode 实例
+         * @throws IllegalStateException 如果校验失败
+         */
+        public IntentNode build() {
+            // 校验：intentService 不能为空
+            if (intentService == null) {
+                throw new IllegalStateException("创建 IntentNode 失败：intentService 不能为空");
+            }
+            
+            // 校验：如果配置了 config，则 config 不能为空对象（可以为 null，会自动创建）
+            // 注意：config 允许为 null，会在构造函数中自动创建默认配置
+            
+            // 所有校验通过，创建并返回实例
+            return new IntentNode(config, intentService);
+        }
     }
 
     @Override
@@ -55,15 +103,44 @@ public class IntentNode extends BaseNode {
         log.info("开始执行意图识别节点，输入：{}", input);
         
         try {
-            // TODO: 实现具体的意图识别逻辑
-            // 1. 解析用户输入
-            // 2. 调用意图识别模型或服务
-            // 3. 根据置信度判断是否需要重新识别
-            // 4. 返回识别结果
+            // 1. 获取用户输入
+            String userInput = input.getParameter("userInput", "");
+            if (userInput.trim().isEmpty()) {
+                userInput = input.getParameter("query", "");
+            }
             
+            if (userInput.trim().isEmpty()) {
+                NodeOutput output = new NodeOutput();
+                output.setSuccess(false);
+                output.setMsg("用户输入为空");
+                output.addData("intentCode", "UNKNOWN");
+                return output;
+            }
+            
+            // 2. 调用意图识别服务
+            List<IntentDefinition> supportedIntents = getSupportedIntents();
+            IntentService.IntentRecognitionResult result = 
+                    intentService.recognize(userInput, supportedIntents);
+            
+            // 3. 构建输出结果
             NodeOutput output = new NodeOutput();
-            output.setSuccess(true);
-            output.setData(recognizeIntent(input));
+            output.setSuccess(result.success());
+            output.setMsg(result.errorMessage() != null ? result.errorMessage() : "意图识别成功");
+            
+            // 4. 添加识别结果到输出
+            output.addData("intentCode", result.intentCode());
+            output.addData("intentName", result.intentName());
+            output.addData("confidence", result.confidence());
+            output.addData("slots", result.slots());
+            
+            // 5. 如果识别成功，将意图代码添加到状态中供条件边使用
+            if (result.success()) {
+                output.addData("nextNode", getResultIntentKey(result.intentCode()));
+                log.info("意图识别成功：code={}, name={}, confidence={}", 
+                        result.intentCode(), result.intentName(), result.confidence());
+            } else {
+                log.warn("意图识别失败或置信度不足：{}", result.errorMessage());
+            }
             
             log.info("意图识别完成，结果：{}", output);
             return output;
@@ -73,58 +150,30 @@ public class IntentNode extends BaseNode {
             NodeOutput output = new NodeOutput();
             output.setSuccess(false);
             output.setMsg("意图识别失败：" + e.getMessage());
+            output.addData("intentCode", "ERROR");
             return output;
         }
     }
 
     /**
-     * 识别意图
-     *
-     * @param input 节点输入
-     * @return 意图识别结果
+     * 获取支持的意图列表
+     * @return 支持的意图定义列表
      */
-    private Map<String, Object> recognizeIntent(NodeInput input) {
-        // TODO: 实现具体的意图识别逻辑
-        return Map.of();
-    }
-
-    /**
-     * 验证意图是否在支持的列表中
-     *
-     * @param intentDefinition 识别的意图定义
-     * @return 是否支持
-     */
-    private boolean isSupportedIntent(IntentDefinition intentDefinition) {
-        if (config.getSupportedIntents() == null || config.getSupportedIntents().length == 0) {
-            return true;
+    private List<IntentDefinition> getSupportedIntents() {
+        if (config.getSupportedIntents() != null && config.getSupportedIntents().length > 0) {
+            return List.of(config.getSupportedIntents());
         }
-        
-        for (IntentDefinition supportedIntent : config.getSupportedIntents()) {
-            if (supportedIntent.getCode().equals(intentDefinition.getCode())) {
-                return true;
-            }
-        }
-        return false;
-    }
-
-    /**
-     * 检查置信度是否满足要求
-     *
-     * @param confidence 置信度
-     * @return 是否满足阈值
-     */
-    private boolean meetsConfidenceThreshold(Double confidence) {
-        return confidence != null && confidence >= config.getConfidenceThreshold();
+        return null;
     }
     
     /**
-     * 注册意图识别服务
-     * 
-     * @param service 意图识别服务实例
+     * 获取结果意图键（用于条件边路由）
+     * @param intentCode 意图代码
+     * @return 意图键
      */
-    public void registerIntentRecognitionService(Object service) {
-        this.intentRecognitionService = service;
-        log.info("已注册意图识别服务到节点：{}", config.getNodeId());
+    private String getResultIntentKey(String intentCode) {
+        // 返回意图代码本身，用于条件边的映射
+        return intentCode != null ? intentCode : "UNKNOWN";
     }
 
 }

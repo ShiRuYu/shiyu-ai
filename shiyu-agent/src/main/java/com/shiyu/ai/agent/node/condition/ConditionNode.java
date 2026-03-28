@@ -7,7 +7,6 @@ import com.shiyu.ai.agent.node.NodeType;
 import lombok.Getter;
 import lombok.Setter;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.stereotype.Component;
 
 /**
  * 条件判断节点
@@ -19,27 +18,52 @@ import org.springframework.stereotype.Component;
 @Setter
 @Getter
 @Slf4j
-@Component
 public class ConditionNode extends BaseNode {
 
     private ConditionConfig config;
 
-    public ConditionNode() {
-        this.config = new ConditionConfig();
+    /**
+     * 私有构造函数，强制使用 Builder 模式
+     * @param config 节点配置
+     */
+    private ConditionNode(ConditionConfig config) {
+        super(config != null ? config : new ConditionConfig());
+        this.config = config != null ? config : new ConditionConfig();
         // 设置节点类型为 CONDITION
         this.config.setNodeType(NodeType.CONDITION);
     }
 
-    public ConditionNode(ConditionConfig config) {
-        super(config);
-        this.config = config;
-        // 设置节点类型为 CONDITION
-        this.config.setNodeType(NodeType.CONDITION);
+    /**
+     * 获取 Builder 实例
+     * @return Builder 实例
+     */
+    public static Builder builder() {
+        return new Builder();
     }
 
-    public void setConditionConfig(ConditionConfig config) {
-        super.setConfig(config);
-        this.config = config;
+    /**
+     * Builder 类，用于构建 ConditionNode 实例
+     */
+    public static class Builder {
+        private ConditionConfig config;
+
+        /**
+         * 设置节点配置
+         * @param config 节点配置
+         * @return Builder 实例
+         */
+        public Builder config(ConditionConfig config) {
+            this.config = config;
+            return this;
+        }
+
+        /**
+         * 构建并返回 ConditionNode 实例
+         * @return ConditionNode 实例
+         */
+        public ConditionNode build() {
+            return new ConditionNode(config);
+        }
     }
 
     @Override
@@ -49,13 +73,25 @@ public class ConditionNode extends BaseNode {
                 config.getConditionType(), config.getConditionExpression(), config.getDefaultBranch());
         
         try {
+            // 1. 获取条件表达式
+            String conditionExpression = config.getConditionExpression();
+            String conditionType = config.getConditionType() != null ? config.getConditionType() : "EXPRESSION";
+            
+            // 2. 执行条件判断
+            boolean result = evaluateCondition(input, conditionType, conditionExpression);
+            
+            // 3. 构建输出结果
             NodeOutput output = new NodeOutput();
             output.setSuccess(true);
-            output.setMsg("条件判断节点执行成功");
+            output.setMsg("条件判断执行成功");
+            output.addData("conditionResult", result);
             
-            // TODO: 实现具体的条件判断逻辑
+            // 4. 根据结果设置下一个分支
+            String nextBranch = result ? config.getTrueBranch() : config.getDefaultBranch();
+            output.addData("nextNode", nextBranch);
+            output.addData("branch", result ? "true" : "false");
             
-            log.info("条件判断节点执行完成，输入：{}", input);
+            log.info("条件判断完成：result={}, nextNode={}", result, nextBranch);
             return output;
             
         } catch (Exception e) {
@@ -63,7 +99,74 @@ public class ConditionNode extends BaseNode {
             NodeOutput output = new NodeOutput();
             output.setSuccess(false);
             output.setMsg("条件判断节点执行失败：" + e.getMessage());
+            // 返回默认分支
+            output.addData("nextNode", config.getDefaultBranch());
             return output;
         }
+    }
+    
+    /**
+     * 评估条件
+     */
+    private boolean evaluateCondition(NodeInput input, String conditionType, String expression) {
+        if (expression == null || expression.trim().isEmpty()) {
+            log.warn("条件表达式为空，返回 false");
+            return false;
+        }
+        
+        switch (conditionType) {
+            case "EXPRESSION":
+                return evaluateExpression(expression, input);
+            case "SCRIPT":
+                return evaluateScript(expression, input);
+            case "INTENT":
+                return evaluateIntent(expression, input);
+            default:
+                log.warn("未知的条件类型：{}，使用表达式评估", conditionType);
+                return evaluateExpression(expression, input);
+        }
+    }
+    
+    /**
+     * 评估表达式（简化实现）
+     */
+    private boolean evaluateExpression(String expression, NodeInput input) {
+        // 简单的变量检查：如果表达式是变量名，检查其值是否为 true
+        Object value = input.getParameter(expression, null);
+        if (value instanceof Boolean boolValue) {
+            return boolValue;
+        }
+        
+        // 支持简单的比较表达式（如 "var == value"）
+        if (expression.contains("==")) {
+            String[] parts = expression.split("==");
+            if (parts.length == 2) {
+                String varName = parts[0].trim();
+                String expectedValue = parts[1].trim();
+                Object actualValue = input.getParameter(varName, null);
+                return expectedValue.equals(actualValue != null ? actualValue.toString() : null);
+            }
+        }
+        
+        // 默认返回 false
+        return false;
+    }
+    
+    /**
+     * 评估脚本（需要实际实现）
+     */
+    private boolean evaluateScript(String script, NodeInput input) {
+        // TODO: 实际项目中可以集成脚本引擎如 JavaScript/Nashorn
+        log.warn("脚本条件评估暂未实现，返回 false");
+        return false;
+    }
+    
+    /**
+     * 评估意图条件
+     */
+    private boolean evaluateIntent(String expectedIntent, NodeInput input) {
+        // 检查当前意图是否匹配期望的意图
+        Object currentIntent = input.getParameter("intentCode", null);
+        return expectedIntent.equals(currentIntent);
     }
 }

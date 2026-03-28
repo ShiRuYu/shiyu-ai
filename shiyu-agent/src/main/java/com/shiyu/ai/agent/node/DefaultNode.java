@@ -3,7 +3,6 @@ package com.shiyu.ai.agent.node;
 import lombok.Getter;
 import lombok.Setter;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.stereotype.Component;
 
 /**
  * 默认节点实现
@@ -15,19 +14,50 @@ import org.springframework.stereotype.Component;
 @Setter
 @Getter
 @Slf4j
-@Component
 public class DefaultNode extends BaseNode {
 
-    public DefaultNode() {
-        this.config = new NodeConfig();
+    /**
+     * 私有构造函数，强制使用 Builder 模式
+     * @param config 节点配置
+     */
+    private DefaultNode(NodeConfig config) {
+        super(config != null ? config : new NodeConfig());
+        this.config = config != null ? config : new NodeConfig();
         // 设置节点类型为 DEFAULT
         this.config.setNodeType(NodeType.DEFAULT);
     }
 
-    public DefaultNode(NodeConfig config) {
-        super(config);
-        // 设置节点类型为 DEFAULT
-        this.config.setNodeType(NodeType.DEFAULT);
+    /**
+     * 获取 Builder 实例
+     * @return Builder 实例
+     */
+    public static Builder builder() {
+        return new Builder();
+    }
+
+    /**
+     * Builder 类，用于构建 DefaultNode 实例
+     */
+    public static class Builder {
+        private NodeConfig config;
+
+        /**
+         * 设置节点配置
+         * @param config 节点配置
+         * @return Builder 实例
+         */
+        public Builder config(NodeConfig config) {
+            this.config = config;
+            return this;
+        }
+
+        /**
+         * 构建并返回 DefaultNode 实例
+         * @return DefaultNode 实例
+         */
+        public DefaultNode build() {
+            return new DefaultNode(config);
+        }
     }
 
     @Override

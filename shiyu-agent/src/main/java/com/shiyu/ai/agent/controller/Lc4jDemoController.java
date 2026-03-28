@@ -1,8 +1,8 @@
 package com.shiyu.ai.agent.controller;
 
-import com.shiyu.ai.agent.domain.AgentChatRequest;
-import com.shiyu.ai.agent.domain.AgentChatResponse;
-import com.shiyu.ai.agent.service.AgentChatService;
+import com.shiyu.ai.agent.domain.Lc4jRequest;
+import com.shiyu.ai.agent.domain.Lc4jResponse;
+import com.shiyu.ai.agent.service.Lc4jService;
 import lombok.Data;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -26,10 +26,10 @@ import java.util.Map;
 @RequestMapping("/api/lc4j")
 public class Lc4jDemoController {
     
-    private final AgentChatService agentChatService;
+    private final Lc4jService lc4jService;
     
-    public Lc4jDemoController(AgentChatService agentChatService) {
-        this.agentChatService = agentChatService;
+    public Lc4jDemoController(Lc4jService lc4jService) {
+        this.lc4jService = lc4jService;
     }
     
     /**
@@ -37,7 +37,7 @@ public class Lc4jDemoController {
      */
     @GetMapping("/platforms")
     public List<String> getAvailablePlatforms() {
-        // TODO: 需要通过 AgentChatService 或其他方式获取平台列表
+        // TODO: 需要通过 Lc4jService 或其他方式获取平台列表
         return List.of("OPENROUTER", "OLLAMA", "DEEPSEEK", "OPENAI", "SILICON_FLOW");
     }
     
@@ -52,20 +52,20 @@ public class Lc4jDemoController {
                 request.getPlatform(), request.getModel(), request.getPrompt());
         
         try {
-            // 转换为 AgentChatRequest
-            AgentChatRequest agentRequest = AgentChatRequest.builder()
+            // 转换为 Lc4jRequest
+            Lc4jRequest lc4jRequest = Lc4jRequest.builder()
                     .platform(request.getPlatform())
                     .model(request.getModel())
                     .prompt(request.getPrompt())
                     .build();
             
-            // 调用 AgentChatService
-            AgentChatResponse agentResponse = agentChatService.call(agentRequest);
+            // 调用 Lc4jService
+            Lc4jResponse lc4jResponse = lc4jService.call(lc4jRequest);
             
             log.info("模型响应成功");
             return ChatResponse.builder()
-                    .success(agentResponse.isSuccess())
-                    .content(agentResponse.getContent())
+                    .success(lc4jResponse.isSuccess())
+                    .content(lc4jResponse.getContent())
                     .build();
                     
         } catch (Exception e) {
@@ -88,15 +88,15 @@ public class Lc4jDemoController {
                 request.getPlatform(), request.getModel(), request.getPrompt());
         
         try {
-            // 转换为 AgentChatRequest
-            AgentChatRequest agentRequest = AgentChatRequest.builder()
+            // 转换为 Lc4jRequest
+            Lc4jRequest lc4jRequest = Lc4jRequest.builder()
                     .platform(request.getPlatform())
                     .model(request.getModel())
                     .prompt(request.getPrompt())
                     .build();
             
-            // 调用 AgentChatService 的流式方法
-            return agentChatService.stream(agentRequest);
+            // 调用 Lc4jService 的流式方法
+            return lc4jService.stream(lc4jRequest);
         } catch (Exception e) {
             log.error("流式对话处理失败", e);
             return Flux.error(e);
@@ -109,7 +109,7 @@ public class Lc4jDemoController {
     @GetMapping("/default-model")
     public Map<String, String> getDefaultModel(@RequestParam String platform) {
         Map<String, String> result = new HashMap<>();
-        // TODO: 需要通过 AgentChatService 或其他方式获取默认模型
+        // TODO: 需要通过 Lc4jService 或其他方式获取默认模型
         result.put("platform", platform);
         result.put("defaultModel", "未配置");
         return result;

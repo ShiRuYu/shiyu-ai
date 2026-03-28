@@ -26,7 +26,12 @@ public class ConditionConfig extends NodeConfig {
     private String conditionType = "EXPRESSION";
     
     /**
-     * 默认分支
+     * 真实分支（条件为 true 时的执行路径）
+     */
+    private String trueBranch;
+    
+    /**
+     * 默认分支（条件为 false 时的执行路径）
      */
     private String defaultBranch;
     

@@ -19,27 +19,52 @@ import org.springframework.stereotype.Component;
 @Setter
 @Getter
 @Slf4j
-@Component
 public class RagEnhancementNode extends BaseNode {
 
     private RagEnhancementConfig config;
 
-    public RagEnhancementNode() {
-        this.config = new RagEnhancementConfig();
+    /**
+     * 私有构造函数，强制使用 Builder 模式
+     * @param config 节点配置
+     */
+    private RagEnhancementNode(RagEnhancementConfig config) {
+        super(config != null ? config : new RagEnhancementConfig());
+        this.config = config != null ? config : new RagEnhancementConfig();
         // 设置节点类型为 RAG_ENHANCEMENT
         this.config.setNodeType(NodeType.RAG_ENHANCEMENT);
     }
 
-    public RagEnhancementNode(RagEnhancementConfig config) {
-        super(config);
-        this.config = config;
-        // 设置节点类型为 RAG_ENHANCEMENT
-        this.config.setNodeType(NodeType.RAG_ENHANCEMENT);
+    /**
+     * 获取 Builder 实例
+     * @return Builder 实例
+     */
+    public static Builder builder() {
+        return new Builder();
     }
 
-    public void setRagEnhancementConfig(RagEnhancementConfig config) {
-        super.setConfig(config);
-        this.config = config;
+    /**
+     * Builder 类，用于构建 RagEnhancementNode 实例
+     */
+    public static class Builder {
+        private RagEnhancementConfig config;
+
+        /**
+         * 设置节点配置
+         * @param config 节点配置
+         * @return Builder 实例
+         */
+        public Builder config(RagEnhancementConfig config) {
+            this.config = config;
+            return this;
+        }
+
+        /**
+         * 构建并返回 RagEnhancementNode 实例
+         * @return RagEnhancementNode 实例
+         */
+        public RagEnhancementNode build() {
+            return new RagEnhancementNode(config);
+        }
     }
 
     @Override

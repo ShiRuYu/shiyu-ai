@@ -39,4 +39,24 @@ public class LlmCallConfig extends NodeConfig {
      * 系统提示词
      */
     private String systemPrompt;
+    
+    /**
+     * Prompt 模板
+     */
+    private String promptTemplate;
+    
+    /**
+     * 默认 Prompt
+     */
+    private String defaultPrompt;
+    
+    /**
+     * 平台类型
+     */
+    private String platform;
+    
+    /**
+     * 是否流式调用（默认 false）
+     */
+    private boolean stream = false;
 }

@@ -5,6 +5,7 @@ import com.shiyu.ai.agent.domain.AgentDefinition;
 import com.shiyu.ai.agent.node.DefaultNode;
 import com.shiyu.ai.agent.node.llm.LlmCallNode;
 import com.shiyu.ai.agent.service.AgentService;
+import com.shiyu.ai.agent.service.Lc4jService;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.boot.ApplicationArguments;
 import org.springframework.boot.ApplicationRunner;
@@ -21,9 +22,11 @@ import java.util.Map;
 public class AgentStartupConfig implements ApplicationRunner {
 
     private final AgentService agentService;
+    private final Lc4jService lc4jService;
 
-    public AgentStartupConfig(AgentService agentService) {
+    public AgentStartupConfig(AgentService agentService, Lc4jService lc4jService) {
         this.agentService = agentService;
+        this.lc4jService = lc4jService;
     }
 
     @Override
@@ -62,7 +65,7 @@ public class AgentStartupConfig implements ApplicationRunner {
                     .versionDescription("初始版本")
                     
                     // 添加一个默认节点（简单处理输入并返回）
-                    .addNode("default", new DefaultNode())
+                    .addNode("default", DefaultNode.builder().build())
                     
                     // 设置起始和结束节点
                     .setStartNode("default")
@@ -90,9 +93,11 @@ public class AgentStartupConfig implements ApplicationRunner {
             AgentBuilder builder = new AgentBuilder();
             
             // 创建节点实例
-            DefaultNode inputNode = new DefaultNode();
-            LlmCallNode llmNode = new LlmCallNode();
-            DefaultNode outputNode = new DefaultNode();
+            DefaultNode inputNode = DefaultNode.builder().build();
+            LlmCallNode llmNode = LlmCallNode.builder()
+                    .lc4jService(lc4jService)
+                    .build();
+            DefaultNode outputNode = DefaultNode.builder().build();
             
             AgentDefinition agent = builder
                     .agentId("customer-service-agent")
@@ -135,10 +140,10 @@ public class AgentStartupConfig implements ApplicationRunner {
             AgentBuilder builder = new AgentBuilder();
             
             // 创建节点
-            DefaultNode startNode = new DefaultNode();
-            DefaultNode processNode = new DefaultNode();
-            DefaultNode fallbackNode = new DefaultNode();
-            DefaultNode endNode = new DefaultNode();
+            DefaultNode startNode = DefaultNode.builder().build();
+            DefaultNode processNode = DefaultNode.builder().build();
+            DefaultNode fallbackNode = DefaultNode.builder().build();
+            DefaultNode endNode = DefaultNode.builder().build();
             
             AgentDefinition agent = builder
                     .agentId("conditional-agent")

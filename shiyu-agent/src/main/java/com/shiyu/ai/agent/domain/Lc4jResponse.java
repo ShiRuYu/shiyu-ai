@@ -6,26 +6,36 @@ import lombok.Data;
 import lombok.NoArgsConstructor;
 
 /**
- * Agent 对话请求参数
+ * LangChain4j 对话响应
  */
 @Data
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor
-public class AgentChatRequest {
+public class Lc4jResponse {
     
     /**
-     * 平台类型（如：OPENROUTER, OLLAMA, DEEPSEEK, OPENAI, SILICON_FLOW）
+     * 是否成功
+     */
+    private boolean success;
+    
+    /**
+     * AI 回复内容
+     */
+    private String content;
+    
+    /**
+     * 使用的平台
      */
     private String platform;
     
     /**
-     * 模型名称，为空时使用平台默认模型
+     * 使用的模型
      */
     private String model;
     
     /**
-     * 用户输入的问题
+     * 错误信息（失败时）
      */
-    private String prompt;
+    private String errorMessage;
 }

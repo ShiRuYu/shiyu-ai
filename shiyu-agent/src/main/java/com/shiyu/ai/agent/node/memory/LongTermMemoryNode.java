@@ -19,27 +19,52 @@ import org.springframework.stereotype.Component;
 @Setter
 @Getter
 @Slf4j
-@Component
 public class LongTermMemoryNode extends BaseNode {
 
     private LongTermMemoryConfig config;
 
-    public LongTermMemoryNode() {
-        this.config = new LongTermMemoryConfig();
+    /**
+     * 私有构造函数，强制使用 Builder 模式
+     * @param config 节点配置
+     */
+    private LongTermMemoryNode(LongTermMemoryConfig config) {
+        super(config != null ? config : new LongTermMemoryConfig());
+        this.config = config != null ? config : new LongTermMemoryConfig();
         // 设置节点类型为 MEMORY_LONG_TERM
         this.config.setNodeType(NodeType.MEMORY_LONG_TERM);
     }
 
-    public LongTermMemoryNode(LongTermMemoryConfig config) {
-        super(config);
-        this.config = config;
-        // 设置节点类型为 MEMORY_LONG_TERM
-        this.config.setNodeType(NodeType.MEMORY_LONG_TERM);
+    /**
+     * 获取 Builder 实例
+     * @return Builder 实例
+     */
+    public static Builder builder() {
+        return new Builder();
     }
 
-    public void setLongTermMemoryConfig(LongTermMemoryConfig config) {
-        super.setConfig(config);
-        this.config = config;
+    /**
+     * Builder 类，用于构建 LongTermMemoryNode 实例
+     */
+    public static class Builder {
+        private LongTermMemoryConfig config;
+
+        /**
+         * 设置节点配置
+         * @param config 节点配置
+         * @return Builder 实例
+         */
+        public Builder config(LongTermMemoryConfig config) {
+            this.config = config;
+            return this;
+        }
+
+        /**
+         * 构建并返回 LongTermMemoryNode 实例
+         * @return LongTermMemoryNode 实例
+         */
+        public LongTermMemoryNode build() {
+            return new LongTermMemoryNode(config);
+        }
     }
 
     @Override

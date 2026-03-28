@@ -34,4 +34,9 @@ public class TransformConfig extends NodeConfig {
      * 转换规则
      */
     private String transformationRules;
+    
+    /**
+     * 模板字符串（用于模板转换）
+     */
+    private String template;
 }

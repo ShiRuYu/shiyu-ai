@@ -9,6 +9,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.bsc.langgraph4j.CompiledGraph;
 import org.bsc.langgraph4j.GraphStateException;
 import org.bsc.langgraph4j.state.AgentState;
+import reactor.core.publisher.Flux;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -220,6 +221,69 @@ public class Graph {
         
         log.info("Graph 编译完成：{}", this.name);
         return this.compiledGraph;
+    }
+    
+    /**
+     * 同步执行图
+     * @param input 输入数据
+     * @return 执行结果
+     * @throws GraphStateException 图状态异常
+     */
+    public Map<String, Object> execute(Map<String, Object> input) throws GraphStateException {
+        log.info("开始同步执行图：{}", this.name);
+        
+        CompiledGraph<AgentState> compiledGraph = compile();
+        
+        // 执行图并获取最终状态
+        var resultOptional = compiledGraph.invoke(input);
+        AgentState finalState = resultOptional.orElseThrow(() -> 
+            new IllegalStateException("图执行返回空结果：" + this.name));
+        
+        log.info("图同步执行完成：{}", this.name);
+        return finalState.data();
+    }
+    
+    /**
+     * 流式执行图
+     * @param input 输入数据
+     * @return 流式响应
+     * @throws GraphStateException 图状态异常
+     */
+    public Flux<Map<String, Object>> executeStream(Map<String, Object> input) throws GraphStateException {
+        log.info("开始流式执行图：{}", this.name);
+        
+        CompiledGraph<AgentState> compiledGraph = compile();
+        
+        // 流式执行图 - 返回每个节点执行后的状态
+        return Flux.fromIterable(() -> compiledGraph.stream(input).iterator())
+                .map(nodeOutput -> nodeOutput.state().data())
+                .doOnSubscribe(subscription -> log.debug("流式执行开始"))
+                .doOnComplete(() -> log.info("流式执行完成"))
+                .doOnError(error -> log.error("流式执行失败", error));
+    }
+    
+    /**
+     * 流式执行图（仅返回最终结果，适用于 LLM 流式场景）
+     * @param input 输入数据
+     * @return 最终的流式内容
+     * @throws GraphStateException 图状态异常
+     */
+    public Flux<String> executeLLMStream(Map<String, Object> input) throws GraphStateException {
+        log.info("开始 LLM 流式执行图：{}", this.name);
+        
+        // 先执行图获取最终状态
+        Map<String, Object> result = execute(input);
+        
+        // 从结果中提取 content 字段进行流式输出
+        Object content = result.get("content");
+        if (content instanceof String str) {
+            // 将字符串拆分为字符流
+            return Flux.fromArray(str.split(""))
+                    .doOnSubscribe(subscription -> log.debug("LLM 流式输出开始"))
+                    .doOnComplete(() -> log.info("LLM 流式输出完成"));
+        }
+        
+        return Flux.empty();
     }
     
 }

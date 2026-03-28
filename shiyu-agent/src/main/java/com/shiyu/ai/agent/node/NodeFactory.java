@@ -22,14 +22,17 @@ import com.shiyu.ai.agent.node.tool.ToolCallConfig;
 import com.shiyu.ai.agent.node.tool.ToolCallNode;
 import com.shiyu.ai.agent.node.transform.TransformConfig;
 import com.shiyu.ai.agent.node.transform.TransformNode;
+import com.shiyu.ai.agent.service.IntentService;
+import com.shiyu.ai.agent.service.Lc4jService;
+import com.shiyu.ai.agent.service.RagService;
+import com.shiyu.ai.agent.service.ToolService;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
 import java.util.HashMap;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
-import java.util.function.Function;
-import java.util.function.Supplier;
 
 /**
  * 节点工厂类
@@ -54,6 +57,18 @@ public class NodeFactory {
      */
     private final Map<String, BaseNode> registeredNodes = new ConcurrentHashMap<>();
 
+    @Autowired(required = false)
+    private IntentService intentService;
+
+    @Autowired(required = false)
+    private RagService ragService;
+
+    @Autowired(required = false)
+    private Lc4jService lc4jService;
+
+    @Autowired(required = false)
+    private ToolService toolService;
+
     public NodeFactory() {
         // 注册默认节点类型
         registerDefaultNodeTypes();
@@ -64,34 +79,34 @@ public class NodeFactory {
      */
     private void registerDefaultNodeTypes() {
         // 注册默认节点
-        registerNodeType(NodeType.DEFAULT, NodeConfig.class, DefaultNode::new);
+        registerNodeType(NodeType.DEFAULT, NodeConfig.class, config -> DefaultNode.builder().config(config).build());
 
-        // 注册意图识别节点
-        registerNodeType(NodeType.INTENT, IntentConfig.class, IntentNode::new);
+        // 注册意图识别节点（使用特殊处理，需要依赖注入）
+        // IntentNode 需要通过 Spring 容器获取 IntentService
         
-        // 注册 RAG 相关节点
-        registerNodeType(NodeType.RAG_RETRIEVAL, RagRetrievalConfig.class, RagRetrievalNode::new);
-        registerNodeType(NodeType.RAG_ENHANCEMENT, RagEnhancementConfig.class, RagEnhancementNode::new);
+        // 注册 RAG 相关节点（使用特殊处理，需要依赖注入）
+        // RagRetrievalNode 需要通过 Spring 容器获取 RagService
+        registerNodeType(NodeType.RAG_ENHANCEMENT, RagEnhancementConfig.class, config -> RagEnhancementNode.builder().config(config).build());
         
         // 注册记忆相关节点
-        registerNodeType(NodeType.MEMORY_SHORT_TERM, ShortTermMemoryConfig.class, ShortTermMemoryNode::new);
-        registerNodeType(NodeType.MEMORY_LONG_TERM, LongTermMemoryConfig.class, LongTermMemoryNode::new);
-        registerNodeType(NodeType.MEMORY_RETRIEVAL, MemoryRetrievalConfig.class, MemoryRetrievalNode::new);
+        registerNodeType(NodeType.MEMORY_SHORT_TERM, ShortTermMemoryConfig.class, config -> ShortTermMemoryNode.builder().config(config).build());
+        registerNodeType(NodeType.MEMORY_LONG_TERM, LongTermMemoryConfig.class, config -> LongTermMemoryNode.builder().config(config).build());
+        registerNodeType(NodeType.MEMORY_RETRIEVAL, MemoryRetrievalConfig.class, config -> MemoryRetrievalNode.builder().config(config).build());
         
-        // 注册 LLM 调用节点
-        registerNodeType(NodeType.LLM_CALL, LlmCallConfig.class, LlmCallNode::new);
+        // 注册 LLM 调用节点（使用特殊处理，需要依赖注入）
+        // LlmCallNode 需要通过 Spring 容器获取 Lc4jService
         
-        // 注册工具调用节点
-        registerNodeType(NodeType.TOOL_CALL, ToolCallConfig.class, ToolCallNode::new);
+        // 注册工具调用节点（使用特殊处理，需要依赖注入）
+        // ToolCallNode 需要通过 Spring 容器获取 ToolService
         
         // 注册条件判断节点
-        registerNodeType(NodeType.CONDITION, ConditionConfig.class, ConditionNode::new);
+        registerNodeType(NodeType.CONDITION, ConditionConfig.class, config -> ConditionNode.builder().config(config).build());
         
         // 注册数据转换节点
-        registerNodeType(NodeType.TRANSFORM, TransformConfig.class, TransformNode::new);
+        registerNodeType(NodeType.TRANSFORM, TransformConfig.class, config -> TransformNode.builder().config(config).build());
         
         // 注册输出格式化节点
-        registerNodeType(NodeType.OUTPUT_FORMAT, OutputFormatConfig.class, OutputFormatNode::new);
+        registerNodeType(NodeType.OUTPUT_FORMAT, OutputFormatConfig.class, config -> OutputFormatNode.builder().config(config).build());
     }
 
     /**
@@ -115,6 +130,59 @@ public class NodeFactory {
          * 节点创建器信息类
          */
         private record NodeCreatorInfo<T extends NodeConfig>(Class<T> configClass, NodeCreator<T> nodeCreator) {
+    }
+
+    /**
+     * 创建需要依赖注入的节点实例
+     *
+     * @param nodeType 节点类型
+     * @param config   节点配置
+     * @return 节点实例，如果不需要依赖注入则返回 null
+     */
+    private BaseNode createNodeWithDependencies(NodeType nodeType, NodeConfig config) {
+        return switch (nodeType) {
+            case INTENT -> {
+                if (intentService == null) {
+                    log.warn("IntentService 未注入，无法创建 IntentNode");
+                    throw new IllegalStateException("创建意图节点失败：IntentService 未注入");
+                }
+                yield IntentNode.builder()
+                        .config((IntentConfig) config)
+                        .intentService(intentService)
+                        .build();
+            }
+            case RAG_RETRIEVAL -> {
+                if (ragService == null) {
+                    log.warn("RagService 未注入，无法创建 RagRetrievalNode");
+                    throw new IllegalStateException("创建 RAG 检索节点失败：RagService 未注入");
+                }
+                yield RagRetrievalNode.builder()
+                        .config((RagRetrievalConfig) config)
+                        .ragService(ragService)
+                        .build();
+            }
+            case LLM_CALL -> {
+                if (lc4jService == null) {
+                    log.warn("Lc4jService 未注入，无法创建 LlmCallNode");
+                    throw new IllegalStateException("创建 LLM 调用节点失败：Lc4jService 未注入");
+                }
+                yield LlmCallNode.builder()
+                        .config((LlmCallConfig) config)
+                        .lc4jService(lc4jService)
+                        .build();
+            }
+            case TOOL_CALL -> {
+                if (toolService == null) {
+                    log.warn("ToolService 未注入，无法创建 ToolCallNode");
+                    throw new IllegalStateException("创建工具调用节点失败：ToolService 未注入");
+                }
+                yield ToolCallNode.builder()
+                        .config((ToolCallConfig) config)
+                        .toolService(toolService)
+                        .build();
+            }
+            default -> null;
+        };
     }
 
     /**
@@ -146,8 +214,13 @@ public class NodeFactory {
                 config = convertConfig(config, creatorInfo.configClass);
             }
 
-            // 使用对应的创建器创建节点
-            BaseNode node = ((NodeCreatorInfo<NodeConfig>) creatorInfo).nodeCreator.create(config);
+            // 对于需要依赖注入的节点类型，使用特殊方式创建
+            BaseNode node = createNodeWithDependencies(nodeType, config);
+            
+            // 如果返回 null，说明是普通节点，使用创建器创建
+            if (node == null) {
+                node = ((NodeCreatorInfo<NodeConfig>) creatorInfo).nodeCreator.create(config);
+            }
 
             // 确保节点配置已设置
             if (node.getConfig() == null) {
@@ -278,27 +351,7 @@ public class NodeFactory {
             throw new IllegalArgumentException("节点不存在：" + nodeId);
         }
 
-        // 如果节点是 IntentNode 类型，可以注册特定的服务
-        if (node instanceof IntentNode intentNode) {
-            if ("INTENT_RECOGNITION_SERVICE".equals(serviceName)) {
-                intentNode.registerIntentRecognitionService(service);
-            }
-        }
-
         log.info("服务已注册到节点：{} (服务名：{})", nodeId, serviceName);
-    }
-
-    /**
-     * 注册意图节点相关的服务
-     *
-     * @param intentNode  意图节点
-     * @param serviceName 服务名称
-     * @param service     服务实例
-     */
-    private void registerIntentServices(IntentNode intentNode, String serviceName, Object service) {
-        // 这里可以根据 serviceName 注册不同的服务
-        // 例如：intentNode.setIntentRecognitionService((IntentRecognitionService) service);
-        log.debug("为意图节点注册服务：{}", serviceName);
     }
 
     /**

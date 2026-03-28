@@ -19,27 +19,52 @@ import org.springframework.stereotype.Component;
 @Setter
 @Getter
 @Slf4j
-@Component
 public class ShortTermMemoryNode extends BaseNode {
 
     private ShortTermMemoryConfig config;
 
-    public ShortTermMemoryNode() {
-        this.config = new ShortTermMemoryConfig();
+    /**
+     * 私有构造函数，强制使用 Builder 模式
+     * @param config 节点配置
+     */
+    private ShortTermMemoryNode(ShortTermMemoryConfig config) {
+        super(config != null ? config : new ShortTermMemoryConfig());
+        this.config = config != null ? config : new ShortTermMemoryConfig();
         // 设置节点类型为 MEMORY_SHORT_TERM
         this.config.setNodeType(NodeType.MEMORY_SHORT_TERM);
     }
 
-    public ShortTermMemoryNode(ShortTermMemoryConfig config) {
-        super(config);
-        this.config = config;
-        // 设置节点类型为 MEMORY_SHORT_TERM
-        this.config.setNodeType(NodeType.MEMORY_SHORT_TERM);
+    /**
+     * 获取 Builder 实例
+     * @return Builder 实例
+     */
+    public static Builder builder() {
+        return new Builder();
     }
 
-    public void setShortTermMemoryConfig(ShortTermMemoryConfig config) {
-        super.setConfig(config);
-        this.config = config;
+    /**
+     * Builder 类，用于构建 ShortTermMemoryNode 实例
+     */
+    public static class Builder {
+        private ShortTermMemoryConfig config;
+
+        /**
+         * 设置节点配置
+         * @param config 节点配置
+         * @return Builder 实例
+         */
+        public Builder config(ShortTermMemoryConfig config) {
+            this.config = config;
+            return this;
+        }
+
+        /**
+         * 构建并返回 ShortTermMemoryNode 实例
+         * @return ShortTermMemoryNode 实例
+         */
+        public ShortTermMemoryNode build() {
+            return new ShortTermMemoryNode(config);
+        }
     }
 
     @Override
