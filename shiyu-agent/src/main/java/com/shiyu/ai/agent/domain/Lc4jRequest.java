@@ -28,4 +28,9 @@ public class Lc4jRequest {
      * 用户输入的问题
      */
     private String prompt;
+    
+    /**
+     * Chat 类型（SYNC 或 STREAM）
+     */
+    private ChatType chatType;
 }

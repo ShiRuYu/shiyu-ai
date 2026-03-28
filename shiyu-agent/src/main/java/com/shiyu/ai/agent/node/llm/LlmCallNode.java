@@ -1,5 +1,6 @@
 package com.shiyu.ai.agent.node.llm;
 
+import com.shiyu.ai.agent.domain.ChatType;
 import com.shiyu.ai.agent.domain.Lc4jRequest;
 import com.shiyu.ai.agent.domain.Lc4jResponse;
 import com.shiyu.ai.agent.node.BaseNode;
@@ -111,16 +112,18 @@ public class LlmCallNode extends BaseNode {
             String prompt = buildPrompt(input);
             String platform = getPlatform(input);
             String modelName = getModelName(input);
+            ChatType chatType = getChatType(input);
             
             // 2. 构建请求对象
             Lc4jRequest request = Lc4jRequest.builder()
                     .platform(platform)
                     .model(modelName)
                     .prompt(prompt)
+                    .chatType(chatType)
                     .build();
             
-            // 3. 根据配置选择同步或流式调用
-            if (config.isStream()) {
+            // 3. 根据 chatType 选择同步或流式调用
+            if (chatType == ChatType.STREAM) {
                 return executeStream(request);
             } else {
                 return executeSync(request);
@@ -183,6 +186,7 @@ public class LlmCallNode extends BaseNode {
         output.addData("model", request.getModel());
         output.addData("messages", fullContent.toString());
         output.addData("stream", true);
+        output.addData("chatType", ChatType.STREAM.name());
         
         log.info("LLM 流式调用完成，内容长度：{}", fullContent.length());
         return output;
@@ -235,6 +239,30 @@ public class LlmCallNode extends BaseNode {
         }
         
         return result;
+    }
+    
+    /**
+     * 获取 Chat 类型
+     * @param input 节点输入
+     * @return Chat 类型
+     */
+    private ChatType getChatType(NodeInput input) {
+        // 优先使用输入中的 chatType
+        Object chatTypeObj = input.toMap().get("chatType");
+        if (chatTypeObj != null) {
+            if (chatTypeObj instanceof ChatType) {
+                return (ChatType) chatTypeObj;
+            } else if (chatTypeObj instanceof String) {
+                try {
+                    return ChatType.valueOf(((String) chatTypeObj).toUpperCase());
+                } catch (IllegalArgumentException e) {
+                    log.warn("无效的 ChatType: {}, 使用默认值 SYNC", chatTypeObj);
+                }
+            }
+        }
+        
+        // 使用节点配置的 stream 属性作为默认值
+        return config.isStream() ? ChatType.STREAM : ChatType.SYNC;
     }
     
     /**

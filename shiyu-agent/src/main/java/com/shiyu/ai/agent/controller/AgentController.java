@@ -2,11 +2,14 @@ package com.shiyu.ai.agent.controller;
 
 import com.shiyu.ai.agent.domain.AgentDefinition;
 import com.shiyu.ai.agent.domain.AgentVersion;
+import com.shiyu.ai.agent.domain.ChatType;
 import com.shiyu.ai.agent.graph.Graph;
 import com.shiyu.ai.agent.service.AgentService;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+import reactor.core.publisher.Flux;
 
 import java.util.*;
 
@@ -136,11 +139,15 @@ public class AgentController {
         log.info("收到 Agent 执行请求：agentId={}", agentId);
         
         try {
+            // 设置 chatType 为 SYNC
+            input.put("chatType", ChatType.SYNC.name());
+            
             Map<String, Object> result = agentService.execute(agentId, input);
             
             Map<String, Object> response = new HashMap<>();
             response.put("success", true);
             response.put("data", result);
+            response.put("chatType", ChatType.SYNC.name());
             
             return ResponseEntity.ok(response);
             
@@ -150,6 +157,49 @@ public class AgentController {
                     "success", false,
                     "message", "Agent 执行失败：" + e.getMessage()
             ));
+        }
+    }
+
+    /**
+     * 执行 Agent（流式）
+     * @param agentId Agent ID
+     * @param input 输入数据
+     * @return 流式执行结果
+     */
+    @PostMapping(value = "/{agentId}/executeStream", produces = MediaType.TEXT_EVENT_STREAM_VALUE)
+    public Flux<Map<String, Object>> executeStreamAgent(
+            @PathVariable String agentId,
+            @RequestBody Map<String, Object> input) {
+        log.info("收到 Agent 流式执行请求：agentId={}", agentId);
+        
+        try {
+            // 设置 chatType 为 STREAM
+            input.put("chatType", ChatType.STREAM.name());
+            
+            return agentService.executeStream(agentId, input)
+                    .map(result -> {
+                        Map<String, Object> response = new HashMap<>();
+                        response.put("success", true);
+                        response.put("data", result);
+                        response.put("chatType", ChatType.STREAM.name());
+                        return response;
+                    })
+                    .onErrorResume(e -> {
+                        log.error("Agent 流式执行失败：agentId={}", agentId, e);
+                        Map<String, Object> errorResponse = new HashMap<>();
+                        errorResponse.put("success", false);
+                        errorResponse.put("message", "Agent 流式执行失败：" + e.getMessage());
+                        errorResponse.put("chatType", ChatType.STREAM.name());
+                        return Flux.just(errorResponse);
+                    });
+            
+        } catch (Exception e) {
+            log.error("Agent 流式执行失败：agentId={}", agentId, e);
+            Map<String, Object> errorResponse = new HashMap<>();
+            errorResponse.put("success", false);
+            errorResponse.put("message", "Agent 流式执行失败：" + e.getMessage());
+            errorResponse.put("chatType", ChatType.STREAM.name());
+            return Flux.just(errorResponse);
         }
     }
 
