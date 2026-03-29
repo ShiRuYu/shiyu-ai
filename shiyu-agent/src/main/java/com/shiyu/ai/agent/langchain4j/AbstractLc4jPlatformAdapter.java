@@ -89,7 +89,7 @@ public abstract class AbstractLc4jPlatformAdapter implements Lc4jPlatformAdapter
      */
     @Override
     public StreamingChatModel getStreamingChatModel(String modelName) {
-        if (modelName == null || modelName.trim().isEmpty()) {
+        if (modelName == null || modelName.trim().isEmpty() || "default".equals(modelName)) {
             modelName = getDefaultModelName();
         }
         

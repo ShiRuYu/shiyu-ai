@@ -8,6 +8,7 @@ import com.shiyu.ai.agent.node.NodeInput;
 import com.shiyu.ai.agent.node.NodeOutput;
 import com.shiyu.ai.agent.node.NodeType;
 import com.shiyu.ai.agent.service.Lc4jService;
+import dev.langchain4j.data.message.UserMessage;
 import dev.langchain4j.model.chat.StreamingChatModel;
 import lombok.Getter;
 import lombok.Setter;
@@ -15,6 +16,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.bsc.langgraph4j.langchain4j.generators.StreamingChatGenerator;
 import org.bsc.langgraph4j.state.AgentState;
 
+import java.util.List;
 import java.util.Map;
 
 /**
@@ -170,19 +172,17 @@ public class LlmCallNode extends BaseNode {
      * 真正的流式需要在 Graph 执行层面处理
      */
     private NodeOutput executeStream(Lc4jRequest request) {
-        // 收集所有流式块
+        StreamingChatModel streamingChatModel = lc4jService.getStreamingChatModel(request.getPlatform(), request.getModel());
+        
         StreamingChatGenerator<AgentState> generator = StreamingChatGenerator.builder()
                 .mapResult(r -> {
-                    String content = r.toString();
-                    if (content == null || content.isEmpty()) {
-                        content = "";
-                    }
-                    return Map.of("content", content);
+                    String content = r != null && r.aiMessage() != null ? r.aiMessage().text() : "";
+                    return Map.<String, Object>of("content", content);
                 })
                 .build();
 
-        StreamingChatModel streamingChatModel = lc4jService.getStreamingChatModel(request.getPlatform(), request.getModel());
-        streamingChatModel.chat(request.getPrompt(), generator.handler());
+        UserMessage userMessage = UserMessage.from(request.getPrompt());
+        streamingChatModel.chat(List.of(userMessage), generator.handler());
 
         NodeOutput output = new NodeOutput();
         output.setSuccess(true);
@@ -210,15 +210,15 @@ public class LlmCallNode extends BaseNode {
         
         // 否则从输入中获取
         String prompt = input.getParameter("prompt", "");
-        if (prompt == null || prompt.trim().isEmpty()) {
+        if (prompt.trim().isEmpty()) {
             prompt = input.getParameter("query", "");
         }
-        if (prompt == null || prompt.trim().isEmpty()) {
+        if (prompt.trim().isEmpty()) {
             prompt = input.getParameter("userInput", "");
         }
         
         // 如果还是为空，使用默认值
-        if (prompt == null || prompt.trim().isEmpty()) {
+        if (prompt.trim().isEmpty()) {
             prompt = config.getDefaultPrompt();
         }
         
@@ -278,7 +278,7 @@ public class LlmCallNode extends BaseNode {
     private String getPlatform(NodeInput input) {
         // 优先使用输入中的平台配置
         String platform = input.getParameter("platform", "OLLAMA");
-        if (platform != null && !platform.trim().isEmpty()) {
+        if (!platform.trim().isEmpty()) {
             return platform;
         }
         
@@ -298,8 +298,8 @@ public class LlmCallNode extends BaseNode {
      */
     private String getModelName(NodeInput input) {
         // 优先使用输入中的模型配置
-        String model = input.getParameter("model", "");
-        if (model != null && !model.trim().isEmpty()) {
+        String model = input.getParameter("model", "default");
+        if (!model.trim().isEmpty()) {
             return model;
         }
         

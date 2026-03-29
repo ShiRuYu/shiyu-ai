@@ -181,10 +181,11 @@ public class AgentServiceImpl implements AgentService {
                 .filter(output -> output instanceof StreamingOutput<AgentState>)
                 .map(output -> ((StreamingOutput<AgentState>) output).chunk())
                 .filter(StringUtils::isNotEmpty)
-                .doOnNext(chunk -> {
+                .map(chunk -> {
                     log.info("Agent 节点输出：chunk={}", chunk);
+                    return Map.<String, Object>of("content", chunk);
                 })
-                .map(content -> Map.of("content", content));
+                .filter(map -> map.get("content") != null);
 
         log.info("Agent 执行完成：agentId={}, version={}", agentId,
                 agentVersion.getVersionNumber());
