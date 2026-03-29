@@ -277,7 +277,7 @@ public class LlmCallNode extends BaseNode {
      */
     private String getPlatform(NodeInput input) {
         // 优先使用输入中的平台配置
-        String platform = input.getParameter("platform", "SILICON_FLOW");
+        String platform = input.getParameter("platform", "OLLAMA");
         if (platform != null && !platform.trim().isEmpty()) {
             return platform;
         }
