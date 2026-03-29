@@ -9,6 +9,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.bsc.langgraph4j.CompiledGraph;
 import org.bsc.langgraph4j.GraphStateException;
 import org.bsc.langgraph4j.state.AgentState;
+import org.bsc.langgraph4j.state.Channel;
 import reactor.core.publisher.Flux;
 
 import java.util.ArrayList;
@@ -57,6 +58,12 @@ public class Graph {
      */
     @Builder.Default
     private Map<String, ConditionEdge> conditionalEdges = new HashMap<>();
+    
+    /**
+     * 通道列表
+     */
+    @Builder.Default
+    private Map<String, Channel<?>> channels = new HashMap<>();
     
     /**
      * 起始节点 ID
@@ -128,6 +135,18 @@ public class Graph {
                 .nodeMappings(mappings)
                 .build();
         return addConditionalEdge(sourceId, conditionEdge);
+    }
+    
+    /**
+     * 添加通道
+     * @param name 通道名称
+     * @param channel 通道对象
+     * @return 当前 Graph 实例
+     */
+    public Graph addChannel(String name, Channel<?> channel) {
+        this.channels.put(name, channel);
+        log.debug("添加通道：{}", name);
+        return this;
     }
     
     /**
@@ -207,6 +226,43 @@ public class Graph {
         log.info("Graph 配置验证通过：{}", this.name);
     }
 
+    /**
+     * 是否已编译
+     * @return true-已编译，false-未编译
+     */
+    public boolean isCompiled() {
+        return this.compiledGraph != null;
+    }
+    
+    /**
+     * 重新编译 Graph
+     * 用于清除缓存并重新编译
+     * @return CompiledGraph 实例
+     * @throws GraphStateException 编译异常
+     */
+    public CompiledGraph<AgentState> recompile() throws GraphStateException {
+        log.info("重新编译 Graph: {}", this.name);
+            
+        // 清除缓存并重新编译
+        this.compiledGraph = null;
+        return compile();
+    }
+    
+    /**
+     * 验证 Graph 配置
+     * @return true-配置有效，false-配置无效
+     */
+    public boolean validateGraph() {
+        try {
+            validate();
+            log.info("Graph 配置验证通过：{}", this.name);
+            return true;
+        } catch (Exception e) {
+            log.error("Graph 配置验证失败：{}", this.name, e);
+            return false;
+        }
+    }
+
     public CompiledGraph<AgentState> compile() throws GraphStateException {
         log.info("开始编译 Graph: {}", this.name);
         
@@ -261,29 +317,5 @@ public class Graph {
                 .doOnComplete(() -> log.info("流式执行完成"))
                 .doOnError(error -> log.error("流式执行失败", error));
     }
-    
-    /**
-     * 流式执行图（仅返回最终结果，适用于 LLM 流式场景）
-     * @param input 输入数据
-     * @return 最终的流式内容
-     * @throws GraphStateException 图状态异常
-     */
-    public Flux<String> executeLLMStream(Map<String, Object> input) throws GraphStateException {
-        log.info("开始 LLM 流式执行图：{}", this.name);
-        
-        // 先执行图获取最终状态
-        Map<String, Object> result = execute(input);
-        
-        // 从结果中提取 content 字段进行流式输出
-        Object content = result.get("content");
-        if (content instanceof String str) {
-            // 将字符串拆分为字符流
-            return Flux.fromArray(str.split(""))
-                    .doOnSubscribe(subscription -> log.debug("LLM 流式输出开始"))
-                    .doOnComplete(() -> log.info("LLM 流式输出完成"));
-        }
-        
-        return Flux.empty();
-    }
-    
+
 }

@@ -3,7 +3,6 @@ package com.shiyu.ai.agent.service.impl;
 import com.shiyu.ai.agent.domain.AgentDefinition;
 import com.shiyu.ai.agent.domain.AgentVersion;
 import com.shiyu.ai.agent.service.AgentService;
-import com.shiyu.ai.common.core.utils.JSONUtils;
 import com.shiyu.ai.common.core.utils.StringUtils;
 import lombok.extern.slf4j.Slf4j;
 import org.bsc.async.AsyncGenerator;
@@ -18,7 +17,6 @@ import reactor.core.publisher.Flux;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
-import java.util.Objects;
 import java.util.concurrent.ConcurrentHashMap;
 
 /**
@@ -109,7 +107,7 @@ public class AgentServiceImpl implements AgentService {
         // 2. 从版本中拿到 graph 进行编译
         CompiledGraph<AgentState> compiledGraph;
         try {
-            compiledGraph = agentVersion.getOrCompileGraph();
+            compiledGraph = agentVersion.getGraph().compile();
         } catch (GraphStateException e) {
             log.error("Graph 编译失败：agentId={}, version={}", agentId,
                     agentVersion.getVersionNumber(), e);
@@ -169,7 +167,7 @@ public class AgentServiceImpl implements AgentService {
         // 2. 从版本中拿到 graph 进行编译
         CompiledGraph<AgentState> compiledGraph;
         try {
-            compiledGraph = agentVersion.getOrCompileGraph();
+            compiledGraph = agentVersion.getGraph().compile();
         } catch (GraphStateException e) {
             log.error("Graph 编译失败：agentId={}, version={}", agentId,
                     agentVersion.getVersionNumber(), e);

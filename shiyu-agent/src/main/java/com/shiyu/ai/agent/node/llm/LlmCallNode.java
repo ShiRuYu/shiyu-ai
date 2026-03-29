@@ -14,11 +14,8 @@ import lombok.Setter;
 import lombok.extern.slf4j.Slf4j;
 import org.bsc.langgraph4j.langchain4j.generators.StreamingChatGenerator;
 import org.bsc.langgraph4j.state.AgentState;
-import org.bsc.langgraph4j.streaming.StreamingOutput;
-import reactor.core.publisher.Flux;
 
 import java.util.Map;
-import java.util.Objects;
 
 /**
  * LLM 调用节点
@@ -174,24 +171,29 @@ public class LlmCallNode extends BaseNode {
      */
     private NodeOutput executeStream(Lc4jRequest request) {
         // 收集所有流式块
-        StringBuilder fullContent = new StringBuilder();
         StreamingChatGenerator<AgentState> generator = StreamingChatGenerator.builder()
-                .mapResult(r -> Map.of("content", r.aiMessage().text()))
+                .mapResult(r -> {
+                    String content = r.toString();
+                    if (content == null || content.isEmpty()) {
+                        content = "";
+                    }
+                    return Map.of("content", content);
+                })
                 .build();
+
         StreamingChatModel streamingChatModel = lc4jService.getStreamingChatModel(request.getPlatform(), request.getModel());
         streamingChatModel.chat(request.getPrompt(), generator.handler());
 
         NodeOutput output = new NodeOutput();
         output.setSuccess(true);
         output.setMsg("LLM 流式调用成功");
-        output.addData("content", fullContent.toString());
         output.addData("platform", request.getPlatform());
         output.addData("model", request.getModel());
         output.addData("streamingChatGenerator", generator);
         output.addData("stream", true);
         output.addData("chatType", ChatType.STREAM.name());
         
-        log.info("LLM 流式调用完成，内容长度：{}", fullContent.length());
+        log.info("LLM 流式调用完成");
         return output;
     }
     

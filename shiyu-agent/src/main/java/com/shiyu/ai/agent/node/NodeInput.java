@@ -53,6 +53,15 @@ public class NodeInput {
         Object value = parameters.get(key);
         return value != null ? (T) value : defaultValue;
     }
+
+    /**
+     * 获取参数
+     * @param key 键
+     * @return 值
+     */
+    public <T> T getParameter(String key) {
+        return getParameter(key, null);
+    }
     
     /**
      * 添加参数

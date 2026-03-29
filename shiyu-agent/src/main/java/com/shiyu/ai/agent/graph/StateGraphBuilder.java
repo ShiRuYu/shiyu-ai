@@ -75,6 +75,7 @@ public class StateGraphBuilder {
                 .nodes(graph.getNodes())
                 .edges(graph.getEdges())
                 .conditionalEdges(graph.getConditionalEdges())
+                .channels(graph.getChannels())
                 .startNode(graph.getStartNode())
                 .endNode(graph.getEndNode())
                 .build();
@@ -89,7 +90,7 @@ public class StateGraphBuilder {
         log.info("开始构建 StateGraph，节点数：{}", nodes.size());
         
         // 创建 StateGraph 实例
-        StateGraph<AgentState> stateGraph = new StateGraph<>(AgentState::new);
+        StateGraph<AgentState> stateGraph = new StateGraph<>(channels, AgentState::new);
         
         // 添加所有节点
         for (Map.Entry<String, BaseNode> entry : nodes.entrySet()) {
