@@ -1,0 +1,65 @@
+package com.shiyu.ai.agent.auth.service;
+
+import com.shiyu.ai.agent.domain.bo.MenuBO;
+
+import java.util.List;
+
+/**
+ * 菜单服务接口
+ */
+public interface MenuService {
+
+    /**
+     * 获取角色权限树-by token
+     *
+     * @return 权限树
+     */
+    List<MenuBO> getMenuPermissionsTree();
+
+    /**
+     * 获取权限树 - 菜单
+     *
+     * @return 权限树
+     */
+    List<MenuBO> getMenuTree();
+
+    /**
+     * 获取权限树-all
+     *
+     * @return 权限树
+     */
+    List<MenuBO> getAllTree();
+
+    /**
+     * 删除菜单
+     *
+     * @param id 菜单 ID
+     * @return 是否成功
+     */
+    boolean deleteMenu(Long id);
+
+    /**
+     * 新增菜单
+     *
+     * @param menuBO 菜单信息
+     * @return 是否成功
+     */
+    boolean createMenu(MenuBO menuBO);
+
+    /**
+     * 修改菜单
+     *
+     * @param id      菜单 ID
+     * @param menuBO  菜单信息
+     * @return 是否成功
+     */
+    boolean updateMenu(Long id, MenuBO menuBO);
+
+    /**
+     * 获取按钮权限-by parentId
+     *
+     * @param parentId 父菜单 ID
+     * @return 按钮权限列表
+     */
+    List<MenuBO> getButtonsByParentId(Long parentId);
+}

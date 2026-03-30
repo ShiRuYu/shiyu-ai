@@ -1,7 +1,5 @@
-package com.shiyu.ai.agent.domain.bo;
+package com.shiyu.ai.agent.dal.dataobject;
 
-import com.shiyu.ai.agent.dal.dataobject.MenuDO;
-import io.github.linpeilie.annotations.AutoMapper;
 import lombok.Data;
 
 import java.io.Serial;
@@ -9,11 +7,10 @@ import java.io.Serializable;
 import java.util.List;
 
 /**
- * 菜单业务对象
+ * 菜单数据对象（模拟数据）
  */
 @Data
-@AutoMapper(target = MenuDO.class, reverseConvertGenerate = true)
-public class MenuBO implements Serializable {
+public class MenuDO implements Serializable {
 
     @Serial
     private static final long serialVersionUID = 1L;
@@ -101,5 +98,5 @@ public class MenuBO implements Serializable {
     /**
      * 子菜单列表
      */
-    private List<MenuBO> children;
+    private List<MenuDO> children;
 }

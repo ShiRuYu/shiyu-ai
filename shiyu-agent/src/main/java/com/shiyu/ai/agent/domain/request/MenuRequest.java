@@ -1,27 +1,18 @@
-package com.shiyu.ai.agent.domain.bo;
+package com.shiyu.ai.agent.domain.request;
 
-import com.shiyu.ai.agent.dal.dataobject.MenuDO;
-import io.github.linpeilie.annotations.AutoMapper;
 import lombok.Data;
 
 import java.io.Serial;
 import java.io.Serializable;
-import java.util.List;
 
 /**
- * 菜单业务对象
+ * 菜单请求对象
  */
 @Data
-@AutoMapper(target = MenuDO.class, reverseConvertGenerate = true)
-public class MenuBO implements Serializable {
+public class MenuRequest implements Serializable {
 
     @Serial
     private static final long serialVersionUID = 1L;
-
-    /**
-     * 菜单 ID
-     */
-    private Long id;
 
     /**
      * 菜单名称
@@ -69,7 +60,7 @@ public class MenuBO implements Serializable {
     private String layout;
 
     /**
-     * 是否缓存
+     * 是否缓存（1 是 0 否）
      */
     private Boolean keepAlive;
 
@@ -84,12 +75,12 @@ public class MenuBO implements Serializable {
     private String description;
 
     /**
-     * 是否显示
+     * 是否显示（1 是 0 否）
      */
     private Boolean show;
 
     /**
-     * 是否启用
+     * 是否启用（1 是 0 否）
      */
     private Boolean enable;
 
@@ -97,9 +88,4 @@ public class MenuBO implements Serializable {
      * 排序
      */
     private Integer order;
-
-    /**
-     * 子菜单列表
-     */
-    private List<MenuBO> children;
 }

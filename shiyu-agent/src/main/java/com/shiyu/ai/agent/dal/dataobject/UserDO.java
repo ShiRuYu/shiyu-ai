@@ -1,7 +1,5 @@
-package com.shiyu.ai.agent.domain.bo;
+package com.shiyu.ai.agent.dal.dataobject;
 
-import com.shiyu.ai.agent.dal.dataobject.UserDO;
-import io.github.linpeilie.annotations.AutoMapper;
 import lombok.Data;
 
 import java.io.Serial;
@@ -10,11 +8,10 @@ import java.util.Date;
 import java.util.List;
 
 /**
- * 用户信息业务对象
+ * 用户数据对象（模拟数据）
  */
 @Data
-@AutoMapper(target = UserDO.class, reverseConvertGenerate = true)
-public class UserBO implements Serializable {
+public class UserDO implements Serializable {
 
     @Serial
     private static final long serialVersionUID = 1L;
@@ -72,10 +69,10 @@ public class UserBO implements Serializable {
     /**
      * 角色列表
      */
-    private List<RoleBO> roles;
+    private List<RoleDO> roles;
 
     /**
      * 当前角色
      */
-    private RoleBO currentRole;
+    private RoleDO currentRole;
 }

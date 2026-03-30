@@ -1,18 +1,15 @@
-package com.shiyu.ai.agent.domain.bo;
+package com.shiyu.ai.agent.dal.dataobject;
 
-import com.shiyu.ai.agent.dal.dataobject.RoleDO;
-import io.github.linpeilie.annotations.AutoMapper;
 import lombok.Data;
 
 import java.io.Serial;
 import java.io.Serializable;
 
 /**
- * 角色业务对象
+ * 角色数据对象（模拟数据）
  */
 @Data
-@AutoMapper(target = RoleDO.class, reverseConvertGenerate = true)
-public class RoleBO implements Serializable {
+public class RoleDO implements Serializable {
 
     @Serial
     private static final long serialVersionUID = 1L;
