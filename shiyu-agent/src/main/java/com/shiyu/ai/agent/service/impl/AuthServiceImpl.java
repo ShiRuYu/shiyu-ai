@@ -1,6 +1,7 @@
 package com.shiyu.ai.agent.service.impl;
 
 import com.shiyu.ai.agent.controller.response.LoginResponse;
+import com.shiyu.ai.agent.domain.RoleDO;
 import com.shiyu.ai.agent.domain.UserDO;
 import com.shiyu.ai.agent.service.AuthService;
 import com.shiyu.ai.agent.service.CaptchaService;
