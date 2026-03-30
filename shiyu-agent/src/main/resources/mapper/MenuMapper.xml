@@ -4,4 +4,32 @@
         "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
 <mapper namespace="com.shiyu.ai.agent.dal.mapper.MenuMapper">
 
+    <!-- 结果映射 -->
+    <resultMap id="MenuResult" type="com.shiyu.ai.agent.dal.dataobject.MenuDO">
+        <id property="id" column="id"/>
+        <result property="name" column="name"/>
+        <result property="code" column="code"/>
+        <result property="type" column="type"/>
+        <result property="parentId" column="parent_id"/>
+        <result property="path" column="path"/>
+        <result property="redirect" column="redirect"/>
+        <result property="icon" column="icon"/>
+        <result property="component" column="component"/>
+        <result property="layout" column="layout"/>
+        <result property="keepAlive" column="keep_alive"/>
+        <result property="method" column="method"/>
+        <result property="description" column="description"/>
+        <result property="show" column="show"/>
+        <result property="enable" column="enable"/>
+        <result property="order" column="order"/>
+        <!-- 子菜单关联查询 -->
+        <collection property="children" ofType="com.shiyu.ai.agent.dal.dataobject.MenuDO" 
+                    select="com.shiyu.ai.agent.dal.mapper.MenuMapper.selectByParentId" column="id=parent_id"/>
+    </resultMap>
+
+    <!-- 根据父 ID 查询子菜单 -->
+    <select id="selectByParentId" resultMap="MenuResult">
+        SELECT * FROM menu WHERE parent_id = #{parentId}
+    </select>
+
 </mapper>

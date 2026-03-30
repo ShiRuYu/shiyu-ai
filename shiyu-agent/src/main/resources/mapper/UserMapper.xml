@@ -4,4 +4,18 @@
         "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
 <mapper namespace="com.shiyu.ai.agent.dal.mapper.UserMapper">
 
+    <!-- 结果映射 -->
+    <resultMap id="UserResult" type="com.shiyu.ai.agent.dal.dataobject.UserDO">
+        <id property="id" column="id"/>
+        <result property="username" column="username"/>
+        <result property="enable" column="enable"/>
+        <result property="createTime" column="create_time"/>
+        <result property="updateTime" column="update_time"/>
+        <result property="nickName" column="nick_name"/>
+        <result property="gender" column="gender"/>
+        <result property="avatar" column="avatar"/>
+        <result property="address" column="address"/>
+        <result property="email" column="email"/>
+    </resultMap>
+
 </mapper>

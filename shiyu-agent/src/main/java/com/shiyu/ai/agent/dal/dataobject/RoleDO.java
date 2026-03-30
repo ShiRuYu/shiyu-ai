@@ -35,7 +35,7 @@ public class RoleDO implements Serializable {
     private Boolean enable;
 
     /**
-     * 权限 ID 列表
+     * 权限 ID 列表，用逗号分隔
      */
-    private Long[] permissionIds;
+    private String permissionIds;
 }

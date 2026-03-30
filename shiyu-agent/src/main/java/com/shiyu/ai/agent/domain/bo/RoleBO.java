@@ -1,5 +1,6 @@
 package com.shiyu.ai.agent.domain.bo;
 
+import com.shiyu.ai.agent.config.PermissionIdsConverter;
 import com.shiyu.ai.agent.dal.dataobject.RoleDO;
 import io.github.linpeilie.annotations.AutoMapper;
 import lombok.Data;
@@ -11,7 +12,7 @@ import java.io.Serializable;
  * 角色业务对象
  */
 @Data
-@AutoMapper(target = RoleDO.class, reverseConvertGenerate = true)
+@AutoMapper(target = RoleDO.class, reverseConvertGenerate = true, uses = PermissionIdsConverter.class)
 public class RoleBO implements Serializable {
 
     @Serial
