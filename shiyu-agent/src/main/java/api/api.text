@@ -1,0 +1,27 @@
+# isme-nest-serrve
+
+## API Docs
+- 认证 [登录](https://s.apifox.cn/ff4a4d32-c0d1-4caf-b0ee-6abc130f734a/api-134463068.md):
+- 认证 [验证码](https://s.apifox.cn/ff4a4d32-c0d1-4caf-b0ee-6abc130f734a/api-134496720.md):
+- 认证 [切换角色](https://s.apifox.cn/ff4a4d32-c0d1-4caf-b0ee-6abc130f734a/api-134503748.md):
+- 认证 [退出登录](https://s.apifox.cn/ff4a4d32-c0d1-4caf-b0ee-6abc130f734a/api-134536800.md):
+- 用户 [用户详情](https://s.apifox.cn/ff4a4d32-c0d1-4caf-b0ee-6abc130f734a/api-134492431.md):
+- 用户 [用户列表-分页](https://s.apifox.cn/ff4a4d32-c0d1-4caf-b0ee-6abc130f734a/api-134538296.md):
+- 用户 [删除用户](https://s.apifox.cn/ff4a4d32-c0d1-4caf-b0ee-6abc130f734a/api-134539122.md):
+- 用户 [修改用户](https://s.apifox.cn/ff4a4d32-c0d1-4caf-b0ee-6abc130f734a/api-134539762.md):
+- 用户 [重置用户密码](https://s.apifox.cn/ff4a4d32-c0d1-4caf-b0ee-6abc130f734a/api-134539912.md):
+- 用户 [新增用户](https://s.apifox.cn/ff4a4d32-c0d1-4caf-b0ee-6abc130f734a/api-134540670.md):
+- 权限 [角色权限树-by token](https://s.apifox.cn/ff4a4d32-c0d1-4caf-b0ee-6abc130f734a/api-134494114.md):
+- 权限 [权限树-菜单](https://s.apifox.cn/ff4a4d32-c0d1-4caf-b0ee-6abc130f734a/api-134536978.md):
+- 权限 [权限树-all](https://s.apifox.cn/ff4a4d32-c0d1-4caf-b0ee-6abc130f734a/api-134537660.md):
+- 权限 [删除权限](https://s.apifox.cn/ff4a4d32-c0d1-4caf-b0ee-6abc130f734a/api-134540547.md):
+- 权限 [新增权限](https://s.apifox.cn/ff4a4d32-c0d1-4caf-b0ee-6abc130f734a/api-134540636.md):
+- 权限 [修改权限](https://s.apifox.cn/ff4a4d32-c0d1-4caf-b0ee-6abc130f734a/api-134540644.md):
+- 权限 [按钮权限-by parentId](https://s.apifox.cn/ff4a4d32-c0d1-4caf-b0ee-6abc130f734a/api-234699449.md):
+- 角色 [角色列表-分页](https://s.apifox.cn/ff4a4d32-c0d1-4caf-b0ee-6abc130f734a/api-134537884.md):
+- 角色 [角色列表-all](https://s.apifox.cn/ff4a4d32-c0d1-4caf-b0ee-6abc130f734a/api-134538569.md):
+- 角色 [修改角色](https://s.apifox.cn/ff4a4d32-c0d1-4caf-b0ee-6abc130f734a/api-134540076.md):
+- 角色 [删除角色](https://s.apifox.cn/ff4a4d32-c0d1-4caf-b0ee-6abc130f734a/api-134540078.md):
+- 角色 [取消分配角色-批量](https://s.apifox.cn/ff4a4d32-c0d1-4caf-b0ee-6abc130f734a/api-134540301.md):
+- 角色 [分配角色-批量](https://s.apifox.cn/ff4a4d32-c0d1-4caf-b0ee-6abc130f734a/api-134540518.md):
+- 角色 [新增角色](https://s.apifox.cn/ff4a4d32-c0d1-4caf-b0ee-6abc130f734a/api-134539062.md):
