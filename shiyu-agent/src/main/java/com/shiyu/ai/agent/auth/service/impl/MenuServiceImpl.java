@@ -3,11 +3,10 @@ package com.shiyu.ai.agent.auth.service.impl;
 import com.shiyu.ai.agent.auth.service.MenuService;
 import com.shiyu.ai.agent.dal.dataobject.MenuDO;
 import com.shiyu.ai.agent.dal.dataobject.RoleDO;
-import com.shiyu.ai.agent.dal.mapper.MenuMapper;
 import com.shiyu.ai.agent.dal.mapper.RoleMenuMapper;
 import com.shiyu.ai.agent.dal.mapper.UserRoleMapper;
 import com.shiyu.ai.agent.domain.bo.MenuBO;
-import com.shiyu.ai.common.core.utils.MapstructUtils;
+import com.shiyu.ai.agent.repository.MenuRepository;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 
@@ -15,18 +14,18 @@ import java.util.*;
 import java.util.stream.Collectors;
 
 /**
- * 菜单服务实现类（模拟数据）
+ * 菜单服务实现类
  */
 @Slf4j
 @Service
 public class MenuServiceImpl implements MenuService {
 
-    private final MenuMapper menuMapper;
+    private final MenuRepository menuRepository;
     private final UserRoleMapper userRoleMapper;
     private final RoleMenuMapper roleMenuMapper;
 
-    public MenuServiceImpl(MenuMapper menuMapper, UserRoleMapper userRoleMapper, RoleMenuMapper roleMenuMapper) {
-        this.menuMapper = menuMapper;
+    public MenuServiceImpl(MenuRepository menuRepository, UserRoleMapper userRoleMapper, RoleMenuMapper roleMenuMapper) {
+        this.menuRepository = menuRepository;
         this.userRoleMapper = userRoleMapper;
         this.roleMenuMapper = roleMenuMapper;
     }
@@ -41,21 +40,18 @@ public class MenuServiceImpl implements MenuService {
     @Override
     public List<MenuBO> getMenuTree() {
         log.info("获取权限树 - 菜单");
-        // 查询所有菜单（平铺列表）
-        List<MenuDO> allMenus = menuMapper.selectAll();
-        List<MenuDO> menus = filterByType(allMenus, "MENU");
-        List<MenuBO> menuBOs = MapstructUtils.convert(menus, MenuBO.class);
+        // 查询所有菜单类型
+        List<MenuBO> menus = menuRepository.filterByType("MENU");
         
         // 构建树形结构
-        return buildMenuTree(menuBOs, null);
+        return buildMenuTree(menus, null);
     }
 
     @Override
     public List<MenuBO> getAllTree() {
         log.info("获取权限树-all");
-        // 查询所有菜单（平铺列表）
-        List<MenuDO> allMenus = menuMapper.selectAll();
-        List<MenuBO> allMenuBOs = MapstructUtils.convert(allMenus, MenuBO.class);
+        // 查询所有菜单
+        List<MenuBO> allMenuBOs = menuRepository.selectAll();
         
         // 构建树形结构
         return buildMenuTree(allMenuBOs, null);
@@ -89,25 +85,18 @@ public class MenuServiceImpl implements MenuService {
         return tree;
     }
 
-    private List<MenuDO> filterByType(List<MenuDO> menus, String type) {
-        return menus.stream()
-                .filter(menu -> type.equals(menu.getType()))
-                .collect(Collectors.toList());
-    }
+
 
     @Override
     public boolean deleteMenu(Long id) {
         log.info("删除菜单，id: {}", id);
-        return menuMapper.deleteById(id) > 0;
+        return menuRepository.deleteById(id);
     }
 
     @Override
     public boolean createMenu(MenuBO menuBO) {
         log.info("新增菜单");
-        MenuDO newMenu = MapstructUtils.convert(menuBO, MenuDO.class);
-        
-        menuMapper.insert(newMenu);
-        
+        menuRepository.insert(menuBO);
         return true;
     }
 
@@ -115,15 +104,13 @@ public class MenuServiceImpl implements MenuService {
     public boolean updateMenu(Long id, MenuBO menuBO) {
         log.info("修改菜单，id: {}", id);
         
-        MenuDO existingMenu = menuMapper.selectOneById(id);
+        MenuBO existingMenu = menuRepository.selectOneById(id);
         if (existingMenu == null) {
             return false;
         }
         
-        MenuDO updatedMenu = MapstructUtils.convert(menuBO, MenuDO.class);
-        updatedMenu.setId(id);
-        
-        return menuMapper.update(updatedMenu) > 0;
+        menuBO.setId(id);
+        return menuRepository.update(menuBO);
     }
 
     @Override
@@ -170,15 +157,14 @@ public class MenuServiceImpl implements MenuService {
         }
         
         // 3. 查询所有菜单
-        List<MenuDO> allMenus = menuMapper.selectAll();
+        List<MenuBO> allMenus = menuRepository.selectAll();
         
         // 4. 过滤出用户有权限的菜单
-        List<MenuDO> userMenus = allMenus.stream()
+        List<MenuBO> userMenuBOs = allMenus.stream()
                 .filter(menu -> menuIds.contains(menu.getId()))
                 .collect(Collectors.toList());
         
-        // 5. 转换为 BO 并构建树形结构
-        List<MenuBO> userMenuBOs = MapstructUtils.convert(userMenus, MenuBO.class);
+        // 5. 构建树形结构
         return buildMenuTree(userMenuBOs, null);
     }
 }

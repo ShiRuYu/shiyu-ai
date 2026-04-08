@@ -2,6 +2,7 @@ package com.shiyu.ai.agent.auth.controller;
 
 import com.shiyu.ai.agent.domain.request.MenuRequest;
 import com.shiyu.ai.agent.domain.bo.MenuBO;
+import com.shiyu.ai.agent.domain.vo.MenuVO;
 import com.shiyu.ai.agent.domain.vo.RouteMenuVO;
 import com.shiyu.ai.agent.domain.vo.SystemMenuVO;
 import com.shiyu.ai.agent.auth.service.MenuService;
@@ -62,7 +63,7 @@ public class MenuController {
      * GET /system/menu/list
      */
     @GetMapping("/list")
-    public ResponseEntity<Result<List<SystemMenuVO>>> getSystemMenuList(
+    public ResponseEntity<Result<List<MenuVO>>> getSystemMenuList(
             @RequestHeader(value = "Authorization", required = false) String token) {
         log.info("获取系统菜单列表");
         
@@ -70,10 +71,10 @@ public class MenuController {
             // 从服务层获取所有菜单
             List<MenuBO> menuBOs = menuService.getAllTree();
             
-            // 转换为 SystemMenuVO
-            List<SystemMenuVO> systemMenus = convertToSystemMenuVO(menuBOs);
+            // 转换为 MenuVO
+            List<MenuVO> menuVOs = convertToMenuVO(menuBOs);
             
-            return ResponseEntity.ok(Result.success(systemMenus));
+            return ResponseEntity.ok(Result.success(menuVOs));
             
         } catch (Exception e) {
             log.error("获取系统菜单列表失败", e);
@@ -82,36 +83,20 @@ public class MenuController {
     }
     
     /**
-     * 将 MenuBO 列表转换为 SystemMenuVO 列表
+     * 将 MenuBO 列表转换为 MenuVO 列表
      */
-    private List<SystemMenuVO> convertToSystemMenuVO(List<MenuBO> menuBOs) {
+    private List<MenuVO> convertToMenuVO(List<MenuBO> menuBOs) {
         if (menuBOs == null || menuBOs.isEmpty()) {
             return new ArrayList<>();
         }
         
-        List<SystemMenuVO> result = new ArrayList<>();
+        List<MenuVO> result = new ArrayList<>();
         for (MenuBO menuBO : menuBOs) {
-            SystemMenuVO vo = new SystemMenuVO();
-            vo.setId(menuBO.getId());
-            vo.setName(menuBO.getName());
-            vo.setType(menuBO.getType());
-            vo.setIcon(menuBO.getIcon());
-            vo.setPath(menuBO.getPath());
-            vo.setComponent(menuBO.getComponent());
-            vo.setPid(menuBO.getParentId());
-            vo.setStatus(menuBO.getEnable() ? 1 : 0);
-            vo.setAuthCode(menuBO.getCode());
-            
-            // 设置元数据
-            SystemMenuVO.MetaVO meta = new SystemMenuVO.MetaVO();
-            meta.setTitle(menuBO.getName());
-            meta.setIcon(menuBO.getIcon());
-            meta.setOrder(menuBO.getOrder());
-            vo.setMeta(meta);
+            MenuVO vo = MapstructUtils.convert(menuBO, MenuVO.class);
             
             // 递归处理子菜单
             if (menuBO.getChildren() != null && !menuBO.getChildren().isEmpty()) {
-                vo.setChildren(convertToSystemMenuVO(menuBO.getChildren()));
+                vo.setChildren(convertToMenuVO(menuBO.getChildren()));
             }
             
             result.add(vo);

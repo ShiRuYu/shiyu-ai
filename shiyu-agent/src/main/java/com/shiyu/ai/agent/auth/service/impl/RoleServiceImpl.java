@@ -1,52 +1,40 @@
 package com.shiyu.ai.agent.auth.service.impl;
 
-import com.mybatisflex.core.query.QueryWrapper;
 import com.shiyu.ai.agent.auth.service.RoleService;
-import com.shiyu.ai.agent.dal.dataobject.RoleDO;
-import com.shiyu.ai.agent.dal.mapper.RoleMapper;
 import com.shiyu.ai.agent.domain.bo.RoleBO;
 import com.shiyu.ai.agent.domain.vo.RolePageResponse;
 import com.shiyu.ai.agent.domain.vo.RoleVO;
+import com.shiyu.ai.agent.repository.RoleRepository;
 import com.shiyu.ai.common.core.utils.MapstructUtils;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.lang3.tuple.Pair;
 import org.springframework.stereotype.Service;
 
-import java.util.*;
-import java.util.stream.Collectors;
+import java.util.List;
 
 /**
- * 角色服务实现类（模拟数据）
+ * 角色服务实现类
  */
 @Slf4j
 @Service
 public class RoleServiceImpl implements RoleService {
 
-    private final RoleMapper roleMapper;
+    private final RoleRepository roleRepository;
 
-    public RoleServiceImpl(RoleMapper roleMapper) {
-        this.roleMapper = roleMapper;
+    public RoleServiceImpl(RoleRepository roleRepository) {
+        this.roleRepository = roleRepository;
     }
 
     @Override
     public RolePageResponse getRoleList(Integer pageNo, Integer pageSize, String name) {
         log.info("获取角色列表，pageNo: {}, pageSize: {}, name: {}", pageNo, pageSize, name);
         
-        // 构建查询条件
-        QueryWrapper queryWrapper = new QueryWrapper();
-        if (name != null && !name.isEmpty()) {
-            queryWrapper.like("name", name);
-        }
-        long total = roleMapper.selectCountByQuery(queryWrapper);
-        if (pageNo != null && pageSize != null) {
-            queryWrapper.limit((pageNo.longValue() - 1) * pageSize.longValue(), pageSize.longValue());
-        }
-        List<RoleDO> roles = roleMapper.selectListByQuery(queryWrapper);
-
-        List<RoleVO> roleVOs = MapstructUtils.convert(roles, RoleVO.class);
+        Pair<Long, List<RoleBO>> result = roleRepository.selectPage(pageNo, pageSize, name);
+        List<RoleVO> roleVOs = MapstructUtils.convert(result.getRight(), RoleVO.class);
         
         RolePageResponse response = new RolePageResponse();
         response.setPageData(roleVOs);
-        response.setTotal(total);
+        response.setTotal(result.getLeft());
         
         return response;
     }
@@ -54,36 +42,26 @@ public class RoleServiceImpl implements RoleService {
     @Override
     public List<RoleBO> getAllRoles(Boolean enable) {
         log.info("获取所有角色，enable: {}", enable);
-        
-        // 构建查询条件
-        QueryWrapper queryWrapper = new QueryWrapper();
-        if (enable != null) {
-            queryWrapper.eq("enable", enable);
-        }
-        List<RoleDO> allRoles = roleMapper.selectListByQuery(queryWrapper);
-        
-        return MapstructUtils.convert(allRoles, RoleBO.class);
+        return roleRepository.selectAll(enable);
     }
 
     @Override
     public boolean updateRole(Long id, RoleBO roleBO) {
         log.info("修改角色，id: {}", id);
         
-        RoleDO existingRole = roleMapper.selectOneById(id);
+        RoleBO existingRole = roleRepository.selectOneById(id);
         if (existingRole == null) {
             return false;
         }
         
-        RoleDO updatedRole = MapstructUtils.convert(roleBO, RoleDO.class);
-        updatedRole.setId(id);
-        
-        return roleMapper.update(updatedRole) > 0;
+        roleBO.setId(id);
+        return roleRepository.update(roleBO);
     }
 
     @Override
     public boolean deleteRole(Long id) {
         log.info("删除角色，id: {}", id);
-        return roleMapper.deleteById(id) > 0;
+        return roleRepository.deleteById(id);
     }
 
     @Override
@@ -103,10 +81,7 @@ public class RoleServiceImpl implements RoleService {
     @Override
     public boolean createRole(RoleBO roleBO) {
         log.info("新增角色");
-        RoleDO newRole = MapstructUtils.convert(roleBO, RoleDO.class);
-        
-        roleMapper.insert(newRole);
-        
+        roleRepository.insert(roleBO);
         return true;
     }
 }
