@@ -18,9 +18,14 @@ public class RouteMenuVO implements Serializable {
     private static final long serialVersionUID = 1L;
 
     /**
-     * 元数据
+     * 菜单 ID
      */
-    private MetaVO meta;
+    private Long id;
+
+    /**
+     * 父菜单 ID
+     */
+    private Long pid;
 
     /**
      * 菜单名称
@@ -33,19 +38,44 @@ public class RouteMenuVO implements Serializable {
     private String path;
 
     /**
+     * 组件
+     */
+    private String component;
+
+    /**
+     * 类型（menu/catalog/button/embedded/link）
+     */
+    private String type;
+
+    /**
+     * 状态（1 启用，0 禁用）
+     */
+    private Integer status;
+
+    /**
+     * 权限码
+     */
+    private String authCode;
+
+    /**
+     * 图标
+     */
+    private String icon;
+
+    /**
      * 重定向地址
      */
     private String redirect;
 
     /**
+     * 元数据
+     */
+    private MetaVO meta;
+
+    /**
      * 子菜单列表
      */
     private List<RouteMenuVO> children;
-
-    /**
-     * 组件
-     */
-    private String component;
 
     /**
      * 元数据内部类
@@ -57,14 +87,19 @@ public class RouteMenuVO implements Serializable {
         private static final long serialVersionUID = 1L;
 
         /**
-         * 排序
-         */
-        private Integer order;
-
-        /**
          * 标题
          */
         private String title;
+
+        /**
+         * 图标
+         */
+        private String icon;
+
+        /**
+         * 排序
+         */
+        private Integer order;
 
         /**
          * 是否固定标签页（可选）
@@ -72,8 +107,28 @@ public class RouteMenuVO implements Serializable {
         private Boolean affixTab;
 
         /**
-         * 图标（可选）
+         * 徽章内容（可选）
          */
-        private String icon;
+        private String badge;
+
+        /**
+         * 徽章类型（可选）
+         */
+        private String badgeType;
+
+        /**
+         * 徽章样式（可选）
+         */
+        private String badgeVariants;
+
+        /**
+         * iframe 地址（可选）
+         */
+        private String iframeSrc;
+
+        /**
+         * 外链地址（可选）
+         */
+        private String link;
     }
 }

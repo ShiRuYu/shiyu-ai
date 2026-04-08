@@ -115,15 +115,33 @@ public class MenuController {
         
         List<RouteMenuVO> result = new ArrayList<>();
         for (MenuBO menuBO : menuBOs) {
-            // 只转换菜单类型，不转换按钮
-            if ("BUTTON".equals(menuBO.getType())) {
-                continue;
-            }
-            
             RouteMenuVO vo = new RouteMenuVO();
+            vo.setId(menuBO.getId());
+            vo.setPid(menuBO.getParentId());
             vo.setName(menuBO.getCode()); // 使用 code 作为路由名称
             vo.setPath(menuBO.getPath());
             vo.setComponent(menuBO.getComponent());
+            
+            // 转换类型：MENU -> menu, CATALOG -> catalog, BUTTON -> button
+            String type = menuBO.getType();
+            if ("MENU".equals(type)) {
+                vo.setType("menu");
+            } else if ("CATALOG".equals(type)) {
+                vo.setType("catalog");
+            } else if ("BUTTON".equals(type)) {
+                vo.setType("button");
+            } else {
+                vo.setType(type != null ? type.toLowerCase() : "menu");
+            }
+            
+            // 设置状态：enable=true -> status=1, enable=false -> status=0
+            vo.setStatus(Boolean.TRUE.equals(menuBO.getEnable()) ? 1 : 0);
+            
+            // 设置权限码（使用 code 字段）
+            vo.setAuthCode(menuBO.getCode());
+            
+            // 设置图标
+            vo.setIcon(menuBO.getIcon());
             
             // 设置元数据
             RouteMenuVO.MetaVO meta = new RouteMenuVO.MetaVO();
