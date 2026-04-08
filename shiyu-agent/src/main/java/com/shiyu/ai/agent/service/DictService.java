@@ -13,11 +13,11 @@ public interface DictService {
     /**
      * 分页查询字典列表
      *
-     * @param pageNumber 页码
+     * @param pageNo 页码
      * @param pageSize   每页数量
      * @return 字典列表
      */
-    Pair<Long, List<DictBO>> getAll(Number pageNumber, Number pageSize);
+    Pair<Long, List<DictBO>> getAll(Number pageNo, Number pageSize);
 
     /**
      * 根据ID查询字典

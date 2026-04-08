@@ -23,14 +23,14 @@ public class DictRepository {
     /**
      * 分页查询字典列表
      */
-    public Pair<Long, List<DictBO>> getAll(Number pageNumber, Number pageSize) {
+    public Pair<Long, List<DictBO>> getAll(Number pageNo, Number pageSize) {
         QueryWrapper queryWrapper = new QueryWrapper();
         queryWrapper.eq(DictDO::getDelFlag, "0");
         queryWrapper.orderBy(DictDO::getDictType, true);
         queryWrapper.orderBy(DictDO::getDictSort, true);
 
-        if (pageNumber != null && pageSize != null) {
-            queryWrapper.limit((pageNumber.longValue() - 1) * pageSize.longValue(), pageSize.longValue());
+        if (pageNo != null && pageSize != null) {
+            queryWrapper.limit((pageNo.longValue() - 1) * pageSize.longValue(), pageSize.longValue());
         }
         
         List<DictDO> dictList = dictMapper.selectListByQuery(queryWrapper);

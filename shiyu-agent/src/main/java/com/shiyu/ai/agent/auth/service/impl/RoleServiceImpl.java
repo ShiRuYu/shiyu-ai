@@ -36,26 +36,17 @@ public class RoleServiceImpl implements RoleService {
         if (name != null && !name.isEmpty()) {
             queryWrapper.like("name", name);
         }
-        List<RoleDO> allRoles = roleMapper.selectListByQuery(queryWrapper);
-        
-        // 分页
-        int total = allRoles.size();
-        int fromIndex = (pageNo - 1) * pageSize;
-        int toIndex = Math.min(fromIndex + pageSize, total);
-        
-        if (fromIndex >= total) {
-            RolePageResponse response = new RolePageResponse();
-            response.setPageData(new ArrayList<>());
-            response.setTotal(0L);
-            return response;
+        long total = roleMapper.selectCountByQuery(queryWrapper);
+        if (pageNo != null && pageSize != null) {
+            queryWrapper.limit((pageNo.longValue() - 1) * pageSize.longValue(), pageSize.longValue());
         }
-        
-        List<RoleDO> pageData = allRoles.subList(fromIndex, toIndex);
-        List<RoleVO> roleVOs = MapstructUtils.convert(pageData, RoleVO.class);
+        List<RoleDO> roles = roleMapper.selectListByQuery(queryWrapper);
+
+        List<RoleVO> roleVOs = MapstructUtils.convert(roles, RoleVO.class);
         
         RolePageResponse response = new RolePageResponse();
         response.setPageData(roleVOs);
-        response.setTotal((long) total);
+        response.setTotal(total);
         
         return response;
     }

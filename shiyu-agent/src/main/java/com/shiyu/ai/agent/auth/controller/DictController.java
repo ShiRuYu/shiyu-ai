@@ -31,15 +31,15 @@ public class DictController {
      */
     @GetMapping("/page")
     public ResponseEntity<Map<String, Object>> getDictList(
-            @RequestParam(required = false) Integer pageNumber,
+            @RequestParam(required = false) Integer pageNo,
             @RequestParam(required = false) Integer pageSize) {
-        log.info("获取字典列表，pageNumber: {}, pageSize: {}", pageNumber, pageSize);
+        log.info("获取字典列表，pageNo: {}, pageSize: {}", pageNo, pageSize);
         
         // 设置默认值
-        if (pageNumber == null) pageNumber = 1;
+        if (pageNo == null) pageNo = 1;
         if (pageSize == null) pageSize = 10;
         
-        Pair<Long, List<DictBO>> result = dictService.getAll(pageNumber, pageSize);
+        Pair<Long, List<DictBO>> result = dictService.getAll(pageNo, pageSize);
         
         Map<String, Object> response = new HashMap<>();
         response.put("code", 0);

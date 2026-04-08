@@ -61,27 +61,18 @@ public class UserServiceImpl implements UserService {
         if (username != null && !username.isEmpty()) {
             queryWrapper.like("username", username);
         }
-        // 构建查询条件
-        List<UserDO> allUsers = userMapper.selectListByQuery(queryWrapper);
-        
-        // 分页
-        int total = allUsers.size();
-        int fromIndex = (pageNo - 1) * pageSize;
-        int toIndex = Math.min(fromIndex + pageSize, total);
-        
-        if (fromIndex >= total) {
-            UserPageResponse response = new UserPageResponse();
-            response.setPageData(new ArrayList<>());
-            response.setTotal(0L);
-            return response;
+        long total = userMapper.selectCountByQuery(queryWrapper);
+        if (pageNo != null && pageSize != null) {
+            queryWrapper.limit((pageNo.longValue() - 1) * pageSize.longValue(), pageSize.longValue());
         }
-        
-        List<UserDO> pageData = allUsers.subList(fromIndex, toIndex);
-        List<UserVO> userVOs = MapstructUtils.convert(pageData, UserVO.class);
+        // 构建查询条件
+        List<UserDO> users = userMapper.selectListByQuery(queryWrapper);
+
+        List<UserVO> userVOs = MapstructUtils.convert(users, UserVO.class);
         
         UserPageResponse response = new UserPageResponse();
         response.setPageData(userVOs);
-        response.setTotal((long) total);
+        response.setTotal(total);
         
         return response;
     }

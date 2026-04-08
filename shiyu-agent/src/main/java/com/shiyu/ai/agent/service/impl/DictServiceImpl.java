@@ -19,8 +19,8 @@ public class DictServiceImpl implements DictService {
     private DictRepository dictRepository;
 
     @Override
-    public Pair<Long, List<DictBO>> getAll(Number pageNumber, Number pageSize) {
-        return dictRepository.getAll(pageNumber, pageSize);
+    public Pair<Long, List<DictBO>> getAll(Number pageNo, Number pageSize) {
+        return dictRepository.getAll(pageNo, pageSize);
     }
 
     @Override
