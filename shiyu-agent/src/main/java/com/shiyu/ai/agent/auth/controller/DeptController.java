@@ -1,5 +1,6 @@
 package com.shiyu.ai.agent.auth.controller;
 
+import com.shiyu.ai.common.core.api.Result;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -21,28 +22,18 @@ public class DeptController {
      * 获取部门列表
      */
     @GetMapping("/list")
-    public ResponseEntity<Map<String, Object>> getDeptList(
-            @RequestParam(required = false) Integer pageNo,
-            @RequestParam(required = false) Integer pageSize,
+    public ResponseEntity<Result<Map<String, Object>>> getDeptList(
             @RequestParam(required = false) String name) {
-        log.info("获取部门列表，pageNo: {}, pageSize: {}, name: {}", pageNo, pageSize, name);
+        log.info("获取部门，name: {}", name);
         
         // TODO: 实现真实的部门查询逻辑
         // 目前返回空列表
         List<Map<String, Object>> depts = new ArrayList<>();
         
-        Map<String, Object> response = new HashMap<>();
-        response.put("code", 0);
-        response.put("message", "OK");
-        
         Map<String, Object> data = new HashMap<>();
         data.put("items", depts);
         data.put("total", 0);
-        data.put("pageNo", pageNo != null ? pageNo : 1);
-        data.put("pageSize", pageSize != null ? pageSize : 10);
         
-        response.put("data", data);
-        
-        return ResponseEntity.ok(response);
+        return ResponseEntity.ok(Result.success(data));
     }
 }

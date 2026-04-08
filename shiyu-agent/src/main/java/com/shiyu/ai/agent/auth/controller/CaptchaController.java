@@ -2,6 +2,7 @@ package com.shiyu.ai.agent.auth.controller;
 
 import com.shiyu.ai.agent.domain.vo.CaptchaVO;
 import com.shiyu.ai.agent.auth.service.CaptchaService;
+import com.shiyu.ai.common.core.api.Result;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -26,7 +27,7 @@ public class CaptchaController {
      * @return SVG 格式的验证码图片
      */
     @GetMapping("/captcha")
-    public ResponseEntity<CaptchaVO> getCaptcha() {
+    public ResponseEntity<Result<CaptchaVO>> getCaptcha() {
         log.info("收到验证码请求");
         
         try {
@@ -34,11 +35,11 @@ public class CaptchaController {
             CaptchaVO captchaVO = captchaService.generateCaptcha();
             
             // 返回结果
-            return ResponseEntity.ok(captchaVO);
+            return ResponseEntity.ok(Result.success(captchaVO));
             
         } catch (Exception e) {
             log.error("生成验证码失败", e);
-            return ResponseEntity.badRequest().build();
+            return ResponseEntity.badRequest().body(Result.fail("生成验证码失败"));
         }
     }
     
@@ -48,7 +49,7 @@ public class CaptchaController {
      * @return 验证结果
      */
     @PostMapping("/captcha/validate")
-    public ResponseEntity<ValidateCaptchaResponse> validateCaptcha(@RequestBody ValidateCaptchaRequest request) {
+    public ResponseEntity<Result<ValidateCaptchaResponse>> validateCaptcha(@RequestBody ValidateCaptchaRequest request) {
         log.info("收到验证码验证请求：key={}", request.getKey());
         
         try {
@@ -58,15 +59,15 @@ public class CaptchaController {
             ValidateCaptchaResponse response;
             if (valid) {
                 response = new ValidateCaptchaResponse(true, "验证码正确");
+                return ResponseEntity.ok(Result.success(response));
             } else {
                 response = new ValidateCaptchaResponse(false, "验证码错误");
+                return ResponseEntity.ok(Result.success(response));
             }
-            
-            return ResponseEntity.ok(response);
             
         } catch (Exception e) {
             log.error("验证验证码失败", e);
-            return ResponseEntity.badRequest().body(new ValidateCaptchaResponse(false, "验证验证码失败：" + e.getMessage()));
+            return ResponseEntity.badRequest().body(Result.fail("验证验证码失败：" + e.getMessage()));
         }
     }
     

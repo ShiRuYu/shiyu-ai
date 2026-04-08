@@ -78,7 +78,7 @@ public class UserController {
      * 用户详情
      */
     @GetMapping("/detail")
-    public ResponseEntity<Map<String, Object>> getUserDetail() {
+    public ResponseEntity<Result<UserVO>> getUserDetail() {
         log.info("获取用户详情");
         
         // TODO: 从 token 中解析用户 ID，这里暂时使用固定值
@@ -86,28 +86,19 @@ public class UserController {
         UserBO userBO = userService.getUserDetail(userId);
         
         if (userBO == null) {
-            return ResponseEntity.badRequest().body(Map.of(
-                    "code", 1,
-                    "message", "用户不存在",
-                    "data", null
-            ));
+            return ResponseEntity.badRequest().body(Result.fail("用户不存在"));
         }
         
         UserVO userVO = MapstructUtils.convert(userBO, UserVO.class);
         
-        Map<String, Object> response = new HashMap<>();
-        response.put("code", 0);
-        response.put("message", "OK");
-        response.put("data", userVO);
-        
-        return ResponseEntity.ok(response);
+        return ResponseEntity.ok(Result.success(userVO));
     }
 
     /**
      * 用户列表 - 分页
      */
     @GetMapping("")
-    public ResponseEntity<Map<String, Object>> getUserList(
+    public ResponseEntity<Result<UserPageResponse>> getUserList(
             @RequestParam(required = false) String username,
             @RequestParam Integer pageNo,
             @RequestParam Integer pageSize) {
@@ -115,33 +106,22 @@ public class UserController {
         
         UserPageResponse pageResponse = userService.getUserList(username, pageNo, pageSize);
         
-        Map<String, Object> response = new HashMap<>();
-        response.put("code", 0);
-        response.put("message", "OK");
-        response.put("data", pageResponse);
-        
-        return ResponseEntity.ok(response);
+        return ResponseEntity.ok(Result.success(pageResponse));
     }
 
     /**
      * 删除用户
      */
     @DeleteMapping("/{userId}")
-    public ResponseEntity<Map<String, Object>> deleteUser(@PathVariable Long userId) {
+    public ResponseEntity<Result<Void>> deleteUser(@PathVariable Long userId) {
         log.info("删除用户，userId: {}", userId);
         
         boolean success = userService.deleteUser(userId);
         
         if (success) {
-            Map<String, Object> response = new HashMap<>();
-            response.put("code", 0);
-            response.put("message", "删除成功");
-            return ResponseEntity.ok(response);
+            return ResponseEntity.ok(Result.success());
         } else {
-            return ResponseEntity.badRequest().body(Map.of(
-                    "code", 1,
-                    "message", "用户不存在"
-            ));
+            return ResponseEntity.badRequest().body(Result.fail("用户不存在"));
         }
     }
 
@@ -149,7 +129,7 @@ public class UserController {
      * 修改用户
      */
     @PatchMapping("/{userId}")
-    public ResponseEntity<Map<String, Object>> updateUser(
+    public ResponseEntity<Result<Void>> updateUser(
             @PathVariable Long userId,
             @RequestBody UserRequest request) {
         log.info("修改用户，userId: {}", userId);
@@ -158,15 +138,9 @@ public class UserController {
         boolean success = userService.updateUser(userId, userBO);
         
         if (success) {
-            Map<String, Object> response = new HashMap<>();
-            response.put("code", 0);
-            response.put("message", "修改成功");
-            return ResponseEntity.ok(response);
+            return ResponseEntity.ok(Result.success());
         } else {
-            return ResponseEntity.badRequest().body(Map.of(
-                    "code", 1,
-                    "message", "用户不存在"
-            ));
+            return ResponseEntity.badRequest().body(Result.fail("用户不存在"));
         }
     }
 
@@ -174,7 +148,7 @@ public class UserController {
      * 重置用户密码
      */
     @PatchMapping("/{userId}/password/reset")
-    public ResponseEntity<Map<String, Object>> resetPassword(
+    public ResponseEntity<Result<Void>> resetPassword(
             @PathVariable Long userId,
             @RequestBody Map<String, String> passwordMap) {
         log.info("重置用户密码，userId: {}", userId);
@@ -183,15 +157,9 @@ public class UserController {
         boolean success = userService.resetUserPassword(userId, password);
         
         if (success) {
-            Map<String, Object> response = new HashMap<>();
-            response.put("code", 0);
-            response.put("message", "重置成功");
-            return ResponseEntity.ok(response);
+            return ResponseEntity.ok(Result.success());
         } else {
-            return ResponseEntity.badRequest().body(Map.of(
-                    "code", 1,
-                    "message", "用户不存在"
-            ));
+            return ResponseEntity.badRequest().body(Result.fail("用户不存在"));
         }
     }
 
@@ -199,17 +167,12 @@ public class UserController {
      * 新增用户
      */
     @PostMapping("")
-    public ResponseEntity<Map<String, Object>> createUser(@RequestBody UserRequest request) {
+    public ResponseEntity<Result<Long>> createUser(@RequestBody UserRequest request) {
         log.info("新增用户");
         
         UserBO userBO = MapstructUtils.convert(request, UserBO.class);
         Long userId = userService.createUser(userBO);
         
-        Map<String, Object> response = new HashMap<>();
-        response.put("code", 0);
-        response.put("message", "新增成功");
-        response.put("data", userId);
-        
-        return ResponseEntity.ok(response);
+        return ResponseEntity.ok(Result.success(userId));
     }
 }

@@ -33,7 +33,7 @@ public class RoleServiceImpl implements RoleService {
         List<RoleVO> roleVOs = MapstructUtils.convert(result.getRight(), RoleVO.class);
         
         RolePageResponse response = new RolePageResponse();
-        response.setPageData(roleVOs);
+        response.setItems(roleVOs);
         response.setTotal(result.getLeft());
         
         return response;

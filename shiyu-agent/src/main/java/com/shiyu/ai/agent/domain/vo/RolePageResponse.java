@@ -18,7 +18,7 @@ public class RolePageResponse implements Serializable {
     /**
      * 角色列表
      */
-    private List<RoleVO> pageData;
+    private List<RoleVO> items;
 
     /**
      * 总数
