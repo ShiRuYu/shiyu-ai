@@ -19,7 +19,7 @@ import java.util.Map;
  */
 @Slf4j
 @RestController
-@RequestMapping("/role")
+@RequestMapping("/system/role")
 public class RoleController {
 
     private final RoleService roleService;
@@ -31,7 +31,7 @@ public class RoleController {
     /**
      * 角色列表 - 分页
      */
-    @GetMapping("/page")
+    @GetMapping("/list")
     public ResponseEntity<Map<String, Object>> getRoleList(
             @RequestParam(required = false) Integer pageNo,
             @RequestParam(required = false) Integer pageSize,

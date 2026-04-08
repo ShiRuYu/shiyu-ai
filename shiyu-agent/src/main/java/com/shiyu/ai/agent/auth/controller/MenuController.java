@@ -21,7 +21,7 @@ import java.util.Map;
  */
 @Slf4j
 @RestController
-@RequestMapping("/menu")
+@RequestMapping("/system/menu")
 public class MenuController {
 
     private final MenuService menuService;
@@ -61,7 +61,7 @@ public class MenuController {
      * 获取系统菜单列表
      * GET /system/menu/list
      */
-    @GetMapping("/system/menu/list")
+    @GetMapping("/list")
     public ResponseEntity<Result<List<SystemMenuVO>>> getSystemMenuList(
             @RequestHeader(value = "Authorization", required = false) String token) {
         log.info("获取系统菜单列表");
