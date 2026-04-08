@@ -1,14 +1,14 @@
 package com.shiyu.ai.agent.auth.controller;
 
 import com.shiyu.ai.agent.domain.request.LoginRequest;
-import com.shiyu.ai.agent.domain.vo.LoginVO;
+import com.shiyu.ai.agent.domain.vo.LoginResponseVO;
 import com.shiyu.ai.agent.auth.service.AuthService;
+import com.shiyu.ai.common.core.api.Result;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
-import java.util.HashMap;
-import java.util.Map;
+import java.util.List;
 
 /**
  * 认证 Controller
@@ -27,77 +27,88 @@ public class AuthController {
     
     /**
      * 用户登录
-     * @param request 登录请求（包含用户名、密码、验证码）
-     * @return 登录响应（包含访问令牌）
+     * POST /auth/login
+     * @param request 登录请求（包含用户名、密码）
+     * @return 登录响应（包含用户信息和访问令牌）
      */
     @PostMapping("/login")
-    public ResponseEntity<LoginVO> login(@RequestBody LoginRequest request) {
+    public ResponseEntity<Result<LoginResponseVO>> login(@RequestBody LoginRequest request) {
         log.info("收到登录请求：username={}", request.getUsername());
         
         try {
-            // 调用登录服务
-            LoginVO response = authService.login(
-                    request.getUsername(),
-                    request.getPassword(),
-                    request.getCaptcha(),
-                    request.getCaptchaKey()
-            );
+            // 验证参数
+            if (request.getUsername() == null || request.getUsername().trim().isEmpty() ||
+                request.getPassword() == null || request.getPassword().trim().isEmpty()) {
+                return ResponseEntity.badRequest().body(Result.fail("Username and password are required"));
+            }
             
-            return ResponseEntity.ok(response);
+            // 调用登录服务
+            LoginResponseVO response = authService.login(request.getUsername(), request.getPassword());
+            
+            if (response == null) {
+                return ResponseEntity.status(403).body(Result.fail("Username or password is incorrect."));
+            }
+            
+            return ResponseEntity.ok(Result.success(response));
             
         } catch (Exception e) {
             log.error("登录失败：username={}", request.getUsername(), e);
-            
-            // 构建错误响应
-            LoginVO errorResponse = new LoginVO();
-            errorResponse.setCode(1);
-            errorResponse.setMessage("登录失败：" + e.getMessage());
-            errorResponse.setData(null);
-            errorResponse.setOriginUrl("/auth/login");
-            
-            return ResponseEntity.badRequest().body(errorResponse);
+            return ResponseEntity.badRequest().body(Result.fail("登录失败：" + e.getMessage()));
         }
     }
     
     /**
-     * 切换当前角色
-     * @param roleCode 角色编码
+     * 获取用户权限码
+     * GET /auth/codes
      * @param token 访问令牌（从 Header 中获取）
-     * @return 登录响应（包含新的访问令牌）
+     * @return 权限码列表
      */
-    @PostMapping("/current-role/switch/{roleCode}")
-    public ResponseEntity<LoginVO> switchCurrentRole(
-            @PathVariable String roleCode,
+    @GetMapping("/codes")
+    public ResponseEntity<Result<List<String>>> getAuthCodes(
             @RequestHeader(value = "Authorization", required = false) String token) {
-        log.info("收到切换角色请求：roleCode={}", roleCode);
+        log.info("收到获取权限码请求");
         
         try {
-            // 从 token 中提取用户名（简化处理，实际项目中应该解析 JWT）
             String username = extractUsernameFromToken(token);
             if (username == null || username.trim().isEmpty()) {
-                LoginVO errorResponse = new LoginVO();
-                errorResponse.setCode(1);
-                errorResponse.setMessage("未认证或 token 无效");
-                errorResponse.setData(null);
-                errorResponse.setOriginUrl("/auth/current-role/switch/" + roleCode);
-                return ResponseEntity.badRequest().body(errorResponse);
+                return ResponseEntity.status(401).body(Result.fail("未认证或 token 无效"));
             }
             
-            // 调用切换角色服务
-            LoginVO response = authService.switchCurrentRole(username, roleCode);
-            
-            return ResponseEntity.ok(response);
+            List<String> codes = authService.getAuthCodes(username);
+            return ResponseEntity.ok(Result.success(codes));
             
         } catch (Exception e) {
-            log.error("切换角色失败：roleCode={}", roleCode, e);
+            log.error("获取权限码失败", e);
+            return ResponseEntity.status(401).body(Result.fail("获取权限码失败：" + e.getMessage()));
+        }
+    }
+    
+    /**
+     * 刷新访问令牌
+     * POST /auth/refresh
+     * @param refreshToken 刷新令牌（从 Cookie 中获取）
+     * @return 新的访问令牌
+     */
+    @PostMapping("/refresh")
+    public ResponseEntity<Result<String>> refreshToken(
+            @CookieValue(value = "refreshToken", required = false) String refreshToken) {
+        log.info("收到刷新令牌请求");
+        
+        try {
+            if (refreshToken == null || refreshToken.trim().isEmpty()) {
+                return ResponseEntity.status(403).body(Result.fail("Refresh token is required"));
+            }
             
-            LoginVO errorResponse = new LoginVO();
-            errorResponse.setCode(1);
-            errorResponse.setMessage("切换角色失败：" + e.getMessage());
-            errorResponse.setData(null);
-            errorResponse.setOriginUrl("/auth/current-role/switch/" + roleCode);
+            String newAccessToken = authService.refreshToken(refreshToken);
+            if (newAccessToken == null) {
+                return ResponseEntity.status(403).body(Result.fail("Invalid refresh token"));
+            }
             
-            return ResponseEntity.badRequest().body(errorResponse);
+            return ResponseEntity.ok(Result.success(newAccessToken));
+            
+        } catch (Exception e) {
+            log.error("刷新令牌失败", e);
+            return ResponseEntity.status(403).body(Result.fail("刷新令牌失败：" + e.getMessage()));
         }
     }
     
@@ -128,40 +139,25 @@ public class AuthController {
     
     /**
      * 用户登出
-     * @param token 访问令牌（从 Header 中获取）
+     * POST /auth/logout
+     * @param refreshToken 刷新令牌（从 Cookie 中获取）
      * @return 登出结果
      */
     @PostMapping("/logout")
-    public ResponseEntity<Map<String, Object>> logout(
-            @RequestHeader(value = "Authorization", required = false) String token) {
+    public ResponseEntity<Result<String>> logout(
+            @CookieValue(value = "refreshToken", required = false) String refreshToken) {
         log.info("收到登出请求");
         
         try {
-            // 移除 Bearer 前缀
-            String accessToken = token;
-            if (token != null && token.startsWith("Bearer ")) {
-                accessToken = token.substring(7);
+            if (refreshToken != null && !refreshToken.trim().isEmpty()) {
+                authService.logout(refreshToken);
             }
             
-            // 调用登出服务
-            if (accessToken != null && !accessToken.trim().isEmpty()) {
-                authService.logout(accessToken);
-            }
-            
-            Map<String, Object> response = new HashMap<>();
-            response.put("code", 0);
-            response.put("message", "登出成功");
-            
-            return ResponseEntity.ok(response);
+            return ResponseEntity.ok(Result.success(""));
             
         } catch (Exception e) {
             log.error("登出失败", e);
-            
-            Map<String, Object> response = new HashMap<>();
-            response.put("code", 1);
-            response.put("message", "登出失败：" + e.getMessage());
-            
-            return ResponseEntity.badRequest().body(response);
+            return ResponseEntity.badRequest().body(Result.fail("登出失败：" + e.getMessage()));
         }
     }
 }

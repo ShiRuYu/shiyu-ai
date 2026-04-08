@@ -1,0 +1,29 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.shiyu.ai.agent.dal.mapper.AuthCodeMapper">
+
+    <!-- 根据角色 ID 查询权限码列表 -->
+    <select id="selectCodesByRoleId" resultType="java.lang.String">
+        SELECT code
+        FROM auth_code
+        WHERE role_id = #{roleId}
+          AND enable = 1
+          AND del_flag = 0
+        ORDER BY id
+    </select>
+
+    <!-- 根据用户名查询权限码列表 -->
+    <select id="selectCodesByUsername" resultType="java.lang.String">
+        SELECT DISTINCT ac.code
+        FROM auth_code ac
+        INNER JOIN user_role ur ON ac.role_id = ur.role_id
+        INNER JOIN `user` u ON ur.user_id = u.id
+        WHERE u.username = #{username}
+          AND ac.enable = 1
+          AND ac.del_flag = 0
+          AND u.enable = 1
+          AND u.del_flag = 0
+        ORDER BY ac.id
+    </select>
+
+</mapper>

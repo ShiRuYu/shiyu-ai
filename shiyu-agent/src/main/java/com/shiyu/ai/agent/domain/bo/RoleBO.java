@@ -1,18 +1,18 @@
 package com.shiyu.ai.agent.domain.bo;
 
-import com.shiyu.ai.agent.config.PermissionIdsConverter;
 import com.shiyu.ai.agent.dal.dataobject.RoleDO;
 import io.github.linpeilie.annotations.AutoMapper;
 import lombok.Data;
 
 import java.io.Serial;
 import java.io.Serializable;
+import java.util.Date;
 
 /**
  * 角色业务对象
  */
 @Data
-@AutoMapper(target = RoleDO.class, reverseConvertGenerate = true, uses = PermissionIdsConverter.class)
+@AutoMapper(target = RoleDO.class, reverseConvertGenerate = true)
 public class RoleBO implements Serializable {
 
     @Serial
@@ -39,7 +39,17 @@ public class RoleBO implements Serializable {
     private Boolean enable;
 
     /**
-     * 权限 ID 列表
+     * 删除标志（0：正常 1：已删除）
      */
-    private Long[] permissionIds;
+    private Integer delFlag;
+
+    /**
+     * 创建时间
+     */
+    private Date createTime;
+
+    /**
+     * 更新时间
+     */
+    private Date updateTime;
 }

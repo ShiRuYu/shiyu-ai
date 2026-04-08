@@ -9,7 +9,7 @@ import org.apache.ibatis.annotations.Mapper;
  * 菜单表 数据层
  */
 @Mapper
-public interface MenuMapper extends BaseMapperFlex<MenuDO, MenuBO> {
+public interface MenuMapper extends BaseMapperFlex<MenuDO> {
 
 
 }

@@ -10,7 +10,7 @@ import org.apache.ibatis.annotations.Mapper;
  *
  */
 @Mapper
-public interface SysUserMapper extends BaseMapperFlex<SysUserDO, SysUserBO> {
+public interface SysUserMapper extends BaseMapperFlex<SysUserDO> {
 
 
 }

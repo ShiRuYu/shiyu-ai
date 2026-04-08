@@ -62,4 +62,12 @@ public interface MenuService {
      * @return 按钮权限列表
      */
     List<MenuBO> getButtonsByParentId(Long parentId);
+    
+    /**
+     * 根据用户 ID 获取菜单树
+     *
+     * @param userId 用户 ID
+     * @return 菜单树
+     */
+    List<MenuBO> getMenuTreeByUserId(Long userId);
 }

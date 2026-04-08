@@ -7,6 +7,7 @@ import lombok.Data;
 
 import java.io.Serial;
 import java.io.Serializable;
+import java.util.Date;
 import java.util.List;
 
 /**
@@ -99,6 +100,21 @@ public class MenuVO implements Serializable {
      * 排序
      */
     private Integer order;
+
+    /**
+     * 删除标志（0：正常 1：已删除）
+     */
+    private Integer delFlag;
+
+    /**
+     * 创建时间
+     */
+    private Date createTime;
+
+    /**
+     * 更新时间
+     */
+    private Date updateTime;
 
     /**
      * 子菜单列表

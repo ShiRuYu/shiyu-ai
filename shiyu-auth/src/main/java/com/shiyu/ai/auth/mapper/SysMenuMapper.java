@@ -10,6 +10,6 @@ import org.apache.ibatis.annotations.Mapper;
  *
  */
 @Mapper
-public interface SysMenuMapper extends BaseMapperFlex<SysMenuDO, SysMenuBO> {
+public interface SysMenuMapper extends BaseMapperFlex<SysMenuDO> {
 
 }

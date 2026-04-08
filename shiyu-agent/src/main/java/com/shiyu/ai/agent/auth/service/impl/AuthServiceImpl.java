@@ -1,15 +1,20 @@
 package com.shiyu.ai.agent.auth.service.impl;
 
+import com.mybatisflex.core.query.QueryChain;
+import com.mybatisflex.core.query.QueryColumn;
+import com.mybatisflex.core.query.QueryCondition;
 import com.shiyu.ai.agent.auth.service.AuthService;
-import com.shiyu.ai.agent.auth.service.CaptchaService;
-import com.shiyu.ai.agent.domain.vo.LoginVO;
+import com.shiyu.ai.agent.dal.mapper.AuthCodeMapper;
+import com.shiyu.ai.agent.dal.mapper.UserMapper;
+import com.shiyu.ai.agent.dal.mapper.UserRoleMapper;
+import com.shiyu.ai.agent.domain.vo.LoginResponseVO;
 import com.shiyu.ai.agent.dal.dataobject.RoleDO;
 import com.shiyu.ai.agent.dal.dataobject.UserDO;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 
-import java.util.HashMap;
-import java.util.Map;
+import java.util.*;
+import java.util.stream.Collectors;
 
 /**
  * 认证服务实现类（基于模拟数据）
@@ -18,224 +23,143 @@ import java.util.Map;
 @Service
 public class AuthServiceImpl implements AuthService {
     
-    private final CaptchaService captchaService;
-    
-    // 模拟用户数据库（实际项目中应该从数据库查询）
-    private static final Map<String, UserDO> USER_DATABASE = new HashMap<>();
+    private final UserMapper userMapper;
+    private final AuthCodeMapper authCodeMapper;
+    private final UserRoleMapper userRoleMapper;
     
     // 模拟 token 存储（实际项目中应该使用 Redis 等）
     private static final Map<String, String> TOKEN_STORE = new HashMap<>();
     
-    static {
-        // 初始化模拟用户数据
-        UserDO admin = new UserDO();
-        admin.setId(1L);
-        admin.setUsername("admin");
-        admin.setNickName("超级管理员");
-        admin.setEnable(true);
-        USER_DATABASE.put("admin", admin);
-        
-        UserDO user = new UserDO();
-        user.setId(2L);
-        user.setUsername("user");
-        user.setNickName("普通用户");
-        user.setEnable(true);
-        USER_DATABASE.put("user", user);
-    }
+    // 模拟 refresh token 存储
+    private static final Map<String, String> REFRESH_TOKEN_STORE = new HashMap<>();
     
-    public AuthServiceImpl(CaptchaService captchaService) {
-        this.captchaService = captchaService;
+    public AuthServiceImpl(UserMapper userMapper, AuthCodeMapper authCodeMapper, UserRoleMapper userRoleMapper) {
+        this.userMapper = userMapper;
+        this.authCodeMapper = authCodeMapper;
+        this.userRoleMapper = userRoleMapper;
     }
     
     @Override
-    public LoginVO login(String username, String password, String captcha, String captchaKey) {
-        log.info("收到登录请求：username={}, captcha={}", username, captcha);
-        
-        LoginVO response = new LoginVO();
+    public LoginResponseVO login(String username, String password) {
+        log.info("收到登录请求：username={}", username);
         
         try {
-            // 1. 验证验证码
-            if (!validateCaptcha(captchaKey, captcha)) {
-                response.setCode(1);
-                response.setMessage("验证码错误");
-                response.setData(null);
-                response.setOriginUrl("/auth/login");
-                return response;
-            }
-            
-            // 2. 查询用户信息
-            UserDO user = USER_DATABASE.get(username);
+            // 1. 从数据库查询用户信息（包含角色）
+            UserDO user = userMapper.selectUserWithRolesByUsername(username);
             if (user == null) {
                 log.warn("登录失败：用户不存在 - {}", username);
-                response.setCode(1);
-                response.setMessage("用户名或密码错误");
-                response.setData(null);
-                response.setOriginUrl("/auth/login");
-                return response;
-            }
-            
-            // 3. 验证用户状态
-            if (!user.getEnable()) {
-                log.warn("登录失败：用户已禁用 - {}", username);
-                response.setCode(1);
-                response.setMessage("账号已被禁用，请联系管理员");
-                response.setData(null);
-                response.setOriginUrl("/auth/login");
-                return response;
-            }
-            
-            // 4. 验证密码（模拟密码验证，实际项目中应该加密比对）
-            // 这里简化处理：密码为 "123456" 或通过配置
-            if (!"123456".equals(password)) {
-                log.warn("登录失败：密码错误 - {}", username);
-                response.setCode(1);
-                response.setMessage("用户名或密码错误");
-                response.setData(null);
-                response.setOriginUrl("/auth/login");
-                return response;
-            }
-            
-            // 5. 生成访问令牌
-            String accessToken = generateAccessToken(user);
-            
-            // 6. 构建响应数据
-            LoginVO.LoginDataVO data = new LoginVO.LoginDataVO();
-            data.setAccessToken(accessToken);
-            
-            response.setCode(0);
-            response.setMessage("OK");
-            response.setData(data);
-            response.setOriginUrl("/auth/login");
-            
-            log.info("登录成功：username={}, accessToken={}", username, accessToken);
-            
-        } catch (Exception e) {
-            log.error("登录失败：{}", username, e);
-            response.setCode(1);
-            response.setMessage("登录失败：" + e.getMessage());
-            response.setData(null);
-            response.setOriginUrl("/auth/login");
-        }
-        
-        return response;
-    }
-    
-    @Override
-    public LoginVO switchCurrentRole(String username, String roleCode) {
-        log.info("收到切换角色请求：username={}, roleCode={}", username, roleCode);
-        
-        LoginVO response = new LoginVO();
-        
-        try {
-            // 1. 查询用户信息
-            UserDO user = USER_DATABASE.get(username);
-            if (user == null) {
-                log.warn("切换角色失败：用户不存在 - {}", username);
-                response.setCode(1);
-                response.setMessage("用户不存在");
-                response.setData(null);
-                response.setOriginUrl("/auth/current-role/switch/" + roleCode);
-                return response;
+                return null;
             }
             
             // 2. 验证用户状态
             if (!user.getEnable()) {
-                log.warn("切换角色失败：用户已禁用 - {}", username);
-                response.setCode(1);
-                response.setMessage("账号已被禁用，请联系管理员");
-                response.setData(null);
-                response.setOriginUrl("/auth/current-role/switch/" + roleCode);
-                return response;
+                log.warn("登录失败：用户已禁用 - {}", username);
+                return null;
             }
             
-            // 3. 查找目标角色
-            RoleDO targetRole = findRoleByCode(user, roleCode);
-            if (targetRole == null) {
-                log.warn("切换角色失败：角色不存在 - {}, username={}", roleCode, username);
-                response.setCode(1);
-                response.setMessage("角色不存在或无权限使用此角色");
-                response.setData(null);
-                response.setOriginUrl("/auth/current-role/switch/" + roleCode);
-                return response;
+            // 3. 验证密码
+            if (password == null || !password.equals(user.getPassword())) {
+                log.warn("登录失败：密码错误 - {}", username);
+                return null;
             }
             
-            // 4. 验证角色状态
-            if (!targetRole.getEnable()) {
-                log.warn("切换角色失败：角色已禁用 - {}", roleCode);
-                response.setCode(1);
-                response.setMessage("角色已被禁用，请联系管理员");
-                response.setData(null);
-                response.setOriginUrl("/auth/current-role/switch/" + roleCode);
-                return response;
-            }
+            // 4. 从数据库查询用户的角色列表
+            List<RoleDO> roles = userRoleMapper.selectRolesByUserId(user.getId());
             
-            // 5. 更新用户的当前角色
-            user.setCurrentRole(targetRole);
-            
-            // 6. 生成新的访问令牌（包含新角色信息）
+            // 5. 生成访问令牌和刷新令牌
             String accessToken = generateAccessToken(user);
+            String refreshToken = generateRefreshToken(user);
             
-            // 7. 构建响应数据
-            LoginVO.LoginDataVO data = new LoginVO.LoginDataVO();
-            data.setAccessToken(accessToken);
+            // 6. 构建响应数据
+            LoginResponseVO response = new LoginResponseVO();
+            response.setId(user.getId());
+            response.setPassword(user.getPassword());
+            response.setRealName(user.getNickName());
+            response.setUsername(user.getUsername());
+            response.setHomePath("/workspace"); // 默认首页
             
-            response.setCode(0);
-            response.setMessage("OK");
-            response.setData(data);
-            response.setOriginUrl("/auth/current-role/switch/" + roleCode);
+            // 设置角色列表（从数据库查询的角色信息）
+            if (roles != null && !roles.isEmpty()) {
+                response.setRoles(roles.stream()
+                        .map(RoleDO::getCode)
+                        .collect(Collectors.toList()));
+            } else {
+                response.setRoles(new ArrayList<>());
+            }
             
-            log.info("切换角色成功：username={}, roleCode={}, accessToken={}", username, roleCode, accessToken);
+            response.setAccessToken(accessToken);
+            
+            log.info("登录成功：username={}, roles={}, accessToken={}", username, response.getRoles(), accessToken);
+            return response;
             
         } catch (Exception e) {
-            log.error("切换角色失败：username={}, roleCode={}", username, roleCode, e);
-            response.setCode(1);
-            response.setMessage("切换角色失败：" + e.getMessage());
-            response.setData(null);
-            response.setOriginUrl("/auth/current-role/switch/" + roleCode);
-        }
-        
-        return response;
-    }
-    
-    /**
-     * 根据角色编码查找角色
-     */
-    private RoleDO findRoleByCode(UserDO user, String roleCode) {
-        if (user.getRoles() == null || user.getRoles().isEmpty()) {
+            log.error("登录失败：{}", username, e);
             return null;
         }
-        
-        return user.getRoles().stream()
-                .filter(role -> role.getCode().equals(roleCode))
-                .findFirst()
-                .orElse(null);
     }
     
     @Override
-    public void logout(String accessToken) {
-        log.info("收到登出请求：accessToken={}", accessToken);
+    public List<String> getAuthCodes(String username) {
+        log.info("获取用户权限码：username={}", username);
         
-        // 从 token 存储中移除
-        TOKEN_STORE.remove(accessToken);
-        
-        log.info("登出成功：accessToken={}", accessToken);
+        try {
+            // 从数据库查询权限码
+            List<String> codes = authCodeMapper.selectCodesByUsername(username);
+            
+            if (codes == null || codes.isEmpty()) {
+                log.warn("用户 {} 没有配置权限码", username);
+                return new ArrayList<>();
+            }
+            
+            return codes;
+            
+        } catch (Exception e) {
+            log.error("获取权限码失败：username={}", username, e);
+            return new ArrayList<>();
+        }
     }
     
-    /**
-     * 验证验证码
-     */
-    private boolean validateCaptcha(String captchaKey, String captcha) {
-        if (captchaKey == null || captchaKey.trim().isEmpty()) {
-            // 如果没有提供 captchaKey，则不验证验证码（开发环境方便测试）
-            log.debug("未提供验证码 key，跳过验证");
-            return true;
+    @Override
+    public String refreshToken(String refreshToken) {
+        log.info("刷新访问令牌");
+        
+        // 验证 refresh token
+        String username = REFRESH_TOKEN_STORE.get(refreshToken);
+        if (username == null) {
+            log.warn("无效的 refresh token");
+            return null;
         }
         
-        boolean valid = captchaService.validateCaptcha(captchaKey, captcha);
-        if (!valid) {
-            log.warn("验证码验证失败");
+        // 从数据库查询用户
+        UserDO user = QueryChain.of(userMapper)
+                .select()
+                .where(UserDO::getUsername).eq(username)
+                .one();
+        if (user == null) {
+            log.warn("用户不存在：{}", username);
+            return null;
         }
-        return valid;
+        
+        // 生成新的 access token
+        String newAccessToken = generateAccessToken(user);
+        log.info("刷新令牌成功：username={}", username);
+        
+        return newAccessToken;
+    }
+    
+    @Override
+    public void logout(String refreshToken) {
+        log.info("收到登出请求");
+        
+        // 从 refresh token 存储中移除
+        String username = REFRESH_TOKEN_STORE.remove(refreshToken);
+        
+        // 同时移除相关的 access token
+        if (username != null) {
+            TOKEN_STORE.entrySet().removeIf(entry -> entry.getValue().equals(username));
+        }
+        
+        log.info("登出成功");
     }
     
     /**
@@ -243,11 +167,24 @@ public class AuthServiceImpl implements AuthService {
      */
     private String generateAccessToken(UserDO user) {
         // 生成简单的 token（实际项目中应该使用 JWT 等安全令牌）
-        String accessToken = "access-token:" + user.getUsername() + ":" + user.getNickName();
+        String accessToken = "access-token:" + user.getUsername() + ":" + System.currentTimeMillis();
         
         // 存储 token（设置过期时间等）
         TOKEN_STORE.put(accessToken, user.getUsername());
         
         return accessToken;
+    }
+    
+    /**
+     * 生成刷新令牌
+     */
+    private String generateRefreshToken(UserDO user) {
+        // 生成简单的 refresh token
+        String refreshToken = "refresh-token:" + user.getUsername() + ":" + System.currentTimeMillis();
+        
+        // 存储 refresh token
+        REFRESH_TOKEN_STORE.put(refreshToken, user.getUsername());
+        
+        return refreshToken;
     }
 }

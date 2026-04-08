@@ -9,6 +9,6 @@ import org.apache.ibatis.annotations.Mapper;
  *
  */
 @Mapper
-public interface SysUserPostMapper extends BaseMapperFlex<SysUserPostDO, SysUserPostDO> {
+public interface SysUserPostMapper extends BaseMapperFlex<SysUserPostDO> {
 
 }

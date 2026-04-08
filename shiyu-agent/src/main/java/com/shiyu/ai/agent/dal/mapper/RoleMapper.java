@@ -9,7 +9,7 @@ import org.apache.ibatis.annotations.Mapper;
  * 角色表 数据层
  */
 @Mapper
-public interface RoleMapper extends BaseMapperFlex<RoleDO, RoleBO> {
+public interface RoleMapper extends BaseMapperFlex<RoleDO> {
 
 
 }

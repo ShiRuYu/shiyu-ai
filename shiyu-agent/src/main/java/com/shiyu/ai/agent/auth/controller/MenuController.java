@@ -2,12 +2,16 @@ package com.shiyu.ai.agent.auth.controller;
 
 import com.shiyu.ai.agent.domain.request.MenuRequest;
 import com.shiyu.ai.agent.domain.bo.MenuBO;
+import com.shiyu.ai.agent.domain.vo.RouteMenuVO;
+import com.shiyu.ai.agent.domain.vo.SystemMenuVO;
 import com.shiyu.ai.agent.auth.service.MenuService;
+import com.shiyu.ai.common.core.api.Result;
 import com.shiyu.ai.common.core.utils.MapstructUtils;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -24,6 +28,134 @@ public class MenuController {
 
     public MenuController(MenuService menuService) {
         this.menuService = menuService;
+    }
+
+    /**
+     * 获取当前用户菜单
+     * GET /menu/all
+     */
+    @GetMapping("/all")
+    public ResponseEntity<Result<List<RouteMenuVO>>> getAllMenus(
+            @RequestHeader(value = "Authorization", required = false) String token) {
+        log.info("获取当前用户菜单");
+        
+        try {
+            // TODO: 从 token 中解析用户 ID，这里暂时使用固定值
+            Long userId = 1L;
+            
+            // 从数据库查询用户的菜单树
+            List<MenuBO> menuBOs = menuService.getMenuTreeByUserId(userId);
+            
+            // 转换为 RouteMenuVO
+            List<RouteMenuVO> routeMenus = convertToRouteMenuVO(menuBOs);
+            
+            return ResponseEntity.ok(Result.success(routeMenus));
+            
+        } catch (Exception e) {
+            log.error("获取菜单失败", e);
+            return ResponseEntity.status(401).body(Result.fail("获取菜单失败：" + e.getMessage()));
+        }
+    }
+    
+    /**
+     * 获取系统菜单列表
+     * GET /system/menu/list
+     */
+    @GetMapping("/system/menu/list")
+    public ResponseEntity<Result<List<SystemMenuVO>>> getSystemMenuList(
+            @RequestHeader(value = "Authorization", required = false) String token) {
+        log.info("获取系统菜单列表");
+        
+        try {
+            // 从服务层获取所有菜单
+            List<MenuBO> menuBOs = menuService.getAllTree();
+            
+            // 转换为 SystemMenuVO
+            List<SystemMenuVO> systemMenus = convertToSystemMenuVO(menuBOs);
+            
+            return ResponseEntity.ok(Result.success(systemMenus));
+            
+        } catch (Exception e) {
+            log.error("获取系统菜单列表失败", e);
+            return ResponseEntity.status(401).body(Result.fail("获取系统菜单列表失败：" + e.getMessage()));
+        }
+    }
+    
+    /**
+     * 将 MenuBO 列表转换为 SystemMenuVO 列表
+     */
+    private List<SystemMenuVO> convertToSystemMenuVO(List<MenuBO> menuBOs) {
+        if (menuBOs == null || menuBOs.isEmpty()) {
+            return new ArrayList<>();
+        }
+        
+        List<SystemMenuVO> result = new ArrayList<>();
+        for (MenuBO menuBO : menuBOs) {
+            SystemMenuVO vo = new SystemMenuVO();
+            vo.setId(menuBO.getId());
+            vo.setName(menuBO.getName());
+            vo.setType(menuBO.getType());
+            vo.setIcon(menuBO.getIcon());
+            vo.setPath(menuBO.getPath());
+            vo.setComponent(menuBO.getComponent());
+            vo.setPid(menuBO.getParentId());
+            vo.setStatus(menuBO.getEnable() ? 1 : 0);
+            vo.setAuthCode(menuBO.getCode());
+            
+            // 设置元数据
+            SystemMenuVO.MetaVO meta = new SystemMenuVO.MetaVO();
+            meta.setTitle(menuBO.getName());
+            meta.setIcon(menuBO.getIcon());
+            meta.setOrder(menuBO.getOrder());
+            vo.setMeta(meta);
+            
+            // 递归处理子菜单
+            if (menuBO.getChildren() != null && !menuBO.getChildren().isEmpty()) {
+                vo.setChildren(convertToSystemMenuVO(menuBO.getChildren()));
+            }
+            
+            result.add(vo);
+        }
+        
+        return result;
+    }
+    
+    /**
+     * 将 MenuBO 列表转换为 RouteMenuVO 列表
+     */
+    private List<RouteMenuVO> convertToRouteMenuVO(List<MenuBO> menuBOs) {
+        if (menuBOs == null || menuBOs.isEmpty()) {
+            return new ArrayList<>();
+        }
+        
+        List<RouteMenuVO> result = new ArrayList<>();
+        for (MenuBO menuBO : menuBOs) {
+            // 只转换菜单类型，不转换按钮
+            if ("BUTTON".equals(menuBO.getType())) {
+                continue;
+            }
+            
+            RouteMenuVO vo = new RouteMenuVO();
+            vo.setName(menuBO.getCode()); // 使用 code 作为路由名称
+            vo.setPath(menuBO.getPath());
+            vo.setComponent(menuBO.getComponent());
+            
+            // 设置元数据
+            RouteMenuVO.MetaVO meta = new RouteMenuVO.MetaVO();
+            meta.setTitle(menuBO.getName());
+            meta.setIcon(menuBO.getIcon());
+            meta.setOrder(menuBO.getOrder());
+            vo.setMeta(meta);
+            
+            // 递归处理子菜单
+            if (menuBO.getChildren() != null && !menuBO.getChildren().isEmpty()) {
+                vo.setChildren(convertToRouteMenuVO(menuBO.getChildren()));
+            }
+            
+            result.add(vo);
+        }
+        
+        return result;
     }
 
     /**

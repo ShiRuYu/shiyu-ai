@@ -1,6 +1,8 @@
 package com.shiyu.ai.agent.auth.service;
 
-import com.shiyu.ai.agent.domain.vo.LoginVO;
+import com.shiyu.ai.agent.domain.vo.LoginResponseVO;
+
+import java.util.List;
 
 /**
  * 认证服务
@@ -12,23 +14,27 @@ public interface AuthService {
      * 用户登录
      * @param username 用户名
      * @param password 密码
-     * @param captcha 验证码
-     * @param captchaKey 验证码 key
-     * @return 登录响应（包含访问令牌）
+     * @return 登录响应（包含用户信息和访问令牌）
      */
-    LoginVO login(String username, String password, String captcha, String captchaKey);
+    LoginResponseVO login(String username, String password);
     
     /**
-     * 切换当前角色
+     * 获取用户权限码
      * @param username 用户名
-     * @param roleCode 角色编码
-     * @return 登录响应（包含新的访问令牌）
+     * @return 权限码列表
      */
-    LoginVO switchCurrentRole(String username, String roleCode);
+    List<String> getAuthCodes(String username);
+    
+    /**
+     * 刷新访问令牌
+     * @param refreshToken 刷新令牌
+     * @return 新的访问令牌
+     */
+    String refreshToken(String refreshToken);
     
     /**
      * 用户登出
-     * @param accessToken 访问令牌
+     * @param refreshToken 刷新令牌
      */
-    void logout(String accessToken);
+    void logout(String refreshToken);
 }

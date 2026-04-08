@@ -9,6 +9,6 @@ import org.apache.ibatis.annotations.Mapper;
  * 租户Mapper接口
  */
 @Mapper
-public interface SysTenantMapper extends BaseMapperFlex<SysTenantDO, SysTenantBO> {
+public interface SysTenantMapper extends BaseMapperFlex<SysTenantDO> {
 
 }

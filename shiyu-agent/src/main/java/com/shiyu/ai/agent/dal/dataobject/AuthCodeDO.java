@@ -1,7 +1,8 @@
-package com.shiyu.ai.agent.domain.vo;
+package com.shiyu.ai.agent.dal.dataobject;
 
-import com.shiyu.ai.agent.domain.bo.RoleBO;
-import io.github.linpeilie.annotations.AutoMapper;
+import com.mybatisflex.annotation.Id;
+import com.mybatisflex.annotation.KeyType;
+import com.mybatisflex.annotation.Table;
 import lombok.Data;
 
 import java.io.Serial;
@@ -9,29 +10,35 @@ import java.io.Serializable;
 import java.util.Date;
 
 /**
- * 角色视图对象
+ * 权限码数据对象
  */
 @Data
-@AutoMapper(target = RoleBO.class)
-public class RoleVO implements Serializable {
+@Table(value = "auth_code")
+public class AuthCodeDO implements Serializable {
 
     @Serial
     private static final long serialVersionUID = 1L;
 
     /**
-     * 角色 ID
+     * 权限码 ID
      */
+    @Id(keyType = KeyType.Auto)
     private Long id;
 
     /**
-     * 角色编码
+     * 权限编码
      */
     private String code;
 
     /**
-     * 角色名称
+     * 权限名称
      */
     private String name;
+
+    /**
+     * 角色 ID
+     */
+    private Long roleId;
 
     /**
      * 是否启用

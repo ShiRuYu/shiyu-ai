@@ -1,15 +1,19 @@
 package com.shiyu.ai.agent.dal.dataobject;
 
+import com.mybatisflex.annotation.Id;
+import com.mybatisflex.annotation.KeyType;
+import com.mybatisflex.annotation.Table;
 import lombok.Data;
 
 import java.io.Serial;
 import java.io.Serializable;
-import java.util.List;
+import java.util.Date;
 
 /**
  * 菜单数据对象（模拟数据）
  */
 @Data
+@Table(value = "menu")
 public class MenuDO implements Serializable {
 
     @Serial
@@ -18,6 +22,7 @@ public class MenuDO implements Serializable {
     /**
      * 菜单 ID
      */
+    @Id(keyType = KeyType.Auto)
     private Long id;
 
     /**
@@ -96,7 +101,17 @@ public class MenuDO implements Serializable {
     private Integer order;
 
     /**
-     * 子菜单列表
+     * 删除标志（0：正常 1：已删除）
      */
-    private List<MenuDO> children;
+    private Integer delFlag;
+
+    /**
+     * 创建时间
+     */
+    private Date createTime;
+
+    /**
+     * 更新时间
+     */
+    private Date updateTime;
 }

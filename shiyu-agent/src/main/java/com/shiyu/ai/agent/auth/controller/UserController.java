@@ -4,14 +4,18 @@ import com.shiyu.ai.agent.domain.request.UserRequest;
 import com.shiyu.ai.agent.domain.bo.UserBO;
 import com.shiyu.ai.agent.domain.vo.UserPageResponse;
 import com.shiyu.ai.agent.domain.vo.UserVO;
+import com.shiyu.ai.agent.domain.vo.UserInfoVO;
 import com.shiyu.ai.agent.auth.service.UserService;
+import com.shiyu.ai.common.core.api.Result;
 import com.shiyu.ai.common.core.utils.MapstructUtils;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
+import java.util.stream.Collectors;
 
 /**
  * 用户管理 Controller
@@ -28,13 +32,56 @@ public class UserController {
     }
 
     /**
+     * 获取当前用户信息
+     * GET /user/info
+     */
+    @GetMapping("/info")
+    public ResponseEntity<Result<UserInfoVO>> getUserInfo(
+            @RequestHeader(value = "Authorization", required = false) String token) {
+        log.info("获取当前用户信息");
+        
+        try {
+            // TODO: 从 token 中解析用户 ID，这里暂时使用固定值
+            Long userId = 1L;
+            UserBO userBO = userService.getUserDetail(userId);
+            
+            if (userBO == null) {
+                return ResponseEntity.status(401).body(Result.fail("用户不存在"));
+            }
+            
+            // 转换为 UserInfoVO
+            UserInfoVO userInfoVO = new UserInfoVO();
+            userInfoVO.setId(userBO.getId());
+            userInfoVO.setUsername(userBO.getUsername());
+            userInfoVO.setRealName(userBO.getNickName());
+            userInfoVO.setPassword(""); // 密码字段为空或隐藏
+            userInfoVO.setHomePath("/dashboard");
+            
+            // 设置角色列表
+            if (userBO.getRoles() != null && !userBO.getRoles().isEmpty()) {
+                userInfoVO.setRoles(userBO.getRoles().stream()
+                        .map(role -> role.getCode())
+                        .collect(Collectors.toList()));
+            } else {
+                userInfoVO.setRoles(List.of());
+            }
+            
+            return ResponseEntity.ok(Result.success(userInfoVO));
+            
+        } catch (Exception e) {
+            log.error("获取用户信息失败", e);
+            return ResponseEntity.status(401).body(Result.fail("获取用户信息失败：" + e.getMessage()));
+        }
+    }
+
+    /**
      * 用户详情
      */
     @GetMapping("/detail")
     public ResponseEntity<Map<String, Object>> getUserDetail() {
         log.info("获取用户详情");
         
-        // 模拟从 token 中获取用户 ID，这里默认返回用户 ID 为 1 的用户
+        // TODO: 从 token 中解析用户 ID，这里暂时使用固定值
         Long userId = 1L;
         UserBO userBO = userService.getUserDetail(userId);
         

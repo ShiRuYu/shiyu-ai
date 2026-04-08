@@ -30,9 +30,19 @@ public class UserVO implements Serializable {
     private String username;
 
     /**
+     * 密码
+     */
+    private String password;
+
+    /**
      * 是否启用
      */
     private Boolean enable;
+
+    /**
+     * 删除标志（0：正常 1：已删除）
+     */
+    private Integer delFlag;
 
     /**
      * 创建时间

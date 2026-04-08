@@ -5,6 +5,8 @@ import com.shiyu.ai.agent.auth.service.UserService;
 import com.shiyu.ai.agent.dal.dataobject.RoleDO;
 import com.shiyu.ai.agent.dal.dataobject.UserDO;
 import com.shiyu.ai.agent.dal.mapper.UserMapper;
+import com.shiyu.ai.agent.dal.mapper.UserRoleMapper;
+import com.shiyu.ai.agent.domain.bo.RoleBO;
 import com.shiyu.ai.agent.domain.bo.UserBO;
 import com.shiyu.ai.agent.domain.vo.UserPageResponse;
 import com.shiyu.ai.agent.domain.vo.UserVO;
@@ -23,9 +25,11 @@ import java.util.stream.Collectors;
 public class UserServiceImpl implements UserService {
 
     private final UserMapper userMapper;
+    private final UserRoleMapper userRoleMapper;
 
-    public UserServiceImpl(UserMapper userMapper) {
+    public UserServiceImpl(UserMapper userMapper, UserRoleMapper userRoleMapper) {
         this.userMapper = userMapper;
+        this.userRoleMapper = userRoleMapper;
     }
 
     @Override
@@ -35,7 +39,18 @@ public class UserServiceImpl implements UserService {
         if (userDO == null) {
             return null;
         }
-        return MapstructUtils.convert(userDO, UserBO.class);
+        
+        // 转换为 UserBO
+        UserBO userBO = MapstructUtils.convert(userDO, UserBO.class);
+        
+        // 从数据库查询用户的角色列表
+        List<RoleDO> roleDOs = userRoleMapper.selectRolesByUserId(userId);
+        if (roleDOs != null && !roleDOs.isEmpty()) {
+            List<RoleBO> roleBOs = MapstructUtils.convert(roleDOs, RoleBO.class);
+            userBO.setRoles(roleBOs);
+        }
+        
+        return userBO;
     }
 
     @Override

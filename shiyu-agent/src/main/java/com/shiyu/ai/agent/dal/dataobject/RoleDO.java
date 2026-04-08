@@ -1,14 +1,19 @@
 package com.shiyu.ai.agent.dal.dataobject;
 
+import com.mybatisflex.annotation.Id;
+import com.mybatisflex.annotation.KeyType;
+import com.mybatisflex.annotation.Table;
 import lombok.Data;
 
 import java.io.Serial;
 import java.io.Serializable;
+import java.util.Date;
 
 /**
  * 角色数据对象（模拟数据）
  */
 @Data
+@Table(value = "role")
 public class RoleDO implements Serializable {
 
     @Serial
@@ -17,6 +22,7 @@ public class RoleDO implements Serializable {
     /**
      * 角色 ID
      */
+    @Id(keyType = KeyType.Auto)
     private Long id;
 
     /**
@@ -35,7 +41,17 @@ public class RoleDO implements Serializable {
     private Boolean enable;
 
     /**
-     * 权限 ID 列表，用逗号分隔
+     * 删除标志（0：正常 1：已删除）
      */
-    private String permissionIds;
+    private Integer delFlag;
+
+    /**
+     * 创建时间
+     */
+    private Date createTime;
+
+    /**
+     * 更新时间
+     */
+    private Date updateTime;
 }

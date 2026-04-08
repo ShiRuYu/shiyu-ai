@@ -9,6 +9,6 @@ import org.apache.ibatis.annotations.Mapper;
  *
  */
 @Mapper
-public interface SysRoleDeptMapper extends BaseMapperFlex<SysRoleDeptDO, SysRoleDeptDO> {
+public interface SysRoleDeptMapper extends BaseMapperFlex<SysRoleDeptDO> {
 
 }

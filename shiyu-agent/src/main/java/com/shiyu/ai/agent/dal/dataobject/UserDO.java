@@ -1,16 +1,19 @@
 package com.shiyu.ai.agent.dal.dataobject;
 
+import com.mybatisflex.annotation.Id;
+import com.mybatisflex.annotation.KeyType;
+import com.mybatisflex.annotation.Table;
 import lombok.Data;
 
 import java.io.Serial;
 import java.io.Serializable;
 import java.util.Date;
-import java.util.List;
 
 /**
- * 用户数据对象（模拟数据）
+ * 用户数据对象
  */
 @Data
+@Table(value = "user")
 public class UserDO implements Serializable {
 
     @Serial
@@ -19,6 +22,7 @@ public class UserDO implements Serializable {
     /**
      * 用户 ID
      */
+    @Id(keyType = KeyType.Auto)
     private Long id;
 
     /**
@@ -27,9 +31,19 @@ public class UserDO implements Serializable {
     private String username;
 
     /**
+     * 密码
+     */
+    private String password;
+
+    /**
      * 是否启用
      */
     private Boolean enable;
+
+    /**
+     * 删除标志（0：正常 1：已删除）
+     */
+    private Integer delFlag;
 
     /**
      * 创建时间
@@ -65,14 +79,4 @@ public class UserDO implements Serializable {
      * 邮箱
      */
     private String email;
-
-    /**
-     * 角色列表
-     */
-    private List<RoleDO> roles;
-
-    /**
-     * 当前角色
-     */
-    private RoleDO currentRole;
 }

@@ -29,9 +29,4 @@ public class RoleRequest implements Serializable {
      * 是否启用（1 是 0 否）
      */
     private Boolean enable;
-
-    /**
-     * 权限 ID 列表
-     */
-    private List<Long> permissionIds;
 }
