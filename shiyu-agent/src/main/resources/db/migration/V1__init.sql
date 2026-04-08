@@ -94,6 +94,26 @@ CREATE TABLE IF NOT EXISTS `auth_code` (
     INDEX `idx_code` (`code`)
 ) COMMENT='权限码表';
 
+-- 字典表
+CREATE TABLE IF NOT EXISTS `dict` (
+    `id` BIGINT NOT NULL COMMENT '字典ID',
+    `dict_type` VARCHAR(100) NOT NULL COMMENT '字典类型',
+    `dict_label` VARCHAR(100) NOT NULL COMMENT '字典标签',
+    `dict_value` VARCHAR(100) NOT NULL COMMENT '字典键值',
+    `dict_sort` INT DEFAULT 0 COMMENT '字典排序',
+    `css_class` VARCHAR(100) COMMENT '样式属性',
+    `list_class` VARCHAR(100) COMMENT '表格回显样式',
+    `is_default` CHAR(1) DEFAULT 'N' COMMENT '是否默认（Y是 N否）',
+    `status` CHAR(1) DEFAULT '1' COMMENT '状态（1正常 0停用）',
+    `remark` VARCHAR(500) COMMENT '备注',
+    `create_time` DATETIME DEFAULT CURRENT_TIMESTAMP COMMENT '创建时间',
+    `update_time` DATETIME DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP COMMENT '更新时间',
+    `del_flag` CHAR(1) DEFAULT '0' COMMENT '删除标志（0存在 1删除）',
+    PRIMARY KEY (`id`),
+    INDEX `idx_dict_type` (`dict_type`),
+    INDEX `idx_dict_sort` (`dict_sort`)
+) COMMENT='字典表';
+
 -- ============================================
 -- 2. 初始化用户数据（根据 API 文档模拟数据）
 -- ============================================
@@ -298,3 +318,23 @@ INSERT INTO `auth_code` (`id`, `code`, `name`, `role_id`, `enable`, `del_flag`) 
 -- user 角色（jack）的权限码
 INSERT INTO `auth_code` (`id`, `code`, `name`, `role_id`, `enable`, `del_flag`) VALUES (8, 'AC_1000001', '权限码 1000001', 3, TRUE, 0);
 INSERT INTO `auth_code` (`id`, `code`, `name`, `role_id`, `enable`, `del_flag`) VALUES (9, 'AC_1000002', '权限码 1000002', 3, TRUE, 0);
+
+-- ============================================
+-- 8. 初始化字典数据
+-- ============================================
+
+-- 时区字典（dict_type = 'timezone'）
+INSERT INTO `dict` (`id`, `dict_type`, `dict_label`, `dict_value`, `dict_sort`, `css_class`, `list_class`, `is_default`, `status`, `remark`, `create_time`, `update_time`, `del_flag`) 
+VALUES (1, 'timezone', 'America/New_York (GMT-5)', 'America/New_York', 1, NULL, NULL, 'N', '1', '美国纽约时区', NOW(), NOW(), '0');
+
+INSERT INTO `dict` (`id`, `dict_type`, `dict_label`, `dict_value`, `dict_sort`, `css_class`, `list_class`, `is_default`, `status`, `remark`, `create_time`, `update_time`, `del_flag`) 
+VALUES (2, 'timezone', 'Europe/London (GMT0)', 'Europe/London', 2, NULL, NULL, 'N', '1', '欧洲伦敦时区', NOW(), NOW(), '0');
+
+INSERT INTO `dict` (`id`, `dict_type`, `dict_label`, `dict_value`, `dict_sort`, `css_class`, `list_class`, `is_default`, `status`, `remark`, `create_time`, `update_time`, `del_flag`) 
+VALUES (3, 'timezone', 'Asia/Shanghai (GMT+8)', 'Asia/Shanghai', 3, NULL, NULL, 'Y', '1', '亚洲上海时区', NOW(), NOW(), '0');
+
+INSERT INTO `dict` (`id`, `dict_type`, `dict_label`, `dict_value`, `dict_sort`, `css_class`, `list_class`, `is_default`, `status`, `remark`, `create_time`, `update_time`, `del_flag`) 
+VALUES (4, 'timezone', 'Asia/Tokyo (GMT+9)', 'Asia/Tokyo', 4, NULL, NULL, 'N', '1', '亚洲东京时区', NOW(), NOW(), '0');
+
+INSERT INTO `dict` (`id`, `dict_type`, `dict_label`, `dict_value`, `dict_sort`, `css_class`, `list_class`, `is_default`, `status`, `remark`, `create_time`, `update_time`, `del_flag`) 
+VALUES (5, 'timezone', 'Asia/Seoul (GMT+9)', 'Asia/Seoul', 5, NULL, NULL, 'N', '1', '亚洲首尔时区', NOW(), NOW(), '0');
