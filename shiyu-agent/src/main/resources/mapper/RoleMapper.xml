@@ -4,15 +4,4 @@
         "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
 <mapper namespace="com.shiyu.ai.agent.dal.mapper.RoleMapper">
 
-    <!-- 结果映射 -->
-    <resultMap id="RoleResult" type="com.shiyu.ai.agent.dal.dataobject.RoleDO">
-        <id property="id" column="id"/>
-        <result property="code" column="code"/>
-        <result property="name" column="name"/>
-        <result property="enable" column="enable"/>
-        <result property="delFlag" column="del_flag"/>
-        <result property="createTime" column="create_time"/>
-        <result property="updateTime" column="update_time"/>
-    </resultMap>
-
 </mapper>

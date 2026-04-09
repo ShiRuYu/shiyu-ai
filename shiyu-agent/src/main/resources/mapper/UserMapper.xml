@@ -4,41 +4,25 @@
         "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
 <mapper namespace="com.shiyu.ai.agent.dal.mapper.UserMapper">
 
-    <!-- 结果映射 -->
-    <resultMap id="UserResult" type="com.shiyu.ai.agent.dal.dataobject.UserDO">
-        <id property="id" column="id"/>
-        <result property="username" column="username"/>
-        <result property="password" column="password"/>
-        <result property="enable" column="enable"/>
-        <result property="delFlag" column="del_flag"/>
-        <result property="createTime" column="create_time"/>
-        <result property="updateTime" column="update_time"/>
-        <result property="nickName" column="nick_name"/>
-        <result property="gender" column="gender"/>
-        <result property="avatar" column="avatar"/>
-        <result property="address" column="address"/>
-        <result property="email" column="email"/>
-    </resultMap>
-
     <!-- 根据用户名查询用户基本信息 -->
-    <select id="selectUserWithRolesByUsername" resultMap="UserResult">
+    <select id="selectUserWithRolesByUsername" resultType="com.shiyu.ai.agent.dal.dataobject.UserDO">
         SELECT 
-            u.id,
-            u.username,
-            u.password,
-            u.enable,
-            u.del_flag,
-            u.create_time,
-            u.update_time,
-            u.nick_name,
-            u.gender,
-            u.avatar,
-            u.address,
-            u.email
-        FROM `user` u
-        WHERE u.username = #{username}
-          AND u.enable = TRUE
-          AND u.del_flag = 0
+            id,
+            username,
+            password,
+            status,
+            del_flag AS delFlag,
+            create_time AS createTime,
+            update_time AS updateTime,
+            nick_name AS nickName,
+            gender,
+            avatar,
+            address,
+            email
+        FROM `user`
+        WHERE username = #{username}
+          AND status = '1'
+          AND del_flag = 0
     </select>
 
 </mapper>

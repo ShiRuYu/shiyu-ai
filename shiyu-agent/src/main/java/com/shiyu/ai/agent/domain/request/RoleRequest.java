@@ -1,15 +1,17 @@
 package com.shiyu.ai.agent.domain.request;
 
+import com.shiyu.ai.agent.domain.bo.RoleBO;
+import io.github.linpeilie.annotations.AutoMapper;
 import lombok.Data;
 
 import java.io.Serial;
 import java.io.Serializable;
-import java.util.List;
 
 /**
  * 角色请求对象
  */
 @Data
+@AutoMapper(target = RoleBO.class, reverseConvertGenerate = false)
 public class RoleRequest implements Serializable {
 
     @Serial

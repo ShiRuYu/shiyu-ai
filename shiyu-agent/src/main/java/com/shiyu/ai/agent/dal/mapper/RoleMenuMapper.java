@@ -36,7 +36,7 @@ public interface RoleMenuMapper extends BaseMapperFlex<RoleMenuDO> {
                         "m.method",
                         "m.description",
                         "m.show",
-                        "m.enable",
+                        "m.status",
                         "m.`order`",
                         "m.del_flag",
                         "m.create_time",
@@ -45,7 +45,7 @@ public interface RoleMenuMapper extends BaseMapperFlex<RoleMenuDO> {
                 .from("menu").as("m")
                 .innerJoin("role_menu").as("rm").on("m.id = rm.menu_id")
                 .where("rm.role_id = ?", roleId)
-                .and("m.enable = 1")
+                .and("m.status = '1'")
                 .and("m.del_flag = 0")
                 .orderBy("m.`order`", true)
                 .orderBy("m.id", true);

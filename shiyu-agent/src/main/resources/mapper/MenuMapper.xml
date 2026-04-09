@@ -4,32 +4,31 @@
         "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
 <mapper namespace="com.shiyu.ai.agent.dal.mapper.MenuMapper">
 
-    <!-- 结果映射 -->
-    <resultMap id="MenuResult" type="com.shiyu.ai.agent.dal.dataobject.MenuDO">
-        <id property="id" column="id"/>
-        <result property="name" column="name"/>
-        <result property="code" column="code"/>
-        <result property="type" column="type"/>
-        <result property="parentId" column="parent_id"/>
-        <result property="path" column="path"/>
-        <result property="redirect" column="redirect"/>
-        <result property="icon" column="icon"/>
-        <result property="component" column="component"/>
-        <result property="layout" column="layout"/>
-        <result property="keepAlive" column="keep_alive"/>
-        <result property="method" column="method"/>
-        <result property="description" column="description"/>
-        <result property="show" column="show"/>
-        <result property="enable" column="enable"/>
-        <result property="order" column="order"/>
-        <result property="delFlag" column="del_flag"/>
-        <result property="createTime" column="create_time"/>
-        <result property="updateTime" column="update_time"/>
-    </resultMap>
-
     <!-- 查询所有菜单 -->
-    <select id="selectAll" resultMap="MenuResult">
-        SELECT * FROM menu WHERE del_flag = 0 ORDER BY `order` ASC, id ASC
+    <select id="selectAll" resultType="com.shiyu.ai.agent.dal.dataobject.MenuDO">
+        SELECT 
+            id,
+            name,
+            code,
+            type,
+            parent_id AS parentId,
+            path,
+            redirect,
+            icon,
+            component,
+            layout,
+            keep_alive AS keepAlive,
+            method,
+            description,
+            show,
+            status,
+            `order`,
+            del_flag AS delFlag,
+            create_time AS createTime,
+            update_time AS updateTime
+        FROM menu 
+        WHERE del_flag = 0 
+        ORDER BY `order` ASC, id ASC
     </select>
 
 </mapper>

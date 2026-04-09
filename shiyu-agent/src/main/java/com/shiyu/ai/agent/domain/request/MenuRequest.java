@@ -1,5 +1,7 @@
 package com.shiyu.ai.agent.domain.request;
 
+import com.shiyu.ai.agent.domain.bo.MenuBO;
+import io.github.linpeilie.annotations.AutoMapper;
 import lombok.Data;
 
 import java.io.Serial;
@@ -9,6 +11,7 @@ import java.io.Serializable;
  * 菜单请求对象
  */
 @Data
+@AutoMapper(target = MenuBO.class, reverseConvertGenerate = false)
 public class MenuRequest implements Serializable {
 
     @Serial

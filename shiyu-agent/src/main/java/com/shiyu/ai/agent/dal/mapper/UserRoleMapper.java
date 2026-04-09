@@ -25,7 +25,7 @@ public interface UserRoleMapper extends BaseMapperFlex<UserRoleDO> {
                         "r.id",
                         "r.code",
                         "r.name",
-                        "r.enable",
+                        "r.status",
                         "r.del_flag",
                         "r.create_time",
                         "r.update_time"
@@ -33,7 +33,7 @@ public interface UserRoleMapper extends BaseMapperFlex<UserRoleDO> {
                 .from("role").as("r")
                 .innerJoin("user_role").as("ur").on("r.id = ur.role_id")
                 .where("ur.user_id = ?", userId)
-                .and("r.enable = 1")
+                .and("r.status = '1'")
                 .and("r.del_flag = 0");
         
         return selectListByQueryAs(queryWrapper, RoleDO.class);

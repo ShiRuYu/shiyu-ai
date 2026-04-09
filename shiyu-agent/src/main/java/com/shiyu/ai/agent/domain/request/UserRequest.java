@@ -1,5 +1,7 @@
 package com.shiyu.ai.agent.domain.request;
 
+import com.shiyu.ai.agent.domain.bo.UserBO;
+import io.github.linpeilie.annotations.AutoMapper;
 import lombok.Data;
 
 import java.io.Serial;
@@ -10,6 +12,7 @@ import java.util.List;
  * 用户请求对象
  */
 @Data
+@AutoMapper(target = UserBO.class, reverseConvertGenerate = false)
 public class UserRequest implements Serializable {
 
     @Serial
