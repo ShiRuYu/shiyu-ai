@@ -4,7 +4,7 @@ import com.shiyu.ai.agent.langgraph4j.node.BaseNode;
 import com.shiyu.ai.agent.langgraph4j.node.NodeInput;
 import com.shiyu.ai.agent.langgraph4j.node.NodeOutput;
 import com.shiyu.ai.agent.langgraph4j.node.NodeType;
-import com.shiyu.ai.agent.agent.service.ToolService;
+import com.shiyu.ai.agent.biz.agent.service.ToolService;
 import lombok.Getter;
 import lombok.Setter;
 import lombok.extern.slf4j.Slf4j;

@@ -1,13 +1,13 @@
 package com.shiyu.ai.agent.langgraph4j.node.llm;
 
-import com.shiyu.ai.agent.agent.domain.ChatType;
-import com.shiyu.ai.agent.agent.domain.Lc4jRequest;
-import com.shiyu.ai.agent.agent.domain.Lc4jResponse;
+import com.shiyu.ai.agent.biz.agent.domain.ChatType;
+import com.shiyu.ai.agent.biz.agent.domain.Lc4jRequest;
+import com.shiyu.ai.agent.biz.agent.domain.Lc4jResponse;
 import com.shiyu.ai.agent.langgraph4j.node.BaseNode;
 import com.shiyu.ai.agent.langgraph4j.node.NodeInput;
 import com.shiyu.ai.agent.langgraph4j.node.NodeOutput;
 import com.shiyu.ai.agent.langgraph4j.node.NodeType;
-import com.shiyu.ai.agent.agent.service.Lc4jService;
+import com.shiyu.ai.agent.biz.agent.service.Lc4jService;
 import dev.langchain4j.data.message.UserMessage;
 import dev.langchain4j.model.chat.StreamingChatModel;
 import lombok.Getter;

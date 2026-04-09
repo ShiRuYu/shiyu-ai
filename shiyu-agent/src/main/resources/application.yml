@@ -19,8 +19,7 @@ springdoc:
       paths-to-match:
         - '/**'
       packages-to-scan:
-        - com.shiyu.ai.agent.auth.controller
-        - com.shiyu.ai.agent.agent.controller
+        - com.shiyu.ai.agent.biz.**.controller
   swagger-ui:
     path: /swagger-ui/index.html      # Swagger UI 访问路径，默认 /swagger-ui/index.html
     display-request-duration: true  # 显示请求耗时

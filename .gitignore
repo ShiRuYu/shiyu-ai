@@ -37,4 +37,4 @@ build/
 
 ### VS Code ###
 .vscode/
-/.data/agentdb.trace.db
+/.data/**/*.trace.db

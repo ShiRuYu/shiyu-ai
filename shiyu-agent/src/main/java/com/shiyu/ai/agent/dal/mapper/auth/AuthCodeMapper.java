@@ -1,0 +1,22 @@
+package com.shiyu.ai.agent.dal.mapper.auth;
+
+import com.mybatisflex.annotation.UseDataSource;
+import com.shiyu.ai.agent.dal.DataSourceConfig;
+import com.shiyu.ai.agent.dal.dataobject.auth.AuthCodeDO;
+import com.shiyu.ai.common.mybatis.core.mapper.BaseMapperFlex;
+import org.apache.ibatis.annotations.Mapper;
+
+import java.util.List;
+
+/**
+ * 认证码表 数据层
+ */
+@Mapper
+@UseDataSource(DataSourceConfig.AUTH)
+public interface AuthCodeMapper extends BaseMapperFlex<AuthCodeDO> {
+
+    /**
+     * 根据用户名查询权限码列表
+     */
+    List<String> selectCodesByUsername(String username);
+}

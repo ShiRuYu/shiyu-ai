@@ -1,0 +1,72 @@
+package com.shiyu.ai.agent.dal.dataobject.auth;
+
+import com.mybatisflex.annotation.Id;
+import com.mybatisflex.annotation.KeyType;
+import com.mybatisflex.annotation.Table;
+import lombok.Data;
+
+import java.io.Serial;
+import java.io.Serializable;
+import java.util.Date;
+
+/**
+ * 字典数据对象
+ */
+@Data
+@Table(value = "dict")
+public class DictDO implements Serializable {
+
+    @Serial
+    private static final long serialVersionUID = 1L;
+
+    /**
+     * 字典ID
+     */
+    @Id(keyType = KeyType.Auto)
+    private Long id;
+
+    /**
+     * 字典类型
+     */
+    private String dictType;
+
+    /**
+     * 字典标签
+     */
+    private String dictLabel;
+
+    /**
+     * 字典值
+     */
+    private String dictValue;
+
+    /**
+     * 排序
+     */
+    private Integer dictSort;
+
+    /**
+     * 状态（0正常 1停用）
+     */
+    private String status;
+
+    /**
+     * 删除标志（0存在 1删除）
+     */
+    private String delFlag;
+
+    /**
+     * 备注
+     */
+    private String remark;
+
+    /**
+     * 创建时间
+     */
+    private Date createTime;
+
+    /**
+     * 更新时间
+     */
+    private Date updateTime;
+}

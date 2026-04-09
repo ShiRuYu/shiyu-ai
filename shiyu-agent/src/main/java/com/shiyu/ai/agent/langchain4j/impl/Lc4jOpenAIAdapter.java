@@ -1,6 +1,6 @@
 package com.shiyu.ai.agent.langchain4j.impl;
 
-import com.shiyu.ai.agent.agent.config.PlatformProperties;
+import com.shiyu.ai.agent.biz.agent.config.PlatformProperties;
 import com.shiyu.ai.agent.langchain4j.AbstractLc4jPlatformAdapter;
 import com.shiyu.ai.agent.langchain4j.config.Lc4jPlatformConfig;
 import dev.langchain4j.model.chat.ChatModel;
