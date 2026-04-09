@@ -52,7 +52,7 @@ public class AuthServiceImpl implements AuthService {
             }
             
             // 2. 验证用户状态
-            if (!user.getEnable()) {
+            if (!"1".equals(user.getStatus())) {
                 log.warn("登录失败：用户已禁用 - {}", username);
                 return null;
             }

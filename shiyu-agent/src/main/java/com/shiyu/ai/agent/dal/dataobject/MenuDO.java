@@ -91,9 +91,9 @@ public class MenuDO implements Serializable {
     private Boolean show;
 
     /**
-     * 是否启用
+     * 状态（1正常 0停用）
      */
-    private Boolean enable;
+    private String status;
 
     /**
      * 排序

@@ -40,9 +40,9 @@ public class RoleServiceImpl implements RoleService {
     }
 
     @Override
-    public List<RoleBO> getAllRoles(Boolean enable) {
-        log.info("获取所有角色，enable: {}", enable);
-        return roleRepository.selectAll(enable);
+    public List<RoleBO> getAllRoles(String status) {
+        log.info("获取所有角色，status: {}", status);
+        return roleRepository.selectAll(status);
     }
 
     @Override

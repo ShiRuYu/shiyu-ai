@@ -53,15 +53,10 @@ public class RoleController {
      */
     @GetMapping("")
     public ResponseEntity<Result<List<RoleBO>>> getAllRoles(
-            @RequestParam(required = false) Integer enable) {
-        log.info("获取所有角色，enable: {}", enable);
+            @RequestParam(required = false) String status) {
+        log.info("获取所有角色，status: {}", status);
         
-        Boolean enableBool = null;
-        if (enable != null) {
-            enableBool = enable == 1;
-        }
-        
-        List<RoleBO> roles = roleService.getAllRoles(enableBool);
+        List<RoleBO> roles = roleService.getAllRoles(status);
         
         return ResponseEntity.ok(Result.success(roles));
     }
@@ -78,6 +73,25 @@ public class RoleController {
         RoleBO roleBO = MapstructUtils.convert(request, RoleBO.class);
         boolean success = roleService.updateRole(id, roleBO);
         
+        if (success) {
+            return ResponseEntity.ok(Result.success());
+        } else {
+            return ResponseEntity.badRequest().body(Result.fail("角色不存在"));
+        }
+    }
+
+    /**
+     * 修改角色
+     */
+    @PutMapping("/{id}")
+    public ResponseEntity<Result<Void>> putRole(
+            @PathVariable Long id,
+            @RequestBody RoleRequest request) {
+        log.info("修改角色，id: {}", id);
+
+        RoleBO roleBO = MapstructUtils.convert(request, RoleBO.class);
+        boolean success = roleService.updateRole(id, roleBO);
+
         if (success) {
             return ResponseEntity.ok(Result.success());
         } else {

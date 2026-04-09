@@ -109,8 +109,8 @@ public class MenuController {
                 vo.setType(type != null ? type.toLowerCase() : "menu");
             }
             
-            // 设置状态：enable=true -> status=1, enable=false -> status=0
-            vo.setStatus(Boolean.TRUE.equals(menuBO.getEnable()) ? 1 : 0);
+            // 设置状态：status="1" -> status=1, status="0" -> status=0
+            vo.setStatus("1".equals(menuBO.getStatus()) ? 1 : 0);
             
             // 设置权限码（使用 code 字段）
             vo.setAuthCode(menuBO.getCode());

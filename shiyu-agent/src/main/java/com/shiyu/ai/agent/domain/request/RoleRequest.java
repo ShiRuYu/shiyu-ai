@@ -26,7 +26,7 @@ public class RoleRequest implements Serializable {
     private String name;
 
     /**
-     * 是否启用（1 是 0 否）
+     * 状态（1正常 0停用）
      */
-    private Boolean enable;
+    private String status;
 }

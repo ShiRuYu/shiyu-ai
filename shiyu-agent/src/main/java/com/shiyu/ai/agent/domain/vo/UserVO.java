@@ -35,9 +35,9 @@ public class UserVO implements Serializable {
     private String password;
 
     /**
-     * 是否启用
+     * 状态（1正常 0停用）
      */
-    private Boolean enable;
+    private String status;
 
     /**
      * 删除标志（0：正常 1：已删除）

@@ -23,10 +23,10 @@ public interface RoleService {
     /**
      * 获取角色列表-all
      *
-     * @param enable 是否启用（可选）
+     * @param status 状态（可选，1正常 0停用）
      * @return 角色列表
      */
-    List<RoleBO> getAllRoles(Boolean enable);
+    List<RoleBO> getAllRoles(String status);
 
     /**
      * 修改角色

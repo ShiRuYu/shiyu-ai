@@ -44,10 +44,10 @@ public class RoleRepository {
     /**
      * 查询所有角色
      */
-    public List<RoleBO> selectAll(Boolean enable) {
+    public List<RoleBO> selectAll(String status) {
         QueryWrapper queryWrapper = new QueryWrapper();
-        if (enable != null) {
-            queryWrapper.eq("enable", enable);
+        if (status != null && !status.isEmpty()) {
+            queryWrapper.eq("status", status);
         }
         List<RoleDO> roleDOs = roleMapper.selectListByQuery(queryWrapper);
         return MapstructUtils.convert(roleDOs, RoleBO.class);

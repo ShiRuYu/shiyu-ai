@@ -76,7 +76,7 @@ public class UserRepository {
         UserDO userDO = MapstructUtils.convert(userBO, UserDO.class);
         userDO.setCreateTime(new Date());
         userDO.setUpdateTime(new Date());
-        userDO.setEnable(true);
+        userDO.setStatus("1");
         
         userMapper.insert(userDO);
         return MapstructUtils.convert(userDO, UserBO.class);
