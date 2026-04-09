@@ -5,6 +5,7 @@ mybatis-flex:
   # 启动时是否检查 MyBatis XML 文件的存在，默认不检查
   check-config-location: false
   global-config:
+    key-config: Auto
     # 是否打印 Logo banner
     banner: true
     dbConfig:

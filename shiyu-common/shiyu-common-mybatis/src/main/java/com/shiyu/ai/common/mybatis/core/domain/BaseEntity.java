@@ -16,11 +16,6 @@ public class BaseEntity implements Serializable {
     private static final long serialVersionUID = 1L;
 
     /**
-     * 创建部门
-     */
-    private Long createDept;
-
-    /**
      * 创建者
      */
     private Long createBy;
