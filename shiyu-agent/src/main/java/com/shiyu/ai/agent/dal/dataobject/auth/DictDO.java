@@ -46,14 +46,24 @@ public class DictDO implements Serializable {
     private Integer dictSort;
 
     /**
-     * 状态（0正常 1停用）
+     * 样式属性
      */
-    private String status;
+    private String cssClass;
 
     /**
-     * 删除标志（0存在 1删除）
+     * 表格回显样式
      */
-    private String delFlag;
+    private String listClass;
+
+    /**
+     * 是否默认（Y是 N否）
+     */
+    private String isDefault;
+
+    /**
+     * 状态（1正常 0停用）
+     */
+    private String status;
 
     /**
      * 备注
@@ -69,4 +79,9 @@ public class DictDO implements Serializable {
      * 更新时间
      */
     private Date updateTime;
+
+    /**
+     * 删除标志（0存在 1删除）
+     */
+    private String delFlag;
 }

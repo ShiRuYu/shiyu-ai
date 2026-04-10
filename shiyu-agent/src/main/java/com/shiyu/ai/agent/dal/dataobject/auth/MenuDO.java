@@ -28,52 +28,82 @@ public class MenuDO implements Serializable {
     /**
      * 菜单名称
      */
-    private String menuName;
+    private String name;
 
     /**
-     * 父菜单ID
+     * 菜单编码
+     */
+    private String code;
+
+    /**
+     * 菜单类型（MENU/BUTTON）
+     */
+    private String type;
+
+    /**
+     * 父菜单 ID
      */
     private Long parentId;
 
     /**
-     * 显示顺序
-     */
-    private Integer orderNum;
-
-    /**
-     * 路由地址
+     * 路径
      */
     private String path;
 
     /**
-     * 组件路径
+     * 重定向地址
      */
-    private String component;
+    private String redirect;
 
     /**
-     * 菜单类型（M目录 C菜单 F按钮）
-     */
-    private String menuType;
-
-    /**
-     * 权限标识
-     */
-    private String perms;
-
-    /**
-     * 菜单图标
+     * 图标
      */
     private String icon;
 
     /**
-     * 状态（0正常 1停用）
+     * 组件
+     */
+    private String component;
+
+    /**
+     * 布局
+     */
+    private String layout;
+
+    /**
+     * 是否缓存
+     */
+    private Boolean keepAlive;
+
+    /**
+     * 请求方法
+     */
+    private String method;
+
+    /**
+     * 描述
+     */
+    private String description;
+
+    /**
+     * 是否显示
+     */
+    private Boolean show;
+
+    /**
+     * 状态（1正常 0停用）
      */
     private String status;
 
     /**
-     * 删除标志（0存在 1删除）
+     * 排序
      */
-    private String delFlag;
+    private Integer order;
+
+    /**
+     * 删除标志（0：正常 1：已删除）
+     */
+    private Integer delFlag;
 
     /**
      * 创建时间

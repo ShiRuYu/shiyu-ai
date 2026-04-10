@@ -34,7 +34,7 @@ public class MenuRepository {
      */
     public List<MenuBO> selectAllByType(String type) {
         QueryWrapper queryWrapper = new QueryWrapper()
-                .where(MenuDO::getMenuType).eq(type);
+                .where(MenuDO::getType).eq(type);
         List<MenuDO> menuDOs = menuMapper.selectListByQuery(queryWrapper);
         return MapstructUtils.convert(menuDOs, MenuBO.class);
     }

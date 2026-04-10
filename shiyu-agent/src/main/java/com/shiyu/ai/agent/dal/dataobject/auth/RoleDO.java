@@ -26,34 +26,24 @@ public class RoleDO implements Serializable {
     private Long id;
 
     /**
+     * 角色编码
+     */
+    private String code;
+
+    /**
      * 角色名称
      */
-    private String roleName;
+    private String name;
 
     /**
-     * 角色权限字符串
-     */
-    private String roleKey;
-
-    /**
-     * 显示顺序
-     */
-    private Integer roleSort;
-
-    /**
-     * 状态（0正常 1停用）
+     * 状态（1正常 0停用）
      */
     private String status;
 
     /**
-     * 删除标志（0存在 1删除）
+     * 删除标志（0：正常 1：已删除）
      */
-    private String delFlag;
-
-    /**
-     * 备注
-     */
-    private String remark;
+    private Integer delFlag;
 
     /**
      * 创建时间

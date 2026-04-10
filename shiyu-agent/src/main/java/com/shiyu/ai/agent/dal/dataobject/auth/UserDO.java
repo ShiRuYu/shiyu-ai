@@ -36,49 +36,14 @@ public class UserDO implements Serializable {
     private String password;
 
     /**
-     * 昵称
-     */
-    private String nickname;
-
-    /**
-     * 手机号
-     */
-    private String phone;
-
-    /**
-     * 邮箱
-     */
-    private String email;
-
-    /**
-     * 头像
-     */
-    private String avatar;
-
-    /**
-     * 性别（0男 1女 2未知）
-     */
-    private String sex;
-
-    /**
-     * 状态（0正常 1停用）
+     * 状态（1正常 0停用）
      */
     private String status;
 
     /**
-     * 删除标志（0存在 1删除）
+     * 删除标志（0：正常 1：已删除）
      */
-    private String delFlag;
-
-    /**
-     * 最后登录IP
-     */
-    private String loginIp;
-
-    /**
-     * 最后登录时间
-     */
-    private Date loginDate;
+    private Integer delFlag;
 
     /**
      * 创建时间
@@ -89,4 +54,29 @@ public class UserDO implements Serializable {
      * 更新时间
      */
     private Date updateTime;
+
+    /**
+     * 昵称
+     */
+    private String nickName;
+
+    /**
+     * 性别
+     */
+    private String gender;
+
+    /**
+     * 头像
+     */
+    private String avatar;
+
+    /**
+     * 地址
+     */
+    private String address;
+
+    /**
+     * 邮箱
+     */
+    private String email;
 }

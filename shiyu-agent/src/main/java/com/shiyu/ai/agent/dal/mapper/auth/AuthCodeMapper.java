@@ -16,6 +16,11 @@ import java.util.List;
 public interface AuthCodeMapper extends BaseMapperFlex<AuthCodeDO> {
 
     /**
+     * 根据角色 ID 查询权限码列表
+     */
+    List<String> selectCodesByRoleId(Long roleId);
+
+    /**
      * 根据用户名查询权限码列表
      */
     List<String> selectCodesByUsername(String username);

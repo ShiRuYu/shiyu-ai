@@ -12,14 +12,32 @@ springdoc:
   api-docs:
     enabled: true               # 是否启用 API 文档
     path: /v3/api-docs         # OpenAPI JSON 文档访问路径，默认 /v3/api-docs
-  #逗号分割
-  packages-to-scan: com.shiyu.ai.agent.auth.controller,com.shiyu.ai.agent.agent.controller
   group-configs:
     - group: 'default'
       paths-to-match:
         - '/**'
       packages-to-scan:
         - com.shiyu.ai.agent.biz.**.controller
+    - group: 'common'
+      paths-to-match:
+        - '/**'
+      packages-to-scan:
+        - com.shiyu.ai.agent.biz.common.controller
+    - group: 'auth'
+      paths-to-match:
+        - '/**'
+      packages-to-scan:
+        - com.shiyu.ai.agent.biz.auth.controller
+    - group: 'record'
+      paths-to-match:
+        - '/**'
+      packages-to-scan:
+        - com.shiyu.ai.agent.biz.record.controller
+    - group: 'agent'
+      paths-to-match:
+        - '/**'
+      packages-to-scan:
+        - com.shiyu.ai.agent.biz.agent.controller
   swagger-ui:
     path: /swagger-ui/index.html      # Swagger UI 访问路径，默认 /swagger-ui/index.html
     display-request-duration: true  # 显示请求耗时

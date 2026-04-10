@@ -37,12 +37,4 @@ public class OpenApiConfig {
                 );
     }
 
-
-    @Bean
-    public GroupedOpenApi sysApi() {
-        return GroupedOpenApi.builder()
-                .group("系统接口")
-                .pathsToMatch("/sys/**")
-                .build();
-    }
 }

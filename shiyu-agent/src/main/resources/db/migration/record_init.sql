@@ -1,5 +1,5 @@
 -- 个人成长记录系统数据库表结构
--- 使用 ds2 数据源 (recorddb)
+-- 使用 record 数据源 (recorddb)
 
 -- 人物表(profile)
 CREATE TABLE IF NOT EXISTS profile (

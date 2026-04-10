@@ -10,7 +10,7 @@ import java.io.Serializable;
 import java.util.Date;
 
 /**
- * 认证码数据对象
+ * 权限码数据对象
  */
 @Data
 @Table(value = "auth_code")
@@ -20,38 +20,43 @@ public class AuthCodeDO implements Serializable {
     private static final long serialVersionUID = 1L;
 
     /**
-     * ID
+     * 权限码 ID
      */
     @Id(keyType = KeyType.Auto)
     private Long id;
 
     /**
-     * 验证码
+     * 权限编码
      */
     private String code;
 
     /**
-     * 手机号/邮箱
+     * 权限名称
      */
-    private String target;
+    private String name;
 
     /**
-     * 类型（login/register/reset）
+     * 角色 ID
      */
-    private String type;
+    private Long roleId;
 
     /**
-     * 过期时间
+     * 状态（1正常 0停用）
      */
-    private Date expireTime;
+    private String status;
 
     /**
-     * 是否使用
+     * 删除标志（0：正常 1：已删除）
      */
-    private Integer used;
+    private Integer delFlag;
 
     /**
      * 创建时间
      */
     private Date createTime;
+
+    /**
+     * 更新时间
+     */
+    private Date updateTime;
 }
