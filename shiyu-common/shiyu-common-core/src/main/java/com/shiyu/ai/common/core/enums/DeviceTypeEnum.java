@@ -24,7 +24,38 @@ public enum DeviceTypeEnum {
     /**
      * 小程序端
      */
-    XCX("xcx");
+    XCX("xcx"),
+
+    /**
+     * Windows系统
+     */
+    WINDOWS("windows"),
+
+    /**
+     * Mac系统
+     */
+    MAC("mac"),
+
+    /**
+     * Linux系统
+     */
+    LINUX("linux"),
+
+    /**
+     * Android系统
+     */
+    ANDROID("android"),
+
+    /**
+     * iOS系统
+     */
+    IOS("ios"),
+
+    /**
+     * 未知设备
+     */
+    UNKNOWN("unknown");
+
 
     private final String device;
 }

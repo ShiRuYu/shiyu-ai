@@ -19,11 +19,18 @@ public interface AuthService {
     LoginResponseVO login(String username, String password);
     
     /**
-     * 获取用户权限码
+     * 获取用户权限码（通过用户名）
      * @param username 用户名
      * @return 权限码列表
      */
     List<String> getAuthCodes(String username);
+    
+    /**
+     * 获取用户权限码（通过用户 ID）
+     * @param userId 用户 ID
+     * @return 权限码列表
+     */
+    List<String> getAuthCodesByUserId(Long userId);
     
     /**
      * 刷新访问令牌

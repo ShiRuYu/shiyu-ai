@@ -25,5 +25,16 @@
           AND u.del_flag = 0
         ORDER BY ac.id
     </select>
+    
+    <!-- 根据用户 ID 查询权限码列表 -->
+    <select id="selectCodesByUserId" resultType="java.lang.String">
+        SELECT DISTINCT ac.code
+        FROM auth_code ac
+        INNER JOIN user_role ur ON ac.role_id = ur.role_id
+        WHERE ur.user_id = #{userId}
+          AND ac.status = '1'
+          AND ac.del_flag = 0
+        ORDER BY ac.id
+    </select>
 
 </mapper>

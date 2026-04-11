@@ -4,10 +4,12 @@ import com.shiyu.ai.agent.domain.request.LoginRequest;
 import com.shiyu.ai.agent.domain.vo.LoginResponseVO;
 import com.shiyu.ai.agent.biz.auth.service.AuthService;
 import com.shiyu.ai.common.core.api.Result;
+import com.shiyu.ai.common.core.domain.LoginHelper;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
+import java.util.Map;
 
 /**
  * 认证 Controller
@@ -59,21 +61,19 @@ public class AuthController {
     /**
      * 获取用户权限码
      * GET /auth/codes
-     * @param token 访问令牌（从 Header 中获取）
      * @return 权限码列表
      */
     @GetMapping("/codes")
-    public Result<List<String>> getAuthCodes(
-            @RequestHeader(value = "Authorization", required = false) String token) {
+    public Result<List<String>> getAuthCodes() {
         log.info("收到获取权限码请求");
         
         try {
-            String username = extractUsernameFromToken(token);
-            if (username == null || username.trim().isEmpty()) {
-                return Result.fail("未认证或 token 无效");
-            }
+            // 从 LoginHelper 获取当前登录用户 ID
+            Long userId = LoginHelper.getUserId();
+            log.debug("当前登录用户 ID: {}", userId);
             
-            List<String> codes = authService.getAuthCodes(username);
+            // 通过用户 ID 查询权限码
+            List<String> codes = authService.getAuthCodesByUserId(userId);
             return Result.success(codes);
             
         } catch (Exception e) {
@@ -85,22 +85,22 @@ public class AuthController {
     /**
      * 刷新访问令牌
      * POST /auth/refresh
-     * @param refreshToken 刷新令牌（从 Cookie 中获取）
+     * @param request 包含旧 token 的请求体
      * @return 新的访问令牌
      */
     @PostMapping("/refresh")
-    public Result<String> refreshToken(
-            @CookieValue(value = "refreshToken", required = false) String refreshToken) {
+    public Result<String> refreshToken(@RequestBody Map<String, String> request) {
         log.info("收到刷新令牌请求");
         
         try {
-            if (refreshToken == null || refreshToken.trim().isEmpty()) {
-                return Result.fail("Refresh token is required");
+            String oldToken = request.get("accessToken");
+            if (oldToken == null || oldToken.trim().isEmpty()) {
+                return Result.fail("Access token is required");
             }
             
-            String newAccessToken = authService.refreshToken(refreshToken);
+            String newAccessToken = authService.refreshToken(oldToken);
             if (newAccessToken == null) {
-                return Result.fail("Invalid refresh token");
+                return Result.fail("Invalid access token");
             }
             
             return Result.success(newAccessToken);
@@ -111,45 +111,22 @@ public class AuthController {
         }
     }
     
-    /**
-     * 从 token 中提取用户名（简化实现）
-     */
-    private String extractUsernameFromToken(String token) {
-        if (token == null || token.trim().isEmpty()) {
-            return null;
-        }
-        
-        // 移除 Bearer 前缀
-        String accessToken = token;
-        if (token.startsWith("Bearer ")) {
-            accessToken = token.substring(7);
-        }
-        
-        // 简化解析：access-token:username:nickname
-        if (accessToken.startsWith("access-token:")) {
-            String[] parts = accessToken.split(":");
-            if (parts.length >= 2) {
-                return parts[1];
-            }
-        }
-        
-        return null;
-    }
-    
+
     /**
      * 用户登出
      * POST /auth/logout
-     * @param refreshToken 刷新令牌（从 Cookie 中获取）
+     * @param tokenHeader Authorization Header（Bearer Token）
      * @return 登出结果
      */
     @PostMapping("/logout")
     public Result<String> logout(
-            @CookieValue(value = "refreshToken", required = false) String refreshToken) {
+            @RequestHeader(value = "Authorization", required = false) String tokenHeader) {
         log.info("收到登出请求");
         
         try {
-            if (refreshToken != null && !refreshToken.trim().isEmpty()) {
-                authService.logout(refreshToken);
+            String token = extractTokenFromHeader(tokenHeader);
+            if (token != null && !token.trim().isEmpty()) {
+                authService.logout(token);
             }
             
             return Result.success("");
@@ -158,5 +135,21 @@ public class AuthController {
             log.error("登出失败", e);
             return Result.fail("登出失败：" + e.getMessage());
         }
+    }
+    
+    /**
+     * 从 Authorization Header 中提取 Token
+     */
+    private String extractTokenFromHeader(String tokenHeader) {
+        if (tokenHeader == null || tokenHeader.trim().isEmpty()) {
+            return null;
+        }
+        
+        // 移除 Bearer 前缀
+        if (tokenHeader.startsWith("Bearer ")) {
+            return tokenHeader.substring(7);
+        }
+        
+        return tokenHeader;
     }
 }

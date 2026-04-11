@@ -21,4 +21,11 @@ public class AuthRepository {
     public List<String> selectCodesByUsername(String username) {
         return authCodeMapper.selectCodesByUsername(username);
     }
+    
+    /**
+     * 根据用户 ID 查询权限码列表
+     */
+    public List<String> selectCodesByUserId(Long userId) {
+        return authCodeMapper.selectCodesByUserId(userId);
+    }
 }

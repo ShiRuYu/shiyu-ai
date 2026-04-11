@@ -24,4 +24,9 @@ public interface AuthCodeMapper extends BaseMapperFlex<AuthCodeDO> {
      * 根据用户名查询权限码列表
      */
     List<String> selectCodesByUsername(String username);
+    
+    /**
+     * 根据用户 ID 查询权限码列表
+     */
+    List<String> selectCodesByUserId(Long userId);
 }

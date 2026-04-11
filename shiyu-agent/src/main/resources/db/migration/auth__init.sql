@@ -116,19 +116,20 @@ CREATE TABLE IF NOT EXISTS `dict` (
 
 -- ============================================
 -- 2. 初始化用户数据（根据 API 文档模拟数据）
+-- 注意：密码已使用 BCrypt 加密，原始密码均为: 123456
 -- ============================================
 
 -- 用户 vben (ID: 0) - super 角色
 INSERT INTO `user` (`id`, `username`, `password`, `status`, `del_flag`, `create_time`, `update_time`, `nick_name`, `gender`, `avatar`, `address`, `email`) 
-VALUES (0, 'vben', '123456', '1', 0, NOW(), NOW(), 'Vben', NULL, NULL, NULL, NULL);
+VALUES (0, 'vben', '$2a$10$upTL84vHb86f9vMVMn4m8uOGqGr9Pedo.CCsg.XmZ62xhU2IIHJvy', '1', 0, NOW(), NOW(), 'Vben', NULL, NULL, NULL, NULL);
 
 -- 用户 admin (ID: 1)
 INSERT INTO `user` (`id`, `username`, `password`, `status`, `del_flag`, `create_time`, `update_time`, `nick_name`, `gender`, `avatar`, `address`, `email`) 
-VALUES (1, 'admin', '123456', '1', 0, NOW(), NOW(), 'Admin', NULL, NULL, NULL, NULL);
+VALUES (1, 'admin', '$2a$10$upTL84vHb86f9vMVMn4m8uOGqGr9Pedo.CCsg.XmZ62xhU2IIHJvy', '1', 0, NOW(), NOW(), 'Admin', NULL, NULL, NULL, NULL);
 
 -- 用户 jack (ID: 2)
 INSERT INTO `user` (`id`, `username`, `password`, `status`, `del_flag`, `create_time`, `update_time`, `nick_name`, `gender`, `avatar`, `address`, `email`) 
-VALUES (2, 'jack', '123456', '1', 0, NOW(), NOW(), 'Jack', NULL, NULL, NULL, NULL);
+VALUES (2, 'jack', '$2a$10$upTL84vHb86f9vMVMn4m8uOGqGr9Pedo.CCsg.XmZ62xhU2IIHJvy', '1', 0, NOW(), NOW(), 'Jack', NULL, NULL, NULL, NULL);
 
 -- ============================================
 -- 3. 初始化角色数据

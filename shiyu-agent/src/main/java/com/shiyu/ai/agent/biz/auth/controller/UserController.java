@@ -1,5 +1,6 @@
 package com.shiyu.ai.agent.biz.auth.controller;
 
+import com.shiyu.ai.agent.domain.bo.RoleBO;
 import com.shiyu.ai.agent.domain.request.UserRequest;
 import com.shiyu.ai.agent.domain.bo.UserBO;
 import com.shiyu.ai.agent.domain.vo.UserPageResponse;
@@ -7,9 +8,9 @@ import com.shiyu.ai.agent.domain.vo.UserVO;
 import com.shiyu.ai.agent.domain.vo.UserInfoVO;
 import com.shiyu.ai.agent.biz.auth.service.UserService;
 import com.shiyu.ai.common.core.api.Result;
+import com.shiyu.ai.common.core.domain.LoginHelper;
 import com.shiyu.ai.common.core.utils.MapstructUtils;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -40,8 +41,12 @@ public class UserController {
         log.info("获取当前用户信息");
         
         try {
-            // TODO: 从 token 中解析用户 ID，这里暂时使用固定值
-            Long userId = 1L;
+            // 从 LoginHelper 获取当前登录用户 ID
+            Long userId = LoginHelper.getUserId();
+            if (userId == null) {
+                return Result.fail("用户未登录");
+            }
+            
             UserBO userBO = userService.getUserDetail(userId);
             
             if (userBO == null) {
@@ -59,7 +64,7 @@ public class UserController {
             // 设置角色列表
             if (userBO.getRoles() != null && !userBO.getRoles().isEmpty()) {
                 userInfoVO.setRoles(userBO.getRoles().stream()
-                        .map(role -> role.getCode())
+                        .map(RoleBO::getCode)
                         .collect(Collectors.toList()));
             } else {
                 userInfoVO.setRoles(List.of());
@@ -80,8 +85,12 @@ public class UserController {
     public Result<UserVO> getUserDetail() {
         log.info("获取用户详情");
         
-        // TODO: 从 token 中解析用户 ID，这里暂时使用固定值
-        Long userId = 1L;
+        // 从 LoginHelper 获取当前登录用户 ID
+        Long userId = LoginHelper.getUserId();
+        if (userId == null) {
+            return Result.fail("用户未登录");
+        }
+        
         UserBO userBO = userService.getUserDetail(userId);
         
         if (userBO == null) {

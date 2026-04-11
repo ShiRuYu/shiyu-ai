@@ -49,4 +49,19 @@ public class LoginResponseVO implements Serializable {
      * 访问令牌
      */
     private String accessToken;
+
+    /**
+     * 令牌类型（默认 Bearer）
+     */
+    private String tokenType = "Bearer";
+
+    /**
+     * 过期时间（秒）
+     */
+    private Long expiresIn;
+
+    /**
+     * 权限码列表
+     */
+    private List<String> permissions;
 }

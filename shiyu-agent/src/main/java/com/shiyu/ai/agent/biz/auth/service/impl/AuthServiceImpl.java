@@ -6,14 +6,17 @@ import com.shiyu.ai.agent.biz.auth.service.AuthService;
 import com.shiyu.ai.agent.domain.bo.RoleBO;
 import com.shiyu.ai.agent.domain.bo.UserBO;
 import com.shiyu.ai.agent.domain.vo.LoginResponseVO;
+import com.shiyu.ai.agent.utils.SaTokenHelper;
+import com.shiyu.ai.common.core.utils.PasswordUtils;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
 import java.util.*;
 import java.util.stream.Collectors;
 
 /**
- * 认证服务实现类（基于模拟数据）
+ * 认证服务实现类（基于 SaToken）
  */
 @Slf4j
 @Service
@@ -22,11 +25,8 @@ public class AuthServiceImpl implements AuthService {
     private final AuthRepository authRepository;
     private final UserRepository userRepository;
     
-    // 模拟 token 存储（实际项目中应该使用 Redis 等）
-    private static final Map<String, String> TOKEN_STORE = new HashMap<>();
-    
-    // 模拟 refresh token 存储
-    private static final Map<String, String> REFRESH_TOKEN_STORE = new HashMap<>();
+    @Value("${sa-token.timeout:7200}")
+    private long tokenTimeout; // Token 过期时间（秒），默认 2 小时
     
     public AuthServiceImpl(AuthRepository authRepository, UserRepository userRepository) {
         this.authRepository = authRepository;
@@ -51,8 +51,8 @@ public class AuthServiceImpl implements AuthService {
                 return null;
             }
             
-            // 3. 验证密码
-            if (password == null || !password.equals(user.getPassword())) {
+            // 3. 验证密码（使用 BCrypt）
+            if (password == null || !PasswordUtils.matches(password, user.getPassword())) {
                 log.warn("登录失败：密码错误 - {}", username);
                 return null;
             }
@@ -60,19 +60,25 @@ public class AuthServiceImpl implements AuthService {
             // 4. 从数据库查询用户的角色列表
             List<RoleBO> roles = userRepository.selectRolesByUserId(user.getId());
             
-            // 5. 生成访问令牌和刷新令牌
-            String accessToken = generateAccessToken(user);
-            String refreshToken = generateRefreshToken(user);
+            // 5. 从数据库查询用户的权限码列表
+            List<String> permissions = authRepository.selectCodesByUsername(username);
             
-            // 6. 构建响应数据
+            // 6. 单设备登录：先踢掉旧会话，再生成 Token
+            SaTokenHelper helper = SaTokenHelper.getInstance();
+            String accessToken = helper.loginWithKickout(user.getId());
+            
+            // 7. 获取 Token 过期时间
+            long timeout = helper.getTokenTimeout();
+            
+            // 9. 构建响应数据
             LoginResponseVO response = new LoginResponseVO();
             response.setId(user.getId());
-            response.setPassword(user.getPassword());
-            response.setRealName(user.getUsername());
+            // 注意：不要返回密码
+            response.setRealName(user.getNickName() != null ? user.getNickName() : user.getUsername());
             response.setUsername(user.getUsername());
             response.setHomePath("/workspace"); // 默认首页
             
-            // 设置角色列表（从数据库查询的角色信息）
+            // 设置角色列表
             if (roles != null && !roles.isEmpty()) {
                 response.setRoles(roles.stream()
                         .map(RoleBO::getCode)
@@ -81,9 +87,17 @@ public class AuthServiceImpl implements AuthService {
                 response.setRoles(new ArrayList<>());
             }
             
-            response.setAccessToken(accessToken);
+            // 设置权限码列表
+            response.setPermissions(permissions != null ? permissions : new ArrayList<>());
             
-            log.info("登录成功：username={}, roles={}, accessToken={}", username, response.getRoles(), accessToken);
+            // 设置 Token 信息
+            response.setAccessToken(accessToken);
+            response.setTokenType("Bearer");
+            response.setExpiresIn(timeout);
+            
+            log.info("登录成功：username={}, userId={}, roles={}, permissionsCount={}", 
+                    username, user.getId(), response.getRoles(), 
+                    response.getPermissions() != null ? response.getPermissions().size() : 0);
             return response;
             
         } catch (Exception e) {
@@ -114,68 +128,68 @@ public class AuthServiceImpl implements AuthService {
     }
     
     @Override
-    public String refreshToken(String refreshToken) {
-        log.info("刷新访问令牌");
+    public List<String> getAuthCodesByUserId(Long userId) {
+        log.info("获取用户权限码：userId={}", userId);
         
-        // 验证 refresh token
-        String username = REFRESH_TOKEN_STORE.get(refreshToken);
-        if (username == null) {
-            log.warn("无效的 refresh token");
-            return null;
+        try {
+            // 从数据库查询权限码（通过用户 ID）
+            List<String> codes = authRepository.selectCodesByUserId(userId);
+            
+            if (codes == null || codes.isEmpty()) {
+                log.warn("用户 ID {} 没有配置权限码", userId);
+                return new ArrayList<>();
+            }
+            
+            return codes;
+            
+        } catch (Exception e) {
+            log.error("获取权限码失败：userId={}", userId, e);
+            return new ArrayList<>();
         }
-        
-        // 从数据库查询用户
-        UserBO user = userRepository.selectByUsername(username);
-        if (user == null) {
-            log.warn("用户不存在：{}", username);
-            return null;
-        }
-        
-        // 生成新的 access token
-        String newAccessToken = generateAccessToken(user);
-        log.info("刷新令牌成功：username={}", username);
-        
-        return newAccessToken;
     }
     
     @Override
-    public void logout(String refreshToken) {
+    public String refreshToken(String oldToken) {
+        log.info("刷新访问令牌");
+        
+        try {
+            // 1. 从旧 Token 中提取 userId
+            SaTokenHelper helper = SaTokenHelper.getInstance();
+            Long userId = helper.getUserIdByToken(oldToken);
+            if (userId == null) {
+                log.warn("无效的 access token");
+                return null;
+            }
+            
+            // 2. 刷新 Token（先登出再登录）
+            String newAccessToken = helper.refreshToken(userId);
+            
+            log.info("刷新令牌成功：userId={}", userId);
+            return newAccessToken;
+            
+        } catch (Exception e) {
+            log.error("刷新令牌失败", e);
+            return null;
+        }
+    }
+    
+    @Override
+    public void logout(String token) {
         log.info("收到登出请求");
         
-        // 从 refresh token 存储中移除
-        String username = REFRESH_TOKEN_STORE.remove(refreshToken);
-        
-        // 同时移除相关的 access token
-        if (username != null) {
-            TOKEN_STORE.entrySet().removeIf(entry -> entry.getValue().equals(username));
+        try {
+            // 从 Token 中提取 userId
+            SaTokenHelper helper = SaTokenHelper.getInstance();
+            Long userId = helper.getUserIdByToken(token);
+            if (userId != null) {
+                // 执行登出
+                helper.logout(userId);
+                log.info("登出成功：userId={}", userId);
+            } else {
+                log.warn("无效的 token，无法登出");
+            }
+        } catch (Exception e) {
+            log.error("登出失败", e);
         }
-        
-        log.info("登出成功");
-    }
-    
-    /**
-     * 生成访问令牌
-     */
-    private String generateAccessToken(UserBO user) {
-        // 生成简单的 token（实际项目中应该使用 JWT 等安全令牌）
-        String accessToken = "access-token:" + user.getUsername() + ":" + System.currentTimeMillis();
-        
-        // 存储 token（设置过期时间等）
-        TOKEN_STORE.put(accessToken, user.getUsername());
-        
-        return accessToken;
-    }
-    
-    /**
-     * 生成刷新令牌
-     */
-    private String generateRefreshToken(UserBO user) {
-        // 生成简单的 refresh token
-        String refreshToken = "refresh-token:" + user.getUsername() + ":" + System.currentTimeMillis();
-        
-        // 存储 refresh token
-        REFRESH_TOKEN_STORE.put(refreshToken, user.getUsername());
-        
-        return refreshToken;
     }
 }
