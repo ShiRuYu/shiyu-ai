@@ -84,6 +84,11 @@ public class TimelineEventRepository {
      */
     public TimelineEventBO insert(TimelineEventBO eventBO) {
         TimelineEventDO eventDO = MapstructUtils.convert(eventBO, TimelineEventDO.class);
+        // 如果事件时间为空，使用当前时间作为默认值
+        assert eventDO != null;
+        if (eventDO.getEventTime() == null) {
+            eventDO.setEventTime(new java.util.Date());
+        }
         timelineEventMapper.insert(eventDO);
         eventBO.setId(eventDO.getId());
         return eventBO;

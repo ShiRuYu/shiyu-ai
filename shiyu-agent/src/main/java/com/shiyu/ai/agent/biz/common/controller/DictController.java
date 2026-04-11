@@ -2,15 +2,13 @@ package com.shiyu.ai.agent.biz.common.controller;
 
 import com.shiyu.ai.agent.biz.common.service.DictService;
 import com.shiyu.ai.agent.domain.bo.DictBO;
+import com.shiyu.ai.common.core.api.PageData;
 import com.shiyu.ai.common.core.api.Result;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.tuple.Pair;
-import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 
 /**
  * 字典管理 Controller
@@ -30,22 +28,14 @@ public class DictController {
      * 字典列表 - 分页
      */
     @GetMapping("/page")
-    public Result<Map<String, Object>> getDictList(
-            @RequestParam(required = false) Integer pageNo,
-            @RequestParam(required = false) Integer pageSize) {
+    public Result<PageData<DictBO>> getDictList(
+            @RequestParam(required = false, defaultValue = "1") Integer pageNo,
+            @RequestParam(required = false, defaultValue = "10") Integer pageSize) {
         log.info("获取字典列表，pageNo: {}, pageSize: {}", pageNo, pageSize);
         
-        // 设置默认值
-        if (pageNo == null) pageNo = 1;
-        if (pageSize == null) pageSize = 10;
-        
         Pair<Long, List<DictBO>> result = dictService.getAll(pageNo, pageSize);
-        
-        Map<String, Object> data = new HashMap<>();
-        data.put("total", result.getLeft());
-        data.put("list", result.getRight());
-        
-        return Result.success(data);
+        PageData<DictBO> pageData = new PageData<>(result.getRight(), result.getLeft());
+        return Result.success(pageData);
     }
 
     /**

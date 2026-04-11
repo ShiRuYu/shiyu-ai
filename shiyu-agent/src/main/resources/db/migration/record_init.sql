@@ -171,3 +171,11 @@ INSERT INTO record_tag (record_id, tag_id) VALUES
 (6, 6),
 (7, 1),
 (7, 7);
+
+-- ==================== 重置自增序列 ====================
+-- H2数据库在手动插入ID后需要重置序列，避免主键冲突
+ALTER TABLE profile ALTER COLUMN id RESTART WITH 100;
+ALTER TABLE timeline_event ALTER COLUMN id RESTART WITH 100;
+ALTER TABLE record ALTER COLUMN id RESTART WITH 100;
+ALTER TABLE media ALTER COLUMN id RESTART WITH 100;
+ALTER TABLE tag ALTER COLUMN id RESTART WITH 100;

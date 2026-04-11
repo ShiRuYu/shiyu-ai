@@ -2,6 +2,7 @@ package com.shiyu.ai.agent.biz.record.controller;
 
 import com.shiyu.ai.agent.domain.bo.ProfileBO;
 import com.shiyu.ai.agent.biz.record.service.ProfileService;
+import com.shiyu.ai.common.core.api.PageData;
 import com.shiyu.ai.common.core.api.Result;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
@@ -27,12 +28,13 @@ public class ProfileController {
      */
     @Operation(summary = "分页查询人物列表")
     @GetMapping("/page")
-    public Result<Pair<Long, List<ProfileBO>>> getPage(
+    public Result<PageData<ProfileBO>> getPage(
             @RequestParam(required = false, defaultValue = "1") Integer pageNo,
             @RequestParam(required = false, defaultValue = "10") Integer pageSize,
             @RequestParam(required = false) Long creatorId) {
         Pair<Long, List<ProfileBO>> page = profileService.getPage(pageNo, pageSize, creatorId);
-        return Result.success(page);
+        PageData<ProfileBO> pageData = new PageData<>(page.getRight(), page.getLeft());
+        return Result.success(pageData);
     }
 
     /**

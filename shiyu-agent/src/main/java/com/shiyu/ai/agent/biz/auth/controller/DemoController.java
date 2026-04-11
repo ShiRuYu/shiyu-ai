@@ -2,8 +2,8 @@ package com.shiyu.ai.agent.biz.auth.controller;
 
 import com.shiyu.ai.agent.biz.auth.service.DemoService;
 import com.shiyu.ai.agent.domain.vo.MenuAllVO;
-import com.shiyu.ai.agent.domain.vo.PageResult;
 import com.shiyu.ai.agent.domain.vo.ProductVO;
+import com.shiyu.ai.common.core.api.PageData;
 import com.shiyu.ai.common.core.api.Result;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.format.annotation.DateTimeFormat;
@@ -46,7 +46,7 @@ public class DemoController {
      * @param end 结束日期（可选）
      */
     @GetMapping("/table/list")
-    public Result<PageResult<ProductVO>> getTableList(
+    public Result<PageData<ProductVO>> getTableList(
             @RequestParam(defaultValue = "1") Integer page,
             @RequestParam(defaultValue = "20") Integer pageSize,
             @RequestParam(required = false) String category,
@@ -54,7 +54,7 @@ public class DemoController {
             @RequestParam(required = false) @DateTimeFormat(pattern = "yyyy-MM-dd") Date end) {
         log.info("获取表格数据列表 - page: {}, pageSize: {}, category: {}, start: {}, end: {}", 
                 page, pageSize, category, start, end);
-        PageResult<ProductVO> result = demoService.getTableList(page, pageSize, category, start, end);
-        return Result.success(result);
+        PageData<ProductVO> pageData = demoService.getTableList(page, pageSize, category, start, end);
+        return Result.success(pageData);
     }
 }

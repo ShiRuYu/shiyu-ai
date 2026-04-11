@@ -2,6 +2,7 @@ package com.shiyu.ai.agent.biz.record.controller;
 
 import com.shiyu.ai.agent.domain.bo.TimelineEventBO;
 import com.shiyu.ai.agent.biz.record.service.TimelineEventService;
+import com.shiyu.ai.common.core.api.PageData;
 import com.shiyu.ai.common.core.api.Result;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
@@ -27,12 +28,13 @@ public class TimelineEventController {
      */
     @Operation(summary = "分页查询时间轴事件列表")
     @GetMapping("/page")
-    public Result<Pair<Long, List<TimelineEventBO>>> getPage(
+    public Result<PageData<TimelineEventBO>> getPage(
             @RequestParam(required = false, defaultValue = "1") Integer pageNo,
             @RequestParam(required = false, defaultValue = "20") Integer pageSize,
             @RequestParam Long profileId) {
         Pair<Long, List<TimelineEventBO>> page = timelineEventService.getPage(pageNo, pageSize, profileId);
-        return Result.success(page);
+        PageData<TimelineEventBO> pageData = new PageData<>(page.getRight(), page.getLeft());
+        return Result.success(pageData);
     }
 
     /**

@@ -2,8 +2,8 @@ package com.shiyu.ai.agent.biz.auth.service.impl;
 
 import com.shiyu.ai.agent.biz.auth.service.DemoService;
 import com.shiyu.ai.agent.domain.vo.MenuAllVO;
-import com.shiyu.ai.agent.domain.vo.PageResult;
 import com.shiyu.ai.agent.domain.vo.ProductVO;
+import com.shiyu.ai.common.core.api.PageData;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 
@@ -134,7 +134,7 @@ public class DemoServiceImpl implements DemoService {
     }
 
     @Override
-    public PageResult<ProductVO> getTableList(Integer page, Integer pageSize, String category, Date start, Date end) {
+    public PageData<ProductVO> getTableList(Integer page, Integer pageSize, String category, Date start, Date end) {
         log.info("获取表格数据列表 - page: {}, pageSize: {}, category: {}, start: {}, end: {}", 
                 page, pageSize, category, start, end);
         
@@ -160,7 +160,7 @@ public class DemoServiceImpl implements DemoService {
                 Math.min(toIndex, filteredProducts.size())
         );
         
-        return new PageResult<>(pagedProducts, total);
+        return new PageData<>(pagedProducts, total);
     }
     
     /**

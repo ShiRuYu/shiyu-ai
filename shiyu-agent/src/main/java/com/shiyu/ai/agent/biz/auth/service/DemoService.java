@@ -1,8 +1,8 @@
 package com.shiyu.ai.agent.biz.auth.service;
 
 import com.shiyu.ai.agent.domain.vo.MenuAllVO;
-import com.shiyu.ai.agent.domain.vo.PageResult;
 import com.shiyu.ai.agent.domain.vo.ProductVO;
+import com.shiyu.ai.common.core.api.PageData;
 
 import java.util.Date;
 import java.util.List;
@@ -29,5 +29,5 @@ public interface DemoService {
      * @param end 结束日期
      * @return 分页结果
      */
-    PageResult<ProductVO> getTableList(Integer page, Integer pageSize, String category, Date start, Date end);
+    PageData<ProductVO> getTableList(Integer page, Integer pageSize, String category, Date start, Date end);
 }
