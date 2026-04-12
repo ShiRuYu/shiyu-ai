@@ -2,97 +2,106 @@
 -- 使用 record 数据源 (recorddb)
 
 -- 人物表(profile)
-CREATE TABLE IF NOT EXISTS profile (
-    id BIGINT NOT NULL AUTO_INCREMENT,
-    name VARCHAR(64) NOT NULL,
-    gender VARCHAR(10),
-    birth_date DATE,
-    avatar VARCHAR(255),
-    creator_id BIGINT NOT NULL,
-    status CHAR(1) DEFAULT '1',
-    del_flag TINYINT DEFAULT 0,
-    create_time TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-    update_time TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+DROP TABLE IF EXISTS profile;
+CREATE TABLE profile (
+    id BIGINT NOT NULL AUTO_INCREMENT COMMENT '人物ID',
+    name VARCHAR(64) NOT NULL COMMENT '姓名',
+    gender VARCHAR(10) COMMENT '性别',
+    birth_date DATE COMMENT '出生日期',
+    avatar VARCHAR(255) COMMENT '头像URL',
+    creator_id BIGINT NOT NULL COMMENT '创建者ID',
+    status CHAR(1) DEFAULT '1' COMMENT '状态（1正常 0停用）',
+    del_flag TINYINT DEFAULT 0 COMMENT '删除标志（0：正常 1：已删除）',
+    create_time TIMESTAMP DEFAULT CURRENT_TIMESTAMP COMMENT '创建时间',
+    update_time TIMESTAMP DEFAULT CURRENT_TIMESTAMP COMMENT '更新时间',
     PRIMARY KEY (id)
 );
+COMMENT ON TABLE profile IS '人物表';
 
 -- 人物成员关系表(profile_member)
-CREATE TABLE IF NOT EXISTS profile_member (
-    id BIGINT NOT NULL AUTO_INCREMENT,
-    profile_id BIGINT NOT NULL,
-    user_id BIGINT NOT NULL,
-    role VARCHAR(20),
-    create_time TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+DROP TABLE IF EXISTS profile_member;
+CREATE TABLE profile_member (
+    id BIGINT NOT NULL AUTO_INCREMENT COMMENT '关系ID',
+    profile_id BIGINT NOT NULL COMMENT '人物ID',
+    user_id BIGINT NOT NULL COMMENT '用户ID',
+    role VARCHAR(20) COMMENT '角色（owner/parent等）',
+    create_time TIMESTAMP DEFAULT CURRENT_TIMESTAMP COMMENT '创建时间',
     PRIMARY KEY (id)
 );
-
-CREATE UNIQUE INDEX IF NOT EXISTS idx_profile_user ON profile_member (profile_id, user_id);
+CREATE UNIQUE INDEX idx_profile_user ON profile_member (profile_id, user_id);
+COMMENT ON TABLE profile_member IS '人物成员关系表';
 
 -- 时间轴事件表(timeline_event)
-CREATE TABLE IF NOT EXISTS timeline_event (
-    id BIGINT NOT NULL AUTO_INCREMENT,
-    profile_id BIGINT NOT NULL,
-    title VARCHAR(255),
-    event_time TIMESTAMP NOT NULL,
-    type VARCHAR(30),
-    visibility VARCHAR(20) DEFAULT 'family',
-    created_by BIGINT,
-    create_time TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+DROP TABLE IF EXISTS timeline_event;
+CREATE TABLE timeline_event (
+    id BIGINT NOT NULL AUTO_INCREMENT COMMENT '事件ID',
+    profile_id BIGINT NOT NULL COMMENT '人物ID',
+    title VARCHAR(255) COMMENT '事件标题',
+    event_time TIMESTAMP NOT NULL COMMENT '事件时间',
+    type VARCHAR(30) COMMENT '事件类型（milestone/daily等）',
+    visibility VARCHAR(20) DEFAULT 'family' COMMENT '可见性（family/private等）',
+    created_by BIGINT COMMENT '创建者ID',
+    create_time TIMESTAMP DEFAULT CURRENT_TIMESTAMP COMMENT '创建时间',
     PRIMARY KEY (id)
 );
-
-CREATE INDEX IF NOT EXISTS idx_profile_time ON timeline_event (profile_id, event_time);
+CREATE INDEX idx_profile_time ON timeline_event (profile_id, event_time);
+COMMENT ON TABLE timeline_event IS '时间轴事件表';
 
 -- 记录内容表(record)
-CREATE TABLE IF NOT EXISTS record (
-    id BIGINT NOT NULL AUTO_INCREMENT,
-    event_id BIGINT NOT NULL,
-    content CLOB,
-    mood VARCHAR(20),
-    location VARCHAR(100),
-    weather VARCHAR(50),
-    create_time TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+DROP TABLE IF EXISTS record;
+CREATE TABLE record (
+    id BIGINT NOT NULL AUTO_INCREMENT COMMENT '记录ID',
+    event_id BIGINT NOT NULL COMMENT '事件ID',
+    content CLOB COMMENT '记录内容',
+    mood VARCHAR(20) COMMENT '心情',
+    location VARCHAR(100) COMMENT '地点',
+    weather VARCHAR(50) COMMENT '天气',
+    create_time TIMESTAMP DEFAULT CURRENT_TIMESTAMP COMMENT '创建时间',
     PRIMARY KEY (id)
 );
-
-CREATE INDEX IF NOT EXISTS idx_event ON record (event_id);
+CREATE INDEX idx_event ON record (event_id);
+COMMENT ON TABLE record IS '记录内容表';
 
 -- 附件表(media)
-CREATE TABLE IF NOT EXISTS media (
-    id BIGINT NOT NULL AUTO_INCREMENT,
-    record_id BIGINT NOT NULL,
-    url VARCHAR(500) NOT NULL,
-    type VARCHAR(20),
-    size BIGINT,
-    duration INT,
-    width INT,
-    height INT,
-    sort INT DEFAULT 0,
-    bucket VARCHAR(100),
-    object_key VARCHAR(255),
-    create_time TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+DROP TABLE IF EXISTS media;
+CREATE TABLE media (
+    id BIGINT NOT NULL AUTO_INCREMENT COMMENT '附件ID',
+    record_id BIGINT NOT NULL COMMENT '记录ID',
+    url VARCHAR(500) NOT NULL COMMENT '文件URL',
+    type VARCHAR(20) COMMENT '文件类型（image/video等）',
+    size BIGINT COMMENT '文件大小（字节）',
+    duration INT COMMENT '时长（秒，仅视频）',
+    width INT COMMENT '宽度（像素）',
+    height INT COMMENT '高度（像素）',
+    sort INT DEFAULT 0 COMMENT '排序',
+    bucket VARCHAR(100) COMMENT '存储桶名称',
+    object_key VARCHAR(255) COMMENT '对象键',
+    create_time TIMESTAMP DEFAULT CURRENT_TIMESTAMP COMMENT '创建时间',
     PRIMARY KEY (id)
 );
-
-CREATE INDEX IF NOT EXISTS idx_record ON media (record_id);
+CREATE INDEX idx_record ON media (record_id);
+COMMENT ON TABLE media IS '附件表';
 
 -- 标签表(tag)
-CREATE TABLE IF NOT EXISTS tag (
-    id BIGINT NOT NULL AUTO_INCREMENT,
-    name VARCHAR(50) NOT NULL,
-    creator_id BIGINT,
-    create_time TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+DROP TABLE IF EXISTS tag;
+CREATE TABLE tag (
+    id BIGINT NOT NULL AUTO_INCREMENT COMMENT '标签ID',
+    name VARCHAR(50) NOT NULL COMMENT '标签名称',
+    creator_id BIGINT COMMENT '创建者ID',
+    create_time TIMESTAMP DEFAULT CURRENT_TIMESTAMP COMMENT '创建时间',
     PRIMARY KEY (id)
 );
-
-CREATE UNIQUE INDEX IF NOT EXISTS idx_name_creator ON tag (name, creator_id);
+CREATE UNIQUE INDEX idx_name_creator ON tag (name, creator_id);
+COMMENT ON TABLE tag IS '标签表';
 
 -- 记录标签关联表(record_tag)
-CREATE TABLE IF NOT EXISTS record_tag (
-    record_id BIGINT NOT NULL,
-    tag_id BIGINT NOT NULL,
+DROP TABLE IF EXISTS record_tag;
+CREATE TABLE record_tag (
+    record_id BIGINT NOT NULL COMMENT '记录ID',
+    tag_id BIGINT NOT NULL COMMENT '标签ID',
     PRIMARY KEY (record_id, tag_id)
 );
+COMMENT ON TABLE record_tag IS '记录标签关联表';
 
 -- ==================== 样例数据 ====================
 

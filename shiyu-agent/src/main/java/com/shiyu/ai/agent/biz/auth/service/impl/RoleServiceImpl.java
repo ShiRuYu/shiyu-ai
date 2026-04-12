@@ -30,7 +30,15 @@ public class RoleServiceImpl implements RoleService {
         log.info("获取角色列表，pageNo: {}, pageSize: {}, name: {}", pageNo, pageSize, name);
         
         Pair<Long, List<RoleBO>> result = roleRepository.selectPage(pageNo, pageSize, name);
-        List<RoleVO> roleVOs = MapstructUtils.convert(result.getRight(), RoleVO.class);
+        List<RoleBO> roleBOs = result.getRight();
+        
+        // 为每个角色填充权限菜单ID列表
+        for (RoleBO roleBO : roleBOs) {
+            List<Long> menuIds = roleRepository.selectMenuIdsByRoleId(roleBO.getId());
+            roleBO.setPermissions(menuIds);
+        }
+        
+        List<RoleVO> roleVOs = MapstructUtils.convert(roleBOs, RoleVO.class);
         
         RolePageResponse response = new RolePageResponse();
         response.setItems(roleVOs);

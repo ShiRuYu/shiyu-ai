@@ -7,6 +7,7 @@ import lombok.Data;
 import java.io.Serial;
 import java.io.Serializable;
 import java.util.Date;
+import java.util.List;
 
 /**
  * 角色视图对象
@@ -39,6 +40,11 @@ public class RoleVO implements Serializable {
     private String status;
 
     /**
+     * 备注
+     */
+    private String remark;
+
+    /**
      * 删除标志（0：正常 1：已删除）
      */
     private Integer delFlag;
@@ -52,4 +58,9 @@ public class RoleVO implements Serializable {
      * 更新时间
      */
     private Date updateTime;
+
+    /**
+     * 权限菜单ID列表
+     */
+    private List<Long> permissions;
 }

@@ -41,6 +41,11 @@ public class RoleDO implements Serializable {
     private String status;
 
     /**
+     * 备注
+     */
+    private String remark;
+
+    /**
      * 删除标志（0：正常 1：已删除）
      */
     private Integer delFlag;

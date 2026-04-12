@@ -100,4 +100,11 @@ public class RoleRepository {
         return MapstructUtils.convert(menuDOs, MenuBO.class);
     }
 
+    /**
+     * 根据角色ID查询菜单ID列表
+     */
+    public List<Long> selectMenuIdsByRoleId(Long roleId) {
+        return roleMenuMapper.selectMenuIdsByRoleId(roleId);
+    }
+
 }

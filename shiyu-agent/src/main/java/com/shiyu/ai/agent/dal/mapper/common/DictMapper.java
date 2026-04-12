@@ -1,8 +1,8 @@
-package com.shiyu.ai.agent.dal.mapper.auth;
+package com.shiyu.ai.agent.dal.mapper.common;
 
 import com.mybatisflex.annotation.UseDataSource;
 import com.shiyu.ai.agent.dal.DataSourceConfig;
-import com.shiyu.ai.agent.dal.dataobject.auth.DictDO;
+import com.shiyu.ai.agent.dal.dataobject.common.DictDO;
 import com.shiyu.ai.common.mybatis.core.mapper.BaseMapperFlex;
 import org.apache.ibatis.annotations.Mapper;
 

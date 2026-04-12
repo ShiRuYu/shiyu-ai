@@ -1,8 +1,8 @@
 package com.shiyu.ai.agent.biz.common.repository;
 
 import com.mybatisflex.core.query.QueryWrapper;
-import com.shiyu.ai.agent.dal.dataobject.auth.DictDO;
-import com.shiyu.ai.agent.dal.mapper.auth.DictMapper;
+import com.shiyu.ai.agent.dal.dataobject.common.DictDO;
+import com.shiyu.ai.agent.dal.mapper.common.DictMapper;
 import com.shiyu.ai.agent.domain.bo.DictBO;
 import com.shiyu.ai.common.core.utils.MapstructUtils;
 import jakarta.annotation.Resource;

@@ -1,4 +1,4 @@
-package com.shiyu.ai.agent.dal.dataobject.auth;
+package com.shiyu.ai.agent.dal.dataobject.common;
 
 import com.mybatisflex.annotation.Id;
 import com.mybatisflex.annotation.KeyType;

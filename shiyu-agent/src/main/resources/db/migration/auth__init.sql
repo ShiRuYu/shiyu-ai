@@ -8,39 +8,45 @@
 -- ============================================
 
 -- 用户表
-CREATE TABLE IF NOT EXISTS `user` (
-    `id` BIGINT NOT NULL COMMENT '用户 ID',
+DROP TABLE IF EXISTS `user`;
+CREATE TABLE `user` (
+    `id` BIGINT NOT NULL AUTO_INCREMENT COMMENT '用户 ID',
     `username` VARCHAR(64) NOT NULL COMMENT '用户名',
     `password` VARCHAR(255) COMMENT '密码',
     `status` CHAR(1) DEFAULT '1' COMMENT '状态（1正常 0停用）',
     `del_flag` TINYINT DEFAULT 0 COMMENT '删除标志（0：正常 1：已删除）',
-    `create_time` DATETIME DEFAULT CURRENT_TIMESTAMP COMMENT '创建时间',
-    `update_time` DATETIME DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP COMMENT '更新时间',
+    `create_time` TIMESTAMP DEFAULT CURRENT_TIMESTAMP COMMENT '创建时间',
+    `update_time` TIMESTAMP DEFAULT CURRENT_TIMESTAMP COMMENT '更新时间',
     `nick_name` VARCHAR(64) COMMENT '昵称',
     `gender` VARCHAR(10) COMMENT '性别',
     `avatar` VARCHAR(255) COMMENT '头像',
     `address` VARCHAR(255) COMMENT '地址',
     `email` VARCHAR(128) COMMENT '邮箱',
-    PRIMARY KEY (`id`),
-    UNIQUE INDEX `idx_username` (`username`)
-) COMMENT='用户表';
+    PRIMARY KEY (`id`)
+);
+CREATE UNIQUE INDEX `idx_username` ON `user` (`username`);
+COMMENT ON TABLE `user` IS '用户表';
 
 -- 角色表
-CREATE TABLE IF NOT EXISTS `role` (
-    `id` BIGINT NOT NULL COMMENT '角色 ID',
+DROP TABLE IF EXISTS `role`;
+CREATE TABLE `role` (
+    `id` BIGINT NOT NULL AUTO_INCREMENT COMMENT '角色 ID',
     `code` VARCHAR(64) NOT NULL COMMENT '角色编码',
     `name` VARCHAR(64) NOT NULL COMMENT '角色名称',
     `status` CHAR(1) DEFAULT '1' COMMENT '状态（1正常 0停用）',
+    `remark` VARCHAR(500) COMMENT '备注',
     `del_flag` TINYINT DEFAULT 0 COMMENT '删除标志（0：正常 1：已删除）',
-    `create_time` DATETIME DEFAULT CURRENT_TIMESTAMP COMMENT '创建时间',
-    `update_time` DATETIME DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP COMMENT '更新时间',
-    PRIMARY KEY (`id`),
-    UNIQUE INDEX `idx_code` (`code`)
-) COMMENT='角色表';
+    `create_time` TIMESTAMP DEFAULT CURRENT_TIMESTAMP COMMENT '创建时间',
+    `update_time` TIMESTAMP DEFAULT CURRENT_TIMESTAMP COMMENT '更新时间',
+    PRIMARY KEY (`id`)
+);
+CREATE UNIQUE INDEX `idx_code` ON `role` (`code`);
+COMMENT ON TABLE `role` IS '角色表';
 
 -- 菜单表
-CREATE TABLE IF NOT EXISTS `menu` (
-    `id` BIGINT NOT NULL COMMENT '菜单 ID',
+DROP TABLE IF EXISTS `menu`;
+CREATE TABLE `menu` (
+    `id` BIGINT NOT NULL AUTO_INCREMENT COMMENT '菜单 ID',
     `name` VARCHAR(64) NOT NULL COMMENT '菜单名称',
     `code` VARCHAR(64) NOT NULL COMMENT '菜单编码',
     `type` VARCHAR(20) NOT NULL COMMENT '菜单类型（MENU/BUTTON）',
@@ -57,62 +63,49 @@ CREATE TABLE IF NOT EXISTS `menu` (
     `status` CHAR(1) DEFAULT '1' COMMENT '状态（1正常 0停用）',
     `order` INT DEFAULT 0 COMMENT '排序',
     `del_flag` TINYINT DEFAULT 0 COMMENT '删除标志（0：正常 1：已删除）',
-    `create_time` DATETIME DEFAULT CURRENT_TIMESTAMP COMMENT '创建时间',
-    `update_time` DATETIME DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP COMMENT '更新时间',
-    PRIMARY KEY (`id`),
-    INDEX `idx_parent_id` (`parent_id`)
-) COMMENT='菜单表';
+    `create_time` TIMESTAMP DEFAULT CURRENT_TIMESTAMP COMMENT '创建时间',
+    `update_time` TIMESTAMP DEFAULT CURRENT_TIMESTAMP COMMENT '更新时间',
+    PRIMARY KEY (`id`)
+);
+CREATE INDEX `idx_parent_id` ON `menu` (`parent_id`);
+COMMENT ON TABLE `menu` IS '菜单表';
 
 -- 用户角色关联表
-CREATE TABLE IF NOT EXISTS `user_role` (
+DROP TABLE IF EXISTS `user_role`;
+CREATE TABLE `user_role` (
     `user_id` BIGINT NOT NULL COMMENT '用户 ID',
     `role_id` BIGINT NOT NULL COMMENT '角色 ID',
-    PRIMARY KEY (`user_id`, `role_id`),
-    INDEX `idx_role_id` (`role_id`)
-) COMMENT='用户角色关联表';
+    PRIMARY KEY (`user_id`, `role_id`)
+);
+CREATE INDEX `idx_role_id` ON `user_role` (`role_id`);
+COMMENT ON TABLE `user_role` IS '用户角色关联表';
 
 -- 角色菜单关联表
-CREATE TABLE IF NOT EXISTS `role_menu` (
+DROP TABLE IF EXISTS `role_menu`;
+CREATE TABLE `role_menu` (
     `role_id` BIGINT NOT NULL COMMENT '角色 ID',
     `menu_id` BIGINT NOT NULL COMMENT '菜单 ID',
-    PRIMARY KEY (`role_id`, `menu_id`),
-    INDEX `idx_menu_id` (`menu_id`)
-) COMMENT='角色菜单关联表';
+    PRIMARY KEY (`role_id`, `menu_id`)
+);
+CREATE INDEX `idx_menu_id` ON `role_menu` (`menu_id`);
+COMMENT ON TABLE `role_menu` IS '角色菜单关联表';
 
 -- 权限码表
-CREATE TABLE IF NOT EXISTS `auth_code` (
-    `id` BIGINT NOT NULL COMMENT '权限码 ID',
+DROP TABLE IF EXISTS `auth_code`;
+CREATE TABLE `auth_code` (
+    `id` BIGINT NOT NULL AUTO_INCREMENT COMMENT '权限码 ID',
     `code` VARCHAR(64) NOT NULL COMMENT '权限编码',
     `name` VARCHAR(128) COMMENT '权限名称',
     `role_id` BIGINT NOT NULL COMMENT '角色 ID',
     `status` CHAR(1) DEFAULT '1' COMMENT '状态（1正常 0停用）',
     `del_flag` TINYINT DEFAULT 0 COMMENT '删除标志（0：正常 1：已删除）',
-    `create_time` DATETIME DEFAULT CURRENT_TIMESTAMP COMMENT '创建时间',
-    `update_time` DATETIME DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP COMMENT '更新时间',
-    PRIMARY KEY (`id`),
-    UNIQUE INDEX `idx_role_code` (`role_id`, `code`),
-    INDEX `idx_code` (`code`)
-) COMMENT='权限码表';
-
--- 字典表
-CREATE TABLE IF NOT EXISTS `dict` (
-    `id` BIGINT NOT NULL COMMENT '字典ID',
-    `dict_type` VARCHAR(100) NOT NULL COMMENT '字典类型',
-    `dict_label` VARCHAR(100) NOT NULL COMMENT '字典标签',
-    `dict_value` VARCHAR(100) NOT NULL COMMENT '字典键值',
-    `dict_sort` INT DEFAULT 0 COMMENT '字典排序',
-    `css_class` VARCHAR(100) COMMENT '样式属性',
-    `list_class` VARCHAR(100) COMMENT '表格回显样式',
-    `is_default` CHAR(1) DEFAULT 'N' COMMENT '是否默认（Y是 N否）',
-    `status` CHAR(1) DEFAULT '1' COMMENT '状态（1正常 0停用）',
-    `remark` VARCHAR(500) COMMENT '备注',
-    `create_time` DATETIME DEFAULT CURRENT_TIMESTAMP COMMENT '创建时间',
-    `update_time` DATETIME DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP COMMENT '更新时间',
-    `del_flag` CHAR(1) DEFAULT '0' COMMENT '删除标志（0存在 1删除）',
-    PRIMARY KEY (`id`),
-    INDEX `idx_dict_type` (`dict_type`),
-    INDEX `idx_dict_sort` (`dict_sort`)
-) COMMENT='字典表';
+    `create_time` TIMESTAMP DEFAULT CURRENT_TIMESTAMP COMMENT '创建时间',
+    `update_time` TIMESTAMP DEFAULT CURRENT_TIMESTAMP COMMENT '更新时间',
+    PRIMARY KEY (`id`)
+);
+CREATE UNIQUE INDEX `idx_role_code` ON `auth_code` (`role_id`, `code`);
+CREATE INDEX `idx_auth_code` ON `auth_code` (`code`);
+COMMENT ON TABLE `auth_code` IS '权限码表';
 
 -- ============================================
 -- 2. 初始化用户数据（根据 API 文档模拟数据）
@@ -136,16 +129,16 @@ VALUES (2, 'jack', '$2a$10$upTL84vHb86f9vMVMn4m8uOGqGr9Pedo.CCsg.XmZ62xhU2IIHJvy
 -- ============================================
 
 -- 角色 super (ID: 0)
-INSERT INTO `role` (`id`, `code`, `name`, `status`, `del_flag`, `create_time`, `update_time`) 
-VALUES (0, 'super', '超级管理员', '1', 0, NOW(), NOW());
+INSERT INTO `role` (`id`, `code`, `name`, `status`, `remark`, `del_flag`, `create_time`, `update_time`) 
+VALUES (0, 'super', '超级管理员', '1', '拥有系统所有权限', 0, NOW(), NOW());
 
 -- 角色 admin (ID: 1)
-INSERT INTO `role` (`id`, `code`, `name`, `status`, `del_flag`, `create_time`, `update_time`) 
-VALUES (1, 'admin', '管理员', '1', 0, NOW(), NOW());
+INSERT INTO `role` (`id`, `code`, `name`, `status`, `remark`, `del_flag`, `create_time`, `update_time`) 
+VALUES (1, 'admin', '管理员', '1', '系统管理员角色', 0, NOW(), NOW());
 
 -- 角色 user (ID: 2)
-INSERT INTO `role` (`id`, `code`, `name`, `status`, `del_flag`, `create_time`, `update_time`) 
-VALUES (2, 'user', '普通用户', '1', 0, NOW(), NOW());
+INSERT INTO `role` (`id`, `code`, `name`, `status`, `remark`, `del_flag`, `create_time`, `update_time`) 
+VALUES (2, 'user', '普通用户', '1', '普通用户角色', 0, NOW(), NOW());
 
 -- ============================================
 -- 4. 初始化用户角色关联数据
@@ -248,7 +241,7 @@ VALUES (30105, 'Admin专属页面', 'AccessAdminVisibleDemo', 'MENU', 301, '/dem
 
 -- 权限演示子菜单：User专属 (ID: 30106)
 INSERT INTO `menu` (`id`, `name`, `code`, `type`, `parent_id`, `path`, `redirect`, `icon`, `component`, `layout`, `keep_alive`, `method`, `description`, `show`, `status`, `order`, `del_flag`) 
-VALUES (30106, 'User专属页面', 'AccessUserVisibleDemo', 'MENU', 301, '/demos/access/user-visible', NULL, 'mdi:button-cursor', '/demos/access/user-visible', '', TRUE, '1', 6, 0);
+VALUES (30106, 'User专属页面', 'AccessUserVisibleDemo', 'MENU', 301, '/demos/access/user-visible', NULL, 'mdi:button-cursor', '/demos/access/user-visible', '', TRUE, NULL, NULL, TRUE, '1', 6, 0);
 
 -- ==================== Vben Admin 项目模块 ====================
 
@@ -320,22 +313,9 @@ INSERT INTO `auth_code` (`id`, `code`, `name`, `role_id`, `status`, `del_flag`) 
 INSERT INTO `auth_code` (`id`, `code`, `name`, `role_id`, `status`, `del_flag`) VALUES (8, 'AC_1000001', '权限码 1000001', 3, '1', 0);
 INSERT INTO `auth_code` (`id`, `code`, `name`, `role_id`, `status`, `del_flag`) VALUES (9, 'AC_1000002', '权限码 1000002', 3, '1', 0);
 
--- ============================================
--- 8. 初始化字典数据
--- ============================================
-
--- 时区字典（dict_type = 'timezone'）
-INSERT INTO `dict` (`id`, `dict_type`, `dict_label`, `dict_value`, `dict_sort`, `css_class`, `list_class`, `is_default`, `status`, `remark`, `create_time`, `update_time`, `del_flag`) 
-VALUES (1, 'timezone', 'America/New_York (GMT-5)', 'America/New_York', 1, NULL, NULL, 'N', '1', '美国纽约时区', NOW(), NOW(), '0');
-
-INSERT INTO `dict` (`id`, `dict_type`, `dict_label`, `dict_value`, `dict_sort`, `css_class`, `list_class`, `is_default`, `status`, `remark`, `create_time`, `update_time`, `del_flag`) 
-VALUES (2, 'timezone', 'Europe/London (GMT0)', 'Europe/London', 2, NULL, NULL, 'N', '1', '欧洲伦敦时区', NOW(), NOW(), '0');
-
-INSERT INTO `dict` (`id`, `dict_type`, `dict_label`, `dict_value`, `dict_sort`, `css_class`, `list_class`, `is_default`, `status`, `remark`, `create_time`, `update_time`, `del_flag`) 
-VALUES (3, 'timezone', 'Asia/Shanghai (GMT+8)', 'Asia/Shanghai', 3, NULL, NULL, 'Y', '1', '亚洲上海时区', NOW(), NOW(), '0');
-
-INSERT INTO `dict` (`id`, `dict_type`, `dict_label`, `dict_value`, `dict_sort`, `css_class`, `list_class`, `is_default`, `status`, `remark`, `create_time`, `update_time`, `del_flag`) 
-VALUES (4, 'timezone', 'Asia/Tokyo (GMT+9)', 'Asia/Tokyo', 4, NULL, NULL, 'N', '1', '亚洲东京时区', NOW(), NOW(), '0');
-
-INSERT INTO `dict` (`id`, `dict_type`, `dict_label`, `dict_value`, `dict_sort`, `css_class`, `list_class`, `is_default`, `status`, `remark`, `create_time`, `update_time`, `del_flag`) 
-VALUES (5, 'timezone', 'Asia/Seoul (GMT+9)', 'Asia/Seoul', 5, NULL, NULL, 'N', '1', '亚洲首尔时区', NOW(), NOW(), '0');
+-- ==================== 重置自增序列 ====================
+-- H2数据库在手动插入ID后需要重置序列，避免主键冲突
+ALTER TABLE `user` ALTER COLUMN `id` RESTART WITH 100;
+ALTER TABLE `role` ALTER COLUMN `id` RESTART WITH 100;
+ALTER TABLE `menu` ALTER COLUMN `id` RESTART WITH 1000;
+ALTER TABLE `auth_code` ALTER COLUMN `id` RESTART WITH 100;

@@ -1,9 +1,10 @@
-package com.shiyu.ai.agent.handler;
+ package com.shiyu.ai.agent.handler;
 
 import cn.dev33.satoken.exception.NotLoginException;
 import cn.dev33.satoken.exception.NotPermissionException;
 import cn.dev33.satoken.exception.NotRoleException;
 import com.shiyu.ai.common.core.api.Result;
+import com.shiyu.ai.common.core.enums.BizResultCode;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
@@ -31,7 +32,7 @@ public class SaTokenExceptionHandler {
         };
         
         log.warn("认证失败: type={}, message={}", e.getType(), message);
-        return Result.common(null, 401, message, false);
+        return Result.fail(BizResultCode.UNAUTHORIZED, message);
     }
 
     /**
@@ -40,7 +41,7 @@ public class SaTokenExceptionHandler {
     @ExceptionHandler(NotPermissionException.class)
     public Result<Void> handleNotPermissionException(NotPermissionException e) {
         log.warn("权限不足: permission={}", e.getPermission());
-        return Result.common(null, 403, "无权限访问，请联系管理员申请权限", false);
+        return Result.fail(BizResultCode.FORBIDDEN, BizResultCode.FORBIDDEN.getMsg());
     }
 
     /**
@@ -49,6 +50,6 @@ public class SaTokenExceptionHandler {
     @ExceptionHandler(NotRoleException.class)
     public Result<Void> handleNotRoleException(NotRoleException e) {
         log.warn("角色不足: role={}", e.getRole());
-        return Result.common(null, 403, "角色权限不足，请联系管理员", false);
+        return Result.fail(BizResultCode.FORBIDDEN, "角色权限不足，请联系管理员");
     }
 }

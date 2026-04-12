@@ -34,4 +34,15 @@
         ORDER BY m.`order` ASC, m.id ASC
     </select>
 
+    <!-- 根据角色ID查询菜单ID列表 -->
+    <select id="selectMenuIdsByRoleId" resultType="java.lang.Long">
+        SELECT rm.menu_id
+        FROM role_menu rm
+        INNER JOIN menu m ON rm.menu_id = m.id
+        WHERE rm.role_id = #{roleId}
+          AND m.status = '1'
+          AND m.del_flag = 0
+        ORDER BY m.`order` ASC, m.id ASC
+    </select>
+
 </mapper>

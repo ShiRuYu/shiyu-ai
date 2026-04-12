@@ -20,4 +20,9 @@ public interface RoleMenuMapper extends BaseMapperFlex<RoleMenuDO> {
      * 根据角色ID查询菜单列表
      */
     List<MenuDO> selectMenusByRoleId(Long roleId);
+
+    /**
+     * 根据角色ID查询菜单ID列表
+     */
+    List<Long> selectMenuIdsByRoleId(Long roleId);
 }
