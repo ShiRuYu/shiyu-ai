@@ -59,9 +59,4 @@ public class LoginResponseVO implements Serializable {
      * 过期时间（秒）
      */
     private Long expiresIn;
-
-    /**
-     * 权限码列表
-     */
-    private List<String> permissions;
 }

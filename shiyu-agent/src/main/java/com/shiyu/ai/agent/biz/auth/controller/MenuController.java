@@ -4,6 +4,7 @@ import com.shiyu.ai.agent.domain.request.MenuRequest;
 import com.shiyu.ai.agent.domain.bo.MenuBO;
 import com.shiyu.ai.agent.domain.vo.RouteMenuVO;
 import com.shiyu.ai.agent.biz.auth.service.MenuService;
+import com.shiyu.ai.agent.utils.SaTokenHelper;
 import com.shiyu.ai.common.core.api.Result;
 import com.shiyu.ai.common.core.utils.MapstructUtils;
 import lombok.extern.slf4j.Slf4j;
@@ -36,8 +37,7 @@ public class MenuController {
         log.info("获取当前用户菜单");
         
         try {
-            // TODO: 从 token 中解析用户 ID，这里暂时使用固定值
-            Long userId = 1L;
+            Long userId = SaTokenHelper.getCurrentUserId();
             
             // 从数据库查询用户的菜单树
             List<MenuBO> menuBOs = menuService.getMenuTreeByUserId(userId);

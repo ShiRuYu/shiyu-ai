@@ -52,25 +52,22 @@ public class AuthServiceImpl implements AuthService {
             }
             
             // 3. 验证密码（使用 BCrypt）
-            if (password == null || !PasswordUtils.matches(password, user.getPassword())) {
+            if (!PasswordUtils.matches(password, user.getPassword())) {
                 log.warn("登录失败：密码错误 - {}", username);
                 return null;
             }
             
             // 4. 从数据库查询用户的角色列表
             List<RoleBO> roles = userRepository.selectRolesByUserId(user.getId());
-            
-            // 5. 从数据库查询用户的权限码列表
-            List<String> permissions = authRepository.selectCodesByUsername(username);
-            
-            // 6. 单设备登录：先踢掉旧会话，再生成 Token
+
+            // 5. 单设备登录：先踢掉旧会话，再生成 Token
             SaTokenHelper helper = SaTokenHelper.getInstance();
             String accessToken = helper.loginWithKickout(user.getId());
             
-            // 7. 获取 Token 过期时间
+            // 6. 获取 Token 过期时间
             long timeout = helper.getTokenTimeout();
             
-            // 9. 构建响应数据
+            // 7. 构建响应数据
             LoginResponseVO response = new LoginResponseVO();
             response.setId(user.getId());
             // 注意：不要返回密码
@@ -86,18 +83,14 @@ public class AuthServiceImpl implements AuthService {
             } else {
                 response.setRoles(new ArrayList<>());
             }
-            
-            // 设置权限码列表
-            response.setPermissions(permissions != null ? permissions : new ArrayList<>());
-            
+
             // 设置 Token 信息
             response.setAccessToken(accessToken);
             response.setTokenType("Bearer");
             response.setExpiresIn(timeout);
             
-            log.info("登录成功：username={}, userId={}, roles={}, permissionsCount={}", 
-                    username, user.getId(), response.getRoles(), 
-                    response.getPermissions() != null ? response.getPermissions().size() : 0);
+            log.info("登录成功：username={}, userId={}, roles={}",
+                    username, user.getId(), response.getRoles());
             return response;
             
         } catch (Exception e) {

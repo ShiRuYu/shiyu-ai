@@ -209,6 +209,72 @@ VALUES (20202, '编辑部门', 'System:Dept:Edit', 'BUTTON', 202, NULL, NULL, NU
 INSERT INTO `menu` (`id`, `name`, `code`, `type`, `parent_id`, `path`, `redirect`, `icon`, `component`, `layout`, `keep_alive`, `method`, `description`, `show`, `status`, `order`, `del_flag`) 
 VALUES (20203, '删除部门', 'System:Dept:Delete', 'BUTTON', 202, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, TRUE, '1', 3, 0);
 
+-- 系统管理子菜单：角色管理 (ID: 203)
+INSERT INTO `menu` (`id`, `name`, `code`, `type`, `parent_id`, `path`, `redirect`, `icon`, `component`, `layout`, `keep_alive`, `method`, `description`, `show`, `status`, `order`, `del_flag`) 
+VALUES (203, '角色管理', 'SystemRole', 'MENU', 100, '/system/role', NULL, 'carbon:user-role', '/system/role/list', '', TRUE, NULL, NULL, TRUE, '1', 3, 0);
+
+-- 角色管理按钮权限：查询 (ID: 20301)
+INSERT INTO `menu` (`id`, `name`, `code`, `type`, `parent_id`, `path`, `redirect`, `icon`, `component`, `layout`, `keep_alive`, `method`, `description`, `show`, `status`, `order`, `del_flag`) 
+VALUES (20301, '角色查询', 'system:role:query', 'BUTTON', 203, NULL, NULL, NULL, NULL, NULL, NULL, 'GET', '查询角色列表', TRUE, '1', 1, 0);
+
+-- 角色管理按钮权限：新增 (ID: 20302)
+INSERT INTO `menu` (`id`, `name`, `code`, `type`, `parent_id`, `path`, `redirect`, `icon`, `component`, `layout`, `keep_alive`, `method`, `description`, `show`, `status`, `order`, `del_flag`) 
+VALUES (20302, '角色新增', 'system:role:create', 'BUTTON', 203, NULL, NULL, NULL, NULL, NULL, NULL, 'POST', '新增角色', TRUE, '1', 2, 0);
+
+-- 角色管理按钮权限：修改 (ID: 20303)
+INSERT INTO `menu` (`id`, `name`, `code`, `type`, `parent_id`, `path`, `redirect`, `icon`, `component`, `layout`, `keep_alive`, `method`, `description`, `show`, `status`, `order`, `del_flag`) 
+VALUES (20303, '角色修改', 'system:role:update', 'BUTTON', 203, NULL, NULL, NULL, NULL, NULL, NULL, 'PUT', '修改角色信息', TRUE, '1', 3, 0);
+
+-- 角色管理按钮权限：删除 (ID: 20304)
+INSERT INTO `menu` (`id`, `name`, `code`, `type`, `parent_id`, `path`, `redirect`, `icon`, `component`, `layout`, `keep_alive`, `method`, `description`, `show`, `status`, `order`, `del_flag`) 
+VALUES (20304, '角色删除', 'system:role:delete', 'BUTTON', 203, NULL, NULL, NULL, NULL, NULL, NULL, 'DELETE', '删除角色', TRUE, '1', 4, 0);
+
+-- ==================== 日常记录模块 ====================
+
+-- 根菜单：日常记录 (ID: 400)
+INSERT INTO `menu` (`id`, `name`, `code`, `type`, `parent_id`, `path`, `redirect`, `icon`, `component`, `layout`, `keep_alive`, `method`, `description`, `show`, `status`, `order`, `del_flag`) 
+VALUES (400, '日常记录', 'Record', 'MENU', NULL, '/record', NULL, 'mdi:book-open-page-variant', '', '', FALSE, NULL, '日常记录管理目录', TRUE, '1', 5, 0);
+
+-- 日常记录子菜单：人物管理 (ID: 401)
+INSERT INTO `menu` (`id`, `name`, `code`, `type`, `parent_id`, `path`, `redirect`, `icon`, `component`, `layout`, `keep_alive`, `method`, `description`, `show`, `status`, `order`, `del_flag`) 
+VALUES (401, '人物管理', 'RecordProfile', 'MENU', 400, '/record/profile', NULL, 'mdi:account-multiple', '/src/views/record/profile/list.vue', '', TRUE, NULL, '人物信息管理', TRUE, '1', 1, 0);
+
+-- 人物管理按钮权限：查询 (ID: 40101)
+INSERT INTO `menu` (`id`, `name`, `code`, `type`, `parent_id`, `path`, `redirect`, `icon`, `component`, `layout`, `keep_alive`, `method`, `description`, `show`, `status`, `order`, `del_flag`) 
+VALUES (40101, '人物查询', 'record:profile:query', 'BUTTON', 401, NULL, NULL, NULL, NULL, NULL, NULL, 'GET', '查询人物列表', TRUE, '1', 1, 0);
+
+-- 人物管理按钮权限：新增 (ID: 40102)
+INSERT INTO `menu` (`id`, `name`, `code`, `type`, `parent_id`, `path`, `redirect`, `icon`, `component`, `layout`, `keep_alive`, `method`, `description`, `show`, `status`, `order`, `del_flag`) 
+VALUES (40102, '人物新增', 'record:profile:add', 'BUTTON', 401, NULL, NULL, NULL, NULL, NULL, NULL, 'POST', '新增人物', TRUE, '1', 2, 0);
+
+-- 人物管理按钮权限：修改 (ID: 40103)
+INSERT INTO `menu` (`id`, `name`, `code`, `type`, `parent_id`, `path`, `redirect`, `icon`, `component`, `layout`, `keep_alive`, `method`, `description`, `show`, `status`, `order`, `del_flag`) 
+VALUES (40103, '人物修改', 'record:profile:edit', 'BUTTON', 401, NULL, NULL, NULL, NULL, NULL, NULL, 'PUT', '修改人物信息', TRUE, '1', 3, 0);
+
+-- 人物管理按钮权限：删除 (ID: 40104)
+INSERT INTO `menu` (`id`, `name`, `code`, `type`, `parent_id`, `path`, `redirect`, `icon`, `component`, `layout`, `keep_alive`, `method`, `description`, `show`, `status`, `order`, `del_flag`) 
+VALUES (40104, '人物删除', 'record:profile:remove', 'BUTTON', 401, NULL, NULL, NULL, NULL, NULL, NULL, 'DELETE', '删除人物', TRUE, '1', 4, 0);
+
+-- 日常记录子菜单：时间轴管理 (ID: 402)
+INSERT INTO `menu` (`id`, `name`, `code`, `type`, `parent_id`, `path`, `redirect`, `icon`, `component`, `layout`, `keep_alive`, `method`, `description`, `show`, `status`, `order`, `del_flag`) 
+VALUES (402, '时间轴管理', 'RecordTimeline', 'MENU', 400, '/record/timeline', NULL, 'mdi:timeline', '/src/views/record/timeline/list.vue', '', TRUE, NULL, '时间轴事件管理', TRUE, '1', 2, 0);
+
+-- 时间轴管理按钮权限：查询 (ID: 40201)
+INSERT INTO `menu` (`id`, `name`, `code`, `type`, `parent_id`, `path`, `redirect`, `icon`, `component`, `layout`, `keep_alive`, `method`, `description`, `show`, `status`, `order`, `del_flag`) 
+VALUES (40201, '时间轴查询', 'record:timeline:query', 'BUTTON', 402, NULL, NULL, NULL, NULL, NULL, NULL, 'GET', '查询时间轴事件列表', TRUE, '1', 1, 0);
+
+-- 时间轴管理按钮权限：新增 (ID: 40202)
+INSERT INTO `menu` (`id`, `name`, `code`, `type`, `parent_id`, `path`, `redirect`, `icon`, `component`, `layout`, `keep_alive`, `method`, `description`, `show`, `status`, `order`, `del_flag`) 
+VALUES (40202, '时间轴新增', 'record:timeline:add', 'BUTTON', 402, NULL, NULL, NULL, NULL, NULL, NULL, 'POST', '新增时间轴事件', TRUE, '1', 2, 0);
+
+-- 时间轴管理按钮权限：修改 (ID: 40203)
+INSERT INTO `menu` (`id`, `name`, `code`, `type`, `parent_id`, `path`, `redirect`, `icon`, `component`, `layout`, `keep_alive`, `method`, `description`, `show`, `status`, `order`, `del_flag`) 
+VALUES (40203, '时间轴修改', 'record:timeline:edit', 'BUTTON', 402, NULL, NULL, NULL, NULL, NULL, NULL, 'PUT', '修改时间轴事件', TRUE, '1', 3, 0);
+
+-- 时间轴管理按钮权限：删除 (ID: 40204)
+INSERT INTO `menu` (`id`, `name`, `code`, `type`, `parent_id`, `path`, `redirect`, `icon`, `component`, `layout`, `keep_alive`, `method`, `description`, `show`, `status`, `order`, `del_flag`) 
+VALUES (40204, '时间轴删除', 'record:timeline:remove', 'BUTTON', 402, NULL, NULL, NULL, NULL, NULL, NULL, 'DELETE', '删除时间轴事件', TRUE, '1', 4, 0);
+
 -- ==================== 演示模块 ====================
 
 -- 根菜单：Demos (ID: 300)
@@ -274,7 +340,8 @@ VALUES (1000, '关于', 'About', 'MENU', NULL, '/about', NULL, 'lucide:copyright
 -- super 角色的权限（完整权限 - 所有菜单）
 INSERT INTO `role_menu` (`role_id`, `menu_id`) VALUES 
 (0, 1), (0, 2), (0, 3), 
-(0, 100), (0, 201), (0, 20101), (0, 20102), (0, 20103), (0, 202), (0, 20201), (0, 20202), (0, 20203),
+(0, 100), (0, 201), (0, 20101), (0, 20102), (0, 20103), (0, 202), (0, 20201), (0, 20202), (0, 20203), (0, 203), (0, 20301), (0, 20302), (0, 20303), (0, 20304),
+(0, 400), (0, 401), (0, 40101), (0, 40102), (0, 40103), (0, 40104), (0, 402), (0, 40201), (0, 40202), (0, 40203), (0, 40204),
 (0, 300), (0, 301), (0, 30101), (0, 30102), (0, 30103), (0, 30104), (0, 30105), (0, 30106),
 (0, 900), (0, 901), (0, 902), (0, 903),
 (0, 1000);
@@ -282,7 +349,8 @@ INSERT INTO `role_menu` (`role_id`, `menu_id`) VALUES
 -- admin 角色的权限（管理员权限 - 不包含 super 专属）
 INSERT INTO `role_menu` (`role_id`, `menu_id`) VALUES 
 (1, 1), (1, 2), (1, 3), 
-(1, 100), (1, 201), (1, 20101), (1, 20102), (1, 20103), (1, 202), (1, 20201), (1, 20202), (1, 20203),
+(1, 100), (1, 201), (1, 20101), (1, 20102), (1, 20103), (1, 202), (1, 20201), (1, 20202), (1, 20203), (1, 203), (1, 20301), (1, 20302), (1, 20303), (1, 20304),
+(1, 400), (1, 401), (1, 40101), (1, 40102), (1, 40103), (1, 40104), (1, 402), (1, 40201), (1, 40202), (1, 40203), (1, 40204),
 (1, 300), (1, 301), (1, 30101), (1, 30102), (1, 30103), (1, 30105),
 (1, 900), (1, 901), (1, 902), (1, 903),
 (1, 1000);
