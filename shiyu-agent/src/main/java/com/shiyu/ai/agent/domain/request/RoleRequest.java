@@ -6,6 +6,7 @@ import lombok.Data;
 
 import java.io.Serial;
 import java.io.Serializable;
+import java.util.List;
 
 /**
  * 角色请求对象
@@ -36,4 +37,9 @@ public class RoleRequest implements Serializable {
      * 备注
      */
     private String remark;
+
+    /**
+     * 权限菜单ID列表
+     */
+    private List<Long> permissions;
 }

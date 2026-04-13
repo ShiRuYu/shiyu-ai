@@ -38,7 +38,9 @@ public class SysTenantRepository {
 
     public SysTenantBO create(SysTenantBO sysTenantBO) {
         SysTenantDO sysTenantDO = MapstructUtils.convert(sysTenantBO, SysTenantDO.class);
-        sysTenantMapper.insert(sysTenantDO);
+        
+        // 使用 insertSelective 忽略 null 值，让数据库 DEFAULT 生效
+        sysTenantMapper.insertSelective(sysTenantDO);
         return MapstructUtils.convert(sysTenantDO, SysTenantBO.class);
     }
 

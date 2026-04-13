@@ -2,6 +2,7 @@ package com.shiyu.ai.agent.biz.auth.service.impl;
 
 import com.shiyu.ai.agent.biz.auth.repository.UserRepository;
 import com.shiyu.ai.agent.biz.auth.service.UserService;
+import com.shiyu.ai.agent.domain.bo.RoleBO;
 import com.shiyu.ai.agent.domain.bo.UserBO;
 import com.shiyu.ai.agent.domain.vo.UserPageResponse;
 import com.shiyu.ai.agent.domain.vo.UserVO;
@@ -28,7 +29,15 @@ public class UserServiceImpl implements UserService {
     @Override
     public UserBO getUserDetail(Long userId) {
         log.info("获取用户详情，userId: {}", userId);
-        return userRepository.selectById(userId);
+        UserBO userBO = userRepository.selectById(userId);
+        
+        if (userBO != null) {
+            // 查询并设置用户角色列表
+            List<RoleBO> roles = userRepository.selectRolesByUserId(userId);
+            userBO.setRoles(roles);
+        }
+        
+        return userBO;
     }
 
     @Override

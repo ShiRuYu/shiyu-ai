@@ -58,7 +58,9 @@ public class ProfileRepository {
      */
     public ProfileBO insert(ProfileBO profileBO) {
         ProfileDO profileDO = MapstructUtils.convert(profileBO, ProfileDO.class);
-        profileMapper.insert(profileDO);
+        
+        // 使用 insertSelective 忽略 null 值，让数据库 DEFAULT 生效
+        profileMapper.insertSelective(profileDO);
         profileBO.setId(profileDO.getId());
         return profileBO;
     }

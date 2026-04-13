@@ -38,7 +38,9 @@ public class SysUserRepository {
 
     public SysUserBO create(SysUserBO sysUserBO) {
         SysUserDO sysUserDO = MapstructUtils.convert(sysUserBO, SysUserDO.class);
-        sysUserMapper.insert(sysUserDO);
+        
+        // 使用 insertSelective 忽略 null 值，让数据库 DEFAULT 生效
+        sysUserMapper.insertSelective(sysUserDO);
         return MapstructUtils.convert(sysUserDO, SysUserBO.class);
     }
 

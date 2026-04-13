@@ -38,7 +38,9 @@ public class SysDeptRepository {
 
     public SysDeptBO create(SysDeptBO sysDeptBO) {
         SysDeptDO sysDeptDO = MapstructUtils.convert(sysDeptBO, SysDeptDO.class);
-        sysDeptMapper.insert(sysDeptDO);
+        
+        // 使用 insertSelective 忽略 null 值，让数据库 DEFAULT 生效
+        sysDeptMapper.insertSelective(sysDeptDO);
         return MapstructUtils.convert(sysDeptDO, SysDeptBO.class);
     }
 

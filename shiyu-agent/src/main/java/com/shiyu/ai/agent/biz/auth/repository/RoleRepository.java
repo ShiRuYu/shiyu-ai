@@ -3,6 +3,7 @@ package com.shiyu.ai.agent.biz.auth.repository;
 import com.mybatisflex.core.query.QueryWrapper;
 import com.shiyu.ai.agent.dal.dataobject.auth.MenuDO;
 import com.shiyu.ai.agent.dal.dataobject.auth.RoleDO;
+import com.shiyu.ai.agent.dal.dataobject.auth.RoleMenuDO;
 import com.shiyu.ai.agent.dal.mapper.auth.RoleMapper;
 import com.shiyu.ai.agent.dal.mapper.auth.RoleMenuMapper;
 import com.shiyu.ai.agent.domain.bo.MenuBO;
@@ -72,7 +73,14 @@ public class RoleRepository {
      */
     public RoleBO insert(RoleBO roleBO) {
         RoleDO roleDO = MapstructUtils.convert(roleBO, RoleDO.class);
-        roleMapper.insert(roleDO);
+        
+        // 如果 code 为空，使用 name 作为 code
+        if (roleDO.getCode() == null || roleDO.getCode().isEmpty()) {
+            roleDO.setCode(roleDO.getName());
+        }
+        
+        // 使用 insertSelective 忽略 null 值，让数据库 DEFAULT 生效
+        roleMapper.insertSelective(roleDO);
         roleBO.setId(roleDO.getId());
         return roleBO;
     }
@@ -105,6 +113,31 @@ public class RoleRepository {
      */
     public List<Long> selectMenuIdsByRoleId(Long roleId) {
         return roleMenuMapper.selectMenuIdsByRoleId(roleId);
+    }
+
+    /**
+     * 批量插入角色-菜单关联
+     */
+    public void insertRoleMenus(Long roleId, List<Long> menuIds) {
+        if (menuIds == null || menuIds.isEmpty()) {
+            return;
+        }
+        
+        for (Long menuId : menuIds) {
+            RoleMenuDO roleMenuDO = new RoleMenuDO();
+            roleMenuDO.setRoleId(roleId);
+            roleMenuDO.setMenuId(menuId);
+            roleMenuMapper.insert(roleMenuDO);
+        }
+    }
+
+    /**
+     * 删除角色的所有菜单关联
+     */
+    public void deleteRoleMenus(Long roleId) {
+        QueryWrapper queryWrapper = new QueryWrapper();
+        queryWrapper.eq(RoleMenuDO::getRoleId, roleId);
+        roleMenuMapper.deleteByQuery(queryWrapper);
     }
 
 }

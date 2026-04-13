@@ -79,7 +79,9 @@ public class DictRepository {
      */
     public DictBO create(DictBO dictBO) {
         DictDO dictDO = MapstructUtils.convert(dictBO, DictDO.class);
-        dictMapper.insert(dictDO);
+        
+        // 使用 insertSelective 忽略 null 值，让数据库 DEFAULT 生效
+        dictMapper.insertSelective(dictDO);
         dictBO.setId(dictDO.getId());
         return dictBO;
     }

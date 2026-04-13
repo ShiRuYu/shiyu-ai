@@ -38,7 +38,9 @@ public class SysMenuRepository {
 
     public SysMenuBO create(SysMenuBO sysMenuBO) {
         SysMenuDO sysMenuDO = MapstructUtils.convert(sysMenuBO, SysMenuDO.class);
-        sysMenuMapper.insert(sysMenuDO);
+        
+        // 使用 insertSelective 忽略 null 值，让数据库 DEFAULT 生效
+        sysMenuMapper.insertSelective(sysMenuDO);
         return MapstructUtils.convert(sysMenuDO, SysMenuBO.class);
     }
 

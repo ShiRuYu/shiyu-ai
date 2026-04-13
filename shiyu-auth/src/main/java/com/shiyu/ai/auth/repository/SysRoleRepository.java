@@ -38,7 +38,9 @@ public class SysRoleRepository {
 
     public SysRoleBO create(SysRoleBO sysRoleBO) {
         SysRoleDO sysRoleDO = MapstructUtils.convert(sysRoleBO, SysRoleDO.class);
-        sysRoleMapper.insert(sysRoleDO);
+        
+        // 使用 insertSelective 忽略 null 值，让数据库 DEFAULT 生效
+        sysRoleMapper.insertSelective(sysRoleDO);
         return MapstructUtils.convert(sysRoleDO, SysRoleBO.class);
     }
 

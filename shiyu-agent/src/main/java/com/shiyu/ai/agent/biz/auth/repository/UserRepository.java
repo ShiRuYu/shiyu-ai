@@ -72,9 +72,9 @@ public class UserRepository {
      */
     public UserBO insert(UserBO userBO) {
         UserDO userDO = MapstructUtils.convert(userBO, UserDO.class);
-        userDO.setCreateTime(new Date());
-        userDO.setUpdateTime(new Date());
-        userMapper.insert(userDO);
+        
+        // 使用 insertSelective 忽略 null 值，让数据库 DEFAULT 生效
+        userMapper.insertSelective(userDO);
         userBO.setId(userDO.getId());
         return userBO;
     }

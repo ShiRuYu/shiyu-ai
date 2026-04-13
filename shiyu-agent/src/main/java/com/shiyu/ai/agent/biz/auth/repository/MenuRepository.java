@@ -52,7 +52,9 @@ public class MenuRepository {
      */
     public MenuBO insert(MenuBO menuBO) {
         MenuDO menuDO = MapstructUtils.convert(menuBO, MenuDO.class);
-        menuMapper.insert(menuDO);
+        
+        // 使用 insertSelective 忽略 null 值，让数据库 DEFAULT 生效
+        menuMapper.insertSelective(menuDO);
         menuBO.setId(menuDO.getId());
         return menuBO;
     }

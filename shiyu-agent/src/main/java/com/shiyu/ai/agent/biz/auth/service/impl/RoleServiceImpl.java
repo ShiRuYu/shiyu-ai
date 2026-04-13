@@ -62,13 +62,29 @@ public class RoleServiceImpl implements RoleService {
             return false;
         }
         
+        // 保存角色基本信息
         roleBO.setId(id);
-        return roleRepository.update(roleBO);
+        boolean success = roleRepository.update(roleBO);
+        
+        // 如果提供了permissions，则更新角色-菜单关联
+        if (success && roleBO.getPermissions() != null) {
+            // 先删除旧的关联
+            roleRepository.deleteRoleMenus(id);
+            // 再插入新的关联
+            roleRepository.insertRoleMenus(id, roleBO.getPermissions());
+        }
+        
+        return success;
     }
 
     @Override
     public boolean deleteRole(Long id) {
         log.info("删除角色，id: {}", id);
+        
+        // 先删除角色-菜单关联
+        roleRepository.deleteRoleMenus(id);
+        
+        // 再删除角色
         return roleRepository.deleteById(id);
     }
 
@@ -89,7 +105,15 @@ public class RoleServiceImpl implements RoleService {
     @Override
     public boolean createRole(RoleBO roleBO) {
         log.info("新增角色");
-        roleRepository.insert(roleBO);
+        
+        // 保存角色基本信息
+        RoleBO savedRole = roleRepository.insert(roleBO);
+        
+        // 如果提供了permissions，则保存角色-菜单关联
+        if (roleBO.getPermissions() != null && !roleBO.getPermissions().isEmpty()) {
+            roleRepository.insertRoleMenus(savedRole.getId(), roleBO.getPermissions());
+        }
+        
         return true;
     }
 }

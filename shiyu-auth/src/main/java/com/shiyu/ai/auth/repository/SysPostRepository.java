@@ -38,7 +38,9 @@ public class SysPostRepository {
 
     public SysPostBO create(SysPostBO sysPostBO) {
         SysPostDO sysPostDO = MapstructUtils.convert(sysPostBO, SysPostDO.class);
-        sysPostMapper.insert(sysPostDO);
+        
+        // 使用 insertSelective 忽略 null 值，让数据库 DEFAULT 生效
+        sysPostMapper.insertSelective(sysPostDO);
         return MapstructUtils.convert(sysPostDO, SysPostBO.class);
     }
 
