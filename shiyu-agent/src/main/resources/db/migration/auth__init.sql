@@ -161,11 +161,11 @@ INSERT INTO `user_role` (`user_id`, `role_id`) VALUES (2, 2);
 
 -- 根菜单：Dashboard (ID: 1)
 INSERT INTO `menu` (`id`, `name`, `code`, `type`, `parent_id`, `path`, `redirect`, `icon`, `component`, `layout`, `keep_alive`, `method`, `description`, `show`, `status`, `order`, `del_flag`) 
-VALUES (1, '仪表盘', 'Dashboard', 'MENU', NULL, '/dashboard', '/analytics', 'i-fe:home', 'BasicLayout', '', TRUE, NULL, NULL, TRUE, '1', -1, 0);
+VALUES (1, '仪表盘', 'Dashboard', 'MENU', NULL, '/dashboard', '/analytics', 'lucide:layout-dashboard', 'BasicLayout', '', TRUE, NULL, NULL, TRUE, '1', -1, 0);
 
 -- Dashboard 子菜单：分析页 (ID: 2)
 INSERT INTO `menu` (`id`, `name`, `code`, `type`, `parent_id`, `path`, `redirect`, `icon`, `component`, `layout`, `keep_alive`, `method`, `description`, `show`, `status`, `order`, `del_flag`) 
-VALUES (2, '分析页', 'Analytics', 'MENU', 1, '/analytics', NULL, 'i-fe:bar-chart', '/dashboard/analytics/index', '', TRUE, NULL, NULL, TRUE, '1', 1, 0);
+VALUES (2, '分析页', 'Analytics', 'MENU', 1, '/analytics', NULL, 'lucide:area-chart', '/dashboard/analytics/index', '', TRUE, NULL, NULL, TRUE, '1', 1, 0);
 
 -- Dashboard 子菜单：工作空间 (ID: 3)
 INSERT INTO `menu` (`id`, `name`, `code`, `type`, `parent_id`, `path`, `redirect`, `icon`, `component`, `layout`, `keep_alive`, `method`, `description`, `show`, `status`, `order`, `del_flag`) 
@@ -175,7 +175,7 @@ VALUES (3, '工作空间', 'Workspace', 'MENU', 1, '/workspace', NULL, 'carbon:w
 
 -- 根菜单：系统管理 (ID: 100)
 INSERT INTO `menu` (`id`, `name`, `code`, `type`, `parent_id`, `path`, `redirect`, `icon`, `component`, `layout`, `keep_alive`, `method`, `description`, `show`, `status`, `order`, `del_flag`) 
-VALUES (100, '系统管理', 'System', 'MENU', NULL, '/system', NULL, 'i-fe:settings', 'BasicLayout', '', TRUE, NULL, NULL, TRUE, '1', 9997, 0);
+VALUES (100, '系统管理', 'System', 'MENU', NULL, '/system', NULL, 'ion:settings-outline', 'BasicLayout', '', TRUE, NULL, NULL, TRUE, '1', 9997, 0);
 
 -- 系统管理子菜单：菜单管理 (ID: 201)
 INSERT INTO `menu` (`id`, `name`, `code`, `type`, `parent_id`, `path`, `redirect`, `icon`, `component`, `layout`, `keep_alive`, `method`, `description`, `show`, `status`, `order`, `del_flag`) 
@@ -237,7 +237,7 @@ VALUES (400, '日常记录', 'Record', 'MENU', NULL, '/record', NULL, 'mdi:book-
 
 -- 日常记录子菜单：人物管理 (ID: 401)
 INSERT INTO `menu` (`id`, `name`, `code`, `type`, `parent_id`, `path`, `redirect`, `icon`, `component`, `layout`, `keep_alive`, `method`, `description`, `show`, `status`, `order`, `del_flag`) 
-VALUES (401, '人物管理', 'RecordProfile', 'MENU', 400, '/record/profile', NULL, 'mdi:account-multiple', '/src/views/record/profile/list.vue', '', TRUE, NULL, '人物信息管理', TRUE, '1', 1, 0);
+VALUES (401, '人物管理', 'RecordProfile', 'MENU', 400, '/record/profile', NULL, 'mdi:account-multiple', '/record/profile/list', '', TRUE, NULL, '人物信息管理', TRUE, '1', 1, 0);
 
 -- 人物管理按钮权限：查询 (ID: 40101)
 INSERT INTO `menu` (`id`, `name`, `code`, `type`, `parent_id`, `path`, `redirect`, `icon`, `component`, `layout`, `keep_alive`, `method`, `description`, `show`, `status`, `order`, `del_flag`) 
@@ -257,7 +257,7 @@ VALUES (40104, '人物删除', 'record:profile:remove', 'BUTTON', 401, NULL, NUL
 
 -- 日常记录子菜单：时间轴管理 (ID: 402)
 INSERT INTO `menu` (`id`, `name`, `code`, `type`, `parent_id`, `path`, `redirect`, `icon`, `component`, `layout`, `keep_alive`, `method`, `description`, `show`, `status`, `order`, `del_flag`) 
-VALUES (402, '时间轴管理', 'RecordTimeline', 'MENU', 400, '/record/timeline', NULL, 'mdi:timeline', '/src/views/record/timeline/list.vue', '', TRUE, NULL, '时间轴事件管理', TRUE, '1', 2, 0);
+VALUES (402, '时间轴管理', 'RecordTimeline', 'MENU', 400, '/record/timeline', NULL, 'mdi:timeline', '/record/timeline/list', '', TRUE, NULL, '时间轴事件管理', TRUE, '1', 2, 0);
 
 -- 时间轴管理按钮权限：查询 (ID: 40201)
 INSERT INTO `menu` (`id`, `name`, `code`, `type`, `parent_id`, `path`, `redirect`, `icon`, `component`, `layout`, `keep_alive`, `method`, `description`, `show`, `status`, `order`, `del_flag`) 

@@ -70,4 +70,13 @@ public interface MenuService {
      * @return 菜单树
      */
     List<MenuBO> getMenuTreeByUserId(Long userId);
+    
+    /**
+     * 根据用户 ID 和类型获取菜单列表
+     *
+     * @param userId 用户 ID
+     * @param type 菜单类型（MENU-菜单，CATALOG-目录，BUTTON-按钮）
+     * @return 菜单列表
+     */
+    List<MenuBO> getMenusByUserIdAndType(Long userId, String type);
 }

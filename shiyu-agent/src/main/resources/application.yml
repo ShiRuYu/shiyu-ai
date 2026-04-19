@@ -17,7 +17,10 @@ springdoc:
       paths-to-match:
         - '/**'
       packages-to-scan:
-        - com.shiyu.ai.agent.biz.**.controller
+        - com.shiyu.ai.agent.biz.common.controller
+        - com.shiyu.ai.agent.biz.auth.controller
+        - com.shiyu.ai.agent.biz.record.controller
+        - com.shiyu.ai.agent.biz.agent.controller
     - group: 'common'
       paths-to-match:
         - '/**'

@@ -17,7 +17,7 @@ import java.util.List;
  */
 @Slf4j
 @RestController
-@RequestMapping("/system/role")
+@RequestMapping("/role")
 public class RoleController {
 
     private final RoleService roleService;

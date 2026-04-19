@@ -166,4 +166,42 @@ public class MenuServiceImpl implements MenuService {
         // 5. 构建树形结构
         return buildMenuTree(userMenuBOs, null);
     }
+    
+    @Override
+    public List<MenuBO> getMenusByUserIdAndType(Long userId, String type) {
+        log.info("根据用户 ID 和类型获取菜单树，userId: {}, type: {}", userId, type);
+        // 1. 查询用户的角色列表
+        List<RoleBO> roles = userRepository.selectRolesByUserId(userId);
+        if (roles == null || roles.isEmpty()) {
+            log.warn("用户 {} 没有分配角色", userId);
+            return new ArrayList<>();
+        }
+        
+        // 2. 收集所有角色的菜单 ID（去重）
+        Set<Long> menuIds = new HashSet<>();
+        for (RoleBO role : roles) {
+            List<MenuBO> menus = roleRepository.selectMenusByRoleId(role.getId());
+            if (menus != null) {
+                for (MenuBO menu : menus) {
+                    menuIds.add(menu.getId());
+                }
+            }
+        }
+        
+        if (menuIds.isEmpty()) {
+            log.warn("用户 {} 的角色没有分配菜单", userId);
+            return new ArrayList<>();
+        }
+        
+        // 3. 根据类型查询所有菜单
+        List<MenuBO> allMenus = menuRepository.selectAllByType(type);
+        
+        // 4. 过滤出用户有权限且符合类型的菜单
+        List<MenuBO> userMenuBOs = allMenus.stream()
+                .filter(menu -> menuIds.contains(menu.getId()))
+                .collect(Collectors.toList());
+        
+        // 5. 构建树形结构
+        return buildMenuTree(userMenuBOs, null);
+    }
 }

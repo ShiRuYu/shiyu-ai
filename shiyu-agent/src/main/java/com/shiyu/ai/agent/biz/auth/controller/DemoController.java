@@ -16,8 +16,8 @@ import java.util.Date;
 import java.util.List;
 
 @Slf4j
-@RestController
-@RequestMapping
+//@RestController
+//@RequestMapping
 public class DemoController {
 
     private final DemoService demoService;

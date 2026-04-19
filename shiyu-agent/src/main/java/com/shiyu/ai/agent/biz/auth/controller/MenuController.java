@@ -18,7 +18,7 @@ import java.util.List;
  */
 @Slf4j
 @RestController
-@RequestMapping("/system/menu")
+@RequestMapping("/menu")
 public class MenuController {
 
     private final MenuService menuService;
@@ -28,19 +28,19 @@ public class MenuController {
     }
 
     /**
-     * 获取当前用户菜单
+     * 获取当前用户菜单（类型为 MENU）
      * GET /menu/all
      */
     @GetMapping("/all")
     public Result<List<RouteMenuVO>> getAllMenus(
             @RequestHeader(value = "Authorization", required = false) String token) {
-        log.info("获取当前用户菜单");
+        log.info("获取当前用户菜单（类型为 MENU）");
         
         try {
             Long userId = SaTokenHelper.getCurrentUserId();
             
-            // 从数据库查询用户的菜单树
-            List<MenuBO> menuBOs = menuService.getMenuTreeByUserId(userId);
+            // 从数据库查询用户的 MENU 类型菜单列表
+            List<MenuBO> menuBOs = menuService.getMenusByUserIdAndType(userId, "MENU");
             
             // 转换为 RouteMenuVO
             List<RouteMenuVO> routeMenus = convertToRouteMenuVO(menuBOs);
@@ -55,7 +55,7 @@ public class MenuController {
     
     /**
      * 获取系统菜单列表
-     * GET /system/menu/list
+     * GET /menu/list
      */
     @GetMapping("/list")
     public Result<List<RouteMenuVO>> getSystemMenuList(
