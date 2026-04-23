@@ -275,40 +275,6 @@ VALUES (40203, '时间轴修改', 'record:timeline:edit', 'BUTTON', 402, NULL, N
 INSERT INTO `menu` (`id`, `name`, `code`, `type`, `parent_id`, `path`, `redirect`, `icon`, `component`, `layout`, `keep_alive`, `method`, `description`, `show`, `status`, `order`, `del_flag`) 
 VALUES (40204, '时间轴删除', 'record:timeline:remove', 'BUTTON', 402, NULL, NULL, NULL, NULL, NULL, NULL, 'DELETE', '删除时间轴事件', TRUE, '1', 4, 0);
 
--- ==================== 演示模块 ====================
-
--- 根菜单：Demos (ID: 300)
-INSERT INTO `menu` (`id`, `name`, `code`, `type`, `parent_id`, `path`, `redirect`, `icon`, `component`, `layout`, `keep_alive`, `method`, `description`, `show`, `status`, `order`, `del_flag`) 
-VALUES (300, '演示', 'Demos', 'MENU', NULL, '/demos', '/demos/access', 'ic:baseline-view-in-ar', 'BasicLayout', '', TRUE, NULL, NULL, TRUE, '1', 1000, 0);
-
--- Demos 子菜单：权限演示 (ID: 301)
-INSERT INTO `menu` (`id`, `name`, `code`, `type`, `parent_id`, `path`, `redirect`, `icon`, `component`, `layout`, `keep_alive`, `method`, `description`, `show`, `status`, `order`, `del_flag`) 
-VALUES (301, '权限控制', 'AccessDemos', 'MENU', 300, '/demos/access', '/demos/access/page-control', 'mdi:cloud-key-outline', '', '', TRUE, NULL, NULL, TRUE, '1', 1, 0);
-
--- 权限演示子菜单：页面权限 (ID: 30101)
-INSERT INTO `menu` (`id`, `name`, `code`, `type`, `parent_id`, `path`, `redirect`, `icon`, `component`, `layout`, `keep_alive`, `method`, `description`, `show`, `status`, `order`, `del_flag`) 
-VALUES (30101, '页面权限', 'AccessPageControlDemo', 'MENU', 301, '/demos/access/page-control', NULL, 'mdi:page-previous-outline', '/demos/access/index', '', TRUE, NULL, NULL, TRUE, '1', 1, 0);
-
--- 权限演示子菜单：按钮权限 (ID: 30102)
-INSERT INTO `menu` (`id`, `name`, `code`, `type`, `parent_id`, `path`, `redirect`, `icon`, `component`, `layout`, `keep_alive`, `method`, `description`, `show`, `status`, `order`, `del_flag`) 
-VALUES (30102, '按钮权限', 'AccessButtonControlDemo', 'MENU', 301, '/demos/access/button-control', NULL, 'mdi:button-cursor', '/demos/access/button-control', '', TRUE, NULL, NULL, TRUE, '1', 2, 0);
-
--- 权限演示子菜单：菜单可见403 (ID: 30103)
-INSERT INTO `menu` (`id`, `name`, `code`, `type`, `parent_id`, `path`, `redirect`, `icon`, `component`, `layout`, `keep_alive`, `method`, `description`, `show`, `status`, `order`, `del_flag`) 
-VALUES (30103, '菜单可见403', 'AccessMenuVisible403Demo', 'MENU', 301, '/demos/access/menu-visible-403', NULL, 'mdi:button-cursor', '/demos/access/menu-visible-403', '', TRUE, NULL, NULL, TRUE, '1', 3, 0);
-
--- 权限演示子菜单：Super专属 (ID: 30104)
-INSERT INTO `menu` (`id`, `name`, `code`, `type`, `parent_id`, `path`, `redirect`, `icon`, `component`, `layout`, `keep_alive`, `method`, `description`, `show`, `status`, `order`, `del_flag`) 
-VALUES (30104, 'Super专属页面', 'AccessSuperVisibleDemo', 'MENU', 301, '/demos/access/super-visible', NULL, 'mdi:button-cursor', '/demos/access/super-visible', '', TRUE, NULL, NULL, TRUE, '1', 4, 0);
-
--- 权限演示子菜单：Admin专属 (ID: 30105)
-INSERT INTO `menu` (`id`, `name`, `code`, `type`, `parent_id`, `path`, `redirect`, `icon`, `component`, `layout`, `keep_alive`, `method`, `description`, `show`, `status`, `order`, `del_flag`) 
-VALUES (30105, 'Admin专属页面', 'AccessAdminVisibleDemo', 'MENU', 301, '/demos/access/admin-visible', NULL, 'mdi:button-cursor', '/demos/access/admin-visible', '', TRUE, NULL, NULL, TRUE, '1', 5, 0);
-
--- 权限演示子菜单：User专属 (ID: 30106)
-INSERT INTO `menu` (`id`, `name`, `code`, `type`, `parent_id`, `path`, `redirect`, `icon`, `component`, `layout`, `keep_alive`, `method`, `description`, `show`, `status`, `order`, `del_flag`) 
-VALUES (30106, 'User专属页面', 'AccessUserVisibleDemo', 'MENU', 301, '/demos/access/user-visible', NULL, 'mdi:button-cursor', '/demos/access/user-visible', '', TRUE, NULL, NULL, TRUE, '1', 6, 0);
-
 -- ==================== Vben Admin 项目模块 ====================
 
 -- 根菜单：Vben Admin (ID: 900)
