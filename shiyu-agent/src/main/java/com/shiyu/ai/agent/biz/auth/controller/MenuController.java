@@ -107,7 +107,7 @@ public class MenuController {
             }
             
             // 设置状态：status="1" -> status=1, status="0" -> status=0
-            vo.setStatus("1".equals(menuBO.getStatus()) ? 1 : 0);
+            vo.setStatus(menuBO.getStatus());
             
             // 设置权限码（使用 code 字段）
             vo.setAuthCode(menuBO.getCode());
