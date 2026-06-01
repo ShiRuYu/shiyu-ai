@@ -5,7 +5,7 @@ import cn.hutool.core.lang.tree.Tree;
 import com.shiyu.ai.common.core.utils.TreeBuildUtils;
 import com.shiyu.ai.common.core.validate.AddGroup;
 import com.shiyu.ai.common.core.validate.EditGroup;
-import com.shiyu.ai.common.mybatis.core.domain.BaseEntity;
+import com.shiyu.ai.common.core.domain.BaseEntity;
 import com.shiyu.ai.auth.domain.SysDeptDO;
 import io.github.linpeilie.annotations.AutoMapper;
 import jakarta.validation.constraints.Email;

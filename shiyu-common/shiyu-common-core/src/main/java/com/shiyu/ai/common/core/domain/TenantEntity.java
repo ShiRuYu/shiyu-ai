@@ -1,4 +1,4 @@
-package com.shiyu.ai.common.mybatis.core.domain;
+package com.shiyu.ai.common.core.domain;
 
 import lombok.Data;
 import lombok.EqualsAndHashCode;

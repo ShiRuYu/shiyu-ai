@@ -6,7 +6,7 @@ import com.shiyu.ai.common.core.CharConstants;
 import com.shiyu.ai.common.core.enums.ComponentTypeEnum;
 import com.shiyu.ai.common.core.enums.MenuTypeEnum;
 import com.shiyu.ai.common.core.utils.StringUtils;
-import com.shiyu.ai.common.mybatis.core.domain.BaseEntity;
+import com.shiyu.ai.common.core.domain.BaseEntity;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
 

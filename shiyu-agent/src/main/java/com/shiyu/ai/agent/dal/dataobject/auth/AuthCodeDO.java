@@ -3,7 +3,7 @@ package com.shiyu.ai.agent.dal.dataobject.auth;
 import com.mybatisflex.annotation.Id;
 import com.mybatisflex.annotation.KeyType;
 import com.mybatisflex.annotation.Table;
-import com.shiyu.ai.common.mybatis.core.domain.BaseEntity;
+import com.shiyu.ai.common.core.domain.BaseEntity;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
 

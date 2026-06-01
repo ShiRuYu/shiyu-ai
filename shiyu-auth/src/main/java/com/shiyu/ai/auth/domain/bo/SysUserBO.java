@@ -1,7 +1,7 @@
 package com.shiyu.ai.auth.domain.bo;
 
 import com.shiyu.ai.common.core.xss.Xss;
-import com.shiyu.ai.common.mybatis.core.domain.BaseEntity;
+import com.shiyu.ai.common.core.domain.BaseEntity;
 import com.shiyu.ai.auth.domain.SysUserDO;
 import io.github.linpeilie.annotations.AutoMapper;
 import jakarta.validation.constraints.Email;
