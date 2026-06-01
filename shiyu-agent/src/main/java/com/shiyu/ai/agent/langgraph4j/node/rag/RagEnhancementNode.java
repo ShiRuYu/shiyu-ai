@@ -77,8 +77,7 @@ public class RagEnhancementNode extends BaseNode {
             output.setSuccess(true);
             output.setMsg("RAG 增强节点执行成功");
             
-            // TODO: 实现具体的 RAG 增强逻辑
-            
+            log.warn("RAG 增强节点尚未实现完整逻辑，请集成向量数据库检索");
             log.info("RAG 增强节点执行完成，输入：{}", input);
             return output;
             

@@ -77,8 +77,7 @@ public class ShortTermMemoryNode extends BaseNode {
             output.setSuccess(true);
             output.setMsg("短期记忆节点执行成功");
             
-            // TODO: 实现具体的短期记忆管理逻辑
-            
+            log.warn("短期记忆节点尚未实现完整逻辑，请集成缓存/数据库存储");
             log.info("短期记忆节点执行完成，输入：{}", input);
             return output;
             

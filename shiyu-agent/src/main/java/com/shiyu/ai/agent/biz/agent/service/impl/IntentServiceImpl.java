@@ -3,6 +3,7 @@ package com.shiyu.ai.agent.biz.agent.service.impl;
 import com.shiyu.ai.agent.langchain4j.Lc4jModelManager;
 import com.shiyu.ai.agent.langgraph4j.node.intent.IntentDefinition;
 import com.shiyu.ai.agent.biz.agent.service.IntentService;
+import com.shiyu.ai.common.core.utils.JSONUtils;
 import dev.langchain4j.model.chat.ChatModel;
 import dev.langchain4j.service.AiServices;
 import lombok.extern.slf4j.Slf4j;
@@ -117,8 +118,7 @@ public class IntentServiceImpl implements IntentService {
             }
             json = json.trim();
             
-            // 简单的 JSON 解析（生产环境建议使用 Jackson）
-            Map<String, Object> result = parseSimpleJson(json);
+            Map<String, Object> result = JSONUtils.parseObject(json, HashMap.class);
             
             String intentCode = (String) result.get("intentCode");
             String intentName = (String) result.get("intentName");
@@ -157,34 +157,6 @@ public class IntentServiceImpl implements IntentService {
                 false, null, null, 0.0, Map.of(), 
                 "响应解析失败：" + e.getMessage());
         }
-    }
-    
-    /**
-     * 简单的 JSON 解析（生产环境请替换为 Jackson/Gson）
-     */
-    @SuppressWarnings("unchecked")
-    private Map<String, Object> parseSimpleJson(String json) {
-        // 这里使用一个简化的实现
-        // 实际项目应该使用 Jackson 的 ObjectMapper
-        Map<String, Object> result = new HashMap<>();
-        
-        // 移除花括号
-        if (json.startsWith("{") && json.endsWith("}")) {
-            json = json.substring(1, json.length() - 1);
-        }
-        
-        // 简单分割键值对
-        String[] pairs = json.split(",");
-        for (String pair : pairs) {
-            String[] keyValue = pair.split(":", 2);
-            if (keyValue.length == 2) {
-                String key = keyValue[0].trim().replace("\"", "");
-                String value = keyValue[1].trim().replace("\"", "");
-                result.put(key, value);
-            }
-        }
-        
-        return result;
     }
     
     private Double parseDouble(Object obj) {

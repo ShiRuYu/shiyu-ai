@@ -28,14 +28,14 @@ public class PlatformProperties {
     public static class DeepSeekConfig {
         private String baseUrl = "https://api.deepseek.com";
         private String apiKey = "";
-        private String model = "x-ai/grok-4.1-fast";
+        private String model = "deepseek-chat";
     }
 
     @Data
     public static class OpenAIConfig {
         private String baseUrl = "https://api.openai.com/v1";
         private String apiKey = "";
-        private String model = "x-ai/grok-4.1-fast";
+        private String model = "gpt-4o-mini";
     }
 
     @Data

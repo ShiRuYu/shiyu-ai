@@ -1,4 +1,4 @@
- package com.shiyu.ai.agent.handler;
+package com.shiyu.ai.agent.handler;
 
 import cn.dev33.satoken.exception.NotLoginException;
 import cn.dev33.satoken.exception.NotPermissionException;

@@ -7,6 +7,7 @@ import com.shiyu.ai.agent.domain.bo.UserBO;
 import com.shiyu.ai.agent.domain.vo.UserPageResponse;
 import com.shiyu.ai.agent.domain.vo.UserVO;
 import com.shiyu.ai.common.core.utils.MapstructUtils;
+import com.shiyu.ai.common.core.utils.PasswordUtils;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.tuple.Pair;
 import org.springframework.stereotype.Service;
@@ -80,9 +81,8 @@ public class UserServiceImpl implements UserService {
             return false;
         }
         
-        // TODO: 实现密码重置逻辑
-        log.info("用户 {} 密码已重置", userId);
-        return true;
+        userBO.setPassword(PasswordUtils.encode(password));
+        return userRepository.update(userBO);
     }
 
     @Override

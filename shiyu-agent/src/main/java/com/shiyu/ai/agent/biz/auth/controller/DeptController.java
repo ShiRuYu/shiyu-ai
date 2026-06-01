@@ -23,10 +23,8 @@ public class DeptController {
     @GetMapping("/list")
     public Result<Map<String, Object>> getDeptList(
             @RequestParam(required = false) String name) {
-        log.info("获取部门，name: {}", name);
+        log.warn("部门查询尚未实现，返回空列表，name: {}", name);
         
-        // TODO: 实现真实的部门查询逻辑
-        // 目前返回空列表
         List<Map<String, Object>> depts = new ArrayList<>();
         
         Map<String, Object> data = new HashMap<>();

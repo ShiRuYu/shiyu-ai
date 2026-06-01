@@ -2,6 +2,8 @@ package com.shiyu.ai.agent.biz.auth.service.impl;
 
 import com.shiyu.ai.agent.biz.auth.repository.RoleRepository;
 import com.shiyu.ai.agent.biz.auth.service.RoleService;
+import com.shiyu.ai.agent.dal.dataobject.auth.UserRoleDO;
+import com.shiyu.ai.agent.dal.mapper.auth.UserRoleMapper;
 import com.shiyu.ai.agent.domain.bo.RoleBO;
 import com.shiyu.ai.agent.domain.vo.RolePageResponse;
 import com.shiyu.ai.agent.domain.vo.RoleVO;
@@ -20,9 +22,11 @@ import java.util.List;
 public class RoleServiceImpl implements RoleService {
 
     private final RoleRepository roleRepository;
+    private final UserRoleMapper userRoleMapper;
 
-    public RoleServiceImpl(RoleRepository roleRepository) {
+    public RoleServiceImpl(RoleRepository roleRepository, UserRoleMapper userRoleMapper) {
         this.roleRepository = roleRepository;
+        this.userRoleMapper = userRoleMapper;
     }
 
     @Override
@@ -89,16 +93,31 @@ public class RoleServiceImpl implements RoleService {
     }
 
     @Override
-    public boolean removeUserRoles(Long id, List<Long> userIds) {
-        log.info("取消分配角色，id: {}, userIds: {}", id, userIds);
-        // 模拟操作
+    public boolean removeUserRoles(Long roleId, List<Long> userIds) {
+        log.info("取消分配角色，roleId: {}, userIds: {}", roleId, userIds);
+        if (userIds == null || userIds.isEmpty()) {
+            return true;
+        }
+        for (Long userId : userIds) {
+            userRoleMapper.deleteByQuery(new com.mybatisflex.core.query.QueryWrapper()
+                    .eq(UserRoleDO::getUserId, userId)
+                    .eq(UserRoleDO::getRoleId, roleId));
+        }
         return true;
     }
 
     @Override
-    public boolean assignUserRoles(Long id, List<Long> userIds) {
-        log.info("分配角色，id: {}, userIds: {}", id, userIds);
-        // 模拟操作
+    public boolean assignUserRoles(Long roleId, List<Long> userIds) {
+        log.info("分配角色，roleId: {}, userIds: {}", roleId, userIds);
+        if (userIds == null || userIds.isEmpty()) {
+            return true;
+        }
+        for (Long userId : userIds) {
+            UserRoleDO userRoleDO = new UserRoleDO();
+            userRoleDO.setUserId(userId);
+            userRoleDO.setRoleId(roleId);
+            userRoleMapper.insert(userRoleDO);
+        }
         return true;
     }
 

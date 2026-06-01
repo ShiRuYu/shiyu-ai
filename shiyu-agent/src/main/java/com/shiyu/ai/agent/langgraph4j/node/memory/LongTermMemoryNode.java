@@ -77,8 +77,7 @@ public class LongTermMemoryNode extends BaseNode {
             output.setSuccess(true);
             output.setMsg("长期记忆节点执行成功");
             
-            // TODO: 实现具体的长期记忆管理逻辑
-            
+            log.warn("长期记忆节点尚未实现完整逻辑，请集成向量数据库存储");
             log.info("长期记忆节点执行完成，输入：{}", input);
             return output;
             

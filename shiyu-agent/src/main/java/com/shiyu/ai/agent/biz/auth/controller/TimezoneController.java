@@ -60,12 +60,11 @@ public class TimezoneController {
         log.info("获取当前用户设置的时区");
         
         try {
-            // TODO: 从用户上下文或数据库中获取用户的时区设置
-            // 这里暂时返回默认时区（上海）
-            String current_timezone = TimezoneEnum.ASIA_SHANGHAI.getValue();
+            log.warn("时区持久化存储尚未实现，返回默认时区");
+            String currentTimeZone = TimezoneEnum.ASIA_SHANGHAI.getValue();
             
-            log.info("当前时区：{}", current_timezone);
-            return Result.success(current_timezone);
+            log.info("当前时区：{}", currentTimeZone);
+            return Result.success(currentTimeZone);
             
         } catch (Exception e) {
             log.error("获取当前时区失败", e);
@@ -91,9 +90,7 @@ public class TimezoneController {
                 return Result.fail("无效的时区：" + request.getTimezone());
             }
             
-            // TODO: 将时区保存到用户配置或数据库中
-            // 这里只是验证了时区的有效性
-            
+            log.warn("时区持久化存储尚未实现，后续需保存到用户配置或数据库中");
             log.info("时区设置成功：{}", request.getTimezone());
             return Result.success();
             
