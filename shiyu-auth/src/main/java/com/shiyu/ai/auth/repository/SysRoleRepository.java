@@ -8,24 +8,29 @@ import com.shiyu.ai.auth.mapper.SysRoleMapper;
 import jakarta.annotation.Resource;
 import org.apache.commons.lang3.tuple.Pair;
 import org.springframework.stereotype.Component;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
 
 /**
- * 角色数据仓储层
+ * 角色数据仓储�?
  *
  * @author shiyu-ai
  */
 @Component
+@Transactional
 public class SysRoleRepository {
 
     @Resource
     private SysRoleMapper sysRoleMapper;
 
-    public Pair<Long, List<SysRoleBO>> getAll(Number pageNumber, Number pageSize) {
+    public Pair<Long, List<SysRoleBO>> getAll(Integer pageNumber, Integer pageSize) {
         QueryWrapper queryWrapper = new QueryWrapper();
-        List<SysRoleDO> sysRoles = sysRoleMapper.selectListByQuery(queryWrapper);
         long count = sysRoleMapper.selectCountByQuery(queryWrapper);
+        if (pageNumber != null && pageSize != null && pageSize > 0) {
+            queryWrapper.limit((pageNumber.longValue() - 1) * pageSize.longValue(), pageSize);
+        }
+        List<SysRoleDO> sysRoles = sysRoleMapper.selectListByQuery(queryWrapper);
         return Pair.of(count, MapstructUtils.convert(sysRoles, SysRoleBO.class));
     }
 
@@ -56,3 +61,4 @@ public class SysRoleRepository {
         sysRoleMapper.deleteByQuery(queryWrapper);
     }
 }
+

@@ -14,6 +14,7 @@ import java.util.Map;
  */
 @Slf4j
 @Service
+@Deprecated(forRemoval = true, since = "1.0.0")
 public class RagServiceImpl implements RagService {
     
     @Override

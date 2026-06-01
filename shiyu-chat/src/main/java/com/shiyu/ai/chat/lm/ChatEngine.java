@@ -73,14 +73,13 @@ public class ChatEngine {
      * @return 平台类型
      */
     private PlatformEnum resolvePlatformEnum(LmRequest request) {
-        // 如果有 platform 和 modelName，尝试匹配
-        if (request.getPlatform() != null || request.getModelName() != null) {
-            // 这里可以根据 platform 和 modelName 进行更精确的匹配
-            // 暂时返回默认模型或根据现有逻辑推断
+        if (request.getPlatform() != null) {
             return PlatformEnum.fromAdapterName(request.getPlatform());
         }
-        
-        // 如果没有指定，使用 LOCAL 平台
+        if (request.getModelName() != null) {
+            log.warn("未指定平台，使用默认平台 OLLAMA（modelName={}）", request.getModelName());
+            return PlatformEnum.OLLAMA;
+        }
         return PlatformEnum.OLLAMA;
     }
     

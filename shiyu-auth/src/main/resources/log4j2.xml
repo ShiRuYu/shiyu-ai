@@ -6,7 +6,7 @@
     <!--定义属性，在下方方便维护引用-->
     <properties>
         <!--项目名-->
-        <property name="project">shiyu-chat</property>
+        <property name="project">shiyu-auth</property>
         <!--当天文件保存目录-->
         <property name="logDir">./.logs</property>
         <!--历史文件保存目录-->

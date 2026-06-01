@@ -8,24 +8,29 @@ import com.shiyu.ai.auth.mapper.SysUserMapper;
 import jakarta.annotation.Resource;
 import org.apache.commons.lang3.tuple.Pair;
 import org.springframework.stereotype.Component;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
 
 /**
- * 用户数据仓储层
+ * 用户数据仓储�?
  *
  * @author shiyu-ai
  */
 @Component
+@Transactional
 public class SysUserRepository {
 
     @Resource
     private SysUserMapper sysUserMapper;
 
-    public Pair<Long,List<SysUserBO>> getAll(Number pageNumber, Number pageSize) {
+    public Pair<Long,List<SysUserBO>> getAll(Integer pageNumber, Integer pageSize) {
         QueryWrapper queryWrapper = new QueryWrapper();
-        List<SysUserDO> sysUsers = sysUserMapper.selectListByQuery(queryWrapper);
         long count = sysUserMapper.selectCountByQuery(queryWrapper);
+        if (pageNumber != null && pageSize != null && pageSize > 0) {
+            queryWrapper.limit((pageNumber.longValue() - 1) * pageSize.longValue(), pageSize);
+        }
+        List<SysUserDO> sysUsers = sysUserMapper.selectListByQuery(queryWrapper);
         return Pair.of(count, MapstructUtils.convert(sysUsers, SysUserBO.class));
     }
 
@@ -57,9 +62,9 @@ public class SysUserRepository {
     }
 
     /**
-     * 根据用户名查询用户
+     * 根据用户名查询用�?
      *
-     * @param username 用户名
+     * @param username 用户�?
      * @return 用户信息
      */
     public SysUserBO getByUsername(String username) {
@@ -69,3 +74,4 @@ public class SysUserRepository {
         return MapstructUtils.convert(sysUserDO, SysUserBO.class);
     }
 }
+

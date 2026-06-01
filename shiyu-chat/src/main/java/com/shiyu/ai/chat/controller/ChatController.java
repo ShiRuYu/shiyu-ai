@@ -1,5 +1,6 @@
 package com.shiyu.ai.chat.controller;
 
+import com.shiyu.ai.chat.config.PlatformProperties;
 import com.shiyu.ai.chat.domain.ChatRequest;
 import com.shiyu.ai.chat.lm.PlatformEnum;
 import com.shiyu.ai.chat.service.ChatService;
@@ -18,6 +19,9 @@ public class ChatController {
 
     @Resource
     private ChatService chatService;
+
+    @Resource
+    private PlatformProperties platformProperties;
 
     /**
      * 流式对话接口
@@ -50,19 +54,26 @@ public class ChatController {
         return platforms;
     }
 
-    /**
-     * 获取指定平台的可用模型列表
-     */
     @GetMapping("/platforms/{platform}/models")
     public List<Map<String, Object>> getModels(@PathVariable String platform) {
-        // 这里可以根据实际平台配置返回具体模型列表
-        // 目前返回默认模型配置
         List<Map<String, Object>> models = new ArrayList<>();
         Map<String, Object> modelInfo = new HashMap<>();
-        modelInfo.put("name", getDefaultModelForPlatform(platform));
+        modelInfo.put("name", resolveDefaultModel(platform));
         modelInfo.put("displayName", "默认模型");
         models.add(modelInfo);
         return models;
+    }
+
+    private String resolveDefaultModel(String platform) {
+        if (platform == null) return platformProperties.getSiliconflow().getModel();
+        return switch (platform.toUpperCase()) {
+            case "OLLAMA" -> platformProperties.getOllama().getModel();
+            case "DEEPSEEK" -> platformProperties.getDeepseek().getModel();
+            case "OPENAI" -> platformProperties.getOpenai().getModel();
+            case "OPEN_ROUTER" -> platformProperties.getOpenrouter().getModel();
+            case "SILICON_FLOW" -> platformProperties.getSiliconflow().getModel();
+            default -> platformProperties.getSiliconflow().getModel();
+        };
     }
 
     /**
@@ -79,17 +90,4 @@ public class ChatController {
         };
     }
 
-    /**
-     * 获取平台默认模型名称
-     */
-    private String getDefaultModelForPlatform(String platform) {
-        return switch (platform.toUpperCase()) {
-            case "OLLAMA" -> "gemma3:4b";
-            case "OPENAI" -> "gpt-4";
-            case "OPEN_ROUTER" -> "gpt-4";
-            case "SILICON_FLOW" -> "THUDM/GLM-Z1-9B-0414";
-            case "DEEPSEEK" -> "deepseek-chat";
-            default -> "default";
-        };
-    }
 }

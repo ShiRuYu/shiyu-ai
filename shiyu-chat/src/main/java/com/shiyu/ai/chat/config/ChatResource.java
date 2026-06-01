@@ -14,9 +14,6 @@ public class ChatResource {
     @Value("classpath:/prompts/system-message.st")
     private org.springframework.core.io.Resource systemResource;
 
-    @Value("classpath:/docs/wikipedia-curling.md")
-    private org.springframework.core.io.Resource docsToStuffResource;
-
     @Value("classpath:/prompts/qa-prompt.st")
     private org.springframework.core.io.Resource qaPromptResource;
 }

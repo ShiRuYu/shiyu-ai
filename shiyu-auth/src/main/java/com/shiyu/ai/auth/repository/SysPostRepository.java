@@ -8,24 +8,29 @@ import com.shiyu.ai.auth.mapper.SysPostMapper;
 import jakarta.annotation.Resource;
 import org.apache.commons.lang3.tuple.Pair;
 import org.springframework.stereotype.Component;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
 
 /**
- * 岗位数据仓储层
+ * 岗位数据仓储�?
  *
  * @author shiyu-ai
  */
 @Component
+@Transactional
 public class SysPostRepository {
 
     @Resource
     private SysPostMapper sysPostMapper;
 
-    public Pair<Long, List<SysPostBO>> getAll(Number pageNumber, Number pageSize) {
+    public Pair<Long, List<SysPostBO>> getAll(Integer pageNumber, Integer pageSize) {
         QueryWrapper queryWrapper = new QueryWrapper();
-        List<SysPostDO> sysPosts = sysPostMapper.selectListByQuery(queryWrapper);
         long count = sysPostMapper.selectCountByQuery(queryWrapper);
+        if (pageNumber != null && pageSize != null && pageSize > 0) {
+            queryWrapper.limit((pageNumber.longValue() - 1) * pageSize.longValue(), pageSize);
+        }
+        List<SysPostDO> sysPosts = sysPostMapper.selectListByQuery(queryWrapper);
         return Pair.of(count, MapstructUtils.convert(sysPosts, SysPostBO.class));
     }
 
@@ -56,3 +61,4 @@ public class SysPostRepository {
         sysPostMapper.deleteByQuery(queryWrapper);
     }
 }
+

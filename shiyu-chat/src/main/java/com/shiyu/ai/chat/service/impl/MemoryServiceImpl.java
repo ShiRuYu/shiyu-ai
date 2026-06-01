@@ -5,12 +5,12 @@ import com.shiyu.ai.chat.domain.memory.Memory;
 import com.shiyu.ai.chat.domain.memory.ConversationHistory;
 import com.shiyu.ai.chat.domain.memory.MemoryContext;
 import com.shiyu.ai.chat.lm.ChatEngine;
-import com.shiyu.ai.chat.lm.PlatformEnum;
 import com.shiyu.ai.chat.lm.request.LmRequest;
 import com.shiyu.ai.chat.lm.result.ChatResult;
 import com.shiyu.ai.chat.service.MemoryService;
 import jakarta.annotation.Resource;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDateTime;
@@ -26,9 +26,12 @@ public class MemoryServiceImpl implements MemoryService {
     
     @Resource
     private ChatEngine chatEngine;
-    
+
     @Resource
     private com.shiyu.ai.chat.config.MemoryConfig memoryConfig;
+
+    @Value("${shiyu.memory.extraction-platform:SILICON_FLOW}")
+    private String defaultMemoryPlatform;
     
     // 短期记忆存储：sessionId -> memories
     private final Map<String, List<Memory>> shortTermMemoryStore = new ConcurrentHashMap<>();
@@ -208,8 +211,13 @@ public class MemoryServiceImpl implements MemoryService {
     
     @Override
     public void extractAndStoreLongTermMemory(String sessionId, String query, String response) {
+        extractAndStoreLongTermMemory(sessionId, query, response, null);
+    }
+
+    @Override
+    public void extractAndStoreLongTermMemory(String sessionId, String query, String response, String platform) {
+        if (!memoryConfig.isAutoExtractLongTerm()) return;
         try {
-            // 构建提取提示词
             String extractPrompt = String.format(
                     "请从以下对话中提取重要的事实、偏好、知识点等长期记忆信息。\n\n" +
                     "用户问题：%s\n\n" +
@@ -222,7 +230,8 @@ public class MemoryServiceImpl implements MemoryService {
                     "5. 保持简洁，每个要点不超过 50 字",
                     query, response);
             
-            ChatResult result = chatEngine.call(new LmRequest(extractPrompt, PlatformEnum.SILICON_FLOW.getAdapterName(), null, "MemoryService"));
+            String actualPlatform = platform != null ? platform : defaultMemoryPlatform;
+            ChatResult result = chatEngine.call(new LmRequest(extractPrompt, actualPlatform, null, "MemoryService"));
             
             if (result != null && !result.getAnswer().trim().isEmpty() && !result.getAnswer().contains("无")) {
                 // 将提取的信息存储为长期记忆
@@ -247,6 +256,50 @@ public class MemoryServiceImpl implements MemoryService {
         }
     }
     
+    @Override
+    public void saveChatMemory(String sessionId, String userId, String query, String response,
+                                String intentType, String chainUsed) {
+        try {
+            ConversationHistory history = ConversationHistory.builder()
+                    .sessionId(sessionId)
+                    .userId(userId != null ? userId : "anonymous")
+                    .userQuery(query)
+                    .aiResponse(response)
+                    .intentType(intentType)
+                    .chainUsed(chainUsed)
+                    .createdAt(LocalDateTime.now())
+                    .build();
+            saveConversationHistory(history);
+
+            Memory userMemory = Memory.builder()
+                    .sessionId(sessionId)
+                    .userId(userId != null ? userId : "anonymous")
+                    .type(Memory.MemoryType.SHORT_TERM)
+                    .content("用户：" + query)
+                    .weight(0.9)
+                    .createdAt(LocalDateTime.now())
+                    .expiresAt(LocalDateTime.now().plusHours(24))
+                    .build();
+
+            Memory aiMemory = Memory.builder()
+                    .sessionId(sessionId)
+                    .userId(userId != null ? userId : "anonymous")
+                    .type(Memory.MemoryType.SHORT_TERM)
+                    .content("AI: " + response)
+                    .weight(0.9)
+                    .createdAt(LocalDateTime.now())
+                    .expiresAt(LocalDateTime.now().plusHours(24))
+                    .build();
+
+            addShortTermMemory(userMemory);
+            addShortTermMemory(aiMemory);
+            extractAndStoreLongTermMemory(sessionId, query, response);
+
+        } catch (Exception e) {
+            log.error("保存对话记忆失败：{}", e.getMessage(), e);
+        }
+    }
+
     @Override
     public String buildPromptWithMemory(String originalPrompt, MemoryContext memoryContext) {
         if (memoryContext == null) {
@@ -302,9 +355,12 @@ public class MemoryServiceImpl implements MemoryService {
      * 从 Session ID 中提取 User ID（简单实现，可根据实际业务调整）
      */
     private String extractUserIdFromSession(String sessionId) {
-        // 简单实现：直接使用 sessionId 作为 userId
-        // 实际业务中可以从 sessionId 解析出 userId
-        return sessionId != null ? sessionId.split("_")[0] : "anonymous";
+        if (sessionId == null) return "anonymous";
+        int idx = sessionId.indexOf('_');
+        if (idx > 0) {
+            return sessionId.substring(0, idx);
+        }
+        return "anonymous";
     }
     
     /**

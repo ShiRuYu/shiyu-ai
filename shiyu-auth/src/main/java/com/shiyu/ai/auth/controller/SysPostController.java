@@ -3,6 +3,8 @@ package com.shiyu.ai.auth.controller;
 import com.shiyu.ai.common.core.api.Result;
 import com.shiyu.ai.auth.domain.bo.SysPostBO;
 import com.shiyu.ai.auth.service.SysPostService;
+import io.swagger.v3.oas.annotations.tags.Tag;
+import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.apache.commons.lang3.tuple.Pair;
 import org.springframework.web.bind.annotation.DeleteMapping;
@@ -18,10 +20,10 @@ import org.springframework.web.bind.annotation.RestController;
 import java.util.List;
 
 /**
- * 岗位管理控制器
- *
+ * 岗位管理控制�? *
  * @author shiyu-ai
  */
+@Tag(name = "��λ����", description = "��λ����ӿ�")
 @RestController
 @RequiredArgsConstructor
 @RequestMapping("/posts")
@@ -50,7 +52,7 @@ public class SysPostController {
      * 创建岗位
      */
     @PostMapping
-    public Result<SysPostBO> createPost(@RequestBody SysPostBO sysPostBO) {
+    public Result<SysPostBO> createPost(@Valid @RequestBody SysPostBO sysPostBO) {
         return Result.success(sysPostService.create(sysPostBO));
     }
 
@@ -58,7 +60,7 @@ public class SysPostController {
      * 更新岗位
      */
     @PutMapping("/{postId}")
-    public Result<SysPostBO> updatePost(@PathVariable Long postId, @RequestBody SysPostBO sysPostBO) {
+    public Result<SysPostBO> updatePost(@PathVariable Long postId, @Valid @RequestBody SysPostBO sysPostBO) {
         sysPostBO.setPostId(postId);
         return Result.success(sysPostService.update(sysPostBO));
     }
@@ -72,3 +74,5 @@ public class SysPostController {
         return Result.success();
     }
 }
+
+

@@ -4,6 +4,8 @@ import com.shiyu.ai.common.core.api.Result;
 import com.shiyu.ai.auth.domain.bo.SysUserBO;
 import com.shiyu.ai.auth.domain.vo.SysUserVO;
 import com.shiyu.ai.auth.service.SysUserService;
+import io.swagger.v3.oas.annotations.tags.Tag;
+import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.apache.commons.lang3.tuple.Pair;
 import org.springframework.web.bind.annotation.DeleteMapping;
@@ -19,10 +21,10 @@ import org.springframework.web.bind.annotation.RestController;
 import java.util.List;
 
 /**
- * 用户管理控制器
- *
+ * 用户管理控制�? *
  * @author shiyu-ai
  */
+@Tag(name = "�û�����", description = "�û�����ӿ�")
 @RestController
 @RequiredArgsConstructor
 @RequestMapping("/users")
@@ -51,7 +53,7 @@ public class SysUserController {
      * 创建用户
      */
     @PostMapping
-    public Result<SysUserVO> createUser(@RequestBody SysUserBO sysUserBO) {
+    public Result<SysUserVO> createUser(@Valid @RequestBody SysUserBO sysUserBO) {
         return Result.success(sysUserService.create(sysUserBO));
     }
 
@@ -59,7 +61,7 @@ public class SysUserController {
      * 更新用户
      */
     @PutMapping("/{userId}")
-    public Result<SysUserVO> updateUser(@PathVariable Long userId, @RequestBody SysUserBO sysUserBO) {
+    public Result<SysUserVO> updateUser(@PathVariable Long userId, @Valid @RequestBody SysUserBO sysUserBO) {
         sysUserBO.setUserId(userId);
         return Result.success(sysUserService.update(sysUserBO));
     }
@@ -73,3 +75,5 @@ public class SysUserController {
         return Result.success();
     }
 }
+
+

@@ -5,8 +5,6 @@ import com.shiyu.ai.chat.lm.ChatEngine;
 import com.shiyu.ai.chat.lm.request.LmRequest;
 import com.shiyu.ai.chat.lm.result.StreamResult;
 import jakarta.annotation.Resource;
-import org.springframework.ai.chat.messages.Message;
-import org.springframework.ai.chat.messages.UserMessage;
 import org.springframework.ai.chat.prompt.SystemPromptTemplate;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -26,31 +24,20 @@ public class ResourceController {
     @Resource
     private ChatResource chatResource;
 
-
     @GetMapping("/stream")
-    public Flux<String> stream(@RequestParam(required = false,defaultValue = "SILICON_FLOW") String platformEnum,
-                               @RequestParam(
-                                       value = "message",
-                                       required = false,
-                                       defaultValue = "Tell me about three famous pirates from the Golden Age of Piracy and why they did.  Write at least a sentence for each pirate.") String message,
+    public Flux<String> stream(@RequestParam(required = false, defaultValue = "SILICON_FLOW") String platformEnum,
+                               @RequestParam(value = "message", required = false,
+                                       defaultValue = "Tell me about three famous pirates from the Golden Age of Piracy and why they did. Write at least a sentence for each pirate.") String message,
                                @RequestParam(value = "name", required = false, defaultValue = "Bob") String name,
-                               @RequestParam(value = "voice", required = false, defaultValue = "pirate") String voice
-    ) {
+                               @RequestParam(value = "voice", required = false, defaultValue = "pirate") String voice) {
 
-        // 用户输入
-        UserMessage userMessage = new UserMessage(message);
-
-        // 使用 System prompt tmpl
         SystemPromptTemplate systemPromptTemplate = new SystemPromptTemplate(chatResource.getSystemResource());
-        // 填充 System prompt 中的变量值
-        Message systemMessage = systemPromptTemplate.createMessage(Map.of("name", name, "voice", voice));
+        String systemContent = systemPromptTemplate.render(Map.of("name", name, "voice", voice));
 
-        // 调用大模型
-        LmRequest request = new LmRequest(message, platformEnum, null, "ResourceController");
+        String combinedPrompt = systemContent + "\n\n" + message;
+        LmRequest request = new LmRequest(combinedPrompt, platformEnum, null, "ResourceController");
         StreamResult result = chatEngine.stream(request);
         return result.getAnswer();
-        //ChatClient chatClient = chatEngine.getChatClient(PlatformEnum.fromEnumName(platformEnum));
-        //return chatClient.prompt(new Prompt(List.of(userMessage, systemMessage))).stream().content();
     }
 
 }

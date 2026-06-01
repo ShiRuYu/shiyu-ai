@@ -8,7 +8,6 @@ import com.shiyu.ai.auth.repository.SysUserRepository;
 import com.shiyu.ai.auth.service.AuthService;
 import com.shiyu.ai.auth.utils.JwtTokenUtil;
 import com.shiyu.ai.common.core.utils.MapstructUtils;
-import jakarta.annotation.Resource;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.security.authentication.AuthenticationManager;
@@ -16,7 +15,6 @@ import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
-import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
 /**
@@ -27,11 +25,9 @@ import org.springframework.stereotype.Service;
 @RequiredArgsConstructor
 public class AuthServiceImpl implements AuthService {
 
-    @Resource
-    private SysUserRepository sysUserRepository;
-
+    private final SysUserRepository sysUserRepository;
     private final AuthenticationManager authenticationManager;
-    private final PasswordEncoder passwordEncoder;
+    private final JwtTokenUtil jwtTokenUtil;
 
     @Override
     public LoginResponseVO login(LoginVO loginVO) {
@@ -58,8 +54,8 @@ public class AuthServiceImpl implements AuthService {
             SecurityContextHolder.getContext().setAuthentication(authentication);
 
             // 6. 生成访问令牌和刷新令牌
-            String accessToken = JwtTokenUtil.generateAccessToken(sysUserBO);
-            String refreshToken = JwtTokenUtil.generateRefreshToken(sysUserBO);
+            String accessToken = jwtTokenUtil.generateAccessToken(sysUserBO);
+            String refreshToken = jwtTokenUtil.generateRefreshToken(sysUserBO);
 
             // 7. 构建用户视图对象
             SysUserVO sysUserVO = convertToVO(sysUserBO);
@@ -99,17 +95,17 @@ public class AuthServiceImpl implements AuthService {
 
     @Override
     public boolean validateToken(String token) {
-        return JwtTokenUtil.validateToken(token);
+        return jwtTokenUtil.validateToken(token);
     }
 
     @Override
     public String refreshToken(String oldToken) {
-        if (!JwtTokenUtil.canTokenBeRefreshed(oldToken)) {
+        if (!jwtTokenUtil.canTokenBeRefreshed(oldToken)) {
             log.warn("Token 无法刷新：{}", oldToken);
             return null;
         }
         
-        String newToken = JwtTokenUtil.refreshToken(oldToken);
+        String newToken = jwtTokenUtil.refreshToken(oldToken);
         log.info("Token 已刷新：{} -> {}", oldToken.substring(0, Math.min(20, oldToken.length())), 
                 newToken != null ? newToken.substring(0, Math.min(20, newToken.length())) : "null");
         return newToken;

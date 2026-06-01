@@ -8,24 +8,29 @@ import com.shiyu.ai.auth.mapper.SysDeptMapper;
 import jakarta.annotation.Resource;
 import org.apache.commons.lang3.tuple.Pair;
 import org.springframework.stereotype.Component;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
 
 /**
- * 部门数据仓储层
+ * 部门数据仓储�?
  *
  * @author shiyu-ai
  */
 @Component
+@Transactional
 public class SysDeptRepository {
 
     @Resource
     private SysDeptMapper sysDeptMapper;
 
-    public Pair<Long, List<SysDeptBO>> getAll(Number pageNumber, Number pageSize) {
+    public Pair<Long, List<SysDeptBO>> getAll(Integer pageNumber, Integer pageSize) {
         QueryWrapper queryWrapper = new QueryWrapper();
-        List<SysDeptDO> sysDepts = sysDeptMapper.selectListByQuery(queryWrapper);
         long count = sysDeptMapper.selectCountByQuery(queryWrapper);
+        if (pageNumber != null && pageSize != null && pageSize > 0) {
+            queryWrapper.limit((pageNumber.longValue() - 1) * pageSize.longValue(), pageSize);
+        }
+        List<SysDeptDO> sysDepts = sysDeptMapper.selectListByQuery(queryWrapper);
         return Pair.of(count, MapstructUtils.convert(sysDepts, SysDeptBO.class));
     }
 
@@ -56,3 +61,4 @@ public class SysDeptRepository {
         sysDeptMapper.deleteByQuery(queryWrapper);
     }
 }
+

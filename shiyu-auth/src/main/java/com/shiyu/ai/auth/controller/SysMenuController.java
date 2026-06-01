@@ -3,6 +3,8 @@ package com.shiyu.ai.auth.controller;
 import com.shiyu.ai.common.core.api.Result;
 import com.shiyu.ai.auth.domain.bo.SysMenuBO;
 import com.shiyu.ai.auth.service.SysMenuService;
+import io.swagger.v3.oas.annotations.tags.Tag;
+import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.apache.commons.lang3.tuple.Pair;
 import org.springframework.web.bind.annotation.DeleteMapping;
@@ -18,10 +20,10 @@ import org.springframework.web.bind.annotation.RestController;
 import java.util.List;
 
 /**
- * 菜单管理控制器
- *
+ * 菜单管理控制�? *
  * @author shiyu-ai
  */
+@Tag(name = "�˵�����", description = "�˵�Ȩ�޽ӿ�")
 @RestController
 @RequiredArgsConstructor
 @RequestMapping("/menus")
@@ -50,7 +52,7 @@ public class SysMenuController {
      * 创建菜单
      */
     @PostMapping
-    public Result<SysMenuBO> createMenu(@RequestBody SysMenuBO sysMenuBO) {
+    public Result<SysMenuBO> createMenu(@Valid @RequestBody SysMenuBO sysMenuBO) {
         return Result.success(sysMenuService.create(sysMenuBO));
     }
 
@@ -58,7 +60,7 @@ public class SysMenuController {
      * 更新菜单
      */
     @PutMapping("/{menuId}")
-    public Result<SysMenuBO> updateMenu(@PathVariable Long menuId, @RequestBody SysMenuBO sysMenuBO) {
+    public Result<SysMenuBO> updateMenu(@PathVariable Long menuId, @Valid @RequestBody SysMenuBO sysMenuBO) {
         sysMenuBO.setMenuId(menuId);
         return Result.success(sysMenuService.update(sysMenuBO));
     }
@@ -72,3 +74,5 @@ public class SysMenuController {
         return Result.success();
     }
 }
+
+

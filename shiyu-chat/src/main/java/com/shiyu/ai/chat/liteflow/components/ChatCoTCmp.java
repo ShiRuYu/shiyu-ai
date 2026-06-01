@@ -1,12 +1,12 @@
 package com.shiyu.ai.chat.liteflow.components;
 
+import com.shiyu.ai.chat.config.PlatformProperties;
 import com.shiyu.ai.chat.domain.GlobalContext;
 import com.shiyu.ai.chat.lm.ChatEngine;
 import com.shiyu.ai.chat.lm.PlatformEnum;
 import com.shiyu.ai.chat.lm.request.LmRequest;
 import com.shiyu.ai.chat.lm.result.ChatResult;
 import com.shiyu.ai.chat.lm.result.StreamResult;
-import com.shiyu.ai.chat.config.PlatformProperties;
 import com.yomahub.liteflow.annotation.LiteflowComponent;
 import com.yomahub.liteflow.core.NodeComponent;
 import jakarta.annotation.Resource;
@@ -18,7 +18,7 @@ import reactor.core.publisher.Flux;
 public class ChatCoTCmp extends NodeComponent {
     @Resource
     private ChatEngine chatEngine;
-    
+
     @Resource
     private PlatformProperties platformProperties;
 
@@ -60,7 +60,7 @@ public class ChatCoTCmp extends NodeComponent {
         
         // 如果 modelName 为空，根据 platform 获取默认模型
         if (modelName == null || modelName.trim().isEmpty()) {
-            modelName = getDefaultModelForPlatform(platform);
+            modelName = resolveDefaultModel(platform);
         }
         
         // Step 2: 调用模型进行逐步推理
@@ -96,7 +96,7 @@ public class ChatCoTCmp extends NodeComponent {
         
         // 如果 modelName 为空，根据 platform 获取默认模型
         if (modelName == null || modelName.trim().isEmpty()) {
-            modelName = getDefaultModelForPlatform(platform);
+            modelName = resolveDefaultModel(platform);
         }
         
         // Step 2: 执行流式调用
@@ -170,26 +170,14 @@ public class ChatCoTCmp extends NodeComponent {
         return reasoningResult;
     }
     
-    /**
-     * 根据平台获取默认模型
-     */
-    private String getDefaultModelForPlatform(String platform) {
-        if (platform == null) {
-            return platformProperties.getSiliconflow().getModel();
-        }
-        
-        switch (platform.toUpperCase()) {
-            case "OLLAMA":
-                return platformProperties.getOllama().getModel();
-            case "DEEPSEEK":
-                return platformProperties.getDeepseek().getModel();
-            case "OPENAI":
-                return platformProperties.getOpenai().getModel();
-            case "OPENROUTER":
-                return platformProperties.getOpenrouter().getModel();
-            case "SILICONFLOW":
-            default:
-                return platformProperties.getSiliconflow().getModel();
-        }
+    private String resolveDefaultModel(String platform) {
+        if (platform == null) return platformProperties.getSiliconflow().getModel();
+        return switch (platform.toUpperCase()) {
+            case "OLLAMA" -> platformProperties.getOllama().getModel();
+            case "DEEPSEEK" -> platformProperties.getDeepseek().getModel();
+            case "OPENAI" -> platformProperties.getOpenai().getModel();
+            case "OPENROUTER" -> platformProperties.getOpenrouter().getModel();
+            default -> platformProperties.getSiliconflow().getModel();
+        };
     }
 }

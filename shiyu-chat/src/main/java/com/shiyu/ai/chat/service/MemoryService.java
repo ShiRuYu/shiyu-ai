@@ -52,10 +52,28 @@ public interface MemoryService {
     void cleanupExpiredMemories();
     
     /**
-     * 从记忆中提取关键信息并生成长期记忆
+     * 从记忆中提取关键信息并生成长期记忆（使用默认平台）
      */
     void extractAndStoreLongTermMemory(String sessionId, String query, String response);
+
+    /**
+     * 从记忆中提取关键信息并生成长期记忆（指定平台）
+     * @param platform 调用 LLM 的平台名称
+     */
+    void extractAndStoreLongTermMemory(String sessionId, String query, String response, String platform);
     
+    /**
+     * 保存对话记忆（对话历史 + 短期记忆 + 长期记忆）
+     * @param sessionId 会话ID
+     * @param userId 用户ID
+     * @param query 用户问题
+     * @param response AI回复
+     * @param intentType 意图类型
+     * @param chainUsed 使用的链
+     */
+    void saveChatMemory(String sessionId, String userId, String query, String response,
+                        String intentType, String chainUsed);
+
     /**
      * 构建带记忆的提示词（将记忆信息整合到 Prompt 中）
      */

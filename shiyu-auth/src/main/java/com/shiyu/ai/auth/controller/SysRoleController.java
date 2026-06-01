@@ -3,6 +3,8 @@ package com.shiyu.ai.auth.controller;
 import com.shiyu.ai.common.core.api.Result;
 import com.shiyu.ai.auth.domain.bo.SysRoleBO;
 import com.shiyu.ai.auth.service.SysRoleService;
+import io.swagger.v3.oas.annotations.tags.Tag;
+import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.apache.commons.lang3.tuple.Pair;
 import org.springframework.web.bind.annotation.DeleteMapping;
@@ -18,10 +20,10 @@ import org.springframework.web.bind.annotation.RestController;
 import java.util.List;
 
 /**
- * 角色管理控制器
- *
+ * 角色管理控制�? *
  * @author shiyu-ai
  */
+@Tag(name = "��ɫ����", description = "��ɫ����ӿ�")
 @RestController
 @RequiredArgsConstructor
 @RequestMapping("/roles")
@@ -50,7 +52,7 @@ public class SysRoleController {
      * 创建角色
      */
     @PostMapping
-    public Result<SysRoleBO> createRole(@RequestBody SysRoleBO sysRoleBO) {
+    public Result<SysRoleBO> createRole(@Valid @RequestBody SysRoleBO sysRoleBO) {
         return Result.success(sysRoleService.create(sysRoleBO));
     }
 
@@ -58,7 +60,7 @@ public class SysRoleController {
      * 更新角色
      */
     @PutMapping("/{roleId}")
-    public Result<SysRoleBO> updateRole(@PathVariable Long roleId, @RequestBody SysRoleBO sysRoleBO) {
+    public Result<SysRoleBO> updateRole(@PathVariable Long roleId, @Valid @RequestBody SysRoleBO sysRoleBO) {
         sysRoleBO.setRoleId(roleId);
         return Result.success(sysRoleService.update(sysRoleBO));
     }
@@ -72,3 +74,5 @@ public class SysRoleController {
         return Result.success();
     }
 }
+
+

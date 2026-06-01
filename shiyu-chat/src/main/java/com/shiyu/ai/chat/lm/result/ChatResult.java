@@ -2,8 +2,6 @@ package com.shiyu.ai.chat.lm.result;
 
 import lombok.Data;
 
-import java.util.List;
-
 /**
  * 普通对话响应结果（非流式）
  */
@@ -20,11 +18,6 @@ public class ChatResult {
      */
     private double score;
     
-    /**
-     * 链路追踪信息（可选）
-     */
-    private List<String> traces;
-
     public ChatResult() {
     }
 
@@ -32,15 +25,9 @@ public class ChatResult {
         this.answer = answer;
         this.score = 0.0;
     }
-    
+
     public ChatResult(String answer, double score) {
         this.answer = answer;
         this.score = score;
-    }
-    
-    public ChatResult(String answer, double score, List<String> traces) {
-        this.answer = answer;
-        this.score = score;
-        this.traces = traces;
     }
 }

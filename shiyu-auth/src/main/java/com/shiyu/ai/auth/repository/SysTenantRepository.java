@@ -8,24 +8,29 @@ import com.shiyu.ai.auth.mapper.SysTenantMapper;
 import jakarta.annotation.Resource;
 import org.apache.commons.lang3.tuple.Pair;
 import org.springframework.stereotype.Component;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
 
 /**
- * 租户数据仓储层
+ * 租户数据仓储�?
  *
  * @author shiyu-ai
  */
 @Component
+@Transactional
 public class SysTenantRepository {
 
     @Resource
     private SysTenantMapper sysTenantMapper;
 
-    public Pair<Long, List<SysTenantBO>> getAll(Number pageNumber, Number pageSize) {
+    public Pair<Long, List<SysTenantBO>> getAll(Integer pageNumber, Integer pageSize) {
         QueryWrapper queryWrapper = new QueryWrapper();
-        List<SysTenantDO> sysTenants = sysTenantMapper.selectListByQuery(queryWrapper);
         long count = sysTenantMapper.selectCountByQuery(queryWrapper);
+        if (pageNumber != null && pageSize != null && pageSize > 0) {
+            queryWrapper.limit((pageNumber.longValue() - 1) * pageSize.longValue(), pageSize);
+        }
+        List<SysTenantDO> sysTenants = sysTenantMapper.selectListByQuery(queryWrapper);
         return Pair.of(count, MapstructUtils.convert(sysTenants, SysTenantBO.class));
     }
 
@@ -56,3 +61,4 @@ public class SysTenantRepository {
         sysTenantMapper.deleteByQuery(queryWrapper);
     }
 }
+

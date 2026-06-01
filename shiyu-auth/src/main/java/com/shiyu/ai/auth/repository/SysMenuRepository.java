@@ -8,24 +8,29 @@ import com.shiyu.ai.auth.mapper.SysMenuMapper;
 import jakarta.annotation.Resource;
 import org.apache.commons.lang3.tuple.Pair;
 import org.springframework.stereotype.Component;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
 
 /**
- * 菜单数据仓储层
+ * 菜单数据仓储�?
  *
  * @author shiyu-ai
  */
 @Component
+@Transactional
 public class SysMenuRepository {
 
     @Resource
     private SysMenuMapper sysMenuMapper;
 
-    public Pair<Long, List<SysMenuBO>> getAll(Number pageNumber, Number pageSize) {
+    public Pair<Long, List<SysMenuBO>> getAll(Integer pageNumber, Integer pageSize) {
         QueryWrapper queryWrapper = new QueryWrapper();
-        List<SysMenuDO> sysMenus = sysMenuMapper.selectListByQuery(queryWrapper);
         long count = sysMenuMapper.selectCountByQuery(queryWrapper);
+        if (pageNumber != null && pageSize != null && pageSize > 0) {
+            queryWrapper.limit((pageNumber.longValue() - 1) * pageSize.longValue(), pageSize);
+        }
+        List<SysMenuDO> sysMenus = sysMenuMapper.selectListByQuery(queryWrapper);
         return Pair.of(count, MapstructUtils.convert(sysMenus, SysMenuBO.class));
     }
 
@@ -56,3 +61,4 @@ public class SysMenuRepository {
         sysMenuMapper.deleteByQuery(queryWrapper);
     }
 }
+

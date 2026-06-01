@@ -6,11 +6,9 @@ import org.springframework.stereotype.Service;
 
 import java.util.Map;
 
-/**
- * 工具调用服务实现类
- */
 @Slf4j
 @Service
+@Deprecated(forRemoval = true, since = "1.0.0")
 public class ToolServiceImpl implements ToolService {
     
     @Override

@@ -3,6 +3,8 @@ package com.shiyu.ai.auth.controller;
 import com.shiyu.ai.common.core.api.Result;
 import com.shiyu.ai.auth.domain.bo.SysDeptBO;
 import com.shiyu.ai.auth.service.SysDeptService;
+import io.swagger.v3.oas.annotations.tags.Tag;
+import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.apache.commons.lang3.tuple.Pair;
 import org.springframework.web.bind.annotation.DeleteMapping;
@@ -18,10 +20,10 @@ import org.springframework.web.bind.annotation.RestController;
 import java.util.List;
 
 /**
- * 部门管理控制器
- *
+ * 部门管理控制�? *
  * @author shiyu-ai
  */
+@Tag(name = "���Ź���", description = "���Ź���ӿ�")
 @RestController
 @RequiredArgsConstructor
 @RequestMapping("/depts")
@@ -50,7 +52,7 @@ public class SysDeptController {
      * 创建部门
      */
     @PostMapping
-    public Result<SysDeptBO> createDept(@RequestBody SysDeptBO sysDeptBO) {
+    public Result<SysDeptBO> createDept(@Valid @RequestBody SysDeptBO sysDeptBO) {
         return Result.success(sysDeptService.create(sysDeptBO));
     }
 
@@ -58,7 +60,7 @@ public class SysDeptController {
      * 更新部门
      */
     @PutMapping("/{deptId}")
-    public Result<SysDeptBO> updateDept(@PathVariable Long deptId, @RequestBody SysDeptBO sysDeptBO) {
+    public Result<SysDeptBO> updateDept(@PathVariable Long deptId, @Valid @RequestBody SysDeptBO sysDeptBO) {
         sysDeptBO.setDeptId(deptId);
         return Result.success(sysDeptService.update(sysDeptBO));
     }
@@ -72,3 +74,5 @@ public class SysDeptController {
         return Result.success();
     }
 }
+
+

@@ -28,28 +28,20 @@ public class StuffController {
      * 演示使用特定的 prompt 上下文信息以增强大模型的回答。
      */
     @GetMapping(value = "/stuff")
-    public Flux<String> completion(@RequestParam(required = false,defaultValue = "SILICON_FLOW") String platformEnum,
-                                   @RequestParam(
-                                           value = "message",
-                                           required = false,
-                                           defaultValue = "Which athletes won the mixed doubles gold medal in curling at the 2022 Winter Olympics?'") String message,
-                                   @RequestParam(value = "stuffit", defaultValue = "false") boolean stuffit
-    ) {
+    public Flux<String> completion(@RequestParam(required = false, defaultValue = "SILICON_FLOW") String platformEnum,
+                                   @RequestParam(value = "message", required = false,
+                                           defaultValue = "Which athletes won the mixed doubles gold medal in curling at the 2022 Winter Olympics?") String message,
+                                   @RequestParam(value = "stuffit", defaultValue = "false") boolean stuffit) {
 
         PromptTemplate promptTemplate = new PromptTemplate(chatResource.getQaPromptResource());
 
         Map<String, Object> map = new HashMap<>();
         map.put("question", message);
+        map.put("context", stuffit ? "文档上下文（待配置）" : "");
 
-        // 是否填充 prompt 上下文，以增强大模型回答。
-        if (stuffit) {
-            map.put("context", chatResource.getDocsToStuffResource());
-        } else {
-            map.put("context", "");
-        }
-        LmRequest request = new LmRequest(message, platformEnum, null, "StuffController");
+        String finalPrompt = promptTemplate.create(map).getContents();
+        LmRequest request = new LmRequest(finalPrompt, platformEnum, null, "StuffController");
         StreamResult result = chatEngine.stream(request);
         return result.getAnswer();
-        //return chatClient.prompt(promptTemplate.create(map)).stream().content();
     }
 }

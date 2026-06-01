@@ -8,7 +8,6 @@ import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.jspecify.annotations.NullMarked;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.core.userdetails.UserDetails;
@@ -28,52 +27,35 @@ import java.io.IOException;
 public class JwtAuthenticationFilter extends OncePerRequestFilter {
 
     private final CustomUserDetailsService userDetailsService;
+    private final JwtTokenUtil jwtTokenUtil;
 
     @Override
-    @NullMarked
     protected void doFilterInternal(
             HttpServletRequest request,
             HttpServletResponse response,
             FilterChain filterChain) throws ServletException, IOException {
         
         try {
-            // 从请求中获取 JWT token
             String jwt = parseJwt(request);
-            
-            if (StringUtils.hasText(jwt)) {
-                // 验证 token
-                if (JwtTokenUtil.validateToken(jwt)) {
-                    // 从 token 中获取用户名
-                    String username = JwtTokenUtil.getUsernameFromToken(jwt);
-                                
-                    if (username != null && SecurityContextHolder.getContext().getAuthentication() == null) {
-                        // 加载用户详情
-                        UserDetails userDetails = userDetailsService.loadUserByUsername(username);
-                                    
-                        // 验证 token 中的用户与当前用户是否匹配
-                        if (JwtTokenUtil.validateToken(jwt)) {
-                            // 创建认证令牌
-                            UsernamePasswordAuthenticationToken authentication = 
-                                    new UsernamePasswordAuthenticationToken(
-                                            userDetails,
-                                            null,
-                                            userDetails.getAuthorities()
-                                    );
-                            
-                            // 设置认证详情
-                            authentication.setDetails(
-                                    new WebAuthenticationDetailsSource().buildDetails(request)
-                            );
-                            
-                            // 将认证信息设置到安全上下文
-                            SecurityContextHolder.getContext().setAuthentication(authentication);
-                            
-                            log.debug("JWT 认证成功：{}", username);
-                        }
-                    }
-                } else {
-                    log.warn("JWT Token 无效或已过期");
+
+            if (StringUtils.hasText(jwt) && jwtTokenUtil.validateToken(jwt)) {
+                String username = jwtTokenUtil.getUsernameFromToken(jwt);
+
+                if (username != null && SecurityContextHolder.getContext().getAuthentication() == null) {
+                    UserDetails userDetails = userDetailsService.loadUserByUsername(username);
+
+                    UsernamePasswordAuthenticationToken authentication =
+                            new UsernamePasswordAuthenticationToken(
+                                    userDetails, null, userDetails.getAuthorities());
+
+                    authentication.setDetails(
+                            new WebAuthenticationDetailsSource().buildDetails(request));
+
+                    SecurityContextHolder.getContext().setAuthentication(authentication);
+                    log.debug("JWT 认证成功：{}", username);
                 }
+            } else {
+                log.warn("JWT Token 无效或已过期");
             }
         } catch (Exception e) {
             log.error("JWT 认证失败：{}", e.getMessage(), e);
