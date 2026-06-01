@@ -7,11 +7,13 @@ import com.shiyu.ai.common.core.utils.JSONUtils;
 import dev.langchain4j.model.chat.ChatModel;
 import dev.langchain4j.service.AiServices;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
 
 /**
  * 意图识别服务实现类
@@ -20,53 +22,57 @@ import java.util.Map;
 @Slf4j
 @Service
 public class IntentServiceImpl implements IntentService {
-    
+
     private final Lc4jModelManager modelManager;
-    
+
+    @Value("${shiyu.ai.intent.platform:SILICON_FLOW}")
+    private String defaultIntentPlatform;
+
+    private final Map<String, IntentAssistant> assistantCache = new ConcurrentHashMap<>();
+
     public IntentServiceImpl(Lc4jModelManager modelManager) {
         this.modelManager = modelManager;
     }
-    
+
     @Override
-    public IntentRecognitionResult recognize(String userInput, List<IntentDefinition> supportedIntents) {
+    public IntentRecognitionResult recognize(String userInput, List<IntentDefinition> supportedIntents, String platform) {
         log.info("开始识别用户意图，支持 {} 个预定义意图", supportedIntents != null ? supportedIntents.size() : 0);
-        
+
         try {
-            // 构建意图识别的 prompt
             String prompt = buildIntentPrompt(userInput, supportedIntents);
-            
-            // 获取默认模型进行意图识别
-            ChatModel chatModel = modelManager.getChatModel(
-                    "SILICON_FLOW", 
-                    null);
-            
+
+            String actualPlatform = platform != null ? platform : defaultIntentPlatform;
+            String cacheKey = actualPlatform + ":" + modelManager.getDefaultModelName(actualPlatform);
+
+            ChatModel chatModel = modelManager.getChatModel(actualPlatform, null);
             if (chatModel == null) {
                 return new IntentRecognitionResult(
-                    false, null, null, 0.0, Map.of(), 
+                    false, null, null, 0.0, Map.of(),
                     "无法获取模型实例进行意图识别");
             }
-            
-            // 使用 AiServices 调用
-            IntentAssistant assistant = AiServices.builder(IntentAssistant.class)
-                    .chatModel(chatModel)
-                    .build();
-            
+
+            IntentAssistant assistant = assistantCache.computeIfAbsent(cacheKey,
+                    k -> AiServices.builder(IntentAssistant.class).chatModel(chatModel).build());
+
             String response = assistant.recognize(prompt);
-            
-            // 解析响应结果
             return parseIntentResponse(response, supportedIntents);
-            
+
         } catch (Exception e) {
             log.error("意图识别失败", e);
             return new IntentRecognitionResult(
-                false, null, null, 0.0, Map.of(), 
+                false, null, null, 0.0, Map.of(),
                 "意图识别异常：" + e.getMessage());
         }
     }
-    
+
+    @Override
+    public IntentRecognitionResult recognize(String userInput, List<IntentDefinition> supportedIntents) {
+        return recognize(userInput, supportedIntents, null);
+    }
+
     @Override
     public IntentRecognitionResult recognize(String userInput) {
-        return recognize(userInput, null);
+        return recognize(userInput, null, null);
     }
     
     /**

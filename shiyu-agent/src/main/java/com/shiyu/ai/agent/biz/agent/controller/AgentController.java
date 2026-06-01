@@ -123,10 +123,10 @@ public class AgentController {
         log.info("收到 Agent 执行请求：agentId={}", agentId);
         
         try {
-            // 设置 chatType 为 SYNC
-            input.put("chatType", ChatType.SYNC.name());
+            Map<String, Object> safeInput = new HashMap<>(input);
+            safeInput.put("chatType", ChatType.SYNC.name());
             
-            Map<String, Object> result = agentService.execute(agentId, input);
+            Map<String, Object> result = agentService.execute(agentId, safeInput);
             
             return Result.success(result);
             
@@ -149,10 +149,10 @@ public class AgentController {
         log.info("收到 Agent 流式执行请求：agentId={}", agentId);
         
         try {
-            // 设置 chatType 为 STREAM
-            input.put("chatType", ChatType.STREAM.name());
+            Map<String, Object> safeInput = new HashMap<>(input);
+            safeInput.put("chatType", ChatType.STREAM.name());
             
-            return agentService.executeStream(agentId, input)
+            return agentService.executeStream(agentId, safeInput)
                     .map(result -> Result.success(result))
                     .onErrorResume(e -> {
                         log.error("Agent 流式执行失败：agentId={}", agentId, e);

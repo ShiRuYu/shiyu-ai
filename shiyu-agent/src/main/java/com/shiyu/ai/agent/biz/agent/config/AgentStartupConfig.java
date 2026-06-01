@@ -11,8 +11,6 @@ import org.springframework.boot.ApplicationArguments;
 import org.springframework.boot.ApplicationRunner;
 import org.springframework.stereotype.Component;
 
-import java.util.Map;
-
 /**
  * Agent 启动配置
  * 在应用启动时自动创建示例 Agent
@@ -130,71 +128,4 @@ public class AgentStartupConfig implements ApplicationRunner {
         }
     }
 
-    /**
-     * 创建带条件分支的 Agent 示例（高级用法）
-     */
-    private void createConditionalAgent() {
-        log.info("创建示例 Agent：conditional-agent");
-        
-        try {
-            AgentBuilder builder = new AgentBuilder();
-            
-            // 创建节点
-            DefaultNode startNode = DefaultNode.builder().build();
-            DefaultNode processNode = DefaultNode.builder().build();
-            DefaultNode fallbackNode = DefaultNode.builder().build();
-            DefaultNode endNode = DefaultNode.builder().build();
-            
-            AgentDefinition agent = builder
-                    .agentId("conditional-agent")
-                    .name("条件分支 Agent")
-                    .description("演示条件分支的高级 Agent")
-                    .version("v1.0.0")
-                    
-                    // 添加节点
-                    .addNode("start", startNode)
-                    .addNode("process", processNode)
-                    .addNode("fallback", fallbackNode)
-                    .addNode("end", endNode)
-                    
-                    // 添加普通边
-                    .addEdge("start", "process")
-                    .addEdge("end", "end")
-                    
-                    // 添加条件边（根据处理结果决定下一步）
-                    .addConditionalEdge("process",
-                            "end", // 默认目标
-                            Map.of(
-                                // 如果返回 true，走 success 分支
-                                (Map<String, Object> state) -> {
-                                    Boolean success = (Boolean) state.get("success");
-                                    return success != null && success;
-                                },
-                                "end",
-                                // 如果返回 false，走 fallback 分支
-                                (Map<String, Object> state) -> {
-                                    Boolean success = (Boolean) state.get("success");
-                                    return success == null || !success;
-                                },
-                                "fallback"
-                            )
-                    )
-                    
-                    // fallback 节点完成后也到结束
-                    .addEdge("fallback", "end")
-                    
-                    // 设置起始节点
-                    .setStartNode("start")
-                    .setEndNode("end")
-                    
-                    // 构建并注册
-                    .buildAndRegister(agentService);
-            
-            log.info("示例 Agent 创建成功：agentId={}, name={}", 
-                    agent.getAgentId(), agent.getName());
-            
-        } catch (Exception e) {
-            log.error("创建示例 Agent 失败：conditional-agent", e);
-        }
-    }
 }

@@ -11,6 +11,9 @@ import org.springframework.stereotype.Service;
 import reactor.core.publisher.Flux;
 import reactor.core.scheduler.Schedulers;
 
+import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
+
 import static com.shiyu.ai.agent.biz.agent.service.impl.helper.Lc4jServiceHelper.*;
 
 /**
@@ -21,32 +24,39 @@ import static com.shiyu.ai.agent.biz.agent.service.impl.helper.Lc4jServiceHelper
 @Slf4j
 @Service
 public class Lc4jServiceImpl implements Lc4jService {
-    
+
     private final Lc4jModelManager modelManager;
-    
+    private final Map<String, Assistant> assistantCache = new ConcurrentHashMap<>();
+    private final Map<String, StreamingAssistant> streamingAssistantCache = new ConcurrentHashMap<>();
+
     public Lc4jServiceImpl(Lc4jModelManager modelManager) {
         this.modelManager = modelManager;
     }
-    
+
+    private String assistantCacheKey(String platform, String model) {
+        return platform + ":" + (model != null ? model : "");
+    }
+
     @Override
     public Lc4jResponse call(Lc4jRequest request) {
-        log.info("收到对话请求：platform={}, model={}, prompt={}", 
+        log.info("收到对话请求：platform={}, model={}, prompt={}",
                 request.getPlatform(), request.getModel(), request.getPrompt());
-        
+
         try {
-            // 验证参数
             String validationError = validateRequest(request);
             if (validationError != null) {
                 return buildErrorResponse(validationError, request.getPlatform(), request.getModel());
             }
-            
-            // 获取并验证同步模型
+
             ChatModel chatModel = validateChatModel(
                     modelManager.getChatModel(request.getPlatform(), request.getModel()),
                     request.getPlatform(), request.getModel());
-            
-            // 使用 AiServices 创建助手并进行调用
-            String response = createAssistant(chatModel).chat(request.getPrompt());
+
+            String cacheKey = assistantCacheKey(request.getPlatform(), request.getModel());
+            Assistant assistant = assistantCache.computeIfAbsent(cacheKey,
+                    k -> createAssistant(chatModel));
+
+            String response = assistant.chat(request.getPrompt());
             
             log.info("模型响应成功");
             return buildSuccessResponse(response, request.getPlatform(), 
@@ -71,13 +81,15 @@ public class Lc4jServiceImpl implements Lc4jService {
                 return Flux.error(new IllegalArgumentException(validationError));
             }
             
-            // 获取并验证流式模型
             StreamingChatModel streamingChatModel = validateStreamingChatModel(
                     modelManager.getStreamingChatModel(request.getPlatform(), request.getModel()),
                     request.getPlatform(), request.getModel());
-            
-            // 使用 AiServices 创建流式助手并返回 Flux
-            return createStreamingAssistant(streamingChatModel).chat(request.getPrompt())
+
+            String cacheKey = assistantCacheKey(request.getPlatform(), request.getModel());
+            StreamingAssistant streamingAssistant = streamingAssistantCache.computeIfAbsent(cacheKey,
+                    k -> createStreamingAssistant(streamingChatModel));
+
+            return streamingAssistant.chat(request.getPrompt())
                     .subscribeOn(Schedulers.boundedElastic());
                 
         } catch (Exception e) {

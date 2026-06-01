@@ -53,6 +53,9 @@ public abstract class AbstractLc4jPlatformAdapter implements Lc4jPlatformAdapter
         if (modelName == null || modelName.trim().isEmpty()) {
             modelName = getDefaultModelName();
         }
+        if (modelName == null || modelName.trim().isEmpty()) {
+            throw new IllegalStateException(getPlatformType() + " 平台未配置默认模型");
+        }
         
         final String finalModelName = modelName;
         return chatModelCache.computeIfAbsent(finalModelName, key -> {
@@ -74,8 +77,7 @@ public abstract class AbstractLc4jPlatformAdapter implements Lc4jPlatformAdapter
         }
         
         if (!validateConfig(config)) {
-            log.warn("平台配置验证失败，返回 null");
-            return null;
+            throw new IllegalStateException(getPlatformType() + " 平台配置验证失败");
         }
         
         log.debug("使用动态配置创建同步模型：{} - {}", getPlatformType(), modelName);
@@ -91,6 +93,9 @@ public abstract class AbstractLc4jPlatformAdapter implements Lc4jPlatformAdapter
     public StreamingChatModel getStreamingChatModel(String modelName) {
         if (modelName == null || modelName.trim().isEmpty() || "default".equals(modelName)) {
             modelName = getDefaultModelName();
+        }
+        if (modelName == null || modelName.trim().isEmpty()) {
+            throw new IllegalStateException(getPlatformType() + " 平台未配置默认模型");
         }
         
         final String finalModelName = modelName;
@@ -113,8 +118,7 @@ public abstract class AbstractLc4jPlatformAdapter implements Lc4jPlatformAdapter
         }
         
         if (!validateConfig(config)) {
-            log.warn("平台配置验证失败，返回 null");
-            return null;
+            throw new IllegalStateException(getPlatformType() + " 平台配置验证失败");
         }
         
         log.debug("使用动态配置创建流式模型：{} - {}", getPlatformType(), modelName);

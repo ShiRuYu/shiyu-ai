@@ -10,7 +10,16 @@ import java.util.Map;
  * 用于识别用户输入的真实意图
  */
 public interface IntentService {
-    
+
+    /**
+     * 识别用户意图
+     * @param userInput 用户输入文本
+     * @param supportedIntents 支持的意图列表（可选）
+     * @param platform 平台名称（null 则使用默认平台）
+     * @return 意图识别结果
+     */
+    IntentRecognitionResult recognize(String userInput, List<IntentDefinition> supportedIntents, String platform);
+
     /**
      * 识别用户意图
      * @param userInput 用户输入文本
@@ -18,14 +27,14 @@ public interface IntentService {
      * @return 意图识别结果
      */
     IntentRecognitionResult recognize(String userInput, List<IntentDefinition> supportedIntents);
-    
+
     /**
      * 识别用户意图（使用默认配置）
      * @param userInput 用户输入文本
      * @return 意图识别结果
      */
     IntentRecognitionResult recognize(String userInput);
-    
+
     /**
      * 意图识别结果
      */

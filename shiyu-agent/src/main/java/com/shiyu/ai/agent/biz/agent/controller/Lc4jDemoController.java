@@ -3,6 +3,7 @@ package com.shiyu.ai.agent.biz.agent.controller;
 import com.shiyu.ai.agent.biz.agent.domain.Lc4jRequest;
 import com.shiyu.ai.agent.biz.agent.domain.Lc4jResponse;
 import com.shiyu.ai.agent.biz.agent.service.Lc4jService;
+import com.shiyu.ai.agent.langchain4j.Lc4jModelManager;
 import com.shiyu.ai.common.core.api.Result;
 import lombok.Data;
 import lombok.extern.slf4j.Slf4j;
@@ -28,18 +29,16 @@ import java.util.Map;
 public class Lc4jDemoController {
     
     private final Lc4jService lc4jService;
+    private final Lc4jModelManager modelManager;
     
-    public Lc4jDemoController(Lc4jService lc4jService) {
+    public Lc4jDemoController(Lc4jService lc4jService, Lc4jModelManager modelManager) {
         this.lc4jService = lc4jService;
+        this.modelManager = modelManager;
     }
     
-    /**
-     * 获取可用的平台列表
-     */
     @GetMapping("/platforms")
     public Result<List<String>> getAvailablePlatforms() {
-        List<String> platforms = List.of("OPENROUTER", "OLLAMA", "DEEPSEEK", "OPENAI", "SILICON_FLOW");
-        return Result.success(platforms);
+        return Result.success(modelManager.getAvailablePlatforms());
     }
     
     /**
@@ -106,61 +105,12 @@ public class Lc4jDemoController {
         }
     }
     
-    /**
-     * 获取指定平台的默认模型名称
-     */
     @GetMapping("/default-model")
     public Result<Map<String, String>> getDefaultModel(@RequestParam String platform) {
         Map<String, String> result = new HashMap<>();
         result.put("platform", platform);
-        result.put("defaultModel", "未配置");
+        result.put("defaultModel", modelManager.getDefaultModelName(platform));
         return Result.success(result);
-    }
-    
-    /**
-     * 聊天请求参数（使用动态配置）
-     */
-    @Data
-    public static class ChatWithConfigRequest {
-        /**
-         * 平台类型（OPENROUTER, OLLAMA, DEEPSEEK, OPENAI, SILICON_FLOW）
-         */
-        private String platformType = "SILICON_FLOW";
-        
-        /**
-         * Base URL
-         */
-        private String baseUrl;
-        
-        /**
-         * API Key
-         */
-        private String apiKey;
-        
-        /**
-         * 模型名称
-         */
-        private String modelName;
-        
-        /**
-         * 温度参数（默认 0.7）
-         */
-        private Double temperature = 0.7;
-        
-        /**
-         * 最大 Token 数（默认 4096）
-         */
-        private Integer maxTokens = 4096;
-        
-        /**
-         * 最大重试次数（默认 3）
-         */
-        private Integer maxRetries = 3;
-        
-        /**
-         * 用户输入的问题
-         */
-        private String prompt;
     }
     
     /**

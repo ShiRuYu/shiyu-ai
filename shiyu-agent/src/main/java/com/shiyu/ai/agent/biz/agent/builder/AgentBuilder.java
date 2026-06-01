@@ -13,6 +13,8 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.function.Function;
+import java.util.function.Predicate;
+import java.util.stream.Collectors;
 
 /**
  * Agent Builder
@@ -67,11 +69,6 @@ public class AgentBuilder {
      * 版本描述
      */
     private String versionDescription;
-
-    /**
-     * Graph 构建器
-     */
-    private final Graph graph = new Graph();
 
     /**
      * 节点列表（临时存储）
@@ -195,12 +192,15 @@ public class AgentBuilder {
      * @return 当前 Builder 实例
      */
     public AgentBuilder addConditionalEdge(String from,
-                                          String defaultTarget,
-                                          Map<java.util.function.Predicate<Map<String, Object>>, String> conditions) {
+                                           String defaultTarget,
+                                           Map<Predicate<Map<String, Object>>, String> conditions) {
+        List<ConditionEdge.PredicateCondition> conditionList = conditions.entrySet().stream()
+                .map(e -> new ConditionEdge.PredicateCondition(e.getKey(), e.getValue()))
+                .collect(Collectors.toList());
         ConditionEdge edge = ConditionEdge.builder()
                 .from(from)
                 .defaultTarget(defaultTarget)
-                .predicateConditions(conditions)
+                .predicateConditions(conditionList)
                 .build();
         
         this.conditionalEdges.add(new ConditionalEdgeConfig(from, edge));
@@ -314,7 +314,7 @@ public class AgentBuilder {
         graph.setEndNode(endNode != null ? endNode : "");
         
         // 添加节点
-        graph.getNodes().putAll(nodes);
+        graph.addAllNodes(nodes);
         
         // 添加边
         for (EdgeConfig edge : edges) {

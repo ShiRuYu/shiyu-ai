@@ -13,7 +13,9 @@ import org.bsc.langgraph4j.state.Channel;
 import reactor.core.publisher.Flux;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.HashMap;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.function.Function;
@@ -82,7 +84,14 @@ public class Graph {
      */
     @Builder.Default
     private CompiledGraph<AgentState> compiledGraph = null;
-    
+
+    /**
+     * 批量添加节点（仅在构建阶段使用）
+     */
+    public void addAllNodes(Map<String, BaseNode> nodes) {
+        this.nodes.putAll(nodes);
+    }
+
     /**
      * 添加节点
      * @param nodeId 节点 ID
@@ -240,10 +249,8 @@ public class Graph {
      * @return CompiledGraph 实例
      * @throws GraphStateException 编译异常
      */
-    public CompiledGraph<AgentState> recompile() throws GraphStateException {
+    public synchronized CompiledGraph<AgentState> recompile() throws GraphStateException {
         log.info("重新编译 Graph: {}", this.name);
-            
-        // 清除缓存并重新编译
         this.compiledGraph = null;
         return compile();
     }
@@ -263,16 +270,14 @@ public class Graph {
         }
     }
 
-    public CompiledGraph<AgentState> compile() throws GraphStateException {
+    public synchronized CompiledGraph<AgentState> compile() throws GraphStateException {
         log.info("开始编译 Graph: {}", this.name);
         
-        // 如果已经编译过，直接返回缓存的对象
         if (this.compiledGraph != null) {
             log.debug("Graph 已编译过，使用缓存的 CompiledGraph: {}", this.name);
             return this.compiledGraph;
         }
         
-        // 执行编译
         this.compiledGraph = StateGraphBuilder.fromGraph(this).build();
         
         log.info("Graph 编译完成：{}", this.name);

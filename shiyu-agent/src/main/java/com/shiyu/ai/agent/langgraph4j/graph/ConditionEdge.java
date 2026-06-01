@@ -6,8 +6,7 @@ import lombok.Data;
 import lombok.NoArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 
-import java.util.HashMap;
-import java.util.Map;
+import java.util.*;
 import java.util.function.Function;
 import java.util.function.Predicate;
 
@@ -48,12 +47,11 @@ public class ConditionEdge {
     private Map<String, String> nodeMappings = new HashMap<>();
 
     /**
-     * 谓语条件
-     * 简化的条件表达，用于映射到不同的目标节点
-     * key: 条件结果标识，value: 对应的目标节点 ID
+     * 谓语条件列表（有序）
+     * 使用 List 而非 Map 以避免 Predicate 作为 HashMap key 的身份等价问题
      */
     @Builder.Default
-    private Map<Predicate<Map<String, Object>>, String> predicateConditions = new HashMap<>();
+    private List<PredicateCondition> predicateConditions = new ArrayList<>();
 
     /**
      * 添加节点映射
@@ -72,7 +70,7 @@ public class ConditionEdge {
      * @param target    目标节点 ID
      */
     public void addPredicateCondition(Predicate<Map<String, Object>> predicate, String target) {
-        this.predicateConditions.put(predicate, target);
+        this.predicateConditions.add(new PredicateCondition(predicate, target));
     }
 
     /**
@@ -85,6 +83,15 @@ public class ConditionEdge {
     public ConditionEdge predicateCondition(Predicate<Map<String, Object>> predicate, String target) {
         addPredicateCondition(predicate, target);
         return this;
+    }
+
+    /**
+     * 谓语条件记录
+     */
+    @lombok.Value
+    public static class PredicateCondition {
+        Predicate<Map<String, Object>> predicate;
+        String target;
     }
 
     /**
@@ -107,11 +114,18 @@ public class ConditionEdge {
 
     /**
      * 是否有谓语条件
-     *
      * @return true-有谓语条件，false-无
      */
     public boolean hasPredicateCondition() {
         return this.predicateConditions != null && !this.predicateConditions.isEmpty();
+    }
+
+    /**
+     * 获取谓语条件列表（不可变视图）
+     * @return 谓语条件列表
+     */
+    public List<PredicateCondition> getPredicateConditions() {
+        return predicateConditions;
     }
 
     /**
@@ -155,12 +169,12 @@ public class ConditionEdge {
             log.debug("函数式条件执行结果：{}", result);
             return result != null ? result : this.defaultTarget;
         }
-        // 再尝试谓语条件
+        // 再尝试谓语条件（按添加顺序依次匹配）
         if (this.hasPredicateCondition()) {
-            for (Map.Entry<Predicate<Map<String, Object>>, String> entry : this.predicateConditions.entrySet()) {
-                if (entry.getKey().test(state)) {
-                    log.debug("谓语条件匹配成功，目标节点：{}", entry.getValue());
-                    return entry.getValue();
+            for (PredicateCondition pc : this.predicateConditions) {
+                if (pc.getPredicate().test(state)) {
+                    log.debug("谓语条件匹配成功，目标节点：{}", pc.getTarget());
+                    return pc.getTarget();
                 }
             }
             log.debug("谓语条件未匹配，返回默认目标：{}", this.defaultTarget);
