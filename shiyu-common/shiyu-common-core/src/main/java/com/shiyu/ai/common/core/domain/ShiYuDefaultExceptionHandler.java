@@ -44,10 +44,10 @@ public class ShiYuDefaultExceptionHandler {
         return Result.fail(BizResultCode.ERR_10007, e.getMessage());
     }
 
-    @ExceptionHandler(value = {Exception.class, Throwable.class})
-    public Result<String> exception(Throwable e) {
+    @ExceptionHandler(Exception.class)
+    public Result<String> exception(Exception e) {
         log.error(e.getMessage(), e);
-        return Result.fail(BizResultCode.ERR, e.getMessage());
+        return Result.fail(BizResultCode.ERROR, e.getMessage());
     }
 }
 

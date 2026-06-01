@@ -6,7 +6,10 @@ import java.lang.management.ManagementFactory;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.time.*;
+import java.time.format.DateTimeFormatter;
 import java.util.Date;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.ConcurrentMap;
 
 /**
  * 时间工具类
@@ -27,6 +30,12 @@ public class DateUtils extends org.apache.commons.lang3.time.DateUtils {
         "yyyy-MM-dd", "yyyy-MM-dd HH:mm:ss", "yyyy-MM-dd HH:mm", "yyyy-MM",
         "yyyy/MM/dd", "yyyy/MM/dd HH:mm:ss", "yyyy/MM/dd HH:mm", "yyyy/MM",
         "yyyy.MM.dd", "yyyy.MM.dd HH:mm:ss", "yyyy.MM.dd HH:mm", "yyyy.MM"};
+
+    private static final ConcurrentMap<String, DateTimeFormatter> FORMATTER_CACHE = new ConcurrentHashMap<>();
+
+    private static DateTimeFormatter getFormatter(String pattern) {
+        return FORMATTER_CACHE.computeIfAbsent(pattern, DateTimeFormatter::ofPattern);
+    }
 
     /**
      * 获取当前Date型日期
@@ -63,13 +72,14 @@ public class DateUtils extends org.apache.commons.lang3.time.DateUtils {
     }
 
     public static String parseDateToStr(final String format, final Date date) {
-        return new SimpleDateFormat(format).format(date);
+        return getFormatter(format).format(date.toInstant().atZone(ZoneId.systemDefault()).toLocalDateTime());
     }
 
     public static Date dateTime(final String format, final String ts) {
         try {
-            return new SimpleDateFormat(format).parse(ts);
-        } catch (ParseException e) {
+            LocalDateTime localDateTime = LocalDateTime.parse(ts, getFormatter(format));
+            return Date.from(localDateTime.atZone(ZoneId.systemDefault()).toInstant());
+        } catch (Exception e) {
             throw new RuntimeException(e);
         }
     }
@@ -126,7 +136,6 @@ public class DateUtils extends org.apache.commons.lang3.time.DateUtils {
         long nd = 1000 * 24 * 60 * 60;
         long nh = 1000 * 60 * 60;
         long nm = 1000 * 60;
-        // long ns = 1000;
         // 获得两个时间的毫秒时间差异
         long diff = endDate.getTime() - nowDate.getTime();
         // 计算差多少天
@@ -135,8 +144,6 @@ public class DateUtils extends org.apache.commons.lang3.time.DateUtils {
         long hour = diff % nd / nh;
         // 计算差多少分钟
         long min = diff % nd % nh / nm;
-        // 计算差多少秒//输出结果
-        // long sec = diff % nd % nh % nm / ns;
         return day + "天" + hour + "小时" + min + "分钟";
     }
 

@@ -3,21 +3,17 @@ package com.shiyu.ai.agent.dal.dataobject.record;
 import com.mybatisflex.annotation.Id;
 import com.mybatisflex.annotation.KeyType;
 import com.mybatisflex.annotation.Table;
+import com.shiyu.ai.common.mybatis.core.domain.BaseEntity;
 import lombok.Data;
-
-import java.io.Serial;
-import java.io.Serializable;
-import java.util.Date;
+import lombok.EqualsAndHashCode;
 
 /**
  * 附件数据对象
  */
 @Data
+@EqualsAndHashCode(callSuper = true)
 @Table(value = "media")
-public class MediaDO implements Serializable {
-
-    @Serial
-    private static final long serialVersionUID = 1L;
+public class MediaDO extends BaseEntity {
 
     /**
      * 附件ID
@@ -74,9 +70,4 @@ public class MediaDO implements Serializable {
      * 对象键
      */
     private String objectKey;
-
-    /**
-     * 创建时间
-     */
-    private Date createTime;
 }

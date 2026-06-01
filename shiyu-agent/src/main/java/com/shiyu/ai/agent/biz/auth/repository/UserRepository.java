@@ -13,7 +13,7 @@ import jakarta.annotation.Resource;
 import org.apache.commons.lang3.tuple.Pair;
 import org.springframework.stereotype.Component;
 
-import java.util.Date;
+import java.time.LocalDateTime;
 import java.util.List;
 
 /**
@@ -84,7 +84,7 @@ public class UserRepository {
      */
     public boolean update(UserBO userBO) {
         UserDO userDO = MapstructUtils.convert(userBO, UserDO.class);
-        userDO.setUpdateTime(new Date());
+        userDO.setUpdateTime(LocalDateTime.now());
         return userMapper.update(userDO) > 0;
     }
 

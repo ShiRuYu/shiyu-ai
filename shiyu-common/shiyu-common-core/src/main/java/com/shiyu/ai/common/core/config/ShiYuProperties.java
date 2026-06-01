@@ -40,11 +40,6 @@ public class ShiYuProperties {
     /**
      * 获取地址开关
      */
-    @Getter
-    private static boolean addressEnabled;
-
-    public void setAddressEnabled(boolean addressEnabled) {
-        ShiYuProperties.addressEnabled = addressEnabled;
-    }
+    private boolean addressEnabled;
 
 }

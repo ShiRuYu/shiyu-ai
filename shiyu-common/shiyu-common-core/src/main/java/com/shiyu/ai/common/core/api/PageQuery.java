@@ -6,6 +6,7 @@ import lombok.Data;
 import java.io.Serial;
 import java.io.Serializable;
 import java.util.List;
+import java.util.Objects;
 
 /**
  * 分页查询实体类
@@ -52,14 +53,16 @@ public class PageQuery implements Serializable {
     public static final int DEFAULT_PAGE_NUM = 1;
 
     /**
-     * 每页显示记录数 默认值 默认查全部
+     * 每页显示记录数 默认值
      */
-    public static final int DEFAULT_PAGE_SIZE = Integer.MAX_VALUE;
+    public static final int DEFAULT_PAGE_SIZE = 1000;
 
 
     @JsonIgnore
     public Integer getFirstNum() {
-        return (pageNum - 1) * pageSize;
+        int num = Objects.requireNonNullElse(pageNum, DEFAULT_PAGE_NUM);
+        int size = Objects.requireNonNullElse(pageSize, DEFAULT_PAGE_SIZE);
+        return (num - 1) * size;
     }
 
     public PageQuery() {

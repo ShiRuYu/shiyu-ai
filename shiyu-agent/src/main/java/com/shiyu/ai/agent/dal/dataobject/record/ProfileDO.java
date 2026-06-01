@@ -3,21 +3,19 @@ package com.shiyu.ai.agent.dal.dataobject.record;
 import com.mybatisflex.annotation.Id;
 import com.mybatisflex.annotation.KeyType;
 import com.mybatisflex.annotation.Table;
+import com.shiyu.ai.common.mybatis.core.domain.BaseEntity;
 import lombok.Data;
+import lombok.EqualsAndHashCode;
 
-import java.io.Serial;
-import java.io.Serializable;
-import java.util.Date;
+import java.time.LocalDate;
 
 /**
  * 人物数据对象
  */
 @Data
+@EqualsAndHashCode(callSuper = true)
 @Table(value = "profile")
-public class ProfileDO implements Serializable {
-
-    @Serial
-    private static final long serialVersionUID = 1L;
+public class ProfileDO extends BaseEntity {
 
     /**
      * 人物ID
@@ -38,7 +36,7 @@ public class ProfileDO implements Serializable {
     /**
      * 出生日期
      */
-    private Date birthDate;
+    private LocalDate birthDate;
 
     /**
      * 头像URL
@@ -59,14 +57,4 @@ public class ProfileDO implements Serializable {
      * 删除标志（0存在 1删除）
      */
     private Integer delFlag;
-
-    /**
-     * 创建时间
-     */
-    private Date createTime;
-
-    /**
-     * 更新时间
-     */
-    private Date updateTime;
 }

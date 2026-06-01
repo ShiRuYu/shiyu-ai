@@ -8,7 +8,18 @@ import org.springframework.context.i18n.LocaleContextHolder;
  */
 public class MessageUtils {
 
-    private static final MessageSource MESSAGE_SOURCE = SpringUtils.getBean(MessageSource.class);
+    private static volatile MessageSource MESSAGE_SOURCE;
+
+    private static MessageSource getMessageSource() {
+        if (MESSAGE_SOURCE == null) {
+            synchronized (MessageUtils.class) {
+                if (MESSAGE_SOURCE == null) {
+                    MESSAGE_SOURCE = SpringUtils.getBean(MessageSource.class);
+                }
+            }
+        }
+        return MESSAGE_SOURCE;
+    }
 
     /**
      * 根据消息键和参数 获取消息 委托给spring messageSource
@@ -18,6 +29,6 @@ public class MessageUtils {
      * @return 获取国际化翻译值
      */
     public static String message(String code, Object... args) {
-        return MESSAGE_SOURCE.getMessage(code, args, LocaleContextHolder.getLocale());
+        return getMessageSource().getMessage(code, args, LocaleContextHolder.getLocale());
     }
 }

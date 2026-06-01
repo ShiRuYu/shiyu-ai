@@ -15,6 +15,11 @@ public enum BizResultCode {
      * 正常响应码
      */
     SUC(200, "成功"),
+
+    /**
+     * 系统内部错误
+     */
+    ERROR(500, "系统内部错误"),
     
     /**
      * HTTP 标准状态码
@@ -24,8 +29,6 @@ public enum BizResultCode {
     FORBIDDEN(403, "禁止访问，无权限"),
     NOT_FOUND(404, "资源不存在"),
     REQUEST_TIMEOUT(408, "请求超时"),
-    
-    ERR(400, "请求失败"),
 
     ERR_10001(10001, "用户已存在"),
     ERR_10002(10002, "用户名或密码错误"),

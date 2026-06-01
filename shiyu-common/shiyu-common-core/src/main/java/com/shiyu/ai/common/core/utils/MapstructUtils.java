@@ -14,7 +14,18 @@ import java.util.Map;
  */
 public class MapstructUtils {
 
-    private final static Converter CONVERTER = SpringUtils.getBean(Converter.class);
+    private static volatile Converter CONVERTER;
+
+    private static Converter getConverter() {
+        if (CONVERTER == null) {
+            synchronized (MapstructUtils.class) {
+                if (CONVERTER == null) {
+                    CONVERTER = SpringUtils.getBean(Converter.class);
+                }
+            }
+        }
+        return CONVERTER;
+    }
 
     /**
      * 将 T 类型对象，转换为 desc 类型的对象并返回
@@ -30,7 +41,7 @@ public class MapstructUtils {
         if (ObjectUtils.isNull(desc)) {
             return null;
         }
-        return CONVERTER.convert(source, desc);
+        return getConverter().convert(source, desc);
     }
 
     /**
@@ -47,7 +58,7 @@ public class MapstructUtils {
         if (ObjectUtils.isNull(desc)) {
             return null;
         }
-        return CONVERTER.convert(source, desc);
+        return getConverter().convert(source, desc);
     }
 
     /**
@@ -64,7 +75,7 @@ public class MapstructUtils {
         if (CollectionUtils.isEmpty(sourceList)) {
             return Lists.newArrayList();
         }
-        return CONVERTER.convert(sourceList, desc);
+        return getConverter().convert(sourceList, desc);
     }
 
     /**
@@ -81,7 +92,7 @@ public class MapstructUtils {
         if (ObjectUtils.isNull(beanClass)) {
             return null;
         }
-        return CONVERTER.convert(map, beanClass);
+        return getConverter().convert(map, beanClass);
     }
 
 }

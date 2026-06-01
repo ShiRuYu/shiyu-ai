@@ -20,17 +20,15 @@ import java.util.concurrent.ThreadPoolExecutor;
 @EnableConfigurationProperties(ThreadPoolProperties.class)
 public class ThreadPoolConfig {
 
-    /**
-     * 核心线程数 = cpu 核心数 + 1
-     */
-    private final int core = Runtime.getRuntime().availableProcessors() + 1;
-
     @Bean(name = "threadPoolTaskExecutor")
     @ConditionalOnProperty(prefix = "thread-pool", name = "enabled", havingValue = "true")
     public ThreadPoolTaskExecutor threadPoolTaskExecutor(ThreadPoolProperties threadPoolProperties) {
+        int cores = Math.max(1, Runtime.getRuntime().availableProcessors());
         ThreadPoolTaskExecutor executor = new ThreadPoolTaskExecutor();
-        executor.setCorePoolSize(core);
-        executor.setMaxPoolSize(core * 2);
+        executor.setCorePoolSize(threadPoolProperties.getCorePoolSize() > 0
+            ? threadPoolProperties.getCorePoolSize() : cores + 1);
+        executor.setMaxPoolSize(threadPoolProperties.getMaxPoolSize() > 0
+            ? threadPoolProperties.getMaxPoolSize() : (cores + 1) * 2);
         executor.setQueueCapacity(threadPoolProperties.getQueueCapacity());
         executor.setKeepAliveSeconds(threadPoolProperties.getKeepAliveSeconds());
         executor.setRejectedExecutionHandler(new ThreadPoolExecutor.CallerRunsPolicy());
@@ -41,8 +39,11 @@ public class ThreadPoolConfig {
      * 执行周期性或定时任务
      */
     @Bean(name = "scheduledExecutorService")
-    protected ScheduledExecutorService scheduledExecutorService() {
-        return new ScheduledThreadPoolExecutor(core,
+    protected ScheduledExecutorService scheduledExecutorService(ThreadPoolProperties threadPoolProperties) {
+        int cores = Math.max(1, Runtime.getRuntime().availableProcessors());
+        int scheduledCoreSize = threadPoolProperties.getScheduledCorePoolSize() > 0
+            ? threadPoolProperties.getScheduledCorePoolSize() : cores + 1;
+        return new ScheduledThreadPoolExecutor(scheduledCoreSize,
             new BasicThreadFactory.Builder().namingPattern("schedule-pool-%d").daemon(true).build(),
             new ThreadPoolExecutor.CallerRunsPolicy()) {
             @Override

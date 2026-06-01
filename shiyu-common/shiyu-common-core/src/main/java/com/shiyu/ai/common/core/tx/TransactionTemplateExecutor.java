@@ -21,7 +21,7 @@ public class TransactionTemplateExecutor {
             T result = action.get();
             transactionManager.commit(status);
             return result;
-        } catch (Throwable ex) {
+        } catch (Exception ex) {
             transactionManager.rollback(status);
             throw ex;
         }

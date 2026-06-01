@@ -3,21 +3,19 @@ package com.shiyu.ai.agent.dal.dataobject.record;
 import com.mybatisflex.annotation.Id;
 import com.mybatisflex.annotation.KeyType;
 import com.mybatisflex.annotation.Table;
+import com.shiyu.ai.common.mybatis.core.domain.BaseEntity;
 import lombok.Data;
+import lombok.EqualsAndHashCode;
 
-import java.io.Serial;
-import java.io.Serializable;
-import java.util.Date;
+import java.time.LocalDateTime;
 
 /**
  * 时间轴事件数据对象
  */
 @Data
+@EqualsAndHashCode(callSuper = true)
 @Table(value = "timeline_event")
-public class TimelineEventDO implements Serializable {
-
-    @Serial
-    private static final long serialVersionUID = 1L;
+public class TimelineEventDO extends BaseEntity {
 
     /**
      * 事件ID
@@ -38,25 +36,5 @@ public class TimelineEventDO implements Serializable {
     /**
      * 事件时间
      */
-    private Date eventTime;
-
-    /**
-     * 事件类型（milestone/daily/custom）
-     */
-    private String type;
-
-    /**
-     * 可见性（private/family/public）
-     */
-    private String visibility;
-
-    /**
-     * 创建者ID
-     */
-    private Long createdBy;
-
-    /**
-     * 创建时间
-     */
-    private Date createTime;
+    private LocalDateTime eventTime;
 }

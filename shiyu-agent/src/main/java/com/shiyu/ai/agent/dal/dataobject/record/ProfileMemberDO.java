@@ -3,21 +3,17 @@ package com.shiyu.ai.agent.dal.dataobject.record;
 import com.mybatisflex.annotation.Id;
 import com.mybatisflex.annotation.KeyType;
 import com.mybatisflex.annotation.Table;
+import com.shiyu.ai.common.mybatis.core.domain.BaseEntity;
 import lombok.Data;
-
-import java.io.Serial;
-import java.io.Serializable;
-import java.util.Date;
+import lombok.EqualsAndHashCode;
 
 /**
  * 人物成员关系数据对象
  */
 @Data
+@EqualsAndHashCode(callSuper = true)
 @Table(value = "profile_member")
-public class ProfileMemberDO implements Serializable {
-
-    @Serial
-    private static final long serialVersionUID = 1L;
+public class ProfileMemberDO extends BaseEntity {
 
     /**
      * ID
@@ -39,9 +35,4 @@ public class ProfileMemberDO implements Serializable {
      * 角色（owner/parent/viewer）
      */
     private String role;
-
-    /**
-     * 创建时间
-     */
-    private Date createTime;
 }

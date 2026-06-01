@@ -16,7 +16,7 @@ import java.util.Properties;
 public class ValidatorConfig {
 
     /**
-     * 配置校验框架 快速返回模式
+     * 配置校验框架
      */
     @Bean
     public Validator validator(MessageSource messageSource) {
@@ -26,8 +26,8 @@ public class ValidatorConfig {
         // 设置使用 HibernateValidator 校验器
         factoryBean.setProviderClass(HibernateValidator.class);
         Properties properties = new Properties();
-        // 设置 快速异常返回
-        properties.setProperty("hibernate.validator.fail_fast", "true");
+        // 快速失败模式（匹配到第一个错误即返回）
+        properties.setProperty("hibernate.validator.fail_fast", "false");
         factoryBean.setValidationProperties(properties);
         // 加载配置
         factoryBean.afterPropertiesSet();

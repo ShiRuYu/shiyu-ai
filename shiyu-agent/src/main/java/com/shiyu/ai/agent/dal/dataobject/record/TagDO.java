@@ -3,21 +3,17 @@ package com.shiyu.ai.agent.dal.dataobject.record;
 import com.mybatisflex.annotation.Id;
 import com.mybatisflex.annotation.KeyType;
 import com.mybatisflex.annotation.Table;
+import com.shiyu.ai.common.mybatis.core.domain.BaseEntity;
 import lombok.Data;
-
-import java.io.Serial;
-import java.io.Serializable;
-import java.util.Date;
+import lombok.EqualsAndHashCode;
 
 /**
  * 标签数据对象
  */
 @Data
+@EqualsAndHashCode(callSuper = true)
 @Table(value = "tag")
-public class TagDO implements Serializable {
-
-    @Serial
-    private static final long serialVersionUID = 1L;
+public class TagDO extends BaseEntity {
 
     /**
      * 标签ID
@@ -34,9 +30,4 @@ public class TagDO implements Serializable {
      * 创建者ID
      */
     private Long creatorId;
-
-    /**
-     * 创建时间
-     */
-    private Date createTime;
 }

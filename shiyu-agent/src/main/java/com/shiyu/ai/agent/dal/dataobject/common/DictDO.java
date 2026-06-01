@@ -3,21 +3,17 @@ package com.shiyu.ai.agent.dal.dataobject.common;
 import com.mybatisflex.annotation.Id;
 import com.mybatisflex.annotation.KeyType;
 import com.mybatisflex.annotation.Table;
+import com.shiyu.ai.common.mybatis.core.domain.BaseEntity;
 import lombok.Data;
-
-import java.io.Serial;
-import java.io.Serializable;
-import java.util.Date;
+import lombok.EqualsAndHashCode;
 
 /**
  * 字典数据对象
  */
 @Data
+@EqualsAndHashCode(callSuper = true)
 @Table(value = "dict")
-public class DictDO implements Serializable {
-
-    @Serial
-    private static final long serialVersionUID = 1L;
+public class DictDO extends BaseEntity {
 
     /**
      * 字典ID
@@ -69,16 +65,6 @@ public class DictDO implements Serializable {
      * 备注
      */
     private String remark;
-
-    /**
-     * 创建时间
-     */
-    private Date createTime;
-
-    /**
-     * 更新时间
-     */
-    private Date updateTime;
 
     /**
      * 删除标志（0存在 1删除）

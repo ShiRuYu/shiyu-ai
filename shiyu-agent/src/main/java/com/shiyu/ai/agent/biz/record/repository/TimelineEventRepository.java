@@ -13,6 +13,7 @@ import jakarta.annotation.Resource;
 import org.apache.commons.lang3.tuple.Pair;
 import org.springframework.stereotype.Component;
 
+import java.time.LocalDateTime;
 import java.util.List;
 
 /**
@@ -87,7 +88,7 @@ public class TimelineEventRepository {
         // 如果事件时间为空，使用当前时间作为默认值
         assert eventDO != null;
         if (eventDO.getEventTime() == null) {
-            eventDO.setEventTime(new java.util.Date());
+            eventDO.setEventTime(LocalDateTime.now());
         }
         timelineEventMapper.insert(eventDO);
         eventBO.setId(eventDO.getId());

@@ -28,7 +28,7 @@ public enum LoginTypeEnum {
     /**
      * 小程序登录
      */
-    XCX("", "");
+    XCX("xcx.login.retry.limit.exceed", "xcx.login.retry.limit.count");
 
     /**
      * 登录重试超出限制提示

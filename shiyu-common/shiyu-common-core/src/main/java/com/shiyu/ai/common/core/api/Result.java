@@ -20,14 +20,14 @@ public class Result<T> {
     private T data;
 
     /**
-     * 错误信息
-     */
-    private String error;
-
-    /**
      * 描述
      */
     private String message;
+
+    /**
+     * 错误信息（与 message 内容一致时不再冗余存储）
+     */
+    private String error;
 
     /**
      * 是否成功
@@ -65,7 +65,7 @@ public class Result<T> {
     }
 
     public static <T> Result<T> fail(BizResultCode resultCode, String message) {
-        return common(null, resultCode.getCode(), message, message, false);
+        return common(null, resultCode.getCode(), message, null, false);
     }
 
     public static <T> Result<T> success() {
@@ -77,13 +77,13 @@ public class Result<T> {
     }
 
     public static <T> Result<T> fail() {
-        return fail(BizResultCode.ERR);
+        return fail(BizResultCode.ERROR);
     }
 
     public static <T> Result<T> fail(T data) {
-        return fail(BizResultCode.ERR, data);
+        return fail(BizResultCode.ERROR, data);
     }
     public static <T> Result<T> fail(String  message) {
-        return fail(BizResultCode.ERR, message);
+        return fail(BizResultCode.ERROR, message);
     }
 }

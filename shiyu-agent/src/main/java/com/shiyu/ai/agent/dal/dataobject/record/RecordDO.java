@@ -3,21 +3,17 @@ package com.shiyu.ai.agent.dal.dataobject.record;
 import com.mybatisflex.annotation.Id;
 import com.mybatisflex.annotation.KeyType;
 import com.mybatisflex.annotation.Table;
+import com.shiyu.ai.common.mybatis.core.domain.BaseEntity;
 import lombok.Data;
-
-import java.io.Serial;
-import java.io.Serializable;
-import java.util.Date;
+import lombok.EqualsAndHashCode;
 
 /**
  * 记录内容数据对象
  */
 @Data
+@EqualsAndHashCode(callSuper = true)
 @Table(value = "record")
-public class RecordDO implements Serializable {
-
-    @Serial
-    private static final long serialVersionUID = 1L;
+public class RecordDO extends BaseEntity {
 
     /**
      * 记录ID
@@ -49,9 +45,4 @@ public class RecordDO implements Serializable {
      * 天气
      */
     private String weather;
-
-    /**
-     * 创建时间
-     */
-    private Date createTime;
 }

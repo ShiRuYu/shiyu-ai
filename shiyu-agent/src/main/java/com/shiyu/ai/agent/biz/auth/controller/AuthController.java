@@ -4,7 +4,7 @@ import com.shiyu.ai.agent.domain.request.LoginRequest;
 import com.shiyu.ai.agent.domain.vo.LoginResponseVO;
 import com.shiyu.ai.agent.biz.auth.service.AuthService;
 import com.shiyu.ai.common.core.api.Result;
-import com.shiyu.ai.common.core.domain.LoginHelper;
+import com.shiyu.ai.common.core.domain.LoginContextHolder;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.web.bind.annotation.*;
 
@@ -69,7 +69,7 @@ public class AuthController {
         
         try {
             // 从 LoginHelper 获取当前登录用户 ID
-            Long userId = LoginHelper.getUserId();
+            Long userId = LoginContextHolder.getUserId();
             log.debug("当前登录用户 ID: {}", userId);
             
             // 通过用户 ID 查询权限码

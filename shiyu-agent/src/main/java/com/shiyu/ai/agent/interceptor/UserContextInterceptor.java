@@ -1,7 +1,7 @@
 package com.shiyu.ai.agent.interceptor;
 
 import com.shiyu.ai.agent.utils.SaTokenHelper;
-import com.shiyu.ai.common.core.domain.LoginHelper;
+import com.shiyu.ai.common.core.domain.LoginContextHolder;
 import com.shiyu.ai.common.core.domain.LoginUser;
 import com.shiyu.ai.common.core.enums.DeviceTypeEnum;
 import com.shiyu.ai.common.core.enums.UserTypeEnum;
@@ -15,7 +15,7 @@ import org.springframework.web.servlet.HandlerInterceptor;
 /**
  * 用户上下文拦截器
  * 将 Sa-Token 的登录信息填充到 UserGlobalContext 中
- * 使得后续业务逻辑可以通过 LoginHelper 获取当前登录用户信息
+ * 使得后续业务逻辑可以通过 LoginContextHolder 获取当前登录用户信息
  */
 @Slf4j
 @Component
@@ -57,7 +57,7 @@ public class UserContextInterceptor implements HandlerInterceptor {
             }
             
             // 将 LoginUser 设置到 UserGlobalContext
-            LoginHelper.setContext(loginUser);
+            LoginContextHolder.setContext(loginUser);
             
             log.debug("用户上下文设置成功: userId={}, uri={}", userId, request.getRequestURI());
             
@@ -73,7 +73,7 @@ public class UserContextInterceptor implements HandlerInterceptor {
     @Override
     public void afterCompletion(HttpServletRequest request, HttpServletResponse response, Object handler, Exception ex) throws Exception {
         // 请求完成后清理用户上下文，防止内存泄漏
-        LoginHelper.clearContext();
+        LoginContextHolder.clearContext();
         log.debug("用户上下文已清理: uri={}", request.getRequestURI());
     }
 

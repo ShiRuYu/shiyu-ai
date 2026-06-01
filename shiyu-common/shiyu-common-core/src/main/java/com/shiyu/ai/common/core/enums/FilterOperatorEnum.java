@@ -29,6 +29,6 @@ public enum FilterOperatorEnum {
         return Arrays.stream(values())
                 .filter(operator -> operator.getCode().equalsIgnoreCase(code))
                 .findFirst()
-                .orElse(FilterOperatorEnum.EQ); // 默认为 EQ
+                .orElseThrow(() -> new IllegalArgumentException("Unknown filter operator: " + code));
     }
 }

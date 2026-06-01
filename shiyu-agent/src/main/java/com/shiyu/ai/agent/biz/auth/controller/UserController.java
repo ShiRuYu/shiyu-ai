@@ -5,10 +5,9 @@ import com.shiyu.ai.agent.domain.request.UserRequest;
 import com.shiyu.ai.agent.domain.bo.UserBO;
 import com.shiyu.ai.agent.domain.vo.UserPageResponse;
 import com.shiyu.ai.agent.domain.vo.UserVO;
-import com.shiyu.ai.agent.domain.vo.UserInfoVO;
 import com.shiyu.ai.agent.biz.auth.service.UserService;
 import com.shiyu.ai.common.core.api.Result;
-import com.shiyu.ai.common.core.domain.LoginHelper;
+import com.shiyu.ai.common.core.domain.LoginContextHolder;
 import com.shiyu.ai.common.core.utils.MapstructUtils;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.web.bind.annotation.*;
@@ -36,57 +35,11 @@ public class UserController {
      * GET /user/info
      */
     @GetMapping("/info")
-    public Result<UserInfoVO> getUserInfo(
+    public Result<UserVO> getUserInfo(
             @RequestHeader(value = "Authorization", required = false) String token) {
         log.info("获取当前用户信息");
-        
-        try {
-            // 从 LoginHelper 获取当前登录用户 ID
-            Long userId = LoginHelper.getUserId();
-            if (userId == null) {
-                return Result.fail("用户未登录");
-            }
-            
-            UserBO userBO = userService.getUserDetail(userId);
-            
-            if (userBO == null) {
-                return Result.fail("用户不存在");
-            }
-            
-            // 转换为 UserInfoVO
-            UserInfoVO userInfoVO = new UserInfoVO();
-            userInfoVO.setId(userBO.getId());
-            userInfoVO.setUsername(userBO.getUsername());
-            userInfoVO.setRealName(userBO.getNickName());
-            userInfoVO.setPassword(""); // 密码字段为空或隐藏
-            userInfoVO.setHomePath("/dashboard");
-            
-            // 设置角色列表
-            if (userBO.getRoles() != null && !userBO.getRoles().isEmpty()) {
-                userInfoVO.setRoles(userBO.getRoles().stream()
-                        .map(RoleBO::getCode)
-                        .collect(Collectors.toList()));
-            } else {
-                userInfoVO.setRoles(List.of());
-            }
-            
-            return Result.success(userInfoVO);
-            
-        } catch (Exception e) {
-            log.error("获取用户信息失败", e);
-            return Result.fail("获取用户信息失败：" + e.getMessage());
-        }
-    }
 
-    /**
-     * 用户详情
-     */
-    @GetMapping("/detail")
-    public Result<UserVO> getUserDetail() {
-        log.info("获取用户详情");
-        
-        // 从 LoginHelper 获取当前登录用户 ID
-        Long userId = LoginHelper.getUserId();
+        Long userId = LoginContextHolder.getUserId();
         if (userId == null) {
             return Result.fail("用户未登录");
         }

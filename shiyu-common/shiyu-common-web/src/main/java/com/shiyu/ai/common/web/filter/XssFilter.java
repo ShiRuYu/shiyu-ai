@@ -6,6 +6,7 @@ import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.http.HttpMethod;
+import org.springframework.util.AntPathMatcher;
 
 import java.io.IOException;
 import java.util.ArrayList;
@@ -15,9 +16,9 @@ import java.util.List;
  * 防止XSS攻击的过滤器
  */
 public class XssFilter implements Filter {
-    /**
-     * 排除链接
-     */
+
+    private final AntPathMatcher pathMatcher = new AntPathMatcher();
+
     public List<String> excludes = new ArrayList<>();
 
     @Override
@@ -47,11 +48,10 @@ public class XssFilter implements Filter {
     private boolean handleExcludeURL(HttpServletRequest request, HttpServletResponse response) {
         String url = request.getServletPath();
         String method = request.getMethod();
-        // GET DELETE 不过滤
         if (method == null || HttpMethod.GET.matches(method) || HttpMethod.DELETE.matches(method)) {
             return true;
         }
-        return excludes.stream().anyMatch(url::contains);
+        return excludes.stream().anyMatch(pattern -> pathMatcher.match(pattern, url));
     }
 
     @Override

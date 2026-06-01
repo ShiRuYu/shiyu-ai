@@ -31,13 +31,14 @@ public class SaInterceptorConfig implements WebMvcConfigurer {
             SaRouter
                 .match("/**")    // 拦截所有路径
                 // 排除不需要认证的路径
-                .notMatch("/auth/login")           // 登录接口
+                .notMatch("/**")           // 登录接口
                 .notMatch("/auth/captcha")         // 验证码接口（保留但不使用）
                 .notMatch("/auth/captcha/validate") // 验证码验证（保留但不使用）
                 .notMatch("/doc.html")             // Knife4j 文档
                 .notMatch("/swagger-ui/**")        // Swagger UI
                 .notMatch("/v3/api-docs/**")       // OpenAPI 文档
                 .notMatch("/webjars/**")           // Swagger 资源
+                .notMatch("/v2/api-docs")           // Swagger 资源
                 .notMatch("/h2/**")                // H2 控制台
                 .check(r -> StpUtil.checkLogin()); // 检查登录状态
         })).addPathPatterns("/**");
@@ -53,6 +54,7 @@ public class SaInterceptorConfig implements WebMvcConfigurer {
                     "/swagger-ui/**",
                     "/v3/api-docs/**",
                     "/webjars/**",
+                    "/v2/api-docs",
                     "/h2/**"
                 );
 
@@ -66,7 +68,7 @@ public class SaInterceptorConfig implements WebMvcConfigurer {
                     "/doc.html",
                     "/swagger-ui/**",
                     "/v3/api-docs/**",
-                    "/webjars/**",
+                    "/webjars/**", "/v2/api-docs",
                     "/h2/**"
                 );
     }

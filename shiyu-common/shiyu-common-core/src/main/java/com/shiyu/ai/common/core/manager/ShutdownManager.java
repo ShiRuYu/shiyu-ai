@@ -3,11 +3,10 @@ package com.shiyu.ai.common.core.manager;
 import com.shiyu.ai.common.core.utils.Threads;
 import jakarta.annotation.PreDestroy;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.stereotype.Component;
 
-import java.util.concurrent.ScheduledExecutorService;
+import java.util.List;
+import java.util.concurrent.ExecutorService;
 
 /**
  * 确保应用退出时能关闭后台线程
@@ -16,9 +15,11 @@ import java.util.concurrent.ScheduledExecutorService;
 @Component
 public class ShutdownManager {
 
-    @Autowired
-    @Qualifier("scheduledExecutorService")
-    private ScheduledExecutorService scheduledExecutorService;
+    private final List<ExecutorService> executorServices;
+
+    public ShutdownManager(List<ExecutorService> executorServices) {
+        this.executorServices = executorServices;
+    }
 
     @PreDestroy
     public void destroy() {
@@ -26,14 +27,16 @@ public class ShutdownManager {
     }
 
     /**
-     * 停止异步执行任务
+     * 停止所有后台线程池
      */
     private void shutdownAsyncManager() {
-        try {
-            log.info("====关闭后台任务任务线程池====");
-            Threads.shutdownAndAwaitTermination(scheduledExecutorService);
-        } catch (Exception e) {
-            log.error(e.getMessage(), e);
+        for (ExecutorService executor : executorServices) {
+            try {
+                log.info("====关闭后台任务线程池: {}====", executor);
+                Threads.shutdownAndAwaitTermination(executor);
+            } catch (Exception e) {
+                log.error(e.getMessage(), e);
+            }
         }
     }
 }

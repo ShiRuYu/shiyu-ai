@@ -1,35 +1,30 @@
 package com.shiyu.ai.common.core.config;
 
-import cn.hutool.core.util.ArrayUtil;
-import com.shiyu.ai.common.core.exception.ServiceException;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.aop.interceptor.AsyncUncaughtExceptionHandler;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.scheduling.annotation.AsyncConfigurer;
 import org.springframework.scheduling.annotation.EnableAsync;
 
 import java.util.Arrays;
 import java.util.concurrent.Executor;
-import java.util.concurrent.ScheduledExecutorService;
 
 /**
  * 异步配置
  */
+@Slf4j
 @EnableAsync(proxyTargetClass = true)
 @Configuration
 public class AsyncConfig implements AsyncConfigurer {
 
-    @Autowired
-    @Qualifier("scheduledExecutorService")
-    private ScheduledExecutorService scheduledExecutorService;
-
     /**
      * 自定义 @Async 注解使用系统线程池
+     * 留空则使用 Spring Boot 自动配置的 TaskExecutor
+     * (Spring Boot 4 支持虚拟线程: spring.threads.virtual.enabled=true)
      */
     @Override
     public Executor getAsyncExecutor() {
-        return scheduledExecutorService;
+        return null;
     }
 
     /**
@@ -37,16 +32,8 @@ public class AsyncConfig implements AsyncConfigurer {
      */
     @Override
     public AsyncUncaughtExceptionHandler getAsyncUncaughtExceptionHandler() {
-        return (throwable, method, objects) -> {
-            throwable.printStackTrace();
-            StringBuilder sb = new StringBuilder();
-            sb.append("Exception message - ").append(throwable.getMessage())
-                .append(", Method name - ").append(method.getName());
-            if (ArrayUtil.isNotEmpty(objects)) {
-                sb.append(", Parameter value - ").append(Arrays.toString(objects));
-            }
-            throw new ServiceException(sb.toString());
-        };
+        return (throwable, method, objects) ->
+            log.error("Async method [{}] with params {} failed", method.getName(), Arrays.toString(objects), throwable);
     }
 
 }

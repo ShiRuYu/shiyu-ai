@@ -3,21 +3,17 @@ package com.shiyu.ai.agent.dal.dataobject.auth;
 import com.mybatisflex.annotation.Id;
 import com.mybatisflex.annotation.KeyType;
 import com.mybatisflex.annotation.Table;
+import com.shiyu.ai.common.mybatis.core.domain.BaseEntity;
 import lombok.Data;
-
-import java.io.Serial;
-import java.io.Serializable;
-import java.util.Date;
+import lombok.EqualsAndHashCode;
 
 /**
  * 权限码数据对象
  */
 @Data
+@EqualsAndHashCode(callSuper = true)
 @Table(value = "auth_code")
-public class AuthCodeDO implements Serializable {
-
-    @Serial
-    private static final long serialVersionUID = 1L;
+public class AuthCodeDO extends BaseEntity {
 
     /**
      * 权限码 ID
@@ -49,14 +45,4 @@ public class AuthCodeDO implements Serializable {
      * 删除标志（0：正常 1：已删除）
      */
     private Integer delFlag;
-
-    /**
-     * 创建时间
-     */
-    private Date createTime;
-
-    /**
-     * 更新时间
-     */
-    private Date updateTime;
 }

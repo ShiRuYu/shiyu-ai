@@ -2,6 +2,7 @@ package com.shiyu.ai.common.web.interceptor;
 
 import cn.hutool.core.io.IoUtil;
 import cn.hutool.core.map.MapUtil;
+import com.shiyu.ai.common.core.domain.UserGlobalContext;
 import com.shiyu.ai.common.core.utils.JSONUtils;
 import com.shiyu.ai.common.web.filter.RepeatedlyRequestWrapper;
 import jakarta.servlet.http.HttpServletRequest;
@@ -55,6 +56,7 @@ public class WebInvokeInterceptor implements HandlerInterceptor {
 
     @Override
     public void afterCompletion(HttpServletRequest request, HttpServletResponse response, Object handler, Exception ex) {
+        UserGlobalContext.clear();
         log.debug("结束请求 => URL[{}]", request.getRequestURI());
     }
 

@@ -1,10 +1,13 @@
 package com.shiyu.ai.common.core.utils;
 
+import com.github.benmanes.caffeine.cache.Cache;
+import com.github.benmanes.caffeine.cache.Caffeine;
 import java.lang.invoke.MethodHandle;
 import java.lang.invoke.MethodHandles;
 import java.lang.reflect.Field;
 import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.TimeUnit;
 import java.util.function.Predicate;
 import java.util.stream.Collectors;
 
@@ -109,17 +112,23 @@ public class DynamicQuery {
     }
 
     // ----------------------- 缓存 Predicate + Comparator -----------------------
-    private static final Map<String, Predicate<?>> PREDICATE_CACHE = new ConcurrentHashMap<>();
-    private static final Map<String, Comparator<?>> COMPARATOR_CACHE = new ConcurrentHashMap<>();
+    private static final Cache<String, Predicate<?>> PREDICATE_CACHE = Caffeine.newBuilder()
+            .maximumSize(500)
+            .expireAfterAccess(1, TimeUnit.HOURS)
+            .build();
+    private static final Cache<String, Comparator<?>> COMPARATOR_CACHE = Caffeine.newBuilder()
+            .maximumSize(500)
+            .expireAfterAccess(1, TimeUnit.HOURS)
+            .build();
 
     @SuppressWarnings("unchecked")
     private static <T> Predicate<T> getCachedPredicate(String key, List<FilterRule> filters) {
-        return (Predicate<T>) PREDICATE_CACHE.computeIfAbsent(key, k -> buildPredicate(filters));
+        return (Predicate<T>) PREDICATE_CACHE.get(key, k -> buildPredicate(filters));
     }
 
     @SuppressWarnings("unchecked")
     private static <T> Comparator<T> getCachedComparator(String key, List<SortRule> sorts) {
-        return (Comparator<T>) COMPARATOR_CACHE.computeIfAbsent(key, k -> buildComparator(sorts));
+        return (Comparator<T>) COMPARATOR_CACHE.get(key, k -> buildComparator(sorts));
     }
 
     // ----------------------- 查询主方法 -----------------------

@@ -4,7 +4,7 @@ import lombok.Data;
 
 import java.io.Serial;
 import java.io.Serializable;
-import java.util.Date;
+import java.time.LocalDateTime;
 
 /**
  * Entity基类
@@ -18,21 +18,21 @@ public class BaseEntity implements Serializable {
     /**
      * 创建者
      */
-    private Long createBy;
+    private String createBy;
 
     /**
      * 创建时间
      */
-    private Date createTime;
+    private LocalDateTime createTime;
 
     /**
      * 更新者
      */
-    private Long updateBy;
+    private String updateBy;
 
     /**
      * 更新时间
      */
-    private Date updateTime;
+    private LocalDateTime updateTime;
 
 }
