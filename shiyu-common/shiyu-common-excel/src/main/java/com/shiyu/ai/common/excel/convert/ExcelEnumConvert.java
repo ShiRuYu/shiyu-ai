@@ -16,12 +16,18 @@ import org.apache.fesod.sheet.metadata.property.ExcelContentProperty;
 import java.lang.reflect.Field;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
 
 /**
  * 枚举格式化转换处理
  */
 @Slf4j
 public class ExcelEnumConvert implements Converter<Object> {
+
+    /**
+     * 枚举映射缓存 key: enumClass:codeField:textField
+     */
+    private static final Map<String, Map<Object, String>> ENUM_CACHE = new ConcurrentHashMap<>();
 
     @Override
     public Class<Object> supportJavaTypeKey() {
@@ -57,6 +63,11 @@ public class ExcelEnumConvert implements Converter<Object> {
 
     private Map<Object, String> beforeConvert(ExcelContentProperty contentProperty) {
         ExcelEnumFormat anno = getAnnotation(contentProperty.getField());
+        String cacheKey = anno.enumClass().getName() + ":" + anno.codeField() + ":" + anno.textField();
+        return ENUM_CACHE.computeIfAbsent(cacheKey, key -> buildEnumMap(anno));
+    }
+
+    private Map<Object, String> buildEnumMap(ExcelEnumFormat anno) {
         Map<Object, String> enumValueMap = new HashMap<>();
         Enum<?>[] enumConstants = anno.enumClass().getEnumConstants();
         for (Enum<?> enumConstant : enumConstants) {

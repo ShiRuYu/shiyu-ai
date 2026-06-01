@@ -63,7 +63,7 @@ public class DefaultExcelResult<T> implements ExcelResult<T> {
             if (errorCount == 0) {
                 return StrUtil.format("恭喜您，全部读取成功！共{}条", successCount);
             } else {
-                return "";
+                return StrUtil.format("共{}条数据，其中{}条解析失败", successCount, errorCount);
             }
         }
     }
