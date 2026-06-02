@@ -12,9 +12,7 @@ import org.bsc.langgraph4j.state.Channel;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-
-import static org.bsc.langgraph4j.action.AsyncEdgeAction.edge_async;
-import static org.bsc.langgraph4j.action.AsyncNodeAction.node_async;
+import java.util.concurrent.CompletableFuture;
 
 /**
  * StateGraph 构建器
@@ -97,7 +95,7 @@ public class StateGraphBuilder {
             String nodeId = entry.getKey();
             BaseNode node = entry.getValue();
             try {
-                stateGraph.addNode(nodeId, node_async(node));
+                stateGraph.addNode(nodeId, state -> CompletableFuture.completedFuture(node.apply(state)));
             } catch (GraphStateException e) {
                 log.error("添加节点失败：{}", nodeId, e);
                 throw e;
@@ -130,7 +128,7 @@ public class StateGraphBuilder {
             if (!mappings.isEmpty()) {
                 try {
                     stateGraph.addConditionalEdges(sourceId,
-                            edge_async(state -> conditionEdge.getTarget(state.data()))
+                            state -> CompletableFuture.completedFuture(conditionEdge.getTarget(state.data()))
                             , mappings);
                 } catch (GraphStateException e) {
                     log.error("添加条件边失败：{}", sourceId, e);
