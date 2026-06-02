@@ -7,6 +7,7 @@ import com.shiyu.ai.agent.langgraph4j.node.BaseNode;
 import com.shiyu.ai.agent.langgraph4j.node.NodeInput;
 import com.shiyu.ai.agent.langgraph4j.node.NodeOutput;
 import com.shiyu.ai.agent.langgraph4j.node.NodeType;
+import com.shiyu.ai.agent.langgraph4j.node.NodeFields.FieldKey;
 import com.shiyu.ai.agent.biz.agent.service.Lc4jService;
 import dev.langchain4j.data.message.UserMessage;
 import dev.langchain4j.model.chat.StreamingChatModel;
@@ -152,10 +153,10 @@ public class LlmCallNode extends BaseNode {
         output.setMsg(response.getErrorMessage() != null ? response.getErrorMessage() : "LLM 调用成功");
         
         if (response.isSuccess()) {
-            output.addData("content", response.getContent());
-            output.addData("platform", response.getPlatform());
-            output.addData("model", response.getModel());
-            output.addData("messages", response.getContent());
+            output.addData(FieldKey.CONTENT, response.getContent());
+            output.addData(FieldKey.PLATFORM_OUTPUT, response.getPlatform());
+            output.addData(FieldKey.MODEL_OUTPUT, response.getModel());
+            output.addData(FieldKey.MESSAGES, response.getContent());
             
             log.info("LLM 调用成功，平台：{}, 模型：{}", response.getPlatform(), response.getModel());
         } else {
@@ -167,13 +168,13 @@ public class LlmCallNode extends BaseNode {
     }
     
     /**
-     * 流式执行 LLM 调用（收集所有块后返回）
-     * 注意：由于节点接口是同步的，这里会收集所有流式块后一次性返回
-     * 真正的流式需要在 Graph 执行层面处理
+     * 流式执行 LLM 调用
+     * 使用 langgraph4j 的 StreamingChatGenerator 桥接 StreamingChatModel，
+     * 在 chat() 阻塞期间实时发射 StreamingOutput，由 AsyncGenerator 逐 token 消费
      */
     private NodeOutput executeStream(Lc4jRequest request) {
         StreamingChatModel streamingChatModel = lc4jService.getStreamingChatModel(request.getPlatform(), request.getModel());
-        
+
         StreamingChatGenerator<AgentState> generator = StreamingChatGenerator.builder()
                 .mapResult(r -> {
                     String content = r != null && r.aiMessage() != null ? r.aiMessage().text() : "";
@@ -187,12 +188,11 @@ public class LlmCallNode extends BaseNode {
         NodeOutput output = new NodeOutput();
         output.setSuccess(true);
         output.setMsg("LLM 流式调用成功");
-        output.addData("platform", request.getPlatform());
-        output.addData("model", request.getModel());
-        output.addData("streamingChatGenerator", generator);
-        output.addData("stream", true);
-        output.addData("chatType", ChatType.STREAM.name());
-        
+        output.addData(FieldKey.PLATFORM_OUTPUT, request.getPlatform());
+        output.addData(FieldKey.MODEL_OUTPUT, request.getModel());
+        output.addData(FieldKey.STREAM, true);
+        output.addData(FieldKey.CHAT_TYPE, ChatType.STREAM.name());
+
         log.info("LLM 流式调用完成");
         return output;
     }
@@ -203,26 +203,28 @@ public class LlmCallNode extends BaseNode {
      * @return 构建后的 Prompt
      */
     private String buildPrompt(NodeInput input) {
-        // 优先使用配置的模板
+        // 1. Input（最高优先级）：尝试多个字段名
+        String prompt = input.getParameter(FieldKey.PROMPT, null);
+        if (prompt == null || prompt.trim().isEmpty()) {
+            prompt = input.getParameter(FieldKey.QUERY, null);
+        }
+        if (prompt == null || prompt.trim().isEmpty()) {
+            prompt = input.getParameter(FieldKey.USER_INPUT, null);
+        }
+        if (prompt != null && !prompt.trim().isEmpty()) {
+            return prompt;
+        }
+
+        // 2. Config（次高优先级）
         if (config.getPromptTemplate() != null && !config.getPromptTemplate().isEmpty()) {
             return applyPromptTemplate(config.getPromptTemplate(), input);
         }
-        
-        // 否则从输入中获取
-        String prompt = input.getParameter("prompt", "");
-        if (prompt.trim().isEmpty()) {
-            prompt = input.getParameter("query", "");
+        if (config.getDefaultPrompt() != null && !config.getDefaultPrompt().isEmpty()) {
+            return config.getDefaultPrompt();
         }
-        if (prompt.trim().isEmpty()) {
-            prompt = input.getParameter("userInput", "");
-        }
-        
-        // 如果还是为空，使用默认值
-        if (prompt.trim().isEmpty()) {
-            prompt = config.getDefaultPrompt();
-        }
-        
-        return prompt != null ? prompt : "";
+
+        // 3. 硬编码默认值（最低优先级）
+        return "";
     }
     
     /**
@@ -253,7 +255,7 @@ public class LlmCallNode extends BaseNode {
      */
     private ChatType getChatType(NodeInput input) {
         // 优先使用输入中的 chatType
-        Object chatTypeObj = input.toMap().get("chatType");
+        Object chatTypeObj = input.toMap().get(FieldKey.CHAT_TYPE.key());
         if (chatTypeObj != null) {
             if (chatTypeObj instanceof ChatType) {
                 return (ChatType) chatTypeObj;
@@ -276,19 +278,19 @@ public class LlmCallNode extends BaseNode {
      * @return 平台类型
      */
     private String getPlatform(NodeInput input) {
-        // 优先使用输入中的平台配置
-        String platform = input.getParameter("platform", "OLLAMA");
-        if (!platform.trim().isEmpty()) {
+        // 1. Input（最高优先级）
+        String platform = input.getParameter(FieldKey.PLATFORM, null);
+        if (platform != null && !platform.trim().isEmpty()) {
             return platform;
         }
-        
-        // 使用节点配置的平台
+
+        // 2. Config（次高优先级）
         if (config.getPlatform() != null && !config.getPlatform().trim().isEmpty()) {
             return config.getPlatform();
         }
-        
-        // 使用默认平台
-        return "SILICON_FLOW"; // 默认使用 SILICON_FLOW
+
+        // 3. 硬编码默认值（最低优先级）
+        return "SILICON_FLOW";
     }
     
     /**
@@ -297,18 +299,18 @@ public class LlmCallNode extends BaseNode {
      * @return 模型名称
      */
     private String getModelName(NodeInput input) {
-        // 优先使用输入中的模型配置
-        String model = input.getParameter("model", "default");
-        if (!model.trim().isEmpty()) {
+        // 1. Input（最高优先级）
+        String model = input.getParameter(FieldKey.MODEL, null);
+        if (model != null && !model.trim().isEmpty()) {
             return model;
         }
-        
-        // 使用节点配置的模型
+
+        // 2. Config（次高优先级）
         if (config.getModelName() != null && !config.getModelName().trim().isEmpty()) {
             return config.getModelName();
         }
-        
-        // 返回 null，使用默认模型
+
+        // 3. 硬编码默认值（最低优先级）
         return null;
     }
 }

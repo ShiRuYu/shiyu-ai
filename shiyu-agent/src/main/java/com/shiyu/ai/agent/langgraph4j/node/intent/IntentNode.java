@@ -4,6 +4,7 @@ import com.shiyu.ai.agent.langgraph4j.node.BaseNode;
 import com.shiyu.ai.agent.langgraph4j.node.NodeInput;
 import com.shiyu.ai.agent.langgraph4j.node.NodeOutput;
 import com.shiyu.ai.agent.langgraph4j.node.NodeType;
+import com.shiyu.ai.agent.langgraph4j.node.NodeFields.FieldKey;
 import com.shiyu.ai.agent.biz.agent.service.IntentService;
 import lombok.Getter;
 import lombok.Setter;
@@ -104,16 +105,16 @@ public class IntentNode extends BaseNode {
         
         try {
             // 1. 获取用户输入
-            String userInput = input.getParameter("userInput", "");
+            String userInput = input.getParameter(FieldKey.USER_INPUT, "");
             if (userInput.trim().isEmpty()) {
-                userInput = input.getParameter("query", "");
+                userInput = input.getParameter(FieldKey.QUERY, "");
             }
-            
+
             if (userInput.trim().isEmpty()) {
                 NodeOutput output = new NodeOutput();
                 output.setSuccess(false);
                 output.setMsg("用户输入为空");
-                output.addData("intentCode", "UNKNOWN");
+                output.addData(FieldKey.INTENT_CODE, "UNKNOWN");
                 return output;
             }
             
@@ -128,14 +129,14 @@ public class IntentNode extends BaseNode {
             output.setMsg(result.errorMessage() != null ? result.errorMessage() : "意图识别成功");
             
             // 4. 添加识别结果到输出
-            output.addData("intentCode", result.intentCode());
-            output.addData("intentName", result.intentName());
-            output.addData("confidence", result.confidence());
-            output.addData("slots", result.slots());
-            
+            output.addData(FieldKey.INTENT_CODE, result.intentCode());
+            output.addData(FieldKey.INTENT_NAME, result.intentName());
+            output.addData(FieldKey.CONFIDENCE, result.confidence());
+            output.addData(FieldKey.SLOTS, result.slots());
+
             // 5. 如果识别成功，将意图代码添加到状态中供条件边使用
             if (result.success()) {
-                output.addData("nextNode", getResultIntentKey(result.intentCode()));
+                output.addData(FieldKey.NEXT_NODE, getResultIntentKey(result.intentCode()));
                 log.info("意图识别成功：code={}, name={}, confidence={}", 
                         result.intentCode(), result.intentName(), result.confidence());
             } else {
@@ -150,7 +151,7 @@ public class IntentNode extends BaseNode {
             NodeOutput output = new NodeOutput();
             output.setSuccess(false);
             output.setMsg("意图识别失败：" + e.getMessage());
-            output.addData("intentCode", "ERROR");
+            output.addData(FieldKey.INTENT_CODE, "ERROR");
             return output;
         }
     }

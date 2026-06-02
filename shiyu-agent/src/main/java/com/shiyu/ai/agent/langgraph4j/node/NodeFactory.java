@@ -31,7 +31,9 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
+import java.util.ArrayList;
 import java.util.concurrent.ConcurrentHashMap;
 
 /**
@@ -276,31 +278,53 @@ public class NodeFactory {
     }
 
     /**
-     * 复制对象属性
+     * 复制对象属性（支持 null 跳过、final 字段兼容、深拷贝 Map/List）
      *
      * @param source 源对象
      * @param target 目标对象
      */
     private void copyProperties(Object source, Object target) {
-        try {
-            var sourceFields = source.getClass().getDeclaredFields();
-            for (var sourceField : sourceFields) {
-                try {
-                    var fieldName = sourceField.getName();
-                    sourceField.setAccessible(true);
-                    var value = sourceField.get(source);
+        var sourceFields = source.getClass().getDeclaredFields();
+        for (var sourceField : sourceFields) {
+            try {
+                var fieldName = sourceField.getName();
 
-                    var targetField = target.getClass().getDeclaredField(fieldName);
-                    if (targetField != null) {
-                        targetField.setAccessible(true);
-                        targetField.set(target, value);
-                    }
-                } catch (NoSuchFieldException e) {
-                    // 忽略目标类没有的字段
+                // 跳过 static 字段
+                if (java.lang.reflect.Modifier.isStatic(sourceField.getModifiers())) {
+                    continue;
                 }
+
+                sourceField.setAccessible(true);
+                var value = sourceField.get(source);
+
+                var targetField = target.getClass().getDeclaredField(fieldName);
+
+                // 跳过 final 字段（@Builder.Default 通过 final 实现）
+                if (java.lang.reflect.Modifier.isFinal(targetField.getModifiers())) {
+                    continue;
+                }
+
+                targetField.setAccessible(true);
+
+                // 空值不覆盖目标默认值
+                if (value == null) {
+                    continue;
+                }
+
+                // 深拷贝 Map / List
+                if (value instanceof Map<?, ?> map) {
+                    targetField.set(target, new HashMap<>(map));
+                } else if (value instanceof List<?> list) {
+                    targetField.set(target, new ArrayList<>(list));
+                } else {
+                    targetField.set(target, value);
+                }
+
+            } catch (NoSuchFieldException e) {
+                // 忽略目标类没有的字段
+            } catch (Exception e) {
+                log.warn("属性复制失败：{} -> {}.{}", sourceField.getName(), target.getClass().getSimpleName(), e.getMessage());
             }
-        } catch (Exception e) {
-            log.warn("属性复制失败", e);
         }
     }
 
@@ -339,10 +363,10 @@ public class NodeFactory {
 
     /**
      * 注册服务到节点
-     * 允许将外部服务注入到节点实例中
+     * 通过反射将服务实例注入到节点实例的对应字段中
      *
      * @param nodeId      节点 ID
-     * @param serviceName 服务名称
+     * @param serviceName 服务名称（对应节点类中的字段名）
      * @param service     服务实例
      */
     public void registerServiceToNode(String nodeId, String serviceName, Object service) {
@@ -351,7 +375,51 @@ public class NodeFactory {
             throw new IllegalArgumentException("节点不存在：" + nodeId);
         }
 
-        log.info("服务已注册到节点：{} (服务名：{})", nodeId, serviceName);
+        // 尝试字段注入（字段名匹配或类型匹配）
+        Class<?> nodeClass = node.getClass();
+        boolean injected = false;
+
+        // 1. 按字段名精确匹配
+        try {
+            java.lang.reflect.Field field = nodeClass.getDeclaredField(serviceName);
+            field.setAccessible(true);
+            // 检查类型兼容
+            if (field.getType().isInstance(service)) {
+                field.set(node, service);
+                injected = true;
+            }
+        } catch (NoSuchFieldException ignored) {
+            // 字段名不匹配，尝试类型匹配
+        } catch (Exception e) {
+            log.warn("服务字段注入失败：{}.{}", nodeId, serviceName, e);
+        }
+
+        // 2. 按类型匹配注入（从父类开始搜索）
+        if (!injected) {
+            for (Class<?> cls = nodeClass; cls != null && cls != Object.class; cls = cls.getSuperclass()) {
+                for (var field : cls.getDeclaredFields()) {
+                    if (field.getType().isInstance(service)) {
+                        try {
+                            field.setAccessible(true);
+                            field.set(node, service);
+                            injected = true;
+                            log.debug("按类型匹配注入服务：{} -> {}.{}", serviceName, nodeId, field.getName());
+                            break;
+                        } catch (Exception e) {
+                            log.warn("按类型匹配注入失败", e);
+                        }
+                    }
+                }
+                if (injected) break;
+            }
+        }
+
+        if (injected) {
+            log.info("服务已注册到节点：{} (服务名：{})", nodeId, serviceName);
+        } else {
+            log.warn("服务注册到节点失败，未找到匹配的字段：{} (服务名：{}, 服务类型：{})",
+                    nodeId, serviceName, service.getClass().getSimpleName());
+        }
     }
 
     /**
@@ -359,16 +427,22 @@ public class NodeFactory {
      *
      * @param configs 节点配置列表
      * @return 创建的节点实例列表
+     * @throws RuntimeException 当创建任何一个节点失败时，抛出包含所有失败原因的异常
      */
     public Map<String, BaseNode> createNodes(Map<String, NodeConfig> configs) {
         Map<String, BaseNode> nodes = new HashMap<>();
+        List<String> errors = new ArrayList<>();
         for (NodeConfig config : configs.values()) {
             try {
                 BaseNode node = createNode(config);
                 nodes.put(config.getNodeId(), node);
             } catch (Exception e) {
                 log.error("创建节点失败：{}", config.getNodeId(), e);
+                errors.add(config.getNodeId() + ": " + e.getMessage());
             }
+        }
+        if (!errors.isEmpty()) {
+            throw new RuntimeException("部分节点创建失败：" + String.join("; ", errors));
         }
         return nodes;
     }

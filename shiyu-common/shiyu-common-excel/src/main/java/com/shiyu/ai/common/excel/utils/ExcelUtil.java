@@ -33,24 +33,21 @@ import java.util.Map;
  */
 public class ExcelUtil {
 
+    // ==============================
+    //  导入
+    // ==============================
+
     /**
      * 同步导入(适用于小数据量)
-     *
-     * @param is 输入流
-     * @return 转换后集合
      */
     public static <T> List<T> importExcel(InputStream is, Class<T> clazz) {
         return FesodSheet.read(is).head(clazz).autoCloseStream(false).sheet().doReadSync();
     }
 
-
     /**
      * 使用校验监听器 异步导入 同步返回
      *
-     * @param is         输入流
-     * @param clazz      对象类型
-     * @param isValidate 是否 Validator 检验 默认为是
-     * @return 转换后集合
+     * @param isValidate 是否 Validator 检验
      */
     public static <T> ExcelResult<T> importExcel(InputStream is, Class<T> clazz, boolean isValidate) {
         DefaultExcelListener<T> listener = new DefaultExcelListener<>(isValidate);
@@ -60,68 +57,18 @@ public class ExcelUtil {
 
     /**
      * 使用自定义监听器 异步导入 自定义返回
-     *
-     * @param is       输入流
-     * @param clazz    对象类型
-     * @param listener 自定义监听器
-     * @return 转换后集合
      */
     public static <T> ExcelResult<T> importExcel(InputStream is, Class<T> clazz, ExcelListener<T> listener) {
         FesodSheet.read(is, clazz, listener).sheet().doRead();
         return listener.getExcelResult();
     }
 
-    /**
-     * 导出excel
-     *
-     * @param list      导出数据集合
-     * @param sheetName 工作表的名称
-     * @param clazz     实体类
-     * @param response  响应体
-     */
-    public static <T> void exportExcel(List<T> list, String sheetName, Class<T> clazz, HttpServletResponse response) {
-        try {
-            resetResponse(sheetName, response);
-            ServletOutputStream os = response.getOutputStream();
-            exportExcel(list, sheetName, clazz, false, os);
-        } catch (IOException e) {
-            throw new RuntimeException("导出Excel异常");
-        }
-    }
+    // ==============================
+    //  导出
+    // ==============================
 
     /**
-     * 导出excel
-     *
-     * @param list      导出数据集合
-     * @param sheetName 工作表的名称
-     * @param clazz     实体类
-     * @param merge     是否合并单元格
-     * @param response  响应体
-     */
-    public static <T> void exportExcel(List<T> list, String sheetName, Class<T> clazz, boolean merge, HttpServletResponse response) {
-        try {
-            resetResponse(sheetName, response);
-            ServletOutputStream os = response.getOutputStream();
-            exportExcel(list, sheetName, clazz, merge, os);
-        } catch (IOException e) {
-            throw new RuntimeException("导出Excel异常");
-        }
-    }
-
-    /**
-     * 导出excel
-     *
-     * @param list      导出数据集合
-     * @param sheetName 工作表的名称
-     * @param clazz     实体类
-     * @param os        输出流
-     */
-    public static <T> void exportExcel(List<T> list, String sheetName, Class<T> clazz, OutputStream os) {
-        exportExcel(list, sheetName, clazz, false, os);
-    }
-
-    /**
-     * 导出excel
+     * 导出excel（输出到流）
      *
      * @param list      导出数据集合
      * @param sheetName 工作表的名称
@@ -132,128 +79,103 @@ public class ExcelUtil {
     public static <T> void exportExcel(List<T> list, String sheetName, Class<T> clazz, boolean merge, OutputStream os) {
         ExcelWriterSheetBuilder builder = FesodSheet.write(os, clazz)
             .autoCloseStream(false)
-            // 自动适配
             .registerWriteHandler(new LongestMatchColumnWidthStyleStrategy())
-            // 大数值自动转换 防止失真
             .registerConverter(new ExcelBigNumberConvert())
             .sheet(sheetName);
         if (merge) {
-            // 合并处理器
             builder.registerWriteHandler(new CellMergeStrategy(list, true));
         }
         builder.doWrite(list);
     }
 
     /**
-     * 单表多数据模板导出 模板格式为 {.属性}
+     * 导出excel（输出到HTTP响应）
      *
-     * @param filename     文件名
-     * @param templatePath 模板路径 resource 目录下的路径包括模板文件名
-     *                     例如: excel/temp.xlsx
-     *                     重点: 模板文件必须放置到启动类对应的 resource 目录下
-     * @param data         模板需要的数据
-     * @param response     响应体
+     * @param list      导出数据集合
+     * @param sheetName 工作表的名称 / 文件名
+     * @param clazz     实体类
+     * @param merge     是否合并单元格
+     * @param response  HTTP响应
      */
-    public static void exportTemplate(List<Object> data, String filename, String templatePath, HttpServletResponse response) {
-        try {
-            resetResponse(filename, response);
-            ServletOutputStream os = response.getOutputStream();
-            exportTemplate(data, templatePath, os);
-        } catch (IOException e) {
-            throw new RuntimeException("导出Excel异常");
-        }
+    public static <T> void exportExcel(List<T> list, String sheetName, Class<T> clazz, boolean merge, HttpServletResponse response) {
+        writeToResponse(sheetName, response, os ->
+            exportExcel(list, sheetName, clazz, merge, os));
     }
 
+    // ==============================
+    //  模板导出
+    // ==============================
+
     /**
-     * 单表多数据模板导出 模板格式为 {.属性}
+     * 单表多数据模板导出 模板格式为 {.属性}（输出到流）
      *
-     * @param templatePath 模板路径 resource 目录下的路径包括模板文件名
-     *                     例如: excel/temp.xlsx
-     *                     重点: 模板文件必须放置到启动类对应的 resource 目录下
      * @param data         模板需要的数据
+     * @param templatePath 模板路径（classpath 下的路径，如 excel/temp.xlsx）
      * @param os           输出流
      */
     public static void exportTemplate(List<Object> data, String templatePath, OutputStream os) {
-        ClassPathResource templateResource = new ClassPathResource(templatePath);
-        ExcelWriter excelWriter = FesodSheet.write(os)
-            .withTemplate(templateResource.getStream())
-            .autoCloseStream(false)
-            // 大数值自动转换 防止失真
-            .registerConverter(new ExcelBigNumberConvert())
-            .build();
-        WriteSheet writeSheet = FesodSheet.writerSheet().build();
         if (CollUtil.isEmpty(data)) {
             throw new IllegalArgumentException("数据为空");
         }
-        // 单表多数据导出 模板格式为 {.属性}
+        TemplateContext ctx = buildTemplateContext(os, templatePath);
         for (Object d : data) {
-            excelWriter.fill(d, writeSheet);
+            ctx.writer().fill(d, ctx.sheet());
         }
-        excelWriter.finish();
+        ctx.writer().finish();
     }
 
     /**
-     * 多表多数据模板导出 模板格式为 {key.属性}
+     * 单表多数据模板导出 模板格式为 {.属性}（输出到HTTP响应）
      *
-     * @param filename     文件名
-     * @param templatePath 模板路径 resource 目录下的路径包括模板文件名
-     *                     例如: excel/temp.xlsx
-     *                     重点: 模板文件必须放置到启动类对应的 resource 目录下
      * @param data         模板需要的数据
-     * @param response     响应体
+     * @param filename     文件名（不含扩展名）
+     * @param templatePath 模板路径（classpath 下的路径，如 excel/temp.xlsx）
+     * @param response     HTTP响应
      */
-    public static void exportTemplateMultiList(Map<String, Object> data, String filename, String templatePath, HttpServletResponse response) {
-        try {
-            resetResponse(filename, response);
-            ServletOutputStream os = response.getOutputStream();
-            exportTemplateMultiList(data, templatePath, os);
-        } catch (IOException e) {
-            throw new RuntimeException("导出Excel异常");
-        }
+    public static void exportTemplate(List<Object> data, String filename, String templatePath, HttpServletResponse response) {
+        writeToResponse(filename, response, os ->
+            exportTemplate(data, templatePath, os));
     }
 
     /**
-     * 多表多数据模板导出 模板格式为 {key.属性}
+     * 多表多数据模板导出 模板格式为 {key.属性}（输出到流）
      *
-     * @param templatePath 模板路径 resource 目录下的路径包括模板文件名
-     *                     例如: excel/temp.xlsx
-     *                     重点: 模板文件必须放置到启动类对应的 resource 目录下
-     * @param data         模板需要的数据
+     * @param data         模板需要的数据（key 对应模板中的 {key.属性} 前缀）
+     * @param templatePath 模板路径（classpath 下的路径，如 excel/temp.xlsx）
      * @param os           输出流
      */
     public static void exportTemplateMultiList(Map<String, Object> data, String templatePath, OutputStream os) {
-        ClassPathResource templateResource = new ClassPathResource(templatePath);
-        ExcelWriter excelWriter = FesodSheet.write(os)
-            .withTemplate(templateResource.getStream())
-            .autoCloseStream(false)
-            // 大数值自动转换 防止失真
-            .registerConverter(new ExcelBigNumberConvert())
-            .build();
-        WriteSheet writeSheet = FesodSheet.writerSheet().build();
         if (CollUtil.isEmpty(data)) {
             throw new IllegalArgumentException("数据为空");
         }
-        for (Map.Entry<String, Object> map : data.entrySet()) {
-            // 设置列表后续还有数据
-            FillConfig fillConfig = FillConfig.builder().forceNewRow(Boolean.TRUE).build();
-            if (map.getValue() instanceof Collection) {
-                // 多表导出必须使用 FillWrapper
-                excelWriter.fill(new FillWrapper(map.getKey(), (Collection<?>) map.getValue()), fillConfig, writeSheet);
+        TemplateContext ctx = buildTemplateContext(os, templatePath);
+        FillConfig fillConfig = FillConfig.builder().forceNewRow(Boolean.TRUE).build();
+        for (Map.Entry<String, Object> entry : data.entrySet()) {
+            if (entry.getValue() instanceof Collection<?> collection) {
+                ctx.writer().fill(new FillWrapper(entry.getKey(), collection), fillConfig, ctx.sheet());
             } else {
-                excelWriter.fill(map.getValue(), writeSheet);
+                ctx.writer().fill(entry.getValue(), ctx.sheet());
             }
         }
-        excelWriter.finish();
+        ctx.writer().finish();
     }
 
     /**
-     * 重置响应体
+     * 多表多数据模板导出 模板格式为 {key.属性}（输出到HTTP响应）
+     *
+     * @param data         模板需要的数据
+     * @param filename     文件名（不含扩展名）
+     * @param templatePath 模板路径（classpath 下的路径，如 excel/temp.xlsx）
+     * @param response     HTTP响应
      */
-    private static void resetResponse(String sheetName, HttpServletResponse response) {
-        String filename = encodingFilename(sheetName);
-        FileUtils.setAttachmentResponseHeader(response, filename);
-        response.setContentType("application/vnd.openxmlformats-officedocument.spreadsheetml.sheet;charset=UTF-8");
+    public static void exportTemplateMultiList(Map<String, Object> data, String filename, String templatePath, HttpServletResponse response) {
+        writeToResponse(filename, response, os ->
+            exportTemplateMultiList(data, templatePath, os));
     }
+
+    // ==============================
+    //  表达式转换
+    // ==============================
 
     /**
      * 解析导出值 0=男,1=女,2=未知
@@ -319,5 +241,55 @@ public class ExcelUtil {
     public static String encodingFilename(String filename) {
         return IdUtil.fastSimpleUUID() + "_" + filename + ".xlsx";
     }
+
+    // ==============================
+    //  私有辅助
+    // ==============================
+
+    /**
+     * 构建模板写入上下文（消除 FesodSheet 重复构建代码）
+     */
+    private static TemplateContext buildTemplateContext(OutputStream os, String templatePath) {
+        ClassPathResource templateResource = new ClassPathResource(templatePath);
+        ExcelWriter writer = FesodSheet.write(os)
+            .withTemplate(templateResource.getStream())
+            .autoCloseStream(false)
+            .registerConverter(new ExcelBigNumberConvert())
+            .build();
+        return new TemplateContext(writer, FesodSheet.writerSheet().build());
+    }
+
+    /**
+     * 写入HTTP响应（消除重复的 resetResponse + getOutputStream + try/catch）
+     */
+    private static void writeToResponse(String filename, HttpServletResponse response,
+                                         IoConsumer consumer) {
+        try {
+            resetResponse(filename, response);
+            ServletOutputStream os = response.getOutputStream();
+            consumer.accept(os);
+        } catch (IOException e) {
+            throw new RuntimeException("导出Excel异常", e);
+        }
+    }
+
+    /**
+     * 重置响应体
+     */
+    private static void resetResponse(String sheetName, HttpServletResponse response) {
+        String filename = encodingFilename(sheetName);
+        FileUtils.setAttachmentResponseHeader(response, filename);
+        response.setContentType("application/vnd.openxmlformats-officedocument.spreadsheetml.sheet;charset=UTF-8");
+    }
+
+    @FunctionalInterface
+    private interface IoConsumer {
+        void accept(OutputStream os) throws IOException;
+    }
+
+    /**
+     * 模板写入上下文，承载 writer + sheet 避免重复传递
+     */
+    private record TemplateContext(ExcelWriter writer, WriteSheet sheet) {}
 
 }

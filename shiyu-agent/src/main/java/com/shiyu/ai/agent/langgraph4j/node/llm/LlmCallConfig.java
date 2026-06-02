@@ -26,9 +26,9 @@ public class LlmCallConfig extends NodeConfig {
     private Double temperature = 0.7;
     
     /**
-     * 最大生成长度（默认 2048）
+     * 最大生成长度（默认 4096，与适配器默认值保持一致）
      */
-    private Integer maxTokens = 2048;
+    private Integer maxTokens = 4096;
     
     /**
      * Top P 参数（默认 0.9）

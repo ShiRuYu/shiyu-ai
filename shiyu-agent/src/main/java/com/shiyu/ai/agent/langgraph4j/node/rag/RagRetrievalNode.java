@@ -4,6 +4,7 @@ import com.shiyu.ai.agent.langgraph4j.node.BaseNode;
 import com.shiyu.ai.agent.langgraph4j.node.NodeInput;
 import com.shiyu.ai.agent.langgraph4j.node.NodeOutput;
 import com.shiyu.ai.agent.langgraph4j.node.NodeType;
+import com.shiyu.ai.agent.langgraph4j.node.NodeFields.FieldKey;
 import com.shiyu.ai.agent.biz.agent.service.RagService;
 import lombok.Getter;
 import lombok.Setter;
@@ -105,9 +106,9 @@ public class RagRetrievalNode extends BaseNode {
         
         try {
             // 1. 获取查询文本
-            String query = input.getParameter("query", "");
+            String query = input.getParameter(FieldKey.QUERY, "");
             if (query == null || query.trim().isEmpty()) {
-                query = input.getParameter("userInput", "");
+                query = input.getParameter(FieldKey.USER_INPUT, "");
             }
             
             // 2. 调用 RAG 检索服务
@@ -134,12 +135,12 @@ public class RagRetrievalNode extends BaseNode {
                     ));
                 }
                 
-                output.addData("documents", documentsList);
-                output.addData("documentCount", documentsList.size());
+                output.addData(FieldKey.DOCUMENTS, documentsList);
+                output.addData(FieldKey.DOCUMENT_COUNT, documentsList.size());
                 
                 // 将文档内容合并为上下文（供 LLM 使用）
                 String context = buildContextFromDocuments(result.documents());
-                output.addData("context", context);
+                output.addData(FieldKey.CONTEXT, context);
                 
                 log.info("RAG 检索成功，返回 {} 个文档", documentsList.size());
             } else {
@@ -179,7 +180,7 @@ public class RagRetrievalNode extends BaseNode {
      */
     private String getKnowledgeBaseId(NodeInput input) {
         // 优先使用输入中的配置
-        String kbId = input.getParameter("knowledgeBaseId", "");
+        String kbId = input.getParameter(FieldKey.KNOWLEDGE_BASE_ID, "");
         if (kbId != null && !kbId.trim().isEmpty()) {
             return kbId;
         }

@@ -4,6 +4,7 @@ import com.shiyu.ai.agent.langgraph4j.node.BaseNode;
 import com.shiyu.ai.agent.langgraph4j.node.NodeInput;
 import com.shiyu.ai.agent.langgraph4j.node.NodeOutput;
 import com.shiyu.ai.agent.langgraph4j.node.NodeType;
+import com.shiyu.ai.agent.langgraph4j.node.NodeFields.FieldKey;
 import com.shiyu.ai.agent.biz.agent.service.ToolService;
 import lombok.Getter;
 import lombok.Setter;
@@ -122,8 +123,8 @@ public class ToolCallNode extends BaseNode {
             output.setMsg(result.errorMessage() != null ? result.errorMessage() : "工具调用成功");
             
             if (result.success()) {
-                output.addData("toolName", toolName);
-                output.addData("toolResult", result.result());
+                output.addData(FieldKey.TOOL_NAME, toolName);
+                output.addData(FieldKey.TOOL_RESULT, result.result());
                 log.info("工具调用成功：{}", toolName);
             } else {
                 log.error("工具调用失败：{}", result.errorMessage());
@@ -146,7 +147,7 @@ public class ToolCallNode extends BaseNode {
      */
     private String getToolName(NodeInput input) {
         // 优先使用输入中的配置
-        String toolName = input.getParameter("toolName", "");
+        String toolName = input.getParameter(FieldKey.TOOL_NAME, "");
         if (toolName != null && !toolName.trim().isEmpty()) {
             return toolName;
         }
@@ -165,7 +166,7 @@ public class ToolCallNode extends BaseNode {
         for (java.util.Map.Entry<String, Object> entry : input.toMap().entrySet()) {
             String key = entry.getKey();
             // 排除已经使用的参数
-            if (!"toolName".equals(key) && !"toolType".equals(key)) {
+            if (!FieldKey.TOOL_NAME.key().equals(key) && !FieldKey.TOOL_TYPE.key().equals(key)) {
                 params.put(key, entry.getValue());
             }
         }

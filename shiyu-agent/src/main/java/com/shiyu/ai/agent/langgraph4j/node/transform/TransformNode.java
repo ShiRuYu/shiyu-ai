@@ -4,6 +4,7 @@ import com.shiyu.ai.agent.langgraph4j.node.BaseNode;
 import com.shiyu.ai.agent.langgraph4j.node.NodeInput;
 import com.shiyu.ai.agent.langgraph4j.node.NodeOutput;
 import com.shiyu.ai.agent.langgraph4j.node.NodeType;
+import com.shiyu.ai.agent.langgraph4j.node.NodeFields.FieldKey;
 import lombok.Getter;
 import lombok.Setter;
 import lombok.extern.slf4j.Slf4j;
@@ -21,6 +22,14 @@ import lombok.extern.slf4j.Slf4j;
 public class TransformNode extends BaseNode {
 
     private TransformConfig config;
+
+    /**
+     * 备选的输入字段键，按优先级从高到低排列
+     */
+    private static final FieldKey[] GET_INPUT_KEYS = {
+            FieldKey.INPUT, FieldKey.DATA, FieldKey.CONTENT,
+            FieldKey.TEXT, FieldKey.QUERY, FieldKey.USER_INPUT
+    };
 
     /**
      * 私有构造函数，强制使用 Builder 模式
@@ -83,11 +92,11 @@ public class TransformNode extends BaseNode {
             NodeOutput output = new NodeOutput();
             output.setSuccess(true);
             output.setMsg("数据转换成功");
-            output.addData("transformedData", result);
-            
+            output.addData(FieldKey.TRANSFORMED_DATA, result);
+
             // 将转换后的数据也添加到 messages（标准格式）
             if (result instanceof String str) {
-                output.addData("messages", str);
+                output.addData(FieldKey.MESSAGES, str);
             }
             
             log.info("数据转换成功");
@@ -106,16 +115,14 @@ public class TransformNode extends BaseNode {
      * 获取输入数据
      */
     private String getInputData(NodeInput input) {
-        // 尝试多个可能的键
-        String[] possibleKeys = {"input", "data", "content", "text", "query", "userInput"};
-        
-        for (String key : possibleKeys) {
-            Object value = input.getParameter(key, null);
+        // 尝试多个可能的键，按优先级查找
+        for (FieldKey fieldKey : GET_INPUT_KEYS) {
+            Object value = input.getParameter(fieldKey, null);
             if (value != null) {
                 return value.toString();
             }
         }
-        
+
         return "";
     }
     

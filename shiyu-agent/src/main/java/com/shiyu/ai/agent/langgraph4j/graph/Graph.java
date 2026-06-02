@@ -15,9 +15,12 @@ import reactor.core.publisher.Flux;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.Iterator;
+import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.function.Function;
 
 /**
@@ -219,17 +222,29 @@ public class Graph {
         for (Map.Entry<String, ConditionEdge> entry : conditionalEdges.entrySet()) {
             String sourceId = entry.getKey();
             ConditionEdge conditionEdge = entry.getValue();
-            
+
             if (!nodes.containsKey(sourceId)) {
                 throw new IllegalStateException("条件边的源节点 " + sourceId + " 未定义");
             }
-            
+
             // 检查条件边的目标节点映射
             for (String targetId : conditionEdge.getNodeMappings().values()) {
                 if (!nodes.containsKey(targetId)) {
                     throw new IllegalStateException("条件边的目标节点 " + targetId + " 未定义");
                 }
             }
+        }
+
+        // 5. 检测循环依赖（DFS）
+        String cycle = detectCycle();
+        if (cycle != null) {
+            throw new IllegalStateException("图检测到循环依赖：" + cycle);
+        }
+
+        // 6. 检测不可达节点
+        Set<String> unreachable = findUnreachableNodes();
+        if (!unreachable.isEmpty()) {
+            log.warn("图存在不可达节点：{}（不影响执行，但可能表明配置遗漏）", unreachable);
         }
         
         log.info("Graph 配置验证通过：{}", this.name);
@@ -321,6 +336,75 @@ public class Graph {
                 .doOnSubscribe(subscription -> log.debug("流式执行开始"))
                 .doOnComplete(() -> log.info("流式执行完成"))
                 .doOnError(error -> log.error("流式执行失败", error));
+    }
+
+    /**
+     * 基于 DFS 的循环依赖检测
+     *
+     * @return 检测到循环时返回路径描述字符串，否则返回 null
+     */
+    String detectCycle() {
+        Set<String> white = new HashSet<>(nodes.keySet());
+        Set<String> gray = new LinkedHashSet<>();
+        Set<String> black = new HashSet<>();
+
+        for (String node : new ArrayList<>(white)) {
+            if (black.contains(node)) continue;
+            if (hasCycle(node, white, gray, black)) {
+                List<String> path = new ArrayList<>(gray);
+                int start = path.indexOf(node);
+                return String.join(" -> ", path.subList(start, path.size())) + " -> " + node;
+            }
+        }
+        return null;
+    }
+
+    private boolean hasCycle(String node, Set<String> white, Set<String> gray, Set<String> black) {
+        white.remove(node);
+        gray.add(node);
+
+        Set<String> successors = new HashSet<>();
+        List<String> edgeTargets = edges.get(node);
+        if (edgeTargets != null) successors.addAll(edgeTargets);
+        ConditionEdge condEdge = conditionalEdges.get(node);
+        if (condEdge != null && condEdge.getNodeMappings() != null) {
+            successors.addAll(condEdge.getNodeMappings().values());
+        }
+
+        for (String successor : successors) {
+            if (black.contains(successor)) continue;
+            if (gray.contains(successor)) return true;
+            if (hasCycle(successor, white, gray, black)) return true;
+        }
+
+        gray.remove(node);
+        black.add(node);
+        return false;
+    }
+
+    /**
+     * 查找从起始节点无法到达的节点
+     */
+    Set<String> findUnreachableNodes() {
+        Set<String> reachable = new HashSet<>();
+        dfsReachable(startNode, reachable);
+        Set<String> unreachable = new HashSet<>(nodes.keySet());
+        unreachable.removeAll(reachable);
+        unreachable.remove(startNode);
+        return unreachable;
+    }
+
+    private void dfsReachable(String node, Set<String> reachable) {
+        if (node == null || node.isEmpty() || reachable.contains(node)) return;
+        reachable.add(node);
+        List<String> edgeTargets = edges.get(node);
+        if (edgeTargets != null) {
+            for (String target : edgeTargets) dfsReachable(target, reachable);
+        }
+        ConditionEdge condEdge = conditionalEdges.get(node);
+        if (condEdge != null && condEdge.getNodeMappings() != null) {
+            for (String target : condEdge.getNodeMappings().values()) dfsReachable(target, reachable);
+        }
     }
 
 }

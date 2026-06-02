@@ -4,6 +4,7 @@ import com.shiyu.ai.agent.langgraph4j.node.BaseNode;
 import com.shiyu.ai.agent.langgraph4j.node.NodeInput;
 import com.shiyu.ai.agent.langgraph4j.node.NodeOutput;
 import com.shiyu.ai.agent.langgraph4j.node.NodeType;
+import com.shiyu.ai.agent.langgraph4j.node.NodeFields.FieldKey;
 import lombok.Getter;
 import lombok.Setter;
 import lombok.extern.slf4j.Slf4j;
@@ -84,12 +85,12 @@ public class ConditionNode extends BaseNode {
             NodeOutput output = new NodeOutput();
             output.setSuccess(true);
             output.setMsg("条件判断执行成功");
-            output.addData("conditionResult", result);
-            
+            output.addData(FieldKey.CONDITION_RESULT, result);
+
             // 4. 根据结果设置下一个分支
             String nextBranch = result ? config.getTrueBranch() : config.getDefaultBranch();
-            output.addData("nextNode", nextBranch);
-            output.addData("branch", result ? "true" : "false");
+            output.addData(FieldKey.NEXT_NODE, nextBranch);
+            output.addData(FieldKey.BRANCH, result ? "true" : "false");
             
             log.info("条件判断完成：result={}, nextNode={}", result, nextBranch);
             return output;
@@ -100,7 +101,7 @@ public class ConditionNode extends BaseNode {
             output.setSuccess(false);
             output.setMsg("条件判断节点执行失败：" + e.getMessage());
             // 返回默认分支
-            output.addData("nextNode", config.getDefaultBranch());
+            output.addData(FieldKey.NEXT_NODE, config.getDefaultBranch());
             return output;
         }
     }
@@ -166,7 +167,7 @@ public class ConditionNode extends BaseNode {
      */
     private boolean evaluateIntent(String expectedIntent, NodeInput input) {
         // 检查当前意图是否匹配期望的意图
-        Object currentIntent = input.getParameter("intentCode", null);
+        Object currentIntent = input.getParameter(FieldKey.INTENT_CODE, null);
         return expectedIntent.equals(currentIntent);
     }
 }

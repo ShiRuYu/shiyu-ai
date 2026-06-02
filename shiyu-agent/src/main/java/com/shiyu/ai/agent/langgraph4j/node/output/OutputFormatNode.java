@@ -4,6 +4,7 @@ import com.shiyu.ai.agent.langgraph4j.node.BaseNode;
 import com.shiyu.ai.agent.langgraph4j.node.NodeInput;
 import com.shiyu.ai.agent.langgraph4j.node.NodeOutput;
 import com.shiyu.ai.agent.langgraph4j.node.NodeType;
+import com.shiyu.ai.agent.langgraph4j.node.NodeFields.FieldKey;
 import lombok.Getter;
 import lombok.Setter;
 import lombok.extern.slf4j.Slf4j;
@@ -21,6 +22,14 @@ import lombok.extern.slf4j.Slf4j;
 public class OutputFormatNode extends BaseNode {
 
     private OutputFormatConfig config;
+
+    /**
+     * 备选的输入字段键集合，按优先级从高到低排列
+     */
+    private static final FieldKey[] GET_CONTENT_KEYS = {
+            FieldKey.CONTENT, FieldKey.RESPONSE, FieldKey.RESULT,
+            FieldKey.OUTPUT, FieldKey.ANSWER, FieldKey.MESSAGES
+    };
 
     /**
      * 私有构造函数，强制使用 Builder 模式
@@ -83,8 +92,8 @@ public class OutputFormatNode extends BaseNode {
             NodeOutput output = new NodeOutput();
             output.setSuccess(true);
             output.setMsg("输出格式化成功");
-            output.addData("formattedContent", formattedContent);
-            output.addData("messages", formattedContent);
+            output.addData(FieldKey.FORMATTED_CONTENT, formattedContent);
+            output.addData(FieldKey.MESSAGES, formattedContent);
             
             log.info("输出格式化成功");
             return output;
@@ -102,16 +111,14 @@ public class OutputFormatNode extends BaseNode {
      * 获取待格式化的内容
      */
     private String getContent(NodeInput input) {
-        // 尝试多个可能的键
-        String[] possibleKeys = {"content", "response", "result", "output", "answer", "messages"};
-        
-        for (String key : possibleKeys) {
-            Object value = input.getParameter(key, null);
+        // 尝试多个可能的键，按优先级查找
+        for (FieldKey fieldKey : GET_CONTENT_KEYS) {
+            Object value = input.getParameter(fieldKey, null);
             if (value != null) {
                 return value.toString();
             }
         }
-        
+
         return "";
     }
     

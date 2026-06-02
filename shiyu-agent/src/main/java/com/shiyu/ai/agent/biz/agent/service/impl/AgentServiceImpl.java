@@ -176,18 +176,14 @@ public class AgentServiceImpl implements AgentService {
 
         AsyncGenerator<NodeOutput<AgentState>> outputs = compiledGraph.stream(input);
 
-        // 将 outputs 转换为热 Flux，避免重复消费
+        // 将 outputs 转换为 Flux，过滤 StreamingOutput 逐 token 输出
         Flux<Map<String, Object>> flux = Flux.fromStream(outputs.stream())
                 .filter(output -> output instanceof StreamingOutput<AgentState>)
                 .map(output -> ((StreamingOutput<AgentState>) output).chunk())
                 .filter(StringUtils::isNotEmpty)
-                .map(chunk -> {
-                    log.info("Agent 节点输出：chunk={}", chunk);
-                    return Map.<String, Object>of("content", chunk);
-                })
-                .filter(map -> map.get("content") != null);
+                .map(chunk -> Map.<String, Object>of("content", chunk));
 
-        log.info("Agent 执行完成：agentId={}, version={}", agentId,
+        log.info("Agent 流式执行完成：agentId={}, version={}", agentId,
                 agentVersion.getVersionNumber());
 
         return flux;

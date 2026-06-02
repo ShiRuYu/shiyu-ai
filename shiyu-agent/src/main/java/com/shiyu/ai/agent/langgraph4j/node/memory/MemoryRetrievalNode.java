@@ -4,6 +4,7 @@ import com.shiyu.ai.agent.langgraph4j.node.BaseNode;
 import com.shiyu.ai.agent.langgraph4j.node.NodeInput;
 import com.shiyu.ai.agent.langgraph4j.node.NodeOutput;
 import com.shiyu.ai.agent.langgraph4j.node.NodeType;
+import com.shiyu.ai.agent.langgraph4j.node.NodeFields.FieldKey;
 import lombok.Getter;
 import lombok.Setter;
 import lombok.extern.slf4j.Slf4j;
@@ -76,17 +77,17 @@ public class MemoryRetrievalNode extends BaseNode {
         
         try {
             // 1. 获取查询文本
-            String query = input.getParameter("query", "");
+            String query = input.getParameter(FieldKey.QUERY, "");
             if (query == null || query.trim().isEmpty()) {
-                query = input.getParameter("userInput", "");
+                query = input.getParameter(FieldKey.USER_INPUT, "");
             }
-            
+
             // 2. 从输入中获取参数
-            String retrievalScope = input.getParameter("retrievalScope", 
+            String retrievalScope = input.getParameter(FieldKey.RETRIEVAL_SCOPE,
                     config.getRetrievalScope() != null ? config.getRetrievalScope() : "SHORT_TERM");
-            Integer topK = input.getParameter("topK", 
+            Integer topK = input.getParameter(FieldKey.TOP_K,
                     config.getTopK() != null ? config.getTopK() : 5);
-            Double similarityThreshold = input.getParameter("similarityThreshold", 
+            Double similarityThreshold = input.getParameter(FieldKey.SIMILARITY_THRESHOLD,
                     config.getSimilarityThreshold() != null ? config.getSimilarityThreshold() : 0.7);
             
             // 3. 调用记忆检索服务（这里使用示例实现）
@@ -96,13 +97,13 @@ public class MemoryRetrievalNode extends BaseNode {
             NodeOutput output = new NodeOutput();
             output.setSuccess(true);
             output.setMsg("记忆检索成功");
-            output.addData("memories", memories);
-            output.addData("memoryCount", memories.size());
-            
+            output.addData(FieldKey.MEMORIES, memories);
+            output.addData(FieldKey.MEMORY_COUNT, memories.size());
+
             // 将相关记忆添加到上下文中
             if (!memories.isEmpty()) {
                 String context = buildMemoryContext(memories);
-                output.addData("memoryContext", context);
+                output.addData(FieldKey.MEMORY_CONTEXT, context);
             }
             
             log.info("记忆检索成功，返回 {} 条记忆", memories.size());
