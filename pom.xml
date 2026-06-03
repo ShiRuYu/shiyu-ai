@@ -14,14 +14,14 @@
 
     <properties>
         <revision>1.0.0</revision>
-        <spring-boot.version>4.0.1</spring-boot.version>
-        <spring-ai.version>2.0.0-M1</spring-ai.version>
+        <spring-boot.version>4.0.6</spring-boot.version>
+        <spring-ai.version>2.0.0-M8</spring-ai.version>
 
-        <langchain4j.version>1.12.2</langchain4j.version> <!-- Check for the actual latest version -->
-        <langgraph4j.version>1.8.10</langgraph4j.version> <!-- Check for the actual latest version -->
+        <langchain4j.version>1.15.1</langchain4j.version> <!-- Check for the actual latest version -->
+        <langgraph4j.version>1.8.17</langgraph4j.version> <!-- Check for the actual latest version -->
 
         <sa-token.version>1.45.0</sa-token.version>
-        <liteflow-spring.version>2.15.3</liteflow-spring.version>
+        <liteflow-spring.version>2.16.0</liteflow-spring.version>
 
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
         <project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
@@ -71,19 +71,11 @@
 
     <profiles>
         <profile>
-            <id>local</id>
-            <properties>
-                <!-- 环境标识，需要与配置文件的名称相对应 -->
-                <profiles.active>local</profiles.active>
-                <logging.level>debug</logging.level>
-            </properties>
-        </profile>
-        <profile>
             <id>dev</id>
             <properties>
                 <!-- 环境标识，需要与配置文件的名称相对应 -->
                 <profiles.active>dev</profiles.active>
-                <logging.level>debug</logging.level>
+                <logging.level>trace</logging.level>
             </properties>
             <activation>
                 <!-- 默认环境 -->
@@ -254,7 +246,7 @@
 
             <dependency>
                 <groupId>com.yomahub</groupId>
-                <artifactId>liteflow-spring-boot-starter</artifactId>
+                <artifactId>liteflow-spring-boot4-starter</artifactId>
                 <version>${liteflow-spring.version}</version>
             </dependency>
             <dependency>

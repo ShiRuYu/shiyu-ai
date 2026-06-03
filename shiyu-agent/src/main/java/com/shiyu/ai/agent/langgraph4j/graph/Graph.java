@@ -6,8 +6,10 @@ import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.bsc.async.AsyncGenerator;
 import org.bsc.langgraph4j.CompiledGraph;
 import org.bsc.langgraph4j.GraphStateException;
+import org.bsc.langgraph4j.NodeOutput;
 import org.bsc.langgraph4j.state.AgentState;
 import org.bsc.langgraph4j.state.Channel;
 import reactor.core.publisher.Flux;
@@ -300,6 +302,18 @@ public class Graph {
     }
     
     /**
+     * 编译并获取流式执行源（返回 AsyncGenerator，由调用方控制消费逻辑）
+     * @param input 输入数据
+     * @return AsyncGenerator 流式源
+     * @throws GraphStateException 图状态异常
+     */
+    public AsyncGenerator<NodeOutput<AgentState>> stream(Map<String, Object> input) throws GraphStateException {
+        log.info("开始流式执行图：{}", this.name);
+        CompiledGraph<AgentState> compiledGraph = compile();
+        return compiledGraph.stream(input);
+    }
+
+    /**
      * 同步执行图
      * @param input 输入数据
      * @return 执行结果
@@ -325,17 +339,16 @@ public class Graph {
      * @return 流式响应
      * @throws GraphStateException 图状态异常
      */
-    public Flux<Map<String, Object>> executeStream(Map<String, Object> input) throws GraphStateException {
+    public Flux<NodeOutput<AgentState>> executeStream(Map<String, Object> input) throws GraphStateException {
         log.info("开始流式执行图：{}", this.name);
-        
+
         CompiledGraph<AgentState> compiledGraph = compile();
-        
+
         // 流式执行图 - 返回每个节点执行后的状态
         return Flux.fromIterable(() -> compiledGraph.stream(input).iterator())
-                .map(nodeOutput -> nodeOutput.state().data())
-                .doOnSubscribe(subscription -> log.debug("流式执行开始"))
-                .doOnComplete(() -> log.info("流式执行完成"))
-                .doOnError(error -> log.error("流式执行失败", error));
+                .doOnSubscribe(subscription -> log.debug("图 [{}] 流式执行开始", this.name))
+                .doOnComplete(() -> log.info("图 [{}] 流式执行完成", this.name))
+                .doOnError(error -> log.error("图 [{}] 流式执行失败", this.name, error));
     }
 
     /**

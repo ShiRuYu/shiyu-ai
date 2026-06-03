@@ -156,8 +156,7 @@ public class LlmCallNode extends BaseNode {
             output.addData(FieldKey.CONTENT, response.getContent());
             output.addData(FieldKey.PLATFORM_OUTPUT, response.getPlatform());
             output.addData(FieldKey.MODEL_OUTPUT, response.getModel());
-            output.addData(FieldKey.MESSAGES, response.getContent());
-            
+
             log.info("LLM 调用成功，平台：{}, 模型：{}", response.getPlatform(), response.getModel());
         } else {
             log.error("LLM 调用失败：{}", response.getErrorMessage());
@@ -192,6 +191,7 @@ public class LlmCallNode extends BaseNode {
         output.addData(FieldKey.MODEL_OUTPUT, request.getModel());
         output.addData(FieldKey.STREAM, true);
         output.addData(FieldKey.CHAT_TYPE, ChatType.STREAM.name());
+        output.addData("_streaming_generator", generator);
 
         log.info("LLM 流式调用完成");
         return output;

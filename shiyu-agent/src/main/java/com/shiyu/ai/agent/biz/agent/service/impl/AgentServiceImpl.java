@@ -5,10 +5,7 @@ import com.shiyu.ai.agent.biz.agent.domain.AgentVersion;
 import com.shiyu.ai.agent.biz.agent.service.AgentService;
 import com.shiyu.ai.common.core.utils.StringUtils;
 import lombok.extern.slf4j.Slf4j;
-import org.bsc.async.AsyncGenerator;
-import org.bsc.langgraph4j.CompiledGraph;
 import org.bsc.langgraph4j.GraphStateException;
-import org.bsc.langgraph4j.NodeOutput;
 import org.bsc.langgraph4j.state.AgentState;
 import org.bsc.langgraph4j.streaming.StreamingOutput;
 import org.springframework.stereotype.Service;
@@ -104,38 +101,13 @@ public class AgentServiceImpl implements AgentService {
         log.info("获取到 Agent 版本：agentId={}, version={}, compiled={}",
                 agentId, agentVersion.getVersionNumber(), agentVersion.isCompiled());
 
-        // 2. 从版本中拿到 graph 进行编译
-        CompiledGraph<AgentState> compiledGraph;
+        // 2. 通过 Graph 的 execute 方法执行
         try {
-            compiledGraph = agentVersion.getGraph().compile();
+            return agentVersion.getGraph().execute(input);
         } catch (GraphStateException e) {
-            log.error("Graph 编译失败：agentId={}, version={}", agentId,
+            log.error("Graph 执行失败：agentId={}, version={}", agentId,
                     agentVersion.getVersionNumber(), e);
-            throw new Exception("Graph 编译失败：" + e.getMessage(), e);
-        }
-
-        // 3. 执行编译后的 graph
-        try {
-            log.info("开始执行 CompiledGraph: agentId={}, version={}", agentId,
-                    agentVersion.getVersionNumber());
-
-            // 执行图并获取结果 (返回 Optional<AgentState>)
-            var resultOptional = compiledGraph.invoke(input);
-
-            // 从 Optional 中获取结果
-            var result = resultOptional.orElseThrow(() ->
-                    new IllegalStateException("Agent 执行返回空结果：" + agentId));
-
-            log.info("Agent 执行完成：agentId={}, version={}", agentId,
-                    agentVersion.getVersionNumber());
-
-            // 返回结果数据
-            return result.data();
-
-        } catch (Exception e) {
-            log.error("Agent 执行失败：agentId={}, version={}", agentId,
-                    agentVersion.getVersionNumber(), e);
-            throw new Exception("Agent 执行失败：" + e.getMessage(), e);
+            throw new Exception("Graph 执行失败：" + e.getMessage(), e);
         }
     }
 
@@ -146,7 +118,7 @@ public class AgentServiceImpl implements AgentService {
 
     @Override
     public Flux<Map<String, Object>> executeStream(String agentId, String version, Map<String, Object> input) throws Exception {
-        log.info("开始执行 Agent：agentId={}, version={}, inputSize={}",
+        log.info("开始流式执行 Agent：agentId={}, version={}, inputSize={}",
                 agentId, version, input != null ? input.size() : 0);
 
         // 1. 从 Agent 定义中获取版本
@@ -164,29 +136,15 @@ public class AgentServiceImpl implements AgentService {
         log.info("获取到 Agent 版本：agentId={}, version={}, compiled={}",
                 agentId, agentVersion.getVersionNumber(), agentVersion.isCompiled());
 
-        // 2. 从版本中拿到 graph 进行编译
-        CompiledGraph<AgentState> compiledGraph;
-        try {
-            compiledGraph = agentVersion.getGraph().compile();
-        } catch (GraphStateException e) {
-            log.error("Graph 编译失败：agentId={}, version={}", agentId,
-                    agentVersion.getVersionNumber(), e);
-            throw new Exception("Graph 编译失败：" + e.getMessage(), e);
-        }
-
-        AsyncGenerator<NodeOutput<AgentState>> outputs = compiledGraph.stream(input);
-
-        // 将 outputs 转换为 Flux，过滤 StreamingOutput 逐 token 输出
-        Flux<Map<String, Object>> flux = Flux.fromStream(outputs.stream())
+        // 2. 通过 Graph 的 executeStream 方法获取流式数据，过滤 StreamingOutput 逐 token 输出
+        return agentVersion.getGraph().executeStream(input)
                 .filter(output -> output instanceof StreamingOutput<AgentState>)
                 .map(output -> ((StreamingOutput<AgentState>) output).chunk())
                 .filter(StringUtils::isNotEmpty)
-                .map(chunk -> Map.<String, Object>of("content", chunk));
-
-        log.info("Agent 流式执行完成：agentId={}, version={}", agentId,
-                agentVersion.getVersionNumber());
-
-        return flux;
+                .map(chunk -> Map.<String, Object>of("content", chunk))
+                .doOnNext(chunk -> log.trace("Graph 流式输出 token：agentId={}, content={}", agentId, chunk.get("content")))
+                .doOnComplete(() -> log.info("Graph 流式执行完成：agentId={}", agentId))
+                .doOnError(e -> log.error("Graph 流式执行错误：agentId={}, error={}", agentId, e.getMessage()));
     }
 
     @Override

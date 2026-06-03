@@ -6,7 +6,7 @@
     <!--定义属性，在下方方便维护引用-->
     <properties>
         <!--项目名-->
-        <property name="project">shiyu-chat</property>
+        <property name="project">shiyu-auth</property>
         <!--当天文件保存目录-->
         <property name="logDir">./.logs</property>
         <!--历史文件保存目录-->
@@ -17,6 +17,8 @@
         <property name="fileCount">30</property>
         <!--输出格式-->
         <property name="logPattern">%d{yyyy-MM-dd HH:mm:ss.SSS} => [%thread] => [%X{traceId},%X{spanId}] %-5level %logger{50}:(%line) - %msg%n</property>
+        <!-- Log level from Spring Boot logging.level.root (set via Maven profile) -->
+        <property name="appLogLevel">${spring:logging.level.root:-INFO}</property>
     </properties>
 
     <!--先定义所有的 appender 附加器-->
@@ -24,7 +26,7 @@
         <!--控制台输出配置-->
         <console name="Console" target="SYSTEM_OUT">
             <filters>
-                <ThresholdFilter level="INFO" onMatch="ACCEPT" onMismatch="DENY"/>
+                <ThresholdFilter level="${appLogLevel}" onMatch="ACCEPT" onMismatch="DENY"/>
             </filters>
             <!--输出日志的格式
                 %d表示日期时间，
@@ -122,33 +124,29 @@
     2、任何一个类只会和一个logger对应，要么是定义的logger，要么是root，判断的关键在于找到这个logger，然后判断这个logger的appender和level。
     3、appender-ref 用于引用上面定义好的 appender 日志追加器，只有引用了，上面的 appender 才能生效. -->
     <loggers>
-        <logger name="COMMON_LOGGER" level="DEBUG" additivity="true">
+        <logger name="COMMON_LOGGER" level="${spring:logging.level.root:-INFO}" additivity="true">
             <appender-ref ref="fileDebug" />
             <appender-ref ref="fileInfo" />
             <appender-ref ref="fileWarn" />
             <appender-ref ref="fileError" />
         </logger>
 
-        <logger name="WEB_LOGGER" level="DEBUG" additivity="true">
+        <logger name="WEB_LOGGER" level="${spring:logging.level.root:-INFO}" additivity="true">
             <appender-ref ref="fileDebug" />
             <appender-ref ref="fileInfo" />
             <appender-ref ref="fileWarn" />
             <appender-ref ref="fileError" />
             <appender-ref ref="webInfo" />
         </logger>
-
-        <!--以下包中ERROR级别以上日志在root中将被记录-->
-        <logger name="org.springframework.ai.vectorstore.SimpleVectorStore" level="ERROR"/>
-
         <!--com.shiyu包中的DEBUG以上信息在以下的appender中输出，additivity所有日志还要向控制台和allLog中输出-->
-        <logger name="com.shiyu" level="DEBUG" additivity="true">
+        <logger name="com.shiyu" level="${spring:logging.level.com.shiyu:-DEBUG}" additivity="true">
             <appender-ref ref="fileDebug" />
             <appender-ref ref="fileInfo" />
             <appender-ref ref="fileWarn" />
             <appender-ref ref="fileError" />
         </logger>
 
-        <root level="INFO">
+        <root level="${spring:logging.level.root:-INFO}">
             <appender-ref ref="Console" />
         </root>
     </loggers>

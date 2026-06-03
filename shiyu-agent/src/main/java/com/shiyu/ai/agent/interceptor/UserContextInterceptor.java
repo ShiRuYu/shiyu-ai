@@ -5,6 +5,7 @@ import com.shiyu.ai.common.core.domain.LoginContextHolder;
 import com.shiyu.ai.common.core.domain.LoginUser;
 import com.shiyu.ai.common.core.enums.DeviceTypeEnum;
 import com.shiyu.ai.common.core.enums.UserTypeEnum;
+import jakarta.servlet.DispatcherType;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import lombok.extern.slf4j.Slf4j;
@@ -25,6 +26,11 @@ public class UserContextInterceptor implements HandlerInterceptor {
     public boolean preHandle(HttpServletRequest request, @NonNull HttpServletResponse response, @NonNull Object handler) throws Exception {
         // OPTIONS 请求直接放行（CORS 预检）
         if ("OPTIONS".equalsIgnoreCase(request.getMethod())) {
+            return true;
+        }
+
+        // 异步派发（如 SSE）不重新设置上下文，避免覆盖控制器线程已设置的值
+        if (request.getDispatcherType() == DispatcherType.ASYNC) {
             return true;
         }
 

@@ -9,6 +9,20 @@ server:
   # 服务器的HTTP端口，默认为8080
   port: 9001
 
+# Logging levels (package hierarchy)
+logging:
+  level:
+    # Project packages - use Maven profile level
+    root: warn
+    com.shiyu: @logging.level@
+    # Third-party frameworks - fixed levels
+    org.springframework: warn
+    org.springframework.ai: warn
+    org.mybatis: warn
+    org.apache: error
+    com.zaxxer: error
+    springfox.documentation: error
+    org.hibernate: error
 springdoc:
   api-docs:
     enabled: true               # 是否启用 API 文档

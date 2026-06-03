@@ -8,6 +8,12 @@ server:
   # 服务器的HTTP端口，默认为8080
   port: 9000
 
+# Logging levels (package hierarchy)
+logging:
+  level:
+    # Project packages - use Maven profile level
+    root: info
+    com.shiyu: @logging.level@
 springdoc:
   api-docs:
     enabled: true               # 是否启用 API 文档
