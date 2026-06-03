@@ -75,11 +75,9 @@ public class IntentDefinition {
     @Builder.Default
     private Boolean requireSlotFilling = false;
     
-    /**
-     * 关联的子链名称
-     */
+    /** 路由目标节点 ID（识别后路由到哪个节点） */
     @Builder.Default
-    private String chainToCall = "chatDirect";
+    private String targetNode = "";
     
     /**
      * 是否启用（默认 true）

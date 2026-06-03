@@ -1,4 +1,4 @@
-package com.shiyu.ai.agent.langgraph4j.node.transform;
+﻿package com.shiyu.ai.agent.langgraph4j.node.transform;
 
 import com.shiyu.ai.agent.langgraph4j.node.BaseNode;
 import com.shiyu.ai.agent.langgraph4j.node.NodeInput;
@@ -86,7 +86,7 @@ public class TransformNode extends BaseNode {
             String inputData = getInputData(input);
             
             // 2. 根据转换类型执行转换
-            Object result = transformData(inputData, config.getTransformType());
+            Object result = transformData(inputData, input.getParameter("transformType", config.getTransformType()));
             
             // 3. 构建输出结果
             NodeOutput output = new NodeOutput();

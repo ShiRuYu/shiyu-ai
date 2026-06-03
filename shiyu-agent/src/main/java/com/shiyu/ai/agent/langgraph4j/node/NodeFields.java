@@ -1,4 +1,4 @@
-package com.shiyu.ai.agent.langgraph4j.node;
+﻿package com.shiyu.ai.agent.langgraph4j.node;
 
 import java.util.Set;
 
@@ -6,20 +6,10 @@ import java.util.Set;
  * 节点字段 Schema 接口
  * <p>
  * 每个节点类型对应一个枚举实现，定义该节点在 AgentState/NodeInput/NodeOutput
- * 中读写的所有字段键。集中管理避免了魔法字符串散落在各节点实现中。
+ * 中读写の所有字段键。集中管理避免了魔法字符串散落在各节点实现中。
  * <p>
- * 使用示例：
- * <pre>{@code
- * // 校验输入是否齐全
- * NodeFields fields = NodeFields.forType(nodeType);
- * for (NodeFields.FieldKey key : fields.inputFields()) {
- *     if (!input.hasParameter(key.key())) {
- *         throw new IllegalArgumentException("缺少必需输入字段: " + key);
- *     }
- * }
- * }</pre>
+ * 当新增节点或修改节点输入/输出时，必须同步更新此处对应的字段定义。
  *
- * @author shiyu-ai
  * @see NodeType
  * @see NodeInput
  * @see NodeOutput
@@ -40,180 +30,111 @@ public interface NodeFields {
 
     /**
      * 全局统一字段键，集中管理所有节点在 Map 中使用的字段名。
-     * <p>
      * 每个枚举值包含一个 {@link #key()} 字符串，即实际在 Map 中使用的键。
      * 所有节点统一引用此枚举，避免拼写错误和字段名不一致。
      */
     enum FieldKey {
         // ==================== 输入字段 ====================
 
-        /**
-         * 用户的原始输入文本
-         */
+        /** 用户的原始输入文本 */
         USER_INPUT("userInput"),
-        /**
-         * 查询文本（语义同 USER_INPUT，用于不同的上下文）
-         */
+        /** 查询文本（语义同 USER_INPUT，用于不同的上下文） */
         QUERY("query"),
-        /**
-         * 拼接好的 Prompt 文本
-         */
+        /** 拼接好的 Prompt 文本 */
         PROMPT("prompt"),
-        /**
-         * 平台/提供商（如 SILICON_FLOW, OLLAMA）
-         */
+        /** 平台/提供商（如 SILICON_FLOW, OLLAMA） */
         PLATFORM("platform"),
-        /**
-         * 模型名称
-         */
+        /** 模型名称 */
         MODEL("model"),
-        /**
-         * 聊天类型（SYNC / STREAM）
-         */
+        /** 聊天类型（SYNC / STREAM） */
         CHAT_TYPE("chatType"),
-        /**
-         * 工具名称
-         */
+        /** 工具名称 */
         TOOL_NAME("toolName"),
-        /**
-         * 工具类型
-         */
+        /** 工具类型 */
         TOOL_TYPE("toolType"),
-        /**
-         * 知识库 ID
-         */
+        /** 知识库 ID */
         KNOWLEDGE_BASE_ID("knowledgeBaseId"),
-        /**
-         * 记忆检索范围
-         */
+        /** 记忆检索范围 */
         RETRIEVAL_SCOPE("retrievalScope"),
-        /**
-         * Top-K 检索数量
-         */
+        /** Top-K 检索数量 */
         TOP_K("topK"),
-        /**
-         * 相似度阈值
-         */
+        /** 相似度阈值 */
         SIMILARITY_THRESHOLD("similarityThreshold"),
-        /**
-         * 输入数据（通用）
-         */
+        /** 输入数据（通用） */
         INPUT("input"),
-        /**
-         * 数据内容（通用）
-         */
+        /** 数据内容（通用） */
         DATA("data"),
-        /**
-         * 文本内容
-         */
+        /** 文本内容 */
         TEXT("text"),
-        /**
-         * 响应内容
-         */
+        /** 响应内容 */
         RESPONSE("response"),
-        /**
-         * 结果内容
-         */
+        /** 结果内容 */
         RESULT("result"),
-        /**
-         * 输出内容（通用）
-         */
+        /** 输出内容（通用） */
         OUTPUT("output"),
-        /**
-         * 答案文本
-         */
+        /** 答案文本 */
         ANSWER("answer"),
 
         // ==================== 输出字段 ====================
 
-        /**
-         * 识别到的意图代码
-         */
+        /** 识别到的意图代码 */
         INTENT_CODE("intentCode"),
-        /**
-         * 意图名称
-         */
+        /** 意图名称 */
         INTENT_NAME("intentName"),
-        /**
-         * 置信度
-         */
+        /** 置信度 */
         CONFIDENCE("confidence"),
-        /**
-         * 意图槽位映射
-         */
+        /** 意图槽位映射 */
         SLOTS("slots"),
-        /**
-         * 下一个要执行的节点 ID
-         */
+        /** 下一个要执行的节点 ID */
         NEXT_NODE("nextNode"),
-        /**
-         * 检索到的文档列表
-         */
+        /** 检索到的文档列表 */
         DOCUMENTS("documents"),
-        /**
-         * 文档数量
-         */
+        /** 文档数量 */
         DOCUMENT_COUNT("documentCount"),
-        /**
-         * 上下文文本（RAG / 记忆的上下文拼接结果）
-         */
+        /** 上下文文本（RAG / 记忆的上下文拼接结果） */
         CONTEXT("context"),
-        /**
-         * 记忆条目列表
-         */
+        /** 记忆条目列表 */
         MEMORIES("memories"),
-        /**
-         * 记忆数量
-         */
+        /** 记忆数量 */
         MEMORY_COUNT("memoryCount"),
-        /**
-         * 记忆上下文拼接文本
-         */
+        /** 记忆上下文拼接文本 */
         MEMORY_CONTEXT("memoryContext"),
-        /**
-         * 工具执行结果
-         */
+        /** 工具执行结果 */
         TOOL_RESULT("toolResult"),
-        /**
-         * 条件判断结果布尔值
-         */
+        /** 条件判断结果布尔值 */
         CONDITION_RESULT("conditionResult"),
-        /**
-         * 条件分支标识（"true"/"false"）
-         */
+        /** 条件分支标识（"true"/"false"） */
         BRANCH("branch"),
-        /**
-         * 格式化后的输出内容
-         */
+        /** 格式化后的输出内容 */
         FORMATTED_CONTENT("formattedContent"),
-        /**
-         * 转换后的数据
-         */
+        /** 转换后的数据 */
         TRANSFORMED_DATA("transformedData"),
-        /**
-         * LLM 流式生成器对象
-         */
+        /** LLM 流式生成器对象 */
         STREAMING_CHAT_GENERATOR("streamingChatGenerator"),
-        /**
-         * 是否流式
-         */
+        /** 是否流式 */
         STREAM("stream"),
-        /**
-         * 使用的平台（输出）
-         */
+        /** 使用的平台（输出） */
         PLATFORM_OUTPUT("platform"),
-        /**
-         * 使用的模型（输出）
-         */
+        /** 使用的模型（输出） */
         MODEL_OUTPUT("model"),
-        /**
-         * 生成的文本内容（输出）
-         */
+        /** 生成的文本内容（输出） */
         CONTENT("content"),
-        /**
-         * 消息列表（输出/输入）
-         */
-        MESSAGES("messages");
+        /** 消息列表（输出/输入） */
+        MESSAGES("messages"),
+
+        // ==================== RAG 增强节点专属 ====================
+
+        /** 增强后的文档列表 */
+        ENHANCED_DOCUMENTS("enhanced_documents"),
+        /** 增强后的文档数量 */
+        ENHANCED_COUNT("enhanced_count"),
+        /** 使用的增强策略名称 */
+        ENHANCEMENT_STRATEGY("enhancement_strategy"),
+
+        // ==================== 工具调用节点专属 ====================
+
+        /** 缓存命中标记 */
+        CACHE_HIT("cache_hit");
 
         private final String key;
 
@@ -263,8 +184,8 @@ public interface NodeFields {
     /**
      * 意图识别节点
      * <p>
-     * 输入：userInput / query
-     * 输出：intentCode, intentName, confidence, slots, nextNode
+     * 输入: userInput / query
+     * 输出: intentCode, intentName, confidence, slots, nextNode
      */
     enum IntentFields implements NodeFields {
         INSTANCE;
@@ -289,8 +210,8 @@ public interface NodeFields {
     /**
      * LLM 调用节点
      * <p>
-     * 输入：prompt / query / userInput, platform, model, chatType
-     * 输出：content, platform, model, messages, streamingChatGenerator, stream, chatType
+     * 输入: prompt / query / userInput, platform, model, chatType
+     * 输出: content, platform, model, messages, streamingChatGenerator, stream, chatType
      */
     enum LlmCallFields implements NodeFields {
         INSTANCE;
@@ -324,28 +245,33 @@ public interface NodeFields {
     /**
      * 工具调用节点
      * <p>
-     * 输入：toolName
-     * 输出：toolName, toolResult
+     * 输入: toolName, toolResult（前序工具的结果，用于工具链）
+     * 输出: toolName, toolResult, text, cacheHit
      */
     enum ToolCallFields implements NodeFields {
         INSTANCE;
 
         @Override
         public Set<FieldKey> inputFields() {
-            return Set.of(FieldKey.TOOL_NAME);
+            return Set.of(FieldKey.TOOL_NAME, FieldKey.TOOL_RESULT);
         }
 
         @Override
         public Set<FieldKey> outputFields() {
-            return Set.of(FieldKey.TOOL_NAME, FieldKey.TOOL_RESULT);
+            return Set.of(
+                    FieldKey.TOOL_NAME,
+                    FieldKey.TOOL_RESULT,
+                    FieldKey.TEXT,
+                    FieldKey.CACHE_HIT
+            );
         }
     }
 
     /**
      * RAG 检索节点
      * <p>
-     * 输入：query / userInput, knowledgeBaseId
-     * 输出：documents, documentCount, context
+     * 输入: query / userInput, knowledgeBaseId
+     * 输出: documents, documentCount, context
      */
     enum RagRetrievalFields implements NodeFields {
         INSTANCE;
@@ -372,8 +298,8 @@ public interface NodeFields {
     /**
      * RAG 增强节点
      * <p>
-     * 输入：documents, context（来自上一个 RAG 检索节点）
-     * 输出：（无特殊输出字段）
+     * 输入: documents, context（来自上一个 RAG 检索节点）
+     * 输出: context, enhancedDocuments, enhancedCount, enhancementStrategy
      */
     enum RagEnhancementFields implements NodeFields {
         INSTANCE;
@@ -385,7 +311,12 @@ public interface NodeFields {
 
         @Override
         public Set<FieldKey> outputFields() {
-            return Set.of();
+            return Set.of(
+                    FieldKey.CONTEXT,
+                    FieldKey.ENHANCED_DOCUMENTS,
+                    FieldKey.ENHANCED_COUNT,
+                    FieldKey.ENHANCEMENT_STRATEGY
+            );
         }
     }
 
@@ -393,7 +324,6 @@ public interface NodeFields {
      * 短期记忆节点
      * <p>
      * 存储和管理最近的对话历史
-     * 输入/输出：（无特殊 map 字段，操作独立存储）
      */
     enum ShortTermMemoryFields implements NodeFields {
         INSTANCE;
@@ -413,7 +343,6 @@ public interface NodeFields {
      * 长期记忆节点
      * <p>
      * 存储和管理重要信息和知识点
-     * 输入/输出：（无特殊 map 字段，操作独立存储）
      */
     enum LongTermMemoryFields implements NodeFields {
         INSTANCE;
@@ -432,8 +361,8 @@ public interface NodeFields {
     /**
      * 记忆检索节点
      * <p>
-     * 输入：query / userInput, retrievalScope, topK, similarityThreshold
-     * 输出：memories, memoryCount, memoryContext
+     * 输入: query / userInput, retrievalScope, topK, similarityThreshold
+     * 输出: memories, memoryCount, memoryContext
      */
     enum MemoryRetrievalFields implements NodeFields {
         INSTANCE;
@@ -462,8 +391,8 @@ public interface NodeFields {
     /**
      * 条件判断节点
      * <p>
-     * 输入：根据 conditionExpression 动态读取任意字段 + intentCode（INTENT 模式）
-     * 输出：conditionResult, nextNode, branch
+     * 输入: 根据 conditionExpression 动态读取任意字段 + intentCode（INTENT 模式）
+     * 输出: conditionResult, nextNode, branch
      */
     enum ConditionFields implements NodeFields {
         INSTANCE;
@@ -487,8 +416,8 @@ public interface NodeFields {
     /**
      * 数据转换节点
      * <p>
-     * 输入：input / data / content / text / query / userInput
-     * 输出：transformedData, messages
+     * 输入: input / data / content / text / query / userInput
+     * 输出: transformedData, messages
      */
     enum TransformFields implements NodeFields {
         INSTANCE;
@@ -517,8 +446,8 @@ public interface NodeFields {
     /**
      * 输出格式化节点
      * <p>
-     * 输入：content / response / result / output / answer / messages
-     * 输出：formattedContent, messages
+     * 输入: content / response / result / output / answer / messages
+     * 输出: formattedContent, messages
      */
     enum OutputFormatFields implements NodeFields {
         INSTANCE;

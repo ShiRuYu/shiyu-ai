@@ -2,6 +2,7 @@ package com.shiyu.ai.agent.langgraph4j.node.output;
 
 import com.shiyu.ai.agent.langgraph4j.node.NodeConfig;
 import lombok.Data;
+import lombok.experimental.SuperBuilder;
 import lombok.EqualsAndHashCode;
 
 /**
@@ -12,6 +13,7 @@ import lombok.EqualsAndHashCode;
  * @date 2026-03-28
  */
 @Data
+@SuperBuilder
 @EqualsAndHashCode(callSuper = true)
 public class OutputFormatConfig extends NodeConfig {
     

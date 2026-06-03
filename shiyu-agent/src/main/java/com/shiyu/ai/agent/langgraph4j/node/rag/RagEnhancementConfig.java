@@ -2,16 +2,22 @@ package com.shiyu.ai.agent.langgraph4j.node.rag;
 
 import com.shiyu.ai.agent.langgraph4j.node.NodeConfig;
 import lombok.Data;
+import lombok.experimental.SuperBuilder;
 import lombok.EqualsAndHashCode;
 
 /**
- * RAG 增强节点配置类
- * 用于对检索结果进行增强处理
- *
- * @author shiyu-ai
- * @date 2026-03-28
+ * RAG 增强节点配置
+ * <p>
+ * 配置增强策略、上下文窗口、过滤阈值等参数。
+ * 支持策略:
+ * <ul>
+ *   <li>SUMMARIZATION — 摘要合并（默认）</li>
+ *   <li>RE_RANK — 按分数重排序</li>
+ *   <li>FILTER — 按相似度阈值过滤</li>
+ * </ul>
  */
 @Data
+@SuperBuilder
 @EqualsAndHashCode(callSuper = true)
 public class RagEnhancementConfig extends NodeConfig {
     
@@ -26,7 +32,7 @@ public class RagEnhancementConfig extends NodeConfig {
     private Boolean addContext = true;
     
     /**
-     * 上下文窗口大小（默认 3）
+     * 上下文窗口大小（默认 3，用于 RE_RANK 和 SUMMARIZATION）
      */
     private Integer contextWindowSize = 3;
     
@@ -34,4 +40,9 @@ public class RagEnhancementConfig extends NodeConfig {
      * 最大文本长度（默认 2000）
      */
     private Integer maxLength = 2000;
+    
+    /**
+     * 相似度阈值（默认 0.5，用于 FILTER 策略）
+     */
+    private Double similarityThreshold = 0.5;
 }

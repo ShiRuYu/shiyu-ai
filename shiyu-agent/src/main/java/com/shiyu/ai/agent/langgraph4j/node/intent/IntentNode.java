@@ -136,9 +136,8 @@ public class IntentNode extends BaseNode {
 
             // 5. 如果识别成功，将意图代码添加到状态中供条件边使用
             if (result.success()) {
-                output.addData(FieldKey.NEXT_NODE, getResultIntentKey(result.intentCode()));
-                log.info("意图识别成功：code={}, name={}, confidence={}", 
-                        result.intentCode(), result.intentName(), result.confidence());
+                String nextNode = resolvetargetNode(result.intentCode());
+                output.addData(FieldKey.NEXT_NODE, nextNode);
             } else {
                 log.warn("意图识别失败或置信度不足：{}", result.errorMessage());
             }
@@ -164,17 +163,37 @@ public class IntentNode extends BaseNode {
         if (config.getSupportedIntents() != null && config.getSupportedIntents().length > 0) {
             return List.of(config.getSupportedIntents());
         }
-        return null;
+        return List.of();
     }
     
     /**
-     * 获取结果意图键（用于条件边路由）
-     * @param intentCode 意图代码
-     * @return 意图键
+     * 解析 targetNode 路由目标
+     * <p>
+     * 从配置的 supportedIntents 中查找匹配的 IntentDefinition，
+     * 使用其 targetNode 字段作为条件边的路由目标节点 ID。
+     * 如果未找到匹配项或 targetNode 为空，则回退到 intentCode。
+     *
+     * @param intentCode 识别的意图代码
+     * @return 路由目标节点 ID
      */
-    private String getResultIntentKey(String intentCode) {
-        // 返回意图代码本身，用于条件边的映射
-        return intentCode != null ? intentCode : "UNKNOWN";
+    private String resolvetargetNode(String intentCode) {
+        if (intentCode == null) {
+            return "UNKNOWN";
+        }
+        IntentDefinition[] supportedIntents = config.getSupportedIntents();
+        if (supportedIntents != null) {
+            for (IntentDefinition def : supportedIntents) {
+                if (intentCode.equals(def.getCode())) {
+                    String chainTo = def.getTargetNode();
+                    if (chainTo != null && !chainTo.trim().isEmpty()) {
+                        log.debug("意图 {} 匹配 targetNode: {}", intentCode, chainTo);
+                        return chainTo;
+                    }
+                    break;
+                }
+            }
+        }
+        // 未配置 targetNode，回退到 intentCode
+        return intentCode;
     }
-
 }

@@ -1,4 +1,4 @@
-package com.shiyu.ai.agent.langgraph4j.node.rag;
+﻿package com.shiyu.ai.agent.langgraph4j.node.rag;
 
 import com.shiyu.ai.agent.langgraph4j.node.BaseNode;
 import com.shiyu.ai.agent.langgraph4j.node.NodeInput;
@@ -113,7 +113,7 @@ public class RagRetrievalNode extends BaseNode {
             
             // 2. 调用 RAG 检索服务
             String knowledgeBaseId = getKnowledgeBaseId(input);
-            int topK = config.getTopK() != null ? config.getTopK() : 5;
+            int topK = input.getParameter(FieldKey.TOP_K, config.getTopK() != null ? config.getTopK() : 5);
             
             RagService.RagRetrievalResult result = 
                     ragService.retrieve(query, knowledgeBaseId, topK);

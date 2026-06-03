@@ -1,4 +1,4 @@
-package com.shiyu.ai.agent.langgraph4j.node.condition;
+﻿package com.shiyu.ai.agent.langgraph4j.node.condition;
 
 import com.shiyu.ai.agent.langgraph4j.node.BaseNode;
 import com.shiyu.ai.agent.langgraph4j.node.NodeInput;
@@ -75,8 +75,8 @@ public class ConditionNode extends BaseNode {
         
         try {
             // 1. 获取条件表达式
-            String conditionExpression = config.getConditionExpression();
-            String conditionType = config.getConditionType() != null ? config.getConditionType() : "EXPRESSION";
+            String conditionExpression = input.getParameter("conditionExpression", config.getConditionExpression());
+            String conditionType = input.getParameter("conditionType", config.getConditionType() != null ? config.getConditionType() : "EXPRESSION");
             
             // 2. 执行条件判断
             boolean result = evaluateCondition(input, conditionType, conditionExpression);
@@ -88,7 +88,7 @@ public class ConditionNode extends BaseNode {
             output.addData(FieldKey.CONDITION_RESULT, result);
 
             // 4. 根据结果设置下一个分支
-            String nextBranch = result ? config.getTrueBranch() : config.getDefaultBranch();
+            String nextBranch = result ? input.getParameter("trueBranch", config.getTrueBranch()) : input.getParameter("defaultBranch", config.getDefaultBranch());
             output.addData(FieldKey.NEXT_NODE, nextBranch);
             output.addData(FieldKey.BRANCH, result ? "true" : "false");
             
