@@ -25,9 +25,6 @@
     <appenders>
         <!--控制台输出配置-->
         <console name="Console" target="SYSTEM_OUT">
-            <filters>
-                <ThresholdFilter level="${appLogLevel}" onMatch="ACCEPT" onMismatch="DENY"/>
-            </filters>
             <!--输出日志的格式
                 %d表示日期时间，
                 %thread表示线程名，
