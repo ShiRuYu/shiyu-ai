@@ -1,9 +1,11 @@
 package com.shiyu.ai.agent.langgraph4j.node.rag;
 
 import com.shiyu.ai.agent.langgraph4j.node.NodeConfig;
+import lombok.AllArgsConstructor;
 import lombok.Data;
-import lombok.experimental.SuperBuilder;
 import lombok.EqualsAndHashCode;
+import lombok.NoArgsConstructor;
+import lombok.experimental.SuperBuilder;
 
 /**
  * RAG 增强节点配置
@@ -18,6 +20,8 @@ import lombok.EqualsAndHashCode;
  */
 @Data
 @SuperBuilder
+@NoArgsConstructor
+@AllArgsConstructor
 @EqualsAndHashCode(callSuper = true)
 public class RagEnhancementConfig extends NodeConfig {
     

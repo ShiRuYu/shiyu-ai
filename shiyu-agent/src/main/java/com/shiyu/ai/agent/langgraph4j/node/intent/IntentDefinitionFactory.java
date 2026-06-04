@@ -12,7 +12,7 @@ import java.util.stream.Collectors;
  * @author shiyu-ai
  * @date 2026-03-28
  */
-public class IntentDefinitions {
+public class IntentDefinitionFactory {
     
     /**
      * 获取所有预定义的意图定义
@@ -49,7 +49,7 @@ public class IntentDefinitions {
                         "你在干什么",
                         "聊聊天吧"
                 })
-                .chainToCall("chatDirect")
+                .targetNode("chatDirect")
                 .enabled(true)
                 .build();
     }
@@ -74,7 +74,7 @@ public class IntentDefinitions {
                         "地球有多大",
                         "谁发明了电灯"
                 })
-                .chainToCall("chatWithRag")
+                .targetNode("chatWithRag")
                 .enabled(true)
                 .build();
     }
@@ -100,7 +100,7 @@ public class IntentDefinitions {
                         "预约明天的会议"
                 })
                 .requireSlotFilling(true)
-                .chainToCall("chatWithTool")
+                .targetNode("chatWithTool")
                 .enabled(true)
                 .build();
     }
@@ -125,7 +125,7 @@ public class IntentDefinitions {
                         "查找联系人信息",
                         "查看账户余额"
                 })
-                .chainToCall("chatWithSearch")
+                .targetNode("chatWithSearch")
                 .enabled(true)
                 .build();
     }
@@ -155,7 +155,7 @@ public class IntentDefinitions {
                                 "codeSnippet", "代码片段"
                         ))
                 .requireSlotFilling(false)
-                .chainToCall("chatWithCode")
+                .targetNode("chatWithCode")
                 .enabled(true)
                 .build();
         

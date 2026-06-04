@@ -1,8 +1,11 @@
 package com.shiyu.ai.agent.langgraph4j.node.condition;
 
 import com.shiyu.ai.agent.langgraph4j.node.NodeConfig;
+import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
+import lombok.NoArgsConstructor;
+import lombok.experimental.SuperBuilder;
 
 /**
  * 条件判断节点配置类
@@ -12,6 +15,9 @@ import lombok.EqualsAndHashCode;
  * @date 2026-03-28
  */
 @Data
+@SuperBuilder
+@NoArgsConstructor
+@AllArgsConstructor
 @EqualsAndHashCode(callSuper = true)
 public class ConditionConfig extends NodeConfig {
     

@@ -14,6 +14,7 @@ import com.shiyu.ai.agent.langgraph4j.node.tool.ToolCallConfig;
 import com.shiyu.ai.agent.langgraph4j.node.intent.IntentNode;
 import com.shiyu.ai.agent.langgraph4j.node.intent.IntentConfig;
 import com.shiyu.ai.agent.langgraph4j.node.intent.IntentDefinition;
+import com.shiyu.ai.agent.langgraph4j.node.intent.IntentDefinitionFactory;
 import com.shiyu.ai.agent.langgraph4j.node.intent.IntentType;
 import com.shiyu.ai.agent.langgraph4j.node.output.OutputFormatNode;
 import com.shiyu.ai.agent.langgraph4j.node.output.OutputFormatConfig;
@@ -180,31 +181,29 @@ public class AgentStartupConfig implements ApplicationRunner {
             // --- 意图识别节点 ---
             IntentConfig intentConfig = new IntentConfig();
             intentConfig.setNodeName("意图识别");
+
+            IntentDefinition chitChat = IntentDefinitionFactory.createChitChatDefinition();
+            chitChat.setTargetNode("llm_chat");
+
+            IntentDefinition query = IntentDefinitionFactory.createQueryDefinition();
+            query.setName("知识查询");
+            query.setDescription("查询知识库信息");
+            query.setExamples(new String[]{"什么是RAG", "Shiyu AI 是什么"});
+            query.setTargetNode("chat_rag");
+
+            IntentDefinition task = IntentDefinitionFactory.createTaskDefinition();
+            task.setExamples(new String[]{"查询北京天气", "计算 1+2*3"});
+            task.setTargetNode("tool_execute");
+
+            IntentDefinition weather = IntentDefinition.builder()
+                    .code(IntentType.WEATHER.getCode()).name("天气查询")
+                    .description("查询天气信息")
+                    .examples(new String[]{"北京天气怎么样", "上海今天冷吗"})
+                    .targetNode("tool_execute")
+                    .build();
+
             intentConfig.setSupportedIntents(new IntentDefinition[]{
-                    IntentDefinition.builder()
-                            .code(IntentType.CHITCHAT.getCode()).name("闲聊")
-                            .description("日常闲聊")
-                            .examples(new String[]{"你好", "今天天气不错"})
-                            .targetNode("llm_chat")
-                            .build(),
-                    IntentDefinition.builder()
-                            .code(IntentType.QUERY.getCode()).name("知识查询")
-                            .description("查询知识库信息")
-                            .examples(new String[]{"什么是RAG", "Shiyu AI 是什么"})
-                            .targetNode("chat_rag")
-                            .build(),
-                    IntentDefinition.builder()
-                            .code(IntentType.TASK.getCode()).name("任务执行")
-                            .description("调用工具执行任务")
-                            .examples(new String[]{"查询北京天气", "计算 1+2*3"})
-                            .targetNode("tool_execute")
-                            .build(),
-                    IntentDefinition.builder()
-                            .code(IntentType.WEATHER.getCode()).name("天气查询")
-                            .description("查询天气信息")
-                            .examples(new String[]{"北京天气怎么样", "上海今天冷吗"})
-                            .targetNode("tool_execute")
-                            .build()
+                    chitChat, query, task, weather
             });
 
             IntentNode intentNode = IntentNode.builder()

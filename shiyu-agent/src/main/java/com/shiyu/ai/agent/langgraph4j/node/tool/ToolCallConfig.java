@@ -1,9 +1,11 @@
 package com.shiyu.ai.agent.langgraph4j.node.tool;
 
 import com.shiyu.ai.agent.langgraph4j.node.NodeConfig;
+import lombok.AllArgsConstructor;
 import lombok.Data;
-import lombok.experimental.SuperBuilder;
 import lombok.EqualsAndHashCode;
+import lombok.NoArgsConstructor;
+import lombok.experimental.SuperBuilder;
 
 /**
  * 工具调用节点配置类
@@ -14,6 +16,8 @@ import lombok.EqualsAndHashCode;
  */
 @Data
 @SuperBuilder
+@NoArgsConstructor
+@AllArgsConstructor
 @EqualsAndHashCode(callSuper = true)
 public class ToolCallConfig extends NodeConfig {
     

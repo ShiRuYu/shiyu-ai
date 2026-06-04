@@ -1,4 +1,4 @@
-﻿package com.shiyu.ai.agent.langgraph4j.node.rag;
+package com.shiyu.ai.agent.langgraph4j.node.rag;
 
 import com.shiyu.ai.agent.langgraph4j.node.BaseNode;
 import com.shiyu.ai.agent.langgraph4j.node.NodeInput;

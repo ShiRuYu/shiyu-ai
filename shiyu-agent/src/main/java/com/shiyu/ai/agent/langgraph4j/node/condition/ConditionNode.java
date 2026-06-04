@@ -1,4 +1,4 @@
-﻿package com.shiyu.ai.agent.langgraph4j.node.condition;
+package com.shiyu.ai.agent.langgraph4j.node.condition;
 
 import com.shiyu.ai.agent.langgraph4j.node.BaseNode;
 import com.shiyu.ai.agent.langgraph4j.node.NodeInput;

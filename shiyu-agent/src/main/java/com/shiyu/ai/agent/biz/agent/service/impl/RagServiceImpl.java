@@ -1,4 +1,4 @@
-﻿package com.shiyu.ai.agent.biz.agent.service.impl;
+package com.shiyu.ai.agent.biz.agent.service.impl;
 
 import com.shiyu.ai.agent.biz.agent.service.RagService;
 import jakarta.annotation.PostConstruct;

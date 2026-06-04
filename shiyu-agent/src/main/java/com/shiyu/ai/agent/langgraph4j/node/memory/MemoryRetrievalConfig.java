@@ -1,8 +1,11 @@
 package com.shiyu.ai.agent.langgraph4j.node.memory;
 
 import com.shiyu.ai.agent.langgraph4j.node.NodeConfig;
+import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
+import lombok.NoArgsConstructor;
+import lombok.experimental.SuperBuilder;
 
 /**
  * 记忆检索节点配置类
@@ -12,6 +15,9 @@ import lombok.EqualsAndHashCode;
  * @date 2026-03-28
  */
 @Data
+@SuperBuilder
+@NoArgsConstructor
+@AllArgsConstructor
 @EqualsAndHashCode(callSuper = true)
 public class MemoryRetrievalConfig extends NodeConfig {
     
