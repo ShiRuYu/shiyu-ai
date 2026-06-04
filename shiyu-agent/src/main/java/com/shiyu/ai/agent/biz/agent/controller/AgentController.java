@@ -113,20 +113,28 @@ public class AgentController {
     /**
      * 执行 Agent（同步）
      * @param agentId Agent ID
-     * @param input 输入数据
+     * @param body 输入数据（POST 请求体）
+     * @param params 查询参数（GET 请求）
      * @return 执行结果
      */
-    @PostMapping("/{agentId}/execute")
+    @RequestMapping(value = "/{agentId}/execute", method = {RequestMethod.GET, RequestMethod.POST})
     public Result<Map<String, Object>> executeAgent(
             @PathVariable String agentId,
-            @RequestBody Map<String, Object> input) {
+            @RequestBody(required = false) Map<String, Object> body,
+            @RequestParam(required = false) Map<String, String> params) {
         log.info("收到 Agent 执行请求：agentId={}", agentId);
         
         try {
-            Map<String, Object> safeInput = new HashMap<>(input);
-            safeInput.put("chatType", ChatType.SYNC.name());
+            Map<String, Object> input = new HashMap<>();
+            if (body != null) {
+                input.putAll(body);
+            }
+            if (params != null) {
+                input.putAll(params);
+            }
+            input.put("chatType", ChatType.SYNC.name());
             
-            Map<String, Object> result = agentService.execute(agentId, safeInput);
+            Map<String, Object> result = agentService.execute(agentId, input);
             
             return Result.success(result);
             
@@ -139,20 +147,28 @@ public class AgentController {
     /**
      * 执行 Agent（流式）
      * @param agentId Agent ID
-     * @param input 输入数据
+     * @param body 输入数据（POST 请求体）
+     * @param params 查询参数（GET 请求）
      * @return 流式执行结果
      */
-    @PostMapping(value = "/{agentId}/executeStream", produces = MediaType.TEXT_EVENT_STREAM_VALUE)
+    @RequestMapping(value = "/{agentId}/executeStream", method = {RequestMethod.GET, RequestMethod.POST}, produces = MediaType.TEXT_EVENT_STREAM_VALUE)
     public Flux<Result<Map<String, Object>>> executeStreamAgent(
             @PathVariable String agentId,
-            @RequestBody Map<String, Object> input) {
+            @RequestBody(required = false) Map<String, Object> body,
+            @RequestParam(required = false) Map<String, String> params) {
         log.info("收到 Agent 流式执行请求：agentId={}", agentId);
         
         try {
-            Map<String, Object> safeInput = new HashMap<>(input);
-            safeInput.put("chatType", ChatType.STREAM.name());
+            Map<String, Object> input = new HashMap<>();
+            if (body != null) {
+                input.putAll(body);
+            }
+            if (params != null) {
+                input.putAll(params);
+            }
+            input.put("chatType", ChatType.STREAM.name());
             
-            return agentService.executeStream(agentId, safeInput)
+            return agentService.executeStream(agentId, input)
                     .map(result -> Result.success(result))
                     .onErrorResume(e -> {
                         log.error("Agent 流式执行失败：agentId={}", agentId, e);

@@ -197,10 +197,17 @@ public class AgentBuilder {
         List<ConditionEdge.PredicateCondition> conditionList = conditions.entrySet().stream()
                 .map(e -> new ConditionEdge.PredicateCondition(e.getKey(), e.getValue()))
                 .collect(Collectors.toList());
+
+        Map<String, String> mappings = new HashMap<>();
+        for (String target : conditions.values()) {
+            mappings.put(target, target);
+        }
+
         ConditionEdge edge = ConditionEdge.builder()
                 .from(from)
                 .defaultTarget(defaultTarget)
                 .predicateConditions(conditionList)
+                .nodeMappings(mappings)
                 .build();
         
         this.conditionalEdges.add(new ConditionalEdgeConfig(from, edge));

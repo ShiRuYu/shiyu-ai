@@ -37,13 +37,13 @@ import java.util.function.Function;
 public class Graph {
     
     /**
-     * 图名称
+     * Graph名称
      */
     @Builder.Default
     private String name = "default_graph";
     
     /**
-     * 图描述
+     * Graph描述
      */
     @Builder.Default
     private String description = "";
@@ -85,7 +85,7 @@ public class Graph {
     private String endNode = "";
     
     /**
-     * 编译后的图对象（用于缓存，避免重复编译）
+     * 编译后的Graph对象（用于缓存，避免重复编译）
      */
     @Builder.Default
     private CompiledGraph<AgentState> compiledGraph = null;
@@ -186,7 +186,7 @@ public class Graph {
     }
     
     /**
-     * 验证图配置的完整性
+     * 验证Graph配置的完整性
      * @throws IllegalStateException 当配置不完整时
      */
     public void validate() {
@@ -240,13 +240,13 @@ public class Graph {
         // 5. 检测循环依赖（DFS）
         String cycle = detectCycle();
         if (cycle != null) {
-            throw new IllegalStateException("图检测到循环依赖：" + cycle);
+            throw new IllegalStateException("Graph检测到循环依赖：" + cycle);
         }
 
         // 6. 检测不可达节点
         Set<String> unreachable = findUnreachableNodes();
         if (!unreachable.isEmpty()) {
-            log.warn("图存在不可达节点：{}（不影响执行，但可能表明配置遗漏）", unreachable);
+            log.warn("Graph存在不可达节点：{}（不影响执行，但可能表明配置遗漏）", unreachable);
         }
         
         log.info("Graph 配置验证通过：{}", this.name);
@@ -305,50 +305,50 @@ public class Graph {
      * 编译并获取流式执行源（返回 AsyncGenerator，由调用方控制消费逻辑）
      * @param input 输入数据
      * @return AsyncGenerator 流式源
-     * @throws GraphStateException 图状态异常
+     * @throws GraphStateException Graph状态异常
      */
     public AsyncGenerator<NodeOutput<AgentState>> stream(Map<String, Object> input) throws GraphStateException {
-        log.info("开始流式执行图：{}", this.name);
+        log.info("开始流式执行Graph：{}", this.name);
         CompiledGraph<AgentState> compiledGraph = compile();
         return compiledGraph.stream(input);
     }
 
     /**
-     * 同步执行图
+     * 同步执行Graph
      * @param input 输入数据
      * @return 执行结果
-     * @throws GraphStateException 图状态异常
+     * @throws GraphStateException Graph状态异常
      */
     public Map<String, Object> execute(Map<String, Object> input) throws GraphStateException {
-        log.info("开始同步执行图：{}", this.name);
+        log.info("开始同步执行Graph：{}", this.name);
         
         CompiledGraph<AgentState> compiledGraph = compile();
         
-        // 执行图并获取最终状态
+        // 执行Graph并获取最终状态
         var resultOptional = compiledGraph.invoke(input);
         AgentState finalState = resultOptional.orElseThrow(() -> 
-            new IllegalStateException("图执行返回空结果：" + this.name));
+            new IllegalStateException("Graph执行返回空结果：" + this.name));
         
-        log.info("图同步执行完成：{}", this.name);
+        log.info("Graph同步执行完成：{}", this.name);
         return finalState.data();
     }
     
     /**
-     * 流式执行图
+     * 流式执行Graph
      * @param input 输入数据
      * @return 流式响应
-     * @throws GraphStateException 图状态异常
+     * @throws GraphStateException Graph状态异常
      */
     public Flux<NodeOutput<AgentState>> executeStream(Map<String, Object> input) throws GraphStateException {
-        log.info("开始流式执行图：{}", this.name);
+        log.info("开始流式执行Graph：{}", this.name);
 
         CompiledGraph<AgentState> compiledGraph = compile();
 
-        // 流式执行图 - 返回每个节点执行后的状态
+        // 流式执行Graph - 返回每个节点执行后的状态
         return Flux.fromIterable(() -> compiledGraph.stream(input).iterator())
-                .doOnSubscribe(subscription -> log.debug("图 [{}] 流式执行开始", this.name))
-                .doOnComplete(() -> log.info("图 [{}] 流式执行完成", this.name))
-                .doOnError(error -> log.error("图 [{}] 流式执行失败", this.name, error));
+                .doOnSubscribe(subscription -> log.debug("Graph [{}] 流式执行开始", this.name))
+                .doOnComplete(() -> log.info("Graph [{}] 流式执行完成", this.name))
+                .doOnError(error -> log.error("Graph [{}] 流式执行失败", this.name, error));
     }
 
     /**
