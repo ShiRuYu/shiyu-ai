@@ -11,6 +11,7 @@ import lombok.Setter;
 import lombok.extern.slf4j.Slf4j;
 
 import java.util.List;
+import java.util.Map;
 
 /**
  * 意图识别节点
@@ -141,6 +142,30 @@ public class IntentNode extends BaseNode {
             if (result.success()) {
                 String nextNode = resolvetargetNode(result.intentCode(), agentId);
                 output.addData(FieldKey.NEXT_NODE, nextNode);
+
+                // 6. 如果路由到工具节点，将工具参数写入状态
+                if ("tool_call".equals(nextNode)) {
+                    // 6a. 从工厂查找当前意图定义，获取关联的 toolName
+                    List<IntentDefinition> defs = IntentDefinitionFactory.getByCategory(agentId, config.getCategory());
+                    for (IntentDefinition def : defs) {
+                        if (result.intentCode().equals(def.getCode())) {
+                            String toolName = def.getToolName();
+                            if (toolName != null && !toolName.trim().isEmpty()) {
+                                output.addData(FieldKey.TOOL_NAME, toolName);
+                                log.debug("意图 {} 关联工具: {}", result.intentCode(), toolName);
+                            }
+                            break;
+                        }
+                    }
+                    // 6b. 将 slots 展平为独立字段，供 ToolCallNode 作为参数
+                    Map<String, Object> slots = result.slots();
+                    if (slots != null && !slots.isEmpty()) {
+                        for (Map.Entry<String, Object> entry : slots.entrySet()) {
+                            output.addData(entry.getKey(), entry.getValue());
+                        }
+                        log.debug("展平 slots 参数: {}", slots);
+                    }
+                }
             } else {
                 log.warn("意图识别失败或置信度不足：{}", result.errorMessage());
             }

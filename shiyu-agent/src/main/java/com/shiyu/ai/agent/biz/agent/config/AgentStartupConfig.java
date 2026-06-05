@@ -199,14 +199,14 @@ public class AgentStartupConfig implements ApplicationRunner {
                     .category("general").priority(70).confidenceThreshold(0.85)
                     .examples(new String[]{"查询北京天气", "计算 1+2*3"})
                     .requireSlotFilling(true)
-                    .targetNode("tool_call").enabled(true).build());
+                    .targetNode("tool_call").toolName("calculator").enabled(true).build());
 
             IntentDefinitionFactory.register("smart-agent", "general", IntentDefinition.builder()
                     .code(IntentType.WEATHER.getCode()).name("天气查询")
                     .description("查询天气信息")
                     .category("general").priority(65).confidenceThreshold(0.8)
                     .examples(new String[]{"北京天气怎么样", "上海今天冷吗"})
-                    .targetNode("tool_call").enabled(true).build());
+                    .targetNode("tool_call").toolName("weather").enabled(true).build());
 
             // --- 意图识别节点 ---
             IntentNode intentNode = IntentNode.builder()
