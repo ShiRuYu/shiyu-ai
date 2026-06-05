@@ -139,7 +139,7 @@ public class IntentNode extends BaseNode {
 
             // 5. 如果识别成功，将意图代码添加到状态中供条件边使用
             if (result.success()) {
-                String nextNode = resolvetargetNode(result.intentCode());
+                String nextNode = resolvetargetNode(result.intentCode(), agentId);
                 output.addData(FieldKey.NEXT_NODE, nextNode);
             } else {
                 log.warn("意图识别失败或置信度不足：{}", result.errorMessage());
@@ -173,26 +173,35 @@ public class IntentNode extends BaseNode {
     /**
      * 解析 targetNode 路由目标
      * <p>
-     * 从 {@link IntentDefinitionFactory} 中根据 category 查找对应的 IntentDefinition，
-     * 使用其 targetNode 字段作为条件边的路由目标节点 ID。
+     * 从 {@link IntentDefinitionFactory} 中根据 agentId + category 查找对应的 IntentDefinition，
+     * 使用其 targetNode 字段作为路由目标节点 ID。
      * 如果未找到匹配项或 targetNode 为空，则回退到 intentCode。
      *
      * @param intentCode 识别的意图代码
+     * @param agentId    当前 agent ID
      * @return 路由目标节点 ID
      */
-    private String resolvetargetNode(String intentCode) {
+    private String resolvetargetNode(String intentCode, String agentId) {
         if (intentCode == null) {
             return "UNKNOWN";
         }
         // 从 IntentDefinitionFactory 查询 targetNode
         String category = config.getCategory();
         if (category != null && !category.trim().isEmpty()) {
-            IntentDefinition def = IntentDefinitionFactory.getFirst("default", category);
+            IntentDefinition def = IntentDefinitionFactory.getFirst(agentId, category);
             if (def != null && intentCode.equals(def.getCode())) {
                 String targetNode = def.getTargetNode();
                 if (targetNode != null && !targetNode.trim().isEmpty()) {
                     log.debug("意图 {} 匹配 targetNode: {}", intentCode, targetNode);
                     return targetNode;
+                }
+            }
+            // 未匹配到精确 intentCode，遍历该 category 下所有定义
+            List<IntentDefinition> defs = IntentDefinitionFactory.getByCategory(agentId, category);
+            for (IntentDefinition d : defs) {
+                if (intentCode.equals(d.getCode()) && d.getTargetNode() != null && !d.getTargetNode().trim().isEmpty()) {
+                    log.debug("意图 {} 匹配 targetNode: {}", intentCode, d.getTargetNode());
+                    return d.getTargetNode();
                 }
             }
         }

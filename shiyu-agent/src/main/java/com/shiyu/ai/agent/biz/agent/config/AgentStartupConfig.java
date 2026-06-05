@@ -191,7 +191,7 @@ public class AgentStartupConfig implements ApplicationRunner {
                     .description("查询知识库信息")
                     .category("general").priority(60).confidenceThreshold(0.8)
                     .examples(new String[]{"什么是RAG", "Shiyu AI 是什么"})
-                    .targetNode("chat_rag").enabled(true).build());
+                    .targetNode("rag_retrieval").enabled(true).build());
 
             IntentDefinitionFactory.register("smart-agent", "general", IntentDefinition.builder()
                     .code(IntentType.TASK.getCode()).name(IntentType.TASK.getName())
@@ -199,14 +199,14 @@ public class AgentStartupConfig implements ApplicationRunner {
                     .category("general").priority(70).confidenceThreshold(0.85)
                     .examples(new String[]{"查询北京天气", "计算 1+2*3"})
                     .requireSlotFilling(true)
-                    .targetNode("tool_execute").enabled(true).build());
+                    .targetNode("tool_call").enabled(true).build());
 
             IntentDefinitionFactory.register("smart-agent", "general", IntentDefinition.builder()
                     .code(IntentType.WEATHER.getCode()).name("天气查询")
                     .description("查询天气信息")
                     .category("general").priority(65).confidenceThreshold(0.8)
                     .examples(new String[]{"北京天气怎么样", "上海今天冷吗"})
-                    .targetNode("tool_execute").enabled(true).build());
+                    .targetNode("tool_call").enabled(true).build());
 
             // --- 意图识别节点 ---
             IntentNode intentNode = IntentNode.builder()
@@ -294,20 +294,16 @@ public class AgentStartupConfig implements ApplicationRunner {
                     .addConditionalEdge("intent",
                             "llm_chat",
                             Map.<Predicate<Map<String, Object>>, String>of(
-                                    state -> {
-                                        String code = (String) state.get("intentCode");
-                                        return "CHITCHAT".equals(code);
-                                    },
+                                    state -> IntentType.CHITCHAT.getCode()
+                                            .equals(state.get("intentCode")),
                                     "llm_chat",
-                                    state -> {
-                                        String code = (String) state.get("intentCode");
-                                        return "QUERY".equals(code);
-                                    },
+                                    state -> IntentType.QUESTION.getCode()
+                                            .equals(state.get("intentCode")),
                                     "rag_retrieval",
-                                    state -> {
-                                        String code = (String) state.get("intentCode");
-                                        return "TASK".equals(code) || "WEATHER".equals(code);
-                                    },
+                                    state -> IntentType.TASK.getCode()
+                                            .equals(state.get("intentCode"))
+                                            || IntentType.WEATHER.getCode()
+                                            .equals(state.get("intentCode")),
                                     "tool_call"
                             ))
 
