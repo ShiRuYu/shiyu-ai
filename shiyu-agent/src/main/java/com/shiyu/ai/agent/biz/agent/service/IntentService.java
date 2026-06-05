@@ -13,27 +13,22 @@ public interface IntentService {
 
     /**
      * 识别用户意图
+     *
      * @param userInput 用户输入文本
-     * @param supportedIntents 支持的意图列表（可选）
-     * @param platform 平台名称（null 则使用默认平台）
+     * @param category  意图分类（用于从 {@link com.shiyu.ai.agent.langgraph4j.node.intent.IntentDefinitionFactory} 查找支持的意图定义）
+     * @param platform  平台名称（null 则使用默认平台）
      * @return 意图识别结果
      */
-    IntentRecognitionResult recognize(String userInput, List<IntentDefinition> supportedIntents, String platform);
+    IntentRecognitionResult recognize(String userInput, String category, String platform);
 
     /**
-     * 识别用户意图
+     * 识别用户意图（使用默认平台）
+     *
      * @param userInput 用户输入文本
-     * @param supportedIntents 支持的意图列表（可选）
+     * @param category  意图分类
      * @return 意图识别结果
      */
-    IntentRecognitionResult recognize(String userInput, List<IntentDefinition> supportedIntents);
-
-    /**
-     * 识别用户意图（使用默认配置）
-     * @param userInput 用户输入文本
-     * @return 意图识别结果
-     */
-    IntentRecognitionResult recognize(String userInput);
+    IntentRecognitionResult recognize(String userInput, String category);
 
     /**
      * 意图识别结果

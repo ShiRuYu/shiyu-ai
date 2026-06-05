@@ -118,10 +118,10 @@ public class IntentNode extends BaseNode {
                 return output;
             }
             
-            // 2. 调用意图识别服务
-            List<IntentDefinition> supportedIntents = getSupportedIntents();
-            IntentService.IntentRecognitionResult result = 
-                    intentService.recognize(userInput, supportedIntents);
+            // 2. 调用意图识别服务（通过 category 查找定义）
+            String category = config.getCategory();
+            IntentService.IntentRecognitionResult result =
+                    intentService.recognize(userInput, category);
             
             // 3. 构建输出结果
             NodeOutput output = new NodeOutput();
@@ -156,12 +156,13 @@ public class IntentNode extends BaseNode {
     }
 
     /**
-     * 获取支持的意图列表
+     * 获取支持的意图列表（从 {@link IntentDefinitionFactory} 按 category 查询）
      * @return 支持的意图定义列表
      */
     private List<IntentDefinition> getSupportedIntents() {
-        if (config.getSupportedIntents() != null && config.getSupportedIntents().length > 0) {
-            return List.of(config.getSupportedIntents());
+        String category = config.getCategory();
+        if (category != null && !category.trim().isEmpty()) {
+            return IntentDefinitionFactory.getByCategory("default", category);
         }
         return List.of();
     }
@@ -169,7 +170,7 @@ public class IntentNode extends BaseNode {
     /**
      * 解析 targetNode 路由目标
      * <p>
-     * 从配置的 supportedIntents 中查找匹配的 IntentDefinition，
+     * 从 {@link IntentDefinitionFactory} 中根据 category 查找对应的 IntentDefinition，
      * 使用其 targetNode 字段作为条件边的路由目标节点 ID。
      * 如果未找到匹配项或 targetNode 为空，则回退到 intentCode。
      *
@@ -180,16 +181,15 @@ public class IntentNode extends BaseNode {
         if (intentCode == null) {
             return "UNKNOWN";
         }
-        IntentDefinition[] supportedIntents = config.getSupportedIntents();
-        if (supportedIntents != null) {
-            for (IntentDefinition def : supportedIntents) {
-                if (intentCode.equals(def.getCode())) {
-                    String chainTo = def.getTargetNode();
-                    if (chainTo != null && !chainTo.trim().isEmpty()) {
-                        log.debug("意图 {} 匹配 targetNode: {}", intentCode, chainTo);
-                        return chainTo;
-                    }
-                    break;
+        // 从 IntentDefinitionFactory 查询 targetNode
+        String category = config.getCategory();
+        if (category != null && !category.trim().isEmpty()) {
+            IntentDefinition def = IntentDefinitionFactory.get("default", category);
+            if (def != null && intentCode.equals(def.getCode())) {
+                String targetNode = def.getTargetNode();
+                if (targetNode != null && !targetNode.trim().isEmpty()) {
+                    log.debug("意图 {} 匹配 targetNode: {}", intentCode, targetNode);
+                    return targetNode;
                 }
             }
         }

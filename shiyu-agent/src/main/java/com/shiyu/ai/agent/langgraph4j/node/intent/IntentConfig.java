@@ -37,9 +37,9 @@ public class IntentConfig extends NodeConfig {
     private Double confidenceThreshold = 0.75;
     
     /**
-     * 支持的意图列表
+     * 意图分类（用于从 {@link IntentDefinitionFactory} 中查找对应的意图定义）
      */
-    private IntentDefinition[] supportedIntents;
+    private String category;
     
     /**
      * 是否启用模糊匹配（默认 false）
