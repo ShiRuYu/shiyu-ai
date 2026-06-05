@@ -120,7 +120,7 @@ public class IntentNode extends BaseNode {
             
             // 2. 调用意图识别服务（通过 category + agentId 查找定义）
             String category = config.getCategory();
-            String agentId = input.getParameter("agentId", "default");
+            String agentId = input.getParameter(FieldKey.AGENT_ID, "default");
             String platform = config.getPlatform();
             String modelName = config.getModelName();
             IntentService.IntentRecognitionResult result =

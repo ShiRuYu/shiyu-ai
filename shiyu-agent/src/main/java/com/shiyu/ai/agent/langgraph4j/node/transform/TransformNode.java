@@ -86,7 +86,7 @@ public class TransformNode extends BaseNode {
             String inputData = getInputData(input);
             
             // 2. 根据转换类型执行转换
-            Object result = transformData(inputData, input.getParameter("transformType", config.getTransformType()));
+            Object result = transformData(inputData, input.getParameter(FieldKey.TRANSFORM_TYPE, config.getTransformType()));
             
             // 3. 构建输出结果
             NodeOutput output = new NodeOutput();

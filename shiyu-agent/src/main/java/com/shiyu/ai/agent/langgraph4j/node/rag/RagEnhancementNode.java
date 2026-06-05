@@ -73,7 +73,7 @@ public class RagEnhancementNode extends BaseNode {
                 NodeOutput output = new NodeOutput();
                 output.setSuccess(true);
                 output.setMsg("RAG 增强跳过: 无输入文档");
-                Boolean addCtx = input.getParameter("addContext",
+                Boolean addCtx = input.getParameter(FieldKey.ADD_CONTEXT,
                         config.getAddContext() != null && config.getAddContext());
                 if (addCtx != null && addCtx) {
                     output.addData(FieldKey.CONTEXT, originalContext);
@@ -82,20 +82,20 @@ public class RagEnhancementNode extends BaseNode {
             }
 
             // 2. 读取配置参数（优先从 input，回退到 config）
-            String strategy = input.getParameter(FieldKey.ENHANCEMENT_STRATEGY.key(),
+            String strategy = input.getParameter(FieldKey.ENHANCEMENT_STRATEGY,
                     config.getEnhancementStrategy());
             if (strategy == null) {
                 strategy = "SUMMARIZATION";
             }
             strategy = strategy.toUpperCase();
 
-            int windowSize = input.getParameter("contextWindowSize",
+            int windowSize = input.getParameter(FieldKey.CONTEXT_WINDOW_SIZE,
                     config.getContextWindowSize() != null ? config.getContextWindowSize() : 3);
-            int maxLen = input.getParameter("maxLength",
+            int maxLen = input.getParameter(FieldKey.MAX_LENGTH,
                     config.getMaxLength() != null ? config.getMaxLength() : 2000);
-            double threshold = input.getParameter(FieldKey.SIMILARITY_THRESHOLD.key(),
+            double threshold = input.getParameter(FieldKey.SIMILARITY_THRESHOLD,
                     config.getSimilarityThreshold() != null ? config.getSimilarityThreshold() : 0.5);
-            Boolean addContext = input.getParameter("addContext",
+            Boolean addContext = input.getParameter(FieldKey.ADD_CONTEXT,
                     config.getAddContext() != null && config.getAddContext());
 
             // 3. 执行增强策略
@@ -116,9 +116,9 @@ public class RagEnhancementNode extends BaseNode {
             if (addContext != null && addContext) {
                 output.addData(FieldKey.CONTEXT, enhanced.context());
             }
-            output.addData(FieldKey.ENHANCED_DOCUMENTS.key(), enhanced.documents());
-            output.addData(FieldKey.ENHANCED_COUNT.key(), enhanced.documents().size());
-            output.addData(FieldKey.ENHANCEMENT_STRATEGY.key(), strategy);
+            output.addData(FieldKey.ENHANCED_DOCUMENTS, enhanced.documents());
+            output.addData(FieldKey.ENHANCED_COUNT, enhanced.documents().size());
+            output.addData(FieldKey.ENHANCEMENT_STRATEGY, strategy);
 
             return output;
 

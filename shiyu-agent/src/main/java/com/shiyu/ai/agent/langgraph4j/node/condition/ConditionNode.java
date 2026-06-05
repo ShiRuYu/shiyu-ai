@@ -75,8 +75,8 @@ public class ConditionNode extends BaseNode {
         
         try {
             // 1. 获取条件表达式
-            String conditionExpression = input.getParameter("conditionExpression", config.getConditionExpression());
-            String conditionType = input.getParameter("conditionType", config.getConditionType() != null ? config.getConditionType() : "EXPRESSION");
+            String conditionExpression = input.getParameter(FieldKey.CONDITION_EXPRESSION, config.getConditionExpression());
+            String conditionType = input.getParameter(FieldKey.CONDITION_TYPE, config.getConditionType() != null ? config.getConditionType() : "EXPRESSION");
             
             // 2. 执行条件判断
             boolean result = evaluateCondition(input, conditionType, conditionExpression);
@@ -88,7 +88,7 @@ public class ConditionNode extends BaseNode {
             output.addData(FieldKey.CONDITION_RESULT, result);
 
             // 4. 根据结果设置下一个分支
-            String nextBranch = result ? input.getParameter("trueBranch", config.getTrueBranch()) : input.getParameter("defaultBranch", config.getDefaultBranch());
+            String nextBranch = result ? input.getParameter(FieldKey.TRUE_BRANCH, config.getTrueBranch()) : input.getParameter(FieldKey.DEFAULT_BRANCH, config.getDefaultBranch());
             output.addData(FieldKey.NEXT_NODE, nextBranch);
             output.addData(FieldKey.BRANCH, result ? "true" : "false");
             

@@ -191,7 +191,7 @@ public class LlmCallNode extends BaseNode {
         output.addData(FieldKey.MODEL_OUTPUT, request.getModel());
         output.addData(FieldKey.STREAM, true);
         output.addData(FieldKey.CHAT_TYPE, ChatType.STREAM.name());
-        output.addData("_streaming_generator", generator);
+        output.addData(FieldKey.STREAMING_GENERATOR, generator);
 
         log.info("LLM 流式调用完成");
         return output;

@@ -134,7 +134,42 @@ public interface NodeFields {
         // ==================== 工具调用节点专属 ====================
 
         /** 缓存命中标记 */
-        CACHE_HIT("cache_hit");
+        CACHE_HIT("cache_hit"),
+
+        // ==================== 意图节点专属 ====================
+
+        /** agentId */
+        AGENT_ID("agentId"),
+
+        // ==================== LLM 调用节点专属 ====================
+
+        /** 流式生成器内部对象 */
+        STREAMING_GENERATOR("_streaming_generator"),
+
+        // ==================== 条件节点专属 ====================
+
+        /** 条件表达式 */
+        CONDITION_EXPRESSION("conditionExpression"),
+        /** 条件类型 */
+        CONDITION_TYPE("conditionType"),
+        /** 真分支 */
+        TRUE_BRANCH("trueBranch"),
+        /** 默认分支 */
+        DEFAULT_BRANCH("defaultBranch"),
+
+        // ==================== 转换节点专属 ====================
+
+        /** 转换类型 */
+        TRANSFORM_TYPE("transformType"),
+
+        // ==================== RAG 增强节点专属 ====================
+
+        /** 添加上下文标记 */
+        ADD_CONTEXT("addContext"),
+        /** 上下文窗口大小 */
+        CONTEXT_WINDOW_SIZE("contextWindowSize"),
+        /** 最大长度 */
+        MAX_LENGTH("maxLength");
 
         private final String key;
 
@@ -192,7 +227,7 @@ public interface NodeFields {
 
         @Override
         public Set<FieldKey> inputFields() {
-            return Set.of(FieldKey.USER_INPUT, FieldKey.QUERY);
+            return Set.of(FieldKey.USER_INPUT, FieldKey.QUERY, FieldKey.AGENT_ID);
         }
 
         @Override
@@ -237,7 +272,8 @@ public interface NodeFields {
                     FieldKey.MESSAGES,
                     FieldKey.STREAMING_CHAT_GENERATOR,
                     FieldKey.STREAM,
-                    FieldKey.CHAT_TYPE
+                    FieldKey.CHAT_TYPE,
+                    FieldKey.STREAMING_GENERATOR
             );
         }
     }
@@ -306,7 +342,13 @@ public interface NodeFields {
 
         @Override
         public Set<FieldKey> inputFields() {
-            return Set.of(FieldKey.DOCUMENTS, FieldKey.CONTEXT);
+            return Set.of(
+                    FieldKey.DOCUMENTS,
+                    FieldKey.CONTEXT,
+                    FieldKey.ADD_CONTEXT,
+                    FieldKey.CONTEXT_WINDOW_SIZE,
+                    FieldKey.MAX_LENGTH
+            );
         }
 
         @Override
@@ -400,7 +442,13 @@ public interface NodeFields {
         @Override
         public Set<FieldKey> inputFields() {
             // 条件节点可读取任意输入字段，这里列出已知的静态依赖
-            return Set.of(FieldKey.INTENT_CODE);
+            return Set.of(
+                    FieldKey.INTENT_CODE,
+                    FieldKey.CONDITION_EXPRESSION,
+                    FieldKey.CONDITION_TYPE,
+                    FieldKey.TRUE_BRANCH,
+                    FieldKey.DEFAULT_BRANCH
+            );
         }
 
         @Override
@@ -430,7 +478,8 @@ public interface NodeFields {
                     FieldKey.CONTENT,
                     FieldKey.TEXT,
                     FieldKey.QUERY,
-                    FieldKey.USER_INPUT
+                    FieldKey.USER_INPUT,
+                    FieldKey.TRANSFORM_TYPE
             );
         }
 
