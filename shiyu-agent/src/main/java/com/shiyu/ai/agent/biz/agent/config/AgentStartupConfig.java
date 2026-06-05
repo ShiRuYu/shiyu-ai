@@ -213,7 +213,7 @@ public class AgentStartupConfig implements ApplicationRunner {
                     .intentService(intentService)
                     .config(IntentConfig.builder()
                             .nodeName("意图识别")
-                            .category("CONVERSATION")
+                            .category("general")
                             .build())
                     .build();
 

@@ -110,6 +110,72 @@ public class JSONUtils {
         }
     }
 
+    /**
+     * 从 LLM 响应或任意字符串中提取第一个 JSON 片段（{} 或 []）。
+     * <p>
+     * 通过括号匹配定位 JSON，不依赖任何外层包裹格式。
+     * 因此无论外层是 Markdown 代码块、{@code <|begin_of_box|>}、XML 还是纯文本，
+     * 都能正确提取。支持转义引号内的括号，避免误判。
+     *
+     * @param raw 原始字符串（可为 null）
+     * @return 提取的纯 JSON 字符串
+     * @throws IllegalArgumentException 未找到有效的 JSON 起始括号或括号未闭合
+     */
+    public static String extractJsonFragment(String raw) {
+        if (raw == null || raw.isBlank()) {
+            throw new IllegalArgumentException("输入字符串为空，无法提取 JSON");
+        }
+        String trimmed = raw.trim();
+        // 定位第一个 JSON 起始括号
+        int start = -1;
+        char openChar = 0;
+        char closeChar = 0;
+        for (int i = 0; i < trimmed.length(); i++) {
+            char c = trimmed.charAt(i);
+            if (c == '{') {
+                start = i;
+                openChar = '{';
+                closeChar = '}';
+                break;
+            } else if (c == '[') {
+                start = i;
+                openChar = '[';
+                closeChar = ']';
+                break;
+            }
+        }
+        if (start < 0) {
+            throw new IllegalArgumentException("响应中未找到 JSON 起始字符（{ 或 [）");
+        }
+
+        // 括号匹配：找到对应的闭合括号
+        int depth = 0;
+        boolean inString = false;
+        for (int i = start; i < trimmed.length(); i++) {
+            char c = trimmed.charAt(i);
+
+            // 跳过字符串内的内容（处理转义引号）
+            if (c == '"' && (i == 0 || trimmed.charAt(i - 1) != '\\')) {
+                inString = !inString;
+                continue;
+            }
+            if (inString) {
+                continue;
+            }
+
+            if (c == openChar) {
+                depth++;
+            } else if (c == closeChar) {
+                depth--;
+                if (depth == 0) {
+                    return trimmed.substring(start, i + 1);
+                }
+            }
+        }
+
+        throw new IllegalArgumentException("JSON 括号未闭合，depth=" + depth);
+    }
+
     public static Map<String, Object> parseMap(File file) {
         try {
             return OBJECT_MAPPER.readValue(file, OBJECT_MAPPER.getTypeFactory().constructType(Map.class));
