@@ -99,12 +99,22 @@ public class IntentServiceImpl implements IntentService {
             prompt.append("\n");
         }
 
-        prompt.append("请返回：\n");
-        prompt.append("1. 最匹配的意图代码（intentCode）\n");
-        prompt.append("2. 意图名称（intentName）\n");
-        prompt.append("3. 置信度（confidence，0-1 之间的小数）\n");
-        prompt.append("4. 提取的槽位信息（slots，JSON 格式）\n");
-        prompt.append("\n请以 JSON 格式返回结果");
+        prompt.append("""
+                请返回：
+                1. 最匹配的意图代码（intentCode）
+                2. 意图名称（intentName）
+                3. 置信度（confidence，0-1 之间的小数）
+                4. 提取的槽位信息（slots，JSON 格式）
+
+                请严格以 JSON 格式返回结果，不要包含任何其他字符（包括 Markdown 标记、说明文字等）。
+                输出示例：
+                {
+                  "intentCode": "CHITCHAT",
+                  "intentName": "闲聊",
+                  "confidence": 0.1,
+                  "slots": {}
+                }
+                """);
 
         return prompt.toString();
     }
