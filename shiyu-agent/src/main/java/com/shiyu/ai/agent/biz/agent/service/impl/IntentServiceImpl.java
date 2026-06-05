@@ -126,16 +126,25 @@ public class IntentServiceImpl implements IntentService {
         log.debug("意图识别响应：{}", response);
 
         try {
-            // 简化处理：假设返回的是 JSON 格式
-            // 实际项目中可以使用 JSON 解析库如 Jackson 或 Gson
+            // 清理：去除 Markdown 代码块标记
             String json = response.trim();
             if (json.startsWith("```json")) {
                 json = json.substring(7);
+            } else if (json.startsWith("```")) {
+                json = json.substring(3);
             }
             if (json.endsWith("```")) {
                 json = json.substring(0, json.length() - 3);
             }
             json = json.trim();
+
+            // 清理：去除 <|begin_of_box|> / <|end_of_box|> 包裹
+            if (json.startsWith("<|begin_of_box|>")) {
+                json = json.substring("<|begin_of_box|>".length()).trim();
+            }
+            if (json.endsWith("<|end_of_box|>")) {
+                json = json.substring(0, json.length() - "<|end_of_box|>".length()).trim();
+            }
 
             Map<String, Object> result = JSONUtils.parseObject(json, HashMap.class);
 
