@@ -75,7 +75,26 @@ public class IntentDefinition {
      */
     @Builder.Default
     private Boolean requireSlotFilling = false;
-    
+
+    /**
+     * Slot → 工具参数名的显式映射
+     * <p>
+     * key: slot 名称（LLM 输出），value: 工具服务方法参数名。
+     * 当 slot 名与工具参数名不一致时，通过此映射重命名。
+     * 例如：{"city" → "location", "date" → "queryDate"}
+     */
+    @Builder.Default
+    private Map<String, String> parameterMapping = new HashMap<>();
+
+    /**
+     * Slot 默认值
+     * <p>
+     * 当 LLM 未提取到某个 slot 时，使用此默认值兜底。
+     * 例如：{"unit" → "celsius", "lang" → "zh"}
+     */
+    @Builder.Default
+    private Map<String, String> slotDefaults = new HashMap<>();
+
     /** 路由目标节点 ID（识别后路由到哪个节点） */
     @Builder.Default
     private String targetNode = "";
@@ -132,6 +151,40 @@ public class IntentDefinition {
         return this;
     }
     
+    /**
+     * 添加槽位→工具参数的映射
+     *
+     * @param slotName     slot 名称
+     * @param paramName    工具参数名
+     * @return 当前对象（支持链式调用）
+     */
+    public IntentDefinition addParameterMapping(String slotName, String paramName) {
+        if (this.parameterMapping == null) {
+            this.parameterMapping = Maps.newHashMap();
+        } else if (!(this.parameterMapping instanceof HashMap)) {
+            this.parameterMapping = Maps.newHashMap(this.parameterMapping);
+        }
+        this.parameterMapping.put(slotName, paramName);
+        return this;
+    }
+
+    /**
+     * 添加槽位默认值
+     *
+     * @param slotName slot 名称
+     * @param defaultValue 默认值
+     * @return 当前对象（支持链式调用）
+     */
+    public IntentDefinition addSlotDefault(String slotName, String defaultValue) {
+        if (this.slotDefaults == null) {
+            this.slotDefaults = Maps.newHashMap();
+        } else if (!(this.slotDefaults instanceof HashMap)) {
+            this.slotDefaults = Maps.newHashMap(this.slotDefaults);
+        }
+        this.slotDefaults.put(slotName, defaultValue);
+        return this;
+    }
+
     /**
      * 添加自定义参数
      *

@@ -99,22 +99,43 @@ public class IntentServiceImpl implements IntentService {
             prompt.append("\n");
         }
 
-        prompt.append("""
-                请返回：
-                1. 最匹配的意图代码（intentCode）
-                2. 意图名称（intentName）
-                3. 置信度（confidence，0-1 之间的小数）
-                4. 提取的槽位信息（slots，JSON 格式）
+        // 判断是否有意图需要 slot 提取
+        boolean needSlots = supportedIntents != null && supportedIntents.stream()
+                .anyMatch(IntentDefinition::getRequireSlotFilling);
 
-                请严格以 JSON 格式返回结果，不要包含任何其他字符（包括 Markdown 标记、说明文字等）。
-                输出示例：
-                {
-                  "intentCode": "CHITCHAT",
-                  "intentName": "闲聊",
-                  "confidence": 0.1,
-                  "slots": {}
+        // ---------- 需要槽位的意图：包含 slots 提取指令和 slot 定义 ----------
+        if (needSlots) {
+            prompt.append("部分意图包含槽位信息，需要从用户输入中提取。具体定义如下：\n");
+            for (IntentDefinition intent : supportedIntents) {
+                if (intent.getRequireSlotFilling() && intent.getSlots() != null && !intent.getSlots().isEmpty()) {
+                    prompt.append("- ").append(intent.getCode())
+                          .append(" 的槽位：").append(intent.getSlots()).append("\n");
                 }
-                """);
+            }
+            prompt.append("\n");
+
+            prompt.append("""
+                    请返回 JSON 格式结果，不要包含任何其他字符（包括 Markdown 标记、说明文字等）：
+                    {
+                      "intentCode": "WEATHER_QUERY",
+                      "intentName": "天气查询",
+                      "confidence": 0.95,
+                      "slots": { "city": "北京", "date": "明天" }
+                    }
+                    注意：如果选择的意图不需要槽位，slots 字段固定为 {}。
+                    """);
+        } else {
+            // ---------- 无需槽位的意图：简化输出，slots 固定为 {} ----------
+            prompt.append("""
+                    请返回 JSON 格式结果，不要包含任何其他字符（包括 Markdown 标记、说明文字等）：
+                    {
+                      "intentCode": "CHITCHAT",
+                      "intentName": "闲聊",
+                      "confidence": 0.95,
+                      "slots": {}
+                    }
+                    """);
+        }
 
         return prompt.toString();
     }
@@ -135,7 +156,10 @@ public class IntentServiceImpl implements IntentService {
             String intentCode = (String) result.get("intentCode");
             String intentName = (String) result.get("intentName");
             Double confidence = parseDouble(result.get("confidence"));
-            Map<String, Object> slots = (Map<String, Object>) result.getOrDefault("slots", new HashMap<>());
+            Object slotsObj = result.get("slots");
+            Map<String, Object> slots = slotsObj instanceof Map
+                    ? (Map<String, Object>) slotsObj
+                    : new HashMap<>();
 
             // 验证是否在支持的意图列表中
             if (supportedIntents != null && !supportedIntents.isEmpty()) {

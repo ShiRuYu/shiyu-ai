@@ -1,5 +1,6 @@
 package com.shiyu.ai.agent.biz.agent.config;
 
+import com.google.common.collect.Maps;
 import com.shiyu.ai.agent.biz.agent.builder.AgentBuilder;
 import com.shiyu.ai.agent.biz.agent.domain.AgentDefinition;
 import com.shiyu.ai.agent.langgraph4j.node.DefaultNode;
@@ -199,6 +200,7 @@ public class AgentStartupConfig implements ApplicationRunner {
                     .category("general").priority(70).confidenceThreshold(0.85)
                     .examples(new String[]{"查询北京天气", "计算 1+2*3"})
                     .requireSlotFilling(true)
+                    .slots(Maps.newHashMap(Map.of("expression", "数学表达式")))
                     .targetNode("tool_call").toolName("calculator").enabled(true).build());
 
             IntentDefinitionFactory.register("smart-agent", "general", IntentDefinition.builder()
@@ -206,6 +208,10 @@ public class AgentStartupConfig implements ApplicationRunner {
                     .description("查询天气信息")
                     .category("general").priority(65).confidenceThreshold(0.8)
                     .examples(new String[]{"北京天气怎么样", "上海今天冷吗"})
+                    .requireSlotFilling(true)
+                    .slots(Maps.newHashMap(Map.of("city", "城市名称", "date", "日期（可选）")))
+                    .parameterMapping(Maps.newHashMap(Map.of("city", "location")))
+                    .slotDefaults(Maps.newHashMap(Map.of("unit", "celsius")))
                     .targetNode("tool_call").toolName("weather").enabled(true).build());
 
             // --- 意图识别节点 ---
