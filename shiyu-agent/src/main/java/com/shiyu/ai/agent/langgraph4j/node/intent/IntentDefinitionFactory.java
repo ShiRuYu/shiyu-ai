@@ -11,8 +11,8 @@ import java.util.Set;
 /**
  * 意图定义工厂
  * <p>
- * 使用 Guava {@link HashBasedTable} 管理意图定义，rowKey = agentId，columnKey = category。
- * 每个 (agentId, category) 单元格持有 {@link List}&lt;{@link IntentDefinition}&gt;，
+ * 使用 Guava {@link HashBasedTable} 管理意图定义，rowKey = row，columnKey = column。
+ * 每个 (row, column) 单元格持有 {@link List}&lt;{@link IntentDefinition}&gt;，
  * 支持同一分类下注册多个意图定义。
  *
  * @author shiyu-ai
@@ -136,13 +136,13 @@ public class IntentDefinitionFactory {
     // ==================== 内部辅助 ====================
 
     /**
-     * 向表中追加一条意图定义，如果该 (agentId, category) 已存在列表则追加，否则新建列表。
+     * 向表中追加一条意图定义，如果该 (row, column) 已存在列表则追加，否则新建列表。
      */
-    private static void put(String agentId, String category, IntentDefinition def) {
-        List<IntentDefinition> list = intentTable.get(agentId, category);
+    private static void put(String row, String column, IntentDefinition def) {
+        List<IntentDefinition> list = intentTable.get(row, column);
         if (list == null) {
             list = new ArrayList<>();
-            intentTable.put(agentId, category, list);
+            intentTable.put(row, column, list);
         }
         list.add(def);
     }
@@ -150,20 +150,20 @@ public class IntentDefinitionFactory {
     // ==================== 查询方法 ====================
 
     /**
-     * 根据 agentId 和 category 获取该分类下的所有意图定义
+     * 根据 row 和 column 获取该分类下的所有意图定义
      *
-     * @param agentId  代理 ID
-     * @param category 意图分类
+     * @param row    row key（agentId）
+     * @param column column key（意图分类）
      * @return 意图定义列表（不可变），不存在时返回空列表
      */
-    public static List<IntentDefinition> getByCategory(String agentId, String category) {
-        // 先查指定 agent
-        List<IntentDefinition> list = intentTable.get(agentId, category);
+    public static List<IntentDefinition> getByCategory(String row, String column) {
+        // 先查指定 row
+        List<IntentDefinition> list = intentTable.get(row, column);
         if (list != null && !list.isEmpty()) {
             return Collections.unmodifiableList(list);
         }
-        // fallback 到 default agent
-        list = intentTable.get("default", category);
+        // fallback 到 default row
+        list = intentTable.get("default", column);
         if (list != null && !list.isEmpty()) {
             return Collections.unmodifiableList(list);
         }
@@ -171,74 +171,74 @@ public class IntentDefinitionFactory {
     }
 
     /**
-     * 根据 agentId 获取该代理所有分类下的意图定义
+     * 根据 row 获取该 row 下所有 column 的意图定义
      *
-     * @param agentId 代理 ID
+     * @param row row key（agentId）
      * @return 所有意图定义（合并列表，不可变）
      */
-    public static List<IntentDefinition> getAll(String agentId) {
-        Map<String, List<IntentDefinition>> row = intentTable.row(agentId);
-        if (row == null || row.isEmpty()) {
+    public static List<IntentDefinition> getAll(String row) {
+        Map<String, List<IntentDefinition>> rowMap = intentTable.row(row);
+        if (rowMap == null || rowMap.isEmpty()) {
             return getAll("default");
         }
         List<IntentDefinition> result = new ArrayList<>();
-        for (List<IntentDefinition> list : row.values()) {
+        for (List<IntentDefinition> list : rowMap.values()) {
             result.addAll(list);
         }
         return Collections.unmodifiableList(result);
     }
 
     /**
-     * 根据 category 获取所有代理的意图定义（跨 agent）
+     * 根据 column 获取所有 row 的意图定义（跨 agent）
      *
-     * @param category 意图分类
+     * @param column 意图分类
      * @return 该分类下的所有意图定义（合并列表，不可变）
      */
-    public static List<IntentDefinition> getByCategory(String category) {
-        Map<String, List<IntentDefinition>> column = intentTable.column(category);
+    public static List<IntentDefinition> getByCategory(String column) {
+        Map<String, List<IntentDefinition>> columnMap = intentTable.column(column);
         List<IntentDefinition> result = new ArrayList<>();
-        for (List<IntentDefinition> list : column.values()) {
+        for (List<IntentDefinition> list : columnMap.values()) {
             result.addAll(list);
         }
         return Collections.unmodifiableList(result);
     }
 
     /**
-     * 根据 agentId + category 获取第一个匹配的意图定义
+     * 根据 row + column 获取第一个匹配的意图定义
      *
-     * @param agentId  代理 ID
-     * @param category 意图分类
+     * @param row    row key（agentId）
+     * @param column column key（意图分类）
      * @return 第一个意图定义，不存在时返回 {@code null}
      */
-    public static IntentDefinition getFirst(String agentId, String category) {
-        List<IntentDefinition> list = getByCategory(agentId, category);
+    public static IntentDefinition getFirst(String row, String column) {
+        List<IntentDefinition> list = getByCategory(row, column);
         return list.isEmpty() ? null : list.get(0);
     }
 
     /**
      * 注册自定义意图定义（添加到已有列表或新建列表）
      *
-     * @param agentId  代理 ID
-     * @param category 意图分类
-     * @param def      意图定义
+     * @param row    row key（agentId）
+     * @param column column key（意图分类）
+     * @param def    意图定义
      */
-    public static void register(String agentId, String category, IntentDefinition def) {
-        put(agentId, category, def);
+    public static void register(String row, String column, IntentDefinition def) {
+        put(row, column, def);
     }
 
     /**
-     * 获取所有已知的 agentId
+     * 获取所有已知的 row key（agentId）
      *
-     * @return agentId 集合
+     * @return row key 集合
      */
     public static Set<String> getAgentIds() {
         return Collections.unmodifiableSet(intentTable.rowKeySet());
     }
 
     /**
-     * 获取所有已知的 category
+     * 获取所有已知的 column key（category）
      *
-     * @return category 集合
+     * @return column key 集合
      */
     public static Set<String> getCategories() {
         return Collections.unmodifiableSet(intentTable.columnKeySet());

@@ -179,32 +179,32 @@ public class AgentStartupConfig implements ApplicationRunner {
         log.info("创建 Agent: smart-agent");
         try {
             // --- 注册 smart-agent 的自定义意图定义到工厂 ---
-            IntentDefinitionFactory.register("smart-agent", "通用", IntentDefinition.builder()
+            IntentDefinitionFactory.register("smart-agent", "general", IntentDefinition.builder()
                     .code(IntentType.CHITCHAT.getCode()).name(IntentType.CHITCHAT.getName())
                     .description(IntentType.CHITCHAT.getDescription())
-                    .category("通用").priority(50).confidenceThreshold(0.75)
+                    .category("general").priority(50).confidenceThreshold(0.75)
                     .examples(new String[]{"你好", "最近怎么样", "今天天气不错", "你在干什么", "聊聊天吧"})
                     .targetNode("llm_chat").enabled(true).build());
 
-            IntentDefinitionFactory.register("smart-agent", "通用", IntentDefinition.builder()
+            IntentDefinitionFactory.register("smart-agent", "general", IntentDefinition.builder()
                     .code(IntentType.QUESTION.getCode()).name("知识查询")
                     .description("查询知识库信息")
-                    .category("通用").priority(60).confidenceThreshold(0.8)
+                    .category("general").priority(60).confidenceThreshold(0.8)
                     .examples(new String[]{"什么是RAG", "Shiyu AI 是什么"})
                     .targetNode("chat_rag").enabled(true).build());
 
-            IntentDefinitionFactory.register("smart-agent", "通用", IntentDefinition.builder()
+            IntentDefinitionFactory.register("smart-agent", "general", IntentDefinition.builder()
                     .code(IntentType.TASK.getCode()).name(IntentType.TASK.getName())
                     .description(IntentType.TASK.getDescription())
-                    .category("通用").priority(70).confidenceThreshold(0.85)
+                    .category("general").priority(70).confidenceThreshold(0.85)
                     .examples(new String[]{"查询北京天气", "计算 1+2*3"})
                     .requireSlotFilling(true)
                     .targetNode("tool_execute").enabled(true).build());
 
-            IntentDefinitionFactory.register("smart-agent", "通用", IntentDefinition.builder()
+            IntentDefinitionFactory.register("smart-agent", "general", IntentDefinition.builder()
                     .code(IntentType.WEATHER.getCode()).name("天气查询")
                     .description("查询天气信息")
-                    .category("通用").priority(65).confidenceThreshold(0.8)
+                    .category("general").priority(65).confidenceThreshold(0.8)
                     .examples(new String[]{"北京天气怎么样", "上海今天冷吗"})
                     .targetNode("tool_execute").enabled(true).build());
 
