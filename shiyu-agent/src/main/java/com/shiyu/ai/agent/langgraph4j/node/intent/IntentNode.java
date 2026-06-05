@@ -10,9 +10,6 @@ import lombok.Getter;
 import lombok.Setter;
 import lombok.extern.slf4j.Slf4j;
 
-import java.util.List;
-import java.util.Map;
-
 /**
  * 意图识别节点
  * 用于识别和处理用户的意图
@@ -132,45 +129,14 @@ public class IntentNode extends BaseNode {
             output.setSuccess(result.success());
             output.setMsg(result.errorMessage() != null ? result.errorMessage() : "意图识别成功");
             
-            // 4. 添加识别结果到输出
+            // 4. 添加识别结果到输出（路由由条件边从 IntentDefinitionFactory 驱动）
             output.addData(FieldKey.INTENT_CODE, result.intentCode());
             output.addData(FieldKey.INTENT_NAME, result.intentName());
             output.addData(FieldKey.CONFIDENCE, result.confidence());
             output.addData(FieldKey.SLOTS, result.slots());
 
-            // 5. 如果识别成功，将意图代码添加到状态中供条件边使用
-            if (result.success()) {
-                String nextNode = resolvetargetNode(result.intentCode(), agentId);
-                output.addData(FieldKey.NEXT_NODE, nextNode);
-
-                // 6. 如果路由到工具节点，将工具参数写入状态
-                if ("tool_call".equals(nextNode)) {
-                    // 6a. 从工厂查找当前意图定义，获取关联的 toolName
-                    List<IntentDefinition> defs = IntentDefinitionFactory.getByCategory(agentId, config.getCategory());
-                    for (IntentDefinition def : defs) {
-                        if (result.intentCode().equals(def.getCode())) {
-                            String toolName = def.getToolName();
-                            if (toolName != null && !toolName.trim().isEmpty()) {
-                                output.addData(FieldKey.TOOL_NAME, toolName);
-                                log.debug("意图 {} 关联工具: {}", result.intentCode(), toolName);
-                            }
-                            break;
-                        }
-                    }
-                    // 6b. 将 slots 展平为独立字段，供 ToolCallNode 作为参数
-                    Map<String, Object> slots = result.slots();
-                    if (slots != null && !slots.isEmpty()) {
-                        for (Map.Entry<String, Object> entry : slots.entrySet()) {
-                            output.addData(entry.getKey(), entry.getValue());
-                        }
-                        log.debug("展平 slots 参数: {}", slots);
-                    }
-                }
-            } else {
-                log.warn("意图识别失败或置信度不足：{}", result.errorMessage());
-            }
-            
-            log.info("意图识别完成，结果：{}", output);
+            log.info("意图识别完成，intentCode={}, confidence={}",
+                    result.intentCode(), result.confidence());
             return output;
             
         } catch (Exception e) {
@@ -181,56 +147,5 @@ public class IntentNode extends BaseNode {
             output.addData(FieldKey.INTENT_CODE, "ERROR");
             return output;
         }
-    }
-
-    /**
-     * 获取支持的意图列表（从 {@link IntentDefinitionFactory} 按 category 查询）
-     * @return 支持的意图定义列表
-     */
-    private List<IntentDefinition> getSupportedIntents() {
-        String category = config.getCategory();
-        if (category != null && !category.trim().isEmpty()) {
-            return IntentDefinitionFactory.getByCategory("default", category);
-        }
-        return List.of();
-    }
-    
-    /**
-     * 解析 targetNode 路由目标
-     * <p>
-     * 从 {@link IntentDefinitionFactory} 中根据 agentId + category 查找对应的 IntentDefinition，
-     * 使用其 targetNode 字段作为路由目标节点 ID。
-     * 如果未找到匹配项或 targetNode 为空，则回退到 intentCode。
-     *
-     * @param intentCode 识别的意图代码
-     * @param agentId    当前 agent ID
-     * @return 路由目标节点 ID
-     */
-    private String resolvetargetNode(String intentCode, String agentId) {
-        if (intentCode == null) {
-            return "UNKNOWN";
-        }
-        // 从 IntentDefinitionFactory 查询 targetNode
-        String category = config.getCategory();
-        if (category != null && !category.trim().isEmpty()) {
-            IntentDefinition def = IntentDefinitionFactory.getFirst(agentId, category);
-            if (def != null && intentCode.equals(def.getCode())) {
-                String targetNode = def.getTargetNode();
-                if (targetNode != null && !targetNode.trim().isEmpty()) {
-                    log.debug("意图 {} 匹配 targetNode: {}", intentCode, targetNode);
-                    return targetNode;
-                }
-            }
-            // 未匹配到精确 intentCode，遍历该 category 下所有定义
-            List<IntentDefinition> defs = IntentDefinitionFactory.getByCategory(agentId, category);
-            for (IntentDefinition d : defs) {
-                if (intentCode.equals(d.getCode()) && d.getTargetNode() != null && !d.getTargetNode().trim().isEmpty()) {
-                    log.debug("意图 {} 匹配 targetNode: {}", intentCode, d.getTargetNode());
-                    return d.getTargetNode();
-                }
-            }
-        }
-        // 未配置 targetNode，回退到 intentCode
-        return intentCode;
     }
 }

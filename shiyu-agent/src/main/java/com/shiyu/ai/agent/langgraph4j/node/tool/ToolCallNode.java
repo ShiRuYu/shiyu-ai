@@ -5,13 +5,16 @@ import com.shiyu.ai.agent.langgraph4j.node.NodeInput;
 import com.shiyu.ai.agent.langgraph4j.node.NodeOutput;
 import com.shiyu.ai.agent.langgraph4j.node.NodeType;
 import com.shiyu.ai.agent.langgraph4j.node.NodeFields.FieldKey;
+import com.shiyu.ai.agent.langgraph4j.node.intent.IntentDefinition;
+import com.shiyu.ai.agent.langgraph4j.node.intent.IntentDefinitionFactory;
 import com.shiyu.ai.agent.biz.agent.service.ToolService;
 import lombok.Getter;
 import lombok.Setter;
 import lombok.extern.slf4j.Slf4j;
 
+import java.util.List;
+
 /**
- * 工具调用节点
  * 用于调用外部工具或服务
  *
  * @author shiyu-ai
@@ -144,31 +147,72 @@ public class ToolCallNode extends BaseNode {
     
     /**
      * 获取工具名称
+     * <p>
+     * 优先级: input (runtime) > config > IntentDefinitionFactory (从 intentCode 推导)
      */
     private String getToolName(NodeInput input) {
-        // 优先使用输入中的配置
+        // 1. Input（最高优先级）
         String toolName = input.getParameter(FieldKey.TOOL_NAME, "");
         if (toolName != null && !toolName.trim().isEmpty()) {
             return toolName;
         }
         
-        // 使用节点配置
-        return config.getToolName();
+        // 2. Config（次高优先级）
+        if (config.getToolName() != null && !config.getToolName().trim().isEmpty()) {
+            return config.getToolName();
+        }
+
+        // 3. Factory（最低优先级）— 从 intentCode 查找对应 IntentDefinition 的 toolName
+        String intentCode = input.getParameter(FieldKey.INTENT_CODE, "");
+        if (intentCode != null && !intentCode.trim().isEmpty()) {
+            for (String agentId : IntentDefinitionFactory.getAgentIds()) {
+                List<IntentDefinition> defs = IntentDefinitionFactory.getAll(agentId);
+                for (IntentDefinition def : defs) {
+                    if (intentCode.equals(def.getCode())
+                            && def.getToolName() != null && !def.getToolName().trim().isEmpty()) {
+                        log.debug("从 IntentDefinition 推导 toolName: {} (intentCode={})",
+                                def.getToolName(), intentCode);
+                        return def.getToolName();
+                    }
+                }
+            }
+        }
+        
+        return null;
     }
     
     /**
      * 准备工具参数
+     * <p>
+     * 从输入中提取工具参数：排除 {@link FieldKey#TOOL_NAME} 和 {@link FieldKey#TOOL_TYPE}，
+     * 并将 {@link FieldKey#SLOTS} 展开为独立字段。
      */
+    @SuppressWarnings("unchecked")
     private java.util.Map<String, Object> prepareToolParameters(NodeInput input) {
-        // 从输入中提取工具相关参数
         java.util.Map<String, Object> params = new java.util.HashMap<>();
         
         for (java.util.Map.Entry<String, Object> entry : input.toMap().entrySet()) {
             String key = entry.getKey();
-            // 排除已经使用的参数
-            if (!FieldKey.TOOL_NAME.key().equals(key) && !FieldKey.TOOL_TYPE.key().equals(key)) {
-                params.put(key, entry.getValue());
+            Object value = entry.getValue();
+            
+            // 排除元数据字段
+            if (FieldKey.TOOL_NAME.key().equals(key)
+                    || FieldKey.TOOL_TYPE.key().equals(key)
+                    || FieldKey.INTENT_CODE.key().equals(key)
+                    || FieldKey.INTENT_NAME.key().equals(key)
+                    || FieldKey.CONFIDENCE.key().equals(key)
+                    || key.startsWith("_")) {
+                continue;
             }
+            
+            // 展平 slots 为独立字段
+            if (FieldKey.SLOTS.key().equals(key) && value instanceof java.util.Map) {
+                java.util.Map<String, Object> slots = (java.util.Map<String, Object>) value;
+                params.putAll(slots);
+                continue;
+            }
+            
+            params.put(key, value);
         }
         
         return params;

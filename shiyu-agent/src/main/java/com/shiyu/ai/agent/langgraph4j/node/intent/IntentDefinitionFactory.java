@@ -5,9 +5,11 @@ import com.google.common.collect.Table;
 
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.function.Predicate;
 
 /**
  * 意图定义工厂
@@ -241,5 +243,34 @@ public class IntentDefinitionFactory {
      */
     public static Set<String> getCategories() {
         return Collections.unmodifiableSet(intentTable.columnKeySet());
+    }
+
+    /**
+     * 根据指定 agent 和 category 下的所有意图定义，动态构建条件边路由谓词映射。
+     * <p>
+     * 每个意图定义的 {@link IntentDefinition#getCode()} 作为判断条件，
+     * {@link IntentDefinition#getTargetNode()} 作为路由目标。
+     * 由此替代硬编码的 {@code addConditionalEdge} 谓词列表，
+     * 新增意图时只需 {@link #register(String, String, IntentDefinition)}，路由自动适配。
+     *
+     * @param agentId  agent ID
+     * @param category 意图分类
+     * @return 条件边谓词映射（{@link Predicate} → 目标节点 ID）
+     */
+    public static Map<Predicate<Map<String, Object>>, String> buildRoutingPredicates(
+            String agentId, String category) {
+        Map<Predicate<Map<String, Object>>, String> routing = new LinkedHashMap<>();
+        List<IntentDefinition> defs = getByCategory(agentId, category);
+        for (IntentDefinition def : defs) {
+            String code = def.getCode();
+            String targetNode = def.getTargetNode();
+            if (targetNode != null && !targetNode.trim().isEmpty()) {
+                routing.put(
+                        state -> code.equals(state.get("intentCode")),
+                        targetNode
+                );
+            }
+        }
+        return routing;
     }
 }

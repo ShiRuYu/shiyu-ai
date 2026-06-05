@@ -290,22 +290,11 @@ public class AgentStartupConfig implements ApplicationRunner {
                     .addNode("tool_call", toolNode)
                     .addNode("output", outputNode)
 
-                    // 意图 → 条件路由
-                    .addConditionalEdge("intent",
-                            "llm_chat",
-                            Map.<Predicate<Map<String, Object>>, String>of(
-                                    state -> IntentType.CHITCHAT.getCode()
-                                            .equals(state.get("intentCode")),
-                                    "llm_chat",
-                                    state -> IntentType.QUESTION.getCode()
-                                            .equals(state.get("intentCode")),
-                                    "rag_retrieval",
-                                    state -> IntentType.TASK.getCode()
-                                            .equals(state.get("intentCode"))
-                                            || IntentType.WEATHER.getCode()
-                                            .equals(state.get("intentCode")),
-                                    "tool_call"
-                            ))
+                    // 意图 → 条件路由（由 IntentDefinitionFactory 驱动）
+                    // 新增意图时只需注册 IntentDefinition，路由自动适配
+                    .addConditionalEdge("intent", "llm_chat",
+                            IntentDefinitionFactory.buildRoutingPredicates(
+                                    "smart-agent", "general"))
 
                     // RAG 链路
                     .addEdge("rag_retrieval", "rag_enhance")
