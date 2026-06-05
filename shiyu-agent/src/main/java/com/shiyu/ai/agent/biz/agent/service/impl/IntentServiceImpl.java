@@ -36,7 +36,7 @@ public class IntentServiceImpl implements IntentService {
     }
 
     @Override
-    public IntentRecognitionResult recognize(String row, String column, String userInput, String platform) {
+    public IntentRecognitionResult recognize(String row, String column, String userInput, String platform, String modelName) {
         String effectiveRow = row != null ? row : "default";
         String effectiveColumn = column;
 
@@ -49,9 +49,10 @@ public class IntentServiceImpl implements IntentService {
             String prompt = buildIntentPrompt(userInput, supportedIntents);
 
             String actualPlatform = platform != null ? platform : defaultIntentPlatform;
-            String cacheKey = actualPlatform + ":" + modelManager.getDefaultModelName(actualPlatform);
+            String actualModelName = modelName != null ? modelName : modelManager.getDefaultModelName(actualPlatform);
+            String cacheKey = actualPlatform + ":" + actualModelName;
 
-            ChatModel chatModel = modelManager.getChatModel(actualPlatform, null);
+            ChatModel chatModel = modelManager.getChatModel(actualPlatform, actualModelName);
             if (chatModel == null) {
                 return new IntentRecognitionResult(
                     false, null, null, 0.0, Map.of(),
@@ -74,7 +75,7 @@ public class IntentServiceImpl implements IntentService {
 
     @Override
     public IntentRecognitionResult recognize(String row, String column, String userInput) {
-        return recognize(row, column, userInput, null);
+        return recognize(row, column, userInput, null, null);
     }
 
     /**

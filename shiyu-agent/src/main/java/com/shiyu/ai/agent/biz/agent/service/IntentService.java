@@ -15,9 +15,10 @@ public interface IntentService {
      * @param column    column key（意图分类）
      * @param userInput 用户输入文本
      * @param platform  平台名称（null 则使用默认平台）
+     * @param modelName 模型名称（null 则使用默认模型）
      * @return 意图识别结果
      */
-    IntentRecognitionResult recognize(String row, String column, String userInput, String platform);
+    IntentRecognitionResult recognize(String row, String column, String userInput, String platform, String modelName);
 
     /**
      * 识别用户意图（使用默认平台）

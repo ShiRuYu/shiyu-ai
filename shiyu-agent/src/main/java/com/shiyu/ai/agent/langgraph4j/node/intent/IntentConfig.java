@@ -50,4 +50,14 @@ public class IntentConfig extends NodeConfig {
      * 最大重试次数（默认 3）
      */
     private Integer maxRetries = 3;
+    
+    /**
+     * 意图识别使用的 LLM 平台（null 则使用默认平台）
+     */
+    private String platform;
+    
+    /**
+     * 意图识别使用的模型名称（null 则使用默认模型）
+     */
+    private String modelName;
 }
