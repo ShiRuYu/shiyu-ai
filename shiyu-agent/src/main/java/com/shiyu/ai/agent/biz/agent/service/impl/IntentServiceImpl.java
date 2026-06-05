@@ -126,25 +126,9 @@ public class IntentServiceImpl implements IntentService {
         log.debug("意图识别响应：{}", response);
 
         try {
-            // 清理：去除 Markdown 代码块标记
-            String json = response.trim();
-            if (json.startsWith("```json")) {
-                json = json.substring(7);
-            } else if (json.startsWith("```")) {
-                json = json.substring(3);
-            }
-            if (json.endsWith("```")) {
-                json = json.substring(0, json.length() - 3);
-            }
-            json = json.trim();
-
-            // 清理：去除 <|begin_of_box|> / <|end_of_box|> 包裹
-            if (json.startsWith("<|begin_of_box|>")) {
-                json = json.substring("<|begin_of_box|>".length()).trim();
-            }
-            if (json.endsWith("<|end_of_box|>")) {
-                json = json.substring(0, json.length() - "<|end_of_box|>".length()).trim();
-            }
+            // 通用 JSON 提取：找到第一个 { 或 [，通过花括号匹配定位结尾
+            // 无论外层包裹了什么（```json、<|begin_of_box|>、XML、纯文本等），都能正确提取
+            String json = extractJsonFragment(response);
 
             Map<String, Object> result = JSONUtils.parseObject(json, HashMap.class);
 
@@ -199,6 +183,69 @@ public class IntentServiceImpl implements IntentService {
             }
         }
         return 0.0;
+    }
+
+    /**
+     * 从 LLM 响应中提取第一个 JSON 片段（{} 或 []）。
+     * <p>
+     * 通过匹配第一个起始括号和对应的闭合括号来定位 JSON，不依赖任何外层包裹格式。
+     * 因此无论响应外层是 Markdown 代码块、{@code <|begin_of_box|>}、XML 还是纯文本，
+     * 都能正确提取。
+     *
+     * @param raw LLM 原始响应字符串
+     * @return 提取的纯 JSON 字符串
+     * @throws IllegalArgumentException 未找到有效的 JSON 起始括号
+     */
+    private String extractJsonFragment(String raw) {
+        String trimmed = raw.trim();
+        // 定位第一个 JSON 起始括号
+        int start = -1;
+        char openChar = 0;
+        char closeChar = 0;
+        for (int i = 0; i < trimmed.length(); i++) {
+            char c = trimmed.charAt(i);
+            if (c == '{') {
+                start = i;
+                openChar = '{';
+                closeChar = '}';
+                break;
+            } else if (c == '[') {
+                start = i;
+                openChar = '[';
+                closeChar = ']';
+                break;
+            }
+        }
+        if (start < 0) {
+            throw new IllegalArgumentException("响应中未找到 JSON 起始字符（{ 或 [）");
+        }
+
+        // 括号匹配：找到对应的闭合括号
+        int depth = 0;
+        boolean inString = false;
+        for (int i = start; i < trimmed.length(); i++) {
+            char c = trimmed.charAt(i);
+
+            // 跳过字符串内的内容
+            if (c == '"' && (i == 0 || trimmed.charAt(i - 1) != '\\')) {
+                inString = !inString;
+                continue;
+            }
+            if (inString) {
+                continue;
+            }
+
+            if (c == openChar) {
+                depth++;
+            } else if (c == closeChar) {
+                depth--;
+                if (depth == 0) {
+                    return trimmed.substring(start, i + 1);
+                }
+            }
+        }
+
+        throw new IllegalArgumentException("JSON 括号未闭合，depth=" + depth);
     }
 
     /**
