@@ -11,23 +11,23 @@ public interface IntentService {
     /**
      * 识别用户意图
      *
-     * @param agentId   代理 ID（null 则使用 "default"）
-     * @param category  意图分类
+     * @param row       row key（agentId，null 则使用 "default"）
+     * @param column    column key（意图分类）
      * @param userInput 用户输入文本
      * @param platform  平台名称（null 则使用默认平台）
      * @return 意图识别结果
      */
-    IntentRecognitionResult recognize(String agentId, String category, String userInput, String platform);
+    IntentRecognitionResult recognize(String row, String column, String userInput, String platform);
 
     /**
      * 识别用户意图（使用默认平台）
      *
-     * @param agentId   代理 ID（null 则使用 "default"）
-     * @param category  意图分类
+     * @param row       row key（agentId，null 则使用 "default"）
+     * @param column    column key（意图分类）
      * @param userInput 用户输入文本
      * @return 意图识别结果
      */
-    IntentRecognitionResult recognize(String agentId, String category, String userInput);
+    IntentRecognitionResult recognize(String row, String column, String userInput);
 
     /**
      * 意图识别结果
