@@ -1,8 +1,5 @@
 package com.shiyu.ai.agent.biz.agent.service;
 
-import com.shiyu.ai.agent.langgraph4j.node.intent.IntentDefinition;
-
-import java.util.List;
 import java.util.Map;
 
 /**
@@ -15,20 +12,22 @@ public interface IntentService {
      * 识别用户意图
      *
      * @param userInput 用户输入文本
-     * @param category  意图分类（用于从 {@link com.shiyu.ai.agent.langgraph4j.node.intent.IntentDefinitionFactory} 查找支持的意图定义）
+     * @param category  意图分类
+     * @param agentId   代理 ID（null 则使用 "default"）
      * @param platform  平台名称（null 则使用默认平台）
      * @return 意图识别结果
      */
-    IntentRecognitionResult recognize(String userInput, String category, String platform);
+    IntentRecognitionResult recognize(String userInput, String category, String agentId, String platform);
 
     /**
      * 识别用户意图（使用默认平台）
      *
      * @param userInput 用户输入文本
      * @param category  意图分类
+     * @param agentId   代理 ID（null 则使用 "default"）
      * @return 意图识别结果
      */
-    IntentRecognitionResult recognize(String userInput, String category);
+    IntentRecognitionResult recognize(String userInput, String category, String agentId);
 
     /**
      * 意图识别结果

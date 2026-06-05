@@ -36,11 +36,13 @@ public class IntentServiceImpl implements IntentService {
     }
 
     @Override
-    public IntentRecognitionResult recognize(String userInput, String category, String platform) {
-        // 根据 category 从工厂获取意图定义
-        List<IntentDefinition> supportedIntents = IntentDefinitionFactory.getByCategory("default", category);
-        log.info("开始识别用户意图，category={}, 匹配 {} 个意图定义", category,
-                supportedIntents != null ? supportedIntents.size() : 0);
+    public IntentRecognitionResult recognize(String userInput, String category, String agentId, String platform) {
+        String effectiveAgentId = agentId != null ? agentId : "default";
+
+        // 根据 agentId + category 从工厂获取意图定义
+        List<IntentDefinition> supportedIntents = IntentDefinitionFactory.getByCategory(effectiveAgentId, category);
+        log.info("开始识别用户意图，agentId={}, category={}, 匹配 {} 个意图定义",
+                effectiveAgentId, category, supportedIntents != null ? supportedIntents.size() : 0);
 
         try {
             String prompt = buildIntentPrompt(userInput, supportedIntents);
@@ -70,8 +72,8 @@ public class IntentServiceImpl implements IntentService {
     }
 
     @Override
-    public IntentRecognitionResult recognize(String userInput, String category) {
-        return recognize(userInput, category, null);
+    public IntentRecognitionResult recognize(String userInput, String category, String agentId) {
+        return recognize(userInput, category, agentId, null);
     }
 
     /**

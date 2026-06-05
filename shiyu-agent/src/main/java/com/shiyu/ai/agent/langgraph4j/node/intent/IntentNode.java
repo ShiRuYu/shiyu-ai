@@ -118,10 +118,11 @@ public class IntentNode extends BaseNode {
                 return output;
             }
             
-            // 2. 调用意图识别服务（通过 category 查找定义）
+            // 2. 调用意图识别服务（通过 category + agentId 查找定义）
             String category = config.getCategory();
+            String agentId = input.getParameter(\"agentId\", \"default\");
             IntentService.IntentRecognitionResult result =
-                    intentService.recognize(userInput, category);
+                    intentService.recognize(userInput, category, agentId);
             
             // 3. 构建输出结果
             NodeOutput output = new NodeOutput();

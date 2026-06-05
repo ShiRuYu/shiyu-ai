@@ -178,37 +178,43 @@ public class AgentStartupConfig implements ApplicationRunner {
     private void createSmartAgent() {
         log.info("创建 Agent: smart-agent");
         try {
-            // --- 意图识别节点 ---
-            IntentConfig intentConfig = new IntentConfig();
-            intentConfig.setNodeName("意图识别");
+            // --- 注册 smart-agent 的自定义意图定义到工厂 ---
+            IntentDefinitionFactory.register("smart-agent", "CONVERSATION", IntentDefinition.builder()
+                    .code(IntentType.CHITCHAT.getCode()).name(IntentType.CHITCHAT.getName())
+                    .description(IntentType.CHITCHAT.getDescription())
+                    .category("CONVERSATION").priority(50).confidenceThreshold(0.75)
+                    .examples(new String[]{"你好", "最近怎么样", "今天天气不错", "你在干什么", "聊聊天吧"})
+                    .targetNode("llm_chat").enabled(true).build());
 
-            IntentDefinition chitChat = IntentDefinitionFactory.createChitChatDefinition();
-            chitChat.setTargetNode("llm_chat");
+            IntentDefinitionFactory.register("smart-agent", "KNOWLEDGE", IntentDefinition.builder()
+                    .code(IntentType.QUESTION.getCode()).name("知识查询")
+                    .description("查询知识库信息")
+                    .category("KNOWLEDGE").priority(60).confidenceThreshold(0.8)
+                    .examples(new String[]{"什么是RAG", "Shiyu AI 是什么"})
+                    .targetNode("chat_rag").enabled(true).build());
 
-            IntentDefinition query = IntentDefinitionFactory.createQueryDefinition();
-            query.setName("知识查询");
-            query.setDescription("查询知识库信息");
-            query.setExamples(new String[]{"什么是RAG", "Shiyu AI 是什么"});
-            query.setTargetNode("chat_rag");
+            IntentDefinitionFactory.register("smart-agent", "TASK", IntentDefinition.builder()
+                    .code(IntentType.TASK.getCode()).name(IntentType.TASK.getName())
+                    .description(IntentType.TASK.getDescription())
+                    .category("TASK").priority(70).confidenceThreshold(0.85)
+                    .examples(new String[]{"查询北京天气", "计算 1+2*3"})
+                    .requireSlotFilling(true)
+                    .targetNode("tool_execute").enabled(true).build());
 
-            IntentDefinition task = IntentDefinitionFactory.createTaskDefinition();
-            task.setExamples(new String[]{"查询北京天气", "计算 1+2*3"});
-            task.setTargetNode("tool_execute");
-
-            IntentDefinition weather = IntentDefinition.builder()
+            IntentDefinitionFactory.register("smart-agent", "WEATHER", IntentDefinition.builder()
                     .code(IntentType.WEATHER.getCode()).name("天气查询")
                     .description("查询天气信息")
+                    .category("WEATHER").priority(65).confidenceThreshold(0.8)
                     .examples(new String[]{"北京天气怎么样", "上海今天冷吗"})
-                    .targetNode("tool_execute")
-                    .build();
+                    .targetNode("tool_execute").enabled(true).build());
 
-            intentConfig.setSupportedIntents(new IntentDefinition[]{
-                    chitChat, query, task, weather
-            });
-
+            // --- 意图识别节点 ---
             IntentNode intentNode = IntentNode.builder()
                     .intentService(intentService)
-                    .config(intentConfig)
+                    .config(IntentConfig.builder()
+                            .nodeName("意图识别")
+                            .category("CONVERSATION")
+                            .build())
                     .build();
 
             // --- LLM 闲聊节点 ---

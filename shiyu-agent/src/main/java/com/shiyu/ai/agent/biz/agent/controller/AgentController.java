@@ -133,6 +133,7 @@ public class AgentController {
                 input.putAll(params);
             }
             input.put("chatType", ChatType.SYNC.name());
+            input.put("agentId", agentId);
             
             Map<String, Object> result = agentService.execute(agentId, input);
             
@@ -167,6 +168,7 @@ public class AgentController {
                 input.putAll(params);
             }
             input.put("chatType", ChatType.STREAM.name());
+            input.put("agentId", agentId);
             
             return agentService.executeStream(agentId, input)
                     .map(result -> Result.success(result))
