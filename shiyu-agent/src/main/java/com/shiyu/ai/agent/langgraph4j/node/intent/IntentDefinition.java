@@ -1,5 +1,6 @@
 package com.shiyu.ai.agent.langgraph4j.node.intent;
 
+import com.google.common.collect.Maps;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
@@ -119,7 +120,9 @@ public class IntentDefinition {
      */
     public IntentDefinition addSlot(String slotName, String slotDescription) {
         if (this.slots == null) {
-            this.slots = new HashMap<>();
+            this.slots = Maps.newHashMap();
+        } else if (!(this.slots instanceof HashMap)) {
+            this.slots = Maps.newHashMap(this.slots);
         }
         this.slots.put(slotName, slotDescription);
         return this;
@@ -134,7 +137,9 @@ public class IntentDefinition {
      */
     public IntentDefinition addParameter(String key, Object value) {
         if (this.parameters == null) {
-            this.parameters = new HashMap<>();
+            this.parameters = Maps.newHashMap();
+        } else if (!(this.parameters instanceof HashMap)) {
+            this.parameters = Maps.newHashMap(this.parameters);
         }
         this.parameters.put(key, value);
         return this;

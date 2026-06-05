@@ -1,5 +1,6 @@
 package com.shiyu.ai.agent.langgraph4j.node.intent;
 import com.google.common.collect.HashBasedTable;
+import com.google.common.collect.Maps;
 import com.google.common.collect.Table;
 
 import java.util.ArrayList;
@@ -120,16 +121,14 @@ public class IntentDefinitionFactory {
                         "帮我写一个排序方法",
                         "这个错误怎么解决"
                 })
-                .slots(Map.of(
+                .slots(Maps.newHashMap(Map.of(
                         "language", "编程语言",
                         "codeSnippet", "代码片段"
-                ))
+                )))
                 .requireSlotFilling(false)
                 .targetNode("chatWithCode")
                 .enabled(true)
                 .build();
-        codeHelp.addSlot("language", "编程语言");
-        codeHelp.addSlot("codeSnippet", "代码片段");
         put("default", "TECHNICAL", codeHelp);
     }
 
