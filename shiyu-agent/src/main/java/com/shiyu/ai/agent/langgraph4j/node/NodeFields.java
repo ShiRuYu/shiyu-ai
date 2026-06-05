@@ -36,12 +36,8 @@ public interface NodeFields {
     enum FieldKey {
         // ==================== 输入字段 ====================
 
-        /** 用户的原始输入文本 */
-        USER_INPUT("userInput"),
-        /** 查询文本（语义同 USER_INPUT，用于不同的上下文） */
+        /** 用户的原始输入文本 / 查询文本 */
         QUERY("query"),
-        /** 拼接好的 Prompt 文本 */
-        PROMPT("prompt"),
         /** 平台/提供商（如 SILICON_FLOW, OLLAMA） */
         PLATFORM("platform"),
         /** 模型名称 */
@@ -140,6 +136,12 @@ public interface NodeFields {
 
         /** agentId */
         AGENT_ID("agentId"),
+        /** Slot → 工具参数名的映射（从 IntentDefinition 传递） */
+        PARAMETER_MAPPING("parameterMapping"),
+        /** Slot 默认值（从 IntentDefinition 传递） */
+        SLOT_DEFAULTS("slotDefaults"),
+        /** Slot 定义 schema（从 IntentDefinition 传递，key 集用作必填校验） */
+        SLOT_DEFINITIONS("slotDefinitions"),
 
         // ==================== LLM 调用节点专属 ====================
 
@@ -219,7 +221,7 @@ public interface NodeFields {
     /**
      * 意图识别节点
      * <p>
-     * 输入: userInput / query
+     * 输入: query
      * 输出: intentCode, intentName, confidence, slots, nextNode
      */
     enum IntentFields implements NodeFields {
@@ -227,7 +229,7 @@ public interface NodeFields {
 
         @Override
         public Set<FieldKey> inputFields() {
-            return Set.of(FieldKey.USER_INPUT, FieldKey.QUERY, FieldKey.AGENT_ID);
+            return Set.of(FieldKey.QUERY, FieldKey.AGENT_ID);
         }
 
         @Override
@@ -237,6 +239,9 @@ public interface NodeFields {
                     FieldKey.INTENT_NAME,
                     FieldKey.CONFIDENCE,
                     FieldKey.SLOTS,
+                    FieldKey.PARAMETER_MAPPING,
+                    FieldKey.SLOT_DEFAULTS,
+                    FieldKey.SLOT_DEFINITIONS,
                     FieldKey.NEXT_NODE
             );
         }
@@ -245,7 +250,7 @@ public interface NodeFields {
     /**
      * LLM 调用节点
      * <p>
-     * 输入: prompt / query / userInput, platform, model, chatType
+     * 输入: query, platform, model, chatType
      * 输出: content, platform, model, messages, streamingChatGenerator, stream, chatType
      */
     enum LlmCallFields implements NodeFields {
@@ -254,9 +259,7 @@ public interface NodeFields {
         @Override
         public Set<FieldKey> inputFields() {
             return Set.of(
-                    FieldKey.PROMPT,
                     FieldKey.QUERY,
-                    FieldKey.USER_INPUT,
                     FieldKey.PLATFORM,
                     FieldKey.MODEL,
                     FieldKey.CHAT_TYPE
@@ -306,7 +309,7 @@ public interface NodeFields {
     /**
      * RAG 检索节点
      * <p>
-     * 输入: query / userInput, knowledgeBaseId
+     * 输入: query, knowledgeBaseId
      * 输出: documents, documentCount, context
      */
     enum RagRetrievalFields implements NodeFields {
@@ -316,7 +319,6 @@ public interface NodeFields {
         public Set<FieldKey> inputFields() {
             return Set.of(
                     FieldKey.QUERY,
-                    FieldKey.USER_INPUT,
                     FieldKey.KNOWLEDGE_BASE_ID
             );
         }
@@ -403,7 +405,7 @@ public interface NodeFields {
     /**
      * 记忆检索节点
      * <p>
-     * 输入: query / userInput, retrievalScope, topK, similarityThreshold
+     * 输入: query, retrievalScope, topK, similarityThreshold
      * 输出: memories, memoryCount, memoryContext
      */
     enum MemoryRetrievalFields implements NodeFields {
@@ -413,7 +415,6 @@ public interface NodeFields {
         public Set<FieldKey> inputFields() {
             return Set.of(
                     FieldKey.QUERY,
-                    FieldKey.USER_INPUT,
                     FieldKey.RETRIEVAL_SCOPE,
                     FieldKey.TOP_K,
                     FieldKey.SIMILARITY_THRESHOLD
@@ -464,7 +465,7 @@ public interface NodeFields {
     /**
      * 数据转换节点
      * <p>
-     * 输入: input / data / content / text / query / userInput
+     * 输入: input / data / content / text / query
      * 输出: transformedData, messages
      */
     enum TransformFields implements NodeFields {
@@ -478,7 +479,6 @@ public interface NodeFields {
                     FieldKey.CONTENT,
                     FieldKey.TEXT,
                     FieldKey.QUERY,
-                    FieldKey.USER_INPUT,
                     FieldKey.TRANSFORM_TYPE
             );
         }

@@ -28,7 +28,7 @@ public class TransformNode extends BaseNode {
      */
     private static final FieldKey[] GET_INPUT_KEYS = {
             FieldKey.INPUT, FieldKey.DATA, FieldKey.CONTENT,
-            FieldKey.TEXT, FieldKey.QUERY, FieldKey.USER_INPUT
+            FieldKey.TEXT, FieldKey.QUERY
     };
 
     /**

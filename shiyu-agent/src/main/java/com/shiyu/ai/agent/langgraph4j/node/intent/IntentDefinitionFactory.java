@@ -71,9 +71,9 @@ public class IntentDefinitionFactory {
 
         // TASK 分类
         put("default", "TASK", IntentDefinition.builder()
-                .code(IntentType.TASK.getCode())
-                .name(IntentType.TASK.getName())
-                .description(IntentType.TASK.getDescription())
+                .code(IntentType.CALCULATOR.getCode())
+                .name(IntentType.CALCULATOR.getName())
+                .description(IntentType.CALCULATOR.getDescription())
                 .category("TASK")
                 .priority(70)
                 .confidenceThreshold(0.85)

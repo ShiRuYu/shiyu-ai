@@ -1,5 +1,6 @@
 package com.shiyu.ai.agent.biz.agent.service.impl;
 
+import com.shiyu.ai.agent.langgraph4j.node.intent.IntentType;
 import com.shiyu.ai.agent.biz.agent.service.ToolService;
 import jakarta.annotation.PostConstruct;
 import lombok.extern.slf4j.Slf4j;
@@ -175,13 +176,14 @@ public class ToolServiceImpl implements ToolService {
     private void registerBuiltinTools() {
         // 1. 天气查询
         registerTool(
-                "weather",
-                "查询指定城市的当前天气信息",
+                IntentType.WEATHER.getCode(),
+                IntentType.WEATHER.getDescription(),
                 Map.of(
-                        "city", new ParameterDef("string", "城市名称，如 北京、上海", true)
+                        "location", new ParameterDef("string", "城市名称，如 北京、上海（支持别名映射）", true)
                 ),
                 params -> {
-                    String city = (String) params.get("city");
+                    String location = (String) params.get("location");
+                    String city = location != null ? location : "未知";
                     int code = Math.floorMod(city.hashCode(), 6);
                     String[] conditions = {"晴", "多云", "阴天", "小雨", "中雨", "微风"};
                     String condition = conditions[code];
@@ -199,8 +201,8 @@ public class ToolServiceImpl implements ToolService {
 
         // 2. 计算器
         registerTool(
-                "calculator",
-                "执行基础的数学运算（加、减、乘、除）",
+                IntentType.CALCULATOR.getCode(),
+                IntentType.CALCULATOR.getDescription(),
                 Map.of(
                         "expression", new ParameterDef("string", "数学表达式，如 1+2*3", true)
                 ),

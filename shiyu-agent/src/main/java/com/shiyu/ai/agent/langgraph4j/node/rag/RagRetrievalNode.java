@@ -107,10 +107,16 @@ public class RagRetrievalNode extends BaseNode {
         try {
             // 1. 获取查询文本
             String query = input.getParameter(FieldKey.QUERY, "");
+
             if (query == null || query.trim().isEmpty()) {
-                query = input.getParameter(FieldKey.USER_INPUT, "");
+                log.warn("查询文本为空，跳过 RAG 检索");
+                NodeOutput output = new NodeOutput();
+                output.setSuccess(false);
+                output.setMsg("查询文本为空");
+                output.setData(Map.of());
+                return output;
             }
-            
+
             // 2. 调用 RAG 检索服务
             String knowledgeBaseId = getKnowledgeBaseId(input);
             int topK = input.getParameter(FieldKey.TOP_K, config.getTopK() != null ? config.getTopK() : 5);

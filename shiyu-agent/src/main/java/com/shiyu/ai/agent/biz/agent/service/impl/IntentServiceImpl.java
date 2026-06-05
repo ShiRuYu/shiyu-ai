@@ -36,7 +36,7 @@ public class IntentServiceImpl implements IntentService {
     }
 
     @Override
-    public IntentRecognitionResult recognize(String row, String column, String userInput, String platform, String modelName) {
+    public IntentRecognitionResult recognize(String row, String column, String query, String platform, String modelName) {
         String effectiveRow = row != null ? row : "default";
         String effectiveColumn = column;
 
@@ -46,7 +46,7 @@ public class IntentServiceImpl implements IntentService {
                 effectiveRow, effectiveColumn, supportedIntents != null ? supportedIntents.size() : 0);
 
         try {
-            String prompt = buildIntentPrompt(userInput, supportedIntents);
+            String prompt = buildIntentPrompt(query, supportedIntents);
 
             String actualPlatform = platform != null ? platform : defaultIntentPlatform;
             String actualModelName = modelName != null ? modelName : modelManager.getDefaultModelName(actualPlatform);
@@ -74,17 +74,17 @@ public class IntentServiceImpl implements IntentService {
     }
 
     @Override
-    public IntentRecognitionResult recognize(String row, String column, String userInput) {
-        return recognize(row, column, userInput, null, null);
+    public IntentRecognitionResult recognize(String row, String column, String query) {
+        return recognize(row, column, query, null, null);
     }
 
     /**
      * 构建意图识别的 Prompt
      */
-    private String buildIntentPrompt(String userInput, List<IntentDefinition> supportedIntents) {
+    private String buildIntentPrompt(String query, List<IntentDefinition> supportedIntents) {
         StringBuilder prompt = new StringBuilder();
         prompt.append("请分析以下用户输入的意图：\n\n");
-        prompt.append("用户输入：").append(userInput).append("\n\n");
+        prompt.append("用户输入：").append(query).append("\n\n");
 
         if (supportedIntents != null && !supportedIntents.isEmpty()) {
             prompt.append("支持的意图列表：\n");

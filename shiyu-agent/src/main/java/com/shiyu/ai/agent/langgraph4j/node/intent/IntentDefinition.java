@@ -99,10 +99,6 @@ public class IntentDefinition {
     @Builder.Default
     private String targetNode = "";
     
-    /** 关联工具名称（当 targetNode 指向工具节点时，指定具体工具） */
-    @Builder.Default
-    private String toolName = "";
-    
     /**
      * 是否启用（默认 true）
      */

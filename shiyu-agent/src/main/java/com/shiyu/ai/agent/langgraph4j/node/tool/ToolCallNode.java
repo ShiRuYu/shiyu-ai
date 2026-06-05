@@ -5,14 +5,10 @@ import com.shiyu.ai.agent.langgraph4j.node.NodeInput;
 import com.shiyu.ai.agent.langgraph4j.node.NodeOutput;
 import com.shiyu.ai.agent.langgraph4j.node.NodeType;
 import com.shiyu.ai.agent.langgraph4j.node.NodeFields.FieldKey;
-import com.shiyu.ai.agent.langgraph4j.node.intent.IntentDefinition;
-import com.shiyu.ai.agent.langgraph4j.node.intent.IntentDefinitionFactory;
 import com.shiyu.ai.agent.biz.agent.service.ToolService;
 import lombok.Getter;
 import lombok.Setter;
 import lombok.extern.slf4j.Slf4j;
-
-import java.util.List;
 
 /**
  * 用于调用外部工具或服务
@@ -148,74 +144,33 @@ public class ToolCallNode extends BaseNode {
     /**
      * 获取工具名称
      * <p>
-     * 优先级: input (runtime) > config > IntentDefinitionFactory (从 intentCode 推导)
+     * 从配置中读取 toolName，每个 ToolCallNode 实例只对应一个工具。
      */
     private String getToolName(NodeInput input) {
-        // 1. Input（最高优先级）
-        String toolName = input.getParameter(FieldKey.TOOL_NAME, "");
-        if (toolName != null && !toolName.trim().isEmpty()) {
-            return toolName;
-        }
-        
-        // 2. Config（次高优先级）
-        if (config.getToolName() != null && !config.getToolName().trim().isEmpty()) {
-            return config.getToolName();
-        }
-
-        // 3. Factory（最低优先级）— 从 intentCode 查找对应 IntentDefinition 的 toolName
-        String intentCode = input.getParameter(FieldKey.INTENT_CODE, "");
-        if (intentCode != null && !intentCode.trim().isEmpty()) {
-            for (String agentId : IntentDefinitionFactory.getAgentIds()) {
-                List<IntentDefinition> defs = IntentDefinitionFactory.getAll(agentId);
-                for (IntentDefinition def : defs) {
-                    if (intentCode.equals(def.getCode())
-                            && def.getToolName() != null && !def.getToolName().trim().isEmpty()) {
-                        log.debug("从 IntentDefinition 推导 toolName: {} (intentCode={})",
-                                def.getToolName(), intentCode);
-                        return def.getToolName();
-                    }
-                }
-            }
-        }
-        
-        return null;
+        return config.getToolName();
     }
     
     /**
-     * 根据 input 中的 intentCode 查找对应的 IntentDefinition
-     */
-    private IntentDefinition resolveIntentDefinition(NodeInput input) {
-        String intentCode = input.getParameter(FieldKey.INTENT_CODE, "");
-        if (intentCode == null || intentCode.trim().isEmpty()) {
-            return null;
-        }
-        for (String agentId : IntentDefinitionFactory.getAgentIds()) {
-            List<IntentDefinition> defs = IntentDefinitionFactory.getAll(agentId);
-            for (IntentDefinition def : defs) {
-                if (intentCode.equals(def.getCode())) {
-                    return def;
-                }
-            }
-        }
-        return null;
-    }
-
-    /**
      * 准备工具参数
      * <p>
-     * 处理流程：
+     * 从 input 中提取参数并处理：
      * <ol>
-     *   <li>从 input 中提取原始参数，排除元数据字段</li>
+     *   <li>提取原始参数，排除元数据字段</li>
      *   <li>将 {@link FieldKey#SLOTS} 展平为独立字段</li>
-     *   <li>通过 {@link IntentDefinition#getParameterMapping()} 重命名 slot key</li>
-     *   <li>通过 {@link IntentDefinition#getSlotDefaults()} 补充缺失的默认值</li>
-     *   <li>校验 @link IntentDefinition#getSlots()} 中声明的必填 slot 是否存在</li>
+     *   <li>通过 {@link FieldKey#PARAMETER_MAPPING} 重命名 slot key</li>
+     *   <li>通过 {@link FieldKey#SLOT_DEFAULTS} 补充缺失的默认值</li>
+     *   <li>通过 {@link FieldKey#SLOT_DEFINITIONS} 校验部分 slot 缺失</li>
      * </ol>
+     * <p>
+     * 参数映射/默认值/schema 均由上游 {@code IntentNode} 从 {@code IntentDefinition} 解析后
+     * 写入 state 传递至此，不再直接查询工厂。
      */
     @SuppressWarnings("unchecked")
     private java.util.Map<String, Object> prepareToolParameters(NodeInput input) {
-        // 1. 查找意图定义（用于参数映射和默认值）
-        IntentDefinition intentDef = resolveIntentDefinition(input);
+        // 1. 从 state 读取上游 IntentNode 传递的配置
+        java.util.Map<String, String> parameterMapping = input.getParameter(FieldKey.PARAMETER_MAPPING, null);
+        java.util.Map<String, String> slotDefaults = input.getParameter(FieldKey.SLOT_DEFAULTS, null);
+        java.util.Map<String, String> slotDefinitions = input.getParameter(FieldKey.SLOT_DEFINITIONS, null);
 
         // 2. 收集原始参数，排除元数据
         java.util.Map<String, Object> raw = new java.util.HashMap<>();
@@ -229,6 +184,9 @@ public class ToolCallNode extends BaseNode {
                     || FieldKey.INTENT_CODE.key().equals(key)
                     || FieldKey.INTENT_NAME.key().equals(key)
                     || FieldKey.CONFIDENCE.key().equals(key)
+                    || FieldKey.PARAMETER_MAPPING.key().equals(key)
+                    || FieldKey.SLOT_DEFAULTS.key().equals(key)
+                    || FieldKey.SLOT_DEFINITIONS.key().equals(key)
                     || key.startsWith("_")) {
                 continue;
             }
@@ -243,48 +201,40 @@ public class ToolCallNode extends BaseNode {
             raw.put(key, value);
         }
 
-        // 3. 如果有 IntentDefinition，应用参数映射 + 默认值
-        if (intentDef != null) {
-            // 3a. 参数重命名（slot名 → 工具参数名）
-            java.util.Map<String, String> mapping = intentDef.getParameterMapping();
-            if (mapping != null && !mapping.isEmpty()) {
-                for (java.util.Map.Entry<String, String> me : mapping.entrySet()) {
-                    String slotName = me.getKey();
-                    String paramName = me.getValue();
-                    if (raw.containsKey(slotName) && !slotName.equals(paramName)) {
-                        raw.put(paramName, raw.remove(slotName));
-                    }
+        // 3. 参数重命名（slot名 → 工具参数名）
+        if (parameterMapping != null && !parameterMapping.isEmpty()) {
+            for (java.util.Map.Entry<String, String> me : parameterMapping.entrySet()) {
+                String slotName = me.getKey();
+                String paramName = me.getValue();
+                if (raw.containsKey(slotName) && !slotName.equals(paramName)) {
+                    raw.put(paramName, raw.remove(slotName));
                 }
             }
+        }
 
-            // 3b. 补充 slot 默认值（仅当缺失时）
-            java.util.Map<String, String> defaults = intentDef.getSlotDefaults();
-            if (defaults != null && !defaults.isEmpty()) {
-                for (java.util.Map.Entry<String, String> de : defaults.entrySet()) {
-                    String slotName = de.getKey();
-                    // 先查重命名后的 key
-                    String effectiveKey = mapping != null
-                            ? mapping.getOrDefault(slotName, slotName)
-                            : slotName;
-                    if (!raw.containsKey(effectiveKey)) {
-                        raw.put(effectiveKey, de.getValue());
-                        log.debug("补充 slot 默认值: {}={}", effectiveKey, de.getValue());
-                    }
+        // 4. 补充 slot 默认值（仅当缺失时）
+        if (slotDefaults != null && !slotDefaults.isEmpty()) {
+            for (java.util.Map.Entry<String, String> de : slotDefaults.entrySet()) {
+                String slotName = de.getKey();
+                String effectiveKey = parameterMapping != null
+                        ? parameterMapping.getOrDefault(slotName, slotName)
+                        : slotName;
+                if (!raw.containsKey(effectiveKey)) {
+                    raw.put(effectiveKey, de.getValue());
+                    log.debug("补充 slot 默认值: {}={}", effectiveKey, de.getValue());
                 }
             }
+        }
 
-            // 3c. 校验必填 slot（IntentDefinition.slots 中声明的 key 为必填）
-            java.util.Map<String, String> slotDefs = intentDef.getSlots();
-            if (slotDefs != null && !slotDefs.isEmpty()) {
-                for (String slotName : slotDefs.keySet()) {
-                    String effectiveKey = mapping != null
-                            ? mapping.getOrDefault(slotName, slotName)
-                            : slotName;
-                    if (!raw.containsKey(effectiveKey) || raw.get(effectiveKey) == null
-                            || "".equals(raw.get(effectiveKey).toString().trim())) {
-                        // slotDefaults 中有默认值，已在上一步补全，走到这里说明确实缺了
-                        log.warn("必填 slot 缺失: {} (原始slot名={})", effectiveKey, slotName);
-                    }
+        // 5. 校验部分 slot 缺失（仅 warn，不阻断）
+        if (slotDefinitions != null && !slotDefinitions.isEmpty()) {
+            for (String slotName : slotDefinitions.keySet()) {
+                String effectiveKey = parameterMapping != null
+                        ? parameterMapping.getOrDefault(slotName, slotName)
+                        : slotName;
+                if (!raw.containsKey(effectiveKey) || raw.get(effectiveKey) == null
+                        || "".equals(raw.get(effectiveKey).toString().trim())) {
+                    log.warn("部分 slot 缺失: {} (原始slot名={})", effectiveKey, slotName);
                 }
             }
         }

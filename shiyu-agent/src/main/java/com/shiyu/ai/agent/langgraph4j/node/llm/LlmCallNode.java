@@ -203,27 +203,23 @@ public class LlmCallNode extends BaseNode {
      * @return 构建后的 Prompt
      */
     private String buildPrompt(NodeInput input) {
-        // 1. Input（最高优先级）：尝试多个字段名
-        String prompt = input.getParameter(FieldKey.PROMPT, null);
-        if (prompt == null || prompt.trim().isEmpty()) {
-            prompt = input.getParameter(FieldKey.QUERY, null);
+        // 1. Config 模板（最高优先级）：有模板则应用变量替换
+        if (config.getPromptTemplate() != null && !config.getPromptTemplate().isEmpty()) {
+            return applyPromptTemplate(config.getPromptTemplate(), input);
         }
-        if (prompt == null || prompt.trim().isEmpty()) {
-            prompt = input.getParameter(FieldKey.USER_INPUT, null);
-        }
+
+        // 2. 原始查询文本（中优先级）
+        String prompt = input.getParameter(FieldKey.QUERY, null);
         if (prompt != null && !prompt.trim().isEmpty()) {
             return prompt;
         }
 
-        // 2. Config（次高优先级）
-        if (config.getPromptTemplate() != null && !config.getPromptTemplate().isEmpty()) {
-            return applyPromptTemplate(config.getPromptTemplate(), input);
-        }
+        // 3. 默认 Prompt（低优先级）
         if (config.getDefaultPrompt() != null && !config.getDefaultPrompt().isEmpty()) {
             return config.getDefaultPrompt();
         }
 
-        // 3. 硬编码默认值（最低优先级）
+        // 4. 硬编码默认值（最低优先级）
         return "";
     }
     
@@ -235,7 +231,7 @@ public class LlmCallNode extends BaseNode {
      */
     private String applyPromptTemplate(String template, NodeInput input) {
         String result = template;
-        
+
         // 简单的变量替换（支持 {variable} 格式）
         for (Map.Entry<String, Object> entry : input.toMap().entrySet()) {
             String key = entry.getKey();
@@ -244,7 +240,7 @@ public class LlmCallNode extends BaseNode {
                 result = result.replace("{" + key + "}", value.toString());
             }
         }
-        
+
         return result;
     }
     

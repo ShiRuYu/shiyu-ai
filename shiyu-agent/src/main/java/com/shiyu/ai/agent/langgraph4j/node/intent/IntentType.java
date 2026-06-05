@@ -25,9 +25,9 @@ public enum IntentType {
     QUESTION("QUESTION", "问答", "处理用户的知识性问题"),
     
     /**
-     * 任务型意图
+     * 计算器
      */
-    TASK("TASK", "任务", "处理需要执行特定任务的请求"),
+    CALCULATOR("CALCULATOR", "计算器", "执行基础的数学运算（加、减、乘、除）"),
     
     /**
      * 查询意图
@@ -100,9 +100,9 @@ public enum IntentType {
     TRAVEL("TRAVEL", "旅行", "处理旅行和旅游相关的规划"),
     
     /**
-     * 天气意图
+     * 天气查询
      */
-    WEATHER("WEATHER", "天气", "处理天气查询"),
+    WEATHER("WEATHER", "天气查询", "查询指定城市的当前天气信息"),
     
     /**
      * 新闻意图

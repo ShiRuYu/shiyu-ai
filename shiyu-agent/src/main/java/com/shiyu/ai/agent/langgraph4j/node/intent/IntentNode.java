@@ -6,9 +6,13 @@ import com.shiyu.ai.agent.langgraph4j.node.NodeOutput;
 import com.shiyu.ai.agent.langgraph4j.node.NodeType;
 import com.shiyu.ai.agent.langgraph4j.node.NodeFields.FieldKey;
 import com.shiyu.ai.agent.biz.agent.service.IntentService;
+import com.shiyu.ai.agent.langgraph4j.node.intent.IntentDefinition;
+import com.shiyu.ai.agent.langgraph4j.node.intent.IntentDefinitionFactory;
 import lombok.Getter;
 import lombok.Setter;
 import lombok.extern.slf4j.Slf4j;
+
+import java.util.List;
 
 /**
  * 意图识别节点
@@ -103,12 +107,9 @@ public class IntentNode extends BaseNode {
         
         try {
             // 1. 获取用户输入
-            String userInput = input.getParameter(FieldKey.USER_INPUT, "");
-            if (userInput.trim().isEmpty()) {
-                userInput = input.getParameter(FieldKey.QUERY, "");
-            }
+            String query = input.getParameter(FieldKey.QUERY, "");
 
-            if (userInput.trim().isEmpty()) {
+            if (query.trim().isEmpty()) {
                 NodeOutput output = new NodeOutput();
                 output.setSuccess(false);
                 output.setMsg("用户输入为空");
@@ -122,7 +123,7 @@ public class IntentNode extends BaseNode {
             String platform = config.getPlatform();
             String modelName = config.getModelName();
             IntentService.IntentRecognitionResult result =
-                    intentService.recognize(agentId, category, userInput, platform, modelName);
+                    intentService.recognize(agentId, category, query, platform, modelName);
             
             // 3. 构建输出结果
             NodeOutput output = new NodeOutput();
@@ -134,6 +135,28 @@ public class IntentNode extends BaseNode {
             output.addData(FieldKey.INTENT_NAME, result.intentName());
             output.addData(FieldKey.CONFIDENCE, result.confidence());
             output.addData(FieldKey.SLOTS, result.slots());
+
+            // 5. 从工厂查找 IntentDefinition，将参数映射和 slot schema 传递给下游工具节点
+            String intentCode = result.intentCode();
+            if (intentCode != null && !intentCode.trim().isEmpty()) {
+                List<IntentDefinition> defs = IntentDefinitionFactory.getAll(agentId);
+                for (IntentDefinition def : defs) {
+                    if (intentCode.equals(def.getCode())) {
+                        if (def.getParameterMapping() != null && !def.getParameterMapping().isEmpty()) {
+                            output.addData(FieldKey.PARAMETER_MAPPING, def.getParameterMapping());
+                        }
+                        if (def.getSlotDefaults() != null && !def.getSlotDefaults().isEmpty()) {
+                            output.addData(FieldKey.SLOT_DEFAULTS, def.getSlotDefaults());
+                        }
+                        if (def.getSlots() != null && !def.getSlots().isEmpty()) {
+                            output.addData(FieldKey.SLOT_DEFINITIONS, def.getSlots());
+                        }
+                        log.debug("意图 {} 携带 mapping={}, defaults={}, slots={}", intentCode,
+                                def.getParameterMapping(), def.getSlotDefaults(), def.getSlots());
+                        break;
+                    }
+                }
+            }
 
             log.info("意图识别完成，intentCode={}, confidence={}",
                     result.intentCode(), result.confidence());

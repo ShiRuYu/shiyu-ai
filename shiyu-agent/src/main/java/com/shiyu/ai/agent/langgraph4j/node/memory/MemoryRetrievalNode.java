@@ -78,9 +78,6 @@ public class MemoryRetrievalNode extends BaseNode {
         try {
             // 1. 获取查询文本
             String query = input.getParameter(FieldKey.QUERY, "");
-            if (query == null || query.trim().isEmpty()) {
-                query = input.getParameter(FieldKey.USER_INPUT, "");
-            }
 
             // 2. 从输入中获取参数
             String retrievalScope = input.getParameter(FieldKey.RETRIEVAL_SCOPE,

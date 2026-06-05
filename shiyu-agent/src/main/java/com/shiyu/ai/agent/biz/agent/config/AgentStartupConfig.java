@@ -135,7 +135,7 @@ public class AgentStartupConfig implements ApplicationRunner {
                     .lc4jService(lc4jService)
                     .config(LlmCallConfig.builder()
                             .nodeName("LLM 回答")
-                            .promptTemplate("基于以下检索到的文档内容回答用户问题。\n\n{context}\n\n用户问题: {userInput}")
+                            .promptTemplate("基于以下检索到的文档内容回答用户问题。\n\n{context}\n\n用户问题: {query}")
                             .stream(false)
                             .build())
                     .build();
@@ -195,24 +195,24 @@ public class AgentStartupConfig implements ApplicationRunner {
                     .targetNode("rag_retrieval").enabled(true).build());
 
             IntentDefinitionFactory.register("smart-agent", "general", IntentDefinition.builder()
-                    .code(IntentType.TASK.getCode()).name(IntentType.TASK.getName())
-                    .description(IntentType.TASK.getDescription())
+                    .code(IntentType.CALCULATOR.getCode()).name(IntentType.CALCULATOR.getName())
+                    .description(IntentType.CALCULATOR.getDescription())
                     .category("general").priority(70).confidenceThreshold(0.85)
                     .examples(new String[]{"查询北京天气", "计算 1+2*3"})
                     .requireSlotFilling(true)
                     .slots(Maps.newHashMap(Map.of("expression", "数学表达式")))
-                    .targetNode("tool_call").toolName("calculator").enabled(true).build());
+                    .targetNode("tool_call_calculator").enabled(true).build());
 
             IntentDefinitionFactory.register("smart-agent", "general", IntentDefinition.builder()
-                    .code(IntentType.WEATHER.getCode()).name("天气查询")
-                    .description("查询天气信息")
+                    .code(IntentType.WEATHER.getCode()).name(IntentType.WEATHER.getName())
+                    .description(IntentType.WEATHER.getDescription())
                     .category("general").priority(65).confidenceThreshold(0.8)
                     .examples(new String[]{"北京天气怎么样", "上海今天冷吗"})
                     .requireSlotFilling(true)
                     .slots(Maps.newHashMap(Map.of("city", "城市名称", "date", "日期（可选）")))
                     .parameterMapping(Maps.newHashMap(Map.of("city", "location")))
                     .slotDefaults(Maps.newHashMap(Map.of("unit", "celsius")))
-                    .targetNode("tool_call").toolName("weather").enabled(true).build());
+                    .targetNode("tool_call_weather").enabled(true).build());
 
             // --- 意图识别节点 ---
             IntentNode intentNode = IntentNode.builder()
@@ -256,17 +256,38 @@ public class AgentStartupConfig implements ApplicationRunner {
                     .lc4jService(lc4jService)
                     .config(LlmCallConfig.builder()
                             .nodeName("RAG 回答")
-                            .promptTemplate("基于以下检索到的文档回答用户问题。\n\n{context}\n\n用户问题: {userInput}")
+                            .promptTemplate("基于以下检索到的文档回答用户问题。\n\n{context}\n\n用户问题: {query}")
                             .stream(false)
                             .build())
                     .build();
 
-            // --- 工具调用节点 ---
-            ToolCallNode toolNode = ToolCallNode.builder()
+            // --- 天气工具节点 ---
+            ToolCallNode weatherTool = ToolCallNode.builder()
                     .toolService(toolService)
                     .config(ToolCallConfig.builder()
-                            .nodeName("工具执行")
+                            .nodeName("天气查询工具")
+                            .toolName(IntentType.WEATHER.getCode())
                             .enableCache(true)
+                            .build())
+                    .build();
+
+            // --- 计算器工具节点 ---
+            ToolCallNode calcTool = ToolCallNode.builder()
+                    .toolService(toolService)
+                    .config(ToolCallConfig.builder()
+                            .nodeName("计算器工具")
+                            .toolName(IntentType.CALCULATOR.getCode())
+                            .enableCache(true)
+                            .build())
+                    .build();
+
+            // --- 工具结果 LLM 回答节点 ---
+            LlmCallNode toolLlmNode = LlmCallNode.builder()
+                    .lc4jService(lc4jService)
+                    .config(LlmCallConfig.builder()
+                            .nodeName("工具结果回答")
+                            .promptTemplate("以下是工具执行结果，请用自然语言回复用户。\n\n工具结果: {toolResult}\n\n用户问题: {query}")
+                            .stream(false)
                             .build())
                     .build();
 
@@ -293,7 +314,9 @@ public class AgentStartupConfig implements ApplicationRunner {
                     .addNode("rag_retrieval", ragRetrieval)
                     .addNode("rag_enhance", ragEnhance)
                     .addNode("rag_llm", ragLlmNode)
-                    .addNode("tool_call", toolNode)
+                    .addNode("tool_call_weather", weatherTool)
+                    .addNode("tool_call_calculator", calcTool)
+                    .addNode("tool_llm", toolLlmNode)
                     .addNode("output", outputNode)
 
                     // 意图 → 条件路由（由 IntentDefinitionFactory 驱动）
@@ -309,7 +332,9 @@ public class AgentStartupConfig implements ApplicationRunner {
 
                     // 闲聊 & 工具 → 输出
                     .addEdge("llm_chat", "output")
-                    .addEdge("tool_call", "output")
+                    .addEdge("tool_call_weather", "tool_llm")
+                    .addEdge("tool_call_calculator", "tool_llm")
+                    .addEdge("tool_llm", "output")
 
                     .setStartNode("intent")
                     .setEndNode("output")
