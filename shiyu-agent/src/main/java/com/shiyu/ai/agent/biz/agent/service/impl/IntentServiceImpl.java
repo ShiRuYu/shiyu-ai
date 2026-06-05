@@ -36,7 +36,7 @@ public class IntentServiceImpl implements IntentService {
     }
 
     @Override
-    public IntentRecognitionResult recognize(String userInput, String category, String agentId, String platform) {
+    public IntentRecognitionResult recognize(String agentId, String category, String userInput, String platform) {
         String effectiveAgentId = agentId != null ? agentId : "default";
 
         // 根据 agentId + category 从工厂获取意图定义
@@ -72,8 +72,8 @@ public class IntentServiceImpl implements IntentService {
     }
 
     @Override
-    public IntentRecognitionResult recognize(String userInput, String category, String agentId) {
-        return recognize(userInput, category, agentId, null);
+    public IntentRecognitionResult recognize(String agentId, String category, String userInput) {
+        return recognize(agentId, category, userInput, null);
     }
 
     /**

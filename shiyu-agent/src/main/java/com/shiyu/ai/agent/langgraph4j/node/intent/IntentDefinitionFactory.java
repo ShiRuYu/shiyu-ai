@@ -1,8 +1,8 @@
 package com.shiyu.ai.agent.langgraph4j.node.intent;
-
 import com.google.common.collect.HashBasedTable;
 import com.google.common.collect.Table;
 
+import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
@@ -12,7 +12,8 @@ import java.util.Set;
  * 意图定义工厂
  * <p>
  * 使用 Guava {@link HashBasedTable} 管理意图定义，rowKey = agentId，columnKey = category。
- * 支持按 agentId 和 category 查询对应的意图定义列表。
+ * 每个 (agentId, category) 单元格持有 {@link List}&lt;{@link IntentDefinition}&gt;，
+ * 支持同一分类下注册多个意图定义。
  *
  * @author shiyu-ai
  * @date 2026-03-28
@@ -20,15 +21,15 @@ import java.util.Set;
 public class IntentDefinitionFactory {
 
     /**
-     * intentTable: row = agentId, column = category, value = IntentDefinition
+     * intentTable: row = agentId, column = category, value = List&lt;IntentDefinition&gt;
      */
-    private static final Table<String, String, IntentDefinition> intentTable = HashBasedTable.create();
+    private static final Table<String, String, List<IntentDefinition>> intentTable = HashBasedTable.create();
 
     static {
         // ========== 默认 agent ("default") ==========
 
         // CONVERSATION 分类
-        intentTable.put("default", "CONVERSATION", IntentDefinition.builder()
+        put("default", "CONVERSATION", IntentDefinition.builder()
                 .code(IntentType.CHITCHAT.getCode())
                 .name(IntentType.CHITCHAT.getName())
                 .description(IntentType.CHITCHAT.getDescription())
@@ -47,7 +48,7 @@ public class IntentDefinitionFactory {
                 .build());
 
         // KNOWLEDGE 分类
-        intentTable.put("default", "KNOWLEDGE", IntentDefinition.builder()
+        put("default", "KNOWLEDGE", IntentDefinition.builder()
                 .code(IntentType.QUESTION.getCode())
                 .name(IntentType.QUESTION.getName())
                 .description(IntentType.QUESTION.getDescription())
@@ -66,7 +67,7 @@ public class IntentDefinitionFactory {
                 .build());
 
         // TASK 分类
-        intentTable.put("default", "TASK", IntentDefinition.builder()
+        put("default", "TASK", IntentDefinition.builder()
                 .code(IntentType.TASK.getCode())
                 .name(IntentType.TASK.getName())
                 .description(IntentType.TASK.getDescription())
@@ -86,7 +87,7 @@ public class IntentDefinitionFactory {
                 .build());
 
         // SEARCH 分类
-        intentTable.put("default", "SEARCH", IntentDefinition.builder()
+        put("default", "SEARCH", IntentDefinition.builder()
                 .code(IntentType.QUERY.getCode())
                 .name(IntentType.QUERY.getName())
                 .description(IntentType.QUERY.getDescription())
@@ -129,76 +130,100 @@ public class IntentDefinitionFactory {
                 .build();
         codeHelp.addSlot("language", "编程语言");
         codeHelp.addSlot("codeSnippet", "代码片段");
-        intentTable.put("default", "TECHNICAL", codeHelp);
+        put("default", "TECHNICAL", codeHelp);
+    }
+
+    // ==================== 内部辅助 ====================
+
+    /**
+     * 向表中追加一条意图定义，如果该 (agentId, category) 已存在列表则追加，否则新建列表。
+     */
+    private static void put(String agentId, String category, IntentDefinition def) {
+        List<IntentDefinition> list = intentTable.get(agentId, category);
+        if (list == null) {
+            list = new ArrayList<>();
+            intentTable.put(agentId, category, list);
+        }
+        list.add(def);
     }
 
     // ==================== 查询方法 ====================
 
     /**
-     * 根据 agentId 和 category 获取对应的意图定义
+     * 根据 agentId 和 category 获取该分类下的所有意图定义
      *
      * @param agentId  代理 ID
      * @param category 意图分类
-     * @return 对应的意图定义，不存在时返回 {@code null}
+     * @return 意图定义列表（不可变），不存在时返回空列表
      */
-    public static IntentDefinition get(String agentId, String category) {
-        IntentDefinition def = intentTable.get(agentId, category);
-        if (def == null) {
-            // fallback 到 default agent
-            return intentTable.get("default", category);
+    public static List<IntentDefinition> getByCategory(String agentId, String category) {
+        // 先查指定 agent
+        List<IntentDefinition> list = intentTable.get(agentId, category);
+        if (list != null && !list.isEmpty()) {
+            return Collections.unmodifiableList(list);
         }
-        return def;
+        // fallback 到 default agent
+        list = intentTable.get("default", category);
+        if (list != null && !list.isEmpty()) {
+            return Collections.unmodifiableList(list);
+        }
+        return List.of();
     }
 
     /**
      * 根据 agentId 获取该代理所有分类下的意图定义
      *
      * @param agentId 代理 ID
-     * @return 所有意图定义（不可变列表）
+     * @return 所有意图定义（合并列表，不可变）
      */
     public static List<IntentDefinition> getAll(String agentId) {
-        Map<String, IntentDefinition> row = intentTable.row(agentId);
+        Map<String, List<IntentDefinition>> row = intentTable.row(agentId);
         if (row == null || row.isEmpty()) {
             return getAll("default");
         }
-        return List.copyOf(row.values());
+        List<IntentDefinition> result = new ArrayList<>();
+        for (List<IntentDefinition> list : row.values()) {
+            result.addAll(list);
+        }
+        return Collections.unmodifiableList(result);
     }
 
     /**
      * 根据 category 获取所有代理的意图定义（跨 agent）
      *
      * @param category 意图分类
-     * @return 该分类下的所有意图定义（不可变列表）
+     * @return 该分类下的所有意图定义（合并列表，不可变）
      */
     public static List<IntentDefinition> getByCategory(String category) {
-        Map<String, IntentDefinition> column = intentTable.column(category);
-        return List.copyOf(column.values());
+        Map<String, List<IntentDefinition>> column = intentTable.column(category);
+        List<IntentDefinition> result = new ArrayList<>();
+        for (List<IntentDefinition> list : column.values()) {
+            result.addAll(list);
+        }
+        return Collections.unmodifiableList(result);
     }
 
     /**
-     * 根据 agentId + category 获取该分类下的所有意图定义
+     * 根据 agentId + category 获取第一个匹配的意图定义
      *
      * @param agentId  代理 ID
      * @param category 意图分类
-     * @return 该 agent 下该分类的意图定义列表（只含一条或为空）
+     * @return 第一个意图定义，不存在时返回 {@code null}
      */
-    public static List<IntentDefinition> getByCategory(String agentId, String category) {
-        IntentDefinition def = get(agentId, category);
-        if (def != null) {
-            return List.of(def);
-        }
-        return List.of();
+    public static IntentDefinition getFirst(String agentId, String category) {
+        List<IntentDefinition> list = getByCategory(agentId, category);
+        return list.isEmpty() ? null : list.get(0);
     }
 
     /**
-     * 注册自定义意图定义
+     * 注册自定义意图定义（添加到已有列表或新建列表）
      *
      * @param agentId  代理 ID
      * @param category 意图分类
      * @param def      意图定义
      */
     public static void register(String agentId, String category, IntentDefinition def) {
-        intentTable.put(agentId, category, def);
+        put(agentId, category, def);
     }
 
     /**

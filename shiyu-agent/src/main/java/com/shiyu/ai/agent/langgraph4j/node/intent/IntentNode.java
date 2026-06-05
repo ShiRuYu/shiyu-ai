@@ -120,9 +120,9 @@ public class IntentNode extends BaseNode {
             
             // 2. 调用意图识别服务（通过 category + agentId 查找定义）
             String category = config.getCategory();
-            String agentId = input.getParameter(\"agentId\", \"default\");
+            String agentId = input.getParameter("agentId", "default");
             IntentService.IntentRecognitionResult result =
-                    intentService.recognize(userInput, category, agentId);
+                    intentService.recognize(agentId, category, userInput);
             
             // 3. 构建输出结果
             NodeOutput output = new NodeOutput();
@@ -185,7 +185,7 @@ public class IntentNode extends BaseNode {
         // 从 IntentDefinitionFactory 查询 targetNode
         String category = config.getCategory();
         if (category != null && !category.trim().isEmpty()) {
-            IntentDefinition def = IntentDefinitionFactory.get("default", category);
+            IntentDefinition def = IntentDefinitionFactory.getFirst("default", category);
             if (def != null && intentCode.equals(def.getCode())) {
                 String targetNode = def.getTargetNode();
                 if (targetNode != null && !targetNode.trim().isEmpty()) {
