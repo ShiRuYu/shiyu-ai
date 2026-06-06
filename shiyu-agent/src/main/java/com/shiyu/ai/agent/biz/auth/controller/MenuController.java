@@ -28,19 +28,20 @@ public class MenuController {
     }
 
     /**
-     * 获取当前用户菜单（类型为 MENU）
+     * 获取当前用户路由菜单（CATALOG + MENU，排除 BUTTON）
      * GET /menu/all
+     * 用于前端 backend accessMode 动态路由生成
      */
     @GetMapping("/all")
     public Result<List<RouteMenuVO>> getAllMenus(
             @RequestHeader(value = "Authorization", required = false) String token) {
-        log.info("获取当前用户菜单（类型为 MENU）");
+        log.info("获取当前用户路由菜单（CATALOG + MENU）");
         
         try {
             Long userId = SaTokenHelper.getCurrentUserId();
             
-            // 从数据库查询用户的 MENU 类型菜单列表
-            List<MenuBO> menuBOs = menuService.getMenusByUserIdAndType(userId, "MENU");
+            // 从数据库查询用户的路由菜单（排除 BUTTON）
+            List<MenuBO> menuBOs = menuService.getRouteMenusByUserId(userId);
             
             // 转换为 RouteMenuVO
             List<RouteMenuVO> routeMenus = convertToRouteMenuVO(menuBOs);
@@ -79,6 +80,7 @@ public class MenuController {
     
     /**
      * 将 MenuBO 列表转换为 RouteMenuVO 列表
+     * 适配 Vben 5.x backend accessMode 的路由格式
      */
     private List<RouteMenuVO> convertToRouteMenuVO(List<MenuBO> menuBOs) {
         if (menuBOs == null || menuBOs.isEmpty()) {
@@ -93,6 +95,7 @@ public class MenuController {
             vo.setName(menuBO.getCode()); // 使用 code 作为路由名称
             vo.setPath(menuBO.getPath());
             vo.setComponent(menuBO.getComponent());
+            vo.setRedirect(menuBO.getRedirect());
             
             // 转换类型：MENU -> menu, CATALOG -> catalog, BUTTON -> button
             String type = menuBO.getType();
@@ -106,10 +109,10 @@ public class MenuController {
                 vo.setType(type != null ? type.toLowerCase() : "menu");
             }
             
-            // 设置状态：status="1" -> status=1, status="0" -> status=0
+            // 设置状态
             vo.setStatus(menuBO.getStatus());
             
-            // 设置权限码（使用 code 字段）
+            // 设置权限码
             vo.setAuthCode(menuBO.getCode());
             
             // 设置图标
@@ -120,6 +123,19 @@ public class MenuController {
             meta.setTitle(menuBO.getName());
             meta.setIcon(menuBO.getIcon());
             meta.setOrder(menuBO.getOrder());
+            meta.setKeepAlive(menuBO.getKeepAlive());
+            
+            // show=false → hideInMenu=true（菜单中不展现）
+            if (menuBO.getShow() != null && !menuBO.getShow()) {
+                meta.setHideInMenu(true);
+            }
+            
+            // layout 字段控制 noBasicLayout（"none" 或 "false" 表示不使用基础布局）
+            String layout = menuBO.getLayout();
+            if ("none".equalsIgnoreCase(layout) || "false".equalsIgnoreCase(layout)) {
+                meta.setNoBasicLayout(true);
+            }
+            
             vo.setMeta(meta);
             
             // 递归处理子菜单

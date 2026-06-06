@@ -222,4 +222,43 @@ public class MenuServiceImpl implements MenuService {
                 menu.getPath() != null && menu.getPath().equals(path)
                         && (id == null || !id.equals(menu.getId())));
     }
+
+    @Override
+    public List<MenuBO> getRouteMenusByUserId(Long userId) {
+        log.info("获取用户路由菜单（排除 BUTTON），userId: {}", userId);
+
+        // 1. 查询用户的角色列表
+        List<RoleBO> roles = userRepository.selectRolesByUserId(userId);
+        if (roles == null || roles.isEmpty()) {
+            log.warn("用户 {} 没有分配角色", userId);
+            return new ArrayList<>();
+        }
+
+        // 2. 收集所有角色的菜单 ID（去重）
+        Set<Long> menuIds = new HashSet<>();
+        for (RoleBO role : roles) {
+            List<MenuBO> menus = roleRepository.selectMenusByRoleId(role.getId());
+            if (menus != null) {
+                for (MenuBO menu : menus) {
+                    menuIds.add(menu.getId());
+                }
+            }
+        }
+
+        if (menuIds.isEmpty()) {
+            log.warn("用户 {} 的角色没有分配菜单", userId);
+            return new ArrayList<>();
+        }
+
+        // 3. 查询所有菜单（排除 BUTTON 类型）
+        List<MenuBO> allMenus = menuRepository.selectAllExcludingType("BUTTON");
+
+        // 4. 过滤出用户有权限的菜单
+        List<MenuBO> userMenuBOs = allMenus.stream()
+                .filter(menu -> menuIds.contains(menu.getId()))
+                .collect(Collectors.toList());
+
+        // 5. 构建树形结构
+        return buildMenuTree(userMenuBOs, null);
+    }
 }

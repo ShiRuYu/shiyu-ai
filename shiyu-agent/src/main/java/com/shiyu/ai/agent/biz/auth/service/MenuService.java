@@ -97,4 +97,13 @@ public interface MenuService {
      * @return true 表示已存在
      */
     boolean isMenuPathExists(String path, Long id);
+
+    /**
+     * 获取用户路由菜单（CATALOG + MENU，排除 BUTTON）
+     * 用于前端动态路由生成
+     *
+     * @param userId 用户 ID
+     * @return 路由菜单树
+     */
+    List<MenuBO> getRouteMenusByUserId(Long userId);
 }

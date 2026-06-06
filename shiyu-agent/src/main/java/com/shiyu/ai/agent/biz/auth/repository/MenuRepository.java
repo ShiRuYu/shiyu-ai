@@ -40,6 +40,18 @@ public class MenuRepository {
     }
 
     /**
+     * 查询菜单（排除指定类型）
+     * @param type 需要排除的菜单类型（如 BUTTON）
+     * @return 菜单列表
+     */
+    public List<MenuBO> selectAllExcludingType(String type) {
+        QueryWrapper queryWrapper = new QueryWrapper()
+                .where(MenuDO::getType).ne(type);
+        List<MenuDO> menuDOs = menuMapper.selectListByQuery(queryWrapper);
+        return MapstructUtils.convert(menuDOs, MenuBO.class);
+    }
+
+    /**
      * 根据ID查询菜单
      */
     public MenuBO selectById(Long id) {
