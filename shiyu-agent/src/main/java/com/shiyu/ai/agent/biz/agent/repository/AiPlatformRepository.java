@@ -4,12 +4,14 @@ import com.mybatisflex.core.query.QueryWrapper;
 import com.shiyu.ai.agent.dal.dataobject.agent.AiPlatformDO;
 import com.shiyu.ai.agent.dal.mapper.agent.AiPlatformMapper;
 import com.shiyu.ai.agent.domain.bo.AiPlatformBO;
+import com.shiyu.ai.agent.domain.vo.IdNameOptionVO;
 import com.shiyu.ai.common.core.utils.MapstructUtils;
 import jakarta.annotation.Resource;
 import org.apache.commons.lang3.tuple.Pair;
 import org.springframework.stereotype.Component;
 
 import java.util.List;
+import java.util.stream.Collectors;
 
 /**
  * AI 平台数据仓储层
@@ -108,6 +110,20 @@ public class AiPlatformRepository {
      */
     public void deleteById(Long id) {
         aiPlatformMapper.deleteById(id);
+    }
+
+    public List<IdNameOptionVO> selectOptions() {
+        QueryWrapper queryWrapper = new QueryWrapper();
+        queryWrapper.eq(AiPlatformDO::getDelFlag, "0");
+        queryWrapper.eq(AiPlatformDO::getStatus, "1");
+        queryWrapper.orderBy(AiPlatformDO::getIsDefault, true);
+        queryWrapper.orderBy(AiPlatformDO::getId, true);
+        queryWrapper.select(AiPlatformDO::getId, AiPlatformDO::getName, AiPlatformDO::getCode);
+
+        List<AiPlatformDO> list = aiPlatformMapper.selectListByQuery(queryWrapper);
+        return list.stream()
+                .map(p -> IdNameOptionVO.builder().id(p.getId()).name(p.getName()).code(p.getCode()).build())
+                .collect(Collectors.toList());
     }
 
     /**

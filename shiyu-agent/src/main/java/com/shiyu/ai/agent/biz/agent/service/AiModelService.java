@@ -1,6 +1,7 @@
 package com.shiyu.ai.agent.biz.agent.service;
 
 import com.shiyu.ai.agent.domain.bo.AiModelBO;
+import com.shiyu.ai.agent.domain.vo.IdNameOptionVO;
 import org.apache.commons.lang3.tuple.Pair;
 
 import java.util.List;
@@ -53,6 +54,11 @@ public interface AiModelService {
      * 批量删除模型
      */
     void deleteByIds(List<Long> ids);
+
+    /**
+     * 查询启用的模型下拉选项（id + name）
+     */
+    List<IdNameOptionVO> getOptions(Long platformId);
 
     /**
      * 设置为平台默认模型

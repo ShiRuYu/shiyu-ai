@@ -1,6 +1,7 @@
 package com.shiyu.ai.agent.biz.agent.service;
 
 import com.shiyu.ai.agent.domain.bo.AiPlatformBO;
+import com.shiyu.ai.agent.domain.vo.IdNameOptionVO;
 import org.apache.commons.lang3.tuple.Pair;
 
 import java.util.List;
@@ -49,6 +50,11 @@ public interface AiPlatformService {
      * 删除平台
      */
     void deleteById(Long id);
+
+    /**
+     * 查询启用的平台下拉选项（id + name）
+     */
+    List<IdNameOptionVO> getOptions();
 
     /**
      * 设置为默认平台

@@ -350,11 +350,11 @@ VALUES (20404, '字典删除', 'system:dict:delete', 'BUTTON', 204, NULL, NULL, 
 
 -- 根菜单：智能体 (ID: 500)
 INSERT INTO `menu` (`id`, `name`, `code`, `type`, `parent_id`, `path`, `redirect`, `icon`, `component`, `layout`, `keep_alive`, `method`, `description`, `show`, `status`, `order`, `del_flag`, `create_by`, `update_by`) 
-VALUES (500, '智能体', 'Agent', 'MENU', NULL, '/agent', NULL, 'carbon:machine', '', '', FALSE, NULL, 'AI智能体管理', TRUE, '1', 6, 0, 'system', 'system');
+VALUES (500, '智能体', 'Agent', 'MENU', NULL, '/agent', NULL, 'carbon:ibm-watson-assistant', '', '', FALSE, NULL, 'AI智能体管理', TRUE, '1', 6, 0, 'system', 'system');
 
 -- 智能体子菜单：智能体列表 (ID: 501)
 INSERT INTO `menu` (`id`, `name`, `code`, `type`, `parent_id`, `path`, `redirect`, `icon`, `component`, `layout`, `keep_alive`, `method`, `description`, `show`, `status`, `order`, `del_flag`, `create_by`, `update_by`) 
-VALUES (501, '智能体列表', 'AgentList', 'MENU', 500, '/agent/list', NULL, 'carbon:list', '/agent/list', '', TRUE, NULL, '已注册智能体列表', TRUE, '1', 1, 0, 'system', 'system');
+VALUES (501, '智能体列表', 'AgentList', 'MENU', 500, '/agent/list', NULL, 'carbon:cube', '/agent/agent/list', '', TRUE, NULL, '已注册智能体列表', TRUE, '1', 1, 0, 'system', 'system');
 
 -- 智能体子菜单：AI对话 (ID: 502)
 INSERT INTO `menu` (`id`, `name`, `code`, `type`, `parent_id`, `path`, `redirect`, `icon`, `component`, `layout`, `keep_alive`, `method`, `description`, `show`, `status`, `order`, `del_flag`, `create_by`, `update_by`) 
@@ -362,7 +362,7 @@ VALUES (502, 'AI对话', 'AgentChat', 'MENU', 500, '/agent/chat', NULL, 'carbon:
 
 -- 智能体子菜单：平台管理 (ID: 503)
 INSERT INTO `menu` (`id`, `name`, `code`, `type`, `parent_id`, `path`, `redirect`, `icon`, `component`, `layout`, `keep_alive`, `method`, `description`, `show`, `status`, `order`, `del_flag`, `create_by`, `update_by`) 
-VALUES (503, '平台管理', 'CommonPlatform', 'MENU', 500, '/agent/platform', NULL, 'carbon:cloud-service-management', '/agent/platform/list', '', TRUE, NULL, 'AI平台管理', TRUE, '1', 3, 0, 'system', 'system');
+VALUES (503, '平台管理', 'CommonPlatform', 'MENU', 500, '/agent/platform', NULL, 'carbon:cloud', '/agent/platform/list', '', TRUE, NULL, 'AI平台管理', TRUE, '1', 3, 0, 'system', 'system');
 
 -- 平台管理按钮权限：查询 (ID: 50301)
 INSERT INTO `menu` (`id`, `name`, `code`, `type`, `parent_id`, `path`, `redirect`, `icon`, `component`, `layout`, `keep_alive`, `method`, `description`, `show`, `status`, `order`, `del_flag`, `create_by`, `update_by`) 
@@ -382,7 +382,7 @@ VALUES (50304, '平台删除', 'common:platform:delete', 'BUTTON', 503, NULL, NU
 
 -- 智能体子菜单：模型管理 (ID: 504)
 INSERT INTO `menu` (`id`, `name`, `code`, `type`, `parent_id`, `path`, `redirect`, `icon`, `component`, `layout`, `keep_alive`, `method`, `description`, `show`, `status`, `order`, `del_flag`, `create_by`, `update_by`) 
-VALUES (504, '模型管理', 'CommonModel', 'MENU', 500, '/agent/model', NULL, 'carbon:machine-model', '/agent/model/list', '', TRUE, NULL, 'AI模型管理', TRUE, '1', 4, 0, 'system', 'system');
+VALUES (504, '模型管理', 'CommonModel', 'MENU', 500, '/agent/model', NULL, 'carbon:ai-generate', '/agent/model/list', '', TRUE, NULL, 'AI模型管理', TRUE, '1', 4, 0, 'system', 'system');
 
 -- 模型管理按钮权限：查询 (ID: 50401)
 INSERT INTO `menu` (`id`, `name`, `code`, `type`, `parent_id`, `path`, `redirect`, `icon`, `component`, `layout`, `keep_alive`, `method`, `description`, `show`, `status`, `order`, `del_flag`, `create_by`, `update_by`) 

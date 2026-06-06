@@ -2,6 +2,7 @@ package com.shiyu.ai.agent.biz.agent.controller;
 
 import com.shiyu.ai.agent.biz.agent.service.AiPlatformService;
 import com.shiyu.ai.agent.domain.bo.AiPlatformBO;
+import com.shiyu.ai.agent.domain.vo.IdNameOptionVO;
 import com.shiyu.ai.agent.langchain4j.Lc4jModelManager;
 import com.shiyu.ai.common.core.api.PageData;
 import com.shiyu.ai.common.core.api.Result;
@@ -47,6 +48,16 @@ public class AiPlatformController {
     public Result<List<AiPlatformBO>> getAllEnabled() {
         log.info("查询所有启用的平台");
         List<AiPlatformBO> list = aiPlatformService.getAllEnabled();
+        return Result.success(list);
+    }
+
+    /**
+     * 平台下拉选项（id + name）
+     */
+    @GetMapping("/options")
+    public Result<List<IdNameOptionVO>> getOptions() {
+        log.info("查询平台下拉选项");
+        List<IdNameOptionVO> list = aiPlatformService.getOptions();
         return Result.success(list);
     }
 

@@ -2,6 +2,7 @@ package com.shiyu.ai.agent.biz.agent.controller;
 
 import com.shiyu.ai.agent.biz.agent.service.AiModelService;
 import com.shiyu.ai.agent.domain.bo.AiModelBO;
+import com.shiyu.ai.agent.domain.vo.IdNameOptionVO;
 import com.shiyu.ai.agent.langchain4j.Lc4jModelManager;
 import com.shiyu.ai.common.core.api.PageData;
 import com.shiyu.ai.common.core.api.Result;
@@ -48,6 +49,17 @@ public class AiModelController {
     public Result<List<AiModelBO>> getByPlatformId(@PathVariable Long platformId) {
         log.info("查询平台下的模型，platformId: {}", platformId);
         List<AiModelBO> list = aiModelService.getByPlatformId(platformId);
+        return Result.success(list);
+    }
+
+    /**
+     * 模型下拉选项（id + name），可按平台过滤
+     */
+    @GetMapping("/options")
+    public Result<List<IdNameOptionVO>> getOptions(
+            @RequestParam(required = false) Long platformId) {
+        log.info("查询模型下拉选项，platformId: {}", platformId);
+        List<IdNameOptionVO> list = aiModelService.getOptions(platformId);
         return Result.success(list);
     }
 

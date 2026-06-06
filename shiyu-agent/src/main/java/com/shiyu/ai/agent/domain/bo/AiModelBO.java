@@ -69,4 +69,9 @@ public class AiModelBO extends BaseEntity {
      * 排序
      */
     private Integer sort;
+
+    /**
+     * 平台名
+     */
+    private String platformName;
 }
