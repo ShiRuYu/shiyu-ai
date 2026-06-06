@@ -7,6 +7,11 @@ package com.shiyu.ai.agent.dal;
 public final class DataSourceConfig {
     
     /**
+     * common (通用数据源)
+     */
+    public static final String COMMON = "common";
+    
+    /**
      * auth (认证数据源)
      */
     public static final String AUTH = "auth";

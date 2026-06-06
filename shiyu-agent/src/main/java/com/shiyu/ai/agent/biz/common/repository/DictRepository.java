@@ -26,11 +26,11 @@ public class DictRepository {
     public Pair<Long, List<DictBO>> selectPage(Number pageNo, Number pageSize) {
         QueryWrapper queryWrapper = new QueryWrapper();
         queryWrapper.eq(DictDO::getDelFlag, "0");
-        queryWrapper.orderBy(DictDO::getDictType, true);
-        queryWrapper.orderBy(DictDO::getDictSort, true);
 
         long count = dictMapper.selectCountByQuery(queryWrapper);
-        
+
+        queryWrapper.orderBy(DictDO::getDictType, true);
+        queryWrapper.orderBy(DictDO::getDictSort, true);
         if (pageNo != null && pageSize != null) {
             queryWrapper.limit((pageNo.longValue() - 1) * pageSize.longValue(), pageSize.longValue());
         }

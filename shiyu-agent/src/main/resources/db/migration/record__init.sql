@@ -12,7 +12,9 @@ CREATE TABLE profile (
     creator_id BIGINT NOT NULL COMMENT '创建者ID',
     status CHAR(1) DEFAULT '1' COMMENT '状态（1正常 0停用）',
     del_flag TINYINT DEFAULT 0 COMMENT '删除标志（0：正常 1：已删除）',
+    create_by VARCHAR(64) COMMENT '创建者',
     create_time TIMESTAMP DEFAULT CURRENT_TIMESTAMP COMMENT '创建时间',
+    update_by VARCHAR(64) COMMENT '更新者',
     update_time TIMESTAMP DEFAULT CURRENT_TIMESTAMP COMMENT '更新时间',
     PRIMARY KEY (id)
 );
@@ -25,7 +27,10 @@ CREATE TABLE profile_member (
     profile_id BIGINT NOT NULL COMMENT '人物ID',
     user_id BIGINT NOT NULL COMMENT '用户ID',
     role VARCHAR(20) COMMENT '角色（owner/parent等）',
+    create_by VARCHAR(64) COMMENT '创建者',
     create_time TIMESTAMP DEFAULT CURRENT_TIMESTAMP COMMENT '创建时间',
+    update_by VARCHAR(64) COMMENT '更新者',
+    update_time TIMESTAMP DEFAULT CURRENT_TIMESTAMP COMMENT '更新时间',
     PRIMARY KEY (id)
 );
 CREATE UNIQUE INDEX idx_profile_user ON profile_member (profile_id, user_id);
@@ -41,7 +46,10 @@ CREATE TABLE timeline_event (
     type VARCHAR(30) COMMENT '事件类型（milestone/daily等）',
     visibility VARCHAR(20) DEFAULT 'family' COMMENT '可见性（family/private等）',
     created_by BIGINT COMMENT '创建者ID',
+    create_by VARCHAR(64) COMMENT '创建者',
     create_time TIMESTAMP DEFAULT CURRENT_TIMESTAMP COMMENT '创建时间',
+    update_by VARCHAR(64) COMMENT '更新者',
+    update_time TIMESTAMP DEFAULT CURRENT_TIMESTAMP COMMENT '更新时间',
     PRIMARY KEY (id)
 );
 CREATE INDEX idx_profile_time ON timeline_event (profile_id, event_time);
@@ -56,7 +64,10 @@ CREATE TABLE record (
     mood VARCHAR(20) COMMENT '心情',
     location VARCHAR(100) COMMENT '地点',
     weather VARCHAR(50) COMMENT '天气',
+    create_by VARCHAR(64) COMMENT '创建者',
     create_time TIMESTAMP DEFAULT CURRENT_TIMESTAMP COMMENT '创建时间',
+    update_by VARCHAR(64) COMMENT '更新者',
+    update_time TIMESTAMP DEFAULT CURRENT_TIMESTAMP COMMENT '更新时间',
     PRIMARY KEY (id)
 );
 CREATE INDEX idx_event ON record (event_id);
@@ -76,7 +87,10 @@ CREATE TABLE media (
     sort INT DEFAULT 0 COMMENT '排序',
     bucket VARCHAR(100) COMMENT '存储桶名称',
     object_key VARCHAR(255) COMMENT '对象键',
+    create_by VARCHAR(64) COMMENT '创建者',
     create_time TIMESTAMP DEFAULT CURRENT_TIMESTAMP COMMENT '创建时间',
+    update_by VARCHAR(64) COMMENT '更新者',
+    update_time TIMESTAMP DEFAULT CURRENT_TIMESTAMP COMMENT '更新时间',
     PRIMARY KEY (id)
 );
 CREATE INDEX idx_record ON media (record_id);
@@ -88,7 +102,10 @@ CREATE TABLE tag (
     id BIGINT NOT NULL AUTO_INCREMENT COMMENT '标签ID',
     name VARCHAR(50) NOT NULL COMMENT '标签名称',
     creator_id BIGINT COMMENT '创建者ID',
+    create_by VARCHAR(64) COMMENT '创建者',
     create_time TIMESTAMP DEFAULT CURRENT_TIMESTAMP COMMENT '创建时间',
+    update_by VARCHAR(64) COMMENT '更新者',
+    update_time TIMESTAMP DEFAULT CURRENT_TIMESTAMP COMMENT '更新时间',
     PRIMARY KEY (id)
 );
 CREATE UNIQUE INDEX idx_name_creator ON tag (name, creator_id);
@@ -106,64 +123,64 @@ COMMENT ON TABLE record_tag IS '记录标签关联表';
 -- ==================== 样例数据 ====================
 
 -- 插入人物数据
-INSERT INTO profile (id, name, gender, birth_date, avatar, creator_id, status, del_flag) VALUES
-(1, '张小明', '男', '2015-06-15', '/avatars/boy_001.jpg', 1001, '1', 0),
-(2, '李小花', '女', '2018-03-22', '/avatars/girl_001.jpg', 1001, '1', 0),
-(3, '王大宝', '男', '2020-09-10', '/avatars/baby_001.jpg', 1002, '1', 0);
+INSERT INTO profile (id, name, gender, birth_date, avatar, creator_id, status, del_flag, create_by, update_by) VALUES
+(1, '张小明', '男', '2015-06-15', '/avatars/boy_001.jpg', 1001, '1', 0, 'system', 'system'),
+(2, '李小花', '女', '2018-03-22', '/avatars/girl_001.jpg', 1001, '1', 0, 'system', 'system'),
+(3, '王大宝', '男', '2020-09-10', '/avatars/baby_001.jpg', 1002, '1', 0, 'system', 'system');
 
 -- 插入人物成员关系
-INSERT INTO profile_member (profile_id, user_id, role) VALUES
-(1, 1001, 'owner'),
-(1, 1003, 'parent'),
-(2, 1001, 'owner'),
-(2, 1003, 'parent'),
-(3, 1002, 'owner'),
-(3, 1004, 'parent');
+INSERT INTO profile_member (profile_id, user_id, role, create_by, update_by) VALUES
+(1, 1001, 'owner', 'system', 'system'),
+(1, 1003, 'parent', 'system', 'system'),
+(2, 1001, 'owner', 'system', 'system'),
+(2, 1003, 'parent', 'system', 'system'),
+(3, 1002, 'owner', 'system', 'system'),
+(3, 1004, 'parent', 'system', 'system');
 
 -- 插入时间轴事件
-INSERT INTO timeline_event (id, profile_id, title, event_time, type, visibility, created_by) VALUES
-(1, 1, '第一次走路', '2016-08-20 10:30:00', 'milestone', 'family', 1001),
-(2, 1, '幼儿园第一天', '2018-09-01 08:00:00', 'milestone', 'family', 1001),
-(3, 1, '周末公园游玩', '2024-04-06 14:00:00', 'daily', 'family', 1001),
-(4, 2, '出生', '2018-03-22 15:20:00', 'milestone', 'family', 1001),
-(5, 2, '学会叫妈妈', '2019-01-10 09:15:00', 'milestone', 'family', 1001),
-(6, 3, '满月', '2020-10-10 12:00:00', 'milestone', 'family', 1002),
-(7, 3, '第一次翻身', '2021-01-15 16:30:00', 'milestone', 'private', 1002);
+INSERT INTO timeline_event (id, profile_id, title, event_time, type, visibility, created_by, create_by, update_by) VALUES
+(1, 1, '第一次走路', '2016-08-20 10:30:00', 'milestone', 'family', 1001, 'system', 'system'),
+(2, 1, '幼儿园第一天', '2018-09-01 08:00:00', 'milestone', 'family', 1001, 'system', 'system'),
+(3, 1, '周末公园游玩', '2024-04-06 14:00:00', 'daily', 'family', 1001, 'system', 'system'),
+(4, 2, '出生', '2018-03-22 15:20:00', 'milestone', 'family', 1001, 'system', 'system'),
+(5, 2, '学会叫妈妈', '2019-01-10 09:15:00', 'milestone', 'family', 1001, 'system', 'system'),
+(6, 3, '满月', '2020-10-10 12:00:00', 'milestone', 'family', 1002, 'system', 'system'),
+(7, 3, '第一次翻身', '2021-01-15 16:30:00', 'milestone', 'private', 1002, 'system', 'system');
 
 -- 插入记录内容
-INSERT INTO record (id, event_id, content, mood, location, weather) VALUES
-(1, 1, '今天小明终于迈出了人生的第一步！虽然摇摇晃晃，但坚持走了好几步，太棒了！', 'happy', '家中客厅', '晴'),
-(2, 2, '小明第一天上幼儿园，刚开始有点紧张，但很快就和小朋友们玩在一起了。老师说他表现很好！', 'excited', '阳光幼儿园', '多云'),
-(3, 3, '周末带小明去公园放风筝，天气真好，孩子玩得很开心，还认识了新朋友。', 'happy', '中央公园', '晴'),
-(4, 4, '小花平安出生，体重3.2kg，母女平安。全家都很开心！', 'touched', '市妇幼保健院', '阴'),
-(5, 5, '小花今天突然清晰地叫了一声"妈妈"，声音甜甜的，心都化了！', 'happy', '家中', '晴'),
-(6, 6, '大宝满月啦！今天办了一个小型的满月宴，亲友们都来了，收到很多祝福。', 'happy', '家中', '晴'),
-(7, 7, '大宝今天自己翻过身了，动作很利索，看来离爬行不远了！', 'proud', '卧室', '多云');
+INSERT INTO record (id, event_id, content, mood, location, weather, create_by, update_by) VALUES
+(1, 1, '今天小明终于迈出了人生的第一步！虽然摇摇晃晃，但坚持走了好几步，太棒了！', 'happy', '家中客厅', '晴', 'system', 'system'),
+(2, 2, '小明第一天上幼儿园，刚开始有点紧张，但很快就和小朋友们玩在一起了。老师说他表现很好！', 'excited', '阳光幼儿园', '多云', 'system', 'system'),
+(3, 3, '周末带小明去公园放风筝，天气真好，孩子玩得很开心，还认识了新朋友。', 'happy', '中央公园', '晴', 'system', 'system'),
+(4, 4, '小花平安出生，体重3.2kg，母女平安。全家都很开心！', 'touched', '市妇幼保健院', '阴', 'system', 'system'),
+(5, 5, '小花今天突然清晰地叫了一声"妈妈"，声音甜甜的，心都化了！', 'happy', '家中', '晴', 'system', 'system'),
+(6, 6, '大宝满月啦！今天办了一个小型的满月宴，亲友们都来了，收到很多祝福。', 'happy', '家中', '晴', 'system', 'system'),
+(7, 7, '大宝今天自己翻过身了，动作很利索，看来离爬行不远了！', 'proud', '卧室', '多云', 'system', 'system');
 
 -- 插入附件(图片/视频)
-INSERT INTO media (record_id, url, type, size, width, height, sort, bucket, object_key) VALUES
-(1, '/media/walking_001.jpg', 'image', 2048576, 1920, 1080, 1, 'growth-photos', '2016/08/walking_001.jpg'),
-(1, '/media/walking_002.jpg', 'image', 1856432, 1920, 1080, 2, 'growth-photos', '2016/08/walking_002.jpg'),
-(2, '/media/kindergarten_001.jpg', 'image', 3145728, 2048, 1536, 1, 'growth-photos', '2018/09/kindergarten_001.jpg'),
-(2, '/media/kindergarten_video.mp4', 'video', 15728640, 1920, 1080, 2, 'growth-videos', '2018/09/kindergarten_001.mp4'),
-(3, '/media/park_001.jpg', 'image', 2621440, 1920, 1080, 1, 'growth-photos', '2024/04/park_001.jpg'),
-(3, '/media/park_002.jpg', 'image', 2359296, 1920, 1080, 2, 'growth-photos', '2024/04/park_002.jpg'),
-(3, '/media/park_kite.jpg', 'image', 1966080, 1920, 1080, 3, 'growth-photos', '2024/04/park_kite.jpg'),
-(4, '/media/birth_001.jpg', 'image', 1572864, 1920, 1080, 1, 'growth-photos', '2018/03/birth_001.jpg'),
-(5, '/media/call_mama.mp4', 'video', 8388608, 1920, 1080, 1, 'growth-videos', '2019/01/call_mama.mp4'),
-(6, '/media/fullmoon_001.jpg', 'image', 2883584, 2048, 1536, 1, 'growth-photos', '2020/10/fullmoon_001.jpg'),
-(6, '/media/fullmoon_002.jpg', 'image', 2621440, 2048, 1536, 2, 'growth-photos', '2020/10/fullmoon_002.jpg'),
-(7, '/media/rollover.mp4', 'video', 6291456, 1920, 1080, 1, 'growth-videos', '2021/01/rollover.mp4');
+INSERT INTO media (record_id, url, type, size, width, height, sort, bucket, object_key, create_by, update_by) VALUES
+(1, '/media/walking_001.jpg', 'image', 2048576, 1920, 1080, 1, 'growth-photos', '2016/08/walking_001.jpg', 'system', 'system'),
+(1, '/media/walking_002.jpg', 'image', 1856432, 1920, 1080, 2, 'growth-photos', '2016/08/walking_002.jpg', 'system', 'system'),
+(2, '/media/kindergarten_001.jpg', 'image', 3145728, 2048, 1536, 1, 'growth-photos', '2018/09/kindergarten_001.jpg', 'system', 'system'),
+(2, '/media/kindergarten_video.mp4', 'video', 15728640, 1920, 1080, 2, 'growth-videos', '2018/09/kindergarten_001.mp4', 'system', 'system'),
+(3, '/media/park_001.jpg', 'image', 2621440, 1920, 1080, 1, 'growth-photos', '2024/04/park_001.jpg', 'system', 'system'),
+(3, '/media/park_002.jpg', 'image', 2359296, 1920, 1080, 2, 'growth-photos', '2024/04/park_002.jpg', 'system', 'system'),
+(3, '/media/park_kite.jpg', 'image', 1966080, 1920, 1080, 3, 'growth-photos', '2024/04/park_kite.jpg', 'system', 'system'),
+(4, '/media/birth_001.jpg', 'image', 1572864, 1920, 1080, 1, 'growth-photos', '2018/03/birth_001.jpg', 'system', 'system'),
+(5, '/media/call_mama.mp4', 'video', 8388608, 1920, 1080, 1, 'growth-videos', '2019/01/call_mama.mp4', 'system', 'system'),
+(6, '/media/fullmoon_001.jpg', 'image', 2883584, 2048, 1536, 1, 'growth-photos', '2020/10/fullmoon_001.jpg', 'system', 'system'),
+(6, '/media/fullmoon_002.jpg', 'image', 2621440, 2048, 1536, 2, 'growth-photos', '2020/10/fullmoon_002.jpg', 'system', 'system'),
+(7, '/media/rollover.mp4', 'video', 6291456, 1920, 1080, 1, 'growth-videos', '2021/01/rollover.mp4', 'system', 'system');
 
 -- 插入标签
-INSERT INTO tag (id, name, creator_id) VALUES
-(1, '第一次', 1001),
-(2, '成长里程碑', 1001),
-(3, '幼儿园', 1001),
-(4, '户外活动', 1001),
-(5, '家庭聚会', 1001),
-(6, '重要时刻', 1002),
-(7, '婴儿期', 1002);
+INSERT INTO tag (id, name, creator_id, create_by, update_by) VALUES
+(1, '第一次', 1001, 'system', 'system'),
+(2, '成长里程碑', 1001, 'system', 'system'),
+(3, '幼儿园', 1001, 'system', 'system'),
+(4, '户外活动', 1001, 'system', 'system'),
+(5, '家庭聚会', 1001, 'system', 'system'),
+(6, '重要时刻', 1002, 'system', 'system'),
+(7, '婴儿期', 1002, 'system', 'system');
 
 -- 插入记录标签关联
 INSERT INTO record_tag (record_id, tag_id) VALUES

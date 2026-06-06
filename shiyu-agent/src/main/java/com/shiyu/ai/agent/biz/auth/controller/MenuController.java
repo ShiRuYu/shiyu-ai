@@ -225,6 +225,30 @@ public class MenuController {
     }
 
     /**
+     * 检查菜单名称是否已存在
+     */
+    @GetMapping("/name-exists")
+    public Result<Boolean> isMenuNameExists(
+            @RequestParam String name,
+            @RequestParam(required = false) Long id) {
+        log.info("检查菜单名称，name: {}, id: {}", name, id);
+        boolean exists = menuService.isMenuNameExists(name, id);
+        return Result.success(exists);
+    }
+
+    /**
+     * 检查菜单路径是否已存在
+     */
+    @GetMapping("/path-exists")
+    public Result<Boolean> isMenuPathExists(
+            @RequestParam String path,
+            @RequestParam(required = false) Long id) {
+        log.info("检查菜单路径，path: {}, id: {}", path, id);
+        boolean exists = menuService.isMenuPathExists(path, id);
+        return Result.success(exists);
+    }
+
+    /**
      * 按钮权限-by parentId
      */
     @GetMapping("/button/{parentId}")

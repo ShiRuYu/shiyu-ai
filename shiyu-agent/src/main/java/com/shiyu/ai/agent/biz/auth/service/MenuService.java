@@ -79,4 +79,22 @@ public interface MenuService {
      * @return 菜单列表
      */
     List<MenuBO> getMenusByUserIdAndType(Long userId, String type);
+
+    /**
+     * 检查菜单名称是否已存在
+     *
+     * @param name 菜单名称
+     * @param id   菜单 ID（编辑时排除自身）
+     * @return true 表示已存在
+     */
+    boolean isMenuNameExists(String name, Long id);
+
+    /**
+     * 检查菜单路径是否已存在
+     *
+     * @param path 菜单路径
+     * @param id   菜单 ID（编辑时排除自身）
+     * @return true 表示已存在
+     */
+    boolean isMenuPathExists(String path, Long id);
 }

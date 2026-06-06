@@ -204,4 +204,22 @@ public class MenuServiceImpl implements MenuService {
         // 5. 构建树形结构
         return buildMenuTree(userMenuBOs, null);
     }
+
+    @Override
+    public boolean isMenuNameExists(String name, Long id) {
+        log.info("检查菜单名称是否存在，name: {}, id: {}", name, id);
+        List<MenuBO> allMenus = menuRepository.selectAll();
+        return allMenus.stream().anyMatch(menu ->
+                menu.getName() != null && menu.getName().equals(name)
+                        && (id == null || !id.equals(menu.getId())));
+    }
+
+    @Override
+    public boolean isMenuPathExists(String path, Long id) {
+        log.info("检查菜单路径是否存在，path: {}, id: {}", path, id);
+        List<MenuBO> allMenus = menuRepository.selectAll();
+        return allMenus.stream().anyMatch(menu ->
+                menu.getPath() != null && menu.getPath().equals(path)
+                        && (id == null || !id.equals(menu.getId())));
+    }
 }

@@ -1,10 +1,13 @@
 package com.shiyu.ai.agent.config;
 
+import cn.dev33.satoken.context.SaHolder;
+import cn.dev33.satoken.exception.NotLoginException;
 import cn.dev33.satoken.jwt.StpLogicJwtForSimple;
 import cn.dev33.satoken.filter.SaServletFilter;
 import cn.dev33.satoken.stp.StpLogic;
 import cn.dev33.satoken.stp.StpUtil;
 import cn.dev33.satoken.router.SaRouter;
+import com.shiyu.ai.common.core.enums.BizResultCode;
 import com.shiyu.ai.common.core.utils.JSONUtils;
 import com.shiyu.ai.common.core.api.Result;
 import org.springframework.context.annotation.Bean;
@@ -41,8 +44,11 @@ public class SaTokenConfig {
                     SaRouter.match("/**").check(r -> StpUtil.checkLogin());
                 })
                 .setError(e -> {
-                    // 异常处理：返回统一的错误格式
-                    return JSONUtils.toJsonString(Result.fail(e.getMessage()));
+                    BizResultCode resultCode = BizResultCode.BAD_REQUEST;
+                    if (e instanceof NotLoginException) {
+                        resultCode = BizResultCode.UNAUTHORIZED;
+                    }
+                    return JSONUtils.toJsonString(Result.fail(resultCode));
                 });
     }
 }
