@@ -72,7 +72,12 @@ public enum NodeType {
     /**
      * 输出格式化节点
      */
-    OUTPUT_FORMAT("OUTPUT_FORMAT", "输出格式化节点", "用于格式化最终输出结果");
+    OUTPUT_FORMAT("OUTPUT_FORMAT", "输出格式化节点", "用于格式化最终输出结果"),
+    
+    /**
+     * Agent 调用节点
+     */
+    AGENT_CALL("AGENT_CALL", "Agent 调用节点", "用于调用其他已注册的 Agent 执行子任务");
     
     /**
      * 节点类型代码

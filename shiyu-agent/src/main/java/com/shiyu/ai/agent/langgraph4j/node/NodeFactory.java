@@ -1,5 +1,7 @@
 package com.shiyu.ai.agent.langgraph4j.node;
 
+import com.shiyu.ai.agent.langgraph4j.node.agent.AgentCallConfig;
+import com.shiyu.ai.agent.langgraph4j.node.agent.AgentCallNode;
 import com.shiyu.ai.agent.langgraph4j.node.condition.ConditionConfig;
 import com.shiyu.ai.agent.langgraph4j.node.condition.ConditionNode;
 import com.shiyu.ai.agent.langgraph4j.node.intent.IntentConfig;
@@ -22,6 +24,7 @@ import com.shiyu.ai.agent.langgraph4j.node.tool.ToolCallConfig;
 import com.shiyu.ai.agent.langgraph4j.node.tool.ToolCallNode;
 import com.shiyu.ai.agent.langgraph4j.node.transform.TransformConfig;
 import com.shiyu.ai.agent.langgraph4j.node.transform.TransformNode;
+import com.shiyu.ai.agent.biz.agent.service.AgentService;
 import com.shiyu.ai.agent.biz.agent.service.IntentService;
 import com.shiyu.ai.agent.biz.agent.service.Lc4jService;
 import com.shiyu.ai.agent.biz.agent.service.RagService;
@@ -71,6 +74,9 @@ public class NodeFactory {
     @Autowired(required = false)
     private ToolService toolService;
 
+    @Autowired(required = false)
+    private AgentService agentService;
+
     public NodeFactory() {
         // 注册默认节点类型
         registerDefaultNodeTypes();
@@ -109,6 +115,10 @@ public class NodeFactory {
         
         // 注册输出格式化节点
         registerNodeType(NodeType.OUTPUT_FORMAT, OutputFormatConfig.class, config -> OutputFormatNode.builder().config(config).build());
+        
+        // 注册 Agent 调用节点（使用特殊处理，需要依赖注入）
+        // AgentCallNode 需要通过 Spring 容器获取 AgentService
+        registerNodeType(NodeType.AGENT_CALL, AgentCallConfig.class, config -> AgentCallNode.builder().config(config).agentService(agentService).build());
     }
 
     /**
@@ -181,6 +191,16 @@ public class NodeFactory {
                 yield ToolCallNode.builder()
                         .config((ToolCallConfig) config)
                         .toolService(toolService)
+                        .build();
+            }
+            case AGENT_CALL -> {
+                if (agentService == null) {
+                    log.warn("AgentService 未注入，无法创建 AgentCallNode");
+                    throw new IllegalStateException("创建 Agent 调用节点失败：AgentService 未注入");
+                }
+                yield AgentCallNode.builder()
+                        .config((AgentCallConfig) config)
+                        .agentService(agentService)
                         .build();
             }
             default -> null;
