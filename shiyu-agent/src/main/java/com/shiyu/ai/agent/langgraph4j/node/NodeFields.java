@@ -522,6 +522,32 @@ public interface NodeFields {
         }
     }
 
+    /**
+     * Agent 调用节点
+     * <p>
+     * 输入: agentId, query
+     * 输出: result, content
+     */
+    enum AgentCallFields implements NodeFields {
+        INSTANCE;
+
+        @Override
+        public Set<FieldKey> inputFields() {
+            return Set.of(
+                    FieldKey.AGENT_ID,
+                    FieldKey.QUERY
+            );
+        }
+
+        @Override
+        public Set<FieldKey> outputFields() {
+            return Set.of(
+                    FieldKey.RESULT,
+                    FieldKey.CONTENT
+            );
+        }
+    }
+
     // ========== 工厂方法 ==========
 
     /**
@@ -547,6 +573,7 @@ public interface NodeFields {
             case CONDITION -> ConditionFields.INSTANCE;
             case TRANSFORM -> TransformFields.INSTANCE;
             case OUTPUT_FORMAT -> OutputFormatFields.INSTANCE;
+            case AGENT_CALL -> AgentCallFields.INSTANCE;
         };
     }
 }

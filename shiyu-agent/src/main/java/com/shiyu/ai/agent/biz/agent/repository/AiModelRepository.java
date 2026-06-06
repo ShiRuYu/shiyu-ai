@@ -1,8 +1,8 @@
-package com.shiyu.ai.agent.biz.common.repository;
+package com.shiyu.ai.agent.biz.agent.repository;
 
 import com.mybatisflex.core.query.QueryWrapper;
-import com.shiyu.ai.agent.dal.dataobject.common.AiModelDO;
-import com.shiyu.ai.agent.dal.mapper.common.AiModelMapper;
+import com.shiyu.ai.agent.dal.dataobject.agent.AiModelDO;
+import com.shiyu.ai.agent.dal.mapper.agent.AiModelMapper;
 import com.shiyu.ai.agent.domain.bo.AiModelBO;
 import com.shiyu.ai.common.core.utils.MapstructUtils;
 import jakarta.annotation.Resource;
@@ -24,6 +24,13 @@ public class AiModelRepository {
      * 按平台分页查询模型
      */
     public Pair<Long, List<AiModelBO>> selectPage(Long platformId, Number pageNo, Number pageSize) {
+        QueryWrapper countWrapper = new QueryWrapper();
+        countWrapper.eq(AiModelDO::getDelFlag, "0");
+        if (platformId != null) {
+            countWrapper.eq(AiModelDO::getPlatformId, platformId);
+        }
+        long count = aiModelMapper.selectCountByQuery(countWrapper);
+
         QueryWrapper queryWrapper = new QueryWrapper();
         queryWrapper.eq(AiModelDO::getDelFlag, "0");
         if (platformId != null) {
@@ -31,9 +38,6 @@ public class AiModelRepository {
         }
         queryWrapper.orderBy(AiModelDO::getIsDefault, true);
         queryWrapper.orderBy(AiModelDO::getSort, true);
-
-        long count = aiModelMapper.selectCountByQuery(queryWrapper);
-
         if (pageNo != null && pageSize != null) {
             queryWrapper.limit((pageNo.longValue() - 1) * pageSize.longValue(), pageSize.longValue());
         }

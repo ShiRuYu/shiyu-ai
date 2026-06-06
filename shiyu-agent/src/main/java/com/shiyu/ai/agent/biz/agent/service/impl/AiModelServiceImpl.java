@@ -1,7 +1,7 @@
-package com.shiyu.ai.agent.biz.common.service.impl;
+package com.shiyu.ai.agent.biz.agent.service.impl;
 
-import com.shiyu.ai.agent.biz.common.repository.AiModelRepository;
-import com.shiyu.ai.agent.biz.common.service.AiModelService;
+import com.shiyu.ai.agent.biz.agent.repository.AiModelRepository;
+import com.shiyu.ai.agent.biz.agent.service.AiModelService;
 import com.shiyu.ai.agent.domain.bo.AiModelBO;
 import jakarta.annotation.Resource;
 import lombok.extern.slf4j.Slf4j;
@@ -42,7 +42,6 @@ public class AiModelServiceImpl implements AiModelService {
 
     @Override
     public AiModelBO create(AiModelBO bo) {
-        // 如果设置为默认，先清除该平台下其他默认
         if ("Y".equals(bo.getIsDefault())) {
             aiModelRepository.clearDefaultExcept(bo.getPlatformId(), null);
         }
@@ -51,7 +50,6 @@ public class AiModelServiceImpl implements AiModelService {
 
     @Override
     public AiModelBO update(AiModelBO bo) {
-        // 如果设置为默认，先清除该平台下其他默认
         if ("Y".equals(bo.getIsDefault())) {
             aiModelRepository.clearDefaultExcept(bo.getPlatformId(), bo.getId());
         }
@@ -74,9 +72,7 @@ public class AiModelServiceImpl implements AiModelService {
         if (bo == null) {
             throw new IllegalArgumentException("模型不存在: " + id);
         }
-        // 清除该平台下其他默认
         aiModelRepository.clearDefaultExcept(bo.getPlatformId(), id);
-        // 设置当前为默认
         bo.setIsDefault("Y");
         return aiModelRepository.update(bo);
     }

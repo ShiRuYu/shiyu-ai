@@ -1,4 +1,4 @@
-package com.shiyu.ai.agent.biz.common.service;
+package com.shiyu.ai.agent.biz.agent.service;
 
 import com.shiyu.ai.agent.domain.bo.AiModelBO;
 import org.apache.commons.lang3.tuple.Pair;

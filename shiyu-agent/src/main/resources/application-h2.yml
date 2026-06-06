@@ -10,6 +10,13 @@ spring:
 
 mybatis-flex:
   datasource:
+    agent:
+      type: druid
+      driverClassName: org.h2.Driver
+      url: jdbc:h2:file:./.data/shiyu-agent/agentdb;MODE=MySQL;DB_CLOSE_DELAY=-1
+      username: sa
+      password:
+      validationQuery: SELECT 1
     common:
       type: druid
       driverClassName: org.h2.Driver

@@ -1,7 +1,7 @@
 package com.shiyu.ai.agent.langchain4j;
 
-import com.shiyu.ai.agent.biz.common.repository.AiModelRepository;
-import com.shiyu.ai.agent.biz.common.repository.AiPlatformRepository;
+import com.shiyu.ai.agent.biz.agent.repository.AiModelRepository;
+import com.shiyu.ai.agent.biz.agent.repository.AiPlatformRepository;
 import com.shiyu.ai.agent.domain.bo.AiModelBO;
 import com.shiyu.ai.agent.domain.bo.AiPlatformBO;
 import com.shiyu.ai.agent.langchain4j.config.Lc4jPlatformConfig;

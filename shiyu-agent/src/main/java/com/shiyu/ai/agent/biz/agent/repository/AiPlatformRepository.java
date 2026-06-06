@@ -1,8 +1,8 @@
-package com.shiyu.ai.agent.biz.common.repository;
+package com.shiyu.ai.agent.biz.agent.repository;
 
 import com.mybatisflex.core.query.QueryWrapper;
-import com.shiyu.ai.agent.dal.dataobject.common.AiPlatformDO;
-import com.shiyu.ai.agent.dal.mapper.common.AiPlatformMapper;
+import com.shiyu.ai.agent.dal.dataobject.agent.AiPlatformDO;
+import com.shiyu.ai.agent.dal.mapper.agent.AiPlatformMapper;
 import com.shiyu.ai.agent.domain.bo.AiPlatformBO;
 import com.shiyu.ai.common.core.utils.MapstructUtils;
 import jakarta.annotation.Resource;
@@ -24,13 +24,14 @@ public class AiPlatformRepository {
      * 分页查询
      */
     public Pair<Long, List<AiPlatformBO>> selectPage(Number pageNo, Number pageSize) {
+        QueryWrapper countWrapper = new QueryWrapper();
+        countWrapper.eq(AiPlatformDO::getDelFlag, "0");
+        long count = aiPlatformMapper.selectCountByQuery(countWrapper);
+
         QueryWrapper queryWrapper = new QueryWrapper();
         queryWrapper.eq(AiPlatformDO::getDelFlag, "0");
         queryWrapper.orderBy(AiPlatformDO::getIsDefault, true);
         queryWrapper.orderBy(AiPlatformDO::getId, true);
-
-        long count = aiPlatformMapper.selectCountByQuery(queryWrapper);
-
         if (pageNo != null && pageSize != null) {
             queryWrapper.limit((pageNo.longValue() - 1) * pageSize.longValue(), pageSize.longValue());
         }

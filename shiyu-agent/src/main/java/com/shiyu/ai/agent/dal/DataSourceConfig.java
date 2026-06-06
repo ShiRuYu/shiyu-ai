@@ -7,6 +7,11 @@ package com.shiyu.ai.agent.dal;
 public final class DataSourceConfig {
     
     /**
+     * agent (Agent 数据源)
+     */
+    public static final String AGENT = "agent";
+    
+    /**
      * common (通用数据源)
      */
     public static final String COMMON = "common";

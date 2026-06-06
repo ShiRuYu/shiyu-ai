@@ -360,6 +360,46 @@ VALUES (501, '智能体列表', 'AgentList', 'MENU', 500, '/agent/list', NULL, '
 INSERT INTO `menu` (`id`, `name`, `code`, `type`, `parent_id`, `path`, `redirect`, `icon`, `component`, `layout`, `keep_alive`, `method`, `description`, `show`, `status`, `order`, `del_flag`, `create_by`, `update_by`) 
 VALUES (502, 'AI对话', 'AgentChat', 'MENU', 500, '/agent/chat', NULL, 'carbon:chat', '/agent/chat', '', TRUE, NULL, 'LangChain4j AI对话', TRUE, '1', 2, 0, 'system', 'system');
 
+-- 智能体子菜单：平台管理 (ID: 503)
+INSERT INTO `menu` (`id`, `name`, `code`, `type`, `parent_id`, `path`, `redirect`, `icon`, `component`, `layout`, `keep_alive`, `method`, `description`, `show`, `status`, `order`, `del_flag`, `create_by`, `update_by`) 
+VALUES (503, '平台管理', 'CommonPlatform', 'MENU', 500, '/agent/platform', NULL, 'carbon:cloud-service-management', '/agent/platform/list', '', TRUE, NULL, 'AI平台管理', TRUE, '1', 3, 0, 'system', 'system');
+
+-- 平台管理按钮权限：查询 (ID: 50301)
+INSERT INTO `menu` (`id`, `name`, `code`, `type`, `parent_id`, `path`, `redirect`, `icon`, `component`, `layout`, `keep_alive`, `method`, `description`, `show`, `status`, `order`, `del_flag`, `create_by`, `update_by`) 
+VALUES (50301, '平台查询', 'common:platform:query', 'BUTTON', 503, NULL, NULL, NULL, NULL, NULL, NULL, 'GET', '查询平台列表', TRUE, '1', 1, 0, 'system', 'system');
+
+-- 平台管理按钮权限：新增 (ID: 50302)
+INSERT INTO `menu` (`id`, `name`, `code`, `type`, `parent_id`, `path`, `redirect`, `icon`, `component`, `layout`, `keep_alive`, `method`, `description`, `show`, `status`, `order`, `del_flag`, `create_by`, `update_by`) 
+VALUES (50302, '平台新增', 'common:platform:create', 'BUTTON', 503, NULL, NULL, NULL, NULL, NULL, NULL, 'POST', '新增平台', TRUE, '1', 2, 0, 'system', 'system');
+
+-- 平台管理按钮权限：修改 (ID: 50303)
+INSERT INTO `menu` (`id`, `name`, `code`, `type`, `parent_id`, `path`, `redirect`, `icon`, `component`, `layout`, `keep_alive`, `method`, `description`, `show`, `status`, `order`, `del_flag`, `create_by`, `update_by`) 
+VALUES (50303, '平台修改', 'common:platform:update', 'BUTTON', 503, NULL, NULL, NULL, NULL, NULL, NULL, 'PATCH', '修改平台', TRUE, '1', 3, 0, 'system', 'system');
+
+-- 平台管理按钮权限：删除 (ID: 50304)
+INSERT INTO `menu` (`id`, `name`, `code`, `type`, `parent_id`, `path`, `redirect`, `icon`, `component`, `layout`, `keep_alive`, `method`, `description`, `show`, `status`, `order`, `del_flag`, `create_by`, `update_by`) 
+VALUES (50304, '平台删除', 'common:platform:delete', 'BUTTON', 503, NULL, NULL, NULL, NULL, NULL, NULL, 'DELETE', '删除平台', TRUE, '1', 4, 0, 'system', 'system');
+
+-- 智能体子菜单：模型管理 (ID: 504)
+INSERT INTO `menu` (`id`, `name`, `code`, `type`, `parent_id`, `path`, `redirect`, `icon`, `component`, `layout`, `keep_alive`, `method`, `description`, `show`, `status`, `order`, `del_flag`, `create_by`, `update_by`) 
+VALUES (504, '模型管理', 'CommonModel', 'MENU', 500, '/agent/model', NULL, 'carbon:machine-model', '/agent/model/list', '', TRUE, NULL, 'AI模型管理', TRUE, '1', 4, 0, 'system', 'system');
+
+-- 模型管理按钮权限：查询 (ID: 50401)
+INSERT INTO `menu` (`id`, `name`, `code`, `type`, `parent_id`, `path`, `redirect`, `icon`, `component`, `layout`, `keep_alive`, `method`, `description`, `show`, `status`, `order`, `del_flag`, `create_by`, `update_by`) 
+VALUES (50401, '模型查询', 'common:model:query', 'BUTTON', 504, NULL, NULL, NULL, NULL, NULL, NULL, 'GET', '查询模型列表', TRUE, '1', 1, 0, 'system', 'system');
+
+-- 模型管理按钮权限：新增 (ID: 50402)
+INSERT INTO `menu` (`id`, `name`, `code`, `type`, `parent_id`, `path`, `redirect`, `icon`, `component`, `layout`, `keep_alive`, `method`, `description`, `show`, `status`, `order`, `del_flag`, `create_by`, `update_by`) 
+VALUES (50402, '模型新增', 'common:model:create', 'BUTTON', 504, NULL, NULL, NULL, NULL, NULL, NULL, 'POST', '新增模型', TRUE, '1', 2, 0, 'system', 'system');
+
+-- 模型管理按钮权限：修改 (ID: 50403)
+INSERT INTO `menu` (`id`, `name`, `code`, `type`, `parent_id`, `path`, `redirect`, `icon`, `component`, `layout`, `keep_alive`, `method`, `description`, `show`, `status`, `order`, `del_flag`, `create_by`, `update_by`) 
+VALUES (50403, '模型修改', 'common:model:update', 'BUTTON', 504, NULL, NULL, NULL, NULL, NULL, NULL, 'PATCH', '修改模型', TRUE, '1', 3, 0, 'system', 'system');
+
+-- 模型管理按钮权限：删除 (ID: 50404)
+INSERT INTO `menu` (`id`, `name`, `code`, `type`, `parent_id`, `path`, `redirect`, `icon`, `component`, `layout`, `keep_alive`, `method`, `description`, `show`, `status`, `order`, `del_flag`, `create_by`, `update_by`) 
+VALUES (50404, '模型删除', 'common:model:delete', 'BUTTON', 504, NULL, NULL, NULL, NULL, NULL, NULL, 'DELETE', '删除模型', TRUE, '1', 4, 0, 'system', 'system');
+
 -- ==================== Vben Admin 项目模块 ====================
 
 -- 根菜单：Vben Admin (ID: 900)
@@ -393,7 +433,7 @@ INSERT INTO `role_menu` (`role_id`, `menu_id`) VALUES
 (0, 1), (0, 2), (0, 3), 
 (0, 100), (0, 201), (0, 20101), (0, 20102), (0, 20103), (0, 202), (0, 20201), (0, 20202), (0, 20203), (0, 203), (0, 20301), (0, 20302), (0, 20303), (0, 20304), (0, 204), (0, 20401), (0, 20402), (0, 20403), (0, 20404),
 (0, 400), (0, 401), (0, 40101), (0, 40102), (0, 40103), (0, 40104), (0, 402), (0, 40201), (0, 40202), (0, 40203), (0, 40204),
-(0, 500), (0, 501), (0, 502),
+(0, 500), (0, 501), (0, 502), (0, 503), (0, 50301), (0, 50302), (0, 50303), (0, 50304), (0, 504), (0, 50401), (0, 50402), (0, 50403), (0, 50404),
 (0, 300), (0, 301), (0, 30101), (0, 30102), (0, 30103), (0, 30104), (0, 30105), (0, 30106),
 (0, 900), (0, 901), (0, 902), (0, 903),
 (0, 1000);
@@ -403,7 +443,7 @@ INSERT INTO `role_menu` (`role_id`, `menu_id`) VALUES
 (1, 1), (1, 2), (1, 3), 
 (1, 100), (1, 201), (1, 20101), (1, 20102), (1, 20103), (1, 202), (1, 20201), (1, 20202), (1, 20203), (1, 203), (1, 20301), (1, 20302), (1, 20303), (1, 20304), (1, 204), (1, 20401), (1, 20402), (1, 20403), (1, 20404),
 (1, 400), (1, 401), (1, 40101), (1, 40102), (1, 40103), (1, 40104), (1, 402), (1, 40201), (1, 40202), (1, 40203), (1, 40204),
-(1, 500), (1, 501), (1, 502),
+(1, 500), (1, 501), (1, 502), (1, 503), (1, 50301), (1, 50302), (1, 50303), (1, 50304), (1, 504), (1, 50401), (1, 50402), (1, 50403), (1, 50404),
 (1, 300), (1, 301), (1, 30101), (1, 30102), (1, 30103), (1, 30105),
 (1, 900), (1, 901), (1, 902), (1, 903),
 (1, 1000);
@@ -411,6 +451,7 @@ INSERT INTO `role_menu` (`role_id`, `menu_id`) VALUES
 -- user 角色的权限（基础权限 - 仅 Dashboard）
 INSERT INTO `role_menu` (`role_id`, `menu_id`) VALUES 
 (2, 1), (2, 2), (2, 3),
+(2, 500), (2, 501), (2, 502), (2, 503), (2, 504),
 (2, 300), (2, 301), (2, 30101), (2, 30102), (2, 30103), (2, 30106),
 (2, 900), (2, 901), (2, 902),
 (2, 1000);

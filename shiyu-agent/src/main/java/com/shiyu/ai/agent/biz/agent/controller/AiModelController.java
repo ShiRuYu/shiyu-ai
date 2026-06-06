@@ -1,6 +1,6 @@
-package com.shiyu.ai.agent.biz.common.controller;
+package com.shiyu.ai.agent.biz.agent.controller;
 
-import com.shiyu.ai.agent.biz.common.service.AiModelService;
+import com.shiyu.ai.agent.biz.agent.service.AiModelService;
 import com.shiyu.ai.agent.domain.bo.AiModelBO;
 import com.shiyu.ai.agent.langchain4j.Lc4jModelManager;
 import com.shiyu.ai.common.core.api.PageData;
