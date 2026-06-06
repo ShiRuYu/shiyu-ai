@@ -1,0 +1,127 @@
+package com.shiyu.ai.agent.biz.common.repository;
+
+import com.mybatisflex.core.query.QueryWrapper;
+import com.shiyu.ai.agent.dal.dataobject.common.AiPlatformDO;
+import com.shiyu.ai.agent.dal.mapper.common.AiPlatformMapper;
+import com.shiyu.ai.agent.domain.bo.AiPlatformBO;
+import com.shiyu.ai.common.core.utils.MapstructUtils;
+import jakarta.annotation.Resource;
+import org.apache.commons.lang3.tuple.Pair;
+import org.springframework.stereotype.Component;
+
+import java.util.List;
+
+/**
+ * AI 平台数据仓储层
+ */
+@Component
+public class AiPlatformRepository {
+
+    @Resource
+    private AiPlatformMapper aiPlatformMapper;
+
+    /**
+     * 分页查询
+     */
+    public Pair<Long, List<AiPlatformBO>> selectPage(Number pageNo, Number pageSize) {
+        QueryWrapper queryWrapper = new QueryWrapper();
+        queryWrapper.eq(AiPlatformDO::getDelFlag, "0");
+        queryWrapper.orderBy(AiPlatformDO::getIsDefault, true);
+        queryWrapper.orderBy(AiPlatformDO::getId, true);
+
+        long count = aiPlatformMapper.selectCountByQuery(queryWrapper);
+
+        if (pageNo != null && pageSize != null) {
+            queryWrapper.limit((pageNo.longValue() - 1) * pageSize.longValue(), pageSize.longValue());
+        }
+
+        List<AiPlatformDO> list = aiPlatformMapper.selectListByQuery(queryWrapper);
+        return Pair.of(count, MapstructUtils.convert(list, AiPlatformBO.class));
+    }
+
+    /**
+     * 查询所有启用的平台
+     */
+    public List<AiPlatformBO> selectAllEnabled() {
+        QueryWrapper queryWrapper = new QueryWrapper();
+        queryWrapper.eq(AiPlatformDO::getDelFlag, "0");
+        queryWrapper.eq(AiPlatformDO::getStatus, "1");
+        queryWrapper.orderBy(AiPlatformDO::getIsDefault, true);
+
+        List<AiPlatformDO> list = aiPlatformMapper.selectListByQuery(queryWrapper);
+        return MapstructUtils.convert(list, AiPlatformBO.class);
+    }
+
+    /**
+     * 根据 ID 查询
+     */
+    public AiPlatformBO selectById(Long id) {
+        AiPlatformDO platformDO = aiPlatformMapper.selectOneById(id);
+        return MapstructUtils.convert(platformDO, AiPlatformBO.class);
+    }
+
+    /**
+     * 根据编码查询
+     */
+    public AiPlatformBO selectByCode(String code) {
+        QueryWrapper queryWrapper = new QueryWrapper();
+        queryWrapper.eq(AiPlatformDO::getCode, code);
+        queryWrapper.eq(AiPlatformDO::getDelFlag, "0");
+        AiPlatformDO platformDO = aiPlatformMapper.selectOneByQuery(queryWrapper);
+        return MapstructUtils.convert(platformDO, AiPlatformBO.class);
+    }
+
+    /**
+     * 查询默认平台
+     */
+    public AiPlatformBO selectDefault() {
+        QueryWrapper queryWrapper = new QueryWrapper();
+        queryWrapper.eq(AiPlatformDO::getIsDefault, "Y");
+        queryWrapper.eq(AiPlatformDO::getDelFlag, "0");
+        queryWrapper.eq(AiPlatformDO::getStatus, "1");
+        AiPlatformDO platformDO = aiPlatformMapper.selectOneByQuery(queryWrapper);
+        return MapstructUtils.convert(platformDO, AiPlatformBO.class);
+    }
+
+    /**
+     * 创建
+     */
+    public AiPlatformBO create(AiPlatformBO bo) {
+        AiPlatformDO platformDO = MapstructUtils.convert(bo, AiPlatformDO.class);
+        aiPlatformMapper.insertSelective(platformDO);
+        bo.setId(platformDO.getId());
+        return bo;
+    }
+
+    /**
+     * 更新
+     */
+    public AiPlatformBO update(AiPlatformBO bo) {
+        AiPlatformDO platformDO = MapstructUtils.convert(bo, AiPlatformDO.class);
+        aiPlatformMapper.update(platformDO);
+        return bo;
+    }
+
+    /**
+     * 删除
+     */
+    public void deleteById(Long id) {
+        aiPlatformMapper.deleteById(id);
+    }
+
+    /**
+     * 清除其他平台的默认标记
+     */
+    public void clearDefaultExcept(Long excludeId) {
+        QueryWrapper queryWrapper = new QueryWrapper();
+        queryWrapper.eq(AiPlatformDO::getIsDefault, "Y");
+        if (excludeId != null) {
+            queryWrapper.ne(AiPlatformDO::getId, excludeId);
+        }
+        List<AiPlatformDO> list = aiPlatformMapper.selectListByQuery(queryWrapper);
+        for (AiPlatformDO platform : list) {
+            platform.setIsDefault("N");
+            aiPlatformMapper.update(platform);
+        }
+    }
+}
