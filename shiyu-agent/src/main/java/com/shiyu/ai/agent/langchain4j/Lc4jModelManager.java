@@ -1,5 +1,6 @@
 package com.shiyu.ai.agent.langchain4j;
 
+import com.shiyu.ai.agent.biz.agent.config.PlatformProperties;
 import com.shiyu.ai.agent.biz.agent.repository.AiModelRepository;
 import com.shiyu.ai.agent.biz.agent.repository.AiPlatformRepository;
 import com.shiyu.ai.agent.domain.bo.AiModelBO;
@@ -10,6 +11,7 @@ import com.shiyu.ai.agent.langchain4j.impl.Lc4jOllamaAdapter;
 import dev.langchain4j.model.chat.ChatModel;
 import dev.langchain4j.model.chat.StreamingChatModel;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.lang3.StringUtils;
 import org.springframework.boot.ApplicationArguments;
 import org.springframework.boot.ApplicationRunner;
 import org.springframework.context.annotation.Lazy;
@@ -50,10 +52,14 @@ public class Lc4jModelManager implements ApplicationRunner {
     @Lazy
     private final AiModelRepository modelRepository;
 
+    private final PlatformProperties platformProperties;
+
     public Lc4jModelManager(@Lazy AiPlatformRepository platformRepository,
-                            @Lazy AiModelRepository modelRepository) {
+                            @Lazy AiModelRepository modelRepository,
+                            PlatformProperties platformProperties) {
         this.platformRepository = platformRepository;
         this.modelRepository = modelRepository;
+        this.platformProperties = platformProperties;
         log.info("LangChain4j 模型管理器已创建，等待启动后加载适配器");
     }
 
@@ -115,6 +121,13 @@ public class Lc4jModelManager implements ApplicationRunner {
         String code = platform.getCode();
         String baseUrl = platform.getBaseUrl();
         String apiKey = platform.getApiKey();
+        
+        String externalApiKey = getExternalApiKey(code);
+        if (StringUtils.isNotBlank(externalApiKey)) {
+            apiKey = externalApiKey;
+            log.debug("平台 {} 使用外部配置 apiKey", code);
+        }
+        
         double temperature = platform.getTemperature() != null ? platform.getTemperature() : 0.7;
         int maxTokens = platform.getMaxTokens() != null ? platform.getMaxTokens() : 4096;
         int maxRetries = platform.getMaxRetries() != null ? platform.getMaxRetries() : 3;
@@ -139,20 +152,39 @@ public class Lc4jModelManager implements ApplicationRunner {
         return new GenericLc4jAdapter(code, baseUrl, apiKey, defaultModelName);
     }
 
+    private String getExternalApiKey(String code) {
+        if (StringUtils.isBlank(code)) {
+            return null;
+        }
+        String upperCode = code.toUpperCase();
+        return switch (upperCode) {
+            case "OLLAMA" -> platformProperties.getOllama().getApiKey();
+            case "DEEPSEEK" -> platformProperties.getDeepseek().getApiKey();
+            case "OPENAI" -> platformProperties.getOpenai().getApiKey();
+            case "OPENROUTER" -> platformProperties.getOpenrouter().getApiKey();
+            case "SILICON_FLOW" -> platformProperties.getSiliconflow().getApiKey();
+            default -> null;
+        };
+    }
+
     // ======================== 硬编码 Fallback ========================
 
     private void loadHardcodedDefaults() {
         adapterMap.put("OPENAI", new GenericLc4jAdapter(
-                "OPENAI", "https://api.openai.com/v1", "", "gpt-4o"));
+                "OPENAI", "https://api.openai.com/v1",
+                StringUtils.defaultString(getExternalApiKey("OPENAI"), ""), "gpt-4o"));
 
         adapterMap.put("DEEPSEEK", new GenericLc4jAdapter(
-                "DEEPSEEK", "https://api.deepseek.com", "", "deepseek-chat"));
+                "DEEPSEEK", "https://api.deepseek.com",
+                StringUtils.defaultString(getExternalApiKey("DEEPSEEK"), ""), "deepseek-chat"));
 
         adapterMap.put("OPENROUTER", new GenericLc4jAdapter(
-                "OPENROUTER", "https://openrouter.ai/api", "", "x-ai/grok-4.1-fast"));
+                "OPENROUTER", "https://openrouter.ai/api",
+                StringUtils.defaultString(getExternalApiKey("OPENROUTER"), ""), "x-ai/grok-4.1-fast"));
 
         adapterMap.put("SILICON_FLOW", new GenericLc4jAdapter(
-                "SILICON_FLOW", "https://api.siliconflow.cn", "", "THUDM/GLM-Z1-9B-0414"));
+                "SILICON_FLOW", "https://api.siliconflow.cn",
+                StringUtils.defaultString(getExternalApiKey("SILICON_FLOW"), ""), "THUDM/GLM-Z1-9B-0414"));
 
         adapterMap.put("OLLAMA", new Lc4jOllamaAdapter(
                 "http://localhost:11434", "gemma3:4b", 0.7, 3));

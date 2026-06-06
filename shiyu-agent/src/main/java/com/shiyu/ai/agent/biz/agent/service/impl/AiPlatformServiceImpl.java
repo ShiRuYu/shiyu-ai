@@ -1,11 +1,13 @@
 package com.shiyu.ai.agent.biz.agent.service.impl;
 
+import com.shiyu.ai.agent.biz.agent.config.PlatformProperties;
 import com.shiyu.ai.agent.biz.agent.repository.AiPlatformRepository;
 import com.shiyu.ai.agent.biz.agent.service.AiPlatformService;
 import com.shiyu.ai.agent.domain.bo.AiPlatformBO;
 import com.shiyu.ai.agent.domain.vo.IdNameOptionVO;
 import jakarta.annotation.Resource;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.tuple.Pair;
 import org.springframework.stereotype.Service;
 
@@ -21,29 +23,42 @@ public class AiPlatformServiceImpl implements AiPlatformService {
     @Resource
     private AiPlatformRepository aiPlatformRepository;
 
+    @Resource
+    private PlatformProperties platformProperties;
+
     @Override
     public Pair<Long, List<AiPlatformBO>> getPage(Integer pageNo, Integer pageSize) {
-        return aiPlatformRepository.selectPage(pageNo, pageSize);
+        Pair<Long, List<AiPlatformBO>> result = aiPlatformRepository.selectPage(pageNo, pageSize);
+        result.getRight().forEach(this::fillApiKey);
+        return result;
     }
 
     @Override
     public List<AiPlatformBO> getAllEnabled() {
-        return aiPlatformRepository.selectAllEnabled();
+        List<AiPlatformBO> list = aiPlatformRepository.selectAllEnabled();
+        list.forEach(this::fillApiKey);
+        return list;
     }
 
     @Override
     public AiPlatformBO getById(Long id) {
-        return aiPlatformRepository.selectById(id);
+        AiPlatformBO bo = aiPlatformRepository.selectById(id);
+        fillApiKey(bo);
+        return bo;
     }
 
     @Override
     public AiPlatformBO getByCode(String code) {
-        return aiPlatformRepository.selectByCode(code);
+        AiPlatformBO bo = aiPlatformRepository.selectByCode(code);
+        fillApiKey(bo);
+        return bo;
     }
 
     @Override
     public AiPlatformBO getDefault() {
-        return aiPlatformRepository.selectDefault();
+        AiPlatformBO bo = aiPlatformRepository.selectDefault();
+        fillApiKey(bo);
+        return bo;
     }
 
     @Override
@@ -80,6 +95,26 @@ public class AiPlatformServiceImpl implements AiPlatformService {
         }
         aiPlatformRepository.clearDefaultExcept(id);
         bo.setIsDefault("Y");
-        return aiPlatformRepository.update(bo);
+        AiPlatformBO updated = aiPlatformRepository.update(bo);
+        fillApiKey(updated);
+        return updated;
+    }
+
+    private void fillApiKey(AiPlatformBO bo) {
+        if (bo == null || StringUtils.isBlank(bo.getCode())) {
+            return;
+        }
+        String code = bo.getCode().toUpperCase();
+        String externalApiKey = switch (code) {
+            case "OLLAMA" -> platformProperties.getOllama().getApiKey();
+            case "DEEPSEEK" -> platformProperties.getDeepseek().getApiKey();
+            case "OPENAI" -> platformProperties.getOpenai().getApiKey();
+            case "OPENROUTER" -> platformProperties.getOpenrouter().getApiKey();
+            case "SILICON_FLOW" -> platformProperties.getSiliconflow().getApiKey();
+            default -> null;
+        };
+        if (StringUtils.isNotBlank(externalApiKey)) {
+            bo.setApiKey(externalApiKey);
+        }
     }
 }
