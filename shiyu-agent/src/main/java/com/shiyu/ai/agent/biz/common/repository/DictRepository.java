@@ -25,6 +25,7 @@ public class DictRepository {
      */
     public Pair<Long, List<DictBO>> selectPage(Number pageNo, Number pageSize) {
         QueryWrapper countWrapper = new QueryWrapper();
+        countWrapper.eq(DictDO::getDelFlag, "0");
         long count = dictMapper.selectCountByQuery(countWrapper);
 
         QueryWrapper queryWrapper = new QueryWrapper();

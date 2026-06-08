@@ -24,16 +24,18 @@ public class ProfileRepository {
      * 分页查询人物列表
      */
     public Pair<Long, List<ProfileBO>> selectPage(Number pageNo, Number pageSize, String createBy) {
-        QueryWrapper countWrapper = QueryWrapper.create();
+        QueryWrapper countWrapper = QueryWrapper.create()
+                .eq(ProfileDO::getDelFlag, 0);
+        if (createBy != null && !createBy.isBlank()) {
+            countWrapper.eq(ProfileDO::getCreateBy, createBy);
+        }
         long total = profileMapper.selectCountByQuery(countWrapper);
 
         QueryWrapper queryWrapper = QueryWrapper.create()
                 .eq(ProfileDO::getDelFlag, 0);
-        
         if (createBy != null && !createBy.isBlank()) {
             queryWrapper.eq(ProfileDO::getCreateBy, createBy);
         }
-        
         queryWrapper.orderBy(ProfileDO::getCreateTime, false);
         
         if (pageNo != null && pageSize != null) {

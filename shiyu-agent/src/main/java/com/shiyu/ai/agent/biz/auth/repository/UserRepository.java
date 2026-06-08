@@ -33,6 +33,9 @@ public class UserRepository {
      */
     public Pair<Long, List<UserBO>> selectPage(Number pageNo, Number pageSize, String username) {
         QueryWrapper countWrapper = new QueryWrapper();
+        if (username != null && !username.isEmpty()) {
+            countWrapper.like("username", username);
+        }
         long total = userMapper.selectCountByQuery(countWrapper);
 
         QueryWrapper queryWrapper = new QueryWrapper();

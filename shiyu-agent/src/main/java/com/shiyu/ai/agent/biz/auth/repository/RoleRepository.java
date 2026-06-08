@@ -32,6 +32,9 @@ public class RoleRepository {
      */
     public Pair<Long, List<RoleBO>> selectPage(Number pageNo, Number pageSize, String name) {
         QueryWrapper countWrapper = new QueryWrapper();
+        if (name != null && !name.isEmpty()) {
+            countWrapper.eq(RoleDO::getName, name);
+        }
         long count = roleMapper.selectCountByQuery(countWrapper);
 
         QueryWrapper queryWrapper = new QueryWrapper();
