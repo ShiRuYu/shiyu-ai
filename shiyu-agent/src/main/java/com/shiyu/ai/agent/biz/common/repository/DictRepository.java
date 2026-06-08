@@ -24,11 +24,11 @@ public class DictRepository {
      * 分页查询字典列表
      */
     public Pair<Long, List<DictBO>> selectPage(Number pageNo, Number pageSize) {
+        QueryWrapper countWrapper = new QueryWrapper();
+        long count = dictMapper.selectCountByQuery(countWrapper);
+
         QueryWrapper queryWrapper = new QueryWrapper();
         queryWrapper.eq(DictDO::getDelFlag, "0");
-
-        long count = dictMapper.selectCountByQuery(queryWrapper);
-
         queryWrapper.orderBy(DictDO::getDictType, true);
         queryWrapper.orderBy(DictDO::getDictSort, true);
         if (pageNo != null && pageSize != null) {

@@ -24,6 +24,9 @@ public class ProfileRepository {
      * 分页查询人物列表
      */
     public Pair<Long, List<ProfileBO>> selectPage(Integer pageNo, Integer pageSize, String createBy) {
+        QueryWrapper countWrapper = QueryWrapper.create();
+        long total = profileMapper.selectCountByQuery(countWrapper);
+
         QueryWrapper queryWrapper = QueryWrapper.create()
                 .eq(ProfileDO::getDelFlag, 0);
         
@@ -32,8 +35,6 @@ public class ProfileRepository {
         }
         
         queryWrapper.orderBy(ProfileDO::getCreateTime, false);
-        
-        long total = profileMapper.selectCountByQuery(queryWrapper);
         
         if (pageNo != null && pageSize != null) {
             queryWrapper.limit((pageNo.longValue() - 1) * pageSize.longValue(), pageSize.longValue());

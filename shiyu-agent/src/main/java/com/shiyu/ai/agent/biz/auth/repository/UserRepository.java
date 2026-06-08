@@ -32,13 +32,13 @@ public class UserRepository {
      * 分页查询用户列表
      */
     public Pair<Long, List<UserBO>> selectPage(Integer pageNo, Integer pageSize, String username) {
+        QueryWrapper countWrapper = new QueryWrapper();
+        long total = userMapper.selectCountByQuery(countWrapper);
+
         QueryWrapper queryWrapper = new QueryWrapper();
         if (username != null && !username.isEmpty()) {
             queryWrapper.like("username", username);
         }
-        
-        long total = userMapper.selectCountByQuery(queryWrapper);
-        
         if (pageNo != null && pageSize != null) {
             queryWrapper.limit((pageNo.longValue() - 1) * pageSize.longValue(), pageSize.longValue());
         }

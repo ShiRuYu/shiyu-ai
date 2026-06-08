@@ -35,11 +35,12 @@ public class TimelineEventRepository {
      * 分页查询时间轴事件列表
      */
     public Pair<Long, List<TimelineEventBO>> selectPage(Integer pageNo, Integer pageSize, Long profileId) {
+        QueryWrapper countWrapper = QueryWrapper.create();
+        long total = timelineEventMapper.selectCountByQuery(countWrapper);
+
         QueryWrapper queryWrapper = QueryWrapper.create()
                 .eq(TimelineEventDO::getProfileId, profileId)
                 .orderBy(TimelineEventDO::getEventTime, false);
-        
-        long total = timelineEventMapper.selectCountByQuery(queryWrapper);
         
         if (pageNo != null && pageSize != null) {
             queryWrapper.limit((pageNo.longValue() - 1) * pageSize.longValue(), pageSize.longValue());

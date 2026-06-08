@@ -31,13 +31,13 @@ public class RoleRepository {
      * 分页查询角色列表
      */
     public Pair<Long, List<RoleBO>> selectPage(Number pageNo, Number pageSize, String name) {
+        QueryWrapper countWrapper = new QueryWrapper();
+        long count = roleMapper.selectCountByQuery(countWrapper);
+
         QueryWrapper queryWrapper = new QueryWrapper();
         if (name != null && !name.isEmpty()) {
             queryWrapper.eq(RoleDO::getName, name);
         }
-        
-        long count = roleMapper.selectCountByQuery(queryWrapper);
-        
         if (pageNo != null && pageSize != null) {
             queryWrapper.limit((pageNo.longValue() - 1) * pageSize.longValue(), pageSize.longValue());
         }

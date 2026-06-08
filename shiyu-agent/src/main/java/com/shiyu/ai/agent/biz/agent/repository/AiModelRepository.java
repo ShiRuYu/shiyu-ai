@@ -27,10 +27,6 @@ public class AiModelRepository {
      */
     public Pair<Long, List<AiModelBO>> selectPage(Long platformId, Number pageNo, Number pageSize) {
         QueryWrapper countWrapper = new QueryWrapper();
-        countWrapper.eq(AiModelDO::getDelFlag, "0");
-        if (platformId != null) {
-            countWrapper.eq(AiModelDO::getPlatformId, platformId);
-        }
         long count = aiModelMapper.selectCountByQuery(countWrapper);
 
         QueryWrapper queryWrapper = new QueryWrapper();
