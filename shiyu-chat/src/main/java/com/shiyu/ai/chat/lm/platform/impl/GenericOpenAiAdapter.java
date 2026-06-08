@@ -8,9 +8,10 @@ import com.shiyu.ai.chat.lm.result.StreamResult;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.ai.chat.client.ChatClient;
 import org.springframework.ai.chat.model.ChatModel;
+import com.openai.client.OpenAIClient;
+import com.openai.client.okhttp.OpenAIOkHttpClient;
 import org.springframework.ai.openai.OpenAiChatModel;
 import org.springframework.ai.openai.OpenAiChatOptions;
-import org.springframework.ai.openai.api.OpenAiApi;
 import reactor.core.publisher.Flux;
 
 import java.util.Map;
@@ -34,12 +35,12 @@ public class GenericOpenAiAdapter extends AbstractPlatformAdapter {
     }
 
     private ChatClient createChatClient(String modelName) {
-        OpenAiApi api = OpenAiApi.builder().baseUrl(baseUrl).apiKey(apiKey).build();
+        OpenAIClient client = OpenAIOkHttpClient.builder().baseUrl(baseUrl).apiKey(apiKey).build();
         OpenAiChatOptions options = OpenAiChatOptions.builder().model(modelName).build();
-        ChatModel chatModel = OpenAiChatModel.builder().openAiApi(api).defaultOptions(options).build();
-        ChatClient client = ChatClient.builder(chatModel).build();
-        chatClientCache.put(modelName, client);
-        return client;
+        ChatModel chatModel = OpenAiChatModel.builder().openAiClient(client).options(options).build();
+        ChatClient chatClient = ChatClient.builder(chatModel).build();
+        chatClientCache.put(modelName, chatClient);
+        return chatClient;
     }
 
     private ChatClient getOrCreateChatClient(String modelName) {

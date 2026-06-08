@@ -24,11 +24,11 @@ public class SysRoleRepository {
     @Resource
     private SysRoleMapper sysRoleMapper;
 
-    public Pair<Long, List<SysRoleBO>> getAll(Integer pageNumber, Integer pageSize) {
+    public Pair<Long, List<SysRoleBO>> getAll(Number pageNumber, Number pageSize) {
         QueryWrapper queryWrapper = new QueryWrapper();
         long count = sysRoleMapper.selectCountByQuery(queryWrapper);
-        if (pageNumber != null && pageSize != null && pageSize > 0) {
-            queryWrapper.limit((pageNumber.longValue() - 1) * pageSize.longValue(), pageSize);
+        if (pageNumber != null && pageSize != null && pageSize.longValue() > 0) {
+            queryWrapper.limit((pageNumber.longValue() - 1) * pageSize.longValue(), pageSize.intValue());
         }
         List<SysRoleDO> sysRoles = sysRoleMapper.selectListByQuery(queryWrapper);
         return Pair.of(count, MapstructUtils.convert(sysRoles, SysRoleBO.class));

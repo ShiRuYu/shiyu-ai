@@ -5,7 +5,7 @@ import com.shiyu.ai.auth.domain.SysUserDO;
 import org.apache.ibatis.annotations.Mapper;
 
 /**
- * 用户�?数据�?
+ * 用户表 数据层
  *
  */
 @Mapper
@@ -13,4 +13,3 @@ public interface SysUserMapper extends BaseMapperFlex<SysUserDO> {
 
 
 }
-

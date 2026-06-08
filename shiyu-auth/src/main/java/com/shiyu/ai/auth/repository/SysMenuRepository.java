@@ -24,11 +24,11 @@ public class SysMenuRepository {
     @Resource
     private SysMenuMapper sysMenuMapper;
 
-    public Pair<Long, List<SysMenuBO>> getAll(Integer pageNumber, Integer pageSize) {
+    public Pair<Long, List<SysMenuBO>> getAll(Number pageNumber, Number pageSize) {
         QueryWrapper queryWrapper = new QueryWrapper();
         long count = sysMenuMapper.selectCountByQuery(queryWrapper);
-        if (pageNumber != null && pageSize != null && pageSize > 0) {
-            queryWrapper.limit((pageNumber.longValue() - 1) * pageSize.longValue(), pageSize);
+        if (pageNumber != null && pageSize != null && pageSize.longValue() > 0) {
+            queryWrapper.limit((pageNumber.longValue() - 1) * pageSize.longValue(), pageSize.intValue());
         }
         List<SysMenuDO> sysMenus = sysMenuMapper.selectListByQuery(queryWrapper);
         return Pair.of(count, MapstructUtils.convert(sysMenus, SysMenuBO.class));

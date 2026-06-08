@@ -5,11 +5,10 @@ import com.shiyu.ai.auth.domain.SysMenuDO;
 import org.apache.ibatis.annotations.Mapper;
 
 /**
- * 菜单�?数据�?
+ * 菜单表 数据层
  *
  */
 @Mapper
 public interface SysMenuMapper extends BaseMapperFlex<SysMenuDO> {
 
 }
-

@@ -5,11 +5,10 @@ import com.shiyu.ai.auth.domain.SysRoleDO;
 import org.apache.ibatis.annotations.Mapper;
 
 /**
- * 角色�?数据�?
+ * 角色表 数据层
  *
  */
 @Mapper
 public interface SysRoleMapper extends BaseMapperFlex<SysRoleDO> {
 
 }
-

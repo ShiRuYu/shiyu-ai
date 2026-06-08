@@ -24,11 +24,11 @@ public class SysDeptRepository {
     @Resource
     private SysDeptMapper sysDeptMapper;
 
-    public Pair<Long, List<SysDeptBO>> getAll(Integer pageNumber, Integer pageSize) {
+    public Pair<Long, List<SysDeptBO>> getAll(Number pageNumber, Number pageSize) {
         QueryWrapper queryWrapper = new QueryWrapper();
         long count = sysDeptMapper.selectCountByQuery(queryWrapper);
-        if (pageNumber != null && pageSize != null && pageSize > 0) {
-            queryWrapper.limit((pageNumber.longValue() - 1) * pageSize.longValue(), pageSize);
+        if (pageNumber != null && pageSize != null && pageSize.longValue() > 0) {
+            queryWrapper.limit((pageNumber.longValue() - 1) * pageSize.longValue(), pageSize.intValue());
         }
         List<SysDeptDO> sysDepts = sysDeptMapper.selectListByQuery(queryWrapper);
         return Pair.of(count, MapstructUtils.convert(sysDepts, SysDeptBO.class));

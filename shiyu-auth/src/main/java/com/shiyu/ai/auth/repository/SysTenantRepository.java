@@ -24,11 +24,11 @@ public class SysTenantRepository {
     @Resource
     private SysTenantMapper sysTenantMapper;
 
-    public Pair<Long, List<SysTenantBO>> getAll(Integer pageNumber, Integer pageSize) {
+    public Pair<Long, List<SysTenantBO>> getAll(Number pageNumber, Number pageSize) {
         QueryWrapper queryWrapper = new QueryWrapper();
         long count = sysTenantMapper.selectCountByQuery(queryWrapper);
-        if (pageNumber != null && pageSize != null && pageSize > 0) {
-            queryWrapper.limit((pageNumber.longValue() - 1) * pageSize.longValue(), pageSize);
+        if (pageNumber != null && pageSize != null && pageSize.longValue() > 0) {
+            queryWrapper.limit((pageNumber.longValue() - 1) * pageSize.longValue(), pageSize.intValue());
         }
         List<SysTenantDO> sysTenants = sysTenantMapper.selectListByQuery(queryWrapper);
         return Pair.of(count, MapstructUtils.convert(sysTenants, SysTenantBO.class));

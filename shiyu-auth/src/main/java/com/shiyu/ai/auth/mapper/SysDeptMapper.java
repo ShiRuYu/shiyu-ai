@@ -5,7 +5,7 @@ import com.shiyu.ai.auth.domain.SysDeptDO;
 import org.apache.ibatis.annotations.Mapper;
 
 /**
- * 部门管理 数据�?
+ * 部门管理 数据层
  *
  */
 @Mapper

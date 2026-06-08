@@ -5,7 +5,7 @@ import com.shiyu.ai.auth.domain.SysPostDO;
 import org.apache.ibatis.annotations.Mapper;
 
 /**
- * 岗位信息 数据�?
+ * 岗位信息 数据层
  *
  */
 @Mapper

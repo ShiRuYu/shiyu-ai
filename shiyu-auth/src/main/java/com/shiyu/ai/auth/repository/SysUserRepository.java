@@ -24,11 +24,11 @@ public class SysUserRepository {
     @Resource
     private SysUserMapper sysUserMapper;
 
-    public Pair<Long,List<SysUserBO>> getAll(Integer pageNumber, Integer pageSize) {
+    public Pair<Long,List<SysUserBO>> getAll(Number pageNumber, Number pageSize) {
         QueryWrapper queryWrapper = new QueryWrapper();
         long count = sysUserMapper.selectCountByQuery(queryWrapper);
-        if (pageNumber != null && pageSize != null && pageSize > 0) {
-            queryWrapper.limit((pageNumber.longValue() - 1) * pageSize.longValue(), pageSize);
+        if (pageNumber != null && pageSize != null && pageSize.longValue() > 0) {
+            queryWrapper.limit((pageNumber.longValue() - 1) * pageSize.longValue(), pageSize.intValue());
         }
         List<SysUserDO> sysUsers = sysUserMapper.selectListByQuery(queryWrapper);
         return Pair.of(count, MapstructUtils.convert(sysUsers, SysUserBO.class));

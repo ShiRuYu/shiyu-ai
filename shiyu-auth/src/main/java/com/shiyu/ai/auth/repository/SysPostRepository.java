@@ -24,11 +24,11 @@ public class SysPostRepository {
     @Resource
     private SysPostMapper sysPostMapper;
 
-    public Pair<Long, List<SysPostBO>> getAll(Integer pageNumber, Integer pageSize) {
+    public Pair<Long, List<SysPostBO>> getAll(Number pageNumber, Number pageSize) {
         QueryWrapper queryWrapper = new QueryWrapper();
         long count = sysPostMapper.selectCountByQuery(queryWrapper);
-        if (pageNumber != null && pageSize != null && pageSize > 0) {
-            queryWrapper.limit((pageNumber.longValue() - 1) * pageSize.longValue(), pageSize);
+        if (pageNumber != null && pageSize != null && pageSize.longValue() > 0) {
+            queryWrapper.limit((pageNumber.longValue() - 1) * pageSize.longValue(), pageSize.intValue());
         }
         List<SysPostDO> sysPosts = sysPostMapper.selectListByQuery(queryWrapper);
         return Pair.of(count, MapstructUtils.convert(sysPosts, SysPostBO.class));
