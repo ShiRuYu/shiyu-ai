@@ -6,6 +6,7 @@ import com.mybatisflex.annotation.Table;
 import com.shiyu.ai.common.core.domain.BaseEntity;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
+import java.io.Serial;
 
 /**
  * 附件数据对象
@@ -14,6 +15,9 @@ import lombok.EqualsAndHashCode;
 @EqualsAndHashCode(callSuper = true)
 @Table(value = "media")
 public class MediaDO extends BaseEntity {
+
+    @Serial
+    private static final long serialVersionUID = 1L;
 
     /**
      * 附件ID

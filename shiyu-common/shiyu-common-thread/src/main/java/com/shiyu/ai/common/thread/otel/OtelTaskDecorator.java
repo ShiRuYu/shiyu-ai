@@ -13,6 +13,7 @@ import java.util.function.Supplier;
  * OpenTelemetry任务装饰器
  * 用于在异步任务中传递OpenTelemetry上下文
  */
+@SuppressWarnings("try")
 public class OtelTaskDecorator implements com.shiyu.ai.common.thread.api.TaskDecorator {
 
     private final Tracer tracer;

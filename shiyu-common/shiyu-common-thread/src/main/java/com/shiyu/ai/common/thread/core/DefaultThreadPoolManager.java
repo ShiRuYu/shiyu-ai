@@ -44,6 +44,7 @@ public class DefaultThreadPoolManager implements ThreadPoolManager {
     /**
      * 初始化默认线程池
      */
+    @SuppressWarnings("this-escape")
     private void initializeDefaultExecutors() {
         // 创建默认线程池
         getExecutor(PoolType.DEFAULT);

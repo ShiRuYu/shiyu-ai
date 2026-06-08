@@ -6,6 +6,7 @@ import com.shiyu.ai.common.core.domain.TenantEntity;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
 import lombok.NoArgsConstructor;
+import java.io.Serial;
 
 /**
  * 角色表 sys_role
@@ -16,6 +17,9 @@ import lombok.NoArgsConstructor;
 @EqualsAndHashCode(callSuper = true)
 @Table("sys_role")
 public class SysRoleDO extends TenantEntity {
+
+    @Serial
+    private static final long serialVersionUID = 1L;
 
     /**
      * 角色ID

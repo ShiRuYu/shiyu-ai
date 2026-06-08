@@ -10,6 +10,7 @@ import jakarta.validation.constraints.Size;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
 import lombok.NoArgsConstructor;
+import java.io.Serial;
 
 /**
  * 用户信息业务对象 sys_user
@@ -20,6 +21,9 @@ import lombok.NoArgsConstructor;
 @EqualsAndHashCode(callSuper = true)
 @AutoMapper(target = SysUserDO.class, reverseConvertGenerate = true)
 public class SysUserBO extends BaseEntity {
+
+    @Serial
+    private static final long serialVersionUID = 1L;
 
     /**
      * 用户 ID

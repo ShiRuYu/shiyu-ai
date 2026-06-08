@@ -6,6 +6,7 @@ import com.mybatisflex.annotation.Table;
 import com.shiyu.ai.common.core.domain.BaseEntity;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
+import java.io.Serial;
 
 /**
  * 部门数据对象
@@ -14,6 +15,9 @@ import lombok.EqualsAndHashCode;
 @EqualsAndHashCode(callSuper = true)
 @Table(value = "dept")
 public class DeptDO extends BaseEntity {
+
+    @Serial
+    private static final long serialVersionUID = 1L;
 
     /**
      * 部门 ID

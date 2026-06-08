@@ -6,6 +6,7 @@ import lombok.Data;
 import lombok.EqualsAndHashCode;
 import lombok.NoArgsConstructor;
 import lombok.experimental.SuperBuilder;
+import lombok.Builder;
 
 /**
  * 条件判断节点配置类
@@ -29,6 +30,7 @@ public class ConditionConfig extends NodeConfig {
     /**
      * 条件类型（默认：EXPRESSION）
      */
+    @Builder.Default
     private String conditionType = "EXPRESSION";
     
     /**

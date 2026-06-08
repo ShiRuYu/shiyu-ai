@@ -8,6 +8,7 @@ import lombok.EqualsAndHashCode;
 import lombok.NoArgsConstructor;
 
 import java.time.LocalDateTime;
+import java.io.Serial;
 
 /**
  * 用户对象 sys_user
@@ -18,6 +19,9 @@ import java.time.LocalDateTime;
 @EqualsAndHashCode(callSuper = true)
 @Table("sys_user")
 public class SysUserDO extends TenantEntity {
+
+    @Serial
+    private static final long serialVersionUID = 1L;
 
     /**
      * 用户ID

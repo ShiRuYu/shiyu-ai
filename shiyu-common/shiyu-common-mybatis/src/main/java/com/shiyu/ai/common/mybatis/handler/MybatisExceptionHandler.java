@@ -1,7 +1,6 @@
 package com.shiyu.ai.common.mybatis.handler;
 
 import com.shiyu.ai.common.core.api.Result;
-import com.shiyu.ai.common.core.utils.StringUtils;
 import jakarta.servlet.http.HttpServletRequest;
 import lombok.extern.slf4j.Slf4j;
 import org.mybatis.spring.MyBatisSystemException;
@@ -33,7 +32,7 @@ public class MybatisExceptionHandler {
     public Result<Void> handleCannotFindDataSourceException(MyBatisSystemException e, HttpServletRequest request) {
         String requestURI = request.getRequestURI();
         String message = e.getMessage();
-        if (StringUtils.contains("CannotFindDataSourceException", message)) {
+        if (message != null && message.contains("CannotFindDataSourceException")) {
             log.error("请求地址'{}', 未找到数据源", requestURI);
             return Result.fail("未找到数据源，请联系管理员确认");
         }

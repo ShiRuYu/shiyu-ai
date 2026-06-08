@@ -8,6 +8,7 @@ import lombok.Data;
 import lombok.EqualsAndHashCode;
 
 import java.time.LocalDateTime;
+import java.io.Serial;
 
 /**
  * 时间轴事件数据对象
@@ -16,6 +17,9 @@ import java.time.LocalDateTime;
 @EqualsAndHashCode(callSuper = true)
 @Table(value = "timeline_event")
 public class TimelineEventDO extends BaseEntity {
+
+    @Serial
+    private static final long serialVersionUID = 1L;
 
     /**
      * 事件ID

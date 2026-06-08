@@ -11,6 +11,7 @@ import jakarta.validation.constraints.Size;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
 import lombok.NoArgsConstructor;
+import java.io.Serial;
 
 /**
  * 角色信息业务对象 sys_role
@@ -21,6 +22,9 @@ import lombok.NoArgsConstructor;
 @EqualsAndHashCode(callSuper = true)
 @AutoMapper(target = SysRoleDO.class, reverseConvertGenerate = true)
 public class SysRoleBO extends BaseEntity {
+
+    @Serial
+    private static final long serialVersionUID = 1L;
 
     /**
      * 角色ID

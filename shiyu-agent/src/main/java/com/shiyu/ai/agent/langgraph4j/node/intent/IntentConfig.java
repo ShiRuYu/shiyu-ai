@@ -5,6 +5,7 @@ import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
 import lombok.NoArgsConstructor;
+import lombok.Builder;
 import lombok.experimental.SuperBuilder;
 
 /**
@@ -34,6 +35,7 @@ public class IntentConfig extends NodeConfig {
     /**
      * 置信度阈值（默认 0.75）
      */
+    @Builder.Default
     private Double confidenceThreshold = 0.75;
     
     /**
@@ -44,11 +46,13 @@ public class IntentConfig extends NodeConfig {
     /**
      * 是否启用模糊匹配（默认 false）
      */
+    @Builder.Default
     private Boolean enableFuzzyMatch = false;
     
     /**
      * 最大重试次数（默认 3）
      */
+    @Builder.Default
     private Integer maxRetries = 3;
     
     /**

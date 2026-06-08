@@ -6,6 +6,7 @@ import lombok.Data;
 import lombok.EqualsAndHashCode;
 import lombok.NoArgsConstructor;
 import lombok.experimental.SuperBuilder;
+import lombok.Builder;
 
 /**
  * 长期记忆节点配置类
@@ -24,6 +25,7 @@ public class LongTermMemoryConfig extends NodeConfig {
     /**
      * 存储类型（默认：VECTOR_DB）
      */
+    @Builder.Default
     private String storageType = "VECTOR_DB";
     
     /**
@@ -34,10 +36,12 @@ public class LongTermMemoryConfig extends NodeConfig {
     /**
      * 最小重要性阈值（默认 0.5）
      */
+    @Builder.Default
     private Double minImportanceScore = 0.5;
     
     /**
      * 是否启用压缩（默认 false）
      */
+    @Builder.Default
     private Boolean enableCompression = false;
 }

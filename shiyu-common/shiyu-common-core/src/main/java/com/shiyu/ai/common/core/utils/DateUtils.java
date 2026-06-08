@@ -14,6 +14,7 @@ import java.util.concurrent.ConcurrentMap;
 /**
  * 时间工具类
  */
+@SuppressWarnings("deprecation")
 public class DateUtils extends org.apache.commons.lang3.time.DateUtils {
 
     public static final String YYYY = "yyyy";

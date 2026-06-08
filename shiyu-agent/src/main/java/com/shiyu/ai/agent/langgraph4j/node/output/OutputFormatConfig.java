@@ -6,6 +6,7 @@ import lombok.Data;
 import lombok.EqualsAndHashCode;
 import lombok.NoArgsConstructor;
 import lombok.experimental.SuperBuilder;
+import lombok.Builder;
 
 /**
  * 输出格式化节点配置类
@@ -24,6 +25,7 @@ public class OutputFormatConfig extends NodeConfig {
     /**
      * 输出格式（默认：TEXT）
      */
+    @Builder.Default
     private String outputFormat = "TEXT";
     
     /**
@@ -34,6 +36,7 @@ public class OutputFormatConfig extends NodeConfig {
     /**
      * 是否美化输出（默认 false）
      */
+    @Builder.Default
     private Boolean prettyPrint = false;
     
     /**

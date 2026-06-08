@@ -9,6 +9,7 @@ import com.shiyu.ai.common.core.utils.StringUtils;
 import com.shiyu.ai.common.core.domain.BaseEntity;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
+import java.io.Serial;
 
 /**
  * 菜单权限表 sys_menu
@@ -18,6 +19,9 @@ import lombok.EqualsAndHashCode;
 @EqualsAndHashCode(callSuper = true)
 @Table("sys_menu")
 public class SysMenuDO extends BaseEntity {
+
+    @Serial
+    private static final long serialVersionUID = 1L;
 
     /**
      * 菜单ID

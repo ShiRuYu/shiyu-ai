@@ -5,6 +5,7 @@ import com.mybatisflex.annotation.Table;
 import com.shiyu.ai.common.core.domain.TenantEntity;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
+import java.io.Serial;
 
 /**
  * 岗位表 sys_post
@@ -14,6 +15,9 @@ import lombok.EqualsAndHashCode;
 @EqualsAndHashCode(callSuper = true)
 @Table("sys_post")
 public class SysPostDO extends TenantEntity {
+
+    @Serial
+    private static final long serialVersionUID = 1L;
 
     /**
      * 岗位序号

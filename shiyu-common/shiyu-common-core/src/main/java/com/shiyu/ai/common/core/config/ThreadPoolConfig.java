@@ -2,11 +2,11 @@ package com.shiyu.ai.common.core.config;
 
 import com.shiyu.ai.common.core.config.properties.ThreadPoolProperties;
 import com.shiyu.ai.common.core.utils.Threads;
-import org.apache.commons.lang3.concurrent.BasicThreadFactory;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.scheduling.concurrent.CustomizableThreadFactory;
 import org.springframework.scheduling.concurrent.ThreadPoolTaskExecutor;
 
 import java.util.concurrent.ScheduledExecutorService;
@@ -43,8 +43,10 @@ public class ThreadPoolConfig {
         int cores = Math.max(1, Runtime.getRuntime().availableProcessors());
         int scheduledCoreSize = threadPoolProperties.getScheduledCorePoolSize() > 0
             ? threadPoolProperties.getScheduledCorePoolSize() : cores + 1;
+        CustomizableThreadFactory threadFactory = new CustomizableThreadFactory("schedule-pool-");
+        threadFactory.setDaemon(true);
         return new ScheduledThreadPoolExecutor(scheduledCoreSize,
-            new BasicThreadFactory.Builder().namingPattern("schedule-pool-%d").daemon(true).build(),
+            threadFactory,
             new ThreadPoolExecutor.CallerRunsPolicy()) {
             @Override
             protected void afterExecute(Runnable r, Throwable t) {

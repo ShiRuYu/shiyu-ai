@@ -11,6 +11,7 @@ import lombok.Data;
 import lombok.EqualsAndHashCode;
 
 import java.util.Date;
+import java.io.Serial;
 
 /**
  * 租户业务对象 sys_tenant
@@ -20,6 +21,9 @@ import java.util.Date;
 @EqualsAndHashCode(callSuper = true)
 @AutoMapper(target = SysTenantDO.class, reverseConvertGenerate = true)
 public class SysTenantBO extends BaseEntity {
+
+    @Serial
+    private static final long serialVersionUID = 1L;
 
     /**
      * id

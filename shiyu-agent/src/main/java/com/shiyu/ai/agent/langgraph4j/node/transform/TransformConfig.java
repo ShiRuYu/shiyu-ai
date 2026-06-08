@@ -6,6 +6,7 @@ import lombok.Data;
 import lombok.EqualsAndHashCode;
 import lombok.NoArgsConstructor;
 import lombok.experimental.SuperBuilder;
+import lombok.Builder;
 
 /**
  * 数据转换节点配置类
@@ -24,6 +25,7 @@ public class TransformConfig extends NodeConfig {
     /**
      * 转换类型（默认：JSON_TO_XML）
      */
+    @Builder.Default
     private String transformType = "JSON_TO_XML";
     
     /**

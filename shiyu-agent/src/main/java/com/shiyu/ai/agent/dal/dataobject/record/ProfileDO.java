@@ -8,6 +8,7 @@ import lombok.Data;
 import lombok.EqualsAndHashCode;
 
 import java.time.LocalDate;
+import java.io.Serial;
 
 /**
  * 人物数据对象
@@ -16,6 +17,9 @@ import java.time.LocalDate;
 @EqualsAndHashCode(callSuper = true)
 @Table(value = "profile")
 public class ProfileDO extends BaseEntity {
+
+    @Serial
+    private static final long serialVersionUID = 1L;
 
     /**
      * 人物ID

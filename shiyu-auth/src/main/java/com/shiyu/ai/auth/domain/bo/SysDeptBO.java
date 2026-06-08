@@ -16,6 +16,7 @@ import lombok.Data;
 import lombok.EqualsAndHashCode;
 
 import java.util.List;
+import java.io.Serial;
 
 /**
  * 部门业务对象 sys_dept
@@ -25,6 +26,9 @@ import java.util.List;
 @EqualsAndHashCode(callSuper = true)
 @AutoMapper(target = SysDeptDO.class, reverseConvertGenerate = true)
 public class SysDeptBO extends BaseEntity {
+
+    @Serial
+    private static final long serialVersionUID = 1L;
 
     /**
      * 部门id

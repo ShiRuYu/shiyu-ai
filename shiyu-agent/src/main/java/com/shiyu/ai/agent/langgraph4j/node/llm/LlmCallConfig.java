@@ -6,6 +6,7 @@ import lombok.Data;
 import lombok.EqualsAndHashCode;
 import lombok.NoArgsConstructor;
 import lombok.experimental.SuperBuilder;
+import lombok.Builder;
 
 /**
  * LLM 调用节点配置类
@@ -29,16 +30,19 @@ public class LlmCallConfig extends NodeConfig {
     /**
      * 温度参数（默认 0.7）
      */
+    @Builder.Default
     private Double temperature = 0.7;
     
     /**
      * 最大生成长度（默认 4096，与适配器默认值保持一致）
      */
+    @Builder.Default
     private Integer maxTokens = 4096;
     
     /**
      * Top P 参数（默认 0.9）
      */
+    @Builder.Default
     private Double topP = 0.9;
     
     /**
@@ -64,5 +68,6 @@ public class LlmCallConfig extends NodeConfig {
     /**
      * 是否流式调用（默认 false）
      */
+    @Builder.Default
     private boolean stream = false;
 }

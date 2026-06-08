@@ -17,6 +17,7 @@ import jakarta.validation.constraints.Size;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
 
+import java.io.Serial;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -28,6 +29,9 @@ import java.util.List;
 @EqualsAndHashCode(callSuper = true)
 @AutoMapper(target = SysMenuDO.class, reverseConvertGenerate = true)
 public class SysMenuBO extends BaseEntity {
+
+    @Serial
+    private static final long serialVersionUID = 1L;
 
     /**
      * 菜单ID

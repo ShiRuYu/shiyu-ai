@@ -1,7 +1,7 @@
 package com.shiyu.ai.common.core.factory;
 
 
-import com.shiyu.ai.common.core.utils.StringUtils;
+import cn.hutool.core.util.StrUtil;
 import org.springframework.beans.factory.config.YamlPropertiesFactoryBean;
 import org.springframework.core.env.PropertiesPropertySource;
 import org.springframework.core.env.PropertySource;
@@ -18,7 +18,7 @@ public class YmlPropertySourceFactory extends DefaultPropertySourceFactory {
     @Override
     public PropertySource<?> createPropertySource(String name, EncodedResource resource) throws IOException {
         String sourceName = resource.getResource().getFilename();
-        if (StringUtils.isNotBlank(sourceName) && StringUtils.endsWithAny(sourceName, ".yml", ".yaml")) {
+        if (StrUtil.isNotBlank(sourceName) && (sourceName.endsWith(".yml") || sourceName.endsWith(".yaml"))) {
             YamlPropertiesFactoryBean factory = new YamlPropertiesFactoryBean();
             factory.setResources(resource.getResource());
             factory.afterPropertiesSet();
