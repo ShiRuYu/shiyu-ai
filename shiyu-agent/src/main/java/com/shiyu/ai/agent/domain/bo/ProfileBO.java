@@ -35,9 +35,14 @@ public class ProfileBO implements Serializable {
     private String name;
 
     /**
-     * 性别
+     * 性别（0男 1女 2未知）
      */
-    private String gender;
+    private Integer gender;
+
+    /**
+     * 性别标签（接口返回用，不映射数据库）
+     */
+    private String genderLabel;
 
     /**
      * 出生日期

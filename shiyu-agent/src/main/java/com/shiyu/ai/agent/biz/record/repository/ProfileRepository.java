@@ -4,6 +4,7 @@ import com.mybatisflex.core.query.QueryWrapper;
 import com.shiyu.ai.agent.dal.dataobject.record.ProfileDO;
 import com.shiyu.ai.agent.dal.mapper.record.ProfileMapper;
 import com.shiyu.ai.agent.domain.bo.ProfileBO;
+import com.shiyu.ai.common.core.enums.GenderEnum;
 import com.shiyu.ai.common.core.utils.MapstructUtils;
 import jakarta.annotation.Resource;
 import org.apache.commons.lang3.tuple.Pair;
@@ -44,6 +45,7 @@ public class ProfileRepository {
         
         List<ProfileDO> profileDOs = profileMapper.selectListByQuery(queryWrapper);
         List<ProfileBO> profileBOs = MapstructUtils.convert(profileDOs, ProfileBO.class);
+        fillGenderLabel(profileBOs);
         
         return Pair.of(total, profileBOs);
     }
@@ -53,7 +55,11 @@ public class ProfileRepository {
      */
     public ProfileBO selectById(Long id) {
         ProfileDO profileDO = profileMapper.selectOneById(id);
-        return MapstructUtils.convert(profileDO, ProfileBO.class);
+        ProfileBO bo = MapstructUtils.convert(profileDO, ProfileBO.class);
+        if (bo != null) {
+            bo.setGenderLabel(GenderEnum.getLabelByCode(bo.getGender()));
+        }
+        return bo;
     }
 
     /**
@@ -65,6 +71,7 @@ public class ProfileRepository {
         // 使用 insertSelective 忽略 null 值，让数据库 DEFAULT 生效
         profileMapper.insertSelective(profileDO);
         profileBO.setId(profileDO.getId());
+        profileBO.setGenderLabel(GenderEnum.getLabelByCode(profileBO.getGender()));
         return profileBO;
     }
 
@@ -81,5 +88,17 @@ public class ProfileRepository {
      */
     public boolean deleteById(Long id) {
         return profileMapper.deleteById(id) > 0;
+    }
+
+    /**
+     * 填充性别标签
+     */
+    private void fillGenderLabel(List<ProfileBO> list) {
+        if (list == null) {
+            return;
+        }
+        for (ProfileBO bo : list) {
+            bo.setGenderLabel(GenderEnum.getLabelByCode(bo.getGender()));
+        }
     }
 }

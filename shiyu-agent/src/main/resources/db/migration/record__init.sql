@@ -6,7 +6,7 @@ DROP TABLE IF EXISTS profile;
 CREATE TABLE profile (
     id BIGINT NOT NULL AUTO_INCREMENT COMMENT '人物ID',
     name VARCHAR(64) NOT NULL COMMENT '姓名',
-    gender VARCHAR(10) COMMENT '性别',
+    gender TINYINT DEFAULT 2 COMMENT '性别（0男 1女 2未知）',
     birth_date DATE COMMENT '出生日期',
     avatar VARCHAR(255) COMMENT '头像URL',
     status CHAR(1) DEFAULT '1' COMMENT '状态（1正常 0停用）',
@@ -122,9 +122,9 @@ COMMENT ON TABLE record_tag IS '记录标签关联表';
 
 -- 插入人物数据
 INSERT INTO profile (id, name, gender, birth_date, avatar, status, del_flag, create_by, update_by) VALUES
-(1, '张小明', '男', '2015-06-15', '/avatars/boy_001.jpg', '1', 0, 'system', 'system'),
-(2, '李小花', '女', '2018-03-22', '/avatars/girl_001.jpg', '1', 0, 'system', 'system'),
-(3, '王大宝', '男', '2020-09-10', '/avatars/baby_001.jpg', '1', 0, 'system', 'system');
+(1, '张小明', 0, '2015-06-15', '/avatars/boy_001.jpg', '1', 0, 'system', 'system'),
+(2, '李小花', 1, '2018-03-22', '/avatars/girl_001.jpg', '1', 0, 'system', 'system'),
+(3, '王大宝', 0, '2020-09-10', '/avatars/baby_001.jpg', '1', 0, 'system', 'system');
 
 -- 插入人物成员关系
 INSERT INTO profile_member (profile_id, user_id, role, create_by, update_by) VALUES

@@ -33,9 +33,9 @@ public class ProfileDO extends BaseEntity {
     private String name;
 
     /**
-     * 性别
+     * 性别（0男 1女 2未知）
      */
-    private String gender;
+    private Integer gender;
 
     /**
      * 出生日期
