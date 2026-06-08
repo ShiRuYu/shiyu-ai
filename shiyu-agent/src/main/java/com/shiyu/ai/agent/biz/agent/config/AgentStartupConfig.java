@@ -64,13 +64,7 @@ public class AgentStartupConfig implements ApplicationRunner {
 
     @Override
     public void run(ApplicationArguments args) {
-        log.info("开始初始化示例 Agent...");
-
-        createSimpleAssistantAgent();
-        createRagKnowledgeAgent();
-        createSmartAgent();
-
-        log.info("示例 Agent 初始化完成");
+        log.info("Agent 已改为懒加载模式，示例 Agent 数据已通过 SQL 种子数据初始化，启动时不再预加载");
     }
 
     // ======================== Agent 1: 基础 LLM 问答 ========================

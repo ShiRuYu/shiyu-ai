@@ -352,9 +352,9 @@ VALUES (20404, '字典删除', 'system:dict:delete', 'BUTTON', 204, NULL, NULL, 
 INSERT INTO `menu` (`id`, `name`, `code`, `type`, `parent_id`, `path`, `redirect`, `icon`, `component`, `layout`, `keep_alive`, `method`, `description`, `show`, `status`, `order`, `del_flag`, `create_by`, `update_by`) 
 VALUES (500, '智能体', 'Agent', 'MENU', NULL, '/agent', NULL, 'carbon:ibm-watson-assistant', '', '', FALSE, NULL, 'AI智能体管理', TRUE, '1', 6, 0, 'system', 'system');
 
--- 智能体子菜单：智能体列表 (ID: 501)
+-- 智能体子菜单：Agent管理 (ID: 501)
 INSERT INTO `menu` (`id`, `name`, `code`, `type`, `parent_id`, `path`, `redirect`, `icon`, `component`, `layout`, `keep_alive`, `method`, `description`, `show`, `status`, `order`, `del_flag`, `create_by`, `update_by`) 
-VALUES (501, '智能体列表', 'AgentList', 'MENU', 500, '/agent/list', NULL, 'carbon:cube', '/agent/agent/list', '', TRUE, NULL, '已注册智能体列表', TRUE, '1', 1, 0, 'system', 'system');
+VALUES (501, 'Agent管理', 'AgentAdminList', 'MENU', 500, '/agent/admin/list', NULL, 'carbon:cube', '/agent/admin/agent-list', '', TRUE, NULL, 'Agent 注册与管理', TRUE, '1', 1, 0, 'system', 'system');
 
 -- 智能体子菜单：AI对话 (ID: 502)
 INSERT INTO `menu` (`id`, `name`, `code`, `type`, `parent_id`, `path`, `redirect`, `icon`, `component`, `layout`, `keep_alive`, `method`, `description`, `show`, `status`, `order`, `del_flag`, `create_by`, `update_by`) 
@@ -400,6 +400,14 @@ VALUES (50403, '模型修改', 'common:model:update', 'BUTTON', 504, NULL, NULL,
 INSERT INTO `menu` (`id`, `name`, `code`, `type`, `parent_id`, `path`, `redirect`, `icon`, `component`, `layout`, `keep_alive`, `method`, `description`, `show`, `status`, `order`, `del_flag`, `create_by`, `update_by`) 
 VALUES (50404, '模型删除', 'common:model:delete', 'BUTTON', 504, NULL, NULL, NULL, NULL, NULL, NULL, 'DELETE', '删除模型', TRUE, '1', 4, 0, 'system', 'system');
 
+-- 智能体子菜单：版本管理 (ID: 505)
+INSERT INTO `menu` (`id`, `name`, `code`, `type`, `parent_id`, `path`, `redirect`, `icon`, `component`, `layout`, `keep_alive`, `method`, `description`, `show`, `status`, `order`, `del_flag`, `create_by`, `update_by`) 
+VALUES (505, '版本管理', 'AgentVersion', 'MENU', 500, '/agent/admin/version', NULL, 'carbon:version', '/agent/admin/version-list', '', TRUE, NULL, 'Agent 版本发布与管理', TRUE, '1', 5, 0, 'system', 'system');
+
+-- 智能体子菜单：Graph编排 (ID: 506)
+INSERT INTO `menu` (`id`, `name`, `code`, `type`, `parent_id`, `path`, `redirect`, `icon`, `component`, `layout`, `keep_alive`, `method`, `description`, `show`, `status`, `order`, `del_flag`, `create_by`, `update_by`) 
+VALUES (506, 'Graph编排', 'AgentGraph', 'MENU', 500, '/agent/admin/graph', NULL, 'carbon:flow-data', '/agent/admin/graph-editor', '', TRUE, NULL, 'Agent Graph 可视化编排', TRUE, '1', 6, 0, 'system', 'system');
+
 -- ==================== Vben Admin 项目模块 ====================
 
 -- 根菜单：Vben Admin (ID: 900)
@@ -433,7 +441,7 @@ INSERT INTO `role_menu` (`role_id`, `menu_id`) VALUES
 (0, 1), (0, 2), (0, 3), 
 (0, 100), (0, 201), (0, 20101), (0, 20102), (0, 20103), (0, 202), (0, 20201), (0, 20202), (0, 20203), (0, 203), (0, 20301), (0, 20302), (0, 20303), (0, 20304), (0, 204), (0, 20401), (0, 20402), (0, 20403), (0, 20404),
 (0, 400), (0, 401), (0, 40101), (0, 40102), (0, 40103), (0, 40104), (0, 402), (0, 40201), (0, 40202), (0, 40203), (0, 40204),
-(0, 500), (0, 501), (0, 502), (0, 503), (0, 50301), (0, 50302), (0, 50303), (0, 50304), (0, 504), (0, 50401), (0, 50402), (0, 50403), (0, 50404),
+(0, 500), (0, 501), (0, 502), (0, 503), (0, 50301), (0, 50302), (0, 50303), (0, 50304), (0, 504), (0, 50401), (0, 50402), (0, 50403), (0, 50404), (0, 505), (0, 506),
 (0, 300), (0, 301), (0, 30101), (0, 30102), (0, 30103), (0, 30104), (0, 30105), (0, 30106),
 (0, 900), (0, 901), (0, 902), (0, 903),
 (0, 1000);
@@ -443,7 +451,7 @@ INSERT INTO `role_menu` (`role_id`, `menu_id`) VALUES
 (1, 1), (1, 2), (1, 3), 
 (1, 100), (1, 201), (1, 20101), (1, 20102), (1, 20103), (1, 202), (1, 20201), (1, 20202), (1, 20203), (1, 203), (1, 20301), (1, 20302), (1, 20303), (1, 20304), (1, 204), (1, 20401), (1, 20402), (1, 20403), (1, 20404),
 (1, 400), (1, 401), (1, 40101), (1, 40102), (1, 40103), (1, 40104), (1, 402), (1, 40201), (1, 40202), (1, 40203), (1, 40204),
-(1, 500), (1, 501), (1, 502), (1, 503), (1, 50301), (1, 50302), (1, 50303), (1, 50304), (1, 504), (1, 50401), (1, 50402), (1, 50403), (1, 50404),
+(1, 500), (1, 501), (1, 502), (1, 503), (1, 50301), (1, 50302), (1, 50303), (1, 50304), (1, 504), (1, 50401), (1, 50402), (1, 50403), (1, 50404), (1, 505), (1, 506),
 (1, 300), (1, 301), (1, 30101), (1, 30102), (1, 30103), (1, 30105),
 (1, 900), (1, 901), (1, 902), (1, 903),
 (1, 1000);

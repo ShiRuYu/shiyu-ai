@@ -107,6 +107,76 @@ VALUES (4, 'THUDM/GLM-Z1-9B-0414', 'GLM-Z1-9B', '智谱 GLM-Z1 9B 模型', 'Y', 
 INSERT INTO `ai_model` (`platform_id`, `model_name`, `display_name`, `description`, `is_default`, `status`, `sort`)
 VALUES (5, 'gemma3:4b', 'Gemma 3 4B', 'Google Gemma 3 4B 本地模型', 'Y', '1', 1);
 
+-- ============================================
+-- 5. Agent 定义表
+-- ============================================
+DROP TABLE IF EXISTS `agent_def`;
+CREATE TABLE `agent_def` (
+    `id`              BIGINT       NOT NULL AUTO_INCREMENT COMMENT '主键ID',
+    `agent_id`        VARCHAR(64)  NOT NULL COMMENT 'Agent唯一标识',
+    `name`            VARCHAR(100) NOT NULL COMMENT 'Agent名称',
+    `description`     VARCHAR(500) DEFAULT NULL COMMENT 'Agent描述',
+    `owner_id`        BIGINT       DEFAULT NULL COMMENT '所属用户ID(为空则所有用户可见)',
+    `current_version` VARCHAR(32)  DEFAULT NULL COMMENT '当前激活版本号',
+    `status`          CHAR(1)      DEFAULT '1' COMMENT '状态(1正常 0停用)',
+    `del_flag`        CHAR(1)      DEFAULT '0' COMMENT '删除标志(0存在 1删除)',
+    `create_by`       VARCHAR(64)  DEFAULT NULL COMMENT '创建者',
+    `create_time`     TIMESTAMP    DEFAULT CURRENT_TIMESTAMP COMMENT '创建时间',
+    `update_by`       VARCHAR(64)  DEFAULT NULL COMMENT '更新者',
+    `update_time`     TIMESTAMP    DEFAULT CURRENT_TIMESTAMP COMMENT '更新时间',
+    PRIMARY KEY (`id`)
+);
+CREATE UNIQUE INDEX `uk_agent_def_agent_id` ON `agent_def` (`agent_id`);
+COMMENT ON TABLE `agent_def` IS 'Agent 定义表';
+
+-- ============================================
+-- 6. Agent 版本表
+-- ============================================
+DROP TABLE IF EXISTS `agent_version`;
+CREATE TABLE `agent_version` (
+    `id`              BIGINT       NOT NULL AUTO_INCREMENT COMMENT '主键ID',
+    `agent_id`        VARCHAR(64)  NOT NULL COMMENT '所属Agent标识',
+    `version_number`  VARCHAR(32)  NOT NULL COMMENT '版本号(如v1.0.0)',
+    `description`     VARCHAR(500) DEFAULT NULL COMMENT '版本描述',
+    `status`          VARCHAR(16)  DEFAULT 'DRAFT' COMMENT '版本状态(DRAFT/PUBLISHED/ARCHIVED)',
+    `graph_config`    CLOB         DEFAULT NULL COMMENT 'Graph配置JSON',
+    `canvas_config`   CLOB         DEFAULT NULL COMMENT '画布布局JSON',
+    `del_flag`        CHAR(1)      DEFAULT '0' COMMENT '删除标志(0存在 1删除)',
+    `create_by`       VARCHAR(64)  DEFAULT NULL COMMENT '创建者',
+    `create_time`     TIMESTAMP    DEFAULT CURRENT_TIMESTAMP COMMENT '创建时间',
+    `update_by`       VARCHAR(64)  DEFAULT NULL COMMENT '更新者',
+    `update_time`     TIMESTAMP    DEFAULT CURRENT_TIMESTAMP COMMENT '更新时间',
+    PRIMARY KEY (`id`)
+);
+CREATE UNIQUE INDEX `uk_agent_version` ON `agent_version` (`agent_id`, `version_number`);
+COMMENT ON TABLE `agent_version` IS 'Agent 版本表';
+
+-- ============================================
+-- 7. 种子数据：示例 Agent
+-- ============================================
+INSERT INTO `agent_def` (`id`, `agent_id`, `name`, `description`, `current_version`, `status`)
+VALUES (1, 'simple-assistant', '简单助手', '基础 LLM 问答助手，直接调用大模型回答用户问题', 'v1.0.0', '1');
+
+INSERT INTO `agent_version` (`id`, `agent_id`, `version_number`, `description`, `status`, `graph_config`)
+VALUES (1, 'simple-assistant', 'v1.0.0', '初始版本', 'PUBLISHED',
+'{"name":"simple-assistant_graph","description":"基础LLM问答","startNode":"llm","endNode":"llm","nodes":{"llm":{"nodeName":"LLM 回答","nodeType":"LLM_CALL","enabled":true,"timeout":30000,"retryCount":0,"errorStrategy":"THROW","config":{"defaultPrompt":"你是一个智能助手，请友好地回答用户的问题。","stream":false}}},"edges":{},"conditionalEdges":{}}');
+
+INSERT INTO `agent_def` (`id`, `agent_id`, `name`, `description`, `current_version`, `status`)
+VALUES (2, 'rag-knowledge-agent', '知识库问答', '基于文档知识库的 RAG 检索问答', 'v1.0.0', '1');
+
+INSERT INTO `agent_version` (`id`, `agent_id`, `version_number`, `description`, `status`, `graph_config`)
+VALUES (2, 'rag-knowledge-agent', 'v1.0.0', '初始版本', 'PUBLISHED',
+'{"name":"rag-knowledge-agent_graph","description":"RAG知识库检索问答","startNode":"input","endNode":"output","nodes":{"input":{"nodeName":"输入","nodeType":"DEFAULT","enabled":true,"timeout":30000,"config":{}},"rag_retrieval":{"nodeName":"知识库检索","nodeType":"RAG_RETRIEVAL","enabled":true,"timeout":30000,"config":{"topK":5,"similarityThreshold":0.6}},"rag_enhance":{"nodeName":"检索增强","nodeType":"RAG_ENHANCEMENT","enabled":true,"timeout":30000,"config":{"enhancementStrategy":"SUMMARIZATION","contextWindowSize":3,"maxLength":2000,"addContext":true}},"llm":{"nodeName":"LLM 回答","nodeType":"LLM_CALL","enabled":true,"timeout":30000,"config":{"promptTemplate":"基于以下检索到的文档内容回答用户问题。\n\n{context}\n\n用户问题: {query}","stream":false}},"output":{"nodeName":"格式化输出","nodeType":"OUTPUT_FORMAT","enabled":true,"timeout":30000,"config":{"outputFormat":"TEXT","prettyPrint":true}}},"edges":{"input":["rag_retrieval"],"rag_retrieval":["rag_enhance"],"rag_enhance":["llm"],"llm":["output"]},"conditionalEdges":{}}');
+
+INSERT INTO `agent_def` (`id`, `agent_id`, `name`, `description`, `current_version`, `status`)
+VALUES (3, 'smart-agent', '智能路由助手', '支持意图识别、RAG 知识检索、工具调用、闲聊的全功能智能助手', 'v1.0.0', '1');
+
+INSERT INTO `agent_version` (`id`, `agent_id`, `version_number`, `description`, `status`, `graph_config`)
+VALUES (3, 'smart-agent', 'v1.0.0', '初始版本', 'PUBLISHED',
+'{"name":"smart-agent_graph","description":"全功能智能路由助手","startNode":"intent","endNode":"output","nodes":{"intent":{"nodeName":"意图识别","nodeType":"INTENT","enabled":true,"timeout":30000,"config":{"category":"general","confidenceThreshold":0.75}},"llm_chat":{"nodeName":"闲聊回答","nodeType":"LLM_CALL","enabled":true,"timeout":30000,"config":{"defaultPrompt":"你是一个友好的 AI 助手，请用轻松自然的语气和用户聊天。","stream":false}},"rag_retrieval":{"nodeName":"知识库检索","nodeType":"RAG_RETRIEVAL","enabled":true,"timeout":30000,"config":{"topK":3}},"rag_enhance":{"nodeName":"检索增强","nodeType":"RAG_ENHANCEMENT","enabled":true,"timeout":30000,"config":{"enhancementStrategy":"SUMMARIZATION","contextWindowSize":3}},"rag_llm":{"nodeName":"RAG 回答","nodeType":"LLM_CALL","enabled":true,"timeout":30000,"config":{"promptTemplate":"基于以下检索到的文档回答用户问题。\n\n{context}\n\n用户问题: {query}","stream":false}},"tool_call_weather":{"nodeName":"天气查询工具","nodeType":"TOOL_CALL","enabled":true,"timeout":30000,"config":{"toolName":"WEATHER","enableCache":true}},"tool_call_calculator":{"nodeName":"计算器工具","nodeType":"TOOL_CALL","enabled":true,"timeout":30000,"config":{"toolName":"CALCULATOR","enableCache":true}},"tool_llm":{"nodeName":"工具结果回答","nodeType":"LLM_CALL","enabled":true,"timeout":30000,"config":{"promptTemplate":"以下是工具执行结果，请用自然语言回复用户。\n\n工具结果: {toolResult}\n\n用户问题: {query}","stream":false}},"output":{"nodeName":"格式化输出","nodeType":"OUTPUT_FORMAT","enabled":true,"timeout":30000,"config":{"outputFormat":"TEXT","prettyPrint":true}}},"edges":{"rag_retrieval":["rag_enhance"],"rag_enhance":["rag_llm"],"rag_llm":["output"],"llm_chat":["output"],"tool_call_weather":["tool_llm"],"tool_call_calculator":["tool_llm"],"tool_llm":["output"]},"conditionalEdges":{"intent":{"defaultTarget":"llm_chat","nodeMappings":{"CHITCHAT":"llm_chat","QUESTION":"rag_retrieval","CALCULATOR":"tool_call_calculator","WEATHER":"tool_call_weather"},"conditionType":"INTENT_ROUTING"}}}');
+
 -- ==================== 重置自增序列 ====================
 ALTER TABLE `ai_platform` ALTER COLUMN `id` RESTART WITH 100;
 ALTER TABLE `ai_model` ALTER COLUMN `id` RESTART WITH 100;
+ALTER TABLE `agent_def` ALTER COLUMN `id` RESTART WITH 100;
+ALTER TABLE `agent_version` ALTER COLUMN `id` RESTART WITH 100;
