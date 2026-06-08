@@ -31,8 +31,8 @@ public class ProfileController {
     public Result<PageData<ProfileBO>> getPage(
             @RequestParam(required = false, defaultValue = "1") Integer pageNo,
             @RequestParam(required = false, defaultValue = "10") Integer pageSize,
-            @RequestParam(required = false) Long creatorId) {
-        Pair<Long, List<ProfileBO>> page = profileService.getPage(pageNo, pageSize, creatorId);
+            @RequestParam(required = false) String createBy) {
+        Pair<Long, List<ProfileBO>> page = profileService.getPage(pageNo, pageSize, createBy);
         PageData<ProfileBO> pageData = new PageData<>(page.getRight(), page.getLeft());
         return Result.success(pageData);
     }

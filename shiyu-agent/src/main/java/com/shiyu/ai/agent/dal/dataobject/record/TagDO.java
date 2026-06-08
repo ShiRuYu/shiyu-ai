@@ -29,9 +29,4 @@ public class TagDO extends BaseEntity {
      * 标签名称
      */
     private String name;
-
-    /**
-     * 创建者ID
-     */
-    private Long creatorId;
 }

@@ -29,9 +29,4 @@ public class TagBO implements Serializable {
      */
     @NotBlank(message = "标签名称不能为空", groups = { AddGroup.class })
     private String name;
-
-    /**
-     * 创建者ID
-     */
-    private Long creatorId;
 }

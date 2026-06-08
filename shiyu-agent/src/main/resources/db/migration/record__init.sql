@@ -9,7 +9,6 @@ CREATE TABLE profile (
     gender VARCHAR(10) COMMENT '性别',
     birth_date DATE COMMENT '出生日期',
     avatar VARCHAR(255) COMMENT '头像URL',
-    creator_id BIGINT NOT NULL COMMENT '创建者ID',
     status CHAR(1) DEFAULT '1' COMMENT '状态（1正常 0停用）',
     del_flag TINYINT DEFAULT 0 COMMENT '删除标志（0：正常 1：已删除）',
     create_by VARCHAR(64) COMMENT '创建者',
@@ -101,14 +100,13 @@ DROP TABLE IF EXISTS tag;
 CREATE TABLE tag (
     id BIGINT NOT NULL AUTO_INCREMENT COMMENT '标签ID',
     name VARCHAR(50) NOT NULL COMMENT '标签名称',
-    creator_id BIGINT COMMENT '创建者ID',
     create_by VARCHAR(64) COMMENT '创建者',
     create_time TIMESTAMP DEFAULT CURRENT_TIMESTAMP COMMENT '创建时间',
     update_by VARCHAR(64) COMMENT '更新者',
     update_time TIMESTAMP DEFAULT CURRENT_TIMESTAMP COMMENT '更新时间',
     PRIMARY KEY (id)
 );
-CREATE UNIQUE INDEX idx_name_creator ON tag (name, creator_id);
+CREATE UNIQUE INDEX idx_name_creator ON tag (name, create_by);
 COMMENT ON TABLE tag IS '标签表';
 
 -- 记录标签关联表(record_tag)
@@ -123,10 +121,10 @@ COMMENT ON TABLE record_tag IS '记录标签关联表';
 -- ==================== 样例数据 ====================
 
 -- 插入人物数据
-INSERT INTO profile (id, name, gender, birth_date, avatar, creator_id, status, del_flag, create_by, update_by) VALUES
-(1, '张小明', '男', '2015-06-15', '/avatars/boy_001.jpg', 1001, '1', 0, 'system', 'system'),
-(2, '李小花', '女', '2018-03-22', '/avatars/girl_001.jpg', 1001, '1', 0, 'system', 'system'),
-(3, '王大宝', '男', '2020-09-10', '/avatars/baby_001.jpg', 1002, '1', 0, 'system', 'system');
+INSERT INTO profile (id, name, gender, birth_date, avatar, status, del_flag, create_by, update_by) VALUES
+(1, '张小明', '男', '2015-06-15', '/avatars/boy_001.jpg', '1', 0, 'system', 'system'),
+(2, '李小花', '女', '2018-03-22', '/avatars/girl_001.jpg', '1', 0, 'system', 'system'),
+(3, '王大宝', '男', '2020-09-10', '/avatars/baby_001.jpg', '1', 0, 'system', 'system');
 
 -- 插入人物成员关系
 INSERT INTO profile_member (profile_id, user_id, role, create_by, update_by) VALUES
@@ -173,14 +171,14 @@ INSERT INTO media (record_id, url, type, size, width, height, sort, bucket, obje
 (7, '/media/rollover.mp4', 'video', 6291456, 1920, 1080, 1, 'growth-videos', '2021/01/rollover.mp4', 'system', 'system');
 
 -- 插入标签
-INSERT INTO tag (id, name, creator_id, create_by, update_by) VALUES
-(1, '第一次', 1001, 'system', 'system'),
-(2, '成长里程碑', 1001, 'system', 'system'),
-(3, '幼儿园', 1001, 'system', 'system'),
-(4, '户外活动', 1001, 'system', 'system'),
-(5, '家庭聚会', 1001, 'system', 'system'),
-(6, '重要时刻', 1002, 'system', 'system'),
-(7, '婴儿期', 1002, 'system', 'system');
+INSERT INTO tag (id, name, create_by, update_by) VALUES
+(1, '第一次', 'system', 'system'),
+(2, '成长里程碑', 'system', 'system'),
+(3, '幼儿园', 'system', 'system'),
+(4, '户外活动', 'system', 'system'),
+(5, '家庭聚会', 'system', 'system'),
+(6, '重要时刻', 'system', 'system'),
+(7, '婴儿期', 'system', 'system');
 
 -- 插入记录标签关联
 INSERT INTO record_tag (record_id, tag_id) VALUES

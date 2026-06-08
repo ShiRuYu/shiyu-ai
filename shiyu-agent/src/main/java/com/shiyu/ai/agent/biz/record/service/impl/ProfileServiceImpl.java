@@ -19,14 +19,14 @@ public class ProfileServiceImpl implements ProfileService {
     private ProfileRepository profileRepository;
 
     @Override
-    public Pair<Long, List<ProfileBO>> getPage(Integer pageNo, Integer pageSize, Long creatorId) {
+    public Pair<Long, List<ProfileBO>> getPage(Integer pageNo, Integer pageSize, String createBy) {
         if (pageNo == null || pageNo < 1) {
             pageNo = 1;
         }
         if (pageSize == null || pageSize < 1) {
             pageSize = 10;
         }
-        return profileRepository.selectPage(pageNo, pageSize, creatorId);
+        return profileRepository.selectPage(pageNo, pageSize, createBy);
     }
 
     @Override

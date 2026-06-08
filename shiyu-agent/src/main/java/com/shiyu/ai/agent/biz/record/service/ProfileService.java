@@ -13,7 +13,7 @@ public interface ProfileService {
     /**
      * 分页查询人物列表
      */
-    Pair<Long, List<ProfileBO>> getPage(Integer pageNo, Integer pageSize, Long creatorId);
+    Pair<Long, List<ProfileBO>> getPage(Integer pageNo, Integer pageSize, String createBy);
 
     /**
      * 根据ID查询人物

@@ -27,11 +27,6 @@ public class TagVO implements Serializable {
     private String name;
 
     /**
-     * 创建者ID
-     */
-    private Long creatorId;
-
-    /**
      * 创建时间
      */
     @JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss")

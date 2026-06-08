@@ -23,12 +23,12 @@ public class ProfileRepository {
     /**
      * 分页查询人物列表
      */
-    public Pair<Long, List<ProfileBO>> selectPage(Integer pageNo, Integer pageSize, Long creatorId) {
+    public Pair<Long, List<ProfileBO>> selectPage(Integer pageNo, Integer pageSize, String createBy) {
         QueryWrapper queryWrapper = QueryWrapper.create()
                 .eq(ProfileDO::getDelFlag, 0);
         
-        if (creatorId != null) {
-            queryWrapper.eq(ProfileDO::getCreatorId, creatorId);
+        if (createBy != null && !createBy.isBlank()) {
+            queryWrapper.eq(ProfileDO::getCreateBy, createBy);
         }
         
         queryWrapper.orderBy(ProfileDO::getCreateTime, false);

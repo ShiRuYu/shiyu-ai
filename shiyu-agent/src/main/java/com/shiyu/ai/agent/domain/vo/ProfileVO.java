@@ -43,11 +43,6 @@ public class ProfileVO implements Serializable {
     private String avatar;
 
     /**
-     * 创建者ID
-     */
-    private Long creatorId;
-
-    /**
      * 状态（1正常 0停用）
      */
     private String status;
