@@ -18,21 +18,21 @@ public class BaseEntity implements Serializable {
     /**
      * 创建者
      */
-    private String createBy;
+    private String createBy = "system";
 
     /**
      * 创建时间
      */
-    private LocalDateTime createTime;
+    private LocalDateTime createTime = LocalDateTime.now();
 
     /**
      * 更新者
      */
-    private String updateBy;
+    private String updateBy = "system";
 
     /**
      * 更新时间
      */
-    private LocalDateTime updateTime;
+    private LocalDateTime updateTime = LocalDateTime.now();
 
 }
