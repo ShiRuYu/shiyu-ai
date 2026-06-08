@@ -31,7 +31,7 @@ public class UserRepository {
     /**
      * 分页查询用户列表
      */
-    public Pair<Long, List<UserBO>> selectPage(Integer pageNo, Integer pageSize, String username) {
+    public Pair<Long, List<UserBO>> selectPage(Number pageNo, Number pageSize, String username) {
         QueryWrapper countWrapper = new QueryWrapper();
         long total = userMapper.selectCountByQuery(countWrapper);
 

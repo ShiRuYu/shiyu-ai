@@ -20,9 +20,12 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
 
+import lombok.extern.slf4j.Slf4j;
+
 /**
  * 客户端工具类
  */
+@Slf4j
 public class ServletUtils extends JakartaServletUtil {
 
     /**
@@ -131,7 +134,7 @@ public class ServletUtils extends JakartaServletUtil {
             response.setCharacterEncoding(StandardCharsets.UTF_8.toString());
             response.getWriter().print(string);
         } catch (IOException e) {
-            e.printStackTrace();
+            log.error("renderString error", e);
         }
     }
 

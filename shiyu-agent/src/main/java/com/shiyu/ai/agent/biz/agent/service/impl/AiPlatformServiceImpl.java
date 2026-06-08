@@ -27,7 +27,7 @@ public class AiPlatformServiceImpl implements AiPlatformService {
     private PlatformProperties platformProperties;
 
     @Override
-    public Pair<Long, List<AiPlatformBO>> getPage(Integer pageNo, Integer pageSize) {
+    public Pair<Long, List<AiPlatformBO>> getPage(Number pageNo, Number pageSize) {
         Pair<Long, List<AiPlatformBO>> result = aiPlatformRepository.selectPage(pageNo, pageSize);
         result.getRight().forEach(this::fillApiKey);
         return result;

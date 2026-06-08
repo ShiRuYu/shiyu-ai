@@ -2,6 +2,7 @@ package com.shiyu.ai.tts.utils.tts;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.shiyu.ai.common.core.utils.UnifiedThreadPoolUtils;
+import lombok.extern.slf4j.Slf4j;
 
 import java.net.URI;
 import java.net.http.*;
@@ -23,6 +24,7 @@ import java.util.stream.Stream;
  * 并将生成的 MP3 下载到 output 文件夹。
  * 支持去除多个指定字符串。
  */
+@Slf4j
 public class ChapterTTSProcessor {
 
     private static final ObjectMapper MAPPER = new ObjectMapper();
@@ -41,7 +43,7 @@ public class ChapterTTSProcessor {
 
     public static void main(String[] args) throws Exception {
         if (!Files.exists(INPUT_DIR)) {
-            System.err.println("❌ 输入目录不存在：" + INPUT_DIR.toAbsolutePath());
+            log.error("❌ 输入目录不存在：{}", INPUT_DIR.toAbsolutePath());
             return;
         }
 
@@ -52,11 +54,11 @@ public class ChapterTTSProcessor {
         }
 
         if (files.isEmpty()) {
-            System.out.println("⚠️ 未找到任何 .txt 文件");
+            log.warn("⚠️ 未找到任何 .txt 文件");
             return;
         }
 
-        System.out.println("📝 共检测到文件数：" + files.size());
+        log.info("📝 共检测到文件数：{}", files.size());
 
         // 限制并发执行数量
         Semaphore semaphore = new Semaphore(MAX_CONCURRENT_TASKS);
@@ -79,11 +81,11 @@ public class ChapterTTSProcessor {
             try {
                 f.get();
             } catch (Exception e) {
-                System.err.println("⚠️ 任务执行出错：" + e.getMessage());
+                log.error("⚠️ 任务执行出错：{}", e.getMessage());
             }
         }
 
-        System.out.println("✅ 所有任务执行完毕！");
+        log.info("✅ 所有任务执行完毕！");
     }
 
     /** 处理单个文件 */
@@ -93,11 +95,10 @@ public class ChapterTTSProcessor {
             String text = Files.readString(file, StandardCharsets.UTF_8);
             text = removeUnwantedStrings(text);
 
-            System.out.println("🎙️ 开始生成音频：" + chapterName);
+            log.info("🎙️ 开始生成音频：{}", chapterName);
             callTTSAndSave(chapterName, text);
         } catch (Exception e) {
-            System.err.println("❌ 文件处理失败：" + file + " -> " + e.getMessage());
-            e.printStackTrace();
+            log.error("❌ 文件处理失败：{} -> {}", file, e.getMessage(), e);
         }
     }
 
@@ -138,11 +139,11 @@ public class ChapterTTSProcessor {
         HttpResponse<String> response = client.send(request, HttpResponse.BodyHandlers.ofString());
 
         if (response.statusCode() != 200) {
-            System.err.println("❌ HTTP错误：" + response.statusCode() + " - " + fileName);
+            log.error("❌ HTTP错误：{} - {}", response.statusCode(), fileName);
             return;
         }
 
-        System.out.println("✅ 已生成音频" );
+        log.info("✅ 已生成音频");
     }
 
 }

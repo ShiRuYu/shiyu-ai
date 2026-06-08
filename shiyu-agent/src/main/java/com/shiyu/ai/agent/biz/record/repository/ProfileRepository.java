@@ -23,7 +23,7 @@ public class ProfileRepository {
     /**
      * 分页查询人物列表
      */
-    public Pair<Long, List<ProfileBO>> selectPage(Integer pageNo, Integer pageSize, String createBy) {
+    public Pair<Long, List<ProfileBO>> selectPage(Number pageNo, Number pageSize, String createBy) {
         QueryWrapper countWrapper = QueryWrapper.create();
         long total = profileMapper.selectCountByQuery(countWrapper);
 

@@ -24,7 +24,7 @@ public interface UserService {
      * @param pageSize 每页大小
      * @return 分页数据
      */
-    UserPageResponse getUserList(String username, Integer pageNo, Integer pageSize);
+    UserPageResponse getUserList(String username, Number pageNo, Number pageSize);
 
     /**
      * 删除用户

@@ -30,7 +30,7 @@ public class RoleServiceImpl implements RoleService {
     }
 
     @Override
-    public RolePageResponse getRoleList(Integer pageNo, Integer pageSize, String name) {
+    public RolePageResponse getRoleList(Number pageNo, Number pageSize, String name) {
         log.info("获取角色列表，pageNo: {}, pageSize: {}, name: {}", pageNo, pageSize, name);
         
         Pair<Long, List<RoleBO>> result = roleRepository.selectPage(pageNo, pageSize, name);

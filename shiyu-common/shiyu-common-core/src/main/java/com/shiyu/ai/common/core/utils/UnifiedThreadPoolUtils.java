@@ -46,8 +46,7 @@ public class UnifiedThreadPoolUtils {
         try {
             DEFAULT_EXECUTOR.execute(wrapRunnable(task));
         } catch (Exception e) {
-            log.error("[ThreadPool] Failed to execute task: {}", e.getMessage());
-            e.printStackTrace();
+            log.error("[ThreadPool] Failed to execute task", e);
         }
     }
 
@@ -55,8 +54,7 @@ public class UnifiedThreadPoolUtils {
         try {
             return DEFAULT_EXECUTOR.submit(wrapCallable(task));
         } catch (Exception e) {
-            log.error("[ThreadPool] Failed to submit task: {}", e.getMessage());
-            e.printStackTrace();
+            log.error("[ThreadPool] Failed to submit task", e);
             return CompletableFuture.failedFuture(e);
         }
     }
@@ -71,8 +69,7 @@ public class UnifiedThreadPoolUtils {
                 log.info("[ThreadPool] Shutting down pool: {}", poolName);
                 executor.shutdown();
             } catch (Exception e) {
-                log.error("[ThreadPool] Failed to shutdown pool: {} , {}", poolName, e.getMessage());
-                e.printStackTrace();
+                log.error("[ThreadPool] Failed to shutdown pool: {}", poolName, e);
             }
         } else {
             log.info("[ThreadPool] No pool found with name: {}", poolName);
@@ -94,8 +91,7 @@ public class UnifiedThreadPoolUtils {
             }
             executor.shutdown();
         } catch (Exception e) {
-            log.error("[ThreadPool] Failed to shutdown executor: {}", e.getMessage());
-            e.printStackTrace();
+            log.error("[ThreadPool] Failed to shutdown executor", e);
         }
     }
 
@@ -106,8 +102,7 @@ public class UnifiedThreadPoolUtils {
                 entry.getValue().shutdown();
             }
         } catch (Exception e) {
-            log.error("[ThreadPool] Shutdown error: {}", e.getMessage());
-            e.printStackTrace();
+            log.error("[ThreadPool] Shutdown error", e);
         }
     }
 
@@ -130,8 +125,7 @@ public class UnifiedThreadPoolUtils {
             try {
                 task.run();
             } catch (Throwable t) {
-                log.error("[ThreadPool] Task error: {}" , t.getMessage());
-                t.printStackTrace();
+                log.error("[ThreadPool] Task error", t);
             }
         };
     }
@@ -142,8 +136,7 @@ public class UnifiedThreadPoolUtils {
             try {
                 return task.call();
             } catch (Throwable t) {
-                log.error("[ThreadPool] Task error: {}", t.getMessage());
-                t.printStackTrace();
+                log.error("[ThreadPool] Task error", t);
                 throw t;
             }
         };

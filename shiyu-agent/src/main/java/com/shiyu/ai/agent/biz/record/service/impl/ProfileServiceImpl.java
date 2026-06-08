@@ -19,11 +19,11 @@ public class ProfileServiceImpl implements ProfileService {
     private ProfileRepository profileRepository;
 
     @Override
-    public Pair<Long, List<ProfileBO>> getPage(Integer pageNo, Integer pageSize, String createBy) {
-        if (pageNo == null || pageNo < 1) {
+    public Pair<Long, List<ProfileBO>> getPage(Number pageNo, Number pageSize, String createBy) {
+        if (pageNo == null || pageNo.intValue() < 1) {
             pageNo = 1;
         }
-        if (pageSize == null || pageSize < 1) {
+        if (pageSize == null || pageSize.intValue() < 1) {
             pageSize = 10;
         }
         return profileRepository.selectPage(pageNo, pageSize, createBy);

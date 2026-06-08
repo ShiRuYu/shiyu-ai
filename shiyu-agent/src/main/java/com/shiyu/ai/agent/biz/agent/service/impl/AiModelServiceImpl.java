@@ -27,7 +27,7 @@ public class AiModelServiceImpl implements AiModelService {
     private AiPlatformRepository aiPlatformRepository;
 
     @Override
-    public Pair<Long, List<AiModelBO>> getPage(Long platformId, Integer pageNo, Integer pageSize) {
+    public Pair<Long, List<AiModelBO>> getPage(Long platformId, Number pageNo, Number pageSize) {
         Pair<Long, List<AiModelBO>> result = aiModelRepository.selectPage(platformId, pageNo, pageSize);
         fillPlatformName(result.getRight());
         return result;

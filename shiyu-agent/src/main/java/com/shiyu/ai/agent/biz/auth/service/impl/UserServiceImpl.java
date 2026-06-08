@@ -42,7 +42,7 @@ public class UserServiceImpl implements UserService {
     }
 
     @Override
-    public UserPageResponse getUserList(String username, Integer pageNo, Integer pageSize) {
+    public UserPageResponse getUserList(String username, Number pageNo, Number pageSize) {
         log.info("获取用户列表，username: {}, pageNo: {}, pageSize: {}", username, pageNo, pageSize);
         
         Pair<Long, List<UserBO>> result = userRepository.selectPage(pageNo, pageSize, username);

@@ -14,7 +14,7 @@ public interface AiPlatformService {
     /**
      * 分页查询平台列表
      */
-    Pair<Long, List<AiPlatformBO>> getPage(Integer pageNo, Integer pageSize);
+    Pair<Long, List<AiPlatformBO>> getPage(Number pageNo, Number pageSize);
 
     /**
      * 查询所有启用的平台

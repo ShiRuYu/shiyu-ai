@@ -18,7 +18,7 @@ public interface AiModelService {
      * @param pageNo     页码
      * @param pageSize   每页数量
      */
-    Pair<Long, List<AiModelBO>> getPage(Long platformId, Integer pageNo, Integer pageSize);
+    Pair<Long, List<AiModelBO>> getPage(Long platformId, Number pageNo, Number pageSize);
 
     /**
      * 查询指定平台下所有启用的模型

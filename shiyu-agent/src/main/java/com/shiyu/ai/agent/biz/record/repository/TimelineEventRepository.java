@@ -34,7 +34,7 @@ public class TimelineEventRepository {
     /**
      * 分页查询时间轴事件列表
      */
-    public Pair<Long, List<TimelineEventBO>> selectPage(Integer pageNo, Integer pageSize, Long profileId) {
+    public Pair<Long, List<TimelineEventBO>> selectPage(Number pageNo, Number pageSize, Long profileId) {
         QueryWrapper countWrapper = QueryWrapper.create();
         long total = timelineEventMapper.selectCountByQuery(countWrapper);
 
@@ -86,8 +86,10 @@ public class TimelineEventRepository {
      */
     public TimelineEventBO insert(TimelineEventBO eventBO) {
         TimelineEventDO eventDO = MapstructUtils.convert(eventBO, TimelineEventDO.class);
+        if (eventDO == null) {
+            throw new IllegalArgumentException("TimelineEventBO 转换失败");
+        }
         // 如果事件时间为空，使用当前时间作为默认值
-        assert eventDO != null;
         if (eventDO.getEventTime() == null) {
             eventDO.setEventTime(LocalDateTime.now());
         }

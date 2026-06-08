@@ -19,11 +19,11 @@ public class TimelineEventServiceImpl implements TimelineEventService {
     private TimelineEventRepository timelineEventRepository;
 
     @Override
-    public Pair<Long, List<TimelineEventBO>> getPage(Integer pageNo, Integer pageSize, Long profileId) {
-        if (pageNo == null || pageNo < 1) {
+    public Pair<Long, List<TimelineEventBO>> getPage(Number pageNo, Number pageSize, Long profileId) {
+        if (pageNo == null || pageNo.intValue() < 1) {
             pageNo = 1;
         }
-        if (pageSize == null || pageSize < 1) {
+        if (pageSize == null || pageSize.intValue() < 1) {
             pageSize = 20;
         }
         return timelineEventRepository.selectPage(pageNo, pageSize, profileId);

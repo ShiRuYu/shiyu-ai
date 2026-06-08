@@ -13,7 +13,7 @@ public interface TimelineEventService {
     /**
      * 分页查询时间轴事件列表
      */
-    Pair<Long, List<TimelineEventBO>> getPage(Integer pageNo, Integer pageSize, Long profileId);
+    Pair<Long, List<TimelineEventBO>> getPage(Number pageNo, Number pageSize, Long profileId);
 
     /**
      * 根据ID查询时间轴事件

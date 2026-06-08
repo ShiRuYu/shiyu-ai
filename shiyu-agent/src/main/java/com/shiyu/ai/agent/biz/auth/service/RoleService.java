@@ -18,7 +18,7 @@ public interface RoleService {
      * @param name     角色名称（可选）
      * @return 分页数据
      */
-    RolePageResponse getRoleList(Integer pageNo, Integer pageSize, String name);
+    RolePageResponse getRoleList(Number pageNo, Number pageSize, String name);
 
     /**
      * 获取角色列表-all
