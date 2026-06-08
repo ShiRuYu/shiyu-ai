@@ -2,6 +2,8 @@ package com.shiyu.ai.common.mybatis.config;
 
 import com.mybatisflex.annotation.KeyType;
 import com.mybatisflex.core.FlexGlobalConfig;
+import com.shiyu.ai.common.core.domain.BaseEntity;
+import com.shiyu.ai.common.mybatis.handler.AuditFieldListener;
 import com.shiyu.ai.common.mybatis.handler.MybatisExceptionHandler;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
@@ -32,8 +34,15 @@ public class MybatisConfig {
         }
         keyConfig.setBefore(keyBefore);
 
-        FlexGlobalConfig.getDefaultConfig().setKeyConfig(keyConfig);
-        return FlexGlobalConfig.getDefaultConfig();
+        FlexGlobalConfig config = FlexGlobalConfig.getDefaultConfig();
+        config.setKeyConfig(keyConfig);
+
+        // 注册审计字段自动填充监听器
+        AuditFieldListener auditListener = new AuditFieldListener();
+        config.registerInsertListener(auditListener, BaseEntity.class);
+        config.registerUpdateListener(auditListener, BaseEntity.class);
+
+        return config;
     }
 
     @Bean
