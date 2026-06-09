@@ -3,6 +3,7 @@ package com.shiyu.ai.agent.biz.agent.service.impl;
 import com.shiyu.ai.agent.biz.agent.repository.IntentDefRepository;
 import com.shiyu.ai.agent.biz.agent.service.IntentDefService;
 import com.shiyu.ai.agent.domain.bo.IntentDefBO;
+import com.shiyu.ai.agent.domain.vo.IdNameOptionVO;
 import jakarta.annotation.Resource;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.tuple.Pair;
@@ -48,5 +49,10 @@ public class IntentDefServiceImpl implements IntentDefService {
     @Override
     public void deleteByIds(List<Long> ids) {
         intentDefRepository.deleteByIds(ids);
+    }
+
+    @Override
+    public List<IdNameOptionVO> listAllOptions() {
+        return intentDefRepository.selectAllOptions();
     }
 }

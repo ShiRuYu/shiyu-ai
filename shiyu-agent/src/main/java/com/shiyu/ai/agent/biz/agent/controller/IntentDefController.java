@@ -2,6 +2,7 @@ package com.shiyu.ai.agent.biz.agent.controller;
 
 import com.shiyu.ai.agent.biz.agent.service.IntentDefService;
 import com.shiyu.ai.agent.domain.bo.IntentDefBO;
+import com.shiyu.ai.agent.domain.vo.IdNameOptionVO;
 import com.shiyu.ai.common.core.api.PageData;
 import com.shiyu.ai.common.core.api.Result;
 import lombok.extern.slf4j.Slf4j;
@@ -112,5 +113,13 @@ public class IntentDefController {
             log.error("批量删除意图定义失败", e);
             return Result.fail("批量删除失败：" + e.getMessage());
         }
+    }
+
+    /**
+     * 获取所有意图定义选项（下拉选择用）
+     */
+    @GetMapping("/options")
+    public Result<List<IdNameOptionVO>> getOptions() {
+        return Result.success(intentDefService.listAllOptions());
     }
 }

@@ -402,13 +402,13 @@ VALUES (50404, '模型删除', 'common:model:delete', 'BUTTON', 504, NULL, NULL,
 
 -- 智能体子菜单：版本管理 (ID: 505)
 INSERT INTO `menu` (`id`, `name`, `code`, `type`, `parent_id`, `path`, `redirect`, `icon`, `component`, `layout`, `keep_alive`, `method`, `description`, `show`, `status`, `order`, `del_flag`, `create_by`, `update_by`) 
-VALUES (505, '版本管理', 'AgentVersion', 'MENU', 500, '/agent/admin/edit', NULL, 'carbon:version', '/agent/admin/agent-edit', '', TRUE, NULL, 'Agent 版本管理与 Graph 编排', TRUE, '1', 5, 0, 'system', 'system');
+VALUES (505, '版本管理', 'AgentVersion', 'MENU', 500, '/agent/admin/edit', NULL, 'carbon:version', '/agent/admin/agent-edit', '', FALSE, NULL, 'Agent 版本管理与 Graph 编排（隐藏菜单，请从编辑页面进入）', FALSE, '1', 5, 0, 'system', 'system');
 
 -- 版本管理已整合到编辑页面中，Graph编排入口移除
 
 -- 智能体子菜单：意图定义管理 (ID: 507)
 INSERT INTO `menu` (`id`, `name`, `code`, `type`, `parent_id`, `path`, `redirect`, `icon`, `component`, `layout`, `keep_alive`, `method`, `description`, `show`, `status`, `order`, `del_flag`, `create_by`, `update_by`) 
-VALUES (507, '意图管理', 'AgentIntent', 'MENU', 500, '/agent/intent', NULL, 'carbon:intent', '/agent/intent/list', '', TRUE, NULL, '意图定义管理', TRUE, '1', 7, 0, 'system', 'system');
+VALUES (507, '意图管理', 'AgentIntent', 'MENU', 500, '/agent/intent', NULL, 'carbon:idea', '/agent/intent/list', '', TRUE, NULL, '意图定义管理', TRUE, '1', 7, 0, 'system', 'system');
 
 
 -- 已删除 - 前端 vben.ts 路由已清空

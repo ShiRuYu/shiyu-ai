@@ -59,6 +59,17 @@ public class AgentAdminRepository {
         return agentDefMapper.selectOneByQuery(queryWrapper);
     }
 
+    /**
+     * 查询所有启用 Agent（用于下拉选择）
+     */
+    public List<AgentDefDO> selectAllActive() {
+        QueryWrapper queryWrapper = new QueryWrapper();
+        queryWrapper.eq(AgentDefDO::getDelFlag, "0");
+        queryWrapper.eq(AgentDefDO::getStatus, "1");
+        queryWrapper.orderBy(AgentDefDO::getName, true);
+        return agentDefMapper.selectListByQuery(queryWrapper);
+    }
+
     public AgentDefDO create(AgentDefDO agentDef) {
         agentDefMapper.insertSelective(agentDef);
         return agentDef;

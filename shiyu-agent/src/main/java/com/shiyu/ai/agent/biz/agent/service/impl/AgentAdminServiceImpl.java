@@ -389,6 +389,16 @@ public class AgentAdminServiceImpl implements AgentAdminService {
         return metas;
     }
 
+    @Override
+    public List<IdNameOptionVO> listAllOptions() {
+        List<AgentDefDO> list = agentAdminRepository.selectAllActive();
+        return list.stream().map(d -> IdNameOptionVO.builder()
+                .id(d.getId())
+                .name(d.getName())
+                .code(d.getAgentId())
+                .build()).collect(Collectors.toList());
+    }
+
     private AgentVersionDO getVersionOrThrow(String agentId, Long versionId) {
         AgentVersionDO v = agentAdminRepository.selectVersionById(versionId);
         if (v == null || !v.getAgentId().equals(agentId)) {

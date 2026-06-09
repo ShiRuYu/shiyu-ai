@@ -57,4 +57,9 @@ public interface AgentAdminService {
     void updateCanvasConfig(String agentId, Long versionId, String canvasConfig);
 
     List<NodeTypeMetaVO> getNodeTypes();
+
+    /**
+     * 获取所有启用 Agent 列表（下拉选项用）
+     */
+    List<IdNameOptionVO> listAllOptions();
 }

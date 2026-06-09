@@ -1,6 +1,7 @@
 package com.shiyu.ai.agent.biz.agent.service;
 
 import com.shiyu.ai.agent.domain.bo.IntentDefBO;
+import com.shiyu.ai.agent.domain.vo.IdNameOptionVO;
 import org.apache.commons.lang3.tuple.Pair;
 
 import java.util.List;
@@ -39,4 +40,9 @@ public interface IntentDefService {
      * 批量删除意图定义
      */
     void deleteByIds(List<Long> ids);
+
+    /**
+     * 获取所有意图定义选项（下拉选择用）
+     */
+    List<IdNameOptionVO> listAllOptions();
 }

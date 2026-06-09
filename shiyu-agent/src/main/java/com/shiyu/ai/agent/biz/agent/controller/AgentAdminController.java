@@ -4,6 +4,7 @@ import com.shiyu.ai.agent.biz.agent.service.AgentAdminService;
 import com.shiyu.ai.agent.domain.request.AgentRequest;
 import com.shiyu.ai.agent.domain.vo.AgentDetailVO;
 import com.shiyu.ai.agent.domain.vo.AgentVO;
+import com.shiyu.ai.agent.domain.vo.IdNameOptionVO;
 import com.shiyu.ai.common.core.api.PageData;
 import com.shiyu.ai.common.core.api.Result;
 import lombok.extern.slf4j.Slf4j;
@@ -84,5 +85,13 @@ public class AgentAdminController {
             log.error("更新Agent状态失败", e);
             return Result.fail("更新失败：" + e.getMessage());
         }
+    }
+
+    /**
+     * 获取所有启用 Agent 选项（下拉选择用）
+     */
+    @GetMapping("/list/all")
+    public Result<List<IdNameOptionVO>> listAllOptions() {
+        return Result.success(agentAdminService.listAllOptions());
     }
 }

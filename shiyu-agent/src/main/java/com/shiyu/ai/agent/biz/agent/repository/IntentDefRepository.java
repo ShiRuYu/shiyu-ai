@@ -5,6 +5,7 @@ import com.mybatisflex.core.query.QueryWrapper;
 import com.shiyu.ai.agent.dal.dataobject.agent.IntentDefDO;
 import com.shiyu.ai.agent.dal.mapper.agent.IntentDefMapper;
 import com.shiyu.ai.agent.domain.bo.IntentDefBO;
+import com.shiyu.ai.agent.domain.vo.IdNameOptionVO;
 import jakarta.annotation.Resource;
 import org.apache.commons.lang3.tuple.Pair;
 import org.springframework.stereotype.Component;
@@ -106,6 +107,23 @@ public class IntentDefRepository {
         for (Long id : ids) {
             intentDefMapper.deleteById(id);
         }
+    }
+
+    /**
+     * 获取所有启用意图定义选项（下拉选择用）
+     */
+    public List<IdNameOptionVO> selectAllOptions() {
+        QueryWrapper qw = new QueryWrapper();
+        qw.eq(IntentDefDO::getDelFlag, "0")
+          .eq(IntentDefDO::getEnabled, "1")
+          .eq(IntentDefDO::getStatus, "1")
+          .orderBy(IntentDefDO::getPriority, true);
+        List<IntentDefDO> doList = intentDefMapper.selectListByQuery(qw);
+        return doList.stream().map(d -> IdNameOptionVO.builder()
+                .id(d.getId())
+                .name(d.getName())
+                .code(d.getCode())
+                .build()).collect(java.util.stream.Collectors.toList());
     }
 
     private IntentDefBO convertToBo(IntentDefDO d) {
