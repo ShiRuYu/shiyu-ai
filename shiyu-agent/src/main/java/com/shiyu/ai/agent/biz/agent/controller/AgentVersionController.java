@@ -1,9 +1,11 @@
 package com.shiyu.ai.agent.biz.agent.controller;
 
 import com.shiyu.ai.agent.biz.agent.service.AgentAdminService;
+import com.shiyu.ai.agent.domain.request.GraphConfigRequest;
 import com.shiyu.ai.agent.domain.request.VersionRequest;
 import com.shiyu.ai.agent.domain.vo.AgentVersionDetailVO;
 import com.shiyu.ai.agent.domain.vo.AgentVersionVO;
+import com.shiyu.ai.agent.domain.vo.GraphValidationVO;
 import com.shiyu.ai.common.core.api.Result;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.web.bind.annotation.*;
@@ -114,5 +116,36 @@ public class AgentVersionController {
             log.error("复制版本失败", e);
             return Result.fail("复制失败：" + e.getMessage());
         }
+    }
+
+    // ==================== Graph 编排接口 ====================
+
+    @GetMapping("/{versionId}/graph")
+    public Result<AgentVersionDetailVO> getGraphConfig(
+            @PathVariable String agentId, @PathVariable Long versionId) {
+        AgentVersionDetailVO vo = agentAdminService.getGraphConfig(agentId, versionId);
+        if (vo == null) return Result.fail("版本不存在");
+        return Result.success(vo);
+    }
+
+    @PutMapping("/{versionId}/graph")
+    public Result<AgentVersionDetailVO> updateGraphConfig(
+            @PathVariable String agentId, @PathVariable Long versionId,
+            @RequestBody GraphConfigRequest request) {
+        try {
+            AgentVersionDetailVO vo = agentAdminService.updateGraphConfig(agentId, versionId, request);
+            return Result.success(vo);
+        } catch (Exception e) {
+            log.error("更新Graph配置失败", e);
+            return Result.fail("更新Graph失败：" + e.getMessage());
+        }
+    }
+
+    @PostMapping("/{versionId}/graph/validate")
+    public Result<GraphValidationVO> validateGraphConfig(
+            @PathVariable String agentId, @PathVariable Long versionId,
+            @RequestBody GraphConfigRequest request) {
+        GraphValidationVO result = agentAdminService.validateGraphConfig(request);
+        return Result.success(result);
     }
 }
