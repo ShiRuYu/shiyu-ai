@@ -12,7 +12,7 @@ import java.util.List;
  * 用户表 数据层
  */
 @Mapper
-@UseDataSource(DataSourceConfig.AUTH)
+@UseDataSource(DataSourceConfig.AGENT)
 public interface UserMapper extends BaseMapperFlex<UserDO> {
 
     /**

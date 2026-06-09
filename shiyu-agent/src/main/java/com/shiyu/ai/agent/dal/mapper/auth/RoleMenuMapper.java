@@ -13,7 +13,7 @@ import java.util.List;
  * 角色菜单关联表 数据层
  */
 @Mapper
-@UseDataSource(DataSourceConfig.AUTH)
+@UseDataSource(DataSourceConfig.AGENT)
 public interface RoleMenuMapper extends BaseMapperFlex<RoleMenuDO> {
 
     /**

@@ -10,7 +10,7 @@ import org.apache.ibatis.annotations.Mapper;
  * 菜单表 数据层
  */
 @Mapper
-@UseDataSource(DataSourceConfig.AUTH)
+@UseDataSource(DataSourceConfig.AGENT)
 public interface MenuMapper extends BaseMapperFlex<MenuDO> {
 
 }

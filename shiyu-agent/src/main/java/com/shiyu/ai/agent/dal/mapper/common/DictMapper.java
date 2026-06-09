@@ -10,7 +10,7 @@ import org.apache.ibatis.annotations.Mapper;
  * 字典表 数据层
  */
 @Mapper
-@UseDataSource(DataSourceConfig.COMMON)
+@UseDataSource(DataSourceConfig.AGENT)
 public interface DictMapper extends BaseMapperFlex<DictDO> {
 
 }

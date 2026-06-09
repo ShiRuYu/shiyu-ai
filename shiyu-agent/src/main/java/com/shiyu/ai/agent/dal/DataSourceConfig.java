@@ -10,22 +10,7 @@ public final class DataSourceConfig {
      * agent (Agent 数据源)
      */
     public static final String AGENT = "agent";
-    
-    /**
-     * common (通用数据源)
-     */
-    public static final String COMMON = "common";
-    
-    /**
-     * auth (认证数据源)
-     */
-    public static final String AUTH = "auth";
-    
-    /**
-     * record (个人成长记录系统数据源)
-     */
-    public static final String RECORD = "record";
-    
+
     /**
      * 私有构造函数,防止实例化
      */

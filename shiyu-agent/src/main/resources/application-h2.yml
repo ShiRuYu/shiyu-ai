@@ -17,24 +17,3 @@ mybatis-flex:
       username: sa
       password:
       validationQuery: SELECT 1
-    common:
-      type: druid
-      driverClassName: org.h2.Driver
-      url: jdbc:h2:file:./.data/shiyu-agent/commondb;MODE=MySQL;DB_CLOSE_DELAY=-1
-      username: sa
-      password:
-      validationQuery: SELECT 1
-    auth:
-      type: druid
-      driverClassName: org.h2.Driver
-      url: jdbc:h2:file:./.data/shiyu-agent/authdb;MODE=MySQL;DB_CLOSE_DELAY=-1
-      username: sa
-      password:
-      validationQuery: SELECT 1
-    record:
-      type: druid
-      driverClassName: org.h2.Driver
-      url: jdbc:h2:file:./.data/shiyu-agent/recorddb;MODE=MySQL;DB_CLOSE_DELAY=-1
-      username: sa
-      password:
-      validationQuery: SELECT 1

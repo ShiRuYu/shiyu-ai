@@ -10,7 +10,7 @@ import org.apache.ibatis.annotations.Mapper;
  * 角色表 数据层
  */
 @Mapper
-@UseDataSource(DataSourceConfig.AUTH)
+@UseDataSource(DataSourceConfig.AGENT)
 public interface RoleMapper extends BaseMapperFlex<RoleDO> {
 
 }

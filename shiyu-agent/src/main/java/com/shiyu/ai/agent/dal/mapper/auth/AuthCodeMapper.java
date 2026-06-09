@@ -12,7 +12,7 @@ import java.util.List;
  * 认证码表 数据层
  */
 @Mapper
-@UseDataSource(DataSourceConfig.AUTH)
+@UseDataSource(DataSourceConfig.AGENT)
 public interface AuthCodeMapper extends BaseMapperFlex<AuthCodeDO> {
 
     /**

@@ -13,7 +13,7 @@ import java.util.List;
  * 用户角色关联表 数据层
  */
 @Mapper
-@UseDataSource(DataSourceConfig.AUTH)
+@UseDataSource(DataSourceConfig.AGENT)
 public interface UserRoleMapper extends BaseMapperFlex<UserRoleDO> {
 
     /**

@@ -10,7 +10,7 @@ import org.apache.ibatis.annotations.Mapper;
  * 人物成员关系表 数据层
  */
 @Mapper
-@UseDataSource(DataSourceConfig.RECORD)
+@UseDataSource(DataSourceConfig.AGENT)
 public interface ProfileMemberMapper extends BaseMapperFlex<ProfileMemberDO> {
 
 }

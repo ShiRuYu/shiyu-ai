@@ -10,7 +10,7 @@ import org.apache.ibatis.annotations.Mapper;
  * 部门表 数据层
  */
 @Mapper
-@UseDataSource(DataSourceConfig.AUTH)
+@UseDataSource(DataSourceConfig.AGENT)
 public interface DeptMapper extends BaseMapperFlex<DeptDO> {
 
 }

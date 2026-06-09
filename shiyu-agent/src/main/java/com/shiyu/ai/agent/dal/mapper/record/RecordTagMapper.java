@@ -10,7 +10,7 @@ import org.apache.ibatis.annotations.Mapper;
  * 记录标签关联表 数据层
  */
 @Mapper
-@UseDataSource(DataSourceConfig.RECORD)
+@UseDataSource(DataSourceConfig.AGENT)
 public interface RecordTagMapper extends BaseMapperFlex<RecordTagDO> {
 
 }

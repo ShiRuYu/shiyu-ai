@@ -10,7 +10,7 @@ import org.apache.ibatis.annotations.Mapper;
  * 时间轴事件表 数据层
  */
 @Mapper
-@UseDataSource(DataSourceConfig.RECORD)
+@UseDataSource(DataSourceConfig.AGENT)
 public interface TimelineEventMapper extends BaseMapperFlex<TimelineEventDO> {
 
 }
