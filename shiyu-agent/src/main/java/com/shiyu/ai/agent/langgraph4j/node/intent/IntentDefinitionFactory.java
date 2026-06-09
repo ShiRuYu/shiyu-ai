@@ -1,10 +1,11 @@
 package com.shiyu.ai.agent.langgraph4j.node.intent;
+import com.shiyu.ai.agent.domain.bo.IntentDefBO;
 import com.google.common.collect.HashBasedTable;
-import com.google.common.collect.Maps;
 import com.google.common.collect.Table;
 
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
@@ -26,112 +27,43 @@ public class IntentDefinitionFactory {
     /**
      * intentTable: row = agentId, column = category, value = List&lt;IntentDefinition&gt;
      */
-    private static final Table<String, String, List<IntentDefinition>> intentTable = HashBasedTable.create();
+    private static Table<String, String, List<IntentDefinition>> intentTable = HashBasedTable.create();
 
     static {
-        // ========== 默认 agent ("default") ==========
+        // 意图定义现在由 DB 驱动，启动时由 IntentDefApplicationRunner 从 DB 加载
+        // 运行时可通过 reloadFromDb(List<IntentDefBO>) 动态刷新
+    }
 
-        // CONVERSATION 分类
-        put("default", "CONVERSATION", IntentDefinition.builder()
-                .code(IntentType.CHITCHAT.getCode())
-                .name(IntentType.CHITCHAT.getName())
-                .description(IntentType.CHITCHAT.getDescription())
-                .category("CONVERSATION")
-                .priority(50)
-                .confidenceThreshold(0.75)
-                .examples(new String[]{
-                        "你好",
-                        "最近怎么样",
-                        "今天天气不错",
-                        "你在干什么",
-                        "聊聊天吧"
-                })
-                .targetNode("chatDirect")
-                .enabled(true)
-                .build());
-
-        // KNOWLEDGE 分类
-        put("default", "KNOWLEDGE", IntentDefinition.builder()
-                .code(IntentType.QUESTION.getCode())
-                .name(IntentType.QUESTION.getName())
-                .description(IntentType.QUESTION.getDescription())
-                .category("KNOWLEDGE")
-                .priority(60)
-                .confidenceThreshold(0.8)
-                .examples(new String[]{
-                        "什么是人工智能",
-                        "为什么天空是蓝色的",
-                        "如何学习编程",
-                        "地球有多大",
-                        "谁发明了电灯"
-                })
-                .targetNode("chatWithRag")
-                .enabled(true)
-                .build());
-
-        // TASK 分类
-        put("default", "TASK", IntentDefinition.builder()
-                .code(IntentType.CALCULATOR.getCode())
-                .name(IntentType.CALCULATOR.getName())
-                .description(IntentType.CALCULATOR.getDescription())
-                .category("TASK")
-                .priority(70)
-                .confidenceThreshold(0.85)
-                .examples(new String[]{
-                        "帮我订一张机票",
-                        "设置一个明天早上的闹钟",
-                        "发送邮件给张三",
-                        "创建一个待办事项",
-                        "预约明天的会议"
-                })
-                .requireSlotFilling(true)
-                .targetNode("chatWithTool")
-                .enabled(true)
-                .build());
-
-        // SEARCH 分类
-        put("default", "SEARCH", IntentDefinition.builder()
-                .code(IntentType.QUERY.getCode())
-                .name(IntentType.QUERY.getName())
-                .description(IntentType.QUERY.getDescription())
-                .category("SEARCH")
-                .priority(65)
-                .confidenceThreshold(0.8)
-                .examples(new String[]{
-                        "查询我的订单",
-                        "看看今天的新闻",
-                        "搜索相关的文章",
-                        "查找联系人信息",
-                        "查看账户余额"
-                })
-                .targetNode("chatWithSearch")
-                .enabled(true)
-                .build());
-
-        // TECHNICAL 分类
-        IntentDefinition codeHelp = IntentDefinition.builder()
-                .code(IntentType.CODE_HELP.getCode())
-                .name(IntentType.CODE_HELP.getName())
-                .description(IntentType.CODE_HELP.getDescription())
-                .category("TECHNICAL")
-                .priority(75)
-                .confidenceThreshold(0.85)
-                .examples(new String[]{
-                        "这段代码有什么问题",
-                        "如何优化这个算法",
-                        "解释一下这个函数",
-                        "帮我写一个排序方法",
-                        "这个错误怎么解决"
-                })
-                .slots(Maps.newHashMap(Map.of(
-                        "language", "编程语言",
-                        "codeSnippet", "代码片段"
-                )))
-                .requireSlotFilling(false)
-                .targetNode("chatWithCode")
-                .enabled(true)
-                .build();
-        put("default", "TECHNICAL", codeHelp);
+    /**
+     * 从 DB 意图定义数据重新加载 intentTable，清空原有数据后填充。
+     *
+     * @param boList DB 中查询到的意图定义列表
+     */
+    public static void reloadFromDb(List<IntentDefBO> boList) {
+        intentTable.clear();
+        if (boList == null || boList.isEmpty()) {
+            return;
+        }
+        for (IntentDefBO bo : boList) {
+            IntentDefinition def = IntentDefinition.builder()
+                    .code(bo.getCode())
+                    .name(bo.getName())
+                    .description(bo.getDescription())
+                    .category(bo.getCategory())
+                    .priority(bo.getPriority())
+                    .confidenceThreshold(bo.getConfidenceThreshold())
+                    .examples(bo.getExamples() != null ? bo.getExamples().toArray(new String[0]) : new String[0])
+                    .targetNode(bo.getTargetNode())
+                    .requireSlotFilling(bo.getRequireSlotFilling() != null && bo.getRequireSlotFilling())
+                    .slots(bo.getSlots() != null ? new HashMap<>(bo.getSlots()) : new HashMap<>())
+                    .parameterMapping(bo.getParameterMapping() != null ? new HashMap<>(bo.getParameterMapping()) : new HashMap<>())
+                    .slotDefaults(bo.getSlotDefaults() != null ? new HashMap<>(bo.getSlotDefaults()) : new HashMap<>())
+                    .enabled(bo.getEnabled() != null && bo.getEnabled())
+                    .build();
+            String row = bo.getAgentId() != null ? bo.getAgentId() : "default";
+            String column = bo.getCategory() != null ? bo.getCategory() : "CONVERSATION";
+            put(row, column, def);
+        }
     }
 
     // ==================== 内部辅助 ====================

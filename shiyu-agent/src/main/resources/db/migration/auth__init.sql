@@ -402,38 +402,18 @@ VALUES (50404, '模型删除', 'common:model:delete', 'BUTTON', 504, NULL, NULL,
 
 -- 智能体子菜单：版本管理 (ID: 505)
 INSERT INTO `menu` (`id`, `name`, `code`, `type`, `parent_id`, `path`, `redirect`, `icon`, `component`, `layout`, `keep_alive`, `method`, `description`, `show`, `status`, `order`, `del_flag`, `create_by`, `update_by`) 
-VALUES (505, '版本管理', 'AgentVersion', 'MENU', 500, '/agent/admin/version', NULL, 'carbon:version', '/agent/admin/version-list', '', TRUE, NULL, 'Agent 版本发布与管理', TRUE, '1', 5, 0, 'system', 'system');
+VALUES (505, '版本管理', 'AgentVersion', 'MENU', 500, '/agent/admin/edit', NULL, 'carbon:version', '/agent/admin/agent-edit', '', TRUE, NULL, 'Agent 版本管理与 Graph 编排', TRUE, '1', 5, 0, 'system', 'system');
 
--- 智能体子菜单：Graph编排 (ID: 506)
+-- 版本管理已整合到编辑页面中，Graph编排入口移除
+
+-- 智能体子菜单：意图定义管理 (ID: 507)
 INSERT INTO `menu` (`id`, `name`, `code`, `type`, `parent_id`, `path`, `redirect`, `icon`, `component`, `layout`, `keep_alive`, `method`, `description`, `show`, `status`, `order`, `del_flag`, `create_by`, `update_by`) 
-VALUES (506, 'Graph编排', 'AgentGraph', 'MENU', 500, '/agent/admin/graph', NULL, 'carbon:flow-data', '/agent/admin/graph-editor', '', TRUE, NULL, 'Agent Graph 可视化编排', TRUE, '1', 6, 0, 'system', 'system');
+VALUES (507, '意图管理', 'AgentIntent', 'MENU', 500, '/agent/intent', NULL, 'carbon:intent', '/agent/intent/list', '', TRUE, NULL, '意图定义管理', TRUE, '1', 7, 0, 'system', 'system');
 
--- ==================== Vben Admin 项目模块 ====================
 
--- 根菜单：Vben Admin (ID: 900)
-INSERT INTO `menu` (`id`, `name`, `code`, `type`, `parent_id`, `path`, `redirect`, `icon`, `component`, `layout`, `keep_alive`, `method`, `description`, `show`, `status`, `order`, `del_flag`, `create_by`, `update_by`) 
-VALUES (900, 'Vben Admin', 'Project', 'MENU', NULL, '/vben-admin', NULL, 'carbon:data-center', 'BasicLayout', '', TRUE, NULL, NULL, TRUE, '1', 9998, 0, 'system', 'system');
-
--- Vben Admin 子菜单：文档 (ID: 901)
-INSERT INTO `menu` (`id`, `name`, `code`, `type`, `parent_id`, `path`, `redirect`, `icon`, `component`, `layout`, `keep_alive`, `method`, `description`, `show`, `status`, `order`, `del_flag`, `create_by`, `update_by`) 
-VALUES (901, 'Vben 文档', 'VbenDocument', 'MENU', 900, '/vben-admin/document', NULL, 'carbon:book', 'IFrameView', '', FALSE, NULL, 'https://doc.vben.pro', TRUE, '1', 1, 0, 'system', 'system');
-
--- Vben Admin 子菜单：GitHub (ID: 902)
-INSERT INTO `menu` (`id`, `name`, `code`, `type`, `parent_id`, `path`, `redirect`, `icon`, `component`, `layout`, `keep_alive`, `method`, `description`, `show`, `status`, `order`, `del_flag`, `create_by`, `update_by`) 
-VALUES (902, 'GitHub', 'VbenGithub', 'MENU', 900, '/vben-admin/github', NULL, 'carbon:logo-github', 'IFrameView', '', FALSE, NULL, 'https://github.com/vbenjs/vue-vben-admin', TRUE, '1', 2, 0, 'system', 'system');
-
--- Vben Admin 子菜单：Antdv (ID: 903) - 禁用状态
-INSERT INTO `menu` (`id`, `name`, `code`, `type`, `parent_id`, `path`, `redirect`, `icon`, `component`, `layout`, `keep_alive`, `method`, `description`, `show`, `status`, `order`, `del_flag`, `create_by`, `update_by`) 
-VALUES (903, 'Ant Design Vue', 'VbenAntdv', 'MENU', 900, '/vben-admin/antdv', NULL, 'carbon:hexagon-vertical-solid', 'IFrameView', '', FALSE, NULL, 'https://ant.vben.pro', TRUE, '0', 3, 0, 'system', 'system');
-
--- ==================== 关于页面 ====================
-
--- 根菜单：关于 (ID: 1000)
-INSERT INTO `menu` (`id`, `name`, `code`, `type`, `parent_id`, `path`, `redirect`, `icon`, `component`, `layout`, `keep_alive`, `method`, `description`, `show`, `status`, `order`, `del_flag`, `create_by`, `update_by`) 
-VALUES (1000, '关于', 'About', 'MENU', NULL, '/about', NULL, 'lucide:copyright', '_core/about/index', '', TRUE, NULL, NULL, TRUE, '1', 9999, 0, 'system', 'system');
+-- 已删除 - 前端 vben.ts 路由已清空
 
 -- ============================================
--- 6. 初始化角色菜单关联数据
 -- ============================================
 
 -- super 角色的权限（完整权限 - 所有菜单）
@@ -441,28 +421,19 @@ INSERT INTO `role_menu` (`role_id`, `menu_id`) VALUES
 (0, 1), (0, 2), (0, 3), 
 (0, 100), (0, 201), (0, 20101), (0, 20102), (0, 20103), (0, 202), (0, 20201), (0, 20202), (0, 20203), (0, 203), (0, 20301), (0, 20302), (0, 20303), (0, 20304), (0, 204), (0, 20401), (0, 20402), (0, 20403), (0, 20404),
 (0, 400), (0, 401), (0, 40101), (0, 40102), (0, 40103), (0, 40104), (0, 402), (0, 40201), (0, 40202), (0, 40203), (0, 40204),
-(0, 500), (0, 501), (0, 502), (0, 503), (0, 50301), (0, 50302), (0, 50303), (0, 50304), (0, 504), (0, 50401), (0, 50402), (0, 50403), (0, 50404), (0, 505), (0, 506),
-(0, 300), (0, 301), (0, 30101), (0, 30102), (0, 30103), (0, 30104), (0, 30105), (0, 30106),
-(0, 900), (0, 901), (0, 902), (0, 903),
-(0, 1000);
+(0, 500), (0, 501), (0, 502), (0, 503), (0, 50301), (0, 50302), (0, 50303), (0, 50304), (0, 504), (0, 50401), (0, 50402), (0, 50403), (0, 50404), (0, 505), (0, 507);
 
 -- admin 角色的权限（管理员权限 - 不包含 super 专属）
 INSERT INTO `role_menu` (`role_id`, `menu_id`) VALUES 
 (1, 1), (1, 2), (1, 3), 
 (1, 100), (1, 201), (1, 20101), (1, 20102), (1, 20103), (1, 202), (1, 20201), (1, 20202), (1, 20203), (1, 203), (1, 20301), (1, 20302), (1, 20303), (1, 20304), (1, 204), (1, 20401), (1, 20402), (1, 20403), (1, 20404),
 (1, 400), (1, 401), (1, 40101), (1, 40102), (1, 40103), (1, 40104), (1, 402), (1, 40201), (1, 40202), (1, 40203), (1, 40204),
-(1, 500), (1, 501), (1, 502), (1, 503), (1, 50301), (1, 50302), (1, 50303), (1, 50304), (1, 504), (1, 50401), (1, 50402), (1, 50403), (1, 50404), (1, 505), (1, 506),
-(1, 300), (1, 301), (1, 30101), (1, 30102), (1, 30103), (1, 30105),
-(1, 900), (1, 901), (1, 902), (1, 903),
-(1, 1000);
+(1, 500), (1, 501), (1, 502), (1, 503), (1, 50301), (1, 50302), (1, 50303), (1, 50304), (1, 504), (1, 50401), (1, 50402), (1, 50403), (1, 50404), (1, 505), (1, 507);
 
 -- user 角色的权限（基础权限 - 仅 Dashboard）
 INSERT INTO `role_menu` (`role_id`, `menu_id`) VALUES 
 (2, 1), (2, 2), (2, 3),
-(2, 500), (2, 501), (2, 502), (2, 503), (2, 504),
-(2, 300), (2, 301), (2, 30101), (2, 30102), (2, 30103), (2, 30106),
-(2, 900), (2, 901), (2, 902),
-(2, 1000);
+(2, 500), (2, 501), (2, 502), (2, 503), (2, 504);
 
 -- ============================================
 -- 7. 初始化权限码数据（根据 API 文档模拟数据）

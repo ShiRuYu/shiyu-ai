@@ -175,8 +175,56 @@ INSERT INTO `agent_version` (`id`, `agent_id`, `version_number`, `description`, 
 VALUES (3, 'smart-agent', 'v1.0.0', '初始版本', 'PUBLISHED',
 '{"name":"smart-agent_graph","description":"全功能智能路由助手","startNode":"intent","endNode":"output","nodes":{"intent":{"nodeName":"意图识别","nodeType":"INTENT","enabled":true,"timeout":30000,"config":{"category":"general","confidenceThreshold":0.75}},"llm_chat":{"nodeName":"闲聊回答","nodeType":"LLM_CALL","enabled":true,"timeout":30000,"config":{"defaultPrompt":"你是一个友好的 AI 助手，请用轻松自然的语气和用户聊天。","stream":false}},"rag_retrieval":{"nodeName":"知识库检索","nodeType":"RAG_RETRIEVAL","enabled":true,"timeout":30000,"config":{"topK":3}},"rag_enhance":{"nodeName":"检索增强","nodeType":"RAG_ENHANCEMENT","enabled":true,"timeout":30000,"config":{"enhancementStrategy":"SUMMARIZATION","contextWindowSize":3}},"rag_llm":{"nodeName":"RAG 回答","nodeType":"LLM_CALL","enabled":true,"timeout":30000,"config":{"promptTemplate":"基于以下检索到的文档回答用户问题。\n\n{context}\n\n用户问题: {query}","stream":false}},"tool_call_weather":{"nodeName":"天气查询工具","nodeType":"TOOL_CALL","enabled":true,"timeout":30000,"config":{"toolName":"WEATHER","enableCache":true}},"tool_call_calculator":{"nodeName":"计算器工具","nodeType":"TOOL_CALL","enabled":true,"timeout":30000,"config":{"toolName":"CALCULATOR","enableCache":true}},"tool_llm":{"nodeName":"工具结果回答","nodeType":"LLM_CALL","enabled":true,"timeout":30000,"config":{"promptTemplate":"以下是工具执行结果，请用自然语言回复用户。\n\n工具结果: {toolResult}\n\n用户问题: {query}","stream":false}},"output":{"nodeName":"格式化输出","nodeType":"OUTPUT_FORMAT","enabled":true,"timeout":30000,"config":{"outputFormat":"TEXT","prettyPrint":true}}},"edges":{"rag_retrieval":["rag_enhance"],"rag_enhance":["rag_llm"],"rag_llm":["output"],"llm_chat":["output"],"tool_call_weather":["tool_llm"],"tool_call_calculator":["tool_llm"],"tool_llm":["output"]},"conditionalEdges":{"intent":{"defaultTarget":"llm_chat","nodeMappings":{"CHITCHAT":"llm_chat","QUESTION":"rag_retrieval","CALCULATOR":"tool_call_calculator","WEATHER":"tool_call_weather"},"conditionType":"INTENT_ROUTING"}}}');
 
+-- ============================================
+-- 8. 意图定义表
+-- ============================================
+DROP TABLE IF EXISTS `intent_def`;
+CREATE TABLE `intent_def` (
+    `id`               BIGINT       NOT NULL AUTO_INCREMENT COMMENT '主键ID',
+    `agent_id`         VARCHAR(64)  NOT NULL DEFAULT 'default' COMMENT '所属Agent标识',
+    `code`             VARCHAR(64)  NOT NULL COMMENT '意图代码',
+    `name`             VARCHAR(100) NOT NULL COMMENT '意图名称',
+    `description`      VARCHAR(500) DEFAULT NULL COMMENT '意图描述',
+    `category`         VARCHAR(64)  DEFAULT 'CONVERSATION' COMMENT '意图分类',
+    `priority`         INT          DEFAULT 50 COMMENT '优先级',
+    `confidence_threshold` DOUBLE   DEFAULT 0.75 COMMENT '置信度阈值',
+    `examples`         TEXT         DEFAULT NULL COMMENT '示例语句（JSON数组）',
+    `target_node`      VARCHAR(64)  DEFAULT NULL COMMENT '路由目标节点ID',
+    `require_slot_filling` CHAR(1)  DEFAULT '0' COMMENT '是否需要槽位填充(1是 0否)',
+    `slots`            TEXT         DEFAULT NULL COMMENT '槽位定义（JSON对象）',
+    `parameter_mapping` TEXT        DEFAULT NULL COMMENT 'Slot→工具参数映射（JSON对象）',
+    `slot_defaults`    TEXT         DEFAULT NULL COMMENT 'Slot默认值（JSON对象）',
+    `enabled`          CHAR(1)      DEFAULT '1' COMMENT '是否启用(1是 0否)',
+    `status`           CHAR(1)      DEFAULT '1' COMMENT '状态(1正常 0停用)',
+    `del_flag`         CHAR(1)      DEFAULT '0' COMMENT '删除标志(0存在 1删除)',
+    `create_by`        VARCHAR(64)  DEFAULT NULL,
+    `create_time`      TIMESTAMP    DEFAULT CURRENT_TIMESTAMP,
+    `update_by`        VARCHAR(64)  DEFAULT NULL,
+    `update_time`      TIMESTAMP    DEFAULT CURRENT_TIMESTAMP,
+    PRIMARY KEY (`id`)
+);
+CREATE UNIQUE INDEX `uk_intent_def_code_agent` ON `intent_def` (`agent_id`, `code`);
+COMMENT ON TABLE `intent_def` IS '意图定义表';
+
+-- 种子数据：5个默认意图定义（对应 IntentDefinitionFactory 中硬编码的）
+INSERT INTO `intent_def` (`agent_id`, `code`, `name`, `description`, `category`, `priority`, `confidence_threshold`, `examples`, `require_slot_filling`, `target_node`)
+VALUES ('default', 'CHITCHAT', '闲聊', '处理用户的日常闲聊对话', 'CONVERSATION', 50, 0.75, '["你好","最近怎么样","今天天气不错","你在干什么","聊聊天吧"]', '0', 'chatDirect');
+
+INSERT INTO `intent_def` (`agent_id`, `code`, `name`, `description`, `category`, `priority`, `confidence_threshold`, `examples`, `require_slot_filling`, `target_node`)
+VALUES ('default', 'QUESTION', '问答', '处理用户的知识性问题', 'KNOWLEDGE', 60, 0.8, '["什么是人工智能","为什么天空是蓝色的","如何学习编程","地球有多大","谁发明了电灯"]', '0', 'chatWithRag');
+
+INSERT INTO `intent_def` (`agent_id`, `code`, `name`, `description`, `category`, `priority`, `confidence_threshold`, `examples`, `require_slot_filling`, `target_node`)
+VALUES ('default', 'CALCULATOR', '计算器', '执行基础的数学运算（加、减、乘、除）', 'TASK', 70, 0.85, '["帮我订一张机票","设置一个明天早上的闹钟","发送邮件给张三","创建一个待办事项","预约明天的会议"]', '1', 'chatWithTool');
+
+INSERT INTO `intent_def` (`agent_id`, `code`, `name`, `description`, `category`, `priority`, `confidence_threshold`, `examples`, `require_slot_filling`, `target_node`)
+VALUES ('default', 'QUERY', '查询', '处理数据或信息查询请求', 'SEARCH', 65, 0.8, '["查询我的订单","看看今天的新闻","搜索相关的文章","查找联系人信息","查看账户余额"]', '0', 'chatWithSearch');
+
+INSERT INTO `intent_def` (`agent_id`, `code`, `name`, `description`, `category`, `priority`, `confidence_threshold`, `examples`, `slots`, `require_slot_filling`, `target_node`)
+VALUES ('default', 'CODE_HELP', '代码帮助', '处理编程相关的技术问题', 'TECHNICAL', 75, 0.85, '["这段代码有什么问题","如何优化这个算法","解释一下这个函数","帮我写一个排序方法","这个错误怎么解决"]', '{"language":"编程语言","codeSnippet":"代码片段"}', '0', 'chatWithCode');
+
 -- ==================== 重置自增序列 ====================
 ALTER TABLE `ai_platform` ALTER COLUMN `id` RESTART WITH 100;
 ALTER TABLE `ai_model` ALTER COLUMN `id` RESTART WITH 100;
 ALTER TABLE `agent_def` ALTER COLUMN `id` RESTART WITH 100;
 ALTER TABLE `agent_version` ALTER COLUMN `id` RESTART WITH 100;
+ALTER TABLE `intent_def` ALTER COLUMN `id` RESTART WITH 100;
