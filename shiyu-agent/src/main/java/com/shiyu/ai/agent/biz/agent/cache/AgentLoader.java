@@ -183,8 +183,9 @@ public class AgentLoader {
                 .defaultTarget(defaultTarget)
                 .nodeMappings(mappings)
                 .functionCondition(state -> {
+                    // 只返回条件键，由 langgraph4j 的 mappings 参数完成节点映射
                     String intentCode = (String) state.getOrDefault("intentCode", "");
-                    return mappings.getOrDefault(intentCode, defaultTarget);
+                    return intentCode.isEmpty() ? "UNKNOWN" : intentCode;
                 })
                 .build();
     }
