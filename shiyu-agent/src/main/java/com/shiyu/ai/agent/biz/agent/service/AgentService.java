@@ -85,4 +85,11 @@ public interface AgentService {
      * @return AgentDefinition 列表
      */
     List<AgentDefinition> listAgents();
+
+    /**
+     * 清理 Agent 的运行时缓存（本地内存 + AgentCacheManager）
+     * 当 Agent 配置被修改后调用，确保下次执行时重新加载
+     * @param agentId Agent ID
+     */
+    void evictRuntimeCache(String agentId);
 }

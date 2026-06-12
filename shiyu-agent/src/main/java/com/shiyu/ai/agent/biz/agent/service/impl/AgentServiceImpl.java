@@ -159,6 +159,13 @@ public class AgentServiceImpl implements AgentService {
         return agents;
     }
 
+    @Override
+    public void evictRuntimeCache(String agentId) {
+        agentDefinitions.remove(agentId);
+        cacheManager.evictColumn(agentId);
+        log.info("运行时缓存已清除: agentId={}", agentId);
+    }
+
     private AgentDefinition getOrLoadAgent(String agentId) {
         AgentDefinition definition = agentDefinitions.get(agentId);
         if (definition != null) return definition;

@@ -6,6 +6,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.shiyu.ai.agent.biz.agent.cache.AgentCacheManager;
 import com.shiyu.ai.agent.biz.agent.repository.AgentAdminRepository;
 import com.shiyu.ai.agent.biz.agent.service.AgentAdminService;
+import com.shiyu.ai.agent.biz.agent.service.AgentService;
 import com.shiyu.ai.agent.dal.dataobject.agent.AgentDefDO;
 import com.shiyu.ai.agent.dal.dataobject.agent.AgentVersionDO;
 import com.shiyu.ai.agent.domain.request.*;
@@ -30,6 +31,9 @@ public class AgentAdminServiceImpl implements AgentAdminService {
 
     @Resource
     private AgentCacheManager cacheManager;
+
+    @Resource
+    private AgentService agentService;
 
     private final ObjectMapper objectMapper = new ObjectMapper()
             .configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false);
@@ -79,7 +83,7 @@ public class AgentAdminServiceImpl implements AgentAdminService {
         if (request.getStatus() != null) def.setStatus(request.getStatus());
         def.setUpdateTime(LocalDateTime.now());
         agentAdminRepository.update(def);
-        cacheManager.evictColumn(def.getAgentId());
+        evictAgentCache(def.getAgentId());
         return toVO(def);
     }
 
@@ -88,7 +92,7 @@ public class AgentAdminServiceImpl implements AgentAdminService {
         AgentDefDO def = agentAdminRepository.selectById(id);
         if (def == null) return;
         agentAdminRepository.deleteById(id);
-        cacheManager.evictColumn(def.getAgentId());
+        evictAgentCache(def.getAgentId());
     }
 
     @Override
@@ -127,6 +131,7 @@ public class AgentAdminServiceImpl implements AgentAdminService {
         }
 
         agentAdminRepository.createVersion(version);
+        evictAgentCache(agentId);
         return toVersionVO(version);
     }
 
@@ -145,6 +150,7 @@ public class AgentAdminServiceImpl implements AgentAdminService {
         AgentVersionDO v = agentAdminRepository.selectVersionById(versionId);
         if (v == null || !v.getAgentId().equals(agentId)) return;
         agentAdminRepository.deleteVersionById(versionId);
+        evictAgentCache(agentId);
     }
 
     @Override
@@ -155,6 +161,7 @@ public class AgentAdminServiceImpl implements AgentAdminService {
         v.setStatus("PUBLISHED");
         v.setUpdateTime(LocalDateTime.now());
         agentAdminRepository.updateVersion(v);
+        evictAgentCache(agentId);
     }
 
     @Override
@@ -165,6 +172,7 @@ public class AgentAdminServiceImpl implements AgentAdminService {
         v.setStatus("ARCHIVED");
         v.setUpdateTime(LocalDateTime.now());
         agentAdminRepository.updateVersion(v);
+        evictAgentCache(agentId);
     }
 
     @Override
@@ -179,7 +187,7 @@ public class AgentAdminServiceImpl implements AgentAdminService {
         def.setUpdateTime(LocalDateTime.now());
         agentAdminRepository.update(def);
 
-        cacheManager.evictColumn(agentId);
+        evictAgentCache(agentId);
     }
 
     @Override
@@ -204,7 +212,7 @@ public class AgentAdminServiceImpl implements AgentAdminService {
             v.setGraphConfig(json);
             v.setUpdateTime(LocalDateTime.now());
             agentAdminRepository.updateVersion(v);
-            cacheManager.evictColumn(agentId);
+            evictAgentCache(agentId);
         } catch (Exception e) {
             throw new RuntimeException("序列化Graph配置失败", e);
         }
@@ -434,10 +442,15 @@ public class AgentAdminServiceImpl implements AgentAdminService {
             v.setGraphConfig(objectMapper.writeValueAsString(graphData));
             v.setUpdateTime(LocalDateTime.now());
             agentAdminRepository.updateVersion(v);
-            cacheManager.evictColumn(v.getAgentId());
+            evictAgentCache(v.getAgentId());
         } catch (Exception e) {
             throw new RuntimeException("保存Graph配置失败", e);
         }
+    }
+
+    private void evictAgentCache(String agentId) {
+        cacheManager.evictColumn(agentId);
+        agentService.evictRuntimeCache(agentId);
     }
 
     private AgentVO toVO(AgentDefDO def) {
