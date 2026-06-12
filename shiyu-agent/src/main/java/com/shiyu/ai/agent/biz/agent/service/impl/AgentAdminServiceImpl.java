@@ -574,7 +574,7 @@ public class AgentAdminServiceImpl implements AgentAdminService {
                 break;
             case AGENT_CALL:
                 fields.add(fieldWithSource(field("targetAgentId", "目标Agent", "select", "", true, "选择已存在的Agent"),
-                    new NodeTypeMetaVO.DataSourceConfig("api", "/admin/agent/list/all", null, "name", "agentId", null)));
+                    new NodeTypeMetaVO.DataSourceConfig("api", "/admin/agent/list/all", null, "name", "code", null)));
                 fields.add(field("agentTimeout", "超时时间(ms)", "number", 30000L, false, "Agent调用超时"));
                 fields.add(field("async", "异步调用", "boolean", false, false, "是否异步调用"));
                 break;
