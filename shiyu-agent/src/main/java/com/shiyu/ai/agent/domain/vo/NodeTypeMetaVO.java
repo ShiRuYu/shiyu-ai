@@ -38,5 +38,19 @@ public class NodeTypeMetaVO {
         private Boolean required;
         private Map<String, Object> options;
         private String description;
+        private DataSourceConfig source;
+    }
+
+    @Data
+    @Builder
+    @NoArgsConstructor
+    @AllArgsConstructor
+    public static class DataSourceConfig {
+        private String type;
+        private String url;
+        private String dictType;
+        private String labelKey;
+        private String valueKey;
+        private String dependsOn;
     }
 }

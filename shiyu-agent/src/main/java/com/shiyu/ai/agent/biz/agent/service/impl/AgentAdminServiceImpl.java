@@ -515,14 +515,19 @@ public class AgentAdminServiceImpl implements AgentAdminService {
         List<NodeTypeMetaVO.FieldMeta> fields = new ArrayList<>();
         switch (type) {
             case INTENT:
-                fields.add(field("category", "意图分类", "text", "", false, "分类标识"));
+                fields.add(fieldWithSource(field("category", "意图分类", "select", "", false, "意图分类"),
+                    new NodeTypeMetaVO.DataSourceConfig("dict", null, "INTENT_CATEGORY", "dictLabel", "dictValue", null)));
                 fields.add(field("confidenceThreshold", "置信度阈值", "number", 0.75, false, "意图识别的最低置信度"));
-                fields.add(field("platform", "AI平台", "text", "", false, "LLM平台编码(如DEEPSEEK)"));
-                fields.add(field("modelName", "模型名称", "text", "", false, "模型名称(如deepseek-chat)"));
+                fields.add(fieldWithSource(field("platform", "AI平台", "select", "", false, "选择AI平台"),
+                    new NodeTypeMetaVO.DataSourceConfig("api", "/ai/platform/enabled", null, "name", "code", null)));
+                fields.add(fieldWithSource(field("modelName", "模型名称", "select", "", false, "选择模型"),
+                    new NodeTypeMetaVO.DataSourceConfig("api", "/ai/model/platform/by-code/{platform}", null, "displayName", "modelName", "platform")));
                 break;
             case LLM_CALL:
-                fields.add(field("platform", "AI平台", "text", "", false, "LLM平台编码"));
-                fields.add(field("modelName", "模型名称", "text", "", false, "模型名称"));
+                fields.add(fieldWithSource(field("platform", "AI平台", "select", "", false, "选择AI平台"),
+                    new NodeTypeMetaVO.DataSourceConfig("api", "/ai/platform/enabled", null, "name", "code", null)));
+                fields.add(fieldWithSource(field("modelName", "模型名称", "select", "", false, "选择模型"),
+                    new NodeTypeMetaVO.DataSourceConfig("api", "/ai/model/platform/by-code/{platform}", null, "displayName", "modelName", "platform")));
                 fields.add(field("temperature", "温度参数", "number", 0.7, false, "控制输出随机性(0-2)"));
                 fields.add(field("maxTokens", "最大Token数", "number", 4096, false, "输出最大长度"));
                 fields.add(field("topP", "Top-P", "number", 0.9, false, "核采样参数"));
@@ -568,7 +573,8 @@ public class AgentAdminServiceImpl implements AgentAdminService {
                 fields.add(field("messageExpiryTime", "消息过期时间(ms)", "number", 3600000L, false, "消息过期时间"));
                 break;
             case AGENT_CALL:
-                fields.add(field("targetAgentId", "目标Agent", "text", "", true, "调用的目标Agent标识"));
+                fields.add(fieldWithSource(field("targetAgentId", "目标Agent", "select", "", true, "选择已存在的Agent"),
+                    new NodeTypeMetaVO.DataSourceConfig("api", "/admin/agent/list/all", null, "name", "agentId", null)));
                 fields.add(field("agentTimeout", "超时时间(ms)", "number", 30000L, false, "Agent调用超时"));
                 fields.add(field("async", "异步调用", "boolean", false, false, "是否异步调用"));
                 break;
@@ -584,5 +590,10 @@ public class AgentAdminServiceImpl implements AgentAdminService {
                 .description("")
                 .options(extra instanceof Map ? (Map<String, Object>) extra : null)
                 .build();
+    }
+
+    private NodeTypeMetaVO.FieldMeta fieldWithSource(NodeTypeMetaVO.FieldMeta meta, NodeTypeMetaVO.DataSourceConfig source) {
+        meta.setSource(source);
+        return meta;
     }
 }

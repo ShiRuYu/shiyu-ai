@@ -222,6 +222,45 @@ VALUES ('default', 'QUERY', '查询', '处理数据或信息查询请求', 'SEAR
 INSERT INTO `intent_def` (`agent_id`, `code`, `name`, `description`, `category`, `priority`, `confidence_threshold`, `examples`, `slots`, `require_slot_filling`, `target_node`)
 VALUES ('default', 'CODE_HELP', '代码帮助', '处理编程相关的技术问题', 'TECHNICAL', 75, 0.85, '["这段代码有什么问题","如何优化这个算法","解释一下这个函数","帮我写一个排序方法","这个错误怎么解决"]', '{"language":"编程语言","codeSnippet":"代码片段"}', '0', 'chatWithCode');
 
+INSERT INTO `intent_def` (`agent_id`, `code`, `name`, `description`, `category`, `priority`, `confidence_threshold`, `target_node`)
+VALUES ('default', 'SUGGESTION', '建议', '处理用户提出的建议或反馈', 'CONVERSATION', 50, 0.75, 'chatDirect');
+INSERT INTO `intent_def` (`agent_id`, `code`, `name`, `description`, `category`, `priority`, `confidence_threshold`, `target_node`)
+VALUES ('default', 'COMPLAINT', '投诉', '处理用户的投诉', 'CONVERSATION', 50, 0.75, 'chatDirect');
+INSERT INTO `intent_def` (`agent_id`, `code`, `name`, `description`, `category`, `priority`, `confidence_threshold`, `target_node`)
+VALUES ('default', 'TECHNICAL_SUPPORT', '技术支持', '处理技术咨询和支持问题', 'TECHNICAL', 70, 0.8, 'chatWithCode');
+INSERT INTO `intent_def` (`agent_id`, `code`, `name`, `description`, `category`, `priority`, `confidence_threshold`, `target_node`)
+VALUES ('default', 'PRODUCT_INQUIRY', '产品咨询', '处理产品相关的咨询', 'KNOWLEDGE', 60, 0.8, 'chatWithRag');
+INSERT INTO `intent_def` (`agent_id`, `code`, `name`, `description`, `category`, `priority`, `confidence_threshold`, `target_node`)
+VALUES ('default', 'ORDER_PROCESSING', '订单处理', '处理订单相关的操作', 'TASK', 70, 0.85, 'chatWithTool');
+INSERT INTO `intent_def` (`agent_id`, `code`, `name`, `description`, `category`, `priority`, `confidence_threshold`, `target_node`)
+VALUES ('default', 'APPOINTMENT', '预约', '处理预约和时间安排', 'TASK', 65, 0.8, 'chatWithTool');
+INSERT INTO `intent_def` (`agent_id`, `code`, `name`, `description`, `category`, `priority`, `confidence_threshold`, `target_node`)
+VALUES ('default', 'NAVIGATION', '导航', '处理路线和位置导航', 'SEARCH', 60, 0.8, 'chatWithSearch');
+INSERT INTO `intent_def` (`agent_id`, `code`, `name`, `description`, `category`, `priority`, `confidence_threshold`, `target_node`)
+VALUES ('default', 'ENTERTAINMENT', '娱乐', '处理娱乐相关的内容', 'CONVERSATION', 45, 0.7, 'chatDirect');
+INSERT INTO `intent_def` (`agent_id`, `code`, `name`, `description`, `category`, `priority`, `confidence_threshold`, `target_node`)
+VALUES ('default', 'EDUCATION', '教育', '处理教育和学习内容', 'KNOWLEDGE', 60, 0.8, 'chatWithRag');
+INSERT INTO `intent_def` (`agent_id`, `code`, `name`, `description`, `category`, `priority`, `confidence_threshold`, `target_node`)
+VALUES ('default', 'HEALTH', '健康', '处理健康和医疗相关的咨询', 'KNOWLEDGE', 60, 0.8, 'chatWithRag');
+INSERT INTO `intent_def` (`agent_id`, `code`, `name`, `description`, `category`, `priority`, `confidence_threshold`, `target_node`)
+VALUES ('default', 'FINANCE', '金融', '处理金融和财务相关的问题', 'KNOWLEDGE', 60, 0.8, 'chatWithRag');
+INSERT INTO `intent_def` (`agent_id`, `code`, `name`, `description`, `category`, `priority`, `confidence_threshold`, `target_node`)
+VALUES ('default', 'SHOPPING', '购物', '处理购物相关的请求', 'TASK', 65, 0.8, 'chatWithTool');
+INSERT INTO `intent_def` (`agent_id`, `code`, `name`, `description`, `category`, `priority`, `confidence_threshold`, `target_node`)
+VALUES ('default', 'TRAVEL', '旅行', '处理旅行和旅游相关的规划', 'SEARCH', 60, 0.8, 'chatWithSearch');
+INSERT INTO `intent_def` (`agent_id`, `code`, `name`, `description`, `category`, `priority`, `confidence_threshold`, `target_node`)
+VALUES ('default', 'WEATHER', '天气查询', '查询指定城市的当前天气信息', 'SEARCH', 65, 0.85, 'chatWithTool');
+INSERT INTO `intent_def` (`agent_id`, `code`, `name`, `description`, `category`, `priority`, `confidence_threshold`, `target_node`)
+VALUES ('default', 'NEWS', '新闻', '处理新闻资讯查询', 'SEARCH', 55, 0.75, 'chatWithSearch');
+INSERT INTO `intent_def` (`agent_id`, `code`, `name`, `description`, `category`, `priority`, `confidence_threshold`, `target_node`)
+VALUES ('default', 'TRANSLATION', '翻译', '处理语言翻译请求', 'TASK', 60, 0.8, 'chatWithTool');
+INSERT INTO `intent_def` (`agent_id`, `code`, `name`, `description`, `category`, `priority`, `confidence_threshold`, `target_node`)
+VALUES ('default', 'WRITING_ASSISTANCE', '写作辅助', '处理写作和文本生成任务', 'TASK', 60, 0.8, 'chatWithTool');
+INSERT INTO `intent_def` (`agent_id`, `code`, `name`, `description`, `category`, `priority`, `confidence_threshold`, `target_node`)
+VALUES ('default', 'DATA_ANALYSIS', '数据分析', '处理数据分析和解释', 'TASK', 65, 0.85, 'chatWithTool');
+INSERT INTO `intent_def` (`agent_id`, `code`, `name`, `description`, `category`, `priority`, `confidence_threshold`, `target_node`)
+VALUES ('default', 'UNKNOWN', '未知', '无法识别的意图类型', 'CONVERSATION', 30, 0.5, 'chatDirect');
+
 -- ==================== 重置自增序列 ====================
 ALTER TABLE `ai_platform` ALTER COLUMN `id` RESTART WITH 100;
 ALTER TABLE `ai_model` ALTER COLUMN `id` RESTART WITH 100;

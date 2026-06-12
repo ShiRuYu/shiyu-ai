@@ -26,6 +26,11 @@ public interface AiModelService {
     List<AiModelBO> getByPlatformId(Long platformId);
 
     /**
+     * 根据平台编码查询所有启用的模型
+     */
+    List<AiModelBO> getByPlatformCode(String platformCode);
+
+    /**
      * 根据 ID 查询模型详情
      */
     AiModelBO getById(Long id);

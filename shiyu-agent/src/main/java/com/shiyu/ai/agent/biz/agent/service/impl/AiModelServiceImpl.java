@@ -41,6 +41,15 @@ public class AiModelServiceImpl implements AiModelService {
     }
 
     @Override
+    public List<AiModelBO> getByPlatformCode(String platformCode) {
+        AiPlatformBO platform = aiPlatformRepository.selectByCode(platformCode);
+        if (platform == null) {
+            return List.of();
+        }
+        return getByPlatformId(platform.getId());
+    }
+
+    @Override
     public AiModelBO getById(Long id) {
         AiModelBO bo = aiModelRepository.selectById(id);
         if (bo != null) {

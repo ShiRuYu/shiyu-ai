@@ -53,6 +53,16 @@ public class AiModelController {
     }
 
     /**
+     * 根据平台编码查询所有启用的模型（前端级联下拉使用）
+     */
+    @GetMapping("/platform/by-code/{platformCode}")
+    public Result<List<AiModelBO>> getByPlatformCode(@PathVariable String platformCode) {
+        log.info("查询平台编码下的模型，platformCode: {}", platformCode);
+        List<AiModelBO> list = aiModelService.getByPlatformCode(platformCode);
+        return Result.success(list);
+    }
+
+    /**
      * 模型下拉选项（id + name），可按平台过滤
      */
     @GetMapping("/options")
