@@ -261,6 +261,16 @@ VALUES ('default', 'DATA_ANALYSIS', '数据分析', '处理数据分析和解释
 INSERT INTO `intent_def` (`agent_id`, `code`, `name`, `description`, `category`, `priority`, `confidence_threshold`, `target_node`)
 VALUES ('default', 'UNKNOWN', '未知', '无法识别的意图类型', 'CONVERSATION', 30, 0.5, 'chatDirect');
 
+-- smart-agent 的意图定义（对应 createSmartAgent 中的注册逻辑，覆盖默认值，路由到具体图节点）
+INSERT INTO `intent_def` (`agent_id`, `code`, `name`, `description`, `category`, `priority`, `confidence_threshold`, `examples`, `require_slot_filling`, `slots`, `parameter_mapping`, `slot_defaults`, `target_node`)
+VALUES ('smart-agent', 'CHITCHAT', '闲聊', '处理用户的日常闲聊对话', 'CONVERSATION', 50, 0.75, '["你好","最近怎么样","今天天气不错","你在干什么","聊聊天吧"]', '0', NULL, NULL, NULL, 'llm_chat');
+INSERT INTO `intent_def` (`agent_id`, `code`, `name`, `description`, `category`, `priority`, `confidence_threshold`, `examples`, `require_slot_filling`, `target_node`)
+VALUES ('smart-agent', 'QUESTION', '知识查询', '查询知识库信息', 'KNOWLEDGE', 60, 0.8, '["什么是RAG","Shiyu AI 是什么"]', '0', 'rag_retrieval');
+INSERT INTO `intent_def` (`agent_id`, `code`, `name`, `description`, `category`, `priority`, `confidence_threshold`, `examples`, `require_slot_filling`, `slots`, `target_node`)
+VALUES ('smart-agent', 'CALCULATOR', '计算器', '执行基础的数学运算', 'TASK', 70, 0.85, '["计算 1+2*3","计算 100/5"]', '1', '{"expression":"数学表达式"}', 'tool_call_calculator');
+INSERT INTO `intent_def` (`agent_id`, `code`, `name`, `description`, `category`, `priority`, `confidence_threshold`, `examples`, `require_slot_filling`, `slots`, `parameter_mapping`, `slot_defaults`, `target_node`)
+VALUES ('smart-agent', 'WEATHER', '天气查询', '查询指定城市的当前天气信息', 'SEARCH', 65, 0.85, '["北京天气怎么样","上海今天冷吗"]', '1', '{"city":"城市名称","date":"日期（可选）"}', '{"city":"location"}', '{"unit":"celsius"}', 'tool_call_weather');
+
 -- ==================== 重置自增序列 ====================
 ALTER TABLE `ai_platform` ALTER COLUMN `id` RESTART WITH 100;
 ALTER TABLE `ai_model` ALTER COLUMN `id` RESTART WITH 100;
