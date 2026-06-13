@@ -23,8 +23,8 @@ public class IntentDefServiceImpl implements IntentDefService {
     private IntentDefRepository intentDefRepository;
 
     @Override
-    public Pair<Long, List<IntentDefBO>> getPage(Number pageNo, Number pageSize, String agentId, String category) {
-        return intentDefRepository.selectPage(pageNo, pageSize, agentId, category);
+    public Pair<Long, List<IntentDefBO>> getPage(Number pageNo, Number pageSize, String agentId, String name, String code, String category) {
+        return intentDefRepository.selectPage(pageNo, pageSize, agentId, name, code, category);
     }
 
     @Override

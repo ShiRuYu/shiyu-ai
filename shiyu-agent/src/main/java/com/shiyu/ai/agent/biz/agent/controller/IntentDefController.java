@@ -31,12 +31,14 @@ public class IntentDefController {
     @GetMapping("/page")
     public Result<PageData<IntentDefBO>> getPage(
             @RequestParam(required = false) String agentId,
+            @RequestParam(required = false) String name,
+            @RequestParam(required = false) String code,
             @RequestParam(required = false) String category,
             @RequestParam(required = false, defaultValue = "1") Integer pageNo,
             @RequestParam(required = false, defaultValue = "10") Integer pageSize) {
-        log.info("获取意图定义列表，agentId: {}, category: {}, pageNo: {}, pageSize: {}",
-                agentId, category, pageNo, pageSize);
-        Pair<Long, List<IntentDefBO>> result = intentDefService.getPage(pageNo, pageSize, agentId, category);
+        log.info("获取意图定义列表，agentId: {}, name: {}, code: {}, category: {}, pageNo: {}, pageSize: {}",
+                agentId, name, code, category, pageNo, pageSize);
+        Pair<Long, List<IntentDefBO>> result = intentDefService.getPage(pageNo, pageSize, agentId, name, code, category);
         PageData<IntentDefBO> pageData = new PageData<>(result.getRight(), result.getLeft());
         return Result.success(pageData);
     }

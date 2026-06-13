@@ -20,16 +20,20 @@ public class IntentDefRepository {
     @Resource
     private IntentDefMapper intentDefMapper;
 
-    public Pair<Long, List<IntentDefBO>> selectPage(Number pageNo, Number pageSize, String agentId, String category) {
+    public Pair<Long, List<IntentDefBO>> selectPage(Number pageNo, Number pageSize, String agentId, String name, String code, String category) {
         QueryWrapper countWrapper = new QueryWrapper();
         countWrapper.eq(IntentDefDO::getDelFlag, "0");
         if (agentId != null) countWrapper.eq(IntentDefDO::getAgentId, agentId);
+        if (name != null) countWrapper.like(IntentDefDO::getName, name);
+        if (code != null) countWrapper.like(IntentDefDO::getCode, code);
         if (category != null) countWrapper.eq(IntentDefDO::getCategory, category);
         long count = intentDefMapper.selectCountByQuery(countWrapper);
 
         QueryWrapper queryWrapper = new QueryWrapper();
         queryWrapper.eq(IntentDefDO::getDelFlag, "0");
         if (agentId != null) queryWrapper.eq(IntentDefDO::getAgentId, agentId);
+        if (name != null) queryWrapper.like(IntentDefDO::getName, name);
+        if (code != null) queryWrapper.like(IntentDefDO::getCode, code);
         if (category != null) queryWrapper.eq(IntentDefDO::getCategory, category);
         queryWrapper.orderBy(IntentDefDO::getPriority, true);
         if (pageNo != null && pageSize != null) {

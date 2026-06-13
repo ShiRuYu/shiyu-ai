@@ -14,7 +14,7 @@ public interface IntentDefService {
     /**
      * 分页查询意图定义列表
      */
-    Pair<Long, List<IntentDefBO>> getPage(Number pageNo, Number pageSize, String agentId, String category);
+    Pair<Long, List<IntentDefBO>> getPage(Number pageNo, Number pageSize, String agentId, String name, String code, String category);
 
     /**
      * 根据ID查询意图定义
