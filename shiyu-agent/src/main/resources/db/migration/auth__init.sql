@@ -24,6 +24,7 @@ CREATE TABLE `user` (
     `avatar` VARCHAR(255) COMMENT '头像',
     `address` VARCHAR(255) COMMENT '地址',
     `email` VARCHAR(128) COMMENT '邮箱',
+    `ext_info` TEXT COMMENT '扩展信息(JSON)',
     PRIMARY KEY (`id`)
 );
 CREATE UNIQUE INDEX `idx_username` ON `user` (`username`);

@@ -69,4 +69,9 @@ public class UserDO extends BaseEntity {
      * 邮箱
      */
     private String email;
+
+    /**
+     * 扩展信息（JSON格式）
+     */
+    private String extInfo;
 }

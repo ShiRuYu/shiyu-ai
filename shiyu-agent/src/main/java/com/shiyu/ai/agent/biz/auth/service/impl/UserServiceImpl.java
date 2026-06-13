@@ -6,6 +6,7 @@ import com.shiyu.ai.agent.domain.bo.RoleBO;
 import com.shiyu.ai.agent.domain.bo.UserBO;
 import com.shiyu.ai.agent.domain.vo.UserPageResponse;
 import com.shiyu.ai.agent.domain.vo.UserVO;
+import com.shiyu.ai.common.core.utils.JSONUtils;
 import com.shiyu.ai.common.core.utils.MapstructUtils;
 import com.shiyu.ai.common.core.utils.PasswordUtils;
 import lombok.extern.slf4j.Slf4j;
@@ -13,6 +14,7 @@ import org.apache.commons.lang3.tuple.Pair;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
+import java.util.Map;
 
 /**
  * 用户服务实现类
@@ -36,6 +38,24 @@ public class UserServiceImpl implements UserService {
             // 查询并设置用户角色列表
             List<RoleBO> roles = userRepository.selectRolesByUserId(userId);
             userBO.setRoles(roles);
+
+            // 从 extInfo 中解析当前角色
+            if (userBO.getExtInfo() != null && !userBO.getExtInfo().isEmpty()) {
+                Map<?, ?> extInfoMap = JSONUtils.parseObject(userBO.getExtInfo(), Map.class);
+                if (extInfoMap != null) {
+                    Map<?, ?> roleMap = (Map<?, ?>) extInfoMap.get("currentRole");
+                    if (roleMap != null) {
+                        RoleBO currentRole = new RoleBO();
+                        Object roleId = roleMap.get("roleId");
+                        if (roleId instanceof Number) {
+                            currentRole.setId(((Number) roleId).longValue());
+                        }
+                        currentRole.setName((String) roleMap.get("roleName"));
+                        currentRole.setCode((String) roleMap.get("roleKey"));
+                        userBO.setCurrentRole(currentRole);
+                    }
+                }
+            }
         }
         
         return userBO;
@@ -90,5 +110,20 @@ public class UserServiceImpl implements UserService {
         log.info("新增用户");
         UserBO createdUser = userRepository.insert(userBO);
         return createdUser.getId();
+    }
+
+    @Override
+    public boolean changePassword(Long userId, String oldPassword, String newPassword) {
+        log.info("修改密码，userId: {}", userId);
+        UserBO userBO = userRepository.selectById(userId);
+        if (userBO == null) {
+            return false;
+        }
+        if (!PasswordUtils.matches(oldPassword, userBO.getPassword())) {
+            log.warn("旧密码错误，userId: {}", userId);
+            return false;
+        }
+        userBO.setPassword(PasswordUtils.encode(newPassword));
+        return userRepository.update(userBO);
     }
 }

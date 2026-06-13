@@ -43,8 +43,8 @@ public class AuthController {
                 return Result.fail("Username and password are required");
             }
             
-            // 调用登录服务
-            LoginResponseVO response = authService.login(request.getUsername(), request.getPassword());
+            // 调用登录服务（含角色选择）
+            LoginResponseVO response = authService.login(request.getUsername(), request.getPassword(), request.getRoleId());
             
             if (response == null) {
                 return Result.fail("Username or password is incorrect.");
@@ -111,6 +111,26 @@ public class AuthController {
         }
     }
     
+
+    /**
+     * 切换当前角色
+     * PATCH /auth/current-role
+     */
+    @PatchMapping("/current-role")
+    public Result<Void> switchCurrentRole(@RequestBody Map<String, Long> body) {
+        log.info("收到切换角色请求");
+        Long userId = LoginContextHolder.getUserId();
+        if (userId == null) {
+            return Result.fail("用户未登录");
+        }
+        Long roleId = body.get("roleId");
+        boolean success = authService.switchCurrentRole(userId, roleId);
+        if (success) {
+            return Result.success();
+        } else {
+            return Result.fail("切换角色失败");
+        }
+    }
 
     /**
      * 用户登出

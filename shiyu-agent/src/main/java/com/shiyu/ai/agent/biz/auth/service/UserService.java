@@ -59,4 +59,14 @@ public interface UserService {
      * @return 用户 ID
      */
     Long createUser(UserBO userBO);
+
+    /**
+     * 修改密码（校验旧密码）
+     *
+     * @param userId      用户 ID
+     * @param oldPassword 旧密码
+     * @param newPassword 新密码
+     * @return 是否成功
+     */
+    boolean changePassword(Long userId, String oldPassword, String newPassword);
 }

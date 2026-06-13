@@ -88,4 +88,9 @@ public class UserVO implements Serializable {
      * 当前角色
      */
     private RoleVO currentRole;
+
+    /**
+     * 扩展信息（JSON格式）
+     */
+    private String extInfo;
 }

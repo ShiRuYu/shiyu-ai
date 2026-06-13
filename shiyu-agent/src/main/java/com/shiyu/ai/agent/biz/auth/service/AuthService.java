@@ -17,6 +17,15 @@ public interface AuthService {
      * @return 登录响应（包含用户信息和访问令牌）
      */
     LoginResponseVO login(String username, String password);
+
+    /**
+     * 用户登录（带角色选择）
+     * @param username 用户名
+     * @param password 密码
+     * @param roleId 当前角色ID（不传则默认使用第一个角色）
+     * @return 登录响应（包含用户信息和访问令牌）
+     */
+    LoginResponseVO login(String username, String password, Long roleId);
     
     /**
      * 获取用户权限码（通过用户名）
@@ -44,4 +53,12 @@ public interface AuthService {
      * @param refreshToken 刷新令牌
      */
     void logout(String refreshToken);
+
+    /**
+     * 切换当前角色
+     * @param userId 用户 ID
+     * @param roleId 目标角色 ID
+     * @return 是否成功
+     */
+    boolean switchCurrentRole(Long userId, Long roleId);
 }

@@ -33,4 +33,9 @@ public class LoginRequest implements Serializable {
      * 验证码 key（可选，用于验证验证码）
      */
     private String captchaKey;
+
+    /**
+     * 当前角色ID（不传则默认使用第一个角色）
+     */
+    private Long roleId;
 }

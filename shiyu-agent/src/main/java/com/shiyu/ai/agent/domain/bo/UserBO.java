@@ -88,4 +88,9 @@ public class UserBO implements Serializable {
      * 当前角色
      */
     private RoleBO currentRole;
+
+    /**
+     * 扩展信息（JSON格式）
+     */
+    private String extInfo;
 }

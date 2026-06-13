@@ -125,6 +125,30 @@ public class UserController {
     }
 
     /**
+     * 修改密码（需校验旧密码）
+     */
+    @PatchMapping("/{userId}/password")
+    public Result<Void> changePassword(
+            @PathVariable Long userId,
+            @RequestBody Map<String, String> body) {
+        log.info("修改密码，userId: {}", userId);
+
+        String oldPassword = body.get("oldPassword");
+        String newPassword = body.get("newPassword");
+        if (oldPassword == null || oldPassword.isEmpty() ||
+            newPassword == null || newPassword.isEmpty()) {
+            return Result.fail("旧密码和新密码不能为空");
+        }
+
+        boolean success = userService.changePassword(userId, oldPassword, newPassword);
+        if (success) {
+            return Result.success();
+        } else {
+            return Result.fail("旧密码错误或用户不存在");
+        }
+    }
+
+    /**
      * 新增用户
      */
     @PostMapping("")
