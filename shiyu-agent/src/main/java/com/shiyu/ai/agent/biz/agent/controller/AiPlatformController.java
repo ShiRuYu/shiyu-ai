@@ -33,10 +33,12 @@ public class AiPlatformController {
      */
     @GetMapping("/page")
     public Result<PageData<AiPlatformBO>> getPage(
+            @RequestParam(required = false) String name,
+            @RequestParam(required = false) String code,
             @RequestParam(required = false, defaultValue = "1") Integer pageNo,
             @RequestParam(required = false, defaultValue = "10") Integer pageSize) {
-        log.info("获取平台列表，pageNo: {}, pageSize: {}", pageNo, pageSize);
-        Pair<Long, List<AiPlatformBO>> result = aiPlatformService.getPage(pageNo, pageSize);
+        log.info("获取平台列表，name: {}, code: {}, pageNo: {}, pageSize: {}", name, code, pageNo, pageSize);
+        Pair<Long, List<AiPlatformBO>> result = aiPlatformService.getPage(pageNo, pageSize, name, code);
         PageData<AiPlatformBO> pageData = new PageData<>(result.getRight(), result.getLeft());
         return Result.success(pageData);
     }

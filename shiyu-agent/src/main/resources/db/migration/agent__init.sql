@@ -173,7 +173,7 @@ VALUES (3, 'smart-agent', '智能路由助手', '支持意图识别、RAG 知识
 
 INSERT INTO `agent_version` (`id`, `agent_id`, `version_number`, `description`, `status`, `graph_config`)
 VALUES (3, 'smart-agent', 'v1.0.0', '初始版本', 'PUBLISHED',
-'{"name":"smart-agent_graph","description":"全功能智能路由助手","startNode":"intent","endNode":"output","nodes":{"intent":{"nodeName":"意图识别","nodeType":"INTENT","enabled":true,"timeout":30000,"config":{"category":"general","confidenceThreshold":0.75}},"llm_chat":{"nodeName":"闲聊回答","nodeType":"LLM_CALL","enabled":true,"timeout":30000,"config":{"defaultPrompt":"你是一个友好的 AI 助手，请用轻松自然的语气和用户聊天。","stream":false}},"rag_retrieval":{"nodeName":"知识库检索","nodeType":"RAG_RETRIEVAL","enabled":true,"timeout":30000,"config":{"topK":3}},"rag_enhance":{"nodeName":"检索增强","nodeType":"RAG_ENHANCEMENT","enabled":true,"timeout":30000,"config":{"enhancementStrategy":"SUMMARIZATION","contextWindowSize":3}},"rag_llm":{"nodeName":"RAG 回答","nodeType":"LLM_CALL","enabled":true,"timeout":30000,"config":{"promptTemplate":"基于以下检索到的文档回答用户问题。\n\n{context}\n\n用户问题: {query}","stream":false}},"tool_call_weather":{"nodeName":"天气查询工具","nodeType":"TOOL_CALL","enabled":true,"timeout":30000,"config":{"toolName":"WEATHER","enableCache":true}},"tool_call_calculator":{"nodeName":"计算器工具","nodeType":"TOOL_CALL","enabled":true,"timeout":30000,"config":{"toolName":"CALCULATOR","enableCache":true}},"tool_llm":{"nodeName":"工具结果回答","nodeType":"LLM_CALL","enabled":true,"timeout":30000,"config":{"promptTemplate":"以下是工具执行结果，请用自然语言回复用户。\n\n工具结果: {toolResult}\n\n用户问题: {query}","stream":false}},"output":{"nodeName":"格式化输出","nodeType":"OUTPUT_FORMAT","enabled":true,"timeout":30000,"config":{"outputFormat":"TEXT","prettyPrint":true}}},"edges":{"rag_retrieval":["rag_enhance"],"rag_enhance":["rag_llm"],"rag_llm":["output"],"llm_chat":["output"],"tool_call_weather":["tool_llm"],"tool_call_calculator":["tool_llm"],"tool_llm":["output"]},"conditionalEdges":{"intent":{"defaultTarget":"llm_chat","nodeMappings":{"CHITCHAT":"llm_chat","QUESTION":"rag_retrieval","CALCULATOR":"tool_call_calculator","WEATHER":"tool_call_weather","UNKNOWN":"llm_chat"},"conditionType":"INTENT_ROUTING"}}}');
+'{"name":"smart-agent_graph","description":"全功能智能路由助手","startNode":"intent","endNode":"output","nodes":{"intent":{"nodeName":"意图识别","nodeType":"INTENT","enabled":true,"timeout":30000,"config":{"category":"CONVERSATION","confidenceThreshold":0.75}},"llm_chat":{"nodeName":"闲聊回答","nodeType":"LLM_CALL","enabled":true,"timeout":30000,"config":{"defaultPrompt":"你是一个友好的 AI 助手，请用轻松自然的语气和用户聊天。","stream":false}},"rag_retrieval":{"nodeName":"知识库检索","nodeType":"RAG_RETRIEVAL","enabled":true,"timeout":30000,"config":{"topK":3}},"rag_enhance":{"nodeName":"检索增强","nodeType":"RAG_ENHANCEMENT","enabled":true,"timeout":30000,"config":{"enhancementStrategy":"SUMMARIZATION","contextWindowSize":3}},"rag_llm":{"nodeName":"RAG 回答","nodeType":"LLM_CALL","enabled":true,"timeout":30000,"config":{"promptTemplate":"基于以下检索到的文档回答用户问题。\n\n{context}\n\n用户问题: {query}","stream":false}},"tool_call_weather":{"nodeName":"天气查询工具","nodeType":"TOOL_CALL","enabled":true,"timeout":30000,"config":{"toolName":"WEATHER","enableCache":true}},"tool_call_calculator":{"nodeName":"计算器工具","nodeType":"TOOL_CALL","enabled":true,"timeout":30000,"config":{"toolName":"CALCULATOR","enableCache":true}},"tool_llm":{"nodeName":"工具结果回答","nodeType":"LLM_CALL","enabled":true,"timeout":30000,"config":{"promptTemplate":"以下是工具执行结果，请用自然语言回复用户。\n\n工具结果: {toolResult}\n\n用户问题: {query}","stream":false}},"output":{"nodeName":"格式化输出","nodeType":"OUTPUT_FORMAT","enabled":true,"timeout":30000,"config":{"outputFormat":"TEXT","prettyPrint":true}}},"edges":{"rag_retrieval":["rag_enhance"],"rag_enhance":["rag_llm"],"rag_llm":["output"],"llm_chat":["output"],"tool_call_weather":["tool_llm"],"tool_call_calculator":["tool_llm"],"tool_llm":["output"]},"conditionalEdges":{"intent":{"defaultTarget":"llm_chat","nodeMappings":{"CHITCHAT":"llm_chat","QUESTION":"rag_retrieval","CALCULATOR":"tool_call_calculator","WEATHER":"tool_call_weather","UNKNOWN":"llm_chat"},"conditionType":"INTENT_ROUTING"}}}');
 
 -- ============================================
 -- 8. 意图定义表
@@ -206,70 +206,31 @@ CREATE TABLE `intent_def` (
 CREATE UNIQUE INDEX `uk_intent_def_code_agent` ON `intent_def` (`agent_id`, `code`);
 COMMENT ON TABLE `intent_def` IS '意图定义表';
 
--- 种子数据：5个默认意图定义（对应 IntentDefinitionFactory 中硬编码的）
+-- 种子数据：5个核心默认意图定义（作为全局 fallback，target_node 不绑定特定 graph）
 INSERT INTO `intent_def` (`agent_id`, `code`, `name`, `description`, `category`, `priority`, `confidence_threshold`, `examples`, `require_slot_filling`, `target_node`)
-VALUES ('default', 'CHITCHAT', '闲聊', '处理用户的日常闲聊对话', 'CONVERSATION', 50, 0.75, '["你好","最近怎么样","今天天气不错","你在干什么","聊聊天吧"]', '0', 'chatDirect');
+VALUES ('default', 'CHITCHAT', '闲聊', '处理用户的日常闲聊对话', 'CONVERSATION', 50, 0.75, '["你好","最近怎么样","今天天气不错","你在干什么","聊聊天吧"]', '0', '_fallback');
 
 INSERT INTO `intent_def` (`agent_id`, `code`, `name`, `description`, `category`, `priority`, `confidence_threshold`, `examples`, `require_slot_filling`, `target_node`)
-VALUES ('default', 'QUESTION', '问答', '处理用户的知识性问题', 'KNOWLEDGE', 60, 0.8, '["什么是人工智能","为什么天空是蓝色的","如何学习编程","地球有多大","谁发明了电灯"]', '0', 'chatWithRag');
+VALUES ('default', 'QUESTION', '问答', '处理用户的知识性问题', 'KNOWLEDGE', 60, 0.8, '["什么是人工智能","为什么天空是蓝色的","如何学习编程","地球有多大","谁发明了电灯"]', '0', '_fallback');
 
 INSERT INTO `intent_def` (`agent_id`, `code`, `name`, `description`, `category`, `priority`, `confidence_threshold`, `examples`, `require_slot_filling`, `target_node`)
-VALUES ('default', 'CALCULATOR', '计算器', '执行基础的数学运算（加、减、乘、除）', 'TASK', 70, 0.85, '["帮我订一张机票","设置一个明天早上的闹钟","发送邮件给张三","创建一个待办事项","预约明天的会议"]', '1', 'chatWithTool');
+VALUES ('default', 'CALCULATOR', '计算器', '执行基础的数学运算（加、减、乘、除）', 'TASK', 70, 0.85, '["帮我订一张机票","设置一个明天早上的闹钟","发送邮件给张三","创建一个待办事项","预约明天的会议"]', '1', '_fallback');
 
 INSERT INTO `intent_def` (`agent_id`, `code`, `name`, `description`, `category`, `priority`, `confidence_threshold`, `examples`, `require_slot_filling`, `target_node`)
-VALUES ('default', 'QUERY', '查询', '处理数据或信息查询请求', 'SEARCH', 65, 0.8, '["查询我的订单","看看今天的新闻","搜索相关的文章","查找联系人信息","查看账户余额"]', '0', 'chatWithSearch');
+VALUES ('default', 'QUERY', '查询', '处理数据或信息查询请求', 'SEARCH', 65, 0.8, '["查询我的订单","看看今天的新闻","搜索相关的文章","查找联系人信息","查看账户余额"]', '0', '_fallback');
 
 INSERT INTO `intent_def` (`agent_id`, `code`, `name`, `description`, `category`, `priority`, `confidence_threshold`, `examples`, `slots`, `require_slot_filling`, `target_node`)
-VALUES ('default', 'CODE_HELP', '代码帮助', '处理编程相关的技术问题', 'TECHNICAL', 75, 0.85, '["这段代码有什么问题","如何优化这个算法","解释一下这个函数","帮我写一个排序方法","这个错误怎么解决"]', '{"language":"编程语言","codeSnippet":"代码片段"}', '0', 'chatWithCode');
+VALUES ('default', 'CODE_HELP', '代码帮助', '处理编程相关的技术问题', 'TECHNICAL', 75, 0.85, '["这段代码有什么问题","如何优化这个算法","解释一下这个函数","帮我写一个排序方法","这个错误怎么解决"]', '{"language":"编程语言","codeSnippet":"代码片段"}', '0', '_fallback');
 
-INSERT INTO `intent_def` (`agent_id`, `code`, `name`, `description`, `category`, `priority`, `confidence_threshold`, `target_node`)
-VALUES ('default', 'SUGGESTION', '建议', '处理用户提出的建议或反馈', 'CONVERSATION', 50, 0.75, 'chatDirect');
-INSERT INTO `intent_def` (`agent_id`, `code`, `name`, `description`, `category`, `priority`, `confidence_threshold`, `target_node`)
-VALUES ('default', 'COMPLAINT', '投诉', '处理用户的投诉', 'CONVERSATION', 50, 0.75, 'chatDirect');
-INSERT INTO `intent_def` (`agent_id`, `code`, `name`, `description`, `category`, `priority`, `confidence_threshold`, `target_node`)
-VALUES ('default', 'TECHNICAL_SUPPORT', '技术支持', '处理技术咨询和支持问题', 'TECHNICAL', 70, 0.8, 'chatWithCode');
-INSERT INTO `intent_def` (`agent_id`, `code`, `name`, `description`, `category`, `priority`, `confidence_threshold`, `target_node`)
-VALUES ('default', 'PRODUCT_INQUIRY', '产品咨询', '处理产品相关的咨询', 'KNOWLEDGE', 60, 0.8, 'chatWithRag');
-INSERT INTO `intent_def` (`agent_id`, `code`, `name`, `description`, `category`, `priority`, `confidence_threshold`, `target_node`)
-VALUES ('default', 'ORDER_PROCESSING', '订单处理', '处理订单相关的操作', 'TASK', 70, 0.85, 'chatWithTool');
-INSERT INTO `intent_def` (`agent_id`, `code`, `name`, `description`, `category`, `priority`, `confidence_threshold`, `target_node`)
-VALUES ('default', 'APPOINTMENT', '预约', '处理预约和时间安排', 'TASK', 65, 0.8, 'chatWithTool');
-INSERT INTO `intent_def` (`agent_id`, `code`, `name`, `description`, `category`, `priority`, `confidence_threshold`, `target_node`)
-VALUES ('default', 'NAVIGATION', '导航', '处理路线和位置导航', 'SEARCH', 60, 0.8, 'chatWithSearch');
-INSERT INTO `intent_def` (`agent_id`, `code`, `name`, `description`, `category`, `priority`, `confidence_threshold`, `target_node`)
-VALUES ('default', 'ENTERTAINMENT', '娱乐', '处理娱乐相关的内容', 'CONVERSATION', 45, 0.7, 'chatDirect');
-INSERT INTO `intent_def` (`agent_id`, `code`, `name`, `description`, `category`, `priority`, `confidence_threshold`, `target_node`)
-VALUES ('default', 'EDUCATION', '教育', '处理教育和学习内容', 'KNOWLEDGE', 60, 0.8, 'chatWithRag');
-INSERT INTO `intent_def` (`agent_id`, `code`, `name`, `description`, `category`, `priority`, `confidence_threshold`, `target_node`)
-VALUES ('default', 'HEALTH', '健康', '处理健康和医疗相关的咨询', 'KNOWLEDGE', 60, 0.8, 'chatWithRag');
-INSERT INTO `intent_def` (`agent_id`, `code`, `name`, `description`, `category`, `priority`, `confidence_threshold`, `target_node`)
-VALUES ('default', 'FINANCE', '金融', '处理金融和财务相关的问题', 'KNOWLEDGE', 60, 0.8, 'chatWithRag');
-INSERT INTO `intent_def` (`agent_id`, `code`, `name`, `description`, `category`, `priority`, `confidence_threshold`, `target_node`)
-VALUES ('default', 'SHOPPING', '购物', '处理购物相关的请求', 'TASK', 65, 0.8, 'chatWithTool');
-INSERT INTO `intent_def` (`agent_id`, `code`, `name`, `description`, `category`, `priority`, `confidence_threshold`, `target_node`)
-VALUES ('default', 'TRAVEL', '旅行', '处理旅行和旅游相关的规划', 'SEARCH', 60, 0.8, 'chatWithSearch');
-INSERT INTO `intent_def` (`agent_id`, `code`, `name`, `description`, `category`, `priority`, `confidence_threshold`, `target_node`)
-VALUES ('default', 'WEATHER', '天气查询', '查询指定城市的当前天气信息', 'SEARCH', 65, 0.85, 'chatWithTool');
-INSERT INTO `intent_def` (`agent_id`, `code`, `name`, `description`, `category`, `priority`, `confidence_threshold`, `target_node`)
-VALUES ('default', 'NEWS', '新闻', '处理新闻资讯查询', 'SEARCH', 55, 0.75, 'chatWithSearch');
-INSERT INTO `intent_def` (`agent_id`, `code`, `name`, `description`, `category`, `priority`, `confidence_threshold`, `target_node`)
-VALUES ('default', 'TRANSLATION', '翻译', '处理语言翻译请求', 'TASK', 60, 0.8, 'chatWithTool');
-INSERT INTO `intent_def` (`agent_id`, `code`, `name`, `description`, `category`, `priority`, `confidence_threshold`, `target_node`)
-VALUES ('default', 'WRITING_ASSISTANCE', '写作辅助', '处理写作和文本生成任务', 'TASK', 60, 0.8, 'chatWithTool');
-INSERT INTO `intent_def` (`agent_id`, `code`, `name`, `description`, `category`, `priority`, `confidence_threshold`, `target_node`)
-VALUES ('default', 'DATA_ANALYSIS', '数据分析', '处理数据分析和解释', 'TASK', 65, 0.85, 'chatWithTool');
-INSERT INTO `intent_def` (`agent_id`, `code`, `name`, `description`, `category`, `priority`, `confidence_threshold`, `target_node`)
-VALUES ('default', 'UNKNOWN', '未知', '无法识别的意图类型', 'CONVERSATION', 30, 0.5, 'chatDirect');
-
--- smart-agent 的意图定义（对应 createSmartAgent 中的注册逻辑，覆盖默认值，路由到具体图节点）
+-- smart-agent 的意图定义（路由到具体 graph 节点，覆盖 default fallback）
 INSERT INTO `intent_def` (`agent_id`, `code`, `name`, `description`, `category`, `priority`, `confidence_threshold`, `examples`, `require_slot_filling`, `slots`, `parameter_mapping`, `slot_defaults`, `target_node`)
 VALUES ('smart-agent', 'CHITCHAT', '闲聊', '处理用户的日常闲聊对话', 'CONVERSATION', 50, 0.75, '["你好","最近怎么样","今天天气不错","你在干什么","聊聊天吧"]', '0', NULL, NULL, NULL, 'llm_chat');
 INSERT INTO `intent_def` (`agent_id`, `code`, `name`, `description`, `category`, `priority`, `confidence_threshold`, `examples`, `require_slot_filling`, `target_node`)
-VALUES ('smart-agent', 'QUESTION', '知识查询', '查询知识库信息', 'KNOWLEDGE', 60, 0.8, '["什么是RAG","Shiyu AI 是什么"]', '0', 'rag_retrieval');
+VALUES ('smart-agent', 'QUESTION', '知识查询', '查询知识库信息', 'CONVERSATION', 60, 0.8, '["什么是RAG","Shiyu AI 是什么"]', '0', 'rag_retrieval');
 INSERT INTO `intent_def` (`agent_id`, `code`, `name`, `description`, `category`, `priority`, `confidence_threshold`, `examples`, `require_slot_filling`, `slots`, `target_node`)
-VALUES ('smart-agent', 'CALCULATOR', '计算器', '执行基础的数学运算', 'TASK', 70, 0.85, '["计算 1+2*3","计算 100/5"]', '1', '{"expression":"数学表达式"}', 'tool_call_calculator');
+VALUES ('smart-agent', 'CALCULATOR', '计算器', '执行基础的数学运算', 'CONVERSATION', 70, 0.85, '["计算 1+2*3","计算 100/5"]', '1', '{"expression":"数学表达式"}', 'tool_call_calculator');
 INSERT INTO `intent_def` (`agent_id`, `code`, `name`, `description`, `category`, `priority`, `confidence_threshold`, `examples`, `require_slot_filling`, `slots`, `parameter_mapping`, `slot_defaults`, `target_node`)
-VALUES ('smart-agent', 'WEATHER', '天气查询', '查询指定城市的当前天气信息', 'SEARCH', 65, 0.85, '["北京天气怎么样","上海今天冷吗"]', '1', '{"city":"城市名称","date":"日期（可选）"}', '{"city":"location"}', '{"unit":"celsius"}', 'tool_call_weather');
+VALUES ('smart-agent', 'WEATHER', '天气查询', '查询指定城市的当前天气信息', 'CONVERSATION', 65, 0.85, '["北京天气怎么样","上海今天冷吗"]', '1', '{"city":"城市名称","date":"日期（可选）"}', '{"city":"location"}', '{"unit":"celsius"}', 'tool_call_weather');
 
 -- ==================== 重置自增序列 ====================
 ALTER TABLE `ai_platform` ALTER COLUMN `id` RESTART WITH 100;

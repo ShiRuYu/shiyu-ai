@@ -25,13 +25,17 @@ public class AiPlatformRepository {
     /**
      * 分页查询
      */
-    public Pair<Long, List<AiPlatformBO>> selectPage(Number pageNo, Number pageSize) {
+    public Pair<Long, List<AiPlatformBO>> selectPage(Number pageNo, Number pageSize, String name, String code) {
         QueryWrapper countWrapper = new QueryWrapper();
         countWrapper.eq(AiPlatformDO::getDelFlag, "0");
+        if (name != null) countWrapper.like(AiPlatformDO::getName, name);
+        if (code != null) countWrapper.like(AiPlatformDO::getCode, code);
         long count = aiPlatformMapper.selectCountByQuery(countWrapper);
 
         QueryWrapper queryWrapper = new QueryWrapper();
         queryWrapper.eq(AiPlatformDO::getDelFlag, "0");
+        if (name != null) queryWrapper.like(AiPlatformDO::getName, name);
+        if (code != null) queryWrapper.like(AiPlatformDO::getCode, code);
         queryWrapper.orderBy(AiPlatformDO::getIsDefault, true);
         queryWrapper.orderBy(AiPlatformDO::getId, true);
         if (pageNo != null && pageSize != null) {
