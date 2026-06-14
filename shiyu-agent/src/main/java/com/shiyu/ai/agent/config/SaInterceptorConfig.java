@@ -1,7 +1,6 @@
 package com.shiyu.ai.agent.config;
 
 import com.shiyu.ai.agent.interceptor.UserContextInterceptor;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.web.servlet.config.annotation.InterceptorRegistry;
 import org.springframework.web.servlet.config.annotation.WebMvcConfigurer;
@@ -13,8 +12,11 @@ import org.springframework.web.servlet.config.annotation.WebMvcConfigurer;
 @Configuration
 public class SaInterceptorConfig implements WebMvcConfigurer {
 
-    @Autowired
-    private UserContextInterceptor userContextInterceptor;
+    private final UserContextInterceptor userContextInterceptor;
+
+    public SaInterceptorConfig(UserContextInterceptor userContextInterceptor) {
+        this.userContextInterceptor = userContextInterceptor;
+    }
 
     @Override
     public void addInterceptors(InterceptorRegistry registry) {

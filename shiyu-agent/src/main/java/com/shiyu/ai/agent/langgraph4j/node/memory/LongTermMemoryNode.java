@@ -1,20 +1,17 @@
 package com.shiyu.ai.agent.langgraph4j.node.memory;
 
+import com.shiyu.ai.agent.biz.agent.service.MemoryService;
 import com.shiyu.ai.agent.langgraph4j.node.BaseNode;
 import com.shiyu.ai.agent.langgraph4j.node.NodeInput;
 import com.shiyu.ai.agent.langgraph4j.node.NodeOutput;
 import com.shiyu.ai.agent.langgraph4j.node.NodeType;
+import com.shiyu.ai.agent.langgraph4j.node.NodeFields.FieldKey;
 import lombok.Getter;
 import lombok.Setter;
 import lombok.extern.slf4j.Slf4j;
 
-/**
- * 长期记忆节点
- * 用于存储和管理重要信息和知识点
- *
- * @author shiyu-ai
- * @date 2026-03-28
- */
+import java.util.Map;
+
 @Setter
 @Getter
 @Slf4j
@@ -22,70 +19,88 @@ public class LongTermMemoryNode extends BaseNode {
 
     private LongTermMemoryConfig config;
 
-    /**
-     * 私有构造函数，强制使用 Builder 模式
-     * @param config 节点配置
-     */
-    private LongTermMemoryNode(LongTermMemoryConfig config) {
+    private final MemoryService memoryService;
+
+    private LongTermMemoryNode(LongTermMemoryConfig config, MemoryService memoryService) {
         super(config != null ? config : new LongTermMemoryConfig());
         this.config = config != null ? config : new LongTermMemoryConfig();
-        // 设置节点类型为 MEMORY_LONG_TERM
         this.config.setNodeType(NodeType.MEMORY_LONG_TERM);
+        this.memoryService = memoryService;
     }
 
-    /**
-     * 获取 Builder 实例
-     * @return Builder 实例
-     */
     public static Builder builder() {
         return new Builder();
     }
 
-    /**
-     * Builder 类，用于构建 LongTermMemoryNode 实例
-     */
     public static class Builder {
         private LongTermMemoryConfig config;
+        private MemoryService memoryService;
 
-        /**
-         * 设置节点配置
-         * @param config 节点配置
-         * @return Builder 实例
-         */
         public Builder config(LongTermMemoryConfig config) {
             this.config = config;
             return this;
         }
 
-        /**
-         * 构建并返回 LongTermMemoryNode 实例
-         * @return LongTermMemoryNode 实例
-         */
+        public Builder memoryService(MemoryService memoryService) {
+            this.memoryService = memoryService;
+            return this;
+        }
+
         public LongTermMemoryNode build() {
-            return new LongTermMemoryNode(config);
+            if (memoryService == null) {
+                throw new IllegalStateException("创建 LongTermMemoryNode 失败: memoryService 不能为空");
+            }
+            return new LongTermMemoryNode(config, memoryService);
         }
     }
 
     @Override
     protected NodeOutput doExecute(NodeInput input) throws Exception {
-        log.info("执行长期记忆节点：{}", config.getNodeName());
-        log.debug("记忆配置：storageType={}, embeddingModel={}, minImportanceScore={}", 
-                config.getStorageType(), config.getEmbeddingModel(), config.getMinImportanceScore());
-        
+        log.info("执行长期记忆节点: {}", config.getNodeName());
+
         try {
+            Long userId = input.getParameter(FieldKey.USER_ID, null);
+            String agentId = input.getParameter(FieldKey.AGENT_ID, "");
+            String sessionId = input.getParameter(FieldKey.SESSION_ID, "");
+
+            String memoryKey = input.getParameter(FieldKey.MEMORY_KEY, "");
+            String memoryContent = input.getParameter(FieldKey.MEMORY_CONTENT, "");
+            String category = input.getParameter(FieldKey.CATEGORY, "general");
+            double minImportance = config.getMinImportanceScore() != null ? config.getMinImportanceScore() : 0.5;
+            double importance = input.getParameter(FieldKey.IMPORTANCE, 0.5);
+
+            if (memoryContent == null || memoryContent.isBlank()) {
+                log.warn("长期记忆内容为空，跳过存储");
+                NodeOutput output = new NodeOutput();
+                output.setSuccess(true);
+                output.setMsg("长期记忆节点跳过: 内容为空");
+                return output;
+            }
+
+            if (importance < minImportance) {
+                log.info("记忆重要度 {} 低于阈值 {}, 跳过存储", importance, minImportance);
+                NodeOutput output = new NodeOutput();
+                output.setSuccess(true);
+                output.setMsg("长期记忆节点跳过: 重要度不足");
+                return output;
+            }
+
+            memoryService.saveLongTermMemory(userId, agentId, category, memoryKey, memoryContent, importance, sessionId);
+
             NodeOutput output = new NodeOutput();
             output.setSuccess(true);
             output.setMsg("长期记忆节点执行成功");
-            
-            log.warn("长期记忆节点尚未实现完整逻辑，请集成向量数据库存储");
-            log.info("长期记忆节点执行完成，输入：{}", input);
+            output.addData(FieldKey.MEMORY_KEY, memoryKey);
+            output.addData(FieldKey.IMPORTANCE, importance);
+
+            log.info("长期记忆已保存: category={}, importance={}", category, importance);
             return output;
-            
+
         } catch (Exception e) {
             log.error("长期记忆节点执行失败", e);
             NodeOutput output = new NodeOutput();
             output.setSuccess(false);
-            output.setMsg("长期记忆节点执行失败：" + e.getMessage());
+            output.setMsg("长期记忆节点执行失败: " + e.getMessage());
             return output;
         }
     }

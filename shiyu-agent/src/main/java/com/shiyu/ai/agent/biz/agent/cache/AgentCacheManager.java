@@ -1,67 +1,102 @@
 package com.shiyu.ai.agent.biz.agent.cache;
 
-import com.google.common.collect.HashBasedTable;
-import com.google.common.collect.Table;
+import com.github.benmanes.caffeine.cache.Cache;
+import com.github.benmanes.caffeine.cache.Caffeine;
 import com.shiyu.ai.agent.biz.agent.domain.AgentDefinition;
 import com.shiyu.ai.agent.biz.agent.repository.AgentAdminRepository;
+import com.shiyu.ai.agent.dal.dataobject.agent.AgentDefDO;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Component;
+
+import java.util.List;
+import java.util.Objects;
+import java.util.concurrent.TimeUnit;
+import java.util.stream.Collectors;
 
 @Slf4j
 @Component
 public class AgentCacheManager {
 
-    private final Table<Long, String, AgentDefinition> cache = HashBasedTable.create();
+    private final Cache<String, AgentDefinition> cache;
+
+    private final AgentAdminRepository agentAdminRepository;
+
+    public AgentCacheManager(AgentAdminRepository agentAdminRepository) {
+        this.agentAdminRepository = agentAdminRepository;
+        this.cache = Caffeine.newBuilder()
+                .maximumSize(1000)
+                .expireAfterWrite(30, TimeUnit.MINUTES)
+                .recordStats()
+                .build();
+    }
+
+    private String key(Long userId, String agentId) {
+        return (userId != null ? userId : 0L) + ":" + agentId;
+    }
 
     public AgentDefinition get(Long userId, String agentId) {
-        synchronized (cache) {
-            return cache.get(userId, agentId);
-        }
+        return cache.getIfPresent(key(userId, agentId));
     }
 
     public void put(Long userId, String agentId, AgentDefinition agent) {
-        synchronized (cache) {
-            cache.put(userId, agentId, agent);
-            log.debug("缓存已写入: userId={}, agentId={}", userId, agentId);
-        }
+        cache.put(key(userId, agentId), agent);
+        log.debug("缓存已写入: userId={}, agentId={}", userId, agentId);
+    }
+
+    public void put(AgentDefinition agent) {
+        cache.put(key(0L, agent.getAgentId()), agent);
+        log.debug("缓存已写入: agentId={}", agent.getAgentId());
     }
 
     public AgentDefinition getOrLoad(Long userId, String agentId, AgentLoader loader) {
-        synchronized (cache) {
-            AgentDefinition cached = cache.get(userId, agentId);
-            if (cached != null) {
-                log.debug("缓存命中: userId={}, agentId={}", userId, agentId);
-                return cached;
-            }
+        String k = key(userId, agentId);
+        AgentDefinition cached = cache.getIfPresent(k);
+        if (cached != null) {
+            log.debug("缓存命中: userId={}, agentId={}", userId, agentId);
+            return cached;
         }
         AgentDefinition loaded = loader.loadFromDb(userId, agentId);
         if (loaded != null) {
-            synchronized (cache) {
-                cache.put(userId, agentId, loaded);
-            }
+            cache.put(k, loaded);
             log.info("缓存加载: userId={}, agentId={}", userId, agentId);
         }
         return loaded;
     }
 
-    public void evictColumn(String agentId) {
-        synchronized (cache) {
-            cache.column(agentId).clear();
-            log.info("缓存列已清除: agentId={}", agentId);
-        }
+    public void evict(String agentId) {
+        cache.asMap().keySet().removeIf(k -> k.endsWith(":" + agentId));
+        log.info("缓存已清除: agentId={}", agentId);
     }
 
     public void evict(Long userId, String agentId) {
-        synchronized (cache) {
-            cache.remove(userId, agentId);
-            log.debug("缓存已清除: userId={}, agentId={}", userId, agentId);
-        }
+        cache.invalidate(key(userId, agentId));
+        log.debug("缓存已清除: userId={}, agentId={}", userId, agentId);
     }
 
     public void evictAll() {
-        synchronized (cache) {
-            cache.clear();
-            log.info("全部缓存已清除");
-        }
+        cache.invalidateAll();
+        log.info("全部缓存已清除");
+    }
+
+    public boolean containsKey(Long userId, String agentId) {
+        return cache.getIfPresent(key(userId, agentId)) != null;
+    }
+
+    public List<AgentDefinition> listAll(Long userId) {
+        List<AgentDefDO> activeDefs = agentAdminRepository.selectAllActive();
+        return activeDefs.stream()
+                .map(def -> {
+                    String agentId = def.getAgentId();
+                    AgentDefinition cached = cache.getIfPresent(key(userId, agentId));
+                    if (cached != null) return cached;
+                    return null;
+                })
+                .filter(Objects::nonNull)
+                .collect(Collectors.toList());
+    }
+
+    public long estimatedSize() {
+        cache.cleanUp();
+        return cache.estimatedSize();
     }
 }

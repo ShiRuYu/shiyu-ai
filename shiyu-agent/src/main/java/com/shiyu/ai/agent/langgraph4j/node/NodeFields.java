@@ -42,6 +42,8 @@ public interface NodeFields {
         PLATFORM("platform"),
         /** 模型名称 */
         MODEL("model"),
+        /** 用户 ID */
+        USER_ID("userId"),
         /** 聊天类型（SYNC / STREAM） */
         CHAT_TYPE("chatType"),
         /** 工具名称 */
@@ -163,6 +165,32 @@ public interface NodeFields {
 
         /** 转换类型 */
         TRANSFORM_TYPE("transformType"),
+
+        // ==================== 记忆节点专属 ====================
+
+        /** 会话唯一标识 */
+        SESSION_ID("sessionId"),
+        /** 会话历史文本 */
+        CONVERSATION_HISTORY("conversationHistory"),
+        /** 记忆键 */
+        MEMORY_KEY("memoryKey"),
+        /** 记忆内容 */
+        MEMORY_CONTENT("memoryContent"),
+        /** 分类 */
+        CATEGORY("category"),
+        /** 重要度分数 */
+        IMPORTANCE("importance"),
+
+        // ==================== Agent 调用节点专属 ====================
+
+        /** 目标 Agent ID */
+        TARGET_AGENT_ID("targetAgentId"),
+        /** 目标版本号 */
+        TARGET_VERSION("targetVersion"),
+        /** 版本号 */
+        VERSION("version"),
+        /** 错误信息 */
+        ERROR("error"),
 
         // ==================== RAG 增强节点专属 ====================
 
@@ -368,18 +396,28 @@ public interface NodeFields {
      * 短期记忆节点
      * <p>
      * 存储和管理最近的对话历史
+     * 输入: sessionId, userId, agentId, query, response
+     * 输出: conversationHistory, messages
      */
     enum ShortTermMemoryFields implements NodeFields {
         INSTANCE;
 
         @Override
         public Set<FieldKey> inputFields() {
-            return Set.of();
+            return Set.of(
+                    FieldKey.SESSION_ID,
+                    FieldKey.AGENT_ID,
+                    FieldKey.QUERY,
+                    FieldKey.CONTENT
+            );
         }
 
         @Override
         public Set<FieldKey> outputFields() {
-            return Set.of();
+            return Set.of(
+                    FieldKey.CONVERSATION_HISTORY,
+                    FieldKey.MESSAGES
+            );
         }
     }
 
@@ -387,18 +425,31 @@ public interface NodeFields {
      * 长期记忆节点
      * <p>
      * 存储和管理重要信息和知识点
+     * 输入: userId, agentId, sessionId, memoryKey, memoryContent, category, importance
+     * 输出: memoryKey, importance
      */
     enum LongTermMemoryFields implements NodeFields {
         INSTANCE;
 
         @Override
         public Set<FieldKey> inputFields() {
-            return Set.of();
+            return Set.of(
+                    FieldKey.USER_ID,
+                    FieldKey.AGENT_ID,
+                    FieldKey.SESSION_ID,
+                    FieldKey.MEMORY_KEY,
+                    FieldKey.MEMORY_CONTENT,
+                    FieldKey.CATEGORY,
+                    FieldKey.IMPORTANCE
+            );
         }
 
         @Override
         public Set<FieldKey> outputFields() {
-            return Set.of();
+            return Set.of(
+                    FieldKey.MEMORY_KEY,
+                    FieldKey.IMPORTANCE
+            );
         }
     }
 
@@ -417,7 +468,10 @@ public interface NodeFields {
                     FieldKey.QUERY,
                     FieldKey.RETRIEVAL_SCOPE,
                     FieldKey.TOP_K,
-                    FieldKey.SIMILARITY_THRESHOLD
+                    FieldKey.SIMILARITY_THRESHOLD,
+                    FieldKey.SESSION_ID,
+                    FieldKey.USER_ID,
+                    FieldKey.AGENT_ID
             );
         }
 

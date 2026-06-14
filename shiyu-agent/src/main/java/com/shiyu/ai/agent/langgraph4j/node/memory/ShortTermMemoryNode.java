@@ -1,20 +1,18 @@
 package com.shiyu.ai.agent.langgraph4j.node.memory;
 
+import com.shiyu.ai.agent.biz.agent.service.MemoryService;
 import com.shiyu.ai.agent.langgraph4j.node.BaseNode;
 import com.shiyu.ai.agent.langgraph4j.node.NodeInput;
 import com.shiyu.ai.agent.langgraph4j.node.NodeOutput;
 import com.shiyu.ai.agent.langgraph4j.node.NodeType;
+import com.shiyu.ai.agent.langgraph4j.node.NodeFields.FieldKey;
 import lombok.Getter;
 import lombok.Setter;
 import lombok.extern.slf4j.Slf4j;
 
-/**
- * 短期记忆节点
- * 用于存储和管理最近的对话历史
- *
- * @author shiyu-ai
- * @date 2026-03-28
- */
+import java.util.List;
+import java.util.Map;
+
 @Setter
 @Getter
 @Slf4j
@@ -22,70 +20,85 @@ public class ShortTermMemoryNode extends BaseNode {
 
     private ShortTermMemoryConfig config;
 
-    /**
-     * 私有构造函数，强制使用 Builder 模式
-     * @param config 节点配置
-     */
-    private ShortTermMemoryNode(ShortTermMemoryConfig config) {
+    private final MemoryService memoryService;
+
+    private ShortTermMemoryNode(ShortTermMemoryConfig config, MemoryService memoryService) {
         super(config != null ? config : new ShortTermMemoryConfig());
         this.config = config != null ? config : new ShortTermMemoryConfig();
-        // 设置节点类型为 MEMORY_SHORT_TERM
         this.config.setNodeType(NodeType.MEMORY_SHORT_TERM);
+        this.memoryService = memoryService;
     }
 
-    /**
-     * 获取 Builder 实例
-     * @return Builder 实例
-     */
     public static Builder builder() {
         return new Builder();
     }
 
-    /**
-     * Builder 类，用于构建 ShortTermMemoryNode 实例
-     */
     public static class Builder {
         private ShortTermMemoryConfig config;
+        private MemoryService memoryService;
 
-        /**
-         * 设置节点配置
-         * @param config 节点配置
-         * @return Builder 实例
-         */
         public Builder config(ShortTermMemoryConfig config) {
             this.config = config;
             return this;
         }
 
-        /**
-         * 构建并返回 ShortTermMemoryNode 实例
-         * @return ShortTermMemoryNode 实例
-         */
+        public Builder memoryService(MemoryService memoryService) {
+            this.memoryService = memoryService;
+            return this;
+        }
+
         public ShortTermMemoryNode build() {
-            return new ShortTermMemoryNode(config);
+            if (memoryService == null) {
+                throw new IllegalStateException("创建 ShortTermMemoryNode 失败: memoryService 不能为空");
+            }
+            return new ShortTermMemoryNode(config, memoryService);
         }
     }
 
     @Override
     protected NodeOutput doExecute(NodeInput input) throws Exception {
-        log.info("执行短期记忆节点：{}", config.getNodeName());
-        log.debug("记忆配置：maxMessages={}, enableSlidingWindow={}", 
-                config.getMaxMessages(), config.getEnableSlidingWindow());
-        
+        log.info("执行短期记忆节点: {}", config.getNodeName());
+
         try {
+            String sessionId = input.getParameter(FieldKey.SESSION_ID, "");
+            Long userId = input.getParameter(FieldKey.USER_ID, null);
+            String agentId = input.getParameter(FieldKey.AGENT_ID, "");
+            String userMessage = input.getParameter(FieldKey.QUERY, "");
+            String assistantResponse = input.getParameter(FieldKey.CONTENT, input.getParameter(FieldKey.RESPONSE, ""));
+            int maxMessages = config.getMaxMessages() != null ? config.getMaxMessages() : 20;
+            boolean slidingWindow = config.getEnableSlidingWindow() != null && config.getEnableSlidingWindow();
+
+            if (sessionId.isEmpty()) {
+                log.warn("sessionId 为空，跳过短期记忆存储");
+                NodeOutput output = new NodeOutput();
+                output.setSuccess(false);
+                output.setMsg("短期记忆节点执行跳过: sessionId 为空");
+                return output;
+            }
+
+            if (!userMessage.isEmpty()) {
+                memoryService.saveMessage(sessionId, userId, agentId, "user", userMessage);
+            }
+            if (!assistantResponse.isEmpty()) {
+                memoryService.saveMessage(sessionId, userId, agentId, "assistant", assistantResponse);
+            }
+
+            String conversationHistory = memoryService.buildConversationHistory(sessionId, maxMessages);
+
             NodeOutput output = new NodeOutput();
             output.setSuccess(true);
             output.setMsg("短期记忆节点执行成功");
-            
-            log.warn("短期记忆节点尚未实现完整逻辑，请集成缓存/数据库存储");
-            log.info("短期记忆节点执行完成，输入：{}", input);
+            output.addData(FieldKey.CONVERSATION_HISTORY, conversationHistory);
+            output.addData(FieldKey.MESSAGES, conversationHistory);
+
+            log.info("短期记忆节点执行完成, 会话历史长度: {} 字符", conversationHistory.length());
             return output;
-            
+
         } catch (Exception e) {
             log.error("短期记忆节点执行失败", e);
             NodeOutput output = new NodeOutput();
             output.setSuccess(false);
-            output.setMsg("短期记忆节点执行失败：" + e.getMessage());
+            output.setMsg("短期记忆节点执行失败: " + e.getMessage());
             return output;
         }
     }

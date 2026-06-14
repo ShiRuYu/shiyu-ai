@@ -1,143 +1,178 @@
 package com.shiyu.ai.agent.langgraph4j.node;
 
+import com.shiyu.ai.agent.biz.agent.service.ExecutionHistoryService;
+import com.shiyu.ai.common.core.utils.JSONUtils;
 import lombok.Getter;
 import lombok.Setter;
 import lombok.extern.slf4j.Slf4j;
 import org.bsc.langgraph4j.action.NodeAction;
 import org.bsc.langgraph4j.state.AgentState;
 
+import java.util.Collections;
 import java.util.Map;
+import java.util.Optional;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+import java.util.concurrent.Future;
+import java.util.concurrent.TimeUnit;
+import java.util.concurrent.TimeoutException;
 
-/**
- * 基础节点抽象类
- * 所有节点的父类，提供统一的执行框架
- * 
- * 执行流程:
- * 1. beforeExecute - 执行前处理
- * 2. processParameters - 参数处理
- * 3. doExecute - 执行核心逻辑
- * 4. afterExecute - 执行后处理
- */
 @Setter
 @Getter
 @Slf4j
 public abstract class BaseNode implements NodeAction<AgentState> {
 
     protected NodeConfig config;
-    
-    /**
-     * 构造函数
-     */
+
+    protected ExecutionHistoryService executionHistoryService;
+
     public BaseNode() {
         this.config = NodeConfig.builder().build();
     }
-    
-    /**
-     * 构造函数
-     * @param config 节点配置
-     */
+
     public BaseNode(NodeConfig config) {
         this.config = config;
     }
-    
+
     public Map<String, Object> apply(AgentState state) throws Exception {
+        long startTime = System.currentTimeMillis();
+        String executionId = null;
+
         try {
-            // 1. 执行前处理
             beforeExecute(state);
-            
-            // 2. 参数处理
+
             NodeInput input = processParameters(state);
-            
-            // 3. 执行核心逻辑
-            NodeOutput output = doExecute(input);
-            
-            // 4. 执行后处理
-            afterExecute(state, output);
-            
-            // 返回结果 Map
-            return output.toMap();
-            
+
+            int retries = Optional.ofNullable(config.getRetryCount()).orElse(0);
+            long timeoutMs = Optional.ofNullable(config.getTimeout()).orElse(30000L);
+            long retryIntervalMs = Optional.ofNullable(config.getRetryInterval()).orElse(1000L);
+
+            if (executionHistoryService != null) {
+                Map<String, Object> data = state.data();
+                executionId = executionHistoryService.startExecution(
+                        getStr(data, NodeFields.FieldKey.AGENT_ID),
+                        getStr(data, NodeFields.FieldKey.VERSION),
+                        getLong(data, NodeFields.FieldKey.USER_ID),
+                        getStr(data, NodeFields.FieldKey.SESSION_ID),
+                        config.getNodeId(),
+                        config.getNodeType() != null ? config.getNodeType().getCode() : null,
+                        JSONUtils.toJsonString(input.toMap())
+                );
+            }
+
+            Exception lastError = null;
+
+            for (int attempt = 0; attempt <= retries; attempt++) {
+                if (attempt > 0) {
+                    log.warn("节点 [{}] 第 {}/{} 次重试", config.getNodeName(), attempt, retries);
+                    Thread.sleep(retryIntervalMs);
+                }
+                try {
+                    NodeOutput output = executeWithTimeout(input, timeoutMs);
+                    afterExecute(state, output);
+
+                    if (executionHistoryService != null && executionId != null) {
+                        executionHistoryService.completeExecution(executionId,
+                                JSONUtils.toJsonString(output.toMap()), "SUCCESS", null);
+                    }
+                    return output.toMap();
+
+                } catch (Exception e) {
+                    lastError = e;
+                    log.warn("节点 [{}] 执行失败 (尝试 {}/{})", config.getNodeName(), attempt, retries, e.getMessage());
+                }
+            }
+
+            Map<String, Object> fallback = handleException(state, lastError);
+            if (executionHistoryService != null && executionId != null) {
+                executionHistoryService.completeExecution(executionId,
+                        JSONUtils.toJsonString(fallback), "FAILED",
+                        lastError != null ? lastError.getMessage() : "未知错误");
+            }
+            return fallback;
+
         } catch (Exception e) {
-            log.error("节点执行失败：{}", config.getNodeName(), e);
-            throw e; // 直接抛出异常，由框架处理
+            log.error("节点执行失败: {}", config.getNodeName(), e);
+            if (executionHistoryService != null && executionId != null) {
+                executionHistoryService.completeExecution(executionId, null, "FAILED", e.getMessage());
+            }
+            throw e;
+        } finally {
+            long duration = System.currentTimeMillis() - startTime;
+            if (duration > 1000) {
+                log.info("节点 [{}] 执行耗时: {}ms", config.getNodeName(), duration);
+            }
         }
     }
-    
-    /**
-     * 执行前处理
-     * @param state 当前状态
-     */
+
+    private NodeOutput executeWithTimeout(NodeInput input, long timeoutMs) throws Exception {
+        if (timeoutMs <= 0) {
+            return doExecute(input);
+        }
+        try (ExecutorService executor = Executors.newSingleThreadExecutor(
+                Thread.ofVirtual().name("node-exec-").factory())) {
+            Future<NodeOutput> future = executor.submit(() -> doExecute(input));
+            return future.get(timeoutMs, TimeUnit.MILLISECONDS);
+        } catch (TimeoutException e) {
+            throw new Exception("节点执行超时 (" + timeoutMs + "ms): " + config.getNodeName());
+        }
+    }
+
     protected void beforeExecute(AgentState state) {
-        log.info("开始执行节点：{}", config.getNodeName());
-        
-        // 记录日志
+        log.info("开始执行节点: {}", config.getNodeName());
         if ("DEBUG".equalsIgnoreCase(config.getLogLevel())) {
-            log.debug("节点配置：{}", config);
+            log.debug("节点配置: {}", config);
         }
     }
-    
-    /**
-     * 参数处理
-     * @param state 当前状态
-     * @return NodeInput 处理后的输入参数
-     */
+
     protected NodeInput processParameters(AgentState state) {
-        log.debug("处理节点参数：{}", config.getNodeName());
-        
+        log.debug("处理节点参数: {}", config.getNodeName());
         return NodeInput.fromMap(state.data());
     }
-    
-    /**
-     * 执行核心逻辑 (由子类实现)
-     * @param input 处理后的输入参数
-     * @return NodeOutput 执行结果
-     * @throws Exception 执行异常
-     */
+
     protected abstract NodeOutput doExecute(NodeInput input) throws Exception;
-    
-    /**
-     * 执行后处理
-     * @param state 当前状态
-     * @param output 执行结果
-     */
+
     protected void afterExecute(AgentState state, NodeOutput output) {
-        log.info("节点执行完成：{}", config.getNodeName());
+        log.info("节点执行完成: {}", config.getNodeName());
     }
-    
-    /**
-     * 异常处理
-     * @param state 当前状态
-     * @param e 异常
-     * @return Map<String, Object>
-     */
+
     protected Map<String, Object> handleException(AgentState state, Exception e) {
         String errorStrategy = config.getErrorStrategy();
-        
+
         switch (errorStrategy) {
             case "IGNORE":
-                log.warn("忽略异常，继续执行：{}", e.getMessage());
-                return java.util.Collections.emptyMap();
-                
+                log.warn("忽略异常，继续执行: {}", e.getMessage());
+                return Collections.emptyMap();
+
             case "DEFAULT":
-                log.warn("使用默认值处理异常：{}", e.getMessage());
+                log.warn("使用默认值处理异常: {}", e.getMessage());
                 return createDefaultResult();
-                
+
             case "THROW":
             default:
-                log.error("抛出异常：{}", e.getMessage(), e);
-                throw new RuntimeException("节点执行失败：" + config.getNodeName(), e);
+                log.error("抛出异常: {}", e.getMessage(), e);
+                throw new RuntimeException("节点执行失败: " + config.getNodeName(), e);
         }
     }
-    
-    /**
-     * 创建默认结果
-     * @return Map<String, Object>
-     */
+
     protected Map<String, Object> createDefaultResult() {
-        return java.util.Map.of(
-            "error", "使用默认值处理",
+        return Map.of(
+            NodeFields.FieldKey.ERROR.key(), "使用默认值处理",
             "status", "DEFAULT_APPLIED"
         );
     }
 
+    private static String getStr(Map<String, Object> data, NodeFields.FieldKey key) {
+        Object v = data.get(key.key());
+        return v != null ? v.toString() : null;
+    }
+
+    private static Long getLong(Map<String, Object> data, NodeFields.FieldKey key) {
+        Object v = data.get(key.key());
+        if (v instanceof Number n) return n.longValue();
+        if (v instanceof String s) {
+            try { return Long.parseLong(s); } catch (NumberFormatException ignored) {}
+        }
+        return null;
+    }
 }

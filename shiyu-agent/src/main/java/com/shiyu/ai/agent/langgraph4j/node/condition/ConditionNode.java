@@ -8,6 +8,9 @@ import com.shiyu.ai.agent.langgraph4j.node.NodeFields.FieldKey;
 import lombok.Getter;
 import lombok.Setter;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.expression.ExpressionParser;
+import org.springframework.expression.spel.standard.SpelExpressionParser;
+import org.springframework.expression.spel.support.StandardEvaluationContext;
 
 /**
  * 条件判断节点
@@ -153,13 +156,22 @@ public class ConditionNode extends BaseNode {
         return false;
     }
     
+    private static final ExpressionParser SPEL_PARSER = new SpelExpressionParser();
+
     /**
-     * 评估脚本（需要实际实现）
+     * 评估脚本（使用 Spring Expression Language）
+     * <p>支持 #variableName 引用 state 中的任意字段，支持布尔表达式如 {@code #score > 0.5}</p>
      */
     private boolean evaluateScript(String script, NodeInput input) {
-        // TODO: 实际项目中可以集成脚本引擎如 JavaScript/Nashorn
-        log.warn("脚本条件评估暂未实现，返回 false");
-        return false;
+        try {
+            StandardEvaluationContext ctx = new StandardEvaluationContext();
+            input.toMap().forEach((k, v) -> ctx.setVariable(k, v));
+            Boolean result = SPEL_PARSER.parseExpression(script).getValue(ctx, Boolean.class);
+            return Boolean.TRUE.equals(result);
+        } catch (Exception e) {
+            log.warn("脚本条件评估失败: script={}, error={}", script, e.getMessage());
+            return false;
+        }
     }
     
     /**

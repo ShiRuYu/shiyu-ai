@@ -1,5 +1,6 @@
 package com.shiyu.ai.agent.langgraph4j.node.memory;
 
+import com.shiyu.ai.agent.biz.agent.service.MemoryService;
 import com.shiyu.ai.agent.langgraph4j.node.BaseNode;
 import com.shiyu.ai.agent.langgraph4j.node.NodeInput;
 import com.shiyu.ai.agent.langgraph4j.node.NodeOutput;
@@ -9,15 +10,10 @@ import lombok.Getter;
 import lombok.Setter;
 import lombok.extern.slf4j.Slf4j;
 
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Map;
 
-/**
- * 记忆检索节点
- * 用于从记忆中检索相关信息
- *
- * @author shiyu-ai
- * @date 2026-03-28
- */
 @Setter
 @Getter
 @Slf4j
@@ -25,129 +21,128 @@ public class MemoryRetrievalNode extends BaseNode {
 
     private MemoryRetrievalConfig config;
 
-    /**
-     * 私有构造函数，强制使用 Builder 模式
-     * @param config 节点配置
-     */
-    private MemoryRetrievalNode(MemoryRetrievalConfig config) {
+    private final MemoryService memoryService;
+
+    private MemoryRetrievalNode(MemoryRetrievalConfig config, MemoryService memoryService) {
         super(config != null ? config : new MemoryRetrievalConfig());
         this.config = config != null ? config : new MemoryRetrievalConfig();
-        // 设置节点类型为 MEMORY_RETRIEVAL
         this.config.setNodeType(NodeType.MEMORY_RETRIEVAL);
+        this.memoryService = memoryService;
     }
 
-    /**
-     * 获取 Builder 实例
-     * @return Builder 实例
-     */
     public static Builder builder() {
         return new Builder();
     }
 
-    /**
-     * Builder 类，用于构建 MemoryRetrievalNode 实例
-     */
     public static class Builder {
         private MemoryRetrievalConfig config;
+        private MemoryService memoryService;
 
-        /**
-         * 设置节点配置
-         * @param config 节点配置
-         * @return Builder 实例
-         */
         public Builder config(MemoryRetrievalConfig config) {
             this.config = config;
             return this;
         }
 
-        /**
-         * 构建并返回 MemoryRetrievalNode 实例
-         * @return MemoryRetrievalNode 实例
-         */
+        public Builder memoryService(MemoryService memoryService) {
+            this.memoryService = memoryService;
+            return this;
+        }
+
         public MemoryRetrievalNode build() {
-            return new MemoryRetrievalNode(config);
+            if (memoryService == null) {
+                throw new IllegalStateException("创建 MemoryRetrievalNode 失败: memoryService 不能为空");
+            }
+            return new MemoryRetrievalNode(config, memoryService);
         }
     }
 
     @Override
     protected NodeOutput doExecute(NodeInput input) throws Exception {
-        log.info("执行记忆检索节点：{}", config.getNodeName());
-        log.debug("检索配置：retrievalScope={}, topK={}, similarityThreshold={}", 
-                config.getRetrievalScope(), config.getTopK(), config.getSimilarityThreshold());
-        
-        try {
-            // 1. 获取查询文本
-            String query = input.getParameter(FieldKey.QUERY, "");
+        log.info("执行记忆检索节点: {}", config.getNodeName());
 
-            // 2. 从输入中获取参数
+        try {
+            String query = input.getParameter(FieldKey.QUERY, "");
+            String sessionId = input.getParameter(FieldKey.SESSION_ID, "");
+            Long userId = input.getParameter(FieldKey.USER_ID, null);
+            String agentId = input.getParameter(FieldKey.AGENT_ID, "");
+
             String retrievalScope = input.getParameter(FieldKey.RETRIEVAL_SCOPE,
-                    config.getRetrievalScope() != null ? config.getRetrievalScope() : "SHORT_TERM");
-            Integer topK = input.getParameter(FieldKey.TOP_K,
+                    config.getRetrievalScope() != null ? config.getRetrievalScope() : "ALL");
+            int topK = input.getParameter(FieldKey.TOP_K,
                     config.getTopK() != null ? config.getTopK() : 5);
-            Double similarityThreshold = input.getParameter(FieldKey.SIMILARITY_THRESHOLD,
-                    config.getSimilarityThreshold() != null ? config.getSimilarityThreshold() : 0.7);
-            
-            // 3. 调用记忆检索服务（这里使用示例实现）
-            java.util.List<Map<String, Object>> memories = mockMemoryRetrieval(query, topK, similarityThreshold);
-            
-            // 4. 构建输出结果
+            double similarityThreshold = input.getParameter(FieldKey.SIMILARITY_THRESHOLD,
+                    config.getSimilarityThreshold() != null ? config.getSimilarityThreshold() : 0.5);
+
+            List<Map<String, Object>> allMemories = new ArrayList<>();
+
+            if ("SHORT_TERM".equalsIgnoreCase(retrievalScope) || "BOTH".equalsIgnoreCase(retrievalScope) || "ALL".equalsIgnoreCase(retrievalScope)) {
+                if (sessionId != null && !sessionId.isEmpty()) {
+                    List<Map<String, Object>> shortTerm = memoryService.retrieveShortTerm(sessionId, topK);
+                    for (Map<String, Object> m : shortTerm) {
+                        m.put("type", "short_term");
+                    }
+                    allMemories.addAll(shortTerm);
+                    log.debug("短期记忆检索到 {} 条", shortTerm.size());
+                }
+            }
+
+            if ("LONG_TERM".equalsIgnoreCase(retrievalScope) || "BOTH".equalsIgnoreCase(retrievalScope) || "ALL".equalsIgnoreCase(retrievalScope)) {
+                List<Map<String, Object>> longTerm = memoryService.retrieveLongTerm(query, userId, agentId, topK);
+                for (Map<String, Object> m : longTerm) {
+                    m.put("type", "long_term");
+                }
+                allMemories.addAll(longTerm);
+                log.debug("长期记忆检索到 {} 条", longTerm.size());
+            }
+
+            String context = buildMemoryContext(allMemories, similarityThreshold);
+
             NodeOutput output = new NodeOutput();
             output.setSuccess(true);
             output.setMsg("记忆检索成功");
-            output.addData(FieldKey.MEMORIES, memories);
-            output.addData(FieldKey.MEMORY_COUNT, memories.size());
+            output.addData(FieldKey.MEMORIES, allMemories);
+            output.addData(FieldKey.MEMORY_COUNT, allMemories.size());
 
-            // 将相关记忆添加到上下文中
-            if (!memories.isEmpty()) {
-                String context = buildMemoryContext(memories);
+            if (!allMemories.isEmpty()) {
                 output.addData(FieldKey.MEMORY_CONTEXT, context);
             }
-            
-            log.info("记忆检索成功，返回 {} 条记忆", memories.size());
+
+            log.info("记忆检索成功, 返回 {} 条记忆 (范围: {})", allMemories.size(), retrievalScope);
             return output;
-            
+
         } catch (Exception e) {
             log.error("记忆检索节点执行失败", e);
             NodeOutput output = new NodeOutput();
             output.setSuccess(false);
-            output.setMsg("记忆检索节点执行失败：" + e.getMessage());
+            output.setMsg("记忆检索节点执行失败: " + e.getMessage());
             return output;
         }
     }
-    
-    /**
-     * 模拟记忆检索（实际项目需要接入向量数据库）
-     */
-    private java.util.List<Map<String, Object>> mockMemoryRetrieval(String query, int topK, double threshold) {
-        java.util.List<Map<String, Object>> memories = new java.util.ArrayList<>();
-        
-        // 示例数据
-        for (int i = 0; i < Math.min(topK, 3); i++) {
-            memories.add(java.util.Map.of(
-                "id", "memory_" + i,
-                "content", "这是第 " + (i + 1) + " 条相关记忆，查询：" + query,
-                "score", 0.95 - i * 0.1,
-                "timestamp", System.currentTimeMillis() - i * 1000000L,
-                "type", "conversation"
-            ));
+
+    private String buildMemoryContext(List<Map<String, Object>> memories, double threshold) {
+        if (memories.isEmpty()) return "";
+
+        StringBuilder sb = new StringBuilder();
+        sb.append("相关记忆:\n\n");
+
+        int index = 0;
+        for (Map<String, Object> mem : memories) {
+            String type = (String) mem.getOrDefault("type", "unknown");
+            String content = (String) mem.getOrDefault("content", "");
+            if (content.isBlank()) continue;
+
+            if (threshold > 0 && mem.containsKey("score")) {
+                Object scoreObj = mem.get("score");
+                double score = 0;
+                if (scoreObj instanceof Number n) score = n.doubleValue();
+                if (score < threshold) continue;
+            }
+
+            index++;
+            sb.append("[").append(index).append("] (").append(type).append(") ");
+            sb.append(content).append("\n\n");
         }
-        
-        return memories;
-    }
-    
-    /**
-     * 构建记忆上下文
-     */
-    private String buildMemoryContext(java.util.List<Map<String, Object>> memories) {
-        StringBuilder context = new StringBuilder();
-        context.append("相关记忆：\n\n");
-        
-        for (int i = 0; i < memories.size(); i++) {
-            Map<String, Object> memory = memories.get(i);
-            context.append("[记忆 ").append(i + 1).append("] ");
-            context.append(memory.get("content")).append("\n");
-        }
-        
-        return context.toString();
+
+        return sb.toString();
     }
 }

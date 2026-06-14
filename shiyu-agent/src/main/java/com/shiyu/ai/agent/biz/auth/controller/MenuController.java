@@ -4,8 +4,8 @@ import com.shiyu.ai.agent.domain.request.MenuRequest;
 import com.shiyu.ai.agent.domain.bo.MenuBO;
 import com.shiyu.ai.agent.domain.vo.RouteMenuVO;
 import com.shiyu.ai.agent.biz.auth.service.MenuService;
-import com.shiyu.ai.agent.utils.SaTokenHelper;
 import com.shiyu.ai.common.core.api.Result;
+import com.shiyu.ai.common.core.domain.LoginContextHolder;
 import com.shiyu.ai.common.core.utils.MapstructUtils;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.web.bind.annotation.*;
@@ -38,7 +38,7 @@ public class MenuController {
         log.info("获取当前用户路由菜单（CATALOG + MENU）");
         
         try {
-            Long userId = SaTokenHelper.getCurrentUserId();
+            Long userId = LoginContextHolder.getUserId();
             
             // 从数据库查询用户的路由菜单（排除 BUTTON）
             List<MenuBO> menuBOs = menuService.getRouteMenusByUserId(userId);

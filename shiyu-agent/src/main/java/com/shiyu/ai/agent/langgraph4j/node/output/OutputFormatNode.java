@@ -5,9 +5,12 @@ import com.shiyu.ai.agent.langgraph4j.node.NodeInput;
 import com.shiyu.ai.agent.langgraph4j.node.NodeOutput;
 import com.shiyu.ai.agent.langgraph4j.node.NodeType;
 import com.shiyu.ai.agent.langgraph4j.node.NodeFields.FieldKey;
+import com.shiyu.ai.common.core.utils.JSONUtils;
 import lombok.Getter;
 import lombok.Setter;
 import lombok.extern.slf4j.Slf4j;
+
+import java.util.Map;
 
 /**
  * 输出格式化节点
@@ -161,8 +164,20 @@ public class OutputFormatNode extends BaseNode {
      * 格式化为 JSON
      */
     private String formatAsJson(String content) {
-        // TODO: 实际项目应该使用 Jackson 进行格式化
-        return content.startsWith("{") ? content : "{\"result\": \"" + content + "\"}";
+        try {
+            Map<String, Object> parsed = JSONUtils.parseObject(content, Map.class);
+            if (parsed != null) {
+                if (config.getPrettyPrint() != null && config.getPrettyPrint()) {
+                    return JSONUtils.getObjectMapper()
+                            .writerWithDefaultPrettyPrinter()
+                            .writeValueAsString(parsed);
+                }
+                return JSONUtils.toJsonString(parsed);
+            }
+        } catch (Exception ignored) {
+        }
+        String escaped = content.replace("\"", "\\\"");
+        return "{\"result\": \"" + escaped + "\"}";
     }
     
     /**

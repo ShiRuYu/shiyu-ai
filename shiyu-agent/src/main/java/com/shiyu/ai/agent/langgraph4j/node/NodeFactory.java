@@ -25,13 +25,15 @@ import com.shiyu.ai.agent.langgraph4j.node.tool.ToolCallNode;
 import com.shiyu.ai.agent.langgraph4j.node.transform.TransformConfig;
 import com.shiyu.ai.agent.langgraph4j.node.transform.TransformNode;
 import com.shiyu.ai.agent.biz.agent.service.AgentService;
+import com.shiyu.ai.agent.biz.agent.service.ExecutionHistoryService;
 import com.shiyu.ai.agent.biz.agent.service.IntentService;
 import com.shiyu.ai.agent.biz.agent.service.Lc4jService;
+import com.shiyu.ai.agent.biz.agent.service.MemoryService;
 import com.shiyu.ai.agent.biz.agent.service.RagService;
 import com.shiyu.ai.agent.biz.agent.service.ToolService;
+import jakarta.annotation.Resource;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.context.annotation.Lazy;
+import org.springframework.beans.factory.ObjectProvider;
 import org.springframework.stereotype.Component;
 
 import java.util.HashMap;
@@ -63,21 +65,26 @@ public class NodeFactory {
      */
     private final Map<String, BaseNode> registeredNodes = new ConcurrentHashMap<>();
 
-    @Autowired(required = false)
-    private IntentService intentService;
+    @Resource
+    private ObjectProvider<IntentService> intentServiceProvider;
 
-    @Autowired(required = false)
-    private RagService ragService;
+    @Resource
+    private ObjectProvider<RagService> ragServiceProvider;
 
-    @Autowired(required = false)
-    private Lc4jService lc4jService;
+    @Resource
+    private ObjectProvider<Lc4jService> lc4jServiceProvider;
 
-    @Autowired(required = false)
-    private ToolService toolService;
+    @Resource
+    private ObjectProvider<ToolService> toolServiceProvider;
 
-    @Lazy
-    @Autowired(required = false)
-    private AgentService agentService;
+    @Resource
+    private ObjectProvider<AgentService> agentServiceProvider;
+
+    @Resource
+    private ObjectProvider<MemoryService> memoryServiceProvider;
+
+    @Resource
+    private ObjectProvider<ExecutionHistoryService> executionHistoryServiceProvider;
 
     public NodeFactory() {
         // 注册默认节点类型
@@ -88,10 +95,9 @@ public class NodeFactory {
      * 注册默认的节点类型
      * <p>
      * 注册 {@link NodeType} 全部 13 种类型，与 {@code agent__init.sql} graph_config 中使用的 nodeType 一致。
-     * DI 节点（INTENT / RAG_RETRIEVAL / LLM_CALL / TOOL_CALL / AGENT_CALL）注册简单 lambda 仅提供
+     * DI 节点（INTENT / RAG_RETRIEVAL / LLM_CALL / TOOL_CALL / AGENT_CALL / MEMORY_*）注册简单 lambda 仅提供
      * 配置类信息以完善 registry 清单，实际节点创建由 {@link #createNodeWithDependencies} 注入服务后覆盖。
-     * 非 DI 节点（DEFAULT / RAG_ENHANCEMENT / MEMORY_* / CONDITION / TRANSFORM / OUTPUT_FORMAT）
-     * 在此直接创建。
+     * 非 DI 节点（DEFAULT / RAG_ENHANCEMENT / CONDITION / TRANSFORM / OUTPUT_FORMAT）在此直接创建。
      *
      * @see #createNodeWithDependencies(NodeType, NodeConfig)
      */
@@ -164,53 +170,91 @@ public class NodeFactory {
     private BaseNode createNodeWithDependencies(NodeType nodeType, NodeConfig config) {
         return switch (nodeType) {
             case INTENT -> {
-                if (intentService == null) {
+                IntentService intentSvc = intentServiceProvider.getIfAvailable();
+                if (intentSvc == null) {
                     log.warn("IntentService 未注入，无法创建 IntentNode");
                     throw new IllegalStateException("创建意图节点失败：IntentService 未注入");
                 }
                 yield IntentNode.builder()
                         .config((IntentConfig) config)
-                        .intentService(intentService)
+                        .intentService(intentSvc)
                         .build();
             }
             case RAG_RETRIEVAL -> {
-                if (ragService == null) {
+                RagService ragSvc = ragServiceProvider.getIfAvailable();
+                if (ragSvc == null) {
                     log.warn("RagService 未注入，无法创建 RagRetrievalNode");
                     throw new IllegalStateException("创建 RAG 检索节点失败：RagService 未注入");
                 }
                 yield RagRetrievalNode.builder()
                         .config((RagRetrievalConfig) config)
-                        .ragService(ragService)
+                        .ragService(ragSvc)
                         .build();
             }
             case LLM_CALL -> {
-                if (lc4jService == null) {
+                Lc4jService lc4jSvc = lc4jServiceProvider.getIfAvailable();
+                if (lc4jSvc == null) {
                     log.warn("Lc4jService 未注入，无法创建 LlmCallNode");
                     throw new IllegalStateException("创建 LLM 调用节点失败：Lc4jService 未注入");
                 }
                 yield LlmCallNode.builder()
                         .config((LlmCallConfig) config)
-                        .lc4jService(lc4jService)
+                        .lc4jService(lc4jSvc)
                         .build();
             }
             case TOOL_CALL -> {
-                if (toolService == null) {
+                ToolService toolSvc = toolServiceProvider.getIfAvailable();
+                if (toolSvc == null) {
                     log.warn("ToolService 未注入，无法创建 ToolCallNode");
                     throw new IllegalStateException("创建工具调用节点失败：ToolService 未注入");
                 }
                 yield ToolCallNode.builder()
                         .config((ToolCallConfig) config)
-                        .toolService(toolService)
+                        .toolService(toolSvc)
                         .build();
             }
             case AGENT_CALL -> {
-                if (agentService == null) {
+                AgentService agentSvc = agentServiceProvider.getIfAvailable();
+                if (agentSvc == null) {
                     log.warn("AgentService 未注入，无法创建 AgentCallNode");
                     throw new IllegalStateException("创建 Agent 调用节点失败：AgentService 未注入");
                 }
                 yield AgentCallNode.builder()
                         .config((AgentCallConfig) config)
-                        .agentService(agentService)
+                        .agentService(agentSvc)
+                        .build();
+            }
+            case MEMORY_SHORT_TERM -> {
+                MemoryService memSvc = memoryServiceProvider.getIfAvailable();
+                if (memSvc == null) {
+                    log.warn("MemoryService 未注入，无法创建 ShortTermMemoryNode");
+                    throw new IllegalStateException("创建短期记忆节点失败: MemoryService 未注入");
+                }
+                yield ShortTermMemoryNode.builder()
+                        .config((ShortTermMemoryConfig) config)
+                        .memoryService(memSvc)
+                        .build();
+            }
+            case MEMORY_LONG_TERM -> {
+                MemoryService memSvc = memoryServiceProvider.getIfAvailable();
+                if (memSvc == null) {
+                    log.warn("MemoryService 未注入，无法创建 LongTermMemoryNode");
+                    throw new IllegalStateException("创建长期记忆节点失败: MemoryService 未注入");
+                }
+                yield LongTermMemoryNode.builder()
+                        .config((LongTermMemoryConfig) config)
+                        .memoryService(memSvc)
+                        .build();
+            }
+            case MEMORY_RETRIEVAL -> {
+                MemoryService memSvc = memoryServiceProvider.getIfAvailable();
+                if (memSvc == null) {
+                    log.warn("MemoryService 未注入，无法创建 MemoryRetrievalNode");
+                    throw new IllegalStateException("创建记忆检索节点失败: MemoryService 未注入");
+                }
+                yield MemoryRetrievalNode.builder()
+                        .config((MemoryRetrievalConfig) config)
+                        .memoryService(memSvc)
                         .build();
             }
             default -> null;
@@ -257,6 +301,12 @@ public class NodeFactory {
             // 确保节点配置已设置
             if (node.getConfig() == null) {
                 node.setConfig(config);
+            }
+
+            // 注入执行历史服务（所有节点通用）
+            ExecutionHistoryService execSvc = executionHistoryServiceProvider.getIfAvailable();
+            if (execSvc != null) {
+                node.setExecutionHistoryService(execSvc);
             }
 
             // 注册节点实例

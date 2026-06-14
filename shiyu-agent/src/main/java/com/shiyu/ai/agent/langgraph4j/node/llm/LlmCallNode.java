@@ -177,7 +177,7 @@ public class LlmCallNode extends BaseNode {
         StreamingChatGenerator<AgentState> generator = StreamingChatGenerator.builder()
                 .mapResult(r -> {
                     String content = r != null && r.aiMessage() != null ? r.aiMessage().text() : "";
-                    return Map.<String, Object>of("content", content);
+                    return Map.<String, Object>of(FieldKey.CONTENT.key(), content);
                 })
                 .build();
 

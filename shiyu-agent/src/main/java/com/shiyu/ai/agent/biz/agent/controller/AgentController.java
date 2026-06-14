@@ -4,8 +4,10 @@ import com.shiyu.ai.agent.biz.agent.domain.AgentDefinition;
 import com.shiyu.ai.agent.biz.agent.domain.AgentVersion;
 import com.shiyu.ai.agent.biz.agent.domain.ChatType;
 import com.shiyu.ai.agent.langgraph4j.graph.Graph;
+import com.shiyu.ai.agent.langgraph4j.node.NodeFields;
 import com.shiyu.ai.agent.biz.agent.service.AgentService;
 import com.shiyu.ai.common.core.api.Result;
+import com.shiyu.ai.common.core.domain.LoginContextHolder;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.MediaType;
 import org.springframework.web.bind.annotation.*;
@@ -14,6 +16,7 @@ import reactor.core.publisher.Flux;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.UUID;
 
 /**
  * Agent Controller
@@ -132,8 +135,10 @@ public class AgentController {
             if (params != null) {
                 input.putAll(params);
             }
-            input.put("chatType", ChatType.SYNC.name());
-            input.put("agentId", agentId);
+            input.put(NodeFields.FieldKey.CHAT_TYPE.key(), ChatType.SYNC.name());
+            input.put(NodeFields.FieldKey.AGENT_ID.key(), agentId);
+            input.put(NodeFields.FieldKey.SESSION_ID.key(), UUID.randomUUID().toString());
+            input.put(NodeFields.FieldKey.USER_ID.key(), LoginContextHolder.getUserId());
             
             Map<String, Object> result = agentService.execute(agentId, input);
             
@@ -167,11 +172,13 @@ public class AgentController {
             if (params != null) {
                 input.putAll(params);
             }
-            input.put("chatType", ChatType.STREAM.name());
-            input.put("agentId", agentId);
+            input.put(NodeFields.FieldKey.CHAT_TYPE.key(), ChatType.STREAM.name());
+            input.put(NodeFields.FieldKey.AGENT_ID.key(), agentId);
+            input.put(NodeFields.FieldKey.SESSION_ID.key(), UUID.randomUUID().toString());
+            input.put(NodeFields.FieldKey.USER_ID.key(), LoginContextHolder.getUserId());
             
             return agentService.executeStream(agentId, input)
-                    .map(result -> Result.success(result))
+                    .map(Result::success)
                     .onErrorResume(e -> {
                         log.error("Agent 流式执行失败：agentId={}", agentId, e);
                         return Flux.just(Result.fail("Agent 流式执行失败：" + e.getMessage()));

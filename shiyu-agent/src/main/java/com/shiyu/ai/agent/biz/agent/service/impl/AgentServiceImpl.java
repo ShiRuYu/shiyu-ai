@@ -5,6 +5,7 @@ import com.shiyu.ai.agent.biz.agent.cache.AgentLoader;
 import com.shiyu.ai.agent.biz.agent.domain.AgentDefinition;
 import com.shiyu.ai.agent.biz.agent.domain.AgentVersion;
 import com.shiyu.ai.agent.biz.agent.service.AgentService;
+import com.shiyu.ai.agent.langgraph4j.node.NodeFields;
 import com.shiyu.ai.common.core.domain.LoginContextHolder;
 import com.shiyu.ai.common.core.utils.StringUtils;
 import lombok.extern.slf4j.Slf4j;
@@ -14,16 +15,12 @@ import org.bsc.langgraph4j.streaming.StreamingOutput;
 import org.springframework.stereotype.Service;
 import reactor.core.publisher.Flux;
 
-import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
-import java.util.concurrent.ConcurrentHashMap;
 
 @Slf4j
 @Service
 public class AgentServiceImpl implements AgentService {
-
-    private final Map<String, AgentDefinition> agentDefinitions = new ConcurrentHashMap<>();
 
     private final AgentCacheManager cacheManager;
 
@@ -44,7 +41,7 @@ public class AgentServiceImpl implements AgentService {
             throw new IllegalArgumentException("AgentId 不能为空");
         }
         log.info("注册 Agent：agentId={}, name={}", agentId, agentDefinition.getName());
-        agentDefinitions.put(agentId, agentDefinition);
+        cacheManager.put(agentDefinition);
         log.info("Agent 注册成功：agentId={}", agentId);
     }
 
@@ -53,9 +50,10 @@ public class AgentServiceImpl implements AgentService {
         if (agentId == null || agentId.trim().isEmpty()) {
             throw new IllegalArgumentException("AgentId 不能为空");
         }
-        AgentDefinition definition = agentDefinitions.get(agentId);
+        Long uid = currentUserId();
+        AgentDefinition definition = cacheManager.get(uid, agentId);
         if (definition == null) {
-            definition = loadFromCache(agentId);
+            definition = cacheManager.getOrLoad(uid, agentId, agentLoader);
         }
         return definition;
     }
@@ -65,8 +63,13 @@ public class AgentServiceImpl implements AgentService {
         if (agentId == null || agentId.trim().isEmpty()) {
             throw new IllegalArgumentException("AgentId 不能为空");
         }
-        AgentDefinition removed = agentDefinitions.remove(agentId);
+        Long uid = currentUserId();
+        AgentDefinition removed = cacheManager.get(uid, agentId);
+        if (removed == null) {
+            removed = cacheManager.getOrLoad(uid, agentId, agentLoader);
+        }
         if (removed != null) {
+            cacheManager.evict(agentId);
             log.info("Agent 已注销：agentId={}", agentId);
             return true;
         }
@@ -129,8 +132,8 @@ public class AgentServiceImpl implements AgentService {
                 .filter(output -> output instanceof StreamingOutput<AgentState>)
                 .map(output -> ((StreamingOutput<AgentState>) output).chunk())
                 .filter(StringUtils::isNotEmpty)
-                .map(chunk -> Map.<String, Object>of("content", chunk))
-                .doOnNext(chunk -> log.trace("Graph 流式输出 token：agentId={}, content={}", agentId, chunk.get("content")))
+                .map(chunk -> Map.<String, Object>of(NodeFields.FieldKey.CONTENT.key(), chunk))
+                .doOnNext(chunk -> log.trace("Graph 流式输出 token：agentId={}, content={}", agentId, chunk.get(NodeFields.FieldKey.CONTENT.key())))
                 .doOnComplete(() -> log.info("Graph 流式执行完成：agentId={}", agentId))
                 .doOnError(e -> log.error("Graph 流式执行错误：agentId={}, error={}", agentId, e.getMessage()));
     }
@@ -154,44 +157,33 @@ public class AgentServiceImpl implements AgentService {
 
     @Override
     public List<AgentDefinition> listAgents() {
-        List<AgentDefinition> agents = new ArrayList<>(agentDefinitions.values());
+        List<AgentDefinition> agents = cacheManager.listAll(currentUserId());
         log.debug("已注册 Agent 数量：{}", agents.size());
         return agents;
     }
 
     @Override
     public void evictRuntimeCache(String agentId) {
-        agentDefinitions.remove(agentId);
-        cacheManager.evictColumn(agentId);
+        cacheManager.evict(agentId);
         log.info("运行时缓存已清除: agentId={}", agentId);
     }
 
     private AgentDefinition getOrLoadAgent(String agentId) {
-        AgentDefinition definition = agentDefinitions.get(agentId);
+        Long uid = currentUserId();
+        AgentDefinition definition = cacheManager.get(uid, agentId);
         if (definition != null) return definition;
 
-        definition = loadFromCache(agentId);
+        definition = cacheManager.getOrLoad(uid, agentId, agentLoader);
         if (definition == null) {
             throw new IllegalStateException("Agent 不存在：" + agentId);
         }
         return definition;
     }
 
-    private AgentDefinition loadFromCache(String agentId) {
-        Long userId = getCurrentUserId();
-        AgentDefinition definition = cacheManager.getOrLoad(userId, agentId, agentLoader);
-        if (definition != null) {
-            agentDefinitions.put(agentId, definition);
-        }
-        return definition;
-    }
-
-    private Long getCurrentUserId() {
+    private static Long currentUserId() {
         try {
-            Long userId = LoginContextHolder.getUserId();
-            return userId != null ? userId : 0L;
+            return LoginContextHolder.getUserId();
         } catch (Exception e) {
-            log.debug("无法获取当前用户ID，使用默认值");
             return 0L;
         }
     }

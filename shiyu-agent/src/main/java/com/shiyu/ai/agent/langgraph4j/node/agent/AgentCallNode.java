@@ -5,6 +5,7 @@ import com.shiyu.ai.agent.langgraph4j.node.BaseNode;
 import com.shiyu.ai.agent.langgraph4j.node.NodeInput;
 import com.shiyu.ai.agent.langgraph4j.node.NodeOutput;
 import com.shiyu.ai.agent.langgraph4j.node.NodeType;
+import com.shiyu.ai.agent.langgraph4j.node.NodeFields.FieldKey;
 import lombok.Getter;
 import lombok.Setter;
 import lombok.extern.slf4j.Slf4j;
@@ -134,8 +135,8 @@ public class AgentCallNode extends BaseNode {
 
             String outputKey = config.getOutputKey() != null ? config.getOutputKey() : "agentResult";
             output.addData(outputKey, result);
-            output.addData("targetAgentId", targetAgentId);
-            output.addData("targetVersion", targetVersion);
+            output.addData(FieldKey.TARGET_AGENT_ID, targetAgentId);
+            output.addData(FieldKey.TARGET_VERSION, targetVersion);
 
             log.info("Agent 调用成功：targetAgentId={}, resultSize={}",
                     targetAgentId, result != null ? result.size() : 0);
@@ -155,11 +156,10 @@ public class AgentCallNode extends BaseNode {
      */
     private String getTargetAgentId(NodeInput input) {
         // 优先使用输入中的配置
-        String targetAgentId = input.getParameter("targetAgentId");
+        String targetAgentId = input.getParameter(FieldKey.TARGET_AGENT_ID);
         if (targetAgentId != null && !targetAgentId.trim().isEmpty()) {
             return targetAgentId;
         }
-        // 使用节点配置
         return config.getTargetAgentId();
     }
 
@@ -168,11 +168,10 @@ public class AgentCallNode extends BaseNode {
      */
     private String getTargetVersion(NodeInput input) {
         // 优先使用输入中的配置
-        String targetVersion = input.getParameter("targetVersion");
+        String targetVersion = input.getParameter(FieldKey.TARGET_VERSION);
         if (targetVersion != null && !targetVersion.trim().isEmpty()) {
             return targetVersion;
         }
-        // 使用节点配置
         return config.getTargetVersion();
     }
 
@@ -198,7 +197,7 @@ public class AgentCallNode extends BaseNode {
             // 没有映射规则时，传递所有参数（排除内部字段）
             for (Map.Entry<String, Object> entry : input.toMap().entrySet()) {
                 String key = entry.getKey();
-                if (!"targetAgentId".equals(key) && !"targetVersion".equals(key)) {
+                if (!FieldKey.TARGET_AGENT_ID.key().equals(key) && !FieldKey.TARGET_VERSION.key().equals(key)) {
                     agentInput.put(key, entry.getValue());
                 }
             }

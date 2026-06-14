@@ -449,7 +449,7 @@ public class AgentAdminServiceImpl implements AgentAdminService {
     }
 
     private void evictAgentCache(String agentId) {
-        cacheManager.evictColumn(agentId);
+        cacheManager.evict(agentId);
         agentService.evictRuntimeCache(agentId);
     }
 

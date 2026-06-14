@@ -5,9 +5,12 @@ import com.shiyu.ai.agent.langgraph4j.node.NodeInput;
 import com.shiyu.ai.agent.langgraph4j.node.NodeOutput;
 import com.shiyu.ai.agent.langgraph4j.node.NodeType;
 import com.shiyu.ai.agent.langgraph4j.node.NodeFields.FieldKey;
+import com.shiyu.ai.common.core.utils.JSONUtils;
 import lombok.Getter;
 import lombok.Setter;
 import lombok.extern.slf4j.Slf4j;
+
+import java.util.Map;
 
 /**
  * 数据转换节点
@@ -153,20 +156,24 @@ public class TransformNode extends BaseNode {
         }
     }
     
-    /**
-     * 解析 JSON 到 Map（简化实现）
-     */
-    private java.util.Map<String, Object> parseJsonToMap(String json) {
-        // TODO: 实际项目应该使用 Jackson 或 Gson
-        return java.util.Map.of("raw", json, "parsed", true);
+    @SuppressWarnings("unchecked")
+    private Map<String, Object> parseJsonToMap(String json) {
+        try {
+            return JSONUtils.parseObject(json, Map.class);
+        } catch (Exception e) {
+            log.warn("JSON 解析失败，返回空 Map: {}", e.getMessage());
+            return Map.of();
+        }
     }
     
-    /**
-     * 转换 Map 到 JSON（简化实现）
-     */
     private String convertMapToJson(String mapData) {
-        // TODO: 实际项目应该使用 Jackson 或 Gson
-        return "{\"data\": \"" + mapData + "\"}";
+        try {
+            Map<String, Object> map = JSONUtils.parseObject(mapData, Map.class);
+            return map != null ? JSONUtils.toJsonString(map) : "{}";
+        } catch (Exception e) {
+            log.warn("Map 转换 JSON 失败，尝试视为 Map 字符串: {}", e.getMessage());
+            return "{\"data\": \"" + mapData + "\"}";
+        }
     }
     
     /**
