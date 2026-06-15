@@ -1,7 +1,7 @@
 package com.shiyu.ai.agent.domain.vo;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
-import com.shiyu.ai.agent.domain.bo.DeptBO;
+import com.shiyu.ai.agent.domain.bo.WorkspaceBO;
 import io.github.linpeilie.annotations.AutoMapper;
 import lombok.Data;
 
@@ -11,11 +11,11 @@ import java.time.LocalDateTime;
 import java.util.List;
 
 /**
- * 部门视图对象
+ * 工作空间视图对象
  */
 @Data
-@AutoMapper(target = DeptBO.class)
-public class DeptVO implements Serializable {
+@AutoMapper(target = WorkspaceBO.class)
+public class WorkspaceVO implements Serializable {
 
     @Serial
     private static final long serialVersionUID = 1L;
@@ -43,5 +43,5 @@ public class DeptVO implements Serializable {
 
     private LocalDateTime updateTime;
 
-    private List<DeptVO> children;
+    private List<WorkspaceVO> children;
 }

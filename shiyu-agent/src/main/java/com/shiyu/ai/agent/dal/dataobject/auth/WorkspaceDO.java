@@ -1,44 +1,44 @@
-package com.shiyu.ai.auth.domain;
+package com.shiyu.ai.agent.dal.dataobject.auth;
 
 import com.mybatisflex.annotation.Id;
+import com.mybatisflex.annotation.KeyType;
 import com.mybatisflex.annotation.Table;
-import com.shiyu.ai.common.core.domain.TenantEntity;
+import com.shiyu.ai.common.core.domain.BaseEntity;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
-
 import java.io.Serial;
 
 /**
- * 部门表 sys_dept
+ * 工作空间数据对象
  */
 @Data
 @EqualsAndHashCode(callSuper = true)
-@Table("sys_dept")
-public class SysDeptDO extends TenantEntity {
+@Table(value = "workspace")
+public class WorkspaceDO extends BaseEntity {
 
     @Serial
     private static final long serialVersionUID = 1L;
 
     /**
-     * 部门ID
+     * 工作空间 ID
      */
-    @Id
-    private Long deptId;
+    @Id(keyType = KeyType.Auto)
+    private Long id;
 
     /**
-     * 父部门ID
+     * 父工作空间 ID
      */
     private Long parentId;
 
     /**
-     * 部门名称
+     * 工作空间名称
      */
-    private String deptName;
+    private String name;
 
     /**
-     * 显示顺序
+     * 排序
      */
-    private Integer orderNum;
+    private Integer order;
 
     /**
      * 负责人
@@ -56,18 +56,17 @@ public class SysDeptDO extends TenantEntity {
     private String email;
 
     /**
-     * 部门状态:1正常,0停用
+     * 状态（1正常 0停用）
      */
     private String status;
 
     /**
-     * 删除标志（0 代表存在 1 代表删除）
+     * 备注
      */
-    private String delFlag;
+    private String remark;
 
     /**
-     * 祖级列表
+     * 删除标志（0：正常 1：已删除）
      */
-    private String ancestors;
-
+    private Integer delFlag;
 }

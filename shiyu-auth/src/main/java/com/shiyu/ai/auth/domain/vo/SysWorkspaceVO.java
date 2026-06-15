@@ -1,6 +1,6 @@
 package com.shiyu.ai.auth.domain.vo;
 
-import com.shiyu.ai.auth.domain.bo.SysDeptBO;
+import com.shiyu.ai.auth.domain.bo.SysWorkspaceBO;
 import com.shiyu.ai.common.excel.annotation.ExcelDictFormat;
 import com.shiyu.ai.common.excel.convert.ExcelDictConvert;
 import io.github.linpeilie.annotations.AutoMapper;
@@ -13,29 +13,29 @@ import java.io.Serializable;
 import java.util.Date;
 
 /**
- * 部门视图对象 sys_dept
+ * 工作空间视图对象 sys_workspace
  */
 @Data
 @ExcelIgnoreUnannotated
-@AutoMapper(target = SysDeptBO.class)
-public class SysDeptVO implements Serializable {
+@AutoMapper(target = SysWorkspaceBO.class)
+public class SysWorkspaceVO implements Serializable {
 
     @Serial
     private static final long serialVersionUID = 1L;
 
     /**
-     * 部门id
+     * 工作空间id
      */
-    @ExcelProperty(value = "部门id")
-    private Long deptId;
+    @ExcelProperty(value = "工作空间id")
+    private Long workspaceId;
 
     /**
-     * 父部门id
+     * 父工作空间id
      */
     private Long parentId;
 
     /**
-     * 父部门名称
+     * 父工作空间名称
      */
     private String parentName;
 
@@ -45,10 +45,10 @@ public class SysDeptVO implements Serializable {
     private String ancestors;
 
     /**
-     * 部门名称
+     * 工作空间名称
      */
-    @ExcelProperty(value = "部门名称")
-    private String deptName;
+    @ExcelProperty(value = "工作空间名称")
+    private String workspaceName;
 
     /**
      * 显示顺序
@@ -74,9 +74,9 @@ public class SysDeptVO implements Serializable {
     private String email;
 
     /**
-     * 部门状态（1正常 0停用）
+     * 工作空间状态（1正常 0停用）
      */
-    @ExcelProperty(value = "部门状态", converter = ExcelDictConvert.class)
+    @ExcelProperty(value = "工作空间状态", converter = ExcelDictConvert.class)
     @ExcelDictFormat(dictType = "sys_normal_disable")
     private String status;
 

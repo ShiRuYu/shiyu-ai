@@ -5,13 +5,13 @@ import com.mybatisflex.annotation.Table;
 import lombok.Data;
 
 /**
- * 角色和部门关联 sys_role_dept
+ * 角色和工作空间关联 sys_role_workspace
  *
  */
 
 @Data
-@Table("sys_role_dept")
-public class SysRoleDeptDO {
+@Table("sys_role_workspace")
+public class SysRoleWorkspaceDO {
 
     /**
      * 角色ID
@@ -20,8 +20,8 @@ public class SysRoleDeptDO {
     private Long roleId;
 
     /**
-     * 部门ID
+     * 工作空间ID
      */
-    private Long deptId;
+    private Long workspaceId;
 
 }

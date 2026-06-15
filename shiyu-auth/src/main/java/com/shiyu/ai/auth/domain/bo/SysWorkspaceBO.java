@@ -6,7 +6,7 @@ import com.shiyu.ai.common.core.utils.TreeBuildUtils;
 import com.shiyu.ai.common.core.validate.AddGroup;
 import com.shiyu.ai.common.core.validate.EditGroup;
 import com.shiyu.ai.common.core.domain.BaseEntity;
-import com.shiyu.ai.auth.domain.SysDeptDO;
+import com.shiyu.ai.auth.domain.SysWorkspaceDO;
 import io.github.linpeilie.annotations.AutoMapper;
 import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.NotBlank;
@@ -19,34 +19,34 @@ import java.util.List;
 import java.io.Serial;
 
 /**
- * 部门业务对象 sys_dept
+ * 工作空间业务对象 sys_workspace
  */
 
 @Data
 @EqualsAndHashCode(callSuper = true)
-@AutoMapper(target = SysDeptDO.class, reverseConvertGenerate = true)
-public class SysDeptBO extends BaseEntity {
+@AutoMapper(target = SysWorkspaceDO.class, reverseConvertGenerate = true)
+public class SysWorkspaceBO extends BaseEntity {
 
     @Serial
     private static final long serialVersionUID = 1L;
 
     /**
-     * 部门id
+     * 工作空间id
      */
-    @NotNull(message = "部门id不能为空", groups = { EditGroup.class })
-    private Long deptId;
+    @NotNull(message = "工作空间id不能为空", groups = { EditGroup.class })
+    private Long workspaceId;
 
     /**
-     * 父部门ID
+     * 父工作空间ID
      */
     private Long parentId;
 
     /**
-     * 部门名称
+     * 工作空间名称
      */
-    @NotBlank(message = "部门名称不能为空", groups = { AddGroup.class, EditGroup.class })
-    @Size(min = 0, max = 30, message = "部门名称长度不能超过{max}个字符")
-    private String deptName;
+    @NotBlank(message = "工作空间名称不能为空", groups = { AddGroup.class, EditGroup.class })
+    @Size(min = 0, max = 30, message = "工作空间名称长度不能超过{max}个字符")
+    private String workspaceName;
 
     /**
      * 显示顺序
@@ -73,25 +73,25 @@ public class SysDeptBO extends BaseEntity {
     private String email;
 
     /**
-     * 部门状态（1正常 0停用）
+     * 工作空间状态（1正常 0停用）
      */
     private String status;
 
     /**
      * 构建前端所需要下拉树结构
      *
-     * @param depts 部门列表
+     * @param workspaces 工作空间列表
      * @return 下拉树结构列表
      */
-    public List<Tree<Long>> buildDeptTreeSelect(List<SysDeptDO> depts) {
-        if (CollUtil.isEmpty(depts)) {
+    public List<Tree<Long>> buildWorkspaceTreeSelect(List<SysWorkspaceDO> workspaces) {
+        if (CollUtil.isEmpty(workspaces)) {
             return CollUtil.newArrayList();
         }
-        return TreeBuildUtils.build(depts, (dept, tree) ->
-                tree.setId(dept.getDeptId())
-                        .setParentId(dept.getParentId())
-                        .setName(dept.getDeptName())
-                        .setWeight(dept.getOrderNum()));
+        return TreeBuildUtils.build(workspaces, (workspace, tree) ->
+                tree.setId(workspace.getWorkspaceId())
+                        .setParentId(workspace.getParentId())
+                        .setName(workspace.getWorkspaceName())
+                        .setWeight(workspace.getOrderNum()));
     }
 
 }

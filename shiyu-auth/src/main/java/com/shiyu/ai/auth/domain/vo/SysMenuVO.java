@@ -91,9 +91,9 @@ public class SysMenuVO implements Serializable {
     private String icon;
 
     /**
-     * 创建部门
+     * 创建工作空间
      */
-    private Long createDept;
+    private Long createWorkspace;
 
     /**
      * 备注

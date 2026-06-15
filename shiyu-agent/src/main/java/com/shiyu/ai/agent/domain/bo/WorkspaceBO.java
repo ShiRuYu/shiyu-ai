@@ -1,6 +1,6 @@
 package com.shiyu.ai.agent.domain.bo;
 
-import com.shiyu.ai.agent.dal.dataobject.auth.DeptDO;
+import com.shiyu.ai.agent.dal.dataobject.auth.WorkspaceDO;
 import io.github.linpeilie.annotations.AutoMapper;
 import lombok.Data;
 
@@ -10,27 +10,27 @@ import java.time.LocalDateTime;
 import java.util.List;
 
 /**
- * 部门业务对象
+ * 工作空间业务对象
  */
 @Data
-@AutoMapper(target = DeptDO.class, reverseConvertGenerate = true)
-public class DeptBO implements Serializable {
+@AutoMapper(target = WorkspaceDO.class, reverseConvertGenerate = true)
+public class WorkspaceBO implements Serializable {
 
     @Serial
     private static final long serialVersionUID = 1L;
 
     /**
-     * 部门 ID
+     * 工作空间 ID
      */
     private Long id;
 
     /**
-     * 父部门 ID
+     * 父工作空间 ID
      */
     private Long parentId;
 
     /**
-     * 部门名称
+     * 工作空间名称
      */
     private String name;
 
@@ -80,7 +80,7 @@ public class DeptBO implements Serializable {
     private LocalDateTime updateTime;
 
     /**
-     * 子部门列表
+     * 子工作空间列表
      */
-    private List<DeptBO> children;
+    private List<WorkspaceBO> children;
 }

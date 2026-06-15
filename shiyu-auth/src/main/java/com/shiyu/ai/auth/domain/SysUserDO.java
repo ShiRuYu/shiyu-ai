@@ -30,9 +30,9 @@ public class SysUserDO extends TenantEntity {
     private Long userId;
 
     /**
-     * 部门ID
+     * 工作空间ID
      */
-    private Long deptId;
+    private Long workspaceId;
 
     /**
      * 用户账号

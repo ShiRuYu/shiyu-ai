@@ -25,8 +25,6 @@ public class AgentDefDO extends BaseEntity {
 
     private String description;
 
-    private Long ownerId;
-
     private String currentVersion;
 
     private String status;

@@ -33,9 +33,9 @@ public class SysUserVO implements Serializable {
     private String tenantId;
 
     /**
-     * 部门ID
+     * 工作空间ID
      */
-    private Long deptId;
+    private Long workspaceId;
 
     /**
      * 用户账号
@@ -116,9 +116,9 @@ public class SysUserVO implements Serializable {
     private Date createTime;
 
     /**
-     * 部门对象
+     * 工作空间对象
      */
-    private SysDeptVO dept;
+    private SysWorkspaceVO workspace;
 
     /**
      * 注册域名

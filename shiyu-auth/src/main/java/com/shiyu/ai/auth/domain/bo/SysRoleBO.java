@@ -63,9 +63,9 @@ public class SysRoleBO extends BaseEntity {
     private Boolean menuCheckStrictly;
 
     /**
-     * 部门树选择项是否关联显示
+     * 工作空间树选择项是否关联显示
      */
-    private Boolean deptCheckStrictly;
+    private Boolean workspaceCheckStrictly;
 
     /**
      * 角色状态（1正常 0停用）
@@ -83,9 +83,9 @@ public class SysRoleBO extends BaseEntity {
     private Long[] menuIds;
 
     /**
-     * 部门组（数据权限）
+     * 工作空间组（数据权限）
      */
-    private Long[] deptIds;
+    private Long[] workspaceIds;
 
     public SysRoleBO(Long roleId) {
         this.roleId = roleId;

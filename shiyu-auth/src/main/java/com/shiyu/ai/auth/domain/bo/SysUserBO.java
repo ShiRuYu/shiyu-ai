@@ -31,9 +31,9 @@ public class SysUserBO extends BaseEntity {
     private Long userId;
 
     /**
-     * 部门 ID
+     * 工作空间 ID
      */
-    private Long deptId;
+    private Long workspaceId;
 
     /**
      * 用户账号

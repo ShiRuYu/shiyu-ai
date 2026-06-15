@@ -1,7 +1,7 @@
 package com.shiyu.ai.agent.domain.request;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
-import com.shiyu.ai.agent.domain.bo.DeptBO;
+import com.shiyu.ai.agent.domain.bo.WorkspaceBO;
 import io.github.linpeilie.annotations.AutoMapper;
 import lombok.Data;
 
@@ -9,23 +9,23 @@ import java.io.Serial;
 import java.io.Serializable;
 
 /**
- * 部门请求对象
+ * 工作空间请求对象
  */
 @Data
-@AutoMapper(target = DeptBO.class, reverseConvertGenerate = false)
-public class DeptRequest implements Serializable {
+@AutoMapper(target = WorkspaceBO.class, reverseConvertGenerate = false)
+public class WorkspaceRequest implements Serializable {
 
     @Serial
     private static final long serialVersionUID = 1L;
 
     /**
-     * 父部门 ID（前端字段名为 pid）
+     * 父工作空间 ID（前端字段名为 pid）
      */
     @JsonProperty("pid")
     private Long parentId;
 
     /**
-     * 部门名称
+     * 工作空间名称
      */
     private String name;
 
