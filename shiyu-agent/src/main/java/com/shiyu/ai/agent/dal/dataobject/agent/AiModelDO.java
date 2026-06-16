@@ -3,7 +3,7 @@ package com.shiyu.ai.agent.dal.dataobject.agent;
 import com.mybatisflex.annotation.Id;
 import com.mybatisflex.annotation.KeyType;
 import com.mybatisflex.annotation.Table;
-import com.shiyu.ai.common.core.domain.BaseEntity;
+import com.shiyu.ai.common.core.domain.TenantEntity;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
 import java.io.Serial;
@@ -14,7 +14,7 @@ import java.io.Serial;
 @Data
 @EqualsAndHashCode(callSuper = true)
 @Table(value = "ai_model")
-public class AiModelDO extends BaseEntity {
+public class AiModelDO extends TenantEntity {
 
     @Serial
     private static final long serialVersionUID = 1L;
@@ -34,6 +34,11 @@ public class AiModelDO extends BaseEntity {
      * 模型名称（如：gpt-4o, deepseek-chat）
      */
     private String modelName;
+
+    /**
+     * 工作空间ID
+     */
+    private Long workspaceId;
 
     /**
      * 模型显示名称

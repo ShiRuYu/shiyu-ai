@@ -10,6 +10,7 @@
             id,
             username,
             password,
+            tenant_id AS tenantId,
             status,
             del_flag AS delFlag,
             create_time AS createTime,
@@ -18,7 +19,8 @@
             gender,
             avatar,
             address,
-            email
+            email,
+            ext_info AS extInfo
         FROM `user`
         WHERE username = #{username}
           AND status = '1'

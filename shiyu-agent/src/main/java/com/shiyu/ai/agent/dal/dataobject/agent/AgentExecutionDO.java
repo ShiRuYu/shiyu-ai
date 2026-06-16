@@ -29,6 +29,8 @@ public class AgentExecutionDO implements Serializable {
 
     private String sessionId;
 
+    private Long tenantId;
+
     private String nodeId;
 
     private String nodeType;

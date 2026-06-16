@@ -3,7 +3,7 @@ package com.shiyu.ai.agent.dal.dataobject.agent;
 import com.mybatisflex.annotation.Id;
 import com.mybatisflex.annotation.KeyType;
 import com.mybatisflex.annotation.Table;
-import com.shiyu.ai.common.core.domain.BaseEntity;
+import com.shiyu.ai.common.core.domain.TenantEntity;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
 import java.io.Serial;
@@ -11,7 +11,7 @@ import java.io.Serial;
 @Data
 @EqualsAndHashCode(callSuper = true)
 @Table(value = "agent_def")
-public class AgentDefDO extends BaseEntity {
+public class AgentDefDO extends TenantEntity {
 
     @Serial
     private static final long serialVersionUID = 1L;
@@ -24,6 +24,8 @@ public class AgentDefDO extends BaseEntity {
     private String name;
 
     private String description;
+
+    private Long workspaceId;
 
     private String currentVersion;
 

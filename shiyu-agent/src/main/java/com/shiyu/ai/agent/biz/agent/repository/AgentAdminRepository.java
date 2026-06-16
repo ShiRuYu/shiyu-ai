@@ -1,6 +1,7 @@
 package com.shiyu.ai.agent.biz.agent.repository;
 
 import com.mybatisflex.core.query.QueryWrapper;
+import com.shiyu.ai.agent.biz.auth.util.TenantWorkspaceHelper;
 import com.shiyu.ai.agent.dal.dataobject.agent.AgentDefDO;
 import com.shiyu.ai.agent.dal.dataobject.agent.AgentVersionDO;
 import com.shiyu.ai.agent.dal.mapper.agent.AgentDefMapper;
@@ -26,6 +27,7 @@ public class AgentAdminRepository {
 
     public Pair<Long, List<AgentDefBO>> selectPage(Number pageNo, Number pageSize, String name, String status) {
         QueryWrapper countWrapper = new QueryWrapper();
+        TenantWorkspaceHelper.applyWorkspaceFilter(countWrapper);
         countWrapper.eq(AgentDefDO::getDelFlag, "0");
         if (StringUtils.isNotBlank(name)) {
             countWrapper.like(AgentDefDO::getName, name);
@@ -36,6 +38,7 @@ public class AgentAdminRepository {
         long count = agentDefMapper.selectCountByQuery(countWrapper);
 
         QueryWrapper queryWrapper = new QueryWrapper();
+        TenantWorkspaceHelper.applyWorkspaceFilter(queryWrapper);
         queryWrapper.eq(AgentDefDO::getDelFlag, "0");
         if (StringUtils.isNotBlank(name)) {
             queryWrapper.like(AgentDefDO::getName, name);
@@ -59,17 +62,16 @@ public class AgentAdminRepository {
 
     public AgentDefBO selectByAgentId(String agentId) {
         QueryWrapper queryWrapper = new QueryWrapper();
+        TenantWorkspaceHelper.applyWorkspaceFilter(queryWrapper);
         queryWrapper.eq(AgentDefDO::getAgentId, agentId);
         queryWrapper.eq(AgentDefDO::getDelFlag, "0");
         AgentDefDO d = agentDefMapper.selectOneByQuery(queryWrapper);
         return MapstructUtils.convert(d, AgentDefBO.class);
     }
 
-    /**
-     * 查询所有启用 Agent（用于下拉选择）
-     */
     public List<AgentDefBO> selectAllActive() {
         QueryWrapper queryWrapper = new QueryWrapper();
+        TenantWorkspaceHelper.applyWorkspaceFilter(queryWrapper);
         queryWrapper.eq(AgentDefDO::getDelFlag, "0");
         queryWrapper.eq(AgentDefDO::getStatus, "1");
         queryWrapper.orderBy(AgentDefDO::getName, true);
@@ -100,6 +102,7 @@ public class AgentAdminRepository {
 
     public List<AgentVersionBO> selectVersionsByAgentId(String agentId) {
         QueryWrapper queryWrapper = new QueryWrapper();
+        TenantWorkspaceHelper.applyWorkspaceFilter(queryWrapper);
         queryWrapper.eq(AgentVersionDO::getAgentId, agentId);
         queryWrapper.eq(AgentVersionDO::getDelFlag, "0");
         queryWrapper.orderBy(AgentVersionDO::getCreateTime, false);
@@ -114,6 +117,7 @@ public class AgentAdminRepository {
 
     public AgentVersionBO selectVersionByAgentIdAndNumber(String agentId, String versionNumber) {
         QueryWrapper queryWrapper = new QueryWrapper();
+        TenantWorkspaceHelper.applyWorkspaceFilter(queryWrapper);
         queryWrapper.eq(AgentVersionDO::getAgentId, agentId);
         queryWrapper.eq(AgentVersionDO::getVersionNumber, versionNumber);
         queryWrapper.eq(AgentVersionDO::getDelFlag, "0");

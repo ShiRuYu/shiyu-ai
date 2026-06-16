@@ -6,28 +6,18 @@ import lombok.Data;
 import java.io.Serial;
 import java.io.Serializable;
 
-/**
- * 角色菜单关联数据对象
- */
 @Data
-@Table(value = "role_menu")
-public class RoleMenuDO implements Serializable {
+@Table(value = "user_workspace_role")
+public class UserWorkspaceRoleDO implements Serializable {
 
     @Serial
     private static final long serialVersionUID = 1L;
 
-    /**
-     * 角色ID
-     */
+    private Long userId;
+
+    private Long workspaceId;
+
     private Long roleId;
 
-    /**
-     * 菜单ID
-     */
-    private Long menuId;
-
-    /**
-     * 租户ID
-     */
     private Long tenantId;
 }

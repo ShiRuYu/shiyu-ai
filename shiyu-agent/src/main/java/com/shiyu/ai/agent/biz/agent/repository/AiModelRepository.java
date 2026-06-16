@@ -1,6 +1,7 @@
 package com.shiyu.ai.agent.biz.agent.repository;
 
 import com.mybatisflex.core.query.QueryWrapper;
+import com.shiyu.ai.agent.biz.auth.util.TenantWorkspaceHelper;
 import com.shiyu.ai.agent.dal.dataobject.agent.AiModelDO;
 import com.shiyu.ai.agent.dal.mapper.agent.AiModelMapper;
 import com.shiyu.ai.agent.domain.bo.AiModelBO;
@@ -13,20 +14,15 @@ import org.springframework.stereotype.Component;
 import java.util.List;
 import java.util.stream.Collectors;
 
-/**
- * AI 模型数据仓储层
- */
 @Component
 public class AiModelRepository {
 
     @Resource
     private AiModelMapper aiModelMapper;
 
-    /**
-     * 按平台分页查询模型
-     */
     public Pair<Long, List<AiModelBO>> selectPage(Long platformId, Number pageNo, Number pageSize) {
         QueryWrapper countWrapper = new QueryWrapper();
+        TenantWorkspaceHelper.applyWorkspaceFilter(countWrapper);
         countWrapper.eq(AiModelDO::getDelFlag, "0");
         if (platformId != null) {
             countWrapper.eq(AiModelDO::getPlatformId, platformId);
@@ -34,6 +30,7 @@ public class AiModelRepository {
         long count = aiModelMapper.selectCountByQuery(countWrapper);
 
         QueryWrapper queryWrapper = new QueryWrapper();
+        TenantWorkspaceHelper.applyWorkspaceFilter(queryWrapper);
         queryWrapper.eq(AiModelDO::getDelFlag, "0");
         if (platformId != null) {
             queryWrapper.eq(AiModelDO::getPlatformId, platformId);
@@ -48,11 +45,9 @@ public class AiModelRepository {
         return Pair.of(count, MapstructUtils.convert(list, AiModelBO.class));
     }
 
-    /**
-     * 查询指定平台下所有启用的模型
-     */
     public List<AiModelBO> selectByPlatformId(Long platformId) {
         QueryWrapper queryWrapper = new QueryWrapper();
+        TenantWorkspaceHelper.applyWorkspaceFilter(queryWrapper);
         queryWrapper.eq(AiModelDO::getPlatformId, platformId);
         queryWrapper.eq(AiModelDO::getDelFlag, "0");
         queryWrapper.eq(AiModelDO::getStatus, "1");
@@ -63,19 +58,14 @@ public class AiModelRepository {
         return MapstructUtils.convert(list, AiModelBO.class);
     }
 
-    /**
-     * 根据 ID 查询
-     */
     public AiModelBO selectById(Long id) {
         AiModelDO modelDO = aiModelMapper.selectOneById(id);
         return MapstructUtils.convert(modelDO, AiModelBO.class);
     }
 
-    /**
-     * 查询平台的默认模型
-     */
     public AiModelBO selectDefaultByPlatformId(Long platformId) {
         QueryWrapper queryWrapper = new QueryWrapper();
+        TenantWorkspaceHelper.applyWorkspaceFilter(queryWrapper);
         queryWrapper.eq(AiModelDO::getPlatformId, platformId);
         queryWrapper.eq(AiModelDO::getIsDefault, "Y");
         queryWrapper.eq(AiModelDO::getDelFlag, "0");
@@ -84,9 +74,6 @@ public class AiModelRepository {
         return MapstructUtils.convert(modelDO, AiModelBO.class);
     }
 
-    /**
-     * 创建
-     */
     public AiModelBO create(AiModelBO bo) {
         AiModelDO modelDO = MapstructUtils.convert(bo, AiModelDO.class);
         aiModelMapper.insertSelective(modelDO);
@@ -94,25 +81,16 @@ public class AiModelRepository {
         return bo;
     }
 
-    /**
-     * 更新
-     */
     public AiModelBO update(AiModelBO bo) {
         AiModelDO modelDO = MapstructUtils.convert(bo, AiModelDO.class);
         aiModelMapper.update(modelDO);
         return bo;
     }
 
-    /**
-     * 删除
-     */
     public void deleteById(Long id) {
         aiModelMapper.deleteById(id);
     }
 
-    /**
-     * 批量删除
-     */
     public void deleteByIds(List<Long> ids) {
         for (Long id : ids) {
             aiModelMapper.deleteById(id);
@@ -121,6 +99,7 @@ public class AiModelRepository {
 
     public List<IdNameOptionVO> selectOptions(Long platformId) {
         QueryWrapper queryWrapper = new QueryWrapper();
+        TenantWorkspaceHelper.applyWorkspaceFilter(queryWrapper);
         queryWrapper.eq(AiModelDO::getDelFlag, "0");
         queryWrapper.eq(AiModelDO::getStatus, "1");
         if (platformId != null) {
@@ -136,11 +115,9 @@ public class AiModelRepository {
                 .collect(Collectors.toList());
     }
 
-    /**
-     * 清除平台下其他模型的默认标记
-     */
     public void clearDefaultExcept(Long platformId, Long excludeId) {
         QueryWrapper queryWrapper = new QueryWrapper();
+        TenantWorkspaceHelper.applyWorkspaceFilter(queryWrapper);
         queryWrapper.eq(AiModelDO::getPlatformId, platformId);
         queryWrapper.eq(AiModelDO::getIsDefault, "Y");
         if (excludeId != null) {

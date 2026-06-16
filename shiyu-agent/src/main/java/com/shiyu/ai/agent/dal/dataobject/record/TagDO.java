@@ -3,7 +3,7 @@ package com.shiyu.ai.agent.dal.dataobject.record;
 import com.mybatisflex.annotation.Id;
 import com.mybatisflex.annotation.KeyType;
 import com.mybatisflex.annotation.Table;
-import com.shiyu.ai.common.core.domain.BaseEntity;
+import com.shiyu.ai.common.core.domain.TenantEntity;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
 import java.io.Serial;
@@ -14,7 +14,7 @@ import java.io.Serial;
 @Data
 @EqualsAndHashCode(callSuper = true)
 @Table(value = "tag")
-public class TagDO extends BaseEntity {
+public class TagDO extends TenantEntity {
 
     @Serial
     private static final long serialVersionUID = 1L;

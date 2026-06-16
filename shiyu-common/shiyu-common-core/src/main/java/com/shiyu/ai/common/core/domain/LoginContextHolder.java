@@ -2,6 +2,8 @@ package com.shiyu.ai.common.core.domain;
 
 import com.shiyu.ai.common.core.enums.UserTypeEnum;
 
+import java.util.List;
+
 /**
  * 登录上下文持有者
  * 提供统一的用户上下文存取操作（静态工具类）
@@ -48,5 +50,25 @@ public final class LoginContextHolder {
 
     public static boolean isLogin() {
         return getLoginUser() != null;
+    }
+
+    public static Long getTenantId() {
+        LoginUser user = getLoginUser();
+        return user != null ? user.getTenantId() : null;
+    }
+
+    public static Long getCurrentWorkspaceId() {
+        LoginUser user = getLoginUser();
+        return user != null ? user.getCurrentWorkspaceId() : null;
+    }
+
+    public static List<Long> getWorkspaceIds() {
+        LoginUser user = getLoginUser();
+        return user != null ? user.getWorkspaceIds() : null;
+    }
+
+    public static boolean isSuperAdmin() {
+        LoginUser user = getLoginUser();
+        return user != null && user.isSuperAdmin();
     }
 }

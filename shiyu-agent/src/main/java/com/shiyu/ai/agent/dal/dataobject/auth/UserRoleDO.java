@@ -25,4 +25,9 @@ public class UserRoleDO implements Serializable {
      * 角色ID
      */
     private Long roleId;
+
+    /**
+     * 租户ID
+     */
+    private Long tenantId;
 }

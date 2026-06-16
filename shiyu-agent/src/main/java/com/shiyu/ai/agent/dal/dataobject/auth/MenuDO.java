@@ -3,7 +3,7 @@ package com.shiyu.ai.agent.dal.dataobject.auth;
 import com.mybatisflex.annotation.Id;
 import com.mybatisflex.annotation.KeyType;
 import com.mybatisflex.annotation.Table;
-import com.shiyu.ai.common.core.domain.BaseEntity;
+import com.shiyu.ai.common.core.domain.TenantEntity;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
 import java.io.Serial;
@@ -14,7 +14,7 @@ import java.io.Serial;
 @Data
 @EqualsAndHashCode(callSuper = true)
 @Table(value = "menu")
-public class MenuDO extends BaseEntity {
+public class MenuDO extends TenantEntity {
 
     @Serial
     private static final long serialVersionUID = 1L;

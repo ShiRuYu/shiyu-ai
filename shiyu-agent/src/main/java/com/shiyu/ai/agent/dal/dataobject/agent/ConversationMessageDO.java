@@ -25,6 +25,8 @@ public class ConversationMessageDO implements Serializable {
 
     private String agentId;
 
+    private Long tenantId;
+
     private String role;
 
     private String content;

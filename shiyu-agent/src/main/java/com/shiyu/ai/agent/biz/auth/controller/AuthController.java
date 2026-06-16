@@ -3,11 +3,13 @@ package com.shiyu.ai.agent.biz.auth.controller;
 import com.shiyu.ai.agent.domain.request.LoginRequest;
 import com.shiyu.ai.agent.domain.vo.LoginResponseVO;
 import com.shiyu.ai.agent.biz.auth.service.AuthService;
+import com.shiyu.ai.agent.domain.vo.WorkspaceContextVO;
 import com.shiyu.ai.common.core.api.Result;
 import com.shiyu.ai.common.core.domain.LoginContextHolder;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 
@@ -130,6 +132,54 @@ public class AuthController {
         } else {
             return Result.fail("切换角色失败");
         }
+    }
+
+    /**
+     * 切换当前租户
+     * POST /auth/switch-tenant
+     */
+    @PostMapping("/switch-tenant")
+    public Result<List<WorkspaceContextVO>> switchTenant(@RequestBody Map<String, Long> body) {
+        log.info("收到切换租户请求");
+        Long userId = LoginContextHolder.getUserId();
+        if (userId == null) return Result.fail("用户未登录");
+        Long tenantId = body.get("tenantId");
+        if (tenantId == null) return Result.fail("tenantId 不能为空");
+        boolean success = authService.switchCurrentTenant(userId, tenantId);
+        if (success) {
+            List<WorkspaceContextVO> workspaces = authService.getUserWorkspaces(userId);
+            return Result.success(workspaces);
+        }
+        return Result.fail("切换租户失败");
+    }
+
+    /**
+     * 切换当前工作空间
+     * POST /auth/switch-workspace
+     */
+    @PostMapping("/switch-workspace")
+    public Result<Void> switchWorkspace(@RequestBody Map<String, Object> body) {
+        log.info("收到切换工作空间请求");
+        Long userId = LoginContextHolder.getUserId();
+        if (userId == null) return Result.fail("用户未登录");
+        Long workspaceId = body.get("workspaceId") != null
+                ? ((Number) body.get("workspaceId")).longValue() : null;
+        boolean success = authService.switchCurrentWorkspace(userId, workspaceId);
+        if (success) return Result.success();
+        return Result.fail("切换工作空间失败");
+    }
+
+    /**
+     * 获取用户工作空间列表
+     * GET /auth/workspaces
+     */
+    @GetMapping("/workspaces")
+    public Result<List<WorkspaceContextVO>> getUserWorkspaces() {
+        log.info("获取用户工作空间列表");
+        Long userId = LoginContextHolder.getUserId();
+        if (userId == null) return Result.fail("用户未登录");
+        List<WorkspaceContextVO> workspaces = authService.getUserWorkspaces(userId);
+        return Result.success(workspaces);
     }
 
     /**

@@ -1,6 +1,7 @@
 package com.shiyu.ai.agent.biz.auth.service;
 
 import com.shiyu.ai.agent.domain.vo.LoginResponseVO;
+import com.shiyu.ai.agent.domain.vo.WorkspaceContextVO;
 
 import java.util.List;
 
@@ -61,4 +62,19 @@ public interface AuthService {
      * @return 是否成功
      */
     boolean switchCurrentRole(Long userId, Long roleId);
+
+    /**
+     * 切换当前租户
+     */
+    boolean switchCurrentTenant(Long userId, Long tenantId);
+
+    /**
+     * 切换当前工作空间
+     */
+    boolean switchCurrentWorkspace(Long userId, Long workspaceId);
+
+    /**
+     * 获取用户当前租户下的工作空间列表
+     */
+    List<WorkspaceContextVO> getUserWorkspaces(Long userId);
 }

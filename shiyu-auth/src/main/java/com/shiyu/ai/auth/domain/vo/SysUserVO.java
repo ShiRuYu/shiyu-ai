@@ -30,7 +30,7 @@ public class SysUserVO implements Serializable {
     /**
      * 租户ID
      */
-    private String tenantId;
+    private Long tenantId;
 
     /**
      * 工作空间ID

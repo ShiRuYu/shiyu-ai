@@ -25,4 +25,9 @@ public class RecordTagDO implements Serializable {
      * 标签ID
      */
     private Long tagId;
+
+    /**
+     * 租户ID
+     */
+    private Long tenantId;
 }

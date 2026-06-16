@@ -4,7 +4,9 @@ import lombok.Data;
 
 import java.io.Serial;
 import java.io.Serializable;
+import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 
 /**
  * 登录响应数据 - 符合 API 文档规范
@@ -59,4 +61,24 @@ public class LoginResponseVO implements Serializable {
      * 过期时间（秒）
      */
     private Long expiresIn;
+
+    /**
+     * 当前租户ID
+     */
+    private Long tenantId;
+
+    /**
+     * 当前租户名称
+     */
+    private String tenantName;
+
+    /**
+     * 可用租户列表
+     */
+    private List<Map<String, Object>> tenants;
+
+    /**
+     * 用户所属空间及角色列表
+     */
+    private List<WorkspaceContextVO> workspaces;
 }

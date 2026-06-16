@@ -1,10 +1,17 @@
 package com.shiyu.ai.agent.interceptor;
 
+import com.shiyu.ai.agent.dal.dataobject.auth.RoleDO;
+import com.shiyu.ai.agent.dal.dataobject.auth.UserDO;
+import com.shiyu.ai.agent.dal.dataobject.auth.UserWorkspaceRoleDO;
+import com.shiyu.ai.agent.dal.mapper.auth.RoleMapper;
+import com.shiyu.ai.agent.dal.mapper.auth.UserMapper;
+import com.shiyu.ai.agent.dal.mapper.auth.UserWorkspaceRoleMapper;
 import com.shiyu.ai.agent.utils.SaTokenHelper;
 import com.shiyu.ai.common.core.domain.LoginContextHolder;
 import com.shiyu.ai.common.core.domain.LoginUser;
 import com.shiyu.ai.common.core.enums.DeviceTypeEnum;
 import com.shiyu.ai.common.core.enums.UserTypeEnum;
+import com.shiyu.ai.common.core.utils.JSONUtils;
 import jakarta.servlet.DispatcherType;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
@@ -13,79 +20,179 @@ import org.jspecify.annotations.NonNull;
 import org.springframework.stereotype.Component;
 import org.springframework.web.servlet.HandlerInterceptor;
 
-/**
- * 用户上下文拦截器
- * 将 Sa-Token 的登录信息填充到 UserGlobalContext 中
- * 使得后续业务逻辑可以通过 LoginContextHolder 获取当前登录用户信息
- */
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
+import java.util.stream.Collectors;
+
 @Slf4j
 @Component
 public class UserContextInterceptor implements HandlerInterceptor {
 
+    private final UserMapper userMapper;
+    private final UserWorkspaceRoleMapper userWorkspaceRoleMapper;
+    private final RoleMapper roleMapper;
+
+    public UserContextInterceptor(UserMapper userMapper, UserWorkspaceRoleMapper userWorkspaceRoleMapper,
+            RoleMapper roleMapper) {
+        this.userMapper = userMapper;
+        this.userWorkspaceRoleMapper = userWorkspaceRoleMapper;
+        this.roleMapper = roleMapper;
+    }
+
     @Override
     public boolean preHandle(HttpServletRequest request, @NonNull HttpServletResponse response, @NonNull Object handler) throws Exception {
-        // OPTIONS 请求直接放行（CORS 预检）
         if ("OPTIONS".equalsIgnoreCase(request.getMethod())) {
             return true;
         }
 
-        // 异步派发（如 SSE）不重新设置上下文，避免覆盖控制器线程已设置的值
         if (request.getDispatcherType() == DispatcherType.ASYNC) {
             return true;
         }
 
         try {
-            // 检查是否已登录
             SaTokenHelper helper = SaTokenHelper.getInstance();
             if (!helper.isFrameworkLogin()) {
                 log.debug("用户未登录，跳过用户上下文设置");
                 return true;
             }
 
-            // 从 Sa-Token 获取用户 ID
             Long userId = SaTokenHelper.getCurrentUserId();
-            
-            // 构建 LoginUser 对象
+
             LoginUser loginUser = new LoginUser();
             loginUser.setUserId(userId);
             loginUser.setToken(SaTokenHelper.getCurrentToken());
-            loginUser.setUserType(UserTypeEnum.SYS_USER); // 默认系统用户类型
+            loginUser.setUserType(UserTypeEnum.SYS_USER);
             loginUser.setLoginTime(System.currentTimeMillis());
             loginUser.setExpireTime(helper.getTokenTimeout());
             loginUser.setIpaddr(getClientIp(request));
-            loginUser.setUsername(String.valueOf(userId)); // 使用 userId 作为 username
-            
-            // 设置设备信息（可以从 User-Agent 解析）
+
             String userAgent = request.getHeader("User-Agent");
             if (userAgent != null) {
                 loginUser.setBrowser(parseBrowser(userAgent));
                 loginUser.setOs(parseOS(userAgent));
             }
-            
-            // 将 LoginUser 设置到 UserGlobalContext
+
+            // 加载租户和空间上下文
+            loadTenantWorkspaceContext(userId, loginUser);
+
             LoginContextHolder.setContext(loginUser);
-            
-            log.debug("用户上下文设置成功: userId={}, uri={}", userId, request.getRequestURI());
-            
+
+            log.debug("用户上下文设置成功: userId={}, tenantId={}, workspaceId={}, uri={}",
+                    userId, loginUser.getTenantId(), loginUser.getCurrentWorkspaceId(), request.getRequestURI());
+
             return true;
-            
+
         } catch (Exception e) {
             log.warn("设置用户上下文失败: uri={}, error={}", request.getRequestURI(), e.getMessage());
-            // 不抛出异常，避免影响正常业务流程
             return true;
+        }
+    }
+
+    private void loadTenantWorkspaceContext(Long userId, LoginUser loginUser) {
+        try {
+            UserDO user = userMapper.selectOneById(userId);
+            if (user == null) return;
+
+            loginUser.setUsername(user.getUsername());
+            loginUser.setNickName(user.getNickName());
+            loginUser.setAvatar(user.getAvatar());
+
+            // 解析 ext_info 获取上次保存的租户/空间偏好
+            Long currentTenantId = null;
+            Long currentWorkspaceId = null;
+            if (user.getExtInfo() != null && !user.getExtInfo().isEmpty()) {
+                try {
+                    Map<String, Object> extInfo = JSONUtils.parseObject(user.getExtInfo(), Map.class);
+                    if (extInfo != null) {
+                        Object tenantObj = extInfo.get("currentTenantId");
+                        if (tenantObj instanceof Number) {
+                            currentTenantId = ((Number) tenantObj).longValue();
+                        }
+                        Object wsObj = extInfo.get("currentWorkspaceId");
+                        if (wsObj instanceof Number) {
+                            currentWorkspaceId = ((Number) wsObj).longValue();
+                        }
+                    }
+                } catch (Exception ignored) {
+                }
+            }
+
+            // 查 user_workspace_role
+            List<UserWorkspaceRoleDO> uwrList = userWorkspaceRoleMapper.selectByUserId(userId);
+
+            if (uwrList == null || uwrList.isEmpty()) {
+                log.warn("用户 {} 未分配任何空间", userId);
+                loginUser.setWorkspaceIds(new ArrayList<>());
+                loginUser.setWorkspaceRoleMap(new HashMap<>());
+                return;
+            }
+
+            // 按当前租户过滤（如果有偏好）
+            Long effectiveTenantId = currentTenantId;
+            if (effectiveTenantId == null && user.getTenantId() != null) {
+                effectiveTenantId = user.getTenantId();
+            }
+            // 如果两者都无，取第一条记录的 tenant_id
+            if (effectiveTenantId == null && !uwrList.isEmpty()) {
+                effectiveTenantId = uwrList.get(0).getTenantId();
+            }
+
+            final Long filterTenantId = effectiveTenantId;
+            List<UserWorkspaceRoleDO> filtered = uwrList;
+            if (filterTenantId != null) {
+                filtered = uwrList.stream()
+                        .filter(r -> filterTenantId.equals(r.getTenantId()))
+                        .collect(Collectors.toList());
+                if (filtered.isEmpty()) {
+                    filtered = uwrList; // 回退到全部
+                }
+            }
+
+            // 构建 workspaceIds 和 workspaceRoleMap
+            List<Long> workspaceIds = filtered.stream()
+                    .map(UserWorkspaceRoleDO::getWorkspaceId)
+                    .distinct()
+                    .collect(Collectors.toList());
+
+            // 批量加载角色 code
+            Set<Long> roleIds = filtered.stream()
+                    .map(UserWorkspaceRoleDO::getRoleId)
+                    .collect(Collectors.toSet());
+            Map<Long, String> roleCodeMap = new HashMap<>();
+            for (Long roleId : roleIds) {
+                RoleDO role = roleMapper.selectOneById(roleId);
+                if (role != null) {
+                    roleCodeMap.put(roleId, role.getCode());
+                }
+            }
+
+            Map<Long, String> workspaceRoleMap = new HashMap<>();
+            for (UserWorkspaceRoleDO uwr : filtered) {
+                String code = roleCodeMap.get(uwr.getRoleId());
+                if (code != null) {
+                    workspaceRoleMap.putIfAbsent(uwr.getWorkspaceId(), code);
+                }
+            }
+
+            loginUser.setTenantId(filterTenantId);
+            loginUser.setCurrentWorkspaceId(currentWorkspaceId);
+            loginUser.setWorkspaceIds(workspaceIds);
+            loginUser.setWorkspaceRoleMap(workspaceRoleMap);
+
+        } catch (Exception e) {
+            log.warn("加载租户/空间上下文失败: userId={}, error={}", userId, e.getMessage());
         }
     }
 
     @Override
     public void afterCompletion(HttpServletRequest request, HttpServletResponse response, Object handler, Exception ex) throws Exception {
-        // 请求完成后清理用户上下文，防止内存泄漏
         LoginContextHolder.clearContext();
         log.debug("用户上下文已清理: uri={}", request.getRequestURI());
     }
 
-    /**
-     * 获取客户端 IP 地址
-     */
     private String getClientIp(HttpServletRequest request) {
         String ip = request.getHeader("X-Forwarded-For");
         if (ip == null || ip.isEmpty() || "unknown".equalsIgnoreCase(ip)) {
@@ -100,7 +207,6 @@ public class UserContextInterceptor implements HandlerInterceptor {
         if (ip == null || ip.isEmpty() || "unknown".equalsIgnoreCase(ip)) {
             ip = request.getRemoteAddr();
         }
-        // 对于通过多个代理的情况，第一个 IP 为客户端真实 IP，多个 IP 按照 ',' 分割
         if (ip != null && ip.length() > 15) {
             if (ip.indexOf(",") > 0) {
                 ip = ip.substring(0, ip.indexOf(","));
@@ -109,39 +215,21 @@ public class UserContextInterceptor implements HandlerInterceptor {
         return ip;
     }
 
-    /**
-     * 解析浏览器类型
-     */
     private String parseBrowser(String userAgent) {
-        if (userAgent.contains("Chrome")) {
-            return "Chrome";
-        } else if (userAgent.contains("Firefox")) {
-            return "Firefox";
-        } else if (userAgent.contains("Safari")) {
-            return "Safari";
-        } else if (userAgent.contains("Edge")) {
-            return "Edge";
-        } else if (userAgent.contains("MSIE") || userAgent.contains("Trident")) {
-            return "IE";
-        }
+        if (userAgent.contains("Chrome")) return "Chrome";
+        else if (userAgent.contains("Firefox")) return "Firefox";
+        else if (userAgent.contains("Safari")) return "Safari";
+        else if (userAgent.contains("Edge")) return "Edge";
+        else if (userAgent.contains("MSIE") || userAgent.contains("Trident")) return "IE";
         return "Unknown";
     }
 
-    /**
-     * 解析操作系统类型
-     */
     private DeviceTypeEnum parseOS(String userAgent) {
-        if (userAgent.contains("Windows")) {
-            return DeviceTypeEnum.WINDOWS;
-        } else if (userAgent.contains("Mac OS")) {
-            return DeviceTypeEnum.MAC;
-        } else if (userAgent.contains("Linux")) {
-            return DeviceTypeEnum.LINUX;
-        } else if (userAgent.contains("Android")) {
-            return DeviceTypeEnum.ANDROID;
-        } else if (userAgent.contains("iPhone") || userAgent.contains("iPad")) {
-            return DeviceTypeEnum.IOS;
-        }
+        if (userAgent.contains("Windows")) return DeviceTypeEnum.WINDOWS;
+        else if (userAgent.contains("Mac OS")) return DeviceTypeEnum.MAC;
+        else if (userAgent.contains("Linux")) return DeviceTypeEnum.LINUX;
+        else if (userAgent.contains("Android")) return DeviceTypeEnum.ANDROID;
+        else if (userAgent.contains("iPhone") || userAgent.contains("iPad")) return DeviceTypeEnum.IOS;
         return DeviceTypeEnum.UNKNOWN;
     }
 }

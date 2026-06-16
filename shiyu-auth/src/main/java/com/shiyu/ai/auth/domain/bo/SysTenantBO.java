@@ -32,9 +32,9 @@ public class SysTenantBO extends BaseEntity {
     private Long id;
 
     /**
-     * 租户编号
+     * 租户编码
      */
-    private String tenantId;
+    private String code;
 
     /**
      * 联系人

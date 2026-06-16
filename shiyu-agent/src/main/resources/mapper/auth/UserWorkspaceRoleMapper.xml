@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.shiyu.ai.agent.dal.mapper.auth.UserWorkspaceRoleMapper">
+
+    <select id="selectByUserId" resultType="com.shiyu.ai.agent.dal.dataobject.auth.UserWorkspaceRoleDO">
+        SELECT
+            user_id AS userId,
+            workspace_id AS workspaceId,
+            role_id AS roleId,
+            tenant_id AS tenantId
+        FROM user_workspace_role
+        WHERE user_id = #{userId}
+    </select>
+
+</mapper>

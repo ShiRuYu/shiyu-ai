@@ -31,10 +31,10 @@ public class SysTenantVO implements Serializable {
     private Long id;
 
     /**
-     * 租户编号
+     * 租户编码
      */
-    @ExcelProperty(value = "租户编号")
-    private String tenantId;
+    @ExcelProperty(value = "租户编码")
+    private String code;
 
     /**
      * 联系人

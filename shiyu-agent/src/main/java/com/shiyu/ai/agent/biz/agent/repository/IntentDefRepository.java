@@ -2,6 +2,7 @@ package com.shiyu.ai.agent.biz.agent.repository;
 
 import cn.hutool.json.JSONUtil;
 import com.mybatisflex.core.query.QueryWrapper;
+import com.shiyu.ai.agent.biz.auth.util.TenantWorkspaceHelper;
 import com.shiyu.ai.agent.dal.dataobject.agent.IntentDefDO;
 import com.shiyu.ai.agent.dal.mapper.agent.IntentDefMapper;
 import com.shiyu.ai.agent.domain.bo.IntentDefBO;
@@ -22,6 +23,7 @@ public class IntentDefRepository {
 
     public Pair<Long, List<IntentDefBO>> selectPage(Number pageNo, Number pageSize, String agentId, String name, String code, String category) {
         QueryWrapper countWrapper = new QueryWrapper();
+        TenantWorkspaceHelper.applyWorkspaceFilter(countWrapper);
         countWrapper.eq(IntentDefDO::getDelFlag, "0");
         if (agentId != null) countWrapper.eq(IntentDefDO::getAgentId, agentId);
         if (name != null) countWrapper.like(IntentDefDO::getName, name);
@@ -30,6 +32,7 @@ public class IntentDefRepository {
         long count = intentDefMapper.selectCountByQuery(countWrapper);
 
         QueryWrapper queryWrapper = new QueryWrapper();
+        TenantWorkspaceHelper.applyWorkspaceFilter(queryWrapper);
         queryWrapper.eq(IntentDefDO::getDelFlag, "0");
         if (agentId != null) queryWrapper.eq(IntentDefDO::getAgentId, agentId);
         if (name != null) queryWrapper.like(IntentDefDO::getName, name);
@@ -51,6 +54,7 @@ public class IntentDefRepository {
     public List<IntentDefBO> selectByAgentId(String agentId) {
         // WHERE del_flag='0' AND enabled='1' AND status='1' AND (agent_id=? OR agent_id='default')
         QueryWrapper qw = new QueryWrapper();
+        TenantWorkspaceHelper.applyWorkspaceFilter(qw);
         qw.eq(IntentDefDO::getDelFlag, "0")
           .eq(IntentDefDO::getEnabled, "1")
           .eq(IntentDefDO::getStatus, "1")
@@ -67,6 +71,7 @@ public class IntentDefRepository {
     public List<IntentDefBO> selectByCategory(String agentId, String category) {
         // WHERE del_flag='0' AND enabled='1' AND status='1' AND category=? AND (agent_id=? OR agent_id='default')
         QueryWrapper qw = new QueryWrapper();
+        TenantWorkspaceHelper.applyWorkspaceFilter(qw);
         qw.eq(IntentDefDO::getDelFlag, "0")
           .eq(IntentDefDO::getEnabled, "1")
           .eq(IntentDefDO::getStatus, "1")
@@ -118,6 +123,7 @@ public class IntentDefRepository {
      */
     public List<IdNameOptionVO> selectAllOptions() {
         QueryWrapper qw = new QueryWrapper();
+        TenantWorkspaceHelper.applyWorkspaceFilter(qw);
         qw.eq(IntentDefDO::getDelFlag, "0")
           .eq(IntentDefDO::getEnabled, "1")
           .eq(IntentDefDO::getStatus, "1")

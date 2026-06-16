@@ -3,7 +3,7 @@ package com.shiyu.ai.agent.dal.dataobject.agent;
 import com.mybatisflex.annotation.Id;
 import com.mybatisflex.annotation.KeyType;
 import com.mybatisflex.annotation.Table;
-import com.shiyu.ai.common.core.domain.BaseEntity;
+import com.shiyu.ai.common.core.domain.TenantEntity;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
 import java.io.Serial;
@@ -14,7 +14,7 @@ import java.io.Serial;
 @Data
 @EqualsAndHashCode(callSuper = true)
 @Table(value = "ai_platform")
-public class AiPlatformDO extends BaseEntity {
+public class AiPlatformDO extends TenantEntity {
 
     @Serial
     private static final long serialVersionUID = 1L;
@@ -34,6 +34,11 @@ public class AiPlatformDO extends BaseEntity {
      * 平台编码（如：OPENAI, DEEPSEEK, OLLAMA, OPENROUTER, SILICON_FLOW）
      */
     private String code;
+
+    /**
+     * 工作空间ID
+     */
+    private Long workspaceId;
 
     /**
      * Base URL

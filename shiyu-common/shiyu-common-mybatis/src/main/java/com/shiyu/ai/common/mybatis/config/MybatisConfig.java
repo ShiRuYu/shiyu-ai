@@ -2,7 +2,6 @@ package com.shiyu.ai.common.mybatis.config;
 
 import com.mybatisflex.annotation.KeyType;
 import com.mybatisflex.core.FlexGlobalConfig;
-import com.shiyu.ai.common.core.domain.BaseEntity;
 import com.shiyu.ai.common.mybatis.handler.AuditFieldListener;
 import com.shiyu.ai.common.mybatis.handler.MybatisExceptionHandler;
 import org.springframework.beans.factory.annotation.Value;
@@ -39,8 +38,8 @@ public class MybatisConfig {
 
         // 注册审计字段自动填充监听器
         AuditFieldListener auditListener = new AuditFieldListener();
-        config.registerInsertListener(auditListener, BaseEntity.class);
-        config.registerUpdateListener(auditListener, BaseEntity.class);
+        config.registerInsertListener(auditListener, Object.class);
+        config.registerUpdateListener(auditListener, Object.class);
 
         return config;
     }

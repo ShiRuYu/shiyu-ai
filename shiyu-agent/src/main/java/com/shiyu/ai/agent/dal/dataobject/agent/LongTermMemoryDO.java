@@ -23,6 +23,8 @@ public class LongTermMemoryDO implements Serializable {
 
     private String agentId;
 
+    private Long tenantId;
+
     private String category;
 
     private String memoryKey;

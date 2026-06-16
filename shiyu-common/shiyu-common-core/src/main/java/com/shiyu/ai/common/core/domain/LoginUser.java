@@ -8,6 +8,7 @@ import lombok.NoArgsConstructor;
 
 import java.io.Serial;
 import java.io.Serializable;
+import java.util.List;
 import java.util.Map;
 
 /**
@@ -85,5 +86,30 @@ public class LoginUser implements Serializable {
      * 扩展信息
      */
     private Map<String, Object> extInfo = Maps.newHashMap();
+
+    /**
+     * 当前租户ID
+     */
+    private Long tenantId;
+
+    /**
+     * 当前空间ID（null表示全部空间）
+     */
+    private Long currentWorkspaceId;
+
+    /**
+     * 用户所属的所有空间ID列表
+     */
+    private List<Long> workspaceIds;
+
+    /**
+     * 空间-角色映射：{workspaceId -> roleCode}
+     */
+    private Map<Long, String> workspaceRoleMap;
+
+    public boolean isSuperAdmin() {
+        return workspaceRoleMap != null
+            && workspaceRoleMap.values().stream().anyMatch("super"::equals);
+    }
 
 }

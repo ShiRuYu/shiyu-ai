@@ -1,6 +1,7 @@
 package com.shiyu.ai.agent.biz.agent.repository;
 
 import com.mybatisflex.core.query.QueryWrapper;
+import com.shiyu.ai.agent.biz.auth.util.TenantWorkspaceHelper;
 import com.shiyu.ai.agent.dal.dataobject.agent.AiPlatformDO;
 import com.shiyu.ai.agent.dal.mapper.agent.AiPlatformMapper;
 import com.shiyu.ai.agent.domain.bo.AiPlatformBO;
@@ -13,26 +14,22 @@ import org.springframework.stereotype.Component;
 import java.util.List;
 import java.util.stream.Collectors;
 
-/**
- * AI 平台数据仓储层
- */
 @Component
 public class AiPlatformRepository {
 
     @Resource
     private AiPlatformMapper aiPlatformMapper;
 
-    /**
-     * 分页查询
-     */
     public Pair<Long, List<AiPlatformBO>> selectPage(Number pageNo, Number pageSize, String name, String code) {
         QueryWrapper countWrapper = new QueryWrapper();
+        TenantWorkspaceHelper.applyWorkspaceFilter(countWrapper);
         countWrapper.eq(AiPlatformDO::getDelFlag, "0");
         if (name != null) countWrapper.like(AiPlatformDO::getName, name);
         if (code != null) countWrapper.like(AiPlatformDO::getCode, code);
         long count = aiPlatformMapper.selectCountByQuery(countWrapper);
 
         QueryWrapper queryWrapper = new QueryWrapper();
+        TenantWorkspaceHelper.applyWorkspaceFilter(queryWrapper);
         queryWrapper.eq(AiPlatformDO::getDelFlag, "0");
         if (name != null) queryWrapper.like(AiPlatformDO::getName, name);
         if (code != null) queryWrapper.like(AiPlatformDO::getCode, code);
@@ -46,11 +43,9 @@ public class AiPlatformRepository {
         return Pair.of(count, MapstructUtils.convert(list, AiPlatformBO.class));
     }
 
-    /**
-     * 查询所有启用的平台
-     */
     public List<AiPlatformBO> selectAllEnabled() {
         QueryWrapper queryWrapper = new QueryWrapper();
+        TenantWorkspaceHelper.applyWorkspaceFilter(queryWrapper);
         queryWrapper.eq(AiPlatformDO::getDelFlag, "0");
         queryWrapper.eq(AiPlatformDO::getStatus, "1");
         queryWrapper.orderBy(AiPlatformDO::getIsDefault, true);
@@ -59,30 +54,23 @@ public class AiPlatformRepository {
         return MapstructUtils.convert(list, AiPlatformBO.class);
     }
 
-    /**
-     * 根据 ID 查询
-     */
     public AiPlatformBO selectById(Long id) {
         AiPlatformDO platformDO = aiPlatformMapper.selectOneById(id);
         return MapstructUtils.convert(platformDO, AiPlatformBO.class);
     }
 
-    /**
-     * 根据编码查询
-     */
     public AiPlatformBO selectByCode(String code) {
         QueryWrapper queryWrapper = new QueryWrapper();
+        TenantWorkspaceHelper.applyWorkspaceFilter(queryWrapper);
         queryWrapper.eq(AiPlatformDO::getCode, code);
         queryWrapper.eq(AiPlatformDO::getDelFlag, "0");
         AiPlatformDO platformDO = aiPlatformMapper.selectOneByQuery(queryWrapper);
         return MapstructUtils.convert(platformDO, AiPlatformBO.class);
     }
 
-    /**
-     * 查询默认平台
-     */
     public AiPlatformBO selectDefault() {
         QueryWrapper queryWrapper = new QueryWrapper();
+        TenantWorkspaceHelper.applyWorkspaceFilter(queryWrapper);
         queryWrapper.eq(AiPlatformDO::getIsDefault, "Y");
         queryWrapper.eq(AiPlatformDO::getDelFlag, "0");
         queryWrapper.eq(AiPlatformDO::getStatus, "1");
@@ -90,9 +78,6 @@ public class AiPlatformRepository {
         return MapstructUtils.convert(platformDO, AiPlatformBO.class);
     }
 
-    /**
-     * 创建
-     */
     public AiPlatformBO create(AiPlatformBO bo) {
         AiPlatformDO platformDO = MapstructUtils.convert(bo, AiPlatformDO.class);
         aiPlatformMapper.insertSelective(platformDO);
@@ -100,24 +85,19 @@ public class AiPlatformRepository {
         return bo;
     }
 
-    /**
-     * 更新
-     */
     public AiPlatformBO update(AiPlatformBO bo) {
         AiPlatformDO platformDO = MapstructUtils.convert(bo, AiPlatformDO.class);
         aiPlatformMapper.update(platformDO);
         return bo;
     }
 
-    /**
-     * 删除
-     */
     public void deleteById(Long id) {
         aiPlatformMapper.deleteById(id);
     }
 
     public List<IdNameOptionVO> selectOptions() {
         QueryWrapper queryWrapper = new QueryWrapper();
+        TenantWorkspaceHelper.applyWorkspaceFilter(queryWrapper);
         queryWrapper.eq(AiPlatformDO::getDelFlag, "0");
         queryWrapper.eq(AiPlatformDO::getStatus, "1");
         queryWrapper.orderBy(AiPlatformDO::getIsDefault, true);
@@ -130,11 +110,9 @@ public class AiPlatformRepository {
                 .collect(Collectors.toList());
     }
 
-    /**
-     * 清除其他平台的默认标记
-     */
     public void clearDefaultExcept(Long excludeId) {
         QueryWrapper queryWrapper = new QueryWrapper();
+        TenantWorkspaceHelper.applyWorkspaceFilter(queryWrapper);
         queryWrapper.eq(AiPlatformDO::getIsDefault, "Y");
         if (excludeId != null) {
             queryWrapper.ne(AiPlatformDO::getId, excludeId);

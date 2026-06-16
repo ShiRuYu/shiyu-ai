@@ -16,8 +16,8 @@ public class TenantEntity extends BaseEntity {
     private static final long serialVersionUID = 1L;
 
     /**
-     * 租户编号
+     * 租户ID
      */
-    private String tenantId;
+    private Long tenantId;
 
 }
