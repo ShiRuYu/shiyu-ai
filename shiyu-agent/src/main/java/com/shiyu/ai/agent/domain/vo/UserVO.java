@@ -8,6 +8,7 @@ import java.io.Serial;
 import java.io.Serializable;
 import java.util.Date;
 import java.util.List;
+import java.util.Map;
 
 /**
  * 用户信息视图对象
@@ -93,4 +94,24 @@ public class UserVO implements Serializable {
      * 扩展信息（JSON格式）
      */
     private String extInfo;
+
+    /**
+     * 可用租户列表
+     */
+    private List<Map<String, Object>> tenants;
+
+    /**
+     * 可用工作空间列表
+     */
+    private List<WorkspaceContextVO> workspaces;
+
+    /**
+     * 当前租户ID
+     */
+    private Long currentTenantId;
+
+    /**
+     * 当前工作空间ID
+     */
+    private Long currentWorkspaceId;
 }

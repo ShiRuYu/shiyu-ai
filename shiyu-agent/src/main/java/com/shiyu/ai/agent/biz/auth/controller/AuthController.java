@@ -183,6 +183,19 @@ public class AuthController {
     }
 
     /**
+     * 获取用户租户列表
+     * GET /auth/tenants
+     */
+    @GetMapping("/tenants")
+    public Result<List<Map<String, Object>>> getUserTenants() {
+        log.info("获取用户租户列表");
+        Long userId = LoginContextHolder.getUserId();
+        if (userId == null) return Result.fail("用户未登录");
+        List<Map<String, Object>> tenants = authService.getUserTenants(userId);
+        return Result.success(tenants);
+    }
+
+    /**
      * 用户登出
      * POST /auth/logout
      * @param tokenHeader Authorization Header（Bearer Token）

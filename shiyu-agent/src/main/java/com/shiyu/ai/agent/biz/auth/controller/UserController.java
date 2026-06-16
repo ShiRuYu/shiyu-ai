@@ -5,6 +5,8 @@ import com.shiyu.ai.agent.domain.request.UserRequest;
 import com.shiyu.ai.agent.domain.bo.UserBO;
 import com.shiyu.ai.agent.domain.vo.UserPageResponse;
 import com.shiyu.ai.agent.domain.vo.UserVO;
+import com.shiyu.ai.agent.domain.vo.WorkspaceContextVO;
+import com.shiyu.ai.agent.biz.auth.service.AuthService;
 import com.shiyu.ai.agent.biz.auth.service.UserService;
 import com.shiyu.ai.common.core.api.Result;
 import com.shiyu.ai.common.core.domain.LoginContextHolder;
@@ -25,9 +27,11 @@ import java.util.stream.Collectors;
 public class UserController {
 
     private final UserService userService;
+    private final AuthService authService;
 
-    public UserController(UserService userService) {
+    public UserController(UserService userService, AuthService authService) {
         this.userService = userService;
+        this.authService = authService;
     }
 
     /**
@@ -51,7 +55,32 @@ public class UserController {
         }
         
         UserVO userVO = MapstructUtils.convert(userBO, UserVO.class);
-        
+
+        // 填充租户和工作空间信息
+        try {
+            userVO.setTenants(authService.getUserTenants(userId));
+            List<WorkspaceContextVO> workspaces = authService.getUserWorkspaces(userId);
+            userVO.setWorkspaces(workspaces);
+
+            // 从 extInfo 解析当前租户和工作空间 ID
+            if (userVO.getExtInfo() != null) {
+                var extMap = com.shiyu.ai.common.core.utils.JSONUtils.parseObject(
+                        userVO.getExtInfo(), java.util.Map.class);
+                if (extMap != null) {
+                    Object tid = extMap.get("currentTenantId");
+                    if (tid instanceof Number) {
+                        userVO.setCurrentTenantId(((Number) tid).longValue());
+                    }
+                    Object wid = extMap.get("currentWorkspaceId");
+                    if (wid instanceof Number) {
+                        userVO.setCurrentWorkspaceId(((Number) wid).longValue());
+                    }
+                }
+            }
+        } catch (Exception e) {
+            log.warn("获取用户租户/工作空间信息失败: {}", e.getMessage());
+        }
+
         return Result.success(userVO);
     }
 

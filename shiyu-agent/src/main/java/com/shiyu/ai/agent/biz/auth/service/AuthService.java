@@ -4,6 +4,7 @@ import com.shiyu.ai.agent.domain.vo.LoginResponseVO;
 import com.shiyu.ai.agent.domain.vo.WorkspaceContextVO;
 
 import java.util.List;
+import java.util.Map;
 
 /**
  * 认证服务
@@ -77,4 +78,9 @@ public interface AuthService {
      * 获取用户当前租户下的工作空间列表
      */
     List<WorkspaceContextVO> getUserWorkspaces(Long userId);
+
+    /**
+     * 获取用户所有租户列表
+     */
+    List<Map<String, Object>> getUserTenants(Long userId);
 }

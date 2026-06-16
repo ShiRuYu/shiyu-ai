@@ -386,7 +386,28 @@ public class AuthServiceImpl implements AuthService {
 
             Map<String, Object> extInfoMap = parseExtInfo(user.getExtInfo());
             extInfoMap.put("currentTenantId", tenantId);
-            extInfoMap.remove("currentWorkspaceId"); // 切租户时重置空间
+            extInfoMap.remove("currentWorkspaceId");
+            extInfoMap.remove("currentRole");
+
+            // 自动选择该租户下的第一个工作空间及其角色
+            List<UserWorkspaceRoleDO> uwrList = userWorkspaceRoleMapper.selectByUserId(userId);
+            if (uwrList != null && !uwrList.isEmpty()) {
+                UserWorkspaceRoleDO first = uwrList.stream()
+                        .filter(r -> tenantId.equals(r.getTenantId()))
+                        .findFirst().orElse(null);
+                if (first != null) {
+                    extInfoMap.put("currentWorkspaceId", first.getWorkspaceId());
+                    RoleDO role = roleMapper.selectOneById(first.getRoleId());
+                    if (role != null) {
+                        Map<String, Object> roleMap = new LinkedHashMap<>();
+                        roleMap.put("roleId", role.getId());
+                        roleMap.put("roleName", role.getName());
+                        roleMap.put("roleKey", role.getCode());
+                        extInfoMap.put("currentRole", roleMap);
+                    }
+                }
+            }
+
             user.setExtInfo(JSONUtils.toJsonString(extInfoMap));
             userRepository.update(user);
 
@@ -407,6 +428,25 @@ public class AuthServiceImpl implements AuthService {
 
             Map<String, Object> extInfoMap = parseExtInfo(user.getExtInfo());
             extInfoMap.put("currentWorkspaceId", workspaceId);
+
+            // 自动选择该工作空间对应的角色
+            List<UserWorkspaceRoleDO> uwrList = userWorkspaceRoleMapper.selectByUserId(userId);
+            if (uwrList != null && !uwrList.isEmpty()) {
+                UserWorkspaceRoleDO match = uwrList.stream()
+                        .filter(r -> workspaceId.equals(r.getWorkspaceId()))
+                        .findFirst().orElse(null);
+                if (match != null) {
+                    RoleDO role = roleMapper.selectOneById(match.getRoleId());
+                    if (role != null) {
+                        Map<String, Object> roleMap = new LinkedHashMap<>();
+                        roleMap.put("roleId", role.getId());
+                        roleMap.put("roleName", role.getName());
+                        roleMap.put("roleKey", role.getCode());
+                        extInfoMap.put("currentRole", roleMap);
+                    }
+                }
+            }
+
             user.setExtInfo(JSONUtils.toJsonString(extInfoMap));
             userRepository.update(user);
 
@@ -437,6 +477,12 @@ public class AuthServiceImpl implements AuthService {
         }
 
         return buildWorkspaceContextList(uwrList, currentTenantId);
+    }
+
+    @Override
+    public List<Map<String, Object>> getUserTenants(Long userId) {
+        List<UserWorkspaceRoleDO> uwrList = userWorkspaceRoleMapper.selectByUserId(userId);
+        return buildTenantList(uwrList);
     }
 
     @Override
