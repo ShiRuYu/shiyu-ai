@@ -28,7 +28,7 @@ CREATE TABLE `ai_platform` (
     `del_flag`         CHAR(1)      DEFAULT '0' COMMENT '删除标志（0存在 1删除）',
     PRIMARY KEY (`id`)
 );
-CREATE UNIQUE INDEX `uk_ai_platform_code` ON `ai_platform` (`code`);
+CREATE INDEX `idx_ai_platform_code` ON `ai_platform` (`code`);
 COMMENT ON TABLE `ai_platform` IS 'AI 平台配置表';
 
 -- ============================================
@@ -126,7 +126,7 @@ CREATE TABLE `agent_def` (
     `update_time`     TIMESTAMP    DEFAULT CURRENT_TIMESTAMP COMMENT '更新时间',
     PRIMARY KEY (`id`)
 );
-CREATE UNIQUE INDEX `uk_agent_def_agent_id` ON `agent_def` (`agent_id`);
+CREATE INDEX `idx_agent_def_agent_id` ON `agent_def` (`agent_id`);
 COMMENT ON TABLE `agent_def` IS 'Agent 定义表';
 
 -- ============================================
@@ -148,7 +148,7 @@ CREATE TABLE `agent_version` (
     `update_time`     TIMESTAMP    DEFAULT CURRENT_TIMESTAMP COMMENT '更新时间',
     PRIMARY KEY (`id`)
 );
-CREATE UNIQUE INDEX `uk_agent_version` ON `agent_version` (`agent_id`, `version_number`);
+CREATE INDEX `idx_agent_version` ON `agent_version` (`agent_id`, `version_number`);
 COMMENT ON TABLE `agent_version` IS 'Agent 版本表';
 
 -- ============================================
@@ -203,7 +203,7 @@ CREATE TABLE `intent_def` (
     `update_time`      TIMESTAMP    DEFAULT CURRENT_TIMESTAMP,
     PRIMARY KEY (`id`)
 );
-CREATE UNIQUE INDEX `uk_intent_def_code_agent` ON `intent_def` (`agent_id`, `code`);
+CREATE INDEX `idx_intent_def_code_agent` ON `intent_def` (`agent_id`, `code`);
 COMMENT ON TABLE `intent_def` IS '意图定义表';
 
 -- 种子数据：5个核心默认意图定义（作为全局 fallback，target_node 不绑定特定 graph）

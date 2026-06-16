@@ -27,7 +27,7 @@ CREATE TABLE `user` (
     `ext_info` TEXT COMMENT '扩展信息(JSON)',
     PRIMARY KEY (`id`)
 );
-CREATE UNIQUE INDEX `idx_username` ON `user` (`username`);
+CREATE INDEX `idx_username` ON `user` (`username`);
 COMMENT ON TABLE `user` IS '用户表';
 
 -- 角色表
@@ -45,7 +45,7 @@ CREATE TABLE `role` (
     `update_time` TIMESTAMP DEFAULT CURRENT_TIMESTAMP COMMENT '更新时间',
     PRIMARY KEY (`id`)
 );
-CREATE UNIQUE INDEX `idx_code` ON `role` (`code`);
+CREATE INDEX `idx_code` ON `role` (`code`);
 COMMENT ON TABLE `role` IS '角色表';
 
 -- 菜单表
@@ -112,7 +112,7 @@ CREATE TABLE `auth_code` (
     `update_time` TIMESTAMP DEFAULT CURRENT_TIMESTAMP COMMENT '更新时间',
     PRIMARY KEY (`id`)
 );
-CREATE UNIQUE INDEX `idx_role_code` ON `auth_code` (`role_id`, `code`);
+CREATE INDEX `idx_role_code` ON `auth_code` (`role_id`, `code`);
 CREATE INDEX `idx_auth_code` ON `auth_code` (`code`);
 COMMENT ON TABLE `auth_code` IS '权限码表';
 

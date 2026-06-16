@@ -4,7 +4,7 @@ import com.github.benmanes.caffeine.cache.Cache;
 import com.github.benmanes.caffeine.cache.Caffeine;
 import com.shiyu.ai.agent.biz.agent.domain.AgentDefinition;
 import com.shiyu.ai.agent.biz.agent.repository.AgentAdminRepository;
-import com.shiyu.ai.agent.dal.dataobject.agent.AgentDefDO;
+import com.shiyu.ai.agent.domain.bo.AgentDefBO;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Component;
 
@@ -83,7 +83,7 @@ public class AgentCacheManager {
     }
 
     public List<AgentDefinition> listAll(Long userId) {
-        List<AgentDefDO> activeDefs = agentAdminRepository.selectAllActive();
+        List<AgentDefBO> activeDefs = agentAdminRepository.selectAllActive();
         return activeDefs.stream()
                 .map(def -> {
                     String agentId = def.getAgentId();

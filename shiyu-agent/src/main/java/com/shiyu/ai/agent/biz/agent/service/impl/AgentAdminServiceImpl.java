@@ -7,8 +7,8 @@ import com.shiyu.ai.agent.biz.agent.cache.AgentCacheManager;
 import com.shiyu.ai.agent.biz.agent.repository.AgentAdminRepository;
 import com.shiyu.ai.agent.biz.agent.service.AgentAdminService;
 import com.shiyu.ai.agent.biz.agent.service.AgentService;
-import com.shiyu.ai.agent.dal.dataobject.agent.AgentDefDO;
-import com.shiyu.ai.agent.dal.dataobject.agent.AgentVersionDO;
+import com.shiyu.ai.agent.domain.bo.AgentDefBO;
+import com.shiyu.ai.agent.domain.bo.AgentVersionBO;
 import com.shiyu.ai.agent.domain.request.*;
 import com.shiyu.ai.agent.domain.vo.*;
 import com.shiyu.ai.agent.langgraph4j.graph.Graph;
@@ -40,16 +40,16 @@ public class AgentAdminServiceImpl implements AgentAdminService {
 
     @Override
     public Pair<Long, List<AgentVO>> getPage(Number pageNo, Number pageSize, String name, String status) {
-        Pair<Long, List<AgentDefDO>> result = agentAdminRepository.selectPage(pageNo, pageSize, name, status);
+        Pair<Long, List<AgentDefBO>> result = agentAdminRepository.selectPage(pageNo, pageSize, name, status);
         List<AgentVO> vos = result.getRight().stream().map(this::toVO).collect(Collectors.toList());
         return Pair.of(result.getLeft(), vos);
     }
 
     @Override
     public AgentDetailVO getById(Long id) {
-        AgentDefDO def = agentAdminRepository.selectById(id);
+        AgentDefBO def = agentAdminRepository.selectById(id);
         if (def == null) return null;
-        List<AgentVersionDO> versions = agentAdminRepository.selectVersionsByAgentId(def.getAgentId());
+        List<AgentVersionBO> versions = agentAdminRepository.selectVersionsByAgentId(def.getAgentId());
         List<AgentVersionVO> versionVOs = versions.stream().map(this::toVersionVO).collect(Collectors.toList());
         return AgentDetailVO.builder()
                 .id(def.getId()).agentId(def.getAgentId()).name(def.getName())
@@ -61,11 +61,11 @@ public class AgentAdminServiceImpl implements AgentAdminService {
 
     @Override
     public AgentVO create(AgentRequest request) {
-        AgentDefDO existing = agentAdminRepository.selectByAgentId(request.getAgentId());
+        AgentDefBO existing = agentAdminRepository.selectByAgentId(request.getAgentId());
         if (existing != null) {
             throw new IllegalArgumentException("Agent标识已存在: " + request.getAgentId());
         }
-        AgentDefDO def = new AgentDefDO();
+        AgentDefBO def = new AgentDefBO();
         def.setAgentId(request.getAgentId());
         def.setName(request.getName());
         def.setDescription(request.getDescription());
@@ -76,7 +76,7 @@ public class AgentAdminServiceImpl implements AgentAdminService {
 
     @Override
     public AgentVO update(Long id, AgentRequest request) {
-        AgentDefDO def = agentAdminRepository.selectById(id);
+        AgentDefBO def = agentAdminRepository.selectById(id);
         if (def == null) throw new IllegalArgumentException("Agent不存在: " + id);
         if (request.getName() != null) def.setName(request.getName());
         if (request.getDescription() != null) def.setDescription(request.getDescription());
@@ -89,7 +89,7 @@ public class AgentAdminServiceImpl implements AgentAdminService {
 
     @Override
     public void deleteById(Long id) {
-        AgentDefDO def = agentAdminRepository.selectById(id);
+        AgentDefBO def = agentAdminRepository.selectById(id);
         if (def == null) return;
         agentAdminRepository.deleteById(id);
         evictAgentCache(def.getAgentId());
@@ -97,33 +97,33 @@ public class AgentAdminServiceImpl implements AgentAdminService {
 
     @Override
     public List<AgentVersionVO> getVersions(String agentId) {
-        List<AgentVersionDO> versions = agentAdminRepository.selectVersionsByAgentId(agentId);
+        List<AgentVersionBO> versions = agentAdminRepository.selectVersionsByAgentId(agentId);
         return versions.stream().map(this::toVersionVO).collect(Collectors.toList());
     }
 
     @Override
     public AgentVersionDetailVO getVersionDetail(String agentId, Long versionId) {
-        AgentVersionDO v = agentAdminRepository.selectVersionById(versionId);
+        AgentVersionBO v = agentAdminRepository.selectVersionById(versionId);
         if (v == null || !v.getAgentId().equals(agentId)) return null;
         return toVersionDetailVO(v);
     }
 
     @Override
     public AgentVersionVO createVersion(String agentId, VersionRequest request) {
-        AgentDefDO def = agentAdminRepository.selectByAgentId(agentId);
+        AgentDefBO def = agentAdminRepository.selectByAgentId(agentId);
         if (def == null) throw new IllegalArgumentException("Agent不存在: " + agentId);
 
-        AgentVersionDO existing = agentAdminRepository.selectVersionByAgentIdAndNumber(agentId, request.getVersionNumber());
+        AgentVersionBO existing = agentAdminRepository.selectVersionByAgentIdAndNumber(agentId, request.getVersionNumber());
         if (existing != null) throw new IllegalArgumentException("版本号已存在: " + request.getVersionNumber());
 
-        AgentVersionDO version = new AgentVersionDO();
+        AgentVersionBO version = new AgentVersionBO();
         version.setAgentId(agentId);
         version.setVersionNumber(request.getVersionNumber());
         version.setDescription(request.getDescription());
         version.setStatus("DRAFT");
 
         if (request.getCopyFromVersionId() != null) {
-            AgentVersionDO source = agentAdminRepository.selectVersionById(request.getCopyFromVersionId());
+            AgentVersionBO source = agentAdminRepository.selectVersionById(request.getCopyFromVersionId());
             if (source != null) {
                 version.setGraphConfig(source.getGraphConfig());
                 version.setCanvasConfig(source.getCanvasConfig());
@@ -137,7 +137,7 @@ public class AgentAdminServiceImpl implements AgentAdminService {
 
     @Override
     public AgentVersionVO updateVersion(String agentId, Long versionId, VersionRequest request) {
-        AgentVersionDO v = agentAdminRepository.selectVersionById(versionId);
+        AgentVersionBO v = agentAdminRepository.selectVersionById(versionId);
         if (v == null || !v.getAgentId().equals(agentId)) throw new IllegalArgumentException("版本不存在: " + versionId);
         if (request.getDescription() != null) v.setDescription(request.getDescription());
         v.setUpdateTime(LocalDateTime.now());
@@ -147,7 +147,7 @@ public class AgentAdminServiceImpl implements AgentAdminService {
 
     @Override
     public void deleteVersion(String agentId, Long versionId) {
-        AgentVersionDO v = agentAdminRepository.selectVersionById(versionId);
+        AgentVersionBO v = agentAdminRepository.selectVersionById(versionId);
         if (v == null || !v.getAgentId().equals(agentId)) return;
         agentAdminRepository.deleteVersionById(versionId);
         evictAgentCache(agentId);
@@ -155,7 +155,7 @@ public class AgentAdminServiceImpl implements AgentAdminService {
 
     @Override
     public void publishVersion(String agentId, Long versionId) {
-        AgentVersionDO v = agentAdminRepository.selectVersionById(versionId);
+        AgentVersionBO v = agentAdminRepository.selectVersionById(versionId);
         if (v == null || !v.getAgentId().equals(agentId)) throw new IllegalArgumentException("版本不存在");
         if (!"DRAFT".equals(v.getStatus())) throw new IllegalArgumentException("只有草稿状态才能发布");
         v.setStatus("PUBLISHED");
@@ -166,7 +166,7 @@ public class AgentAdminServiceImpl implements AgentAdminService {
 
     @Override
     public void archiveVersion(String agentId, Long versionId) {
-        AgentVersionDO v = agentAdminRepository.selectVersionById(versionId);
+        AgentVersionBO v = agentAdminRepository.selectVersionById(versionId);
         if (v == null || !v.getAgentId().equals(agentId)) throw new IllegalArgumentException("版本不存在");
         if ("ARCHIVED".equals(v.getStatus())) throw new IllegalArgumentException("版本已归档");
         v.setStatus("ARCHIVED");
@@ -177,11 +177,11 @@ public class AgentAdminServiceImpl implements AgentAdminService {
 
     @Override
     public void activateVersion(String agentId, Long versionId) {
-        AgentVersionDO v = agentAdminRepository.selectVersionById(versionId);
+        AgentVersionBO v = agentAdminRepository.selectVersionById(versionId);
         if (v == null || !v.getAgentId().equals(agentId)) throw new IllegalArgumentException("版本不存在");
         if (!"PUBLISHED".equals(v.getStatus())) throw new IllegalArgumentException("只有已发布版本才能激活");
 
-        AgentDefDO def = agentAdminRepository.selectByAgentId(agentId);
+        AgentDefBO def = agentAdminRepository.selectByAgentId(agentId);
         if (def == null) throw new IllegalArgumentException("Agent不存在");
         def.setCurrentVersion(v.getVersionNumber());
         def.setUpdateTime(LocalDateTime.now());
@@ -197,14 +197,14 @@ public class AgentAdminServiceImpl implements AgentAdminService {
 
     @Override
     public AgentVersionDetailVO getGraphConfig(String agentId, Long versionId) {
-        AgentVersionDO v = agentAdminRepository.selectVersionById(versionId);
+        AgentVersionBO v = agentAdminRepository.selectVersionById(versionId);
         if (v == null || !v.getAgentId().equals(agentId)) return null;
         return toVersionDetailVO(v);
     }
 
     @Override
     public AgentVersionDetailVO updateGraphConfig(String agentId, Long versionId, GraphConfigRequest request) {
-        AgentVersionDO v = agentAdminRepository.selectVersionById(versionId);
+        AgentVersionBO v = agentAdminRepository.selectVersionById(versionId);
         if (v == null || !v.getAgentId().equals(agentId)) throw new IllegalArgumentException("版本不存在");
 
         try {
@@ -257,7 +257,7 @@ public class AgentAdminServiceImpl implements AgentAdminService {
 
     @Override
     public void addNode(String agentId, Long versionId, NodeConfigRequest request) {
-        AgentVersionDO v = getVersionOrThrow(agentId, versionId);
+        AgentVersionBO v = getVersionOrThrow(agentId, versionId);
         Map<String, Object> graphData = parseGraphConfig(v.getGraphConfig());
         Map<String, Object> nodes = getMap(graphData, "nodes");
         Map<String, Object> nodeConfig = new LinkedHashMap<>();
@@ -276,7 +276,7 @@ public class AgentAdminServiceImpl implements AgentAdminService {
 
     @Override
     public void updateNode(String agentId, Long versionId, String nodeId, NodeConfigRequest request) {
-        AgentVersionDO v = getVersionOrThrow(agentId, versionId);
+        AgentVersionBO v = getVersionOrThrow(agentId, versionId);
         Map<String, Object> graphData = parseGraphConfig(v.getGraphConfig());
         Map<String, Object> nodes = getMap(graphData, "nodes");
         if (!nodes.containsKey(nodeId)) throw new IllegalArgumentException("节点不存在: " + nodeId);
@@ -297,7 +297,7 @@ public class AgentAdminServiceImpl implements AgentAdminService {
     @Override
     @SuppressWarnings("unchecked")
     public void deleteNode(String agentId, Long versionId, String nodeId) {
-        AgentVersionDO v = getVersionOrThrow(agentId, versionId);
+        AgentVersionBO v = getVersionOrThrow(agentId, versionId);
         Map<String, Object> graphData = parseGraphConfig(v.getGraphConfig());
         Map<String, Object> nodes = getMap(graphData, "nodes");
         nodes.remove(nodeId);
@@ -322,7 +322,7 @@ public class AgentAdminServiceImpl implements AgentAdminService {
     @Override
     @SuppressWarnings("unchecked")
     public void addEdge(String agentId, Long versionId, EdgeRequest request) {
-        AgentVersionDO v = getVersionOrThrow(agentId, versionId);
+        AgentVersionBO v = getVersionOrThrow(agentId, versionId);
         Map<String, Object> graphData = parseGraphConfig(v.getGraphConfig());
 
         if (request.getConditionType() != null) {
@@ -346,7 +346,7 @@ public class AgentAdminServiceImpl implements AgentAdminService {
     @Override
     @SuppressWarnings("unchecked")
     public void deleteEdge(String agentId, Long versionId, String sourceNodeId, String targetNodeId) {
-        AgentVersionDO v = getVersionOrThrow(agentId, versionId);
+        AgentVersionBO v = getVersionOrThrow(agentId, versionId);
         Map<String, Object> graphData = parseGraphConfig(v.getGraphConfig());
 
         Map<String, Object> edges = getMap(graphData, "edges");
@@ -368,14 +368,14 @@ public class AgentAdminServiceImpl implements AgentAdminService {
 
     @Override
     public String getCanvasConfig(String agentId, Long versionId) {
-        AgentVersionDO v = agentAdminRepository.selectVersionById(versionId);
+        AgentVersionBO v = agentAdminRepository.selectVersionById(versionId);
         if (v == null || !v.getAgentId().equals(agentId)) return null;
         return v.getCanvasConfig();
     }
 
     @Override
     public void updateCanvasConfig(String agentId, Long versionId, String canvasConfig) {
-        AgentVersionDO v = getVersionOrThrow(agentId, versionId);
+        AgentVersionBO v = getVersionOrThrow(agentId, versionId);
         v.setCanvasConfig(canvasConfig);
         v.setUpdateTime(LocalDateTime.now());
         agentAdminRepository.updateVersion(v);
@@ -399,7 +399,7 @@ public class AgentAdminServiceImpl implements AgentAdminService {
 
     @Override
     public List<IdNameOptionVO> listAllOptions() {
-        List<AgentDefDO> list = agentAdminRepository.selectAllActive();
+        List<AgentDefBO> list = agentAdminRepository.selectAllActive();
         return list.stream().map(d -> IdNameOptionVO.builder()
                 .id(d.getId())
                 .name(d.getName())
@@ -407,8 +407,8 @@ public class AgentAdminServiceImpl implements AgentAdminService {
                 .build()).collect(Collectors.toList());
     }
 
-    private AgentVersionDO getVersionOrThrow(String agentId, Long versionId) {
-        AgentVersionDO v = agentAdminRepository.selectVersionById(versionId);
+    private AgentVersionBO getVersionOrThrow(String agentId, Long versionId) {
+        AgentVersionBO v = agentAdminRepository.selectVersionById(versionId);
         if (v == null || !v.getAgentId().equals(agentId)) {
             throw new IllegalArgumentException("版本不存在: " + versionId);
         }
@@ -437,7 +437,7 @@ public class AgentAdminServiceImpl implements AgentAdminService {
         return (Map<String, Object>) value;
     }
 
-    private void saveGraphConfig(AgentVersionDO v, Map<String, Object> graphData) {
+    private void saveGraphConfig(AgentVersionBO v, Map<String, Object> graphData) {
         try {
             v.setGraphConfig(objectMapper.writeValueAsString(graphData));
             v.setUpdateTime(LocalDateTime.now());
@@ -449,11 +449,10 @@ public class AgentAdminServiceImpl implements AgentAdminService {
     }
 
     private void evictAgentCache(String agentId) {
-        cacheManager.evict(agentId);
         agentService.evictRuntimeCache(agentId);
     }
 
-    private AgentVO toVO(AgentDefDO def) {
+    private AgentVO toVO(AgentDefBO def) {
         return AgentVO.builder()
                 .id(def.getId()).agentId(def.getAgentId()).name(def.getName())
                 .description(def.getDescription()).currentVersion(def.getCurrentVersion())
@@ -462,7 +461,7 @@ public class AgentAdminServiceImpl implements AgentAdminService {
                 .build();
     }
 
-    private AgentVersionVO toVersionVO(AgentVersionDO v) {
+    private AgentVersionVO toVersionVO(AgentVersionBO v) {
         return AgentVersionVO.builder()
                 .id(v.getId()).agentId(v.getAgentId()).versionNumber(v.getVersionNumber())
                 .description(v.getDescription()).status(v.getStatus())
@@ -470,7 +469,7 @@ public class AgentAdminServiceImpl implements AgentAdminService {
                 .build();
     }
 
-    private AgentVersionDetailVO toVersionDetailVO(AgentVersionDO v) {
+    private AgentVersionDetailVO toVersionDetailVO(AgentVersionBO v) {
         AgentVersionDetailVO.GraphConfigVO graphVO = null;
         if (v.getGraphConfig() != null && !v.getGraphConfig().isEmpty()) {
             try {

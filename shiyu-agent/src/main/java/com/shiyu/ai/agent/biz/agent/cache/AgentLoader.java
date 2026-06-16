@@ -6,8 +6,8 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.shiyu.ai.agent.biz.agent.domain.AgentDefinition;
 import com.shiyu.ai.agent.biz.agent.domain.AgentVersion;
 import com.shiyu.ai.agent.biz.agent.repository.AgentAdminRepository;
-import com.shiyu.ai.agent.dal.dataobject.agent.AgentDefDO;
-import com.shiyu.ai.agent.dal.dataobject.agent.AgentVersionDO;
+import com.shiyu.ai.agent.domain.bo.AgentDefBO;
+import com.shiyu.ai.agent.domain.bo.AgentVersionBO;
 import com.shiyu.ai.agent.domain.request.GraphConfigRequest;
 import com.shiyu.ai.agent.langgraph4j.graph.ConditionEdge;
 import com.shiyu.ai.agent.langgraph4j.graph.Graph;
@@ -52,7 +52,7 @@ public class AgentLoader {
     public AgentDefinition loadFromDb(Long userId, String agentId) {
         log.info("从数据库加载 Agent: agentId={}", agentId);
 
-        AgentDefDO agentDef = agentAdminRepository.selectByAgentId(agentId);
+        AgentDefBO agentDef = agentAdminRepository.selectByAgentId(agentId);
         if (agentDef == null || !"1".equals(agentDef.getStatus())) {
             log.warn("Agent 不存在或已停用: agentId={}", agentId);
             return null;
@@ -64,28 +64,28 @@ public class AgentLoader {
             return null;
         }
 
-        AgentVersionDO versionDO = agentAdminRepository.selectVersionByAgentIdAndNumber(agentId, versionNumber);
-        if (versionDO == null) {
+        AgentVersionBO versionBO = agentAdminRepository.selectVersionByAgentIdAndNumber(agentId, versionNumber);
+        if (versionBO == null) {
             log.warn("Agent 当前版本不存在: agentId={}, version={}", agentId, versionNumber);
             return null;
         }
 
-        if (versionDO.getGraphConfig() == null || versionDO.getGraphConfig().isEmpty()) {
+        if (versionBO.getGraphConfig() == null || versionBO.getGraphConfig().isEmpty()) {
             log.warn("Agent 版本无 Graph 配置: agentId={}, version={}", agentId, versionNumber);
             return null;
         }
 
         try {
-            GraphConfigRequest graphConfig = objectMapper.readValue(versionDO.getGraphConfig(),
+            GraphConfigRequest graphConfig = objectMapper.readValue(versionBO.getGraphConfig(),
                     new TypeReference<GraphConfigRequest>() {});
 
             Graph graph = buildGraph(agentId, graphConfig);
 
             AgentVersion agentVersion = AgentVersion.builder()
                     .versionNumber(versionNumber)
-                    .description(versionDO.getDescription())
+                    .description(versionBO.getDescription())
                     .graph(graph)
-                    .createdAt(versionDO.getCreateTime().atZone(ZoneId.systemDefault()).toInstant().toEpochMilli())
+                    .createdAt(versionBO.getCreateTime().atZone(ZoneId.systemDefault()).toInstant().toEpochMilli())
                     .build();
 
             return AgentDefinition.builder()

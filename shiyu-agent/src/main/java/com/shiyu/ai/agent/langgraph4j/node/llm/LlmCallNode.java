@@ -220,7 +220,7 @@ public class LlmCallNode extends BaseNode {
         }
 
         // 4. 硬编码默认值（最低优先级）
-        return "";
+        return "你是一个智能助手，请友好地回答用户的问题。";
     }
     
     /**

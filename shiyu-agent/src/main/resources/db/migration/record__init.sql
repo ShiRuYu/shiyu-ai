@@ -32,7 +32,7 @@ CREATE TABLE profile_member (
     update_time TIMESTAMP DEFAULT CURRENT_TIMESTAMP COMMENT '更新时间',
     PRIMARY KEY (id)
 );
-CREATE UNIQUE INDEX idx_profile_user ON profile_member (profile_id, user_id);
+CREATE INDEX idx_profile_user ON profile_member (profile_id, user_id);
 COMMENT ON TABLE profile_member IS '人物成员关系表';
 
 -- 时间轴事件表(timeline_event)
@@ -106,7 +106,7 @@ CREATE TABLE tag (
     update_time TIMESTAMP DEFAULT CURRENT_TIMESTAMP COMMENT '更新时间',
     PRIMARY KEY (id)
 );
-CREATE UNIQUE INDEX idx_name_creator ON tag (name, create_by);
+CREATE INDEX idx_name_creator ON tag (name, create_by);
 COMMENT ON TABLE tag IS '标签表';
 
 -- 记录标签关联表(record_tag)
