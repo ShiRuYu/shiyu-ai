@@ -1,6 +1,8 @@
 package com.shiyu.ai.agent.domain.bo;
 
+import com.shiyu.ai.agent.dal.dataobject.agent.AgentDefDO;
 import com.shiyu.ai.common.core.domain.BaseEntity;
+import io.github.linpeilie.annotations.AutoMapper;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
 
@@ -11,6 +13,7 @@ import java.io.Serial;
  */
 @Data
 @EqualsAndHashCode(callSuper = true)
+@AutoMapper(target = AgentDefDO.class, reverseConvertGenerate = true)
 public class AgentDefBO extends BaseEntity {
 
     @Serial

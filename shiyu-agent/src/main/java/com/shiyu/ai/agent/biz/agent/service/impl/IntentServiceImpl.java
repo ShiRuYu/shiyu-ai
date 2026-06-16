@@ -8,7 +8,6 @@ import com.shiyu.ai.common.core.utils.JSONUtils;
 import dev.langchain4j.model.chat.ChatModel;
 import dev.langchain4j.service.AiServices;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
 import java.util.HashMap;
@@ -25,10 +24,6 @@ import java.util.concurrent.ConcurrentHashMap;
 public class IntentServiceImpl implements IntentService {
 
     private final Lc4jModelManager modelManager;
-
-    @Value("${shiyu.ai.intent.platform:SILICON_FLOW}")
-    private String defaultIntentPlatform;
-
     private final Map<String, IntentAssistant> assistantCache = new ConcurrentHashMap<>();
 
     public IntentServiceImpl(Lc4jModelManager modelManager) {
@@ -48,7 +43,7 @@ public class IntentServiceImpl implements IntentService {
         try {
             String prompt = buildIntentPrompt(query, supportedIntents);
 
-            String actualPlatform = platform != null ? platform : defaultIntentPlatform;
+            String actualPlatform = platform != null ? platform : modelManager.getDefaultPlatform();
             String actualModelName = modelName != null ? modelName : modelManager.getDefaultModelName(actualPlatform);
             String cacheKey = actualPlatform + ":" + actualModelName;
 

@@ -109,4 +109,14 @@ public class Lc4jServiceImpl implements Lc4jService {
         log.debug("获取 StreamingChatModel：platform={}, model={}", platformType, modelName);
         return modelManager.getStreamingChatModel(platformType, modelName);
     }
+
+    @Override
+    public String getDefaultPlatform() {
+        return modelManager.getDefaultPlatform();
+    }
+
+    @Override
+    public String getDefaultModelName(String platformType) {
+        return modelManager.getDefaultModelName(platformType);
+    }
 }

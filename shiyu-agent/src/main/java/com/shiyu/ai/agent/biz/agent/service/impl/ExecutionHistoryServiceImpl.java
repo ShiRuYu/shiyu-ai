@@ -2,7 +2,7 @@ package com.shiyu.ai.agent.biz.agent.service.impl;
 
 import com.shiyu.ai.agent.biz.agent.repository.AgentExecutionRepository;
 import com.shiyu.ai.agent.biz.agent.service.ExecutionHistoryService;
-import com.shiyu.ai.agent.dal.dataobject.agent.AgentExecutionDO;
+import com.shiyu.ai.agent.domain.bo.AgentExecutionBO;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 
@@ -22,7 +22,7 @@ public class ExecutionHistoryServiceImpl implements ExecutionHistoryService {
     @Override
     public String startExecution(String agentId, String version, Long userId, String sessionId, String nodeId, String nodeType, String inputData) {
         String executionId = UUID.randomUUID().toString().replace("-", "");
-        AgentExecutionDO exec = new AgentExecutionDO();
+        AgentExecutionBO exec = new AgentExecutionBO();
         exec.setExecutionId(executionId);
         exec.setAgentId(agentId);
         exec.setVersion(version);
@@ -41,7 +41,7 @@ public class ExecutionHistoryServiceImpl implements ExecutionHistoryService {
     @Override
     public void completeExecution(String executionId, String outputData, String status, String errorMessage) {
         try {
-            AgentExecutionDO exec = agentExecutionRepository.selectByExecutionId(executionId);
+            AgentExecutionBO exec = agentExecutionRepository.selectByExecutionId(executionId);
             if (exec == null) {
                 log.warn("执行记录不存在: {}", executionId);
                 return;

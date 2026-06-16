@@ -3,8 +3,8 @@ package com.shiyu.ai.agent.biz.agent.service.impl;
 import com.shiyu.ai.agent.biz.agent.repository.ConversationMessageRepository;
 import com.shiyu.ai.agent.biz.agent.repository.LongTermMemoryRepository;
 import com.shiyu.ai.agent.biz.agent.service.MemoryService;
-import com.shiyu.ai.agent.dal.dataobject.agent.ConversationMessageDO;
-import com.shiyu.ai.agent.dal.dataobject.agent.LongTermMemoryDO;
+import com.shiyu.ai.agent.domain.bo.ConversationMessageBO;
+import com.shiyu.ai.agent.domain.bo.LongTermMemoryBO;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 
@@ -31,7 +31,7 @@ public class MemoryServiceImpl implements MemoryService {
     @Override
     public void saveMessage(String sessionId, Long userId, String agentId, String role, String content) {
         if (sessionId == null || content == null) return;
-        ConversationMessageDO msg = new ConversationMessageDO();
+        ConversationMessageBO msg = new ConversationMessageBO();
         msg.setSessionId(sessionId);
         msg.setUserId(userId);
         msg.setAgentId(agentId);
@@ -44,9 +44,9 @@ public class MemoryServiceImpl implements MemoryService {
 
     @Override
     public List<Map<String, Object>> getRecentMessages(String sessionId, int limit) {
-        List<ConversationMessageDO> messages = conversationMessageRepository.selectRecentBySession(sessionId, limit);
+        List<ConversationMessageBO> messages = conversationMessageRepository.selectRecentBySession(sessionId, limit);
         List<Map<String, Object>> result = new ArrayList<>();
-        for (ConversationMessageDO msg : messages) {
+        for (ConversationMessageBO msg : messages) {
             Map<String, Object> m = new LinkedHashMap<>();
             m.put("role", msg.getRole());
             m.put("content", msg.getContent());
@@ -80,7 +80,7 @@ public class MemoryServiceImpl implements MemoryService {
     @Override
     public void saveLongTermMemory(Long userId, String agentId, String category, String key, String content, double importance, String source) {
         if (content == null || content.isBlank()) return;
-        LongTermMemoryDO mem = new LongTermMemoryDO();
+        LongTermMemoryBO mem = new LongTermMemoryBO();
         mem.setUserId(userId);
         mem.setAgentId(agentId);
         mem.setCategory(category != null ? category : "general");
@@ -96,7 +96,7 @@ public class MemoryServiceImpl implements MemoryService {
 
     @Override
     public List<Map<String, Object>> searchLongTermMemory(String keyword, Long userId, String agentId, int topK) {
-        List<LongTermMemoryDO> list;
+        List<LongTermMemoryBO> list;
         if (keyword != null && !keyword.isBlank()) {
             list = longTermMemoryRepository.searchByKeyword(keyword, userId, agentId, topK);
         } else {
@@ -115,7 +115,7 @@ public class MemoryServiceImpl implements MemoryService {
         return searchLongTermMemory(query, userId, agentId, topK);
     }
 
-    private List<Map<String, Object>> toMemoryMapList(List<LongTermMemoryDO> list) {
+    private List<Map<String, Object>> toMemoryMapList(List<LongTermMemoryBO> list) {
         return list.stream().map(m -> {
             Map<String, Object> map = new LinkedHashMap<>();
             map.put("id", m.getId());

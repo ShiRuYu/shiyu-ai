@@ -3,6 +3,8 @@ package com.shiyu.ai.agent.biz.agent.repository;
 import com.mybatisflex.core.query.QueryWrapper;
 import com.shiyu.ai.agent.dal.dataobject.agent.ConversationMessageDO;
 import com.shiyu.ai.agent.dal.mapper.agent.ConversationMessageMapper;
+import com.shiyu.ai.agent.domain.bo.ConversationMessageBO;
+import com.shiyu.ai.common.core.utils.MapstructUtils;
 import jakarta.annotation.Resource;
 import org.springframework.stereotype.Component;
 
@@ -14,16 +16,19 @@ public class ConversationMessageRepository {
     @Resource
     private ConversationMessageMapper conversationMessageMapper;
 
-    public void insert(ConversationMessageDO message) {
+    public void insert(ConversationMessageBO bo) {
+        ConversationMessageDO message = MapstructUtils.convert(bo, ConversationMessageDO.class);
         conversationMessageMapper.insertSelective(message);
+        bo.setId(message.getId());
     }
 
-    public List<ConversationMessageDO> selectRecentBySession(String sessionId, int limit) {
+    public List<ConversationMessageBO> selectRecentBySession(String sessionId, int limit) {
         QueryWrapper qw = new QueryWrapper();
         qw.eq(ConversationMessageDO::getSessionId, sessionId);
         qw.orderBy(ConversationMessageDO::getCreateTime, false);
         qw.limit(limit);
-        return conversationMessageMapper.selectListByQuery(qw);
+        List<ConversationMessageDO> doList = conversationMessageMapper.selectListByQuery(qw);
+        return MapstructUtils.convert(doList, ConversationMessageBO.class);
     }
 
     public long countBySession(String sessionId) {

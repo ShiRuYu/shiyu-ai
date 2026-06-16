@@ -3,6 +3,8 @@ package com.shiyu.ai.agent.biz.agent.repository;
 import com.mybatisflex.core.query.QueryWrapper;
 import com.shiyu.ai.agent.dal.dataobject.agent.AgentExecutionDO;
 import com.shiyu.ai.agent.dal.mapper.agent.AgentExecutionMapper;
+import com.shiyu.ai.agent.domain.bo.AgentExecutionBO;
+import com.shiyu.ai.common.core.utils.MapstructUtils;
 import jakarta.annotation.Resource;
 import org.springframework.stereotype.Component;
 
@@ -14,32 +16,38 @@ public class AgentExecutionRepository {
     @Resource
     private AgentExecutionMapper agentExecutionMapper;
 
-    public void insert(AgentExecutionDO execution) {
+    public void insert(AgentExecutionBO bo) {
+        AgentExecutionDO execution = MapstructUtils.convert(bo, AgentExecutionDO.class);
         agentExecutionMapper.insertSelective(execution);
+        bo.setId(execution.getId());
     }
 
-    public void update(AgentExecutionDO execution) {
+    public void update(AgentExecutionBO bo) {
+        AgentExecutionDO execution = MapstructUtils.convert(bo, AgentExecutionDO.class);
         agentExecutionMapper.update(execution);
     }
 
-    public AgentExecutionDO selectByExecutionId(String executionId) {
+    public AgentExecutionBO selectByExecutionId(String executionId) {
         QueryWrapper qw = new QueryWrapper();
         qw.eq(AgentExecutionDO::getExecutionId, executionId);
-        return agentExecutionMapper.selectOneByQuery(qw);
+        AgentExecutionDO d = agentExecutionMapper.selectOneByQuery(qw);
+        return MapstructUtils.convert(d, AgentExecutionBO.class);
     }
 
-    public List<AgentExecutionDO> selectBySessionId(String sessionId) {
+    public List<AgentExecutionBO> selectBySessionId(String sessionId) {
         QueryWrapper qw = new QueryWrapper();
         qw.eq(AgentExecutionDO::getSessionId, sessionId);
         qw.orderBy(AgentExecutionDO::getStartTime, true);
-        return agentExecutionMapper.selectListByQuery(qw);
+        List<AgentExecutionDO> doList = agentExecutionMapper.selectListByQuery(qw);
+        return MapstructUtils.convert(doList, AgentExecutionBO.class);
     }
 
-    public List<AgentExecutionDO> selectByAgentId(String agentId, int limit) {
+    public List<AgentExecutionBO> selectByAgentId(String agentId, int limit) {
         QueryWrapper qw = new QueryWrapper();
         qw.eq(AgentExecutionDO::getAgentId, agentId);
         qw.orderBy(AgentExecutionDO::getStartTime, false);
         qw.limit(limit);
-        return agentExecutionMapper.selectListByQuery(qw);
+        List<AgentExecutionDO> doList = agentExecutionMapper.selectListByQuery(qw);
+        return MapstructUtils.convert(doList, AgentExecutionBO.class);
     }
 }

@@ -115,7 +115,7 @@ public class LlmCallNode extends BaseNode {
             // 1. 从输入中获取必要的参数
             String prompt = buildPrompt(input);
             String platform = getPlatform(input);
-            String modelName = getModelName(input);
+            String modelName = getModelName(input, platform);
             ChatType chatType = getChatType(input);
             
             // 2. 构建请求对象
@@ -285,7 +285,17 @@ public class LlmCallNode extends BaseNode {
             return config.getPlatform();
         }
 
-        // 3. 硬编码默认值（最低优先级）
+        // 3. DB 默认平台（中优先级）
+        try {
+            String defaultPlatform = lc4jService.getDefaultPlatform();
+            if (defaultPlatform != null && !defaultPlatform.trim().isEmpty()) {
+                return defaultPlatform;
+            }
+        } catch (Exception e) {
+            log.warn("获取默认平台失败: {}", e.getMessage());
+        }
+
+        // 4. 硬编码默认值（最低优先级）
         return "SILICON_FLOW";
     }
     
@@ -294,7 +304,7 @@ public class LlmCallNode extends BaseNode {
      * @param input 节点输入
      * @return 模型名称
      */
-    private String getModelName(NodeInput input) {
+    private String getModelName(NodeInput input, String platform) {
         // 1. Input（最高优先级）
         String model = input.getParameter(FieldKey.MODEL, null);
         if (model != null && !model.trim().isEmpty()) {
@@ -306,7 +316,17 @@ public class LlmCallNode extends BaseNode {
             return config.getModelName();
         }
 
-        // 3. 硬编码默认值（最低优先级）
+        // 3. DB 默认模型（通过已获取的平台查询）
+        try {
+            String defaultModel = lc4jService.getDefaultModelName(platform);
+            if (defaultModel != null && !defaultModel.trim().isEmpty()) {
+                return defaultModel;
+            }
+        } catch (Exception e) {
+            log.warn("获取默认模型失败: {}", e.getMessage());
+        }
+
+        // 4. 无默认值，返回 null
         return null;
     }
 }

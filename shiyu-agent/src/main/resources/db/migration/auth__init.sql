@@ -357,10 +357,6 @@ VALUES (500, '智能体', 'Agent', 'MENU', NULL, '/agent', NULL, 'carbon:ibm-wat
 INSERT INTO `menu` (`id`, `name`, `code`, `type`, `parent_id`, `path`, `redirect`, `icon`, `component`, `layout`, `keep_alive`, `method`, `description`, `show`, `status`, `order`, `del_flag`, `create_by`, `update_by`) 
 VALUES (501, 'Agent管理', 'AgentAdminList', 'MENU', 500, '/agent/admin/list', NULL, 'carbon:cube', '/agent/admin/agent-list', '', TRUE, NULL, 'Agent 注册与管理', TRUE, '1', 1, 0, '0', '0');
 
--- 智能体子菜单：AI对话 (ID: 502)
-INSERT INTO `menu` (`id`, `name`, `code`, `type`, `parent_id`, `path`, `redirect`, `icon`, `component`, `layout`, `keep_alive`, `method`, `description`, `show`, `status`, `order`, `del_flag`, `create_by`, `update_by`) 
-VALUES (502, 'AI对话', 'AgentChat', 'MENU', 500, '/agent/chat', NULL, 'carbon:chat', '/agent/chat', '', TRUE, NULL, 'LangChain4j AI对话', TRUE, '1', 2, 0, '0', '0');
-
 -- 智能体子菜单：平台管理 (ID: 503)
 INSERT INTO `menu` (`id`, `name`, `code`, `type`, `parent_id`, `path`, `redirect`, `icon`, `component`, `layout`, `keep_alive`, `method`, `description`, `show`, `status`, `order`, `del_flag`, `create_by`, `update_by`) 
 VALUES (503, '平台管理', 'CommonPlatform', 'MENU', 500, '/agent/platform', NULL, 'carbon:cloud', '/agent/platform/list', '', TRUE, NULL, 'AI平台管理', TRUE, '1', 3, 0, '0', '0');
@@ -422,19 +418,19 @@ INSERT INTO `role_menu` (`role_id`, `menu_id`) VALUES
 (0, 1), (0, 2), (0, 3), 
 (0, 100), (0, 201), (0, 20101), (0, 20102), (0, 20103), (0, 202), (0, 20201), (0, 20202), (0, 20203), (0, 203), (0, 20301), (0, 20302), (0, 20303), (0, 20304), (0, 204), (0, 20401), (0, 20402), (0, 20403), (0, 20404),
 (0, 400), (0, 401), (0, 40101), (0, 40102), (0, 40103), (0, 40104), (0, 402), (0, 40201), (0, 40202), (0, 40203), (0, 40204),
-(0, 500), (0, 501), (0, 502), (0, 503), (0, 50301), (0, 50302), (0, 50303), (0, 50304), (0, 504), (0, 50401), (0, 50402), (0, 50403), (0, 50404), (0, 505), (0, 507);
+(0, 500), (0, 501), (0, 503), (0, 50301), (0, 50302), (0, 50303), (0, 50304), (0, 504), (0, 50401), (0, 50402), (0, 50403), (0, 50404), (0, 505), (0, 507);
 
 -- admin 角色的权限（管理员权限 - 不包含 super 专属）
 INSERT INTO `role_menu` (`role_id`, `menu_id`) VALUES 
 (1, 1), (1, 2), (1, 3), 
 (1, 100), (1, 201), (1, 20101), (1, 20102), (1, 20103), (1, 202), (1, 20201), (1, 20202), (1, 20203), (1, 203), (1, 20301), (1, 20302), (1, 20303), (1, 20304), (1, 204), (1, 20401), (1, 20402), (1, 20403), (1, 20404),
 (1, 400), (1, 401), (1, 40101), (1, 40102), (1, 40103), (1, 40104), (1, 402), (1, 40201), (1, 40202), (1, 40203), (1, 40204),
-(1, 500), (1, 501), (1, 502), (1, 503), (1, 50301), (1, 50302), (1, 50303), (1, 50304), (1, 504), (1, 50401), (1, 50402), (1, 50403), (1, 50404), (1, 505), (1, 507);
+(1, 500), (1, 501), (1, 503), (1, 50301), (1, 50302), (1, 50303), (1, 50304), (1, 504), (1, 50401), (1, 50402), (1, 50403), (1, 50404), (1, 505), (1, 507);
 
 -- user 角色的权限（基础权限 - 仅 Dashboard）
 INSERT INTO `role_menu` (`role_id`, `menu_id`) VALUES 
 (2, 1), (2, 2), (2, 3),
-(2, 500), (2, 501), (2, 502), (2, 503), (2, 504), (2, 507);
+(2, 500), (2, 501), (2, 503), (2, 504), (2, 507);
 
 -- ============================================
 -- 7. 初始化权限码数据（根据 API 文档模拟数据）

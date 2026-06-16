@@ -41,4 +41,17 @@ public interface Lc4jService {
      * @return StreamingChatModel 实例
      */
     StreamingChatModel getStreamingChatModel(String platformType, String modelName);
+
+    /**
+     * 获取默认平台编码
+     * @return 默认平台编码（如 OPENAI、DEEPSEEK）
+     */
+    String getDefaultPlatform();
+
+    /**
+     * 获取指定平台的默认模型名称
+     * @param platformType 平台编码
+     * @return 默认模型名称，如无则返回 null
+     */
+    String getDefaultModelName(String platformType);
 }

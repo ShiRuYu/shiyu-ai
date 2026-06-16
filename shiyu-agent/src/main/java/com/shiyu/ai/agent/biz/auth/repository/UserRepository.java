@@ -99,13 +99,6 @@ public class UserRepository {
     }
 
     /**
-     * 根据用户ID查询角色列表（返回 DO）
-     */
-    public List<RoleDO> selectRolesByUserIdAsDO(Long userId) {
-        return userRoleMapper.selectRolesByUserId(userId);
-    }
-
-    /**
      * 根据用户ID查询角色列表（返回 BO）
      */
     public List<RoleBO> selectRolesByUserId(Long userId) {

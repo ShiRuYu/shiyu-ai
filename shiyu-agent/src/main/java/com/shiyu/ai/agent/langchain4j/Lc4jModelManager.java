@@ -288,6 +288,30 @@ public class Lc4jModelManager implements ApplicationRunner {
         return adapter != null ? adapter.getDefaultModelName() : null;
     }
 
+    /**
+     * 获取默认平台编码
+     * 优先级：DB 默认平台（is_default='Y'）> 已注册的第一个适配器 > SILICON_FLOW
+     */
+    public String getDefaultPlatform() {
+        // 1. DB 默认平台
+        try {
+            AiPlatformBO defaultPlatform = platformRepository.selectDefault();
+            if (defaultPlatform != null && StringUtils.isNotBlank(defaultPlatform.getCode())) {
+                return defaultPlatform.getCode();
+            }
+        } catch (Exception e) {
+            log.debug("查询 DB 默认平台失败: {}", e.getMessage());
+        }
+
+        // 2. 已注册的第一个适配器
+        if (!adapterMap.isEmpty()) {
+            return adapterMap.keySet().iterator().next();
+        }
+
+        // 3. 最终 fallback
+        return "SILICON_FLOW";
+    }
+
     public boolean isDbLoaded() {
         return dbLoaded;
     }
