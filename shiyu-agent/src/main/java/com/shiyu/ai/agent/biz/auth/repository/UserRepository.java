@@ -3,6 +3,8 @@ package com.shiyu.ai.agent.biz.auth.repository;
 import com.mybatisflex.core.query.QueryWrapper;
 import com.shiyu.ai.agent.dal.dataobject.auth.RoleDO;
 import com.shiyu.ai.agent.dal.dataobject.auth.UserDO;
+import com.shiyu.ai.agent.dal.dataobject.auth.UserWorkspaceRoleDO;
+import com.shiyu.ai.agent.dal.mapper.auth.RoleMapper;
 import com.shiyu.ai.agent.dal.mapper.auth.UserMapper;
 import com.shiyu.ai.agent.dal.mapper.auth.UserWorkspaceRoleMapper;
 import com.shiyu.ai.agent.domain.bo.RoleBO;
@@ -15,6 +17,8 @@ import org.springframework.stereotype.Component;
 import java.time.LocalDateTime;
 import java.util.List;
 
+import static com.mybatisflex.core.query.QueryMethods.column;
+
 /**
  * 用户数据仓储层
  */
@@ -26,6 +30,9 @@ public class UserRepository {
 
     @Resource
     private UserWorkspaceRoleMapper userWorkspaceRoleMapper;
+
+    @Resource
+    private RoleMapper roleMapper;
 
     /**
      * 分页查询用户列表
@@ -98,17 +105,18 @@ public class UserRepository {
     }
 
     /**
-     * 根据用户ID查询角色列表（返回 DO）
-     */
-    public List<RoleDO> selectRolesByUserIdAsDO(Long userId) {
-        return userWorkspaceRoleMapper.selectRolesByUserId(userId);
-    }
-
-    /**
      * 根据用户ID查询角色列表（从 user_workspace_role 去重获取）
      */
     public List<RoleBO> selectRolesByUserId(Long userId) {
-        List<RoleDO> roleDOs = userWorkspaceRoleMapper.selectRolesByUserId(userId);
+        QueryWrapper qw = QueryWrapper.create()
+            .from(RoleDO.class)
+            .innerJoin(UserWorkspaceRoleDO.class)
+                .on(column(RoleDO::getId).eq(column(UserWorkspaceRoleDO::getRoleId)))
+            .where(UserWorkspaceRoleDO::getUserId).eq(userId)
+            .and(RoleDO::getStatus).eq("1")
+            .and(RoleDO::getDelFlag).eq(0);
+        qw.orderBy(RoleDO::getId);
+        List<RoleDO> roleDOs = roleMapper.selectListByQuery(qw);
         return MapstructUtils.convert(roleDOs, RoleBO.class);
     }
 
@@ -116,7 +124,12 @@ public class UserRepository {
      * 根据用户名查询用户（包含角色信息）
      */
     public UserBO selectUserWithRolesByUsername(String username) {
-        UserDO userDO = userMapper.selectUserWithRolesByUsername(username);
+        QueryWrapper qw = QueryWrapper.create()
+            .from(UserDO.class)
+            .where(UserDO::getUsername).eq(username)
+            .and(UserDO::getStatus).eq("1")
+            .and(UserDO::getDelFlag).eq(0);
+        UserDO userDO = userMapper.selectOneByQuery(qw);
         return MapstructUtils.convert(userDO, UserBO.class);
     }
 

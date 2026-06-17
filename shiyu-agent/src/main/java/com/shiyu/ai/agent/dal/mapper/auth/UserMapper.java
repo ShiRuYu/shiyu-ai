@@ -6,8 +6,6 @@ import com.shiyu.ai.agent.dal.dataobject.auth.UserDO;
 import com.shiyu.ai.common.mybatis.core.mapper.BaseMapperFlex;
 import org.apache.ibatis.annotations.Mapper;
 
-import java.util.List;
-
 /**
  * 用户表 数据层
  */
@@ -15,8 +13,4 @@ import java.util.List;
 @UseDataSource(DataSourceConfig.AGENT)
 public interface UserMapper extends BaseMapperFlex<UserDO> {
 
-    /**
-     * 根据用户名查询用户（包含角色信息）
-     */
-    UserDO selectUserWithRolesByUsername(String username);
 }

@@ -4,6 +4,7 @@ import com.mybatisflex.core.query.QueryWrapper;
 import com.shiyu.ai.agent.dal.dataobject.auth.MenuDO;
 import com.shiyu.ai.agent.dal.dataobject.auth.RoleDO;
 import com.shiyu.ai.agent.dal.dataobject.auth.RoleWorkspaceMenuDO;
+import com.shiyu.ai.agent.dal.mapper.auth.MenuMapper;
 import com.shiyu.ai.agent.dal.mapper.auth.RoleMapper;
 import com.shiyu.ai.agent.dal.mapper.auth.RoleWorkspaceMenuMapper;
 import com.shiyu.ai.agent.domain.bo.MenuBO;
@@ -14,6 +15,9 @@ import org.apache.commons.lang3.tuple.Pair;
 import org.springframework.stereotype.Component;
 
 import java.util.List;
+import java.util.stream.Collectors;
+
+import static com.mybatisflex.core.query.QueryMethods.column;
 
 /**
  * 角色数据仓储层
@@ -26,6 +30,9 @@ public class RoleRepository {
 
     @Resource
     private RoleWorkspaceMenuMapper roleWorkspaceMenuMapper;
+
+    @Resource
+    private MenuMapper menuMapper;
 
     /**
      * 分页查询角色列表
@@ -107,7 +114,15 @@ public class RoleRepository {
      * 根据角色ID查询菜单列表
      */
     public List<MenuBO> selectMenusByRoleId(Long roleId) {
-        List<MenuDO> menuDOs = roleWorkspaceMenuMapper.selectMenusByRoleId(roleId);
+        QueryWrapper qw = QueryWrapper.create()
+            .from(MenuDO.class)
+            .innerJoin(RoleWorkspaceMenuDO.class)
+                .on(column(MenuDO::getId).eq(column(RoleWorkspaceMenuDO::getMenuId)))
+            .where(RoleWorkspaceMenuDO::getRoleId).eq(roleId)
+            .and(MenuDO::getStatus).eq("1")
+            .and(MenuDO::getDelFlag).eq(0);
+        qw.orderBy(column(MenuDO::getOrder).asc(), column(MenuDO::getId).asc());
+        List<MenuDO> menuDOs = menuMapper.selectListByQuery(qw);
         return MapstructUtils.convert(menuDOs, MenuBO.class);
     }
 
@@ -115,7 +130,17 @@ public class RoleRepository {
      * 根据角色ID查询菜单ID列表
      */
     public List<Long> selectMenuIdsByRoleId(Long roleId) {
-        return roleWorkspaceMenuMapper.selectMenuIdsByRoleId(roleId);
+        QueryWrapper qw = QueryWrapper.create()
+            .select(column(RoleWorkspaceMenuDO::getMenuId))
+            .from(RoleWorkspaceMenuDO.class)
+            .innerJoin(MenuDO.class)
+                .on(column(RoleWorkspaceMenuDO::getMenuId).eq(column(MenuDO::getId)))
+            .where(RoleWorkspaceMenuDO::getRoleId).eq(roleId)
+            .and(MenuDO::getStatus).eq("1")
+            .and(MenuDO::getDelFlag).eq(0);
+        qw.orderBy(column(MenuDO::getOrder).asc(), column(MenuDO::getId).asc());
+        List<RoleWorkspaceMenuDO> list = roleWorkspaceMenuMapper.selectListByQuery(qw);
+        return list.stream().map(RoleWorkspaceMenuDO::getMenuId).collect(Collectors.toList());
     }
 
     /**

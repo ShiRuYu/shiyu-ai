@@ -2,12 +2,9 @@ package com.shiyu.ai.agent.dal.mapper.auth;
 
 import com.mybatisflex.annotation.UseDataSource;
 import com.shiyu.ai.agent.dal.DataSourceConfig;
-import com.shiyu.ai.agent.dal.dataobject.auth.MenuDO;
 import com.shiyu.ai.agent.dal.dataobject.auth.RoleWorkspaceMenuDO;
 import com.shiyu.ai.common.mybatis.core.mapper.BaseMapperFlex;
 import org.apache.ibatis.annotations.Mapper;
-
-import java.util.List;
 
 /**
  * 角色工作空间菜单关联表 数据层
@@ -16,13 +13,4 @@ import java.util.List;
 @UseDataSource(DataSourceConfig.AGENT)
 public interface RoleWorkspaceMenuMapper extends BaseMapperFlex<RoleWorkspaceMenuDO> {
 
-    /**
-     * 根据角色ID和工作空间ID查询菜单列表
-     */
-    List<MenuDO> selectMenusByRoleId(Long roleId);
-
-    /**
-     * 根据角色ID查询菜单ID列表
-     */
-    List<Long> selectMenuIdsByRoleId(Long roleId);
 }
