@@ -12,62 +12,36 @@ public interface RoleService {
 
     /**
      * 获取角色列表 - 分页
-     *
-     * @param pageNo   页码
-     * @param pageSize 每页大小
-     * @param name     角色名称（可选）
-     * @return 分页数据
      */
     RolePageResponse getRoleList(Number pageNo, Number pageSize, String name);
 
     /**
      * 获取角色列表-all
-     *
-     * @param status 状态（可选，1正常 0停用）
-     * @return 角色列表
      */
     List<RoleBO> getAllRoles(String status);
 
     /**
      * 修改角色
-     *
-     * @param id      角色 ID
-     * @param roleBO  角色信息
-     * @return 是否成功
      */
     boolean updateRole(Long id, RoleBO roleBO);
 
     /**
      * 删除角色
-     *
-     * @param id 角色 ID
-     * @return 是否成功
      */
     boolean deleteRole(Long id);
 
     /**
-     * 取消分配角色 - 批量
-     *
-     * @param id      角色 ID
-     * @param userIds 用户 ID 列表
-     * @return 是否成功
+     * 取消分配角色 - 批量（从指定工作空间移除角色）
      */
-    boolean removeUserRoles(Long id, List<Long> userIds);
+    boolean removeUserRoles(Long id, List<Long> userIds, Long workspaceId);
 
     /**
-     * 分配角色 - 批量
-     *
-     * @param id      角色 ID
-     * @param userIds 用户 ID 列表
-     * @return 是否成功
+     * 分配角色 - 批量（在指定工作空间分配角色）
      */
-    boolean assignUserRoles(Long id, List<Long> userIds);
+    boolean assignUserRoles(Long id, List<Long> userIds, Long workspaceId);
 
     /**
      * 新增角色
-     *
-     * @param roleBO 角色信息
-     * @return 是否成功
      */
     boolean createRole(RoleBO roleBO);
 }

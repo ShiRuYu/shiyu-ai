@@ -14,4 +14,22 @@
         WHERE user_id = #{userId}
     </select>
 
+    <!-- 根据用户ID查询角色列表（从 user_workspace_role 去重获取） -->
+    <select id="selectRolesByUserId" resultType="com.shiyu.ai.agent.dal.dataobject.auth.RoleDO">
+        SELECT DISTINCT
+            r.id,
+            r.code,
+            r.name,
+            r.status,
+            r.del_flag AS delFlag,
+            r.create_time AS createTime,
+            r.update_time AS updateTime
+        FROM role r
+        INNER JOIN user_workspace_role uwr ON r.id = uwr.role_id
+        WHERE uwr.user_id = #{userId}
+          AND r.status = '1'
+          AND r.del_flag = 0
+        ORDER BY r.id
+    </select>
+
 </mapper>

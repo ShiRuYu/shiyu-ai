@@ -7,11 +7,11 @@ import java.io.Serial;
 import java.io.Serializable;
 
 /**
- * 角色菜单关联数据对象
+ * 角色工作空间菜单关联数据对象
  */
 @Data
-@Table(value = "role_menu")
-public class RoleMenuDO implements Serializable {
+@Table(value = "role_workspace_menu")
+public class RoleWorkspaceMenuDO implements Serializable {
 
     @Serial
     private static final long serialVersionUID = 1L;
@@ -20,6 +20,11 @@ public class RoleMenuDO implements Serializable {
      * 角色ID
      */
     private Long roleId;
+
+    /**
+     * 工作空间ID
+     */
+    private Long workspaceId;
 
     /**
      * 菜单ID

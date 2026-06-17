@@ -16,8 +16,8 @@
     <select id="selectCodesByUsername" resultType="java.lang.String">
         SELECT DISTINCT ac.code
         FROM auth_code ac
-        INNER JOIN user_role ur ON ac.role_id = ur.role_id
-        INNER JOIN `user` u ON ur.user_id = u.id
+        INNER JOIN user_workspace_role uwr ON ac.role_id = uwr.role_id
+        INNER JOIN `user` u ON uwr.user_id = u.id
         WHERE u.username = #{username}
           AND ac.status = '1'
           AND ac.del_flag = 0
@@ -30,8 +30,8 @@
     <select id="selectCodesByUserId" resultType="java.lang.String">
         SELECT DISTINCT ac.code
         FROM auth_code ac
-        INNER JOIN user_role ur ON ac.role_id = ur.role_id
-        WHERE ur.user_id = #{userId}
+        INNER JOIN user_workspace_role uwr ON ac.role_id = uwr.role_id
+        WHERE uwr.user_id = #{userId}
           AND ac.status = '1'
           AND ac.del_flag = 0
         ORDER BY ac.id

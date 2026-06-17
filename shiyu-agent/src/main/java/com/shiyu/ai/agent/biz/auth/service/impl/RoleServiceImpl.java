@@ -2,11 +2,12 @@ package com.shiyu.ai.agent.biz.auth.service.impl;
 
 import com.shiyu.ai.agent.biz.auth.repository.RoleRepository;
 import com.shiyu.ai.agent.biz.auth.service.RoleService;
-import com.shiyu.ai.agent.dal.dataobject.auth.UserRoleDO;
-import com.shiyu.ai.agent.dal.mapper.auth.UserRoleMapper;
+import com.shiyu.ai.agent.dal.dataobject.auth.UserWorkspaceRoleDO;
+import com.shiyu.ai.agent.dal.mapper.auth.UserWorkspaceRoleMapper;
 import com.shiyu.ai.agent.domain.bo.RoleBO;
 import com.shiyu.ai.agent.domain.vo.RolePageResponse;
 import com.shiyu.ai.agent.domain.vo.RoleVO;
+import com.shiyu.ai.common.core.domain.LoginContextHolder;
 import com.shiyu.ai.common.core.utils.MapstructUtils;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.tuple.Pair;
@@ -22,11 +23,11 @@ import java.util.List;
 public class RoleServiceImpl implements RoleService {
 
     private final RoleRepository roleRepository;
-    private final UserRoleMapper userRoleMapper;
+    private final UserWorkspaceRoleMapper userWorkspaceRoleMapper;
 
-    public RoleServiceImpl(RoleRepository roleRepository, UserRoleMapper userRoleMapper) {
+    public RoleServiceImpl(RoleRepository roleRepository, UserWorkspaceRoleMapper userWorkspaceRoleMapper) {
         this.roleRepository = roleRepository;
-        this.userRoleMapper = userRoleMapper;
+        this.userWorkspaceRoleMapper = userWorkspaceRoleMapper;
     }
 
     @Override
@@ -93,30 +94,39 @@ public class RoleServiceImpl implements RoleService {
     }
 
     @Override
-    public boolean removeUserRoles(Long roleId, List<Long> userIds) {
-        log.info("取消分配角色，roleId: {}, userIds: {}", roleId, userIds);
+    public boolean removeUserRoles(Long roleId, List<Long> userIds, Long workspaceId) {
+        log.info("取消分配角色，roleId: {}, userIds: {}, workspaceId: {}", roleId, userIds, workspaceId);
         if (userIds == null || userIds.isEmpty()) {
             return true;
         }
+        Long tenantId = LoginContextHolder.getTenantId();
         for (Long userId : userIds) {
-            userRoleMapper.deleteByQuery(new com.mybatisflex.core.query.QueryWrapper()
-                    .eq(UserRoleDO::getUserId, userId)
-                    .eq(UserRoleDO::getRoleId, roleId));
+            com.mybatisflex.core.query.QueryWrapper qw = new com.mybatisflex.core.query.QueryWrapper();
+            qw.eq(UserWorkspaceRoleDO::getUserId, userId)
+               .eq(UserWorkspaceRoleDO::getRoleId, roleId)
+               .eq(UserWorkspaceRoleDO::getWorkspaceId, workspaceId);
+            if (tenantId != null) {
+                qw.eq(UserWorkspaceRoleDO::getTenantId, tenantId);
+            }
+            userWorkspaceRoleMapper.deleteByQuery(qw);
         }
         return true;
     }
 
     @Override
-    public boolean assignUserRoles(Long roleId, List<Long> userIds) {
-        log.info("分配角色，roleId: {}, userIds: {}", roleId, userIds);
+    public boolean assignUserRoles(Long roleId, List<Long> userIds, Long workspaceId) {
+        log.info("分配角色，roleId: {}, userIds: {}, workspaceId: {}", roleId, userIds, workspaceId);
         if (userIds == null || userIds.isEmpty()) {
             return true;
         }
+        Long tenantId = LoginContextHolder.getTenantId();
         for (Long userId : userIds) {
-            UserRoleDO userRoleDO = new UserRoleDO();
-            userRoleDO.setUserId(userId);
-            userRoleDO.setRoleId(roleId);
-            userRoleMapper.insert(userRoleDO);
+            UserWorkspaceRoleDO uwr = new UserWorkspaceRoleDO();
+            uwr.setUserId(userId);
+            uwr.setWorkspaceId(workspaceId);
+            uwr.setRoleId(roleId);
+            uwr.setTenantId(tenantId);
+            userWorkspaceRoleMapper.insert(uwr);
         }
         return true;
     }

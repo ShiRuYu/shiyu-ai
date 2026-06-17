@@ -102,27 +102,30 @@ CREATE TABLE `menu` (
 CREATE INDEX `idx_parent_id` ON `menu` (`parent_id`);
 COMMENT ON TABLE `menu` IS '菜单表';
 
--- 用户角色关联表
-DROP TABLE IF EXISTS `user_role`;
-CREATE TABLE `user_role` (
-    `user_id` BIGINT NOT NULL COMMENT '用户 ID',
-    `role_id` BIGINT NOT NULL COMMENT '角色 ID',
-    `tenant_id` BIGINT NOT NULL COMMENT '租户ID',
-    PRIMARY KEY (`user_id`, `role_id`)
+-- 用户空间角色关联表（替代原 user_role，角色分配必须指定空间）
+DROP TABLE IF EXISTS `user_workspace_role`;
+CREATE TABLE `user_workspace_role` (
+    `user_id`      BIGINT NOT NULL COMMENT '用户 ID',
+    `workspace_id` BIGINT NOT NULL COMMENT '工作空间 ID',
+    `role_id`      BIGINT NOT NULL COMMENT '角色 ID',
+    `tenant_id`    BIGINT NOT NULL COMMENT '租户ID',
+    PRIMARY KEY (`user_id`, `workspace_id`, `role_id`)
 );
-CREATE INDEX `idx_role_id` ON `user_role` (`role_id`);
-COMMENT ON TABLE `user_role` IS '用户角色关联表';
+CREATE INDEX `idx_uwr_workspace` ON `user_workspace_role` (`workspace_id`);
+CREATE INDEX `idx_uwr_role` ON `user_workspace_role` (`role_id`);
+COMMENT ON TABLE `user_workspace_role` IS '用户空间角色关联表';
 
--- 角色菜单关联表
-DROP TABLE IF EXISTS `role_menu`;
-CREATE TABLE `role_menu` (
-    `role_id` BIGINT NOT NULL COMMENT '角色 ID',
-    `menu_id` BIGINT NOT NULL COMMENT '菜单 ID',
-    `tenant_id` BIGINT NOT NULL COMMENT '租户ID',
-    PRIMARY KEY (`role_id`, `menu_id`)
+-- 角色工作空间菜单关联表（原 role_menu，增加空间隔离）
+DROP TABLE IF EXISTS `role_workspace_menu`;
+CREATE TABLE `role_workspace_menu` (
+    `role_id`      BIGINT NOT NULL COMMENT '角色 ID',
+    `workspace_id` BIGINT NOT NULL COMMENT '工作空间 ID',
+    `menu_id`      BIGINT NOT NULL COMMENT '菜单 ID',
+    `tenant_id`    BIGINT NOT NULL COMMENT '租户ID',
+    PRIMARY KEY (`role_id`, `workspace_id`, `menu_id`)
 );
-CREATE INDEX `idx_menu_id` ON `role_menu` (`menu_id`);
-COMMENT ON TABLE `role_menu` IS '角色菜单关联表';
+CREATE INDEX `idx_rwm_menu_id` ON `role_workspace_menu` (`menu_id`);
+COMMENT ON TABLE `role_workspace_menu` IS '角色工作空间菜单关联表';
 
 -- 权限码表
 DROP TABLE IF EXISTS `auth_code`;
@@ -214,15 +217,7 @@ INSERT INTO `role` (`id`, `code`, `name`, `tenant_id`, `status`, `remark`, `del_
 VALUES (2, 'user', '普通用户', 1, '1', '普通用户角色', 0, '0', NOW(), '0', NOW());
 
 -- ============================================
--- 5. 初始化用户角色关联数据
--- ============================================
-
-INSERT INTO `user_role` (`user_id`, `role_id`, `tenant_id`) VALUES (0, 0, 1);
-INSERT INTO `user_role` (`user_id`, `role_id`, `tenant_id`) VALUES (1, 1, 1);
-INSERT INTO `user_role` (`user_id`, `role_id`, `tenant_id`) VALUES (2, 2, 1);
-
--- ============================================
--- 5.1 初始化用户空间角色数据
+-- 5.1 初始化用户空间角色数据（角色分配必须指定空间）
 -- ============================================
 
 INSERT INTO `user_workspace_role` (`user_id`, `workspace_id`, `role_id`, `tenant_id`)
@@ -413,24 +408,24 @@ VALUES (507, '意图管理', 'AgentIntent', 'MENU', 500, 1, '/agent/intent', NUL
 -- 8. 初始化角色菜单关联数据
 -- ============================================
 
--- super 角色的权限（完整权限 - 所有菜单）
-INSERT INTO `role_menu` (`role_id`, `menu_id`, `tenant_id`) VALUES 
-(0, 1, 1), (0, 2, 1), (0, 3, 1), 
-(0, 100, 1), (0, 201, 1), (0, 20101, 1), (0, 20102, 1), (0, 20103, 1), (0, 202, 1), (0, 20201, 1), (0, 20202, 1), (0, 20203, 1), (0, 203, 1), (0, 20301, 1), (0, 20302, 1), (0, 20303, 1), (0, 20304, 1), (0, 204, 1), (0, 20401, 1), (0, 20402, 1), (0, 20403, 1), (0, 20404, 1),
-(0, 400, 1), (0, 401, 1), (0, 40101, 1), (0, 40102, 1), (0, 40103, 1), (0, 40104, 1), (0, 402, 1), (0, 40201, 1), (0, 40202, 1), (0, 40203, 1), (0, 40204, 1),
-(0, 500, 1), (0, 501, 1), (0, 503, 1), (0, 50301, 1), (0, 50302, 1), (0, 50303, 1), (0, 50304, 1), (0, 504, 1), (0, 50401, 1), (0, 50402, 1), (0, 50403, 1), (0, 50404, 1), (0, 505, 1), (0, 507, 1);
+-- super 角色的权限（完整权限 - 所有菜单，默认空间 0）
+INSERT INTO `role_workspace_menu` (`role_id`, `workspace_id`, `menu_id`, `tenant_id`) VALUES 
+(0, 0, 1, 1), (0, 0, 2, 1), (0, 0, 3, 1), 
+(0, 0, 100, 1), (0, 0, 201, 1), (0, 0, 20101, 1), (0, 0, 20102, 1), (0, 0, 20103, 1), (0, 0, 202, 1), (0, 0, 20201, 1), (0, 0, 20202, 1), (0, 0, 20203, 1), (0, 0, 203, 1), (0, 0, 20301, 1), (0, 0, 20302, 1), (0, 0, 20303, 1), (0, 0, 20304, 1), (0, 0, 204, 1), (0, 0, 20401, 1), (0, 0, 20402, 1), (0, 0, 20403, 1), (0, 0, 20404, 1),
+(0, 0, 400, 1), (0, 0, 401, 1), (0, 0, 40101, 1), (0, 0, 40102, 1), (0, 0, 40103, 1), (0, 0, 40104, 1), (0, 0, 402, 1), (0, 0, 40201, 1), (0, 0, 40202, 1), (0, 0, 40203, 1), (0, 0, 40204, 1),
+(0, 0, 500, 1), (0, 0, 501, 1), (0, 0, 502, 1), (0, 0, 503, 1), (0, 0, 50301, 1), (0, 0, 50302, 1), (0, 0, 50303, 1), (0, 0, 50304, 1), (0, 0, 504, 1), (0, 0, 50401, 1), (0, 0, 50402, 1), (0, 0, 50403, 1), (0, 0, 50404, 1), (0, 0, 505, 1), (0, 0, 507, 1);
 
--- admin 角色的权限（管理员权限 - 不包含 super 专属）
-INSERT INTO `role_menu` (`role_id`, `menu_id`, `tenant_id`) VALUES 
-(1, 1, 1), (1, 2, 1), (1, 3, 1), 
-(1, 100, 1), (1, 201, 1), (1, 20101, 1), (1, 20102, 1), (1, 20103, 1), (1, 202, 1), (1, 20201, 1), (1, 20202, 1), (1, 20203, 1), (1, 203, 1), (1, 20301, 1), (1, 20302, 1), (1, 20303, 1), (1, 20304, 1), (1, 204, 1), (1, 20401, 1), (1, 20402, 1), (1, 20403, 1), (1, 20404, 1),
-(1, 400, 1), (1, 401, 1), (1, 40101, 1), (1, 40102, 1), (1, 40103, 1), (1, 40104, 1), (1, 402, 1), (1, 40201, 1), (1, 40202, 1), (1, 40203, 1), (1, 40204, 1),
-(1, 500, 1), (1, 501, 1), (1, 503, 1), (1, 50301, 1), (1, 50302, 1), (1, 50303, 1), (1, 50304, 1), (1, 504, 1), (1, 50401, 1), (1, 50402, 1), (1, 50403, 1), (1, 50404, 1), (1, 505, 1), (1, 507, 1);
+-- admin 角色的权限（管理员权限 - 不包含 super 专属，默认空间 0）
+INSERT INTO `role_workspace_menu` (`role_id`, `workspace_id`, `menu_id`, `tenant_id`) VALUES 
+(1, 0, 1, 1), (1, 0, 2, 1), (1, 0, 3, 1), 
+(1, 0, 100, 1), (1, 0, 201, 1), (1, 0, 20101, 1), (1, 0, 20102, 1), (1, 0, 20103, 1), (1, 0, 202, 1), (1, 0, 20201, 1), (1, 0, 20202, 1), (1, 0, 20203, 1), (1, 0, 203, 1), (1, 0, 20301, 1), (1, 0, 20302, 1), (1, 0, 20303, 1), (1, 0, 20304, 1), (1, 0, 204, 1), (1, 0, 20401, 1), (1, 0, 20402, 1), (1, 0, 20403, 1), (1, 0, 20404, 1),
+(1, 0, 400, 1), (1, 0, 401, 1), (1, 0, 40101, 1), (1, 0, 40102, 1), (1, 0, 40103, 1), (1, 0, 40104, 1), (1, 0, 402, 1), (1, 0, 40201, 1), (1, 0, 40202, 1), (1, 0, 40203, 1), (1, 0, 40204, 1),
+(1, 0, 500, 1), (1, 0, 501, 1), (1, 0, 502, 1), (1, 0, 503, 1), (1, 0, 50301, 1), (1, 0, 50302, 1), (1, 0, 50303, 1), (1, 0, 50304, 1), (1, 0, 504, 1), (1, 0, 50401, 1), (1, 0, 50402, 1), (1, 0, 50403, 1), (1, 0, 50404, 1), (1, 0, 505, 1), (1, 0, 507, 1);
 
--- user 角色的权限（基础权限 - 仅 Dashboard + Agent 可见）
-INSERT INTO `role_menu` (`role_id`, `menu_id`, `tenant_id`) VALUES 
-(2, 1, 1), (2, 2, 1), (2, 3, 1),
-(2, 500, 1), (2, 501, 1), (2, 503, 1), (2, 504, 1), (2, 507, 1);
+-- user 角色的权限（基础权限 - 仅 Dashboard 和 Agent 目录，默认空间 0）
+INSERT INTO `role_workspace_menu` (`role_id`, `workspace_id`, `menu_id`, `tenant_id`) VALUES 
+(2, 0, 1, 1), (2, 0, 2, 1), (2, 0, 3, 1),
+(2, 0, 500, 1), (2, 0, 501, 1), (2, 0, 502, 1), (2, 0, 503, 1), (2, 0, 504, 1), (2, 0, 507, 1);
 
 -- ============================================
 -- 9. 初始化权限码数据

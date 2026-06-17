@@ -3,9 +3,9 @@ package com.shiyu.ai.agent.biz.auth.repository;
 import com.mybatisflex.core.query.QueryWrapper;
 import com.shiyu.ai.agent.dal.dataobject.auth.MenuDO;
 import com.shiyu.ai.agent.dal.dataobject.auth.RoleDO;
-import com.shiyu.ai.agent.dal.dataobject.auth.RoleMenuDO;
+import com.shiyu.ai.agent.dal.dataobject.auth.RoleWorkspaceMenuDO;
 import com.shiyu.ai.agent.dal.mapper.auth.RoleMapper;
-import com.shiyu.ai.agent.dal.mapper.auth.RoleMenuMapper;
+import com.shiyu.ai.agent.dal.mapper.auth.RoleWorkspaceMenuMapper;
 import com.shiyu.ai.agent.domain.bo.MenuBO;
 import com.shiyu.ai.agent.domain.bo.RoleBO;
 import com.shiyu.ai.common.core.utils.MapstructUtils;
@@ -25,7 +25,7 @@ public class RoleRepository {
     private RoleMapper roleMapper;
 
     @Resource
-    private RoleMenuMapper roleMenuMapper;
+    private RoleWorkspaceMenuMapper roleWorkspaceMenuMapper;
 
     /**
      * 分页查询角色列表
@@ -107,7 +107,7 @@ public class RoleRepository {
      * 根据角色ID查询菜单列表
      */
     public List<MenuBO> selectMenusByRoleId(Long roleId) {
-        List<MenuDO> menuDOs = roleMenuMapper.selectMenusByRoleId(roleId);
+        List<MenuDO> menuDOs = roleWorkspaceMenuMapper.selectMenusByRoleId(roleId);
         return MapstructUtils.convert(menuDOs, MenuBO.class);
     }
 
@@ -115,7 +115,7 @@ public class RoleRepository {
      * 根据角色ID查询菜单ID列表
      */
     public List<Long> selectMenuIdsByRoleId(Long roleId) {
-        return roleMenuMapper.selectMenuIdsByRoleId(roleId);
+        return roleWorkspaceMenuMapper.selectMenuIdsByRoleId(roleId);
     }
 
     /**
@@ -126,21 +126,30 @@ public class RoleRepository {
             return;
         }
         
+        Long workspaceId = com.shiyu.ai.common.core.domain.LoginContextHolder.getCurrentWorkspaceId();
+        Long tenantId = com.shiyu.ai.common.core.domain.LoginContextHolder.getTenantId();
+        
         for (Long menuId : menuIds) {
-            RoleMenuDO roleMenuDO = new RoleMenuDO();
-            roleMenuDO.setRoleId(roleId);
-            roleMenuDO.setMenuId(menuId);
-            roleMenuMapper.insert(roleMenuDO);
+            RoleWorkspaceMenuDO rwm = new RoleWorkspaceMenuDO();
+            rwm.setRoleId(roleId);
+            rwm.setWorkspaceId(workspaceId);
+            rwm.setMenuId(menuId);
+            rwm.setTenantId(tenantId);
+            roleWorkspaceMenuMapper.insert(rwm);
         }
     }
 
     /**
-     * 删除角色的所有菜单关联
+     * 删除角色的所有菜单关联（按当前工作空间过滤）
      */
     public void deleteRoleMenus(Long roleId) {
+        Long workspaceId = com.shiyu.ai.common.core.domain.LoginContextHolder.getCurrentWorkspaceId();
         QueryWrapper queryWrapper = new QueryWrapper();
-        queryWrapper.eq(RoleMenuDO::getRoleId, roleId);
-        roleMenuMapper.deleteByQuery(queryWrapper);
+        queryWrapper.eq(RoleWorkspaceMenuDO::getRoleId, roleId);
+        if (workspaceId != null) {
+            queryWrapper.eq(RoleWorkspaceMenuDO::getWorkspaceId, workspaceId);
+        }
+        roleWorkspaceMenuMapper.deleteByQuery(queryWrapper);
     }
 
 }

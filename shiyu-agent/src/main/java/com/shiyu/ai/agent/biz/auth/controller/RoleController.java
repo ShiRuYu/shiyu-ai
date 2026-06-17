@@ -119,9 +119,9 @@ public class RoleController {
     public Result<Void> removeUserRoles(
             @PathVariable Long id,
             @RequestBody AssignUserRolesRequest request) {
-        log.info("取消分配角色，id: {}, userIds: {}", id, request.getUserIds());
+        log.info("取消分配角色，id: {}, userIds: {}, workspaceId: {}", id, request.getUserIds(), request.getWorkspaceId());
         
-        boolean success = roleService.removeUserRoles(id, request.getUserIds());
+        boolean success = roleService.removeUserRoles(id, request.getUserIds(), request.getWorkspaceId());
         
         if (success) {
             return Result.success();
@@ -137,9 +137,9 @@ public class RoleController {
     public Result<Void> assignUserRoles(
             @PathVariable Long id,
             @RequestBody AssignUserRolesRequest request) {
-        log.info("分配角色，id: {}, userIds: {}", id, request.getUserIds());
+        log.info("分配角色，id: {}, userIds: {}, workspaceId: {}", id, request.getUserIds(), request.getWorkspaceId());
         
-        boolean success = roleService.assignUserRoles(id, request.getUserIds());
+        boolean success = roleService.assignUserRoles(id, request.getUserIds(), request.getWorkspaceId());
         
         if (success) {
             return Result.success();
