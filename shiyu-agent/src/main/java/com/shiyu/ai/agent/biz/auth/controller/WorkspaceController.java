@@ -9,7 +9,10 @@ import com.shiyu.ai.common.core.utils.MapstructUtils;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 /**
  * 工作空间管理 Controller
@@ -26,7 +29,7 @@ public class WorkspaceController {
     }
 
     /**
-     * 获取工作空间列表（树形）
+     * 获取工作空间列表（树形），平铺转换避免循环引用导致的 StackOverflowError
      */
     @GetMapping("/list")
     public Result<List<WorkspaceVO>> getWorkspaceList(
@@ -34,9 +37,15 @@ public class WorkspaceController {
         log.info("获取工作空间列表，name: {}", name);
 
         List<WorkspaceBO> workspaceBOs = workspaceService.getWorkspaceList(name);
-        List<WorkspaceVO> workspaceVOs = MapstructUtils.convert(workspaceBOs, WorkspaceVO.class);
 
-        return Result.success(workspaceVOs);
+        // 先平铺树 -> 清空 children 避免递归转换导致循环引用
+        List<WorkspaceBO> flatBos = flattenBos(workspaceBOs);
+        List<WorkspaceVO> flatVos = MapstructUtils.convert(flatBos, WorkspaceVO.class);
+
+        // 从扁平 VO 列表重建树形结构
+        List<WorkspaceVO> tree = buildVOTree(flatVos);
+
+        return Result.success(tree);
     }
 
     /**
@@ -90,4 +99,67 @@ public class WorkspaceController {
             return Result.fail("删除失败，可能存在子工作空间");
         }
     }
+
+    /**
+     * 将树形 BO 列表平铺为扁平列表，同时清除 children 以避免递归转换
+     */
+    private List<WorkspaceBO> flattenBos(List<WorkspaceBO> bos) {
+        List<WorkspaceBO> flat = new ArrayList<>();
+        flattenBosRecursive(bos, flat);
+        return flat;
+    }
+
+    private void flattenBosRecursive(List<WorkspaceBO> nodes, List<WorkspaceBO> result) {
+        if (nodes == null) {
+            return;
+        }
+        for (WorkspaceBO node : nodes) {
+            // 先保存 children 引用，再清空
+            List<WorkspaceBO> children = node.getChildren();
+            node.setChildren(null);
+            result.add(node);
+            // 递归处理子节点
+            if (children != null) {
+                flattenBosRecursive(children, result);
+            }
+        }
+    }
+
+    /**
+     * 从扁平 VO 列表重建树形结构（基于 parentId 字段），
+     * 父节点为 0L 或 null 的作为根节点
+     */
+    private List<WorkspaceVO> buildVOTree(List<WorkspaceVO> flatVos) {
+        if (flatVos == null || flatVos.isEmpty()) {
+            return new ArrayList<>();
+        }
+
+        // 建立 id -> VO 映射
+        Map<Long, WorkspaceVO> voMap = new HashMap<>();
+        for (WorkspaceVO vo : flatVos) {
+            vo.setChildren(new ArrayList<>());
+            voMap.put(vo.getId(), vo);
+        }
+
+        // 按 parentId 挂载子节点，同时收集根节点
+        List<WorkspaceVO> roots = new ArrayList<>();
+        for (WorkspaceVO vo : flatVos) {
+            Long parentId = vo.getParentId();
+            if (parentId == null || parentId == 0L) {
+                roots.add(vo);
+            } else {
+                WorkspaceVO parent = voMap.get(parentId);
+                if (parent != null) {
+                    parent.getChildren().add(vo);
+                } else {
+                    // parentId 指向不存在的节点，降级为根节点
+                    log.warn("工作空间 {} 的 parentId={} 不存在，降级为根节点", vo.getId(), parentId);
+                    roots.add(vo);
+                }
+            }
+        }
+
+        return roots;
+    }
+
 }

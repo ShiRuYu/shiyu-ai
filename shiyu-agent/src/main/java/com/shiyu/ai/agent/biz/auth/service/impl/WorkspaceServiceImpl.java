@@ -7,8 +7,10 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.stream.Collectors;
 
 /**
@@ -72,7 +74,7 @@ public class WorkspaceServiceImpl implements WorkspaceService {
     }
 
     /**
-     * 将平铺列表构建为树形结构
+     * 将平铺列表构造为树形结构（含循环引用防护）
      */
     private List<WorkspaceBO> buildTree(List<WorkspaceBO> workspaces) {
         if (workspaces == null || workspaces.isEmpty()) {
@@ -83,9 +85,23 @@ public class WorkspaceServiceImpl implements WorkspaceService {
                 .collect(Collectors.groupingBy(d ->
                         d.getParentId() == null ? 0L : d.getParentId()));
 
+        Set<Long> allIds = workspaces.stream()
+                .map(WorkspaceBO::getId)
+                .collect(Collectors.toSet());
+
         for (WorkspaceBO workspace : workspaces) {
-            List<WorkspaceBO> children = grouped.get(workspace.getId());
-            workspace.setChildren(children != null ? children : new ArrayList<>());
+            Long id = workspace.getId();
+            List<WorkspaceBO> children = grouped.get(id);
+            if (children != null) {
+                // 过滤掉自身引用（parentId == id）和不存在的节点，防止循环引用
+                workspace.setChildren(
+                        children.stream()
+                                .filter(c -> allIds.contains(c.getId()) && !c.getId().equals(id))
+                                .collect(Collectors.toList())
+                );
+            } else {
+                workspace.setChildren(new ArrayList<>());
+            }
         }
 
         return grouped.getOrDefault(0L, new ArrayList<>());
