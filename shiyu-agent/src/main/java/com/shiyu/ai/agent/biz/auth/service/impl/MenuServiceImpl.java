@@ -1,16 +1,19 @@
 package com.shiyu.ai.agent.biz.auth.service.impl;
 
+import com.github.benmanes.caffeine.cache.Cache;
+import com.github.benmanes.caffeine.cache.Caffeine;
 import com.shiyu.ai.agent.biz.auth.repository.MenuRepository;
-import com.shiyu.ai.agent.biz.auth.repository.RoleRepository;
-import com.shiyu.ai.agent.biz.auth.repository.UserRepository;
 import com.shiyu.ai.agent.biz.auth.service.MenuService;
 import com.shiyu.ai.agent.domain.bo.MenuBO;
-import com.shiyu.ai.agent.domain.bo.RoleBO;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 
-import java.util.*;
-import java.util.stream.Collectors;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.Comparator;
+import java.util.concurrent.TimeUnit;
 
 /**
  * 菜单服务实现类
@@ -20,245 +23,221 @@ import java.util.stream.Collectors;
 public class MenuServiceImpl implements MenuService {
 
     private final MenuRepository menuRepository;
-    private final UserRepository userRepository;
-    private final RoleRepository roleRepository;
 
-    public MenuServiceImpl(MenuRepository menuRepository, UserRepository userRepository, RoleRepository roleRepository) {
+    /**
+     * 路由菜单缓存：userId → 菜单树
+     * 菜单数据由管理员维护，变更频率极低，适合 5 分钟本地缓存
+     */
+    private final Cache<Long, List<MenuBO>> routeMenuCache;
+
+    public MenuServiceImpl(MenuRepository menuRepository) {
         this.menuRepository = menuRepository;
-        this.userRepository = userRepository;
-        this.roleRepository = roleRepository;
+        this.routeMenuCache = Caffeine.newBuilder()
+                .maximumSize(1000)
+                .expireAfterWrite(5, TimeUnit.MINUTES)
+                .recordStats()
+                .build();
     }
 
     @Override
     public List<MenuBO> getMenuPermissionsTree() {
-        log.info("获取角色权限树-by token");
-        // 返回所有权限树
+        log.info("获取角色权限树 by token");
         return getAllTree();
     }
 
     @Override
     public List<MenuBO> getMenuTree() {
         log.info("获取权限树 - 菜单");
-        // 查询所有菜单类型
         List<MenuBO> menus = menuRepository.selectAllByType("MENU");
-        
-        // 构建树形结构
-        return buildMenuTree(menus, null);
+        return buildMenuTree(menus);
     }
 
     @Override
     public List<MenuBO> getAllTree() {
-        log.info("获取权限树-all");
-        // 查询所有菜单
+        log.info("获取权限树 all");
         List<MenuBO> allMenuBOs = menuRepository.selectAll();
-        
-        // 构建树形结构
-        return buildMenuTree(allMenuBOs, null);
+        return buildMenuTree(allMenuBOs);
     }
-    
+
     /**
-     * 构建菜单树形结构
-     * @param allMenus 所有菜单列表
-     * @param parentId 父菜单 ID，null 表示根节点
-     * @return 树形结构的菜单列表
+     * 构建菜单树形结构（O(n) Map 分组，替代原 O(n²) 递归）
      */
-    private List<MenuBO> buildMenuTree(List<MenuBO> allMenus, Long parentId) {
-        List<MenuBO> tree = new ArrayList<>();
-        
+    private List<MenuBO> buildMenuTree(List<MenuBO> allMenus) {
+        if (allMenus == null || allMenus.isEmpty()) {
+            return new ArrayList<>();
+        }
+
+        // 一次遍历建立 parentId → children 映射
+        Map<Long, List<MenuBO>> childrenMap = new HashMap<>();
+        List<MenuBO> roots = new ArrayList<>();
+
         for (MenuBO menu : allMenus) {
-            // 如果 parentId 为 null，查找所有根节点（parent_id 为 null 的菜单）
-            // 如果 parentId 不为 null，查找指定父节点的子菜单
-            boolean isMatch = (parentId == null && menu.getParentId() == null) ||
-                             (parentId != null && parentId.equals(menu.getParentId()));
-            
-            if (isMatch) {
-                // 递归查找子菜单
-                List<MenuBO> children = buildMenuTree(allMenus, menu.getId());
-                if (children != null && !children.isEmpty()) {
-                    menu.setChildren(children);
-                }
-                tree.add(menu);
+            Long pid = menu.getParentId();
+            if (pid == null) {
+                roots.add(menu);
+            } else {
+                childrenMap.computeIfAbsent(pid, k -> new ArrayList<>()).add(menu);
             }
         }
-        
-        return tree;
+
+        // 递归挂载子节点
+        for (MenuBO root : roots) {
+            attachChildren(root, childrenMap);
+        }
+        return roots;
     }
 
-
+    private void attachChildren(MenuBO parent, Map<Long, List<MenuBO>> childrenMap) {
+        List<MenuBO> children = childrenMap.get(parent.getId());
+        if (children != null && !children.isEmpty()) {
+            parent.setChildren(children);
+            for (MenuBO child : children) {
+                attachChildren(child, childrenMap);
+            }
+        }
+    }
 
     @Override
     public boolean deleteMenu(Long id) {
         log.info("删除菜单，id: {}", id);
-        return menuRepository.deleteById(id);
+        boolean result = menuRepository.deleteById(id);
+        if (result) {
+            evictAllRouteMenuCache();
+        }
+        return result;
     }
 
     @Override
     public boolean createMenu(MenuBO menuBO) {
         log.info("新增菜单");
         menuRepository.insert(menuBO);
+        evictAllRouteMenuCache();
         return true;
     }
 
     @Override
     public boolean updateMenu(Long id, MenuBO menuBO) {
         log.info("修改菜单，id: {}", id);
-        
+
         MenuBO existingMenu = menuRepository.selectById(id);
         if (existingMenu == null) {
             return false;
         }
-        
+
         menuBO.setId(id);
-        return menuRepository.update(menuBO);
+        boolean result = menuRepository.update(menuBO);
+        if (result) {
+            evictAllRouteMenuCache();
+        }
+        return result;
+    }
+
+    @Override
+    public List<MenuBO> getMenuRoots() {
+        log.info("获取根节点菜单（parentId 为 null）");
+        List<MenuBO> allMenus = menuRepository.selectAll();
+        return allMenus.stream()
+                .filter(m -> m.getParentId() == null)
+                .sorted(Comparator.comparing(MenuBO::getOrder, Comparator.nullsLast(Comparator.naturalOrder()))
+                        .thenComparing(MenuBO::getId, Comparator.nullsLast(Comparator.naturalOrder())))
+                .toList();
+    }
+
+    @Override
+    public List<MenuBO> getChildrenByParentId(Long parentId) {
+        log.info("获取子菜单，parentId: {}", parentId);
+        return menuRepository.selectByParentId(parentId);
     }
 
     @Override
     public List<MenuBO> getButtonsByParentId(Long parentId) {
-        log.info("获取按钮权限-by parentId: {}", parentId);
-        
-        List<MenuBO> allMenus = getAllTree();
-        List<MenuBO> buttons = new ArrayList<>();
-        
-        for (MenuBO menu : allMenus) {
-            if (parentId.equals(menu.getParentId()) && "BUTTON".equals(menu.getType())) {
-                buttons.add(menu);
-            }
-        }
-        
-        return buttons;
+        log.info("获取按钮权限 by parentId: {}", parentId);
+        // 直接 SQL 查询，替代原 getAllTree() 全量加载后再内存过滤
+        return menuRepository.selectByParentIdAndType(parentId, "BUTTON");
     }
-    
+
     @Override
     public List<MenuBO> getMenuTreeByUserId(Long userId) {
         log.info("根据用户 ID 获取菜单树，userId: {}", userId);
-        
-        // 1. 查询用户的角色列表
-        List<RoleBO> roles = userRepository.selectRolesByUserId(userId);
-        if (roles == null || roles.isEmpty()) {
-            log.warn("用户 {} 没有分配角色", userId);
+        // 复用单 JOIN 查询 + 建树
+        List<MenuBO> userMenus = menuRepository.selectMenusByUserId(userId, null);
+        if (userMenus.isEmpty()) {
             return new ArrayList<>();
         }
-        
-        // 2. 收集所有角色的菜单 ID（去重）
-        Set<Long> menuIds = new HashSet<>();
-        for (RoleBO role : roles) {
-            List<MenuBO> menus = roleRepository.selectMenusByRoleId(role.getId());
-            if (menus != null) {
-                for (MenuBO menu : menus) {
-                    menuIds.add(menu.getId());
-                }
-            }
-        }
-        
-        if (menuIds.isEmpty()) {
-            log.warn("用户 {} 的角色没有分配菜单", userId);
-            return new ArrayList<>();
-        }
-        
-        // 3. 查询所有菜单
-        List<MenuBO> allMenus = menuRepository.selectAll();
-        
-        // 4. 过滤出用户有权限的菜单
-        List<MenuBO> userMenuBOs = allMenus.stream()
-                .filter(menu -> menuIds.contains(menu.getId()))
-                .collect(Collectors.toList());
-        
-        // 5. 构建树形结构
-        return buildMenuTree(userMenuBOs, null);
+        return buildMenuTree(userMenus);
     }
-    
+
     @Override
     public List<MenuBO> getMenusByUserIdAndType(Long userId, String type) {
         log.info("根据用户 ID 和类型获取菜单树，userId: {}, type: {}", userId, type);
-        // 1. 查询用户的角色列表
-        List<RoleBO> roles = userRepository.selectRolesByUserId(userId);
-        if (roles == null || roles.isEmpty()) {
-            log.warn("用户 {} 没有分配角色", userId);
+        List<MenuBO> userMenus = menuRepository.selectMenusByUserId(userId, null);
+        if (userMenus.isEmpty()) {
             return new ArrayList<>();
         }
-        
-        // 2. 收集所有角色的菜单 ID（去重）
-        Set<Long> menuIds = new HashSet<>();
-        for (RoleBO role : roles) {
-            List<MenuBO> menus = roleRepository.selectMenusByRoleId(role.getId());
-            if (menus != null) {
-                for (MenuBO menu : menus) {
-                    menuIds.add(menu.getId());
-                }
-            }
-        }
-        
-        if (menuIds.isEmpty()) {
-            log.warn("用户 {} 的角色没有分配菜单", userId);
-            return new ArrayList<>();
-        }
-        
-        // 3. 根据类型查询所有菜单
-        List<MenuBO> allMenus = menuRepository.selectAllByType(type);
-        
-        // 4. 过滤出用户有权限且符合类型的菜单
-        List<MenuBO> userMenuBOs = allMenus.stream()
-                .filter(menu -> menuIds.contains(menu.getId()))
-                .collect(Collectors.toList());
-        
-        // 5. 构建树形结构
-        return buildMenuTree(userMenuBOs, null);
+        List<MenuBO> filtered = userMenus.stream()
+                .filter(menu -> type.equals(menu.getType()))
+                .toList();
+        return buildMenuTree(filtered);
     }
 
     @Override
     public boolean isMenuNameExists(String name, Long id) {
         log.info("检查菜单名称是否存在，name: {}, id: {}", name, id);
-        List<MenuBO> allMenus = menuRepository.selectAll();
-        return allMenus.stream().anyMatch(menu ->
-                menu.getName() != null && menu.getName().equals(name)
-                        && (id == null || !id.equals(menu.getId())));
+        // SQL COUNT，替代原全表加载 + 内存过滤
+        return menuRepository.existsByName(name, id);
     }
 
     @Override
     public boolean isMenuPathExists(String path, Long id) {
         log.info("检查菜单路径是否存在，path: {}, id: {}", path, id);
-        List<MenuBO> allMenus = menuRepository.selectAll();
-        return allMenus.stream().anyMatch(menu ->
-                menu.getPath() != null && menu.getPath().equals(path)
-                        && (id == null || !id.equals(menu.getId())));
+        // SQL COUNT，替代原全表加载 + 内存过滤
+        return menuRepository.existsByPath(path, id);
     }
 
     @Override
     public List<MenuBO> getRouteMenusByUserId(Long userId) {
         log.info("获取用户路由菜单（排除 BUTTON），userId: {}", userId);
 
-        // 1. 查询用户的角色列表
-        List<RoleBO> roles = userRepository.selectRolesByUserId(userId);
-        if (roles == null || roles.isEmpty()) {
-            log.warn("用户 {} 没有分配角色", userId);
+        // 1. 查缓存
+        List<MenuBO> cached = routeMenuCache.getIfPresent(userId);
+        if (cached != null) {
+            log.debug("路由菜单缓存命中，userId: {}", userId);
+            return cached;
+        }
+
+        // 2. 单 SQL JOIN 查询，替代原来的 查角色→遍历查菜单→全表查→内存过滤 流程
+        List<MenuBO> userMenus = menuRepository.selectMenusByUserId(userId, "BUTTON");
+        if (userMenus.isEmpty()) {
+            log.warn("用户 {} 没有分配菜单", userId);
             return new ArrayList<>();
         }
 
-        // 2. 收集所有角色的菜单 ID（去重）
-        Set<Long> menuIds = new HashSet<>();
-        for (RoleBO role : roles) {
-            List<MenuBO> menus = roleRepository.selectMenusByRoleId(role.getId());
-            if (menus != null) {
-                for (MenuBO menu : menus) {
-                    menuIds.add(menu.getId());
-                }
-            }
+        // 3. 建树
+        List<MenuBO> tree = buildMenuTree(userMenus);
+
+        // 4. 写入缓存
+        routeMenuCache.put(userId, tree);
+        log.info("路由菜单已缓存，userId: {}", userId);
+        return tree;
+    }
+
+    /**
+     * 清除指定用户的路由菜单缓存
+     */
+    public void evictRouteMenuCache(Long userId) {
+        if (userId != null) {
+            routeMenuCache.invalidate(userId);
+            log.debug("路由菜单缓存已清除，userId: {}", userId);
         }
+    }
 
-        if (menuIds.isEmpty()) {
-            log.warn("用户 {} 的角色没有分配菜单", userId);
-            return new ArrayList<>();
-        }
-
-        // 3. 查询所有菜单（排除 BUTTON 类型）
-        List<MenuBO> allMenus = menuRepository.selectAllExcludingType("BUTTON");
-
-        // 4. 过滤出用户有权限的菜单
-        List<MenuBO> userMenuBOs = allMenus.stream()
-                .filter(menu -> menuIds.contains(menu.getId()))
-                .collect(Collectors.toList());
-
-        // 5. 构建树形结构
-        return buildMenuTree(userMenuBOs, null);
+    /**
+     * 清除所有用户的路由菜单缓存（菜单增删改后调用）
+     */
+    public void evictAllRouteMenuCache() {
+        routeMenuCache.invalidateAll();
+        log.info("全部路由菜单缓存已清除（菜单结构变更）");
     }
 }
+
+

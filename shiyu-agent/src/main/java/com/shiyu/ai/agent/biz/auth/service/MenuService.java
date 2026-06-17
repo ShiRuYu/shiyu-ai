@@ -10,7 +10,7 @@ import java.util.List;
 public interface MenuService {
 
     /**
-     * 获取角色权限树-by token
+     * 获取角色权限树 by token
      *
      * @return 权限树
      */
@@ -24,7 +24,7 @@ public interface MenuService {
     List<MenuBO> getMenuTree();
 
     /**
-     * 获取权限树-all
+     * 获取权限树 all
      *
      * @return 权限树
      */
@@ -97,6 +97,21 @@ public interface MenuService {
      * @return true 表示已存在
      */
     boolean isMenuPathExists(String path, Long id);
+
+    /**
+     * 获取根节点菜单（parentId 为 null，用于懒加载初始加载）
+     *
+     * @return 根菜单列表（平铺）
+     */
+    List<MenuBO> getMenuRoots();
+
+    /**
+     * 获取指定父菜单的子菜单（用于懒加载展开）
+     *
+     * @param parentId 父菜单 ID
+     * @return 子菜单列表（平铺）
+     */
+    List<MenuBO> getChildrenByParentId(Long parentId);
 
     /**
      * 获取用户路由菜单（CATALOG + MENU，排除 BUTTON）

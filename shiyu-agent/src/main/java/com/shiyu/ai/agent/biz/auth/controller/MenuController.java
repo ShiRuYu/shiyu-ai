@@ -14,7 +14,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 /**
- * 菜单管理 Controller
+ * Menu Controller
  */
 @Slf4j
 @RestController
@@ -27,253 +27,112 @@ public class MenuController {
         this.menuService = menuService;
     }
 
-    /**
-     * 获取当前用户路由菜单（CATALOG + MENU，排除 BUTTON）
-     * GET /menu/all
-     * 用于前端 backend accessMode 动态路由生成
-     */
     @GetMapping("/all")
     public Result<List<RouteMenuVO>> getAllMenus(
             @RequestHeader(value = "Authorization", required = false) String token) {
-        log.info("获取当前用户路由菜单（CATALOG + MENU）");
-        
+        log.info("getAllMenus");
         try {
             Long userId = LoginContextHolder.getUserId();
-            
-            // 从数据库查询用户的路由菜单（排除 BUTTON）
             List<MenuBO> menuBOs = menuService.getRouteMenusByUserId(userId);
-            
-            // 转换为 RouteMenuVO
-            List<RouteMenuVO> routeMenus = convertToRouteMenuVO(menuBOs);
-            
-            return Result.success(routeMenus);
-            
+            return Result.success(convertToRouteMenuVO(menuBOs));
         } catch (Exception e) {
-            log.error("获取菜单失败", e);
-            return Result.fail("获取菜单失败：" + e.getMessage());
+            log.error("getAllMenus error", e);
+            return Result.fail(e.getMessage());
         }
     }
-    
-    /**
-     * 获取系统菜单列表
-     * GET /menu/list
-     */
+
     @GetMapping("/list")
-    public Result<List<RouteMenuVO>> getSystemMenuList(
-            @RequestHeader(value = "Authorization", required = false) String token) {
-        log.info("获取系统菜单列表");
-        
-        try {
-            // 从服务层获取所有菜单
-            List<MenuBO> menuBOs = menuService.getAllTree();
-            
-            // 转换为 RouteMenuVO（统一格式）
-            List<RouteMenuVO> routeMenus = convertToRouteMenuVO(menuBOs);
-            
-            return Result.success(routeMenus);
-            
-        } catch (Exception e) {
-            log.error("获取系统菜单列表失败", e);
-            return Result.fail("获取系统菜单列表失败：" + e.getMessage());
-        }
+    public Result<List<RouteMenuVO>> getSystemMenuList() {
+        return Result.success(convertToRouteMenuVO(menuService.getAllTree()));
     }
-    
-    /**
-     * 将 MenuBO 列表转换为 RouteMenuVO 列表
-     * 适配 Vben 5.x backend accessMode 的路由格式
-     */
+
+    @GetMapping("/list/roots")
+    public Result<List<RouteMenuVO>> getMenuRoots() {
+        return Result.success(convertToRouteMenuVO(menuService.getMenuRoots()));
+    }
+
+    @GetMapping("/list/children/{parentId}")
+    public Result<List<RouteMenuVO>> getMenuChildren(@PathVariable Long parentId) {
+        return Result.success(convertToRouteMenuVO(menuService.getChildrenByParentId(parentId)));
+    }
+
     private List<RouteMenuVO> convertToRouteMenuVO(List<MenuBO> menuBOs) {
-        if (menuBOs == null || menuBOs.isEmpty()) {
-            return new ArrayList<>();
-        }
-        
+        if (menuBOs == null || menuBOs.isEmpty()) return new ArrayList<>();
         List<RouteMenuVO> result = new ArrayList<>();
         for (MenuBO menuBO : menuBOs) {
             RouteMenuVO vo = new RouteMenuVO();
             vo.setId(menuBO.getId());
             vo.setPid(menuBO.getParentId());
-            vo.setName(menuBO.getCode()); // 使用 code 作为路由名称
+            vo.setName(menuBO.getCode());
             vo.setPath(menuBO.getPath());
             vo.setComponent(menuBO.getComponent());
             vo.setRedirect(menuBO.getRedirect());
-            
-            // 转换类型：MENU -> menu, CATALOG -> catalog, BUTTON -> button
             String type = menuBO.getType();
-            if ("MENU".equals(type)) {
-                vo.setType("menu");
-            } else if ("CATALOG".equals(type)) {
-                vo.setType("catalog");
-            } else if ("BUTTON".equals(type)) {
-                vo.setType("button");
-            } else {
-                vo.setType(type != null ? type.toLowerCase() : "menu");
-            }
-            
-            // 设置状态
+            if ("MENU".equals(type)) vo.setType("menu");
+            else if ("CATALOG".equals(type)) vo.setType("catalog");
+            else if ("BUTTON".equals(type)) vo.setType("button");
+            else vo.setType(type != null ? type.toLowerCase() : "menu");
             vo.setStatus(menuBO.getStatus());
-            
-            // 设置权限码
             vo.setAuthCode(menuBO.getCode());
-            
-            // 设置图标
             vo.setIcon(menuBO.getIcon());
-            
-            // 设置元数据
             RouteMenuVO.MetaVO meta = new RouteMenuVO.MetaVO();
             meta.setTitle(menuBO.getName());
             meta.setIcon(menuBO.getIcon());
             meta.setOrder(menuBO.getOrder());
             meta.setKeepAlive(menuBO.getKeepAlive());
-            
-            // show=false → hideInMenu=true（菜单中不展现）
-            if (menuBO.getShow() != null && !menuBO.getShow()) {
-                meta.setHideInMenu(true);
-            }
-            
-            // layout 字段控制 noBasicLayout（"none" 或 "false" 表示不使用基础布局）
+            if (menuBO.getShow() != null && !menuBO.getShow()) meta.setHideInMenu(true);
             String layout = menuBO.getLayout();
-            if ("none".equalsIgnoreCase(layout) || "false".equalsIgnoreCase(layout)) {
-                meta.setNoBasicLayout(true);
-            }
-            
+            if ("none".equalsIgnoreCase(layout) || "false".equalsIgnoreCase(layout)) meta.setNoBasicLayout(true);
             vo.setMeta(meta);
-            
-            // 递归处理子菜单
-            if (menuBO.getChildren() != null && !menuBO.getChildren().isEmpty()) {
+            if (menuBO.getChildren() != null && !menuBO.getChildren().isEmpty())
                 vo.setChildren(convertToRouteMenuVO(menuBO.getChildren()));
-            }
-            
             result.add(vo);
         }
-        
         return result;
     }
 
-    /**
-     * 角色权限树-by token
-     */
     @GetMapping("/role/permissions/tree")
     public Result<List<RouteMenuVO>> getMenuPermissionsTree() {
-        log.info("获取角色权限树-by token");
-        
-        List<MenuBO> menus = menuService.getMenuPermissionsTree();
-        List<RouteMenuVO> routeMenus = convertToRouteMenuVO(menus);
-        
-        return Result.success(routeMenus);
+        return Result.success(convertToRouteMenuVO(menuService.getMenuPermissionsTree()));
     }
 
-    /**
-     * 权限树 - 菜单
-     */
     @GetMapping("/menu/tree")
     public Result<List<RouteMenuVO>> getMenuTree() {
-        log.info("获取权限树 - 菜单");
-        
-        List<MenuBO> menus = menuService.getMenuTree();
-        List<RouteMenuVO> routeMenus = convertToRouteMenuVO(menus);
-        
-        return Result.success(routeMenus);
+        return Result.success(convertToRouteMenuVO(menuService.getMenuTree()));
     }
 
-    /**
-     * 权限树-all
-     */
     @GetMapping("/tree")
     public Result<List<RouteMenuVO>> getAllTree() {
-        log.info("获取权限树-all");
-        
-        List<MenuBO> menus = menuService.getAllTree();
-        List<RouteMenuVO> routeMenus = convertToRouteMenuVO(menus);
-        
-        return Result.success(routeMenus);
+        return Result.success(convertToRouteMenuVO(menuService.getAllTree()));
     }
 
-    /**
-     * 删除菜单
-     */
     @DeleteMapping("/{id}")
     public Result<Void> deleteMenu(@PathVariable Long id) {
-        log.info("删除菜单，id: {}", id);
-        
-        boolean success = menuService.deleteMenu(id);
-        
-        if (success) {
-            return Result.success();
-        } else {
-            return Result.fail("删除失败");
-        }
+        return menuService.deleteMenu(id) ? Result.success() : Result.fail("delete fail");
     }
 
-    /**
-     * 新增菜单
-     */
     @PostMapping("")
     public Result<Void> createMenu(@RequestBody MenuRequest request) {
-        log.info("新增菜单");
-        
-        MenuBO menuBO = MapstructUtils.convert(request, MenuBO.class);
-        boolean success = menuService.createMenu(menuBO);
-        
-        if (success) {
-            return Result.success();
-        } else {
-            return Result.fail("新增失败");
-        }
+        return menuService.createMenu(MapstructUtils.convert(request, MenuBO.class)) ? Result.success() : Result.fail("create fail");
     }
 
-    /**
-     * 修改菜单
-     */
     @PatchMapping("/{id}")
-    public Result<Void> updateMenu(
-            @PathVariable Long id,
-            @RequestBody MenuRequest request) {
-        log.info("修改菜单，id: {}", id);
-        
-        MenuBO menuBO = MapstructUtils.convert(request, MenuBO.class);
-        boolean success = menuService.updateMenu(id, menuBO);
-        
-        if (success) {
-            return Result.success();
-        } else {
-            return Result.fail("修改失败");
-        }
+    public Result<Void> updateMenu(@PathVariable Long id, @RequestBody MenuRequest request) {
+        return menuService.updateMenu(id, MapstructUtils.convert(request, MenuBO.class)) ? Result.success() : Result.fail("update fail");
     }
 
-    /**
-     * 检查菜单名称是否已存在
-     */
     @GetMapping("/name-exists")
-    public Result<Boolean> isMenuNameExists(
-            @RequestParam String name,
-            @RequestParam(required = false) Long id) {
-        log.info("检查菜单名称，name: {}, id: {}", name, id);
-        boolean exists = menuService.isMenuNameExists(name, id);
-        return Result.success(exists);
+    public Result<Boolean> isMenuNameExists(@RequestParam String name, @RequestParam(required = false) Long id) {
+        return Result.success(menuService.isMenuNameExists(name, id));
     }
 
-    /**
-     * 检查菜单路径是否已存在
-     */
     @GetMapping("/path-exists")
-    public Result<Boolean> isMenuPathExists(
-            @RequestParam String path,
-            @RequestParam(required = false) Long id) {
-        log.info("检查菜单路径，path: {}, id: {}", path, id);
-        boolean exists = menuService.isMenuPathExists(path, id);
-        return Result.success(exists);
+    public Result<Boolean> isMenuPathExists(@RequestParam String path, @RequestParam(required = false) Long id) {
+        return Result.success(menuService.isMenuPathExists(path, id));
     }
 
-    /**
-     * 按钮权限-by parentId
-     */
     @GetMapping("/button/{parentId}")
     public Result<List<RouteMenuVO>> getButtonsByParentId(@PathVariable Long parentId) {
-        log.info("获取按钮权限-by parentId: {}", parentId);
-        
-        List<MenuBO> buttons = menuService.getButtonsByParentId(parentId);
-        List<RouteMenuVO> routeMenus = convertToRouteMenuVO(buttons);
-        
-        return Result.success(routeMenus);
+        return Result.success(convertToRouteMenuVO(menuService.getButtonsByParentId(parentId)));
     }
 }
