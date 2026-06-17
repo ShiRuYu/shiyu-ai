@@ -94,7 +94,8 @@ public class RoleServiceImpl implements RoleService {
     }
 
     @Override
-    public boolean removeUserRoles(Long roleId, List<Long> userIds, Long workspaceId) {
+    public boolean removeUserRoles(Long roleId, List<Long> userIds) {
+        Long workspaceId = LoginContextHolder.getCurrentWorkspaceId();
         log.info("取消分配角色，roleId: {}, userIds: {}, workspaceId: {}", roleId, userIds, workspaceId);
         if (userIds == null || userIds.isEmpty()) {
             return true;
@@ -114,7 +115,8 @@ public class RoleServiceImpl implements RoleService {
     }
 
     @Override
-    public boolean assignUserRoles(Long roleId, List<Long> userIds, Long workspaceId) {
+    public boolean assignUserRoles(Long roleId, List<Long> userIds) {
+        Long workspaceId = LoginContextHolder.getCurrentWorkspaceId();
         log.info("分配角色，roleId: {}, userIds: {}, workspaceId: {}", roleId, userIds, workspaceId);
         if (userIds == null || userIds.isEmpty()) {
             return true;

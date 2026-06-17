@@ -31,14 +31,14 @@ public interface RoleService {
     boolean deleteRole(Long id);
 
     /**
-     * 取消分配角色 - 批量（从指定工作空间移除角色）
+     * 取消分配角色 - 批量（从当前工作空间移除角色）
      */
-    boolean removeUserRoles(Long id, List<Long> userIds, Long workspaceId);
+    boolean removeUserRoles(Long id, List<Long> userIds);
 
     /**
-     * 分配角色 - 批量（在指定工作空间分配角色）
+     * 分配角色 - 批量（在当前工作空间分配角色）
      */
-    boolean assignUserRoles(Long id, List<Long> userIds, Long workspaceId);
+    boolean assignUserRoles(Long id, List<Long> userIds);
 
     /**
      * 新增角色

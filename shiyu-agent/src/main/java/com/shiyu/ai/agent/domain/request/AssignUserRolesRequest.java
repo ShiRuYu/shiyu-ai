@@ -19,9 +19,4 @@ public class AssignUserRolesRequest implements Serializable {
      * 用户 ID 列表
      */
     private List<Long> userIds;
-
-    /**
-     * 工作空间 ID
-     */
-    private Long workspaceId;
 }
