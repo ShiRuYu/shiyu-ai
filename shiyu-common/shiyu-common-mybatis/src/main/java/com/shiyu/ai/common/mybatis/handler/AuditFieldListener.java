@@ -2,6 +2,7 @@ package com.shiyu.ai.common.mybatis.handler;
 
 import com.shiyu.ai.common.core.domain.BaseEntity;
 import com.shiyu.ai.common.core.domain.LoginContextHolder;
+import lombok.extern.slf4j.Slf4j;
 
 import java.lang.reflect.Field;
 import java.time.LocalDateTime;
@@ -11,6 +12,7 @@ import java.time.LocalDateTime;
  * 在插入和更新操作时自动填充创建人、创建时间、更新人、更新时间、租户ID、空间ID
  * 租户ID优先由MyBatis-Flex多租户机制处理，此处作为TenantManager未设置时的兜底
  */
+@Slf4j
 public class AuditFieldListener implements com.mybatisflex.annotation.InsertListener,
         com.mybatisflex.annotation.UpdateListener {
 
@@ -20,13 +22,13 @@ public class AuditFieldListener implements com.mybatisflex.annotation.InsertList
             LocalDateTime now = LocalDateTime.now();
             String currentUser = getCurrentUser();
 
-            if (baseEntity.getCreateBy() == null || "system".equals(baseEntity.getCreateBy())) {
+            if (baseEntity.getCreateBy() == null) {
                 baseEntity.setCreateBy(currentUser);
             }
             if (baseEntity.getCreateTime() == null) {
                 baseEntity.setCreateTime(now);
             }
-            if (baseEntity.getUpdateBy() == null || "system".equals(baseEntity.getUpdateBy())) {
+            if (baseEntity.getUpdateBy() == null) {
                 baseEntity.setUpdateBy(currentUser);
             }
             if (baseEntity.getUpdateTime() == null) {
@@ -34,8 +36,8 @@ public class AuditFieldListener implements com.mybatisflex.annotation.InsertList
             }
         }
 
-        autoFillReflective(entity, "tenantId", LoginContextHolder.getTenantId());
-        autoFillReflective(entity, "workspaceId", LoginContextHolder.getCurrentWorkspaceId());
+        autoFillIfPresent(entity, "tenantId", LoginContextHolder.getTenantId());
+        autoFillIfPresent(entity, "workspaceId", LoginContextHolder.getCurrentWorkspaceId());
     }
 
     @Override
@@ -46,7 +48,7 @@ public class AuditFieldListener implements com.mybatisflex.annotation.InsertList
         }
     }
 
-    private void autoFillReflective(Object entity, String fieldName, Object value) {
+    private void autoFillIfPresent(Object entity, String fieldName, Object value) {
         if (value == null) return;
         try {
             Field field = entity.getClass().getDeclaredField(fieldName);
@@ -55,21 +57,19 @@ public class AuditFieldListener implements com.mybatisflex.annotation.InsertList
                 field.set(entity, value);
             }
         } catch (NoSuchFieldException ignored) {
+            // 实体没有该字段，跳过
         } catch (Exception e) {
-            throw new RuntimeException("Failed to auto-fill " + fieldName, e);
+            log.warn("Failed to auto-fill {} on {}", fieldName, entity.getClass().getSimpleName(), e);
         }
     }
 
     private String getCurrentUser() {
-        try {
-            if (LoginContextHolder.isLogin()) {
-                String username = LoginContextHolder.getUsername();
-                if (username != null && !username.isBlank()) {
-                    return username;
-                }
+        if (LoginContextHolder.isLogin()) {
+            String username = LoginContextHolder.getUsername();
+            if (username != null && !username.isBlank()) {
+                return username;
             }
-        } catch (Exception ignored) {
         }
-        return "system";
+        throw new IllegalStateException("无法获取当前登录用户，请在已登录状态下操作");
     }
 }

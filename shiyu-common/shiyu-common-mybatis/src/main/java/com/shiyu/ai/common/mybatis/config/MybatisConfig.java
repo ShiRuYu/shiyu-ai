@@ -2,13 +2,16 @@ package com.shiyu.ai.common.mybatis.config;
 
 import com.mybatisflex.annotation.KeyType;
 import com.mybatisflex.core.FlexGlobalConfig;
+import com.shiyu.ai.common.core.factory.YmlPropertySourceFactory;
 import com.shiyu.ai.common.mybatis.handler.AuditFieldListener;
 import com.shiyu.ai.common.mybatis.handler.MybatisExceptionHandler;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.context.annotation.PropertySource;
 
 @Configuration
+@PropertySource(value = "classpath:application-common-mybatis.yml", factory = YmlPropertySourceFactory.class)
 public class MybatisConfig {
 
     @Value("${mybatis-flex.key-type:Auto}")
