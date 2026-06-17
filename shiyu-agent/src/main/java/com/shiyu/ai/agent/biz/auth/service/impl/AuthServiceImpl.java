@@ -16,6 +16,8 @@ import com.shiyu.ai.agent.domain.bo.UserBO;
 import com.shiyu.ai.agent.domain.vo.LoginResponseVO;
 import com.shiyu.ai.agent.domain.vo.WorkspaceContextVO;
 import com.shiyu.ai.agent.utils.SaTokenHelper;
+import com.shiyu.ai.common.core.domain.LoginContextHolder;
+import com.shiyu.ai.common.core.domain.LoginUser;
 import com.shiyu.ai.common.core.utils.JSONUtils;
 import com.shiyu.ai.common.core.utils.PasswordUtils;
 import jakarta.servlet.http.HttpServletRequest;
@@ -107,7 +109,17 @@ public class AuthServiceImpl implements AuthService {
             LocalDateTime now = LocalDateTime.now();
             Map<String, Object> extInfoMap = buildExtInfo(user.getExtInfo(), currentRole, currentTenantId, currentWorkspaceId, now, loginIp);
             user.setExtInfo(JSONUtils.toJsonString(extInfoMap));
-            userRepository.update(user);
+
+            // 预先设置登录上下文，使审计监听器能获取到当前用户
+            LoginUser loginUser = new LoginUser();
+            loginUser.setUserId(user.getId());
+            loginUser.setUsername(user.getUsername());
+            LoginContextHolder.setContext(loginUser);
+            try {
+                userRepository.update(user);
+            } finally {
+                LoginContextHolder.clearContext();
+            }
 
             // 生成 Token
             SaTokenHelper helper = SaTokenHelper.getInstance();

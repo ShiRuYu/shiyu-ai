@@ -15,7 +15,7 @@ public interface UserWorkspaceRoleMapper extends BaseMapperFlex<UserWorkspaceRol
 
     default List<UserWorkspaceRoleDO> selectByUserId(Long userId) {
         QueryWrapper qw = QueryWrapper.create()
-            .eq("userId", userId);
+            .eq(UserWorkspaceRoleDO::getUserId, userId);
         return selectListByQuery(qw);
     }
 }
