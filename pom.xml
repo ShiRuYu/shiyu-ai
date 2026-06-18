@@ -94,10 +94,6 @@
     <modules>
         <module>shiyu-common</module>
         <module>shiyu-agent</module>
-        <module>shiyu-auth</module>
-        <module>shiyu-chat</module>
-        <module>shiyu-mcp</module>
-        <module>shiyu-tts</module>
     </modules>
 
     <!-- 依赖声明 -->
@@ -335,26 +331,6 @@
             <dependency>
                 <groupId>com.shiyu.ai</groupId>
                 <artifactId>shiyu-agent</artifactId>
-                <version>${revision}</version>
-            </dependency>
-            <dependency>
-                <groupId>com.shiyu.ai</groupId>
-                <artifactId>shiyu-auth</artifactId>
-                <version>${revision}</version>
-            </dependency>
-            <dependency>
-                <groupId>com.shiyu.ai</groupId>
-                <artifactId>shiyu-chat</artifactId>
-                <version>${revision}</version>
-            </dependency>
-            <dependency>
-                <groupId>com.shiyu.ai</groupId>
-                <artifactId>shiyu-mcp</artifactId>
-                <version>${revision}</version>
-            </dependency>
-            <dependency>
-                <groupId>com.shiyu.ai</groupId>
-                <artifactId>shiyu-tts</artifactId>
                 <version>${revision}</version>
             </dependency>
 
