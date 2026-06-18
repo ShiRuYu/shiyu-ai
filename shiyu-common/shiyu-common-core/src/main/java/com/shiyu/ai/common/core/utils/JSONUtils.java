@@ -66,6 +66,17 @@ public class JSONUtils {
         }
     }
 
+    public static String toPrettyJsonString(Object object) {
+        if (ObjectUtils.isNull(object)) {
+            return null;
+        }
+        try {
+            return OBJECT_MAPPER.writerWithDefaultPrettyPrinter().writeValueAsString(object);
+        } catch (JacksonException e) {
+            throw new RuntimeException(e);
+        }
+
+    }
     public static <T> T parseObject(String text, Class<T> clazz) {
         if (text.isBlank()) {
             return null;
@@ -94,6 +105,17 @@ public class JSONUtils {
         }
         try {
             return OBJECT_MAPPER.readValue(text, typeReference);
+        } catch (JacksonException e) {
+            throw new RuntimeException(e);
+        }
+    }
+
+    public static <T> T convertValue(Object fromValue, Class<T> toValueType) {
+        if (fromValue == null) {
+            return null;
+        }
+        try {
+            return OBJECT_MAPPER.convertValue(fromValue, toValueType);
         } catch (JacksonException e) {
             throw new RuntimeException(e);
         }

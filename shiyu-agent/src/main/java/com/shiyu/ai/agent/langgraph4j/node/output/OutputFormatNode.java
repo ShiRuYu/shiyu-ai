@@ -168,9 +168,7 @@ public class OutputFormatNode extends BaseNode {
             Map<String, Object> parsed = JSONUtils.parseObject(content, Map.class);
             if (parsed != null) {
                 if (config.getPrettyPrint() != null && config.getPrettyPrint()) {
-                    return JSONUtils.getObjectMapper()
-                            .writerWithDefaultPrettyPrinter()
-                            .writeValueAsString(parsed);
+                    return JSONUtils.toPrettyJsonString(parsed);
                 }
                 return JSONUtils.toJsonString(parsed);
             }
@@ -219,3 +217,5 @@ public class OutputFormatNode extends BaseNode {
         return content.trim().replaceAll("\\s+", " ");
     }
 }
+
+

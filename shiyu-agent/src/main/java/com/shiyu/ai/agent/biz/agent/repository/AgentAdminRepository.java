@@ -100,6 +100,17 @@ public class AgentAdminRepository {
         }
     }
 
+    public void deleteByAgentId(String agentId) {
+        QueryWrapper queryWrapper = new QueryWrapper();
+        TenantWorkspaceHelper.applyWorkspaceFilter(queryWrapper);
+        queryWrapper.eq(AgentDefDO::getAgentId, agentId);
+        queryWrapper.eq(AgentDefDO::getDelFlag, "0");
+        AgentDefBO def = selectByAgentId(agentId);
+        if (def != null) {
+            deleteById(def.getId());
+        }
+    }
+
     public List<AgentVersionBO> selectVersionsByAgentId(String agentId) {
         QueryWrapper queryWrapper = new QueryWrapper();
         TenantWorkspaceHelper.applyWorkspaceFilter(queryWrapper);

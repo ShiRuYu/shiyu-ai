@@ -31,6 +31,8 @@ import java.util.stream.Collectors;
 @Component
 public class UserContextInterceptor implements HandlerInterceptor {
 
+    private static final String SESSION_KEY_LOGIN_USER = "loginUser";
+
     private final UserMapper userMapper;
     private final UserWorkspaceRoleMapper userWorkspaceRoleMapper;
     private final RoleMapper roleMapper;
@@ -61,7 +63,24 @@ public class UserContextInterceptor implements HandlerInterceptor {
 
             Long userId = SaTokenHelper.getCurrentUserId();
 
-            LoginUser loginUser = new LoginUser();
+            // 先从 SaToken session 中读取缓存的 LoginUser
+            LoginUser loginUser = SaTokenHelper.getLoginUserFromSession();
+            if (loginUser != null && userId.equals(loginUser.getUserId())) {
+                // 更新动态属性（IP、浏览器等）
+                loginUser.setToken(SaTokenHelper.getCurrentToken());
+                loginUser.setIpaddr(getClientIp(request));
+                String userAgent = request.getHeader("User-Agent");
+                if (userAgent != null) {
+                    loginUser.setBrowser(parseBrowser(userAgent));
+                    loginUser.setOs(parseOS(userAgent));
+                }
+                LoginContextHolder.setContext(loginUser);
+                log.debug("用户上下文从 session 缓存加载: userId={}, tenantId={}", userId, loginUser.getTenantId());
+                return true;
+            }
+
+            // 缓存未命中，重新加载
+            loginUser = new LoginUser();
             loginUser.setUserId(userId);
             loginUser.setToken(SaTokenHelper.getCurrentToken());
             loginUser.setUserType(UserTypeEnum.SYS_USER);
@@ -75,12 +94,14 @@ public class UserContextInterceptor implements HandlerInterceptor {
                 loginUser.setOs(parseOS(userAgent));
             }
 
-            // 加载租户和空间上下文
             loadTenantWorkspaceContext(userId, loginUser);
+
+            // 写入 SaToken session 缓存
+            SaTokenHelper.saveLoginUserToSession(loginUser);
 
             LoginContextHolder.setContext(loginUser);
 
-            log.debug("用户上下文设置成功: userId={}, tenantId={}, workspaceId={}, uri={}",
+            log.debug("用户上下文从数据库加载并缓存: userId={}, tenantId={}, workspaceId={}, uri={}",
                     userId, loginUser.getTenantId(), loginUser.getCurrentWorkspaceId(), request.getRequestURI());
 
             return true;
@@ -100,7 +121,6 @@ public class UserContextInterceptor implements HandlerInterceptor {
             loginUser.setNickName(user.getNickName());
             loginUser.setAvatar(user.getAvatar());
 
-            // 解析 ext_info 获取上次保存的租户/空间偏好
             Long currentTenantId = null;
             Long currentWorkspaceId = null;
             if (user.getExtInfo() != null && !user.getExtInfo().isEmpty()) {
@@ -120,7 +140,6 @@ public class UserContextInterceptor implements HandlerInterceptor {
                 }
             }
 
-            // 查 user_workspace_role
             List<UserWorkspaceRoleDO> uwrList = userWorkspaceRoleMapper.selectByUserId(userId);
 
             if (uwrList == null || uwrList.isEmpty()) {
@@ -130,12 +149,10 @@ public class UserContextInterceptor implements HandlerInterceptor {
                 return;
             }
 
-            // 按当前租户过滤（如果有偏好）
             Long effectiveTenantId = currentTenantId;
             if (effectiveTenantId == null && user.getTenantId() != null) {
                 effectiveTenantId = user.getTenantId();
             }
-            // 如果两者都无，取第一条记录的 tenant_id
             if (effectiveTenantId == null && !uwrList.isEmpty()) {
                 effectiveTenantId = uwrList.get(0).getTenantId();
             }
@@ -147,17 +164,15 @@ public class UserContextInterceptor implements HandlerInterceptor {
                         .filter(r -> filterTenantId.equals(r.getTenantId()))
                         .collect(Collectors.toList());
                 if (filtered.isEmpty()) {
-                    filtered = uwrList; // 回退到全部
+                    filtered = uwrList;
                 }
             }
 
-            // 构建 workspaceIds 和 workspaceRoleMap
             List<Long> workspaceIds = filtered.stream()
                     .map(UserWorkspaceRoleDO::getWorkspaceId)
                     .distinct()
                     .collect(Collectors.toList());
 
-            // 批量加载角色 code
             Set<Long> roleIds = filtered.stream()
                     .map(UserWorkspaceRoleDO::getRoleId)
                     .collect(Collectors.toSet());

@@ -5,11 +5,17 @@ import com.shiyu.ai.agent.biz.agent.repository.LongTermMemoryRepository;
 import com.shiyu.ai.agent.biz.agent.service.MemoryService;
 import com.shiyu.ai.agent.domain.bo.ConversationMessageBO;
 import com.shiyu.ai.agent.domain.bo.LongTermMemoryBO;
+import com.shiyu.ai.agent.domain.vo.ConversationMessageVO;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDateTime;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.LinkedHashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.Collections;
 import java.util.stream.Collectors;
 
 @Slf4j
@@ -28,6 +34,7 @@ public class MemoryServiceImpl implements MemoryService {
         this.longTermMemoryRepository = longTermMemoryRepository;
     }
 
+    @Transactional(rollbackFor = Exception.class)
     @Override
     public void saveMessage(String sessionId, Long userId, String agentId, String role, String content) {
         if (sessionId == null || content == null) return;
@@ -42,16 +49,17 @@ public class MemoryServiceImpl implements MemoryService {
         log.debug("保存对话消息: sessionId={}, role={}, len={}", sessionId, role, content.length());
     }
 
-    @Override
-    public List<Map<String, Object>> getRecentMessages(String sessionId, int limit) {
+    private List<ConversationMessageVO> getRecentMessages(String sessionId, int limit) {
         List<ConversationMessageBO> messages = conversationMessageRepository.selectRecentBySession(sessionId, limit);
-        List<Map<String, Object>> result = new ArrayList<>();
+        List<ConversationMessageVO> result = new ArrayList<>();
         for (ConversationMessageBO msg : messages) {
-            Map<String, Object> m = new LinkedHashMap<>();
-            m.put("role", msg.getRole());
-            m.put("content", msg.getContent());
-            m.put("createTime", msg.getCreateTime());
-            result.add(m);
+            ConversationMessageVO vo = new ConversationMessageVO();
+            vo.setId(msg.getId());
+            vo.setSessionId(msg.getSessionId());
+            vo.setRole(msg.getRole());
+            vo.setContent(msg.getContent());
+            vo.setCreateTime(msg.getCreateTime());
+            result.add(vo);
         }
         Collections.reverse(result);
         return result;
@@ -59,13 +67,13 @@ public class MemoryServiceImpl implements MemoryService {
 
     @Override
     public String buildConversationHistory(String sessionId, int maxMessages) {
-        List<Map<String, Object>> messages = getRecentMessages(sessionId, maxMessages);
+        List<ConversationMessageVO> messages = getRecentMessages(sessionId, maxMessages);
         if (messages.isEmpty()) return "";
 
         StringBuilder sb = new StringBuilder();
-        for (Map<String, Object> msg : messages) {
-            String role = (String) msg.get("role");
-            String content = (String) msg.get("content");
+        for (ConversationMessageVO msg : messages) {
+            String role = msg.getRole();
+            String content = msg.getContent();
             if (ROLE_USER.equals(role)) {
                 sb.append("用户: ").append(content).append("\n");
             } else if (ROLE_ASSISTANT.equals(role)) {
@@ -77,6 +85,7 @@ public class MemoryServiceImpl implements MemoryService {
         return sb.toString();
     }
 
+    @Transactional(rollbackFor = Exception.class)
     @Override
     public void saveLongTermMemory(Long userId, String agentId, String category, String key, String content, double importance, String source) {
         if (content == null || content.isBlank()) return;
@@ -107,7 +116,16 @@ public class MemoryServiceImpl implements MemoryService {
 
     @Override
     public List<Map<String, Object>> retrieveShortTerm(String sessionId, int limit) {
-        return getRecentMessages(sessionId, limit);
+        List<ConversationMessageVO> messages = getRecentMessages(sessionId, limit);
+        return messages.stream().map(m -> {
+            Map<String, Object> map = new LinkedHashMap<>();
+            map.put("id", m.getId());
+            map.put("sessionId", m.getSessionId());
+            map.put("role", m.getRole());
+            map.put("content", m.getContent());
+            map.put("timestamp", m.getCreateTime());
+            return map;
+        }).collect(Collectors.toList());
     }
 
     @Override

@@ -13,7 +13,7 @@ import org.springframework.transaction.annotation.Transactional;
 import java.util.List;
 
 /**
- * 菜单数据仓储�?
+ * 菜单数据仓储
  *
  * @author shiyu-ai
  */

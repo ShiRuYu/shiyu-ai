@@ -7,8 +7,6 @@ public interface MemoryService {
 
     void saveMessage(String sessionId, Long userId, String agentId, String role, String content);
 
-    List<Map<String, Object>> getRecentMessages(String sessionId, int limit);
-
     String buildConversationHistory(String sessionId, int maxMessages);
 
     void saveLongTermMemory(Long userId, String agentId, String category, String key, String content, double importance, String source);

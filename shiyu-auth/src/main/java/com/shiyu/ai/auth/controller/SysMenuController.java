@@ -20,10 +20,10 @@ import org.springframework.web.bind.annotation.RestController;
 import java.util.List;
 
 /**
- * 菜单管理控制�? *
+ * 菜单管理控制器
  * @author shiyu-ai
  */
-@Tag(name = "�˵�����", description = "�˵�Ȩ�޽ӿ�")
+@Tag(name = "菜单管理", description = "菜单权限接口")
 @RestController
 @RequiredArgsConstructor
 @RequestMapping("/menus")

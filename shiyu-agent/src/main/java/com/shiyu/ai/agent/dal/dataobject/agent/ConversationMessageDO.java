@@ -3,15 +3,16 @@ package com.shiyu.ai.agent.dal.dataobject.agent;
 import com.mybatisflex.annotation.Id;
 import com.mybatisflex.annotation.KeyType;
 import com.mybatisflex.annotation.Table;
+import com.shiyu.ai.common.mybatis.model.TenantEntity;
 import lombok.Data;
+import lombok.EqualsAndHashCode;
 
 import java.io.Serial;
-import java.io.Serializable;
-import java.time.LocalDateTime;
 
 @Data
-@Table(value = "conversation_message")
-public class ConversationMessageDO implements Serializable {
+@EqualsAndHashCode(callSuper = true)
+@Table("conversation_message")
+public class ConversationMessageDO extends TenantEntity {
 
     @Serial
     private static final long serialVersionUID = 1L;
@@ -25,11 +26,8 @@ public class ConversationMessageDO implements Serializable {
 
     private String agentId;
 
-    private Long tenantId;
-
     private String role;
 
     private String content;
 
-    private LocalDateTime createTime;
 }

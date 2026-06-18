@@ -13,7 +13,7 @@ import org.springframework.transaction.annotation.Transactional;
 import java.util.List;
 
 /**
- * 用户数据仓储�?
+ * 用户数据仓储
  *
  * @author shiyu-ai
  */
@@ -62,9 +62,9 @@ public class SysUserRepository {
     }
 
     /**
-     * 根据用户名查询用�?
+     * 根据用户名查询用户信息
      *
-     * @param username 用户�?
+     * @param username 用户名
      * @return 用户信息
      */
     public SysUserBO getByUsername(String username) {

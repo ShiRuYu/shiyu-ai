@@ -1,8 +1,6 @@
 package com.shiyu.ai.agent.biz.agent.cache;
 
-import com.fasterxml.jackson.core.type.TypeReference;
-import com.fasterxml.jackson.databind.DeserializationFeature;
-import com.fasterxml.jackson.databind.ObjectMapper;
+import com.shiyu.ai.common.core.utils.JSONUtils;
 import com.shiyu.ai.agent.biz.agent.domain.AgentDefinition;
 import com.shiyu.ai.agent.biz.agent.domain.AgentVersion;
 import com.shiyu.ai.agent.biz.agent.repository.AgentAdminRepository;
@@ -27,7 +25,6 @@ import com.shiyu.ai.agent.langgraph4j.node.rag.RagEnhancementConfig;
 import com.shiyu.ai.agent.langgraph4j.node.rag.RagRetrievalConfig;
 import com.shiyu.ai.agent.langgraph4j.node.tool.ToolCallConfig;
 import com.shiyu.ai.agent.langgraph4j.node.transform.TransformConfig;
-import com.shiyu.ai.common.core.utils.JSONUtils;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Component;
 
@@ -38,13 +35,10 @@ import java.util.*;
 @Component
 public class AgentLoader {
 
-    private final ObjectMapper objectMapper;
     private final NodeFactory nodeFactory;
     private final AgentAdminRepository agentAdminRepository;
 
     public AgentLoader(NodeFactory nodeFactory, AgentAdminRepository agentAdminRepository) {
-        this.objectMapper = new ObjectMapper()
-                .configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false);
         this.nodeFactory = nodeFactory;
         this.agentAdminRepository = agentAdminRepository;
     }
@@ -76,8 +70,8 @@ public class AgentLoader {
         }
 
         try {
-            GraphConfigRequest graphConfig = objectMapper.readValue(versionBO.getGraphConfig(),
-                    new TypeReference<GraphConfigRequest>() {});
+            GraphConfigRequest graphConfig = JSONUtils.parseObject(versionBO.getGraphConfig(),
+                    new tools.jackson.core.type.TypeReference<GraphConfigRequest>() {});
 
             Graph graph = buildGraph(agentId, graphConfig);
 
@@ -172,7 +166,7 @@ public class AgentLoader {
             merged.putAll(dto.getConfig());
         }
 
-        return objectMapper.convertValue(merged, configClass);
+        return JSONUtils.convertValue(merged, configClass);
     }
 
     private ConditionEdge buildConditionEdge(String sourceId, GraphConfigRequest.ConditionalEdgeDTO dto) {

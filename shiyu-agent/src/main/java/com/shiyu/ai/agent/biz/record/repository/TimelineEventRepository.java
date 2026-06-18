@@ -1,6 +1,7 @@
 package com.shiyu.ai.agent.biz.record.repository;
 
 import com.mybatisflex.core.query.QueryWrapper;
+import com.shiyu.ai.agent.biz.auth.util.TenantWorkspaceHelper;
 import com.shiyu.ai.agent.dal.dataobject.record.MediaDO;
 import com.shiyu.ai.agent.dal.dataobject.record.RecordDO;
 import com.shiyu.ai.agent.dal.dataobject.record.TimelineEventDO;
@@ -37,11 +38,13 @@ public class TimelineEventRepository {
     public Pair<Long, List<TimelineEventBO>> selectPage(Number pageNo, Number pageSize, Long profileId) {
         QueryWrapper countWrapper = QueryWrapper.create()
                 .eq(TimelineEventDO::getProfileId, profileId);
+        TenantWorkspaceHelper.applyWorkspaceFilter(countWrapper);
         long total = timelineEventMapper.selectCountByQuery(countWrapper);
 
         QueryWrapper queryWrapper = QueryWrapper.create()
                 .eq(TimelineEventDO::getProfileId, profileId)
                 .orderBy(TimelineEventDO::getEventTime, false);
+        TenantWorkspaceHelper.applyWorkspaceFilter(queryWrapper);
         
         if (pageNo != null && pageSize != null) {
             queryWrapper.limit((pageNo.longValue() - 1) * pageSize.longValue(), pageSize.longValue());
@@ -54,7 +57,7 @@ public class TimelineEventRepository {
     }
 
     /**
-     * 根据ID查询时间轴事件(包含记录和附件)
+     * 根据ID查询时间轴事件（包含记录和附件）
      */
     public TimelineEventBO selectByIdWithDetails(Long id) {
         TimelineEventDO eventDO = timelineEventMapper.selectOneById(id);
@@ -64,19 +67,17 @@ public class TimelineEventRepository {
         
         TimelineEventBO eventBO = MapstructUtils.convert(eventDO, TimelineEventBO.class);
         
-        // 查询关联的记录
         QueryWrapper recordQuery = QueryWrapper.create()
                 .eq(RecordDO::getEventId, id);
+        TenantWorkspaceHelper.applyWorkspaceFilter(recordQuery);
         RecordDO recordDO = recordMapper.selectOneByQuery(recordQuery);
         
         if (recordDO != null) {
-            // 查询关联的附件
             QueryWrapper mediaQuery = QueryWrapper.create()
                     .eq(MediaDO::getRecordId, recordDO.getId())
                     .orderBy(MediaDO::getSort, true);
+            TenantWorkspaceHelper.applyWorkspaceFilter(mediaQuery);
             List<MediaDO> mediaDOs = mediaMapper.selectListByQuery(mediaQuery);
-            
-            // 这里简化处理,实际应该返回完整的VO对象
         }
         
         return eventBO;
@@ -90,7 +91,6 @@ public class TimelineEventRepository {
         if (eventDO == null) {
             throw new IllegalArgumentException("TimelineEventBO 转换失败");
         }
-        // 如果事件时间为空，使用当前时间作为默认值
         if (eventDO.getEventTime() == null) {
             eventDO.setEventTime(LocalDateTime.now());
         }
@@ -121,6 +121,7 @@ public class TimelineEventRepository {
         QueryWrapper queryWrapper = QueryWrapper.create()
                 .eq(TimelineEventDO::getProfileId, profileId)
                 .orderBy(TimelineEventDO::getEventTime, false);
+        TenantWorkspaceHelper.applyWorkspaceFilter(queryWrapper);
         
         List<TimelineEventDO> eventDOs = timelineEventMapper.selectListByQuery(queryWrapper);
         return MapstructUtils.convert(eventDOs, TimelineEventBO.class);

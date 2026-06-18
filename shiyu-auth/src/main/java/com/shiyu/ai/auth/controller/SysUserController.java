@@ -21,10 +21,10 @@ import org.springframework.web.bind.annotation.RestController;
 import java.util.List;
 
 /**
- * 用户管理控制�? *
+ * 用户管理控制器
  * @author shiyu-ai
  */
-@Tag(name = "�û�����", description = "�û�����ӿ�")
+@Tag(name = "用户管理", description = "用户权限接口")
 @RestController
 @RequiredArgsConstructor
 @RequestMapping("/users")

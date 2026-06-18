@@ -109,6 +109,10 @@ CREATE TABLE `user_workspace_role` (
     `workspace_id` BIGINT NOT NULL COMMENT '工作空间 ID',
     `role_id`      BIGINT NOT NULL COMMENT '角色 ID',
     `tenant_id`    BIGINT NOT NULL COMMENT '租户ID',
+    `create_by`    VARCHAR(64)   COMMENT '创建者',
+    `create_time`  TIMESTAMP DEFAULT CURRENT_TIMESTAMP COMMENT '创建时间',
+    `update_by`    VARCHAR(64)   COMMENT '更新者',
+    `update_time`  TIMESTAMP DEFAULT CURRENT_TIMESTAMP COMMENT '更新时间',
     PRIMARY KEY (`user_id`, `workspace_id`, `role_id`)
 );
 CREATE INDEX `idx_uwr_workspace` ON `user_workspace_role` (`workspace_id`);
@@ -177,6 +181,10 @@ CREATE TABLE `user_workspace_role` (
     `workspace_id` BIGINT NOT NULL COMMENT '工作空间 ID',
     `role_id`      BIGINT NOT NULL COMMENT '角色 ID',
     `tenant_id`    BIGINT NOT NULL COMMENT '租户ID',
+    `create_by`    VARCHAR(64)   COMMENT '创建者',
+    `create_time`  TIMESTAMP DEFAULT CURRENT_TIMESTAMP COMMENT '创建时间',
+    `update_by`    VARCHAR(64)   COMMENT '更新者',
+    `update_time`  TIMESTAMP DEFAULT CURRENT_TIMESTAMP COMMENT '更新时间',
     PRIMARY KEY (`user_id`, `workspace_id`, `role_id`)
 );
 CREATE INDEX `idx_uwr_workspace` ON `user_workspace_role` (`workspace_id`);
@@ -271,6 +279,21 @@ VALUES (3, '工作空间', 'Workspace', 'MENU', 1, 1, '/workspace', NULL, 'carbo
 INSERT INTO `menu` (`id`, `name`, `code`, `type`, `parent_id`, `tenant_id`, `path`, `redirect`, `icon`, `component`, `layout`, `keep_alive`, `method`, `description`, `show`, `status`, `order`, `del_flag`, `create_by`, `update_by`) 
 VALUES (100, '系统管理', 'System', 'MENU', NULL, 1, '/system', NULL, 'ion:settings-outline', 'BasicLayout', '', TRUE, NULL, NULL, TRUE, '1', 9997, 0, '0', '0');
 
+
+INSERT INTO `menu` (`id`, `name`, `code`, `type`, `parent_id`, `tenant_id`, `path`, `redirect`, `icon`, `component`, `layout`, `keep_alive`, `method`, `description`, `show`, `status`, `order`, `del_flag`, `create_by`, `update_by`) 
+VALUES (200, '用户管理', 'SystemUser', 'MENU', 100, 1, '/system/user', NULL, 'carbon:user-avatar', '/system/user/list', '', TRUE, NULL, NULL, TRUE, '1', 0, 0, '0', '0');
+
+INSERT INTO `menu` (`id`, `name`, `code`, `type`, `parent_id`, `tenant_id`, `path`, `redirect`, `icon`, `component`, `layout`, `keep_alive`, `method`, `description`, `show`, `status`, `order`, `del_flag`, `create_by`, `update_by`) 
+VALUES (20001, '用户查询', 'system:user:query', 'BUTTON', 200, 1, NULL, NULL, NULL, NULL, NULL, 'GET', '查询用户列表', TRUE, '1', 1, 0, '0', '0');
+
+INSERT INTO `menu` (`id`, `name`, `code`, `type`, `parent_id`, `tenant_id`, `path`, `redirect`, `icon`, `component`, `layout`, `keep_alive`, `method`, `description`, `show`, `status`, `order`, `del_flag`, `create_by`, `update_by`) 
+VALUES (20002, '用户新增', 'system:user:create', 'BUTTON', 200, 1, NULL, NULL, NULL, NULL, NULL, 'POST', '新增用户', TRUE, '1', 2, 0, '0', '0');
+
+INSERT INTO `menu` (`id`, `name`, `code`, `type`, `parent_id`, `tenant_id`, `path`, `redirect`, `icon`, `component`, `layout`, `keep_alive`, `method`, `description`, `show`, `status`, `order`, `del_flag`, `create_by`, `update_by`) 
+VALUES (20003, '用户修改', 'system:user:update', 'BUTTON', 200, 1, NULL, NULL, NULL, NULL, NULL, 'PUT', '修改用户', TRUE, '1', 3, 0, '0', '0');
+
+INSERT INTO `menu` (`id`, `name`, `code`, `type`, `parent_id`, `tenant_id`, `path`, `redirect`, `icon`, `component`, `layout`, `keep_alive`, `method`, `description`, `show`, `status`, `order`, `del_flag`, `create_by`, `update_by`) 
+VALUES (20004, '用户删除', 'system:user:delete', 'BUTTON', 200, 1, NULL, NULL, NULL, NULL, NULL, 'DELETE', '删除用户', TRUE, '1', 4, 0, '0', '0');
 INSERT INTO `menu` (`id`, `name`, `code`, `type`, `parent_id`, `tenant_id`, `path`, `redirect`, `icon`, `component`, `layout`, `keep_alive`, `method`, `description`, `show`, `status`, `order`, `del_flag`, `create_by`, `update_by`) 
 VALUES (201, '菜单管理', 'SystemMenu', 'MENU', 100, 1, '/system/menu', NULL, 'carbon:menu', '/system/menu/list', '', TRUE, NULL, NULL, TRUE, '1', 1, 0, '0', '0');
 
@@ -411,14 +434,14 @@ VALUES (507, '意图管理', 'AgentIntent', 'MENU', 500, 1, '/agent/intent', NUL
 -- super 角色的权限（完整权限 - 所有菜单，默认空间 0）
 INSERT INTO `role_workspace_menu` (`role_id`, `workspace_id`, `menu_id`, `tenant_id`) VALUES 
 (0, 0, 1, 1), (0, 0, 2, 1), (0, 0, 3, 1), 
-(0, 0, 100, 1), (0, 0, 201, 1), (0, 0, 20101, 1), (0, 0, 20102, 1), (0, 0, 20103, 1), (0, 0, 202, 1), (0, 0, 20201, 1), (0, 0, 20202, 1), (0, 0, 20203, 1), (0, 0, 203, 1), (0, 0, 20301, 1), (0, 0, 20302, 1), (0, 0, 20303, 1), (0, 0, 20304, 1), (0, 0, 204, 1), (0, 0, 20401, 1), (0, 0, 20402, 1), (0, 0, 20403, 1), (0, 0, 20404, 1),
+(0, 0, 100, 1), (0, 0, 200, 1), (0, 0, 20001, 1), (0, 0, 20002, 1), (0, 0, 20003, 1), (0, 0, 20004, 1), (0, 0, 201, 1), (0, 0, 20101, 1), (0, 0, 20102, 1), (0, 0, 20103, 1), (0, 0, 202, 1), (0, 0, 20201, 1), (0, 0, 20202, 1), (0, 0, 20203, 1), (0, 0, 203, 1), (0, 0, 20301, 1), (0, 0, 20302, 1), (0, 0, 20303, 1), (0, 0, 20304, 1), (0, 0, 204, 1), (0, 0, 20401, 1), (0, 0, 20402, 1), (0, 0, 20403, 1), (0, 0, 20404, 1),
 (0, 0, 400, 1), (0, 0, 401, 1), (0, 0, 40101, 1), (0, 0, 40102, 1), (0, 0, 40103, 1), (0, 0, 40104, 1), (0, 0, 402, 1), (0, 0, 40201, 1), (0, 0, 40202, 1), (0, 0, 40203, 1), (0, 0, 40204, 1),
 (0, 0, 500, 1), (0, 0, 501, 1), (0, 0, 502, 1), (0, 0, 503, 1), (0, 0, 50301, 1), (0, 0, 50302, 1), (0, 0, 50303, 1), (0, 0, 50304, 1), (0, 0, 504, 1), (0, 0, 50401, 1), (0, 0, 50402, 1), (0, 0, 50403, 1), (0, 0, 50404, 1), (0, 0, 505, 1), (0, 0, 507, 1);
 
 -- admin 角色的权限（管理员权限 - 不包含 super 专属，默认空间 0）
 INSERT INTO `role_workspace_menu` (`role_id`, `workspace_id`, `menu_id`, `tenant_id`) VALUES 
 (1, 0, 1, 1), (1, 0, 2, 1), (1, 0, 3, 1), 
-(1, 0, 100, 1), (1, 0, 201, 1), (1, 0, 20101, 1), (1, 0, 20102, 1), (1, 0, 20103, 1), (1, 0, 202, 1), (1, 0, 20201, 1), (1, 0, 20202, 1), (1, 0, 20203, 1), (1, 0, 203, 1), (1, 0, 20301, 1), (1, 0, 20302, 1), (1, 0, 20303, 1), (1, 0, 20304, 1), (1, 0, 204, 1), (1, 0, 20401, 1), (1, 0, 20402, 1), (1, 0, 20403, 1), (1, 0, 20404, 1),
+(1, 0, 100, 1), (1, 0, 200, 1), (1, 0, 20001, 1), (1, 0, 20002, 1), (1, 0, 20003, 1), (1, 0, 20004, 1), (1, 0, 201, 1), (1, 0, 20101, 1), (1, 0, 20102, 1), (1, 0, 20103, 1), (1, 0, 202, 1), (1, 0, 20201, 1), (1, 0, 20202, 1), (1, 0, 20203, 1), (1, 0, 203, 1), (1, 0, 20301, 1), (1, 0, 20302, 1), (1, 0, 20303, 1), (1, 0, 20304, 1), (1, 0, 204, 1), (1, 0, 20401, 1), (1, 0, 20402, 1), (1, 0, 20403, 1), (1, 0, 20404, 1),
 (1, 0, 400, 1), (1, 0, 401, 1), (1, 0, 40101, 1), (1, 0, 40102, 1), (1, 0, 40103, 1), (1, 0, 40104, 1), (1, 0, 402, 1), (1, 0, 40201, 1), (1, 0, 40202, 1), (1, 0, 40203, 1), (1, 0, 40204, 1),
 (1, 0, 500, 1), (1, 0, 501, 1), (1, 0, 502, 1), (1, 0, 503, 1), (1, 0, 50301, 1), (1, 0, 50302, 1), (1, 0, 50303, 1), (1, 0, 50304, 1), (1, 0, 504, 1), (1, 0, 50401, 1), (1, 0, 50402, 1), (1, 0, 50403, 1), (1, 0, 50404, 1), (1, 0, 505, 1), (1, 0, 507, 1);
 

@@ -66,36 +66,36 @@ public class AuthServiceImpl implements AuthService {
 
     @Override
     public LoginResponseVO login(String username, String password, Long roleId) {
-        log.info("收到登录请求：username={}", username);
+        log.info("用户登录开始, username={}", username);
 
         try {
             UserBO user = userRepository.selectUserWithRolesByUsername(username);
             if (user == null) {
-                log.warn("登录失败：用户不存在 - {}", username);
+                log.warn("用户不存在 - {}", username);
                 return null;
             }
 
             if (!"1".equals(user.getStatus())) {
-                log.warn("登录失败：用户已禁用 - {}", username);
+                log.warn("用户已被禁用 - {}", username);
                 return null;
             }
 
             if (!PasswordUtils.matches(password, user.getPassword())) {
-                log.warn("登录失败：密码错误 - {}", username);
+                log.warn("密码错误 - {}", username);
                 return null;
             }
 
             List<RoleBO> roles = userRepository.selectRolesByUserId(user.getId());
             RoleBO currentRole = resolveCurrentRole(roleId, roles);
 
-            // 加载租户和工作空间上下文
+            // 查询用户工作空间角色列表
             List<UserWorkspaceRoleDO> uwrList = userWorkspaceRoleMapper.selectByUserId(user.getId());
 
-            // 确定租户：优先 ext_info 中的偏好，否则取第一个
+            // 从 ext_info 解析当前租户和工作空间
             Long currentTenantId = resolveCurrentTenantId(user.getExtInfo(), uwrList);
             Long currentWorkspaceId = resolveCurrentWorkspaceId(user.getExtInfo(), uwrList, currentTenantId);
 
-            // 查询租户名称
+            // 获取租户名称
             String tenantName = null;
             if (currentTenantId != null) {
                 TenantDO tenant = tenantMapper.selectOneById(currentTenantId);
@@ -104,13 +104,13 @@ public class AuthServiceImpl implements AuthService {
                 }
             }
 
-            // 构建 ext_info
+            // 更新 ext_info
             String loginIp = getClientIp();
             LocalDateTime now = LocalDateTime.now();
             Map<String, Object> extInfoMap = buildExtInfo(user.getExtInfo(), currentRole, currentTenantId, currentWorkspaceId, now, loginIp);
             user.setExtInfo(JSONUtils.toJsonString(extInfoMap));
 
-            // 预先设置登录上下文，使审计监听器能获取到当前用户
+            // 设置 LoginUser 上下文（用于自动更新）
             LoginUser loginUser = new LoginUser();
             loginUser.setUserId(user.getId());
             loginUser.setUsername(user.getUsername());
@@ -124,9 +124,10 @@ public class AuthServiceImpl implements AuthService {
             // 生成 Token
             SaTokenHelper helper = SaTokenHelper.getInstance();
             String accessToken = helper.loginWithKickout(user.getId());
+            SaTokenHelper.clearLoginUserSession();
             long timeout = helper.getTokenTimeout();
 
-            // 构建工作空间列表
+            // 构建工作空间上下文列表
             List<WorkspaceContextVO> workspaces = buildWorkspaceContextList(uwrList, currentTenantId);
 
             // 构建租户列表
@@ -154,12 +155,12 @@ public class AuthServiceImpl implements AuthService {
             response.setTenants(tenantList);
             response.setWorkspaces(workspaces);
 
-            log.info("登录成功：username={}, userId={}, tenantId={}, workspaceId={}, roles={}",
+            log.info("用户登录成功, username={}, userId={}, tenantId={}, workspaceId={}, roles={}",
                     username, user.getId(), currentTenantId, currentWorkspaceId, response.getRoles());
             return response;
 
         } catch (Exception e) {
-            log.error("登录失败：{}", username, e);
+            log.error("用户登录异常", username, e);
             return null;
         }
     }
@@ -308,7 +309,7 @@ public class AuthServiceImpl implements AuthService {
 
     @Override
     public List<String> getAuthCodes(String username) {
-        log.info("获取用户权限码：username={}", username);
+        log.info("获取权限编码, username={}", username);
         try {
             List<String> codes = authRepository.selectCodesByUsername(username);
             if (codes == null || codes.isEmpty()) {
@@ -316,14 +317,14 @@ public class AuthServiceImpl implements AuthService {
             }
             return codes;
         } catch (Exception e) {
-            log.error("获取权限码失败：username={}", username, e);
+            log.error("获取权限编码异常, username={}", username, e);
             return new ArrayList<>();
         }
     }
 
     @Override
     public List<String> getAuthCodesByUserId(Long userId) {
-        log.info("获取用户权限码：userId={}", userId);
+        log.info("获取权限编码, userId={}", userId);
         try {
             List<String> codes = authRepository.selectCodesByUserId(userId);
             if (codes == null || codes.isEmpty()) {
@@ -331,43 +332,43 @@ public class AuthServiceImpl implements AuthService {
             }
             return codes;
         } catch (Exception e) {
-            log.error("获取权限码失败：userId={}", userId, e);
+            log.error("获取权限编码异常, userId={}", userId, e);
             return new ArrayList<>();
         }
     }
 
     @Override
     public String refreshToken(String oldToken) {
-        log.info("刷新访问令牌");
+        log.info("刷新Token");
         try {
             SaTokenHelper helper = SaTokenHelper.getInstance();
             Long userId = helper.getUserIdByToken(oldToken);
             if (userId == null) {
-                log.warn("无效的 access token");
+                log.warn("无效的access token");
                 return null;
             }
             String newAccessToken = helper.refreshToken(userId);
-            log.info("刷新令牌成功：userId={}", userId);
+            log.info("刷新Token成功, userId={}", userId);
             return newAccessToken;
         } catch (Exception e) {
-            log.error("刷新令牌失败", e);
+            log.error("刷新Token异常", e);
             return null;
         }
     }
 
     @Override
     public boolean switchCurrentRole(Long userId, Long roleId) {
-        log.info("切换当前角色，userId: {}, roleId: {}", userId, roleId);
+        log.info("切换角色, userId: {}, roleId: {}", userId, roleId);
         try {
             UserBO user = userRepository.selectById(userId);
             if (user == null) {
-                log.warn("用户不存在，userId: {}", userId);
+                log.warn("用户不存在, userId: {}", userId);
                 return false;
             }
             List<RoleBO> roles = userRepository.selectRolesByUserId(userId);
             RoleBO target = resolveCurrentRole(roleId, roles);
             if (target == null) {
-                log.warn("用户无可用角色，userId: {}", userId);
+                log.warn("角色不存在, userId: {}", userId);
                 return false;
             }
 
@@ -381,17 +382,18 @@ public class AuthServiceImpl implements AuthService {
             user.setExtInfo(JSONUtils.toJsonString(extInfoMap));
             userRepository.update(user);
 
-            log.info("切换角色成功，userId: {}, newRole: {}", userId, target.getName());
+            log.info("切换角色成功, userId: {}, newRole: {}", userId, target.getName());
+            SaTokenHelper.clearLoginUserSession();
             return true;
         } catch (Exception e) {
-            log.error("切换角色失败，userId: {}, roleId: {}", userId, roleId, e);
+            log.error("切换角色异常, userId: {}, roleId: {}", userId, roleId, e);
             return false;
         }
     }
 
     @Override
     public boolean switchCurrentTenant(Long userId, Long tenantId) {
-        log.info("切换当前租户，userId: {}, tenantId: {}", userId, tenantId);
+        log.info("切换租户, userId: {}, tenantId: {}", userId, tenantId);
         try {
             UserBO user = userRepository.selectById(userId);
             if (user == null) return false;
@@ -401,7 +403,7 @@ public class AuthServiceImpl implements AuthService {
             extInfoMap.remove("currentWorkspaceId");
             extInfoMap.remove("currentRole");
 
-            // 自动选择该租户下的第一个工作空间及其角色
+            // 查询用户在当前租户下的工作空间角色
             List<UserWorkspaceRoleDO> uwrList = userWorkspaceRoleMapper.selectByUserId(userId);
             if (uwrList != null && !uwrList.isEmpty()) {
                 UserWorkspaceRoleDO first = uwrList.stream()
@@ -423,17 +425,18 @@ public class AuthServiceImpl implements AuthService {
             user.setExtInfo(JSONUtils.toJsonString(extInfoMap));
             userRepository.update(user);
 
-            log.info("切换租户成功，userId: {}, tenantId: {}", userId, tenantId);
+            log.info("切换租户成功, userId: {}, tenantId: {}", userId, tenantId);
+            SaTokenHelper.clearLoginUserSession();
             return true;
         } catch (Exception e) {
-            log.error("切换租户失败，userId: {}, tenantId: {}", userId, tenantId, e);
+            log.error("切换租户异常, userId: {}, tenantId: {}", userId, tenantId, e);
             return false;
         }
     }
 
     @Override
     public boolean switchCurrentWorkspace(Long userId, Long workspaceId) {
-        log.info("切换当前工作空间，userId: {}, workspaceId: {}", userId, workspaceId);
+        log.info("切换工作空间, userId: {}, workspaceId: {}", userId, workspaceId);
         try {
             UserBO user = userRepository.selectById(userId);
             if (user == null) return false;
@@ -441,7 +444,7 @@ public class AuthServiceImpl implements AuthService {
             Map<String, Object> extInfoMap = parseExtInfo(user.getExtInfo());
             extInfoMap.put("currentWorkspaceId", workspaceId);
 
-            // 自动选择该工作空间对应的角色
+            // 查询用户在当前工作空间下的角色
             List<UserWorkspaceRoleDO> uwrList = userWorkspaceRoleMapper.selectByUserId(userId);
             if (uwrList != null && !uwrList.isEmpty()) {
                 UserWorkspaceRoleDO match = uwrList.stream()
@@ -462,10 +465,11 @@ public class AuthServiceImpl implements AuthService {
             user.setExtInfo(JSONUtils.toJsonString(extInfoMap));
             userRepository.update(user);
 
-            log.info("切换工作空间成功，userId: {}, workspaceId: {}", userId, workspaceId);
+            log.info("切换工作空间成功, userId: {}, workspaceId: {}", userId, workspaceId);
+            SaTokenHelper.clearLoginUserSession();
             return true;
         } catch (Exception e) {
-            log.error("切换工作空间失败，userId: {}, workspaceId: {}", userId, workspaceId, e);
+            log.error("切换工作空间异常, userId: {}, workspaceId: {}", userId, workspaceId, e);
             return false;
         }
     }
@@ -499,18 +503,18 @@ public class AuthServiceImpl implements AuthService {
 
     @Override
     public void logout(String token) {
-        log.info("收到登出请求");
+        log.info("注销退出");
         try {
             SaTokenHelper helper = SaTokenHelper.getInstance();
             Long userId = helper.getUserIdByToken(token);
             if (userId != null) {
                 helper.logout(userId);
-                log.info("登出成功：userId={}", userId);
+                log.info("退出登录成功, userId={}", userId);
             } else {
-                log.warn("无效的 token，无法登出");
+                log.warn("无效的token, 注销失败");
             }
         } catch (Exception e) {
-            log.error("登出失败", e);
+            log.error("注销异常", e);
         }
     }
 
@@ -522,3 +526,4 @@ public class AuthServiceImpl implements AuthService {
         return new LinkedHashMap<>();
     }
 }
+

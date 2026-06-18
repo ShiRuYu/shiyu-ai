@@ -2,6 +2,7 @@ package com.shiyu.ai.agent.utils;
 
 import cn.dev33.satoken.stp.StpUtil;
 import com.shiyu.ai.common.core.domain.LoginHelper;
+import com.shiyu.ai.common.core.domain.LoginUser;
 import lombok.extern.slf4j.Slf4j;
 
 /**
@@ -12,6 +13,9 @@ import lombok.extern.slf4j.Slf4j;
  */
 @Slf4j
 public class SaTokenHelper extends LoginHelper {
+
+    /** session 中 LoginUser 的键名 */
+    private static final String SESSION_KEY_LOGIN_USER = "loginUser";
 
     /**
      * 单例实例（用于调用实例方法）
@@ -79,8 +83,6 @@ public class SaTokenHelper extends LoginHelper {
 
     /**
      * 获取当前登录用户 ID（基于 Sa-Token）
-     * 
-     * @return 用户 ID
      */
     public static Long getCurrentUserId() {
         return StpUtil.getLoginIdAsLong();
@@ -88,10 +90,38 @@ public class SaTokenHelper extends LoginHelper {
 
     /**
      * 获取当前 Token 值
-     * 
-     * @return Token 值
      */
     public static String getCurrentToken() {
         return StpUtil.getTokenValue();
+    }
+
+    /**
+     * 缓存当前 LoginUser 到 session
+     */
+    public static void saveLoginUserToSession(LoginUser loginUser) {
+        StpUtil.getSession().set(SESSION_KEY_LOGIN_USER, loginUser);
+    }
+
+    /**
+     * 从 session 中读取缓存的 LoginUser
+     */
+    public static LoginUser getLoginUserFromSession() {
+        try {
+            return (LoginUser) StpUtil.getSession().get(SESSION_KEY_LOGIN_USER);
+        } catch (Exception e) {
+            return null;
+        }
+    }
+
+    /**
+     * 清除 session 中的 LoginUser 缓存
+     * 在切换租户/空间/角色后调用，确保下次请求从数据库重新加载
+     */
+    public static void clearLoginUserSession() {
+        try {
+            StpUtil.getSession().delete(SESSION_KEY_LOGIN_USER);
+        } catch (Exception e) {
+            // session 可能已过期，忽略
+        }
     }
 }

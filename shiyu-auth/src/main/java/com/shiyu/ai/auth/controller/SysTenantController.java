@@ -20,10 +20,10 @@ import org.springframework.web.bind.annotation.RestController;
 import java.util.List;
 
 /**
- * 租户管理控制�? *
+ * 租户管理控制器
  * @author shiyu-ai
  */
-@Tag(name = "�⻧����", description = "�⻧����ӿ�")
+@Tag(name = "租户管理", description = "租户权限接口")
 @RestController
 @RequiredArgsConstructor
 @RequestMapping("/tenants")

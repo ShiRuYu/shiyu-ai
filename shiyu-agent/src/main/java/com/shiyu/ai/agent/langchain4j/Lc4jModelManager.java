@@ -14,7 +14,6 @@ import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.boot.ApplicationArguments;
 import org.springframework.boot.ApplicationRunner;
-import org.springframework.context.annotation.Lazy;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
@@ -46,16 +45,14 @@ public class Lc4jModelManager implements ApplicationRunner {
      */
     private volatile boolean dbLoaded = false;
 
-    @Lazy
     private final AiPlatformRepository platformRepository;
 
-    @Lazy
     private final AiModelRepository modelRepository;
 
     private final PlatformProperties platformProperties;
 
-    public Lc4jModelManager(@Lazy AiPlatformRepository platformRepository,
-                            @Lazy AiModelRepository modelRepository,
+    public Lc4jModelManager(AiPlatformRepository platformRepository,
+                            AiModelRepository modelRepository,
                             PlatformProperties platformProperties) {
         this.platformRepository = platformRepository;
         this.modelRepository = modelRepository;
@@ -156,15 +153,8 @@ public class Lc4jModelManager implements ApplicationRunner {
         if (StringUtils.isBlank(code)) {
             return null;
         }
-        String upperCode = code.toUpperCase();
-        return switch (upperCode) {
-            case "OLLAMA" -> platformProperties.getOllama().getApiKey();
-            case "DEEPSEEK" -> platformProperties.getDeepseek().getApiKey();
-            case "OPENAI" -> platformProperties.getOpenai().getApiKey();
-            case "OPENROUTER" -> platformProperties.getOpenrouter().getApiKey();
-            case "SILICON_FLOW" -> platformProperties.getSiliconflow().getApiKey();
-            default -> null;
-        };
+        // ???? PlatformProperties ? Map ????? switch-case ???
+        return platformProperties.getApiKey(code);
     }
 
     // ======================== 硬编码 Fallback ========================

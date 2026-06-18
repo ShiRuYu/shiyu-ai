@@ -3,15 +3,16 @@ package com.shiyu.ai.agent.dal.dataobject.agent;
 import com.mybatisflex.annotation.Id;
 import com.mybatisflex.annotation.KeyType;
 import com.mybatisflex.annotation.Table;
+import com.shiyu.ai.common.mybatis.model.TenantEntity;
 import lombok.Data;
+import lombok.EqualsAndHashCode;
 
 import java.io.Serial;
-import java.io.Serializable;
-import java.time.LocalDateTime;
 
 @Data
-@Table(value = "long_term_memory")
-public class LongTermMemoryDO implements Serializable {
+@EqualsAndHashCode(callSuper = true)
+@Table("long_term_memory")
+public class LongTermMemoryDO extends TenantEntity {
 
     @Serial
     private static final long serialVersionUID = 1L;
@@ -23,8 +24,6 @@ public class LongTermMemoryDO implements Serializable {
 
     private String agentId;
 
-    private Long tenantId;
-
     private String category;
 
     private String memoryKey;
@@ -35,7 +34,4 @@ public class LongTermMemoryDO implements Serializable {
 
     private String source;
 
-    private LocalDateTime createTime;
-
-    private LocalDateTime updateTime;
 }

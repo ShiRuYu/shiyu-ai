@@ -1,6 +1,7 @@
 package com.shiyu.ai.agent.langgraph4j.node;
 
 import com.shiyu.ai.agent.biz.agent.service.ExecutionHistoryService;
+import com.shiyu.ai.common.core.utils.UnifiedThreadPoolUtils;
 import com.shiyu.ai.common.core.utils.JSONUtils;
 import lombok.Getter;
 import lombok.Setter;
@@ -12,9 +13,7 @@ import java.util.Collections;
 import java.util.Map;
 import java.util.Optional;
 import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
-import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
 
 @Setter
@@ -109,11 +108,13 @@ public abstract class BaseNode implements NodeAction<AgentState> {
         if (timeoutMs <= 0) {
             return doExecute(input);
         }
-        try (ExecutorService executor = Executors.newSingleThreadExecutor(
-                Thread.ofVirtual().name("node-exec-").factory())) {
-            Future<NodeOutput> future = executor.submit(() -> doExecute(input));
-            return future.get(timeoutMs, TimeUnit.MILLISECONDS);
+        // 使用 shiyu-common UnifiedThreadPoolUtils 共享线程池，避免每次创建/销毁的开销
+        ExecutorService executor = UnifiedThreadPoolUtils.getNamedExecutor("node-exec");
+        Future<NodeOutput> future = executor.submit(() -> doExecute(input));
+        try {
+            return future.get(timeoutMs, java.util.concurrent.TimeUnit.MILLISECONDS);
         } catch (TimeoutException e) {
+            future.cancel(true);
             throw new Exception("节点执行超时 (" + timeoutMs + "ms): " + config.getNodeName());
         }
     }

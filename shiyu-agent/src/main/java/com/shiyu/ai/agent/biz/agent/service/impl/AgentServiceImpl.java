@@ -2,6 +2,7 @@ package com.shiyu.ai.agent.biz.agent.service.impl;
 
 import com.shiyu.ai.agent.biz.agent.cache.AgentCacheManager;
 import com.shiyu.ai.agent.biz.agent.cache.AgentLoader;
+import com.shiyu.ai.agent.biz.agent.repository.AgentAdminRepository;
 import com.shiyu.ai.agent.biz.agent.domain.AgentDefinition;
 import com.shiyu.ai.agent.biz.agent.domain.AgentVersion;
 import com.shiyu.ai.agent.biz.agent.service.AgentService;
@@ -13,6 +14,7 @@ import org.bsc.langgraph4j.GraphStateException;
 import org.bsc.langgraph4j.state.AgentState;
 import org.bsc.langgraph4j.streaming.StreamingOutput;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 import reactor.core.publisher.Flux;
 
 import java.util.List;
@@ -26,9 +28,12 @@ public class AgentServiceImpl implements AgentService {
 
     private final AgentLoader agentLoader;
 
-    public AgentServiceImpl(AgentCacheManager cacheManager, AgentLoader agentLoader) {
+    private final AgentAdminRepository agentAdminRepository;
+
+    public AgentServiceImpl(AgentCacheManager cacheManager, AgentLoader agentLoader, AgentAdminRepository agentAdminRepository, AgentAdminRepository agentAdminRepository1) {
         this.cacheManager = cacheManager;
         this.agentLoader = agentLoader;
+        this.agentAdminRepository = agentAdminRepository1;
     }
 
     @Override
@@ -59,22 +64,17 @@ public class AgentServiceImpl implements AgentService {
     }
 
     @Override
+    @Transactional(rollbackFor = Exception.class)
     public boolean unregisterAgent(String agentId) {
         if (agentId == null || agentId.trim().isEmpty()) {
             throw new IllegalArgumentException("AgentId 不能为空");
         }
-        Long uid = currentUserId();
-        AgentDefinition removed = cacheManager.get(uid, agentId);
-        if (removed == null) {
-            removed = cacheManager.getOrLoad(uid, agentId, agentLoader);
-        }
-        if (removed != null) {
-            cacheManager.evict(agentId);
-            log.info("Agent 已注销：agentId={}", agentId);
-            return true;
-        }
-        log.warn("Agent 不存在，注销失败：agentId={}", agentId);
-        return false;
+        // 1. DB 软删除
+        agentAdminRepository.deleteByAgentId(agentId);
+        // 2. 清缓存
+        cacheManager.evict(agentId);
+        log.info("Agent 已注销（DB 软删除 + 缓存清理）：agentId={}", agentId);
+        return true;
     }
 
     @Override

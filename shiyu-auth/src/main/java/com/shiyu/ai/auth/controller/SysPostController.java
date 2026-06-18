@@ -20,10 +20,10 @@ import org.springframework.web.bind.annotation.RestController;
 import java.util.List;
 
 /**
- * 岗位管理控制�? *
+ * 岗位管理控制器
  * @author shiyu-ai
  */
-@Tag(name = "��λ����", description = "��λ����ӿ�")
+@Tag(name = "岗位管理", description = "岗位权限接口")
 @RestController
 @RequiredArgsConstructor
 @RequestMapping("/posts")

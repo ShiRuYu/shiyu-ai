@@ -20,10 +20,10 @@ import org.springframework.web.bind.annotation.RestController;
 import java.util.List;
 
 /**
- * 角色管理控制�? *
+ * 角色管理控制器
  * @author shiyu-ai
  */
-@Tag(name = "��ɫ����", description = "��ɫ����ӿ�")
+@Tag(name = "角色管理", description = "角色权限接口")
 @RestController
 @RequiredArgsConstructor
 @RequestMapping("/roles")

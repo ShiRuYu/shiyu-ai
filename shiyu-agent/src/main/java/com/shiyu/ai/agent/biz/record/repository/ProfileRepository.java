@@ -1,6 +1,7 @@
 package com.shiyu.ai.agent.biz.record.repository;
 
 import com.mybatisflex.core.query.QueryWrapper;
+import com.shiyu.ai.agent.biz.auth.util.TenantWorkspaceHelper;
 import com.shiyu.ai.agent.dal.dataobject.record.ProfileDO;
 import com.shiyu.ai.agent.dal.mapper.record.ProfileMapper;
 import com.shiyu.ai.agent.domain.bo.ProfileBO;
@@ -27,6 +28,7 @@ public class ProfileRepository {
     public Pair<Long, List<ProfileBO>> selectPage(Number pageNo, Number pageSize, String createBy) {
         QueryWrapper countWrapper = QueryWrapper.create()
                 .eq(ProfileDO::getDelFlag, 0);
+        TenantWorkspaceHelper.applyWorkspaceFilter(countWrapper);
         if (createBy != null && !createBy.isBlank()) {
             countWrapper.eq(ProfileDO::getCreateBy, createBy);
         }
@@ -34,6 +36,7 @@ public class ProfileRepository {
 
         QueryWrapper queryWrapper = QueryWrapper.create()
                 .eq(ProfileDO::getDelFlag, 0);
+        TenantWorkspaceHelper.applyWorkspaceFilter(queryWrapper);
         if (createBy != null && !createBy.isBlank()) {
             queryWrapper.eq(ProfileDO::getCreateBy, createBy);
         }
@@ -67,8 +70,6 @@ public class ProfileRepository {
      */
     public ProfileBO insert(ProfileBO profileBO) {
         ProfileDO profileDO = MapstructUtils.convert(profileBO, ProfileDO.class);
-        
-        // 使用 insertSelective 忽略 null 值，让数据库 DEFAULT 生效
         profileMapper.insertSelective(profileDO);
         profileBO.setId(profileDO.getId());
         profileBO.setGenderLabel(GenderEnum.getLabelByCode(profileBO.getGender()));

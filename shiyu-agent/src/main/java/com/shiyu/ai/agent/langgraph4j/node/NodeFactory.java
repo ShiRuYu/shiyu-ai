@@ -40,6 +40,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.ArrayList;
+import cn.hutool.core.bean.BeanUtil;
 import java.util.concurrent.ConcurrentHashMap;
 
 /**
@@ -364,48 +365,10 @@ public class NodeFactory {
      * @param target 目标对象
      */
     private void copyProperties(Object source, Object target) {
-        var sourceFields = source.getClass().getDeclaredFields();
-        for (var sourceField : sourceFields) {
-            try {
-                var fieldName = sourceField.getName();
-
-                // 跳过 static 字段
-                if (java.lang.reflect.Modifier.isStatic(sourceField.getModifiers())) {
-                    continue;
-                }
-
-                sourceField.setAccessible(true);
-                var value = sourceField.get(source);
-
-                var targetField = target.getClass().getDeclaredField(fieldName);
-
-                // 跳过 final 字段（@Builder.Default 通过 final 实现）
-                if (java.lang.reflect.Modifier.isFinal(targetField.getModifiers())) {
-                    continue;
-                }
-
-                targetField.setAccessible(true);
-
-                // 空值不覆盖目标默认值
-                if (value == null) {
-                    continue;
-                }
-
-                // 深拷贝 Map / List
-                if (value instanceof Map<?, ?> map) {
-                    targetField.set(target, new HashMap<>(map));
-                } else if (value instanceof List<?> list) {
-                    targetField.set(target, new ArrayList<>(list));
-                } else {
-                    targetField.set(target, value);
-                }
-
-            } catch (NoSuchFieldException e) {
-                // 忽略目标类没有的字段
-            } catch (Exception e) {
-                log.warn("属性复制失败：{} -> {}.{}", sourceField.getName(), target.getClass().getSimpleName(), e.getMessage());
-            }
-        }
+        BeanUtil.copyProperties(source, target,
+                cn.hutool.core.bean.copier.CopyOptions.create()
+                        .ignoreNullValue()
+                        .ignoreError());
     }
 
     /**

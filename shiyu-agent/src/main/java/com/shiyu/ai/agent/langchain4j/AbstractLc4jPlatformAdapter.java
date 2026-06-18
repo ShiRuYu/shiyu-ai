@@ -5,8 +5,9 @@ import dev.langchain4j.model.chat.ChatModel;
 import dev.langchain4j.model.chat.StreamingChatModel;
 import lombok.extern.slf4j.Slf4j;
 
-import java.util.Map;
-import java.util.concurrent.ConcurrentHashMap;
+import com.github.benmanes.caffeine.cache.Cache;
+import com.github.benmanes.caffeine.cache.Caffeine;
+import java.util.concurrent.TimeUnit;
 
 /**
  * 抽象 LangChain4j 平台适配器基类
@@ -16,14 +17,20 @@ import java.util.concurrent.ConcurrentHashMap;
 public abstract class AbstractLc4jPlatformAdapter implements Lc4jPlatformAdapter {
     
     /**
-     * 同步模型缓存（按 modelName 缓存）
+     * 同步模型缓存（按 modelName 缓存，Caffeine 带 TTL）
      */
-    private final Map<String, ChatModel> chatModelCache = new ConcurrentHashMap<>();
+    private final Cache<String, ChatModel> chatModelCache = Caffeine.newBuilder()
+            .maximumSize(50)
+            .expireAfterWrite(30, TimeUnit.MINUTES)
+            .build();
     
     /**
-     * 流式模型缓存（按 modelName 缓存）
+     * 流式模型缓存（按 modelName 缓存，Caffeine 带 TTL）
      */
-    private final Map<String, StreamingChatModel> streamingModelCache = new ConcurrentHashMap<>();
+    private final Cache<String, StreamingChatModel> streamingModelCache = Caffeine.newBuilder()
+            .maximumSize(50)
+            .expireAfterWrite(30, TimeUnit.MINUTES)
+            .build();
     
     /**
      * 检查 API Key 是否已配置
@@ -57,10 +64,10 @@ public abstract class AbstractLc4jPlatformAdapter implements Lc4jPlatformAdapter
             throw new IllegalStateException(getPlatformType() + " 平台未配置默认模型");
         }
         
-        final String finalModelName = modelName;
-        return chatModelCache.computeIfAbsent(finalModelName, key -> {
-            log.debug("创建新的同步模型实例：{} - {}", getPlatformType(), finalModelName);
-            return createChatModel(finalModelName);
+        final String fn = modelName;
+        return chatModelCache.get(fn, k -> {
+            log.debug("创建新的同步模型实例：{} - {}", getPlatformType(), fn);
+            return createChatModel(fn);
         });
     }
     
@@ -98,10 +105,10 @@ public abstract class AbstractLc4jPlatformAdapter implements Lc4jPlatformAdapter
             throw new IllegalStateException(getPlatformType() + " 平台未配置默认模型");
         }
         
-        final String finalModelName = modelName;
-        return streamingModelCache.computeIfAbsent(finalModelName, key -> {
-            log.debug("创建新的流式模型实例：{} - {}", getPlatformType(), finalModelName);
-            return createStreamingChatModel(finalModelName);
+        final String fn = modelName;
+        return streamingModelCache.get(fn, k -> {
+            log.debug("创建新的流式模型实例：{} - {}", getPlatformType(), fn);
+            return createStreamingChatModel(fn);
         });
     }
     
@@ -177,7 +184,7 @@ public abstract class AbstractLc4jPlatformAdapter implements Lc4jPlatformAdapter
      */
     public void clearCache() {
         log.info("清空模型缓存：{}", getPlatformType());
-        chatModelCache.clear();
-        streamingModelCache.clear();
+        chatModelCache.invalidateAll();
+        streamingModelCache.invalidateAll();
     }
 }

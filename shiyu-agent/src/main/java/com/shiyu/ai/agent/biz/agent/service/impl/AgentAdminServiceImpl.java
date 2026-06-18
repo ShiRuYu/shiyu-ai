@@ -1,8 +1,6 @@
 package com.shiyu.ai.agent.biz.agent.service.impl;
 
-import com.fasterxml.jackson.core.type.TypeReference;
-import com.fasterxml.jackson.databind.DeserializationFeature;
-import com.fasterxml.jackson.databind.ObjectMapper;
+import com.shiyu.ai.common.core.utils.JSONUtils;
 import com.shiyu.ai.agent.biz.agent.cache.AgentCacheManager;
 import com.shiyu.ai.agent.biz.agent.repository.AgentAdminRepository;
 import com.shiyu.ai.agent.biz.agent.service.AgentAdminService;
@@ -17,6 +15,7 @@ import jakarta.annotation.Resource;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.tuple.Pair;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDateTime;
 import java.util.*;
@@ -34,9 +33,6 @@ public class AgentAdminServiceImpl implements AgentAdminService {
 
     @Resource
     private AgentService agentService;
-
-    private final ObjectMapper objectMapper = new ObjectMapper()
-            .configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false);
 
     @Override
     public Pair<Long, List<AgentVO>> getPage(Number pageNo, Number pageSize, String name, String status) {
@@ -60,6 +56,7 @@ public class AgentAdminServiceImpl implements AgentAdminService {
     }
 
     @Override
+    @Transactional(rollbackFor = Exception.class)
     public AgentVO create(AgentRequest request) {
         AgentDefBO existing = agentAdminRepository.selectByAgentId(request.getAgentId());
         if (existing != null) {
@@ -75,6 +72,7 @@ public class AgentAdminServiceImpl implements AgentAdminService {
     }
 
     @Override
+    @Transactional(rollbackFor = Exception.class)
     public AgentVO update(Long id, AgentRequest request) {
         AgentDefBO def = agentAdminRepository.selectById(id);
         if (def == null) throw new IllegalArgumentException("Agent不存在: " + id);
@@ -88,6 +86,7 @@ public class AgentAdminServiceImpl implements AgentAdminService {
     }
 
     @Override
+    @Transactional(rollbackFor = Exception.class)
     public void deleteById(Long id) {
         AgentDefBO def = agentAdminRepository.selectById(id);
         if (def == null) return;
@@ -109,6 +108,7 @@ public class AgentAdminServiceImpl implements AgentAdminService {
     }
 
     @Override
+    @Transactional(rollbackFor = Exception.class)
     public AgentVersionVO createVersion(String agentId, VersionRequest request) {
         AgentDefBO def = agentAdminRepository.selectByAgentId(agentId);
         if (def == null) throw new IllegalArgumentException("Agent不存在: " + agentId);
@@ -154,6 +154,7 @@ public class AgentAdminServiceImpl implements AgentAdminService {
     }
 
     @Override
+    @Transactional(rollbackFor = Exception.class)
     public void publishVersion(String agentId, Long versionId) {
         AgentVersionBO v = agentAdminRepository.selectVersionById(versionId);
         if (v == null || !v.getAgentId().equals(agentId)) throw new IllegalArgumentException("版本不存在");
@@ -176,6 +177,7 @@ public class AgentAdminServiceImpl implements AgentAdminService {
     }
 
     @Override
+    @Transactional(rollbackFor = Exception.class)
     public void activateVersion(String agentId, Long versionId) {
         AgentVersionBO v = agentAdminRepository.selectVersionById(versionId);
         if (v == null || !v.getAgentId().equals(agentId)) throw new IllegalArgumentException("版本不存在");
@@ -208,7 +210,7 @@ public class AgentAdminServiceImpl implements AgentAdminService {
         if (v == null || !v.getAgentId().equals(agentId)) throw new IllegalArgumentException("版本不存在");
 
         try {
-            String json = objectMapper.writeValueAsString(request);
+            String json = JSONUtils.toJsonString(request);
             v.setGraphConfig(json);
             v.setUpdateTime(LocalDateTime.now());
             agentAdminRepository.updateVersion(v);
@@ -425,7 +427,7 @@ public class AgentAdminServiceImpl implements AgentAdminService {
             return empty;
         }
         try {
-            return objectMapper.readValue(graphConfig, new TypeReference<Map<String, Object>>() {});
+            return JSONUtils.parseObject(graphConfig, new tools.jackson.core.type.TypeReference<Map<String, Object>>(){});
         } catch (Exception e) {
             throw new RuntimeException("解析Graph配置失败", e);
         }
@@ -439,7 +441,7 @@ public class AgentAdminServiceImpl implements AgentAdminService {
 
     private void saveGraphConfig(AgentVersionBO v, Map<String, Object> graphData) {
         try {
-            v.setGraphConfig(objectMapper.writeValueAsString(graphData));
+            v.setGraphConfig(JSONUtils.toJsonString(graphData));
             v.setUpdateTime(LocalDateTime.now());
             agentAdminRepository.updateVersion(v);
             evictAgentCache(v.getAgentId());
@@ -473,8 +475,8 @@ public class AgentAdminServiceImpl implements AgentAdminService {
         AgentVersionDetailVO.GraphConfigVO graphVO = null;
         if (v.getGraphConfig() != null && !v.getGraphConfig().isEmpty()) {
             try {
-                Map<String, Object> graphData = objectMapper.readValue(v.getGraphConfig(),
-                        new TypeReference<Map<String, Object>>() {});
+                Map<String, Object> graphData = JSONUtils.parseObject(v.getGraphConfig(),
+                        new tools.jackson.core.type.TypeReference<Map<String, Object>>(){});
                 graphVO = AgentVersionDetailVO.GraphConfigVO.builder()
                         .name((String) graphData.get("name"))
                         .description((String) graphData.get("description"))

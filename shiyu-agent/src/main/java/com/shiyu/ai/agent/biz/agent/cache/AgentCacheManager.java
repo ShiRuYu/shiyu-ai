@@ -21,8 +21,11 @@ public class AgentCacheManager {
 
     private final AgentAdminRepository agentAdminRepository;
 
-    public AgentCacheManager(AgentAdminRepository agentAdminRepository) {
+    private final AgentLoader agentLoader;
+
+    public AgentCacheManager(AgentAdminRepository agentAdminRepository, AgentLoader agentLoader) {
         this.agentAdminRepository = agentAdminRepository;
+        this.agentLoader = agentLoader;
         this.cache = Caffeine.newBuilder()
                 .maximumSize(1000)
                 .expireAfterWrite(30, TimeUnit.MINUTES)
@@ -89,7 +92,7 @@ public class AgentCacheManager {
                     String agentId = def.getAgentId();
                     AgentDefinition cached = cache.getIfPresent(key(userId, agentId));
                     if (cached != null) return cached;
-                    return null;
+                    return getOrLoad(userId, agentId, agentLoader);
                 })
                 .filter(Objects::nonNull)
                 .collect(Collectors.toList());
