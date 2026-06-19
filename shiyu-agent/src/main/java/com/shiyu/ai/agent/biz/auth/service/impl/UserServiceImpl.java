@@ -69,7 +69,7 @@ public class UserServiceImpl implements UserService {
         List<UserVO> userVOs = MapstructUtils.convert(result.getRight(), UserVO.class);
         
         UserPageResponse response = new UserPageResponse();
-        response.setPageData(userVOs);
+        response.setItems(userVOs);
         response.setTotal(result.getLeft());
         
         return response;
@@ -107,7 +107,12 @@ public class UserServiceImpl implements UserService {
 
     @Override
     public Long createUser(UserBO userBO) {
-        log.info("新增用户");
+        log.info("新增用户: {}", userBO.getUsername());
+        if (userBO.getPassword() == null || userBO.getPassword().isBlank()) {
+            userBO.setPassword(PasswordUtils.encode(PasswordUtils.DEFAULT_PASSWORD));
+        } else {
+            userBO.setPassword(PasswordUtils.encode(userBO.getPassword()));
+        }
         UserBO createdUser = userRepository.insert(userBO);
         return createdUser.getId();
     }

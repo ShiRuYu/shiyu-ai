@@ -18,7 +18,7 @@ public class UserPageResponse implements Serializable {
     /**
      * 用户列表
      */
-    private List<UserVO> pageData;
+    private List<UserVO> items;
 
     /**
      * 总数

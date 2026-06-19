@@ -7,6 +7,7 @@ import com.shiyu.ai.common.core.api.PageData;
 import com.shiyu.ai.common.core.api.Result;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.tuple.Pair;
+import jakarta.validation.Valid;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -60,14 +61,14 @@ public class IntentDefController {
      * 新增意图定义
      */
     @PostMapping
-    public Result<IntentDefBO> create(@RequestBody IntentDefBO bo) {
+    public Result<IntentDefBO> create(@Valid @RequestBody IntentDefBO bo) {
         log.info("新增意图定义，code: {}", bo.getCode());
         try {
             IntentDefBO created = intentDefService.create(bo);
             return Result.success(created);
         } catch (Exception e) {
             log.error("新增意图定义失败", e);
-            return Result.fail("新增失败：" + e.getMessage());
+            return Result.fail("新增失败");
         }
     }
 
@@ -75,7 +76,7 @@ public class IntentDefController {
      * 修改意图定义
      */
     @PatchMapping("/{id}")
-    public Result<IntentDefBO> update(@PathVariable Long id, @RequestBody IntentDefBO bo) {
+    public Result<IntentDefBO> update(@PathVariable Long id, @Valid @RequestBody IntentDefBO bo) {
         log.info("修改意图定义，id: {}", id);
         try {
             bo.setId(id);
@@ -83,7 +84,7 @@ public class IntentDefController {
             return Result.success(updated);
         } catch (Exception e) {
             log.error("修改意图定义失败", e);
-            return Result.fail("修改失败：" + e.getMessage());
+            return Result.fail("修改失败");
         }
     }
 
@@ -98,7 +99,7 @@ public class IntentDefController {
             return Result.success();
         } catch (Exception e) {
             log.error("删除意图定义失败", e);
-            return Result.fail("删除失败：" + e.getMessage());
+            return Result.fail("删除失败");
         }
     }
 
@@ -113,7 +114,7 @@ public class IntentDefController {
             return Result.success();
         } catch (Exception e) {
             log.error("批量删除意图定义失败", e);
-            return Result.fail("批量删除失败：" + e.getMessage());
+            return Result.fail("批量删除失败");
         }
     }
 

@@ -6,6 +6,7 @@ import com.shiyu.ai.common.core.api.PageData;
 import com.shiyu.ai.common.core.api.Result;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.tuple.Pair;
+import jakarta.validation.Valid;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -70,7 +71,7 @@ public class DictController {
      * 新增字典
      */
     @PostMapping("")
-    public Result<DictBO> createDict(@RequestBody DictBO dictBO) {
+    public Result<DictBO> createDict(@Valid @RequestBody DictBO dictBO) {
         log.info("新增字典");
         
         try {
@@ -78,7 +79,7 @@ public class DictController {
             return Result.success(createdDict);
         } catch (Exception e) {
             log.error("新增字典失败", e);
-            return Result.fail("新增失败：" + e.getMessage());
+            return Result.fail("新增失败");
         }
     }
 
@@ -88,7 +89,7 @@ public class DictController {
     @PatchMapping("/{id}")
     public Result<DictBO> updateDict(
             @PathVariable Long id,
-            @RequestBody DictBO dictBO) {
+            @Valid @RequestBody DictBO dictBO) {
         log.info("修改字典，id: {}", id);
         
         try {
@@ -97,7 +98,7 @@ public class DictController {
             return Result.success(updatedDict);
         } catch (Exception e) {
             log.error("修改字典失败", e);
-            return Result.fail("修改失败：" + e.getMessage());
+            return Result.fail("修改失败");
         }
     }
 
@@ -113,7 +114,7 @@ public class DictController {
             return Result.success();
         } catch (Exception e) {
             log.error("删除字典失败", e);
-            return Result.fail("删除失败：" + e.getMessage());
+            return Result.fail("删除失败");
         }
     }
 
@@ -129,7 +130,7 @@ public class DictController {
             return Result.success();
         } catch (Exception e) {
             log.error("批量删除字典失败", e);
-            return Result.fail("批量删除失败：" + e.getMessage());
+            return Result.fail("批量删除失败");
         }
     }
 }

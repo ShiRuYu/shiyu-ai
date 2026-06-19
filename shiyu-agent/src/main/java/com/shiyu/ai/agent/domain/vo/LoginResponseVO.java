@@ -1,5 +1,6 @@
 package com.shiyu.ai.agent.domain.vo;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import lombok.Data;
 
 import java.io.Serial;
@@ -25,6 +26,7 @@ public class LoginResponseVO implements Serializable {
     /**
      * 密码
      */
+    @JsonIgnore
     private String password;
 
     /**

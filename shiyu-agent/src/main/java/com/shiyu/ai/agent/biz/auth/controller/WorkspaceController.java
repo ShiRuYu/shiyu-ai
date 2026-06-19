@@ -7,6 +7,7 @@ import com.shiyu.ai.agent.domain.vo.WorkspaceVO;
 import com.shiyu.ai.common.core.api.Result;
 import com.shiyu.ai.common.core.utils.MapstructUtils;
 import lombok.extern.slf4j.Slf4j;
+import jakarta.validation.Valid;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.ArrayList;
@@ -52,7 +53,7 @@ public class WorkspaceController {
      * 新增工作空间
      */
     @PostMapping("")
-    public Result<Void> createWorkspace(@RequestBody WorkspaceRequest request) {
+    public Result<Void> createWorkspace(@Valid @RequestBody WorkspaceRequest request) {
         log.info("新增工作空间，name: {}", request.getName());
 
         WorkspaceBO workspaceBO = MapstructUtils.convert(request, WorkspaceBO.class);
@@ -71,7 +72,7 @@ public class WorkspaceController {
     @PatchMapping("/{id}")
     public Result<Void> updateWorkspace(
             @PathVariable Long id,
-            @RequestBody WorkspaceRequest request) {
+            @Valid @RequestBody WorkspaceRequest request) {
         log.info("修改工作空间，id: {}", id);
 
         WorkspaceBO workspaceBO = MapstructUtils.convert(request, WorkspaceBO.class);

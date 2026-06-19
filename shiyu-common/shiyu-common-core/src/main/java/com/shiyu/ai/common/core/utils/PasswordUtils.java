@@ -11,6 +11,11 @@ public class PasswordUtils {
     private static final BCryptPasswordEncoder PASSWORD_ENCODER = new BCryptPasswordEncoder();
 
     /**
+     * 系统默认密码（新增用户时若未设置密码则使用此值）
+     */
+    public static final String DEFAULT_PASSWORD = "123456";
+
+    /**
      * 加密密码
      *
      * @param rawPassword 原始密码

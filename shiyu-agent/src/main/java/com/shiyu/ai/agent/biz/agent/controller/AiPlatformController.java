@@ -8,6 +8,7 @@ import com.shiyu.ai.common.core.api.PageData;
 import com.shiyu.ai.common.core.api.Result;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.tuple.Pair;
+import jakarta.validation.Valid;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -106,15 +107,15 @@ public class AiPlatformController {
      * 新增平台
      */
     @PostMapping
-    public Result<AiPlatformBO> create(@RequestBody AiPlatformBO bo) {
+    public Result<AiPlatformBO> create(@Valid @RequestBody AiPlatformBO bo) {
         log.info("新增平台：{}", bo.getName());
         try {
             AiPlatformBO created = aiPlatformService.create(bo);
-            lc4jModelManager.reloadFromDb();
+            lc4jModelManager.markDirty();
             return Result.success(created);
         } catch (Exception e) {
             log.error("新增平台失败", e);
-            return Result.fail("新增失败：" + e.getMessage());
+            return Result.fail("新增失败");
         }
     }
 
@@ -122,16 +123,16 @@ public class AiPlatformController {
      * 修改平台
      */
     @PatchMapping("/{id}")
-    public Result<AiPlatformBO> update(@PathVariable Long id, @RequestBody AiPlatformBO bo) {
+    public Result<AiPlatformBO> update(@PathVariable Long id, @Valid @RequestBody AiPlatformBO bo) {
         log.info("修改平台，id: {}", id);
         try {
             bo.setId(id);
             AiPlatformBO updated = aiPlatformService.update(bo);
-            lc4jModelManager.reloadFromDb();
+            lc4jModelManager.markDirty();
             return Result.success(updated);
         } catch (Exception e) {
             log.error("修改平台失败", e);
-            return Result.fail("修改失败：" + e.getMessage());
+            return Result.fail("修改失败");
         }
     }
 
@@ -143,11 +144,11 @@ public class AiPlatformController {
         log.info("删除平台，id: {}", id);
         try {
             aiPlatformService.deleteById(id);
-            lc4jModelManager.reloadFromDb();
+            lc4jModelManager.markDirty();
             return Result.success();
         } catch (Exception e) {
             log.error("删除平台失败", e);
-            return Result.fail("删除失败：" + e.getMessage());
+            return Result.fail("删除失败");
         }
     }
 
@@ -159,11 +160,11 @@ public class AiPlatformController {
         log.info("设置默认平台，id: {}", id);
         try {
             AiPlatformBO bo = aiPlatformService.setDefault(id);
-            lc4jModelManager.reloadFromDb();
+            lc4jModelManager.markDirty();
             return Result.success(bo);
         } catch (Exception e) {
             log.error("设置默认平台失败", e);
-            return Result.fail("设置失败：" + e.getMessage());
+            return Result.fail("设置失败");
         }
     }
 
@@ -174,11 +175,11 @@ public class AiPlatformController {
     public Result<Void> reload() {
         log.info("手动触发平台适配器重新加载");
         try {
-            lc4jModelManager.reloadFromDb();
+            lc4jModelManager.markDirty();
             return Result.success();
         } catch (Exception e) {
             log.error("重新加载失败", e);
-            return Result.fail("重新加载失败：" + e.getMessage());
+            return Result.fail("重新加载失败");
         }
     }
 }

@@ -4,6 +4,7 @@ import com.shiyu.ai.agent.domain.vo.CaptchaVO;
 import com.shiyu.ai.agent.biz.auth.service.CaptchaService;
 import com.shiyu.ai.common.core.api.Result;
 import lombok.extern.slf4j.Slf4j;
+import jakarta.validation.Valid;
 import org.springframework.web.bind.annotation.*;
 
 /**
@@ -48,7 +49,7 @@ public class CaptchaController {
      * @return 验证结果
      */
     @PostMapping("/captcha/validate")
-    public Result<ValidateCaptchaResponse> validateCaptcha(@RequestBody ValidateCaptchaRequest request) {
+    public Result<ValidateCaptchaResponse> validateCaptcha(@Valid @RequestBody ValidateCaptchaRequest request) {
         log.info("收到验证码验证请求：key={}", request.getKey());
         
         try {
@@ -66,7 +67,7 @@ public class CaptchaController {
             
         } catch (Exception e) {
             log.error("验证验证码失败", e);
-            return Result.fail("验证验证码失败：" + e.getMessage());
+            return Result.fail("验证验证码失败");
         }
     }
     

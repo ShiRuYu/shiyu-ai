@@ -7,6 +7,7 @@ import com.shiyu.ai.common.core.api.Result;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.annotation.Resource;
+import jakarta.validation.Valid;
 import org.apache.commons.lang3.tuple.Pair;
 import org.springframework.web.bind.annotation.*;
 
@@ -52,7 +53,7 @@ public class ProfileController {
      */
     @Operation(summary = "创建人物")
     @PostMapping
-    public Result<ProfileBO> create(@RequestBody ProfileBO profileBO) {
+    public Result<ProfileBO> create(@Valid @RequestBody ProfileBO profileBO) {
         ProfileBO created = profileService.create(profileBO);
         return Result.success(created);
     }
@@ -62,7 +63,7 @@ public class ProfileController {
      */
     @Operation(summary = "更新人物")
     @PutMapping
-    public Result<Boolean> update(@RequestBody ProfileBO profileBO) {
+    public Result<Boolean> update(@Valid @RequestBody ProfileBO profileBO) {
         boolean updated = profileService.update(profileBO);
         return Result.success(updated);
     }

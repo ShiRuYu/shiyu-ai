@@ -63,7 +63,7 @@ public class UserContextTestController {
             
         } catch (Exception e) {
             log.error("获取用户信息失败", e);
-            return Result.fail("获取用户信息失败：" + e.getMessage());
+            return Result.fail("获取用户信息失败");
         }
     }
 

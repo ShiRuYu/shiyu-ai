@@ -37,4 +37,4 @@ build/
 
 ### VS Code ###
 .vscode/
-/.data/**/*.trace.db
+/.data/

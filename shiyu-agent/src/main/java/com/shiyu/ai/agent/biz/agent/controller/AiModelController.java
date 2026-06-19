@@ -8,6 +8,7 @@ import com.shiyu.ai.common.core.api.PageData;
 import com.shiyu.ai.common.core.api.Result;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.tuple.Pair;
+import jakarta.validation.Valid;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -103,15 +104,15 @@ public class AiModelController {
      * 新增模型
      */
     @PostMapping
-    public Result<AiModelBO> create(@RequestBody AiModelBO bo) {
+    public Result<AiModelBO> create(@Valid @RequestBody AiModelBO bo) {
         log.info("新增模型：{}", bo.getModelName());
         try {
             AiModelBO created = aiModelService.create(bo);
-            lc4jModelManager.reloadFromDb();
+            lc4jModelManager.markDirty();
             return Result.success(created);
         } catch (Exception e) {
             log.error("新增模型失败", e);
-            return Result.fail("新增失败：" + e.getMessage());
+            return Result.fail("新增失败");
         }
     }
 
@@ -119,16 +120,16 @@ public class AiModelController {
      * 修改模型
      */
     @PatchMapping("/{id}")
-    public Result<AiModelBO> update(@PathVariable Long id, @RequestBody AiModelBO bo) {
+    public Result<AiModelBO> update(@PathVariable Long id, @Valid @RequestBody AiModelBO bo) {
         log.info("修改模型，id: {}", id);
         try {
             bo.setId(id);
             AiModelBO updated = aiModelService.update(bo);
-            lc4jModelManager.reloadFromDb();
+            lc4jModelManager.markDirty();
             return Result.success(updated);
         } catch (Exception e) {
             log.error("修改模型失败", e);
-            return Result.fail("修改失败：" + e.getMessage());
+            return Result.fail("修改失败");
         }
     }
 
@@ -140,11 +141,11 @@ public class AiModelController {
         log.info("删除模型，id: {}", id);
         try {
             aiModelService.deleteById(id);
-            lc4jModelManager.reloadFromDb();
+            lc4jModelManager.markDirty();
             return Result.success();
         } catch (Exception e) {
             log.error("删除模型失败", e);
-            return Result.fail("删除失败：" + e.getMessage());
+            return Result.fail("删除失败");
         }
     }
 
@@ -156,11 +157,11 @@ public class AiModelController {
         log.info("批量删除模型，ids: {}", ids);
         try {
             aiModelService.deleteByIds(ids);
-            lc4jModelManager.reloadFromDb();
+            lc4jModelManager.markDirty();
             return Result.success();
         } catch (Exception e) {
             log.error("批量删除模型失败", e);
-            return Result.fail("批量删除失败：" + e.getMessage());
+            return Result.fail("批量删除失败");
         }
     }
 
@@ -172,11 +173,11 @@ public class AiModelController {
         log.info("设置默认模型，id: {}", id);
         try {
             AiModelBO bo = aiModelService.setDefault(id);
-            lc4jModelManager.reloadFromDb();
+            lc4jModelManager.markDirty();
             return Result.success(bo);
         } catch (Exception e) {
             log.error("设置默认模型失败", e);
-            return Result.fail("设置失败：" + e.getMessage());
+            return Result.fail("设置失败");
         }
     }
 }

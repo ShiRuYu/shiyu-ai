@@ -45,7 +45,10 @@ public class DatabaseInitializer implements ApplicationRunner {
                     `tenant_id`   BIGINT       NOT NULL COMMENT '租户ID',
                     `role`        VARCHAR(16)  NOT NULL COMMENT '角色(user/assistant/system/tool)',
                     `content`     TEXT         NOT NULL COMMENT '消息内容',
+                    `create_by`   VARCHAR(64)  DEFAULT NULL COMMENT '创建者',
                     `create_time` TIMESTAMP    DEFAULT CURRENT_TIMESTAMP,
+                    `update_by`   VARCHAR(64)  DEFAULT NULL COMMENT '更新者',
+                    `update_time` TIMESTAMP    DEFAULT NULL COMMENT '更新时间',
                     PRIMARY KEY (`id`)
                 )
             """);
@@ -62,7 +65,9 @@ public class DatabaseInitializer implements ApplicationRunner {
                     `content`       TEXT         NOT NULL COMMENT '记忆内容',
                     `importance`    DOUBLE       DEFAULT 0.5 COMMENT '重要度评分(0-1)',
                     `source`        VARCHAR(64)  DEFAULT NULL COMMENT '来源(session_id等)',
+                    `create_by`     VARCHAR(64)  DEFAULT NULL COMMENT '创建者',
                     `create_time`   TIMESTAMP    DEFAULT CURRENT_TIMESTAMP,
+                    `update_by`     VARCHAR(64)  DEFAULT NULL COMMENT '更新者',
                     `update_time`   TIMESTAMP    DEFAULT CURRENT_TIMESTAMP,
                     PRIMARY KEY (`id`)
                 )
@@ -88,7 +93,10 @@ public class DatabaseInitializer implements ApplicationRunner {
                     `start_time`    TIMESTAMP    NOT NULL COMMENT '开始时间',
                     `end_time`      TIMESTAMP    DEFAULT NULL COMMENT '结束时间',
                     `duration_ms`   BIGINT       DEFAULT NULL COMMENT '耗时(毫秒)',
+                    `create_by`     VARCHAR(64)  DEFAULT NULL COMMENT '创建者',
                     `create_time`   TIMESTAMP    DEFAULT CURRENT_TIMESTAMP,
+                    `update_by`     VARCHAR(64)  DEFAULT NULL COMMENT '更新者',
+                    `update_time`   TIMESTAMP    DEFAULT NULL COMMENT '更新时间',
                     PRIMARY KEY (`id`)
                 )
             """);
@@ -96,9 +104,35 @@ public class DatabaseInitializer implements ApplicationRunner {
             stmt.execute("CREATE INDEX IF NOT EXISTS `idx_agent_exec_agent` ON `agent_execution` (`agent_id`, `create_time`)");
             stmt.execute("CREATE INDEX IF NOT EXISTS `idx_agent_exec_session` ON `agent_execution` (`session_id`)");
 
+            // 确保旧表包含审计字段（兼容已有数据库文件）
+            migrateColumn(stmt, "agent_execution", "output_data", "TEXT");
+            migrateColumn(stmt, "agent_execution", "error_message", "TEXT");
+            migrateColumn(stmt, "agent_execution", "end_time", "TIMESTAMP");
+            migrateColumn(stmt, "agent_execution", "duration_ms", "BIGINT");
+            migrateColumn(stmt, "agent_execution", "create_by", "VARCHAR(64)");
+            migrateColumn(stmt, "agent_execution", "create_time", "TIMESTAMP DEFAULT CURRENT_TIMESTAMP");
+            migrateColumn(stmt, "agent_execution", "update_by", "VARCHAR(64)");
+            migrateColumn(stmt, "agent_execution", "update_time", "TIMESTAMP");
+            migrateColumn(stmt, "conversation_message", "create_by", "VARCHAR(64)");
+            migrateColumn(stmt, "conversation_message", "create_time", "TIMESTAMP DEFAULT CURRENT_TIMESTAMP");
+            migrateColumn(stmt, "conversation_message", "update_by", "VARCHAR(64)");
+            migrateColumn(stmt, "conversation_message", "update_time", "TIMESTAMP");
+            migrateColumn(stmt, "long_term_memory", "create_by", "VARCHAR(64)");
+            migrateColumn(stmt, "long_term_memory", "create_time", "TIMESTAMP DEFAULT CURRENT_TIMESTAMP");
+            migrateColumn(stmt, "long_term_memory", "update_by", "VARCHAR(64)");
+            migrateColumn(stmt, "long_term_memory", "update_time", "TIMESTAMP");
+
             log.info("数据库表初始化完成: conversation_message, long_term_memory, agent_execution");
         } catch (Exception e) {
             log.error("数据库表初始化失败", e);
+        }
+    }
+
+    private void migrateColumn(Statement stmt, String table, String column, String type) {
+        try {
+            stmt.execute("ALTER TABLE `" + table + "` ADD COLUMN IF NOT EXISTS `" + column + "` " + type);
+        } catch (Exception ignored) {
+            // H2 may not support IF NOT EXISTS in older versions; ignore if column already exists
         }
     }
 }

@@ -30,6 +30,10 @@ public class ResourcesConfig implements WebMvcConfigurer {
         // 处理 favicon.ico 请求
         registry.addResourceHandler("/favicon.ico")
                 .addResourceLocations("classpath:/static/", "classpath:/public/");
+
+        // 处理文件上传访问
+        registry.addResourceHandler("/uploads/**")
+                .addResourceLocations("file:./uploads/");
     }
 
     /**

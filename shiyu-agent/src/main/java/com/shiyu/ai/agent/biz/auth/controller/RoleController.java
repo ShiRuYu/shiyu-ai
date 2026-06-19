@@ -8,6 +8,7 @@ import com.shiyu.ai.agent.biz.auth.service.RoleService;
 import com.shiyu.ai.common.core.api.Result;
 import com.shiyu.ai.common.core.utils.MapstructUtils;
 import lombok.extern.slf4j.Slf4j;
+import jakarta.validation.Valid;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -64,7 +65,7 @@ public class RoleController {
     @PatchMapping("/{id}")
     public Result<Void> updateRole(
             @PathVariable Long id,
-            @RequestBody RoleRequest request) {
+            @Valid @RequestBody RoleRequest request) {
         log.info("修改角色，id: {}", id);
         
         RoleBO roleBO = MapstructUtils.convert(request, RoleBO.class);
@@ -83,7 +84,7 @@ public class RoleController {
     @PutMapping("/{id}")
     public Result<Void> putRole(
             @PathVariable Long id,
-            @RequestBody RoleRequest request) {
+            @Valid @RequestBody RoleRequest request) {
         log.info("修改角色，id: {}", id);
 
         RoleBO roleBO = MapstructUtils.convert(request, RoleBO.class);
@@ -118,7 +119,7 @@ public class RoleController {
     @PatchMapping("/users/remove/{id}")
     public Result<Void> removeUserRoles(
             @PathVariable Long id,
-            @RequestBody AssignUserRolesRequest request) {
+            @Valid @RequestBody AssignUserRolesRequest request) {
         log.info("取消分配角色，id: {}, userIds: {}", id, request.getUserIds());
         
         boolean success = roleService.removeUserRoles(id, request.getUserIds());
@@ -136,7 +137,7 @@ public class RoleController {
     @PatchMapping("/users/add/{id}")
     public Result<Void> assignUserRoles(
             @PathVariable Long id,
-            @RequestBody AssignUserRolesRequest request) {
+            @Valid @RequestBody AssignUserRolesRequest request) {
         log.info("分配角色，id: {}, userIds: {}", id, request.getUserIds());
         
         boolean success = roleService.assignUserRoles(id, request.getUserIds());
@@ -152,7 +153,7 @@ public class RoleController {
      * 新增角色
      */
     @PostMapping("")
-    public Result<Void> createRole(@RequestBody RoleRequest request) {
+    public Result<Void> createRole(@Valid @RequestBody RoleRequest request) {
         log.info("新增角色");
         
         RoleBO roleBO = MapstructUtils.convert(request, RoleBO.class);

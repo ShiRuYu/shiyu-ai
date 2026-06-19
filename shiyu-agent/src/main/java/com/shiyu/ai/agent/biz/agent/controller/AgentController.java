@@ -73,7 +73,7 @@ public class AgentController {
             
         } catch (Exception e) {
             log.error("Agent 注册失败：agentId={}", request.getAgentId(), e);
-            return Result.fail("Agent 注册失败：" + e.getMessage());
+            return Result.fail("Agent 注册失败");
         }
     }
 
@@ -146,7 +146,7 @@ public class AgentController {
             
         } catch (Exception e) {
             log.error("Agent 执行失败：agentId={}", agentId, e);
-            return Result.fail("Agent 执行失败：" + e.getMessage());
+            return Result.fail("Agent 执行失败");
         }
     }
 
@@ -181,12 +181,12 @@ public class AgentController {
                     .map(Result::success)
                     .onErrorResume(e -> {
                         log.error("Agent 流式执行失败：agentId={}", agentId, e);
-                        return Flux.just(Result.fail("Agent 流式执行失败：" + e.getMessage()));
+                        return Flux.just(Result.fail("Agent 流式执行失败"));
                     });
             
         } catch (Exception e) {
             log.error("Agent 流式执行失败：agentId={}", agentId, e);
-            return Flux.just(Result.fail("Agent 流式执行失败：" + e.getMessage()));
+            return Flux.just(Result.fail("Agent 流式执行失败"));
         }
     }
 

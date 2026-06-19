@@ -9,6 +9,7 @@ import com.shiyu.ai.common.core.api.PageData;
 import com.shiyu.ai.common.core.api.Result;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.tuple.Pair;
+import jakarta.validation.Valid;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -42,24 +43,24 @@ public class AgentAdminController {
     }
 
     @PostMapping
-    public Result<AgentVO> create(@RequestBody AgentRequest request) {
+    public Result<AgentVO> create(@Valid @RequestBody AgentRequest request) {
         try {
             AgentVO vo = agentAdminService.create(request);
             return Result.success(vo);
         } catch (Exception e) {
             log.error("新增Agent失败", e);
-            return Result.fail("新增失败：" + e.getMessage());
+            return Result.fail("新增失败");
         }
     }
 
     @PatchMapping("/{id}")
-    public Result<AgentVO> update(@PathVariable Long id, @RequestBody AgentRequest request) {
+    public Result<AgentVO> update(@PathVariable Long id, @Valid @RequestBody AgentRequest request) {
         try {
             AgentVO vo = agentAdminService.update(id, request);
             return Result.success(vo);
         } catch (Exception e) {
             log.error("修改Agent失败", e);
-            return Result.fail("修改失败：" + e.getMessage());
+            return Result.fail("修改失败");
         }
     }
 
@@ -70,7 +71,7 @@ public class AgentAdminController {
             return Result.success();
         } catch (Exception e) {
             log.error("删除Agent失败", e);
-            return Result.fail("删除失败：" + e.getMessage());
+            return Result.fail("删除失败");
         }
     }
 
@@ -83,7 +84,7 @@ public class AgentAdminController {
             return Result.success();
         } catch (Exception e) {
             log.error("更新Agent状态失败", e);
-            return Result.fail("更新失败：" + e.getMessage());
+            return Result.fail("更新失败");
         }
     }
 

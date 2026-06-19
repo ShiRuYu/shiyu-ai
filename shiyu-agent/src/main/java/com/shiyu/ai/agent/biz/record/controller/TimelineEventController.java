@@ -7,6 +7,7 @@ import com.shiyu.ai.common.core.api.Result;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.annotation.Resource;
+import jakarta.validation.Valid;
 import org.apache.commons.lang3.tuple.Pair;
 import org.springframework.web.bind.annotation.*;
 
@@ -52,7 +53,7 @@ public class TimelineEventController {
      */
     @Operation(summary = "创建时间轴事件")
     @PostMapping
-    public Result<TimelineEventBO> create(@RequestBody TimelineEventBO eventBO) {
+    public Result<TimelineEventBO> create(@Valid @RequestBody TimelineEventBO eventBO) {
         TimelineEventBO created = timelineEventService.create(eventBO);
         return Result.success(created);
     }
@@ -62,7 +63,7 @@ public class TimelineEventController {
      */
     @Operation(summary = "更新时间轴事件")
     @PutMapping
-    public Result<Boolean> update(@RequestBody TimelineEventBO eventBO) {
+    public Result<Boolean> update(@Valid @RequestBody TimelineEventBO eventBO) {
         boolean updated = timelineEventService.update(eventBO);
         return Result.success(updated);
     }

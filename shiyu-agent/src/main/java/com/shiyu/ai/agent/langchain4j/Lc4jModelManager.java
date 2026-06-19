@@ -250,6 +250,13 @@ public class Lc4jModelManager implements ApplicationRunner {
     // ======================== 查询 ========================
 
     public Lc4jPlatformAdapter getAdapter(String platformType) {
+        if (!dbLoaded) {
+            synchronized (this) {
+                if (!dbLoaded) {
+                    reloadFromDb();
+                }
+            }
+        }
         Lc4jPlatformAdapter adapter = adapterMap.get(platformType);
         if (adapter == null) {
             throw new IllegalArgumentException("未找到平台适配器：" + platformType);
@@ -276,6 +283,15 @@ public class Lc4jModelManager implements ApplicationRunner {
     public String getDefaultModelName(String platformType) {
         Lc4jPlatformAdapter adapter = adapterMap.get(platformType);
         return adapter != null ? adapter.getDefaultModelName() : null;
+    }
+
+    /**
+     * 标记数据源为脏，下次获取适配器时自动从 DB 重载。
+     * 替代原先每次 CRUD 后调用 reloadFromDb() 的全量重载。
+     */
+    public void markDirty() {
+        this.dbLoaded = false;
+        log.info("平台适配器已标记为脏，将在下次访问时懒加载");
     }
 
     /**

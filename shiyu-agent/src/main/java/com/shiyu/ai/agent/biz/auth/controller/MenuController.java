@@ -8,6 +8,7 @@ import com.shiyu.ai.common.core.api.Result;
 import com.shiyu.ai.common.core.domain.LoginContextHolder;
 import com.shiyu.ai.common.core.utils.MapstructUtils;
 import lombok.extern.slf4j.Slf4j;
+import jakarta.validation.Valid;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.ArrayList;
@@ -36,8 +37,8 @@ public class MenuController {
             List<MenuBO> menuBOs = menuService.getRouteMenusByUserId(userId);
             return Result.success(convertToRouteMenuVO(menuBOs));
         } catch (Exception e) {
-            log.error("getAllMenus error", e);
-            return Result.fail(e.getMessage());
+            log.error("操作失败", e);
+            return Result.fail("操作失败");
         }
     }
 
@@ -112,12 +113,12 @@ public class MenuController {
     }
 
     @PostMapping("")
-    public Result<Void> createMenu(@RequestBody MenuRequest request) {
+    public Result<Void> createMenu(@Valid @RequestBody MenuRequest request) {
         return menuService.createMenu(MapstructUtils.convert(request, MenuBO.class)) ? Result.success() : Result.fail("create fail");
     }
 
     @PatchMapping("/{id}")
-    public Result<Void> updateMenu(@PathVariable Long id, @RequestBody MenuRequest request) {
+    public Result<Void> updateMenu(@PathVariable Long id, @Valid @RequestBody MenuRequest request) {
         return menuService.updateMenu(id, MapstructUtils.convert(request, MenuBO.class)) ? Result.success() : Result.fail("update fail");
     }
 

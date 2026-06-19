@@ -41,13 +41,13 @@ public class ShiYuDefaultExceptionHandler {
     @ExceptionHandler(ConstraintViolationException.class)
     public Result<String> exception(ConstraintViolationException e) {
         log.error(e.getMessage(), e);
-        return Result.fail(BizResultCode.ERR_10007, e.getMessage());
+        return Result.fail(BizResultCode.ERR_10007, "请求参数校验失败");
     }
 
     @ExceptionHandler(Exception.class)
     public Result<String> exception(Exception e) {
         log.error(e.getMessage(), e);
-        return Result.fail(BizResultCode.ERROR, e.getMessage());
+        return Result.fail(BizResultCode.ERROR, "服务器内部错误");
     }
 }
 

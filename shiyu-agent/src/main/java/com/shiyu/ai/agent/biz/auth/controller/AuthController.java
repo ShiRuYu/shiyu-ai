@@ -3,10 +3,12 @@ package com.shiyu.ai.agent.biz.auth.controller;
 import com.shiyu.ai.agent.domain.request.LoginRequest;
 import com.shiyu.ai.agent.domain.vo.LoginResponseVO;
 import com.shiyu.ai.agent.biz.auth.service.AuthService;
+import com.shiyu.ai.agent.biz.auth.service.LoginRateLimiter;
 import com.shiyu.ai.agent.domain.vo.WorkspaceContextVO;
 import com.shiyu.ai.common.core.api.Result;
 import com.shiyu.ai.common.core.domain.LoginContextHolder;
 import lombok.extern.slf4j.Slf4j;
+import jakarta.validation.Valid;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.ArrayList;
@@ -23,9 +25,11 @@ import java.util.Map;
 public class AuthController {
     
     private final AuthService authService;
+    private final LoginRateLimiter loginRateLimiter;
     
-    public AuthController(AuthService authService) {
+    public AuthController(AuthService authService, LoginRateLimiter loginRateLimiter) {
         this.authService = authService;
+        this.loginRateLimiter = loginRateLimiter;
     }
     
     /**
@@ -35,8 +39,14 @@ public class AuthController {
      * @return 登录响应（包含用户信息和访问令牌）
      */
     @PostMapping("/login")
-    public Result<LoginResponseVO> login(@RequestBody LoginRequest request) {
+    public Result<LoginResponseVO> login(@Valid @RequestBody LoginRequest request) {
         log.info("收到登录请求：username={}", request.getUsername());
+        
+        String clientIp = loginRateLimiter.getClientIp();
+        if (!loginRateLimiter.isAllowed(clientIp)) {
+            log.warn("登录频率超限，IP: {}, username: {}", clientIp, request.getUsername());
+            return Result.fail("登录尝试过于频繁，请稍后再试");
+        }
         
         try {
             // 验证参数
@@ -52,11 +62,12 @@ public class AuthController {
                 return Result.fail("Username or password is incorrect.");
             }
             
+            loginRateLimiter.reset(clientIp);
             return Result.success(response);
             
         } catch (Exception e) {
             log.error("登录失败：username={}", request.getUsername(), e);
-            return Result.fail("登录失败：" + e.getMessage());
+            return Result.fail("登录失败");
         }
     }
     
@@ -80,7 +91,7 @@ public class AuthController {
             
         } catch (Exception e) {
             log.error("获取权限码失败", e);
-            return Result.fail("获取权限码失败：" + e.getMessage());
+            return Result.fail("获取权限码失败");
         }
     }
     
@@ -109,7 +120,7 @@ public class AuthController {
             
         } catch (Exception e) {
             log.error("刷新令牌失败", e);
-            return Result.fail("刷新令牌失败：" + e.getMessage());
+            return Result.fail("刷新令牌失败");
         }
     }
     
@@ -216,7 +227,7 @@ public class AuthController {
             
         } catch (Exception e) {
             log.error("登出失败", e);
-            return Result.fail("登出失败：" + e.getMessage());
+            return Result.fail("登出失败");
         }
     }
     

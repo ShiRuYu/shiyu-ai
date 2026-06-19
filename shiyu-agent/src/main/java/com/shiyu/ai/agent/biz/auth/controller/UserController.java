@@ -12,6 +12,7 @@ import com.shiyu.ai.common.core.api.Result;
 import com.shiyu.ai.common.core.domain.LoginContextHolder;
 import com.shiyu.ai.common.core.utils.MapstructUtils;
 import lombok.extern.slf4j.Slf4j;
+import jakarta.validation.Valid;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -121,7 +122,7 @@ public class UserController {
     @PatchMapping("/{userId}")
     public Result<Void> updateUser(
             @PathVariable Long userId,
-            @RequestBody UserRequest request) {
+            @Valid @RequestBody UserRequest request) {
         log.info("修改用户，userId: {}", userId);
         
         UserBO userBO = MapstructUtils.convert(request, UserBO.class);
@@ -181,7 +182,7 @@ public class UserController {
      * 新增用户
      */
     @PostMapping("")
-    public Result<Long> createUser(@RequestBody UserRequest request) {
+    public Result<Long> createUser(@Valid @RequestBody UserRequest request) {
         log.info("新增用户");
         
         UserBO userBO = MapstructUtils.convert(request, UserBO.class);

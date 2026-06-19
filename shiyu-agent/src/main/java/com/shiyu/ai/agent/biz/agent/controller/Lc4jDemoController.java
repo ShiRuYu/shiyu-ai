@@ -7,6 +7,7 @@ import com.shiyu.ai.agent.langchain4j.Lc4jModelManager;
 import com.shiyu.ai.common.core.api.Result;
 import lombok.Data;
 import lombok.extern.slf4j.Slf4j;
+import jakarta.validation.Valid;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
@@ -47,7 +48,7 @@ public class Lc4jDemoController {
      * @return AI 响应
      */
     @PostMapping("/chat")
-    public Result<ChatResponse> chat(@RequestBody ChatRequest request) {
+    public Result<ChatResponse> chat(@Valid @RequestBody ChatRequest request) {
         log.info("收到聊天请求：platform={}, model={}, prompt={}", 
                 request.getPlatform(), request.getModel(), request.getPrompt());
         
@@ -85,7 +86,7 @@ public class Lc4jDemoController {
      * @return 流式响应
      */
     @PostMapping("/chat/stream")
-    public Flux<String> streamChat(@RequestBody ChatRequest request) {
+    public Flux<String> streamChat(@Valid @RequestBody ChatRequest request) {
         log.info("收到流式聊天请求：platform={}, model={}, prompt={}", 
                 request.getPlatform(), request.getModel(), request.getPrompt());
         
