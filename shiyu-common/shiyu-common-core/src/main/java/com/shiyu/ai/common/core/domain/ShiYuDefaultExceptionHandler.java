@@ -44,6 +44,12 @@ public class ShiYuDefaultExceptionHandler {
         return Result.fail(BizResultCode.ERR_10007, "请求参数校验失败");
     }
 
+    @ExceptionHandler(SecurityException.class)
+    public Result<String> exception(SecurityException e) {
+        log.warn("安全拦截: {}", e.getMessage());
+        return Result.fail(e.getMessage());
+    }
+
     @ExceptionHandler(Exception.class)
     public Result<String> exception(Exception e) {
         log.error(e.getMessage(), e);

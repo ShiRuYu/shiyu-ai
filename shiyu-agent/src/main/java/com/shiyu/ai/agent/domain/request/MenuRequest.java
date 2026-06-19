@@ -1,5 +1,6 @@
 package com.shiyu.ai.agent.domain.request;
 
+import com.fasterxml.jackson.annotation.JsonProperty;
 import com.shiyu.ai.agent.domain.bo.MenuBO;
 import io.github.linpeilie.annotations.AutoMapper;
 import jakarta.validation.constraints.NotBlank;
@@ -23,6 +24,7 @@ public class MenuRequest implements Serializable {
     @NotBlank(message = "菜单类型不能为空")
     private String type;
 
+    @JsonProperty("pid")
     private Long parentId;
 
     private String path;

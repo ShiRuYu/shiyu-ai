@@ -348,6 +348,21 @@ VALUES (20403, '字典修改', 'system:dict:update', 'BUTTON', 204, 1, NULL, NUL
 INSERT INTO `menu` (`id`, `name`, `code`, `type`, `parent_id`, `tenant_id`, `path`, `redirect`, `icon`, `component`, `layout`, `keep_alive`, `method`, `description`, `show`, `status`, `order`, `del_flag`, `create_by`, `update_by`) 
 VALUES (20404, '字典删除', 'system:dict:delete', 'BUTTON', 204, 1, NULL, NULL, NULL, NULL, NULL, 'DELETE', '删除字典', TRUE, '1', 4, 0, '0', '0');
 
+INSERT INTO `menu` (`id`, `name`, `code`, `type`, `parent_id`, `tenant_id`, `path`, `redirect`, `icon`, `component`, `layout`, `keep_alive`, `method`, `description`, `show`, `status`, `order`, `del_flag`, `create_by`, `update_by`) 
+VALUES (205, '租户管理', 'SystemTenant', 'MENU', 100, 1, '/system/tenant', NULL, 'carbon:enterprise', '/system/tenant/list', '', TRUE, NULL, NULL, TRUE, '1', 5, 0, '0', '0');
+
+INSERT INTO `menu` (`id`, `name`, `code`, `type`, `parent_id`, `tenant_id`, `path`, `redirect`, `icon`, `component`, `layout`, `keep_alive`, `method`, `description`, `show`, `status`, `order`, `del_flag`, `create_by`, `update_by`) 
+VALUES (20501, '租户查询', 'system:tenant:query', 'BUTTON', 205, 1, NULL, NULL, NULL, NULL, NULL, 'GET', '查询租户列表', TRUE, '1', 1, 0, '0', '0');
+
+INSERT INTO `menu` (`id`, `name`, `code`, `type`, `parent_id`, `tenant_id`, `path`, `redirect`, `icon`, `component`, `layout`, `keep_alive`, `method`, `description`, `show`, `status`, `order`, `del_flag`, `create_by`, `update_by`) 
+VALUES (20502, '租户新增', 'system:tenant:create', 'BUTTON', 205, 1, NULL, NULL, NULL, NULL, NULL, 'POST', '新增租户', TRUE, '1', 2, 0, '0', '0');
+
+INSERT INTO `menu` (`id`, `name`, `code`, `type`, `parent_id`, `tenant_id`, `path`, `redirect`, `icon`, `component`, `layout`, `keep_alive`, `method`, `description`, `show`, `status`, `order`, `del_flag`, `create_by`, `update_by`) 
+VALUES (20503, '租户修改', 'system:tenant:update', 'BUTTON', 205, 1, NULL, NULL, NULL, NULL, NULL, 'PUT', '修改租户', TRUE, '1', 3, 0, '0', '0');
+
+INSERT INTO `menu` (`id`, `name`, `code`, `type`, `parent_id`, `tenant_id`, `path`, `redirect`, `icon`, `component`, `layout`, `keep_alive`, `method`, `description`, `show`, `status`, `order`, `del_flag`, `create_by`, `update_by`) 
+VALUES (20504, '租户删除', 'system:tenant:delete', 'BUTTON', 205, 1, NULL, NULL, NULL, NULL, NULL, 'DELETE', '删除租户', TRUE, '1', 4, 0, '0', '0');
+
 -- ==================== 日常记录模块 ====================
 
 INSERT INTO `menu` (`id`, `name`, `code`, `type`, `parent_id`, `tenant_id`, `path`, `redirect`, `icon`, `component`, `layout`, `keep_alive`, `method`, `description`, `show`, `status`, `order`, `del_flag`, `create_by`, `update_by`) 
@@ -435,6 +450,7 @@ VALUES (507, '意图管理', 'AgentIntent', 'MENU', 500, 1, '/agent/intent', NUL
 INSERT INTO `role_workspace_menu` (`role_id`, `workspace_id`, `menu_id`, `tenant_id`) VALUES 
 (0, 0, 1, 1), (0, 0, 2, 1), (0, 0, 3, 1), 
 (0, 0, 100, 1), (0, 0, 200, 1), (0, 0, 20001, 1), (0, 0, 20002, 1), (0, 0, 20003, 1), (0, 0, 20004, 1), (0, 0, 201, 1), (0, 0, 20101, 1), (0, 0, 20102, 1), (0, 0, 20103, 1), (0, 0, 202, 1), (0, 0, 20201, 1), (0, 0, 20202, 1), (0, 0, 20203, 1), (0, 0, 203, 1), (0, 0, 20301, 1), (0, 0, 20302, 1), (0, 0, 20303, 1), (0, 0, 20304, 1), (0, 0, 204, 1), (0, 0, 20401, 1), (0, 0, 20402, 1), (0, 0, 20403, 1), (0, 0, 20404, 1),
+(0, 0, 205, 1), (0, 0, 20501, 1), (0, 0, 20502, 1), (0, 0, 20503, 1), (0, 0, 20504, 1),
 (0, 0, 400, 1), (0, 0, 401, 1), (0, 0, 40101, 1), (0, 0, 40102, 1), (0, 0, 40103, 1), (0, 0, 40104, 1), (0, 0, 402, 1), (0, 0, 40201, 1), (0, 0, 40202, 1), (0, 0, 40203, 1), (0, 0, 40204, 1),
 (0, 0, 500, 1), (0, 0, 501, 1), (0, 0, 502, 1), (0, 0, 503, 1), (0, 0, 50301, 1), (0, 0, 50302, 1), (0, 0, 50303, 1), (0, 0, 50304, 1), (0, 0, 504, 1), (0, 0, 50401, 1), (0, 0, 50402, 1), (0, 0, 50403, 1), (0, 0, 50404, 1), (0, 0, 505, 1), (0, 0, 507, 1);
 
@@ -442,6 +458,7 @@ INSERT INTO `role_workspace_menu` (`role_id`, `workspace_id`, `menu_id`, `tenant
 INSERT INTO `role_workspace_menu` (`role_id`, `workspace_id`, `menu_id`, `tenant_id`) VALUES 
 (1, 0, 1, 1), (1, 0, 2, 1), (1, 0, 3, 1), 
 (1, 0, 100, 1), (1, 0, 200, 1), (1, 0, 20001, 1), (1, 0, 20002, 1), (1, 0, 20003, 1), (1, 0, 20004, 1), (1, 0, 201, 1), (1, 0, 20101, 1), (1, 0, 20102, 1), (1, 0, 20103, 1), (1, 0, 202, 1), (1, 0, 20201, 1), (1, 0, 20202, 1), (1, 0, 20203, 1), (1, 0, 203, 1), (1, 0, 20301, 1), (1, 0, 20302, 1), (1, 0, 20303, 1), (1, 0, 20304, 1), (1, 0, 204, 1), (1, 0, 20401, 1), (1, 0, 20402, 1), (1, 0, 20403, 1), (1, 0, 20404, 1),
+(1, 0, 205, 1), (1, 0, 20501, 1), (1, 0, 20502, 1), (1, 0, 20503, 1), (1, 0, 20504, 1),
 (1, 0, 400, 1), (1, 0, 401, 1), (1, 0, 40101, 1), (1, 0, 40102, 1), (1, 0, 40103, 1), (1, 0, 40104, 1), (1, 0, 402, 1), (1, 0, 40201, 1), (1, 0, 40202, 1), (1, 0, 40203, 1), (1, 0, 40204, 1),
 (1, 0, 500, 1), (1, 0, 501, 1), (1, 0, 502, 1), (1, 0, 503, 1), (1, 0, 50301, 1), (1, 0, 50302, 1), (1, 0, 50303, 1), (1, 0, 50304, 1), (1, 0, 504, 1), (1, 0, 50401, 1), (1, 0, 50402, 1), (1, 0, 50403, 1), (1, 0, 50404, 1), (1, 0, 505, 1), (1, 0, 507, 1);
 
