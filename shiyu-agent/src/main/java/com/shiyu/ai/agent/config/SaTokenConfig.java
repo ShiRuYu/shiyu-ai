@@ -2,30 +2,27 @@ package com.shiyu.ai.agent.config;
 
 import cn.dev33.satoken.context.SaHolder;
 import cn.dev33.satoken.exception.NotLoginException;
-import cn.dev33.satoken.jwt.StpLogicJwtForSimple;
 import cn.dev33.satoken.filter.SaServletFilter;
-import cn.dev33.satoken.stp.StpLogic;
 import cn.dev33.satoken.stp.StpUtil;
+import cn.dev33.satoken.strategy.SaStrategy;
+import cn.dev33.satoken.util.SaFoxUtil;
 import cn.dev33.satoken.router.SaRouter;
 import com.shiyu.ai.common.core.enums.BizResultCode;
 import com.shiyu.ai.common.core.utils.JSONUtils;
 import com.shiyu.ai.common.core.api.Result;
+import jakarta.annotation.PostConstruct;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 
-/**
- * Sa-Token 配置类
- * 配置 JWT 模式、路由鉴权过滤器等
- */
 @Configuration
 public class SaTokenConfig {
-
     /**
-     * Sa-Token 整合 JWT (简单模式)
+     * 重写 Sa-Token 框架内部算法策略
      */
-    @Bean
-    public StpLogic getStpLogicJwt() {
-        return new StpLogicJwtForSimple();
+    @PostConstruct
+    public void rewriteSaStrategy() {
+        SaStrategy.instance.createToken = (loginId, loginType) ->
+                loginId + "_" + SaFoxUtil.getRandomString(60);
     }
 
     /**

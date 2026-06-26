@@ -89,5 +89,4 @@ sa-token:
   is-read-header: true
   # Token 前缀
   token-prefix: Bearer
-  # JWT 密钥（生产环境请修改为复杂密钥）
-  jwt-secret-key: shiyu-ai-jwt-secret-key-2026-change-in-production
+

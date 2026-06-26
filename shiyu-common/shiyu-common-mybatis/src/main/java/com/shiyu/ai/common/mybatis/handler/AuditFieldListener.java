@@ -43,8 +43,12 @@ public class AuditFieldListener implements com.mybatisflex.annotation.InsertList
     @Override
     public void onUpdate(Object entity) {
         if (entity instanceof BaseEntity baseEntity) {
-            baseEntity.setUpdateBy(getCurrentUser());
-            baseEntity.setUpdateTime(LocalDateTime.now());
+            if (baseEntity.getUpdateBy() == null) {
+                baseEntity.setUpdateBy(getCurrentUser());
+            }
+            if (baseEntity.getUpdateTime() == null) {
+                baseEntity.setUpdateTime(LocalDateTime.now());
+            }
         }
     }
 
@@ -70,6 +74,7 @@ public class AuditFieldListener implements com.mybatisflex.annotation.InsertList
                 return username;
             }
         }
-        throw new IllegalStateException("无法获取当前登录用户，请在已登录状态下操作");
+        log.warn("Current user is not logged");
+        return "unknown";
     }
 }
