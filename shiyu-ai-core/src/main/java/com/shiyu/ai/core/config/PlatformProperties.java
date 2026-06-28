@@ -1,4 +1,4 @@
-package com.shiyu.ai.agent.biz.agent.config;
+package com.shiyu.ai.core.config;
 
 import com.shiyu.ai.common.core.factory.YmlPropertySourceFactory;
 import jakarta.annotation.PostConstruct;

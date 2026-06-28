@@ -1,6 +1,6 @@
 package com.shiyu.ai.agent.biz.agent.service.impl;
 
-import com.shiyu.ai.agent.biz.agent.config.PlatformProperties;
+import com.shiyu.ai.core.config.PlatformProperties;
 import com.shiyu.ai.dal.repository.AiPlatformRepository;
 import com.shiyu.ai.agent.biz.agent.service.AiPlatformService;
 import com.shiyu.ai.model.bo.AiPlatformBO;
