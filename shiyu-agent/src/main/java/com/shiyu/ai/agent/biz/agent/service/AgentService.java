@@ -1,6 +1,6 @@
 package com.shiyu.ai.agent.biz.agent.service;
 
-import com.shiyu.ai.agent.biz.agent.domain.AgentDefinition;
+import com.shiyu.ai.aiagent.langgraph4j.AgentDefinition;
 import reactor.core.publisher.Flux;
 
 import java.util.List;

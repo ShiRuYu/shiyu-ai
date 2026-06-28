@@ -1,11 +1,11 @@
 package com.shiyu.ai.agent.biz.agent.builder;
 
 import com.shiyu.ai.agent.biz.agent.service.AgentService;
-import com.shiyu.ai.agent.biz.agent.domain.AgentDefinition;
-import com.shiyu.ai.agent.biz.agent.domain.AgentVersion;
-import com.shiyu.ai.agent.langgraph4j.graph.ConditionEdge;
-import com.shiyu.ai.agent.langgraph4j.graph.Graph;
-import com.shiyu.ai.agent.langgraph4j.node.BaseNode;
+import com.shiyu.ai.aiagent.langgraph4j.AgentDefinition;
+import com.shiyu.ai.aiagent.langgraph4j.AgentVersion;
+import com.shiyu.ai.aiagent.langgraph4j.graph.ConditionEdge;
+import com.shiyu.ai.aiagent.langgraph4j.graph.Graph;
+import com.shiyu.ai.aiagent.langgraph4j.node.BaseNode;
 import lombok.extern.slf4j.Slf4j;
 
 import java.util.ArrayList;

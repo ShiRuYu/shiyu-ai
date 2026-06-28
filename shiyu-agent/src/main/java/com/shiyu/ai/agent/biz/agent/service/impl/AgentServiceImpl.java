@@ -2,11 +2,11 @@ package com.shiyu.ai.agent.biz.agent.service.impl;
 
 import com.shiyu.ai.agent.biz.agent.cache.AgentCacheManager;
 import com.shiyu.ai.agent.biz.agent.cache.AgentLoader;
-import com.shiyu.ai.agent.biz.agent.repository.AgentAdminRepository;
-import com.shiyu.ai.agent.biz.agent.domain.AgentDefinition;
-import com.shiyu.ai.agent.biz.agent.domain.AgentVersion;
+import com.shiyu.ai.dal.repository.AgentAdminRepository;
+import com.shiyu.ai.aiagent.langgraph4j.AgentDefinition;
+import com.shiyu.ai.aiagent.langgraph4j.AgentVersion;
 import com.shiyu.ai.agent.biz.agent.service.AgentService;
-import com.shiyu.ai.agent.langgraph4j.node.NodeFields;
+import com.shiyu.ai.aiagent.langgraph4j.node.NodeFields;
 import com.shiyu.ai.common.core.domain.LoginContextHolder;
 import com.shiyu.ai.common.core.utils.StringUtils;
 import lombok.extern.slf4j.Slf4j;

@@ -1,15 +1,15 @@
 package com.shiyu.ai.agent.biz.agent.service.impl;
 
-import com.shiyu.ai.agent.biz.agent.repository.AgentAdminRepository;
+import com.shiyu.ai.dal.repository.AgentAdminRepository;
 import com.shiyu.ai.agent.biz.agent.service.AgentGraphService;
 import com.shiyu.ai.agent.biz.agent.service.AgentService;
-import com.shiyu.ai.agent.domain.bo.AgentVersionBO;
-import com.shiyu.ai.agent.domain.request.EdgeRequest;
-import com.shiyu.ai.agent.domain.request.GraphConfigRequest;
-import com.shiyu.ai.agent.domain.request.NodeConfigRequest;
-import com.shiyu.ai.agent.domain.vo.AgentVersionDetailVO;
-import com.shiyu.ai.agent.domain.vo.GraphValidationVO;
-import com.shiyu.ai.agent.langgraph4j.graph.Graph;
+import com.shiyu.ai.model.bo.AgentVersionBO;
+import com.shiyu.ai.model.request.EdgeRequest;
+import com.shiyu.ai.model.request.GraphConfigRequest;
+import com.shiyu.ai.model.request.NodeConfigRequest;
+import com.shiyu.ai.model.vo.AgentVersionDetailVO;
+import com.shiyu.ai.model.vo.GraphValidationVO;
+import com.shiyu.ai.aiagent.langgraph4j.graph.Graph;
 import com.shiyu.ai.common.core.utils.JSONUtils;
 import jakarta.annotation.Resource;
 import lombok.extern.slf4j.Slf4j;

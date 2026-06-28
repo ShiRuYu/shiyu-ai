@@ -1,9 +1,9 @@
 package com.shiyu.ai.agent.biz.agent.controller;
 
 import com.shiyu.ai.agent.biz.agent.service.AiModelService;
-import com.shiyu.ai.agent.domain.bo.AiModelBO;
-import com.shiyu.ai.agent.domain.vo.IdNameOptionVO;
-import com.shiyu.ai.agent.langchain4j.Lc4jModelManager;
+import com.shiyu.ai.model.bo.AiModelBO;
+import com.shiyu.ai.model.vo.IdNameOptionVO;
+import com.shiyu.ai.core.langchain4j.Lc4jModelManager;
 import com.shiyu.ai.common.core.api.PageData;
 import com.shiyu.ai.common.core.api.Result;
 import lombok.extern.slf4j.Slf4j;

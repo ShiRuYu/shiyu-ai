@@ -1,10 +1,10 @@
 package com.shiyu.ai.agent.biz.agent.service.impl;
 
-import com.shiyu.ai.agent.biz.agent.repository.IntentDefRepository;
+import com.shiyu.ai.dal.repository.IntentDefRepository;
 import com.shiyu.ai.agent.biz.agent.service.IntentDefService;
-import com.shiyu.ai.agent.domain.bo.IntentDefBO;
-import com.shiyu.ai.agent.domain.vo.IdNameOptionVO;
-import com.shiyu.ai.agent.langgraph4j.node.intent.IntentDefinitionFactory;
+import com.shiyu.ai.model.bo.IntentDefBO;
+import com.shiyu.ai.model.vo.IdNameOptionVO;
+import com.shiyu.ai.aiagent.langgraph4j.node.intent.IntentDefinitionFactory;
 import jakarta.annotation.Resource;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.tuple.Pair;

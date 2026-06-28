@@ -1,8 +1,8 @@
 package com.shiyu.ai.agent.biz.agent.service.impl;
 
-import com.shiyu.ai.agent.langchain4j.Lc4jModelManager;
-import com.shiyu.ai.agent.langgraph4j.node.intent.IntentDefinition;
-import com.shiyu.ai.agent.langgraph4j.node.intent.IntentDefinitionFactory;
+import com.shiyu.ai.core.langchain4j.Lc4jModelManager;
+import com.shiyu.ai.aiagent.langgraph4j.node.intent.IntentDefinition;
+import com.shiyu.ai.aiagent.langgraph4j.node.intent.IntentDefinitionFactory;
 import com.shiyu.ai.agent.biz.agent.service.IntentService;
 import com.shiyu.ai.common.core.utils.JSONUtils;
 import dev.langchain4j.model.chat.ChatModel;

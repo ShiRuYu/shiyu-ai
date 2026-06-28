@@ -1,7 +1,7 @@
 package com.shiyu.ai.agent.biz.agent.service.impl;
 
-import com.shiyu.ai.agent.langgraph4j.node.intent.IntentType;
-import com.shiyu.ai.agent.biz.agent.service.ToolService;
+import com.shiyu.ai.aiagent.langgraph4j.node.intent.IntentType;
+import com.shiyu.ai.mcp.ToolService;
 import jakarta.annotation.PostConstruct;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;

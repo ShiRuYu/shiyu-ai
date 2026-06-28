@@ -1,9 +1,9 @@
 package com.shiyu.ai.agent.biz.agent.service.impl;
 
-import com.shiyu.ai.agent.biz.agent.domain.Lc4jRequest;
-import com.shiyu.ai.agent.biz.agent.domain.Lc4jResponse;
-import com.shiyu.ai.agent.langchain4j.Lc4jModelManager;
-import com.shiyu.ai.agent.biz.agent.service.Lc4jService;
+import com.shiyu.ai.core.Lc4jRequest;
+import com.shiyu.ai.core.Lc4jResponse;
+import com.shiyu.ai.core.langchain4j.Lc4jModelManager;
+import com.shiyu.ai.core.Lc4jService;
 import dev.langchain4j.model.chat.ChatModel;
 import dev.langchain4j.model.chat.StreamingChatModel;
 import lombok.extern.slf4j.Slf4j;

@@ -1,13 +1,13 @@
 package com.shiyu.ai.agent.biz.agent.service.impl;
 
-import com.shiyu.ai.agent.biz.agent.repository.AgentAdminRepository;
+import com.shiyu.ai.dal.repository.AgentAdminRepository;
 import com.shiyu.ai.agent.biz.agent.service.AgentAdminService;
 import com.shiyu.ai.agent.biz.agent.service.AgentService;
-import com.shiyu.ai.agent.domain.bo.AgentDefBO;
-import com.shiyu.ai.agent.domain.bo.AgentVersionBO;
-import com.shiyu.ai.agent.domain.request.AgentRequest;
-import com.shiyu.ai.agent.domain.vo.*;
-import com.shiyu.ai.agent.langgraph4j.node.NodeType;
+import com.shiyu.ai.model.bo.AgentDefBO;
+import com.shiyu.ai.model.bo.AgentVersionBO;
+import com.shiyu.ai.model.request.AgentRequest;
+import com.shiyu.ai.model.vo.*;
+import com.shiyu.ai.aiagent.langgraph4j.node.NodeType;
 import jakarta.annotation.Resource;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.tuple.Pair;
