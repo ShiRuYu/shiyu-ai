@@ -1,30 +1,30 @@
 package com.shiyu.ai.aiagent.cache;
 
 import com.shiyu.ai.common.core.utils.JSONUtils;
-import com.shiyu.ai.aiagent.langgraph4j.AgentDefinition;
-import com.shiyu.ai.aiagent.langgraph4j.AgentVersion;
+import com.shiyu.ai.aiagent.AgentDefinition;
+import com.shiyu.ai.aiagent.AgentVersion;
 import com.shiyu.ai.dal.repository.AgentAdminRepository;
 import com.shiyu.ai.model.bo.AgentDefBO;
 import com.shiyu.ai.model.bo.AgentVersionBO;
 import com.shiyu.ai.model.request.GraphConfigRequest;
-import com.shiyu.ai.aiagent.langgraph4j.graph.ConditionEdge;
-import com.shiyu.ai.aiagent.langgraph4j.graph.Graph;
-import com.shiyu.ai.aiagent.langgraph4j.node.BaseNode;
-import com.shiyu.ai.aiagent.langgraph4j.node.NodeConfig;
-import com.shiyu.ai.aiagent.langgraph4j.node.NodeFactory;
-import com.shiyu.ai.aiagent.langgraph4j.node.NodeType;
-import com.shiyu.ai.aiagent.langgraph4j.node.agent.AgentCallConfig;
-import com.shiyu.ai.aiagent.langgraph4j.node.condition.ConditionConfig;
-import com.shiyu.ai.aiagent.langgraph4j.node.intent.IntentConfig;
-import com.shiyu.ai.aiagent.langgraph4j.node.llm.LlmCallConfig;
-import com.shiyu.ai.aiagent.langgraph4j.node.memory.LongTermMemoryConfig;
-import com.shiyu.ai.aiagent.langgraph4j.node.memory.MemoryRetrievalConfig;
-import com.shiyu.ai.aiagent.langgraph4j.node.memory.ShortTermMemoryConfig;
-import com.shiyu.ai.aiagent.langgraph4j.node.output.OutputFormatConfig;
-import com.shiyu.ai.aiagent.langgraph4j.node.rag.RagEnhancementConfig;
-import com.shiyu.ai.aiagent.langgraph4j.node.rag.RagRetrievalConfig;
-import com.shiyu.ai.aiagent.langgraph4j.node.tool.ToolCallConfig;
-import com.shiyu.ai.aiagent.langgraph4j.node.transform.TransformConfig;
+import com.shiyu.ai.aiagent.graph.ConditionEdge;
+import com.shiyu.ai.aiagent.graph.Graph;
+import com.shiyu.ai.aiagent.node.BaseNode;
+import com.shiyu.ai.aiagent.node.NodeConfig;
+import com.shiyu.ai.aiagent.node.NodeFactory;
+import com.shiyu.ai.aiagent.node.NodeType;
+import com.shiyu.ai.aiagent.node.agent.AgentCallConfig;
+import com.shiyu.ai.aiagent.node.condition.ConditionConfig;
+import com.shiyu.ai.aiagent.node.intent.IntentConfig;
+import com.shiyu.ai.aiagent.node.llm.LlmCallConfig;
+import com.shiyu.ai.aiagent.node.memory.LongTermMemoryConfig;
+import com.shiyu.ai.aiagent.node.memory.MemoryRetrievalConfig;
+import com.shiyu.ai.aiagent.node.memory.ShortTermMemoryConfig;
+import com.shiyu.ai.aiagent.node.output.OutputFormatConfig;
+import com.shiyu.ai.aiagent.node.rag.RagEnhancementConfig;
+import com.shiyu.ai.aiagent.node.rag.RagRetrievalConfig;
+import com.shiyu.ai.aiagent.node.tool.ToolCallConfig;
+import com.shiyu.ai.aiagent.node.transform.TransformConfig;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Component;
 
@@ -48,7 +48,7 @@ public class AgentLoader {
 
         AgentDefBO agentDef = agentAdminRepository.selectByAgentId(agentId);
         if (agentDef == null || !"1".equals(agentDef.getStatus())) {
-            log.warn("Agent 不存在或已停用: agentId={}", agentId);
+            log.warn("Agent 不存在或已停�? agentId={}", agentId);
             return null;
         }
 
@@ -60,12 +60,12 @@ public class AgentLoader {
 
         AgentVersionBO versionBO = agentAdminRepository.selectVersionByAgentIdAndNumber(agentId, versionNumber);
         if (versionBO == null) {
-            log.warn("Agent 当前版本不存在: agentId={}, version={}", agentId, versionNumber);
+            log.warn("Agent 当前版本不存�? agentId={}, version={}", agentId, versionNumber);
             return null;
         }
 
         if (versionBO.getGraphConfig() == null || versionBO.getGraphConfig().isEmpty()) {
-            log.warn("Agent 版本无 Graph 配置: agentId={}, version={}", agentId, versionNumber);
+            log.warn("Agent 版本�?Graph 配置: agentId={}, version={}", agentId, versionNumber);
             return null;
         }
 
@@ -141,7 +141,7 @@ public class AgentLoader {
         }
 
         graph.validate();
-        log.info("Graph 构建并验证成功: {}", graphName);
+        log.info("Graph 构建并验证成�? {}", graphName);
         return graph;
     }
 
@@ -178,7 +178,7 @@ public class AgentLoader {
                 .defaultTarget(defaultTarget)
                 .nodeMappings(mappings)
                 .functionCondition(state -> {
-                    // 只返回条件键，由 langgraph4j 的 mappings 参数完成节点映射
+                    // 只返回条件键，由 langgraph4j �?mappings 参数完成节点映射
                     String intentCode = (String) state.getOrDefault("intentCode", "");
                     return intentCode.isEmpty() ? "UNKNOWN" : intentCode;
                 })

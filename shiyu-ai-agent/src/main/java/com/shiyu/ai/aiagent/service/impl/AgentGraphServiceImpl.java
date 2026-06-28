@@ -9,7 +9,7 @@ import com.shiyu.ai.model.request.GraphConfigRequest;
 import com.shiyu.ai.model.request.NodeConfigRequest;
 import com.shiyu.ai.model.vo.AgentVersionDetailVO;
 import com.shiyu.ai.model.vo.GraphValidationVO;
-import com.shiyu.ai.aiagent.langgraph4j.graph.Graph;
+import com.shiyu.ai.aiagent.graph.Graph;
 import com.shiyu.ai.common.core.utils.JSONUtils;
 import jakarta.annotation.Resource;
 import lombok.extern.slf4j.Slf4j;
@@ -74,7 +74,7 @@ public class AgentGraphServiceImpl implements AgentGraphService {
                         if (request.getConditionalEdges() != null) {
                             for (GraphConfigRequest.ConditionalEdgeDTO ce : request.getConditionalEdges().values()) {
                                 if (ce.getNodeMappings() != null && ce.getNodeMappings().values().contains(nodeId)) {
-                                    warnings.add("节点 " + nodeId + " 通过条件边可达");
+                                    warnings.add("节点 " + nodeId + " 通过条件边可�?);
                                 }
                             }
                         }
@@ -112,7 +112,7 @@ public class AgentGraphServiceImpl implements AgentGraphService {
         AgentVersionBO v = getVersionOrThrow(agentId, versionId);
         Map<String, Object> graphData = parseGraphConfig(v.getGraphConfig());
         Map<String, Object> nodes = getMap(graphData, "nodes");
-        if (!nodes.containsKey(nodeId)) throw new IllegalArgumentException("节点不存在: " + nodeId);
+        if (!nodes.containsKey(nodeId)) throw new IllegalArgumentException("节点不存�? " + nodeId);
 
         Map<String, Object> nodeConfig = getMap(nodes, nodeId);
         if (request.getNodeName() != null) nodeConfig.put("nodeName", request.getNodeName());
@@ -219,7 +219,7 @@ public class AgentGraphServiceImpl implements AgentGraphService {
     private AgentVersionBO getVersionOrThrow(String agentId, Long versionId) {
         AgentVersionBO v = agentAdminRepository.selectVersionById(versionId);
         if (v == null || !v.getAgentId().equals(agentId)) {
-            throw new IllegalArgumentException("版本不存在: " + versionId);
+            throw new IllegalArgumentException("版本不存�? " + versionId);
         }
         return v;
     }

@@ -1,0 +1,39 @@
+package com.shiyu.ai.aiagent;
+
+import lombok.AllArgsConstructor;
+import lombok.Builder;
+import lombok.Data;
+import lombok.NoArgsConstructor;
+
+import java.util.HashMap;
+import java.util.Map;
+
+@Data
+@Builder
+@NoArgsConstructor
+@AllArgsConstructor
+public class AgentDefinition {
+    private String agentId;
+    private String name;
+    private String description;
+    private String currentVersion;
+    private long createdAt;
+    private long updatedAt;
+    private Long workspaceId;
+    private String startNodeId;
+
+    @Builder.Default
+    private Map<String, AgentVersion> versions = new HashMap<>();
+
+    public void addVersion(AgentVersion version) {
+        if (versions == null) {
+            versions = new HashMap<>();
+        }
+        versions.put(version.getVersionNumber(), version);
+    }
+
+    public AgentVersion getVersion(String versionNumber) {
+        if (versions == null) return null;
+        return versions.get(versionNumber);
+    }
+}

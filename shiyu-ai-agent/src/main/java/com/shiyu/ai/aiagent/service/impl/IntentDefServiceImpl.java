@@ -4,7 +4,7 @@ import com.shiyu.ai.dal.repository.IntentDefRepository;
 import com.shiyu.ai.aiagent.service.IntentDefService;
 import com.shiyu.ai.model.bo.IntentDefBO;
 import com.shiyu.ai.model.vo.IdNameOptionVO;
-import com.shiyu.ai.aiagent.langgraph4j.node.intent.IntentDefinitionFactory;
+import com.shiyu.ai.aiagent.node.intent.IntentDefinitionFactory;
 import jakarta.annotation.Resource;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.tuple.Pair;
@@ -13,7 +13,7 @@ import org.springframework.stereotype.Service;
 import java.util.List;
 
 /**
- * 意图定义服务实现层
+ * Intent definition service implementation
  */
 @Slf4j
 @Service
@@ -72,7 +72,7 @@ public class IntentDefServiceImpl implements IntentDefService {
         try {
             List<IntentDefBO> all = intentDefRepository.selectByAgentId("default");
             IntentDefinitionFactory.reloadFromDb(all);
-            log.info("IntentDefinitionFactory 已刷新，共计 {} 条意图定义", all != null ? all.size() : 0);
+            log.info("IntentDefinitionFactory 已刷新，共计 {} 条意图定�?, all != null ? all.size() : 0);
         } catch (Exception e) {
             log.error("刷新 IntentDefinitionFactory 失败", e);
         }

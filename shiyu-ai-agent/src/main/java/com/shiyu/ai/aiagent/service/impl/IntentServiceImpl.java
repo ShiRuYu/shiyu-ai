@@ -1,8 +1,8 @@
 package com.shiyu.ai.aiagent.service.impl;
 
 import com.shiyu.ai.core.langchain4j.Lc4jModelManager;
-import com.shiyu.ai.aiagent.langgraph4j.node.intent.IntentDefinition;
-import com.shiyu.ai.aiagent.langgraph4j.node.intent.IntentDefinitionFactory;
+import com.shiyu.ai.aiagent.node.intent.IntentDefinition;
+import com.shiyu.ai.aiagent.node.intent.IntentDefinitionFactory;
 import com.shiyu.ai.aiagent.service.IntentService;
 import com.shiyu.ai.common.core.utils.JSONUtils;
 import dev.langchain4j.model.chat.ChatModel;
@@ -15,10 +15,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 
-/**
- * 意图识别服务实现类
- * 使用 LLM 进行意图识别
- */
 @Slf4j
 @Service
 public class IntentServiceImpl implements IntentService {
@@ -35,9 +31,8 @@ public class IntentServiceImpl implements IntentService {
         String effectiveRow = row != null ? row : "default";
         String effectiveColumn = column;
 
-        // 根据 row + column 从工厂获取意图定义
         List<IntentDefinition> supportedIntents = IntentDefinitionFactory.getByCategory(effectiveRow, effectiveColumn);
-        log.info("开始识别用户意图，row={}, column={}, 匹配 {} 个意图定义",
+        log.info("Recognizing user intent: row={}, column={}, matched {} intents",
                 effectiveRow, effectiveColumn, supportedIntents != null ? supportedIntents.size() : 0);
 
         try {
@@ -51,7 +46,7 @@ public class IntentServiceImpl implements IntentService {
             if (chatModel == null) {
                 return new IntentRecognitionResult(
                     false, null, null, 0.0, Map.of(),
-                    "无法获取模型实例进行意图识别");
+                    "Unable to obtain model instance");
             }
 
             IntentAssistant assistant = assistantCache.computeIfAbsent(cacheKey,
@@ -61,10 +56,10 @@ public class IntentServiceImpl implements IntentService {
             return parseIntentResponse(response, supportedIntents);
 
         } catch (Exception e) {
-            log.error("意图识别失败", e);
+            log.error("Intent recognition failed", e);
             return new IntentRecognitionResult(
                 false, null, null, 0.0, Map.of(),
-                "意图识别异常：" + e.getMessage());
+                "Intent recognition error: " + e.getMessage());
         }
     }
 
@@ -73,59 +68,53 @@ public class IntentServiceImpl implements IntentService {
         return recognize(row, column, query, null, null);
     }
 
-    /**
-     * 构建意图识别的 Prompt
-     */
     private String buildIntentPrompt(String query, List<IntentDefinition> supportedIntents) {
         StringBuilder prompt = new StringBuilder();
-        prompt.append("请分析以下用户输入的意图：\n\n");
-        prompt.append("用户输入：").append(query).append("\n\n");
+        prompt.append("Please analyze the user input intent:\n\n");
+        prompt.append("User input: ").append(query).append("\n\n");
 
         if (supportedIntents != null && !supportedIntents.isEmpty()) {
-            prompt.append("支持的意图列表：\n");
+            prompt.append("Supported intents:\n");
             for (IntentDefinition intent : supportedIntents) {
-                prompt.append("- 代码：").append(intent.getCode())
-                      .append(", 名称：").append(intent.getName())
-                      .append(", 描述：").append(intent.getDescription())
-                      .append(", 示例：").append(intent.getExamples() != null
-                          ? String.join(",", intent.getExamples()) : "无")
+                prompt.append("- Code: ").append(intent.getCode())
+                      .append(", Name: ").append(intent.getName())
+                      .append(", Description: ").append(intent.getDescription())
+                      .append(", Examples: ").append(intent.getExamples() != null
+                          ? String.join(",", intent.getExamples()) : "N/A")
                       .append("\n");
             }
             prompt.append("\n");
         }
 
-        // 判断是否有意图需要 slot 提取
         boolean needSlots = supportedIntents != null && supportedIntents.stream()
                 .anyMatch(IntentDefinition::getRequireSlotFilling);
 
-        // ---------- 需要槽位的意图：包含 slots 提取指令和 slot 定义 ----------
         if (needSlots) {
-            prompt.append("部分意图包含槽位信息，需要从用户输入中提取。具体定义如下：\n");
+            prompt.append("Some intents require slot extraction from user input:\n");
             for (IntentDefinition intent : supportedIntents) {
                 if (intent.getRequireSlotFilling() && intent.getSlots() != null && !intent.getSlots().isEmpty()) {
                     prompt.append("- ").append(intent.getCode())
-                          .append(" 的槽位：").append(intent.getSlots()).append("\n");
+                          .append(" slots: ").append(intent.getSlots()).append("\n");
                 }
             }
             prompt.append("\n");
 
             prompt.append("""
-                    请返回 JSON 格式结果，不要包含任何其他字符（包括 Markdown 标记、说明文字等）：
+                    Return result as JSON only:
                     {
                       "intentCode": "WEATHER_QUERY",
-                      "intentName": "天气查询",
+                      "intentName": "Weather Query",
                       "confidence": 0.95,
-                      "slots": { "city": "北京", "date": "明天" }
+                      "slots": { "city": "Beijing", "date": "tomorrow" }
                     }
-                    注意：如果选择的意图不需要槽位，slots 字段固定为 {}。
+                    Note: slots must be {} if selected intent does not need slots.
                     """);
         } else {
-            // ---------- 无需槽位的意图：简化输出，slots 固定为 {} ----------
             prompt.append("""
-                    请返回 JSON 格式结果，不要包含任何其他字符（包括 Markdown 标记、说明文字等）：
+                    Return result as JSON only:
                     {
                       "intentCode": "CHITCHAT",
-                      "intentName": "闲聊",
+                      "intentName": "Chat",
                       "confidence": 0.95,
                       "slots": {}
                     }
@@ -135,15 +124,10 @@ public class IntentServiceImpl implements IntentService {
         return prompt.toString();
     }
 
-    /**
-     * 解析意图识别响应
-     */
     private IntentRecognitionResult parseIntentResponse(String response, List<IntentDefinition> supportedIntents) {
-        log.debug("意图识别响应：{}", response);
+        log.debug("Intent recognition response: {}", response);
 
         try {
-            // 通用 JSON 提取：找到第一个 { 或 [，通过花括号匹配定位结尾
-            // 无论外层包裹了什么（```json、<|begin_of_box|>、XML、纯文本等），都能正确提取
             String json = JSONUtils.extractJsonFragment(response);
 
             Map<String, Object> result = JSONUtils.parseObject(json, HashMap.class);
@@ -156,37 +140,35 @@ public class IntentServiceImpl implements IntentService {
                     ? (Map<String, Object>) slotsObj
                     : new HashMap<>();
 
-            // 验证是否在支持的意图列表中
             if (supportedIntents != null && !supportedIntents.isEmpty()) {
                 boolean isSupported = supportedIntents.stream()
                         .anyMatch(i -> i.getCode().equals(intentCode));
                 if (!isSupported) {
-                    log.warn("识别的意图 {} 不在支持的列表中", intentCode);
+                    log.warn("Recognized intent {} not in supported list", intentCode);
                     return new IntentRecognitionResult(
                         false, intentCode, intentName, confidence, slots,
-                        "不支持的意图类型：" + intentCode);
+                        "Unsupported intent type: " + intentCode);
                 }
             }
 
-            // 检查置信度阈值
             if (confidence < 0.5) {
-                log.warn("意图识别置信度过低：{}", confidence);
+                log.warn("Low confidence: {}", confidence);
                 return new IntentRecognitionResult(
                     false, intentCode, intentName, confidence, slots,
-                    "置信度过低：" + confidence);
+                    "Low confidence: " + confidence);
             }
 
-            log.info("意图识别成功：code={}, name={}, confidence={}",
+            log.info("Intent success: code={}, name={}, confidence={}",
                     intentCode, intentName, confidence);
 
             return new IntentRecognitionResult(
                 true, intentCode, intentName, confidence, slots, null);
 
         } catch (Exception e) {
-            log.error("解析意图响应失败", e);
+            log.error("Parse intent response failed", e);
             return new IntentRecognitionResult(
                 false, null, null, 0.0, Map.of(),
-                "响应解析失败：" + e.getMessage());
+                "Parse failed: " + e.getMessage());
         }
     }
 
@@ -204,9 +186,6 @@ public class IntentServiceImpl implements IntentService {
         return 0.0;
     }
 
-    /**
-     * 意图识别助手接口
-     */
     interface IntentAssistant {
         String recognize(String prompt);
     }

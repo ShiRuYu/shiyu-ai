@@ -101,7 +101,9 @@
         <module>shiyu-ai-rag</module>
         <module>shiyu-ai-mcp</module>
         <module>shiyu-ai-agent</module>
-        <module>shiyu-agent</module>
+        <module>shiyu-ai-auth</module>
+        <module>shiyu-ai-record</module>
+        <module>shiyu-ai-bootstrap</module>
     </modules>
 
     <!-- 依赖声明 -->
@@ -338,7 +340,17 @@
             </dependency>
             <dependency>
                 <groupId>com.shiyu.ai</groupId>
-                <artifactId>shiyu-agent</artifactId>
+                <artifactId>shiyu-ai-auth</artifactId>
+                <version>${revision}</version>
+            </dependency>
+            <dependency>
+                <groupId>com.shiyu.ai</groupId>
+                <artifactId>shiyu-ai-record</artifactId>
+                <version>${revision}</version>
+            </dependency>
+            <dependency>
+                <groupId>com.shiyu.ai</groupId>
+                <artifactId>shiyu-ai-bootstrap</artifactId>
                 <version>${revision}</version>
             </dependency>
 
@@ -389,6 +401,9 @@
                 <groupId>org.springframework.boot</groupId>
                 <artifactId>spring-boot-maven-plugin</artifactId>
                 <version>${spring-boot.version}</version>
+                <configuration>
+                    <skip>true</skip>
+                </configuration>
                 <executions>
                     <execution>
                         <goals>

@@ -1,0 +1,92 @@
+shiyu:
+  # 名称
+  name: "shiyu-agent"
+  # 版本
+  version: ${revision}
+# 开发环境配置
+server:
+  # 服务器的HTTP端口，默认为8080
+  port: 9000
+
+# Logging levels (package hierarchy)
+logging:
+  level:
+    # Project packages - use Maven profile level
+    root: info
+    com.shiyu: @logging.level@
+springdoc:
+  api-docs:
+    enabled: true               # 是否启用 API 文档
+    path: /v3/api-docs         # OpenAPI JSON 文档访问路径，默认 /v3/api-docs
+  group-configs:
+    - group: 'default'
+      paths-to-match:
+        - '/**'
+      packages-to-scan:
+        - com.shiyu.ai.bootstrap.controller
+        - com.shiyu.ai.auth.controller
+        - com.shiyu.ai.record.controller
+        - com.shiyu.ai.common.web.controller
+    - group: 'common'
+      paths-to-match:
+        - '/**'
+      packages-to-scan:
+        - com.shiyu.ai.common.web.controller
+    - group: 'auth'
+      paths-to-match:
+        - '/**'
+      packages-to-scan:
+        - com.shiyu.ai.auth.controller
+    - group: 'record'
+      paths-to-match:
+        - '/**'
+      packages-to-scan:
+        - com.shiyu.ai.record.controller
+    - group: 'agent'
+      paths-to-match:
+        - '/**'
+      packages-to-scan:
+        - com.shiyu.ai.bootstrap.controller
+  swagger-ui:
+    path: /swagger-ui/index.html      # Swagger UI 访问路径，默认 /swagger-ui/index.html
+    display-request-duration: true  # 显示请求耗时
+    operations-sorter: alpha     # 按字母排序接口
+    tags-sorter: alpha           # 按标签排序
+    default-model-rendering: example # 默认显示 model 示例
+
+# Spring 配置
+spring:
+  application:
+    name: ${shiyu.name}
+  # 资源信息
+  messages:
+    # 国际化资源文件路径
+    basename: i18n/messages
+  profiles:
+    active: @profiles.active@
+    group:
+      dev: ai, h2 #,mcp
+
+# Sa-Token 配置
+sa-token:
+  # Token 名称（同时也是 Cookie 名称）
+  token-name: Authorization
+  # Token 有效期，单位秒（默认 7200 秒 = 2 小时）
+  timeout: 7200
+  # Token 临时有效期（指定时间内无操作就视为 Token 过期），单位秒（默认 -1 表示不启用）
+  active-timeout: -1
+  # 是否允许同一账号并发登录（为 false 时新登录挤掉旧登录，实现单设备登录）
+  is-concurrent: false
+  # 在多人登录同一账号时，是否共用一个 Token（为 false 时每次登录新建一个 Token）
+  is-share: false
+  # Token 风格（默认可取值：uuid、simple-uuid、random-32、random-64、random-128、tik）
+  token-style: uuid
+  # 是否输出操作日志
+  is-log: false
+  # 是否从 Cookie 中读取 Token
+  is-read-cookie: false
+  # 是否从 Header 中读取 Token
+  is-read-header: true
+  # Token 前缀
+  token-prefix: Bearer
+
