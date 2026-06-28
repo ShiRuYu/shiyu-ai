@@ -1,8 +1,8 @@
 package com.shiyu.ai.agent.biz.record.service.impl;
 
-import com.shiyu.ai.agent.biz.record.repository.RecordRepository;
+import com.shiyu.ai.dal.repository.RecordRepository;
 import com.shiyu.ai.agent.biz.record.service.RecordService;
-import com.shiyu.ai.agent.domain.bo.RecordBO;
+import com.shiyu.ai.model.bo.RecordBO;
 import jakarta.annotation.Resource;
 import org.apache.commons.lang3.tuple.Pair;
 import org.springframework.stereotype.Service;

@@ -1,6 +1,6 @@
 package com.shiyu.ai.agent.domain.bo;
 
-import com.shiyu.ai.agent.dal.dataobject.agent.AgentExecutionDO;
+import com.shiyu.ai.dal.dataobject.agent.AgentExecutionDO;
 import io.github.linpeilie.annotations.AutoMapper;
 import lombok.Data;
 

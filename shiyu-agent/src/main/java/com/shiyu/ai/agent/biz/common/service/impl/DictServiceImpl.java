@@ -2,9 +2,9 @@ package com.shiyu.ai.agent.biz.common.service.impl;
 
 import com.github.benmanes.caffeine.cache.Cache;
 import com.github.benmanes.caffeine.cache.Caffeine;
-import com.shiyu.ai.agent.biz.common.repository.DictRepository;
+import com.shiyu.ai.dal.repository.DictRepository;
 import com.shiyu.ai.agent.biz.common.service.DictService;
-import com.shiyu.ai.agent.domain.bo.DictBO;
+import com.shiyu.ai.model.bo.DictBO;
 import jakarta.annotation.Resource;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.tuple.Pair;

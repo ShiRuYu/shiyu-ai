@@ -1,6 +1,6 @@
 package com.shiyu.ai.agent.domain.vo;
 
-import com.shiyu.ai.agent.domain.bo.RoleBO;
+import com.shiyu.ai.model.bo.RoleBO;
 import io.github.linpeilie.annotations.AutoMapper;
 import lombok.Data;
 

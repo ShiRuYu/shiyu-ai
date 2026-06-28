@@ -1,6 +1,6 @@
 package com.shiyu.ai.agent.biz.record.controller;
 
-import com.shiyu.ai.agent.domain.bo.TimelineEventBO;
+import com.shiyu.ai.model.bo.TimelineEventBO;
 import com.shiyu.ai.agent.biz.record.service.TimelineEventService;
 import com.shiyu.ai.common.core.api.PageData;
 import com.shiyu.ai.common.core.api.Result;

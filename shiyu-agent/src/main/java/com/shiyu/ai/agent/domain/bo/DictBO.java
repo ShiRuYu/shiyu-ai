@@ -1,6 +1,6 @@
 package com.shiyu.ai.agent.domain.bo;
 
-import com.shiyu.ai.agent.dal.dataobject.common.DictDO;
+import com.shiyu.ai.dal.dataobject.common.DictDO;
 import com.shiyu.ai.common.core.validate.AddGroup;
 import com.shiyu.ai.common.core.validate.EditGroup;
 import com.shiyu.ai.common.core.domain.BaseEntity;

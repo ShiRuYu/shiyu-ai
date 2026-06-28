@@ -1,6 +1,6 @@
 package com.shiyu.ai.agent.domain.bo;
 
-import com.shiyu.ai.agent.dal.dataobject.record.MediaDO;
+import com.shiyu.ai.dal.dataobject.record.MediaDO;
 import com.shiyu.ai.common.core.validate.AddGroup;
 import io.github.linpeilie.annotations.AutoMapper;
 import jakarta.validation.constraints.NotBlank;

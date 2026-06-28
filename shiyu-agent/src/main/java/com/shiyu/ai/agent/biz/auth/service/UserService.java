@@ -1,7 +1,7 @@
 package com.shiyu.ai.agent.biz.auth.service;
 
-import com.shiyu.ai.agent.domain.bo.UserBO;
-import com.shiyu.ai.agent.domain.vo.UserPageResponse;
+import com.shiyu.ai.model.bo.UserBO;
+import com.shiyu.ai.model.vo.UserPageResponse;
 
 /**
  * 用户服务接口

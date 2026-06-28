@@ -1,10 +1,10 @@
 package com.shiyu.ai.agent.biz.agent.service.impl;
 
 import com.shiyu.ai.agent.biz.agent.config.PlatformProperties;
-import com.shiyu.ai.agent.biz.agent.repository.AiPlatformRepository;
+import com.shiyu.ai.dal.repository.AiPlatformRepository;
 import com.shiyu.ai.agent.biz.agent.service.AiPlatformService;
-import com.shiyu.ai.agent.domain.bo.AiPlatformBO;
-import com.shiyu.ai.agent.domain.vo.IdNameOptionVO;
+import com.shiyu.ai.model.bo.AiPlatformBO;
+import com.shiyu.ai.model.vo.IdNameOptionVO;
 import jakarta.annotation.Resource;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;

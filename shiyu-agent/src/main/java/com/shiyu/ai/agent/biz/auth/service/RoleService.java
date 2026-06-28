@@ -1,7 +1,7 @@
 package com.shiyu.ai.agent.biz.auth.service;
 
-import com.shiyu.ai.agent.domain.bo.RoleBO;
-import com.shiyu.ai.agent.domain.vo.RolePageResponse;
+import com.shiyu.ai.model.bo.RoleBO;
+import com.shiyu.ai.model.vo.RolePageResponse;
 
 import java.util.List;
 

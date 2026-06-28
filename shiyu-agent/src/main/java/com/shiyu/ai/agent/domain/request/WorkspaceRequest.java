@@ -1,7 +1,7 @@
 package com.shiyu.ai.agent.domain.request;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
-import com.shiyu.ai.agent.domain.bo.WorkspaceBO;
+import com.shiyu.ai.model.bo.WorkspaceBO;
 import io.github.linpeilie.annotations.AutoMapper;
 import jakarta.validation.constraints.NotBlank;
 import lombok.Data;

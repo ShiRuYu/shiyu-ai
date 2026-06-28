@@ -1,7 +1,7 @@
 package com.shiyu.ai.agent.biz.record.service.impl;
 
-import com.shiyu.ai.agent.domain.bo.ProfileBO;
-import com.shiyu.ai.agent.biz.record.repository.ProfileRepository;
+import com.shiyu.ai.model.bo.ProfileBO;
+import com.shiyu.ai.dal.repository.ProfileRepository;
 import com.shiyu.ai.agent.biz.record.service.ProfileService;
 import jakarta.annotation.Resource;
 import org.apache.commons.lang3.tuple.Pair;

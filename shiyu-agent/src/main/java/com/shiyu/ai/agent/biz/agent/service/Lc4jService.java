@@ -1,7 +1,7 @@
 package com.shiyu.ai.agent.biz.agent.service;
 
-import com.shiyu.ai.agent.biz.agent.domain.Lc4jRequest;
-import com.shiyu.ai.agent.biz.agent.domain.Lc4jResponse;
+import com.shiyu.ai.core.Lc4jRequest;
+import com.shiyu.ai.core.Lc4jResponse;
 import dev.langchain4j.model.chat.ChatModel;
 import dev.langchain4j.model.chat.StreamingChatModel;
 import reactor.core.publisher.Flux;

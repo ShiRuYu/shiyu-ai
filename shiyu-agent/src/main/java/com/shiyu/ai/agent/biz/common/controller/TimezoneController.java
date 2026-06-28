@@ -1,10 +1,10 @@
 package com.shiyu.ai.agent.biz.common.controller;
 
-import com.shiyu.ai.agent.biz.auth.repository.UserRepository;
-import com.shiyu.ai.agent.domain.bo.UserBO;
-import com.shiyu.ai.agent.domain.enums.TimezoneEnum;
-import com.shiyu.ai.agent.domain.request.SetTimezoneRequest;
-import com.shiyu.ai.agent.domain.vo.TimezoneOptionVO;
+import com.shiyu.ai.dal.repository.UserRepository;
+import com.shiyu.ai.model.bo.UserBO;
+import com.shiyu.ai.model.enums.TimezoneEnum;
+import com.shiyu.ai.model.request.SetTimezoneRequest;
+import com.shiyu.ai.model.vo.TimezoneOptionVO;
 import com.shiyu.ai.common.core.api.Result;
 import com.shiyu.ai.common.core.domain.LoginContextHolder;
 import com.shiyu.ai.common.core.utils.JSONUtils;

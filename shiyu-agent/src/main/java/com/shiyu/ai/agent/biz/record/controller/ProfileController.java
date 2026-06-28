@@ -1,6 +1,6 @@
 package com.shiyu.ai.agent.biz.record.controller;
 
-import com.shiyu.ai.agent.domain.bo.ProfileBO;
+import com.shiyu.ai.model.bo.ProfileBO;
 import com.shiyu.ai.agent.biz.record.service.ProfileService;
 import com.shiyu.ai.common.core.api.PageData;
 import com.shiyu.ai.common.core.api.Result;

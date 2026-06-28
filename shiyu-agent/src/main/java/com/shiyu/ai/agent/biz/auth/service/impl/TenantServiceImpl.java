@@ -1,8 +1,8 @@
 package com.shiyu.ai.agent.biz.auth.service.impl;
 
-import com.shiyu.ai.agent.biz.auth.repository.TenantRepository;
+import com.shiyu.ai.dal.repository.TenantRepository;
 import com.shiyu.ai.agent.biz.auth.service.TenantService;
-import com.shiyu.ai.agent.domain.bo.TenantBO;
+import com.shiyu.ai.model.bo.TenantBO;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 

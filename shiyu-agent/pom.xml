@@ -17,6 +17,30 @@
 
     <dependencies>
 
+        <!-- ================================================== -->
+        <!-- New modules                                       -->
+        <!-- ================================================== -->
+        <dependency>
+            <groupId>com.shiyu.ai</groupId>
+            <artifactId>shiyu-ai-dal</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>com.shiyu.ai</groupId>
+            <artifactId>shiyu-ai-core</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>com.shiyu.ai</groupId>
+            <artifactId>shiyu-ai-memory</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>com.shiyu.ai</groupId>
+            <artifactId>shiyu-ai-rag</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>com.shiyu.ai</groupId>
+            <artifactId>shiyu-ai-mcp</artifactId>
+        </dependency>
+
         <dependency>
             <groupId>com.shiyu.ai</groupId>
             <artifactId>shiyu-common-web</artifactId>

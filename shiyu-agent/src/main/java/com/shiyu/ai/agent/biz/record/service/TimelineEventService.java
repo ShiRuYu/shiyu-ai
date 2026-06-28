@@ -1,6 +1,6 @@
 package com.shiyu.ai.agent.biz.record.service;
 
-import com.shiyu.ai.agent.domain.bo.TimelineEventBO;
+import com.shiyu.ai.model.bo.TimelineEventBO;
 import org.apache.commons.lang3.tuple.Pair;
 
 import java.util.List;

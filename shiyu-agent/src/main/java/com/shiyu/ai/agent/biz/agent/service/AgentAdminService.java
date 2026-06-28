@@ -1,10 +1,10 @@
 package com.shiyu.ai.agent.biz.agent.service;
 
-import com.shiyu.ai.agent.domain.request.AgentRequest;
-import com.shiyu.ai.agent.domain.vo.AgentDetailVO;
-import com.shiyu.ai.agent.domain.vo.AgentVO;
-import com.shiyu.ai.agent.domain.vo.IdNameOptionVO;
-import com.shiyu.ai.agent.domain.vo.NodeTypeMetaVO;
+import com.shiyu.ai.model.request.AgentRequest;
+import com.shiyu.ai.model.vo.AgentDetailVO;
+import com.shiyu.ai.model.vo.AgentVO;
+import com.shiyu.ai.model.vo.IdNameOptionVO;
+import com.shiyu.ai.model.vo.NodeTypeMetaVO;
 import org.apache.commons.lang3.tuple.Pair;
 
 import java.util.List;

@@ -1,7 +1,7 @@
 package com.shiyu.ai.agent.domain.bo;
 
 import com.fasterxml.jackson.annotation.JsonFormat;
-import com.shiyu.ai.agent.dal.dataobject.record.TimelineEventDO;
+import com.shiyu.ai.dal.dataobject.record.TimelineEventDO;
 import com.shiyu.ai.common.core.validate.AddGroup;
 import com.shiyu.ai.common.core.validate.EditGroup;
 import io.github.linpeilie.annotations.AutoMapper;

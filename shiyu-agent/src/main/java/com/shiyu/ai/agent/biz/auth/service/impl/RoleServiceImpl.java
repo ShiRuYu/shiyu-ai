@@ -1,12 +1,12 @@
 package com.shiyu.ai.agent.biz.auth.service.impl;
 
-import com.shiyu.ai.agent.biz.auth.repository.RoleRepository;
+import com.shiyu.ai.dal.repository.RoleRepository;
 import com.shiyu.ai.agent.biz.auth.service.RoleService;
-import com.shiyu.ai.agent.dal.dataobject.auth.UserWorkspaceRoleDO;
-import com.shiyu.ai.agent.dal.mapper.auth.UserWorkspaceRoleMapper;
-import com.shiyu.ai.agent.domain.bo.RoleBO;
-import com.shiyu.ai.agent.domain.vo.RolePageResponse;
-import com.shiyu.ai.agent.domain.vo.RoleVO;
+import com.shiyu.ai.dal.dataobject.auth.UserWorkspaceRoleDO;
+import com.shiyu.ai.dal.repository.UserWorkspaceRoleRepository;
+import com.shiyu.ai.model.bo.RoleBO;
+import com.shiyu.ai.model.vo.RolePageResponse;
+import com.shiyu.ai.model.vo.RoleVO;
 import com.shiyu.ai.common.core.domain.LoginContextHolder;
 import com.shiyu.ai.common.core.utils.MapstructUtils;
 import lombok.extern.slf4j.Slf4j;
@@ -23,11 +23,11 @@ import java.util.List;
 public class RoleServiceImpl implements RoleService {
 
     private final RoleRepository roleRepository;
-    private final UserWorkspaceRoleMapper userWorkspaceRoleMapper;
+    private final UserWorkspaceRoleRepository userWorkspaceRoleRepository;
 
-    public RoleServiceImpl(RoleRepository roleRepository, UserWorkspaceRoleMapper userWorkspaceRoleMapper) {
+    public RoleServiceImpl(RoleRepository roleRepository, UserWorkspaceRoleRepository userWorkspaceRoleRepository) {
         this.roleRepository = roleRepository;
-        this.userWorkspaceRoleMapper = userWorkspaceRoleMapper;
+        this.userWorkspaceRoleRepository = userWorkspaceRoleRepository;
     }
 
     @Override
@@ -109,7 +109,7 @@ public class RoleServiceImpl implements RoleService {
             if (tenantId != null) {
                 qw.eq(UserWorkspaceRoleDO::getTenantId, tenantId);
             }
-            userWorkspaceRoleMapper.deleteByQuery(qw);
+            userWorkspaceRoleRepository.deleteByQuery(qw);
         }
         return true;
     }
@@ -128,7 +128,7 @@ public class RoleServiceImpl implements RoleService {
             uwr.setWorkspaceId(workspaceId);
             uwr.setRoleId(roleId);
             uwr.setTenantId(tenantId);
-            userWorkspaceRoleMapper.insert(uwr);
+            userWorkspaceRoleRepository.insert(uwr);
         }
         return true;
     }

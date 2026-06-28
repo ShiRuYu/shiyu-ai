@@ -1,7 +1,7 @@
 package com.shiyu.ai.agent.biz.auth.service.impl;
 
 import com.shiyu.ai.agent.biz.auth.service.CaptchaService;
-import com.shiyu.ai.agent.domain.vo.CaptchaVO;
+import com.shiyu.ai.model.vo.CaptchaVO;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 

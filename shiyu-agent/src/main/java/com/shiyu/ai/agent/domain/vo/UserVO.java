@@ -1,7 +1,7 @@
 package com.shiyu.ai.agent.domain.vo;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
-import com.shiyu.ai.agent.domain.bo.UserBO;
+import com.shiyu.ai.model.bo.UserBO;
 import io.github.linpeilie.annotations.AutoMapper;
 import lombok.Data;
 

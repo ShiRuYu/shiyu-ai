@@ -1,7 +1,7 @@
 package com.shiyu.ai.agent.biz.common.controller;
 
 import com.shiyu.ai.agent.biz.common.service.DictService;
-import com.shiyu.ai.agent.domain.bo.DictBO;
+import com.shiyu.ai.model.bo.DictBO;
 import com.shiyu.ai.common.core.api.PageData;
 import com.shiyu.ai.common.core.api.Result;
 import lombok.extern.slf4j.Slf4j;

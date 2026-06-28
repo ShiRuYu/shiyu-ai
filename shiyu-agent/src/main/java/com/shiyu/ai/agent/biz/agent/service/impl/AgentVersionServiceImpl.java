@@ -1,13 +1,13 @@
 package com.shiyu.ai.agent.biz.agent.service.impl;
 
-import com.shiyu.ai.agent.biz.agent.repository.AgentAdminRepository;
+import com.shiyu.ai.dal.repository.AgentAdminRepository;
 import com.shiyu.ai.agent.biz.agent.service.AgentService;
 import com.shiyu.ai.agent.biz.agent.service.AgentVersionService;
-import com.shiyu.ai.agent.domain.bo.AgentDefBO;
-import com.shiyu.ai.agent.domain.bo.AgentVersionBO;
-import com.shiyu.ai.agent.domain.request.VersionRequest;
-import com.shiyu.ai.agent.domain.vo.AgentVersionDetailVO;
-import com.shiyu.ai.agent.domain.vo.AgentVersionVO;
+import com.shiyu.ai.model.bo.AgentDefBO;
+import com.shiyu.ai.model.bo.AgentVersionBO;
+import com.shiyu.ai.model.request.VersionRequest;
+import com.shiyu.ai.model.vo.AgentVersionDetailVO;
+import com.shiyu.ai.model.vo.AgentVersionVO;
 import com.shiyu.ai.common.core.utils.JSONUtils;
 import jakarta.annotation.Resource;
 import lombok.extern.slf4j.Slf4j;

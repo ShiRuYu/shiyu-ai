@@ -4,8 +4,8 @@ import cn.dev33.satoken.dao.SaTokenDao;
 import cn.dev33.satoken.session.SaSession;
 import com.github.benmanes.caffeine.cache.Cache;
 import com.github.benmanes.caffeine.cache.Caffeine;
-import com.shiyu.ai.agent.dal.dataobject.auth.UserDO;
-import com.shiyu.ai.agent.dal.mapper.auth.UserMapper;
+import com.shiyu.ai.dal.repository.SaTokenUserRepository;
+import com.shiyu.ai.dal.dataobject.auth.UserDO;
 import com.shiyu.ai.common.core.utils.JSONUtils;
 import org.springframework.stereotype.Component;
 
@@ -22,15 +22,15 @@ public class SaTokenDaoImpl implements SaTokenDao {
     private static final String SESSION_PREFIX = KEY_PREFIX + "session:";
     private static final String TOKEN_SESSION_PREFIX = KEY_PREFIX + "token-session:";
 
-    private final UserMapper userMapper;
+    private final SaTokenUserRepository saTokenUserRepository;
 
     private final Cache<String, Object> localCache = Caffeine.newBuilder()
             .expireAfterWrite(3, TimeUnit.SECONDS)
             .maximumSize(10000)
             .build();
 
-    public SaTokenDaoImpl(UserMapper userMapper) {
-        this.userMapper = userMapper;
+    public SaTokenDaoImpl(SaTokenUserRepository saTokenUserRepository) {
+        this.saTokenUserRepository = saTokenUserRepository;
     }
 
     // ==================== String 存储 (Token→loginId) ====================
@@ -439,7 +439,7 @@ public class SaTokenDaoImpl implements SaTokenDao {
     }
 
     private Map<String, Object> getExtInfo(Long userId) {
-        UserDO user = userMapper.selectOneById(userId);
+        UserDO user = saTokenUserRepository.selectById(userId);
         if (user == null || user.getExtInfo() == null || user.getExtInfo().isBlank()) {
             return new LinkedHashMap<>();
         }
@@ -448,11 +448,11 @@ public class SaTokenDaoImpl implements SaTokenDao {
     }
 
     private void saveExtInfo(Long userId, Map<String, Object> ext) {
-        UserDO user = userMapper.selectOneById(userId);
+        UserDO user = saTokenUserRepository.selectById(userId);
         if (user == null) return;
         user.setExtInfo(JSONUtils.toJsonString(ext));
         user.setUpdateTime(LocalDateTime.now());
-        userMapper.update(user);
+        saTokenUserRepository.updateExtInfo(user);
     }
 
     private boolean isExpired(Map<String, Object> entry) {

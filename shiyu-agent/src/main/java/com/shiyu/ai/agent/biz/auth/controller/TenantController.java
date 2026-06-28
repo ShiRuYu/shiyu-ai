@@ -1,9 +1,9 @@
 package com.shiyu.ai.agent.biz.auth.controller;
 
 import com.shiyu.ai.agent.biz.auth.service.TenantService;
-import com.shiyu.ai.agent.domain.bo.TenantBO;
-import com.shiyu.ai.agent.domain.request.TenantRequest;
-import com.shiyu.ai.agent.domain.vo.TenantVO;
+import com.shiyu.ai.model.bo.TenantBO;
+import com.shiyu.ai.model.request.TenantRequest;
+import com.shiyu.ai.model.vo.TenantVO;
 import com.shiyu.ai.common.core.api.Result;
 import com.shiyu.ai.common.core.domain.LoginContextHolder;
 import com.shiyu.ai.common.core.utils.MapstructUtils;

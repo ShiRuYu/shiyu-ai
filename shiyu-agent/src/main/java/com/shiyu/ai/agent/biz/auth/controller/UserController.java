@@ -1,11 +1,11 @@
 package com.shiyu.ai.agent.biz.auth.controller;
 
-import com.shiyu.ai.agent.domain.bo.RoleBO;
-import com.shiyu.ai.agent.domain.request.UserRequest;
-import com.shiyu.ai.agent.domain.bo.UserBO;
-import com.shiyu.ai.agent.domain.vo.UserPageResponse;
-import com.shiyu.ai.agent.domain.vo.UserVO;
-import com.shiyu.ai.agent.domain.vo.WorkspaceContextVO;
+import com.shiyu.ai.model.bo.RoleBO;
+import com.shiyu.ai.model.request.UserRequest;
+import com.shiyu.ai.model.bo.UserBO;
+import com.shiyu.ai.model.vo.UserPageResponse;
+import com.shiyu.ai.model.vo.UserVO;
+import com.shiyu.ai.model.vo.WorkspaceContextVO;
 import com.shiyu.ai.agent.biz.auth.service.AuthService;
 import com.shiyu.ai.agent.biz.auth.service.UserService;
 import com.shiyu.ai.common.core.api.Result;

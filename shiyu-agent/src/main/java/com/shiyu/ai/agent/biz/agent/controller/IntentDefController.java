@@ -1,8 +1,8 @@
 package com.shiyu.ai.agent.biz.agent.controller;
 
 import com.shiyu.ai.agent.biz.agent.service.IntentDefService;
-import com.shiyu.ai.agent.domain.bo.IntentDefBO;
-import com.shiyu.ai.agent.domain.vo.IdNameOptionVO;
+import com.shiyu.ai.model.bo.IntentDefBO;
+import com.shiyu.ai.model.vo.IdNameOptionVO;
 import com.shiyu.ai.common.core.api.PageData;
 import com.shiyu.ai.common.core.api.Result;
 import lombok.extern.slf4j.Slf4j;

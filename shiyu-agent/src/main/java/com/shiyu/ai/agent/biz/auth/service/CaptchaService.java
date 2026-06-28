@@ -1,6 +1,6 @@
 package com.shiyu.ai.agent.biz.auth.service;
 
-import com.shiyu.ai.agent.domain.vo.CaptchaVO;
+import com.shiyu.ai.model.vo.CaptchaVO;
 
 /**
  * 验证码服务

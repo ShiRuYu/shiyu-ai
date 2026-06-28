@@ -1,8 +1,8 @@
 package com.shiyu.ai.agent.biz.agent.service.impl;
 
-import com.shiyu.ai.agent.biz.agent.repository.AgentExecutionRepository;
+import com.shiyu.ai.dal.repository.AgentExecutionRepository;
 import com.shiyu.ai.agent.biz.agent.service.ExecutionHistoryService;
-import com.shiyu.ai.agent.domain.bo.AgentExecutionBO;
+import com.shiyu.ai.model.bo.AgentExecutionBO;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 

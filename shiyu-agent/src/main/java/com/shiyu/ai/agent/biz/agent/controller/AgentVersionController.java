@@ -1,9 +1,9 @@
 package com.shiyu.ai.agent.biz.agent.controller;
 
 import com.shiyu.ai.agent.biz.agent.service.AgentVersionService;
-import com.shiyu.ai.agent.domain.request.VersionRequest;
-import com.shiyu.ai.agent.domain.vo.AgentVersionDetailVO;
-import com.shiyu.ai.agent.domain.vo.AgentVersionVO;
+import com.shiyu.ai.model.request.VersionRequest;
+import com.shiyu.ai.model.vo.AgentVersionDetailVO;
+import com.shiyu.ai.model.vo.AgentVersionVO;
 import com.shiyu.ai.common.core.api.Result;
 import lombok.extern.slf4j.Slf4j;
 import jakarta.validation.Valid;

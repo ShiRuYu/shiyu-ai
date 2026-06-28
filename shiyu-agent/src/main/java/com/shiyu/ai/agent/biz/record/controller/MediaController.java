@@ -1,7 +1,7 @@
 package com.shiyu.ai.agent.biz.record.controller;
 
 import com.shiyu.ai.agent.biz.record.service.MediaService;
-import com.shiyu.ai.agent.domain.bo.MediaBO;
+import com.shiyu.ai.model.bo.MediaBO;
 import com.shiyu.ai.common.core.api.PageData;
 import com.shiyu.ai.common.core.api.Result;
 import io.swagger.v3.oas.annotations.Operation;

@@ -1,8 +1,8 @@
 package com.shiyu.ai.agent.biz.record.service.impl;
 
-import com.shiyu.ai.agent.biz.record.repository.TagRepository;
+import com.shiyu.ai.dal.repository.TagRepository;
 import com.shiyu.ai.agent.biz.record.service.TagService;
-import com.shiyu.ai.agent.domain.bo.TagBO;
+import com.shiyu.ai.model.bo.TagBO;
 import jakarta.annotation.Resource;
 import org.apache.commons.lang3.tuple.Pair;
 import org.springframework.stereotype.Service;

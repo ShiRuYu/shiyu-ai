@@ -1,0 +1,20 @@
+package com.shiyu.ai.dal.datasource;
+
+/**
+ * 数据源配置常量类
+ * 用于多数据源配置标识
+ */
+public final class DataSourceConfig {
+    
+    /**
+     * agent (Agent 数据源)
+     */
+    public static final String AGENT = "agent";
+
+    /**
+     * 私有构造函数,防止实例化
+     */
+    private DataSourceConfig() {
+        throw new UnsupportedOperationException("This is a utility class and cannot be instantiated");
+    }
+}

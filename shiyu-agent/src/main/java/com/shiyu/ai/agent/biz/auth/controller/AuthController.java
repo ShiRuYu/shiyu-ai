@@ -1,10 +1,10 @@
 package com.shiyu.ai.agent.biz.auth.controller;
 
-import com.shiyu.ai.agent.domain.request.LoginRequest;
-import com.shiyu.ai.agent.domain.vo.LoginResponseVO;
+import com.shiyu.ai.model.request.LoginRequest;
+import com.shiyu.ai.model.vo.LoginResponseVO;
 import com.shiyu.ai.agent.biz.auth.service.AuthService;
 import com.shiyu.ai.agent.biz.auth.service.LoginRateLimiter;
-import com.shiyu.ai.agent.domain.vo.WorkspaceContextVO;
+import com.shiyu.ai.model.vo.WorkspaceContextVO;
 import com.shiyu.ai.common.core.api.Result;
 import com.shiyu.ai.common.core.domain.LoginContextHolder;
 import lombok.extern.slf4j.Slf4j;

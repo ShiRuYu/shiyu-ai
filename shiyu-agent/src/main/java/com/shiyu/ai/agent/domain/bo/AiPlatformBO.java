@@ -1,6 +1,6 @@
 package com.shiyu.ai.agent.domain.bo;
 
-import com.shiyu.ai.agent.dal.dataobject.agent.AiPlatformDO;
+import com.shiyu.ai.dal.dataobject.agent.AiPlatformDO;
 import com.shiyu.ai.common.core.domain.BaseEntity;
 import com.shiyu.ai.common.core.validate.AddGroup;
 import com.shiyu.ai.common.core.validate.EditGroup;

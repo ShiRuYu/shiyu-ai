@@ -1,7 +1,7 @@
 package com.shiyu.ai.agent.biz.record.service.impl;
 
-import com.shiyu.ai.agent.domain.bo.TimelineEventBO;
-import com.shiyu.ai.agent.biz.record.repository.TimelineEventRepository;
+import com.shiyu.ai.model.bo.TimelineEventBO;
+import com.shiyu.ai.dal.repository.TimelineEventRepository;
 import com.shiyu.ai.agent.biz.record.service.TimelineEventService;
 import jakarta.annotation.Resource;
 import org.apache.commons.lang3.tuple.Pair;

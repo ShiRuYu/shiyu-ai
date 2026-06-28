@@ -1,6 +1,6 @@
 package com.shiyu.ai.agent.domain.request;
 
-import com.shiyu.ai.agent.domain.bo.TenantBO;
+import com.shiyu.ai.model.bo.TenantBO;
 import io.github.linpeilie.annotations.AutoMapper;
 import jakarta.validation.constraints.NotBlank;
 import lombok.Data;

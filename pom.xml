@@ -94,6 +94,12 @@
 
     <modules>
         <module>shiyu-common</module>
+        <module>shiyu-ai-model</module>
+        <module>shiyu-ai-dal</module>
+        <module>shiyu-ai-core</module>
+        <module>shiyu-ai-memory</module>
+        <module>shiyu-ai-rag</module>
+        <module>shiyu-ai-mcp</module>
         <module>shiyu-agent</module>
     </modules>
 
@@ -332,6 +338,38 @@
             <dependency>
                 <groupId>com.shiyu.ai</groupId>
                 <artifactId>shiyu-agent</artifactId>
+                <version>${revision}</version>
+            </dependency>
+
+            <!-- New modules -->
+            <dependency>
+                <groupId>com.shiyu.ai</groupId>
+                <artifactId>shiyu-ai-model</artifactId>
+                <version>${revision}</version>
+            </dependency>
+            <dependency>
+                <groupId>com.shiyu.ai</groupId>
+                <artifactId>shiyu-ai-dal</artifactId>
+                <version>${revision}</version>
+            </dependency>
+            <dependency>
+                <groupId>com.shiyu.ai</groupId>
+                <artifactId>shiyu-ai-core</artifactId>
+                <version>${revision}</version>
+            </dependency>
+            <dependency>
+                <groupId>com.shiyu.ai</groupId>
+                <artifactId>shiyu-ai-memory</artifactId>
+                <version>${revision}</version>
+            </dependency>
+            <dependency>
+                <groupId>com.shiyu.ai</groupId>
+                <artifactId>shiyu-ai-rag</artifactId>
+                <version>${revision}</version>
+            </dependency>
+            <dependency>
+                <groupId>com.shiyu.ai</groupId>
+                <artifactId>shiyu-ai-mcp</artifactId>
                 <version>${revision}</version>
             </dependency>
 

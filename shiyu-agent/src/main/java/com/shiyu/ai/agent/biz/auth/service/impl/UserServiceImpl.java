@@ -1,11 +1,11 @@
 package com.shiyu.ai.agent.biz.auth.service.impl;
 
-import com.shiyu.ai.agent.biz.auth.repository.UserRepository;
+import com.shiyu.ai.dal.repository.UserRepository;
 import com.shiyu.ai.agent.biz.auth.service.UserService;
-import com.shiyu.ai.agent.domain.bo.RoleBO;
-import com.shiyu.ai.agent.domain.bo.UserBO;
-import com.shiyu.ai.agent.domain.vo.UserPageResponse;
-import com.shiyu.ai.agent.domain.vo.UserVO;
+import com.shiyu.ai.model.bo.RoleBO;
+import com.shiyu.ai.model.bo.UserBO;
+import com.shiyu.ai.model.vo.UserPageResponse;
+import com.shiyu.ai.model.vo.UserVO;
 import com.shiyu.ai.common.core.utils.JSONUtils;
 import com.shiyu.ai.common.core.utils.MapstructUtils;
 import com.shiyu.ai.common.core.utils.PasswordUtils;

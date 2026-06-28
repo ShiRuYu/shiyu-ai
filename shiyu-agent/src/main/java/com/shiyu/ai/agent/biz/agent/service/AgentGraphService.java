@@ -1,10 +1,10 @@
 package com.shiyu.ai.agent.biz.agent.service;
 
-import com.shiyu.ai.agent.domain.request.EdgeRequest;
-import com.shiyu.ai.agent.domain.request.GraphConfigRequest;
-import com.shiyu.ai.agent.domain.request.NodeConfigRequest;
-import com.shiyu.ai.agent.domain.vo.AgentVersionDetailVO;
-import com.shiyu.ai.agent.domain.vo.GraphValidationVO;
+import com.shiyu.ai.model.request.EdgeRequest;
+import com.shiyu.ai.model.request.GraphConfigRequest;
+import com.shiyu.ai.model.request.NodeConfigRequest;
+import com.shiyu.ai.model.vo.AgentVersionDetailVO;
+import com.shiyu.ai.model.vo.GraphValidationVO;
 
 public interface AgentGraphService {
 

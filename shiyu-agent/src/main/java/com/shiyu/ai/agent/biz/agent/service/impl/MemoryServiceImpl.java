@@ -1,11 +1,11 @@
 package com.shiyu.ai.agent.biz.agent.service.impl;
 
-import com.shiyu.ai.agent.biz.agent.repository.ConversationMessageRepository;
-import com.shiyu.ai.agent.biz.agent.repository.LongTermMemoryRepository;
-import com.shiyu.ai.agent.biz.agent.service.MemoryService;
-import com.shiyu.ai.agent.domain.bo.ConversationMessageBO;
-import com.shiyu.ai.agent.domain.bo.LongTermMemoryBO;
-import com.shiyu.ai.agent.domain.vo.ConversationMessageVO;
+import com.shiyu.ai.dal.repository.ConversationMessageRepository;
+import com.shiyu.ai.dal.repository.LongTermMemoryRepository;
+import com.shiyu.ai.memory.MemoryService;
+import com.shiyu.ai.model.bo.ConversationMessageBO;
+import com.shiyu.ai.model.bo.LongTermMemoryBO;
+import com.shiyu.ai.model.vo.ConversationMessageVO;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;

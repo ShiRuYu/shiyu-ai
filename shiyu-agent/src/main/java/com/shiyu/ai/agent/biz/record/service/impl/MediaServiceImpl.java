@@ -1,8 +1,8 @@
 package com.shiyu.ai.agent.biz.record.service.impl;
 
-import com.shiyu.ai.agent.biz.record.repository.MediaRepository;
+import com.shiyu.ai.dal.repository.MediaRepository;
 import com.shiyu.ai.agent.biz.record.service.MediaService;
-import com.shiyu.ai.agent.domain.bo.MediaBO;
+import com.shiyu.ai.model.bo.MediaBO;
 import jakarta.annotation.Resource;
 import org.apache.commons.lang3.tuple.Pair;
 import org.springframework.stereotype.Service;

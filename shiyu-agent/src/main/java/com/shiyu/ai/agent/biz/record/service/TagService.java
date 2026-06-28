@@ -1,6 +1,6 @@
 package com.shiyu.ai.agent.biz.record.service;
 
-import com.shiyu.ai.agent.domain.bo.TagBO;
+import com.shiyu.ai.model.bo.TagBO;
 import org.apache.commons.lang3.tuple.Pair;
 
 import java.util.List;
