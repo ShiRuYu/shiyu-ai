@@ -1,6 +1,6 @@
 package com.shiyu.ai.aiagent.langgraph4j.node.agent;
 
-import com.shiyu.ai.agent.biz.agent.service.AgentService;
+import com.shiyu.ai.aiagent.service.AgentService;
 import com.shiyu.ai.aiagent.langgraph4j.node.BaseNode;
 import com.shiyu.ai.aiagent.langgraph4j.node.NodeInput;
 import com.shiyu.ai.aiagent.langgraph4j.node.NodeOutput;

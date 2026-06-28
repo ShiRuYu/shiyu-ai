@@ -26,6 +26,10 @@
         </dependency>
         <dependency>
             <groupId>com.shiyu.ai</groupId>
+            <artifactId>shiyu-ai-agent</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>com.shiyu.ai</groupId>
             <artifactId>shiyu-ai-core</artifactId>
         </dependency>
         <dependency>

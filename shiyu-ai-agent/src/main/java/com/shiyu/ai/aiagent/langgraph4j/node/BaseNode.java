@@ -1,6 +1,6 @@
 package com.shiyu.ai.aiagent.langgraph4j.node;
 
-import com.shiyu.ai.agent.biz.agent.service.ExecutionHistoryService;
+import com.shiyu.ai.aiagent.service.ExecutionHistoryService;
 import com.shiyu.ai.common.core.utils.UnifiedThreadPoolUtils;
 import com.shiyu.ai.common.core.utils.JSONUtils;
 import lombok.Getter;

@@ -5,7 +5,7 @@ import com.shiyu.ai.aiagent.langgraph4j.node.NodeInput;
 import com.shiyu.ai.aiagent.langgraph4j.node.NodeOutput;
 import com.shiyu.ai.aiagent.langgraph4j.node.NodeType;
 import com.shiyu.ai.aiagent.langgraph4j.node.NodeFields.FieldKey;
-import com.shiyu.ai.agent.biz.agent.service.IntentService;
+import com.shiyu.ai.aiagent.service.IntentService;
 import com.shiyu.ai.aiagent.langgraph4j.node.intent.IntentDefinition;
 import com.shiyu.ai.aiagent.langgraph4j.node.intent.IntentDefinitionFactory;
 import lombok.Getter;
