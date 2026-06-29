@@ -9,6 +9,8 @@ import com.shiyu.ai.common.core.domain.LoginContextHolder;
 import com.shiyu.ai.common.core.domain.LoginUser;
 import com.shiyu.ai.common.core.enums.DeviceTypeEnum;
 import com.shiyu.ai.common.core.enums.UserTypeEnum;
+import com.shiyu.ai.common.core.api.Result;
+import com.shiyu.ai.common.core.enums.BizResultCode;
 import com.shiyu.ai.common.core.utils.JSONUtils;
 import jakarta.servlet.DispatcherType;
 import jakarta.servlet.http.HttpServletRequest;
@@ -48,8 +50,10 @@ public class UserContextInterceptor implements HandlerInterceptor {
         try {
             SaTokenHelper helper = SaTokenHelper.getInstance();
             if (!helper.isFrameworkLogin()) {
-                log.debug("用户未登录，跳过用户上下文设置");
-                return true;
+                log.warn("用户未登录，拦截请求: uri={}", request.getRequestURI());
+                response.setContentType("application/json;charset=utf-8");
+                response.getWriter().print(JSONUtils.toJsonString(Result.fail(BizResultCode.UNAUTHORIZED, "未登录或登录已失效")));
+                return false;
             }
 
             Long userId = SaTokenHelper.getCurrentUserId();
@@ -87,10 +91,15 @@ public class UserContextInterceptor implements HandlerInterceptor {
 
             loadTenantWorkspaceContext(userId, loginUser);
 
-            // 写入 SaToken session 缓存
-            SaTokenHelper.saveLoginUserToSession(loginUser);
-
+            // 先设置上下文，确保即使 session 持久化失败上下文也立即可用
             LoginContextHolder.setContext(loginUser);
+
+            // 写入 SaToken session 缓存（失败不影响当前请求）
+            try {
+                SaTokenHelper.saveLoginUserToSession(loginUser);
+            } catch (Exception sessionEx) {
+                log.warn("session 持久化失败，但不影响当前请求: uri={}, error={}", request.getRequestURI(), sessionEx.getMessage());
+            }
 
             log.debug("用户上下文从数据库加载并缓存: userId={}, tenantId={}, workspaceId={}, uri={}",
                     userId, loginUser.getTenantId(), loginUser.getCurrentWorkspaceId(), request.getRequestURI());

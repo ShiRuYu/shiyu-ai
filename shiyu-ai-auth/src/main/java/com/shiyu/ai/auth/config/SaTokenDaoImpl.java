@@ -450,10 +450,25 @@ public class SaTokenDaoImpl implements SaTokenDao {
     private void saveExtInfo(Long userId, Map<String, Object> ext) {
         UserDO user = saTokenUserRepository.selectById(userId);
         if (user == null) return;
+        // 合并现有 extInfo，避免其他业务操作（如 updateUser）清空 tokens/sessions
+        Map<String, Object> existing = getExtInfo(userId);
+        if (!existing.isEmpty()) {
+            // 只覆写 token 相关 key，保留其他业务字段
+            for (String key : TOKEN_KEYS) {
+                if (ext.containsKey(key)) {
+                    existing.put(key, ext.get(key));
+                } else {
+                    existing.remove(key);
+                }
+            }
+            ext = existing;
+        }
         user.setExtInfo(JSONUtils.toJsonString(ext));
         user.setUpdateTime(LocalDateTime.now());
         saTokenUserRepository.updateExtInfo(user);
     }
+
+    private static final List<String> TOKEN_KEYS = List.of("tokens", "sessions", "tokenSessions");
 
     private boolean isExpired(Map<String, Object> entry) {
         Object expObj = entry.get("expireTime");

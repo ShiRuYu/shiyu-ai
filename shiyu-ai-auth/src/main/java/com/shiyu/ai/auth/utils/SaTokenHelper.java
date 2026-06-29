@@ -99,7 +99,12 @@ public class SaTokenHelper extends LoginHelper {
      * 缂撳瓨褰撳墠 LoginUser 鍒?session
      */
     public static void saveLoginUserToSession(LoginUser loginUser) {
-        StpUtil.getSession().set(SESSION_KEY_LOGIN_USER, loginUser);
+        try {
+            StpUtil.getSession().set(SESSION_KEY_LOGIN_USER, loginUser);
+        } catch (Exception e) {
+            log.warn("写入 session 失败（可能已过期）: {}", e.getMessage());
+            return;
+        }
         // 必须持久化 session 修改，否则 extInfo 中存的 SaSession 不包含 loginUser
         // 服务重启后 Caffeine 缓存丢失，getLoginUserFromSession() 会返回 null
         try {

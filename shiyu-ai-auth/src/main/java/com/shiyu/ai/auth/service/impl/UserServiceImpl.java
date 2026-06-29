@@ -89,6 +89,10 @@ public class UserServiceImpl implements UserService {
             return false;
         }
         
+        // 保留现有的 extInfo（含 token/session 数据），防止被请求中的 null 覆盖
+        if (userBO.getExtInfo() == null) {
+            userBO.setExtInfo(existingUser.getExtInfo());
+        }
         userBO.setId(userId);
         return userRepository.update(userBO);
     }

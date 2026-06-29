@@ -3,6 +3,7 @@ package com.shiyu.ai.auth.config;
 import cn.dev33.satoken.exception.NotLoginException;
 import cn.dev33.satoken.filter.SaServletFilter;
 import cn.dev33.satoken.strategy.SaStrategy;
+import cn.dev33.satoken.stp.StpUtil;
 import cn.dev33.satoken.util.SaFoxUtil;
 import com.shiyu.ai.common.core.enums.BizResultCode;
 import com.shiyu.ai.common.core.utils.JSONUtils;
@@ -33,9 +34,7 @@ public class SaTokenConfig {
                 .addExclude("/auth/login", "/auth/captcha", "/auth/captcha/validate")
                 .addExclude("/doc.html", "/swagger-ui/**", "/v3/api-docs/**")
                 .addExclude("/webjars/**", "/v2/api-docs", "/h2/**")
-                .setAuth(obj -> {
-                    // 閴存潈锛氭鏌ユ槸鍚︾櫥褰?                    SaRouter.match("/**").check(r -> StpUtil.checkLogin());
-                })
+                .setAuth(obj -> StpUtil.checkLogin())
                 .setError(e -> {
                     BizResultCode resultCode = BizResultCode.BAD_REQUEST;
                     if (e instanceof NotLoginException) {
