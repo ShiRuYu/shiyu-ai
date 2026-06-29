@@ -1,8 +1,8 @@
 package com.shiyu.ai.auth.controller;
 
-import com.shiyu.ai.model.request.MenuRequest;
-import com.shiyu.ai.model.bo.MenuBO;
-import com.shiyu.ai.model.vo.RouteMenuVO;
+import com.shiyu.ai.auth.request.MenuRequest;
+import com.shiyu.ai.auth.bo.MenuBO;
+import com.shiyu.ai.auth.vo.RouteMenuVO;
 import com.shiyu.ai.auth.service.MenuService;
 import com.shiyu.ai.common.core.api.Result;
 import com.shiyu.ai.common.core.domain.LoginContextHolder;

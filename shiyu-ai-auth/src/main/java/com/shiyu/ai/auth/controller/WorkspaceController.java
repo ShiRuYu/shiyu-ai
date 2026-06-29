@@ -1,9 +1,9 @@
 package com.shiyu.ai.auth.controller;
 
 import com.shiyu.ai.auth.service.WorkspaceService;
-import com.shiyu.ai.model.bo.WorkspaceBO;
-import com.shiyu.ai.model.request.WorkspaceRequest;
-import com.shiyu.ai.model.vo.WorkspaceVO;
+import com.shiyu.ai.auth.bo.WorkspaceBO;
+import com.shiyu.ai.auth.request.WorkspaceRequest;
+import com.shiyu.ai.auth.vo.WorkspaceVO;
 import com.shiyu.ai.common.core.api.Result;
 import com.shiyu.ai.common.core.utils.MapstructUtils;
 import lombok.extern.slf4j.Slf4j;

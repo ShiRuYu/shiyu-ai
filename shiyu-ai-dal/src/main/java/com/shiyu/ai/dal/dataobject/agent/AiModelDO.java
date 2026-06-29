@@ -7,10 +7,13 @@ import com.shiyu.ai.common.mybatis.model.TenantEntity;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
 import java.io.Serial;
+import io.github.linpeilie.annotations.AutoMapper;
+import com.shiyu.ai.model.bo.AiModelBO;
 
 /**
  * AI 模型数据对象
  */
+@AutoMapper(target = AiModelBO.class, reverseConvertGenerate = true)
 @Data
 @EqualsAndHashCode(callSuper = true)
 @Table(value = "ai_model")

@@ -1,6 +1,6 @@
 package com.shiyu.ai.auth.controller;
 
-import com.shiyu.ai.model.vo.CaptchaVO;
+import com.shiyu.ai.auth.vo.CaptchaVO;
 import com.shiyu.ai.auth.service.CaptchaService;
 import com.shiyu.ai.common.core.api.Result;
 import lombok.extern.slf4j.Slf4j;

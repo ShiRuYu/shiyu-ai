@@ -2,7 +2,7 @@ package com.shiyu.ai.aiagent.service.impl;
 
 import com.shiyu.ai.aiagent.cache.AgentCacheManager;
 import com.shiyu.ai.aiagent.cache.AgentLoader;
-import com.shiyu.ai.dal.repository.AgentAdminRepository;
+import com.shiyu.ai.aiagent.repository.AgentAdminRepository;
 import com.shiyu.ai.aiagent.AgentDefinition;
 import com.shiyu.ai.aiagent.AgentVersion;
 import com.shiyu.ai.aiagent.service.AgentService;

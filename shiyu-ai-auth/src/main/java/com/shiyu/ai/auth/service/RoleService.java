@@ -1,7 +1,7 @@
 package com.shiyu.ai.auth.service;
 
-import com.shiyu.ai.model.bo.RoleBO;
-import com.shiyu.ai.model.vo.RolePageResponse;
+import com.shiyu.ai.auth.bo.RoleBO;
+import com.shiyu.ai.auth.vo.RolePageResponse;
 
 import java.util.List;
 

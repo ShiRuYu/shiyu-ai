@@ -1,6 +1,6 @@
 package com.shiyu.ai.record.service;
 
-import com.shiyu.ai.model.bo.RecordBO;
+import com.shiyu.ai.record.bo.RecordBO;
 import org.apache.commons.lang3.tuple.Pair;
 
 import java.util.List;

@@ -1,7 +1,7 @@
 package com.shiyu.ai.record.controller;
 
 import com.shiyu.ai.record.service.TagService;
-import com.shiyu.ai.model.bo.TagBO;
+import com.shiyu.ai.record.bo.TagBO;
 import com.shiyu.ai.common.core.api.PageData;
 import com.shiyu.ai.common.core.api.Result;
 import io.swagger.v3.oas.annotations.Operation;

@@ -1,6 +1,6 @@
 package com.shiyu.ai.auth.service;
 
-import com.shiyu.ai.model.bo.DictBO;
+import com.shiyu.ai.auth.bo.DictBO;
 import org.apache.commons.lang3.tuple.Pair;
 
 import java.util.List;

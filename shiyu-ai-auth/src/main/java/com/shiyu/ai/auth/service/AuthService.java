@@ -1,7 +1,7 @@
 package com.shiyu.ai.auth.service;
 
-import com.shiyu.ai.model.vo.LoginResponseVO;
-import com.shiyu.ai.model.vo.WorkspaceContextVO;
+import com.shiyu.ai.auth.vo.LoginResponseVO;
+import com.shiyu.ai.auth.vo.WorkspaceContextVO;
 
 import java.util.List;
 import java.util.Map;

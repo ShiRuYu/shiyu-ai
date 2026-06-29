@@ -1,8 +1,8 @@
 package com.shiyu.ai.aiagent.service;
 
-import com.shiyu.ai.model.request.VersionRequest;
-import com.shiyu.ai.model.vo.AgentVersionDetailVO;
-import com.shiyu.ai.model.vo.AgentVersionVO;
+import com.shiyu.ai.aiagent.request.VersionRequest;
+import com.shiyu.ai.aiagent.vo.AgentVersionDetailVO;
+import com.shiyu.ai.aiagent.vo.AgentVersionVO;
 
 import java.util.List;
 

@@ -1,6 +1,6 @@
 package com.shiyu.ai.auth.service;
 
-import com.shiyu.ai.model.bo.MenuBO;
+import com.shiyu.ai.auth.bo.MenuBO;
 
 import java.util.List;
 

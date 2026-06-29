@@ -1,7 +1,7 @@
 package com.shiyu.ai.auth.service;
 
-import com.shiyu.ai.model.bo.UserBO;
-import com.shiyu.ai.model.vo.UserPageResponse;
+import com.shiyu.ai.auth.bo.UserBO;
+import com.shiyu.ai.auth.vo.UserPageResponse;
 
 /**
  * 鐢ㄦ埛鏈嶅姟鎺ュ彛

@@ -1,6 +1,6 @@
 package com.shiyu.ai.bootstrap.interceptor;
 
-import com.shiyu.ai.dal.repository.AuthUserLookupRepository;
+import com.shiyu.ai.auth.repository.AuthUserLookupRepository;
 import com.shiyu.ai.dal.dataobject.auth.RoleDO;
 import com.shiyu.ai.dal.dataobject.auth.UserDO;
 import com.shiyu.ai.dal.dataobject.auth.UserWorkspaceRoleDO;

@@ -8,7 +8,10 @@ import lombok.Data;
 import lombok.EqualsAndHashCode;
 
 import java.io.Serial;
+import io.github.linpeilie.annotations.AutoMapper;
+import com.shiyu.ai.model.bo.LongTermMemoryBO;
 
+@AutoMapper(target = LongTermMemoryBO.class, reverseConvertGenerate = true)
 @Data
 @EqualsAndHashCode(callSuper = true)
 @Table("long_term_memory")

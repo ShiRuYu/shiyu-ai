@@ -1,6 +1,6 @@
 package com.shiyu.ai.auth.service;
 
-import com.shiyu.ai.model.bo.TenantBO;
+import com.shiyu.ai.auth.bo.TenantBO;
 
 import java.util.List;
 

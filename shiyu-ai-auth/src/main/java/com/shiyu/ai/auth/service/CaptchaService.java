@@ -1,6 +1,6 @@
 package com.shiyu.ai.auth.service;
 
-import com.shiyu.ai.model.vo.CaptchaVO;
+import com.shiyu.ai.auth.vo.CaptchaVO;
 
 /**
  * 楠岃瘉鐮佹湇鍔?

@@ -1,9 +1,9 @@
 package com.shiyu.ai.auth.controller;
 
-import com.shiyu.ai.model.request.RoleRequest;
-import com.shiyu.ai.model.request.AssignUserRolesRequest;
-import com.shiyu.ai.model.bo.RoleBO;
-import com.shiyu.ai.model.vo.RolePageResponse;
+import com.shiyu.ai.auth.request.RoleRequest;
+import com.shiyu.ai.auth.request.AssignUserRolesRequest;
+import com.shiyu.ai.auth.bo.RoleBO;
+import com.shiyu.ai.auth.vo.RolePageResponse;
 import com.shiyu.ai.auth.service.RoleService;
 import com.shiyu.ai.common.core.api.Result;
 import com.shiyu.ai.common.core.utils.MapstructUtils;

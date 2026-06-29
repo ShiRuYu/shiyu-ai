@@ -1,9 +1,14 @@
 package com.shiyu.ai.aiagent.controller;
 
 import com.shiyu.ai.aiagent.service.AgentGraphService;
-import com.shiyu.ai.model.request.*;
-import com.shiyu.ai.model.vo.AgentVersionDetailVO;
-import com.shiyu.ai.model.vo.GraphValidationVO;
+import com.shiyu.ai.aiagent.request.GraphConfigRequest;
+import com.shiyu.ai.aiagent.request.GraphPreviewRequest;
+import com.shiyu.ai.aiagent.request.CanvasConfigRequest;
+import com.shiyu.ai.aiagent.request.EdgeRequest;
+import com.shiyu.ai.aiagent.request.NodeConfigRequest;
+import com.shiyu.ai.aiagent.request.VersionRequest;
+import com.shiyu.ai.aiagent.vo.AgentVersionDetailVO;
+import com.shiyu.ai.aiagent.vo.GraphValidationVO;
 import com.shiyu.ai.common.core.api.Result;
 import lombok.extern.slf4j.Slf4j;
 import jakarta.validation.Valid;

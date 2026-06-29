@@ -1,12 +1,19 @@
 package com.shiyu.ai.aiagent.service.impl;
 
-import com.shiyu.ai.dal.repository.AgentAdminRepository;
+import com.shiyu.ai.aiagent.repository.AgentAdminRepository;
 import com.shiyu.ai.aiagent.service.AgentAdminService;
 import com.shiyu.ai.aiagent.service.AgentService;
-import com.shiyu.ai.model.bo.AgentDefBO;
-import com.shiyu.ai.model.bo.AgentVersionBO;
-import com.shiyu.ai.model.request.AgentRequest;
-import com.shiyu.ai.model.vo.*;
+import com.shiyu.ai.aiagent.bo.AgentDefBO;
+import com.shiyu.ai.aiagent.bo.AgentVersionBO;
+import com.shiyu.ai.aiagent.request.AgentRequest;
+import com.shiyu.ai.aiagent.vo.AgentVO;
+import com.shiyu.ai.aiagent.vo.AgentDetailVO;
+import com.shiyu.ai.model.vo.IdNameOptionVO;
+import com.shiyu.ai.aiagent.vo.AgentVersionVO;
+import com.shiyu.ai.aiagent.vo.AgentVersionDetailVO;
+import com.shiyu.ai.aiagent.vo.NodeTypeMetaVO;
+import com.shiyu.ai.aiagent.vo.GraphConfigVO;
+import com.shiyu.ai.aiagent.vo.GraphValidationVO;
 import com.shiyu.ai.aiagent.node.NodeType;
 import jakarta.annotation.Resource;
 import lombok.extern.slf4j.Slf4j;

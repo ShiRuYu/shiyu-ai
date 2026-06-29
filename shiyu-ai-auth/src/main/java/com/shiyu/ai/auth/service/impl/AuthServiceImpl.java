@@ -1,20 +1,20 @@
 package com.shiyu.ai.auth.service.impl;
 
-import com.shiyu.ai.dal.repository.AuthRepository;
-import com.shiyu.ai.dal.repository.UserRepository;
+import com.shiyu.ai.auth.repository.AuthRepository;
+import com.shiyu.ai.auth.repository.UserRepository;
 import com.shiyu.ai.auth.service.AuthService;
 import com.shiyu.ai.dal.dataobject.auth.RoleDO;
 import com.shiyu.ai.dal.dataobject.auth.TenantDO;
 import com.shiyu.ai.dal.dataobject.auth.UserWorkspaceRoleDO;
 import com.shiyu.ai.dal.dataobject.auth.WorkspaceDO;
-import com.shiyu.ai.dal.repository.WorkspaceTenantRepository;
+import com.shiyu.ai.auth.repository.WorkspaceTenantRepository;
 
-import com.shiyu.ai.dal.repository.UserWorkspaceRoleRepository;
+import com.shiyu.ai.auth.repository.UserWorkspaceRoleRepository;
 
-import com.shiyu.ai.model.bo.RoleBO;
-import com.shiyu.ai.model.bo.UserBO;
-import com.shiyu.ai.model.vo.LoginResponseVO;
-import com.shiyu.ai.model.vo.WorkspaceContextVO;
+import com.shiyu.ai.auth.bo.RoleBO;
+import com.shiyu.ai.auth.bo.UserBO;
+import com.shiyu.ai.auth.vo.LoginResponseVO;
+import com.shiyu.ai.auth.vo.WorkspaceContextVO;
 import com.shiyu.ai.auth.utils.SaTokenHelper;
 import com.shiyu.ai.common.core.domain.LoginContextHolder;
 import com.shiyu.ai.common.core.domain.LoginUser;

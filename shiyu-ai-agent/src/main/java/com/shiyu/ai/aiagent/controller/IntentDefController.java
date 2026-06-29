@@ -1,7 +1,7 @@
 package com.shiyu.ai.aiagent.controller;
 
 import com.shiyu.ai.aiagent.service.IntentDefService;
-import com.shiyu.ai.model.bo.IntentDefBO;
+import com.shiyu.ai.aiagent.bo.IntentDefBO;
 import com.shiyu.ai.model.vo.IdNameOptionVO;
 import com.shiyu.ai.common.core.api.PageData;
 import com.shiyu.ai.common.core.api.Result;

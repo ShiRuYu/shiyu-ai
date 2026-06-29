@@ -28,7 +28,15 @@
         <dependency>
             <groupId>com.shiyu.ai</groupId>
             <artifactId>shiyu-ai-mcp</artifactId>
+        </dependency>        <dependency>
+            <groupId>com.shiyu.ai</groupId>
+            <artifactId>shiyu-ai-dal</artifactId>
         </dependency>
+        <dependency>
+            <groupId>com.shiyu.ai</groupId>
+            <artifactId>shiyu-ai-model</artifactId>
+        </dependency>
+
         <dependency>
             <groupId>org.bsc.langgraph4j</groupId>
             <artifactId>langgraph4j-core</artifactId>

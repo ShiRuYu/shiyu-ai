@@ -1,14 +1,14 @@
 package com.shiyu.ai.aiagent.service.impl;
 
-import com.shiyu.ai.dal.repository.AgentAdminRepository;
+import com.shiyu.ai.aiagent.repository.AgentAdminRepository;
 import com.shiyu.ai.aiagent.service.AgentGraphService;
 import com.shiyu.ai.aiagent.service.AgentService;
-import com.shiyu.ai.model.bo.AgentVersionBO;
-import com.shiyu.ai.model.request.EdgeRequest;
-import com.shiyu.ai.model.request.GraphConfigRequest;
-import com.shiyu.ai.model.request.NodeConfigRequest;
-import com.shiyu.ai.model.vo.AgentVersionDetailVO;
-import com.shiyu.ai.model.vo.GraphValidationVO;
+import com.shiyu.ai.aiagent.bo.AgentVersionBO;
+import com.shiyu.ai.aiagent.request.EdgeRequest;
+import com.shiyu.ai.aiagent.request.GraphConfigRequest;
+import com.shiyu.ai.aiagent.request.NodeConfigRequest;
+import com.shiyu.ai.aiagent.vo.AgentVersionDetailVO;
+import com.shiyu.ai.aiagent.vo.GraphValidationVO;
 import com.shiyu.ai.aiagent.graph.Graph;
 import com.shiyu.ai.common.core.utils.JSONUtils;
 import jakarta.annotation.Resource;

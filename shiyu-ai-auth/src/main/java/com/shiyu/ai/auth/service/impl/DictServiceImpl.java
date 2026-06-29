@@ -2,9 +2,9 @@ package com.shiyu.ai.auth.service.impl;
 
 import com.github.benmanes.caffeine.cache.Cache;
 import com.github.benmanes.caffeine.cache.Caffeine;
-import com.shiyu.ai.dal.repository.DictRepository;
+import com.shiyu.ai.auth.repository.DictRepository;
 import com.shiyu.ai.auth.service.DictService;
-import com.shiyu.ai.model.bo.DictBO;
+import com.shiyu.ai.auth.bo.DictBO;
 import jakarta.annotation.Resource;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.tuple.Pair;

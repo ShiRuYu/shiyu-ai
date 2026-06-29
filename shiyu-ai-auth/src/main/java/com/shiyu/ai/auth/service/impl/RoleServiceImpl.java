@@ -1,12 +1,12 @@
 package com.shiyu.ai.auth.service.impl;
 
-import com.shiyu.ai.dal.repository.RoleRepository;
+import com.shiyu.ai.auth.repository.RoleRepository;
 import com.shiyu.ai.auth.service.RoleService;
 import com.shiyu.ai.dal.dataobject.auth.UserWorkspaceRoleDO;
-import com.shiyu.ai.dal.repository.UserWorkspaceRoleRepository;
-import com.shiyu.ai.model.bo.RoleBO;
-import com.shiyu.ai.model.vo.RolePageResponse;
-import com.shiyu.ai.model.vo.RoleVO;
+import com.shiyu.ai.auth.repository.UserWorkspaceRoleRepository;
+import com.shiyu.ai.auth.bo.RoleBO;
+import com.shiyu.ai.auth.vo.RolePageResponse;
+import com.shiyu.ai.auth.vo.RoleVO;
 import com.shiyu.ai.common.core.domain.LoginContextHolder;
 import com.shiyu.ai.common.core.utils.MapstructUtils;
 import lombok.extern.slf4j.Slf4j;

@@ -4,7 +4,7 @@ import cn.dev33.satoken.dao.SaTokenDao;
 import cn.dev33.satoken.session.SaSession;
 import com.github.benmanes.caffeine.cache.Cache;
 import com.github.benmanes.caffeine.cache.Caffeine;
-import com.shiyu.ai.dal.repository.SaTokenUserRepository;
+import com.shiyu.ai.auth.repository.SaTokenUserRepository;
 import com.shiyu.ai.dal.dataobject.auth.UserDO;
 import com.shiyu.ai.common.core.utils.JSONUtils;
 import org.springframework.stereotype.Component;
