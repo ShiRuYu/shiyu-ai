@@ -41,7 +41,7 @@ public class IntentNode extends BaseNode {
     private IntentNode(IntentConfig config, IntentService intentService) {
         super(config != null ? config : new IntentConfig());
         this.config = config != null ? config : new IntentConfig();
-        // 设置节点类型�?INTENT
+        // 设置节点类型为 INTENT
         this.config.setNodeType(NodeType.INTENT);
         this.intentService = intentService;
     }
@@ -82,7 +82,7 @@ public class IntentNode extends BaseNode {
         }
 
         /**
-         * 构建并返�?IntentNode 实例
+         * 构建并返回 IntentNode 实例
          * 在构建前会进行必要的校验
          * @return IntentNode 实例
          * @throws IllegalStateException 如果校验失败
@@ -93,8 +93,8 @@ public class IntentNode extends BaseNode {
                 throw new IllegalStateException("创建 IntentNode 失败：intentService 不能为空");
             }
             
-            // 校验：如果配置了 config，则 config 不能为空对象（可以为 null，会自动创建�?
-            // 注意：config 允许�?null，会在构造函数中自动创建默认配置
+            // 校验：如果配置了 config，则 config 不能为空对象（可以为 null，会自动创建）
+            // 注意：config 允许为 null，会在构造函数中自动创建默认配置
             
             // 所有校验通过，创建并返回实例
             return new IntentNode(config, intentService);
@@ -117,7 +117,7 @@ public class IntentNode extends BaseNode {
                 return output;
             }
             
-            // 2. 调用意图识别服务（通过 category + agentId 查找定义�?
+            // 2. 调用意图识别服务（通过 category + agentId 查找定义）
             String category = config.getCategory();
             String agentId = input.getParameter(FieldKey.AGENT_ID, "default");
             String platform = config.getPlatform();
@@ -130,13 +130,13 @@ public class IntentNode extends BaseNode {
             output.setSuccess(result.success());
             output.setMsg(result.errorMessage() != null ? result.errorMessage() : "意图识别成功");
             
-            // 4. 添加识别结果到输出（路由由条件边�?IntentDefinitionFactory 驱动�?
+            // 4. 添加识别结果到输出（路由由条件边从 IntentDefinitionFactory 驱动）
             output.addData(FieldKey.INTENT_CODE, result.intentCode());
             output.addData(FieldKey.INTENT_NAME, result.intentName());
             output.addData(FieldKey.CONFIDENCE, result.confidence());
             output.addData(FieldKey.SLOTS, result.slots());
 
-            // 5. 从工厂查�?IntentDefinition，将参数映射�?slot schema 传递给下游工具节点
+            // 5. 从工厂查找 IntentDefinition，将参数映射和 slot schema 传递给下游工具节点
             String intentCode = result.intentCode();
             if (intentCode != null && !intentCode.trim().isEmpty()) {
                 List<IntentDefinition> defs = IntentDefinitionFactory.getAll(agentId);
@@ -166,7 +166,7 @@ public class IntentNode extends BaseNode {
             log.error("意图识别失败", e);
             NodeOutput output = new NodeOutput();
             output.setSuccess(false);
-            output.setMsg("意图识别失败�? + e.getMessage());
+            output.setMsg("意图识别失败：" + e.getMessage());
             output.addData(FieldKey.INTENT_CODE, "ERROR");
             return output;
         }

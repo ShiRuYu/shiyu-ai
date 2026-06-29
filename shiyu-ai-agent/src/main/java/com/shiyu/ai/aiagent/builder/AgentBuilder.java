@@ -18,7 +18,7 @@ import java.util.stream.Collectors;
 
 /**
  * Agent Builder
- * Utility class for building and registering Agent
+ * 用于便捷构建和注册 Agent 的工具类
  * 
  * 使用示例:
  * <pre>
@@ -61,7 +61,7 @@ public class AgentBuilder {
     private String description;
 
     /**
-     * 版本�?
+     * 版本号
      */
     private String versionNumber = "v1.0.0";
 
@@ -76,12 +76,12 @@ public class AgentBuilder {
     private final Map<String, BaseNode> nodes = new HashMap<>();
 
     /**
-     * 边列表（临时存储�?
+     * 边列表（临时存储）
      */
     private final List<EdgeConfig> edges = new ArrayList<>();
 
     /**
-     * 条件边列表（临时存储�?
+     * 条件边列表（临时存储）
      */
     private final List<ConditionalEdgeConfig> conditionalEdges = new ArrayList<>();
 
@@ -126,8 +126,8 @@ public class AgentBuilder {
     }
 
     /**
-     * 设置版本�?
-     * @param versionNumber 版本�?
+     * 设置版本号
+     * @param versionNumber 版本号
      * @return 当前 Builder 实例
      */
     public AgentBuilder version(String versionNumber) {
@@ -159,7 +159,7 @@ public class AgentBuilder {
 
     /**
      * 添加普通边
-     * @param from 源节�?ID
+     * @param from 源节点 ID
      * @param to 目标节点 ID
      * @return 当前 Builder 实例
      */
@@ -170,10 +170,10 @@ public class AgentBuilder {
     }
 
     /**
-     * 添加条件�?
-     * @param from 源节�?ID
+     * 添加条件边
+     * @param from 源节点 ID
      * @param condition 条件函数
-     * @param mappings 条件映射（条件结�?-> 目标节点 ID�?
+     * @param mappings 条件映射（条件结果 -> 目标节点 ID）
      * @return 当前 Builder 实例
      */
     public AgentBuilder addConditionalEdge(String from, 
@@ -185,10 +185,10 @@ public class AgentBuilder {
     }
 
     /**
-     * 添加条件边（简化的谓语形式�?
-     * @param from 源节�?ID
+     * 添加条件边（简化的谓语形式）
+     * @param from 源节点 ID
      * @param defaultTarget 默认目标节点
-     * @param conditions 条件列表（谓�?-> 目标节点�?
+     * @param conditions 条件列表（谓语 -> 目标节点）
      * @return 当前 Builder 实例
      */
     public AgentBuilder addConditionalEdge(String from,
@@ -236,7 +236,7 @@ public class AgentBuilder {
     }
 
     /**
-     * 构建并注�?Agent
+     * 构建并注册 Agent
      * @param agentService AgentService 实例
      * @return 注册后的 AgentDefinition
      */
@@ -261,16 +261,16 @@ public class AgentBuilder {
             
         } catch (Exception e) {
             log.error("Agent 构建失败：agentId={}", agentId, e);
-            throw new RuntimeException("Agent 构建失败�? + e.getMessage(), e);
+            throw new RuntimeException("Agent 构建失败：" + e.getMessage(), e);
         }
     }
 
     /**
-     * 仅构�?AgentDefinition，不注册
+     * 仅构建 AgentDefinition，不注册
      * @return AgentDefinition
      */
     public AgentDefinition build() {
-        log.info("开始构�?Agent：agentId={}", agentId);
+        log.info("开始构建 Agent：agentId={}", agentId);
         
         try {
             // 验证必填参数
@@ -284,7 +284,7 @@ public class AgentBuilder {
             
         } catch (Exception e) {
             log.error("Agent 构建失败：agentId={}", agentId, e);
-            throw new RuntimeException("Agent 构建失败�? + e.getMessage(), e);
+            throw new RuntimeException("Agent 构建失败：" + e.getMessage(), e);
         }
     }
 
@@ -305,7 +305,7 @@ public class AgentBuilder {
         }
         
         if (nodes.isEmpty()) {
-            throw new IllegalArgumentException("至少需要添加一个节�?);
+            throw new IllegalArgumentException("至少需要添加一个节点");
         }
     }
 
@@ -323,12 +323,12 @@ public class AgentBuilder {
         // 添加节点
         graph.addAllNodes(nodes);
         
-        // 添加�?
+        // 添加边
         for (EdgeConfig edge : edges) {
             graph.addEdge(edge.from, edge.to);
         }
         
-        // 添加条件�?
+        // 添加条件边
         for (ConditionalEdgeConfig edge : conditionalEdges) {
             if (edge.conditionEdge != null) {
                 graph.addConditionalEdge(edge.from, edge.conditionEdge);
@@ -370,7 +370,7 @@ public class AgentBuilder {
     }
 
     /**
-     * 边配�?
+     * 边配置
      */
     private static class EdgeConfig {
         String from;
@@ -383,7 +383,7 @@ public class AgentBuilder {
     }
 
     /**
-     * 条件边配�?
+     * 条件边配置
      */
     private static class ConditionalEdgeConfig {
         String from;

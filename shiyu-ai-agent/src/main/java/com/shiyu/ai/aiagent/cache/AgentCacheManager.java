@@ -43,12 +43,12 @@ public class AgentCacheManager {
 
     public void put(Long userId, String agentId, AgentDefinition agent) {
         cache.put(key(userId, agentId), agent);
-        log.debug("缓存已写�? userId={}, agentId={}", userId, agentId);
+        log.debug("缓存已写.? userId={}, agentId={}", userId, agentId);
     }
 
     public void put(AgentDefinition agent) {
         cache.put(key(0L, agent.getAgentId()), agent);
-        log.debug("缓存已写�? agentId={}", agent.getAgentId());
+        log.debug("缓存已写.? agentId={}", agent.getAgentId());
     }
 
     public AgentDefinition getOrLoad(Long userId, String agentId, AgentLoader loader) {
@@ -68,17 +68,17 @@ public class AgentCacheManager {
 
     public void evict(String agentId) {
         cache.asMap().keySet().removeIf(k -> k.endsWith(":" + agentId));
-        log.info("缓存已清�? agentId={}", agentId);
+        log.info("缓存已清g? agentId={}", agentId);
     }
 
     public void evict(Long userId, String agentId) {
         cache.invalidate(key(userId, agentId));
-        log.debug("缓存已清�? userId={}, agentId={}", userId, agentId);
+        log.debug("缓存已清.? userId={}, agentId={}", userId, agentId);
     }
 
     public void evictAll() {
         cache.invalidateAll();
-        log.info("全部缓存已清�?);
+        log.info("全部缓存已清i?);
     }
 
     public boolean containsKey(Long userId, String agentId) {

@@ -15,7 +15,7 @@ import java.util.Map;
 
 /**
  * Agent 调用节点
- * 用于�?Graph 中调用其他已注册�?Agent 执行子任�?
+ * 用于??Graph 中调用其他已注册??Agent 执行子任??
  *
  * @author shiyu-ai
  * @date 2026-06-06
@@ -84,7 +84,7 @@ public class AgentCallNode extends BaseNode {
         }
 
         /**
-         * 构建并返�?AgentCallNode 实例
+         * 构建并返??AgentCallNode 实例
          *
          * @return AgentCallNode 实例
          * @throws IllegalStateException 如果校验失败
@@ -120,7 +120,7 @@ public class AgentCallNode extends BaseNode {
             String targetVersion = getTargetVersion(input);
 
             // 4. 调用目标 Agent
-            log.info("开始调用目�?Agent：agentId={}, version={}", targetAgentId, targetVersion);
+            log.info("开始调用目??Agent：agentId={}, version={}", targetAgentId, targetVersion);
             Map<String, Object> result;
             if (targetVersion != null && !targetVersion.trim().isEmpty()) {
                 result = agentService.execute(targetAgentId, targetVersion, agentInput);
@@ -146,7 +146,7 @@ public class AgentCallNode extends BaseNode {
             log.error("Agent 调用节点执行失败", e);
             NodeOutput output = new NodeOutput();
             output.setSuccess(false);
-            output.setMsg("Agent 调用节点执行失败�? + e.getMessage());
+            output.setMsg("Agent 调用节点执行失败?? + e.getMessage());
             return output;
         }
     }
@@ -176,7 +176,7 @@ public class AgentCallNode extends BaseNode {
     }
 
     /**
-     * 准备目标 Agent 的输入参�?
+     * 准备目标 Agent 的输入参??
      * 根据 inputMapping 配置进行参数映射
      */
     private Map<String, Object> prepareAgentInput(NodeInput input) {
@@ -194,7 +194,7 @@ public class AgentCallNode extends BaseNode {
                 }
             }
         } else {
-            // 没有映射规则时，传递所有参数（排除内部字段�?
+            // 没有映射规则时，传递所有参数（排除内部字段??
             for (Map.Entry<String, Object> entry : input.toMap().entrySet()) {
                 String key = entry.getKey();
                 if (!FieldKey.TARGET_AGENT_ID.key().equals(key) && !FieldKey.TARGET_VERSION.key().equals(key)) {

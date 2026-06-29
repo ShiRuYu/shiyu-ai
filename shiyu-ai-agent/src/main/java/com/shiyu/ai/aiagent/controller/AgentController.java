@@ -20,7 +20,7 @@ import java.util.UUID;
 
 /**
  * Agent Controller
- * 提供 Agent 管理、执行和版本控制�?REST API
+ * 提供 Agent 管理、执行和版本控制的 REST API
  */
 @Slf4j
 @RestController
@@ -35,7 +35,7 @@ public class AgentController {
 
     /**
      * 注册 Agent
-     * @param request 注册请求（包�?agentId、name、description、graph�?
+     * @param request 注册请求（包含 agentId、name、description、graph）
      * @return 注册结果
      */
     @PostMapping("/register")
@@ -89,7 +89,7 @@ public class AgentController {
         AgentDefinition definition = agentService.getAgent(agentId);
         
         if (definition == null) {
-            return Result.fail("Agent 不存�?);
+            return Result.fail("Agent 不存在");
         }
         
         return Result.success(definition);
@@ -117,7 +117,7 @@ public class AgentController {
      * 执行 Agent（同步）
      * @param agentId Agent ID
      * @param body 输入数据（POST 请求体）
-     * @param params 查询参数（GET 请求�?
+     * @param params 查询参数（GET 请求）
      * @return 执行结果
      */
     @RequestMapping(value = "/{agentId}/execute", method = {RequestMethod.GET, RequestMethod.POST})
@@ -154,7 +154,7 @@ public class AgentController {
      * 执行 Agent（流式）
      * @param agentId Agent ID
      * @param body 输入数据（POST 请求体）
-     * @param params 查询参数（GET 请求�?
+     * @param params 查询参数（GET 请求）
      * @return 流式执行结果
      */
     @RequestMapping(value = "/{agentId}/executeStream", method = {RequestMethod.GET, RequestMethod.POST}, produces = MediaType.TEXT_EVENT_STREAM_VALUE)
@@ -193,7 +193,7 @@ public class AgentController {
     /**
      * 切换 Agent 版本
      * @param agentId Agent ID
-     * @param version 版本�?
+     * @param version 版本号
      * @return 切换结果
      */
     @PostMapping("/{agentId}/version/switch")
@@ -212,7 +212,7 @@ public class AgentController {
     }
 
     /**
-     * 获取所有已注册�?Agent
+     * 获取所有已注册的 Agent
      * @return Agent 列表
      */
     @GetMapping("/list")
@@ -230,7 +230,7 @@ public class AgentController {
     @lombok.Data
     public static class RegisterAgentRequest {
         /**
-         * Agent ID（唯一标识�?
+         * Agent ID（唯一标识）
          */
         private String agentId;
         
@@ -245,7 +245,7 @@ public class AgentController {
         private String description;
         
         /**
-         * 版本号（可选，默认 v1.0.0�?
+         * 版本号（可选，默认 v1.0.0）
          */
         private String versionNumber;
         

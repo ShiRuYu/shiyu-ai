@@ -63,7 +63,7 @@ public abstract class BaseNode implements NodeAction<AgentState> {
 
             for (int attempt = 0; attempt <= retries; attempt++) {
                 if (attempt > 0) {
-                    log.warn("节点 [{}] �?{}/{} 次重�?, config.getNodeName(), attempt, retries);
+                    log.warn("节点 [{}] 第 {}/{} 次重试", config.getNodeName(), attempt, retries);
                     Thread.sleep(retryIntervalMs);
                 }
                 try {
@@ -120,7 +120,7 @@ public abstract class BaseNode implements NodeAction<AgentState> {
     }
 
     protected void beforeExecute(AgentState state) {
-        log.info("开始执行节�? {}", config.getNodeName());
+        log.info("开始执行节?? {}", config.getNodeName());
         if ("DEBUG".equalsIgnoreCase(config.getLogLevel())) {
             log.debug("节点配置: {}", config);
         }
@@ -142,11 +142,11 @@ public abstract class BaseNode implements NodeAction<AgentState> {
 
         switch (errorStrategy) {
             case "IGNORE":
-                log.warn("忽略异常，继续执�? {}", e.getMessage());
+                log.warn("忽略异常，继续执?? {}", e.getMessage());
                 return Collections.emptyMap();
 
             case "DEFAULT":
-                log.warn("使用默认值处理异�? {}", e.getMessage());
+                log.warn("使用默认值处理异?? {}", e.getMessage());
                 return createDefaultResult();
 
             case "THROW":
@@ -158,7 +158,7 @@ public abstract class BaseNode implements NodeAction<AgentState> {
 
     protected Map<String, Object> createDefaultResult() {
         return Map.of(
-            NodeFields.FieldKey.ERROR.key(), "使用默认值处�?,
+            NodeFields.FieldKey.ERROR.key(), "使用默认值处??,
             "status", "DEFAULT_APPLIED"
         );
     }

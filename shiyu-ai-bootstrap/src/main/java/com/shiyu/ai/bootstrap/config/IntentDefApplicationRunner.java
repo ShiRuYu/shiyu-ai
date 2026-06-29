@@ -2,7 +2,7 @@ package com.shiyu.ai.bootstrap.config;
 
 import com.shiyu.ai.dal.repository.IntentDefRepository;
 import com.shiyu.ai.model.bo.IntentDefBO;
-import com.shiyu.ai.aiagent.langgraph4j.node.intent.IntentDefinitionFactory;
+import com.shiyu.ai.aiagent.node.intent.IntentDefinitionFactory;
 import jakarta.annotation.Resource;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.boot.ApplicationArguments;

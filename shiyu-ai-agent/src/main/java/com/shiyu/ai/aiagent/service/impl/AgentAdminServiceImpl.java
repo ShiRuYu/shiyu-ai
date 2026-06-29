@@ -54,7 +54,7 @@ public class AgentAdminServiceImpl implements AgentAdminService {
     public AgentVO create(AgentRequest request) {
         AgentDefBO existing = agentAdminRepository.selectByAgentId(request.getAgentId());
         if (existing != null) {
-            throw new IllegalArgumentException("Agent标识已存�? " + request.getAgentId());
+            throw new IllegalArgumentException("Agent标识已存在: " + request.getAgentId());
         }
         AgentDefBO def = new AgentDefBO();
         def.setAgentId(request.getAgentId());
@@ -69,7 +69,7 @@ public class AgentAdminServiceImpl implements AgentAdminService {
     @Transactional(rollbackFor = Exception.class)
     public AgentVO update(Long id, AgentRequest request) {
         AgentDefBO def = agentAdminRepository.selectById(id);
-        if (def == null) throw new IllegalArgumentException("Agent不存�? " + id);
+        if (def == null) throw new IllegalArgumentException("Agent不存在: " + id);
         if (request.getName() != null) def.setName(request.getName());
         if (request.getDescription() != null) def.setDescription(request.getDescription());
         if (request.getStatus() != null) def.setStatus(request.getStatus());
@@ -158,7 +158,7 @@ public class AgentAdminServiceImpl implements AgentAdminService {
             case INTENT:
                 fields.add(fieldWithSource(field("category", "意图分类", "select", "", false, "意图分类"),
                     new NodeTypeMetaVO.DataSourceConfig("dict", null, "INTENT_CATEGORY", "dictLabel", "dictValue", null)));
-                fields.add(field("confidenceThreshold", "置信度阈�?, "number", 0.75, false, "意图识别的最低置信度"));
+                fields.add(field("confidenceThreshold", "置信度阈值", "number", 0.75, false, "意图识别的最低置信度"));
                 fields.add(fieldWithSource(field("platform", "AI平台", "select", "", false, "选择AI平台"),
                     new NodeTypeMetaVO.DataSourceConfig("api", "/ai/platform/enabled", null, "name", "code", null)));
                 fields.add(fieldWithSource(field("modelName", "模型名称", "select", "", false, "选择模型"),
@@ -169,34 +169,34 @@ public class AgentAdminServiceImpl implements AgentAdminService {
                     new NodeTypeMetaVO.DataSourceConfig("api", "/ai/platform/enabled", null, "name", "code", null)));
                 fields.add(fieldWithSource(field("modelName", "模型名称", "select", "", false, "选择模型"),
                     new NodeTypeMetaVO.DataSourceConfig("api", "/ai/model/platform/by-code/{platform}", null, "displayName", "modelName", "platform")));
-                fields.add(field("temperature", "温度参数", "number", 0.7, false, "控制输出随机�?0-2)"));
-                fields.add(field("maxTokens", "最大Token�?, "number", 4096, false, "输出最大长�?));
-                fields.add(field("topP", "Top-P", "number", 0.9, false, "核采样参�?));
-                fields.add(field("systemPrompt", "系统提示�?, "textarea", "", false, "系统级别的指�?));
-                fields.add(field("defaultPrompt", "默认提示�?, "textarea", "", false, "默认的用户提示词"));
-                fields.add(field("promptTemplate", "提示词模�?, "textarea", "", false, "支持{context}{query}占位�?));
+                fields.add(field("temperature", "温度参数", "number", 0.7, false, "控制输出随机性(0-2)"));
+                fields.add(field("maxTokens", "最大Token数", "number", 4096, false, "输出最大长度"));
+                fields.add(field("topP", "Top-P", "number", 0.9, false, "核采样参数"));
+                fields.add(field("systemPrompt", "系统提示词", "textarea", "", false, "系统级别的指令"));
+                fields.add(field("defaultPrompt", "默认提示词", "textarea", "", false, "默认的用户提示词"));
+                fields.add(field("promptTemplate", "提示词模板", "textarea", "", false, "支持{context}{query}占位符"));
                 fields.add(field("stream", "流式输出", "boolean", false, false, "是否使用流式输出"));
                 break;
             case RAG_RETRIEVAL:
                 fields.add(field("knowledgeBaseId", "知识库ID", "text", "", false, "目标知识库ID"));
-                fields.add(field("topK", "检索数�?, "number", 5, false, "返回的相关文档数�?));
-                fields.add(field("similarityThreshold", "相似度阈�?, "number", 0.7, false, "最低相似度"));
-                fields.add(field("enableRerank", "重排�?, "boolean", false, false, "是否启用重排�?));
+                fields.add(field("topK", "检索数量", "number", 5, false, "返回的相关文档数量"));
+                fields.add(field("similarityThreshold", "相似度阈值", "number", 0.7, false, "最低相似度"));
+                fields.add(field("enableRerank", "重排序", "boolean", false, false, "是否启用重排序"));
                 break;
             case RAG_ENHANCEMENT:
                 fields.add(field("enhancementStrategy", "增强策略", "select", "SUMMARIZATION", false, Map.of("options", List.of("SUMMARIZATION", "CHUNKING", "HYBRID"))));
-                fields.add(field("contextWindowSize", "上下文窗�?, "number", 3, false, "上下文窗口大�?));
-                fields.add(field("maxLength", "最大长�?, "number", 2000, false, "输出最大长�?));
-                fields.add(field("addContext", "添加上下�?, "boolean", true, false, "是否添加上下�?));
+                fields.add(field("contextWindowSize", "上下文窗口", "number", 3, false, "上下文窗口大小"));
+                fields.add(field("maxLength", "最大长度", "number", 2000, false, "输出最大长度"));
+                fields.add(field("addContext", "添加上下文", "boolean", true, false, "是否添加上下文"));
                 break;
             case TOOL_CALL:
-                fields.add(field("toolName", "工具名称", "text", "", true, "调用的工具标�?));
+                fields.add(field("toolName", "工具名称", "text", "", true, "调用的工具标识"));
                 fields.add(field("toolType", "工具类型", "text", "", false, "工具类型分类"));
                 fields.add(field("toolTimeout", "超时时间(ms)", "number", 10000L, false, "工具调用超时"));
                 fields.add(field("enableCache", "启用缓存", "boolean", false, false, "是否缓存工具结果"));
                 break;
             case CONDITION:
-                fields.add(field("conditionExpression", "条件表达�?, "textarea", "", false, "条件判断表达�?));
+                fields.add(field("conditionExpression", "条件表达式", "textarea", "", false, "条件判断表达式"));
                 fields.add(field("conditionType", "条件类型", "select", "EXPRESSION", false, Map.of("options", List.of("EXPRESSION", "INTENT_ROUTING"))));
                 break;
             case TRANSFORM:
@@ -205,7 +205,7 @@ public class AgentAdminServiceImpl implements AgentAdminService {
                 break;
             case OUTPUT_FORMAT:
                 fields.add(field("outputFormat", "输出格式", "select", "TEXT", false, Map.of("options", List.of("TEXT", "JSON", "MARKDOWN", "HTML"))));
-                fields.add(field("template", "格式化模�?, "textarea", "", false, "输出格式化模�?));
+                fields.add(field("template", "格式化模板", "textarea", "", false, "输出格式化模板"));
                 fields.add(field("prettyPrint", "美化输出", "boolean", true, false, "是否美化格式"));
                 break;
             case MEMORY_SHORT_TERM:

@@ -72,7 +72,7 @@ public class IntentDefServiceImpl implements IntentDefService {
         try {
             List<IntentDefBO> all = intentDefRepository.selectByAgentId("default");
             IntentDefinitionFactory.reloadFromDb(all);
-            log.info("IntentDefinitionFactory 已刷新，共计 {} 条意图定�?, all != null ? all.size() : 0);
+            log.info("IntentDefinitionFactory 已刷新，共计 {} 条意图定义", all != null ? all.size() : 0);
         } catch (Exception e) {
             log.error("刷新 IntentDefinitionFactory 失败", e);
         }

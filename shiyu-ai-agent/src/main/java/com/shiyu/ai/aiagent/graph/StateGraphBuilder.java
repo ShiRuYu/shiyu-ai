@@ -17,8 +17,8 @@ import static org.bsc.langgraph4j.action.AsyncEdgeAction.edge_async;
 import static org.bsc.langgraph4j.action.AsyncNodeAction.node_async;
 
 /**
- * StateGraph 构建�?
- * 用于�?Graph 对象转换�?langgraph4j �?StateGraph
+ * StateGraph 构建??
+ * 用于??Graph 对象转换??langgraph4j ??StateGraph
  */
 @Slf4j
 @Builder
@@ -31,13 +31,13 @@ public class StateGraphBuilder {
     private Map<String, BaseNode> nodes = new HashMap<>();
 
     /**
-     * 边列�?(源节�?ID -> 目标节点 ID 列表)
+     * 节点列表 (节点 ID -> 节点实例)
      */
     @Builder.Default
     private Map<String, List<String>> edges = new HashMap<>();
 
     /**
-     * 条件函数列表 (源节�?ID -> 条件函数)
+     * 条件函数列表 (源节??ID -> 条件函数)
      */
     @Builder.Default
     private Map<String, ConditionEdge> conditionalEdges = new HashMap<>();
@@ -61,14 +61,14 @@ public class StateGraphBuilder {
     private String endNode = "";
 
     /**
-     * �?Graph 对象构建 StateGraphBuilder
+     * ??Graph 对象构建 StateGraphBuilder
      * @param graph Graph 对象
      * @return StateGraphBuilder 实例
      */
     public static StateGraphBuilder fromGraph(Graph graph) {
         log.info("开始从 Graph 构建 StateGraphBuilder: {}", graph.getName());
         
-        // 先验证配�?
+        // 先验证配??
         graph.validate();
         
         return StateGraphBuilder.builder()
@@ -82,17 +82,17 @@ public class StateGraphBuilder {
     }
 
     /**
-     * 构建并编�?StateGraph
+     * 构建并编??StateGraph
      * @return 编译后的 CompiledGraph
-     * @throws GraphStateException 图状态异�?
+     * @throws GraphStateException 图状态异??
      */
     public CompiledGraph<AgentState> build() throws GraphStateException {
-        log.info("开始构�?StateGraph，节点数：{}", nodes.size());
+        log.info("开始构??StateGraph，节点数：{}", nodes.size());
         
         // 创建 StateGraph 实例
         StateGraph<AgentState> stateGraph = new StateGraph<>(channels, AgentState::new);
         
-        // 添加所有节�?
+        // 添加所有节??
         for (Map.Entry<String, BaseNode> entry : nodes.entrySet()) {
             String nodeId = entry.getKey();
             BaseNode node = entry.getValue();
@@ -121,7 +121,7 @@ public class StateGraphBuilder {
             }
         }
         
-        // 添加条件�?
+        // 添加条件??
         for (Map.Entry<String, ConditionEdge> entry : conditionalEdges.entrySet()) {
             String sourceId = entry.getKey();
             ConditionEdge conditionEdge = entry.getValue();
@@ -140,7 +140,7 @@ public class StateGraphBuilder {
             }
         }
         
-        // 添加起始�?
+        // 添加起始??
         if (startNode != null && !startNode.isEmpty()) {
             try {
                 stateGraph.addEdge(StateGraph.START, startNode);
@@ -151,7 +151,7 @@ public class StateGraphBuilder {
             log.debug("添加起始边：START -> {}", startNode);
         }
         
-        // 添加结束�?
+        // 添加结束??
         if (endNode != null && !endNode.isEmpty()) {
             try {
                 stateGraph.addEdge(endNode, StateGraph.END);
@@ -162,8 +162,8 @@ public class StateGraphBuilder {
             log.debug("添加结束边：{} -> END", endNode);
         }
         
-        // 编译并返�?
-        log.info("StateGraph 构建完成，开始编�?..");
+        // 编译并返??
+        log.info("StateGraph 构建完成，开始编??..");
         return stateGraph.compile();
     }
 }
