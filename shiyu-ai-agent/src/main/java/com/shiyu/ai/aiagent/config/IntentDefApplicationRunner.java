@@ -1,4 +1,4 @@
-package com.shiyu.ai.bootstrap.config;
+package com.shiyu.ai.aiagent.config;
 
 import com.shiyu.ai.aiagent.repository.IntentDefRepository;
 import com.shiyu.ai.aiagent.bo.IntentDefBO;

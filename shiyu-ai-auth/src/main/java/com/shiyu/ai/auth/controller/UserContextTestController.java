@@ -1,4 +1,4 @@
-package com.shiyu.ai.bootstrap.controller;
+package com.shiyu.ai.auth.controller;
 
 import com.shiyu.ai.common.core.api.Result;
 import com.shiyu.ai.common.core.domain.LoginContextHolder;

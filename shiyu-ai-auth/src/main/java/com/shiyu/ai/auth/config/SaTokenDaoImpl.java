@@ -1,4 +1,4 @@
-package com.shiyu.ai.bootstrap.config;
+package com.shiyu.ai.auth.config;
 
 import cn.dev33.satoken.dao.SaTokenDao;
 import cn.dev33.satoken.session.SaSession;

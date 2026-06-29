@@ -1,4 +1,4 @@
-package com.shiyu.ai.bootstrap.interceptor;
+package com.shiyu.ai.auth.interceptor;
 
 import com.shiyu.ai.auth.repository.AuthUserLookupRepository;
 import com.shiyu.ai.dal.dataobject.auth.RoleDO;
@@ -28,8 +28,6 @@ import java.util.stream.Collectors;
 @Slf4j
 @Component
 public class UserContextInterceptor implements HandlerInterceptor {
-
-    private static final String SESSION_KEY_LOGIN_USER = "loginUser";
 
     private final AuthUserLookupRepository authUserLookupRepository;
 

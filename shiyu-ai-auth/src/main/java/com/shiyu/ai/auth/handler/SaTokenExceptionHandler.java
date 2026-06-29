@@ -1,4 +1,4 @@
-package com.shiyu.ai.bootstrap.handler;
+package com.shiyu.ai.auth.handler;
 
 import cn.dev33.satoken.exception.NotLoginException;
 import cn.dev33.satoken.exception.NotPermissionException;

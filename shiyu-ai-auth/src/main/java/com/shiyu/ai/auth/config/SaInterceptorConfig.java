@@ -1,6 +1,6 @@
-package com.shiyu.ai.bootstrap.config;
+package com.shiyu.ai.auth.config;
 
-import com.shiyu.ai.bootstrap.interceptor.UserContextInterceptor;
+import com.shiyu.ai.auth.interceptor.UserContextInterceptor;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.web.servlet.config.annotation.InterceptorRegistry;
 import org.springframework.web.servlet.config.annotation.WebMvcConfigurer;

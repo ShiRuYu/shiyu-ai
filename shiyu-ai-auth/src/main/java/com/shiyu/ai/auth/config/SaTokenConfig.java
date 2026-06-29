@@ -1,12 +1,9 @@
-package com.shiyu.ai.bootstrap.config;
+package com.shiyu.ai.auth.config;
 
-import cn.dev33.satoken.context.SaHolder;
 import cn.dev33.satoken.exception.NotLoginException;
 import cn.dev33.satoken.filter.SaServletFilter;
-import cn.dev33.satoken.stp.StpUtil;
 import cn.dev33.satoken.strategy.SaStrategy;
 import cn.dev33.satoken.util.SaFoxUtil;
-import cn.dev33.satoken.router.SaRouter;
 import com.shiyu.ai.common.core.enums.BizResultCode;
 import com.shiyu.ai.common.core.utils.JSONUtils;
 import com.shiyu.ai.common.core.api.Result;

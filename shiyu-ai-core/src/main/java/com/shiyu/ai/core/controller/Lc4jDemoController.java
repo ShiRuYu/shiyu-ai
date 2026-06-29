@@ -1,4 +1,4 @@
-package com.shiyu.ai.bootstrap.controller;
+package com.shiyu.ai.core.controller;
 
 import com.shiyu.ai.core.Lc4jRequest;
 import com.shiyu.ai.core.Lc4jResponse;
