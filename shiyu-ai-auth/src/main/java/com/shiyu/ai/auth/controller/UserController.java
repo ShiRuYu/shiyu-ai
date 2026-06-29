@@ -20,7 +20,7 @@ import java.util.Map;
 import java.util.stream.Collectors;
 
 /**
- * 鐢ㄦ埛绠＄悊 Controller
+ * 用户管理 Controller
  */
 @Slf4j
 @RestController
@@ -36,34 +36,34 @@ public class UserController {
     }
 
     /**
-     * 鑾峰彇褰撳墠鐢ㄦ埛淇℃伅
+     * 获取当前用户信息
      * GET /user/info
      */
     @GetMapping("/info")
     public Result<UserVO> getUserInfo(
             @RequestHeader(value = "Authorization", required = false) String token) {
-        log.info("鑾峰彇褰撳墠鐢ㄦ埛淇℃伅");
+        log.info("获取当前用户信息");
 
         Long userId = LoginContextHolder.getUserId();
         if (userId == null) {
-            return Result.fail("鐢ㄦ埛鏈櫥褰?);
+            return Result.fail("用户未登录");
         }
         
         UserBO userBO = userService.getUserDetail(userId);
         
         if (userBO == null) {
-            return Result.fail("鐢ㄦ埛涓嶅瓨鍦?);
+            return Result.fail("用户不存在");
         }
         
         UserVO userVO = MapstructUtils.convert(userBO, UserVO.class);
 
-        // 濉厖绉熸埛鍜屽伐浣滅┖闂翠俊鎭?
+        // 填充租户和工作空间信息
         try {
             userVO.setTenants(authService.getUserTenants(userId));
             List<WorkspaceContextVO> workspaces = authService.getUserWorkspaces(userId);
             userVO.setWorkspaces(workspaces);
 
-            // 浠?extInfo 瑙ｆ瀽褰撳墠绉熸埛鍜屽伐浣滅┖闂?ID
+            // 从 extInfo 解析当前租户和工作空间 ID
             if (userVO.getExtInfo() != null) {
                 var extMap = com.shiyu.ai.common.core.utils.JSONUtils.parseObject(
                         userVO.getExtInfo(), java.util.Map.class);
@@ -79,21 +79,21 @@ public class UserController {
                 }
             }
         } catch (Exception e) {
-            log.warn("鑾峰彇鐢ㄦ埛绉熸埛/宸ヤ綔绌洪棿淇℃伅澶辫触: {}", e.getMessage());
+            log.warn("获取用户租户/工作空间信息失败: {}", e.getMessage());
         }
 
         return Result.success(userVO);
     }
 
     /**
-     * 鐢ㄦ埛鍒楄〃 - 鍒嗛〉
+     * 用户列表 - 分页
      */
     @GetMapping("")
     public Result<UserPageResponse> getUserList(
             @RequestParam(required = false) String username,
             @RequestParam Integer pageNo,
             @RequestParam Integer pageSize) {
-        log.info("鑾峰彇鐢ㄦ埛鍒楄〃锛寀sername: {}, pageNo: {}, pageSize: {}", username, pageNo, pageSize);
+        log.info("获取用户列表，username: {}, pageNo: {}, pageSize: {}", username, pageNo, pageSize);
         
         UserPageResponse pageResponse = userService.getUserList(username, pageNo, pageSize);
         
@@ -101,29 +101,29 @@ public class UserController {
     }
 
     /**
-     * 鍒犻櫎鐢ㄦ埛
+     * 删除用户
      */
     @DeleteMapping("/{userId}")
     public Result<Void> deleteUser(@PathVariable Long userId) {
-        log.info("鍒犻櫎鐢ㄦ埛锛寀serId: {}", userId);
+        log.info("删除用户，userId: {}", userId);
         
         boolean success = userService.deleteUser(userId);
         
         if (success) {
             return Result.success();
         } else {
-            return Result.fail("鐢ㄦ埛涓嶅瓨鍦?);
+            return Result.fail("用户不存在");
         }
     }
 
     /**
-     * 淇敼鐢ㄦ埛
+     * 修改用户
      */
     @PatchMapping("/{userId}")
     public Result<Void> updateUser(
             @PathVariable Long userId,
             @Valid @RequestBody UserRequest request) {
-        log.info("淇敼鐢ㄦ埛锛寀serId: {}", userId);
+        log.info("修改用户，userId: {}", userId);
         
         UserBO userBO = MapstructUtils.convert(request, UserBO.class);
         boolean success = userService.updateUser(userId, userBO);
@@ -131,18 +131,18 @@ public class UserController {
         if (success) {
             return Result.success();
         } else {
-            return Result.fail("鐢ㄦ埛涓嶅瓨鍦?);
+            return Result.fail("用户不存在");
         }
     }
 
     /**
-     * 閲嶇疆鐢ㄦ埛瀵嗙爜
+     * 重置用户密码
      */
     @PatchMapping("/{userId}/password/reset")
     public Result<Void> resetPassword(
             @PathVariable Long userId,
             @RequestBody Map<String, String> passwordMap) {
-        log.info("閲嶇疆鐢ㄦ埛瀵嗙爜锛寀serId: {}", userId);
+        log.info("重置用户密码，userId: {}", userId);
         
         String password = passwordMap.get("password");
         boolean success = userService.resetUserPassword(userId, password);
@@ -150,40 +150,40 @@ public class UserController {
         if (success) {
             return Result.success();
         } else {
-            return Result.fail("鐢ㄦ埛涓嶅瓨鍦?);
+            return Result.fail("用户不存在");
         }
     }
 
     /**
-     * 淇敼瀵嗙爜锛堥渶鏍￠獙鏃у瘑鐮侊級
+     * 修改密码（需校验旧密码）
      */
     @PatchMapping("/{userId}/password")
     public Result<Void> changePassword(
             @PathVariable Long userId,
             @RequestBody Map<String, String> body) {
-        log.info("淇敼瀵嗙爜锛寀serId: {}", userId);
+        log.info("修改密码，userId: {}", userId);
 
         String oldPassword = body.get("oldPassword");
         String newPassword = body.get("newPassword");
         if (oldPassword == null || oldPassword.isEmpty() ||
             newPassword == null || newPassword.isEmpty()) {
-            return Result.fail("鏃у瘑鐮佸拰鏂板瘑鐮佷笉鑳戒负绌?);
+            return Result.fail("旧密码和新密码不能为空");
         }
 
         boolean success = userService.changePassword(userId, oldPassword, newPassword);
         if (success) {
             return Result.success();
         } else {
-            return Result.fail("鏃у瘑鐮侀敊璇垨鐢ㄦ埛涓嶅瓨鍦?);
+            return Result.fail("旧密码错误或用户不存在");
         }
     }
 
     /**
-     * 鏂板鐢ㄦ埛
+     * 新增用户
      */
     @PostMapping("")
     public Result<Long> createUser(@Valid @RequestBody UserRequest request) {
-        log.info("鏂板鐢ㄦ埛");
+        log.info("新增用户");
         
         UserBO userBO = MapstructUtils.convert(request, UserBO.class);
         Long userId = userService.createUser(userBO);

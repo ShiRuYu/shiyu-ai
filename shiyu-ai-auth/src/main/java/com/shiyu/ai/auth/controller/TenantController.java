@@ -27,7 +27,7 @@ public class TenantController {
     private void checkTenantAdmin() {
         Long tenantId = LoginContextHolder.getTenantId();
         if (tenantId == null || tenantId != 1L) {
-            throw new SecurityException("浠呴粯璁ょ鎴峰彲绠＄悊绉熸埛");
+            throw new SecurityException("仅默认租户可管理租户");
         }
     }
 
@@ -44,7 +44,7 @@ public class TenantController {
         checkTenantAdmin();
         TenantBO tenantBO = tenantService.getTenantById(id);
         if (tenantBO == null) {
-            return Result.fail("绉熸埛涓嶅瓨鍦?);
+            return Result.fail("租户不存在");
         }
         TenantVO tenantVO = MapstructUtils.convert(tenantBO, TenantVO.class);
         return Result.success(tenantVO);
@@ -58,7 +58,7 @@ public class TenantController {
         if (success) {
             return Result.success();
         } else {
-            return Result.fail("鏂板澶辫触锛岀鎴风紪鐮佸彲鑳藉凡瀛樺湪");
+            return Result.fail("新增失败，租户编码可能已存在");
         }
     }
 
@@ -70,7 +70,7 @@ public class TenantController {
         if (success) {
             return Result.success();
         } else {
-            return Result.fail("淇敼澶辫触锛岀鎴蜂笉瀛樺湪鎴栫紪鐮佸凡瀛樺湪");
+            return Result.fail("修改失败，租户不存在或编码已存在");
         }
     }
 
@@ -81,7 +81,7 @@ public class TenantController {
         if (success) {
             return Result.success();
         } else {
-            return Result.fail("鍒犻櫎澶辫触锛岄粯璁ょ鎴蜂笉鍙垹闄ゆ垨绉熸埛涓嶅瓨鍦?);
+            return Result.fail("删除失败，默认租户不可删除或租户不存在");
         }
     }
 }

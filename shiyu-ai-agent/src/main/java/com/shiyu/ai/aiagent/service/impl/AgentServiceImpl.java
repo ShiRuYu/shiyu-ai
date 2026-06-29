@@ -69,12 +69,11 @@ public class AgentServiceImpl implements AgentService {
         if (agentId == null || agentId.trim().isEmpty()) {
             throw new IllegalArgumentException("AgentId 不能为空");
         }
-        // 1. DB 软删能?
+        // 1. DB 软删除
         agentAdminRepository.deleteByAgentId(agentId);
-        // 2. 清缓y?
+        // 2. 清缓存
         cacheManager.evict(agentId);
-        log.info("Agent 已注销（DB 软删
-?+ 缓存清理）：agentId={}", agentId);
+        log.info("Agent 已注销（DB 软删除 + 缓存清理）：agentId={}", agentId);
         return true;
     }
 
@@ -85,7 +84,7 @@ public class AgentServiceImpl implements AgentService {
 
     @Override
     public Map<String, Object> execute(String agentId, String version, Map<String, Object> input) throws Exception {
-        log.info("开始执 ?Agent：agentId={}, version={}, inputSize={}",
+        log.info("开始执行 Agent：agentId={}, version={}, inputSize={}",
                 agentId, version, input != null ? input.size() : 0);
 
         AgentDefinition definition = getOrLoadAgent(agentId);
@@ -96,15 +95,15 @@ public class AgentServiceImpl implements AgentService {
                     (version != null ? version : definition.getCurrentVersion()));
         }
 
-        log.info("获取)?Agent 版本：agentId={}, version={}, compiled={}",
-                agentId, agentVersion.getVersionNumber(), agentVersion.isCompiled());
+        log.info("获取到 Agent 版本：agentId={}, version={}, compiled={}",
+                agentId, agentVersion.getVersionNumber());
 
         try {
             return agentVersion.getGraph().execute(input);
         } catch (GraphStateException e) {
             log.error("Graph 执行失败：agentId={}, version={}", agentId,
                     agentVersion.getVersionNumber(), e);
-            throw new Exception("Graph 执行失败 ? + e.getMessage(), e);
+            throw new Exception("Graph 执行失败：" + e.getMessage(), e);
         }
     }
 
@@ -115,7 +114,7 @@ public class AgentServiceImpl implements AgentService {
 
     @Override
     public Flux<Map<String, Object>> executeStream(String agentId, String version, Map<String, Object> input) throws Exception {
-        log.info("开始流式执x?Agent：agentId={}, version={}, inputSize={}",
+        log.info("开始流式执行 Agent：agentId={}, version={}, inputSize={}",
                 agentId, version, input != null ? input.size() : 0);
 
         AgentDefinition definition = getOrLoadAgent(agentId);
@@ -126,8 +125,8 @@ public class AgentServiceImpl implements AgentService {
                     (version != null ? version : definition.getCurrentVersion()));
         }
 
-        log.info("获取)?Agent 版本：agentId={}, version={}, compiled={}",
-                agentId, agentVersion.getVersionNumber(), agentVersion.isCompiled());
+        log.info("获取到 Agent 版本：agentId={}, version={}, compiled={}",
+                agentId, agentVersion.getVersionNumber());
 
         return agentVersion.getGraph().executeStream(input)
                 .filter(output -> output instanceof StreamingOutput<AgentState>)
@@ -147,19 +146,19 @@ public class AgentServiceImpl implements AgentService {
             log.warn("Agent 不存在，切换失败：agentId={}", agentId);
             return false;
         }
-        boolean success = definition.setCurrentVersion(version);
-        if (success) {
-            log.info("版本切换成功：agentId={}, version={}", agentId, version);
-        } else {
-            log.warn("版本切换失败：agentId={}, version={}", agentId, version);
+        if (definition.getVersion(version) == null) {
+            log.warn("版本切换失败，版本不存在：agentId={}, version={}", agentId, version);
+            return false;
         }
-        return success;
+        definition.setCurrentVersion(version);
+        log.info("版本切换成功：agentId={}, version={}", agentId, version);
+        return true;
     }
 
     @Override
     public List<AgentDefinition> listAgents() {
         List<AgentDefinition> agents = cacheManager.listAll(currentUserId());
-        log.debug("已注n?Agent 数量：{}", agents.size());
+        log.debug("已注册 Agent 数量：{}", agents.size());
         return agents;
     }
 

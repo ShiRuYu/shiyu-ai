@@ -50,16 +50,16 @@ public class UserContextInterceptor implements HandlerInterceptor {
         try {
             SaTokenHelper helper = SaTokenHelper.getInstance();
             if (!helper.isFrameworkLogin()) {
-                log.debug("鐢ㄦ埛鏈櫥褰曪紝璺宠繃鐢ㄦ埛涓婁笅鏂囪缃?);
+                log.debug("用户未登录，跳过用户上下文设置");
                 return true;
             }
 
             Long userId = SaTokenHelper.getCurrentUserId();
 
-            // 鍏堜粠 SaToken session 涓鍙栫紦瀛樼殑 LoginUser
+            // 先从 SaToken session 中读取缓存的 LoginUser
             LoginUser loginUser = SaTokenHelper.getLoginUserFromSession();
             if (loginUser != null && userId.equals(loginUser.getUserId())) {
-                // 鏇存柊鍔ㄦ€佸睘鎬э紙IP銆佹祻瑙堝櫒绛夛級
+                // 更新动态属性（IP、浏览器等）
                 loginUser.setToken(SaTokenHelper.getCurrentToken());
                 loginUser.setIpaddr(getClientIp(request));
                 String userAgent = request.getHeader("User-Agent");
@@ -68,11 +68,11 @@ public class UserContextInterceptor implements HandlerInterceptor {
                     loginUser.setOs(parseOS(userAgent));
                 }
                 LoginContextHolder.setContext(loginUser);
-                log.debug("鐢ㄦ埛涓婁笅鏂囦粠 session 缂撳瓨鍔犺浇: userId={}, tenantId={}", userId, loginUser.getTenantId());
+                log.debug("用户上下文从 session 缓存加载: userId={}, tenantId={}", userId, loginUser.getTenantId());
                 return true;
             }
 
-            // 缂撳瓨鏈懡涓紝閲嶆柊鍔犺浇
+            // 缓存未命中，重新加载
             loginUser = new LoginUser();
             loginUser.setUserId(userId);
             loginUser.setToken(SaTokenHelper.getCurrentToken());
@@ -89,18 +89,18 @@ public class UserContextInterceptor implements HandlerInterceptor {
 
             loadTenantWorkspaceContext(userId, loginUser);
 
-            // 鍐欏叆 SaToken session 缂撳瓨
+            // 写入 SaToken session 缓存
             SaTokenHelper.saveLoginUserToSession(loginUser);
 
             LoginContextHolder.setContext(loginUser);
 
-            log.debug("鐢ㄦ埛涓婁笅鏂囦粠鏁版嵁搴撳姞杞藉苟缂撳瓨: userId={}, tenantId={}, workspaceId={}, uri={}",
+            log.debug("用户上下文从数据库加载并缓存: userId={}, tenantId={}, workspaceId={}, uri={}",
                     userId, loginUser.getTenantId(), loginUser.getCurrentWorkspaceId(), request.getRequestURI());
 
             return true;
 
         } catch (Exception e) {
-            log.warn("璁剧疆鐢ㄦ埛涓婁笅鏂囧け璐? uri={}, error={}", request.getRequestURI(), e.getMessage());
+            log.warn("设置用户上下文失败: uri={}, error={}", request.getRequestURI(), e.getMessage());
             return true;
         }
     }
@@ -164,7 +164,7 @@ public class UserContextInterceptor implements HandlerInterceptor {
     @Override
     public void afterCompletion(HttpServletRequest request, HttpServletResponse response, Object handler, Exception ex) throws Exception {
         LoginContextHolder.clearContext();
-        log.debug("鐢ㄦ埛涓婁笅鏂囧凡娓呯悊: uri={}", request.getRequestURI());
+        log.debug("用户上下文已清理: uri={}", request.getRequestURI());
     }
 
     private String getClientIp(HttpServletRequest request) {

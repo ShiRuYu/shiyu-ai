@@ -12,8 +12,8 @@ import java.util.HashMap;
 import java.util.Map;
 
 /**
- * 鐢ㄦ埛涓婁笅鏂囨祴璇曟帶鍒跺櫒
- * 鐢ㄤ簬婕旂ず濡備綍閫氳繃 LoginContextHolder 鑾峰彇褰撳墠鐧诲綍鐢ㄦ埛淇℃伅
+ * 用户上下文测试控制器
+ * 用于演示如何通过 LoginContextHolder 获取当前登录用户信息
  */
 @Slf4j
 @RestController
@@ -21,25 +21,25 @@ import java.util.Map;
 public class UserContextTestController {
 
     /**
-     * 鑾峰彇褰撳墠鐧诲綍鐢ㄦ埛淇℃伅
+     * 获取当前登录用户信息
      * GET /test/user-context/info
      * 
-     * @return 褰撳墠鐧诲綍鐢ㄦ埛鐨勮缁嗕俊鎭?
+     * @return 当前登录用户的详细信息
      */
     @GetMapping("/info")
     public Result<Map<String, Object>> getCurrentUserInfo() {
-        log.info("鏀跺埌鑾峰彇褰撳墠鐢ㄦ埛淇℃伅璇锋眰");
+        log.info("收到获取当前用户信息请求");
         
         try {
-            // 妫€鏌ユ槸鍚﹀凡鐧诲綍
+            // 检查是否已登录
             if (!LoginContextHolder.isLogin()) {
-                return Result.fail("鐢ㄦ埛鏈櫥褰?);
+                return Result.fail("用户未登录");
             }
             
-            // 鑾峰彇鐧诲綍鐢ㄦ埛淇℃伅
+            // 获取登录用户信息
             LoginUser loginUser = LoginContextHolder.getLoginUser();
             
-            // 鏋勫缓鍝嶅簲鏁版嵁
+            // 构建响应数据
             Map<String, Object> userInfo = new HashMap<>();
             userInfo.put("userId", LoginContextHolder.getUserId());
             userInfo.put("username", LoginContextHolder.getUsername());
@@ -58,54 +58,54 @@ public class UserContextTestController {
                 userInfo.put("extInfo", loginUser.getExtInfo());
             }
             
-            log.info("鎴愬姛鑾峰彇鐢ㄦ埛淇℃伅: userId={}", LoginContextHolder.getUserId());
+            log.info("成功获取用户信息: userId={}", LoginContextHolder.getUserId());
             return Result.success(userInfo);
             
         } catch (Exception e) {
-            log.error("鑾峰彇鐢ㄦ埛淇℃伅澶辫触", e);
-            return Result.fail("鑾峰彇鐢ㄦ埛淇℃伅澶辫触");
+            log.error("获取用户信息失败", e);
+            return Result.fail("获取用户信息失败");
         }
     }
 
     /**
-     * 娴嬭瘯鍦ㄤ笟鍔￠€昏緫涓娇鐢?LoginContextHolder
+     * 测试在业务逻辑中使用 LoginContextHolder
      * GET /test/user-context/demo
      * 
-     * @return 婕旂ず缁撴灉
+     * @return 演示结果
      */
     @GetMapping("/demo")
     public Result<Map<String, Object>> demoUsage() {
-        log.info("婕旂ず LoginContextHolder 鐨勪娇鐢?);
+        log.info("演示 LoginContextHolder 的使用");
         
         Map<String, Object> result = new HashMap<>();
         
-        // 1. 妫€鏌ョ櫥褰曠姸鎬?
+        // 1. 检查登录状态
         boolean isLogin = LoginContextHolder.isLogin();
         result.put("isLogin", isLogin);
         
         if (isLogin) {
-            // 2. 鑾峰彇鐢ㄦ埛 ID锛堟渶甯哥敤锛?
+            // 2. 获取用户 ID（最常用）
             Long userId = LoginContextHolder.getUserId();
             result.put("userId", userId);
             
-            // 3. 鑾峰彇鐢ㄦ埛鍚?
+            // 3. 获取用户名
             String username = LoginContextHolder.getUsername();
             result.put("username", username);
             
-            // 4. 鑾峰彇瀹屾暣鐢ㄦ埛瀵硅薄锛堥渶瑕佹洿澶氫俊鎭椂锛?
+            // 4. 获取完整用户对象（需要更多信息时）
             LoginUser loginUser = LoginContextHolder.getLoginUser();
             if (loginUser != null) {
-                result.put("message", String.format("娆㈣繋鍥炴潵锛?s锛佹偍鐨?IP 鏄細%s", 
-                    username != null ? username : "鐢ㄦ埛", 
-                    loginUser.getIpaddr() != null ? loginUser.getIpaddr() : "鏈煡"));
+                result.put("message", String.format("欢迎回来，%s！您的 IP 是：%s", 
+                    username != null ? username : "用户", 
+                    loginUser.getIpaddr() != null ? loginUser.getIpaddr() : "未知"));
                 
-                result.put("device", String.format("娴忚鍣細%s, 鎿嶄綔绯荤粺锛?s", 
+                result.put("device", String.format("浏览器：%s, 操作系统：%s", 
                     loginUser.getBrowser(), loginUser.getOs()));
             }
             
-            log.info("婕旂ず瀹屾垚锛歶serId={}, username={}", userId, username);
+            log.info("演示完成：userId={}, username={}", userId, username);
         } else {
-            result.put("message", "璇峰厛鐧诲綍");
+            result.put("message", "请先登录");
         }
         
         return Result.success(result);

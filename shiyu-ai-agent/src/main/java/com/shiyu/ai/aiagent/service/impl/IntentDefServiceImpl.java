@@ -13,7 +13,7 @@ import org.springframework.stereotype.Service;
 import java.util.List;
 
 /**
- * Intent definition service implementation
+ * 意图定义服务实现层
  */
 @Slf4j
 @Service

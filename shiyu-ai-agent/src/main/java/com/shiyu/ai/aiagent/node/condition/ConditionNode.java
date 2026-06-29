@@ -33,7 +33,7 @@ public class ConditionNode extends BaseNode {
     private ConditionNode(ConditionConfig config) {
         super(config != null ? config : new ConditionConfig());
         this.config = config != null ? config : new ConditionConfig();
-        // 设置节点类型??CONDITION
+        // 设置节点类型为 CONDITION
         this.config.setNodeType(NodeType.CONDITION);
     }
 
@@ -62,7 +62,7 @@ public class ConditionNode extends BaseNode {
         }
 
         /**
-         * 构建并返??ConditionNode 实例
+         * 构建并返回 ConditionNode 实例
          * @return ConditionNode 实例
          */
         public ConditionNode build() {
@@ -77,7 +77,7 @@ public class ConditionNode extends BaseNode {
                 config.getConditionType(), config.getConditionExpression(), config.getDefaultBranch());
         
         try {
-            // 1. 获取条件表达??
+            // 1. 获取条件表达式
             String conditionExpression = input.getParameter(FieldKey.CONDITION_EXPRESSION, config.getConditionExpression());
             String conditionType = input.getParameter(FieldKey.CONDITION_TYPE, config.getConditionType() != null ? config.getConditionType() : "EXPRESSION");
             
@@ -90,7 +90,7 @@ public class ConditionNode extends BaseNode {
             output.setMsg("条件判断执行成功");
             output.addData(FieldKey.CONDITION_RESULT, result);
 
-            // 4. 根据结果设置下一个分??
+            // 4. 根据结果设置下一个分支
             String nextBranch = result ? input.getParameter(FieldKey.TRUE_BRANCH, config.getTrueBranch()) : input.getParameter(FieldKey.DEFAULT_BRANCH, config.getDefaultBranch());
             output.addData(FieldKey.NEXT_NODE, nextBranch);
             output.addData(FieldKey.BRANCH, result ? "true" : "false");
@@ -102,7 +102,7 @@ public class ConditionNode extends BaseNode {
             log.error("条件判断节点执行失败", e);
             NodeOutput output = new NodeOutput();
             output.setSuccess(false);
-            output.setMsg("条件判断节点执行失败?? + e.getMessage());
+            output.setMsg("条件判断节点执行失败：" + e.getMessage());
             // 返回默认分支
             output.addData(FieldKey.NEXT_NODE, config.getDefaultBranch());
             return output;
@@ -141,7 +141,7 @@ public class ConditionNode extends BaseNode {
             return boolValue;
         }
         
-        // 支持简单的比较表达式（??"var == value"??
+        // 支持简单的比较表达式（如 "var == value"）
         if (expression.contains("==")) {
             String[] parts = expression.split("==");
             if (parts.length == 2) {
@@ -159,7 +159,7 @@ public class ConditionNode extends BaseNode {
     private static final ExpressionParser SPEL_PARSER = new SpelExpressionParser();
 
     /**
-     * 评估脚本（使??Spring Expression Language??
+     * 评估脚本（使用 Spring Expression Language）
      * <p>支持 #variableName 引用 state 中的任意字段，支持布尔表达式如 {@code #score > 0.5}</p>
      */
     private boolean evaluateScript(String script, NodeInput input) {

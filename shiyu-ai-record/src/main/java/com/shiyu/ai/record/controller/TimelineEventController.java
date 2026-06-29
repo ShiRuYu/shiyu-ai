@@ -14,9 +14,9 @@ import org.springframework.web.bind.annotation.*;
 import java.util.List;
 
 /**
- * 鏃堕棿杞翠簨浠舵帶鍒跺櫒
+ * 时间轴事件控制器
  */
-@Tag(name = "鏃堕棿杞寸鐞?, description = "涓汉鎴愰暱璁板綍绯荤粺 - 鏃堕棿杞翠簨浠剁鐞?)
+@Tag(name = "时间轴管理", description = "个人成长记录系统 - 时间轴事件管理")
 @RestController
 @RequestMapping("/api/timeline")
 public class TimelineEventController {
@@ -25,9 +25,9 @@ public class TimelineEventController {
     private TimelineEventService timelineEventService;
 
     /**
-     * 鍒嗛〉鏌ヨ鏃堕棿杞翠簨浠跺垪琛?
+     * 分页查询时间轴事件列表
      */
-    @Operation(summary = "鍒嗛〉鏌ヨ鏃堕棿杞翠簨浠跺垪琛?)
+    @Operation(summary = "分页查询时间轴事件列表")
     @GetMapping("/page")
     public Result<PageData<TimelineEventBO>> getPage(
             @RequestParam(required = false, defaultValue = "1") Integer pageNo,
@@ -39,9 +39,9 @@ public class TimelineEventController {
     }
 
     /**
-     * 鏍规嵁ID鏌ヨ鏃堕棿杞翠簨浠?
+     * 根据ID查询时间轴事件
      */
-    @Operation(summary = "鏍规嵁ID鏌ヨ鏃堕棿杞翠簨浠?)
+    @Operation(summary = "根据ID查询时间轴事件")
     @GetMapping("/{id}")
     public Result<TimelineEventBO> getById(@PathVariable Long id) {
         TimelineEventBO event = timelineEventService.getById(id);
@@ -49,9 +49,9 @@ public class TimelineEventController {
     }
 
     /**
-     * 鍒涘缓鏃堕棿杞翠簨浠?
+     * 创建时间轴事件
      */
-    @Operation(summary = "鍒涘缓鏃堕棿杞翠簨浠?)
+    @Operation(summary = "创建时间轴事件")
     @PostMapping
     public Result<TimelineEventBO> create(@Valid @RequestBody TimelineEventBO eventBO) {
         TimelineEventBO created = timelineEventService.create(eventBO);
@@ -59,9 +59,9 @@ public class TimelineEventController {
     }
 
     /**
-     * 鏇存柊鏃堕棿杞翠簨浠?
+     * 更新时间轴事件
      */
-    @Operation(summary = "鏇存柊鏃堕棿杞翠簨浠?)
+    @Operation(summary = "更新时间轴事件")
     @PutMapping
     public Result<Boolean> update(@Valid @RequestBody TimelineEventBO eventBO) {
         boolean updated = timelineEventService.update(eventBO);
@@ -69,9 +69,9 @@ public class TimelineEventController {
     }
 
     /**
-     * 鍒犻櫎鏃堕棿杞翠簨浠?
+     * 删除时间轴事件
      */
-    @Operation(summary = "鍒犻櫎鏃堕棿杞翠簨浠?)
+    @Operation(summary = "删除时间轴事件")
     @DeleteMapping("/{id}")
     public Result<Boolean> delete(@PathVariable Long id) {
         boolean deleted = timelineEventService.delete(id);
@@ -79,9 +79,9 @@ public class TimelineEventController {
     }
 
     /**
-     * 鏌ヨ浜虹墿鐨勫畬鏁存椂闂磋酱
+     * 查询人物的完整时间轴
      */
-    @Operation(summary = "鏌ヨ浜虹墿鐨勫畬鏁存椂闂磋酱")
+    @Operation(summary = "查询人物的完整时间轴")
     @GetMapping("/profile/{profileId}")
     public Result<List<TimelineEventBO>> getTimelineByProfileId(@PathVariable Long profileId) {
         List<TimelineEventBO> timeline = timelineEventService.getTimelineByProfileId(profileId);

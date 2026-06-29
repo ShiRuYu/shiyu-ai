@@ -37,9 +37,9 @@ import java.util.function.Predicate;
  * <p>
  * 应用启动时自动创建并注册示例 Agent:
  * <ul>
- *   <li>simple-assistant p?基础 LLM 问答</li>
- *   <li>rag-knowledge-agent t?知识o?RAG 检索问p?/li>
- *   <li>smart-agent p?意图识别 + 条件路由（闲u?RAG/工具c?/li>
+ *   <li>simple-assistant — 基础 LLM 问答</li>
+ *   <li>rag-knowledge-agent — 知识库 RAG 检索问答</li>
+ *   <li>smart-agent — 意图识别 + 条件路由（闲聊/RAG/工具）</li>
  * </ul>
  */
 @Slf4j
@@ -64,7 +64,7 @@ public class AgentStartupConfig implements ApplicationRunner {
 
     @Override
     public void run(ApplicationArguments args) {
-        log.info("Agent 已改为懒加载模式，示a?Agent 数据已通过 SQL 种子数据初始化，启动时不再预加载");
+        log.info("Agent 已改为懒加载模式，示例 Agent 数据已通过 SQL 种子数据初始化，启动时不再预加载");
     }
 
     // ======================== Agent 1: 基础 LLM 问答 ========================
@@ -77,13 +77,13 @@ public class AgentStartupConfig implements ApplicationRunner {
                     .lc4jService(lc4jService)
                     .config(LlmCallConfig.builder()
                             .nodeName("LLM 回答")
-                            .defaultPrompt("你是一个智能助手，请友好地回答用户的问题)?)
+                            .defaultPrompt("你是一个智能助手，请友好地回答用户的问题。")
                             .stream(false)
                             .build())
                     .build();
 
             builder.agentId("simple-assistant")
-                    .name("简单助一?)
+                    .name("简单助手")
                     .description("基础 LLM 问答助手，直接调用大模型回答用户问题")
                     .version("v1.0.0")
                     .versionDescription("初始版本")
@@ -98,16 +98,16 @@ public class AgentStartupConfig implements ApplicationRunner {
         }
     }
 
-    // ======================== Agent 2: 知识g?RAG 检索问c?========================
+    // ======================== Agent 2: 知识库 RAG 检索问答 ========================
 
     private void createRagKnowledgeAgent() {
         log.info("创建 Agent: rag-knowledge-agent");
         try {
-            // RAG 检索节 ?
+            // RAG 检索节点
             RagRetrievalNode ragRetrieval = RagRetrievalNode.builder()
                     .ragService(ragService)
                     .config(RagRetrievalConfig.builder()
-                            .nodeName("知识库检 ?)
+                            .nodeName("知识库检索")
                             .topK(5)
                             .similarityThreshold(0.6)
                             .build())
@@ -116,7 +116,7 @@ public class AgentStartupConfig implements ApplicationRunner {
             // RAG 增强节点
             RagEnhancementNode ragEnhance = RagEnhancementNode.builder()
                     .config(RagEnhancementConfig.builder()
-                            .nodeName("检索增 ?)
+                            .nodeName("检索增强")
                             .enhancementStrategy("SUMMARIZATION")
                             .contextWindowSize(3)
                             .maxLength(2000)
@@ -134,10 +134,10 @@ public class AgentStartupConfig implements ApplicationRunner {
                             .build())
                     .build();
 
-            // 输出格式 ?
+            // 输出格式化
             OutputFormatNode outputNode = OutputFormatNode.builder()
                     .config(OutputFormatConfig.builder()
-                            .nodeName("格式化输 ?)
+                            .nodeName("格式化输出")
                             .outputFormat("TEXT")
                             .prettyPrint(true)
                             .build())
@@ -145,10 +145,10 @@ public class AgentStartupConfig implements ApplicationRunner {
 
             AgentBuilder builder = new AgentBuilder();
             builder.agentId("rag-knowledge-agent")
-                    .name("知识库问u?)
-                    .description("基于文档知识库的 RAG 检索问答，支持检索、增强、生成流d?)
+                    .name("知识库问答")
+                    .description("基于文档知识库的 RAG 检索问答，支持检索、增强、生成流程")
                     .version("v1.0.0")
-                    .versionDescription("初始版本 - 支持知识库检索问e?)
+                    .versionDescription("初始版本 - 支持知识库检索问答")
                     .addNode("input", DefaultNode.builder().build())
                     .addNode("rag_retrieval", ragRetrieval)
                     .addNode("rag_enhance", ragEnhance)
@@ -173,20 +173,19 @@ public class AgentStartupConfig implements ApplicationRunner {
     private void createSmartAgent() {
         log.info("创建 Agent: smart-agent");
         try {
-            // --- 注册 smart-agent 的自定义意图定义到工=?---
+            // --- 注册 smart-agent 的自定义意图定义到工厂 ---
             IntentDefinitionFactory.register("smart-agent", "general", IntentDefinition.builder()
                     .code(IntentType.CHITCHAT.getCode()).name(IntentType.CHITCHAT.getName())
                     .description(IntentType.CHITCHAT.getDescription())
                     .category("general").priority(50).confidenceThreshold(0.75)
-                    .examples(new String[]{"你好", "最近怎么e?, "今天天气不错", "你在干什 ?, "聊聊天吧"})
+                    .examples(new String[]{"你好", "最近怎么样", "今天天气不错", "你在干什么", "聊聊天吧"})
                     .targetNode("llm_chat").enabled(true).build());
 
             IntentDefinitionFactory.register("smart-agent", "general", IntentDefinition.builder()
                     .code(IntentType.QUESTION.getCode()).name("知识查询")
-                    .description("查询知识库信
-?)
+                    .description("查询知识库信息")
                     .category("general").priority(60).confidenceThreshold(0.8)
-                    .examples(new String[]{"什么是RAG", "Shiyu AI 是什t?})
+                    .examples(new String[]{"什么是RAG", "Shiyu AI 是什么"})
                     .targetNode("rag_retrieval").enabled(true).build());
 
             IntentDefinitionFactory.register("smart-agent", "general", IntentDefinition.builder()
@@ -195,14 +194,14 @@ public class AgentStartupConfig implements ApplicationRunner {
                     .category("general").priority(70).confidenceThreshold(0.85)
                     .examples(new String[]{"查询北京天气", "计算 1+2*3"})
                     .requireSlotFilling(true)
-                    .slots(Maps.newHashMap(Map.of("expression", "数学表达0?)))
+                    .slots(Maps.newHashMap(Map.of("expression", "数学表达式")))
                     .targetNode("tool_call_calculator").enabled(true).build());
 
             IntentDefinitionFactory.register("smart-agent", "general", IntentDefinition.builder()
                     .code(IntentType.WEATHER.getCode()).name(IntentType.WEATHER.getName())
                     .description(IntentType.WEATHER.getDescription())
                     .category("general").priority(65).confidenceThreshold(0.8)
-                    .examples(new String[]{"北京天气怎么g?, "上海今天冷吗"})
+                    .examples(new String[]{"北京天气怎么样", "上海今天冷吗"})
                     .requireSlotFilling(true)
                     .slots(Maps.newHashMap(Map.of("city", "城市名称", "date", "日期（可选）")))
                     .parameterMapping(Maps.newHashMap(Map.of("city", "location")))
@@ -223,16 +222,16 @@ public class AgentStartupConfig implements ApplicationRunner {
                     .lc4jService(lc4jService)
                     .config(LlmCallConfig.builder()
                             .nodeName("闲聊回答")
-                            .defaultPrompt("你是一个友好的 AI 助手，请用轻松自然的语气和用户聊天 ?)
+                            .defaultPrompt("你是一个友好的 AI 助手，请用轻松自然的语气和用户聊天。")
                             .stream(false)
                             .build())
                     .build();
 
-            // --- RAG 检索节 ?---
+            // --- RAG 检索节点 ---
             RagRetrievalNode ragRetrieval = RagRetrievalNode.builder()
                     .ragService(ragService)
                     .config(RagRetrievalConfig.builder()
-                            .nodeName("知识库检 ?)
+                            .nodeName("知识库检索")
                             .topK(3)
                             .build())
                     .build();
@@ -240,7 +239,7 @@ public class AgentStartupConfig implements ApplicationRunner {
             // --- RAG 增强节点 ---
             RagEnhancementNode ragEnhance = RagEnhancementNode.builder()
                     .config(RagEnhancementConfig.builder()
-                            .nodeName("检索增)?)
+                            .nodeName("检索增强")
                             .enhancementStrategy("SUMMARIZATION")
                             .contextWindowSize(3)
                             .build())
@@ -266,12 +265,11 @@ public class AgentStartupConfig implements ApplicationRunner {
                             .build())
                     .build();
 
-            // --- 计算器工具节
-?---
+            // --- 计算器工具节点 ---
             ToolCallNode calcTool = ToolCallNode.builder()
                     .toolService(toolService)
                     .config(ToolCallConfig.builder()
-                            .nodeName("计算器工工?)
+                            .nodeName("计算器工具")
                             .toolName(IntentType.CALCULATOR.getCode())
                             .enableCache(true)
                             .build())
@@ -287,22 +285,22 @@ public class AgentStartupConfig implements ApplicationRunner {
                             .build())
                     .build();
 
-            // --- 输出格式化节T?---
+            // --- 输出格式化节点 ---
             OutputFormatNode outputNode = OutputFormatNode.builder()
                     .config(OutputFormatConfig.builder()
-                            .nodeName("格式化输b?)
+                            .nodeName("格式化输出")
                             .outputFormat("TEXT")
                             .prettyPrint(true)
                             .build())
                     .build();
 
-            // ---  ?AgentBuilder 组装 ---
+            // --- 用 AgentBuilder 组装 ---
             AgentBuilder builder = new AgentBuilder();
             builder.agentId("smart-agent")
                     .name("智能路由助手")
-                    .description("支持意图识别、RAG 知识检索、工具调用、闲聊的全功能智能助l?)
+                    .description("支持意图识别、RAG 知识检索、工具调用、闲聊的全功能智能助手")
                     .version("v1.0.0")
-                    .versionDescription("初始版本 - 全功能智能路m?)
+                    .versionDescription("初始版本 - 全功能智能路由")
 
                     // 节点
                     .addNode("intent", intentNode)
@@ -315,7 +313,7 @@ public class AgentStartupConfig implements ApplicationRunner {
                     .addNode("tool_llm", toolLlmNode)
                     .addNode("output", outputNode)
 
-                    // 意图 ,?条件路由（由 IntentDefinitionFactory 驱动.?
+                    // 意图 → 条件路由（由 IntentDefinitionFactory 驱动）
                     // 新增意图时只需注册 IntentDefinition，路由自动适配
                     .addConditionalEdge("intent", "llm_chat",
                             IntentDefinitionFactory.buildRoutingPredicates(
@@ -326,7 +324,7 @@ public class AgentStartupConfig implements ApplicationRunner {
                     .addEdge("rag_enhance", "rag_llm")
                     .addEdge("rag_llm", "output")
 
-                    // 闲聊 & 工具  ?输出
+                    // 闲聊 & 工具 → 输出
                     .addEdge("llm_chat", "output")
                     .addEdge("tool_call_weather", "tool_llm")
                     .addEdge("tool_call_calculator", "tool_llm")

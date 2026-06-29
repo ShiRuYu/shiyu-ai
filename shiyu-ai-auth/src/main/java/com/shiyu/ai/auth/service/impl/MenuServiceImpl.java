@@ -16,7 +16,7 @@ import java.util.Comparator;
 import java.util.concurrent.TimeUnit;
 
 /**
- * 鑿滃崟鏈嶅姟瀹炵幇绫?
+ * 菜单服务实现类
  */
 @Slf4j
 @Service
@@ -25,8 +25,8 @@ public class MenuServiceImpl implements MenuService {
     private final MenuRepository menuRepository;
 
     /**
-     * 璺敱鑿滃崟缂撳瓨锛歶serId 鈫?鑿滃崟鏍?
-     * 鑿滃崟鏁版嵁鐢辩鐞嗗憳缁存姢锛屽彉鏇撮鐜囨瀬浣庯紝閫傚悎 5 鍒嗛挓鏈湴缂撳瓨
+     * 路由菜单缓存：userId → 菜单树
+     * 菜单数据由管理员维护，变更频率极低，适合 5 分钟本地缓存
      */
     private final Cache<Long, List<MenuBO>> routeMenuCache;
 
@@ -41,33 +41,33 @@ public class MenuServiceImpl implements MenuService {
 
     @Override
     public List<MenuBO> getMenuPermissionsTree() {
-        log.info("鑾峰彇瑙掕壊鏉冮檺鏍?by token");
+        log.info("获取角色权限树 by token");
         return getAllTree();
     }
 
     @Override
     public List<MenuBO> getMenuTree() {
-        log.info("鑾峰彇鏉冮檺鏍?- 鑿滃崟");
+        log.info("获取权限树 - 菜单");
         List<MenuBO> menus = menuRepository.selectAllByType("MENU");
         return buildMenuTree(menus);
     }
 
     @Override
     public List<MenuBO> getAllTree() {
-        log.info("鑾峰彇鏉冮檺鏍?all");
+        log.info("获取权限树 all");
         List<MenuBO> allMenuBOs = menuRepository.selectAll();
         return buildMenuTree(allMenuBOs);
     }
 
     /**
-     * 鏋勫缓鑿滃崟鏍戝舰缁撴瀯锛圤(n) Map 鍒嗙粍锛屾浛浠ｅ師 O(n虏) 閫掑綊锛?
+     * 构建菜单树形结构（O(n) Map 分组，替代原 O(n²) 递归）
      */
     private List<MenuBO> buildMenuTree(List<MenuBO> allMenus) {
         if (allMenus == null || allMenus.isEmpty()) {
             return new ArrayList<>();
         }
 
-        // 涓€娆￠亶鍘嗗缓绔?parentId 鈫?children 鏄犲皠
+        // 一次遍历建立 parentId → children 映射
         Map<Long, List<MenuBO>> childrenMap = new HashMap<>();
         List<MenuBO> roots = new ArrayList<>();
 
@@ -80,7 +80,7 @@ public class MenuServiceImpl implements MenuService {
             }
         }
 
-        // 閫掑綊鎸傝浇瀛愯妭鐐?
+        // 递归挂载子节点
         for (MenuBO root : roots) {
             attachChildren(root, childrenMap);
         }
@@ -99,7 +99,7 @@ public class MenuServiceImpl implements MenuService {
 
     @Override
     public boolean deleteMenu(Long id) {
-        log.info("鍒犻櫎鑿滃崟锛宨d: {}", id);
+        log.info("删除菜单，id: {}", id);
         boolean result = menuRepository.deleteById(id);
         if (result) {
             evictAllRouteMenuCache();
@@ -109,7 +109,7 @@ public class MenuServiceImpl implements MenuService {
 
     @Override
     public boolean createMenu(MenuBO menuBO) {
-        log.info("鏂板鑿滃崟");
+        log.info("新增菜单");
         menuRepository.insert(menuBO);
         evictAllRouteMenuCache();
         return true;
@@ -117,7 +117,7 @@ public class MenuServiceImpl implements MenuService {
 
     @Override
     public boolean updateMenu(Long id, MenuBO menuBO) {
-        log.info("淇敼鑿滃崟锛宨d: {}", id);
+        log.info("修改菜单，id: {}", id);
 
         MenuBO existingMenu = menuRepository.selectById(id);
         if (existingMenu == null) {
@@ -134,7 +134,7 @@ public class MenuServiceImpl implements MenuService {
 
     @Override
     public List<MenuBO> getMenuRoots() {
-        log.info("鑾峰彇鏍硅妭鐐硅彍鍗曪紙parentId 涓?null锛?);
+        log.info("获取根节点菜单（parentId 为 null）");
         List<MenuBO> allMenus = menuRepository.selectAll();
         return allMenus.stream()
                 .filter(m -> m.getParentId() == null)
@@ -145,21 +145,21 @@ public class MenuServiceImpl implements MenuService {
 
     @Override
     public List<MenuBO> getChildrenByParentId(Long parentId) {
-        log.info("鑾峰彇瀛愯彍鍗曪紝parentId: {}", parentId);
+        log.info("获取子菜单，parentId: {}", parentId);
         return menuRepository.selectByParentId(parentId);
     }
 
     @Override
     public List<MenuBO> getButtonsByParentId(Long parentId) {
-        log.info("鑾峰彇鎸夐挳鏉冮檺 by parentId: {}", parentId);
-        // 鐩存帴 SQL 鏌ヨ锛屾浛浠ｅ師 getAllTree() 鍏ㄩ噺鍔犺浇鍚庡啀鍐呭瓨杩囨护
+        log.info("获取按钮权限 by parentId: {}", parentId);
+        // 直接 SQL 查询，替代原 getAllTree() 全量加载后再内存过滤
         return menuRepository.selectByParentIdAndType(parentId, "BUTTON");
     }
 
     @Override
     public List<MenuBO> getMenuTreeByUserId(Long userId) {
-        log.info("鏍规嵁鐢ㄦ埛 ID 鑾峰彇鑿滃崟鏍戯紝userId: {}", userId);
-        // 澶嶇敤鍗?JOIN 鏌ヨ + 寤烘爲
+        log.info("根据用户 ID 获取菜单树，userId: {}", userId);
+        // 复用单 JOIN 查询 + 建树
         List<MenuBO> userMenus = menuRepository.selectMenusByUserId(userId, null);
         if (userMenus.isEmpty()) {
             return new ArrayList<>();
@@ -169,7 +169,7 @@ public class MenuServiceImpl implements MenuService {
 
     @Override
     public List<MenuBO> getMenusByUserIdAndType(Long userId, String type) {
-        log.info("鏍规嵁鐢ㄦ埛 ID 鍜岀被鍨嬭幏鍙栬彍鍗曟爲锛寀serId: {}, type: {}", userId, type);
+        log.info("根据用户 ID 和类型获取菜单树，userId: {}, type: {}", userId, type);
         List<MenuBO> userMenus = menuRepository.selectMenusByUserId(userId, null);
         if (userMenus.isEmpty()) {
             return new ArrayList<>();
@@ -182,61 +182,61 @@ public class MenuServiceImpl implements MenuService {
 
     @Override
     public boolean isMenuNameExists(String name, Long id) {
-        log.info("妫€鏌ヨ彍鍗曞悕绉版槸鍚﹀瓨鍦紝name: {}, id: {}", name, id);
-        // SQL COUNT锛屾浛浠ｅ師鍏ㄨ〃鍔犺浇 + 鍐呭瓨杩囨护
+        log.info("检查菜单名称是否存在，name: {}, id: {}", name, id);
+        // SQL COUNT，替代原全表加载 + 内存过滤
         return menuRepository.existsByName(name, id);
     }
 
     @Override
     public boolean isMenuPathExists(String path, Long id) {
-        log.info("妫€鏌ヨ彍鍗曡矾寰勬槸鍚﹀瓨鍦紝path: {}, id: {}", path, id);
-        // SQL COUNT锛屾浛浠ｅ師鍏ㄨ〃鍔犺浇 + 鍐呭瓨杩囨护
+        log.info("检查菜单路径是否存在，path: {}, id: {}", path, id);
+        // SQL COUNT，替代原全表加载 + 内存过滤
         return menuRepository.existsByPath(path, id);
     }
 
     @Override
     public List<MenuBO> getRouteMenusByUserId(Long userId) {
-        log.info("鑾峰彇鐢ㄦ埛璺敱鑿滃崟锛堟帓闄?BUTTON锛夛紝userId: {}", userId);
+        log.info("获取用户路由菜单（排除 BUTTON），userId: {}", userId);
 
-        // 1. 鏌ョ紦瀛?
+        // 1. 查缓存
         List<MenuBO> cached = routeMenuCache.getIfPresent(userId);
         if (cached != null) {
-            log.debug("璺敱鑿滃崟缂撳瓨鍛戒腑锛寀serId: {}", userId);
+            log.debug("路由菜单缓存命中，userId: {}", userId);
             return cached;
         }
 
-        // 2. 鍗?SQL JOIN 鏌ヨ锛屾浛浠ｅ師鏉ョ殑 鏌ヨ鑹测啋閬嶅巻鏌ヨ彍鍗曗啋鍏ㄨ〃鏌モ啋鍐呭瓨杩囨护 娴佺▼
+        // 2. 单 SQL JOIN 查询，替代原来的 查角色→遍历查菜单→全表查→内存过滤 流程
         List<MenuBO> userMenus = menuRepository.selectMenusByUserId(userId, "BUTTON");
         if (userMenus.isEmpty()) {
-            log.warn("鐢ㄦ埛 {} 娌℃湁鍒嗛厤鑿滃崟", userId);
+            log.warn("用户 {} 没有分配菜单", userId);
             return new ArrayList<>();
         }
 
-        // 3. 寤烘爲
+        // 3. 建树
         List<MenuBO> tree = buildMenuTree(userMenus);
 
-        // 4. 鍐欏叆缂撳瓨
+        // 4. 写入缓存
         routeMenuCache.put(userId, tree);
-        log.info("璺敱鑿滃崟宸茬紦瀛橈紝userId: {}", userId);
+        log.info("路由菜单已缓存，userId: {}", userId);
         return tree;
     }
 
     /**
-     * 娓呴櫎鎸囧畾鐢ㄦ埛鐨勮矾鐢辫彍鍗曠紦瀛?
+     * 清除指定用户的路由菜单缓存
      */
     public void evictRouteMenuCache(Long userId) {
         if (userId != null) {
             routeMenuCache.invalidate(userId);
-            log.debug("璺敱鑿滃崟缂撳瓨宸叉竻闄わ紝userId: {}", userId);
+            log.debug("路由菜单缓存已清除，userId: {}", userId);
         }
     }
 
     /**
-     * 娓呴櫎鎵€鏈夌敤鎴风殑璺敱鑿滃崟缂撳瓨锛堣彍鍗曞鍒犳敼鍚庤皟鐢級
+     * 清除所有用户的路由菜单缓存（菜单增删改后调用）
      */
     public void evictAllRouteMenuCache() {
         routeMenuCache.invalidateAll();
-        log.info("鍏ㄩ儴璺敱鑿滃崟缂撳瓨宸叉竻闄わ紙鑿滃崟缁撴瀯鍙樻洿锛?);
+        log.info("全部路由菜单缓存已清除（菜单结构变更）");
     }
 }
 

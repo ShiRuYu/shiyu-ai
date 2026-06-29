@@ -8,8 +8,8 @@ import jakarta.validation.Valid;
 import org.springframework.web.bind.annotation.*;
 
 /**
- * 楠岃瘉鐮?Controller
- * 鎻愪緵楠岃瘉鐮佺敓鎴愬拰楠岃瘉鍔熻兘
+ * 验证码 Controller
+ * 提供验证码生成和验证功能
  */
 @Slf4j
 @RestController
@@ -23,84 +23,84 @@ public class CaptchaController {
     }
     
     /**
-     * 鑾峰彇楠岃瘉鐮?
-     * @return SVG 鏍煎紡鐨勯獙璇佺爜鍥剧墖
+     * 获取验证码
+     * @return SVG 格式的验证码图片
      */
     @GetMapping("/captcha")
     public Result<CaptchaVO> getCaptcha() {
-        log.info("鏀跺埌楠岃瘉鐮佽姹?);
+        log.info("收到验证码请求");
         
         try {
-            // 鐢熸垚楠岃瘉鐮?
+            // 生成验证码
             CaptchaVO captchaVO = captchaService.generateCaptcha();
             
-            // 杩斿洖缁撴灉
+            // 返回结果
             return Result.success(captchaVO);
             
         } catch (Exception e) {
-            log.error("鐢熸垚楠岃瘉鐮佸け璐?, e);
-            return Result.fail("鐢熸垚楠岃瘉鐮佸け璐?);
+            log.error("生成验证码失败", e);
+            return Result.fail("生成验证码失败");
         }
     }
     
     /**
-     * 楠岃瘉楠岃瘉鐮?
-     * @param request 楠岃瘉璇锋眰锛堝寘鍚?key 鍜?code锛?
-     * @return 楠岃瘉缁撴灉
+     * 验证验证码
+     * @param request 验证请求（包含 key 和 code）
+     * @return 验证结果
      */
     @PostMapping("/captcha/validate")
     public Result<ValidateCaptchaResponse> validateCaptcha(@Valid @RequestBody ValidateCaptchaRequest request) {
-        log.info("鏀跺埌楠岃瘉鐮侀獙璇佽姹傦細key={}", request.getKey());
+        log.info("收到验证码验证请求：key={}", request.getKey());
         
         try {
-            // 楠岃瘉楠岃瘉鐮?
+            // 验证验证码
             boolean valid = captchaService.validateCaptcha(request.getKey(), request.getCode());
             
             ValidateCaptchaResponse response;
             if (valid) {
-                response = new ValidateCaptchaResponse(true, "楠岃瘉鐮佹纭?);
+                response = new ValidateCaptchaResponse(true, "验证码正确");
                 return Result.success(response);
             } else {
-                response = new ValidateCaptchaResponse(false, "楠岃瘉鐮侀敊璇?);
+                response = new ValidateCaptchaResponse(false, "验证码错误");
                 return Result.success(response);
             }
             
         } catch (Exception e) {
-            log.error("楠岃瘉楠岃瘉鐮佸け璐?, e);
-            return Result.fail("楠岃瘉楠岃瘉鐮佸け璐?);
+            log.error("验证验证码失败", e);
+            return Result.fail("验证验证码失败");
         }
     }
     
     /**
-     * 楠岃瘉璇锋眰鍙傛暟
+     * 验证请求参数
      */
     @lombok.Data
     @lombok.AllArgsConstructor
     public static class ValidateCaptchaRequest {
         /**
-         * 楠岃瘉鐮?key
+         * 验证码 key
          */
         private String key;
         
         /**
-         * 鐢ㄦ埛杈撳叆鐨勯獙璇佺爜
+         * 用户输入的验证码
          */
         private String code;
     }
     
     /**
-     * 楠岃瘉鍝嶅簲
+     * 验证响应
      */
     @lombok.Data
     @lombok.AllArgsConstructor
     public static class ValidateCaptchaResponse {
         /**
-         * 鏄惁鎴愬姛
+         * 是否成功
          */
         private Boolean success;
         
         /**
-         * 娑堟伅
+         * 消息
          */
         private String message;
     }

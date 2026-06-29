@@ -362,7 +362,7 @@ public class AgentBuilder {
                 .agentId(agentId)
                 .name(name)
                 .description(description)
-                .versions(new ArrayList<>(List.of(version)))
+                .versions(new HashMap<>(Map.of(version.getVersionNumber(), version)))
                 .currentVersion(versionNumber)
                 .createdAt(System.currentTimeMillis())
                 .updatedAt(System.currentTimeMillis())

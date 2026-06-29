@@ -31,7 +31,7 @@ public class TimezoneController {
 
     @GetMapping("/getTimezoneOptions")
     public Result<List<TimezoneOptionVO>> getTimezoneOptions() {
-        log.info("鑾峰彇绯荤粺鏀寔鐨勬椂鍖洪€夐」鍒楄〃");
+        log.info("获取系统支持的时区选项列表");
         try {
             List<TimezoneOptionVO> options = Arrays.stream(TimezoneEnum.values())
                     .map(timezone -> TimezoneOptionVO.builder()
@@ -39,17 +39,17 @@ public class TimezoneController {
                             .value(timezone.getValue())
                             .build())
                     .collect(Collectors.toList());
-            log.info("鎴愬姛鑾峰彇鏃跺尯閫夐」鍒楄〃锛屽叡 {} 涓?, options.size());
+            log.info("成功获取时区选项列表，共 {} 个", options.size());
             return Result.success(options);
         } catch (Exception e) {
-            log.error("Failed to get timezone options", e);
-            return Result.fail("Failed to get timezone options");
+            log.error("获取时区选项列表失败", e);
+            return Result.fail("获取时区选项列表失败");
         }
     }
 
     @GetMapping("/getTimezone")
     public Result<String> getTimezone() {
-        log.info("鑾峰彇褰撳墠鐢ㄦ埛璁剧疆鐨勬椂鍖?);
+        log.info("获取当前用户设置的时区");
         try {
             Long userId = LoginContextHolder.getUserId();
             String currentTimeZone = TimezoneEnum.ASIA_SHANGHAI.getValue();
@@ -64,31 +64,31 @@ public class TimezoneController {
                 }
             }
 
-            log.info("褰撳墠鏃跺尯锛歿}", currentTimeZone);
+            log.info("当前时区：{}", currentTimeZone);
             return Result.success(currentTimeZone);
         } catch (Exception e) {
-            log.error("鑾峰彇褰撳墠鏃跺尯澶辫触", e);
-            return Result.fail("鑾峰彇褰撳墠鏃跺尯澶辫触");
+            log.error("获取当前时区失败", e);
+            return Result.fail("获取当前时区失败");
         }
     }
 
     @PostMapping("/setTimezone")
     public Result<Void> setTimezone(@Valid @RequestBody SetTimezoneRequest request) {
-        log.info("璁剧疆鐢ㄦ埛鏃跺尯锛歿}", request.getTimezone());
+        log.info("设置用户时区：{}", request.getTimezone());
         try {
             if (!TimezoneEnum.isValid(request.getTimezone())) {
-                log.warn("鏃犳晥鐨勬椂鍖猴細{}", request.getTimezone());
-                return Result.fail("鏃犳晥鐨勬椂鍖?);
+                log.warn("无效的时区：{}", request.getTimezone());
+                return Result.fail("无效的时区");
             }
 
             Long userId = LoginContextHolder.getUserId();
             if (userId == null) {
-                return Result.fail("鐢ㄦ埛鏈櫥褰?);
+                return Result.fail("用户未登录");
             }
 
             UserBO user = userRepository.selectById(userId);
             if (user == null) {
-                return Result.fail("鐢ㄦ埛涓嶅瓨鍦?);
+                return Result.fail("用户不存在");
             }
 
             Map<String, Object> extMap = new HashMap<>();
@@ -102,11 +102,11 @@ public class TimezoneController {
             user.setExtInfo(JSONUtils.toJsonString(extMap));
             userRepository.update(user);
 
-            log.info("鏃跺尯璁剧疆鎴愬姛锛歿}", request.getTimezone());
+            log.info("时区设置成功：{}", request.getTimezone());
             return Result.success();
         } catch (Exception e) {
-            log.error("璁剧疆鏃跺尯澶辫触", e);
-            return Result.fail("璁剧疆鏃跺尯澶辫触");
+            log.error("设置时区失败", e);
+            return Result.fail("设置时区失败");
         }
     }
 }

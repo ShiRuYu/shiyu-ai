@@ -120,7 +120,7 @@ public abstract class BaseNode implements NodeAction<AgentState> {
     }
 
     protected void beforeExecute(AgentState state) {
-        log.info("开始执行节?? {}", config.getNodeName());
+        log.info("开始执行节点: {}", config.getNodeName());
         if ("DEBUG".equalsIgnoreCase(config.getLogLevel())) {
             log.debug("节点配置: {}", config);
         }
@@ -142,11 +142,11 @@ public abstract class BaseNode implements NodeAction<AgentState> {
 
         switch (errorStrategy) {
             case "IGNORE":
-                log.warn("忽略异常，继续执?? {}", e.getMessage());
+                log.warn("忽略异常，继续执行: {}", e.getMessage());
                 return Collections.emptyMap();
 
             case "DEFAULT":
-                log.warn("使用默认值处理异?? {}", e.getMessage());
+                log.warn("使用默认值处理异常: {}", e.getMessage());
                 return createDefaultResult();
 
             case "THROW":
@@ -158,7 +158,7 @@ public abstract class BaseNode implements NodeAction<AgentState> {
 
     protected Map<String, Object> createDefaultResult() {
         return Map.of(
-            NodeFields.FieldKey.ERROR.key(), "使用默认值处??,
+            NodeFields.FieldKey.ERROR.key(), "使用默认值处理",
             "status", "DEFAULT_APPLIED"
         );
     }

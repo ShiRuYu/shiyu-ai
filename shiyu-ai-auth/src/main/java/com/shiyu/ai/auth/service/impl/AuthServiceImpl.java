@@ -62,36 +62,36 @@ public class AuthServiceImpl implements AuthService {
 
     @Override
     public LoginResponseVO login(String username, String password, Long roleId) {
-        log.info("鐢ㄦ埛鐧诲綍寮€濮? username={}", username);
+        log.info("用户登录开始, username={}", username);
 
         try {
             UserBO user = userRepository.selectUserWithRolesByUsername(username);
             if (user == null) {
-                log.warn("鐢ㄦ埛涓嶅瓨鍦?- {}", username);
+                log.warn("用户不存在 - {}", username);
                 return null;
             }
 
             if (!"1".equals(user.getStatus())) {
-                log.warn("鐢ㄦ埛宸茶绂佺敤 - {}", username);
+                log.warn("用户已被禁用 - {}", username);
                 return null;
             }
 
             if (!PasswordUtils.matches(password, user.getPassword())) {
-                log.warn("瀵嗙爜閿欒 - {}", username);
+                log.warn("密码错误 - {}", username);
                 return null;
             }
 
             List<RoleBO> roles = userRepository.selectRolesByUserId(user.getId());
             RoleBO currentRole = resolveCurrentRole(roleId, roles);
 
-            // 鏌ヨ鐢ㄦ埛宸ヤ綔绌洪棿瑙掕壊鍒楄〃
+            // 查询用户工作空间角色列表
             List<UserWorkspaceRoleDO> uwrList = userWorkspaceRoleRepository.selectByUserId(user.getId());
 
-            // 浠?ext_info 瑙ｆ瀽褰撳墠绉熸埛鍜屽伐浣滅┖闂?
+            // 从 ext_info 解析当前租户和工作空间
             Long currentTenantId = resolveCurrentTenantId(user.getExtInfo(), uwrList);
             Long currentWorkspaceId = resolveCurrentWorkspaceId(user.getExtInfo(), uwrList, currentTenantId);
 
-            // 鑾峰彇绉熸埛鍚嶇О
+            // 获取租户名称
             String tenantName = null;
             if (currentTenantId != null) {
                 TenantDO tenant = workspaceTenantRepository.selectTenantById(currentTenantId);
@@ -100,13 +100,13 @@ public class AuthServiceImpl implements AuthService {
                 }
             }
 
-            // 鏇存柊 ext_info
+            // 更新 ext_info
             String loginIp = getClientIp();
             LocalDateTime now = LocalDateTime.now();
             Map<String, Object> extInfoMap = buildExtInfo(user.getExtInfo(), currentRole, currentTenantId, currentWorkspaceId, now, loginIp);
             user.setExtInfo(JSONUtils.toJsonString(extInfoMap));
 
-            // 璁剧疆 LoginUser 涓婁笅鏂囷紙鐢ㄤ簬鑷姩鏇存柊锛?
+            // 设置 LoginUser 上下文（用于自动更新）
             LoginUser loginUser = new LoginUser();
             loginUser.setUserId(user.getId());
             loginUser.setUsername(user.getUsername());
@@ -117,16 +117,16 @@ public class AuthServiceImpl implements AuthService {
                 LoginContextHolder.clearContext();
             }
 
-            // 鐢熸垚 Token
+            // 生成 Token
             SaTokenHelper helper = SaTokenHelper.getInstance();
             String accessToken = helper.loginWithKickout(user.getId());
             SaTokenHelper.clearLoginUserSession();
             long timeout = helper.getTokenTimeout();
 
-            // 鏋勫缓宸ヤ綔绌洪棿涓婁笅鏂囧垪琛?
+            // 构建工作空间上下文列表
             List<WorkspaceContextVO> workspaces = buildWorkspaceContextList(uwrList, currentTenantId);
 
-            // 鏋勫缓绉熸埛鍒楄〃
+            // 构建租户列表
             List<Map<String, Object>> tenantList = buildTenantList(uwrList);
 
             LoginResponseVO response = new LoginResponseVO();
@@ -151,12 +151,12 @@ public class AuthServiceImpl implements AuthService {
             response.setTenants(tenantList);
             response.setWorkspaces(workspaces);
 
-            log.info("鐢ㄦ埛鐧诲綍鎴愬姛, username={}, userId={}, tenantId={}, workspaceId={}, roles={}",
+            log.info("用户登录成功, username={}, userId={}, tenantId={}, workspaceId={}, roles={}",
                     username, user.getId(), currentTenantId, currentWorkspaceId, response.getRoles());
             return response;
 
         } catch (Exception e) {
-            log.error("鐢ㄦ埛鐧诲綍寮傚父", username, e);
+            log.error("用户登录异常", username, e);
             return null;
         }
     }
@@ -305,7 +305,7 @@ public class AuthServiceImpl implements AuthService {
 
     @Override
     public List<String> getAuthCodes(String username) {
-        log.info("鑾峰彇鏉冮檺缂栫爜, username={}", username);
+        log.info("获取权限编码, username={}", username);
         try {
             List<String> codes = authRepository.selectCodesByUsername(username);
             if (codes == null || codes.isEmpty()) {
@@ -313,14 +313,14 @@ public class AuthServiceImpl implements AuthService {
             }
             return codes;
         } catch (Exception e) {
-            log.error("鑾峰彇鏉冮檺缂栫爜寮傚父, username={}", username, e);
+            log.error("获取权限编码异常, username={}", username, e);
             return new ArrayList<>();
         }
     }
 
     @Override
     public List<String> getAuthCodesByUserId(Long userId) {
-        log.info("鑾峰彇鏉冮檺缂栫爜, userId={}", userId);
+        log.info("获取权限编码, userId={}", userId);
         try {
             List<String> codes = authRepository.selectCodesByUserId(userId);
             if (codes == null || codes.isEmpty()) {
@@ -328,43 +328,43 @@ public class AuthServiceImpl implements AuthService {
             }
             return codes;
         } catch (Exception e) {
-            log.error("鑾峰彇鏉冮檺缂栫爜寮傚父, userId={}", userId, e);
+            log.error("获取权限编码异常, userId={}", userId, e);
             return new ArrayList<>();
         }
     }
 
     @Override
     public String refreshToken(String oldToken) {
-        log.info("鍒锋柊Token");
+        log.info("刷新Token");
         try {
             SaTokenHelper helper = SaTokenHelper.getInstance();
             Long userId = helper.getUserIdByToken(oldToken);
             if (userId == null) {
-                log.warn("鏃犳晥鐨刟ccess token");
+                log.warn("无效的access token");
                 return null;
             }
             String newAccessToken = helper.refreshToken(userId);
-            log.info("鍒锋柊Token鎴愬姛, userId={}", userId);
+            log.info("刷新Token成功, userId={}", userId);
             return newAccessToken;
         } catch (Exception e) {
-            log.error("鍒锋柊Token寮傚父", e);
+            log.error("刷新Token异常", e);
             return null;
         }
     }
 
     @Override
     public boolean switchCurrentRole(Long userId, Long roleId) {
-        log.info("鍒囨崲瑙掕壊, userId: {}, roleId: {}", userId, roleId);
+        log.info("切换角色, userId: {}, roleId: {}", userId, roleId);
         try {
             UserBO user = userRepository.selectById(userId);
             if (user == null) {
-                log.warn("鐢ㄦ埛涓嶅瓨鍦? userId: {}", userId);
+                log.warn("用户不存在, userId: {}", userId);
                 return false;
             }
             List<RoleBO> roles = userRepository.selectRolesByUserId(userId);
             RoleBO target = resolveCurrentRole(roleId, roles);
             if (target == null) {
-                log.warn("瑙掕壊涓嶅瓨鍦? userId: {}", userId);
+                log.warn("角色不存在, userId: {}", userId);
                 return false;
             }
 
@@ -378,18 +378,18 @@ public class AuthServiceImpl implements AuthService {
             user.setExtInfo(JSONUtils.toJsonString(extInfoMap));
             userRepository.update(user);
 
-            log.info("鍒囨崲瑙掕壊鎴愬姛, userId: {}, newRole: {}", userId, target.getName());
+            log.info("切换角色成功, userId: {}, newRole: {}", userId, target.getName());
             SaTokenHelper.clearLoginUserSession();
             return true;
         } catch (Exception e) {
-            log.error("鍒囨崲瑙掕壊寮傚父, userId: {}, roleId: {}", userId, roleId, e);
+            log.error("切换角色异常, userId: {}, roleId: {}", userId, roleId, e);
             return false;
         }
     }
 
     @Override
     public boolean switchCurrentTenant(Long userId, Long tenantId) {
-        log.info("鍒囨崲绉熸埛, userId: {}, tenantId: {}", userId, tenantId);
+        log.info("切换租户, userId: {}, tenantId: {}", userId, tenantId);
         try {
             UserBO user = userRepository.selectById(userId);
             if (user == null) return false;
@@ -399,7 +399,7 @@ public class AuthServiceImpl implements AuthService {
             extInfoMap.remove("currentWorkspaceId");
             extInfoMap.remove("currentRole");
 
-            // 鏌ヨ鐢ㄦ埛鍦ㄥ綋鍓嶇鎴蜂笅鐨勫伐浣滅┖闂磋鑹?
+            // 查询用户在当前租户下的工作空间角色
             List<UserWorkspaceRoleDO> uwrList = userWorkspaceRoleRepository.selectByUserId(userId);
             if (uwrList != null && !uwrList.isEmpty()) {
                 UserWorkspaceRoleDO first = uwrList.stream()
@@ -421,18 +421,18 @@ public class AuthServiceImpl implements AuthService {
             user.setExtInfo(JSONUtils.toJsonString(extInfoMap));
             userRepository.update(user);
 
-            log.info("鍒囨崲绉熸埛鎴愬姛, userId: {}, tenantId: {}", userId, tenantId);
+            log.info("切换租户成功, userId: {}, tenantId: {}", userId, tenantId);
             SaTokenHelper.clearLoginUserSession();
             return true;
         } catch (Exception e) {
-            log.error("鍒囨崲绉熸埛寮傚父, userId: {}, tenantId: {}", userId, tenantId, e);
+            log.error("切换租户异常, userId: {}, tenantId: {}", userId, tenantId, e);
             return false;
         }
     }
 
     @Override
     public boolean switchCurrentWorkspace(Long userId, Long workspaceId) {
-        log.info("鍒囨崲宸ヤ綔绌洪棿, userId: {}, workspaceId: {}", userId, workspaceId);
+        log.info("切换工作空间, userId: {}, workspaceId: {}", userId, workspaceId);
         try {
             UserBO user = userRepository.selectById(userId);
             if (user == null) return false;
@@ -440,7 +440,7 @@ public class AuthServiceImpl implements AuthService {
             Map<String, Object> extInfoMap = parseExtInfo(user.getExtInfo());
             extInfoMap.put("currentWorkspaceId", workspaceId);
 
-            // 鏌ヨ鐢ㄦ埛鍦ㄥ綋鍓嶅伐浣滅┖闂翠笅鐨勮鑹?
+            // 查询用户在当前工作空间下的角色
             List<UserWorkspaceRoleDO> uwrList = userWorkspaceRoleRepository.selectByUserId(userId);
             if (uwrList != null && !uwrList.isEmpty()) {
                 UserWorkspaceRoleDO match = uwrList.stream()
@@ -461,11 +461,11 @@ public class AuthServiceImpl implements AuthService {
             user.setExtInfo(JSONUtils.toJsonString(extInfoMap));
             userRepository.update(user);
 
-            log.info("鍒囨崲宸ヤ綔绌洪棿鎴愬姛, userId: {}, workspaceId: {}", userId, workspaceId);
+            log.info("切换工作空间成功, userId: {}, workspaceId: {}", userId, workspaceId);
             SaTokenHelper.clearLoginUserSession();
             return true;
         } catch (Exception e) {
-            log.error("鍒囨崲宸ヤ綔绌洪棿寮傚父, userId: {}, workspaceId: {}", userId, workspaceId, e);
+            log.error("切换工作空间异常, userId: {}, workspaceId: {}", userId, workspaceId, e);
             return false;
         }
     }
@@ -499,18 +499,18 @@ public class AuthServiceImpl implements AuthService {
 
     @Override
     public void logout(String token) {
-        log.info("娉ㄩ攢閫€鍑?);
+        log.info("注销退出");
         try {
             SaTokenHelper helper = SaTokenHelper.getInstance();
             Long userId = helper.getUserIdByToken(token);
             if (userId != null) {
                 helper.logout(userId);
-                log.info("閫€鍑虹櫥褰曟垚鍔? userId={}", userId);
+                log.info("退出登录成功, userId={}", userId);
             } else {
-                log.warn("鏃犳晥鐨則oken, 娉ㄩ攢澶辫触");
+                log.warn("无效的token, 注销失败");
             }
         } catch (Exception e) {
-            log.error("娉ㄩ攢寮傚父", e);
+            log.error("注销异常", e);
         }
     }
 

@@ -13,7 +13,7 @@ import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
 
-@Tag(name = "鏍囩绠＄悊")
+@Tag(name = "标签管理")
 @RestController
 @RequestMapping("/api/tag")
 public class TagController {
@@ -21,7 +21,7 @@ public class TagController {
     @Resource
     private TagService tagService;
 
-    @Operation(summary = "鍒嗛〉鏌ヨ鏍囩鍒楄〃")
+    @Operation(summary = "分页查询标签列表")
     @GetMapping("/page")
     public Result<PageData<TagBO>> getPage(
             @RequestParam(required = false, defaultValue = "1") Integer pageNo,
@@ -31,31 +31,31 @@ public class TagController {
         return Result.success(new PageData<>(page.getRight(), page.getLeft()));
     }
 
-    @Operation(summary = "鏌ヨ鎵€鏈夋爣绛?)
+    @Operation(summary = "查询所有标签")
     @GetMapping("/all")
     public Result<List<TagBO>> getAll() {
         return Result.success(tagService.getAll());
     }
 
-    @Operation(summary = "鏍规嵁ID鏌ヨ鏍囩")
+    @Operation(summary = "根据ID查询标签")
     @GetMapping("/{id}")
     public Result<TagBO> getById(@PathVariable Long id) {
         return Result.success(tagService.getById(id));
     }
 
-    @Operation(summary = "鍒涘缓鏍囩")
+    @Operation(summary = "创建标签")
     @PostMapping
     public Result<TagBO> create(@Valid @RequestBody TagBO tagBO) {
         return Result.success(tagService.create(tagBO));
     }
 
-    @Operation(summary = "鏇存柊鏍囩")
+    @Operation(summary = "更新标签")
     @PutMapping
     public Result<Boolean> update(@Valid @RequestBody TagBO tagBO) {
         return Result.success(tagService.update(tagBO));
     }
 
-    @Operation(summary = "鍒犻櫎鏍囩")
+    @Operation(summary = "删除标签")
     @DeleteMapping("/{id}")
     public Result<Boolean> delete(@PathVariable Long id) {
         return Result.success(tagService.delete(id));

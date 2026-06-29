@@ -12,7 +12,7 @@ import org.springframework.web.bind.annotation.*;
 import java.util.List;
 
 /**
- * 瀛楀吀绠＄悊 Controller
+ * 字典管理 Controller
  */
 @Slf4j
 @RestController
@@ -26,13 +26,13 @@ public class DictController {
     }
 
     /**
-     * 瀛楀吀鍒楄〃 - 鍒嗛〉
+     * 字典列表 - 分页
      */
     @GetMapping("/page")
     public Result<PageData<DictBO>> getDictList(
             @RequestParam(required = false, defaultValue = "1") Integer pageNo,
             @RequestParam(required = false, defaultValue = "10") Integer pageSize) {
-        log.info("鑾峰彇瀛楀吀鍒楄〃锛宲ageNo: {}, pageSize: {}", pageNo, pageSize);
+        log.info("获取字典列表，pageNo: {}, pageSize: {}", pageNo, pageSize);
         
         Pair<Long, List<DictBO>> result = dictService.getAll(pageNo, pageSize);
         PageData<DictBO> pageData = new PageData<>(result.getRight(), result.getLeft());
@@ -40,27 +40,27 @@ public class DictController {
     }
 
     /**
-     * 鏍规嵁ID鏌ヨ瀛楀吀璇︽儏
+     * 根据ID查询字典详情
      */
     @GetMapping("/{id}")
     public Result<DictBO> getDictById(@PathVariable Long id) {
-        log.info("鏌ヨ瀛楀吀璇︽儏锛宨d: {}", id);
+        log.info("查询字典详情，id: {}", id);
         
         DictBO dictBO = dictService.getById(id);
         
         if (dictBO != null) {
             return Result.success(dictBO);
         } else {
-            return Result.fail("瀛楀吀涓嶅瓨鍦?);
+            return Result.fail("字典不存在");
         }
     }
 
     /**
-     * 鏍规嵁瀛楀吀绫诲瀷鏌ヨ瀛楀吀鍒楄〃
+     * 根据字典类型查询字典列表
      */
     @GetMapping("/type/{dictType}")
     public Result<List<DictBO>> getDictByType(@PathVariable String dictType) {
-        log.info("鏍规嵁瀛楀吀绫诲瀷鏌ヨ瀛楀吀鍒楄〃锛宒ictType: {}", dictType);
+        log.info("根据字典类型查询字典列表，dictType: {}", dictType);
         
         List<DictBO> dictList = dictService.getByDictType(dictType);
         
@@ -68,69 +68,69 @@ public class DictController {
     }
 
     /**
-     * 鏂板瀛楀吀
+     * 新增字典
      */
     @PostMapping("")
     public Result<DictBO> createDict(@Valid @RequestBody DictBO dictBO) {
-        log.info("鏂板瀛楀吀");
+        log.info("新增字典");
         
         try {
             DictBO createdDict = dictService.create(dictBO);
             return Result.success(createdDict);
         } catch (Exception e) {
-            log.error("鏂板瀛楀吀澶辫触", e);
-            return Result.fail("鏂板澶辫触");
+            log.error("新增字典失败", e);
+            return Result.fail("新增失败");
         }
     }
 
     /**
-     * 淇敼瀛楀吀
+     * 修改字典
      */
     @PatchMapping("/{id}")
     public Result<DictBO> updateDict(
             @PathVariable Long id,
             @Valid @RequestBody DictBO dictBO) {
-        log.info("淇敼瀛楀吀锛宨d: {}", id);
+        log.info("修改字典，id: {}", id);
         
         try {
             dictBO.setId(id);
             DictBO updatedDict = dictService.update(dictBO);
             return Result.success(updatedDict);
         } catch (Exception e) {
-            log.error("淇敼瀛楀吀澶辫触", e);
-            return Result.fail("淇敼澶辫触");
+            log.error("修改字典失败", e);
+            return Result.fail("修改失败");
         }
     }
 
     /**
-     * 鍒犻櫎瀛楀吀
+     * 删除字典
      */
     @DeleteMapping("/{id}")
     public Result<Void> deleteDict(@PathVariable Long id) {
-        log.info("鍒犻櫎瀛楀吀锛宨d: {}", id);
+        log.info("删除字典，id: {}", id);
         
         try {
             dictService.deleteById(id);
             return Result.success();
         } catch (Exception e) {
-            log.error("鍒犻櫎瀛楀吀澶辫触", e);
-            return Result.fail("鍒犻櫎澶辫触");
+            log.error("删除字典失败", e);
+            return Result.fail("删除失败");
         }
     }
 
     /**
-     * 鎵归噺鍒犻櫎瀛楀吀
+     * 批量删除字典
      */
     @DeleteMapping("/batch")
     public Result<Void> deleteDicts(@RequestBody List<Long> ids) {
-        log.info("鎵归噺鍒犻櫎瀛楀吀锛宨ds: {}", ids);
+        log.info("批量删除字典，ids: {}", ids);
         
         try {
             dictService.deleteByIds(ids);
             return Result.success();
         } catch (Exception e) {
-            log.error("鎵归噺鍒犻櫎瀛楀吀澶辫触", e);
-            return Result.fail("鎵归噺鍒犻櫎澶辫触");
+            log.error("批量删除字典失败", e);
+            return Result.fail("批量删除失败");
         }
     }
 }

@@ -14,7 +14,7 @@ import org.springframework.web.bind.annotation.*;
 import java.util.List;
 
 /**
- * 瑙掕壊绠＄悊 Controller
+ * 角色管理 Controller
  */
 @Slf4j
 @RestController
@@ -28,16 +28,16 @@ public class RoleController {
     }
 
     /**
-     * 瑙掕壊鍒楄〃 - 鍒嗛〉
+     * 角色列表 - 分页
      */
     @GetMapping("/list")
     public Result<RolePageResponse> getRoleList(
             @RequestParam(required = false,name = "page") Integer pageNo,
             @RequestParam(required = false) Integer pageSize,
             @RequestParam(required = false) String name) {
-        log.info("鑾峰彇瑙掕壊鍒楄〃锛宲ageNo: {}, pageSize: {}, name: {}", pageNo, pageSize, name);
+        log.info("获取角色列表，pageNo: {}, pageSize: {}, name: {}", pageNo, pageSize, name);
         
-        // 璁剧疆榛樿鍊?
+        // 设置默认值
         if (pageNo == null) pageNo = 1;
         if (pageSize == null) pageSize = 10;
         
@@ -47,12 +47,12 @@ public class RoleController {
     }
 
     /**
-     * 瑙掕壊鍒楄〃-all
+     * 角色列表-all
      */
     @GetMapping("")
     public Result<List<RoleBO>> getAllRoles(
             @RequestParam(required = false) String status) {
-        log.info("鑾峰彇鎵€鏈夎鑹诧紝status: {}", status);
+        log.info("获取所有角色，status: {}", status);
         
         List<RoleBO> roles = roleService.getAllRoles(status);
         
@@ -60,13 +60,13 @@ public class RoleController {
     }
 
     /**
-     * 淇敼瑙掕壊
+     * 修改角色
      */
     @PatchMapping("/{id}")
     public Result<Void> updateRole(
             @PathVariable Long id,
             @Valid @RequestBody RoleRequest request) {
-        log.info("淇敼瑙掕壊锛宨d: {}", id);
+        log.info("修改角色，id: {}", id);
         
         RoleBO roleBO = MapstructUtils.convert(request, RoleBO.class);
         boolean success = roleService.updateRole(id, roleBO);
@@ -74,18 +74,18 @@ public class RoleController {
         if (success) {
             return Result.success();
         } else {
-            return Result.fail("瑙掕壊涓嶅瓨鍦?);
+            return Result.fail("角色不存在");
         }
     }
 
     /**
-     * 淇敼瑙掕壊
+     * 修改角色
      */
     @PutMapping("/{id}")
     public Result<Void> putRole(
             @PathVariable Long id,
             @Valid @RequestBody RoleRequest request) {
-        log.info("淇敼瑙掕壊锛宨d: {}", id);
+        log.info("修改角色，id: {}", id);
 
         RoleBO roleBO = MapstructUtils.convert(request, RoleBO.class);
         boolean success = roleService.updateRole(id, roleBO);
@@ -93,68 +93,68 @@ public class RoleController {
         if (success) {
             return Result.success();
         } else {
-            return Result.fail("瑙掕壊涓嶅瓨鍦?);
+            return Result.fail("角色不存在");
         }
     }
 
     /**
-     * 鍒犻櫎瑙掕壊
+     * 删除角色
      */
     @DeleteMapping("/{id}")
     public Result<Void> deleteRole(@PathVariable Long id) {
-        log.info("鍒犻櫎瑙掕壊锛宨d: {}", id);
+        log.info("删除角色，id: {}", id);
         
         boolean success = roleService.deleteRole(id);
         
         if (success) {
             return Result.success();
         } else {
-            return Result.fail("瑙掕壊涓嶅瓨鍦?);
+            return Result.fail("角色不存在");
         }
     }
 
     /**
-     * 鍙栨秷鍒嗛厤瑙掕壊 - 鎵归噺
+     * 取消分配角色 - 批量
      */
     @PatchMapping("/users/remove/{id}")
     public Result<Void> removeUserRoles(
             @PathVariable Long id,
             @Valid @RequestBody AssignUserRolesRequest request) {
-        log.info("鍙栨秷鍒嗛厤瑙掕壊锛宨d: {}, userIds: {}", id, request.getUserIds());
+        log.info("取消分配角色，id: {}, userIds: {}", id, request.getUserIds());
         
         boolean success = roleService.removeUserRoles(id, request.getUserIds());
         
         if (success) {
             return Result.success();
         } else {
-            return Result.fail("鍙栨秷鍒嗛厤澶辫触");
+            return Result.fail("取消分配失败");
         }
     }
 
     /**
-     * 鍒嗛厤瑙掕壊 - 鎵归噺
+     * 分配角色 - 批量
      */
     @PatchMapping("/users/add/{id}")
     public Result<Void> assignUserRoles(
             @PathVariable Long id,
             @Valid @RequestBody AssignUserRolesRequest request) {
-        log.info("鍒嗛厤瑙掕壊锛宨d: {}, userIds: {}", id, request.getUserIds());
+        log.info("分配角色，id: {}, userIds: {}", id, request.getUserIds());
         
         boolean success = roleService.assignUserRoles(id, request.getUserIds());
         
         if (success) {
             return Result.success();
         } else {
-            return Result.fail("鍒嗛厤澶辫触");
+            return Result.fail("分配失败");
         }
     }
 
     /**
-     * 鏂板瑙掕壊
+     * 新增角色
      */
     @PostMapping("")
     public Result<Void> createRole(@Valid @RequestBody RoleRequest request) {
-        log.info("鏂板瑙掕壊");
+        log.info("新增角色");
         
         RoleBO roleBO = MapstructUtils.convert(request, RoleBO.class);
         boolean success = roleService.createRole(roleBO);
@@ -162,7 +162,7 @@ public class RoleController {
         if (success) {
             return Result.success();
         } else {
-            return Result.fail("鏂板澶辫触");
+            return Result.fail("新增失败");
         }
     }
 }

@@ -48,7 +48,7 @@ public class AgentLoader {
 
         AgentDefBO agentDef = agentAdminRepository.selectByAgentId(agentId);
         if (agentDef == null || !"1".equals(agentDef.getStatus())) {
-            log.warn("Agent 不存在或已停)? agentId={}", agentId);
+            log.warn("Agent 不存在或已停用: agentId={}", agentId);
             return null;
         }
 
@@ -60,12 +60,12 @@ public class AgentLoader {
 
         AgentVersionBO versionBO = agentAdminRepository.selectVersionByAgentIdAndNumber(agentId, versionNumber);
         if (versionBO == null) {
-            log.warn("Agent 当前版本不存 ? agentId={}, version={}", agentId, versionNumber);
+            log.warn("Agent 当前版本不存在: agentId={}, version={}", agentId, versionNumber);
             return null;
         }
 
         if (versionBO.getGraphConfig() == null || versionBO.getGraphConfig().isEmpty()) {
-            log.warn("Agent 版本 ?Graph 配置: agentId={}, version={}", agentId, versionNumber);
+            log.warn("Agent 版本无 Graph 配置: agentId={}, version={}", agentId, versionNumber);
             return null;
         }
 
@@ -86,7 +86,7 @@ public class AgentLoader {
                     .agentId(agentId)
                     .name(agentDef.getName())
                     .description(agentDef.getDescription())
-                    .versions(new ArrayList<>(List.of(agentVersion)))
+                    .versions(new HashMap<>(Map.of(agentVersion.getVersionNumber(), agentVersion)))
                     .currentVersion(versionNumber)
                     .createdAt(agentDef.getCreateTime().atZone(ZoneId.systemDefault()).toInstant().toEpochMilli())
                     .updatedAt(agentDef.getUpdateTime().atZone(ZoneId.systemDefault()).toInstant().toEpochMilli())
@@ -141,7 +141,7 @@ public class AgentLoader {
         }
 
         graph.validate();
-        log.info("Graph 构建并验证成l? {}", graphName);
+        log.info("Graph 构建并验证成功: {}", graphName);
         return graph;
     }
 
@@ -178,7 +178,7 @@ public class AgentLoader {
                 .defaultTarget(defaultTarget)
                 .nodeMappings(mappings)
                 .functionCondition(state -> {
-                    // 只返回条件键，由 langgraph4j  ?mappings 参数完成节点映射
+                    // 只返回条件键，由 langgraph4j 的 mappings 参数完成节点映射
                     String intentCode = (String) state.getOrDefault("intentCode", "");
                     return intentCode.isEmpty() ? "UNKNOWN" : intentCode;
                 })

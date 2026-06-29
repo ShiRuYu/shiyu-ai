@@ -21,8 +21,8 @@ import java.util.List;
 import java.util.Map;
 
 /**
- * LangChain4j 绀轰緥 Controller
- * 婕旂ず濡備綍浣跨敤 LangChain4j 杩涜澶фā鍨嬭皟鐢?
+ * LangChain4j 示例 Controller
+ * 演示如何使用 LangChain4j 进行大模型调用
  */
 @Slf4j
 @RestController
@@ -43,27 +43,27 @@ public class Lc4jDemoController {
     }
     
     /**
-     * 鍚屾瀵硅瘽鎺ュ彛
-     * @param request 璇锋眰鍙傛暟锛坧latform銆乵odel銆乸rompt锛?
-     * @return AI 鍝嶅簲
+     * 同步对话接口
+     * @param request 请求参数（platform、model、prompt）
+     * @return AI 响应
      */
     @PostMapping("/chat")
     public Result<ChatResponse> chat(@Valid @RequestBody ChatRequest request) {
-        log.info("鏀跺埌鑱婂ぉ璇锋眰锛歱latform={}, model={}, prompt={}", 
+        log.info("收到聊天请求：platform={}, model={}, prompt={}", 
                 request.getPlatform(), request.getModel(), request.getPrompt());
         
         try {
-            // 杞崲涓?Lc4jRequest
+            // 转换为 Lc4jRequest
             Lc4jRequest lc4jRequest = Lc4jRequest.builder()
                     .platform(request.getPlatform())
                     .model(request.getModel())
                     .prompt(request.getPrompt())
                     .build();
             
-            // 璋冪敤 Lc4jService
+            // 调用 Lc4jService
             Lc4jResponse lc4jResponse = lc4jService.call(lc4jRequest);
             
-            log.info("妯″瀷鍝嶅簲鎴愬姛");
+            log.info("模型响应成功");
             ChatResponse response = ChatResponse.builder()
                     .success(lc4jResponse.isSuccess())
                     .content(lc4jResponse.getContent())
@@ -71,37 +71,37 @@ public class Lc4jDemoController {
             return Result.success(response);
                     
         } catch (Exception e) {
-            log.error("妯″瀷璋冪敤澶辫触", e);
+            log.error("模型调用失败", e);
             ChatResponse response = ChatResponse.builder()
                     .success(false)
-                    .content("璋冪敤澶辫触锛? + e.getMessage())
+                    .content("调用失败：" + e.getMessage())
                     .build();
             return Result.success(response);
         }
     }
     
     /**
-     * 娴佸紡瀵硅瘽鎺ュ彛
-     * @param request 璇锋眰鍙傛暟
-     * @return 娴佸紡鍝嶅簲
+     * 流式对话接口
+     * @param request 请求参数
+     * @return 流式响应
      */
     @PostMapping("/chat/stream")
     public Flux<String> streamChat(@Valid @RequestBody ChatRequest request) {
-        log.info("鏀跺埌娴佸紡鑱婂ぉ璇锋眰锛歱latform={}, model={}, prompt={}", 
+        log.info("收到流式聊天请求：platform={}, model={}, prompt={}", 
                 request.getPlatform(), request.getModel(), request.getPrompt());
         
         try {
-            // 杞崲涓?Lc4jRequest
+            // 转换为 Lc4jRequest
             Lc4jRequest lc4jRequest = Lc4jRequest.builder()
                     .platform(request.getPlatform())
                     .model(request.getModel())
                     .prompt(request.getPrompt())
                     .build();
             
-            // 璋冪敤 Lc4jService 鐨勬祦寮忔柟娉?
+            // 调用 Lc4jService 的流式方法
             return lc4jService.stream(lc4jRequest);
         } catch (Exception e) {
-            log.error("娴佸紡瀵硅瘽澶勭悊澶辫触", e);
+            log.error("流式对话处理失败", e);
             return Flux.error(e);
         }
     }
@@ -115,39 +115,39 @@ public class Lc4jDemoController {
     }
     
     /**
-     * 鑱婂ぉ璇锋眰鍙傛暟
+     * 聊天请求参数
      */
     @Data
     public static class ChatRequest {
         /**
-         * 骞冲彴绫诲瀷锛圤PENROUTER, OLLAMA, DEEPSEEK, OPENAI, SILICON_FLOW锛?
+         * 平台类型（OPENROUTER, OLLAMA, DEEPSEEK, OPENAI, SILICON_FLOW）
          */
         private String platform = "SILICON_FLOW";
         
         /**
-         * 妯″瀷鍚嶇О锛屼负绌烘椂浣跨敤骞冲彴榛樿妯″瀷
+         * 模型名称，为空时使用平台默认模型
          */
         private String model;
         
         /**
-         * 鐢ㄦ埛杈撳叆鐨勯棶棰?
+         * 用户输入的问题
          */
         private String prompt;
     }
     
     /**
-     * 鑱婂ぉ鍝嶅簲
+     * 聊天响应
      */
     @Data
     @lombok.Builder
     public static class ChatResponse {
         /**
-         * 鏄惁鎴愬姛
+         * 是否成功
          */
         private boolean success;
         
         /**
-         * AI 鍥炲鍐呭
+         * AI 回复内容
          */
         private String content;
     }
