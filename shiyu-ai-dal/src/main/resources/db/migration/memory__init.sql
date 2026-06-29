@@ -6,7 +6,8 @@
 -- ============================================
 -- 1. 对话消息表（短期记忆）
 -- ============================================
-CREATE TABLE IF NOT EXISTS `conversation_message` (
+DROP TABLE IF EXISTS `conversation_message`;
+CREATE TABLE `conversation_message` (
     `id`          BIGINT       NOT NULL AUTO_INCREMENT,
     `session_id`  VARCHAR(64)  NOT NULL COMMENT '会话ID',
     `user_id`     BIGINT       DEFAULT NULL,
@@ -20,13 +21,14 @@ CREATE TABLE IF NOT EXISTS `conversation_message` (
     `update_time` TIMESTAMP    DEFAULT NULL COMMENT '更新时间',
     PRIMARY KEY (`id`)
 );
-CREATE INDEX IF NOT EXISTS `idx_conv_msg_session` ON `conversation_message` (`session_id`, `create_time`);
+CREATE INDEX `idx_conv_msg_session` ON `conversation_message` (`session_id`, `create_time`);
 COMMENT ON TABLE `conversation_message` IS '对话消息表（短期记忆）';
 
 -- ============================================
 -- 2. 长期记忆表
 -- ============================================
-CREATE TABLE IF NOT EXISTS `long_term_memory` (
+DROP TABLE IF EXISTS `long_term_memory`;
+CREATE TABLE `long_term_memory` (
     `id`            BIGINT       NOT NULL AUTO_INCREMENT,
     `user_id`       BIGINT       DEFAULT NULL,
     `agent_id`      VARCHAR(64)  DEFAULT NULL,
@@ -42,14 +44,15 @@ CREATE TABLE IF NOT EXISTS `long_term_memory` (
     `update_time`   TIMESTAMP    DEFAULT CURRENT_TIMESTAMP,
     PRIMARY KEY (`id`)
 );
-CREATE INDEX IF NOT EXISTS `idx_ltm_user_agent` ON `long_term_memory` (`user_id`, `agent_id`);
-CREATE INDEX IF NOT EXISTS `idx_ltm_category` ON `long_term_memory` (`category`);
+CREATE INDEX `idx_ltm_user_agent` ON `long_term_memory` (`user_id`, `agent_id`);
+CREATE INDEX `idx_ltm_category` ON `long_term_memory` (`category`);
 COMMENT ON TABLE `long_term_memory` IS '长期记忆表';
 
 -- ============================================
 -- 3. Agent 执行记录表
 -- ============================================
-CREATE TABLE IF NOT EXISTS `agent_execution` (
+DROP TABLE IF EXISTS `agent_execution`;
+CREATE TABLE `agent_execution` (
     `id`            BIGINT       NOT NULL AUTO_INCREMENT,
     `execution_id`  VARCHAR(64)  NOT NULL COMMENT '执行唯一ID(UUID)',
     `agent_id`      VARCHAR(64)  NOT NULL COMMENT 'Agent标识',
@@ -72,7 +75,7 @@ CREATE TABLE IF NOT EXISTS `agent_execution` (
     `update_time`   TIMESTAMP    DEFAULT NULL COMMENT '更新时间',
     PRIMARY KEY (`id`)
 );
-CREATE INDEX IF NOT EXISTS `idx_agent_exec_exec_id` ON `agent_execution` (`execution_id`);
-CREATE INDEX IF NOT EXISTS `idx_agent_exec_agent` ON `agent_execution` (`agent_id`, `create_time`);
-CREATE INDEX IF NOT EXISTS `idx_agent_exec_session` ON `agent_execution` (`session_id`);
+CREATE INDEX `idx_agent_exec_exec_id` ON `agent_execution` (`execution_id`);
+CREATE INDEX `idx_agent_exec_agent` ON `agent_execution` (`agent_id`, `create_time`);
+CREATE INDEX `idx_agent_exec_session` ON `agent_execution` (`session_id`);
 COMMENT ON TABLE `agent_execution` IS 'Agent 执行历史记录表';

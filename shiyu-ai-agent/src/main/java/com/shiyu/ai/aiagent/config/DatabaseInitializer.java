@@ -36,8 +36,9 @@ public class DatabaseInitializer implements ApplicationRunner {
             return;
         }
         try (Connection conn = ds.getConnection(); Statement stmt = conn.createStatement()) {
+            stmt.execute("DROP TABLE IF EXISTS `conversation_message`");
             stmt.execute("""
-                CREATE TABLE IF NOT EXISTS `conversation_message` (
+                CREATE TABLE `conversation_message` (
                     `id`          BIGINT       NOT NULL AUTO_INCREMENT,
                     `session_id`  VARCHAR(64)  NOT NULL COMMENT '会话ID',
                     `user_id`     BIGINT       DEFAULT NULL,
@@ -52,10 +53,11 @@ public class DatabaseInitializer implements ApplicationRunner {
                     PRIMARY KEY (`id`)
                 )
             """);
-            stmt.execute("CREATE INDEX IF NOT EXISTS `idx_conv_msg_session` ON `conversation_message` (`session_id`, `create_time`)");
+            stmt.execute("CREATE INDEX `idx_conv_msg_session` ON `conversation_message` (`session_id`, `create_time`)");
 
+            stmt.execute("DROP TABLE IF EXISTS `long_term_memory`");
             stmt.execute("""
-                CREATE TABLE IF NOT EXISTS `long_term_memory` (
+                CREATE TABLE `long_term_memory` (
                     `id`            BIGINT       NOT NULL AUTO_INCREMENT,
                     `user_id`       BIGINT       DEFAULT NULL,
                     `agent_id`      VARCHAR(64)  DEFAULT NULL,
@@ -72,11 +74,12 @@ public class DatabaseInitializer implements ApplicationRunner {
                     PRIMARY KEY (`id`)
                 )
             """);
-            stmt.execute("CREATE INDEX IF NOT EXISTS `idx_ltm_user_agent` ON `long_term_memory` (`user_id`, `agent_id`)");
-            stmt.execute("CREATE INDEX IF NOT EXISTS `idx_ltm_category` ON `long_term_memory` (`category`)");
+            stmt.execute("CREATE INDEX `idx_ltm_user_agent` ON `long_term_memory` (`user_id`, `agent_id`)");
+            stmt.execute("CREATE INDEX `idx_ltm_category` ON `long_term_memory` (`category`)");
 
+            stmt.execute("DROP TABLE IF EXISTS `agent_execution`");
             stmt.execute("""
-                CREATE TABLE IF NOT EXISTS `agent_execution` (
+                CREATE TABLE `agent_execution` (
                     `id`            BIGINT       NOT NULL AUTO_INCREMENT,
                     `execution_id`  VARCHAR(64)  NOT NULL COMMENT '执行唯一ID(UUID)',
                     `agent_id`      VARCHAR(64)  NOT NULL COMMENT 'Agent标识',
@@ -100,39 +103,13 @@ public class DatabaseInitializer implements ApplicationRunner {
                     PRIMARY KEY (`id`)
                 )
             """);
-            stmt.execute("CREATE INDEX IF NOT EXISTS `idx_agent_exec_exec_id` ON `agent_execution` (`execution_id`)");
-            stmt.execute("CREATE INDEX IF NOT EXISTS `idx_agent_exec_agent` ON `agent_execution` (`agent_id`, `create_time`)");
-            stmt.execute("CREATE INDEX IF NOT EXISTS `idx_agent_exec_session` ON `agent_execution` (`session_id`)");
-
-            // 确保旧表包含审计字段（兼容已有数据库文件）
-            migrateColumn(stmt, "agent_execution", "output_data", "TEXT");
-            migrateColumn(stmt, "agent_execution", "error_message", "TEXT");
-            migrateColumn(stmt, "agent_execution", "end_time", "TIMESTAMP");
-            migrateColumn(stmt, "agent_execution", "duration_ms", "BIGINT");
-            migrateColumn(stmt, "agent_execution", "create_by", "VARCHAR(64)");
-            migrateColumn(stmt, "agent_execution", "create_time", "TIMESTAMP DEFAULT CURRENT_TIMESTAMP");
-            migrateColumn(stmt, "agent_execution", "update_by", "VARCHAR(64)");
-            migrateColumn(stmt, "agent_execution", "update_time", "TIMESTAMP");
-            migrateColumn(stmt, "conversation_message", "create_by", "VARCHAR(64)");
-            migrateColumn(stmt, "conversation_message", "create_time", "TIMESTAMP DEFAULT CURRENT_TIMESTAMP");
-            migrateColumn(stmt, "conversation_message", "update_by", "VARCHAR(64)");
-            migrateColumn(stmt, "conversation_message", "update_time", "TIMESTAMP");
-            migrateColumn(stmt, "long_term_memory", "create_by", "VARCHAR(64)");
-            migrateColumn(stmt, "long_term_memory", "create_time", "TIMESTAMP DEFAULT CURRENT_TIMESTAMP");
-            migrateColumn(stmt, "long_term_memory", "update_by", "VARCHAR(64)");
-            migrateColumn(stmt, "long_term_memory", "update_time", "TIMESTAMP");
+            stmt.execute("CREATE INDEX `idx_agent_exec_exec_id` ON `agent_execution` (`execution_id`)");
+            stmt.execute("CREATE INDEX `idx_agent_exec_agent` ON `agent_execution` (`agent_id`, `create_time`)");
+            stmt.execute("CREATE INDEX `idx_agent_exec_session` ON `agent_execution` (`session_id`)");
 
             log.info("数据库表初始化完成: conversation_message, long_term_memory, agent_execution");
         } catch (Exception e) {
             log.error("数据库表初始化失败", e);
-        }
-    }
-
-    private void migrateColumn(Statement stmt, String table, String column, String type) {
-        try {
-            stmt.execute("ALTER TABLE `" + table + "` ADD COLUMN IF NOT EXISTS `" + column + "` " + type);
-        } catch (Exception ignored) {
-            // H2 may not support IF NOT EXISTS in older versions; ignore if column already exists
         }
     }
 }
