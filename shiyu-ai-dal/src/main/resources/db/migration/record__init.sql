@@ -179,17 +179,17 @@ INSERT INTO record (id, event_id, tenant_id, workspace_id, content, mood, locati
 -- 插入附件(图片/视频)
 INSERT INTO media (id, record_id, url, tenant_id, workspace_id, type, size, width, height, sort, bucket, object_key, create_by, update_by) VALUES
 (1, 1, '/media/walking_001.jpg', 1, 0, 'image', 2048576, 1920, 1080, 1, 'growth-photos', '2016/08/walking_001.jpg', 'system', 'system'),
-(1, 1, '/media/walking_002.jpg', 1, 0, 'image', 1856432, 1920, 1080, 2, 'growth-photos', '2016/08/walking_002.jpg', 'system', 'system'),
-(2, 2, '/media/kindergarten_001.jpg', 1, 0, 'image', 3145728, 2048, 1536, 1, 'growth-photos', '2018/09/kindergarten_001.jpg', 'system', 'system'),
-(2, 2, '/media/kindergarten_video.mp4', 1, 0, 'video', 15728640, 1920, 1080, 2, 'growth-videos', '2018/09/kindergarten_001.mp4', 'system', 'system'),
-(3, 3, '/media/park_001.jpg', 1, 0, 'image', 2621440, 1920, 1080, 1, 'growth-photos', '2024/04/park_001.jpg', 'system', 'system'),
-(3, 3, '/media/park_002.jpg', 1, 0, 'image', 2359296, 1920, 1080, 2, 'growth-photos', '2024/04/park_002.jpg', 'system', 'system'),
-(3, 3, '/media/park_kite.jpg', 1, 0, 'image', 1966080, 1920, 1080, 3, 'growth-photos', '2024/04/park_kite.jpg', 'system', 'system'),
-(4, 4, '/media/birth_001.jpg', 1, 0, 'image', 1572864, 1920, 1080, 1, 'growth-photos', '2018/03/birth_001.jpg', 'system', 'system'),
-(5, 5, '/media/call_mama.mp4', 1, 0, 'video', 8388608, 1920, 1080, 1, 'growth-videos', '2019/01/call_mama.mp4', 'system', 'system'),
-(6, 6, '/media/fullmoon_001.jpg', 1, 0, 'image', 2883584, 2048, 1536, 1, 'growth-photos', '2020/10/fullmoon_001.jpg', 'system', 'system'),
-(6, 6, '/media/fullmoon_002.jpg', 1, 0, 'image', 2621440, 2048, 1536, 2, 'growth-photos', '2020/10/fullmoon_002.jpg', 'system', 'system'),
-(7, 7, '/media/rollover.mp4', 1, 0, 'video', 6291456, 1920, 1080, 1, 'growth-videos', '2021/01/rollover.mp4', 'system', 'system');
+(2, 1, '/media/walking_002.jpg', 1, 0, 'image', 1856432, 1920, 1080, 2, 'growth-photos', '2016/08/walking_002.jpg', 'system', 'system'),
+(3, 2, '/media/kindergarten_001.jpg', 1, 0, 'image', 3145728, 2048, 1536, 1, 'growth-photos', '2018/09/kindergarten_001.jpg', 'system', 'system'),
+(4, 2, '/media/kindergarten_video.mp4', 1, 0, 'video', 15728640, 1920, 1080, 2, 'growth-videos', '2018/09/kindergarten_001.mp4', 'system', 'system'),
+(5, 3, '/media/park_001.jpg', 1, 0, 'image', 2621440, 1920, 1080, 1, 'growth-photos', '2024/04/park_001.jpg', 'system', 'system'),
+(6, 3, '/media/park_002.jpg', 1, 0, 'image', 2359296, 1920, 1080, 2, 'growth-photos', '2024/04/park_002.jpg', 'system', 'system'),
+(7, 3, '/media/park_kite.jpg', 1, 0, 'image', 1966080, 1920, 1080, 3, 'growth-photos', '2024/04/park_kite.jpg', 'system', 'system'),
+(8, 4, '/media/birth_001.jpg', 1, 0, 'image', 1572864, 1920, 1080, 1, 'growth-photos', '2018/03/birth_001.jpg', 'system', 'system'),
+(9, 5, '/media/call_mama.mp4', 1, 0, 'video', 8388608, 1920, 1080, 1, 'growth-videos', '2019/01/call_mama.mp4', 'system', 'system'),
+(10, 6, '/media/fullmoon_001.jpg', 1, 0, 'image', 2883584, 2048, 1536, 1, 'growth-photos', '2020/10/fullmoon_001.jpg', 'system', 'system'),
+(11, 6, '/media/fullmoon_002.jpg', 1, 0, 'image', 2621440, 2048, 1536, 2, 'growth-photos', '2020/10/fullmoon_002.jpg', 'system', 'system'),
+(12, 7, '/media/rollover.mp4', 1, 0, 'video', 6291456, 1920, 1080, 1, 'growth-videos', '2021/01/rollover.mp4', 'system', 'system');
 
 -- 插入标签
 INSERT INTO tag (id, name, tenant_id, workspace_id, create_by, update_by) VALUES
