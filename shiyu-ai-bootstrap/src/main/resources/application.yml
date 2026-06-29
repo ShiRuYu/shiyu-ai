@@ -27,6 +27,7 @@ springdoc:
         - com.shiyu.ai.auth.controller
         - com.shiyu.ai.record.controller
         - com.shiyu.ai.common.web.controller
+        - com.shiyu.ai.knowledge.controller
     - group: 'common'
       paths-to-match:
         - '/**'
@@ -47,6 +48,11 @@ springdoc:
         - '/**'
       packages-to-scan:
         - com.shiyu.ai.bootstrap.controller
+    - group: 'knowledge'
+      paths-to-match:
+        - '/**'
+      packages-to-scan:
+        - com.shiyu.ai.knowledge.controller
   swagger-ui:
     path: /swagger-ui/index.html      # Swagger UI 访问路径，默认 /swagger-ui/index.html
     display-request-duration: true  # 显示请求耗时

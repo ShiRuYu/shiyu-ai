@@ -1,0 +1,46 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0"
+         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+    <modelVersion>4.0.0</modelVersion>
+    <parent>
+        <groupId>com.shiyu.ai</groupId>
+        <artifactId>shiyu-ai</artifactId>
+        <version>${revision}</version>
+    </parent>
+
+    <artifactId>shiyu-ai-knowledge</artifactId>
+    <name>shiyu-ai-knowledge</name>
+    <description>Knowledge engine: graph store / learning path / ability model / Ebbinghaus review</description>
+
+    <dependencies>
+        <dependency>
+            <groupId>com.shiyu.ai</groupId>
+            <artifactId>shiyu-ai-dal</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>com.shiyu.ai</groupId>
+            <artifactId>shiyu-ai-model</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>com.shiyu.ai</groupId>
+            <artifactId>shiyu-common-core</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>com.shiyu.ai</groupId>
+            <artifactId>shiyu-common-mybatis</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>com.shiyu.ai</groupId>
+            <artifactId>shiyu-common-web</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>com.yomahub</groupId>
+            <artifactId>roguemap-core</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>org.apache.commons</groupId>
+            <artifactId>commons-lang3</artifactId>
+        </dependency>
+    </dependencies>
+</project>

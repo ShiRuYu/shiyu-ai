@@ -48,6 +48,10 @@
         </dependency>
         <dependency>
             <groupId>com.shiyu.ai</groupId>
+            <artifactId>shiyu-ai-knowledge</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>com.shiyu.ai</groupId>
             <artifactId>shiyu-common-web</artifactId>
         </dependency>
         <dependency>
