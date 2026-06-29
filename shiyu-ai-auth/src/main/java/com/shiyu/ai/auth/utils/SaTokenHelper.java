@@ -100,6 +100,13 @@ public class SaTokenHelper extends LoginHelper {
      */
     public static void saveLoginUserToSession(LoginUser loginUser) {
         StpUtil.getSession().set(SESSION_KEY_LOGIN_USER, loginUser);
+        // 必须持久化 session 修改，否则 extInfo 中存的 SaSession 不包含 loginUser
+        // 服务重启后 Caffeine 缓存丢失，getLoginUserFromSession() 会返回 null
+        try {
+            StpUtil.getStpLogic().getSaTokenDao().updateSession(StpUtil.getSession());
+        } catch (Exception e) {
+            log.error("持久化 session 失败", e);
+        }
     }
 
     /**
@@ -120,6 +127,9 @@ public class SaTokenHelper extends LoginHelper {
     public static void clearLoginUserSession() {
         try {
             StpUtil.getSession().delete(SESSION_KEY_LOGIN_USER);
+            try {
+                StpUtil.getStpLogic().getSaTokenDao().updateSession(StpUtil.getSession());
+            } catch (Exception ignored) { }
         } catch (Exception e) {
             // session 鍙兘宸茶繃鏈燂紝蹇界暐
         }
