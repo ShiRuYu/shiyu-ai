@@ -38,5 +38,6 @@ build/
 ### VS Code ###
 .vscode/
 /.logs/
-/.data/
-/data/
+/.data/**/**.trace.db
+/.data/**/**.lock.db
+/data/**
