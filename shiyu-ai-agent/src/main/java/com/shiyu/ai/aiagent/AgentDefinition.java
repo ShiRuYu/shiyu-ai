@@ -34,6 +34,9 @@ public class AgentDefinition {
 
     public AgentVersion getVersion(String versionNumber) {
         if (versions == null) return null;
-        return versions.get(versionNumber);
+        if (versionNumber == null || versionNumber.isBlank()) {
+            versionNumber = currentVersion;
+        }
+        return versionNumber != null ? versions.get(versionNumber) : null;
     }
 }
