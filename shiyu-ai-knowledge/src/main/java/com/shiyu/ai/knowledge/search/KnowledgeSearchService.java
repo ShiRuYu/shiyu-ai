@@ -47,7 +47,7 @@ public class KnowledgeSearchService {
             meta.put("id", String.valueOf(k.getId()));
             meta.put("code", k.getCode());
             meta.put("name", k.getName());
-            meta.put("subjectCode", k.getSubjectCode());
+            meta.put("category", k.getCategory() != null ? k.getCategory() : "");
             knowledgeRogueMemory.add(content, meta, NS_KNOWLEDGE);
             count++;
         }
@@ -96,7 +96,7 @@ public class KnowledgeSearchService {
                         id,
                         meta.getOrDefault("name", ""),
                         meta.getOrDefault("code", ""),
-                        meta.getOrDefault("subjectCode", ""),
+                        meta.getOrDefault("category", ""),
                         r.getScore()));
             } catch (Exception ignored) {}
         }

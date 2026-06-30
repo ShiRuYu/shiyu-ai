@@ -23,19 +23,13 @@ public class KnowledgeDO extends BaseEntity {
 
     private String name;
 
-    private String subjectCode;
-
-    private Integer grade;
-
-    private String gradeLevel;
-
     private String description;
 
     private Integer difficulty;
 
-    private Integer estimatedTime;
+    private String category;
 
-    private String suitableAge;
+    private String tags;
 
     private Integer status;
 }

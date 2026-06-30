@@ -7,12 +7,9 @@ import jakarta.validation.constraints.NotBlank;
 public record CreateKnowledgeRequest(
         @NotBlank String code,
         @NotBlank String name,
-        @NotBlank String subjectCode,
-        @Min(0) Integer grade,
-        String gradeLevel,
         String description,
         @Min(1) @Max(4) Integer difficulty,
-        Integer estimatedTime,
-        String suitableAge
+        String category,
+        String tags
 ) {
 }

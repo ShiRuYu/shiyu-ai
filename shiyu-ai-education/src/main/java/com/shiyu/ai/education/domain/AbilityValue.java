@@ -1,4 +1,4 @@
-package com.shiyu.ai.knowledge.domain;
+package com.shiyu.ai.education.domain;
 
 import java.time.LocalDateTime;
 

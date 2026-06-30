@@ -86,9 +86,8 @@ public class KnowledgeRelationServiceImpl implements KnowledgeRelationService {
 
     private KnowledgeResponse toSimpleResponse(KnowledgeDO k) {
         return new KnowledgeResponse(
-                k.getId(), k.getCode(), k.getName(), k.getSubjectCode(),
-                k.getGrade(), k.getGradeLevel(), k.getDescription(),
-                k.getDifficulty(), k.getEstimatedTime(), k.getSuitableAge(),
+                k.getId(), k.getCode(), k.getName(), k.getDescription(),
+                k.getDifficulty(), k.getCategory(), k.getTags(),
                 Collections.emptyList(), Collections.emptyList()
         );
     }

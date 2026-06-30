@@ -50,7 +50,7 @@ public class RogueMapGraphStore implements GraphStore, ApplicationRunner {
 
         Map<Long, GraphNode> nodeMap = new HashMap<>();
         for (var k : allNodes) {
-            GraphNode node = GraphNode.of(k.getId(), k.getName(), k.getCode(), k.getSubjectCode(), k.getGrade());
+            GraphNode node = GraphNode.of(k.getId(), k.getName(), k.getCode());
             nodeMap.put(k.getId(), node);
         }
 

@@ -1,7 +1,7 @@
-package com.shiyu.ai.knowledge.ability;
+package com.shiyu.ai.education.ability;
 
-import com.shiyu.ai.knowledge.domain.AbilityValue;
-import com.shiyu.ai.knowledge.domain.BloomTaxonomy;
+import com.shiyu.ai.education.domain.AbilityValue;
+import com.shiyu.ai.education.domain.BloomTaxonomy;
 
 public interface AbilityService {
 

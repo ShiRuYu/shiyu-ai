@@ -102,6 +102,7 @@
         <module>shiyu-ai-rag</module>
         <module>shiyu-ai-mcp</module>
         <module>shiyu-ai-knowledge</module>
+        <module>shiyu-ai-education</module>
         <module>shiyu-ai-agent</module>
         <module>shiyu-ai-auth</module>
         <module>shiyu-ai-record</module>
@@ -397,6 +398,11 @@
                 <artifactId>shiyu-ai-knowledge</artifactId>
                 <version>${revision}</version>
             </dependency>
+        <dependency>
+            <groupId>com.shiyu.ai</groupId>
+            <artifactId>shiyu-ai-education</artifactId>
+            <version>${revision}</version>
+        </dependency>
             <dependency>
                 <groupId>com.yomahub</groupId>
                 <artifactId>roguemap-core</artifactId>

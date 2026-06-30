@@ -54,18 +54,15 @@ public class KnowledgeServiceImpl implements KnowledgeService {
         KnowledgeDO knowledgeDO = new KnowledgeDO();
         knowledgeDO.setCode(request.code());
         knowledgeDO.setName(request.name());
-        knowledgeDO.setSubjectCode(request.subjectCode());
-        knowledgeDO.setGrade(request.grade());
-        knowledgeDO.setGradeLevel(request.gradeLevel());
         knowledgeDO.setDescription(request.description());
         knowledgeDO.setDifficulty(request.difficulty());
-        knowledgeDO.setEstimatedTime(request.estimatedTime());
-        knowledgeDO.setSuitableAge(request.suitableAge());
+        knowledgeDO.setCategory(request.category());
+        knowledgeDO.setTags(request.tags());
         knowledgeDO.setStatus(1);
         knowledgeRepository.insert(knowledgeDO);
 
         GraphNode node = GraphNode.of(knowledgeDO.getId(), knowledgeDO.getName(),
-                knowledgeDO.getCode(), knowledgeDO.getSubjectCode(), knowledgeDO.getGrade());
+                knowledgeDO.getCode());
         knowledgeGraph.addNode(node);
 
         return toResponse(knowledgeDO);
@@ -87,8 +84,11 @@ public class KnowledgeServiceImpl implements KnowledgeService {
         if (request.difficulty() != null) {
             knowledgeDO.setDifficulty(request.difficulty());
         }
-        if (request.estimatedTime() != null) {
-            knowledgeDO.setEstimatedTime(request.estimatedTime());
+        if (request.category() != null) {
+            knowledgeDO.setCategory(request.category());
+        }
+        if (request.tags() != null) {
+            knowledgeDO.setTags(request.tags());
         }
         knowledgeRepository.update(knowledgeDO);
     }
@@ -110,13 +110,10 @@ public class KnowledgeServiceImpl implements KnowledgeService {
                 knowledgeDO.getId(),
                 knowledgeDO.getCode(),
                 knowledgeDO.getName(),
-                knowledgeDO.getSubjectCode(),
-                knowledgeDO.getGrade(),
-                knowledgeDO.getGradeLevel(),
                 knowledgeDO.getDescription(),
                 knowledgeDO.getDifficulty(),
-                knowledgeDO.getEstimatedTime(),
-                knowledgeDO.getSuitableAge(),
+                knowledgeDO.getCategory(),
+                knowledgeDO.getTags(),
                 parentIds,
                 childIds
         );

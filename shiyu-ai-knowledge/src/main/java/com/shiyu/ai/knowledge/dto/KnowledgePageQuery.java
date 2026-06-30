@@ -4,26 +4,16 @@ import com.shiyu.ai.common.core.api.PageQuery;
 
 public class KnowledgePageQuery extends PageQuery {
 
-    private String subjectCode;
-
-    private Integer grade;
+    private String category;
 
     private String keyword;
 
-    public String getSubjectCode() {
-        return subjectCode;
+    public String getCategory() {
+        return category;
     }
 
-    public void setSubjectCode(String subjectCode) {
-        this.subjectCode = subjectCode;
-    }
-
-    public Integer getGrade() {
-        return grade;
-    }
-
-    public void setGrade(Integer grade) {
-        this.grade = grade;
+    public void setCategory(String category) {
+        this.category = category;
     }
 
     public String getKeyword() {

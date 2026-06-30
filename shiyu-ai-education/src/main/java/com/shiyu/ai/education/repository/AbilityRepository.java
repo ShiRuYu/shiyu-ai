@@ -1,4 +1,4 @@
-package com.shiyu.ai.knowledge.repository;
+package com.shiyu.ai.education.repository;
 
 import com.shiyu.ai.dal.dataobject.knowledge.AbilityDO;
 import com.shiyu.ai.dal.mapper.knowledge.AbilityMapper;

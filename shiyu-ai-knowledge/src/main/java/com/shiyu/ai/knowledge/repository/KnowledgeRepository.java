@@ -30,20 +30,6 @@ public class KnowledgeRepository {
         return knowledgeMapper.selectListByQuery(qw);
     }
 
-    public List<KnowledgeDO> findBySubjectCode(String subjectCode) {
-        QueryWrapper qw = QueryWrapper.create();
-        qw.eq(KnowledgeDO::getSubjectCode, subjectCode);
-        qw.eq(KnowledgeDO::getStatus, 1);
-        return knowledgeMapper.selectListByQuery(qw);
-    }
-
-    public List<KnowledgeDO> findByGrade(Integer grade) {
-        QueryWrapper qw = QueryWrapper.create();
-        qw.eq(KnowledgeDO::getGrade, grade);
-        qw.eq(KnowledgeDO::getStatus, 1);
-        return knowledgeMapper.selectListByQuery(qw);
-    }
-
     public List<KnowledgeDO> page(int offset, int limit) {
         QueryWrapper qw = QueryWrapper.create();
         qw.eq(KnowledgeDO::getStatus, 1);

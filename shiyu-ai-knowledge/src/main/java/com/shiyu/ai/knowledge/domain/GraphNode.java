@@ -25,10 +25,6 @@ public class GraphNode implements Serializable {
 
     private String code;
 
-    private String subjectCode;
-
-    private Integer grade;
-
     private List<Long> parentIds;
 
     private List<Long> childIds;
@@ -37,13 +33,11 @@ public class GraphNode implements Serializable {
 
     private List<GraphEdge> edges;
 
-    public static GraphNode of(Long id, String name, String code, String subjectCode, Integer grade) {
+    public static GraphNode of(Long id, String name, String code) {
         return GraphNode.builder()
                 .id(id)
                 .name(name)
                 .code(code)
-                .subjectCode(subjectCode)
-                .grade(grade)
                 .parentIds(new ArrayList<>())
                 .childIds(new ArrayList<>())
                 .relatedIds(new ArrayList<>())

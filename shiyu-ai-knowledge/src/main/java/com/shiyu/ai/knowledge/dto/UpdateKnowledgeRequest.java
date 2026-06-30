@@ -7,6 +7,7 @@ public record UpdateKnowledgeRequest(
         String name,
         String description,
         @Min(1) @Max(4) Integer difficulty,
-        Integer estimatedTime
+        String category,
+        String tags
 ) {
 }
