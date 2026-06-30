@@ -50,6 +50,7 @@ public class DatabaseInitializer implements ApplicationRunner {
             executeSqlFile(stmt, "db/migration/record__init.sql");
             executeSqlFile(stmt, "db/migration/knowledge__init.sql");
             executeSqlFile(stmt, "db/migration/education__init.sql");
+            executeSqlFile(stmt, "db/migration/education_domain__init.sql");
 
             log.info("数据库表初始化完成");
         } catch (Exception e) {

@@ -6,6 +6,7 @@ import com.shiyu.ai.knowledge.service.DocumentKnowledgeService;
 import com.yomahub.roguemap.memory.MemoryResult;
 import com.yomahub.roguemap.memory.RogueMemory;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -22,7 +23,7 @@ public class DocumentKnowledgeServiceImpl implements DocumentKnowledgeService {
     private final RogueMemory knowledgeRogueMemory;
 
     public DocumentKnowledgeServiceImpl(KnowledgeDocumentRepository documentRepository,
-                                        RogueMemory knowledgeRogueMemory) {
+                                        @Qualifier("knowledgeKeywordMemory") RogueMemory knowledgeRogueMemory) {
         this.documentRepository = documentRepository;
         this.knowledgeRogueMemory = knowledgeRogueMemory;
     }

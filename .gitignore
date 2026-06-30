@@ -38,5 +38,5 @@ build/
 ### VS Code ###
 .vscode/
 /.logs/
-/.data/
+/.data/**
 /data/

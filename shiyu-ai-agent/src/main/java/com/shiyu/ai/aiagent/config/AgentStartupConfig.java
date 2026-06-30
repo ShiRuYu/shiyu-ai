@@ -20,7 +20,8 @@ import com.shiyu.ai.model.enums.IntentType;
 import com.shiyu.ai.aiagent.node.output.OutputFormatNode;
 import com.shiyu.ai.aiagent.node.output.OutputFormatConfig;
 import com.shiyu.ai.aiagent.service.AgentService;
-import com.shiyu.ai.core.Lc4jService;
+import com.shiyu.ai.core.ChatEngine;
+import com.shiyu.ai.core.langchain4j.ModelManager;
 import com.shiyu.ai.rag.RagService;
 import com.shiyu.ai.mcp.ToolService;
 import com.shiyu.ai.aiagent.service.IntentService;
@@ -47,16 +48,18 @@ import java.util.function.Predicate;
 public class AgentStartupConfig implements ApplicationRunner {
 
     private final AgentService agentService;
-    private final Lc4jService lc4jService;
+    private final ChatEngine chatEngine;
+    private final ModelManager modelManager;
     private final RagService ragService;
     private final ToolService toolService;
     private final IntentService intentService;
 
-    public AgentStartupConfig(AgentService agentService, Lc4jService lc4jService,
+    public AgentStartupConfig(AgentService agentService, ChatEngine chatEngine, ModelManager modelManager,
                               RagService ragService, ToolService toolService,
                               IntentService intentService) {
         this.agentService = agentService;
-        this.lc4jService = lc4jService;
+        this.chatEngine = chatEngine;
+        this.modelManager = modelManager;
         this.ragService = ragService;
         this.toolService = toolService;
         this.intentService = intentService;
@@ -74,7 +77,8 @@ public class AgentStartupConfig implements ApplicationRunner {
         try {
             AgentBuilder builder = new AgentBuilder();
             LlmCallNode llmNode = LlmCallNode.builder()
-                    .lc4jService(lc4jService)
+                    .chatEngine(chatEngine)
+                    .modelManager(modelManager)
                     .config(LlmCallConfig.builder()
                             .nodeName("LLM 回答")
                             .defaultPrompt("你是一个智能助手，请友好地回答用户的问题。")
@@ -126,7 +130,8 @@ public class AgentStartupConfig implements ApplicationRunner {
 
             // LLM 调用节点（带 RAG 上下文）
             LlmCallNode llmNode = LlmCallNode.builder()
-                    .lc4jService(lc4jService)
+                    .chatEngine(chatEngine)
+                    .modelManager(modelManager)
                     .config(LlmCallConfig.builder()
                             .nodeName("LLM 回答")
                             .promptTemplate("基于以下检索到的文档内容回答用户问题。\n\n{context}\n\n用户问题: {query}")
@@ -219,7 +224,8 @@ public class AgentStartupConfig implements ApplicationRunner {
 
             // --- LLM 闲聊节点 ---
             LlmCallNode chatNode = LlmCallNode.builder()
-                    .lc4jService(lc4jService)
+                    .chatEngine(chatEngine)
+                    .modelManager(modelManager)
                     .config(LlmCallConfig.builder()
                             .nodeName("闲聊回答")
                             .defaultPrompt("你是一个友好的 AI 助手，请用轻松自然的语气和用户聊天。")
@@ -247,7 +253,8 @@ public class AgentStartupConfig implements ApplicationRunner {
 
             // --- LLM 回答节点（RAG 结果上生成） ---
             LlmCallNode ragLlmNode = LlmCallNode.builder()
-                    .lc4jService(lc4jService)
+                    .chatEngine(chatEngine)
+                    .modelManager(modelManager)
                     .config(LlmCallConfig.builder()
                             .nodeName("RAG 回答")
                             .promptTemplate("基于以下检索到的文档回答用户问题。\n\n{context}\n\n用户问题: {query}")
@@ -277,7 +284,8 @@ public class AgentStartupConfig implements ApplicationRunner {
 
             // --- 工具结果 LLM 回答节点 ---
             LlmCallNode toolLlmNode = LlmCallNode.builder()
-                    .lc4jService(lc4jService)
+                    .chatEngine(chatEngine)
+                    .modelManager(modelManager)
                     .config(LlmCallConfig.builder()
                             .nodeName("工具结果回答")
                             .promptTemplate("以下是工具执行结果，请用自然语言回复用户。\n\n工具结果: {toolResult}\n\n用户问题: {query}")

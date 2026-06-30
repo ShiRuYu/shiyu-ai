@@ -3,6 +3,12 @@ shiyu:
   name: "shiyu-agent"
   # 版本
   version: ${revision}
+  # 数据文件目录（RogueMap 持久化文件存储位置）
+  data:
+    dir: ${user.dir}/data
+  # 文件上传目录
+  upload:
+    path: ${user.dir}/uploads
 # 开发环境配置
 server:
   # 服务器的HTTP端口，默认为8080

@@ -79,7 +79,7 @@ public class PlatformProperties {
 
     /**
      * ?????????? API Key
-     * ?? Lc4jModelManager ?? switch-case ???
+     * ?? ModelManager ?? switch-case ???
      */
     public String getApiKey(String platformCode) {
         if (platformCode == null) return null;

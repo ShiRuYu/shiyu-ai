@@ -1,6 +1,6 @@
 package com.shiyu.ai.aiagent.service.impl;
 
-import com.shiyu.ai.core.langchain4j.Lc4jModelManager;
+import com.shiyu.ai.core.langchain4j.ModelManager;
 import com.shiyu.ai.aiagent.node.intent.IntentDefinition;
 import com.shiyu.ai.aiagent.node.intent.IntentDefinitionFactory;
 import com.shiyu.ai.aiagent.service.IntentService;
@@ -19,10 +19,10 @@ import java.util.concurrent.ConcurrentHashMap;
 @Service
 public class IntentServiceImpl implements IntentService {
 
-    private final Lc4jModelManager modelManager;
+    private final ModelManager modelManager;
     private final Map<String, IntentAssistant> assistantCache = new ConcurrentHashMap<>();
 
-    public IntentServiceImpl(Lc4jModelManager modelManager) {
+    public IntentServiceImpl(ModelManager modelManager) {
         this.modelManager = modelManager;
     }
 

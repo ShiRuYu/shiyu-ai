@@ -4,12 +4,16 @@ import com.shiyu.ai.common.core.api.PageData;
 import com.shiyu.ai.common.core.exception.ServiceException;
 import com.shiyu.ai.dal.dataobject.knowledge.KnowledgeDO;
 import com.shiyu.ai.knowledge.dto.CreateKnowledgeRequest;
+import com.shiyu.ai.knowledge.dto.KnowledgeGraphResponse;
 import com.shiyu.ai.knowledge.dto.KnowledgePageQuery;
 import com.shiyu.ai.knowledge.dto.KnowledgeResponse;
 import com.shiyu.ai.knowledge.dto.UpdateKnowledgeRequest;
 import com.shiyu.ai.knowledge.graph.KnowledgeGraph;
 import com.shiyu.ai.knowledge.domain.GraphNode;
 import com.shiyu.ai.knowledge.repository.KnowledgeRepository;
+import com.shiyu.ai.knowledge.search.KnowledgeSearchService;
+import com.shiyu.ai.knowledge.service.DocumentKnowledgeService;
+import com.shiyu.ai.knowledge.service.KnowledgeRelationService;
 import com.shiyu.ai.knowledge.service.KnowledgeService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -26,6 +30,9 @@ public class KnowledgeServiceImpl implements KnowledgeService {
 
     private final KnowledgeRepository knowledgeRepository;
     private final KnowledgeGraph knowledgeGraph;
+    private final KnowledgeSearchService knowledgeSearchService;
+    private final KnowledgeRelationService knowledgeRelationService;
+    private final DocumentKnowledgeService documentKnowledgeService;
 
     @Override
     public KnowledgeResponse getById(Long id) {
@@ -65,6 +72,8 @@ public class KnowledgeServiceImpl implements KnowledgeService {
                 knowledgeDO.getCode());
         knowledgeGraph.addNode(node);
 
+        indexKnowledge(knowledgeDO);
+
         return toResponse(knowledgeDO);
     }
 
@@ -103,9 +112,29 @@ public class KnowledgeServiceImpl implements KnowledgeService {
         knowledgeRepository.deleteById(id);
     }
 
+    @Override
+    public KnowledgeGraphResponse getGraph(Long id) {
+        KnowledgeResponse node = getById(id);
+        List<KnowledgeResponse> parentNodes = knowledgeRelationService.getPrerequisites(id);
+        List<KnowledgeResponse> childNodes = knowledgeRelationService.getSubsequent(id);
+        List<KnowledgeResponse> relatedNodes = knowledgeRelationService.getRelated(id);
+        return new KnowledgeGraphResponse(node, parentNodes, childNodes, relatedNodes);
+    }
+
+    private void indexKnowledge(KnowledgeDO knowledgeDO) {
+        knowledgeSearchService.indexKnowledge(knowledgeDO);
+    }
+
     private KnowledgeResponse toResponse(KnowledgeDO knowledgeDO) {
         List<Long> parentIds = knowledgeGraph.parents(knowledgeDO.getId());
         List<Long> childIds = knowledgeGraph.children(knowledgeDO.getId());
+
+        // 查询关联文档，限制返回前 10 个
+        List<DocumentKnowledgeService.KnowledgeDocumentVO> allDocs =
+                documentKnowledgeService.searchByKnowledgeId(knowledgeDO.getId());
+        List<DocumentKnowledgeService.KnowledgeDocumentVO> limitedDocs =
+                allDocs.stream().limit(10).toList();
+
         return new KnowledgeResponse(
                 knowledgeDO.getId(),
                 knowledgeDO.getCode(),
@@ -115,7 +144,8 @@ public class KnowledgeServiceImpl implements KnowledgeService {
                 knowledgeDO.getCategory(),
                 knowledgeDO.getTags(),
                 parentIds,
-                childIds
+                childIds,
+                limitedDocs
         );
     }
 }

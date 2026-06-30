@@ -33,7 +33,7 @@ public class ResourcesConfig implements WebMvcConfigurer {
 
         // 处理文件上传访问
         registry.addResourceHandler("/uploads/**")
-                .addResourceLocations("file:./uploads/");
+                .addResourceLocations("file:" + System.getProperty("user.dir") + "/uploads/");
     }
 
     /**

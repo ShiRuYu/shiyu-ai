@@ -88,7 +88,7 @@ public class KnowledgeRelationServiceImpl implements KnowledgeRelationService {
         return new KnowledgeResponse(
                 k.getId(), k.getCode(), k.getName(), k.getDescription(),
                 k.getDifficulty(), k.getCategory(), k.getTags(),
-                Collections.emptyList(), Collections.emptyList()
+                Collections.emptyList(), Collections.emptyList(), Collections.emptyList()
         );
     }
 }

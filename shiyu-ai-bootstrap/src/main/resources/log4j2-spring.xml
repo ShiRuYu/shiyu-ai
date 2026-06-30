@@ -8,9 +8,9 @@
         <!--项目名-->
         <property name="project">shiyu-agent</property>
         <!--当天文件保存目录-->
-        <property name="logDir">./.logs</property>
+        <property name="logDir">${sys:user.dir}/.logs</property>
         <!--历史文件保存目录-->
-        <property name="historyLogDir">./.logs/history</property>
+        <property name="historyLogDir">${sys:user.dir}/.logs/history</property>
         <!--如果当天日志文件大于100MB，则存档-->
         <property name="splitSize">100MB</property>
         <!--文件保存个数，这里的30说明可保留30个，即30天-->

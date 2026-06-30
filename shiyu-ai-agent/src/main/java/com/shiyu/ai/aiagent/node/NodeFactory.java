@@ -27,7 +27,8 @@ import com.shiyu.ai.aiagent.node.transform.TransformNode;
 import com.shiyu.ai.aiagent.service.AgentService;
 import com.shiyu.ai.aiagent.service.ExecutionHistoryService;
 import com.shiyu.ai.aiagent.service.IntentService;
-import com.shiyu.ai.core.Lc4jService;
+import com.shiyu.ai.core.ChatEngine;
+import com.shiyu.ai.core.langchain4j.ModelManager;
 import com.shiyu.ai.memory.MemoryService;
 import com.shiyu.ai.rag.RagService;
 import com.shiyu.ai.mcp.ToolService;
@@ -73,7 +74,10 @@ public class NodeFactory {
     private ObjectProvider<RagService> ragServiceProvider;
 
     @Resource
-    private ObjectProvider<Lc4jService> lc4jServiceProvider;
+    private ObjectProvider<ChatEngine> chatEngineProvider;
+
+    @Resource
+    private ObjectProvider<ModelManager> modelManagerProvider;
 
     @Resource
     private ObjectProvider<ToolService> toolServiceProvider;
@@ -119,7 +123,7 @@ public class NodeFactory {
         registerNodeType(NodeType.MEMORY_LONG_TERM, LongTermMemoryConfig.class, config -> LongTermMemoryNode.builder().config(config).build());
         registerNodeType(NodeType.MEMORY_RETRIEVAL, MemoryRetrievalConfig.class, config -> MemoryRetrievalNode.builder().config(config).build());
 
-        // 注册 LLM 调用节点 — DI 由 createNodeWithDependencies() 注入 Lc4jService
+        // 注册 LLM 调用节点 — DI 由 createNodeWithDependencies() 注入 ChatEngine + ModelManager
         registerNodeType(NodeType.LLM_CALL, LlmCallConfig.class, config -> LlmCallNode.builder().config(config).build());
 
         // 注册工具调用节点 — DI 由 createNodeWithDependencies() 注入 ToolService
@@ -193,14 +197,20 @@ public class NodeFactory {
                         .build();
             }
             case LLM_CALL -> {
-                Lc4jService lc4jSvc = lc4jServiceProvider.getIfAvailable();
-                if (lc4jSvc == null) {
-                    log.warn("Lc4jService 未注入，无法创建 LlmCallNode");
-                    throw new IllegalStateException("创建 LLM 调用节点失败：Lc4jService 未注入");
+                ChatEngine chatEngine = chatEngineProvider.getIfAvailable();
+                ModelManager modelManager = modelManagerProvider.getIfAvailable();
+                if (chatEngine == null) {
+                    log.warn("ChatEngine 未注入，无法创建 LlmCallNode");
+                    throw new IllegalStateException("创建 LLM 调用节点失败：ChatEngine 未注入");
+                }
+                if (modelManager == null) {
+                    log.warn("ModelManager 未注入，无法创建 LlmCallNode");
+                    throw new IllegalStateException("创建 LLM 调用节点失败：ModelManager 未注入");
                 }
                 yield LlmCallNode.builder()
                         .config((LlmCallConfig) config)
-                        .lc4jService(lc4jSvc)
+                        .chatEngine(chatEngine)
+                        .modelManager(modelManager)
                         .build();
             }
             case TOOL_CALL -> {

@@ -1,5 +1,7 @@
 package com.shiyu.ai.knowledge.dto;
 
+import com.shiyu.ai.knowledge.service.DocumentKnowledgeService;
+
 import java.util.List;
 
 public record KnowledgeResponse(
@@ -11,6 +13,7 @@ public record KnowledgeResponse(
         String category,
         String tags,
         List<Long> parentIds,
-        List<Long> childIds
+        List<Long> childIds,
+        List<DocumentKnowledgeService.KnowledgeDocumentVO> documents
 ) {
 }
