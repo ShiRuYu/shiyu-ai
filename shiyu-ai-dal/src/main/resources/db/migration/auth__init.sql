@@ -284,16 +284,16 @@ INSERT INTO `menu` (`id`, `name`, `code`, `type`, `parent_id`, `tenant_id`, `pat
 VALUES (200, '用户管理', 'SystemUser', 'MENU', 100, 1, '/system/user', NULL, 'carbon:user-avatar', '/system/user/list', '', TRUE, NULL, NULL, TRUE, '1', 0, 0, '0', '0');
 
 INSERT INTO `menu` (`id`, `name`, `code`, `type`, `parent_id`, `tenant_id`, `path`, `redirect`, `icon`, `component`, `layout`, `keep_alive`, `method`, `description`, `show`, `status`, `order`, `del_flag`, `create_by`, `update_by`) 
-VALUES (20001, '用户查询', 'system:user:query', 'BUTTON', 200, 1, NULL, NULL, NULL, NULL, NULL, 'GET', '查询用户列表', TRUE, '1', 1, 0, '0', '0');
+VALUES (20001, '用户查询', 'system:user:query', 'BUTTON', 200, 1, NULL, NULL, NULL, NULL, NULL, NULL, 'GET', '查询用户列表', TRUE, '1', 1, 0, '0', '0');
 
 INSERT INTO `menu` (`id`, `name`, `code`, `type`, `parent_id`, `tenant_id`, `path`, `redirect`, `icon`, `component`, `layout`, `keep_alive`, `method`, `description`, `show`, `status`, `order`, `del_flag`, `create_by`, `update_by`) 
-VALUES (20002, '用户新增', 'system:user:create', 'BUTTON', 200, 1, NULL, NULL, NULL, NULL, NULL, 'POST', '新增用户', TRUE, '1', 2, 0, '0', '0');
+VALUES (20002, '用户新增', 'system:user:create', 'BUTTON', 200, 1, NULL, NULL, NULL, NULL, NULL, NULL, 'POST', '新增用户', TRUE, '1', 2, 0, '0', '0');
 
 INSERT INTO `menu` (`id`, `name`, `code`, `type`, `parent_id`, `tenant_id`, `path`, `redirect`, `icon`, `component`, `layout`, `keep_alive`, `method`, `description`, `show`, `status`, `order`, `del_flag`, `create_by`, `update_by`) 
-VALUES (20003, '用户修改', 'system:user:update', 'BUTTON', 200, 1, NULL, NULL, NULL, NULL, NULL, 'PUT', '修改用户', TRUE, '1', 3, 0, '0', '0');
+VALUES (20003, '用户修改', 'system:user:update', 'BUTTON', 200, 1, NULL, NULL, NULL, NULL, NULL, NULL, 'PUT', '修改用户', TRUE, '1', 3, 0, '0', '0');
 
 INSERT INTO `menu` (`id`, `name`, `code`, `type`, `parent_id`, `tenant_id`, `path`, `redirect`, `icon`, `component`, `layout`, `keep_alive`, `method`, `description`, `show`, `status`, `order`, `del_flag`, `create_by`, `update_by`) 
-VALUES (20004, '用户删除', 'system:user:delete', 'BUTTON', 200, 1, NULL, NULL, NULL, NULL, NULL, 'DELETE', '删除用户', TRUE, '1', 4, 0, '0', '0');
+VALUES (20004, '用户删除', 'system:user:delete', 'BUTTON', 200, 1, NULL, NULL, NULL, NULL, NULL, NULL, 'DELETE', '删除用户', TRUE, '1', 4, 0, '0', '0');
 INSERT INTO `menu` (`id`, `name`, `code`, `type`, `parent_id`, `tenant_id`, `path`, `redirect`, `icon`, `component`, `layout`, `keep_alive`, `method`, `description`, `show`, `status`, `order`, `del_flag`, `create_by`, `update_by`) 
 VALUES (201, '菜单管理', 'SystemMenu', 'MENU', 100, 1, '/system/menu', NULL, 'carbon:menu', '/system/menu/list', '', TRUE, NULL, NULL, TRUE, '1', 1, 0, '0', '0');
 
@@ -322,46 +322,46 @@ INSERT INTO `menu` (`id`, `name`, `code`, `type`, `parent_id`, `tenant_id`, `pat
 VALUES (203, '角色管理', 'SystemRole', 'MENU', 100, 1, '/system/role', NULL, 'carbon:user-role', '/system/role/list', '', TRUE, NULL, NULL, TRUE, '1', 3, 0, '0', '0');
 
 INSERT INTO `menu` (`id`, `name`, `code`, `type`, `parent_id`, `tenant_id`, `path`, `redirect`, `icon`, `component`, `layout`, `keep_alive`, `method`, `description`, `show`, `status`, `order`, `del_flag`, `create_by`, `update_by`) 
-VALUES (20301, '角色查询', 'system:role:query', 'BUTTON', 203, 1, NULL, NULL, NULL, NULL, NULL, 'GET', '查询角色列表', TRUE, '1', 1, 0, '0', '0');
+VALUES (20301, '角色查询', 'system:role:query', 'BUTTON', 203, 1, NULL, NULL, NULL, NULL, NULL, NULL, 'GET', '查询角色列表', TRUE, '1', 1, 0, '0', '0');
 
 INSERT INTO `menu` (`id`, `name`, `code`, `type`, `parent_id`, `tenant_id`, `path`, `redirect`, `icon`, `component`, `layout`, `keep_alive`, `method`, `description`, `show`, `status`, `order`, `del_flag`, `create_by`, `update_by`) 
-VALUES (20302, '角色新增', 'system:role:create', 'BUTTON', 203, 1, NULL, NULL, NULL, NULL, NULL, 'POST', '新增角色', TRUE, '1', 2, 0, '0', '0');
+VALUES (20302, '角色新增', 'system:role:create', 'BUTTON', 203, 1, NULL, NULL, NULL, NULL, NULL, NULL, 'POST', '新增角色', TRUE, '1', 2, 0, '0', '0');
 
 INSERT INTO `menu` (`id`, `name`, `code`, `type`, `parent_id`, `tenant_id`, `path`, `redirect`, `icon`, `component`, `layout`, `keep_alive`, `method`, `description`, `show`, `status`, `order`, `del_flag`, `create_by`, `update_by`) 
-VALUES (20303, '角色修改', 'system:role:update', 'BUTTON', 203, 1, NULL, NULL, NULL, NULL, NULL, 'PUT', '修改角色信息', TRUE, '1', 3, 0, '0', '0');
+VALUES (20303, '角色修改', 'system:role:update', 'BUTTON', 203, 1, NULL, NULL, NULL, NULL, NULL, NULL, 'PUT', '修改角色信息', TRUE, '1', 3, 0, '0', '0');
 
 INSERT INTO `menu` (`id`, `name`, `code`, `type`, `parent_id`, `tenant_id`, `path`, `redirect`, `icon`, `component`, `layout`, `keep_alive`, `method`, `description`, `show`, `status`, `order`, `del_flag`, `create_by`, `update_by`) 
-VALUES (20304, '角色删除', 'system:role:delete', 'BUTTON', 203, 1, NULL, NULL, NULL, NULL, NULL, 'DELETE', '删除角色', TRUE, '1', 4, 0, '0', '0');
+VALUES (20304, '角色删除', 'system:role:delete', 'BUTTON', 203, 1, NULL, NULL, NULL, NULL, NULL, NULL, 'DELETE', '删除角色', TRUE, '1', 4, 0, '0', '0');
 
 INSERT INTO `menu` (`id`, `name`, `code`, `type`, `parent_id`, `tenant_id`, `path`, `redirect`, `icon`, `component`, `layout`, `keep_alive`, `method`, `description`, `show`, `status`, `order`, `del_flag`, `create_by`, `update_by`) 
 VALUES (204, '字典管理', 'SystemDict', 'MENU', 100, 1, '/system/dict', NULL, 'carbon:data-table', '/common/dict/list', '', TRUE, NULL, NULL, TRUE, '1', 4, 0, '0', '0');
 
 INSERT INTO `menu` (`id`, `name`, `code`, `type`, `parent_id`, `tenant_id`, `path`, `redirect`, `icon`, `component`, `layout`, `keep_alive`, `method`, `description`, `show`, `status`, `order`, `del_flag`, `create_by`, `update_by`) 
-VALUES (20401, '字典查询', 'system:dict:query', 'BUTTON', 204, 1, NULL, NULL, NULL, NULL, NULL, 'GET', '查询字典列表', TRUE, '1', 1, 0, '0', '0');
+VALUES (20401, '字典查询', 'system:dict:query', 'BUTTON', 204, 1, NULL, NULL, NULL, NULL, NULL, NULL, 'GET', '查询字典列表', TRUE, '1', 1, 0, '0', '0');
 
 INSERT INTO `menu` (`id`, `name`, `code`, `type`, `parent_id`, `tenant_id`, `path`, `redirect`, `icon`, `component`, `layout`, `keep_alive`, `method`, `description`, `show`, `status`, `order`, `del_flag`, `create_by`, `update_by`) 
-VALUES (20402, '字典新增', 'system:dict:create', 'BUTTON', 204, 1, NULL, NULL, NULL, NULL, NULL, 'POST', '新增字典', TRUE, '1', 2, 0, '0', '0');
+VALUES (20402, '字典新增', 'system:dict:create', 'BUTTON', 204, 1, NULL, NULL, NULL, NULL, NULL, NULL, 'POST', '新增字典', TRUE, '1', 2, 0, '0', '0');
 
 INSERT INTO `menu` (`id`, `name`, `code`, `type`, `parent_id`, `tenant_id`, `path`, `redirect`, `icon`, `component`, `layout`, `keep_alive`, `method`, `description`, `show`, `status`, `order`, `del_flag`, `create_by`, `update_by`) 
-VALUES (20403, '字典修改', 'system:dict:update', 'BUTTON', 204, 1, NULL, NULL, NULL, NULL, NULL, 'PATCH', '修改字典', TRUE, '1', 3, 0, '0', '0');
+VALUES (20403, '字典修改', 'system:dict:update', 'BUTTON', 204, 1, NULL, NULL, NULL, NULL, NULL, NULL, 'PATCH', '修改字典', TRUE, '1', 3, 0, '0', '0');
 
 INSERT INTO `menu` (`id`, `name`, `code`, `type`, `parent_id`, `tenant_id`, `path`, `redirect`, `icon`, `component`, `layout`, `keep_alive`, `method`, `description`, `show`, `status`, `order`, `del_flag`, `create_by`, `update_by`) 
-VALUES (20404, '字典删除', 'system:dict:delete', 'BUTTON', 204, 1, NULL, NULL, NULL, NULL, NULL, 'DELETE', '删除字典', TRUE, '1', 4, 0, '0', '0');
+VALUES (20404, '字典删除', 'system:dict:delete', 'BUTTON', 204, 1, NULL, NULL, NULL, NULL, NULL, NULL, 'DELETE', '删除字典', TRUE, '1', 4, 0, '0', '0');
 
 INSERT INTO `menu` (`id`, `name`, `code`, `type`, `parent_id`, `tenant_id`, `path`, `redirect`, `icon`, `component`, `layout`, `keep_alive`, `method`, `description`, `show`, `status`, `order`, `del_flag`, `create_by`, `update_by`) 
 VALUES (205, '租户管理', 'SystemTenant', 'MENU', 100, 1, '/system/tenant', NULL, 'carbon:enterprise', '/system/tenant/list', '', TRUE, NULL, NULL, TRUE, '1', 5, 0, '0', '0');
 
 INSERT INTO `menu` (`id`, `name`, `code`, `type`, `parent_id`, `tenant_id`, `path`, `redirect`, `icon`, `component`, `layout`, `keep_alive`, `method`, `description`, `show`, `status`, `order`, `del_flag`, `create_by`, `update_by`) 
-VALUES (20501, '租户查询', 'system:tenant:query', 'BUTTON', 205, 1, NULL, NULL, NULL, NULL, NULL, 'GET', '查询租户列表', TRUE, '1', 1, 0, '0', '0');
+VALUES (20501, '租户查询', 'system:tenant:query', 'BUTTON', 205, 1, NULL, NULL, NULL, NULL, NULL, NULL, 'GET', '查询租户列表', TRUE, '1', 1, 0, '0', '0');
 
 INSERT INTO `menu` (`id`, `name`, `code`, `type`, `parent_id`, `tenant_id`, `path`, `redirect`, `icon`, `component`, `layout`, `keep_alive`, `method`, `description`, `show`, `status`, `order`, `del_flag`, `create_by`, `update_by`) 
-VALUES (20502, '租户新增', 'system:tenant:create', 'BUTTON', 205, 1, NULL, NULL, NULL, NULL, NULL, 'POST', '新增租户', TRUE, '1', 2, 0, '0', '0');
+VALUES (20502, '租户新增', 'system:tenant:create', 'BUTTON', 205, 1, NULL, NULL, NULL, NULL, NULL, NULL, 'POST', '新增租户', TRUE, '1', 2, 0, '0', '0');
 
 INSERT INTO `menu` (`id`, `name`, `code`, `type`, `parent_id`, `tenant_id`, `path`, `redirect`, `icon`, `component`, `layout`, `keep_alive`, `method`, `description`, `show`, `status`, `order`, `del_flag`, `create_by`, `update_by`) 
-VALUES (20503, '租户修改', 'system:tenant:update', 'BUTTON', 205, 1, NULL, NULL, NULL, NULL, NULL, 'PUT', '修改租户', TRUE, '1', 3, 0, '0', '0');
+VALUES (20503, '租户修改', 'system:tenant:update', 'BUTTON', 205, 1, NULL, NULL, NULL, NULL, NULL, NULL, 'PUT', '修改租户', TRUE, '1', 3, 0, '0', '0');
 
 INSERT INTO `menu` (`id`, `name`, `code`, `type`, `parent_id`, `tenant_id`, `path`, `redirect`, `icon`, `component`, `layout`, `keep_alive`, `method`, `description`, `show`, `status`, `order`, `del_flag`, `create_by`, `update_by`) 
-VALUES (20504, '租户删除', 'system:tenant:delete', 'BUTTON', 205, 1, NULL, NULL, NULL, NULL, NULL, 'DELETE', '删除租户', TRUE, '1', 4, 0, '0', '0');
+VALUES (20504, '租户删除', 'system:tenant:delete', 'BUTTON', 205, 1, NULL, NULL, NULL, NULL, NULL, NULL, 'DELETE', '删除租户', TRUE, '1', 4, 0, '0', '0');
 
 -- ==================== 日常记录模块 ====================
 
@@ -372,31 +372,31 @@ INSERT INTO `menu` (`id`, `name`, `code`, `type`, `parent_id`, `tenant_id`, `pat
 VALUES (401, '人物管理', 'RecordProfile', 'MENU', 400, 1, '/record/profile', NULL, 'mdi:account-multiple', '/record/profile/list', '', TRUE, NULL, '人物信息管理', TRUE, '1', 1, 0, '0', '0');
 
 INSERT INTO `menu` (`id`, `name`, `code`, `type`, `parent_id`, `tenant_id`, `path`, `redirect`, `icon`, `component`, `layout`, `keep_alive`, `method`, `description`, `show`, `status`, `order`, `del_flag`, `create_by`, `update_by`) 
-VALUES (40101, '人物查询', 'record:profile:query', 'BUTTON', 401, 1, NULL, NULL, NULL, NULL, NULL, 'GET', '查询人物列表', TRUE, '1', 1, 0, '0', '0');
+VALUES (40101, '人物查询', 'record:profile:query', 'BUTTON', 401, 1, NULL, NULL, NULL, NULL, NULL, NULL, 'GET', '查询人物列表', TRUE, '1', 1, 0, '0', '0');
 
 INSERT INTO `menu` (`id`, `name`, `code`, `type`, `parent_id`, `tenant_id`, `path`, `redirect`, `icon`, `component`, `layout`, `keep_alive`, `method`, `description`, `show`, `status`, `order`, `del_flag`, `create_by`, `update_by`) 
-VALUES (40102, '人物新增', 'record:profile:add', 'BUTTON', 401, 1, NULL, NULL, NULL, NULL, NULL, 'POST', '新增人物', TRUE, '1', 2, 0, '0', '0');
+VALUES (40102, '人物新增', 'record:profile:add', 'BUTTON', 401, 1, NULL, NULL, NULL, NULL, NULL, NULL, 'POST', '新增人物', TRUE, '1', 2, 0, '0', '0');
 
 INSERT INTO `menu` (`id`, `name`, `code`, `type`, `parent_id`, `tenant_id`, `path`, `redirect`, `icon`, `component`, `layout`, `keep_alive`, `method`, `description`, `show`, `status`, `order`, `del_flag`, `create_by`, `update_by`) 
-VALUES (40103, '人物修改', 'record:profile:edit', 'BUTTON', 401, 1, NULL, NULL, NULL, NULL, NULL, 'PUT', '修改人物信息', TRUE, '1', 3, 0, '0', '0');
+VALUES (40103, '人物修改', 'record:profile:edit', 'BUTTON', 401, 1, NULL, NULL, NULL, NULL, NULL, NULL, 'PUT', '修改人物信息', TRUE, '1', 3, 0, '0', '0');
 
 INSERT INTO `menu` (`id`, `name`, `code`, `type`, `parent_id`, `tenant_id`, `path`, `redirect`, `icon`, `component`, `layout`, `keep_alive`, `method`, `description`, `show`, `status`, `order`, `del_flag`, `create_by`, `update_by`) 
-VALUES (40104, '人物删除', 'record:profile:remove', 'BUTTON', 401, 1, NULL, NULL, NULL, NULL, NULL, 'DELETE', '删除人物', TRUE, '1', 4, 0, '0', '0');
+VALUES (40104, '人物删除', 'record:profile:remove', 'BUTTON', 401, 1, NULL, NULL, NULL, NULL, NULL, NULL, 'DELETE', '删除人物', TRUE, '1', 4, 0, '0', '0');
 
 INSERT INTO `menu` (`id`, `name`, `code`, `type`, `parent_id`, `tenant_id`, `path`, `redirect`, `icon`, `component`, `layout`, `keep_alive`, `method`, `description`, `show`, `status`, `order`, `del_flag`, `create_by`, `update_by`) 
 VALUES (402, '时间轴管理', 'RecordTimeline', 'MENU', 400, 1, '/record/timeline', NULL, 'mdi:timeline', '/record/timeline/list', '', TRUE, NULL, '时间轴事件管理', TRUE, '1', 2, 0, '0', '0');
 
 INSERT INTO `menu` (`id`, `name`, `code`, `type`, `parent_id`, `tenant_id`, `path`, `redirect`, `icon`, `component`, `layout`, `keep_alive`, `method`, `description`, `show`, `status`, `order`, `del_flag`, `create_by`, `update_by`) 
-VALUES (40201, '时间轴查询', 'record:timeline:query', 'BUTTON', 402, 1, NULL, NULL, NULL, NULL, NULL, 'GET', '查询时间轴事件列表', TRUE, '1', 1, 0, '0', '0');
+VALUES (40201, '时间轴查询', 'record:timeline:query', 'BUTTON', 402, 1, NULL, NULL, NULL, NULL, NULL, NULL, 'GET', '查询时间轴事件列表', TRUE, '1', 1, 0, '0', '0');
 
 INSERT INTO `menu` (`id`, `name`, `code`, `type`, `parent_id`, `tenant_id`, `path`, `redirect`, `icon`, `component`, `layout`, `keep_alive`, `method`, `description`, `show`, `status`, `order`, `del_flag`, `create_by`, `update_by`) 
-VALUES (40202, '时间轴新增', 'record:timeline:add', 'BUTTON', 402, 1, NULL, NULL, NULL, NULL, NULL, 'POST', '新增时间轴事件', TRUE, '1', 2, 0, '0', '0');
+VALUES (40202, '时间轴新增', 'record:timeline:add', 'BUTTON', 402, 1, NULL, NULL, NULL, NULL, NULL, NULL, 'POST', '新增时间轴事件', TRUE, '1', 2, 0, '0', '0');
 
 INSERT INTO `menu` (`id`, `name`, `code`, `type`, `parent_id`, `tenant_id`, `path`, `redirect`, `icon`, `component`, `layout`, `keep_alive`, `method`, `description`, `show`, `status`, `order`, `del_flag`, `create_by`, `update_by`) 
-VALUES (40203, '时间轴修改', 'record:timeline:edit', 'BUTTON', 402, 1, NULL, NULL, NULL, NULL, NULL, 'PUT', '修改时间轴事件', TRUE, '1', 3, 0, '0', '0');
+VALUES (40203, '时间轴修改', 'record:timeline:edit', 'BUTTON', 402, 1, NULL, NULL, NULL, NULL, NULL, NULL, 'PUT', '修改时间轴事件', TRUE, '1', 3, 0, '0', '0');
 
 INSERT INTO `menu` (`id`, `name`, `code`, `type`, `parent_id`, `tenant_id`, `path`, `redirect`, `icon`, `component`, `layout`, `keep_alive`, `method`, `description`, `show`, `status`, `order`, `del_flag`, `create_by`, `update_by`) 
-VALUES (40204, '时间轴删除', 'record:timeline:remove', 'BUTTON', 402, 1, NULL, NULL, NULL, NULL, NULL, 'DELETE', '删除时间轴事件', TRUE, '1', 4, 0, '0', '0');
+VALUES (40204, '时间轴删除', 'record:timeline:remove', 'BUTTON', 402, 1, NULL, NULL, NULL, NULL, NULL, NULL, 'DELETE', '删除时间轴事件', TRUE, '1', 4, 0, '0', '0');
 
 -- ==================== 智能体模块 ====================
 
@@ -410,31 +410,31 @@ INSERT INTO `menu` (`id`, `name`, `code`, `type`, `parent_id`, `tenant_id`, `pat
 VALUES (503, '平台管理', 'CommonPlatform', 'MENU', 500, 1, '/agent/platform', NULL, 'carbon:cloud', '/agent/platform/list', '', TRUE, NULL, 'AI平台管理', TRUE, '1', 3, 0, '0', '0');
 
 INSERT INTO `menu` (`id`, `name`, `code`, `type`, `parent_id`, `tenant_id`, `path`, `redirect`, `icon`, `component`, `layout`, `keep_alive`, `method`, `description`, `show`, `status`, `order`, `del_flag`, `create_by`, `update_by`) 
-VALUES (50301, '平台查询', 'common:platform:query', 'BUTTON', 503, 1, NULL, NULL, NULL, NULL, NULL, 'GET', '查询平台列表', TRUE, '1', 1, 0, '0', '0');
+VALUES (50301, '平台查询', 'common:platform:query', 'BUTTON', 503, 1, NULL, NULL, NULL, NULL, NULL, NULL, 'GET', '查询平台列表', TRUE, '1', 1, 0, '0', '0');
 
 INSERT INTO `menu` (`id`, `name`, `code`, `type`, `parent_id`, `tenant_id`, `path`, `redirect`, `icon`, `component`, `layout`, `keep_alive`, `method`, `description`, `show`, `status`, `order`, `del_flag`, `create_by`, `update_by`) 
-VALUES (50302, '平台新增', 'common:platform:create', 'BUTTON', 503, 1, NULL, NULL, NULL, NULL, NULL, 'POST', '新增平台', TRUE, '1', 2, 0, '0', '0');
+VALUES (50302, '平台新增', 'common:platform:create', 'BUTTON', 503, 1, NULL, NULL, NULL, NULL, NULL, NULL, 'POST', '新增平台', TRUE, '1', 2, 0, '0', '0');
 
 INSERT INTO `menu` (`id`, `name`, `code`, `type`, `parent_id`, `tenant_id`, `path`, `redirect`, `icon`, `component`, `layout`, `keep_alive`, `method`, `description`, `show`, `status`, `order`, `del_flag`, `create_by`, `update_by`) 
-VALUES (50303, '平台修改', 'common:platform:update', 'BUTTON', 503, 1, NULL, NULL, NULL, NULL, NULL, 'PATCH', '修改平台', TRUE, '1', 3, 0, '0', '0');
+VALUES (50303, '平台修改', 'common:platform:update', 'BUTTON', 503, 1, NULL, NULL, NULL, NULL, NULL, NULL, 'PATCH', '修改平台', TRUE, '1', 3, 0, '0', '0');
 
 INSERT INTO `menu` (`id`, `name`, `code`, `type`, `parent_id`, `tenant_id`, `path`, `redirect`, `icon`, `component`, `layout`, `keep_alive`, `method`, `description`, `show`, `status`, `order`, `del_flag`, `create_by`, `update_by`) 
-VALUES (50304, '平台删除', 'common:platform:delete', 'BUTTON', 503, 1, NULL, NULL, NULL, NULL, NULL, 'DELETE', '删除平台', TRUE, '1', 4, 0, '0', '0');
+VALUES (50304, '平台删除', 'common:platform:delete', 'BUTTON', 503, 1, NULL, NULL, NULL, NULL, NULL, NULL, 'DELETE', '删除平台', TRUE, '1', 4, 0, '0', '0');
 
 INSERT INTO `menu` (`id`, `name`, `code`, `type`, `parent_id`, `tenant_id`, `path`, `redirect`, `icon`, `component`, `layout`, `keep_alive`, `method`, `description`, `show`, `status`, `order`, `del_flag`, `create_by`, `update_by`) 
 VALUES (504, '模型管理', 'CommonModel', 'MENU', 500, 1, '/agent/model', NULL, 'carbon:ai-generate', '/agent/model/list', '', TRUE, NULL, 'AI模型管理', TRUE, '1', 4, 0, '0', '0');
 
 INSERT INTO `menu` (`id`, `name`, `code`, `type`, `parent_id`, `tenant_id`, `path`, `redirect`, `icon`, `component`, `layout`, `keep_alive`, `method`, `description`, `show`, `status`, `order`, `del_flag`, `create_by`, `update_by`) 
-VALUES (50401, '模型查询', 'common:model:query', 'BUTTON', 504, 1, NULL, NULL, NULL, NULL, NULL, 'GET', '查询模型列表', TRUE, '1', 1, 0, '0', '0');
+VALUES (50401, '模型查询', 'common:model:query', 'BUTTON', 504, 1, NULL, NULL, NULL, NULL, NULL, NULL, 'GET', '查询模型列表', TRUE, '1', 1, 0, '0', '0');
 
 INSERT INTO `menu` (`id`, `name`, `code`, `type`, `parent_id`, `tenant_id`, `path`, `redirect`, `icon`, `component`, `layout`, `keep_alive`, `method`, `description`, `show`, `status`, `order`, `del_flag`, `create_by`, `update_by`) 
-VALUES (50402, '模型新增', 'common:model:create', 'BUTTON', 504, 1, NULL, NULL, NULL, NULL, NULL, 'POST', '新增模型', TRUE, '1', 2, 0, '0', '0');
+VALUES (50402, '模型新增', 'common:model:create', 'BUTTON', 504, 1, NULL, NULL, NULL, NULL, NULL, NULL, 'POST', '新增模型', TRUE, '1', 2, 0, '0', '0');
 
 INSERT INTO `menu` (`id`, `name`, `code`, `type`, `parent_id`, `tenant_id`, `path`, `redirect`, `icon`, `component`, `layout`, `keep_alive`, `method`, `description`, `show`, `status`, `order`, `del_flag`, `create_by`, `update_by`) 
-VALUES (50403, '模型修改', 'common:model:update', 'BUTTON', 504, 1, NULL, NULL, NULL, NULL, NULL, 'PATCH', '修改模型', TRUE, '1', 3, 0, '0', '0');
+VALUES (50403, '模型修改', 'common:model:update', 'BUTTON', 504, 1, NULL, NULL, NULL, NULL, NULL, NULL, 'PATCH', '修改模型', TRUE, '1', 3, 0, '0', '0');
 
 INSERT INTO `menu` (`id`, `name`, `code`, `type`, `parent_id`, `tenant_id`, `path`, `redirect`, `icon`, `component`, `layout`, `keep_alive`, `method`, `description`, `show`, `status`, `order`, `del_flag`, `create_by`, `update_by`) 
-VALUES (50404, '模型删除', 'common:model:delete', 'BUTTON', 504, 1, NULL, NULL, NULL, NULL, NULL, 'DELETE', '删除模型', TRUE, '1', 4, 0, '0', '0');
+VALUES (50404, '模型删除', 'common:model:delete', 'BUTTON', 504, 1, NULL, NULL, NULL, NULL, NULL, NULL, 'DELETE', '删除模型', TRUE, '1', 4, 0, '0', '0');
 
 INSERT INTO `menu` (`id`, `name`, `code`, `type`, `parent_id`, `tenant_id`, `path`, `redirect`, `icon`, `component`, `layout`, `keep_alive`, `method`, `description`, `show`, `status`, `order`, `del_flag`, `create_by`, `update_by`) 
 VALUES (505, '版本管理', 'AgentVersion', 'MENU', 500, 1, '/agent/admin/edit', NULL, 'carbon:version', '/agent/admin/agent-edit', '', FALSE, NULL, 'Agent 版本管理与 Graph 编排（隐藏菜单，请从编辑页面进入）', FALSE, '1', 5, 0, '0', '0');
