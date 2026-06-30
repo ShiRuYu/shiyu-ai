@@ -17,14 +17,14 @@
 | [06-接口规范.md](./06-接口规范.md) | REST API 全量定义(学习/题库/考试/AI Agent) |
 | [07-开发规范.md](./07-开发规范.md) | DDD 分层、命名、异常处理、日志、测试规范 |
 
-### 改造实施（待执行）
+### 改造实施
 
 | 文档 | 说明 | 状态 |
 |------|------|------|
-| [08-改造方案.md](./08-改造方案.md) | **当前状态分析 → 目标架构 → 5 个 Phase 详细执行计划** | ✅ 已定稿 |
-| [09-模块拆分指南.md](./09-模块拆分指南.md) | **Phase 1 实操：6 个新模块 pom + 160+ 文件迁移 + 包名映射** | ✅ 已定稿 |
-| [10-教育域开发指南.md](./10-教育域开发指南.md) | Phase 2-4 实操：Knowledge/Education 模块 + Agent 对接 | ✅ 已定稿 |
-| [11-验证检查清单.md](./11-验证检查清单.md) | 每 Phase 验收命令 + 12 项启动检查 + 常见故障速查 | ✅ 已定稿 |
+| [08-改造方案.md](./08-改造方案.md) | **架构演进：单体 → 12 模块 → 教育平台** | ✅ |
+| [09-模块拆分指南.md](./09-模块拆分指南.md) | **Phase 1 实操：实际模块结构 + 包名映射 + 依赖关系** | ✅ |
+| [10-教育域开发指南.md](./10-教育域开发指南.md) | Phase 2-4 实操：Knowledge/Education 模块 + Agent 对接 | ✅ |
+| [11-验证检查清单.md](./11-验证检查清单.md) | 每 Phase 验收命令 + 12 项启动检查 + 常见故障速查 | ✅ |
 
 ### 路线图
 
@@ -37,38 +37,30 @@
 ## 推荐执行顺序
 
 ```
-Week 1-2: 阅读 00-07 文档，理解架构和接口
-              ↓
-Week 3-4: 执行 08 + 09 → Phase 1 (模块拆分)
-              ↓
-Week 5-8: 执行 10   → Phase 2 (知识引擎)
-              ↓
-Week 9-14: 执行 10  → Phase 3 (教育业务域)
-              ↓
-Week 15-20: 执行 10 → Phase 4 (Agent/LiteFlow/MCP)
+Phase 1 ✅ — 模块拆分 (12 模块，编译通过)
+     ↓
+Phase 2 ✅ — 知识引擎 (shiyu-ai-knowledge, RogueMap DAG)
+     ↓
+Phase 3 🔜 — 教育业务域 (shiyu-ai-education)
+     ↓
+Phase 4 ⏳ — 教育 Agent + LiteFlow + MCP
 ```
-
-**每个 Phase 结束后，用 11-验证检查清单.md 验收。**
-
----
 
 ## 当前项目状态
 
 | 项 | 状态 |
 |----|------|
-| Java 21 + Spring Boot 4.1 + Spring AI 2.0 | ✅ 已就位 |
-| LangChain4j 多平台适配 (5 平台) | ✅ 已就位 |
-| LangGraph4j 图引擎 (12 种节点) | ✅ 已就位 |
-| Sa-Token 多租户 RBAC | ✅ 已就位 |
-| MyBatis-Flex + H2 (可切 MySQL) | ✅ 已就位 |
-| LiteFlow 依赖声明 | ✅ 已声明，未实现 Chain |
-| MCP 配置 | ✅ 已声明，未接入 |
-| **模块拆分（Phase 1）** | 🔜 **下一步** |
-| **知识引擎（Phase 2）** | ⏳ 待启动 |
-| **教育业务域（Phase 3）** | ⏳ 待启动 |
-| **教育 Agent（Phase 4）** | ⏳ 待启动 |
-
----
+| Java 21 + Spring Boot 4.1 | ✅ |
+| LangChain4j 多平台适配 (5 平台) | ✅ |
+| LangGraph4j 图引擎 (12 种节点) | ✅ |
+| Sa-Token 多租户 RBAC | ✅ |
+| MyBatis-Flex + H2 (可切 MySQL) | ✅ |
+| **模块拆分 (Phase 1)** | ✅ **12 模块编译通过** |
+| **知识引擎 (Phase 2)** | ✅ **shiyu-ai-knowledge 已就绪** |
+| LiteFlow 依赖声明 | ✅ 已声明 |
+| MCP 配置 | ✅ 已声明 |
+| **教育业务域 (Phase 3)** | ⏳ 待启动 |
+| **教育 Agent (Phase 4)** | ⏳ 待启动 |
 
 ## 快速开始
 
@@ -78,13 +70,12 @@ git clone <repo>
 cd shiyu-ai
 
 # 2. 开发环境启动
-cd shiyu-agent
+cd shiyu-ai-bootstrap
 mvn spring-boot:run -Dspring-boot.run.profiles=dev
 
 # 3. 访问
 # - API 文档：http://localhost:9000/doc.html
 # - H2 控制台：http://localhost:9000/h2-console
-# - Agent 列表：GET /api/agent/list
 ```
 
 ---
@@ -93,5 +84,5 @@ mvn spring-boot:run -Dspring-boot.run.profiles=dev
 
 - 架构问题：参考 [01-总体架构.md](./01-总体架构.md)
 - 接口规范：参考 [06-接口规范.md](./06-接口规范.md)
-- 改造疑问：优先看 [08-改造方案.md](./08-改造方案.md) 的风险控制章节
-- 验证失败：参考 [11-验证检查清单.md](./11-验证检查清单.md) 的常见故障速查表
+- 改造疑问：参考 [08-改造方案.md](./08-改造方案.md)
+- 验证失败：参考 [11-验证检查清单.md](./11-验证检查清单.md)
