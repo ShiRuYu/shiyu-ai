@@ -10,51 +10,51 @@ import java.util.Random;
 import java.util.concurrent.ConcurrentHashMap;
 
 /**
- * 楠岃瘉鐮佹湇鍔″疄鐜扮被
+ * 验证码服务实现类
  */
 @Slf4j
 @Service
 public class CaptchaServiceImpl implements CaptchaService {
     
     /**
-     * 楠岃瘉鐮佸瓨鍌紙浣跨敤 ConcurrentHashMap 淇濊瘉绾跨▼瀹夊叏锛?
-     * key: 楠岃瘉鐮?key
-     * value: 楠岃瘉鐮佷俊鎭紙鍖呭惈 code 鍜?expireTime锛?
+     * 验证码存储（使用 ConcurrentHashMap 保证线程安全）
+     * key: 验证码 key
+     * value: 验证码信息（包含 code 和 expireTime）
      */
     private final Map<String, CaptchaData> captchaStore = new ConcurrentHashMap<>();
     
     /**
-     * 楠岃瘉鐮佽繃鏈熸椂闂达紙5 鍒嗛挓锛?
+     * 验证码过期时间（5 分钟）
      */
     private static final long CAPTCHA_EXPIRE_TIME = 5 * 60 * 1000;
     
     /**
-     * 楠岃瘉鐮佸瓧绗﹂泦锛堟帓闄ゅ鏄撴贩娣嗙殑瀛楃锛?, O, 1, I, l锛?
+     * 验证码字符集（排除容易混淆的字符：0, O, 1, I, l）
      */
     private static final String CAPTCHA_CHARS = "23456789abcdefghjkmnpqrstuvwxyzABCDEFGHJKMNPQRSTUVWXYZ";
     
     /**
-     * 楠岃瘉鐮侀暱搴?
+     * 验证码长度
      */
     private static final int CAPTCHA_LENGTH = 4;
     
     /**
-     * 鍥剧墖瀹藉害
+     * 图片宽度
      */
     private static final int WIDTH = 120;
     
     /**
-     * 鍥剧墖楂樺害
+     * 图片高度
      */
     private static final int HEIGHT = 40;
     
     /**
-     * 闅忔満鏁扮敓鎴愬櫒
+     * 随机数生成器
      */
     private final Random random = new Random();
     
     /**
-     * 鍐呴儴绫伙細楠岃瘉鐮佹暟鎹?
+     * 内部类：验证码数据
      */
     private static class CaptchaData {
         private final String code;
@@ -80,23 +80,23 @@ public class CaptchaServiceImpl implements CaptchaService {
     
     @Override
     public CaptchaVO generateCaptcha() {
-        // 鐢熸垚闅忔満楠岃瘉鐮?
+        // 生成随机验证码
         String code = generateRandomCode();
         
-        // 鐢熸垚鍞竴 key
+        // 生成唯一 key
         String key = generateCaptchaKey();
         
-        // 鐢熸垚 SVG 鍥剧墖
+        // 生成 SVG 图片
         String svgImage = generateSvgCaptcha(code);
         
-        // 瀛樺偍楠岃瘉鐮佷俊鎭?
+        // 存储验证码信息
         long expireTime = System.currentTimeMillis() + CAPTCHA_EXPIRE_TIME;
         captchaStore.put(key, new CaptchaData(code, expireTime));
         
-        log.info("鐢熸垚楠岃瘉鐮侊細key={}, code={}, expireTime={}", key, code, expireTime);
+        log.info("生成验证码：key={}, code={}, expireTime={}", key, code, expireTime);
         
-        // 杩斿洖 CaptchaVO 瀵硅薄
-        return new CaptchaVO(key, svgImage, CAPTCHA_EXPIRE_TIME / 1000); // 杞崲涓虹
+        // 返回 CaptchaVO 对象
+        return new CaptchaVO(key, svgImage, CAPTCHA_EXPIRE_TIME / 1000); // 转换为秒
     }
     
     @Override
@@ -107,25 +107,25 @@ public class CaptchaServiceImpl implements CaptchaService {
         
         CaptchaData captchaData = captchaStore.get(key);
         if (captchaData == null) {
-            log.warn("楠岃瘉鐮佷笉瀛樺湪锛歬ey={}", key);
+            log.warn("验证码不存在：key={}", key);
             return false;
         }
         
-        // 妫€鏌ユ槸鍚﹁繃鏈?
+        // 检查是否过期
         if (captchaData.isExpired()) {
-            log.warn("楠岃瘉鐮佸凡杩囨湡锛歬ey={}", key);
+            log.warn("验证码已过期：key={}", key);
             destroyCaptcha(key);
             return false;
         }
         
-        // 楠岃瘉楠岃瘉鐮侊紙蹇界暐澶у皬鍐欙級
+        // 验证验证码（忽略大小写）
         boolean valid = captchaData.getCode().equalsIgnoreCase(code);
         if (valid) {
-            log.info("楠岃瘉鐮侀獙璇佹垚鍔燂細key={}", key);
-            // 楠岃瘉鎴愬姛鍚庣珛鍗抽攢姣?
+            log.info("验证码验证成功：key={}", key);
+            // 验证成功后立即销毁
             destroyCaptcha(key);
         } else {
-            log.warn("楠岃瘉鐮侀敊璇細key={}, input={}, expected={}", key, code, captchaData.getCode());
+            log.warn("验证码错误：key={}, input={}, expected={}", key, code, captchaData.getCode());
         }
         
         return valid;
@@ -134,11 +134,11 @@ public class CaptchaServiceImpl implements CaptchaService {
     @Override
     public void destroyCaptcha(String key) {
         captchaStore.remove(key);
-        log.debug("閿€姣侀獙璇佺爜锛歬ey={}", key);
+        log.debug("销毁验证码：key={}", key);
     }
     
     /**
-     * 鐢熸垚闅忔満楠岃瘉鐮?
+     * 生成随机验证码
      */
     private String generateRandomCode() {
         StringBuilder sb = new StringBuilder(CAPTCHA_LENGTH);
@@ -149,33 +149,33 @@ public class CaptchaServiceImpl implements CaptchaService {
     }
     
     /**
-     * 鐢熸垚鍞竴 key
+     * 生成唯一 key
      */
     private String generateCaptchaKey() {
         return "captcha_" + System.currentTimeMillis() + "_" + random.nextInt(10000);
     }
     
     /**
-     * 鐢熸垚 SVG 楠岃瘉鐮?
+     * 生成 SVG 验证码
      */
     private String generateSvgCaptcha(String code) {
         StringBuilder svg = new StringBuilder();
         svg.append("<svg xmlns=\"http://www.w3.org/2000/svg\" width=\"").append(WIDTH).append("\" height=\"").append(HEIGHT)
                 .append("\" viewBox=\"0,0,").append(WIDTH).append(",").append(HEIGHT).append("\">");
         
-        // 鑳屾櫙
+        // 背景
         svg.append("<rect width=\"100%\" height=\"100%\" fill=\"#f0f0f0\"/>");
         
-        // 缁樺埗骞叉壈绾?
+        // 绘制干扰线
         drawNoiseLines(svg);
         
-        // 缁樺埗骞叉壈鐐?
+        // 绘制干扰点
         drawNoisePoints(svg);
         
-        // 缁樺埗楠岃瘉鐮佹枃瀛?
+        // 绘制验证码文字
         drawCaptchaText(svg, code);
         
-        // 缁樺埗璐濆灏旀洸绾垮共鎵?
+        // 绘制贝塞尔曲线干扰
         drawBezierCurves(svg);
         
         svg.append("</svg>");
@@ -183,7 +183,7 @@ public class CaptchaServiceImpl implements CaptchaService {
     }
     
     /**
-     * 缁樺埗骞叉壈绾?
+     * 绘制干扰线
      */
     private void drawNoiseLines(StringBuilder svg) {
         int lineCount = 5;
@@ -201,7 +201,7 @@ public class CaptchaServiceImpl implements CaptchaService {
     }
     
     /**
-     * 缁樺埗骞叉壈鐐?
+     * 绘制干扰点
      */
     private void drawNoisePoints(StringBuilder svg) {
         int pointCount = 50;
@@ -216,7 +216,7 @@ public class CaptchaServiceImpl implements CaptchaService {
     }
     
     /**
-     * 缁樺埗楠岃瘉鐮佹枃瀛?
+     * 绘制验证码文字
      */
     private void drawCaptchaText(StringBuilder svg, String code) {
         int fontSize = 28;
@@ -227,13 +227,13 @@ public class CaptchaServiceImpl implements CaptchaService {
             int x = charWidth * (i + 1) - 10;
             int y = HEIGHT / 2 + fontSize / 2 - 5;
             
-            // 闅忔満鏃嬭浆瑙掑害锛?15 鍒?15 搴︼級
+            // 随机旋转角度（-15 到 15 度）
             double rotation = (random.nextInt(30) - 15) * Math.PI / 180.0;
             
-            // 闅忔満棰滆壊
+            // 随机颜色
             String color = getRandomDarkColor();
             
-            // 娣诲姞鏂囧瓧鍙樻崲鏁堟灉
+            // 添加文字变换效果
             svg.append("<text x=\"").append(x).append("\" y=\"").append(y)
                     .append("\" font-family=\"Arial, sans-serif\" font-size=\"").append(fontSize)
                     .append("\" font-weight=\"bold\" fill=\"").append(color).append("\"")
@@ -243,7 +243,7 @@ public class CaptchaServiceImpl implements CaptchaService {
     }
     
     /**
-     * 缁樺埗璐濆灏旀洸绾垮共鎵?
+     * 绘制贝塞尔曲线干扰
      */
     private void drawBezierCurves(StringBuilder svg) {
         int curveCount = 3;
@@ -257,7 +257,7 @@ public class CaptchaServiceImpl implements CaptchaService {
             
             String color = getRandomLightColor();
             
-            // 浣跨敤浜屾璐濆灏旀洸绾?
+            // 使用二次贝塞尔曲线
             svg.append("<path d=\"M").append(x1).append(",").append(y1)
                     .append(" Q").append(ctrlX).append(",").append(ctrlY)
                     .append(" ").append(x2).append(",").append(y2).append("\"")
@@ -268,7 +268,7 @@ public class CaptchaServiceImpl implements CaptchaService {
     }
     
     /**
-     * 鑾峰彇闅忔満棰滆壊锛堟祬鑹诧級
+     * 获取随机颜色（浅色）
      */
     private String getRandomColor() {
         int r = random.nextInt(256);
@@ -278,7 +278,7 @@ public class CaptchaServiceImpl implements CaptchaService {
     }
     
     /**
-     * 鑾峰彇闅忔満娣辫壊棰滆壊锛堢敤浜庢枃瀛楋級
+     * 获取随机深色颜色（用于文字）
      */
     private String getRandomDarkColor() {
         int r = random.nextInt(128);
@@ -288,7 +288,7 @@ public class CaptchaServiceImpl implements CaptchaService {
     }
     
     /**
-     * 鑾峰彇闅忔満娴呰壊棰滆壊锛堢敤浜庡共鎵扮嚎锛?
+     * 获取随机浅色颜色（用于干扰线）
      */
     private String getRandomLightColor() {
         int r = 128 + random.nextInt(128);

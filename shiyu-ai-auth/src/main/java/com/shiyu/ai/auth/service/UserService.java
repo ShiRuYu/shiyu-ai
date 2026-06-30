@@ -4,69 +4,69 @@ import com.shiyu.ai.auth.bo.UserBO;
 import com.shiyu.ai.auth.vo.UserPageResponse;
 
 /**
- * 鐢ㄦ埛鏈嶅姟鎺ュ彛
+ * 用户服务接口
  */
 public interface UserService {
 
     /**
-     * 鑾峰彇鐢ㄦ埛璇︽儏
+     * 获取用户详情
      *
-     * @param userId 鐢ㄦ埛 ID
-     * @return 鐢ㄦ埛淇℃伅
+     * @param userId 用户 ID
+     * @return 用户信息
      */
     UserBO getUserDetail(Long userId);
 
     /**
-     * 鑾峰彇鐢ㄦ埛鍒楄〃 - 鍒嗛〉
+     * 获取用户列表 - 分页
      *
-     * @param username 鐢ㄦ埛鍚嶏紙鍙€夛級
-     * @param pageNo   椤电爜
-     * @param pageSize 姣忛〉澶у皬
-     * @return 鍒嗛〉鏁版嵁
+     * @param username 用户名（可选）
+     * @param pageNo   页码
+     * @param pageSize 每页大小
+     * @return 分页数据
      */
     UserPageResponse getUserList(String username, Number pageNo, Number pageSize);
 
     /**
-     * 鍒犻櫎鐢ㄦ埛
+     * 删除用户
      *
-     * @param userId 鐢ㄦ埛 ID
-     * @return 鏄惁鎴愬姛
+     * @param userId 用户 ID
+     * @return 是否成功
      */
     boolean deleteUser(Long userId);
 
     /**
-     * 淇敼鐢ㄦ埛
+     * 修改用户
      *
-     * @param userId  鐢ㄦ埛 ID
-     * @param userBO  鐢ㄦ埛淇℃伅
-     * @return 鏄惁鎴愬姛
+     * @param userId  用户 ID
+     * @param userBO  用户信息
+     * @return 是否成功
      */
     boolean updateUser(Long userId, UserBO userBO);
 
     /**
-     * 閲嶇疆鐢ㄦ埛瀵嗙爜
+     * 重置用户密码
      *
-     * @param userId  鐢ㄦ埛 ID
-     * @param password 鏂板瘑鐮?
-     * @return 鏄惁鎴愬姛
+     * @param userId  用户 ID
+     * @param password 新密码
+     * @return 是否成功
      */
     boolean resetUserPassword(Long userId, String password);
 
     /**
-     * 鏂板鐢ㄦ埛
+     * 新增用户
      *
-     * @param userBO 鐢ㄦ埛淇℃伅
-     * @return 鐢ㄦ埛 ID
+     * @param userBO 用户信息
+     * @return 用户 ID
      */
     Long createUser(UserBO userBO);
 
     /**
-     * 淇敼瀵嗙爜锛堟牎楠屾棫瀵嗙爜锛?
+     * 修改密码（校验旧密码）
      *
-     * @param userId      鐢ㄦ埛 ID
-     * @param oldPassword 鏃у瘑鐮?
-     * @param newPassword 鏂板瘑鐮?
-     * @return 鏄惁鎴愬姛
+     * @param userId      用户 ID
+     * @param oldPassword 旧密码
+     * @param newPassword 新密码
+     * @return 是否成功
      */
     boolean changePassword(Long userId, String oldPassword, String newPassword);
 }

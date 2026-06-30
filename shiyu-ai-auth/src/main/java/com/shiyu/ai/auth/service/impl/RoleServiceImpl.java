@@ -16,7 +16,7 @@ import org.springframework.stereotype.Service;
 import java.util.List;
 
 /**
- * 瑙掕壊鏈嶅姟瀹炵幇绫?
+ * 角色服务实现类
  */
 @Slf4j
 @Service
@@ -32,12 +32,12 @@ public class RoleServiceImpl implements RoleService {
 
     @Override
     public RolePageResponse getRoleList(Number pageNo, Number pageSize, String name) {
-        log.info("鑾峰彇瑙掕壊鍒楄〃锛宲ageNo: {}, pageSize: {}, name: {}", pageNo, pageSize, name);
+        log.info("获取角色列表，pageNo: {}, pageSize: {}, name: {}", pageNo, pageSize, name);
         
         Pair<Long, List<RoleBO>> result = roleRepository.selectPage(pageNo, pageSize, name);
         List<RoleBO> roleBOs = result.getRight();
         
-        // 涓烘瘡涓鑹插～鍏呮潈闄愯彍鍗旾D鍒楄〃
+        // 为每个角色填充权限菜单ID列表
         for (RoleBO roleBO : roleBOs) {
             List<Long> menuIds = roleRepository.selectMenuIdsByRoleId(roleBO.getId());
             roleBO.setPermissions(menuIds);
@@ -54,28 +54,28 @@ public class RoleServiceImpl implements RoleService {
 
     @Override
     public List<RoleBO> getAllRoles(String status) {
-        log.info("鑾峰彇鎵€鏈夎鑹诧紝status: {}", status);
+        log.info("获取所有角色，status: {}", status);
         return roleRepository.selectAll(status);
     }
 
     @Override
     public boolean updateRole(Long id, RoleBO roleBO) {
-        log.info("淇敼瑙掕壊锛宨d: {}", id);
+        log.info("修改角色，id: {}", id);
         
         RoleBO existingRole = roleRepository.selectById(id);
         if (existingRole == null) {
             return false;
         }
         
-        // 淇濆瓨瑙掕壊鍩烘湰淇℃伅
+        // 保存角色基本信息
         roleBO.setId(id);
         boolean success = roleRepository.update(roleBO);
         
-        // 濡傛灉鎻愪緵浜唒ermissions锛屽垯鏇存柊瑙掕壊-鑿滃崟鍏宠仈
+        // 如果提供了permissions，则更新角色-菜单关联
         if (success && roleBO.getPermissions() != null) {
-            // 鍏堝垹闄ゆ棫鐨勫叧鑱?
+            // 先删除旧的关联
             roleRepository.deleteRoleMenus(id);
-            // 鍐嶆彃鍏ユ柊鐨勫叧鑱?
+            // 再插入新的关联
             roleRepository.insertRoleMenus(id, roleBO.getPermissions());
         }
         
@@ -84,19 +84,19 @@ public class RoleServiceImpl implements RoleService {
 
     @Override
     public boolean deleteRole(Long id) {
-        log.info("鍒犻櫎瑙掕壊锛宨d: {}", id);
+        log.info("删除角色，id: {}", id);
         
-        // 鍏堝垹闄よ鑹?鑿滃崟鍏宠仈
+        // 先删除角色-菜单关联
         roleRepository.deleteRoleMenus(id);
         
-        // 鍐嶅垹闄よ鑹?
+        // 再删除角色
         return roleRepository.deleteById(id);
     }
 
     @Override
     public boolean removeUserRoles(Long roleId, List<Long> userIds) {
         Long workspaceId = LoginContextHolder.getCurrentWorkspaceId();
-        log.info("鍙栨秷鍒嗛厤瑙掕壊锛宺oleId: {}, userIds: {}, workspaceId: {}", roleId, userIds, workspaceId);
+        log.info("取消分配角色，roleId: {}, userIds: {}, workspaceId: {}", roleId, userIds, workspaceId);
         if (userIds == null || userIds.isEmpty()) {
             return true;
         }
@@ -117,7 +117,7 @@ public class RoleServiceImpl implements RoleService {
     @Override
     public boolean assignUserRoles(Long roleId, List<Long> userIds) {
         Long workspaceId = LoginContextHolder.getCurrentWorkspaceId();
-        log.info("鍒嗛厤瑙掕壊锛宺oleId: {}, userIds: {}, workspaceId: {}", roleId, userIds, workspaceId);
+        log.info("分配角色，roleId: {}, userIds: {}, workspaceId: {}", roleId, userIds, workspaceId);
         if (userIds == null || userIds.isEmpty()) {
             return true;
         }
@@ -135,12 +135,12 @@ public class RoleServiceImpl implements RoleService {
 
     @Override
     public boolean createRole(RoleBO roleBO) {
-        log.info("鏂板瑙掕壊");
+        log.info("新增角色");
         
-        // 淇濆瓨瑙掕壊鍩烘湰淇℃伅
+        // 保存角色基本信息
         RoleBO savedRole = roleRepository.insert(roleBO);
         
-        // 濡傛灉鎻愪緵浜唒ermissions锛屽垯淇濆瓨瑙掕壊-鑿滃崟鍏宠仈
+        // 如果提供了permissions，则保存角色-菜单关联
         if (roleBO.getPermissions() != null && !roleBO.getPermissions().isEmpty()) {
             roleRepository.insertRoleMenus(savedRole.getId(), roleBO.getPermissions());
         }

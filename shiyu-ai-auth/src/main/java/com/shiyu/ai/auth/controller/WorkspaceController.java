@@ -16,7 +16,7 @@ import java.util.List;
 import java.util.Map;
 
 /**
- * 宸ヤ綔绌洪棿绠＄悊 Controller
+ * 工作空间管理 Controller
  */
 @Slf4j
 @RestController
@@ -30,31 +30,31 @@ public class WorkspaceController {
     }
 
     /**
-     * 鑾峰彇宸ヤ綔绌洪棿鍒楄〃锛堟爲褰級锛屽钩閾鸿浆鎹㈤伩鍏嶅惊鐜紩鐢ㄥ鑷寸殑 StackOverflowError
+     * 获取工作空间列表（树形），平铺转换避免循环引用导致的 StackOverflowError
      */
     @GetMapping("/list")
     public Result<List<WorkspaceVO>> getWorkspaceList(
             @RequestParam(required = false) String name) {
-        log.info("鑾峰彇宸ヤ綔绌洪棿鍒楄〃锛宯ame: {}", name);
+        log.info("获取工作空间列表，name: {}", name);
 
         List<WorkspaceBO> workspaceBOs = workspaceService.getWorkspaceList(name);
 
-        // 鍏堝钩閾烘爲 -> 娓呯┖ children 閬垮厤閫掑綊杞崲瀵艰嚧寰幆寮曠敤
+        // 先平铺树 -> 清空 children 避免递归转换导致循环引用
         List<WorkspaceBO> flatBos = flattenBos(workspaceBOs);
         List<WorkspaceVO> flatVos = MapstructUtils.convert(flatBos, WorkspaceVO.class);
 
-        // 浠庢墎骞?VO 鍒楄〃閲嶅缓鏍戝舰缁撴瀯
+        // 从扁平 VO 列表重建树形结构
         List<WorkspaceVO> tree = buildVOTree(flatVos);
 
         return Result.success(tree);
     }
 
     /**
-     * 鏂板宸ヤ綔绌洪棿
+     * 新增工作空间
      */
     @PostMapping("")
     public Result<Void> createWorkspace(@Valid @RequestBody WorkspaceRequest request) {
-        log.info("鏂板宸ヤ綔绌洪棿锛宯ame: {}", request.getName());
+        log.info("新增工作空间，name: {}", request.getName());
 
         WorkspaceBO workspaceBO = MapstructUtils.convert(request, WorkspaceBO.class);
         boolean success = workspaceService.createWorkspace(workspaceBO);
@@ -62,18 +62,18 @@ public class WorkspaceController {
         if (success) {
             return Result.success();
         } else {
-            return Result.fail("鏂板澶辫触");
+            return Result.fail("新增失败");
         }
     }
 
     /**
-     * 淇敼宸ヤ綔绌洪棿
+     * 修改工作空间
      */
     @PatchMapping("/{id}")
     public Result<Void> updateWorkspace(
             @PathVariable Long id,
             @Valid @RequestBody WorkspaceRequest request) {
-        log.info("淇敼宸ヤ綔绌洪棿锛宨d: {}", id);
+        log.info("修改工作空间，id: {}", id);
 
         WorkspaceBO workspaceBO = MapstructUtils.convert(request, WorkspaceBO.class);
         boolean success = workspaceService.updateWorkspace(id, workspaceBO);
@@ -81,28 +81,28 @@ public class WorkspaceController {
         if (success) {
             return Result.success();
         } else {
-            return Result.fail("淇敼澶辫触");
+            return Result.fail("修改失败");
         }
     }
 
     /**
-     * 鍒犻櫎宸ヤ綔绌洪棿
+     * 删除工作空间
      */
     @DeleteMapping("/{id}")
     public Result<Void> deleteWorkspace(@PathVariable Long id) {
-        log.info("鍒犻櫎宸ヤ綔绌洪棿锛宨d: {}", id);
+        log.info("删除工作空间，id: {}", id);
 
         boolean success = workspaceService.deleteWorkspace(id);
 
         if (success) {
             return Result.success();
         } else {
-            return Result.fail("鍒犻櫎澶辫触锛屽彲鑳藉瓨鍦ㄥ瓙宸ヤ綔绌洪棿");
+            return Result.fail("删除失败，可能存在子工作空间");
         }
     }
 
     /**
-     * 灏嗘爲褰?BO 鍒楄〃骞抽摵涓烘墎骞冲垪琛紝鍚屾椂娓呴櫎 children 浠ラ伩鍏嶉€掑綊杞崲
+     * 将树形 BO 列表平铺为扁平列表，同时清除 children 以避免递归转换
      */
     private List<WorkspaceBO> flattenBos(List<WorkspaceBO> bos) {
         List<WorkspaceBO> flat = new ArrayList<>();
@@ -115,11 +115,11 @@ public class WorkspaceController {
             return;
         }
         for (WorkspaceBO node : nodes) {
-            // 鍏堜繚瀛?children 寮曠敤锛屽啀娓呯┖
+            // 先保存 children 引用，再清空
             List<WorkspaceBO> children = node.getChildren();
             node.setChildren(null);
             result.add(node);
-            // 閫掑綊澶勭悊瀛愯妭鐐?
+            // 递归处理子节点
             if (children != null) {
                 flattenBosRecursive(children, result);
             }
@@ -127,22 +127,22 @@ public class WorkspaceController {
     }
 
     /**
-     * 浠庢墎骞?VO 鍒楄〃閲嶅缓鏍戝舰缁撴瀯锛堝熀浜?parentId 瀛楁锛夛紝
-     * 鐖惰妭鐐逛负 0L 鎴?null 鐨勪綔涓烘牴鑺傜偣
+     * 从扁平 VO 列表重建树形结构（基于 parentId 字段），
+     * 父节点为 0L 或 null 的作为根节点
      */
     private List<WorkspaceVO> buildVOTree(List<WorkspaceVO> flatVos) {
         if (flatVos == null || flatVos.isEmpty()) {
             return new ArrayList<>();
         }
 
-        // 寤虹珛 id -> VO 鏄犲皠
+        // 建立 id -> VO 映射
         Map<Long, WorkspaceVO> voMap = new HashMap<>();
         for (WorkspaceVO vo : flatVos) {
             vo.setChildren(new ArrayList<>());
             voMap.put(vo.getId(), vo);
         }
 
-        // 鎸?parentId 鎸傝浇瀛愯妭鐐癸紝鍚屾椂鏀堕泦鏍硅妭鐐?
+        // 按 parentId 挂载子节点，同时收集根节点
         List<WorkspaceVO> roots = new ArrayList<>();
         for (WorkspaceVO vo : flatVos) {
             Long parentId = vo.getParentId();
@@ -153,8 +153,8 @@ public class WorkspaceController {
                 if (parent != null) {
                     parent.getChildren().add(vo);
                 } else {
-                    // parentId 鎸囧悜涓嶅瓨鍦ㄧ殑鑺傜偣锛岄檷绾т负鏍硅妭鐐?
-                    log.warn("宸ヤ綔绌洪棿 {} 鐨?parentId={} 涓嶅瓨鍦紝闄嶇骇涓烘牴鑺傜偣", vo.getId(), parentId);
+                    // parentId 指向不存在的节点，降级为根节点
+                    log.warn("工作空间 {} 的 parentId={} 不存在，降级为根节点", vo.getId(), parentId);
                     roots.add(vo);
                 }
             }

@@ -6,62 +6,62 @@ import org.apache.commons.lang3.tuple.Pair;
 import java.util.List;
 
 /**
- * 瀛楀吀鏈嶅姟灞?
+ * 字典服务层
  */
 public interface DictService {
 
     /**
-     * 鍒嗛〉鏌ヨ瀛楀吀鍒楄〃
+     * 分页查询字典列表
      *
-     * @param pageNo 椤电爜
-     * @param pageSize   姣忛〉鏁伴噺
-     * @return 瀛楀吀鍒楄〃
+     * @param pageNo 页码
+     * @param pageSize   每页数量
+     * @return 字典列表
      */
     Pair<Long, List<DictBO>> getAll(Number pageNo, Number pageSize);
 
     /**
-     * 鏍规嵁ID鏌ヨ瀛楀吀
+     * 根据ID查询字典
      *
-     * @param id 瀛楀吀ID
-     * @return 瀛楀吀淇℃伅
+     * @param id 字典ID
+     * @return 字典信息
      */
     DictBO getById(Long id);
 
     /**
-     * 鏍规嵁瀛楀吀绫诲瀷鏌ヨ瀛楀吀鍒楄〃
+     * 根据字典类型查询字典列表
      *
-     * @param dictType 瀛楀吀绫诲瀷
-     * @return 瀛楀吀鍒楄〃
+     * @param dictType 字典类型
+     * @return 字典列表
      */
     List<DictBO> getByDictType(String dictType);
 
     /**
-     * 鍒涘缓瀛楀吀
+     * 创建字典
      *
-     * @param dictBO 瀛楀吀淇℃伅
-     * @return 鍒涘缓鍚庣殑瀛楀吀淇℃伅
+     * @param dictBO 字典信息
+     * @return 创建后的字典信息
      */
     DictBO create(DictBO dictBO);
 
     /**
-     * 鏇存柊瀛楀吀
+     * 更新字典
      *
-     * @param dictBO 瀛楀吀淇℃伅
-     * @return 鏇存柊鍚庣殑瀛楀吀淇℃伅
+     * @param dictBO 字典信息
+     * @return 更新后的字典信息
      */
     DictBO update(DictBO dictBO);
 
     /**
-     * 鍒犻櫎瀛楀吀
+     * 删除字典
      *
-     * @param id 瀛楀吀ID
+     * @param id 字典ID
      */
     void deleteById(Long id);
 
     /**
-     * 鎵归噺鍒犻櫎瀛楀吀
+     * 批量删除字典
      *
-     * @param ids 瀛楀吀ID鍒楄〃
+     * @param ids 字典ID列表
      */
     void deleteByIds(List<Long> ids);
 }

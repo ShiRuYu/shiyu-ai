@@ -12,7 +12,7 @@ import org.springframework.stereotype.Component;
 import java.util.List;
 
 /**
- * 搴旂敤鍚姩鏃朵粠 DB 鍔犺浇鎰忓浘瀹氫箟鍒?IntentDefinitionFactory
+ * 应用启动时从 DB 加载意图定义到 IntentDefinitionFactory
  */
 @Slf4j
 @Component
@@ -26,15 +26,15 @@ public class IntentDefApplicationRunner implements ApplicationRunner {
         try {
             List<IntentDefBO> boList = intentDefRepository.selectByAgentId("default");
             if (boList == null || boList.isEmpty()) {
-                log.warn("DB 涓湭鎵惧埌鎰忓浘瀹氫箟鏁版嵁锛坅gentId=default锛夛紝浣跨敤绌鸿〃");
-                // 鍗充娇娌℃湁鏁版嵁涔熻璋冪敤 reloadFromDb 浠ユ竻绌?static 鍧楀彲鑳介仐鐣欑殑鏁版嵁
+                log.warn("DB 中未找到意图定义数据（agentId=default），使用空表");
+                // 即使没有数据也要调用 reloadFromDb 以清空 static 块可能遗留的数据
                 IntentDefinitionFactory.reloadFromDb(List.of());
             } else {
                 IntentDefinitionFactory.reloadFromDb(boList);
-                log.info("浠?DB 鍔犺浇浜?{} 鏉℃剰鍥惧畾涔夊埌 IntentDefinitionFactory", boList.size());
+                log.info("从 DB 加载了 {} 条意图定义到 IntentDefinitionFactory", boList.size());
             }
         } catch (Exception e) {
-            log.error("浠?DB 鍔犺浇鎰忓浘瀹氫箟澶辫触锛屽皢浣跨敤绌鸿〃", e);
+            log.error("从 DB 加载意图定义失败，将使用空表", e);
             IntentDefinitionFactory.reloadFromDb(List.of());
         }
     }

@@ -6,8 +6,8 @@ import org.springframework.web.servlet.config.annotation.InterceptorRegistry;
 import org.springframework.web.servlet.config.annotation.WebMvcConfigurer;
 
 /**
- * 鎷︽埅鍣ㄩ厤缃?
- * 娉ㄥ唽鐢ㄦ埛涓婁笅鏂囨嫤鎴櫒锛堥壌鏉冧娇鐢?SaServletFilter锛屽湪 SaTokenConfig 涓厤缃級
+ * 拦截器配置
+ * 注册用户上下文拦截器（鉴权使用 SaServletFilter，在 SaTokenConfig 中配置）
  */
 @Configuration
 public class SaInterceptorConfig implements WebMvcConfigurer {
@@ -20,7 +20,7 @@ public class SaInterceptorConfig implements WebMvcConfigurer {
 
     @Override
     public void addInterceptors(InterceptorRegistry registry) {
-        // 娉ㄥ唽鐢ㄦ埛涓婁笅鏂囨嫤鎴櫒锛堝皢鐧诲綍淇℃伅濉厖鍒?UserGlobalContext锛?
+        // 注册用户上下文拦截器（将登录信息填充到 UserGlobalContext）
         registry.addInterceptor(userContextInterceptor)
                 .addPathPatterns("/**")
                 .excludePathPatterns(

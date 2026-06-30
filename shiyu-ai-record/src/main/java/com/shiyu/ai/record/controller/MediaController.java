@@ -13,7 +13,7 @@ import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
 
-@Tag(name = "闄勪欢绠＄悊")
+@Tag(name = "附件管理")
 @RestController
 @RequestMapping("/api/media")
 public class MediaController {
@@ -21,7 +21,7 @@ public class MediaController {
     @Resource
     private MediaService mediaService;
 
-    @Operation(summary = "鍒嗛〉鏌ヨ闄勪欢鍒楄〃")
+    @Operation(summary = "分页查询附件列表")
     @GetMapping("/page")
     public Result<PageData<MediaBO>> getPage(
             @RequestParam(required = false, defaultValue = "1") Integer pageNo,
@@ -31,25 +31,25 @@ public class MediaController {
         return Result.success(new PageData<>(page.getRight(), page.getLeft()));
     }
 
-    @Operation(summary = "鏍规嵁ID鏌ヨ闄勪欢")
+    @Operation(summary = "根据ID查询附件")
     @GetMapping("/{id}")
     public Result<MediaBO> getById(@PathVariable Long id) {
         return Result.success(mediaService.getById(id));
     }
 
-    @Operation(summary = "鍒涘缓闄勪欢")
+    @Operation(summary = "创建附件")
     @PostMapping
     public Result<MediaBO> create(@Valid @RequestBody MediaBO mediaBO) {
         return Result.success(mediaService.create(mediaBO));
     }
 
-    @Operation(summary = "鏇存柊闄勪欢")
+    @Operation(summary = "更新附件")
     @PutMapping
     public Result<Boolean> update(@Valid @RequestBody MediaBO mediaBO) {
         return Result.success(mediaService.update(mediaBO));
     }
 
-    @Operation(summary = "鍒犻櫎闄勪欢")
+    @Operation(summary = "删除附件")
     @DeleteMapping("/{id}")
     public Result<Boolean> delete(@PathVariable Long id) {
         return Result.success(mediaService.delete(id));

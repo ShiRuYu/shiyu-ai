@@ -5,48 +5,48 @@ import com.shiyu.ai.auth.bo.WorkspaceBO;
 import java.util.List;
 
 /**
- * 宸ヤ綔绌洪棿鏈嶅姟鎺ュ彛
+ * 工作空间服务接口
  */
 public interface WorkspaceService {
 
     /**
-     * 鑾峰彇宸ヤ綔绌洪棿鍒楄〃锛堟爲褰級
+     * 获取工作空间列表（树形）
      *
-     * @param name 宸ヤ綔绌洪棿鍚嶇О锛堝彲閫夛紝鐢ㄤ簬杩囨护锛?
-     * @return 宸ヤ綔绌洪棿鏍戝舰鍒楄〃
+     * @param name 工作空间名称（可选，用于过滤）
+     * @return 工作空间树形列表
      */
     List<WorkspaceBO> getWorkspaceList(String name);
 
     /**
-     * 鏍规嵁 ID 鑾峰彇宸ヤ綔绌洪棿
+     * 根据 ID 获取工作空间
      *
-     * @param id 宸ヤ綔绌洪棿 ID
-     * @return 宸ヤ綔绌洪棿淇℃伅
+     * @param id 工作空间 ID
+     * @return 工作空间信息
      */
     WorkspaceBO getById(Long id);
 
     /**
-     * 鏂板宸ヤ綔绌洪棿
+     * 新增工作空间
      *
-     * @param workspaceBO 宸ヤ綔绌洪棿淇℃伅
-     * @return 鏄惁鎴愬姛
+     * @param workspaceBO 工作空间信息
+     * @return 是否成功
      */
     boolean createWorkspace(WorkspaceBO workspaceBO);
 
     /**
-     * 淇敼宸ヤ綔绌洪棿
+     * 修改工作空间
      *
-     * @param id          宸ヤ綔绌洪棿 ID
-     * @param workspaceBO 宸ヤ綔绌洪棿淇℃伅
-     * @return 鏄惁鎴愬姛
+     * @param id          工作空间 ID
+     * @param workspaceBO 工作空间信息
+     * @return 是否成功
      */
     boolean updateWorkspace(Long id, WorkspaceBO workspaceBO);
 
     /**
-     * 鍒犻櫎宸ヤ綔绌洪棿
+     * 删除工作空间
      *
-     * @param id 宸ヤ綔绌洪棿 ID
-     * @return 鏄惁鎴愬姛
+     * @param id 工作空间 ID
+     * @return 是否成功
      */
     boolean deleteWorkspace(Long id);
 }

@@ -7,80 +7,80 @@ import java.util.List;
 import java.util.Map;
 
 /**
- * 璁よ瘉鏈嶅姟
- * 鎻愪緵鐢ㄦ埛鐧诲綍銆佺櫥鍑虹瓑璁よ瘉鍔熻兘
+ * 认证服务
+ * 提供用户登录、登出等认证功能
  */
 public interface AuthService {
     
     /**
-     * 鐢ㄦ埛鐧诲綍
-     * @param username 鐢ㄦ埛鍚?
-     * @param password 瀵嗙爜
-     * @return 鐧诲綍鍝嶅簲锛堝寘鍚敤鎴蜂俊鎭拰璁块棶浠ょ墝锛?
+     * 用户登录
+     * @param username 用户名
+     * @param password 密码
+     * @return 登录响应（包含用户信息和访问令牌）
      */
     LoginResponseVO login(String username, String password);
 
     /**
-     * 鐢ㄦ埛鐧诲綍锛堝甫瑙掕壊閫夋嫨锛?
-     * @param username 鐢ㄦ埛鍚?
-     * @param password 瀵嗙爜
-     * @param roleId 褰撳墠瑙掕壊ID锛堜笉浼犲垯榛樿浣跨敤绗竴涓鑹诧級
-     * @return 鐧诲綍鍝嶅簲锛堝寘鍚敤鎴蜂俊鎭拰璁块棶浠ょ墝锛?
+     * 用户登录（带角色选择）
+     * @param username 用户名
+     * @param password 密码
+     * @param roleId 当前角色ID（不传则默认使用第一个角色）
+     * @return 登录响应（包含用户信息和访问令牌）
      */
     LoginResponseVO login(String username, String password, Long roleId);
     
     /**
-     * 鑾峰彇鐢ㄦ埛鏉冮檺鐮侊紙閫氳繃鐢ㄦ埛鍚嶏級
-     * @param username 鐢ㄦ埛鍚?
-     * @return 鏉冮檺鐮佸垪琛?
+     * 获取用户权限码（通过用户名）
+     * @param username 用户名
+     * @return 权限码列表
      */
     List<String> getAuthCodes(String username);
     
     /**
-     * 鑾峰彇鐢ㄦ埛鏉冮檺鐮侊紙閫氳繃鐢ㄦ埛 ID锛?
-     * @param userId 鐢ㄦ埛 ID
-     * @return 鏉冮檺鐮佸垪琛?
+     * 获取用户权限码（通过用户 ID）
+     * @param userId 用户 ID
+     * @return 权限码列表
      */
     List<String> getAuthCodesByUserId(Long userId);
     
     /**
-     * 鍒锋柊璁块棶浠ょ墝
-     * @param refreshToken 鍒锋柊浠ょ墝
-     * @return 鏂扮殑璁块棶浠ょ墝
+     * 刷新访问令牌
+     * @param refreshToken 刷新令牌
+     * @return 新的访问令牌
      */
     String refreshToken(String refreshToken);
     
     /**
-     * 鐢ㄦ埛鐧诲嚭
-     * @param refreshToken 鍒锋柊浠ょ墝
+     * 用户登出
+     * @param refreshToken 刷新令牌
      */
     void logout(String refreshToken);
 
     /**
-     * 鍒囨崲褰撳墠瑙掕壊
-     * @param userId 鐢ㄦ埛 ID
-     * @param roleId 鐩爣瑙掕壊 ID
-     * @return 鏄惁鎴愬姛
+     * 切换当前角色
+     * @param userId 用户 ID
+     * @param roleId 目标角色 ID
+     * @return 是否成功
      */
     boolean switchCurrentRole(Long userId, Long roleId);
 
     /**
-     * 鍒囨崲褰撳墠绉熸埛
+     * 切换当前租户
      */
     boolean switchCurrentTenant(Long userId, Long tenantId);
 
     /**
-     * 鍒囨崲褰撳墠宸ヤ綔绌洪棿
+     * 切换当前工作空间
      */
     boolean switchCurrentWorkspace(Long userId, Long workspaceId);
 
     /**
-     * 鑾峰彇鐢ㄦ埛褰撳墠绉熸埛涓嬬殑宸ヤ綔绌洪棿鍒楄〃
+     * 获取用户当前租户下的工作空间列表
      */
     List<WorkspaceContextVO> getUserWorkspaces(Long userId);
 
     /**
-     * 鑾峰彇鐢ㄦ埛鎵€鏈夌鎴峰垪琛?
+     * 获取用户所有租户列表
      */
     List<Map<String, Object>> getUserTenants(Long userId);
 }

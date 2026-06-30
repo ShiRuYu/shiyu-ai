@@ -13,7 +13,7 @@ import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
 
-@Tag(name = "璁板綍鍐呭绠＄悊")
+@Tag(name = "记录内容管理")
 @RestController
 @RequestMapping("/api/record")
 public class RecordController {
@@ -21,7 +21,7 @@ public class RecordController {
     @Resource
     private RecordService recordService;
 
-    @Operation(summary = "鍒嗛〉鏌ヨ璁板綍鍒楄〃")
+    @Operation(summary = "分页查询记录列表")
     @GetMapping("/page")
     public Result<PageData<RecordBO>> getPage(
             @RequestParam(required = false, defaultValue = "1") Integer pageNo,
@@ -31,25 +31,25 @@ public class RecordController {
         return Result.success(new PageData<>(page.getRight(), page.getLeft()));
     }
 
-    @Operation(summary = "鏍规嵁ID鏌ヨ璁板綍")
+    @Operation(summary = "根据ID查询记录")
     @GetMapping("/{id}")
     public Result<RecordBO> getById(@PathVariable Long id) {
         return Result.success(recordService.getById(id));
     }
 
-    @Operation(summary = "鍒涘缓璁板綍")
+    @Operation(summary = "创建记录")
     @PostMapping
     public Result<RecordBO> create(@Valid @RequestBody RecordBO recordBO) {
         return Result.success(recordService.create(recordBO));
     }
 
-    @Operation(summary = "鏇存柊璁板綍")
+    @Operation(summary = "更新记录")
     @PutMapping
     public Result<Boolean> update(@Valid @RequestBody RecordBO recordBO) {
         return Result.success(recordService.update(recordBO));
     }
 
-    @Operation(summary = "鍒犻櫎璁板綍")
+    @Operation(summary = "删除记录")
     @DeleteMapping("/{id}")
     public Result<Boolean> delete(@PathVariable Long id) {
         return Result.success(recordService.delete(id));

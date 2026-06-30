@@ -33,7 +33,7 @@ public class SaTokenDaoImpl implements SaTokenDao {
         this.saTokenUserRepository = saTokenUserRepository;
     }
 
-    // ==================== String 瀛樺偍 (Token鈫抣oginId) ====================
+    // ==================== String 存储 (Token→loginId) ====================
 
     @Override
     public String get(String key) {
@@ -77,7 +77,7 @@ public class SaTokenDaoImpl implements SaTokenDao {
         Map<String, Object> ext = getExtInfo(userId);
         String tokenValue = key.substring(TOKEN_PREFIX.length());
 
-        // 浠呬繚鐣欐渶杩戠櫥褰曠殑涓€涓?token锛屾竻鐞嗚鐢ㄦ埛涓嬫墍鏈夋棫 token
+        // 仅保留最近登录的一个 token，清理该用户下所有旧 token
         Map<String, Object> tokens = getOrCreateMap(ext, "tokens");
 
         @SuppressWarnings("unchecked")
@@ -187,7 +187,7 @@ public class SaTokenDaoImpl implements SaTokenDao {
         saveExtInfo(userId, ext);
     }
 
-    // ==================== Object 瀛樺偍锛堜粎鍐呭瓨 Caffeine锛?====================
+    // ==================== Object 存储（仅内存 Caffeine） ====================
 
     @Override
     public Object getObject(String key) {
@@ -227,7 +227,7 @@ public class SaTokenDaoImpl implements SaTokenDao {
     public void updateObjectTimeout(String key, long timeout) {
     }
 
-    // ==================== Session 瀛樺偍 ====================
+    // ==================== Session 存储 ====================
 
     @Override
     public SaSession getSession(String sessionId) {
@@ -372,14 +372,14 @@ public class SaTokenDaoImpl implements SaTokenDao {
         saveExtInfo(userId, ext);
     }
 
-    // ==================== 鎼滅储 ====================
+    // ==================== 搜索 ====================
 
     @Override
     public List<String> searchData(String prefix, String keyword, int start, int size, boolean sortType) {
         return new ArrayList<>();
     }
 
-    // ==================== 鍐呴儴杈呭姪鏂规硶 ====================
+    // ==================== 内部辅助方法 ====================
 
     private Long extractUserIdFromTokenKey(String key) {
         try {
@@ -450,25 +450,10 @@ public class SaTokenDaoImpl implements SaTokenDao {
     private void saveExtInfo(Long userId, Map<String, Object> ext) {
         UserDO user = saTokenUserRepository.selectById(userId);
         if (user == null) return;
-        // 合并现有 extInfo，避免其他业务操作（如 updateUser）清空 tokens/sessions
-        Map<String, Object> existing = getExtInfo(userId);
-        if (!existing.isEmpty()) {
-            // 只覆写 token 相关 key，保留其他业务字段
-            for (String key : TOKEN_KEYS) {
-                if (ext.containsKey(key)) {
-                    existing.put(key, ext.get(key));
-                } else {
-                    existing.remove(key);
-                }
-            }
-            ext = existing;
-        }
         user.setExtInfo(JSONUtils.toJsonString(ext));
         user.setUpdateTime(LocalDateTime.now());
         saTokenUserRepository.updateExtInfo(user);
     }
-
-    private static final List<String> TOKEN_KEYS = List.of("tokens", "sessions", "tokenSessions");
 
     private boolean isExpired(Map<String, Object> entry) {
         Object expObj = entry.get("expireTime");

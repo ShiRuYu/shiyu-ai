@@ -14,7 +14,7 @@ import java.util.Set;
 import java.util.stream.Collectors;
 
 /**
- * 宸ヤ綔绌洪棿鏈嶅姟瀹炵幇绫?
+ * 工作空间服务实现类
  */
 @Slf4j
 @Service
@@ -28,20 +28,20 @@ public class WorkspaceServiceImpl implements WorkspaceService {
 
     @Override
     public List<WorkspaceBO> getWorkspaceList(String name) {
-        log.info("鑾峰彇宸ヤ綔绌洪棿鍒楄〃锛宯ame: {}", name);
+        log.info("获取工作空间列表，name: {}", name);
         List<WorkspaceBO> allWorkspaces = workspaceRepository.selectAll(name);
         return buildTree(allWorkspaces);
     }
 
     @Override
     public WorkspaceBO getById(Long id) {
-        log.info("鑾峰彇宸ヤ綔绌洪棿锛宨d: {}", id);
+        log.info("获取工作空间，id: {}", id);
         return workspaceRepository.selectById(id);
     }
 
     @Override
     public boolean createWorkspace(WorkspaceBO workspaceBO) {
-        log.info("鏂板宸ヤ綔绌洪棿锛宯ame: {}", workspaceBO.getName());
+        log.info("新增工作空间，name: {}", workspaceBO.getName());
         if (workspaceBO.getParentId() == null) {
             workspaceBO.setParentId(0L);
         }
@@ -51,7 +51,7 @@ public class WorkspaceServiceImpl implements WorkspaceService {
 
     @Override
     public boolean updateWorkspace(Long id, WorkspaceBO workspaceBO) {
-        log.info("淇敼宸ヤ綔绌洪棿锛宨d: {}", id);
+        log.info("修改工作空间，id: {}", id);
         WorkspaceBO existing = workspaceRepository.selectById(id);
         if (existing == null) {
             return false;
@@ -62,19 +62,19 @@ public class WorkspaceServiceImpl implements WorkspaceService {
 
     @Override
     public boolean deleteWorkspace(Long id) {
-        log.info("鍒犻櫎宸ヤ綔绌洪棿锛宨d: {}", id);
+        log.info("删除工作空间，id: {}", id);
         List<WorkspaceBO> allWorkspaces = workspaceRepository.selectAll(null);
         boolean hasChildren = allWorkspaces.stream()
                 .anyMatch(d -> id.equals(d.getParentId()));
         if (hasChildren) {
-            log.warn("宸ヤ綔绌洪棿 {} 瀛樺湪瀛愬伐浣滅┖闂达紝涓嶈兘鍒犻櫎", id);
+            log.warn("工作空间 {} 存在子工作空间，不能删除", id);
             return false;
         }
         return workspaceRepository.softDelete(id);
     }
 
     /**
-     * 灏嗗钩閾哄垪琛ㄦ瀯閫犱负鏍戝舰缁撴瀯锛堝惈寰幆寮曠敤闃叉姢锛?
+     * 将平铺列表构造为树形结构（含循环引用防护）
      */
     private List<WorkspaceBO> buildTree(List<WorkspaceBO> workspaces) {
         if (workspaces == null || workspaces.isEmpty()) {
@@ -93,7 +93,7 @@ public class WorkspaceServiceImpl implements WorkspaceService {
             Long id = workspace.getId();
             List<WorkspaceBO> children = grouped.get(id);
             if (children != null) {
-                // 杩囨护鎺夎嚜韬紩鐢紙parentId == id锛夊拰涓嶅瓨鍦ㄧ殑鑺傜偣锛岄槻姝㈠惊鐜紩鐢?
+                // 过滤掉自身引用（parentId == id）和不存在的节点，防止循环引用
                 workspace.setChildren(
                         children.stream()
                                 .filter(c -> allIds.contains(c.getId()) && !c.getId().equals(id))

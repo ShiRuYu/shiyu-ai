@@ -6,32 +6,32 @@ import org.apache.commons.lang3.tuple.Pair;
 import java.util.List;
 
 /**
- * 浜虹墿鏈嶅姟鎺ュ彛
+ * 人物服务接口
  */
 public interface ProfileService {
 
     /**
-     * 鍒嗛〉鏌ヨ浜虹墿鍒楄〃
+     * 分页查询人物列表
      */
     Pair<Long, List<ProfileBO>> getPage(Number pageNo, Number pageSize, String createBy);
 
     /**
-     * 鏍规嵁ID鏌ヨ浜虹墿
+     * 根据ID查询人物
      */
     ProfileBO getById(Long id);
 
     /**
-     * 鍒涘缓浜虹墿
+     * 创建人物
      */
     ProfileBO create(ProfileBO profileBO);
 
     /**
-     * 鏇存柊浜虹墿
+     * 更新人物
      */
     boolean update(ProfileBO profileBO);
 
     /**
-     * 鍒犻櫎浜虹墿
+     * 删除人物
      */
     boolean delete(Long id);
 }

@@ -6,42 +6,42 @@ import com.shiyu.ai.auth.vo.RolePageResponse;
 import java.util.List;
 
 /**
- * 瑙掕壊鏈嶅姟鎺ュ彛
+ * 角色服务接口
  */
 public interface RoleService {
 
     /**
-     * 鑾峰彇瑙掕壊鍒楄〃 - 鍒嗛〉
+     * 获取角色列表 - 分页
      */
     RolePageResponse getRoleList(Number pageNo, Number pageSize, String name);
 
     /**
-     * 鑾峰彇瑙掕壊鍒楄〃-all
+     * 获取角色列表-all
      */
     List<RoleBO> getAllRoles(String status);
 
     /**
-     * 淇敼瑙掕壊
+     * 修改角色
      */
     boolean updateRole(Long id, RoleBO roleBO);
 
     /**
-     * 鍒犻櫎瑙掕壊
+     * 删除角色
      */
     boolean deleteRole(Long id);
 
     /**
-     * 鍙栨秷鍒嗛厤瑙掕壊 - 鎵归噺锛堜粠褰撳墠宸ヤ綔绌洪棿绉婚櫎瑙掕壊锛?
+     * 取消分配角色 - 批量（从当前工作空间移除角色）
      */
     boolean removeUserRoles(Long id, List<Long> userIds);
 
     /**
-     * 鍒嗛厤瑙掕壊 - 鎵归噺锛堝湪褰撳墠宸ヤ綔绌洪棿鍒嗛厤瑙掕壊锛?
+     * 分配角色 - 批量（在当前工作空间分配角色）
      */
     boolean assignUserRoles(Long id, List<Long> userIds);
 
     /**
-     * 鏂板瑙掕壊
+     * 新增角色
      */
     boolean createRole(RoleBO roleBO);
 }

@@ -1,10 +1,12 @@
 package com.shiyu.ai.auth.config;
 
+import cn.dev33.satoken.context.SaHolder;
 import cn.dev33.satoken.exception.NotLoginException;
 import cn.dev33.satoken.filter.SaServletFilter;
-import cn.dev33.satoken.strategy.SaStrategy;
 import cn.dev33.satoken.stp.StpUtil;
+import cn.dev33.satoken.strategy.SaStrategy;
 import cn.dev33.satoken.util.SaFoxUtil;
+import cn.dev33.satoken.router.SaRouter;
 import com.shiyu.ai.common.core.enums.BizResultCode;
 import com.shiyu.ai.common.core.utils.JSONUtils;
 import com.shiyu.ai.common.core.api.Result;
@@ -15,7 +17,7 @@ import org.springframework.context.annotation.Configuration;
 @Configuration
 public class SaTokenConfig {
     /**
-     * 閲嶅啓 Sa-Token 妗嗘灦鍐呴儴绠楁硶绛栫暐
+     * 重写 Sa-Token 框架内部算法策略
      */
     @PostConstruct
     public void rewriteSaStrategy() {
@@ -24,8 +26,8 @@ public class SaTokenConfig {
     }
 
     /**
-     * Sa-Token 鍏ㄥ眬杩囨护鍣紙Servlet 鐗堬級
-     * 鏇夸唬 SaInterceptor 鐨勮矾鐢辨嫤鎴柟寮忥紝瀵瑰紓姝ユ淳鍙戞洿鍙嬪ソ
+     * Sa-Token 全局过滤器（Servlet 版）
+     * 替代 SaInterceptor 的路由拦截方式，对异步派发更友好
      */
     @Bean
     public SaServletFilter saServletFilter() {
@@ -34,7 +36,10 @@ public class SaTokenConfig {
                 .addExclude("/auth/login", "/auth/captcha", "/auth/captcha/validate")
                 .addExclude("/doc.html", "/swagger-ui/**", "/v3/api-docs/**")
                 .addExclude("/webjars/**", "/v2/api-docs", "/h2/**")
-                .setAuth(obj -> StpUtil.checkLogin())
+                .setAuth(obj -> {
+                    // 鉴权：检查是否登录
+                    SaRouter.match("/**").check(r -> StpUtil.checkLogin());
+                })
                 .setError(e -> {
                     BizResultCode resultCode = BizResultCode.BAD_REQUEST;
                     if (e instanceof NotLoginException) {

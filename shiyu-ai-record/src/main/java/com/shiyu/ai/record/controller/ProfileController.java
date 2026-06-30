@@ -14,9 +14,9 @@ import org.springframework.web.bind.annotation.*;
 import java.util.List;
 
 /**
- * 浜虹墿绠＄悊鎺у埗鍣?
+ * 人物管理控制器
  */
-@Tag(name = "浜虹墿绠＄悊", description = "涓汉鎴愰暱璁板綍绯荤粺 - 浜虹墿绠＄悊")
+@Tag(name = "人物管理", description = "个人成长记录系统 - 人物管理")
 @RestController
 @RequestMapping("/api/profile")
 public class ProfileController {
@@ -25,9 +25,9 @@ public class ProfileController {
     private ProfileService profileService;
 
     /**
-     * 鍒嗛〉鏌ヨ浜虹墿鍒楄〃
+     * 分页查询人物列表
      */
-    @Operation(summary = "鍒嗛〉鏌ヨ浜虹墿鍒楄〃")
+    @Operation(summary = "分页查询人物列表")
     @GetMapping("/page")
     public Result<PageData<ProfileBO>> getPage(
             @RequestParam(required = false, defaultValue = "1") Integer pageNo,
@@ -39,9 +39,9 @@ public class ProfileController {
     }
 
     /**
-     * 鏍规嵁ID鏌ヨ浜虹墿
+     * 根据ID查询人物
      */
-    @Operation(summary = "鏍规嵁ID鏌ヨ浜虹墿")
+    @Operation(summary = "根据ID查询人物")
     @GetMapping("/{id}")
     public Result<ProfileBO> getById(@PathVariable Long id) {
         ProfileBO profile = profileService.getById(id);
@@ -49,9 +49,9 @@ public class ProfileController {
     }
 
     /**
-     * 鍒涘缓浜虹墿
+     * 创建人物
      */
-    @Operation(summary = "鍒涘缓浜虹墿")
+    @Operation(summary = "创建人物")
     @PostMapping
     public Result<ProfileBO> create(@Valid @RequestBody ProfileBO profileBO) {
         ProfileBO created = profileService.create(profileBO);
@@ -59,9 +59,9 @@ public class ProfileController {
     }
 
     /**
-     * 鏇存柊浜虹墿
+     * 更新人物
      */
-    @Operation(summary = "鏇存柊浜虹墿")
+    @Operation(summary = "更新人物")
     @PutMapping
     public Result<Boolean> update(@Valid @RequestBody ProfileBO profileBO) {
         boolean updated = profileService.update(profileBO);
@@ -69,9 +69,9 @@ public class ProfileController {
     }
 
     /**
-     * 鍒犻櫎浜虹墿
+     * 删除人物
      */
-    @Operation(summary = "鍒犻櫎浜虹墿")
+    @Operation(summary = "删除人物")
     @DeleteMapping("/{id}")
     public Result<Boolean> delete(@PathVariable Long id) {
         boolean deleted = profileService.delete(id);

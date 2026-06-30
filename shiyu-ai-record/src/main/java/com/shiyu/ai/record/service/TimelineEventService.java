@@ -6,37 +6,37 @@ import org.apache.commons.lang3.tuple.Pair;
 import java.util.List;
 
 /**
- * 鏃堕棿杞翠簨浠舵湇鍔℃帴鍙?
+ * 时间轴事件服务接口
  */
 public interface TimelineEventService {
 
     /**
-     * 鍒嗛〉鏌ヨ鏃堕棿杞翠簨浠跺垪琛?
+     * 分页查询时间轴事件列表
      */
     Pair<Long, List<TimelineEventBO>> getPage(Number pageNo, Number pageSize, Long profileId);
 
     /**
-     * 鏍规嵁ID鏌ヨ鏃堕棿杞翠簨浠?
+     * 根据ID查询时间轴事件
      */
     TimelineEventBO getById(Long id);
 
     /**
-     * 鍒涘缓鏃堕棿杞翠簨浠?
+     * 创建时间轴事件
      */
     TimelineEventBO create(TimelineEventBO eventBO);
 
     /**
-     * 鏇存柊鏃堕棿杞翠簨浠?
+     * 更新时间轴事件
      */
     boolean update(TimelineEventBO eventBO);
 
     /**
-     * 鍒犻櫎鏃堕棿杞翠簨浠?
+     * 删除时间轴事件
      */
     boolean delete(Long id);
 
     /**
-     * 鏌ヨ浜虹墿鐨勬椂闂磋酱
+     * 查询人物的时间轴
      */
     List<TimelineEventBO> getTimelineByProfileId(Long profileId);
 }

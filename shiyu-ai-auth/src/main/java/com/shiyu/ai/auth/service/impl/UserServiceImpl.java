@@ -17,7 +17,7 @@ import java.util.List;
 import java.util.Map;
 
 /**
- * 鐢ㄦ埛鏈嶅姟瀹炵幇绫?
+ * 用户服务实现类
  */
 @Slf4j
 @Service
@@ -31,15 +31,15 @@ public class UserServiceImpl implements UserService {
 
     @Override
     public UserBO getUserDetail(Long userId) {
-        log.info("鑾峰彇鐢ㄦ埛璇︽儏锛寀serId: {}", userId);
+        log.info("获取用户详情，userId: {}", userId);
         UserBO userBO = userRepository.selectById(userId);
         
         if (userBO != null) {
-            // 鏌ヨ骞惰缃敤鎴疯鑹插垪琛?
+            // 查询并设置用户角色列表
             List<RoleBO> roles = userRepository.selectRolesByUserId(userId);
             userBO.setRoles(roles);
 
-            // 浠?extInfo 涓В鏋愬綋鍓嶈鑹?
+            // 从 extInfo 中解析当前角色
             if (userBO.getExtInfo() != null && !userBO.getExtInfo().isEmpty()) {
                 Map<?, ?> extInfoMap = JSONUtils.parseObject(userBO.getExtInfo(), Map.class);
                 if (extInfoMap != null) {
@@ -63,7 +63,7 @@ public class UserServiceImpl implements UserService {
 
     @Override
     public UserPageResponse getUserList(String username, Number pageNo, Number pageSize) {
-        log.info("鑾峰彇鐢ㄦ埛鍒楄〃锛寀sername: {}, pageNo: {}, pageSize: {}", username, pageNo, pageSize);
+        log.info("获取用户列表，username: {}, pageNo: {}, pageSize: {}", username, pageNo, pageSize);
         
         Pair<Long, List<UserBO>> result = userRepository.selectPage(pageNo, pageSize, username);
         List<UserVO> userVOs = MapstructUtils.convert(result.getRight(), UserVO.class);
@@ -77,29 +77,25 @@ public class UserServiceImpl implements UserService {
 
     @Override
     public boolean deleteUser(Long userId) {
-        log.info("鍒犻櫎鐢ㄦ埛锛寀serId: {}", userId);
+        log.info("删除用户，userId: {}", userId);
         return userRepository.deleteById(userId);
     }
 
     @Override
     public boolean updateUser(Long userId, UserBO userBO) {
-        log.info("淇敼鐢ㄦ埛锛寀serId: {}", userId);
+        log.info("修改用户，userId: {}", userId);
         UserBO existingUser = userRepository.selectById(userId);
         if (existingUser == null) {
             return false;
         }
         
-        // 保留现有的 extInfo（含 token/session 数据），防止被请求中的 null 覆盖
-        if (userBO.getExtInfo() == null) {
-            userBO.setExtInfo(existingUser.getExtInfo());
-        }
         userBO.setId(userId);
         return userRepository.update(userBO);
     }
 
     @Override
     public boolean resetUserPassword(Long userId, String password) {
-        log.info("閲嶇疆鐢ㄦ埛瀵嗙爜锛寀serId: {}", userId);
+        log.info("重置用户密码，userId: {}", userId);
         UserBO userBO = userRepository.selectById(userId);
         if (userBO == null) {
             return false;
@@ -111,7 +107,7 @@ public class UserServiceImpl implements UserService {
 
     @Override
     public Long createUser(UserBO userBO) {
-        log.info("鏂板鐢ㄦ埛: {}", userBO.getUsername());
+        log.info("新增用户: {}", userBO.getUsername());
         if (userBO.getPassword() == null || userBO.getPassword().isBlank()) {
             userBO.setPassword(PasswordUtils.encode(PasswordUtils.DEFAULT_PASSWORD));
         } else {
@@ -123,13 +119,13 @@ public class UserServiceImpl implements UserService {
 
     @Override
     public boolean changePassword(Long userId, String oldPassword, String newPassword) {
-        log.info("淇敼瀵嗙爜锛寀serId: {}", userId);
+        log.info("修改密码，userId: {}", userId);
         UserBO userBO = userRepository.selectById(userId);
         if (userBO == null) {
             return false;
         }
         if (!PasswordUtils.matches(oldPassword, userBO.getPassword())) {
-            log.warn("鏃у瘑鐮侀敊璇紝userId: {}", userId);
+            log.warn("旧密码错误，userId: {}", userId);
             return false;
         }
         userBO.setPassword(PasswordUtils.encode(newPassword));
