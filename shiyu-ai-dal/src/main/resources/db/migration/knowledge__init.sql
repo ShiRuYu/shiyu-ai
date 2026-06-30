@@ -81,3 +81,107 @@ INSERT INTO `knowledge_relation` (`source_id`, `target_id`, `relation_type`, `we
 
 ALTER TABLE `knowledge` ALTER COLUMN `id` RESTART WITH 100;
 ALTER TABLE `knowledge_relation` ALTER COLUMN `id` RESTART WITH 100;
+
+-- ============================================
+-- 5. 文档知识表 (教材/讲义/参考资料)
+-- ============================================
+DROP TABLE IF EXISTS `knowledge_document`;
+CREATE TABLE `knowledge_document` (
+    `id`              BIGINT       NOT NULL AUTO_INCREMENT COMMENT '文档ID',
+    `title`           VARCHAR(255) NOT NULL COMMENT '文档标题',
+    `content`         TEXT         NOT NULL COMMENT '文档内容',
+    `doc_type`        VARCHAR(20)  DEFAULT 'ARTICLE' COMMENT '文档类型 ARTICLE/TEXTBOOK/LECTURE/REFERENCE',
+    `source`          VARCHAR(255) DEFAULT NULL COMMENT '来源',
+    `author`          VARCHAR(128) DEFAULT NULL COMMENT '作者',
+    `create_by`       VARCHAR(64)  DEFAULT NULL COMMENT '创建者',
+    `create_time`     TIMESTAMP    DEFAULT CURRENT_TIMESTAMP COMMENT '创建时间',
+    `update_by`       VARCHAR(64)  DEFAULT NULL COMMENT '更新者',
+    `update_time`     TIMESTAMP    DEFAULT CURRENT_TIMESTAMP COMMENT '更新时间',
+    PRIMARY KEY (`id`)
+);
+CREATE INDEX `idx_kd_type` ON `knowledge_document` (`doc_type`);
+COMMENT ON TABLE `knowledge_document` IS '文档知识表';
+
+-- ============================================
+-- 6. 文档-知识点关联表 (多对多)
+-- ============================================
+DROP TABLE IF EXISTS `knowledge_doc_relation`;
+CREATE TABLE `knowledge_doc_relation` (
+    `id`            BIGINT      NOT NULL AUTO_INCREMENT,
+    `doc_id`        BIGINT      NOT NULL COMMENT '文档ID',
+    `knowledge_id`  BIGINT      NOT NULL COMMENT '知识点ID',
+    `relation_type` VARCHAR(20) DEFAULT 'RELATED' COMMENT '关联类型',
+    `create_time`   TIMESTAMP   DEFAULT CURRENT_TIMESTAMP,
+    PRIMARY KEY (`id`),
+    UNIQUE KEY `uk_kdr_doc_knowledge` (`doc_id`, `knowledge_id`)
+);
+CREATE INDEX `idx_kdr_knowledge` ON `knowledge_doc_relation` (`knowledge_id`);
+COMMENT ON TABLE `knowledge_doc_relation` IS '文档-知识点关联表';
+
+-- ============================================
+-- 7. 能力值表 (Bloom Taxonomy 持久化)
+-- ============================================
+DROP TABLE IF EXISTS `ability`;
+CREATE TABLE `ability` (
+    `id`              BIGINT       NOT NULL AUTO_INCREMENT,
+    `student_id`      BIGINT       NOT NULL COMMENT '学生ID',
+    `knowledge_id`    BIGINT       NOT NULL COMMENT '知识点ID',
+    `remember`        DOUBLE       DEFAULT 0 COMMENT '记忆',
+    `understand`      DOUBLE       DEFAULT 0 COMMENT '理解',
+    `apply`           DOUBLE       DEFAULT 0 COMMENT '应用',
+    `analyze`         DOUBLE       DEFAULT 0 COMMENT '分析',
+    `evaluate`        DOUBLE       DEFAULT 0 COMMENT '评价',
+    `create_score`    DOUBLE       DEFAULT 0 COMMENT '创造',
+    `overall_mastery` DOUBLE       DEFAULT 0 COMMENT '总体掌握度',
+    `last_update`     TIMESTAMP    DEFAULT CURRENT_TIMESTAMP COMMENT '最后更新时间',
+    PRIMARY KEY (`id`),
+    UNIQUE KEY `uk_ability_student_knowledge` (`student_id`, `knowledge_id`)
+);
+COMMENT ON TABLE `ability' IS '能力值表';
+
+-- ============================================
+-- 8. 教材版本表 (知识点分层)
+-- ============================================
+DROP TABLE IF EXISTS `textbook`;
+CREATE TABLE `textbook` (
+    `id`              BIGINT       NOT NULL AUTO_INCREMENT,
+    `name`            VARCHAR(128) NOT NULL COMMENT '教材名称',
+    `subject_code`    VARCHAR(20)  NOT NULL COMMENT '学科编码',
+    `grade`           INT          NOT NULL COMMENT '年级',
+    `publisher`       VARCHAR(64)  NOT NULL COMMENT '出版社(人教版/北师大版等)',
+    `isbn`            VARCHAR(32)  DEFAULT NULL COMMENT 'ISBN',
+    `create_time`     TIMESTAMP    DEFAULT CURRENT_TIMESTAMP,
+    PRIMARY KEY (`id`)
+);
+COMMENT ON TABLE `textbook` IS '教材版本表';
+
+-- ============================================
+-- 9. 章节表 (教材的章节结构)
+-- ============================================
+DROP TABLE IF EXISTS `chapter`;
+CREATE TABLE `chapter` (
+    `id`              BIGINT       NOT NULL AUTO_INCREMENT,
+    `textbook_id`     BIGINT       NOT NULL COMMENT '教材ID',
+    `parent_id`       BIGINT       DEFAULT NULL COMMENT '父章节ID',
+    `name`            VARCHAR(128) NOT NULL COMMENT '章节名称',
+    `chapter_order`   INT          DEFAULT 0 COMMENT '排序',
+    `create_time`     TIMESTAMP    DEFAULT CURRENT_TIMESTAMP,
+    PRIMARY KEY (`id`),
+    KEY `idx_chapter_textbook` (`textbook_id`),
+    KEY `idx_chapter_parent` (`parent_id`)
+);
+COMMENT ON TABLE `chapter` IS '章节表';
+
+-- ============================================
+-- 10. 知识点-教材章节关联
+-- ============================================
+DROP TABLE IF EXISTS `knowledge_textbook`;
+CREATE TABLE `knowledge_textbook` (
+    `id`              BIGINT NOT NULL AUTO_INCREMENT,
+    `knowledge_id`    BIGINT NOT NULL COMMENT '知识点ID',
+    `textbook_id`     BIGINT NOT NULL COMMENT '教材ID',
+    `chapter_id`      BIGINT DEFAULT NULL COMMENT '章节ID',
+    PRIMARY KEY (`id`),
+    UNIQUE KEY `uk_kt_knowledge_textbook` (`knowledge_id`, `textbook_id`)
+);
+COMMENT ON TABLE `knowledge_textbook` IS '知识点-教材章节关联表';

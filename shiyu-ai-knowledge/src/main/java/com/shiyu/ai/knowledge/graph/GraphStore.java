@@ -24,6 +24,15 @@ public interface GraphStore {
 
     void removeEdge(Long sourceId, Long targetId, String type);
 
+
+    /** 获取父节点列表 (返回完整节点) */
+    List<GraphNode> getParentNodes(Long id);
+
+    /** 获取子节点列表 (返回完整节点) */
+    List<GraphNode> getChildNodes(Long id);
+
+    /** 获取相关节点列表 (返回完整节点) */
+    List<GraphNode> getRelatedNodes(Long id);
     List<Long> topologicalSort(Long rootId);
 
     List<Long> dfs(Long startId);

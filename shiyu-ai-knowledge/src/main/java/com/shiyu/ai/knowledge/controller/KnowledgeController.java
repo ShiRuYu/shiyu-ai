@@ -9,6 +9,8 @@ import com.shiyu.ai.knowledge.dto.KnowledgeResponse;
 import com.shiyu.ai.knowledge.dto.UpdateKnowledgeRequest;
 import com.shiyu.ai.knowledge.graph.KnowledgeGraph;
 import com.shiyu.ai.knowledge.path.LearningPathService;
+import com.shiyu.ai.knowledge.search.KnowledgeSearchService;
+import com.shiyu.ai.knowledge.search.SearchResult;
 import com.shiyu.ai.knowledge.service.KnowledgeRelationService;
 import com.shiyu.ai.knowledge.service.KnowledgeService;
 import io.swagger.v3.oas.annotations.Operation;
@@ -32,6 +34,7 @@ public class KnowledgeController {
     private final KnowledgeRelationService relationService;
     private final LearningPathService learningPathService;
     private final KnowledgeGraph knowledgeGraph;
+    private final KnowledgeSearchService knowledgeSearchService;
 
     @GetMapping("/{id}")
     @Operation(summary = "获取知识点详情")

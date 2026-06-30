@@ -15,6 +15,7 @@ import org.springframework.stereotype.Component;
 
 import java.util.*;
 import java.util.stream.Collectors;
+import java.util.stream.Collectors;
 
 @Slf4j
 @Component
@@ -106,6 +107,31 @@ public class RogueMapGraphStore implements GraphStore, ApplicationRunner {
     public List<Long> related(Long id) {
         GraphNode node = getNode(id);
         return node != null ? node.getRelatedIds() : Collections.emptyList();
+    }
+
+
+    @Override
+    public List<GraphNode> getParentNodes(Long id) {
+        return parents(id).stream()
+                .map(this::getNode)
+                .filter(Objects::nonNull)
+                .collect(Collectors.toList());
+    }
+
+    @Override
+    public List<GraphNode> getChildNodes(Long id) {
+        return children(id).stream()
+                .map(this::getNode)
+                .filter(Objects::nonNull)
+                .collect(Collectors.toList());
+    }
+
+    @Override
+    public List<GraphNode> getRelatedNodes(Long id) {
+        return related(id).stream()
+                .map(this::getNode)
+                .filter(Objects::nonNull)
+                .collect(Collectors.toList());
     }
 
     @Override

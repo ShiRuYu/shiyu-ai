@@ -1,61 +1,100 @@
 package com.shiyu.ai.knowledge.ability.impl;
 
+import com.shiyu.ai.dal.dataobject.knowledge.AbilityDO;
 import com.shiyu.ai.knowledge.domain.AbilityValue;
 import com.shiyu.ai.knowledge.domain.BloomTaxonomy;
 import com.shiyu.ai.knowledge.ability.AbilityService;
+import com.shiyu.ai.knowledge.repository.AbilityRepository;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDateTime;
-import java.util.Map;
-import java.util.concurrent.ConcurrentHashMap;
 
 @Slf4j
 @Service
 public class AbilityServiceImpl implements AbilityService {
 
-    private final Map<String, AbilityValue> store = new ConcurrentHashMap<>();
+    private final AbilityRepository abilityRepository;
+
+    public AbilityServiceImpl(AbilityRepository abilityRepository) {
+        this.abilityRepository = abilityRepository;
+    }
 
     @Override
     public AbilityValue get(Long studentId, Long knowledgeId) {
-        String key = buildKey(studentId, knowledgeId);
-        return store.getOrDefault(key, AbilityValue.empty(studentId, knowledgeId));
+        AbilityDO d = abilityRepository.selectByStudentAndKnowledge(studentId, knowledgeId);
+        return d != null ? fromDO(d) : AbilityValue.empty(studentId, knowledgeId);
     }
 
     @Override
     public void update(Long studentId, Long knowledgeId, BloomTaxonomy dimension, double accuracy) {
-        String key = buildKey(studentId, knowledgeId);
-        AbilityValue current = store.getOrDefault(key, AbilityValue.empty(studentId, knowledgeId));
+        AbilityDO d = abilityRepository.selectByStudentAndKnowledge(studentId, knowledgeId);
+        boolean isNew = false;
+        if (d == null) {
+            d = new AbilityDO();
+            d.setStudentId(studentId);
+            d.setKnowledgeId(knowledgeId);
+            d.setRemember(0.0);
+            d.setUnderstand(0.0);
+            d.setApply(0.0);
+            d.setAnalyze(0.0);
+            d.setEvaluate(0.0);
+            d.setCreateScore(0.0);
+            isNew = true;
+        }
 
-        double currentScore = getScore(current, dimension);
-        double updatedScore = currentScore + (100 - currentScore) * accuracy * 0.1;
-        updatedScore = Math.min(100, updatedScore);
+        double current = getScore(d, dimension);
+        double updated = current + (100 - current) * accuracy * 0.1;
+        updated = Math.min(100, updated);
 
-        AbilityValue newValue = switch (dimension) {
-            case REMEMBER  -> new AbilityValue(studentId, knowledgeId, updatedScore, current.understand(), current.apply(), current.analyze(), current.evaluate(), current.create(), LocalDateTime.now());
-            case UNDERSTAND -> new AbilityValue(studentId, knowledgeId, current.remember(), updatedScore, current.apply(), current.analyze(), current.evaluate(), current.create(), LocalDateTime.now());
-            case APPLY     -> new AbilityValue(studentId, knowledgeId, current.remember(), current.understand(), updatedScore, current.analyze(), current.evaluate(), current.create(), LocalDateTime.now());
-            case ANALYZE   -> new AbilityValue(studentId, knowledgeId, current.remember(), current.understand(), current.apply(), updatedScore, current.evaluate(), current.create(), LocalDateTime.now());
-            case EVALUATE  -> new AbilityValue(studentId, knowledgeId, current.remember(), current.understand(), current.apply(), current.analyze(), updatedScore, current.create(), LocalDateTime.now());
-            case CREATE    -> new AbilityValue(studentId, knowledgeId, current.remember(), current.understand(), current.apply(), current.analyze(), current.evaluate(), updatedScore, LocalDateTime.now());
-        };
+        setScore(d, dimension, updated);
+        d.setOverallMastery(
+            d.getRemember() * 0.15 +
+            d.getUnderstand() * 0.20 +
+            d.getApply() * 0.25 +
+            d.getAnalyze() * 0.20 +
+            d.getEvaluate() * 0.10 +
+            d.getCreateScore() * 0.10
+        );
+        d.setLastUpdate(LocalDateTime.now());
 
-        store.put(key, newValue);
-        log.info("能力值更新: student={}, knowledge={}, dimension={}, score={}", studentId, knowledgeId, dimension, updatedScore);
+        if (isNew) {
+            abilityRepository.insert(d);
+        } else {
+            abilityRepository.update(d);
+        }
+
+        log.info("能力值更新: student={}, knowledge={}, dimension={}, score={}",
+                studentId, knowledgeId, dimension, updated);
     }
 
-    private double getScore(AbilityValue value, BloomTaxonomy dimension) {
-        return switch (dimension) {
-            case REMEMBER   -> value.remember();
-            case UNDERSTAND -> value.understand();
-            case APPLY      -> value.apply();
-            case ANALYZE    -> value.analyze();
-            case EVALUATE   -> value.evaluate();
-            case CREATE     -> value.create();
+    private double getScore(AbilityDO d, BloomTaxonomy dim) {
+        return switch (dim) {
+            case REMEMBER   -> d.getRemember();
+            case UNDERSTAND -> d.getUnderstand();
+            case APPLY      -> d.getApply();
+            case ANALYZE    -> d.getAnalyze();
+            case EVALUATE   -> d.getEvaluate();
+            case CREATE     -> d.getCreateScore();
         };
     }
 
-    private String buildKey(Long studentId, Long knowledgeId) {
-        return studentId + ":" + knowledgeId;
+    private void setScore(AbilityDO d, BloomTaxonomy dim, double score) {
+        switch (dim) {
+            case REMEMBER   -> d.setRemember(score);
+            case UNDERSTAND -> d.setUnderstand(score);
+            case APPLY      -> d.setApply(score);
+            case ANALYZE    -> d.setAnalyze(score);
+            case EVALUATE   -> d.setEvaluate(score);
+            case CREATE     -> d.setCreateScore(score);
+        }
+    }
+
+    private AbilityValue fromDO(AbilityDO d) {
+        return new AbilityValue(
+                d.getStudentId(), d.getKnowledgeId(),
+                d.getRemember(), d.getUnderstand(), d.getApply(),
+                d.getAnalyze(), d.getEvaluate(), d.getCreateScore(),
+                d.getLastUpdate());
     }
 }

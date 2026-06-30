@@ -6,6 +6,7 @@ import org.springframework.stereotype.Component;
 
 import java.util.List;
 import java.util.Set;
+import java.util.Set;
 
 @Component
 public class KnowledgeGraph {
@@ -68,6 +69,18 @@ public class KnowledgeGraph {
         graphStore.removeEdge(sourceId, targetId, type);
     }
 
+
+    public List<GraphNode> getParentNodes(Long id) {
+        return graphStore.getParentNodes(id);
+    }
+
+    public List<GraphNode> getChildNodes(Long id) {
+        return graphStore.getChildNodes(id);
+    }
+
+    public List<GraphNode> getRelatedNodes(Long id) {
+        return graphStore.getRelatedNodes(id);
+    }
     public void reload() {
         graphStore.loadAll();
     }
