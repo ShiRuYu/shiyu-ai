@@ -37,11 +37,7 @@
         <dependency>
             <groupId>com.yomahub</groupId>
             <artifactId>roguemap-core</artifactId>
-        </dependency>        <dependency>
-            <groupId>com.yomahub</groupId>
-            <artifactId>roguemap-memory</artifactId>
         </dependency>
-
         <dependency>
             <groupId>org.apache.commons</groupId>
             <artifactId>commons-lang3</artifactId>
