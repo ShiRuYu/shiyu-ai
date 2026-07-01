@@ -1,0 +1,298 @@
+### ============================================================
+### Agent 引擎 API
+### 基础 URL: http://localhost:9000
+### ============================================================
+
+@baseUrl = http://localhost:9000
+
+### ============================================================
+### 0. 【必须先执行】登录获取 Token
+###    执行后 {{Login.response.body.$.data.accessToken}} 即为后续请求的 Bearer Token
+### ============================================================
+
+# @name Login
+POST {{baseUrl}}/auth/login
+Content-Type: application/json
+
+{
+  "username": "vben",
+  "password": "123456",
+  "captchaKey": "",
+  "captcha": ""
+}
+
+
+
+### ============================================================
+### 1. Agent 列表
+### GET {{baseUrl}}/api/agent/list
+### ============================================================
+
+# @name AgentList
+GET {{baseUrl}}/api/agent/list
+Content-Type: application/json
+Authorization: Bearer {{Login.response.body.$.data.accessToken}}
+
+### ============================================================
+### 2. 获取 Agent 详情
+### GET {{baseUrl}}/api/agent/{agentId}
+### ============================================================
+
+@agentId = {{AgentList.response.body.$.data.[0].agentId}}
+
+GET {{baseUrl}}/api/agent/{{agentId}}
+Authorization: Bearer {{Login.response.body.$.data.accessToken}}
+
+### ============================================================
+### 3. 注册新 Agent
+### POST {{baseUrl}}/api/agent/register
+### ============================================================
+
+POST {{baseUrl}}/api/agent/register
+Content-Type: application/json
+Authorization: Bearer {{Login.response.body.$.data.accessToken}}
+
+{
+  "agentId": "education-tutor",
+  "name": "AI 教育辅导助手",
+  "description": "K12 教育辅导专用 Agent，支持知识点讲解、出题、组卷等",
+  "versionNumber": "v1.0.0",
+  "versionDescription": "初始版本"
+}
+
+### ============================================================
+### 4. 执行 Agent（普通模式）
+### POST {{baseUrl}}/api/agent/{agentId}/execute
+### ============================================================
+
+POST {{baseUrl}}/api/agent/{{agentId}}/execute
+Content-Type: application/json
+Authorization: Bearer {{Login.response.body.$.data.accessToken}}
+
+{
+  "query": "请给用户介绍下自己"
+}
+
+### ============================================================
+### 5. 执行 Agent（流式模式）
+### POST {{baseUrl}}/api/agent/{agentId}/executeStream
+### ============================================================
+
+POST {{baseUrl}}/api/agent/{{agentId}}/executeStream
+Content-Type: application/json
+Authorization: Bearer {{Login.response.body.$.data.accessToken}}
+
+{
+  "query": "ai"
+}
+
+### ============================================================
+### 6. 切换 Agent 版本
+### POST {{baseUrl}}/api/agent/{agentId}/version/switch?version=v1.0.0
+### ============================================================
+
+POST {{baseUrl}}/api/agent/{{agentId}}/version/switch?version=v1.0.0
+Content-Type: application/json
+Authorization: Bearer {{Login.response.body.$.data.accessToken}}
+
+### ============================================================
+### 7. 删除 Agent
+### POST {{baseUrl}}/api/agent/{agentId}
+### ============================================================
+
+POST {{baseUrl}}/api/agent/{{agentId}}
+Content-Type: application/json
+Authorization: Bearer {{Login.response.body.$.data.accessToken}}
+
+### ============================================================
+### Agent 管理后台 API
+### ============================================================
+
+### ----------------------------------------------------------
+### 8. 分页查询 Agent
+### GET {{baseUrl}}/admin/agent/page
+### ----------------------------------------------------------
+
+GET {{baseUrl}}/admin/agent/page?pageNum=1&pageSize=10
+Authorization: Bearer {{Login.response.body.$.data.accessToken}}
+
+### ----------------------------------------------------------
+### 9. 查询全部 Agent 列表（下拉选择用）
+### GET {{baseUrl}}/admin/agent/list/all
+### ----------------------------------------------------------
+
+GET {{baseUrl}}/admin/agent/list/all
+Authorization: Bearer {{Login.response.body.$.data.accessToken}}
+
+### ----------------------------------------------------------
+### 10. 创建 Agent
+### POST {{baseUrl}}/admin/agent
+### ----------------------------------------------------------
+
+# @name CreatedAgent
+POST {{baseUrl}}/admin/agent
+Content-Type: application/json
+Authorization: Bearer {{Login.response.body.$.data.accessToken}}
+
+{
+  "agentId": "custom-tutor",
+  "name": "自定义辅导 Agent",
+  "description": "测试用"
+}
+
+### ----------------------------------------------------------
+### 11. 获取 Agent 详情
+### GET {{baseUrl}}/admin/agent/{id}
+### ----------------------------------------------------------
+
+@agentAdminId = {{CreatedAgent.response.body.$.data.id}}
+
+GET {{baseUrl}}/admin/agent/{{agentAdminId}}
+Authorization: Bearer {{Login.response.body.$.data.accessToken}}
+
+### ----------------------------------------------------------
+### 12. 更新 Agent
+### PUT {{baseUrl}}/admin/agent/{id}
+### ----------------------------------------------------------
+
+PUT {{baseUrl}}/admin/agent/{{agentAdminId}}
+Content-Type: application/json
+Authorization: Bearer {{Login.response.body.$.data.accessToken}}
+
+{
+  "name": "自定义辅导 Agent（已更新）",
+  "description": "更新后的描述"
+}
+
+### ----------------------------------------------------------
+### 13. 更新 Agent 状态
+### PUT {{baseUrl}}/admin/agent/{id}/status
+### ----------------------------------------------------------
+
+PUT {{baseUrl}}/admin/agent/{{agentAdminId}}/status?status=DISABLED
+Content-Type: application/json
+Authorization: Bearer {{Login.response.body.$.data.accessToken}}
+
+### ----------------------------------------------------------
+### 14. 删除 Agent
+### DELETE {{baseUrl}}/admin/agent/{id}
+### ----------------------------------------------------------
+
+DELETE {{baseUrl}}/admin/agent/{{agentAdminId}}
+Authorization: Bearer {{Login.response.body.$.data.accessToken}}
+
+### ============================================================
+### Agent Graph 配置
+### ============================================================
+
+# 先获取一个 Agent 的 ID 和版本 ID
+@graphAgentId = {{AgentList.response.body.$.data.[0].agentId}}
+@graphVersionId = 1
+
+### ----------------------------------------------------------
+### 15. 获取 Graph
+### GET {{baseUrl}}/admin/agent/{agentId}/version/{versionId}/graph
+### ----------------------------------------------------------
+
+GET {{baseUrl}}/admin/agent/{{graphAgentId}}/version/{{graphVersionId}}/graph
+Authorization: Bearer {{Login.response.body.$.data.accessToken}}
+
+### ----------------------------------------------------------
+### 16. 更新 Graph
+### PUT {{baseUrl}}/admin/agent/{agentId}/version/{versionId}/graph
+### ----------------------------------------------------------
+
+PUT {{baseUrl}}/admin/agent/{{graphAgentId}}/version/{{graphVersionId}}/graph
+Content-Type: application/json
+Authorization: Bearer {{Login.response.body.$.data.accessToken}}
+
+{
+  "nodes": [],
+  "edges": []
+}
+
+### ----------------------------------------------------------
+### 17. 验证 Graph
+### POST {{baseUrl}}/admin/agent/{agentId}/version/{versionId}/graph/validate
+### ----------------------------------------------------------
+
+POST {{baseUrl}}/admin/agent/{{graphAgentId}}/version/{{graphVersionId}}/graph/validate
+Content-Type: application/json
+Authorization: Bearer {{Login.response.body.$.data.accessToken}}
+
+{
+  "nodes": [],
+  "edges": []
+}
+
+### ----------------------------------------------------------
+### 18. 获取 Canvas 配置
+### GET {{baseUrl}}/admin/agent/{agentId}/version/{versionId}/graph/canvas
+### ----------------------------------------------------------
+
+GET {{baseUrl}}/admin/agent/{{graphAgentId}}/version/{{graphVersionId}}/graph/canvas
+Authorization: Bearer {{Login.response.body.$.data.accessToken}}
+
+### ============================================================
+### Agent 节点类型
+### ============================================================
+
+### ----------------------------------------------------------
+### 19. 列出所有节点类型
+### GET {{baseUrl}}/admin/agent/node-types
+### ----------------------------------------------------------
+
+GET {{baseUrl}}/admin/agent/node-types
+Authorization: Bearer {{Login.response.body.$.data.accessToken}}
+
+### ----------------------------------------------------------
+### 20. 获取节点类型详情
+### GET {{baseUrl}}/admin/agent/node-types/{nodeType}
+### ----------------------------------------------------------
+
+GET {{baseUrl}}/admin/agent/node-types/llm
+Authorization: Bearer {{Login.response.body.$.data.accessToken}}
+
+### ============================================================
+### Agent 版本管理
+### ============================================================
+
+### ----------------------------------------------------------
+### 21. 获取版本列表
+### GET {{baseUrl}}/admin/agent/{agentId}/version
+### ----------------------------------------------------------
+
+GET {{baseUrl}}/admin/agent/{{graphAgentId}}/version
+Authorization: Bearer {{Login.response.body.$.data.accessToken}}
+
+### ----------------------------------------------------------
+### 22. 创建新版本
+### POST {{baseUrl}}/admin/agent/{agentId}/version
+### ----------------------------------------------------------
+
+POST {{baseUrl}}/admin/agent/{{graphAgentId}}/version
+Content-Type: application/json
+Authorization: Bearer {{Login.response.body.$.data.accessToken}}
+
+{
+  "versionNumber": "v2.0.0",
+  "description": "第二个版本"
+}
+
+### ----------------------------------------------------------
+### 23. 发布版本
+### POST {{baseUrl}}/admin/agent/{agentId}/version/{versionId}/publish
+### ----------------------------------------------------------
+
+POST {{baseUrl}}/admin/agent/{{graphAgentId}}/version/{{graphVersionId}}/publish
+Content-Type: application/json
+Authorization: Bearer {{Login.response.body.$.data.accessToken}}
+
+### ----------------------------------------------------------
+### 24. 激活版本
+### POST {{baseUrl}}/admin/agent/{agentId}/version/{versionId}/activate
+### ----------------------------------------------------------
+
+POST {{baseUrl}}/admin/agent/{{graphAgentId}}/version/{{graphVersionId}}/activate
+Content-Type: application/json
+Authorization: Bearer {{Login.response.body.$.data.accessToken}}

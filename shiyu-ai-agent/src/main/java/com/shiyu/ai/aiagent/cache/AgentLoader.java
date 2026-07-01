@@ -172,13 +172,19 @@ public class AgentLoader {
     private ConditionEdge buildConditionEdge(String sourceId, GraphConfigRequest.ConditionalEdgeDTO dto) {
         Map<String, String> mappings = dto.getNodeMappings() != null ? dto.getNodeMappings() : new HashMap<>();
         String defaultTarget = dto.getDefaultTarget() != null ? dto.getDefaultTarget() : "";
+        String conditionType = dto.getConditionType() != null ? dto.getConditionType() : "";
 
         return ConditionEdge.builder()
                 .from(sourceId)
                 .defaultTarget(defaultTarget)
                 .nodeMappings(mappings)
                 .functionCondition(state -> {
-                    // 只返回条件键，由 langgraph4j 的 mappings 参数完成节点映射
+                    if ("SCORE_ROUTING".equals(conditionType)) {
+                        // 教育图评分路由：reviewNeeded=true → retry, false → pass
+                        Boolean reviewNeeded = (Boolean) state.get("reviewNeeded");
+                        return Boolean.TRUE.equals(reviewNeeded) ? "retry" : "pass";
+                    }
+                    // 默认：意图路由
                     String intentCode = (String) state.getOrDefault("intentCode", "");
                     return intentCode.isEmpty() ? "UNKNOWN" : intentCode;
                 })

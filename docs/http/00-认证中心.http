@@ -1,0 +1,138 @@
+### ============================================================
+### 认证中心 API
+### 基础 URL: http://localhost:9000
+### ============================================================
+
+@baseUrl = http://localhost:9000
+
+### ============================================================
+### 1. 登录
+### POST {{baseUrl}}/auth/login
+### 
+### 用户名密码列表（来自 auth__init.sql 种子数据）：
+###   - admin / admin123 → 管理员
+###   - vben  / 123456  → 普通用户
+###   - test  / 123456  → 测试用户
+###
+### ⚠️ 注意：Token 变量仅在当前 .http 文件内有效
+###    其他 .http 文件各自包含独立的登录请求
+### ============================================================
+
+# @name Login
+POST {{baseUrl}}/auth/login
+Content-Type: application/json
+
+{
+  "username": "vben",
+  "password": "123456",
+  "captchaKey": "",
+  "captcha": ""
+}
+
+### ============================================================
+### 2. 获取权限码（需登录后使用）
+### GET {{baseUrl}}/auth/codes
+### ============================================================
+
+# @name AuthCodes
+GET {{baseUrl}}/auth/codes
+Authorization: Bearer {{Login.response.body.$.data.accessToken}}
+
+### ============================================================
+### 3. 刷新 Token
+### POST {{baseUrl}}/auth/refresh
+### ============================================================
+
+# @name RefreshToken
+POST {{baseUrl}}/auth/refresh
+Content-Type: application/json
+Authorization: Bearer {{Login.response.body.$.data.accessToken}}
+
+{
+  "token": "{{Login.response.body.$.data.accessToken}}"
+}
+
+### ============================================================
+### 4. 获取验证码
+### GET {{baseUrl}}/auth/captcha
+### ============================================================
+
+GET {{baseUrl}}/auth/captcha
+
+### ============================================================
+### 5. 校验验证码
+### POST {{baseUrl}}/auth/captcha/validate
+### ============================================================
+
+POST {{baseUrl}}/auth/captcha/validate
+Content-Type: application/json
+
+{
+  "captchaKey": "xxx",
+  "captcha": "xxx"
+}
+
+### ============================================================
+### 6. 切换当前角色
+### POST {{baseUrl}}/auth/switch-role
+### ============================================================
+
+POST {{baseUrl}}/auth/switch-role
+Content-Type: application/json
+Authorization: Bearer {{Login.response.body.$.data.accessToken}}
+
+{
+  "roleId": 1
+}
+
+### ============================================================
+### 7. 切换租户
+### POST {{baseUrl}}/auth/switch-tenant
+### ============================================================
+
+POST {{baseUrl}}/auth/switch-tenant
+Content-Type: application/json
+Authorization: Bearer {{Login.response.body.$.data.accessToken}}
+
+{
+  "tenantId": 1
+}
+
+### ============================================================
+### 8. 切换工作空间
+### POST {{baseUrl}}/auth/switch-workspace
+### ============================================================
+
+POST {{baseUrl}}/auth/switch-workspace
+Content-Type: application/json
+Authorization: Bearer {{Login.response.body.$.data.accessToken}}
+
+{
+  "workspaceId": 1,
+  "tenantId": 1
+}
+
+### ============================================================
+### 9. 获取工作空间列表
+### GET {{baseUrl}}/auth/workspaces
+### ============================================================
+
+GET {{baseUrl}}/auth/workspaces
+Authorization: Bearer {{Login.response.body.$.data.accessToken}}
+
+### ============================================================
+### 10. 获取租户列表
+### GET {{baseUrl}}/auth/tenants
+### ============================================================
+
+GET {{baseUrl}}/auth/tenants
+Authorization: Bearer {{Login.response.body.$.data.accessToken}}
+
+### ============================================================
+### 11. 退出登录
+### POST {{baseUrl}}/auth/logout
+### ============================================================
+
+POST {{baseUrl}}/auth/logout
+Content-Type: application/json
+Authorization: Bearer {{Login.response.body.$.data.accessToken}}

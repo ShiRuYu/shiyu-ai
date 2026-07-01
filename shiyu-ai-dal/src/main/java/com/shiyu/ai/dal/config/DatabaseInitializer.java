@@ -14,15 +14,45 @@ import java.io.InputStreamReader;
 import java.nio.charset.StandardCharsets;
 import java.sql.Connection;
 import java.sql.Statement;
+import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
 
+/**
+ * 数据库表结构及种子数据初始化器
+ *
+ * 按以下顺序执行 SQL 文件：
+ * 1. DDL（建表）→ 2. DML（数据）
+ * 每个子目录内按文件编号顺序执行。
+ */
 @Slf4j
 @Component
 @Order(0)
 public class DatabaseInitializer implements ApplicationRunner {
 
     private final ApplicationContext applicationContext;
+
+    /** DDL 建表文件路径（按依赖顺序） */
+    private static final List<String> DDL_FILES = List.of(
+            "db/migration/ddl/01__schema_common.sql",
+            "db/migration/ddl/02__schema_auth.sql",
+            "db/migration/ddl/03__schema_agent.sql",
+            "db/migration/ddl/04__schema_memory.sql",
+            "db/migration/ddl/05__schema_knowledge.sql",
+            "db/migration/ddl/06__schema_education.sql",
+            "db/migration/ddl/07__schema_record.sql"
+    );
+
+    /** DML 种子数据文件路径（按依赖顺序） */
+    private static final List<String> DML_FILES = List.of(
+            "db/migration/data/10__data_auth.sql",
+            "db/migration/data/11__data_common.sql",
+            "db/migration/data/12__data_agent.sql",
+            "db/migration/data/13__data_record.sql",
+            "db/migration/data/14__data_knowledge.sql",
+            "db/migration/data/15__data_education.sql",
+            "db/migration/data/16__data_agent_supplement.sql"
+    );
 
     public DatabaseInitializer(ApplicationContext applicationContext) {
         this.applicationContext = applicationContext;
@@ -43,18 +73,19 @@ public class DatabaseInitializer implements ApplicationRunner {
             return;
         }
         try (Connection conn = ds.getConnection(); Statement stmt = conn.createStatement()) {
-            executeSqlFile(stmt, "db/migration/agent__init.sql");
-            executeSqlFile(stmt, "db/migration/memory__init.sql");
-            executeSqlFile(stmt, "db/migration/auth__init.sql");
-            executeSqlFile(stmt, "db/migration/common__init.sql");
-            executeSqlFile(stmt, "db/migration/record__init.sql");
-            executeSqlFile(stmt, "db/migration/knowledge__init.sql");
-            executeSqlFile(stmt, "db/migration/education__init.sql");
-            executeSqlFile(stmt, "db/migration/education_domain__init.sql");
-
-            log.info("数据库表初始化完成");
+            // 1. 执行 DDL（建表）
+            log.info("开始执行 DDL 建表...");
+            for (String path : DDL_FILES) {
+                executeSqlFile(stmt, path);
+            }
+            // 2. 执行 DML（数据）
+            log.info("开始执行 DML 种子数据...");
+            for (String path : DML_FILES) {
+                executeSqlFile(stmt, path);
+            }
+            log.info("数据库初始化完成");
         } catch (Exception e) {
-            log.error("数据库表初始化失败", e);
+            log.error("数据库初始化失败", e);
         }
     }
 

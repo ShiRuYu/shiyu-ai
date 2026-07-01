@@ -628,6 +628,12 @@ public interface NodeFields {
             case TRANSFORM -> TransformFields.INSTANCE;
             case OUTPUT_FORMAT -> OutputFormatFields.INSTANCE;
             case AGENT_CALL -> AgentCallFields.INSTANCE;
+            case ABILITY_QUERY -> TransformFields.INSTANCE;
+            case EDUCATION_TEACH -> LlmCallFields.INSTANCE;
+            case EDUCATION_PRACTICE -> LlmCallFields.INSTANCE;
+            case SCORE_ANALYSIS -> TransformFields.INSTANCE;
+            case REVIEW_SCHEDULE -> TransformFields.INSTANCE;
+            case PREREQ_CHECK -> TransformFields.INSTANCE;
         };
     }
 }

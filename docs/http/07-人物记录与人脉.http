@@ -1,0 +1,164 @@
+### ============================================================
+### 人物记录 & 人脉 API
+### 基础 URL: http://localhost:9000
+### ============================================================
+
+@baseUrl = http://localhost:9000
+
+### ============================================================
+### 0. 【必须先执行】登录获取 Token
+###    执行后 {{Login.response.body.$.data.accessToken}} 即为后续请求的 Bearer Token
+### ============================================================
+
+# @name Login
+POST {{baseUrl}}/auth/login
+Content-Type: application/json
+
+{
+  "username": "vben",
+  "password": "123456",
+  "captchaKey": "",
+  "captcha": ""
+}
+
+
+### ============================================================
+### 人物（Profile）API
+### ============================================================
+
+### 1. 分页查询人物
+GET {{baseUrl}}/api/profile/page?pageNum=1&pageSize=10
+Authorization: Bearer {{Login.response.body.$.data.accessToken}}
+
+### 2. 获取人物详情
+GET {{baseUrl}}/api/profile/1
+Authorization: Bearer {{Login.response.body.$.data.accessToken}}
+
+### 3. 创建人物
+POST {{baseUrl}}/api/profile
+Content-Type: application/json
+Authorization: Bearer {{Login.response.body.$.data.accessToken}}
+
+{
+  "name": "爱因斯坦",
+  "gender": 1,
+  "birthDate": "1879-03-14",
+  "description": "理论物理学家，相对论创立者"
+}
+
+### ============================================================
+### 记录（Record）API
+### ============================================================
+
+### 4. 分页查询记录
+GET {{baseUrl}}/api/record/page?pageNum=1&pageSize=10
+Authorization: Bearer {{Login.response.body.$.data.accessToken}}
+
+### 5. 获取记录详情
+GET {{baseUrl}}/api/record/1
+Authorization: Bearer {{Login.response.body.$.data.accessToken}}
+
+### 6. 创建记录
+POST {{baseUrl}}/api/record
+Content-Type: application/json
+Authorization: Bearer {{Login.response.body.$.data.accessToken}}
+
+{
+  "eventId": 1,
+  "content": "这是一条测试记录",
+  "mood": "开心",
+  "location": "北京"
+}
+
+### ============================================================
+### 时间线（Timeline）API
+### ============================================================
+
+### 7. 分页查询时间线事件
+GET {{baseUrl}}/api/timeline/page?pageNum=1&pageSize=20&profileId=1
+Authorization: Bearer {{Login.response.body.$.data.accessToken}}
+
+### 8. 获取时间线事件详情
+GET {{baseUrl}}/api/timeline/1
+Authorization: Bearer {{Login.response.body.$.data.accessToken}}
+
+### 9. 按人物查询时间线
+GET {{baseUrl}}/api/timeline/profile/1
+Authorization: Bearer {{Login.response.body.$.data.accessToken}}
+
+### 10. 创建时间线事件
+POST {{baseUrl}}/api/timeline
+Content-Type: application/json
+Authorization: Bearer {{Login.response.body.$.data.accessToken}}
+
+{
+  "profileId": 1,
+  "title": "1905年奇迹年",
+  "eventTime": "1905-01-01T00:00:00",
+  "type": "ACHIEVEMENT",
+  "content": "爱因斯坦发表了四篇划时代的论文",
+  "visibility": "PUBLIC"
+}
+
+### ============================================================
+### 标签（Tag）API
+### ============================================================
+
+### 11. 分页查询标签
+GET {{baseUrl}}/api/tag/page?pageNum=1&pageSize=10
+Authorization: Bearer {{Login.response.body.$.data.accessToken}}
+
+### 12. 获取所有标签
+GET {{baseUrl}}/api/tag/all
+Authorization: Bearer {{Login.response.body.$.data.accessToken}}
+
+### 13. 获取标签详情
+GET {{baseUrl}}/api/tag/1
+Authorization: Bearer {{Login.response.body.$.data.accessToken}}
+
+### 14. 创建标签
+POST {{baseUrl}}/api/tag
+Content-Type: application/json
+Authorization: Bearer {{Login.response.body.$.data.accessToken}}
+
+{
+  "name": "科学家"
+}
+
+### ============================================================
+### 媒体资源（Media）API
+### ============================================================
+
+### 15. 分页查询媒体
+GET {{baseUrl}}/api/media/page?pageNum=1&pageSize=10
+Authorization: Bearer {{Login.response.body.$.data.accessToken}}
+
+### 16. 获取媒体详情
+GET {{baseUrl}}/api/media/1
+Authorization: Bearer {{Login.response.body.$.data.accessToken}}
+
+### 17. 创建媒体
+POST {{baseUrl}}/api/media
+Content-Type: application/json
+Authorization: Bearer {{Login.response.body.$.data.accessToken}}
+
+{
+  "recordId": 1,
+  "url": "/uploads/test.png",
+  "type": "IMAGE",
+  "size": 102400,
+  "sort": 1
+}
+
+### ============================================================
+### 文件上传 API
+### ============================================================
+
+### 18. 上传文件
+POST {{baseUrl}}/upload
+Content-Type: multipart/form-data
+Authorization: Bearer {{Login.response.body.$.data.accessToken}}
+
+{
+  "file": "@./test-file.png"
+}

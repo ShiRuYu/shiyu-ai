@@ -86,3 +86,19 @@ mvn spring-boot:run -Dspring-boot.run.profiles=dev
 - 接口规范：参考 [06-接口规范.md](./06-接口规范.md)
 - 改造疑问：参考 [08-改造方案.md](./08-改造方案.md)
 - 验证失败：参考 [11-验证检查清单.md](./11-验证检查清单.md)
+
+
+### HTTP 请求文件
+
+| 文件 | 说明 |
+|------|------|
+| [http/00-认证中心.http](./http/00-认证中心.http) | 登录/登出/Token/验证码 |
+| [http/01-Agent引擎.http](./http/01-Agent引擎.http) | Agent 注册/执行/版本/Graph |
+| [http/02-知识图谱.http](./http/02-知识图谱.http) | 知识点CRUD/图谱/搜索 |
+| [http/03-教育业务域.http](./http/03-教育业务域.http) | 学科/教材/课程/题目/考试 |
+| [http/04-教育Agent.http](./http/04-教育Agent.http) | AI 讲解/出题/组卷/复习 |
+| [http/05-AI对话与模型.http](./http/05-AI对话与模型.http) | Chat/平台/模型管理 |
+| [http/06-用户与权限管理.http](./http/06-用户与权限管理.http) | 用户/角色/菜单/租户 |
+| [http/07-人物记录与人脉.http](./http/07-人物记录与人脉.http) | Profile/记录/时间线 |
+
+> 使用方法：在 VS Code 中安装 **REST Client** 插件，打开任意 `.http` 文件，先执行顶部登录请求获取 Token，再调用其他接口。

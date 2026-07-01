@@ -1,0 +1,238 @@
+### ============================================================
+### 知识图谱 API
+### 基础 URL: http://localhost:9000
+### 种子数据中包含 10 个知识点（ID=1~10）和 12 条关系边
+### ============================================================
+
+@baseUrl = http://localhost:9000
+
+### ============================================================
+### 0. 【必须先执行】登录获取 Token
+###    执行后 {{Login.response.body.$.data.accessToken}} 即为后续请求的 Bearer Token
+### ============================================================
+
+# @name Login
+POST {{baseUrl}}/auth/login
+Content-Type: application/json
+
+{
+  "username": "vben",
+  "password": "123456",
+  "captchaKey": "",
+  "captcha": ""
+}
+
+
+### ============================================================
+### 1. 获取知识点详情
+### GET {{baseUrl}}/api/v1/knowledge/{id}
+### ============================================================
+
+GET {{baseUrl}}/api/v1/knowledge/5
+Authorization: Bearer {{Login.response.body.$.data.accessToken}}
+
+### 种子数据 ID 说明：
+###   1=自然数  2=整数  3=数轴  4=相反数  5=绝对值
+###   6=有理数  7=一次函数  8=二次函数  9=函数  10=导数
+
+### ============================================================
+### 2. 分页查询知识点
+### GET {{baseUrl}}/api/v1/knowledge?pageNum=1&pageSize=20
+### ============================================================
+
+GET {{baseUrl}}/api/v1/knowledge?pageNum=1&pageSize=20
+Authorization: Bearer {{Login.response.body.$.data.accessToken}}
+
+### ============================================================
+### 3. 获取知识图谱（邻域信息）
+### GET {{baseUrl}}/api/v1/knowledge/{id}/graph
+### ============================================================
+
+GET {{baseUrl}}/api/v1/knowledge/8/graph
+Authorization: Bearer {{Login.response.body.$.data.accessToken}}
+
+### ============================================================
+### 4. 获取学习路径（拓扑排序）
+### GET {{baseUrl}}/api/v1/knowledge/{id}/path
+### ============================================================
+
+GET {{baseUrl}}/api/v1/knowledge/8/path
+Authorization: Bearer {{Login.response.body.$.data.accessToken}}
+
+### ============================================================
+### 5. 获取缺失的前置知识
+### GET {{baseUrl}}/api/v1/knowledge/{id}/prerequisites?masteredIds=1,2,3
+### ============================================================
+
+GET {{baseUrl}}/api/v1/knowledge/5/prerequisites?masteredIds=1,2,3
+Authorization: Bearer {{Login.response.body.$.data.accessToken}}
+
+### ============================================================
+### 6. 获取前置知识点列表
+### GET {{baseUrl}}/api/v1/knowledge/{id}/prerequisites-list
+### ============================================================
+
+GET {{baseUrl}}/api/v1/knowledge/5/prerequisites-list
+Authorization: Bearer {{Login.response.body.$.data.accessToken}}
+
+### ============================================================
+### 7. 获取后续知识点列表
+### GET {{baseUrl}}/api/v1/knowledge/{id}/subsequent-list
+### ============================================================
+
+GET {{baseUrl}}/api/v1/knowledge/3/subsequent-list
+Authorization: Bearer {{Login.response.body.$.data.accessToken}}
+
+### ============================================================
+### 8. 搜索知识点
+### GET {{baseUrl}}/api/v1/knowledge/search?query=绝对值&topK=10&mode=HYBRID
+### 
+### 搜索模式（SearchMode）：
+###   - KEYWORD  → 关键词检索（默认，无需 Embedding API）
+###   - SEMANTIC → 语义检索（需要 Embedding API）
+###   - HYBRID   → 混合检索（关键词 + 语义）
+### ============================================================
+
+GET {{baseUrl}}/api/v1/knowledge/search?query=绝对值&topK=10&mode=HYBRID
+Authorization: Bearer {{Login.response.body.$.data.accessToken}}
+
+### ============================================================
+### 9. 获取支持的所有搜索模式
+### GET {{baseUrl}}/api/v1/knowledge/search/modes
+### ============================================================
+
+GET {{baseUrl}}/api/v1/knowledge/search/modes
+Authorization: Bearer {{Login.response.body.$.data.accessToken}}
+
+### ============================================================
+### 10. 创建知识点
+### POST {{baseUrl}}/api/v1/knowledge
+### ============================================================
+
+# @name CreatedKnowledge
+POST {{baseUrl}}/api/v1/knowledge
+Content-Type: application/json
+Authorization: Bearer {{Login.response.body.$.data.accessToken}}
+
+{
+  "code": "math_equation",
+  "name": "方程",
+  "description": "含有未知数的等式叫做方程",
+  "difficulty": 2,
+  "category": "MATH",
+  "tags": "[\"方程\",\"代数\"]"
+}
+
+### ============================================================
+### 11. 更新知识点
+### PUT {{baseUrl}}/api/v1/knowledge/{id}
+### ============================================================
+
+PUT {{baseUrl}}/api/v1/knowledge/100
+Content-Type: application/json
+Authorization: Bearer {{Login.response.body.$.data.accessToken}}
+
+{
+  "name": "方程（已更新）",
+  "description": "更新后的描述",
+  "difficulty": 3
+}
+
+### ============================================================
+### 12. 添加知识点关系边
+### POST {{baseUrl}}/api/v1/knowledge/relation
+### 
+### 关系类型（RelationType）：
+###   PRE=前置知识  NEXT=后续知识  INCLUDE=包含
+###   RELATED=相关  SIMILAR=相似  BELONG=属于
+### ============================================================
+
+POST {{baseUrl}}/api/v1/knowledge/relation?sourceId=6&targetId=100&type=PRE&weight=1.0
+Authorization: Bearer {{Login.response.body.$.data.accessToken}}
+
+### ============================================================
+### 13. 删除知识点关系边
+### DELETE {{baseUrl}}/api/v1/knowledge/relation
+### ============================================================
+
+DELETE {{baseUrl}}/api/v1/knowledge/relation?sourceId=6&targetId=100&type=PRE
+Authorization: Bearer {{Login.response.body.$.data.accessToken}}
+
+### ============================================================
+### 14. 删除知识点
+### DELETE {{baseUrl}}/api/v1/knowledge/{id}
+### ============================================================
+
+DELETE {{baseUrl}}/api/v1/knowledge/100
+Authorization: Bearer {{Login.response.body.$.data.accessToken}}
+
+### ============================================================
+### 15. 重新加载 Graph（从 DB 刷新到内存）
+### POST {{baseUrl}}/api/v1/knowledge/reload
+### ============================================================
+
+POST {{baseUrl}}/api/v1/knowledge/reload
+Authorization: Bearer {{Login.response.body.$.data.accessToken}}
+
+### ============================================================
+### 16. 重建搜索索引（异步）
+### POST {{baseUrl}}/api/v1/knowledge/rebuild-index
+### ============================================================
+
+# @name RebuildIndex
+POST {{baseUrl}}/api/v1/knowledge/rebuild-index
+Authorization: Bearer {{Login.response.body.$.data.accessToken}}
+
+### ============================================================
+### 17. 查询重建进度
+### GET {{baseUrl}}/api/v1/knowledge/rebuild-index/{taskId}
+### ============================================================
+
+@rebuildTaskId = {{RebuildIndex.response.body.$.data.taskId}}
+
+GET {{baseUrl}}/api/v1/knowledge/rebuild-index/{{rebuildTaskId}}
+Authorization: Bearer {{Login.response.body.$.data.accessToken}}
+
+### ============================================================
+### 18. 获取最近一次重建状态
+### GET {{baseUrl}}/api/v1/knowledge/rebuild-index
+### ============================================================
+
+GET {{baseUrl}}/api/v1/knowledge/rebuild-index
+Authorization: Bearer {{Login.response.body.$.data.accessToken}}
+
+### ============================================================
+### 文档知识 API
+### ============================================================
+
+### ----------------------------------------------------------
+### 19. 搜索文档
+### GET {{baseUrl}}/api/v1/knowledge/documents?keyword=绝对值&topK=10
+### ----------------------------------------------------------
+
+GET {{baseUrl}}/api/v1/knowledge/documents?keyword=绝对值&topK=10
+Authorization: Bearer {{Login.response.body.$.data.accessToken}}
+
+### ----------------------------------------------------------
+### 20. 根据知识点查询关联文档
+### GET {{baseUrl}}/api/v1/knowledge/documents/by-knowledge/{knowledgeId}
+### ----------------------------------------------------------
+
+GET {{baseUrl}}/api/v1/knowledge/documents/by-knowledge/5
+Authorization: Bearer {{Login.response.body.$.data.accessToken}}
+
+### ----------------------------------------------------------
+### 21. 创建文档
+### POST {{baseUrl}}/api/v1/knowledge/documents
+### ----------------------------------------------------------
+
+POST {{baseUrl}}/api/v1/knowledge/documents
+Content-Type: application/json
+Authorization: Bearer {{Login.response.body.$.data.accessToken}}
+
+{
+  "title": "绝对值专题讲义",
+  "content": "绝对值是一个数到原点的距离，用符号 |a| 表示...",
+  "docType": "LECTURE",
+  "knowledgeIds": [5, 3]
+}
