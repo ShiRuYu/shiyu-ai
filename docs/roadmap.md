@@ -2,12 +2,13 @@
 
 ## 1. 概述
 
-项目分三个阶段演进，兼顾可落地性与长期扩展。**当前状态：Phase 1 + Phase 2 已完成 ✅**
+项目分三个阶段演进，兼顾可落地性与长期扩展。**当前状态：Phase 1 + Phase 2 + Phase 3 + Phase 4 已完成 ✅，模块职责重构完成 ✅**
 
 ```
 V1 (MVP)     → ✅ 模块拆分 + 知识引擎
 V2 (Smart)   → 🔜 教育业务域 + 智能推荐 (Phase 3)
 V3 (AI)      → ✅ 多Agent + 数字教师 + 长期记忆 (Phase 4)
+重构          → ✅ 学习进度相关类迁移到 education 模块
 ```
 
 ## 2. V1 - MVP 阶段
@@ -75,14 +76,14 @@ shiyu-ai-knowledge
 [9] 学习计划 (基础)
 ```
 
-## 3. V2 - Smart 阶段 → 当前为 Phase 3
+## 3. V2 - Smart 阶段 → Phase 3 已完成
 
 ### 目标
 
 引入知识图谱、能力模型、智能推荐、遗忘复习，从"能用"升级为"好用"。
 
 > **注**：知识图谱、能力模型、遗忘曲线已在 Phase 2 完成✅
-> Phase 3 将完成剩余的教育业务域 + 智能推荐
+> Phase 3 教育业务域已完成 ✅，智能推荐待 Phase 6 实现
 
 ### 核心功能
 
@@ -90,17 +91,17 @@ shiyu-ai-knowledge
 [1] 知识图谱      → ✅ Phase 2 已完成
 [2] 能力模型      → ✅ Phase 2 已完成
 [3] 学习路径      → ✅ Phase 2 已完成
-[4] 智能出题      → 🔜 Phase 3
-[5] 错题本        → 🔜 Phase 3
-[6] 艾宾浩斯复习  → ✅ Phase 2 已完成
-[7] 推荐系统      → 🔜 Phase 3
-[8] 学习分析      → 🔜 Phase 3
-[9] LiteFlow 工作流 → ⏳ Phase 4
+[4] 智能出题      → ✅ Phase 3 完成 (PracticeAgent + PracticeNode)
+[5] 错题本        → ✅ Phase 3 完成 (WrongQuestionController)
+[6] 艾宾浩斯复习  → ✅ Phase 3 完成 (ReviewScheduler + ReviewAgent)
+[7] 推荐系统      → 🔜 待实现
+[8] 学习分析      → ✅ Phase 3 完成 (AnalyticsController + ReportAgent)
+[9] LiteFlow 工作流 → ✅ Phase 4 完成 (learningChain 完整，reviewChain/examChain 占位)
 [10] RAG          → ✅ 已有
-[11] Embedding    → ⏳ Phase 5
+[11] Embedding    → ⏳ 待实现
 ```
 
-## 4. V3 - AI 阶段 → 当前为 Phase 4
+## 4. V3 - AI 阶段 → Phase 4 已完成
 
 ### 目标
 
@@ -109,15 +110,15 @@ shiyu-ai-knowledge
 ### 核心功能
 
 ```
-[1] AI Tutor 多 Agent   → ⏳ Phase 4
-[2] LangGraph4j         → ✅ 已有 (12 种节点)
+[1] AI Tutor 多 Agent   → ✅ Phase 4 完成 (6 个教育 Agent)
+[2] LangGraph4j         → ✅ 已有 (12 种节点 + 6 个教育节点)
 [3] 长期记忆            → ✅ 已有 (shiyu-ai-memory)
-[4] MCP 工具            → ✅ 已有 (shiyu-ai-mcp)
-[5] 数字教师            → ⏳ Phase 4
-[6] 自适应学习          → ⏳ Phase 4
-[7] 成长档案            → 🔜 Phase 3
-[8] 知识森林            → ⏳ 待定
-[9] 多模态学习          → ⏳ 待定
+[4] MCP 工具            → ✅ 已有 (8 个教育工具)
+[5] 数字教师            → ✅ Phase 4 完成 (TeacherAgent + TeachNode)
+[6] 自适应学习          → ⏳ 待实现
+[7] 成长档案            → ✅ Phase 3 完成 (ReportAgent)
+[8] 知识森林            → 🔜 待定
+[9] 多模态学习          → 🔜 待定
 ```
 
 ## 5. 关键里程碑（更新）
@@ -126,8 +127,9 @@ shiyu-ai-knowledge
 | --- | --- | --- | --- |
 | M1 | 模块拆分 | 单体 → 12 模块 | ✅ |
 | M2 | 知识引擎 | RogueMap + 知识图谱 API | ✅ |
-| M3 | 教育业务域 | 教材/课程/题库/考试/复习 | 🔜 |
-| M4 | V1 上线 | MVP 可用版本 | ⏳ |
-| M5 | 智能推荐 | 题目/知识点/资源推荐 | ⏳ |
-| M6 | AI Tutor | 多 Agent 教学系统 | ⏳ |
-| M7 | V3 上线 | 完整 AI 教育平台 | ⏳ |
+| M3 | 教育业务域 | 教材/课程/题库/考试/复习 | ✅ |
+| M4 | Phase 4 | 教育 Agent + LiteFlow + MCP | ✅ |
+| M4.5 | 模块职责重构 | 学习状态/复习调度/遗忘曲线迁移到 education | ✅ |
+| M5 | V1 上线 | MVP 可用版本 | ⏳ |
+| M6 | 智能推荐 | 题目/知识点/资源推荐 | ⏳ |
+| M7 | AI Tutor | 多 Agent 教学系统 | ⏳ |
