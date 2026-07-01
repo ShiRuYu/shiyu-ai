@@ -1,4 +1,4 @@
-package com.shiyu.ai.knowledge.review;
+package com.shiyu.ai.education.review;
 
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Component;

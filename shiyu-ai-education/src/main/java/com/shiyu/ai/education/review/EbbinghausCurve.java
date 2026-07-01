@@ -1,4 +1,4 @@
-package com.shiyu.ai.knowledge.review;
+package com.shiyu.ai.education.review;
 
 import java.time.Duration;
 import java.time.Instant;

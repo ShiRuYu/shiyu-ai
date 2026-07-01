@@ -1,6 +1,6 @@
-package com.shiyu.ai.knowledge.service;
+package com.shiyu.ai.education.service;
 
-import com.shiyu.ai.knowledge.domain.LearningState;
+import com.shiyu.ai.education.domain.LearningState;
 
 /**
  * 学习状态机服务

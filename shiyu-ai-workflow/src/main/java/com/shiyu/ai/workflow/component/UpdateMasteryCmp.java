@@ -3,7 +3,7 @@ package com.shiyu.ai.workflow.component;
 import com.shiyu.ai.education.ability.AbilityService;
 import com.shiyu.ai.education.domain.AbilityValue;
 import com.shiyu.ai.education.domain.BloomTaxonomy;
-import com.shiyu.ai.knowledge.review.ReviewScheduler;
+import com.shiyu.ai.education.review.ReviewScheduler;
 import com.shiyu.ai.workflow.context.LearningContext;
 import com.yomahub.liteflow.core.NodeComponent;
 import lombok.RequiredArgsConstructor;

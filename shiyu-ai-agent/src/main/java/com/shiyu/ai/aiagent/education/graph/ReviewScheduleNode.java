@@ -8,7 +8,7 @@ import com.shiyu.ai.aiagent.node.NodeOutput;
 import com.shiyu.ai.aiagent.node.NodeType;
 import com.shiyu.ai.dal.dataobject.education.ReviewTaskDO;
 import com.shiyu.ai.education.review.ReviewService;
-import com.shiyu.ai.knowledge.review.ReviewScheduler;
+import com.shiyu.ai.education.review.ReviewScheduler;
 import lombok.Getter;
 import lombok.Setter;
 import lombok.extern.slf4j.Slf4j;

@@ -1,7 +1,7 @@
-package com.shiyu.ai.knowledge.service.impl;
+package com.shiyu.ai.education.service.impl;
 
-import com.shiyu.ai.knowledge.domain.LearningState;
-import com.shiyu.ai.knowledge.service.LearningStateMachine;
+import com.shiyu.ai.education.domain.LearningState;
+import com.shiyu.ai.education.service.LearningStateMachine;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 
