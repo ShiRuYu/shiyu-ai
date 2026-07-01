@@ -127,6 +127,7 @@ public class AgentLoader {
                     .agentId(agentId)
                     .name(agentDef.getName())
                     .description(agentDef.getDescription())
+                    .extInfo(agentDef.getExtInfo() != null ? JSONUtils.parseObject(agentDef.getExtInfo(), new tools.jackson.core.type.TypeReference<java.util.Map<String, Object>>() {}) : null)
                     .versions(new HashMap<>(Map.of(agentVersion.getVersionNumber(), agentVersion)))
                     .currentVersion(versionNumber)
                     .createdAt(agentDef.getCreateTime().atZone(ZoneId.systemDefault()).toInstant().toEpochMilli())

@@ -15,7 +15,9 @@ import com.shiyu.ai.aiagent.vo.NodeTypeMetaVO;
 import com.shiyu.ai.aiagent.vo.GraphConfigVO;
 import com.shiyu.ai.aiagent.vo.GraphValidationVO;
 import com.shiyu.ai.aiagent.node.NodeType;
+import com.shiyu.ai.common.core.utils.JSONUtils;
 import jakarta.annotation.Resource;
+import tools.jackson.core.type.TypeReference;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.tuple.Pair;
 import org.springframework.stereotype.Service;
@@ -51,7 +53,7 @@ public class AgentAdminServiceImpl implements AgentAdminService {
         return AgentDetailVO.builder()
                 .id(def.getId()).agentId(def.getAgentId()).name(def.getName())
                 .description(def.getDescription()).currentVersion(def.getCurrentVersion())
-                .status(def.getStatus()).extInfo(def.getExtInfo()).versions(versionVOs)
+                .status(def.getStatus()).extInfo(parseExtInfo(def.getExtInfo())).versions(versionVOs)
                 .createTime(def.getCreateTime()).updateTime(def.getUpdateTime())
                 .build();
     }
@@ -131,9 +133,14 @@ public class AgentAdminServiceImpl implements AgentAdminService {
         return AgentVO.builder()
                 .id(def.getId()).agentId(def.getAgentId()).name(def.getName())
                 .description(def.getDescription()).currentVersion(def.getCurrentVersion())
-                .status(def.getStatus())
+                .status(def.getStatus()).extInfo(parseExtInfo(def.getExtInfo()))
                 .createTime(def.getCreateTime()).updateTime(def.getUpdateTime())
                 .build();
+    }
+
+    private Map<String, Object> parseExtInfo(String extInfo) {
+        if (extInfo == null || extInfo.isBlank()) return null;
+        return JSONUtils.parseObject(extInfo, new TypeReference<Map<String, Object>>() {});
     }
 
     private AgentVersionVO toVersionVO(AgentVersionBO v) {

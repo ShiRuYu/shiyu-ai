@@ -1,5 +1,6 @@
 package com.shiyu.ai.aiagent.education.graph;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.shiyu.ai.aiagent.node.NodeInputParam;
 import com.shiyu.ai.aiagent.node.BaseNode;
 import com.shiyu.ai.aiagent.node.NodeInput;
@@ -28,7 +29,9 @@ import java.util.List;
 @Setter
 public class ReviewScheduleNode extends BaseNode {
 
+    @JsonIgnore
     private final ReviewScheduler reviewScheduler;
+    @JsonIgnore
     private final ReviewService reviewService;
 
     public ReviewScheduleNode(ReviewScheduler reviewScheduler, ReviewService reviewService) {

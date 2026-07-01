@@ -16,6 +16,7 @@ public class AgentDefinition {
     private String agentId;
     private String name;
     private String description;
+    private Map<String, Object> extInfo;
     private String currentVersion;
     private long createdAt;
     private long updatedAt;

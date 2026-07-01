@@ -6,6 +6,7 @@ import lombok.Data;
 import lombok.NoArgsConstructor;
 
 import java.time.LocalDateTime;
+import java.util.Map;
 
 @Data
 @Builder
@@ -25,7 +26,7 @@ public class AgentVO {
 
     private String status;
     /** 扩展字段：该 Agent 当前版本所需的接口入参定义 */
-    private String extInfo;
+    private Map<String, Object> extInfo;
 
     private LocalDateTime createTime;
 

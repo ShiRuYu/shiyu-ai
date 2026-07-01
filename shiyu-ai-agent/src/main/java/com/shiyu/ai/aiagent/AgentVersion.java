@@ -1,5 +1,6 @@
 package com.shiyu.ai.aiagent;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.shiyu.ai.aiagent.graph.Graph;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -13,6 +14,7 @@ import lombok.NoArgsConstructor;
 public class AgentVersion {
     private String versionNumber;
     private String description;
+    @JsonIgnore
     private Graph graph;
     private long createdAt;
 }

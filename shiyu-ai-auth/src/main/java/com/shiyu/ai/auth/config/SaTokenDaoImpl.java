@@ -231,7 +231,7 @@ public class SaTokenDaoImpl implements SaTokenDao {
 
     @Override
     public SaSession getSession(String sessionId) {
-        Object cached = localCache.getIfPresent(sessionId);
+       Object cached = localCache.getIfPresent(sessionId);
         if (cached instanceof SaSession ss) return ss;
 
         Long userId = extractUserIdFromSessionKey(sessionId);
