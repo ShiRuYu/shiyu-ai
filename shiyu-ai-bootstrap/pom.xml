@@ -56,6 +56,10 @@
         </dependency>
         <dependency>
             <groupId>com.shiyu.ai</groupId>
+            <artifactId>shiyu-ai-workflow</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>com.shiyu.ai</groupId>
             <artifactId>shiyu-common-web</artifactId>
         </dependency>
         <dependency>

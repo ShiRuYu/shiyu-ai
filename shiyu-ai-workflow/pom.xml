@@ -9,25 +9,38 @@
         <version>${revision}</version>
         <relativePath>../pom.xml</relativePath>
     </parent>
-    <artifactId>shiyu-ai-agent</artifactId>
-    <name>shiyu-ai-agent</name>
-    <description>LangGraph4j pure graph engine, typed node configs, and education agents</description>
+
+    <artifactId>shiyu-ai-workflow</artifactId>
+    <name>shiyu-ai-workflow</name>
+    <description>LiteFlow workflow orchestration: learning, review, exam, tutor chains</description>
+
     <dependencies>
+        <!-- LiteFlow 核心 -->
+        <dependency>
+            <groupId>com.yomahub</groupId>
+            <artifactId>liteflow-spring-boot4-starter</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>com.yomahub</groupId>
+            <artifactId>liteflow-el-builder</artifactId>
+        </dependency>
+
+        <!-- 项目内部依赖 -->
+        <dependency>
+            <groupId>com.shiyu.ai</groupId>
+            <artifactId>shiyu-ai-agent</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>com.shiyu.ai</groupId>
+            <artifactId>shiyu-ai-education</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>com.shiyu.ai</groupId>
+            <artifactId>shiyu-ai-knowledge</artifactId>
+        </dependency>
         <dependency>
             <groupId>com.shiyu.ai</groupId>
             <artifactId>shiyu-ai-core</artifactId>
-        </dependency>
-        <dependency>
-            <groupId>com.shiyu.ai</groupId>
-            <artifactId>shiyu-ai-memory</artifactId>
-        </dependency>
-        <dependency>
-            <groupId>com.shiyu.ai</groupId>
-            <artifactId>shiyu-ai-rag</artifactId>
-        </dependency>
-        <dependency>
-            <groupId>com.shiyu.ai</groupId>
-            <artifactId>shiyu-ai-mcp</artifactId>
         </dependency>
         <dependency>
             <groupId>com.shiyu.ai</groupId>
@@ -37,33 +50,10 @@
             <groupId>com.shiyu.ai</groupId>
             <artifactId>shiyu-ai-model</artifactId>
         </dependency>
-        <!-- 教育业务域依赖 -->
         <dependency>
             <groupId>com.shiyu.ai</groupId>
-            <artifactId>shiyu-ai-education</artifactId>
+            <artifactId>shiyu-common-core</artifactId>
         </dependency>
-        <dependency>
-            <groupId>com.shiyu.ai</groupId>
-            <artifactId>shiyu-ai-knowledge</artifactId>
-        </dependency>
-
-        <dependency>
-            <groupId>org.bsc.langgraph4j</groupId>
-            <artifactId>langgraph4j-core</artifactId>
-        </dependency>
-        <dependency>
-            <groupId>org.bsc.langgraph4j</groupId>
-            <artifactId>langgraph4j-langchain4j</artifactId>
-        </dependency>
-        <dependency>
-            <groupId>dev.langchain4j</groupId>
-            <artifactId>langchain4j</artifactId>
-        </dependency>
-        <dependency>
-            <groupId>dev.langchain4j</groupId>
-            <artifactId>langchain4j-reactor</artifactId>
-        </dependency>
-
         <!-- 测试依赖 -->
         <dependency>
             <groupId>org.springframework.boot</groupId>
@@ -73,11 +63,6 @@
         <dependency>
             <groupId>org.mockito</groupId>
             <artifactId>mockito-core</artifactId>
-            <scope>test</scope>
-        </dependency>
-        <dependency>
-            <groupId>org.mockito</groupId>
-            <artifactId>mockito-junit-jupiter</artifactId>
             <scope>test</scope>
         </dependency>
     </dependencies>

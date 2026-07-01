@@ -107,6 +107,7 @@
         <module>shiyu-ai-auth</module>
         <module>shiyu-ai-record</module>
         <module>shiyu-ai-bootstrap</module>
+        <module>shiyu-ai-workflow</module>
     </modules>
 
     <!-- 依赖声明 -->
@@ -398,11 +399,16 @@
                 <artifactId>shiyu-ai-knowledge</artifactId>
                 <version>${revision}</version>
             </dependency>
-        <dependency>
-            <groupId>com.shiyu.ai</groupId>
-            <artifactId>shiyu-ai-education</artifactId>
-            <version>${revision}</version>
-        </dependency>
+            <dependency>
+                <groupId>com.shiyu.ai</groupId>
+                <artifactId>shiyu-ai-workflow</artifactId>
+                <version>${revision}</version>
+            </dependency>
+            <dependency>
+                <groupId>com.shiyu.ai</groupId>
+                <artifactId>shiyu-ai-education</artifactId>
+                <version>${revision}</version>
+            </dependency>
             <dependency>
                 <groupId>com.yomahub</groupId>
                 <artifactId>roguemap-core</artifactId>
