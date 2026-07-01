@@ -1,3 +1,7 @@
+# 应用根目录 - 由 AppHomeEnvironmentPostProcessor 自动探测
+# 从 user.dir 向上找到第一个包含 pom.xml 的目录即为项目根目录
+# 也可通过环境变量 APP_HOME 显式指定
+
 shiyu:
   # 名称
   name: "shiyu-agent"
@@ -5,10 +9,10 @@ shiyu:
   version: ${revision}
   # 数据文件目录（RogueMap 持久化文件存储位置）
   data:
-    dir: ${user.dir}/data
+    roguemap: ${app.home}/data/roguemap
   # 文件上传目录
   upload:
-    path: ${user.dir}/uploads
+    path: ${app.home}/data/uploads
 # 开发环境配置
 server:
   # 服务器的HTTP端口，默认为8080

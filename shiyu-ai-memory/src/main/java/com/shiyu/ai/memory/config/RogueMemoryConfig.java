@@ -15,7 +15,7 @@ import java.util.concurrent.TimeUnit;
 @Configuration
 public class RogueMemoryConfig {
 
-    @Value("${shiyu.data.dir:./data}")
+    @Value("${shiyu.data.roguemap:${app.home}/data/roguemap}")
     private String dataDir;
 
     @Value("${rogue.memory.embedding.api-key:}")

@@ -2,6 +2,7 @@ package com.shiyu.ai.common.web.config;
 
 import com.shiyu.ai.common.core.factory.YmlPropertySourceFactory;
 import com.shiyu.ai.common.web.interceptor.WebInvokeInterceptor;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.autoconfigure.AutoConfiguration;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.PropertySource;
@@ -19,6 +20,12 @@ import org.springframework.web.servlet.config.annotation.WebMvcConfigurer;
 @PropertySource(value = "classpath:shiyu-web.yml", factory = YmlPropertySourceFactory.class)
 public class ResourcesConfig implements WebMvcConfigurer {
 
+    /**
+     * 应用根目录，由 AppHomeEnvironmentPostProcessor 自动探测（从 work dir 向上找 pom.xml）
+     */
+    @Value("${app.home:${user.dir}}")
+    private String appHome;
+
     @Override
     public void addInterceptors(InterceptorRegistry registry) {
         // 全局访问性能拦截
@@ -33,7 +40,7 @@ public class ResourcesConfig implements WebMvcConfigurer {
 
         // 处理文件上传访问
         registry.addResourceHandler("/uploads/**")
-                .addResourceLocations("file:" + System.getProperty("user.dir") + "/uploads/");
+                .addResourceLocations("file:" + appHome + "/data/uploads/");
     }
 
     /**

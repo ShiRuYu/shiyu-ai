@@ -29,7 +29,7 @@ import java.util.concurrent.TimeUnit;
 @Configuration
 public class RogueMapConfig {
 
-    @Value("${shiyu.data.dir:./data}")
+    @Value("${shiyu.data.roguemap:${app.home}/data/roguemap}")
     private String dataDir;
 
     @Value("${shiyu.knowledge.embedding.api-key:}")
