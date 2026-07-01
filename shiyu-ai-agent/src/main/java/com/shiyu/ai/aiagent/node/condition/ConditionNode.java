@@ -11,6 +11,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.expression.ExpressionParser;
 import org.springframework.expression.spel.standard.SpelExpressionParser;
 import org.springframework.expression.spel.support.StandardEvaluationContext;
+import com.shiyu.ai.aiagent.node.NodeInputParam;
 
 /**
  * 条件判断节点
@@ -181,5 +182,16 @@ public class ConditionNode extends BaseNode {
         // 检查当前意图是否匹配期望的意图
         Object currentIntent = input.getParameter(FieldKey.INTENT_CODE, null);
         return expectedIntent.equals(currentIntent);
+    }
+
+    @Override
+    public java.util.List<NodeInputParam> getRequiredInputs() {
+        return java.util.List.of(
+            NodeInputParam.config("conditionType", "string", "条件类型（EXPRESSION/SCRIPT/INTENT）"),
+            NodeInputParam.config("conditionExpression", "string", "条件表达式或脚本"),
+            NodeInputParam.config("defaultBranch", "string", "默认分支节点 ID"),
+            NodeInputParam.config("trueBranch", "string", "真值分支节点 ID"),
+            NodeInputParam.previous("intentCode", "string", "意图代码（INTENT 模式使用）")
+        );
     }
 }

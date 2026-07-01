@@ -1,5 +1,6 @@
 package com.shiyu.ai.aiagent.education.graph;
 
+import com.shiyu.ai.aiagent.node.NodeInputParam;
 import com.shiyu.ai.aiagent.node.BaseNode;
 import com.shiyu.ai.aiagent.node.NodeInput;
 import com.shiyu.ai.aiagent.node.NodeOutput;
@@ -70,5 +71,14 @@ public class ScoreAnalysisNode extends BaseNode {
 
         log.info("ScoreAnalysisNode: 得分={}, 重学需要={}", score, reviewNeeded);
         return output;
+    }
+
+    @Override
+    public java.util.List<NodeInputParam> getRequiredInputs() {
+        return java.util.List.of(
+            NodeInputParam.previous("practiceQuestions", "array", "练习题列表"),
+            NodeInputParam.previous("studentId", "number", "学生 ID"),
+            NodeInputParam.previous("knowledgeId", "number", "知识点 ID")
+        );
     }
 }

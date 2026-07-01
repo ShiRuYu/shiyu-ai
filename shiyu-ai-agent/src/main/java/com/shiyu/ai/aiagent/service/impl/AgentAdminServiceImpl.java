@@ -51,7 +51,7 @@ public class AgentAdminServiceImpl implements AgentAdminService {
         return AgentDetailVO.builder()
                 .id(def.getId()).agentId(def.getAgentId()).name(def.getName())
                 .description(def.getDescription()).currentVersion(def.getCurrentVersion())
-                .status(def.getStatus()).versions(versionVOs)
+                .status(def.getStatus()).extInfo(def.getExtInfo()).versions(versionVOs)
                 .createTime(def.getCreateTime()).updateTime(def.getUpdateTime())
                 .build();
     }

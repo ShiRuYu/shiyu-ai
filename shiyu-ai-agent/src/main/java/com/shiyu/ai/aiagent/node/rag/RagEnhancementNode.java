@@ -11,6 +11,7 @@ import lombok.extern.slf4j.Slf4j;
 
 import java.util.*;
 import java.util.stream.Collectors;
+import com.shiyu.ai.aiagent.node.NodeInputParam;
 
 /**
  * RAG 增强节点
@@ -238,4 +239,14 @@ public class RagEnhancementNode extends BaseNode {
 
     /** 增强结果 */
     private record EnhancedResult(List<Map<String, Object>> documents, String context) {}
+
+    @Override
+    public java.util.List<NodeInputParam> getRequiredInputs() {
+        return java.util.List.of(
+            NodeInputParam.previous("documents", "array", "检索到的文档列表"),
+            NodeInputParam.config("enhancementStrategy", "string", "增强策略"),
+            NodeInputParam.config("contextWindowSize", "number", "上下文窗口大小"),
+            NodeInputParam.config("maxLength", "number", "最大长度")
+        );
+    }
 }

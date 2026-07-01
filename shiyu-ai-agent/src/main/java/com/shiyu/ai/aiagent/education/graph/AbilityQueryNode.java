@@ -1,5 +1,6 @@
 package com.shiyu.ai.aiagent.education.graph;
 
+import com.shiyu.ai.aiagent.node.NodeInputParam;
 import com.shiyu.ai.aiagent.node.BaseNode;
 import com.shiyu.ai.aiagent.node.NodeInput;
 import com.shiyu.ai.aiagent.node.NodeOutput;
@@ -89,5 +90,13 @@ public class AbilityQueryNode extends BaseNode {
 
         log.info("AbilityQueryNode: 知识点={}, 掌握度={}%", knowledge.name(), String.format("%.1f", overallScore));
         return output;
+    }
+
+    @Override
+    public java.util.List<NodeInputParam> getRequiredInputs() {
+        return java.util.List.of(
+            NodeInputParam.apiRequired("studentId", "number", "学生 ID"),
+            NodeInputParam.apiRequired("knowledgeId", "number", "知识点 ID")
+        );
     }
 }

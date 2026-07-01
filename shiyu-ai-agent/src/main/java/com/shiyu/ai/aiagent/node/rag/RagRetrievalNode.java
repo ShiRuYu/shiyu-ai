@@ -13,6 +13,7 @@ import lombok.extern.slf4j.Slf4j;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
+import com.shiyu.ai.aiagent.node.NodeInputParam;
 
 /**
  * RAG 检索节点
@@ -193,5 +194,15 @@ public class RagRetrievalNode extends BaseNode {
         
         // 使用节点配置
         return config.getKnowledgeBaseId();
+    }
+
+    @Override
+    public java.util.List<NodeInputParam> getRequiredInputs() {
+        return java.util.List.of(
+            NodeInputParam.apiRequired("query", "string", "检索查询文本"),
+            NodeInputParam.config("knowledgeBaseId", "string", "知识库 ID"),
+            NodeInputParam.config("topK", "number", "最大检索结果数"),
+            NodeInputParam.config("similarityThreshold", "number", "相似度阈值")
+        );
     }
 }

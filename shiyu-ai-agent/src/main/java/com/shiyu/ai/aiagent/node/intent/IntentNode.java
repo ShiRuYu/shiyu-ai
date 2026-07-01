@@ -13,6 +13,7 @@ import lombok.Setter;
 import lombok.extern.slf4j.Slf4j;
 
 import java.util.List;
+import com.shiyu.ai.aiagent.node.NodeInputParam;
 
 /**
  * 意图识别节点
@@ -170,5 +171,15 @@ public class IntentNode extends BaseNode {
             output.addData(FieldKey.INTENT_CODE, "ERROR");
             return output;
         }
+    }
+
+    @Override
+    public java.util.List<NodeInputParam> getRequiredInputs() {
+        return java.util.List.of(
+            NodeInputParam.apiRequired("query", "string", "用户输入文本"),
+            NodeInputParam.previous("agentId", "string", "所属 Agent ID"),
+            NodeInputParam.config("category", "string", "意图分类"),
+            NodeInputParam.config("confidenceThreshold", "number", "置信度阈值")
+        );
     }
 }

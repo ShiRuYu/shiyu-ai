@@ -11,6 +11,7 @@ import lombok.Setter;
 import lombok.extern.slf4j.Slf4j;
 
 import java.util.Map;
+import com.shiyu.ai.aiagent.node.NodeInputParam;
 
 @Setter
 @Getter
@@ -103,5 +104,16 @@ public class LongTermMemoryNode extends BaseNode {
             output.setMsg("长期记忆节点执行失败: " + e.getMessage());
             return output;
         }
+    }
+
+    @Override
+    public java.util.List<NodeInputParam> getRequiredInputs() {
+        return java.util.List.of(
+            NodeInputParam.previous("userId", "number", "用户 ID"),
+            NodeInputParam.previous("sessionId", "string", "会话 ID"),
+            NodeInputParam.config("memoryKey", "string", "记忆键"),
+            NodeInputParam.config("category", "string", "记忆分类"),
+            NodeInputParam.config("importance", "number", "重要度（0-1）")
+        );
     }
 }

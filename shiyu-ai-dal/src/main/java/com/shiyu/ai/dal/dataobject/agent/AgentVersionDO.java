@@ -33,5 +33,7 @@ public class AgentVersionDO extends TenantEntity {
 
     private String canvasConfig;
 
+    /** 扩展字段：版本所有节点的入参定义 (JSON) */
+    private String extInfo;
     private String delFlag;
 }

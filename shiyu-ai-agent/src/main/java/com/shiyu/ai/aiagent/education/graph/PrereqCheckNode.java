@@ -1,5 +1,6 @@
 package com.shiyu.ai.aiagent.education.graph;
 
+import com.shiyu.ai.aiagent.node.NodeInputParam;
 import com.shiyu.ai.aiagent.node.BaseNode;
 import com.shiyu.ai.aiagent.node.NodeInput;
 import com.shiyu.ai.aiagent.node.NodeOutput;
@@ -86,5 +87,13 @@ public class PrereqCheckNode extends BaseNode {
         log.info("PrereqCheckNode: 前置知识={}个, 缺失={}个",
                 prerequisites.size(), missing.size());
         return output;
+    }
+
+    @Override
+    public java.util.List<NodeInputParam> getRequiredInputs() {
+        return java.util.List.of(
+            NodeInputParam.apiRequired("knowledgeId", "number", "知识点 ID"),
+            NodeInputParam.apiOptional("studentId", "number", "学生 ID（可选，仅用于记录）", null)
+        );
     }
 }

@@ -84,4 +84,9 @@ public class DefaultNode extends BaseNode {
             return output;
         }
     }
+
+    @Override
+    public java.util.List<NodeInputParam> getRequiredInputs() {
+        return java.util.List.of();
+    }
 }

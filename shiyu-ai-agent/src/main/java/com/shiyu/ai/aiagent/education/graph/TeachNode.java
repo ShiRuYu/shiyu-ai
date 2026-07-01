@@ -1,5 +1,6 @@
 package com.shiyu.ai.aiagent.education.graph;
 
+import com.shiyu.ai.aiagent.node.NodeInputParam;
 import com.shiyu.ai.aiagent.node.BaseNode;
 import com.shiyu.ai.aiagent.node.NodeInput;
 import com.shiyu.ai.aiagent.node.NodeOutput;
@@ -121,5 +122,15 @@ public class TeachNode extends BaseNode {
         sb.append("6. 请用中文回答\n");
 
         return sb.toString();
+    }
+
+    @Override
+    public java.util.List<NodeInputParam> getRequiredInputs() {
+        return java.util.List.of(
+            NodeInputParam.previous("knowledge", "object", "知识点详情（由 AbilityQueryNode 传入）"),
+            NodeInputParam.previous("prerequisites", "array", "前置知识点列表"),
+            NodeInputParam.previous("ability", "object", "学生能力值"),
+            NodeInputParam.previous("overallScore", "number", "总体掌握度")
+        );
     }
 }

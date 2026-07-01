@@ -9,6 +9,7 @@ import com.shiyu.ai.mcp.ToolService;
 import lombok.Getter;
 import lombok.Setter;
 import lombok.extern.slf4j.Slf4j;
+import com.shiyu.ai.aiagent.node.NodeInputParam;
 
 /**
  * 用于调用外部工具或服务
@@ -240,5 +241,14 @@ public class ToolCallNode extends BaseNode {
         }
 
         return raw;
+    }
+
+    @Override
+    public java.util.List<NodeInputParam> getRequiredInputs() {
+        return java.util.List.of(
+            NodeInputParam.config("toolName", "string", "工具名称"),
+            NodeInputParam.config("enableCache", "boolean", "是否启用缓存"),
+            NodeInputParam.previous("toolResult", "object", "前序工具结果（工具链场景）")
+        );
     }
 }

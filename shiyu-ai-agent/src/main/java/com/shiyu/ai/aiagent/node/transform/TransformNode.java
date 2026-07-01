@@ -11,6 +11,7 @@ import lombok.Setter;
 import lombok.extern.slf4j.Slf4j;
 
 import java.util.Map;
+import com.shiyu.ai.aiagent.node.NodeInputParam;
 
 /**
  * 数据转换节点
@@ -187,5 +188,15 @@ public class TransformNode extends BaseNode {
         
         // 简单的变量替换
         return template.replace("{input}", inputData);
+    }
+
+    @Override
+    public java.util.List<NodeInputParam> getRequiredInputs() {
+        return java.util.List.of(
+            NodeInputParam.previous("input", "object", "输入数据"),
+            NodeInputParam.previous("data", "object", "数据内容"),
+            NodeInputParam.previous("content", "string", "文本内容"),
+            NodeInputParam.config("transformType", "string", "转换类型")
+        );
     }
 }

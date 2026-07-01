@@ -12,6 +12,7 @@ import lombok.extern.slf4j.Slf4j;
 
 import java.util.HashMap;
 import java.util.Map;
+import com.shiyu.ai.aiagent.node.NodeInputParam;
 
 /**
  * Agent 调用节点
@@ -204,5 +205,14 @@ public class AgentCallNode extends BaseNode {
         }
 
         return agentInput;
+    }
+
+    @Override
+    public java.util.List<NodeInputParam> getRequiredInputs() {
+        return java.util.List.of(
+            NodeInputParam.config("targetAgentId", "string", "目标 Agent ID"),
+            NodeInputParam.config("targetVersion", "string", "目标版本号"),
+            NodeInputParam.previous("query", "string", "用户输入（传递给子 Agent）")
+        );
     }
 }

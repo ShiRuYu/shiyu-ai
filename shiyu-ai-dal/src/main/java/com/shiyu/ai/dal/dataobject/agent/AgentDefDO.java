@@ -31,5 +31,7 @@ public class AgentDefDO extends TenantEntity {
 
     private String status;
 
+    /** 扩展字段：聚合的节点入参定义 (JSON) */
+    private String extInfo;
     private String delFlag;
 }

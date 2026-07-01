@@ -20,6 +20,7 @@ CREATE TABLE `ai_platform` (
     `is_default`       CHAR(1)      DEFAULT 'N' COMMENT '是否默认平台（Y/N）',
     `status`           CHAR(1)      DEFAULT '1' COMMENT '状态（1正常 0停用）',
     `remark`           VARCHAR(500) DEFAULT NULL COMMENT '备注',
+    `ext_info`          CLOB         DEFAULT NULL COMMENT '扩展字段：聚合的节点入参定义 (JSON)'
     `create_by`        VARCHAR(64)  DEFAULT NULL COMMENT '创建者',
     `create_time`      TIMESTAMP    DEFAULT CURRENT_TIMESTAMP COMMENT '创建时间',
     `update_by`        VARCHAR(64)  DEFAULT NULL COMMENT '更新者',
@@ -93,6 +94,8 @@ CREATE TABLE `agent_version` (
     `description`     VARCHAR(500) DEFAULT NULL COMMENT '版本描述',
     `status`          VARCHAR(16)  DEFAULT 'DRAFT' COMMENT '版本状态(DRAFT/PUBLISHED/ARCHIVED)',
     `graph_config`    CLOB         DEFAULT NULL COMMENT 'Graph配置JSON',
+    `canvas_config`   CLOB         DEFAULT NULL COMMENT '画布布局JSON',
+    `ext_fields`      CLOB         DEFAULT NULL COMMENT '扩展字段：版本所有节点的入参定义 (JSON)'
     `canvas_config`   CLOB         DEFAULT NULL COMMENT '画布布局JSON',
     `del_flag`        CHAR(1)      DEFAULT '0' COMMENT '删除标志(0存在 1删除)',
     `create_by`       VARCHAR(64)  DEFAULT NULL COMMENT '创建者',

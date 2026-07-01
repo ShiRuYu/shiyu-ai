@@ -10,6 +10,7 @@ import com.shiyu.ai.aiagent.request.NodeConfigRequest;
 import com.shiyu.ai.aiagent.vo.AgentVersionDetailVO;
 import com.shiyu.ai.aiagent.vo.GraphValidationVO;
 import com.shiyu.ai.aiagent.graph.Graph;
+import com.shiyu.ai.aiagent.node.NodeFactory;
 import com.shiyu.ai.common.core.utils.JSONUtils;
 import jakarta.annotation.Resource;
 import lombok.extern.slf4j.Slf4j;
@@ -28,6 +29,9 @@ public class AgentGraphServiceImpl implements AgentGraphService {
 
     @Resource
     private AgentService agentService;
+
+    @Resource
+    private NodeFactory nodeFactory;
 
     @Override
     public AgentVersionDetailVO getGraphConfig(String agentId, Long versionId) {
@@ -246,10 +250,56 @@ public class AgentGraphServiceImpl implements AgentGraphService {
         return (Map<String, Object>) value;
     }
 
+    @SuppressWarnings("unchecked")
     private void saveGraphConfig(AgentVersionBO v, Map<String, Object> graphData) {
         try {
             v.setGraphConfig(JSONUtils.toJsonString(graphData));
             v.setUpdateTime(LocalDateTime.now());
+            // 提取 ext_info.requiredInputs
+            try {
+                java.util.List<com.shiyu.ai.aiagent.node.NodeInputParam> allInputs = new java.util.ArrayList<>();
+                java.util.Map<String, Object> nodes = (java.util.Map<String, Object>) graphData.get("nodes");
+                if (nodes != null) {
+                    java.util.List<com.shiyu.ai.aiagent.node.BaseNode> graphNodes = new java.util.ArrayList<>();
+                    // 从 nodeFactory 获取节点实例来调用 getRequiredInputs()
+                    //（无法直接从 graphData 重建节点，需要 NodeFactory）
+                    com.shiyu.ai.aiagent.node.NodeFactory nf = nodeFactory;
+                    for (String nodeId : nodes.keySet()) {
+                        try {
+                            java.util.Map<String, Object> nodeData = (java.util.Map<String, Object>) nodes.get(nodeId);
+                            String nodeTypeStr = (String) nodeData.get("nodeType");
+                            if (nodeTypeStr != null) {
+                                com.shiyu.ai.aiagent.node.NodeType nt = com.shiyu.ai.aiagent.node.NodeType.fromCode(nodeTypeStr);
+                                com.shiyu.ai.aiagent.node.NodeConfig cfg = new com.shiyu.ai.aiagent.node.NodeConfig();
+                                cfg.setNodeId(nodeId);
+                                cfg.setNodeType(nt);
+                                com.shiyu.ai.aiagent.node.BaseNode node = nf.createNode(cfg);
+                                if (node != null) {
+                                    java.util.List<com.shiyu.ai.aiagent.node.NodeInputParam> inputs = node.getRequiredInputs();
+                                    for (com.shiyu.ai.aiagent.node.NodeInputParam p : inputs) {
+                                        allInputs.add(new com.shiyu.ai.aiagent.node.NodeInputParam(
+                                                p.name(), p.type(), p.source(), p.required(),
+                                                "[" + nodeId + "] " + p.description(), p.defaultValue()
+                                        ));
+                                    }
+                                }
+                            }
+                        } catch (Exception ignored) {
+                        }
+                    }
+                }
+                // 去重
+                java.util.LinkedHashMap<String, com.shiyu.ai.aiagent.node.NodeInputParam> deduped = new java.util.LinkedHashMap<>();
+                for (com.shiyu.ai.aiagent.node.NodeInputParam p : allInputs) {
+                    String key = p.name() + "|" + p.source().name();
+                    if (!deduped.containsKey(key)) deduped.put(key, p);
+                }
+                java.util.Map<String, Object> extInfoMap = new java.util.HashMap<>();
+                extInfoMap.put("requiredInputs", deduped.values());
+                v.setExtInfo(JSONUtils.toJsonString(extInfoMap));
+            } catch (Exception ex) {
+                log.warn("提取节点入参定义失败（不影响保存）", ex);
+            }
             agentAdminRepository.updateVersion(v);
             evictAgentCache(v.getAgentId());
         } catch (Exception e) {

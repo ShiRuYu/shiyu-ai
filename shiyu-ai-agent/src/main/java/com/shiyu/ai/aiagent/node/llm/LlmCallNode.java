@@ -20,6 +20,7 @@ import org.bsc.langgraph4j.state.AgentState;
 
 import java.util.List;
 import java.util.Map;
+import com.shiyu.ai.aiagent.node.NodeInputParam;
 
 @Setter
 @Getter
@@ -246,5 +247,16 @@ public class LlmCallNode extends BaseNode {
         }
 
         return null;
+    }
+
+    @Override
+    public java.util.List<NodeInputParam> getRequiredInputs() {
+        return java.util.List.of(
+            NodeInputParam.apiOptional("query", "string", "用户提问/输入文本", ""),
+            NodeInputParam.config("platform", "string", "AI 平台编码（如 SILICON_FLOW）"),
+            NodeInputParam.config("modelName", "string", "模型名称"),
+            NodeInputParam.config("temperature", "number", "温度参数"),
+            NodeInputParam.defaultVal("defaultPrompt", "string", "默认 Prompt（无 query 时使用）", "你是一个智能助手")
+        );
     }
 }

@@ -13,6 +13,7 @@ import lombok.extern.slf4j.Slf4j;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
+import com.shiyu.ai.aiagent.node.NodeInputParam;
 
 @Setter
 @Getter
@@ -144,5 +145,16 @@ public class MemoryRetrievalNode extends BaseNode {
         }
 
         return sb.toString();
+    }
+
+    @Override
+    public java.util.List<NodeInputParam> getRequiredInputs() {
+        return java.util.List.of(
+            NodeInputParam.apiRequired("query", "string", "检索查询"),
+            NodeInputParam.previous("sessionId", "string", "会话 ID"),
+            NodeInputParam.config("retrievalScope", "string", "检索范围（session/user/global）"),
+            NodeInputParam.config("topK", "number", "最大返回数量"),
+            NodeInputParam.config("similarityThreshold", "number", "相似度阈值")
+        );
     }
 }

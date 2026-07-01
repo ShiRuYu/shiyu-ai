@@ -163,6 +163,19 @@ public abstract class BaseNode implements NodeAction<AgentState> {
         );
     }
 
+    /**
+     * 获取该节点所需的输入参数定义列表
+     * <p>
+     * 子类应覆盖此方法，返回该节点从 AgentState 读取的所有入参的元信息。
+     * 这些信息将被 AgentLoader 聚合后存入 agent_version / agent_def 的 ext_fields，
+     * 用于接口文档推导和运行时参数校验。
+     *
+     * @return 输入参数定义列表，子类覆盖时不能返回 null（返回空列表即可）
+     */
+    public java.util.List<NodeInputParam> getRequiredInputs() {
+        return java.util.Collections.emptyList();
+    }
+
     private static String getStr(Map<String, Object> data, NodeFields.FieldKey key) {
         Object v = data.get(key.key());
         return v != null ? v.toString() : null;

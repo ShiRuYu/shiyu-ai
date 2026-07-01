@@ -1,5 +1,6 @@
 package com.shiyu.ai.aiagent.education.graph;
 
+import com.shiyu.ai.aiagent.node.NodeInputParam;
 import com.shiyu.ai.aiagent.node.BaseNode;
 import com.shiyu.ai.aiagent.node.NodeInput;
 import com.shiyu.ai.aiagent.node.NodeOutput;
@@ -187,5 +188,14 @@ public class PracticeNode extends BaseNode {
         if (u.startsWith("ENG") || u.startsWith("E")) return "ENGLISH";
         if (u.startsWith("CHN") || u.startsWith("CH")) return "CHINESE";
         return "MATH";
+    }
+
+    @Override
+    public java.util.List<NodeInputParam> getRequiredInputs() {
+        return java.util.List.of(
+            NodeInputParam.previous("knowledge", "object", "知识点详情"),
+            NodeInputParam.previous("overallScore", "number", "总体掌握度（用于自动适配难度）"),
+            NodeInputParam.apiOptional("practiceCount", "number", "题目数量（默认5）", 5)
+        );
     }
 }

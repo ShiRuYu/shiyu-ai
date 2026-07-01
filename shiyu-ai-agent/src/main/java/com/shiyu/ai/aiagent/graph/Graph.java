@@ -379,10 +379,8 @@ public class Graph {
         Set<String> successors = new HashSet<>();
         List<String> edgeTargets = edges.get(node);
         if (edgeTargets != null) successors.addAll(edgeTargets);
-        ConditionEdge condEdge = conditionalEdges.get(node);
-        if (condEdge != null && condEdge.getNodeMappings() != null) {
-            successors.addAll(condEdge.getNodeMappings().values());
-        }
+        // 条件边不参与循环检测 — 它们是"有时"路径，不是"总是"路径
+        // 例如 tutor-graph 的 scoreAnalysis→teach（仅 score<60 时走）
 
         for (String successor : successors) {
             if (black.contains(successor)) continue;

@@ -12,6 +12,7 @@ import lombok.extern.slf4j.Slf4j;
 
 import java.util.List;
 import java.util.Map;
+import com.shiyu.ai.aiagent.node.NodeInputParam;
 
 @Setter
 @Getter
@@ -101,5 +102,15 @@ public class ShortTermMemoryNode extends BaseNode {
             output.setMsg("短期记忆节点执行失败: " + e.getMessage());
             return output;
         }
+    }
+
+    @Override
+    public java.util.List<NodeInputParam> getRequiredInputs() {
+        return java.util.List.of(
+            NodeInputParam.previous("sessionId", "string", "会话 ID"),
+            NodeInputParam.previous("agentId", "string", "Agent ID"),
+            NodeInputParam.previous("query", "string", "用户输入"),
+            NodeInputParam.previous("content", "string", "AI 回复内容")
+        );
     }
 }

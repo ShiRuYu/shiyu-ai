@@ -11,6 +11,7 @@ import lombok.Setter;
 import lombok.extern.slf4j.Slf4j;
 
 import java.util.Map;
+import com.shiyu.ai.aiagent.node.NodeInputParam;
 
 /**
  * 输出格式化节点
@@ -215,6 +216,16 @@ public class OutputFormatNode extends BaseNode {
     private String prettifyContent(String content) {
         // 简单的文本美化：添加适当的换行和空格
         return content.trim().replaceAll("\\s+", " ");
+    }
+
+    @Override
+    public java.util.List<NodeInputParam> getRequiredInputs() {
+        return java.util.List.of(
+            NodeInputParam.previous("content", "string", "待格式化内容"),
+            NodeInputParam.previous("response", "object", "响应内容"),
+            NodeInputParam.config("outputFormat", "string", "输出格式（TEXT/JSON/MARKDOWN）"),
+            NodeInputParam.config("prettyPrint", "boolean", "是否美化输出")
+        );
     }
 }
 

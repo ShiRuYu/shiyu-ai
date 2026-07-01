@@ -75,6 +75,47 @@ public class AgentLoader {
 
             Graph graph = buildGraph(agentId, graphConfig);
 
+            // ===== 提取节点入参定义 → ext_info.requiredInputs =====
+            try {
+                java.util.List<com.shiyu.ai.aiagent.node.NodeInputParam> allInputs = new java.util.ArrayList<>();
+                for (Map.Entry<String, com.shiyu.ai.aiagent.node.BaseNode> entry : graph.getNodes().entrySet()) {
+                    String nodeId = entry.getKey();
+                    com.shiyu.ai.aiagent.node.BaseNode node = entry.getValue();
+                    java.util.List<com.shiyu.ai.aiagent.node.NodeInputParam> nodeInputs = node.getRequiredInputs();
+                    for (com.shiyu.ai.aiagent.node.NodeInputParam p : nodeInputs) {
+                        allInputs.add(new com.shiyu.ai.aiagent.node.NodeInputParam(
+                                p.name(), p.type(), p.source(), p.required(),
+                                "[" + nodeId + "] " + p.description(), p.defaultValue()
+                        ));
+                    }
+                }
+                // 去重
+                java.util.LinkedHashMap<String, com.shiyu.ai.aiagent.node.NodeInputParam> deduped = new java.util.LinkedHashMap<>();
+                for (com.shiyu.ai.aiagent.node.NodeInputParam p : allInputs) {
+                    String key = p.name() + "|" + p.source().name();
+                    if (!deduped.containsKey(key)) {
+                        deduped.put(key, p);
+                    }
+                }
+                java.util.Map<String, Object> extInfoMap = new java.util.HashMap<>();
+                extInfoMap.put("requiredInputs", deduped.values());
+                String extInfoJson = com.shiyu.ai.common.core.utils.JSONUtils.toJsonString(extInfoMap);
+                
+                if (!extInfoJson.equals(versionBO.getExtInfo())) {
+                    versionBO.setExtInfo(extInfoJson);
+                    agentAdminRepository.updateVersion(versionBO);
+                    log.info("agent_version.ext_info 已更新: agentId={}, version={}", agentId, versionNumber);
+                }
+                if (!extInfoJson.equals(agentDef.getExtInfo())) {
+                    agentDef.setExtInfo(extInfoJson);
+                    agentAdminRepository.update(agentDef);
+                    log.info("agent_def.ext_info 已同步: agentId={}", agentId);
+                }
+            } catch (Exception e) {
+                log.warn("提取节点入参定义失败（不影响执行）: agentId={}", agentId, e);
+            }
+            // ===== end ext_info =====
+
             AgentVersion agentVersion = AgentVersion.builder()
                     .versionNumber(versionNumber)
                     .description(versionBO.getDescription())
