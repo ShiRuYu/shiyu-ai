@@ -51,17 +51,18 @@ public class RogueMapFileManager {
         if (markerFile.toFile().exists()) {
             log.info("RogueMap: 检测到上次正常退出标记，保留数据文件 (dir={})", dataDir);
             markerFile.toFile().delete();
-        } else {
-            log.warn("RogueMap: 未检测到正常退出标记（上次可能异常退出），清理损坏的数据文件 (dir={})", dataDir);
-            if (!cleanDataFiles()) {
-                log.warn("RogueMap: 部分数据文件无法清理，尝试终止残留进程");
-                killLingeringProcesses();
-                // 再试一次
-                if (!cleanDataFiles()) {
-                    log.error("RogueMap: 数据文件被其他进程锁定，无法清理。请手动执行：");
-                    log.error("  Stop-Process -Id $(Get-Process java | Where-Object MainWindowTitle -eq '').Id -Force");
-                }
-            }
+            return;
+        }
+
+        log.warn("RogueMap: 未检测到正常退出标记（上次可能异常退出），清理损坏的数据文件 (dir={})", dataDir);
+
+        // 先尝试终止可能持有文件锁的残留进程
+        killLingeringProcesses();
+
+        // 再清理数据文件
+        if (!cleanDataFiles()) {
+            log.error("RogueMap: 数据文件被其他进程锁定，无法清理。请手动执行：");
+            log.error("  Stop-Process -Id $(Get-Process java | Where-Object MainWindowTitle -eq '').Id -Force");
         }
     }
 

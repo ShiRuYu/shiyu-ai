@@ -64,18 +64,31 @@ public class AppHomeEnvironmentPostProcessor implements EnvironmentPostProcessor
     }
 
     /**
-     * 从给定路径向上遍历父目录，找到第一个包含 pom.xml 的目录
+     * 从给定路径向上遍历父目录，找到项目根目录。
+     * 项目根目录的判断标准：pom.xml 中包含 {@code <packaging>pom</packaging>}（即 parent pom）。
+     * 这可以避免错误地将子模块目录识别为项目根目录。
      */
     private Path findProjectRoot(Path start) {
         Path current = start.toAbsolutePath().normalize();
-        int maxDepth = 10; // 最多向上找 10 层，防止无限循环
+        int maxDepth = 10;
+        Path root = null;
         for (int i = 0; i < maxDepth && current != null; i++) {
-            if (Files.exists(current.resolve("pom.xml"))) {
-                return current;
+            Path pom = current.resolve("pom.xml");
+            if (Files.exists(pom)) {
+                try {
+                    String content = Files.readString(pom);
+                    if (content.contains("<packaging>pom</packaging>")) {
+                        return current; // 找到了 root pom，直接返回
+                    }
+                } catch (Exception e) {
+                    // ignore
+                }
+                root = current; // 记录最后一个包含 pom.xml 的目录
             }
             current = current.getParent();
         }
-        return null;
+        // 如果没找到 root pom，回退到最上层的 pom 目录
+        return root;
     }
 
     private void setAppHome(ConfigurableEnvironment environment, String appHome) {
