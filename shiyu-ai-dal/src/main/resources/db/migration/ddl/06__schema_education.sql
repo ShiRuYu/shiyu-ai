@@ -443,5 +443,19 @@ ALTER TABLE `edu_study_plan`     ALTER COLUMN `id` RESTART WITH 100;
 
 ALTER TABLE `edu_study_plan_item` ALTER COLUMN `id` RESTART WITH 100;
 
+
+
+DROP TABLE IF EXISTS `edu_learning_state`;
+CREATE TABLE `edu_learning_state`(
+    `id`              BIGINT       NOT NULL AUTO_INCREMENT,
+    `student_id`      BIGINT       NOT NULL COMMENT '学生ID',
+    `knowledge_id`    BIGINT       NOT NULL COMMENT '知识点ID',
+    `state`           VARCHAR(20)  NOT NULL DEFAULT 'NOT_STARTED' COMMENT '状态: NOT_STARTED/LEARNING/MASTERED/PROFICIENT/FORGOTTEN/REVIEWING',
+    `create_time`     TIMESTAMP    DEFAULT CURRENT_TIMESTAMP,
+    `update_time`     TIMESTAMP    DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+    PRIMARY KEY (`id`),
+    UNIQUE KEY `uk_learning_state` (`student_id`, `knowledge_id`)
+);
+COMMENT ON TABLE `edu_learning_state` IS '知识点学习状态表（持久化 LearningStateMachine）';
 ALTER TABLE `wrong_question`     ALTER COLUMN `id` RESTART WITH 100;
 

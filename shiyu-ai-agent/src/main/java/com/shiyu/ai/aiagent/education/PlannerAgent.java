@@ -6,6 +6,7 @@ import com.shiyu.ai.core.ChatResponse;
 import com.shiyu.ai.dal.dataobject.education.StudyPlanDO;
 import com.shiyu.ai.dal.dataobject.education.StudyPlanItemDO;
 import com.shiyu.ai.education.plan.StudyPlanService;
+import com.shiyu.ai.education.repository.StudyPlanItemRepository;
 import com.shiyu.ai.knowledge.dto.KnowledgeResponse;
 import com.shiyu.ai.knowledge.path.LearningPathService;
 import com.shiyu.ai.knowledge.service.KnowledgeService;
@@ -32,6 +33,7 @@ public class PlannerAgent {
     private final KnowledgeService knowledgeService;
     private final LearningPathService learningPathService;
     private final StudyPlanService studyPlanService;
+    private final StudyPlanItemRepository studyPlanItemRepository;
 
     /**
      * 生成学习计划
@@ -71,7 +73,8 @@ public class PlannerAgent {
                 savedPlan.getId(), path.size() > 0 ? path : List.of(targetKnowledgeId),
                 startDate, endDate);
         // 保存每日任务（当前仅创建计划本身，items 持久化后续扩展）
-        // TODO: 持久化 StudyPlanItemDO
+        studyPlanItemRepository.insertBatch(items);
+        log.info("PlannerAgent: {} 条计划明细已持久化", items.size());
 
         log.info("PlannerAgent.generatePlan: 计划创建完成, planId={}, totalDays={}",
                 savedPlan.getId(), ChronoUnit.DAYS.between(startDate, endDate));

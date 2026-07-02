@@ -1,14 +1,20 @@
 package com.shiyu.ai.education.course.impl;
 
 import com.shiyu.ai.dal.dataobject.education.CourseDO;
+import com.shiyu.ai.dal.dataobject.education.CourseKnowledgeDO;
+import com.shiyu.ai.dal.dataobject.education.StudyRecordDO;
 import com.shiyu.ai.education.course.CourseService;
+import com.shiyu.ai.education.dto.CourseProgressResponse;
+import com.shiyu.ai.education.repository.CourseKnowledgeRepository;
 import com.shiyu.ai.education.repository.CourseRepository;
+import com.shiyu.ai.education.repository.StudyRecordRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
+import java.util.Set;
+import java.util.stream.Collectors;
 
 @Slf4j
 @Service
@@ -16,6 +22,8 @@ import java.util.List;
 public class CourseServiceImpl implements CourseService {
 
     private final CourseRepository courseRepository;
+    private final CourseKnowledgeRepository courseKnowledgeRepository;
+    private final StudyRecordRepository studyRecordRepository;
 
     @Override
     public CourseDO getById(Long id) {
@@ -38,21 +46,51 @@ public class CourseServiceImpl implements CourseService {
     }
 
     @Override
-    @Transactional(rollbackFor = Exception.class)
     public CourseDO create(CourseDO course) {
         courseRepository.insert(course);
         return course;
     }
 
     @Override
-    @Transactional(rollbackFor = Exception.class)
     public void update(CourseDO course) {
         courseRepository.update(course);
     }
 
     @Override
-    @Transactional(rollbackFor = Exception.class)
     public void deleteById(Long id) {
         courseRepository.deleteById(id);
+    }
+
+    @Override
+    public CourseProgressResponse getProgress(Long courseId, Long studentId) {
+        CourseDO course = courseRepository.selectById(courseId);
+        if (course == null) return null;
+
+        // 获取课程关联的知识点
+        List<CourseKnowledgeDO> ckList = courseKnowledgeRepository.selectByCourseId(courseId);
+        if (ckList.isEmpty()) {
+            return new CourseProgressResponse(courseId, course.getName(), 0, 0, 0.0);
+        }
+
+        int totalKnowledges = ckList.size();
+        // 统计学生已完成学习的知识点
+        long completedKnowledges = 0;
+        for (CourseKnowledgeDO ck : ckList) {
+            List<StudyRecordDO> records = studyRecordRepository.selectByStudentAndKnowledge(
+                    studentId, ck.getKnowledgeId());
+            if (!records.isEmpty()) {
+                completedKnowledges++;
+            }
+        }
+
+        double progress = totalKnowledges > 0
+                ? Math.round((double) completedKnowledges / totalKnowledges * 100 * 10.0) / 10.0
+                : 0.0;
+
+        log.info("课程进度: courseId={}, studentId={}, {}/{}={}%",
+                courseId, studentId, completedKnowledges, totalKnowledges, progress);
+
+        return new CourseProgressResponse(courseId, course.getName(),
+                (int) completedKnowledges, totalKnowledges, progress);
     }
 }

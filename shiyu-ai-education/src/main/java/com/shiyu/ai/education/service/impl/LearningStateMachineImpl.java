@@ -1,60 +1,69 @@
 package com.shiyu.ai.education.service.impl;
 
+import com.shiyu.ai.dal.dataobject.education.LearningStateDO;
 import com.shiyu.ai.education.domain.LearningState;
+import com.shiyu.ai.education.repository.LearningStateRepository;
 import com.shiyu.ai.education.service.LearningStateMachine;
+import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 
-import java.util.Map;
-import java.util.concurrent.ConcurrentHashMap;
-
 @Slf4j
 @Service
+@RequiredArgsConstructor
 public class LearningStateMachineImpl implements LearningStateMachine {
 
-    private final Map<String, LearningState> states = new ConcurrentHashMap<>();
-
-    private String key(Long studentId, Long knowledgeId) {
-        return studentId + ":" + knowledgeId;
-    }
+    private final LearningStateRepository learningStateRepository;
 
     @Override
     public LearningState getState(Long studentId, Long knowledgeId) {
-        return states.getOrDefault(key(studentId, knowledgeId), LearningState.NOT_STARTED);
+        LearningStateDO stateDO = learningStateRepository.selectByStudentAndKnowledge(studentId, knowledgeId);
+        if (stateDO == null) {
+            return LearningState.NOT_STARTED;
+        }
+        try {
+            return LearningState.valueOf(stateDO.getState());
+        } catch (IllegalArgumentException e) {
+            return LearningState.NOT_STARTED;
+        }
     }
 
     @Override
     public void startLearning(Long studentId, Long knowledgeId) {
-        setState(studentId, knowledgeId, getState(studentId, knowledgeId).startLearning());
+        updateState(studentId, knowledgeId, getState(studentId, knowledgeId).startLearning());
     }
 
     @Override
     public void passAssessment(Long studentId, Long knowledgeId) {
-        setState(studentId, knowledgeId, getState(studentId, knowledgeId).passAssessment());
+        updateState(studentId, knowledgeId, getState(studentId, knowledgeId).passAssessment());
     }
 
     @Override
     public void deepPractice(Long studentId, Long knowledgeId) {
-        setState(studentId, knowledgeId, getState(studentId, knowledgeId).deepPractice());
+        updateState(studentId, knowledgeId, getState(studentId, knowledgeId).deepPractice());
     }
 
     @Override
     public void forget(Long studentId, Long knowledgeId) {
-        setState(studentId, knowledgeId, getState(studentId, knowledgeId).forget());
+        updateState(studentId, knowledgeId, getState(studentId, knowledgeId).forget());
     }
 
     @Override
     public void scheduleReview(Long studentId, Long knowledgeId) {
-        setState(studentId, knowledgeId, getState(studentId, knowledgeId).scheduleReview());
+        updateState(studentId, knowledgeId, getState(studentId, knowledgeId).scheduleReview());
     }
 
     @Override
     public void giveUp(Long studentId, Long knowledgeId) {
-        setState(studentId, knowledgeId, getState(studentId, knowledgeId).giveUp());
+        updateState(studentId, knowledgeId, getState(studentId, knowledgeId).giveUp());
     }
 
-    private void setState(Long studentId, Long knowledgeId, LearningState newState) {
-        states.put(key(studentId, knowledgeId), newState);
-        log.debug("学习状态变更: student={}, knowledge={}, newState={}", studentId, knowledgeId, newState);
+    private void updateState(Long studentId, Long knowledgeId, LearningState newState) {
+        LearningStateDO stateDO = new LearningStateDO();
+        stateDO.setStudentId(studentId);
+        stateDO.setKnowledgeId(knowledgeId);
+        stateDO.setState(newState.name());
+        learningStateRepository.upsert(stateDO);
+        log.info("学习状态已持久化: student={}, knowledge={}, state={}", studentId, knowledgeId, newState);
     }
 }

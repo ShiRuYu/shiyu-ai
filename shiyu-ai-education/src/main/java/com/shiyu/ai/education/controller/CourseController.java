@@ -2,6 +2,7 @@ package com.shiyu.ai.education.controller;
 
 import com.shiyu.ai.common.core.api.Result;
 import com.shiyu.ai.dal.dataobject.education.CourseDO;
+import com.shiyu.ai.education.dto.CourseProgressResponse;
 import com.shiyu.ai.education.course.CourseService;
 import com.shiyu.ai.education.dto.CourseResponse;
 import io.swagger.v3.oas.annotations.Operation;
