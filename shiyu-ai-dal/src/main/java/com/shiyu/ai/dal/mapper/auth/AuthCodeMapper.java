@@ -7,6 +7,10 @@ import com.shiyu.ai.common.mybatis.core.mapper.BaseMapperFlex;
 import org.apache.ibatis.annotations.Mapper;
 
 /**
+ * Auth Code 接口
+ */
+
+/**
  * 认证码表 数据层
  */
 @Mapper

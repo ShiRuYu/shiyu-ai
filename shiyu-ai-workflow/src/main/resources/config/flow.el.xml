@@ -39,4 +39,37 @@
             analyzeExamCmp
         );
     </chain>
+
+    <!--
+    推荐链 recommendChain
+    流程：加载薄弱知识点 → 生成推荐建议
+    -->
+    <chain name="recommendChain">
+        THEN(
+            loadWeakPointsCmp,
+            generateRecommendationCmp
+        );
+    </chain>
+
+    <!--
+    辅导链 tutorChain
+    流程：查能力→讲解→出题→评分→复习→报告
+    -->
+    <chain name="tutorChain">
+        THEN(
+            tutorCheckCmp,
+            tutorReportCmp
+        );
+    </chain>
+
+    <!--
+    能力链 abilityChain
+    流程：加载能力值 → 生成评估报告
+    -->
+    <chain name="abilityChain">
+        THEN(
+            loadAbilityCmp,
+            generateAbilityReportCmp
+        );
+    </chain>
 </flow>

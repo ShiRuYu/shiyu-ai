@@ -1,6 +1,6 @@
 package com.shiyu.ai.education.ability.impl;
 
-import com.shiyu.ai.dal.dataobject.knowledge.AbilityDO;
+import com.shiyu.ai.dal.dataobject.education.AbilityDO;
 import com.shiyu.ai.education.domain.AbilityValue;
 import com.shiyu.ai.education.domain.BloomTaxonomy;
 import com.shiyu.ai.education.ability.AbilityService;

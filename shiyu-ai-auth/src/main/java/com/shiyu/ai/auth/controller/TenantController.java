@@ -10,10 +10,13 @@ import com.shiyu.ai.common.core.utils.MapstructUtils;
 import jakarta.validation.Valid;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.web.bind.annotation.*;
+import io.swagger.v3.oas.annotations.tags.Tag;
+import io.swagger.v3.oas.annotations.Operation;
 
 import java.util.List;
 
 @Slf4j
+@Tag(name = "Tenant", description = "Tenant")
 @RestController
 @RequestMapping("/tenant")
 public class TenantController {
@@ -31,6 +34,7 @@ public class TenantController {
         }
     }
 
+    @Operation(summary = "Get All Tenants")
     @GetMapping("/all")
     public Result<List<TenantVO>> getAllTenants() {
         checkTenantAdmin();
@@ -39,6 +43,7 @@ public class TenantController {
         return Result.success(tenantVOs);
     }
 
+    @Operation(summary = "Get Tenant By Id")
     @GetMapping("/{id}")
     public Result<TenantVO> getTenantById(@PathVariable Long id) {
         checkTenantAdmin();
@@ -50,6 +55,7 @@ public class TenantController {
         return Result.success(tenantVO);
     }
 
+    @Operation(summary = "Create Tenant")
     @PostMapping("")
     public Result<Void> createTenant(@Valid @RequestBody TenantRequest request) {
         checkTenantAdmin();
@@ -74,6 +80,7 @@ public class TenantController {
         }
     }
 
+    @Operation(summary = "Delete Tenant")
     @DeleteMapping("/{id}")
     public Result<Void> deleteTenant(@PathVariable Long id) {
         checkTenantAdmin();

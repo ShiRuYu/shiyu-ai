@@ -7,6 +7,10 @@ import com.shiyu.ai.common.mybatis.core.mapper.BaseMapperFlex;
 import org.apache.ibatis.annotations.Mapper;
 
 /**
+ * Dict 接口
+ */
+
+/**
  * 字典表 数据层
  */
 @Mapper

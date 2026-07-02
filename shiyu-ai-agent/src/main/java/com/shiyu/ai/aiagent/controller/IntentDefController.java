@@ -9,6 +9,8 @@ import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.tuple.Pair;
 import jakarta.validation.Valid;
 import org.springframework.web.bind.annotation.*;
+import io.swagger.v3.oas.annotations.tags.Tag;
+import io.swagger.v3.oas.annotations.Operation;
 
 import java.util.List;
 
@@ -16,6 +18,7 @@ import java.util.List;
  * 意图定义管理 Controller
  */
 @Slf4j
+@Tag(name = "Intent Def", description = "Intent Def")
 @RestController
 @RequestMapping("/intent/def")
 public class IntentDefController {
@@ -29,6 +32,7 @@ public class IntentDefController {
     /**
      * 意图定义列表 - 分页（可按 agentId 或 category 过滤）
      */
+    @Operation(summary = "Get Page")
     @GetMapping("/page")
     public Result<PageData<IntentDefBO>> getPage(
             @RequestParam(required = false) String agentId,
@@ -47,6 +51,7 @@ public class IntentDefController {
     /**
      * 根据 ID 查询意图定义详情
      */
+    @Operation(summary = "Get by Id")
     @GetMapping("/{id}")
     public Result<IntentDefBO> getById(@PathVariable Long id) {
         log.info("查询意图定义详情，id: {}", id);
@@ -60,6 +65,7 @@ public class IntentDefController {
     /**
      * 新增意图定义
      */
+    @Operation(summary = "Create")
     @PostMapping
     public Result<IntentDefBO> create(@Valid @RequestBody IntentDefBO bo) {
         log.info("新增意图定义，code: {}", bo.getCode());
@@ -91,6 +97,7 @@ public class IntentDefController {
     /**
      * 删除意图定义
      */
+    @Operation(summary = "Delete")
     @DeleteMapping("/{id}")
     public Result<Void> delete(@PathVariable Long id) {
         log.info("删除意图定义，id: {}", id);
@@ -106,6 +113,7 @@ public class IntentDefController {
     /**
      * 批量删除意图定义
      */
+    @Operation(summary = "Delete Batch")
     @DeleteMapping("/batch")
     public Result<Void> deleteBatch(@RequestBody List<Long> ids) {
         log.info("批量删除意图定义，ids: {}", ids);
@@ -121,6 +129,7 @@ public class IntentDefController {
     /**
      * 获取所有意图定义选项（下拉选择用）
      */
+    @Operation(summary = "Get Options")
     @GetMapping("/options")
     public Result<List<IdNameOptionVO>> getOptions() {
         return Result.success(intentDefService.listAllOptions());

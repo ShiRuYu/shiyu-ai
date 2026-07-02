@@ -7,6 +7,8 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
+import io.swagger.v3.oas.annotations.tags.Tag;
+import io.swagger.v3.oas.annotations.Operation;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -16,6 +18,7 @@ import java.util.Map;
  * 用于演示如何通过 LoginContextHolder 获取当前登录用户信息
  */
 @Slf4j
+@Tag(name = "User Context Test", description = "User Context Test")
 @RestController
 @RequestMapping("/test/user-context")
 public class UserContextTestController {
@@ -26,6 +29,7 @@ public class UserContextTestController {
      * 
      * @return 当前登录用户的详细信息
      */
+    @Operation(summary = "Get Current User Info")
     @GetMapping("/info")
     public Result<Map<String, Object>> getCurrentUserInfo() {
         log.info("收到获取当前用户信息请求");
@@ -73,6 +77,7 @@ public class UserContextTestController {
      * 
      * @return 演示结果
      */
+    @Operation(summary = "Demo Usage")
     @GetMapping("/demo")
     public Result<Map<String, Object>> demoUsage() {
         log.info("演示 LoginContextHolder 的使用");

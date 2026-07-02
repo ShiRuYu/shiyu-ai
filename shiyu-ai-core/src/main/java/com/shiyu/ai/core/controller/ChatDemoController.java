@@ -14,6 +14,8 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
+import io.swagger.v3.oas.annotations.tags.Tag;
+import io.swagger.v3.oas.annotations.Operation;
 import reactor.core.publisher.Flux;
 
 import java.util.HashMap;
@@ -21,6 +23,7 @@ import java.util.List;
 import java.util.Map;
 
 @Slf4j
+@Tag(name = "Chat Demo", description = "Chat Demo")
 @RestController
 @RequestMapping("/api/chat")
 public class ChatDemoController {
@@ -33,11 +36,13 @@ public class ChatDemoController {
         this.modelManager = modelManager;
     }
 
+    @Operation(summary = "Get Available Platforms")
     @GetMapping("/platforms")
     public Result<List<String>> getAvailablePlatforms() {
         return Result.success(modelManager.getAvailablePlatforms());
     }
 
+    @Operation(summary = "操作: /send")
     @PostMapping("/send")
     public Result<DemoChatResponse> chat(@Valid @RequestBody DemoChatRequest request) {
         log.info("收到聊天请求：platform={}, model={}, prompt={}",
@@ -69,6 +74,7 @@ public class ChatDemoController {
         }
     }
 
+    @Operation(summary = "Stream Chat")
     @PostMapping("/send/stream")
     public Flux<ChatResponse> streamChat(@Valid @RequestBody DemoChatRequest request) {
         log.info("收到流式聊天请求：platform={}, model={}, prompt={}",
@@ -88,6 +94,7 @@ public class ChatDemoController {
         }
     }
 
+    @Operation(summary = "Chat With Memory")
     @PostMapping("/send/with-memory")
     public Result<DemoChatResponse> chatWithMemory(
             @RequestParam String sessionId,
@@ -120,6 +127,7 @@ public class ChatDemoController {
         }
     }
 
+    @Operation(summary = "Get Default Model")
     @GetMapping("/default-model")
     public Result<Map<String, String>> getDefaultModel(@RequestParam String platform) {
         Map<String, String> result = new HashMap<>();

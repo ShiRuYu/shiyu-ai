@@ -266,3 +266,134 @@ VALUES (8, 'AC_1000001', '权限码 1000001', 3, 1, '1', 0, '0', '0');
 INSERT INTO `auth_code` (`id`, `code`, `name`, `role_id`, `tenant_id`, `status`, `del_flag`, `create_by`, `update_by`) 
 VALUES (9, 'AC_1000002', '权限码 1000002', 3, 1, '1', 0, '0', '0');
 
+
+-- ============================================
+-- 9. 智能体-对话调试
+-- ============================================
+INSERT INTO `menu` (`id`, `name`, `code`, `type`, `parent_id`, `tenant_id`, `path`, `redirect`, `icon`, `component`, `layout`, `keep_alive`, `method`, `description`, `show`, `status`, `order`, `del_flag`, `create_by`, `update_by`) 
+VALUES (506, '对话调试', 'AgentChatConfig', 'MENU', 500, 1, '/agent/chat-config', NULL, 'carbon:chat', '/agent/chat-config/index', '', TRUE, NULL, 'AI对话调试与测试', TRUE, '1', 6, 0, '0', '0');
+
+-- ============================================
+-- 10. 知识库管理模块
+-- ============================================
+INSERT INTO `menu` (`id`, `name`, `code`, `type`, `parent_id`, `tenant_id`, `path`, `redirect`, `icon`, `component`, `layout`, `keep_alive`, `method`, `description`, `show`, `status`, `order`, `del_flag`, `create_by`, `update_by`) 
+VALUES (600, '知识库管理', 'Knowledge', 'CATALOG', NULL, 1, '/knowledge', '/knowledge/list', 'carbon:knowledge-base', '', '', TRUE, NULL, '知识点与文档管理', TRUE, '1', 7, 0, '0', '0');
+
+INSERT INTO `menu` (`id`, `name`, `code`, `type`, `parent_id`, `tenant_id`, `path`, `redirect`, `icon`, `component`, `layout`, `keep_alive`, `method`, `description`, `show`, `status`, `order`, `del_flag`, `create_by`, `update_by`) 
+VALUES (601, '知识点管理', 'KnowledgeList', 'MENU', 600, 1, '/knowledge/list', NULL, 'carbon:concept', '/knowledge/list', '', TRUE, NULL, '知识点CRUD管理', TRUE, '1', 1, 0, '0', '0');
+
+INSERT INTO `menu` (`id`, `name`, `code`, `type`, `parent_id`, `tenant_id`, `path`, `redirect`, `icon`, `component`, `layout`, `keep_alive`, `method`, `description`, `show`, `status`, `order`, `del_flag`, `create_by`, `update_by`) 
+VALUES (60101, '知识点查询', 'knowledge:query', 'BUTTON', 601, 1, NULL, NULL, NULL, NULL, NULL, NULL, 'GET', '查询知识点列表', TRUE, '1', 1, 0, '0', '0');
+
+INSERT INTO `menu` (`id`, `name`, `code`, `type`, `parent_id`, `tenant_id`, `path`, `redirect`, `icon`, `component`, `layout`, `keep_alive`, `method`, `description`, `show`, `status`, `order`, `del_flag`, `create_by`, `update_by`) 
+VALUES (60102, '知识点新增', 'knowledge:create', 'BUTTON', 601, 1, NULL, NULL, NULL, NULL, NULL, NULL, 'POST', '新增知识点', TRUE, '1', 2, 0, '0', '0');
+
+INSERT INTO `menu` (`id`, `name`, `code`, `type`, `parent_id`, `tenant_id`, `path`, `redirect`, `icon`, `component`, `layout`, `keep_alive`, `method`, `description`, `show`, `status`, `order`, `del_flag`, `create_by`, `update_by`) 
+VALUES (60103, '知识点修改', 'knowledge:update', 'BUTTON', 601, 1, NULL, NULL, NULL, NULL, NULL, NULL, 'PUT', '修改知识点', TRUE, '1', 3, 0, '0', '0');
+
+INSERT INTO `menu` (`id`, `name`, `code`, `type`, `parent_id`, `tenant_id`, `path`, `redirect`, `icon`, `component`, `layout`, `keep_alive`, `method`, `description`, `show`, `status`, `order`, `del_flag`, `create_by`, `update_by`) 
+VALUES (60104, '知识点删除', 'knowledge:delete', 'BUTTON', 601, 1, NULL, NULL, NULL, NULL, NULL, NULL, 'DELETE', '删除知识点', TRUE, '1', 4, 0, '0', '0');
+
+INSERT INTO `menu` (`id`, `name`, `code`, `type`, `parent_id`, `tenant_id`, `path`, `redirect`, `icon`, `component`, `layout`, `keep_alive`, `method`, `description`, `show`, `status`, `order`, `del_flag`, `create_by`, `update_by`) 
+VALUES (602, '知识关系', 'KnowledgeRelation', 'MENU', 600, 1, '/knowledge/relation', NULL, 'carbon:flow', '/knowledge/relation', '', TRUE, NULL, '知识关系（前置/后续/相关）管理', TRUE, '1', 2, 0, '0', '0');
+
+INSERT INTO `menu` (`id`, `name`, `code`, `type`, `parent_id`, `tenant_id`, `path`, `redirect`, `icon`, `component`, `layout`, `keep_alive`, `method`, `description`, `show`, `status`, `order`, `del_flag`, `create_by`, `update_by`) 
+VALUES (603, '知识图谱', 'KnowledgeGraph', 'MENU', 600, 1, '/knowledge/graph', NULL, 'carbon:network-3', '/knowledge/graph', '', TRUE, NULL, '知识图谱可视化', TRUE, '1', 3, 0, '0', '0');
+
+INSERT INTO `menu` (`id`, `name`, `code`, `type`, `parent_id`, `tenant_id`, `path`, `redirect`, `icon`, `component`, `layout`, `keep_alive`, `method`, `description`, `show`, `status`, `order`, `del_flag`, `create_by`, `update_by`) 
+VALUES (604, '文档管理', 'KnowledgeDocument', 'MENU', 600, 1, '/knowledge/document', NULL, 'carbon:document', '/knowledge/document/list', '', TRUE, NULL, '文档CRUD管理', TRUE, '1', 4, 0, '0', '0');
+
+INSERT INTO `menu` (`id`, `name`, `code`, `type`, `parent_id`, `tenant_id`, `path`, `redirect`, `icon`, `component`, `layout`, `keep_alive`, `method`, `description`, `show`, `status`, `order`, `del_flag`, `create_by`, `update_by`) 
+VALUES (60401, '文档查询', 'knowledge:doc:query', 'BUTTON', 604, 1, NULL, NULL, NULL, NULL, NULL, NULL, 'GET', '查询文档列表', TRUE, '1', 1, 0, '0', '0');
+
+INSERT INTO `menu` (`id`, `name`, `code`, `type`, `parent_id`, `tenant_id`, `path`, `redirect`, `icon`, `component`, `layout`, `keep_alive`, `method`, `description`, `show`, `status`, `order`, `del_flag`, `create_by`, `update_by`) 
+VALUES (60402, '文档新增', 'knowledge:doc:create', 'BUTTON', 604, 1, NULL, NULL, NULL, NULL, NULL, NULL, 'POST', '新增文档', TRUE, '1', 2, 0, '0', '0');
+
+INSERT INTO `menu` (`id`, `name`, `code`, `type`, `parent_id`, `tenant_id`, `path`, `redirect`, `icon`, `component`, `layout`, `keep_alive`, `method`, `description`, `show`, `status`, `order`, `del_flag`, `create_by`, `update_by`) 
+VALUES (60403, '文档修改', 'knowledge:doc:update', 'BUTTON', 604, 1, NULL, NULL, NULL, NULL, NULL, NULL, 'PUT', '修改文档', TRUE, '1', 3, 0, '0', '0');
+
+INSERT INTO `menu` (`id`, `name`, `code`, `type`, `parent_id`, `tenant_id`, `path`, `redirect`, `icon`, `component`, `layout`, `keep_alive`, `method`, `description`, `show`, `status`, `order`, `del_flag`, `create_by`, `update_by`) 
+VALUES (60404, '文档删除', 'knowledge:doc:delete', 'BUTTON', 604, 1, NULL, NULL, NULL, NULL, NULL, NULL, 'DELETE', '删除文档', TRUE, '1', 4, 0, '0', '0');
+
+INSERT INTO `menu` (`id`, `name`, `code`, `type`, `parent_id`, `tenant_id`, `path`, `redirect`, `icon`, `component`, `layout`, `keep_alive`, `method`, `description`, `show`, `status`, `order`, `del_flag`, `create_by`, `update_by`) 
+VALUES (605, '索引管理', 'KnowledgeIndex', 'MENU', 600, 1, '/knowledge/index', NULL, 'carbon:data-class', '/knowledge/index', '', TRUE, NULL, '重建索引/状态查看', TRUE, '1', 5, 0, '0', '0');
+
+-- ============================================
+-- 11. 教育管理模块
+-- ============================================
+INSERT INTO `menu` (`id`, `name`, `code`, `type`, `parent_id`, `tenant_id`, `path`, `redirect`, `icon`, `component`, `layout`, `keep_alive`, `method`, `description`, `show`, `status`, `order`, `del_flag`, `create_by`, `update_by`) 
+VALUES (700, '教育管理', 'Education', 'CATALOG', NULL, 1, '/education', '/education/subject', 'carbon:education', '', '', TRUE, NULL, '教育业务管理目录', TRUE, '1', 8, 0, '0', '0');
+
+INSERT INTO `menu` (`id`, `name`, `code`, `type`, `parent_id`, `tenant_id`, `path`, `redirect`, `icon`, `component`, `layout`, `keep_alive`, `method`, `description`, `show`, `status`, `order`, `del_flag`, `create_by`, `update_by`) 
+VALUES (701, '学科管理', 'EducationSubject', 'MENU', 700, 1, '/education/subject', NULL, 'carbon:book', '/education/subject/list', '', TRUE, NULL, '学科管理', TRUE, '1', 1, 0, '0', '0');
+
+INSERT INTO `menu` (`id`, `name`, `code`, `type`, `parent_id`, `tenant_id`, `path`, `redirect`, `icon`, `component`, `layout`, `keep_alive`, `method`, `description`, `show`, `status`, `order`, `del_flag`, `create_by`, `update_by`) 
+VALUES (702, '教材管理', 'EducationTextbook', 'MENU', 700, 1, '/education/textbook', NULL, 'carbon:notebook', '/education/textbook/list', '', TRUE, NULL, '教材版本管理', TRUE, '1', 2, 0, '0', '0');
+
+INSERT INTO `menu` (`id`, `name`, `code`, `type`, `parent_id`, `tenant_id`, `path`, `redirect`, `icon`, `component`, `layout`, `keep_alive`, `method`, `description`, `show`, `status`, `order`, `del_flag`, `create_by`, `update_by`) 
+VALUES (703, '章节管理', 'EducationChapter', 'MENU', 700, 1, '/education/chapter', NULL, 'carbon:tree', '/education/chapter/list', '', TRUE, NULL, '章节树形管理', TRUE, '1', 3, 0, '0', '0');
+
+INSERT INTO `menu` (`id`, `name`, `code`, `type`, `parent_id`, `tenant_id`, `path`, `redirect`, `icon`, `component`, `layout`, `keep_alive`, `method`, `description`, `show`, `status`, `order`, `del_flag`, `create_by`, `update_by`) 
+VALUES (704, '课程管理', 'EducationCourse', 'MENU', 700, 1, '/education/course', NULL, 'carbon:course', '/education/course/list', '', TRUE, NULL, '课程管理', TRUE, '1', 4, 0, '0', '0');
+
+INSERT INTO `menu` (`id`, `name`, `code`, `type`, `parent_id`, `tenant_id`, `path`, `redirect`, `icon`, `component`, `layout`, `keep_alive`, `method`, `description`, `show`, `status`, `order`, `del_flag`, `create_by`, `update_by`) 
+VALUES (705, '试卷管理', 'EducationExam', 'MENU', 700, 1, '/education/exam', NULL, 'carbon:exam', '/education/exam/list', '', TRUE, NULL, '试卷管理', TRUE, '1', 5, 0, '0', '0');
+
+INSERT INTO `menu` (`id`, `name`, `code`, `type`, `parent_id`, `tenant_id`, `path`, `redirect`, `icon`, `component`, `layout`, `keep_alive`, `method`, `description`, `show`, `status`, `order`, `del_flag`, `create_by`, `update_by`) 
+VALUES (706, '题库管理', 'EducationQuestion', 'MENU', 700, 1, '/education/question', NULL, 'carbon:list-boxes', '/education/question/list', '', TRUE, NULL, '题库管理', TRUE, '1', 6, 0, '0', '0');
+
+INSERT INTO `menu` (`id`, `name`, `code`, `type`, `parent_id`, `tenant_id`, `path`, `redirect`, `icon`, `component`, `layout`, `keep_alive`, `method`, `description`, `show`, `status`, `order`, `del_flag`, `create_by`, `update_by`) 
+VALUES (707, '学习计划', 'EducationPlan', 'MENU', 700, 1, '/education/plan', NULL, 'carbon:task', '/education/plan/list', '', TRUE, NULL, '学习计划管理', TRUE, '1', 7, 0, '0', '0');
+
+INSERT INTO `menu` (`id`, `name`, `code`, `type`, `parent_id`, `tenant_id`, `path`, `redirect`, `icon`, `component`, `layout`, `keep_alive`, `method`, `description`, `show`, `status`, `order`, `del_flag`, `create_by`, `update_by`) 
+VALUES (708, '复习任务', 'EducationReview', 'MENU', 700, 1, '/education/review', NULL, 'carbon:rotate', '/education/review/list', '', TRUE, NULL, '复习任务管理', TRUE, '1', 8, 0, '0', '0');
+
+INSERT INTO `menu` (`id`, `name`, `code`, `type`, `parent_id`, `tenant_id`, `path`, `redirect`, `icon`, `component`, `layout`, `keep_alive`, `method`, `description`, `show`, `status`, `order`, `del_flag`, `create_by`, `update_by`) 
+VALUES (709, '学情分析', 'EducationAnalytics', 'MENU', 700, 1, '/education/analytics', NULL, 'carbon:chart-radar', '/education/analytics/index', '', TRUE, NULL, '学情分析看板', TRUE, '1', 9, 0, '0', '0');
+
+INSERT INTO `menu` (`id`, `name`, `code`, `type`, `parent_id`, `tenant_id`, `path`, `redirect`, `icon`, `component`, `layout`, `keep_alive`, `method`, `description`, `show`, `status`, `order`, `del_flag`, `create_by`, `update_by`) 
+VALUES (710, '资源管理', 'EducationResource', 'MENU', 700, 1, '/education/resource', NULL, 'carbon:document', '/education/resource/list', '', TRUE, NULL, '资源管理', TRUE, '1', 10, 0, '0', '0');
+
+INSERT INTO `menu` (`id`, `name`, `code`, `type`, `parent_id`, `tenant_id`, `path`, `redirect`, `icon`, `component`, `layout`, `keep_alive`, `method`, `description`, `show`, `status`, `order`, `del_flag`, `create_by`, `update_by`) 
+VALUES (711, '错题管理', 'EducationWrongQ', 'MENU', 700, 1, '/education/wrong-question', NULL, 'carbon:error', '/education/wrong-question/list', '', TRUE, NULL, '错题管理', TRUE, '1', 11, 0, '0', '0');
+
+-- ============================================
+-- 12. 文件管理
+-- ============================================
+INSERT INTO `menu` (`id`, `name`, `code`, `type`, `parent_id`, `tenant_id`, `path`, `redirect`, `icon`, `component`, `layout`, `keep_alive`, `method`, `description`, `show`, `status`, `order`, `del_flag`, `create_by`, `update_by`) 
+VALUES (800, '文件管理', 'FileManager', 'MENU', NULL, 1, '/file', NULL, 'carbon:folder', '/file/list', '', TRUE, NULL, '文件管理', TRUE, '1', 9, 0, '0', '0');
+
+-- ============================================
+-- 13. 新菜单 -> super角色 (role_id=0) 完整权限
+-- ============================================
+INSERT INTO `role_workspace_menu` (`role_id`, `workspace_id`, `menu_id`, `tenant_id`) VALUES 
+(0, 0, 506, 1),
+(0, 0, 600, 1), (0, 0, 601, 1), (0, 0, 60101, 1), (0, 0, 60102, 1), (0, 0, 60103, 1), (0, 0, 60104, 1),
+(0, 0, 602, 1), (0, 0, 603, 1),
+(0, 0, 604, 1), (0, 0, 60401, 1), (0, 0, 60402, 1), (0, 0, 60403, 1), (0, 0, 60404, 1),
+(0, 0, 605, 1),
+(0, 0, 700, 1), (0, 0, 701, 1), (0, 0, 702, 1), (0, 0, 703, 1), (0, 0, 704, 1),
+(0, 0, 705, 1), (0, 0, 706, 1), (0, 0, 707, 1), (0, 0, 708, 1), (0, 0, 709, 1),
+(0, 0, 710, 1), (0, 0, 711, 1),
+(0, 0, 800, 1);
+
+-- ============================================
+-- 14. 新菜单 -> admin角色 (role_id=1) 完整权限
+-- ============================================
+INSERT INTO `role_workspace_menu` (`role_id`, `workspace_id`, `menu_id`, `tenant_id`) VALUES 
+(1, 0, 506, 1),
+(1, 0, 600, 1), (1, 0, 601, 1), (1, 0, 60101, 1), (1, 0, 60102, 1), (1, 0, 60103, 1), (1, 0, 60104, 1),
+(1, 0, 602, 1), (1, 0, 603, 1),
+(1, 0, 604, 1), (1, 0, 60401, 1), (1, 0, 60402, 1), (1, 0, 60403, 1), (1, 0, 60404, 1),
+(1, 0, 605, 1),
+(1, 0, 700, 1), (1, 0, 701, 1), (1, 0, 702, 1), (1, 0, 703, 1), (1, 0, 704, 1),
+(1, 0, 705, 1), (1, 0, 706, 1), (1, 0, 707, 1), (1, 0, 708, 1), (1, 0, 709, 1),
+(1, 0, 710, 1), (1, 0, 711, 1),
+(1, 0, 800, 1);
+
+-- ============================================
+-- 15. 新菜单 -> user角色 (role_id=2) 仅知识库和对话调试
+-- ============================================
+INSERT INTO `role_workspace_menu` (`role_id`, `workspace_id`, `menu_id`, `tenant_id`) VALUES 
+(2, 0, 506, 1),
+(2, 0, 600, 1), (2, 0, 601, 1), (2, 0, 604, 1);

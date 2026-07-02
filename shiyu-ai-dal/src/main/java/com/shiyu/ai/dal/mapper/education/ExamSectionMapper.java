@@ -8,5 +8,9 @@ import org.apache.ibatis.annotations.Mapper;
 
 @Mapper
 @UseDataSource(DataSourceConfig.AGENT)
+/**
+ * Exam Section 接口
+ */
+
 public interface ExamSectionMapper extends BaseMapperFlex<ExamSectionDO> {
 }

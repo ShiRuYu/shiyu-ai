@@ -14,6 +14,10 @@ public interface ToolService {
      * @param parameters 工具参数
      * @return 工具执行结果
      */
+    /**
+     * Execute
+     * @return 处理结果
+     */
     ToolExecutionResult execute(String toolName, Map<String, Object> parameters);
     
     /**

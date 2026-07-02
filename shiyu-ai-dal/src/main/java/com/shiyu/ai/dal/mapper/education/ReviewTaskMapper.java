@@ -8,5 +8,9 @@ import org.apache.ibatis.annotations.Mapper;
 
 @Mapper
 @UseDataSource(DataSourceConfig.AGENT)
+/**
+ * Review Task 接口
+ */
+
 public interface ReviewTaskMapper extends BaseMapperFlex<ReviewTaskDO> {
 }

@@ -8,5 +8,9 @@ import org.apache.ibatis.annotations.Mapper;
 
 @Mapper
 @UseDataSource(DataSourceConfig.AGENT)
+/**
+ * Agent Execution 接口
+ */
+
 public interface AgentExecutionMapper extends BaseMapperFlex<AgentExecutionDO> {
 }

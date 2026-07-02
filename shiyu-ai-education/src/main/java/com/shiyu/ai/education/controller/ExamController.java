@@ -3,8 +3,10 @@ package com.shiyu.ai.education.controller;
 import com.shiyu.ai.common.core.api.Result;
 import com.shiyu.ai.dal.dataobject.education.ExamDO;
 import com.shiyu.ai.education.dto.ExamResponse;
+import com.shiyu.ai.education.dto.SubmitAnswerRequest;
 import com.shiyu.ai.education.exam.ExamService;
 import io.swagger.v3.oas.annotations.Operation;
+import lombok.extern.slf4j.Slf4j;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
 import org.springframework.web.bind.annotation.*;
@@ -53,6 +55,16 @@ public class ExamController {
         exam.setId(id);
         examService.update(exam);
         return Result.success();
+    }
+
+
+    @PostMapping("/{id}/submit")
+    @Operation(summary = "交卷 - 提交考试答案")
+    public Result<ExamResponse> submit(@PathVariable Long id, @RequestBody SubmitAnswerRequest request) {
+        ExamDO exam = examService.getById(id);
+        if (exam == null) return Result.fail("考试不存在");
+        log.info("交卷: examId={}, studentId={}", id, request.studentId());
+        return Result.success(toResponse(exam));
     }
 
     @DeleteMapping("/{id}")

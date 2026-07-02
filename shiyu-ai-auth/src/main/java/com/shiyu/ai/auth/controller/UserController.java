@@ -14,6 +14,8 @@ import com.shiyu.ai.common.core.utils.MapstructUtils;
 import lombok.extern.slf4j.Slf4j;
 import jakarta.validation.Valid;
 import org.springframework.web.bind.annotation.*;
+import io.swagger.v3.oas.annotations.tags.Tag;
+import io.swagger.v3.oas.annotations.Operation;
 
 import java.util.List;
 import java.util.Map;
@@ -23,6 +25,7 @@ import java.util.stream.Collectors;
  * 用户管理 Controller
  */
 @Slf4j
+@Tag(name = "User", description = "User")
 @RestController
 @RequestMapping("/user")
 public class UserController {
@@ -39,6 +42,7 @@ public class UserController {
      * 获取当前用户信息
      * GET /user/info
      */
+    @Operation(summary = "Get User Info")
     @GetMapping("/info")
     public Result<UserVO> getUserInfo(
             @RequestHeader(value = "Authorization", required = false) String token) {
@@ -88,6 +92,7 @@ public class UserController {
     /**
      * 用户列表 - 分页
      */
+    @Operation(summary = "Get User List")
     @GetMapping("")
     public Result<UserPageResponse> getUserList(
             @RequestParam(required = false) String username,
@@ -103,6 +108,7 @@ public class UserController {
     /**
      * 删除用户
      */
+    @Operation(summary = "Delete User")
     @DeleteMapping("/{userId}")
     public Result<Void> deleteUser(@PathVariable Long userId) {
         log.info("删除用户，userId: {}", userId);
@@ -181,6 +187,7 @@ public class UserController {
     /**
      * 新增用户
      */
+    @Operation(summary = "Create User")
     @PostMapping("")
     public Result<Long> createUser(@Valid @RequestBody UserRequest request) {
         log.info("新增用户");

@@ -8,5 +8,9 @@ import org.apache.ibatis.annotations.Mapper;
 
 @Mapper
 @UseDataSource(DataSourceConfig.AGENT)
+/**
+ * Course Chapter 接口
+ */
+
 public interface CourseChapterMapper extends BaseMapperFlex<CourseChapterDO> {
 }

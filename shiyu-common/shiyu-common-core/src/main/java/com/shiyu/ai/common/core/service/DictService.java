@@ -18,6 +18,10 @@ public interface DictService {
      * @return 字典标签
      */
     default String getDictLabel(String dictType, String dictValue) {
+    /**
+     * Get Dict Label
+     * @return 处理结果
+     */
         return getDictLabel(dictType, dictValue, SEPARATOR);
     }
 
@@ -29,6 +33,10 @@ public interface DictService {
      * @return 字典值
      */
     default String getDictValue(String dictType, String dictLabel) {
+    /**
+     * Get Dict Value
+     * @return 处理结果
+     */
         return getDictValue(dictType, dictLabel, SEPARATOR);
     }
 
@@ -40,6 +48,10 @@ public interface DictService {
      * @param separator 分隔符
      * @return 字典标签
      */
+    /**
+     * Get Dict Label
+     * @return 处理结果
+     */
     String getDictLabel(String dictType, String dictValue, String separator);
 
     /**
@@ -49,6 +61,10 @@ public interface DictService {
      * @param dictLabel 字典标签
      * @param separator 分隔符
      * @return 字典值
+     */
+    /**
+     * Get Dict Value
+     * @return 处理结果
      */
     String getDictValue(String dictType, String dictLabel, String separator);
 

@@ -8,5 +8,9 @@ import org.apache.ibatis.annotations.Mapper;
 
 @Mapper
 @UseDataSource(DataSourceConfig.AGENT)
+/**
+ * Agent Version 接口
+ */
+
 public interface AgentVersionMapper extends BaseMapperFlex<AgentVersionDO> {
 }

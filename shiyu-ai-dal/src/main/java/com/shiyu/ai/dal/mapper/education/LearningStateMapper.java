@@ -8,5 +8,9 @@ import org.apache.ibatis.annotations.Mapper;
 
 @Mapper
 @UseDataSource(DataSourceConfig.AGENT)
+/**
+ * Learning State 接口
+ */
+
 public interface LearningStateMapper extends BaseMapperFlex<LearningStateDO> {
 }

@@ -8,5 +8,9 @@ import org.apache.ibatis.annotations.Mapper;
 
 @Mapper
 @UseDataSource(DataSourceConfig.AGENT)
+/**
+ * Student 接口
+ */
+
 public interface StudentMapper extends BaseMapperFlex<StudentDO> {
 }

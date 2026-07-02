@@ -16,12 +16,20 @@ public interface RagService {
      * @param topK 返回结果数量
      * @return 检索结果
      */
+    /**
+     * Retrieve
+     * @return 处理结果
+     */
     RagRetrievalResult retrieve(String query, String knowledgeBaseId, int topK);
     
     /**
      * 检索文档（使用默认配置）
      * @param query 查询文本
      * @return 检索结果
+     */
+    /**
+     * Retrieve
+     * @return 处理结果
      */
     RagRetrievalResult retrieve(String query);
     

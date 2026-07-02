@@ -1,12 +1,11 @@
 package com.shiyu.ai.education.repository;
 
-import com.shiyu.ai.dal.dataobject.knowledge.AbilityDO;
-import com.shiyu.ai.dal.mapper.knowledge.AbilityMapper;
 import com.mybatisflex.core.query.QueryWrapper;
+import com.shiyu.ai.dal.dataobject.education.AbilityDO;
+import com.shiyu.ai.dal.mapper.education.AbilityMapper;
 import jakarta.annotation.Resource;
+import java.util.List;
 import org.springframework.stereotype.Component;
-
-import static com.shiyu.ai.dal.dataobject.knowledge.AbilityDO.*;
 
 @Component
 public class AbilityRepository {
@@ -16,9 +15,12 @@ public class AbilityRepository {
 
     public AbilityDO selectByStudentAndKnowledge(Long studentId, Long knowledgeId) {
         return abilityMapper.selectOneByQuery(
-                QueryWrapper.create()
-                        .eq("student_id", studentId)
-                        .eq("knowledge_id", knowledgeId));
+                QueryWrapper.create().eq("student_id", studentId).eq("knowledge_id", knowledgeId));
+    }
+
+    public List<AbilityDO> selectByStudent(Long studentId) {
+        return abilityMapper.selectListByQuery(
+                QueryWrapper.create().eq("student_id", studentId));
     }
 
     public int insert(AbilityDO ability) {

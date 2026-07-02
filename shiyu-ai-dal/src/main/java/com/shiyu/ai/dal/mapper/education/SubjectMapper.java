@@ -8,5 +8,9 @@ import org.apache.ibatis.annotations.Mapper;
 
 @Mapper
 @UseDataSource(DataSourceConfig.AGENT)
+/**
+ * Subject 接口
+ */
+
 public interface SubjectMapper extends BaseMapperFlex<SubjectDO> {
 }

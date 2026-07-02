@@ -11,10 +11,13 @@ import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.tuple.Pair;
 import jakarta.validation.Valid;
 import org.springframework.web.bind.annotation.*;
+import io.swagger.v3.oas.annotations.tags.Tag;
+import io.swagger.v3.oas.annotations.Operation;
 
 import java.util.List;
 
 @Slf4j
+@Tag(name = "Agent Admin", description = "Agent Admin")
 @RestController
 @RequestMapping("/admin/agent")
 public class AgentAdminController {
@@ -25,6 +28,7 @@ public class AgentAdminController {
         this.agentAdminService = agentAdminService;
     }
 
+    @Operation(summary = "Get Page")
     @GetMapping("/page")
     public Result<PageData<AgentVO>> getPage(
             @RequestParam(required = false, defaultValue = "1") Integer pageNo,
@@ -35,6 +39,7 @@ public class AgentAdminController {
         return Result.success(new PageData<>(result.getRight(), result.getLeft()));
     }
 
+    @Operation(summary = "Get by Id")
     @GetMapping("/{id}")
     public Result<AgentDetailVO> getById(@PathVariable Long id) {
         AgentDetailVO vo = agentAdminService.getById(id);
@@ -42,6 +47,7 @@ public class AgentAdminController {
         return Result.success(vo);
     }
 
+    @Operation(summary = "Create")
     @PostMapping
     public Result<AgentVO> create(@Valid @RequestBody AgentRequest request) {
         try {
@@ -64,6 +70,7 @@ public class AgentAdminController {
         }
     }
 
+    @Operation(summary = "Delete")
     @DeleteMapping("/{id}")
     public Result<Void> delete(@PathVariable Long id) {
         try {
@@ -75,6 +82,7 @@ public class AgentAdminController {
         }
     }
 
+    @Operation(summary = "Update Status")
     @PutMapping("/{id}/status")
     public Result<Void> updateStatus(@PathVariable Long id, @RequestParam String status) {
         AgentRequest request = new AgentRequest();
@@ -91,6 +99,7 @@ public class AgentAdminController {
     /**
      * 获取所有启用 Agent 选项（下拉选择用）
      */
+    @Operation(summary = "List All Options")
     @GetMapping("/list/all")
     public Result<List<IdNameOptionVO>> listAllOptions() {
         return Result.success(agentAdminService.listAllOptions());

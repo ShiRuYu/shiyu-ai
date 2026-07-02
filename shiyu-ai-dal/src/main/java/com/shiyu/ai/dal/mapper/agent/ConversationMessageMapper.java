@@ -8,5 +8,9 @@ import org.apache.ibatis.annotations.Mapper;
 
 @Mapper
 @UseDataSource(DataSourceConfig.AGENT)
+/**
+ * Conversation Message 接口
+ */
+
 public interface ConversationMessageMapper extends BaseMapperFlex<ConversationMessageDO> {
 }

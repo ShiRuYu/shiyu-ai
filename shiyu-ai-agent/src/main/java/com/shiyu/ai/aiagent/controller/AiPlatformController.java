@@ -10,6 +10,8 @@ import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.tuple.Pair;
 import jakarta.validation.Valid;
 import org.springframework.web.bind.annotation.*;
+import io.swagger.v3.oas.annotations.tags.Tag;
+import io.swagger.v3.oas.annotations.Operation;
 
 import java.util.List;
 
@@ -17,6 +19,7 @@ import java.util.List;
  * AI 平台管理 Controller
  */
 @Slf4j
+@Tag(name = "Ai Platform", description = "Ai Platform")
 @RestController
 @RequestMapping("/ai/platform")
 public class AiPlatformController {
@@ -32,6 +35,7 @@ public class AiPlatformController {
     /**
      * 平台列表 - 分页
      */
+    @Operation(summary = "Get Page")
     @GetMapping("/page")
     public Result<PageData<AiPlatformBO>> getPage(
             @RequestParam(required = false) String name,
@@ -47,6 +51,7 @@ public class AiPlatformController {
     /**
      * 查询所有启用的平台
      */
+    @Operation(summary = "Get All Enabled")
     @GetMapping("/enabled")
     public Result<List<AiPlatformBO>> getAllEnabled() {
         log.info("查询所有启用的平台");
@@ -57,6 +62,7 @@ public class AiPlatformController {
     /**
      * 平台下拉选项（id + name）
      */
+    @Operation(summary = "Get Options")
     @GetMapping("/options")
     public Result<List<IdNameOptionVO>> getOptions() {
         log.info("查询平台下拉选项");
@@ -67,6 +73,7 @@ public class AiPlatformController {
     /**
      * 根据 ID 查询平台详情
      */
+    @Operation(summary = "Get by Id")
     @GetMapping("/{id}")
     public Result<AiPlatformBO> getById(@PathVariable Long id) {
         log.info("查询平台详情，id: {}", id);
@@ -80,6 +87,7 @@ public class AiPlatformController {
     /**
      * 根据编码查询平台
      */
+    @Operation(summary = "Get by Code")
     @GetMapping("/code/{code}")
     public Result<AiPlatformBO> getByCode(@PathVariable String code) {
         log.info("根据编码查询平台，code: {}", code);
@@ -93,6 +101,7 @@ public class AiPlatformController {
     /**
      * 获取默认平台
      */
+    @Operation(summary = "Get Default")
     @GetMapping("/default")
     public Result<AiPlatformBO> getDefault() {
         log.info("获取默认平台");
@@ -106,6 +115,7 @@ public class AiPlatformController {
     /**
      * 新增平台
      */
+    @Operation(summary = "Create")
     @PostMapping
     public Result<AiPlatformBO> create(@Valid @RequestBody AiPlatformBO bo) {
         log.info("新增平台：{}", bo.getName());
@@ -139,6 +149,7 @@ public class AiPlatformController {
     /**
      * 删除平台
      */
+    @Operation(summary = "Delete")
     @DeleteMapping("/{id}")
     public Result<Void> delete(@PathVariable Long id) {
         log.info("删除平台，id: {}", id);
@@ -155,6 +166,7 @@ public class AiPlatformController {
     /**
      * 设置为默认平台
      */
+    @Operation(summary = "Set Default")
     @PutMapping("/{id}/default")
     public Result<AiPlatformBO> setDefault(@PathVariable Long id) {
         log.info("设置默认平台，id: {}", id);
@@ -171,6 +183,7 @@ public class AiPlatformController {
     /**
      * 手动重新加载所有平台适配器（从数据库刷新）
      */
+    @Operation(summary = "Reload")
     @PostMapping("/reload")
     public Result<Void> reload() {
         log.info("手动触发平台适配器重新加载");

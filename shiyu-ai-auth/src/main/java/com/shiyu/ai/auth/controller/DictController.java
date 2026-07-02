@@ -8,6 +8,8 @@ import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.tuple.Pair;
 import jakarta.validation.Valid;
 import org.springframework.web.bind.annotation.*;
+import io.swagger.v3.oas.annotations.tags.Tag;
+import io.swagger.v3.oas.annotations.Operation;
 
 import java.util.List;
 
@@ -15,6 +17,7 @@ import java.util.List;
  * 字典管理 Controller
  */
 @Slf4j
+@Tag(name = "Dict", description = "Dict")
 @RestController
 @RequestMapping("/dict")
 public class DictController {
@@ -28,6 +31,7 @@ public class DictController {
     /**
      * 字典列表 - 分页
      */
+    @Operation(summary = "Get Dict List")
     @GetMapping("/page")
     public Result<PageData<DictBO>> getDictList(
             @RequestParam(required = false, defaultValue = "1") Integer pageNo,
@@ -42,6 +46,7 @@ public class DictController {
     /**
      * 根据ID查询字典详情
      */
+    @Operation(summary = "Get Dict By Id")
     @GetMapping("/{id}")
     public Result<DictBO> getDictById(@PathVariable Long id) {
         log.info("查询字典详情，id: {}", id);
@@ -58,6 +63,7 @@ public class DictController {
     /**
      * 根据字典类型查询字典列表
      */
+    @Operation(summary = "Get Dict By Type")
     @GetMapping("/type/{dictType}")
     public Result<List<DictBO>> getDictByType(@PathVariable String dictType) {
         log.info("根据字典类型查询字典列表，dictType: {}", dictType);
@@ -70,6 +76,7 @@ public class DictController {
     /**
      * 新增字典
      */
+    @Operation(summary = "Create Dict")
     @PostMapping("")
     public Result<DictBO> createDict(@Valid @RequestBody DictBO dictBO) {
         log.info("新增字典");
@@ -105,6 +112,7 @@ public class DictController {
     /**
      * 删除字典
      */
+    @Operation(summary = "Delete Dict")
     @DeleteMapping("/{id}")
     public Result<Void> deleteDict(@PathVariable Long id) {
         log.info("删除字典，id: {}", id);
@@ -121,6 +129,7 @@ public class DictController {
     /**
      * 批量删除字典
      */
+    @Operation(summary = "Delete Dicts")
     @DeleteMapping("/batch")
     public Result<Void> deleteDicts(@RequestBody List<Long> ids) {
         log.info("批量删除字典，ids: {}", ids);

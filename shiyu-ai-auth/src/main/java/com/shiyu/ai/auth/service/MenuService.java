@@ -14,6 +14,10 @@ public interface MenuService {
      *
      * @return 权限树
      */
+    /**
+     * Get Menu Permissions Tree
+     * @return 处理结果
+     */
     List<MenuBO> getMenuPermissionsTree();
 
     /**
@@ -21,12 +25,20 @@ public interface MenuService {
      *
      * @return 权限树
      */
+    /**
+     * Get Menu Tree
+     * @return 处理结果
+     */
     List<MenuBO> getMenuTree();
 
     /**
      * 获取权限树 all
      *
      * @return 权限树
+     */
+    /**
+     * Get All Tree
+     * @return 处理结果
      */
     List<MenuBO> getAllTree();
 
@@ -36,6 +48,10 @@ public interface MenuService {
      * @param id 菜单 ID
      * @return 是否成功
      */
+    /**
+     * Delete Menu
+     * @return 处理结果
+     */
     boolean deleteMenu(Long id);
 
     /**
@@ -43,6 +59,11 @@ public interface MenuService {
      *
      * @param menuBO 菜单信息
      * @return 是否成功
+     */
+    /**
+     * Create Menu
+     * @param MenuBO MenuBO
+     * @return 处理结果
      */
     boolean createMenu(MenuBO menuBO);
 
@@ -53,6 +74,11 @@ public interface MenuService {
      * @param menuBO  菜单信息
      * @return 是否成功
      */
+    /**
+     * Update Menu
+     * @param MenuBO MenuBO
+     * @return 处理结果
+     */
     boolean updateMenu(Long id, MenuBO menuBO);
 
     /**
@@ -61,6 +87,10 @@ public interface MenuService {
      * @param parentId 父菜单 ID
      * @return 按钮权限列表
      */
+    /**
+     * Get Buttons By Parent Id
+     * @return 处理结果
+     */
     List<MenuBO> getButtonsByParentId(Long parentId);
     
     /**
@@ -68,6 +98,10 @@ public interface MenuService {
      *
      * @param userId 用户 ID
      * @return 菜单树
+     */
+    /**
+     * Get Menu Tree By User Id
+     * @return 处理结果
      */
     List<MenuBO> getMenuTreeByUserId(Long userId);
     
@@ -78,6 +112,10 @@ public interface MenuService {
      * @param type 菜单类型（MENU-菜单，CATALOG-目录，BUTTON-按钮）
      * @return 菜单列表
      */
+    /**
+     * Get Menus By User Id And Type
+     * @return 处理结果
+     */
     List<MenuBO> getMenusByUserIdAndType(Long userId, String type);
 
     /**
@@ -86,6 +124,10 @@ public interface MenuService {
      * @param name 菜单名称
      * @param id   菜单 ID（编辑时排除自身）
      * @return true 表示已存在
+     */
+    /**
+     * Is Menu Name Exists
+     * @return 处理结果
      */
     boolean isMenuNameExists(String name, Long id);
 
@@ -96,12 +138,20 @@ public interface MenuService {
      * @param id   菜单 ID（编辑时排除自身）
      * @return true 表示已存在
      */
+    /**
+     * Is Menu Path Exists
+     * @return 处理结果
+     */
     boolean isMenuPathExists(String path, Long id);
 
     /**
      * 获取根节点菜单（parentId 为 null，用于懒加载初始加载）
      *
      * @return 根菜单列表（平铺）
+     */
+    /**
+     * Get Menu Roots
+     * @return 处理结果
      */
     List<MenuBO> getMenuRoots();
 
@@ -111,6 +161,10 @@ public interface MenuService {
      * @param parentId 父菜单 ID
      * @return 子菜单列表（平铺）
      */
+    /**
+     * Get Children By Parent Id
+     * @return 处理结果
+     */
     List<MenuBO> getChildrenByParentId(Long parentId);
 
     /**
@@ -119,6 +173,10 @@ public interface MenuService {
      *
      * @param userId 用户 ID
      * @return 路由菜单树
+     */
+    /**
+     * Get Route Menus By User Id
+     * @return 处理结果
      */
     List<MenuBO> getRouteMenusByUserId(Long userId);
 }

@@ -10,6 +10,8 @@ import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.tuple.Pair;
 import jakarta.validation.Valid;
 import org.springframework.web.bind.annotation.*;
+import io.swagger.v3.oas.annotations.tags.Tag;
+import io.swagger.v3.oas.annotations.Operation;
 
 import java.util.List;
 
@@ -17,6 +19,7 @@ import java.util.List;
  * AI 模型管理 Controller
  */
 @Slf4j
+@Tag(name = "Ai Model", description = "Ai Model")
 @RestController
 @RequestMapping("/ai/model")
 public class AiModelController {
@@ -32,6 +35,7 @@ public class AiModelController {
     /**
      * 模型列表 - 分页（可按平台过滤）
      */
+    @Operation(summary = "Get Page")
     @GetMapping("/page")
     public Result<PageData<AiModelBO>> getPage(
             @RequestParam(required = false) Long platformId,
@@ -46,6 +50,7 @@ public class AiModelController {
     /**
      * 查询指定平台下所有启用的模型
      */
+    @Operation(summary = "Get by Platform Id")
     @GetMapping("/platform/{platformId}")
     public Result<List<AiModelBO>> getByPlatformId(@PathVariable Long platformId) {
         log.info("查询平台下的模型，platformId: {}", platformId);
@@ -56,6 +61,7 @@ public class AiModelController {
     /**
      * 根据平台编码查询所有启用的模型（前端级联下拉使用）
      */
+    @Operation(summary = "Get by Platform Code")
     @GetMapping("/platform/by-code/{platformCode}")
     public Result<List<AiModelBO>> getByPlatformCode(@PathVariable String platformCode) {
         log.info("查询平台编码下的模型，platformCode: {}", platformCode);
@@ -66,6 +72,7 @@ public class AiModelController {
     /**
      * 模型下拉选项（id + name），可按平台过滤
      */
+    @Operation(summary = "Get Options")
     @GetMapping("/options")
     public Result<List<IdNameOptionVO>> getOptions(
             @RequestParam(required = false) Long platformId) {
@@ -77,6 +84,7 @@ public class AiModelController {
     /**
      * 根据 ID 查询模型详情
      */
+    @Operation(summary = "Get by Id")
     @GetMapping("/{id}")
     public Result<AiModelBO> getById(@PathVariable Long id) {
         log.info("查询模型详情，id: {}", id);
@@ -90,6 +98,7 @@ public class AiModelController {
     /**
      * 获取平台的默认模型
      */
+    @Operation(summary = "Get Default By Platform Id")
     @GetMapping("/platform/{platformId}/default")
     public Result<AiModelBO> getDefaultByPlatformId(@PathVariable Long platformId) {
         log.info("获取平台默认模型，platformId: {}", platformId);
@@ -103,6 +112,7 @@ public class AiModelController {
     /**
      * 新增模型
      */
+    @Operation(summary = "Create")
     @PostMapping
     public Result<AiModelBO> create(@Valid @RequestBody AiModelBO bo) {
         log.info("新增模型：{}", bo.getModelName());
@@ -136,6 +146,7 @@ public class AiModelController {
     /**
      * 删除模型
      */
+    @Operation(summary = "Delete")
     @DeleteMapping("/{id}")
     public Result<Void> delete(@PathVariable Long id) {
         log.info("删除模型，id: {}", id);
@@ -152,6 +163,7 @@ public class AiModelController {
     /**
      * 批量删除模型
      */
+    @Operation(summary = "Delete Batch")
     @DeleteMapping("/batch")
     public Result<Void> deleteBatch(@RequestBody List<Long> ids) {
         log.info("批量删除模型，ids: {}", ids);
@@ -168,6 +180,7 @@ public class AiModelController {
     /**
      * 设置为平台默认模型
      */
+    @Operation(summary = "Set Default")
     @PutMapping("/{id}/default")
     public Result<AiModelBO> setDefault(@PathVariable Long id) {
         log.info("设置默认模型，id: {}", id);

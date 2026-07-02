@@ -17,10 +17,10 @@ V3 (AI)      → ✅ 多Agent + 数字教师 + 长期记忆 (Phase 4)
 
 | 里程碑 | 状态 | 内容 |
 | --- | --- | --- |
-| Phase 1 — 模块拆分 | ✅ 已完成 | 单体 → 12 模块，编译通过 |
+| Phase 1 — 模块拆分 | ✅ 已完成 | 单体 → 14 模块，编译通过 |
 | Phase 2 — 知识引擎 | ✅ 已完成 | RogueMap 图存储 + 知识图谱 API |
 
-### Phase 1 产出（12 模块）
+### Phase 1 产出（14 模块）
 
 ```
 shiyu-ai
@@ -91,12 +91,12 @@ shiyu-ai-knowledge
 [1] 知识图谱      → ✅ Phase 2 已完成
 [2] 能力模型      → ✅ Phase 2 已完成
 [3] 学习路径      → ✅ Phase 2 已完成
-[4] 智能出题      → ✅ Phase 3 完成 (PracticeAgent + PracticeNode)
+[4] 智能出题      → ✅ Phase 3 + Phase 4 完成 (PracticeNode/EDUCATION_PRACTICE)
 [5] 错题本        → ✅ Phase 3 完成 (WrongQuestionController)
 [6] 艾宾浩斯复习  → ✅ Phase 3 完成 (ReviewScheduler + ReviewAgent)
 [7] 推荐系统      → 🔜 待实现
 [8] 学习分析      → ✅ Phase 3 完成 (AnalyticsController + ReportAgent)
-[9] LiteFlow 工作流 → ✅ Phase 4 完成 (learningChain 完整，reviewChain/examChain 占位)
+[9] LiteFlow 工作流 → ✅ Phase 4 完成 (3条链/13组件全部实现)
 [10] RAG          → ✅ 已有
 [11] Embedding    → ⏳ 待实现
 ```
@@ -121,11 +121,11 @@ shiyu-ai-knowledge
 [9] 多模态学习          → 🔜 待定
 ```
 
-## 5. 关键里程碑（更新）
+## 5. 关键里程碑
 
 | 时间 | 里程碑 | 主要内容 | 状态 |
 | --- | --- | --- | --- |
-| M1 | 模块拆分 | 单体 → 12 模块 | ✅ |
+| M1 | 模块拆分 | 单体 → 14 模块 | ✅ |
 | M2 | 知识引擎 | RogueMap + 知识图谱 API | ✅ |
 | M3 | 教育业务域 | 教材/课程/题库/考试/复习 | ✅ |
 | M4 | Phase 4 | 教育 Agent + LiteFlow + MCP | ✅ |

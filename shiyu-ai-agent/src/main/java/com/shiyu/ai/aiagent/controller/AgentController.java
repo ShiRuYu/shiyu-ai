@@ -11,6 +11,8 @@ import com.shiyu.ai.common.core.domain.LoginContextHolder;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.MediaType;
 import org.springframework.web.bind.annotation.*;
+import io.swagger.v3.oas.annotations.tags.Tag;
+import io.swagger.v3.oas.annotations.Operation;
 import reactor.core.publisher.Flux;
 
 import java.util.HashMap;
@@ -23,6 +25,7 @@ import java.util.UUID;
  * 提供 Agent 管理、执行和版本控制的 REST API
  */
 @Slf4j
+@Tag(name = "Agent", description = "Agent")
 @RestController
 @RequestMapping("/api/agent")
 public class AgentController {
@@ -38,6 +41,7 @@ public class AgentController {
      * @param request 注册请求（包含 agentId、name、description、graph）
      * @return 注册结果
      */
+    @Operation(summary = "Register Agent")
     @PostMapping("/register")
     public Result<Map<String, Object>> registerAgent(@RequestBody RegisterAgentRequest request) {
         log.info("收到 Agent 注册请求：agentId={}, name={}", request.getAgentId(), request.getName());
@@ -82,6 +86,7 @@ public class AgentController {
      * @param agentId Agent ID
      * @return AgentDefinition
      */
+    @Operation(summary = "Get Agent")
     @GetMapping("/{agentId}")
     public Result<AgentDefinition> getAgent(@PathVariable String agentId) {
         log.info("收到 Agent 查询请求：agentId={}", agentId);
@@ -100,6 +105,7 @@ public class AgentController {
      * @param agentId Agent ID
      * @return 删除结果
      */
+    @Operation(summary = "Delete Agent")
     @PostMapping("/{agentId}")
     public Result<Void> deleteAgent(@PathVariable String agentId) {
         log.info("收到 Agent 删除请求：agentId={}", agentId);
@@ -120,6 +126,7 @@ public class AgentController {
      * @param params 查询参数（GET 请求）
      * @return 执行结果
      */
+    @Operation(summary = "Execute Agent")
     @RequestMapping(value = "/{agentId}/execute", method = {RequestMethod.GET, RequestMethod.POST})
     public Result<Map<String, Object>> executeAgent(
             @PathVariable String agentId,
@@ -157,6 +164,7 @@ public class AgentController {
      * @param params 查询参数（GET 请求）
      * @return 流式执行结果
      */
+    @Operation(summary = "Execute Stream Agent")
     @RequestMapping(value = "/{agentId}/executeStream", method = {RequestMethod.GET, RequestMethod.POST}, produces = MediaType.TEXT_EVENT_STREAM_VALUE)
     public Flux<Result<Map<String, Object>>> executeStreamAgent(
             @PathVariable String agentId,
@@ -196,6 +204,7 @@ public class AgentController {
      * @param version 版本号
      * @return 切换结果
      */
+    @Operation(summary = "Switch Version")
     @PostMapping("/{agentId}/version/switch")
     public Result<Void> switchVersion(
             @PathVariable String agentId,
@@ -215,6 +224,7 @@ public class AgentController {
      * 获取所有已注册的 Agent
      * @return Agent 列表
      */
+    @Operation(summary = "List Agents")
     @GetMapping("/list")
     public Result<List<AgentDefinition>> listAgents() {
         log.info("收到 Agent 列表查询请求");

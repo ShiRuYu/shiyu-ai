@@ -8,5 +8,9 @@ import org.apache.ibatis.annotations.Mapper;
 
 @Mapper
 @UseDataSource(DataSourceConfig.AGENT)
+/**
+ * Course Knowledge 接口
+ */
+
 public interface CourseKnowledgeMapper extends BaseMapperFlex<CourseKnowledgeDO> {
 }

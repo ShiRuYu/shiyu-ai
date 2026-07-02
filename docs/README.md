@@ -21,7 +21,7 @@
 
 | 文档 | 说明 | 状态 |
 |------|------|------|
-| [08-改造方案.md](./08-改造方案.md) | **架构演进：单体 → 12 模块 → 教育平台** | ✅ |
+| [08-改造方案.md](./08-改造方案.md) | **架构演进：单体 → 14 模块 → 教育平台** | ✅ |
 | [09-模块拆分指南.md](./09-模块拆分指南.md) | **Phase 1 实操：实际模块结构 + 包名映射 + 依赖关系** | ✅ |
 | [10-教育域开发指南.md](./10-教育域开发指南.md) | Phase 2-4 实操：Knowledge/Education 模块 + Agent 对接 | ✅ |
 | [11-验证检查清单.md](./11-验证检查清单.md) | 每 Phase 验收命令 + 12 项启动检查 + 常见故障速查 | ✅ |
@@ -37,13 +37,13 @@
 ## 推荐执行顺序
 
 ```
-Phase 1 ✅ — 模块拆分 (12 模块，编译通过)
+Phase 1 ✅ — 模块拆分 (14 模块，编译通过)
      ↓
 Phase 2 ✅ — 知识引擎 (shiyu-ai-knowledge, RogueMap DAG)
      ↓
 Phase 3 ✅ — 教育业务域 (shiyu-ai-education)
      ↓
-Phase 4 ⏳ — 教育 Agent + LiteFlow + MCP
+Phase 4 ✅ — 教育 Agent + LiteFlow + MCP
 ```
 
 ## 当前项目状态
@@ -55,12 +55,12 @@ Phase 4 ⏳ — 教育 Agent + LiteFlow + MCP
 | LangGraph4j 图引擎 (12 种节点) | ✅ |
 | Sa-Token 多租户 RBAC | ✅ |
 | MyBatis-Flex + H2 (可切 MySQL) | ✅ |
-| **模块拆分 (Phase 1)** | ✅ **12 模块编译通过** |
+| **模块拆分 (Phase 1)** | ✅ **14 模块编译通过** |
 | **知识引擎 (Phase 2)** | ✅ **shiyu-ai-knowledge 已就绪** |
 | LiteFlow 依赖声明 | ✅ 已声明 |
 | MCP 配置 | ✅ 已声明 |
-| **教育业务域 (Phase 3)** | ⏳ 待启动 |
-| **教育 Agent (Phase 4)** | ⏳ 待启动 |
+| **教育业务域 (Phase 3)** | ✅ **92 Java文件，教育域完整** |
+| **教育 Agent (Phase 4)** | ✅ **6 Agent + 3条LiteFlow链 + MCP框架** |
 
 ## 快速开始
 

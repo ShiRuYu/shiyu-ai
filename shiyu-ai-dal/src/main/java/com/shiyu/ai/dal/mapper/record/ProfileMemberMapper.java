@@ -7,6 +7,10 @@ import com.shiyu.ai.common.mybatis.core.mapper.BaseMapperFlex;
 import org.apache.ibatis.annotations.Mapper;
 
 /**
+ * Profile Member 接口
+ */
+
+/**
  * 人物成员关系表 数据层
  */
 @Mapper

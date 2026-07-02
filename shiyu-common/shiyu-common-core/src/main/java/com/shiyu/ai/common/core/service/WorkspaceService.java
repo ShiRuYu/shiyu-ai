@@ -11,6 +11,10 @@ public interface WorkspaceService {
      * @param workspaceIds 工作空间ID串逗号分隔
      * @return 工作空间名称串逗号分隔
      */
+    /**
+     * Select Workspace Name By Ids
+     * @return 处理结果
+     */
     String selectWorkspaceNameByIds(String workspaceIds);
 
 }

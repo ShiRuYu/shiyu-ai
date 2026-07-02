@@ -6,12 +6,15 @@ import com.shiyu.ai.common.core.api.Result;
 import lombok.extern.slf4j.Slf4j;
 import jakarta.validation.Valid;
 import org.springframework.web.bind.annotation.*;
+import io.swagger.v3.oas.annotations.tags.Tag;
+import io.swagger.v3.oas.annotations.Operation;
 
 /**
  * 验证码 Controller
  * 提供验证码生成和验证功能
  */
 @Slf4j
+@Tag(name = "Captcha", description = "Captcha")
 @RestController
 @RequestMapping("/auth")
 public class CaptchaController {
@@ -26,6 +29,7 @@ public class CaptchaController {
      * 获取验证码
      * @return SVG 格式的验证码图片
      */
+    @Operation(summary = "Get Captcha")
     @GetMapping("/captcha")
     public Result<CaptchaVO> getCaptcha() {
         log.info("收到验证码请求");
@@ -48,6 +52,7 @@ public class CaptchaController {
      * @param request 验证请求（包含 key 和 code）
      * @return 验证结果
      */
+    @Operation(summary = "Validate Captcha")
     @PostMapping("/captcha/validate")
     public Result<ValidateCaptchaResponse> validateCaptcha(@Valid @RequestBody ValidateCaptchaRequest request) {
         log.info("收到验证码验证请求：key={}", request.getKey());

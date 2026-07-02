@@ -1,4 +1,4 @@
-package com.shiyu.ai.dal.dataobject.knowledge;
+package com.shiyu.ai.dal.dataobject.education;
 
 import com.mybatisflex.annotation.Id;
 import com.mybatisflex.annotation.KeyType;

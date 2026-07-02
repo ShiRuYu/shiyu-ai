@@ -8,5 +8,9 @@ import org.apache.ibatis.annotations.Mapper;
 
 @Mapper
 @UseDataSource(DataSourceConfig.AGENT)
+/**
+ * Resource Knowledge 接口
+ */
+
 public interface ResourceKnowledgeMapper extends BaseMapperFlex<ResourceKnowledgeDO> {
 }

@@ -10,6 +10,8 @@ import com.shiyu.ai.common.core.domain.LoginContextHolder;
 import lombok.extern.slf4j.Slf4j;
 import jakarta.validation.Valid;
 import org.springframework.web.bind.annotation.*;
+import io.swagger.v3.oas.annotations.tags.Tag;
+import io.swagger.v3.oas.annotations.Operation;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -20,6 +22,7 @@ import java.util.Map;
  * 提供用户登录、登出等认证功能
  */
 @Slf4j
+@Tag(name = "Auth", description = "Auth")
 @RestController
 @RequestMapping("/auth")
 public class AuthController {
@@ -38,6 +41,7 @@ public class AuthController {
      * @param request 登录请求（包含用户名、密码）
      * @return 登录响应（包含用户信息和访问令牌）
      */
+    @Operation(summary = "Login")
     @PostMapping("/login")
     public Result<LoginResponseVO> login(@Valid @RequestBody LoginRequest request) {
         log.info("收到登录请求：username={}", request.getUsername());
@@ -76,6 +80,7 @@ public class AuthController {
      * GET /auth/codes
      * @return 权限码列表
      */
+    @Operation(summary = "Get Auth Codes")
     @GetMapping("/codes")
     public Result<List<String>> getAuthCodes() {
         log.info("收到获取权限码请求");
@@ -101,6 +106,7 @@ public class AuthController {
      * @param request 包含旧 token 的请求体
      * @return 新的访问令牌
      */
+    @Operation(summary = "Refresh Token")
     @PostMapping("/refresh")
     public Result<String> refreshToken(@RequestBody Map<String, String> request) {
         log.info("收到刷新令牌请求");
@@ -149,6 +155,7 @@ public class AuthController {
      * 切换当前租户
      * POST /auth/switch-tenant
      */
+    @Operation(summary = "Switch Tenant")
     @PostMapping("/switch-tenant")
     public Result<List<WorkspaceContextVO>> switchTenant(@RequestBody Map<String, Long> body) {
         log.info("收到切换租户请求");
@@ -168,6 +175,7 @@ public class AuthController {
      * 切换当前工作空间
      * POST /auth/switch-workspace
      */
+    @Operation(summary = "Switch Workspace")
     @PostMapping("/switch-workspace")
     public Result<Void> switchWorkspace(@RequestBody Map<String, Object> body) {
         log.info("收到切换工作空间请求");
@@ -184,6 +192,7 @@ public class AuthController {
      * 获取用户工作空间列表
      * GET /auth/workspaces
      */
+    @Operation(summary = "Get User Workspaces")
     @GetMapping("/workspaces")
     public Result<List<WorkspaceContextVO>> getUserWorkspaces() {
         log.info("获取用户工作空间列表");
@@ -197,6 +206,7 @@ public class AuthController {
      * 获取用户租户列表
      * GET /auth/tenants
      */
+    @Operation(summary = "Get User Tenants")
     @GetMapping("/tenants")
     public Result<List<Map<String, Object>>> getUserTenants() {
         log.info("获取用户租户列表");
@@ -212,6 +222,7 @@ public class AuthController {
      * @param tokenHeader Authorization Header（Bearer Token）
      * @return 登出结果
      */
+    @Operation(summary = "Logout")
     @PostMapping("/logout")
     public Result<String> logout(
             @RequestHeader(value = "Authorization", required = false) String tokenHeader) {

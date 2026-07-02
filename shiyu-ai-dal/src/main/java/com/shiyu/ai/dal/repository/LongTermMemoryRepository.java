@@ -52,6 +52,15 @@ public class LongTermMemoryRepository {
         return MapstructUtils.convert(doList, LongTermMemoryBO.class);
     }
 
+    public List<LongTermMemoryBO> selectAllByUser(Long userId, String agentId) {
+        QueryWrapper qw = new QueryWrapper();
+        qw.eq(LongTermMemoryDO::getUserId, userId);
+        qw.eq(LongTermMemoryDO::getAgentId, agentId);
+        qw.orderBy(LongTermMemoryDO::getCreateTime, false);
+        List<LongTermMemoryDO> doList = longTermMemoryMapper.selectListByQuery(qw);
+        return MapstructUtils.convert(doList, LongTermMemoryBO.class);
+    }
+
     public List<LongTermMemoryBO> selectTopByImportance(Long userId, String agentId, int topK) {
         QueryWrapper qw = new QueryWrapper();
         if (userId != null) {
@@ -64,6 +73,11 @@ public class LongTermMemoryRepository {
         qw.limit(topK);
         List<LongTermMemoryDO> doList = longTermMemoryMapper.selectListByQuery(qw);
         return MapstructUtils.convert(doList, LongTermMemoryBO.class);
+    }
+
+    public int update(LongTermMemoryBO memory) {
+        LongTermMemoryDO memoryDo = MapstructUtils.convert(memory, LongTermMemoryDO.class);
+        return longTermMemoryMapper.update(memoryDo);
     }
 
     public void deleteById(Long id) {

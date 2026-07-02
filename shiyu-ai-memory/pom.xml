@@ -23,6 +23,10 @@
             <artifactId>shiyu-ai-model</artifactId>
         </dependency>
         <dependency>
+            <groupId>com.shiyu.ai</groupId>
+            <artifactId>shiyu-ai-core</artifactId>
+        </dependency>
+        <dependency>
             <groupId>com.yomahub</groupId>
             <artifactId>roguemap-memory</artifactId>
         </dependency>

@@ -13,8 +13,11 @@ import com.shiyu.ai.common.core.api.Result;
 import lombok.extern.slf4j.Slf4j;
 import jakarta.validation.Valid;
 import org.springframework.web.bind.annotation.*;
+import io.swagger.v3.oas.annotations.tags.Tag;
+import io.swagger.v3.oas.annotations.Operation;
 
 @Slf4j
+@Tag(name = "Agent Graph", description = "Agent Graph")
 @RestController
 @RequestMapping("/admin/agent/{agentId}/version/{versionId}/graph")
 public class AgentGraphController {
@@ -25,6 +28,7 @@ public class AgentGraphController {
         this.agentGraphService = agentGraphService;
     }
 
+    @Operation(summary = "Get Graph")
     @GetMapping
     public Result<AgentVersionDetailVO> getGraph(
             @PathVariable String agentId, @PathVariable Long versionId) {
@@ -33,6 +37,7 @@ public class AgentGraphController {
         return Result.success(vo);
     }
 
+    @Operation(summary = "Update Graph")
     @PutMapping
     public Result<AgentVersionDetailVO> updateGraph(
             @PathVariable String agentId, @PathVariable Long versionId,
@@ -46,6 +51,7 @@ public class AgentGraphController {
         }
     }
 
+    @Operation(summary = "Validate")
     @PostMapping("/validate")
     public Result<GraphValidationVO> validate(
             @PathVariable String agentId, @PathVariable Long versionId,
@@ -54,6 +60,7 @@ public class AgentGraphController {
         return Result.success(result);
     }
 
+    @Operation(summary = "Add Node")
     @PostMapping("/node")
     public Result<Void> addNode(
             @PathVariable String agentId, @PathVariable Long versionId,
@@ -67,6 +74,7 @@ public class AgentGraphController {
         }
     }
 
+    @Operation(summary = "Update Node")
     @PutMapping("/node/{nodeId}")
     public Result<Void> updateNode(
             @PathVariable String agentId, @PathVariable Long versionId,
@@ -80,6 +88,7 @@ public class AgentGraphController {
         }
     }
 
+    @Operation(summary = "Delete Node")
     @DeleteMapping("/node/{nodeId}")
     public Result<Void> deleteNode(
             @PathVariable String agentId, @PathVariable Long versionId,
@@ -93,6 +102,7 @@ public class AgentGraphController {
         }
     }
 
+    @Operation(summary = "Add Edge")
     @PostMapping("/edge")
     public Result<Void> addEdge(
             @PathVariable String agentId, @PathVariable Long versionId,
@@ -106,6 +116,7 @@ public class AgentGraphController {
         }
     }
 
+    @Operation(summary = "Delete Edge")
     @DeleteMapping("/edge")
     public Result<Void> deleteEdge(
             @PathVariable String agentId, @PathVariable Long versionId,
@@ -119,6 +130,7 @@ public class AgentGraphController {
         }
     }
 
+    @Operation(summary = "Get Canvas")
     @GetMapping("/canvas")
     public Result<String> getCanvas(
             @PathVariable String agentId, @PathVariable Long versionId) {
@@ -126,6 +138,7 @@ public class AgentGraphController {
         return Result.success(canvas);
     }
 
+    @Operation(summary = "Update Canvas")
     @PutMapping("/canvas")
     public Result<Void> updateCanvas(
             @PathVariable String agentId, @PathVariable Long versionId,

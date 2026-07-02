@@ -12,6 +12,10 @@ public interface CaptchaService {
      * 生成验证码
      * @return 验证码信息（CaptchaVO 对象）
      */
+    /**
+     * Generate Captcha
+     * @return 处理结果
+     */
     CaptchaVO generateCaptcha();
     
     /**
@@ -20,11 +24,19 @@ public interface CaptchaService {
      * @param code 用户输入的验证码
      * @return 验证结果
      */
+    /**
+     * Validate Captcha
+     * @return 处理结果
+     */
     boolean validateCaptcha(String key, String code);
     
     /**
      * 销毁验证码（使用后立即销毁）
      * @param key 验证码 key
+     */
+    /**
+     * Destroy Captcha
+     * @return 处理结果
      */
     void destroyCaptcha(String key);
 }

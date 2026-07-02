@@ -7,6 +7,10 @@ import com.shiyu.ai.common.mybatis.core.mapper.BaseMapperFlex;
 import org.apache.ibatis.annotations.Mapper;
 
 /**
+ * Workspace 接口
+ */
+
+/**
  * 工作空间表 数据层
  */
 @Mapper

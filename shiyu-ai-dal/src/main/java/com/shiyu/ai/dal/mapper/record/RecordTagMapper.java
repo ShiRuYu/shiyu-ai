@@ -7,6 +7,10 @@ import com.shiyu.ai.common.mybatis.core.mapper.BaseMapperFlex;
 import org.apache.ibatis.annotations.Mapper;
 
 /**
+ * Record Tag 接口
+ */
+
+/**
  * 记录标签关联表 数据层
  */
 @Mapper

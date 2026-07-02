@@ -18,6 +18,10 @@ public interface AuthService {
      * @param password 密码
      * @return 登录响应（包含用户信息和访问令牌）
      */
+    /**
+     * Login
+     * @return 处理结果
+     */
     LoginResponseVO login(String username, String password);
 
     /**
@@ -27,12 +31,20 @@ public interface AuthService {
      * @param roleId 当前角色ID（不传则默认使用第一个角色）
      * @return 登录响应（包含用户信息和访问令牌）
      */
+    /**
+     * Login
+     * @return 处理结果
+     */
     LoginResponseVO login(String username, String password, Long roleId);
     
     /**
      * 获取用户权限码（通过用户名）
      * @param username 用户名
      * @return 权限码列表
+     */
+    /**
+     * Get Auth Codes
+     * @return 处理结果
      */
     List<String> getAuthCodes(String username);
     
@@ -41,6 +53,10 @@ public interface AuthService {
      * @param userId 用户 ID
      * @return 权限码列表
      */
+    /**
+     * Get Auth Codes By User Id
+     * @return 处理结果
+     */
     List<String> getAuthCodesByUserId(Long userId);
     
     /**
@@ -48,11 +64,19 @@ public interface AuthService {
      * @param refreshToken 刷新令牌
      * @return 新的访问令牌
      */
+    /**
+     * Refresh Token
+     * @return 处理结果
+     */
     String refreshToken(String refreshToken);
     
     /**
      * 用户登出
      * @param refreshToken 刷新令牌
+     */
+    /**
+     * Logout
+     * @return 处理结果
      */
     void logout(String refreshToken);
 
@@ -61,6 +85,10 @@ public interface AuthService {
      * @param userId 用户 ID
      * @param roleId 目标角色 ID
      * @return 是否成功
+     */
+    /**
+     * Switch Current Role
+     * @return 处理结果
      */
     boolean switchCurrentRole(Long userId, Long roleId);
 

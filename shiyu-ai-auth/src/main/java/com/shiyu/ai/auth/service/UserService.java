@@ -14,6 +14,10 @@ public interface UserService {
      * @param userId 用户 ID
      * @return 用户信息
      */
+    /**
+     * Get User Detail
+     * @return 处理结果
+     */
     UserBO getUserDetail(Long userId);
 
     /**
@@ -24,6 +28,12 @@ public interface UserService {
      * @param pageSize 每页大小
      * @return 分页数据
      */
+    /**
+     * Get User List
+     * @param Number Number
+     * @param Number Number
+     * @return 处理结果
+     */
     UserPageResponse getUserList(String username, Number pageNo, Number pageSize);
 
     /**
@@ -31,6 +41,10 @@ public interface UserService {
      *
      * @param userId 用户 ID
      * @return 是否成功
+     */
+    /**
+     * Delete User
+     * @return 处理结果
      */
     boolean deleteUser(Long userId);
 
@@ -41,6 +55,11 @@ public interface UserService {
      * @param userBO  用户信息
      * @return 是否成功
      */
+    /**
+     * Update User
+     * @param UserBO UserBO
+     * @return 处理结果
+     */
     boolean updateUser(Long userId, UserBO userBO);
 
     /**
@@ -50,6 +69,10 @@ public interface UserService {
      * @param password 新密码
      * @return 是否成功
      */
+    /**
+     * Reset User Password
+     * @return 处理结果
+     */
     boolean resetUserPassword(Long userId, String password);
 
     /**
@@ -57,6 +80,11 @@ public interface UserService {
      *
      * @param userBO 用户信息
      * @return 用户 ID
+     */
+    /**
+     * Create User
+     * @param UserBO UserBO
+     * @return 处理结果
      */
     Long createUser(UserBO userBO);
 
@@ -67,6 +95,10 @@ public interface UserService {
      * @param oldPassword 旧密码
      * @param newPassword 新密码
      * @return 是否成功
+     */
+    /**
+     * Change Password
+     * @return 处理结果
      */
     boolean changePassword(Long userId, String oldPassword, String newPassword);
 }

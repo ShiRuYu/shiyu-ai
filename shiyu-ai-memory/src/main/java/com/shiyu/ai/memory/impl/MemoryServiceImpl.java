@@ -1,5 +1,8 @@
 package com.shiyu.ai.memory.impl;
 
+import com.shiyu.ai.core.ChatEngine;
+import com.shiyu.ai.core.ChatRequest;
+import com.shiyu.ai.core.ChatResponse;
 import com.shiyu.ai.dal.repository.ConversationMessageRepository;
 import com.shiyu.ai.dal.repository.LongTermMemoryRepository;
 import com.shiyu.ai.memory.MemoryService;
@@ -17,6 +20,8 @@ import java.util.List;
 import java.util.Map;
 import java.util.Collections;
 import java.util.stream.Collectors;
+import java.time.LocalDate;
+import java.util.stream.Collectors;
 
 @Slf4j
 @Service
@@ -27,11 +32,14 @@ public class MemoryServiceImpl implements MemoryService {
 
     private final ConversationMessageRepository conversationMessageRepository;
     private final LongTermMemoryRepository longTermMemoryRepository;
+    private final ChatEngine chatEngine;
 
     public MemoryServiceImpl(ConversationMessageRepository conversationMessageRepository,
-                             LongTermMemoryRepository longTermMemoryRepository) {
+                             LongTermMemoryRepository longTermMemoryRepository,
+                             ChatEngine chatEngine) {
         this.conversationMessageRepository = conversationMessageRepository;
         this.longTermMemoryRepository = longTermMemoryRepository;
+        this.chatEngine = chatEngine;
     }
 
     @Transactional(rollbackFor = Exception.class)
@@ -131,6 +139,73 @@ public class MemoryServiceImpl implements MemoryService {
     @Override
     public List<Map<String, Object>> retrieveLongTerm(String query, Long userId, String agentId, int topK) {
         return searchLongTermMemory(query, userId, agentId, topK);
+    }
+
+    @Override
+    public String summarizeSession(String sessionId, Long userId, String agentId) {
+        String history = buildConversationHistory(sessionId, 50);
+        if (history.isBlank()) return "";
+
+        // 调用 LLM 生成摘要
+        try {
+            String prompt = "请对以下对话进行简要总结，提取关键信息和学习要点（100字以内）：\n\n" + history;
+            ChatResponse resp = chatEngine.chat(ChatRequest.builder().prompt(prompt).build());
+            if (resp.isSuccess() && resp.getContent() != null && !resp.getContent().isBlank()) {
+                String summary = resp.getContent().trim();
+                saveLongTermMemory(userId, agentId, "summary", "session:" + sessionId,
+                        summary, 0.9, sessionId);
+                log.info("LLM 会话摘要已生成: sessionId={}, len={}", sessionId, summary.length());
+                return summary;
+            }
+        } catch (Exception e) {
+            log.warn("LLM 摘要生成失败，使用截断回退: {}", e.getMessage());
+        }
+
+        // 回退：截断前500字符
+        String fallback = history.length() > 500 ? history.substring(0, 500) + "..." : history;
+        saveLongTermMemory(userId, agentId, "summary", "session:" + sessionId,
+                fallback, 0.9, sessionId);
+        log.info("会话摘要（截断回退）已生成: sessionId={}", sessionId);
+        return fallback;
+    }
+
+    @Override
+    public String getSessionSummary(String sessionId) {
+        List<LongTermMemoryBO> mems = longTermMemoryRepository.searchByKeyword(
+                "session:" + sessionId, null, null, 1);
+        return mems.isEmpty() ? null : mems.get(0).getContent();
+    }
+
+    @Override
+    @Transactional(rollbackFor = Exception.class)
+    public int cleanupExpiredSessions(int maxDays) {
+        LocalDate deadline = LocalDate.now().minusDays(maxDays);
+        int deleted = conversationMessageRepository.deleteBySessionBefore(deadline);
+        if (deleted > 0) {
+            log.info("清理过期会话消息: {} 条 (截止日期={})", deleted, deadline);
+        }
+        return deleted;
+    }
+
+    @Override
+    public void recalculateImportance(Long userId, String agentId) {
+        List<LongTermMemoryBO> allMems = longTermMemoryRepository.selectAllByUser(userId, agentId);
+        for (LongTermMemoryBO mem : allMems) {
+            // 重要性 = 基础值 + 时效因子（越近越重要）
+            double baseImportance = mem.getImportance() != null ? mem.getImportance() : 0.5;
+            if (mem.getUpdateTime() != null) {
+                long daysSinceUpdate = java.time.temporal.ChronoUnit.DAYS.between(
+                        mem.getUpdateTime(), LocalDateTime.now());
+                double timeDecay = Math.max(0, 1.0 - daysSinceUpdate * 0.01);
+                double newImportance = baseImportance * 0.7 + timeDecay * 0.3;
+                newImportance = Math.max(0.1, Math.min(1.0, newImportance));
+                if (Math.abs(newImportance - baseImportance) > 0.05) {
+                    mem.setImportance(newImportance);
+                    longTermMemoryRepository.update(mem);
+                }
+            }
+        }
+        log.info("长期记忆重要性已重新计算: userId={}, count={}", userId, allMems.size());
     }
 
     private List<Map<String, Object>> toMemoryMapList(List<LongTermMemoryBO> list) {

@@ -18,6 +18,12 @@ public interface AiModelService {
      * @param pageNo     页码
      * @param pageSize   每页数量
      */
+    /**
+     * Get Page
+     * @param Number Number
+     * @param Number Number
+     * @return 处理结果
+     */
     Pair<Long, List<AiModelBO>> getPage(Long platformId, Number pageNo, Number pageSize);
 
     /**

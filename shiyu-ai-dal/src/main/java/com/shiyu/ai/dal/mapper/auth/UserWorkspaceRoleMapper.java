@@ -11,11 +11,23 @@ import java.util.List;
 
 @Mapper
 @UseDataSource(DataSourceConfig.AGENT)
+/**
+ * User Workspace Role 接口
+ */
+
 public interface UserWorkspaceRoleMapper extends BaseMapperFlex<UserWorkspaceRoleDO> {
 
     default List<UserWorkspaceRoleDO> selectByUserId(Long userId) {
         QueryWrapper qw = QueryWrapper.create()
+    /**
+     * Eq
+     * @return 处理结果
+     */
             .eq(UserWorkspaceRoleDO::getUserId, userId);
+    /**
+     * Select List By Query
+     * @return 处理结果
+     */
         return selectListByQuery(qw);
     }
 }

@@ -8,5 +8,9 @@ import org.apache.ibatis.annotations.Mapper;
 
 @Mapper
 @UseDataSource(DataSourceConfig.AGENT)
+/**
+ * Intent Def 接口
+ */
+
 public interface IntentDefMapper extends BaseMapperFlex<IntentDefDO> {
 }

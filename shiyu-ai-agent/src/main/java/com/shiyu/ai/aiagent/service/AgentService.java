@@ -16,6 +16,11 @@ public interface AgentService {
      * 注册 Agent 定义
      * @param agentDefinition Agent 定义对象
      */
+    /**
+     * Register Agent
+     * @param AgentDefinition AgentDefinition
+     * @return 处理结果
+     */
     void registerAgent(AgentDefinition agentDefinition);
     
     /**
@@ -23,12 +28,20 @@ public interface AgentService {
      * @param agentId Agent ID
      * @return AgentDefinition 实例，不存在则返回 null
      */
+    /**
+     * Get Agent
+     * @return 处理结果
+     */
     AgentDefinition getAgent(String agentId);
     
     /**
      * 注销 Agent 定义
      * @param agentId Agent ID
      * @return true-注销成功，false-Agent 不存在
+     */
+    /**
+     * Unregister Agent
+     * @return 处理结果
      */
     boolean unregisterAgent(String agentId);
     
@@ -78,11 +91,19 @@ public interface AgentService {
      * @param version 版本号
      * @return true-切换成功，false-切换失败
      */
+    /**
+     * Switch Version
+     * @return 处理结果
+     */
     boolean switchVersion(String agentId, String version);
 
     /**
      * 列出所有已注册的 Agent
      * @return AgentDefinition 列表
+     */
+    /**
+     * List Agents
+     * @return 处理结果
      */
     List<AgentDefinition> listAgents();
 
@@ -90,6 +111,10 @@ public interface AgentService {
      * 清理 Agent 的运行时缓存（本地内存 + AgentCacheManager）
      * 当 Agent 配置被修改后调用，确保下次执行时重新加载
      * @param agentId Agent ID
+     */
+    /**
+     * Evict Runtime Cache
+     * @return 处理结果
      */
     void evictRuntimeCache(String agentId);
 }

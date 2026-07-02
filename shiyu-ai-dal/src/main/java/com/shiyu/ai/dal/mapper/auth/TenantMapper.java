@@ -8,5 +8,9 @@ import org.apache.ibatis.annotations.Mapper;
 
 @Mapper
 @UseDataSource(DataSourceConfig.AGENT)
+/**
+ * Tenant 接口
+ */
+
 public interface TenantMapper extends BaseMapperFlex<TenantDO> {
 }

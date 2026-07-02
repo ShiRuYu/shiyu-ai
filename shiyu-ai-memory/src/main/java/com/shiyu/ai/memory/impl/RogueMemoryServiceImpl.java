@@ -109,6 +109,26 @@ public class RogueMemoryServiceImpl implements MemoryService {
         return searchLongTermMemory(query, userId, agentId, topK);
     }
 
+    @Override
+    public String summarizeSession(String sessionId, Long userId, String agentId) {
+        return ""; // RogueMemory 暂不实现摘要
+    }
+
+    @Override
+    public String getSessionSummary(String sessionId) {
+        return null;
+    }
+
+    @Override
+    public int cleanupExpiredSessions(int maxDays) {
+        return 0; // RogueMemory 暂不实现清理
+    }
+
+    @Override
+    public void recalculateImportance(Long userId, String agentId) {
+        // RogueMemory 暂不实现重要性重算
+    }
+
     private List<Map<String, Object>> toResultList(List<MemoryResult> results) {
         List<Map<String, Object>> list = new ArrayList<>();
         for (MemoryResult r : results) {

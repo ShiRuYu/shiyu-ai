@@ -9,6 +9,8 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.multipart.MultipartFile;
+import io.swagger.v3.oas.annotations.tags.Tag;
+import io.swagger.v3.oas.annotations.Operation;
 
 import java.io.IOException;
 import java.nio.file.Files;
@@ -17,6 +19,7 @@ import java.nio.file.Paths;
 import java.util.UUID;
 
 @Slf4j
+@Tag(name = "File", description = "File")
 @RestController
 @RequestMapping("/upload")
 public class FileController {
@@ -37,6 +40,7 @@ public class FileController {
         }
     }
 
+    @Operation(summary = "Upload File")
     @PostMapping
     public Result<String> uploadFile(@RequestParam("file") MultipartFile file) {
         if (file == null || file.isEmpty()) {

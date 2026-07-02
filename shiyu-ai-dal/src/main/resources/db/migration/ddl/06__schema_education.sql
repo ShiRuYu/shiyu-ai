@@ -457,5 +457,19 @@ CREATE TABLE `edu_learning_state`(
     UNIQUE KEY `uk_learning_state` (`student_id`, `knowledge_id`)
 );
 COMMENT ON TABLE `edu_learning_state` IS '知识点学习状态表（持久化 LearningStateMachine）';
+
+DROP TABLE IF EXISTS `edu_achievement`;
+CREATE TABLE `edu_achievement`(
+    `id`              BIGINT       NOT NULL AUTO_INCREMENT,
+    `student_id`      BIGINT       NOT NULL COMMENT '学生ID',
+    `code`            VARCHAR(50)  NOT NULL COMMENT '成就编码',
+    `name`            VARCHAR(100) NOT NULL COMMENT '成就名称',
+    `description`     VARCHAR(500) DEFAULT NULL COMMENT '成就描述',
+    `icon`            VARCHAR(200) DEFAULT NULL COMMENT '成就图标',
+    `earned_at`       TIMESTAMP    DEFAULT CURRENT_TIMESTAMP COMMENT '获得时间',
+    PRIMARY KEY (`id`),
+    UNIQUE KEY `uk_achievement` (`student_id`, `code`)
+);
+COMMENT ON TABLE `edu_achievement` IS '成就表（成长档案）';
 ALTER TABLE `wrong_question`     ALTER COLUMN `id` RESTART WITH 100;
 

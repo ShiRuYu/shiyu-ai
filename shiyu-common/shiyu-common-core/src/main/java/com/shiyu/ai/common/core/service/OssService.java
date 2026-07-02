@@ -11,6 +11,10 @@ public interface OssService {
      * @param ossIds ossId串逗号分隔
      * @return url串逗号分隔
      */
+    /**
+     * Select Url By Ids
+     * @return 处理结果
+     */
     String selectUrlByIds(String ossIds);
 
 }

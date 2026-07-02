@@ -9,6 +9,8 @@ import com.shiyu.ai.common.core.utils.MapstructUtils;
 import lombok.extern.slf4j.Slf4j;
 import jakarta.validation.Valid;
 import org.springframework.web.bind.annotation.*;
+import io.swagger.v3.oas.annotations.tags.Tag;
+import io.swagger.v3.oas.annotations.Operation;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -19,6 +21,7 @@ import java.util.Map;
  * 工作空间管理 Controller
  */
 @Slf4j
+@Tag(name = "Workspace", description = "Workspace")
 @RestController
 @RequestMapping("/workspace")
 public class WorkspaceController {
@@ -32,6 +35,7 @@ public class WorkspaceController {
     /**
      * 获取工作空间列表（树形），平铺转换避免循环引用导致的 StackOverflowError
      */
+    @Operation(summary = "Get Workspace List")
     @GetMapping("/list")
     public Result<List<WorkspaceVO>> getWorkspaceList(
             @RequestParam(required = false) String name) {
@@ -52,6 +56,7 @@ public class WorkspaceController {
     /**
      * 新增工作空间
      */
+    @Operation(summary = "Create Workspace")
     @PostMapping("")
     public Result<Void> createWorkspace(@Valid @RequestBody WorkspaceRequest request) {
         log.info("新增工作空间，name: {}", request.getName());
@@ -88,6 +93,7 @@ public class WorkspaceController {
     /**
      * 删除工作空间
      */
+    @Operation(summary = "Delete Workspace")
     @DeleteMapping("/{id}")
     public Result<Void> deleteWorkspace(@PathVariable Long id) {
         log.info("删除工作空间，id: {}", id);

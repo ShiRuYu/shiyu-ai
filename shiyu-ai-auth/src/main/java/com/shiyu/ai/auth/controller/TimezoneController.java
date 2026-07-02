@@ -11,6 +11,8 @@ import com.shiyu.ai.common.core.utils.JSONUtils;
 import jakarta.validation.Valid;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.web.bind.annotation.*;
+import io.swagger.v3.oas.annotations.tags.Tag;
+import io.swagger.v3.oas.annotations.Operation;
 
 import java.util.Arrays;
 import java.util.HashMap;
@@ -19,6 +21,7 @@ import java.util.Map;
 import java.util.stream.Collectors;
 
 @Slf4j
+@Tag(name = "Timezone", description = "Timezone")
 @RestController
 @RequestMapping("/timezone")
 public class TimezoneController {
@@ -29,6 +32,7 @@ public class TimezoneController {
         this.userRepository = userRepository;
     }
 
+    @Operation(summary = "Get Timezone Options")
     @GetMapping("/getTimezoneOptions")
     public Result<List<TimezoneOptionVO>> getTimezoneOptions() {
         log.info("获取系统支持的时区选项列表");
@@ -47,6 +51,7 @@ public class TimezoneController {
         }
     }
 
+    @Operation(summary = "Get Timezone")
     @GetMapping("/getTimezone")
     public Result<String> getTimezone() {
         log.info("获取当前用户设置的时区");
@@ -72,6 +77,7 @@ public class TimezoneController {
         }
     }
 
+    @Operation(summary = "Set Timezone")
     @PostMapping("/setTimezone")
     public Result<Void> setTimezone(@Valid @RequestBody SetTimezoneRequest request) {
         log.info("设置用户时区：{}", request.getTimezone());

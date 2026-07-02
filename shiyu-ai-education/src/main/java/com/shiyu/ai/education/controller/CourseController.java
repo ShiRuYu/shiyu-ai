@@ -6,6 +6,7 @@ import com.shiyu.ai.education.dto.CourseProgressResponse;
 import com.shiyu.ai.education.course.CourseService;
 import com.shiyu.ai.education.dto.CourseResponse;
 import io.swagger.v3.oas.annotations.Operation;
+import lombok.extern.slf4j.Slf4j;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
 import org.springframework.web.bind.annotation.*;
@@ -61,6 +62,16 @@ public class CourseController {
         course.setId(id);
         courseService.update(course);
         return Result.success();
+    }
+
+
+    @PostMapping("/{courseId}/learn")
+    @Operation(summary = "开始学习 - 记录学生学习课程")
+    public Result<CourseResponse> startLearning(@PathVariable Long courseId, @RequestParam Long studentId) {
+        log.info("开始学习: courseId={}, studentId={}", courseId, studentId);
+        CourseDO course = courseService.getById(courseId);
+        if (course == null) return Result.fail("课程不存在");
+        return Result.success(toResponse(course));
     }
 
     @DeleteMapping("/{id}")

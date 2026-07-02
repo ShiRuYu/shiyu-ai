@@ -22,6 +22,12 @@ public class ConversationMessageRepository {
         bo.setId(message.getId());
     }
 
+    public int deleteBySessionBefore(java.time.LocalDate deadline) {
+        return conversationMessageMapper.deleteByQuery(
+                com.mybatisflex.core.query.QueryWrapper.create()
+                        .lt("create_time", deadline.atStartOfDay()));
+    }
+
     public List<ConversationMessageBO> selectRecentBySession(String sessionId, int limit) {
         QueryWrapper qw = new QueryWrapper();
         qw.eq(ConversationMessageDO::getSessionId, sessionId);

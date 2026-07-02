@@ -2,6 +2,7 @@ package com.shiyu.ai.education.controller;
 
 import com.shiyu.ai.common.core.api.Result;
 import com.shiyu.ai.dal.dataobject.education.StudyPlanDO;
+import com.shiyu.ai.education.dto.DailyTaskResponse;
 import com.shiyu.ai.education.dto.StudyPlanResponse;
 import com.shiyu.ai.education.plan.StudyPlanService;
 import io.swagger.v3.oas.annotations.Operation;
@@ -53,6 +54,27 @@ public class StudyPlanController {
         plan.setId(id);
         studyPlanService.update(plan);
         return Result.success();
+    }
+
+
+    @GetMapping("/today/{studentId}")
+    @Operation(summary = "今日任务 - 获取学生今日学习计划明细")
+    public Result<List<DailyTaskResponse>> getTodayTasks(@PathVariable Long studentId) {
+        List<StudyPlanDO> plans = studyPlanService.listActiveByStudent(studentId);
+        if (plans.isEmpty()) {
+            return Result.success(java.util.Collections.emptyList());
+        }
+        java.time.LocalDate today = java.time.LocalDate.now();
+        java.util.List<DailyTaskResponse> tasks = new java.util.ArrayList<>();
+        for (StudyPlanDO plan : plans) {
+            if (plan.getStartDate() != null && plan.getEndDate() != null
+                    && !today.isBefore(plan.getStartDate()) && !today.isAfter(plan.getEndDate())) {
+                tasks.add(new DailyTaskResponse(
+                        plan.getId(), plan.getTargetKnowledgeId(), plan.getName(),
+                        today.toString(), plan.getStatus(), 0));
+            }
+        }
+        return Result.success(tasks);
     }
 
     @DeleteMapping("/{id}")

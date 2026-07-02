@@ -8,5 +8,9 @@ import org.apache.ibatis.annotations.Mapper;
 
 @Mapper
 @UseDataSource(DataSourceConfig.AGENT)
+/**
+ * Question 接口
+ */
+
 public interface QuestionMapper extends BaseMapperFlex<QuestionDO> {
 }

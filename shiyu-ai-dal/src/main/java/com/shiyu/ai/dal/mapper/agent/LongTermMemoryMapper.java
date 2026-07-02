@@ -8,5 +8,9 @@ import org.apache.ibatis.annotations.Mapper;
 
 @Mapper
 @UseDataSource(DataSourceConfig.AGENT)
+/**
+ * Long Term Memory 接口
+ */
+
 public interface LongTermMemoryMapper extends BaseMapperFlex<LongTermMemoryDO> {
 }

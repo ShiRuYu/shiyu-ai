@@ -10,6 +10,8 @@ import com.shiyu.ai.common.core.utils.MapstructUtils;
 import lombok.extern.slf4j.Slf4j;
 import jakarta.validation.Valid;
 import org.springframework.web.bind.annotation.*;
+import io.swagger.v3.oas.annotations.tags.Tag;
+import io.swagger.v3.oas.annotations.Operation;
 
 import java.util.List;
 
@@ -17,6 +19,7 @@ import java.util.List;
  * 角色管理 Controller
  */
 @Slf4j
+@Tag(name = "Role", description = "Role")
 @RestController
 @RequestMapping("/role")
 public class RoleController {
@@ -30,6 +33,7 @@ public class RoleController {
     /**
      * 角色列表 - 分页
      */
+    @Operation(summary = "Get Role List")
     @GetMapping("/list")
     public Result<RolePageResponse> getRoleList(
             @RequestParam(required = false,name = "page") Integer pageNo,
@@ -49,6 +53,7 @@ public class RoleController {
     /**
      * 角色列表-all
      */
+    @Operation(summary = "Get All Roles")
     @GetMapping("")
     public Result<List<RoleBO>> getAllRoles(
             @RequestParam(required = false) String status) {
@@ -81,6 +86,7 @@ public class RoleController {
     /**
      * 修改角色
      */
+    @Operation(summary = "Put Role")
     @PutMapping("/{id}")
     public Result<Void> putRole(
             @PathVariable Long id,
@@ -100,6 +106,7 @@ public class RoleController {
     /**
      * 删除角色
      */
+    @Operation(summary = "Delete Role")
     @DeleteMapping("/{id}")
     public Result<Void> deleteRole(@PathVariable Long id) {
         log.info("删除角色，id: {}", id);
@@ -152,6 +159,7 @@ public class RoleController {
     /**
      * 新增角色
      */
+    @Operation(summary = "Create Role")
     @PostMapping("")
     public Result<Void> createRole(@Valid @RequestBody RoleRequest request) {
         log.info("新增角色");

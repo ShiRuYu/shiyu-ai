@@ -15,6 +15,10 @@ public interface WorkspaceService {
      * @param name 工作空间名称（可选，用于过滤）
      * @return 工作空间树形列表
      */
+    /**
+     * Get Workspace List
+     * @return 处理结果
+     */
     List<WorkspaceBO> getWorkspaceList(String name);
 
     /**
@@ -23,6 +27,10 @@ public interface WorkspaceService {
      * @param id 工作空间 ID
      * @return 工作空间信息
      */
+    /**
+     * Get By Id
+     * @return 处理结果
+     */
     WorkspaceBO getById(Long id);
 
     /**
@@ -30,6 +38,11 @@ public interface WorkspaceService {
      *
      * @param workspaceBO 工作空间信息
      * @return 是否成功
+     */
+    /**
+     * Create Workspace
+     * @param WorkspaceBO WorkspaceBO
+     * @return 处理结果
      */
     boolean createWorkspace(WorkspaceBO workspaceBO);
 
@@ -40,6 +53,11 @@ public interface WorkspaceService {
      * @param workspaceBO 工作空间信息
      * @return 是否成功
      */
+    /**
+     * Update Workspace
+     * @param WorkspaceBO WorkspaceBO
+     * @return 处理结果
+     */
     boolean updateWorkspace(Long id, WorkspaceBO workspaceBO);
 
     /**
@@ -47,6 +65,10 @@ public interface WorkspaceService {
      *
      * @param id 工作空间 ID
      * @return 是否成功
+     */
+    /**
+     * Delete Workspace
+     * @return 处理结果
      */
     boolean deleteWorkspace(Long id);
 }

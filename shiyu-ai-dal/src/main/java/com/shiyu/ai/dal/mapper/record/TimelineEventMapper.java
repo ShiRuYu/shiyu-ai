@@ -7,6 +7,10 @@ import com.shiyu.ai.common.mybatis.core.mapper.BaseMapperFlex;
 import org.apache.ibatis.annotations.Mapper;
 
 /**
+ * Timeline Event 接口
+ */
+
+/**
  * 时间轴事件表 数据层
  */
 @Mapper

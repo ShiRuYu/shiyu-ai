@@ -18,6 +18,10 @@ public interface IntentService {
      * @param modelName 模型名称（null 则使用默认模型）
      * @return 意图识别结果
      */
+    /**
+     * Recognize
+     * @return 处理结果
+     */
     IntentRecognitionResult recognize(String row, String column, String query, String platform, String modelName);
 
     /**
@@ -27,6 +31,10 @@ public interface IntentService {
      * @param column    column key（意图分类）
      * @param query 用户输入文本
      * @return 意图识别结果
+     */
+    /**
+     * Recognize
+     * @return 处理结果
      */
     IntentRecognitionResult recognize(String row, String column, String query);
 
