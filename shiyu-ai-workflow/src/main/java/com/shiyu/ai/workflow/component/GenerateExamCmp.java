@@ -26,7 +26,7 @@ public class GenerateExamCmp extends NodeComponent {
         log.info("GenerateExamCmp: 智能组卷, subjectCode=MATH, grade=7");
 
         ExamDO exam = examAgent.generateExam("MATH", 7,
-                List.of(5, 4, 3), 60, 1L);
+                List.of(5L, 4L, 3L), 60, 1L);
         ctx.setKnowledgeId(exam.getId());
         log.info("GenerateExamCmp: 组卷完成, examId={}", exam.getId());
     }

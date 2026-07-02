@@ -11,7 +11,7 @@ import com.shiyu.ai.aiagent.education.graph.ReviewScheduleNode;
 import com.shiyu.ai.education.ability.AbilityService;
 import com.shiyu.ai.education.review.ReviewService;
 import com.shiyu.ai.knowledge.path.LearningPathService;
-import com.shiyu.ai.knowledge.review.ReviewScheduler;
+import com.shiyu.ai.education.review.ReviewScheduler;
 import com.shiyu.ai.knowledge.service.KnowledgeRelationService;
 import com.shiyu.ai.knowledge.service.KnowledgeService;
 import com.shiyu.ai.core.ChatEngine;

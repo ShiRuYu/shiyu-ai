@@ -13,6 +13,7 @@ import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
 
+@Slf4j
 @Tag(name = "课程管理")
 @RestController
 @RequestMapping("/api/v1/course")
