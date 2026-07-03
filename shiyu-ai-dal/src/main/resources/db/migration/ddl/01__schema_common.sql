@@ -2,9 +2,8 @@
 -- Schema: schema_common
 -- ============================================
 
-DROP TABLE IF EXISTS `dict`;
 
-CREATE TABLE `dict` (
+CREATE TABLE IF NOT EXISTS `dict` (
     `id` BIGINT NOT NULL AUTO_INCREMENT COMMENT '字典ID',
     `dict_type` VARCHAR(100) NOT NULL COMMENT '字典类型',
     `dict_label` VARCHAR(100) NOT NULL COMMENT '字典标签',
@@ -24,9 +23,9 @@ CREATE TABLE `dict` (
     PRIMARY KEY (`id`)
 );
 
-CREATE INDEX `idx_dict_type` ON `dict` (`dict_type`);
+CREATE INDEX IF NOT EXISTS `idx_dict_type` ON `dict` (`dict_type`);
 
-CREATE INDEX `idx_dict_sort` ON `dict` (`dict_sort`);
+CREATE INDEX IF NOT EXISTS `idx_dict_sort` ON `dict` (`dict_sort`);
 
 COMMENT ON TABLE `dict` IS '字典表';
 

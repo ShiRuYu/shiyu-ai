@@ -2,7 +2,7 @@
 -- Data: data_knowledge
 -- ============================================
 
-INSERT INTO `knowledge` (`id`, `code`, `name`, `description`, `difficulty`, `category`, `tags`) VALUES
+INSERT IGNORE INTO `knowledge` (`id`, `code`, `name`, `description`, `difficulty`, `category`, `tags`) VALUES
 (1, 'math_natural',    '自然数',   '用来表示物体个数的数: 0,1,2,3,...', 1, 'MATH', '["自然数","初等数学"]'),
 (2, 'math_integer',    '整数',     '正整数、零和负整数的统称', 1, 'MATH', '["整数"]'),
 (3, 'math_numberline', '数轴',     '规定了原点、正方向和单位长度的直线', 2, 'MATH', '["数轴"]'),
@@ -14,7 +14,7 @@ INSERT INTO `knowledge` (`id`, `code`, `name`, `description`, `difficulty`, `cat
 (9, 'math_function',   '函数',     '两个变量之间的对应关系', 3, 'MATH', '["函数"]'),
 (10, 'math_derivative', '导数',     '函数在某一点的变化率', 4, 'MATH', '["导数","高等数学"]');
 
-INSERT INTO `knowledge_relation` (`source_id`, `target_id`, `relation_type`, `weight`) VALUES
+INSERT IGNORE INTO `knowledge_relation` (`source_id`, `target_id`, `relation_type`, `weight`) VALUES
 (2,  1,  'PRE',   1.0),
 (3,  2,  'PRE',   1.0),
 (4,  3,  'PRE',   1.0),
@@ -28,7 +28,7 @@ INSERT INTO `knowledge_relation` (`source_id`, `target_id`, `relation_type`, `we
 (5,  3,  'RELATED', 0.6),
 (7,  8,  'SIMILAR', 0.7);
 
-INSERT INTO `knowledge_document` (`id`, `title`, `content`, `doc_type`, `source`, `author`) VALUES
+INSERT IGNORE INTO `knowledge_document` (`id`, `title`, `content`, `doc_type`, `source`, `author`) VALUES
 (1, '绝对值专题讲义',
  '## 一、绝对值的概念\n\n' ||
  '绝对值是一个数在数轴上对应点到原点的距离。用符号 |a| 表示。\n\n' ||
@@ -64,7 +64,7 @@ INSERT INTO `knowledge_document` (`id`, `title`, `content`, `doc_type`, `source`
  '减去一个数等于加上这个数的相反数。',
  'TEXTBOOK', '人教版初中数学', '人民教育出版社');
 
-INSERT INTO `knowledge_doc_relation` (`doc_id`, `knowledge_id`, `relation_type`) VALUES
+INSERT IGNORE INTO `knowledge_doc_relation` (`doc_id`, `knowledge_id`, `relation_type`) VALUES
 (1, 5, 'RELATED'),   -- 绝对值讲义→绝对值
 (1, 3, 'RELATED'),   -- 绝对值讲义→数轴
 (2, 3, 'RELATED'),   -- 数轴总结→数轴

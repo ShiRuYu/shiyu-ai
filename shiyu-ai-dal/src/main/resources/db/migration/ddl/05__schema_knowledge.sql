@@ -2,9 +2,8 @@
 -- Schema: schema_knowledge
 -- ============================================
 
-DROP TABLE IF EXISTS `knowledge`;
 
-CREATE TABLE `knowledge` (
+CREATE TABLE IF NOT EXISTS `knowledge` (
     `id`              BIGINT       NOT NULL AUTO_INCREMENT COMMENT '知识点ID',
     `code`            VARCHAR(50)  NOT NULL UNIQUE COMMENT '知识点编码',
     `name`            VARCHAR(200) NOT NULL COMMENT '名称',
@@ -20,13 +19,12 @@ CREATE TABLE `knowledge` (
     PRIMARY KEY (`id`)
 );
 
-CREATE INDEX `idx_knowledge_category` ON `knowledge` (`category`);
+CREATE INDEX IF NOT EXISTS `idx_knowledge_category` ON `knowledge` (`category`);
 
 COMMENT ON TABLE `knowledge` IS '知识点表（通用，不绑定教育域）';
 
-DROP TABLE IF EXISTS `knowledge_relation`;
 
-CREATE TABLE `knowledge_relation` (
+CREATE TABLE IF NOT EXISTS `knowledge_relation` (
     `id`            BIGINT      NOT NULL AUTO_INCREMENT,
     `source_id`     BIGINT      NOT NULL COMMENT '源知识点ID',
     `target_id`     BIGINT      NOT NULL COMMENT '目标知识点ID',
@@ -36,17 +34,16 @@ CREATE TABLE `knowledge_relation` (
     PRIMARY KEY (`id`)
 );
 
-CREATE UNIQUE INDEX `uk_kr_source_target_type` ON `knowledge_relation` (`source_id`, `target_id`, `relation_type`);
+CREATE UNIQUE INDEX IF NOT EXISTS `uk_kr_source_target_type` ON `knowledge_relation` (`source_id`, `target_id`, `relation_type`);
 
-CREATE INDEX `idx_kr_source` ON `knowledge_relation` (`source_id`);
+CREATE INDEX IF NOT EXISTS `idx_kr_source` ON `knowledge_relation` (`source_id`);
 
-CREATE INDEX `idx_kr_target` ON `knowledge_relation` (`target_id`);
+CREATE INDEX IF NOT EXISTS `idx_kr_target` ON `knowledge_relation` (`target_id`);
 
 COMMENT ON TABLE `knowledge_relation` IS '知识点关系表';
 
-DROP TABLE IF EXISTS `knowledge_document`;
 
-CREATE TABLE `knowledge_document` (
+CREATE TABLE IF NOT EXISTS `knowledge_document` (
     `id`              BIGINT       NOT NULL AUTO_INCREMENT COMMENT '文档ID',
     `title`           VARCHAR(255) NOT NULL COMMENT '文档标题',
     `content`         TEXT         NOT NULL COMMENT '文档内容',
@@ -60,13 +57,12 @@ CREATE TABLE `knowledge_document` (
     PRIMARY KEY (`id`)
 );
 
-CREATE INDEX `idx_kd_type` ON `knowledge_document` (`doc_type`);
+CREATE INDEX IF NOT EXISTS `idx_kd_type` ON `knowledge_document` (`doc_type`);
 
 COMMENT ON TABLE `knowledge_document` IS '文档知识表';
 
-DROP TABLE IF EXISTS `knowledge_doc_relation`;
 
-CREATE TABLE `knowledge_doc_relation` (
+CREATE TABLE IF NOT EXISTS `knowledge_doc_relation` (
     `id`            BIGINT      NOT NULL AUTO_INCREMENT,
     `doc_id`        BIGINT      NOT NULL COMMENT '文档ID',
     `knowledge_id`  BIGINT      NOT NULL COMMENT '知识点ID',
@@ -76,7 +72,7 @@ CREATE TABLE `knowledge_doc_relation` (
     UNIQUE KEY `uk_kdr_doc_knowledge` (`doc_id`, `knowledge_id`)
 );
 
-CREATE INDEX `idx_kdr_knowledge` ON `knowledge_doc_relation` (`knowledge_id`);
+CREATE INDEX IF NOT EXISTS `idx_kdr_knowledge` ON `knowledge_doc_relation` (`knowledge_id`);
 
 COMMENT ON TABLE `knowledge_doc_relation` IS '文档-知识点关联表';
 

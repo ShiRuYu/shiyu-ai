@@ -2,9 +2,8 @@
 -- Schema: schema_agent
 -- ============================================
 
-DROP TABLE IF EXISTS `ai_platform`;
 
-CREATE TABLE `ai_platform` (
+CREATE TABLE IF NOT EXISTS `ai_platform` (
     `id`               BIGINT       NOT NULL AUTO_INCREMENT COMMENT '平台ID',
     `name`             VARCHAR(50)  NOT NULL COMMENT '平台名称（如 OpenAI、DeepSeek）',
     `code`             VARCHAR(50)  NOT NULL COMMENT '平台编码（如 OPENAI, DEEPSEEK, OLLAMA）',
@@ -29,13 +28,12 @@ CREATE TABLE `ai_platform` (
     PRIMARY KEY (`id`)
 );
 
-CREATE INDEX `idx_ai_platform_code` ON `ai_platform` (`code`);
+CREATE INDEX IF NOT EXISTS `idx_ai_platform_code` ON `ai_platform` (`code`);
 
 COMMENT ON TABLE `ai_platform` IS 'AI 平台配置表';
 
-DROP TABLE IF EXISTS `ai_model`;
 
-CREATE TABLE `ai_model` (
+CREATE TABLE IF NOT EXISTS `ai_model` (
     `id`           BIGINT       NOT NULL AUTO_INCREMENT COMMENT '模型ID',
     `platform_id`  BIGINT       NOT NULL COMMENT '所属平台ID',
     `model_name`   VARCHAR(100) NOT NULL COMMENT '模型名称（如 gpt-4o, deepseek-chat）',
@@ -55,13 +53,12 @@ CREATE TABLE `ai_model` (
     PRIMARY KEY (`id`)
 );
 
-CREATE INDEX `idx_ai_model_platform_id` ON `ai_model` (`platform_id`);
+CREATE INDEX IF NOT EXISTS `idx_ai_model_platform_id` ON `ai_model` (`platform_id`);
 
 COMMENT ON TABLE `ai_model` IS 'AI 模型配置表';
 
-DROP TABLE IF EXISTS `agent_def`;
 
-CREATE TABLE `agent_def` (
+CREATE TABLE IF NOT EXISTS `agent_def` (
     `id`              BIGINT       NOT NULL AUTO_INCREMENT COMMENT '主键ID',
     `agent_id`        VARCHAR(64)  NOT NULL COMMENT 'Agent唯一标识',
     `name`            VARCHAR(100) NOT NULL COMMENT 'Agent名称',
@@ -80,13 +77,12 @@ CREATE TABLE `agent_def` (
     PRIMARY KEY (`id`)
 );
 
-CREATE INDEX `idx_agent_def_agent_id` ON `agent_def` (`agent_id`);
+CREATE INDEX IF NOT EXISTS `idx_agent_def_agent_id` ON `agent_def` (`agent_id`);
 
 COMMENT ON TABLE `agent_def` IS 'Agent 定义表';
 
-DROP TABLE IF EXISTS `agent_version`;
 
-CREATE TABLE `agent_version` (
+CREATE TABLE IF NOT EXISTS `agent_version` (
     `id`              BIGINT       NOT NULL AUTO_INCREMENT COMMENT '主键ID',
     `agent_id`        VARCHAR(64)  NOT NULL COMMENT '所属Agent标识',
     `version_number`  VARCHAR(32)  NOT NULL COMMENT '版本号(如v1.0.0)',
@@ -105,13 +101,12 @@ CREATE TABLE `agent_version` (
     PRIMARY KEY (`id`)
 );
 
-CREATE INDEX `idx_agent_version` ON `agent_version` (`agent_id`, `version_number`);
+CREATE INDEX IF NOT EXISTS `idx_agent_version` ON `agent_version` (`agent_id`, `version_number`);
 
 COMMENT ON TABLE `agent_version` IS 'Agent 版本表';
 
-DROP TABLE IF EXISTS `intent_def`;
 
-CREATE TABLE `intent_def` (
+CREATE TABLE IF NOT EXISTS `intent_def` (
     `id`               BIGINT       NOT NULL AUTO_INCREMENT COMMENT '主键ID',
     `agent_id`         VARCHAR(64)  NOT NULL DEFAULT 'default' COMMENT '所属Agent标识',
     `code`             VARCHAR(64)  NOT NULL COMMENT '意图代码',
@@ -138,7 +133,7 @@ CREATE TABLE `intent_def` (
     PRIMARY KEY (`id`)
 );
 
-CREATE INDEX `idx_intent_def_code_agent` ON `intent_def` (`agent_id`, `code`);
+CREATE INDEX IF NOT EXISTS `idx_intent_def_code_agent` ON `intent_def` (`agent_id`, `code`);
 
 COMMENT ON TABLE `intent_def` IS '意图定义表';
 

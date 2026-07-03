@@ -2,9 +2,8 @@
 -- Schema: schema_education
 -- ============================================
 
-DROP TABLE IF EXISTS `ability`;
 
-CREATE TABLE `ability`(
+CREATE TABLE IF NOT EXISTS `ability`(
     `id`              BIGINT       NOT NULL AUTO_INCREMENT,
     `student_id`      BIGINT       NOT NULL COMMENT '学生ID',
     `knowledge_id`    BIGINT       NOT NULL COMMENT '知识点ID',
@@ -22,9 +21,8 @@ CREATE TABLE `ability`(
 
 COMMENT ON TABLE `ability` IS '能力值表';
 
-DROP TABLE IF EXISTS `textbook`;
 
-CREATE TABLE `textbook`(
+CREATE TABLE IF NOT EXISTS `textbook`(
     `id`              BIGINT       NOT NULL AUTO_INCREMENT,
     `name`            VARCHAR(128) NOT NULL COMMENT '教材名称',
     `subject_code`    VARCHAR(20)  NOT NULL COMMENT '学科编码',
@@ -37,9 +35,8 @@ CREATE TABLE `textbook`(
 
 COMMENT ON TABLE `textbook` IS '教材版本表';
 
-DROP TABLE IF EXISTS `chapter`;
 
-CREATE TABLE `chapter`(
+CREATE TABLE IF NOT EXISTS `chapter`(
     `id`              BIGINT       NOT NULL AUTO_INCREMENT,
     `textbook_id`     BIGINT       NOT NULL COMMENT '教材ID',
     `parent_id`       BIGINT       DEFAULT NULL COMMENT '父章节ID',
@@ -53,9 +50,8 @@ CREATE TABLE `chapter`(
 
 COMMENT ON TABLE `chapter` IS '章节表';
 
-DROP TABLE IF EXISTS `knowledge_textbook`;
 
-CREATE TABLE `knowledge_textbook`(
+CREATE TABLE IF NOT EXISTS `knowledge_textbook`(
     `id`              BIGINT NOT NULL AUTO_INCREMENT,
     `knowledge_id`    BIGINT NOT NULL COMMENT '知识点ID',
     `textbook_id`     BIGINT NOT NULL COMMENT '教材ID',
@@ -66,9 +62,8 @@ CREATE TABLE `knowledge_textbook`(
 
 COMMENT ON TABLE `knowledge_textbook` IS '知识点-教材章节关联表';
 
-DROP TABLE IF EXISTS `student`;
 
-CREATE TABLE `student`(
+CREATE TABLE IF NOT EXISTS `student`(
     `id`              BIGINT       NOT NULL AUTO_INCREMENT,
     `user_id`         BIGINT       NOT NULL COMMENT '关联用户ID',
     `student_no`      VARCHAR(50)  DEFAULT NULL COMMENT '学号',
@@ -90,9 +85,8 @@ CREATE TABLE `student`(
 
 COMMENT ON TABLE `student` IS '学生表';
 
-DROP TABLE IF EXISTS `teacher`;
 
-CREATE TABLE `teacher`(
+CREATE TABLE IF NOT EXISTS `teacher`(
     `id`              BIGINT       NOT NULL AUTO_INCREMENT,
     `user_id`         BIGINT       NOT NULL COMMENT '关联用户ID',
     `teacher_no`      VARCHAR(50)  DEFAULT NULL COMMENT '工号',
@@ -108,9 +102,8 @@ CREATE TABLE `teacher`(
 
 COMMENT ON TABLE `teacher` IS '教师表';
 
-DROP TABLE IF EXISTS `subject`;
 
-CREATE TABLE `subject`(
+CREATE TABLE IF NOT EXISTS `subject`(
     `id`              BIGINT       NOT NULL AUTO_INCREMENT,
     `code`            VARCHAR(20)  NOT NULL COMMENT '学科编码',
     `name`            VARCHAR(50)  NOT NULL COMMENT '学科名称',
@@ -124,9 +117,8 @@ CREATE TABLE `subject`(
 
 COMMENT ON TABLE `subject` IS '学科表';
 
-DROP TABLE IF EXISTS `course`;
 
-CREATE TABLE `course`(
+CREATE TABLE IF NOT EXISTS `course`(
     `id`              BIGINT       NOT NULL AUTO_INCREMENT,
     `name`            VARCHAR(200) NOT NULL COMMENT '课程名称',
     `description`     TEXT         DEFAULT NULL COMMENT '课程描述',
@@ -147,9 +139,8 @@ CREATE TABLE `course`(
 
 COMMENT ON TABLE `course` IS '课程表';
 
-DROP TABLE IF EXISTS `course_chapter`;
 
-CREATE TABLE `course_chapter`(
+CREATE TABLE IF NOT EXISTS `course_chapter`(
     `id`              BIGINT       NOT NULL AUTO_INCREMENT,
     `course_id`       BIGINT       NOT NULL COMMENT '课程ID',
     `name`            VARCHAR(200) NOT NULL COMMENT '章节名称',
@@ -161,9 +152,8 @@ CREATE TABLE `course_chapter`(
 
 COMMENT ON TABLE `course_chapter` IS '课程章节表';
 
-DROP TABLE IF EXISTS `course_section`;
 
-CREATE TABLE `course_section`(
+CREATE TABLE IF NOT EXISTS `course_section`(
     `id`              BIGINT       NOT NULL AUTO_INCREMENT,
     `chapter_id`      BIGINT       NOT NULL COMMENT '章节ID',
     `name`            VARCHAR(200) NOT NULL COMMENT '小节名称',
@@ -178,9 +168,8 @@ CREATE TABLE `course_section`(
 
 COMMENT ON TABLE `course_section` IS '课程小节表';
 
-DROP TABLE IF EXISTS `course_knowledge`;
 
-CREATE TABLE `course_knowledge`(
+CREATE TABLE IF NOT EXISTS `course_knowledge`(
     `course_id`       BIGINT       NOT NULL COMMENT '课程ID',
     `knowledge_id`    BIGINT       NOT NULL COMMENT '知识点ID',
     `section_id`      BIGINT       DEFAULT NULL COMMENT '小节ID',
@@ -191,9 +180,8 @@ CREATE TABLE `course_knowledge`(
 
 COMMENT ON TABLE `course_knowledge` IS '课程-知识点关联表';
 
-DROP TABLE IF EXISTS `resource`;
 
-CREATE TABLE `resource`(
+CREATE TABLE IF NOT EXISTS `resource`(
     `id`              BIGINT       NOT NULL AUTO_INCREMENT,
     `name`            VARCHAR(200) NOT NULL COMMENT '资源名称',
     `type`            VARCHAR(20)  NOT NULL COMMENT '类型 VIDEO/PDF/PPT/IMAGE/AUDIO/ANIMATION/QUIZ/EXPERIMENT/GAME',
@@ -214,9 +202,8 @@ CREATE TABLE `resource`(
 
 COMMENT ON TABLE `resource` IS '资源表';
 
-DROP TABLE IF EXISTS `resource_knowledge`;
 
-CREATE TABLE `resource_knowledge`(
+CREATE TABLE IF NOT EXISTS `resource_knowledge`(
     `resource_id`     BIGINT       NOT NULL COMMENT '资源ID',
     `knowledge_id`    BIGINT       NOT NULL COMMENT '知识点ID',
     `sort_order`      INT          DEFAULT 0 COMMENT '排序',
@@ -226,9 +213,8 @@ CREATE TABLE `resource_knowledge`(
 
 COMMENT ON TABLE `resource_knowledge` IS '资源-知识点关联表';
 
-DROP TABLE IF EXISTS `edu_question`;
 
-CREATE TABLE `edu_question`(
+CREATE TABLE IF NOT EXISTS `edu_question`(
     `id`              BIGINT       NOT NULL AUTO_INCREMENT,
     `code`            VARCHAR(50)  DEFAULT NULL COMMENT '题目编号',
     `type`            VARCHAR(20)  NOT NULL COMMENT '类型 CHOICE/FILL/SOLVE/JUDGE/ESSAY/EXPERIMENT',
@@ -254,9 +240,8 @@ CREATE TABLE `edu_question`(
 
 COMMENT ON TABLE `edu_question` IS '题目表';
 
-DROP TABLE IF EXISTS `edu_question_knowledge`;
 
-CREATE TABLE `edu_question_knowledge`(
+CREATE TABLE IF NOT EXISTS `edu_question_knowledge`(
     `question_id`     BIGINT       NOT NULL COMMENT '题目ID',
     `knowledge_id`    BIGINT       NOT NULL COMMENT '知识点ID',
     `weight`          DOUBLE       DEFAULT 1.0 COMMENT '权重',
@@ -266,9 +251,8 @@ CREATE TABLE `edu_question_knowledge`(
 
 COMMENT ON TABLE `edu_question_knowledge` IS '题目-知识点关联表';
 
-DROP TABLE IF EXISTS `exam`;
 
-CREATE TABLE `exam`(
+CREATE TABLE IF NOT EXISTS `exam`(
     `id`              BIGINT       NOT NULL AUTO_INCREMENT,
     `name`            VARCHAR(200) NOT NULL COMMENT '考试名称',
     `type`            VARCHAR(20)  NOT NULL COMMENT '类型 DAILY_QUIZ/UNIT_TEST/MIDTERM/FINAL/MOCK/AI_GENERATED',
@@ -287,9 +271,8 @@ CREATE TABLE `exam`(
 
 COMMENT ON TABLE `exam` IS '考试表';
 
-DROP TABLE IF EXISTS `exam_section`;
 
-CREATE TABLE `exam_section`(
+CREATE TABLE IF NOT EXISTS `exam_section`(
     `id`              BIGINT       NOT NULL AUTO_INCREMENT,
     `exam_id`         BIGINT       NOT NULL COMMENT '考试ID',
     `name`            VARCHAR(100) NOT NULL COMMENT '大题名称',
@@ -302,9 +285,8 @@ CREATE TABLE `exam_section`(
 
 COMMENT ON TABLE `exam_section` IS '考试大题表';
 
-DROP TABLE IF EXISTS `exam_question`;
 
-CREATE TABLE `exam_question`(
+CREATE TABLE IF NOT EXISTS `exam_question`(
     `id`              BIGINT       NOT NULL AUTO_INCREMENT,
     `exam_id`         BIGINT       NOT NULL COMMENT '考试ID',
     `section_id`      BIGINT       NOT NULL COMMENT '大题ID',
@@ -319,9 +301,8 @@ CREATE TABLE `exam_question`(
 
 COMMENT ON TABLE `exam_question` IS '考试-题目关联表';
 
-DROP TABLE IF EXISTS `edu_study_record`;
 
-CREATE TABLE `edu_study_record`(
+CREATE TABLE IF NOT EXISTS `edu_study_record`(
     `id`              BIGINT       NOT NULL AUTO_INCREMENT,
     `student_id`      BIGINT       NOT NULL COMMENT '学生ID',
     `knowledge_id`    BIGINT       NOT NULL COMMENT '知识点ID',
@@ -338,9 +319,8 @@ CREATE TABLE `edu_study_record`(
 
 COMMENT ON TABLE `edu_study_record` IS '学习记录表';
 
-DROP TABLE IF EXISTS `edu_review_task`;
 
-CREATE TABLE `edu_review_task`(
+CREATE TABLE IF NOT EXISTS `edu_review_task`(
     `id`              BIGINT       NOT NULL AUTO_INCREMENT,
     `student_id`      BIGINT       NOT NULL COMMENT '学生ID',
     `knowledge_id`    BIGINT       NOT NULL COMMENT '知识点ID',
@@ -357,9 +337,8 @@ CREATE TABLE `edu_review_task`(
 
 COMMENT ON TABLE `edu_review_task` IS '复习任务表';
 
-DROP TABLE IF EXISTS `edu_study_plan`;
 
-CREATE TABLE `edu_study_plan`(
+CREATE TABLE IF NOT EXISTS `edu_study_plan`(
     `id`                  BIGINT       NOT NULL AUTO_INCREMENT,
     `student_id`          BIGINT       NOT NULL COMMENT '学生ID',
     `target_knowledge_id` BIGINT       DEFAULT NULL COMMENT '目标知识点ID',
@@ -374,9 +353,8 @@ CREATE TABLE `edu_study_plan`(
 
 COMMENT ON TABLE `edu_study_plan` IS '学习计划表';
 
-DROP TABLE IF EXISTS `edu_study_plan_item`;
 
-CREATE TABLE `edu_study_plan_item`(
+CREATE TABLE IF NOT EXISTS `edu_study_plan_item`(
     `id`              BIGINT       NOT NULL AUTO_INCREMENT,
     `plan_id`         BIGINT       NOT NULL COMMENT '计划ID',
     `knowledge_id`    BIGINT       NOT NULL COMMENT '知识点ID',
@@ -391,9 +369,8 @@ CREATE TABLE `edu_study_plan_item`(
 
 COMMENT ON TABLE `edu_study_plan_item` IS '学习计划明细表';
 
-DROP TABLE IF EXISTS `wrong_question`;
 
-CREATE TABLE `wrong_question`(
+CREATE TABLE IF NOT EXISTS `wrong_question`(
     `id`              BIGINT       NOT NULL AUTO_INCREMENT,
     `student_id`      BIGINT       NOT NULL COMMENT '学生ID',
     `question_id`     BIGINT       NOT NULL COMMENT '题目ID',
@@ -445,8 +422,7 @@ ALTER TABLE `edu_study_plan_item` ALTER COLUMN `id` RESTART WITH 100;
 
 
 
-DROP TABLE IF EXISTS `edu_learning_state`;
-CREATE TABLE `edu_learning_state`(
+CREATE TABLE IF NOT EXISTS `edu_learning_state`(
     `id`              BIGINT       NOT NULL AUTO_INCREMENT,
     `student_id`      BIGINT       NOT NULL COMMENT '学生ID',
     `knowledge_id`    BIGINT       NOT NULL COMMENT '知识点ID',
@@ -458,8 +434,7 @@ CREATE TABLE `edu_learning_state`(
 );
 COMMENT ON TABLE `edu_learning_state` IS '知识点学习状态表（持久化 LearningStateMachine）';
 
-DROP TABLE IF EXISTS `edu_achievement`;
-CREATE TABLE `edu_achievement`(
+CREATE TABLE IF NOT EXISTS `edu_achievement`(
     `id`              BIGINT       NOT NULL AUTO_INCREMENT,
     `student_id`      BIGINT       NOT NULL COMMENT '学生ID',
     `code`            VARCHAR(50)  NOT NULL COMMENT '成就编码',

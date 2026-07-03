@@ -2,7 +2,7 @@
 -- Data: data_agent_supplement
 -- ============================================
 
-INSERT INTO `conversation_message` (`id`, `session_id`, `user_id`, `agent_id`, `tenant_id`, `role`, `content`, `create_time`) VALUES
+INSERT IGNORE INTO `conversation_message` (`id`, `session_id`, `user_id`, `agent_id`, `tenant_id`, `role`, `content`, `create_time`) VALUES
 -- 小明（user_id=1）与 TeacherAgent 的数学对话
 (1,  'session-math-001', 1, 'tutor-bot',       1, 'user',     '老师，什么是绝对值？能给我讲一下吗？',    '2026-06-28 09:00:00'),
 (2,  'session-math-001', 1, 'tutor-bot',       1, 'assistant','绝对值就是一个数在数轴上到原点的距离，用符号 |a| 表示。比如 |-5| = 5，表示-5这个点到原点的距离是5个单位。', '2026-06-28 09:01:00'),
@@ -26,7 +26,7 @@ INSERT INTO `conversation_message` (`id`, `session_id`, `user_id`, `agent_id`, `
 (17, 'session-practice-001', 1, 'math-practice-bot', 1, 'user',     '1. 9  2. 0  3. 7 或 -7', '2026-07-01 08:01:00'),
 (18, 'session-practice-001', 1, 'math-practice-bot', 1, 'assistant','全部正确！🎉 你掌握得很好。特别是第三题，能想到正负两个解，说明你对绝对值的概念理解到位了。', '2026-07-01 08:01:30');
 
-INSERT INTO `long_term_memory` (`id`, `user_id`, `agent_id`, `tenant_id`, `category`, `memory_key`, `content`, `importance`, `source`, `create_time`) VALUES
+INSERT IGNORE INTO `long_term_memory` (`id`, `user_id`, `agent_id`, `tenant_id`, `category`, `memory_key`, `content`, `importance`, `source`, `create_time`) VALUES
 -- 小明（user_id=1）
 (1, 1, 'tutor-bot',        1, 'learning_style',  'xiaoming_style',       '小明偏向视觉型学习，喜欢通过图形和数轴理解概念。绝对值概念偏弱，需要多练习。', 0.9, 'session-math-001', '2026-06-28 09:10:00'),
 (2, 1, 'tutor-bot',        1, 'weakness',        'xiaoming_abs_weakness','绝对值比较大小、绝对值方程漏解是薄弱环节。建议多出这类题目。', 0.85, 'session-practice-001', '2026-07-01 08:05:00'),
@@ -41,7 +41,7 @@ INSERT INTO `long_term_memory` (`id`, `user_id`, `agent_id`, `tenant_id`, `categ
 (9, 0, 'knowledge-tutor',  1, 'weakness',        'xiaohua_eng_weakness', '小华英语口语流利度需加强，词汇量约200词。建议从日常对话入手提升。', 0.8, 'session-eng-001', '2026-06-30 10:08:00'),
 (10, 0, 'knowledge-tutor', 1, 'preference',      'xiaohua_goal',         '小华目标是能进行简单的英语日常对话，侧重听说能力的培养。', 0.7, 'session-eng-001', '2026-06-30 10:12:00');
 
-INSERT INTO `agent_execution` (`id`, `execution_id`, `agent_id`, `version`, `user_id`, `session_id`, `tenant_id`, `node_id`, `node_type`, `input_data`, `output_data`, `status`, `error_message`, `start_time`, `end_time`, `duration_ms`) VALUES
+INSERT IGNORE INTO `agent_execution` (`id`, `execution_id`, `agent_id`, `version`, `user_id`, `session_id`, `tenant_id`, `node_id`, `node_type`, `input_data`, `output_data`, `status`, `error_message`, `start_time`, `end_time`, `duration_ms`) VALUES
 -- 小明 tutor-bot 执行：teach 节点
 (1,  'exec-001-aaaa', 'tutor-bot',  'v1.0.0', 1, 'session-math-001', 1, 'abilityQuery', 'TRANSFORM',
  '{"studentId":1,"knowledgeId":5,"query":"什么是绝对值？"}',

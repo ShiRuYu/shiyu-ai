@@ -2,9 +2,8 @@
 -- Schema: schema_auth
 -- ============================================
 
-DROP TABLE IF EXISTS `tenant`;
 
-CREATE TABLE `tenant` (
+CREATE TABLE IF NOT EXISTS `tenant` (
     `id`            BIGINT       NOT NULL AUTO_INCREMENT COMMENT '租户ID',
     `code`          VARCHAR(64)  NOT NULL COMMENT '租户编码',
     `name`          VARCHAR(128) COMMENT '租户名称',
@@ -22,13 +21,12 @@ CREATE TABLE `tenant` (
     PRIMARY KEY (`id`)
 );
 
-CREATE INDEX `idx_tenant_code` ON `tenant` (`code`);
+CREATE INDEX IF NOT EXISTS `idx_tenant_code` ON `tenant` (`code`);
 
 COMMENT ON TABLE `tenant` IS '租户表';
 
-DROP TABLE IF EXISTS `user`;
 
-CREATE TABLE `user` (
+CREATE TABLE IF NOT EXISTS `user` (
     `id` BIGINT NOT NULL AUTO_INCREMENT COMMENT '用户 ID',
     `username` VARCHAR(64) NOT NULL COMMENT '用户名',
     `password` VARCHAR(255) COMMENT '密码',
@@ -48,13 +46,12 @@ CREATE TABLE `user` (
     PRIMARY KEY (`id`)
 );
 
-CREATE INDEX `idx_username` ON `user` (`username`);
+CREATE INDEX IF NOT EXISTS `idx_username` ON `user` (`username`);
 
 COMMENT ON TABLE `user` IS '用户表';
 
-DROP TABLE IF EXISTS `role`;
 
-CREATE TABLE `role` (
+CREATE TABLE IF NOT EXISTS `role` (
     `id` BIGINT NOT NULL AUTO_INCREMENT COMMENT '角色 ID',
     `code` VARCHAR(64) NOT NULL COMMENT '角色编码',
     `name` VARCHAR(64) NOT NULL COMMENT '角色名称',
@@ -69,13 +66,12 @@ CREATE TABLE `role` (
     PRIMARY KEY (`id`)
 );
 
-CREATE INDEX `idx_code` ON `role` (`code`);
+CREATE INDEX IF NOT EXISTS `idx_code` ON `role` (`code`);
 
 COMMENT ON TABLE `role` IS '角色表';
 
-DROP TABLE IF EXISTS `menu`;
 
-CREATE TABLE `menu` (
+CREATE TABLE IF NOT EXISTS `menu` (
     `id` BIGINT NOT NULL AUTO_INCREMENT COMMENT '菜单 ID',
     `name` VARCHAR(64) NOT NULL COMMENT '菜单名称',
     `code` VARCHAR(64) NOT NULL COMMENT '菜单编码',
@@ -101,13 +97,12 @@ CREATE TABLE `menu` (
     PRIMARY KEY (`id`)
 );
 
-CREATE INDEX `idx_parent_id` ON `menu` (`parent_id`);
+CREATE INDEX IF NOT EXISTS `idx_parent_id` ON `menu` (`parent_id`);
 
 COMMENT ON TABLE `menu` IS '菜单表';
 
-DROP TABLE IF EXISTS `user_workspace_role`;
 
-CREATE TABLE `user_workspace_role` (
+CREATE TABLE IF NOT EXISTS `user_workspace_role` (
     `user_id`      BIGINT NOT NULL COMMENT '用户 ID',
     `workspace_id` BIGINT NOT NULL COMMENT '工作空间 ID',
     `role_id`      BIGINT NOT NULL COMMENT '角色 ID',
@@ -119,15 +114,14 @@ CREATE TABLE `user_workspace_role` (
     PRIMARY KEY (`user_id`, `workspace_id`, `role_id`)
 );
 
-CREATE INDEX `idx_uwr_workspace` ON `user_workspace_role` (`workspace_id`);
+CREATE INDEX IF NOT EXISTS `idx_uwr_workspace` ON `user_workspace_role` (`workspace_id`);
 
-CREATE INDEX `idx_uwr_role` ON `user_workspace_role` (`role_id`);
+CREATE INDEX IF NOT EXISTS `idx_uwr_role` ON `user_workspace_role` (`role_id`);
 
 COMMENT ON TABLE `user_workspace_role` IS '用户空间角色关联表';
 
-DROP TABLE IF EXISTS `role_workspace_menu`;
 
-CREATE TABLE `role_workspace_menu` (
+CREATE TABLE IF NOT EXISTS `role_workspace_menu` (
     `role_id`      BIGINT NOT NULL COMMENT '角色 ID',
     `workspace_id` BIGINT NOT NULL COMMENT '工作空间 ID',
     `menu_id`      BIGINT NOT NULL COMMENT '菜单 ID',
@@ -135,13 +129,12 @@ CREATE TABLE `role_workspace_menu` (
     PRIMARY KEY (`role_id`, `workspace_id`, `menu_id`)
 );
 
-CREATE INDEX `idx_rwm_menu_id` ON `role_workspace_menu` (`menu_id`);
+CREATE INDEX IF NOT EXISTS `idx_rwm_menu_id` ON `role_workspace_menu` (`menu_id`);
 
 COMMENT ON TABLE `role_workspace_menu` IS '角色工作空间菜单关联表';
 
-DROP TABLE IF EXISTS `auth_code`;
 
-CREATE TABLE `auth_code` (
+CREATE TABLE IF NOT EXISTS `auth_code` (
     `id` BIGINT NOT NULL AUTO_INCREMENT COMMENT '权限码 ID',
     `code` VARCHAR(64) NOT NULL COMMENT '权限编码',
     `name` VARCHAR(128) COMMENT '权限名称',
@@ -156,15 +149,14 @@ CREATE TABLE `auth_code` (
     PRIMARY KEY (`id`)
 );
 
-CREATE INDEX `idx_role_code` ON `auth_code` (`role_id`, `code`);
+CREATE INDEX IF NOT EXISTS `idx_role_code` ON `auth_code` (`role_id`, `code`);
 
-CREATE INDEX `idx_auth_code` ON `auth_code` (`code`);
+CREATE INDEX IF NOT EXISTS `idx_auth_code` ON `auth_code` (`code`);
 
 COMMENT ON TABLE `auth_code` IS '权限码表';
 
-DROP TABLE IF EXISTS `workspace`;
 
-CREATE TABLE `workspace` (
+CREATE TABLE IF NOT EXISTS `workspace` (
     `id` BIGINT NOT NULL AUTO_INCREMENT COMMENT '工作空间 ID',
     `parent_id` BIGINT DEFAULT 0 COMMENT '父工作空间 ID',
     `name` VARCHAR(64) NOT NULL COMMENT '工作空间名称',
@@ -183,13 +175,12 @@ CREATE TABLE `workspace` (
     PRIMARY KEY (`id`)
 );
 
-CREATE INDEX `idx_workspace_parent_id` ON `workspace` (`parent_id`);
+CREATE INDEX IF NOT EXISTS `idx_workspace_parent_id` ON `workspace` (`parent_id`);
 
 COMMENT ON TABLE `workspace` IS '工作空间表';
 
-DROP TABLE IF EXISTS `user_workspace_role`;
 
-CREATE TABLE `user_workspace_role` (
+CREATE TABLE IF NOT EXISTS `user_workspace_role` (
     `user_id`      BIGINT NOT NULL COMMENT '用户 ID',
     `workspace_id` BIGINT NOT NULL COMMENT '工作空间 ID',
     `role_id`      BIGINT NOT NULL COMMENT '角色 ID',
@@ -201,9 +192,9 @@ CREATE TABLE `user_workspace_role` (
     PRIMARY KEY (`user_id`, `workspace_id`, `role_id`)
 );
 
-CREATE INDEX `idx_uwr_workspace` ON `user_workspace_role` (`workspace_id`);
+CREATE INDEX IF NOT EXISTS `idx_uwr_workspace` ON `user_workspace_role` (`workspace_id`);
 
-CREATE INDEX `idx_uwr_role` ON `user_workspace_role` (`role_id`);
+CREATE INDEX IF NOT EXISTS `idx_uwr_role` ON `user_workspace_role` (`role_id`);
 
 COMMENT ON TABLE `user_workspace_role` IS '用户空间角色关联表';
 

@@ -2,9 +2,8 @@
 -- Schema: schema_record
 -- ============================================
 
-DROP TABLE IF EXISTS `profile`;
 
-CREATE TABLE profile (
+CREATE TABLE IF NOT EXISTS profile (
     id BIGINT NOT NULL AUTO_INCREMENT COMMENT '人物ID',
     name VARCHAR(64) NOT NULL COMMENT '姓名',
     tenant_id BIGINT NOT NULL COMMENT '租户ID',
@@ -21,13 +20,12 @@ CREATE TABLE profile (
     PRIMARY KEY (id)
 );
 
-CREATE INDEX idx_profile_workspace ON profile (workspace_id);
+CREATE INDEX IF NOT EXISTS idx_profile_workspace ON profile (workspace_id);
 
 COMMENT ON TABLE profile IS '人物表';
 
-DROP TABLE IF EXISTS `profile_member`;
 
-CREATE TABLE profile_member (
+CREATE TABLE IF NOT EXISTS profile_member (
     id BIGINT NOT NULL AUTO_INCREMENT COMMENT '关系ID',
     profile_id BIGINT NOT NULL COMMENT '人物ID',
     user_id BIGINT NOT NULL COMMENT '用户ID',
@@ -41,15 +39,14 @@ CREATE TABLE profile_member (
     PRIMARY KEY (id)
 );
 
-CREATE INDEX idx_profile_user ON profile_member (profile_id, user_id);
+CREATE INDEX IF NOT EXISTS idx_profile_user ON profile_member (profile_id, user_id);
 
-CREATE INDEX idx_pm_workspace ON profile_member (workspace_id);
+CREATE INDEX IF NOT EXISTS idx_pm_workspace ON profile_member (workspace_id);
 
 COMMENT ON TABLE profile_member IS '人物成员关系表';
 
-DROP TABLE IF EXISTS `timeline_event`;
 
-CREATE TABLE timeline_event (
+CREATE TABLE IF NOT EXISTS timeline_event (
     id BIGINT NOT NULL AUTO_INCREMENT COMMENT '事件ID',
     profile_id BIGINT NOT NULL COMMENT '人物ID',
     title VARCHAR(255) COMMENT '事件标题',
@@ -66,15 +63,14 @@ CREATE TABLE timeline_event (
     PRIMARY KEY (id)
 );
 
-CREATE INDEX idx_profile_time ON timeline_event (profile_id, event_time);
+CREATE INDEX IF NOT EXISTS idx_profile_time ON timeline_event (profile_id, event_time);
 
-CREATE INDEX idx_te_workspace ON timeline_event (workspace_id);
+CREATE INDEX IF NOT EXISTS idx_te_workspace ON timeline_event (workspace_id);
 
 COMMENT ON TABLE timeline_event IS '时间轴事件表';
 
-DROP TABLE IF EXISTS `record`;
 
-CREATE TABLE record (
+CREATE TABLE IF NOT EXISTS record (
     id BIGINT NOT NULL AUTO_INCREMENT COMMENT '记录ID',
     event_id BIGINT NOT NULL COMMENT '事件ID',
     tenant_id BIGINT NOT NULL COMMENT '租户ID',
@@ -90,15 +86,14 @@ CREATE TABLE record (
     PRIMARY KEY (id)
 );
 
-CREATE INDEX idx_event ON record (event_id);
+CREATE INDEX IF NOT EXISTS idx_event ON record (event_id);
 
-CREATE INDEX idx_record_workspace ON record (workspace_id);
+CREATE INDEX IF NOT EXISTS idx_record_workspace ON record (workspace_id);
 
 COMMENT ON TABLE record IS '记录内容表';
 
-DROP TABLE IF EXISTS `media`;
 
-CREATE TABLE media (
+CREATE TABLE IF NOT EXISTS media (
     id BIGINT NOT NULL AUTO_INCREMENT COMMENT '附件ID',
     record_id BIGINT NOT NULL COMMENT '记录ID',
     url VARCHAR(500) NOT NULL COMMENT '文件URL',
@@ -119,15 +114,14 @@ CREATE TABLE media (
     PRIMARY KEY (id)
 );
 
-CREATE INDEX idx_record ON media (record_id);
+CREATE INDEX IF NOT EXISTS idx_record ON media (record_id);
 
-CREATE INDEX idx_media_workspace ON media (workspace_id);
+CREATE INDEX IF NOT EXISTS idx_media_workspace ON media (workspace_id);
 
 COMMENT ON TABLE media IS '附件表';
 
-DROP TABLE IF EXISTS `tag`;
 
-CREATE TABLE tag (
+CREATE TABLE IF NOT EXISTS tag (
     id BIGINT NOT NULL AUTO_INCREMENT COMMENT '标签ID',
     name VARCHAR(50) NOT NULL COMMENT '标签名称',
     tenant_id BIGINT NOT NULL COMMENT '租户ID',
@@ -139,15 +133,14 @@ CREATE TABLE tag (
     PRIMARY KEY (id)
 );
 
-CREATE INDEX idx_name_creator ON tag (name, create_by);
+CREATE INDEX IF NOT EXISTS idx_name_creator ON tag (name, create_by);
 
-CREATE INDEX idx_tag_workspace ON tag (workspace_id);
+CREATE INDEX IF NOT EXISTS idx_tag_workspace ON tag (workspace_id);
 
 COMMENT ON TABLE tag IS '标签表';
 
-DROP TABLE IF EXISTS `record_tag`;
 
-CREATE TABLE record_tag (
+CREATE TABLE IF NOT EXISTS record_tag (
     record_id BIGINT NOT NULL COMMENT '记录ID',
     tag_id BIGINT NOT NULL COMMENT '标签ID',
     tenant_id BIGINT NOT NULL COMMENT '租户ID',
@@ -155,7 +148,7 @@ CREATE TABLE record_tag (
     PRIMARY KEY (record_id, tag_id)
 );
 
-CREATE INDEX idx_rt_workspace ON record_tag (workspace_id);
+CREATE INDEX IF NOT EXISTS idx_rt_workspace ON record_tag (workspace_id);
 
 COMMENT ON TABLE record_tag IS '记录标签关联表';
 
