@@ -12,6 +12,7 @@ import com.shiyu.ai.common.core.utils.PasswordUtils;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.tuple.Pair;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
 import java.util.Map;
@@ -76,12 +77,14 @@ public class UserServiceImpl implements UserService {
     }
 
     @Override
+    @Transactional(rollbackFor = Exception.class)
     public boolean deleteUser(Long userId) {
         log.info("删除用户，userId: {}", userId);
         return userRepository.deleteById(userId);
     }
 
     @Override
+    @Transactional(rollbackFor = Exception.class)
     public boolean updateUser(Long userId, UserBO userBO) {
         log.info("修改用户，userId: {}", userId);
         UserBO existingUser = userRepository.selectById(userId);
@@ -94,18 +97,23 @@ public class UserServiceImpl implements UserService {
     }
 
     @Override
+    @Transactional(rollbackFor = Exception.class)
     public boolean resetUserPassword(Long userId, String password) {
         log.info("重置用户密码，userId: {}", userId);
         UserBO userBO = userRepository.selectById(userId);
         if (userBO == null) {
             return false;
         }
-        
-        userBO.setPassword(PasswordUtils.encode(password));
+
+        String newPassword = (password == null || password.isBlank())
+                ? PasswordUtils.generateRandomPassword()
+                : password;
+        userBO.setPassword(PasswordUtils.encode(newPassword));
         return userRepository.update(userBO);
     }
 
     @Override
+    @Transactional(rollbackFor = Exception.class)
     public Long createUser(UserBO userBO) {
         log.info("新增用户: {}", userBO.getUsername());
         if (userBO.getPassword() == null || userBO.getPassword().isBlank()) {
@@ -118,6 +126,7 @@ public class UserServiceImpl implements UserService {
     }
 
     @Override
+    @Transactional(rollbackFor = Exception.class)
     public boolean changePassword(Long userId, String oldPassword, String newPassword) {
         log.info("修改密码，userId: {}", userId);
         UserBO userBO = userRepository.selectById(userId);

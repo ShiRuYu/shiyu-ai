@@ -28,7 +28,7 @@ import java.util.List;
 import java.util.Set;
 
 @RestController
-@RequestMapping("/api/v1/knowledge")
+@RequestMapping("/api/knowledge")
 @RequiredArgsConstructor
 @Tag(name = "知识点管理")
 @Validated

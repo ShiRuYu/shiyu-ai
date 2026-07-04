@@ -2,6 +2,8 @@ package com.shiyu.ai.common.core.utils;
 
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 
+import java.security.SecureRandom;
+
 /**
  * 密码加密工具类（BCrypt）
  * 提供密码加密和验证功能
@@ -9,11 +11,24 @@ import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 public class PasswordUtils {
 
     private static final BCryptPasswordEncoder PASSWORD_ENCODER = new BCryptPasswordEncoder();
+    private static final SecureRandom SECURE_RANDOM = new SecureRandom();
+    private static final String CHARS = "ABCDEFGHJKLMNPQRSTUVWXYZabcdefghjkmnpqrstuvwxyz23456789!@#$%";
+
+    /**
+     * 生成随机密码（12 位，含大小写字母、数字、特殊字符）
+     */
+    public static String generateRandomPassword() {
+        StringBuilder sb = new StringBuilder(12);
+        for (int i = 0; i < 12; i++) {
+            sb.append(CHARS.charAt(SECURE_RANDOM.nextInt(CHARS.length())));
+        }
+        return sb.toString();
+    }
 
     /**
      * 系统默认密码（新增用户时若未设置密码则使用此值）
      */
-    public static final String DEFAULT_PASSWORD = "123456";
+    public static final String DEFAULT_PASSWORD = generateRandomPassword();
 
     /**
      * 加密密码

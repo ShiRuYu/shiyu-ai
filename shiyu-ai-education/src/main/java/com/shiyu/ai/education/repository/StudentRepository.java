@@ -6,6 +6,8 @@ import com.shiyu.ai.dal.mapper.education.StudentMapper;
 import jakarta.annotation.Resource;
 import org.springframework.stereotype.Component;
 
+import java.util.List;
+
 @Component
 public class StudentRepository {
 
@@ -20,11 +22,20 @@ public class StudentRepository {
         return studentMapper.selectOneByQuery(QueryWrapper.create().eq("user_id", userId));
     }
 
+    public List<StudentDO> selectAll() {
+        return studentMapper.selectListByQuery(
+                QueryWrapper.create().orderBy("grade", true).orderBy("name", true));
+    }
+
     public int insert(StudentDO student) {
         return studentMapper.insert(student);
     }
 
     public int update(StudentDO student) {
         return studentMapper.update(student);
+    }
+
+    public int deleteById(Long id) {
+        return studentMapper.deleteById(id);
     }
 }

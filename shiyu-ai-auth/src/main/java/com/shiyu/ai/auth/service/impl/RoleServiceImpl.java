@@ -12,6 +12,7 @@ import com.shiyu.ai.common.core.utils.MapstructUtils;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.tuple.Pair;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
 
@@ -37,10 +38,11 @@ public class RoleServiceImpl implements RoleService {
         Pair<Long, List<RoleBO>> result = roleRepository.selectPage(pageNo, pageSize, name);
         List<RoleBO> roleBOs = result.getRight();
         
-        // 为每个角色填充权限菜单ID列表
+        // 批量查询菜单权限（修复 N+1 问题）
+        List<Long> roleIds = roleBOs.stream().map(RoleBO::getId).toList();
+        java.util.Map<Long, List<Long>> roleMenusMap = roleRepository.selectMenuIdsByRoleIds(roleIds);
         for (RoleBO roleBO : roleBOs) {
-            List<Long> menuIds = roleRepository.selectMenuIdsByRoleId(roleBO.getId());
-            roleBO.setPermissions(menuIds);
+            roleBO.setPermissions(roleMenusMap.getOrDefault(roleBO.getId(), java.util.Collections.emptyList()));
         }
         
         List<RoleVO> roleVOs = MapstructUtils.convert(roleBOs, RoleVO.class);
@@ -59,6 +61,7 @@ public class RoleServiceImpl implements RoleService {
     }
 
     @Override
+    @Transactional(rollbackFor = Exception.class)
     public boolean updateRole(Long id, RoleBO roleBO) {
         log.info("修改角色，id: {}", id);
         
@@ -83,6 +86,7 @@ public class RoleServiceImpl implements RoleService {
     }
 
     @Override
+    @Transactional(rollbackFor = Exception.class)
     public boolean deleteRole(Long id) {
         log.info("删除角色，id: {}", id);
         
@@ -94,6 +98,7 @@ public class RoleServiceImpl implements RoleService {
     }
 
     @Override
+    @Transactional(rollbackFor = Exception.class)
     public boolean removeUserRoles(Long roleId, List<Long> userIds) {
         Long workspaceId = LoginContextHolder.getCurrentWorkspaceId();
         log.info("取消分配角色，roleId: {}, userIds: {}, workspaceId: {}", roleId, userIds, workspaceId);
@@ -115,6 +120,7 @@ public class RoleServiceImpl implements RoleService {
     }
 
     @Override
+    @Transactional(rollbackFor = Exception.class)
     public boolean assignUserRoles(Long roleId, List<Long> userIds) {
         Long workspaceId = LoginContextHolder.getCurrentWorkspaceId();
         log.info("分配角色，roleId: {}, userIds: {}, workspaceId: {}", roleId, userIds, workspaceId);
@@ -134,6 +140,7 @@ public class RoleServiceImpl implements RoleService {
     }
 
     @Override
+    @Transactional(rollbackFor = Exception.class)
     public boolean createRole(RoleBO roleBO) {
         log.info("新增角色");
         

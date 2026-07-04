@@ -18,6 +18,11 @@ public class ExamServiceImpl implements ExamService {
     private final ExamRepository examRepository;
 
     @Override
+    public List<ExamDO> listAll() {
+        return examRepository.selectAll();
+    }
+
+    @Override
     public ExamDO getById(Long id) {
         return examRepository.selectById(id);
     }

@@ -130,25 +130,25 @@ INSERT IGNORE INTO `menu` (`id`, `name`, `code`, `type`, `parent_id`, `tenant_id
 VALUES (1300, '数据中心', 'AnalyticsCenter', 'CATALOG', NULL, 1, '/analytics-center', NULL, 'lucide:bar-chart-3', '', '', TRUE, NULL, '学习数据分析', TRUE, '1', 999, 0, '0', '0');
 
 INSERT IGNORE INTO `menu` (`id`, `name`, `code`, `type`, `parent_id`, `tenant_id`, `path`, `redirect`, `icon`, `component`, `layout`, `keep_alive`, `method`, `description`, `show`, `status`, `order`, `del_flag`, `create_by`, `update_by`)
-VALUES (1301, '学习报告', 'AnalyticsReport', 'MENU', 1505, 1, '/analytics-center/report', NULL, 'lucide:file-bar-chart', '/analytics/report/index', '', TRUE, NULL, 'AI生成学习报告', TRUE, '1', 1, 0, '0', '0');
+VALUES (1301, '学习报告', 'AnalyticsReport', 'MENU', 1300, 1, '/analytics-center/report', NULL, 'lucide:file-bar-chart', '/analytics/report/index', '', TRUE, NULL, 'AI生成学习报告', TRUE, '1', 1, 0, '0', '0');
 
 INSERT IGNORE INTO `menu` (`id`, `name`, `code`, `type`, `parent_id`, `tenant_id`, `path`, `redirect`, `icon`, `component`, `layout`, `keep_alive`, `method`, `description`, `show`, `status`, `order`, `del_flag`, `create_by`, `update_by`)
 VALUES (130101, '报告查看', 'analytics:report:view', 'BUTTON', 1301, 1, NULL, NULL, NULL, NULL, NULL, NULL, 'GET', '查看学习报告', TRUE, '1', 1, 0, '0', '0');
 
 INSERT IGNORE INTO `menu` (`id`, `name`, `code`, `type`, `parent_id`, `tenant_id`, `path`, `redirect`, `icon`, `component`, `layout`, `keep_alive`, `method`, `description`, `show`, `status`, `order`, `del_flag`, `create_by`, `update_by`)
-VALUES (1302, '能力雷达', 'AnalyticsRadar', 'MENU', 1505, 1, '/analytics-center/radar', NULL, 'lucide:radar', '/analytics/ability-radar/index', '', TRUE, NULL, 'Bloom六维度能力雷达图', TRUE, '1', 2, 0, '0', '0');
+VALUES (1302, '能力雷达', 'AnalyticsRadar', 'MENU', 1300, 1, '/analytics-center/radar', NULL, 'lucide:radar', '/analytics/ability-radar/index', '', TRUE, NULL, 'Bloom六维度能力雷达图', TRUE, '1', 2, 0, '0', '0');
 
 INSERT IGNORE INTO `menu` (`id`, `name`, `code`, `type`, `parent_id`, `tenant_id`, `path`, `redirect`, `icon`, `component`, `layout`, `keep_alive`, `method`, `description`, `show`, `status`, `order`, `del_flag`, `create_by`, `update_by`)
 VALUES (130201, '雷达查看', 'analytics:radar:view', 'BUTTON', 1302, 1, NULL, NULL, NULL, NULL, NULL, NULL, 'GET', '查看能力雷达图', TRUE, '1', 1, 0, '0', '0');
 
 INSERT IGNORE INTO `menu` (`id`, `name`, `code`, `type`, `parent_id`, `tenant_id`, `path`, `redirect`, `icon`, `component`, `layout`, `keep_alive`, `method`, `description`, `show`, `status`, `order`, `del_flag`, `create_by`, `update_by`)
-VALUES (1303, '学习趋势', 'AnalyticsTrend', 'MENU', 1505, 1, '/analytics-center/trend', NULL, 'lucide:trending-up', '/analytics/trend/index', '', TRUE, NULL, '学习趋势折线图', TRUE, '1', 3, 0, '0', '0');
+VALUES (1303, '学习趋势', 'AnalyticsTrend', 'MENU', 1300, 1, '/analytics-center/trend', NULL, 'lucide:trending-up', '/analytics/trend/index', '', TRUE, NULL, '学习趋势折线图', TRUE, '1', 3, 0, '0', '0');
 
 INSERT IGNORE INTO `menu` (`id`, `name`, `code`, `type`, `parent_id`, `tenant_id`, `path`, `redirect`, `icon`, `component`, `layout`, `keep_alive`, `method`, `description`, `show`, `status`, `order`, `del_flag`, `create_by`, `update_by`)
 VALUES (130301, '趋势查看', 'analytics:trend:view', 'BUTTON', 1303, 1, NULL, NULL, NULL, NULL, NULL, NULL, 'GET', '查看学习趋势', TRUE, '1', 1, 0, '0', '0');
 
 INSERT IGNORE INTO `menu` (`id`, `name`, `code`, `type`, `parent_id`, `tenant_id`, `path`, `redirect`, `icon`, `component`, `layout`, `keep_alive`, `method`, `description`, `show`, `status`, `order`, `del_flag`, `create_by`, `update_by`)
-VALUES (1304, '薄弱分析', 'AnalyticsWeak', 'MENU', 1505, 1, '/analytics-center/weak', NULL, 'lucide:alert-triangle', '/analytics/weak-points/list', '', TRUE, NULL, '薄弱知识点分析', TRUE, '1', 4, 0, '0', '0');
+VALUES (1304, '薄弱分析', 'AnalyticsWeak', 'MENU', 1300, 1, '/analytics-center/weak', NULL, 'lucide:alert-triangle', '/analytics/weak-points/list', '', TRUE, NULL, '薄弱知识点分析', TRUE, '1', 4, 0, '0', '0');
 
 INSERT IGNORE INTO `menu` (`id`, `name`, `code`, `type`, `parent_id`, `tenant_id`, `path`, `redirect`, `icon`, `component`, `layout`, `keep_alive`, `method`, `description`, `show`, `status`, `order`, `del_flag`, `create_by`, `update_by`)
 VALUES (130401, '薄弱查看', 'analytics:weak:view', 'BUTTON', 1304, 1, NULL, NULL, NULL, NULL, NULL, NULL, 'GET', '查看薄弱知识点', TRUE, '1', 1, 0, '0', '0');
@@ -160,31 +160,31 @@ INSERT IGNORE INTO `menu` (`id`, `name`, `code`, `type`, `parent_id`, `tenant_id
 VALUES (1400, 'AI助手', 'AiTutor', 'CATALOG', NULL, 1, '/ai-tutor', NULL, 'lucide:bot', '', '', TRUE, NULL, 'AI教学助手', TRUE, '1', 999, 0, '0', '0');
 
 INSERT IGNORE INTO `menu` (`id`, `name`, `code`, `type`, `parent_id`, `tenant_id`, `path`, `redirect`, `icon`, `component`, `layout`, `keep_alive`, `method`, `description`, `show`, `status`, `order`, `del_flag`, `create_by`, `update_by`)
-VALUES (1401, 'AI讲解', 'AiTutorTeacher', 'MENU', 1506, 1, '/ai-tutor/teacher', NULL, 'lucide:graduation-cap', '/ai-tutor/teacher/index', '', TRUE, NULL, 'TeacherAgent知识点讲解', TRUE, '1', 1, 0, '0', '0');
+VALUES (1401, 'AI讲解', 'AiTutorTeacher', 'MENU', 1400, 1, '/ai-tutor/teacher', NULL, 'lucide:graduation-cap', '/ai-tutor/teacher/index', '', TRUE, NULL, 'TeacherAgent知识点讲解', TRUE, '1', 1, 0, '0', '0');
 
 INSERT IGNORE INTO `menu` (`id`, `name`, `code`, `type`, `parent_id`, `tenant_id`, `path`, `redirect`, `icon`, `component`, `layout`, `keep_alive`, `method`, `description`, `show`, `status`, `order`, `del_flag`, `create_by`, `update_by`)
 VALUES (140101, 'AI讲解', 'ai:teacher:execute', 'BUTTON', 1401, 1, NULL, NULL, NULL, NULL, NULL, NULL, 'POST', '执行AI讲解', TRUE, '1', 1, 0, '0', '0');
 
 INSERT IGNORE INTO `menu` (`id`, `name`, `code`, `type`, `parent_id`, `tenant_id`, `path`, `redirect`, `icon`, `component`, `layout`, `keep_alive`, `method`, `description`, `show`, `status`, `order`, `del_flag`, `create_by`, `update_by`)
-VALUES (1402, 'AI出题', 'AiTutorPractice', 'MENU', 1506, 1, '/ai-tutor/practice', NULL, 'lucide:pencil-ruler', '/ai-tutor/practice/index', '', TRUE, NULL, 'PracticeAgent智能出题', TRUE, '1', 2, 0, '0', '0');
+VALUES (1402, 'AI出题', 'AiTutorPractice', 'MENU', 1400, 1, '/ai-tutor/practice', NULL, 'lucide:pencil-ruler', '/ai-tutor/practice/index', '', TRUE, NULL, 'PracticeAgent智能出题', TRUE, '1', 2, 0, '0', '0');
 
 INSERT IGNORE INTO `menu` (`id`, `name`, `code`, `type`, `parent_id`, `tenant_id`, `path`, `redirect`, `icon`, `component`, `layout`, `keep_alive`, `method`, `description`, `show`, `status`, `order`, `del_flag`, `create_by`, `update_by`)
 VALUES (140201, 'AI出题', 'ai:practice:execute', 'BUTTON', 1402, 1, NULL, NULL, NULL, NULL, NULL, NULL, 'POST', '执行AI出题', TRUE, '1', 1, 0, '0', '0');
 
 INSERT IGNORE INTO `menu` (`id`, `name`, `code`, `type`, `parent_id`, `tenant_id`, `path`, `redirect`, `icon`, `component`, `layout`, `keep_alive`, `method`, `description`, `show`, `status`, `order`, `del_flag`, `create_by`, `update_by`)
-VALUES (1403, 'AI规划', 'AiTutorPlanner', 'MENU', 1506, 1, '/ai-tutor/planner', NULL, 'lucide:route', '/ai-tutor/planner/index', '', TRUE, NULL, 'PlannerAgent学习路径规划', TRUE, '1', 3, 0, '0', '0');
+VALUES (1403, 'AI规划', 'AiTutorPlanner', 'MENU', 1400, 1, '/ai-tutor/planner', NULL, 'lucide:route', '/ai-tutor/planner/index', '', TRUE, NULL, 'PlannerAgent学习路径规划', TRUE, '1', 3, 0, '0', '0');
 
 INSERT IGNORE INTO `menu` (`id`, `name`, `code`, `type`, `parent_id`, `tenant_id`, `path`, `redirect`, `icon`, `component`, `layout`, `keep_alive`, `method`, `description`, `show`, `status`, `order`, `del_flag`, `create_by`, `update_by`)
 VALUES (140301, 'AI规划', 'ai:planner:execute', 'BUTTON', 1403, 1, NULL, NULL, NULL, NULL, NULL, NULL, 'POST', '执行AI规划', TRUE, '1', 1, 0, '0', '0');
 
 INSERT IGNORE INTO `menu` (`id`, `name`, `code`, `type`, `parent_id`, `tenant_id`, `path`, `redirect`, `icon`, `component`, `layout`, `keep_alive`, `method`, `description`, `show`, `status`, `order`, `del_flag`, `create_by`, `update_by`)
-VALUES (1404, 'AI对话', 'AiTutorChat', 'MENU', 1506, 1, '/ai-tutor/chat', NULL, 'lucide:message-circle', '/ai-tutor/chat/index', '', TRUE, NULL, '通用AI对话', TRUE, '1', 4, 0, '0', '0');
+VALUES (1404, 'AI对话', 'AiTutorChat', 'MENU', 1400, 1, '/ai-tutor/chat', NULL, 'lucide:message-circle', '/ai-tutor/chat/index', '', TRUE, NULL, '通用AI对话', TRUE, '1', 4, 0, '0', '0');
 
 INSERT IGNORE INTO `menu` (`id`, `name`, `code`, `type`, `parent_id`, `tenant_id`, `path`, `redirect`, `icon`, `component`, `layout`, `keep_alive`, `method`, `description`, `show`, `status`, `order`, `del_flag`, `create_by`, `update_by`)
 VALUES (140401, 'AI对话', 'ai:chat:execute', 'BUTTON', 1404, 1, NULL, NULL, NULL, NULL, NULL, NULL, 'POST', '执行AI对话', TRUE, '1', 1, 0, '0', '0');
 
 INSERT IGNORE INTO `menu` (`id`, `name`, `code`, `type`, `parent_id`, `tenant_id`, `path`, `redirect`, `icon`, `component`, `layout`, `keep_alive`, `method`, `description`, `show`, `status`, `order`, `del_flag`, `create_by`, `update_by`)
-VALUES (1405, 'AI报告', 'AiTutorReport', 'MENU', 1506, 1, '/ai-tutor/report', NULL, 'lucide:file-output', '/ai-tutor/report-gen/index', '', TRUE, NULL, 'ReportAgent生成学习报告', TRUE, '1', 5, 0, '0', '0');
+VALUES (1405, 'AI报告', 'AiTutorReport', 'MENU', 1400, 1, '/ai-tutor/report', NULL, 'lucide:file-output', '/ai-tutor/report-gen/index', '', TRUE, NULL, 'ReportAgent生成学习报告', TRUE, '1', 5, 0, '0', '0');
 
 INSERT IGNORE INTO `menu` (`id`, `name`, `code`, `type`, `parent_id`, `tenant_id`, `path`, `redirect`, `icon`, `component`, `layout`, `keep_alive`, `method`, `description`, `show`, `status`, `order`, `del_flag`, `create_by`, `update_by`)
 VALUES (140501, 'AI报告', 'ai:report:execute', 'BUTTON', 1405, 1, NULL, NULL, NULL, NULL, NULL, NULL, 'POST', '生成AI报告', TRUE, '1', 1, 0, '0', '0');

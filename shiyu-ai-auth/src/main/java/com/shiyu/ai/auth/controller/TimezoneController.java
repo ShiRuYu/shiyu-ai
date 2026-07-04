@@ -23,7 +23,7 @@ import java.util.stream.Collectors;
 @Slf4j
 @Tag(name = "Timezone", description = "Timezone")
 @RestController
-@RequestMapping("/timezone")
+@RequestMapping("/api/timezone")
 public class TimezoneController {
 
     private final UserRepository userRepository;

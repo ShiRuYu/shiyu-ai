@@ -7,13 +7,14 @@ import com.shiyu.ai.education.dto.ChapterResponse;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
+import jakarta.validation.Valid;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
 
 @Tag(name = "章节管理")
 @RestController
-@RequestMapping("/api/v1/chapter")
+@RequestMapping("/api/chapter")
 @RequiredArgsConstructor
 public class ChapterController {
 
@@ -42,14 +43,14 @@ public class ChapterController {
 
     @PostMapping
     @Operation(summary = "创建章节")
-    public Result<ChapterResponse> create(@RequestBody ChapterDO chapter) {
+    public Result<ChapterResponse> create(@Valid @RequestBody ChapterDO chapter) {
         ChapterDO created = chapterService.create(chapter);
         return Result.success(toResponse(created));
     }
 
     @PutMapping("/{id}")
     @Operation(summary = "更新章节")
-    public Result<Void> update(@PathVariable Long id, @RequestBody ChapterDO chapter) {
+    public Result<Void> update(@PathVariable Long id, @Valid @RequestBody ChapterDO chapter) {
         chapter.setId(id);
         chapterService.update(chapter);
         return Result.success();

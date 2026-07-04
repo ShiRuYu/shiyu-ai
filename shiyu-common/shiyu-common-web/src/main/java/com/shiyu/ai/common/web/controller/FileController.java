@@ -21,7 +21,7 @@ import java.util.UUID;
 @Slf4j
 @Tag(name = "File", description = "File")
 @RestController
-@RequestMapping("/upload")
+@RequestMapping("/api/upload")
 public class FileController {
 
     @Value("${shiyu.upload.path:./uploads}")

@@ -12,7 +12,7 @@ import org.springframework.web.bind.annotation.*;
 import java.util.List;
 
 @RestController
-@RequestMapping("/api/v1/knowledge/documents")
+@RequestMapping("/api/knowledge/documents")
 @RequiredArgsConstructor
 @Tag(name = "文档知识管理")
 @Validated

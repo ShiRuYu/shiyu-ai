@@ -15,6 +15,7 @@ import org.apache.commons.lang3.tuple.Pair;
 import org.springframework.stereotype.Component;
 
 import java.util.List;
+import java.util.Map;
 import java.util.stream.Collectors;
 
 import static com.mybatisflex.core.query.QueryMethods.column;
@@ -144,6 +145,29 @@ public class RoleRepository {
     }
 
     /**
+     * 批量查询多个角色的菜单ID列表（修复 N+1）
+     */
+    public Map<Long, List<Long>> selectMenuIdsByRoleIds(List<Long> roleIds) {
+        if (roleIds == null || roleIds.isEmpty()) {
+            return Map.of();
+        }
+        QueryWrapper qw = QueryWrapper.create()
+            .select(column(RoleWorkspaceMenuDO::getRoleId), column(RoleWorkspaceMenuDO::getMenuId))
+            .from(RoleWorkspaceMenuDO.class)
+            .innerJoin(MenuDO.class)
+                .on(column(RoleWorkspaceMenuDO::getMenuId).eq(column(MenuDO::getId)))
+            .where(RoleWorkspaceMenuDO::getRoleId).in(roleIds)
+            .and(MenuDO::getStatus).eq("1")
+            .and(MenuDO::getDelFlag).eq(0);
+        qw.orderBy(column(MenuDO::getOrder).asc(), column(MenuDO::getId).asc());
+        List<RoleWorkspaceMenuDO> list = roleWorkspaceMenuMapper.selectListByQuery(qw);
+        return list.stream().collect(Collectors.groupingBy(
+            RoleWorkspaceMenuDO::getRoleId,
+            Collectors.mapping(RoleWorkspaceMenuDO::getMenuId, Collectors.toList())
+        ));
+    }
+
+    /**
      * 批量插入角色-菜单关联
      */
     public void insertRoleMenus(Long roleId, List<Long> menuIds) {
@@ -154,14 +178,15 @@ public class RoleRepository {
         Long workspaceId = com.shiyu.ai.common.core.domain.LoginContextHolder.getCurrentWorkspaceId();
         Long tenantId = com.shiyu.ai.common.core.domain.LoginContextHolder.getTenantId();
         
-        for (Long menuId : menuIds) {
+        List<RoleWorkspaceMenuDO> list = menuIds.stream().map(menuId -> {
             RoleWorkspaceMenuDO rwm = new RoleWorkspaceMenuDO();
             rwm.setRoleId(roleId);
             rwm.setWorkspaceId(workspaceId);
             rwm.setMenuId(menuId);
             rwm.setTenantId(tenantId);
-            roleWorkspaceMenuMapper.insert(rwm);
-        }
+            return rwm;
+        }).toList();
+        roleWorkspaceMenuMapper.insertBatch(list);
     }
 
     /**

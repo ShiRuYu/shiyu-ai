@@ -2,11 +2,9 @@ spring:
   h2:
     console:
       enabled: true
-      #进行该配置，你就可以通过YOUR_URL/h2访问h2 web consloe。YOUR_URL是你程序的访问URl。默认为/h2-console
       path: /h2
-      # 进行该配置后，h2 web consloe就可以在远程访问了。否则只能在本机访问。
       settings:
-        web-allow-others: true
+        web-allow-others: false
 
 mybatis-flex:
   datasource:

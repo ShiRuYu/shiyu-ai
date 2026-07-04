@@ -9,6 +9,7 @@ import io.swagger.v3.oas.annotations.Operation;
 import lombok.extern.slf4j.Slf4j;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
+import jakarta.validation.Valid;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -16,7 +17,7 @@ import java.util.List;
 @Slf4j
 @Tag(name = "课程管理")
 @RestController
-@RequestMapping("/api/v1/course")
+@RequestMapping("/api/course")
 @RequiredArgsConstructor
 public class CourseController {
 
@@ -52,14 +53,14 @@ public class CourseController {
 
     @PostMapping
     @Operation(summary = "创建课程")
-    public Result<CourseResponse> create(@RequestBody CourseDO course) {
+    public Result<CourseResponse> create(@Valid @RequestBody CourseDO course) {
         CourseDO created = courseService.create(course);
         return Result.success(toResponse(created));
     }
 
     @PutMapping("/{id}")
     @Operation(summary = "更新课程")
-    public Result<Void> update(@PathVariable Long id, @RequestBody CourseDO course) {
+    public Result<Void> update(@PathVariable Long id, @Valid @RequestBody CourseDO course) {
         course.setId(id);
         courseService.update(course);
         return Result.success();

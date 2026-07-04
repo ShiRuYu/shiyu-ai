@@ -8,13 +8,14 @@ import com.shiyu.ai.education.plan.StudyPlanService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
+import jakarta.validation.Valid;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
 
 @Tag(name = "学习计划")
 @RestController
-@RequestMapping("/api/v1/plan")
+@RequestMapping("/api/plan")
 @RequiredArgsConstructor
 public class StudyPlanController {
 
@@ -43,14 +44,14 @@ public class StudyPlanController {
 
     @PostMapping
     @Operation(summary = "创建学习计划")
-    public Result<StudyPlanResponse> create(@RequestBody StudyPlanDO plan) {
+    public Result<StudyPlanResponse> create(@Valid @RequestBody StudyPlanDO plan) {
         StudyPlanDO created = studyPlanService.create(plan);
         return Result.success(toResponse(created));
     }
 
     @PutMapping("/{id}")
     @Operation(summary = "更新学习计划")
-    public Result<Void> update(@PathVariable Long id, @RequestBody StudyPlanDO plan) {
+    public Result<Void> update(@PathVariable Long id, @Valid @RequestBody StudyPlanDO plan) {
         plan.setId(id);
         studyPlanService.update(plan);
         return Result.success();

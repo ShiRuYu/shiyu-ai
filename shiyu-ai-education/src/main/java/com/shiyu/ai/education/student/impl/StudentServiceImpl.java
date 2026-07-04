@@ -8,6 +8,8 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.util.List;
+
 @Slf4j
 @Service
 @RequiredArgsConstructor
@@ -33,8 +35,19 @@ public class StudentServiceImpl implements StudentService {
     }
 
     @Override
+    public List<StudentDO> listAll() {
+        return studentRepository.selectAll();
+    }
+
+    @Override
     @Transactional(rollbackFor = Exception.class)
     public void update(StudentDO student) {
         studentRepository.update(student);
+    }
+
+    @Override
+    @Transactional(rollbackFor = Exception.class)
+    public void deleteById(Long id) {
+        studentRepository.deleteById(id);
     }
 }

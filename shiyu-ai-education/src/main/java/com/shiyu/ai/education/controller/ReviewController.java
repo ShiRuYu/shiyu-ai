@@ -8,13 +8,14 @@ import com.shiyu.ai.education.review.ReviewService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
+import jakarta.validation.Valid;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
 
 @Tag(name = "复习管理")
 @RestController
-@RequestMapping("/api/v1/review")
+@RequestMapping("/api/review")
 @RequiredArgsConstructor
 public class ReviewController {
 
@@ -44,14 +45,14 @@ public class ReviewController {
 
     @PostMapping
     @Operation(summary = "创建复习任务")
-    public Result<ReviewTaskResponse> create(@RequestBody ReviewTaskDO task) {
+    public Result<ReviewTaskResponse> create(@Valid @RequestBody ReviewTaskDO task) {
         ReviewTaskDO created = reviewService.create(task);
         return Result.success(toResponse(created));
     }
 
     @PutMapping("/{id}/complete")
     @Operation(summary = "完成复习任务")
-    public Result<Void> complete(@PathVariable Long id, @RequestBody CompleteReviewRequest request) {
+    public Result<Void> complete(@PathVariable Long id, @Valid @RequestBody CompleteReviewRequest request) {
         ReviewTaskDO task = reviewService.getById(id);
         if (task != null) {
             task.setStatus("COMPLETED");

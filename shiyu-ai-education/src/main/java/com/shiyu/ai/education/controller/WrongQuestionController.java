@@ -7,13 +7,14 @@ import com.shiyu.ai.education.question.WrongQuestionService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
+import jakarta.validation.Valid;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
 
 @Tag(name = "错题本")
 @RestController
-@RequestMapping("/api/v1/wrong-question")
+@RequestMapping("/api/wrong-question")
 @RequiredArgsConstructor
 public class WrongQuestionController {
 
@@ -35,14 +36,14 @@ public class WrongQuestionController {
 
     @PostMapping
     @Operation(summary = "添加错题")
-    public Result<WrongQuestionResponse> create(@RequestBody WrongQuestionDO wrongQuestion) {
+    public Result<WrongQuestionResponse> create(@Valid @RequestBody WrongQuestionDO wrongQuestion) {
         WrongQuestionDO created = wrongQuestionService.create(wrongQuestion);
         return Result.success(toResponse(created));
     }
 
     @PutMapping("/{id}")
     @Operation(summary = "更新错题")
-    public Result<Void> update(@PathVariable Long id, @RequestBody WrongQuestionDO wrongQuestion) {
+    public Result<Void> update(@PathVariable Long id, @Valid @RequestBody WrongQuestionDO wrongQuestion) {
         wrongQuestion.setId(id);
         wrongQuestionService.update(wrongQuestion);
         return Result.success();

@@ -7,13 +7,14 @@ import com.shiyu.ai.education.question.QuestionService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
+import jakarta.validation.Valid;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
 
 @Tag(name = "题目管理")
 @RestController
-@RequestMapping("/api/v1/question")
+@RequestMapping("/api/question")
 @RequiredArgsConstructor
 public class QuestionController {
 
@@ -50,14 +51,14 @@ public class QuestionController {
 
     @PostMapping
     @Operation(summary = "创建题目")
-    public Result<QuestionResponse> create(@RequestBody QuestionDO question) {
+    public Result<QuestionResponse> create(@Valid @RequestBody QuestionDO question) {
         QuestionDO created = questionService.create(question);
         return Result.success(toResponse(created));
     }
 
     @PutMapping("/{id}")
     @Operation(summary = "更新题目")
-    public Result<Void> update(@PathVariable Long id, @RequestBody QuestionDO question) {
+    public Result<Void> update(@PathVariable Long id, @Valid @RequestBody QuestionDO question) {
         question.setId(id);
         questionService.update(question);
         return Result.success();

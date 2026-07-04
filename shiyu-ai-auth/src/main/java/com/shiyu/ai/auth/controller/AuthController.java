@@ -24,7 +24,7 @@ import java.util.Map;
 @Slf4j
 @Tag(name = "Auth", description = "Auth")
 @RestController
-@RequestMapping("/auth")
+@RequestMapping("/api/auth")
 public class AuthController {
     
     private final AuthService authService;

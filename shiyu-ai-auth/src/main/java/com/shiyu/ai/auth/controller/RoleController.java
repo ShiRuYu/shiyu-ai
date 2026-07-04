@@ -21,7 +21,7 @@ import java.util.List;
 @Slf4j
 @Tag(name = "Role", description = "Role")
 @RestController
-@RequestMapping("/role")
+@RequestMapping("/admin/role")
 public class RoleController {
 
     private final RoleService roleService;

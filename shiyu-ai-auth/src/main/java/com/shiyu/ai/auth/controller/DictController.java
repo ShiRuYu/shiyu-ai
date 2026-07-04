@@ -19,7 +19,7 @@ import java.util.List;
 @Slf4j
 @Tag(name = "Dict", description = "Dict")
 @RestController
-@RequestMapping("/dict")
+@RequestMapping("/admin/dict")
 public class DictController {
 
     private final DictService dictService;

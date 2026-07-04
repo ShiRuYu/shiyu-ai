@@ -21,7 +21,7 @@ import java.util.List;
 @Slf4j
 @Tag(name = "Ai Platform", description = "Ai Platform")
 @RestController
-@RequestMapping("/ai/platform")
+@RequestMapping("/admin/platform")
 public class AiPlatformController {
 
     private final AiPlatformService aiPlatformService;

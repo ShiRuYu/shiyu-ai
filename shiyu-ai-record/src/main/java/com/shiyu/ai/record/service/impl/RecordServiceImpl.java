@@ -6,6 +6,7 @@ import com.shiyu.ai.record.bo.RecordBO;
 import jakarta.annotation.Resource;
 import org.apache.commons.lang3.tuple.Pair;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
 
@@ -28,16 +29,19 @@ public class RecordServiceImpl implements RecordService {
     }
 
     @Override
+    @Transactional(rollbackFor = Exception.class)
     public RecordBO create(RecordBO recordBO) {
         return recordRepository.insert(recordBO);
     }
 
     @Override
+    @Transactional(rollbackFor = Exception.class)
     public boolean update(RecordBO recordBO) {
         return recordRepository.update(recordBO);
     }
 
     @Override
+    @Transactional(rollbackFor = Exception.class)
     public boolean delete(Long id) {
         return recordRepository.deleteById(id);
     }

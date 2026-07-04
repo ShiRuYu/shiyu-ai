@@ -11,6 +11,11 @@ import java.util.List;
 public interface ExamService {
 
     /**
+     * List All
+     */
+    List<ExamDO> listAll();
+
+    /**
      * Get By Id
      * @return 处理结果
      */

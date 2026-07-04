@@ -10,13 +10,14 @@ import com.shiyu.ai.education.dto.WeakPointResponse;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
+import jakarta.validation.Valid;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
 
 @Tag(name = "学习分析")
 @RestController
-@RequestMapping("/api/v1/analytics")
+@RequestMapping("/api/analytics")
 @RequiredArgsConstructor
 public class AnalyticsController {
 
@@ -39,7 +40,7 @@ public class AnalyticsController {
 
     @PostMapping("/records")
     @Operation(summary = "创建学习记录")
-    public Result<StudyRecordDO> createRecord(@RequestBody StudyRecordDO record) {
+    public Result<StudyRecordDO> createRecord(@Valid @RequestBody StudyRecordDO record) {
         StudyRecordDO created = analyticsService.createRecord(record);
         return Result.success(created);
     }

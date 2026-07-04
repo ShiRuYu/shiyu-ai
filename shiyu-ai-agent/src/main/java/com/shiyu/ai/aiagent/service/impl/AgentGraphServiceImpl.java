@@ -93,6 +93,7 @@ public class AgentGraphServiceImpl implements AgentGraphService {
     }
 
     @Override
+    @Transactional(rollbackFor = Exception.class)
     public void addNode(String agentId, Long versionId, NodeConfigRequest request) {
         AgentVersionBO v = getVersionOrThrow(agentId, versionId);
         Map<String, Object> graphData = parseGraphConfig(v.getGraphConfig());
@@ -112,6 +113,7 @@ public class AgentGraphServiceImpl implements AgentGraphService {
     }
 
     @Override
+    @Transactional(rollbackFor = Exception.class)
     public void updateNode(String agentId, Long versionId, String nodeId, NodeConfigRequest request) {
         AgentVersionBO v = getVersionOrThrow(agentId, versionId);
         Map<String, Object> graphData = parseGraphConfig(v.getGraphConfig());
@@ -132,6 +134,7 @@ public class AgentGraphServiceImpl implements AgentGraphService {
     }
 
     @Override
+    @Transactional(rollbackFor = Exception.class)
     @SuppressWarnings("unchecked")
     public void deleteNode(String agentId, Long versionId, String nodeId) {
         AgentVersionBO v = getVersionOrThrow(agentId, versionId);
@@ -157,6 +160,7 @@ public class AgentGraphServiceImpl implements AgentGraphService {
     }
 
     @Override
+    @Transactional(rollbackFor = Exception.class)
     @SuppressWarnings("unchecked")
     public void addEdge(String agentId, Long versionId, EdgeRequest request) {
         AgentVersionBO v = getVersionOrThrow(agentId, versionId);
@@ -181,6 +185,7 @@ public class AgentGraphServiceImpl implements AgentGraphService {
     }
 
     @Override
+    @Transactional(rollbackFor = Exception.class)
     @SuppressWarnings("unchecked")
     public void deleteEdge(String agentId, Long versionId, String sourceNodeId, String targetNodeId) {
         AgentVersionBO v = getVersionOrThrow(agentId, versionId);
@@ -211,6 +216,7 @@ public class AgentGraphServiceImpl implements AgentGraphService {
     }
 
     @Override
+    @Transactional(rollbackFor = Exception.class)
     public void updateCanvasConfig(String agentId, Long versionId, String canvasConfig) {
         AgentVersionBO v = getVersionOrThrow(agentId, versionId);
         v.setCanvasConfig(canvasConfig);
@@ -284,7 +290,8 @@ public class AgentGraphServiceImpl implements AgentGraphService {
                                     }
                                 }
                             }
-                        } catch (Exception ignored) {
+                        } catch (Exception ex) {
+                            log.warn("获取节点入参定义失败, nodeId={}", nodeId, ex);
                         }
                     }
                 }
@@ -326,7 +333,8 @@ public class AgentGraphServiceImpl implements AgentGraphService {
                         .edges(getMap(graphData, "edges"))
                         .conditionalEdges(getMap(graphData, "conditionalEdges"))
                         .build();
-            } catch (Exception ignored) {
+            } catch (Exception ex) {
+                log.warn("解析图谱配置失败, versionId={}", v.getId(), ex);
             }
         }
         return AgentVersionDetailVO.builder()

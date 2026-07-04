@@ -27,7 +27,7 @@ import java.util.stream.Collectors;
 @Slf4j
 @Tag(name = "User", description = "User")
 @RestController
-@RequestMapping("/user")
+@RequestMapping("/admin/user")
 public class UserController {
 
     private final UserService userService;

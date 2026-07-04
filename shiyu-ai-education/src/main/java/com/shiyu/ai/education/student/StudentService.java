@@ -2,6 +2,8 @@ package com.shiyu.ai.education.student;
 
 import com.shiyu.ai.dal.dataobject.education.StudentDO;
 
+import java.util.List;
+
 /**
  * Student 接口
  */
@@ -28,9 +30,19 @@ public interface StudentService {
     StudentDO create(StudentDO student);
 
     /**
+     * List All
+     */
+    List<StudentDO> listAll();
+
+    /**
      * Update
      * @param StudentDO StudentDO
      * @return 处理结果
      */
     void update(StudentDO student);
+
+    /**
+     * Delete By Id
+     */
+    void deleteById(Long id);
 }

@@ -7,13 +7,14 @@ import com.shiyu.ai.education.textbook.TextbookService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
+import jakarta.validation.Valid;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
 
 @Tag(name = "教材管理")
 @RestController
-@RequestMapping("/api/v1/textbook")
+@RequestMapping("/api/textbook")
 @RequiredArgsConstructor
 public class TextbookController {
 
@@ -43,14 +44,14 @@ public class TextbookController {
 
     @PostMapping
     @Operation(summary = "创建教材")
-    public Result<TextbookResponse> create(@RequestBody TextbookDO textbook) {
+    public Result<TextbookResponse> create(@Valid @RequestBody TextbookDO textbook) {
         TextbookDO created = textbookService.create(textbook);
         return Result.success(toResponse(created));
     }
 
     @PutMapping("/{id}")
     @Operation(summary = "更新教材")
-    public Result<Void> update(@PathVariable Long id, @RequestBody TextbookDO textbook) {
+    public Result<Void> update(@PathVariable Long id, @Valid @RequestBody TextbookDO textbook) {
         textbook.setId(id);
         textbookService.update(textbook);
         return Result.success();

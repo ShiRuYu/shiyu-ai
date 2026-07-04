@@ -20,7 +20,7 @@ import java.util.List;
 @Slf4j
 @Tag(name = "Intent Def", description = "Intent Def")
 @RestController
-@RequestMapping("/intent/def")
+@RequestMapping("/admin/intent")
 public class IntentDefController {
 
     private final IntentDefService intentDefService;

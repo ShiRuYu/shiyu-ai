@@ -7,13 +7,14 @@ import com.shiyu.ai.education.resource.ResourceService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
+import jakarta.validation.Valid;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
 
 @Tag(name = "资源管理")
 @RestController
-@RequestMapping("/api/v1/resource")
+@RequestMapping("/api/resource")
 @RequiredArgsConstructor
 public class ResourceController {
 
@@ -49,14 +50,14 @@ public class ResourceController {
 
     @PostMapping
     @Operation(summary = "创建资源")
-    public Result<ResourceResponse> create(@RequestBody ResourceDO resource) {
+    public Result<ResourceResponse> create(@Valid @RequestBody ResourceDO resource) {
         ResourceDO created = resourceService.create(resource);
         return Result.success(toResponse(created));
     }
 
     @PutMapping("/{id}")
     @Operation(summary = "更新资源")
-    public Result<Void> update(@PathVariable Long id, @RequestBody ResourceDO resource) {
+    public Result<Void> update(@PathVariable Long id, @Valid @RequestBody ResourceDO resource) {
         resource.setId(id);
         resourceService.update(resource);
         return Result.success();

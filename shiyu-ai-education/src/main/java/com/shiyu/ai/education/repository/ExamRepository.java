@@ -14,6 +14,11 @@ public class ExamRepository {
     @Resource
     private ExamMapper examMapper;
 
+    public List<ExamDO> selectAll() {
+        return examMapper.selectListByQuery(
+                QueryWrapper.create().orderBy("created_at", false));
+    }
+
     public ExamDO selectById(Long id) {
         return examMapper.selectOneById(id);
     }

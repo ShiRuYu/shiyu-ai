@@ -7,13 +7,14 @@ import com.shiyu.ai.education.subject.SubjectService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
+import jakarta.validation.Valid;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
 
 @Tag(name = "学科管理")
 @RestController
-@RequestMapping("/api/v1/subject")
+@RequestMapping("/api/subject")
 @RequiredArgsConstructor
 public class SubjectController {
 
@@ -49,14 +50,14 @@ public class SubjectController {
 
     @PostMapping
     @Operation(summary = "创建学科")
-    public Result<SubjectResponse> create(@RequestBody SubjectDO subject) {
+    public Result<SubjectResponse> create(@Valid @RequestBody SubjectDO subject) {
         SubjectDO created = subjectService.create(subject);
         return Result.success(toResponse(created));
     }
 
     @PutMapping("/{id}")
     @Operation(summary = "更新学科")
-    public Result<Void> update(@PathVariable Long id, @RequestBody SubjectDO subject) {
+    public Result<Void> update(@PathVariable Long id, @Valid @RequestBody SubjectDO subject) {
         subject.setId(id);
         subjectService.update(subject);
         return Result.success();
