@@ -166,19 +166,22 @@ public class RagRetrievalNode extends BaseNode {
         }
     }
     
-    /**
-     * 从文档构建上下文
-     */
     private String buildContextFromDocuments(List<RagService.Document> documents) {
         StringBuilder context = new StringBuilder();
-        context.append("相关文档信息：\n\n");
-        
-        for (int i = 0; i < documents.size(); i++) {
-            RagService.Document doc = documents.get(i);
-            context.append("[文档 ").append(i + 1).append("]\n");
-            context.append(doc.content()).append("\n\n");
+        int docIndex = 0;
+
+        for (RagService.Document doc : documents) {
+            boolean isGraph = doc.metadata() != null
+                    && "graph_context".equals(doc.metadata().get("type"));
+            if (isGraph) {
+                context.append("[知识图谱上下文]\n");
+                context.append(doc.content()).append("\n\n");
+            } else {
+                context.append("[文档 ").append(++docIndex).append("]\n");
+                context.append(doc.content()).append("\n\n");
+            }
         }
-        
+
         return context.toString();
     }
     

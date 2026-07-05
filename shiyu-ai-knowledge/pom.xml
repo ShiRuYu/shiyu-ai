@@ -24,6 +24,10 @@
         </dependency>
         <dependency>
             <groupId>com.shiyu.ai</groupId>
+            <artifactId>shiyu-ai-core</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>com.shiyu.ai</groupId>
             <artifactId>shiyu-common-core</artifactId>
         </dependency>
         <dependency>
@@ -37,7 +41,8 @@
         <dependency>
             <groupId>com.yomahub</groupId>
             <artifactId>roguemap-core</artifactId>
-        </dependency>        <dependency>
+        </dependency>
+        <dependency>
             <groupId>com.yomahub</groupId>
             <artifactId>roguemap-memory</artifactId>
         </dependency>
@@ -46,5 +51,9 @@
             <groupId>org.apache.commons</groupId>
             <artifactId>commons-lang3</artifactId>
         </dependency>
+
+        <!-- VectorStore 后端（通过反射加载，按需添加） -->
+        <!-- HNSW: io.milvus:usearch -->
+        <!-- Qdrant: io.qdrant:qdrant-client -->
     </dependencies>
 </project>

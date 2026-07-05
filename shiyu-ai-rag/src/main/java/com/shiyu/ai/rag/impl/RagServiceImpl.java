@@ -1,5 +1,7 @@
 package com.shiyu.ai.rag.impl;
 
+import com.shiyu.ai.knowledge.rag.RagOrchestrator;
+import com.shiyu.ai.knowledge.rag.RagOrchestrator.RagResult;
 import com.shiyu.ai.knowledge.search.KnowledgeSearchService;
 import com.shiyu.ai.knowledge.search.SearchResult;
 import com.shiyu.ai.knowledge.service.DocumentKnowledgeService;
@@ -12,24 +14,20 @@ import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
 
-/**
- * RAG 检索服务实现
- * <p>
- * 委托 Knowledge 模块的搜索服务实现检索：
- * - knowledgeBaseId = "knowledge" → KnowledgeSearchService（知识点检索）
- * - 其他值（默认 "document"） → DocumentKnowledgeService（文档检索）
- */
 @Slf4j
 @Service
 public class RagServiceImpl implements RagService {
 
     private final KnowledgeSearchService knowledgeSearchService;
     private final DocumentKnowledgeService documentKnowledgeService;
+    private final RagOrchestrator ragOrchestrator;
 
     public RagServiceImpl(KnowledgeSearchService knowledgeSearchService,
-                          DocumentKnowledgeService documentKnowledgeService) {
+                          DocumentKnowledgeService documentKnowledgeService,
+                          RagOrchestrator ragOrchestrator) {
         this.knowledgeSearchService = knowledgeSearchService;
         this.documentKnowledgeService = documentKnowledgeService;
+        this.ragOrchestrator = ragOrchestrator;
     }
 
     @Override
@@ -44,7 +42,7 @@ public class RagServiceImpl implements RagService {
             if ("knowledge".equals(knowledgeBaseId)) {
                 return retrieveFromKnowledge(query, topK);
             } else {
-                return retrieveFromDocument(query, topK);
+                return retrieveFromRagOrchestrator(query, topK);
             }
         } catch (Exception e) {
             log.error("RAG 检索失败", e);
@@ -72,18 +70,31 @@ public class RagServiceImpl implements RagService {
         return new RagRetrievalResult(true, documents, null);
     }
 
-    private RagRetrievalResult retrieveFromDocument(String query, int topK) {
-        List<KnowledgeDocumentVO> results = documentKnowledgeService.search(query, topK);
-        List<Document> documents = results.stream()
-                .map(vo -> new Document(
-                        String.valueOf(vo.id()),
-                        vo.content(),
-                        1.0,
-                        Map.of("type", "document", "title", vo.title(), "docType", vo.docType())
-                ))
+    private RagRetrievalResult retrieveFromRagOrchestrator(String query, int topK) {
+        RagResult result = ragOrchestrator.retrieve(query, topK);
+
+        List<Document> documents = result.chunks().stream()
+                .map(chunk -> {
+                    String content = chunk.content();
+                    double score = chunk.score();
+                    return new Document(
+                            String.valueOf(chunk.metadata().getOrDefault("chunkIndex", "")),
+                            content,
+                            score,
+                            chunk.metadata()
+                    );
+                })
                 .collect(Collectors.toList());
 
-        log.info("文档检索完成: 返回 {} 条", documents.size());
+        String graphContext = result.graphContext();
+        if (!graphContext.isBlank()) {
+            documents.add(new Document(
+                    "graph_context", graphContext, 1.0,
+                    Map.of("type", "graph_context")));
+        }
+
+        log.info("RAG Orchestrator 检索完成: 返回 {} 条 chunk, graphContext={}",
+                result.chunks().size(), !graphContext.isBlank());
         return new RagRetrievalResult(true, documents, null);
     }
 }

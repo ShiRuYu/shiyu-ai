@@ -40,7 +40,8 @@ public class DatabaseInitializer implements ApplicationRunner {
             "db/migration/ddl/04__schema_memory.sql",
             "db/migration/ddl/05__schema_knowledge.sql",
             "db/migration/ddl/06__schema_education.sql",
-            "db/migration/ddl/07__schema_record.sql"
+            "db/migration/ddl/07__schema_record.sql",
+            "db/migration/ddl/08__schema_vector.sql"
     );
 
     /** DML 种子数据文件路径（按依赖顺序） */

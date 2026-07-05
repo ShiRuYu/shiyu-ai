@@ -1,6 +1,7 @@
 package com.shiyu.ai.knowledge.service.impl;
 
 import com.shiyu.ai.dal.dataobject.knowledge.KnowledgeDocumentDO;
+import com.shiyu.ai.knowledge.rag.DocumentIngestionService;
 import com.shiyu.ai.knowledge.repository.KnowledgeDocumentRepository;
 import com.shiyu.ai.knowledge.service.DocumentKnowledgeService;
 import com.yomahub.roguemap.memory.MemoryResult;
@@ -21,11 +22,14 @@ public class DocumentKnowledgeServiceImpl implements DocumentKnowledgeService {
 
     private final KnowledgeDocumentRepository documentRepository;
     private final RogueMemory knowledgeRogueMemory;
+    private final DocumentIngestionService ingestionService;
 
     public DocumentKnowledgeServiceImpl(KnowledgeDocumentRepository documentRepository,
-                                        @Qualifier("knowledgeKeywordMemory") RogueMemory knowledgeRogueMemory) {
+                                        @Qualifier("knowledgeKeywordMemory") RogueMemory knowledgeRogueMemory,
+                                        DocumentIngestionService ingestionService) {
         this.documentRepository = documentRepository;
         this.knowledgeRogueMemory = knowledgeRogueMemory;
+        this.ingestionService = ingestionService;
     }
 
     @Override
@@ -92,8 +96,11 @@ public class DocumentKnowledgeServiceImpl implements DocumentKnowledgeService {
         doc.setCreateTime(LocalDateTime.now());
         documentRepository.insert(doc);
 
-        // 同步到 RogueMemory
+        // 同步到 RogueMemory（保留兼容）
         indexDocument(doc, request.knowledgeIds());
+
+        // 同步到 VectorStore（ChunkSplit + Embed + H2 + VectorStore）
+        ingestionService.ingest(doc.getId(), doc.getContent());
 
         return toVO(doc);
     }
