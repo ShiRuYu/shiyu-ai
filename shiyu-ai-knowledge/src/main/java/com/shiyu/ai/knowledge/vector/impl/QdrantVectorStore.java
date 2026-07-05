@@ -63,8 +63,14 @@ public class QdrantVectorStore implements VectorStore {
                 Object valBuilder = valueClass.getMethod("newBuilder").invoke(null);
                 if (entry.getValue() instanceof String s) {
                     valBuilder = valBuilder.getClass().getMethod("setStringValue", String.class).invoke(valBuilder, s);
-                } else if (entry.getValue() instanceof Number n) {
-                    valBuilder = valBuilder.getClass().getMethod("setDoubleValue", double.class).invoke(valBuilder, n.doubleValue());
+                } else if (entry.getValue() instanceof Boolean b) {
+                    try {
+                        valBuilder = valBuilder.getClass().getMethod("setBoolValue", boolean.class).invoke(valBuilder, b);
+                    } catch (Exception ex) {
+                        log.warn("Qdrant metadata Boolean 处理失败: key={}", entry.getKey(), ex);
+                    }
+                } else {
+                    log.warn("Qdrant metadata 不支持的字段类型: key={}, type={}", entry.getKey(), entry.getValue().getClass().getName());
                 }
                 struct = struct.getClass().getMethod("putFields", String.class, valueClass)
                         .invoke(struct, entry.getKey(), valBuilder.getClass().getMethod("build").invoke(valBuilder));

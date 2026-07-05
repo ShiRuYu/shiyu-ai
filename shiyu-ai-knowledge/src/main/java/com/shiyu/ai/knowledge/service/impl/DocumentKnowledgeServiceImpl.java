@@ -68,6 +68,7 @@ public class DocumentKnowledgeServiceImpl implements DocumentKnowledgeService {
                 .namespace(NS_DOCUMENT)
                 .filter("knowledgeId", String.valueOf(knowledgeId))
                 .build();
+        // 空查询 + metadata filter：通过 knowledgeId 元数据字段过滤文档，不依赖文本匹配
         var results = knowledgeRogueMemory.search("", 50, opts);
         List<KnowledgeDocumentVO> list = new ArrayList<>();
         for (MemoryResult r : results) {
@@ -100,7 +101,7 @@ public class DocumentKnowledgeServiceImpl implements DocumentKnowledgeService {
         indexDocument(doc, request.knowledgeIds());
 
         // 同步到 VectorStore（ChunkSplit + Embed + H2 + VectorStore）
-        ingestionService.ingest(doc.getId(), doc.getContent());
+        ingestionService.ingest(doc.getId(), doc.getContent(), request.knowledgeIds());
 
         return toVO(doc);
     }
@@ -118,14 +119,14 @@ public class DocumentKnowledgeServiceImpl implements DocumentKnowledgeService {
         documentRepository.update(doc);
 
         // 更新 RogueMemory 索引
-        knowledgeRogueMemory.delete(id.toString());
+        knowledgeRogueMemory.delete(id.toString(), NS_DOCUMENT);
         indexDocument(doc, request.knowledgeIds());
     }
 
     @Override
     public void delete(Long id) {
         documentRepository.deleteById(id);
-        knowledgeRogueMemory.delete(id.toString());
+        knowledgeRogueMemory.delete(id.toString(), NS_DOCUMENT);
     }
 
     private void indexDocument(KnowledgeDocumentDO doc, List<Long> knowledgeIds) {
@@ -154,4 +155,14 @@ public class DocumentKnowledgeServiceImpl implements DocumentKnowledgeService {
         if (s == null || s.isBlank()) return List.of();
         return Arrays.stream(s.split(",")).map(Long::parseLong).toList();
     }
+
+    @Override
+    public void deleteByKnowledgeId(Long knowledgeId) {
+        var docs = documentRepository.selectAll();
+        for (var doc : docs) {
+            knowledgeRogueMemory.delete(String.valueOf(doc.getId()), NS_DOCUMENT);
+        }
+        log.info("已解除知识点 {} 与文档的关联并重建索引", knowledgeId);
+    }
+
 }

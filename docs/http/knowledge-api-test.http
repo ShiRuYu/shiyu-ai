@@ -1,0 +1,245 @@
+@baseUrl = http://localhost:9000
+
+### ============================================================
+### 0. 【必须先执行】登录获取 Token
+###    执行后 {{Login.response.body.$.data.accessToken}} 即为后续请求的 Bearer Token
+### ============================================================
+
+# @name Login
+POST {{baseUrl}}/api/auth/login
+Content-Type: application/json
+
+{
+  "username": "vben",
+  "password": "123456",
+  "captchaKey": "",
+  "captcha": ""
+}
+
+### ========== 知识引擎测试 ==========
+### 规范: 每个请求用 ### 注释说明，请求间用 ### 空行分隔
+
+### ==================================
+### 1. 知识点 CRUD
+### ==================================
+
+### 1.1 创建知识点
+POST {{baseUrl}}/api/knowledge
+Content-Type: application/json
+Authorization: Bearer {{Login.response.body.$.data.accessToken}}
+
+{
+  "code": "test-001",
+  "name": "测试知识点-绝对值",
+  "description": "这是一个测试知识点，用于验证知识引擎完整链路",
+  "difficulty": 2,
+  "category": "MATH",
+  "tags": "初一,有理数"
+}
+
+### 1.2 获取知识点详情
+GET {{baseUrl}}/api/knowledge/1
+Authorization: Bearer {{Login.response.body.$.data.accessToken}}
+
+### 1.3 分页查询知识点（不带过滤）
+GET {{baseUrl}}/api/knowledge?pageNum=1&pageSize=10
+Authorization: Bearer {{Login.response.body.$.data.accessToken}}
+
+### 1.4 分页查询知识点（按分类过滤）
+GET {{baseUrl}}/api/knowledge?pageNum=1&pageSize=10&category=MATH
+Authorization: Bearer {{Login.response.body.$.data.accessToken}}
+
+### 1.5 分页查询知识点（按关键词过滤）
+GET {{baseUrl}}/api/knowledge?pageNum=1&pageSize=10&keyword=绝对值
+Authorization: Bearer {{Login.response.body.$.data.accessToken}}
+
+### 1.6 修改知识点（验证索引同步）
+PUT {{baseUrl}}/api/knowledge/1
+Content-Type: application/json
+Authorization: Bearer {{Login.response.body.$.data.accessToken}}
+
+{
+  "name": "测试知识点-绝对值-updated",
+  "description": "更新后的描述-验证索引同步",
+  "difficulty": 3,
+  "category": "MATH",
+  "tags": "初一,有理数,数轴"
+}
+
+### 1.7 删除知识点（验证索引/图谱/关系同时清理）
+DELETE {{baseUrl}}/api/knowledge/1
+Authorization: Bearer {{Login.response.body.$.data.accessToken}}
+### ==================================
+### 2. 知识关系管理
+### ==================================
+
+### 2.1 创建多个知识点用于关系测试
+POST {{baseUrl}}/api/knowledge
+Content-Type: application/json
+Authorization: Bearer {{Login.response.body.$.data.accessToken}}
+
+{
+  "code": "rel-source-001",
+  "name": "源知识点-数轴",
+  "description": "关系测试-源知识点",
+  "difficulty": 1,
+  "category": "MATH"
+}
+
+### 2.2 创建目标知识点
+POST {{baseUrl}}/api/knowledge
+Content-Type: application/json
+Authorization: Bearer {{Login.response.body.$.data.accessToken}}
+
+{
+  "code": "rel-target-001",
+  "name": "目标知识点-相反数",
+  "description": "关系测试-目标知识点",
+  "difficulty": 2,
+  "category": "MATH"
+}
+
+### 2.3 创建关联知识点
+POST {{baseUrl}}/api/knowledge
+Content-Type: application/json
+Authorization: Bearer {{Login.response.body.$.data.accessToken}}
+
+{
+  "code": "rel-related-001",
+  "name": "相关知识点-有理数",
+  "description": "关系测试-相关知识点",
+  "difficulty": 1,
+  "category": "MATH"
+}
+
+### 2.4 添加前置关系
+POST {{baseUrl}}/api/knowledge/relation?sourceId=2&targetId=3&type=PRE&weight=1.0
+Authorization: Bearer {{Login.response.body.$.data.accessToken}}
+
+
+### 2.5 添加相关关系
+POST {{baseUrl}}/api/knowledge/relation?sourceId=2&targetId=4&type=RELATED&weight=0.8
+Authorization: Bearer {{Login.response.body.$.data.accessToken}}
+
+
+### 2.6 获取前置知识点列表
+GET {{baseUrl}}/api/knowledge/3/prerequisites-list
+Authorization: Bearer {{Login.response.body.$.data.accessToken}}
+
+### 2.7 获取后续知识点列表
+GET {{baseUrl}}/api/knowledge/2/subsequent-list
+Authorization: Bearer {{Login.response.body.$.data.accessToken}}
+
+### 2.8 获取知识图谱邻域
+GET {{baseUrl}}/api/knowledge/2/graph
+Authorization: Bearer {{Login.response.body.$.data.accessToken}}
+
+### 2.9 删除关系
+DELETE {{baseUrl}}/api/knowledge/relation?sourceId=2&targetId=4&type=RELATED
+Authorization: Bearer {{Login.response.body.$.data.accessToken}}
+
+### 2.10 获取学习路径
+GET {{baseUrl}}/api/knowledge/3/path
+Authorization: Bearer {{Login.response.body.$.data.accessToken}}
+
+### 2.11 获取缺失前置知识
+GET {{baseUrl}}/api/knowledge/3/prerequisites?masteredIds=4
+Authorization: Bearer {{Login.response.body.$.data.accessToken}}
+
+### ==================================
+### 3. 搜索测试
+### ==================================
+
+### 3.1 混合搜索（默认模式）
+GET {{baseUrl}}/api/knowledge/search?query=绝对值&topK=5&mode=HYBRID
+Authorization: Bearer {{Login.response.body.$.data.accessToken}}
+
+### 3.2 关键词搜索
+GET {{baseUrl}}/api/knowledge/search?query=绝对值&topK=5&mode=KEYWORD
+Authorization: Bearer {{Login.response.body.$.data.accessToken}}
+
+### 3.3 语义搜索
+GET {{baseUrl}}/api/knowledge/search?query=绝对值&topK=5&mode=SEMANTIC
+Authorization: Bearer {{Login.response.body.$.data.accessToken}}
+
+### 3.4 向量搜索
+GET {{baseUrl}}/api/knowledge/search?query=绝对值&topK=5&mode=VECTOR
+Authorization: Bearer {{Login.response.body.$.data.accessToken}}
+
+### 3.5 获取可用搜索模式
+GET {{baseUrl}}/api/knowledge/search/modes
+Authorization: Bearer {{Login.response.body.$.data.accessToken}}
+
+### ==================================
+### 4. 文档管理
+### ==================================
+
+### 4.1 创建文档
+POST {{baseUrl}}/api/knowledge/documents
+Content-Type: application/json
+Authorization: Bearer {{Login.response.body.$.data.accessToken}}
+
+{
+  "title": "测试文档-有理数概述",
+  "content": "有理数是整数和分数的统称。整数包括正整数、零和负整数。分数包括有限小数和无限循环小数。",
+  "docType": "ARTICLE",
+  "source": "系统测试",
+  "knowledgeIds": [2, 3]
+}
+
+### 4.2 获取文档详情
+GET {{baseUrl}}/api/knowledge/documents/1
+Authorization: Bearer {{Login.response.body.$.data.accessToken}}
+
+### 4.3 搜索文档
+GET {{baseUrl}}/api/knowledge/documents?keyword=有理数&topK=10
+Authorization: Bearer {{Login.response.body.$.data.accessToken}}
+
+### 4.4 根据知识点ID获取关联文档
+GET {{baseUrl}}/api/knowledge/documents/by-knowledge/2
+Authorization: Bearer {{Login.response.body.$.data.accessToken}}
+
+### 4.5 修改文档
+PUT {{baseUrl}}/api/knowledge/documents/1
+Content-Type: application/json
+Authorization: Bearer {{Login.response.body.$.data.accessToken}}
+
+{
+  "title": "测试文档-有理数概述-updated",
+  "content": "更新后的文档内容-验证索引同步。有理数是整数和分数的统称。",
+  "docType": "ARTICLE",
+  "source": "系统测试",
+  "knowledgeIds": [2]
+}
+
+### 4.6 删除文档
+DELETE {{baseUrl}}/api/knowledge/documents/1
+Authorization: Bearer {{Login.response.body.$.data.accessToken}}
+
+### ==================================
+### 5. 索引管理
+### ==================================
+
+### 5.1 重建索引（异步）
+POST {{baseUrl}}/api/knowledge/rebuild-index
+Authorization: Bearer {{Login.response.body.$.data.accessToken}}
+
+### 5.2 查看重建任务状态（请替换 taskId）
+GET {{baseUrl}}/api/knowledge/rebuild-index/REPLACE_WITH_TASK_ID
+Authorization: Bearer {{Login.response.body.$.data.accessToken}}
+
+### 5.3 查看所有重建任务
+GET {{baseUrl}}/api/knowledge/rebuild-index
+Authorization: Bearer {{Login.response.body.$.data.accessToken}}
+
+### 5.4 清理索引
+DELETE {{baseUrl}}/api/knowledge/index
+Authorization: Bearer {{Login.response.body.$.data.accessToken}}
+
+### ==================================
+### 6. 图谱重载
+### ==================================
+
+### 6.1 重新加载知识图谱
+POST {{baseUrl}}/api/knowledge/reload
+Authorization: Bearer {{Login.response.body.$.data.accessToken}}

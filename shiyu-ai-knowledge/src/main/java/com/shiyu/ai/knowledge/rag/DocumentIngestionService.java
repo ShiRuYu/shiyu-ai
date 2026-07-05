@@ -30,8 +30,7 @@ public class DocumentIngestionService {
         this.chunkRepository = chunkRepository;
         this.chunkSplitter = new ChineseChunkSplitter();
     }
-
-    public List<KnowledgeChunkDO> ingest(Long documentId, String content) {
+    public List<KnowledgeChunkDO> ingest(Long documentId, String content, List<Long> knowledgeIds) {
         List<Chunk> chunks = chunkSplitter.split(content);
         log.info("文档 {} 切分为 {} 个 Chunk", documentId, chunks.size());
 
@@ -46,7 +45,10 @@ public class DocumentIngestionService {
             meta.put("chunkIndex", chunk.index());
             meta.put("startPos", chunk.startPos());
             meta.put("endPos", chunk.endPos());
-
+            if (knowledgeIds != null && !knowledgeIds.isEmpty()) {
+                meta.put("knowledgeId", String.valueOf(knowledgeIds.get(0)));
+                meta.put("knowledgeIds", knowledgeIds.stream().map(String::valueOf).collect(java.util.stream.Collectors.joining(",")));
+            }
             String id = documentId + "_" + chunk.index();
 
             vectorRecords.add(new VectorRecord(id, vector, meta));

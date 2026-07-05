@@ -15,14 +15,13 @@ public class HnswVectorStore implements VectorStore {
 
     private final int dimension;
     private final Path indexPath;
-    private final Map<String, float[]> cache = new ConcurrentHashMap<>();
+    private final Map<String, VectorRecord> cache = new ConcurrentHashMap<>();
 
     private Object index;
 
     public HnswVectorStore(VectorStoreProperties properties) {
         this.dimension = properties.getDimension();
-        this.indexPath = Path.of(properties.getHnsw().getIndexPath()
-                .replace("${app.home}", System.getProperty("app.home", ".")));
+        this.indexPath = Path.of(properties.getDataDir(), "hnsw.index");
         initIndex();
     }
 
@@ -47,10 +46,10 @@ public class HnswVectorStore implements VectorStore {
 
     @Override
     public void upsert(VectorRecord record) {
-        cache.put(record.id(), record.vector());
+        cache.put(record.id(), record);
         try {
             if (index != null) {
-                long key = Long.parseLong(record.id());
+                long key = parseIdAsLong(record.id());
                 index.getClass().getMethod("add", long.class, float[].class)
                         .invoke(index, key, record.vector());
             }
@@ -75,10 +74,11 @@ public class HnswVectorStore implements VectorStore {
             List<VectorRecord> records = new ArrayList<>();
             for (long[] entry : idsAndDistances) {
                 String id = String.valueOf(entry[0]);
-                float[] vector = cache.get(id);
+                VectorRecord rec = cache.get(id);
+                float[] vector = rec != null ? rec.vector() : null;
                 float distance = Float.intBitsToFloat((int) entry[1]);
                 if (vector != null) {
-                    Map<String, Object> meta = new LinkedHashMap<>();
+                    Map<String, Object> meta = new LinkedHashMap<>(rec.metadata());
                     meta.put("_score", distance);
                     records.add(new VectorRecord(id, vector, meta));
                 }
@@ -100,7 +100,7 @@ public class HnswVectorStore implements VectorStore {
         cache.remove(id);
         if (index != null) {
             try {
-                long key = Long.parseLong(id);
+                long key = parseIdAsLong(id);
                 index.getClass().getMethod("remove", long.class).invoke(index, key);
             } catch (Exception e) {
                 log.error("HNSW delete 失败: id={}", id, e);
@@ -123,10 +123,11 @@ public class HnswVectorStore implements VectorStore {
     private List<VectorRecord> fallbackSearch(float[] queryVector, int topK) {
         return cache.entrySet().stream()
                 .map(e -> {
-                    float score = cosineSimilarity(queryVector, e.getValue());
-                    Map<String, Object> meta = new LinkedHashMap<>();
+                    VectorRecord rec = e.getValue();
+                    float score = cosineSimilarity(queryVector, rec.vector());
+                    Map<String, Object> meta = new LinkedHashMap<>(rec.metadata());
                     meta.put("_score", score);
-                    return new VectorRecord(e.getKey(), e.getValue(), meta);
+                    return new VectorRecord(e.getKey(), rec.vector(), meta);
                 })
                 .sorted((a, b) -> {
                     double sa = (double) a.metadata().getOrDefault("_score", 0.0);
@@ -145,6 +146,20 @@ public class HnswVectorStore implements VectorStore {
             normB += b[i] * b[i];
         }
         return (float) (dot / (Math.sqrt(normA) * Math.sqrt(normB) + 1e-10));
+    }
+
+    private long parseIdAsLong(String id) {
+        try {
+            return Long.parseLong(id);
+        } catch (NumberFormatException e) {
+            // Support format like "123_0" (docId_chunkIndex)
+            int underscore = id.indexOf('_');
+            if (underscore > 0) {
+                return Long.parseLong(id.substring(0, underscore));
+            }
+            // Fallback: use hash
+            return (long) id.hashCode();
+        }
     }
 
     public void save() {

@@ -130,7 +130,7 @@ public class KnowledgeSearchService {
                 String code = (String) r.metadata().getOrDefault("code", "");
                 String category = (String) r.metadata().getOrDefault("category", "");
                 double score = (double) r.metadata().getOrDefault("_score", 0.0);
-                list.add(new SearchResult(id, name, code, category, (int) Math.round(score * 100)));
+                list.add(new SearchResult(id, name, code, category, (float) score));
             } catch (Exception ignored) {}
         }
         return list;
@@ -152,12 +152,36 @@ public class KnowledgeSearchService {
 
     public void clearIndex() {
         for (var entry : memoryMap.entrySet()) {
-            log.info("清理 {} 索引", entry.getKey());
+            try {
+                entry.getValue().deleteByNamespace(NS_KNOWLEDGE);
+                log.info("已清理 {} 索引", entry.getKey());
+            } catch (Exception e) {
+                log.error("清理 {} 索引失败", entry.getKey(), e);
+            }
         }
         if (vectorStore != null) {
             vectorStore.rebuild();
             log.info("VectorStore 索引已清理");
         }
+    }
+
+    public void removeFromIndex(Long id) {
+        String idStr = String.valueOf(id);
+        for (var entry : memoryMap.entrySet()) {
+            try {
+                entry.getValue().delete(idStr);
+            } catch (Exception e) {
+                log.error("从 {} 移除索引失败: id={}", entry.getKey(), id, e);
+            }
+        }
+        if (vectorStore != null) {
+            try {
+                vectorStore.delete(VS_ID_PREFIX + idStr);
+            } catch (Exception e) {
+                log.error("从 VectorStore 移除索引失败: id={}", id, e);
+            }
+        }
+        log.info("已从搜索索引移除知识点: id={}", id);
     }
 
     private RogueMemory getFallbackMemory(SearchMode requestedMode) {
@@ -185,7 +209,13 @@ public class KnowledgeSearchService {
         meta.put("name", knowledgeDO.getName());
         meta.put("category", knowledgeDO.getCategory() != null ? knowledgeDO.getCategory() : "");
 
+        // Deduplicate memory instances to avoid indexing twice if KEYWORD and HYBRID share the same bean
+        Set<RogueMemory> deduped = new HashSet<>();
         for (var entry : memoryMap.entrySet()) {
+            if (!deduped.add(entry.getValue())) {
+                log.debug("Skip duplicate memory instance: {} (same as previous)", entry.getKey());
+                continue;
+            }
             try {
                 entry.getValue().add(content, meta, NS_KNOWLEDGE);
             } catch (Exception e) {
@@ -205,12 +235,14 @@ public class KnowledgeSearchService {
     }
 
     private List<SearchResult> toResults(List<MemoryResult> results) {
+        Set<Long> seen = new HashSet<>();
         List<SearchResult> list = new ArrayList<>();
         for (MemoryResult r : results) {
             var meta = r.getMetadata();
             if (meta == null) continue;
             try {
                 Long id = Long.parseLong(meta.getOrDefault("id", "0"));
+                if (!seen.add(id)) continue;
                 list.add(new SearchResult(
                         id,
                         meta.getOrDefault("name", ""),
