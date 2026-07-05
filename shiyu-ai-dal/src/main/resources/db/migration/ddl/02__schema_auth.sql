@@ -198,15 +198,3 @@ CREATE INDEX IF NOT EXISTS `idx_uwr_role` ON `user_workspace_role` (`role_id`);
 
 COMMENT ON TABLE `user_workspace_role` IS '用户空间角色关联表';
 
-ALTER TABLE `tenant` ALTER COLUMN `id` RESTART WITH 100;
-
-ALTER TABLE `user` ALTER COLUMN `id` RESTART WITH 100;
-
-ALTER TABLE `role` ALTER COLUMN `id` RESTART WITH 100;
-
-ALTER TABLE `menu` ALTER COLUMN `id` RESTART WITH 1000;
-
-ALTER TABLE `auth_code` ALTER COLUMN `id` RESTART WITH 100;
-
-ALTER TABLE `workspace` ALTER COLUMN `id` RESTART WITH 100;
-

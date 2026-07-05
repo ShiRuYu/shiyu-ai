@@ -84,6 +84,21 @@ public class KnowledgeRelationServiceImpl implements KnowledgeRelationService {
         knowledgeGraph.removeEdge(sourceId, targetId, type.name());
     }
 
+    @Override
+    @Transactional(rollbackFor = Exception.class)
+    public void removeAllRelations(Long knowledgeId) {
+        relationRepository.deleteBySourceIdOrTargetId(knowledgeId);
+        var sourceRelations = relationRepository.findBySourceId(knowledgeId);
+        for (var r : sourceRelations) {
+            knowledgeGraph.removeEdge(knowledgeId, r.getTargetId(), r.getRelationType());
+        }
+        var targetRelations = relationRepository.findByTargetId(knowledgeId);
+        for (var r : targetRelations) {
+            knowledgeGraph.removeEdge(r.getSourceId(), knowledgeId, r.getRelationType());
+        }
+        log.info("已移除知识点 {} 的所有关联关系", knowledgeId);
+    }
+
     private KnowledgeResponse toSimpleResponse(KnowledgeDO k) {
         return new KnowledgeResponse(
                 k.getId(), k.getCode(), k.getName(), k.getDescription(),

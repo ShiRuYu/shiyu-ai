@@ -29,5 +29,3 @@ CREATE INDEX IF NOT EXISTS `idx_dict_sort` ON `dict` (`dict_sort`);
 
 COMMENT ON TABLE `dict` IS '字典表';
 
-ALTER TABLE `dict` ALTER COLUMN `id` RESTART WITH 100;
-

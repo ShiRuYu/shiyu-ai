@@ -195,6 +195,13 @@ public class RogueMapGraphStore implements GraphStore, ApplicationRunner {
     }
 
     @Override
+    public void removeNode(Long id) {
+        rogueMap.remove(NODE_PREFIX + id);
+        rogueMap.remove(ADJ_PREFIX + id);
+        log.info("Removed graph node: id={}", id);
+    }
+
+    @Override
     public List<Long> topologicalSort(Long rootId) {
         List<Long> result = new ArrayList<>();
         Set<Long> visited = new HashSet<>();

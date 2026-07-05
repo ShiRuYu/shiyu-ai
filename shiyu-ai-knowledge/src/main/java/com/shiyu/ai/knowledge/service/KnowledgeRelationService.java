@@ -42,4 +42,9 @@ public interface KnowledgeRelationService {
      * @return 处理结果
      */
     void removeRelation(Long sourceId, Long targetId, RelationType type);
+
+    /**
+     * 移除指定知识点的所有关联关系
+     */
+    void removeAllRelations(Long knowledgeId);
 }

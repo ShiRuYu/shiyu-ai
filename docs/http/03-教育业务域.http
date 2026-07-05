@@ -1,4 +1,4 @@
-### ============================================================
+﻿### ============================================================
 ### 教育业务域 API
 ### 基础 URL: http://localhost:9000
 ### 种子数据: 学科(5)、教材(5)、章节(10)、学生(2)、教师(1)
@@ -14,7 +14,7 @@
 ### ============================================================
 
 # @name Login
-POST {{baseUrl}}/auth/login
+POST {{baseUrl}}/api/auth/login
 Content-Type: application/json
 
 {
@@ -30,19 +30,19 @@ Content-Type: application/json
 ### ============================================================
 
 ### 1. 获取学科列表
-GET {{baseUrl}}/api/v1/subject
+GET {{baseUrl}}/api/subject
 Authorization: Bearer {{Login.response.body.$.data.accessToken}}
 
 ### 2. 获取学科详情
-GET {{baseUrl}}/api/v1/subject/1
+GET {{baseUrl}}/api/subject/1
 Authorization: Bearer {{Login.response.body.$.data.accessToken}}
 
 ### 3. 按编码获取学科
-GET {{baseUrl}}/api/v1/subject/code/MATH
+GET {{baseUrl}}/api/subject/code/MATH
 Authorization: Bearer {{Login.response.body.$.data.accessToken}}
 
 ### 4. 按学段获取学科
-GET {{baseUrl}}/api/v1/subject/grade-level/K3
+GET {{baseUrl}}/api/subject/grade-level/K3
 Authorization: Bearer {{Login.response.body.$.data.accessToken}}
 
 ### ============================================================
@@ -50,15 +50,15 @@ Authorization: Bearer {{Login.response.body.$.data.accessToken}}
 ### ============================================================
 
 ### 5. 获取教材列表
-GET {{baseUrl}}/api/v1/textbook
+GET {{baseUrl}}/api/textbook
 Authorization: Bearer {{Login.response.body.$.data.accessToken}}
 
 ### 6. 获取教材详情
-GET {{baseUrl}}/api/v1/textbook/1
+GET {{baseUrl}}/api/textbook/1
 Authorization: Bearer {{Login.response.body.$.data.accessToken}}
 
 ### 7. 按学科和年级查询教材
-GET {{baseUrl}}/api/v1/textbook/subject/MATH/grade/7
+GET {{baseUrl}}/api/textbook/subject/MATH/grade/7
 Authorization: Bearer {{Login.response.body.$.data.accessToken}}
 
 ### ============================================================
@@ -66,15 +66,15 @@ Authorization: Bearer {{Login.response.body.$.data.accessToken}}
 ### ============================================================
 
 ### 8. 获取章节详情
-GET {{baseUrl}}/api/v1/chapter/1
+GET {{baseUrl}}/api/chapter/1
 Authorization: Bearer {{Login.response.body.$.data.accessToken}}
 
 ### 9. 按教材查询章节
-GET {{baseUrl}}/api/v1/chapter/textbook/1
+GET {{baseUrl}}/api/chapter/textbook/1
 Authorization: Bearer {{Login.response.body.$.data.accessToken}}
 
 ### 10. 获取章节树
-GET {{baseUrl}}/api/v1/chapter/textbook/1/tree
+GET {{baseUrl}}/api/chapter/textbook/1/tree
 Authorization: Bearer {{Login.response.body.$.data.accessToken}}
 
 ### ============================================================
@@ -82,19 +82,19 @@ Authorization: Bearer {{Login.response.body.$.data.accessToken}}
 ### ============================================================
 
 ### 11. 获取课程列表
-GET {{baseUrl}}/api/v1/course
+GET {{baseUrl}}/api/course
 Authorization: Bearer {{Login.response.body.$.data.accessToken}}
 
 ### 12. 获取课程详情
-GET {{baseUrl}}/api/v1/course/1
+GET {{baseUrl}}/api/course/1
 Authorization: Bearer {{Login.response.body.$.data.accessToken}}
 
 ### 13. 按学科查询课程
-GET {{baseUrl}}/api/v1/course/subject/MATH
+GET {{baseUrl}}/api/course/subject/MATH
 Authorization: Bearer {{Login.response.body.$.data.accessToken}}
 
 ### 14. 按年级查询课程
-GET {{baseUrl}}/api/v1/course/grade/7
+GET {{baseUrl}}/api/course/grade/7
 Authorization: Bearer {{Login.response.body.$.data.accessToken}}
 
 ### ============================================================
@@ -102,19 +102,19 @@ Authorization: Bearer {{Login.response.body.$.data.accessToken}}
 ### ============================================================
 
 ### 15. 获取题目详情
-GET {{baseUrl}}/api/v1/question/1
+GET {{baseUrl}}/api/question/1
 Authorization: Bearer {{Login.response.body.$.data.accessToken}}
 
 ### 16. 按学科和年级查询题目
-GET {{baseUrl}}/api/v1/question/subject/MATH/grade/7
+GET {{baseUrl}}/api/question/subject/MATH/grade/7
 Authorization: Bearer {{Login.response.body.$.data.accessToken}}
 
 ### 17. 按难度查询题目
-GET {{baseUrl}}/api/v1/question/difficulty/1
+GET {{baseUrl}}/api/question/difficulty/1
 Authorization: Bearer {{Login.response.body.$.data.accessToken}}
 
 ### 18. 按类型查询题目
-GET {{baseUrl}}/api/v1/question/type/CHOICE
+GET {{baseUrl}}/api/question/type/CHOICE
 Authorization: Bearer {{Login.response.body.$.data.accessToken}}
 
 ### ============================================================
@@ -122,7 +122,7 @@ Authorization: Bearer {{Login.response.body.$.data.accessToken}}
 ### ============================================================
 
 ### 19. 获取学生错题列表
-GET {{baseUrl}}/api/v1/wrong-question/student/1
+GET {{baseUrl}}/api/wrong-question/student/1
 Authorization: Bearer {{Login.response.body.$.data.accessToken}}
 
 ### ============================================================
@@ -130,15 +130,15 @@ Authorization: Bearer {{Login.response.body.$.data.accessToken}}
 ### ============================================================
 
 ### 20. 获取考试详情
-GET {{baseUrl}}/api/v1/exam/1
+GET {{baseUrl}}/api/exam/1
 Authorization: Bearer {{Login.response.body.$.data.accessToken}}
 
 ### 21. 按学科查询考试
-GET {{baseUrl}}/api/v1/exam/subject/MATH
+GET {{baseUrl}}/api/exam/subject/MATH
 Authorization: Bearer {{Login.response.body.$.data.accessToken}}
 
 ### 22. 按教师查询考试
-GET {{baseUrl}}/api/v1/exam/teacher/1
+GET {{baseUrl}}/api/exam/teacher/1
 Authorization: Bearer {{Login.response.body.$.data.accessToken}}
 
 ### ============================================================
@@ -146,19 +146,19 @@ Authorization: Bearer {{Login.response.body.$.data.accessToken}}
 ### ============================================================
 
 ### 23. 获取复习任务详情
-GET {{baseUrl}}/api/v1/review/1
+GET {{baseUrl}}/api/review/1
 Authorization: Bearer {{Login.response.body.$.data.accessToken}}
 
 ### 24. 获取学生今日复习任务
-GET {{baseUrl}}/api/v1/review/today/1
+GET {{baseUrl}}/api/review/today/1
 Authorization: Bearer {{Login.response.body.$.data.accessToken}}
 
 ### 25. 按学生和状态查询复习任务
-GET {{baseUrl}}/api/v1/review/student/1/status/PENDING
+GET {{baseUrl}}/api/review/student/1/status/PENDING
 Authorization: Bearer {{Login.response.body.$.data.accessToken}}
 
 ### 26. 完成复习任务
-PUT {{baseUrl}}/api/v1/review/1/complete
+PUT {{baseUrl}}/api/review/1/complete
 Content-Type: application/json
 Authorization: Bearer {{Login.response.body.$.data.accessToken}}
 
@@ -172,15 +172,15 @@ Authorization: Bearer {{Login.response.body.$.data.accessToken}}
 ### ============================================================
 
 ### 27. 获取计划详情
-GET {{baseUrl}}/api/v1/plan/1
+GET {{baseUrl}}/api/plan/1
 Authorization: Bearer {{Login.response.body.$.data.accessToken}}
 
 ### 28. 查询学生所有计划
-GET {{baseUrl}}/api/v1/plan/student/1
+GET {{baseUrl}}/api/plan/student/1
 Authorization: Bearer {{Login.response.body.$.data.accessToken}}
 
 ### 29. 查询学生活跃计划
-GET {{baseUrl}}/api/v1/plan/student/1/active
+GET {{baseUrl}}/api/plan/student/1/active
 Authorization: Bearer {{Login.response.body.$.data.accessToken}}
 
 ### ============================================================
@@ -188,11 +188,11 @@ Authorization: Bearer {{Login.response.body.$.data.accessToken}}
 ### ============================================================
 
 ### 30. 获取学生学习记录
-GET {{baseUrl}}/api/v1/analytics/records/student/1
+GET {{baseUrl}}/api/analytics/records/student/1
 Authorization: Bearer {{Login.response.body.$.data.accessToken}}
 
 ### 31. 获取学生某知识点的学习记录
-GET {{baseUrl}}/api/v1/analytics/records/student/1/knowledge/5
+GET {{baseUrl}}/api/analytics/records/student/1/knowledge/5
 Authorization: Bearer {{Login.response.body.$.data.accessToken}}
 
 ### ============================================================
@@ -200,17 +200,17 @@ Authorization: Bearer {{Login.response.body.$.data.accessToken}}
 ### ============================================================
 
 ### 32. 获取资源列表
-GET {{baseUrl}}/api/v1/resource
+GET {{baseUrl}}/api/resource
 Authorization: Bearer {{Login.response.body.$.data.accessToken}}
 
 ### 33. 获取资源详情
-GET {{baseUrl}}/api/v1/resource/1
+GET {{baseUrl}}/api/resource/1
 Authorization: Bearer {{Login.response.body.$.data.accessToken}}
 
 ### 34. 按学科查询资源
-GET {{baseUrl}}/api/v1/resource/subject/MATH
+GET {{baseUrl}}/api/resource/subject/MATH
 Authorization: Bearer {{Login.response.body.$.data.accessToken}}
 
 ### 35. 按类型查询资源
-GET {{baseUrl}}/api/v1/resource/type/VIDEO
+GET {{baseUrl}}/api/resource/type/VIDEO
 Authorization: Bearer {{Login.response.body.$.data.accessToken}}

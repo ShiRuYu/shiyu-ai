@@ -46,8 +46,9 @@ public class KnowledgeServiceImpl implements KnowledgeService {
     @Override
     public PageData<KnowledgeResponse> page(KnowledgePageQuery query) {
         int offset = (query.getPageNum() - 1) * query.getPageSize();
-        List<KnowledgeDO> list = knowledgeRepository.page(offset, query.getPageSize());
-        long total = knowledgeRepository.count();
+        List<KnowledgeDO> list = knowledgeRepository.page(offset, query.getPageSize(),
+                query.getCategory(), query.getKeyword());
+        long total = knowledgeRepository.count(query.getCategory(), query.getKeyword());
         List<KnowledgeResponse> items = list.stream().map(this::toResponse).toList();
         return new PageData<>(items, total);
     }
@@ -100,6 +101,8 @@ public class KnowledgeServiceImpl implements KnowledgeService {
             knowledgeDO.setTags(request.tags());
         }
         knowledgeRepository.update(knowledgeDO);
+        // 更新搜索索引
+        indexKnowledge(knowledgeDO);
     }
 
     @Override
@@ -109,6 +112,14 @@ public class KnowledgeServiceImpl implements KnowledgeService {
         if (knowledgeDO == null) {
             throw new ServiceException("知识点不存在: " + id, 2001);
         }
+        // 清理搜索索引
+        knowledgeSearchService.removeFromIndex(id);
+        // 清理图谱
+        knowledgeGraph.removeNode(id);
+        // 清理关联关系
+        knowledgeRelationService.removeAllRelations(id);
+        // 清理关联文档
+        documentKnowledgeService.deleteByKnowledgeId(id);
         knowledgeRepository.deleteById(id);
     }
 

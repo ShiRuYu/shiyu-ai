@@ -1,4 +1,4 @@
-### ============================================================
+﻿### ============================================================
 ### AI 对话 & 模型管理 API
 ### 基础 URL: http://localhost:9000
 ### ============================================================
@@ -11,7 +11,7 @@
 ### ============================================================
 
 # @name Login
-POST {{baseUrl}}/auth/login
+POST {{baseUrl}}/api/auth/login
 Content-Type: application/json
 
 {
@@ -70,35 +70,35 @@ Authorization: Bearer {{Login.response.body.$.data.accessToken}}
 ### ============================================================
 
 ### 6. 分页查询平台
-GET {{baseUrl}}/ai/platform/page?pageNum=1&pageSize=10
+GET {{baseUrl}}/admin/platform/page?pageNum=1&pageSize=10
 Authorization: Bearer {{Login.response.body.$.data.accessToken}}
 
 ### 7. 查询已启用平台
-GET {{baseUrl}}/ai/platform/enabled
+GET {{baseUrl}}/admin/platform/enabled
 Authorization: Bearer {{Login.response.body.$.data.accessToken}}
 
 ### 8. 获取平台下拉选项
-GET {{baseUrl}}/ai/platform/options
+GET {{baseUrl}}/admin/platform/options
 Authorization: Bearer {{Login.response.body.$.data.accessToken}}
 
 ### 9. 获取平台详情
-GET {{baseUrl}}/ai/platform/1
+GET {{baseUrl}}/admin/platform/1
 Authorization: Bearer {{Login.response.body.$.data.accessToken}}
 
 ### 10. 按编码获取平台
-GET {{baseUrl}}/ai/platform/code/SILICON_FLOW
+GET {{baseUrl}}/admin/platform/code/SILICON_FLOW
 Authorization: Bearer {{Login.response.body.$.data.accessToken}}
 
 ### 11. 获取默认平台
-GET {{baseUrl}}/ai/platform/default
+GET {{baseUrl}}/admin/platform/default
 Authorization: Bearer {{Login.response.body.$.data.accessToken}}
 
 ### 12. 设置默认平台
-PUT {{baseUrl}}/ai/platform/1/default
+PUT {{baseUrl}}/admin/platform/1/default
 Authorization: Bearer {{Login.response.body.$.data.accessToken}}
 
 ### 13. 重新加载平台配置
-POST {{baseUrl}}/ai/platform/reload
+POST {{baseUrl}}/admin/platform/reload
 Authorization: Bearer {{Login.response.body.$.data.accessToken}}
 
 ### ============================================================
@@ -106,29 +106,29 @@ Authorization: Bearer {{Login.response.body.$.data.accessToken}}
 ### ============================================================
 
 ### 14. 分页查询模型
-GET {{baseUrl}}/ai/model/page?pageNum=1&pageSize=20
+GET {{baseUrl}}/admin/model/page?pageNum=1&pageSize=20
 Authorization: Bearer {{Login.response.body.$.data.accessToken}}
 
 ### 15. 按平台 ID 查询模型
-GET {{baseUrl}}/ai/model/platform/1
+GET {{baseUrl}}/admin/model/platform/1
 Authorization: Bearer {{Login.response.body.$.data.accessToken}}
 
 ### 16. 按平台编码查询模型
-GET {{baseUrl}}/ai/model/platform/by-code/SILICON_FLOW
+GET {{baseUrl}}/admin/model/platform/by-code/SILICON_FLOW
 Authorization: Bearer {{Login.response.body.$.data.accessToken}}
 
 ### 17. 获取模型下拉选项
-GET {{baseUrl}}/ai/model/options?platformId=1
+GET {{baseUrl}}/admin/model/options?platformId=1
 Authorization: Bearer {{Login.response.body.$.data.accessToken}}
 
 ### 18. 获取模型详情
-GET {{baseUrl}}/ai/model/1
+GET {{baseUrl}}/admin/model/1
 Authorization: Bearer {{Login.response.body.$.data.accessToken}}
 
 ### 19. 获取平台默认模型
-GET {{baseUrl}}/ai/model/platform/1/default
+GET {{baseUrl}}/admin/model/platform/1/default
 Authorization: Bearer {{Login.response.body.$.data.accessToken}}
 
 ### 20. 设置默认模型
-PUT {{baseUrl}}/ai/model/1/default
+PUT {{baseUrl}}/admin/model/1/default
 Authorization: Bearer {{Login.response.body.$.data.accessToken}}

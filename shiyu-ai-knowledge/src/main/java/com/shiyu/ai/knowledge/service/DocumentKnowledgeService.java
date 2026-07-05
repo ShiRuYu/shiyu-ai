@@ -48,6 +48,11 @@ public interface DocumentKnowledgeService {
      */
     void delete(Long id);
 
+    /**
+     * 解除知识点与所有文档的关联
+     */
+    void deleteByKnowledgeId(Long knowledgeId);
+
     record KnowledgeDocumentVO(Long id, String title, String content, String docType,
                                String source, List<Long> knowledgeIds) {}
 

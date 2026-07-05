@@ -137,13 +137,3 @@ CREATE INDEX IF NOT EXISTS `idx_intent_def_code_agent` ON `intent_def` (`agent_i
 
 COMMENT ON TABLE `intent_def` IS '意图定义表';
 
-ALTER TABLE `ai_platform` ALTER COLUMN `id` RESTART WITH 100;
-
-ALTER TABLE `ai_model` ALTER COLUMN `id` RESTART WITH 100;
-
-ALTER TABLE `agent_def` ALTER COLUMN `id` RESTART WITH 100;
-
-ALTER TABLE `agent_version` ALTER COLUMN `id` RESTART WITH 100;
-
-ALTER TABLE `intent_def` ALTER COLUMN `id` RESTART WITH 100;
-

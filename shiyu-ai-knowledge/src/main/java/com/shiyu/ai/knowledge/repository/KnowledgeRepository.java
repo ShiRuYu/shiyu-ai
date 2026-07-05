@@ -31,16 +31,36 @@ public class KnowledgeRepository {
     }
 
     public List<KnowledgeDO> page(int offset, int limit) {
+        return page(offset, limit, null, null);
+    }
+
+    public List<KnowledgeDO> page(int offset, int limit, String category, String keyword) {
         QueryWrapper qw = QueryWrapper.create();
         qw.eq(KnowledgeDO::getStatus, 1);
+        if (category != null && !category.isBlank()) {
+            qw.eq(KnowledgeDO::getCategory, category);
+        }
+        if (keyword != null && !keyword.isBlank()) {
+            qw.like(KnowledgeDO::getName, keyword);
+        }
         qw.orderBy(KnowledgeDO::getId, true);
         qw.limit(offset, limit);
         return knowledgeMapper.selectListByQuery(qw);
     }
 
     public long count() {
+        return count(null, null);
+    }
+
+    public long count(String category, String keyword) {
         QueryWrapper qw = QueryWrapper.create();
         qw.eq(KnowledgeDO::getStatus, 1);
+        if (category != null && !category.isBlank()) {
+            qw.eq(KnowledgeDO::getCategory, category);
+        }
+        if (keyword != null && !keyword.isBlank()) {
+            qw.like(KnowledgeDO::getName, keyword);
+        }
         return knowledgeMapper.selectCountByQuery(qw);
     }
 

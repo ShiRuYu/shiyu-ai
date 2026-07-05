@@ -79,9 +79,3 @@ CREATE INDEX IF NOT EXISTS `idx_agent_exec_session` ON `agent_execution` (`sessi
 
 COMMENT ON TABLE `agent_execution` IS 'Agent 执行历史记录表';
 
-ALTER TABLE `conversation_message` ALTER COLUMN `id` RESTART WITH 100;
-
-ALTER TABLE `long_term_memory`     ALTER COLUMN `id` RESTART WITH 100;
-
-ALTER TABLE `agent_execution`      ALTER COLUMN `id` RESTART WITH 100;
-

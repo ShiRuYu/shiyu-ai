@@ -1,4 +1,4 @@
-### ============================================================
+﻿### ============================================================
 ### 教育 Agent API（Phase 4 新增）
 ### 基础 URL: http://localhost:9000
 ### 
@@ -19,7 +19,7 @@
 ### ============================================================
 
 # @name Login
-POST {{baseUrl}}/auth/login
+POST {{baseUrl}}/api/auth/login
 Content-Type: application/json
 
 {
@@ -32,7 +32,7 @@ Content-Type: application/json
 
 ### ============================================================
 ### TeacherAgent — AI 讲解知识点
-### POST {{baseUrl}}/api/v1/agent/teacher
+### POST {{baseUrl}}/api/agent/teacher
 ### 
 ### 学生 ID 说明（种子数据）：
 ###   1 = 小明（绝对值较弱，overall=48.5）
@@ -45,23 +45,23 @@ Content-Type: application/json
 ### ============================================================
 
 ### 给小明讲解绝对值（学生1, 知识点5: 小明绝对值较弱）
-POST {{baseUrl}}/api/v1/agent/teacher?studentId=1&knowledgeId=5
+POST {{baseUrl}}/api/agent/teacher?studentId=1&knowledgeId=5
 Content-Type: application/json
 Authorization: Bearer {{Login.response.body.$.data.accessToken}}
 
 ### 给小红讲解绝对值（学生2, 知识点5: 小红掌握较好）
-POST {{baseUrl}}/api/v1/agent/teacher?studentId=2&knowledgeId=5
+POST {{baseUrl}}/api/agent/teacher?studentId=2&knowledgeId=5
 Content-Type: application/json
 Authorization: Bearer {{Login.response.body.$.data.accessToken}}
 
 ### 讲解二次函数
-POST {{baseUrl}}/api/v1/agent/teacher?studentId=1&knowledgeId=8
+POST {{baseUrl}}/api/agent/teacher?studentId=1&knowledgeId=8
 Content-Type: application/json
 Authorization: Bearer {{Login.response.body.$.data.accessToken}}
 
 ### ============================================================
 ### PracticeAgent — 智能生成练习题
-### POST {{baseUrl}}/api/v1/agent/practice
+### POST {{baseUrl}}/api/agent/practice
 ### 
 ### LLM 会根据学生能力值自动适配难度：
 ###   overall < 40 → BASIC（基础）
@@ -71,85 +71,85 @@ Authorization: Bearer {{Login.response.body.$.data.accessToken}}
 ### ============================================================
 
 ### 给小明出绝对值题（5道，中等难度）
-POST {{baseUrl}}/api/v1/agent/practice?studentId=1&knowledgeId=5&count=5
+POST {{baseUrl}}/api/agent/practice?studentId=1&knowledgeId=5&count=5
 Content-Type: application/json
 Authorization: Bearer {{Login.response.body.$.data.accessToken}}
 
 ### 给小红出绝对值题（3道，较难）
-POST {{baseUrl}}/api/v1/agent/practice?studentId=2&knowledgeId=5&count=3
+POST {{baseUrl}}/api/agent/practice?studentId=2&knowledgeId=5&count=3
 Content-Type: application/json
 Authorization: Bearer {{Login.response.body.$.data.accessToken}}
 
 ### ============================================================
 ### ExamAgent — 智能组卷
-### POST {{baseUrl}}/api/v1/agent/exam
+### POST {{baseUrl}}/api/agent/exam
 ### 
 ### 学科编码：MATH / PHYSICS / ENGLISH / CHINESE / CHEMISTRY
 ### ============================================================
 
 ### 七年级数学单元测验（60分钟，考察绝对值/相反数/数轴）
-POST {{baseUrl}}/api/v1/agent/exam?subjectCode=MATH&grade=7&knowledgeIds=5,4,3&durationMin=60&teacherId=1
+POST {{baseUrl}}/api/agent/exam?subjectCode=MATH&grade=7&knowledgeIds=5,4,3&durationMin=60&teacherId=1
 Content-Type: application/json
 Authorization: Bearer {{Login.response.body.$.data.accessToken}}
 
 ### 八年级物理组卷
-POST {{baseUrl}}/api/v1/agent/exam?subjectCode=PHYSICS&grade=8&knowledgeIds=1&durationMin=45&teacherId=1
+POST {{baseUrl}}/api/agent/exam?subjectCode=PHYSICS&grade=8&knowledgeIds=1&durationMin=45&teacherId=1
 Content-Type: application/json
 Authorization: Bearer {{Login.response.body.$.data.accessToken}}
 
 ### ============================================================
 ### ReviewAgent — 学习后安排复习
-### POST {{baseUrl}}/api/v1/agent/review
+### POST {{baseUrl}}/api/agent/review
 ### 
 ### 依据艾宾浩斯遗忘曲线生成 6 轮复习：
 ###   第1天 → 第3天 → 第7天 → 第15天 → 第30天 → 第90天
 ### ============================================================
 
 ### 小明学习绝对值后安排复习
-POST {{baseUrl}}/api/v1/agent/review?studentId=1&knowledgeId=5
+POST {{baseUrl}}/api/agent/review?studentId=1&knowledgeId=5
 Content-Type: application/json
 Authorization: Bearer {{Login.response.body.$.data.accessToken}}
 
 ### ============================================================
 ### ReviewAgent — 获取今日复习任务
-### GET {{baseUrl}}/api/v1/agent/review/today?studentId={studentId}
+### GET {{baseUrl}}/api/agent/review/today?studentId={studentId}
 ### ============================================================
 
-GET {{baseUrl}}/api/v1/agent/review/today?studentId=1
+GET {{baseUrl}}/api/agent/review/today?studentId=1
 Authorization: Bearer {{Login.response.body.$.data.accessToken}}
 
 ### ============================================================
 ### ReviewAgent — 完成复习任务
-### POST {{baseUrl}}/api/v1/agent/review/complete
+### POST {{baseUrl}}/api/agent/review/complete
 ### ============================================================
 
-POST {{baseUrl}}/api/v1/agent/review/complete?taskId=1&score=90
+POST {{baseUrl}}/api/agent/review/complete?taskId=1&score=90
 Content-Type: application/json
 Authorization: Bearer {{Login.response.body.$.data.accessToken}}
 
 ### ============================================================
 ### PlannerAgent — 生成学习计划
-### POST {{baseUrl}}/api/v1/agent/planner
+### POST {{baseUrl}}/api/agent/planner
 ### 
 ### 根据目标知识点，自动拓扑排序前置知识并分配每日任务
 ### ============================================================
 
 ### 小明计划用 14 天学会二次函数（知识点 8）
-POST {{baseUrl}}/api/v1/agent/planner?studentId=1&targetKnowledgeId=8&startDate=2026-07-01&endDate=2026-07-14
+POST {{baseUrl}}/api/agent/planner?studentId=1&targetKnowledgeId=8&startDate=2026-07-01&endDate=2026-07-14
 Content-Type: application/json
 Authorization: Bearer {{Login.response.body.$.data.accessToken}}
 
 ### ============================================================
 ### ReportAgent — 生成学习报告
-### POST {{baseUrl}}/api/v1/agent/report?studentId={studentId}
+### POST {{baseUrl}}/api/agent/report?studentId={studentId}
 ### ============================================================
 
 ### 小明学习报告
-POST {{baseUrl}}/api/v1/agent/report?studentId=1
+POST {{baseUrl}}/api/agent/report?studentId=1
 Content-Type: application/json
 Authorization: Bearer {{Login.response.body.$.data.accessToken}}
 
 ### 小红学习报告
-POST {{baseUrl}}/api/v1/agent/report?studentId=2
+POST {{baseUrl}}/api/agent/report?studentId=2
 Content-Type: application/json
 Authorization: Bearer {{Login.response.body.$.data.accessToken}}

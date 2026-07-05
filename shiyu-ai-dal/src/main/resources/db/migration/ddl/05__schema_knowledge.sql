@@ -76,9 +76,6 @@ CREATE INDEX IF NOT EXISTS `idx_kdr_knowledge` ON `knowledge_doc_relation` (`kno
 
 COMMENT ON TABLE `knowledge_doc_relation` IS '文档-知识点关联表';
 
-ALTER TABLE `knowledge` ALTER COLUMN `id` RESTART WITH 100;
 
-ALTER TABLE `knowledge_relation` ALTER COLUMN `id` RESTART WITH 100;
 
-ALTER TABLE `knowledge_document` ALTER COLUMN `id` RESTART WITH 100;
 

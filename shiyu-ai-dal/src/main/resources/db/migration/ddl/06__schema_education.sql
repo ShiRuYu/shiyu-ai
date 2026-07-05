@@ -386,40 +386,6 @@ CREATE TABLE IF NOT EXISTS `wrong_question`(
 
 COMMENT ON TABLE `wrong_question` IS '错题本表';
 
-ALTER TABLE `subject`            ALTER COLUMN `id` RESTART WITH 100;
-
-ALTER TABLE `textbook`           ALTER COLUMN `id` RESTART WITH 100;
-
-ALTER TABLE `chapter`            ALTER COLUMN `id` RESTART WITH 100;
-
-ALTER TABLE `teacher`            ALTER COLUMN `id` RESTART WITH 100;
-
-ALTER TABLE `student`            ALTER COLUMN `id` RESTART WITH 100;
-
-ALTER TABLE `course`             ALTER COLUMN `id` RESTART WITH 100;
-
-ALTER TABLE `course_chapter`     ALTER COLUMN `id` RESTART WITH 100;
-
-ALTER TABLE `course_section`     ALTER COLUMN `id` RESTART WITH 100;
-
-ALTER TABLE `resource`           ALTER COLUMN `id` RESTART WITH 100;
-
-ALTER TABLE `edu_question`       ALTER COLUMN `id` RESTART WITH 100;
-
-ALTER TABLE `exam`               ALTER COLUMN `id` RESTART WITH 100;
-
-ALTER TABLE `exam_section`       ALTER COLUMN `id` RESTART WITH 100;
-
-ALTER TABLE `ability`            ALTER COLUMN `id` RESTART WITH 100;
-
-ALTER TABLE `edu_study_record`   ALTER COLUMN `id` RESTART WITH 100;
-
-ALTER TABLE `edu_review_task`    ALTER COLUMN `id` RESTART WITH 100;
-
-ALTER TABLE `edu_study_plan`     ALTER COLUMN `id` RESTART WITH 100;
-
-ALTER TABLE `edu_study_plan_item` ALTER COLUMN `id` RESTART WITH 100;
-
 
 
 CREATE TABLE IF NOT EXISTS `edu_learning_state`(
@@ -446,5 +412,4 @@ CREATE TABLE IF NOT EXISTS `edu_achievement`(
     UNIQUE KEY `uk_achievement` (`student_id`, `code`)
 );
 COMMENT ON TABLE `edu_achievement` IS '成就表（成长档案）';
-ALTER TABLE `wrong_question`     ALTER COLUMN `id` RESTART WITH 100;
 

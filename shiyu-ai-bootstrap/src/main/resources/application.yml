@@ -4,7 +4,7 @@
 
 shiyu:
   # 名称
-  name: "shiyu-agent"
+  name: "shiyu-ai"
   # 版本
   version: ${revision}
   # 数据文件目录（RogueMap 持久化文件存储位置）
@@ -13,6 +13,17 @@ shiyu:
   # 文件上传目录
   upload:
     path: ${app.home}/data/uploads
+  # VectorStore 配置（Embedding 向量检索）
+  vector-store:
+    type: inmemory           # inmemory | hnsw | qdrant
+    dimension: 384
+    data-dir: ${app.home}/data/vector
+    qdrant:
+      host: localhost
+      port: 6334
+      collection: knowledge
+    hnsw:
+      index-path: ${app.home}/data/vector/hnsw.index
 # 开发环境配置
 server:
   # 服务器的HTTP端口，默认为8080
@@ -33,11 +44,13 @@ springdoc:
       paths-to-match:
         - '/**'
       packages-to-scan:
-        - com.shiyu.ai.bootstrap.controller
         - com.shiyu.ai.auth.controller
         - com.shiyu.ai.record.controller
-        - com.shiyu.ai.common.web.controller
         - com.shiyu.ai.knowledge.controller
+        - com.shiyu.ai.education.controller
+        - com.shiyu.ai.aiagent.controller
+        - com.shiyu.ai.core.controller
+        - com.shiyu.ai.common.web.controller
     - group: 'common'
       paths-to-match:
         - '/**'
@@ -57,7 +70,7 @@ springdoc:
       paths-to-match:
         - '/**'
       packages-to-scan:
-        - com.shiyu.ai.bootstrap.controller
+        - com.shiyu.ai.aiagent.controller
     - group: 'knowledge'
       paths-to-match:
         - '/**'

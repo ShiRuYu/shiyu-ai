@@ -8,6 +8,7 @@ import org.apache.commons.collections4.CollectionUtils;
 import org.springframework.validation.BindException;
 import org.springframework.validation.BindingResult;
 import org.springframework.validation.FieldError;
+import com.shiyu.ai.common.core.exception.base.BaseException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
 
@@ -47,6 +48,12 @@ public class ShiYuDefaultExceptionHandler {
     @ExceptionHandler(SecurityException.class)
     public Result<String> exception(SecurityException e) {
         log.warn("安全拦截: {}", e.getMessage());
+        return Result.fail(e.getMessage());
+    }
+
+    @ExceptionHandler(BaseException.class)
+    public Result<String> exception(BaseException e) {
+        log.error("已知异常: {}", e.getMessage());
         return Result.fail(e.getMessage());
     }
 

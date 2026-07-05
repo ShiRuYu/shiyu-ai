@@ -55,4 +55,16 @@ public class KnowledgeRelationRepository {
         qw.eq(KnowledgeRelationDO::getRelationType, type);
         return relationMapper.deleteByQuery(qw);
     }
+
+    public int deleteBySourceIdOrTargetId(Long knowledgeId) {
+        QueryWrapper qw = QueryWrapper.create();
+        qw.eq(KnowledgeRelationDO::getSourceId, knowledgeId);
+        // Delete as source
+        int count = relationMapper.deleteByQuery(qw);
+        // Delete as target
+        QueryWrapper qw2 = QueryWrapper.create();
+        qw2.eq(KnowledgeRelationDO::getTargetId, knowledgeId);
+        count += relationMapper.deleteByQuery(qw2);
+        return count;
+    }
 }

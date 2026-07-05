@@ -19,12 +19,13 @@ import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Collections;
-import java.util.stream.Collectors;
 import java.time.LocalDate;
 import java.util.stream.Collectors;
 
+import org.springframework.context.annotation.Primary;
 @Slf4j
 @Service
+@Primary
 public class MemoryServiceImpl implements MemoryService {
 
     private static final String ROLE_USER = "user";
@@ -188,6 +189,7 @@ public class MemoryServiceImpl implements MemoryService {
     }
 
     @Override
+    @Transactional(rollbackFor = Exception.class)
     public void recalculateImportance(Long userId, String agentId) {
         List<LongTermMemoryBO> allMems = longTermMemoryRepository.selectAllByUser(userId, agentId);
         for (LongTermMemoryBO mem : allMems) {

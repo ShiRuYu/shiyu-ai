@@ -1,4 +1,4 @@
-### ============================================================
+﻿### ============================================================
 ### 知识图谱 API
 ### 基础 URL: http://localhost:9000
 ### 种子数据中包含 10 个知识点（ID=1~10）和 12 条关系边
@@ -12,7 +12,7 @@
 ### ============================================================
 
 # @name Login
-POST {{baseUrl}}/auth/login
+POST {{baseUrl}}/api/auth/login
 Content-Type: application/json
 
 {
@@ -25,10 +25,10 @@ Content-Type: application/json
 
 ### ============================================================
 ### 1. 获取知识点详情
-### GET {{baseUrl}}/api/v1/knowledge/{id}
+### GET {{baseUrl}}/api/knowledge/{id}
 ### ============================================================
 
-GET {{baseUrl}}/api/v1/knowledge/5
+GET {{baseUrl}}/api/knowledge/5
 Authorization: Bearer {{Login.response.body.$.data.accessToken}}
 
 ### 种子数据 ID 说明：
@@ -37,55 +37,55 @@ Authorization: Bearer {{Login.response.body.$.data.accessToken}}
 
 ### ============================================================
 ### 2. 分页查询知识点
-### GET {{baseUrl}}/api/v1/knowledge?pageNum=1&pageSize=20
+### GET {{baseUrl}}/api/knowledge?pageNum=1&pageSize=20
 ### ============================================================
 
-GET {{baseUrl}}/api/v1/knowledge?pageNum=1&pageSize=20
+GET {{baseUrl}}/api/knowledge?pageNum=1&pageSize=20
 Authorization: Bearer {{Login.response.body.$.data.accessToken}}
 
 ### ============================================================
 ### 3. 获取知识图谱（邻域信息）
-### GET {{baseUrl}}/api/v1/knowledge/{id}/graph
+### GET {{baseUrl}}/api/knowledge/{id}/graph
 ### ============================================================
 
-GET {{baseUrl}}/api/v1/knowledge/8/graph
+GET {{baseUrl}}/api/knowledge/8/graph
 Authorization: Bearer {{Login.response.body.$.data.accessToken}}
 
 ### ============================================================
 ### 4. 获取学习路径（拓扑排序）
-### GET {{baseUrl}}/api/v1/knowledge/{id}/path
+### GET {{baseUrl}}/api/knowledge/{id}/path
 ### ============================================================
 
-GET {{baseUrl}}/api/v1/knowledge/8/path
+GET {{baseUrl}}/api/knowledge/8/path
 Authorization: Bearer {{Login.response.body.$.data.accessToken}}
 
 ### ============================================================
 ### 5. 获取缺失的前置知识
-### GET {{baseUrl}}/api/v1/knowledge/{id}/prerequisites?masteredIds=1,2,3
+### GET {{baseUrl}}/api/knowledge/{id}/prerequisites?masteredIds=1,2,3
 ### ============================================================
 
-GET {{baseUrl}}/api/v1/knowledge/5/prerequisites?masteredIds=1,2,3
+GET {{baseUrl}}/api/knowledge/5/prerequisites?masteredIds=1,2,3
 Authorization: Bearer {{Login.response.body.$.data.accessToken}}
 
 ### ============================================================
 ### 6. 获取前置知识点列表
-### GET {{baseUrl}}/api/v1/knowledge/{id}/prerequisites-list
+### GET {{baseUrl}}/api/knowledge/{id}/prerequisites-list
 ### ============================================================
 
-GET {{baseUrl}}/api/v1/knowledge/5/prerequisites-list
+GET {{baseUrl}}/api/knowledge/5/prerequisites-list
 Authorization: Bearer {{Login.response.body.$.data.accessToken}}
 
 ### ============================================================
 ### 7. 获取后续知识点列表
-### GET {{baseUrl}}/api/v1/knowledge/{id}/subsequent-list
+### GET {{baseUrl}}/api/knowledge/{id}/subsequent-list
 ### ============================================================
 
-GET {{baseUrl}}/api/v1/knowledge/3/subsequent-list
+GET {{baseUrl}}/api/knowledge/3/subsequent-list
 Authorization: Bearer {{Login.response.body.$.data.accessToken}}
 
 ### ============================================================
 ### 8. 搜索知识点
-### GET {{baseUrl}}/api/v1/knowledge/search?query=绝对值&topK=10&mode=HYBRID
+### GET {{baseUrl}}/api/knowledge/search?query=绝对值&topK=10&mode=HYBRID
 ### 
 ### 搜索模式（SearchMode）：
 ###   - KEYWORD  → 关键词检索（默认，无需 Embedding API）
@@ -93,24 +93,24 @@ Authorization: Bearer {{Login.response.body.$.data.accessToken}}
 ###   - HYBRID   → 混合检索（关键词 + 语义）
 ### ============================================================
 
-GET {{baseUrl}}/api/v1/knowledge/search?query=绝对值&topK=10&mode=HYBRID
+GET {{baseUrl}}/api/knowledge/search?query=绝对值&topK=10&mode=HYBRID
 Authorization: Bearer {{Login.response.body.$.data.accessToken}}
 
 ### ============================================================
 ### 9. 获取支持的所有搜索模式
-### GET {{baseUrl}}/api/v1/knowledge/search/modes
+### GET {{baseUrl}}/api/knowledge/search/modes
 ### ============================================================
 
-GET {{baseUrl}}/api/v1/knowledge/search/modes
+GET {{baseUrl}}/api/knowledge/search/modes
 Authorization: Bearer {{Login.response.body.$.data.accessToken}}
 
 ### ============================================================
 ### 10. 创建知识点
-### POST {{baseUrl}}/api/v1/knowledge
+### POST {{baseUrl}}/api/knowledge
 ### ============================================================
 
 # @name CreatedKnowledge
-POST {{baseUrl}}/api/v1/knowledge
+POST {{baseUrl}}/api/knowledge
 Content-Type: application/json
 Authorization: Bearer {{Login.response.body.$.data.accessToken}}
 
@@ -125,10 +125,10 @@ Authorization: Bearer {{Login.response.body.$.data.accessToken}}
 
 ### ============================================================
 ### 11. 更新知识点
-### PUT {{baseUrl}}/api/v1/knowledge/{id}
+### PUT {{baseUrl}}/api/knowledge/{id}
 ### ============================================================
 
-PUT {{baseUrl}}/api/v1/knowledge/100
+PUT {{baseUrl}}/api/knowledge/100
 Content-Type: application/json
 Authorization: Bearer {{Login.response.body.$.data.accessToken}}
 
@@ -140,65 +140,65 @@ Authorization: Bearer {{Login.response.body.$.data.accessToken}}
 
 ### ============================================================
 ### 12. 添加知识点关系边
-### POST {{baseUrl}}/api/v1/knowledge/relation
+### POST {{baseUrl}}/api/knowledge/relation
 ### 
 ### 关系类型（RelationType）：
 ###   PRE=前置知识  NEXT=后续知识  INCLUDE=包含
 ###   RELATED=相关  SIMILAR=相似  BELONG=属于
 ### ============================================================
 
-POST {{baseUrl}}/api/v1/knowledge/relation?sourceId=6&targetId=100&type=PRE&weight=1.0
+POST {{baseUrl}}/api/knowledge/relation?sourceId=6&targetId=100&type=PRE&weight=1.0
 Authorization: Bearer {{Login.response.body.$.data.accessToken}}
 
 ### ============================================================
 ### 13. 删除知识点关系边
-### DELETE {{baseUrl}}/api/v1/knowledge/relation
+### DELETE {{baseUrl}}/api/knowledge/relation
 ### ============================================================
 
-DELETE {{baseUrl}}/api/v1/knowledge/relation?sourceId=6&targetId=100&type=PRE
+DELETE {{baseUrl}}/api/knowledge/relation?sourceId=6&targetId=100&type=PRE
 Authorization: Bearer {{Login.response.body.$.data.accessToken}}
 
 ### ============================================================
 ### 14. 删除知识点
-### DELETE {{baseUrl}}/api/v1/knowledge/{id}
+### DELETE {{baseUrl}}/api/knowledge/{id}
 ### ============================================================
 
-DELETE {{baseUrl}}/api/v1/knowledge/100
+DELETE {{baseUrl}}/api/knowledge/100
 Authorization: Bearer {{Login.response.body.$.data.accessToken}}
 
 ### ============================================================
 ### 15. 重新加载 Graph（从 DB 刷新到内存）
-### POST {{baseUrl}}/api/v1/knowledge/reload
+### POST {{baseUrl}}/api/knowledge/reload
 ### ============================================================
 
-POST {{baseUrl}}/api/v1/knowledge/reload
+POST {{baseUrl}}/api/knowledge/reload
 Authorization: Bearer {{Login.response.body.$.data.accessToken}}
 
 ### ============================================================
 ### 16. 重建搜索索引（异步）
-### POST {{baseUrl}}/api/v1/knowledge/rebuild-index
+### POST {{baseUrl}}/api/knowledge/rebuild-index
 ### ============================================================
 
 # @name RebuildIndex
-POST {{baseUrl}}/api/v1/knowledge/rebuild-index
+POST {{baseUrl}}/api/knowledge/rebuild-index
 Authorization: Bearer {{Login.response.body.$.data.accessToken}}
 
 ### ============================================================
 ### 17. 查询重建进度
-### GET {{baseUrl}}/api/v1/knowledge/rebuild-index/{taskId}
+### GET {{baseUrl}}/api/knowledge/rebuild-index/{taskId}
 ### ============================================================
 
 @rebuildTaskId = {{RebuildIndex.response.body.$.data.taskId}}
 
-GET {{baseUrl}}/api/v1/knowledge/rebuild-index/{{rebuildTaskId}}
+GET {{baseUrl}}/api/knowledge/rebuild-index/{{rebuildTaskId}}
 Authorization: Bearer {{Login.response.body.$.data.accessToken}}
 
 ### ============================================================
 ### 18. 获取最近一次重建状态
-### GET {{baseUrl}}/api/v1/knowledge/rebuild-index
+### GET {{baseUrl}}/api/knowledge/rebuild-index
 ### ============================================================
 
-GET {{baseUrl}}/api/v1/knowledge/rebuild-index
+GET {{baseUrl}}/api/knowledge/rebuild-index
 Authorization: Bearer {{Login.response.body.$.data.accessToken}}
 
 ### ============================================================
@@ -207,26 +207,26 @@ Authorization: Bearer {{Login.response.body.$.data.accessToken}}
 
 ### ----------------------------------------------------------
 ### 19. 搜索文档
-### GET {{baseUrl}}/api/v1/knowledge/documents?keyword=绝对值&topK=10
+### GET {{baseUrl}}/api/knowledge/documents?keyword=绝对值&topK=10
 ### ----------------------------------------------------------
 
-GET {{baseUrl}}/api/v1/knowledge/documents?keyword=绝对值&topK=10
+GET {{baseUrl}}/api/knowledge/documents?keyword=绝对值&topK=10
 Authorization: Bearer {{Login.response.body.$.data.accessToken}}
 
 ### ----------------------------------------------------------
 ### 20. 根据知识点查询关联文档
-### GET {{baseUrl}}/api/v1/knowledge/documents/by-knowledge/{knowledgeId}
+### GET {{baseUrl}}/api/knowledge/documents/by-knowledge/{knowledgeId}
 ### ----------------------------------------------------------
 
-GET {{baseUrl}}/api/v1/knowledge/documents/by-knowledge/5
+GET {{baseUrl}}/api/knowledge/documents/by-knowledge/1
 Authorization: Bearer {{Login.response.body.$.data.accessToken}}
 
 ### ----------------------------------------------------------
 ### 21. 创建文档
-### POST {{baseUrl}}/api/v1/knowledge/documents
+### POST {{baseUrl}}/api/knowledge/documents
 ### ----------------------------------------------------------
 
-POST {{baseUrl}}/api/v1/knowledge/documents
+POST {{baseUrl}}/api/knowledge/documents
 Content-Type: application/json
 Authorization: Bearer {{Login.response.body.$.data.accessToken}}
 
