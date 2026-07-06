@@ -20,7 +20,7 @@
         </dependency>
         <dependency>
             <groupId>com.shiyu.ai</groupId>
-            <artifactId>shiyu-ai-model</artifactId>
+            <artifactId>shiyu-ai-core</artifactId>
         </dependency>
         <dependency>
             <groupId>com.shiyu.ai</groupId>

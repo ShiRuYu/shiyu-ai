@@ -96,19 +96,14 @@
 
     <modules>
         <module>shiyu-common</module>
-        <module>shiyu-ai-model</module>
         <module>shiyu-ai-dal</module>
         <module>shiyu-ai-core</module>
-        <module>shiyu-ai-memory</module>
-        <module>shiyu-ai-rag</module>
-        <module>shiyu-ai-mcp</module>
         <module>shiyu-ai-knowledge</module>
         <module>shiyu-ai-education</module>
         <module>shiyu-ai-agent</module>
         <module>shiyu-ai-auth</module>
         <module>shiyu-ai-record</module>
         <module>shiyu-ai-bootstrap</module>
-        <module>shiyu-ai-workflow</module>
     </modules>
 
     <!-- 依赖声明 -->
@@ -363,11 +358,6 @@
             <!-- New modules -->
             <dependency>
                 <groupId>com.shiyu.ai</groupId>
-                <artifactId>shiyu-ai-model</artifactId>
-                <version>${revision}</version>
-            </dependency>
-            <dependency>
-                <groupId>com.shiyu.ai</groupId>
                 <artifactId>shiyu-ai-dal</artifactId>
                 <version>${revision}</version>
             </dependency>
@@ -383,27 +373,7 @@
             </dependency>
             <dependency>
                 <groupId>com.shiyu.ai</groupId>
-                <artifactId>shiyu-ai-memory</artifactId>
-                <version>${revision}</version>
-            </dependency>
-            <dependency>
-                <groupId>com.shiyu.ai</groupId>
-                <artifactId>shiyu-ai-rag</artifactId>
-                <version>${revision}</version>
-            </dependency>
-            <dependency>
-                <groupId>com.shiyu.ai</groupId>
-                <artifactId>shiyu-ai-mcp</artifactId>
-                <version>${revision}</version>
-            </dependency>
-            <dependency>
-                <groupId>com.shiyu.ai</groupId>
                 <artifactId>shiyu-ai-knowledge</artifactId>
-                <version>${revision}</version>
-            </dependency>
-            <dependency>
-                <groupId>com.shiyu.ai</groupId>
-                <artifactId>shiyu-ai-workflow</artifactId>
                 <version>${revision}</version>
             </dependency>
             <dependency>

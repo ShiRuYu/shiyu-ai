@@ -20,11 +20,11 @@
         </dependency>
         <dependency>
             <groupId>com.shiyu.ai</groupId>
-            <artifactId>shiyu-ai-model</artifactId>
+            <artifactId>shiyu-common-web</artifactId>
         </dependency>
         <dependency>
             <groupId>com.shiyu.ai</groupId>
-            <artifactId>shiyu-common-web</artifactId>
+            <artifactId>shiyu-common-core</artifactId>
         </dependency>
 
         <!-- LangChain4j core -->
@@ -59,6 +59,19 @@
         <dependency>
             <groupId>dev.langchain4j</groupId>
             <artifactId>langchain4j-embeddings-bge-small-zh-v15</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>jakarta.validation</groupId>
+            <artifactId>jakarta.validation-api</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>com.fasterxml.jackson.core</groupId>
+            <artifactId>jackson-annotations</artifactId>
+        </dependency>
+        <!-- 从 shiyu-ai-memory 合并 -->
+        <dependency>
+            <groupId>com.shiyu.ai</groupId>
+            <artifactId>shiyu-common-mybatis</artifactId>
         </dependency>
     </dependencies>
 </project>

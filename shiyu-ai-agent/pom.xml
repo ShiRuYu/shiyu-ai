@@ -15,27 +15,7 @@
     <dependencies>
         <dependency>
             <groupId>com.shiyu.ai</groupId>
-            <artifactId>shiyu-ai-core</artifactId>
-        </dependency>
-        <dependency>
-            <groupId>com.shiyu.ai</groupId>
-            <artifactId>shiyu-ai-memory</artifactId>
-        </dependency>
-        <dependency>
-            <groupId>com.shiyu.ai</groupId>
-            <artifactId>shiyu-ai-rag</artifactId>
-        </dependency>
-        <dependency>
-            <groupId>com.shiyu.ai</groupId>
-            <artifactId>shiyu-ai-mcp</artifactId>
-        </dependency>
-        <dependency>
-            <groupId>com.shiyu.ai</groupId>
             <artifactId>shiyu-ai-dal</artifactId>
-        </dependency>
-        <dependency>
-            <groupId>com.shiyu.ai</groupId>
-            <artifactId>shiyu-ai-model</artifactId>
         </dependency>
         <!-- 教育业务域依赖 -->
         <dependency>
@@ -44,9 +24,12 @@
         </dependency>
         <dependency>
             <groupId>com.shiyu.ai</groupId>
+            <artifactId>shiyu-ai-core</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>com.shiyu.ai</groupId>
             <artifactId>shiyu-ai-knowledge</artifactId>
         </dependency>
-
         <dependency>
             <groupId>org.bsc.langgraph4j</groupId>
             <artifactId>langgraph4j-core</artifactId>
@@ -79,6 +62,21 @@
             <groupId>org.mockito</groupId>
             <artifactId>mockito-junit-jupiter</artifactId>
             <scope>test</scope>
+        </dependency>
+
+        <!-- 从 shiyu-ai-workflow 合并 -->
+        <dependency>
+            <groupId>com.shiyu.ai</groupId>
+            <artifactId>shiyu-common-core</artifactId>
+        </dependency>
+        <!-- LiteFlow workflow（从 shiyu-ai-workflow 合并） -->
+        <dependency>
+            <groupId>com.yomahub</groupId>
+            <artifactId>liteflow-spring-boot4-starter</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>com.yomahub</groupId>
+            <artifactId>liteflow-el-builder</artifactId>
         </dependency>
     </dependencies>
 </project>
