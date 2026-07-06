@@ -17,9 +17,5 @@
             <groupId>com.shiyu.ai</groupId>
             <artifactId>shiyu-common-mybatis</artifactId>
         </dependency>
-        <dependency>
-            <groupId>com.shiyu.ai</groupId>
-            <artifactId>shiyu-ai-core</artifactId>
-        </dependency>
     </dependencies>
 </project>
