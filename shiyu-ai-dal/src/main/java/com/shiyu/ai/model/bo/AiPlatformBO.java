@@ -7,12 +7,16 @@ import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Size;
 import lombok.Data;
+import io.github.linpeilie.annotations.AutoMapper;
+import com.shiyu.ai.dal.dataobject.agent.AiPlatformDO;
+
 import lombok.EqualsAndHashCode;
 import java.io.Serial;
 
 /**
  * AI 平台业务对象
  */
+@AutoMapper(target = AiPlatformDO.class, reverseConvertGenerate = true)
 @Data
 @EqualsAndHashCode(callSuper = true)
 public class AiPlatformBO extends BaseEntity {

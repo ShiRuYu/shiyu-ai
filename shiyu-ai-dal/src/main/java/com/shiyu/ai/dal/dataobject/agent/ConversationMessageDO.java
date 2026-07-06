@@ -8,10 +8,7 @@ import lombok.Data;
 import lombok.EqualsAndHashCode;
 
 import java.io.Serial;
-import io.github.linpeilie.annotations.AutoMapper;
-import com.shiyu.ai.model.bo.ConversationMessageBO;
 
-@AutoMapper(target = ConversationMessageBO.class, reverseConvertGenerate = true)
 @Data
 @EqualsAndHashCode(callSuper = true)
 @Table("conversation_message")

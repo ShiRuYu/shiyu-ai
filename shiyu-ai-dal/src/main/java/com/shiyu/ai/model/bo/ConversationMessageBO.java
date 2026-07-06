@@ -1,6 +1,8 @@
 package com.shiyu.ai.model.bo;
 
 import lombok.Data;
+import io.github.linpeilie.annotations.AutoMapper;
+import com.shiyu.ai.dal.dataobject.agent.ConversationMessageDO;
 
 import java.io.Serial;
 import java.io.Serializable;
@@ -9,6 +11,7 @@ import java.time.LocalDateTime;
 /**
  * 对话消息业务对象
  */
+@AutoMapper(target = ConversationMessageDO.class, reverseConvertGenerate = true)
 @Data
 public class ConversationMessageBO implements Serializable {
 
