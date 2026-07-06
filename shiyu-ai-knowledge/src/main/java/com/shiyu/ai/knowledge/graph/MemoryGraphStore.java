@@ -5,8 +5,6 @@ import com.shiyu.ai.knowledge.domain.GraphEdge;
 import com.shiyu.ai.knowledge.domain.GraphNode;
 import com.shiyu.ai.knowledge.repository.KnowledgeRepository;
 import com.shiyu.ai.knowledge.repository.KnowledgeRelationRepository;
-import com.yomahub.roguemap.RogueMap;
-import com.yomahub.roguemap.serialization.StringCodec;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.boot.ApplicationArguments;
 import org.springframework.boot.ApplicationRunner;
@@ -14,25 +12,23 @@ import org.springframework.core.annotation.Order;
 import org.springframework.stereotype.Component;
 
 import java.util.*;
-import java.util.stream.Collectors;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.stream.Collectors;
 
 @Slf4j
 @Component
 @Order(2)
-public class RogueMapGraphStore implements GraphStore, ApplicationRunner {
+public class MemoryGraphStore implements GraphStore, ApplicationRunner {
 
     private static final String NODE_PREFIX = "node:";
     private static final String ADJ_PREFIX = "adj:";
 
-    private final RogueMap<String, String> rogueMap;
+    private final ConcurrentHashMap<String, String> store = new ConcurrentHashMap<>();
     private final KnowledgeRepository knowledgeRepository;
     private final KnowledgeRelationRepository relationRepository;
 
-    public RogueMapGraphStore(RogueMap<String, String> graphRogueMap,
-                              KnowledgeRepository knowledgeRepository,
-                              KnowledgeRelationRepository relationRepository) {
-        this.rogueMap = graphRogueMap;
+    public MemoryGraphStore(KnowledgeRepository knowledgeRepository,
+                            KnowledgeRelationRepository relationRepository) {
         this.knowledgeRepository = knowledgeRepository;
         this.relationRepository = relationRepository;
     }
@@ -44,7 +40,9 @@ public class RogueMapGraphStore implements GraphStore, ApplicationRunner {
 
     @Override
     public void loadAll() {
-        log.info("开始从数据库加载知识图谱到 RogueMap");
+        log.info("开始从数据库加载知识图谱到内存");
+        store.clear();
+
         var allNodes = knowledgeRepository.findAll();
         var allEdges = relationRepository.findAll();
 
@@ -75,19 +73,29 @@ public class RogueMapGraphStore implements GraphStore, ApplicationRunner {
         }
 
         for (var entry : nodeMap.entrySet()) {
-            rogueMap.put(NODE_PREFIX + entry.getKey(), JSONUtils.toJsonString(entry.getValue()));
-            rogueMap.put(ADJ_PREFIX + entry.getKey(), JSONUtils.toJsonString(entry.getValue().getEdges()));
+            store.put(NODE_PREFIX + entry.getKey(), JSONUtils.toJsonString(entry.getValue()));
+            store.put(ADJ_PREFIX + entry.getKey(), JSONUtils.toJsonString(entry.getValue().getEdges()));
         }
 
         log.info("知识图谱加载完成: {} 个节点, {} 条边", nodeMap.size(), allEdges.size());
     }
 
+    private String get(String key) {
+        return store.get(key);
+    }
+
+    private void put(String key, String value) {
+        store.put(key, value);
+    }
+
+    private void remove(String key) {
+        store.remove(key);
+    }
+
     @Override
     public GraphNode getNode(Long id) {
-        String json = rogueMap.get(NODE_PREFIX + id);
-        if (json == null) {
-            return null;
-        }
+        String json = get(NODE_PREFIX + id);
+        if (json == null) return null;
         return JSONUtils.parseObject(json, GraphNode.class);
     }
 
@@ -108,7 +116,6 @@ public class RogueMapGraphStore implements GraphStore, ApplicationRunner {
         GraphNode node = getNode(id);
         return node != null ? node.getRelatedIds() : Collections.emptyList();
     }
-
 
     @Override
     public List<GraphNode> getParentNodes(Long id) {
@@ -136,25 +143,21 @@ public class RogueMapGraphStore implements GraphStore, ApplicationRunner {
 
     @Override
     public List<GraphEdge> edges(Long id) {
-        String json = rogueMap.get(ADJ_PREFIX + id);
-        if (json == null) {
-            return Collections.emptyList();
-        }
+        String json = get(ADJ_PREFIX + id);
+        if (json == null) return Collections.emptyList();
         return JSONUtils.parseArray(json, GraphEdge.class);
     }
 
     @Override
     public void addNode(GraphNode node) {
-        rogueMap.put(NODE_PREFIX + node.getId(), JSONUtils.toJsonString(node));
-        rogueMap.put(ADJ_PREFIX + node.getId(), JSONUtils.toJsonString(node.getEdges()));
+        put(NODE_PREFIX + node.getId(), JSONUtils.toJsonString(node));
+        put(ADJ_PREFIX + node.getId(), JSONUtils.toJsonString(node.getEdges()));
     }
 
     @Override
     public void addEdge(Long sourceId, Long targetId, String type, double weight) {
         GraphNode source = getNode(sourceId);
-        if (source == null) {
-            return;
-        }
+        if (source == null) return;
         GraphEdge edge = new GraphEdge(targetId, type, weight);
         source.getEdges().add(edge);
 
@@ -179,9 +182,7 @@ public class RogueMapGraphStore implements GraphStore, ApplicationRunner {
     @Override
     public void removeEdge(Long sourceId, Long targetId, String type) {
         GraphNode source = getNode(sourceId);
-        if (source == null) {
-            return;
-        }
+        if (source == null) return;
         source.getEdges().removeIf(e -> e.getTargetId().equals(targetId) && e.getType().equals(type));
 
         switch (type) {
@@ -190,14 +191,13 @@ public class RogueMapGraphStore implements GraphStore, ApplicationRunner {
             case "RELATED", "SIMILAR" -> source.getRelatedIds().remove(targetId);
             default -> { }
         }
-
         addNode(source);
     }
 
     @Override
     public void removeNode(Long id) {
-        rogueMap.remove(NODE_PREFIX + id);
-        rogueMap.remove(ADJ_PREFIX + id);
+        remove(NODE_PREFIX + id);
+        remove(ADJ_PREFIX + id);
         log.info("Removed graph node: id={}", id);
     }
 
@@ -219,9 +219,7 @@ public class RogueMapGraphStore implements GraphStore, ApplicationRunner {
     }
 
     private void dfsVisit(Long id, Set<Long> visited, List<Long> result) {
-        if (id == null || visited.contains(id)) {
-            return;
-        }
+        if (id == null || visited.contains(id)) return;
         visited.add(id);
         for (Long parentId : parents(id)) {
             dfsVisit(parentId, visited, result);

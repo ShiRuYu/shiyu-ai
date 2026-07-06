@@ -4,7 +4,7 @@ import com.shiyu.ai.core.embedding.EmbeddingService;
 import dev.langchain4j.data.embedding.Embedding;
 import dev.langchain4j.data.segment.TextSegment;
 import dev.langchain4j.model.embedding.EmbeddingModel;
-import dev.langchain4j.model.embedding.onnx.allminilml6v2.AllMiniLmL6V2EmbeddingModel;
+import dev.langchain4j.model.embedding.onnx.bgesmallzhv15.BgeSmallZhV15EmbeddingModel;
 import lombok.extern.slf4j.Slf4j;
 
 import java.util.List;
@@ -20,7 +20,7 @@ public class LangChain4jEmbeddingService implements EmbeddingService {
     }
 
     public LangChain4jEmbeddingService() {
-        this(new AllMiniLmL6V2EmbeddingModel());
+        this(new BgeSmallZhV15EmbeddingModel());
     }
 
     @Override

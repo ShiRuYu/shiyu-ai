@@ -32,4 +32,21 @@ public class KnowledgeDocumentRepository {
     public int deleteById(Long id) {
         return knowledgeDocumentMapper.deleteById(id);
     }
+
+    public List<KnowledgeDocumentDO> searchByKeyword(String keyword, int topK) {
+        // 先取出全部，在内存中按标题匹配（小规模数据）
+        // 后续可改为 MyBatis-Flex QueryWrapper like 查询
+        return selectAll().stream()
+                .filter(d -> d.getTitle() != null && d.getTitle().contains(keyword)
+                        || d.getContent() != null && d.getContent().contains(keyword))
+                .limit(topK)
+                .toList();
+    }
+
+    public List<KnowledgeDocumentDO> selectByKnowledgeId(Long knowledgeId) {
+        // 通过 ingestion 表关联查询，暂返回空
+        // 后续可通过 knowledge_doc_relation 表关联
+        return List.of();
+    }
+
 }

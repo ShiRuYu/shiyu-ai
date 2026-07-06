@@ -7,21 +7,15 @@ shiyu:
   name: "shiyu-ai"
   # 版本
   version: ${revision}
-  # 数据文件目录（RogueMap 持久化文件存储位置）
   data:
-    roguemap: ${app.home}/data/roguemap
   # 文件上传目录
   upload:
     path: ${app.home}/data/uploads
   # VectorStore 配置（Embedding 向量检索）
   vector-store:
-    type: inmemory           # inmemory | hnsw | qdrant
-    dimension: 384
+    type: hnsw           # inmemory | hnsw
+    dimension: 512
     data-dir: ${app.home}/data/vector
-    qdrant:
-      host: localhost
-      port: 6334
-      collection: knowledge
     hnsw:
       index-path: ${app.home}/data/vector/hnsw.index
 # 开发环境配置

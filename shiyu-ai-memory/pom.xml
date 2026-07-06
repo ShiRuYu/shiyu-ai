@@ -27,10 +27,6 @@
             <artifactId>shiyu-ai-core</artifactId>
         </dependency>
         <dependency>
-            <groupId>com.yomahub</groupId>
-            <artifactId>roguemap-memory</artifactId>
-        </dependency>
-        <dependency>
             <groupId>com.shiyu.ai</groupId>
             <artifactId>shiyu-common-mybatis</artifactId>
         </dependency>

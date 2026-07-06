@@ -9,21 +9,11 @@ public class VectorStoreProperties {
 
     private String type = "inmemory";
 
-    private int dimension = 384;
+    private int dimension = 512;
 
     private String dataDir = "${app.home}/data/vector";
 
-    private Qdrant qdrant = new Qdrant();
-
     private Hnsw hnsw = new Hnsw();
-
-    @Data
-    public static class Qdrant {
-        private String host = "localhost";
-        private int port = 6334;
-        private String collection = "knowledge";
-        private boolean useTls = false;
-    }
 
     @Data
     public static class Hnsw {

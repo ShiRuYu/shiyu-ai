@@ -11,7 +11,7 @@ import com.shiyu.ai.knowledge.dto.UpdateKnowledgeRequest;
 import com.shiyu.ai.knowledge.graph.KnowledgeGraph;
 import com.shiyu.ai.knowledge.path.LearningPathService;
 import com.shiyu.ai.knowledge.search.KnowledgeSearchService;
-import com.shiyu.ai.knowledge.search.SearchMode;
+
 import com.shiyu.ai.knowledge.search.SearchResult;
 import com.shiyu.ai.knowledge.service.KnowledgeRelationService;
 import com.shiyu.ai.knowledge.service.KnowledgeService;
@@ -134,16 +134,10 @@ public class KnowledgeController {
     @Operation(summary = "搜索知识点")
     public Result<List<SearchResult>> search(
             @RequestParam String query,
-            @RequestParam(defaultValue = "10") int topK,
-            @RequestParam(defaultValue = "HYBRID") SearchMode mode) {
-        return Result.success(knowledgeSearchService.search(query, topK, mode));
+            @RequestParam(defaultValue = "10") int topK) {
+        return Result.success(knowledgeSearchService.search(query, topK));
     }
 
-    @GetMapping("/search/modes")
-    @Operation(summary = "获取可用的搜索模式")
-    public Result<Set<SearchMode>> getAvailableModes() {
-        return Result.success(knowledgeSearchService.getAvailableModes());
-    }
 
     @PostMapping("/rebuild-index")
     @Operation(summary = "异步重建知识点向量索引")

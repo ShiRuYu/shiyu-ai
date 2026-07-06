@@ -28,6 +28,13 @@ public class KnowledgeChunkRepository {
         return mapper.selectOneById(id);
     }
 
+    public KnowledgeChunkDO getByDocumentIdAndIndex(Long documentId, Integer chunkIndex) {
+        return mapper.selectOneByQuery(
+                QueryWrapper.create()
+                        .eq("document_id", documentId)
+                        .eq("chunk_index", chunkIndex));
+    }
+
     public List<KnowledgeChunkDO> getByDocumentId(Long documentId) {
         return mapper.selectListByQuery(
                 QueryWrapper.create().eq("document_id", documentId));

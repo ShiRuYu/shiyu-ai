@@ -30,6 +30,15 @@ public class KnowledgeRepository {
         return knowledgeMapper.selectListByQuery(qw);
     }
 
+    public List<KnowledgeDO> searchByName(String keyword, int topK) {
+        QueryWrapper qw = QueryWrapper.create();
+        qw.eq(KnowledgeDO::getStatus, 1);
+        qw.like(KnowledgeDO::getName, keyword);
+        qw.orderBy(KnowledgeDO::getId, true);
+        qw.limit(0, topK);
+        return knowledgeMapper.selectListByQuery(qw);
+    }
+
     public List<KnowledgeDO> page(int offset, int limit) {
         return page(offset, limit, null, null);
     }

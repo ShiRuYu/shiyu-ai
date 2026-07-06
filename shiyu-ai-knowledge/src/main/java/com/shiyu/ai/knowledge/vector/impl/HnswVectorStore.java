@@ -3,21 +3,68 @@ package com.shiyu.ai.knowledge.vector.impl;
 import com.shiyu.ai.knowledge.vector.VectorRecord;
 import com.shiyu.ai.knowledge.vector.VectorStore;
 import com.shiyu.ai.knowledge.vector.config.VectorStoreProperties;
+import io.github.jbellis.jvector.graph.GraphIndexBuilder;
+import io.github.jbellis.jvector.graph.GraphSearcher;
+import io.github.jbellis.jvector.graph.ListRandomAccessVectorValues;
+import io.github.jbellis.jvector.graph.OnHeapGraphIndex;
+import io.github.jbellis.jvector.graph.SearchResult;
+import io.github.jbellis.jvector.util.Bits;
+import io.github.jbellis.jvector.vector.VectorSimilarityFunction;
+import io.github.jbellis.jvector.vector.VectorizationProvider;
+import io.github.jbellis.jvector.vector.types.VectorFloat;
+import io.github.jbellis.jvector.vector.types.VectorTypeSupport;
+import jakarta.annotation.PreDestroy;
 import lombok.extern.slf4j.Slf4j;
 
+import java.io.*;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.atomic.AtomicInteger;
 
+/**
+ * 基于 jvector（纯 Java HNSW 实现）的向量存储。
+ * 无原生库依赖，全平台兼容（Windows/Linux/macOS）。
+ * <p>
+ * 内部使用 HNSW 图索引进行近似最近邻搜索，同时维护一个内存缓存
+ * 作为一致性保证和 fallback。缓存和向量数据通过 Java 序列化持久化到磁盘，
+ * 每次 upsert 后触发异步保存，应用关闭时通过 @PreDestroy 同步保存。
+ */
 @Slf4j
 public class HnswVectorStore implements VectorStore {
 
+    private static final VectorTypeSupport TYPE_SUPPORT =
+            VectorizationProvider.getInstance().getVectorTypeSupport();
+
+    private static final int M = 16;
+    private static final int BEAM_WIDTH = 100;
+    private static final float NEIGHBOR_OVERFLOW = 1.5f;
+    private static final float ALPHA = 1.0f;
+    private static final boolean ADD_HIERARCHY = true;
+
     private final int dimension;
     private final Path indexPath;
+    /** 内存缓存：recordId → VectorRecord（含向量和元数据） */
     private final Map<String, VectorRecord> cache = new ConcurrentHashMap<>();
 
-    private Object index;
+    /** nodeId → 向量数据（有序，与 graph 中节点索引一致） */
+    private final List<VectorFloat<?>> vectors = Collections.synchronizedList(new ArrayList<>());
+    /** nodeId → recordId */
+    private final Map<Integer, String> nodeIdToRecordId = new ConcurrentHashMap<>();
+    /** recordId → nodeId */
+    private final Map<String, Integer> recordIdToNodeId = new ConcurrentHashMap<>();
+    /** 下一个可用的 nodeId */
+    private final AtomicInteger nextNodeId = new AtomicInteger(0);
+
+    /** jvector HNSW 图构建器（支持增量添加） */
+    private volatile GraphIndexBuilder builder;
+    /** 当前图索引（供搜索使用） */
+    private volatile OnHeapGraphIndex graphIndex;
+
+    /** 最后一次保存后的修改计数，用于避免空保存 */
+    private volatile long version = 0;
+    private volatile long savedVersion = 0;
 
     public HnswVectorStore(VectorStoreProperties properties) {
         this.dimension = properties.getDimension();
@@ -25,34 +72,138 @@ public class HnswVectorStore implements VectorStore {
         initIndex();
     }
 
+    // ---------------------------------------------------------------
+    // 初始化
+    // ---------------------------------------------------------------
+
     private void initIndex() {
         try {
-            Class<?> indexClass = Class.forName("io.milvus.usearch.Index");
-            Class<?> metricClass = Class.forName("io.milvus.usearch.Metric");
-            index = indexClass.getDeclaredConstructor(int.class, int.class, metricClass)
-                    .newInstance(dimension, 16, Enum.valueOf((Class<Enum>) metricClass, "InnerProduct"));
-
-            if (Files.exists(indexPath)) {
-                indexClass.getMethod("load", String.class).invoke(index, indexPath.toString());
-                log.info("HNSW 索引已加载: {}", indexPath);
-            }
-            log.info("HNSWVectorStore 初始化完成, 维度={}", dimension);
-        } catch (ClassNotFoundException e) {
-            log.warn("usearch 库未在 classpath 中，HNSWVectorStore 降级为 InMemory 模式");
+            loadFromDisk();
+            log.info("HNSW 索引已加载: {} ({} 条记录)", indexPath, vectors.size());
         } catch (Exception e) {
-            log.error("HNSW 索引初始化失败", e);
+            log.info("HNSW 索引文件不存在或无法加载 (首次启动? 将新建索引), 维度={}", dimension);
+            createNewBuilder();
         }
     }
+
+    @SuppressWarnings("unchecked")
+    private void createNewBuilder() {
+        ListRandomAccessVectorValues rav = new ListRandomAccessVectorValues(
+                (List<VectorFloat<?>>) (List<?>) vectors, dimension);
+        builder = new GraphIndexBuilder(
+                rav,
+                VectorSimilarityFunction.DOT_PRODUCT,
+                M,
+                BEAM_WIDTH,
+                NEIGHBOR_OVERFLOW,
+                ALPHA,
+                ADD_HIERARCHY
+        );
+    }
+
+    // ---------------------------------------------------------------
+    // 持久化
+    // ---------------------------------------------------------------
+
+    /**
+     * 序列化格式：
+     * <pre>
+     * int size
+     * for each:
+     *   float[] vector
+     *   String recordId
+     *   Map<String, Object> metadata  ← cache 中的元数据
+     * </pre>
+     */
+    @SuppressWarnings("unchecked")
+    private void loadFromDisk() throws IOException, ClassNotFoundException {
+        try (ObjectInputStream ois = new ObjectInputStream(Files.newInputStream(indexPath))) {
+            int size = ois.readInt();
+            for (int i = 0; i < size; i++) {
+                float[] vectorData = (float[]) ois.readObject();
+                String recordId = (String) ois.readObject();
+                Map<String, Object> metadata = (Map<String, Object>) ois.readObject();
+
+                int nodeId = nextNodeId.getAndIncrement();
+                VectorFloat<?> vec = TYPE_SUPPORT.createFloatVector(vectorData);
+                vectors.add(vec);
+                nodeIdToRecordId.put(nodeId, recordId);
+                recordIdToNodeId.put(recordId, nodeId);
+
+                // 恢复 cache，确保 search 能返回向量和元数据
+                cache.put(recordId, new VectorRecord(recordId, vectorData, metadata));
+            }
+        }
+
+        // 重建 HNSW 图索引
+        createNewBuilder();
+        for (int i = 0; i < vectors.size(); i++) {
+            builder.addGraphNode(i, vectors.get(i));
+        }
+        graphIndex = builder.getGraph();
+    }
+
+    private synchronized void saveToDisk() {
+        try {
+            Path parent = indexPath.getParent();
+            if (parent != null) Files.createDirectories(parent);
+
+            try (ObjectOutputStream oos = new ObjectOutputStream(Files.newOutputStream(indexPath))) {
+                synchronized (vectors) {
+                    oos.writeInt(vectors.size());
+                    for (int i = 0; i < vectors.size(); i++) {
+                        oos.writeObject(toFloatArray(vectors.get(i)));
+                        String recordId = nodeIdToRecordId.get(i);
+                        oos.writeObject(recordId);
+                        VectorRecord rec = cache.get(recordId);
+                        oos.writeObject(rec != null ? rec.metadata() : Map.of());
+                    }
+                }
+            }
+            savedVersion = version;
+            log.info("HNSW 索引已保存: {} ({} 条记录)", indexPath, vectors.size());
+        } catch (Exception e) {
+            log.error("HNSW 索引保存失败", e);
+        }
+    }
+
+    @PreDestroy
+    public void close() {
+        log.info("HNSWVectorStore 关闭中, 保存索引...");
+        save();
+    }
+
+    // ---------------------------------------------------------------
+    // VectorStore 接口
+    // ---------------------------------------------------------------
 
     @Override
     public void upsert(VectorRecord record) {
         cache.put(record.id(), record);
+        if (builder == null) return;
+
         try {
-            if (index != null) {
-                long key = parseIdAsLong(record.id());
-                index.getClass().getMethod("add", long.class, float[].class)
-                        .invoke(index, key, record.vector());
+            int nodeId;
+            VectorFloat<?> vec = TYPE_SUPPORT.createFloatVector(record.vector().clone());
+
+            synchronized (vectors) {
+                Integer oldNodeId = recordIdToNodeId.remove(record.id());
+                if (oldNodeId != null) {
+                    nodeIdToRecordId.remove(oldNodeId);
+                }
+
+                nodeId = nextNodeId.getAndIncrement();
+                vectors.add(vec);
+                nodeIdToRecordId.put(nodeId, record.id());
+                recordIdToNodeId.put(record.id(), nodeId);
+
+                builder.addGraphNode(nodeId, vec);
             }
+
+            graphIndex = builder.getGraph();
+            version++;
+
+            log.trace("HNSW upsert 成功: id={}, nodeId={}", record.id(), nodeId);
         } catch (Exception e) {
             log.error("HNSW upsert 失败: id={}", record.id(), e);
         }
@@ -60,34 +211,49 @@ public class HnswVectorStore implements VectorStore {
 
     @Override
     public List<VectorRecord> search(float[] queryVector, int topK) {
-        if (index == null) {
+        OnHeapGraphIndex graph = graphIndex;
+        if (graph == null) {
             return fallbackSearch(queryVector, topK);
         }
+
         try {
-            Object result = index.getClass().getMethod("search", float[].class, int.class)
-                    .invoke(index, queryVector, topK);
+            VectorFloat<?> query = TYPE_SUPPORT.createFloatVector(queryVector);
+            ListRandomAccessVectorValues rav = new ListRandomAccessVectorValues(
+                    (List<VectorFloat<?>>) (List<?>) vectors, dimension);
 
-            @SuppressWarnings("unchecked")
-            List<long[]> idsAndDistances = (List<long[]>) result.getClass()
-                    .getMethod("getKeysAndDistances").invoke(result);
+            SearchResult result = GraphSearcher.search(
+                    query,
+                    topK,
+                    rav,
+                    VectorSimilarityFunction.DOT_PRODUCT,
+                    graph,
+                    Bits.ALL
+            );
 
-            List<VectorRecord> records = new ArrayList<>();
-            for (long[] entry : idsAndDistances) {
-                String id = String.valueOf(entry[0]);
-                VectorRecord rec = cache.get(id);
-                float[] vector = rec != null ? rec.vector() : null;
-                float distance = Float.intBitsToFloat((int) entry[1]);
-                if (vector != null) {
-                    Map<String, Object> meta = new LinkedHashMap<>(rec.metadata());
-                    meta.put("_score", distance);
-                    records.add(new VectorRecord(id, vector, meta));
-                }
+            SearchResult.NodeScore[] nodes = result.getNodes();
+            List<VectorRecord> records = new ArrayList<>(nodes.length);
+
+            for (SearchResult.NodeScore ns : nodes) {
+                int nodeId = ns.node;
+                float score = ns.score;
+
+                String recordId = nodeIdToRecordId.get(nodeId);
+                if (recordId == null) continue;
+
+                VectorRecord rec = cache.get(recordId);
+                if (rec == null) continue;
+
+                Map<String, Object> meta = new LinkedHashMap<>(rec.metadata());
+                meta.put("_score", (double) score);
+                records.add(new VectorRecord(recordId, rec.vector(), meta));
             }
+
             records.sort((a, b) -> {
                 double da = (double) a.metadata().getOrDefault("_score", 0.0);
                 double db = (double) b.metadata().getOrDefault("_score", 0.0);
                 return Double.compare(db, da);
             });
+
             return records;
         } catch (Exception e) {
             log.error("HNSW search 失败, 降级到 InMemory", e);
@@ -98,36 +264,65 @@ public class HnswVectorStore implements VectorStore {
     @Override
     public void delete(String id) {
         cache.remove(id);
-        if (index != null) {
-            try {
-                long key = parseIdAsLong(id);
-                index.getClass().getMethod("remove", long.class).invoke(index, key);
-            } catch (Exception e) {
-                log.error("HNSW delete 失败: id={}", id, e);
-            }
+        Integer nodeId = recordIdToNodeId.remove(id);
+        if (nodeId != null) {
+            nodeIdToRecordId.remove(nodeId);
+            version++;
+            log.trace("HNSW delete: id={}, nodeId={}", id, nodeId);
         }
     }
 
     @Override
-    public void rebuild() {
+    public synchronized void rebuild() {
         cache.clear();
-        if (index != null) {
-            try {
-                index.getClass().getMethod("reset").invoke(index);
-            } catch (Exception e) {
-                log.error("HNSW rebuild 失败", e);
-            }
-        }
+        vectors.clear();
+        nodeIdToRecordId.clear();
+        recordIdToNodeId.clear();
+        nextNodeId.set(0);
+        graphIndex = null;
+        builder = null;
+        createNewBuilder();
+        log.info("HNSW 索引已重置");
     }
 
+    // ---------------------------------------------------------------
+    // 其他方法
+    // ---------------------------------------------------------------
+
+    public void save() {
+        if (graphIndex == null && vectors.isEmpty()) return;
+        if (version == savedVersion) return; // 无变更，不保存
+        saveToDisk();
+    }
+
+    // ---------------------------------------------------------------
+    // 辅助方法
+    // ---------------------------------------------------------------
+
+    @SuppressWarnings("unchecked")
+    private static float[] toFloatArray(VectorFloat<?> vec) {
+        Object raw = vec.get();
+        if (raw instanceof float[]) {
+            return (float[]) raw;
+        }
+        float[] result = new float[vec.length()];
+        for (int i = 0; i < result.length; i++) {
+            result[i] = vec.get(i);
+        }
+        return result;
+    }
+
+    // ---------------------------------------------------------------
+    // Fallback（纯内存余弦相似度搜索）
+    // ---------------------------------------------------------------
+
     private List<VectorRecord> fallbackSearch(float[] queryVector, int topK) {
-        return cache.entrySet().stream()
-                .map(e -> {
-                    VectorRecord rec = e.getValue();
+        return cache.values().stream()
+                .map(rec -> {
                     float score = cosineSimilarity(queryVector, rec.vector());
                     Map<String, Object> meta = new LinkedHashMap<>(rec.metadata());
-                    meta.put("_score", score);
-                    return new VectorRecord(e.getKey(), rec.vector(), meta);
+                    meta.put("_score", (double) score);
+                    return new VectorRecord(rec.id(), rec.vector(), meta);
                 })
                 .sorted((a, b) -> {
                     double sa = (double) a.metadata().getOrDefault("_score", 0.0);
@@ -138,7 +333,7 @@ public class HnswVectorStore implements VectorStore {
                 .toList();
     }
 
-    private float cosineSimilarity(float[] a, float[] b) {
+    private static float cosineSimilarity(float[] a, float[] b) {
         float dot = 0, normA = 0, normB = 0;
         for (int i = 0; i < a.length; i++) {
             dot += a[i] * b[i];
@@ -146,32 +341,5 @@ public class HnswVectorStore implements VectorStore {
             normB += b[i] * b[i];
         }
         return (float) (dot / (Math.sqrt(normA) * Math.sqrt(normB) + 1e-10));
-    }
-
-    private long parseIdAsLong(String id) {
-        try {
-            return Long.parseLong(id);
-        } catch (NumberFormatException e) {
-            // Support format like "123_0" (docId_chunkIndex)
-            int underscore = id.indexOf('_');
-            if (underscore > 0) {
-                return Long.parseLong(id.substring(0, underscore));
-            }
-            // Fallback: use hash
-            return (long) id.hashCode();
-        }
-    }
-
-    public void save() {
-        if (index != null) {
-            try {
-                Path parent = indexPath.getParent();
-                if (parent != null) Files.createDirectories(parent);
-                index.getClass().getMethod("save", String.class).invoke(index, indexPath.toString());
-                log.info("HNSW 索引已保存: {}", indexPath);
-            } catch (Exception e) {
-                log.error("HNSW 索引保存失败", e);
-            }
-        }
     }
 }

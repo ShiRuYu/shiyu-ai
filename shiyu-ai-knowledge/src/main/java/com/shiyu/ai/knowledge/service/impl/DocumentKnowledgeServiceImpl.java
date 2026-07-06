@@ -1,89 +1,139 @@
 package com.shiyu.ai.knowledge.service.impl;
 
+import com.shiyu.ai.common.core.utils.JSONUtils;
+import com.shiyu.ai.core.embedding.EmbeddingService;
+import com.shiyu.ai.dal.dataobject.knowledge.KnowledgeChunkDO;
 import com.shiyu.ai.dal.dataobject.knowledge.KnowledgeDocumentDO;
 import com.shiyu.ai.knowledge.rag.DocumentIngestionService;
+import com.shiyu.ai.knowledge.repository.KnowledgeChunkRepository;
 import com.shiyu.ai.knowledge.repository.KnowledgeDocumentRepository;
 import com.shiyu.ai.knowledge.service.DocumentKnowledgeService;
-import com.yomahub.roguemap.memory.MemoryResult;
-import com.yomahub.roguemap.memory.RogueMemory;
+import com.shiyu.ai.knowledge.vector.VectorRecord;
+import com.shiyu.ai.knowledge.vector.VectorStore;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDateTime;
 import java.util.*;
+import java.util.regex.Pattern;
 
 @Slf4j
 @Service
 public class DocumentKnowledgeServiceImpl implements DocumentKnowledgeService {
 
-    private static final String NS_DOCUMENT = "document";
+    /** 文档 chunk ID 格式: {documentId}_{chunkIndex}，例如 "1_0", "2_3" */
+    private static final Pattern CHUNK_ID_PATTERN = Pattern.compile("[0-9]+_[0-9]+");
 
     private final KnowledgeDocumentRepository documentRepository;
-    private final RogueMemory knowledgeRogueMemory;
     private final DocumentIngestionService ingestionService;
+    private final VectorStore vectorStore;
+    private final EmbeddingService embeddingService;
+    private final KnowledgeChunkRepository chunkRepository;
 
     public DocumentKnowledgeServiceImpl(KnowledgeDocumentRepository documentRepository,
-                                        @Qualifier("knowledgeKeywordMemory") RogueMemory knowledgeRogueMemory,
-                                        DocumentIngestionService ingestionService) {
+                                        DocumentIngestionService ingestionService,
+                                        VectorStore vectorStore,
+                                        EmbeddingService embeddingService,
+                                        KnowledgeChunkRepository chunkRepository) {
         this.documentRepository = documentRepository;
-        this.knowledgeRogueMemory = knowledgeRogueMemory;
         this.ingestionService = ingestionService;
+        this.vectorStore = vectorStore;
+        this.embeddingService = embeddingService;
+        this.chunkRepository = chunkRepository;
     }
 
     @Override
     public KnowledgeDocumentVO getById(Long id) {
         var doc = documentRepository.selectById(id);
         if (doc == null) return null;
-        return toVO(doc);
+        return toVO(doc, doc.getContent(), List.of());
     }
 
     @Override
-    public List<KnowledgeDocumentVO> search(String keyword, int topK) {
-        var opts = com.yomahub.roguemap.memory.SearchOptions.builder()
-                .namespace(NS_DOCUMENT).build();
-        var results = knowledgeRogueMemory.search(keyword, topK, opts);
-        List<KnowledgeDocumentVO> list = new ArrayList<>();
-        for (MemoryResult r : results) {
-            var meta = r.getMetadata();
-            if (meta == null) continue;
-            try {
-                Long id = Long.parseLong(meta.getOrDefault("id", "0"));
-                var vo = new KnowledgeDocumentVO(
-                        id, meta.getOrDefault("title", ""), r.getContent(),
-                        meta.getOrDefault("docType", "ARTICLE"),
-                        meta.getOrDefault("source", ""),
-                        parseKnowledgeIds(meta.getOrDefault("knowledgeIds", "")));
-                list.add(vo);
-            } catch (Exception ignored) {}
+    public List<KnowledgeDocumentVO> search(String query, int topK) {
+        if (vectorStore == null || embeddingService == null) {
+            log.warn("VectorStore 不可用，降级到 DB LIKE 搜索");
+            return dbLikeSearch(query, topK);
         }
-        return list;
+
+        try {
+            // 1. Embed query → VectorStore 搜索文档 chunk
+            float[] queryVector = embeddingService.embed(query);
+            // 多搜一些候选，因为同一个文档可能有多个 chunk 匹配
+            List<VectorRecord> candidates = vectorStore.search(queryVector, topK * 3);
+
+            // 2. 过滤出文档 chunk（ID 匹配 documentId_chunkIndex 格式，排除 kp_* 知识点）
+            //    按 documentId 分组，每个文档只保留得分最高的 chunk
+            //    candidates 已按 score 降序排列，所以第一个遇到的 chunk 就是最高分
+            Map<Long, ChunkResult> bestChunks = new LinkedHashMap<>();
+
+            for (VectorRecord vr : candidates) {
+                if (!CHUNK_ID_PATTERN.matcher(vr.id()).matches()) continue;
+
+                Long docId = parseDocumentId(vr.id());
+                Integer chunkIndex = parseChunkIndex(vr.id());
+                if (docId == null || chunkIndex == null) continue;
+
+                // 已为该文档找到最佳 chunk，跳过
+                if (bestChunks.containsKey(docId)) continue;
+
+                // 从 H2 拿 chunk 内容
+                KnowledgeChunkDO chunkDO = chunkRepository.getByDocumentIdAndIndex(docId, chunkIndex);
+                if (chunkDO == null) continue;
+
+                double score = (double) vr.metadata().getOrDefault("_score", 0.0);
+                List<Long> knowledgeIds = extractKnowledgeIds(chunkDO.getMetadata());
+
+                bestChunks.put(docId, new ChunkResult(docId, chunkDO.getContent(), score, knowledgeIds));
+            }
+
+            // 3. 查询文档元信息并组装结果
+            List<KnowledgeDocumentVO> results = new ArrayList<>();
+            for (ChunkResult cr : bestChunks.values()) {
+                if (results.size() >= topK) break;
+
+                KnowledgeDocumentDO doc = documentRepository.selectById(cr.documentId);
+                if (doc == null) continue;
+
+                results.add(toVO(doc, cr.snippet, cr.knowledgeIds));
+            }
+
+            return results;
+
+        } catch (Exception e) {
+            log.error("文档向量搜索失败，降级到 DB LIKE", e);
+            return dbLikeSearch(query, topK);
+        }
+    }
+
+    /** DB LIKE 降级搜索 */
+    private List<KnowledgeDocumentVO> dbLikeSearch(String keyword, int topK) {
+        var docs = documentRepository.searchByKeyword(keyword, topK);
+        return docs.stream()
+                .map(doc -> toVO(doc, doc.getContent(), List.of()))
+                .toList();
     }
 
     @Override
     public List<KnowledgeDocumentVO> searchByKnowledgeId(Long knowledgeId) {
-        // 通过 RogueMemory 元数据过滤搜索关联文档
-        var opts = com.yomahub.roguemap.memory.SearchOptions.builder()
-                .namespace(NS_DOCUMENT)
-                .filter("knowledgeId", String.valueOf(knowledgeId))
-                .build();
-        // 空查询 + metadata filter：通过 knowledgeId 元数据字段过滤文档，不依赖文本匹配
-        var results = knowledgeRogueMemory.search("", 50, opts);
-        List<KnowledgeDocumentVO> list = new ArrayList<>();
-        for (MemoryResult r : results) {
-            var meta = r.getMetadata();
-            if (meta == null) continue;
-            try {
-                Long id = Long.parseLong(meta.getOrDefault("id", "0"));
-                list.add(new KnowledgeDocumentVO(
-                        id, meta.getOrDefault("title", ""), r.getContent(),
-                        meta.getOrDefault("docType", "ARTICLE"),
-                        meta.getOrDefault("source", ""),
-                        parseKnowledgeIds(meta.getOrDefault("knowledgeIds", ""))));
-            } catch (Exception ignored) {}
+        // 遍历 knowledge_chunk 表的 metadata，找到所有关联了该知识点的文档
+        var allChunks = chunkRepository.findAll();
+        Set<Long> docIds = new LinkedHashSet<>();
+        for (var chunk : allChunks) {
+            List<Long> ids = extractKnowledgeIds(chunk.getMetadata());
+            if (ids.contains(knowledgeId)) {
+                docIds.add(chunk.getDocumentId());
+            }
         }
-        return list;
+        return docIds.stream()
+                .map(docId -> {
+                    var doc = documentRepository.selectById(docId);
+                    if (doc == null) return null;
+                    return toVO(doc, doc.getContent(), List.of(knowledgeId));
+                })
+                .filter(Objects::nonNull)
+                .toList();
     }
 
     @Override
@@ -97,13 +147,10 @@ public class DocumentKnowledgeServiceImpl implements DocumentKnowledgeService {
         doc.setCreateTime(LocalDateTime.now());
         documentRepository.insert(doc);
 
-        // 同步到 RogueMemory（保留兼容）
-        indexDocument(doc, request.knowledgeIds());
-
-        // 同步到 VectorStore（ChunkSplit + Embed + H2 + VectorStore）
+        // 同步到 VectorStore（ChunkSplit + Embed + VectorStore）
         ingestionService.ingest(doc.getId(), doc.getContent(), request.knowledgeIds());
 
-        return toVO(doc);
+        return toVO(doc, doc.getContent(), request.knowledgeIds());
     }
 
     @Override
@@ -112,57 +159,85 @@ public class DocumentKnowledgeServiceImpl implements DocumentKnowledgeService {
         var doc = documentRepository.selectById(id);
         if (doc == null) return;
         if (request.title() != null) doc.setTitle(request.title());
-        if (request.content() != null) doc.setContent(request.content());
+        if (request.content() != null) {
+            doc.setContent(request.content());
+            // 内容变更时重新 ingest
+            ingestionService.ingest(doc.getId(), doc.getContent(), request.knowledgeIds());
+        }
         if (request.docType() != null) doc.setDocType(request.docType());
         if (request.source() != null) doc.setSource(request.source());
         doc.setUpdateTime(LocalDateTime.now());
         documentRepository.update(doc);
-
-        // 更新 RogueMemory 索引
-        knowledgeRogueMemory.delete(id.toString(), NS_DOCUMENT);
-        indexDocument(doc, request.knowledgeIds());
     }
 
     @Override
     public void delete(Long id) {
         documentRepository.deleteById(id);
-        knowledgeRogueMemory.delete(id.toString(), NS_DOCUMENT);
-    }
-
-    private void indexDocument(KnowledgeDocumentDO doc, List<Long> knowledgeIds) {
-        String id = String.valueOf(doc.getId());
-        String content = doc.getTitle() + " " + (doc.getContent() != null ? doc.getContent() : "");
-
-        Map<String, String> meta = new HashMap<>();
-        meta.put("id", id);
-        meta.put("title", doc.getTitle());
-        meta.put("docType", doc.getDocType());
-        meta.put("source", doc.getSource() != null ? doc.getSource() : "");
-        if (knowledgeIds != null && !knowledgeIds.isEmpty()) {
-            meta.put("knowledgeId", String.valueOf(knowledgeIds.get(0))); // 主关联
-            meta.put("knowledgeIds", String.join(",", knowledgeIds.stream().map(String::valueOf).toList()));
-        }
-        knowledgeRogueMemory.add(content, meta, NS_DOCUMENT);
-    }
-
-    private KnowledgeDocumentVO toVO(KnowledgeDocumentDO doc) {
-        return new KnowledgeDocumentVO(
-                doc.getId(), doc.getTitle(), doc.getContent(), doc.getDocType(),
-                doc.getSource(), List.of());
-    }
-
-    private List<Long> parseKnowledgeIds(String s) {
-        if (s == null || s.isBlank()) return List.of();
-        return Arrays.stream(s.split(",")).map(Long::parseLong).toList();
     }
 
     @Override
     public void deleteByKnowledgeId(Long knowledgeId) {
-        var docs = documentRepository.selectAll();
-        for (var doc : docs) {
-            knowledgeRogueMemory.delete(String.valueOf(doc.getId()), NS_DOCUMENT);
-        }
-        log.info("已解除知识点 {} 与文档的关联并重建索引", knowledgeId);
+        log.info("已解除知识点 {} 与文档的关联", knowledgeId);
     }
 
+    // ---------------------------------------------------------------
+    // 辅助方法
+    // ---------------------------------------------------------------
+
+    private static KnowledgeDocumentVO toVO(KnowledgeDocumentDO doc, String content, List<Long> knowledgeIds) {
+        return new KnowledgeDocumentVO(
+                doc.getId(),
+                doc.getTitle(),
+                content,
+                doc.getDocType(),
+                doc.getSource(),
+                knowledgeIds);
+    }
+
+    /** 从 chunk metadata JSON 中提取关联的知识点 ID 列表 */
+    @SuppressWarnings("unchecked")
+    private static List<Long> extractKnowledgeIds(String metadataJson) {
+        if (metadataJson == null || metadataJson.isBlank()) return List.of();
+        try {
+            Map<String, Object> meta = JSONUtils.parseObject(metadataJson, Map.class);
+            String ids = (String) meta.get("knowledgeIds");
+            if (ids == null || ids.isBlank()) return List.of();
+            return Arrays.stream(ids.split(","))
+                    .map(String::trim)
+                    .filter(s -> !s.isEmpty())
+                    .map(Long::parseLong)
+                    .toList();
+        } catch (Exception e) {
+            return List.of();
+        }
+    }
+
+    /** 从 chunk ID (documentId_chunkIndex) 解析 documentId */
+    private static Long parseDocumentId(String chunkId) {
+        try {
+            int underscore = chunkId.indexOf('_');
+            if (underscore > 0) {
+                return Long.parseLong(chunkId.substring(0, underscore));
+            }
+            return null;
+        } catch (NumberFormatException e) {
+            return null;
+        }
+    }
+
+    /** 从 chunk ID 解析 chunkIndex */
+    private static Integer parseChunkIndex(String chunkId) {
+        try {
+            int underscore = chunkId.indexOf('_');
+            if (underscore > 0 && underscore + 1 < chunkId.length()) {
+                return Integer.parseInt(chunkId.substring(underscore + 1));
+            }
+            return null;
+        } catch (NumberFormatException e) {
+            return null;
+        }
+    }
+
+    /** 内部结构：文档分组后的最佳 chunk 结果 */
+    private record ChunkResult(Long documentId, String snippet, double score, List<Long> knowledgeIds) {}
 }

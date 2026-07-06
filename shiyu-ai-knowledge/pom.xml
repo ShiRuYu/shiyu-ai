@@ -38,14 +38,6 @@
             <groupId>com.shiyu.ai</groupId>
             <artifactId>shiyu-common-web</artifactId>
         </dependency>
-        <dependency>
-            <groupId>com.yomahub</groupId>
-            <artifactId>roguemap-core</artifactId>
-        </dependency>
-        <dependency>
-            <groupId>com.yomahub</groupId>
-            <artifactId>roguemap-memory</artifactId>
-        </dependency>
 
         <dependency>
             <groupId>org.apache.commons</groupId>
@@ -53,7 +45,10 @@
         </dependency>
 
         <!-- VectorStore 后端（通过反射加载，按需添加） -->
-        <!-- HNSW: io.milvus:usearch -->
-        <!-- Qdrant: io.qdrant:qdrant-client -->
+        <!-- HNSW: jvector（纯 Java HNSW 实现，无原生依赖，全平台兼容） -->
+        <dependency>
+            <groupId>io.github.jbellis</groupId>
+            <artifactId>jvector</artifactId>
+        </dependency>
     </dependencies>
 </project>
