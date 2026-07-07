@@ -27,9 +27,8 @@ import java.util.concurrent.atomic.AtomicInteger;
  * 基于 jvector（纯 Java HNSW 实现）的向量存储。
  * 无原生库依赖，全平台兼容（Windows/Linux/macOS）。
  * <p>
- * 内部使用 HNSW 图索引进行近似最近邻搜索，同时维护一个内存缓存
- * 作为一致性保证和 fallback。缓存和向量数据通过 Java 序列化持久化到磁盘，
- * 每次 upsert 后触发异步保存，应用关闭时通过 @PreDestroy 同步保存。
+ * 内存优化：向量数据仅存一份（{@link #vectors}），元数据查询通过
+ * {@link #metadataCache} 按 recordId 索引，避免 float[] 副本驻留。
  */
 @Slf4j
 public class HnswVectorStore implements VectorStore {
@@ -45,10 +44,11 @@ public class HnswVectorStore implements VectorStore {
 
     private final int dimension;
     private final Path indexPath;
-    /** 内存缓存：recordId → VectorRecord（含向量和元数据） */
-    private final Map<String, VectorRecord> cache = new ConcurrentHashMap<>();
 
-    /** nodeId → 向量数据（有序，与 graph 中节点索引一致） */
+    /** 元数据缓存（不含向量数据）：recordId → metadata */
+    private final Map<String, Map<String, Object>> metadataCache = new ConcurrentHashMap<>();
+
+    /** nodeId → 向量数据（唯一全量副本，与 graph 索引共享） */
     private final List<VectorFloat<?>> vectors = Collections.synchronizedList(new ArrayList<>());
     /** nodeId → recordId */
     private final Map<Integer, String> nodeIdToRecordId = new ConcurrentHashMap<>();
@@ -112,7 +112,7 @@ public class HnswVectorStore implements VectorStore {
      * for each:
      *   float[] vector
      *   String recordId
-     *   Map<String, Object> metadata  ← cache 中的元数据
+     *   Map<String, Object> metadata
      * </pre>
      */
     @SuppressWarnings("unchecked")
@@ -125,13 +125,10 @@ public class HnswVectorStore implements VectorStore {
                 Map<String, Object> metadata = (Map<String, Object>) ois.readObject();
 
                 int nodeId = nextNodeId.getAndIncrement();
-                VectorFloat<?> vec = TYPE_SUPPORT.createFloatVector(vectorData);
-                vectors.add(vec);
+                vectors.add(TYPE_SUPPORT.createFloatVector(vectorData));
                 nodeIdToRecordId.put(nodeId, recordId);
                 recordIdToNodeId.put(recordId, nodeId);
-
-                // 恢复 cache，确保 search 能返回向量和元数据
-                cache.put(recordId, new VectorRecord(recordId, vectorData, metadata));
+                metadataCache.put(recordId, metadata);
             }
         }
 
@@ -155,8 +152,8 @@ public class HnswVectorStore implements VectorStore {
                         oos.writeObject(toFloatArray(vectors.get(i)));
                         String recordId = nodeIdToRecordId.get(i);
                         oos.writeObject(recordId);
-                        VectorRecord rec = cache.get(recordId);
-                        oos.writeObject(rec != null ? rec.metadata() : Map.of());
+                        Map<String, Object> meta = metadataCache.get(recordId);
+                        oos.writeObject(meta != null ? meta : Map.of());
                     }
                 }
             }
@@ -179,11 +176,13 @@ public class HnswVectorStore implements VectorStore {
 
     @Override
     public void upsert(VectorRecord record) {
-        cache.put(record.id(), record);
+        // 仅缓存元数据，不缓存向量数据
+        metadataCache.put(record.id(), new LinkedHashMap<>(record.metadata()));
         if (builder == null) return;
 
         try {
             int nodeId;
+            // 向量数据存入唯一副本列表
             VectorFloat<?> vec = TYPE_SUPPORT.createFloatVector(record.vector().clone());
 
             synchronized (vectors) {
@@ -240,12 +239,15 @@ public class HnswVectorStore implements VectorStore {
                 String recordId = nodeIdToRecordId.get(nodeId);
                 if (recordId == null) continue;
 
-                VectorRecord rec = cache.get(recordId);
-                if (rec == null) continue;
+                Map<String, Object> meta = metadataCache.get(recordId);
+                if (meta == null) continue;
 
-                Map<String, Object> meta = new LinkedHashMap<>(rec.metadata());
-                meta.put("_score", (double) score);
-                records.add(new VectorRecord(recordId, rec.vector(), meta));
+                // 从唯一副本取向量数据
+                float[] vec = toFloatArray(vectors.get(nodeId));
+
+                Map<String, Object> resultMeta = new LinkedHashMap<>(meta);
+                resultMeta.put("_score", (double) score);
+                records.add(new VectorRecord(recordId, vec, resultMeta));
             }
 
             records.sort((a, b) -> {
@@ -263,7 +265,7 @@ public class HnswVectorStore implements VectorStore {
 
     @Override
     public void delete(String id) {
-        cache.remove(id);
+        metadataCache.remove(id);
         Integer nodeId = recordIdToNodeId.remove(id);
         if (nodeId != null) {
             nodeIdToRecordId.remove(nodeId);
@@ -274,7 +276,7 @@ public class HnswVectorStore implements VectorStore {
 
     @Override
     public synchronized void rebuild() {
-        cache.clear();
+        metadataCache.clear();
         vectors.clear();
         nodeIdToRecordId.clear();
         recordIdToNodeId.clear();
@@ -291,7 +293,7 @@ public class HnswVectorStore implements VectorStore {
 
     public void save() {
         if (graphIndex == null && vectors.isEmpty()) return;
-        if (version == savedVersion) return; // 无变更，不保存
+        if (version == savedVersion) return;
         saveToDisk();
     }
 
@@ -317,20 +319,28 @@ public class HnswVectorStore implements VectorStore {
     // ---------------------------------------------------------------
 
     private List<VectorRecord> fallbackSearch(float[] queryVector, int topK) {
-        return cache.values().stream()
-                .map(rec -> {
-                    float score = cosineSimilarity(queryVector, rec.vector());
-                    Map<String, Object> meta = new LinkedHashMap<>(rec.metadata());
-                    meta.put("_score", (double) score);
-                    return new VectorRecord(rec.id(), rec.vector(), meta);
-                })
-                .sorted((a, b) -> {
-                    double sa = (double) a.metadata().getOrDefault("_score", 0.0);
-                    double sb = (double) b.metadata().getOrDefault("_score", 0.0);
-                    return Double.compare(sb, sa);
-                })
-                .limit(topK)
-                .toList();
+        // 遍历 recordIdToNodeId，从 vectors 取向量，从 metadataCache 取元数据
+        List<VectorRecord> all = new ArrayList<>();
+        for (var entry : recordIdToNodeId.entrySet()) {
+            String recordId = entry.getKey();
+            int nodeId = entry.getValue();
+
+            if (nodeId >= vectors.size()) continue;
+            float[] vec = toFloatArray(vectors.get(nodeId));
+            float score = cosineSimilarity(queryVector, vec);
+
+            Map<String, Object> meta = new LinkedHashMap<>(metadataCache.getOrDefault(recordId, Map.of()));
+            meta.put("_score", (double) score);
+            all.add(new VectorRecord(recordId, vec, meta));
+        }
+
+        all.sort((a, b) -> {
+            double sa = (double) a.metadata().getOrDefault("_score", 0.0);
+            double sb = (double) b.metadata().getOrDefault("_score", 0.0);
+            return Double.compare(sb, sa);
+        });
+
+        return all.size() <= topK ? all : all.subList(0, topK);
     }
 
     private static float cosineSimilarity(float[] a, float[] b) {
