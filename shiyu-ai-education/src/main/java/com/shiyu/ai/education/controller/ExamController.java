@@ -4,7 +4,7 @@ import com.shiyu.ai.common.core.api.Result;
 import com.shiyu.ai.dal.dataobject.education.ExamDO;
 import com.shiyu.ai.education.dto.ExamResponse;
 import com.shiyu.ai.education.dto.SubmitAnswerRequest;
-import com.shiyu.ai.education.exam.ExamService;
+import com.shiyu.ai.education.service.ExamService;
 import io.swagger.v3.oas.annotations.Operation;
 import lombok.extern.slf4j.Slf4j;
 import io.swagger.v3.oas.annotations.tags.Tag;

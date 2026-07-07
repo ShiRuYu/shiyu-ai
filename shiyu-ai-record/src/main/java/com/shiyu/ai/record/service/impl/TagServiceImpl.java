@@ -1,6 +1,6 @@
 package com.shiyu.ai.record.service.impl;
 
-import com.shiyu.ai.record.repository.TagRepository;
+import com.shiyu.ai.dal.repository.record.TagRepository;
 import com.shiyu.ai.record.service.TagService;
 import com.shiyu.ai.record.bo.TagBO;
 import jakarta.annotation.Resource;

@@ -5,7 +5,7 @@ import com.shiyu.ai.aiagent.node.BaseNode;
 import com.shiyu.ai.aiagent.node.NodeInput;
 import com.shiyu.ai.aiagent.node.NodeOutput;
 import com.shiyu.ai.aiagent.node.NodeType;
-import com.shiyu.ai.education.ability.AbilityService;
+import com.shiyu.ai.education.service.AbilityService;
 import com.shiyu.ai.education.domain.AbilityValue;
 import com.shiyu.ai.knowledge.dto.KnowledgeResponse;
 import com.shiyu.ai.knowledge.service.KnowledgeRelationService;

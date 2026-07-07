@@ -10,7 +10,7 @@ import com.shiyu.ai.knowledge.dto.KnowledgeResponse;
 import com.shiyu.ai.knowledge.dto.UpdateKnowledgeRequest;
 import com.shiyu.ai.knowledge.graph.KnowledgeGraph;
 import com.shiyu.ai.knowledge.domain.GraphNode;
-import com.shiyu.ai.knowledge.repository.KnowledgeRepository;
+import com.shiyu.ai.dal.repository.knowledge.KnowledgeRepository;
 import com.shiyu.ai.knowledge.search.KnowledgeSearchService;
 import com.shiyu.ai.knowledge.service.DocumentKnowledgeService;
 import com.shiyu.ai.knowledge.service.KnowledgeRelationService;

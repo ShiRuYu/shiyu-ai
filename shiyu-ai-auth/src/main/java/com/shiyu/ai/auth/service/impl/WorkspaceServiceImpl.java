@@ -1,6 +1,6 @@
 package com.shiyu.ai.auth.service.impl;
 
-import com.shiyu.ai.auth.repository.WorkspaceRepository;
+import com.shiyu.ai.dal.repository.auth.WorkspaceRepository;
 import com.shiyu.ai.auth.service.WorkspaceService;
 import com.shiyu.ai.auth.bo.WorkspaceBO;
 import lombok.extern.slf4j.Slf4j;

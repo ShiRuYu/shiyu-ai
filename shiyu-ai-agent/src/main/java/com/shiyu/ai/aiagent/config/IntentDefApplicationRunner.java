@@ -1,6 +1,6 @@
 package com.shiyu.ai.aiagent.config;
 
-import com.shiyu.ai.aiagent.repository.IntentDefRepository;
+import com.shiyu.ai.dal.repository.agent.IntentDefRepository;
 import com.shiyu.ai.aiagent.bo.IntentDefBO;
 import com.shiyu.ai.aiagent.node.intent.IntentDefinitionFactory;
 import jakarta.annotation.Resource;

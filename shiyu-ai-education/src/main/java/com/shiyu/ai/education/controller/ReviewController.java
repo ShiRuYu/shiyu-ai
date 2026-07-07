@@ -4,7 +4,7 @@ import com.shiyu.ai.common.core.api.Result;
 import com.shiyu.ai.dal.dataobject.education.ReviewTaskDO;
 import com.shiyu.ai.education.dto.CompleteReviewRequest;
 import com.shiyu.ai.education.dto.ReviewTaskResponse;
-import com.shiyu.ai.education.review.ReviewService;
+import com.shiyu.ai.education.service.ReviewService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;

@@ -3,7 +3,7 @@ package com.shiyu.ai.education.controller;
 import com.shiyu.ai.common.core.api.Result;
 import com.shiyu.ai.dal.dataobject.education.QuestionDO;
 import com.shiyu.ai.education.dto.QuestionResponse;
-import com.shiyu.ai.education.question.QuestionService;
+import com.shiyu.ai.education.service.QuestionService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;

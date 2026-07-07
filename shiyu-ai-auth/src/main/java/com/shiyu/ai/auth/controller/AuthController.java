@@ -3,7 +3,7 @@ package com.shiyu.ai.auth.controller;
 import com.shiyu.ai.auth.request.LoginRequest;
 import com.shiyu.ai.auth.vo.LoginResponseVO;
 import com.shiyu.ai.auth.service.AuthService;
-import com.shiyu.ai.auth.service.LoginRateLimiter;
+import com.shiyu.ai.auth.handler.LoginRateLimiter;
 import com.shiyu.ai.auth.vo.WorkspaceContextVO;
 import com.shiyu.ai.common.core.api.Result;
 import com.shiyu.ai.common.core.domain.LoginContextHolder;

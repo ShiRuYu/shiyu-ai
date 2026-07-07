@@ -1,7 +1,7 @@
 package com.shiyu.ai.knowledge.config;
 
 import com.shiyu.ai.knowledge.rag.DocumentIngestionService;
-import com.shiyu.ai.knowledge.repository.KnowledgeDocumentRepository;
+import com.shiyu.ai.dal.repository.knowledge.KnowledgeDocumentRepository;
 import com.shiyu.ai.knowledge.search.KnowledgeSearchService;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.boot.ApplicationArguments;

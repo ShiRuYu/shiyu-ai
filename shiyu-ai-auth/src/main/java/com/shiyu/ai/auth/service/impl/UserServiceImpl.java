@@ -1,6 +1,6 @@
 package com.shiyu.ai.auth.service.impl;
 
-import com.shiyu.ai.auth.repository.UserRepository;
+import com.shiyu.ai.dal.repository.auth.UserRepository;
 import com.shiyu.ai.auth.service.UserService;
 import com.shiyu.ai.auth.bo.RoleBO;
 import com.shiyu.ai.auth.bo.UserBO;

@@ -1,6 +1,6 @@
 package com.shiyu.ai.aiagent.service.impl;
 
-import com.shiyu.ai.aiagent.repository.AgentAdminRepository;
+import com.shiyu.ai.dal.repository.agent.AgentAdminRepository;
 import com.shiyu.ai.aiagent.service.AgentAdminService;
 import com.shiyu.ai.aiagent.service.AgentService;
 import com.shiyu.ai.aiagent.bo.AgentDefBO;

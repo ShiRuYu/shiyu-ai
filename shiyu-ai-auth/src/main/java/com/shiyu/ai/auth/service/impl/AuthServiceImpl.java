@@ -1,15 +1,15 @@
 package com.shiyu.ai.auth.service.impl;
 
-import com.shiyu.ai.auth.repository.AuthRepository;
-import com.shiyu.ai.auth.repository.UserRepository;
+import com.shiyu.ai.dal.repository.auth.AuthRepository;
+import com.shiyu.ai.dal.repository.auth.UserRepository;
 import com.shiyu.ai.auth.service.AuthService;
 import com.shiyu.ai.dal.dataobject.auth.RoleDO;
 import com.shiyu.ai.dal.dataobject.auth.TenantDO;
 import com.shiyu.ai.dal.dataobject.auth.UserWorkspaceRoleDO;
 import com.shiyu.ai.dal.dataobject.auth.WorkspaceDO;
-import com.shiyu.ai.auth.repository.WorkspaceTenantRepository;
+import com.shiyu.ai.dal.repository.auth.WorkspaceTenantRepository;
 
-import com.shiyu.ai.auth.repository.UserWorkspaceRoleRepository;
+import com.shiyu.ai.dal.repository.auth.UserWorkspaceRoleRepository;
 
 import com.shiyu.ai.auth.bo.RoleBO;
 import com.shiyu.ai.auth.bo.UserBO;

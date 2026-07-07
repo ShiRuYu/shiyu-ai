@@ -1,6 +1,6 @@
 package com.shiyu.ai.record.service.impl;
 
-import com.shiyu.ai.record.repository.RecordRepository;
+import com.shiyu.ai.dal.repository.record.RecordRepository;
 import com.shiyu.ai.record.service.RecordService;
 import com.shiyu.ai.record.bo.RecordBO;
 import jakarta.annotation.Resource;

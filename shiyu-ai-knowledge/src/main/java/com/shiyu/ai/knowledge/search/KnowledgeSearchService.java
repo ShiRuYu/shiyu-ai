@@ -2,7 +2,7 @@ package com.shiyu.ai.knowledge.search;
 
 import com.shiyu.ai.core.embedding.EmbeddingService;
 import com.shiyu.ai.dal.dataobject.knowledge.KnowledgeDO;
-import com.shiyu.ai.knowledge.repository.KnowledgeRepository;
+import com.shiyu.ai.dal.repository.knowledge.KnowledgeRepository;
 import com.shiyu.ai.knowledge.vector.VectorRecord;
 import com.shiyu.ai.knowledge.vector.VectorStore;
 import lombok.extern.slf4j.Slf4j;

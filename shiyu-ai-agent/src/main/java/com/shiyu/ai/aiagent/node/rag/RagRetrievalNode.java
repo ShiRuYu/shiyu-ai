@@ -5,7 +5,7 @@ import com.shiyu.ai.aiagent.node.NodeInput;
 import com.shiyu.ai.aiagent.node.NodeOutput;
 import com.shiyu.ai.aiagent.node.NodeType;
 import com.shiyu.ai.aiagent.node.NodeFields.FieldKey;
-import com.shiyu.ai.rag.RagService;
+import com.shiyu.ai.knowledge.rag.integration.RagService;
 import lombok.Getter;
 import lombok.Setter;
 import lombok.extern.slf4j.Slf4j;

@@ -2,7 +2,7 @@ package com.shiyu.ai.education.controller;
 
 import com.shiyu.ai.common.core.api.Result;
 import com.shiyu.ai.dal.dataobject.education.ChapterDO;
-import com.shiyu.ai.education.chapter.ChapterService;
+import com.shiyu.ai.education.service.ChapterService;
 import com.shiyu.ai.education.dto.ChapterResponse;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;

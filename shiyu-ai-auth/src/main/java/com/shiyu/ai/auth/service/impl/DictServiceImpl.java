@@ -2,7 +2,7 @@ package com.shiyu.ai.auth.service.impl;
 
 import com.github.benmanes.caffeine.cache.Cache;
 import com.github.benmanes.caffeine.cache.Caffeine;
-import com.shiyu.ai.auth.repository.DictRepository;
+import com.shiyu.ai.dal.repository.auth.DictRepository;
 import com.shiyu.ai.auth.service.DictService;
 import com.shiyu.ai.auth.bo.DictBO;
 import jakarta.annotation.Resource;

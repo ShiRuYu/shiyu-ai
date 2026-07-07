@@ -4,7 +4,7 @@ import com.shiyu.ai.common.core.api.Result;
 import com.shiyu.ai.dal.dataobject.education.StudyPlanDO;
 import com.shiyu.ai.education.dto.DailyTaskResponse;
 import com.shiyu.ai.education.dto.StudyPlanResponse;
-import com.shiyu.ai.education.plan.StudyPlanService;
+import com.shiyu.ai.education.service.StudyPlanService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;

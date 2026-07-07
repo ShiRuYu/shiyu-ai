@@ -2,8 +2,8 @@ package com.shiyu.ai.aiagent.education;
 
 import com.shiyu.ai.dal.dataobject.education.ReviewTaskDO;
 import com.shiyu.ai.education.domain.ReviewStatus;
-import com.shiyu.ai.education.review.ReviewService;
-import com.shiyu.ai.education.review.ReviewScheduler;
+import com.shiyu.ai.education.service.ReviewService;
+import com.shiyu.ai.education.domain.ReviewScheduler;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Component;

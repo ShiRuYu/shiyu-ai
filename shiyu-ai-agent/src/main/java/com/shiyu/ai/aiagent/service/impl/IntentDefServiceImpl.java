@@ -1,6 +1,6 @@
 package com.shiyu.ai.aiagent.service.impl;
 
-import com.shiyu.ai.aiagent.repository.IntentDefRepository;
+import com.shiyu.ai.dal.repository.agent.IntentDefRepository;
 import com.shiyu.ai.aiagent.service.IntentDefService;
 import com.shiyu.ai.aiagent.bo.IntentDefBO;
 import com.shiyu.ai.model.vo.IdNameOptionVO;

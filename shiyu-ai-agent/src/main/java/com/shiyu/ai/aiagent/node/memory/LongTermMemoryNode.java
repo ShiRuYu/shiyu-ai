@@ -1,6 +1,6 @@
 package com.shiyu.ai.aiagent.node.memory;
 
-import com.shiyu.ai.memory.MemoryService;
+import com.shiyu.ai.core.memory.MemoryService;
 import com.shiyu.ai.aiagent.node.BaseNode;
 import com.shiyu.ai.aiagent.node.NodeInput;
 import com.shiyu.ai.aiagent.node.NodeOutput;

@@ -1,6 +1,6 @@
 package com.shiyu.ai.aiagent.service.impl;
 
-import com.shiyu.ai.aiagent.repository.AgentExecutionRepository;
+import com.shiyu.ai.dal.repository.agent.AgentExecutionRepository;
 import com.shiyu.ai.aiagent.service.ExecutionHistoryService;
 import com.shiyu.ai.aiagent.bo.AgentExecutionBO;
 import lombok.extern.slf4j.Slf4j;

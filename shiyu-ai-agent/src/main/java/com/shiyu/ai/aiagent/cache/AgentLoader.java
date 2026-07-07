@@ -3,7 +3,7 @@ package com.shiyu.ai.aiagent.cache;
 import com.shiyu.ai.common.core.utils.JSONUtils;
 import com.shiyu.ai.aiagent.AgentDefinition;
 import com.shiyu.ai.aiagent.AgentVersion;
-import com.shiyu.ai.aiagent.repository.AgentAdminRepository;
+import com.shiyu.ai.dal.repository.agent.AgentAdminRepository;
 import com.shiyu.ai.aiagent.bo.AgentDefBO;
 import com.shiyu.ai.aiagent.bo.AgentVersionBO;
 import com.shiyu.ai.aiagent.request.GraphConfigRequest;

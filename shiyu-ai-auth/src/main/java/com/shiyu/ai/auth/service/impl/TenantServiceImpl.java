@@ -1,6 +1,6 @@
 package com.shiyu.ai.auth.service.impl;
 
-import com.shiyu.ai.auth.repository.TenantRepository;
+import com.shiyu.ai.dal.repository.auth.TenantRepository;
 import com.shiyu.ai.auth.service.TenantService;
 import com.shiyu.ai.auth.bo.TenantBO;
 import lombok.extern.slf4j.Slf4j;

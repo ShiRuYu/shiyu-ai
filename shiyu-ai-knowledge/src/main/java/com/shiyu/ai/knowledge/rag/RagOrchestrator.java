@@ -4,7 +4,7 @@ import com.shiyu.ai.common.core.utils.JSONUtils;
 import com.shiyu.ai.core.embedding.EmbeddingService;
 import com.shiyu.ai.dal.dataobject.knowledge.KnowledgeChunkDO;
 import com.shiyu.ai.knowledge.graph.GraphStore;
-import com.shiyu.ai.knowledge.repository.KnowledgeChunkRepository;
+import com.shiyu.ai.dal.repository.knowledge.KnowledgeChunkRepository;
 import com.shiyu.ai.knowledge.vector.VectorRecord;
 import com.shiyu.ai.knowledge.vector.VectorStore;
 import lombok.extern.slf4j.Slf4j;

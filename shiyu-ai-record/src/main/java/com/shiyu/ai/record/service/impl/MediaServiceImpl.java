@@ -1,6 +1,6 @@
 package com.shiyu.ai.record.service.impl;
 
-import com.shiyu.ai.record.repository.MediaRepository;
+import com.shiyu.ai.dal.repository.record.MediaRepository;
 import com.shiyu.ai.record.service.MediaService;
 import com.shiyu.ai.record.bo.MediaBO;
 import jakarta.annotation.Resource;

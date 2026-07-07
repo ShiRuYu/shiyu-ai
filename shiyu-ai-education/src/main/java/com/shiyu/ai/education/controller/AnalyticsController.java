@@ -2,7 +2,7 @@ package com.shiyu.ai.education.controller;
 
 import com.shiyu.ai.common.core.api.Result;
 import com.shiyu.ai.dal.dataobject.education.StudyRecordDO;
-import com.shiyu.ai.education.analytics.AnalyticsService;
+import com.shiyu.ai.education.service.AnalyticsService;
 import com.shiyu.ai.education.dto.AbilityRadarResponse;
 import com.shiyu.ai.education.dto.OverviewResponse;
 import com.shiyu.ai.education.dto.TrendResponse;

@@ -5,7 +5,7 @@ import com.shiyu.ai.core.ChatRequest;
 import com.shiyu.ai.core.ChatResponse;
 import com.shiyu.ai.dal.dataobject.education.ExamDO;
 import com.shiyu.ai.education.domain.ExamType;
-import com.shiyu.ai.education.exam.ExamService;
+import com.shiyu.ai.education.service.ExamService;
 import com.shiyu.ai.knowledge.dto.KnowledgeResponse;
 import com.shiyu.ai.knowledge.service.KnowledgeService;
 import lombok.RequiredArgsConstructor;
