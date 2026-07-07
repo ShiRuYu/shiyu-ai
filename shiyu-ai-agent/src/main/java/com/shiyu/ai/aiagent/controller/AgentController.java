@@ -27,7 +27,7 @@ import java.util.UUID;
 @Slf4j
 @Tag(name = "Agent", description = "Agent")
 @RestController
-@RequestMapping("/api/agent")
+@RequestMapping("/agent/agent")
 public class AgentController {
 
     private final AgentService agentService;
@@ -87,16 +87,16 @@ public class AgentController {
      * @return AgentDefinition
      */
     @Operation(summary = "Get Agent")
-    @GetMapping("/{agentId}")
-    public Result<AgentDefinition> getAgent(@PathVariable String agentId) {
+    @GetMapping("/detail")
+    public Result<AgentDefinition> getAgent(@RequestParam String agentId) {
         log.info("收到 Agent 查询请求：agentId={}", agentId);
-        
+
         AgentDefinition definition = agentService.getAgent(agentId);
-        
+
         if (definition == null) {
             return Result.fail("Agent 不存在");
         }
-        
+
         return Result.success(definition);
     }
 
@@ -106,12 +106,12 @@ public class AgentController {
      * @return 删除结果
      */
     @Operation(summary = "Delete Agent")
-    @PostMapping("/{agentId}")
-    public Result<Void> deleteAgent(@PathVariable String agentId) {
+    @PostMapping("/delete")
+    public Result<Void> deleteAgent(@RequestParam String agentId) {
         log.info("收到 Agent 删除请求：agentId={}", agentId);
-        
+
         boolean success = agentService.unregisterAgent(agentId);
-        
+
         if (success) {
             return Result.success();
         } else {
@@ -127,13 +127,13 @@ public class AgentController {
      * @return 执行结果
      */
     @Operation(summary = "Execute Agent")
-    @RequestMapping(value = "/{agentId}/execute", method = {RequestMethod.GET, RequestMethod.POST})
+    @RequestMapping(value = "/execute", method = {RequestMethod.GET, RequestMethod.POST})
     public Result<Map<String, Object>> executeAgent(
-            @PathVariable String agentId,
+            @RequestParam String agentId,
             @RequestBody(required = false) Map<String, Object> body,
             @RequestParam(required = false) Map<String, String> params) {
         log.info("收到 Agent 执行请求：agentId={}", agentId);
-        
+
         try {
             Map<String, Object> input = new HashMap<>();
             if (body != null) {
@@ -146,11 +146,11 @@ public class AgentController {
             input.put(NodeFields.FieldKey.AGENT_ID.key(), agentId);
             input.put(NodeFields.FieldKey.SESSION_ID.key(), UUID.randomUUID().toString());
             input.put(NodeFields.FieldKey.USER_ID.key(), LoginContextHolder.getUserId());
-            
+
             Map<String, Object> result = agentService.execute(agentId, input);
-            
+
             return Result.success(result);
-            
+
         } catch (Exception e) {
             log.error("Agent 执行失败：agentId={}", agentId, e);
             return Result.fail("Agent 执行失败");
@@ -165,13 +165,13 @@ public class AgentController {
      * @return 流式执行结果
      */
     @Operation(summary = "Execute Stream Agent")
-    @RequestMapping(value = "/{agentId}/executeStream", method = {RequestMethod.GET, RequestMethod.POST}, produces = MediaType.TEXT_EVENT_STREAM_VALUE)
+    @RequestMapping(value = "/execute-stream", method = {RequestMethod.GET, RequestMethod.POST}, produces = MediaType.TEXT_EVENT_STREAM_VALUE)
     public Flux<Result<Map<String, Object>>> executeStreamAgent(
-            @PathVariable String agentId,
+            @RequestParam String agentId,
             @RequestBody(required = false) Map<String, Object> body,
             @RequestParam(required = false) Map<String, String> params) {
         log.info("收到 Agent 流式执行请求：agentId={}", agentId);
-        
+
         try {
             Map<String, Object> input = new HashMap<>();
             if (body != null) {
@@ -184,14 +184,14 @@ public class AgentController {
             input.put(NodeFields.FieldKey.AGENT_ID.key(), agentId);
             input.put(NodeFields.FieldKey.SESSION_ID.key(), UUID.randomUUID().toString());
             input.put(NodeFields.FieldKey.USER_ID.key(), LoginContextHolder.getUserId());
-            
+
             return agentService.executeStream(agentId, input)
                     .map(Result::success)
                     .onErrorResume(e -> {
                         log.error("Agent 流式执行失败：agentId={}", agentId, e);
                         return Flux.just(Result.fail("Agent 流式执行失败"));
                     });
-            
+
         } catch (Exception e) {
             log.error("Agent 流式执行失败：agentId={}", agentId, e);
             return Flux.just(Result.fail("Agent 流式执行失败"));
@@ -205,14 +205,14 @@ public class AgentController {
      * @return 切换结果
      */
     @Operation(summary = "Switch Version")
-    @PostMapping("/{agentId}/version/switch")
+    @PostMapping("/version/switch")
     public Result<Void> switchVersion(
-            @PathVariable String agentId,
+            @RequestParam String agentId,
             @RequestParam String version) {
         log.info("收到 Agent 版本切换请求：agentId={}, version={}", agentId, version);
-        
+
         boolean success = agentService.switchVersion(agentId, version);
-        
+
         if (success) {
             return Result.success();
         } else {

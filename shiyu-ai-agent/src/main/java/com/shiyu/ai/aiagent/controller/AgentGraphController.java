@@ -9,6 +9,7 @@ import com.shiyu.ai.aiagent.request.NodeConfigRequest;
 import com.shiyu.ai.aiagent.request.VersionRequest;
 import com.shiyu.ai.aiagent.vo.AgentVersionDetailVO;
 import com.shiyu.ai.aiagent.vo.GraphValidationVO;
+import com.shiyu.ai.common.core.api.PageQuery;
 import com.shiyu.ai.common.core.api.Result;
 import lombok.extern.slf4j.Slf4j;
 import jakarta.validation.Valid;
@@ -19,7 +20,7 @@ import io.swagger.v3.oas.annotations.Operation;
 @Slf4j
 @Tag(name = "Agent Graph", description = "Agent Graph")
 @RestController
-@RequestMapping("/admin/agent/{agentId}/version/{versionId}/graph")
+@RequestMapping("/agent/graph")
 public class AgentGraphController {
 
     private final AgentGraphService agentGraphService;
@@ -29,18 +30,18 @@ public class AgentGraphController {
     }
 
     @Operation(summary = "Get Graph")
-    @GetMapping
+    @GetMapping("/detail")
     public Result<AgentVersionDetailVO> getGraph(
-            @PathVariable String agentId, @PathVariable Long versionId) {
+            @RequestParam String agentId, @RequestParam Long versionId) {
         AgentVersionDetailVO vo = agentGraphService.getGraphConfig(agentId, versionId);
         if (vo == null) return Result.fail("版本不存在");
         return Result.success(vo);
     }
 
     @Operation(summary = "Update Graph")
-    @PutMapping
+    @PostMapping("/update")
     public Result<AgentVersionDetailVO> updateGraph(
-            @PathVariable String agentId, @PathVariable Long versionId,
+            @RequestParam String agentId, @RequestParam Long versionId,
             @Valid @RequestBody GraphConfigRequest request) {
         try {
             AgentVersionDetailVO vo = agentGraphService.updateGraphConfig(agentId, versionId, request);
@@ -54,16 +55,16 @@ public class AgentGraphController {
     @Operation(summary = "Validate")
     @PostMapping("/validate")
     public Result<GraphValidationVO> validate(
-            @PathVariable String agentId, @PathVariable Long versionId,
+            @RequestParam String agentId, @RequestParam Long versionId,
             @Valid @RequestBody GraphConfigRequest request) {
         GraphValidationVO result = agentGraphService.validateGraphConfig(request);
         return Result.success(result);
     }
 
     @Operation(summary = "Add Node")
-    @PostMapping("/node")
+    @PostMapping("/node/create")
     public Result<Void> addNode(
-            @PathVariable String agentId, @PathVariable Long versionId,
+            @RequestParam String agentId, @RequestParam Long versionId,
             @Valid @RequestBody NodeConfigRequest request) {
         try {
             agentGraphService.addNode(agentId, versionId, request);
@@ -75,10 +76,10 @@ public class AgentGraphController {
     }
 
     @Operation(summary = "Update Node")
-    @PutMapping("/node/{nodeId}")
+    @PostMapping("/node/update")
     public Result<Void> updateNode(
-            @PathVariable String agentId, @PathVariable Long versionId,
-            @PathVariable String nodeId, @Valid @RequestBody NodeConfigRequest request) {
+            @RequestParam String agentId, @RequestParam Long versionId,
+            @RequestParam String nodeId, @Valid @RequestBody NodeConfigRequest request) {
         try {
             agentGraphService.updateNode(agentId, versionId, nodeId, request);
             return Result.success();
@@ -89,10 +90,10 @@ public class AgentGraphController {
     }
 
     @Operation(summary = "Delete Node")
-    @DeleteMapping("/node/{nodeId}")
+    @PostMapping("/node/delete")
     public Result<Void> deleteNode(
-            @PathVariable String agentId, @PathVariable Long versionId,
-            @PathVariable String nodeId) {
+            @RequestParam String agentId, @RequestParam Long versionId,
+            @RequestParam String nodeId) {
         try {
             agentGraphService.deleteNode(agentId, versionId, nodeId);
             return Result.success();
@@ -103,9 +104,9 @@ public class AgentGraphController {
     }
 
     @Operation(summary = "Add Edge")
-    @PostMapping("/edge")
+    @PostMapping("/edge/create")
     public Result<Void> addEdge(
-            @PathVariable String agentId, @PathVariable Long versionId,
+            @RequestParam String agentId, @RequestParam Long versionId,
             @Valid @RequestBody EdgeRequest request) {
         try {
             agentGraphService.addEdge(agentId, versionId, request);
@@ -117,9 +118,9 @@ public class AgentGraphController {
     }
 
     @Operation(summary = "Delete Edge")
-    @DeleteMapping("/edge")
+    @PostMapping("/edge/delete")
     public Result<Void> deleteEdge(
-            @PathVariable String agentId, @PathVariable Long versionId,
+            @RequestParam String agentId, @RequestParam Long versionId,
             @RequestParam String sourceNodeId, @RequestParam String targetNodeId) {
         try {
             agentGraphService.deleteEdge(agentId, versionId, sourceNodeId, targetNodeId);
@@ -133,15 +134,15 @@ public class AgentGraphController {
     @Operation(summary = "Get Canvas")
     @GetMapping("/canvas")
     public Result<String> getCanvas(
-            @PathVariable String agentId, @PathVariable Long versionId) {
+            @RequestParam String agentId, @RequestParam Long versionId) {
         String canvas = agentGraphService.getCanvasConfig(agentId, versionId);
         return Result.success(canvas);
     }
 
     @Operation(summary = "Update Canvas")
-    @PutMapping("/canvas")
+    @PostMapping("/canvas-update")
     public Result<Void> updateCanvas(
-            @PathVariable String agentId, @PathVariable Long versionId,
+            @RequestParam String agentId, @RequestParam Long versionId,
             @RequestBody String canvasConfig) {
         try {
             agentGraphService.updateCanvasConfig(agentId, versionId, canvasConfig);

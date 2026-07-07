@@ -25,13 +25,7 @@ public class AgentDefDO extends TenantEntity {
 
     private String description;
 
-    private Long workspaceId;
-
     private String currentVersion;
 
-    private String status;
-
-    /** 扩展字段：聚合的节点入参定义 (JSON) */
     private String extInfo;
-    private String delFlag;
 }

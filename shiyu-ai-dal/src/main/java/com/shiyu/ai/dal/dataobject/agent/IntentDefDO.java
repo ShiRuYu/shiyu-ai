@@ -23,8 +23,6 @@ public class IntentDefDO extends TenantEntity {
     private String code;
     private String name;
 
-    private Long workspaceId;
-
     private String description;
     private String category;
     private Integer priority;
@@ -36,6 +34,4 @@ public class IntentDefDO extends TenantEntity {
     private String parameterMapping; // JSON object
     private String slotDefaults;     // JSON object
     private String enabled;          // '1' or '0'
-    private String status;
-    private String delFlag;
 }

@@ -5,7 +5,6 @@ import com.mybatisflex.annotation.KeyType;
 import com.mybatisflex.annotation.Table;
 import lombok.Data;
 
-import java.io.Serial;
 import java.io.Serializable;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
@@ -13,9 +12,6 @@ import java.time.LocalDateTime;
 @Data
 @Table("edu_study_plan_item")
 public class StudyPlanItemDO implements Serializable {
-
-    @Serial
-    private static final long serialVersionUID = 1L;
 
     @Id(keyType = KeyType.Auto)
     private Long id;

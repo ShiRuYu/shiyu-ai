@@ -23,7 +23,7 @@ import java.util.stream.Collectors;
 @Slf4j
 @Tag(name = "Timezone", description = "Timezone")
 @RestController
-@RequestMapping("/api/timezone")
+@RequestMapping("/system/timezone")
 public class TimezoneController {
 
     private final UserRepository userRepository;
@@ -33,7 +33,7 @@ public class TimezoneController {
     }
 
     @Operation(summary = "Get Timezone Options")
-    @GetMapping("/getTimezoneOptions")
+    @GetMapping("/options")
     public Result<List<TimezoneOptionVO>> getTimezoneOptions() {
         log.info("获取系统支持的时区选项列表");
         try {
@@ -51,8 +51,8 @@ public class TimezoneController {
         }
     }
 
-    @Operation(summary = "Get Timezone")
-    @GetMapping("/getTimezone")
+    @Operation(summary = "Get Current Timezone")
+    @GetMapping("/current")
     public Result<String> getTimezone() {
         log.info("获取当前用户设置的时区");
         try {
@@ -78,7 +78,7 @@ public class TimezoneController {
     }
 
     @Operation(summary = "Set Timezone")
-    @PostMapping("/setTimezone")
+    @PostMapping("/set")
     public Result<Void> setTimezone(@Valid @RequestBody SetTimezoneRequest request) {
         log.info("设置用户时区：{}", request.getTimezone());
         try {

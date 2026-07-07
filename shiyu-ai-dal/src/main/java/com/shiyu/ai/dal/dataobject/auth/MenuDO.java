@@ -91,17 +91,8 @@ public class MenuDO extends TenantEntity {
     private Boolean show;
 
     /**
-     * 状态（1正常 0停用）
-     */
-    private String status;
-
-    /**
      * 排序
      */
     private Integer order;
 
-    /**
-     * 删除标志（0：正常 1：已删除）
-     */
-    private Integer delFlag;
 }

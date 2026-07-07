@@ -15,13 +15,13 @@ import java.util.List;
 
 @Tag(name = "题目管理")
 @RestController
-@RequestMapping("/api/question")
+@RequestMapping("/edu/question")
 @RequiredArgsConstructor
 public class QuestionController {
 
     private final QuestionService questionService;
 
-    @GetMapping
+    @GetMapping("/list")
     @Operation(summary = "分页获取题目")
     public Result<PageData<QuestionResponse>> listAll(
             @RequestParam(defaultValue = "1") Integer pageNum,
@@ -31,53 +31,53 @@ public class QuestionController {
         return Result.success(new PageData<>(items, page.getTotal()));
     }
 
-    @GetMapping("/{id}")
+    @GetMapping("/detail")
     @Operation(summary = "获取题目详情")
-    public Result<QuestionResponse> getById(@PathVariable Long id) {
+    public Result<QuestionResponse> getById(@RequestParam Long id) {
         QuestionDO question = questionService.getById(id);
         return Result.success(toResponse(question));
     }
 
-    @GetMapping("/subject/{subjectCode}/grade/{grade}")
+    @GetMapping("/subject-grade")
     @Operation(summary = "根据学科和年级获取题目")
     public Result<List<QuestionResponse>> listBySubjectAndGrade(
-            @PathVariable String subjectCode, @PathVariable Integer grade) {
+            @RequestParam String subjectCode, @RequestParam Integer grade) {
         List<QuestionDO> questions = questionService.listBySubjectAndGrade(subjectCode, grade);
         return Result.success(questions.stream().map(this::toResponse).toList());
     }
 
-    @GetMapping("/difficulty/{difficulty}")
+    @GetMapping("/difficulty")
     @Operation(summary = "根据难度获取题目")
-    public Result<List<QuestionResponse>> listByDifficulty(@PathVariable Integer difficulty) {
+    public Result<List<QuestionResponse>> listByDifficulty(@RequestParam Integer difficulty) {
         List<QuestionDO> questions = questionService.listByDifficulty(difficulty);
         return Result.success(questions.stream().map(this::toResponse).toList());
     }
 
-    @GetMapping("/type/{type}")
+    @GetMapping("/type")
     @Operation(summary = "根据类型获取题目")
-    public Result<List<QuestionResponse>> listByType(@PathVariable String type) {
+    public Result<List<QuestionResponse>> listByType(@RequestParam String type) {
         List<QuestionDO> questions = questionService.listByType(type);
         return Result.success(questions.stream().map(this::toResponse).toList());
     }
 
-    @PostMapping
+    @PostMapping("/create")
     @Operation(summary = "创建题目")
     public Result<QuestionResponse> create(@Valid @RequestBody QuestionDO question) {
         QuestionDO created = questionService.create(question);
         return Result.success(toResponse(created));
     }
 
-    @PutMapping("/{id}")
+    @PostMapping("/update")
     @Operation(summary = "更新题目")
-    public Result<Void> update(@PathVariable Long id, @Valid @RequestBody QuestionDO question) {
+    public Result<Void> update(@RequestParam Long id, @Valid @RequestBody QuestionDO question) {
         question.setId(id);
         questionService.update(question);
         return Result.success();
     }
 
-    @DeleteMapping("/{id}")
+    @PostMapping("/delete")
     @Operation(summary = "删除题目")
-    public Result<Void> delete(@PathVariable Long id) {
+    public Result<Void> delete(@RequestParam Long id) {
         questionService.deleteById(id);
         return Result.success();
     }

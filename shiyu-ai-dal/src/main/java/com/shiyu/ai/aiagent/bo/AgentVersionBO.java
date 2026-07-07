@@ -1,20 +1,17 @@
 package com.shiyu.ai.aiagent.bo;
 
-import com.shiyu.ai.common.core.domain.BaseEntity;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
 
 import java.io.Serial;
-import io.github.linpeilie.annotations.AutoMapper;
-import com.shiyu.ai.dal.dataobject.agent.AgentVersionDO;
+import java.io.Serializable;
+import java.time.LocalDateTime;
 
 /**
  * Agent 版本业务对象
  */
-@AutoMapper(target = AgentVersionDO.class, reverseConvertGenerate = true)
 @Data
-@EqualsAndHashCode(callSuper = true)
-public class AgentVersionBO extends BaseEntity {
+public class AgentVersionBO implements Serializable {
 
     @Serial
     private static final long serialVersionUID = 1L;
@@ -29,4 +26,8 @@ public class AgentVersionBO extends BaseEntity {
     /** 扩展字段：版本所有节点的入参定义 JSON */
     private String extInfo;
     private String delFlag;
+    private String createBy;
+    private LocalDateTime createTime;
+    private String updateBy;
+    private LocalDateTime updateTime;
 }

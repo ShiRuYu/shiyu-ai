@@ -16,52 +16,52 @@ import java.util.List;
 
 @Tag(name = "学习计划")
 @RestController
-@RequestMapping("/api/plan")
+@RequestMapping("/edu/plan")
 @RequiredArgsConstructor
 public class StudyPlanController {
 
     private final StudyPlanService studyPlanService;
 
-    @GetMapping("/{id}")
+    @GetMapping("/detail")
     @Operation(summary = "获取学习计划详情")
-    public Result<StudyPlanResponse> getById(@PathVariable Long id) {
+    public Result<StudyPlanResponse> getById(@RequestParam Long id) {
         StudyPlanDO plan = studyPlanService.getById(id);
         return Result.success(toResponse(plan));
     }
 
-    @GetMapping("/student/{studentId}")
+    @GetMapping("/student")
     @Operation(summary = "获取学生学习计划")
-    public Result<List<StudyPlanResponse>> listByStudentId(@PathVariable Long studentId) {
+    public Result<List<StudyPlanResponse>> listByStudentId(@RequestParam Long studentId) {
         List<StudyPlanDO> plans = studyPlanService.listByStudentId(studentId);
         return Result.success(plans.stream().map(this::toResponse).toList());
     }
 
-    @GetMapping("/student/{studentId}/active")
+    @GetMapping("/active")
     @Operation(summary = "获取学生活跃计划")
-    public Result<List<StudyPlanResponse>> listActiveByStudent(@PathVariable Long studentId) {
+    public Result<List<StudyPlanResponse>> listActiveByStudent(@RequestParam Long studentId) {
         List<StudyPlanDO> plans = studyPlanService.listActiveByStudent(studentId);
         return Result.success(plans.stream().map(this::toResponse).toList());
     }
 
-    @PostMapping
+    @PostMapping("/create")
     @Operation(summary = "创建学习计划")
     public Result<StudyPlanResponse> create(@Valid @RequestBody StudyPlanDO plan) {
         StudyPlanDO created = studyPlanService.create(plan);
         return Result.success(toResponse(created));
     }
 
-    @PutMapping("/{id}")
+    @PostMapping("/update")
     @Operation(summary = "更新学习计划")
-    public Result<Void> update(@PathVariable Long id, @Valid @RequestBody StudyPlanDO plan) {
+    public Result<Void> update(@RequestParam Long id, @Valid @RequestBody StudyPlanDO plan) {
         plan.setId(id);
         studyPlanService.update(plan);
         return Result.success();
     }
 
 
-    @GetMapping("/today/{studentId}")
+    @GetMapping("/today")
     @Operation(summary = "今日任务 - 获取学生今日学习计划明细")
-    public Result<List<DailyTaskResponse>> getTodayTasks(@PathVariable Long studentId) {
+    public Result<List<DailyTaskResponse>> getTodayTasks(@RequestParam Long studentId) {
         List<StudyPlanDO> plans = studyPlanService.listActiveByStudent(studentId);
         if (plans.isEmpty()) {
             return Result.success(java.util.Collections.emptyList());
@@ -79,9 +79,9 @@ public class StudyPlanController {
         return Result.success(tasks);
     }
 
-    @DeleteMapping("/{id}")
+    @PostMapping("/delete")
     @Operation(summary = "删除学习计划")
-    public Result<Void> delete(@PathVariable Long id) {
+    public Result<Void> delete(@RequestParam Long id) {
         studyPlanService.deleteById(id);
         return Result.success();
     }

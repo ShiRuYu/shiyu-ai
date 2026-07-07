@@ -17,28 +17,28 @@ import java.util.List;
 
 @Tag(name = "学习分析")
 @RestController
-@RequestMapping("/api/analytics")
+@RequestMapping("/edu/analytics")
 @RequiredArgsConstructor
 public class AnalyticsController {
 
     private final AnalyticsService analyticsService;
 
-    @GetMapping("/records/student/{studentId}")
+    @GetMapping("/records")
     @Operation(summary = "获取学生学习记录")
-    public Result<List<StudyRecordDO>> listRecordsByStudent(@PathVariable Long studentId) {
+    public Result<List<StudyRecordDO>> listRecordsByStudent(@RequestParam Long studentId) {
         List<StudyRecordDO> records = analyticsService.listRecordsByStudent(studentId);
         return Result.success(records);
     }
 
-    @GetMapping("/records/student/{studentId}/knowledge/{knowledgeId}")
+    @GetMapping("/records/knowledge")
     @Operation(summary = "获取学生知识点学习记录")
     public Result<List<StudyRecordDO>> listRecordsByStudentAndKnowledge(
-            @PathVariable Long studentId, @PathVariable Long knowledgeId) {
+            @RequestParam Long studentId, @RequestParam Long knowledgeId) {
         List<StudyRecordDO> records = analyticsService.listRecordsByStudentAndKnowledge(studentId, knowledgeId);
         return Result.success(records);
     }
 
-    @PostMapping("/records")
+    @PostMapping("/record-create")
     @Operation(summary = "创建学习记录")
     public Result<StudyRecordDO> createRecord(@Valid @RequestBody StudyRecordDO record) {
         StudyRecordDO created = analyticsService.createRecord(record);

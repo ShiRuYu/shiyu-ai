@@ -3,6 +3,7 @@ package com.shiyu.ai.auth.controller;
 import com.shiyu.ai.auth.service.DictService;
 import com.shiyu.ai.auth.bo.DictBO;
 import com.shiyu.ai.common.core.api.PageData;
+import com.shiyu.ai.common.core.api.PageQuery;
 import com.shiyu.ai.common.core.api.Result;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.tuple.Pair;
@@ -19,7 +20,7 @@ import java.util.List;
 @Slf4j
 @Tag(name = "Dict", description = "Dict")
 @RestController
-@RequestMapping("/admin/dict")
+@RequestMapping("/auth/dict")
 public class DictController {
 
     private final DictService dictService;
@@ -32,10 +33,11 @@ public class DictController {
      * 字典列表 - 分页
      */
     @Operation(summary = "Get Dict List")
-    @GetMapping("/page")
+    @GetMapping("/list")
     public Result<PageData<DictBO>> getDictList(
-            @RequestParam(required = false, defaultValue = "1") Integer pageNo,
-            @RequestParam(required = false, defaultValue = "10") Integer pageSize) {
+            PageQuery pageQuery) {
+        Integer pageNo = pageQuery != null && pageQuery.getPageNum() != null ? pageQuery.getPageNum() : 1;
+        Integer pageSize = pageQuery != null && pageQuery.getPageSize() != null ? pageQuery.getPageSize() : 10;
         log.info("获取字典列表，pageNo: {}, pageSize: {}", pageNo, pageSize);
         
         Pair<Long, List<DictBO>> result = dictService.getAll(pageNo, pageSize);
@@ -46,9 +48,9 @@ public class DictController {
     /**
      * 根据ID查询字典详情
      */
-    @Operation(summary = "Get Dict By Id")
-    @GetMapping("/{id}")
-    public Result<DictBO> getDictById(@PathVariable Long id) {
+    @Operation(summary = "Get Dict Detail")
+    @GetMapping("/detail")
+    public Result<DictBO> getDictById(@RequestParam Long id) {
         log.info("查询字典详情，id: {}", id);
         
         DictBO dictBO = dictService.getById(id);
@@ -64,8 +66,8 @@ public class DictController {
      * 根据字典类型查询字典列表
      */
     @Operation(summary = "Get Dict By Type")
-    @GetMapping("/type/{dictType}")
-    public Result<List<DictBO>> getDictByType(@PathVariable String dictType) {
+    @GetMapping("/type")
+    public Result<List<DictBO>> getDictByType(@RequestParam String dictType) {
         log.info("根据字典类型查询字典列表，dictType: {}", dictType);
         
         List<DictBO> dictList = dictService.getByDictType(dictType);
@@ -77,7 +79,7 @@ public class DictController {
      * 新增字典
      */
     @Operation(summary = "Create Dict")
-    @PostMapping("")
+    @PostMapping("/create")
     public Result<DictBO> createDict(@Valid @RequestBody DictBO dictBO) {
         log.info("新增字典");
         
@@ -93,9 +95,10 @@ public class DictController {
     /**
      * 修改字典
      */
-    @PatchMapping("/{id}")
+    @Operation(summary = "Update Dict")
+    @PostMapping("/update")
     public Result<DictBO> updateDict(
-            @PathVariable Long id,
+            @RequestParam Long id,
             @Valid @RequestBody DictBO dictBO) {
         log.info("修改字典，id: {}", id);
         
@@ -113,8 +116,8 @@ public class DictController {
      * 删除字典
      */
     @Operation(summary = "Delete Dict")
-    @DeleteMapping("/{id}")
-    public Result<Void> deleteDict(@PathVariable Long id) {
+    @PostMapping("/delete")
+    public Result<Void> deleteDict(@RequestParam Long id) {
         log.info("删除字典，id: {}", id);
         
         try {
@@ -129,8 +132,8 @@ public class DictController {
     /**
      * 批量删除字典
      */
-    @Operation(summary = "Delete Dicts")
-    @DeleteMapping("/batch")
+    @Operation(summary = "Batch Delete Dicts")
+    @PostMapping("/batch-delete")
     public Result<Void> deleteDicts(@RequestBody List<Long> ids) {
         log.info("批量删除字典，ids: {}", ids);
         

@@ -3,6 +3,7 @@ package com.shiyu.ai.record.controller;
 import com.shiyu.ai.record.bo.ProfileBO;
 import com.shiyu.ai.record.service.ProfileService;
 import com.shiyu.ai.common.core.api.PageData;
+import com.shiyu.ai.common.core.api.PageQuery;
 import com.shiyu.ai.common.core.api.Result;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
@@ -18,7 +19,7 @@ import java.util.List;
  */
 @Tag(name = "人物管理", description = "个人成长记录系统 - 人物管理")
 @RestController
-@RequestMapping("/api/profile")
+@RequestMapping("/record/profile")
 public class ProfileController {
 
     @Resource
@@ -28,12 +29,10 @@ public class ProfileController {
      * 分页查询人物列表
      */
     @Operation(summary = "分页查询人物列表")
-    @GetMapping("/page")
-    public Result<PageData<ProfileBO>> getPage(
-            @RequestParam(required = false, defaultValue = "1") Integer pageNo,
-            @RequestParam(required = false, defaultValue = "10") Integer pageSize,
-            @RequestParam(required = false) String createBy) {
-        Pair<Long, List<ProfileBO>> page = profileService.getPage(pageNo, pageSize, createBy);
+    @GetMapping("/list")
+    public Result<PageData<ProfileBO>> getPage(PageQuery pageQuery,
+                                                @RequestParam(required = false) String createBy) {
+        Pair<Long, List<ProfileBO>> page = profileService.getPage(pageQuery.getPageNum(), pageQuery.getPageSize(), createBy);
         PageData<ProfileBO> pageData = new PageData<>(page.getRight(), page.getLeft());
         return Result.success(pageData);
     }
@@ -42,8 +41,8 @@ public class ProfileController {
      * 根据ID查询人物
      */
     @Operation(summary = "根据ID查询人物")
-    @GetMapping("/{id}")
-    public Result<ProfileBO> getById(@PathVariable Long id) {
+    @GetMapping("/detail")
+    public Result<ProfileBO> getById(@RequestParam Long id) {
         ProfileBO profile = profileService.getById(id);
         return Result.success(profile);
     }
@@ -52,7 +51,7 @@ public class ProfileController {
      * 创建人物
      */
     @Operation(summary = "创建人物")
-    @PostMapping
+    @PostMapping("/create")
     public Result<ProfileBO> create(@Valid @RequestBody ProfileBO profileBO) {
         ProfileBO created = profileService.create(profileBO);
         return Result.success(created);
@@ -62,7 +61,7 @@ public class ProfileController {
      * 更新人物
      */
     @Operation(summary = "更新人物")
-    @PutMapping
+    @PostMapping("/update")
     public Result<Boolean> update(@Valid @RequestBody ProfileBO profileBO) {
         boolean updated = profileService.update(profileBO);
         return Result.success(updated);
@@ -72,8 +71,8 @@ public class ProfileController {
      * 删除人物
      */
     @Operation(summary = "删除人物")
-    @DeleteMapping("/{id}")
-    public Result<Boolean> delete(@PathVariable Long id) {
+    @PostMapping("/delete")
+    public Result<Boolean> delete(@RequestParam Long id) {
         boolean deleted = profileService.delete(id);
         return Result.success(deleted);
     }

@@ -23,4 +23,9 @@ public class TenantEntity extends BaseEntity {
     @Column(tenantId = true)
     private Long tenantId;
 
+    /**
+     * 工作空间ID
+     */
+    private Long workspaceId;
+
 }

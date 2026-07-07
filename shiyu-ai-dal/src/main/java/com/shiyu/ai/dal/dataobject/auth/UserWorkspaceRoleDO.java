@@ -18,7 +18,5 @@ public class UserWorkspaceRoleDO extends TenantEntity {
 
     private Long userId;
 
-    private Long workspaceId;
-
     private Long roleId;
 }

@@ -36,16 +36,6 @@ public class UserDO extends TenantEntity {
     private String password;
 
     /**
-     * 状态（1正常 0停用）
-     */
-    private String status;
-
-    /**
-     * 删除标志（0：正常 1：已删除）
-     */
-    private Integer delFlag;
-
-    /**
      * 昵称
      */
     private String nickName;

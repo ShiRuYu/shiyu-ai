@@ -15,44 +15,44 @@ import java.util.List;
 
 @Tag(name = "复习管理")
 @RestController
-@RequestMapping("/api/review")
+@RequestMapping("/edu/review")
 @RequiredArgsConstructor
 public class ReviewController {
 
     private final ReviewService reviewService;
 
-    @GetMapping("/{id}")
+    @GetMapping("/detail")
     @Operation(summary = "获取复习任务详情")
-    public Result<ReviewTaskResponse> getById(@PathVariable Long id) {
+    public Result<ReviewTaskResponse> getById(@RequestParam Long id) {
         ReviewTaskDO task = reviewService.getById(id);
         return Result.success(toResponse(task));
     }
 
-    @GetMapping("/today/{studentId}")
+    @GetMapping("/today")
     @Operation(summary = "获取今日复习任务")
-    public Result<List<ReviewTaskResponse>> listTodayTasks(@PathVariable Long studentId) {
+    public Result<List<ReviewTaskResponse>> listTodayTasks(@RequestParam Long studentId) {
         List<ReviewTaskDO> tasks = reviewService.listTodayTasks(studentId);
         return Result.success(tasks.stream().map(this::toResponse).toList());
     }
 
-    @GetMapping("/student/{studentId}/status/{status}")
+    @GetMapping("/list")
     @Operation(summary = "根据状态获取复习任务")
     public Result<List<ReviewTaskResponse>> listByStatus(
-            @PathVariable Long studentId, @PathVariable String status) {
+            @RequestParam Long studentId, @RequestParam String status) {
         List<ReviewTaskDO> tasks = reviewService.listByStudentAndStatus(studentId, status);
         return Result.success(tasks.stream().map(this::toResponse).toList());
     }
 
-    @PostMapping
+    @PostMapping("/create")
     @Operation(summary = "创建复习任务")
     public Result<ReviewTaskResponse> create(@Valid @RequestBody ReviewTaskDO task) {
         ReviewTaskDO created = reviewService.create(task);
         return Result.success(toResponse(created));
     }
 
-    @PutMapping("/{id}/complete")
+    @PostMapping("/complete")
     @Operation(summary = "完成复习任务")
-    public Result<Void> complete(@PathVariable Long id, @Valid @RequestBody CompleteReviewRequest request) {
+    public Result<Void> complete(@RequestParam Long id, @Valid @RequestBody CompleteReviewRequest request) {
         ReviewTaskDO task = reviewService.getById(id);
         if (task != null) {
             task.setStatus("COMPLETED");

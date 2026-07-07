@@ -22,7 +22,7 @@ import java.util.List;
 @Slf4j
 @Tag(name = "Menu", description = "Menu")
 @RestController
-@RequestMapping("/admin/menu")
+@RequestMapping("/auth/menu")
 public class MenuController {
 
     private final MenuService menuService;
@@ -53,14 +53,14 @@ public class MenuController {
     }
 
     @Operation(summary = "Get Menu Roots")
-    @GetMapping("/list/roots")
+    @GetMapping("/roots")
     public Result<List<RouteMenuVO>> getMenuRoots() {
         return Result.success(convertToRouteMenuVO(menuService.getMenuRoots()));
     }
 
     @Operation(summary = "Get Menu Children")
-    @GetMapping("/list/children/{parentId}")
-    public Result<List<RouteMenuVO>> getMenuChildren(@PathVariable Long parentId) {
+    @GetMapping("/children")
+    public Result<List<RouteMenuVO>> getMenuChildren(@RequestParam Long parentId) {
         return Result.success(convertToRouteMenuVO(menuService.getChildrenByParentId(parentId)));
     }
 
@@ -100,15 +100,9 @@ public class MenuController {
     }
 
     @Operation(summary = "Get Menu Permissions Tree")
-    @GetMapping("/role/permissions/tree")
+    @GetMapping("/permissions")
     public Result<List<RouteMenuVO>> getMenuPermissionsTree() {
         return Result.success(convertToRouteMenuVO(menuService.getMenuPermissionsTree()));
-    }
-
-    @Operation(summary = "Get Menu Tree")
-    @GetMapping("/menu/tree")
-    public Result<List<RouteMenuVO>> getMenuTree() {
-        return Result.success(convertToRouteMenuVO(menuService.getMenuTree()));
     }
 
     @Operation(summary = "Get All Tree")
@@ -118,19 +112,20 @@ public class MenuController {
     }
 
     @Operation(summary = "Delete Menu")
-    @DeleteMapping("/{id}")
-    public Result<Void> deleteMenu(@PathVariable Long id) {
+    @PostMapping("/delete")
+    public Result<Void> deleteMenu(@RequestParam Long id) {
         return menuService.deleteMenu(id) ? Result.success() : Result.fail("delete fail");
     }
 
     @Operation(summary = "Create Menu")
-    @PostMapping("")
+    @PostMapping("/create")
     public Result<Void> createMenu(@Valid @RequestBody MenuRequest request) {
         return menuService.createMenu(MapstructUtils.convert(request, MenuBO.class)) ? Result.success() : Result.fail("create fail");
     }
 
-    @PatchMapping("/{id}")
-    public Result<Void> updateMenu(@PathVariable Long id, @Valid @RequestBody MenuRequest request) {
+    @Operation(summary = "Update Menu")
+    @PostMapping("/update")
+    public Result<Void> updateMenu(@RequestParam Long id, @Valid @RequestBody MenuRequest request) {
         return menuService.updateMenu(id, MapstructUtils.convert(request, MenuBO.class)) ? Result.success() : Result.fail("update fail");
     }
 
@@ -147,8 +142,8 @@ public class MenuController {
     }
 
     @Operation(summary = "Get Buttons By Parent Id")
-    @GetMapping("/button/{parentId}")
-    public Result<List<RouteMenuVO>> getButtonsByParentId(@PathVariable Long parentId) {
+    @GetMapping("/buttons")
+    public Result<List<RouteMenuVO>> getButtonsByParentId(@RequestParam Long parentId) {
         return Result.success(convertToRouteMenuVO(menuService.getButtonsByParentId(parentId)));
     }
 }

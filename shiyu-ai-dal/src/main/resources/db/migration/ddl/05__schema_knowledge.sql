@@ -11,6 +11,8 @@ CREATE TABLE IF NOT EXISTS `knowledge` (
     `difficulty`      TINYINT      DEFAULT 2 COMMENT '1~4',
     `category`        VARCHAR(64)  DEFAULT NULL COMMENT '分类（如: math/phys/chem）',
     `tags`            VARCHAR(500) DEFAULT NULL COMMENT '标签（JSON数组，如 ["代数","函数"]）',
+    `tenant_id`       BIGINT       NOT NULL COMMENT '租户ID',
+    `workspace_id`    BIGINT       COMMENT '工作空间ID',
     `status`          TINYINT      DEFAULT 1 COMMENT '0停 1启',
     `create_by`       VARCHAR(64)  DEFAULT NULL COMMENT '创建者',
     `create_time`     TIMESTAMP    DEFAULT CURRENT_TIMESTAMP COMMENT '创建时间',

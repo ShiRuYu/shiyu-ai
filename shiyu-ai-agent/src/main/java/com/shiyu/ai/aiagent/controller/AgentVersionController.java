@@ -4,6 +4,7 @@ import com.shiyu.ai.aiagent.service.AgentVersionService;
 import com.shiyu.ai.aiagent.request.VersionRequest;
 import com.shiyu.ai.aiagent.vo.AgentVersionDetailVO;
 import com.shiyu.ai.aiagent.vo.AgentVersionVO;
+import com.shiyu.ai.common.core.api.PageQuery;
 import com.shiyu.ai.common.core.api.Result;
 import lombok.extern.slf4j.Slf4j;
 import jakarta.validation.Valid;
@@ -16,7 +17,7 @@ import java.util.List;
 @Slf4j
 @Tag(name = "Agent Version", description = "Agent Version")
 @RestController
-@RequestMapping("/admin/agent/{agentId}/version")
+@RequestMapping("/agent/version")
 public class AgentVersionController {
 
     private final AgentVersionService agentVersionService;
@@ -26,25 +27,25 @@ public class AgentVersionController {
     }
 
     @Operation(summary = "Get Versions")
-    @GetMapping
-    public Result<List<AgentVersionVO>> getVersions(@PathVariable String agentId) {
+    @GetMapping("/list")
+    public Result<List<AgentVersionVO>> getVersions(@RequestParam String agentId) {
         List<AgentVersionVO> versions = agentVersionService.getVersions(agentId);
         return Result.success(versions);
     }
 
     @Operation(summary = "Get Version Detail")
-    @GetMapping("/{versionId}")
+    @GetMapping("/detail")
     public Result<AgentVersionDetailVO> getVersionDetail(
-            @PathVariable String agentId, @PathVariable Long versionId) {
+            @RequestParam String agentId, @RequestParam Long versionId) {
         AgentVersionDetailVO vo = agentVersionService.getVersionDetail(agentId, versionId);
         if (vo == null) return Result.fail("版本不存在");
         return Result.success(vo);
     }
 
     @Operation(summary = "Create Version")
-    @PostMapping
+    @PostMapping("/create")
     public Result<AgentVersionVO> createVersion(
-            @PathVariable String agentId, @Valid @RequestBody VersionRequest request) {
+            @RequestParam String agentId, @Valid @RequestBody VersionRequest request) {
         try {
             AgentVersionVO vo = agentVersionService.createVersion(agentId, request);
             return Result.success(vo);
@@ -54,9 +55,9 @@ public class AgentVersionController {
         }
     }
 
-    @PatchMapping("/{versionId}")
+    @PostMapping("/update")
     public Result<AgentVersionVO> updateVersion(
-            @PathVariable String agentId, @PathVariable Long versionId,
+            @RequestParam String agentId, @RequestParam Long versionId,
             @Valid @RequestBody VersionRequest request) {
         try {
             AgentVersionVO vo = agentVersionService.updateVersion(agentId, versionId, request);
@@ -68,9 +69,9 @@ public class AgentVersionController {
     }
 
     @Operation(summary = "Delete Version")
-    @DeleteMapping("/{versionId}")
+    @PostMapping("/delete")
     public Result<Void> deleteVersion(
-            @PathVariable String agentId, @PathVariable Long versionId) {
+            @RequestParam String agentId, @RequestParam Long versionId) {
         try {
             agentVersionService.deleteVersion(agentId, versionId);
             return Result.success();
@@ -81,8 +82,8 @@ public class AgentVersionController {
     }
 
     @Operation(summary = "Publish")
-    @PostMapping("/{versionId}/publish")
-    public Result<Void> publish(@PathVariable String agentId, @PathVariable Long versionId) {
+    @PostMapping("/publish")
+    public Result<Void> publish(@RequestParam String agentId, @RequestParam Long versionId) {
         try {
             agentVersionService.publishVersion(agentId, versionId);
             return Result.success();
@@ -93,8 +94,8 @@ public class AgentVersionController {
     }
 
     @Operation(summary = "Archive")
-    @PostMapping("/{versionId}/archive")
-    public Result<Void> archive(@PathVariable String agentId, @PathVariable Long versionId) {
+    @PostMapping("/archive")
+    public Result<Void> archive(@RequestParam String agentId, @RequestParam Long versionId) {
         try {
             agentVersionService.archiveVersion(agentId, versionId);
             return Result.success();
@@ -105,8 +106,8 @@ public class AgentVersionController {
     }
 
     @Operation(summary = "Activate")
-    @PostMapping("/{versionId}/activate")
-    public Result<Void> activate(@PathVariable String agentId, @PathVariable Long versionId) {
+    @PostMapping("/activate")
+    public Result<Void> activate(@RequestParam String agentId, @RequestParam Long versionId) {
         try {
             agentVersionService.activateVersion(agentId, versionId);
             return Result.success();
@@ -116,9 +117,9 @@ public class AgentVersionController {
         }
     }
 
-    @Operation(summary = "操作: /{versionId}/copy")
-    @PostMapping("/{versionId}/copy")
-    public Result<AgentVersionVO> copy(@PathVariable String agentId, @Valid @RequestBody VersionRequest request) {
+    @Operation(summary = "Copy")
+    @PostMapping("/copy")
+    public Result<AgentVersionVO> copy(@RequestParam String agentId, @Valid @RequestBody VersionRequest request) {
         try {
             AgentVersionVO vo = agentVersionService.copyVersion(agentId, request);
             return Result.success(vo);

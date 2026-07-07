@@ -23,7 +23,7 @@ import java.util.Map;
 @Slf4j
 @Tag(name = "Workspace", description = "Workspace")
 @RestController
-@RequestMapping("/admin/workspace")
+@RequestMapping("/auth/workspace")
 public class WorkspaceController {
 
     private final WorkspaceService workspaceService;
@@ -57,7 +57,7 @@ public class WorkspaceController {
      * 新增工作空间
      */
     @Operation(summary = "Create Workspace")
-    @PostMapping("")
+    @PostMapping("/create")
     public Result<Void> createWorkspace(@Valid @RequestBody WorkspaceRequest request) {
         log.info("新增工作空间，name: {}", request.getName());
 
@@ -74,9 +74,10 @@ public class WorkspaceController {
     /**
      * 修改工作空间
      */
-    @PatchMapping("/{id}")
+    @Operation(summary = "Update Workspace")
+    @PostMapping("/update")
     public Result<Void> updateWorkspace(
-            @PathVariable Long id,
+            @RequestParam Long id,
             @Valid @RequestBody WorkspaceRequest request) {
         log.info("修改工作空间，id: {}", id);
 
@@ -94,8 +95,8 @@ public class WorkspaceController {
      * 删除工作空间
      */
     @Operation(summary = "Delete Workspace")
-    @DeleteMapping("/{id}")
-    public Result<Void> deleteWorkspace(@PathVariable Long id) {
+    @PostMapping("/delete")
+    public Result<Void> deleteWorkspace(@RequestParam Long id) {
         log.info("删除工作空间，id: {}", id);
 
         boolean success = workspaceService.deleteWorkspace(id);

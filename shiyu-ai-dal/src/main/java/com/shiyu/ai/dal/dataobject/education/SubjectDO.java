@@ -3,17 +3,14 @@ package com.shiyu.ai.dal.dataobject.education;
 import com.mybatisflex.annotation.Id;
 import com.mybatisflex.annotation.KeyType;
 import com.mybatisflex.annotation.Table;
+import com.shiyu.ai.common.mybatis.model.TenantEntity;
 import lombok.Data;
-
-import java.io.Serial;
-import java.io.Serializable;
+import lombok.EqualsAndHashCode;
 
 @Data
+@EqualsAndHashCode(callSuper = true)
 @Table("subject")
-public class SubjectDO implements Serializable {
-
-    @Serial
-    private static final long serialVersionUID = 1L;
+public class SubjectDO extends TenantEntity {
 
     @Id(keyType = KeyType.Auto)
     private Long id;
@@ -23,5 +20,4 @@ public class SubjectDO implements Serializable {
     private String gradeLevel;
     private String icon;
     private Integer sortOrder;
-    private Integer status;
 }

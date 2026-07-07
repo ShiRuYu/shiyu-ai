@@ -21,7 +21,7 @@ import java.util.UUID;
 @Slf4j
 @Tag(name = "File", description = "File")
 @RestController
-@RequestMapping("/api/upload")
+@RequestMapping("/system/file")
 public class FileController {
 
     @Value("${shiyu.upload.path:./uploads}")
@@ -41,7 +41,7 @@ public class FileController {
     }
 
     @Operation(summary = "Upload File")
-    @PostMapping
+    @PostMapping("/upload")
     public Result<String> uploadFile(@RequestParam("file") MultipartFile file) {
         if (file == null || file.isEmpty()) {
             return Result.fail("上传文件不能为空");

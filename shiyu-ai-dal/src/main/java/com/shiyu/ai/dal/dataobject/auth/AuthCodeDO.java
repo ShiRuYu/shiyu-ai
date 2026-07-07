@@ -40,13 +40,4 @@ public class AuthCodeDO extends TenantEntity {
      */
     private Long roleId;
 
-    /**
-     * 状态（1正常 0停用）
-     */
-    private String status;
-
-    /**
-     * 删除标志（0：正常 1：已删除）
-     */
-    private Integer delFlag;
 }

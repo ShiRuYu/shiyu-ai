@@ -25,7 +25,7 @@ import java.util.Map;
 @Slf4j
 @Tag(name = "Chat Demo", description = "Chat Demo")
 @RestController
-@RequestMapping("/api/chat")
+@RequestMapping("/chat")
 public class ChatDemoController {
 
     private final ChatEngine chatEngine;
@@ -75,7 +75,7 @@ public class ChatDemoController {
     }
 
     @Operation(summary = "Stream Chat")
-    @PostMapping("/send/stream")
+    @PostMapping("/send-stream")
     public Flux<ChatResponse> streamChat(@Valid @RequestBody DemoChatRequest request) {
         log.info("收到流式聊天请求：platform={}, model={}, prompt={}",
                 request.getPlatform(), request.getModel(), request.getPrompt());
@@ -95,7 +95,7 @@ public class ChatDemoController {
     }
 
     @Operation(summary = "Chat With Memory")
-    @PostMapping("/send/with-memory")
+    @PostMapping("/send-with-memory")
     public Result<DemoChatResponse> chatWithMemory(
             @RequestParam String sessionId,
             @Valid @RequestBody DemoChatRequest request) {

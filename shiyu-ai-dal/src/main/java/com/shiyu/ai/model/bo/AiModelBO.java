@@ -66,11 +66,6 @@ public class AiModelBO extends BaseEntity {
     private String isDefault;
 
     /**
-     * 状态（1正常 0停用）
-     */
-    private String status;
-
-    /**
      * 排序
      */
     private Integer sort;

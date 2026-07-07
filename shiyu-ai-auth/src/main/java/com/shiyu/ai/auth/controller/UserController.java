@@ -8,6 +8,7 @@ import com.shiyu.ai.auth.vo.UserVO;
 import com.shiyu.ai.auth.vo.WorkspaceContextVO;
 import com.shiyu.ai.auth.service.AuthService;
 import com.shiyu.ai.auth.service.UserService;
+import com.shiyu.ai.common.core.api.PageQuery;
 import com.shiyu.ai.common.core.api.Result;
 import com.shiyu.ai.common.core.domain.LoginContextHolder;
 import com.shiyu.ai.common.core.utils.MapstructUtils;
@@ -27,7 +28,7 @@ import java.util.stream.Collectors;
 @Slf4j
 @Tag(name = "User", description = "User")
 @RestController
-@RequestMapping("/admin/user")
+@RequestMapping("/auth/user")
 public class UserController {
 
     private final UserService userService;
@@ -42,8 +43,8 @@ public class UserController {
      * 获取当前用户信息
      * GET /user/info
      */
-    @Operation(summary = "Get User Info")
-    @GetMapping("/info")
+    @Operation(summary = "Get User Detail")
+    @GetMapping("/detail")
     public Result<UserVO> getUserInfo(
             @RequestHeader(value = "Authorization", required = false) String token) {
         log.info("获取当前用户信息");
@@ -93,11 +94,12 @@ public class UserController {
      * 用户列表 - 分页
      */
     @Operation(summary = "Get User List")
-    @GetMapping("")
+    @GetMapping("/list")
     public Result<UserPageResponse> getUserList(
             @RequestParam(required = false) String username,
-            @RequestParam Integer pageNo,
-            @RequestParam Integer pageSize) {
+            PageQuery pageQuery) {
+        Integer pageNo = pageQuery != null && pageQuery.getPageNum() != null ? pageQuery.getPageNum() : 1;
+        Integer pageSize = pageQuery != null && pageQuery.getPageSize() != null ? pageQuery.getPageSize() : 10;
         log.info("获取用户列表，username: {}, pageNo: {}, pageSize: {}", username, pageNo, pageSize);
         
         UserPageResponse pageResponse = userService.getUserList(username, pageNo, pageSize);
@@ -109,8 +111,8 @@ public class UserController {
      * 删除用户
      */
     @Operation(summary = "Delete User")
-    @DeleteMapping("/{userId}")
-    public Result<Void> deleteUser(@PathVariable Long userId) {
+    @PostMapping("/delete")
+    public Result<Void> deleteUser(@RequestParam Long userId) {
         log.info("删除用户，userId: {}", userId);
         
         boolean success = userService.deleteUser(userId);
@@ -125,9 +127,10 @@ public class UserController {
     /**
      * 修改用户
      */
-    @PatchMapping("/{userId}")
+    @Operation(summary = "Update User")
+    @PostMapping("/update")
     public Result<Void> updateUser(
-            @PathVariable Long userId,
+            @RequestParam Long userId,
             @Valid @RequestBody UserRequest request) {
         log.info("修改用户，userId: {}", userId);
         
@@ -144,9 +147,10 @@ public class UserController {
     /**
      * 重置用户密码
      */
-    @PatchMapping("/{userId}/password/reset")
+    @Operation(summary = "Reset User Password")
+    @PostMapping("/password/reset")
     public Result<Void> resetPassword(
-            @PathVariable Long userId,
+            @RequestParam Long userId,
             @RequestBody Map<String, String> passwordMap) {
         log.info("重置用户密码，userId: {}", userId);
         
@@ -163,9 +167,10 @@ public class UserController {
     /**
      * 修改密码（需校验旧密码）
      */
-    @PatchMapping("/{userId}/password")
+    @Operation(summary = "Change Password")
+    @PostMapping("/password/change")
     public Result<Void> changePassword(
-            @PathVariable Long userId,
+            @RequestParam Long userId,
             @RequestBody Map<String, String> body) {
         log.info("修改密码，userId: {}", userId);
 
@@ -188,7 +193,7 @@ public class UserController {
      * 新增用户
      */
     @Operation(summary = "Create User")
-    @PostMapping("")
+    @PostMapping("/create")
     public Result<Long> createUser(@Valid @RequestBody UserRequest request) {
         log.info("新增用户");
         

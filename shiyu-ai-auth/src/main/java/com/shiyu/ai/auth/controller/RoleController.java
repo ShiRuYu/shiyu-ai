@@ -5,6 +5,7 @@ import com.shiyu.ai.auth.request.AssignUserRolesRequest;
 import com.shiyu.ai.auth.bo.RoleBO;
 import com.shiyu.ai.auth.vo.RolePageResponse;
 import com.shiyu.ai.auth.service.RoleService;
+import com.shiyu.ai.common.core.api.PageQuery;
 import com.shiyu.ai.common.core.api.Result;
 import com.shiyu.ai.common.core.utils.MapstructUtils;
 import lombok.extern.slf4j.Slf4j;
@@ -21,7 +22,7 @@ import java.util.List;
 @Slf4j
 @Tag(name = "Role", description = "Role")
 @RestController
-@RequestMapping("/admin/role")
+@RequestMapping("/auth/role")
 public class RoleController {
 
     private final RoleService roleService;
@@ -36,14 +37,11 @@ public class RoleController {
     @Operation(summary = "Get Role List")
     @GetMapping("/list")
     public Result<RolePageResponse> getRoleList(
-            @RequestParam(required = false,name = "page") Integer pageNo,
-            @RequestParam(required = false) Integer pageSize,
-            @RequestParam(required = false) String name) {
+            @RequestParam(required = false) String name,
+            PageQuery pageQuery) {
+        Integer pageNo = pageQuery != null && pageQuery.getPageNum() != null ? pageQuery.getPageNum() : 1;
+        Integer pageSize = pageQuery != null && pageQuery.getPageSize() != null ? pageQuery.getPageSize() : 10;
         log.info("获取角色列表，pageNo: {}, pageSize: {}, name: {}", pageNo, pageSize, name);
-        
-        // 设置默认值
-        if (pageNo == null) pageNo = 1;
-        if (pageSize == null) pageSize = 10;
         
         RolePageResponse pageResponse = roleService.getRoleList(pageNo, pageSize, name);
         
@@ -54,7 +52,7 @@ public class RoleController {
      * 角色列表-all
      */
     @Operation(summary = "Get All Roles")
-    @GetMapping("")
+    @GetMapping("/all")
     public Result<List<RoleBO>> getAllRoles(
             @RequestParam(required = false) String status) {
         log.info("获取所有角色，status: {}", status);
@@ -67,35 +65,16 @@ public class RoleController {
     /**
      * 修改角色
      */
-    @PatchMapping("/{id}")
+    @Operation(summary = "Update Role")
+    @PostMapping("/update")
     public Result<Void> updateRole(
-            @PathVariable Long id,
+            @RequestParam Long id,
             @Valid @RequestBody RoleRequest request) {
         log.info("修改角色，id: {}", id);
         
         RoleBO roleBO = MapstructUtils.convert(request, RoleBO.class);
         boolean success = roleService.updateRole(id, roleBO);
         
-        if (success) {
-            return Result.success();
-        } else {
-            return Result.fail("角色不存在");
-        }
-    }
-
-    /**
-     * 修改角色
-     */
-    @Operation(summary = "Put Role")
-    @PutMapping("/{id}")
-    public Result<Void> putRole(
-            @PathVariable Long id,
-            @Valid @RequestBody RoleRequest request) {
-        log.info("修改角色，id: {}", id);
-
-        RoleBO roleBO = MapstructUtils.convert(request, RoleBO.class);
-        boolean success = roleService.updateRole(id, roleBO);
-
         if (success) {
             return Result.success();
         } else {
@@ -107,8 +86,8 @@ public class RoleController {
      * 删除角色
      */
     @Operation(summary = "Delete Role")
-    @DeleteMapping("/{id}")
-    public Result<Void> deleteRole(@PathVariable Long id) {
+    @PostMapping("/delete")
+    public Result<Void> deleteRole(@RequestParam Long id) {
         log.info("删除角色，id: {}", id);
         
         boolean success = roleService.deleteRole(id);
@@ -123,9 +102,10 @@ public class RoleController {
     /**
      * 取消分配角色 - 批量
      */
-    @PatchMapping("/users/remove/{id}")
+    @Operation(summary = "Remove User Roles")
+    @PostMapping("/user/remove")
     public Result<Void> removeUserRoles(
-            @PathVariable Long id,
+            @RequestParam Long id,
             @Valid @RequestBody AssignUserRolesRequest request) {
         log.info("取消分配角色，id: {}, userIds: {}", id, request.getUserIds());
         
@@ -141,9 +121,10 @@ public class RoleController {
     /**
      * 分配角色 - 批量
      */
-    @PatchMapping("/users/add/{id}")
+    @Operation(summary = "Assign User Roles")
+    @PostMapping("/user/add")
     public Result<Void> assignUserRoles(
-            @PathVariable Long id,
+            @RequestParam Long id,
             @Valid @RequestBody AssignUserRolesRequest request) {
         log.info("分配角色，id: {}, userIds: {}", id, request.getUserIds());
         
@@ -160,7 +141,7 @@ public class RoleController {
      * 新增角色
      */
     @Operation(summary = "Create Role")
-    @PostMapping("")
+    @PostMapping("/create")
     public Result<Void> createRole(@Valid @RequestBody RoleRequest request) {
         log.info("新增角色");
         

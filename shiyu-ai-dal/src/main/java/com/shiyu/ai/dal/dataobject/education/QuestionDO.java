@@ -3,18 +3,16 @@ package com.shiyu.ai.dal.dataobject.education;
 import com.mybatisflex.annotation.Id;
 import com.mybatisflex.annotation.KeyType;
 import com.mybatisflex.annotation.Table;
+import com.shiyu.ai.common.mybatis.model.TenantEntity;
 import lombok.Data;
+import lombok.EqualsAndHashCode;
 
-import java.io.Serial;
-import java.io.Serializable;
 import java.time.LocalDateTime;
 
 @Data
+@EqualsAndHashCode(callSuper = true)
 @Table("edu_question")
-public class QuestionDO implements Serializable {
-
-    @Serial
-    private static final long serialVersionUID = 1L;
+public class QuestionDO extends TenantEntity {
 
     @Id(keyType = KeyType.Auto)
     private Long id;
@@ -31,8 +29,5 @@ public class QuestionDO implements Serializable {
     private String analysis;
     private String source;
     private String tags;
-    private Integer status;
     private Long usedCount;
-    private LocalDateTime createTime;
-    private LocalDateTime updateTime;
 }

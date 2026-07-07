@@ -14,51 +14,51 @@ import java.util.List;
 
 @Tag(name = "章节管理")
 @RestController
-@RequestMapping("/api/chapter")
+@RequestMapping("/edu/chapter")
 @RequiredArgsConstructor
 public class ChapterController {
 
     private final ChapterService chapterService;
 
-    @GetMapping("/{id}")
+    @GetMapping("/detail")
     @Operation(summary = "获取章节详情")
-    public Result<ChapterResponse> getById(@PathVariable Long id) {
+    public Result<ChapterResponse> getById(@RequestParam Long id) {
         ChapterDO chapter = chapterService.getById(id);
         return Result.success(toResponse(chapter));
     }
 
-    @GetMapping("/textbook/{textbookId}")
+    @GetMapping("/textbook")
     @Operation(summary = "获取教材所有章节")
-    public Result<List<ChapterResponse>> listByTextbookId(@PathVariable Long textbookId) {
+    public Result<List<ChapterResponse>> listByTextbookId(@RequestParam Long textbookId) {
         List<ChapterDO> chapters = chapterService.listByTextbookId(textbookId);
         return Result.success(chapters.stream().map(c -> toResponse(c)).toList());
     }
 
-    @GetMapping("/textbook/{textbookId}/tree")
+    @GetMapping("/textbook-tree")
     @Operation(summary = "获取教材章节树")
-    public Result<List<ChapterResponse>> getChapterTree(@PathVariable Long textbookId) {
+    public Result<List<ChapterResponse>> getChapterTree(@RequestParam Long textbookId) {
         List<ChapterDO> roots = chapterService.listRootChapters(textbookId);
         return Result.success(roots.stream().map(c -> toTreeResponse(c)).toList());
     }
 
-    @PostMapping
+    @PostMapping("/create")
     @Operation(summary = "创建章节")
     public Result<ChapterResponse> create(@Valid @RequestBody ChapterDO chapter) {
         ChapterDO created = chapterService.create(chapter);
         return Result.success(toResponse(created));
     }
 
-    @PutMapping("/{id}")
+    @PostMapping("/update")
     @Operation(summary = "更新章节")
-    public Result<Void> update(@PathVariable Long id, @Valid @RequestBody ChapterDO chapter) {
+    public Result<Void> update(@RequestParam Long id, @Valid @RequestBody ChapterDO chapter) {
         chapter.setId(id);
         chapterService.update(chapter);
         return Result.success();
     }
 
-    @DeleteMapping("/{id}")
+    @PostMapping("/delete")
     @Operation(summary = "删除章节")
-    public Result<Void> delete(@PathVariable Long id) {
+    public Result<Void> delete(@RequestParam Long id) {
         chapterService.deleteById(id);
         return Result.success();
     }

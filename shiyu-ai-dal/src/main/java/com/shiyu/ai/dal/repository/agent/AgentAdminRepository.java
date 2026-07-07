@@ -28,7 +28,7 @@ public class AgentAdminRepository {
     public Pair<Long, List<AgentDefBO>> selectPage(Number pageNo, Number pageSize, String name, String status) {
         QueryWrapper countWrapper = new QueryWrapper();
         TenantWorkspaceHelper.applyWorkspaceFilter(countWrapper);
-        countWrapper.eq(AgentDefDO::getDelFlag, "0");
+        countWrapper.eq(AgentDefDO::getDelFlag, 0);
         if (StringUtils.isNotBlank(name)) {
             countWrapper.like(AgentDefDO::getName, name);
         }
@@ -39,14 +39,13 @@ public class AgentAdminRepository {
 
         QueryWrapper queryWrapper = new QueryWrapper();
         TenantWorkspaceHelper.applyWorkspaceFilter(queryWrapper);
-        queryWrapper.eq(AgentDefDO::getDelFlag, "0");
+        queryWrapper.eq(AgentDefDO::getDelFlag, 0);
         if (StringUtils.isNotBlank(name)) {
             queryWrapper.like(AgentDefDO::getName, name);
         }
         if (StringUtils.isNotBlank(status)) {
             queryWrapper.eq(AgentDefDO::getStatus, status);
         }
-        queryWrapper.orderBy(AgentDefDO::getUpdateTime, false);
         if (pageNo != null && pageSize != null) {
             queryWrapper.limit((pageNo.longValue() - 1) * pageSize.longValue(), pageSize.longValue());
         }
@@ -64,7 +63,7 @@ public class AgentAdminRepository {
         QueryWrapper queryWrapper = new QueryWrapper();
         TenantWorkspaceHelper.applyWorkspaceFilter(queryWrapper);
         queryWrapper.eq(AgentDefDO::getAgentId, agentId);
-        queryWrapper.eq(AgentDefDO::getDelFlag, "0");
+        queryWrapper.eq(AgentDefDO::getDelFlag, 0);
         AgentDefDO d = agentDefMapper.selectOneByQuery(queryWrapper);
         return MapstructUtils.convert(d, AgentDefBO.class);
     }
@@ -72,8 +71,8 @@ public class AgentAdminRepository {
     public List<AgentDefBO> selectAllActive() {
         QueryWrapper queryWrapper = new QueryWrapper();
         TenantWorkspaceHelper.applyWorkspaceFilter(queryWrapper);
-        queryWrapper.eq(AgentDefDO::getDelFlag, "0");
-        queryWrapper.eq(AgentDefDO::getStatus, "1");
+        queryWrapper.eq(AgentDefDO::getDelFlag, 0);
+        queryWrapper.eq(AgentDefDO::getStatus, 1);
         queryWrapper.orderBy(AgentDefDO::getName, true);
         List<AgentDefDO> doList = agentDefMapper.selectListByQuery(queryWrapper);
         return MapstructUtils.convert(doList, AgentDefBO.class);
@@ -95,7 +94,7 @@ public class AgentAdminRepository {
     public void deleteById(Long id) {
         AgentDefDO agentDef = agentDefMapper.selectOneById(id);
         if (agentDef != null) {
-            agentDef.setDelFlag("1");
+            agentDef.setDelFlag(1);
             agentDefMapper.update(agentDef);
         }
     }
@@ -104,7 +103,7 @@ public class AgentAdminRepository {
         QueryWrapper queryWrapper = new QueryWrapper();
         TenantWorkspaceHelper.applyWorkspaceFilter(queryWrapper);
         queryWrapper.eq(AgentDefDO::getAgentId, agentId);
-        queryWrapper.eq(AgentDefDO::getDelFlag, "0");
+        queryWrapper.eq(AgentDefDO::getDelFlag, 0);
         AgentDefBO def = selectByAgentId(agentId);
         if (def != null) {
             deleteById(def.getId());
@@ -115,7 +114,7 @@ public class AgentAdminRepository {
         QueryWrapper queryWrapper = new QueryWrapper();
         TenantWorkspaceHelper.applyWorkspaceFilter(queryWrapper);
         queryWrapper.eq(AgentVersionDO::getAgentId, agentId);
-        queryWrapper.eq(AgentVersionDO::getDelFlag, "0");
+        queryWrapper.eq(AgentVersionDO::getDelFlag, 0);
         queryWrapper.orderBy(AgentVersionDO::getCreateTime, false);
         List<AgentVersionDO> doList = agentVersionMapper.selectListByQuery(queryWrapper);
         return MapstructUtils.convert(doList, AgentVersionBO.class);
@@ -131,7 +130,7 @@ public class AgentAdminRepository {
         TenantWorkspaceHelper.applyWorkspaceFilter(queryWrapper);
         queryWrapper.eq(AgentVersionDO::getAgentId, agentId);
         queryWrapper.eq(AgentVersionDO::getVersionNumber, versionNumber);
-        queryWrapper.eq(AgentVersionDO::getDelFlag, "0");
+        queryWrapper.eq(AgentVersionDO::getDelFlag, 0);
         AgentVersionDO v = agentVersionMapper.selectOneByQuery(queryWrapper);
         return MapstructUtils.convert(v, AgentVersionBO.class);
     }

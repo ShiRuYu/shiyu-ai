@@ -18,20 +18,20 @@ import java.util.List;
 @Slf4j
 @Tag(name = "课程管理")
 @RestController
-@RequestMapping("/api/course")
+@RequestMapping("/edu/course")
 @RequiredArgsConstructor
 public class CourseController {
 
     private final CourseService courseService;
 
-    @GetMapping("/{id}")
+    @GetMapping("/detail")
     @Operation(summary = "获取课程详情")
-    public Result<CourseResponse> getById(@PathVariable Long id) {
+    public Result<CourseResponse> getById(@RequestParam Long id) {
         CourseDO course = courseService.getById(id);
         return Result.success(toResponse(course));
     }
 
-    @GetMapping
+    @GetMapping("/list")
     @Operation(summary = "分页获取课程")
     public Result<PageData<CourseResponse>> listAll(
             @RequestParam(defaultValue = "1") Integer pageNum,
@@ -41,48 +41,48 @@ public class CourseController {
         return Result.success(new PageData<>(items, page.getTotal()));
     }
 
-    @GetMapping("/subject/{subjectCode}")
+    @GetMapping("/subject")
     @Operation(summary = "根据学科获取课程")
-    public Result<List<CourseResponse>> listBySubjectCode(@PathVariable String subjectCode) {
+    public Result<List<CourseResponse>> listBySubjectCode(@RequestParam String subjectCode) {
         List<CourseDO> courses = courseService.listBySubjectCode(subjectCode);
         return Result.success(courses.stream().map(this::toResponse).toList());
     }
 
-    @GetMapping("/grade/{grade}")
+    @GetMapping("/grade")
     @Operation(summary = "根据年级获取课程")
-    public Result<List<CourseResponse>> listByGrade(@PathVariable Integer grade) {
+    public Result<List<CourseResponse>> listByGrade(@RequestParam Integer grade) {
         List<CourseDO> courses = courseService.listByGrade(grade);
         return Result.success(courses.stream().map(this::toResponse).toList());
     }
 
-    @PostMapping
+    @PostMapping("/create")
     @Operation(summary = "创建课程")
     public Result<CourseResponse> create(@Valid @RequestBody CourseDO course) {
         CourseDO created = courseService.create(course);
         return Result.success(toResponse(created));
     }
 
-    @PutMapping("/{id}")
+    @PostMapping("/update")
     @Operation(summary = "更新课程")
-    public Result<Void> update(@PathVariable Long id, @Valid @RequestBody CourseDO course) {
+    public Result<Void> update(@RequestParam Long id, @Valid @RequestBody CourseDO course) {
         course.setId(id);
         courseService.update(course);
         return Result.success();
     }
 
 
-    @PostMapping("/{courseId}/learn")
+    @PostMapping("/learn")
     @Operation(summary = "开始学习 - 记录学生学习课程")
-    public Result<CourseResponse> startLearning(@PathVariable Long courseId, @RequestParam Long studentId) {
+    public Result<CourseResponse> startLearning(@RequestParam Long courseId, @RequestParam Long studentId) {
         log.info("开始学习: courseId={}, studentId={}", courseId, studentId);
         CourseDO course = courseService.getById(courseId);
         if (course == null) return Result.fail("课程不存在");
         return Result.success(toResponse(course));
     }
 
-    @DeleteMapping("/{id}")
+    @PostMapping("/delete")
     @Operation(summary = "删除课程")
-    public Result<Void> delete(@PathVariable Long id) {
+    public Result<Void> delete(@RequestParam Long id) {
         courseService.deleteById(id);
         return Result.success();
     }

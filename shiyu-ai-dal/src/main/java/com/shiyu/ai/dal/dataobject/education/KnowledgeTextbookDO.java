@@ -5,12 +5,15 @@ import com.mybatisflex.annotation.KeyType;
 import com.mybatisflex.annotation.Table;
 import lombok.Data;
 
+import com.shiyu.ai.common.mybatis.model.TenantEntity;
+import lombok.EqualsAndHashCode;
+
 import java.io.Serial;
-import java.io.Serializable;
 
 @Data
 @Table("knowledge_textbook")
-public class KnowledgeTextbookDO implements Serializable {
+@EqualsAndHashCode(callSuper = true)
+public class KnowledgeTextbookDO extends TenantEntity {
 
     @Serial
     private static final long serialVersionUID = 1L;

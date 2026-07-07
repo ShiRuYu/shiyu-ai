@@ -3,6 +3,7 @@ package com.shiyu.ai.record.controller;
 import com.shiyu.ai.record.bo.TimelineEventBO;
 import com.shiyu.ai.record.service.TimelineEventService;
 import com.shiyu.ai.common.core.api.PageData;
+import com.shiyu.ai.common.core.api.PageQuery;
 import com.shiyu.ai.common.core.api.Result;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
@@ -18,7 +19,7 @@ import java.util.List;
  */
 @Tag(name = "时间轴管理", description = "个人成长记录系统 - 时间轴事件管理")
 @RestController
-@RequestMapping("/api/timeline")
+@RequestMapping("/record/timeline")
 public class TimelineEventController {
 
     @Resource
@@ -28,12 +29,10 @@ public class TimelineEventController {
      * 分页查询时间轴事件列表
      */
     @Operation(summary = "分页查询时间轴事件列表")
-    @GetMapping("/page")
-    public Result<PageData<TimelineEventBO>> getPage(
-            @RequestParam(required = false, defaultValue = "1") Integer pageNo,
-            @RequestParam(required = false, defaultValue = "20") Integer pageSize,
-            @RequestParam Long profileId) {
-        Pair<Long, List<TimelineEventBO>> page = timelineEventService.getPage(pageNo, pageSize, profileId);
+    @GetMapping("/list")
+    public Result<PageData<TimelineEventBO>> getPage(PageQuery pageQuery,
+                                                      @RequestParam Long profileId) {
+        Pair<Long, List<TimelineEventBO>> page = timelineEventService.getPage(pageQuery.getPageNum(), pageQuery.getPageSize(), profileId);
         PageData<TimelineEventBO> pageData = new PageData<>(page.getRight(), page.getLeft());
         return Result.success(pageData);
     }
@@ -42,8 +41,8 @@ public class TimelineEventController {
      * 根据ID查询时间轴事件
      */
     @Operation(summary = "根据ID查询时间轴事件")
-    @GetMapping("/{id}")
-    public Result<TimelineEventBO> getById(@PathVariable Long id) {
+    @GetMapping("/detail")
+    public Result<TimelineEventBO> getById(@RequestParam Long id) {
         TimelineEventBO event = timelineEventService.getById(id);
         return Result.success(event);
     }
@@ -52,7 +51,7 @@ public class TimelineEventController {
      * 创建时间轴事件
      */
     @Operation(summary = "创建时间轴事件")
-    @PostMapping
+    @PostMapping("/create")
     public Result<TimelineEventBO> create(@Valid @RequestBody TimelineEventBO eventBO) {
         TimelineEventBO created = timelineEventService.create(eventBO);
         return Result.success(created);
@@ -62,7 +61,7 @@ public class TimelineEventController {
      * 更新时间轴事件
      */
     @Operation(summary = "更新时间轴事件")
-    @PutMapping
+    @PostMapping("/update")
     public Result<Boolean> update(@Valid @RequestBody TimelineEventBO eventBO) {
         boolean updated = timelineEventService.update(eventBO);
         return Result.success(updated);
@@ -72,8 +71,8 @@ public class TimelineEventController {
      * 删除时间轴事件
      */
     @Operation(summary = "删除时间轴事件")
-    @DeleteMapping("/{id}")
-    public Result<Boolean> delete(@PathVariable Long id) {
+    @PostMapping("/delete")
+    public Result<Boolean> delete(@RequestParam Long id) {
         boolean deleted = timelineEventService.delete(id);
         return Result.success(deleted);
     }
@@ -82,8 +81,8 @@ public class TimelineEventController {
      * 查询人物的完整时间轴
      */
     @Operation(summary = "查询人物的完整时间轴")
-    @GetMapping("/profile/{profileId}")
-    public Result<List<TimelineEventBO>> getTimelineByProfileId(@PathVariable Long profileId) {
+    @GetMapping("/profile")
+    public Result<List<TimelineEventBO>> getTimelineByProfileId(@RequestParam Long profileId) {
         List<TimelineEventBO> timeline = timelineEventService.getTimelineByProfileId(profileId);
         return Result.success(timeline);
     }

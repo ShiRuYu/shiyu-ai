@@ -24,7 +24,7 @@ import java.util.Map;
 @Slf4j
 @Tag(name = "Auth", description = "Auth")
 @RestController
-@RequestMapping("/api/auth")
+@RequestMapping("/auth")
 public class AuthController {
     
     private final AuthService authService;
@@ -135,7 +135,7 @@ public class AuthController {
      * 切换当前角色
      * PATCH /auth/current-role
      */
-    @PatchMapping("/current-role")
+    @PostMapping("/current-role")
     public Result<Void> switchCurrentRole(@RequestBody Map<String, Long> body) {
         log.info("收到切换角色请求");
         Long userId = LoginContextHolder.getUserId();

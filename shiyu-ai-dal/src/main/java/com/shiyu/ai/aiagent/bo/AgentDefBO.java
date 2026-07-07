@@ -25,8 +25,6 @@ public class AgentDefBO extends BaseEntity {
     private String description;
     private Long ownerId;
     private String currentVersion;
-    private String status;
     /** 扩展字段：聚合的节点入参定义 JSON */
     private String extInfo;
-    private String delFlag;
 }

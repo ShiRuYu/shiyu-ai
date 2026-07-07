@@ -15,20 +15,20 @@ import java.util.List;
 
 @Tag(name = "资源管理")
 @RestController
-@RequestMapping("/api/resource")
+@RequestMapping("/edu/resource")
 @RequiredArgsConstructor
 public class ResourceController {
 
     private final ResourceService resourceService;
 
-    @GetMapping("/{id}")
+    @GetMapping("/detail")
     @Operation(summary = "获取资源详情")
-    public Result<ResourceResponse> getById(@PathVariable Long id) {
+    public Result<ResourceResponse> getById(@RequestParam Long id) {
         ResourceDO resource = resourceService.getById(id);
         return Result.success(toResponse(resource));
     }
 
-    @GetMapping
+    @GetMapping("/list")
     @Operation(summary = "分页获取资源")
     public Result<PageData<ResourceResponse>> listAll(
             @RequestParam(defaultValue = "1") Integer pageNum,
@@ -38,38 +38,38 @@ public class ResourceController {
         return Result.success(new PageData<>(items, page.getTotal()));
     }
 
-    @GetMapping("/subject/{subjectCode}")
+    @GetMapping("/subject")
     @Operation(summary = "根据学科获取资源")
-    public Result<List<ResourceResponse>> listBySubjectCode(@PathVariable String subjectCode) {
+    public Result<List<ResourceResponse>> listBySubjectCode(@RequestParam String subjectCode) {
         List<ResourceDO> resources = resourceService.listBySubjectCode(subjectCode);
         return Result.success(resources.stream().map(this::toResponse).toList());
     }
 
-    @GetMapping("/type/{type}")
+    @GetMapping("/type")
     @Operation(summary = "根据类型获取资源")
-    public Result<List<ResourceResponse>> listByType(@PathVariable String type) {
+    public Result<List<ResourceResponse>> listByType(@RequestParam String type) {
         List<ResourceDO> resources = resourceService.listByType(type);
         return Result.success(resources.stream().map(this::toResponse).toList());
     }
 
-    @PostMapping
+    @PostMapping("/create")
     @Operation(summary = "创建资源")
     public Result<ResourceResponse> create(@Valid @RequestBody ResourceDO resource) {
         ResourceDO created = resourceService.create(resource);
         return Result.success(toResponse(created));
     }
 
-    @PutMapping("/{id}")
+    @PostMapping("/update")
     @Operation(summary = "更新资源")
-    public Result<Void> update(@PathVariable Long id, @Valid @RequestBody ResourceDO resource) {
+    public Result<Void> update(@RequestParam Long id, @Valid @RequestBody ResourceDO resource) {
         resource.setId(id);
         resourceService.update(resource);
         return Result.success();
     }
 
-    @DeleteMapping("/{id}")
+    @PostMapping("/delete")
     @Operation(summary = "删除资源")
-    public Result<Void> delete(@PathVariable Long id) {
+    public Result<Void> delete(@RequestParam Long id) {
         resourceService.deleteById(id);
         return Result.success();
     }

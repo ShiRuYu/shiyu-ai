@@ -3,17 +3,14 @@ package com.shiyu.ai.dal.dataobject.knowledge;
 import com.mybatisflex.annotation.Id;
 import com.mybatisflex.annotation.KeyType;
 import com.mybatisflex.annotation.Table;
+import com.shiyu.ai.common.mybatis.model.TenantEntity;
 import lombok.Data;
-import java.io.Serial;
-import java.io.Serializable;
-import java.time.LocalDateTime;
+import lombok.EqualsAndHashCode;
 
 @Data
+@EqualsAndHashCode(callSuper = true)
 @Table(value = "knowledge_relation")
-public class KnowledgeRelationDO implements Serializable {
-
-    @Serial
-    private static final long serialVersionUID = 1L;
+public class KnowledgeRelationDO extends TenantEntity {
 
     @Id(keyType = KeyType.Auto)
     private Long id;
@@ -25,6 +22,4 @@ public class KnowledgeRelationDO implements Serializable {
     private String relationType;
 
     private Double weight;
-
-    private LocalDateTime createTime;
 }

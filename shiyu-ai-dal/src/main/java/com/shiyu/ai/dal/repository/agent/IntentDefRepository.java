@@ -190,7 +190,7 @@ public class IntentDefRepository {
         d.setParameterMapping(bo.getParameterMapping() != null ? JSONUtil.toJsonStr(bo.getParameterMapping()) : null);
         d.setSlotDefaults(bo.getSlotDefaults() != null ? JSONUtil.toJsonStr(bo.getSlotDefaults()) : null);
         d.setEnabled(Boolean.TRUE.equals(bo.getEnabled()) ? "1" : "0");
-        d.setStatus("1");
-        d.setDelFlag("0");
+        d.setStatus(1);
+        d.setDelFlag(0);
     }
 }

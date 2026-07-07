@@ -3,6 +3,7 @@ package com.shiyu.ai.record.controller;
 import com.shiyu.ai.record.service.TagService;
 import com.shiyu.ai.record.bo.TagBO;
 import com.shiyu.ai.common.core.api.PageData;
+import com.shiyu.ai.common.core.api.PageQuery;
 import com.shiyu.ai.common.core.api.Result;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
@@ -15,19 +16,17 @@ import java.util.List;
 
 @Tag(name = "标签管理")
 @RestController
-@RequestMapping("/api/tag")
+@RequestMapping("/record/tag")
 public class TagController {
 
     @Resource
     private TagService tagService;
 
     @Operation(summary = "分页查询标签列表")
-    @GetMapping("/page")
-    public Result<PageData<TagBO>> getPage(
-            @RequestParam(required = false, defaultValue = "1") Integer pageNo,
-            @RequestParam(required = false, defaultValue = "10") Integer pageSize,
-            @RequestParam(required = false) String name) {
-        Pair<Long, List<TagBO>> page = tagService.getPage(pageNo, pageSize, name);
+    @GetMapping("/list")
+    public Result<PageData<TagBO>> getPage(PageQuery pageQuery,
+                                            @RequestParam(required = false) String name) {
+        Pair<Long, List<TagBO>> page = tagService.getPage(pageQuery.getPageNum(), pageQuery.getPageSize(), name);
         return Result.success(new PageData<>(page.getRight(), page.getLeft()));
     }
 
@@ -38,26 +37,26 @@ public class TagController {
     }
 
     @Operation(summary = "根据ID查询标签")
-    @GetMapping("/{id}")
-    public Result<TagBO> getById(@PathVariable Long id) {
+    @GetMapping("/detail")
+    public Result<TagBO> getById(@RequestParam Long id) {
         return Result.success(tagService.getById(id));
     }
 
     @Operation(summary = "创建标签")
-    @PostMapping
+    @PostMapping("/create")
     public Result<TagBO> create(@Valid @RequestBody TagBO tagBO) {
         return Result.success(tagService.create(tagBO));
     }
 
     @Operation(summary = "更新标签")
-    @PutMapping
+    @PostMapping("/update")
     public Result<Boolean> update(@Valid @RequestBody TagBO tagBO) {
         return Result.success(tagService.update(tagBO));
     }
 
     @Operation(summary = "删除标签")
-    @DeleteMapping("/{id}")
-    public Result<Boolean> delete(@PathVariable Long id) {
+    @PostMapping("/delete")
+    public Result<Boolean> delete(@RequestParam Long id) {
         return Result.success(tagService.delete(id));
     }
 }

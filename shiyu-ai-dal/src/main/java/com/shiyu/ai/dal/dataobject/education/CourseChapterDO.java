@@ -5,13 +5,16 @@ import com.mybatisflex.annotation.KeyType;
 import com.mybatisflex.annotation.Table;
 import lombok.Data;
 
+import com.shiyu.ai.common.mybatis.model.TenantEntity;
+import lombok.EqualsAndHashCode;
+
 import java.io.Serial;
-import java.io.Serializable;
 import java.time.LocalDateTime;
 
 @Data
 @Table("course_chapter")
-public class CourseChapterDO implements Serializable {
+@EqualsAndHashCode(callSuper = true)
+public class CourseChapterDO extends TenantEntity {
 
     @Serial
     private static final long serialVersionUID = 1L;

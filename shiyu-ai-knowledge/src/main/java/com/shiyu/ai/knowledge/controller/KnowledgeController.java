@@ -28,7 +28,7 @@ import java.util.List;
 import java.util.Set;
 
 @RestController
-@RequestMapping("/api/knowledge")
+@RequestMapping("/knowledge/knowledge")
 @RequiredArgsConstructor
 @Tag(name = "知识点管理")
 @Validated
@@ -41,70 +41,70 @@ public class KnowledgeController {
     private final KnowledgeSearchService knowledgeSearchService;
     private final IndexRebuildTask indexRebuildTask;
 
-    @GetMapping("/{id}")
+    @GetMapping("/detail")
     @Operation(summary = "获取知识点详情")
-    public Result<KnowledgeResponse> getById(@PathVariable Long id) {
+    public Result<KnowledgeResponse> getById(@RequestParam Long id) {
         return Result.success(knowledgeService.getById(id));
     }
 
-    @GetMapping
+    @GetMapping("/list")
     @Operation(summary = "分页查询知识点")
     public Result<PageData<KnowledgeResponse>> page(@Valid KnowledgePageQuery query) {
         return Result.success(knowledgeService.page(query));
     }
 
-    @GetMapping("/{id}/graph")
+    @GetMapping("/graph")
     @Operation(summary = "获取知识图谱邻域")
-    public Result<KnowledgeGraphResponse> getGraph(@PathVariable Long id) {
+    public Result<KnowledgeGraphResponse> getGraph(@RequestParam Long id) {
         return Result.success(knowledgeService.getGraph(id));
     }
 
-    @GetMapping("/{id}/path")
+    @GetMapping("/path")
     @Operation(summary = "获取学习路径")
-    public Result<List<Long>> getLearningPath(@PathVariable Long id) {
+    public Result<List<Long>> getLearningPath(@RequestParam Long id) {
         return Result.success(learningPathService.generatePath(id));
     }
 
-    @GetMapping("/{id}/prerequisites")
+    @GetMapping("/prerequisites")
     @Operation(summary = "获取缺失前置知识")
-    public Result<List<Long>> getMissingPrerequisites(@PathVariable Long id,
+    public Result<List<Long>> getMissingPrerequisites(@RequestParam Long id,
                                                       @RequestParam(required = false, defaultValue = "") Set<Long> masteredIds) {
         return Result.success(learningPathService.findMissingPrerequisites(id, masteredIds));
     }
 
-    @GetMapping("/{id}/prerequisites-list")
+    @GetMapping("/prerequisites-list")
     @Operation(summary = "获取前置知识点列表")
-    public Result<List<KnowledgeResponse>> getPrerequisites(@PathVariable Long id) {
+    public Result<List<KnowledgeResponse>> getPrerequisites(@RequestParam Long id) {
         return Result.success(relationService.getPrerequisites(id));
     }
 
-    @GetMapping("/{id}/subsequent-list")
+    @GetMapping("/subsequent-list")
     @Operation(summary = "获取后续知识点列表")
-    public Result<List<KnowledgeResponse>> getSubsequent(@PathVariable Long id) {
+    public Result<List<KnowledgeResponse>> getSubsequent(@RequestParam Long id) {
         return Result.success(relationService.getSubsequent(id));
     }
 
-    @PostMapping
+    @PostMapping("/create")
     @Operation(summary = "新增知识点")
     public Result<KnowledgeResponse> create(@RequestBody @Valid CreateKnowledgeRequest request) {
         return Result.success(knowledgeService.create(request));
     }
 
-    @PutMapping("/{id}")
+    @PostMapping("/update")
     @Operation(summary = "修改知识点")
-    public Result<Void> update(@PathVariable Long id, @RequestBody @Valid UpdateKnowledgeRequest request) {
+    public Result<Void> update(@RequestParam Long id, @RequestBody @Valid UpdateKnowledgeRequest request) {
         knowledgeService.update(id, request);
         return Result.success();
     }
 
-    @DeleteMapping("/{id}")
+    @PostMapping("/delete")
     @Operation(summary = "删除知识点")
-    public Result<Void> delete(@PathVariable Long id) {
+    public Result<Void> delete(@RequestParam Long id) {
         knowledgeService.delete(id);
         return Result.success();
     }
 
-    @PostMapping("/relation")
+    @PostMapping("/relation/create")
     @Operation(summary = "新增知识点关系")
     public Result<Void> addRelation(@RequestParam Long sourceId,
                                     @RequestParam Long targetId,
@@ -114,7 +114,7 @@ public class KnowledgeController {
         return Result.success();
     }
 
-    @DeleteMapping("/relation")
+    @PostMapping("/relation/delete")
     @Operation(summary = "删除知识点关系")
     public Result<Void> removeRelation(@RequestParam Long sourceId,
                                        @RequestParam Long targetId,
@@ -139,7 +139,7 @@ public class KnowledgeController {
     }
 
 
-    @PostMapping("/rebuild-index")
+    @PostMapping("/index/rebuild")
     @Operation(summary = "异步重建知识点向量索引")
     public Result<String> rebuildIndex() {
         String taskId = indexRebuildTask.createTask();
@@ -147,9 +147,9 @@ public class KnowledgeController {
         return Result.success(taskId);
     }
 
-    @GetMapping("/rebuild-index/{taskId}")
+    @GetMapping("/index/rebuild-status")
     @Operation(summary = "查询索引重建任务状态")
-    public Result<RebuildStatus> getRebuildStatus(@PathVariable String taskId) {
+    public Result<RebuildStatus> getRebuildStatus(@RequestParam String taskId) {
         RebuildStatus status = indexRebuildTask.getTaskStatus(taskId);
         if (status == null) {
             return Result.fail("任务不存在");
@@ -157,13 +157,13 @@ public class KnowledgeController {
         return Result.success(status);
     }
 
-    @GetMapping("/rebuild-index")
+    @GetMapping("/index/rebuild-tasks")
     @Operation(summary = "查询所有索引重建任务")
     public Result<List<RebuildStatus>> getAllRebuildTasks() {
         return Result.success(indexRebuildTask.getAllTasks());
     }
 
-    @DeleteMapping("/index")
+    @PostMapping("/index/clear")
     @Operation(summary = "清理知识点向量索引")
     public Result<Void> clearIndex() {
         knowledgeSearchService.clearIndex();

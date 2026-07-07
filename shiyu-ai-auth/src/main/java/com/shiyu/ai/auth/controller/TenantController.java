@@ -18,7 +18,7 @@ import java.util.List;
 @Slf4j
 @Tag(name = "Tenant", description = "Tenant")
 @RestController
-@RequestMapping("/admin/tenant")
+@RequestMapping("/auth/tenant")
 public class TenantController {
 
     private final TenantService tenantService;
@@ -34,8 +34,8 @@ public class TenantController {
         }
     }
 
-    @Operation(summary = "Get All Tenants")
-    @GetMapping("/all")
+    @Operation(summary = "Get Tenant List")
+    @GetMapping("/list")
     public Result<List<TenantVO>> getAllTenants() {
         checkTenantAdmin();
         List<TenantBO> tenantBOs = tenantService.getAllTenants();
@@ -43,9 +43,9 @@ public class TenantController {
         return Result.success(tenantVOs);
     }
 
-    @Operation(summary = "Get Tenant By Id")
-    @GetMapping("/{id}")
-    public Result<TenantVO> getTenantById(@PathVariable Long id) {
+    @Operation(summary = "Get Tenant Detail")
+    @GetMapping("/detail")
+    public Result<TenantVO> getTenantById(@RequestParam Long id) {
         checkTenantAdmin();
         TenantBO tenantBO = tenantService.getTenantById(id);
         if (tenantBO == null) {
@@ -56,7 +56,7 @@ public class TenantController {
     }
 
     @Operation(summary = "Create Tenant")
-    @PostMapping("")
+    @PostMapping("/create")
     public Result<Void> createTenant(@Valid @RequestBody TenantRequest request) {
         checkTenantAdmin();
         TenantBO tenantBO = MapstructUtils.convert(request, TenantBO.class);
@@ -68,8 +68,9 @@ public class TenantController {
         }
     }
 
-    @PatchMapping("/{id}")
-    public Result<Void> updateTenant(@PathVariable Long id, @Valid @RequestBody TenantRequest request) {
+    @Operation(summary = "Update Tenant")
+    @PostMapping("/update")
+    public Result<Void> updateTenant(@RequestParam Long id, @Valid @RequestBody TenantRequest request) {
         checkTenantAdmin();
         TenantBO tenantBO = MapstructUtils.convert(request, TenantBO.class);
         boolean success = tenantService.updateTenant(id, tenantBO);
@@ -81,8 +82,8 @@ public class TenantController {
     }
 
     @Operation(summary = "Delete Tenant")
-    @DeleteMapping("/{id}")
-    public Result<Void> deleteTenant(@PathVariable Long id) {
+    @PostMapping("/delete")
+    public Result<Void> deleteTenant(@RequestParam Long id) {
         checkTenantAdmin();
         boolean success = tenantService.deleteTenant(id);
         if (success) {

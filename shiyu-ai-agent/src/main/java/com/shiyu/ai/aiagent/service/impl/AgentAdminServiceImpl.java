@@ -53,7 +53,8 @@ public class AgentAdminServiceImpl implements AgentAdminService {
         return AgentDetailVO.builder()
                 .id(def.getId()).agentId(def.getAgentId()).name(def.getName())
                 .description(def.getDescription()).currentVersion(def.getCurrentVersion())
-                .status(def.getStatus()).extInfo(parseExtInfo(def.getExtInfo())).versions(versionVOs)
+                .status(def.getStatus() != null ? String.valueOf(def.getStatus()) : null)
+                .extInfo(parseExtInfo(def.getExtInfo())).versions(versionVOs)
                 .createTime(def.getCreateTime()).updateTime(def.getUpdateTime())
                 .build();
     }
@@ -69,7 +70,7 @@ public class AgentAdminServiceImpl implements AgentAdminService {
         def.setAgentId(request.getAgentId());
         def.setName(request.getName());
         def.setDescription(request.getDescription());
-        def.setStatus(request.getStatus() != null ? request.getStatus() : "1");
+        def.setStatus(request.getStatus() != null ? Integer.valueOf(request.getStatus()) : 1);
         agentAdminRepository.create(def);
         return toVO(def);
     }
@@ -81,7 +82,7 @@ public class AgentAdminServiceImpl implements AgentAdminService {
         if (def == null) throw new IllegalArgumentException("Agent不存在: " + id);
         if (request.getName() != null) def.setName(request.getName());
         if (request.getDescription() != null) def.setDescription(request.getDescription());
-        if (request.getStatus() != null) def.setStatus(request.getStatus());
+        if (request.getStatus() != null) def.setStatus(Integer.valueOf(request.getStatus()));
         def.setUpdateTime(LocalDateTime.now());
         agentAdminRepository.update(def);
         evictAgentCache(def.getAgentId());
@@ -133,7 +134,8 @@ public class AgentAdminServiceImpl implements AgentAdminService {
         return AgentVO.builder()
                 .id(def.getId()).agentId(def.getAgentId()).name(def.getName())
                 .description(def.getDescription()).currentVersion(def.getCurrentVersion())
-                .status(def.getStatus()).extInfo(parseExtInfo(def.getExtInfo()))
+                .status(def.getStatus() != null ? String.valueOf(def.getStatus()) : null)
+                .extInfo(parseExtInfo(def.getExtInfo()))
                 .createTime(def.getCreateTime()).updateTime(def.getUpdateTime())
                 .build();
     }
@@ -146,7 +148,7 @@ public class AgentAdminServiceImpl implements AgentAdminService {
     private AgentVersionVO toVersionVO(AgentVersionBO v) {
         return AgentVersionVO.builder()
                 .id(v.getId()).agentId(v.getAgentId()).versionNumber(v.getVersionNumber())
-                .description(v.getDescription()).status(v.getStatus())
+                .description(v.getDescription()).status(v.getStatus() != null ? String.valueOf(v.getStatus()) : null)
                 .createTime(v.getCreateTime()).updateTime(v.getUpdateTime())
                 .build();
     }

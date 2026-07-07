@@ -15,13 +15,13 @@ import java.util.List;
 
 @Tag(name = "学生管理")
 @RestController
-@RequestMapping("/api/student")
+@RequestMapping("/edu/student")
 @RequiredArgsConstructor
 public class StudentController {
 
     private final StudentService studentService;
 
-    @GetMapping
+    @GetMapping("/list")
     @Operation(summary = "分页获取学生")
     public Result<PageData<StudentResponse>> listAll(
             @RequestParam(defaultValue = "1") Integer pageNum,
@@ -31,38 +31,38 @@ public class StudentController {
         return Result.success(new PageData<>(items, page.getTotal()));
     }
 
-    @GetMapping("/{id}")
+    @GetMapping("/detail")
     @Operation(summary = "获取学生详情")
-    public Result<StudentResponse> getById(@PathVariable Long id) {
+    public Result<StudentResponse> getById(@RequestParam Long id) {
         StudentDO student = studentService.getById(id);
         return Result.success(toResponse(student));
     }
 
-    @GetMapping("/user/{userId}")
+    @GetMapping("/user")
     @Operation(summary = "根据用户ID获取学生")
-    public Result<StudentResponse> getByUserId(@PathVariable Long userId) {
+    public Result<StudentResponse> getByUserId(@RequestParam Long userId) {
         StudentDO student = studentService.getByUserId(userId);
         return Result.success(toResponse(student));
     }
 
-    @PostMapping
+    @PostMapping("/create")
     @Operation(summary = "创建学生")
     public Result<StudentResponse> create(@Valid @RequestBody StudentDO student) {
         StudentDO created = studentService.create(student);
         return Result.success(toResponse(created));
     }
 
-    @PutMapping("/{id}")
+    @PostMapping("/update")
     @Operation(summary = "更新学生")
-    public Result<Void> update(@PathVariable Long id, @Valid @RequestBody StudentDO student) {
+    public Result<Void> update(@RequestParam Long id, @Valid @RequestBody StudentDO student) {
         student.setId(id);
         studentService.update(student);
         return Result.success();
     }
 
-    @DeleteMapping("/{id}")
+    @PostMapping("/delete")
     @Operation(summary = "删除学生")
-    public Result<Void> delete(@PathVariable Long id) {
+    public Result<Void> delete(@RequestParam Long id) {
         studentService.deleteById(id);
         return Result.success();
     }

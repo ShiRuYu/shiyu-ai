@@ -15,20 +15,20 @@ import java.util.List;
 
 @Tag(name = "教材管理")
 @RestController
-@RequestMapping("/api/textbook")
+@RequestMapping("/edu/textbook")
 @RequiredArgsConstructor
 public class TextbookController {
 
     private final TextbookService textbookService;
 
-    @GetMapping("/{id}")
+    @GetMapping("/detail")
     @Operation(summary = "获取教材详情")
-    public Result<TextbookResponse> getById(@PathVariable Long id) {
+    public Result<TextbookResponse> getById(@RequestParam Long id) {
         TextbookDO textbook = textbookService.getById(id);
         return Result.success(toResponse(textbook));
     }
 
-    @GetMapping
+    @GetMapping("/list")
     @Operation(summary = "分页获取教材")
     public Result<PageData<TextbookResponse>> listAll(
             @RequestParam(defaultValue = "1") Integer pageNum,
@@ -38,32 +38,32 @@ public class TextbookController {
         return Result.success(new PageData<>(items, page.getTotal()));
     }
 
-    @GetMapping("/subject/{subjectCode}/grade/{grade}")
+    @GetMapping("/subject-grade")
     @Operation(summary = "根据学科和年级获取教材")
     public Result<List<TextbookResponse>> listBySubjectAndGrade(
-            @PathVariable String subjectCode, @PathVariable Integer grade) {
+            @RequestParam String subjectCode, @RequestParam Integer grade) {
         List<TextbookDO> textbooks = textbookService.listBySubjectAndGrade(subjectCode, grade);
         return Result.success(textbooks.stream().map(this::toResponse).toList());
     }
 
-    @PostMapping
+    @PostMapping("/create")
     @Operation(summary = "创建教材")
     public Result<TextbookResponse> create(@Valid @RequestBody TextbookDO textbook) {
         TextbookDO created = textbookService.create(textbook);
         return Result.success(toResponse(created));
     }
 
-    @PutMapping("/{id}")
+    @PostMapping("/update")
     @Operation(summary = "更新教材")
-    public Result<Void> update(@PathVariable Long id, @Valid @RequestBody TextbookDO textbook) {
+    public Result<Void> update(@RequestParam Long id, @Valid @RequestBody TextbookDO textbook) {
         textbook.setId(id);
         textbookService.update(textbook);
         return Result.success();
     }
 
-    @DeleteMapping("/{id}")
+    @PostMapping("/delete")
     @Operation(summary = "删除教材")
-    public Result<Void> delete(@PathVariable Long id) {
+    public Result<Void> delete(@RequestParam Long id) {
         textbookService.deleteById(id);
         return Result.success();
     }

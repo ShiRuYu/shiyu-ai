@@ -5,6 +5,7 @@ import com.shiyu.ai.model.bo.AiModelBO;
 import com.shiyu.ai.model.vo.IdNameOptionVO;
 import com.shiyu.ai.core.langchain4j.ModelManager;
 import com.shiyu.ai.common.core.api.PageData;
+import com.shiyu.ai.common.core.api.PageQuery;
 import com.shiyu.ai.common.core.api.Result;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.tuple.Pair;
@@ -21,7 +22,7 @@ import java.util.List;
 @Slf4j
 @Tag(name = "Ai Model", description = "Ai Model")
 @RestController
-@RequestMapping("/admin/model")
+@RequestMapping("/agent/model")
 public class AiModelController {
 
     private final AiModelService aiModelService;

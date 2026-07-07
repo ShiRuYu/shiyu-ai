@@ -3,12 +3,15 @@ package com.shiyu.ai.dal.dataobject.education;
 import com.mybatisflex.annotation.Table;
 import lombok.Data;
 
+import com.shiyu.ai.common.mybatis.model.TenantEntity;
+import lombok.EqualsAndHashCode;
+
 import java.io.Serial;
-import java.io.Serializable;
 
 @Data
 @Table("course_knowledge")
-public class CourseKnowledgeDO implements Serializable {
+@EqualsAndHashCode(callSuper = true)
+public class CourseKnowledgeDO extends TenantEntity {
 
     @Serial
     private static final long serialVersionUID = 1L;

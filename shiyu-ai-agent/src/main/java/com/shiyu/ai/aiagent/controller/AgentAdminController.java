@@ -6,6 +6,7 @@ import com.shiyu.ai.aiagent.vo.AgentDetailVO;
 import com.shiyu.ai.aiagent.vo.AgentVO;
 import com.shiyu.ai.model.vo.IdNameOptionVO;
 import com.shiyu.ai.common.core.api.PageData;
+import com.shiyu.ai.common.core.api.PageQuery;
 import com.shiyu.ai.common.core.api.Result;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.tuple.Pair;
@@ -19,7 +20,7 @@ import java.util.List;
 @Slf4j
 @Tag(name = "Agent Admin", description = "Agent Admin")
 @RestController
-@RequestMapping("/admin/agent")
+@RequestMapping("/agent/admin")
 public class AgentAdminController {
 
     private final AgentAdminService agentAdminService;
@@ -29,7 +30,7 @@ public class AgentAdminController {
     }
 
     @Operation(summary = "Get Page")
-    @GetMapping("/page")
+    @GetMapping("/list")
     public Result<PageData<AgentVO>> getPage(
             @RequestParam(required = false, defaultValue = "1") Integer pageNo,
             @RequestParam(required = false, defaultValue = "10") Integer pageSize,
@@ -40,15 +41,15 @@ public class AgentAdminController {
     }
 
     @Operation(summary = "Get by Id")
-    @GetMapping("/{id}")
-    public Result<AgentDetailVO> getById(@PathVariable Long id) {
+    @GetMapping("/detail")
+    public Result<AgentDetailVO> getById(@RequestParam Long id) {
         AgentDetailVO vo = agentAdminService.getById(id);
         if (vo == null) return Result.fail("Agent不存在");
         return Result.success(vo);
     }
 
     @Operation(summary = "Create")
-    @PostMapping
+    @PostMapping("/create")
     public Result<AgentVO> create(@Valid @RequestBody AgentRequest request) {
         try {
             AgentVO vo = agentAdminService.create(request);
@@ -59,8 +60,8 @@ public class AgentAdminController {
         }
     }
 
-    @PatchMapping("/{id}")
-    public Result<AgentVO> update(@PathVariable Long id, @Valid @RequestBody AgentRequest request) {
+    @PostMapping("/update")
+    public Result<AgentVO> update(@RequestParam Long id, @Valid @RequestBody AgentRequest request) {
         try {
             AgentVO vo = agentAdminService.update(id, request);
             return Result.success(vo);
@@ -71,8 +72,8 @@ public class AgentAdminController {
     }
 
     @Operation(summary = "Delete")
-    @DeleteMapping("/{id}")
-    public Result<Void> delete(@PathVariable Long id) {
+    @PostMapping("/delete")
+    public Result<Void> delete(@RequestParam Long id) {
         try {
             agentAdminService.deleteById(id);
             return Result.success();
@@ -83,8 +84,8 @@ public class AgentAdminController {
     }
 
     @Operation(summary = "Update Status")
-    @PutMapping("/{id}/status")
-    public Result<Void> updateStatus(@PathVariable Long id, @RequestParam String status) {
+    @PostMapping("/status")
+    public Result<Void> updateStatus(@RequestParam Long id, @RequestParam String status) {
         AgentRequest request = new AgentRequest();
         request.setStatus(status);
         try {
@@ -100,7 +101,7 @@ public class AgentAdminController {
      * 获取所有启用 Agent 选项（下拉选择用）
      */
     @Operation(summary = "List All Options")
-    @GetMapping("/list/all")
+    @GetMapping("/options")
     public Result<List<IdNameOptionVO>> listAllOptions() {
         return Result.success(agentAdminService.listAllOptions());
     }

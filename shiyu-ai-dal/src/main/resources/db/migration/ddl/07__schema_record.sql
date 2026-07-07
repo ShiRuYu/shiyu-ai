@@ -11,7 +11,7 @@ CREATE TABLE IF NOT EXISTS profile (
     gender TINYINT DEFAULT 2 COMMENT '性别（0男 1女 2未知）',
     birth_date DATE COMMENT '出生日期',
     avatar VARCHAR(255) COMMENT '头像URL',
-    status CHAR(1) DEFAULT '1' COMMENT '状态（1正常 0停用）',
+    status TINYINT DEFAULT 1 COMMENT '状态（1正常 0停用）',
     del_flag TINYINT DEFAULT 0 COMMENT '删除标志（0：正常 1：已删除）',
     create_by VARCHAR(64) COMMENT '创建者',
     create_time TIMESTAMP DEFAULT CURRENT_TIMESTAMP COMMENT '创建时间',

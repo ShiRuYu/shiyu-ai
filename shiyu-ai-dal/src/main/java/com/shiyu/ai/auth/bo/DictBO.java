@@ -72,18 +72,8 @@ public class DictBO extends BaseEntity {
     private String isDefault;
 
     /**
-     * 状态（1正常 0停用）
-     */
-    private String status;
-
-    /**
      * 备注
      */
     private String remark;
-
-    /**
-     * 删除标志（0存在 1删除）
-     */
-    private String delFlag;
 
 }

@@ -17,7 +17,5 @@ public class RoleWorkspaceMenuDO extends TenantEntity {
 
     private Long roleId;
 
-    private Long workspaceId;
-
     private Long menuId;
 }

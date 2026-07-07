@@ -5,7 +5,6 @@ import com.mybatisflex.annotation.KeyType;
 import com.mybatisflex.annotation.Table;
 import lombok.Data;
 
-import java.io.Serial;
 import java.io.Serializable;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
@@ -14,18 +13,14 @@ import java.time.LocalDateTime;
 @Table("edu_review_task")
 public class ReviewTaskDO implements Serializable {
 
-    @Serial
-    private static final long serialVersionUID = 1L;
-
     @Id(keyType = KeyType.Auto)
     private Long id;
 
     private Long studentId;
     private Long knowledgeId;
+    private String status;
     private LocalDate reviewDate;
     private Integer reviewRound;
-    private String status;
     private Double resultScore;
     private LocalDateTime completedAt;
-    private LocalDateTime createTime;
 }

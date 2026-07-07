@@ -15,27 +15,27 @@ import java.util.List;
 
 @Tag(name = "学科管理")
 @RestController
-@RequestMapping("/api/subject")
+@RequestMapping("/edu/subject")
 @RequiredArgsConstructor
 public class SubjectController {
 
     private final SubjectService subjectService;
 
-    @GetMapping("/{id}")
+    @GetMapping("/detail")
     @Operation(summary = "获取学科详情")
-    public Result<SubjectResponse> getById(@PathVariable Long id) {
+    public Result<SubjectResponse> getById(@RequestParam Long id) {
         SubjectDO subject = subjectService.getById(id);
         return Result.success(toResponse(subject));
     }
 
-    @GetMapping("/code/{code}")
+    @GetMapping("/code")
     @Operation(summary = "根据编码获取学科")
-    public Result<SubjectResponse> getByCode(@PathVariable String code) {
+    public Result<SubjectResponse> getByCode(@RequestParam String code) {
         SubjectDO subject = subjectService.getByCode(code);
         return Result.success(toResponse(subject));
     }
 
-    @GetMapping
+    @GetMapping("/list")
     @Operation(summary = "分页获取学科")
     public Result<PageData<SubjectResponse>> listAll(
             @RequestParam(defaultValue = "1") Integer pageNum,
@@ -45,31 +45,31 @@ public class SubjectController {
         return Result.success(new PageData<>(items, page.getTotal()));
     }
 
-    @GetMapping("/grade-level/{gradeLevel}")
+    @GetMapping("/grade-level")
     @Operation(summary = "根据学段获取学科")
-    public Result<List<SubjectResponse>> listByGradeLevel(@PathVariable String gradeLevel) {
+    public Result<List<SubjectResponse>> listByGradeLevel(@RequestParam String gradeLevel) {
         List<SubjectDO> subjects = subjectService.listByGradeLevel(gradeLevel);
         return Result.success(subjects.stream().map(this::toResponse).toList());
     }
 
-    @PostMapping
+    @PostMapping("/create")
     @Operation(summary = "创建学科")
     public Result<SubjectResponse> create(@Valid @RequestBody SubjectDO subject) {
         SubjectDO created = subjectService.create(subject);
         return Result.success(toResponse(created));
     }
 
-    @PutMapping("/{id}")
+    @PostMapping("/update")
     @Operation(summary = "更新学科")
-    public Result<Void> update(@PathVariable Long id, @Valid @RequestBody SubjectDO subject) {
+    public Result<Void> update(@RequestParam Long id, @Valid @RequestBody SubjectDO subject) {
         subject.setId(id);
         subjectService.update(subject);
         return Result.success();
     }
 
-    @DeleteMapping("/{id}")
+    @PostMapping("/delete")
     @Operation(summary = "删除学科")
-    public Result<Void> delete(@PathVariable Long id) {
+    public Result<Void> delete(@RequestParam Long id) {
         subjectService.deleteById(id);
         return Result.success();
     }

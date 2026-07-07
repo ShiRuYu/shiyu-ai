@@ -33,7 +33,4 @@ public class TenantDO extends BaseEntity {
 
     private String intro;
 
-    private String status;
-
-    private Integer delFlag;
 }

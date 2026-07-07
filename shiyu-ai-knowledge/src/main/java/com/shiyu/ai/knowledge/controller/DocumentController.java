@@ -12,7 +12,7 @@ import org.springframework.web.bind.annotation.*;
 import java.util.List;
 
 @RestController
-@RequestMapping("/api/knowledge/documents")
+@RequestMapping("/knowledge/document")
 @RequiredArgsConstructor
 @Tag(name = "文档知识管理")
 @Validated
@@ -20,13 +20,13 @@ public class DocumentController {
 
     private final DocumentKnowledgeService documentKnowledgeService;
 
-    @GetMapping("/{id}")
+    @GetMapping("/detail")
     @Operation(summary = "获取文档详情")
-    public Result<DocumentKnowledgeService.KnowledgeDocumentVO> getById(@PathVariable Long id) {
+    public Result<DocumentKnowledgeService.KnowledgeDocumentVO> getById(@RequestParam Long id) {
         return Result.success(documentKnowledgeService.getById(id));
     }
 
-    @GetMapping
+    @GetMapping("/list")
     @Operation(summary = "搜索文档")
     public Result<List<DocumentKnowledgeService.KnowledgeDocumentVO>> search(
             @RequestParam String keyword,
@@ -34,31 +34,31 @@ public class DocumentController {
         return Result.success(documentKnowledgeService.search(keyword, topK));
     }
 
-    @GetMapping("/by-knowledge/{knowledgeId}")
+    @GetMapping("/knowledge")
     @Operation(summary = "根据知识点ID获取关联文档")
     public Result<List<DocumentKnowledgeService.KnowledgeDocumentVO>> getByKnowledge(
-            @PathVariable Long knowledgeId) {
+            @RequestParam Long knowledgeId) {
         return Result.success(documentKnowledgeService.searchByKnowledgeId(knowledgeId));
     }
 
-    @PostMapping
+    @PostMapping("/create")
     @Operation(summary = "新增文档")
     public Result<DocumentKnowledgeService.KnowledgeDocumentVO> create(
             @RequestBody @Valid DocumentKnowledgeService.CreateDocumentRequest request) {
         return Result.success(documentKnowledgeService.create(request));
     }
 
-    @PutMapping("/{id}")
+    @PostMapping("/update")
     @Operation(summary = "修改文档")
-    public Result<Void> update(@PathVariable Long id,
+    public Result<Void> update(@RequestParam Long id,
                                @RequestBody @Valid DocumentKnowledgeService.UpdateDocumentRequest request) {
         documentKnowledgeService.update(id, request);
         return Result.success();
     }
 
-    @DeleteMapping("/{id}")
+    @PostMapping("/delete")
     @Operation(summary = "删除文档")
-    public Result<Void> delete(@PathVariable Long id) {
+    public Result<Void> delete(@RequestParam Long id) {
         documentKnowledgeService.delete(id);
         return Result.success();
     }

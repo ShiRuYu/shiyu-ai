@@ -43,6 +43,4 @@ public class IntentDefBO extends BaseEntity {
     private Map<String, String> slotDefaults;
     @AutoMapping(ignore = true)
     private Boolean enabled;
-    private String status;
-    private String delFlag;
 }
