@@ -2,17 +2,17 @@
 -- Data: data_knowledge
 -- ============================================
 
-INSERT IGNORE INTO `knowledge` (`id`, `code`, `name`, `description`, `difficulty`, `category`, `tags`) VALUES
-(1, 'math_natural',    '自然数',   '用来表示物体个数的数: 0,1,2,3,...', 1, 'MATH', '["自然数","初等数学"]'),
-(2, 'math_integer',    '整数',     '正整数、零和负整数的统称', 1, 'MATH', '["整数"]'),
-(3, 'math_numberline', '数轴',     '规定了原点、正方向和单位长度的直线', 2, 'MATH', '["数轴"]'),
-(4, 'math_opposite',   '相反数',   '只有符号不同的两个数互为相反数', 2, 'MATH', '["相反数"]'),
-(5, 'math_absval',     '绝对值',   '一个数在数轴上对应的点到原点的距离', 2, 'MATH', '["绝对值"]'),
-(6, 'math_rational',   '有理数',   '整数和分数的统称', 2, 'MATH', '["有理数"]'),
-(7, 'math_linear_fn',  '一次函数', 'y=kx+b (k≠0) 形式的函数', 3, 'MATH', '["一次函数"]'),
-(8, 'math_quad_fn',   '二次函数', 'y=ax²+bx+c (a≠0) 形式的函数', 3, 'MATH', '["二次函数"]'),
-(9, 'math_function',   '函数',     '两个变量之间的对应关系', 3, 'MATH', '["函数"]'),
-(10, 'math_derivative', '导数',     '函数在某一点的变化率', 4, 'MATH', '["导数","高等数学"]');
+INSERT IGNORE INTO `knowledge` (`id`, `code`, `name`, `description`, `difficulty`, `category`, `tags`, `tenant_id`) VALUES
+(1, 'math_natural',    '自然数',   '用来表示物体个数的数: 0,1,2,3,...', 1, 'MATH', '["自然数","初等数学"]', 1),
+(2, 'math_integer',    '整数',     '正整数、零和负整数的统称', 1, 'MATH', '["整数"]', 1),
+(3, 'math_numberline', '数轴',     '规定了原点、正方向和单位长度的直线', 2, 'MATH', '["数轴"]', 1),
+(4, 'math_opposite',   '相反数',   '只有符号不同的两个数互为相反数', 2, 'MATH', '["相反数"]', 1),
+(5, 'math_absval',     '绝对值',   '一个数在数轴上对应的点到原点的距离', 2, 'MATH', '["绝对值"]', 1),
+(6, 'math_rational',   '有理数',   '整数和分数的统称', 2, 'MATH', '["有理数"]', 1),
+(7, 'math_linear_fn',  '一次函数', 'y=kx+b (k≠0) 形式的函数', 3, 'MATH', '["一次函数"]', 1),
+(8, 'math_quad_fn',   '二次函数', 'y=ax²+bx+c (a≠0) 形式的函数', 3, 'MATH', '["二次函数"]', 1),
+(9, 'math_function',   '函数',     '两个变量之间的对应关系', 3, 'MATH', '["函数"]', 1),
+(10, 'math_derivative', '导数',     '函数在某一点的变化率', 4, 'MATH', '["导数","高等数学"]', 1);
 
 INSERT IGNORE INTO `knowledge_relation` (`source_id`, `target_id`, `relation_type`, `weight`) VALUES
 (2,  1,  'PRE',   1.0),
