@@ -11,11 +11,11 @@ INSERT IGNORE INTO `subject` (`id`, `code`, `name`, `grade_level`, `icon`, `sort
 
 INSERT IGNORE INTO `textbook` (tenant_id, `id`, `name`, `subject_code`, `grade`, `publisher`, `isbn`) VALUES
 (1, 1, '人教版数学七年级上册',   'MATH',    7, '人民教育出版社', '978-7-107-12345-6'),
-(1, 1, 2, '人教版数学七年级下册',   'MATH',    7, '人民教育出版社', '978-7-107-12346-3'),
-(1, 1, 3, '北师大版数学七年级上册', 'MATH',    7, '北京师范大学出版社', '978-7-303-12345-7'),
-(1, 1, 4, '人教版物理八年级上册',   'PHYSICS', 8, '人民教育出版社', '978-7-107-23456-7'),
-(1, 1, 5, '人教版英语七年级上册',   'ENGLISH', 7, '人民教育出版社', '978-7-107-34567-8'),
-(1, 1, 6, '人教版化学九年级上册',   'CHEMISTRY',9, '人民教育出版社', '978-7-107-45678-9');
+(1, 2, '人教版数学七年级下册',   'MATH',    7, '人民教育出版社', '978-7-107-12346-3'),
+(1, 3, '北师大版数学七年级上册', 'MATH',    7, '北京师范大学出版社', '978-7-303-12345-7'),
+(1, 4, '人教版物理八年级上册',   'PHYSICS', 8, '人民教育出版社', '978-7-107-23456-7'),
+(1, 5, '人教版英语七年级上册',   'ENGLISH', 7, '人民教育出版社', '978-7-107-34567-8'),
+(1, 6, '人教版化学九年级上册',   'CHEMISTRY',9, '人民教育出版社', '978-7-107-45678-9');
 
 INSERT IGNORE INTO `chapter` (tenant_id, `id`, `textbook_id`, `parent_id`, `name`, `chapter_order`) VALUES
 -- 人教版数学七年级上册（教材ID=1）
@@ -45,49 +45,49 @@ INSERT IGNORE INTO `chapter` (tenant_id, `id`, `textbook_id`, `parent_id`, `name
 
 INSERT IGNORE INTO `knowledge_textbook` (tenant_id, `knowledge_id`, `textbook_id`, `chapter_id`) VALUES
 (1, 1,  1, 2),    -- 自然数 → 1.1
-(1, 1, 2,  1, 2),    -- 整数 → 1.1
-(1, 1, 3,  1, 3),    -- 数轴 → 1.2
-(1, 1, 4,  1, 4),    -- 相反数 → 1.3
-(1, 1, 5,  1, 5),    -- 绝对值 → 1.4
-(1, 1, 6,  1, 6);
+(1, 2,  1, 2),    -- 整数 → 1.1
+(1, 3,  1, 3),    -- 数轴 → 1.2
+(1, 4,  1, 4),    -- 相反数 → 1.3
+(1, 5,  1, 5),    -- 绝对值 → 1.4
+(1, 6,  1, 6);
 
 INSERT IGNORE INTO `teacher` (tenant_id, `id`, `user_id`, `teacher_no`, `name`, `subject`, `school`, `title`) VALUES
 (1, 1, 0, 'T2024001', '张老师', 'MATH',     '阳光中学', '高级教师'),
-(1, 1, 2, 1, 'T2024002', '李老师', 'PHYSICS',  '阳光中学', '一级教师');
+(1, 2, 1, 'T2024002', '李老师', 'PHYSICS',  '阳光中学', '一级教师');
 
 INSERT IGNORE INTO `student` (tenant_id, `id`, `user_id`, `student_no`, `name`, `gender`, `grade`, `grade_level`, `school`, `class_name`, `learning_style`) VALUES
 (1, 1, 1, 'ST2024001', '小明', 1, 7, 'K3', '阳光中学', '初一(1)班', 'visual'),
-(1, 1, 2, 2, 'ST2024002', '小红', 2, 7, 'K3', '阳光中学', '初一(2)班', 'auditory'),
-(1, 1, 3, 0, 'ST2024003', '小华', 1, 8, 'K3', '阳光中学', '初二(1)班', 'kinesthetic');
+(1, 2, 2, 'ST2024002', '小红', 2, 7, 'K3', '阳光中学', '初一(2)班', 'auditory'),
+(1, 3, 0, 'ST2024003', '小华', 1, 8, 'K3', '阳光中学', '初二(1)班', 'kinesthetic');
 
 INSERT IGNORE INTO `course` (tenant_id, `id`, `name`, `description`, `subject_code`, `grade`, `textbook_id`, `teacher_id`, `total_hours`, `status`, `view_count`) VALUES
 (1, 1, '七年级数学上册精讲',    '人教版七年级数学上册系统学习，覆盖有理数、整式、方程等核心内容', 'MATH', 7, 1, 1, 48, 1, 1280),
-(1, 1, 2, '有理数专题突破',        '深入理解有理数概念、数轴、相反数、绝对值等难点', 'MATH', 7, 1, 1, 16, 1, 560),
-(1, 1, 3, '八年级物理入门',        '人教版物理八年级上册，机械运动与声现象', 'PHYSICS', 8, 4, 2, 32, 1, 340),
-(1, 1, 4, '七年级英语同步精讲',    '人教版七年级英语上册同步辅导', 'ENGLISH', 7, 5, 1, 40, 1, 890),
-(1, 1, 5, '化学奥秘探索',          '化学九年级上册入门课程', 'CHEMISTRY', 9, 6, 2, 24, 1, 120);
+(1, 2, '有理数专题突破',        '深入理解有理数概念、数轴、相反数、绝对值等难点', 'MATH', 7, 1, 1, 16, 1, 560),
+(1, 3, '八年级物理入门',        '人教版物理八年级上册，机械运动与声现象', 'PHYSICS', 8, 4, 2, 32, 1, 340),
+(1, 4, '七年级英语同步精讲',    '人教版七年级英语上册同步辅导', 'ENGLISH', 7, 5, 1, 40, 1, 890),
+(1, 5, '化学奥秘探索',          '化学九年级上册入门课程', 'CHEMISTRY', 9, 6, 2, 24, 1, 120);
 
 INSERT IGNORE INTO `course_chapter` (tenant_id, `id`, `course_id`, `name`, `order_no`) VALUES
 (1, 1, 1, '有理数',          1),
-(1, 1, 2, 1, '整式的加减',      2),
-(1, 1, 3, 1, '一元一次方程',    3),
-(1, 1, 4, 2, '正负数与数轴',    1),
-(1, 1, 5, 2, '相反数与绝对值',  2),
-(1, 1, 6, 2, '有理数运算',      3),
-(1, 1, 7, 3, '机械运动',        1),
-(1, 1, 8, 3, '声现象',          2),
-(1, 1, 9, 4, 'Starter',         1),
-(1, 1, 10, 4, 'Unit 1',         2);
+(1, 2, 1, '整式的加减',      2),
+(1, 3, 1, '一元一次方程',    3),
+(1, 4, 2, '正负数与数轴',    1),
+(1, 5, 2, '相反数与绝对值',  2),
+(1, 6, 2, '有理数运算',      3),
+(1, 7, 3, '机械运动',        1),
+(1, 8, 3, '声现象',          2),
+(1, 9, 4, 'Starter',         1),
+(1, 10, 4, 'Unit 1',         2);
 
 INSERT IGNORE INTO `course_section` (tenant_id, `id`, `chapter_id`, `name`, `order_no`, `duration_min`) VALUES
 (1, 1, 1, '1.1 正数和负数',      1, 30),
-(1, 1, 2, 1, '1.2 数轴',            2, 25),
-(1, 1, 3, 1, '1.3 相反数',          3, 20),
-(1, 1, 4, 1, '1.4 绝对值',          4, 35),
-(1, 1, 5, 4, '数轴的绘制与应用',      1, 20),
-(1, 1, 6, 5, '相反数的性质',          1, 15),
-(1, 1, 7, 7, '长度和时间的测量',      1, 30),
-(1, 1, 8, 8, '声音的产生与传播',      1, 25);
+(1, 2, 1, '1.2 数轴',            2, 25),
+(1, 3, 1, '1.3 相反数',          3, 20),
+(1, 4, 1, '1.4 绝对值',          4, 35),
+(1, 5, 4, '数轴的绘制与应用',      1, 20),
+(1, 6, 5, '相反数的性质',          1, 15),
+(1, 7, 7, '长度和时间的测量',      1, 30),
+(1, 8, 8, '声音的产生与传播',      1, 25);
 
 INSERT IGNORE INTO `course_knowledge` (`tenant_id`, `course_id`, `knowledge_id`, `section_id`, `sort_order`) VALUES
 (1, 1, 1, 1, 1), (1, 1, 2, 1, 2), (1, 1, 3, 2, 1), (1, 1, 4, 3, 1), (1, 1, 5, 4, 1), (1, 1, 6, 4, 2),
@@ -95,22 +95,22 @@ INSERT IGNORE INTO `course_knowledge` (`tenant_id`, `course_id`, `knowledge_id`,
 
 INSERT IGNORE INTO `resource` (tenant_id, `id`, `name`, `type`, `url`, `size_bytes`, `duration_sec`, `subject_code`, `grade`, `difficulty`, `description`, `view_count`) VALUES
 (1, 1,  '有理数概念精讲视频',   'VIDEO',    '/edu/math/rational_numbers.mp4',    52428800, 1800, 'MATH', 7, 2, '人教版有理数章节详细讲解视频', 3500),
-(1, 1, 2,  '数轴与绝对值PPT',      'PPT',     '/edu/math/numberline_abs.pptx',     10485760, NULL, 'MATH', 7, 2, '数轴绘制方法和绝对值性质的课件', 2100),
-(1, 1, 3,  '相反数练习题集',       'PDF',     '/edu/math/opposite_exercises.pdf',   2097152, NULL, 'MATH', 7, 1, '相反数基础练习题含解析', 1800),
-(1, 1, 4,  '七年级数学知识点总结',  'PDF',     '/edu/math/grade7_summary.pdf',       5242880, NULL, 'MATH', 7, 2, '全册知识点思维导图', 5600),
-(1, 1, 5,  '有理数运算互动动画',   'ANIMATION','/edu/math/rational_ops.html',        NULL, 600,  'MATH', 7, 3, '可视化有理数加减法运算过程', 1200),
-(1, 1, 6,  '机械运动趣味实验',     'VIDEO',   '/edu/physics/motion_exp.mp4',       73400320, 2400, 'PHYSICS', 8, 2, '测量物体运动的实验视频', 890),
-(1, 1, 7,  '声现象科普动画',       'ANIMATION','/edu/physics/sound_waves.html',     NULL, 480,  'PHYSICS', 8, 1, '声音产生与传播的可视化动画', 670),
-(1, 1, 8,  '英语 Starter 单词卡',  'PDF',     '/edu/english/starter_words.pdf',     1048576, NULL, 'ENGLISH', 7, 1, '预备单元核心单词表', 2100),
-(1, 1, 9,  '化学实验安全指南',     'PDF',     '/edu/chemistry/lab_safety.pdf',      3145728, NULL, 'CHEMISTRY', 9, 1, '化学实验室安全操作规范', 450),
-(1, 1, 10, '一元一次方程精讲',     'VIDEO',   '/edu/math/linear_equation.mp4',     41943040, 1500, 'MATH', 7, 2, '一元一次方程的解法步骤讲解', 2200),
-(1, 1, 11, '英语 Unit1 对话音频',  'AUDIO',   '/edu/english/unit1_dialogue.mp3',    5242880, 600,  'ENGLISH', 7, 2, 'My name is Gina 单元对话音频', 3100),
-(1, 1, 12, '长度测量工具介绍',     'PPT',     '/edu/physics/measure_tools.pptx',    8388608, NULL, 'PHYSICS', 8, 1, '长度测量工具使用方法的课件', 560);
+(1, 2,  '数轴与绝对值PPT',      'PPT',     '/edu/math/numberline_abs.pptx',     10485760, NULL, 'MATH', 7, 2, '数轴绘制方法和绝对值性质的课件', 2100),
+(1, 3,  '相反数练习题集',       'PDF',     '/edu/math/opposite_exercises.pdf',   2097152, NULL, 'MATH', 7, 1, '相反数基础练习题含解析', 1800),
+(1, 4,  '七年级数学知识点总结',  'PDF',     '/edu/math/grade7_summary.pdf',       5242880, NULL, 'MATH', 7, 2, '全册知识点思维导图', 5600),
+(1, 5,  '有理数运算互动动画',   'ANIMATION','/edu/math/rational_ops.html',        NULL, 600,  'MATH', 7, 3, '可视化有理数加减法运算过程', 1200),
+(1, 6,  '机械运动趣味实验',     'VIDEO',   '/edu/physics/motion_exp.mp4',       73400320, 2400, 'PHYSICS', 8, 2, '测量物体运动的实验视频', 890),
+(1, 7,  '声现象科普动画',       'ANIMATION','/edu/physics/sound_waves.html',     NULL, 480,  'PHYSICS', 8, 1, '声音产生与传播的可视化动画', 670),
+(1, 8,  '英语 Starter 单词卡',  'PDF',     '/edu/english/starter_words.pdf',     1048576, NULL, 'ENGLISH', 7, 1, '预备单元核心单词表', 2100),
+(1, 9,  '化学实验安全指南',     'PDF',     '/edu/chemistry/lab_safety.pdf',      3145728, NULL, 'CHEMISTRY', 9, 1, '化学实验室安全操作规范', 450),
+(1, 10, '一元一次方程精讲',     'VIDEO',   '/edu/math/linear_equation.mp4',     41943040, 1500, 'MATH', 7, 2, '一元一次方程的解法步骤讲解', 2200),
+(1, 11, '英语 Unit1 对话音频',  'AUDIO',   '/edu/english/unit1_dialogue.mp3',    5242880, 600,  'ENGLISH', 7, 2, 'My name is Gina 单元对话音频', 3100),
+(1, 12, '长度测量工具介绍',     'PPT',     '/edu/physics/measure_tools.pptx',    8388608, NULL, 'PHYSICS', 8, 1, '长度测量工具使用方法的课件', 560);
 
 INSERT IGNORE INTO `resource_knowledge` (tenant_id, `resource_id`, `knowledge_id`, `sort_order`) VALUES
-(1, 1, 6, 1), (2, 3, 1), (2, 5, 2), (3, 4, 1),
-(1, 1, 4, 1, 1), (4, 2, 2), (4, 3, 3), (4, 4, 4), (4, 5, 5), (4, 6, 6),
-(1, 1, 5, 6, 1), (10, 6, 2);
+(1, 1, 6, 1), (1, 2, 3, 1), (1, 2, 5, 2), (1, 3, 4, 1),
+(1, 4, 1, 1), (1, 4, 2, 2), (1, 4, 3, 3), (1, 4, 4, 4), (1, 4, 5, 5), (1, 4, 6, 6),
+(1, 5, 6, 1), (1, 10, 6, 2);
 
 INSERT IGNORE INTO `edu_question` (`tenant_id`, `id`, `code`, `type`, `subject_code`, `grade`, `difficulty`, `ability_dimension`, `title`, `options`, `answer`, `analysis`, `tags`, `used_count`) VALUES
 -- ===== 数学 - 基础 =====
@@ -180,11 +180,11 @@ INSERT IGNORE INTO `edu_question` (`tenant_id`, `id`, `code`, `type`, `subject_c
  '["语法","主谓一致"]', 88);
 
 INSERT IGNORE INTO `edu_question_knowledge` (tenant_id, `question_id`, `knowledge_id`, `weight`) VALUES
-(1, 1, 4, 1.0), (2, 5, 1.0), (3, 5, 1.0),
-(1, 1, 4, 3, 0.8), (4, 5, 0.2),
-(1, 1, 5, 5, 1.0), (6, 5, 1.0), (7, 6, 1.0),
-(1, 1, 8, 5, 0.6), (8, 6, 0.4),
-(1, 1, 9, 5, 1.0), (10, 6, 1.0), (11, 5, 1.0);
+(1, 1, 4, 1.0), (1, 2, 5, 1.0), (1, 3, 5, 1.0),
+(1, 4, 3, 0.8), (1, 4, 5, 0.2),
+(1, 5, 5, 1.0), (1, 6, 5, 1.0), (1, 7, 6, 1.0),
+(1, 8, 5, 0.6), (1, 8, 6, 0.4),
+(1, 9, 5, 1.0), (1, 10, 6, 1.0), (1, 11, 5, 1.0);
 
 INSERT IGNORE INTO `exam` (tenant_id, `id`, `name`, `type`, `subject_code`, `grade`, `duration_min`, `total_score`, `status`, `teacher_id`) VALUES
 (1, 1, '七年级有理数单元测验',    'UNIT_TEST',  'MATH', 7, 45, 100, 1, 1),
@@ -193,31 +193,31 @@ INSERT IGNORE INTO `exam` (tenant_id, `id`, `name`, `type`, `subject_code`, `gra
 (1, 4, '英语 Unit 1 单元测试',    'UNIT_TEST',  'ENGLISH', 7, 40, 80, 0, 1);
 
 INSERT IGNORE INTO `exam_section` (tenant_id, `id`, `exam_id`, `name`, `order_no`, `score_per_q`) VALUES
-(1, 1, '选择题（每题5分）', 1, 5.00),
-(1, 1, 2, 1, '填空题（每题5分）', 2, 5.00),
-(1, 1, 3, 1, '解答题（每题10分）',3, 10.00),
-(1, 1, 4, 3, '选择题（每题6分）', 1, 6.00),
-(1, 1, 5, 3, '填空题（每题6分）', 2, 6.00);
+(1, 1, 1, '选择题（每题5分）', 1, 5.00),
+(1, 2, 1, '填空题（每题5分）', 2, 5.00),
+(1, 3, 1, '解答题（每题10分）',3, 10.00),
+(1, 4, 3, '选择题（每题6分）', 1, 6.00),
+(1, 5, 3, '填空题（每题6分）', 2, 6.00);
 
 INSERT IGNORE INTO `exam_question` (tenant_id, `exam_id`, `section_id`, `question_id`, `order_no`, `score`) VALUES
-(1, 1, 1, 1, 1, 5.00), (1, 1, 2, 2, 5.00), (1, 1, 4, 3, 5.00), (1, 1, 8, 4, 5.00),
-(1, 1, 1, 2, 3, 1, 5.00), (1, 2, 5, 2, 5.00),
-(1, 1, 1, 3, 6, 1, 10.00), (1, 3, 9, 2, 10.00),
-(1, 1, 3, 4, 12, 1, 6.00), (3, 4, 13, 2, 6.00),
-(1, 1, 3, 5, 14, 1, 6.00);
+(1, 1, 1, 1, 1, 5.00), (1, 1, 2, 2, 1, 5.00), (1, 1, 4, 3, 1, 5.00), (1, 1, 8, 4, 1, 5.00),
+(1, 1, 2, 3, 1, 5.00), (1, 2, 5, 2, 1, 5.00),
+(1, 1, 3, 6, 1, 10.00), (1, 3, 9, 2, 1, 10.00),
+(1, 3, 4, 12, 1, 6.00), (1, 3, 4, 13, 2, 6.00),
+(1, 3, 5, 14, 1, 6.00);
 
 INSERT IGNORE INTO `ability` (tenant_id, `id`, `student_id`, `knowledge_id`, `remember`, `understand`, `apply`, `analyze`, `evaluate`, `create_score`, `overall_mastery`) VALUES
 -- 小明（studentId=1）：数学基础一般，绝对值偏弱
-(1, 1, 1, 1, 1, 90, 85, 70, 60, 50, 40, 70.0),
-(1, 1, 2, 1, 2, 85, 80, 75, 65, 55, 45, 71.5),
-(1, 1, 3, 1, 3, 80, 75, 70, 60, 50, 40, 67.5),
-(1, 1, 4, 1, 4, 75, 70, 65, 55, 45, 35, 63.0),
-(1, 1, 5, 1, 5, 60, 55, 50, 40, 35, 30, 48.5),   -- 绝对值偏弱
-(1, 1, 6, 1, 6, 70, 65, 60, 50, 40, 35, 57.5),
+(1, 1, 1, 1, 90, 85, 70, 60, 50, 40, 70.0),
+(1, 2, 1, 2, 85, 80, 75, 65, 55, 45, 71.5),
+(1, 3, 1, 3, 80, 75, 70, 60, 50, 40, 67.5),
+(1, 4, 1, 4, 75, 70, 65, 55, 45, 35, 63.0),
+(1, 5, 1, 5, 60, 55, 50, 40, 35, 30, 48.5),   -- 绝对值偏弱
+(1, 6, 1, 6, 70, 65, 60, 50, 40, 35, 57.5),
 -- 小红（studentId=2）：学霸，全面优秀
-(1, 7,  2, 95, 90, 85, 80, 70, 65, 83.5),
-(1, 8,  2, 90, 88, 82, 78, 72, 68, 81.4),
-(1, 9,  2, 88, 82, 78, 72, 65, 60, 77.2),
+(1, 7,  2, 1, 95, 90, 85, 80, 70, 65, 83.5),
+(1, 8,  2, 2, 90, 88, 82, 78, 72, 68, 81.4),
+(1, 9,  2, 3, 88, 82, 78, 72, 65, 60, 77.2),
 (1, 10, 2, 4, 85, 80, 75, 68, 60, 55, 73.0),
 (1, 11, 2, 5, 82, 78, 72, 65, 58, 52, 70.4),
 (1, 12, 2, 6, 80, 75, 70, 62, 55, 50, 67.8),
@@ -258,49 +258,49 @@ INSERT IGNORE INTO `edu_study_record` (tenant_id, `id`, `student_id`, `knowledge
 
 INSERT IGNORE INTO `edu_review_task` (`id`, `student_id`, `knowledge_id`, `review_date`, `review_round`, `status`, `result_score`, `completed_at`) VALUES
 -- 小明 - 绝对值 复习任务（全部待完成）
-(1, 1,  1, 5, DATEADD('DAY', 1, CURRENT_DATE),  1, 'PENDING',   NULL, NULL),
-(1, 2,  1, 5, DATEADD('DAY', 3, CURRENT_DATE),  2, 'PENDING',   NULL, NULL),
-(1, 3,  1, 5, DATEADD('DAY', 7, CURRENT_DATE),  3, 'PENDING',   NULL, NULL),
-(1, 4,  1, 5, DATEADD('DAY', 15, CURRENT_DATE), 4, 'PENDING',   NULL, NULL),
-(1, 5,  1, 5, DATEADD('DAY', 30, CURRENT_DATE), 5, 'PENDING',   NULL, NULL),
-(1, 6,  1, 5, DATEADD('DAY', 90, CURRENT_DATE), 6, 'PENDING',   NULL, NULL),
+(1, 1, 5, DATEADD('DAY', 1, CURRENT_DATE),  1, 'PENDING',   NULL, NULL),
+(2, 1, 5, DATEADD('DAY', 3, CURRENT_DATE),  2, 'PENDING',   NULL, NULL),
+(3, 1, 5, DATEADD('DAY', 7, CURRENT_DATE),  3, 'PENDING',   NULL, NULL),
+(4, 1, 5, DATEADD('DAY', 15, CURRENT_DATE), 4, 'PENDING',   NULL, NULL),
+(5, 1, 5, DATEADD('DAY', 30, CURRENT_DATE), 5, 'PENDING',   NULL, NULL),
+(6, 1, 5, DATEADD('DAY', 90, CURRENT_DATE), 6, 'PENDING',   NULL, NULL),
 -- 小红 - 绝对值 复习（已完成第一轮，第二轮待做）
-(1, 7,  2, 5, DATEADD('DAY', -3, CURRENT_DATE),  1, 'COMPLETED', 92, DATEADD('DAY', -3, CURRENT_TIMESTAMP)),
-(1, 8,  2, 5, DATEADD('DAY', -1, CURRENT_DATE),  2, 'OVERDUE',   NULL, NULL),
-(1, 9,  2, 5, DATEADD('DAY', 3, CURRENT_DATE),   3, 'PENDING',   NULL, NULL),
+(7, 2, 5, DATEADD('DAY', -3, CURRENT_DATE),  1, 'COMPLETED', 92, DATEADD('DAY', -3, CURRENT_TIMESTAMP)),
+(8, 2, 5, DATEADD('DAY', -1, CURRENT_DATE),  2, 'OVERDUE',   NULL, NULL),
+(9, 2, 5, DATEADD('DAY', 3, CURRENT_DATE),   3, 'PENDING',   NULL, NULL),
 -- 小红 - 有理数 复习
-(1, 10, 2, 6, DATEADD('DAY', 1, CURRENT_DATE),  1, 'PENDING',   NULL, NULL),
-(1, 11, 2, 6, DATEADD('DAY', 3, CURRENT_DATE),  2, 'PENDING',   NULL, NULL),
+(10, 2, 6, DATEADD('DAY', 1, CURRENT_DATE),  1, 'PENDING',   NULL, NULL),
+(11, 2, 6, DATEADD('DAY', 3, CURRENT_DATE),  2, 'PENDING',   NULL, NULL),
 -- 小明 - 相反数复习
-(1, 12, 1, 4, DATEADD('DAY', -2, CURRENT_DATE), 1, 'OVERDUE',   NULL, NULL),
-(1, 13, 1, 4, DATEADD('DAY', 4, CURRENT_DATE),  2, 'PENDING',   NULL, NULL),
-(1, 14, 1, 4, DATEADD('DAY', 8, CURRENT_DATE),  3, 'PENDING',   NULL, NULL);
+(12, 1, 4, DATEADD('DAY', -2, CURRENT_DATE), 1, 'OVERDUE',   NULL, NULL),
+(13, 1, 4, DATEADD('DAY', 4, CURRENT_DATE),  2, 'PENDING',   NULL, NULL),
+(14, 1, 4, DATEADD('DAY', 8, CURRENT_DATE),  3, 'PENDING',   NULL, NULL);
 
 INSERT IGNORE INTO `edu_study_plan` (`id`, `student_id`, `target_knowledge_id`, `name`, `start_date`, `end_date`, `status`) VALUES
-(1, 1, 1, 8, '小明 — 二次函数突破计划',    CURRENT_DATE, DATEADD('DAY', 14, CURRENT_DATE), 'ACTIVE'),
-(1, 2, 2, 10, '小红 — 导数入门学习计划',  DATEADD('DAY', 7, CURRENT_DATE), DATEADD('DAY', 28, CURRENT_DATE), 'ACTIVE'),
-(1, 3, 1, 5, '小明 — 绝对值巩固计划',     DATEADD('DAY', -3, CURRENT_DATE), DATEADD('DAY', 11, CURRENT_DATE), 'ACTIVE');
+(1, 1, 8, '小明 — 二次函数突破计划',    CURRENT_DATE, DATEADD('DAY', 14, CURRENT_DATE), 'ACTIVE'),
+(2, 2, 10, '小红 — 导数入门学习计划',  DATEADD('DAY', 7, CURRENT_DATE), DATEADD('DAY', 28, CURRENT_DATE), 'ACTIVE'),
+(3, 1, 5, '小明 — 绝对值巩固计划',     DATEADD('DAY', -3, CURRENT_DATE), DATEADD('DAY', 11, CURRENT_DATE), 'ACTIVE');
 
 INSERT IGNORE INTO `edu_study_plan_item` (`id`, `plan_id`, `knowledge_id`, `plan_date`, `order_no`, `status`) VALUES
 -- 小明二次函数计划：7(一次函数)→9(函数)→8(二次函数)
-(1, 1, 1, 7, CURRENT_DATE,                          1, 'IN_PROGRESS'),
-(1, 2, 1, 9, DATEADD('DAY', 3, CURRENT_DATE),       2, 'PENDING'),
-(1, 3, 1, 9, DATEADD('DAY', 5, CURRENT_DATE),       3, 'PENDING'),
-(1, 4, 1, 8, DATEADD('DAY', 7, CURRENT_DATE),       4, 'PENDING'),
-(1, 5, 1, 8, DATEADD('DAY', 10, CURRENT_DATE),      5, 'PENDING'),
-(1, 6, 1, 8, DATEADD('DAY', 12, CURRENT_DATE),      6, 'PENDING'),
+(1, 1, 7, CURRENT_DATE,                          1, 'IN_PROGRESS'),
+(2, 1, 9, DATEADD('DAY', 3, CURRENT_DATE),       2, 'PENDING'),
+(3, 1, 9, DATEADD('DAY', 5, CURRENT_DATE),       3, 'PENDING'),
+(4, 1, 8, DATEADD('DAY', 7, CURRENT_DATE),       4, 'PENDING'),
+(5, 1, 8, DATEADD('DAY', 10, CURRENT_DATE),      5, 'PENDING'),
+(6, 1, 8, DATEADD('DAY', 12, CURRENT_DATE),      6, 'PENDING'),
 -- 小红导数计划：8(二次函数)→10(导数)
-(1, 7,  2, 8,  DATEADD('DAY', 7, CURRENT_DATE),     1, 'PENDING'),
-(1, 8,  2, 8,  DATEADD('DAY', 10, CURRENT_DATE),    2, 'PENDING'),
-(1, 9,  2, 10, DATEADD('DAY', 17, CURRENT_DATE),    3, 'PENDING'),
-(1, 10, 2, 10, DATEADD('DAY', 21, CURRENT_DATE),    4, 'PENDING'),
+(7,  2, 8,  DATEADD('DAY', 7, CURRENT_DATE),     1, 'PENDING'),
+(8,  2, 8,  DATEADD('DAY', 10, CURRENT_DATE),    2, 'PENDING'),
+(9,  2, 10, DATEADD('DAY', 17, CURRENT_DATE),    3, 'PENDING'),
+(10, 2, 10, DATEADD('DAY', 21, CURRENT_DATE),    4, 'PENDING'),
 -- 小明绝对值巩固计划
-(1, 11, 3, 5, DATEADD('DAY', -3, CURRENT_DATE),    1, 'COMPLETED'),
-(1, 12, 3, 5, DATEADD('DAY', -1, CURRENT_DATE),    2, 'COMPLETED'),
-(1, 13, 3, 5, DATEADD('DAY', 2, CURRENT_DATE),     3, 'PENDING'),
-(1, 14, 3, 5, DATEADD('DAY', 5, CURRENT_DATE),     4, 'PENDING'),
-(1, 15, 3, 5, DATEADD('DAY', 8, CURRENT_DATE),     5, 'PENDING'),
-(1, 16, 3, 5, DATEADD('DAY', 11, CURRENT_DATE),    6, 'PENDING');
+(11, 3, 5, DATEADD('DAY', -3, CURRENT_DATE),    1, 'COMPLETED'),
+(12, 3, 5, DATEADD('DAY', -1, CURRENT_DATE),    2, 'COMPLETED'),
+(13, 3, 5, DATEADD('DAY', 2, CURRENT_DATE),     3, 'PENDING'),
+(14, 3, 5, DATEADD('DAY', 5, CURRENT_DATE),     4, 'PENDING'),
+(15, 3, 5, DATEADD('DAY', 8, CURRENT_DATE),     5, 'PENDING'),
+(16, 3, 5, DATEADD('DAY', 11, CURRENT_DATE),    6, 'PENDING');
 
 INSERT IGNORE INTO `wrong_question` (tenant_id, `id`, `student_id`, `question_id`, `knowledge_id`, `student_answer`, `correct_times`) VALUES
 -- 小明错题

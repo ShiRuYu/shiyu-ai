@@ -2,12 +2,17 @@ package com.shiyu.ai.auth.service.impl;
 
 import com.shiyu.ai.auth.service.CaptchaService;
 import com.shiyu.ai.auth.vo.CaptchaVO;
+import jakarta.annotation.PostConstruct;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 
 import java.util.Map;
 import java.util.Random;
+import java.util.UUID;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.Executors;
+import java.util.concurrent.ScheduledExecutorService;
+import java.util.concurrent.TimeUnit;
 
 /**
  * 验证码服务实现类
@@ -22,21 +27,36 @@ public class CaptchaServiceImpl implements CaptchaService {
      * value: 验证码信息（包含 code 和 expireTime）
      */
     private final Map<String, CaptchaData> captchaStore = new ConcurrentHashMap<>();
-    
+
+    /**
+     * 验证码尝试次数计数（同一 key 最多尝试 MAX_ATTEMPTS 次）
+     */
+    private final Map<String, Integer> attemptCount = new ConcurrentHashMap<>();
+
+    /**
+     * 每个验证码 key 允许的最大验证尝试次数
+     */
+    private static final int MAX_ATTEMPTS = 3;
+
     /**
      * 验证码过期时间（5 分钟）
      */
     private static final long CAPTCHA_EXPIRE_TIME = 5 * 60 * 1000;
-    
+
     /**
      * 验证码字符集（排除容易混淆的字符：0, O, 1, I, l）
      */
     private static final String CAPTCHA_CHARS = "23456789abcdefghjkmnpqrstuvwxyzABCDEFGHJKMNPQRSTUVWXYZ";
-    
+
     /**
      * 验证码长度
      */
-    private static final int CAPTCHA_LENGTH = 4;
+    private static final int CAPTCHA_LENGTH = 6;
+
+    /**
+     * 定时清理过期验证码
+     */
+    private final ScheduledExecutorService cleanupScheduler = Executors.newSingleThreadScheduledExecutor();
     
     /**
      * 图片宽度
@@ -78,23 +98,37 @@ public class CaptchaServiceImpl implements CaptchaService {
         }
     }
     
+    @PostConstruct
+    public void init() {
+        // 每 5 分钟清理过期验证码和尝试计数，防止内存泄漏
+        cleanupScheduler.scheduleAtFixedRate(() -> {
+            long now = System.currentTimeMillis();
+            captchaStore.entrySet().removeIf(e -> e.getValue().isExpired());
+            // 清理已过期或已销毁的验证码对应的尝试计数
+            attemptCount.keySet().removeIf(key -> {
+                CaptchaData data = captchaStore.get(key);
+                return data == null || data.isExpired();
+            });
+        }, 5, 5, TimeUnit.MINUTES);
+    }
+
     @Override
     public CaptchaVO generateCaptcha() {
         // 生成随机验证码
         String code = generateRandomCode();
-        
+
         // 生成唯一 key
         String key = generateCaptchaKey();
-        
+
         // 生成 SVG 图片
         String svgImage = generateSvgCaptcha(code);
-        
+
         // 存储验证码信息
         long expireTime = System.currentTimeMillis() + CAPTCHA_EXPIRE_TIME;
         captchaStore.put(key, new CaptchaData(code, expireTime));
-        
-        log.info("生成验证码：key={}, code={}, expireTime={}", key, code, expireTime);
-        
+
+        log.info("生成验证码：key={}, expireTime={}", key, expireTime);
+
         // 返回 CaptchaVO 对象
         return new CaptchaVO(key, svgImage, CAPTCHA_EXPIRE_TIME / 1000); // 转换为秒
     }
@@ -104,20 +138,29 @@ public class CaptchaServiceImpl implements CaptchaService {
         if (key == null || code == null) {
             return false;
         }
-        
+
+        // 检查尝试次数上限
+        Integer attempts = attemptCount.getOrDefault(key, 0);
+        if (attempts >= MAX_ATTEMPTS) {
+            log.warn("验证码尝试超限：key={}, attempts={}", key, attempts);
+            destroyCaptcha(key);
+            return false;
+        }
+        attemptCount.put(key, attempts + 1);
+
         CaptchaData captchaData = captchaStore.get(key);
         if (captchaData == null) {
             log.warn("验证码不存在：key={}", key);
             return false;
         }
-        
+
         // 检查是否过期
         if (captchaData.isExpired()) {
             log.warn("验证码已过期：key={}", key);
             destroyCaptcha(key);
             return false;
         }
-        
+
         // 验证验证码（忽略大小写）
         boolean valid = captchaData.getCode().equalsIgnoreCase(code);
         if (valid) {
@@ -125,9 +168,9 @@ public class CaptchaServiceImpl implements CaptchaService {
             // 验证成功后立即销毁
             destroyCaptcha(key);
         } else {
-            log.warn("验证码错误：key={}, input={}, expected={}", key, code, captchaData.getCode());
+            log.warn("验证码错误：key={}", key);
         }
-        
+
         return valid;
     }
     
@@ -149,10 +192,10 @@ public class CaptchaServiceImpl implements CaptchaService {
     }
     
     /**
-     * 生成唯一 key
+     * 生成唯一 key（使用 UUID，不可预测）
      */
     private String generateCaptchaKey() {
-        return "captcha_" + System.currentTimeMillis() + "_" + random.nextInt(10000);
+        return "captcha_" + UUID.randomUUID();
     }
     
     /**

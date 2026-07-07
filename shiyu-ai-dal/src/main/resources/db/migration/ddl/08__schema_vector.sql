@@ -9,8 +9,14 @@ CREATE TABLE IF NOT EXISTS `knowledge_chunk` (
     `embedding`     TEXT         DEFAULT NULL COMMENT 'JSON float array',
     `metadata`      TEXT         DEFAULT NULL COMMENT 'JSON map',
     `chunk_index`   INT          DEFAULT 0,
+    `tenant_id`     BIGINT       DEFAULT NULL,
+    `workspace_id`  BIGINT       DEFAULT NULL,
     `create_by`     VARCHAR(64)  DEFAULT NULL,
     `create_time`   TIMESTAMP    DEFAULT CURRENT_TIMESTAMP,
+    `update_by`     VARCHAR(64)  DEFAULT NULL,
+    `update_time`   TIMESTAMP    DEFAULT NULL,
+    `status`        TINYINT      DEFAULT 1,
+    `del_flag`      TINYINT      DEFAULT 0,
     PRIMARY KEY (`id`),
     INDEX `idx_kc_document` (`document_id`)
 );

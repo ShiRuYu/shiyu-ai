@@ -117,7 +117,7 @@ public class UserServiceImpl implements UserService {
     public Long createUser(UserBO userBO) {
         log.info("新增用户: {}", userBO.getUsername());
         if (userBO.getPassword() == null || userBO.getPassword().isBlank()) {
-            userBO.setPassword(PasswordUtils.encode(PasswordUtils.DEFAULT_PASSWORD));
+            userBO.setPassword(PasswordUtils.encode(PasswordUtils.generateDefaultPassword()));
         } else {
             userBO.setPassword(PasswordUtils.encode(userBO.getPassword()));
         }

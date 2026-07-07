@@ -13,23 +13,35 @@ import java.util.concurrent.ConcurrentHashMap;
 @Component
 public class LoginRateLimiter {
 
-    private final Map<String, int[]> attempts = new ConcurrentHashMap<>();
+    private final Map<String, RateLimitEntry> attempts = new ConcurrentHashMap<>();
 
     private final int maxAttempts = 5;
-    private final long windowMs = 60000;
+    private final long windowMs = 60_000;
+    /** 超过限制后临时封禁时长（秒） */
+    private static final long LOCK_DURATION_SECONDS = 60;
 
     public boolean isAllowed(String ip) {
         long now = System.currentTimeMillis();
-        int[] timestamps = attempts.computeIfAbsent(ip, k -> new int[]{0, 0});
-        synchronized (timestamps) {
-            if (timestamps[0] < now - windowMs) {
-                timestamps[0] = (int) now;
-                timestamps[1] = 1;
+        RateLimitEntry entry = attempts.computeIfAbsent(ip, k -> new RateLimitEntry());
+
+        synchronized (entry) {
+            // 检查是否在封禁中
+            if (entry.lockedUntil > now) {
+                log.warn("IP 已被临时封禁至 {}, IP: {}", new java.util.Date(entry.lockedUntil), ip);
+                return false;
+            }
+
+            // 窗口已过期，重置
+            if (entry.windowStart < now - windowMs) {
+                entry.windowStart = now;
+                entry.count = 1;
                 return true;
             }
-            timestamps[1]++;
-            if (timestamps[1] > maxAttempts) {
-                log.warn("鐧诲綍棰戠巼瓒呴檺锛孖P: {}", ip);
+
+            entry.count++;
+            if (entry.count > maxAttempts) {
+                entry.lockedUntil = now + LOCK_DURATION_SECONDS * 1000;
+                log.warn("登录频率超限，IP 已封禁 {} 秒: {}", LOCK_DURATION_SECONDS, ip);
                 return false;
             }
             return true;
@@ -58,5 +70,14 @@ public class LoginRateLimiter {
             ip = ip.split(",")[0].trim();
         }
         return ip;
+    }
+
+    /**
+     * 限流条目：窗口起始时间（ms）、计数、封禁截止时间（ms）
+     */
+    private static class RateLimitEntry {
+        long windowStart;
+        int count;
+        long lockedUntil;
     }
 }

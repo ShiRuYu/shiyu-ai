@@ -26,9 +26,11 @@ public class PasswordUtils {
     }
 
     /**
-     * 系统默认密码（新增用户时若未设置密码则使用此值）
+     * 生成默认密码（每次调用生成不同的随机密码，避免所有用户共享同一默认密码）
      */
-    public static final String DEFAULT_PASSWORD = generateRandomPassword();
+    public static String generateDefaultPassword() {
+        return generateRandomPassword();
+    }
 
     /**
      * 加密密码

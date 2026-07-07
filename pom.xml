@@ -41,6 +41,7 @@
         <commons-collections4.version>4.5.0</commons-collections4.version>
         <caffeine.version>3.2.3</caffeine.version>
         <sensitive-word.version>0.29.4</sensitive-word.version>
+        <jsoup.version>1.18.3</jsoup.version>
 
 
         <fesod-parent.version>2.0.1-incubating</fesod-parent.version>
@@ -201,6 +202,12 @@
                 <artifactId>caffeine</artifactId>
                 <version>${caffeine.version}</version>
             </dependency>
+            <!-- XSS 净化 -->
+            <dependency>
+                <groupId>org.jsoup</groupId>
+                <artifactId>jsoup</artifactId>
+                <version>${jsoup.version}</version>
+            </dependency>
             <!-- https://mvnrepository.com/artifact/org.apache.commons/commons-lang3 -->
             <dependency>
                 <groupId>org.apache.commons</groupId>
@@ -270,8 +277,8 @@
             </dependency>
 
             <dependency>
-                <groupId>mysql</groupId>
-                <artifactId>mysql-connector-java</artifactId>
+                <groupId>com.mysql</groupId>
+                <artifactId>mysql-connector-j</artifactId>
                 <version>${mysql.version}</version>
             </dependency>
 

@@ -1,6 +1,5 @@
 package com.shiyu.ai.auth.vo;
 
-import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.shiyu.ai.auth.bo.UserBO;
 import io.github.linpeilie.annotations.AutoMapper;
 import lombok.Data;
@@ -30,12 +29,6 @@ public class UserVO implements Serializable {
      * 用户名
      */
     private String username;
-
-    /**
-     * 密码
-     */
-    @JsonIgnore
-    private String password;
 
     /**
      * 状态（1正常 0停用）
