@@ -1,5 +1,6 @@
 package com.shiyu.ai.education.controller;
 
+import com.shiyu.ai.common.core.api.PageData;
 import com.shiyu.ai.common.core.api.Result;
 import com.shiyu.ai.dal.dataobject.education.QuestionDO;
 import com.shiyu.ai.education.dto.QuestionResponse;
@@ -19,6 +20,16 @@ import java.util.List;
 public class QuestionController {
 
     private final QuestionService questionService;
+
+    @GetMapping
+    @Operation(summary = "分页获取题目")
+    public Result<PageData<QuestionResponse>> listAll(
+            @RequestParam(defaultValue = "1") Integer pageNum,
+            @RequestParam(defaultValue = "10") Integer pageSize) {
+        PageData<QuestionDO> page = questionService.page(pageNum, pageSize);
+        List<QuestionResponse> items = page.getItems().stream().map(this::toResponse).toList();
+        return Result.success(new PageData<>(items, page.getTotal()));
+    }
 
     @GetMapping("/{id}")
     @Operation(summary = "获取题目详情")

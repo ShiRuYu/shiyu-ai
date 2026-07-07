@@ -1,5 +1,6 @@
 package com.shiyu.ai.education.service.impl;
 
+import com.shiyu.ai.common.core.api.PageData;
 import com.shiyu.ai.dal.dataobject.education.StudentDO;
 import com.shiyu.ai.dal.repository.education.StudentRepository;
 import com.shiyu.ai.education.service.StudentService;
@@ -35,6 +36,10 @@ public class StudentServiceImpl implements StudentService {
     }
 
     @Override
+    public PageData<StudentDO> page(int pageNum, int pageSize) {
+        return studentRepository.selectPage(pageNum, pageSize);
+    }
+
     public List<StudentDO> listAll() {
         return studentRepository.selectAll();
     }

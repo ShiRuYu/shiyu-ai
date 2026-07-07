@@ -1,5 +1,6 @@
 package com.shiyu.ai.education.service.impl;
 
+import com.shiyu.ai.common.core.api.PageData;
 import com.shiyu.ai.dal.dataobject.education.QuestionDO;
 import com.shiyu.ai.education.service.QuestionService;
 import com.shiyu.ai.dal.repository.education.QuestionRepository;
@@ -25,6 +26,15 @@ public class QuestionServiceImpl implements QuestionService {
     @Override
     public QuestionDO getByCode(String code) {
         return questionRepository.selectByCode(code);
+    }
+
+    @Override
+    public PageData<QuestionDO> page(int pageNum, int pageSize) {
+        return questionRepository.selectPage(pageNum, pageSize);
+    }
+
+    public List<QuestionDO> listAll() {
+        return questionRepository.selectAll();
     }
 
     @Override

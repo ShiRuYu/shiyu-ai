@@ -1,5 +1,6 @@
 package com.shiyu.ai.education.service.impl;
 
+import com.shiyu.ai.common.core.api.PageData;
 import com.shiyu.ai.dal.dataobject.education.ExamDO;
 import com.shiyu.ai.education.service.ExamService;
 import com.shiyu.ai.dal.repository.education.ExamRepository;
@@ -18,6 +19,10 @@ public class ExamServiceImpl implements ExamService {
     private final ExamRepository examRepository;
 
     @Override
+    public PageData<ExamDO> page(int pageNum, int pageSize) {
+        return examRepository.selectPage(pageNum, pageSize);
+    }
+
     public List<ExamDO> listAll() {
         return examRepository.selectAll();
     }

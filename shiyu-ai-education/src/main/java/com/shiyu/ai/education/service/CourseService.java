@@ -4,6 +4,7 @@ import com.shiyu.ai.dal.dataobject.education.CourseDO;
 import com.shiyu.ai.education.dto.CourseProgressResponse;
 
 import java.util.List;
+import com.shiyu.ai.common.core.api.PageData;
 
 /**
  * Course 接口
@@ -34,6 +35,8 @@ public interface CourseService {
      * @return 处理结果
      */
     List<CourseDO> listAll();
+
+    PageData<CourseDO> page(int pageNum, int pageSize);
 
     /**
      * Create

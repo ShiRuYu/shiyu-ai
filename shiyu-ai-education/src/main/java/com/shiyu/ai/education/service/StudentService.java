@@ -3,6 +3,7 @@ package com.shiyu.ai.education.service;
 import com.shiyu.ai.dal.dataobject.education.StudentDO;
 
 import java.util.List;
+import com.shiyu.ai.common.core.api.PageData;
 
 /**
  * Student 接口
@@ -33,6 +34,8 @@ public interface StudentService {
      * List All
      */
     List<StudentDO> listAll();
+
+    PageData<StudentDO> page(int pageNum, int pageSize);
 
     /**
      * Update

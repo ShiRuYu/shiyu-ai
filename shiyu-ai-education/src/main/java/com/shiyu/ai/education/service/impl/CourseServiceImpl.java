@@ -1,5 +1,6 @@
 package com.shiyu.ai.education.service.impl;
 
+import com.shiyu.ai.common.core.api.PageData;
 import com.shiyu.ai.dal.dataobject.education.CourseDO;
 import com.shiyu.ai.dal.dataobject.education.CourseKnowledgeDO;
 import com.shiyu.ai.dal.dataobject.education.StudyRecordDO;
@@ -41,6 +42,10 @@ public class CourseServiceImpl implements CourseService {
     }
 
     @Override
+    public PageData<CourseDO> page(int pageNum, int pageSize) {
+        return courseRepository.selectPage(pageNum, pageSize);
+    }
+
     public List<CourseDO> listAll() {
         return courseRepository.selectAll();
     }

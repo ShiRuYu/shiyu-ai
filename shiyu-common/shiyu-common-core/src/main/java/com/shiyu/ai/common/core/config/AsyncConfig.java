@@ -6,6 +6,7 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.core.task.AsyncTaskExecutor;
 import org.springframework.scheduling.annotation.EnableAsync;
+import org.springframework.scheduling.annotation.EnableScheduling;
 import org.springframework.scheduling.concurrent.ThreadPoolTaskExecutor;
 
 import java.util.Arrays;
@@ -16,6 +17,7 @@ import java.util.Arrays;
  */
 @Slf4j
 @EnableAsync(proxyTargetClass = true)
+@EnableScheduling
 @Configuration
 public class AsyncConfig {
 
@@ -23,7 +25,7 @@ public class AsyncConfig {
      * 自定义 @Async 注解使用的线程池
      */
     @Bean
-    public AsyncTaskExecutor applicationTaskExecutor() {
+    public AsyncTaskExecutor shiyuAsyncExecutor() {
         ThreadPoolTaskExecutor executor = new ThreadPoolTaskExecutor();
         executor.setCorePoolSize(2);
         executor.setMaxPoolSize(4);

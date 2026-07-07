@@ -7,12 +7,20 @@ import jakarta.annotation.Resource;
 import org.springframework.stereotype.Component;
 
 import java.util.List;
+import com.shiyu.ai.common.core.api.PageData;
 
 @Component
 public class ExamRepository {
 
     @Resource
     private ExamMapper examMapper;
+
+    public PageData<ExamDO> selectPage(int pageNum, int pageSize) {
+        com.mybatisflex.core.paginate.Page<ExamDO> page = examMapper.paginate(
+                pageNum, pageSize,
+                QueryWrapper.create().eq("status", 1).orderBy("id"));
+        return new PageData<>(page.getRecords(), page.getTotalRow());
+    }
 
     public List<ExamDO> selectAll() {
         return examMapper.selectListByQuery(

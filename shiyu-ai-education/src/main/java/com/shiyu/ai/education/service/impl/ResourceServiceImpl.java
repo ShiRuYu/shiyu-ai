@@ -1,5 +1,6 @@
 package com.shiyu.ai.education.service.impl;
 
+import com.shiyu.ai.common.core.api.PageData;
 import com.shiyu.ai.dal.dataobject.education.ResourceDO;
 import com.shiyu.ai.dal.repository.education.ResourceRepository;
 import com.shiyu.ai.education.service.ResourceService;
@@ -33,6 +34,10 @@ public class ResourceServiceImpl implements ResourceService {
     }
 
     @Override
+    public PageData<ResourceDO> page(int pageNum, int pageSize) {
+        return resourceRepository.selectPage(pageNum, pageSize);
+    }
+
     public List<ResourceDO> listAll() {
         return resourceRepository.selectAll();
     }

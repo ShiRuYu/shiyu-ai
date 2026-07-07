@@ -7,6 +7,7 @@ import jakarta.annotation.Resource;
 import org.springframework.stereotype.Component;
 
 import java.util.List;
+import com.shiyu.ai.common.core.api.PageData;
 
 @Component
 public class QuestionRepository {
@@ -28,6 +29,19 @@ public class QuestionRepository {
                         .eq("subject_code", subjectCode)
                         .eq("grade", grade)
                         .eq("status", 1));
+    }
+
+
+    public PageData<QuestionDO> selectPage(int pageNum, int pageSize) {
+        com.mybatisflex.core.paginate.Page<QuestionDO> page = questionMapper.paginate(
+                pageNum, pageSize,
+                QueryWrapper.create().eq("status", 1).orderBy("id"));
+        return new PageData<>(page.getRecords(), page.getTotalRow());
+    }
+
+    public List<QuestionDO> selectAll() {
+        return questionMapper.selectListByQuery(
+                QueryWrapper.create().eq("status", 1));
     }
 
     public List<QuestionDO> selectByDifficulty(Integer difficulty) {

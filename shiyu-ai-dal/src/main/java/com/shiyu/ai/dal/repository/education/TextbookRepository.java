@@ -7,6 +7,7 @@ import jakarta.annotation.Resource;
 import org.springframework.stereotype.Component;
 
 import java.util.List;
+import com.shiyu.ai.common.core.api.PageData;
 
 @Component
 public class TextbookRepository {
@@ -23,6 +24,13 @@ public class TextbookRepository {
                 QueryWrapper.create()
                         .eq("subject_code", subjectCode)
                         .eq("grade", grade));
+    }
+
+    public PageData<TextbookDO> selectPage(int pageNum, int pageSize) {
+        com.mybatisflex.core.paginate.Page<TextbookDO> page = textbookMapper.paginate(
+                pageNum, pageSize,
+                QueryWrapper.create().eq("status", 1).orderBy("id"));
+        return new PageData<>(page.getRecords(), page.getTotalRow());
     }
 
     public List<TextbookDO> selectAll() {

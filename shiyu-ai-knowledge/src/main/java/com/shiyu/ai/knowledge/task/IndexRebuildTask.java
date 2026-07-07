@@ -1,12 +1,15 @@
 package com.shiyu.ai.knowledge.task;
 
 import com.shiyu.ai.knowledge.search.KnowledgeSearchService;
+import jakarta.annotation.PostConstruct;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.scheduling.annotation.Async;
+import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Component;
 
 import java.time.LocalDateTime;
+import java.time.temporal.ChronoUnit;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
@@ -29,6 +32,10 @@ public class IndexRebuildTask {
     @Value("${shiyu.knowledge.indexing.retry.delay-ms:1000}")
     private long retryDelayMs;
 
+    /** 任务超时时间（分钟），超过此时间仍未完成则标记为失败 */
+    @Value("${shiyu.knowledge.indexing.task-timeout-minutes:30}")
+    private int taskTimeoutMinutes;
+
     public IndexRebuildTask(KnowledgeSearchService knowledgeSearchService) {
         this.knowledgeSearchService = knowledgeSearchService;
     }
@@ -47,7 +54,7 @@ public class IndexRebuildTask {
     /**
      * 提交异步重建任务
      */
-    @Async
+    @Async("shiyuAsyncExecutor")
     public void submitRebuildTask(String taskId) {
         RebuildStatus status = tasks.get(taskId);
         if (status == null) {
@@ -100,6 +107,30 @@ public class IndexRebuildTask {
         status.setError(lastException != null ? lastException.getMessage() : "未知错误");
         status.setEndTime(LocalDateTime.now());
         log.error("索引重建最终失败: taskId={}, attempts={}", taskId, attempt);
+    }
+
+    /**
+     * 定时清理超时任务（每 5 分钟执行一次）
+     * 兜底：如果 @Async 因配置问题未执行，任务将永远停在 PENDING，此处将其标记为失败
+     */
+    @Scheduled(fixedRateString = "${shiyu.knowledge.indexing.cleanup-interval-ms:300000}")
+    public void timeoutStuckTasks() {
+        LocalDateTime now = LocalDateTime.now();
+        for (Map.Entry<String, RebuildStatus> entry : tasks.entrySet()) {
+            RebuildStatus st = entry.getValue();
+            if ("PENDING".equals(st.getStatus()) || "RUNNING".equals(st.getStatus())) {
+                if (st.getStartTime() != null) {
+                    long elapsed = ChronoUnit.MINUTES.between(st.getStartTime(), now);
+                    if (elapsed >= taskTimeoutMinutes) {
+                        log.warn("任务超时，标记为失败: taskId={}, status={}, elapsed={}min",
+                                entry.getKey(), st.getStatus(), elapsed);
+                        st.setStatus("FAILED");
+                        st.setError("任务超时（超过 " + taskTimeoutMinutes + " 分钟）");
+                        st.setEndTime(now);
+                    }
+                }
+            }
+        }
     }
 
     /**

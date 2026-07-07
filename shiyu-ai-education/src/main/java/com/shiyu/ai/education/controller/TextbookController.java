@@ -1,5 +1,6 @@
 package com.shiyu.ai.education.controller;
 
+import com.shiyu.ai.common.core.api.PageData;
 import com.shiyu.ai.common.core.api.Result;
 import com.shiyu.ai.dal.dataobject.education.TextbookDO;
 import com.shiyu.ai.education.dto.TextbookResponse;
@@ -28,10 +29,13 @@ public class TextbookController {
     }
 
     @GetMapping
-    @Operation(summary = "获取所有教材")
-    public Result<List<TextbookResponse>> listAll() {
-        List<TextbookDO> textbooks = textbookService.listAll();
-        return Result.success(textbooks.stream().map(this::toResponse).toList());
+    @Operation(summary = "分页获取教材")
+    public Result<PageData<TextbookResponse>> listAll(
+            @RequestParam(defaultValue = "1") Integer pageNum,
+            @RequestParam(defaultValue = "10") Integer pageSize) {
+        PageData<TextbookDO> page = textbookService.page(pageNum, pageSize);
+        List<TextbookResponse> items = page.getItems().stream().map(this::toResponse).toList();
+        return Result.success(new PageData<>(items, page.getTotal()));
     }
 
     @GetMapping("/subject/{subjectCode}/grade/{grade}")

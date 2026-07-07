@@ -3,6 +3,7 @@ package com.shiyu.ai.education.service;
 import com.shiyu.ai.dal.dataobject.education.QuestionDO;
 
 import java.util.List;
+import com.shiyu.ai.common.core.api.PageData;
 
 /**
  * Question 接口
@@ -26,6 +27,14 @@ public interface QuestionService {
      * List By Subject And Grade
      * @return 处理结果
      */
+    /**
+     * List All
+     * @return 处理结果
+     */
+    List<QuestionDO> listAll();
+
+    PageData<QuestionDO> page(int pageNum, int pageSize);
+
     List<QuestionDO> listBySubjectAndGrade(String subjectCode, Integer grade);
 
     /**

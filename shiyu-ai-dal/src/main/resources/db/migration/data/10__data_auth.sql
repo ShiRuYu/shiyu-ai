@@ -183,8 +183,6 @@ INSERT IGNORE INTO `menu` (`id`, `name`, `code`, `type`, `parent_id`, `tenant_id
 VALUES (500, '智能体', 'Agent', 'MENU', NULL, 1, '/agent', NULL, 'carbon:ibm-watson-assistant', '', '', FALSE, NULL, 'AI智能体管理', TRUE, '1', 6, 0, '0', '0');
 
 INSERT IGNORE INTO `menu` (`id`, `name`, `code`, `type`, `parent_id`, `tenant_id`, `path`, `redirect`, `icon`, `component`, `layout`, `keep_alive`, `method`, `description`, `show`, `status`, `order`, `del_flag`, `create_by`, `update_by`) 
-
-INSERT IGNORE INTO `menu` (`id`, `name`, `code`, `type`, `parent_id`, `tenant_id`, `path`, `redirect`, `icon`, `component`, `layout`, `keep_alive`, `method`, `description`, `show`, `status`, `order`, `del_flag`, `create_by`, `update_by`) 
 VALUES (403, '记录管理', 'RecordRecords', 'MENU', 400, 1, '/record/records', NULL, 'mdi:book-open-page-variant', '/record/records/list', '', TRUE, NULL, '日常记录管理', TRUE, '1', 3, 0, '0', '0');
 
 INSERT IGNORE INTO `menu` (`id`, `name`, `code`, `type`, `parent_id`, `tenant_id`, `path`, `redirect`, `icon`, `component`, `layout`, `keep_alive`, `method`, `description`, `show`, `status`, `order`, `del_flag`, `create_by`, `update_by`) 
@@ -192,6 +190,8 @@ VALUES (404, '媒体管理', 'RecordMedia', 'MENU', 400, 1, '/record/media', NUL
 
 INSERT IGNORE INTO `menu` (`id`, `name`, `code`, `type`, `parent_id`, `tenant_id`, `path`, `redirect`, `icon`, `component`, `layout`, `keep_alive`, `method`, `description`, `show`, `status`, `order`, `del_flag`, `create_by`, `update_by`) 
 VALUES (405, '标签管理', 'RecordTags', 'MENU', 400, 1, '/record/tags', NULL, 'carbon:tag', '/record/tags/list', '', TRUE, NULL, '标签管理', TRUE, '1', 5, 0, '0', '0');
+
+INSERT IGNORE INTO `menu` (`id`, `name`, `code`, `type`, `parent_id`, `tenant_id`, `path`, `redirect`, `icon`, `component`, `layout`, `keep_alive`, `method`, `description`, `show`, `status`, `order`, `del_flag`, `create_by`, `update_by`) 
 VALUES (501, 'Agent管理', 'AgentAdminList', 'MENU', 500, 1, '/agent/admin/list', NULL, 'carbon:cube', '/agent/admin/agent-list', '', TRUE, NULL, 'Agent 注册与管理', TRUE, '1', 1, 0, '0', '0');
 
 INSERT IGNORE INTO `menu` (`id`, `name`, `code`, `type`, `parent_id`, `tenant_id`, `path`, `redirect`, `icon`, `component`, `layout`, `keep_alive`, `method`, `description`, `show`, `status`, `order`, `del_flag`, `create_by`, `update_by`) 

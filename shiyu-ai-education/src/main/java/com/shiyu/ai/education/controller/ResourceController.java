@@ -1,5 +1,6 @@
 package com.shiyu.ai.education.controller;
 
+import com.shiyu.ai.common.core.api.PageData;
 import com.shiyu.ai.common.core.api.Result;
 import com.shiyu.ai.dal.dataobject.education.ResourceDO;
 import com.shiyu.ai.education.dto.ResourceResponse;
@@ -28,10 +29,13 @@ public class ResourceController {
     }
 
     @GetMapping
-    @Operation(summary = "获取所有资源")
-    public Result<List<ResourceResponse>> listAll() {
-        List<ResourceDO> resources = resourceService.listAll();
-        return Result.success(resources.stream().map(this::toResponse).toList());
+    @Operation(summary = "分页获取资源")
+    public Result<PageData<ResourceResponse>> listAll(
+            @RequestParam(defaultValue = "1") Integer pageNum,
+            @RequestParam(defaultValue = "10") Integer pageSize) {
+        PageData<ResourceDO> page = resourceService.page(pageNum, pageSize);
+        List<ResourceResponse> items = page.getItems().stream().map(this::toResponse).toList();
+        return Result.success(new PageData<>(items, page.getTotal()));
     }
 
     @GetMapping("/subject/{subjectCode}")

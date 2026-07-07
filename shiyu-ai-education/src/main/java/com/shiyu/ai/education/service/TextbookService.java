@@ -3,6 +3,7 @@ package com.shiyu.ai.education.service;
 import com.shiyu.ai.dal.dataobject.education.TextbookDO;
 
 import java.util.List;
+import com.shiyu.ai.common.core.api.PageData;
 
 /**
  * Textbook 接口
@@ -27,6 +28,8 @@ public interface TextbookService {
      * @return 处理结果
      */
     List<TextbookDO> listAll();
+
+    PageData<TextbookDO> page(int pageNum, int pageSize);
 
     /**
      * Create

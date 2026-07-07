@@ -1,5 +1,6 @@
 package com.shiyu.ai.education.controller;
 
+import com.shiyu.ai.common.core.api.PageData;
 import com.shiyu.ai.common.core.api.Result;
 import com.shiyu.ai.dal.dataobject.education.SubjectDO;
 import com.shiyu.ai.education.dto.SubjectResponse;
@@ -35,10 +36,13 @@ public class SubjectController {
     }
 
     @GetMapping
-    @Operation(summary = "获取所有学科")
-    public Result<List<SubjectResponse>> listAll() {
-        List<SubjectDO> subjects = subjectService.listAll();
-        return Result.success(subjects.stream().map(this::toResponse).toList());
+    @Operation(summary = "分页获取学科")
+    public Result<PageData<SubjectResponse>> listAll(
+            @RequestParam(defaultValue = "1") Integer pageNum,
+            @RequestParam(defaultValue = "10") Integer pageSize) {
+        PageData<SubjectDO> page = subjectService.page(pageNum, pageSize);
+        List<SubjectResponse> items = page.getItems().stream().map(this::toResponse).toList();
+        return Result.success(new PageData<>(items, page.getTotal()));
     }
 
     @GetMapping("/grade-level/{gradeLevel}")

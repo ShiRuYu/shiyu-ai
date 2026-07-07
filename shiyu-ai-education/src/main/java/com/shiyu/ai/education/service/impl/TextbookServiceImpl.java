@@ -1,5 +1,6 @@
 package com.shiyu.ai.education.service.impl;
 
+import com.shiyu.ai.common.core.api.PageData;
 import com.shiyu.ai.dal.dataobject.education.TextbookDO;
 import com.shiyu.ai.dal.repository.education.TextbookRepository;
 import com.shiyu.ai.education.service.TextbookService;
@@ -28,6 +29,10 @@ public class TextbookServiceImpl implements TextbookService {
     }
 
     @Override
+    public PageData<TextbookDO> page(int pageNum, int pageSize) {
+        return textbookRepository.selectPage(pageNum, pageSize);
+    }
+
     public List<TextbookDO> listAll() {
         return textbookRepository.selectAll();
     }

@@ -1,5 +1,6 @@
 package com.shiyu.ai.education.controller;
 
+import com.shiyu.ai.common.core.api.PageData;
 import com.shiyu.ai.common.core.api.Result;
 import com.shiyu.ai.dal.dataobject.education.StudentDO;
 import com.shiyu.ai.education.dto.StudentResponse;
@@ -21,10 +22,13 @@ public class StudentController {
     private final StudentService studentService;
 
     @GetMapping
-    @Operation(summary = "获取所有学生")
-    public Result<List<StudentResponse>> listAll() {
-        List<StudentDO> students = studentService.listAll();
-        return Result.success(students.stream().map(this::toResponse).toList());
+    @Operation(summary = "分页获取学生")
+    public Result<PageData<StudentResponse>> listAll(
+            @RequestParam(defaultValue = "1") Integer pageNum,
+            @RequestParam(defaultValue = "10") Integer pageSize) {
+        PageData<StudentDO> page = studentService.page(pageNum, pageSize);
+        List<StudentResponse> items = page.getItems().stream().map(this::toResponse).toList();
+        return Result.success(new PageData<>(items, page.getTotal()));
     }
 
     @GetMapping("/{id}")
