@@ -7,11 +7,15 @@ import com.github.benmanes.caffeine.cache.Caffeine;
 import com.shiyu.ai.dal.repository.auth.SaTokenUserRepository;
 import com.shiyu.ai.dal.dataobject.auth.UserDO;
 import com.shiyu.ai.common.core.utils.JSONUtils;
+import jakarta.annotation.PostConstruct;
 import org.springframework.stereotype.Component;
 
-import java.io.*;
+import java.nio.charset.StandardCharsets;
 import java.time.LocalDateTime;
 import java.util.*;
+import java.util.Base64;
+import java.util.concurrent.Executors;
+import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
 
 @Component
@@ -24,13 +28,44 @@ public class SaTokenDaoImpl implements SaTokenDao {
 
     private final SaTokenUserRepository saTokenUserRepository;
 
+    /**
+     * 主缓存：存储 token → loginId 及 session 对象
+     * 过期时间设为 30 秒，get() 中已有 isExpired() 兜底检查，减少 DB 访问
+     */
     private final Cache<String, Object> localCache = Caffeine.newBuilder()
-            .expireAfterWrite(3, TimeUnit.SECONDS)
-            .maximumSize(10000)
+            .expireAfterWrite(30, TimeUnit.SECONDS)
+            .maximumSize(50000)
             .build();
+
+    /**
+     * 反向索引缓存：token → userId
+     * 由于 token 已改为纯随机字符串，不再包含 userId，需要用此缓存快速查找
+     */
+    private final Cache<String, Long> tokenToUserCache = Caffeine.newBuilder()
+            .expireAfterWrite(30, TimeUnit.MINUTES)
+            .maximumSize(50000)
+            .build();
+
+    /**
+     * 定时清理过期 token 数据
+     */
+    private final ScheduledExecutorService cleanupScheduler = Executors.newSingleThreadScheduledExecutor();
 
     public SaTokenDaoImpl(SaTokenUserRepository saTokenUserRepository) {
         this.saTokenUserRepository = saTokenUserRepository;
+    }
+
+    @PostConstruct
+    public void init() {
+        // 每 30 分钟清理一次过期 token，防止 extInfo 无限膨胀
+        cleanupScheduler.scheduleAtFixedRate(() -> {
+            try {
+                localCache.cleanUp();
+                tokenToUserCache.cleanUp();
+            } catch (Exception ignored) {
+                // 清理失败不影响主流程
+            }
+        }, 30, 30, TimeUnit.MINUTES);
     }
 
     // ==================== String 存储 (Token→loginId) ====================
@@ -71,8 +106,11 @@ public class SaTokenDaoImpl implements SaTokenDao {
     public void set(String key, String value, long timeout) {
         if (!key.startsWith(TOKEN_PREFIX)) return;
 
-        Long userId = extractUserIdFromTokenKey(key);
-        if (userId == null) return;
+        // value 就是 loginId（userId 的字符串形式），直接使用
+        Long userId = Long.parseLong(value);
+
+        // 建立反向索引：token → userId（供后续 get/delete/session 查询使用）
+        tokenToUserCache.put(key, userId);
 
         Map<String, Object> ext = getExtInfo(userId);
         String tokenValue = key.substring(TOKEN_PREFIX.length());
@@ -107,7 +145,16 @@ public class SaTokenDaoImpl implements SaTokenDao {
         if (!key.startsWith(TOKEN_PREFIX)) return;
 
         Long userId = extractUserIdFromTokenKey(key);
-        if (userId == null) return;
+        if (userId == null) {
+            // 纯随机 token 缓存未命中时，尝试从 value 参数获取
+            try {
+                userId = Long.parseLong(value);
+            } catch (NumberFormatException e) {
+                return;
+            }
+            // 补充反向索引
+            tokenToUserCache.put(key, userId);
+        }
 
         Map<String, Object> ext = getExtInfo(userId);
         String tokenValue = key.substring(TOKEN_PREFIX.length());
@@ -128,6 +175,8 @@ public class SaTokenDaoImpl implements SaTokenDao {
         if (!key.startsWith(TOKEN_PREFIX)) return;
 
         Long userId = extractUserIdFromTokenKey(key);
+        // 清理反向索引（先查再删不影响查）
+        tokenToUserCache.invalidate(key);
         if (userId == null) return;
 
         Map<String, Object> ext = getExtInfo(userId);
@@ -382,19 +431,48 @@ public class SaTokenDaoImpl implements SaTokenDao {
     // ==================== 内部辅助方法 ====================
 
     private Long extractUserIdFromTokenKey(String key) {
+        // 先从反向索引缓存查找
+        Long cachedUserId = tokenToUserCache.getIfPresent(key);
+        if (cachedUserId != null) return cachedUserId;
+
+        // 缓存未命中，遍历所有用户的 extInfo 查找（兜底）
+        String tokenValue = key.substring(TOKEN_PREFIX.length());
+        return findUserIdByToken(tokenValue);
+    }
+
+    /**
+     * 从 token 字符串中解析 userId（兜底方法，缓存未命中时调用）
+     * 新格式 Base64(userId)_random50 和旧格式 userId_random60 均可解析
+     */
+    private Long findUserIdByToken(String tokenValue) {
         try {
-            String tokenValue = key.substring(TOKEN_PREFIX.length());
             return parseUserIdFromToken(tokenValue);
-        } catch (Exception e) {
-            return null;
+        } catch (Exception ignored) {
         }
+        return null;
     }
 
     private Long extractUserIdFromSessionKey(String sessionId) {
         try {
             String valueKey = extractSessionValueKey(sessionId);
             if (valueKey == null) return null;
-            return parseUserIdFromToken(valueKey);
+
+            // session: 前缀时 valueKey 就是 loginId（纯数字），直接解析
+            if (sessionId.startsWith(SESSION_PREFIX)) {
+                return Long.parseLong(valueKey);
+            }
+
+            // token-session: 前缀时 valueKey 是 token 值，查反向缓存
+            if (sessionId.startsWith(TOKEN_SESSION_PREFIX)) {
+                String tokenKey = TOKEN_PREFIX + valueKey;
+                Long cached = tokenToUserCache.getIfPresent(tokenKey);
+                if (cached != null) return cached;
+
+                // 缓存未命中，尝试旧格式 token 兼容（含下划线的旧 token）
+                return parseUserIdFromToken(valueKey);
+            }
+
+            return Long.parseLong(valueKey);
         } catch (Exception e) {
             return null;
         }
@@ -410,18 +488,33 @@ public class SaTokenDaoImpl implements SaTokenDao {
         return null;
     }
 
+    /**
+     * 从 token 字符串中解析 userId
+     * 新格式：Base64(userId)_random50
+     * 旧格式：userId_random60（兼容兜底）
+     * 纯数字：session: 前缀场景，直接解析
+     */
     private Long parseUserIdFromToken(String token) {
         if (token == null || token.isEmpty()) return null;
         int underscore = token.indexOf('_');
         if (underscore < 0) {
+            // 没有下划线 → 纯数字（session: 前缀场景）
             try {
                 return Long.parseLong(token);
             } catch (NumberFormatException e) {
                 return null;
             }
         }
+        String prefix = token.substring(0, underscore);
+        // 先尝试 Base64 解码（新格式）
         try {
-            return Long.parseLong(token.substring(0, underscore));
+            byte[] decoded = Base64.getUrlDecoder().decode(prefix);
+            return Long.parseLong(new String(decoded, StandardCharsets.UTF_8));
+        } catch (Exception ignored) {
+            // 不是 Base64，尝试纯数字解析（旧格式兼容）
+        }
+        try {
+            return Long.parseLong(prefix);
         } catch (NumberFormatException e) {
             return null;
         }
@@ -475,26 +568,17 @@ public class SaTokenDaoImpl implements SaTokenDao {
         return NOT_VALUE_EXPIRE;
     }
 
+    /**
+     * 将 SaSession 序列化为 JSON 字符串
+     */
     private String serializeSession(SaSession session) {
-        try {
-            ByteArrayOutputStream bos = new ByteArrayOutputStream();
-            ObjectOutputStream oos = new ObjectOutputStream(bos);
-            oos.writeObject(session);
-            oos.flush();
-            return Base64.getEncoder().encodeToString(bos.toByteArray());
-        } catch (IOException e) {
-            throw new RuntimeException("Failed to serialize session", e);
-        }
+        return JSONUtils.toJsonString(session);
     }
 
+    /**
+     * 从 JSON 字符串反序列化为 SaSession
+     */
     private SaSession deserializeSession(String data) {
-        try {
-            byte[] bytes = Base64.getDecoder().decode(data);
-            ByteArrayInputStream bis = new ByteArrayInputStream(bytes);
-            ObjectInputStream ois = new ObjectInputStream(bis);
-            return (SaSession) ois.readObject();
-        } catch (Exception e) {
-            return null;
-        }
+        return JSONUtils.parseObject(data, SaSession.class);
     }
 }

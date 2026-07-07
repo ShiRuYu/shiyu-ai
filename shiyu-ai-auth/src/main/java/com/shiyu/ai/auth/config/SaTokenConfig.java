@@ -14,15 +14,26 @@ import jakarta.annotation.PostConstruct;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 
+import java.util.Base64;
+import java.nio.charset.StandardCharsets;
+
 @Configuration
 public class SaTokenConfig {
     /**
      * 重写 Sa-Token 框架内部算法策略
+     *
+     * 格式：Base64(userId)_{random50}
+     * - 前缀是 userId 的 Base64 编码（可逆），不含原始 userId 明文
+     * - 服务器重启后仍能从 token 字符串中恢复 userId
+     * - 后缀是 50 位随机字符串，保证 token 不可预测
      */
     @PostConstruct
     public void rewriteSaStrategy() {
-        SaStrategy.instance.createToken = (loginId, loginType) ->
-                loginId + "_" + SaFoxUtil.getRandomString(60);
+        SaStrategy.instance.createToken = (loginId, loginType) -> {
+            String encoded = Base64.getUrlEncoder().withoutPadding()
+                    .encodeToString(loginId.toString().getBytes(StandardCharsets.UTF_8));
+            return encoded + "_" + SaFoxUtil.getRandomString(50);
+        };
     }
 
     /**
