@@ -183,6 +183,15 @@ INSERT IGNORE INTO `menu` (`id`, `name`, `code`, `type`, `parent_id`, `tenant_id
 VALUES (500, '智能体', 'Agent', 'MENU', NULL, 1, '/agent', NULL, 'carbon:ibm-watson-assistant', '', '', FALSE, NULL, 'AI智能体管理', TRUE, '1', 6, 0, '0', '0');
 
 INSERT IGNORE INTO `menu` (`id`, `name`, `code`, `type`, `parent_id`, `tenant_id`, `path`, `redirect`, `icon`, `component`, `layout`, `keep_alive`, `method`, `description`, `show`, `status`, `order`, `del_flag`, `create_by`, `update_by`) 
+
+INSERT IGNORE INTO `menu` (`id`, `name`, `code`, `type`, `parent_id`, `tenant_id`, `path`, `redirect`, `icon`, `component`, `layout`, `keep_alive`, `method`, `description`, `show`, `status`, `order`, `del_flag`, `create_by`, `update_by`) 
+VALUES (403, '记录管理', 'RecordRecords', 'MENU', 400, 1, '/record/records', NULL, 'mdi:book-open-page-variant', '/record/records/list', '', TRUE, NULL, '日常记录管理', TRUE, '1', 3, 0, '0', '0');
+
+INSERT IGNORE INTO `menu` (`id`, `name`, `code`, `type`, `parent_id`, `tenant_id`, `path`, `redirect`, `icon`, `component`, `layout`, `keep_alive`, `method`, `description`, `show`, `status`, `order`, `del_flag`, `create_by`, `update_by`) 
+VALUES (404, '媒体管理', 'RecordMedia', 'MENU', 400, 1, '/record/media', NULL, 'carbon:folder', '/record/media/list', '', TRUE, NULL, '媒体文件管理', TRUE, '1', 4, 0, '0', '0');
+
+INSERT IGNORE INTO `menu` (`id`, `name`, `code`, `type`, `parent_id`, `tenant_id`, `path`, `redirect`, `icon`, `component`, `layout`, `keep_alive`, `method`, `description`, `show`, `status`, `order`, `del_flag`, `create_by`, `update_by`) 
+VALUES (405, '标签管理', 'RecordTags', 'MENU', 400, 1, '/record/tags', NULL, 'carbon:tag', '/record/tags/list', '', TRUE, NULL, '标签管理', TRUE, '1', 5, 0, '0', '0');
 VALUES (501, 'Agent管理', 'AgentAdminList', 'MENU', 500, 1, '/agent/admin/list', NULL, 'carbon:cube', '/agent/admin/agent-list', '', TRUE, NULL, 'Agent 注册与管理', TRUE, '1', 1, 0, '0', '0');
 
 INSERT IGNORE INTO `menu` (`id`, `name`, `code`, `type`, `parent_id`, `tenant_id`, `path`, `redirect`, `icon`, `component`, `layout`, `keep_alive`, `method`, `description`, `show`, `status`, `order`, `del_flag`, `create_by`, `update_by`) 
@@ -225,14 +234,14 @@ INSERT IGNORE INTO `role_workspace_menu` (`role_id`, `workspace_id`, `menu_id`, 
 (0, 0, 1, 1), (0, 0, 2, 1), (0, 0, 3, 1), 
 (0, 0, 100, 1), (0, 0, 200, 1), (0, 0, 20001, 1), (0, 0, 20002, 1), (0, 0, 20003, 1), (0, 0, 20004, 1), (0, 0, 201, 1), (0, 0, 20101, 1), (0, 0, 20102, 1), (0, 0, 20103, 1), (0, 0, 202, 1), (0, 0, 20201, 1), (0, 0, 20202, 1), (0, 0, 20203, 1), (0, 0, 203, 1), (0, 0, 20301, 1), (0, 0, 20302, 1), (0, 0, 20303, 1), (0, 0, 20304, 1), (0, 0, 204, 1), (0, 0, 20401, 1), (0, 0, 20402, 1), (0, 0, 20403, 1), (0, 0, 20404, 1),
 (0, 0, 205, 1), (0, 0, 20501, 1), (0, 0, 20502, 1), (0, 0, 20503, 1), (0, 0, 20504, 1),
-(0, 0, 400, 1), (0, 0, 401, 1), (0, 0, 40101, 1), (0, 0, 40102, 1), (0, 0, 40103, 1), (0, 0, 40104, 1), (0, 0, 402, 1), (0, 0, 40201, 1), (0, 0, 40202, 1), (0, 0, 40203, 1), (0, 0, 40204, 1),
+(0, 0, 400, 1), (0, 0, 401, 1), (0, 0, 40101, 1), (0, 0, 40102, 1), (0, 0, 40103, 1), (0, 0, 40104, 1), (0, 0, 402, 1), (0, 0, 40201, 1), (0, 0, 40202, 1), (0, 0, 40203, 1), (0, 0, 40204, 1), (0, 0, 403, 1), (0, 0, 404, 1), (0, 0, 405, 1),
 (0, 0, 500, 1), (0, 0, 501, 1), (0, 0, 502, 1), (0, 0, 503, 1), (0, 0, 50301, 1), (0, 0, 50302, 1), (0, 0, 50303, 1), (0, 0, 50304, 1), (0, 0, 504, 1), (0, 0, 50401, 1), (0, 0, 50402, 1), (0, 0, 50403, 1), (0, 0, 50404, 1), (0, 0, 505, 1), (0, 0, 507, 1);
 
 INSERT IGNORE INTO `role_workspace_menu` (`role_id`, `workspace_id`, `menu_id`, `tenant_id`) VALUES 
 (1, 0, 1, 1), (1, 0, 2, 1), (1, 0, 3, 1), 
 (1, 0, 100, 1), (1, 0, 200, 1), (1, 0, 20001, 1), (1, 0, 20002, 1), (1, 0, 20003, 1), (1, 0, 20004, 1), (1, 0, 201, 1), (1, 0, 20101, 1), (1, 0, 20102, 1), (1, 0, 20103, 1), (1, 0, 202, 1), (1, 0, 20201, 1), (1, 0, 20202, 1), (1, 0, 20203, 1), (1, 0, 203, 1), (1, 0, 20301, 1), (1, 0, 20302, 1), (1, 0, 20303, 1), (1, 0, 20304, 1), (1, 0, 204, 1), (1, 0, 20401, 1), (1, 0, 20402, 1), (1, 0, 20403, 1), (1, 0, 20404, 1),
 (1, 0, 205, 1), (1, 0, 20501, 1), (1, 0, 20502, 1), (1, 0, 20503, 1), (1, 0, 20504, 1),
-(1, 0, 400, 1), (1, 0, 401, 1), (1, 0, 40101, 1), (1, 0, 40102, 1), (1, 0, 40103, 1), (1, 0, 40104, 1), (1, 0, 402, 1), (1, 0, 40201, 1), (1, 0, 40202, 1), (1, 0, 40203, 1), (1, 0, 40204, 1),
+(1, 0, 400, 1), (1, 0, 401, 1), (1, 0, 40101, 1), (1, 0, 40102, 1), (1, 0, 40103, 1), (1, 0, 40104, 1), (1, 0, 402, 1), (1, 0, 40201, 1), (1, 0, 40202, 1), (1, 0, 40203, 1), (1, 0, 40204, 1), (1, 0, 403, 1), (1, 0, 404, 1), (1, 0, 405, 1),
 (1, 0, 500, 1), (1, 0, 501, 1), (1, 0, 502, 1), (1, 0, 503, 1), (1, 0, 50301, 1), (1, 0, 50302, 1), (1, 0, 50303, 1), (1, 0, 50304, 1), (1, 0, 504, 1), (1, 0, 50401, 1), (1, 0, 50402, 1), (1, 0, 50403, 1), (1, 0, 50404, 1), (1, 0, 505, 1), (1, 0, 507, 1);
 
 INSERT IGNORE INTO `role_workspace_menu` (`role_id`, `workspace_id`, `menu_id`, `tenant_id`) VALUES 
@@ -295,7 +304,7 @@ INSERT IGNORE INTO `menu` (`id`, `name`, `code`, `type`, `parent_id`, `tenant_id
 VALUES (60104, '知识点删除', 'knowledge:delete', 'BUTTON', 601, 1, NULL, NULL, NULL, NULL, NULL, NULL, 'DELETE', '删除知识点', TRUE, '1', 4, 0, '0', '0');
 
 INSERT IGNORE INTO `menu` (`id`, `name`, `code`, `type`, `parent_id`, `tenant_id`, `path`, `redirect`, `icon`, `component`, `layout`, `keep_alive`, `method`, `description`, `show`, `status`, `order`, `del_flag`, `create_by`, `update_by`) 
-VALUES (602, '知识关系', 'KnowledgeRelation', 'MENU', 600, 1, '/knowledge/relation', NULL, 'carbon:flow', '/knowledge/relation', '', TRUE, NULL, '知识关系（前置/后续/相关）管理', TRUE, '1', 2, 0, '0', '0');
+VALUES (602, '知识关系', 'KnowledgeRelation', 'MENU', 600, 1, '/knowledge/relation', NULL, 'carbon:flow', '/knowledge-engine/knowledge-relation/index', '', TRUE, NULL, '知识关系（前置/后续/相关）管理', TRUE, '1', 2, 0, '0', '0');
 
 INSERT IGNORE INTO `menu` (`id`, `name`, `code`, `type`, `parent_id`, `tenant_id`, `path`, `redirect`, `icon`, `component`, `layout`, `keep_alive`, `method`, `description`, `show`, `status`, `order`, `del_flag`, `create_by`, `update_by`) 
 VALUES (603, '知识图谱', 'KnowledgeGraph', 'MENU', 600, 1, '/knowledge/graph', NULL, 'carbon:network-3', '/knowledge-engine/knowledge-graph/index', '', TRUE, NULL, '知识图谱可视化', TRUE, '1', 3, 0, '0', '0');

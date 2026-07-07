@@ -55,7 +55,7 @@ public class PageQuery implements Serializable {
     /**
      * 每页显示记录数 默认值
      */
-    public static final int DEFAULT_PAGE_SIZE = 1000;
+    public static final int DEFAULT_PAGE_SIZE = 10;
 
 
     @JsonIgnore

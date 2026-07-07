@@ -1,6 +1,8 @@
 package com.shiyu.ai.knowledge.service.impl;
 
 import com.shiyu.ai.common.core.api.PageData;
+import java.util.Objects;
+import com.shiyu.ai.common.core.api.PageQuery;
 import com.shiyu.ai.common.core.exception.ServiceException;
 import com.shiyu.ai.dal.dataobject.knowledge.KnowledgeDO;
 import com.shiyu.ai.knowledge.dto.CreateKnowledgeRequest;
@@ -45,8 +47,10 @@ public class KnowledgeServiceImpl implements KnowledgeService {
 
     @Override
     public PageData<KnowledgeResponse> page(KnowledgePageQuery query) {
-        int offset = (query.getPageNum() - 1) * query.getPageSize();
-        List<KnowledgeDO> list = knowledgeRepository.page(offset, query.getPageSize(),
+        int pageSize = Objects.requireNonNullElse(query.getPageSize(), PageQuery.DEFAULT_PAGE_SIZE);
+        int pageNum = Objects.requireNonNullElse(query.getPageNum(), PageQuery.DEFAULT_PAGE_NUM);
+        int offset = (pageNum - 1) * pageSize;
+        List<KnowledgeDO> list = knowledgeRepository.page(offset, pageSize,
                 query.getCategory(), query.getKeyword());
         long total = knowledgeRepository.count(query.getCategory(), query.getKeyword());
         List<KnowledgeResponse> items = list.stream().map(this::toResponse).toList();
