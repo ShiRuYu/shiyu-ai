@@ -452,7 +452,6 @@ CREATE TABLE IF NOT EXISTS `edu_study_record`(
     `status`          TINYINT      DEFAULT 1 COMMENT '状态（1正常 0停用）',
     `del_flag`        TINYINT      DEFAULT 0 COMMENT '删除标志（0：正常 1：已删除）',
     `create_by`       VARCHAR(64)  COMMENT '创建者',
-    `create_time`     TIMESTAMP    DEFAULT CURRENT_TIMESTAMP COMMENT '创建时间',
     `update_by`       VARCHAR(64)  COMMENT '更新者',
     `update_time`     TIMESTAMP    DEFAULT CURRENT_TIMESTAMP COMMENT '更新时间',
     PRIMARY KEY (`id`),
@@ -551,9 +550,7 @@ CREATE TABLE IF NOT EXISTS `edu_learning_state`(
     `status`          TINYINT      DEFAULT 1 COMMENT '状态（1正常 0停用）',
     `del_flag`        TINYINT      DEFAULT 0 COMMENT '删除标志（0：正常 1：已删除）',
     `create_by`       VARCHAR(64)  COMMENT '创建者',
-    `create_time`     TIMESTAMP    DEFAULT CURRENT_TIMESTAMP COMMENT '创建时间',
     `update_by`       VARCHAR(64)  COMMENT '更新者',
-    `update_time`     TIMESTAMP    DEFAULT CURRENT_TIMESTAMP COMMENT '更新时间',
     PRIMARY KEY (`id`),
     UNIQUE KEY `uk_learning_state` (`student_id`, `knowledge_id`)
 );

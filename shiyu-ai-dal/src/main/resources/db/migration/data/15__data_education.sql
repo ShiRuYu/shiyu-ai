@@ -3,11 +3,11 @@
 -- ============================================
 
 INSERT IGNORE INTO `subject` (`id`, `code`, `name`, `grade_level`, `icon`, `sort_order`, `status`, `tenant_id`) VALUES
-(1, 1, 'MATH',     '数学',   'K3', 'i-mdi:math-compass',        1, 1),
-(1, 2, 'PHYSICS',  '物理',   'K3', 'i-mdi:physics',            2, 1),
-(1, 3, 'ENGLISH',  '英语',   'K3', 'i-mdi:alphabetical',       3, 1),
-(1, 4, 'CHINESE',  '语文',   'K3', 'i-mdi:book-open-page-variant', 4, 1),
-(1, 5, 'CHEMISTRY','化学',   'K3', 'i-mdi:flask',              5, 1);
+(1, 'MATH',     '数学',   'K3', 'i-mdi:math-compass',        1, 1, 1),
+(2, 'PHYSICS',  '物理',   'K3', 'i-mdi:physics',            2, 1, 1),
+(3, 'ENGLISH',  '英语',   'K3', 'i-mdi:alphabetical',       3, 1, 1),
+(4, 'CHINESE',  '语文',   'K3', 'i-mdi:book-open-page-variant', 4, 1, 1),
+(5, 'CHEMISTRY','化学',   'K3', 'i-mdi:flask',              5, 1, 1);
 
 INSERT IGNORE INTO `textbook` (tenant_id, `id`, `name`, `subject_code`, `grade`, `publisher`, `isbn`) VALUES
 (1, 1, '人教版数学七年级上册',   'MATH',    7, '人民教育出版社', '978-7-107-12345-6'),
