@@ -65,28 +65,19 @@ public interface UserService {
     /**
      * 重置用户密码
      *
-     * @param userId  用户 ID
-     * @param password 新密码
-     * @return 是否成功
+     * @param userId   用户 ID
+     * @param password 新密码（null 或空时自动生成）
+     * @return 新密码明文（自动生成时返回生成值，调用方提供时原样返回），失败返回 null
      */
-    /**
-     * Reset User Password
-     * @return 处理结果
-     */
-    boolean resetUserPassword(Long userId, String password);
+    String resetUserPassword(Long userId, String password);
 
     /**
      * 新增用户
      *
      * @param userBO 用户信息
-     * @return 用户 ID
+     * @return Map 包含 id（用户ID）和 plainPassword（明文密码，自动生成时一并返回）
      */
-    /**
-     * Create User
-     * @param UserBO UserBO
-     * @return 处理结果
-     */
-    Long createUser(UserBO userBO);
+    java.util.Map<String, Object> createUser(UserBO userBO);
 
     /**
      * 修改密码（校验旧密码）

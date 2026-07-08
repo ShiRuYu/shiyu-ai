@@ -98,31 +98,37 @@ public class UserServiceImpl implements UserService {
 
     @Override
     @Transactional(rollbackFor = Exception.class)
-    public boolean resetUserPassword(Long userId, String password) {
+    public String resetUserPassword(Long userId, String password) {
         log.info("重置用户密码，userId: {}", userId);
         UserBO userBO = userRepository.selectById(userId);
         if (userBO == null) {
-            return false;
+            return null;
         }
 
         String newPassword = (password == null || password.isBlank())
                 ? PasswordUtils.generateRandomPassword()
                 : password;
         userBO.setPassword(PasswordUtils.encode(newPassword));
-        return userRepository.update(userBO);
+        boolean success = userRepository.update(userBO);
+        return success ? newPassword : null;
     }
 
     @Override
     @Transactional(rollbackFor = Exception.class)
-    public Long createUser(UserBO userBO) {
+    public Map<String, Object> createUser(UserBO userBO) {
         log.info("新增用户: {}", userBO.getUsername());
+        String plainPassword = null;
         if (userBO.getPassword() == null || userBO.getPassword().isBlank()) {
-            userBO.setPassword(PasswordUtils.encode(PasswordUtils.generateDefaultPassword()));
+            plainPassword = PasswordUtils.generateDefaultPassword();
+            userBO.setPassword(PasswordUtils.encode(plainPassword));
         } else {
             userBO.setPassword(PasswordUtils.encode(userBO.getPassword()));
         }
         UserBO createdUser = userRepository.insert(userBO);
-        return createdUser.getId();
+        Map<String, Object> result = new java.util.HashMap<>();
+        result.put("id", createdUser.getId());
+        result.put("plainPassword", plainPassword);
+        return result;
     }
 
     @Override

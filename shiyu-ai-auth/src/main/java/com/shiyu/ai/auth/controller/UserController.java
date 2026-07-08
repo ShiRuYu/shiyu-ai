@@ -149,16 +149,16 @@ public class UserController {
      */
     @Operation(summary = "Reset User Password")
     @PostMapping("/password/reset")
-    public Result<Void> resetPassword(
+    public Result<String> resetPassword(
             @RequestParam Long userId,
             @RequestBody Map<String, String> passwordMap) {
         log.info("重置用户密码，userId: {}", userId);
-        
+
         String password = passwordMap.get("password");
-        boolean success = userService.resetUserPassword(userId, password);
-        
-        if (success) {
-            return Result.success();
+        String newPassword = userService.resetUserPassword(userId, password);
+
+        if (newPassword != null) {
+            return Result.success(newPassword);
         } else {
             return Result.fail("用户不存在");
         }
@@ -194,12 +194,12 @@ public class UserController {
      */
     @Operation(summary = "Create User")
     @PostMapping("/create")
-    public Result<Long> createUser(@Valid @RequestBody UserRequest request) {
+    public Result<java.util.Map<String, Object>> createUser(@Valid @RequestBody UserRequest request) {
         log.info("新增用户");
-        
+
         UserBO userBO = MapstructUtils.convert(request, UserBO.class);
-        Long userId = userService.createUser(userBO);
-        
-        return Result.success(userId);
+        java.util.Map<String, Object> result = userService.createUser(userBO);
+
+        return Result.success(result);
     }
 }
