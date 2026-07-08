@@ -112,13 +112,10 @@ INSERT IGNORE INTO `menu` (`id`, `name`, `code`, `type`, `parent_id`, `tenant_id
 VALUES (7, '字典管理', 'SystemDict', 'MENU', 1, 1, '/system/dict', 'lucide:book-type', '/system/dict/index', TRUE, 1, 6, 0, 'system', 'system');
 
 INSERT IGNORE INTO `menu` (`id`, `name`, `code`, `type`, `parent_id`, `tenant_id`, `path`, `icon`, `component`, `show`, `status`, `order`, `del_flag`, `create_by`, `update_by`)
-VALUES (8, 'AI 平台', 'SystemAiPlatform', 'MENU', 1, 1, '/system/ai-platform', 'lucide:bot', '/system/ai-platform/index', TRUE, 1, 7, 0, 'system', 'system');
+VALUES (8, 'AI 平台', 'SystemAiPlatform', 'MENU', 1, 1, '/system/ai-platform', 'lucide:bot', '/agent/platform/list', TRUE, 1, 7, 0, 'system', 'system');
 
 INSERT IGNORE INTO `menu` (`id`, `name`, `code`, `type`, `parent_id`, `tenant_id`, `path`, `icon`, `component`, `show`, `status`, `order`, `del_flag`, `create_by`, `update_by`)
-VALUES (9, 'AI 模型', 'SystemAiModel', 'MENU', 1, 1, '/system/ai-model', 'lucide:cpu', '/system/ai-model/index', TRUE, 1, 8, 0, 'system', 'system');
-
-INSERT IGNORE INTO `menu` (`id`, `name`, `code`, `type`, `parent_id`, `tenant_id`, `path`, `icon`, `component`, `show`, `status`, `order`, `del_flag`, `create_by`, `update_by`)
-VALUES (10, '权限码', 'SystemAuthCode', 'MENU', 1, 1, '/system/auth-code', 'lucide:key-round', '/system/auth-code/index', TRUE, 1, 9, 0, 'system', 'system');
+VALUES (9, 'AI 模型', 'SystemAiModel', 'MENU', 1, 1, '/system/ai-model', 'lucide:cpu', '/agent/model/list', TRUE, 1, 8, 0, 'system', 'system');
 
 -- ==============================
 -- 角色-工作空间-菜单 关联（super 角色拥有全部菜单）
@@ -133,4 +130,64 @@ VALUES (0, 0, 1, 1, 1, 0, 'system', 'system'),
        (0, 0, 7, 1, 1, 0, 'system', 'system'),
        (0, 0, 8, 1, 1, 0, 'system', 'system'),
        (0, 0, 9, 1, 1, 0, 'system', 'system'),
-       (0, 0, 10, 1, 1, 0, 'system', 'system');
+       (0, 0, 100, 1, 1, 0, 'system', 'system'),
+       (0, 0, 101, 1, 1, 0, 'system', 'system'),
+       (0, 0, 102, 1, 1, 0, 'system', 'system'),
+       (0, 0, 104, 1, 1, 0, 'system', 'system'),
+       (0, 0, 1500, 1, 1, 0, 'system', 'system'),
+       (0, 0, 1501, 1, 1, 0, 'system', 'system'),
+       (0, 0, 1502, 1, 1, 0, 'system', 'system'),
+       (0, 0, 1503, 1, 1, 0, 'system', 'system'),
+       (0, 0, 1504, 1, 1, 0, 'system', 'system'),
+       (0, 0, 1505, 1, 1, 0, 'system', 'system'),
+       (0, 0, 1506, 1, 1, 0, 'system', 'system'),
+       (0, 0, 1507, 1, 1, 0, 'system', 'system');
+
+-- admin 角色拥有系统管理菜单
+INSERT IGNORE INTO `role_workspace_menu` (`role_id`, `workspace_id`, `menu_id`, `tenant_id`, `status`, `del_flag`, `create_by`, `update_by`)
+VALUES (1, 0, 1, 1, 1, 0, 'system', 'system'),
+       (1, 0, 2, 1, 1, 0, 'system', 'system'),
+       (1, 0, 3, 1, 1, 0, 'system', 'system'),
+       (1, 0, 4, 1, 1, 0, 'system', 'system'),
+       (1, 0, 5, 1, 1, 0, 'system', 'system'),
+       (1, 0, 6, 1, 1, 0, 'system', 'system'),
+       (1, 0, 7, 1, 1, 0, 'system', 'system'),
+       (1, 0, 8, 1, 1, 0, 'system', 'system'),
+       (1, 0, 9, 1, 1, 0, 'system', 'system');
+
+-- user 角色拥有教育中心菜单
+INSERT IGNORE INTO `role_workspace_menu` (`role_id`, `workspace_id`, `menu_id`, `tenant_id`, `status`, `del_flag`, `create_by`, `update_by`)
+VALUES (2, 0, 1500, 1, 1, 0, 'system', 'system'),
+       (2, 0, 1501, 1, 1, 0, 'system', 'system'),
+       (2, 0, 1502, 1, 1, 0, 'system', 'system'),
+       (2, 0, 1503, 1, 1, 0, 'system', 'system'),
+       (2, 0, 1504, 1, 1, 0, 'system', 'system'),
+       (2, 0, 1506, 1, 1, 0, 'system', 'system'),
+       (2, 0, 1507, 1, 1, 0, 'system', 'system');
+
+-- ==============================
+-- 权限码
+-- ==============================
+INSERT IGNORE INTO `auth_code` (`id`, `code`, `name`, `role_id`, `tenant_id`, `workspace_id`, `status`, `create_by`, `update_by`)
+VALUES (1, 'system:user:list', '查看用户列表', 0, 1, 0, 1, 'system', 'system');
+
+INSERT IGNORE INTO `auth_code` (`id`, `code`, `name`, `role_id`, `tenant_id`, `workspace_id`, `status`, `create_by`, `update_by`)
+VALUES (2, 'system:user:create', '创建用户', 0, 1, 0, 1, 'system', 'system');
+
+INSERT IGNORE INTO `auth_code` (`id`, `code`, `name`, `role_id`, `tenant_id`, `workspace_id`, `status`, `create_by`, `update_by`)
+VALUES (3, 'system:user:update', '更新用户', 0, 1, 0, 1, 'system', 'system');
+
+INSERT IGNORE INTO `auth_code` (`id`, `code`, `name`, `role_id`, `tenant_id`, `workspace_id`, `status`, `create_by`, `update_by`)
+VALUES (4, 'system:user:delete', '删除用户', 0, 1, 0, 1, 'system', 'system');
+
+INSERT IGNORE INTO `auth_code` (`id`, `code`, `name`, `role_id`, `tenant_id`, `workspace_id`, `status`, `create_by`, `update_by`)
+VALUES (5, 'system:role:list', '查看角色列表', 0, 1, 0, 1, 'system', 'system');
+
+INSERT IGNORE INTO `auth_code` (`id`, `code`, `name`, `role_id`, `tenant_id`, `workspace_id`, `status`, `create_by`, `update_by`)
+VALUES (6, 'system:role:create', '创建角色', 0, 1, 0, 1, 'system', 'system');
+
+INSERT IGNORE INTO `auth_code` (`id`, `code`, `name`, `role_id`, `tenant_id`, `workspace_id`, `status`, `create_by`, `update_by`)
+VALUES (7, 'system:role:update', '更新角色', 0, 1, 0, 1, 'system', 'system');
+
+INSERT IGNORE INTO `auth_code` (`id`, `code`, `name`, `role_id`, `tenant_id`, `workspace_id`, `status`, `create_by`, `update_by`)
+VALUES (8, 'system:role:delete', '删除角色', 0, 1, 0, 1, 'system', 'system');

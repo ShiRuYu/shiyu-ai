@@ -33,11 +33,17 @@ INSERT IGNORE INTO `agent_def` (`id`, `agent_id`, `name`, `description`, `tenant
 VALUES (2, 'knowledge-tutor', '知识问答助手', '知识问答 Agent', 1, 0, 'v1.0.0', 1, 'system', 'system');
 
 -- Agent 版本
-INSERT IGNORE INTO `agent_version` (`id`, `agent_id`, `version_number`, `tenant_id`, `workspace_id`, `description`, `status`, `create_by`, `update_by`)
-VALUES (1, 'tutor-bot', 'v1.0.0', 1, 0, '初始版本', 'PUBLISHED', 'system', 'system');
+INSERT IGNORE INTO `agent_version` (`id`, `agent_id`, `version_number`, `tenant_id`, `workspace_id`, `description`, `status`, `graph_config`, `canvas_config`, `create_by`, `update_by`)
+VALUES (1, 'tutor-bot', 'v1.0.0', 1, 0, '初始版本', 'PUBLISHED', 
+'{"name":"tutor-graph","description":"辅导助手工作流程","startNode":"intent","endNode":"output","nodes":{"intent":{"nodeName":"意图识别","nodeType":"INTENT","enabled":true,"config":{"category":"EDUCATION"}},"knowledge":{"nodeName":"知识检索","nodeType":"RAG_RETRIEVAL","enabled":true,"config":{"topK":5,"similarityThreshold":0.7}},"teach":{"nodeName":"教学讲解","nodeType":"EDUCATION_TEACH","enabled":true,"config":{}},"practice":{"nodeName":"出题练习","nodeType":"EDUCATION_PRACTICE","enabled":true,"config":{}},"review":{"nodeName":"复习安排","nodeType":"REVIEW_SCHEDULE","enabled":true,"config":{}},"output":{"nodeName":"输出格式化","nodeType":"OUTPUT_FORMAT","enabled":true,"config":{"outputFormat":"MARKDOWN"}}},"edges":{"intent":["knowledge"],"knowledge":["teach"],"teach":["practice"],"practice":["review"],"review":["output"]},"conditionalEdges":{}}',
+'{"zoom":1,"offsetX":0,"offsetY":0,"nodePositions":{"intent":{"x":100,"y":100},"knowledge":{"x":300,"y":100},"teach":{"x":500,"y":100},"practice":{"x":700,"y":100},"review":{"x":900,"y":100},"output":{"x":1100,"y":100}}}',
+'system', 'system');
 
-INSERT IGNORE INTO `agent_version` (`id`, `agent_id`, `version_number`, `tenant_id`, `workspace_id`, `description`, `status`, `create_by`, `update_by`)
-VALUES (2, 'knowledge-tutor', 'v1.0.0', 1, 0, '初始版本', 'PUBLISHED', 'system', 'system');
+INSERT IGNORE INTO `agent_version` (`id`, `agent_id`, `version_number`, `tenant_id`, `workspace_id`, `description`, `status`, `graph_config`, `canvas_config`, `create_by`, `update_by`)
+VALUES (2, 'knowledge-tutor', 'v1.0.0', 1, 0, '初始版本', 'PUBLISHED', 
+'{"name":"knowledge-qa-graph","description":"知识问答工作流程","startNode":"intent","endNode":"output","nodes":{"intent":{"nodeName":"意图识别","nodeType":"INTENT","enabled":true,"config":{"category":"KNOWLEDGE"}},"retrieval":{"nodeName":"知识检索","nodeType":"RAG_RETRIEVAL","enabled":true,"config":{"topK":5,"similarityThreshold":0.7}},"enhancement":{"nodeName":"知识增强","nodeType":"RAG_ENHANCEMENT","enabled":true,"config":{"enhancementStrategy":"SUMMARIZATION"}},"llm":{"nodeName":"LLM生成","nodeType":"LLM_CALL","enabled":true,"config":{"platform":"DEEPSEEK","modelName":"deepseek-chat","temperature":0.7}},"output":{"nodeName":"输出格式化","nodeType":"OUTPUT_FORMAT","enabled":true,"config":{"outputFormat":"MARKDOWN"}}},"edges":{"intent":["retrieval"],"retrieval":["enhancement"],"enhancement":["llm"],"llm":["output"]},"conditionalEdges":{}}',
+'{"zoom":1,"offsetX":0,"offsetY":0,"nodePositions":{"intent":{"x":100,"y":100},"retrieval":{"x":300,"y":100},"enhancement":{"x":500,"y":100},"llm":{"x":700,"y":100},"output":{"x":900,"y":100}}}',
+'system', 'system');
 
 -- 意图定义
 INSERT IGNORE INTO `intent_def` (`id`, `agent_id`, `code`, `name`, `tenant_id`, `workspace_id`, `description`, `category`, `priority`, `confidence_threshold`, `enabled`, `status`, `create_by`, `update_by`)
@@ -51,3 +57,15 @@ VALUES (3, 'default', 'TRANSLATION', '翻译', 1, 0, '语言翻译', 'TASK', 60,
 
 INSERT IGNORE INTO `intent_def` (`id`, `agent_id`, `code`, `name`, `tenant_id`, `workspace_id`, `description`, `category`, `priority`, `confidence_threshold`, `enabled`, `status`, `create_by`, `update_by`)
 VALUES (4, 'default', 'EDUCATION', '教育', 1, 0, '学科教育辅导', 'TASK', 70, 0.80, '1', 1, 'system', 'system');
+
+INSERT IGNORE INTO `intent_def` (`id`, `agent_id`, `code`, `name`, `tenant_id`, `workspace_id`, `description`, `category`, `priority`, `confidence_threshold`, `enabled`, `status`, `create_by`, `update_by`)
+VALUES (5, 'default', 'CODE_HELP', '代码帮助', 1, 0, '编程辅助与代码生成', 'TASK', 65, 0.80, '1', 1, 'system', 'system');
+
+INSERT IGNORE INTO `intent_def` (`id`, `agent_id`, `code`, `name`, `tenant_id`, `workspace_id`, `description`, `category`, `priority`, `confidence_threshold`, `enabled`, `status`, `create_by`, `update_by`)
+VALUES (6, 'default', 'WRITING_ASSISTANCE', '写作辅助', 1, 0, '文章写作与润色', 'TASK', 55, 0.75, '1', 1, 'system', 'system');
+
+INSERT IGNORE INTO `intent_def` (`id`, `agent_id`, `code`, `name`, `tenant_id`, `workspace_id`, `description`, `category`, `priority`, `confidence_threshold`, `enabled`, `status`, `create_by`, `update_by`)
+VALUES (7, 'default', 'DATA_ANALYSIS', '数据分析', 1, 0, '数据处理与分析', 'TASK', 60, 0.80, '1', 1, 'system', 'system');
+
+INSERT IGNORE INTO `intent_def` (`id`, `agent_id`, `code`, `name`, `tenant_id`, `workspace_id`, `description`, `category`, `priority`, `confidence_threshold`, `enabled`, `status`, `create_by`, `update_by`)
+VALUES (8, 'default', 'UNKNOWN', '未知意图', 1, 0, '无法识别的意图', 'CONVERSATION', 0, 0.50, '1', 1, 'system', 'system');

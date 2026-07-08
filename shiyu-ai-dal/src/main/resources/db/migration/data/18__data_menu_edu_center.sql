@@ -21,7 +21,7 @@ INSERT IGNORE INTO `menu` (`id`, `name`, `code`, `type`, `parent_id`, `tenant_id
 VALUES (1504, '复习', 'EduReview', 'MENU', 1500, 1, '/education-center/review', 'lucide:repeat', '/education-center/review/index', '今日复习、复习历史', TRUE, 1, 4, 0, 'system', 'system');
 
 INSERT IGNORE INTO `menu` (`id`, `name`, `code`, `type`, `parent_id`, `tenant_id`, `path`, `icon`, `component`, `description`, `show`, `status`, `order`, `del_flag`, `create_by`, `update_by`)
-VALUES (1505, '教育管理', 'EduManagement', 'MENU', 1500, 1, '/education-center/management', 'lucide:settings-2', '/education-center/management/index', '学科/教材/知识点/题目管理', TRUE, 1, 5, 0, 'system', 'system');
+VALUES (1505, '教育管理', 'EduManagement', 'MENU', 1500, 1, '/education-center/management', 'lucide:settings-2', '/education-center/admin/index', '学科/教材/知识点/题目管理', TRUE, 1, 5, 0, 'system', 'system');
 
 INSERT IGNORE INTO `menu` (`id`, `name`, `code`, `type`, `parent_id`, `tenant_id`, `path`, `icon`, `component`, `description`, `show`, `status`, `order`, `del_flag`, `create_by`, `update_by`)
 VALUES (1506, 'AI 助手', 'EduAiAssistant', 'MENU', 1500, 1, '/education-center/ai', 'lucide:sparkles', '/education-center/ai/index', 'AI 学习助手', TRUE, 1, 6, 0, 'system', 'system');

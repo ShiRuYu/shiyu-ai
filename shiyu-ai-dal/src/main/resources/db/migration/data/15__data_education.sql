@@ -90,3 +90,45 @@ INSERT IGNORE INTO `ability` (`student_id`, `knowledge_id`, `remember`, `underst
 -- 学习状态
 INSERT IGNORE INTO `edu_learning_state` (`student_id`, `knowledge_id`, `state`, `tenant_id`, `workspace_id`, `create_by`, `update_by`) VALUES
 (1, 5, 'LEARNING', 1, 0, 'system', 'system');
+
+-- 学习资源
+INSERT IGNORE INTO `resource` (`id`, `name`, `type`, `url`, `subject_code`, `grade`, `difficulty`, `cover_url`, `description`, `view_count`, `tenant_id`, `workspace_id`, `create_by`, `update_by`) VALUES
+(1, '有理数入门视频', 'VIDEO', 'https://example.com/video1.mp4', 'MATH', 7, 1, 'https://example.com/cover1.jpg', '有理数基础教学视频', 150, 1, 0, 'system', 'system'),
+(2, '绝对值练习题集', 'EXERCISE', 'https://example.com/exercise1.pdf', 'MATH', 7, 2, 'https://example.com/cover2.jpg', '绝对值相关练习题', 89, 1, 0, 'system', 'system'),
+(3, '数轴互动演示', 'INTERACTIVE', 'https://example.com/interactive1.html', 'MATH', 7, 1, 'https://example.com/cover3.jpg', '数轴概念互动学习', 67, 1, 0, 'system', 'system');
+
+-- 考试
+INSERT IGNORE INTO `exam` (`id`, `name`, `type`, `subject_code`, `grade`, `duration_min`, `total_score`, `status`, `teacher_id`, `tenant_id`, `workspace_id`, `create_by`, `update_by`) VALUES
+(1, '七年级数学第一章测验', 'UNIT_TEST', 'MATH', 7, 45, 100, 1, 1, 1, 0, 'system', 'system'),
+(2, '七年级数学期中考试', 'MIDTERM', 'MATH', 7, 90, 150, 1, 1, 1, 0, 'system', 'system');
+
+-- 考试分区
+INSERT IGNORE INTO `exam_section` (`id`, `exam_id`, `name`, `order_no`, `tenant_id`, `workspace_id`, `create_by`, `update_by`) VALUES
+(1, 1, '选择题', 1, 1, 0, 'system', 'system'),
+(2, 1, '解答题', 2, 1, 0, 'system', 'system');
+
+-- 考试-题目关联
+INSERT IGNORE INTO `exam_question` (`exam_id`, `section_id`, `question_id`, `order_no`, `score`, `tenant_id`, `workspace_id`, `create_by`, `update_by`) VALUES
+(1, 1, 1, 1, 10, 1, 0, 'system', 'system'),
+(1, 1, 2, 2, 10, 1, 0, 'system', 'system'),
+(1, 2, 3, 1, 20, 1, 0, 'system', 'system');
+
+-- 学习计划
+INSERT IGNORE INTO `edu_study_plan` (`id`, `student_id`, `name`, `description`, `start_date`, `end_date`, `status`, `tenant_id`, `workspace_id`, `create_by`, `update_by`) VALUES
+(1, 1, '七年级数学上册学习计划', '系统学习有理数和整式', '2024-09-01', '2024-12-31', 'IN_PROGRESS', 1, 0, 'system', 'system');
+
+-- 学习计划项
+INSERT IGNORE INTO `edu_study_plan_item` (`id`, `plan_id`, `knowledge_id`, `target_date`, `status`, `tenant_id`, `workspace_id`, `create_by`, `update_by`) VALUES
+(1, 1, 1, '2024-09-05', 'COMPLETED', 1, 0, 'system', 'system'),
+(2, 1, 2, '2024-09-10', 'COMPLETED', 1, 0, 'system', 'system'),
+(3, 1, 5, '2024-09-15', 'IN_PROGRESS', 1, 0, 'system', 'system');
+
+-- 复习任务
+INSERT IGNORE INTO `edu_review_task` (`id`, `student_id`, `knowledge_id`, `review_round`, `review_date`, `status`, `result_score`, `tenant_id`, `workspace_id`, `create_by`, `update_by`) VALUES
+(1, 1, 1, 1, '2024-09-06', 'COMPLETED', 85, 1, 0, 'system', 'system'),
+(2, 1, 2, 1, '2024-09-11', 'COMPLETED', 78, 1, 0, 'system', 'system'),
+(3, 1, 5, 1, '2024-09-20', 'PENDING', NULL, 1, 0, 'system', 'system');
+
+-- 错题记录
+INSERT IGNORE INTO `wrong_question` (`id`, `student_id`, `question_id`, `student_answer`, `correct_times`, `last_practice_time`, `tenant_id`, `workspace_id`, `create_by`, `update_by`) VALUES
+(1, 1, 2, 'A', 2, '2024-09-12', 1, 0, 'system', 'system');
