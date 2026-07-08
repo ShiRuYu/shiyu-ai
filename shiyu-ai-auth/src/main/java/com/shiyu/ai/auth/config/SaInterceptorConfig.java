@@ -24,9 +24,9 @@ public class SaInterceptorConfig implements WebMvcConfigurer {
         registry.addInterceptor(userContextInterceptor)
                 .addPathPatterns("/**")
                 .excludePathPatterns(
-                    "/api/auth/login",
-                    "/api/auth/captcha",
-                    "/api/auth/captcha/validate",
+                    "/auth/login",
+                    "/auth/captcha",
+                    "/auth/captcha/validate",
                     "/doc.html",
                     "/swagger-ui/**",
                     "/v3/api-docs/**",

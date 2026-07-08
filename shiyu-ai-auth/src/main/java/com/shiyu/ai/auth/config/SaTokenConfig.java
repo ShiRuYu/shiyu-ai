@@ -44,7 +44,7 @@ public class SaTokenConfig {
     public SaServletFilter saServletFilter() {
         return new SaServletFilter()
                 .addInclude("/**")
-                .addExclude("/api/auth/login", "/api/auth/captcha", "/api/auth/captcha/validate", "/api/auth/register")
+                .addExclude("/auth/login", "/auth/captcha", "/auth/captcha/validate", "/auth/register")
                 .addExclude("/doc.html", "/swagger-ui/**", "/v3/api-docs/**")
                 .addExclude("/webjars/**", "/v2/api-docs", "/h2/**")
                 .setAuth(obj -> {
