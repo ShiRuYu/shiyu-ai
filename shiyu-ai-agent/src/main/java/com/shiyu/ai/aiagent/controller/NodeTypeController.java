@@ -29,8 +29,8 @@ public class NodeTypeController {
     }
 
     @Operation(summary = "Get Node Type")
-    @GetMapping("/{nodeType}")
-    public Result<NodeTypeMetaVO> getNodeType(@PathVariable String nodeType) {
+    @GetMapping("/detail")
+    public Result<NodeTypeMetaVO> getNodeType(@RequestParam String nodeType) {
         List<NodeTypeMetaVO> types = agentAdminService.getNodeTypes();
         return types.stream()
                 .filter(t -> t.getCode().equalsIgnoreCase(nodeType))
