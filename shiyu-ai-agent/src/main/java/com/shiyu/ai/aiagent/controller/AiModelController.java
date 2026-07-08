@@ -114,7 +114,7 @@ public class AiModelController {
      * 新增模型
      */
     @Operation(summary = "Create")
-    @PostMapping
+    @PostMapping("/create")
     public Result<AiModelBO> create(@Valid @RequestBody AiModelBO bo) {
         log.info("新增模型：{}", bo.getModelName());
         try {
@@ -130,8 +130,9 @@ public class AiModelController {
     /**
      * 修改模型
      */
-    @PatchMapping("/{id}")
-    public Result<AiModelBO> update(@PathVariable Long id, @Valid @RequestBody AiModelBO bo) {
+    @Operation(summary = "Update")
+    @PostMapping("/update")
+    public Result<AiModelBO> update(@RequestParam Long id, @Valid @RequestBody AiModelBO bo) {
         log.info("修改模型，id: {}", id);
         try {
             bo.setId(id);
@@ -148,8 +149,8 @@ public class AiModelController {
      * 删除模型
      */
     @Operation(summary = "Delete")
-    @DeleteMapping("/{id}")
-    public Result<Void> delete(@PathVariable Long id) {
+    @PostMapping("/delete")
+    public Result<Void> delete(@RequestParam Long id) {
         log.info("删除模型，id: {}", id);
         try {
             aiModelService.deleteById(id);
@@ -165,7 +166,7 @@ public class AiModelController {
      * 批量删除模型
      */
     @Operation(summary = "Delete Batch")
-    @DeleteMapping("/batch")
+    @PostMapping("/batch-delete")
     public Result<Void> deleteBatch(@RequestBody List<Long> ids) {
         log.info("批量删除模型，ids: {}", ids);
         try {
@@ -182,8 +183,8 @@ public class AiModelController {
      * 设置为平台默认模型
      */
     @Operation(summary = "Set Default")
-    @PutMapping("/{id}/default")
-    public Result<AiModelBO> setDefault(@PathVariable Long id) {
+    @PostMapping("/set-default")
+    public Result<AiModelBO> setDefault(@RequestParam Long id) {
         log.info("设置默认模型，id: {}", id);
         try {
             AiModelBO bo = aiModelService.setDefault(id);

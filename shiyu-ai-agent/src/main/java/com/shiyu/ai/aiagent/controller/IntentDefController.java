@@ -66,7 +66,7 @@ public class IntentDefController {
      * 新增意图定义
      */
     @Operation(summary = "Create")
-    @PostMapping
+    @PostMapping("/create")
     public Result<IntentDefBO> create(@Valid @RequestBody IntentDefBO bo) {
         log.info("新增意图定义，code: {}", bo.getCode());
         try {
@@ -81,8 +81,9 @@ public class IntentDefController {
     /**
      * 修改意图定义
      */
-    @PatchMapping("/{id}")
-    public Result<IntentDefBO> update(@PathVariable Long id, @Valid @RequestBody IntentDefBO bo) {
+    @Operation(summary = "Update")
+    @PostMapping("/update")
+    public Result<IntentDefBO> update(@RequestParam Long id, @Valid @RequestBody IntentDefBO bo) {
         log.info("修改意图定义，id: {}", id);
         try {
             bo.setId(id);
@@ -98,8 +99,8 @@ public class IntentDefController {
      * 删除意图定义
      */
     @Operation(summary = "Delete")
-    @DeleteMapping("/{id}")
-    public Result<Void> delete(@PathVariable Long id) {
+    @PostMapping("/delete")
+    public Result<Void> delete(@RequestParam Long id) {
         log.info("删除意图定义，id: {}", id);
         try {
             intentDefService.deleteById(id);
@@ -114,7 +115,7 @@ public class IntentDefController {
      * 批量删除意图定义
      */
     @Operation(summary = "Delete Batch")
-    @DeleteMapping("/batch")
+    @PostMapping("/batch-delete")
     public Result<Void> deleteBatch(@RequestBody List<Long> ids) {
         log.info("批量删除意图定义，ids: {}", ids);
         try {

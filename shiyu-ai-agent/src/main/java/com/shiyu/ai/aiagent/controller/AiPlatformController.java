@@ -116,7 +116,7 @@ public class AiPlatformController {
      * 新增平台
      */
     @Operation(summary = "Create")
-    @PostMapping
+    @PostMapping("/create")
     public Result<AiPlatformBO> create(@Valid @RequestBody AiPlatformBO bo) {
         log.info("新增平台：{}", bo.getName());
         try {
@@ -132,8 +132,9 @@ public class AiPlatformController {
     /**
      * 修改平台
      */
-    @PatchMapping("/{id}")
-    public Result<AiPlatformBO> update(@PathVariable Long id, @Valid @RequestBody AiPlatformBO bo) {
+    @Operation(summary = "Update")
+    @PostMapping("/update")
+    public Result<AiPlatformBO> update(@RequestParam Long id, @Valid @RequestBody AiPlatformBO bo) {
         log.info("修改平台，id: {}", id);
         try {
             bo.setId(id);
@@ -150,8 +151,8 @@ public class AiPlatformController {
      * 删除平台
      */
     @Operation(summary = "Delete")
-    @DeleteMapping("/{id}")
-    public Result<Void> delete(@PathVariable Long id) {
+    @PostMapping("/delete")
+    public Result<Void> delete(@RequestParam Long id) {
         log.info("删除平台，id: {}", id);
         try {
             aiPlatformService.deleteById(id);
@@ -167,8 +168,8 @@ public class AiPlatformController {
      * 设置为默认平台
      */
     @Operation(summary = "Set Default")
-    @PutMapping("/{id}/default")
-    public Result<AiPlatformBO> setDefault(@PathVariable Long id) {
+    @PostMapping("/set-default")
+    public Result<AiPlatformBO> setDefault(@RequestParam Long id) {
         log.info("设置默认平台，id: {}", id);
         try {
             AiPlatformBO bo = aiPlatformService.setDefault(id);
