@@ -110,6 +110,8 @@ CREATE TABLE IF NOT EXISTS `user_workspace_role` (
     `workspace_id` BIGINT NOT NULL COMMENT '工作空间 ID',
     `role_id`      BIGINT NOT NULL COMMENT '角色 ID',
     `tenant_id`    BIGINT NOT NULL COMMENT '租户ID',
+    `status`       TINYINT      DEFAULT 1 COMMENT '状态（1正常 0停用）',
+    `del_flag`     TINYINT      DEFAULT 0 COMMENT '删除标志（0：正常 1：已删除）',
     `create_by`    VARCHAR(64)   COMMENT '创建者',
     `create_time`  TIMESTAMP DEFAULT CURRENT_TIMESTAMP COMMENT '创建时间',
     `update_by`    VARCHAR(64)   COMMENT '更新者',
@@ -129,6 +131,12 @@ CREATE TABLE IF NOT EXISTS `role_workspace_menu` (
     `workspace_id` BIGINT NOT NULL COMMENT '工作空间 ID',
     `menu_id`      BIGINT NOT NULL COMMENT '菜单 ID',
     `tenant_id`    BIGINT NOT NULL COMMENT '租户ID',
+    `status`       TINYINT      DEFAULT 1 COMMENT '状态（1正常 0停用）',
+    `del_flag`     TINYINT      DEFAULT 0 COMMENT '删除标志（0：正常 1：已删除）',
+    `create_by`    VARCHAR(64)   COMMENT '创建者',
+    `create_time`  TIMESTAMP DEFAULT CURRENT_TIMESTAMP COMMENT '创建时间',
+    `update_by`    VARCHAR(64)   COMMENT '更新者',
+    `update_time`  TIMESTAMP DEFAULT CURRENT_TIMESTAMP COMMENT '更新时间',
     PRIMARY KEY (`role_id`, `workspace_id`, `menu_id`)
 );
 
@@ -183,23 +191,3 @@ CREATE TABLE IF NOT EXISTS `workspace` (
 CREATE INDEX IF NOT EXISTS `idx_workspace_parent_id` ON `workspace` (`parent_id`);
 
 COMMENT ON TABLE `workspace` IS '工作空间表';
-
-
-CREATE TABLE IF NOT EXISTS `user_workspace_role` (
-    `user_id`      BIGINT NOT NULL COMMENT '用户 ID',
-    `workspace_id` BIGINT NOT NULL COMMENT '工作空间 ID',
-    `role_id`      BIGINT NOT NULL COMMENT '角色 ID',
-    `tenant_id`    BIGINT NOT NULL COMMENT '租户ID',
-    `create_by`    VARCHAR(64)   COMMENT '创建者',
-    `create_time`  TIMESTAMP DEFAULT CURRENT_TIMESTAMP COMMENT '创建时间',
-    `update_by`    VARCHAR(64)   COMMENT '更新者',
-    `update_time`  TIMESTAMP DEFAULT CURRENT_TIMESTAMP COMMENT '更新时间',
-    PRIMARY KEY (`user_id`, `workspace_id`, `role_id`)
-);
-
-CREATE INDEX IF NOT EXISTS `idx_uwr_workspace` ON `user_workspace_role` (`workspace_id`);
-
-CREATE INDEX IF NOT EXISTS `idx_uwr_role` ON `user_workspace_role` (`role_id`);
-
-COMMENT ON TABLE `user_workspace_role` IS '用户空间角色关联表';
-
