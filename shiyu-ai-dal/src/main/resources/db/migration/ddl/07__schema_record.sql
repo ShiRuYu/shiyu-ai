@@ -55,7 +55,6 @@ CREATE TABLE IF NOT EXISTS timeline_event (
     event_time TIMESTAMP NOT NULL COMMENT '事件时间',
     type VARCHAR(30) COMMENT '事件类型（milestone/daily等）',
     visibility VARCHAR(20) DEFAULT 'family' COMMENT '可见性（family/private等）',
-    created_by BIGINT COMMENT '创建者ID',
     create_by VARCHAR(64) COMMENT '创建者',
     create_time TIMESTAMP DEFAULT CURRENT_TIMESTAMP COMMENT '创建时间',
     update_by VARCHAR(64) COMMENT '更新者',
