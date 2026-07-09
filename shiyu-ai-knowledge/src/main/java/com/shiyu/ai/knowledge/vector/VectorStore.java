@@ -19,7 +19,7 @@ public interface VectorStore {
     default void rebuild() {
     }
 
-    default boolean supportFilter() {
-        return false;
+    default int size() {
+        return 0;
     }
 }

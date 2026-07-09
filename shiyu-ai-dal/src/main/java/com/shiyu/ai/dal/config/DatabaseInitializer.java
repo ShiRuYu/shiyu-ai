@@ -5,7 +5,8 @@ import org.springframework.boot.ApplicationArguments;
 import org.springframework.boot.ApplicationRunner;
 import org.springframework.context.ApplicationContext;
 import org.springframework.core.annotation.Order;
-import org.springframework.core.io.ClassPathResource;
+import org.springframework.core.io.Resource;
+import org.springframework.core.io.support.PathMatchingResourcePatternResolver;
 import org.springframework.stereotype.Component;
 
 import javax.sql.DataSource;
@@ -14,16 +15,14 @@ import java.io.InputStreamReader;
 import java.nio.charset.StandardCharsets;
 import java.sql.Connection;
 import java.sql.Statement;
-import java.util.List;
+import java.util.Arrays;
 import java.util.Map;
-import java.util.stream.Collectors;
 
 /**
  * 数据库表结构及种子数据初始化器
  *
- * 按以下顺序执行 SQL 文件：
- * 1. DDL（建表）→ 2. DML（数据）
- * 每个子目录内按文件编号顺序执行。
+ * <p>自动扫描 classpath:db/migration/ddl/*.sql 和 classpath:db/migration/data/*.sql，
+ * 按文件名排序后依次执行，无需手动维护列表。</p>
  */
 @Slf4j
 @Component
@@ -31,35 +30,11 @@ import java.util.stream.Collectors;
 public class DatabaseInitializer implements ApplicationRunner {
 
     private final ApplicationContext applicationContext;
-
-    /** DDL 建表文件路径（按依赖顺序） */
-    private static final List<String> DDL_FILES = List.of(
-            "db/migration/ddl/01__schema_common.sql",
-            "db/migration/ddl/02__schema_auth.sql",
-            "db/migration/ddl/03__schema_agent.sql",
-            "db/migration/ddl/04__schema_memory.sql",
-            "db/migration/ddl/05__schema_knowledge.sql",
-            "db/migration/ddl/06__schema_education.sql",
-            "db/migration/ddl/07__schema_record.sql",
-            "db/migration/ddl/08__schema_vector.sql"
-    );
-
-    /** DML 种子数据文件路径（按依赖顺序） */
-    private static final List<String> DML_FILES = List.of(
-            "db/migration/data/10__data_auth.sql",
-            "db/migration/data/11__data_common.sql",
-            "db/migration/data/12__data_agent.sql",
-            "db/migration/data/13__data_record.sql",
-            "db/migration/data/14__data_knowledge.sql",
-            "db/migration/data/15__data_education.sql",
-            "db/migration/data/16__data_memory.sql",
-            "db/migration/data/17__data_menu_student_biz.sql",
-            "db/migration/data/18__data_menu_edu_center.sql",
-            "db/migration/data/19__data_auth_code_to_menu_button.sql"
-    );
+    private final PathMatchingResourcePatternResolver resourceResolver;
 
     public DatabaseInitializer(ApplicationContext applicationContext) {
         this.applicationContext = applicationContext;
+        this.resourceResolver = new PathMatchingResourcePatternResolver(applicationContext);
     }
 
     @Override
@@ -79,13 +54,13 @@ public class DatabaseInitializer implements ApplicationRunner {
         try (Connection conn = ds.getConnection(); Statement stmt = conn.createStatement()) {
             // 1. 执行 DDL（建表）
             log.info("开始执行 DDL 建表...");
-            for (String path : DDL_FILES) {
-                executeSqlFile(stmt, path);
+            for (Resource res : listSqlResources("classpath:db/migration/ddl/*.sql")) {
+                executeSqlFile(stmt, res);
             }
             // 2. 执行 DML（数据）
             log.info("开始执行 DML 种子数据...");
-            for (String path : DML_FILES) {
-                executeSqlFile(stmt, path);
+            for (Resource res : listSqlResources("classpath:db/migration/data/*.sql")) {
+                executeSqlFile(stmt, res);
             }
             log.info("数据库初始化完成");
         } catch (Exception e) {
@@ -93,17 +68,36 @@ public class DatabaseInitializer implements ApplicationRunner {
         }
     }
 
-    private void executeSqlFile(Statement stmt, String path) {
+    /**
+     * 扫描指定路径的所有 SQL 文件，按文件名排序
+     */
+    private Resource[] listSqlResources(String pattern) throws Exception {
+        Resource[] resources = resourceResolver.getResources(pattern);
+        Arrays.sort(resources, (a, b) -> {
+            try {
+                return a.getFilename().compareTo(b.getFilename());
+            } catch (Exception e) {
+                return 0;
+            }
+        });
+        return resources;
+    }
+
+    private void executeSqlFile(Statement stmt, Resource resource) {
         try {
-            ClassPathResource resource = new ClassPathResource(path);
             if (!resource.exists()) {
-                log.warn("SQL 文件不存在: {}", path);
+                log.warn("SQL 文件不存在: {}", resource.getFilename());
                 return;
             }
             String sql;
             try (BufferedReader reader = new BufferedReader(
                     new InputStreamReader(resource.getInputStream(), StandardCharsets.UTF_8))) {
-                sql = reader.lines().collect(Collectors.joining("\n"));
+                StringBuilder sb = new StringBuilder();
+                String line;
+                while ((line = reader.readLine()) != null) {
+                    sb.append(line).append('\n');
+                }
+                sql = sb.toString();
             }
             // 移除注释
             sql = sql.replaceAll("--[^\r\n]*", "");
@@ -135,9 +129,9 @@ public class DatabaseInitializer implements ApplicationRunner {
             if (!trimmed.isEmpty()) {
                 stmt.execute(trimmed);
             }
-            log.info("SQL 文件执行完成: {}", path);
+            log.info("SQL 文件执行完成: {}", resource.getFilename());
         } catch (Exception e) {
-            log.error("SQL 文件执行失败: {}", path, e);
+            log.error("SQL 文件执行失败: {}", resource.getFilename(), e);
         }
     }
 }

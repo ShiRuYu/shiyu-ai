@@ -147,10 +147,14 @@ public class HnswVectorStore implements VectorStore {
 
             try (ObjectOutputStream oos = new ObjectOutputStream(Files.newOutputStream(indexPath))) {
                 synchronized (vectors) {
-                    oos.writeInt(vectors.size());
-                    for (int i = 0; i < vectors.size(); i++) {
-                        oos.writeObject(toFloatArray(vectors.get(i)));
-                        String recordId = nodeIdToRecordId.get(i);
+                    // 按 nodeIdToRecordId 遍历而非 vectors 索引，
+                    // 因为 delete() 只清除映射但不删除 vectors 元素，
+                    // 直接按索引遍历会导致 nodeIdToRecordId.get(i) 返回 null
+                    oos.writeInt(nodeIdToRecordId.size());
+                    for (Map.Entry<Integer, String> entry : nodeIdToRecordId.entrySet()) {
+                        int nodeId = entry.getKey();
+                        String recordId = entry.getValue();
+                        oos.writeObject(toFloatArray(vectors.get(nodeId)));
                         oos.writeObject(recordId);
                         Map<String, Object> meta = metadataCache.get(recordId);
                         oos.writeObject(meta != null ? meta : Map.of());
@@ -285,6 +289,11 @@ public class HnswVectorStore implements VectorStore {
         builder = null;
         createNewBuilder();
         log.info("HNSW 索引已重置");
+    }
+
+    @Override
+    public int size() {
+        return vectors.size();
     }
 
     // ---------------------------------------------------------------

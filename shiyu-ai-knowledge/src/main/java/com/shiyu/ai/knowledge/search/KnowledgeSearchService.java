@@ -37,6 +37,10 @@ public class KnowledgeSearchService {
     }
 
     public int rebuildIndexWithProgress(Consumer<Integer> progressCallback) {
+        // 以 DB 为权威源，先清空再重建，避免旧数据残留
+        if (vectorStore != null) {
+            vectorStore.rebuild();
+        }
         var list = knowledgeRepository.findAll();
         int count = 0;
         int total = list.size();
@@ -112,7 +116,6 @@ public class KnowledgeSearchService {
         }
         log.info("已从搜索索引移除知识点: id={}", id);
     }
-
     public void indexKnowledge(KnowledgeDO knowledgeDO) {
         String id = String.valueOf(knowledgeDO.getId());
         String content = knowledgeDO.getName() + " " +
