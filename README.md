@@ -1,6 +1,6 @@
 # ShiYu AI · 拾羽 AI
 
-> 基于 Java 21 + Spring Boot 4.x 的多模块 AI 服务平台 — 图编排 Agent、LiteFlow 聊天工作流、多平台 LLM 适配、MCP 工具、TTS 语音合成
+> 基于 Java 21 + Spring Boot 4.x 的企业级 AI 服务平台 — 图编排 Agent、RAG 知识引擎、多平台 LLM 适配、MCP 工具集成、智能教育辅导
 
 ---
 
@@ -14,65 +14,68 @@
 - [配置指南](#配置指南)
 - [API 文档](#api-文档)
 - [开发规范](#开发规范)
+- [项目文档](#项目文档)
 - [License](#license)
 
 ---
 
 ## 项目简介
 
-**ShiYu AI** 是一个面向 AI 应用场景的 Java 微服务集合，覆盖了 AI 聊天、Agent 自动化、MCP 工具集成和 TTS 语音合成等核心功能。项目采用模块化设计，每个模块可独立部署运行，通过 REST API 或 MCP 协议相互协作。
+**ShiYu AI（拾羽 AI）** 是一个面向 AI 教育场景的企业级智能平台，采用模块化单体架构（Modular Monolith），覆盖 AI 对话、Agent 编排、知识库 RAG、智能教育辅导等核心功能。
 
-核心设计理念：
+核心特性：
 
-- 🧠 **双编排引擎** — `langgraph4j` 状态图驱动 Agent 行为，`LiteFlow` 规则引擎编排聊天流程
-- 🔌 **多平台 LLM 适配** — 统一接口对接 OpenAI、Ollama、DeepSeek、硅基流动、OpenRouter
-- 🧩 **MCP 协议集成** — 基于 Spring AI MCP 的工具服务体系
-- 🔐 **企业级安全** — JWT + Sa-Token + Spring Security 三层认证体系
-- ⚡ **响应式支持** — 同步/流式双模式，支持 SSE (Server-Sent Events)
+- **图编排 Agent** — 基于 `langgraph4j` 的状态图引擎，支持 13 种可编排节点类型
+- **LiteFlow 工作流** — 规则引擎编排聊天流程，支持 Direct / CoT / ToT 策略
+- **RAG 知识引擎** — 文档解析 + 智能分块 + JVector HNSW 向量检索 + 知识图谱增强
+- **多平台 LLM 适配** — 统一接口对接 OpenAI、Ollama、DeepSeek、硅基流动、OpenRouter
+- **MCP 协议集成** — 基于 Spring AI MCP 的工具服务体系
+- **多租户 RBAC** — Sa-Token 认证 + 租户/工作空间/角色/菜单权限体系
+- **教育领域** — 布鲁姆认知分类、艾宾浩斯遗忘曲线复习、智能组卷、学情分析
+- **可观测性** — OpenTelemetry + Micrometer + Prometheus 全链路追踪
 
 ---
 
 ## 架构总览
 
 ```
-┌─────────────────────────────────────────────────────────┐
-│                    Shiyu AI 系统架构                      │
-├───────────┬───────────┬──────────┬──────────┬───────────┤
-│ shiyu-auth│ shiyu-chat│shiyu-agent│shiyu-mcp│ shiyu-tts │
-│  认证+权限  │  AI 聊天  │ Agent编排  │ MCP工具  │ 语音合成  │
-│   :9002   │   :9001   │   :9000  │  :9003   │   :9004   │
-├───────────┴───────────┴──────────┴──────────┴───────────┤
-│                   shiyu-common (公共库)                  │
-│  core │ web │ mybatis │ thread │ excel │ bom            │
-└─────────────────────────────────────────────────────────┘
+┌─────────────────────────────────────────────────────────────────┐
+│                        shiyu-ai-bootstrap (:9000)                │
+├────────┬────────┬──────────┬──────────┬──────────┬──────────────┤
+│  auth  │ agent  │ education│ knowledge│  record  │    core      │
+│ 认证权限│ Agent  │ 教育领域  │ 知识引擎  │ 记录管理  │  AI 核心    │
+│        │ 编排   │          │  RAG     │          │ Chat/Model   │
+├────────┴────────┴──────────┴──────────┴──────────┴──────────────┤
+│                         shiyu-ai-dal (数据访问层)                 │
+│              DO / BO / Mapper / Repository                       │
+├─────────────────────────────────────────────────────────────────┤
+│                       shiyu-common (公共基础)                     │
+│     core │ web │ mybatis │ thread │ excel │ bom                  │
+└─────────────────────────────────────────────────────────────────┘
 ```
 
-### Agent 图编排流程 (shiyu-agent)
+### Agent 图编排流程
 
 ```
-用户输入 → 注册 Agent(Graph) → NodeFactory 编译 → 
-  意图识别(INTENT) → 条件分支(CONDITION) → 
+用户输入 → AgentDefinition → Graph 编译 → StateGraph 执行 →
+  意图识别(INTENT) → 条件分支(CONDITION) →
   LLM调用 / 工具调用 / RAG检索 / 记忆读写 / 输出格式化
 ```
 
-### 聊天工作流 (shiyu-chat, LiteFlow)
+### RAG 检索流程
 
 ```
-chain "callFlow" = THEN(MEMORY_LOAD, INTENT, CHAIN_EXECUTE, MEMORY_SAVE)
-
-CHAIN_EXECUTE 根据意图识别结果，路由到子链：
-├─ chatDirect — 直接对话
-├─ chatCoT    — Chain-of-Thought 思维链
-└─ chatToT    — Tree-of-Thought 思维树
+用户查询 → Embedding 向量化 → JVector HNSW 检索 →
+  知识图谱上下文增强 → 上下文拼接 → LLM 生成回答
 ```
 
 ---
 
 ## 模块说明
 
-### shiyu-agent (:9000) ⭐ 核心模块
+### shiyu-ai-agent — Agent 编排引擎
 
-基于 `langgraph4j` 的自定义 Agent 状态图引擎，支持 10 种可编排节点：
+基于 `langgraph4j` 的自定义 Agent 状态图引擎，支持 13 种可编排节点：
 
 | 节点类型 | 用途 |
 |----------|------|
@@ -85,60 +88,86 @@ CHAIN_EXECUTE 根据意图识别结果，路由到子链：
 | `LONG_TERM_MEMORY` | 长期记忆读写 |
 | `MEMORY_RETRIEVAL` | 跨会话记忆检索 |
 | `CONDITION` | 条件分支路由 |
-| `TRANSFORM` / `OUTPUT_FORMAT` | 数据转换与格式化 |
+| `AGENT_CALL` | 子 Agent 调用 |
+| `TRANSFORM` | 数据转换 |
+| `OUTPUT_FORMAT` | 输出格式化 |
+| `DEFAULT` | 默认节点 |
 
 核心能力：
 - **动态 Agent 注册** — 运行时注册/注销 Agent 定义
-- **版本管理** — 支持多版本共存与热切换
+- **版本管理** — 支持多版本共存与热切换（DRAFT / PUBLISHED / ARCHIVED）
 - **同步/流式执行** — `POST /api/agent/{agentId}/execute` + SSE 流式端点
-- **记忆系统** — 短期记忆（会话内） + 长期记忆（持久化）
+- **节点级重试与超时** — 每个节点独立配置重试策略和超时时间
+- **LiteFlow 工作流** — 教育场景复杂流程编排（19 个流程组件）
 
-### shiyu-chat (:9001)
+### shiyu-ai-core — AI 核心
 
-多策略 AI 聊天引擎，基于 **LiteFlow 规则引擎** 编排：
+AI 对话引擎与模型管理：
 
-- **3 种对话策略**：Direct（直接对话）、CoT（思维链推理）、ToT（思维树多方案）
-- **5 大 AI 平台**：OpenAI、Ollama、DeepSeek、硅基流动 (SiliconFlow)、OpenRouter
-- **多轮记忆**：短期记忆（对话历史）+ 长期记忆（持久化）
-- **意图识别**：自动分类用户意图并路由到对应策略
-- **流式响应**：支持 SSE 流式输出
+- **ChatEngine** — 统一对话接口，支持同步/流式 + 带记忆对话
+- **ModelManager** — 多平台模型适配器管理（启动时从 DB 加载，支持热更新）
+- **MemoryService** — 短期记忆（对话历史）+ 长期记忆（持久化 + 重要性衰减）
+- **ToolService** — MCP 工具调用服务
+- **EmbeddingService** — 基于 BGE-small-zh ONNX 的本地嵌入模型
 
-### shiyu-auth (:9002)
+### shiyu-ai-knowledge — 知识引擎
 
-企业级认证授权中心，提供完整的 RBAC 权限体系：
+RAG 检索增强生成与知识图谱：
 
-- **双重认证**：JWT Token + Spring Security 认证链
-- **权限模型**：用户 / 角色 / 菜单 / 部门 / 岗位 / 租户
-- **安全防护**：XSS 过滤、CSRF 防护、CORS 配置
-- **密码策略**：委派式密码编码器（支持多种加密算法）
+- **文档管理** — 知识点的 CRUD + 关系管理（前置/后续/包含/相关/相似/归属）
+- **向量检索** — 基于 JVector（纯 Java HNSW）的向量存储，支持磁盘持久化
+- **知识图谱** — 图结构存储知识点关系，支持父子/前后/相关查询
+- **RAG 编排** — 向量检索 + 图谱上下文增强 → 拼接上下文 → LLM 生成
+- **中文分块** — 针对中文优化的文档分块策略
+- **索引重建** — 支持异步全量重建向量索引
 
-### shiyu-mcp (:9003)
+### shiyu-ai-education — 智能教育
 
-基于 Spring AI MCP 协议的工具服务模块：
+面向 K12 教育场景的 AI 辅导系统：
 
-- **天气查询** — 调用 Open-Meteo 免费 API（无需 API Key）
-- **空气质量** — 模拟数据（可对接真实 AQ 数据源）
-- 通过 `@McpTool` 注解自动暴露为 MCP 工具
+- **知识体系** — 教材/章节/知识点三级结构，支持多版本教材
+- **能力评估** — 布鲁姆认知分类六维度（记忆/理解/应用/分析/评价/创造）
+- **智能组卷** — AI 根据薄弱知识点自动生成试卷
+- **复习规划** — 艾宾浩斯遗忘曲线驱动的间隔复习（6 轮复习计划）
+- **学情分析** — 能力雷达图、学习趋势、薄弱知识点分析
+- **学习路径** — 基于知识图谱的个性化学习路径推荐
 
-### shiyu-tts (:9004)
+### shiyu-ai-auth — 认证授权
 
-文本转语音服务，调用微软 Edge TTS WebSocket 接口：
+企业级 RBAC 权限体系：
 
-- 支持多种语音（默认 `zh-CN-XiaoxiaoNeural`）
-- 可调节语速（`rate` 参数）
-- 章节分割 + 批量 TTS 处理（`SplitChapters`/`ChapterTTSProcessor`）
+- **Sa-Token** — 轻量级认证框架，支持登录/权限/会话管理
+- **多租户** — 租户 → 工作空间 → 用户 三级隔离
+- **权限模型** — 用户 / 角色 / 菜单 / 工作空间 / 权限码
+- **安全防护** — XSS 过滤、验证码、登录限流、密码加密
 
-### shiyu-common
+### shiyu-ai-record — 记录管理
 
-公共基础库，按子模块组织：
+个人记录与时间线：
+
+- **人物档案** — 档案管理与成员关联
+- **时间线** — 事件时间线记录
+- **多媒体** — 图片/视频/音频附件管理
+- **标签系统** — 灵活的标签分类
+
+### shiyu-ai-dal — 数据访问层
+
+统一的数据访问抽象：
+
+- **DO/BO 分离** — 数据对象（DO）与业务对象（BO）分层
+- **Repository 模式** — 封装 MyBatis-Flex Mapper，对外返回 BO
+- **多租户支持** — 自动注入 `tenant_id` 过滤条件
+- **H2/MySQL 双模式** — 开发环境 H2 文件模式，生产环境 MySQL
+
+### shiyu-common — 公共基础
 
 | 子模块 | 功能 |
 |--------|------|
-| `core` | 统一返回 `Result`、分页查询、12 种异常、工具类（JSON/Spring/反射/SQL/Servlet）、事务钩子、国际化 |
-| `web` | XSS 过滤、请求流重复读取、OpenAPI 文档配置、资源拦截器 |
-| `mybatis` | MyBatis-Flex 封装 `BaseMapperFlex`、`BaseEntity`/`TenantEntity`、P6Spy SQL 日志 |
-| `thread` | 线程池管理、虚拟线程工厂、平台线程工厂、OpenTelemetry 集成、Micrometer 指标 |
-| `excel` | EasyExcel 封装、字典转换、枚举转换、大数字处理、单元格合并策略 |
+| `core` | 统一返回 `Result`、分页查询、异常体系、工具类、事务钩子、事件机制 |
+| `web` | XSS 过滤、请求流重复读取、OpenAPI 文档、资源拦截器 |
+| `mybatis` | MyBatis-Flex 封装、`TenantEntity`、P6Spy SQL 日志 |
+| `thread` | 线程池管理、虚拟线程工厂、OpenTelemetry 上下文透传、Micrometer 指标 |
+| `excel` | Excel 导入导出、字典转换、枚举转换、单元格合并策略 |
 | `bom` | Maven BOM 统一版本声明 |
 
 ---
@@ -148,20 +177,26 @@ CHAIN_EXECUTE 根据意图识别结果，路由到子链：
 | 领域 | 技术 | 版本 |
 |------|------|------|
 | 语言 | Java | 21 |
-| 框架 | Spring Boot | 4.0.1 |
-| AI 编排 | langgraph4j | 1.8.10 |
-| AI 工具链 | langchain4j / Spring AI | 1.12.2 / 2.0.0-M1 |
-| 流程编排 | LiteFlow | 2.15.3 |
-| 认证授权 | Sa-Token / Spring Security | 1.45.0 |
-| ORM | MyBatis-Flex / MyBatis-Plus | 1.11.5 / 3.5.16 |
-| 数据库 | MySQL / H2 | 9.4.0 |
+| 框架 | Spring Boot | 4.1.0 |
+| AI 框架 | Spring AI | 2.0.0 |
+| LLM 适配 | LangChain4j | 1.16.3 |
+| Agent 引擎 | LangGraph4j | 1.8.19 |
+| 流程编排 | LiteFlow | 2.16.0 |
+| 认证授权 | Sa-Token | 1.45.0 |
+| ORM | MyBatis-Flex | 1.11.7 |
+| 数据库 | H2（开发）/ MySQL（生产） | 2.4.240 / 9.4.0 |
 | 连接池 | Druid | 1.2.27 |
-| 对象映射 | MapStruct + Lombok | 1.5.0 / 1.18.42 |
-| 工具库 | Hutool / Guava / Caffeine | 5.8.43 / 33.5.0 / 3.2.3 |
+| 向量检索 | JVector（HNSW） | 4.0.0-beta.6 |
+| 嵌入模型 | BGE-small-zh（ONNX 本地） | — |
+| 缓存 | Caffeine | 3.2.3 |
+| 对象映射 | MapStruct-Plus + Lombok | 1.5.0 / 1.18.42 |
+| 工具库 | Hutool / Guava / Commons | 5.8.43 / 33.5.0 / 3.20.0 |
 | API 文档 | SpringDoc OpenAPI + Knife4j | 3.0.2 / 4.5.0 |
+| 可观测性 | OpenTelemetry + Micrometer + Prometheus | — |
 | 响应式 | Reactor (Flux) | — |
 | 日志 | Log4j2 | — |
 | 调度 | XXL-Job | 3.3.2 |
+| 对象存储 | AWS S3 SDK | 2.41.18 |
 | 构建 | Maven | 3.8+ |
 
 ---
@@ -184,11 +219,17 @@ mvn clean install -DskipTests
 
 ### 配置 AI 平台
 
-编辑相应模块的配置文件（示例路径：`shiyu-chat/src/main/resources/config/config.yml`）：
+编辑配置文件 `shiyu-ai-core/src/main/resources/config/config.yml`：
 
 ```yaml
 shiyu:
   ai:
+    ollama:
+      base-url: http://localhost:11434
+      model: gemma3:4b
+    openai:
+      base-url: https://api.openai.com/v1
+      api-key: ${AI_OPENAI_API_KEY:}
     siliconflow:
       base-url: https://api.siliconflow.cn
       api-key: sk-xxxxxxxxxxxxxxxx
@@ -201,122 +242,121 @@ shiyu:
 
 ### 启动应用
 
-每个模块独立启动，端口配置见 `application.yml`：
+项目为单体应用，通过 `shiyu-ai-bootstrap` 统一启动：
 
 ```bash
-# Agent 服务 (9000)
-cd shiyu-agent
+cd shiyu-ai-bootstrap
 mvn spring-boot:run -Dspring-boot.run.profiles=dev
-
-# 聊天服务 (9001)
-cd shiyu-chat
-mvn spring-boot:run -Dspring-boot.run.profiles=dev
-
-# 认证服务 (9002)
-cd shiyu-auth
-mvn spring-boot:run -Dspring-boot.run.profiles=dev
-
-# MCP 工具服务 (9003)
-cd shiyu-mcp
-mvn spring-boot:run
-
-# TTS 语音服务 (9004)
-cd shiyu-tts
-mvn spring-boot:run
 ```
+
+启动后访问：
+- 应用端口：`http://localhost:9000`
+- API 文档：`http://localhost:9000/doc.html`
 
 ### Maven Profile
 
 | Profile | 用途 | 默认 |
 |---------|------|------|
-| `local` | 本地开发（debug 日志） | |
-| `dev` | 开发环境（默认） | ✅ |
-| `prod` | 生产环境（warn 日志） | |
+| `dev` | 开发环境（trace 日志，H2 数据库） | ✅ |
+| `prod` | 生产环境（warn 日志，MySQL 数据库） | |
 
 ---
 
 ## 配置指南
 
-### 聊天服务 (shiyu-chat)
+### 应用配置
 
 ```yaml
+server:
+  port: 9000
+
 shiyu:
   ai:
+    # 模型平台配置（也可通过数据库管理）
     ollama:
       base-url: http://localhost:11434
       model: gemma3:4b
-    openai:
-      base-url: https://api.openai.com/v1
-      api-key: sk-xxx
-      model: gpt-4o
-    openrouter:
-      base-url: https://openrouter.ai/api
-      api-key: sk-xxx
-      model: x-ai/grok-4.1-fast
     siliconflow:
       base-url: https://api.siliconflow.cn
       api-key: sk-xxx
       model: THUDM/GLM-Z1-9B-0414
-    deepseek:
-      base-url: https://api.deepseek.com
-      api-key: sk-xxx
-      model: x-ai/grok-4.1-fast
   memory:
     enabled: true
     max-short-term-memories: 10
     max-long-term-memories: 50
-    max-history-records: 5
-  intent:
-    platform: SILICON_FLOW
-    model: THUDM/GLM-Z1-9B-0414
+  vector:
+    type: hnsw          # hnsw / inmemory
+    dimension: 512
+    data-dir: ${app.home}/data/vector
 ```
 
-### TTS 服务 (shiyu-tts)
+### 环境变量
 
-```yaml
-tts:
-  websocket-url: wss://speech.platform.bing.com/…
+| 变量 | 说明 |
+|------|------|
+| `AI_OPENAI_API_KEY` | OpenAI API Key |
+| `APP_HOME` | 应用数据目录（H2 数据库、向量索引存储位置） |
+
+---
+
+## API 文档
+
+启动应用后访问：
+
+```
+http://localhost:9000/doc.html          # Knife4j 文档
+http://localhost:9000/swagger-ui/index.html  # Swagger UI
+http://localhost:9000/v3/api-docs       # OpenAPI 3.0 JSON
 ```
 
-### API 文档访问
+API 按模块分组：
 
-启动各模块后访问：
-
-```
-http://localhost:{port}/swagger-ui/index.html
-http://localhost:{port}/v3/api-docs
-```
+| 分组 | 路径前缀 |
+|------|----------|
+| Agent | `/api/agent/**` |
+| 认证 | `/api/auth/**` |
+| 知识库 | `/api/knowledge/**` |
+| 教育 | `/api/education/**` |
+| 记录 | `/api/record/**` |
+| 系统 | `/api/system/**` |
 
 ---
 
 ## 开发规范
 
 - **Lombok** — `@Data`、`@Slf4j`、`@RequiredArgsConstructor` 简化代码
-- **MapStruct** — BO ↔ VO 对象映射
+- **MapStruct-Plus** — BO <-> VO 对象映射
 - **Jakarta Validation** — `@Valid` 参数校验分组（AddGroup / EditGroup / QueryGroup）
-- **XSS 过滤** — 全局 XSS 过滤器防止跨站脚本攻击
-- **统一异常** — `@ControllerAdvice` + 12 种业务异常 + 统一 `Result<T>` 返回
+- **XSS 过滤** — 全局 XSS 过滤器（Jsoup Safelist）防止跨站脚本攻击
+- **统一异常** — `@ControllerAdvice` + 业务异常体系 + 统一 `Result<T>` 返回
 - **分页查询** — `PageQuery` + `PageData<T>` 统一分页模型
-- **国际化** — `i18n/messages` 资源文件
 - **OpenTelemetry** — 线程池上下文透传 + 调用链追踪
+- **多租户** — 所有业务表包含 `tenant_id` + `workspace_id`，自动过滤
 
 ### 项目分层
 
 ```
-controller/  ←  REST 接口层
-service/     ←  业务逻辑层
-  impl/      ←  实现类
-repository/  ←  仓储层（MyBatis-Flex 操作）
-mapper/      ←  MyBatis 映射接口
-domain/      ←  领域模型
-  bo/        ←  业务对象
-  vo/        ←  视图对象
-  request/   ←  请求参数
+controller/   <- REST 接口层（Request -> VO）
+service/      <- 业务逻辑层（BO）
+  impl/       <- 实现类
+repository/   <- 仓储层（返回 BO）
+mapper/       <- MyBatis 映射接口（操作 DO）
 dal/
-  dataobject/ ← 数据对象（DO）
-  mapper/    ← 数据访问映射
-config/      ←  配置类
+  dataobject/ <- 数据对象（DO，映射数据库行）
+  bo/         <- 业务对象（BO，Repository 对外返回）
+  mapper/     <- 数据访问映射
+  repository/ <- 仓储实现
+config/       <- 配置类
 ```
+
+---
+
+## 项目文档
+
+| 文档 | 说明 |
+|------|------|
+| [架构设计文档 (ADD)](./docs/architecture/shiyu-ai-architecture-design.md) | 企业级架构设计，含 20 章完整内容 |
+| [重构任务清单](./docs/refactoring-tasks.md) | 21 项重构任务，含子任务 Checklist |
 
 ---
 
