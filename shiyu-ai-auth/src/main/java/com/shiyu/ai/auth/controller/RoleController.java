@@ -65,6 +65,14 @@ public class RoleController {
     /**
      * 修改角色
      */
+    @Operation(summary = "Get Role Detail")
+    @GetMapping("/detail")
+    public Result<RoleBO> getRoleDetail(@RequestParam Long id) {
+        log.info("获取角色详情，id: {}", id);
+        RoleBO role = roleService.getRoleDetail(id);
+        return role != null ? Result.success(role) : Result.fail("角色不存在");
+    }
+
     @Operation(summary = "Update Role")
     @PostMapping("/update")
     public Result<Void> updateRole(

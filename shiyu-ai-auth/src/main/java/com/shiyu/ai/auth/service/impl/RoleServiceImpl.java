@@ -61,6 +61,15 @@ public class RoleServiceImpl implements RoleService {
     }
 
     @Override
+    public RoleBO getRoleDetail(Long id) {
+        RoleBO role = roleRepository.selectById(id);
+        if (role == null) return null;
+        List<Long> menuIds = roleRepository.selectMenuIdsByRoleId(id);
+        role.setPermissions(menuIds);
+        return role;
+    }
+
+    @Override
     @Transactional(rollbackFor = Exception.class)
     public boolean updateRole(Long id, RoleBO roleBO) {
         log.info("修改角色，id: {}", id);

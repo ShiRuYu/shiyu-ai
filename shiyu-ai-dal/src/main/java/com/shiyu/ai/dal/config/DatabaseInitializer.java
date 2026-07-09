@@ -54,7 +54,8 @@ public class DatabaseInitializer implements ApplicationRunner {
             "db/migration/data/15__data_education.sql",
             "db/migration/data/16__data_memory.sql",
             "db/migration/data/17__data_menu_student_biz.sql",
-            "db/migration/data/18__data_menu_edu_center.sql"
+            "db/migration/data/18__data_menu_edu_center.sql",
+            "db/migration/data/19__data_auth_code_to_menu_button.sql"
     );
 
     public DatabaseInitializer(ApplicationContext applicationContext) {

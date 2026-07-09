@@ -103,9 +103,9 @@ INSERT IGNORE INTO `exam` (`id`, `name`, `type`, `subject_code`, `grade`, `durat
 (2, '七年级数学期中考试', 'MIDTERM', 'MATH', 7, 90, 150, 1, 1, 1, 0, 'system', 'system');
 
 -- 考试分区
-INSERT IGNORE INTO `exam_section` (`id`, `exam_id`, `name`, `order_no`, `tenant_id`, `workspace_id`, `create_by`, `update_by`) VALUES
-(1, 1, '选择题', 1, 1, 0, 'system', 'system'),
-(2, 1, '解答题', 2, 1, 0, 'system', 'system');
+INSERT IGNORE INTO `exam_section` (`id`, `exam_id`, `name`, `order_no`, `score_per_q`, `tenant_id`, `workspace_id`, `create_by`, `update_by`) VALUES
+(1, 1, '选择题', 1, 0, 1, 0, 'system', 'system'),
+(2, 1, '解答题', 2, 0, 1, 0, 'system', 'system');
 
 -- 考试-题目关联
 INSERT IGNORE INTO `exam_question` (`exam_id`, `section_id`, `question_id`, `order_no`, `score`, `tenant_id`, `workspace_id`, `create_by`, `update_by`) VALUES
@@ -114,21 +114,21 @@ INSERT IGNORE INTO `exam_question` (`exam_id`, `section_id`, `question_id`, `ord
 (1, 2, 3, 1, 20, 1, 0, 'system', 'system');
 
 -- 学习计划
-INSERT IGNORE INTO `edu_study_plan` (`id`, `student_id`, `name`, `description`, `start_date`, `end_date`, `status`, `tenant_id`, `workspace_id`, `create_by`, `update_by`) VALUES
-(1, 1, '七年级数学上册学习计划', '系统学习有理数和整式', '2024-09-01', '2024-12-31', 'IN_PROGRESS', 1, 0, 'system', 'system');
+INSERT IGNORE INTO `edu_study_plan` (`id`, `student_id`, `target_knowledge_id`, `name`, `start_date`, `end_date`, `status`) VALUES
+(1, 1, 1, '七年级数学上册学习计划', '2024-09-01', '2024-12-31', 'ACTIVE');
 
 -- 学习计划项
-INSERT IGNORE INTO `edu_study_plan_item` (`id`, `plan_id`, `knowledge_id`, `target_date`, `status`, `tenant_id`, `workspace_id`, `create_by`, `update_by`) VALUES
-(1, 1, 1, '2024-09-05', 'COMPLETED', 1, 0, 'system', 'system'),
-(2, 1, 2, '2024-09-10', 'COMPLETED', 1, 0, 'system', 'system'),
-(3, 1, 5, '2024-09-15', 'IN_PROGRESS', 1, 0, 'system', 'system');
+INSERT IGNORE INTO `edu_study_plan_item` (`id`, `plan_id`, `knowledge_id`, `plan_date`, `order_no`, `status`) VALUES
+(1, 1, 1, '2024-09-05', 1, 'COMPLETED'),
+(2, 1, 2, '2024-09-10', 2, 'COMPLETED'),
+(3, 1, 5, '2024-09-15', 3, 'IN_PROGRESS');
 
 -- 复习任务
-INSERT IGNORE INTO `edu_review_task` (`id`, `student_id`, `knowledge_id`, `review_round`, `review_date`, `status`, `result_score`, `tenant_id`, `workspace_id`, `create_by`, `update_by`) VALUES
-(1, 1, 1, 1, '2024-09-06', 'COMPLETED', 85, 1, 0, 'system', 'system'),
-(2, 1, 2, 1, '2024-09-11', 'COMPLETED', 78, 1, 0, 'system', 'system'),
-(3, 1, 5, 1, '2024-09-20', 'PENDING', NULL, 1, 0, 'system', 'system');
+INSERT IGNORE INTO `edu_review_task` (`id`, `student_id`, `knowledge_id`, `review_round`, `review_date`, `status`, `result_score`) VALUES
+(1, 1, 1, 1, '2024-09-06', 'COMPLETED', 85),
+(2, 1, 2, 1, '2024-09-11', 'COMPLETED', 78),
+(3, 1, 5, 1, '2024-09-20', 'PENDING', NULL);
 
 -- 错题记录
-INSERT IGNORE INTO `wrong_question` (`id`, `student_id`, `question_id`, `student_answer`, `correct_times`, `last_practice_time`, `tenant_id`, `workspace_id`, `create_by`, `update_by`) VALUES
-(1, 1, 2, 'A', 2, '2024-09-12', 1, 0, 'system', 'system');
+INSERT IGNORE INTO `wrong_question` (`id`, `student_id`, `question_id`, `knowledge_id`, `student_answer`, `correct_times`, `tenant_id`, `workspace_id`, `create_by`, `update_by`) VALUES
+(1, 1, 2, 1, 'A', 2, 1, 0, 'system', 'system');

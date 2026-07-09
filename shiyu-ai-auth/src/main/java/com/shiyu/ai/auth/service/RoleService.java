@@ -20,6 +20,8 @@ public interface RoleService {
      */
     List<RoleBO> getAllRoles(String status);
 
+    RoleBO getRoleDetail(Long id);
+
     /**
      * 修改角色
      */
