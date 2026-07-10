@@ -75,22 +75,22 @@ P2 任务:  [██████████] 8/8 完成
 
 **子任务**:
 
-- [ ] 1.1 AgentRuntime 单元测试
+- [x] 1.1 AgentRuntime 单元测试
   - [ ] Execution 创建 / 状态流转 / 暂停 / 恢复 / 取消
   - [ ] Checkpoint 保存 / 加载 / 恢复
   - [ ] AgentExecutor 节点执行循环
   - [ ] RetryPolicy / TimeoutPolicy
-- [ ] 1.2 MemoryService 单元测试
+- [x] 1.2 MemoryService 单元测试
   - [ ] ShortTermMemoryStore：存储 / 查询 / 滑动窗口压缩
   - [ ] WorkingMemoryStore：变量读写 / 清除
   - [ ] LongTermMemoryStore：持久化 / 关键词搜索 / 重要性排序
   - [ ] SemanticMemoryStore：向量检索 / 元数据过滤
   - [ ] EpisodicMemoryStore：执行记录
   - [ ] MemoryRecallStrategy：相似度 / 重要性 / 混合召回
-- [ ] 1.3 VectorStore SPI 单元测试
+- [x] 1.3 VectorStore SPI 单元测试
   - [ ] JVectorStore：upsert / search / delete / rebuild
   - [ ] InMemoryVectorStore：基础操作 / 余弦相似度
-- [ ] 1.4 ModelRegistry + CircuitBreaker 单元测试
+- [x] 1.4 ModelRegistry + CircuitBreaker 单元测试
   - [ ] ModelRegistry 注册 / 查询 / 热更新
   - [ ] CircuitBreaker 状态转换（CLOSED → OPEN → HALF_OPEN）
   - [ ] FallbackStrategy 降级逻辑
@@ -99,7 +99,7 @@ P2 任务:  [██████████] 8/8 完成
 - [ ] 1.5 引入 Testcontainers
   - [ ] 配置 Testcontainers 集成测试环境
   - [ ] 编写集成测试（H2 / MySQL）
-- [ ] 1.6 配置测试覆盖率报告
+- [x] 1.6 配置测试覆盖率报告
   - [ ] 引入 JaCoCo Maven 插件
   - [ ] 配置覆盖率目标（Phase 1: 核心模块 50%）
 
