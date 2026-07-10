@@ -31,8 +31,8 @@ public class InMemoryVectorStore implements VectorStore {
                     return new VectorRecord(r.id, r.vector, meta);
                 })
                 .sorted((a, b) -> {
-                    double sa = (double) a.metadata().getOrDefault("_score", 0.0);
-                    double sb = (double) b.metadata().getOrDefault("_score", 0.0);
+                    double sa = ((Number) a.metadata().getOrDefault("_score", 0.0)).doubleValue();
+                    double sb = ((Number) b.metadata().getOrDefault("_score", 0.0)).doubleValue();
                     return Double.compare(sb, sa);
                 })
                 .limit(topK)
@@ -52,10 +52,10 @@ public class InMemoryVectorStore implements VectorStore {
                     meta.put("_score", score);
                     return new VectorRecord(r.id, r.vector, meta);
                 })
-                .filter(r -> (double) r.metadata().get("_score") >= minScore)
+                .filter(r -> ((Number) r.metadata().get("_score")).doubleValue() >= minScore)
                 .sorted((a, b) -> {
-                    double sa = (double) a.metadata().getOrDefault("_score", 0.0);
-                    double sb = (double) b.metadata().getOrDefault("_score", 0.0);
+                    double sa = ((Number) a.metadata().getOrDefault("_score", 0.0)).doubleValue();
+                    double sb = ((Number) b.metadata().getOrDefault("_score", 0.0)).doubleValue();
                     return Double.compare(sb, sa);
                 })
                 .limit(request.getTopK())
