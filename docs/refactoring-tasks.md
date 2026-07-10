@@ -159,11 +159,11 @@ P2 任务:  [██████████] 8/8 完成
 
 **子任务**:
 
-- [ ] 3.1 ReviewAgent 完善
+- [x] 3.1 ReviewAgent 完善（schedule/complete/overdue + 6 tests）
   - [ ] 完成艾宾浩斯复习计划的自动生成逻辑
   - [ ] 对接复习计划数据库表
   - [ ] 补充单元测试
-- [ ] 3.2 IntentDefApplicationRunner 完善
+- [x] 3.2 IntentDefApplicationRunner 完善（正常/空/异常路径 + 3 tests）
   - [ ] 补全意图定义的自动注册和校验逻辑
   - [ ] 启动时自动校验配置完整性
 
