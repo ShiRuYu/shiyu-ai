@@ -291,10 +291,10 @@ P2 任务:  [██████████] 8/8 完成
 
 **子任务**:
 
-- [ ] 8.1 register.vue — 对接注册接口 `POST /api/auth/register`
-- [ ] 8.2 code-login.vue — 对接验证码登录接口 `POST /api/auth/code-login`
-- [ ] 8.3 forget-password.vue — 对接忘记密码接口 `POST /api/auth/forget-password`
-- [ ] 8.4 如有必要，补充后端对应 API 接口
+- [x] 8.1 register.vue — 对接注册接口 POST /auth/register `POST /api/auth/register`
+- [x] 8.2 code-login.vue — 对接验证码登录接口 POST /auth/code-login `POST /api/auth/code-login`
+- [x] 8.3 forget-password.vue — 对接忘记密码接口 POST /auth/forget-password `POST /api/auth/forget-password`
+- [x] 8.4 后端对应 API 接口已补充 (AuthController + AuthService)
 
 **预估工时**: 4h
 
