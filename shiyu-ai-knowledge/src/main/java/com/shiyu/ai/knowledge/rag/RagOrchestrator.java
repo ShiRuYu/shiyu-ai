@@ -1,12 +1,13 @@
 package com.shiyu.ai.knowledge.rag;
 
 import com.shiyu.ai.common.core.utils.JSONUtils;
-import com.shiyu.ai.core.embedding.EmbeddingService;
+import com.shiyu.ai.model.embedding.EmbeddingService;
 import com.shiyu.ai.dal.dataobject.knowledge.KnowledgeChunkDO;
+import com.shiyu.ai.knowledge.rag.reranker.Reranker;
 import com.shiyu.ai.knowledge.graph.GraphStore;
 import com.shiyu.ai.dal.repository.knowledge.KnowledgeChunkRepository;
-import com.shiyu.ai.knowledge.vector.VectorRecord;
-import com.shiyu.ai.knowledge.vector.VectorStore;
+import com.shiyu.ai.vector.spi.VectorRecord;
+import com.shiyu.ai.vector.spi.VectorStore;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 
@@ -21,6 +22,7 @@ public class RagOrchestrator {
     private final VectorStore vectorStore;
     private final KnowledgeChunkRepository chunkRepository;
     private final GraphStore graphStore;
+    private Reranker reranker;
 
     public RagOrchestrator(EmbeddingService embeddingService,
                            VectorStore vectorStore,
@@ -30,6 +32,10 @@ public class RagOrchestrator {
         this.vectorStore = vectorStore;
         this.chunkRepository = chunkRepository;
         this.graphStore = graphStore;
+    }
+
+    public void setReranker(Reranker reranker) {
+        this.reranker = reranker;
     }
 
     public RagResult retrieve(String query, int topK) {

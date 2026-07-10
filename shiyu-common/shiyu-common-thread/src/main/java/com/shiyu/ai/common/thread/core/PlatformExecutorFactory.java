@@ -118,6 +118,7 @@ public class PlatformExecutorFactory implements ExecutorFactory {
         );
         // 设置移除已取消任务的策略
         executor.setRemoveOnCancelPolicy(true);
+        executor.setRejectedExecutionHandler(new ThreadPoolExecutor.CallerRunsPolicy());
         return executor;
     }
 

@@ -3,7 +3,7 @@ package com.shiyu.ai.dal.repository.agent;
 import com.mybatisflex.core.query.QueryWrapper;
 import com.shiyu.ai.dal.dataobject.agent.AgentExecutionDO;
 import com.shiyu.ai.dal.mapper.agent.AgentExecutionMapper;
-import com.shiyu.ai.aiagent.bo.AgentExecutionBO;
+import com.shiyu.ai.dal.bo.agent.AgentExecutionBO;
 import com.shiyu.ai.common.core.utils.MapstructUtils;
 import jakarta.annotation.Resource;
 import org.springframework.stereotype.Component;

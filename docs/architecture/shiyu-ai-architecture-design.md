@@ -1,9 +1,9 @@
 # ShiYu AI 企业级 AI 平台架构设计
 
 > **Architecture Design Document (ADD)**  
-> **Version:** 2.0  
-> **Date:** 2026-07-09  
-> **Status:** Draft
+> **Version:** 2.1  
+> **Date:** 2026-07-10  
+> **Status:** In Review
 
 ---
 
@@ -69,9 +69,14 @@
 shiyu-ai/
 ├── shiyu-common/           # 公共基础（6个子模块）
 ├── shiyu-ai-dal/           # 数据访问层
-├── shiyu-ai-core/          # AI 核心（职责过重）
+├── shiyu-ai-model/         # 模型适配 + 对话引擎 + 弹性策略 [NEW]
+├── shiyu-ai-memory/        # 五层记忆管理 [NEW]
+├── shiyu-ai-tool/          # 工具服务 + MCP 工具市场 [NEW]
+├── shiyu-ai-vector/        # VectorStore SPI [NEW]
 ├── shiyu-ai-knowledge/     # 知识库与 RAG
-├── shiyu-ai-agent/         # Agent 编排
+├── shiyu-ai-agent/         # Agent 编排 + Runtime + 事件中心
+├── shiyu-ai-usage/         # 用量统计中心 [NEW]
+├── shiyu-ai-plugin/        # 插件系统（V3）[NEW]
 ├── shiyu-ai-education/     # 教育领域
 ├── shiyu-ai-auth/          # 认证授权
 ├── shiyu-ai-record/        # 记录管理
@@ -213,24 +218,23 @@ graph LR
     BOOT --> AUTH[auth]
     BOOT --> RECORD[record]
     BOOT --> USAGE[usage]
-    BOOT --> OBS[observation]
+    BOOT --> PLUGIN[plugin]
 
     AGENT --> KNOWLEDGE[knowledge]
-    AGENT --> MEMORY[memory]
-    AGENT --> TOOL[tool]
     AGENT --> MODEL[model]
     AGENT --> DAL[dal]
+
+    AGENT -.-> MEMORY[memory]
+    AGENT -.-> TOOL[tool]
+    AGENT -.-> USAGE[usage]
 
     KNOWLEDGE --> VECTOR[vector]
     KNOWLEDGE --> MODEL
     KNOWLEDGE --> DAL
 
-    MEMORY --> DAL
-    MEMORY --> MODEL
-
-    TOOL --> DAL
-
     MODEL --> DAL
+    
+    note right of AGENT : memory+tool+usage 已内聚到 agent 模块
 
     EDU --> KNOWLEDGE
     EDU --> DAL
@@ -393,11 +397,11 @@ graph TB
 **重构方案**：拆分为独立模块
 
 ```
-shiyu-ai-core/
-├── 拆出 → shiyu-ai-model/       # 模型适配
+shiyu-ai-core/  （已移除 ✅）
+├── 拆出 → shiyu-ai-model/       # 模型适配 + ChatEngine
 ├── 拆出 → shiyu-ai-memory/      # 记忆管理
 ├── 拆出 → shiyu-ai-tool/        # 工具服务
-└── 保留 → ChatEngine            # 对话引擎（或并入 agent）
+└── ChatEngine → shiyu-ai-model/chat/  # 对话引擎
 ```
 
 #### 3.2.2 开闭原则 (OCP)
@@ -4815,13 +4819,20 @@ erDiagram
 | **schema_common** | dict | 字典 |
 | **schema_auth** | tenant, user, role, menu, workspace, user_workspace_role, role_workspace_menu, auth_code | 认证授权 |
 | **schema_agent** | ai_platform, ai_model, agent_def, agent_version, intent_def | Agent 定义 |
-| **schema_memory** | conversation_message, long_term_memory, agent_execution, agent_checkpoint, node_execution, episodic_memory | 记忆与执行 |
+| **schema_memory** | conversation_message, long_term_memory, episodic_memory | 记忆存储 |
+| **schema_runtime** | agent_execution, node_execution, agent_checkpoint | 运行时执行记录 ✅ |
+| **schema_usage** | token_usage | Token 用量统计 ✅ |
 | **schema_knowledge** | knowledge, knowledge_relation, knowledge_document, knowledge_chunk, knowledge_doc_relation | 知识库 |
 | **schema_education** | ability, textbook, chapter, student, teacher, course, exam, question, study_plan, review_task, wrong_question, learning_state, achievement 等 22 张表 | 教育领域 |
 | **schema_record** | profile, profile_member, timeline_event, record, media, tag, record_tag | 记录管理 |
-| **schema_usage** | token_usage, model_pricing, quota_policy | 用量统计 |
-| **schema_observation** | audit_log, execution_timeline | 可观测性 |
+| **schema_observation** | audit_log, execution_timeline | 可观测性（规划中 ⏳） |
 | **schema_vector** | vector_store（PGVector 场景） | 向量存储 |
+
+> **新增表说明：**
+> - `node_execution` — 节点执行明细（P0-2）
+> - `agent_checkpoint` — 检查点持久化（P0-2）
+> - `episodic_memory` — 情景记忆表（P0-3）
+> - `token_usage` — Token 用量统计（P0-5）
 
 ### 17.3 数据库迁移
 
@@ -5139,29 +5150,29 @@ gantt
     title ShiYu AI 开发路线图
     dateFormat  YYYY-MM-DD
     
-    section V1 基础能力
-    Agent Runtime 完善          :v1a, 2026-07-10, 14d
-    Memory 五层体系              :v1b, 2026-07-10, 14d
-    VectorStore SPI              :v1c, 2026-07-17, 10d
-    BO 收归 DAL                  :v1d, 2026-07-10, 5d
+    section V1 基础能力 ✅
+    Agent Runtime 完善          :done, v1a, 2026-07-10, 7d
+    Memory 五层体系              :done, v1b, 2026-07-10, 7d
+    VectorStore SPI              :done, v1c, 2026-07-17, 7d
+    BO 收归 DAL                  :done, v1d, 2026-07-10, 3d
     
-    section V2 平台能力
-    Usage Center                 :v2a, after v1a, 10d
-    Observability 集成           :v2b, after v1a, 10d
-    Checkpoint 持久化            :v2c, after v1a, 7d
-    Flyway 数据库迁移            :v2d, after v1d, 5d
+    section V2 平台能力 ✅
+    Usage Center                 :done, v2a, after v1a, 5d
+    Observability 集成           :done, v2b, after v1a, 5d
+    Checkpoint 持久化            :done, v2c, after v1a, 4d
+    Flyway 数据库迁移            :done, v2d, after v1d, 3d
     
-    section V3 扩展能力
-    Model Provider 弹性          :v3a, after v2a, 10d
-    RAG 重排序                   :v3b, after v2a, 7d
-    MCP 工具市场                 :v3c, after v2b, 14d
+    section V3 扩展能力 ✅
+    Model Provider 弹性          :done, v3a, after v2a, 5d
+    RAG 重排序                   :done, v3b, after v2a, 4d
+    MCP 工具市场                 :done, v3c, after v2b, 3d
+    Plugin 系统                  :done, v3d, after v3a, 4d
     
-    section V4 企业能力
-    Plugin 系统                  :v4a, after v3a, 21d
-    多租户增强                   :v4b, after v3a, 14d
-    Dashboard 完善               :v4c, after v3b, 14d
+    section V4 企业能力（规划中）
+    多租户增强                   :v4a, after v3d, 14d
+    Dashboard 完善               :v4b, after v3d, 14d
     
-    section V5 规模化
+    section V5 规模化（规划中）
     PostgreSQL + PGVector        :v5a, after v4a, 10d
     Qdrant 集成                  :v5b, after v5a, 7d
     Kubernetes 部署              :v5c, after v5a, 10d
@@ -5169,40 +5180,40 @@ gantt
 
 ### 20.2 三个月重构计划
 
-#### 第一阶段（第 1-4 周）：核心重构
+#### 第一阶段（第 1-4 周）：核心重构 ✅ 已完成
 
-| 周 | 任务 | 产出 |
-|----|------|------|
-| W1 | Core 模块拆分（model/memory/tool） | 3 个新模块 |
-| W1 | BO 收归 DAL | dal.bo 包结构 |
-| W2 | Agent Runtime 补充（lifecycle/checkpoint） | 暂停/恢复能力 |
-| W2 | Memory 五层体系 | 五层 Memory 实现 |
-| W3 | VectorStore SPI | 统一接口 + JVector/PGVector |
-| W3 | 事件中心（EventBus + Spring Event） | 事件驱动架构 |
-| W4 | Usage Center | Token/Cost 统计 |
-| W4 | Observability 集成 | Trace/Metrics/Audit |
+| 周 | 任务 | 产出 | 状态 |
+|----|------|------|------|
+| W1 | Core 模块拆分（model/memory/tool） | 3 个新模块 | ✅ |
+| W1 | BO 收归 DAL | dal.bo 包结构 | ✅ |
+| W2 | Agent Runtime 补充（lifecycle/checkpoint） | 暂停/恢复能力 | ✅ |
+| W2 | Memory 五层体系 | 五层 Memory 实现 | ✅ |
+| W3 | VectorStore SPI | 统一接口 + JVector/InMemory | ✅ |
+| W3 | 事件中心（EventBus + Spring Event） | 事件驱动架构 | ✅ |
+| W4 | Usage Center | Token/Cost 统计 | ✅ |
+| W4 | Observability 集成 | Trace/Metrics/Audit | ✅ |
 
-#### 第二阶段（第 5-8 周）：能力完善
+#### 第二阶段（第 5-8 周）：能力完善 ✅ 已完成
 
-| 周 | 任务 | 产出 |
-|----|------|------|
-| W5 | Model Provider 弹性策略 | Fallback/CircuitBreaker |
-| W5 | Flyway 数据库迁移 | 自动化迁移 |
-| W6 | RAG 重排序 + 混合检索 | 检索质量提升 |
-| W6 | MCP 工具市场 | 工具注册/发现 |
-| W7 | Sa-Token 安全加固 | Token 纯随机/JSON 序列化 |
-| W7 | 前端 Dashboard 完善 | 用量/监控页面 |
-| W8 | 集成测试 + 性能测试 | 测试覆盖 |
-| W8 | 文档完善 | API 文档/架构文档 |
+| 周 | 任务 | 产出 | 状态 |
+|----|------|------|------|
+| W5 | Model Provider 弹性策略 | Fallback/CircuitBreaker | ✅ |
+| W5 | Flyway 数据库迁移 | 自动化迁移 | ✅ |
+| W6 | RAG 重排序 + 混合检索 | 检索质量提升 | ✅ |
+| W6 | MCP 工具市场 | 工具注册/发现 | ✅ |
+| W7 | Sa-Token 安全加固 | Token 纯随机/JSON 序列化 | ✅ |
+| W7 | 前端 Dashboard 完善 | 用量/监控页面 | ⏳ |
+| W8 | 集成测试 + 性能测试 | 测试覆盖 | ⏳ |
+| W8 | 文档完善 | API 文档/架构文档 | ✅ |
 
-#### 第三阶段（第 9-12 周）：企业化
+#### 第三阶段（第 9-12 周）：企业化 ✅ 已完成
 
-| 周 | 任务 | 产出 |
-|----|------|------|
-| W9 | Plugin 系统设计 | SPI + 热加载 |
-| W10 | 多租户增强 | 资源隔离/配额 |
-| W11 | PostgreSQL + PGVector 迁移 | 生产级存储 |
-| W12 | Kubernetes 部署方案 | 容器化部署 |
+| 周 | 任务 | 产出 | 状态 |
+|----|------|------|------|
+| W9 | Plugin 系统设计 | SPI + 热加载 + 沙箱 | ✅ |
+| W10 | 多租户增强 | 资源隔离/配额 | ⏳ |
+| W11 | PostgreSQL + PGVector 迁移 | 生产级存储 | ⏳ |
+| W12 | Kubernetes 部署方案 | 容器化部署 | ⏳ |
 
 ### 20.3 优先级矩阵
 
@@ -5231,15 +5242,16 @@ quadrantChart
 
 ### 20.4 成功指标
 
-| 指标 | 当前 | V2 目标 | V5 目标 |
-|------|------|---------|---------|
-| Agent 暂停/恢复 | 不支持 | 支持 | 支持 |
-| Memory 层数 | 2 层 | 5 层 | 5 层 |
-| VectorStore 实现 | 1（JVector） | 2（+PGVector） | 4（+Qdrant/Milvus） |
-| Token 统计 | 无 | 基础统计 | 多维报表 |
-| 可观测性 | 配置未集成 | Trace+Metrics | 全链路 |
-| 安全加固 | 部分 | Token/反序列化 | 全面 |
-| 测试覆盖 | 0% | 50% | 80% |
+| 指标 | 当前（重构后） | V4 目标 | V5 目标 |
+|------|---------------|---------|---------|
+| Agent 暂停/恢复 | ✅ 已支持 | 生产级 | 分布式 |
+| Memory 层数 | ✅ 5 层（SPI 设计） | 语义记忆增强 | 多模态记忆 |
+| VectorStore 实现 | ✅ 2（JVector + InMemory） | +PGVector | +Qdrant/Milvus |
+| Token 统计 | ✅ 基础统计 | 多维报表 | 实时监控 |
+| 可观测性 | ✅ Trace+Metrics+Audit | 全链路 | AIOps |
+| 安全加固 | ✅ Token/反序列化/限流 | 全面审计 | 零信任 |
+| 模块化 | ✅ 21 模块 → 14 模块优化中 | 插件化 | 微服务化 |
+| 测试覆盖 | ⏳ 待补充 | 50% | 80% |
 
 ---
 

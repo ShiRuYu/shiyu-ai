@@ -4,7 +4,7 @@ import com.mybatisflex.core.query.QueryWrapper;
 import com.shiyu.ai.dal.util.TenantWorkspaceHelper;
 import com.shiyu.ai.dal.dataobject.record.ProfileDO;
 import com.shiyu.ai.dal.mapper.record.ProfileMapper;
-import com.shiyu.ai.record.bo.ProfileBO;
+import com.shiyu.ai.dal.bo.record.ProfileBO;
 import com.shiyu.ai.common.core.enums.GenderEnum;
 import com.shiyu.ai.common.core.utils.MapstructUtils;
 import jakarta.annotation.Resource;

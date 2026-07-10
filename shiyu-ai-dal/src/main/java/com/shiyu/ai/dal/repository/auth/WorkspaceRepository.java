@@ -3,7 +3,7 @@ package com.shiyu.ai.dal.repository.auth;
 import com.mybatisflex.core.query.QueryWrapper;
 import com.shiyu.ai.dal.dataobject.auth.WorkspaceDO;
 import com.shiyu.ai.dal.mapper.auth.WorkspaceMapper;
-import com.shiyu.ai.auth.bo.WorkspaceBO;
+import com.shiyu.ai.dal.bo.auth.WorkspaceBO;
 import com.shiyu.ai.common.core.utils.MapstructUtils;
 import jakarta.annotation.Resource;
 import org.springframework.stereotype.Component;

@@ -3,7 +3,7 @@ package com.shiyu.ai.dal.repository;
 import com.mybatisflex.core.query.QueryWrapper;
 import com.shiyu.ai.dal.dataobject.agent.ConversationMessageDO;
 import com.shiyu.ai.dal.mapper.agent.ConversationMessageMapper;
-import com.shiyu.ai.model.bo.ConversationMessageBO;
+import com.shiyu.ai.dal.bo.memory.ConversationMessageBO;
 import com.shiyu.ai.common.core.utils.MapstructUtils;
 import jakarta.annotation.Resource;
 import org.springframework.stereotype.Component;

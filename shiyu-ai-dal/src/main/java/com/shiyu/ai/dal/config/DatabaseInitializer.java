@@ -2,6 +2,7 @@ package com.shiyu.ai.dal.config;
 
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.boot.ApplicationArguments;
+
 import org.springframework.boot.ApplicationRunner;
 import org.springframework.context.ApplicationContext;
 import org.springframework.core.annotation.Order;
@@ -39,6 +40,11 @@ public class DatabaseInitializer implements ApplicationRunner {
 
     @Override
     public void run(ApplicationArguments args) {
+        // 如果 application context 中有 flyway bean，跳过手动 DDL 执行
+        if (applicationContext.containsBean("flyway")) {
+            log.info("Flyway 已启用，跳过 DatabaseInitializer DDL 执行");
+            return;
+        }
         Map<String, DataSource> beans = applicationContext.getBeansOfType(DataSource.class);
         DataSource ds = beans.get("agent");
         if (ds == null) {

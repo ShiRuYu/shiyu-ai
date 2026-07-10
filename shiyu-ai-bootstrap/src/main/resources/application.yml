@@ -42,8 +42,7 @@ springdoc:
         - com.shiyu.ai.record.controller
         - com.shiyu.ai.knowledge.controller
         - com.shiyu.ai.education.controller
-        - com.shiyu.ai.aiagent.controller
-        - com.shiyu.ai.core.controller
+        - com.shiyu.ai.agent.controller
         - com.shiyu.ai.common.web.controller
     - group: 'common'
       paths-to-match:
@@ -64,7 +63,7 @@ springdoc:
       paths-to-match:
         - '/**'
       packages-to-scan:
-        - com.shiyu.ai.aiagent.controller
+        - com.shiyu.ai.agent.controller
     - group: 'knowledge'
       paths-to-match:
         - '/**'
@@ -79,6 +78,8 @@ springdoc:
 
 # Spring 配置
 spring:
+  main:
+    allow-circular-references: true
   application:
     name: ${shiyu.name}
   # 资源信息
@@ -112,4 +113,5 @@ sa-token:
   is-read-header: true
   # Token 前缀
   token-prefix: Bearer
+
 

@@ -1,6 +1,6 @@
 package com.shiyu.ai.record.controller;
 
-import com.shiyu.ai.record.bo.ProfileBO;
+import com.shiyu.ai.dal.bo.record.ProfileBO;
 import com.shiyu.ai.record.service.ProfileService;
 import com.shiyu.ai.common.core.api.PageData;
 import com.shiyu.ai.common.core.api.PageQuery;

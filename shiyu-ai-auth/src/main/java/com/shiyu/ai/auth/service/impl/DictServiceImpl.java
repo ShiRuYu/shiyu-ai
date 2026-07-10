@@ -4,7 +4,7 @@ import com.github.benmanes.caffeine.cache.Cache;
 import com.github.benmanes.caffeine.cache.Caffeine;
 import com.shiyu.ai.dal.repository.auth.DictRepository;
 import com.shiyu.ai.auth.service.DictService;
-import com.shiyu.ai.auth.bo.DictBO;
+import com.shiyu.ai.dal.bo.auth.DictBO;
 import jakarta.annotation.Resource;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.tuple.Pair;

@@ -4,7 +4,7 @@ import com.mybatisflex.core.query.QueryWrapper;
 import com.shiyu.ai.dal.util.TenantWorkspaceHelper;
 import com.shiyu.ai.dal.dataobject.agent.AiPlatformDO;
 import com.shiyu.ai.dal.mapper.agent.AiPlatformMapper;
-import com.shiyu.ai.model.bo.AiPlatformBO;
+import com.shiyu.ai.dal.bo.model.AiPlatformBO;
 import com.shiyu.ai.model.vo.IdNameOptionVO;
 import com.shiyu.ai.common.core.utils.MapstructUtils;
 import jakarta.annotation.Resource;

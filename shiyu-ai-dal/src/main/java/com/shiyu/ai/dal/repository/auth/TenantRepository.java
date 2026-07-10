@@ -3,7 +3,7 @@ package com.shiyu.ai.dal.repository.auth;
 import com.mybatisflex.core.query.QueryWrapper;
 import com.shiyu.ai.dal.dataobject.auth.TenantDO;
 import com.shiyu.ai.dal.mapper.auth.TenantMapper;
-import com.shiyu.ai.auth.bo.TenantBO;
+import com.shiyu.ai.dal.bo.auth.TenantBO;
 import com.shiyu.ai.common.core.utils.MapstructUtils;
 import org.apache.commons.lang3.tuple.Pair;
 import org.springframework.stereotype.Component;

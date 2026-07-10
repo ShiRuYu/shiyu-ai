@@ -11,8 +11,8 @@ import com.shiyu.ai.dal.repository.auth.WorkspaceTenantRepository;
 
 import com.shiyu.ai.dal.repository.auth.UserWorkspaceRoleRepository;
 
-import com.shiyu.ai.auth.bo.RoleBO;
-import com.shiyu.ai.auth.bo.UserBO;
+import com.shiyu.ai.dal.bo.auth.RoleBO;
+import com.shiyu.ai.dal.bo.auth.UserBO;
 import com.shiyu.ai.auth.vo.LoginResponseVO;
 import com.shiyu.ai.auth.vo.WorkspaceContextVO;
 import com.shiyu.ai.auth.utils.SaTokenHelper;

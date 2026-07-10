@@ -1,6 +1,6 @@
 package com.shiyu.ai.auth.service;
 
-import com.shiyu.ai.auth.bo.UserBO;
+import com.shiyu.ai.dal.bo.auth.UserBO;
 import com.shiyu.ai.auth.vo.UserPageResponse;
 
 /**

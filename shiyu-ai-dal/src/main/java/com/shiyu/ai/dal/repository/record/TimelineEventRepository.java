@@ -8,7 +8,7 @@ import com.shiyu.ai.dal.dataobject.record.TimelineEventDO;
 import com.shiyu.ai.dal.mapper.record.MediaMapper;
 import com.shiyu.ai.dal.mapper.record.RecordMapper;
 import com.shiyu.ai.dal.mapper.record.TimelineEventMapper;
-import com.shiyu.ai.record.bo.TimelineEventBO;
+import com.shiyu.ai.dal.bo.record.TimelineEventBO;
 import com.shiyu.ai.common.core.utils.MapstructUtils;
 import jakarta.annotation.Resource;
 import org.apache.commons.lang3.tuple.Pair;

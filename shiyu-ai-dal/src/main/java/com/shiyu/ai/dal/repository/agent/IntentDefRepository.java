@@ -5,7 +5,7 @@ import com.mybatisflex.core.query.QueryWrapper;
 import com.shiyu.ai.dal.util.TenantWorkspaceHelper;
 import com.shiyu.ai.dal.dataobject.agent.IntentDefDO;
 import com.shiyu.ai.dal.mapper.agent.IntentDefMapper;
-import com.shiyu.ai.aiagent.bo.IntentDefBO;
+import com.shiyu.ai.dal.bo.agent.IntentDefBO;
 import com.shiyu.ai.model.vo.IdNameOptionVO;
 import jakarta.annotation.Resource;
 import org.apache.commons.lang3.tuple.Pair;

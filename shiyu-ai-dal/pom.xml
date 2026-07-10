@@ -17,5 +17,10 @@
             <groupId>com.shiyu.ai</groupId>
             <artifactId>shiyu-common-mybatis</artifactId>
         </dependency>
+        <!-- Flyway 数据库迁移 -->
+        <dependency>
+            <groupId>org.flywaydb</groupId>
+            <artifactId>flyway-core</artifactId>
+        </dependency>
     </dependencies>
 </project>

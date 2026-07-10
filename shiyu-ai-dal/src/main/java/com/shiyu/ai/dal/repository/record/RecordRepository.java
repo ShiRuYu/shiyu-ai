@@ -3,7 +3,7 @@ package com.shiyu.ai.dal.repository.record;
 import com.mybatisflex.core.query.QueryWrapper;
 import com.shiyu.ai.dal.dataobject.record.RecordDO;
 import com.shiyu.ai.dal.mapper.record.RecordMapper;
-import com.shiyu.ai.record.bo.RecordBO;
+import com.shiyu.ai.dal.bo.record.RecordBO;
 import com.shiyu.ai.common.core.utils.MapstructUtils;
 import jakarta.annotation.Resource;
 import org.apache.commons.lang3.tuple.Pair;

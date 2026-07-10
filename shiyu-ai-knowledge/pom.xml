@@ -20,8 +20,13 @@
         </dependency>
         <dependency>
             <groupId>com.shiyu.ai</groupId>
-            <artifactId>shiyu-ai-core</artifactId>
+            <artifactId>shiyu-ai-vector</artifactId>
         </dependency>
+        <dependency>
+            <groupId>com.shiyu.ai</groupId>
+            <artifactId>shiyu-ai-model</artifactId>
+        </dependency>
+
         <dependency>
             <groupId>com.shiyu.ai</groupId>
             <artifactId>shiyu-common-core</artifactId>
@@ -41,10 +46,6 @@
         </dependency>
 
         <!-- VectorStore 后端（通过反射加载，按需添加） -->
-        <!-- HNSW: jvector（纯 Java HNSW 实现，无原生依赖，全平台兼容） -->
-        <dependency>
-            <groupId>io.github.jbellis</groupId>
-            <artifactId>jvector</artifactId>
-        </dependency>
+
     </dependencies>
 </project>

@@ -132,7 +132,9 @@ public class UserContextInterceptor implements HandlerInterceptor {
                         Object wsObj = extInfo.get("currentWorkspaceId");
                         if (wsObj instanceof Number) currentWorkspaceId = ((Number) wsObj).longValue();
                     }
-                } catch (Exception ignored) { }
+                } catch (Exception e) {
+                log.warn("用户上下文处理异常: {}", e.getMessage());
+            }
             }
 
             List<UserWorkspaceRoleDO> uwrList = authUserLookupRepository.selectUserWorkspaceRoles(userId);

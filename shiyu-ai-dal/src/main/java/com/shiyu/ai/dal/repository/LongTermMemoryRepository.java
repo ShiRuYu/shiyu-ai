@@ -3,7 +3,7 @@ package com.shiyu.ai.dal.repository;
 import com.mybatisflex.core.query.QueryWrapper;
 import com.shiyu.ai.dal.dataobject.agent.LongTermMemoryDO;
 import com.shiyu.ai.dal.mapper.agent.LongTermMemoryMapper;
-import com.shiyu.ai.model.bo.LongTermMemoryBO;
+import com.shiyu.ai.dal.bo.memory.LongTermMemoryBO;
 import com.shiyu.ai.common.core.utils.MapstructUtils;
 import jakarta.annotation.Resource;
 import org.springframework.stereotype.Component;

@@ -24,11 +24,15 @@
         </dependency>
         <dependency>
             <groupId>com.shiyu.ai</groupId>
-            <artifactId>shiyu-ai-core</artifactId>
+            <artifactId>shiyu-ai-knowledge</artifactId>
         </dependency>
         <dependency>
             <groupId>com.shiyu.ai</groupId>
-            <artifactId>shiyu-ai-knowledge</artifactId>
+            <artifactId>shiyu-ai-memory</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>com.shiyu.ai</groupId>
+            <artifactId>shiyu-ai-tool</artifactId>
         </dependency>
         <dependency>
             <groupId>org.bsc.langgraph4j</groupId>

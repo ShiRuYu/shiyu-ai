@@ -98,7 +98,12 @@
     <modules>
         <module>shiyu-common</module>
         <module>shiyu-ai-dal</module>
-        <module>shiyu-ai-core</module>
+        <module>shiyu-ai-model</module>
+        <module>shiyu-ai-memory</module>
+        <module>shiyu-ai-tool</module>
+        <module>shiyu-ai-vector</module>
+        <module>shiyu-ai-usage</module>
+        <module>shiyu-ai-plugin</module>
         <module>shiyu-ai-knowledge</module>
         <module>shiyu-ai-education</module>
         <module>shiyu-ai-agent</module>
@@ -370,7 +375,32 @@
             </dependency>
             <dependency>
                 <groupId>com.shiyu.ai</groupId>
-                <artifactId>shiyu-ai-core</artifactId>
+                <artifactId>shiyu-ai-model</artifactId>
+                <version>${revision}</version>
+            </dependency>
+            <dependency>
+                <groupId>com.shiyu.ai</groupId>
+                <artifactId>shiyu-ai-memory</artifactId>
+                <version>${revision}</version>
+            </dependency>
+            <dependency>
+                <groupId>com.shiyu.ai</groupId>
+                <artifactId>shiyu-ai-tool</artifactId>
+                <version>${revision}</version>
+            </dependency>
+            <dependency>
+                <groupId>com.shiyu.ai</groupId>
+                <artifactId>shiyu-ai-vector</artifactId>
+                <version>${revision}</version>
+            </dependency>
+            <dependency>
+                <groupId>com.shiyu.ai</groupId>
+                <artifactId>shiyu-ai-usage</artifactId>
+                <version>${revision}</version>
+            </dependency>
+            <dependency>
+                <groupId>com.shiyu.ai</groupId>
+                <artifactId>shiyu-ai-plugin</artifactId>
                 <version>${revision}</version>
             </dependency>
             <dependency>

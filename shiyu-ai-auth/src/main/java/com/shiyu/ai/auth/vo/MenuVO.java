@@ -1,7 +1,7 @@
 package com.shiyu.ai.auth.vo;
 
 import com.fasterxml.jackson.annotation.JsonInclude;
-import com.shiyu.ai.auth.bo.MenuBO;
+import com.shiyu.ai.dal.bo.auth.MenuBO;
 import io.github.linpeilie.annotations.AutoMapper;
 import lombok.Data;
 

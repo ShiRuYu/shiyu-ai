@@ -24,10 +24,6 @@
         </dependency>
         <dependency>
             <groupId>com.shiyu.ai</groupId>
-            <artifactId>shiyu-ai-core</artifactId>
-        </dependency>
-        <dependency>
-            <groupId>com.shiyu.ai</groupId>
             <artifactId>shiyu-common-web</artifactId>
         </dependency>
         <dependency>

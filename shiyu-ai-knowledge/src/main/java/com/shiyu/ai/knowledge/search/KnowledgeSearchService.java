@@ -1,10 +1,10 @@
 package com.shiyu.ai.knowledge.search;
 
-import com.shiyu.ai.core.embedding.EmbeddingService;
+import com.shiyu.ai.model.embedding.EmbeddingService;
 import com.shiyu.ai.dal.dataobject.knowledge.KnowledgeDO;
 import com.shiyu.ai.dal.repository.knowledge.KnowledgeRepository;
-import com.shiyu.ai.knowledge.vector.VectorRecord;
-import com.shiyu.ai.knowledge.vector.VectorStore;
+import com.shiyu.ai.vector.spi.VectorRecord;
+import com.shiyu.ai.vector.spi.VectorStore;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 
@@ -88,7 +88,9 @@ public class KnowledgeSearchService {
                 String category = (String) r.metadata().getOrDefault("category", "");
                 double score = (double) r.metadata().getOrDefault("_score", 0.0);
                 list.add(new SearchResult(id, name, code, category, (float) score));
-            } catch (Exception ignored) {}
+            } catch (Exception e) {
+            log.warn("知识搜索异常: {}", e.getMessage());
+        }
         }
         return list;
     }

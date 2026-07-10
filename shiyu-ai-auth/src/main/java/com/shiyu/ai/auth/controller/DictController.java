@@ -1,7 +1,7 @@
 package com.shiyu.ai.auth.controller;
 
 import com.shiyu.ai.auth.service.DictService;
-import com.shiyu.ai.auth.bo.DictBO;
+import com.shiyu.ai.dal.bo.auth.DictBO;
 import com.shiyu.ai.common.core.api.PageData;
 import com.shiyu.ai.common.core.api.PageQuery;
 import com.shiyu.ai.common.core.api.Result;

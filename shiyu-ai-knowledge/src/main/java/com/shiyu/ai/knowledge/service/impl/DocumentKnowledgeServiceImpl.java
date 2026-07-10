@@ -1,15 +1,15 @@
 package com.shiyu.ai.knowledge.service.impl;
 
 import com.shiyu.ai.common.core.utils.JSONUtils;
-import com.shiyu.ai.core.embedding.EmbeddingService;
+import com.shiyu.ai.model.embedding.EmbeddingService;
 import com.shiyu.ai.dal.dataobject.knowledge.KnowledgeChunkDO;
 import com.shiyu.ai.dal.dataobject.knowledge.KnowledgeDocumentDO;
 import com.shiyu.ai.knowledge.rag.DocumentIngestionService;
 import com.shiyu.ai.dal.repository.knowledge.KnowledgeChunkRepository;
 import com.shiyu.ai.dal.repository.knowledge.KnowledgeDocumentRepository;
 import com.shiyu.ai.knowledge.service.DocumentKnowledgeService;
-import com.shiyu.ai.knowledge.vector.VectorRecord;
-import com.shiyu.ai.knowledge.vector.VectorStore;
+import com.shiyu.ai.vector.spi.VectorRecord;
+import com.shiyu.ai.vector.spi.VectorStore;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;

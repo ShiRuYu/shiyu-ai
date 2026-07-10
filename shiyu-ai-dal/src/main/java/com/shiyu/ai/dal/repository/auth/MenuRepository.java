@@ -5,7 +5,7 @@ import com.shiyu.ai.dal.dataobject.auth.MenuDO;
 import com.shiyu.ai.dal.dataobject.auth.RoleWorkspaceMenuDO;
 import com.shiyu.ai.dal.dataobject.auth.UserWorkspaceRoleDO;
 import com.shiyu.ai.dal.mapper.auth.MenuMapper;
-import com.shiyu.ai.auth.bo.MenuBO;
+import com.shiyu.ai.dal.bo.auth.MenuBO;
 import com.shiyu.ai.common.core.utils.MapstructUtils;
 import jakarta.annotation.Resource;
 import org.springframework.stereotype.Component;

@@ -1,8 +1,8 @@
 package com.shiyu.ai.auth.controller;
 
-import com.shiyu.ai.auth.bo.RoleBO;
+import com.shiyu.ai.dal.bo.auth.RoleBO;
 import com.shiyu.ai.auth.request.UserRequest;
-import com.shiyu.ai.auth.bo.UserBO;
+import com.shiyu.ai.dal.bo.auth.UserBO;
 import com.shiyu.ai.auth.vo.UserPageResponse;
 import com.shiyu.ai.auth.vo.UserVO;
 import com.shiyu.ai.auth.vo.WorkspaceContextVO;

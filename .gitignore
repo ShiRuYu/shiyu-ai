@@ -44,3 +44,7 @@ build/
 # Runtime data directory (H2, RogueMap, logs, uploads)
 # 由 AppHomeEnvironmentPostProcessor 自动定位到项目根目录
 **/data/
+
+# 例外：Flyway 种子数据文件
+!**/db/migration/data/
+!**/db/migration/data/**
