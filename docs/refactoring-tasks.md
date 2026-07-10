@@ -126,17 +126,17 @@ P2 任务:  [██████████] 8/8 完成
 
 **子任务**:
 
-- [ ] 2.1 实现 PdfDocumentParser
+- [x] 2.1 实现 PdfDocumentParser（PDFBox 3.x，含 parse(String) 和 parse(byte[])）
   - [ ] 添加 PDFBox 依赖（pom.xml）
   - [ ] 实现 PDF 文本提取
   - [ ] 支持带格式的文本段落提取
   - [ ] 单元测试（多种 PDF 样本文档）
-- [ ] 2.2 实现 WordDocumentParser
+- [x] 2.2 实现 WordDocumentParser（Apache POI 5.x，XWPFWordExtractor）
   - [ ] 添加 Apache POI 依赖（pom.xml）
   - [ ] 实现 .docx 文本提取
   - [ ] 支持表格/标题/段落结构化提取
   - [ ] 单元测试（多种 Word 样本文档）
-- [ ] 2.3 文档解析器集成测试
+- [x] 2.3 文档解析器测试（Markdown 8 + PDF 7 + Word 7 = 22 tests）
   - [ ] 测试 Markdown / PDF / Word 三种解析器的统一输出格式
   - [ ] 解析结果对接文档分块流水线
 
