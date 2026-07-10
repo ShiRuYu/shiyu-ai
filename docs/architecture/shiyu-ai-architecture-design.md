@@ -5141,6 +5141,7 @@ spec:
 
 ---
 
+
 ## 第二十章 RoadMap
 
 ### 20.1 版本规划
@@ -5168,14 +5169,19 @@ gantt
     MCP 工具市场                 :done, v3c, after v2b, 3d
     Plugin 系统                  :done, v3d, after v3a, 4d
     
-    section V4 企业能力（规划中）
-    多租户增强                   :v4a, after v3d, 14d
-    Dashboard 完善               :v4b, after v3d, 14d
+    section V4 质量与平台化（进行中）
+    单元测试补充                 :v4a, after v3d, 10d
+    PDF/Word 文档解析器           :v4b, after v3d, 5d
+    Usage 报表增强               :v4c, after v3d, 5d
+    多租户增强                   :v4d, after v3d, 8d
+    Dashboard 数据联调           :v4e, after v3d, 5d
+    认证页面 TODO 修复           :v4f, after v3d, 3d
+    Metrics 验证                 :v4g, after v3d, 2d
+    UI/UX 优化                  :v4h, after v4e, 5d
+    安全扫描配置                 :v4i, after v3d, 3d
     
     section V5 规模化（规划中）
-    PostgreSQL + PGVector        :v5a, after v4a, 10d
-    Qdrant 集成                  :v5b, after v5a, 7d
-    Kubernetes 部署              :v5c, after v5a, 10d
+    Qdrant 集成                  :v5a, after v4d, 7d
 ```
 
 ### 20.2 三个月重构计划
@@ -5202,18 +5208,28 @@ gantt
 | W6 | RAG 重排序 + 混合检索 | 检索质量提升 | ✅ |
 | W6 | MCP 工具市场 | 工具注册/发现 | ✅ |
 | W7 | Sa-Token 安全加固 | Token 纯随机/JSON 序列化 | ✅ |
-| W7 | 前端 Dashboard 完善 | 用量/监控页面 | ⏳ |
-| W8 | 集成测试 + 性能测试 | 测试覆盖 | ⏳ |
+| W7 | 前端 Dashboard 完善 | 用量/监控页面 | 🔄 V4 进行中 |
+| W8 | 集成测试 + 性能测试 | 测试覆盖 | 🔄 V4 进行中 |
 | W8 | 文档完善 | API 文档/架构文档 | ✅ |
 
-#### 第三阶段（第 9-12 周）：企业化 ✅ 已完成
+#### 第三阶段（第 9-12 周）：企业化 + V4 质量提升（进行中）
 
 | 周 | 任务 | 产出 | 状态 |
 |----|------|------|------|
 | W9 | Plugin 系统设计 | SPI + 热加载 + 沙箱 | ✅ |
-| W10 | 多租户增强 | 资源隔离/配额 | ⏳ |
-| W11 | PostgreSQL + PGVector 迁移 | 生产级存储 | ⏳ |
-| W12 | Kubernetes 部署方案 | 容器化部署 | ⏳ |
+| W10 | 多租户增强 | 资源隔离/配额 | 🔄 V4 进行中 |
+| W11~W12 | V4 综合开发 | 见下方 V4 开发计划 | 🔄 进行中 |
+
+#### V4 开发计划（6 周）
+
+| 周 | 任务 | 预估 |
+|----|------|------|
+| W1 | 单元测试 (AgentRuntime + MemoryService) + 清理维护 | ~11h |
+| W2 | 单元测试 (VectorStore + ModelRegistry) + Metrics 验证 | ~12h |
+| W3 | 文档解析器 + 教育 Agent 完善 + 前端认证页面 TODO | ~16h |
+| W4 | Usage 报表增强 + Dashboard 数据联调 | ~12h |
+| W5 | 多租户增强 + 页面功能验证 | ~16h |
+| W6 | 安全扫描配置 + UI/UX 优化 | ~9h |
 
 ### 20.3 优先级矩阵
 
@@ -5235,8 +5251,9 @@ quadrantChart
     "Usage Center": [0.7, 0.6]
     "Observability": [0.65, 0.55]
     "Plugin 系统": [0.5, 0.3]
-    "K8s 部署": [0.6, 0.35]
     "MCP 市场": [0.55, 0.45]
+    "单元测试": [0.85, 0.75]
+    "文档解析器": [0.6, 0.65]
     "Flyway": [0.4, 0.85]
 ```
 
@@ -5246,15 +5263,19 @@ quadrantChart
 |------|---------------|---------|---------|
 | Agent 暂停/恢复 | ✅ 已支持 | 生产级 | 分布式 |
 | Memory 层数 | ✅ 5 层（SPI 设计） | 语义记忆增强 | 多模态记忆 |
-| VectorStore 实现 | ✅ 2（JVector + InMemory） | +PGVector | +Qdrant/Milvus |
-| Token 统计 | ✅ 基础统计 | 多维报表 | 实时监控 |
-| 可观测性 | ✅ Trace+Metrics+Audit | 全链路 | AIOps |
-| 安全加固 | ✅ Token/反序列化/限流 | 全面审计 | 零信任 |
-| 模块化 | ✅ 21 模块 | 模块合并优化 | 插件化 |
-| MCP 工具市场 | ✅ 注册/发现/搜索/执行 | 远程 MCP | 开放市场 |
-| Plugin 系统 | ✅ SPI+热加载+沙箱 | 企业插件仓库 | 开发者平台 |
-| 启动验证 | ✅ 应用正常启动 :9000 | CI/CD | K8s |
-| 测试覆盖 | ⏳ 待补充 | 50% | 80% |
+| VectorStore 实现 | ✅ 2（JVector + InMemory） | 文档解析器完善 | +Qdrant/Milvus |
+| Token 统计 | ✅ 基础统计 | 多维报表 + WebSocket | 实时监控 |
+| 可观测性 | ✅ Trace+Metrics+Audit | Metrics 验证通过 | AIOps |
+| 安全加固 | ✅ Token/反序列化/限流 | OWASP 扫描 | 零信任 |
+| 模块化 | ✅ 21 模块 | — | 插件化 |
+| MCP 工具市场 | ✅ 注册/发现/搜索/执行 | — | 远程 MCP |
+| Plugin 系统 | ✅ SPI+热加载+沙箱 | — | 开发者平台 |
+| 启动验证 | ✅ 应用正常启动 :9000 | — | — |
+| 测试覆盖 | 🔄 V4 进行中 | 核心模块 50% | 80% |
+| 前端认证 | 🔄 V4 进行中 | 3 页 TODO 修复 | — |
+| Dashboard | 🔄 V4 进行中 | 真实数据绑定 | — |
+| 多租户 | ✅ 数据隔离 | 资源配额 | 全面隔离 |
+| 品牌 UI | ✅ 基础页面 | 统一品牌色 + i18n | — |
 
 ---
 
@@ -5268,25 +5289,3 @@ quadrantChart
 | **SPI** | Service Provider Interface，服务提供者接口 |
 | **RAG** | Retrieval-Augmented Generation，检索增强生成 |
 | **HNSW** | Hierarchical Navigable Small World，分层可导航小世界图 |
-| **MCP** | Model Context Protocol，模型上下文协议 |
-| **DDD** | Domain-Driven Design，领域驱动设计 |
-| **BO** | Business Object，业务对象 |
-| **DO** | Data Object，数据对象 |
-| **VO** | View Object，视图对象 |
-
-### B. 参考文档
-
-- [Spring Boot 4 官方文档](https://docs.spring.io/spring-boot/docs/current/reference/html/)
-- [Spring AI 官方文档](https://docs.spring.io/spring-ai/reference/)
-- [LangGraph4j GitHub](https://github.com/bsorrentino/langgraph4j)
-- [LangChain4j 官方文档](https://docs.langchain4j.dev/)
-- [LiteFlow 官方文档](https://liteflow.cc/)
-- [Sa-Token 官方文档](https://sa-token.cc/)
-- [JVector GitHub](https://github.com/jbellis/jvector)
-- [PGVector GitHub](https://github.com/pgvector/pgvector)
-
----
-
-> **文档版本**：2.0  
-> **最后更新**：2026-07-09  
-> **维护者**：ShiYu AI Team
