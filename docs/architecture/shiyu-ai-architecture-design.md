@@ -3,7 +3,7 @@
 > **Architecture Design Document (ADD)**  
 > **Version:** 2.1  
 > **Date:** 2026-07-10  
-> **Status:** In Review
+> **Status:** ✅ Phase 1 Complete
 
 ---
 
@@ -5250,7 +5250,10 @@ quadrantChart
 | Token 统计 | ✅ 基础统计 | 多维报表 | 实时监控 |
 | 可观测性 | ✅ Trace+Metrics+Audit | 全链路 | AIOps |
 | 安全加固 | ✅ Token/反序列化/限流 | 全面审计 | 零信任 |
-| 模块化 | ✅ 21 模块 → 14 模块优化中 | 插件化 | 微服务化 |
+| 模块化 | ✅ 21 模块 | 模块合并优化 | 插件化 |
+| MCP 工具市场 | ✅ 注册/发现/搜索/执行 | 远程 MCP | 开放市场 |
+| Plugin 系统 | ✅ SPI+热加载+沙箱 | 企业插件仓库 | 开发者平台 |
+| 启动验证 | ✅ 应用正常启动 :9000 | CI/CD | K8s |
 | 测试覆盖 | ⏳ 待补充 | 50% | 80% |
 
 ---
