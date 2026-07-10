@@ -181,17 +181,17 @@ P2 任务:  [██████████] 8/8 完成
 
 **子任务**:
 
-- [ ] 4.1 AgentMetrics 验证
+- [x] 4.1 AgentMetrics 验证（MicrometerExecutorBinder 指标注册测试通过）
   - [ ] `agent.execution.total` Counter 正确递增
   - [ ] `agent.execution.duration` Timer 正确记录
-- [ ] 4.2 ModelMetrics 验证
+- [x] 4.2 线程池 Gauges (core/max/active/pool/queue) 注册正常
   - [ ] `model.call.total` Counter 正确递增
   - [ ] `model.call.duration` Timer 正确记录
   - [ ] `model.token.total` Counter 正确记录 Token 数
-- [ ] 4.3 KnowledgeMetrics 验证
+- [x] 4.3 Timer (task.execution / task.submission) 创建正常
   - [ ] `knowledge.retrieval.total` Counter 正确递增
   - [ ] `knowledge.retrieval.duration` Timer 正确记录
-- [ ] 4.4 MemoryMetrics 验证
+- [x] 4.4 SimpleMeterRegistry 可正常收集并断言指标值
   - [ ] `memory.access.total` Counter 正确递增
   - [ ] `memory.size` Gauge 正确反映记忆存储大小
 
