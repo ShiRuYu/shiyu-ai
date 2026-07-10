@@ -80,6 +80,58 @@ public class AuthController {
      * GET /auth/codes
      * @return 权限码列表
      */
+
+    /**
+     * 用户注册
+     * POST /auth/register
+     */
+    @Operation(summary = "Register")
+    @PostMapping("/register")
+    public Result<LoginResponseVO> register(@Valid @RequestBody LoginRequest request) {
+        log.info("收到注册请求: username={}", request.getUsername());
+        try {
+            LoginResponseVO response = authService.register(
+                request.getUsername(), request.getPassword(), request.getEmail());
+            return Result.success(response);
+        } catch (IllegalArgumentException e) {
+            return Result.fail(e.getMessage());
+        }
+    }
+
+    /**
+     * 验证码登录
+     * POST /auth/code-login
+     */
+    @Operation(summary = "Code Login")
+    @PostMapping("/code-login")
+    public Result<LoginResponseVO> codeLogin(@RequestBody Map<String, String> body) {
+        log.info("收到验证码登录请求");
+        try {
+            LoginResponseVO response = authService.codeLogin(
+                body.get("phone"), body.get("code"));
+            return Result.success(response);
+        } catch (Exception e) {
+            return Result.fail(e.getMessage());
+        }
+    }
+
+    /**
+     * 忘记密码
+     * POST /auth/forget-password
+     */
+    @Operation(summary = "Forget Password")
+    @PostMapping("/forget-password")
+    public Result<Boolean> forgetPassword(@RequestBody Map<String, String> body) {
+        log.info("收到忘记密码请求: email={}", body.get("email"));
+        try {
+            boolean success = authService.forgetPassword(
+                body.get("email"), body.get("newPassword"), body.get("code"));
+            return Result.success(success);
+        } catch (IllegalArgumentException e) {
+            return Result.fail(e.getMessage());
+        }
+    }
+
     @Operation(summary = "Get Auth Codes")
     @GetMapping("/codes")
     public Result<List<String>> getAuthCodes() {

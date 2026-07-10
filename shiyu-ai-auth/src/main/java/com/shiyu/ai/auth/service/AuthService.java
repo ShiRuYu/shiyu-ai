@@ -111,4 +111,19 @@ public interface AuthService {
      * 获取用户所有租户列表
      */
     List<Map<String, Object>> getUserTenants(Long userId);
+    /**
+     * Register
+     */
+    LoginResponseVO register(String username, String password, String email);
+
+    /**
+     * Code Login
+     */
+    LoginResponseVO codeLogin(String phone, String code);
+
+    /**
+     * Forget Password
+     */
+    boolean forgetPassword(String email, String newPassword, String code);
+
 }

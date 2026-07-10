@@ -123,6 +123,17 @@ public class UserRepository {
     /**
      * 根据用户名查询用户（包含角色信息）
      */
+
+    /**
+     * 根据邮箱查询用户
+     */
+    public UserBO selectByEmail(String email) {
+        QueryWrapper queryWrapper = new QueryWrapper();
+        queryWrapper.eq(UserDO::getEmail, email);
+        UserDO userDO = userMapper.selectOneByQuery(queryWrapper);
+        return MapstructUtils.convert(userDO, UserBO.class);
+    }
+
     public UserBO selectUserWithRolesByUsername(String username) {
         QueryWrapper qw = QueryWrapper.create()
             .from(UserDO.class)

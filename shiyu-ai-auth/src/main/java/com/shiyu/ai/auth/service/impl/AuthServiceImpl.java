@@ -514,6 +514,51 @@ public class AuthServiceImpl implements AuthService {
         }
     }
 
+
+    @Override
+    public LoginResponseVO register(String username, String password, String email) {
+        log.info("用户注册: username={}, email={}", username, email);
+        UserBO existing = userRepository.selectByUsername(username);
+        if (existing != null) {
+            throw new IllegalArgumentException("用户名已存在: " + username);
+        }
+        UserBO user = new UserBO();
+        user.setUsername(username);
+        user.setPassword(PasswordUtils.encode(password));
+        user.setEmail(email);
+        user.setStatus("1");
+        userRepository.insert(user);
+        log.info("用户注册成功: userId={}", user.getId());
+        return login(username, password);
+    }
+
+    @Override
+    public LoginResponseVO codeLogin(String phone, String code) {
+        log.info("验证码登录: phone={}", phone);
+        UserBO user = userRepository.selectByUsername(phone);
+        if (user == null) {
+            user = new UserBO();
+            user.setUsername(phone);
+            user.setPassword(PasswordUtils.encode(code));
+            user.setStatus("1");
+            userRepository.insert(user);
+        }
+        return login(user.getUsername(), code);
+    }
+
+    @Override
+    public boolean forgetPassword(String email, String newPassword, String code) {
+        log.info("忘记密码: email={}", email);
+        UserBO user = userRepository.selectByEmail(email);
+        if (user == null) {
+            throw new IllegalArgumentException("该邮箱未注册: " + email);
+        }
+        user.setPassword(PasswordUtils.encode(newPassword));
+        userRepository.update(user);
+        log.info("密码重置成功: userId={}", user.getId());
+        return true;
+    }
+
     private Map<String, Object> parseExtInfo(String extInfo) {
         if (extInfo != null && !extInfo.isEmpty()) {
             Map<String, Object> map = JSONUtils.parseObject(extInfo, Map.class);

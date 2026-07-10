@@ -23,4 +23,8 @@ public class LoginRequest implements Serializable {
     private String captchaKey;
 
     private Long roleId;
+
+    private String email;
+
+    private String phone;
 }
