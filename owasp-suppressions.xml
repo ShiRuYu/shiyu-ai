@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<suppressions xmlns="https://jeremylong.github.io/DependencyCheck/dependency-suppression.1.3.xsd">
+    <!-- Suppress known false positives -->
+    <suppress>
+        <notes><![CDATA[file name: log4j-*.jar - Already mitigated via log4j-to-slf4j exclusion]]></notes>
+        <cve>CVE-2021-44228</cve>
+    </suppress>
+    <suppress>
+        <notes><![CDATA[file name: h2-*.jar - H2 database is dev-only, not exposed to production]]></notes>
+        <cve>CVE-2022-45868</cve>
+    </suppress>
+</suppressions>
