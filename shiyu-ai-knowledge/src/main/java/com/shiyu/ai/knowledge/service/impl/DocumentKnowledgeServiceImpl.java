@@ -6,6 +6,8 @@ import com.shiyu.ai.dal.dataobject.knowledge.KnowledgeChunkDO;
 import com.shiyu.ai.dal.dataobject.knowledge.KnowledgeDocumentDO;
 import com.shiyu.ai.knowledge.rag.DocumentIngestionService;
 import com.shiyu.ai.dal.repository.knowledge.KnowledgeChunkRepository;
+import com.shiyu.ai.dal.repository.knowledge.KnowledgeDocRelationRepository;
+import com.shiyu.ai.dal.dataobject.knowledge.KnowledgeDocRelationDO;
 import com.shiyu.ai.dal.repository.knowledge.KnowledgeDocumentRepository;
 import com.shiyu.ai.knowledge.service.DocumentKnowledgeService;
 import com.shiyu.ai.vector.spi.VectorRecord;
@@ -29,18 +31,21 @@ public class DocumentKnowledgeServiceImpl implements DocumentKnowledgeService {
     private final DocumentIngestionService ingestionService;
     private final VectorStore vectorStore;
     private final EmbeddingService embeddingService;
-    private final KnowledgeChunkRepository chunkRepository;
+        private final KnowledgeChunkRepository chunkRepository;
+    private final KnowledgeDocRelationRepository docRelationRepository;
 
     public DocumentKnowledgeServiceImpl(KnowledgeDocumentRepository documentRepository,
                                         DocumentIngestionService ingestionService,
                                         VectorStore vectorStore,
                                         EmbeddingService embeddingService,
-                                        KnowledgeChunkRepository chunkRepository) {
+                                        KnowledgeChunkRepository chunkRepository,
+                                        KnowledgeDocRelationRepository docRelationRepository) {
         this.documentRepository = documentRepository;
         this.ingestionService = ingestionService;
         this.vectorStore = vectorStore;
         this.embeddingService = embeddingService;
-        this.chunkRepository = chunkRepository;
+                this.chunkRepository = chunkRepository;
+        this.docRelationRepository = docRelationRepository;
     }
 
     @Override
@@ -148,7 +153,22 @@ public class DocumentKnowledgeServiceImpl implements DocumentKnowledgeService {
         documentRepository.insert(doc);
 
         // 同步到 VectorStore（ChunkSplit + Embed + VectorStore）
-        ingestionService.ingest(doc.getId(), doc.getContent(), request.knowledgeIds());
+                ingestionService.ingest(doc.getId(), doc.getContent(), request.knowledgeIds());
+
+        // Save knowledge-doc relations to knowledge_doc_relation table
+        if (request.knowledgeIds() != null && !request.knowledgeIds().isEmpty()) {
+            List<KnowledgeDocRelationDO> relations = request.knowledgeIds().stream()
+                    .map(kid -> {
+                        KnowledgeDocRelationDO r = new KnowledgeDocRelationDO();
+                        r.setDocId(doc.getId());
+                        r.setKnowledgeId(kid);
+                        r.setRelationType("RELATED");
+                        r.setCreateTime(java.time.LocalDateTime.now());
+                        return r;
+                    })
+                    .toList();
+            docRelationRepository.insertBatch(relations);
+        }
 
         return toVO(doc, doc.getContent(), request.knowledgeIds());
     }

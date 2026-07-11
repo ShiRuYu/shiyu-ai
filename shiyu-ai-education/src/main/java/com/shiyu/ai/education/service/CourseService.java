@@ -55,4 +55,8 @@ public interface CourseService {
      * @return 处理结果
      */
     void deleteById(Long id);
+    /**
+     * Record study session
+     */
+    void recordStudy(com.shiyu.ai.dal.dataobject.education.StudyRecordDO record);
 }

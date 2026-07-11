@@ -76,4 +76,41 @@ public class ChapterController {
         return new ChapterResponse(chapter.getId(), chapter.getTextbookId(), chapter.getParentId(),
                 chapter.getName(), chapter.getChapterOrder(), childResponses);
     }
+    // ========== Chapter-Knowledge binding ==========
+
+    @GetMapping("/{id}/detail")
+    @Operation(summary = "Get chapter detail with knowledgeIds")
+    public Result<java.util.Map<String, Object>> getChapterDetail(@PathVariable Long id) {
+        ChapterDO chapter = chapterService.getById(id);
+        if (chapter == null) return Result.fail("Chapter not found");
+        List<Long> knowledgeIds = chapterService.getKnowledgeIdsByChapterId(id);
+        java.util.Map<String, Object> result = new java.util.HashMap<>();
+        result.put("chapter", toResponse(chapter));
+        result.put("knowledgeIds", knowledgeIds);
+        return Result.success(result);
+    }
+
+    @PostMapping("/knowledge/bind")
+    @Operation(summary = "Bind knowledge to chapter")
+    public Result<Void> bindKnowledge(
+            @RequestParam Long chapterId,
+            @RequestBody List<Long> knowledgeIds) {
+        chapterService.bindKnowledge(chapterId, knowledgeIds);
+        return Result.success();
+    }
+
+    @PostMapping("/knowledge/unbind")
+    @Operation(summary = "Unbind knowledge from chapter")
+    public Result<Void> unbindKnowledge(
+            @RequestParam Long chapterId,
+            @RequestParam Long knowledgeId) {
+        chapterService.unbindKnowledge(chapterId, knowledgeId);
+        return Result.success();
+    }
+
+    @GetMapping("/knowledge/list")
+    @Operation(summary = "Get knowledgeIds for a chapter")
+    public Result<List<Long>> getChapterKnowledgeIds(@RequestParam Long chapterId) {
+        return Result.success(chapterService.getKnowledgeIdsByChapterId(chapterId));
+    }
 }

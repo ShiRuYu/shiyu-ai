@@ -113,3 +113,53 @@ VALUES (7, 'default', 'DATA_ANALYSIS', '数据分析', 1, 0, '数据处理与分
 
 INSERT IGNORE INTO `intent_def` (`id`, `agent_id`, `code`, `name`, `tenant_id`, `workspace_id`, `description`, `category`, `priority`, `confidence_threshold`, `enabled`, `status`, `create_by`, `update_by`)
 VALUES (8, 'default', 'UNKNOWN', '未知意图', 1, 0, '无法识别的意图', 'CONVERSATION', 0, 0.50, '1', 1, 'system', 'system');
+
+
+-- ============================================
+-- 教育域 Agent: practice（AI出题）
+-- ============================================
+INSERT IGNORE INTO `agent_def` (`id`, `agent_id`, `name`, `description`, `tenant_id`, `workspace_id`, `current_version`, `status`, `create_by`, `update_by`)
+VALUES (7, 'practice', 'AI出题助手', '根据知识点和难度智能生成练习题（使用硅基流动 Qwen3-8B 模型）', 1, 0, 'v1.0.0', 1, 'system', 'system');
+
+INSERT IGNORE INTO `agent_version` (`id`, `agent_id`, `version_number`, `tenant_id`, `workspace_id`, `description`, `status`, `graph_config`, `canvas_config`, `create_by`, `update_by`)
+VALUES (7, 'practice', 'v1.0.0', 1, 0, '初始版本', 'PUBLISHED', 
+'{"name":"practice-graph","description":"AI出题工作流程","startNode":"input","endNode":"output","nodes":{"input":{"nodeName":"输入节点","nodeType":"DEFAULT","enabled":true},"llm":{"nodeName":"AI出题","nodeType":"LLM_CALL","enabled":true,"config":{"platform":"SILICON_FLOW","modelName":"Qwen/Qwen3-8B","defaultPrompt":"你是一位经验丰富的 K12 出题教师，请根据知识点生成练习题。","promptTemplate":"你是一位经验丰富的 K12 出题教师。\n\n## 出题参数\n- 知识点ID: {knowledgeId}\n- 难度级别（1-4）: {difficulty}\n- 题目数量: {count}\n- 学生ID: {studentId}\n\n请生成 {count} 道难度为 {difficulty} 级的练习题。\n- 题目类型：选择题（60%）和填空题（40%）\n- 每行输出一个 JSON：{\"type\":\"CHOICE\",\"title\":\"题干\",\"options\":[\"A.\",\"B.\",\"C.\",\"D.\"],\"answer\":\"A\",\"analysis\":\"解析\",\"ability_dimension\":\"apply\"}\n- 仅输出 JSON 数据，用中文出题。\n"}},"output":{"nodeName":"输出格式化","nodeType":"OUTPUT_FORMAT","enabled":true,"config":{"outputFormat":"TEXT","prettyPrint":true}}},"edges":{"input":["llm"],"llm":["output"]},"conditionalEdges":{}}',
+'{"zoom":1,"offsetX":0,"offsetY":0,"nodePositions":{"input":{"x":100,"y":100},"llm":{"x":300,"y":100},"output":{"x":500,"y":100}}}',
+'system', 'system');
+
+-- ============================================
+-- 教育域 Agent: teacher（AI讲解/教学）
+-- ============================================
+INSERT IGNORE INTO `agent_def` (`id`, `agent_id`, `name`, `description`, `tenant_id`, `workspace_id`, `current_version`, `status`, `create_by`, `update_by`)
+VALUES (8, 'teacher', 'AI讲解助手', '根据知识点进行智能教学讲解（使用硅基流动 Qwen3-8B 模型）', 1, 0, 'v1.0.0', 1, 'system', 'system');
+
+INSERT IGNORE INTO `agent_version` (`id`, `agent_id`, `version_number`, `tenant_id`, `workspace_id`, `description`, `status`, `graph_config`, `canvas_config`, `create_by`, `update_by`)
+VALUES (8, 'teacher', 'v1.0.0', 1, 0, '初始版本', 'PUBLISHED', 
+'{"name":"teacher-graph","description":"AI教学讲解工作流程","startNode":"input","endNode":"output","nodes":{"input":{"nodeName":"输入节点","nodeType":"DEFAULT","enabled":true},"llm":{"nodeName":"教学讲解","nodeType":"LLM_CALL","enabled":true,"config":{"platform":"SILICON_FLOW","modelName":"Qwen/Qwen3-8B","defaultPrompt":"你是一位耐心的 K12 学科教师，请根据知识点进行详细讲解。","promptTemplate":"你是一位耐心的 K12 学科教师。\n\n## 教学参数\n- 知识点ID: {knowledgeId}\n- 学生ID: {studentId}\n- 讲解风格: {style}\n\n请根据上述知识点进行详细、通俗易懂的讲解，包含概念解释、典型例题和易错点提醒。"}},"output":{"nodeName":"输出格式化","nodeType":"OUTPUT_FORMAT","enabled":true,"config":{"outputFormat":"TEXT","prettyPrint":true}}},"edges":{"input":["llm"],"llm":["output"]},"conditionalEdges":{}}',
+'{"zoom":1,"offsetX":0,"offsetY":0,"nodePositions":{"input":{"x":100,"y":100},"llm":{"x":300,"y":100},"output":{"x":500,"y":100}}}',
+'system', 'system');
+
+-- ============================================
+-- 教育域 Agent: planner（学习规划）
+-- ============================================
+INSERT IGNORE INTO `agent_def` (`id`, `agent_id`, `name`, `description`, `tenant_id`, `workspace_id`, `current_version`, `status`, `create_by`, `update_by`)
+VALUES (9, 'planner', '学习规划助手', '根据知识点生成个性化学习规划（使用硅基流动 Qwen3-8B 模型）', 1, 0, 'v1.0.0', 1, 'system', 'system');
+
+INSERT IGNORE INTO `agent_version` (`id`, `agent_id`, `version_number`, `tenant_id`, `workspace_id`, `description`, `status`, `graph_config`, `canvas_config`, `create_by`, `update_by`)
+VALUES (9, 'planner', 'v1.0.0', 1, 0, '初始版本', 'PUBLISHED', 
+'{"name":"planner-graph","description":"学习规划工作流程","startNode":"input","endNode":"output","nodes":{"input":{"nodeName":"输入节点","nodeType":"DEFAULT","enabled":true},"llm":{"nodeName":"学习规划","nodeType":"LLM_CALL","enabled":true,"config":{"platform":"SILICON_FLOW","modelName":"Qwen/Qwen3-8B","defaultPrompt":"请根据知识点和学习目标生成个性化学习规划。","promptTemplate":"请根据以下信息生成个性化学习规划。\n\n## 规划参数\n- 知识点ID: {knowledgeId}\n- 学生ID: {studentId}\n- 目标日期: {targetDate}\n\n请制定从今天到目标日期的学习计划，每天的学习内容、练习安排和复习计划。"}},"output":{"nodeName":"输出格式化","nodeType":"OUTPUT_FORMAT","enabled":true,"config":{"outputFormat":"TEXT","prettyPrint":true}}},"edges":{"input":["llm"],"llm":["output"]},"conditionalEdges":{}}',
+'{"zoom":1,"offsetX":0,"offsetY":0,"nodePositions":{"input":{"x":100,"y":100},"llm":{"x":300,"y":100},"output":{"x":500,"y":100}}}',
+'system', 'system');
+
+-- ============================================
+-- 教育域 Agent: report（学习报告）
+-- ============================================
+INSERT IGNORE INTO `agent_def` (`id`, `agent_id`, `name`, `description`, `tenant_id`, `workspace_id`, `current_version`, `status`, `create_by`, `update_by`)
+VALUES (10, 'report', '学习报告助手', '基于学习数据生成学习分析报告（使用硅基流动 Qwen3-8B 模型）', 1, 0, 'v1.0.0', 1, 'system', 'system');
+
+INSERT IGNORE INTO `agent_version` (`id`, `agent_id`, `version_number`, `tenant_id`, `workspace_id`, `description`, `status`, `graph_config`, `canvas_config`, `create_by`, `update_by`)
+VALUES (10, 'report', 'v1.0.0', 1, 0, '初始版本', 'PUBLISHED', 
+'{"name":"report-graph","description":"学习报告工作流程","startNode":"input","endNode":"output","nodes":{"input":{"nodeName":"输入节点","nodeType":"DEFAULT","enabled":true},"llm":{"nodeName":"报告生成","nodeType":"LLM_CALL","enabled":true,"config":{"platform":"SILICON_FLOW","modelName":"Qwen/Qwen3-8B","defaultPrompt":"请根据学习数据生成综合学习分析报告。","promptTemplate":"请根据以下学习数据生成学习分析报告。\n\n## 报告参数\n- 学生ID: {studentId}\n- 报告周期: {period}\n\n请生成包含以下内容的学习报告：\n1. 学习概况总结\n2. 各知识点掌握度分析\n3. 薄弱环节识别\n4. 针对性提升建议"}},"output":{"nodeName":"输出格式化","nodeType":"OUTPUT_FORMAT","enabled":true,"config":{"outputFormat":"TEXT","prettyPrint":true}}},"edges":{"input":["llm"],"llm":["output"]},"conditionalEdges":{}}',
+'{"zoom":1,"offsetX":0,"offsetY":0,"nodePositions":{"input":{"x":100,"y":100},"llm":{"x":300,"y":100},"output":{"x":500,"y":100}}}',
+'system', 'system');
+

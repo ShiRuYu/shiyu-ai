@@ -1,7 +1,10 @@
 package com.shiyu.ai.dal.repository.knowledge;
 
+import com.mybatisflex.core.query.QueryWrapper;
+import com.shiyu.ai.dal.dataobject.knowledge.KnowledgeDocRelationDO;
 import com.shiyu.ai.dal.dataobject.knowledge.KnowledgeDocumentDO;
 import com.shiyu.ai.dal.mapper.knowledge.KnowledgeDocumentMapper;
+import com.shiyu.ai.dal.mapper.knowledge.KnowledgeDocRelationMapper;
 import jakarta.annotation.Resource;
 import org.springframework.stereotype.Component;
 
@@ -12,6 +15,9 @@ public class KnowledgeDocumentRepository {
 
     @Resource
     private KnowledgeDocumentMapper knowledgeDocumentMapper;
+
+    @Resource
+    private KnowledgeDocRelationMapper knowledgeDocRelationMapper;
 
     public KnowledgeDocumentDO selectById(Long id) {
         return knowledgeDocumentMapper.selectOneById(id);
@@ -34,8 +40,6 @@ public class KnowledgeDocumentRepository {
     }
 
     public List<KnowledgeDocumentDO> searchByKeyword(String keyword, int topK) {
-        // 先取出全部，在内存中按标题匹配（小规模数据）
-        // 后续可改为 MyBatis-Flex QueryWrapper like 查询
         return selectAll().stream()
                 .filter(d -> d.getTitle() != null && d.getTitle().contains(keyword)
                         || d.getContent() != null && d.getContent().contains(keyword))
@@ -44,9 +48,14 @@ public class KnowledgeDocumentRepository {
     }
 
     public List<KnowledgeDocumentDO> selectByKnowledgeId(Long knowledgeId) {
-        // 通过 ingestion 表关联查询，暂返回空
-        // 后续可通过 knowledge_doc_relation 表关联
-        return List.of();
+        // Query via knowledge_doc_relation table
+        List<Long> docIds = knowledgeDocRelationMapper.selectListByQuery(
+                QueryWrapper.create().eq("knowledge_id", knowledgeId))
+                .stream()
+                .map(KnowledgeDocRelationDO::getDocId)
+                .toList();
+        if (docIds.isEmpty()) return List.of();
+        return knowledgeDocumentMapper.selectListByQuery(
+                QueryWrapper.create().in("id", docIds));
     }
-
 }

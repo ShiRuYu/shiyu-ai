@@ -53,4 +53,18 @@ public interface ChapterService {
      * @return 处理结果
      */
     void deleteById(Long id);
+    /**
+     * Get Knowledge Ids By Chapter Id
+     */
+    List<Long> getKnowledgeIdsByChapterId(Long chapterId);
+
+    /**
+     * Bind Knowledge to Chapter
+     */
+    void bindKnowledge(Long chapterId, List<Long> knowledgeIds);
+
+    /**
+     * Unbind Knowledge from Chapter
+     */
+    void unbindKnowledge(Long chapterId, Long knowledgeId);
 }

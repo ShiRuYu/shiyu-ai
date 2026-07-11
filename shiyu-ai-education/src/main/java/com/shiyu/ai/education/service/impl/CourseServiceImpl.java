@@ -98,4 +98,9 @@ public class CourseServiceImpl implements CourseService {
         return new CourseProgressResponse(courseId, course.getName(),
                 (int) completedKnowledges, totalKnowledges, progress);
     }
+    @Override
+    public void recordStudy(com.shiyu.ai.dal.dataobject.education.StudyRecordDO record) {
+        studyRecordRepository.insert(record);
+        log.info("Study recorded: studentId={}, knowledgeId={}", record.getStudentId(), record.getKnowledgeId());
+    }
 }

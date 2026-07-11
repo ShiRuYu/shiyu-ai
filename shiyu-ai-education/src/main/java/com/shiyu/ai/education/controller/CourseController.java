@@ -95,4 +95,27 @@ public class CourseController {
                 course.getTeacherId(), course.getCoverUrl(), course.getTotalHours(),
                 course.getStatus());
     }
+    @GetMapping("/progress")
+    @Operation(summary = "Get course learning progress")
+    public Result<CourseProgressResponse> getProgress(
+            @RequestParam Long courseId, @RequestParam Long studentId) {
+        return Result.success(courseService.getProgress(courseId, studentId));
+    }
+
+    @PostMapping("/record-study")
+    @Operation(summary = "Record study session")
+    public Result<Void> recordStudy(
+            @RequestParam Long studentId,
+            @RequestParam Long courseId,
+            @RequestParam(required = false) Long chapterId,
+            @RequestParam(required = false) Long knowledgeId) {
+        com.shiyu.ai.dal.dataobject.education.StudyRecordDO record =
+                new com.shiyu.ai.dal.dataobject.education.StudyRecordDO();
+        record.setStudentId(studentId);
+        record.setKnowledgeId(knowledgeId);
+        record.setRecordType("LEARN");
+        record.setCreateTime(java.time.LocalDateTime.now());
+        courseService.recordStudy(record);
+        return Result.success();
+    }
 }
