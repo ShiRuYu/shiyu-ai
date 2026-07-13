@@ -91,7 +91,7 @@ VALUES (5, 2, 5, 1, 1, 0, 'system', 'system');
 -- 菜单（默认系统）
 -- ==============================
 INSERT IGNORE INTO `menu` (`id`, `name`, `code`, `type`, `parent_id`, `tenant_id`, `path`, `redirect`, `icon`, `component`, `show`, `status`, `order`, `del_flag`, `create_by`, `update_by`)
-VALUES (1, '系统管理', 'System', 'CATALOG', NULL, 1, '/system', '/system/user', 'lucide:settings', '', TRUE, 1, 1, 0, 'system', 'system');
+VALUES (1, '系统设置', 'SystemSettings', 'CATALOG', NULL, 1, '/system', '/system/user', 'lucide:settings', '', TRUE, 1, 9998, 0, 'system', 'system');
 
 INSERT IGNORE INTO `menu` (`id`, `name`, `code`, `type`, `parent_id`, `tenant_id`, `path`, `icon`, `component`, `show`, `status`, `order`, `del_flag`, `create_by`, `update_by`)
 VALUES (2, '用户管理', 'SystemUser', 'MENU', 1, 1, '/system/user', 'lucide:user', '/system/user/index', TRUE, 1, 1, 0, 'system', 'system');
@@ -114,21 +114,14 @@ VALUES (7, '字典管理', 'SystemDict', 'MENU', 1, 1, '/system/dict', 'lucide:b
 INSERT IGNORE INTO `menu` (`id`, `name`, `code`, `type`, `parent_id`, `tenant_id`, `path`, `icon`, `component`, `show`, `status`, `order`, `del_flag`, `create_by`, `update_by`)
 VALUES (11, '权限码管理', 'SystemAuthCode', 'MENU', 1, 1, '/system/auth-code', 'lucide:shield-check', '/system/auth-code/index', TRUE, 1, 7, 0, 'system', 'system');
 
-INSERT IGNORE INTO `menu` (`id`, `name`, `code`, `type`, `parent_id`, `tenant_id`, `path`, `icon`, `component`, `show`, `status`, `order`, `del_flag`, `create_by`, `update_by`)
-VALUES (8, 'AI 平台', 'SystemAiPlatform', 'MENU', 1, 1, '/system/ai-platform', 'lucide:bot', '/agent/platform/list', TRUE, 1, 8, 0, 'system', 'system');
-
-INSERT IGNORE INTO `menu` (`id`, `name`, `code`, `type`, `parent_id`, `tenant_id`, `path`, `icon`, `component`, `show`, `status`, `order`, `del_flag`, `create_by`, `update_by`)
-VALUES (9, 'AI 模型', 'SystemAiModel', 'MENU', 1, 1, '/system/ai-model', 'lucide:cpu', '/agent/model/list', TRUE, 1, 8, 0, 'system', 'system');
-
-
 -- ==============================
 -- 菜单（业务模块）
 -- ==============================
 INSERT IGNORE INTO `menu` (`id`, `name`, `code`, `type`, `parent_id`, `tenant_id`, `path`, `redirect`, `icon`, `component`, `show`, `status`, `order`, `del_flag`, `create_by`, `update_by`)
-VALUES (10, '智能体', 'Agent', 'CATALOG', NULL, 1, '/agent', '/agent/admin/list', 'carbon:bot', '', TRUE, 1, 2, 0, 'system', 'system');
+VALUES (10, '平台管理', 'PlatformManager', 'CATALOG', NULL, 1, '/platform', '/agent/admin/list', 'carbon:bot', '', TRUE, 1, 10, 0, 'system', 'system');
 
 INSERT IGNORE INTO `menu` (`id`, `name`, `code`, `type`, `parent_id`, `tenant_id`, `path`, `icon`, `component`, `show`, `status`, `order`, `del_flag`, `create_by`, `update_by`)
-VALUES (11, 'Agent 管理', 'AgentAdmin', 'MENU', 10, 1, '/agent/admin/list', 'carbon:development', '/agent/admin/agent-list', TRUE, 1, 1, 0, 'system', 'system');
+VALUES (16, 'Agent 管理', 'AgentAdmin', 'MENU', 10, 1, '/agent/admin/list', 'carbon:development', '/agent/admin/agent-list', TRUE, 1, 1, 0, 'system', 'system');
 
 INSERT IGNORE INTO `menu` (`id`, `name`, `code`, `type`, `parent_id`, `tenant_id`, `path`, `icon`, `component`, `show`, `status`, `order`, `del_flag`, `create_by`, `update_by`)
 VALUES (12, '平台管理', 'AgentPlatform', 'MENU', 10, 1, '/agent/platform', 'carbon:bare-metal-server', '/agent/platform/list', TRUE, 1, 2, 0, 'system', 'system');
@@ -144,7 +137,7 @@ VALUES (15, '意图管理', 'AgentIntent', 'MENU', 10, 1, '/agent/intent', 'carb
 
 -- 知识库管理 CATALOG
 INSERT IGNORE INTO `menu` (`id`, `name`, `code`, `type`, `parent_id`, `tenant_id`, `path`, `redirect`, `icon`, `component`, `show`, `status`, `order`, `del_flag`, `create_by`, `update_by`)
-VALUES (70, '知识库管理', 'Knowledge', 'CATALOG', NULL, 1, '/knowledge', '/knowledge/list', 'lucide:library', '', TRUE, 1, 70, 0, 'system', 'system');
+VALUES (70, '知识引擎', 'KnowledgeEngine', 'CATALOG', NULL, 1, '/knowledge', '/knowledge/list', 'lucide:library', '', TRUE, 1, 15, 0, 'system', 'system');
 
 INSERT IGNORE INTO `menu` (`id`, `name`, `code`, `type`, `parent_id`, `tenant_id`, `path`, `icon`, `component`, `show`, `status`, `order`, `del_flag`, `create_by`, `update_by`)
 VALUES (71, '知识点管理', 'KnowledgeList', 'MENU', 70, 1, '/knowledge/list', 'carbon:concept', '/knowledge-engine/knowledge-list/list', TRUE, 1, 1, 0, 'system', 'system');
@@ -163,7 +156,7 @@ VALUES (75, '知识关系', 'KnowledgeRelation', 'MENU', 70, 1, '/knowledge/rela
 
 -- 教育管理 CATALOG
 INSERT IGNORE INTO `menu` (`id`, `name`, `code`, `type`, `parent_id`, `tenant_id`, `path`, `redirect`, `icon`, `component`, `show`, `status`, `order`, `del_flag`, `create_by`, `update_by`)
-VALUES (40, '教育管理', 'EduAdmin', 'CATALOG', NULL, 1, '/edu/admin', '/edu/subject', 'lucide:graduation-cap', '', TRUE, 1, 40, 0, 'system', 'system');
+VALUES (40, '教育管理', 'EduAdmin', 'CATALOG', 1500, 1, '/edu/admin', '/edu/subject', 'carbon:settings', '', TRUE, 1, 20, 0, 'system', 'system');
 
 INSERT IGNORE INTO `menu` (`id`, `name`, `code`, `type`, `parent_id`, `tenant_id`, `path`, `icon`, `component`, `show`, `status`, `order`, `del_flag`, `create_by`, `update_by`)
 VALUES (41, '学科管理', 'EduSubject', 'MENU', 40, 1, '/edu/subject', 'carbon:category', '/education-admin/subject/list', TRUE, 1, 1, 0, 'system', 'system');
@@ -203,7 +196,7 @@ VALUES (52, '错题管理', 'EduWrongQuestion', 'MENU', 40, 1, '/edu/wrong-quest
 
 -- 日常记录 CATALOG
 INSERT IGNORE INTO `menu` (`id`, `name`, `code`, `type`, `parent_id`, `tenant_id`, `path`, `redirect`, `icon`, `component`, `show`, `status`, `order`, `del_flag`, `create_by`, `update_by`)
-VALUES (80, '日常记录', 'Record', 'CATALOG', NULL, 1, '/record', '/record/profile', 'carbon:document', '', TRUE, 1, 80, 0, 'system', 'system');
+VALUES (80, '日常记录', 'Record', 'CATALOG', NULL, 1, '/record', '/record/profile', 'carbon:notebook', '', TRUE, 1, 30, 0, 'system', 'system');
 
 INSERT IGNORE INTO `menu` (`id`, `name`, `code`, `type`, `parent_id`, `tenant_id`, `path`, `icon`, `component`, `show`, `status`, `order`, `del_flag`, `create_by`, `update_by`)
 VALUES (81, '人物管理', 'RecordProfile', 'MENU', 80, 1, '/record/profile', 'carbon:user-profile', '/record/profile/list', TRUE, 1, 1, 0, 'system', 'system');
@@ -212,13 +205,13 @@ INSERT IGNORE INTO `menu` (`id`, `name`, `code`, `type`, `parent_id`, `tenant_id
 VALUES (82, '时间轴', 'RecordTimeline', 'MENU', 80, 1, '/record/timeline', 'carbon:time', '/record/timeline/list', TRUE, 1, 2, 0, 'system', 'system');
 
 INSERT IGNORE INTO `menu` (`id`, `name`, `code`, `type`, `parent_id`, `tenant_id`, `path`, `icon`, `component`, `show`, `status`, `order`, `del_flag`, `create_by`, `update_by`)
-VALUES (83, '记录列表', 'RecordRecords', 'MENU', 80, 1, '/record/records', 'carbon:list', '/record/records/list', TRUE, 1, 3, 0, 'system', 'system');
+VALUES (83, '记录内容', 'RecordRecords', 'MENU', 80, 1, '/record/records', 'carbon:document', '/record/records/list', TRUE, 1, 3, 0, 'system', 'system');
 
 INSERT IGNORE INTO `menu` (`id`, `name`, `code`, `type`, `parent_id`, `tenant_id`, `path`, `icon`, `component`, `show`, `status`, `order`, `del_flag`, `create_by`, `update_by`)
 VALUES (84, '标签管理', 'RecordTags', 'MENU', 80, 1, '/record/tags', 'carbon:tag', '/record/tags/list', TRUE, 1, 4, 0, 'system', 'system');
 
 INSERT IGNORE INTO `menu` (`id`, `name`, `code`, `type`, `parent_id`, `tenant_id`, `path`, `icon`, `component`, `show`, `status`, `order`, `del_flag`, `create_by`, `update_by`)
-VALUES (85, '媒体管理', 'RecordMedia', 'MENU', 80, 1, '/record/media', 'carbon:media', '/record/media/list', TRUE, 1, 5, 0, 'system', 'system');
+VALUES (85, '附件管理', 'RecordMedia', 'MENU', 80, 1, '/record/media', 'carbon:attachment', '/record/media/list', TRUE, 1, 5, 0, 'system', 'system');
 
 -- 文件管理
 INSERT IGNORE INTO `menu` (`id`, `name`, `code`, `type`, `parent_id`, `tenant_id`, `path`, `icon`, `component`, `show`, `status`, `order`, `del_flag`, `create_by`, `update_by`)
@@ -235,8 +228,6 @@ VALUES (0, 0, 1, 1, 1, 0, 'system', 'system'),
        (0, 0, 6, 1, 1, 0, 'system', 'system'),
        (0, 0, 7, 1, 1, 0, 'system', 'system'),
        (0, 0, 11, 1, 1, 0, 'system', 'system'),
-       (0, 0, 8, 1, 1, 0, 'system', 'system'),
-       (0, 0, 9, 1, 1, 0, 'system', 'system'),
        (0, 0, 100, 1, 1, 0, 'system', 'system'),
        (0, 0, 101, 1, 1, 0, 'system', 'system'),
        (0, 0, 102, 1, 1, 0, 'system', 'system'),
@@ -245,12 +236,31 @@ VALUES (0, 0, 1, 1, 1, 0, 'system', 'system'),
        (0, 0, 1501, 1, 1, 0, 'system', 'system'),
        (0, 0, 1502, 1, 1, 0, 'system', 'system'),
        (0, 0, 1503, 1, 1, 0, 'system', 'system'),
-       (0, 0, 1504, 1, 1, 0, 'system', 'system'),
-       (0, 0, 1505, 1, 1, 0, 'system', 'system'),
-       (0, 0, 1506, 1, 1, 0, 'system', 'system'),
-       (0, 0, 1507, 1, 1, 0, 'system', 'system'),
+       (0, 0, 1508, 1, 1, 0, 'system', 'system'),
+       (0, 0, 1510, 1, 1, 0, 'system', 'system'),
+       (0, 0, 1511, 1, 1, 0, 'system', 'system'),
+       (0, 0, 1520, 1, 1, 0, 'system', 'system'),
+       (0, 0, 1521, 1, 1, 0, 'system', 'system'),
+       (0, 0, 1530, 1, 1, 0, 'system', 'system'),
+       (0, 0, 1531, 1, 1, 0, 'system', 'system'),
+       (0, 0, 1540, 1, 1, 0, 'system', 'system'),
+       (0, 0, 1541, 1, 1, 0, 'system', 'system'),
+       (0, 0, 1542, 1, 1, 0, 'system', 'system'),
+       (0, 0, 1543, 1, 1, 0, 'system', 'system'),
+       (0, 0, 1544, 1, 1, 0, 'system', 'system'),
+       (0, 0, 1550, 1, 1, 0, 'system', 'system'),
+       (0, 0, 1551, 1, 1, 0, 'system', 'system'),
+       (0, 0, 1552, 1, 1, 0, 'system', 'system'),
+       (0, 0, 1553, 1, 1, 0, 'system', 'system'),
+       (0, 0, 1560, 1, 1, 0, 'system', 'system'),
+       (0, 0, 1561, 1, 1, 0, 'system', 'system'),
+       (0, 0, 1562, 1, 1, 0, 'system', 'system'),
+       (0, 0, 1563, 1, 1, 0, 'system', 'system'),
+       (0, 0, 1564, 1, 1, 0, 'system', 'system'),
+       (0, 0, 1565, 1, 1, 0, 'system', 'system'),
+       (0, 0, 1566, 1, 1, 0, 'system', 'system'),
        (0, 0, 10, 1, 1, 0, 'system', 'system'),
-       (0, 0, 11, 1, 1, 0, 'system', 'system'),
+       (0, 0, 16, 1, 1, 0, 'system', 'system'),
        (0, 0, 12, 1, 1, 0, 'system', 'system'),
        (0, 0, 13, 1, 1, 0, 'system', 'system'),
        (0, 0, 14, 1, 1, 0, 'system', 'system'),
@@ -292,10 +302,8 @@ VALUES (1, 0, 1, 1, 1, 0, 'system', 'system'),
        (1, 0, 6, 1, 1, 0, 'system', 'system'),
        (1, 0, 7, 1, 1, 0, 'system', 'system'),
        (1, 0, 11, 1, 1, 0, 'system', 'system'),
-       (1, 0, 8, 1, 1, 0, 'system', 'system'),
-       (1, 0, 9, 1, 1, 0, 'system', 'system'),
        (1, 0, 10, 1, 1, 0, 'system', 'system'),
-       (1, 0, 11, 1, 1, 0, 'system', 'system'),
+       (1, 0, 16, 1, 1, 0, 'system', 'system'),
        (1, 0, 12, 1, 1, 0, 'system', 'system'),
        (1, 0, 13, 1, 1, 0, 'system', 'system'),
        (1, 0, 14, 1, 1, 0, 'system', 'system'),
@@ -313,6 +321,33 @@ VALUES (1, 0, 1, 1, 1, 0, 'system', 'system'),
        (1, 0, 50, 1, 1, 0, 'system', 'system'),
        (1, 0, 51, 1, 1, 0, 'system', 'system'),
        (1, 0, 52, 1, 1, 0, 'system', 'system'),
+       (1, 0, 1500, 1, 1, 0, 'system', 'system'),
+       (1, 0, 1501, 1, 1, 0, 'system', 'system'),
+       (1, 0, 1502, 1, 1, 0, 'system', 'system'),
+       (1, 0, 1503, 1, 1, 0, 'system', 'system'),
+       (1, 0, 1508, 1, 1, 0, 'system', 'system'),
+       (1, 0, 1510, 1, 1, 0, 'system', 'system'),
+       (1, 0, 1511, 1, 1, 0, 'system', 'system'),
+       (1, 0, 1520, 1, 1, 0, 'system', 'system'),
+       (1, 0, 1521, 1, 1, 0, 'system', 'system'),
+       (1, 0, 1530, 1, 1, 0, 'system', 'system'),
+       (1, 0, 1531, 1, 1, 0, 'system', 'system'),
+       (1, 0, 1540, 1, 1, 0, 'system', 'system'),
+       (1, 0, 1541, 1, 1, 0, 'system', 'system'),
+       (1, 0, 1542, 1, 1, 0, 'system', 'system'),
+       (1, 0, 1543, 1, 1, 0, 'system', 'system'),
+       (1, 0, 1544, 1, 1, 0, 'system', 'system'),
+       (1, 0, 1550, 1, 1, 0, 'system', 'system'),
+       (1, 0, 1551, 1, 1, 0, 'system', 'system'),
+       (1, 0, 1552, 1, 1, 0, 'system', 'system'),
+       (1, 0, 1553, 1, 1, 0, 'system', 'system'),
+       (1, 0, 1560, 1, 1, 0, 'system', 'system'),
+       (1, 0, 1561, 1, 1, 0, 'system', 'system'),
+       (1, 0, 1562, 1, 1, 0, 'system', 'system'),
+       (1, 0, 1563, 1, 1, 0, 'system', 'system'),
+       (1, 0, 1564, 1, 1, 0, 'system', 'system'),
+       (1, 0, 1565, 1, 1, 0, 'system', 'system'),
+       (1, 0, 1566, 1, 1, 0, 'system', 'system'),
        (1, 0, 70, 1, 1, 0, 'system', 'system'),
        (1, 0, 71, 1, 1, 0, 'system', 'system'),
        (1, 0, 72, 1, 1, 0, 'system', 'system'),
@@ -333,9 +368,29 @@ VALUES (2, 0, 1500, 1, 1, 0, 'system', 'system'),
        (2, 0, 1501, 1, 1, 0, 'system', 'system'),
        (2, 0, 1502, 1, 1, 0, 'system', 'system'),
        (2, 0, 1503, 1, 1, 0, 'system', 'system'),
-       (2, 0, 1504, 1, 1, 0, 'system', 'system'),
-       (2, 0, 1506, 1, 1, 0, 'system', 'system'),
-       (2, 0, 1507, 1, 1, 0, 'system', 'system');
+       (2, 0, 1508, 1, 1, 0, 'system', 'system'),
+       (2, 0, 1510, 1, 1, 0, 'system', 'system'),
+       (2, 0, 1511, 1, 1, 0, 'system', 'system'),
+       (2, 0, 1520, 1, 1, 0, 'system', 'system'),
+       (2, 0, 1521, 1, 1, 0, 'system', 'system'),
+       (2, 0, 1530, 1, 1, 0, 'system', 'system'),
+       (2, 0, 1531, 1, 1, 0, 'system', 'system'),
+       (2, 0, 1540, 1, 1, 0, 'system', 'system'),
+       (2, 0, 1541, 1, 1, 0, 'system', 'system'),
+       (2, 0, 1542, 1, 1, 0, 'system', 'system'),
+       (2, 0, 1543, 1, 1, 0, 'system', 'system'),
+       (2, 0, 1544, 1, 1, 0, 'system', 'system'),
+       (2, 0, 1550, 1, 1, 0, 'system', 'system'),
+       (2, 0, 1551, 1, 1, 0, 'system', 'system'),
+       (2, 0, 1552, 1, 1, 0, 'system', 'system'),
+       (2, 0, 1553, 1, 1, 0, 'system', 'system'),
+       (2, 0, 1560, 1, 1, 0, 'system', 'system'),
+       (2, 0, 1561, 1, 1, 0, 'system', 'system'),
+       (2, 0, 1562, 1, 1, 0, 'system', 'system'),
+       (2, 0, 1563, 1, 1, 0, 'system', 'system'),
+       (2, 0, 1564, 1, 1, 0, 'system', 'system'),
+       (2, 0, 1565, 1, 1, 0, 'system', 'system'),
+       (2, 0, 1566, 1, 1, 0, 'system', 'system');
 
 -- ==============================
 -- 权限码（系统管理）

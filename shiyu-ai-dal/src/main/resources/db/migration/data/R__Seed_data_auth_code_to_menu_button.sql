@@ -4,12 +4,8 @@
 -- 并建立 role_workspace_menu 关联
 -- ============================================
 
--- 0. 修正菜单数据：将原 id=11 的权限码管理重命名为 Agent 管理
---    （data_auth.sql 中 id=11 冲突导致 Agent 管理被INSERT IGNORE忽略）
-UPDATE `menu` SET `name` = 'Agent 管理', `code` = 'AgentAdmin', `path` = '/agent/admin/list',
-    `icon` = 'carbon:development', `component` = '/agent/admin/agent-list',
-    `parent_id` = 10, `order` = 1
-WHERE `id` = 11 AND `code` = 'SystemAuthCode';
+-- 0. 注意：data_auth.sql 中 id=11 为 SystemAuthCode(权限码管理)，id=16 为 AgentAdmin
+--    BUTTON 菜单 parent_id 指向 id=16(AgentAdmin)
 
 INSERT IGNORE INTO `menu` (`id`, `name`, `code`, `type`, `parent_id`, `tenant_id`, `show`, `status`, `order`, `del_flag`, `create_by`, `update_by`)
 VALUES (1101, '查看用户列表', 'system:user:list', 'BUTTON', 2, 1, FALSE, 1, 0, 0, 'system', 'system');
@@ -60,13 +56,13 @@ VALUES (1123, '更新字典', 'system:dict:update', 'BUTTON', 7, 1, FALSE, 1, 0,
 INSERT IGNORE INTO `menu` (`id`, `name`, `code`, `type`, `parent_id`, `tenant_id`, `show`, `status`, `order`, `del_flag`, `create_by`, `update_by`)
 VALUES (1124, '删除字典', 'system:dict:delete', 'BUTTON', 7, 1, FALSE, 1, 0, 0, 'system', 'system');
 INSERT IGNORE INTO `menu` (`id`, `name`, `code`, `type`, `parent_id`, `tenant_id`, `show`, `status`, `order`, `del_flag`, `create_by`, `update_by`)
-VALUES (1125, '查看 Agent 列表', 'agent:admin:list', 'BUTTON', 11, 1, FALSE, 1, 0, 0, 'system', 'system');
+VALUES (1125, '查看 Agent 列表', 'agent:admin:list', 'BUTTON', 16, 1, FALSE, 1, 0, 0, 'system', 'system');
 INSERT IGNORE INTO `menu` (`id`, `name`, `code`, `type`, `parent_id`, `tenant_id`, `show`, `status`, `order`, `del_flag`, `create_by`, `update_by`)
-VALUES (1126, '创建 Agent', 'agent:admin:create', 'BUTTON', 11, 1, FALSE, 1, 0, 0, 'system', 'system');
+VALUES (1126, '创建 Agent', 'agent:admin:create', 'BUTTON', 16, 1, FALSE, 1, 0, 0, 'system', 'system');
 INSERT IGNORE INTO `menu` (`id`, `name`, `code`, `type`, `parent_id`, `tenant_id`, `show`, `status`, `order`, `del_flag`, `create_by`, `update_by`)
-VALUES (1127, '编辑 Agent', 'agent:admin:edit', 'BUTTON', 11, 1, FALSE, 1, 0, 0, 'system', 'system');
+VALUES (1127, '编辑 Agent', 'agent:admin:edit', 'BUTTON', 16, 1, FALSE, 1, 0, 0, 'system', 'system');
 INSERT IGNORE INTO `menu` (`id`, `name`, `code`, `type`, `parent_id`, `tenant_id`, `show`, `status`, `order`, `del_flag`, `create_by`, `update_by`)
-VALUES (1128, '删除 Agent', 'agent:admin:delete', 'BUTTON', 11, 1, FALSE, 1, 0, 0, 'system', 'system');
+VALUES (1128, '删除 Agent', 'agent:admin:delete', 'BUTTON', 16, 1, FALSE, 1, 0, 0, 'system', 'system');
 INSERT IGNORE INTO `menu` (`id`, `name`, `code`, `type`, `parent_id`, `tenant_id`, `show`, `status`, `order`, `del_flag`, `create_by`, `update_by`)
 VALUES (1129, '查看平台', 'agent:platform:list', 'BUTTON', 12, 1, FALSE, 1, 0, 0, 'system', 'system');
 INSERT IGNORE INTO `menu` (`id`, `name`, `code`, `type`, `parent_id`, `tenant_id`, `show`, `status`, `order`, `del_flag`, `create_by`, `update_by`)
