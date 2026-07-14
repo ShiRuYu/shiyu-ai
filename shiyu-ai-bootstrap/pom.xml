@@ -78,6 +78,7 @@
             <groupId>com.h2database</groupId>
             <artifactId>h2</artifactId>
         </dependency>
+        <!-- H2 Console（Spring Boot 4.x 已拆分为独立 starter）-->
         <dependency>
             <groupId>org.springframework.boot</groupId>
             <artifactId>spring-boot-h2console</artifactId>
@@ -88,8 +89,8 @@
             <scope>test</scope>
             <exclusions>
                 <exclusion>
-                    <artifactId>spring-boot-starter</artifactId>
                     <groupId>org.springframework.boot</groupId>
+                    <artifactId>spring-boot-starter-logging</artifactId>
                 </exclusion>
             </exclusions>
         </dependency>

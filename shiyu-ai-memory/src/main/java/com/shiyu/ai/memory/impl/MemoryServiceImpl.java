@@ -49,7 +49,6 @@ public class MemoryServiceImpl implements MemoryService {
         this.stores = stores;
         this.recallStrategy = recallStrategy;
         this.consolidationService = consolidationService;
-        initStoreReferences();
     }
 
     private void initStoreReferences() {

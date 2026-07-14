@@ -426,6 +426,12 @@
             <artifactId>jvector</artifactId>
             <version>${jvector.version}</version>
         </dependency>
+        <!-- shiyu-util (保留声明，模块待建) -->
+        <dependency>
+            <groupId>com.shiyu.ai</groupId>
+            <artifactId>shiyu-util</artifactId>
+            <version>${revision}</version>
+        </dependency>
 
 </dependencies>
     </dependencyManagement>
