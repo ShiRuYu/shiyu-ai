@@ -1,4 +1,4 @@
-package com.shiyu.ai.knowledge.rag.reranker;
+package com.shiyu.ai.knowledge.rag;
 
 import org.springframework.stereotype.Component;
 

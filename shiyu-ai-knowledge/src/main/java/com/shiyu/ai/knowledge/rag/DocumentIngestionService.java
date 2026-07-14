@@ -4,7 +4,7 @@ import com.shiyu.ai.knowledge.document.DocumentParser;
 import com.shiyu.ai.model.embedding.EmbeddingService;
 import com.shiyu.ai.dal.dataobject.knowledge.KnowledgeChunkDO;
 import com.shiyu.ai.knowledge.rag.ChunkSplitter.Chunk;
-import com.shiyu.ai.knowledge.rag.impl.ChineseChunkSplitter;
+import com.shiyu.ai.knowledge.rag.ChineseChunkSplitter;
 import com.shiyu.ai.dal.repository.knowledge.KnowledgeChunkRepository;
 import com.shiyu.ai.vector.spi.VectorRecord;
 import com.shiyu.ai.vector.spi.VectorStore;

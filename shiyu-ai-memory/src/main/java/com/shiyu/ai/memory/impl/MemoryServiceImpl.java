@@ -8,6 +8,7 @@ import com.shiyu.ai.memory.spi.Memory;
 import com.shiyu.ai.memory.spi.MemoryQuery;
 import com.shiyu.ai.memory.spi.MemoryStore;
 import com.shiyu.ai.memory.spi.MemoryType;
+import com.shiyu.ai.memory.service.ConsolidationService;
 import com.shiyu.ai.memory.recall.HybridRecallStrategy;
 import com.shiyu.ai.memory.recall.MemoryRecallStrategy;
 import lombok.extern.slf4j.Slf4j;

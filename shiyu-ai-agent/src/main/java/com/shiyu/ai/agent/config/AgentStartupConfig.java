@@ -22,7 +22,7 @@ import com.shiyu.ai.agent.node.output.OutputFormatConfig;
 import com.shiyu.ai.agent.service.AgentService;
 import com.shiyu.ai.model.chat.ChatEngine;
 import com.shiyu.ai.model.adapter.ModelManager;
-import com.shiyu.ai.knowledge.rag.integration.RagService;
+import com.shiyu.ai.knowledge.rag.RagService;
 import com.shiyu.ai.tool.ToolService;
 import com.shiyu.ai.agent.service.IntentService;
 import lombok.extern.slf4j.Slf4j;

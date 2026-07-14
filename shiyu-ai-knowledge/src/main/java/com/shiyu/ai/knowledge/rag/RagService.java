@@ -1,4 +1,4 @@
-package com.shiyu.ai.knowledge.rag.integration;
+package com.shiyu.ai.knowledge.rag;
 
 import com.shiyu.ai.knowledge.search.SearchSource;
 

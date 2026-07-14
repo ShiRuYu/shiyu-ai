@@ -1,4 +1,4 @@
-package com.shiyu.ai.tool.impl;
+package com.shiyu.ai.tool;
 
 import com.shiyu.ai.tool.ToolService;
 import com.shiyu.ai.tool.mcp.McpToolDescriptor;

@@ -5,7 +5,7 @@ import com.shiyu.ai.agent.node.NodeConfig;
 import com.shiyu.ai.agent.node.NodeType;
 import com.shiyu.ai.agent.node.rag.RagRetrievalConfig;
 import com.shiyu.ai.agent.node.rag.RagRetrievalNode;
-import com.shiyu.ai.knowledge.rag.integration.RagService;
+import com.shiyu.ai.knowledge.rag.RagService;
 import org.springframework.stereotype.Component;
 
 @Component

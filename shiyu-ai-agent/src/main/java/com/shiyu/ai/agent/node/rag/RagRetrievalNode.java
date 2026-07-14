@@ -1,6 +1,6 @@
 package com.shiyu.ai.agent.node.rag;
 
-import com.shiyu.ai.knowledge.rag.integration.RagService;
+import com.shiyu.ai.knowledge.rag.RagService;
 import com.shiyu.ai.knowledge.search.SearchSource;
 import com.shiyu.ai.agent.node.BaseNode;
 import com.shiyu.ai.agent.node.NodeInput;

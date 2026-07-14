@@ -1,6 +1,6 @@
 package com.shiyu.ai.memory.pipeline;
+import com.shiyu.ai.memory.service.ConsolidationService;
 
-import com.shiyu.ai.memory.impl.ConsolidationService;
 import com.shiyu.ai.memory.spi.Memory;
 import com.shiyu.ai.memory.spi.MemoryQuery;
 import com.shiyu.ai.memory.spi.MemoryStore;

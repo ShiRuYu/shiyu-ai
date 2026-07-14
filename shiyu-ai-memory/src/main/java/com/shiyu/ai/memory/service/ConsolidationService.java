@@ -1,4 +1,4 @@
-package com.shiyu.ai.memory.impl;
+package com.shiyu.ai.memory.service;
 
 import com.shiyu.ai.dal.bo.memory.LongTermMemoryBO;
 import com.shiyu.ai.dal.repository.ConversationMessageRepository;

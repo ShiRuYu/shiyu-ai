@@ -1,7 +1,7 @@
-package com.shiyu.ai.tool.mcp.config;
+package com.shiyu.ai.tool.config;
 
 import com.shiyu.ai.tool.ToolService;
-import com.shiyu.ai.tool.impl.ToolServiceImpl;
+import com.shiyu.ai.tool.ToolServiceImpl;
 import com.shiyu.ai.tool.mcp.McpToolDescriptor;
 import com.shiyu.ai.tool.mcp.McpToolRegistry;
 import jakarta.annotation.PostConstruct;

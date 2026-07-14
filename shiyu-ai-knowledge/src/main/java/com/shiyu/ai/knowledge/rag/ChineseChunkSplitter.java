@@ -1,4 +1,4 @@
-package com.shiyu.ai.knowledge.rag.impl;
+package com.shiyu.ai.knowledge.rag;
 
 import com.shiyu.ai.knowledge.rag.ChunkSplitter;
 import lombok.extern.slf4j.Slf4j;

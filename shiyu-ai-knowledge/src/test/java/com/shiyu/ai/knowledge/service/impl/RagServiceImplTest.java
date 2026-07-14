@@ -3,11 +3,12 @@ package com.shiyu.ai.knowledge.service.impl;
 import com.shiyu.ai.knowledge.rag.RagOrchestrator;
 import com.shiyu.ai.knowledge.rag.RagOrchestrator.RagChunk;
 import com.shiyu.ai.knowledge.rag.RagOrchestrator.RagResult;
-import com.shiyu.ai.knowledge.rag.integration.RagService.RagRetrievalResult;
-import com.shiyu.ai.knowledge.rag.integration.impl.RagServiceImpl;
+import com.shiyu.ai.knowledge.rag.RagService;
+import com.shiyu.ai.knowledge.rag.RagService.RagRetrievalResult;
+import com.shiyu.ai.knowledge.rag.RagServiceImpl;
 import com.shiyu.ai.knowledge.search.KnowledgeSearchService;
-import com.shiyu.ai.knowledge.search.SearchSource;
 import com.shiyu.ai.knowledge.search.SearchResult;
+import com.shiyu.ai.knowledge.search.SearchSource;
 import com.shiyu.ai.knowledge.service.DocumentKnowledgeService;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Tag;
@@ -62,7 +63,6 @@ class RagServiceImplTest {
         RagRetrievalResult result = ragService.retrieve("微积分", SearchSource.DOCUMENT, 5);
 
         assertTrue(result.success());
-        // Should have 2 docs: the chunk + graph context
         assertEquals(2, result.documents().size());
         assertEquals("微积分基本定理", result.documents().get(0).content());
     }

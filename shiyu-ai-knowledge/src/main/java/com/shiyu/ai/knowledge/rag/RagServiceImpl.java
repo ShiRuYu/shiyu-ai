@@ -1,8 +1,8 @@
-package com.shiyu.ai.knowledge.rag.integration.impl;
+package com.shiyu.ai.knowledge.rag;
 
-import com.shiyu.ai.knowledge.rag.RagOrchestrator;
+
 import com.shiyu.ai.knowledge.rag.RagOrchestrator.RagResult;
-import com.shiyu.ai.knowledge.rag.integration.RagService;
+import com.shiyu.ai.knowledge.rag.RagService;
 import com.shiyu.ai.knowledge.search.KnowledgeSearchService;
 import com.shiyu.ai.knowledge.search.SearchResult;
 import com.shiyu.ai.knowledge.search.SearchSource;

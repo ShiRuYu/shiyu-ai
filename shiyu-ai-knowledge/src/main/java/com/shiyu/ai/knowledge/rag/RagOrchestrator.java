@@ -5,7 +5,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import com.shiyu.ai.common.core.utils.JSONUtils;
 import com.shiyu.ai.model.embedding.EmbeddingService;
 import com.shiyu.ai.dal.dataobject.knowledge.KnowledgeChunkDO;
-import com.shiyu.ai.knowledge.rag.reranker.Reranker;
+import com.shiyu.ai.knowledge.rag.Reranker;
 import com.shiyu.ai.knowledge.graph.GraphStore;
 import com.shiyu.ai.dal.repository.knowledge.KnowledgeChunkRepository;
 import com.shiyu.ai.vector.spi.VectorRecord;

@@ -1,4 +1,4 @@
-package com.shiyu.ai.knowledge.rag.reranker;
+package com.shiyu.ai.knowledge.rag;
 
 import com.shiyu.ai.knowledge.rag.RagOrchestrator.RagChunk;
 
