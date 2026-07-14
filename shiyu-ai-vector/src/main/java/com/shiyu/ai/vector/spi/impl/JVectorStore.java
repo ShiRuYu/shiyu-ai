@@ -1,4 +1,4 @@
-package com.shiyu.ai.vector.impl.jvector;
+package com.shiyu.ai.vector.spi.impl;
 
 import com.shiyu.ai.vector.config.VectorStoreProperties;
 import com.shiyu.ai.vector.spi.VectorRecord;

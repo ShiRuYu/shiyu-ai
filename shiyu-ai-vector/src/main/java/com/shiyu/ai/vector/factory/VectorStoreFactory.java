@@ -1,8 +1,8 @@
 package com.shiyu.ai.vector.factory;
 
 import com.shiyu.ai.vector.config.VectorStoreProperties;
-import com.shiyu.ai.vector.impl.jvector.JVectorStore;
-import com.shiyu.ai.vector.impl.memory.InMemoryVectorStore;
+import com.shiyu.ai.vector.spi.impl.JVectorStore;
+import com.shiyu.ai.vector.spi.impl.InMemoryVectorStore;
 import com.shiyu.ai.vector.spi.VectorStore;
 
 /**

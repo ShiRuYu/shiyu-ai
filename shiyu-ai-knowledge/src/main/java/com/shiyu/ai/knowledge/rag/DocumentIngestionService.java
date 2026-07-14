@@ -1,5 +1,6 @@
 package com.shiyu.ai.knowledge.rag;
 
+import com.shiyu.ai.knowledge.document.DocumentParser;
 import com.shiyu.ai.model.embedding.EmbeddingService;
 import com.shiyu.ai.dal.dataobject.knowledge.KnowledgeChunkDO;
 import com.shiyu.ai.knowledge.rag.ChunkSplitter.Chunk;
@@ -21,15 +22,35 @@ public class DocumentIngestionService {
     private final VectorStore vectorStore;
     private final KnowledgeChunkRepository chunkRepository;
     private final ChunkSplitter chunkSplitter;
+    private final List<DocumentParser> documentParsers;
 
     public DocumentIngestionService(EmbeddingService embeddingService,
                                     VectorStore vectorStore,
-                                    KnowledgeChunkRepository chunkRepository) {
+                                    KnowledgeChunkRepository chunkRepository,
+                                    List<DocumentParser> documentParsers) {
         this.embeddingService = embeddingService;
         this.vectorStore = vectorStore;
         this.chunkRepository = chunkRepository;
         this.chunkSplitter = new ChineseChunkSplitter();
+        this.documentParsers = documentParsers != null ? documentParsers : List.of();
     }
+
+    /**
+     * 根据文件格式获取对应的文档解析器
+     */
+    public Optional<DocumentParser> findParser(String format) {
+        return documentParsers.stream()
+                .filter(p -> p.getSupportedFormat().equalsIgnoreCase(format))
+                .findFirst();
+    }
+
+    /**
+     * 解析并注入文档
+     *
+     * @param documentId   文档 ID
+     * @param content      文本内容（已解析）
+     * @param knowledgeIds 关联知识点 ID
+     */
     public List<KnowledgeChunkDO> ingest(Long documentId, String content, List<Long> knowledgeIds) {
         List<Chunk> chunks = chunkSplitter.split(content);
         log.info("文档 {} 切分为 {} 个 Chunk", documentId, chunks.size());

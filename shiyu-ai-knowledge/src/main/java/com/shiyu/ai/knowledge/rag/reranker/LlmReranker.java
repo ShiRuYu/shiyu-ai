@@ -1,5 +1,7 @@
 package com.shiyu.ai.knowledge.rag.reranker;
 
+import org.springframework.stereotype.Component;
+
 import com.shiyu.ai.model.chat.ChatEngine;
 import com.shiyu.ai.model.chat.ChatRequest;
 import com.shiyu.ai.model.chat.ChatResponse;
@@ -14,6 +16,7 @@ import java.util.stream.Collectors;
  * 调用 LLM 对检索结果重新评分排序
  */
 @Slf4j
+@Component
 public class LlmReranker implements Reranker {
 
     private static final int DEFAULT_TOP_K = 5;

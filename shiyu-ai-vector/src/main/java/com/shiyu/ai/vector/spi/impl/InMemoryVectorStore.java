@@ -1,4 +1,4 @@
-package com.shiyu.ai.vector.impl.memory;
+package com.shiyu.ai.vector.spi.impl;
 
 import com.shiyu.ai.vector.spi.VectorRecord;
 import com.shiyu.ai.vector.spi.VectorSearchRequest;

@@ -86,7 +86,9 @@ public class KnowledgeSearchService {
                 String name = (String) r.metadata().getOrDefault("name", "");
                 String code = (String) r.metadata().getOrDefault("code", "");
                 String category = (String) r.metadata().getOrDefault("category", "");
-                double score = (double) r.metadata().getOrDefault("_score", 0.0);
+                double score = 0.0;
+                Object scoreObj = r.metadata().get("_score");
+                if (scoreObj instanceof Number n) score = n.doubleValue();
                 list.add(new SearchResult(id, name, code, category, (float) score));
             } catch (Exception e) {
             log.warn("知识搜索异常: {}", e.getMessage());

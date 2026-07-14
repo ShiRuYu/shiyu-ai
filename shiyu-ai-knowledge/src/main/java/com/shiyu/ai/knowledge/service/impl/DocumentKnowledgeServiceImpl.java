@@ -122,18 +122,11 @@ public class DocumentKnowledgeServiceImpl implements DocumentKnowledgeService {
 
     @Override
     public List<KnowledgeDocumentVO> searchByKnowledgeId(Long knowledgeId) {
-        // 遍历 knowledge_chunk 表的 metadata，找到所有关联了该知识点的文档
-        var allChunks = chunkRepository.findAll();
-        Set<Long> docIds = new LinkedHashSet<>();
-        for (var chunk : allChunks) {
-            List<Long> ids = extractKnowledgeIds(chunk.getMetadata());
-            if (ids.contains(knowledgeId)) {
-                docIds.add(chunk.getDocumentId());
-            }
-        }
-        return docIds.stream()
-                .map(docId -> {
-                    var doc = documentRepository.selectById(docId);
+        // 通过 knowledge_doc_relation 表 SQL 查询关联文档
+        var relations = docRelationRepository.selectByKnowledgeId(knowledgeId);
+        return relations.stream()
+                .map(r -> {
+                    var doc = documentRepository.selectById(r.getDocId());
                     if (doc == null) return null;
                     return toVO(doc, doc.getContent(), List.of(knowledgeId));
                 })
@@ -197,7 +190,8 @@ public class DocumentKnowledgeServiceImpl implements DocumentKnowledgeService {
 
     @Override
     public void deleteByKnowledgeId(Long knowledgeId) {
-        log.info("已解除知识点 {} 与文档的关联", knowledgeId);
+        docRelationRepository.deleteByKnowledgeId(knowledgeId);
+        log.info("已解除知识点 {} 与所有文档的关联", knowledgeId);
     }
 
     // ---------------------------------------------------------------

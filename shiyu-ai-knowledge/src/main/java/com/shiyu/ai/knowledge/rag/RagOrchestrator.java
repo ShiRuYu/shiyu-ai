@@ -1,5 +1,7 @@
 package com.shiyu.ai.knowledge.rag;
 
+import org.springframework.beans.factory.annotation.Autowired;
+
 import com.shiyu.ai.common.core.utils.JSONUtils;
 import com.shiyu.ai.model.embedding.EmbeddingService;
 import com.shiyu.ai.dal.dataobject.knowledge.KnowledgeChunkDO;
@@ -27,11 +29,13 @@ public class RagOrchestrator {
     public RagOrchestrator(EmbeddingService embeddingService,
                            VectorStore vectorStore,
                            KnowledgeChunkRepository chunkRepository,
-                           GraphStore graphStore) {
+                           GraphStore graphStore,
+                           @Autowired(required = false) Reranker reranker) {
         this.embeddingService = embeddingService;
         this.vectorStore = vectorStore;
         this.chunkRepository = chunkRepository;
         this.graphStore = graphStore;
+        this.reranker = reranker;
     }
 
     public void setReranker(Reranker reranker) {

@@ -87,16 +87,22 @@ public class KnowledgeRelationServiceImpl implements KnowledgeRelationService {
     @Override
     @Transactional(rollbackFor = Exception.class)
     public void removeAllRelations(Long knowledgeId) {
-        relationRepository.deleteBySourceIdOrTargetId(knowledgeId);
+        // 1. 先查 DB，保留所有关联关系（先查后删，避免删完查不到）
         var sourceRelations = relationRepository.findBySourceId(knowledgeId);
+        var targetRelations = relationRepository.findByTargetId(knowledgeId);
+
+        // 2. 再删 DB
+        relationRepository.deleteBySourceIdOrTargetId(knowledgeId);
+
+        // 3. 最后清理内存图的边
         for (var r : sourceRelations) {
             knowledgeGraph.removeEdge(knowledgeId, r.getTargetId(), r.getRelationType());
         }
-        var targetRelations = relationRepository.findByTargetId(knowledgeId);
         for (var r : targetRelations) {
             knowledgeGraph.removeEdge(r.getSourceId(), knowledgeId, r.getRelationType());
         }
-        log.info("已移除知识点 {} 的所有关联关系", knowledgeId);
+        log.info("已移除知识点 {} 的所有关联关系 (source={}, target={})",
+                knowledgeId, sourceRelations.size(), targetRelations.size());
     }
 
     private KnowledgeResponse toSimpleResponse(KnowledgeDO k) {

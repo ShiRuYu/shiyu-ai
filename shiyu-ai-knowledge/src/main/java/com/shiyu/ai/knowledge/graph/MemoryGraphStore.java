@@ -1,6 +1,5 @@
 package com.shiyu.ai.knowledge.graph;
 
-import com.shiyu.ai.common.core.utils.JSONUtils;
 import com.shiyu.ai.knowledge.domain.GraphEdge;
 import com.shiyu.ai.knowledge.domain.GraphNode;
 import com.shiyu.ai.dal.repository.knowledge.KnowledgeRepository;
@@ -15,15 +14,18 @@ import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.stream.Collectors;
 
+/**
+ * 内存图存储 — 基于 ConcurrentHashMap 对象存储
+ *
+ * <p>使用 {@code Map<Long, GraphNode>} 直接存储节点对象，
+ * 避免 JSON 序列化/反序列化带来的性能和类型安全问题。</p>
+ */
 @Slf4j
 @Component
 @Order(2)
 public class MemoryGraphStore implements GraphStore, ApplicationRunner {
 
-    private static final String NODE_PREFIX = "node:";
-    private static final String ADJ_PREFIX = "adj:";
-
-    private final ConcurrentHashMap<String, String> store = new ConcurrentHashMap<>();
+    private final ConcurrentHashMap<Long, GraphNode> nodeStore = new ConcurrentHashMap<>();
     private final KnowledgeRepository knowledgeRepository;
     private final KnowledgeRelationRepository relationRepository;
 
@@ -41,7 +43,7 @@ public class MemoryGraphStore implements GraphStore, ApplicationRunner {
     @Override
     public void loadAll() {
         log.info("开始从数据库加载知识图谱到内存");
-        store.clear();
+        nodeStore.clear();
 
         var allNodes = knowledgeRepository.findAll();
         var allEdges = relationRepository.findAll();
@@ -72,48 +74,30 @@ public class MemoryGraphStore implements GraphStore, ApplicationRunner {
             }
         }
 
-        for (var entry : nodeMap.entrySet()) {
-            store.put(NODE_PREFIX + entry.getKey(), JSONUtils.toJsonString(entry.getValue()));
-            store.put(ADJ_PREFIX + entry.getKey(), JSONUtils.toJsonString(entry.getValue().getEdges()));
-        }
-
+        nodeStore.putAll(nodeMap);
         log.info("知识图谱加载完成: {} 个节点, {} 条边", nodeMap.size(), allEdges.size());
-    }
-
-    private String get(String key) {
-        return store.get(key);
-    }
-
-    private void put(String key, String value) {
-        store.put(key, value);
-    }
-
-    private void remove(String key) {
-        store.remove(key);
     }
 
     @Override
     public GraphNode getNode(Long id) {
-        String json = get(NODE_PREFIX + id);
-        if (json == null) return null;
-        return JSONUtils.parseObject(json, GraphNode.class);
+        return nodeStore.get(id);
     }
 
     @Override
     public List<Long> parents(Long id) {
-        GraphNode node = getNode(id);
+        GraphNode node = nodeStore.get(id);
         return node != null ? node.getParentIds() : Collections.emptyList();
     }
 
     @Override
     public List<Long> children(Long id) {
-        GraphNode node = getNode(id);
+        GraphNode node = nodeStore.get(id);
         return node != null ? node.getChildIds() : Collections.emptyList();
     }
 
     @Override
     public List<Long> related(Long id) {
-        GraphNode node = getNode(id);
+        GraphNode node = nodeStore.get(id);
         return node != null ? node.getRelatedIds() : Collections.emptyList();
     }
 
@@ -143,21 +127,22 @@ public class MemoryGraphStore implements GraphStore, ApplicationRunner {
 
     @Override
     public List<GraphEdge> edges(Long id) {
-        String json = get(ADJ_PREFIX + id);
-        if (json == null) return Collections.emptyList();
-        return JSONUtils.parseArray(json, GraphEdge.class);
+        GraphNode node = nodeStore.get(id);
+        return node != null ? node.getEdges() : Collections.emptyList();
     }
 
     @Override
     public void addNode(GraphNode node) {
-        put(NODE_PREFIX + node.getId(), JSONUtils.toJsonString(node));
-        put(ADJ_PREFIX + node.getId(), JSONUtils.toJsonString(node.getEdges()));
+        nodeStore.put(node.getId(), node);
     }
 
     @Override
     public void addEdge(Long sourceId, Long targetId, String type, double weight) {
-        GraphNode source = getNode(sourceId);
-        if (source == null) return;
+        GraphNode source = nodeStore.get(sourceId);
+        if (source == null) {
+            log.warn("addEdge: 源节点 {} 不存在", sourceId);
+            return;
+        }
         GraphEdge edge = new GraphEdge(targetId, type, weight);
         source.getEdges().add(edge);
 
@@ -168,20 +153,17 @@ public class MemoryGraphStore implements GraphStore, ApplicationRunner {
             default -> { }
         }
 
-        addNode(source);
-
         if ("PRE".equals(type)) {
-            GraphNode target = getNode(targetId);
+            GraphNode target = nodeStore.get(targetId);
             if (target != null) {
                 target.getChildIds().add(sourceId);
-                addNode(target);
             }
         }
     }
 
     @Override
     public void removeEdge(Long sourceId, Long targetId, String type) {
-        GraphNode source = getNode(sourceId);
+        GraphNode source = nodeStore.get(sourceId);
         if (source == null) return;
         source.getEdges().removeIf(e -> e.getTargetId().equals(targetId) && e.getType().equals(type));
 
@@ -191,13 +173,11 @@ public class MemoryGraphStore implements GraphStore, ApplicationRunner {
             case "RELATED", "SIMILAR" -> source.getRelatedIds().remove(targetId);
             default -> { }
         }
-        addNode(source);
     }
 
     @Override
     public void removeNode(Long id) {
-        remove(NODE_PREFIX + id);
-        remove(ADJ_PREFIX + id);
+        nodeStore.remove(id);
         log.info("Removed graph node: id={}", id);
     }
 
