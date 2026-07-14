@@ -1,7 +1,7 @@
 package com.shiyu.ai.usage.controller;
 
 import com.shiyu.ai.common.core.api.Result;
-import com.shiyu.ai.usage.service.TokenUsageRepository;
+import com.shiyu.ai.dal.repository.agent.TokenUsageRepository;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.extern.slf4j.Slf4j;
@@ -12,7 +12,6 @@ import java.util.Map;
 
 /**
  * 用量统计 Controller
- * 提供 Token/Cost/Latency 多维报表查询
  */
 @Slf4j
 @Tag(name = "Usage", description = "Usage Stats")

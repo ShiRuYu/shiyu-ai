@@ -1,26 +1,34 @@
-package com.shiyu.ai.usage.service;
+package com.shiyu.ai.dal.repository.agent;
 
-import com.shiyu.ai.usage.model.TokenUsageRecord;
-import lombok.extern.slf4j.Slf4j;
+import com.mybatisflex.core.query.QueryWrapper;
+import com.shiyu.ai.dal.dataobject.agent.TokenUsageDO;
+import com.shiyu.ai.dal.mapper.agent.TokenUsageMapper;
+import jakarta.annotation.Resource;
 import org.springframework.jdbc.core.JdbcTemplate;
+import org.springframework.stereotype.Component;
 
-import java.sql.Timestamp;
-import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Map;
 
 /**
  * Token 用量数据访问
+ * 使用 MyBatis-Flex 写入，JdbcTemplate 读取聚合报表
  */
-@Slf4j
+@Component
 public class TokenUsageRepository {
 
-    private final JdbcTemplate jdbcTemplate;
+    @Resource
+    private TokenUsageMapper tokenUsageMapper;
 
-    public TokenUsageRepository(JdbcTemplate jdbcTemplate) {
-        this.jdbcTemplate = jdbcTemplate;
+    @Resource
+    private JdbcTemplate jdbcTemplate;
+
+    /**
+     * 插入用量记录
+     */
+    public void insert(TokenUsageDO tokenUsageDO) {
+        tokenUsageMapper.insertSelective(tokenUsageDO);
     }
-
 
     /**
      * 按天查询聚合用量
@@ -97,19 +105,7 @@ public class TokenUsageRepository {
             "COUNT(DISTINCT platform) as platform_count, " +
             "COUNT(DISTINCT model) as model_count " +
             "FROM token_usage";
-        return jdbcTemplate.queryForList(sql).stream().findFirst().orElse(Map.of());
-    }
-
-    public void insert(TokenUsageRecord record) {
-        jdbcTemplate.update(
-            "INSERT INTO token_usage (id, platform, model, prompt_tokens, completion_tokens, " +
-            "total_tokens, latency_ms, cost, user_id, session_id, create_time) " +
-            "VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)",
-            record.getId(), record.getPlatform(), record.getModel(),
-            record.getPromptTokens(), record.getCompletionTokens(),
-            record.getTotalTokens(), record.getLatencyMs(), record.getCost(),
-            record.getUserId(), record.getSessionId(),
-            Timestamp.valueOf(record.getTimestamp())
-        );
+        List<Map<String, Object>> results = jdbcTemplate.queryForList(sql);
+        return results.isEmpty() ? Map.of() : results.get(0);
     }
 }

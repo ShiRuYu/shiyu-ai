@@ -1,11 +1,13 @@
 package com.shiyu.ai.usage.collector;
 
+import com.shiyu.ai.dal.dataobject.agent.TokenUsageDO;
+import com.shiyu.ai.dal.repository.agent.TokenUsageRepository;
 import com.shiyu.ai.usage.model.ModelPricing;
-import com.shiyu.ai.usage.model.TokenUsageRecord;
-import com.shiyu.ai.usage.service.TokenUsageRepository;
 import lombok.extern.slf4j.Slf4j;
 
+import java.time.LocalDateTime;
 import java.util.Map;
+import java.util.UUID;
 import java.util.concurrent.ConcurrentHashMap;
 
 /**
@@ -20,7 +22,6 @@ public class UsageCollector {
 
     public UsageCollector(TokenUsageRepository repository) {
         this.repository = repository;
-        // 注册默认定价
         registerPricing(ModelPricing.defaultOpenAI());
     }
 
@@ -43,10 +44,18 @@ public class UsageCollector {
         );
         double cost = pricing.calculateCost(promptTokens, completionTokens);
 
-        TokenUsageRecord record = new TokenUsageRecord(
-            platform, model, promptTokens, completionTokens,
-            latencyMs, cost, userId, sessionId
-        );
+        TokenUsageDO record = new TokenUsageDO();
+        record.setId(UUID.randomUUID().toString().replace("-", ""));
+        record.setPlatform(platform);
+        record.setModel(model);
+        record.setPromptTokens(promptTokens);
+        record.setCompletionTokens(completionTokens);
+        record.setTotalTokens(promptTokens + completionTokens);
+        record.setLatencyMs(latencyMs);
+        record.setCost(cost);
+        record.setUserId(userId);
+        record.setSessionId(sessionId);
+        record.setCreateTime(LocalDateTime.now());
 
         try {
             repository.insert(record);
