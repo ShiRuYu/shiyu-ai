@@ -6,6 +6,7 @@ import com.shiyu.ai.knowledge.rag.RagOrchestrator.RagResult;
 import com.shiyu.ai.knowledge.rag.integration.RagService.RagRetrievalResult;
 import com.shiyu.ai.knowledge.rag.integration.impl.RagServiceImpl;
 import com.shiyu.ai.knowledge.search.KnowledgeSearchService;
+import com.shiyu.ai.knowledge.search.SearchSource;
 import com.shiyu.ai.knowledge.search.SearchResult;
 import com.shiyu.ai.knowledge.service.DocumentKnowledgeService;
 import org.junit.jupiter.api.BeforeEach;
@@ -45,7 +46,7 @@ class RagServiceImplTest {
         when(knowledgeSearchService.search("微积分", 5))
                 .thenReturn(List.of(new SearchResult(1L, "微积分", "MATH-01", "math", 0.95f)));
 
-        RagRetrievalResult result = ragService.retrieve("微积分", "knowledge", 5);
+        RagRetrievalResult result = ragService.retrieve("微积分", SearchSource.KNOWLEDGE, 5);
 
         assertTrue(result.success());
         assertEquals(1, result.documents().size());
@@ -58,7 +59,7 @@ class RagServiceImplTest {
         when(ragOrchestrator.retrieve("微积分", 5))
                 .thenReturn(new RagResult(List.of(chunk), "图上下文"));
 
-        RagRetrievalResult result = ragService.retrieve("微积分", "document", 5);
+        RagRetrievalResult result = ragService.retrieve("微积分", SearchSource.DOCUMENT, 5);
 
         assertTrue(result.success());
         // Should have 2 docs: the chunk + graph context
@@ -68,7 +69,7 @@ class RagServiceImplTest {
 
     @Test
     void testRetrieveEmptyQuery() {
-        RagRetrievalResult result = ragService.retrieve("", "knowledge", 5);
+        RagRetrievalResult result = ragService.retrieve("", SearchSource.KNOWLEDGE, 5);
         assertFalse(result.success());
         assertNotNull(result.errorMessage());
     }

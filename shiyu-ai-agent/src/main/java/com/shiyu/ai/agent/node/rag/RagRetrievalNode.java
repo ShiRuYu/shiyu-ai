@@ -1,209 +1,148 @@
 package com.shiyu.ai.agent.node.rag;
 
+import com.shiyu.ai.knowledge.rag.integration.RagService;
+import com.shiyu.ai.knowledge.search.SearchSource;
 import com.shiyu.ai.agent.node.BaseNode;
 import com.shiyu.ai.agent.node.NodeInput;
 import com.shiyu.ai.agent.node.NodeOutput;
 import com.shiyu.ai.agent.node.NodeType;
 import com.shiyu.ai.agent.node.NodeFields.FieldKey;
-import com.shiyu.ai.knowledge.rag.integration.RagService;
 import lombok.Getter;
 import lombok.Setter;
 import lombok.extern.slf4j.Slf4j;
 
-import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import com.shiyu.ai.agent.node.NodeInputParam;
 
-/**
- * RAG 检索节点
- * 用于从知识库中检索相关信息
- *
- * @author shiyu-ai
- * @date 2026-03-28
- */
 @Setter
 @Getter
 @Slf4j
 public class RagRetrievalNode extends BaseNode {
 
     private RagRetrievalConfig config;
-    
-    /**
-     * RAG 检索服务（必须依赖）
-     */
+
     private final RagService ragService;
 
-    /**
-     * 私有构造函数，强制使用 Builder 模式
-     * @param config 节点配置
-     * @param ragService RAG 检索服务
-     */
     private RagRetrievalNode(RagRetrievalConfig config, RagService ragService) {
         super(config != null ? config : new RagRetrievalConfig());
         this.config = config != null ? config : new RagRetrievalConfig();
-        // 设置节点类型为 RAG_RETRIEVAL
         this.config.setNodeType(NodeType.RAG_RETRIEVAL);
         this.ragService = ragService;
     }
 
-    /**
-     * 获取 Builder 实例
-     * @return Builder 实例
-     */
     public static Builder builder() {
         return new Builder();
     }
 
-    /**
-     * Builder 类，用于构建 RagRetrievalNode 实例
-     */
     public static class Builder {
         private RagRetrievalConfig config;
         private RagService ragService;
 
-        /**
-         * 设置节点配置
-         * @param config 节点配置
-         * @return Builder 实例
-         */
         public Builder config(RagRetrievalConfig config) {
             this.config = config;
             return this;
         }
 
-        /**
-         * 设置 RAG 检索服务
-         * @param ragService RAG 检索服务
-         * @return Builder 实例
-         */
         public Builder ragService(RagService ragService) {
             this.ragService = ragService;
             return this;
         }
 
-        /**
-         * 构建并返回 RagRetrievalNode 实例
-         * 在构建前会进行必要的校验
-         * @return RagRetrievalNode 实例
-         * @throws IllegalStateException 如果校验失败
-         */
         public RagRetrievalNode build() {
-            // 校验：ragService 不能为空
             if (ragService == null) {
-                throw new IllegalStateException("创建 RagRetrievalNode 失败：ragService 不能为空");
+                throw new IllegalStateException("创建 RagRetrievalNode 失败: ragService 不能为空");
             }
-            
-            // 所有校验通过，创建并返回实例
             return new RagRetrievalNode(config, ragService);
         }
     }
 
     @Override
     protected NodeOutput doExecute(NodeInput input) throws Exception {
-        log.info("执行 RAG 检索节点：{}", config.getNodeName());
-        log.debug("检索配置：knowledgeBaseId={}, topK={}, strategy={}", 
-                config.getKnowledgeBaseId(), config.getTopK(), config.getRetrievalStrategy());
-        
-        try {
-            // 1. 获取查询文本
-            String query = input.getParameter(FieldKey.QUERY, "");
+        log.info("执行 RAG 检索节点: {}", config.getNodeName());
 
+        try {
+            // 1. 获取检索参数
+            String query = input.getParameter(FieldKey.QUERY, "");
             if (query == null || query.trim().isEmpty()) {
-                log.warn("查询文本为空，跳过 RAG 检索");
+                log.warn("检索查询为空，跳过 RAG 检索");
                 NodeOutput output = new NodeOutput();
                 output.setSuccess(false);
-                output.setMsg("查询文本为空");
-                output.setData(Map.of());
+                output.setMsg("检索查询为空");
                 return output;
             }
 
             // 2. 调用 RAG 检索服务
-            String knowledgeBaseId = getKnowledgeBaseId(input);
+            SearchSource source = getSearchSource(input);
             int topK = input.getParameter(FieldKey.TOP_K, config.getTopK() != null ? config.getTopK() : 5);
             
             RagService.RagRetrievalResult result = 
-                    ragService.retrieve(query, knowledgeBaseId, topK);
+                    ragService.retrieve(query, source, topK);
             
             // 3. 构建输出结果
             NodeOutput output = new NodeOutput();
             output.setSuccess(result.success());
-            output.setMsg(result.errorMessage() != null ? result.errorMessage() : "RAG 检索成功");
+            output.setMsg("RAG 检索完成");
             
-            if (result.success()) {
-                // 添加检索到的文档到输出
-                List<Map<String, Object>> documentsList = new ArrayList<>();
-                for (RagService.Document doc : result.documents()) {
-                    documentsList.add(Map.of(
-                        "id", doc.id(),
-                        "content", doc.content(),
-                        "score", doc.score(),
-                        "metadata", doc.metadata()
-                    ));
-                }
-                
-                output.addData(FieldKey.DOCUMENTS, documentsList);
-                output.addData(FieldKey.DOCUMENT_COUNT, documentsList.size());
-                
-                // 将文档内容合并为上下文（供 LLM 使用）
+            if (result.success() && result.documents() != null && !result.documents().isEmpty()) {
                 String context = buildContextFromDocuments(result.documents());
                 output.addData(FieldKey.CONTEXT, context);
-                
-                log.info("RAG 检索成功，返回 {} 个文档", documentsList.size());
+                output.addData(FieldKey.DOCUMENTS, result.documents());
+                log.info("RAG 检索成功，返回 {} 条文档", result.documents().size());
             } else {
-                log.warn("RAG 检索失败：{}", result.errorMessage());
+                log.warn("RAG 检索无结果");
+                output.addData(FieldKey.CONTEXT, "");
+                output.addData(FieldKey.DOCUMENTS, List.of());
             }
-            
-            log.info("RAG 检索节点执行完成");
+
             return output;
-            
+
         } catch (Exception e) {
             log.error("RAG 检索节点执行失败", e);
             NodeOutput output = new NodeOutput();
             output.setSuccess(false);
-            output.setMsg("RAG 检索节点执行失败：" + e.getMessage());
+            output.setMsg("RAG 检索失败: " + e.getMessage());
             return output;
         }
     }
-    
-    private String buildContextFromDocuments(List<RagService.Document> documents) {
-        StringBuilder context = new StringBuilder();
-        int docIndex = 0;
 
+    /**
+     * 获取检索来源
+     */
+    private SearchSource getSearchSource(NodeInput input) {
+        String sourceStr = input.getParameter(FieldKey.KNOWLEDGE_BASE_ID, "");
+        if (sourceStr == null || sourceStr.trim().isEmpty()) {
+            sourceStr = config.getKnowledgeBaseId();
+        }
+        if (sourceStr == null || sourceStr.trim().isEmpty()) {
+            return SearchSource.DOCUMENT;
+        }
+        // 兼容旧配置：将 knowledge/document 映射为枚举
+        return switch (sourceStr.trim().toLowerCase()) {
+            case "knowledge", "kp", "知识点" -> SearchSource.KNOWLEDGE;
+            default -> SearchSource.DOCUMENT;
+        };
+    }
+
+    private String buildContextFromDocuments(List<RagService.Document> documents) {
+        if (documents == null || documents.isEmpty()) return "";
+        StringBuilder sb = new StringBuilder();
+        sb.append("检索结果:\n\n");
         for (RagService.Document doc : documents) {
-            boolean isGraph = doc.metadata() != null
-                    && "graph_context".equals(doc.metadata().get("type"));
-            if (isGraph) {
-                context.append("[知识图谱上下文]\n");
-                context.append(doc.content()).append("\n\n");
-            } else {
-                context.append("[文档 ").append(++docIndex).append("]\n");
-                context.append(doc.content()).append("\n\n");
+            sb.append("---\n");
+            sb.append(doc.content()).append("\n");
+            if (doc.metadata() != null && !doc.metadata().isEmpty()) {
+                sb.append("元数据: ").append(doc.metadata()).append("\n");
             }
         }
-
-        return context.toString();
-    }
-    
-    /**
-     * 获取知识库 ID
-     */
-    private String getKnowledgeBaseId(NodeInput input) {
-        // 优先使用输入中的配置
-        String kbId = input.getParameter(FieldKey.KNOWLEDGE_BASE_ID, "");
-        if (kbId != null && !kbId.trim().isEmpty()) {
-            return kbId;
-        }
-        
-        // 使用节点配置
-        return config.getKnowledgeBaseId();
+        return sb.toString();
     }
 
     @Override
     public java.util.List<NodeInputParam> getRequiredInputs() {
         return java.util.List.of(
             NodeInputParam.apiRequired("query", "string", "检索查询文本"),
-            NodeInputParam.config("knowledgeBaseId", "string", "知识库 ID"),
+            NodeInputParam.config("knowledgeBaseId", "string", "知识库 ID（knowledge/document）"),
             NodeInputParam.config("topK", "number", "最大检索结果数"),
             NodeInputParam.config("similarityThreshold", "number", "相似度阈值")
         );

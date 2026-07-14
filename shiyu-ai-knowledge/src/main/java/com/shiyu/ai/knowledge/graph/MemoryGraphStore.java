@@ -69,6 +69,8 @@ public class MemoryGraphStore implements GraphStore, ApplicationRunner {
                     }
                     case "NEXT" -> source.getChildIds().add(e.getTargetId());
                     case "RELATED", "SIMILAR" -> source.getRelatedIds().add(e.getTargetId());
+                    case "INCLUDE" -> source.getParentIds().add(e.getTargetId());
+                    case "BELONG" -> source.getRelatedIds().add(e.getTargetId());
                     default -> { }
                 }
             }

@@ -8,15 +8,11 @@ import com.shiyu.ai.knowledge.dto.KnowledgeGraphResponse;
 import com.shiyu.ai.knowledge.dto.KnowledgePageQuery;
 import com.shiyu.ai.knowledge.dto.KnowledgeResponse;
 import com.shiyu.ai.knowledge.dto.UpdateKnowledgeRequest;
-import com.shiyu.ai.knowledge.graph.KnowledgeGraph;
 import com.shiyu.ai.knowledge.path.LearningPathService;
 import com.shiyu.ai.knowledge.search.KnowledgeSearchService;
-
 import com.shiyu.ai.knowledge.search.SearchResult;
 import com.shiyu.ai.knowledge.service.KnowledgeRelationService;
 import com.shiyu.ai.knowledge.service.KnowledgeService;
-import com.shiyu.ai.knowledge.task.IndexRebuildTask;
-import com.shiyu.ai.knowledge.task.RebuildStatus;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
@@ -37,9 +33,7 @@ public class KnowledgeController {
     private final KnowledgeService knowledgeService;
     private final KnowledgeRelationService relationService;
     private final LearningPathService learningPathService;
-    private final KnowledgeGraph knowledgeGraph;
     private final KnowledgeSearchService knowledgeSearchService;
-    private final IndexRebuildTask indexRebuildTask;
 
     @GetMapping("/detail")
     @Operation(summary = "获取知识点详情")
@@ -123,50 +117,11 @@ public class KnowledgeController {
         return Result.success();
     }
 
-    @PostMapping("/reload")
-    @Operation(summary = "重新加载知识图谱")
-    public Result<Void> reloadGraph() {
-        knowledgeGraph.reload();
-        return Result.success();
-    }
-
     @GetMapping("/search")
     @Operation(summary = "搜索知识点")
     public Result<List<SearchResult>> search(
             @RequestParam String query,
             @RequestParam(defaultValue = "10") int topK) {
         return Result.success(knowledgeSearchService.search(query, topK));
-    }
-
-
-    @PostMapping("/index/rebuild")
-    @Operation(summary = "异步重建知识点向量索引")
-    public Result<String> rebuildIndex() {
-        String taskId = indexRebuildTask.createTask();
-        indexRebuildTask.submitRebuildTask(taskId);
-        return Result.success(taskId);
-    }
-
-    @GetMapping("/index/rebuild-status")
-    @Operation(summary = "查询索引重建任务状态")
-    public Result<RebuildStatus> getRebuildStatus(@RequestParam String taskId) {
-        RebuildStatus status = indexRebuildTask.getTaskStatus(taskId);
-        if (status == null) {
-            return Result.fail("任务不存在");
-        }
-        return Result.success(status);
-    }
-
-    @GetMapping("/index/rebuild-tasks")
-    @Operation(summary = "查询所有索引重建任务")
-    public Result<List<RebuildStatus>> getAllRebuildTasks() {
-        return Result.success(indexRebuildTask.getAllTasks());
-    }
-
-    @PostMapping("/index/clear")
-    @Operation(summary = "清理知识点向量索引")
-    public Result<Void> clearIndex() {
-        knowledgeSearchService.clearIndex();
-        return Result.success();
     }
 }

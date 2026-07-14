@@ -8,6 +8,7 @@ import com.shiyu.ai.dal.dataobject.knowledge.KnowledgeDO;
 import com.shiyu.ai.knowledge.dto.CreateKnowledgeRequest;
 import com.shiyu.ai.knowledge.dto.KnowledgeGraphResponse;
 import com.shiyu.ai.knowledge.dto.KnowledgePageQuery;
+import com.shiyu.ai.knowledge.dto.KnowledgeDocumentDTO;
 import com.shiyu.ai.knowledge.dto.KnowledgeResponse;
 import com.shiyu.ai.knowledge.dto.UpdateKnowledgeRequest;
 import com.shiyu.ai.knowledge.graph.KnowledgeGraph;
@@ -145,10 +146,14 @@ public class KnowledgeServiceImpl implements KnowledgeService {
         List<Long> childIds = knowledgeGraph.children(knowledgeDO.getId());
 
         // 查询关联文档，限制返回前 10 个
-        List<DocumentKnowledgeService.KnowledgeDocumentVO> allDocs =
-                documentKnowledgeService.searchByKnowledgeId(knowledgeDO.getId());
-        List<DocumentKnowledgeService.KnowledgeDocumentVO> limitedDocs =
-                allDocs.stream().limit(10).toList();
+        List<KnowledgeDocumentDTO> docs =
+                documentKnowledgeService.searchByKnowledgeId(knowledgeDO.getId())
+                        .stream()
+                        .limit(10)
+                        .map(vo -> new KnowledgeDocumentDTO(
+                                vo.id(), vo.title(), vo.content(),
+                                vo.docType(), vo.source(), vo.knowledgeIds()))
+                        .toList();
 
         return new KnowledgeResponse(
                 knowledgeDO.getId(),
@@ -160,7 +165,7 @@ public class KnowledgeServiceImpl implements KnowledgeService {
                 knowledgeDO.getTags(),
                 parentIds,
                 childIds,
-                limitedDocs
+                docs
         );
     }
 }

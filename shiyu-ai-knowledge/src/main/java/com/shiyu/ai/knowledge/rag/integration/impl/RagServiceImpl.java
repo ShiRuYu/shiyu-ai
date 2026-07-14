@@ -2,11 +2,11 @@ package com.shiyu.ai.knowledge.rag.integration.impl;
 
 import com.shiyu.ai.knowledge.rag.RagOrchestrator;
 import com.shiyu.ai.knowledge.rag.RagOrchestrator.RagResult;
+import com.shiyu.ai.knowledge.rag.integration.RagService;
 import com.shiyu.ai.knowledge.search.KnowledgeSearchService;
 import com.shiyu.ai.knowledge.search.SearchResult;
+import com.shiyu.ai.knowledge.search.SearchSource;
 import com.shiyu.ai.knowledge.service.DocumentKnowledgeService;
-import com.shiyu.ai.knowledge.service.DocumentKnowledgeService.KnowledgeDocumentVO;
-import com.shiyu.ai.knowledge.rag.integration.RagService;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 
@@ -31,19 +31,18 @@ public class RagServiceImpl implements RagService {
     }
 
     @Override
-    public RagRetrievalResult retrieve(String query, String knowledgeBaseId, int topK) {
-        log.info("RAG 检索: query=[{}], kb=[{}], topK={}", query, knowledgeBaseId, topK);
+    public RagRetrievalResult retrieve(String query, SearchSource source, int topK) {
+        log.info("RAG 检索: query=[{}], source=[{}], topK={}", query, source, topK);
 
         if (query == null || query.trim().isEmpty()) {
             return new RagRetrievalResult(false, List.of(), "查询文本不能为空");
         }
 
         try {
-            if ("knowledge".equals(knowledgeBaseId)) {
-                return retrieveFromKnowledge(query, topK);
-            } else {
-                return retrieveFromRagOrchestrator(query, topK);
-            }
+            return switch (source) {
+                case KNOWLEDGE -> retrieveFromKnowledge(query, topK);
+                case DOCUMENT -> retrieveFromRagOrchestrator(query, topK);
+            };
         } catch (Exception e) {
             log.error("RAG 检索失败", e);
             return new RagRetrievalResult(false, List.of(), "检索失败: " + e.getMessage());
@@ -52,7 +51,7 @@ public class RagServiceImpl implements RagService {
 
     @Override
     public RagRetrievalResult retrieve(String query) {
-        return retrieve(query, "document", 5);
+        return retrieve(query, SearchSource.DOCUMENT, 5);
     }
 
     private RagRetrievalResult retrieveFromKnowledge(String query, int topK) {
