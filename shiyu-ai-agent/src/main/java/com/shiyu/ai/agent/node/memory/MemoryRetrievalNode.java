@@ -1,6 +1,9 @@
 package com.shiyu.ai.agent.node.memory;
 
 import com.shiyu.ai.memory.MemoryService;
+import com.shiyu.ai.memory.request.RetrieveMemoryRequest;
+import com.shiyu.ai.memory.spi.Memory;
+import com.shiyu.ai.memory.spi.MemoryType;
 import com.shiyu.ai.agent.node.BaseNode;
 import com.shiyu.ai.agent.node.NodeInput;
 import com.shiyu.ai.agent.node.NodeOutput;
@@ -11,6 +14,7 @@ import lombok.Setter;
 import lombok.extern.slf4j.Slf4j;
 
 import java.util.ArrayList;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import com.shiyu.ai.agent.node.NodeInputParam;
@@ -74,41 +78,43 @@ public class MemoryRetrievalNode extends BaseNode {
             double similarityThreshold = input.getParameter(FieldKey.SIMILARITY_THRESHOLD,
                     config.getSimilarityThreshold() != null ? config.getSimilarityThreshold() : 0.5);
 
-            List<Map<String, Object>> allMemories = new ArrayList<>();
+            List<Memory> allMemories = new ArrayList<>();
 
             if ("SHORT_TERM".equalsIgnoreCase(retrievalScope) || "BOTH".equalsIgnoreCase(retrievalScope) || "ALL".equalsIgnoreCase(retrievalScope)) {
                 if (sessionId != null && !sessionId.isEmpty()) {
-                    List<Map<String, Object>> shortTerm = memoryService.retrieveShortTerm(sessionId, topK);
-                    for (Map<String, Object> m : shortTerm) {
-                        m.put("type", "short_term");
-                    }
+                    List<Memory> shortTerm = memoryService.retrieveShortTerm(sessionId, topK);
                     allMemories.addAll(shortTerm);
                     log.debug("短期记忆检索到 {} 条", shortTerm.size());
                 }
             }
 
             if ("LONG_TERM".equalsIgnoreCase(retrievalScope) || "BOTH".equalsIgnoreCase(retrievalScope) || "ALL".equalsIgnoreCase(retrievalScope)) {
-                List<Map<String, Object>> longTerm = memoryService.retrieveLongTerm(query, userId, agentId, topK);
-                for (Map<String, Object> m : longTerm) {
-                    m.put("type", "long_term");
-                }
+                // 使用统一检索接口
+                RetrieveMemoryRequest retrievalRequest = RetrieveMemoryRequest.builder()
+                        .query(query)
+                        .userId(userId)
+                        .agentId(agentId)
+                        .topK(topK)
+                        .build();
+                List<Memory> longTerm = memoryService.retrieve(retrievalRequest);
                 allMemories.addAll(longTerm);
-                log.debug("长期记忆检索到 {} 条", longTerm.size());
+                log.debug("长期/语义记忆检索到 {} 条", longTerm.size());
             }
 
-            String context = buildMemoryContext(allMemories, similarityThreshold);
+            List<Map<String, Object>> memoryMaps = memoriesToMapList(allMemories);
+            String context = buildMemoryContext(memoryMaps, similarityThreshold);
 
             NodeOutput output = new NodeOutput();
             output.setSuccess(true);
             output.setMsg("记忆检索成功");
-            output.addData(FieldKey.MEMORIES, allMemories);
-            output.addData(FieldKey.MEMORY_COUNT, allMemories.size());
+            output.addData(FieldKey.MEMORIES, memoryMaps);
+            output.addData(FieldKey.MEMORY_COUNT, memoryMaps.size());
 
-            if (!allMemories.isEmpty()) {
+            if (!memoryMaps.isEmpty()) {
                 output.addData(FieldKey.MEMORY_CONTEXT, context);
             }
 
-            log.info("记忆检索成功, 返回 {} 条记忆 (范围: {})", allMemories.size(), retrievalScope);
+            log.info("记忆检索成功, 返回 {} 条记忆 (范围: {})", memoryMaps.size(), retrievalScope);
             return output;
 
         } catch (Exception e) {
@@ -118,6 +124,34 @@ public class MemoryRetrievalNode extends BaseNode {
             output.setMsg("记忆检索节点执行失败: " + e.getMessage());
             return output;
         }
+    }
+
+    private List<Map<String, Object>> memoriesToMapList(List<Memory> memories) {
+        List<Map<String, Object>> result = new ArrayList<>();
+        for (Memory mem : memories) {
+            Map<String, Object> map = new LinkedHashMap<>();
+            map.put("id", mem.getMemoryId());
+            map.put("content", mem.getContent());
+            map.put("category", mem.getCategory());
+            map.put("importance", mem.getImportance());
+            map.put("memoryKey", mem.getMemoryKey());
+            map.put("type", typeToScope(mem.getType()));
+            map.put("timestamp", mem.getCreatedAt());
+            map.put("role", mem.getRole());
+            map.put("sessionId", mem.getSessionId());
+            result.add(map);
+        }
+        return result;
+    }
+
+    private String typeToScope(MemoryType type) {
+        if (type == null) return "unknown";
+        return switch (type) {
+            case SHORT_TERM -> "short_term";
+            case LONG_TERM, SEMANTIC -> "long_term";
+            case WORKING -> "working";
+            case EPISODIC -> "episodic";
+        };
     }
 
     private String buildMemoryContext(List<Map<String, Object>> memories, double threshold) {

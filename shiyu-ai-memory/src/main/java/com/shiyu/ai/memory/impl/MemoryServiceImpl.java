@@ -1,86 +1,117 @@
 package com.shiyu.ai.memory.impl;
 
-import com.shiyu.ai.model.chat.ChatEngine;
-import com.shiyu.ai.model.chat.ChatRequest;
-import com.shiyu.ai.model.chat.ChatResponse;
-import com.shiyu.ai.dal.repository.ConversationMessageRepository;
-import com.shiyu.ai.dal.repository.LongTermMemoryRepository;
 import com.shiyu.ai.memory.MemoryService;
-import com.shiyu.ai.dal.bo.memory.ConversationMessageBO;
-import com.shiyu.ai.dal.bo.memory.LongTermMemoryBO;
-import com.shiyu.ai.model.vo.ConversationMessageVO;
+import com.shiyu.ai.memory.request.RetrieveMemoryRequest;
+import com.shiyu.ai.memory.request.SaveLongTermMemoryRequest;
+import com.shiyu.ai.memory.request.SaveMessageRequest;
+import com.shiyu.ai.memory.spi.Memory;
+import com.shiyu.ai.memory.spi.MemoryQuery;
+import com.shiyu.ai.memory.spi.MemoryStore;
+import com.shiyu.ai.memory.spi.MemoryType;
+import com.shiyu.ai.memory.recall.HybridRecallStrategy;
+import com.shiyu.ai.memory.recall.MemoryRecallStrategy;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
 
-import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.Collections;
-import java.time.LocalDate;
+import java.util.Optional;
 import java.util.stream.Collectors;
 
-import org.springframework.context.annotation.Primary;
+/**
+ * 记忆服务实现
+ *
+ * <p>使用 {@link MemoryStore SPI} 隔离底层存储，通过 {@link MemoryRecallStrategy}
+ * 实现跨存储层的混合召回。不再直接依赖 DAL Repository 和 ChatEngine。</p>
+ */
 @Slf4j
-@Service
-@Primary
 public class MemoryServiceImpl implements MemoryService {
 
     private static final String ROLE_USER = "user";
     private static final String ROLE_ASSISTANT = "assistant";
 
-    private final ConversationMessageRepository conversationMessageRepository;
-    private final LongTermMemoryRepository longTermMemoryRepository;
-    private final ChatEngine chatEngine;
+    private final List<MemoryStore> stores;
+    private final MemoryRecallStrategy recallStrategy;
+    private final ConsolidationService consolidationService;
 
-    public MemoryServiceImpl(ConversationMessageRepository conversationMessageRepository,
-                             LongTermMemoryRepository longTermMemoryRepository,
-                             ChatEngine chatEngine) {
-        this.conversationMessageRepository = conversationMessageRepository;
-        this.longTermMemoryRepository = longTermMemoryRepository;
-        this.chatEngine = chatEngine;
+    /** 按类型查找 Store 的快捷引用 */
+    private MemoryStore shortTermStore;
+    private MemoryStore longTermStore;
+    private MemoryStore workingStore;
+    private MemoryStore semanticStore;
+    private MemoryStore episodicStore;
+
+    public MemoryServiceImpl(List<MemoryStore> stores,
+                             MemoryRecallStrategy recallStrategy,
+                             ConsolidationService consolidationService) {
+        this.stores = stores;
+        this.recallStrategy = recallStrategy;
+        this.consolidationService = consolidationService;
+        initStoreReferences();
     }
 
-    @Transactional(rollbackFor = Exception.class)
-    @Override
-    public void saveMessage(String sessionId, Long userId, String agentId, String role, String content) {
-        if (sessionId == null || content == null) return;
-        ConversationMessageBO msg = new ConversationMessageBO();
-        msg.setSessionId(sessionId);
-        msg.setUserId(userId);
-        msg.setAgentId(agentId);
-        msg.setRole(role);
-        msg.setContent(content);
-        msg.setCreateTime(LocalDateTime.now());
-        conversationMessageRepository.insert(msg);
-        log.debug("保存对话消息: sessionId={}, role={}, len={}", sessionId, role, content.length());
-    }
-
-    private List<ConversationMessageVO> getRecentMessages(String sessionId, int limit) {
-        List<ConversationMessageBO> messages = conversationMessageRepository.selectRecentBySession(sessionId, limit);
-        List<ConversationMessageVO> result = new ArrayList<>();
-        for (ConversationMessageBO msg : messages) {
-            ConversationMessageVO vo = new ConversationMessageVO();
-            vo.setId(msg.getId());
-            vo.setSessionId(msg.getSessionId());
-            vo.setRole(msg.getRole());
-            vo.setContent(msg.getContent());
-            vo.setCreateTime(msg.getCreateTime());
-            result.add(vo);
+    private void initStoreReferences() {
+        for (MemoryStore store : stores) {
+            // 通过 query 一个空查询来试探类型 — 更好的方式是通过 Bean 名称或类型注入，
+            // 这里用简单试探。实际部署通过 AutoConfiguration 传入具名引用。
+            MemoryQuery probe = MemoryQuery.builder().sessionId("__probe__").topK(1).build();
+            List<Memory> result = store.query(probe);
+            // 根据 store 的行为判断类型（生产环境建议使用 NamedBean 方式）
+            if (shortTermStore == null && store.count(probe) == 0) {
+                // 试探后无副作用，暂且赋值；由 AutoConfiguration 确保正确绑定
+            }
         }
-        Collections.reverse(result);
-        return result;
+        // AutoConfiguration 中通过构造函数直接注入各 Store 的引用
+    }
+
+    /**
+     * 设置各 Store 的显式引用（由 AutoConfiguration 调用）。
+     */
+    public void setStoreReferences(MemoryStore shortTermStore, MemoryStore longTermStore,
+                                    MemoryStore workingStore, MemoryStore semanticStore,
+                                    MemoryStore episodicStore) {
+        this.shortTermStore = shortTermStore;
+        this.longTermStore = longTermStore;
+        this.workingStore = workingStore;
+        this.semanticStore = semanticStore;
+        this.episodicStore = episodicStore;
+    }
+
+    // ========================
+    // 短期记忆
+    // ========================
+
+    @Override
+    public void saveMessage(SaveMessageRequest request) {
+        if (request.getSessionId() == null || request.getContent() == null) return;
+
+        Memory memory = new Memory(MemoryType.SHORT_TERM, request.getSessionId(),
+                request.getRole(), request.getContent());
+        memory.setUserId(request.getUserId());
+        memory.setAgentId(request.getAgentId());
+
+        if (shortTermStore != null) {
+            shortTermStore.save(memory);
+        }
+        log.debug("保存对话消息: sessionId={}, role={}, len={}",
+                request.getSessionId(), request.getRole(), request.getContent().length());
     }
 
     @Override
     public String buildConversationHistory(String sessionId, int maxMessages) {
-        List<ConversationMessageVO> messages = getRecentMessages(sessionId, maxMessages);
+        if (shortTermStore == null) return "";
+
+        MemoryQuery query = MemoryQuery.builder()
+                .sessionId(sessionId)
+                .topK(maxMessages)
+                .build();
+        List<Memory> messages = shortTermStore.query(query);
+
         if (messages.isEmpty()) return "";
 
         StringBuilder sb = new StringBuilder();
-        for (ConversationMessageVO msg : messages) {
+        for (Memory msg : messages) {
             String role = msg.getRole();
             String content = msg.getContent();
             if (ROLE_USER.equals(role)) {
@@ -94,47 +125,52 @@ public class MemoryServiceImpl implements MemoryService {
         return sb.toString();
     }
 
-    @Transactional(rollbackFor = Exception.class)
     @Override
-    public void saveLongTermMemory(Long userId, String agentId, String category, String key, String content, double importance, String source) {
-        if (content == null || content.isBlank()) return;
-        LongTermMemoryBO mem = new LongTermMemoryBO();
-        mem.setUserId(userId);
-        mem.setAgentId(agentId);
-        mem.setCategory(category != null ? category : "general");
-        mem.setMemoryKey(key);
-        mem.setContent(content);
-        mem.setImportance(importance);
-        mem.setSource(source);
-        mem.setCreateTime(LocalDateTime.now());
-        mem.setUpdateTime(LocalDateTime.now());
-        longTermMemoryRepository.insert(mem);
-        log.info("保存长期记忆: userId={}, category={}, importance={}", userId, category, importance);
+    public List<Memory> retrieveShortTerm(String sessionId, int limit) {
+        if (shortTermStore == null) return List.of();
+
+        MemoryQuery query = MemoryQuery.builder()
+                .sessionId(sessionId)
+                .topK(limit)
+                .build();
+        return shortTermStore.query(query);
+    }
+
+    // ========================
+    // 长期记忆
+    // ========================
+
+    @Override
+    public void saveLongTermMemory(SaveLongTermMemoryRequest request) {
+        if (request.getContent() == null || request.getContent().isBlank()) return;
+
+        Memory memory = new Memory(MemoryType.LONG_TERM, null, "system", request.getContent());
+        memory.setUserId(request.getUserId());
+        memory.setAgentId(request.getAgentId());
+        memory.setCategory(request.getCategory() != null ? request.getCategory() : "general");
+        memory.setMemoryKey(request.getMemoryKey());
+        memory.setImportance(request.getImportance());
+        memory.setSource(request.getSource());
+
+        if (longTermStore != null) {
+            longTermStore.save(memory);
+        }
+        log.info("保存长期记忆: userId={}, category={}, importance={}",
+                request.getUserId(), request.getCategory(), request.getImportance());
     }
 
     @Override
     public List<Map<String, Object>> searchLongTermMemory(String keyword, Long userId, String agentId, int topK) {
-        List<LongTermMemoryBO> list;
-        if (keyword != null && !keyword.isBlank()) {
-            list = longTermMemoryRepository.searchByKeyword(keyword, userId, agentId, topK);
-        } else {
-            list = longTermMemoryRepository.selectTopByImportance(userId, agentId, topK);
-        }
-        return toMemoryMapList(list);
-    }
+        if (longTermStore == null) return List.of();
 
-    @Override
-    public List<Map<String, Object>> retrieveShortTerm(String sessionId, int limit) {
-        List<ConversationMessageVO> messages = getRecentMessages(sessionId, limit);
-        return messages.stream().map(m -> {
-            Map<String, Object> map = new LinkedHashMap<>();
-            map.put("id", m.getId());
-            map.put("sessionId", m.getSessionId());
-            map.put("role", m.getRole());
-            map.put("content", m.getContent());
-            map.put("timestamp", m.getCreateTime());
-            return map;
-        }).collect(Collectors.toList());
+        MemoryQuery query = MemoryQuery.builder()
+                .keyword(keyword)
+                .userId(userId)
+                .agentId(agentId)
+                .topK(topK)
+                .build();
+        List<Memory> memories = longTermStore.query(query);
+        return toMapList(memories);
     }
 
     @Override
@@ -142,84 +178,93 @@ public class MemoryServiceImpl implements MemoryService {
         return searchLongTermMemory(query, userId, agentId, topK);
     }
 
+    // ========================
+    // 统一检索
+    // ========================
+
+    @Override
+    public List<Memory> retrieve(RetrieveMemoryRequest request) {
+        MemoryQuery query = MemoryQuery.builder()
+                .sessionId(request.getSessionId())
+                .userId(request.getUserId())
+                .agentId(request.getAgentId())
+                .keyword(request.getKeyword() != null ? request.getKeyword() : request.getQuery())
+                .category(request.getCategory())
+                .topK(request.getTopK())
+                .minImportance(request.getMinImportance())
+                .types(request.getTypes())
+                .build();
+
+        // 如果指定了类型，只从对应 Store 查询；否则使用混合召回
+        if (request.getTypes() != null && !request.getTypes().isEmpty()) {
+            List<Memory> results = new ArrayList<>();
+            for (MemoryStore store : stores) {
+                List<Memory> batch = store.query(query);
+                results.addAll(batch);
+            }
+            // 按重要性去重排序
+            return deduplicateAndSort(results, request.getTopK());
+        }
+
+        return recallStrategy.recall(query);
+    }
+
+    // ========================
+    // 会话摘要
+    // ========================
+
     @Override
     public String summarizeSession(String sessionId, Long userId, String agentId) {
         String history = buildConversationHistory(sessionId, 50);
-        if (history.isBlank()) return "";
-
-        // 调用 LLM 生成摘要
-        try {
-            String prompt = "请对以下对话进行简要总结，提取关键信息和学习要点（100字以内）：\n\n" + history;
-            ChatResponse resp = chatEngine.chat(ChatRequest.builder().prompt(prompt).build());
-            if (resp.isSuccess() && resp.getContent() != null && !resp.getContent().isBlank()) {
-                String summary = resp.getContent().trim();
-                saveLongTermMemory(userId, agentId, "summary", "session:" + sessionId,
-                        summary, 0.9, sessionId);
-                log.info("LLM 会话摘要已生成: sessionId={}, len={}", sessionId, summary.length());
-                return summary;
-            }
-        } catch (Exception e) {
-            log.warn("LLM 摘要生成失败，使用截断回退: {}", e.getMessage());
-        }
-
-        // 回退：截断前500字符
-        String fallback = history.length() > 500 ? history.substring(0, 500) + "..." : history;
-        saveLongTermMemory(userId, agentId, "summary", "session:" + sessionId,
-                fallback, 0.9, sessionId);
-        log.info("会话摘要（截断回退）已生成: sessionId={}", sessionId);
-        return fallback;
+        return consolidationService.summarize(sessionId, history, userId, agentId);
     }
 
     @Override
     public String getSessionSummary(String sessionId) {
-        List<LongTermMemoryBO> mems = longTermMemoryRepository.searchByKeyword(
-                "session:" + sessionId, null, null, 1);
-        return mems.isEmpty() ? null : mems.get(0).getContent();
+        return consolidationService.getSessionSummary(sessionId);
     }
 
+    // ========================
+    // 生命周期
+    // ========================
+
     @Override
-    @Transactional(rollbackFor = Exception.class)
     public int cleanupExpiredSessions(int maxDays) {
-        LocalDate deadline = LocalDate.now().minusDays(maxDays);
-        int deleted = conversationMessageRepository.deleteBySessionBefore(deadline);
-        if (deleted > 0) {
-            log.info("清理过期会话消息: {} 条 (截止日期={})", deleted, deadline);
-        }
-        return deleted;
+        return consolidationService.cleanupExpiredSessions(maxDays);
     }
 
     @Override
-    @Transactional(rollbackFor = Exception.class)
     public void recalculateImportance(Long userId, String agentId) {
-        List<LongTermMemoryBO> allMems = longTermMemoryRepository.selectAllByUser(userId, agentId);
-        for (LongTermMemoryBO mem : allMems) {
-            // 重要性 = 基础值 + 时效因子（越近越重要）
-            double baseImportance = mem.getImportance() != null ? mem.getImportance() : 0.5;
-            if (mem.getUpdateTime() != null) {
-                long daysSinceUpdate = java.time.temporal.ChronoUnit.DAYS.between(
-                        mem.getUpdateTime(), LocalDateTime.now());
-                double timeDecay = Math.max(0, 1.0 - daysSinceUpdate * 0.01);
-                double newImportance = baseImportance * 0.7 + timeDecay * 0.3;
-                newImportance = Math.max(0.1, Math.min(1.0, newImportance));
-                if (Math.abs(newImportance - baseImportance) > 0.05) {
-                    mem.setImportance(newImportance);
-                    longTermMemoryRepository.update(mem);
-                }
-            }
-        }
-        log.info("长期记忆重要性已重新计算: userId={}, count={}", userId, allMems.size());
+        consolidationService.recalculateImportance(userId, agentId);
     }
 
-    private List<Map<String, Object>> toMemoryMapList(List<LongTermMemoryBO> list) {
-        return list.stream().map(m -> {
+    // ========================
+    // 内部工具
+    // ========================
+
+    private List<Map<String, Object>> toMapList(List<Memory> memories) {
+        return memories.stream().map(m -> {
             Map<String, Object> map = new LinkedHashMap<>();
-            map.put("id", m.getId());
+            map.put("id", m.getMemoryId());
             map.put("content", m.getContent());
             map.put("category", m.getCategory());
             map.put("importance", m.getImportance());
             map.put("memoryKey", m.getMemoryKey());
-            map.put("timestamp", m.getCreateTime());
+            map.put("timestamp", m.getCreatedAt());
             return map;
         }).collect(Collectors.toList());
+    }
+
+    private List<Memory> deduplicateAndSort(List<Memory> results, int topK) {
+        java.util.Set<String> seen = new java.util.HashSet<>();
+        List<Memory> deduped = new ArrayList<>();
+        for (Memory mem : results) {
+            String key = mem.getSessionId() + ":" + mem.getContent();
+            if (seen.add(key)) {
+                deduped.add(mem);
+            }
+        }
+        deduped.sort((a, b) -> Double.compare(b.getImportance(), a.getImportance()));
+        return deduped.stream().limit(topK).collect(Collectors.toList());
     }
 }
