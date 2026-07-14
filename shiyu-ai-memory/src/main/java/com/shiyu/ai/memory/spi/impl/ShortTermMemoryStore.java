@@ -1,4 +1,4 @@
-package com.shiyu.ai.memory.shortterm;
+package com.shiyu.ai.memory.spi.impl;
 
 import com.github.benmanes.caffeine.cache.Cache;
 import com.github.benmanes.caffeine.cache.Caffeine;

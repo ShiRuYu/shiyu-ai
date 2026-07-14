@@ -1,4 +1,4 @@
-package com.shiyu.ai.memory.shortterm;
+package com.shiyu.ai.memory.spi.impl;
 import org.junit.jupiter.api.Tag;
 
 import com.shiyu.ai.dal.bo.memory.ConversationMessageBO;

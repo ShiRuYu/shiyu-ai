@@ -1,4 +1,4 @@
-package com.shiyu.ai.memory.episodic;
+package com.shiyu.ai.memory.spi.impl;
 
 import com.shiyu.ai.dal.bo.memory.EpisodicMemoryBO;
 import com.shiyu.ai.dal.repository.agent.EpisodicMemoryRepository;

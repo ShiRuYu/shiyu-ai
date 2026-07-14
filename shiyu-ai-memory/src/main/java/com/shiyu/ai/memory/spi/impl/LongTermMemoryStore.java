@@ -1,4 +1,4 @@
-package com.shiyu.ai.memory.longterm;
+package com.shiyu.ai.memory.spi.impl;
 
 import com.shiyu.ai.dal.bo.memory.LongTermMemoryBO;
 import com.shiyu.ai.dal.repository.LongTermMemoryRepository;

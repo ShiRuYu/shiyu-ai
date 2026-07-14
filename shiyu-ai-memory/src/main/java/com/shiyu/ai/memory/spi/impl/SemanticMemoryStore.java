@@ -1,4 +1,4 @@
-package com.shiyu.ai.memory.semantic;
+package com.shiyu.ai.memory.spi.impl;
 
 import com.shiyu.ai.memory.spi.Memory;
 import com.shiyu.ai.memory.spi.MemoryQuery;
