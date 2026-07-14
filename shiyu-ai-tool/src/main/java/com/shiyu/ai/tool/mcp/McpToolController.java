@@ -59,6 +59,12 @@ public class McpToolController {
     public Result<Object> executeTool(
             @PathVariable String name,
             @RequestBody(required = false) Map<String, Object> params) {
+        // 先校验工具是否在注册表中存在
+        McpToolDescriptor tool = registry.getTool(name);
+        if (tool == null) {
+            return Result.fail("工具不存在: " + name);
+        }
+
         ToolService.ToolExecutionResult result = toolService.execute(name, params);
         if (result.success()) {
             return Result.success(result.result());
