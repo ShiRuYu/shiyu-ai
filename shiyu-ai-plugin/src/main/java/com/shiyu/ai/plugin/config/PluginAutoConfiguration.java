@@ -1,4 +1,5 @@
-package com.shiyu.ai.plugin.sandbox;
+package com.shiyu.ai.plugin.config;
+import com.shiyu.ai.plugin.sandbox.PluginSandbox;
 
 import com.shiyu.ai.plugin.registry.PluginRegistry;
 import lombok.extern.slf4j.Slf4j;

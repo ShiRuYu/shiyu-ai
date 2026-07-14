@@ -1,4 +1,4 @@
-package com.shiyu.ai.plugin.lifecycle;
+package com.shiyu.ai.plugin.controller;
 
 import com.shiyu.ai.common.core.api.Result;
 import com.shiyu.ai.plugin.registry.PluginRegistry;

@@ -1,20 +1,15 @@
 package com.shiyu.ai.plugin.registry;
-import jakarta.annotation.PostConstruct;
-import jakarta.annotation.PreDestroy;
 
+import com.shiyu.ai.plugin.lifecycle.PluginLoader;
 import com.shiyu.ai.plugin.lifecycle.PluginManager;
 import com.shiyu.ai.plugin.spi.Plugin;
 import com.shiyu.ai.plugin.spi.PluginDescriptor;
-import com.shiyu.ai.plugin.lifecycle.PluginLoader;
-import com.shiyu.ai.plugin.lifecycle.PluginManager;
 import jakarta.annotation.PostConstruct;
 import jakarta.annotation.PreDestroy;
 import lombok.extern.slf4j.Slf4j;
 
 import java.nio.file.Path;
 import java.util.List;
-import java.util.Map;
-import java.util.concurrent.ConcurrentHashMap;
 
 /**
  * 插件注册表（高层封装）
@@ -52,7 +47,6 @@ public class PluginRegistry {
         pluginLoader.loadFromDirectory(dir, pluginManager);
         log.info("插件扫描完成，已发现 {} 个插件", pluginManager.listPlugins().size());
 
-        // 自动启动所有插件
         for (PluginDescriptor desc : pluginManager.listPlugins()) {
             try {
                 pluginManager.start(desc.getId());
@@ -67,10 +61,9 @@ public class PluginRegistry {
         log.info("停止所有插件...");
         for (PluginDescriptor desc : pluginManager.listPlugins()) {
             pluginManager.stop(desc.getId());
+        pluginLoader.closeClassLoader(desc.getId());
         }
     }
-
-    // ======================== 委托方法 ========================
 
     public void install(PluginDescriptor descriptor, Plugin plugin) {
         pluginManager.install(descriptor, plugin);

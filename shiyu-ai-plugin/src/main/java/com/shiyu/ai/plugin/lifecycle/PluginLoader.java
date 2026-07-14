@@ -11,13 +11,17 @@ import java.net.URLClassLoader;
 import java.nio.file.Path;
 import java.util.Map;
 import java.util.ServiceLoader;
+import java.util.concurrent.ConcurrentHashMap;
 
 /**
  * 插件加载器
- * 从 JAR 文件热加载插件
+ * 从 JAR 文件热加载插件，管理 ClassLoader 生命周期
  */
 @Slf4j
 public class PluginLoader {
+
+    /** 插件 ID → ClassLoader 映射，用于后续关闭 */
+    private final Map<String, URLClassLoader> classLoaders = new ConcurrentHashMap<>();
 
     /**
      * 从 JAR 文件加载插件
@@ -26,14 +30,14 @@ public class PluginLoader {
      * @return 插件实例
      */
     public Plugin loadFromJar(Path jarPath, PluginDescriptor descriptor) {
+        URLClassLoader classLoader = null;
         try {
             File jarFile = jarPath.toFile();
             if (!jarFile.exists()) {
                 throw new IllegalArgumentException("JAR 文件不存在: " + jarPath);
             }
 
-            // 创建独立 ClassLoader 实现隔离
-            URLClassLoader classLoader = new URLClassLoader(
+            classLoader = new URLClassLoader(
                     new URL[]{jarFile.toURI().toURL()},
                     getClass().getClassLoader()
             );
@@ -43,6 +47,7 @@ public class PluginLoader {
             for (Plugin plugin : serviceLoader) {
                 if (plugin.getId().equals(descriptor.getId())) {
                     descriptor.setState(PluginState.RESOLVED);
+                    classLoaders.put(descriptor.getId(), classLoader);
                     log.info("插件已从 JAR 加载: {} v{}", plugin.getName(), plugin.getVersion());
                     return plugin;
                 }
@@ -53,12 +58,14 @@ public class PluginLoader {
                 Class<?> clazz = classLoader.loadClass(descriptor.getEntryClass());
                 Plugin plugin = (Plugin) clazz.getDeclaredConstructor().newInstance();
                 descriptor.setState(PluginState.RESOLVED);
+                classLoaders.put(descriptor.getId(), classLoader);
                 log.info("插件已通过反射加载: {} v{}", plugin.getName(), plugin.getVersion());
                 return plugin;
             }
 
             throw new IllegalStateException("JAR 中未找到 Plugin 实现: " + jarPath);
         } catch (Exception e) {
+            closeClassLoader(descriptor.getId());
             log.error("插件加载失败: {}", jarPath, e);
             descriptor.setState(PluginState.FAILED);
             throw new RuntimeException("插件加载失败: " + jarPath, e);
@@ -74,7 +81,6 @@ public class PluginLoader {
 
         for (File jar : jars) {
             try {
-                // 尝试从 JAR 的 plugin.json 读取描述
                 PluginDescriptor descriptor = readDescriptorFromJar(jar.toPath());
                 if (descriptor != null) {
                     Plugin plugin = loadFromJar(jar.toPath(), descriptor);
@@ -86,8 +92,31 @@ public class PluginLoader {
         }
     }
 
+    /**
+     * 关闭指定插件的 ClassLoader
+     */
+    public void closeClassLoader(String pluginId) {
+        URLClassLoader cl = classLoaders.remove(pluginId);
+        if (cl != null) {
+            try {
+                cl.close();
+                log.debug("插件 ClassLoader 已关闭: {}", pluginId);
+            } catch (Exception e) {
+                log.warn("关闭插件 ClassLoader 失败: {}", pluginId, e);
+            }
+        }
+    }
+
+    /**
+     * 关闭所有 ClassLoader
+     */
+    public void closeAll() {
+        for (String pluginId : classLoaders.keySet()) {
+            closeClassLoader(pluginId);
+        }
+    }
+
     private PluginDescriptor readDescriptorFromJar(Path jarPath) {
-        // 简化实现：根据文件名生成默认描述符
         String fileName = jarPath.getFileName().toString();
         String id = fileName.replace(".jar", "");
         return new PluginDescriptor(
