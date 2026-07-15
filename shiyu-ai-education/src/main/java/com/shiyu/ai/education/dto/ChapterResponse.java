@@ -2,6 +2,10 @@ package com.shiyu.ai.education.dto;
 
 import java.util.List;
 
+import io.github.linpeilie.annotations.AutoMapper;
+import com.shiyu.ai.dal.bo.education.ChapterBO;
+
+@AutoMapper(target = ChapterBO.class)
 public record ChapterResponse(
         Long id,
         Long textbookId,

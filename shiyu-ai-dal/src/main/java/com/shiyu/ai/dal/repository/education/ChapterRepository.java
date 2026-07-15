@@ -1,12 +1,15 @@
 package com.shiyu.ai.dal.repository.education;
 
 import com.mybatisflex.core.query.QueryWrapper;
+import java.util.List;
+
+import com.shiyu.ai.common.core.api.PageData;
+import com.shiyu.ai.common.core.utils.MapstructUtils;
+import com.shiyu.ai.dal.bo.education.ChapterBO;
 import com.shiyu.ai.dal.dataobject.education.ChapterDO;
 import com.shiyu.ai.dal.mapper.education.ChapterMapper;
 import jakarta.annotation.Resource;
 import org.springframework.stereotype.Component;
-
-import java.util.List;
 
 @Component
 public class ChapterRepository {
@@ -14,41 +17,44 @@ public class ChapterRepository {
     @Resource
     private ChapterMapper chapterMapper;
 
-    public ChapterDO selectById(Long id) {
-        return chapterMapper.selectOneById(id);
+    public ChapterBO selectById(Long id) {
+        return MapstructUtils.convert(chapterMapper.selectOneById(id), ChapterBO.class);
     }
 
-    public List<ChapterDO> selectByTextbookId(Long textbookId) {
-        return chapterMapper.selectListByQuery(
+    public List<ChapterBO> selectByTextbookId(Long textbookId) {
+        return MapstructUtils.convert(chapterMapper.selectListByQuery(
                 QueryWrapper.create()
                         .eq("textbook_id", textbookId)
-                        .orderBy("chapter_order"));
+                        .orderBy("chapter_order", true)
+        ), ChapterBO.class);
     }
 
-    public List<ChapterDO> selectByParentId(Long parentId) {
-        return chapterMapper.selectListByQuery(
-                QueryWrapper.create()
-                        .eq("parent_id", parentId)
-                        .orderBy("chapter_order"));
+    public List<ChapterBO> selectAll() {
+        return MapstructUtils.convert(chapterMapper.selectListByQuery(QueryWrapper.create()), ChapterBO.class);
+    }
+    public List<ChapterBO> selectRootChapters(Long textbookId) {
+        return MapstructUtils.convert(chapterMapper.selectListByQuery(
+                QueryWrapper.create().eq("textbook_id", textbookId).eq("parent_id", 0).orderBy("chapter_order", true)), ChapterBO.class);
     }
 
-    public List<ChapterDO> selectRootChapters(Long textbookId) {
-        return chapterMapper.selectListByQuery(
-                QueryWrapper.create()
-                        .eq("textbook_id", textbookId)
-                        .isNull("parent_id")
-                        .orderBy("chapter_order"));
+    public List<ChapterBO> selectByParentId(Long parentId) {
+        return MapstructUtils.convert(chapterMapper.selectListByQuery(
+                QueryWrapper.create().eq("parent_id", parentId).orderBy("chapter_order", true)), ChapterBO.class);
     }
 
-    public int insert(ChapterDO chapter) {
-        return chapterMapper.insert(chapter);
+    public int insert(ChapterBO entity) {
+        ChapterDO dataObj = MapstructUtils.convert(entity, ChapterDO.class);
+        return chapterMapper.insert(dataObj);
     }
 
-    public int update(ChapterDO chapter) {
-        return chapterMapper.update(chapter);
+
+    public int update(ChapterBO entity) {
+        ChapterDO dataObj = MapstructUtils.convert(entity, ChapterDO.class);
+        return chapterMapper.update(dataObj);
     }
 
     public int deleteById(Long id) {
         return chapterMapper.deleteById(id);
     }
+
 }

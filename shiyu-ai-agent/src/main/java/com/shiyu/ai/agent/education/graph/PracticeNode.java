@@ -8,7 +8,7 @@ import com.shiyu.ai.agent.node.NodeType;
 import com.shiyu.ai.model.chat.ChatEngine;
 import com.shiyu.ai.model.chat.ChatRequest;
 import com.shiyu.ai.model.chat.ChatResponse;
-import com.shiyu.ai.dal.dataobject.education.QuestionDO;
+import com.shiyu.ai.dal.bo.education.QuestionBO;
 import com.shiyu.ai.education.domain.DifficultyLevel;
 import com.shiyu.ai.knowledge.dto.KnowledgeResponse;
 import lombok.Getter;
@@ -78,11 +78,11 @@ public class PracticeNode extends BaseNode {
         if (!resp.isSuccess()) {
             output.setSuccess(false);
             output.setMsg("AI 出题失败: " + resp.getErrorMessage());
-            output.addData("practiceQuestions", new ArrayList<QuestionDO>());
+            output.addData("practiceQuestions", new ArrayList<QuestionBO>());
             output.addData("questionCount", 0);
         } else {
             // 解析 LLM 返回的 JSON 题目
-            List<QuestionDO> questions = parseQuestions(resp.getContent(), knowledge, difficulty);
+            List<QuestionBO> questions = parseQuestions(resp.getContent(), knowledge, difficulty);
             output.setSuccess(true);
             output.setMsg("出题成功");
             output.addData("practiceQuestions", questions);
@@ -125,14 +125,14 @@ public class PracticeNode extends BaseNode {
         return DifficultyLevel.COMPETITION;
     }
 
-    private List<QuestionDO> parseQuestions(String content, KnowledgeResponse knowledge,
+    private List<QuestionBO> parseQuestions(String content, KnowledgeResponse knowledge,
                                             DifficultyLevel difficulty) {
-        List<QuestionDO> questions = new ArrayList<>();
+        List<QuestionBO> questions = new ArrayList<>();
         for (String line : content.split("\n")) {
             line = line.trim();
             if (line.isEmpty() || line.startsWith("```")) continue;
             try {
-                QuestionDO q = parseJsonLine(line, knowledge, difficulty);
+                QuestionBO q = parseJsonLine(line, knowledge, difficulty);
                 if (q != null) questions.add(q);
             } catch (Exception e) {
                 log.warn("解析题目行失败: {}", e.getMessage());
@@ -141,12 +141,11 @@ public class PracticeNode extends BaseNode {
         return questions;
     }
 
-    private QuestionDO parseJsonLine(String json, KnowledgeResponse knowledge,
+    private QuestionBO parseJsonLine(String json, KnowledgeResponse knowledge,
                                      DifficultyLevel difficulty) {
         if (!json.startsWith("{") || !json.endsWith("}")) return null;
-        QuestionDO q = new QuestionDO();
+        QuestionBO q = new QuestionBO();
         q.setDifficulty(difficulty.getLevel());
-        q.setStatus(1);
         q.setSubjectCode(parseSubjectCode(knowledge.code()));
         q.setGrade(8);
         q.setType(extract(json, "type"));

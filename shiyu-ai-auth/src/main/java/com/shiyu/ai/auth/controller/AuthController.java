@@ -1,10 +1,9 @@
 package com.shiyu.ai.auth.controller;
 
-import com.shiyu.ai.auth.request.LoginRequest;
-import com.shiyu.ai.auth.vo.LoginResponseVO;
+import com.shiyu.ai.auth.request.*;
+import com.shiyu.ai.auth.vo.*;
 import com.shiyu.ai.auth.service.AuthService;
 import com.shiyu.ai.auth.handler.LoginRateLimiter;
-import com.shiyu.ai.auth.vo.WorkspaceContextVO;
 import com.shiyu.ai.common.core.api.Result;
 import com.shiyu.ai.common.core.domain.LoginContextHolder;
 import lombok.extern.slf4j.Slf4j;
@@ -13,9 +12,7 @@ import org.springframework.web.bind.annotation.*;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import io.swagger.v3.oas.annotations.Operation;
 
-import java.util.ArrayList;
 import java.util.List;
-import java.util.Map;
 
 /**
  * 认证 Controller
@@ -38,8 +35,6 @@ public class AuthController {
     /**
      * 用户登录
      * POST /auth/login
-     * @param request 登录请求（包含用户名、密码）
-     * @return 登录响应（包含用户信息和访问令牌）
      */
     @Operation(summary = "Login")
     @PostMapping("/login")
@@ -53,13 +48,11 @@ public class AuthController {
         }
         
         try {
-            // 验证参数
             if (request.getUsername() == null || request.getUsername().trim().isEmpty() ||
                 request.getPassword() == null || request.getPassword().trim().isEmpty()) {
                 return Result.fail("Username and password are required");
             }
             
-            // 调用登录服务（含角色选择）
             LoginResponseVO response = authService.login(request.getUsername(), request.getPassword(), request.getRoleId());
             
             if (response == null) {
@@ -74,12 +67,6 @@ public class AuthController {
             return Result.fail("登录失败");
         }
     }
-    
-    /**
-     * 获取用户权限码
-     * GET /auth/codes
-     * @return 权限码列表
-     */
 
     /**
      * 用户注册
@@ -104,11 +91,10 @@ public class AuthController {
      */
     @Operation(summary = "Code Login")
     @PostMapping("/code-login")
-    public Result<LoginResponseVO> codeLogin(@RequestBody Map<String, String> body) {
+    public Result<LoginResponseVO> codeLogin(@Valid @RequestBody CodeLoginRequest request) {
         log.info("收到验证码登录请求");
         try {
-            LoginResponseVO response = authService.codeLogin(
-                body.get("phone"), body.get("code"));
+            LoginResponseVO response = authService.codeLogin(request.getPhone(), request.getCode());
             return Result.success(response);
         } catch (Exception e) {
             return Result.fail(e.getMessage());
@@ -121,30 +107,32 @@ public class AuthController {
      */
     @Operation(summary = "Forget Password")
     @PostMapping("/forget-password")
-    public Result<Boolean> forgetPassword(@RequestBody Map<String, String> body) {
-        log.info("收到忘记密码请求: email={}", body.get("email"));
+    public Result<Boolean> forgetPassword(@Valid @RequestBody ForgetPasswordRequest request) {
+        log.info("收到忘记密码请求: email={}", request.getEmail());
         try {
             boolean success = authService.forgetPassword(
-                body.get("email"), body.get("newPassword"), body.get("code"));
+                request.getEmail(), request.getNewPassword(), request.getCode());
             return Result.success(success);
         } catch (IllegalArgumentException e) {
             return Result.fail(e.getMessage());
         }
     }
 
+    /**
+     * 获取用户权限码
+     * GET /auth/codes
+     */
     @Operation(summary = "Get Auth Codes")
     @GetMapping("/codes")
-    public Result<List<String>> getAuthCodes() {
+    public Result<AuthCodeVO> getAuthCodes() {
         log.info("收到获取权限码请求");
-        
         try {
-            // 从 LoginHelper 获取当前登录用户 ID
             Long userId = LoginContextHolder.getUserId();
             log.debug("当前登录用户 ID: {}", userId);
-            
-            // 通过用户 ID 查询权限码
             List<String> codes = authService.getAuthCodesByUserId(userId);
-            return Result.success(codes);
+            AuthCodeVO vo = new AuthCodeVO();
+            vo.setCodes(codes);
+            return Result.success(vo);
             
         } catch (Exception e) {
             log.error("获取权限码失败", e);
@@ -155,52 +143,35 @@ public class AuthController {
     /**
      * 刷新访问令牌
      * POST /auth/refresh
-     * @param request 包含旧 token 的请求体
-     * @return 新的访问令牌
      */
     @Operation(summary = "Refresh Token")
     @PostMapping("/refresh")
-    public Result<String> refreshToken(@RequestBody Map<String, String> request) {
+    public Result<String> refreshToken(@Valid @RequestBody RefreshTokenRequest request) {
         log.info("收到刷新令牌请求");
-        
         try {
-            String oldToken = request.get("accessToken");
-            if (oldToken == null || oldToken.trim().isEmpty()) {
-                return Result.fail("Access token is required");
-            }
-            
-            String newAccessToken = authService.refreshToken(oldToken);
+            String newAccessToken = authService.refreshToken(request.getAccessToken());
             if (newAccessToken == null) {
                 return Result.fail("Invalid access token");
             }
-            
             return Result.success(newAccessToken);
-            
         } catch (Exception e) {
             log.error("刷新令牌失败", e);
             return Result.fail("刷新令牌失败");
         }
     }
     
-
     /**
      * 切换当前角色
-     * PATCH /auth/current-role
+     * POST /auth/current-role
      */
+    @Operation(summary = "Switch Current Role")
     @PostMapping("/current-role")
-    public Result<Void> switchCurrentRole(@RequestBody Map<String, Long> body) {
+    public Result<Void> switchCurrentRole(@Valid @RequestBody SwitchRoleRequest request) {
         log.info("收到切换角色请求");
         Long userId = LoginContextHolder.getUserId();
-        if (userId == null) {
-            return Result.fail("用户未登录");
-        }
-        Long roleId = body.get("roleId");
-        boolean success = authService.switchCurrentRole(userId, roleId);
-        if (success) {
-            return Result.success();
-        } else {
-            return Result.fail("切换角色失败");
-        }
+        if (userId == null) return Result.fail("用户未登录");
+        boolean success = authService.switchCurrentRole(userId, request.getRoleId());
+        return success ? Result.success() : Result.fail("切换角色失败");
     }
 
     /**
@@ -209,13 +180,11 @@ public class AuthController {
      */
     @Operation(summary = "Switch Tenant")
     @PostMapping("/switch-tenant")
-    public Result<List<WorkspaceContextVO>> switchTenant(@RequestBody Map<String, Long> body) {
+    public Result<List<WorkspaceContextVO>> switchTenant(@Valid @RequestBody SwitchTenantRequest request) {
         log.info("收到切换租户请求");
         Long userId = LoginContextHolder.getUserId();
         if (userId == null) return Result.fail("用户未登录");
-        Long tenantId = body.get("tenantId");
-        if (tenantId == null) return Result.fail("tenantId 不能为空");
-        boolean success = authService.switchCurrentTenant(userId, tenantId);
+        boolean success = authService.switchCurrentTenant(userId, request.getTenantId());
         if (success) {
             List<WorkspaceContextVO> workspaces = authService.getUserWorkspaces(userId);
             return Result.success(workspaces);
@@ -229,15 +198,12 @@ public class AuthController {
      */
     @Operation(summary = "Switch Workspace")
     @PostMapping("/switch-workspace")
-    public Result<Void> switchWorkspace(@RequestBody Map<String, Object> body) {
+    public Result<Void> switchWorkspace(@Valid @RequestBody SwitchWorkspaceRequest request) {
         log.info("收到切换工作空间请求");
         Long userId = LoginContextHolder.getUserId();
         if (userId == null) return Result.fail("用户未登录");
-        Long workspaceId = body.get("workspaceId") != null
-                ? ((Number) body.get("workspaceId")).longValue() : null;
-        boolean success = authService.switchCurrentWorkspace(userId, workspaceId);
-        if (success) return Result.success();
-        return Result.fail("切换工作空间失败");
+        boolean success = authService.switchCurrentWorkspace(userId, request.getWorkspaceId());
+        return success ? Result.success() : Result.fail("切换工作空间失败");
     }
 
     /**
@@ -250,8 +216,7 @@ public class AuthController {
         log.info("获取用户工作空间列表");
         Long userId = LoginContextHolder.getUserId();
         if (userId == null) return Result.fail("用户未登录");
-        List<WorkspaceContextVO> workspaces = authService.getUserWorkspaces(userId);
-        return Result.success(workspaces);
+        return Result.success(authService.getUserWorkspaces(userId));
     }
 
     /**
@@ -260,53 +225,37 @@ public class AuthController {
      */
     @Operation(summary = "Get User Tenants")
     @GetMapping("/tenants")
-    public Result<List<Map<String, Object>>> getUserTenants() {
+    public Result<List<TenantInfoVO>> getUserTenants() {
         log.info("获取用户租户列表");
         Long userId = LoginContextHolder.getUserId();
         if (userId == null) return Result.fail("用户未登录");
-        List<Map<String, Object>> tenants = authService.getUserTenants(userId);
-        return Result.success(tenants);
+        return Result.success(authService.getUserTenants(userId));
     }
 
     /**
      * 用户登出
      * POST /auth/logout
-     * @param tokenHeader Authorization Header（Bearer Token）
-     * @return 登出结果
      */
     @Operation(summary = "Logout")
     @PostMapping("/logout")
     public Result<String> logout(
             @RequestHeader(value = "Authorization", required = false) String tokenHeader) {
         log.info("收到登出请求");
-        
         try {
             String token = extractTokenFromHeader(tokenHeader);
             if (token != null && !token.trim().isEmpty()) {
                 authService.logout(token);
             }
-            
             return Result.success("");
-            
         } catch (Exception e) {
             log.error("登出失败", e);
             return Result.fail("登出失败");
         }
     }
     
-    /**
-     * 从 Authorization Header 中提取 Token
-     */
     private String extractTokenFromHeader(String tokenHeader) {
-        if (tokenHeader == null || tokenHeader.trim().isEmpty()) {
-            return null;
-        }
-        
-        // 移除 Bearer 前缀
-        if (tokenHeader.startsWith("Bearer ")) {
-            return tokenHeader.substring(7);
-        }
-        
+        if (tokenHeader == null || tokenHeader.trim().isEmpty()) return null;
+        if (tokenHeader.startsWith("Bearer ")) return tokenHeader.substring(7);
         return tokenHeader;
     }
 }

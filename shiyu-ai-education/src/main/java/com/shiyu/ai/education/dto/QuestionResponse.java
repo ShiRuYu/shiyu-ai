@@ -1,5 +1,9 @@
 package com.shiyu.ai.education.dto;
 
+import io.github.linpeilie.annotations.AutoMapper;
+import com.shiyu.ai.dal.bo.education.QuestionBO;
+
+@AutoMapper(target = QuestionBO.class)
 public record QuestionResponse(
         Long id,
         String code,

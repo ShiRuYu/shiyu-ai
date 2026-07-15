@@ -1,9 +1,13 @@
 package com.shiyu.ai.education.service.impl;
 
 import com.shiyu.ai.common.core.api.PageData;
-import com.shiyu.ai.dal.dataobject.education.ExamDO;
-import com.shiyu.ai.education.service.ExamService;
+import com.shiyu.ai.common.core.utils.MapstructUtils;
+import com.shiyu.ai.dal.bo.education.ExamBO;
 import com.shiyu.ai.dal.repository.education.ExamRepository;
+import com.shiyu.ai.education.dto.ExamResponse;
+import com.shiyu.ai.education.dto.SubmitAnswerRequest;
+import com.shiyu.ai.education.request.ExamRequest;
+import com.shiyu.ai.education.service.ExamService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
@@ -19,40 +23,62 @@ public class ExamServiceImpl implements ExamService {
     private final ExamRepository examRepository;
 
     @Override
-    public PageData<ExamDO> page(int pageNum, int pageSize) {
-        return examRepository.selectPage(pageNum, pageSize);
-    }
-
-    public List<ExamDO> listAll() {
-        return examRepository.selectAll();
+    public ExamResponse getById(Long id) {
+        ExamBO bo = examRepository.selectById(id);
+        return MapstructUtils.convert(bo, ExamResponse.class);
     }
 
     @Override
-    public ExamDO getById(Long id) {
-        return examRepository.selectById(id);
+    public List<ExamResponse> listBySubjectCode(String subjectCode) {
+        List<ExamBO> boList = examRepository.selectBySubjectCode(subjectCode);
+        return MapstructUtils.convert(boList, ExamResponse.class);
     }
 
     @Override
-    public List<ExamDO> listBySubjectCode(String subjectCode) {
-        return examRepository.selectBySubjectCode(subjectCode);
+    public List<ExamResponse> listByTeacherId(Long teacherId) {
+        List<ExamBO> boList = examRepository.selectByTeacherId(teacherId);
+        return MapstructUtils.convert(boList, ExamResponse.class);
     }
 
     @Override
-    public List<ExamDO> listByTeacherId(Long teacherId) {
-        return examRepository.selectByTeacherId(teacherId);
+    public PageData<ExamResponse> page(int pageNum, int pageSize) {
+        PageData<ExamBO> boPage = examRepository.selectPage(pageNum, pageSize);
+        List<ExamResponse> items = MapstructUtils.convert(boPage.getItems(), ExamResponse.class);
+        return new PageData<>(items, boPage.getTotal());
+    }
+
+    @Override
+    public ExamResponse submit(Long examId, SubmitAnswerRequest request) {
+        return getById(examId);
     }
 
     @Override
     @Transactional(rollbackFor = Exception.class)
-    public ExamDO create(ExamDO exam) {
-        examRepository.insert(exam);
-        return exam;
+    public ExamResponse create(ExamRequest request) {
+        ExamBO bo = new ExamBO();
+        bo.setName(request.getName());
+        bo.setType(request.getType());
+        bo.setSubjectCode(request.getSubjectCode());
+        bo.setGrade(request.getGrade());
+        bo.setDurationMin(request.getDurationMin());
+        bo.setTotalScore(request.getTotalScore());
+        examRepository.insert(bo);
+        return MapstructUtils.convert(bo, ExamResponse.class);
     }
 
     @Override
     @Transactional(rollbackFor = Exception.class)
-    public void update(ExamDO exam) {
-        examRepository.update(exam);
+    public void update(ExamRequest request) {
+        ExamBO bo = examRepository.selectById(request.getId());
+        if (bo != null) {
+            bo.setName(request.getName());
+            bo.setType(request.getType());
+            bo.setSubjectCode(request.getSubjectCode());
+            bo.setGrade(request.getGrade());
+            bo.setDurationMin(request.getDurationMin());
+            bo.setTotalScore(request.getTotalScore());
+            examRepository.update(bo);
+        }
     }
 
     @Override

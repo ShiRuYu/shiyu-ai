@@ -3,6 +3,7 @@ package com.shiyu.ai.plugin.controller;
 import com.shiyu.ai.common.core.api.Result;
 import com.shiyu.ai.plugin.registry.PluginRegistry;
 import com.shiyu.ai.plugin.spi.PluginDescriptor;
+import com.shiyu.ai.plugin.vo.PluginInfoVO;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.extern.slf4j.Slf4j;
@@ -26,16 +27,18 @@ public class PluginController {
 
     @Operation(summary = "列出所有插件")
     @GetMapping("/list")
-    public Result<List<Map<String, Object>>> listPlugins() {
-        List<Map<String, Object>> plugins = registry.listPlugins().stream()
-                .map(d -> Map.<String, Object>of(
-                        "id", d.getId(),
-                        "name", d.getName(),
-                        "version", d.getVersion(),
-                        "description", d.getDescription(),
-                        "state", d.getState().name(),
-                        "loadedAt", d.getLoadedAt()
-                ))
+    public Result<List<PluginInfoVO>> listPlugins() {
+        List<PluginInfoVO> plugins = registry.listPlugins().stream()
+                .map(d -> {
+                    PluginInfoVO vo = new PluginInfoVO();
+                    vo.setId(d.getId());
+                    vo.setName(d.getName());
+                    vo.setVersion(d.getVersion());
+                    vo.setDescription(d.getDescription());
+                    vo.setState(d.getState().name());
+                    vo.setLoadedAt(String.valueOf(d.getLoadedAt()));
+                    return vo;
+                })
                 .collect(Collectors.toList());
         return Result.success(plugins);
     }

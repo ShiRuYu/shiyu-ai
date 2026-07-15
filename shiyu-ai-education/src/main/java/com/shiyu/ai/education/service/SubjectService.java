@@ -1,9 +1,11 @@
 package com.shiyu.ai.education.service;
 
-import com.shiyu.ai.dal.dataobject.education.SubjectDO;
+import com.shiyu.ai.dal.bo.education.SubjectBO;
 
 import java.util.List;
 import com.shiyu.ai.common.core.api.PageData;
+import com.shiyu.ai.education.dto.SubjectResponse;
+import com.shiyu.ai.education.request.SubjectRequest;
 
 /**
  * Subject 接口
@@ -15,41 +17,40 @@ public interface SubjectService {
      * Get By Id
      * @return 处理结果
      */
-    SubjectDO getById(Long id);
+    SubjectResponse getById(Long id);
 
     /**
      * Get By Code
      * @return 处理结果
      */
-    SubjectDO getByCode(String code);
+    SubjectResponse getByCode(String code);
 
     /**
      * List All
      * @return 处理结果
      */
-    List<SubjectDO> listAll();
 
-    PageData<SubjectDO> page(int pageNum, int pageSize);
+    PageData<SubjectResponse> page(int pageNum, int pageSize);
 
     /**
      * List By Grade Level
      * @return 处理结果
      */
-    List<SubjectDO> listByGradeLevel(String gradeLevel);
+    List<SubjectResponse> listByGradeLevel(String gradeLevel);
 
     /**
      * Create
-     * @param SubjectDO SubjectDO
+     * @param SubjectResponse SubjectDO
      * @return 处理结果
      */
-    SubjectDO create(SubjectDO subject);
+    SubjectResponse create(SubjectRequest subject);
 
     /**
      * Update
-     * @param SubjectDO SubjectDO
+     * @param SubjectResponse SubjectDO
      * @return 处理结果
      */
-    void update(SubjectDO subject);
+    void update(SubjectRequest subject);
 
     /**
      * Delete By Id

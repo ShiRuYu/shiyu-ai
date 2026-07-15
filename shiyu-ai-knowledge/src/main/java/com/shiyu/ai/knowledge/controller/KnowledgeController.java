@@ -7,6 +7,8 @@ import com.shiyu.ai.knowledge.dto.CreateKnowledgeRequest;
 import com.shiyu.ai.knowledge.dto.KnowledgeGraphResponse;
 import com.shiyu.ai.knowledge.dto.KnowledgePageQuery;
 import com.shiyu.ai.knowledge.dto.KnowledgeResponse;
+import com.shiyu.ai.knowledge.request.KnowledgeRelationRequest;
+import com.shiyu.ai.knowledge.request.KnowledgeSearchRequest;
 import com.shiyu.ai.knowledge.dto.UpdateKnowledgeRequest;
 import com.shiyu.ai.knowledge.path.LearningPathService;
 import com.shiyu.ai.knowledge.search.KnowledgeSearchService;

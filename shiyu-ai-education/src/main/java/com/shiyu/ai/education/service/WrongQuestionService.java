@@ -1,8 +1,10 @@
 package com.shiyu.ai.education.service;
 
-import com.shiyu.ai.dal.dataobject.education.WrongQuestionDO;
+import com.shiyu.ai.dal.bo.education.WrongQuestionBO;
 
 import java.util.List;
+import com.shiyu.ai.education.dto.WrongQuestionResponse;
+import com.shiyu.ai.education.request.WrongQuestionRequest;
 
 /**
  * Wrong Question 接口
@@ -14,33 +16,33 @@ public interface WrongQuestionService {
      * Get By Id
      * @return 处理结果
      */
-    WrongQuestionDO getById(Long id);
+    WrongQuestionResponse getById(Long id);
 
     /**
      * List By Student Id
      * @return 处理结果
      */
-    List<WrongQuestionDO> listByStudentId(Long studentId);
+    List<WrongQuestionResponse> listByStudentId(Long studentId);
 
     /**
      * Get By Student And Question
      * @return 处理结果
      */
-    WrongQuestionDO getByStudentAndQuestion(Long studentId, Long questionId);
+    WrongQuestionResponse getByStudentAndQuestion(Long studentId, Long questionId);
 
     /**
      * Create
-     * @param WrongQuestionDO WrongQuestionDO
+     * @param WrongQuestionResponse WrongQuestionDO
      * @return 处理结果
      */
-    WrongQuestionDO create(WrongQuestionDO wrongQuestion);
+    WrongQuestionResponse create(WrongQuestionRequest wrongQuestion);
 
     /**
      * Update
-     * @param WrongQuestionDO WrongQuestionDO
+     * @param WrongQuestionResponse WrongQuestionDO
      * @return 处理结果
      */
-    void update(WrongQuestionDO wrongQuestion);
+    void update(WrongQuestionRequest wrongQuestion);
 
     /**
      * Delete By Id

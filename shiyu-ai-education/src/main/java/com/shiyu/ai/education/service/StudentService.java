@@ -1,9 +1,11 @@
 package com.shiyu.ai.education.service;
 
-import com.shiyu.ai.dal.dataobject.education.StudentDO;
+import com.shiyu.ai.dal.bo.education.StudentBO;
 
 import java.util.List;
 import com.shiyu.ai.common.core.api.PageData;
+import com.shiyu.ai.education.dto.StudentResponse;
+import com.shiyu.ai.education.request.StudentRequest;
 
 /**
  * Student 接口
@@ -15,34 +17,33 @@ public interface StudentService {
      * Get By Id
      * @return 处理结果
      */
-    StudentDO getById(Long id);
+    StudentResponse getById(Long id);
 
     /**
      * Get By User Id
      * @return 处理结果
      */
-    StudentDO getByUserId(Long userId);
+    StudentResponse getByUserId(Long userId);
 
     /**
      * Create
-     * @param StudentDO StudentDO
+     * @param StudentResponse StudentDO
      * @return 处理结果
      */
-    StudentDO create(StudentDO student);
+    StudentResponse create(StudentRequest student);
 
     /**
      * List All
      */
-    List<StudentDO> listAll();
 
-    PageData<StudentDO> page(int pageNum, int pageSize);
+    PageData<StudentResponse> page(int pageNum, int pageSize);
 
     /**
      * Update
-     * @param StudentDO StudentDO
+     * @param StudentResponse StudentDO
      * @return 处理结果
      */
-    void update(StudentDO student);
+    void update(StudentRequest student);
 
     /**
      * Delete By Id

@@ -2,9 +2,12 @@ package com.shiyu.ai.record.controller;
 
 import com.shiyu.ai.record.service.TagService;
 import com.shiyu.ai.dal.bo.record.TagBO;
+import com.shiyu.ai.record.vo.TagVO;
 import com.shiyu.ai.common.core.api.PageData;
 import com.shiyu.ai.common.core.api.PageQuery;
 import com.shiyu.ai.common.core.api.Result;
+import com.shiyu.ai.common.core.utils.MapstructUtils;
+import com.shiyu.ai.record.request.TagRequest;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.annotation.Resource;
@@ -24,34 +27,39 @@ public class TagController {
 
     @Operation(summary = "分页查询标签列表")
     @GetMapping("/list")
-    public Result<PageData<TagBO>> getPage(PageQuery pageQuery,
+    public Result<PageData<TagVO>> getPage(PageQuery pageQuery,
                                             @RequestParam(required = false) String name) {
         Pair<Long, List<TagBO>> page = tagService.getPage(pageQuery.getPageNum(), pageQuery.getPageSize(), name);
-        return Result.success(new PageData<>(page.getRight(), page.getLeft()));
+        return Result.success(new PageData<>(MapstructUtils.convert(page.getRight(), TagVO.class), page.getLeft()));
     }
 
     @Operation(summary = "查询所有标签")
     @GetMapping("/all")
-    public Result<List<TagBO>> getAll() {
-        return Result.success(tagService.getAll());
+    public Result<List<TagVO>> getAll() {
+        return Result.success(MapstructUtils.convert(tagService.getAll(), TagVO.class));
     }
 
     @Operation(summary = "根据ID查询标签")
     @GetMapping("/detail")
-    public Result<TagBO> getById(@RequestParam Long id) {
-        return Result.success(tagService.getById(id));
+    public Result<TagVO> getById(@RequestParam Long id) {
+        return Result.success(MapstructUtils.convert(tagService.getById(id), TagVO.class));
     }
 
     @Operation(summary = "创建标签")
     @PostMapping("/create")
-    public Result<TagBO> create(@Valid @RequestBody TagBO tagBO) {
-        return Result.success(tagService.create(tagBO));
+    public Result<TagVO> create(@Valid @RequestBody TagRequest request) {
+        TagBO bo = new TagBO();
+        bo.setName(request.getName());
+        return Result.success(MapstructUtils.convert(tagService.create(bo), TagVO.class));
     }
 
     @Operation(summary = "更新标签")
     @PostMapping("/update")
-    public Result<Boolean> update(@Valid @RequestBody TagBO tagBO) {
-        return Result.success(tagService.update(tagBO));
+    public Result<Boolean> update(@RequestParam Long id, @Valid @RequestBody TagRequest request) {
+        TagBO bo = tagService.getById(id);
+        if (bo == null) return Result.fail("标签不存在");
+        bo.setName(request.getName());
+        return Result.success(tagService.update(bo));
     }
 
     @Operation(summary = "删除标签")

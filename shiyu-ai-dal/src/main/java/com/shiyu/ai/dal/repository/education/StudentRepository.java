@@ -1,13 +1,15 @@
 package com.shiyu.ai.dal.repository.education;
 
 import com.mybatisflex.core.query.QueryWrapper;
+import java.util.List;
+
+import com.shiyu.ai.common.core.api.PageData;
+import com.shiyu.ai.common.core.utils.MapstructUtils;
+import com.shiyu.ai.dal.bo.education.StudentBO;
 import com.shiyu.ai.dal.dataobject.education.StudentDO;
 import com.shiyu.ai.dal.mapper.education.StudentMapper;
 import jakarta.annotation.Resource;
 import org.springframework.stereotype.Component;
-
-import java.util.List;
-import com.shiyu.ai.common.core.api.PageData;
 
 @Component
 public class StudentRepository {
@@ -15,35 +17,39 @@ public class StudentRepository {
     @Resource
     private StudentMapper studentMapper;
 
-    public StudentDO selectById(Long id) {
-        return studentMapper.selectOneById(id);
+    public StudentBO selectById(Long id) {
+        return MapstructUtils.convert(studentMapper.selectOneById(id), StudentBO.class);
     }
 
-    public StudentDO selectByUserId(Long userId) {
-        return studentMapper.selectOneByQuery(QueryWrapper.create().eq("user_id", userId));
+    public StudentBO selectByUserId(Long userId) {
+        return MapstructUtils.convert(studentMapper.selectOneById(userId), StudentBO.class);
     }
 
-    public PageData<StudentDO> selectPage(int pageNum, int pageSize) {
+    public PageData<StudentBO> selectPage(int pageNum, int pageSize) {
         com.mybatisflex.core.paginate.Page<StudentDO> page = studentMapper.paginate(
                 pageNum, pageSize,
-                QueryWrapper.create().eq("status", 1).orderBy("id"));
-        return new PageData<>(page.getRecords(), page.getTotalRow());
+                QueryWrapper.create()
+                        .orderBy("id", false)
+        );
+        return new PageData<>(MapstructUtils.convert(page.getRecords(), StudentBO.class), page.getTotalRow());
     }
 
-    public List<StudentDO> selectAll() {
-        return studentMapper.selectListByQuery(
-                QueryWrapper.create().orderBy("grade", true).orderBy("name", true));
+    public List<StudentBO> selectAll() {
+        return MapstructUtils.convert(studentMapper.selectListByQuery(QueryWrapper.create()), StudentBO.class);
+    }
+    public int insert(StudentBO entity) {
+        StudentDO dataObj = MapstructUtils.convert(entity, StudentDO.class);
+        return studentMapper.insert(dataObj);
     }
 
-    public int insert(StudentDO student) {
-        return studentMapper.insert(student);
-    }
 
-    public int update(StudentDO student) {
-        return studentMapper.update(student);
+    public int update(StudentBO entity) {
+        StudentDO dataObj = MapstructUtils.convert(entity, StudentDO.class);
+        return studentMapper.update(dataObj);
     }
 
     public int deleteById(Long id) {
         return studentMapper.deleteById(id);
     }
+
 }

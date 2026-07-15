@@ -1,6 +1,6 @@
 package com.shiyu.ai.agent.education;
 
-import com.shiyu.ai.dal.dataobject.education.ReviewTaskDO;
+import com.shiyu.ai.dal.bo.education.ReviewTaskBO;
 import com.shiyu.ai.education.domain.ReviewScheduler;
 import com.shiyu.ai.education.domain.ReviewStatus;
 import com.shiyu.ai.education.service.ReviewService;

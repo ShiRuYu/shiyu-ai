@@ -6,7 +6,8 @@ import com.shiyu.ai.agent.node.BaseNode;
 import com.shiyu.ai.agent.node.NodeInput;
 import com.shiyu.ai.agent.node.NodeOutput;
 import com.shiyu.ai.agent.node.NodeType;
-import com.shiyu.ai.dal.dataobject.education.ReviewTaskDO;
+import com.shiyu.ai.dal.bo.education.ReviewTaskBO;
+import com.shiyu.ai.dal.repository.education.ReviewTaskRepository;
 import com.shiyu.ai.education.service.ReviewService;
 import com.shiyu.ai.education.domain.ReviewScheduler;
 import lombok.Getter;
@@ -33,13 +34,15 @@ public class ReviewScheduleNode extends BaseNode {
     private final ReviewScheduler reviewScheduler;
     @JsonIgnore
     private final ReviewService reviewService;
+    private final ReviewTaskRepository reviewTaskRepository;
 
-    public ReviewScheduleNode(ReviewScheduler reviewScheduler, ReviewService reviewService) {
+    public ReviewScheduleNode(ReviewScheduler reviewScheduler, ReviewService reviewService, ReviewTaskRepository reviewTaskRepository) {
         super();
         this.getConfig().setNodeType(NodeType.TRANSFORM);
         this.getConfig().setNodeName("reviewSchedule");
         this.reviewScheduler = reviewScheduler;
         this.reviewService = reviewService;
+        this.reviewTaskRepository = reviewTaskRepository;
     }
 
     @Override
@@ -61,15 +64,15 @@ public class ReviewScheduleNode extends BaseNode {
                 studentId, knowledgeId, Instant.now());
 
         // 持久化复习任务
-        List<ReviewTaskDO> savedTasks = scheduledTasks.stream()
+        List<ReviewTaskBO> savedTasks = scheduledTasks.stream()
                 .map(task -> {
-                    ReviewTaskDO rt = new ReviewTaskDO();
+                    ReviewTaskBO rt = new ReviewTaskBO();
                     rt.setStudentId(task.studentId());
                     rt.setKnowledgeId(task.knowledgeId());
                     rt.setReviewDate(task.reviewDate());
                     rt.setReviewRound(task.reviewRound());
                     rt.setStatus("PENDING");
-                    return reviewService.create(rt);
+                    reviewTaskRepository.insert(rt); return rt;
                 })
                 .toList();
 

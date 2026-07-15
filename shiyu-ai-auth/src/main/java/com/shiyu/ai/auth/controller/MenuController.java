@@ -33,8 +33,7 @@ public class MenuController {
 
     @Operation(summary = "Get All Menus")
     @GetMapping("/all")
-    public Result<List<RouteMenuVO>> getAllMenus(
-            @RequestHeader(value = "Authorization", required = false) String token) {
+    public Result<List<RouteMenuVO>> getAllMenus() {
         log.info("getAllMenus");
         try {
             Long userId = LoginContextHolder.getUserId();

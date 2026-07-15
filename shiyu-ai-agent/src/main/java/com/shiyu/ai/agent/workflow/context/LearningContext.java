@@ -1,7 +1,7 @@
 package com.shiyu.ai.agent.workflow.context;
 
-import com.shiyu.ai.dal.dataobject.education.QuestionDO;
-import com.shiyu.ai.dal.dataobject.education.ResourceDO;
+import com.shiyu.ai.dal.bo.education.QuestionBO;
+import com.shiyu.ai.dal.bo.education.ResourceBO;
 import com.shiyu.ai.education.domain.AbilityValue;
 import com.shiyu.ai.knowledge.dto.KnowledgeResponse;
 import lombok.Data;
@@ -34,13 +34,13 @@ public class LearningContext {
     private List<Long> missingPrerequisiteIds = new ArrayList<>();
 
     /** 关联学习资源 */
-    private List<ResourceDO> resources = new ArrayList<>();
+    private List<ResourceBO> resources = new ArrayList<>();
 
     /** TeacherAgent 讲解内容 */
     private String teachResponse;
 
     /** 生成的练习题 */
-    private List<QuestionDO> practiceQuestions = new ArrayList<>();
+    private List<QuestionBO> practiceQuestions = new ArrayList<>();
 
     /** 练习得分 (0~100) */
     private Double practiceScore;

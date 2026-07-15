@@ -1,6 +1,6 @@
 package com.shiyu.ai.education.service.impl;
 
-import com.shiyu.ai.dal.dataobject.education.LearningStateDO;
+import com.shiyu.ai.dal.bo.education.LearningStateBO;
 import com.shiyu.ai.education.domain.LearningState;
 import com.shiyu.ai.dal.repository.education.LearningStateRepository;
 import com.shiyu.ai.education.service.LearningStateMachine;
@@ -17,7 +17,7 @@ public class LearningStateMachineImpl implements LearningStateMachine {
 
     @Override
     public LearningState getState(Long studentId, Long knowledgeId) {
-        LearningStateDO stateDO = learningStateRepository.selectByStudentAndKnowledge(studentId, knowledgeId);
+        LearningStateBO stateDO = learningStateRepository.selectByStudentAndKnowledge(studentId, knowledgeId);
         if (stateDO == null) {
             return LearningState.NOT_STARTED;
         }
@@ -59,7 +59,7 @@ public class LearningStateMachineImpl implements LearningStateMachine {
     }
 
     private void updateState(Long studentId, Long knowledgeId, LearningState newState) {
-        LearningStateDO stateDO = new LearningStateDO();
+        LearningStateBO stateDO = new LearningStateBO();
         stateDO.setStudentId(studentId);
         stateDO.setKnowledgeId(knowledgeId);
         stateDO.setState(newState.name());

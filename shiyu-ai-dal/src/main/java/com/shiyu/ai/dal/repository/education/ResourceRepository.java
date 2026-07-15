@@ -1,13 +1,15 @@
 package com.shiyu.ai.dal.repository.education;
 
 import com.mybatisflex.core.query.QueryWrapper;
+import java.util.List;
+
+import com.shiyu.ai.common.core.api.PageData;
+import com.shiyu.ai.common.core.utils.MapstructUtils;
+import com.shiyu.ai.dal.bo.education.ResourceBO;
 import com.shiyu.ai.dal.dataobject.education.ResourceDO;
 import com.shiyu.ai.dal.mapper.education.ResourceMapper;
 import jakarta.annotation.Resource;
 import org.springframework.stereotype.Component;
-
-import java.util.List;
-import com.shiyu.ai.common.core.api.PageData;
 
 @Component
 public class ResourceRepository {
@@ -15,37 +17,51 @@ public class ResourceRepository {
     @Resource
     private ResourceMapper resourceMapper;
 
-    public ResourceDO selectById(Long id) {
-        return resourceMapper.selectOneById(id);
+    public ResourceBO selectById(Long id) {
+        return MapstructUtils.convert(resourceMapper.selectOneById(id), ResourceBO.class);
     }
 
-    public List<ResourceDO> selectBySubjectCode(String subjectCode) {
-        return resourceMapper.selectListByQuery(
-                QueryWrapper.create().eq("subject_code", subjectCode).eq("status", 1));
+    public List<ResourceBO> selectBySubjectCode(String subjectCode) {
+        return MapstructUtils.convert(resourceMapper.selectListByQuery(
+                QueryWrapper.create()
+                        .eq("subject_code", subjectCode)
+                        .eq("status", 1)
+        ), ResourceBO.class);
     }
 
-    public List<ResourceDO> selectByType(String type) {
-        return resourceMapper.selectListByQuery(
-                QueryWrapper.create().eq("type", type).eq("status", 1));
+    public List<ResourceBO> selectByType(String type) {
+        return MapstructUtils.convert(resourceMapper.selectListByQuery(
+                QueryWrapper.create()
+                        .eq("type", type)
+                        .eq("status", 1)
+        ), ResourceBO.class);
     }
 
-    public PageData<ResourceDO> selectPage(int pageNum, int pageSize) {
+    public PageData<ResourceBO> selectPage(int pageNum, int pageSize) {
         com.mybatisflex.core.paginate.Page<ResourceDO> page = resourceMapper.paginate(
                 pageNum, pageSize,
-                QueryWrapper.create().eq("status", 1).orderBy("id"));
-        return new PageData<>(page.getRecords(), page.getTotalRow());
+                QueryWrapper.create()
+                        .eq("status", 1)
+                        .orderBy("id")
+        );
+        return new PageData<>(MapstructUtils.convert(page.getRecords(), ResourceBO.class), page.getTotalRow());
     }
 
-    public List<ResourceDO> selectAll() {
-        return resourceMapper.selectListByQuery(QueryWrapper.create().eq("status", 1));
+    public List<ResourceBO> selectAll() {
+        return MapstructUtils.convert(resourceMapper.selectListByQuery(
+                QueryWrapper.create()
+                        .eq("status", 1)
+        ), ResourceBO.class);
     }
 
-    public int insert(ResourceDO resource) {
-        return resourceMapper.insert(resource);
+    public int insert(ResourceBO entity) {
+        ResourceDO dataObj = MapstructUtils.convert(entity, ResourceDO.class);
+        return resourceMapper.insert(dataObj);
     }
 
-    public int update(ResourceDO resource) {
-        return resourceMapper.update(resource);
+    public int update(ResourceBO entity) {
+        ResourceDO dataObj = MapstructUtils.convert(entity, ResourceDO.class);
+        return resourceMapper.update(dataObj);
     }
 
     public int deleteById(Long id) {

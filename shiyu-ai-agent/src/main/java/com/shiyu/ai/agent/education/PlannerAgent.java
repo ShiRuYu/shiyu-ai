@@ -3,9 +3,10 @@ package com.shiyu.ai.agent.education;
 import com.shiyu.ai.model.chat.ChatEngine;
 import com.shiyu.ai.model.chat.ChatRequest;
 import com.shiyu.ai.model.chat.ChatResponse;
-import com.shiyu.ai.dal.dataobject.education.StudyPlanDO;
-import com.shiyu.ai.dal.dataobject.education.StudyPlanItemDO;
-import com.shiyu.ai.education.service.StudyPlanService;
+import com.shiyu.ai.dal.bo.education.StudyPlanBO;
+import com.shiyu.ai.dal.bo.education.StudyPlanItemBO;
+import com.shiyu.ai.dal.repository.education.StudyPlanRepository;
+import com.shiyu.ai.dal.repository.education.StudyPlanItemRepository;
 import com.shiyu.ai.dal.repository.education.StudyPlanItemRepository;
 import com.shiyu.ai.knowledge.dto.KnowledgeResponse;
 import com.shiyu.ai.knowledge.path.LearningPathService;
@@ -32,7 +33,7 @@ public class PlannerAgent {
     private final ChatEngine chatEngine;
     private final KnowledgeService knowledgeService;
     private final LearningPathService learningPathService;
-    private final StudyPlanService studyPlanService;
+    private final StudyPlanRepository studyPlanRepository;
     private final StudyPlanItemRepository studyPlanItemRepository;
 
     /**
@@ -44,7 +45,7 @@ public class PlannerAgent {
      * @param endDate           结束日期
      * @return 生成的学习计划
      */
-    public StudyPlanDO generatePlan(Long studentId, Long targetKnowledgeId,
+    public StudyPlanBO generatePlan(Long studentId, Long targetKnowledgeId,
                                      LocalDate startDate, LocalDate endDate) {
         log.info("PlannerAgent.generatePlan: studentId={}, targetKnowledgeId={}",
                 studentId, targetKnowledgeId);
@@ -59,17 +60,23 @@ public class PlannerAgent {
         List<Long> path = learningPathService.generatePath(targetKnowledgeId);
 
         // 3. 构建学习计划
-        StudyPlanDO plan = new StudyPlanDO();
+        StudyPlanBO plan = new StudyPlanBO();
         plan.setStudentId(studentId);
         plan.setTargetKnowledgeId(targetKnowledgeId);
         plan.setName("学习计划: " + target.name());
         plan.setStartDate(startDate);
         plan.setEndDate(endDate);
         plan.setStatus("ACTIVE");
-        StudyPlanDO savedPlan = studyPlanService.create(plan);
+        StudyPlanBO savedPlan = new StudyPlanBO();
+        savedPlan.setStudentId(studentId);
+        savedPlan.setName("学习计划");
+        savedPlan.setStartDate(startDate);
+        savedPlan.setEndDate(endDate);
+        savedPlan.setStatus("ACTIVE");
+        studyPlanRepository.insert(savedPlan);
 
         // 4. 生成每日任务
-        List<StudyPlanItemDO> items = generatePlanItems(
+        List<StudyPlanItemBO> items = generatePlanItems(
                 savedPlan.getId(), path.size() > 0 ? path : List.of(targetKnowledgeId),
                 startDate, endDate);
         // 保存每日任务（当前仅创建计划本身，items 持久化后续扩展）
@@ -84,9 +91,9 @@ public class PlannerAgent {
     /**
      * 根据总天数和知识点数量，生成按天分配的学习计划
      */
-    private List<StudyPlanItemDO> generatePlanItems(Long planId, List<Long> knowledgeIds,
+    private List<StudyPlanItemBO> generatePlanItems(Long planId, List<Long> knowledgeIds,
                                                       LocalDate startDate, LocalDate endDate) {
-        List<StudyPlanItemDO> items = new ArrayList<>();
+        List<StudyPlanItemBO> items = new ArrayList<>();
         long totalDays = ChronoUnit.DAYS.between(startDate, endDate) + 1;
         int knowledgeCount = knowledgeIds.size();
         int daysPerKnowledge = Math.max(1, (int) (totalDays / knowledgeCount));
@@ -94,7 +101,7 @@ public class PlannerAgent {
         LocalDate currentDate = startDate;
         int orderNo = 0;
         for (Long knowledgeId : knowledgeIds) {
-            StudyPlanItemDO item = new StudyPlanItemDO();
+            StudyPlanItemBO item = new StudyPlanItemBO();
             item.setPlanId(planId);
             item.setKnowledgeId(knowledgeId);
             item.setPlanDate(currentDate);

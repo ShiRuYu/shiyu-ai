@@ -1,12 +1,14 @@
 package com.shiyu.ai.dal.repository.education;
 
 import com.mybatisflex.core.query.QueryWrapper;
+import java.util.List;
+
+import com.shiyu.ai.common.core.utils.MapstructUtils;
+import com.shiyu.ai.dal.bo.education.CourseChapterBO;
 import com.shiyu.ai.dal.dataobject.education.CourseChapterDO;
 import com.shiyu.ai.dal.mapper.education.CourseChapterMapper;
 import jakarta.annotation.Resource;
 import org.springframework.stereotype.Component;
-
-import java.util.List;
 
 @Component
 public class CourseChapterRepository {
@@ -14,8 +16,8 @@ public class CourseChapterRepository {
     @Resource
     private CourseChapterMapper courseChapterMapper;
 
-    public List<CourseChapterDO> selectByCourseId(Long courseId) {
-        return courseChapterMapper.selectListByQuery(
-                QueryWrapper.create().eq("course_id", courseId).orderBy("order_no", true));
+    public List<CourseChapterBO> selectByCourseId(Long courseId) {
+        return MapstructUtils.convert(courseChapterMapper.selectListByQuery(
+                QueryWrapper.create().eq("course_id", courseId).orderBy("order_no", true)), CourseChapterBO.class);
     }
 }

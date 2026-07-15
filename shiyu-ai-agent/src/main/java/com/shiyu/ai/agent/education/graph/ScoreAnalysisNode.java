@@ -5,7 +5,7 @@ import com.shiyu.ai.agent.node.BaseNode;
 import com.shiyu.ai.agent.node.NodeInput;
 import com.shiyu.ai.agent.node.NodeOutput;
 import com.shiyu.ai.agent.node.NodeType;
-import com.shiyu.ai.dal.dataobject.education.QuestionDO;
+import com.shiyu.ai.dal.bo.education.QuestionBO;
 import com.shiyu.ai.education.service.AbilityService;
 import com.shiyu.ai.education.domain.BloomTaxonomy;
 import lombok.Getter;
@@ -42,7 +42,7 @@ public class ScoreAnalysisNode extends BaseNode {
         log.info("ScoreAnalysisNode: 评分与分析");
 
         @SuppressWarnings("unchecked")
-        List<QuestionDO> questions = input.getParameter("practiceQuestions", List.of());
+        List<QuestionBO> questions = input.getParameter("practiceQuestions", List.of());
         Long studentId = input.getParameter("studentId", null);
         Long knowledgeId = input.getParameter("knowledgeId", null);
 

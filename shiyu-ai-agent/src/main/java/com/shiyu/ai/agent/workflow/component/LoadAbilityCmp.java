@@ -1,6 +1,6 @@
 package com.shiyu.ai.agent.workflow.component;
 
-import com.shiyu.ai.dal.dataobject.education.AbilityDO;
+import com.shiyu.ai.dal.bo.education.AbilityBO;
 import com.shiyu.ai.dal.repository.education.AbilityRepository;
 import com.shiyu.ai.agent.workflow.context.AbilityContext;
 import com.yomahub.liteflow.core.NodeComponent;
@@ -18,13 +18,13 @@ public class LoadAbilityCmp extends NodeComponent {
     @Override
     public void process() throws Exception {
         AbilityContext ctx = this.getContextBean(AbilityContext.class);
-        List<AbilityDO> all = abilityRepository.selectByStudent(ctx.getStudentId());
+        List<AbilityBO> all = abilityRepository.selectByStudent(ctx.getStudentId());
         Map<String, Double> avg = new LinkedHashMap<>();
         avg.put("remember", 0.0); avg.put("understand", 0.0); avg.put("apply", 0.0);
         avg.put("analyze", 0.0); avg.put("evaluate", 0.0); avg.put("create", 0.0);
         double totalMastery = 0;
         if (!all.isEmpty()) {
-            for (AbilityDO a : all) {
+            for (AbilityBO a : all) {
                 if (a.getRemember() != null) avg.put("remember", avg.get("remember") + a.getRemember());
                 if (a.getUnderstand() != null) avg.put("understand", avg.get("understand") + a.getUnderstand());
                 if (a.getApply() != null) avg.put("apply", avg.get("apply") + a.getApply());

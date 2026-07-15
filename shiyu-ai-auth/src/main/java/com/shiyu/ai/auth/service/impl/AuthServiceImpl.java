@@ -15,6 +15,7 @@ import com.shiyu.ai.dal.bo.auth.RoleBO;
 import com.shiyu.ai.dal.bo.auth.UserBO;
 import com.shiyu.ai.auth.vo.LoginResponseVO;
 import com.shiyu.ai.auth.vo.WorkspaceContextVO;
+import com.shiyu.ai.auth.vo.TenantInfoVO;
 import com.shiyu.ai.auth.utils.SaTokenHelper;
 import com.shiyu.ai.common.core.domain.LoginContextHolder;
 import com.shiyu.ai.common.core.domain.LoginUser;
@@ -127,7 +128,7 @@ public class AuthServiceImpl implements AuthService {
             List<WorkspaceContextVO> workspaces = buildWorkspaceContextList(uwrList, currentTenantId);
 
             // 构建租户列表
-            List<Map<String, Object>> tenantList = buildTenantList(uwrList);
+            List<TenantInfoVO> tenantList = buildTenantList(uwrList);
 
             LoginResponseVO response = new LoginResponseVO();
             response.setId(user.getId());
@@ -254,7 +255,7 @@ public class AuthServiceImpl implements AuthService {
         return result;
     }
 
-    private List<Map<String, Object>> buildTenantList(List<UserWorkspaceRoleDO> uwrList) {
+    private List<TenantInfoVO> buildTenantList(List<UserWorkspaceRoleDO> uwrList) {
         if (uwrList == null || uwrList.isEmpty()) return new ArrayList<>();
 
         Set<Long> tenantIds = uwrList.stream()
@@ -262,15 +263,15 @@ public class AuthServiceImpl implements AuthService {
                 .filter(Objects::nonNull)
                 .collect(Collectors.toSet());
 
-        List<Map<String, Object>> result = new ArrayList<>();
+        List<TenantInfoVO> result = new ArrayList<>();
         for (Long tid : tenantIds) {
             TenantDO tenant = workspaceTenantRepository.selectTenantById(tid);
             if (tenant != null) {
-                Map<String, Object> m = new LinkedHashMap<>();
-                m.put("id", tenant.getId());
-                m.put("code", tenant.getCode());
-                m.put("name", tenant.getName());
-                result.add(m);
+                TenantInfoVO vo = new TenantInfoVO();
+                vo.setId(tenant.getId());
+                vo.setCode(tenant.getCode());
+                vo.setName(tenant.getName());
+                result.add(vo);
             }
         }
         return result;
@@ -492,7 +493,7 @@ public class AuthServiceImpl implements AuthService {
     }
 
     @Override
-    public List<Map<String, Object>> getUserTenants(Long userId) {
+    public List<TenantInfoVO> getUserTenants(Long userId) {
         List<UserWorkspaceRoleDO> uwrList = userWorkspaceRoleRepository.selectByUserId(userId);
         return buildTenantList(uwrList);
     }

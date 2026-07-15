@@ -1,9 +1,11 @@
 package com.shiyu.ai.education.service;
 
-import com.shiyu.ai.dal.dataobject.education.QuestionDO;
+import com.shiyu.ai.dal.bo.education.QuestionBO;
 
 import java.util.List;
 import com.shiyu.ai.common.core.api.PageData;
+import com.shiyu.ai.education.dto.QuestionResponse;
+import com.shiyu.ai.education.request.QuestionRequest;
 
 /**
  * Question 接口
@@ -15,13 +17,13 @@ public interface QuestionService {
      * Get By Id
      * @return 处理结果
      */
-    QuestionDO getById(Long id);
+    QuestionResponse getById(Long id);
 
     /**
      * Get By Code
      * @return 处理结果
      */
-    QuestionDO getByCode(String code);
+    QuestionResponse getByCode(String code);
 
     /**
      * List By Subject And Grade
@@ -31,37 +33,36 @@ public interface QuestionService {
      * List All
      * @return 处理结果
      */
-    List<QuestionDO> listAll();
 
-    PageData<QuestionDO> page(int pageNum, int pageSize);
+    PageData<QuestionResponse> page(int pageNum, int pageSize);
 
-    List<QuestionDO> listBySubjectAndGrade(String subjectCode, Integer grade);
+    List<QuestionResponse> listBySubjectAndGrade(String subjectCode, Integer grade);
 
     /**
      * List By Difficulty
      * @return 处理结果
      */
-    List<QuestionDO> listByDifficulty(Integer difficulty);
+    List<QuestionResponse> listByDifficulty(Integer difficulty);
 
     /**
      * List By Type
      * @return 处理结果
      */
-    List<QuestionDO> listByType(String type);
+    List<QuestionResponse> listByType(String type);
 
     /**
      * Create
-     * @param QuestionDO QuestionDO
+     * @param QuestionResponse QuestionDO
      * @return 处理结果
      */
-    QuestionDO create(QuestionDO question);
+    QuestionResponse create(QuestionRequest question);
 
     /**
      * Update
-     * @param QuestionDO QuestionDO
+     * @param QuestionResponse QuestionDO
      * @return 处理结果
      */
-    void update(QuestionDO question);
+    void update(QuestionRequest question);
 
     /**
      * Delete By Id

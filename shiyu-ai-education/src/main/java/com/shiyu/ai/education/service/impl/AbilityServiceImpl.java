@@ -1,6 +1,6 @@
 package com.shiyu.ai.education.service.impl;
 
-import com.shiyu.ai.dal.dataobject.education.AbilityDO;
+import com.shiyu.ai.dal.bo.education.AbilityBO;
 import com.shiyu.ai.education.domain.AbilityValue;
 import com.shiyu.ai.education.domain.BloomTaxonomy;
 import com.shiyu.ai.education.service.AbilityService;
@@ -22,16 +22,16 @@ public class AbilityServiceImpl implements AbilityService {
 
     @Override
     public AbilityValue get(Long studentId, Long knowledgeId) {
-        AbilityDO d = abilityRepository.selectByStudentAndKnowledge(studentId, knowledgeId);
+        AbilityBO d = abilityRepository.selectByStudentAndKnowledge(studentId, knowledgeId);
         return d != null ? fromDO(d) : AbilityValue.empty(studentId, knowledgeId);
     }
 
     @Override
     public void update(Long studentId, Long knowledgeId, BloomTaxonomy dimension, double accuracy) {
-        AbilityDO d = abilityRepository.selectByStudentAndKnowledge(studentId, knowledgeId);
+        AbilityBO d = abilityRepository.selectByStudentAndKnowledge(studentId, knowledgeId);
         boolean isNew = false;
         if (d == null) {
-            d = new AbilityDO();
+            d = new AbilityBO();
             d.setStudentId(studentId);
             d.setKnowledgeId(knowledgeId);
             d.setRemember(0.0);
@@ -68,7 +68,7 @@ public class AbilityServiceImpl implements AbilityService {
                 studentId, knowledgeId, dimension, updated);
     }
 
-    private double getScore(AbilityDO d, BloomTaxonomy dim) {
+    private double getScore(AbilityBO d, BloomTaxonomy dim) {
         return switch (dim) {
             case REMEMBER   -> d.getRemember();
             case UNDERSTAND -> d.getUnderstand();
@@ -79,7 +79,7 @@ public class AbilityServiceImpl implements AbilityService {
         };
     }
 
-    private void setScore(AbilityDO d, BloomTaxonomy dim, double score) {
+    private void setScore(AbilityBO d, BloomTaxonomy dim, double score) {
         switch (dim) {
             case REMEMBER   -> d.setRemember(score);
             case UNDERSTAND -> d.setUnderstand(score);
@@ -90,7 +90,7 @@ public class AbilityServiceImpl implements AbilityService {
         }
     }
 
-    private AbilityValue fromDO(AbilityDO d) {
+    private AbilityValue fromDO(AbilityBO d) {
         return new AbilityValue(
                 d.getStudentId(), d.getKnowledgeId(),
                 d.getRemember(), d.getUnderstand(), d.getApply(),

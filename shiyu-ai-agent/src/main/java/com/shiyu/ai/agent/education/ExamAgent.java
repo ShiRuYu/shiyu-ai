@@ -3,8 +3,9 @@ package com.shiyu.ai.agent.education;
 import com.shiyu.ai.model.chat.ChatEngine;
 import com.shiyu.ai.model.chat.ChatRequest;
 import com.shiyu.ai.model.chat.ChatResponse;
-import com.shiyu.ai.dal.dataobject.education.ExamDO;
+import com.shiyu.ai.dal.bo.education.ExamBO;
 import com.shiyu.ai.education.domain.ExamType;
+import com.shiyu.ai.dal.repository.education.ExamRepository;
 import com.shiyu.ai.education.service.ExamService;
 import com.shiyu.ai.knowledge.dto.KnowledgeResponse;
 import com.shiyu.ai.knowledge.service.KnowledgeService;
@@ -28,6 +29,7 @@ public class ExamAgent {
     private final ChatEngine chatEngine;
     private final KnowledgeService knowledgeService;
     private final ExamService examService;
+    private final ExamRepository examRepository;
 
     /**
      * 智能组卷
@@ -39,7 +41,7 @@ public class ExamAgent {
      * @param teacherId    出卷教师 ID
      * @return 生成的试卷
      */
-    public ExamDO generateExam(String subjectCode, Integer grade,
+    public ExamBO generateExam(String subjectCode, Integer grade,
                                 List<Long> knowledgeIds, Integer durationMin,
                                 Long teacherId) {
         log.info("ExamAgent.generateExam: subject={}, grade={}, knowledgeIds={}",
@@ -70,16 +72,16 @@ public class ExamAgent {
         }
 
         // 4. 保存试卷元数据
-        ExamDO exam = new ExamDO();
+        ExamBO exam = new ExamBO();
         exam.setSubjectCode(subjectCode);
         exam.setGrade(grade);
         exam.setTeacherId(teacherId);
         exam.setDurationMin(durationMin);
         exam.setType(ExamType.AI_GENERATED.getCode());
-        exam.setStatus(1);
         exam.setTotalScore(100);
         exam.setName(subjectCode + " Grade " + grade + " 智能组卷");
-        examService.create(exam);
+        exam.setType(exam.getType());
+        examRepository.insert(exam);
 
         log.info("ExamAgent.generateExam: 组卷完成, examId={}", exam.getId());
         return exam;

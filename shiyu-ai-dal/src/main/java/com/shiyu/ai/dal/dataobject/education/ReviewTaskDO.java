@@ -2,6 +2,7 @@ package com.shiyu.ai.dal.dataobject.education;
 
 import com.mybatisflex.annotation.Id;
 import com.mybatisflex.annotation.KeyType;
+import com.mybatisflex.annotation.Column;
 import com.mybatisflex.annotation.Table;
 import lombok.Data;
 
@@ -18,6 +19,10 @@ public class ReviewTaskDO implements Serializable {
 
     private Long studentId;
     private Long knowledgeId;
+
+    @Column(ignore = true)
+    private Long questionId;
+
     private String status;
     private LocalDate reviewDate;
     private Integer reviewRound;

@@ -1,6 +1,7 @@
 package com.shiyu.ai.education.service;
 
-import com.shiyu.ai.dal.dataobject.education.ReviewTaskDO;
+import com.shiyu.ai.education.dto.ReviewTaskResponse;
+import com.shiyu.ai.education.request.ReviewRequest;
 
 import java.util.List;
 
@@ -14,37 +15,37 @@ public interface ReviewService {
      * Get By Id
      * @return 处理结果
      */
-    ReviewTaskDO getById(Long id);
+    ReviewTaskResponse getById(Long id);
 
     /**
      * List Today Tasks
      * @return 处理结果
      */
-    List<ReviewTaskDO> listTodayTasks(Long studentId);
+    List<ReviewTaskResponse> listTodayTasks(Long studentId);
 
     /**
      * List By Student And Status
      * @return 处理结果
      */
-    List<ReviewTaskDO> listByStudentAndStatus(Long studentId, String status);
+    List<ReviewTaskResponse> listByStudentAndStatus(Long studentId, String status);
 
     /**
      * List By Student And Knowledge
      * @return 处理结果
      */
-    List<ReviewTaskDO> listByStudentAndKnowledge(Long studentId, Long knowledgeId);
+    List<ReviewTaskResponse> listByStudentAndKnowledge(Long studentId, Long knowledgeId);
 
     /**
      * Create
-     * @param ReviewTaskDO ReviewTaskDO
+     * @param ReviewRequest ReviewRequest
      * @return 处理结果
      */
-    ReviewTaskDO create(ReviewTaskDO task);
+    ReviewTaskResponse create(ReviewRequest request);
 
     /**
      * Update
-     * @param ReviewTaskDO ReviewTaskDO
+     * @param ReviewRequest ReviewRequest
      * @return 处理结果
      */
-    void update(ReviewTaskDO task);
+    void update(ReviewRequest request);
 }

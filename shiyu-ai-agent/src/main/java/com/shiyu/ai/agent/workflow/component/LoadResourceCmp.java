@@ -1,7 +1,7 @@
 package com.shiyu.ai.agent.workflow.component;
 
-import com.shiyu.ai.dal.dataobject.education.ResourceDO;
-import com.shiyu.ai.education.service.ResourceService;
+import com.shiyu.ai.dal.bo.education.ResourceBO;
+import com.shiyu.ai.dal.repository.education.ResourceRepository;
 import com.shiyu.ai.agent.workflow.context.LearningContext;
 import com.yomahub.liteflow.core.NodeComponent;
 import lombok.RequiredArgsConstructor;
@@ -20,7 +20,7 @@ import java.util.List;
 @RequiredArgsConstructor
 public class LoadResourceCmp extends NodeComponent {
 
-    private final ResourceService resourceService;
+    private final ResourceRepository resourceRepository;
 
     @Override
     public void process() throws Exception {
@@ -28,7 +28,7 @@ public class LoadResourceCmp extends NodeComponent {
         log.info("LoadResourceCmp: 加载学习资源, knowledgeId={}", ctx.getKnowledgeId());
 
         // 加载所有可用资源
-        List<ResourceDO> allResources = resourceService.listAll();
+        List<ResourceBO> allResources = resourceRepository.selectAll();
         ctx.setResources(allResources);
 
         log.info("LoadResourceCmp: 加载到 {} 个资源", allResources.size());

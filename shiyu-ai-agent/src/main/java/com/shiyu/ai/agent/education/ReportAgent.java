@@ -3,8 +3,9 @@ package com.shiyu.ai.agent.education;
 import com.shiyu.ai.model.chat.ChatEngine;
 import com.shiyu.ai.model.chat.ChatRequest;
 import com.shiyu.ai.model.chat.ChatResponse;
-import com.shiyu.ai.dal.dataobject.education.StudyRecordDO;
+import com.shiyu.ai.dal.bo.education.StudyRecordBO;
 import com.shiyu.ai.education.service.AbilityService;
+import com.shiyu.ai.dal.repository.education.StudyRecordRepository;
 import com.shiyu.ai.education.service.AnalyticsService;
 import com.shiyu.ai.education.domain.AbilityValue;
 import lombok.RequiredArgsConstructor;
@@ -28,6 +29,7 @@ public class ReportAgent {
 
     private final ChatEngine chatEngine;
     private final AnalyticsService analyticsService;
+    private final StudyRecordRepository studyRecordRepository;
     private final AbilityService abilityService;
 
     /**
@@ -40,18 +42,18 @@ public class ReportAgent {
         log.info("ReportAgent.generateOverviewReport: studentId={}", studentId);
 
         // 1. 获取学习记录
-        List<StudyRecordDO> records = analyticsService.listRecordsByStudent(studentId);
+        List<StudyRecordBO> records = studyRecordRepository.selectByStudent(studentId);
 
         // 2. 统计学习数据
         int totalStudySessions = records.size();
         double totalScore = records.stream()
                 .filter(r -> r.getScore() != null)
-                .mapToDouble(StudyRecordDO::getScore)
+                .mapToDouble(StudyRecordBO::getScore)
                 .average()
                 .orElse(0.0);
         long totalDuration = records.stream()
                 .filter(r -> r.getDurationSec() != null)
-                .mapToLong(StudyRecordDO::getDurationSec)
+                .mapToLong(StudyRecordBO::getDurationSec)
                 .sum();
 
         // 3. 构建 Prompt

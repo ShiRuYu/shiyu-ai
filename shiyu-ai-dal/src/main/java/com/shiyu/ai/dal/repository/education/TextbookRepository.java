@@ -1,13 +1,15 @@
 package com.shiyu.ai.dal.repository.education;
 
 import com.mybatisflex.core.query.QueryWrapper;
+import java.util.List;
+
+import com.shiyu.ai.common.core.api.PageData;
+import com.shiyu.ai.common.core.utils.MapstructUtils;
+import com.shiyu.ai.dal.bo.education.TextbookBO;
 import com.shiyu.ai.dal.dataobject.education.TextbookDO;
 import com.shiyu.ai.dal.mapper.education.TextbookMapper;
 import jakarta.annotation.Resource;
 import org.springframework.stereotype.Component;
-
-import java.util.List;
-import com.shiyu.ai.common.core.api.PageData;
 
 @Component
 public class TextbookRepository {
@@ -15,37 +17,43 @@ public class TextbookRepository {
     @Resource
     private TextbookMapper textbookMapper;
 
-    public TextbookDO selectById(Long id) {
-        return textbookMapper.selectOneById(id);
+    public TextbookBO selectById(Long id) {
+        return MapstructUtils.convert(textbookMapper.selectOneById(id), TextbookBO.class);
     }
 
-    public List<TextbookDO> selectBySubjectAndGrade(String subjectCode, Integer grade) {
-        return textbookMapper.selectListByQuery(
-                QueryWrapper.create()
-                        .eq("subject_code", subjectCode)
-                        .eq("grade", grade));
-    }
-
-    public PageData<TextbookDO> selectPage(int pageNum, int pageSize) {
+    public PageData<TextbookBO> selectPage(int pageNum, int pageSize) {
         com.mybatisflex.core.paginate.Page<TextbookDO> page = textbookMapper.paginate(
                 pageNum, pageSize,
-                QueryWrapper.create().eq("status", 1).orderBy("id"));
-        return new PageData<>(page.getRecords(), page.getTotalRow());
+                QueryWrapper.create()
+                        .orderBy("id", false)
+        );
+        return new PageData<>(MapstructUtils.convert(page.getRecords(), TextbookBO.class), page.getTotalRow());
     }
 
-    public List<TextbookDO> selectAll() {
-        return textbookMapper.selectAll();
+    public List<TextbookBO> selectBySubjectAndGrade(String subjectCode, Integer grade) {
+        return MapstructUtils.convert(textbookMapper.selectListByQuery(
+                QueryWrapper.create()
+                        .eq("subject_code", subjectCode)
+                        .eq("grade", grade)
+        ), TextbookBO.class);
+    }
+    public List<TextbookBO> selectAll() {
+        return MapstructUtils.convert(textbookMapper.selectListByQuery(QueryWrapper.create()), TextbookBO.class);
     }
 
-    public int insert(TextbookDO textbook) {
-        return textbookMapper.insert(textbook);
+    public int insert(TextbookBO entity) {
+        TextbookDO dataObj = MapstructUtils.convert(entity, TextbookDO.class);
+        return textbookMapper.insert(dataObj);
     }
 
-    public int update(TextbookDO textbook) {
-        return textbookMapper.update(textbook);
+
+    public int update(TextbookBO entity) {
+        TextbookDO dataObj = MapstructUtils.convert(entity, TextbookDO.class);
+        return textbookMapper.update(dataObj);
     }
 
     public int deleteById(Long id) {
         return textbookMapper.deleteById(id);
     }
+
 }

@@ -6,6 +6,7 @@ import com.shiyu.ai.agent.node.NodeFactory;
 import com.shiyu.ai.agent.node.NodeType;
 import com.shiyu.ai.model.chat.ChatEngine;
 import com.shiyu.ai.education.service.AbilityService;
+import com.shiyu.ai.dal.repository.education.ReviewTaskRepository;
 import com.shiyu.ai.education.service.ReviewService;
 import com.shiyu.ai.knowledge.path.LearningPathService;
 import com.shiyu.ai.education.domain.ReviewScheduler;
@@ -75,7 +76,7 @@ public class EducationNodeConfigurer {
         nodeFactory.registerNodeType(NodeType.REVIEW_SCHEDULE, NodeConfig.class, config -> {
             ReviewScheduleNode node = new ReviewScheduleNode(
                     ctx.getBean(ReviewScheduler.class),
-                    ctx.getBean(ReviewService.class));
+                    ctx.getBean(ReviewService.class), ctx.getBean(ReviewTaskRepository.class));
             node.setConfig(config);
             return node;
         });

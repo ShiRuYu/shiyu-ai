@@ -1,20 +1,28 @@
 package com.shiyu.ai.dal.repository.education;
 
 import com.mybatisflex.core.query.QueryWrapper;
+import java.util.List;
+
+import com.shiyu.ai.common.core.utils.MapstructUtils;
+import com.shiyu.ai.dal.bo.education.AchievementBO;
 import com.shiyu.ai.dal.dataobject.education.AchievementDO;
 import com.shiyu.ai.dal.mapper.education.AchievementMapper;
 import jakarta.annotation.Resource;
 import org.springframework.stereotype.Component;
-import java.util.List;
 
 @Component
 public class AchievementRepository {
-    @Resource private AchievementMapper achievementMapper;
 
-    public List<AchievementDO> selectByStudent(Long studentId) {
-        return achievementMapper.selectListByQuery(
-                QueryWrapper.create().eq("student_id", studentId).orderBy("earned_at", false));
+    @Resource
+    private AchievementMapper achievementMapper;
+
+    public List<AchievementBO> selectByStudent(Long studentId) {
+        return MapstructUtils.convert(achievementMapper.selectListByQuery(
+                QueryWrapper.create().eq("student_id", studentId).orderBy("earned_at", false)), AchievementBO.class);
     }
 
-    public int insert(AchievementDO a) { return achievementMapper.insert(a); }
+    public int insert(AchievementBO a) {
+        AchievementDO dataObj = MapstructUtils.convert(a, AchievementDO.class);
+        return achievementMapper.insert(dataObj);
+    }
 }

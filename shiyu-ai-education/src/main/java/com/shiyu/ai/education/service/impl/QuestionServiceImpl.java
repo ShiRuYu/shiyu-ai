@@ -1,9 +1,12 @@
 package com.shiyu.ai.education.service.impl;
 
 import com.shiyu.ai.common.core.api.PageData;
-import com.shiyu.ai.dal.dataobject.education.QuestionDO;
-import com.shiyu.ai.education.service.QuestionService;
+import com.shiyu.ai.common.core.utils.MapstructUtils;
+import com.shiyu.ai.dal.bo.education.QuestionBO;
 import com.shiyu.ai.dal.repository.education.QuestionRepository;
+import com.shiyu.ai.education.dto.QuestionResponse;
+import com.shiyu.ai.education.request.QuestionRequest;
+import com.shiyu.ai.education.service.QuestionService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
@@ -19,61 +22,87 @@ public class QuestionServiceImpl implements QuestionService {
     private final QuestionRepository questionRepository;
 
     @Override
-    public QuestionDO getById(Long id) {
-        return questionRepository.selectById(id);
+    public QuestionResponse getById(Long id) {
+        QuestionBO bo = questionRepository.selectById(id);
+        return MapstructUtils.convert(bo, QuestionResponse.class);
     }
 
     @Override
-    public QuestionDO getByCode(String code) {
-        return questionRepository.selectByCode(code);
+    public QuestionResponse getByCode(String code) {
+        QuestionBO bo = questionRepository.selectByCode(code);
+        return MapstructUtils.convert(bo, QuestionResponse.class);
     }
 
     @Override
-    public PageData<QuestionDO> page(int pageNum, int pageSize) {
-        return questionRepository.selectPage(pageNum, pageSize);
-    }
-
-    public List<QuestionDO> listAll() {
-        return questionRepository.selectAll();
+    public List<QuestionResponse> listBySubjectAndGrade(String subjectCode, Integer grade) {
+        List<QuestionBO> boList = questionRepository.selectBySubjectAndGrade(subjectCode, grade);
+        return MapstructUtils.convert(boList, QuestionResponse.class);
     }
 
     @Override
-    public List<QuestionDO> listBySubjectAndGrade(String subjectCode, Integer grade) {
-        return questionRepository.selectBySubjectAndGrade(subjectCode, grade);
+    public List<QuestionResponse> listByDifficulty(Integer difficulty) {
+        List<QuestionBO> boList = questionRepository.selectByDifficulty(difficulty);
+        return MapstructUtils.convert(boList, QuestionResponse.class);
     }
 
     @Override
-    public List<QuestionDO> listByDifficulty(Integer difficulty) {
-        return questionRepository.selectByDifficulty(difficulty);
+    public List<QuestionResponse> listByType(String type) {
+        List<QuestionBO> boList = questionRepository.selectByType(type);
+        return MapstructUtils.convert(boList, QuestionResponse.class);
     }
 
     @Override
-    public List<QuestionDO> listByType(String type) {
-        return questionRepository.selectByType(type);
-    }
-
-    @Override
-    @Transactional(rollbackFor = Exception.class)
-    public QuestionDO create(QuestionDO question) {
-        questionRepository.insert(question);
-        return question;
+    public PageData<QuestionResponse> page(int pageNum, int pageSize) {
+        PageData<QuestionBO> boPage = questionRepository.selectPage(pageNum, pageSize);
+        List<QuestionResponse> items = MapstructUtils.convert(boPage.getItems(), QuestionResponse.class);
+        return new PageData<>(items, boPage.getTotal());
     }
 
     @Override
     @Transactional(rollbackFor = Exception.class)
-    public void update(QuestionDO question) {
-        questionRepository.update(question);
+    public QuestionResponse create(QuestionRequest request) {
+        QuestionBO bo = new QuestionBO();
+        bo.setCode(request.getCode());
+        bo.setType(request.getType());
+        bo.setSubjectCode(request.getSubjectCode());
+        bo.setGrade(request.getGrade());
+        bo.setDifficulty(request.getDifficulty());
+        bo.setTitle(request.getTitle());
+        bo.setOptions(request.getOptions());
+        bo.setAnswer(request.getAnswer());
+        bo.setAnalysis(request.getAnalysis());
+        bo.setTags(request.getTags());
+        questionRepository.insert(bo);
+        return MapstructUtils.convert(bo, QuestionResponse.class);
+    }
+
+    @Override
+    @Transactional(rollbackFor = Exception.class)
+    public void update(QuestionRequest request) {
+        QuestionBO bo = questionRepository.selectById(request.getId());
+        if (bo != null) {
+            bo.setCode(request.getCode());
+            bo.setType(request.getType());
+            bo.setSubjectCode(request.getSubjectCode());
+            bo.setGrade(request.getGrade());
+            bo.setDifficulty(request.getDifficulty());
+            bo.setTitle(request.getTitle());
+            bo.setOptions(request.getOptions());
+            bo.setAnswer(request.getAnswer());
+            bo.setAnalysis(request.getAnalysis());
+            bo.setTags(request.getTags());
+            questionRepository.update(bo);
+        }
+    }
+
+    @Override
+    public void incrementUsedCount(Long id) {
+        questionRepository.incrementUsedCount(id);
     }
 
     @Override
     @Transactional(rollbackFor = Exception.class)
     public void deleteById(Long id) {
         questionRepository.deleteById(id);
-    }
-
-    @Override
-    @Transactional(rollbackFor = Exception.class)
-    public void incrementUsedCount(Long id) {
-        questionRepository.incrementUsedCount(id);
     }
 }

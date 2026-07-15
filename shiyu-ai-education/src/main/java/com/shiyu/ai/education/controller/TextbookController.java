@@ -2,76 +2,57 @@ package com.shiyu.ai.education.controller;
 
 import com.shiyu.ai.common.core.api.PageData;
 import com.shiyu.ai.common.core.api.Result;
-import com.shiyu.ai.dal.dataobject.education.TextbookDO;
 import com.shiyu.ai.education.dto.TextbookResponse;
+import com.shiyu.ai.education.request.TextbookRequest;
 import com.shiyu.ai.education.service.TextbookService;
-import io.swagger.v3.oas.annotations.Operation;
-import io.swagger.v3.oas.annotations.tags.Tag;
-import lombok.RequiredArgsConstructor;
 import jakarta.validation.Valid;
+import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
 
-@Tag(name = "教材管理")
+@Slf4j
 @RestController
-@RequestMapping("/edu/textbook")
+@RequestMapping("/textbook")
 @RequiredArgsConstructor
 public class TextbookController {
 
     private final TextbookService textbookService;
 
     @GetMapping("/detail")
-    @Operation(summary = "获取教材详情")
     public Result<TextbookResponse> getById(@RequestParam Long id) {
-        TextbookDO textbook = textbookService.getById(id);
-        return Result.success(toResponse(textbook));
+        return Result.success(textbookService.getById(id));
     }
 
     @GetMapping("/list")
-    @Operation(summary = "分页获取教材")
-    public Result<PageData<TextbookResponse>> listAll(
+    public Result<PageData<TextbookResponse>> list(
             @RequestParam(defaultValue = "1") Integer pageNum,
             @RequestParam(defaultValue = "10") Integer pageSize) {
-        PageData<TextbookDO> page = textbookService.page(pageNum, pageSize);
-        List<TextbookResponse> items = page.getItems().stream().map(this::toResponse).toList();
-        return Result.success(new PageData<>(items, page.getTotal()));
+        return Result.success(textbookService.page(pageNum, pageSize));
     }
 
     @GetMapping("/subject-grade")
-    @Operation(summary = "根据学科和年级获取教材")
     public Result<List<TextbookResponse>> listBySubjectAndGrade(
             @RequestParam String subjectCode, @RequestParam Integer grade) {
-        List<TextbookDO> textbooks = textbookService.listBySubjectAndGrade(subjectCode, grade);
-        return Result.success(textbooks.stream().map(this::toResponse).toList());
+        return Result.success(textbookService.listBySubjectAndGrade(subjectCode, grade));
     }
 
     @PostMapping("/create")
-    @Operation(summary = "创建教材")
-    public Result<TextbookResponse> create(@Valid @RequestBody TextbookDO textbook) {
-        TextbookDO created = textbookService.create(textbook);
-        return Result.success(toResponse(created));
+    public Result<TextbookResponse> create(@Valid @RequestBody TextbookRequest request) {
+        return Result.success(textbookService.create(request));
     }
 
     @PostMapping("/update")
-    @Operation(summary = "更新教材")
-    public Result<Void> update(@RequestParam Long id, @Valid @RequestBody TextbookDO textbook) {
-        textbook.setId(id);
-        textbookService.update(textbook);
+    public Result<Void> update(@RequestParam Long id, @Valid @RequestBody TextbookRequest request) {
+        request.setId(id);
+        textbookService.update(request);
         return Result.success();
     }
 
     @PostMapping("/delete")
-    @Operation(summary = "删除教材")
     public Result<Void> delete(@RequestParam Long id) {
         textbookService.deleteById(id);
         return Result.success();
-    }
-
-    private TextbookResponse toResponse(TextbookDO textbook) {
-        if (textbook == null) return null;
-        return new TextbookResponse(
-                textbook.getId(), textbook.getName(), textbook.getSubjectCode(),
-                textbook.getGrade(), textbook.getPublisher(), textbook.getIsbn());
     }
 }

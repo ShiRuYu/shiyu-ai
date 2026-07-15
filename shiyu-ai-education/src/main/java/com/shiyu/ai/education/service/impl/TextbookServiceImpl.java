@@ -1,8 +1,11 @@
 package com.shiyu.ai.education.service.impl;
 
 import com.shiyu.ai.common.core.api.PageData;
-import com.shiyu.ai.dal.dataobject.education.TextbookDO;
+import com.shiyu.ai.common.core.utils.MapstructUtils;
+import com.shiyu.ai.dal.bo.education.TextbookBO;
 import com.shiyu.ai.dal.repository.education.TextbookRepository;
+import com.shiyu.ai.education.dto.TextbookResponse;
+import com.shiyu.ai.education.request.TextbookRequest;
 import com.shiyu.ai.education.service.TextbookService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -16,38 +19,59 @@ import java.util.List;
 @RequiredArgsConstructor
 public class TextbookServiceImpl implements TextbookService {
 
+    @Override
+    public PageData<TextbookResponse> page(int pageNum, int pageSize) {
+        PageData<TextbookBO> boPage = textbookRepository.selectPage(pageNum, pageSize);
+        List<TextbookResponse> items = MapstructUtils.convert(boPage.getItems(), TextbookResponse.class);
+        return new PageData<>(items, boPage.getTotal());
+    }
+
     private final TextbookRepository textbookRepository;
 
     @Override
-    public TextbookDO getById(Long id) {
-        return textbookRepository.selectById(id);
+    public TextbookResponse getById(Long id) {
+        TextbookBO bo = textbookRepository.selectById(id);
+        return MapstructUtils.convert(bo, TextbookResponse.class);
     }
+
 
     @Override
-    public List<TextbookDO> listBySubjectAndGrade(String subjectCode, Integer grade) {
-        return textbookRepository.selectBySubjectAndGrade(subjectCode, grade);
+    public List<TextbookResponse> listBySubjectAndGrade(String subjectCode, Integer grade) {
+        List<TextbookBO> boList = textbookRepository.selectBySubjectAndGrade(subjectCode, grade);
+        return MapstructUtils.convert(boList, TextbookResponse.class);
     }
+
+    public List<TextbookResponse> listAll() {
+        List<TextbookBO> boList = textbookRepository.selectAll();
+        return MapstructUtils.convert(boList, TextbookResponse.class);
+    }
+
+
+
 
     @Override
-    public PageData<TextbookDO> page(int pageNum, int pageSize) {
-        return textbookRepository.selectPage(pageNum, pageSize);
-    }
-
-    public List<TextbookDO> listAll() {
-        return textbookRepository.selectAll();
+    @Transactional(rollbackFor = Exception.class)
+    public TextbookResponse create(TextbookRequest request) {
+        TextbookBO bo = new TextbookBO();
+        bo.setName(request.getName());
+        bo.setSubjectCode(request.getSubjectCode());
+        bo.setGrade(request.getGrade());
+        bo.setPublisher(request.getPublisher());
+        textbookRepository.insert(bo);
+        return MapstructUtils.convert(bo, TextbookResponse.class);
     }
 
     @Override
     @Transactional(rollbackFor = Exception.class)
-    public TextbookDO create(TextbookDO textbook) {
-        textbookRepository.insert(textbook);
-        return textbook;
-    }
-
-    @Override
-    @Transactional(rollbackFor = Exception.class)
-    public void update(TextbookDO textbook) {
-        textbookRepository.update(textbook);
+    public void update(TextbookRequest request) {
+        TextbookBO bo = textbookRepository.selectById(request.getId());
+        if (bo != null) {
+            bo.setName(request.getName());
+            bo.setSubjectCode(request.getSubjectCode());
+            bo.setGrade(request.getGrade());
+            bo.setPublisher(request.getPublisher());
+            textbookRepository.update(bo);
+        }
     }
 
     @Override

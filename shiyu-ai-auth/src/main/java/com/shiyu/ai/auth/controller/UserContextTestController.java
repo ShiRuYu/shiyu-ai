@@ -1,5 +1,6 @@
 package com.shiyu.ai.auth.controller;
 
+import com.shiyu.ai.auth.vo.UserContextVO;
 import com.shiyu.ai.common.core.api.Result;
 import com.shiyu.ai.common.core.domain.LoginContextHolder;
 import com.shiyu.ai.common.core.domain.LoginUser;
@@ -9,9 +10,6 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import io.swagger.v3.oas.annotations.Operation;
-
-import java.util.HashMap;
-import java.util.Map;
 
 /**
  * 用户上下文测试控制器
@@ -26,44 +24,41 @@ public class UserContextTestController {
     /**
      * 获取当前登录用户信息
      * GET /test/user-context/info
-     * 
-     * @return 当前登录用户的详细信息
      */
     @Operation(summary = "Get Current User Info")
     @GetMapping("/info")
-    public Result<Map<String, Object>> getCurrentUserInfo() {
+    public Result<UserContextVO> getCurrentUserInfo() {
         log.info("收到获取当前用户信息请求");
         
         try {
-            // 检查是否已登录
             if (!LoginContextHolder.isLogin()) {
                 return Result.fail("用户未登录");
             }
             
-            // 获取登录用户信息
             LoginUser loginUser = LoginContextHolder.getLoginUser();
             
-            // 构建响应数据
-            Map<String, Object> userInfo = new HashMap<>();
-            userInfo.put("userId", LoginContextHolder.getUserId());
-            userInfo.put("username", LoginContextHolder.getUsername());
-            userInfo.put("userType", LoginContextHolder.getUserType());
+            UserContextVO vo = new UserContextVO();
+            vo.setUserId(LoginContextHolder.getUserId());
+            vo.setUsername(LoginContextHolder.getUsername());
+            vo.setUserType(LoginContextHolder.getUserType() != null ? 
+                    LoginContextHolder.getUserType().name() : null);
+            vo.setIsLogin(true);
             
             if (loginUser != null) {
-                userInfo.put("token", loginUser.getToken());
-                userInfo.put("loginTime", loginUser.getLoginTime());
-                userInfo.put("expireTime", loginUser.getExpireTime());
-                userInfo.put("ipaddr", loginUser.getIpaddr());
-                userInfo.put("loginLocation", loginUser.getLoginLocation());
-                userInfo.put("browser", loginUser.getBrowser());
-                userInfo.put("os", loginUser.getOs());
-                userInfo.put("nickName", loginUser.getNickName());
-                userInfo.put("avatar", loginUser.getAvatar());
-                userInfo.put("extInfo", loginUser.getExtInfo());
+                vo.setToken(loginUser.getToken());
+                vo.setLoginTime(loginUser.getLoginTime());
+                vo.setExpireTime(loginUser.getExpireTime());
+                vo.setIpaddr(loginUser.getIpaddr());
+                vo.setLoginLocation(loginUser.getLoginLocation());
+                vo.setBrowser(loginUser.getBrowser());
+                vo.setOs(loginUser.getOs() != null ? loginUser.getOs().name() : null);
+                vo.setNickName(loginUser.getNickName());
+                vo.setAvatar(loginUser.getAvatar());
+                vo.setExtInfo(com.shiyu.ai.common.core.utils.JSONUtils.toJsonString(loginUser.getExtInfo()));
             }
             
             log.info("成功获取用户信息: userId={}", LoginContextHolder.getUserId());
-            return Result.success(userInfo);
+            return Result.success(vo);
             
         } catch (Exception e) {
             log.error("获取用户信息失败", e);
@@ -74,45 +69,35 @@ public class UserContextTestController {
     /**
      * 测试在业务逻辑中使用 LoginContextHolder
      * GET /test/user-context/demo
-     * 
-     * @return 演示结果
      */
     @Operation(summary = "Demo Usage")
     @GetMapping("/demo")
-    public Result<Map<String, Object>> demoUsage() {
+    public Result<UserContextVO> demoUsage() {
         log.info("演示 LoginContextHolder 的使用");
         
-        Map<String, Object> result = new HashMap<>();
+        UserContextVO vo = new UserContextVO();
+        vo.setIsLogin(LoginContextHolder.isLogin());
         
-        // 1. 检查登录状态
-        boolean isLogin = LoginContextHolder.isLogin();
-        result.put("isLogin", isLogin);
-        
-        if (isLogin) {
-            // 2. 获取用户 ID（最常用）
+        if (Boolean.TRUE.equals(vo.getIsLogin())) {
             Long userId = LoginContextHolder.getUserId();
-            result.put("userId", userId);
-            
-            // 3. 获取用户名
             String username = LoginContextHolder.getUsername();
-            result.put("username", username);
-            
-            // 4. 获取完整用户对象（需要更多信息时）
             LoginUser loginUser = LoginContextHolder.getLoginUser();
+            
+            vo.setUserId(userId);
+            vo.setUsername(username);
+            vo.setMessage(String.format("欢迎回来，%s！", username != null ? username : "用户"));
+            
             if (loginUser != null) {
-                result.put("message", String.format("欢迎回来，%s！您的 IP 是：%s", 
-                    username != null ? username : "用户", 
-                    loginUser.getIpaddr() != null ? loginUser.getIpaddr() : "未知"));
-                
-                result.put("device", String.format("浏览器：%s, 操作系统：%s", 
+                vo.setDeviceInfo(String.format("浏览器：%s, 操作系统：%s", 
                     loginUser.getBrowser(), loginUser.getOs()));
+                vo.setIpaddr(loginUser.getIpaddr());
             }
             
             log.info("演示完成：userId={}, username={}", userId, username);
         } else {
-            result.put("message", "请先登录");
+            vo.setMessage("请先登录");
         }
         
-        return Result.success(result);
+        return Result.success(vo);
     }
 }

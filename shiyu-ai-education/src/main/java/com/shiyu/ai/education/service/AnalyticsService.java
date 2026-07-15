@@ -1,8 +1,14 @@
 package com.shiyu.ai.education.service;
+import com.shiyu.ai.education.request.StudyRecordRequest;
+import com.shiyu.ai.education.dto.StudyRecordResponse;
+import com.shiyu.ai.education.request.StudyRecordRequest;
 
-import com.shiyu.ai.dal.dataobject.education.StudyRecordDO;
+import com.shiyu.ai.education.dto.StudyRecordResponse;
+import com.shiyu.ai.education.dto.StudyRecordResponse;
+import com.shiyu.ai.education.dto.StudyRecordResponse;
 
 import java.util.List;
+import com.shiyu.ai.education.dto.AbilityResponse;
 
 /**
  * Analytics 接口
@@ -14,20 +20,20 @@ public interface AnalyticsService {
      * List Records By Student
      * @return 处理结果
      */
-    List<StudyRecordDO> listRecordsByStudent(Long studentId);
+    List<StudyRecordResponse> listRecordsByStudent(Long studentId);
 
     /**
      * List Records By Student And Knowledge
      * @return 处理结果
      */
-    List<StudyRecordDO> listRecordsByStudentAndKnowledge(Long studentId, Long knowledgeId);
+    List<StudyRecordResponse> listRecordsByStudentAndKnowledge(Long studentId, Long knowledgeId);
 
     /**
      * Create Record
-     * @param StudyRecordDO StudyRecordDO
+     * @param StudyRecordBO StudyRecordDO
      * @return 处理结果
      */
-    StudyRecordDO createRecord(StudyRecordDO record);
+    StudyRecordResponse createRecord(StudyRecordRequest request);
 
     /** 获取能力雷达图数据 */
     com.shiyu.ai.education.dto.AbilityRadarResponse getAbilityRadar(Long studentId, Long knowledgeId);

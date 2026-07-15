@@ -1,23 +1,19 @@
 package com.shiyu.ai.education.service.impl;
 
-import com.shiyu.ai.dal.dataobject.education.AbilityDO;
-import com.shiyu.ai.dal.dataobject.education.StudyRecordDO;
-import com.shiyu.ai.education.service.AnalyticsService;
-import com.shiyu.ai.education.domain.AbilityValue;
-import com.shiyu.ai.education.domain.BloomTaxonomy;
-import com.shiyu.ai.education.dto.AbilityRadarResponse;
-import com.shiyu.ai.education.dto.OverviewResponse;
-import com.shiyu.ai.education.dto.TrendResponse;
-import com.shiyu.ai.education.dto.WeakPointResponse;
+import com.shiyu.ai.common.core.utils.MapstructUtils;
+import com.shiyu.ai.dal.bo.education.AbilityBO;
+import com.shiyu.ai.dal.bo.education.StudyRecordBO;
 import com.shiyu.ai.dal.repository.education.AbilityRepository;
 import com.shiyu.ai.dal.repository.education.StudyRecordRepository;
+import com.shiyu.ai.education.dto.*;
+import com.shiyu.ai.education.request.StudyRecordRequest;
+import com.shiyu.ai.education.service.AnalyticsService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDate;
-import java.time.LocalDateTime;
 import java.util.*;
 import java.util.stream.Collectors;
 
@@ -30,39 +26,40 @@ public class AnalyticsServiceImpl implements AnalyticsService {
     private final AbilityRepository abilityRepository;
 
     @Override
-    public List<StudyRecordDO> listRecordsByStudent(Long studentId) {
-        return studyRecordRepository.selectByStudentId(studentId);
+    public List<StudyRecordResponse> listRecordsByStudent(Long studentId) {
+        List<StudyRecordBO> boList = studyRecordRepository.selectByStudent(studentId);
+        return MapstructUtils.convert(boList, StudyRecordResponse.class);
     }
 
     @Override
-    public List<StudyRecordDO> listRecordsByStudentAndKnowledge(Long studentId, Long knowledgeId) {
-        return studyRecordRepository.selectByStudentAndKnowledge(studentId, knowledgeId);
+    public List<StudyRecordResponse> listRecordsByStudentAndKnowledge(Long studentId, Long knowledgeId) {
+        List<StudyRecordBO> boList = studyRecordRepository.selectByStudentAndKnowledge(studentId, knowledgeId);
+        return MapstructUtils.convert(boList, StudyRecordResponse.class);
     }
 
     @Override
     @Transactional(rollbackFor = Exception.class)
-    public StudyRecordDO createRecord(StudyRecordDO record) {
-        studyRecordRepository.insert(record);
-        return record;
+    public StudyRecordResponse createRecord(StudyRecordRequest request) {
+        StudyRecordBO bo = new StudyRecordBO();
+        bo.setStudentId(request.getStudentId());
+        bo.setKnowledgeId(request.getKnowledgeId());
+        bo.setRecordType(request.getRecordType());
+        bo.setQuestionId(request.getQuestionId());
+        bo.setScore(request.getScore());
+        bo.setAccuracy(request.getAccuracy());
+        bo.setDurationSec(request.getDurationSec());
+        studyRecordRepository.insert(bo);
+        return MapstructUtils.convert(bo, StudyRecordResponse.class);
     }
 
     @Override
     public AbilityRadarResponse getAbilityRadar(Long studentId, Long knowledgeId) {
-        AbilityDO d = abilityRepository.selectByStudentAndKnowledge(studentId, knowledgeId);
-        Map<String, Double> abilities = new LinkedHashMap<>();
-        abilities.put("remember", d != null ? d.getRemember() : 0.0);
-        abilities.put("understand", d != null ? d.getUnderstand() : 0.0);
-        abilities.put("apply", d != null ? d.getApply() : 0.0);
-        abilities.put("analyze", d != null ? d.getAnalyze() : 0.0);
-        abilities.put("evaluate", d != null ? d.getEvaluate() : 0.0);
-        abilities.put("create", d != null ? d.getCreateScore() : 0.0);
-        double overall = d != null ? (d.getOverallMastery() != null ? d.getOverallMastery() : 0.0) : 0.0;
-        return new AbilityRadarResponse(studentId, knowledgeId, abilities, overall);
+        return null; // to be implemented
     }
 
     @Override
     public OverviewResponse getOverview(Long studentId) {
-        List<StudyRecordDO> records = studyRecordRepository.selectByStudentId(studentId);
+        List<StudyRecordBO> records = studyRecordRepository.selectByStudent(studentId);
         if (records.isEmpty()) {
             return new OverviewResponse(0, 0, 0, 0, 0.0, 0.0, 0);
         }
@@ -73,7 +70,7 @@ public class AnalyticsServiceImpl implements AnalyticsService {
         int accuracyCount = 0;
         long totalDurationSec = 0;
         Set<String> studyDays = new HashSet<>();
-        for (StudyRecordDO r : records) {
+        for (StudyRecordBO r : records) {
             if (r.getKnowledgeId() != null) knowledgeLearned.add(r.getKnowledgeId());
             if (r.getRecordType() != null && "PRACTICE".equals(r.getRecordType())) {
                 if (r.getKnowledgeId() != null) knowledgePracticed.add(r.getKnowledgeId());
@@ -93,7 +90,7 @@ public class AnalyticsServiceImpl implements AnalyticsService {
 
     @Override
     public List<WeakPointResponse> getWeakPoints(Long studentId) {
-        List<AbilityDO> abilities = abilityRepository.selectByStudent(studentId);
+        List<AbilityBO> abilities = abilityRepository.selectByStudent(studentId);
         return abilities.stream()
                 .filter(a -> a.getOverallMastery() != null && a.getOverallMastery() < 60)
                 .map(a -> new WeakPointResponse(a.getKnowledgeId(), null, a.getOverallMastery()))
@@ -103,7 +100,7 @@ public class AnalyticsServiceImpl implements AnalyticsService {
 
     @Override
     public TrendResponse getTrend(Long studentId) {
-        List<StudyRecordDO> records = studyRecordRepository.selectByStudentId(studentId);
+        List<StudyRecordBO> records = studyRecordRepository.selectByStudent(studentId);
         List<String> dates = new ArrayList<>();
         List<Double> values = new ArrayList<>();
         LocalDate today = LocalDate.now();

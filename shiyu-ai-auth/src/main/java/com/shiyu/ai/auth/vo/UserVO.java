@@ -93,7 +93,7 @@ public class UserVO implements Serializable {
     /**
      * 可用租户列表
      */
-    private List<Map<String, Object>> tenants;
+    private List<TenantInfoVO> tenants;
 
     /**
      * 可用工作空间列表

@@ -1,14 +1,21 @@
 package com.shiyu.ai.education.service.impl;
 
-import com.shiyu.ai.dal.dataobject.education.StudyPlanDO;
-import com.shiyu.ai.education.service.StudyPlanService;
+import com.shiyu.ai.common.core.utils.MapstructUtils;
+import com.shiyu.ai.dal.bo.education.StudyPlanBO;
+import com.shiyu.ai.dal.bo.education.StudyPlanItemBO;
+import com.shiyu.ai.dal.repository.education.StudyPlanItemRepository;
 import com.shiyu.ai.dal.repository.education.StudyPlanRepository;
+import com.shiyu.ai.education.dto.DailyTaskResponse;
+import com.shiyu.ai.education.dto.StudyPlanResponse;
+import com.shiyu.ai.education.request.StudyPlanRequest;
+import com.shiyu.ai.education.service.StudyPlanService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
+import java.util.stream.Collectors;
 
 @Slf4j
 @Service
@@ -16,38 +23,71 @@ import java.util.List;
 public class StudyPlanServiceImpl implements StudyPlanService {
 
     private final StudyPlanRepository studyPlanRepository;
+    private final StudyPlanItemRepository studyPlanItemRepository;
 
     @Override
-    public StudyPlanDO getById(Long id) {
-        return studyPlanRepository.selectById(id);
+    public StudyPlanResponse getById(Long id) {
+        StudyPlanBO bo = studyPlanRepository.selectById(id);
+        return MapstructUtils.convert(bo, StudyPlanResponse.class);
     }
 
     @Override
-    public List<StudyPlanDO> listByStudentId(Long studentId) {
-        return studyPlanRepository.selectByStudentId(studentId);
+    public List<StudyPlanResponse> listByStudentId(Long studentId) {
+        List<StudyPlanBO> boList = studyPlanRepository.selectByStudentId(studentId);
+        return MapstructUtils.convert(boList, StudyPlanResponse.class);
     }
 
     @Override
-    public List<StudyPlanDO> listActiveByStudent(Long studentId) {
-        return studyPlanRepository.selectActiveByStudent(studentId);
+    public List<StudyPlanResponse> listActiveByStudent(Long studentId) {
+        List<StudyPlanBO> boList = studyPlanRepository.selectActiveByStudent(studentId);
+        return MapstructUtils.convert(boList, StudyPlanResponse.class);
     }
 
     @Override
     @Transactional(rollbackFor = Exception.class)
-    public StudyPlanDO create(StudyPlanDO plan) {
-        studyPlanRepository.insert(plan);
-        return plan;
+    public StudyPlanResponse create(StudyPlanRequest request) {
+        StudyPlanBO bo = new StudyPlanBO();
+        bo.setStudentId(request.getStudentId());
+        bo.setName(request.getName());
+        if (request.getStartDate() != null) bo.setStartDate(request.getStartDate());
+        if (request.getEndDate() != null) bo.setEndDate(request.getEndDate());
+        bo.setStatus("ACTIVE");
+        studyPlanRepository.insert(bo);
+        return MapstructUtils.convert(bo, StudyPlanResponse.class);
     }
 
     @Override
     @Transactional(rollbackFor = Exception.class)
-    public void update(StudyPlanDO plan) {
-        studyPlanRepository.update(plan);
+    public void update(StudyPlanRequest request) {
+        StudyPlanBO bo = studyPlanRepository.selectById(request.getId());
+        if (bo != null) {
+            if (request.getName() != null) bo.setName(request.getName());
+            if (request.getStartDate() != null) bo.setStartDate(request.getStartDate());
+            if (request.getEndDate() != null) bo.setEndDate(request.getEndDate());
+            if (request.getStatus() != null) bo.setStatus(request.getStatus());
+            studyPlanRepository.update(bo);
+        }
     }
 
     @Override
     @Transactional(rollbackFor = Exception.class)
     public void deleteById(Long id) {
         studyPlanRepository.deleteById(id);
+    }
+
+    @Override
+    public List<DailyTaskResponse> getTodayTasks(Long studentId) {
+        List<StudyPlanBO> plans = studyPlanRepository.selectByStudentId(studentId);
+        List<Long> planIds = plans.stream().map(StudyPlanBO::getId).collect(Collectors.toList());
+        if (planIds.isEmpty()) return List.of();
+        List<StudyPlanItemBO> items = studyPlanItemRepository.selectTodayItems(planIds);
+        return items.stream().map(item -> new DailyTaskResponse(
+                item.getId(),
+                item.getKnowledgeId(),
+                null,
+                item.getPlanDate().toString(),
+                item.getStatus(),
+                item.getOrderNo()
+        )).collect(Collectors.toList());
     }
 }

@@ -1,6 +1,7 @@
 package com.shiyu.ai.agent.workflow.component;
 
-import com.shiyu.ai.dal.dataobject.education.ReviewTaskDO;
+import com.shiyu.ai.dal.bo.education.ReviewTaskBO;
+import com.shiyu.ai.dal.repository.education.ReviewTaskRepository;
 import com.shiyu.ai.education.service.ReviewService;
 import com.shiyu.ai.agent.workflow.context.LearningContext;
 import com.yomahub.liteflow.core.NodeComponent;
@@ -21,18 +22,19 @@ import java.util.List;
 public class LoadReviewTaskCmp extends NodeComponent {
 
     private final ReviewService reviewService;
+    private final ReviewTaskRepository reviewTaskRepository;
 
     @Override
     public void process() throws Exception {
         LearningContext ctx = this.getContextBean(LearningContext.class);
         log.info("LoadReviewTaskCmp: 加载复习任务, studentId={}", ctx.getStudentId());
 
-        List<ReviewTaskDO> tasks = reviewService.listTodayTasks(ctx.getStudentId());
+        List<ReviewTaskBO> tasks = reviewTaskRepository.selectTodayTasks(ctx.getStudentId());
         if (tasks.isEmpty()) {
             log.info("LoadReviewTaskCmp: 今日无待复习任务");
             return;
         }
-        ctx.setReviewDates(tasks.stream().map(ReviewTaskDO::getReviewDate).toList());
+        ctx.setReviewDates(tasks.stream().map(ReviewTaskBO::getReviewDate).toList());
         ctx.setKnowledgeId(tasks.get(0).getKnowledgeId());
         log.info("LoadReviewTaskCmp: 加载 {} 条复习任务", tasks.size());
     }

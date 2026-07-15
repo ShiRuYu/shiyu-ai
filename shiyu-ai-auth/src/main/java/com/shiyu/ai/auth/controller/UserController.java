@@ -1,14 +1,12 @@
 package com.shiyu.ai.auth.controller;
 
-import com.shiyu.ai.dal.bo.auth.RoleBO;
-import com.shiyu.ai.auth.request.UserRequest;
+import com.shiyu.ai.auth.request.*;
 import com.shiyu.ai.dal.bo.auth.UserBO;
 import com.shiyu.ai.auth.vo.UserPageResponse;
 import com.shiyu.ai.auth.vo.UserVO;
 import com.shiyu.ai.auth.vo.WorkspaceContextVO;
 import com.shiyu.ai.auth.service.AuthService;
 import com.shiyu.ai.auth.service.UserService;
-import com.shiyu.ai.common.core.api.PageQuery;
 import com.shiyu.ai.common.core.api.Result;
 import com.shiyu.ai.common.core.domain.LoginContextHolder;
 import com.shiyu.ai.common.core.utils.MapstructUtils;
@@ -20,7 +18,6 @@ import io.swagger.v3.oas.annotations.Operation;
 
 import java.util.List;
 import java.util.Map;
-import java.util.stream.Collectors;
 
 /**
  * 用户管理 Controller
@@ -28,7 +25,7 @@ import java.util.stream.Collectors;
 @Slf4j
 @Tag(name = "User", description = "User")
 @RestController
-@RequestMapping("/auth/user")
+@RequestMapping("/user")
 public class UserController {
 
     private final UserService userService;
@@ -43,44 +40,31 @@ public class UserController {
      * 获取当前用户信息
      * GET /user/info
      */
-    @Operation(summary = "Get User Detail")
-    @GetMapping("/detail")
-    public Result<UserVO> getUserInfo(
-            @RequestHeader(value = "Authorization", required = false) String token) {
+    @Operation(summary = "Get User Info")
+    @GetMapping("/info")
+    public Result<UserVO> getUserInfo() {
         log.info("获取当前用户信息");
-
         Long userId = LoginContextHolder.getUserId();
-        if (userId == null) {
-            return Result.fail("用户未登录");
-        }
+        if (userId == null) return Result.fail("用户未登录");
         
         UserBO userBO = userService.getUserDetail(userId);
-        
-        if (userBO == null) {
-            return Result.fail("用户不存在");
-        }
+        if (userBO == null) return Result.fail("用户不存在");
         
         UserVO userVO = MapstructUtils.convert(userBO, UserVO.class);
 
-        // 填充租户和工作空间信息
         try {
             userVO.setTenants(authService.getUserTenants(userId));
             List<WorkspaceContextVO> workspaces = authService.getUserWorkspaces(userId);
             userVO.setWorkspaces(workspaces);
 
-            // 从 extInfo 解析当前租户和工作空间 ID
             if (userVO.getExtInfo() != null) {
                 var extMap = com.shiyu.ai.common.core.utils.JSONUtils.parseObject(
                         userVO.getExtInfo(), java.util.Map.class);
                 if (extMap != null) {
                     Object tid = extMap.get("currentTenantId");
-                    if (tid instanceof Number) {
-                        userVO.setCurrentTenantId(((Number) tid).longValue());
-                    }
+                    if (tid instanceof Number) userVO.setCurrentTenantId(((Number) tid).longValue());
                     Object wid = extMap.get("currentWorkspaceId");
-                    if (wid instanceof Number) {
-                        userVO.setCurrentWorkspaceId(((Number) wid).longValue());
-                    }
+                    if (wid instanceof Number) userVO.setCurrentWorkspaceId(((Number) wid).longValue());
                 }
             }
         } catch (Exception e) {
@@ -92,114 +76,77 @@ public class UserController {
 
     /**
      * 用户列表 - 分页
+     * GET /user
      */
     @Operation(summary = "Get User List")
-    @GetMapping("/list")
-    public Result<UserPageResponse> getUserList(
-            @RequestParam(required = false) String username,
-            PageQuery pageQuery) {
-        Integer pageNo = pageQuery != null && pageQuery.getPageNum() != null ? pageQuery.getPageNum() : 1;
-        Integer pageSize = pageQuery != null && pageQuery.getPageSize() != null ? pageQuery.getPageSize() : 10;
-        log.info("获取用户列表，username: {}, pageNo: {}, pageSize: {}", username, pageNo, pageSize);
-        
-        UserPageResponse pageResponse = userService.getUserList(username, pageNo, pageSize);
-        
-        return Result.success(pageResponse);
+    @GetMapping("")
+    public Result<UserPageResponse> getUserList(@Valid UserPageRequest request) {
+        log.info("获取用户列表，username: {}, pageNo: {}, pageSize: {}",
+                request.getUsername(), request.getPageNo(), request.getPageSize());
+        return Result.success(userService.getUserList(
+                request.getUsername(), request.getPageNo(), request.getPageSize()));
     }
 
     /**
      * 删除用户
+     * DELETE /user/{userId}
      */
     @Operation(summary = "Delete User")
-    @PostMapping("/delete")
-    public Result<Void> deleteUser(@RequestParam Long userId) {
+    @DeleteMapping("/{userId}")
+    public Result<Void> deleteUser(@PathVariable Long userId) {
         log.info("删除用户，userId: {}", userId);
-        
-        boolean success = userService.deleteUser(userId);
-        
-        if (success) {
-            return Result.success();
-        } else {
-            return Result.fail("用户不存在");
-        }
+        return userService.deleteUser(userId) ? Result.success() : Result.fail("用户不存在");
     }
 
     /**
      * 修改用户
+     * PATCH /user/{userId}
      */
     @Operation(summary = "Update User")
-    @PostMapping("/update")
-    public Result<Void> updateUser(
-            @RequestParam Long userId,
-            @Valid @RequestBody UserRequest request) {
+    @PatchMapping("/{userId}")
+    public Result<Void> updateUser(@PathVariable Long userId, @Valid @RequestBody UserRequest request) {
         log.info("修改用户，userId: {}", userId);
-        
         UserBO userBO = MapstructUtils.convert(request, UserBO.class);
-        boolean success = userService.updateUser(userId, userBO);
-        
-        if (success) {
-            return Result.success();
-        } else {
-            return Result.fail("用户不存在");
-        }
+        return userService.updateUser(userId, userBO) ? Result.success() : Result.fail("用户不存在");
     }
 
     /**
      * 重置用户密码
+     * PATCH /user/{userId}/password/reset
      */
-    @Operation(summary = "Reset User Password")
-    @PostMapping("/password/reset")
-    public Result<String> resetPassword(
-            @RequestParam Long userId,
-            @RequestBody Map<String, String> passwordMap) {
+    @Operation(summary = "Reset Password")
+    @PatchMapping("/{userId}/password/reset")
+    public Result<Void> resetPassword(@PathVariable Long userId, @Valid @RequestBody ResetPasswordRequest request) {
         log.info("重置用户密码，userId: {}", userId);
-
-        String password = passwordMap.get("password");
-        String newPassword = userService.resetUserPassword(userId, password);
-
-        if (newPassword != null) {
-            return Result.success(newPassword);
-        } else {
+        String result = userService.resetUserPassword(userId, request.getPassword());
+        if (result == null) {
             return Result.fail("用户不存在");
         }
+        return Result.success();
     }
 
     /**
      * 修改密码（需校验旧密码）
+     * PATCH /user/{userId}/password
      */
     @Operation(summary = "Change Password")
-    @PostMapping("/password/change")
-    public Result<Void> changePassword(
-            @RequestParam Long userId,
-            @RequestBody Map<String, String> body) {
+    @PatchMapping("/{userId}/password")
+    public Result<Void> changePassword(@PathVariable Long userId, @Valid @RequestBody ChangePasswordRequest request) {
         log.info("修改密码，userId: {}", userId);
-
-        String oldPassword = body.get("oldPassword");
-        String newPassword = body.get("newPassword");
-        if (oldPassword == null || oldPassword.isEmpty() ||
-            newPassword == null || newPassword.isEmpty()) {
-            return Result.fail("旧密码和新密码不能为空");
-        }
-
-        boolean success = userService.changePassword(userId, oldPassword, newPassword);
-        if (success) {
-            return Result.success();
-        } else {
-            return Result.fail("旧密码错误或用户不存在");
-        }
+        boolean success = userService.changePassword(userId, request.getOldPassword(), request.getNewPassword());
+        return success ? Result.success() : Result.fail("旧密码错误或用户不存在");
     }
 
     /**
      * 新增用户
+     * POST /user
      */
     @Operation(summary = "Create User")
-    @PostMapping("/create")
-    public Result<java.util.Map<String, Object>> createUser(@Valid @RequestBody UserRequest request) {
+    @PostMapping("")
+    public Result<Map<String, Object>> createUser(@Valid @RequestBody UserRequest request) {
         log.info("新增用户");
-
         UserBO userBO = MapstructUtils.convert(request, UserBO.class);
-        java.util.Map<String, Object> result = userService.createUser(userBO);
-
+        Map<String, Object> result = userService.createUser(userBO);
         return Result.success(result);
     }
 }

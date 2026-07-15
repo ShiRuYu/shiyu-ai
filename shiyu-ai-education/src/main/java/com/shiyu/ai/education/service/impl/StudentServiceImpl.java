@@ -1,8 +1,11 @@
 package com.shiyu.ai.education.service.impl;
 
 import com.shiyu.ai.common.core.api.PageData;
-import com.shiyu.ai.dal.dataobject.education.StudentDO;
+import com.shiyu.ai.common.core.utils.MapstructUtils;
+import com.shiyu.ai.dal.bo.education.StudentBO;
 import com.shiyu.ai.dal.repository.education.StudentRepository;
+import com.shiyu.ai.education.dto.StudentResponse;
+import com.shiyu.ai.education.request.StudentRequest;
 import com.shiyu.ai.education.service.StudentService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -19,35 +22,45 @@ public class StudentServiceImpl implements StudentService {
     private final StudentRepository studentRepository;
 
     @Override
-    public StudentDO getById(Long id) {
-        return studentRepository.selectById(id);
+    public StudentResponse getById(Long id) {
+        StudentBO bo = studentRepository.selectById(id);
+        return MapstructUtils.convert(bo, StudentResponse.class);
     }
 
     @Override
-    public StudentDO getByUserId(Long userId) {
-        return studentRepository.selectByUserId(userId);
+    public StudentResponse getByUserId(Long userId) {
+        StudentBO bo = studentRepository.selectByUserId(userId);
+        return MapstructUtils.convert(bo, StudentResponse.class);
     }
 
     @Override
-    @Transactional(rollbackFor = Exception.class)
-    public StudentDO create(StudentDO student) {
-        studentRepository.insert(student);
-        return student;
-    }
-
-    @Override
-    public PageData<StudentDO> page(int pageNum, int pageSize) {
-        return studentRepository.selectPage(pageNum, pageSize);
-    }
-
-    public List<StudentDO> listAll() {
-        return studentRepository.selectAll();
+    public PageData<StudentResponse> page(int pageNum, int pageSize) {
+        PageData<StudentBO> boPage = studentRepository.selectPage(pageNum, pageSize);
+        List<StudentResponse> items = MapstructUtils.convert(boPage.getItems(), StudentResponse.class);
+        return new PageData<>(items, boPage.getTotal());
     }
 
     @Override
     @Transactional(rollbackFor = Exception.class)
-    public void update(StudentDO student) {
-        studentRepository.update(student);
+    public StudentResponse create(StudentRequest request) {
+        StudentBO bo = new StudentBO();
+        bo.setName(request.getName());
+        bo.setUserId(request.getUserId());
+        bo.setStudentNo(request.getStudentNo());
+        studentRepository.insert(bo);
+        return MapstructUtils.convert(bo, StudentResponse.class);
+    }
+
+    @Override
+    @Transactional(rollbackFor = Exception.class)
+    public void update(StudentRequest request) {
+        StudentBO bo = studentRepository.selectById(request.getId());
+        if (bo != null) {
+            bo.setName(request.getName());
+            bo.setUserId(request.getUserId());
+            bo.setStudentNo(request.getStudentNo());
+            studentRepository.update(bo);
+        }
     }
 
     @Override

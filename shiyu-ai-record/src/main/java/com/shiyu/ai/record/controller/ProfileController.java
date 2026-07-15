@@ -1,10 +1,13 @@
 package com.shiyu.ai.record.controller;
 
-import com.shiyu.ai.dal.bo.record.ProfileBO;
 import com.shiyu.ai.record.service.ProfileService;
+import com.shiyu.ai.dal.bo.record.ProfileBO;
+import com.shiyu.ai.record.vo.ProfileVO;
 import com.shiyu.ai.common.core.api.PageData;
 import com.shiyu.ai.common.core.api.PageQuery;
 import com.shiyu.ai.common.core.api.Result;
+import com.shiyu.ai.common.core.utils.MapstructUtils;
+import com.shiyu.ai.record.request.ProfileRequest;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.annotation.Resource;
@@ -14,10 +17,7 @@ import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
 
-/**
- * 人物管理控制器
- */
-@Tag(name = "人物管理", description = "个人成长记录系统 - 人物管理")
+@Tag(name = "档案管理")
 @RestController
 @RequestMapping("/record/profile")
 public class ProfileController {
@@ -25,55 +25,42 @@ public class ProfileController {
     @Resource
     private ProfileService profileService;
 
-    /**
-     * 分页查询人物列表
-     */
-    @Operation(summary = "分页查询人物列表")
+    @Operation(summary = "分页查询档案列表")
     @GetMapping("/list")
-    public Result<PageData<ProfileBO>> getPage(PageQuery pageQuery,
+    public Result<PageData<ProfileVO>> getPage(PageQuery pageQuery,
                                                 @RequestParam(required = false) String createBy) {
         Pair<Long, List<ProfileBO>> page = profileService.getPage(pageQuery.getPageNum(), pageQuery.getPageSize(), createBy);
-        PageData<ProfileBO> pageData = new PageData<>(page.getRight(), page.getLeft());
-        return Result.success(pageData);
+        return Result.success(new PageData<>(MapstructUtils.convert(page.getRight(), ProfileVO.class), page.getLeft()));
     }
 
-    /**
-     * 根据ID查询人物
-     */
-    @Operation(summary = "根据ID查询人物")
+    @Operation(summary = "根据ID查询档案")
     @GetMapping("/detail")
-    public Result<ProfileBO> getById(@RequestParam Long id) {
-        ProfileBO profile = profileService.getById(id);
-        return Result.success(profile);
+    public Result<ProfileVO> getById(@RequestParam Long id) {
+        return Result.success(MapstructUtils.convert(profileService.getById(id), ProfileVO.class));
     }
 
-    /**
-     * 创建人物
-     */
-    @Operation(summary = "创建人物")
+    @Operation(summary = "创建档案")
     @PostMapping("/create")
-    public Result<ProfileBO> create(@Valid @RequestBody ProfileBO profileBO) {
-        ProfileBO created = profileService.create(profileBO);
-        return Result.success(created);
+    public Result<ProfileVO> create(@Valid @RequestBody ProfileRequest request) {
+        ProfileBO bo = new ProfileBO();
+        bo.setName(request.getName());
+        bo.setAvatar(request.getAvatar());
+        return Result.success(MapstructUtils.convert(profileService.create(bo), ProfileVO.class));
     }
 
-    /**
-     * 更新人物
-     */
-    @Operation(summary = "更新人物")
+    @Operation(summary = "更新档案")
     @PostMapping("/update")
-    public Result<Boolean> update(@Valid @RequestBody ProfileBO profileBO) {
-        boolean updated = profileService.update(profileBO);
-        return Result.success(updated);
+    public Result<Boolean> update(@RequestParam Long id, @Valid @RequestBody ProfileRequest request) {
+        ProfileBO bo = profileService.getById(id);
+        if (bo == null) return Result.fail("档案不存在");
+        bo.setName(request.getName());
+        bo.setAvatar(request.getAvatar());
+        return Result.success(profileService.update(bo));
     }
 
-    /**
-     * 删除人物
-     */
-    @Operation(summary = "删除人物")
+    @Operation(summary = "删除档案")
     @PostMapping("/delete")
     public Result<Boolean> delete(@RequestParam Long id) {
-        boolean deleted = profileService.delete(id);
-        return Result.success(deleted);
+        return Result.success(profileService.delete(id));
     }
 }

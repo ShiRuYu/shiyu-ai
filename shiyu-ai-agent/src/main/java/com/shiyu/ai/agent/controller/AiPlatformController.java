@@ -1,6 +1,7 @@
 package com.shiyu.ai.agent.controller;
 
 import com.shiyu.ai.agent.service.AiPlatformService;
+import com.shiyu.ai.agent.vo.AiPlatformVO;
 import com.shiyu.ai.dal.bo.model.AiPlatformBO;
 import com.shiyu.ai.model.vo.IdNameOptionVO;
 import com.shiyu.ai.model.adapter.ModelManager;
@@ -37,14 +38,15 @@ public class AiPlatformController {
      */
     @Operation(summary = "Get Page")
     @GetMapping("/page")
-    public Result<PageData<AiPlatformBO>> getPage(
+    public Result<PageData<AiPlatformVO>> getPage(
             @RequestParam(required = false) String name,
             @RequestParam(required = false) String code,
             @RequestParam(required = false, defaultValue = "1") Integer pageNo,
             @RequestParam(required = false, defaultValue = "10") Integer pageSize) {
         log.info("获取平台列表，name: {}, code: {}, pageNo: {}, pageSize: {}", name, code, pageNo, pageSize);
-        Pair<Long, List<AiPlatformBO>> result = aiPlatformService.getPage(pageNo, pageSize, name, code);
-        PageData<AiPlatformBO> pageData = new PageData<>(result.getRight(), result.getLeft());
+        var result = aiPlatformService.getPage(pageNo, pageSize, name, code);
+        var vos = com.shiyu.ai.common.core.utils.MapstructUtils.convert(result.getRight(), AiPlatformVO.class);
+        PageData<AiPlatformVO> pageData = new PageData<>(vos, result.getLeft());
         return Result.success(pageData);
     }
 
@@ -53,10 +55,10 @@ public class AiPlatformController {
      */
     @Operation(summary = "Get All Enabled")
     @GetMapping("/enabled")
-    public Result<List<AiPlatformBO>> getAllEnabled() {
+    public Result<List<AiPlatformVO>> getAllEnabled() {
         log.info("查询所有启用的平台");
-        List<AiPlatformBO> list = aiPlatformService.getAllEnabled();
-        return Result.success(list);
+        var list = aiPlatformService.getAllEnabled();
+        return Result.success(com.shiyu.ai.common.core.utils.MapstructUtils.convert(list, AiPlatformVO.class));
     }
 
     /**
@@ -117,12 +119,12 @@ public class AiPlatformController {
      */
     @Operation(summary = "Create")
     @PostMapping("/create")
-    public Result<AiPlatformBO> create(@Valid @RequestBody AiPlatformBO bo) {
+    public Result<AiPlatformVO> create(@Valid @RequestBody AiPlatformBO bo) {
         log.info("新增平台：{}", bo.getName());
         try {
             AiPlatformBO created = aiPlatformService.create(bo);
             modelManager.markDirty();
-            return Result.success(created);
+            return Result.success(com.shiyu.ai.common.core.utils.MapstructUtils.convert(created, AiPlatformVO.class));
         } catch (Exception e) {
             log.error("新增平台失败", e);
             return Result.fail("新增失败");
@@ -134,13 +136,13 @@ public class AiPlatformController {
      */
     @Operation(summary = "Update")
     @PostMapping("/update")
-    public Result<AiPlatformBO> update(@RequestParam Long id, @Valid @RequestBody AiPlatformBO bo) {
+    public Result<AiPlatformVO> update(@RequestParam Long id, @Valid @RequestBody AiPlatformBO bo) {
         log.info("修改平台，id: {}", id);
         try {
             bo.setId(id);
             AiPlatformBO updated = aiPlatformService.update(bo);
             modelManager.markDirty();
-            return Result.success(updated);
+            return Result.success(com.shiyu.ai.common.core.utils.MapstructUtils.convert(updated, AiPlatformVO.class));
         } catch (Exception e) {
             log.error("修改平台失败", e);
             return Result.fail("修改失败");
@@ -169,12 +171,12 @@ public class AiPlatformController {
      */
     @Operation(summary = "Set Default")
     @PostMapping("/set-default")
-    public Result<AiPlatformBO> setDefault(@RequestParam Long id) {
+    public Result<AiPlatformVO> setDefault(@RequestParam Long id) {
         log.info("设置默认平台，id: {}", id);
         try {
             AiPlatformBO bo = aiPlatformService.setDefault(id);
             modelManager.markDirty();
-            return Result.success(bo);
+            return Result.success(com.shiyu.ai.common.core.utils.MapstructUtils.convert(bo, AiPlatformVO.class));
         } catch (Exception e) {
             log.error("设置默认平台失败", e);
             return Result.fail("设置失败");

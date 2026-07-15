@@ -1,6 +1,7 @@
 package com.shiyu.ai.agent.controller;
 
 import com.shiyu.ai.agent.service.IntentDefService;
+import com.shiyu.ai.agent.vo.IntentDefVO;
 import com.shiyu.ai.dal.bo.agent.IntentDefBO;
 import com.shiyu.ai.model.vo.IdNameOptionVO;
 import com.shiyu.ai.common.core.api.PageData;
@@ -34,7 +35,7 @@ public class IntentDefController {
      */
     @Operation(summary = "Get Page")
     @GetMapping("/page")
-    public Result<PageData<IntentDefBO>> getPage(
+    public Result<PageData<IntentDefVO>> getPage(
             @RequestParam(required = false) String agentId,
             @RequestParam(required = false) String name,
             @RequestParam(required = false) String code,
@@ -44,7 +45,8 @@ public class IntentDefController {
         log.info("获取意图定义列表，agentId: {}, name: {}, code: {}, category: {}, pageNo: {}, pageSize: {}",
                 agentId, name, code, category, pageNo, pageSize);
         Pair<Long, List<IntentDefBO>> result = intentDefService.getPage(pageNo, pageSize, agentId, name, code, category);
-        PageData<IntentDefBO> pageData = new PageData<>(result.getRight(), result.getLeft());
+        var vos = com.shiyu.ai.common.core.utils.MapstructUtils.convert(result.getRight(), IntentDefVO.class);
+        PageData<IntentDefVO> pageData = new PageData<>(vos, result.getLeft());
         return Result.success(pageData);
     }
 
@@ -53,11 +55,11 @@ public class IntentDefController {
      */
     @Operation(summary = "Get by Id")
     @GetMapping("/{id}")
-    public Result<IntentDefBO> getById(@PathVariable Long id) {
+    public Result<IntentDefVO> getById(@PathVariable Long id) {
         log.info("查询意图定义详情，id: {}", id);
         IntentDefBO bo = intentDefService.getById(id);
         if (bo != null) {
-            return Result.success(bo);
+            return Result.success(com.shiyu.ai.common.core.utils.MapstructUtils.convert(bo, IntentDefVO.class));
         }
         return Result.fail("意图定义不存在");
     }
@@ -67,11 +69,11 @@ public class IntentDefController {
      */
     @Operation(summary = "Create")
     @PostMapping("/create")
-    public Result<IntentDefBO> create(@Valid @RequestBody IntentDefBO bo) {
+    public Result<IntentDefVO> create(@Valid @RequestBody IntentDefBO bo) {
         log.info("新增意图定义，code: {}", bo.getCode());
         try {
             IntentDefBO created = intentDefService.create(bo);
-            return Result.success(created);
+            return Result.success(com.shiyu.ai.common.core.utils.MapstructUtils.convert(created, IntentDefVO.class));
         } catch (Exception e) {
             log.error("新增意图定义失败", e);
             return Result.fail("新增失败");
@@ -83,12 +85,12 @@ public class IntentDefController {
      */
     @Operation(summary = "Update")
     @PostMapping("/update")
-    public Result<IntentDefBO> update(@RequestParam Long id, @Valid @RequestBody IntentDefBO bo) {
+    public Result<IntentDefVO> update(@RequestParam Long id, @Valid @RequestBody IntentDefBO bo) {
         log.info("修改意图定义，id: {}", id);
         try {
             bo.setId(id);
             IntentDefBO updated = intentDefService.update(bo);
-            return Result.success(updated);
+            return Result.success(com.shiyu.ai.common.core.utils.MapstructUtils.convert(updated, IntentDefVO.class));
         } catch (Exception e) {
             log.error("修改意图定义失败", e);
             return Result.fail("修改失败");

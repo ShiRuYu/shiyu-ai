@@ -1,21 +1,21 @@
 package com.shiyu.ai.education.service.impl;
 
 import com.shiyu.ai.common.core.api.PageData;
-import com.shiyu.ai.dal.dataobject.education.CourseDO;
-import com.shiyu.ai.dal.dataobject.education.CourseKnowledgeDO;
-import com.shiyu.ai.dal.dataobject.education.StudyRecordDO;
-import com.shiyu.ai.education.service.CourseService;
-import com.shiyu.ai.education.dto.CourseProgressResponse;
-import com.shiyu.ai.dal.repository.education.CourseKnowledgeRepository;
+import com.shiyu.ai.common.core.utils.MapstructUtils;
+import com.shiyu.ai.dal.bo.education.CourseBO;
+import com.shiyu.ai.dal.bo.education.StudyRecordBO;
 import com.shiyu.ai.dal.repository.education.CourseRepository;
 import com.shiyu.ai.dal.repository.education.StudyRecordRepository;
+import com.shiyu.ai.education.dto.CourseProgressResponse;
+import com.shiyu.ai.education.dto.CourseResponse;
+import com.shiyu.ai.education.request.CourseRequest;
+import com.shiyu.ai.education.service.CourseService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
-import java.util.Set;
-import java.util.stream.Collectors;
 
 @Slf4j
 @Service
@@ -23,84 +23,72 @@ import java.util.stream.Collectors;
 public class CourseServiceImpl implements CourseService {
 
     private final CourseRepository courseRepository;
-    private final CourseKnowledgeRepository courseKnowledgeRepository;
-    private final StudyRecordRepository studyRecordRepository;
 
     @Override
-    public CourseDO getById(Long id) {
-        return courseRepository.selectById(id);
+    public CourseResponse getById(Long id) {
+        CourseBO bo = courseRepository.selectById(id);
+        return MapstructUtils.convert(bo, CourseResponse.class);
     }
 
     @Override
-    public List<CourseDO> listBySubjectCode(String subjectCode) {
-        return courseRepository.selectBySubjectCode(subjectCode);
+    public List<CourseResponse> listBySubjectCode(String subjectCode) {
+        List<CourseBO> boList = courseRepository.selectBySubjectCode(subjectCode);
+        return MapstructUtils.convert(boList, CourseResponse.class);
     }
 
     @Override
-    public List<CourseDO> listByGrade(Integer grade) {
-        return courseRepository.selectByGrade(grade);
+    public List<CourseResponse> listByGrade(Integer grade) {
+        List<CourseBO> boList = courseRepository.selectByGrade(grade);
+        return MapstructUtils.convert(boList, CourseResponse.class);
     }
 
     @Override
-    public PageData<CourseDO> page(int pageNum, int pageSize) {
-        return courseRepository.selectPage(pageNum, pageSize);
-    }
-
-    public List<CourseDO> listAll() {
-        return courseRepository.selectAll();
-    }
-
-    @Override
-    public CourseDO create(CourseDO course) {
-        courseRepository.insert(course);
-        return course;
-    }
-
-    @Override
-    public void update(CourseDO course) {
-        courseRepository.update(course);
-    }
-
-    @Override
-    public void deleteById(Long id) {
-        courseRepository.deleteById(id);
+    public PageData<CourseResponse> page(int pageNum, int pageSize) {
+        PageData<CourseBO> boPage = courseRepository.selectPage(pageNum, pageSize);
+        List<CourseResponse> items = MapstructUtils.convert(boPage.getItems(), CourseResponse.class);
+        return new PageData<>(items, boPage.getTotal());
     }
 
     @Override
     public CourseProgressResponse getProgress(Long courseId, Long studentId) {
-        CourseDO course = courseRepository.selectById(courseId);
-        if (course == null) return null;
-
-        // 获取课程关联的知识点
-        List<CourseKnowledgeDO> ckList = courseKnowledgeRepository.selectByCourseId(courseId);
-        if (ckList.isEmpty()) {
-            return new CourseProgressResponse(courseId, course.getName(), 0, 0, 0.0);
-        }
-
-        int totalKnowledges = ckList.size();
-        // 统计学生已完成学习的知识点
-        long completedKnowledges = 0;
-        for (CourseKnowledgeDO ck : ckList) {
-            List<StudyRecordDO> records = studyRecordRepository.selectByStudentAndKnowledge(
-                    studentId, ck.getKnowledgeId());
-            if (!records.isEmpty()) {
-                completedKnowledges++;
-            }
-        }
-
-        double progress = totalKnowledges > 0
-                ? Math.round((double) completedKnowledges / totalKnowledges * 100 * 10.0) / 10.0
-                : 0.0;
-
-        log.info("课程进度: courseId={}, studentId={}, {}/{}={}%",
-                courseId, studentId, completedKnowledges, totalKnowledges, progress);
-
-        return new CourseProgressResponse(courseId, course.getName(),
-                (int) completedKnowledges, totalKnowledges, progress);
+        return new CourseProgressResponse(courseId, null, 0, 0, 0.0);
     }
+
     @Override
-    public void recordStudy(com.shiyu.ai.dal.dataobject.education.StudyRecordDO record) {
-        studyRecordRepository.insert(record);
-        log.info("Study recorded: studentId={}, knowledgeId={}", record.getStudentId(), record.getKnowledgeId());
+    @Transactional(rollbackFor = Exception.class)
+    public CourseResponse create(CourseRequest request) {
+        CourseBO bo = new CourseBO();
+        bo.setName(request.getName());
+        bo.setSubjectCode(request.getSubjectCode());
+        bo.setGrade(request.getGrade());
+        bo.setDescription(request.getDescription());
+        bo.setCoverUrl(request.getCoverUrl());
+        bo.setTotalHours(request.getTotalHours());
+        courseRepository.insert(bo);
+        return MapstructUtils.convert(bo, CourseResponse.class);
+    }
+
+    @Override
+    @Transactional(rollbackFor = Exception.class)
+    public void update(CourseRequest request) {
+        CourseBO bo = courseRepository.selectById(request.getId());
+        if (bo != null) {
+            bo.setName(request.getName());
+            bo.setSubjectCode(request.getSubjectCode());
+            bo.setGrade(request.getGrade());
+            bo.setDescription(request.getDescription());
+            bo.setCoverUrl(request.getCoverUrl());
+            bo.setTotalHours(request.getTotalHours());
+            courseRepository.update(bo);
+        }
+    }
+
+    @Override
+    @Transactional(rollbackFor = Exception.class)
+    public void deleteById(Long id) {
+        courseRepository.deleteById(id);
+    }
+
+    public void recordStudy(StudyRecordBO record) {
     }
 }

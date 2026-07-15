@@ -1,9 +1,11 @@
 package com.shiyu.ai.education.service;
 
-import com.shiyu.ai.dal.dataobject.education.ResourceDO;
+import com.shiyu.ai.dal.bo.education.ResourceBO;
 
 import java.util.List;
 import com.shiyu.ai.common.core.api.PageData;
+import com.shiyu.ai.education.dto.ResourceResponse;
+import com.shiyu.ai.education.request.ResourceRequest;
 
 /**
  * Resource 接口
@@ -15,45 +17,45 @@ public interface ResourceService {
      * Get By Id
      * @return 处理结果
      */
-    ResourceDO getById(Long id);
+    ResourceResponse getById(Long id);
 
     /**
      * List By Subject Code
      * @return 处理结果
      */
-    List<ResourceDO> listBySubjectCode(String subjectCode);
+    List<ResourceResponse> listBySubjectCode(String subjectCode);
 
     /**
      * List By Type
      * @return 处理结果
      */
-    List<ResourceDO> listByType(String type);
+    List<ResourceResponse> listByType(String type);
 
     /**
      * List All
      * @return 处理结果
      */
-    List<ResourceDO> listAll();
 
-    PageData<ResourceDO> page(int pageNum, int pageSize);
+    PageData<ResourceResponse> page(int pageNum, int pageSize);
 
     /**
      * Create
-     * @param ResourceDO ResourceDO
+     * @param ResourceResponse ResourceDO
      * @return 处理结果
      */
-    ResourceDO create(ResourceDO resource);
+    ResourceResponse create(ResourceRequest resource);
 
     /**
      * Update
-     * @param ResourceDO ResourceDO
+     * @param ResourceResponse ResourceDO
      * @return 处理结果
      */
-    void update(ResourceDO resource);
+    void update(ResourceRequest resource);
 
     /**
      * Delete By Id
      * @return 处理结果
      */
+    List<ResourceResponse> listAll();
     void deleteById(Long id);
 }

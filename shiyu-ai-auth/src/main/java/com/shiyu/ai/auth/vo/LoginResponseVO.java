@@ -7,7 +7,6 @@ import java.io.Serial;
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Map;
 
 /**
  * 登录响应数据 - 符合 API 文档规范
@@ -77,7 +76,7 @@ public class LoginResponseVO implements Serializable {
     /**
      * 可用租户列表
      */
-    private List<Map<String, Object>> tenants;
+    private List<TenantInfoVO> tenants;
 
     /**
      * 用户所属空间及角色列表

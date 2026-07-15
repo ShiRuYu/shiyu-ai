@@ -7,6 +7,7 @@ import com.shiyu.ai.agent.education.graph.PrereqCheckNode;
 import com.shiyu.ai.agent.education.graph.ScoreAnalysisNode;
 import com.shiyu.ai.agent.education.graph.TeachNode;
 import com.shiyu.ai.agent.education.graph.PracticeNode;
+import com.shiyu.ai.dal.repository.education.ReviewTaskRepository;
 import com.shiyu.ai.agent.education.graph.ReviewScheduleNode;
 import com.shiyu.ai.education.service.AbilityService;
 import com.shiyu.ai.education.service.ReviewService;
@@ -33,6 +34,7 @@ public class TutorCheckCmp extends NodeComponent {
     private final ChatEngine chatEngine;
     private final ReviewScheduler reviewScheduler;
     private final ReviewService reviewService;
+    private final ReviewTaskRepository reviewTaskRepository;
 
     @Override
     public void process() throws Exception {
@@ -46,7 +48,7 @@ public class TutorCheckCmp extends NodeComponent {
         g.addNode("teach", new TeachNode(chatEngine));
         g.addNode("practice", new PracticeNode(chatEngine));
         g.addNode("scoreAnalysis", new ScoreAnalysisNode(abilityService));
-        g.addNode("reviewSchedule", new ReviewScheduleNode(reviewScheduler, reviewService));
+        g.addNode("reviewSchedule", new ReviewScheduleNode(reviewScheduler, reviewService, reviewTaskRepository));
         g.addEdge("abilityQuery", "teach"); g.addEdge("teach", "practice");
         g.addEdge("practice", "scoreAnalysis");
         g.setStartNode("abilityQuery"); g.setEndNode("reviewSchedule");

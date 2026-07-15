@@ -1,5 +1,9 @@
 package com.shiyu.ai.education.dto;
 
+import io.github.linpeilie.annotations.AutoMapper;
+import com.shiyu.ai.dal.bo.education.ReviewTaskBO;
+
+@AutoMapper(target = ReviewTaskBO.class)
 public record ReviewTaskResponse(
         Long id,
         Long studentId,
