@@ -1,8 +1,8 @@
-package com.shiyu.ai.agent.service.impl;
+package com.shiyu.ai.model.service.impl;
 
 import com.shiyu.ai.model.config.PlatformProperties;
 import com.shiyu.ai.dal.repository.AiPlatformRepository;
-import com.shiyu.ai.agent.service.AiPlatformService;
+import com.shiyu.ai.model.service.AiPlatformService;
 import com.shiyu.ai.dal.bo.model.AiPlatformBO;
 import com.shiyu.ai.model.vo.IdNameOptionVO;
 import jakarta.annotation.Resource;

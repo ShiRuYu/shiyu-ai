@@ -1,4 +1,4 @@
-package com.shiyu.ai.agent.service;
+package com.shiyu.ai.model.service;
 
 import com.shiyu.ai.dal.bo.model.AiPlatformBO;
 import com.shiyu.ai.model.vo.IdNameOptionVO;

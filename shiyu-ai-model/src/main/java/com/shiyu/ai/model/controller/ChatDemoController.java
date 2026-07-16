@@ -1,4 +1,4 @@
-package com.shiyu.ai.agent.controller;
+package com.shiyu.ai.model.controller;
 
 import com.shiyu.ai.model.chat.ChatEngine;
 import com.shiyu.ai.model.chat.ChatRequest;

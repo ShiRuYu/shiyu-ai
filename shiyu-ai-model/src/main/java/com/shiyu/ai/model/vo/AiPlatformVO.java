@@ -1,4 +1,4 @@
-package com.shiyu.ai.agent.vo;
+package com.shiyu.ai.model.vo;
 
 import lombok.Data;
 
@@ -7,16 +7,14 @@ import java.io.Serializable;
 import java.time.LocalDateTime;
 
 @Data
-public class AiModelVO implements Serializable {
+public class AiPlatformVO implements Serializable {
 
     @Serial
     private static final long serialVersionUID = 1L;
 
     private Long id;
-    private Long platformId;
     private String name;
     private String code;
-    private String type;
     private Boolean isDefault;
     private String status;
     private Integer sort;

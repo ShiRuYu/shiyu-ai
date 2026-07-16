@@ -1,7 +1,7 @@
-package com.shiyu.ai.agent.controller;
+package com.shiyu.ai.model.controller;
 
-import com.shiyu.ai.agent.service.AiModelService;
-import com.shiyu.ai.agent.vo.AiModelVO;
+import com.shiyu.ai.model.service.AiModelService;
+import com.shiyu.ai.model.vo.AiModelVO;
 import com.shiyu.ai.dal.bo.model.AiModelBO;
 import com.shiyu.ai.model.vo.IdNameOptionVO;
 import com.shiyu.ai.model.adapter.ModelManager;
