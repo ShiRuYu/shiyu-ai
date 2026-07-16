@@ -1,4 +1,4 @@
-package com.shiyu.ai.model.vo;
+package com.shiyu.ai.common.core.vo;
 
 import lombok.AllArgsConstructor;
 import lombok.Builder;

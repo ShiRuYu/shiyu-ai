@@ -16,7 +16,7 @@ import com.shiyu.ai.agent.node.intent.IntentNode;
 import com.shiyu.ai.agent.node.intent.IntentConfig;
 import com.shiyu.ai.agent.node.intent.IntentDefinition;
 import com.shiyu.ai.agent.node.intent.IntentDefinitionFactory;
-import com.shiyu.ai.model.enums.IntentType;
+import com.shiyu.ai.agent.node.intent.IntentType;
 import com.shiyu.ai.agent.node.output.OutputFormatNode;
 import com.shiyu.ai.agent.node.output.OutputFormatConfig;
 import com.shiyu.ai.agent.service.AgentService;

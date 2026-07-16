@@ -3,7 +3,7 @@ package com.shiyu.ai.model.controller;
 import com.shiyu.ai.model.service.AiPlatformService;
 import com.shiyu.ai.model.vo.AiPlatformVO;
 import com.shiyu.ai.dal.bo.model.AiPlatformBO;
-import com.shiyu.ai.model.vo.IdNameOptionVO;
+import com.shiyu.ai.common.core.vo.IdNameOptionVO;
 import com.shiyu.ai.model.adapter.ModelManager;
 import com.shiyu.ai.common.core.api.PageData;
 import com.shiyu.ai.common.core.api.Result;

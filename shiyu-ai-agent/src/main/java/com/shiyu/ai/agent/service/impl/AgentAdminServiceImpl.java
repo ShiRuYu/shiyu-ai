@@ -8,7 +8,7 @@ import com.shiyu.ai.dal.bo.agent.AgentVersionBO;
 import com.shiyu.ai.agent.request.AgentRequest;
 import com.shiyu.ai.agent.vo.AgentVO;
 import com.shiyu.ai.agent.vo.AgentDetailVO;
-import com.shiyu.ai.model.vo.IdNameOptionVO;
+import com.shiyu.ai.common.core.vo.IdNameOptionVO;
 import com.shiyu.ai.agent.vo.AgentVersionVO;
 import com.shiyu.ai.agent.vo.AgentVersionDetailVO;
 import com.shiyu.ai.agent.vo.NodeTypeMetaVO;

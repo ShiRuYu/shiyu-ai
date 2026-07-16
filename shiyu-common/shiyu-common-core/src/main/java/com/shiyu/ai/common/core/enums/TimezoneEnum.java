@@ -1,4 +1,4 @@
-package com.shiyu.ai.model.enums;
+package com.shiyu.ai.common.core.enums;
 
 import lombok.AllArgsConstructor;
 import lombok.Getter;

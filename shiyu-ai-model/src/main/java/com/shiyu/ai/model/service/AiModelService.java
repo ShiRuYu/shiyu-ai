@@ -1,7 +1,7 @@
 package com.shiyu.ai.model.service;
 
 import com.shiyu.ai.dal.bo.model.AiModelBO;
-import com.shiyu.ai.model.vo.IdNameOptionVO;
+import com.shiyu.ai.common.core.vo.IdNameOptionVO;
 import org.apache.commons.lang3.tuple.Pair;
 
 import java.util.List;

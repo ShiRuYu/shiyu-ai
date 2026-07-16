@@ -3,7 +3,7 @@ package com.shiyu.ai.agent.controller;
 import com.shiyu.ai.agent.service.IntentDefService;
 import com.shiyu.ai.agent.vo.IntentDefVO;
 import com.shiyu.ai.dal.bo.agent.IntentDefBO;
-import com.shiyu.ai.model.vo.IdNameOptionVO;
+import com.shiyu.ai.common.core.vo.IdNameOptionVO;
 import com.shiyu.ai.common.core.api.PageData;
 import com.shiyu.ai.common.core.api.Result;
 import lombok.extern.slf4j.Slf4j;

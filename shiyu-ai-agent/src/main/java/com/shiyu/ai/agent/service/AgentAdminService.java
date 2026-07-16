@@ -3,7 +3,7 @@ package com.shiyu.ai.agent.service;
 import com.shiyu.ai.agent.request.AgentRequest;
 import com.shiyu.ai.agent.vo.AgentDetailVO;
 import com.shiyu.ai.agent.vo.AgentVO;
-import com.shiyu.ai.model.vo.IdNameOptionVO;
+import com.shiyu.ai.common.core.vo.IdNameOptionVO;
 import com.shiyu.ai.agent.vo.NodeTypeMetaVO;
 import org.apache.commons.lang3.tuple.Pair;
 

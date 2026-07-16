@@ -6,7 +6,7 @@ import com.shiyu.ai.dal.util.TenantWorkspaceHelper;
 import com.shiyu.ai.dal.dataobject.agent.IntentDefDO;
 import com.shiyu.ai.dal.mapper.agent.IntentDefMapper;
 import com.shiyu.ai.dal.bo.agent.IntentDefBO;
-import com.shiyu.ai.model.vo.IdNameOptionVO;
+import com.shiyu.ai.common.core.vo.IdNameOptionVO;
 import jakarta.annotation.Resource;
 import org.apache.commons.lang3.tuple.Pair;
 import org.springframework.stereotype.Component;

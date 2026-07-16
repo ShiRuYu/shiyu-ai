@@ -3,7 +3,7 @@ package com.shiyu.ai.agent.service.impl;
 import com.shiyu.ai.dal.repository.agent.IntentDefRepository;
 import com.shiyu.ai.agent.service.IntentDefService;
 import com.shiyu.ai.dal.bo.agent.IntentDefBO;
-import com.shiyu.ai.model.vo.IdNameOptionVO;
+import com.shiyu.ai.common.core.vo.IdNameOptionVO;
 import com.shiyu.ai.agent.node.intent.IntentDefinitionFactory;
 import jakarta.annotation.Resource;
 import lombok.extern.slf4j.Slf4j;

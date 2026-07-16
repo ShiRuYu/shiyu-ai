@@ -6,7 +6,11 @@ import java.io.Serial;
 import java.io.Serializable;
 import java.time.LocalDateTime;
 
+import com.shiyu.ai.dal.bo.model.AiPlatformBO;
+import io.github.linpeilie.annotations.AutoMapper;
+
 @Data
+@AutoMapper(target = AiPlatformBO.class)
 public class AiPlatformVO implements Serializable {
 
     @Serial
@@ -15,9 +19,10 @@ public class AiPlatformVO implements Serializable {
     private Long id;
     private String name;
     private String code;
-    private Boolean isDefault;
+    private String isDefault;
     private String status;
     private Integer sort;
+    private String remark;
     private LocalDateTime createTime;
     private LocalDateTime updateTime;
 }

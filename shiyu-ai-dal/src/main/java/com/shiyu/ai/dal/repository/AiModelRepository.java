@@ -5,7 +5,7 @@ import com.shiyu.ai.dal.util.TenantWorkspaceHelper;
 import com.shiyu.ai.dal.dataobject.agent.AiModelDO;
 import com.shiyu.ai.dal.mapper.agent.AiModelMapper;
 import com.shiyu.ai.dal.bo.model.AiModelBO;
-import com.shiyu.ai.model.vo.IdNameOptionVO;
+import com.shiyu.ai.common.core.vo.IdNameOptionVO;
 import com.shiyu.ai.common.core.utils.MapstructUtils;
 import jakarta.annotation.Resource;
 import org.apache.commons.lang3.tuple.Pair;
