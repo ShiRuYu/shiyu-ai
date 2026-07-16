@@ -12,6 +12,10 @@ import java.util.List;
  * 时间轴事件视图对象
  */
 @Data
+import com.shiyu.ai.dal.bo.record.TimelineEventBO;
+import io.github.linpeilie.annotations.AutoMapper;
+
+@AutoMapper(target = TimelineEventBO.class)
 public class TimelineEventVO implements Serializable {
 
     @Serial

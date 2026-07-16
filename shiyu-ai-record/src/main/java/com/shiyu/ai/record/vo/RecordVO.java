@@ -12,6 +12,10 @@ import java.util.List;
  * 记录内容视图对象
  */
 @Data
+import com.shiyu.ai.dal.bo.record.RecordBO;
+import io.github.linpeilie.annotations.AutoMapper;
+
+@AutoMapper(target = RecordBO.class)
 public class RecordVO implements Serializable {
 
     @Serial

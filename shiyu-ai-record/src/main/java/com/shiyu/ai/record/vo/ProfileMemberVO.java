@@ -11,6 +11,10 @@ import java.util.Date;
  * 人物成员关系视图对象
  */
 @Data
+import com.shiyu.ai.dal.bo.record.ProfileMemberBO;
+import io.github.linpeilie.annotations.AutoMapper;
+
+@AutoMapper(target = ProfileMemberBO.class)
 public class ProfileMemberVO implements Serializable {
 
     @Serial

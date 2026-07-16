@@ -11,6 +11,10 @@ import java.util.Date;
  * 附件视图对象
  */
 @Data
+import com.shiyu.ai.dal.bo.record.MediaBO;
+import io.github.linpeilie.annotations.AutoMapper;
+
+@AutoMapper(target = MediaBO.class)
 public class MediaVO implements Serializable {
 
     @Serial
