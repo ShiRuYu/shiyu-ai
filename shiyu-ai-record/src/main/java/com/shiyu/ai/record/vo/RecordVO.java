@@ -8,12 +8,12 @@ import java.io.Serializable;
 import java.util.Date;
 import java.util.List;
 
+import io.github.linpeilie.annotations.AutoMapper;
+import com.shiyu.ai.dal.bo.record.RecordBO;
 /**
  * 记录内容视图对象
  */
 @Data
-import com.shiyu.ai.dal.bo.record.RecordBO;
-import io.github.linpeilie.annotations.AutoMapper;
 
 @AutoMapper(target = RecordBO.class)
 public class RecordVO implements Serializable {

@@ -7,12 +7,12 @@ import java.io.Serial;
 import java.io.Serializable;
 import java.util.Date;
 
+import io.github.linpeilie.annotations.AutoMapper;
+import com.shiyu.ai.dal.bo.record.ProfileBO;
 /**
  * 人物视图对象
  */
 @Data
-import com.shiyu.ai.dal.bo.record.ProfileBO;
-import io.github.linpeilie.annotations.AutoMapper;
 
 @AutoMapper(target = ProfileBO.class)
 public class ProfileVO implements Serializable {

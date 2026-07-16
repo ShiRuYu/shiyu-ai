@@ -7,12 +7,12 @@ import java.io.Serial;
 import java.io.Serializable;
 import java.util.Date;
 
+import io.github.linpeilie.annotations.AutoMapper;
+import com.shiyu.ai.dal.bo.record.TagBO;
 /**
  * 标签视图对象
  */
 @Data
-import com.shiyu.ai.dal.bo.record.TagBO;
-import io.github.linpeilie.annotations.AutoMapper;
 
 @AutoMapper(target = TagBO.class)
 public class TagVO implements Serializable {

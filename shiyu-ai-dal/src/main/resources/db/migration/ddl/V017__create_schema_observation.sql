@@ -38,8 +38,8 @@ CREATE TABLE IF NOT EXISTS `execution_timeline` (
     `duration_ms`  BIGINT       DEFAULT 0 COMMENT '节点耗时（毫秒，仅 NODE_END 时有效）',
     `create_time`  TIMESTAMP    DEFAULT CURRENT_TIMESTAMP COMMENT '创建时间',
 
-    INDEX `idx_execution_id` (`execution_id`),
-    INDEX `idx_agent_id`     (`agent_id`),
-    INDEX `idx_event_type`   (`event_type`),
-    INDEX `idx_create_time`  (`create_time`)
+    INDEX `idx_timeline_execution_id` (`execution_id`),
+    INDEX `idx_timeline_agent_id`     (`agent_id`),
+    INDEX `idx_timeline_event_type`   (`event_type`),
+    INDEX `idx_timeline_create_time`  (`create_time`)
 ) COMMENT='执行时间线表';

@@ -16,6 +16,7 @@ import java.util.Map;
 
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.*;
+import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 
 @Tag("dev")
@@ -72,7 +73,7 @@ class ScoreAnalysisNodeTest {
         double score = output.getData("practiceScore");
         assertTrue(score < 60.0, "得分低于60应触发 reviewNeeded");
         assertTrue((Boolean) output.getData("reviewNeeded"));
-        verify(abilityService).update(anyLong(), anyLong(), any(), anyDouble());
+        verify(abilityService, times(2)).update(anyLong(), anyLong(), any(), anyDouble());
     }
 
     @Test

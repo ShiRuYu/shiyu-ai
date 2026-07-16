@@ -13,11 +13,9 @@ shiyu:
     path: ${app.home}/data/uploads
   # VectorStore 配置（Embedding 向量检索）
   vector-store:
-    type: hnsw           # inmemory | hnsw
+    type: jvector           # inmemory | jvector
     dimension: 512
     data-dir: ${app.home}/data/vector
-    hnsw:
-      index-path: ${app.home}/data/vector/hnsw.index
 # 开发环境配置
 server:
   # 服务器的HTTP端口，默认为8080
