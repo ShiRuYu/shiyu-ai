@@ -2,6 +2,7 @@ package com.shiyu.ai.agent.workflow.component;
 
 import com.shiyu.ai.knowledge.dto.KnowledgeResponse;
 import com.shiyu.ai.knowledge.path.LearningPathService;
+import com.shiyu.ai.knowledge.service.KnowledgeRelationService;
 import com.shiyu.ai.knowledge.service.KnowledgeService;
 import com.shiyu.ai.agent.workflow.context.LearningContext;
 import com.yomahub.liteflow.core.NodeComponent;
@@ -25,6 +26,7 @@ import java.util.Set;
 public class CheckKnowledgeCmp extends NodeComponent {
 
     private final KnowledgeService knowledgeService;
+    private final KnowledgeRelationService knowledgeRelationService;
     private final LearningPathService learningPathService;
 
     @Override
@@ -40,8 +42,8 @@ public class CheckKnowledgeCmp extends NodeComponent {
         // 2. 获取前置知识点列表
         List<KnowledgeResponse> prerequisites = Collections.emptyList();
         try {
-            // 通过 KnowledgeRelationService 获取前置知识点（简化处理）
-            // 标准做法依赖 GraphStore，这里通过 KnowledgeService 的 Graph 获取
+            prerequisites = knowledgeRelationService.getPrerequisites(ctx.getKnowledgeId());
+            log.info("CheckKnowledgeCmp: 获取到 {} 个前置知识点", prerequisites.size());
         } catch (Exception e) {
             log.warn("CheckKnowledgeCmp: 获取前置知识失败", e);
         }

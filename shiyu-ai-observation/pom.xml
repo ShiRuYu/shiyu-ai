@@ -9,38 +9,44 @@
         <version>${revision}</version>
     </parent>
 
-    <artifactId>shiyu-ai-usage</artifactId>
-    <name>shiyu-ai-usage</name>
-    <description>Usage Center: token/cost/latency statistics and quota management</description>
+    <artifactId>shiyu-ai-observation</artifactId>
+    <name>shiyu-ai-observation</name>
+    <description>Observability: audit logging, execution timeline, metrics aggregation</description>
 
     <dependencies>
-        <dependency>
-            <groupId>com.shiyu.ai</groupId>
-            <artifactId>shiyu-ai-agent</artifactId>
-        </dependency>
+        <!-- 内部依赖 -->
         <dependency>
             <groupId>com.shiyu.ai</groupId>
             <artifactId>shiyu-common-core</artifactId>
         </dependency>
+        <dependency>
+            <groupId>com.shiyu.ai</groupId>
+            <artifactId>shiyu-ai-dal</artifactId>
+        </dependency>
+
+        <!-- Spring -->
         <dependency>
             <groupId>org.springframework.boot</groupId>
             <artifactId>spring-boot-starter-jdbc</artifactId>
         </dependency>
         <dependency>
             <groupId>org.springframework.boot</groupId>
-            <artifactId>spring-boot-autoconfigure</artifactId>
+            <artifactId>spring-boot-starter-web</artifactId>
+            <scope>provided</scope>
         </dependency>
-        <!-- WebSocket 实时推送 -->
         <dependency>
             <groupId>org.springframework.boot</groupId>
-            <artifactId>spring-boot-starter-websocket</artifactId>
+            <artifactId>spring-boot-autoconfigure</artifactId>
         </dependency>
+
+        <!-- 工具 -->
         <dependency>
             <groupId>org.projectlombok</groupId>
             <artifactId>lombok</artifactId>
             <scope>provided</scope>
         </dependency>
-            <!-- Test -->
+
+        <!-- Test -->
         <dependency>
             <groupId>org.springframework.boot</groupId>
             <artifactId>spring-boot-starter-test</artifactId>

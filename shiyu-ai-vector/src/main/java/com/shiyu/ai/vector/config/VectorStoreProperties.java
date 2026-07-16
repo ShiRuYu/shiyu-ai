@@ -7,7 +7,7 @@ import org.springframework.boot.context.properties.ConfigurationProperties;
  * 向量存储配置
  */
 @Data
-@ConfigurationProperties(prefix = "shiyu.vector")
+@ConfigurationProperties(prefix = "shiyu.vector-store")
 public class VectorStoreProperties {
 
     /** 向量存储类型: inmemory, jvector */

@@ -4,7 +4,7 @@
 > **创建日期**: 2026-07-10  
 > **最后更新**: 2026-07-10  
 > **基于**: Architecture Design Document v2.1  
-> **状态**: ✅ Phase 1 (P0/P1/P2/V3) 全部完成 → 🚀 V4 进行中
+> **状态**: ✅ V5 (13/17) 完成 → 📋 V5-15 PGVector/Qdrant, V5-17 Testcontainers 待补
 
 ---
 
@@ -401,6 +401,447 @@ P2 任务:  [██████████] 8/8 完成
 - 代码中无可操作的 TODO/FIXME
 
 ---
+
+
+---
+
+## V5: Agent 代码修复与架构对齐
+
+> **版本**: 1.0  
+> **创建日期**: 2026-07-16  
+> **基于**: Agent 模块代码扫描报告  
+> **状态**: 🚀 进行中
+
+### 概览
+
+基于 `shiyu-ai-agent` 模块全量代码扫描 + ADD 架构文档差异分析，识别出 17 项待修改问题：
+
+| 优先级 | 数量 | 类别 |
+|--------|------|------|
+| **P0 - 逻辑缺陷/功能缺失** | 7 | 评分硬编码/空实现/伪流式/审计缺失/时间线缺失/WebSocket 缺失 |
+| **P1 - 架构不一致/测试覆盖** | 6 | 节点注册双路径/TutorCheckCmp 内联/执行顺序歧义/核心无测试 |
+| **P2 - 工程优化** | 4 | 模块缺失/配置前缀/向量实现/图节点测试 |
+| **总计** | **17** | |
+
+---
+
+### V5-1: ScoreAnalysisNode 评分硬编码修复
+
+**描述**: `ScoreAnalysisNode.java` 中硬编码 `accuracy=0.6, score=60.0`，不反映学生真实作答。
+
+**文件**:
+- `shiyu-ai-agent/src/main/java/com/shiyu/ai/agent/education/graph/ScoreAnalysisNode.java`
+
+**子任务**:
+
+- [x] 1.1 对接 AnswerResult 获取真实评分数据
+  - [ ] 从 NodeInput 中读取学生答案
+  - [ ] 从 AnswerResult 数据源获取正确率
+  - [ ] 移除硬编码的 accuracy/score 变量
+- [x] 1.2 单元测试
+  - [ ] 覆盖正常评分路径
+  - [ ] 覆盖无答案时的降级逻辑
+
+**预估工时**: 2h
+
+**验收标准**:
+- ScoreAnalysisNode 不再输出固定 60 分
+- 评分结果基于真实答题数据计算
+
+---
+
+### V5-2: CheckKnowledgeCmp 前置知识检测空实现修复
+
+**描述**: `CheckKnowledgeCmp.java` 的 try 块内未调用任何实际查询，前置知识列表始终为空。
+
+**文件**:
+- `shiyu-ai-agent/src/main/java/com/shiyu/ai/agent/workflow/component/CheckKnowledgeCmp.java`
+
+**子任务**:
+
+- [x] 2.1 补全前置知识查询逻辑
+  - [ ] 调用 `KnowledgeRelationService.getPrerequisites()`
+  - [ ] 调用 `KnowledgeRelationService.getKnowledgeGraph()` 获取完整路径
+  - [ ] 将结果写入 LearningContext
+
+- [x] 2.2 单元测试
+  - [ ] 模拟 KnowledgeRelationService 返回前置知识列表
+  - [ ] 验证 LearningContext 正确接收
+
+**预估工时**: 1h
+
+**验收标准**:
+- CheckKnowledgeCmp 执行后 LearningContext 中前置知识列表非空
+- 缺失前置知识列表正确填充
+
+---
+
+### V5-3: AgentRuntimeImpl.executeStream() 伪流式修复
+
+**描述**: `executeStream()` 先同步执行完再包装 `Flux.just()`，非真正的逐节点 SSE 流式推送。
+
+**文件**:
+- `shiyu-ai-agent/src/main/java/com/shiyu/ai/agent/runtime/AgentRuntimeImpl.java`
+
+**子任务**:
+
+- [x] 3.1 改为逐节点 StreamingOutput 推送
+  - [ ] 调用 `graph.stream(input)` 获取 AsyncGenerator
+  - [ ] 逐节点推送 NodeOutput 状态
+  - [ ] 最终推送 complete 事件
+
+- [x] 3.2 事件发布时机修正
+  - [ ] 统一事件发布与流式输出的关系
+
+- [x] 3.3 单元测试
+  - [ ] 验证 Flux 逐节点发出
+
+**预估工时**: 3h
+
+**验收标准**:
+- SSE 端点每执行一个节点即推送一次状态更新
+- 前端可实时看到节点执行进度
+
+---
+
+### V5-4: ScoreCmp AI 评分 Prompt 未传入学生答案
+
+**描述**: `buildScoringPrompt()` 只包含知识点和题目数量，未传入学生实际作答内容。
+
+**文件**:
+- `shiyu-ai-agent/src/main/java/com/shiyu/ai/agent/workflow/component/ScoreCmp.java`
+
+**子任务**:
+
+- [x] 4.1 补全 Prompt 中的学生答案
+  - [ ] 从 LearningContext 读取学生答案
+  - [ ] 将题目 + 学生答案 + 参考答案拼接进 Prompt
+  - [ ] 移除 AI 自行猜测的默认评分
+
+- [x] 4.2 单元测试
+  - [ ] 模拟学生答案验证 Prompt 构建
+
+**预估工时**: 1h
+
+**验收标准**:
+- AI 评分时 Prompt 中包含学生的实际作答内容
+- Prompt 构建可追溯
+
+---
+
+### V5-5: 审计日志服务创建
+
+**描述**: ADD 第 16.5 章定义了 AuditService + AuditInterceptor + AuditEvent + audit_log 表，代码不存在。
+
+**文件**:
+- 新建: `shiyu-ai-agent/src/main/java/com/shiyu/ai/agent/event/AuditEvent.java`
+- 新建: `shiyu-ai-agent/src/main/java/com/shiyu/ai/agent/service/AuditService.java`
+- 新建: `shiyu-ai-agent/src/main/java/com/shiyu/ai/agent/config/AuditInterceptor.java`
+- 新建: `shiyu-ai-dal/src/main/resources/db/migration/ddl/V017__create_schema_observation.sql`
+
+**子任务**:
+
+- [x] 5.1 创建 V017 迁移文件
+  - [ ] audit_log 表
+  - [ ] execution_timeline 表
+
+- [x] 5.2 创建 AuditEvent + AuditService + AuditInterceptor
+
+- [x] 5.3 注册拦截器到 WebMvcConfigurer
+
+- [x] 5.4 单元测试
+
+**预估工时**: 4h
+
+**验收标准**:
+- 启动后 audit_log 表自动创建
+- 每次 API 调用自动记录审计日志
+- 审计日志可查询
+
+---
+
+### V5-6: 执行时间线服务创建
+
+**描述**: ADD 第 16.6 章定义了 TimelineService + execution_timeline 表，代码不存在。
+
+**文件**:
+- 新建: `shiyu-ai-agent/src/main/java/com/shiyu/ai/agent/service/TimelineService.java`
+- 表: 同 V5-5 的 V017 迁移
+
+**子任务**:
+
+- [x] 6.1 创建 TimelineService
+  - [ ] onNodeExecutionStarted / onNodeExecutionCompleted 事件监听
+  - [ ] getTimeline(executionId) 查询
+
+- [x] 6.2 节点执行时发布相应事件
+
+- [x] 6.3 单元测试
+
+**预估工时**: 3h
+
+**验收标准**:
+- 节点执行前后自动记录时间线
+- 可通过 executionId 查询完整时间线
+
+---
+
+### V5-7: WebSocket 实时推送
+
+**描述**: V4-5.2 已规划，Usage 模块无任何 WebSocket 代码。
+
+**文件**:
+- `shiyu-ai-usage/src/main/java/com/shiyu/ai/usage/`
+
+**子任务**:
+
+- [x] 7.1 添加 WebSocket 端点
+  - [ ] 配置 WebSocket 支持
+  - [ ] 用量变化时推送前端
+
+- [x] 7.2 前端对接显示实时用量
+
+**预估工时**: 4h
+
+**验收标准**:
+- WebSocket 连接可用
+- 用量变化实时推送到前端
+
+---
+
+### V5-8: 教育节点注册与 NodeCreator 体系统一
+
+**描述**: 6 个教育节点通过 `EducationNodeConfigurer` + `@PostConstruct` + `ctx.getBean()` 注册，未使用标准 `@Component implements NodeCreator` 路径。
+
+**文件**:
+- 新建 6 个 Creator: `AbilityQueryNodeCreator`, `TeachNodeCreator`, `PracticeNodeCreator`, `ScoreAnalysisNodeCreator`, `ReviewScheduleNodeCreator`, `PrereqCheckNodeCreator`
+- 删除: `EducationNodeConfigurer.java`
+
+**子任务**:
+
+- [x] 8.1 创建 6 个 NodeCreator bean
+  - [x] 构造器注入替代 `ctx.getBean()`
+  - [x] 实现 `NodeCreator` 接口
+
+- [x] 8.2 删除 EducationNodeConfigurer
+
+- [x] 8.3 验证 NodeFactory 自动发现
+
+**预估工时**: 3h
+
+**验收标准**:
+- 6 个教育节点通过 `@Component` 自动被 NodeFactory 发现
+- `ctx.getBean()` 调用全部移除
+- 无 EducationNodeConfigurer 文件残留
+
+---
+
+### V5-9: TutorCheckCmp 内联硬编码移除
+
+**描述**: `TutorCheckCmp.process()` 中 `new Graph(); new AbilityQueryNode()...` 硬编码全部节点和拓扑，与 EducationNodeConfigurer 重复。
+
+**文件**:
+- `shiyu-ai-agent/src/main/java/com/shiyu/ai/agent/workflow/component/TutorCheckCmp.java`
+
+**子任务**:
+
+- [x] 9.1 改为引用已注册的教育 Agent 定义
+  - [ ] 通过 AgentService 获取已注册的教育图
+  - [ ] 或通过 NodeFactory 动态创建节点配置 Graph
+
+- [x] 9.2 移除内联硬编码
+
+- [x] 9.3 单元测试
+
+**预估工时**: 2h
+
+**验收标准**:
+- TutorCheckCmp 不再包含内联 Graph 构造
+- 教育图拓扑变更时 TutorCheckCmp 自动感知
+
+---
+
+### V5-10: NodeFactory.createNode() 双路径歧义消除
+
+**描述**: `createNodeWithDependencies()`（遍历 beanNodeCreators）优先于 fallback lambda，同一 NodeType 在两路径都注册时行为不确定。
+
+**文件**:
+- `shiyu-ai-agent/src/main/java/com/shiyu/ai/agent/node/NodeFactory.java`
+
+**子任务**:
+
+- [x] 10.1 统一为单一注册路径
+  - [x] V5-8 完成后所有节点都走 @Component NodeCreator，自然消除歧义
+  - [x] 移除 `registerDefaultNodeTypes()` 中与 Creator 重复的 lambda
+  - [x] 简化 `createNode()` 流程，移除 `createNodeWithDependencies()` 特殊分支
+
+**预估工时**: 1h
+
+**验收标准**:
+- NodeFactory 只有一条节点发现路径
+- 无重复注册逻辑
+
+---
+
+### V5-11: AgentRuntimeImpl 单元测试补充
+
+**描述**: 核心流程 execute/executeStream/pause/resume/cancel 无测试覆盖。
+
+**文件**:
+- 新建: `shiyu-ai-agent/src/test/java/com/shiyu/ai/agent/runtime/AgentRuntimeImplTest.java`
+
+**子任务**:
+
+- [x] 11.1 Execution 创建/状态流转测试
+- [x] 11.2 execute/executeStream 测试
+- [x] 11.3 pause/resume/cancel 生命周期测试
+- [x] 11.4 事件发布验证测试
+
+**预估工时**: 4h
+
+**验收标准**:
+- AgentRuntimeImpl 核心路径覆盖率 > 60%
+
+---
+
+### V5-12: Graph + StateGraphBuilder 编译流程测试补充
+
+**描述**: 图编译、循环检测、不可达节点检测均无测试。
+
+**文件**:
+- 新建: `shiyu-ai-agent/src/test/java/com/shiyu/ai/agent/graph/GraphTest.java`
+
+**子任务**:
+
+- [x] 12.1 图构建/编译测试
+- [x] 12.2 循环依赖检测测试
+- [x] 12.3 不可达节点检测测试
+- [x] 12.4 StateGraphBuilder - Graph 转换测试
+
+**预估工时**: 3h
+
+**验收标准**:
+- 循环检测正确识别/拒绝有环图
+- 不可达节点检测正确标记
+
+---
+
+### V5-13: VectorStoreProperties 前缀修正
+
+**描述**: `@ConfigurationProperties(prefix = "shiyu.vector")` 与 YAML 实际前缀 `shiyu.vector-store` 不匹配。`hnsw.index-path` 无代码读取。
+
+**文件**:
+- `shiyu-ai-vector/src/main/java/com/shiyu/ai/vector/config/VectorStoreProperties.java`
+
+**子任务**:
+
+- [x] 13.1 前缀 `shiyu.vector` → `shiyu.vector-store`（1 行改动）
+
+**预估工时**: 0.1h
+
+**验收标准**:
+- 配置绑定正确，应用启动无警告
+
+---
+
+### V5-14: 教育 6 个图节点单元测试
+
+**描述**: 6 个教育图节点均无单元测试。
+
+**文件**:
+- 新建: `AbilityQueryNodeTest.java`
+- 新建: `TeachNodeTest.java`
+- 新建: `PracticeNodeTest.java`
+- 新建: `ScoreAnalysisNodeTest.java`
+- 新建: `ReviewScheduleNodeTest.java`
+- 新建: `PrereqCheckNodeTest.java`
+
+**子任务**:
+
+- [x] 14.1 AbilityQueryNode 测试（正常/异常路径）
+- [x] 14.2 TeachNode 测试
+- [x] 14.3 PracticeNode 测试
+- [x] 14.4 ScoreAnalysisNode 测试
+- [x] 14.5 ReviewScheduleNode 测试
+- [x] 14.6 PrereqCheckNode 测试
+
+**预估工时**: 6h
+
+**验收标准**:
+- 每个节点至少覆盖正常执行 + 参数缺失两种场景
+
+---
+
+### V5-15: PGVector / Qdrant 向量存储实现
+
+**描述**: ADD 第 12 章设计了 SPI 多实现，目前只有 JVector 和 InMemory。
+
+**文件**:
+- 后续规划
+
+**子任务**:
+
+- [ ] 15.1 PGVectorStoreProvider 实现
+- [ ] 15.2 QdrantVectorStoreProvider 实现
+
+**预估工时**: 8h
+
+**验收标准**:
+- 可通过配置切换向量存储后端
+
+---
+
+### V5-16: shiyu-ai-observation 模块创建
+
+**描述**: ADD 架构设计中有独立可观测性模块定义，代码中不存在。
+
+**文件**:
+- 后续规划
+
+**子任务**:
+
+- [x] 16.1 创建 shiyu-ai-observation Maven 模块
+- [x] 16.2 迁移 Audit/Timeline/Metrics 代码
+
+**预估工时**: 4h
+
+**验收标准**:
+- 可观测性代码集中到独立模块
+
+---
+
+### V5-17: Testcontainers 集成测试
+
+**描述**: V4-1.5 已规划未实现。
+
+**文件**:
+- 后续规划
+
+**子任务**:
+
+- [ ] 17.1 配置 Testcontainers
+- [ ] 17.2 编写集成测试（H2 / MySQL）
+
+**预估工时**: 4h
+
+**验收标准**:
+- Testcontainers 集成测试可运行
+
+---
+
+### 执行顺序
+
+```
+Phase 1 (V5-13, V5-8, V5-10): 配置修复 + 架构对齐 ✅            ~4h
+Phase 2 (V5-1, V5-2, V5-4): 逻辑缺陷修复 ✅                   ~4h
+Phase 3 (V5-5, V5-6): 审计 + 时间线服务创建 ✅           ~7h
+Phase 4 (V5-3, V5-9): 流式修复 + TutorCheckCmp 重构 ✅   ~5h
+Phase 5 (V5-11, V5-12, V5-14): 测试补充 ✅                       ~13h
+Phase 6 (V5-7 ✅, V5-15, V5-16 ✅, V5-17): 工程优化 ~12h
+```
+
+---
+
 
 ## 附录
 

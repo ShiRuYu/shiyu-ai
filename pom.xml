@@ -106,6 +106,7 @@
         <module>shiyu-ai-tool</module>
         <module>shiyu-ai-vector</module>
         <module>shiyu-ai-usage</module>
+        <module>shiyu-ai-observation</module>
         <module>shiyu-ai-plugin</module>
         <module>shiyu-ai-knowledge</module>
         <module>shiyu-ai-education</module>
@@ -399,6 +400,11 @@
             <dependency>
                 <groupId>com.shiyu.ai</groupId>
                 <artifactId>shiyu-ai-usage</artifactId>
+                <version>${revision}</version>
+            </dependency>
+            <dependency>
+                <groupId>com.shiyu.ai</groupId>
+                <artifactId>shiyu-ai-observation</artifactId>
                 <version>${revision}</version>
             </dependency>
             <dependency>

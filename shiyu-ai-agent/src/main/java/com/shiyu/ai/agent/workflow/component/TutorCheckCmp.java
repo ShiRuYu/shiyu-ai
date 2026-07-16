@@ -1,40 +1,34 @@
 package com.shiyu.ai.agent.workflow.component;
 
 import com.shiyu.ai.agent.graph.Graph;
-import com.shiyu.ai.agent.graph.StateGraphBuilder;
-import com.shiyu.ai.agent.education.graph.AbilityQueryNode;
-import com.shiyu.ai.agent.education.graph.PrereqCheckNode;
-import com.shiyu.ai.agent.education.graph.ScoreAnalysisNode;
-import com.shiyu.ai.agent.education.graph.TeachNode;
-import com.shiyu.ai.agent.education.graph.PracticeNode;
-import com.shiyu.ai.dal.repository.education.ReviewTaskRepository;
-import com.shiyu.ai.agent.education.graph.ReviewScheduleNode;
-import com.shiyu.ai.education.service.AbilityService;
-import com.shiyu.ai.education.service.ReviewService;
-import com.shiyu.ai.knowledge.path.LearningPathService;
-import com.shiyu.ai.education.domain.ReviewScheduler;
-import com.shiyu.ai.knowledge.service.KnowledgeRelationService;
-import com.shiyu.ai.knowledge.service.KnowledgeService;
-import com.shiyu.ai.model.chat.ChatEngine;
+import com.shiyu.ai.agent.node.BaseNode;
+import com.shiyu.ai.agent.node.NodeConfig;
+import com.shiyu.ai.agent.node.NodeFactory;
+import com.shiyu.ai.agent.node.NodeType;
 import com.shiyu.ai.agent.workflow.context.TutorContext;
 import com.yomahub.liteflow.core.NodeComponent;
-import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Component;
-import java.util.HashMap;
 
+import java.util.HashMap;
+import java.util.concurrent.atomic.AtomicReference;
+
+/**
+ * 辅导检查组件
+ * <p>
+ * 利用已通过 NodeCreator 注册的教育节点，通过 NodeFactory 动态构建辅导图。
+ * 图拓扑缓存，避免每次 process() 重复创建。
+ */
 @Slf4j
 @Component("tutorCheckCmp")
-@RequiredArgsConstructor
 public class TutorCheckCmp extends NodeComponent {
-    private final KnowledgeService knowledgeService;
-    private final KnowledgeRelationService knowledgeRelationService;
-    private final AbilityService abilityService;
-    private final LearningPathService learningPathService;
-    private final ChatEngine chatEngine;
-    private final ReviewScheduler reviewScheduler;
-    private final ReviewService reviewService;
-    private final ReviewTaskRepository reviewTaskRepository;
+
+    private final NodeFactory nodeFactory;
+    private final AtomicReference<Graph> cachedGraph = new AtomicReference<>();
+
+    public TutorCheckCmp(NodeFactory nodeFactory) {
+        this.nodeFactory = nodeFactory;
+    }
 
     @Override
     public void process() throws Exception {
@@ -42,16 +36,16 @@ public class TutorCheckCmp extends NodeComponent {
         log.info("TutorCheckCmp: 执行辅导, studentId={}, knowledgeId={}",
                 ctx.getStudentId(), ctx.getKnowledgeId());
 
-        // Build tutor graph inline
-        Graph g = new Graph(); g.setName("tutorGraph");
-        g.addNode("abilityQuery", new AbilityQueryNode(knowledgeService, knowledgeRelationService, abilityService));
-        g.addNode("teach", new TeachNode(chatEngine));
-        g.addNode("practice", new PracticeNode(chatEngine));
-        g.addNode("scoreAnalysis", new ScoreAnalysisNode(abilityService));
-        g.addNode("reviewSchedule", new ReviewScheduleNode(reviewScheduler, reviewService, reviewTaskRepository));
-        g.addEdge("abilityQuery", "teach"); g.addEdge("teach", "practice");
-        g.addEdge("practice", "scoreAnalysis");
-        g.setStartNode("abilityQuery"); g.setEndNode("reviewSchedule");
+        Graph g = cachedGraph.get();
+        if (g == null) {
+            synchronized (cachedGraph) {
+                g = cachedGraph.get();
+                if (g == null) {
+                    g = buildTutorGraph();
+                    cachedGraph.set(g);
+                }
+            }
+        }
 
         HashMap<String, Object> input = new HashMap<>();
         input.put("studentId", ctx.getStudentId());
@@ -65,5 +59,32 @@ public class TutorCheckCmp extends NodeComponent {
         } catch (Exception e) {
             log.error("辅导执行失败", e);
         }
+    }
+
+    private Graph buildTutorGraph() {
+        Graph g = new Graph();
+        g.setName("tutorGraph");
+
+        g.addNode("abilityQuery",   createNode(NodeType.ABILITY_QUERY));
+        g.addNode("teach",          createNode(NodeType.EDUCATION_TEACH));
+        g.addNode("practice",       createNode(NodeType.EDUCATION_PRACTICE));
+        g.addNode("scoreAnalysis",  createNode(NodeType.SCORE_ANALYSIS));
+        g.addNode("reviewSchedule", createNode(NodeType.REVIEW_SCHEDULE));
+
+        g.addEdge("abilityQuery", "teach");
+        g.addEdge("teach", "practice");
+        g.addEdge("practice", "scoreAnalysis");
+        g.addEdge("scoreAnalysis", "reviewSchedule");
+
+        g.setStartNode("abilityQuery");
+        g.setEndNode("reviewSchedule");
+        return g;
+    }
+
+    private BaseNode createNode(NodeType type) {
+        NodeConfig config = new NodeConfig();
+        config.setNodeType(type);
+        config.setNodeName(type.getName());
+        return nodeFactory.createNode(config);
     }
 }

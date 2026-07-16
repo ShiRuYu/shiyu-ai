@@ -18,8 +18,11 @@ import com.shiyu.ai.dal.bo.agent.AgentExecutionBO;
 import com.shiyu.ai.dal.repository.agent.AgentExecutionRepository;
 import com.shiyu.ai.common.core.utils.JSONUtils;
 import lombok.extern.slf4j.Slf4j;
+import org.bsc.langgraph4j.NodeOutput;
+import org.bsc.langgraph4j.state.AgentState;
 import org.springframework.jdbc.core.JdbcTemplate;
 import reactor.core.publisher.Flux;
+import reactor.core.scheduler.Schedulers;
 
 import java.lang.reflect.Field;
 import java.util.List;
@@ -69,14 +72,12 @@ public class AgentRuntimeImpl implements AgentRuntime {
         AgentDefinition definition = getAgentDefinition(agentId);
         AgentVersion agentVersion = definition.getVersion(version);
 
-        // 发布执行开始事件
         eventPublisher.publish(new AgentExecutionStartedEvent(
                 execution.getExecutionId(), agentId, input));
 
         Execution result = agentExecutor.executeAgent(definition, agentVersion, input, execution);
         saveExecution(result);
 
-        // 发布执行结果事件
         if (result.getStatus() == ExecutionStatus.COMPLETED) {
             eventPublisher.publish(new AgentExecutionCompletedEvent(
                     result.getExecutionId(), agentId, result.getOutput(), result.getDurationMs()));
@@ -103,24 +104,58 @@ public class AgentRuntimeImpl implements AgentRuntime {
         eventPublisher.publish(new AgentExecutionStartedEvent(
                 execution.getExecutionId(), agentId, input));
 
-        return Flux.defer(() -> {
-            Execution result = agentExecutor.executeAgent(definition, agentVersion, input, execution);
-            saveExecution(result);
+        // 记录执行开始时间
+        execution.start();
 
-            if (result.getStatus() == ExecutionStatus.COMPLETED) {
-                eventPublisher.publish(new AgentExecutionCompletedEvent(
-                        result.getExecutionId(), agentId, result.getOutput(), result.getDurationMs()));
-            } else if (result.getStatus() == ExecutionStatus.FAILED) {
+        return Flux.<Map<String, Object>>create(sink -> {
+            try {
+                // 逐节点流式执行 — 使用 graph.stream(input) 而非一次性 execute
+                // stream() 返回 AsyncGenerator，forEach 遍历每个节点执行后的状态
+                final Map<String, Object>[] finalState = new Map[]{null};
+
+                agentVersion.getGraph().stream(input)
+                        .forEach(nodeOutput -> {
+                            Map<String, Object> stateData = nodeOutput.state().data();
+                            finalState[0] = stateData;
+                            // 每个节点执行后的完整 State 作为一个 chunk 发出
+                            sink.next(Map.of(
+                                    "node", nodeOutput.node(),
+                                    "state", stateData
+                            ));
+                        });
+
+                // stream() 遍历完成后，finalState[0] 即为最后一个节点的输出
+                if (finalState[0] != null) {
+                    execution.complete(finalState[0]);
+                    saveExecution(execution);
+
+                    eventPublisher.publish(new AgentExecutionCompletedEvent(
+                            execution.getExecutionId(), agentId, finalState[0],
+                            execution.getDurationMs()));
+                }
+
+                // 发出完成标记
+                sink.next(Map.of(
+                        "status", "COMPLETED",
+                        "executionId", execution.getExecutionId()
+                ));
+
+                sink.complete();
+
+            } catch (Exception e) {
+                log.error("Agent 流式执行失败: agentId={}, executionId={}",
+                        agentId, execution.getExecutionId(), e);
+                execution.fail(e.getMessage());
+                saveExecution(execution);
+
                 eventPublisher.publish(new AgentExecutionFailedEvent(
-                        result.getExecutionId(), agentId, result.getErrorMessage()));
-            }
+                        execution.getExecutionId(), agentId, e.getMessage()));
 
-            cleanupExecution(result);
-            if (result.getOutput() != null) {
-                return Flux.just(result.getOutput());
+                sink.error(e);
+            } finally {
+                cleanupExecution(execution);
             }
-            return Flux.empty();
-        });
+        }).subscribeOn(Schedulers.boundedElastic());
     }
 
     @Override

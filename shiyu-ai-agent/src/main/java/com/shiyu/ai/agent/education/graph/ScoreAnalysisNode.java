@@ -13,6 +13,7 @@ import lombok.Setter;
 import lombok.extern.slf4j.Slf4j;
 
 import java.util.List;
+import java.util.Map;
 
 /**
  * 评分分析节点
@@ -20,7 +21,7 @@ import java.util.List;
  * LangGraph4j 节点，对学生练习结果进行评分，
  * 更新 Bloom 能力值，输出"是否需要重学"的判断。
  *
- * 输入字段：practiceQuestions, overallScore, studentId, knowledgeId
+ * 输入字段：practiceQuestions, overallScore, studentId, knowledgeId, answerResults（可选）
  * 输出字段：practiceScore, practiceAccuracy, updatedAbility, reviewNeeded, afterAbility
  */
 @Slf4j
@@ -43,13 +44,30 @@ public class ScoreAnalysisNode extends BaseNode {
 
         @SuppressWarnings("unchecked")
         List<QuestionBO> questions = input.getParameter("practiceQuestions", List.of());
+        @SuppressWarnings("unchecked")
+        List<Map<String, Object>> answerResults = input.getParameter("answerResults", null);
         Long studentId = input.getParameter("studentId", null);
         Long knowledgeId = input.getParameter("knowledgeId", null);
 
-        // 模拟评分（60% 准确率，实际应对接答题结果）
-        double accuracy = 0.6;
-        double score = 60.0;
+        // 基于答题结果计算准确率；无结果时降级为默认值
+        double accuracy;
+        double score;
         int questionCount = questions.size();
+
+        if (answerResults != null && !answerResults.isEmpty()) {
+            long correctCount = answerResults.stream()
+                    .filter(r -> Boolean.TRUE.equals(r.get("correct")))
+                    .count();
+            questionCount = Math.max(answerResults.size(), questionCount);
+            accuracy = questionCount > 0 ? (double) correctCount / questionCount : 0.0;
+            score = accuracy * 100.0;
+            log.info("ScoreAnalysisNode: 基于答题结果评分, 正确={}/{}, 准确率={}%, 得分={}",
+                    correctCount, questionCount, String.format("%.1f", accuracy * 100), String.format("%.1f", score));
+        } else {
+            accuracy = 0.6;
+            score = 60.0;
+            log.warn("ScoreAnalysisNode: 无答题结果(answerResults)，使用默认评分 accuracy=0.6, score=60.0");
+        }
 
         // 更新能力值
         if (studentId != null && knowledgeId != null) {
@@ -69,7 +87,7 @@ public class ScoreAnalysisNode extends BaseNode {
         output.addData("reviewNeeded", reviewNeeded);
         output.addData("scoreAnalysisDone", true);
 
-        log.info("ScoreAnalysisNode: 得分={}, 重学需要={}", score, reviewNeeded);
+        log.info("ScoreAnalysisNode: 最终得分={}, 重学需要={}", String.format("%.1f", score), reviewNeeded);
         return output;
     }
 
@@ -78,7 +96,8 @@ public class ScoreAnalysisNode extends BaseNode {
         return java.util.List.of(
             NodeInputParam.previous("practiceQuestions", "array", "练习题列表"),
             NodeInputParam.previous("studentId", "number", "学生 ID"),
-            NodeInputParam.previous("knowledgeId", "number", "知识点 ID")
+            NodeInputParam.previous("knowledgeId", "number", "知识点 ID"),
+            NodeInputParam.apiOptional("answerResults", "array", "答题结果列表（可选），每项含 questionId + correct，为空时使用默认评分", null)
         );
     }
 }

@@ -9,6 +9,7 @@ import lombok.Data;
 import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 
 /**
  * 学习流程上下文
@@ -41,6 +42,9 @@ public class LearningContext {
 
     /** 生成的练习题 */
     private List<QuestionBO> practiceQuestions = new ArrayList<>();
+
+    /** 学生答案列表（可选），每项含 questionId + 学生作答内容 */
+    private List<Map<String, Object>> studentAnswers = new ArrayList<>();
 
     /** 练习得分 (0~100) */
     private Double practiceScore;

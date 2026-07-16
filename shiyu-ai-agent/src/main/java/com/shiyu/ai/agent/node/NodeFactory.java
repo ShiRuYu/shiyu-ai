@@ -74,48 +74,34 @@ public class NodeFactory {
     }
 
     /**
-     * 注册默认的节点类型
-     * <p>
-     * 注册 {@link NodeType} 全部 13 种类型，与 {@code agent__init.sql} graph_config 中使用的 nodeType 一致。
-     * DI 节点（INTENT / RAG_RETRIEVAL / LLM_CALL / TOOL_CALL / AGENT_CALL / MEMORY_*）注册简单 lambda 仅提供
-     * 配置类信息以完善 registry 清单，实际节点创建由 {@link #createNodeWithDependencies} 注入服务后覆盖。
-     * 非 DI 节点（DEFAULT / RAG_ENHANCEMENT / CONDITION / TRANSFORM / OUTPUT_FORMAT）在此直接创建。
+     * 注册默认节点类型。
+     *
+     * <p>节点创建采用双路径策略：
+     * <ol>
+     *   <li><b>路径 A（优先）</b> — {@code @Component implements NodeCreator} 的 Spring bean，
+     *       构造器注入 DI 依赖；由 {@link #createNodeWithDependencies} 自动发现。</li>
+     *   <li><b>路径 B（fallback）</b> — 此处注册的 lambda 表达式。
+     *       用于无需 DI 的简单节点（DEFAULT, CONDITION, TRANSFORM 等）。</li>
+     * </ol>
      *
      * @see #createNodeWithDependencies(NodeType, NodeConfig)
      */
     private void registerDefaultNodeTypes() {
-        // 注册默认节点
+        // ======== 路径 B：无 DI 的简单节点（无 @Component NodeCreator bean） ========
         registerNodeType(NodeType.DEFAULT, NodeConfig.class, config -> DefaultNode.builder().config(config).build());
-        // 注册意图识别节点 — DI 由 createNodeWithDependencies() 注入 IntentService
-        registerNodeType(NodeType.INTENT, IntentConfig.class, config -> IntentNode.builder().config(config).build());
-
-        // 注册 RAG 检索节点 — DI 由 createNodeWithDependencies() 注入 RagService
-        registerNodeType(NodeType.RAG_RETRIEVAL, RagRetrievalConfig.class, config -> RagRetrievalNode.builder().config(config).build());
-
-        // 注册 RAG 增强节点
         registerNodeType(NodeType.RAG_ENHANCEMENT, RagEnhancementConfig.class, config -> RagEnhancementNode.builder().config(config).build());
+        registerNodeType(NodeType.CONDITION, ConditionConfig.class, config -> ConditionNode.builder().config(config).build());
+        registerNodeType(NodeType.TRANSFORM, TransformConfig.class, config -> TransformNode.builder().config(config).build());
+        registerNodeType(NodeType.OUTPUT_FORMAT, OutputFormatConfig.class, config -> OutputFormatNode.builder().config(config).build());
 
-        // 注册记忆相关节点
+        // ======== 路径 A：有 @Component NodeCreator bean，此处仅保留 config 类型映射 ========
+        registerNodeType(NodeType.INTENT, IntentConfig.class, config -> IntentNode.builder().config(config).build());
+        registerNodeType(NodeType.RAG_RETRIEVAL, RagRetrievalConfig.class, config -> RagRetrievalNode.builder().config(config).build());
         registerNodeType(NodeType.MEMORY_SHORT_TERM, ShortTermMemoryConfig.class, config -> ShortTermMemoryNode.builder().config(config).build());
         registerNodeType(NodeType.MEMORY_LONG_TERM, LongTermMemoryConfig.class, config -> LongTermMemoryNode.builder().config(config).build());
         registerNodeType(NodeType.MEMORY_RETRIEVAL, MemoryRetrievalConfig.class, config -> MemoryRetrievalNode.builder().config(config).build());
-
-        // 注册 LLM 调用节点 — DI 由 createNodeWithDependencies() 注入 ChatEngine + ModelManager
         registerNodeType(NodeType.LLM_CALL, LlmCallConfig.class, config -> LlmCallNode.builder().config(config).build());
-
-        // 注册工具调用节点 — DI 由 createNodeWithDependencies() 注入 ToolService
         registerNodeType(NodeType.TOOL_CALL, ToolCallConfig.class, config -> ToolCallNode.builder().config(config).build());
-
-        // 注册条件判断节点
-        registerNodeType(NodeType.CONDITION, ConditionConfig.class, config -> ConditionNode.builder().config(config).build());
-
-        // 注册数据转换节点
-        registerNodeType(NodeType.TRANSFORM, TransformConfig.class, config -> TransformNode.builder().config(config).build());
-
-        // 注册输出格式化节点
-        registerNodeType(NodeType.OUTPUT_FORMAT, OutputFormatConfig.class, config -> OutputFormatNode.builder().config(config).build());
-
-        // 注册 Agent 调用节点 — DI 由 createNodeWithDependencies() 注入 AgentService
         registerNodeType(NodeType.AGENT_CALL, AgentCallConfig.class, config -> AgentCallNode.builder().config(config).build());
     }
 
