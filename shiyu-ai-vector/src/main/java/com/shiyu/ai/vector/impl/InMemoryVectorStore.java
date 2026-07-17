@@ -1,8 +1,8 @@
-package com.shiyu.ai.vector.spi.impl;
+package com.shiyu.ai.vector.impl;
 
-import com.shiyu.ai.vector.spi.VectorRecord;
-import com.shiyu.ai.vector.spi.VectorSearchRequest;
-import com.shiyu.ai.vector.spi.VectorStore;
+import com.shiyu.ai.vector.VectorRecord;
+import com.shiyu.ai.vector.VectorSearchRequest;
+import com.shiyu.ai.vector.VectorStore;
 
 import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;

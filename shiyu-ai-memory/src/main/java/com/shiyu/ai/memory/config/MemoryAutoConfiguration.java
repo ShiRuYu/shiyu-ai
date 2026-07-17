@@ -16,7 +16,7 @@ import com.shiyu.ai.memory.spi.MemoryStore;
 import com.shiyu.ai.memory.spi.impl.WorkingMemoryStore;
 import com.shiyu.ai.model.chat.ChatEngine;
 import com.shiyu.ai.model.embedding.EmbeddingService;
-import com.shiyu.ai.vector.spi.VectorStore;
+import com.shiyu.ai.vector.VectorStore;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.ObjectProvider;
 import org.springframework.boot.autoconfigure.AutoConfigureAfter;

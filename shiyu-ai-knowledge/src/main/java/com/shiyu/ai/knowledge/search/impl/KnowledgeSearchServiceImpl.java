@@ -5,8 +5,8 @@ import com.shiyu.ai.dal.repository.knowledge.KnowledgeRepository;
 import com.shiyu.ai.knowledge.search.KnowledgeSearchService;
 import com.shiyu.ai.knowledge.search.SearchResult;
 import com.shiyu.ai.model.embedding.EmbeddingService;
-import com.shiyu.ai.vector.spi.VectorRecord;
-import com.shiyu.ai.vector.spi.VectorStore;
+import com.shiyu.ai.vector.VectorRecord;
+import com.shiyu.ai.vector.VectorStore;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 

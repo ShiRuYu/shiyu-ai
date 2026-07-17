@@ -1,9 +1,9 @@
 package com.shiyu.ai.vector.factory;
 
 import com.shiyu.ai.vector.config.VectorStoreProperties;
-import com.shiyu.ai.vector.spi.VectorStore;
-import com.shiyu.ai.vector.spi.impl.InMemoryVectorStore;
-import com.shiyu.ai.vector.spi.impl.JVectorStore;
+import com.shiyu.ai.vector.VectorStore;
+import com.shiyu.ai.vector.impl.InMemoryVectorStore;
+import com.shiyu.ai.vector.impl.JVectorStore;
 import lombok.extern.slf4j.Slf4j;
 
 /**

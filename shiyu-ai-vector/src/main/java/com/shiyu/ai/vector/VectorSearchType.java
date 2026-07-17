@@ -1,4 +1,4 @@
-package com.shiyu.ai.vector.spi;
+package com.shiyu.ai.vector;
 
 public enum VectorSearchType {
     /** 近似最近邻（HNSW 默认） */

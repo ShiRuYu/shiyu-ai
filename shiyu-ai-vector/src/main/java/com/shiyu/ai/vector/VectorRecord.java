@@ -1,4 +1,4 @@
-package com.shiyu.ai.vector.spi;
+package com.shiyu.ai.vector;
 
 import java.util.Map;
 

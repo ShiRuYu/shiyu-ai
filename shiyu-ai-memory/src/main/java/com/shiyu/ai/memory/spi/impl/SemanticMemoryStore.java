@@ -5,9 +5,9 @@ import com.shiyu.ai.memory.spi.MemoryQuery;
 import com.shiyu.ai.memory.spi.MemoryStore;
 import com.shiyu.ai.memory.spi.MemoryType;
 import com.shiyu.ai.model.embedding.EmbeddingService;
-import com.shiyu.ai.vector.spi.VectorRecord;
-import com.shiyu.ai.vector.spi.VectorSearchRequest;
-import com.shiyu.ai.vector.spi.VectorStore;
+import com.shiyu.ai.vector.VectorRecord;
+import com.shiyu.ai.vector.VectorSearchRequest;
+import com.shiyu.ai.vector.VectorStore;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 

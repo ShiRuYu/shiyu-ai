@@ -5,7 +5,7 @@ import com.shiyu.ai.dal.repository.knowledge.KnowledgeDocRelationRepository;
 import com.shiyu.ai.dal.repository.knowledge.KnowledgeDocumentRepository;
 import com.shiyu.ai.knowledge.rag.DocumentIngestionService;
 import com.shiyu.ai.model.embedding.EmbeddingService;
-import com.shiyu.ai.vector.spi.VectorStore;
+import com.shiyu.ai.vector.VectorStore;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Tag;
 import org.junit.jupiter.api.Test;

@@ -1,7 +1,7 @@
 package com.shiyu.ai.vector.config;
 
 import com.shiyu.ai.vector.factory.VectorStoreFactory;
-import com.shiyu.ai.vector.spi.VectorStore;
+import com.shiyu.ai.vector.VectorStore;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;

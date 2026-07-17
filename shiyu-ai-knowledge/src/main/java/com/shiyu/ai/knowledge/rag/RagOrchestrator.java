@@ -8,8 +8,8 @@ import com.shiyu.ai.dal.dataobject.knowledge.KnowledgeChunkDO;
 import com.shiyu.ai.knowledge.rag.Reranker;
 import com.shiyu.ai.knowledge.graph.GraphStore;
 import com.shiyu.ai.dal.repository.knowledge.KnowledgeChunkRepository;
-import com.shiyu.ai.vector.spi.VectorRecord;
-import com.shiyu.ai.vector.spi.VectorStore;
+import com.shiyu.ai.vector.VectorRecord;
+import com.shiyu.ai.vector.VectorStore;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 

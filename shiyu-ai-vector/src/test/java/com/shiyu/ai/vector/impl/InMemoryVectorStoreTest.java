@@ -1,8 +1,8 @@
-package com.shiyu.ai.vector.spi.impl;
+package com.shiyu.ai.vector.impl;
 import org.junit.jupiter.api.Tag;
 
-import com.shiyu.ai.vector.spi.VectorRecord;
-import com.shiyu.ai.vector.spi.VectorSearchRequest;
+import com.shiyu.ai.vector.VectorRecord;
+import com.shiyu.ai.vector.VectorSearchRequest;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
