@@ -63,6 +63,9 @@ public class JVectorStore implements VectorStore {
     private final Map<String, Map<String, Object>> metadataCache = new ConcurrentHashMap<>();
     private volatile OnHeapGraphIndex graphIndex;
 
+    @Override
+    public String type() { return "jvector"; }
+
     public JVectorStore(VectorStoreProperties properties) {
         this.dimension = properties.getDimension();
         String resolvedDir = properties.getResolvedDataDir();

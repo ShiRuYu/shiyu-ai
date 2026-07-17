@@ -9,6 +9,11 @@ import java.util.List;
 public interface VectorStore {
 
     /**
+     * 返回向量存储类型标识（如 "inmemory", "jvector", "pgvector"）
+     */
+    String type();
+ 
+    /**
      * 插入或更新向量记录
      */
     void upsert(VectorRecord record);

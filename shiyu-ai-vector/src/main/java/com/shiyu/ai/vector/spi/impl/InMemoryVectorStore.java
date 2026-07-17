@@ -17,6 +17,9 @@ public class InMemoryVectorStore implements VectorStore {
     private final Map<String, InternalRecord> store = new ConcurrentHashMap<>();
 
     @Override
+    public String type() { return "inmemory"; }
+
+    @Override
     public void upsert(VectorRecord record) {
         store.put(record.id(), new InternalRecord(record.id(), record.vector(), record.metadata()));
     }
