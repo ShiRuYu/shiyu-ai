@@ -1,12 +1,12 @@
 package com.shiyu.ai.education.service.impl;
 
-import com.shiyu.ai.dal.bo.education.AbilityBO;
-import com.shiyu.ai.dal.bo.education.QuestionBO;
-import com.shiyu.ai.dal.bo.education.ReviewTaskBO;
+import com.shiyu.ai.dal.education.bo.AbilityBO;
+import com.shiyu.ai.dal.education.bo.QuestionBO;
+import com.shiyu.ai.dal.education.bo.ReviewTaskBO;
 import com.shiyu.ai.education.dto.*;
 import com.shiyu.ai.education.service.QuestionService;
 import com.shiyu.ai.education.service.RecommendationService;
-import com.shiyu.ai.dal.repository.education.AbilityRepository;
+import com.shiyu.ai.dal.education.repository.AbilityRepository;
 import com.shiyu.ai.education.service.ReviewService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;

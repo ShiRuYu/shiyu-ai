@@ -1,7 +1,7 @@
 package com.shiyu.ai.record.controller;
 
 import com.shiyu.ai.record.service.RecordService;
-import com.shiyu.ai.dal.bo.record.RecordBO;
+import com.shiyu.ai.dal.record.bo.RecordBO;
 import com.shiyu.ai.record.vo.RecordVO;
 import com.shiyu.ai.common.core.api.PageData;
 import com.shiyu.ai.common.core.api.PageQuery;

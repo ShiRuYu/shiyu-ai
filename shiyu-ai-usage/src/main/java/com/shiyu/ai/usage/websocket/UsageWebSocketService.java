@@ -23,14 +23,7 @@ public class UsageWebSocketService {
     }
 
     /**
-     * 推送单次用量记录
-     *
-     * @param platform         平台
-     * @param model            模型
-     * @param promptTokens     输入 Token 数
-     * @param completionTokens 输出 Token 数
-     * @param latencyMs        延迟（毫秒）
-     * @param cost             费用
+     * 推送单次 LLM 用量记录
      */
     public void pushUsageRecord(String platform, String model,
                                 int promptTokens, int completionTokens,
@@ -51,7 +44,30 @@ public class UsageWebSocketService {
                 )
         );
         handler.broadcast(JSONUtils.toJsonString(payload));
-        log.debug("已推送用量记录: platform={}, model={}, totalTokens={}", platform, model, promptTokens + completionTokens);
+        log.debug("已推送 LLM 用量记录: platform={}, model={}, totalTokens={}", platform, model, promptTokens + completionTokens);
+    }
+
+    /**
+     * 推送单次 Embedding 用量记录
+     */
+    public void pushEmbeddingUsage(String model, int textLength,
+                                   int estimatedTokens, int vectorCount,
+                                   long latencyMs) {
+        if (handler.getActiveSessionCount() == 0) return;
+
+        Map<String, Object> payload = Map.of(
+                "type", "EMBEDDING_USAGE_RECORD",
+                "timestamp", System.currentTimeMillis(),
+                "data", Map.of(
+                        "model", model,
+                        "textLength", textLength,
+                        "estimatedTokens", estimatedTokens,
+                        "vectorCount", vectorCount,
+                        "latencyMs", latencyMs
+                )
+        );
+        handler.broadcast(JSONUtils.toJsonString(payload));
+        log.debug("已推送 Embedding 用量记录: model={}, vectors={}, tokens≈{}", model, vectorCount, estimatedTokens);
     }
 
     /**

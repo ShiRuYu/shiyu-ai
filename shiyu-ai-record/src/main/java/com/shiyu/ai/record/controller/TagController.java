@@ -1,7 +1,7 @@
 package com.shiyu.ai.record.controller;
 
 import com.shiyu.ai.record.service.TagService;
-import com.shiyu.ai.dal.bo.record.TagBO;
+import com.shiyu.ai.dal.record.bo.TagBO;
 import com.shiyu.ai.record.vo.TagVO;
 import com.shiyu.ai.common.core.api.PageData;
 import com.shiyu.ai.common.core.api.PageQuery;

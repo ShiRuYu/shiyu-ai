@@ -1,7 +1,7 @@
 package com.shiyu.ai.knowledge.search.impl;
 
-import com.shiyu.ai.dal.dataobject.knowledge.KnowledgeDO;
-import com.shiyu.ai.dal.repository.knowledge.KnowledgeRepository;
+import com.shiyu.ai.dal.knowledge.bo.KnowledgeBO;
+import com.shiyu.ai.dal.knowledge.repository.KnowledgeRepository;
 import com.shiyu.ai.knowledge.search.KnowledgeSearchService;
 import com.shiyu.ai.knowledge.search.SearchResult;
 import com.shiyu.ai.model.embedding.EmbeddingService;
@@ -128,7 +128,7 @@ public class KnowledgeSearchServiceImpl implements KnowledgeSearchService {
     }
 
     @Override
-    public void indexKnowledge(KnowledgeDO knowledgeDO) {
+    public void indexKnowledge(KnowledgeBO knowledgeDO) {
         String id = String.valueOf(knowledgeDO.getId());
         String content = knowledgeDO.getName() + " " +
                 (knowledgeDO.getDescription() != null ? knowledgeDO.getDescription() : "");

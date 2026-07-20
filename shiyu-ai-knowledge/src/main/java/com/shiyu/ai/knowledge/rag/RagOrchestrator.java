@@ -4,10 +4,10 @@ import org.springframework.beans.factory.annotation.Autowired;
 
 import com.shiyu.ai.common.core.utils.JSONUtils;
 import com.shiyu.ai.model.embedding.EmbeddingService;
-import com.shiyu.ai.dal.dataobject.knowledge.KnowledgeChunkDO;
+import com.shiyu.ai.dal.knowledge.bo.KnowledgeChunkBO;
 import com.shiyu.ai.knowledge.rag.Reranker;
 import com.shiyu.ai.knowledge.graph.GraphStore;
-import com.shiyu.ai.dal.repository.knowledge.KnowledgeChunkRepository;
+import com.shiyu.ai.dal.knowledge.repository.KnowledgeChunkRepository;
 import com.shiyu.ai.vector.VectorRecord;
 import com.shiyu.ai.vector.VectorStore;
 import lombok.extern.slf4j.Slf4j;
@@ -50,7 +50,7 @@ public class RagOrchestrator {
         Set<String> relatedKnowledgeIds = new LinkedHashSet<>();
 
         for (VectorRecord r : vsResults) {
-            KnowledgeChunkDO chunkDO = chunkRepository.getById(parseChunkId(r.id()));
+            KnowledgeChunkBO chunkDO = chunkRepository.getById(parseChunkId(r.id()));
             if (chunkDO == null) continue;
 
             double score = (double) r.metadata().getOrDefault("_score", 0.0);

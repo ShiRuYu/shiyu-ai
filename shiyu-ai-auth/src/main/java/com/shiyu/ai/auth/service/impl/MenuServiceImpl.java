@@ -2,9 +2,9 @@ package com.shiyu.ai.auth.service.impl;
 
 import com.github.benmanes.caffeine.cache.Cache;
 import com.github.benmanes.caffeine.cache.Caffeine;
-import com.shiyu.ai.dal.repository.auth.MenuRepository;
+import com.shiyu.ai.dal.auth.repository.MenuRepository;
 import com.shiyu.ai.auth.service.MenuService;
-import com.shiyu.ai.dal.bo.auth.MenuBO;
+import com.shiyu.ai.dal.auth.bo.MenuBO;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 

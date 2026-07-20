@@ -1,6 +1,6 @@
 package com.shiyu.ai.education.service;
 
-import com.shiyu.ai.dal.bo.education.WrongQuestionBO;
+import com.shiyu.ai.dal.education.bo.WrongQuestionBO;
 
 import java.util.List;
 import com.shiyu.ai.education.dto.WrongQuestionResponse;

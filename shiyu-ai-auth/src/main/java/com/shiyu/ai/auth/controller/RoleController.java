@@ -3,7 +3,7 @@ package com.shiyu.ai.auth.controller;
 import com.shiyu.ai.auth.request.RolePageRequest;
 import com.shiyu.ai.auth.request.RoleRequest;
 import com.shiyu.ai.auth.request.AssignUserRolesRequest;
-import com.shiyu.ai.dal.bo.auth.RoleBO;
+import com.shiyu.ai.dal.auth.bo.RoleBO;
 import com.shiyu.ai.auth.vo.RolePageResponse;
 import com.shiyu.ai.auth.vo.RoleVO;
 import com.shiyu.ai.auth.service.RoleService;

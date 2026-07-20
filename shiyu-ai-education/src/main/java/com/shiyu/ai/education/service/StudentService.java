@@ -1,6 +1,6 @@
 package com.shiyu.ai.education.service;
 
-import com.shiyu.ai.dal.bo.education.StudentBO;
+import com.shiyu.ai.dal.education.bo.StudentBO;
 
 import java.util.List;
 import com.shiyu.ai.common.core.api.PageData;

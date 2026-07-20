@@ -2,13 +2,13 @@ package com.shiyu.ai.knowledge.service.impl;
 
 import com.shiyu.ai.common.core.utils.JSONUtils;
 import com.shiyu.ai.model.embedding.EmbeddingService;
-import com.shiyu.ai.dal.dataobject.knowledge.KnowledgeChunkDO;
-import com.shiyu.ai.dal.dataobject.knowledge.KnowledgeDocumentDO;
+import com.shiyu.ai.dal.knowledge.bo.KnowledgeChunkBO;
+import com.shiyu.ai.dal.knowledge.bo.KnowledgeDocumentBO;
 import com.shiyu.ai.knowledge.rag.DocumentIngestionService;
-import com.shiyu.ai.dal.repository.knowledge.KnowledgeChunkRepository;
-import com.shiyu.ai.dal.repository.knowledge.KnowledgeDocRelationRepository;
-import com.shiyu.ai.dal.dataobject.knowledge.KnowledgeDocRelationDO;
-import com.shiyu.ai.dal.repository.knowledge.KnowledgeDocumentRepository;
+import com.shiyu.ai.dal.knowledge.repository.KnowledgeChunkRepository;
+import com.shiyu.ai.dal.knowledge.repository.KnowledgeDocRelationRepository;
+import com.shiyu.ai.dal.knowledge.bo.KnowledgeDocRelationBO;
+import com.shiyu.ai.dal.knowledge.repository.KnowledgeDocumentRepository;
 import com.shiyu.ai.knowledge.service.DocumentKnowledgeService;
 import com.shiyu.ai.vector.VectorRecord;
 import com.shiyu.ai.vector.VectorStore;
@@ -84,7 +84,7 @@ public class DocumentKnowledgeServiceImpl implements DocumentKnowledgeService {
                 if (bestChunks.containsKey(docId)) continue;
 
                 // 从 H2 拿 chunk 内容
-                KnowledgeChunkDO chunkDO = chunkRepository.getByDocumentIdAndIndex(docId, chunkIndex);
+                KnowledgeChunkBO chunkDO = chunkRepository.getByDocumentIdAndIndex(docId, chunkIndex);
                 if (chunkDO == null) continue;
 
                 double score = (double) vr.metadata().getOrDefault("_score", 0.0);
@@ -98,7 +98,7 @@ public class DocumentKnowledgeServiceImpl implements DocumentKnowledgeService {
             for (ChunkResult cr : bestChunks.values()) {
                 if (results.size() >= topK) break;
 
-                KnowledgeDocumentDO doc = documentRepository.selectById(cr.documentId);
+                KnowledgeDocumentBO doc = documentRepository.selectById(cr.documentId);
                 if (doc == null) continue;
 
                 results.add(toVO(doc, cr.snippet, cr.knowledgeIds));
@@ -137,7 +137,7 @@ public class DocumentKnowledgeServiceImpl implements DocumentKnowledgeService {
     @Override
     @Transactional(rollbackFor = Exception.class)
     public KnowledgeDocumentVO create(CreateDocumentRequest request) {
-        var doc = new KnowledgeDocumentDO();
+        var doc = new KnowledgeDocumentBO();
         doc.setTitle(request.title());
         doc.setContent(request.content());
         doc.setDocType(request.docType() != null ? request.docType() : "ARTICLE");
@@ -150,9 +150,9 @@ public class DocumentKnowledgeServiceImpl implements DocumentKnowledgeService {
 
         // Save knowledge-doc relations to knowledge_doc_relation table
         if (request.knowledgeIds() != null && !request.knowledgeIds().isEmpty()) {
-            List<KnowledgeDocRelationDO> relations = request.knowledgeIds().stream()
+            List<KnowledgeDocRelationBO> relations = request.knowledgeIds().stream()
                     .map(kid -> {
-                        KnowledgeDocRelationDO r = new KnowledgeDocRelationDO();
+                        KnowledgeDocRelationBO r = new KnowledgeDocRelationBO();
                         r.setDocId(doc.getId());
                         r.setKnowledgeId(kid);
                         r.setRelationType("RELATED");
@@ -198,7 +198,7 @@ public class DocumentKnowledgeServiceImpl implements DocumentKnowledgeService {
     // 辅助方法
     // ---------------------------------------------------------------
 
-    private static KnowledgeDocumentVO toVO(KnowledgeDocumentDO doc, String content, List<Long> knowledgeIds) {
+    private static KnowledgeDocumentVO toVO(KnowledgeDocumentBO doc, String content, List<Long> knowledgeIds) {
         return new KnowledgeDocumentVO(
                 doc.getId(),
                 doc.getTitle(),

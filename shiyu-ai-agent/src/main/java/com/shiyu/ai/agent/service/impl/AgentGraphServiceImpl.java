@@ -1,9 +1,9 @@
 package com.shiyu.ai.agent.service.impl;
 
-import com.shiyu.ai.dal.repository.agent.AgentAdminRepository;
+import com.shiyu.ai.dal.agent.repository.AgentAdminRepository;
 import com.shiyu.ai.agent.service.AgentGraphService;
 import com.shiyu.ai.agent.service.AgentService;
-import com.shiyu.ai.dal.bo.agent.AgentVersionBO;
+import com.shiyu.ai.dal.agent.bo.AgentVersionBO;
 import com.shiyu.ai.agent.request.EdgeRequest;
 import com.shiyu.ai.agent.request.GraphConfigRequest;
 import com.shiyu.ai.agent.request.NodeConfigRequest;

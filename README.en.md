@@ -1,203 +1,237 @@
 # ShiYu AI Platform
 
-> Enterprise-grade AI platform built on Java 21 + Spring Boot 4.x — Graph-based Agent orchestration, RAG knowledge engine, multi-platform LLM adaptation, MCP tool integration, intelligent education tutoring
+> **A multi-platform AI agent platform** — Built on a custom Agent orchestration engine, empowering rapid business agent development.
+> Currently extended into two business domains: **Record (Personal Timeline & Media)** and **Education (Intelligent Tutoring)**.
 
 ---
 
-## Table of Contents
+## Positioning
 
-- [Overview](#overview)
-- [Architecture](#architecture)
-- [Module Description](#module-description)
-- [Technology Stack](#technology-stack)
-- [Quick Start](#quick-start)
-- [Configuration Guide](#configuration-guide)
-- [API Documentation](#api-documentation)
-- [Development Guidelines](#development-guidelines)
-- [Project Documentation](#project-documentation)
-- [License](#license)
-
----
-
-## Overview
-
-**ShiYu AI** is an enterprise-grade intelligent platform for AI education scenarios, built with a modular monolith architecture. It covers core functionalities including AI conversation, Agent orchestration, knowledge base RAG, and intelligent education tutoring.
-
-Key Features:
-
-- **Graph-based Agent Orchestration** — State graph engine powered by `langgraph4j`, supporting 13 orchestratable node types
-- **LiteFlow Workflow** — Rule engine for chat flow orchestration, supporting Direct / CoT / ToT strategies
-- **RAG Knowledge Engine** — Document parsing + intelligent chunking + JVector HNSW vector retrieval + knowledge graph enhancement
-- **Multi-platform LLM Adaptation** — Unified interface for OpenAI, Ollama, DeepSeek, SiliconFlow, OpenRouter
-- **MCP Protocol Integration** — Tool service system based on Spring AI MCP
-- **Multi-tenant RBAC** — Sa-Token authentication + tenant/workspace/role/menu permission system
-- **Education Domain** — Bloom's taxonomy cognitive classification, Ebbinghaus forgetting curve review, intelligent exam generation, learning analytics
-- **Observability** — OpenTelemetry + Micrometer + Prometheus full-stack tracing
-
----
-
-## Architecture
+ShiYu AI is not a single-purpose AI application. It is an **AI agent platform that connects to multiple LLM providers, centers on a customizable Agent engine, and extends into various business directions**.
 
 ```
-┌─────────────────────────────────────────────────────────────────┐
-│                        shiyu-ai-bootstrap (:9000)                │
-├────────┬────────┬──────────┬──────────┬──────────┬──────────────┤
-│  auth  │ agent  │ education│ knowledge│  record  │    core      │
-│  Auth  │ Agent  │Education │ Knowledge│  Record  │  AI Core     │
-│  RBAC  │Engine  │  Domain  │  & RAG   │Management│ Chat/Model   │
-├────────┴────────┴──────────┴──────────┴──────────┴──────────────┤
-│                         shiyu-ai-dal (Data Access Layer)          │
-│              DO / BO / Mapper / Repository                       │
-├─────────────────────────────────────────────────────────────────┤
-│                       shiyu-common (Common Infrastructure)        │
-│     core │ web │ mybatis │ thread │ excel │ bom                  │
-└─────────────────────────────────────────────────────────────────┘
-```
+                     ┌──────────────────┐
+                     │ Multi-LLM Access │
+                     │ OpenAI / DeepSeek│
+                     │ Ollama / Silicon │
+                     │  Flow / More...  │
+                     └────────┬─────────┘
+                              │ Unified Adapter
+                     ┌────────▼─────────┐
+                     │   Agent Engine   │ ◄── Platform Core
+                     │ Graph · 13 Nodes │
+                     │ Memory · Tools · │
+                     │   RAG · Retry    │
+                     └────────┬─────────┘
+                              │
+              ┌───────────────┼───────────────────┐
+              │               │                   │
+     ┌────────▼──────┐  ┌────▼────┐      ┌──────▼──────┐
+     │  Record       │  │Education│      │   More...    │
+     │  Timeline     │  │  K-12   │      │  Future      │
+     │  Media · Tags │  │  Tutoring│      │  Extensions  │
+     └───────────────┘  └─────────┘      └─────────────┘
 
-### Agent Graph Orchestration Flow
-
-```
-User Input → AgentDefinition → Graph Compilation → StateGraph Execution →
-  Intent Recognition(INTENT) → Conditional Branch(CONDITION) →
-  LLM Call / Tool Call / RAG Retrieval / Memory Read-Write / Output Formatting
-```
-
-### RAG Retrieval Flow
-
-```
-User Query → Embedding Vectorization → JVector HNSW Retrieval →
-  Knowledge Graph Context Enhancement → Context Concatenation → LLM Generation
+         ▲  Platform Infrastructure: Knowledge · Vector Store · Usage
+         │  Memory · Plugins · Tools · MCP · Model Management
+         └────────────────────────────────────────────────┘
 ```
 
 ---
 
-## Module Description
+## Platform Infrastructure
 
-### shiyu-ai-agent — Agent Orchestration Engine
+Beneath the Agent engine, the platform provides a full suite of infrastructure capabilities that power Agent nodes and business extensions.
 
-Custom Agent state graph engine based on `langgraph4j`, supporting 13 orchestratable nodes:
+### Knowledge Engine (`shiyu-ai-knowledge`)
+
+All-in-one knowledge service covering document management, RAG retrieval, and knowledge graphs:
+
+- **Document Management** — Knowledge point CRUD + relationship management (prerequisite/subsequent/includes/related/similar/belongs)
+- **Vector Retrieval** — Leverages JVector HNSW from the vector module
+- **Knowledge Graph** — Graph-structured storage of knowledge point relationships
+- **RAG Orchestration** — Vector retrieval → graph context enhancement → context assembly → LLM generation
+- **Chinese Chunking** — Document splitting strategy optimized for Chinese text
+- **Index Rebuild** — Asynchronous full vector index rebuild support
+
+### Vector Store (`shiyu-ai-vector`)
+
+High-performance vector storage powered by **JVector (pure Java HNSW)**:
+
+- **HNSW Index** — Efficient approximate nearest neighbor search
+- **Disk Persistence** — Vector indexes persisted to disk, survivable across restarts
+- **Configurable Dimensions** — Dynamic vector dimension configuration (default 512)
+- **Multiple Search Strategies** — Exact search + approximate search
+- **Full CRUD** — Complete create/read/update/delete for vectors
+
+### Memory System (`shiyu-ai-memory`)
+
+Two-tier intelligent memory service:
+
+- **Short-term Memory** — Conversation context management with automatic truncation for coherent sessions
+- **Long-term Memory** — Persistent storage with importance decay, retaining key information long-term
+- **Cross-session Retrieval** — Retrieve relevant historical memories across different sessions
+- **Compression Strategy** — Intelligent compression of long conversation histories (summarization/truncation)
+- **SPI Extension** — Customizable memory storage backends
+
+### Tool System — Tool & MCP (`shiyu-ai-tool` + `shiyu-ai-mcp`)
+
+Standardized tool invocation service based on the **Spring AI MCP protocol**:
+
+- **MCP Protocol Integration** — Standardized tool description and invocation protocol
+- **Tool Registration** — Runtime register/deregister/update tool definitions
+- **Tool Execution** — Secure sandboxed tool execution environment
+- **Dynamic Discovery** — Auto-discover and register tools from MCP servers
+- **Agent Integration** — Agent `TOOL_CALL` nodes directly invoke registered tools
+
+### Model Management (`shiyu-ai-model`)
+
+Unified multi-platform LLM model adaptation and management:
+
+- **Multi-platform Adaptation** — OpenAI / DeepSeek / Ollama / SiliconFlow / OpenRouter
+- **Hot Reload** — Dynamic platform switching at runtime, zero downtime
+- **Model Routing** — Route to different models by scenario or tenant
+- **Resilience** — Circuit breaking, backoff retry, graceful degradation
+- **Embedding Model** — Built-in BGE-small-zh ONNX local embedding, zero external dependencies
+
+### Usage Tracking (`shiyu-ai-usage`)
+
+Full-stack usage metering and billing:
+
+- **Token Metering** — Precise input/output token counting
+- **Request Logging** — Complete records for every Agent / LLM / tool invocation
+- **Real-time Push** — WebSocket-based live usage data streaming
+- **Multi-dimensional Statistics** — Aggregated by user, tenant, model, time period
+
+### Plugin System (`shiyu-ai-plugin`)
+
+Lightweight plugin extension framework:
+
+- **Plugin Lifecycle** — Full lifecycle management: load → enable → disable → unload
+- **Sandbox Isolation** — Plugin execution in sandbox for platform security
+- **SPI Registration** — SPI-based plugin discovery and registration
+- **Dynamic Hot-Plug** — Install/uninstall plugins at runtime, no restart required
+
+---
+
+## Core Architecture
+
+### Platform Access Layer — Multi-LLM Connectivity
+
+A unified ModelManager adapter mechanism connects to all major LLM platforms through a single API:
+
+| Platform | Access Method |
+|----------|---------------|
+| **OpenAI** | Standard OpenAI API |
+| **DeepSeek** | DeepSeek API |
+| **Ollama** | Local private deployment |
+| **SiliconFlow** | China-accelerated access |
+| **OpenRouter** | Multi-model routing |
+| **More...** | Extensible adapters |
+
+Platform configurations support **startup loading** and **runtime hot-reload** — switch models with zero downtime.
+
+### Agent Engine — Graph-Based Custom Agent Building
+
+Powered by a `langgraph4j` state graph engine with 13 pluggable node types — build Agents like assembling building blocks:
 
 | Node Type | Purpose |
 |-----------|---------|
-| `INTENT` | User intent recognition |
+| `INTENT` | User intent recognition & routing |
 | `LLM_CALL` | LLM model invocation |
-| `TOOL_CALL` | Tool function invocation |
+| `TOOL_CALL` | MCP tool invocation |
 | `RAG_RETRIEVAL` | Knowledge base retrieval |
 | `RAG_ENHANCEMENT` | Post-retrieval enhancement |
 | `SHORT_TERM_MEMORY` | Short-term memory read/write |
 | `LONG_TERM_MEMORY` | Long-term memory read/write |
 | `MEMORY_RETRIEVAL` | Cross-session memory retrieval |
 | `CONDITION` | Conditional branch routing |
-| `AGENT_CALL` | Sub-Agent invocation |
+| `AGENT_CALL` | Sub-Agent invocation (Agent nesting) |
 | `TRANSFORM` | Data transformation |
 | `OUTPUT_FORMAT` | Output formatting |
-| `DEFAULT` | Default node |
+| `DEFAULT` | Default handler |
 
-Core capabilities:
-- **Dynamic Agent Registration** — Runtime registration/deregistration of Agent definitions
-- **Version Management** — Multi-version coexistence with hot switching (DRAFT / PUBLISHED / ARCHIVED)
-- **Sync/Stream Execution** — `POST /api/agent/{agentId}/execute` + SSE streaming endpoint
-- **Node-level Retry & Timeout** — Independent retry strategy and timeout configuration per node
-- **LiteFlow Workflow** — Complex flow orchestration for education scenarios (19 workflow components)
+Engine capabilities:
 
-### shiyu-ai-core — AI Core
+- **Dynamic Registration** — Register/deregister/update Agents at runtime, no restart required
+- **Version Management** — DRAFT / PUBLISHED / ARCHIVED multi-version coexistence
+- **Sync/Stream Execution** — REST sync calls + SSE streaming output
+- **Node-level Retry & Timeout** — Independent configuration per node
+- **Nested Agents** — Agent within Agent for complex task decomposition
+- **Execution Lifecycle** — PENDING → RUNNING → PAUSED → ... → COMPLETED / FAILED
+- **Checkpoint Mechanism** — Node-level execution snapshots supporting pause/resume
 
-AI conversation engine and model management:
+---
 
-- **ChatEngine** — Unified conversation interface, supporting sync/stream + memory-augmented conversation
-- **ModelManager** — Multi-platform model adapter management (loaded from DB at startup, supports hot updates)
-- **MemoryService** — Short-term memory (conversation history) + long-term memory (persistence + importance decay)
-- **ToolService** — MCP tool invocation service
-- **EmbeddingService** — Local embedding model based on BGE-small-zh ONNX
+## Business Extensions
 
-### shiyu-ai-knowledge — Knowledge Engine
+### Extension 1: Record — Personal Timeline & Media
 
-RAG retrieval-augmented generation and knowledge graph:
+A lightweight **personal record and timeline** management system for journaling, note-taking, event archiving, and more.
 
-- **Document Management** — Knowledge point CRUD + relationship management (prerequisite/subsequent/includes/related/similar/belongs)
-- **Vector Retrieval** — JVector-based (pure Java HNSW) vector storage with disk persistence
-- **Knowledge Graph** — Graph-structured storage of knowledge point relationships, supporting parent/child/prerequisite/related queries
-- **RAG Orchestration** — Vector retrieval + graph context enhancement → context concatenation → LLM generation
-- **Chinese Chunking** — Document chunking strategy optimized for Chinese
-- **Index Rebuild** — Asynchronous full vector index rebuild support
+- **Profiles** — Person/character profile management with member associations
+- **Timeline** — Chronological event recording and timeline display
+- **Media Management** — Image / video / audio attachment upload and management
+- **Tag System** — Flexible classification and filtering with tags
 
-### shiyu-ai-education — Intelligent Education
+### Extension 2: Education — Intelligent K-12 Tutoring
 
-AI tutoring system for K12 education scenarios:
+An **AI-powered tutoring system** for K-12 education, covering the full "learn → practice → test → evaluate → recommend" loop.
 
-- **Knowledge System** — Textbook/chapter/knowledge point three-level structure, supporting multiple textbook versions
-- **Ability Assessment** — Bloom's taxonomy six cognitive dimensions (remember/understand/apply/analyze/evaluate/create)
-- **Intelligent Exam Generation** — AI automatically generates exams based on weak knowledge points
-- **Review Planning** — Ebbinghaus forgetting curve-driven spaced repetition (6-round review plan)
-- **Learning Analytics** — Ability radar chart, learning trends, weak knowledge point analysis
-- **Learning Path** — Personalized learning path recommendation based on knowledge graph
+- **Knowledge System** — Textbook → Chapter → Knowledge Point hierarchy, multi-version textbooks
+- **Ability Assessment** — Bloom's Taxonomy (remember/understand/apply/analyze/evaluate/create)
+- **Intelligent Exam Generation** — AI generates exams targeting weak knowledge points
+- **Review Planning** — Ebbinghaus Forgetting Curve driven 6-round spaced repetition
+- **Learning Analytics** — Radar charts, learning trends, weak-point analysis
+- **Learning Path** — Personalized path recommendation via knowledge graph
 
-### shiyu-ai-auth — Authentication & Authorization
+---
 
-Enterprise-grade RBAC permission system:
+## Module Overview
 
-- **Sa-Token** — Lightweight authentication framework, supporting login/permission/session management
-- **Multi-tenant** — Tenant → Workspace → User three-level isolation
-- **Permission Model** — User / Role / Menu / Workspace / Permission Code
-- **Security Protection** — XSS filtering, CAPTCHA, login rate limiting, password encryption
-
-### shiyu-ai-record — Record Management
-
-Personal records and timeline:
-
-- **Profile Management** — Profile management and member associations
-- **Timeline** — Event timeline recording
-- **Multimedia** — Image/video/audio attachment management
-- **Tag System** — Flexible tag classification
-
-### shiyu-ai-dal — Data Access Layer
-
-Unified data access abstraction:
-
-- **DO/BO Separation** — Data Objects (DO) and Business Objects (BO) layered separation
-- **Repository Pattern** — Encapsulates MyBatis-Flex Mapper, returns BO externally
-- **Multi-tenant Support** — Automatic injection of `tenant_id` filter conditions
-- **H2/MySQL Dual Mode** — H2 file mode for development, MySQL for production
-
-### shiyu-common — Common Infrastructure
-
-| Sub-module | Functionality |
-|------------|---------------|
-| `core` | Unified `Result` response, pagination query, exception hierarchy, utilities, transaction hooks, event mechanism |
-| `web` | XSS filtering, repeatable request stream, OpenAPI documentation, resource interceptor |
-| `mybatis` | MyBatis-Flex encapsulation, `TenantEntity`, P6Spy SQL logging |
-| `thread` | Thread pool management, virtual thread factory, OpenTelemetry context propagation, Micrometer metrics |
-| `excel` | Excel import/export, dictionary conversion, enum conversion, cell merge strategy |
-| `bom` | Maven BOM unified version declaration |
+| Module | Responsibility | Category |
+|--------|---------------|----------|
+| `shiyu-ai-agent` | **Agent Engine**: Graph orchestration, Node system, Execution lifecycle, Checkpoint, Retry | **Platform Core** |
+| `shiyu-ai-core` | AI Core: ChatEngine, Conversation interface | Platform Foundation |
+| `shiyu-ai-auth` | Auth & RBAC: Sa-Token, Multi-tenant | Platform Foundation |
+| `shiyu-ai-model` | Model Management: Multi-platform adapters, Hot reload, Resilience, Embedding | Platform Infrastructure |
+| `shiyu-ai-knowledge` | Knowledge Engine: Document management, RAG retrieval, Knowledge graph, Chunking | Platform Infrastructure |
+| `shiyu-ai-vector` | Vector Store: JVector HNSW index, Disk persistence, CRUD | Platform Infrastructure |
+| `shiyu-ai-rag` | RAG Retrieval Service | Platform Infrastructure |
+| `shiyu-ai-memory` | Memory System: Short/long-term memory, Compression, Cross-session retrieval, SPI | Platform Infrastructure |
+| `shiyu-ai-tool` | Tool System: MCP protocol, Tool registration/invocation/execution | Platform Infrastructure |
+| `shiyu-ai-mcp` | MCP Protocol Layer: Protocol adaptation & communication | Platform Infrastructure |
+| `shiyu-ai-plugin` | Plugin System: Lifecycle management, Sandbox isolation, Hot-plug | Platform Infrastructure |
+| `shiyu-ai-usage` | Usage Tracking: Token metering, Real-time push, Multi-dimensional aggregation | Platform Infrastructure |
+| `shiyu-ai-observation` | Observability: Monitoring collection configuration | Platform Infrastructure |
+| `shiyu-ai-record` | **Record Business**: Profiles, Timeline, Media, Tags | **Business Extension** |
+| `shiyu-ai-education` | **Education Business**: Learn/Practice/Exam/Evaluate/Recommend | **Business Extension** |
+| `shiyu-ai-bootstrap` | Application boot entry | Infrastructure |
+| `shiyu-ai-dal` | Data Access Layer: DO/BO/Repository pattern | Infrastructure |
+| `shiyu-common/*` | Common: Web security, Thread pool, Excel, MyBatis wrapper | Infrastructure |
 
 ---
 
 ## Technology Stack
 
-| Domain | Technology | Version |
-|--------|------------|---------|
-| Language | Java | 21 |
-| Framework | Spring Boot | 4.1.0 |
-| AI Framework | Spring AI | 2.0.0 |
-| LLM Adaptation | LangChain4j | 1.16.3 |
-| Agent Engine | LangGraph4j | 1.8.19 |
-| Workflow Engine | LiteFlow | 2.16.0 |
-| Authentication | Sa-Token | 1.45.0 |
-| ORM | MyBatis-Flex | 1.11.7 |
-| Database | H2 (dev) / MySQL (prod) | 2.4.240 / 9.4.0 |
-| Connection Pool | Druid | 1.2.27 |
-| Vector Search | JVector (HNSW) | 4.0.0-beta.6 |
-| Embedding Model | BGE-small-zh (ONNX local) | — |
-| Cache | Caffeine | 3.2.3 |
-| Object Mapping | MapStruct-Plus + Lombok | 1.5.0 / 1.18.42 |
-| Utilities | Hutool / Guava / Commons | 5.8.43 / 33.5.0 / 3.20.0 |
-| API Docs | SpringDoc OpenAPI + Knife4j | 3.0.2 / 4.5.0 |
-| Observability | OpenTelemetry + Micrometer + Prometheus | — |
-| Reactive | Reactor (Flux) | — |
-| Logging | Log4j2 | — |
-| Scheduling | XXL-Job | 3.3.2 |
-| Object Storage | AWS S3 SDK | 2.41.18 |
-| Build | Maven | 3.8+ |
+| Domain | Technology |
+|--------|------------|
+| Language | Java 21 (Virtual Threads) |
+| Framework | Spring Boot 4.1 |
+| AI Framework | Spring AI 2.0 + LangChain4j |
+| Agent Engine | LangGraph4j |
+| Workflow Engine | LiteFlow |
+| Authentication | Sa-Token |
+| ORM | MyBatis-Flex |
+| Database | H2 (dev) / MySQL (prod) |
+| Vector Search | JVector (HNSW) |
+| Embedding Model | BGE-small-zh (ONNX local) |
+| MCP Protocol | Spring AI MCP |
+| Cache | Caffeine |
+| API Docs | SpringDoc OpenAPI + Knife4j |
+| Observability | OpenTelemetry + Micrometer + Prometheus |
+| Logging | Log4j2 |
+| Scheduling | XXL-Job |
 
 ---
 
@@ -205,9 +239,8 @@ Unified data access abstraction:
 
 ### Prerequisites
 
-- **JDK 21+** (project uses Java 21 features like virtual threads)
-- **Maven 3.8+**
-- **Git**
+- JDK 21+
+- Maven 3.8+
 
 ### Clone & Build
 
@@ -217,9 +250,9 @@ cd shiyu-ai
 mvn clean install -DskipTests
 ```
 
-### Configure AI Platforms
+### Configure an LLM Platform
 
-Edit the configuration file `shiyu-ai-core/src/main/resources/config/config.yml`:
+Edit `shiyu-ai-core/src/main/resources/config/config.yml` and configure at least one platform:
 
 ```yaml
 shiyu:
@@ -227,139 +260,70 @@ shiyu:
     ollama:
       base-url: http://localhost:11434
       model: gemma3:4b
-    openai:
-      base-url: https://api.openai.com/v1
-      api-key: ${AI_OPENAI_API_KEY:}
-    siliconflow:
-      base-url: https://api.siliconflow.cn
-      api-key: sk-xxxxxxxxxxxxxxxx
-      model: THUDM/GLM-Z1-9B-0414
     deepseek:
       base-url: https://api.deepseek.com
-      api-key: sk-xxxxxxxxxxxxxxxx
+      api-key: sk-your-key
       model: deepseek-chat
 ```
 
-### Start Application
-
-The project is a monolithic application, started uniformly via `shiyu-ai-bootstrap`:
+### Start
 
 ```bash
 cd shiyu-ai-bootstrap
 mvn spring-boot:run -Dspring-boot.run.profiles=dev
 ```
 
-After startup, access:
-- Application port: `http://localhost:9000`
-- API documentation: `http://localhost:9000/doc.html`
-
-### Maven Profiles
-
-| Profile | Purpose | Default |
-|---------|---------|---------|
-| `dev` | Development environment (trace logging, H2 database) | ✅ |
-| `prod` | Production environment (warn logging, MySQL database) | |
-
----
-
-## Configuration Guide
-
-### Application Configuration
-
-```yaml
-server:
-  port: 9000
-
-shiyu:
-  ai:
-    # Model platform configuration (can also be managed via database)
-    ollama:
-      base-url: http://localhost:11434
-      model: gemma3:4b
-    siliconflow:
-      base-url: https://api.siliconflow.cn
-      api-key: sk-xxx
-      model: THUDM/GLM-Z1-9B-0414
-  memory:
-    enabled: true
-    max-short-term-memories: 10
-    max-long-term-memories: 50
-  vector:
-    type: hnsw          # hnsw / inmemory
-    dimension: 512
-    data-dir: ${app.home}/data/vector
-```
-
-### Environment Variables
-
-| Variable | Description |
-|----------|-------------|
-| `AI_OPENAI_API_KEY` | OpenAI API Key |
-| `APP_HOME` | Application data directory (H2 database, vector index storage location) |
+After startup:
+- Application: `http://localhost:9000`
+- API docs: `http://localhost:9000/doc.html`
 
 ---
 
 ## API Documentation
 
-After starting the application, access:
-
-```
-http://localhost:9000/doc.html              # Knife4j documentation
-http://localhost:9000/swagger-ui/index.html # Swagger UI
-http://localhost:9000/v3/api-docs           # OpenAPI 3.0 JSON
-```
-
-APIs are grouped by module:
-
-| Group | Path Prefix |
-|-------|-------------|
-| Agent | `/api/agent/**` |
-| Authentication | `/api/auth/**` |
-| Knowledge | `/api/knowledge/**` |
-| Education | `/api/education/**` |
-| Record | `/api/record/**` |
-| System | `/api/system/**` |
+| Group | Path Prefix | Category |
+|-------|-------------|----------|
+| Agent | `/api/agent/**` | Platform Core |
+| Model | `/api/model/**` | Platform Infrastructure |
+| Knowledge | `/api/knowledge/**` | Platform Infrastructure |
+| Memory | `/api/memory/**` | Platform Infrastructure |
+| Auth | `/api/auth/**` | Platform Foundation |
+| Usage | `/api/usage/**` | Platform Infrastructure |
+| Plugin | `/api/plugin/**` | Platform Infrastructure |
+| Education | `/api/education/**` | Business Extension |
+| Record | `/api/record/**` | Business Extension |
+| System | `/api/system/**` | Infrastructure |
 
 ---
 
-## Development Guidelines
-
-- **Lombok** — `@Data`, `@Slf4j`, `@RequiredArgsConstructor` to simplify code
-- **MapStruct-Plus** — BO <-> VO object mapping
-- **Jakarta Validation** — `@Valid` parameter validation groups (AddGroup / EditGroup / QueryGroup)
-- **XSS Filtering** — Global XSS filter (Jsoup Safelist) to prevent cross-site scripting attacks
-- **Unified Exception Handling** — `@ControllerAdvice` + business exception hierarchy + unified `Result<T>` response
-- **Pagination Query** — `PageQuery` + `PageData<T>` unified pagination model
-- **OpenTelemetry** — Thread pool context propagation + call chain tracing
-- **Multi-tenant** — All business tables include `tenant_id` + `workspace_id`, automatic filtering
-
-### Project Layering
+## Roadmap
 
 ```
-controller/   <- REST interface layer (Request -> VO)
-service/      <- Business logic layer (BO)
-  impl/       <- Implementations
-repository/   <- Repository layer (returns BO)
-mapper/       <- MyBatis mapping interfaces (operates DO)
-dal/
-  dataobject/ <- Data Objects (DO, maps database rows)
-  bo/         <- Business Objects (BO, returned by Repository)
-  mapper/     <- Data access mappings
-  repository/ <- Repository implementations
-config/       <- Configuration classes
+Phase 1 (Complete)    Platform Foundation
+  ├── Multi-LLM Access            ✅
+  ├── Agent Graph Engine          ✅
+  ├── Knowledge & RAG Engine      ✅
+  ├── Vector Store                ✅
+  ├── Memory System               ✅
+  ├── MCP Tool System             ✅
+  ├── Plugin System               ✅
+  ├── Usage Tracking              ✅
+  └── Multi-tenant RBAC           ✅
+
+Phase 2 (Current)      Business Extensions
+  ├── Record Management           ✅ Launched
+  ├── Education Tutoring          ✅ Launched
+  └── More directions...          🔜 Upcoming
+
+Phase 3 (Planned)      Platform Enhancement
+  ├── Agent Marketplace / Templates
+  ├── Visual Orchestration UI
+  ├── Richer MCP Tool Ecosystem
+  └── Performance & Observability Deepening
 ```
-
----
-
-## Project Documentation
-
-| Document | Description |
-|----------|-------------|
-| [Architecture Design Document (ADD)](./docs/architecture/shiyu-ai-architecture-design.md) | Enterprise architecture design, 20 chapters |
-| [Refactoring Task List](./docs/refactoring-tasks.md) | 21 refactoring tasks with sub-task checklists |
 
 ---
 
 ## License
 
-This project is licensed under the MIT License. See the [LICENSE](./LICENSE) file in the project root directory for details.
+This project is licensed under the MIT License. See [LICENSE](./LICENSE) for details.

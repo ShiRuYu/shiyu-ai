@@ -1,6 +1,6 @@
 package com.shiyu.ai.knowledge.search;
 
-import com.shiyu.ai.dal.dataobject.knowledge.KnowledgeDO;
+import com.shiyu.ai.dal.knowledge.bo.KnowledgeBO;
 
 import java.util.List;
 import java.util.function.Consumer;
@@ -28,5 +28,5 @@ public interface KnowledgeSearchService {
 
     void removeFromIndex(Long id);
 
-    void indexKnowledge(KnowledgeDO knowledgeDO);
+    void indexKnowledge(KnowledgeBO knowledgeDO);
 }

@@ -3,8 +3,8 @@ package com.shiyu.ai.agent.cache;
 import com.github.benmanes.caffeine.cache.Cache;
 import com.github.benmanes.caffeine.cache.Caffeine;
 import com.shiyu.ai.agent.AgentDefinition;
-import com.shiyu.ai.dal.repository.agent.AgentAdminRepository;
-import com.shiyu.ai.dal.bo.agent.AgentDefBO;
+import com.shiyu.ai.dal.agent.repository.AgentAdminRepository;
+import com.shiyu.ai.dal.agent.bo.AgentDefBO;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Component;
 

@@ -1,8 +1,8 @@
 package com.shiyu.ai.memory.spi.impl;
 import org.junit.jupiter.api.Tag;
 
-import com.shiyu.ai.dal.bo.memory.ConversationMessageBO;
-import com.shiyu.ai.dal.repository.ConversationMessageRepository;
+import com.shiyu.ai.dal.memory.bo.ConversationMessageBO;
+import com.shiyu.ai.dal.memory.repository.ConversationMessageRepository;
 import com.shiyu.ai.memory.spi.Memory;
 import com.shiyu.ai.memory.spi.MemoryQuery;
 import com.shiyu.ai.memory.spi.MemoryType;

@@ -1,7 +1,7 @@
 package com.shiyu.ai.education.dto;
 
 import io.github.linpeilie.annotations.AutoMapper;
-import com.shiyu.ai.dal.bo.education.ResourceBO;
+import com.shiyu.ai.dal.education.bo.ResourceBO;
 
 @AutoMapper(target = ResourceBO.class)
 public record ResourceResponse(

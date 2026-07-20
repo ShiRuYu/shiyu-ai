@@ -1,7 +1,7 @@
 package com.shiyu.ai.agent.workflow.component;
 
-import com.shiyu.ai.dal.bo.education.ReviewTaskBO;
-import com.shiyu.ai.dal.repository.education.ReviewTaskRepository;
+import com.shiyu.ai.dal.education.bo.ReviewTaskBO;
+import com.shiyu.ai.dal.education.repository.ReviewTaskRepository;
 import com.shiyu.ai.education.service.ReviewService;
 import com.shiyu.ai.agent.workflow.context.LearningContext;
 import com.yomahub.liteflow.core.NodeComponent;

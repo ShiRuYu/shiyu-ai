@@ -1,7 +1,7 @@
 package com.shiyu.ai.memory.spi.impl;
 
-import com.shiyu.ai.dal.bo.memory.LongTermMemoryBO;
-import com.shiyu.ai.dal.repository.LongTermMemoryRepository;
+import com.shiyu.ai.dal.memory.bo.LongTermMemoryBO;
+import com.shiyu.ai.dal.memory.repository.LongTermMemoryRepository;
 import com.shiyu.ai.memory.spi.Memory;
 import com.shiyu.ai.memory.spi.MemoryQuery;
 import com.shiyu.ai.memory.spi.MemoryStore;

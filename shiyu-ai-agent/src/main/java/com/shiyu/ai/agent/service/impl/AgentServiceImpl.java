@@ -3,7 +3,7 @@ import org.springframework.context.annotation.Lazy;
 
 import com.shiyu.ai.agent.cache.AgentCacheManager;
 import com.shiyu.ai.agent.cache.AgentLoader;
-import com.shiyu.ai.dal.repository.agent.AgentAdminRepository;
+import com.shiyu.ai.dal.agent.repository.AgentAdminRepository;
 import com.shiyu.ai.agent.AgentDefinition;
 import com.shiyu.ai.agent.AgentVersion;
 import com.shiyu.ai.agent.service.AgentService;

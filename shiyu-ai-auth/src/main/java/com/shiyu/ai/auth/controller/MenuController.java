@@ -1,7 +1,7 @@
 package com.shiyu.ai.auth.controller;
 
 import com.shiyu.ai.auth.request.MenuRequest;
-import com.shiyu.ai.dal.bo.auth.MenuBO;
+import com.shiyu.ai.dal.auth.bo.MenuBO;
 import com.shiyu.ai.auth.vo.RouteMenuVO;
 import com.shiyu.ai.auth.service.MenuService;
 import com.shiyu.ai.common.core.api.Result;

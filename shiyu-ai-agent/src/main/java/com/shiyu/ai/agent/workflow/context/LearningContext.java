@@ -1,7 +1,7 @@
 package com.shiyu.ai.agent.workflow.context;
 
-import com.shiyu.ai.dal.bo.education.QuestionBO;
-import com.shiyu.ai.dal.bo.education.ResourceBO;
+import com.shiyu.ai.dal.education.bo.QuestionBO;
+import com.shiyu.ai.dal.education.bo.ResourceBO;
 import com.shiyu.ai.education.domain.AbilityValue;
 import com.shiyu.ai.knowledge.dto.KnowledgeResponse;
 import lombok.Data;

@@ -1,7 +1,7 @@
 package com.shiyu.ai.agent.config;
 
-import com.shiyu.ai.dal.repository.agent.IntentDefRepository;
-import com.shiyu.ai.dal.bo.agent.IntentDefBO;
+import com.shiyu.ai.dal.agent.repository.IntentDefRepository;
+import com.shiyu.ai.dal.agent.bo.IntentDefBO;
 import com.shiyu.ai.agent.node.intent.IntentDefinitionFactory;
 import jakarta.annotation.Resource;
 import lombok.extern.slf4j.Slf4j;

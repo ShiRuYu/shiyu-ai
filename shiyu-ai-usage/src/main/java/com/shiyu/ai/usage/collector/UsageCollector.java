@@ -1,7 +1,8 @@
 package com.shiyu.ai.usage.collector;
 
-import com.shiyu.ai.dal.dataobject.agent.TokenUsageDO;
-import com.shiyu.ai.dal.repository.agent.TokenUsageRepository;
+import com.shiyu.ai.common.core.utils.JSONUtils;
+import com.shiyu.ai.dal.agent.dataobject.UsageRecordDO;
+import com.shiyu.ai.dal.agent.repository.UsageRecordRepository;
 import com.shiyu.ai.usage.model.ModelPricing;
 import com.shiyu.ai.usage.websocket.UsageWebSocketService;
 import lombok.extern.slf4j.Slf4j;
@@ -13,36 +14,33 @@ import java.util.concurrent.ConcurrentHashMap;
 
 /**
  * 用量收集器
- * 接收模型调用事件，记录 Token/Cost/Latency，并通过 WebSocket 实时推送
+ * <p>
+ * 接收模型调用事件和 Embedding 事件，统一写入 usage_record 表。
+ * 通用字段直接落列，类型专属字段以 JSON 存放于 ext_info。
+ * </p>
  */
 @Slf4j
 public class UsageCollector {
 
-    private final TokenUsageRepository repository;
+    private final UsageRecordRepository usageRecordRepository;
     private final Map<String, ModelPricing> pricingMap = new ConcurrentHashMap<>();
     private UsageWebSocketService webSocketService;
 
-    public UsageCollector(TokenUsageRepository repository) {
-        this.repository = repository;
+    public UsageCollector(UsageRecordRepository usageRecordRepository) {
+        this.usageRecordRepository = usageRecordRepository;
         registerPricing(ModelPricing.defaultOpenAI());
     }
 
-    /**
-     * 注入 WebSocket 推送服务（可选）
-     */
     public void setWebSocketService(UsageWebSocketService webSocketService) {
         this.webSocketService = webSocketService;
     }
 
-    /**
-     * 注册模型定价
-     */
     public void registerPricing(ModelPricing pricing) {
         pricingMap.put(pricing.getPlatform() + ":" + pricing.getModel(), pricing);
     }
 
     /**
-     * 记录用量
+     * 记录 LLM 模型调用用量
      */
     public void recordUsage(String platform, String model,
                             int promptTokens, int completionTokens,
@@ -53,29 +51,77 @@ public class UsageCollector {
         );
         double cost = pricing.calculateCost(promptTokens, completionTokens);
 
-        // 1. 持久化到数据库
-        TokenUsageDO record = new TokenUsageDO();
-        record.setId(UUID.randomUUID().toString().replace("-", ""));
-        record.setPlatform(platform);
-        record.setModel(model);
-        record.setPromptTokens(promptTokens);
-        record.setCompletionTokens(completionTokens);
-        record.setTotalTokens(promptTokens + completionTokens);
-        record.setLatencyMs(latencyMs);
-        record.setCost(cost);
-        record.setUserId(userId);
-        record.setSessionId(sessionId);
-        record.setCreateTime(LocalDateTime.now());
+        int totalTokens = promptTokens + completionTokens;
+        String extInfo = JSONUtils.toJsonString(Map.of(
+            "platform", platform,
+            "model", model,
+            "promptTokens", promptTokens,
+            "completionTokens", completionTokens,
+            "totalTokens", totalTokens,
+            "cost", cost
+        ));
+
+        UsageRecordDO record = buildRecord("LLM", latencyMs, userId, sessionId, extInfo);
 
         try {
-            repository.insert(record);
-            log.debug("用量记录已保存: platform={}, model={}, tokens={}, cost={}, latency={}ms",
-                    platform, model, record.getTotalTokens(), cost, latencyMs);
+            usageRecordRepository.insert(record);
+            log.debug("LLM 用量已保存: platform={}, model={}, tokens={}, cost={}, latency={}ms",
+                    platform, model, totalTokens, cost, latencyMs);
         } catch (Exception e) {
-            log.error("保存用量记录失败: platform={}, model={}", platform, model, e);
+            log.error("保存 LLM 用量失败: platform={}, model={}", platform, model, e);
         }
 
-        // 2. WebSocket 实时推送（可选）
+        pushUsageToWebSocket(platform, model, promptTokens, completionTokens, latencyMs, cost);
+    }
+
+    /**
+     * 记录 Embedding 用量
+     */
+    public void recordEmbedding(String model, int textLength,
+                                int estimatedTokens, int vectorCount,
+                                long latencyMs, Long userId, String sessionId) {
+        String extInfo = JSONUtils.toJsonString(Map.of(
+            "model", model,
+            "textLength", textLength,
+            "estimatedTokens", estimatedTokens,
+            "vectorCount", vectorCount
+        ));
+
+        UsageRecordDO record = buildRecord("EMBEDDING", latencyMs, userId, sessionId, extInfo);
+
+        try {
+            usageRecordRepository.insert(record);
+            log.debug("Embedding 用量已保存: model={}, tokens≈{}, vectors={}, latency={}ms",
+                    model, estimatedTokens, vectorCount, latencyMs);
+        } catch (Exception e) {
+            log.error("保存 Embedding 用量失败: model={}", model, e);
+        }
+
+        if (webSocketService != null) {
+            try {
+                webSocketService.pushEmbeddingUsage(model, textLength, estimatedTokens, vectorCount, latencyMs);
+            } catch (Exception e) {
+                log.warn("WebSocket 推送 Embedding 用量失败: {}", e.getMessage());
+            }
+        }
+    }
+
+    private UsageRecordDO buildRecord(String usageType, long latencyMs,
+                                       Long userId, String sessionId, String extInfo) {
+        UsageRecordDO record = new UsageRecordDO();
+        record.setId(UUID.randomUUID().toString().replace("-", ""));
+        record.setUsageType(usageType);
+        record.setLatencyMs(latencyMs);
+        record.setUserId(userId);
+        record.setSessionId(sessionId);
+        record.setExtInfo(extInfo);
+        record.setCreateTime(LocalDateTime.now());
+        return record;
+    }
+
+    private void pushUsageToWebSocket(String platform, String model,
+                                       int promptTokens, int completionTokens,
+                                       long latencyMs, double cost) {
         if (webSocketService != null) {
             try {
                 webSocketService.pushUsageRecord(platform, model,
@@ -86,9 +132,6 @@ public class UsageCollector {
         }
     }
 
-    /**
-     * 获取已注册的定价数
-     */
     public int getPricingCount() {
         return pricingMap.size();
     }

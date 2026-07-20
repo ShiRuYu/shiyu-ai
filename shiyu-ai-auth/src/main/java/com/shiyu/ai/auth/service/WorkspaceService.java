@@ -1,6 +1,6 @@
 package com.shiyu.ai.auth.service;
 
-import com.shiyu.ai.dal.bo.auth.WorkspaceBO;
+import com.shiyu.ai.dal.auth.bo.WorkspaceBO;
 
 import java.util.List;
 

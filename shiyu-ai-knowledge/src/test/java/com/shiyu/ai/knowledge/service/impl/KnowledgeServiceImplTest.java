@@ -1,7 +1,7 @@
 package com.shiyu.ai.knowledge.service.impl;
 
-import com.shiyu.ai.dal.dataobject.knowledge.KnowledgeDO;
-import com.shiyu.ai.dal.repository.knowledge.KnowledgeRepository;
+import com.shiyu.ai.dal.knowledge.bo.KnowledgeBO;
+import com.shiyu.ai.dal.knowledge.repository.KnowledgeRepository;
 import com.shiyu.ai.knowledge.dto.CreateKnowledgeRequest;
 import com.shiyu.ai.knowledge.dto.KnowledgeResponse;
 import com.shiyu.ai.knowledge.dto.UpdateKnowledgeRequest;

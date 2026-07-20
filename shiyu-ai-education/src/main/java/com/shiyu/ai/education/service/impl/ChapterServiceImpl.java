@@ -1,9 +1,9 @@
 package com.shiyu.ai.education.service.impl;
 
 import com.shiyu.ai.common.core.utils.MapstructUtils;
-import com.shiyu.ai.dal.bo.education.ChapterBO;
-import com.shiyu.ai.dal.repository.education.ChapterRepository;
-import com.shiyu.ai.dal.repository.education.KnowledgeTextbookRepository;
+import com.shiyu.ai.dal.education.bo.ChapterBO;
+import com.shiyu.ai.dal.education.repository.ChapterRepository;
+import com.shiyu.ai.dal.education.repository.KnowledgeTextbookRepository;
 import com.shiyu.ai.education.dto.ChapterResponse;
 import com.shiyu.ai.education.service.ChapterService;
 import lombok.RequiredArgsConstructor;

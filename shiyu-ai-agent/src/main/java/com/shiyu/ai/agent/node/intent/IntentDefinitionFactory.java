@@ -1,5 +1,5 @@
 package com.shiyu.ai.agent.node.intent;
-import com.shiyu.ai.dal.bo.agent.IntentDefBO;
+import com.shiyu.ai.dal.agent.bo.IntentDefBO;
 import com.google.common.collect.HashBasedTable;
 import com.google.common.collect.Table;
 

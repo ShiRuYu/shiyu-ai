@@ -12,15 +12,15 @@ import com.shiyu.ai.agent.node.BaseNode;
 import com.shiyu.ai.agent.node.DefaultNode;
 import com.shiyu.ai.agent.node.NodeConfig;
 import com.shiyu.ai.agent.node.NodeType;
-import com.shiyu.ai.dal.bo.agent.AgentExecutionBO;
-import com.shiyu.ai.dal.repository.agent.AgentExecutionRepository;
+import com.shiyu.ai.dal.agent.bo.AgentExecutionBO;
+import com.shiyu.ai.dal.agent.repository.AgentExecutionRepository;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Tag;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
-import org.springframework.jdbc.core.JdbcTemplate;
+
 
 import java.util.HashMap;
 import java.util.List;
@@ -37,7 +37,7 @@ class AgentRuntimeImplTest {
     @Mock private AgentCacheManager cacheManager;
     @Mock private AgentLoader agentLoader;
     @Mock private AgentExecutionRepository executionRepository;
-    @Mock private JdbcTemplate jdbcTemplate;
+    @Mock private AgentCheckpointRepository checkpointRepository;
     @Mock private EventPublisher eventPublisher;
 
     private AgentRuntimeImpl runtime;
@@ -46,7 +46,7 @@ class AgentRuntimeImplTest {
 
     @BeforeEach
     void setUp() {
-        runtime = new AgentRuntimeImpl(cacheManager, agentLoader, executionRepository, jdbcTemplate, eventPublisher);
+        runtime = new AgentRuntimeImpl(cacheManager, agentLoader, executionRepository, checkpointRepository, eventPublisher);
 
         // 构建一个最小可执行的 Agent
         BaseNode node = createNode("test", NodeType.DEFAULT);

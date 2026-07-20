@@ -2,8 +2,8 @@ package com.shiyu.ai.knowledge.graph;
 
 import com.shiyu.ai.knowledge.domain.GraphEdge;
 import com.shiyu.ai.knowledge.domain.GraphNode;
-import com.shiyu.ai.dal.repository.knowledge.KnowledgeRepository;
-import com.shiyu.ai.dal.repository.knowledge.KnowledgeRelationRepository;
+import com.shiyu.ai.dal.knowledge.repository.KnowledgeRepository;
+import com.shiyu.ai.dal.knowledge.repository.KnowledgeRelationRepository;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.boot.ApplicationArguments;
 import org.springframework.boot.ApplicationRunner;

@@ -1,8 +1,8 @@
 package com.shiyu.ai.auth.service.impl;
 
-import com.shiyu.ai.dal.repository.auth.WorkspaceRepository;
+import com.shiyu.ai.dal.auth.repository.WorkspaceRepository;
 import com.shiyu.ai.auth.service.WorkspaceService;
-import com.shiyu.ai.dal.bo.auth.WorkspaceBO;
+import com.shiyu.ai.dal.auth.bo.WorkspaceBO;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 

@@ -1,10 +1,10 @@
 package com.shiyu.ai.education.service.impl;
 
-import com.shiyu.ai.dal.bo.education.AbilityBO;
+import com.shiyu.ai.dal.education.bo.AbilityBO;
 import com.shiyu.ai.education.domain.AbilityValue;
 import com.shiyu.ai.education.domain.BloomTaxonomy;
 import com.shiyu.ai.education.service.AbilityService;
-import com.shiyu.ai.dal.repository.education.AbilityRepository;
+import com.shiyu.ai.dal.education.repository.AbilityRepository;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 

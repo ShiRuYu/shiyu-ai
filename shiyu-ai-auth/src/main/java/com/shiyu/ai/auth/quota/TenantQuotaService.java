@@ -1,17 +1,17 @@
 package com.shiyu.ai.auth.quota;
 
-import com.shiyu.ai.dal.bo.auth.TenantQuotaBO;
 import com.shiyu.ai.common.core.domain.LoginContextHolder;
-import com.shiyu.ai.common.core.utils.JSONUtils;
+import com.shiyu.ai.dal.auth.dataobject.TenantQuotaDO;
+import com.shiyu.ai.dal.auth.bo.TenantQuotaBO;
+import com.shiyu.ai.dal.auth.repository.TenantQuotaRepository;
+import com.shiyu.ai.dal.agent.repository.AgentDefRepository;
+import com.shiyu.ai.dal.agent.repository.UsageRecordRepository;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.jdbc.core.JdbcTemplate;
-import org.springframework.jdbc.core.RowMapper;
 import org.springframework.stereotype.Service;
 
-import java.sql.ResultSet;
-import java.sql.SQLException;
 import java.util.List;
 import java.util.Map;
+import java.util.stream.Collectors;
 
 /**
  * 租户配额服务
@@ -21,108 +21,64 @@ import java.util.Map;
 @Service
 public class TenantQuotaService {
 
-    private final JdbcTemplate jdbcTemplate;
+    private final TenantQuotaRepository tenantQuotaRepository;
+    private final AgentDefRepository agentDefRepository;
+    private final UsageRecordRepository usageRecordRepository;
 
-    public TenantQuotaService(JdbcTemplate jdbcTemplate) {
-        this.jdbcTemplate = jdbcTemplate;
+    public TenantQuotaService(TenantQuotaRepository tenantQuotaRepository,
+                              AgentDefRepository agentDefRepository,
+                              UsageRecordRepository usageRecordRepository) {
+        this.tenantQuotaRepository = tenantQuotaRepository;
+        this.agentDefRepository = agentDefRepository;
+        this.usageRecordRepository = usageRecordRepository;
     }
 
-    /**
-     * 获取租户配额
-     */
+    private TenantQuotaBO toBO(TenantQuotaDO doObj) {
+        if (doObj == null) return null;
+        TenantQuotaBO bo = new TenantQuotaBO();
+        bo.setId(doObj.getId());
+        bo.setTenantId(doObj.getTenantId());
+        bo.setMaxAgentCount(doObj.getMaxAgentCount());
+        bo.setMaxTokenPerDay(doObj.getMaxTokenPerDay());
+        bo.setMaxStorageMb(doObj.getMaxStorageMb());
+        bo.setMaxUserCount(doObj.getMaxUserCount());
+        bo.setStatus(doObj.getStatus());
+        return bo;
+    }
+
     public TenantQuotaBO getQuota(Long tenantId) {
-        List<TenantQuotaBO> results = jdbcTemplate.query(
-            "SELECT * FROM tenant_quota WHERE tenant_id = ?",
-            new TenantQuotaRowMapper(), tenantId
-        );
-        return results.isEmpty() ? null : results.get(0);
+        return toBO(tenantQuotaRepository.getByTenantId(tenantId));
     }
 
-    /**
-     * 创建或更新租户配额
-     */
     public void saveQuota(TenantQuotaBO quota) {
-        TenantQuotaBO existing = getQuota(quota.getTenantId());
-        if (existing != null) {
-            jdbcTemplate.update(
-                "UPDATE tenant_quota SET max_agent_count=?, max_token_per_day=?, " +
-                "max_storage_mb=?, max_user_count=?, status=? WHERE tenant_id=?",
-                quota.getMaxAgentCount(), quota.getMaxTokenPerDay(),
-                quota.getMaxStorageMb(), quota.getMaxUserCount(),
-                quota.getStatus(), quota.getTenantId()
-            );
-        } else {
-            jdbcTemplate.update(
-                "INSERT INTO tenant_quota (tenant_id, max_agent_count, max_token_per_day, " +
-                "max_storage_mb, max_user_count, status) VALUES (?, ?, ?, ?, ?, ?)",
-                quota.getTenantId(), quota.getMaxAgentCount(), quota.getMaxTokenPerDay(),
-                quota.getMaxStorageMb(), quota.getMaxUserCount(), quota.getStatus()
-            );
-        }
+        TenantQuotaDO doObj = new TenantQuotaDO();
+        doObj.setTenantId(quota.getTenantId());
+        doObj.setMaxAgentCount(quota.getMaxAgentCount());
+        doObj.setMaxTokenPerDay(quota.getMaxTokenPerDay());
+        doObj.setMaxStorageMb(quota.getMaxStorageMb());
+        doObj.setMaxUserCount(quota.getMaxUserCount());
+        doObj.setStatus(quota.getStatus());
+        tenantQuotaRepository.save(doObj);
     }
 
-    /**
-     * 校验是否可创建 Agent
-     */
     public boolean checkCanCreateAgent(Long tenantId) {
         TenantQuotaBO quota = getQuota(tenantId);
         if (quota == null) return true;
-        
-        Long count = jdbcTemplate.queryForObject(
-            "SELECT COUNT(*) FROM agent_def WHERE tenant_id = ? AND del_flag = 0",
-            Long.class, tenantId
-        );
-        return count == null || count < quota.getMaxAgentCount();
+        long count = agentDefRepository.countByTenantId(tenantId);
+        return count < quota.getMaxAgentCount();
     }
 
-    /**
-     * 校验每日 Token 限额
-     */
     public boolean checkDailyTokenQuota(Long tenantId, int requestedTokens) {
         TenantQuotaBO quota = getQuota(tenantId);
         if (quota == null || quota.getMaxTokenPerDay() == null) return true;
 
-        Long todayTokens = jdbcTemplate.queryForObject(
-            "SELECT COALESCE(SUM(total_tokens), 0) FROM token_usage " +
-            "WHERE user_id IN (SELECT id FROM auth_user WHERE tenant_id = ?) " +
-            "AND create_time >= CURRENT_DATE",
-            Long.class, tenantId
-        );
+        Long todayTokens = usageRecordRepository.sumLlmTodayTokensByTenantId(tenantId);
         return (todayTokens == null ? 0 : todayTokens) + requestedTokens <= quota.getMaxTokenPerDay();
     }
 
-    /**
-     * 获取当前租户配额
-     */
     public TenantQuotaBO getCurrentTenantQuota() {
         Long tenantId = LoginContextHolder.getTenantId();
         if (tenantId == null) return null;
         return getQuota(tenantId);
-    }
-
-    /**
-     * 获取所有租户配额列表
-     */
-    public List<Map<String, Object>> listAllQuotas() {
-        return jdbcTemplate.queryForList(
-            "SELECT tq.*, t.name as tenant_name FROM tenant_quota tq " +
-            "LEFT JOIN auth_tenant t ON tq.tenant_id = t.id " +
-            "ORDER BY tq.tenant_id"
-        );
-    }
-
-    private static class TenantQuotaRowMapper implements RowMapper<TenantQuotaBO> {
-        @Override
-        public TenantQuotaBO mapRow(ResultSet rs, int rowNum) throws SQLException {
-            TenantQuotaBO bo = new TenantQuotaBO();
-            bo.setId(rs.getLong("id"));
-            bo.setTenantId(rs.getLong("tenant_id"));
-            bo.setMaxAgentCount(rs.getLong("max_agent_count"));
-            bo.setMaxTokenPerDay(rs.getLong("max_token_per_day"));
-            bo.setMaxStorageMb(rs.getLong("max_storage_mb"));
-            bo.setMaxUserCount(rs.getLong("max_user_count"));
-            bo.setStatus(rs.getString("status"));
-            return bo;
-        }
     }
 }

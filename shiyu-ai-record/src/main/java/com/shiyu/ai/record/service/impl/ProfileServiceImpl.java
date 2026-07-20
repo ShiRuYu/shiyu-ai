@@ -1,7 +1,7 @@
 package com.shiyu.ai.record.service.impl;
 
-import com.shiyu.ai.dal.bo.record.ProfileBO;
-import com.shiyu.ai.dal.repository.record.ProfileRepository;
+import com.shiyu.ai.dal.record.bo.ProfileBO;
+import com.shiyu.ai.dal.record.repository.ProfileRepository;
 import com.shiyu.ai.record.service.ProfileService;
 import jakarta.annotation.Resource;
 import org.apache.commons.lang3.tuple.Pair;

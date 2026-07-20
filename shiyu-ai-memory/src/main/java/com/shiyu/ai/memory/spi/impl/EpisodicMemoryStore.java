@@ -1,7 +1,7 @@
 package com.shiyu.ai.memory.spi.impl;
 
-import com.shiyu.ai.dal.bo.memory.EpisodicMemoryBO;
-import com.shiyu.ai.dal.repository.agent.EpisodicMemoryRepository;
+import com.shiyu.ai.dal.memory.bo.EpisodicMemoryBO;
+import com.shiyu.ai.dal.memory.repository.EpisodicMemoryRepository;
 import com.shiyu.ai.memory.spi.Memory;
 import com.shiyu.ai.memory.spi.MemoryQuery;
 import com.shiyu.ai.memory.spi.MemoryStore;

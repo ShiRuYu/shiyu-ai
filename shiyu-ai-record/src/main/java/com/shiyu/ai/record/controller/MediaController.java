@@ -1,7 +1,7 @@
 package com.shiyu.ai.record.controller;
 
 import com.shiyu.ai.record.service.MediaService;
-import com.shiyu.ai.dal.bo.record.MediaBO;
+import com.shiyu.ai.dal.record.bo.MediaBO;
 import com.shiyu.ai.record.vo.MediaVO;
 import com.shiyu.ai.common.core.api.PageData;
 import com.shiyu.ai.common.core.api.PageQuery;

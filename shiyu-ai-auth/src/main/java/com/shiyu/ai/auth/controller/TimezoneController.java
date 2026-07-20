@@ -1,7 +1,7 @@
 package com.shiyu.ai.auth.controller;
 
-import com.shiyu.ai.dal.repository.auth.UserRepository;
-import com.shiyu.ai.dal.bo.auth.UserBO;
+import com.shiyu.ai.dal.auth.repository.UserRepository;
+import com.shiyu.ai.dal.auth.bo.UserBO;
 import com.shiyu.ai.common.core.enums.TimezoneEnum;
 import com.shiyu.ai.auth.request.SetTimezoneRequest;
 import com.shiyu.ai.auth.vo.TimezoneOptionVO;

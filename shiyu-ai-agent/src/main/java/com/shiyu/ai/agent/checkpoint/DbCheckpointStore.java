@@ -1,16 +1,15 @@
 package com.shiyu.ai.agent.checkpoint;
 
-import com.shiyu.ai.agent.checkpoint.Checkpoint;
-import com.shiyu.ai.agent.checkpoint.CheckpointStore;
 import com.shiyu.ai.common.core.utils.JSONUtils;
+import com.shiyu.ai.dal.agent.dataobject.AgentCheckpointDO;
+import com.shiyu.ai.dal.agent.repository.AgentCheckpointRepository;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.jdbc.core.JdbcTemplate;
-import org.springframework.jdbc.core.RowMapper;
 
-import java.sql.ResultSet;
-import java.sql.SQLException;
+import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Map;
+import java.util.UUID;
+import java.util.stream.Collectors;
 
 /**
  * 基于数据库的检查点存储
@@ -18,73 +17,57 @@ import java.util.Map;
 @Slf4j
 public class DbCheckpointStore implements CheckpointStore {
 
-    private final JdbcTemplate jdbcTemplate;
+    private final AgentCheckpointRepository checkpointRepository;
 
-    public DbCheckpointStore(JdbcTemplate jdbcTemplate) {
-        this.jdbcTemplate = jdbcTemplate;
+    public DbCheckpointStore(AgentCheckpointRepository checkpointRepository) {
+        this.checkpointRepository = checkpointRepository;
     }
 
     @Override
     public void save(Checkpoint checkpoint) {
-        String stateJson = JSONUtils.toJsonString(checkpoint.getState());
-        jdbcTemplate.update(
-            "INSERT INTO agent_checkpoint (checkpoint_id, execution_id, node_id, state_data, create_time) " +
-            "VALUES (?, ?, ?, ?, CURRENT_TIMESTAMP)",
-            checkpoint.getCheckpointId(),
-            checkpoint.getExecutionId(),
-            checkpoint.getNodeId(),
-            stateJson
-        );
+        AgentCheckpointDO doObj = new AgentCheckpointDO();
+        doObj.setCheckpointId(checkpoint.getCheckpointId());
+        doObj.setExecutionId(checkpoint.getExecutionId());
+        doObj.setNodeId(checkpoint.getNodeId());
+        doObj.setStateData(JSONUtils.toJsonString(checkpoint.getState()));
+        doObj.setCreateTime(LocalDateTime.now());
+        checkpointRepository.insert(doObj);
     }
 
     @Override
     public Checkpoint load(String checkpointId) {
-        List<Checkpoint> results = jdbcTemplate.query(
-            "SELECT * FROM agent_checkpoint WHERE checkpoint_id = ?",
-            new CheckpointRowMapper(),
-            checkpointId
-        );
-        return results.isEmpty() ? null : results.get(0);
+        AgentCheckpointDO doObj = checkpointRepository.selectByCheckpointId(checkpointId);
+        return doObj != null ? toCheckpoint(doObj) : null;
     }
 
     @Override
     public Checkpoint loadByExecutionId(String executionId) {
-        List<Checkpoint> results = jdbcTemplate.query(
-            "SELECT * FROM agent_checkpoint WHERE execution_id = ? ORDER BY create_time DESC LIMIT 1",
-            new CheckpointRowMapper(),
-            executionId
-        );
-        return results.isEmpty() ? null : results.get(0);
+        AgentCheckpointDO doObj = checkpointRepository.selectLatestByExecutionId(executionId);
+        return doObj != null ? toCheckpoint(doObj) : null;
     }
 
     @Override
     public void delete(String checkpointId) {
-        jdbcTemplate.update("DELETE FROM agent_checkpoint WHERE checkpoint_id = ?", checkpointId);
+        checkpointRepository.deleteByCheckpointId(checkpointId);
     }
 
     @Override
     public void deleteByExecutionId(String executionId) {
-        jdbcTemplate.update("DELETE FROM agent_checkpoint WHERE execution_id = ?", executionId);
+        checkpointRepository.deleteByExecutionId(executionId);
     }
 
     @Override
     public List<Checkpoint> listByExecutionId(String executionId) {
-        return jdbcTemplate.query(
-            "SELECT * FROM agent_checkpoint WHERE execution_id = ? ORDER BY create_time ASC",
-            new CheckpointRowMapper(),
-            executionId
-        );
+        return checkpointRepository.listByExecutionId(executionId)
+                .stream().map(this::toCheckpoint).collect(Collectors.toList());
     }
 
-    private static class CheckpointRowMapper implements RowMapper<Checkpoint> {
-        @Override
-        public Checkpoint mapRow(ResultSet rs, int rowNum) throws SQLException {
-            Checkpoint cp = new Checkpoint(
-                rs.getString("execution_id"),
-                rs.getString("node_id"),
-                JSONUtils.parseObject(rs.getString("state_data"), Map.class)
-            );
-            return cp;
-        }
+    private Checkpoint toCheckpoint(AgentCheckpointDO doObj) {
+        Checkpoint cp = new Checkpoint(
+                doObj.getExecutionId(),
+                doObj.getNodeId(),
+                JSONUtils.parseObject(doObj.getStateData(), Map.class)
+        );
+        return cp;
     }
 }

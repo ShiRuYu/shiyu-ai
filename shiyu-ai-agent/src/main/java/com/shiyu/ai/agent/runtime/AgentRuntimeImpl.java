@@ -5,6 +5,7 @@ import com.shiyu.ai.agent.AgentVersion;
 import com.shiyu.ai.agent.cache.AgentCacheManager;
 import com.shiyu.ai.agent.cache.AgentLoader;
 import com.shiyu.ai.agent.checkpoint.Checkpoint;
+import com.shiyu.ai.dal.agent.repository.AgentCheckpointRepository;
 import com.shiyu.ai.agent.checkpoint.CheckpointManager;
 import com.shiyu.ai.agent.checkpoint.DbCheckpointStore;
 import com.shiyu.ai.agent.event.AgentExecutionCompletedEvent;
@@ -14,13 +15,13 @@ import com.shiyu.ai.agent.event.EventPublisher;
 import com.shiyu.ai.agent.execution.Execution;
 import com.shiyu.ai.agent.execution.ExecutionStatus;
 import com.shiyu.ai.agent.lifecycle.AgentStateMachine;
-import com.shiyu.ai.dal.bo.agent.AgentExecutionBO;
-import com.shiyu.ai.dal.repository.agent.AgentExecutionRepository;
+import com.shiyu.ai.dal.agent.bo.AgentExecutionBO;
+import com.shiyu.ai.dal.agent.repository.AgentExecutionRepository;
 import com.shiyu.ai.common.core.utils.JSONUtils;
 import lombok.extern.slf4j.Slf4j;
 import org.bsc.langgraph4j.NodeOutput;
 import org.bsc.langgraph4j.state.AgentState;
-import org.springframework.jdbc.core.JdbcTemplate;
+
 import reactor.core.publisher.Flux;
 import reactor.core.scheduler.Schedulers;
 
@@ -49,14 +50,14 @@ public class AgentRuntimeImpl implements AgentRuntime {
     public AgentRuntimeImpl(AgentCacheManager cacheManager,
                             AgentLoader agentLoader,
                             AgentExecutionRepository executionRepository,
-                            JdbcTemplate jdbcTemplate,
+                            AgentCheckpointRepository checkpointRepository,
                             EventPublisher eventPublisher) {
         this.cacheManager = cacheManager;
         this.agentLoader = agentLoader;
         this.executionRepository = executionRepository;
         this.eventPublisher = eventPublisher;
 
-        DbCheckpointStore checkpointStore = new DbCheckpointStore(jdbcTemplate);
+        DbCheckpointStore checkpointStore = new DbCheckpointStore(checkpointRepository);
         this.checkpointManager = new CheckpointManager(checkpointStore);
         this.agentExecutor = new AgentExecutor(checkpointManager);
     }

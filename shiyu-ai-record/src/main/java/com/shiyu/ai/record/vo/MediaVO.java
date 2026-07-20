@@ -8,7 +8,7 @@ import java.io.Serializable;
 import java.util.Date;
 
 import io.github.linpeilie.annotations.AutoMapper;
-import com.shiyu.ai.dal.bo.record.MediaBO;
+import com.shiyu.ai.dal.record.bo.MediaBO;
 /**
  * 附件视图对象
  */

@@ -1,8 +1,8 @@
 package com.shiyu.ai.knowledge.service.impl;
 
-import com.shiyu.ai.dal.repository.knowledge.KnowledgeChunkRepository;
-import com.shiyu.ai.dal.repository.knowledge.KnowledgeDocRelationRepository;
-import com.shiyu.ai.dal.repository.knowledge.KnowledgeDocumentRepository;
+import com.shiyu.ai.dal.knowledge.repository.KnowledgeChunkRepository;
+import com.shiyu.ai.dal.knowledge.repository.KnowledgeDocRelationRepository;
+import com.shiyu.ai.dal.knowledge.repository.KnowledgeDocumentRepository;
 import com.shiyu.ai.knowledge.rag.DocumentIngestionService;
 import com.shiyu.ai.model.embedding.EmbeddingService;
 import com.shiyu.ai.vector.VectorStore;
@@ -56,7 +56,7 @@ class DocumentKnowledgeServiceImplTest {
 
     @Test
     void testGetByIdFound() {
-        var mockDoc = new com.shiyu.ai.dal.dataobject.knowledge.KnowledgeDocumentDO();
+        var mockDoc = new com.shiyu.ai.dal.knowledge.bo.KnowledgeDocumentBO();
         mockDoc.setId(1L);
         mockDoc.setTitle("测试文档");
         mockDoc.setContent("内容");

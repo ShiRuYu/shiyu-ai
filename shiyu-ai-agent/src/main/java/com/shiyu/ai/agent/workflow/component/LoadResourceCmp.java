@@ -1,7 +1,7 @@
 package com.shiyu.ai.agent.workflow.component;
 
-import com.shiyu.ai.dal.bo.education.ResourceBO;
-import com.shiyu.ai.dal.repository.education.ResourceRepository;
+import com.shiyu.ai.dal.education.bo.ResourceBO;
+import com.shiyu.ai.dal.education.repository.ResourceRepository;
 import com.shiyu.ai.agent.workflow.context.LearningContext;
 import com.yomahub.liteflow.core.NodeComponent;
 import lombok.RequiredArgsConstructor;

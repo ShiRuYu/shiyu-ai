@@ -1,7 +1,7 @@
 package com.shiyu.ai.agent.workflow.component;
 
-import com.shiyu.ai.dal.bo.education.AbilityBO;
-import com.shiyu.ai.dal.repository.education.AbilityRepository;
+import com.shiyu.ai.dal.education.bo.AbilityBO;
+import com.shiyu.ai.dal.education.repository.AbilityRepository;
 import com.shiyu.ai.agent.workflow.context.AbilityContext;
 import com.yomahub.liteflow.core.NodeComponent;
 import lombok.RequiredArgsConstructor;

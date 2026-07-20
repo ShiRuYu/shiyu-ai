@@ -1,7 +1,7 @@
 package com.shiyu.ai.record.controller;
 
 import com.shiyu.ai.record.service.TimelineEventService;
-import com.shiyu.ai.dal.bo.record.TimelineEventBO;
+import com.shiyu.ai.dal.record.bo.TimelineEventBO;
 import com.shiyu.ai.record.vo.TimelineEventVO;
 import com.shiyu.ai.common.core.api.PageData;
 import com.shiyu.ai.common.core.api.PageQuery;

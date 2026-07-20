@@ -2,10 +2,10 @@ package com.shiyu.ai.education.service.impl;
 
 import com.shiyu.ai.common.core.api.PageData;
 import com.shiyu.ai.common.core.utils.MapstructUtils;
-import com.shiyu.ai.dal.bo.education.CourseBO;
-import com.shiyu.ai.dal.bo.education.StudyRecordBO;
-import com.shiyu.ai.dal.repository.education.CourseRepository;
-import com.shiyu.ai.dal.repository.education.StudyRecordRepository;
+import com.shiyu.ai.dal.education.bo.CourseBO;
+import com.shiyu.ai.dal.education.bo.StudyRecordBO;
+import com.shiyu.ai.dal.education.repository.CourseRepository;
+import com.shiyu.ai.dal.education.repository.StudyRecordRepository;
 import com.shiyu.ai.education.dto.CourseProgressResponse;
 import com.shiyu.ai.education.dto.CourseResponse;
 import com.shiyu.ai.education.request.CourseRequest;

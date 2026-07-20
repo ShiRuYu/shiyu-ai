@@ -1,10 +1,10 @@
 package com.shiyu.ai.education.service.impl;
 
 import com.shiyu.ai.common.core.utils.MapstructUtils;
-import com.shiyu.ai.dal.bo.education.AbilityBO;
-import com.shiyu.ai.dal.bo.education.StudyRecordBO;
-import com.shiyu.ai.dal.repository.education.AbilityRepository;
-import com.shiyu.ai.dal.repository.education.StudyRecordRepository;
+import com.shiyu.ai.dal.education.bo.AbilityBO;
+import com.shiyu.ai.dal.education.bo.StudyRecordBO;
+import com.shiyu.ai.dal.education.repository.AbilityRepository;
+import com.shiyu.ai.dal.education.repository.StudyRecordRepository;
 import com.shiyu.ai.education.dto.*;
 import com.shiyu.ai.education.request.StudyRecordRequest;
 import com.shiyu.ai.education.service.AnalyticsService;

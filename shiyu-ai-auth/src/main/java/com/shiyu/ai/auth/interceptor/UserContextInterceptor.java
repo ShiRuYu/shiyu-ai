@@ -1,9 +1,9 @@
 package com.shiyu.ai.auth.interceptor;
 
-import com.shiyu.ai.dal.repository.auth.AuthUserLookupRepository;
-import com.shiyu.ai.dal.dataobject.auth.RoleDO;
-import com.shiyu.ai.dal.dataobject.auth.UserDO;
-import com.shiyu.ai.dal.dataobject.auth.UserWorkspaceRoleDO;
+import com.shiyu.ai.dal.auth.repository.AuthUserLookupRepository;
+import com.shiyu.ai.dal.auth.dataobject.RoleDO;
+import com.shiyu.ai.dal.auth.dataobject.UserDO;
+import com.shiyu.ai.dal.auth.dataobject.UserWorkspaceRoleDO;
 import com.shiyu.ai.auth.utils.SaTokenHelper;
 import com.shiyu.ai.common.core.domain.LoginContextHolder;
 import com.shiyu.ai.common.core.domain.LoginUser;

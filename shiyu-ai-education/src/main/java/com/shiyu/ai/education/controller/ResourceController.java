@@ -5,7 +5,7 @@ import com.shiyu.ai.education.dto.ResourceResponse;
 import com.shiyu.ai.common.core.api.PageData;
 import com.shiyu.ai.education.dto.ResourceResponse;
 import com.shiyu.ai.common.core.api.Result;
-import com.shiyu.ai.dal.bo.education.ResourceBO;
+import com.shiyu.ai.dal.education.bo.ResourceBO;
 import com.shiyu.ai.education.request.ResourceRequest;
 import com.shiyu.ai.education.service.ResourceService;
 import jakarta.validation.Valid;

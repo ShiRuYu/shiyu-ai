@@ -1,7 +1,7 @@
 package com.shiyu.ai.auth.controller;
 
 import com.shiyu.ai.auth.service.WorkspaceService;
-import com.shiyu.ai.dal.bo.auth.WorkspaceBO;
+import com.shiyu.ai.dal.auth.bo.WorkspaceBO;
 import com.shiyu.ai.auth.request.WorkspaceRequest;
 import com.shiyu.ai.auth.vo.WorkspaceVO;
 import com.shiyu.ai.common.core.api.Result;

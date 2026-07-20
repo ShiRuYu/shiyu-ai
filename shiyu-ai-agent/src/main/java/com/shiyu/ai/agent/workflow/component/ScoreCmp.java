@@ -3,7 +3,7 @@ package com.shiyu.ai.agent.workflow.component;
 import com.shiyu.ai.model.chat.ChatEngine;
 import com.shiyu.ai.model.chat.ChatRequest;
 import com.shiyu.ai.model.chat.ChatResponse;
-import com.shiyu.ai.dal.bo.education.QuestionBO;
+import com.shiyu.ai.dal.education.bo.QuestionBO;
 import com.shiyu.ai.agent.workflow.context.LearningContext;
 import com.yomahub.liteflow.core.NodeComponent;
 import lombok.RequiredArgsConstructor;

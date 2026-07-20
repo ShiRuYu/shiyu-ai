@@ -2,8 +2,8 @@ package com.shiyu.ai.memory.spi.impl;
 
 import com.github.benmanes.caffeine.cache.Cache;
 import com.github.benmanes.caffeine.cache.Caffeine;
-import com.shiyu.ai.dal.bo.memory.ConversationMessageBO;
-import com.shiyu.ai.dal.repository.ConversationMessageRepository;
+import com.shiyu.ai.dal.memory.bo.ConversationMessageBO;
+import com.shiyu.ai.dal.memory.repository.ConversationMessageRepository;
 import com.shiyu.ai.memory.spi.Memory;
 import com.shiyu.ai.memory.spi.MemoryQuery;
 import com.shiyu.ai.memory.spi.MemoryStore;

@@ -1,6 +1,6 @@
 package com.shiyu.ai.record.service;
 
-import com.shiyu.ai.dal.bo.record.TimelineEventBO;
+import com.shiyu.ai.dal.record.bo.TimelineEventBO;
 import org.apache.commons.lang3.tuple.Pair;
 
 import java.util.List;

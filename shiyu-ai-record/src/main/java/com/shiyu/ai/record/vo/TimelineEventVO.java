@@ -9,7 +9,7 @@ import java.util.Date;
 import java.util.List;
 
 import io.github.linpeilie.annotations.AutoMapper;
-import com.shiyu.ai.dal.bo.record.TimelineEventBO;
+import com.shiyu.ai.dal.record.bo.TimelineEventBO;
 /**
  * 时间轴事件视图对象
  */

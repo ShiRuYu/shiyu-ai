@@ -1,8 +1,8 @@
 package com.shiyu.ai.education.service.impl;
 
-import com.shiyu.ai.dal.bo.education.LearningStateBO;
+import com.shiyu.ai.dal.education.bo.LearningStateBO;
 import com.shiyu.ai.education.domain.LearningState;
-import com.shiyu.ai.dal.repository.education.LearningStateRepository;
+import com.shiyu.ai.dal.education.repository.LearningStateRepository;
 import com.shiyu.ai.education.service.LearningStateMachine;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;

@@ -1,10 +1,10 @@
 package com.shiyu.ai.agent.service.impl;
 
-import com.shiyu.ai.dal.repository.agent.AgentAdminRepository;
+import com.shiyu.ai.dal.agent.repository.AgentAdminRepository;
 import com.shiyu.ai.agent.service.AgentService;
 import com.shiyu.ai.agent.service.AgentVersionService;
-import com.shiyu.ai.dal.bo.agent.AgentDefBO;
-import com.shiyu.ai.dal.bo.agent.AgentVersionBO;
+import com.shiyu.ai.dal.agent.bo.AgentDefBO;
+import com.shiyu.ai.dal.agent.bo.AgentVersionBO;
 import com.shiyu.ai.agent.request.VersionRequest;
 import com.shiyu.ai.agent.vo.AgentVersionDetailVO;
 import com.shiyu.ai.agent.vo.AgentVersionVO;

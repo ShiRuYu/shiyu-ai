@@ -2,8 +2,8 @@ package com.shiyu.ai.education.service.impl;
 
 import com.shiyu.ai.common.core.api.PageData;
 import com.shiyu.ai.common.core.utils.MapstructUtils;
-import com.shiyu.ai.dal.bo.education.TextbookBO;
-import com.shiyu.ai.dal.repository.education.TextbookRepository;
+import com.shiyu.ai.dal.education.bo.TextbookBO;
+import com.shiyu.ai.dal.education.repository.TextbookRepository;
 import com.shiyu.ai.education.dto.TextbookResponse;
 import com.shiyu.ai.education.request.TextbookRequest;
 import com.shiyu.ai.education.service.TextbookService;

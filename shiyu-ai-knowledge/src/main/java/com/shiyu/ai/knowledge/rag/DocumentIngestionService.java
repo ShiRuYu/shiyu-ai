@@ -2,10 +2,10 @@ package com.shiyu.ai.knowledge.rag;
 
 import com.shiyu.ai.knowledge.document.DocumentParser;
 import com.shiyu.ai.model.embedding.EmbeddingService;
-import com.shiyu.ai.dal.dataobject.knowledge.KnowledgeChunkDO;
+import com.shiyu.ai.dal.knowledge.bo.KnowledgeChunkBO;
 import com.shiyu.ai.knowledge.rag.ChunkSplitter.Chunk;
 import com.shiyu.ai.knowledge.rag.ChineseChunkSplitter;
-import com.shiyu.ai.dal.repository.knowledge.KnowledgeChunkRepository;
+import com.shiyu.ai.dal.knowledge.repository.KnowledgeChunkRepository;
 import com.shiyu.ai.vector.VectorRecord;
 import com.shiyu.ai.vector.VectorStore;
 import com.shiyu.ai.common.core.utils.JSONUtils;
@@ -51,11 +51,11 @@ public class DocumentIngestionService {
      * @param content      文本内容（已解析）
      * @param knowledgeIds 关联知识点 ID
      */
-    public List<KnowledgeChunkDO> ingest(Long documentId, String content, List<Long> knowledgeIds) {
+    public List<KnowledgeChunkBO> ingest(Long documentId, String content, List<Long> knowledgeIds) {
         List<Chunk> chunks = chunkSplitter.split(content);
         log.info("文档 {} 切分为 {} 个 Chunk", documentId, chunks.size());
 
-        List<KnowledgeChunkDO> chunkDOs = new ArrayList<>();
+        List<KnowledgeChunkBO> chunkDOs = new ArrayList<>();
         List<VectorRecord> vectorRecords = new ArrayList<>();
 
         for (Chunk chunk : chunks) {
@@ -74,7 +74,7 @@ public class DocumentIngestionService {
 
             vectorRecords.add(new VectorRecord(id, vector, meta));
 
-            KnowledgeChunkDO chunkDO = new KnowledgeChunkDO();
+            KnowledgeChunkBO chunkDO = new KnowledgeChunkBO();
             chunkDO.setDocumentId(documentId);
             chunkDO.setContent(chunk.content());
             chunkDO.setEmbedding(JSONUtils.toJsonString(vector));

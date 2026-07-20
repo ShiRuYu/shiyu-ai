@@ -1,10 +1,10 @@
 package com.shiyu.ai.model.adapter;
 
 import com.shiyu.ai.model.config.PlatformProperties;
-import com.shiyu.ai.dal.repository.AiModelRepository;
-import com.shiyu.ai.dal.repository.AiPlatformRepository;
-import com.shiyu.ai.dal.bo.model.AiModelBO;
-import com.shiyu.ai.dal.bo.model.AiPlatformBO;
+import com.shiyu.ai.dal.model.repository.AiModelRepository;
+import com.shiyu.ai.dal.model.repository.AiPlatformRepository;
+import com.shiyu.ai.dal.model.bo.AiModelBO;
+import com.shiyu.ai.dal.model.bo.AiPlatformBO;
 import com.shiyu.ai.model.adapter.config.PlatformConfig;
 import com.shiyu.ai.model.adapter.impl.GenericPlatformAdapter;
 import com.shiyu.ai.model.adapter.impl.OllamaPlatformAdapter;

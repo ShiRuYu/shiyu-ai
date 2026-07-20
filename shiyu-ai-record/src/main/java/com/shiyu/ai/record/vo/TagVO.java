@@ -8,7 +8,7 @@ import java.io.Serializable;
 import java.util.Date;
 
 import io.github.linpeilie.annotations.AutoMapper;
-import com.shiyu.ai.dal.bo.record.TagBO;
+import com.shiyu.ai.dal.record.bo.TagBO;
 /**
  * 标签视图对象
  */

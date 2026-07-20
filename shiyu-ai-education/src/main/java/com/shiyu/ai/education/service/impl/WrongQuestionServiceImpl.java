@@ -1,8 +1,8 @@
 package com.shiyu.ai.education.service.impl;
 
 import com.shiyu.ai.common.core.utils.MapstructUtils;
-import com.shiyu.ai.dal.bo.education.WrongQuestionBO;
-import com.shiyu.ai.dal.repository.education.WrongQuestionRepository;
+import com.shiyu.ai.dal.education.bo.WrongQuestionBO;
+import com.shiyu.ai.dal.education.repository.WrongQuestionRepository;
 import com.shiyu.ai.education.dto.WrongQuestionResponse;
 import com.shiyu.ai.education.request.WrongQuestionRequest;
 import com.shiyu.ai.education.service.WrongQuestionService;

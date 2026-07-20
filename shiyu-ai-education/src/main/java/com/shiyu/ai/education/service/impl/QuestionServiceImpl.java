@@ -2,8 +2,8 @@ package com.shiyu.ai.education.service.impl;
 
 import com.shiyu.ai.common.core.api.PageData;
 import com.shiyu.ai.common.core.utils.MapstructUtils;
-import com.shiyu.ai.dal.bo.education.QuestionBO;
-import com.shiyu.ai.dal.repository.education.QuestionRepository;
+import com.shiyu.ai.dal.education.bo.QuestionBO;
+import com.shiyu.ai.dal.education.repository.QuestionRepository;
 import com.shiyu.ai.education.dto.QuestionResponse;
 import com.shiyu.ai.education.request.QuestionRequest;
 import com.shiyu.ai.education.service.QuestionService;

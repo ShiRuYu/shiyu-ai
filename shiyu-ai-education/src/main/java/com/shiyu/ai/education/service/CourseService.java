@@ -1,6 +1,6 @@
 package com.shiyu.ai.education.service;
 
-import com.shiyu.ai.dal.bo.education.CourseBO;
+import com.shiyu.ai.dal.education.bo.CourseBO;
 import com.shiyu.ai.education.dto.CourseProgressResponse;
 
 import java.util.List;
@@ -59,5 +59,5 @@ public interface CourseService {
     /**
      * Record study session
      */
-    void recordStudy(com.shiyu.ai.dal.bo.education.StudyRecordBO record);
+    void recordStudy(com.shiyu.ai.dal.education.bo.StudyRecordBO record);
 }

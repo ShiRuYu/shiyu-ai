@@ -1,13 +1,13 @@
 package com.shiyu.ai.knowledge.service.impl;
 
 import com.shiyu.ai.common.core.exception.ServiceException;
-import com.shiyu.ai.dal.dataobject.knowledge.KnowledgeDO;
-import com.shiyu.ai.dal.dataobject.knowledge.KnowledgeRelationDO;
+import com.shiyu.ai.dal.knowledge.bo.KnowledgeBO;
+import com.shiyu.ai.dal.knowledge.bo.KnowledgeRelationBO;
 import com.shiyu.ai.knowledge.domain.RelationType;
 import com.shiyu.ai.knowledge.dto.KnowledgeResponse;
 import com.shiyu.ai.knowledge.graph.KnowledgeGraph;
-import com.shiyu.ai.dal.repository.knowledge.KnowledgeRelationRepository;
-import com.shiyu.ai.dal.repository.knowledge.KnowledgeRepository;
+import com.shiyu.ai.dal.knowledge.repository.KnowledgeRelationRepository;
+import com.shiyu.ai.dal.knowledge.repository.KnowledgeRepository;
 import com.shiyu.ai.knowledge.service.KnowledgeRelationService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -29,7 +29,7 @@ public class KnowledgeRelationServiceImpl implements KnowledgeRelationService {
 
     @Override
     public List<KnowledgeResponse> getPrerequisites(Long knowledgeId) {
-        List<KnowledgeRelationDO> relations = relationRepository.findBySourceIdAndType(knowledgeId, RelationType.PRE.name());
+        List<KnowledgeRelationBO> relations = relationRepository.findBySourceIdAndType(knowledgeId, RelationType.PRE.name());
         return relations.stream()
                 .map(r -> knowledgeRepository.findById(r.getTargetId()))
                 .filter(k -> k != null)
@@ -39,7 +39,7 @@ public class KnowledgeRelationServiceImpl implements KnowledgeRelationService {
 
     @Override
     public List<KnowledgeResponse> getSubsequent(Long knowledgeId) {
-        List<KnowledgeRelationDO> relations = relationRepository.findByTargetIdAndType(knowledgeId, RelationType.PRE.name());
+        List<KnowledgeRelationBO> relations = relationRepository.findByTargetIdAndType(knowledgeId, RelationType.PRE.name());
         return relations.stream()
                 .map(r -> knowledgeRepository.findById(r.getSourceId()))
                 .filter(k -> k != null)
@@ -49,7 +49,7 @@ public class KnowledgeRelationServiceImpl implements KnowledgeRelationService {
 
     @Override
     public List<KnowledgeResponse> getRelated(Long knowledgeId) {
-        List<KnowledgeRelationDO> relations = relationRepository.findBySourceIdAndType(knowledgeId, RelationType.RELATED.name());
+        List<KnowledgeRelationBO> relations = relationRepository.findBySourceIdAndType(knowledgeId, RelationType.RELATED.name());
         return relations.stream()
                 .map(r -> knowledgeRepository.findById(r.getTargetId()))
                 .filter(k -> k != null)
@@ -60,13 +60,13 @@ public class KnowledgeRelationServiceImpl implements KnowledgeRelationService {
     @Override
     @Transactional(rollbackFor = Exception.class)
     public void addRelation(Long sourceId, Long targetId, RelationType type, Double weight) {
-        KnowledgeDO source = knowledgeRepository.findById(sourceId);
-        KnowledgeDO target = knowledgeRepository.findById(targetId);
+        KnowledgeBO source = knowledgeRepository.findById(sourceId);
+        KnowledgeBO target = knowledgeRepository.findById(targetId);
         if (source == null || target == null) {
             throw new ServiceException("知识点不存在", 2001);
         }
 
-        KnowledgeRelationDO relation = new KnowledgeRelationDO();
+        KnowledgeRelationBO relation = new KnowledgeRelationBO();
         relation.setSourceId(sourceId);
         relation.setTargetId(targetId);
         relation.setRelationType(type.name());
@@ -105,7 +105,7 @@ public class KnowledgeRelationServiceImpl implements KnowledgeRelationService {
                 knowledgeId, sourceRelations.size(), targetRelations.size());
     }
 
-    private KnowledgeResponse toSimpleResponse(KnowledgeDO k) {
+    private KnowledgeResponse toSimpleResponse(KnowledgeBO k) {
         return new KnowledgeResponse(
                 k.getId(), k.getCode(), k.getName(), k.getDescription(),
                 k.getDifficulty(), k.getCategory(), k.getTags(),

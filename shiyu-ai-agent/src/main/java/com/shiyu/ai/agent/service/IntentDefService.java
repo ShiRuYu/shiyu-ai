@@ -1,6 +1,6 @@
 package com.shiyu.ai.agent.service;
 
-import com.shiyu.ai.dal.bo.agent.IntentDefBO;
+import com.shiyu.ai.dal.agent.bo.IntentDefBO;
 import com.shiyu.ai.common.core.vo.IdNameOptionVO;
 import org.apache.commons.lang3.tuple.Pair;
 

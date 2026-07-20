@@ -1,6 +1,6 @@
 package com.shiyu.ai.auth.request;
 
-import com.shiyu.ai.dal.bo.auth.UserBO;
+import com.shiyu.ai.dal.auth.bo.UserBO;
 import io.github.linpeilie.annotations.AutoMapper;
 import jakarta.validation.constraints.NotBlank;
 import lombok.Data;

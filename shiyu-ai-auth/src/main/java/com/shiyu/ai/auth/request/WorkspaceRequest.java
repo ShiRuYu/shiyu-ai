@@ -1,7 +1,7 @@
 package com.shiyu.ai.auth.request;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
-import com.shiyu.ai.dal.bo.auth.WorkspaceBO;
+import com.shiyu.ai.dal.auth.bo.WorkspaceBO;
 import io.github.linpeilie.annotations.AutoMapper;
 import jakarta.validation.constraints.NotBlank;
 import lombok.Data;

@@ -4,7 +4,7 @@ import com.shiyu.ai.common.core.api.PageData;
 import java.util.Objects;
 import com.shiyu.ai.common.core.api.PageQuery;
 import com.shiyu.ai.common.core.exception.ServiceException;
-import com.shiyu.ai.dal.dataobject.knowledge.KnowledgeDO;
+import com.shiyu.ai.dal.knowledge.bo.KnowledgeBO;
 import com.shiyu.ai.knowledge.dto.CreateKnowledgeRequest;
 import com.shiyu.ai.knowledge.dto.KnowledgeGraphResponse;
 import com.shiyu.ai.knowledge.dto.KnowledgePageQuery;
@@ -13,7 +13,7 @@ import com.shiyu.ai.knowledge.dto.KnowledgeResponse;
 import com.shiyu.ai.knowledge.dto.UpdateKnowledgeRequest;
 import com.shiyu.ai.knowledge.graph.KnowledgeGraph;
 import com.shiyu.ai.knowledge.domain.GraphNode;
-import com.shiyu.ai.dal.repository.knowledge.KnowledgeRepository;
+import com.shiyu.ai.dal.knowledge.repository.KnowledgeRepository;
 import com.shiyu.ai.knowledge.search.KnowledgeSearchService;
 import com.shiyu.ai.knowledge.service.DocumentKnowledgeService;
 import com.shiyu.ai.knowledge.service.KnowledgeRelationService;
@@ -39,7 +39,7 @@ public class KnowledgeServiceImpl implements KnowledgeService {
 
     @Override
     public KnowledgeResponse getById(Long id) {
-        KnowledgeDO knowledgeDO = knowledgeRepository.findById(id);
+        KnowledgeBO knowledgeDO = knowledgeRepository.findById(id);
         if (knowledgeDO == null) {
             throw new ServiceException("知识点不存在: " + id, 2001);
         }
@@ -51,7 +51,7 @@ public class KnowledgeServiceImpl implements KnowledgeService {
         int pageSize = Objects.requireNonNullElse(query.getPageSize(), PageQuery.DEFAULT_PAGE_SIZE);
         int pageNum = Objects.requireNonNullElse(query.getPageNum(), PageQuery.DEFAULT_PAGE_NUM);
         int offset = (pageNum - 1) * pageSize;
-        List<KnowledgeDO> list = knowledgeRepository.page(offset, pageSize,
+        List<KnowledgeBO> list = knowledgeRepository.page(offset, pageSize,
                 query.getCategory(), query.getKeyword());
         long total = knowledgeRepository.count(query.getCategory(), query.getKeyword());
         List<KnowledgeResponse> items = list.stream().map(this::toResponse).toList();
@@ -64,7 +64,7 @@ public class KnowledgeServiceImpl implements KnowledgeService {
         if (knowledgeRepository.existsByCode(request.code())) {
             throw new ServiceException("知识点编码已存在: " + request.code(), 2001);
         }
-        KnowledgeDO knowledgeDO = new KnowledgeDO();
+        KnowledgeBO knowledgeDO = new KnowledgeBO();
         knowledgeDO.setCode(request.code());
         knowledgeDO.setName(request.name());
         knowledgeDO.setDescription(request.description());
@@ -86,7 +86,7 @@ public class KnowledgeServiceImpl implements KnowledgeService {
     @Override
     @Transactional(rollbackFor = Exception.class)
     public void update(Long id, UpdateKnowledgeRequest request) {
-        KnowledgeDO knowledgeDO = knowledgeRepository.findById(id);
+        KnowledgeBO knowledgeDO = knowledgeRepository.findById(id);
         if (knowledgeDO == null) {
             throw new ServiceException("知识点不存在: " + id, 2001);
         }
@@ -113,7 +113,7 @@ public class KnowledgeServiceImpl implements KnowledgeService {
     @Override
     @Transactional(rollbackFor = Exception.class)
     public void delete(Long id) {
-        KnowledgeDO knowledgeDO = knowledgeRepository.findById(id);
+        KnowledgeBO knowledgeDO = knowledgeRepository.findById(id);
         if (knowledgeDO == null) {
             throw new ServiceException("知识点不存在: " + id, 2001);
         }
@@ -137,11 +137,11 @@ public class KnowledgeServiceImpl implements KnowledgeService {
         return new KnowledgeGraphResponse(node, parentNodes, childNodes, relatedNodes);
     }
 
-    private void indexKnowledge(KnowledgeDO knowledgeDO) {
+    private void indexKnowledge(KnowledgeBO knowledgeDO) {
         knowledgeSearchService.indexKnowledge(knowledgeDO);
     }
 
-    private KnowledgeResponse toResponse(KnowledgeDO knowledgeDO) {
+    private KnowledgeResponse toResponse(KnowledgeBO knowledgeDO) {
         List<Long> parentIds = knowledgeGraph.parents(knowledgeDO.getId());
         List<Long> childIds = knowledgeGraph.children(knowledgeDO.getId());
 

@@ -5,10 +5,12 @@ import com.shiyu.ai.model.chat.ChatMemoryProvider;
 import com.shiyu.ai.model.chat.ChatRequest;
 import com.shiyu.ai.model.chat.ChatResponse;
 import com.shiyu.ai.model.adapter.ModelManager;
+import com.shiyu.ai.model.event.ModelCallEvent;
 import dev.langchain4j.model.chat.ChatModel;
 import dev.langchain4j.model.chat.StreamingChatModel;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.stereotype.Service;
 import reactor.core.publisher.Flux;
 import reactor.core.scheduler.Schedulers;
@@ -25,14 +27,16 @@ import static com.shiyu.ai.model.chat.impl.ChatEngineHelper.*;
 public class ChatEngineImpl implements ChatEngine {
 
     private final ModelManager modelManager;
+    private final ApplicationEventPublisher eventPublisher;
     private final Map<String, Assistant> assistantCache = new ConcurrentHashMap<>();
     private final Map<String, StreamingAssistant> streamingAssistantCache = new ConcurrentHashMap<>();
 
     @Autowired(required = false)
     private ChatMemoryProvider chatMemoryProvider;
 
-    public ChatEngineImpl(ModelManager modelManager) {
+    public ChatEngineImpl(ModelManager modelManager, ApplicationEventPublisher eventPublisher) {
         this.modelManager = modelManager;
+        this.eventPublisher = eventPublisher;
     }
 
     private String assistantCacheKey(String platform, String model) {
@@ -41,8 +45,7 @@ public class ChatEngineImpl implements ChatEngine {
 
     @Override
     public ChatResponse chat(ChatRequest request) {
-        log.info("收到对话请求：platform={}, model={}, prompt={}",
-                request.getPlatform(), request.getModel(), request.getPrompt());
+        log.info("收到对话请求：platform={}, model={}", request.getPlatform(), request.getModel());
 
         try {
             String validationError = validateRequest(request);
@@ -58,9 +61,20 @@ public class ChatEngineImpl implements ChatEngine {
             Assistant assistant = assistantCache.computeIfAbsent(cacheKey,
                     k -> createAssistant(chatModel));
 
+            long startMs = System.currentTimeMillis();
             String response = assistant.chat(request.getPrompt());
+            long latencyMs = System.currentTimeMillis() - startMs;
 
-            log.info("模型响应成功");
+            // 估算 Token 用量并发布事件
+            int promptTokens = estimateTokens(request.getPrompt());
+            int completionTokens = estimateTokens(response);
+            eventPublisher.publishEvent(new ModelCallEvent(
+                    request.getPlatform(), getActualModelName(request,
+                            modelManager.getDefaultModelName(request.getPlatform())),
+                    promptTokens, completionTokens, latencyMs));
+
+            log.info("模型响应成功, tokens: input={}, output={}, latency={}ms",
+                    promptTokens, completionTokens, latencyMs);
             return buildSuccessResponse(response, request.getPlatform(),
                     getActualModelName(request, modelManager.getDefaultModelName(request.getPlatform())));
 
@@ -73,8 +87,7 @@ public class ChatEngineImpl implements ChatEngine {
 
     @Override
     public Flux<ChatResponse> stream(ChatRequest request) {
-        log.info("收到流式对话请求：platform={}, model={}, prompt={}",
-                request.getPlatform(), request.getModel(), request.getPrompt());
+        log.info("收到流式对话请求：platform={}, model={}", request.getPlatform(), request.getModel());
 
         try {
             String validationError = validateRequest(request);
@@ -90,6 +103,10 @@ public class ChatEngineImpl implements ChatEngine {
             StreamingAssistant streamingAssistant = streamingAssistantCache.computeIfAbsent(cacheKey,
                     k -> createStreamingAssistant(streamingChatModel));
 
+            long startMs = System.currentTimeMillis();
+            String actualModel = getActualModelName(request,
+                    modelManager.getDefaultModelName(request.getPlatform()));
+
             return streamingAssistant.chat(request.getPrompt())
                     .map(chunk -> ChatResponse.builder()
                             .success(true)
@@ -97,6 +114,14 @@ public class ChatEngineImpl implements ChatEngine {
                             .platform(request.getPlatform())
                             .model(request.getModel())
                             .build())
+                    .doOnComplete(() -> {
+                        long latencyMs = System.currentTimeMillis() - startMs;
+                        // 流式完成时发布事件（prompt 已知，completion 无法精确统计，以 prompt 为准）
+                        int promptTokens = estimateTokens(request.getPrompt());
+                        eventPublisher.publishEvent(new ModelCallEvent(
+                                request.getPlatform(), actualModel,
+                                promptTokens, 0, latencyMs));
+                    })
                     .subscribeOn(Schedulers.boundedElastic());
 
         } catch (Exception e) {
@@ -191,5 +216,22 @@ public class ChatEngineImpl implements ChatEngine {
         }
         sb.append("\n用户当前问题: ").append(currentPrompt);
         return sb.toString();
+    }
+
+    /**
+     * 估算 Token 数量（中文约 1 token/1.5 字，英文约 1 token/4 字符）
+     */
+    private int estimateTokens(String text) {
+        if (text == null || text.isEmpty()) return 0;
+        int chineseChars = 0;
+        int otherChars = 0;
+        for (char c : text.toCharArray()) {
+            if (c >= 0x4E00 && c <= 0x9FFF) {
+                chineseChars++;
+            } else {
+                otherChars++;
+            }
+        }
+        return (int) Math.ceil(chineseChars / 1.5 + otherChars / 4.0);
     }
 }

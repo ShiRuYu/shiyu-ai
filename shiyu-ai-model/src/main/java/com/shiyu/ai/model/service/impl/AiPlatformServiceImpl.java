@@ -1,9 +1,9 @@
 package com.shiyu.ai.model.service.impl;
 
 import com.shiyu.ai.model.config.PlatformProperties;
-import com.shiyu.ai.dal.repository.AiPlatformRepository;
+import com.shiyu.ai.dal.model.repository.AiPlatformRepository;
 import com.shiyu.ai.model.service.AiPlatformService;
-import com.shiyu.ai.dal.bo.model.AiPlatformBO;
+import com.shiyu.ai.dal.model.bo.AiPlatformBO;
 import com.shiyu.ai.common.core.vo.IdNameOptionVO;
 import jakarta.annotation.Resource;
 import lombok.extern.slf4j.Slf4j;

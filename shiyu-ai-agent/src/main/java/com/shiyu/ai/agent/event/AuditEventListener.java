@@ -1,9 +1,9 @@
 package com.shiyu.ai.agent.event;
 
-import com.shiyu.ai.common.core.utils.JSONUtils;
+import com.shiyu.ai.dal.agent.dataobject.AuditLogDO;
+import com.shiyu.ai.dal.agent.repository.AuditLogRepository;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.context.event.EventListener;
-import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Component;
 
@@ -18,22 +18,28 @@ import java.time.LocalDateTime;
 @Component
 public class AuditEventListener {
 
-    private final JdbcTemplate jdbcTemplate;
+    private final AuditLogRepository auditLogRepository;
 
-    public AuditEventListener(JdbcTemplate jdbcTemplate) {
-        this.jdbcTemplate = jdbcTemplate;
+    public AuditEventListener(AuditLogRepository auditLogRepository) {
+        this.auditLogRepository = auditLogRepository;
     }
 
     @Async
     @EventListener
     public void onAuditEvent(AuditEvent event) {
         try {
-            jdbcTemplate.update(
-                    "INSERT INTO audit_log (user_id, action, target_type, target_id, detail, ip, result, error_msg, duration_ms, create_time) " +
-                    "VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)",
-                    event.getUserId(), event.getAction(), event.getTargetType(), event.getTargetId(),
-                    event.getDetail(), event.getIp(), event.getResult(), event.getErrorMsg(),
-                    event.getDurationMs(), LocalDateTime.now());
+            AuditLogDO record = new AuditLogDO();
+            record.setUserId(event.getUserId());
+            record.setAction(event.getAction());
+            record.setTargetType(event.getTargetType());
+            record.setTargetId(event.getTargetId());
+            record.setDetail(event.getDetail());
+            record.setIp(event.getIp());
+            record.setResult(event.getResult());
+            record.setErrorMsg(event.getErrorMsg());
+            record.setDurationMs(event.getDurationMs());
+            record.setCreateTime(LocalDateTime.now());
+            auditLogRepository.insert(record);
             log.debug("审计日志已记录: action={}, userId={}", event.getAction(), event.getUserId());
         } catch (Exception e) {
             log.warn("写入审计日志失败: action={}, userId={}", event.getAction(), event.getUserId(), e);

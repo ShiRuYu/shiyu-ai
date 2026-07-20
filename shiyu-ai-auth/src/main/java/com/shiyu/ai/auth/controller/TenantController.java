@@ -1,7 +1,7 @@
 package com.shiyu.ai.auth.controller;
 
 import com.shiyu.ai.auth.service.TenantService;
-import com.shiyu.ai.dal.bo.auth.TenantBO;
+import com.shiyu.ai.dal.auth.bo.TenantBO;
 import com.shiyu.ai.auth.request.TenantRequest;
 import com.shiyu.ai.auth.vo.TenantVO;
 import com.shiyu.ai.common.core.api.Result;

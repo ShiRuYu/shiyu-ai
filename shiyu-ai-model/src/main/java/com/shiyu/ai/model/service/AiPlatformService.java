@@ -1,6 +1,6 @@
 package com.shiyu.ai.model.service;
 
-import com.shiyu.ai.dal.bo.model.AiPlatformBO;
+import com.shiyu.ai.dal.model.bo.AiPlatformBO;
 import com.shiyu.ai.common.core.vo.IdNameOptionVO;
 import org.apache.commons.lang3.tuple.Pair;
 

@@ -1,8 +1,8 @@
 package com.shiyu.ai.record.service.impl;
 
-import com.shiyu.ai.dal.repository.record.RecordRepository;
+import com.shiyu.ai.dal.record.repository.RecordRepository;
 import com.shiyu.ai.record.service.RecordService;
-import com.shiyu.ai.dal.bo.record.RecordBO;
+import com.shiyu.ai.dal.record.bo.RecordBO;
 import jakarta.annotation.Resource;
 import org.apache.commons.lang3.tuple.Pair;
 import org.springframework.stereotype.Service;

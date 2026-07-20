@@ -1,10 +1,10 @@
 package com.shiyu.ai.auth.service.impl;
 
-import com.shiyu.ai.dal.repository.auth.RoleRepository;
+import com.shiyu.ai.dal.auth.repository.RoleRepository;
 import com.shiyu.ai.auth.service.RoleService;
-import com.shiyu.ai.dal.dataobject.auth.UserWorkspaceRoleDO;
-import com.shiyu.ai.dal.repository.auth.UserWorkspaceRoleRepository;
-import com.shiyu.ai.dal.bo.auth.RoleBO;
+import com.shiyu.ai.dal.auth.dataobject.UserWorkspaceRoleDO;
+import com.shiyu.ai.dal.auth.repository.UserWorkspaceRoleRepository;
+import com.shiyu.ai.dal.auth.bo.RoleBO;
 import com.shiyu.ai.auth.vo.RolePageResponse;
 import com.shiyu.ai.auth.vo.RoleVO;
 import com.shiyu.ai.common.core.domain.LoginContextHolder;
