@@ -22,9 +22,7 @@ import java.util.stream.Collectors;
  * Agent 执行生命周期管理 Controller
  *
  * 职责：Agent 执行的唯一入口，提供执行、流式执行、暂停/恢复/取消、状态查询、历史记录。
- * 合并来源：AgentRuntimeController（重命名），取代 AgentController 中的执行端点。
- *
- * 注意：Agent 定义管理请走 AgentDefinitionController (/agent/definition)
+ * 注意：所有参数均通过 @RequestParam 或 @RequestBody 传入，不使用 @PathVariable。
  */
 @Slf4j
 @Tag(name = "Execution", description = "Agent Execution")
@@ -90,8 +88,8 @@ public class ExecutionController {
     }
 
     @Operation(summary = "Pause Execution")
-    @PostMapping("/{executionId}/pause")
-    public Result<Void> pause(@PathVariable String executionId) {
+    @PostMapping("/pause")
+    public Result<Void> pause(@RequestParam String executionId) {
         try {
             agentRuntime.pause(executionId);
             return Result.success();
@@ -101,8 +99,8 @@ public class ExecutionController {
     }
 
     @Operation(summary = "Resume Execution")
-    @PostMapping("/{executionId}/resume")
-    public Result<Map<String, Object>> resume(@PathVariable String executionId) {
+    @PostMapping("/resume")
+    public Result<Map<String, Object>> resume(@RequestParam String executionId) {
         try {
             Execution execution = agentRuntime.resume(executionId);
             Map<String, Object> result = new HashMap<>();
@@ -117,8 +115,8 @@ public class ExecutionController {
     }
 
     @Operation(summary = "Cancel Execution")
-    @PostMapping("/{executionId}/cancel")
-    public Result<Void> cancel(@PathVariable String executionId) {
+    @PostMapping("/cancel")
+    public Result<Void> cancel(@RequestParam String executionId) {
         try {
             agentRuntime.cancel(executionId);
             return Result.success();
@@ -128,8 +126,8 @@ public class ExecutionController {
     }
 
     @Operation(summary = "Get Execution Status")
-    @GetMapping("/{executionId}/status")
-    public Result<Map<String, Object>> getStatus(@PathVariable String executionId) {
+    @GetMapping("/status")
+    public Result<Map<String, Object>> getStatus(@RequestParam String executionId) {
         ExecutionStatus status = agentRuntime.getStatus(executionId);
         if (status == null) {
             return Result.fail("执行记录不存在");
@@ -138,8 +136,8 @@ public class ExecutionController {
     }
 
     @Operation(summary = "Get Execution Details")
-    @GetMapping("/{executionId}")
-    public Result<Map<String, Object>> getExecution(@PathVariable String executionId) {
+    @GetMapping("/detail")
+    public Result<Map<String, Object>> getExecution(@RequestParam String executionId) {
         Execution execution = agentRuntime.getExecution(executionId);
         if (execution == null) {
             return Result.fail("执行记录不存在");
@@ -159,9 +157,9 @@ public class ExecutionController {
     }
 
     @Operation(summary = "Get Execution History")
-    @GetMapping("/{agentId}/history")
+    @GetMapping("/history")
     public Result<List<Map<String, Object>>> getHistory(
-            @PathVariable String agentId,
+            @RequestParam String agentId,
             @RequestParam(defaultValue = "20") int limit) {
         List<Execution> executions = agentRuntime.getHistory(agentId, limit);
         List<Map<String, Object>> result = executions.stream().map(exec -> {

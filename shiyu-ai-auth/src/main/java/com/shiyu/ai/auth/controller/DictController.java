@@ -6,7 +6,7 @@ import com.shiyu.ai.auth.vo.DictVO;
 import com.shiyu.ai.auth.service.DictService;
 import com.shiyu.ai.common.core.api.PageData;
 import com.shiyu.ai.common.core.api.Result;
-import com.shiyu.ai.common.core.utils.MapstructUtils;
+
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.tuple.Pair;
 import jakarta.validation.Valid;
@@ -18,6 +18,8 @@ import java.util.List;
 
 /**
  * 字典管理 Controller
+ *
+ * 注意：所有参数均通过 @RequestParam 或 @RequestBody 传入，不使用 @PathVariable。
  */
 @Slf4j
 @Tag(name = "Dict", description = "Dict")
@@ -31,80 +33,53 @@ public class DictController {
         this.dictService = dictService;
     }
 
-    /**
-     * 字典列表 - 分页
-     */
     @Operation(summary = "Get Dict List")
-    @GetMapping("/page")
+    @GetMapping("/list")
     public Result<PageData<DictVO>> getDictList(@Valid DictPageRequest request) {
         log.info("获取字典列表，pageNo: {}, pageSize: {}", request.getPageNo(), request.getPageSize());
         Pair<Long, List<DictBO>> result = dictService.getAll(request.getPageNo(), request.getPageSize());
-        List<DictVO> dictVOs = MapstructUtils.convert(result.getRight(), DictVO.class);
+        java.util.List<DictVO> dictVOs = com.shiyu.ai.auth.service.convert.DictConverter.INSTANCE.toVOList(result.getRight());
         return Result.success(new PageData<>(dictVOs, result.getLeft()));
     }
 
-    /**
-     * 根据ID查询字典详情
-     */
-    @Operation(summary = "Get Dict By Id")
-    @GetMapping("/{id}")
-    public Result<DictVO> getDictById(@PathVariable Long id) {
-        log.info("查询字典详情，id: {}", id);
-        DictBO dictBO = dictService.getById(id);
-        if (dictBO == null) return Result.fail("字典不存在");
-        return Result.success(MapstructUtils.convert(dictBO, DictVO.class));
-    }
-
-    /**
-     * 根据字典类型查询字典列表
-     */
     @Operation(summary = "Get Dict By Type")
-    @GetMapping("/type/{dictType}")
-    public Result<List<DictVO>> getDictByType(@PathVariable String dictType) {
+    @GetMapping("/type")
+    public Result<List<DictVO>> getDictByType(@RequestParam String dictType) {
         log.info("根据字典类型查询字典列表，dictType: {}", dictType);
         List<DictBO> dictList = dictService.getByDictType(dictType);
-        return Result.success(MapstructUtils.convert(dictList, DictVO.class));
+        return Result.success(com.shiyu.ai.auth.service.convert.DictConverter.INSTANCE.toVOList(dictList));
     }
 
-    /**
-     * 新增字典
-     */
     @Operation(summary = "Create Dict")
-    @PostMapping("")
+    @PostMapping("/create")
     public Result<DictVO> createDict(@Valid @RequestBody DictBO dictBO) {
         log.info("新增字典");
         try {
             DictBO created = dictService.create(dictBO);
-            return Result.success(MapstructUtils.convert(created, DictVO.class));
+            return Result.success(com.shiyu.ai.auth.service.convert.DictConverter.INSTANCE.toVO(created));
         } catch (Exception e) {
             log.error("新增字典失败", e);
             return Result.fail("新增失败");
         }
     }
 
-    /**
-     * 修改字典
-     */
     @Operation(summary = "Update Dict")
-    @PatchMapping("/{id}")
-    public Result<DictVO> updateDict(@PathVariable Long id, @Valid @RequestBody DictBO dictBO) {
+    @PostMapping("/update")
+    public Result<DictVO> updateDict(@RequestParam Long id, @Valid @RequestBody DictBO dictBO) {
         log.info("修改字典，id: {}", id);
         try {
             dictBO.setId(id);
             DictBO updated = dictService.update(dictBO);
-            return Result.success(MapstructUtils.convert(updated, DictVO.class));
+            return Result.success(com.shiyu.ai.auth.service.convert.DictConverter.INSTANCE.toVO(updated));
         } catch (Exception e) {
             log.error("修改字典失败", e);
             return Result.fail("修改失败");
         }
     }
 
-    /**
-     * 删除字典
-     */
     @Operation(summary = "Delete Dict")
-    @DeleteMapping("/{id}")
-    public Result<Void> deleteDict(@PathVariable Long id) {
+    @PostMapping("/delete")
+    public Result<Void> deleteDict(@RequestParam Long id) {
         log.info("删除字典，id: {}", id);
         try {
             dictService.deleteById(id);
@@ -115,11 +90,8 @@ public class DictController {
         }
     }
 
-    /**
-     * 批量删除字典
-     */
     @Operation(summary = "Delete Dicts")
-    @DeleteMapping("/batch")
+    @PostMapping("/batch-delete")
     public Result<Void> deleteDicts(@RequestBody List<Long> ids) {
         log.info("批量删除字典，ids: {}", ids);
         try {

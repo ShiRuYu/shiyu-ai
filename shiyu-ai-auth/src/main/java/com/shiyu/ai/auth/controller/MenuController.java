@@ -22,7 +22,7 @@ import java.util.List;
 @Slf4j
 @Tag(name = "Menu", description = "Menu")
 @RestController
-@RequestMapping("/auth/menu")
+@RequestMapping("/menu")
 public class MenuController {
 
     private final MenuService menuService;

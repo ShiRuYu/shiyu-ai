@@ -16,7 +16,7 @@ import io.swagger.v3.oas.annotations.Operation;
 @Slf4j
 @Tag(name = "Captcha", description = "Captcha")
 @RestController
-@RequestMapping("/auth")
+@RequestMapping("/captcha")
 public class CaptchaController {
     
     private final CaptchaService captchaService;
@@ -30,7 +30,7 @@ public class CaptchaController {
      * @return SVG 格式的验证码图片
      */
     @Operation(summary = "Get Captcha")
-    @GetMapping("/captcha")
+    @GetMapping("")
     public Result<CaptchaVO> getCaptcha() {
         log.info("收到验证码请求");
         
@@ -53,7 +53,7 @@ public class CaptchaController {
      * @return 验证结果
      */
     @Operation(summary = "Validate Captcha")
-    @PostMapping("/captcha/validate")
+    @PostMapping("/validate")
     public Result<ValidateCaptchaResponse> validateCaptcha(@Valid @RequestBody ValidateCaptchaRequest request) {
         log.info("收到验证码验证请求：key={}", request.getKey());
         

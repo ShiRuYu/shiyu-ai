@@ -17,6 +17,8 @@ import java.util.List;
 
 /**
  * 意图定义管理 Controller
+ *
+ * 注意：所有参数均通过 @RequestParam 或 @RequestBody 传入，不使用 @PathVariable。
  */
 @Slf4j
 @Tag(name = "Intent Def", description = "Intent Def")
@@ -45,7 +47,7 @@ public class IntentDefController {
         log.info("获取意图定义列表，agentId: {}, name: {}, code: {}, category: {}, pageNo: {}, pageSize: {}",
                 agentId, name, code, category, pageNo, pageSize);
         Pair<Long, List<IntentDefBO>> result = intentDefService.getPage(pageNo, pageSize, agentId, name, code, category);
-        var vos = com.shiyu.ai.common.core.utils.MapstructUtils.convert(result.getRight(), IntentDefVO.class);
+        java.util.List<IntentDefVO> vos = com.shiyu.ai.agent.service.convert.IntentDefConverter.INSTANCE.toVOList(result.getRight());
         PageData<IntentDefVO> pageData = new PageData<>(vos, result.getLeft());
         return Result.success(pageData);
     }
@@ -54,12 +56,12 @@ public class IntentDefController {
      * 根据 ID 查询意图定义详情
      */
     @Operation(summary = "Get by Id")
-    @GetMapping("/{id}")
-    public Result<IntentDefVO> getById(@PathVariable Long id) {
+    @GetMapping("/detail")
+    public Result<IntentDefVO> getById(@RequestParam Long id) {
         log.info("查询意图定义详情，id: {}", id);
         IntentDefBO bo = intentDefService.getById(id);
         if (bo != null) {
-            return Result.success(com.shiyu.ai.common.core.utils.MapstructUtils.convert(bo, IntentDefVO.class));
+            return Result.success(com.shiyu.ai.agent.service.convert.IntentDefConverter.INSTANCE.toVO(bo));
         }
         return Result.fail("意图定义不存在");
     }
@@ -73,7 +75,7 @@ public class IntentDefController {
         log.info("新增意图定义，code: {}", bo.getCode());
         try {
             IntentDefBO created = intentDefService.create(bo);
-            return Result.success(com.shiyu.ai.common.core.utils.MapstructUtils.convert(created, IntentDefVO.class));
+            return Result.success(com.shiyu.ai.agent.service.convert.IntentDefConverter.INSTANCE.toVO(created));
         } catch (Exception e) {
             log.error("新增意图定义失败", e);
             return Result.fail("新增失败");
@@ -90,7 +92,7 @@ public class IntentDefController {
         try {
             bo.setId(id);
             IntentDefBO updated = intentDefService.update(bo);
-            return Result.success(com.shiyu.ai.common.core.utils.MapstructUtils.convert(updated, IntentDefVO.class));
+            return Result.success(com.shiyu.ai.agent.service.convert.IntentDefConverter.INSTANCE.toVO(updated));
         } catch (Exception e) {
             log.error("修改意图定义失败", e);
             return Result.fail("修改失败");

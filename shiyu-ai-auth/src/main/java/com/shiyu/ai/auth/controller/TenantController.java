@@ -18,7 +18,7 @@ import java.util.List;
 @Slf4j
 @Tag(name = "Tenant", description = "Tenant")
 @RestController
-@RequestMapping("/auth/tenant")
+@RequestMapping("/tenant")
 public class TenantController {
 
     private final TenantService tenantService;

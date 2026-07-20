@@ -58,23 +58,23 @@ public interface UsageRecordMapper extends BaseMapperFlex<UsageRecordDO> {
 
     /** LLM 按模型聚合 */
     @Select("SELECT " +
-            "JSON_VALUE(ext_info, '$.platform') as platform, " +
-            "JSON_VALUE(ext_info, '$.model') as model, " +
+            "JSON_EXTRACT(ext_info, '$.platform') as platform, " +
+            "JSON_EXTRACT(ext_info, '$.model') as model, " +
             "COUNT(*) as call_count, " +
-            "COALESCE(SUM(CAST(JSON_VALUE(ext_info, '$.totalTokens') AS INT)), 0) as total_tokens, " +
-            "COALESCE(SUM(CAST(JSON_VALUE(ext_info, '$.cost') AS DOUBLE)), 0) as total_cost, " +
+            "COALESCE(SUM(CAST(JSON_EXTRACT(ext_info, '$.totalTokens') AS NUMERIC)), 0) as total_tokens, " +
+            "COALESCE(SUM(CAST(JSON_EXTRACT(ext_info, '$.cost') AS NUMERIC)), 0) as total_cost, " +
             "AVG(latency_ms) as avg_latency_ms " +
             "FROM usage_record " +
             "WHERE usage_type = 'LLM' " +
-            "GROUP BY JSON_VALUE(ext_info, '$.platform'), JSON_VALUE(ext_info, '$.model') " +
+            "GROUP BY JSON_EXTRACT(ext_info, '$.platform'), JSON_EXTRACT(ext_info, '$.model') " +
             "ORDER BY total_tokens DESC")
     List<Map<String, Object>> aggregateByModel();
 
     /** LLM 按日聚合（含 token/cost） */
     @Select("SELECT DATE(create_time) as date, " +
             "COUNT(*) as call_count, " +
-            "COALESCE(SUM(CAST(JSON_VALUE(ext_info, '$.totalTokens') AS INT)), 0) as total_tokens, " +
-            "COALESCE(SUM(CAST(JSON_VALUE(ext_info, '$.cost') AS DOUBLE)), 0) as total_cost, " +
+            "COALESCE(SUM(CAST(JSON_EXTRACT(ext_info, '$.totalTokens') AS NUMERIC)), 0) as total_tokens, " +
+            "COALESCE(SUM(CAST(JSON_EXTRACT(ext_info, '$.cost') AS NUMERIC)), 0) as total_cost, " +
             "AVG(latency_ms) as avg_latency_ms " +
             "FROM usage_record " +
             "WHERE usage_type = 'LLM' AND create_time >= DATEADD('DAY', -#{days}, CURRENT_TIMESTAMP) " +
@@ -85,8 +85,8 @@ public interface UsageRecordMapper extends BaseMapperFlex<UsageRecordDO> {
     /** LLM 按周聚合（含 token/cost） */
     @Select("SELECT YEARWEEK(create_time) as week, " +
             "COUNT(*) as call_count, " +
-            "COALESCE(SUM(CAST(JSON_VALUE(ext_info, '$.totalTokens') AS INT)), 0) as total_tokens, " +
-            "COALESCE(SUM(CAST(JSON_VALUE(ext_info, '$.cost') AS DOUBLE)), 0) as total_cost, " +
+            "COALESCE(SUM(CAST(JSON_EXTRACT(ext_info, '$.totalTokens') AS NUMERIC)), 0) as total_tokens, " +
+            "COALESCE(SUM(CAST(JSON_EXTRACT(ext_info, '$.cost') AS NUMERIC)), 0) as total_cost, " +
             "AVG(latency_ms) as avg_latency_ms " +
             "FROM usage_record " +
             "WHERE usage_type = 'LLM' AND create_time >= DATEADD('WEEK', -#{weeks}, CURRENT_TIMESTAMP) " +
@@ -97,8 +97,8 @@ public interface UsageRecordMapper extends BaseMapperFlex<UsageRecordDO> {
     /** LLM 按月聚合（含 token/cost） */
     @Select("SELECT FORMATDATETIME(create_time, 'YYYY-MM') as month, " +
             "COUNT(*) as call_count, " +
-            "COALESCE(SUM(CAST(JSON_VALUE(ext_info, '$.totalTokens') AS INT)), 0) as total_tokens, " +
-            "COALESCE(SUM(CAST(JSON_VALUE(ext_info, '$.cost') AS DOUBLE)), 0) as total_cost, " +
+            "COALESCE(SUM(CAST(JSON_EXTRACT(ext_info, '$.totalTokens') AS NUMERIC)), 0) as total_tokens, " +
+            "COALESCE(SUM(CAST(JSON_EXTRACT(ext_info, '$.cost') AS NUMERIC)), 0) as total_cost, " +
             "AVG(latency_ms) as avg_latency_ms " +
             "FROM usage_record " +
             "WHERE usage_type = 'LLM' AND create_time >= DATEADD('MONTH', -#{months}, CURRENT_TIMESTAMP) " +
@@ -109,14 +109,14 @@ public interface UsageRecordMapper extends BaseMapperFlex<UsageRecordDO> {
     /** Embedding 概览 */
     @Select("SELECT " +
             "COUNT(*) as total_calls, " +
-            "COALESCE(SUM(CAST(JSON_VALUE(ext_info, '$.estimatedTokens') AS INT)), 0) as total_estimated_tokens, " +
-            "COALESCE(SUM(CAST(JSON_VALUE(ext_info, '$.vectorCount') AS INT)), 0) as total_vectors, " +
+            "COALESCE(SUM(CAST(JSON_EXTRACT(ext_info, '$.estimatedTokens') AS NUMERIC)), 0) as total_estimated_tokens, " +
+            "COALESCE(SUM(CAST(JSON_EXTRACT(ext_info, '$.vectorCount') AS NUMERIC)), 0) as total_vectors, " +
             "AVG(latency_ms) as avg_latency_ms " +
             "FROM usage_record WHERE usage_type = 'EMBEDDING'")
     Map<String, Object> getEmbeddingOverview();
 
     /** 查询指定租户当天的 LLM Token 总消耗 */
-    @Select("SELECT COALESCE(SUM(CAST(JSON_VALUE(ext_info, '$.totalTokens') AS INT)), 0) " +
+    @Select("SELECT COALESCE(SUM(CAST(JSON_EXTRACT(ext_info, '$.totalTokens') AS NUMERIC)), 0) " +
             "FROM usage_record WHERE usage_type = 'LLM' " +
             "AND user_id IN (SELECT id FROM auth_user WHERE tenant_id = #{tenantId}) " +
             "AND create_time >= CURRENT_DATE")

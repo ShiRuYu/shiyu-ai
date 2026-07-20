@@ -11,6 +11,11 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
+/**
+ * MCP 工具市场 Controller
+ *
+ * 注意：所有参数均通过 @RequestParam 或 @RequestBody 传入，不使用 @PathVariable。
+ */
 @Slf4j
 @Tag(name = "MCP 工具市场", description = "MCP Tool Marketplace")
 @RestController
@@ -45,8 +50,8 @@ public class McpToolController {
     }
 
     @Operation(summary = "获取工具详情")
-    @GetMapping("/tools/{name}")
-    public Result<McpToolDescriptor> getTool(@PathVariable String name) {
+    @GetMapping("/tools/detail")
+    public Result<McpToolDescriptor> getTool(@RequestParam String name) {
         McpToolDescriptor tool = registry.getTool(name);
         if (tool == null) {
             return Result.fail("工具不存在: " + name);
@@ -55,16 +60,14 @@ public class McpToolController {
     }
 
     @Operation(summary = "执行工具")
-    @PostMapping("/tools/{name}/execute")
+    @PostMapping("/tools/execute")
     public Result<Object> executeTool(
-            @PathVariable String name,
+            @RequestParam String name,
             @RequestBody(required = false) Map<String, Object> params) {
-        // 先校验工具是否在注册表中存在
         McpToolDescriptor tool = registry.getTool(name);
         if (tool == null) {
             return Result.fail("工具不存在: " + name);
         }
-
         ToolService.ToolExecutionResult result = toolService.execute(name, params);
         if (result.success()) {
             return Result.success(result.result());

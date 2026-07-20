@@ -13,7 +13,7 @@ import org.springframework.web.bind.annotation.*;
 import java.util.List;
 
 @RestController
-@RequestMapping("/knowledge/admin")
+@RequestMapping("/knowledge/knowledge")
 @RequiredArgsConstructor
 @Tag(name = "知识库管理（运维）")
 public class AdminController {

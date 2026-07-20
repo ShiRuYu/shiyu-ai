@@ -21,6 +21,8 @@ import java.util.Map;
 
 /**
  * 用户管理 Controller
+ *
+ * 注意：所有参数均通过 @RequestParam 或 @RequestBody 传入，不使用 @PathVariable。
  */
 @Slf4j
 @Tag(name = "User", description = "User")
@@ -38,10 +40,10 @@ public class UserController {
 
     /**
      * 获取当前用户信息
-     * GET /user/info
+     * GET /auth/user/detail
      */
     @Operation(summary = "Get User Info")
-    @GetMapping("/info")
+    @GetMapping("/detail")
     public Result<UserVO> getUserInfo() {
         log.info("获取当前用户信息");
         Long userId = LoginContextHolder.getUserId();
@@ -76,10 +78,10 @@ public class UserController {
 
     /**
      * 用户列表 - 分页
-     * GET /user
+     * GET /auth/user/list
      */
     @Operation(summary = "Get User List")
-    @GetMapping("")
+    @GetMapping("/list")
     public Result<UserPageResponse> getUserList(@Valid UserPageRequest request) {
         log.info("获取用户列表，username: {}, pageNo: {}, pageSize: {}",
                 request.getUsername(), request.getPageNo(), request.getPageSize());
@@ -88,35 +90,48 @@ public class UserController {
     }
 
     /**
-     * 删除用户
-     * DELETE /user/{userId}
+     * 新增用户
+     * POST /auth/user/create
      */
-    @Operation(summary = "Delete User")
-    @DeleteMapping("/{userId}")
-    public Result<Void> deleteUser(@PathVariable Long userId) {
-        log.info("删除用户，userId: {}", userId);
-        return userService.deleteUser(userId) ? Result.success() : Result.fail("用户不存在");
+    @Operation(summary = "Create User")
+    @PostMapping("/create")
+    public Result<Map<String, Object>> createUser(@Valid @RequestBody UserRequest request) {
+        log.info("新增用户");
+        UserBO userBO = MapstructUtils.convert(request, UserBO.class);
+        Map<String, Object> result = userService.createUser(userBO);
+        return Result.success(result);
     }
 
     /**
      * 修改用户
-     * PATCH /user/{userId}
+     * POST /auth/user/update?userId=
      */
     @Operation(summary = "Update User")
-    @PatchMapping("/{userId}")
-    public Result<Void> updateUser(@PathVariable Long userId, @Valid @RequestBody UserRequest request) {
+    @PostMapping("/update")
+    public Result<Void> updateUser(@RequestParam Long userId, @Valid @RequestBody UserRequest request) {
         log.info("修改用户，userId: {}", userId);
         UserBO userBO = MapstructUtils.convert(request, UserBO.class);
         return userService.updateUser(userId, userBO) ? Result.success() : Result.fail("用户不存在");
     }
 
     /**
+     * 删除用户
+     * POST /auth/user/delete?userId=
+     */
+    @Operation(summary = "Delete User")
+    @PostMapping("/delete")
+    public Result<Void> deleteUser(@RequestParam Long userId) {
+        log.info("删除用户，userId: {}", userId);
+        return userService.deleteUser(userId) ? Result.success() : Result.fail("用户不存在");
+    }
+
+    /**
      * 重置用户密码
-     * PATCH /user/{userId}/password/reset
+     * POST /auth/user/password/reset?userId=
      */
     @Operation(summary = "Reset Password")
-    @PatchMapping("/{userId}/password/reset")
-    public Result<Void> resetPassword(@PathVariable Long userId, @Valid @RequestBody ResetPasswordRequest request) {
+    @PostMapping("/password/reset")
+    public Result<Void> resetPassword(@RequestParam Long userId, @Valid @RequestBody ResetPasswordRequest request) {
         log.info("重置用户密码，userId: {}", userId);
         String result = userService.resetUserPassword(userId, request.getPassword());
         if (result == null) {
@@ -127,26 +142,13 @@ public class UserController {
 
     /**
      * 修改密码（需校验旧密码）
-     * PATCH /user/{userId}/password
+     * POST /auth/user/password/change?userId=
      */
     @Operation(summary = "Change Password")
-    @PatchMapping("/{userId}/password")
-    public Result<Void> changePassword(@PathVariable Long userId, @Valid @RequestBody ChangePasswordRequest request) {
+    @PostMapping("/password/change")
+    public Result<Void> changePassword(@RequestParam Long userId, @Valid @RequestBody ChangePasswordRequest request) {
         log.info("修改密码，userId: {}", userId);
         boolean success = userService.changePassword(userId, request.getOldPassword(), request.getNewPassword());
         return success ? Result.success() : Result.fail("旧密码错误或用户不存在");
-    }
-
-    /**
-     * 新增用户
-     * POST /user
-     */
-    @Operation(summary = "Create User")
-    @PostMapping("")
-    public Result<Map<String, Object>> createUser(@Valid @RequestBody UserRequest request) {
-        log.info("新增用户");
-        UserBO userBO = MapstructUtils.convert(request, UserBO.class);
-        Map<String, Object> result = userService.createUser(userBO);
-        return Result.success(result);
     }
 }

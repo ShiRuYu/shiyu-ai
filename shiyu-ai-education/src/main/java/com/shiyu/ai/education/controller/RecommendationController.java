@@ -15,8 +15,8 @@ import java.util.List;
 
 /**
  * 智能推荐控制器 — Phase 6
- * <p>
- * 提供知识点/题目/资源/复习四类推荐 + 混合推荐聚合
+ *
+ * 注意：所有参数均通过 @RequestParam 或 @RequestBody 传入，不使用 @PathVariable。
  */
 @Slf4j
 @Tag(name = "智能推荐")
@@ -28,57 +28,51 @@ public class RecommendationController {
     private final RecommendationService recommendationService;
     private final ChatEngine chatEngine;
 
-    @GetMapping("/knowledge/{studentId}")
+    @GetMapping("/knowledge")
     @Operation(summary = "推荐薄弱知识点 — 基于能力差距 + 遗忘紧迫度")
     public Result<List<KnowledgeRecommendResponse>> recommendKnowledge(
-            @PathVariable Long studentId,
+            @RequestParam Long studentId,
             @RequestParam(defaultValue = "5") int topK) {
-        log.info("GET /api/v1/recommend/knowledge/{}?topK={}", studentId, topK);
+        log.info("推荐薄弱知识点 studentId={}, topK={}", studentId, topK);
         return Result.success(recommendationService.recommendKnowledge(studentId, topK));
     }
 
-    @GetMapping("/questions/{studentId}")
+    @GetMapping("/questions")
     @Operation(summary = "推荐题目 — 基于薄弱知识点 + 难度匹配 + 能力维度")
     public Result<List<QuestionRecommendResponse>> recommendQuestions(
-            @PathVariable Long studentId,
+            @RequestParam Long studentId,
             @RequestParam(defaultValue = "10") int count) {
-        log.info("GET /api/v1/recommend/questions/{}?count={}", studentId, count);
+        log.info("推荐题目 studentId={}, count={}", studentId, count);
         return Result.success(recommendationService.recommendQuestions(studentId, count));
     }
 
-    @GetMapping("/resources/{studentId}")
+    @GetMapping("/resources")
     @Operation(summary = "推荐学习资源 — 基于薄弱点 + 最近学习知识点")
     public Result<List<ResourceRecommendResponse>> recommendResources(
-            @PathVariable Long studentId,
+            @RequestParam Long studentId,
             @RequestParam(defaultValue = "5") int topK) {
-        log.info("GET /api/v1/recommend/resources/{}?topK={}", studentId, topK);
+        log.info("推荐学习资源 studentId={}, topK={}", studentId, topK);
         return Result.success(recommendationService.recommendResources(studentId, topK));
     }
 
-    @GetMapping("/review/{studentId}")
+    @GetMapping("/review")
     @Operation(summary = "推荐复习任务 — 基于遗忘曲线的到期/即将到期复习")
     public Result<List<QuestionRecommendResponse>> recommendReview(
-            @PathVariable Long studentId,
+            @RequestParam Long studentId,
             @RequestParam(defaultValue = "5") int count) {
-        log.info("GET /api/v1/recommend/review/{}?count={}", studentId, count);
+        log.info("推荐复习任务 studentId={}, count={}", studentId, count);
         return Result.success(recommendationService.recommendReviewTasks(studentId, count));
     }
 
-    @GetMapping("/hybrid/{studentId}")
+    @GetMapping("/hybrid")
     @Operation(summary = "混合推荐 — 聚合知识点/题目/资源/复习 + AI 综合学习建议")
-    public Result<HybridRecommendResponse> hybridRecommend(@PathVariable Long studentId) {
-        log.info("GET /api/v1/recommend/hybrid/{}", studentId);
-
-        // 用 AI 生成综合学习建议
+    public Result<HybridRecommendResponse> hybridRecommend(@RequestParam Long studentId) {
+        log.info("混合推荐 studentId={}", studentId);
         List<Long> weakIds = recommendationService.getWeakKnowledgeIds(studentId);
         String advice = generateOverallAdvice(studentId, weakIds.size());
-
         return Result.success(recommendationService.hybridRecommend(studentId, advice));
     }
 
-    /**
-     * 用 ChatEngine 生成综合学习建议
-     */
     private String generateOverallAdvice(Long studentId, int weakCount) {
         try {
             String prompt = """
@@ -100,7 +94,6 @@ public class RecommendationController {
         } catch (Exception e) {
             log.warn("生成学习建议失败", e);
         }
-        // Fallback
         if (weakCount > 0) {
             return "你有 %d 个薄弱知识点需要加强，建议优先巩固薄弱点，再结合复习任务查漏补缺。加油！".formatted(weakCount);
         }

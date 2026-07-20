@@ -12,7 +12,6 @@ import com.shiyu.ai.dal.agent.dataobject.IntentDefDO;
 
 /**
  * 意图定义业务对象
- * 注意: JSON字段（examples/slots/parameterMapping/slotDefaults）由 Repository 手动转换
  */
 @AutoMapper(target = IntentDefDO.class, reverseConvertGenerate = false)
 @Data

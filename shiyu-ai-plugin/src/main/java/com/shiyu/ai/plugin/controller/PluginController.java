@@ -10,9 +10,13 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
-import java.util.Map;
 import java.util.stream.Collectors;
 
+/**
+ * 插件系统 Controller
+ *
+ * 注意：所有参数均通过 @RequestParam 或 @RequestBody 传入，不使用 @PathVariable。
+ */
 @Slf4j
 @Tag(name = "插件系统", description = "Plugin System")
 @RestController
@@ -44,8 +48,8 @@ public class PluginController {
     }
 
     @Operation(summary = "启动插件")
-    @PostMapping("/{pluginId}/start")
-    public Result<Void> startPlugin(@PathVariable String pluginId) {
+    @PostMapping("/start")
+    public Result<Void> startPlugin(@RequestParam String pluginId) {
         try {
             registry.start(pluginId);
             return Result.success();
@@ -55,8 +59,8 @@ public class PluginController {
     }
 
     @Operation(summary = "停止插件")
-    @PostMapping("/{pluginId}/stop")
-    public Result<Void> stopPlugin(@PathVariable String pluginId) {
+    @PostMapping("/stop")
+    public Result<Void> stopPlugin(@RequestParam String pluginId) {
         try {
             registry.stop(pluginId);
             return Result.success();
@@ -66,8 +70,8 @@ public class PluginController {
     }
 
     @Operation(summary = "卸载插件")
-    @PostMapping("/{pluginId}/uninstall")
-    public Result<Void> uninstallPlugin(@PathVariable String pluginId) {
+    @PostMapping("/uninstall")
+    public Result<Void> uninstallPlugin(@RequestParam String pluginId) {
         try {
             registry.uninstall(pluginId);
             return Result.success();

@@ -23,7 +23,7 @@ import java.util.Map;
 @Slf4j
 @Tag(name = "Workspace", description = "Workspace")
 @RestController
-@RequestMapping("/auth/workspace")
+@RequestMapping("/workspace")
 public class WorkspaceController {
 
     private final WorkspaceService workspaceService;

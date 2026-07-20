@@ -19,7 +19,7 @@ import java.util.List;
 
 @Tag(name = "记录管理")
 @RestController
-@RequestMapping("/record")
+@RequestMapping("/record/record")
 public class RecordController {
 
     @Resource

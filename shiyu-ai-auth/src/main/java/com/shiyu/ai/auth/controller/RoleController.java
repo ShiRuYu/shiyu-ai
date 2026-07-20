@@ -19,6 +19,8 @@ import java.util.List;
 
 /**
  * 角色管理 Controller
+ *
+ * 注意：所有参数均通过 @RequestParam 或 @RequestBody 传入，不使用 @PathVariable。
  */
 @Slf4j
 @Tag(name = "Role", description = "Role")
@@ -32,9 +34,6 @@ public class RoleController {
         this.roleService = roleService;
     }
 
-    /**
-     * 角色列表 - 分页
-     */
     @Operation(summary = "Get Role List")
     @GetMapping("/list")
     public Result<RolePageResponse> getRoleList(@Valid RolePageRequest request) {
@@ -45,76 +44,56 @@ public class RoleController {
         return Result.success(roleService.getRoleList(request.getPageNo(), request.getPageSize(), request.getName()));
     }
 
-    /**
-     * 角色列表-all
-     */
     @Operation(summary = "Get All Roles")
-    @GetMapping("")
+    @GetMapping("/all")
     public Result<List<RoleBO>> getAllRoles(@RequestParam(required = false) String status) {
         log.info("获取所有角色，status: {}", status);
         return Result.success(roleService.getAllRoles(status));
     }
 
-    /**
-     * 修改角色
-     */
-    @Operation(summary = "Update Role")
-    @PatchMapping("/{id}")
-    public Result<Void> updateRole(@PathVariable Long id, @Valid @RequestBody RoleRequest request) {
-        log.info("修改角色，id: {}", id);
-        RoleBO roleBO = MapstructUtils.convert(request, RoleBO.class);
-        return roleService.updateRole(id, roleBO) ? Result.success() : Result.fail("角色不存在");
+    @Operation(summary = "Get Role Detail")
+    @GetMapping("/detail")
+    public Result<RoleVO> getRoleDetail(@RequestParam Long id) {
+        log.info("查询角色详情，id: {}", id);
+        RoleBO bo = roleService.getRoleDetail(id);
+        if (bo == null) return Result.fail("角色不存在");
+        return Result.success(MapstructUtils.convert(bo, RoleVO.class));
     }
 
-    /**
-     * 修改角色（PUT）
-     */
-    @Operation(summary = "Put Role")
-    @PutMapping("/{id}")
-    public Result<Void> putRole(@PathVariable Long id, @Valid @RequestBody RoleRequest request) {
-        log.info("修改角色，id: {}", id);
-        RoleBO roleBO = MapstructUtils.convert(request, RoleBO.class);
-        return roleService.updateRole(id, roleBO) ? Result.success() : Result.fail("角色不存在");
-    }
-
-    /**
-     * 删除角色
-     */
-    @Operation(summary = "Delete Role")
-    @DeleteMapping("/{id}")
-    public Result<Void> deleteRole(@PathVariable Long id) {
-        log.info("删除角色，id: {}", id);
-        return roleService.deleteRole(id) ? Result.success() : Result.fail("角色不存在");
-    }
-
-    /**
-     * 取消分配角色 - 批量
-     */
-    @Operation(summary = "Remove User Roles")
-    @PatchMapping("/users/remove/{id}")
-    public Result<Void> removeUserRoles(@PathVariable Long id, @Valid @RequestBody AssignUserRolesRequest request) {
-        log.info("取消分配角色，id: {}, userIds: {}", id, request.getUserIds());
-        return roleService.removeUserRoles(id, request.getUserIds()) ? Result.success() : Result.fail("取消分配失败");
-    }
-
-    /**
-     * 分配角色 - 批量
-     */
-    @Operation(summary = "Assign User Roles")
-    @PatchMapping("/users/add/{id}")
-    public Result<Void> assignUserRoles(@PathVariable Long id, @Valid @RequestBody AssignUserRolesRequest request) {
-        log.info("分配角色，id: {}, userIds: {}", id, request.getUserIds());
-        return roleService.assignUserRoles(id, request.getUserIds()) ? Result.success() : Result.fail("分配失败");
-    }
-
-    /**
-     * 新增角色
-     */
     @Operation(summary = "Create Role")
-    @PostMapping("")
+    @PostMapping("/create")
     public Result<Void> createRole(@Valid @RequestBody RoleRequest request) {
         log.info("新增角色");
         RoleBO roleBO = MapstructUtils.convert(request, RoleBO.class);
         return roleService.createRole(roleBO) ? Result.success() : Result.fail("新增失败");
+    }
+
+    @Operation(summary = "Update Role")
+    @PostMapping("/update")
+    public Result<Void> updateRole(@RequestParam Long id, @Valid @RequestBody RoleRequest request) {
+        log.info("修改角色，id: {}", id);
+        RoleBO roleBO = MapstructUtils.convert(request, RoleBO.class);
+        return roleService.updateRole(id, roleBO) ? Result.success() : Result.fail("角色不存在");
+    }
+
+    @Operation(summary = "Delete Role")
+    @PostMapping("/delete")
+    public Result<Void> deleteRole(@RequestParam Long id) {
+        log.info("删除角色，id: {}", id);
+        return roleService.deleteRole(id) ? Result.success() : Result.fail("角色不存在");
+    }
+
+    @Operation(summary = "Remove User Roles")
+    @PostMapping("/users/remove")
+    public Result<Void> removeUserRoles(@RequestParam Long id, @Valid @RequestBody AssignUserRolesRequest request) {
+        log.info("取消分配角色，id: {}, userIds: {}", id, request.getUserIds());
+        return roleService.removeUserRoles(id, request.getUserIds()) ? Result.success() : Result.fail("取消分配失败");
+    }
+
+    @Operation(summary = "Assign User Roles")
+    @PostMapping("/users/add")
+    public Result<Void> assignUserRoles(@RequestParam Long id, @Valid @RequestBody AssignUserRolesRequest request) {
+        log.info("分配角色，id: {}, userIds: {}", id, request.getUserIds());
+        return roleService.assignUserRoles(id, request.getUserIds()) ? Result.success() : Result.fail("分配失败");
     }
 }
