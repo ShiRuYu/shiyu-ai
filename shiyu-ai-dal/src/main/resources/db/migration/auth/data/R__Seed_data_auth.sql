@@ -118,10 +118,10 @@ VALUES (11, '权限码管理', 'SystemAuthCode', 'MENU', 1, 1, '/system/auth-cod
 -- 菜单（业务模块）
 -- ==============================
 INSERT IGNORE INTO `menu` (`id`, `name`, `code`, `type`, `parent_id`, `tenant_id`, `path`, `redirect`, `icon`, `component`, `show`, `status`, `order`, `del_flag`, `create_by`, `update_by`)
-VALUES (10, '平台管理', 'PlatformManager', 'CATALOG', NULL, 1, '/platform', '/agent/admin/list', 'carbon:bot', '', TRUE, 1, 10, 0, 'system', 'system');
+VALUES (10, '平台管理', 'PlatformManager', 'CATALOG', NULL, 1, '/platform', '/agent/definition/list', 'carbon:bot', '', TRUE, 1, 10, 0, 'system', 'system');
 
 INSERT IGNORE INTO `menu` (`id`, `name`, `code`, `type`, `parent_id`, `tenant_id`, `path`, `icon`, `component`, `show`, `status`, `order`, `del_flag`, `create_by`, `update_by`)
-VALUES (16, 'Agent 管理', 'AgentAdmin', 'MENU', 10, 1, '/agent/admin/list', 'carbon:development', '/agent/admin/agent-list', TRUE, 1, 1, 0, 'system', 'system');
+VALUES (16, 'Agent 定义', 'AgentDefinition', 'MENU', 10, 1, '/agent/definition/list', 'carbon:development', '/agent/admin/agent-list', TRUE, 1, 1, 0, 'system', 'system');
 
 INSERT IGNORE INTO `menu` (`id`, `name`, `code`, `type`, `parent_id`, `tenant_id`, `path`, `icon`, `component`, `show`, `status`, `order`, `del_flag`, `create_by`, `update_by`)
 VALUES (12, '平台管理', 'AgentPlatform', 'MENU', 10, 1, '/agent/platform', 'carbon:bare-metal-server', '/agent/platform/list', TRUE, 1, 2, 0, 'system', 'system');

@@ -1,6 +1,6 @@
 package com.shiyu.ai.agent.node.agent;
 
-import com.shiyu.ai.agent.service.AgentService;
+import com.shiyu.ai.agent.runtime.AgentRuntime;
 import com.shiyu.ai.agent.node.BaseNode;
 import com.shiyu.ai.agent.node.NodeInput;
 import com.shiyu.ai.agent.node.NodeOutput;
@@ -17,6 +17,7 @@ import com.shiyu.ai.agent.node.NodeInputParam;
 /**
  * Agent 调用节点
  * 用于在 Graph 中调用其他已注册的 Agent 执行子任务
+ * 使用 AgentRuntime 进行调用（统一走 Execution 生命周期）
  *
  * @author shiyu-ai
  * @date 2026-06-06
@@ -29,27 +30,22 @@ public class AgentCallNode extends BaseNode {
     private AgentCallConfig config;
 
     /**
-     * Agent 服务（必须依赖）
+     * Agent 运行时（必须依赖）
      */
-    private final AgentService agentService;
+    private final AgentRuntime agentRuntime;
 
     /**
      * 私有构造函数，强制使用 Builder 模式
-     *
-     * @param config       节点配置
-     * @param agentService Agent 服务
      */
-    private AgentCallNode(AgentCallConfig config, AgentService agentService) {
+    private AgentCallNode(AgentCallConfig config, AgentRuntime agentRuntime) {
         super(config != null ? config : new AgentCallConfig());
         this.config = config != null ? config : new AgentCallConfig();
         this.config.setNodeType(NodeType.AGENT_CALL);
-        this.agentService = agentService;
+        this.agentRuntime = agentRuntime;
     }
 
     /**
      * 获取 Builder 实例
-     *
-     * @return Builder 实例
      */
     public static Builder builder() {
         return new Builder();
@@ -60,41 +56,23 @@ public class AgentCallNode extends BaseNode {
      */
     public static class Builder {
         private AgentCallConfig config;
-        private AgentService agentService;
+        private AgentRuntime agentRuntime;
 
-        /**
-         * 设置节点配置
-         *
-         * @param config 节点配置
-         * @return Builder 实例
-         */
         public Builder config(AgentCallConfig config) {
             this.config = config;
             return this;
         }
 
-        /**
-         * 设置 Agent 服务
-         *
-         * @param agentService Agent 服务
-         * @return Builder 实例
-         */
-        public Builder agentService(AgentService agentService) {
-            this.agentService = agentService;
+        public Builder agentRuntime(AgentRuntime agentRuntime) {
+            this.agentRuntime = agentRuntime;
             return this;
         }
 
-        /**
-         * 构建并返回 AgentCallNode 实例
-         *
-         * @return AgentCallNode 实例
-         * @throws IllegalStateException 如果校验失败
-         */
         public AgentCallNode build() {
-            if (agentService == null) {
-                throw new IllegalStateException("创建 AgentCallNode 失败：agentService 不能为空");
+            if (agentRuntime == null) {
+                throw new IllegalStateException("创建 AgentCallNode 失败：agentRuntime 不能为空");
             }
-            return new AgentCallNode(config, agentService);
+            return new AgentCallNode(config, agentRuntime);
         }
     }
 
@@ -120,14 +98,13 @@ public class AgentCallNode extends BaseNode {
             // 3. 获取目标版本
             String targetVersion = getTargetVersion(input);
 
-            // 4. 调用目标 Agent
+            // 4. 调用目标 Agent（统一走 AgentRuntime，获得 Execution 生命周期支持）
             log.info("开始调用目标 Agent：agentId={}, version={}", targetAgentId, targetVersion);
-            Map<String, Object> result;
-            if (targetVersion != null && !targetVersion.trim().isEmpty()) {
-                result = agentService.execute(targetAgentId, targetVersion, agentInput);
-            } else {
-                result = agentService.execute(targetAgentId, agentInput);
-            }
+            var execution = (targetVersion != null && !targetVersion.trim().isEmpty())
+                    ? agentRuntime.execute(targetAgentId, targetVersion, agentInput)
+                    : agentRuntime.execute(targetAgentId, agentInput);
+
+            Map<String, Object> result = execution.getOutput();
 
             // 5. 构建输出结果
             NodeOutput output = new NodeOutput();
@@ -136,8 +113,8 @@ public class AgentCallNode extends BaseNode {
 
             String outputKey = config.getOutputKey() != null ? config.getOutputKey() : "agentResult";
             output.addData(outputKey, result);
-            output.addData(FieldKey.TARGET_AGENT_ID, targetAgentId);
-            output.addData(FieldKey.TARGET_VERSION, targetVersion);
+            output.addData(FieldKey.TARGET_AGENT_ID.key(), targetAgentId);
+            output.addData(FieldKey.TARGET_VERSION.key(), targetVersion);
 
             log.info("Agent 调用成功：targetAgentId={}, resultSize={}",
                     targetAgentId, result != null ? result.size() : 0);
@@ -156,8 +133,7 @@ public class AgentCallNode extends BaseNode {
      * 获取目标 Agent ID
      */
     private String getTargetAgentId(NodeInput input) {
-        // 优先使用输入中的配置
-        String targetAgentId = input.getParameter(FieldKey.TARGET_AGENT_ID);
+        String targetAgentId = input.getParameter(FieldKey.TARGET_AGENT_ID.key());
         if (targetAgentId != null && !targetAgentId.trim().isEmpty()) {
             return targetAgentId;
         }
@@ -168,8 +144,7 @@ public class AgentCallNode extends BaseNode {
      * 获取目标版本
      */
     private String getTargetVersion(NodeInput input) {
-        // 优先使用输入中的配置
-        String targetVersion = input.getParameter(FieldKey.TARGET_VERSION);
+        String targetVersion = input.getParameter(FieldKey.TARGET_VERSION.key());
         if (targetVersion != null && !targetVersion.trim().isEmpty()) {
             return targetVersion;
         }
@@ -178,14 +153,12 @@ public class AgentCallNode extends BaseNode {
 
     /**
      * 准备目标 Agent 的输入参数
-     * 根据 inputMapping 配置进行参数映射
      */
     private Map<String, Object> prepareAgentInput(NodeInput input) {
         Map<String, Object> agentInput = new HashMap<>();
         Map<String, String> inputMapping = config.getInputMapping();
 
         if (inputMapping != null && !inputMapping.isEmpty()) {
-            // 按照映射规则转换参数
             for (Map.Entry<String, String> entry : inputMapping.entrySet()) {
                 String sourceKey = entry.getKey();
                 String targetKey = entry.getValue();
@@ -195,7 +168,6 @@ public class AgentCallNode extends BaseNode {
                 }
             }
         } else {
-            // 没有映射规则时，传递所有参数（排除内部字段）
             for (Map.Entry<String, Object> entry : input.toMap().entrySet()) {
                 String key = entry.getKey();
                 if (!FieldKey.TARGET_AGENT_ID.key().equals(key) && !FieldKey.TARGET_VERSION.key().equals(key)) {

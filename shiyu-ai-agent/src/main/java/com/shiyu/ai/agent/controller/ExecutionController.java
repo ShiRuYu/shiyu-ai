@@ -19,25 +19,26 @@ import java.util.UUID;
 import java.util.stream.Collectors;
 
 /**
- * Agent Runtime Controller
- * 提供执行生命周期管理 API：暂停/恢复/取消/查询
+ * Agent 执行生命周期管理 Controller
+ *
+ * 职责：Agent 执行的唯一入口，提供执行、流式执行、暂停/恢复/取消、状态查询、历史记录。
+ * 合并来源：AgentRuntimeController（重命名），取代 AgentController 中的执行端点。
+ *
+ * 注意：Agent 定义管理请走 AgentDefinitionController (/agent/definition)
  */
 @Slf4j
-@Tag(name = "Agent Runtime", description = "Agent Runtime")
+@Tag(name = "Execution", description = "Agent Execution")
 @RestController
 @RequestMapping("/agent/execution")
-public class AgentRuntimeController {
+public class ExecutionController {
 
     private final AgentRuntime agentRuntime;
 
-    public AgentRuntimeController(AgentRuntime agentRuntime) {
+    public ExecutionController(AgentRuntime agentRuntime) {
         this.agentRuntime = agentRuntime;
     }
 
-    /**
-     * 同步执行 Agent
-     */
-    @Operation(summary = "Execute Agent (Runtime)")
+    @Operation(summary = "Execute Agent")
     @PostMapping("/execute")
     public Result<Map<String, Object>> execute(
             @RequestParam String agentId,
@@ -64,10 +65,7 @@ public class AgentRuntimeController {
         }
     }
 
-    /**
-     * 流式执行 Agent
-     */
-    @Operation(summary = "Execute Agent Stream (Runtime)")
+    @Operation(summary = "Execute Agent Stream")
     @PostMapping(value = "/execute-stream", produces = MediaType.TEXT_EVENT_STREAM_VALUE)
     public Flux<Result<Map<String, Object>>> executeStream(
             @RequestParam String agentId,
@@ -91,9 +89,6 @@ public class AgentRuntimeController {
                 });
     }
 
-    /**
-     * 暂停执行
-     */
     @Operation(summary = "Pause Execution")
     @PostMapping("/{executionId}/pause")
     public Result<Void> pause(@PathVariable String executionId) {
@@ -105,9 +100,6 @@ public class AgentRuntimeController {
         }
     }
 
-    /**
-     * 恢复执行
-     */
     @Operation(summary = "Resume Execution")
     @PostMapping("/{executionId}/resume")
     public Result<Map<String, Object>> resume(@PathVariable String executionId) {
@@ -124,9 +116,6 @@ public class AgentRuntimeController {
         }
     }
 
-    /**
-     * 取消执行
-     */
     @Operation(summary = "Cancel Execution")
     @PostMapping("/{executionId}/cancel")
     public Result<Void> cancel(@PathVariable String executionId) {
@@ -138,9 +127,6 @@ public class AgentRuntimeController {
         }
     }
 
-    /**
-     * 查询执行状态
-     */
     @Operation(summary = "Get Execution Status")
     @GetMapping("/{executionId}/status")
     public Result<Map<String, Object>> getStatus(@PathVariable String executionId) {
@@ -151,9 +137,6 @@ public class AgentRuntimeController {
         return Result.success(Map.of("executionId", executionId, "status", status.name()));
     }
 
-    /**
-     * 获取执行详情
-     */
     @Operation(summary = "Get Execution Details")
     @GetMapping("/{executionId}")
     public Result<Map<String, Object>> getExecution(@PathVariable String executionId) {
@@ -175,9 +158,6 @@ public class AgentRuntimeController {
         return Result.success(result);
     }
 
-    /**
-     * 查询 Agent 执行历史
-     */
     @Operation(summary = "Get Execution History")
     @GetMapping("/{agentId}/history")
     public Result<List<Map<String, Object>>> getHistory(
