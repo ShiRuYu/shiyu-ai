@@ -37,5 +37,10 @@ public class StudyRecordBO implements Serializable {
     private Integer durationSec;
 
     private LocalDateTime createTime;
+    /**
+     * 状态（依据业务灵活定义）
+     */
+    private Integer status;
+
 
 }

@@ -32,7 +32,7 @@ public class ReviewController {
     }
 
     @GetMapping("/list")
-    public Result<List<ReviewTaskResponse>> list(@RequestParam Long studentId, @RequestParam String status) {
+    public Result<List<ReviewTaskResponse>> list(@RequestParam Long studentId, @RequestParam Integer status) {
         return Result.success(reviewService.listByStudentAndStatus(studentId, status));
     }
 

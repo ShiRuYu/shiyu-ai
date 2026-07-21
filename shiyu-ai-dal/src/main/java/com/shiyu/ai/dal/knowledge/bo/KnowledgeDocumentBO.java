@@ -17,4 +17,9 @@ public class KnowledgeDocumentBO extends TenantEntity {
     private String docType;
     private String source;
     private String author;
+    /**
+     * 状态（依据业务灵活定义）
+     */
+    private Integer status;
+
 }

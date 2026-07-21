@@ -43,5 +43,10 @@ public class AbilityBO implements Serializable {
     private LocalDateTime lastUpdate;
 
     private LocalDateTime createTime;
+    /**
+     * 状态（依据业务灵活定义）
+     */
+    private Integer status;
+
 
 }

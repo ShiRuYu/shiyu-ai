@@ -21,7 +21,7 @@ public class StudyRecordRepository {
         return MapstructUtils.convert(studyRecordMapper.selectListByQuery(
                 QueryWrapper.create()
                         .eq("student_id", studentId)
-                        .orderBy("start_time", false)
+                        .orderBy("create_time", false)
         ), StudyRecordBO.class);
     }
 
@@ -30,7 +30,7 @@ public class StudyRecordRepository {
                 QueryWrapper.create()
                         .eq("student_id", studentId)
                         .eq("knowledge_id", knowledgeId)
-                        .orderBy("start_time", false)
+                        .orderBy("create_time", false)
         ), StudyRecordBO.class);
     }
 

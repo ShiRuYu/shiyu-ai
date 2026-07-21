@@ -7,7 +7,6 @@ import lombok.Data;
 import java.io.Serial;
 import java.io.Serializable;
 import java.time.LocalDate;
-import java.time.LocalDate;
 
 /**
  * StudyPlan 业务对象
@@ -27,10 +26,11 @@ public class StudyPlanBO implements Serializable {
 
     private String name;
 
-    private String status;
+    private Integer status;
+
+    private String statusDesc;
 
     private LocalDate startDate;
 
     private LocalDate endDate;
-
 }

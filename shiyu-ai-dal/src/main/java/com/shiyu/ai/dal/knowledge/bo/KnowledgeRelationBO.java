@@ -16,4 +16,9 @@ public class KnowledgeRelationBO extends TenantEntity {
     private Long targetId;
     private String relationType;
     private Double weight;
+    /**
+     * 状态（依据业务灵活定义）
+     */
+    private Integer status;
+
 }

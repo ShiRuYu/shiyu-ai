@@ -1,5 +1,8 @@
 package com.shiyu.ai.education.service.impl;
 
+import com.shiyu.ai.dal.education.enums.StudyPlanStatus;
+import com.shiyu.ai.dal.education.enums.StudyPlanItemStatus;
+
 import com.shiyu.ai.common.core.utils.MapstructUtils;
 import com.shiyu.ai.dal.education.bo.StudyPlanBO;
 import com.shiyu.ai.dal.education.bo.StudyPlanItemBO;
@@ -51,7 +54,7 @@ public class StudyPlanServiceImpl implements StudyPlanService {
         bo.setName(request.getName());
         if (request.getStartDate() != null) bo.setStartDate(request.getStartDate());
         if (request.getEndDate() != null) bo.setEndDate(request.getEndDate());
-        bo.setStatus("ACTIVE");
+        bo.setStatus(StudyPlanStatus.ACTIVE.getCode());
         studyPlanRepository.insert(bo);
         return MapstructUtils.convert(bo, StudyPlanResponse.class);
     }
@@ -64,7 +67,7 @@ public class StudyPlanServiceImpl implements StudyPlanService {
             if (request.getName() != null) bo.setName(request.getName());
             if (request.getStartDate() != null) bo.setStartDate(request.getStartDate());
             if (request.getEndDate() != null) bo.setEndDate(request.getEndDate());
-            if (request.getStatus() != null) bo.setStatus(request.getStatus());
+            if (request.getStatus() != null) bo.setStatus(Integer.valueOf(request.getStatus()));
             studyPlanRepository.update(bo);
         }
     }
@@ -87,6 +90,7 @@ public class StudyPlanServiceImpl implements StudyPlanService {
                 null,
                 item.getPlanDate().toString(),
                 item.getStatus(),
+                item.getStatusDesc(),
                 item.getOrderNo()
         )).collect(Collectors.toList());
     }

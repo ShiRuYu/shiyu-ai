@@ -1,7 +1,7 @@
 package com.shiyu.ai.agent.education;
 
 import com.shiyu.ai.dal.education.bo.ReviewTaskBO;
-import com.shiyu.ai.education.domain.ReviewStatus;
+import com.shiyu.ai.dal.education.enums.ReviewTaskStatus;
 import com.shiyu.ai.dal.education.repository.ReviewTaskRepository;
 import com.shiyu.ai.education.service.ReviewService;
 import com.shiyu.ai.education.domain.ReviewScheduler;
@@ -51,7 +51,7 @@ public class ReviewAgent {
                     reviewTask.setKnowledgeId(task.knowledgeId());
                     reviewTask.setReviewDate(task.reviewDate());
                     reviewTask.setReviewRound(task.reviewRound());
-                    reviewTask.setStatus(ReviewStatus.PENDING.name());
+                    reviewTask.setStatus(ReviewTaskStatus.PENDING.getCode());
                     reviewTaskRepository.insert(reviewTask); return reviewTask;
                 })
                 .toList();
@@ -86,7 +86,7 @@ public class ReviewAgent {
             throw new IllegalArgumentException("复习任务不存在: " + taskId);
         }
 
-        task.setStatus(ReviewStatus.COMPLETED.name());
+        task.setStatus(ReviewTaskStatus.COMPLETED.getCode());
         task.setResultScore(score);
         task.setCompletedAt(java.time.LocalDateTime.now());
         reviewTaskRepository.update(task);
@@ -104,7 +104,7 @@ public class ReviewAgent {
     public List<ReviewTaskBO> getOverdueTasks(Long studentId) {
         log.info("ReviewAgent.getOverdueTasks: studentId={}", studentId);
         List<ReviewTaskBO> tasks = reviewTaskRepository.selectByStudentAndStatus(
-                studentId, ReviewStatus.PENDING.name());
+                studentId, ReviewTaskStatus.PENDING.getCode());
         return tasks.stream()
                 .filter(t -> t.getReviewDate() != null
                         && t.getReviewDate().isBefore(LocalDate.now()))

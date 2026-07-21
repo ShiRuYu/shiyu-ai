@@ -1,7 +1,8 @@
 package com.shiyu.ai.dal.agent.bo;
 
+import com.shiyu.ai.dal.agent.dataobject.AgentVersionDO;
+import io.github.linpeilie.annotations.AutoMapper;
 import lombok.Data;
-import lombok.EqualsAndHashCode;
 
 import java.io.Serial;
 import java.io.Serializable;
@@ -10,6 +11,7 @@ import java.time.LocalDateTime;
 /**
  * Agent 版本业务对象
  */
+@AutoMapper(target = AgentVersionDO.class, reverseConvertGenerate = true)
 @Data
 public class AgentVersionBO implements Serializable {
 
@@ -20,7 +22,8 @@ public class AgentVersionBO implements Serializable {
     private String agentId;
     private String versionNumber;
     private String description;
-    private String status;
+    private Integer status;
+    private String statusDesc;
     private String graphConfig;
     private String canvasConfig;
     /** 扩展字段：版本所有节点的入参定义 JSON */

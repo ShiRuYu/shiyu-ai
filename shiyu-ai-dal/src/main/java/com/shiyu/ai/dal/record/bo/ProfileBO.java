@@ -57,7 +57,7 @@ public class ProfileBO implements Serializable {
     /**
      * 状态（1正常 0停用）
      */
-    private String status;
+    private Integer status;
 
     /**
      * 删除标志（0存在 1删除）

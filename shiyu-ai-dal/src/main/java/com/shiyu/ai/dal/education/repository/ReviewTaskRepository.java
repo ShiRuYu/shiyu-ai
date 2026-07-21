@@ -31,7 +31,7 @@ public class ReviewTaskRepository {
         ), ReviewTaskBO.class);
     }
 
-    public List<ReviewTaskBO> selectByStudentAndStatus(Long studentId, String status) {
+    public List<ReviewTaskBO> selectByStudentAndStatus(Long studentId, Integer status) {
         return MapstructUtils.convert(reviewTaskMapper.selectListByQuery(
                 QueryWrapper.create()
                         .eq("student_id", studentId)

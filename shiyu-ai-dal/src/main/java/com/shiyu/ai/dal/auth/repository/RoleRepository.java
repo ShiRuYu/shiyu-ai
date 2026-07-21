@@ -120,7 +120,7 @@ public class RoleRepository {
             .innerJoin(RoleWorkspaceMenuDO.class)
                 .on(column(MenuDO::getId).eq(column(RoleWorkspaceMenuDO::getMenuId)))
             .where(RoleWorkspaceMenuDO::getRoleId).eq(roleId)
-            .and(MenuDO::getStatus).eq("1")
+            .and(MenuDO::getStatus).eq(1)
             .and(MenuDO::getDelFlag).eq(0);
         qw.orderBy(column(MenuDO::getOrder).asc(), column(MenuDO::getId).asc());
         List<MenuDO> menuDOs = menuMapper.selectListByQuery(qw);
@@ -137,7 +137,7 @@ public class RoleRepository {
             .innerJoin(MenuDO.class)
                 .on(column(RoleWorkspaceMenuDO::getMenuId).eq(column(MenuDO::getId)))
             .where(RoleWorkspaceMenuDO::getRoleId).eq(roleId)
-            .and(MenuDO::getStatus).eq("1")
+            .and(MenuDO::getStatus).eq(1)
             .and(MenuDO::getDelFlag).eq(0);
         qw.orderBy(column(MenuDO::getOrder).asc(), column(MenuDO::getId).asc());
         List<RoleWorkspaceMenuDO> list = roleWorkspaceMenuMapper.selectListByQuery(qw);
@@ -157,7 +157,7 @@ public class RoleRepository {
             .innerJoin(MenuDO.class)
                 .on(column(RoleWorkspaceMenuDO::getMenuId).eq(column(MenuDO::getId)))
             .where(RoleWorkspaceMenuDO::getRoleId).in(roleIds)
-            .and(MenuDO::getStatus).eq("1")
+            .and(MenuDO::getStatus).eq(1)
             .and(MenuDO::getDelFlag).eq(0);
         qw.orderBy(column(MenuDO::getOrder).asc(), column(MenuDO::getId).asc());
         List<RoleWorkspaceMenuDO> list = roleWorkspaceMenuMapper.selectListByQuery(qw);

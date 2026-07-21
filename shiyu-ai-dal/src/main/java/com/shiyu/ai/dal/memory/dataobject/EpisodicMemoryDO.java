@@ -3,18 +3,19 @@ package com.shiyu.ai.dal.memory.dataobject;
 import com.mybatisflex.annotation.Id;
 import com.mybatisflex.annotation.KeyType;
 import com.mybatisflex.annotation.Table;
+import com.shiyu.ai.common.mybatis.model.TenantEntity;
 import lombok.Data;
+import lombok.EqualsAndHashCode;
 
-import java.io.Serial;
-import java.io.Serializable;
 import java.time.LocalDateTime;
 
+/**
+ * 情景记忆（Agent执行历史）
+ */
 @Data
+@EqualsAndHashCode(callSuper = true)
 @Table("episodic_memory")
-public class EpisodicMemoryDO implements Serializable {
-
-    @Serial
-    private static final long serialVersionUID = 1L;
+public class EpisodicMemoryDO extends TenantEntity {
 
     @Id(keyType = KeyType.Auto)
     private Long id;
@@ -25,7 +26,6 @@ public class EpisodicMemoryDO implements Serializable {
     private String sessionId;
     private String taskType;
     private String taskDescription;
-    private String status;
     private String resultSummary;
     private String errorMessage;
     private Long durationMs;

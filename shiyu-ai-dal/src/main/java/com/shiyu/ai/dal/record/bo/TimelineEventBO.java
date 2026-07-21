@@ -62,4 +62,9 @@ public class TimelineEventBO implements Serializable {
      * 创建者ID
      */
     private Long createdBy;
+    /**
+     * 状态（依据业务灵活定义）
+     */
+    private Integer status;
+
 }

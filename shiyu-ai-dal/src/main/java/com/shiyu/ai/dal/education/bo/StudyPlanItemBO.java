@@ -29,8 +29,9 @@ public class StudyPlanItemBO implements Serializable {
 
     private Integer orderNo;
 
-    private String status;
+    private Integer status;
+
+    private String statusDesc;
 
     private LocalDateTime completedAt;
-
 }

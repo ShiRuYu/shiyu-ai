@@ -44,5 +44,10 @@ public class QuestionBO implements Serializable {
     private String tags;
 
     private Long usedCount;
+    /**
+     * 状态（依据业务灵活定义）
+     */
+    private Integer status;
+
 
 }

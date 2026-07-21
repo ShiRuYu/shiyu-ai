@@ -1,5 +1,7 @@
 package com.shiyu.ai.education.service.impl;
 
+import com.shiyu.ai.dal.education.enums.ReviewTaskStatus;
+
 import com.shiyu.ai.common.core.utils.MapstructUtils;
 import com.shiyu.ai.dal.education.bo.ReviewTaskBO;
 import com.shiyu.ai.dal.education.repository.ReviewTaskRepository;
@@ -33,7 +35,7 @@ public class ReviewServiceImpl implements ReviewService {
     }
 
     @Override
-    public List<ReviewTaskResponse> listByStudentAndStatus(Long studentId, String status) {
+    public List<ReviewTaskResponse> listByStudentAndStatus(Long studentId, Integer status) {
         List<ReviewTaskBO> boList = reviewTaskRepository.selectByStudentAndStatus(studentId, status);
         return MapstructUtils.convert(boList, ReviewTaskResponse.class);
     }
@@ -52,7 +54,7 @@ public class ReviewServiceImpl implements ReviewService {
         bo.setKnowledgeId(request.getKnowledgeId());
         bo.setReviewDate(java.time.LocalDate.now());
         bo.setReviewRound(request.getReviewRound() != null ? request.getReviewRound() : 1);
-        bo.setStatus("PENDING");
+        bo.setStatus(ReviewTaskStatus.PENDING.getCode());
         reviewTaskRepository.insert(bo);
         return MapstructUtils.convert(bo, ReviewTaskResponse.class);
     }
@@ -62,7 +64,7 @@ public class ReviewServiceImpl implements ReviewService {
     public void update(ReviewRequest request) {
         ReviewTaskBO bo = reviewTaskRepository.selectById(request.getId());
         if (bo != null) {
-            bo.setStatus(request.getStatus());
+            bo.setStatus(request.getStatus() != null ? Integer.valueOf(request.getStatus()) : null);
             reviewTaskRepository.update(bo);
         }
     }

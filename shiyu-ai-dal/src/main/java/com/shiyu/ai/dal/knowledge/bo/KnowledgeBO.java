@@ -23,4 +23,9 @@ public class KnowledgeBO extends TenantEntity {
     private Integer difficulty;
     private String category;
     private String tags;
+    /**
+     * 状态（依据业务灵活定义）
+     */
+    private Integer status;
+
 }

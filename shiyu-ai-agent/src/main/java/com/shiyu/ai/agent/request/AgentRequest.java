@@ -16,5 +16,5 @@ public class AgentRequest {
 
     private String description;
 
-    private String status;
+    private Integer status;
 }

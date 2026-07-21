@@ -50,7 +50,7 @@ public class AiModelRepository {
         TenantWorkspaceHelper.applyWorkspaceFilter(queryWrapper);
         queryWrapper.eq(AiModelDO::getPlatformId, platformId);
         queryWrapper.eq(AiModelDO::getDelFlag, "0");
-        queryWrapper.eq(AiModelDO::getStatus, "1");
+        queryWrapper.eq(AiModelDO::getStatus, 1);
         queryWrapper.orderBy(AiModelDO::getIsDefault, true);
         queryWrapper.orderBy(AiModelDO::getSort, true);
 
@@ -69,7 +69,7 @@ public class AiModelRepository {
         queryWrapper.eq(AiModelDO::getPlatformId, platformId);
         queryWrapper.eq(AiModelDO::getIsDefault, "Y");
         queryWrapper.eq(AiModelDO::getDelFlag, "0");
-        queryWrapper.eq(AiModelDO::getStatus, "1");
+        queryWrapper.eq(AiModelDO::getStatus, 1);
         AiModelDO modelDO = aiModelMapper.selectOneByQuery(queryWrapper);
         return MapstructUtils.convert(modelDO, AiModelBO.class);
     }
@@ -101,7 +101,7 @@ public class AiModelRepository {
         QueryWrapper queryWrapper = new QueryWrapper();
         TenantWorkspaceHelper.applyWorkspaceFilter(queryWrapper);
         queryWrapper.eq(AiModelDO::getDelFlag, "0");
-        queryWrapper.eq(AiModelDO::getStatus, "1");
+        queryWrapper.eq(AiModelDO::getStatus, 1);
         if (platformId != null) {
             queryWrapper.eq(AiModelDO::getPlatformId, platformId);
         }

@@ -26,5 +26,10 @@ public class ChapterBO implements Serializable {
     private String name;
 
     private Integer chapterOrder;
+    /**
+     * 状态（依据业务灵活定义）
+     */
+    private Integer status;
+
 
 }

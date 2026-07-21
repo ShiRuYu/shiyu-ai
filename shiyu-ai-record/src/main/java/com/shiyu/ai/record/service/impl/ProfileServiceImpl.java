@@ -37,7 +37,7 @@ public class ProfileServiceImpl implements ProfileService {
     @Override
     public ProfileBO create(ProfileBO profileBO) {
         profileBO.setDelFlag(0);
-        profileBO.setStatus("1");
+        profileBO.setStatus(1);
         return profileRepository.insert(profileBO);
     }
 

@@ -31,7 +31,7 @@ public class ExecutionHistoryServiceImpl implements ExecutionHistoryService {
         exec.setNodeId(nodeId);
         exec.setNodeType(nodeType);
         exec.setInputData(inputData);
-        exec.setStatus("RUNNING");
+        exec.setStatus(com.shiyu.ai.dal.agent.enums.AgentExecutionStatus.RUNNING.getCode());
         exec.setStartTime(LocalDateTime.now());
         exec.setCreateTime(LocalDateTime.now());
         agentExecutionRepository.insert(exec);
@@ -39,7 +39,7 @@ public class ExecutionHistoryServiceImpl implements ExecutionHistoryService {
     }
 
     @Override
-    public void completeExecution(String executionId, String outputData, String status, String errorMessage) {
+    public void completeExecution(String executionId, String outputData, Integer status, String errorMessage) {
         try {
             AgentExecutionBO exec = agentExecutionRepository.selectByExecutionId(executionId);
             if (exec == null) {

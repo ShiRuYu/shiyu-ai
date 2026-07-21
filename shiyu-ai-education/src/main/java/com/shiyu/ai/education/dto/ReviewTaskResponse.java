@@ -11,6 +11,7 @@ public record ReviewTaskResponse(
         String knowledgeName,
         Integer reviewRound,
         String reviewDate,
-        String status,
+        Integer status,
+        String statusDesc,
         Double previousMastery
 ) {}

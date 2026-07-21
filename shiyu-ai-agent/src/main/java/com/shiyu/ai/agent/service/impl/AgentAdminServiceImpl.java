@@ -1,5 +1,7 @@
 package com.shiyu.ai.agent.service.impl;
 
+import com.shiyu.ai.agent.config.DataSourceApiConstants;
+
 import com.shiyu.ai.dal.agent.repository.AgentAdminRepository;
 import com.shiyu.ai.agent.service.AgentAdminService;
 import com.shiyu.ai.agent.service.AgentService;
@@ -38,7 +40,7 @@ public class AgentAdminServiceImpl implements AgentAdminService {
     private AgentService agentService;
 
     @Override
-    public Pair<Long, List<AgentVO>> getPage(Number pageNo, Number pageSize, String name, String status) {
+    public Pair<Long, List<AgentVO>> getPage(Number pageNo, Number pageSize, String name, Integer status) {
         Pair<Long, List<AgentDefBO>> result = agentAdminRepository.selectPage(pageNo, pageSize, name, status);
         List<AgentVO> vos = result.getRight().stream().map(this::toVO).collect(Collectors.toList());
         return Pair.of(result.getLeft(), vos);
@@ -53,7 +55,7 @@ public class AgentAdminServiceImpl implements AgentAdminService {
         return AgentDetailVO.builder()
                 .id(def.getId()).agentId(def.getAgentId()).name(def.getName())
                 .description(def.getDescription()).currentVersion(def.getCurrentVersion())
-                .status(def.getStatus() != null ? String.valueOf(def.getStatus()) : null)
+                .status(def.getStatus())
                 .extInfo(parseExtInfo(def.getExtInfo())).versions(versionVOs)
                 .createTime(def.getCreateTime()).updateTime(def.getUpdateTime())
                 .build();
@@ -70,7 +72,7 @@ public class AgentAdminServiceImpl implements AgentAdminService {
         def.setAgentId(request.getAgentId());
         def.setName(request.getName());
         def.setDescription(request.getDescription());
-        def.setStatus(request.getStatus() != null ? Integer.valueOf(request.getStatus()) : 1);
+        def.setStatus(request.getStatus() != null ? request.getStatus() : 1);
         agentAdminRepository.create(def);
         return toVO(def);
     }
@@ -82,7 +84,7 @@ public class AgentAdminServiceImpl implements AgentAdminService {
         if (def == null) throw new IllegalArgumentException("Agent不存在: " + id);
         if (request.getName() != null) def.setName(request.getName());
         if (request.getDescription() != null) def.setDescription(request.getDescription());
-        if (request.getStatus() != null) def.setStatus(Integer.valueOf(request.getStatus()));
+        if (request.getStatus() != null) def.setStatus(request.getStatus());
         def.setUpdateTime(LocalDateTime.now());
         agentAdminRepository.update(def);
         evictAgentCache(def.getAgentId());
@@ -134,7 +136,7 @@ public class AgentAdminServiceImpl implements AgentAdminService {
         return AgentVO.builder()
                 .id(def.getId()).agentId(def.getAgentId()).name(def.getName())
                 .description(def.getDescription()).currentVersion(def.getCurrentVersion())
-                .status(def.getStatus() != null ? String.valueOf(def.getStatus()) : null)
+                .status(def.getStatus())
                 .extInfo(parseExtInfo(def.getExtInfo()))
                 .createTime(def.getCreateTime()).updateTime(def.getUpdateTime())
                 .build();
@@ -148,7 +150,7 @@ public class AgentAdminServiceImpl implements AgentAdminService {
     private AgentVersionVO toVersionVO(AgentVersionBO v) {
         return AgentVersionVO.builder()
                 .id(v.getId()).agentId(v.getAgentId()).versionNumber(v.getVersionNumber())
-                .description(v.getDescription()).status(v.getStatus() != null ? String.valueOf(v.getStatus()) : null)
+                .description(v.getDescription()).status(v.getStatus())
                 .createTime(v.getCreateTime()).updateTime(v.getUpdateTime())
                 .build();
     }
@@ -176,15 +178,15 @@ public class AgentAdminServiceImpl implements AgentAdminService {
                     new NodeTypeMetaVO.DataSourceConfig("dict", null, "INTENT_CATEGORY", "dictLabel", "dictValue", null)));
                 fields.add(field("confidenceThreshold", "置信度阈值", "number", 0.75, false, "意图识别的最低置信度"));
                 fields.add(fieldWithSource(field("platform", "AI平台", "select", "", false, "选择AI平台"),
-                    new NodeTypeMetaVO.DataSourceConfig("api", "/ai/platform/enabled", null, "name", "code", null)));
+                    new NodeTypeMetaVO.DataSourceConfig("api", DataSourceApiConstants.PLATFORM_ENABLED, null, "name", "code", null)));
                 fields.add(fieldWithSource(field("modelName", "模型名称", "select", "", false, "选择模型"),
-                    new NodeTypeMetaVO.DataSourceConfig("api", "/ai/model/platform/by-code/{platform}", null, "displayName", "modelName", "platform")));
+                    new NodeTypeMetaVO.DataSourceConfig("api", DataSourceApiConstants.MODEL_BY_PLATFORM, null, "displayName", "modelName", "platform")));
                 break;
             case LLM_CALL:
                 fields.add(fieldWithSource(field("platform", "AI平台", "select", "", false, "选择AI平台"),
-                    new NodeTypeMetaVO.DataSourceConfig("api", "/ai/platform/enabled", null, "name", "code", null)));
+                    new NodeTypeMetaVO.DataSourceConfig("api", DataSourceApiConstants.PLATFORM_ENABLED, null, "name", "code", null)));
                 fields.add(fieldWithSource(field("modelName", "模型名称", "select", "", false, "选择模型"),
-                    new NodeTypeMetaVO.DataSourceConfig("api", "/ai/model/platform/by-code/{platform}", null, "displayName", "modelName", "platform")));
+                    new NodeTypeMetaVO.DataSourceConfig("api", DataSourceApiConstants.MODEL_BY_PLATFORM, null, "displayName", "modelName", "platform")));
                 fields.add(field("temperature", "温度参数", "number", 0.7, false, "控制输出随机性(0-2)"));
                 fields.add(field("maxTokens", "最大Token数", "number", 4096, false, "输出最大长度"));
                 fields.add(field("topP", "Top-P", "number", 0.9, false, "核采样参数"));
@@ -231,7 +233,7 @@ public class AgentAdminServiceImpl implements AgentAdminService {
                 break;
             case AGENT_CALL:
                 fields.add(fieldWithSource(field("targetAgentId", "目标Agent", "select", "", true, "选择已存在的Agent"),
-                    new NodeTypeMetaVO.DataSourceConfig("api", "/admin/agent/list/all", null, "name", "code", null)));
+                    new NodeTypeMetaVO.DataSourceConfig("api", DataSourceApiConstants.AGENT_LIST_ALL, null, "name", "code", null)));
                 fields.add(field("agentTimeout", "超时时间(ms)", "number", 30000L, false, "Agent调用超时"));
                 fields.add(field("async", "异步调用", "boolean", false, false, "是否异步调用"));
                 break;

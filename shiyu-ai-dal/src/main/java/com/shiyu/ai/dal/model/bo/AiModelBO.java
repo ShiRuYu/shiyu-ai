@@ -74,4 +74,9 @@ public class AiModelBO extends BaseEntity {
      * 平台名
      */
     private String platformName;
+    /**
+     * 状态（依据业务灵活定义）
+     */
+    private Integer status;
+
 }

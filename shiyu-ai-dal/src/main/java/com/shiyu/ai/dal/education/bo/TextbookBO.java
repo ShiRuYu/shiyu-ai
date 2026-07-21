@@ -31,5 +31,10 @@ public class TextbookBO implements Serializable {
     private String isbn;
 
     private LocalDateTime createTime;
+    /**
+     * 状态（依据业务灵活定义）
+     */
+    private Integer status;
+
 
 }

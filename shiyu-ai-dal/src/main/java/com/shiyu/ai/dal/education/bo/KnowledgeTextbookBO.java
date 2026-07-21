@@ -24,5 +24,10 @@ public class KnowledgeTextbookBO implements Serializable {
     private Long textbookId;
 
     private Long chapterId;
+    /**
+     * 状态（依据业务灵活定义）
+     */
+    private Integer status;
+
 
 }

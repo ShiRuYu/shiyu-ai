@@ -15,7 +15,7 @@ public class RuntimeExecutionVO implements Serializable {
 
     private String executionId;
     private String agentId;
-    private String status;
+    private Integer status;
     private Map<String, Object> input;
     private Map<String, Object> output;
     private String error;

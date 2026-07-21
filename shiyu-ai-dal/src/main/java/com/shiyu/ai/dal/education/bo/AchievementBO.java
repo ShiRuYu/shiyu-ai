@@ -31,5 +31,10 @@ public class AchievementBO implements Serializable {
     private String icon;
 
     private LocalDateTime earnedAt;
+    /**
+     * 状态（依据业务灵活定义）
+     */
+    private Integer status;
+
 
 }

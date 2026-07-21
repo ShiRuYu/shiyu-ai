@@ -5,6 +5,7 @@ public record DailyTaskResponse(
         Long knowledgeId,
         String knowledgeName,
         String planDate,
-        String status,
+        Integer status,
+        String statusDesc,
         Integer orderNo
 ) {}

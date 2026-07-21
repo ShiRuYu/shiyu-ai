@@ -16,5 +16,5 @@ public interface ExecutionHistoryService {
      * Complete Execution
      * @return 处理结果
      */
-    void completeExecution(String executionId, String outputData, String status, String errorMessage);
+    void completeExecution(String executionId, String outputData, Integer status, String errorMessage);
 }

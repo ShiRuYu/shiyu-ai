@@ -1,5 +1,7 @@
 package com.shiyu.ai.auth.quota;
 
+import com.shiyu.ai.dal.auth.enums.TenantQuotaStatus;
+
 import com.shiyu.ai.common.core.domain.LoginContextHolder;
 import com.shiyu.ai.dal.auth.dataobject.TenantQuotaDO;
 import com.shiyu.ai.dal.auth.bo.TenantQuotaBO;

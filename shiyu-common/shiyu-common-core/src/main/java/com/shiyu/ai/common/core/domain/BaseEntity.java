@@ -36,7 +36,7 @@ public class BaseEntity implements Serializable {
     private LocalDateTime updateTime;
 
     /**
-     * 状态（1正常 0停用）
+     * 状态（依据业务灵活定义，参考对应业务枚举）
      */
     private Integer status;
 

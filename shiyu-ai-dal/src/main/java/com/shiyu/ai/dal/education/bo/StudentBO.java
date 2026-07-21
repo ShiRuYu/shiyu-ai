@@ -47,5 +47,10 @@ public class StudentBO implements Serializable {
     private LocalDateTime createdAt;
 
     private LocalDateTime updatedAt;
+    /**
+     * 状态（依据业务灵活定义）
+     */
+    private Integer status;
+
 
 }

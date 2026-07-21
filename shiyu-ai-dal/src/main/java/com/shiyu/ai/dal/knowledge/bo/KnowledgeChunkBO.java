@@ -17,4 +17,9 @@ public class KnowledgeChunkBO extends TenantEntity {
     private String embedding;
     private String metadata;
     private Integer chunkIndex;
+    /**
+     * 状态（依据业务灵活定义）
+     */
+    private Integer status;
+
 }

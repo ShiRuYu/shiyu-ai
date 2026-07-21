@@ -43,9 +43,9 @@ public class AuthRepository {
                 .on(column(UserWorkspaceRoleDO::getUserId).eq(column(UserDO::getId)))
             .where(UserDO::getUsername).eq(username)
             .and(MenuDO::getType).eq("BUTTON")
-            .and(MenuDO::getStatus).eq("1")
+            .and(MenuDO::getStatus).eq(1)
             .and(MenuDO::getDelFlag).eq(0)
-            .and(UserDO::getStatus).eq("1")
+            .and(UserDO::getStatus).eq(1)
             .and(UserDO::getDelFlag).eq(0);
         qw.orderBy(MenuDO::getId);
         List<MenuDO> list = menuMapper.selectListByQuery(qw);
@@ -67,7 +67,7 @@ public class AuthRepository {
                 .on(column(RoleWorkspaceMenuDO::getRoleId).eq(column(UserWorkspaceRoleDO::getRoleId)))
             .where(UserWorkspaceRoleDO::getUserId).eq(userId)
             .and(MenuDO::getType).eq("BUTTON")
-            .and(MenuDO::getStatus).eq("1")
+            .and(MenuDO::getStatus).eq(1)
             .and(MenuDO::getDelFlag).eq(0);
         qw.orderBy(MenuDO::getId);
         List<MenuDO> list = menuMapper.selectListByQuery(qw);
@@ -85,7 +85,7 @@ public class AuthRepository {
                 .on(column(MenuDO::getId).eq(column(RoleWorkspaceMenuDO::getMenuId)))
             .where(RoleWorkspaceMenuDO::getRoleId).eq(roleId)
             .and(MenuDO::getType).eq("BUTTON")
-            .and(MenuDO::getStatus).eq("1")
+            .and(MenuDO::getStatus).eq(1)
             .and(MenuDO::getDelFlag).eq(0);
         qw.orderBy(MenuDO::getId);
         List<MenuDO> list = menuMapper.selectListByQuery(qw);

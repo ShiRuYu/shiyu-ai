@@ -47,7 +47,7 @@ public class AgentLoader {
         log.info("从数据库加载 Agent: agentId={}", agentId);
 
         AgentDefBO agentDef = agentAdminRepository.selectByAgentId(agentId);
-        if (agentDef == null || !"1".equals(agentDef.getStatus())) {
+        if (agentDef == null || agentDef.getStatus() == null || agentDef.getStatus() != 1) {
             log.warn("Agent 不存在或已停用: agentId={}", agentId);
             return null;
         }

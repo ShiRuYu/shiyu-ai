@@ -4,15 +4,20 @@ import com.mybatisflex.annotation.Id;
 import com.mybatisflex.annotation.KeyType;
 import com.mybatisflex.annotation.Column;
 import com.mybatisflex.annotation.Table;
+import com.shiyu.ai.common.mybatis.model.TenantEntity;
 import lombok.Data;
+import lombok.EqualsAndHashCode;
 
-import java.io.Serializable;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 
+/**
+ * 复习任务
+ */
 @Data
+@EqualsAndHashCode(callSuper = true)
 @Table("edu_review_task")
-public class ReviewTaskDO implements Serializable {
+public class ReviewTaskDO extends TenantEntity {
 
     @Id(keyType = KeyType.Auto)
     private Long id;
@@ -23,7 +28,6 @@ public class ReviewTaskDO implements Serializable {
     @Column(ignore = true)
     private Long questionId;
 
-    private String status;
     private LocalDate reviewDate;
     private Integer reviewRound;
     private Double resultScore;

@@ -49,7 +49,7 @@ public class ProfileVO implements Serializable {
     /**
      * 状态（1正常 0停用）
      */
-    private String status;
+    private Integer status;
 
     /**
      * 创建时间

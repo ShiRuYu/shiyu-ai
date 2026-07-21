@@ -42,4 +42,9 @@ public class IntentDefBO extends BaseEntity {
     private Map<String, String> slotDefaults;
     @AutoMapping(ignore = true)
     private Boolean enabled;
+    /**
+     * 状态（依据业务灵活定义）
+     */
+    private Integer status;
+
 }

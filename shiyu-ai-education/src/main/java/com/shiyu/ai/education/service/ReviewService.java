@@ -27,7 +27,7 @@ public interface ReviewService {
      * List By Student And Status
      * @return 处理结果
      */
-    List<ReviewTaskResponse> listByStudentAndStatus(Long studentId, String status);
+    List<ReviewTaskResponse> listByStudentAndStatus(Long studentId, Integer status);
 
     /**
      * List By Student And Knowledge

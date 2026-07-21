@@ -124,15 +124,13 @@ public class AuthController {
      */
     @Operation(summary = "Get Auth Codes")
     @GetMapping("/codes")
-    public Result<AuthCodeVO> getAuthCodes() {
+    public Result<List<String>> getAuthCodes() {
         log.info("收到获取权限码请求");
         try {
             Long userId = LoginContextHolder.getUserId();
             log.debug("当前登录用户 ID: {}", userId);
             List<String> codes = authService.getAuthCodesByUserId(userId);
-            AuthCodeVO vo = new AuthCodeVO();
-            vo.setCodes(codes);
-            return Result.success(vo);
+            return Result.success(codes);
             
         } catch (Exception e) {
             log.error("获取权限码失败", e);

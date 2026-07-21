@@ -29,4 +29,9 @@ public class TagBO implements Serializable {
      */
     @NotBlank(message = "标签名称不能为空", groups = { AddGroup.class })
     private String name;
+    /**
+     * 状态（依据业务灵活定义）
+     */
+    private Integer status;
+
 }

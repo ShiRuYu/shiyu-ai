@@ -12,7 +12,8 @@ public record StudyPlanResponse(
         String name,
         String startDate,
         String endDate,
-        String status,
+        Integer status,
+        String statusDesc,
         Integer totalItems,
         Integer completedItems,
         List<DailyTaskResponse> items

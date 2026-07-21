@@ -30,4 +30,5 @@ public class ConversationMessageDO extends TenantEntity {
 
     private String content;
 
+
 }

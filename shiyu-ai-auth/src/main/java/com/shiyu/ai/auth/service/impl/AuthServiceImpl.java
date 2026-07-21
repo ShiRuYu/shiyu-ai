@@ -72,7 +72,7 @@ public class AuthServiceImpl implements AuthService {
                 return null;
             }
 
-            if (!"1".equals(user.getStatus())) {
+            if (user.getStatus() == null || user.getStatus() != 1) {
                 log.warn("用户已被禁用 - {}", username);
                 return null;
             }
@@ -527,7 +527,7 @@ public class AuthServiceImpl implements AuthService {
         user.setUsername(username);
         user.setPassword(PasswordUtils.encode(password));
         user.setEmail(email);
-        user.setStatus("1");
+        user.setStatus(1);
         userRepository.insert(user);
         log.info("用户注册成功: userId={}", user.getId());
         return login(username, password);
@@ -541,7 +541,7 @@ public class AuthServiceImpl implements AuthService {
             user = new UserBO();
             user.setUsername(phone);
             user.setPassword(PasswordUtils.encode(code));
-            user.setStatus("1");
+            user.setStatus(1);
             userRepository.insert(user);
         }
         return login(user.getUsername(), code);

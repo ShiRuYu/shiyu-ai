@@ -92,7 +92,7 @@ public class MenuBO implements Serializable {
     /**
      * 状态（1正常 0停用）
      */
-    private String status;
+    private Integer status;
 
     /**
      * 排序

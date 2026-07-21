@@ -23,7 +23,9 @@ public class AgentVersionDetailVO {
 
     private String description;
 
-    private String status;
+    private Integer status;
+
+    private String statusDesc;
 
     private GraphConfigVO graphConfig;
 

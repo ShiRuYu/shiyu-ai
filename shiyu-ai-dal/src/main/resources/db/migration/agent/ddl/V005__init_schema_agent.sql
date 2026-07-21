@@ -89,7 +89,7 @@ CREATE TABLE IF NOT EXISTS `agent_version` (
     `tenant_id`       BIGINT       NOT NULL COMMENT '租户ID',
     `workspace_id`    BIGINT       NOT NULL COMMENT '工作空间ID',
     `description`     VARCHAR(500) DEFAULT NULL COMMENT '版本描述',
-    `status`          VARCHAR(16)  DEFAULT 'DRAFT' COMMENT '版本状态(DRAFT/PUBLISHED/ARCHIVED)',
+    `status`          TINYINT      DEFAULT 0 COMMENT '版本状态(0草稿 1已发布 2已归档)',
     `graph_config`    CLOB         DEFAULT NULL COMMENT 'Graph配置JSON',
     `canvas_config`   CLOB         DEFAULT NULL COMMENT '画布布局JSON',
     `ext_info`        CLOB         DEFAULT NULL COMMENT '扩展字段：版本所有节点的入参定义 (JSON)',

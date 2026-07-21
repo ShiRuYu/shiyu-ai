@@ -30,6 +30,7 @@ public class LongTermMemoryDO extends TenantEntity {
 
     private String content;
 
+
     private Double importance;
 
     private String source;

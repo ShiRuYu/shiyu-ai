@@ -9,12 +9,14 @@ CREATE TABLE IF NOT EXISTS `conversation_message` (
     `user_id`     BIGINT       DEFAULT NULL,
     `agent_id`    VARCHAR(64)  DEFAULT NULL,
     `tenant_id`   BIGINT       NOT NULL COMMENT '租户ID',
+    `workspace_id` BIGINT       DEFAULT NULL COMMENT '工作空间ID',
     `role`        VARCHAR(16)  NOT NULL COMMENT '角色(user/assistant/system/tool)',
     `content`     TEXT         NOT NULL COMMENT '消息内容',
     `create_by`   VARCHAR(64)  DEFAULT NULL COMMENT '创建者',
     `create_time` TIMESTAMP    DEFAULT CURRENT_TIMESTAMP,
     `update_by`   VARCHAR(64)  DEFAULT NULL COMMENT '更新者',
     `update_time` TIMESTAMP    DEFAULT NULL COMMENT '更新时间',
+    `del_flag`    TINYINT      DEFAULT 0 COMMENT '删除标志（0存在 1删除）',
     PRIMARY KEY (`id`)
 );
 
@@ -28,6 +30,7 @@ CREATE TABLE IF NOT EXISTS `long_term_memory` (
     `user_id`       BIGINT       DEFAULT NULL,
     `agent_id`      VARCHAR(64)  DEFAULT NULL,
     `tenant_id`     BIGINT       NOT NULL COMMENT '租户ID',
+    `workspace_id`   BIGINT       DEFAULT NULL COMMENT '工作空间ID',
     `category`      VARCHAR(64)  DEFAULT 'general' COMMENT '记忆分类',
     `memory_key`    VARCHAR(255) NOT NULL COMMENT '记忆键',
     `content`       TEXT         NOT NULL COMMENT '记忆内容',
@@ -37,6 +40,7 @@ CREATE TABLE IF NOT EXISTS `long_term_memory` (
     `create_time`   TIMESTAMP    DEFAULT CURRENT_TIMESTAMP,
     `update_by`     VARCHAR(64)  DEFAULT NULL COMMENT '更新者',
     `update_time`   TIMESTAMP    DEFAULT CURRENT_TIMESTAMP,
+    `del_flag`      TINYINT      DEFAULT 0 COMMENT '删除标志（0存在 1删除）',
     PRIMARY KEY (`id`)
 );
 
@@ -55,11 +59,12 @@ CREATE TABLE IF NOT EXISTS `agent_execution` (
     `user_id`       BIGINT       DEFAULT NULL,
     `session_id`    VARCHAR(64)  DEFAULT NULL COMMENT '会话ID',
     `tenant_id`     BIGINT       NOT NULL COMMENT '租户ID',
+    `workspace_id`   BIGINT       DEFAULT NULL COMMENT '工作空间ID',
     `node_id`       VARCHAR(64)  DEFAULT NULL COMMENT '节点ID',
     `node_type`     VARCHAR(32)  DEFAULT NULL COMMENT '节点类型',
     `input_data`    TEXT         DEFAULT NULL COMMENT '输入数据(JSON)',
     `output_data`   TEXT         DEFAULT NULL COMMENT '输出数据(JSON)',
-    `status`        VARCHAR(16)  NOT NULL DEFAULT 'RUNNING' COMMENT 'RUNNING/SUCCESS/FAILED',
+    `status`        TINYINT      NOT NULL DEFAULT 0 COMMENT '0运行中 1成功 2失败',
     `error_message` TEXT         DEFAULT NULL COMMENT '错误信息',
     `start_time`    TIMESTAMP    NOT NULL COMMENT '开始时间',
     `end_time`      TIMESTAMP    DEFAULT NULL COMMENT '结束时间',
@@ -68,6 +73,7 @@ CREATE TABLE IF NOT EXISTS `agent_execution` (
     `create_time`   TIMESTAMP    DEFAULT CURRENT_TIMESTAMP,
     `update_by`     VARCHAR(64)  DEFAULT NULL COMMENT '更新者',
     `update_time`   TIMESTAMP    DEFAULT NULL COMMENT '更新时间',
+    `del_flag`      TINYINT      DEFAULT 0 COMMENT '删除标志（0存在 1删除）',
     PRIMARY KEY (`id`)
 );
 
@@ -91,7 +97,7 @@ CREATE TABLE IF NOT EXISTS `node_execution` (
     `execution_id`  VARCHAR(64)  NOT NULL COMMENT '执行ID',
     `node_id`       VARCHAR(64)  NOT NULL COMMENT '节点ID',
     `node_type`     VARCHAR(32)  NOT NULL COMMENT '节点类型',
-    `status`        VARCHAR(16)  NOT NULL DEFAULT 'RUNNING' COMMENT 'PENDING/RUNNING/COMPLETED/FAILED',
+    `status`        TINYINT      NOT NULL DEFAULT 0 COMMENT '0待处理 1运行中 2已完成 3失败',
     `input_data`    TEXT         DEFAULT NULL COMMENT '输入数据(JSON)',
     `output_data`   TEXT         DEFAULT NULL COMMENT '输出数据(JSON)',
     `error_message` TEXT         DEFAULT NULL COMMENT '错误信息',
@@ -99,6 +105,11 @@ CREATE TABLE IF NOT EXISTS `node_execution` (
     `end_time`      TIMESTAMP    DEFAULT NULL COMMENT '结束时间',
     `duration_ms`   BIGINT       DEFAULT NULL COMMENT '耗时(毫秒)',
     `retry_count`   INT          DEFAULT 0 COMMENT '重试次数',
+    `tenant_id`     BIGINT       DEFAULT NULL COMMENT '租户ID',
+    `workspace_id`  BIGINT       DEFAULT NULL COMMENT '工作空间ID',
+    `create_by`     VARCHAR(64)  DEFAULT NULL COMMENT '创建者',
+    `update_by`     VARCHAR(64)  DEFAULT NULL COMMENT '更新者',
+    `del_flag`      TINYINT      DEFAULT 0 COMMENT '删除标志（0存在 1删除）',
     `create_time`   TIMESTAMP    DEFAULT CURRENT_TIMESTAMP,
     PRIMARY KEY (`id`)
 );
@@ -137,11 +148,16 @@ CREATE TABLE IF NOT EXISTS `episodic_memory` (
     `session_id`       VARCHAR(64)  DEFAULT NULL COMMENT '会话ID',
     `task_type`        VARCHAR(64)  DEFAULT NULL COMMENT '任务类型',
     `task_description` TEXT         DEFAULT NULL COMMENT '任务描述',
-    `status`           VARCHAR(16)  DEFAULT NULL COMMENT '执行状态',
+    `status`           TINYINT      DEFAULT NULL COMMENT '执行状态(0运行中 1成功 2失败)',
     `result_summary`   TEXT         DEFAULT NULL COMMENT '结果摘要',
     `error_message`    VARCHAR(1024) DEFAULT NULL COMMENT '错误信息',
     `duration_ms`      BIGINT       DEFAULT NULL COMMENT '耗时(毫秒)',
     `node_count`       INT          DEFAULT 0 COMMENT '节点数',
+    `tenant_id`        BIGINT       DEFAULT NULL COMMENT '租户ID',
+    `workspace_id`     BIGINT       DEFAULT NULL COMMENT '工作空间ID',
+    `create_by`        VARCHAR(64)  DEFAULT NULL COMMENT '创建者',
+    `update_by`        VARCHAR(64)  DEFAULT NULL COMMENT '更新者',
+    `del_flag`         TINYINT      DEFAULT 0 COMMENT '删除标志（0存在 1删除）',
     `create_time`      TIMESTAMP    DEFAULT CURRENT_TIMESTAMP,
     PRIMARY KEY (`id`)
 );

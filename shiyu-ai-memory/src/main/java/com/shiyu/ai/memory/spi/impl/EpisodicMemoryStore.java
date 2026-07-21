@@ -36,7 +36,7 @@ public class EpisodicMemoryStore implements MemoryStore {
         bo.setSessionId(memory.getSessionId());
         bo.setTaskType(memory.getCategory());
         bo.setTaskDescription(memory.getContent());
-        bo.setStatus("completed");
+        bo.setStatus(com.shiyu.ai.dal.memory.enums.EpisodicMemoryStatus.SUCCESS.getCode());
         bo.setCreateTime(LocalDateTime.now());
         repository.insert(bo);
     }

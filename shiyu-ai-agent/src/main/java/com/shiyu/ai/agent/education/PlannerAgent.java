@@ -1,5 +1,8 @@
 package com.shiyu.ai.agent.education;
 
+import com.shiyu.ai.dal.education.enums.StudyPlanStatus;
+import com.shiyu.ai.dal.education.enums.StudyPlanItemStatus;
+
 import com.shiyu.ai.model.chat.ChatEngine;
 import com.shiyu.ai.model.chat.ChatRequest;
 import com.shiyu.ai.model.chat.ChatResponse;
@@ -66,13 +69,13 @@ public class PlannerAgent {
         plan.setName("学习计划: " + target.name());
         plan.setStartDate(startDate);
         plan.setEndDate(endDate);
-        plan.setStatus("ACTIVE");
+        plan.setStatus(StudyPlanStatus.ACTIVE.getCode());
         StudyPlanBO savedPlan = new StudyPlanBO();
         savedPlan.setStudentId(studentId);
         savedPlan.setName("学习计划");
         savedPlan.setStartDate(startDate);
         savedPlan.setEndDate(endDate);
-        savedPlan.setStatus("ACTIVE");
+        savedPlan.setStatus(StudyPlanStatus.ACTIVE.getCode());
         studyPlanRepository.insert(savedPlan);
 
         // 4. 生成每日任务
@@ -106,7 +109,7 @@ public class PlannerAgent {
             item.setKnowledgeId(knowledgeId);
             item.setPlanDate(currentDate);
             item.setOrderNo(orderNo++);
-            item.setStatus("PENDING");
+            item.setStatus(StudyPlanItemStatus.PENDING.getCode());
             items.add(item);
 
             // 跳到下一个知识点的计划日期

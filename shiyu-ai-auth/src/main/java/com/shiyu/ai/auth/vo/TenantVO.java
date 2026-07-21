@@ -31,7 +31,7 @@ public class TenantVO implements Serializable {
 
     private String intro;
 
-    private String status;
+    private Integer status;
 
     private LocalDateTime createTime;
 

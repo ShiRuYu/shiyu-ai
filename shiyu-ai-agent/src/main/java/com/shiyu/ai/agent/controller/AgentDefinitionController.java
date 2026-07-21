@@ -52,7 +52,7 @@ public class AgentDefinitionController {
             @RequestParam(required = false, defaultValue = "1") Integer pageNo,
             @RequestParam(required = false, defaultValue = "10") Integer pageSize,
             @RequestParam(required = false) String name,
-            @RequestParam(required = false) String status) {
+            @RequestParam(required = false) Integer status) {
         Pair<Long, List<AgentVO>> result = agentAdminService.getPage(pageNo, pageSize, name, status);
         return Result.success(new PageData<>(result.getRight(), result.getLeft()));
     }
@@ -103,7 +103,7 @@ public class AgentDefinitionController {
 
     @Operation(summary = "Update Status")
     @PostMapping("/status")
-    public Result<Void> updateStatus(@RequestParam Long id, @RequestParam String status) {
+    public Result<Void> updateStatus(@RequestParam Long id, @RequestParam Integer status) {
         AgentRequest request = new AgentRequest();
         request.setStatus(status);
         try {

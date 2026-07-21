@@ -1,5 +1,7 @@
 package com.shiyu.ai.agent.runtime;
 
+import com.shiyu.ai.dal.agent.enums.AgentExecutionStatus;
+
 import com.shiyu.ai.agent.AgentDefinition;
 import com.shiyu.ai.agent.AgentVersion;
 import com.shiyu.ai.agent.cache.AgentCacheManager;
@@ -233,7 +235,10 @@ public class AgentRuntimeImpl implements AgentRuntime {
 
         AgentExecutionBO execBO = executionRepository.selectByExecutionId(executionId);
         if (execBO == null) return null;
-        return ExecutionStatus.valueOf(execBO.getStatus());
+        if (execBO.getStatus() == null) return null;
+        AgentExecutionStatus aes = AgentExecutionStatus.fromCode(execBO.getStatus());
+        if (aes == null) return null;
+        return ExecutionStatus.valueOf(aes.name());
     }
 
     @Override
@@ -287,7 +292,12 @@ public class AgentRuntimeImpl implements AgentRuntime {
             bo.setSessionId(execution.getSessionId());
             bo.setInputData(JSONUtils.toJsonString(execution.getInput()));
             bo.setOutputData(JSONUtils.toJsonString(execution.getOutput()));
-            bo.setStatus(execution.getStatus().name());
+            try {
+                bo.setStatus(AgentExecutionStatus.valueOf(execution.getStatus().name()).getCode());
+            } catch (IllegalArgumentException e) {
+                log.warn("无法映射执行状态: {}", execution.getStatus());
+                bo.setStatus(null);
+            }
             bo.setErrorMessage(execution.getErrorMessage());
             bo.setStartTime(execution.getStartTime());
             bo.setEndTime(execution.getEndTime());

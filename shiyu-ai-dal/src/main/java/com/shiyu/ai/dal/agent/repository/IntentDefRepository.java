@@ -57,7 +57,7 @@ public class IntentDefRepository {
         TenantWorkspaceHelper.applyWorkspaceFilter(qw);
         qw.eq(IntentDefDO::getDelFlag, "0")
           .eq(IntentDefDO::getEnabled, "1")
-          .eq(IntentDefDO::getStatus, "1")
+          .eq(IntentDefDO::getStatus, 1)
           .and("(agent_id = ? OR agent_id = 'default')", agentId)
           .orderBy(IntentDefDO::getPriority, true);
         List<IntentDefDO> doList = intentDefMapper.selectListByQuery(qw);
@@ -74,7 +74,7 @@ public class IntentDefRepository {
         TenantWorkspaceHelper.applyWorkspaceFilter(qw);
         qw.eq(IntentDefDO::getDelFlag, "0")
           .eq(IntentDefDO::getEnabled, "1")
-          .eq(IntentDefDO::getStatus, "1")
+          .eq(IntentDefDO::getStatus, 1)
           .eq(IntentDefDO::getCategory, category)
           .and("(agent_id = ? OR agent_id = 'default')", agentId)
           .orderBy(IntentDefDO::getPriority, true);
@@ -126,7 +126,7 @@ public class IntentDefRepository {
         TenantWorkspaceHelper.applyWorkspaceFilter(qw);
         qw.eq(IntentDefDO::getDelFlag, "0")
           .eq(IntentDefDO::getEnabled, "1")
-          .eq(IntentDefDO::getStatus, "1")
+          .eq(IntentDefDO::getStatus, 1)
           .orderBy(IntentDefDO::getPriority, true);
         List<IntentDefDO> doList = intentDefMapper.selectListByQuery(qw);
         return doList.stream().map(d -> IdNameOptionVO.builder()

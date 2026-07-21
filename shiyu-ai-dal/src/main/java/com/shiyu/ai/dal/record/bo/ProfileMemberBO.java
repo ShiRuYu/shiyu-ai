@@ -42,4 +42,9 @@ public class ProfileMemberBO implements Serializable {
      */
     @NotBlank(message = "角色不能为空", groups = { AddGroup.class })
     private String role;
+    /**
+     * 状态（依据业务灵活定义）
+     */
+    private Integer status;
+
 }

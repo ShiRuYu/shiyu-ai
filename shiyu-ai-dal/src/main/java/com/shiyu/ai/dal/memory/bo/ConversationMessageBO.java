@@ -52,4 +52,9 @@ public class ConversationMessageBO implements Serializable {
      * 创建时间
      */
     private LocalDateTime createTime;
+    /**
+     * 状态（依据业务灵活定义）
+     */
+    private Integer status;
+
 }

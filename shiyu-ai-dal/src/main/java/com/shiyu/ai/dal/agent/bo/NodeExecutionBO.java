@@ -8,6 +8,9 @@ import java.time.LocalDateTime;
 import io.github.linpeilie.annotations.AutoMapper;
 import com.shiyu.ai.dal.agent.dataobject.NodeExecutionDO;
 
+/**
+ * 节点执行记录业务对象
+ */
 @Data
 @AutoMapper(target = NodeExecutionDO.class, reverseConvertGenerate = true)
 public class NodeExecutionBO implements Serializable {
@@ -23,7 +26,9 @@ public class NodeExecutionBO implements Serializable {
 
     private String nodeType;
 
-    private String status;
+    private Integer status;
+
+    private String statusDesc;
 
     private String inputData;
 

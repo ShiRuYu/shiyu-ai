@@ -76,4 +76,9 @@ public class MediaBO implements Serializable {
      * 对象键
      */
     private String objectKey;
+    /**
+     * 状态（依据业务灵活定义）
+     */
+    private Integer status;
+
 }

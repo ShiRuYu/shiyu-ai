@@ -27,5 +27,10 @@ public class CourseChapterBO implements Serializable {
     private Integer orderNo;
 
     private LocalDateTime createdAt;
+    /**
+     * 状态（依据业务灵活定义）
+     */
+    private Integer status;
+
 
 }

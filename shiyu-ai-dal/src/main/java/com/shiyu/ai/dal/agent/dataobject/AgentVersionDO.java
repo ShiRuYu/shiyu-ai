@@ -3,18 +3,17 @@ package com.shiyu.ai.dal.agent.dataobject;
 import com.mybatisflex.annotation.Id;
 import com.mybatisflex.annotation.KeyType;
 import com.mybatisflex.annotation.Table;
+import com.shiyu.ai.common.mybatis.model.TenantEntity;
 import lombok.Data;
+import lombok.EqualsAndHashCode;
 
-import java.io.Serial;
-import java.io.Serializable;
-import java.time.LocalDateTime;
-
+/**
+ * Agent 版本
+ */
 @Data
+@EqualsAndHashCode(callSuper = true)
 @Table(value = "agent_version")
-public class AgentVersionDO implements Serializable {
-
-    @Serial
-    private static final long serialVersionUID = 1L;
+public class AgentVersionDO extends TenantEntity {
 
     @Id(keyType = KeyType.Auto)
     private Long id;
@@ -23,11 +22,7 @@ public class AgentVersionDO implements Serializable {
 
     private String versionNumber;
 
-    private Long workspaceId;
-
     private String description;
-
-    private String status;
 
     private String graphConfig;
 
@@ -35,9 +30,4 @@ public class AgentVersionDO implements Serializable {
 
     /** 扩展字段：版本所有节点的入参定义 (JSON) */
     private String extInfo;
-    private String delFlag;
-    private String createBy;
-    private LocalDateTime createTime;
-    private String updateBy;
-    private LocalDateTime updateTime;
 }

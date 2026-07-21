@@ -67,4 +67,9 @@ public class LongTermMemoryBO implements Serializable {
      * 更新时间
      */
     private LocalDateTime updateTime;
+    /**
+     * 状态（依据业务灵活定义）
+     */
+    private Integer status;
+
 }

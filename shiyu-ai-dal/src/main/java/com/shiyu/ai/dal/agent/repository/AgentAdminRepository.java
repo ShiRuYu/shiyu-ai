@@ -25,14 +25,14 @@ public class AgentAdminRepository {
     @Resource
     private AgentVersionMapper agentVersionMapper;
 
-    public Pair<Long, List<AgentDefBO>> selectPage(Number pageNo, Number pageSize, String name, String status) {
+    public Pair<Long, List<AgentDefBO>> selectPage(Number pageNo, Number pageSize, String name, Integer status) {
         QueryWrapper countWrapper = new QueryWrapper();
         TenantWorkspaceHelper.applyWorkspaceFilter(countWrapper);
         countWrapper.eq(AgentDefDO::getDelFlag, 0);
         if (StringUtils.isNotBlank(name)) {
             countWrapper.like(AgentDefDO::getName, name);
         }
-        if (StringUtils.isNotBlank(status)) {
+        if (status != null) {
             countWrapper.eq(AgentDefDO::getStatus, status);
         }
         long count = agentDefMapper.selectCountByQuery(countWrapper);
@@ -43,7 +43,7 @@ public class AgentAdminRepository {
         if (StringUtils.isNotBlank(name)) {
             queryWrapper.like(AgentDefDO::getName, name);
         }
-        if (StringUtils.isNotBlank(status)) {
+        if (status != null) {
             queryWrapper.eq(AgentDefDO::getStatus, status);
         }
         if (pageNo != null && pageSize != null) {
@@ -151,7 +151,7 @@ public class AgentAdminRepository {
     public void deleteVersionById(Long versionId) {
         AgentVersionDO version = agentVersionMapper.selectOneById(versionId);
         if (version != null) {
-            version.setDelFlag("1");
+            version.setDelFlag(1);
             agentVersionMapper.update(version);
         }
     }

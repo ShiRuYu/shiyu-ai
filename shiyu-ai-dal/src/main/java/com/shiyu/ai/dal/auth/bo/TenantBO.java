@@ -31,7 +31,7 @@ public class TenantBO implements Serializable {
 
     private String intro;
 
-    private String status;
+    private Integer status;
 
     private Integer delFlag;
 

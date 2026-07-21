@@ -1,5 +1,7 @@
 package com.shiyu.ai.agent.education.graph;
 
+import com.shiyu.ai.dal.education.enums.ReviewTaskStatus;
+
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.shiyu.ai.agent.node.NodeInputParam;
 import com.shiyu.ai.agent.node.BaseNode;
@@ -71,7 +73,7 @@ public class ReviewScheduleNode extends BaseNode {
                     rt.setKnowledgeId(task.knowledgeId());
                     rt.setReviewDate(task.reviewDate());
                     rt.setReviewRound(task.reviewRound());
-                    rt.setStatus("PENDING");
+                    rt.setStatus(ReviewTaskStatus.PENDING.getCode());
                     reviewTaskRepository.insert(rt); return rt;
                 })
                 .toList();

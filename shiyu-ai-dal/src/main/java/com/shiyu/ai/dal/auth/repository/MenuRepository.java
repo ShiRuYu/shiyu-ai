@@ -102,7 +102,7 @@ public class MenuRepository {
                 .innerJoin(UserWorkspaceRoleDO.class)
                 .on(column(RoleWorkspaceMenuDO::getRoleId).eq(column(UserWorkspaceRoleDO::getRoleId)))
                 .where(UserWorkspaceRoleDO::getUserId).eq(userId)
-                .and(MenuDO::getStatus).eq("1")
+                .and(MenuDO::getStatus).eq(1)
                 .and(MenuDO::getDelFlag).eq(0);
         if (excludeType != null) {
             qw.and(MenuDO::getType).ne(excludeType);
@@ -142,7 +142,7 @@ public class MenuRepository {
     public List<MenuBO> selectByParentId(Long parentId) {
         QueryWrapper qw = new QueryWrapper()
                 .where(MenuDO::getParentId).eq(parentId)
-                .and(MenuDO::getStatus).eq("1")
+                .and(MenuDO::getStatus).eq(1)
                 .and(MenuDO::getDelFlag).eq(0);
         qw.orderBy(column(MenuDO::getOrder).asc(), column(MenuDO::getId).asc());
         List<MenuDO> menuDOs = menuMapper.selectListByQuery(qw);

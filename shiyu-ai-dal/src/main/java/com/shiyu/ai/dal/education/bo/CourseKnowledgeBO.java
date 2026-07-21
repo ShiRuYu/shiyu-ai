@@ -24,5 +24,10 @@ public class CourseKnowledgeBO implements Serializable {
     private Long sectionId;
 
     private Integer sortOrder;
+    /**
+     * 状态（依据业务灵活定义）
+     */
+    private Integer status;
+
 
 }

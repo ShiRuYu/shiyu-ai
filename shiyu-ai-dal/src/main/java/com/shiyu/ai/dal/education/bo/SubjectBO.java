@@ -28,5 +28,10 @@ public class SubjectBO implements Serializable {
     private String icon;
 
     private Integer sortOrder;
+    /**
+     * 状态（依据业务灵活定义）
+     */
+    private Integer status;
+
 
 }

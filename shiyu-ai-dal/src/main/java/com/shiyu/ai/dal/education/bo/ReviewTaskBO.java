@@ -27,7 +27,9 @@ public class ReviewTaskBO implements Serializable {
 
     private Long questionId;
 
-    private String status;
+    private Integer status;
+
+    private String statusDesc;
 
     private LocalDate reviewDate;
 

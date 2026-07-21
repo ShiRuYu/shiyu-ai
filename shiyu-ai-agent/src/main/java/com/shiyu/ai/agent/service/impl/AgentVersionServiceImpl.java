@@ -1,5 +1,7 @@
 package com.shiyu.ai.agent.service.impl;
 
+import com.shiyu.ai.dal.agent.enums.AgentVersionStatus;
+
 import com.shiyu.ai.dal.agent.repository.AgentAdminRepository;
 import com.shiyu.ai.agent.service.AgentService;
 import com.shiyu.ai.agent.service.AgentVersionService;
@@ -64,7 +66,7 @@ public class AgentVersionServiceImpl implements AgentVersionService {
         version.setAgentId(agentId);
         version.setVersionNumber(request.getVersionNumber());
         version.setDescription(request.getDescription());
-        version.setStatus("DRAFT");
+        version.setStatus(AgentVersionStatus.DRAFT.getCode());
 
         if (request.getCopyFromVersionId() != null) {
             AgentVersionBO source = agentAdminRepository.selectVersionById(request.getCopyFromVersionId());
@@ -103,8 +105,8 @@ public class AgentVersionServiceImpl implements AgentVersionService {
     @Transactional(rollbackFor = Exception.class)
     public void publishVersion(String agentId, Long versionId) {
         AgentVersionBO v = getVersionOrThrow(agentId, versionId);
-        if (!"DRAFT".equals(v.getStatus())) throw new IllegalArgumentException("只有草稿状态才能发布");
-        v.setStatus("PUBLISHED");
+        if (!AgentVersionStatus.DRAFT.getCode().equals(v.getStatus())) throw new IllegalArgumentException("只有草稿状态才能发布");
+        v.setStatus(AgentVersionStatus.PUBLISHED.getCode());
         v.setUpdateTime(LocalDateTime.now());
         agentAdminRepository.updateVersion(v);
         evictAgentCache(agentId);
@@ -113,8 +115,8 @@ public class AgentVersionServiceImpl implements AgentVersionService {
     @Override
     public void archiveVersion(String agentId, Long versionId) {
         AgentVersionBO v = getVersionOrThrow(agentId, versionId);
-        if ("ARCHIVED".equals(v.getStatus())) throw new IllegalArgumentException("版本已归档");
-        v.setStatus("ARCHIVED");
+        if (AgentVersionStatus.ARCHIVED.getCode().equals(v.getStatus())) throw new IllegalArgumentException("版本已归档");
+        v.setStatus(AgentVersionStatus.ARCHIVED.getCode());
         v.setUpdateTime(LocalDateTime.now());
         agentAdminRepository.updateVersion(v);
         evictAgentCache(agentId);
@@ -124,7 +126,7 @@ public class AgentVersionServiceImpl implements AgentVersionService {
     @Transactional(rollbackFor = Exception.class)
     public void activateVersion(String agentId, Long versionId) {
         AgentVersionBO v = getVersionOrThrow(agentId, versionId);
-        if (!"PUBLISHED".equals(v.getStatus())) throw new IllegalArgumentException("只有已发布版本才能激活");
+        if (!AgentVersionStatus.PUBLISHED.getCode().equals(v.getStatus())) throw new IllegalArgumentException("只有已发布版本才能激活");
 
         AgentDefBO def = agentAdminRepository.selectByAgentId(agentId);
         if (def == null) throw new IllegalArgumentException("Agent不存在");
@@ -413,6 +415,7 @@ public class AgentVersionServiceImpl implements AgentVersionService {
         return AgentVersionVO.builder()
                 .id(v.getId()).agentId(v.getAgentId()).versionNumber(v.getVersionNumber())
                 .description(v.getDescription()).status(v.getStatus())
+                .statusDesc(v.getStatus() != null ? AgentVersionStatus.fromCode(v.getStatus()).getDesc() : null)
                 .createTime(v.getCreateTime()).updateTime(v.getUpdateTime())
                 .build();
     }
@@ -439,6 +442,7 @@ public class AgentVersionServiceImpl implements AgentVersionService {
         return AgentVersionDetailVO.builder()
                 .id(v.getId()).agentId(v.getAgentId()).versionNumber(v.getVersionNumber())
                 .description(v.getDescription()).status(v.getStatus())
+                .statusDesc(v.getStatus() != null ? AgentVersionStatus.fromCode(v.getStatus()).getDesc() : null)
                 .graphConfig(graphVO).canvasConfig(v.getCanvasConfig())
                 .createTime(v.getCreateTime()).updateTime(v.getUpdateTime())
                 .build();

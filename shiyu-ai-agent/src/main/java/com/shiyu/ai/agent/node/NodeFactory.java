@@ -103,6 +103,26 @@ public class NodeFactory {
         registerNodeType(NodeType.LLM_CALL, LlmCallConfig.class, config -> LlmCallNode.builder().config(config).build());
         registerNodeType(NodeType.TOOL_CALL, ToolCallConfig.class, config -> ToolCallNode.builder().config(config).build());
         registerNodeType(NodeType.AGENT_CALL, AgentCallConfig.class, config -> AgentCallNode.builder().config(config).build());
+
+        // ======== 教育域节点：通过 @Component NodeCreator bean 创建 ========
+        registerNodeType(NodeType.ABILITY_QUERY, NodeConfig.class, config -> {
+            throw new UnsupportedOperationException("节点通过 Bean NodeCreator 创建，请联系开发人员检查 Spring Bean 注入");
+        });
+        registerNodeType(NodeType.EDUCATION_TEACH, NodeConfig.class, config -> {
+            throw new UnsupportedOperationException("节点通过 Bean NodeCreator 创建，请联系开发人员检查 Spring Bean 注入");
+        });
+        registerNodeType(NodeType.EDUCATION_PRACTICE, NodeConfig.class, config -> {
+            throw new UnsupportedOperationException("节点通过 Bean NodeCreator 创建，请联系开发人员检查 Spring Bean 注入");
+        });
+        registerNodeType(NodeType.SCORE_ANALYSIS, NodeConfig.class, config -> {
+            throw new UnsupportedOperationException("节点通过 Bean NodeCreator 创建，请联系开发人员检查 Spring Bean 注入");
+        });
+        registerNodeType(NodeType.REVIEW_SCHEDULE, NodeConfig.class, config -> {
+            throw new UnsupportedOperationException("节点通过 Bean NodeCreator 创建，请联系开发人员检查 Spring Bean 注入");
+        });
+        registerNodeType(NodeType.PREREQ_CHECK, NodeConfig.class, config -> {
+            throw new UnsupportedOperationException("节点通过 Bean NodeCreator 创建，请联系开发人员检查 Spring Bean 注入");
+        });
     }
 
     /**

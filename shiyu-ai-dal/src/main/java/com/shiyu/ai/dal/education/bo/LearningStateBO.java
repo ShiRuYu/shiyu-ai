@@ -24,5 +24,10 @@ public class LearningStateBO implements Serializable {
     private Long knowledgeId;
 
     private String state;
+    /**
+     * 状态（依据业务灵活定义）
+     */
+    private Integer status;
+
 
 }

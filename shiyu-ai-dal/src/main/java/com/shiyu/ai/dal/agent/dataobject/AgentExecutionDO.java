@@ -3,18 +3,19 @@ package com.shiyu.ai.dal.agent.dataobject;
 import com.mybatisflex.annotation.Id;
 import com.mybatisflex.annotation.KeyType;
 import com.mybatisflex.annotation.Table;
+import com.shiyu.ai.common.mybatis.model.TenantEntity;
 import lombok.Data;
+import lombok.EqualsAndHashCode;
 
-import java.io.Serial;
-import java.io.Serializable;
 import java.time.LocalDateTime;
 
+/**
+ * Agent 执行记录
+ */
 @Data
+@EqualsAndHashCode(callSuper = true)
 @Table("agent_execution")
-public class AgentExecutionDO implements Serializable {
-
-    @Serial
-    private static final long serialVersionUID = 1L;
+public class AgentExecutionDO extends TenantEntity {
 
     @Id(keyType = KeyType.Auto)
     private Long id;
@@ -37,8 +38,6 @@ public class AgentExecutionDO implements Serializable {
 
     private String outputData;
 
-    private String status;
-
     private String errorMessage;
 
     private LocalDateTime startTime;
@@ -47,5 +46,4 @@ public class AgentExecutionDO implements Serializable {
 
     private Long durationMs;
 
-    private LocalDateTime createTime;
 }

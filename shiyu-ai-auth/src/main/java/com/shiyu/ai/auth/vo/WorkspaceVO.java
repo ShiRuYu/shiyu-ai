@@ -35,7 +35,7 @@ public class WorkspaceVO implements Serializable {
 
     private String email;
 
-    private String status;
+    private Integer status;
 
     private String remark;
 

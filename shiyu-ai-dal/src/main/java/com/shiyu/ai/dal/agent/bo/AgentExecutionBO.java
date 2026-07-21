@@ -69,9 +69,14 @@ public class AgentExecutionBO implements Serializable {
     private String outputData;
 
     /**
-     * 状态（RUNNING/SUCCESS/FAILED）
+     * 状态（0运行中 1成功 2失败）
      */
-    private String status;
+    private Integer status;
+
+    /**
+     * 状态描述
+     */
+    private String statusDesc;
 
     /**
      * 错误信息

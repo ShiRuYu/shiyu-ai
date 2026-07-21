@@ -50,7 +50,7 @@ public class RouteMenuVO implements Serializable {
     /**
      * 状态（1 启用，0 禁用）
      */
-    private String status;
+    private Integer status;
 
     /**
      * 权限码

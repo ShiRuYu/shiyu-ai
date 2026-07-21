@@ -33,7 +33,7 @@ public class StudyPlanRepository {
         return MapstructUtils.convert(studyPlanMapper.selectListByQuery(
                 QueryWrapper.create()
                         .eq("student_id", studentId)
-                        .eq("status", "ACTIVE")
+                        .eq("status", 0)
         ), StudyPlanBO.class);
     }
 

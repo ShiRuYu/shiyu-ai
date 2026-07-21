@@ -38,7 +38,7 @@ public class TenantServiceImpl implements TenantService {
         }
 
         if (tenantBO.getStatus() == null) {
-            tenantBO.setStatus("1");
+            tenantBO.setStatus(1);
         }
 
         tenantRepository.insert(tenantBO);

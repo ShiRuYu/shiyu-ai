@@ -21,7 +21,7 @@ public interface AgentAdminService {
      * @param Number Number
      * @return 处理结果
      */
-    Pair<Long, List<AgentVO>> getPage(Number pageNo, Number pageSize, String name, String status);
+    Pair<Long, List<AgentVO>> getPage(Number pageNo, Number pageSize, String name, Integer status);
 
     /**
      * Get By Id

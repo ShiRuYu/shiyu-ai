@@ -113,7 +113,7 @@ public class UserRepository {
             .innerJoin(UserWorkspaceRoleDO.class)
                 .on(column(RoleDO::getId).eq(column(UserWorkspaceRoleDO::getRoleId)))
             .where(UserWorkspaceRoleDO::getUserId).eq(userId)
-            .and(RoleDO::getStatus).eq("1")
+            .and(RoleDO::getStatus).eq(1)
             .and(RoleDO::getDelFlag).eq(0);
         qw.orderBy(RoleDO::getId);
         List<RoleDO> roleDOs = roleMapper.selectListByQuery(qw);
@@ -138,7 +138,7 @@ public class UserRepository {
         QueryWrapper qw = QueryWrapper.create()
             .from(UserDO.class)
             .where(UserDO::getUsername).eq(username)
-            .and(UserDO::getStatus).eq("1")
+            .and(UserDO::getStatus).eq(1)
             .and(UserDO::getDelFlag).eq(0);
         UserDO userDO = userMapper.selectOneByQuery(qw);
         return MapstructUtils.convert(userDO, UserBO.class);
