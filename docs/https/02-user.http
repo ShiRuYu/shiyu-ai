@@ -1,0 +1,74 @@
+### ==========================================
+### 用户管理 — User Management
+### 路径前缀：/user
+### ==========================================
+
+@baseUrl = http://localhost:9000
+
+### ------------------- 获取当前用户信息 -------------------
+### @name Get Current User Detail
+# 返回当前登录用户的详细信息（含角色、租户、工作空间列表）
+GET {{baseUrl}}/user/detail HTTP/1.1
+Authorization: Bearer {{authToken}}
+
+### ------------------- 用户分页列表 -------------------
+### @name Get User List (Page)
+GET {{baseUrl}}/user/list?username=&pageNo=1&pageSize=10 HTTP/1.1
+Authorization: Bearer {{authToken}}
+
+### ------------------- 创建用户 -------------------
+### @name Create User
+# 新增用户。password 为空则自动生成随机密码，返回中以 plainPassword 告知
+POST {{baseUrl}}/user/create HTTP/1.1
+Authorization: Bearer {{authToken}}
+Content-Type: application/json
+
+{
+  "username": "zhangsan",
+  "password": "",
+  "nickName": "张三",
+  "email": "zhangsan@example.com",
+  "phone": "13800138001",
+  "gender": "1",
+  "status": "1"
+}
+
+### ------------------- 更新用户 -------------------
+### @name Update User
+POST {{baseUrl}}/user/update?userId=2 HTTP/1.1
+Authorization: Bearer {{authToken}}
+Content-Type: application/json
+
+{
+  "nickName": "张三（已修改）",
+  "email": "zhangsan_new@example.com",
+  "status": "1"
+}
+
+### ------------------- 删除用户 -------------------
+### @name Delete User
+POST {{baseUrl}}/user/delete?userId=2 HTTP/1.1
+Authorization: Bearer {{authToken}}
+
+### ------------------- 重置密码 -------------------
+### @name Reset Password
+# 管理员重置指定用户的密码。password 为空则自动生成随机密码
+POST {{baseUrl}}/user/password/reset?userId=2 HTTP/1.1
+Authorization: Bearer {{authToken}}
+Content-Type: application/json
+
+{
+  "password": ""
+}
+
+### ------------------- 修改密码 -------------------
+### @name Change Password
+# 用户自己修改密码，需验证旧密码。修改成功后该用户所有会话被踢出，需重新登录
+POST {{baseUrl}}/user/password/change?userId=1 HTTP/1.1
+Authorization: Bearer {{authToken}}
+Content-Type: application/json
+
+{
+  "oldPassword": "123456",
+  "newPassword": "newPass123"
+}

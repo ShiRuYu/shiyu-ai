@@ -74,6 +74,7 @@ public class TenantServiceImpl implements TenantService {
             return false;
         }
 
-        return tenantRepository.deleteById(id);
+        tenantRepository.cascadeDelete(id);
+        return true;
     }
 }

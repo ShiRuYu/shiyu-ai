@@ -56,8 +56,11 @@ public class AuthRepository {
      * 根据用户 ID 查询按钮级权限码列表
      *
      * <p>JOIN: user_workspace_role → role_workspace_menu → menu</p>
+     *
+     * @param userId      用户ID
+     * @param workspaceId 当前工作空间ID（null 表示查询所有空间）
      */
-    public List<String> selectCodesByUserId(Long userId) {
+    public List<String> selectCodesByUserId(Long userId, Long workspaceId) {
         QueryWrapper qw = QueryWrapper.create()
             .select(column(MenuDO::getCode))
             .from(MenuDO.class)
@@ -69,9 +72,20 @@ public class AuthRepository {
             .and(MenuDO::getType).eq("BUTTON")
             .and(MenuDO::getStatus).eq(1)
             .and(MenuDO::getDelFlag).eq(0);
+        // ✅ 按当前工作空间过滤权限码，避免跨空间越权
+        if (workspaceId != null) {
+            qw.and(RoleWorkspaceMenuDO::getWorkspaceId).eq(workspaceId);
+        }
         qw.orderBy(MenuDO::getId);
         List<MenuDO> list = menuMapper.selectListByQuery(qw);
         return list.stream().map(MenuDO::getCode).distinct().collect(Collectors.toList());
+    }
+
+    /**
+     * 根据用户 ID 查询按钮级权限码列表（不按空间过滤，保留兼容）
+     */
+    public List<String> selectCodesByUserId(Long userId) {
+        return selectCodesByUserId(userId, null);
     }
 
     /**

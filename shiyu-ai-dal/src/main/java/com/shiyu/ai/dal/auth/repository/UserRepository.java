@@ -134,7 +134,11 @@ public class UserRepository {
         return MapstructUtils.convert(userDO, UserBO.class);
     }
 
-    public UserBO selectUserWithRolesByUsername(String username) {
+    /**
+     * 根据用户名查询活跃用户（不含角色关联信息，方法名避免误导）
+     * 如需角色信息请额外调用 selectRolesByUserId()
+     */
+    public UserBO selectActiveUserByUsername(String username) {
         QueryWrapper qw = QueryWrapper.create()
             .from(UserDO.class)
             .where(UserDO::getUsername).eq(username)

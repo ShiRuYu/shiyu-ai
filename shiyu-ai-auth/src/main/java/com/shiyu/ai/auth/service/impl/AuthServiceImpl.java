@@ -66,7 +66,7 @@ public class AuthServiceImpl implements AuthService {
         log.info("用户登录开始, username={}", username);
 
         try {
-            UserBO user = userRepository.selectUserWithRolesByUsername(username);
+            UserBO user = userRepository.selectActiveUserByUsername(username);
             if (user == null) {
                 log.warn("用户不存在 - {}", username);
                 return null;
@@ -149,6 +149,7 @@ public class AuthServiceImpl implements AuthService {
             response.setExpiresIn(timeout);
             response.setTenantId(currentTenantId);
             response.setTenantName(tenantName);
+            response.setCurrentWorkspaceId(currentWorkspaceId);
             response.setTenants(tenantList);
             response.setWorkspaces(workspaces);
 
@@ -323,7 +324,8 @@ public class AuthServiceImpl implements AuthService {
     public List<String> getAuthCodesByUserId(Long userId) {
         log.info("获取权限编码, userId={}", userId);
         try {
-            List<String> codes = authRepository.selectCodesByUserId(userId);
+                    Long workspaceId = com.shiyu.ai.common.core.domain.LoginContextHolder.getCurrentWorkspaceId();
+            List<String> codes = authRepository.selectCodesByUserId(userId, workspaceId);
             if (codes == null || codes.isEmpty()) {
                 return new ArrayList<>();
             }

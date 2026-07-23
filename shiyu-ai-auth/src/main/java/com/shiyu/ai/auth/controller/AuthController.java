@@ -3,9 +3,12 @@ package com.shiyu.ai.auth.controller;
 import com.shiyu.ai.auth.request.*;
 import com.shiyu.ai.auth.vo.*;
 import com.shiyu.ai.auth.service.AuthService;
+import com.shiyu.ai.auth.service.UserService;
 import com.shiyu.ai.auth.handler.LoginRateLimiter;
 import com.shiyu.ai.common.core.api.Result;
 import com.shiyu.ai.common.core.domain.LoginContextHolder;
+import com.shiyu.ai.common.core.utils.MapstructUtils;
+import com.shiyu.ai.dal.auth.bo.UserBO;
 import lombok.extern.slf4j.Slf4j;
 import jakarta.validation.Valid;
 import org.springframework.web.bind.annotation.*;
@@ -25,10 +28,12 @@ import java.util.List;
 public class AuthController {
     
     private final AuthService authService;
+    private final UserService userService;
     private final LoginRateLimiter loginRateLimiter;
     
-    public AuthController(AuthService authService, LoginRateLimiter loginRateLimiter) {
+    public AuthController(AuthService authService, UserService userService, LoginRateLimiter loginRateLimiter) {
         this.authService = authService;
+        this.userService = userService;
         this.loginRateLimiter = loginRateLimiter;
     }
     
@@ -164,12 +169,13 @@ public class AuthController {
      */
     @Operation(summary = "Switch Current Role")
     @PostMapping("/current-role")
-    public Result<Void> switchCurrentRole(@Valid @RequestBody SwitchRoleRequest request) {
+    public Result<SwitchContextResponse> switchCurrentRole(@Valid @RequestBody SwitchRoleRequest request) {
         log.info("收到切换角色请求");
         Long userId = LoginContextHolder.getUserId();
         if (userId == null) return Result.fail("用户未登录");
         boolean success = authService.switchCurrentRole(userId, request.getRoleId());
-        return success ? Result.success() : Result.fail("切换角色失败");
+        if (!success) return Result.fail("切换角色失败");
+        return Result.success(buildSwitchContext(userId));
     }
 
     /**
@@ -178,16 +184,13 @@ public class AuthController {
      */
     @Operation(summary = "Switch Tenant")
     @PostMapping("/switch-tenant")
-    public Result<List<WorkspaceContextVO>> switchTenant(@Valid @RequestBody SwitchTenantRequest request) {
+    public Result<SwitchContextResponse> switchTenant(@Valid @RequestBody SwitchTenantRequest request) {
         log.info("收到切换租户请求");
         Long userId = LoginContextHolder.getUserId();
         if (userId == null) return Result.fail("用户未登录");
         boolean success = authService.switchCurrentTenant(userId, request.getTenantId());
-        if (success) {
-            List<WorkspaceContextVO> workspaces = authService.getUserWorkspaces(userId);
-            return Result.success(workspaces);
-        }
-        return Result.fail("切换租户失败");
+        if (!success) return Result.fail("切换租户失败");
+        return Result.success(buildSwitchContext(userId));
     }
 
     /**
@@ -196,12 +199,44 @@ public class AuthController {
      */
     @Operation(summary = "Switch Workspace")
     @PostMapping("/switch-workspace")
-    public Result<Void> switchWorkspace(@Valid @RequestBody SwitchWorkspaceRequest request) {
+    public Result<SwitchContextResponse> switchWorkspace(@Valid @RequestBody SwitchWorkspaceRequest request) {
         log.info("收到切换工作空间请求");
         Long userId = LoginContextHolder.getUserId();
         if (userId == null) return Result.fail("用户未登录");
         boolean success = authService.switchCurrentWorkspace(userId, request.getWorkspaceId());
-        return success ? Result.success() : Result.fail("切换工作空间失败");
+        if (!success) return Result.fail("切换工作空间失败");
+        return Result.success(buildSwitchContext(userId));
+    }
+
+    /**
+     * 构建切换后的完整上下文响应（消除 N+1 请求）
+     */
+    private SwitchContextResponse buildSwitchContext(Long userId) {
+        UserBO userBO = userService.getUserDetail(userId);
+        UserVO userVO = userBO != null ? MapstructUtils.convert(userBO, UserVO.class) : null;
+        if (userVO != null) {
+            try {
+                userVO.setTenants(authService.getUserTenants(userId));
+                userVO.setWorkspaces(authService.getUserWorkspaces(userId));
+                if (userVO.getExtInfo() != null) {
+                    var extMap = com.shiyu.ai.common.core.utils.JSONUtils.parseObject(
+                            userVO.getExtInfo(), java.util.Map.class);
+                    if (extMap != null) {
+                        Object tid = extMap.get("currentTenantId");
+                        if (tid instanceof Number) userVO.setCurrentTenantId(((Number) tid).longValue());
+                        Object wid = extMap.get("currentWorkspaceId");
+                        if (wid instanceof Number) userVO.setCurrentWorkspaceId(((Number) wid).longValue());
+                    }
+                }
+            } catch (Exception e) {
+                log.warn("获取用户租户/工作空间信息失败: {}", e.getMessage());
+            }
+        }
+        return SwitchContextResponse.builder()
+                .userInfo(userVO)
+                .tenants(authService.getUserTenants(userId))
+                .workspaces(authService.getUserWorkspaces(userId))
+                .build();
     }
 
     /**

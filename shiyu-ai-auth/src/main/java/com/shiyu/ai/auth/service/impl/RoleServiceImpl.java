@@ -114,6 +114,10 @@ public class RoleServiceImpl implements RoleService {
         if (userIds == null || userIds.isEmpty()) {
             return true;
         }
+        if (workspaceId == null) {
+            log.warn("当前上下文中 workspaceId 为空，跳过角色移除");
+            return false;
+        }
         Long tenantId = LoginContextHolder.getTenantId();
         for (Long userId : userIds) {
             com.mybatisflex.core.query.QueryWrapper qw = new com.mybatisflex.core.query.QueryWrapper();

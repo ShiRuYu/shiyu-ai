@@ -74,6 +74,11 @@ public class LoginResponseVO implements Serializable {
     private String tenantName;
 
     /**
+     * 当前工作空间ID
+     */
+    private Long currentWorkspaceId;
+
+    /**
      * 可用租户列表
      */
     private List<TenantInfoVO> tenants;

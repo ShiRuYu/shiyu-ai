@@ -1,12 +1,14 @@
 package com.shiyu.ai.dal.auth.repository;
 
 import com.mybatisflex.core.query.QueryWrapper;
-import com.shiyu.ai.dal.auth.dataobject.TenantDO;
-import com.shiyu.ai.dal.auth.mapper.TenantMapper;
+import com.shiyu.ai.dal.auth.dataobject.*;
+import com.shiyu.ai.dal.auth.mapper.*;
 import com.shiyu.ai.dal.auth.bo.TenantBO;
 import com.shiyu.ai.common.core.utils.MapstructUtils;
+import jakarta.annotation.Resource;
 import org.apache.commons.lang3.tuple.Pair;
 import org.springframework.stereotype.Component;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
 
@@ -14,6 +16,27 @@ import java.util.List;
 public class TenantRepository {
 
     private final TenantMapper tenantMapper;
+
+    @Resource
+    private UserMapper userMapper;
+
+    @Resource
+    private WorkspaceMapper workspaceMapper;
+
+    @Resource
+    private RoleMapper roleMapper;
+
+    @Resource
+    private MenuMapper menuMapper;
+
+    @Resource
+    private UserWorkspaceRoleMapper userWorkspaceRoleMapper;
+
+    @Resource
+    private RoleWorkspaceMenuMapper roleWorkspaceMenuMapper;
+
+    @Resource
+    private TenantQuotaMapper tenantQuotaMapper;
 
     public TenantRepository(TenantMapper tenantMapper) {
         this.tenantMapper = tenantMapper;
@@ -72,5 +95,29 @@ public class TenantRepository {
             qw.ne(TenantDO::getId, excludeId);
         }
         return tenantMapper.selectCountByQuery(qw) > 0;
+    }
+
+    /**
+     * 级联删除租户及其所有关联数据
+     * 清理顺序：先子表后父表，避免外键/数据残留
+     */
+    @Transactional(rollbackFor = Exception.class)
+    public void cascadeDelete(Long tenantId) {
+        QueryWrapper byTenant = QueryWrapper.create().eq("tenant_id", tenantId);
+
+        // 菜单关联表
+        roleWorkspaceMenuMapper.deleteByQuery(byTenant);
+        // 用户-空间-角色关联表
+        userWorkspaceRoleMapper.deleteByQuery(byTenant);
+        // 租户配额
+        tenantQuotaMapper.deleteByQuery(
+            QueryWrapper.create().eq(TenantQuotaDO::getTenantId, tenantId));
+        // 业务表（带 tenantId）
+        menuMapper.deleteByQuery(byTenant);
+        roleMapper.deleteByQuery(byTenant);
+        workspaceMapper.deleteByQuery(byTenant);
+        userMapper.deleteByQuery(byTenant);
+        // 最后删除租户本身
+        tenantMapper.deleteById(tenantId);
     }
 }

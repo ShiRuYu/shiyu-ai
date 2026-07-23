@@ -1,0 +1,39 @@
+### ==========================================
+### 权限码管理 — Auth Code（历史兼容）
+### 路径前缀：/auth-code
+### 旧版权限码管理，新版建议使用 menu 模块管理 BUTTON 类型权限
+### ==========================================
+
+@baseUrl = http://localhost:9000
+
+### ------------------- 权限码列表 -------------------
+### @name List Auth Codes
+GET {{baseUrl}}/auth-code/list HTTP/1.1
+Authorization: Bearer {{authToken}}
+
+### ------------------- 创建权限码 -------------------
+### @name Create Auth Code
+POST {{baseUrl}}/auth-code/create HTTP/1.1
+Authorization: Bearer {{authToken}}
+Content-Type: application/json
+
+{
+  "code": "system:report:export",
+  "name": "导出报表",
+  "status": 1
+}
+
+### ------------------- 更新权限码 -------------------
+### @name Update Auth Code
+POST {{baseUrl}}/auth-code/update?id=1 HTTP/1.1
+Authorization: Bearer {{authToken}}
+Content-Type: application/json
+
+{
+  "name": "导出报表（已修改）"
+}
+
+### ------------------- 删除权限码 -------------------
+### @name Delete Auth Code
+POST {{baseUrl}}/auth-code/delete?id=1 HTTP/1.1
+Authorization: Bearer {{authToken}}

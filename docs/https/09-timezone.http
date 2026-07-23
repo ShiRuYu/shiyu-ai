@@ -1,0 +1,28 @@
+### ==========================================
+### 时区管理 — Timezone
+### 路径前缀：/system/timezone
+### ==========================================
+
+@baseUrl = http://localhost:9000
+
+### ------------------- 获取时区选项列表 -------------------
+### @name Get Timezone Options
+# 返回系统支持的所有时区选项
+GET {{baseUrl}}/system/timezone/options HTTP/1.1
+Authorization: Bearer {{authToken}}
+
+### ------------------- 获取当前时区 -------------------
+### @name Get Current Timezone
+# 返回当前用户设置的时区
+GET {{baseUrl}}/system/timezone/current HTTP/1.1
+Authorization: Bearer {{authToken}}
+
+### ------------------- 设置时区 -------------------
+### @name Set Timezone
+POST {{baseUrl}}/system/timezone/set HTTP/1.1
+Authorization: Bearer {{authToken}}
+Content-Type: application/json
+
+{
+  "timezone": "Asia/Shanghai"
+}

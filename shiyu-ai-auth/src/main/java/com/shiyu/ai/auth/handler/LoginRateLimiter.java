@@ -48,6 +48,20 @@ public class LoginRateLimiter {
                 windowMs, maxAttempts, BASE_LOCK_DURATION_SECONDS, JITTER_RANGE_SECONDS);
     }
 
+    @PreDestroy
+    public void destroy() {
+        cleanupScheduler.shutdownNow();
+        try {
+            if (!cleanupScheduler.awaitTermination(5, TimeUnit.SECONDS)) {
+                log.warn("LoginRateLimiter 定时清理线程池未能正常关闭");
+            }
+        } catch (InterruptedException e) {
+            cleanupScheduler.shutdownNow();
+            Thread.currentThread().interrupt();
+        }
+        log.info("LoginRateLimiter 定时清理线程池已关闭");
+    }
+
     public boolean isAllowed(String ip) {
         long now = System.currentTimeMillis();
         RateLimitEntry entry = attempts.computeIfAbsent(ip, k -> new RateLimitEntry());
@@ -60,7 +74,9 @@ public class LoginRateLimiter {
             }
 
             // 滑动窗口清理：移除窗口外的记录
-            entry.attempts.removeIf(t -> t < now - windowMs);
+            while (!entry.attempts.isEmpty() && entry.attempts.peek() < now - windowMs) {
+                entry.attempts.poll();
+            }
 
             entry.attempts.add(now);
             if (entry.attempts.size() > maxAttempts) {
@@ -124,11 +140,12 @@ public class LoginRateLimiter {
     }
 
     /**
-     * 限流条目：使用 List 记录每次尝试时间实现真正的滑动窗口
+     * 限流条目：使用 EvictingQueue 记录每次尝试时间实现真正的滑动窗口
+     * 自动淘汰最旧记录，无需手动 removeIf
      */
     private static class RateLimitEntry {
-        /** 尝试时间戳列表（实现滑动窗口） */
-        final java.util.ArrayList<Long> attempts = new java.util.ArrayList<>();
+        /** 尝试时间戳 EvictingQueue（自动淘汰最旧记录，容量=maxAttempts+1） */
+        final java.util.Queue<Long> attempts = new java.util.concurrent.ConcurrentLinkedDeque<>();
         /** 封禁截止时间（毫秒） */
         long lockedUntil;
     }

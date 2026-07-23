@@ -156,11 +156,19 @@ public class UserContextInterceptor implements HandlerInterceptor {
 
             List<Long> workspaceIds = filtered.stream().map(UserWorkspaceRoleDO::getWorkspaceId).distinct().collect(Collectors.toList());
             Set<Long> roleIds = filtered.stream().map(UserWorkspaceRoleDO::getRoleId).collect(Collectors.toSet());
-            Map<Long, String> roleCodeMap = new HashMap<>();
-            // AuthUserLookupRepository doesn't have selectRoleById - we keep RoleMapper for this
-            // But RoleMapper was removed. Let's add it back or use a different approach.
-            // For now, we use the RoleMapper reference through the repository
+
+            // ✅ 修复：批量查询角色并构建 workspaceId → roleCode 映射
+            List<RoleDO> roles = authUserLookupRepository.selectRolesByIds(roleIds);
+            Map<Long, String> roleIdToCode = roles.stream()
+                    .collect(Collectors.toMap(RoleDO::getId, RoleDO::getCode, (a, b) -> b));
             Map<Long, String> workspaceRoleMap = new HashMap<>();
+            for (UserWorkspaceRoleDO uwr : filtered) {
+                String roleCode = roleIdToCode.get(uwr.getRoleId());
+                if (roleCode != null) {
+                    workspaceRoleMap.put(uwr.getWorkspaceId(), roleCode);
+                }
+            }
+
             loginUser.setTenantId(ft);
             loginUser.setCurrentWorkspaceId(currentWorkspaceId);
             loginUser.setWorkspaceIds(workspaceIds);

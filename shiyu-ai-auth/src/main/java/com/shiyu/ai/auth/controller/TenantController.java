@@ -1,5 +1,6 @@
 package com.shiyu.ai.auth.controller;
 
+import com.shiyu.ai.auth.service.AuthService;
 import com.shiyu.ai.auth.service.TenantService;
 import com.shiyu.ai.dal.auth.bo.TenantBO;
 import com.shiyu.ai.auth.request.TenantRequest;
@@ -22,16 +23,34 @@ import java.util.List;
 public class TenantController {
 
     private final TenantService tenantService;
+    private final AuthService authService;
 
-    public TenantController(TenantService tenantService) {
+    private static final String TENANT_ADMIN_PERMISSION = "tenant:admin";
+
+    public TenantController(TenantService tenantService, AuthService authService) {
         this.tenantService = tenantService;
+        this.authService = authService;
     }
 
+    /**
+     * 校验当前用户是否有租户管理权限
+     * 基于菜单权限编码（tenant:admin），可灵活分配无需硬编码 tenantId
+     */
     private void checkTenantAdmin() {
-        Long tenantId = LoginContextHolder.getTenantId();
-        if (tenantId == null || tenantId != 1L) {
-            throw new SecurityException("仅默认租户可管理租户");
+        Long userId = LoginContextHolder.getUserId();
+        if (userId == null) {
+            throw new SecurityException("用户未登录");
         }
+        // 方式一（推荐）：通过菜单权限码校验（需在 menu 表配置 tenant:admin 的 BUTTON 权限）
+        List<String> codes = authService.getAuthCodesByUserId(userId);
+        if (codes.contains(TENANT_ADMIN_PERMISSION)) {
+            return;
+        }
+        // 方式二：如果权限码未配置，降级为超级管理员角色校验
+        if (LoginContextHolder.isSuperAdmin()) {
+            return;
+        }
+        throw new SecurityException("无租户管理权限");
     }
 
     @Operation(summary = "Get Tenant List")

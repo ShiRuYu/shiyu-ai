@@ -1,0 +1,54 @@
+### ==========================================
+### 租户管理 — Tenant Management
+### 路径前缀：/tenant
+### 权限：需要 tenant:admin 权限码或 super_admin 角色
+### ==========================================
+
+@baseUrl = http://localhost:9000
+
+### ------------------- 租户列表 -------------------
+### @name Get All Tenants
+GET {{baseUrl}}/tenant/list HTTP/1.1
+Authorization: Bearer {{authToken}}
+
+### ------------------- 租户详情 -------------------
+### @name Get Tenant Detail
+GET {{baseUrl}}/tenant/detail?id=1 HTTP/1.1
+Authorization: Bearer {{authToken}}
+
+### ------------------- 创建租户 -------------------
+### @name Create Tenant
+POST {{baseUrl}}/tenant/create HTTP/1.1
+Authorization: Bearer {{authToken}}
+Content-Type: application/json
+
+{
+  "code": "tenant_b",
+  "name": "B公司",
+  "contactName": "李四",
+  "contactPhone": "13900139000",
+  "address": "北京市朝阳区",
+  "domain": "b-company.com",
+  "intro": "B公司租户",
+  "status": "1"
+}
+
+### ------------------- 更新租户 -------------------
+### @name Update Tenant
+POST {{baseUrl}}/tenant/update?id=2 HTTP/1.1
+Authorization: Bearer {{authToken}}
+Content-Type: application/json
+
+{
+  "name": "B公司（已更新）",
+  "contactName": "李四",
+  "contactPhone": "13900139001",
+  "status": "1"
+}
+
+### ------------------- 删除租户（级联）-------------------
+### @name Delete Tenant
+# 级联删除：关联的 role_workspace_menu、user_workspace_role、tenant_quota、
+# menu、role、workspace、user 全部清理。默认租户（id=1）禁止删除
+POST {{baseUrl}}/tenant/delete?id=2 HTTP/1.1
+Authorization: Bearer {{authToken}}

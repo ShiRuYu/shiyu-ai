@@ -1,0 +1,17 @@
+### ==========================================
+### 用户上下文测试 — User Context Test
+### 路径前缀：/test/user-context
+### ==========================================
+
+@baseUrl = http://localhost:9000
+
+### ------------------- 获取当前用户上下文 -------------------
+### @name Get User Context Info
+# 返回当前请求的用户上下文信息，用于调试 LoginContextHolder 状态
+GET {{baseUrl}}/test/user-context/info HTTP/1.1
+Authorization: Bearer {{authToken}}
+
+### ------------------- Demo 使用示例 -------------------
+### @name Demo Usage
+GET {{baseUrl}}/test/user-context/demo HTTP/1.1
+Authorization: Bearer {{authToken}}

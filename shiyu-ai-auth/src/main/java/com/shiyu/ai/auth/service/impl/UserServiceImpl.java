@@ -2,6 +2,7 @@ package com.shiyu.ai.auth.service.impl;
 
 import com.shiyu.ai.dal.auth.repository.UserRepository;
 import com.shiyu.ai.auth.service.UserService;
+import com.shiyu.ai.auth.utils.SaTokenHelper;
 import com.shiyu.ai.dal.auth.bo.RoleBO;
 import com.shiyu.ai.dal.auth.bo.UserBO;
 import com.shiyu.ai.auth.vo.UserPageResponse;
@@ -110,6 +111,14 @@ public class UserServiceImpl implements UserService {
                 : password;
         userBO.setPassword(PasswordUtils.encode(newPassword));
         boolean success = userRepository.update(userBO);
+        
+        if (success) {
+            // 🔐 重置密码后踢出用户所有会话，强制重新登录
+            SaTokenHelper.getInstance().logout(userId);
+            SaTokenHelper.clearLoginUserSession();
+            log.info("重置密码后已踢出用户会话: userId={}", userId);
+        }
+        
         return success ? newPassword : null;
     }
 
@@ -144,6 +153,15 @@ public class UserServiceImpl implements UserService {
             return false;
         }
         userBO.setPassword(PasswordUtils.encode(newPassword));
-        return userRepository.update(userBO);
+        boolean success = userRepository.update(userBO);
+        
+        if (success) {
+            // 🔐 修改密码后踢出用户所有会话，强制重新登录
+            SaTokenHelper.getInstance().logout(userId);
+            SaTokenHelper.clearLoginUserSession();
+            log.info("修改密码后已踢出用户会话: userId={}", userId);
+        }
+        
+        return success;
     }
 }
