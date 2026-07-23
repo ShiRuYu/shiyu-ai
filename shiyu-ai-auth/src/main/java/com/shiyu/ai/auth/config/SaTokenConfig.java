@@ -39,12 +39,23 @@ public class SaTokenConfig {
     /**
      * Sa-Token 全局过滤器（Servlet 版）
      * 替代 SaInterceptor 的路由拦截方式，对异步派发更友好
+     *
+     * 注意：排除路径需要与 SaInterceptorConfig 保持一致
      */
     @Bean
     public SaServletFilter saServletFilter() {
         return new SaServletFilter()
                 .addInclude("/**")
-                .addExclude("/auth/login", "/auth/captcha", "/captcha/validate", "/auth/register")
+                // 认证相关公开接口（无需登录即可访问）
+                .addExclude(
+                    "/auth/login",
+                    "/auth/register",
+                    "/auth/code-login",
+                    "/auth/forget-password",
+                    "/captcha/**",
+                    "/auth/captcha"
+                )
+                // 文档和监控接口
                 .addExclude("/doc.html", "/swagger-ui/**", "/v3/api-docs/**")
                 .addExclude("/webjars/**", "/v2/api-docs", "/h2/**")
                 .setAuth(obj -> {

@@ -8,6 +8,8 @@ import org.springframework.web.servlet.config.annotation.WebMvcConfigurer;
 /**
  * 拦截器配置
  * 注册用户上下文拦截器（鉴权使用 SaServletFilter，在 SaTokenConfig 中配置）
+ *
+ * 注意：排除路径需要与 SaTokenConfig 保持一致
  */
 @Configuration
 public class SaInterceptorConfig implements WebMvcConfigurer {
@@ -24,9 +26,14 @@ public class SaInterceptorConfig implements WebMvcConfigurer {
         registry.addInterceptor(userContextInterceptor)
                 .addPathPatterns("/**")
                 .excludePathPatterns(
+                    // 认证相关公开接口（无需登录即可访问）
                     "/auth/login",
-                    "/captcha",
-                    "/captcha/validate",
+                    "/auth/register",
+                    "/auth/code-login",
+                    "/auth/forget-password",
+                    "/captcha/**",
+                    "/auth/captcha",
+                    // 文档和监控接口
                     "/doc.html",
                     "/swagger-ui/**",
                     "/v3/api-docs/**",

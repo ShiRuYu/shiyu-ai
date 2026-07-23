@@ -530,7 +530,18 @@ public class AuthServiceImpl implements AuthService {
         user.setPassword(PasswordUtils.encode(password));
         user.setEmail(email);
         user.setStatus(1);
-        userRepository.insert(user);
+        // 设置默认租户上下文，确保多租户插件自动填充 tenantId
+        LoginUser loginUser = new LoginUser();
+        loginUser.setUserId(0L);
+        loginUser.setTenantId(1L);
+        LoginContextHolder.setContext(loginUser);
+        try {
+            userRepository.insert(user);
+        } finally {
+            LoginContextHolder.clearContext();
+        }
+        // 为新用户分配默认租户和工作空间角色
+        assignDefaultTenantWorkspaceRole(user.getId());
         log.info("用户注册成功: userId={}", user.getId());
         return login(username, password);
     }
@@ -544,7 +555,18 @@ public class AuthServiceImpl implements AuthService {
             user.setUsername(phone);
             user.setPassword(PasswordUtils.encode(code));
             user.setStatus(1);
-            userRepository.insert(user);
+            // 设置默认租户上下文，确保多租户插件自动填充 tenantId
+            LoginUser loginUser = new LoginUser();
+            loginUser.setUserId(0L);
+            loginUser.setTenantId(1L);
+            LoginContextHolder.setContext(loginUser);
+            try {
+                userRepository.insert(user);
+            } finally {
+                LoginContextHolder.clearContext();
+            }
+            // 为新用户分配默认租户和工作空间
+            assignDefaultTenantWorkspaceRole(user.getId());
         }
         return login(user.getUsername(), code);
     }
@@ -560,6 +582,64 @@ public class AuthServiceImpl implements AuthService {
         userRepository.update(user);
         log.info("密码重置成功: userId={}", user.getId());
         return true;
+    }
+
+    /**
+     * 为新用户分配默认租户（tenantId=1）和默认工作空间（workspaceId=1）
+     * 并查询系统第一个可用角色进行绑定，确保用户可正常登录
+     */
+    private void assignDefaultTenantWorkspaceRole(Long userId) {
+        try {
+            // 1. 设置用户所属租户
+            UserBO user = userRepository.selectById(userId);
+            if (user == null) return;
+
+            // 2. 查询默认角色（第一个启用的角色）
+            List<RoleBO> roles = userRepository.selectRolesByUserId(1L);
+            RoleBO defaultRole;
+            if (roles != null && !roles.isEmpty()) {
+                defaultRole = roles.get(0);
+            } else {
+                log.warn("未找到可用角色，跳过用户默认角色分配");
+                return;
+            }
+
+            // 3. 分配默认工作空间和角色
+            UserWorkspaceRoleDO uwr = new UserWorkspaceRoleDO();
+            uwr.setUserId(userId);
+            uwr.setWorkspaceId(1L);
+            uwr.setRoleId(defaultRole.getId());
+            uwr.setTenantId(1L);
+            userWorkspaceRoleRepository.insert(uwr);
+
+            // 4. 设置用户 extInfo 中的当前上下文
+            Map<String, Object> roleMap = new LinkedHashMap<>();
+            roleMap.put("roleId", defaultRole.getId());
+            roleMap.put("roleName", defaultRole.getName());
+            roleMap.put("roleKey", defaultRole.getCode());
+
+            Map<String, Object> extInfoMap = new LinkedHashMap<>();
+            extInfoMap.put("currentTenantId", 1L);
+            extInfoMap.put("currentWorkspaceId", 1L);
+            extInfoMap.put("currentRole", roleMap);
+
+            // 5. 更新用户 extInfo 和 tenantId
+            LoginUser loginUser = new LoginUser();
+            loginUser.setUserId(userId);
+            LoginContextHolder.setContext(loginUser);
+            try {
+                // 更新 extInfo
+                user.setExtInfo(JSONUtils.toJsonString(extInfoMap));
+                userRepository.update(user);
+            } finally {
+                LoginContextHolder.clearContext();
+            }
+
+            log.info("新用户默认租户/空间分配成功: userId={}, tenantId=1, workspaceId=1, roleId={}",
+                    userId, defaultRole.getId());
+        } catch (Exception e) {
+            log.warn("新用户默认租户/空间分配异常，不影响用户登录: userId={}, error={}", userId, e.getMessage());
+        }
     }
 
     private Map<String, Object> parseExtInfo(String extInfo) {

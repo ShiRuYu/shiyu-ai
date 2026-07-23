@@ -1,14 +1,23 @@
 ### ==========================================
 ### 认证模块 — Authentication
 ### 路径前缀：/auth
+###
+### 首次使用：
+###   1. 先执行 ### Login 获取 accessToken
+###   2. 手动将 accessToken 值粘贴到 00-global-variables.http 的 @authToken 中
+###   3. 或直接拷贝 token 到请求头 Authorization: Bearer <token>
+###
+### 备用 curl 命令（无需变量）：
+###   curl -X POST http://localhost:9000/auth/login \
+###     -H 'Content-Type: application/json' \
+###     -d '{"username":"vben","password":"123456"}'
 ### ==========================================
 
-@baseUrl = http://localhost:9000
+### @baseUrl = http://localhost:9000
 
 ### ------------------- 登录（获取 Token）-------------------
 ### @name Login
-# 使用用户名密码登录，返回 accessToken（Bearer token）
-# 后续请求需在 Authorization 头中携带此 token
+# 无需认证。返回 accessToken + currentWorkspaceId + tenants + workspaces
 POST {{baseUrl}}/auth/login HTTP/1.1
 Content-Type: application/json
 
@@ -22,7 +31,7 @@ Content-Type: application/json
 
 ### ------------------- 注册 -------------------
 ### @name Register
-# 注册新用户，注册成功自动返回登录凭证
+# 无需认证。注册成功自动返回登录凭证
 POST {{baseUrl}}/auth/register HTTP/1.1
 Content-Type: application/json
 
@@ -34,7 +43,7 @@ Content-Type: application/json
 
 ### ------------------- 验证码登录 -------------------
 ### @name Code Login
-# 使用手机号+验证码登录，用户不存在则自动创建
+# 无需认证。手机号+验证码登录，用户不存在则自动创建
 POST {{baseUrl}}/auth/code-login HTTP/1.1
 Content-Type: application/json
 
@@ -45,7 +54,7 @@ Content-Type: application/json
 
 ### ------------------- 忘记密码 -------------------
 ### @name Forget Password
-# 通过邮箱验证码重置密码
+# 无需认证。通过邮箱验证码重置密码
 POST {{baseUrl}}/auth/forget-password HTTP/1.1
 Content-Type: application/json
 
@@ -57,13 +66,13 @@ Content-Type: application/json
 
 ### ------------------- 退出登录 -------------------
 ### @name Logout
-# 使当前 token 失效
+# 需要认证（Authorization 头）。使当前 token 失效
 POST {{baseUrl}}/auth/logout HTTP/1.1
 Authorization: Bearer {{authToken}}
 
 ### ------------------- 刷新 Token -------------------
 ### @name Refresh Token
-# 用旧 token 换取新 token（旧 token 作废）
+# 无需认证（使用旧 token 换取新 token）
 POST {{baseUrl}}/auth/refresh HTTP/1.1
 Content-Type: application/json
 
@@ -73,13 +82,13 @@ Content-Type: application/json
 
 ### ------------------- 获取权限码列表 -------------------
 ### @name Get Auth Codes
-# 返回当前用户所有按钮级权限码（用于前端按钮级权限控制）
+# 需要认证。返回当前用户在当前工作空间下的按钮级权限码
 GET {{baseUrl}}/auth/codes HTTP/1.1
 Authorization: Bearer {{authToken}}
 
 ### ------------------- 切换角色 -------------------
 ### @name Switch Current Role
-# 切换当前用户在当前空间下的角色
+# 需要认证。切换后在响应中返回完整上下文（userInfo + tenants + workspaces）
 POST {{baseUrl}}/auth/current-role HTTP/1.1
 Authorization: Bearer {{authToken}}
 Content-Type: application/json
@@ -90,7 +99,7 @@ Content-Type: application/json
 
 ### ------------------- 切换租户 -------------------
 ### @name Switch Tenant
-# 切换到指定租户，同时自动进入该租户下的第一个工作空间
+# 需要认证。切换后自动进入该租户下的第一个工作空间
 POST {{baseUrl}}/auth/switch-tenant HTTP/1.1
 Authorization: Bearer {{authToken}}
 Content-Type: application/json
@@ -101,7 +110,7 @@ Content-Type: application/json
 
 ### ------------------- 切换工作空间 -------------------
 ### @name Switch Workspace
-# 在当前租户内切换到指定工作空间，角色随之切换
+# 需要认证。切换后返回完整上下文
 POST {{baseUrl}}/auth/switch-workspace HTTP/1.1
 Authorization: Bearer {{authToken}}
 Content-Type: application/json
@@ -112,12 +121,10 @@ Content-Type: application/json
 
 ### ------------------- 获取用户工作空间列表 -------------------
 ### @name Get User Workspaces
-# 返回当前用户在当前租户下的所有工作空间及角色
 GET {{baseUrl}}/auth/workspaces HTTP/1.1
 Authorization: Bearer {{authToken}}
 
 ### ------------------- 获取用户租户列表 -------------------
 ### @name Get User Tenants
-# 返回当前用户所属的所有租户
 GET {{baseUrl}}/auth/tenants HTTP/1.1
 Authorization: Bearer {{authToken}}

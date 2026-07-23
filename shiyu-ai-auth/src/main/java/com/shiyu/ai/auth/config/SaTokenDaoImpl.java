@@ -9,6 +9,7 @@ import com.shiyu.ai.dal.auth.dataobject.UserDO;
 import com.shiyu.ai.auth.utils.UserLockManager;
 import com.shiyu.ai.common.core.utils.JSONUtils;
 import jakarta.annotation.PostConstruct;
+import jakarta.annotation.PreDestroy;
 import org.springframework.stereotype.Component;
 
 import java.nio.charset.StandardCharsets;
@@ -21,6 +22,8 @@ import java.util.concurrent.TimeUnit;
 
 @Component
 public class SaTokenDaoImpl implements SaTokenDao {
+
+    private static final org.slf4j.Logger log = org.slf4j.LoggerFactory.getLogger(SaTokenDaoImpl.class);
 
     private static final String KEY_PREFIX = "Authorization:login:";
     private static final String TOKEN_PREFIX = KEY_PREFIX + "token:";
