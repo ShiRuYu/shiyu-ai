@@ -36,42 +36,42 @@ springdoc:
       paths-to-match:
         - '/**'
       packages-to-scan:
-        - com.shiyu.ai.auth.controller
-        - com.shiyu.ai.agent.controller
-        - com.shiyu.ai.model.controller
-        - com.shiyu.ai.education.controller
-        - com.shiyu.ai.knowledge.controller
-        - com.shiyu.ai.record.controller
-        - com.shiyu.ai.usage.controller
-        - com.shiyu.ai.plugin.controller
-        - com.shiyu.ai.common.web.controller
+        - com.shiyu.ai.web.auth.controller
+        - com.shiyu.ai.web.agent.controller
+        - com.shiyu.ai.web.model.controller
+        - com.shiyu.ai.web.education.controller
+        - com.shiyu.ai.web.knowledge.controller
+        - com.shiyu.ai.web.record.controller
+        - com.shiyu.ai.web.usage.controller
+        - com.shiyu.ai.web.plugin.controller
+        - com.shiyu.ai.web.common.controller
     - group: 'auth'
       packages-to-scan:
-        - com.shiyu.ai.auth.controller
+        - com.shiyu.ai.web.auth.controller
     - group: 'agent'
       packages-to-scan:
-        - com.shiyu.ai.agent.controller
+        - com.shiyu.ai.web.agent.controller
     - group: 'education'
       packages-to-scan:
-        - com.shiyu.ai.education.controller
+        - com.shiyu.ai.web.education.controller
     - group: 'knowledge'
       packages-to-scan:
-        - com.shiyu.ai.knowledge.controller
+        - com.shiyu.ai.web.knowledge.controller
     - group: 'model'
       packages-to-scan:
-        - com.shiyu.ai.model.controller
+        - com.shiyu.ai.web.model.controller
     - group: 'record'
       packages-to-scan:
-        - com.shiyu.ai.record.controller
+        - com.shiyu.ai.web.record.controller
     - group: 'usage'
       packages-to-scan:
-        - com.shiyu.ai.usage.controller
+        - com.shiyu.ai.web.usage.controller
     - group: 'plugin'
       packages-to-scan:
-        - com.shiyu.ai.plugin.controller
+        - com.shiyu.ai.web.plugin.controller
     - group: 'common'
       packages-to-scan:
-        - com.shiyu.ai.common.web.controller
+        - com.shiyu.ai.web.common.controller
   swagger-ui:
     path: /swagger-ui/index.html      # Swagger UI 访问路径，默认 /swagger-ui/index.html
     display-request-duration: true  # 显示请求耗时

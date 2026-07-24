@@ -26,10 +26,6 @@
             <groupId>com.shiyu.ai</groupId>
             <artifactId>shiyu-common-core</artifactId>
         </dependency>
-        <dependency>
-            <groupId>com.shiyu.ai</groupId>
-            <artifactId>shiyu-common-web</artifactId>
-        </dependency>
             <dependency>
             <groupId>com.github.ben-manes.caffeine</groupId>
             <artifactId>caffeine</artifactId>

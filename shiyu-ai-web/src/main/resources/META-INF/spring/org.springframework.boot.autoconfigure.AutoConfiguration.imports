@@ -1,0 +1,7 @@
+com.shiyu.ai.web.config.FilterConfig
+com.shiyu.ai.web.config.ResourcesConfig
+com.shiyu.ai.web.config.OpenApiConfig
+com.shiyu.ai.web.config.AgentWebMvcConfig
+com.shiyu.ai.web.config.EduWebMvcConfig
+com.shiyu.ai.web.config.SaInterceptorConfig
+com.shiyu.ai.web.config.UsageWebSocketConfig

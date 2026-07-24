@@ -21,47 +21,40 @@ CREATE INDEX IF NOT EXISTS `idx_rsac_auth_code` ON `role_scope_auth_code` (`auth
 CREATE INDEX IF NOT EXISTS `idx_rsac_scope` ON `role_scope_auth_code` (`scoped_tenant_id`, `tenant_id`);
 
 -- 旧版本 auth_code 中的角色绑定迁移到授权表。
-SELECT IF(
-    EXISTS (
-        SELECT 1 FROM information_schema.columns
-        WHERE table_schema = DATABASE() AND table_name = 'auth_code' AND column_name = 'role_id'
-    ),
-    'INSERT IGNORE INTO role_scope_auth_code (role_id, auth_code_id, scoped_tenant_id, tenant_id, status, del_flag, create_by, create_time, update_by, update_time) SELECT role_id, id, COALESCE(scoped_tenant_id, tenant_id), tenant_id, status, del_flag, create_by, create_time, update_by, update_time FROM auth_code',
-    'SELECT 1'
-) INTO @migrate_auth_code_sql;
-PREPARE migrate_auth_code_stmt FROM @migrate_auth_code_sql;
-EXECUTE migrate_auth_code_stmt;
-DEALLOCATE PREPARE migrate_auth_code_stmt;
+-- 不使用 MySQL 的 SELECT ... INTO @var + PREPARE 动态 SQL：
+-- H2 不支持该语法，而且新库没有这些旧字段，直接引用也会失败。
+-- 先补齐为可空的临时字段；旧库中字段已存在时 IF NOT EXISTS 不做任何修改。
+ALTER TABLE `auth_code` ADD COLUMN IF NOT EXISTS `role_id` BIGINT;
+ALTER TABLE `auth_code` ADD COLUMN IF NOT EXISTS `tenant_id` BIGINT;
+ALTER TABLE `auth_code` ADD COLUMN IF NOT EXISTS `scoped_tenant_id` BIGINT;
 
--- 删除旧的角色/租户字段；新建数据库时这些字段本来就不存在。
-SELECT IF(
-    EXISTS (
-        SELECT 1 FROM information_schema.columns
-        WHERE table_schema = DATABASE() AND table_name = 'auth_code' AND column_name = 'role_id'
-    ),
-    'ALTER TABLE auth_code DROP COLUMN role_id, DROP COLUMN tenant_id, DROP COLUMN scoped_tenant_id',
-    'SELECT 1'
-) INTO @drop_auth_code_scope_sql;
-PREPARE drop_auth_code_scope_stmt FROM @drop_auth_code_scope_sql;
-EXECUTE drop_auth_code_scope_stmt;
-DEALLOCATE PREPARE drop_auth_code_scope_stmt;
+INSERT INTO role_scope_auth_code
+    (role_id, auth_code_id, scoped_tenant_id, tenant_id, status, del_flag,
+     create_by, create_time, update_by, update_time)
+SELECT ac.role_id, ac.id, COALESCE(ac.scoped_tenant_id, ac.tenant_id),
+       ac.tenant_id, ac.status, ac.del_flag, ac.create_by, ac.create_time,
+       ac.update_by, ac.update_time
+FROM auth_code ac
+WHERE ac.role_id IS NOT NULL
+  AND COALESCE(ac.scoped_tenant_id, ac.tenant_id) IS NOT NULL
+  AND NOT EXISTS (
+      SELECT 1
+      FROM role_scope_auth_code rsac
+      WHERE rsac.role_id = ac.role_id
+        AND rsac.auth_code_id = ac.id
+        AND rsac.scoped_tenant_id = COALESCE(ac.scoped_tenant_id, ac.tenant_id)
+  );
 
-SELECT IF(
-    NOT EXISTS (
-        SELECT 1 FROM information_schema.statistics
-        WHERE table_schema = DATABASE() AND table_name = 'auth_code'
-          AND index_name = 'uk_auth_code_code'
-    ),
-    'ALTER TABLE auth_code ADD UNIQUE KEY uk_auth_code_code (code)',
-    'SELECT 1'
-) INTO @add_auth_code_unique_sql;
-PREPARE add_auth_code_unique_stmt FROM @add_auth_code_unique_sql;
-EXECUTE add_auth_code_unique_stmt;
-DEALLOCATE PREPARE add_auth_code_unique_stmt;
+-- 删除旧的角色/租户字段；新建数据库中这里是上面补出的临时字段。
+ALTER TABLE `auth_code` DROP COLUMN IF EXISTS `role_id`;
+ALTER TABLE `auth_code` DROP COLUMN IF EXISTS `tenant_id`;
+ALTER TABLE `auth_code` DROP COLUMN IF EXISTS `scoped_tenant_id`;
 
-DELETE rsm
-FROM `role_scope_menu` rsm
-INNER JOIN `menu` m ON m.id = rsm.menu_id
-WHERE m.type = 'BUTTON';
+DELETE FROM `role_scope_menu`
+WHERE `menu_id` IN (
+    SELECT `id`
+    FROM `menu`
+    WHERE `type` = 'BUTTON'
+);
 
 DELETE FROM `menu` WHERE `type` = 'BUTTON';

@@ -113,6 +113,7 @@
         <module>shiyu-ai-agent</module>
         <module>shiyu-ai-auth</module>
         <module>shiyu-ai-record</module>
+        <module>shiyu-ai-web</module>
         <module>shiyu-ai-bootstrap</module>
     </modules>
 
@@ -368,6 +369,11 @@
             <dependency>
                 <groupId>com.shiyu.ai</groupId>
                 <artifactId>shiyu-ai-bootstrap</artifactId>
+                <version>${revision}</version>
+            </dependency>
+            <dependency>
+                <groupId>com.shiyu.ai</groupId>
+                <artifactId>shiyu-ai-web</artifactId>
                 <version>${revision}</version>
             </dependency>
 
