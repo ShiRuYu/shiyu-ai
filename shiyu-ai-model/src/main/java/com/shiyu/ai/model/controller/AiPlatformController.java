@@ -1,5 +1,6 @@
 package com.shiyu.ai.model.controller;
 
+import cn.dev33.satoken.annotation.SaCheckPermission;
 import com.shiyu.ai.model.service.AiPlatformService;
 import com.shiyu.ai.model.vo.AiPlatformVO;
 import com.shiyu.ai.dal.model.bo.AiPlatformBO;
@@ -22,6 +23,7 @@ import java.util.List;
  */
 @Slf4j
 @Tag(name = "Ai Platform", description = "Ai Platform")
+@SaCheckPermission("agent:platform:list")
 @RestController
 @RequestMapping("/admin/platform")
 public class AiPlatformController {
@@ -90,6 +92,7 @@ public class AiPlatformController {
     }
 
     @Operation(summary = "Create")
+    @SaCheckPermission("agent:platform:create")
     @PostMapping("/create")
     public Result<AiPlatformVO> create(@Valid @RequestBody AiPlatformBO bo) {
         try {
@@ -103,6 +106,7 @@ public class AiPlatformController {
     }
 
     @Operation(summary = "Update")
+    @SaCheckPermission("agent:platform:edit")
     @PostMapping("/update")
     public Result<AiPlatformVO> update(@RequestParam Long id, @Valid @RequestBody AiPlatformBO bo) {
         try {
@@ -117,6 +121,7 @@ public class AiPlatformController {
     }
 
     @Operation(summary = "Delete")
+    @SaCheckPermission("agent:platform:delete")
     @PostMapping("/delete")
     public Result<Void> delete(@RequestParam Long id) {
         try {
@@ -130,6 +135,7 @@ public class AiPlatformController {
     }
 
     @Operation(summary = "Set Default")
+    @SaCheckPermission("agent:platform:set-default")
     @PostMapping("/set-default")
     public Result<AiPlatformVO> setDefault(@RequestParam Long id) {
         try {
@@ -143,6 +149,7 @@ public class AiPlatformController {
     }
 
     @Operation(summary = "Reload")
+    @SaCheckPermission("agent:platform:edit")
     @PostMapping("/reload")
     public Result<Void> reload() {
         try {

@@ -1,5 +1,6 @@
 package com.shiyu.ai.auth.controller;
 
+import cn.dev33.satoken.annotation.SaCheckPermission;
 import com.shiyu.ai.auth.request.RolePageRequest;
 import com.shiyu.ai.auth.request.RoleRequest;
 import com.shiyu.ai.auth.request.AssignUserRolesRequest;
@@ -35,6 +36,7 @@ public class RoleController {
     }
 
     @Operation(summary = "Get Role List")
+    @SaCheckPermission("system:role:list")
     @GetMapping("/list")
     public Result<RolePageResponse> getRoleList(@Valid RolePageRequest request) {
         log.info("获取角色列表，pageNo: {}, pageSize: {}, name: {}",
@@ -45,6 +47,7 @@ public class RoleController {
     }
 
     @Operation(summary = "Get All Roles")
+    @SaCheckPermission("system:role:list")
     @GetMapping("/all")
     public Result<List<RoleBO>> getAllRoles(@RequestParam(required = false) String status) {
         log.info("获取所有角色，status: {}", status);
@@ -52,6 +55,7 @@ public class RoleController {
     }
 
     @Operation(summary = "Get Role Detail")
+    @SaCheckPermission("system:role:list")
     @GetMapping("/detail")
     public Result<RoleVO> getRoleDetail(@RequestParam Long id) {
         log.info("查询角色详情，id: {}", id);
@@ -61,6 +65,7 @@ public class RoleController {
     }
 
     @Operation(summary = "Create Role")
+    @SaCheckPermission("system:role:create")
     @PostMapping("/create")
     public Result<Void> createRole(@Valid @RequestBody RoleRequest request) {
         log.info("新增角色");
@@ -69,6 +74,7 @@ public class RoleController {
     }
 
     @Operation(summary = "Update Role")
+    @SaCheckPermission("system:role:update")
     @PostMapping("/update")
     public Result<Void> updateRole(@RequestParam Long id, @Valid @RequestBody RoleRequest request) {
         log.info("修改角色，id: {}", id);
@@ -77,6 +83,7 @@ public class RoleController {
     }
 
     @Operation(summary = "Delete Role")
+    @SaCheckPermission("system:role:delete")
     @PostMapping("/delete")
     public Result<Void> deleteRole(@RequestParam Long id) {
         log.info("删除角色，id: {}", id);
@@ -84,6 +91,7 @@ public class RoleController {
     }
 
     @Operation(summary = "Remove User Roles")
+    @SaCheckPermission("system:role:assign")
     @PostMapping("/users/remove")
     public Result<Void> removeUserRoles(@RequestParam Long id, @Valid @RequestBody AssignUserRolesRequest request) {
         log.info("取消分配角色，id: {}, userIds: {}", id, request.getUserIds());
@@ -91,6 +99,7 @@ public class RoleController {
     }
 
     @Operation(summary = "Assign User Roles")
+    @SaCheckPermission("system:role:assign")
     @PostMapping("/users/add")
     public Result<Void> assignUserRoles(@RequestParam Long id, @Valid @RequestBody AssignUserRolesRequest request) {
         log.info("分配角色，id: {}, userIds: {}", id, request.getUserIds());

@@ -36,7 +36,7 @@ public class MenuDO extends TenantEntity {
     private String code;
 
     /**
-     * 菜单类型（MENU/BUTTON）
+     * 菜单类型（CATALOG/MENU）
      */
     private String type;
 

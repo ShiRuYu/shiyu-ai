@@ -1,5 +1,6 @@
 package com.shiyu.ai.education.controller;
 
+import cn.dev33.satoken.annotation.SaCheckPermission;
 import com.shiyu.ai.common.core.api.PageData;
 import com.shiyu.ai.common.core.api.Result;
 import com.shiyu.ai.education.dto.TextbookResponse;
@@ -16,6 +17,7 @@ import java.util.List;
 @RestController
 @RequestMapping("/textbook")
 @RequiredArgsConstructor
+@SaCheckPermission("edu:textbook:list")
 public class TextbookController {
 
     private final TextbookService textbookService;
@@ -39,11 +41,13 @@ public class TextbookController {
     }
 
     @PostMapping("/create")
+    @SaCheckPermission("edu:textbook:create")
     public Result<TextbookResponse> create(@Valid @RequestBody TextbookRequest request) {
         return Result.success(textbookService.create(request));
     }
 
     @PostMapping("/update")
+    @SaCheckPermission("edu:textbook:edit")
     public Result<Void> update(@RequestParam Long id, @Valid @RequestBody TextbookRequest request) {
         request.setId(id);
         textbookService.update(request);
@@ -51,6 +55,7 @@ public class TextbookController {
     }
 
     @PostMapping("/delete")
+    @SaCheckPermission("edu:textbook:delete")
     public Result<Void> delete(@RequestParam Long id) {
         textbookService.deleteById(id);
         return Result.success();

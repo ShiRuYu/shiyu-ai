@@ -31,9 +31,9 @@ public interface AuthService {
 
     LoginResponseVO register(String username, String password, String email);
 
-    LoginResponseVO codeLogin(String phone, String code);
+    LoginResponseVO codeLogin(String phone, String code, String captchaKey);
 
-    boolean forgetPassword(String email, String newPassword, String code);
+    boolean forgetPassword(String email, String newPassword, String code, String captchaKey);
 
     /** 设置子租户筛选器（仅在根租户下有效） */
     boolean setScopedTenant(Long userId, Long subTenantId);

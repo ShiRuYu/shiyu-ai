@@ -1,5 +1,6 @@
 package com.shiyu.ai.education.controller;
 
+import cn.dev33.satoken.annotation.SaCheckPermission;
 import com.shiyu.ai.common.core.api.Result;
 import com.shiyu.ai.education.dto.ChapterResponse;
 import com.shiyu.ai.education.service.ChapterService;
@@ -13,6 +14,7 @@ import java.util.List;
 @RestController
 @RequestMapping("/chapter")
 @RequiredArgsConstructor
+@SaCheckPermission("edu:chapter:list")
 public class ChapterController {
 
     private final ChapterService chapterService;

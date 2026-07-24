@@ -29,7 +29,7 @@ public class AuditService {
                        Object detail, String result, String errorMsg, long durationMs) {
         try {
             Long userId = LoginContextHolder.getUserId();
-            Long tenantId = LoginContextHolder.getTenantId();
+            Long tenantId = LoginContextHolder.getCurrentTenantId();
             String ip = resolveIp();
             String detailJson = detail != null ? JSONUtils.toJsonString(detail) : null;
 

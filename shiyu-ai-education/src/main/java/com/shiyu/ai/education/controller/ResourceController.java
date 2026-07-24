@@ -1,4 +1,6 @@
 package com.shiyu.ai.education.controller;
+
+import cn.dev33.satoken.annotation.SaCheckPermission;
 import com.shiyu.ai.education.dto.ResourceResponse;
 
 import com.shiyu.ai.education.dto.ResourceResponse;
@@ -19,6 +21,7 @@ import java.util.List;
 @RestController
 @RequestMapping("/resource")
 @RequiredArgsConstructor
+@SaCheckPermission("edu:resource:list")
 public class ResourceController {
 
     private final ResourceService resourceService;
@@ -46,11 +49,13 @@ public class ResourceController {
     }
 
     @PostMapping("/create")
+    @SaCheckPermission("edu:resource:upload")
     public Result<ResourceResponse> create(@Valid @RequestBody ResourceRequest request) {
         return Result.success(resourceService.create(request));
     }
 
     @PostMapping("/update")
+    @SaCheckPermission("edu:resource:upload")
     public Result<Void> update(@RequestParam Long id, @Valid @RequestBody ResourceRequest request) {
         request.setId(id);
         resourceService.update(request);
@@ -58,6 +63,7 @@ public class ResourceController {
     }
 
     @PostMapping("/delete")
+    @SaCheckPermission("edu:resource:delete")
     public Result<Void> delete(@RequestParam Long id) {
         resourceService.deleteById(id);
         return Result.success();

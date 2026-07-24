@@ -1,5 +1,6 @@
 package com.shiyu.ai.education.controller;
 
+import cn.dev33.satoken.annotation.SaCheckPermission;
 import com.shiyu.ai.common.core.api.Result;
 import com.shiyu.ai.education.dto.DailyTaskResponse;
 import com.shiyu.ai.education.dto.StudyPlanResponse;
@@ -16,6 +17,7 @@ import java.util.List;
 @RestController
 @RequestMapping("/study-plan")
 @RequiredArgsConstructor
+@SaCheckPermission("edu:plan:list")
 public class StudyPlanController {
 
     private final StudyPlanService studyPlanService;
@@ -41,11 +43,13 @@ public class StudyPlanController {
     }
 
     @PostMapping("/create")
+    @SaCheckPermission("edu:plan:list")
     public Result<StudyPlanResponse> create(@Valid @RequestBody StudyPlanRequest request) {
         return Result.success(studyPlanService.create(request));
     }
 
     @PostMapping("/update")
+    @SaCheckPermission("edu:plan:list")
     public Result<Void> update(@RequestParam Long id, @Valid @RequestBody StudyPlanRequest request) {
         request.setId(id);
         studyPlanService.update(request);
@@ -53,6 +57,7 @@ public class StudyPlanController {
     }
 
     @PostMapping("/delete")
+    @SaCheckPermission("edu:plan:list")
     public Result<Void> delete(@RequestParam Long id) {
         studyPlanService.deleteById(id);
         return Result.success();

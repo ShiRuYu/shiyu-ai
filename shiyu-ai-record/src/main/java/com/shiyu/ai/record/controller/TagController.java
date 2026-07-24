@@ -1,5 +1,6 @@
 package com.shiyu.ai.record.controller;
 
+import cn.dev33.satoken.annotation.SaCheckPermission;
 import com.shiyu.ai.record.service.TagService;
 import com.shiyu.ai.dal.record.bo.TagBO;
 import com.shiyu.ai.record.vo.TagVO;
@@ -18,6 +19,7 @@ import org.springframework.web.bind.annotation.*;
 import java.util.List;
 
 @Tag(name = "标签管理")
+@SaCheckPermission("record:tags:list")
 @RestController
 @RequestMapping("/record/tag")
 public class TagController {

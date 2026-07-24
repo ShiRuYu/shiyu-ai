@@ -24,4 +24,8 @@ public class CodeLoginRequest implements Serializable {
     @NotBlank(message = "验证码不能为空")
     @Schema(description = "短信验证码")
     private String code;
+
+    @NotBlank(message = "验证码Key不能为空")
+    @Schema(description = "验证码Key（从 /captcha 接口获取）")
+    private String captchaKey;
 }

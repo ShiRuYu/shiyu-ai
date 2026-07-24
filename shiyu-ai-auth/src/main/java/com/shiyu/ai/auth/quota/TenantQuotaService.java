@@ -79,7 +79,7 @@ public class TenantQuotaService {
     }
 
     public TenantQuotaBO getCurrentTenantQuota() {
-        Long tenantId = LoginContextHolder.getTenantId();
+        Long tenantId = LoginContextHolder.getCurrentTenantId();
         if (tenantId == null) return null;
         return getQuota(tenantId);
     }

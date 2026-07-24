@@ -65,7 +65,7 @@ public class LoginResponseVO implements Serializable {
     /**
      * 当前租户ID
      */
-    private Long tenantId;
+    private Long currentTenantId;
 
     /**
      * 当前租户名称
@@ -73,9 +73,9 @@ public class LoginResponseVO implements Serializable {
     private String tenantName;
 
     /**
-     * 当前作用域租户ID
+     * 当前租户范围内的精确筛选租户ID
      */
-    private Long scopeTenantId;
+    private Long filterTenantId;
 
     /**
      * 可用租户列表

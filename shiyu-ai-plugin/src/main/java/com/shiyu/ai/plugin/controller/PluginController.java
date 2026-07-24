@@ -1,5 +1,6 @@
 package com.shiyu.ai.plugin.controller;
 
+import cn.dev33.satoken.annotation.SaCheckPermission;
 import com.shiyu.ai.common.core.api.Result;
 import com.shiyu.ai.plugin.registry.PluginRegistry;
 import com.shiyu.ai.plugin.spi.PluginDescriptor;
@@ -30,6 +31,7 @@ public class PluginController {
     }
 
     @Operation(summary = "列出所有插件")
+    @SaCheckPermission("plugin:list")
     @GetMapping("/list")
     public Result<List<PluginInfoVO>> listPlugins() {
         List<PluginInfoVO> plugins = registry.listPlugins().stream()
@@ -48,6 +50,7 @@ public class PluginController {
     }
 
     @Operation(summary = "启动插件")
+    @SaCheckPermission("plugin:start")
     @PostMapping("/start")
     public Result<Void> startPlugin(@RequestParam String pluginId) {
         try {
@@ -59,6 +62,7 @@ public class PluginController {
     }
 
     @Operation(summary = "停止插件")
+    @SaCheckPermission("plugin:stop")
     @PostMapping("/stop")
     public Result<Void> stopPlugin(@RequestParam String pluginId) {
         try {
@@ -70,6 +74,7 @@ public class PluginController {
     }
 
     @Operation(summary = "卸载插件")
+    @SaCheckPermission("plugin:uninstall")
     @PostMapping("/uninstall")
     public Result<Void> uninstallPlugin(@RequestParam String pluginId) {
         try {
@@ -81,6 +86,7 @@ public class PluginController {
     }
 
     @Operation(summary = "重新扫描插件目录")
+    @SaCheckPermission("plugin:scan")
     @PostMapping("/scan")
     public Result<Void> rescan() {
         try {

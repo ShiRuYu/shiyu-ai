@@ -1,5 +1,6 @@
 package com.shiyu.ai.auth.controller;
 
+import cn.dev33.satoken.annotation.SaCheckPermission;
 import com.shiyu.ai.auth.request.DictPageRequest;
 import com.shiyu.ai.dal.common.bo.DictBO;
 import com.shiyu.ai.auth.vo.DictVO;
@@ -34,6 +35,7 @@ public class DictController {
     }
 
     @Operation(summary = "Get Dict List")
+    @SaCheckPermission("system:dict:list")
     @GetMapping("/list")
     public Result<PageData<DictVO>> getDictList(@Valid DictPageRequest request) {
         log.info("获取字典列表，pageNo: {}, pageSize: {}", request.getPageNo(), request.getPageSize());
@@ -43,6 +45,7 @@ public class DictController {
     }
 
     @Operation(summary = "Get Dict By Type")
+    @SaCheckPermission("system:dict:list")
     @GetMapping("/type")
     public Result<List<DictVO>> getDictByType(@RequestParam String dictType) {
         log.info("根据字典类型查询字典列表，dictType: {}", dictType);
@@ -51,6 +54,7 @@ public class DictController {
     }
 
     @Operation(summary = "Create Dict")
+    @SaCheckPermission("system:dict:create")
     @PostMapping("/create")
     public Result<DictVO> createDict(@Valid @RequestBody DictBO dictBO) {
         log.info("新增字典");
@@ -64,6 +68,7 @@ public class DictController {
     }
 
     @Operation(summary = "Update Dict")
+    @SaCheckPermission("system:dict:update")
     @PostMapping("/update")
     public Result<DictVO> updateDict(@RequestParam Long id, @Valid @RequestBody DictBO dictBO) {
         log.info("修改字典，id: {}", id);
@@ -78,6 +83,7 @@ public class DictController {
     }
 
     @Operation(summary = "Delete Dict")
+    @SaCheckPermission("system:dict:delete")
     @PostMapping("/delete")
     public Result<Void> deleteDict(@RequestParam Long id) {
         log.info("删除字典，id: {}", id);
@@ -91,6 +97,7 @@ public class DictController {
     }
 
     @Operation(summary = "Delete Dicts")
+    @SaCheckPermission("system:dict:delete")
     @PostMapping("/batch-delete")
     public Result<Void> deleteDicts(@RequestBody List<Long> ids) {
         log.info("批量删除字典，ids: {}", ids);

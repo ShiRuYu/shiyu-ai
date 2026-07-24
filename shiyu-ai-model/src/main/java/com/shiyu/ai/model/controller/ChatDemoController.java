@@ -1,5 +1,6 @@
 package com.shiyu.ai.model.controller;
 
+import cn.dev33.satoken.annotation.SaCheckPermission;
 import com.shiyu.ai.model.chat.ChatEngine;
 import com.shiyu.ai.model.chat.ChatRequest;
 import com.shiyu.ai.model.chat.ChatResponse;
@@ -24,6 +25,7 @@ import java.util.Map;
 
 @Slf4j
 @Tag(name = "Chat Demo", description = "Chat Demo")
+@SaCheckPermission("agent:chat:config")
 @RestController
 @RequestMapping("/chat")
 public class ChatDemoController {

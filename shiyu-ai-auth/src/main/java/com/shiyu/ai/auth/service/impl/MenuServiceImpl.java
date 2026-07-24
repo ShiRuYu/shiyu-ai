@@ -2,6 +2,7 @@ package com.shiyu.ai.auth.service.impl;
 
 import com.github.benmanes.caffeine.cache.Cache;
 import com.github.benmanes.caffeine.cache.Caffeine;
+import com.shiyu.ai.common.core.domain.LoginContextHolder;
 import com.shiyu.ai.dal.auth.repository.MenuRepository;
 import com.shiyu.ai.auth.service.MenuService;
 import com.shiyu.ai.dal.auth.bo.MenuBO;
@@ -25,10 +26,10 @@ public class MenuServiceImpl implements MenuService {
     private final MenuRepository menuRepository;
 
     /**
-     * 路由菜单缓存：userId → 菜单树
+     * 路由菜单缓存：userId:currentTenantId:filterTenantId → 菜单树
      * 菜单数据由管理员维护，变更频率极低，适合 5 分钟本地缓存
      */
-    private final Cache<Long, List<MenuBO>> routeMenuCache;
+    private final Cache<String, List<MenuBO>> routeMenuCache;
 
     public MenuServiceImpl(MenuRepository menuRepository) {
         this.menuRepository = menuRepository;
@@ -151,9 +152,8 @@ public class MenuServiceImpl implements MenuService {
 
     @Override
     public List<MenuBO> getButtonsByParentId(Long parentId) {
-        log.info("获取按钮权限 by parentId: {}", parentId);
-        // 直接 SQL 查询，替代原 getAllTree() 全量加载后再内存过滤
-        return menuRepository.selectByParentIdAndType(parentId, "BUTTON");
+        log.info("BUTTON 菜单已废弃，返回空列表，parentId: {}", parentId);
+        return new ArrayList<>();
     }
 
     @Override
@@ -196,17 +196,18 @@ public class MenuServiceImpl implements MenuService {
 
     @Override
     public List<MenuBO> getRouteMenusByUserId(Long userId) {
-        log.info("获取用户路由菜单（排除 BUTTON），userId: {}", userId);
+        log.info("获取用户路由菜单，userId: {}", userId);
+        String cacheKey = buildRouteMenuCacheKey(userId);
 
         // 1. 查缓存
-        List<MenuBO> cached = routeMenuCache.getIfPresent(userId);
+        List<MenuBO> cached = routeMenuCache.getIfPresent(cacheKey);
         if (cached != null) {
-            log.debug("路由菜单缓存命中，userId: {}", userId);
+            log.debug("路由菜单缓存命中，cacheKey: {}", cacheKey);
             return cached;
         }
 
         // 2. 单 SQL JOIN 查询，替代原来的 查角色→遍历查菜单→全表查→内存过滤 流程
-        List<MenuBO> userMenus = menuRepository.selectMenusByUserId(userId, "BUTTON");
+        List<MenuBO> userMenus = menuRepository.selectMenusByUserId(userId, null);
         if (userMenus.isEmpty()) {
             log.warn("用户 {} 没有分配菜单", userId);
             return new ArrayList<>();
@@ -216,9 +217,13 @@ public class MenuServiceImpl implements MenuService {
         List<MenuBO> tree = buildMenuTree(userMenus);
 
         // 4. 写入缓存
-        routeMenuCache.put(userId, tree);
-        log.info("路由菜单已缓存，userId: {}", userId);
+        routeMenuCache.put(cacheKey, tree);
+        log.info("路由菜单已缓存，cacheKey: {}", cacheKey);
         return tree;
+    }
+
+    private String buildRouteMenuCacheKey(Long userId) {
+        return userId + ":" + LoginContextHolder.getCurrentTenantId() + ":" + LoginContextHolder.getFilterTenantId();
     }
 
     /**
@@ -226,7 +231,7 @@ public class MenuServiceImpl implements MenuService {
      */
     public void evictRouteMenuCache(Long userId) {
         if (userId != null) {
-            routeMenuCache.invalidate(userId);
+            routeMenuCache.asMap().keySet().removeIf(key -> key.startsWith(userId + ":"));
             log.debug("路由菜单缓存已清除，userId: {}", userId);
         }
     }
@@ -239,5 +244,4 @@ public class MenuServiceImpl implements MenuService {
         log.info("全部路由菜单缓存已清除（菜单结构变更）");
     }
 }
-
 

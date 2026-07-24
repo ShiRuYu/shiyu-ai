@@ -8,7 +8,7 @@ CREATE TABLE IF NOT EXISTS `tenant_quota` (
     `max_token_per_day` BIGINT DEFAULT 1000000,
     `max_storage_mb` BIGINT DEFAULT 1024,
     `max_user_count` BIGINT DEFAULT 100,
-    `status` TINYINT DEFAULT 0 COMMENT '0正常 1停用',
+    `status` TINYINT DEFAULT 1 COMMENT '1正常 0停用',
     `create_time` TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     `update_time` TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
 );

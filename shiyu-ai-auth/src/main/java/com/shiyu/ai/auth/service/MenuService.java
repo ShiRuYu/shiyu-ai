@@ -109,7 +109,7 @@ public interface MenuService {
      * 根据用户 ID 和类型获取菜单列表
      *
      * @param userId 用户 ID
-     * @param type 菜单类型（MENU-菜单，CATALOG-目录，BUTTON-按钮）
+     * @param type 菜单类型（MENU-菜单，CATALOG-目录）
      * @return 菜单列表
      */
     /**
@@ -168,7 +168,7 @@ public interface MenuService {
     List<MenuBO> getChildrenByParentId(Long parentId);
 
     /**
-     * 获取用户路由菜单（CATALOG + MENU，排除 BUTTON）
+     * 获取用户路由菜单（CATALOG + MENU）
      * 用于前端动态路由生成
      *
      * @param userId 用户 ID
@@ -179,4 +179,10 @@ public interface MenuService {
      * @return 处理结果
      */
     List<MenuBO> getRouteMenusByUserId(Long userId);
+
+    /** 清除指定用户路由菜单缓存 */
+    void evictRouteMenuCache(Long userId);
+
+    /** 清除全部路由菜单缓存 */
+    void evictAllRouteMenuCache();
 }

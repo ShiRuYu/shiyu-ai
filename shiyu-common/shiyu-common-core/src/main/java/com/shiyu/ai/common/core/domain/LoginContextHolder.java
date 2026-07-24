@@ -46,34 +46,34 @@ public final class LoginContextHolder {
         return getLoginUser() != null;
     }
 
-    /** @deprecated 改用 getScopeTenantId() */
+    /** @deprecated 改用 getCurrentTenantId() */
     @Deprecated
     public static Long getTenantId() {
-        return getScopeTenantId();
+        return getCurrentTenantId();
     }
 
-    /** 当前作用域租户 ID */
-    public static Long getScopeTenantId() {
+    /** 当前租户 ID */
+    public static Long getCurrentTenantId() {
         LoginUser user = getLoginUser();
-        return user != null ? user.getScopeTenantId() : null;
+        return user != null ? user.getCurrentTenantId() : null;
     }
 
-    /** 可见租户 ID 列表（scope 自身 + 所有后代） */
+    /** 可见租户 ID 列表（当前租户自身 + 所有后代） */
     public static List<Long> getVisibleTenantIds() {
         LoginUser user = getLoginUser();
         return user != null ? user.getVisibleTenantIds() : null;
     }
 
-    /** 子租户筛选器 */
-    public static Long getScopedTenantId() {
+    /** 租户筛选器 */
+    public static Long getFilterTenantId() {
         LoginUser user = getLoginUser();
-        return user != null ? user.getScopedTenantId() : null;
+        return user != null ? user.getFilterTenantId() : null;
     }
 
-    /** @deprecated 改用 getScopedTenantId() */
+    /** @deprecated 改用 getFilterTenantId() */
     @Deprecated
     public static Long getCurrentWorkspaceId() {
-        return getScopedTenantId();
+        return getFilterTenantId();
     }
 
     /** @deprecated 无需使用 */

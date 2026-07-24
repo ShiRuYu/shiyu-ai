@@ -1,5 +1,6 @@
 package com.shiyu.ai.tool.mcp;
 
+import cn.dev33.satoken.annotation.SaCheckPermission;
 import com.shiyu.ai.common.core.api.Result;
 import com.shiyu.ai.tool.ToolService;
 import io.swagger.v3.oas.annotations.Operation;
@@ -31,6 +32,7 @@ public class McpToolController {
     }
 
     @Operation(summary = "列出所有工具")
+    @SaCheckPermission("tool:mcp:list")
     @GetMapping("/tools")
     public Result<List<McpToolDescriptor>> listTools(
             @RequestParam(required = false) String category,
@@ -50,6 +52,7 @@ public class McpToolController {
     }
 
     @Operation(summary = "获取工具详情")
+    @SaCheckPermission("tool:mcp:detail")
     @GetMapping("/tools/detail")
     public Result<McpToolDescriptor> getTool(@RequestParam String name) {
         McpToolDescriptor tool = registry.getTool(name);
@@ -60,6 +63,7 @@ public class McpToolController {
     }
 
     @Operation(summary = "执行工具")
+    @SaCheckPermission("tool:mcp:execute")
     @PostMapping("/tools/execute")
     public Result<Object> executeTool(
             @RequestParam String name,
@@ -76,12 +80,14 @@ public class McpToolController {
     }
 
     @Operation(summary = "获取工具分类")
+    @SaCheckPermission("tool:mcp:categories")
     @GetMapping("/categories")
     public Result<Set<String>> getCategories() {
         return Result.success(registry.getCategories());
     }
 
     @Operation(summary = "获取工具统计")
+    @SaCheckPermission("tool:mcp:stats")
     @GetMapping("/stats")
     public Result<Map<String, Object>> getStats() {
         return Result.success(Map.of(

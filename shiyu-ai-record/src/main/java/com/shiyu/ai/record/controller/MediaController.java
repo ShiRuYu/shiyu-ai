@@ -1,5 +1,6 @@
 package com.shiyu.ai.record.controller;
 
+import cn.dev33.satoken.annotation.SaCheckPermission;
 import com.shiyu.ai.record.service.MediaService;
 import com.shiyu.ai.dal.record.bo.MediaBO;
 import com.shiyu.ai.record.vo.MediaVO;
@@ -18,6 +19,7 @@ import org.springframework.web.bind.annotation.*;
 import java.util.List;
 
 @Tag(name = "附件管理")
+@SaCheckPermission("record:media:list")
 @RestController
 @RequestMapping("/record/media")
 public class MediaController {
@@ -40,6 +42,7 @@ public class MediaController {
     }
 
     @Operation(summary = "创建附件")
+    @SaCheckPermission("record:media:upload")
     @PostMapping("/create")
     public Result<MediaVO> create(@Valid @RequestBody MediaRequest request) {
         MediaBO bo = new MediaBO();
@@ -50,6 +53,7 @@ public class MediaController {
     }
 
     @Operation(summary = "更新附件")
+    @SaCheckPermission("record:media:upload")
     @PostMapping("/update")
     public Result<Boolean> update(@RequestParam Long id, @Valid @RequestBody MediaRequest request) {
         MediaBO bo = mediaService.getById(id);
@@ -60,6 +64,7 @@ public class MediaController {
     }
 
     @Operation(summary = "删除附件")
+    @SaCheckPermission("record:media:upload")
     @PostMapping("/delete")
     public Result<Boolean> delete(@RequestParam Long id) {
         return Result.success(mediaService.delete(id));

@@ -1,5 +1,6 @@
 package com.shiyu.ai.auth.controller;
 
+import cn.dev33.satoken.annotation.SaCheckPermission;
 import com.shiyu.ai.auth.request.MenuRequest;
 import com.shiyu.ai.dal.auth.bo.MenuBO;
 import com.shiyu.ai.auth.vo.RouteMenuVO;
@@ -46,18 +47,21 @@ public class MenuController {
     }
 
     @Operation(summary = "Get System Menu List")
+    @SaCheckPermission("system:menu:list")
     @GetMapping("/list")
     public Result<List<RouteMenuVO>> getSystemMenuList() {
         return Result.success(convertToRouteMenuVO(menuService.getAllTree()));
     }
 
     @Operation(summary = "Get Menu Roots")
+    @SaCheckPermission("system:menu:list")
     @GetMapping("/roots")
     public Result<List<RouteMenuVO>> getMenuRoots() {
         return Result.success(convertToRouteMenuVO(menuService.getMenuRoots()));
     }
 
     @Operation(summary = "Get Menu Children")
+    @SaCheckPermission("system:menu:list")
     @GetMapping("/children")
     public Result<List<RouteMenuVO>> getMenuChildren(@RequestParam Long parentId) {
         return Result.success(convertToRouteMenuVO(menuService.getChildrenByParentId(parentId)));
@@ -77,10 +81,10 @@ public class MenuController {
             String type = menuBO.getType();
             if ("MENU".equals(type)) vo.setType("menu");
             else if ("CATALOG".equals(type)) vo.setType("catalog");
-            else if ("BUTTON".equals(type)) vo.setType("button");
             else vo.setType(type != null ? type.toLowerCase() : "menu");
             vo.setStatus(menuBO.getStatus());
-            vo.setAuthCode(menuBO.getCode());
+            // 菜单只负责展示，后端权限统一由 auth_code 表提供。
+            vo.setAuthCode(null);
             vo.setIcon(menuBO.getIcon());
             RouteMenuVO.MetaVO meta = new RouteMenuVO.MetaVO();
             meta.setTitle(menuBO.getName());
@@ -99,48 +103,56 @@ public class MenuController {
     }
 
     @Operation(summary = "Get Menu Permissions Tree")
+    @SaCheckPermission("system:menu:list")
     @GetMapping("/permissions")
     public Result<List<RouteMenuVO>> getMenuPermissionsTree() {
         return Result.success(convertToRouteMenuVO(menuService.getMenuPermissionsTree()));
     }
 
     @Operation(summary = "Get All Tree")
+    @SaCheckPermission("system:menu:list")
     @GetMapping("/tree")
     public Result<List<RouteMenuVO>> getAllTree() {
         return Result.success(convertToRouteMenuVO(menuService.getAllTree()));
     }
 
     @Operation(summary = "Delete Menu")
+    @SaCheckPermission("system:menu:delete")
     @PostMapping("/delete")
     public Result<Void> deleteMenu(@RequestParam Long id) {
         return menuService.deleteMenu(id) ? Result.success() : Result.fail("delete fail");
     }
 
     @Operation(summary = "Create Menu")
+    @SaCheckPermission("system:menu:create")
     @PostMapping("/create")
     public Result<Void> createMenu(@Valid @RequestBody MenuRequest request) {
         return menuService.createMenu(MapstructUtils.convert(request, MenuBO.class)) ? Result.success() : Result.fail("create fail");
     }
 
     @Operation(summary = "Update Menu")
+    @SaCheckPermission("system:menu:update")
     @PostMapping("/update")
     public Result<Void> updateMenu(@RequestParam Long id, @Valid @RequestBody MenuRequest request) {
         return menuService.updateMenu(id, MapstructUtils.convert(request, MenuBO.class)) ? Result.success() : Result.fail("update fail");
     }
 
     @Operation(summary = "Is Menu Name Exists")
+    @SaCheckPermission("system:menu:list")
     @GetMapping("/name-exists")
     public Result<Boolean> isMenuNameExists(@RequestParam String name, @RequestParam(required = false) Long id) {
         return Result.success(menuService.isMenuNameExists(name, id));
     }
 
     @Operation(summary = "Is Menu Path Exists")
+    @SaCheckPermission("system:menu:list")
     @GetMapping("/path-exists")
     public Result<Boolean> isMenuPathExists(@RequestParam String path, @RequestParam(required = false) Long id) {
         return Result.success(menuService.isMenuPathExists(path, id));
     }
 
     @Operation(summary = "Get Buttons By Parent Id")
+    @SaCheckPermission("system:menu:list")
     @GetMapping("/buttons")
     public Result<List<RouteMenuVO>> getButtonsByParentId(@RequestParam Long parentId) {
         return Result.success(convertToRouteMenuVO(menuService.getButtonsByParentId(parentId)));

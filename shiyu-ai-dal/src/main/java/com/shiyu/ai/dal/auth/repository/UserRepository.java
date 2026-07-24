@@ -148,4 +148,20 @@ public class UserRepository {
         return MapstructUtils.convert(userDO, UserBO.class);
     }
 
+    /**
+     * 校验用户是否属于当前租户作用域。
+     * 该校验用于角色分配等写操作，不能只依赖前端传入的 userId。
+     */
+    public boolean isUserInScope(Long userId, Long currentTenantId) {
+        if (userId == null || currentTenantId == null) {
+            return false;
+        }
+        QueryWrapper qw = QueryWrapper.create()
+                .where(UserDO::getId).eq(userId)
+                .and(UserDO::getTenantId).eq(currentTenantId)
+                .and(UserDO::getStatus).eq(1)
+                .and(UserDO::getDelFlag).eq(0);
+        return userMapper.selectCountByQuery(qw) > 0;
+    }
+
 }

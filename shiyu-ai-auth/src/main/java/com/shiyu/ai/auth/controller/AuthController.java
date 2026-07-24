@@ -99,7 +99,8 @@ public class AuthController {
     public Result<LoginResponseVO> codeLogin(@Valid @RequestBody CodeLoginRequest request) {
         log.info("收到验证码登录请求");
         try {
-            LoginResponseVO response = authService.codeLogin(request.getPhone(), request.getCode());
+            LoginResponseVO response = authService.codeLogin(
+                    request.getPhone(), request.getCode(), request.getCaptchaKey());
             return Result.success(response);
         } catch (Exception e) {
             return Result.fail(e.getMessage());
@@ -116,7 +117,8 @@ public class AuthController {
         log.info("收到忘记密码请求: email={}", request.getEmail());
         try {
             boolean success = authService.forgetPassword(
-                request.getEmail(), request.getNewPassword(), request.getCode());
+                    request.getEmail(), request.getNewPassword(),
+                    request.getCode(), request.getCaptchaKey());
             return Result.success(success);
         } catch (IllegalArgumentException e) {
             return Result.fail(e.getMessage());
@@ -208,6 +210,8 @@ public class AuthController {
                     if (extMap != null) {
                         Object tid = extMap.get("currentTenantId");
                         if (tid instanceof Number) userVO.setCurrentTenantId(((Number) tid).longValue());
+                        Object fid = extMap.get("filterTenantId");
+                        if (fid instanceof Number) userVO.setFilterTenantId(((Number) fid).longValue());
                     }
                 }
             } catch (Exception e) {

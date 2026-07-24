@@ -1,5 +1,6 @@
 package com.shiyu.ai.knowledge.controller;
 
+import cn.dev33.satoken.annotation.SaCheckPermission;
 import com.shiyu.ai.common.core.api.Result;
 import com.shiyu.ai.knowledge.graph.KnowledgeGraph;
 import com.shiyu.ai.knowledge.search.KnowledgeSearchService;
@@ -16,6 +17,7 @@ import java.util.List;
 @RequestMapping("/knowledge/knowledge")
 @RequiredArgsConstructor
 @Tag(name = "知识库管理（运维）")
+@SaCheckPermission("knowledge:index:rebuild")
 public class AdminController {
 
     private final KnowledgeGraph knowledgeGraph;

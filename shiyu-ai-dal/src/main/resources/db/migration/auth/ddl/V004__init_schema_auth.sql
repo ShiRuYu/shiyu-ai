@@ -83,7 +83,7 @@ CREATE TABLE IF NOT EXISTS `menu` (
     `id` BIGINT NOT NULL AUTO_INCREMENT COMMENT '菜单 ID',
     `name` VARCHAR(64) NOT NULL COMMENT '菜单名称',
     `code` VARCHAR(64) NOT NULL COMMENT '菜单编码',
-    `type` VARCHAR(20) NOT NULL COMMENT '菜单类型（MENU/BUTTON）',
+    `type` VARCHAR(20) NOT NULL COMMENT '菜单类型（CATALOG/MENU）',
     `parent_id` BIGINT COMMENT '父菜单 ID',
     `tenant_id` BIGINT NOT NULL COMMENT '租户ID',
     `scoped_tenant_id` BIGINT COMMENT '作用域租户ID',
@@ -155,22 +155,37 @@ CREATE TABLE IF NOT EXISTS `auth_code` (
     `id` BIGINT NOT NULL AUTO_INCREMENT COMMENT '权限码 ID',
     `code` VARCHAR(64) NOT NULL COMMENT '权限编码',
     `name` VARCHAR(128) COMMENT '权限名称',
-    `role_id` BIGINT NOT NULL COMMENT '角色 ID',
-    `tenant_id` BIGINT NOT NULL COMMENT '租户ID',
-    `scoped_tenant_id` BIGINT COMMENT '作用域租户ID',
     `status` TINYINT DEFAULT 1 COMMENT '状态（1正常 0停用）',
     `del_flag` TINYINT DEFAULT 0 COMMENT '删除标志（0：正常 1：已删除）',
     `create_by` VARCHAR(64) COMMENT '创建者',
     `create_time` TIMESTAMP DEFAULT CURRENT_TIMESTAMP COMMENT '创建时间',
     `update_by` VARCHAR(64) COMMENT '更新者',
     `update_time` TIMESTAMP DEFAULT CURRENT_TIMESTAMP COMMENT '更新时间',
-    PRIMARY KEY (`id`)
+    PRIMARY KEY (`id`),
+    UNIQUE KEY `uk_auth_code_code` (`code`)
 );
-
-CREATE INDEX IF NOT EXISTS `idx_role_code` ON `auth_code` (`role_id`, `code`);
 
 CREATE INDEX IF NOT EXISTS `idx_auth_code` ON `auth_code` (`code`);
 
-COMMENT ON TABLE `auth_code` IS '权限码表';
+COMMENT ON TABLE `auth_code` IS '权限定义表';
 
+
+CREATE TABLE IF NOT EXISTS `role_scope_auth_code` (
+    `role_id` BIGINT NOT NULL COMMENT '角色ID',
+    `auth_code_id` BIGINT NOT NULL COMMENT '权限定义ID',
+    `scoped_tenant_id` BIGINT NOT NULL COMMENT '作用域租户ID',
+    `tenant_id` BIGINT NOT NULL COMMENT '租户ID',
+    `status` TINYINT DEFAULT 1 COMMENT '状态（1正常 0停用）',
+    `del_flag` TINYINT DEFAULT 0 COMMENT '删除标志（0：正常 1：已删除）',
+    `create_by` VARCHAR(64) COMMENT '创建者',
+    `create_time` TIMESTAMP DEFAULT CURRENT_TIMESTAMP COMMENT '创建时间',
+    `update_by` VARCHAR(64) COMMENT '更新者',
+    `update_time` TIMESTAMP DEFAULT CURRENT_TIMESTAMP COMMENT '更新时间',
+    PRIMARY KEY (`role_id`, `auth_code_id`, `scoped_tenant_id`)
+);
+
+CREATE INDEX IF NOT EXISTS `idx_rsac_auth_code` ON `role_scope_auth_code` (`auth_code_id`);
+CREATE INDEX IF NOT EXISTS `idx_rsac_scope` ON `role_scope_auth_code` (`scoped_tenant_id`, `tenant_id`);
+
+COMMENT ON TABLE `role_scope_auth_code` IS '角色作用域权限授权表';
 

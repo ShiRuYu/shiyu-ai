@@ -1,7 +1,9 @@
 package com.shiyu.ai.auth.service.impl;
 
 import com.shiyu.ai.dal.auth.repository.RoleRepository;
+import com.shiyu.ai.dal.auth.repository.UserRepository;
 import com.shiyu.ai.auth.service.RoleService;
+import com.shiyu.ai.auth.service.MenuService;
 import com.shiyu.ai.dal.auth.dataobject.UserScopeRoleDO;
 import com.shiyu.ai.dal.auth.repository.UserScopeRoleRepository;
 import com.shiyu.ai.dal.auth.bo.RoleBO;
@@ -25,10 +27,17 @@ public class RoleServiceImpl implements RoleService {
 
     private final RoleRepository roleRepository;
     private final UserScopeRoleRepository userWorkspaceRoleRepository;
+    private final UserRepository userRepository;
+    private final MenuService menuService;
 
-    public RoleServiceImpl(RoleRepository roleRepository, UserScopeRoleRepository userWorkspaceRoleRepository) {
+    public RoleServiceImpl(RoleRepository roleRepository,
+                           UserScopeRoleRepository userWorkspaceRoleRepository,
+                           UserRepository userRepository,
+                           MenuService menuService) {
         this.roleRepository = roleRepository;
         this.userWorkspaceRoleRepository = userWorkspaceRoleRepository;
+        this.userRepository = userRepository;
+        this.menuService = menuService;
     }
 
     @Override
@@ -91,6 +100,7 @@ public class RoleServiceImpl implements RoleService {
             roleRepository.insertRoleMenus(id, roleBO.getPermissions());
         }
         
+        if (success) menuService.evictAllRouteMenuCache();
         return success;
     }
 
@@ -103,28 +113,41 @@ public class RoleServiceImpl implements RoleService {
         roleRepository.deleteRoleMenus(id);
         
         // 再删除角色
-        return roleRepository.deleteById(id);
+        boolean success = roleRepository.deleteById(id);
+        if (success) menuService.evictAllRouteMenuCache();
+        return success;
     }
 
     @Override
     @Transactional(rollbackFor = Exception.class)
     public boolean removeUserRoles(Long roleId, List<Long> userIds) {
-        Long scopeTenantId = LoginContextHolder.getScopeTenantId();
-        log.info("取消分配角色，roleId: {}, userIds: {}, scopeTenantId: {}", roleId, userIds, scopeTenantId);
+        Long currentTenantId = LoginContextHolder.getCurrentTenantId();
+        log.info("取消分配角色，roleId: {}, userIds: {}, currentTenantId: {}", roleId, userIds, currentTenantId);
         if (userIds == null || userIds.isEmpty()) {
             return true;
         }
-        if (scopeTenantId == null) {
+        if (currentTenantId == null) {
             log.warn("当前没有作用域租户，跳过角色移除");
             return false;
         }
+        if (!roleRepository.isRoleInScope(roleId, currentTenantId)) {
+            log.warn("角色不属于当前租户作用域或已停用，roleId={}, currentTenantId={}",
+                    roleId, currentTenantId);
+            return false;
+        }
         for (Long userId : userIds) {
+            if (!userRepository.isUserInScope(userId, currentTenantId)) {
+                log.warn("目标用户不属于当前租户作用域，userId={}, currentTenantId={}",
+                        userId, currentTenantId);
+                return false;
+            }
             com.mybatisflex.core.query.QueryWrapper qw = new com.mybatisflex.core.query.QueryWrapper();
             qw.eq(UserScopeRoleDO::getUserId, userId)
                .eq(UserScopeRoleDO::getRoleId, roleId)
-               .eq(UserScopeRoleDO::getScopedTenantId, scopeTenantId)
-               .eq(UserScopeRoleDO::getTenantId, scopeTenantId);
+               .eq(UserScopeRoleDO::getScopedTenantId, currentTenantId)
+               .eq(UserScopeRoleDO::getTenantId, currentTenantId);
             userWorkspaceRoleRepository.deleteByQuery(qw);
+            menuService.evictRouteMenuCache(userId);
         }
         return true;
     }
@@ -132,22 +155,33 @@ public class RoleServiceImpl implements RoleService {
     @Override
     @Transactional(rollbackFor = Exception.class)
     public boolean assignUserRoles(Long roleId, List<Long> userIds) {
-        Long scopeTenantId = LoginContextHolder.getScopeTenantId();
-        log.info("分配角色，roleId: {}, userIds: {}, scopeTenantId: {}", roleId, userIds, scopeTenantId);
+        Long currentTenantId = LoginContextHolder.getCurrentTenantId();
+        log.info("分配角色，roleId: {}, userIds: {}, currentTenantId: {}", roleId, userIds, currentTenantId);
         if (userIds == null || userIds.isEmpty()) {
             return true;
         }
-        if (scopeTenantId == null) {
+        if (currentTenantId == null) {
             log.warn("当前没有作用域租户，跳过角色分配");
             return false;
         }
+        if (!roleRepository.isRoleInScope(roleId, currentTenantId)) {
+            log.warn("角色不属于当前租户作用域或已停用，roleId={}, currentTenantId={}",
+                    roleId, currentTenantId);
+            return false;
+        }
         for (Long userId : userIds) {
+            if (!userRepository.isUserInScope(userId, currentTenantId)) {
+                log.warn("目标用户不属于当前租户作用域，userId={}, currentTenantId={}",
+                        userId, currentTenantId);
+                return false;
+            }
             UserScopeRoleDO uwr = new UserScopeRoleDO();
             uwr.setUserId(userId);
-            uwr.setScopedTenantId(scopeTenantId);
+            uwr.setScopedTenantId(currentTenantId);
             uwr.setRoleId(roleId);
-            uwr.setTenantId(scopeTenantId);
+            uwr.setTenantId(currentTenantId);
             userWorkspaceRoleRepository.insert(uwr);
+            menuService.evictRouteMenuCache(userId);
         }
         return true;
     }
@@ -164,7 +198,7 @@ public class RoleServiceImpl implements RoleService {
         if (roleBO.getPermissions() != null && !roleBO.getPermissions().isEmpty()) {
             roleRepository.insertRoleMenus(savedRole.getId(), roleBO.getPermissions());
         }
-        
+        menuService.evictAllRouteMenuCache();
         return true;
     }
 }

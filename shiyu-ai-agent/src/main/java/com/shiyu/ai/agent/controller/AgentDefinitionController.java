@@ -1,5 +1,6 @@
 package com.shiyu.ai.agent.controller;
 
+import cn.dev33.satoken.annotation.SaCheckPermission;
 import com.shiyu.ai.agent.AgentDefinition;
 import com.shiyu.ai.agent.service.AgentAdminService;
 import com.shiyu.ai.agent.service.AgentService;
@@ -31,6 +32,7 @@ import java.util.Map;
  */
 @Slf4j
 @Tag(name = "Agent Definition", description = "Agent Definition")
+@SaCheckPermission("agent:admin:list")
 @RestController
 @RequestMapping("/agent/definition")
 public class AgentDefinitionController {
@@ -66,6 +68,7 @@ public class AgentDefinitionController {
     }
 
     @Operation(summary = "Create")
+    @SaCheckPermission("agent:admin:create")
     @PostMapping("/create")
     public Result<AgentVO> create(@Valid @RequestBody AgentRequest request) {
         try {
@@ -78,6 +81,7 @@ public class AgentDefinitionController {
     }
 
     @Operation(summary = "Update")
+    @SaCheckPermission("agent:admin:edit")
     @PostMapping("/update")
     public Result<AgentVO> update(@RequestParam Long id, @Valid @RequestBody AgentRequest request) {
         try {
@@ -90,6 +94,7 @@ public class AgentDefinitionController {
     }
 
     @Operation(summary = "Delete")
+    @SaCheckPermission("agent:admin:delete")
     @PostMapping("/delete")
     public Result<Void> delete(@RequestParam Long id) {
         try {
@@ -102,6 +107,7 @@ public class AgentDefinitionController {
     }
 
     @Operation(summary = "Update Status")
+    @SaCheckPermission("agent:admin:edit")
     @PostMapping("/status")
     public Result<Void> updateStatus(@RequestParam Long id, @RequestParam Integer status) {
         AgentRequest request = new AgentRequest();
@@ -124,6 +130,7 @@ public class AgentDefinitionController {
     // ======================== 来自 AgentController（非执行部分） ========================
 
     @Operation(summary = "Register Agent")
+    @SaCheckPermission("agent:admin:create")
     @PostMapping("/register")
     public Result<Map<String, Object>> registerAgent(@RequestBody RegisterAgentRequest request) {
         log.info("收到 Agent 注册请求：agentId={}, name={}", request.getAgentId(), request.getName());
@@ -167,6 +174,7 @@ public class AgentDefinitionController {
     }
 
     @Operation(summary = "Delete Agent")
+    @SaCheckPermission("agent:admin:delete")
     @PostMapping("/delete/by-agent-id")
     public Result<Void> deleteAgent(@RequestParam String agentId) {
         log.info("收到 Agent 删除请求：agentId={}", agentId);

@@ -1,5 +1,6 @@
 package com.shiyu.ai.education.controller;
 
+import cn.dev33.satoken.annotation.SaCheckPermission;
 import com.shiyu.ai.common.core.api.Result;
 import com.shiyu.ai.education.request.StudyRecordRequest;
 import com.shiyu.ai.education.dto.StudyRecordResponse;
@@ -15,6 +16,7 @@ import java.util.List;
 @RestController
 @RequestMapping("/analytics")
 @RequiredArgsConstructor
+@SaCheckPermission("edu:analytics")
 public class AnalyticsController {
 
     private final AnalyticsService analyticsService;

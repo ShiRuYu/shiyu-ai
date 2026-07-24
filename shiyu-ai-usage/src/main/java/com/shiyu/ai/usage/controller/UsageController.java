@@ -1,5 +1,6 @@
 package com.shiyu.ai.usage.controller;
 
+import cn.dev33.satoken.annotation.SaCheckPermission;
 import com.shiyu.ai.common.core.api.Result;
 import com.shiyu.ai.dal.agent.repository.UsageRecordRepository;
 import io.swagger.v3.oas.annotations.Operation;
@@ -26,6 +27,7 @@ public class UsageController {
     }
 
     @Operation(summary = "用量概览（所有类型）")
+    @SaCheckPermission("usage:overview")
     @GetMapping("/overview")
     public Result<Map<String, Object>> getOverview() {
         try {
@@ -37,6 +39,7 @@ public class UsageController {
     }
 
     @Operation(summary = "按日聚合（所有类型，按 usage_type 分组）")
+    @SaCheckPermission("usage:daily")
     @GetMapping("/daily")
     public Result<List<Map<String, Object>>> aggregateByDay(
             @RequestParam(defaultValue = "7") int days) {
@@ -49,6 +52,7 @@ public class UsageController {
     }
 
     @Operation(summary = "按周聚合（所有类型，按 usage_type 分组）")
+    @SaCheckPermission("usage:weekly")
     @GetMapping("/weekly")
     public Result<List<Map<String, Object>>> aggregateByWeek(
             @RequestParam(defaultValue = "4") int weeks) {
@@ -61,6 +65,7 @@ public class UsageController {
     }
 
     @Operation(summary = "按月聚合（所有类型，按 usage_type 分组）")
+    @SaCheckPermission("usage:monthly")
     @GetMapping("/monthly")
     public Result<List<Map<String, Object>>> aggregateByMonth(
             @RequestParam(defaultValue = "6") int months) {
@@ -73,6 +78,7 @@ public class UsageController {
     }
 
     @Operation(summary = "LLM 按模型聚合")
+    @SaCheckPermission("usage:model")
     @GetMapping("/by-model")
     public Result<List<Map<String, Object>>> aggregateByModel() {
         try {
@@ -84,6 +90,7 @@ public class UsageController {
     }
 
     @Operation(summary = "LLM 按日聚合（含 token/cost）")
+    @SaCheckPermission("usage:llm")
     @GetMapping("/llm/daily")
     public Result<List<Map<String, Object>>> aggregateLlmByDay(
             @RequestParam(defaultValue = "7") int days) {
@@ -96,6 +103,7 @@ public class UsageController {
     }
 
     @Operation(summary = "LLM 按周聚合（含 token/cost）")
+    @SaCheckPermission("usage:llm")
     @GetMapping("/llm/weekly")
     public Result<List<Map<String, Object>>> aggregateLlmByWeek(
             @RequestParam(defaultValue = "4") int weeks) {
@@ -108,6 +116,7 @@ public class UsageController {
     }
 
     @Operation(summary = "LLM 按月聚合（含 token/cost）")
+    @SaCheckPermission("usage:llm")
     @GetMapping("/llm/monthly")
     public Result<List<Map<String, Object>>> aggregateLlmByMonth(
             @RequestParam(defaultValue = "6") int months) {
@@ -120,6 +129,7 @@ public class UsageController {
     }
 
     @Operation(summary = "Embedding 用量概览")
+    @SaCheckPermission("usage:embedding")
     @GetMapping("/embedding/overview")
     public Result<Map<String, Object>> getEmbeddingOverview() {
         try {

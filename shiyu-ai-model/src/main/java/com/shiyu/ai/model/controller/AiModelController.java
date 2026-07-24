@@ -1,5 +1,6 @@
 package com.shiyu.ai.model.controller;
 
+import cn.dev33.satoken.annotation.SaCheckPermission;
 import com.shiyu.ai.model.service.AiModelService;
 import com.shiyu.ai.model.vo.AiModelVO;
 import com.shiyu.ai.dal.model.bo.AiModelBO;
@@ -22,6 +23,7 @@ import java.util.List;
  */
 @Slf4j
 @Tag(name = "Ai Model", description = "Ai Model")
+@SaCheckPermission("agent:model:list")
 @RestController
 @RequestMapping("/agent/model")
 public class AiModelController {
@@ -88,6 +90,7 @@ public class AiModelController {
     }
 
     @Operation(summary = "Create")
+    @SaCheckPermission("agent:model:create")
     @PostMapping("/create")
     public Result<AiModelVO> create(@Valid @RequestBody AiModelBO bo) {
         try {
@@ -101,6 +104,7 @@ public class AiModelController {
     }
 
     @Operation(summary = "Update")
+    @SaCheckPermission("agent:model:edit")
     @PostMapping("/update")
     public Result<AiModelVO> update(@RequestParam Long id, @Valid @RequestBody AiModelBO bo) {
         try {
@@ -115,6 +119,7 @@ public class AiModelController {
     }
 
     @Operation(summary = "Delete")
+    @SaCheckPermission("agent:model:delete")
     @PostMapping("/delete")
     public Result<Void> delete(@RequestParam Long id) {
         try {
@@ -128,6 +133,7 @@ public class AiModelController {
     }
 
     @Operation(summary = "Delete Batch")
+    @SaCheckPermission("agent:model:delete")
     @PostMapping("/batch-delete")
     public Result<Void> deleteBatch(@RequestBody List<Long> ids) {
         try {
@@ -141,6 +147,7 @@ public class AiModelController {
     }
 
     @Operation(summary = "Set Default")
+    @SaCheckPermission("agent:model:set-default")
     @PostMapping("/set-default")
     public Result<AiModelVO> setDefault(@RequestParam Long id) {
         try {

@@ -1,5 +1,6 @@
 package com.shiyu.ai.knowledge.controller;
 
+import cn.dev33.satoken.annotation.SaCheckPermission;
 import com.shiyu.ai.common.core.api.Result;
 import com.shiyu.ai.knowledge.service.DocumentKnowledgeService;
 import io.swagger.v3.oas.annotations.Operation;
@@ -15,6 +16,7 @@ import java.util.List;
 @RequestMapping("/knowledge/document")
 @RequiredArgsConstructor
 @Tag(name = "文档知识管理")
+@SaCheckPermission("knowledge:document:list")
 @Validated
 public class DocumentController {
 
@@ -43,6 +45,7 @@ public class DocumentController {
 
     @PostMapping("/create")
     @Operation(summary = "新增文档")
+    @SaCheckPermission("knowledge:document:upload")
     public Result<DocumentKnowledgeService.KnowledgeDocumentVO> create(
             @RequestBody @Valid DocumentKnowledgeService.CreateDocumentRequest request) {
         return Result.success(documentKnowledgeService.create(request));
@@ -50,6 +53,7 @@ public class DocumentController {
 
     @PostMapping("/update")
     @Operation(summary = "修改文档")
+    @SaCheckPermission("knowledge:document:upload")
     public Result<Void> update(@RequestParam Long id,
                                @RequestBody @Valid DocumentKnowledgeService.UpdateDocumentRequest request) {
         documentKnowledgeService.update(id, request);
@@ -58,6 +62,7 @@ public class DocumentController {
 
     @PostMapping("/delete")
     @Operation(summary = "删除文档")
+    @SaCheckPermission("knowledge:document:delete")
     public Result<Void> delete(@RequestParam Long id) {
         documentKnowledgeService.delete(id);
         return Result.success();

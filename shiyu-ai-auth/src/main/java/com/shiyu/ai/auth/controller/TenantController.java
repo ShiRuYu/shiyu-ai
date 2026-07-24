@@ -1,5 +1,6 @@
 package com.shiyu.ai.auth.controller;
 
+import cn.dev33.satoken.annotation.SaCheckPermission;
 import com.shiyu.ai.auth.service.AuthService;
 import com.shiyu.ai.auth.service.TenantService;
 import com.shiyu.ai.dal.auth.bo.TenantBO;
@@ -25,8 +26,6 @@ public class TenantController {
     private final TenantService tenantService;
     private final AuthService authService;
 
-    private static final String TENANT_ADMIN_PERMISSION = "tenant:admin";
-
     public TenantController(TenantService tenantService, AuthService authService) {
         this.tenantService = tenantService;
         this.authService = authService;
@@ -41,19 +40,10 @@ public class TenantController {
         if (userId == null) {
             throw new SecurityException("用户未登录");
         }
-        // 方式一（推荐）：通过菜单权限码校验（需在 menu 表配置 tenant:admin 的 BUTTON 权限）
-        List<String> codes = authService.getAuthCodesByUserId(userId);
-        if (codes.contains(TENANT_ADMIN_PERMISSION)) {
-            return;
-        }
-        // 方式二：如果权限码未配置，降级为超级管理员角色校验
-        if (LoginContextHolder.isSuperAdmin()) {
-            return;
-        }
-        throw new SecurityException("无租户管理权限");
     }
 
     @Operation(summary = "Get Tenant List")
+    @SaCheckPermission("system:tenant:list")
     @GetMapping("/list")
     public Result<List<TenantVO>> getAllTenants() {
         checkTenantAdmin();
@@ -63,6 +53,7 @@ public class TenantController {
     }
 
     @Operation(summary = "Get Tenant Detail")
+    @SaCheckPermission("system:tenant:list")
     @GetMapping("/detail")
     public Result<TenantVO> getTenantById(@RequestParam Long id) {
         checkTenantAdmin();
@@ -75,6 +66,7 @@ public class TenantController {
     }
 
     @Operation(summary = "Create Tenant")
+    @SaCheckPermission("system:tenant:create")
     @PostMapping("/create")
     public Result<Void> createTenant(@Valid @RequestBody TenantRequest request) {
         checkTenantAdmin();
@@ -88,6 +80,7 @@ public class TenantController {
     }
 
     @Operation(summary = "Update Tenant")
+    @SaCheckPermission("system:tenant:update")
     @PostMapping("/update")
     public Result<Void> updateTenant(@RequestParam Long id, @Valid @RequestBody TenantRequest request) {
         checkTenantAdmin();
@@ -101,6 +94,7 @@ public class TenantController {
     }
 
     @Operation(summary = "Delete Tenant")
+    @SaCheckPermission("system:tenant:delete")
     @PostMapping("/delete")
     public Result<Void> deleteTenant(@RequestParam Long id) {
         checkTenantAdmin();

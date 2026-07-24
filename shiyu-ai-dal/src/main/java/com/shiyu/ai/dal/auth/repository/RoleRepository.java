@@ -9,6 +9,7 @@ import com.shiyu.ai.dal.auth.mapper.RoleMapper;
 import com.shiyu.ai.dal.auth.mapper.RoleScopeMenuMapper;
 import com.shiyu.ai.dal.auth.bo.MenuBO;
 import com.shiyu.ai.dal.auth.bo.RoleBO;
+import com.shiyu.ai.common.core.domain.LoginContextHolder;
 import com.shiyu.ai.common.core.utils.MapstructUtils;
 import jakarta.annotation.Resource;
 import org.apache.commons.lang3.tuple.Pair;
@@ -112,6 +113,21 @@ public class RoleRepository {
     }
 
     /**
+     * 校验角色是否属于当前租户作用域且处于有效状态。
+     */
+    public boolean isRoleInScope(Long roleId, Long currentTenantId) {
+        if (roleId == null || currentTenantId == null) {
+            return false;
+        }
+        QueryWrapper qw = QueryWrapper.create()
+                .where(RoleDO::getId).eq(roleId)
+                .and(RoleDO::getStatus).eq(1)
+                .and(RoleDO::getDelFlag).eq(0)
+                .and(RoleDO::getTenantId).eq(currentTenantId);
+        return roleMapper.selectCountByQuery(qw) > 0;
+    }
+
+    /**
      * 根据角色ID查询菜单列表
      */
     public List<MenuBO> selectMenusByRoleId(Long roleId) {
@@ -122,6 +138,7 @@ public class RoleRepository {
             .where(RoleScopeMenuDO::getRoleId).eq(roleId)
             .and(MenuDO::getStatus).eq(1)
             .and(MenuDO::getDelFlag).eq(0);
+        addScopeFilter(qw);
         qw.orderBy(column(MenuDO::getOrder).asc(), column(MenuDO::getId).asc());
         List<MenuDO> menuDOs = menuMapper.selectListByQuery(qw);
         return MapstructUtils.convert(menuDOs, MenuBO.class);
@@ -139,6 +156,7 @@ public class RoleRepository {
             .where(RoleScopeMenuDO::getRoleId).eq(roleId)
             .and(MenuDO::getStatus).eq(1)
             .and(MenuDO::getDelFlag).eq(0);
+        addScopeFilter(qw);
         qw.orderBy(column(MenuDO::getOrder).asc(), column(MenuDO::getId).asc());
         List<RoleScopeMenuDO> list = roleWorkspaceMenuMapper.selectListByQuery(qw);
         return list.stream().map(RoleScopeMenuDO::getMenuId).collect(Collectors.toList());
@@ -159,6 +177,7 @@ public class RoleRepository {
             .where(RoleScopeMenuDO::getRoleId).in(roleIds)
             .and(MenuDO::getStatus).eq(1)
             .and(MenuDO::getDelFlag).eq(0);
+        addScopeFilter(qw);
         qw.orderBy(column(MenuDO::getOrder).asc(), column(MenuDO::getId).asc());
         List<RoleScopeMenuDO> list = roleWorkspaceMenuMapper.selectListByQuery(qw);
         return list.stream().collect(Collectors.groupingBy(
@@ -175,13 +194,13 @@ public class RoleRepository {
             return;
         }
         
-        Long scopeTenantId = com.shiyu.ai.common.core.domain.LoginContextHolder.getScopeTenantId();
-        Long tenantId = com.shiyu.ai.common.core.domain.LoginContextHolder.getTenantId();
+        Long currentTenantId = com.shiyu.ai.common.core.domain.LoginContextHolder.getCurrentTenantId();
+        Long tenantId = com.shiyu.ai.common.core.domain.LoginContextHolder.getCurrentTenantId();
         
         List<RoleScopeMenuDO> list = menuIds.stream().map(menuId -> {
             RoleScopeMenuDO rwm = new RoleScopeMenuDO();
             rwm.setRoleId(roleId);
-            rwm.setScopedTenantId(scopeTenantId);
+            rwm.setScopedTenantId(currentTenantId);
             rwm.setMenuId(menuId);
             rwm.setTenantId(tenantId);
             return rwm;
@@ -193,13 +212,20 @@ public class RoleRepository {
      * 删除角色的所有菜单关联（按当前工作空间过滤）
      */
     public void deleteRoleMenus(Long roleId) {
-        Long scopeTenantId = com.shiyu.ai.common.core.domain.LoginContextHolder.getScopeTenantId();
+        Long currentTenantId = com.shiyu.ai.common.core.domain.LoginContextHolder.getCurrentTenantId();
         QueryWrapper queryWrapper = new QueryWrapper();
         queryWrapper.eq(RoleScopeMenuDO::getRoleId, roleId);
-        if (scopeTenantId != null) {
-            queryWrapper.eq(RoleScopeMenuDO::getScopedTenantId, scopeTenantId);
+        if (currentTenantId != null) {
+            queryWrapper.eq(RoleScopeMenuDO::getScopedTenantId, currentTenantId);
         }
         roleWorkspaceMenuMapper.deleteByQuery(queryWrapper);
+    }
+
+    private void addScopeFilter(QueryWrapper queryWrapper) {
+        Long currentTenantId = LoginContextHolder.getCurrentTenantId();
+        if (currentTenantId != null) {
+            queryWrapper.and(RoleScopeMenuDO::getScopedTenantId).eq(currentTenantId);
+        }
     }
 
 }

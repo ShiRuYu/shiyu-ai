@@ -34,6 +34,16 @@ public class AuthUserLookupRepository {
         return userMapper.selectOneById(userId);
     }
 
+    public boolean updateUserExtInfo(Long userId, String extInfo) {
+        if (userId == null) {
+            return false;
+        }
+        UserDO user = new UserDO();
+        user.setId(userId);
+        user.setExtInfo(extInfo);
+        return userMapper.update(user) > 0;
+    }
+
     public List<UserScopeRoleDO> selectUserWorkspaceRoles(Long userId) {
         return userWorkspaceRoleMapper.selectByUserId(userId);
     }

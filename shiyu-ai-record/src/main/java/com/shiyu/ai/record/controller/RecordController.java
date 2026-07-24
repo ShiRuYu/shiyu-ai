@@ -1,5 +1,6 @@
 package com.shiyu.ai.record.controller;
 
+import cn.dev33.satoken.annotation.SaCheckPermission;
 import com.shiyu.ai.record.service.RecordService;
 import com.shiyu.ai.dal.record.bo.RecordBO;
 import com.shiyu.ai.record.vo.RecordVO;
@@ -18,6 +19,7 @@ import org.springframework.web.bind.annotation.*;
 import java.util.List;
 
 @Tag(name = "记录管理")
+@SaCheckPermission("record:profile:list")
 @RestController
 @RequestMapping("/record/record")
 public class RecordController {
@@ -40,6 +42,7 @@ public class RecordController {
     }
 
     @Operation(summary = "创建记录")
+    @SaCheckPermission("record:profile:create")
     @PostMapping("/create")
     public Result<RecordVO> create(@Valid @RequestBody RecordRequest request) {
         RecordBO bo = new RecordBO();
@@ -49,6 +52,7 @@ public class RecordController {
     }
 
     @Operation(summary = "更新记录")
+    @SaCheckPermission("record:profile:edit")
     @PostMapping("/update")
     public Result<Boolean> update(@RequestParam Long id, @Valid @RequestBody RecordRequest request) {
         RecordBO bo = recordService.getById(id);
@@ -59,6 +63,7 @@ public class RecordController {
     }
 
     @Operation(summary = "删除记录")
+    @SaCheckPermission("record:profile:delete")
     @PostMapping("/delete")
     public Result<Boolean> delete(@RequestParam Long id) {
         return Result.success(recordService.delete(id));

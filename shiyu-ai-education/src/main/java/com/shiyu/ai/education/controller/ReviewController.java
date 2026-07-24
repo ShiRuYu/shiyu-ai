@@ -1,5 +1,6 @@
 package com.shiyu.ai.education.controller;
 
+import cn.dev33.satoken.annotation.SaCheckPermission;
 import com.shiyu.ai.common.core.api.Result;
 import com.shiyu.ai.education.dto.ReviewTaskResponse;
 import com.shiyu.ai.education.dto.CompleteReviewRequest;
@@ -17,6 +18,7 @@ import com.shiyu.ai.education.dto.ReviewTaskResponse;
 @RestController
 @RequestMapping("/review")
 @RequiredArgsConstructor
+@SaCheckPermission("edu:review:list")
 public class ReviewController {
 
     private final ReviewService reviewService;
@@ -37,11 +39,13 @@ public class ReviewController {
     }
 
     @PostMapping("/create")
+    @SaCheckPermission("edu:review:list")
     public Result<ReviewTaskResponse> create(@Valid @RequestBody ReviewRequest request) {
         return Result.success(reviewService.create(request));
     }
 
     @PostMapping("/complete")
+    @SaCheckPermission("edu:review:list")
     public Result<Void> complete(@RequestParam Long id, @Valid @RequestBody CompleteReviewRequest request) {
         return Result.success();
     }

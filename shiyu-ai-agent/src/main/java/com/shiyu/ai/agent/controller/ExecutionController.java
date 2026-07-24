@@ -1,5 +1,6 @@
 package com.shiyu.ai.agent.controller;
 
+import cn.dev33.satoken.annotation.SaCheckPermission;
 import com.shiyu.ai.agent.execution.Execution;
 import com.shiyu.ai.agent.execution.ExecutionStatus;
 import com.shiyu.ai.agent.runtime.AgentRuntime;
@@ -26,6 +27,7 @@ import java.util.stream.Collectors;
  */
 @Slf4j
 @Tag(name = "Execution", description = "Agent Execution")
+@SaCheckPermission("agent:admin:list")
 @RestController
 @RequestMapping("/agent/execution")
 public class ExecutionController {
@@ -37,6 +39,7 @@ public class ExecutionController {
     }
 
     @Operation(summary = "Execute Agent")
+    @SaCheckPermission("agent:admin:edit")
     @PostMapping("/execute")
     public Result<Map<String, Object>> execute(
             @RequestParam String agentId,
@@ -64,6 +67,7 @@ public class ExecutionController {
     }
 
     @Operation(summary = "Execute Agent Stream")
+    @SaCheckPermission("agent:admin:edit")
     @PostMapping(value = "/execute-stream", produces = MediaType.TEXT_EVENT_STREAM_VALUE)
     public Flux<Result<Map<String, Object>>> executeStream(
             @RequestParam String agentId,

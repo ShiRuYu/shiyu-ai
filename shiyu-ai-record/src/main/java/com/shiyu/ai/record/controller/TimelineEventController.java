@@ -1,5 +1,6 @@
 package com.shiyu.ai.record.controller;
 
+import cn.dev33.satoken.annotation.SaCheckPermission;
 import com.shiyu.ai.record.service.TimelineEventService;
 import com.shiyu.ai.dal.record.bo.TimelineEventBO;
 import com.shiyu.ai.record.vo.TimelineEventVO;
@@ -18,6 +19,7 @@ import org.springframework.web.bind.annotation.*;
 import java.util.List;
 
 @Tag(name = "时间线事件管理")
+@SaCheckPermission("record:timeline:list")
 @RestController
 @RequestMapping("/record/timeline")
 public class TimelineEventController {
@@ -40,6 +42,7 @@ public class TimelineEventController {
     }
 
     @Operation(summary = "创建时间线事件")
+    @SaCheckPermission("record:timeline:create")
     @PostMapping("/create")
     public Result<TimelineEventVO> create(@Valid @RequestBody TimelineEventRequest request) {
         TimelineEventBO bo = new TimelineEventBO();
@@ -53,6 +56,7 @@ public class TimelineEventController {
     }
 
     @Operation(summary = "更新时间线事件")
+    @SaCheckPermission("record:timeline:create")
     @PostMapping("/update")
     public Result<Boolean> update(@RequestParam Long id, @Valid @RequestBody TimelineEventRequest request) {
         TimelineEventBO bo = timelineEventService.getById(id);
@@ -66,6 +70,7 @@ public class TimelineEventController {
     }
 
     @Operation(summary = "删除时间线事件")
+    @SaCheckPermission("record:timeline:delete")
     @PostMapping("/delete")
     public Result<Boolean> delete(@RequestParam Long id) {
         return Result.success(timelineEventService.delete(id));

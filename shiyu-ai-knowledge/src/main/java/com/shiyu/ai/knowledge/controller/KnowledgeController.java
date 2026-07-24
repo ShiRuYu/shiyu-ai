@@ -1,5 +1,6 @@
 package com.shiyu.ai.knowledge.controller;
 
+import cn.dev33.satoken.annotation.SaCheckPermission;
 import com.shiyu.ai.common.core.api.PageData;
 import com.shiyu.ai.common.core.api.Result;
 import com.shiyu.ai.knowledge.domain.RelationType;
@@ -29,6 +30,7 @@ import java.util.Set;
 @RequestMapping("/knowledge/knowledge")
 @RequiredArgsConstructor
 @Tag(name = "知识点管理")
+@SaCheckPermission("knowledge:list")
 @Validated
 public class KnowledgeController {
 
@@ -82,12 +84,14 @@ public class KnowledgeController {
 
     @PostMapping("/create")
     @Operation(summary = "新增知识点")
+    @SaCheckPermission("knowledge:create")
     public Result<KnowledgeResponse> create(@RequestBody @Valid CreateKnowledgeRequest request) {
         return Result.success(knowledgeService.create(request));
     }
 
     @PostMapping("/update")
     @Operation(summary = "修改知识点")
+    @SaCheckPermission("knowledge:edit")
     public Result<Void> update(@RequestParam Long id, @RequestBody @Valid UpdateKnowledgeRequest request) {
         knowledgeService.update(id, request);
         return Result.success();
@@ -95,6 +99,7 @@ public class KnowledgeController {
 
     @PostMapping("/delete")
     @Operation(summary = "删除知识点")
+    @SaCheckPermission("knowledge:delete")
     public Result<Void> delete(@RequestParam Long id) {
         knowledgeService.delete(id);
         return Result.success();
@@ -102,6 +107,7 @@ public class KnowledgeController {
 
     @PostMapping("/relation/create")
     @Operation(summary = "新增知识点关系")
+    @SaCheckPermission("knowledge:relation")
     public Result<Void> addRelation(@RequestParam Long sourceId,
                                     @RequestParam Long targetId,
                                     @RequestParam RelationType type,
@@ -112,6 +118,7 @@ public class KnowledgeController {
 
     @PostMapping("/relation/delete")
     @Operation(summary = "删除知识点关系")
+    @SaCheckPermission("knowledge:relation")
     public Result<Void> removeRelation(@RequestParam Long sourceId,
                                        @RequestParam Long targetId,
                                        @RequestParam RelationType type) {

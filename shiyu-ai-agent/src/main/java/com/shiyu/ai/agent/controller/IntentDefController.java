@@ -1,5 +1,6 @@
 package com.shiyu.ai.agent.controller;
 
+import cn.dev33.satoken.annotation.SaCheckPermission;
 import com.shiyu.ai.agent.service.IntentDefService;
 import com.shiyu.ai.agent.vo.IntentDefVO;
 import com.shiyu.ai.dal.agent.bo.IntentDefBO;
@@ -22,6 +23,7 @@ import java.util.List;
  */
 @Slf4j
 @Tag(name = "Intent Def", description = "Intent Def")
+@SaCheckPermission("agent:intent:list")
 @RestController
 @RequestMapping("/admin/intent")
 public class IntentDefController {
@@ -70,6 +72,7 @@ public class IntentDefController {
      * 新增意图定义
      */
     @Operation(summary = "Create")
+    @SaCheckPermission("agent:intent:create")
     @PostMapping("/create")
     public Result<IntentDefVO> create(@Valid @RequestBody IntentDefBO bo) {
         log.info("新增意图定义，code: {}", bo.getCode());
@@ -86,6 +89,7 @@ public class IntentDefController {
      * 修改意图定义
      */
     @Operation(summary = "Update")
+    @SaCheckPermission("agent:intent:create")
     @PostMapping("/update")
     public Result<IntentDefVO> update(@RequestParam Long id, @Valid @RequestBody IntentDefBO bo) {
         log.info("修改意图定义，id: {}", id);
@@ -103,6 +107,7 @@ public class IntentDefController {
      * 删除意图定义
      */
     @Operation(summary = "Delete")
+    @SaCheckPermission("agent:intent:delete")
     @PostMapping("/delete")
     public Result<Void> delete(@RequestParam Long id) {
         log.info("删除意图定义，id: {}", id);
@@ -119,6 +124,7 @@ public class IntentDefController {
      * 批量删除意图定义
      */
     @Operation(summary = "Delete Batch")
+    @SaCheckPermission("agent:intent:delete")
     @PostMapping("/batch-delete")
     public Result<Void> deleteBatch(@RequestBody List<Long> ids) {
         log.info("批量删除意图定义，ids: {}", ids);

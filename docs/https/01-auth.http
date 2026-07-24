@@ -17,7 +17,7 @@
 
 ### ------------------- 登录（获取 Token）-------------------
 ### @name Login
-# 无需认证。返回 accessToken + scopeTenantId + tenants + subTenants
+# 无需认证。返回 accessToken + currentTenantId + tenants + subTenants
 POST {{baseUrl}}/auth/login HTTP/1.1
 Content-Type: application/json
 
@@ -82,7 +82,7 @@ Content-Type: application/json
 
 ### ------------------- 获取权限码列表 -------------------
 ### @name Get Auth Codes
-# 需要认证。返回当前用户在当前工作空间下的按钮级权限码
+# 需要认证。返回当前用户在当前租户下的权限码
 GET {{baseUrl}}/auth/codes HTTP/1.1
 Authorization: Bearer {{authToken}}
 

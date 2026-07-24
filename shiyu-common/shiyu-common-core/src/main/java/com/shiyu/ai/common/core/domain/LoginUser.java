@@ -34,15 +34,15 @@ public class LoginUser implements Serializable {
     private String avatar;
     private java.util.Map<String, Object> extInfo = Maps.newHashMap();
 
-    /** 当前作用域租户 ID（用户切换到的租户，即角色分配的目标） */
-    private Long scopeTenantId;
+    /** 当前租户 ID（用户切换到的租户，即角色分配的目标） */
+    private Long currentTenantId;
 
-    /** 可见租户 ID 列表（scopeTenantId 自身 + 所有后代）
+    /** 可见租户 ID 列表（currentTenantId 自身及所有后代）
      *  用于 ContextTenantFactory 控制数据可见范围 */
     private List<Long> visibleTenantIds;
 
-    /** 子租户筛选器（可选，在可见范围内进一步限定只看某个租户的数据） */
-    private Long scopedTenantId;
+    /** 租户筛选器（可选，在可见范围内进一步限定只看某个租户的数据） */
+    private Long filterTenantId;
 
     /** 当前角色编码 */
     private String currentRoleCode;

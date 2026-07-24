@@ -36,7 +36,8 @@ public class AuditFieldListener implements com.mybatisflex.annotation.InsertList
             }
         }
 
-        autoFillIfPresent(entity, "tenantId", LoginContextHolder.getTenantId());
+        autoFillIfPresent(entity, "tenantId", LoginContextHolder.getCurrentTenantId());
+        autoFillIfPresent(entity, "scopedTenantId", LoginContextHolder.getCurrentTenantId());
     }
 
     @Override
@@ -54,16 +55,27 @@ public class AuditFieldListener implements com.mybatisflex.annotation.InsertList
     private void autoFillIfPresent(Object entity, String fieldName, Object value) {
         if (value == null) return;
         try {
-            Field field = entity.getClass().getDeclaredField(fieldName);
+            Field field = findField(entity.getClass(), fieldName);
+            if (field == null) return;
             field.setAccessible(true);
             if (field.get(entity) == null) {
                 field.set(entity, value);
             }
-        } catch (NoSuchFieldException ignored) {
-            // 实体没有该字段，跳过
         } catch (Exception e) {
             log.warn("Failed to auto-fill {} on {}", fieldName, entity.getClass().getSimpleName(), e);
         }
+    }
+
+    private Field findField(Class<?> type, String fieldName) {
+        Class<?> current = type;
+        while (current != null && current != Object.class) {
+            try {
+                return current.getDeclaredField(fieldName);
+            } catch (NoSuchFieldException ignored) {
+                current = current.getSuperclass();
+            }
+        }
+        return null;
     }
 
     private String getCurrentUser() {

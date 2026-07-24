@@ -92,7 +92,7 @@ public class MenuRepository {
      * 替代原来的 查角色→遍历查菜单→内存过滤 流程
      *
      * @param userId      用户ID
-     * @param excludeType 需要排除的菜单类型（如 BUTTON），传 null 则不过滤
+     * @param excludeType 需要排除的菜单类型，传 null 则不过滤
      * @return 用户有权限的菜单列表（平铺，不含树结构）
      */
     public List<MenuBO> selectMenusByUserId(Long userId, String excludeType) {
@@ -103,6 +103,8 @@ public class MenuRepository {
                 .innerJoin(UserScopeRoleDO.class)
                 .on(column(RoleScopeMenuDO::getRoleId).eq(column(UserScopeRoleDO::getRoleId)))
                 .where(UserScopeRoleDO::getUserId).eq(userId)
+                .and(column(RoleScopeMenuDO::getTenantId).eq(column(UserScopeRoleDO::getTenantId)))
+                .and(column(RoleScopeMenuDO::getScopedTenantId).eq(column(UserScopeRoleDO::getScopedTenantId)))
                 .and(MenuDO::getStatus).eq(1)
                 .and(MenuDO::getDelFlag).eq(0);
         if (excludeType != null) {
@@ -162,4 +164,3 @@ public class MenuRepository {
     }
 
 }
-

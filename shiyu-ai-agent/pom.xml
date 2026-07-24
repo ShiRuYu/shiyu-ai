@@ -14,6 +14,10 @@
     <description>LangGraph4j pure graph engine, typed node configs, and education agents</description>
     <dependencies>
         <dependency>
+            <groupId>cn.dev33</groupId>
+            <artifactId>sa-token-spring-boot4-starter</artifactId>
+        </dependency>
+        <dependency>
             <groupId>com.shiyu.ai</groupId>
             <artifactId>shiyu-ai-dal</artifactId>
         </dependency>

@@ -1,5 +1,6 @@
 package com.shiyu.ai.agent.controller;
 
+import cn.dev33.satoken.annotation.SaCheckPermission;
 import com.shiyu.ai.agent.service.AgentVersionService;
 import com.shiyu.ai.agent.request.EdgeRequest;
 import com.shiyu.ai.agent.request.GraphConfigRequest;
@@ -25,6 +26,7 @@ import java.util.List;
  */
 @Slf4j
 @Tag(name = "Agent Version", description = "Agent Version & Graph")
+@SaCheckPermission("agent:admin:list")
 @RestController
 @RequestMapping("/agent/version")
 public class AgentVersionController {
@@ -53,6 +55,7 @@ public class AgentVersionController {
     }
 
     @Operation(summary = "Create Version")
+    @SaCheckPermission("agent:admin:create")
     @PostMapping("/create")
     public Result<AgentVersionVO> createVersion(
             @RequestParam String agentId, @Valid @RequestBody VersionRequest request) {
@@ -65,6 +68,7 @@ public class AgentVersionController {
     }
 
     @Operation(summary = "Update Version")
+    @SaCheckPermission("agent:admin:edit")
     @PostMapping("/update")
     public Result<AgentVersionVO> updateVersion(
             @RequestParam String agentId, @RequestParam Long versionId,
@@ -78,6 +82,7 @@ public class AgentVersionController {
     }
 
     @Operation(summary = "Delete Version")
+    @SaCheckPermission("agent:admin:delete")
     @PostMapping("/delete")
     public Result<Void> deleteVersion(
             @RequestParam String agentId, @RequestParam Long versionId) {
@@ -93,6 +98,7 @@ public class AgentVersionController {
     // ======================== 版本生命周期 ========================
 
     @Operation(summary = "Publish")
+    @SaCheckPermission("agent:admin:edit")
     @PostMapping("/publish")
     public Result<Void> publish(@RequestParam String agentId, @RequestParam Long versionId) {
         try {
@@ -105,6 +111,7 @@ public class AgentVersionController {
     }
 
     @Operation(summary = "Archive")
+    @SaCheckPermission("agent:admin:edit")
     @PostMapping("/archive")
     public Result<Void> archive(@RequestParam String agentId, @RequestParam Long versionId) {
         try {
@@ -117,6 +124,7 @@ public class AgentVersionController {
     }
 
     @Operation(summary = "Activate")
+    @SaCheckPermission("agent:admin:edit")
     @PostMapping("/activate")
     public Result<Void> activate(@RequestParam String agentId, @RequestParam Long versionId) {
         try {
@@ -129,6 +137,7 @@ public class AgentVersionController {
     }
 
     @Operation(summary = "Copy")
+    @SaCheckPermission("agent:admin:create")
     @PostMapping("/copy")
     public Result<AgentVersionVO> copy(@RequestParam String agentId, @Valid @RequestBody VersionRequest request) {
         try {
@@ -151,6 +160,7 @@ public class AgentVersionController {
     }
 
     @Operation(summary = "Update Graph")
+    @SaCheckPermission("agent:admin:edit")
     @PostMapping("/graph/update")
     public Result<AgentVersionDetailVO> updateGraph(
             @RequestParam String agentId, @RequestParam Long versionId,
@@ -172,6 +182,7 @@ public class AgentVersionController {
     }
 
     @Operation(summary = "Add Node")
+    @SaCheckPermission("agent:admin:edit")
     @PostMapping("/graph/node/create")
     public Result<Void> addNode(
             @RequestParam String agentId, @RequestParam Long versionId,
@@ -186,6 +197,7 @@ public class AgentVersionController {
     }
 
     @Operation(summary = "Update Node")
+    @SaCheckPermission("agent:admin:edit")
     @PostMapping("/graph/node/update")
     public Result<Void> updateNode(
             @RequestParam String agentId, @RequestParam Long versionId,
@@ -200,6 +212,7 @@ public class AgentVersionController {
     }
 
     @Operation(summary = "Delete Node")
+    @SaCheckPermission("agent:admin:edit")
     @PostMapping("/graph/node/delete")
     public Result<Void> deleteNode(
             @RequestParam String agentId, @RequestParam Long versionId,
@@ -214,6 +227,7 @@ public class AgentVersionController {
     }
 
     @Operation(summary = "Add Edge")
+    @SaCheckPermission("agent:admin:edit")
     @PostMapping("/graph/edge/create")
     public Result<Void> addEdge(
             @RequestParam String agentId, @RequestParam Long versionId,
@@ -228,6 +242,7 @@ public class AgentVersionController {
     }
 
     @Operation(summary = "Delete Edge")
+    @SaCheckPermission("agent:admin:edit")
     @PostMapping("/graph/edge/delete")
     public Result<Void> deleteEdge(
             @RequestParam String agentId, @RequestParam Long versionId,
@@ -250,6 +265,7 @@ public class AgentVersionController {
     }
 
     @Operation(summary = "Update Canvas")
+    @SaCheckPermission("agent:admin:edit")
     @PostMapping("/graph/canvas-update")
     public Result<Void> updateCanvas(
             @RequestParam String agentId, @RequestParam Long versionId,

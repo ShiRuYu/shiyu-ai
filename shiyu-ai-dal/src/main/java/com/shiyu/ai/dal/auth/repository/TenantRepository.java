@@ -22,6 +22,24 @@ public class TenantRepository {
     @Resource
     private TenantQuotaMapper tenantQuotaMapper;
 
+    @Resource
+    private UserMapper userMapper;
+
+    @Resource
+    private RoleMapper roleMapper;
+
+    @Resource
+    private MenuMapper menuMapper;
+
+    @Resource
+    private UserScopeRoleMapper userScopeRoleMapper;
+
+    @Resource
+    private RoleScopeMenuMapper roleScopeMenuMapper;
+
+    @Resource
+    private RoleScopeAuthCodeMapper roleScopeAuthCodeMapper;
+
     public Pair<Long, List<TenantBO>> selectPage(Number pageNo, Number pageSize, String name) {
         QueryWrapper countWrapper = new QueryWrapper();
         if (name != null && !name.isEmpty()) {
@@ -87,8 +105,14 @@ public class TenantRepository {
         allIds.add(tenantId);
 
         for (Long id : allIds) {
-            QueryWrapper byTenant = QueryWrapper.create().eq("tenant_id", id);
             tenantQuotaMapper.deleteByQuery(QueryWrapper.create().eq(TenantQuotaDO::getTenantId, id));
+            roleScopeMenuMapper.deleteByQuery(QueryWrapper.create().eq(RoleScopeMenuDO::getTenantId, id));
+            roleScopeAuthCodeMapper.deleteByQuery(QueryWrapper.create()
+                    .eq(RoleScopeAuthCodeDO::getTenantId, id));
+            userScopeRoleMapper.deleteByQuery(QueryWrapper.create().eq(UserScopeRoleDO::getTenantId, id));
+            userMapper.deleteByQuery(QueryWrapper.create().eq(UserDO::getTenantId, id));
+            roleMapper.deleteByQuery(QueryWrapper.create().eq(RoleDO::getTenantId, id));
+            menuMapper.deleteByQuery(QueryWrapper.create().eq(MenuDO::getTenantId, id));
         }
         tenantMapper.deleteById(tenantId);
     }

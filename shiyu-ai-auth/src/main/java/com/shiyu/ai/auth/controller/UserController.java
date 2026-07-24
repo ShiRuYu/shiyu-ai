@@ -1,5 +1,6 @@
 package com.shiyu.ai.auth.controller;
 
+import cn.dev33.satoken.annotation.SaCheckPermission;
 import com.shiyu.ai.auth.request.*;
 import com.shiyu.ai.dal.auth.bo.UserBO;
 import com.shiyu.ai.auth.vo.UserPageResponse;
@@ -62,6 +63,8 @@ public class UserController {
                 if (extMap != null) {
                     Object tid = extMap.get("currentTenantId");
                     if (tid instanceof Number) userVO.setCurrentTenantId(((Number) tid).longValue());
+                    Object fid = extMap.get("filterTenantId");
+                    if (fid instanceof Number) userVO.setFilterTenantId(((Number) fid).longValue());
                 }
             }
         } catch (Exception e) {
@@ -76,6 +79,7 @@ public class UserController {
      * GET /auth/user/list
      */
     @Operation(summary = "Get User List")
+    @SaCheckPermission("system:user:list")
     @GetMapping("/list")
     public Result<UserPageResponse> getUserList(@Valid UserPageRequest request) {
         log.info("获取用户列表，username: {}, pageNo: {}, pageSize: {}",
@@ -89,6 +93,7 @@ public class UserController {
      * POST /auth/user/create
      */
     @Operation(summary = "Create User")
+    @SaCheckPermission("system:user:create")
     @PostMapping("/create")
     public Result<Map<String, Object>> createUser(@Valid @RequestBody UserRequest request) {
         log.info("新增用户");
@@ -102,6 +107,7 @@ public class UserController {
      * POST /auth/user/update?userId=
      */
     @Operation(summary = "Update User")
+    @SaCheckPermission("system:user:update")
     @PostMapping("/update")
     public Result<Void> updateUser(@RequestParam Long userId, @Valid @RequestBody UserRequest request) {
         log.info("修改用户，userId: {}", userId);
@@ -114,6 +120,7 @@ public class UserController {
      * POST /auth/user/delete?userId=
      */
     @Operation(summary = "Delete User")
+    @SaCheckPermission("system:user:delete")
     @PostMapping("/delete")
     public Result<Void> deleteUser(@RequestParam Long userId) {
         log.info("删除用户，userId: {}", userId);
@@ -125,6 +132,7 @@ public class UserController {
      * POST /auth/user/password/reset?userId=
      */
     @Operation(summary = "Reset Password")
+    @SaCheckPermission("system:user:password")
     @PostMapping("/password/reset")
     public Result<Void> resetPassword(@RequestParam Long userId, @Valid @RequestBody ResetPasswordRequest request) {
         log.info("重置用户密码，userId: {}", userId);

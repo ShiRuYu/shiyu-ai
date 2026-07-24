@@ -4,6 +4,8 @@ import com.shiyu.ai.dal.auth.repository.AuthUserLookupRepository;
 import com.shiyu.ai.dal.auth.repository.TenantRepository;
 import com.shiyu.ai.dal.auth.dataobject.TenantDO;
 import com.shiyu.ai.dal.auth.dataobject.UserDO;
+import com.shiyu.ai.dal.auth.dataobject.RoleDO;
+import com.shiyu.ai.dal.auth.dataobject.UserScopeRoleDO;
 import com.shiyu.ai.auth.utils.SaTokenHelper;
 import com.shiyu.ai.common.core.domain.LoginContextHolder;
 import com.shiyu.ai.common.core.domain.LoginUser;
@@ -54,6 +56,11 @@ public class UserContextInterceptor implements HandlerInterceptor {
             LoginUser loginUser = SaTokenHelper.getLoginUserFromSession();
 
             if (loginUser != null && userId.equals(loginUser.getUserId())) {
+                // Session 只作为性能缓存，用户、角色、租户状态和范围必须实时以数据库为准。
+                if (!isCachedContextValid(loginUser)) {
+                    SaTokenHelper.clearLoginUserSession();
+                    throw new IllegalStateException("登录用户权限或租户范围已失效");
+                }
                 loginUser.setToken(SaTokenHelper.getCurrentToken());
                 loginUser.setIpaddr(getClientIp(request));
                 String ua = request.getHeader("User-Agent");
@@ -87,13 +94,16 @@ public class UserContextInterceptor implements HandlerInterceptor {
                 SaTokenHelper.saveLoginUserToSession(loginUser);
             } catch (Exception ignored) {}
 
-            log.debug("用户上下文加载: userId={}, scopeTenantId={}, visibleTenantIds={}, scopedTenantId={}",
-                    userId, loginUser.getScopeTenantId(), loginUser.getVisibleTenantIds(), loginUser.getScopedTenantId());
+            log.debug("用户上下文加载: userId={}, currentTenantId={}, visibleTenantIds={}, filterTenantId={}",
+                    userId, loginUser.getCurrentTenantId(), loginUser.getVisibleTenantIds(), loginUser.getFilterTenantId());
 
             return true;
         } catch (Exception e) {
-            log.warn("设置用户上下文失败: uri={}, error={}", request.getRequestURI(), e.getMessage());
-            return true;
+            log.error("设置用户上下文失败，拒绝请求: uri={}", request.getRequestURI(), e);
+            LoginContextHolder.clearContext();
+            response.setContentType("application/json;charset=utf-8");
+            response.getWriter().print(JSONUtils.toJsonString(Result.fail(BizResultCode.UNAUTHORIZED, "用户上下文加载失败")));
+            return false;
         }
     }
 
@@ -101,38 +111,61 @@ public class UserContextInterceptor implements HandlerInterceptor {
     private void loadScopeContext(Long userId, LoginUser loginUser) {
         try {
             UserDO user = authUserLookupRepository.selectUserById(userId);
-            if (user == null) return;
+            if (user == null) {
+                throw new IllegalStateException("登录用户不存在");
+            }
 
             loginUser.setUsername(user.getUsername());
             loginUser.setNickName(user.getNickName());
             loginUser.setAvatar(user.getAvatar());
 
-            Long currentScopeTenantId = null;
+            Long currentTenantId = null;
+            boolean migratedLegacyContext = false;
             if (user.getExtInfo() != null && !user.getExtInfo().isEmpty()) {
                 try {
                     Map<String, Object> extInfo = JSONUtils.parseObject(user.getExtInfo(), Map.class);
                     if (extInfo != null) {
                         // 作用域租户
-                        Object tid = extInfo.get("scopeTenantId");
-                        if (tid instanceof Number) {
-                            currentScopeTenantId = ((Number) tid).longValue();
+                        Object tid = extInfo.get("currentTenantId");
+                        if (!(tid instanceof Number)) {
+                            // 兼容旧版本持久化字段：scopeTenantId -> currentTenantId
+                            tid = extInfo.get("scopeTenantId");
+                            migratedLegacyContext = tid instanceof Number;
                         }
-                        // 历史遗留兼容
-                        if (currentScopeTenantId == null && extInfo.get("currentTenantId") instanceof Number t) {
-                            currentScopeTenantId = t.longValue();
+                        if (tid instanceof Number) {
+                            currentTenantId = ((Number) tid).longValue();
                         }
                         // 子租户筛选器
-                        Object sid = extInfo.get("scopedTenantId");
+                        Object sid = extInfo.get("filterTenantId");
+                        if (!(sid instanceof Number)) {
+                            // 兼容旧版本持久化字段：scopedTenantId -> filterTenantId
+                            sid = extInfo.get("scopedTenantId");
+                            migratedLegacyContext = migratedLegacyContext || sid instanceof Number;
+                        }
                         if (sid instanceof Number) {
-                            loginUser.setScopedTenantId(((Number) sid).longValue());
+                            loginUser.setFilterTenantId(((Number) sid).longValue());
                         }
                         // 当前角色
                         Object roleObj = extInfo.get("currentRole");
                         if (roleObj instanceof Map roleMap) {
                             Object roleKey = ((Map<String, Object>) roleMap).get("roleKey");
-                            if (roleKey instanceof String) {
+                            Object roleId = ((Map<String, Object>) roleMap).get("roleId");
+                            if (roleId instanceof Number
+                                    && roleKey instanceof String
+                                    && isCurrentRoleValid(userId, currentTenantId,
+                                    ((Number) roleId).longValue(), (String) roleKey)) {
                                 loginUser.setCurrentRoleCode((String) roleKey);
                             }
+                        }
+                        if (migratedLegacyContext) {
+                            extInfo.remove("scopeTenantId");
+                            extInfo.remove("scopedTenantId");
+                            extInfo.put("currentTenantId", currentTenantId);
+                            if (loginUser.getFilterTenantId() != null) {
+                                extInfo.put("filterTenantId", loginUser.getFilterTenantId());
+                            }
+                            user.setExtInfo(JSONUtils.toJsonString(extInfo));
+                            authUserLookupRepository.updateUserExtInfo(userId, user.getExtInfo());
                         }
                     }
                 } catch (Exception e) {
@@ -140,24 +173,146 @@ public class UserContextInterceptor implements HandlerInterceptor {
                 }
             }
 
-            // 兜底 scopeTenantId
-            if (currentScopeTenantId == null) {
+            // 兜底 currentTenantId
+            if (currentTenantId == null) {
                 if (user.getTenantId() != null) {
-                    currentScopeTenantId = user.getTenantId();
+                    currentTenantId = user.getTenantId();
                 }
             }
 
-            loginUser.setScopeTenantId(currentScopeTenantId);
+            loginUser.setCurrentTenantId(currentTenantId);
+
+            TenantDO currentTenant = currentTenantId == null
+                    ? null : authUserLookupRepository.selectTenantById(currentTenantId);
+            if (currentTenantId == null || !isActive(currentTenant)) {
+                throw new IllegalStateException("当前租户不存在或已停用");
+            }
+
+            List<UserScopeRoleDO> assignments =
+                    authUserLookupRepository.selectUserWorkspaceRoles(userId);
+            final Long contextTenantId = currentTenantId;
+            boolean assigned = assignments != null && assignments.stream().anyMatch(item ->
+                    contextTenantId.equals(item.getTenantId())
+                            && isActive(item)
+                            && item.getRoleId() != null
+                            && isActive(authUserLookupRepository.selectRoleById(item.getRoleId())));
+            if (!assigned) {
+                throw new IllegalStateException("用户不再属于当前租户");
+            }
+            if (loginUser.getFilterTenantId() != null
+                    && !isTenantVisibleAndActive(currentTenantId, loginUser.getFilterTenantId())) {
+                throw new IllegalStateException("租户筛选范围已失效");
+            }
 
             // 计算可见范围（scope 自身 + 所有后代）
-            if (currentScopeTenantId != null) {
-                List<Long> descendantIds = tenantRepository.selectDescendantIds(currentScopeTenantId);
+            if (currentTenantId != null) {
+                List<Long> descendantIds = tenantRepository.selectDescendantIds(currentTenantId);
                 loginUser.setVisibleTenantIds(descendantIds);
             }
 
         } catch (Exception e) {
-            log.warn("加载租户作用域异常: userId={}, error={}", userId, e.getMessage());
+            log.error("加载租户作用域异常: userId={}", userId, e);
+            throw new IllegalStateException("加载用户租户作用域失败", e);
         }
+    }
+
+    /**
+     * currentRole 保存在用户扩展信息中，但是否仍然有效必须以当前授权关系为准。
+     * 特别是 super 角色不能仅信任 extInfo，否则撤权后仍可能绕过租户过滤。
+     */
+    private boolean isCurrentRoleValid(Long userId, Long currentTenantId,
+                                       Long roleId, String roleCode) {
+        if (userId == null || currentTenantId == null || roleId == null || roleCode == null) {
+            return false;
+        }
+        List<UserScopeRoleDO> assignments =
+                authUserLookupRepository.selectUserWorkspaceRoles(userId);
+        boolean assigned = assignments != null && assignments.stream().anyMatch(item ->
+                item.getRoleId() != null
+                        && roleId.equals(item.getRoleId())
+                        && currentTenantId.equals(item.getTenantId())
+                        && (item.getStatus() == null || item.getStatus() == 1)
+                        && (item.getDelFlag() == null || item.getDelFlag() == 0));
+        if (!assigned) {
+            return false;
+        }
+        RoleDO role = authUserLookupRepository.selectRoleById(roleId);
+        return role != null
+                && roleCode.equals(role.getCode())
+                && (role.getStatus() == null || role.getStatus() == 1)
+                && (role.getDelFlag() == null || role.getDelFlag() == 0);
+    }
+
+    private boolean isCachedContextValid(LoginUser loginUser) {
+        if (loginUser.getCurrentTenantId() == null) {
+            return false;
+        }
+        UserDO user = authUserLookupRepository.selectUserById(loginUser.getUserId());
+        if (!isActive(user)) {
+            return false;
+        }
+        TenantDO tenant = authUserLookupRepository.selectTenantById(loginUser.getCurrentTenantId());
+        if (!isActive(tenant)) {
+            return false;
+        }
+        List<UserScopeRoleDO> assignments =
+                authUserLookupRepository.selectUserWorkspaceRoles(loginUser.getUserId());
+        boolean assigned = assignments != null && assignments.stream().anyMatch(item ->
+                loginUser.getCurrentTenantId().equals(item.getTenantId())
+                        && isActive(item)
+                        && item.getRoleId() != null
+                        && isActive(authUserLookupRepository.selectRoleById(item.getRoleId())));
+        if (!assigned) {
+            return false;
+        }
+        if (loginUser.getFilterTenantId() != null
+                && !isTenantVisibleAndActive(loginUser.getCurrentTenantId(),
+                loginUser.getFilterTenantId())) {
+            return false;
+        }
+        if (loginUser.getCurrentRoleCode() != null) {
+            boolean roleValid = assignments.stream().anyMatch(item -> {
+                if (!loginUser.getCurrentTenantId().equals(item.getTenantId())
+                        || !isActive(item) || item.getRoleId() == null) {
+                    return false;
+                }
+                RoleDO role = authUserLookupRepository.selectRoleById(item.getRoleId());
+                return isActive(role) && loginUser.getCurrentRoleCode().equals(role.getCode());
+            });
+            if (!roleValid) {
+                return false;
+            }
+        }
+        return true;
+    }
+
+    private boolean isTenantVisibleAndActive(Long currentTenantId, Long filterTenantId) {
+        if (filterTenantId == null) {
+            return true;
+        }
+        TenantDO filterTenant = authUserLookupRepository.selectTenantById(filterTenantId);
+        return isActive(filterTenant)
+                && tenantRepository.selectDescendantIds(currentTenantId).contains(filterTenantId);
+    }
+
+    private boolean isActive(UserDO item) {
+        return item != null && item.getStatus() != null && item.getStatus() == 1
+                && (item.getDelFlag() == null || item.getDelFlag() == 0);
+    }
+
+    private boolean isActive(TenantDO item) {
+        return item != null && item.getStatus() != null && item.getStatus() == 1
+                && (item.getDelFlag() == null || item.getDelFlag() == 0);
+    }
+
+    private boolean isActive(RoleDO item) {
+        return item != null && item.getStatus() != null && item.getStatus() == 1
+                && (item.getDelFlag() == null || item.getDelFlag() == 0);
+    }
+
+    private boolean isActive(UserScopeRoleDO item) {
+        return item != null && item.getStatus() != null && item.getStatus() == 1
+                && (item.getDelFlag() == null || item.getDelFlag() == 0);
     }
 
     @Override

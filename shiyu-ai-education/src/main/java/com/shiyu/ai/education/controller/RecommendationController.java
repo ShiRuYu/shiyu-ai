@@ -1,5 +1,6 @@
 package com.shiyu.ai.education.controller;
 
+import cn.dev33.satoken.annotation.SaCheckPermission;
 import com.shiyu.ai.common.core.api.Result;
 import com.shiyu.ai.model.chat.ChatEngine;
 import com.shiyu.ai.model.chat.ChatRequest;
@@ -23,6 +24,7 @@ import java.util.List;
 @RestController
 @RequestMapping("/api/v1/recommend")
 @RequiredArgsConstructor
+@SaCheckPermission("edu:analytics")
 public class RecommendationController {
 
     private final RecommendationService recommendationService;

@@ -1,5 +1,6 @@
 package com.shiyu.ai.auth.config;
 
+import cn.dev33.satoken.interceptor.SaInterceptor;
 import com.shiyu.ai.auth.interceptor.UserContextInterceptor;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.web.servlet.config.annotation.InterceptorRegistry;
@@ -40,5 +41,6 @@ public class SaInterceptorConfig implements WebMvcConfigurer {
                     "/webjars/**", "/v2/api-docs",
                     "/h2/**"
                 );
+        registry.addInterceptor(new SaInterceptor()).addPathPatterns("/**");
     }
 }

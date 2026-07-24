@@ -1,5 +1,6 @@
 package com.shiyu.ai.education.controller;
 
+import cn.dev33.satoken.annotation.SaCheckPermission;
 import com.shiyu.ai.common.core.api.PageData;
 import com.shiyu.ai.common.core.api.Result;
 import com.shiyu.ai.education.dto.SubjectResponse;
@@ -17,6 +18,7 @@ import java.util.List;
 @RestController
 @RequestMapping("/subject")
 @RequiredArgsConstructor
+@SaCheckPermission("edu:subject:list")
 public class SubjectController {
 
     private final SubjectService subjectService;
@@ -44,11 +46,13 @@ public class SubjectController {
     }
 
     @PostMapping("/create")
+    @SaCheckPermission("edu:subject:create")
     public Result<SubjectResponse> create(@Valid @RequestBody SubjectRequest request) {
         return Result.success(subjectService.create(request));
     }
 
     @PostMapping("/update")
+    @SaCheckPermission("edu:subject:edit")
     public Result<Void> update(@RequestParam Long id, @Valid @RequestBody SubjectRequest request) {
         request.setId(id);
         subjectService.update(request);
@@ -56,6 +60,7 @@ public class SubjectController {
     }
 
     @PostMapping("/delete")
+    @SaCheckPermission("edu:subject:delete")
     public Result<Void> delete(@RequestParam Long id) {
         subjectService.deleteById(id);
         return Result.success();

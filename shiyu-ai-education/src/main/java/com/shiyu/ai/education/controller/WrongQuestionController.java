@@ -1,5 +1,6 @@
 package com.shiyu.ai.education.controller;
 
+import cn.dev33.satoken.annotation.SaCheckPermission;
 import com.shiyu.ai.common.core.api.Result;
 import com.shiyu.ai.education.dto.WrongQuestionResponse;
 import com.shiyu.ai.education.request.WrongQuestionRequest;
@@ -16,6 +17,7 @@ import com.shiyu.ai.education.dto.WrongQuestionResponse;
 @RestController
 @RequestMapping("/wrong-question")
 @RequiredArgsConstructor
+@SaCheckPermission("edu:wrong-question")
 public class WrongQuestionController {
 
     private final WrongQuestionService wrongQuestionService;
