@@ -194,21 +194,6 @@ public class AuthController {
     }
 
     /**
-     * 切换当前工作空间
-     * POST /auth/switch-workspace
-     */
-    @Operation(summary = "Switch Workspace")
-    @PostMapping("/switch-workspace")
-    public Result<SwitchContextResponse> switchWorkspace(@Valid @RequestBody SwitchWorkspaceRequest request) {
-        log.info("收到切换工作空间请求");
-        Long userId = LoginContextHolder.getUserId();
-        if (userId == null) return Result.fail("用户未登录");
-        boolean success = authService.switchCurrentWorkspace(userId, request.getWorkspaceId());
-        if (!success) return Result.fail("切换工作空间失败");
-        return Result.success(buildSwitchContext(userId));
-    }
-
-    /**
      * 构建切换后的完整上下文响应（消除 N+1 请求）
      */
     private SwitchContextResponse buildSwitchContext(Long userId) {
@@ -217,39 +202,22 @@ public class AuthController {
         if (userVO != null) {
             try {
                 userVO.setTenants(authService.getUserTenants(userId));
-                userVO.setWorkspaces(authService.getUserWorkspaces(userId));
                 if (userVO.getExtInfo() != null) {
                     var extMap = com.shiyu.ai.common.core.utils.JSONUtils.parseObject(
                             userVO.getExtInfo(), java.util.Map.class);
                     if (extMap != null) {
                         Object tid = extMap.get("currentTenantId");
                         if (tid instanceof Number) userVO.setCurrentTenantId(((Number) tid).longValue());
-                        Object wid = extMap.get("currentWorkspaceId");
-                        if (wid instanceof Number) userVO.setCurrentWorkspaceId(((Number) wid).longValue());
                     }
                 }
             } catch (Exception e) {
-                log.warn("获取用户租户/工作空间信息失败: {}", e.getMessage());
+                log.warn("获取用户租户信息失败: {}", e.getMessage());
             }
         }
         return SwitchContextResponse.builder()
                 .userInfo(userVO)
                 .tenants(authService.getUserTenants(userId))
-                .workspaces(authService.getUserWorkspaces(userId))
                 .build();
-    }
-
-    /**
-     * 获取用户工作空间列表
-     * GET /auth/workspaces
-     */
-    @Operation(summary = "Get User Workspaces")
-    @GetMapping("/workspaces")
-    public Result<List<WorkspaceContextVO>> getUserWorkspaces() {
-        log.info("获取用户工作空间列表");
-        Long userId = LoginContextHolder.getUserId();
-        if (userId == null) return Result.fail("用户未登录");
-        return Result.success(authService.getUserWorkspaces(userId));
     }
 
     /**
@@ -286,6 +254,36 @@ public class AuthController {
         }
     }
     
+    /**
+     * 设置子租户筛选器
+     * POST /auth/scope-sub-tenant
+     * 仅在根租户上下文中有效，设置后只查看该子租户的数据
+     */
+    @Operation(summary = "Filter Sub Tenant")
+    @PostMapping("/scope-sub-tenant")
+    public Result<Void> filterSubTenant(@Valid @RequestBody FilterSubTenantRequest request) {
+        log.info("收到子租户筛选请求, subTenantId={}", request.getSubTenantId());
+        Long userId = LoginContextHolder.getUserId();
+        if (userId == null) return Result.fail("用户未登录");
+        boolean success = authService.setScopedTenant(userId, request.getSubTenantId());
+        return success ? Result.success() : Result.fail("设置子租户筛选器失败");
+    }
+
+    /**
+     * 清除子租户筛选器
+     * POST /auth/clear-scope
+     * 回到根租户全量视角
+     */
+    @Operation(summary = "Clear Sub Tenant Filter")
+    @PostMapping("/clear-scope")
+    public Result<Void> clearFilter() {
+        log.info("收到清除筛选器请求");
+        Long userId = LoginContextHolder.getUserId();
+        if (userId == null) return Result.fail("用户未登录");
+        boolean success = authService.clearScopedTenant(userId);
+        return success ? Result.success() : Result.fail("清除筛选器失败");
+    }
+
     private String extractTokenFromHeader(String tokenHeader) {
         if (tokenHeader == null || tokenHeader.trim().isEmpty()) return null;
         if (tokenHeader.startsWith("Bearer ")) return tokenHeader.substring(7);

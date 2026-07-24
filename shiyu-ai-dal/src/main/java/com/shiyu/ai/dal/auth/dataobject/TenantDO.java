@@ -19,6 +19,9 @@ public class TenantDO extends BaseEntity {
     @Id(keyType = KeyType.Auto)
     private Long id;
 
+    /** 父租户ID（null=根租户） */
+    private Long parentId;
+
     private String code;
 
     private String name;
@@ -32,5 +35,20 @@ public class TenantDO extends BaseEntity {
     private String domain;
 
     private String intro;
+
+    /** 排序 */
+    private Integer order;
+
+    /** 负责人 */
+    private String leader;
+
+    /** 联系电话 */
+    private String phone;
+
+    /** 邮箱 */
+    private String email;
+
+    /** 备注 */
+    private String remark;
 
 }

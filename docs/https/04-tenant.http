@@ -48,7 +48,7 @@ Content-Type: application/json
 
 ### ------------------- 删除租户（级联）-------------------
 ### @name Delete Tenant
-# 级联删除：关联的 role_workspace_menu、user_workspace_role、tenant_quota、
-# menu、role、workspace、user 全部清理。默认租户（id=1）禁止删除
+# 级联删除：关联的 role_scope_menu、user_scope_role、tenant_quota、
+# menu、role、sub-tenant、user 全部清理。默认租户（id=1）禁止删除
 POST {{baseUrl}}/tenant/delete?id=2 HTTP/1.1
 Authorization: Bearer {{authToken}}

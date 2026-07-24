@@ -3,7 +3,7 @@ package com.shiyu.ai.dal.auth.mapper;
 import com.mybatisflex.annotation.UseDataSource;
 import com.mybatisflex.core.query.QueryWrapper;
 import com.shiyu.ai.dal.datasource.DataSourceConfig;
-import com.shiyu.ai.dal.auth.dataobject.UserWorkspaceRoleDO;
+import com.shiyu.ai.dal.auth.dataobject.UserScopeRoleDO;
 import com.shiyu.ai.common.mybatis.core.mapper.BaseMapperFlex;
 import org.apache.ibatis.annotations.Mapper;
 
@@ -15,15 +15,15 @@ import java.util.List;
  * User Workspace Role 接口
  */
 
-public interface UserWorkspaceRoleMapper extends BaseMapperFlex<UserWorkspaceRoleDO> {
+public interface UserScopeRoleMapper extends BaseMapperFlex<UserScopeRoleDO> {
 
-    default List<UserWorkspaceRoleDO> selectByUserId(Long userId) {
+    default List<UserScopeRoleDO> selectByUserId(Long userId) {
         QueryWrapper qw = QueryWrapper.create()
     /**
      * Eq
      * @return 处理结果
      */
-            .eq(UserWorkspaceRoleDO::getUserId, userId);
+            .eq(UserScopeRoleDO::getUserId, userId);
     /**
      * Select List By Query
      * @return 处理结果

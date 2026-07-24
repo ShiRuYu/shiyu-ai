@@ -37,7 +37,6 @@ public class AuditFieldListener implements com.mybatisflex.annotation.InsertList
         }
 
         autoFillIfPresent(entity, "tenantId", LoginContextHolder.getTenantId());
-        autoFillIfPresent(entity, "workspaceId", LoginContextHolder.getCurrentWorkspaceId());
     }
 
     @Override

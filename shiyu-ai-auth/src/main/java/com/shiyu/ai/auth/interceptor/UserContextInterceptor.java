@@ -1,9 +1,9 @@
 package com.shiyu.ai.auth.interceptor;
 
 import com.shiyu.ai.dal.auth.repository.AuthUserLookupRepository;
-import com.shiyu.ai.dal.auth.dataobject.RoleDO;
+import com.shiyu.ai.dal.auth.repository.TenantRepository;
+import com.shiyu.ai.dal.auth.dataobject.TenantDO;
 import com.shiyu.ai.dal.auth.dataobject.UserDO;
-import com.shiyu.ai.dal.auth.dataobject.UserWorkspaceRoleDO;
 import com.shiyu.ai.auth.utils.SaTokenHelper;
 import com.shiyu.ai.common.core.domain.LoginContextHolder;
 import com.shiyu.ai.common.core.domain.LoginUser;
@@ -20,32 +20,26 @@ import org.jspecify.annotations.NonNull;
 import org.springframework.stereotype.Component;
 import org.springframework.web.servlet.HandlerInterceptor;
 
-import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.Set;
-import java.util.stream.Collectors;
 
 @Slf4j
 @Component
 public class UserContextInterceptor implements HandlerInterceptor {
 
     private final AuthUserLookupRepository authUserLookupRepository;
+    private final TenantRepository tenantRepository;
 
-    public UserContextInterceptor(AuthUserLookupRepository authUserLookupRepository) {
+    public UserContextInterceptor(AuthUserLookupRepository authUserLookupRepository,
+                                  TenantRepository tenantRepository) {
         this.authUserLookupRepository = authUserLookupRepository;
+        this.tenantRepository = tenantRepository;
     }
 
     @Override
     public boolean preHandle(HttpServletRequest request, @NonNull HttpServletResponse response, @NonNull Object handler) throws Exception {
-        if ("OPTIONS".equalsIgnoreCase(request.getMethod())) {
-            return true;
-        }
-
-        if (request.getDispatcherType() == DispatcherType.ASYNC) {
-            return true;
-        }
+        if ("OPTIONS".equalsIgnoreCase(request.getMethod())) return true;
+        if (request.getDispatcherType() == DispatcherType.ASYNC) return true;
 
         try {
             SaTokenHelper helper = SaTokenHelper.getInstance();
@@ -57,20 +51,17 @@ public class UserContextInterceptor implements HandlerInterceptor {
             }
 
             Long userId = SaTokenHelper.getCurrentUserId();
-
-            // 先从 SaToken session 中读取缓存的 LoginUser
             LoginUser loginUser = SaTokenHelper.getLoginUserFromSession();
+
             if (loginUser != null && userId.equals(loginUser.getUserId())) {
-                // 更新动态属性（IP、浏览器等）
                 loginUser.setToken(SaTokenHelper.getCurrentToken());
                 loginUser.setIpaddr(getClientIp(request));
-                String userAgent = request.getHeader("User-Agent");
-                if (userAgent != null) {
-                    loginUser.setBrowser(parseBrowser(userAgent));
-                    loginUser.setOs(parseOS(userAgent));
+                String ua = request.getHeader("User-Agent");
+                if (ua != null) {
+                    loginUser.setBrowser(parseBrowser(ua));
+                    loginUser.setOs(parseOS(ua));
                 }
                 LoginContextHolder.setContext(loginUser);
-                log.debug("用户上下文从 session 缓存加载: userId={}, tenantId={}", userId, loginUser.getTenantId());
                 return true;
             }
 
@@ -83,36 +74,31 @@ public class UserContextInterceptor implements HandlerInterceptor {
             loginUser.setExpireTime(helper.getTokenTimeout());
             loginUser.setIpaddr(getClientIp(request));
 
-            String userAgent = request.getHeader("User-Agent");
-            if (userAgent != null) {
-                loginUser.setBrowser(parseBrowser(userAgent));
-                loginUser.setOs(parseOS(userAgent));
+            String ua = request.getHeader("User-Agent");
+            if (ua != null) {
+                loginUser.setBrowser(parseBrowser(ua));
+                loginUser.setOs(parseOS(ua));
             }
 
-            loadTenantWorkspaceContext(userId, loginUser);
+            loadScopeContext(userId, loginUser);
 
-            // 先设置上下文，确保即使 session 持久化失败上下文也立即可用
             LoginContextHolder.setContext(loginUser);
-
-            // 写入 SaToken session 缓存（失败不影响当前请求）
             try {
                 SaTokenHelper.saveLoginUserToSession(loginUser);
-            } catch (Exception sessionEx) {
-                log.warn("session 持久化失败，但不影响当前请求: uri={}, error={}", request.getRequestURI(), sessionEx.getMessage());
-            }
+            } catch (Exception ignored) {}
 
-            log.debug("用户上下文从数据库加载并缓存: userId={}, tenantId={}, workspaceId={}, uri={}",
-                    userId, loginUser.getTenantId(), loginUser.getCurrentWorkspaceId(), request.getRequestURI());
+            log.debug("用户上下文加载: userId={}, scopeTenantId={}, visibleTenantIds={}, scopedTenantId={}",
+                    userId, loginUser.getScopeTenantId(), loginUser.getVisibleTenantIds(), loginUser.getScopedTenantId());
 
             return true;
-
         } catch (Exception e) {
             log.warn("设置用户上下文失败: uri={}, error={}", request.getRequestURI(), e.getMessage());
             return true;
         }
     }
 
-    private void loadTenantWorkspaceContext(Long userId, LoginUser loginUser) {
+    @SuppressWarnings("unchecked")
+    private void loadScopeContext(Long userId, LoginUser loginUser) {
         try {
             UserDO user = authUserLookupRepository.selectUserById(userId);
             if (user == null) return;
@@ -121,106 +107,93 @@ public class UserContextInterceptor implements HandlerInterceptor {
             loginUser.setNickName(user.getNickName());
             loginUser.setAvatar(user.getAvatar());
 
-            Long currentTenantId = null;
-            Long currentWorkspaceId = null;
+            Long currentScopeTenantId = null;
             if (user.getExtInfo() != null && !user.getExtInfo().isEmpty()) {
                 try {
                     Map<String, Object> extInfo = JSONUtils.parseObject(user.getExtInfo(), Map.class);
                     if (extInfo != null) {
-                        Object tenantObj = extInfo.get("currentTenantId");
-                        if (tenantObj instanceof Number) currentTenantId = ((Number) tenantObj).longValue();
-                        Object wsObj = extInfo.get("currentWorkspaceId");
-                        if (wsObj instanceof Number) currentWorkspaceId = ((Number) wsObj).longValue();
+                        // 作用域租户
+                        Object tid = extInfo.get("scopeTenantId");
+                        if (tid instanceof Number) {
+                            currentScopeTenantId = ((Number) tid).longValue();
+                        }
+                        // 历史遗留兼容
+                        if (currentScopeTenantId == null && extInfo.get("currentTenantId") instanceof Number t) {
+                            currentScopeTenantId = t.longValue();
+                        }
+                        // 子租户筛选器
+                        Object sid = extInfo.get("scopedTenantId");
+                        if (sid instanceof Number) {
+                            loginUser.setScopedTenantId(((Number) sid).longValue());
+                        }
+                        // 当前角色
+                        Object roleObj = extInfo.get("currentRole");
+                        if (roleObj instanceof Map roleMap) {
+                            Object roleKey = ((Map<String, Object>) roleMap).get("roleKey");
+                            if (roleKey instanceof String) {
+                                loginUser.setCurrentRoleCode((String) roleKey);
+                            }
+                        }
                     }
                 } catch (Exception e) {
-                log.warn("用户上下文处理异常: {}", e.getMessage());
-            }
-            }
-
-            List<UserWorkspaceRoleDO> uwrList = authUserLookupRepository.selectUserWorkspaceRoles(userId);
-            if (uwrList == null || uwrList.isEmpty()) {
-                loginUser.setWorkspaceIds(new ArrayList<>());
-                loginUser.setWorkspaceRoleMap(new HashMap<>());
-                return;
-            }
-
-            Long effectiveTenantId = currentTenantId;
-            if (effectiveTenantId == null && user.getTenantId() != null) effectiveTenantId = user.getTenantId();
-            if (effectiveTenantId == null) effectiveTenantId = uwrList.get(0).getTenantId();
-
-            final Long ft = effectiveTenantId;
-            List<UserWorkspaceRoleDO> filtered = ft != null
-                ? uwrList.stream().filter(r -> ft.equals(r.getTenantId())).collect(Collectors.toList())
-                : uwrList;
-            if (filtered.isEmpty()) filtered = uwrList;
-
-            List<Long> workspaceIds = filtered.stream().map(UserWorkspaceRoleDO::getWorkspaceId).distinct().collect(Collectors.toList());
-            Set<Long> roleIds = filtered.stream().map(UserWorkspaceRoleDO::getRoleId).collect(Collectors.toSet());
-
-            // ✅ 修复：批量查询角色并构建 workspaceId → roleCode 映射
-            List<RoleDO> roles = authUserLookupRepository.selectRolesByIds(roleIds);
-            Map<Long, String> roleIdToCode = roles.stream()
-                    .collect(Collectors.toMap(RoleDO::getId, RoleDO::getCode, (a, b) -> b));
-            Map<Long, String> workspaceRoleMap = new HashMap<>();
-            for (UserWorkspaceRoleDO uwr : filtered) {
-                String roleCode = roleIdToCode.get(uwr.getRoleId());
-                if (roleCode != null) {
-                    workspaceRoleMap.put(uwr.getWorkspaceId(), roleCode);
+                    log.warn("extInfo 解析异常: {}", e.getMessage());
                 }
             }
 
-            loginUser.setTenantId(ft);
-            loginUser.setCurrentWorkspaceId(currentWorkspaceId);
-            loginUser.setWorkspaceIds(workspaceIds);
-            loginUser.setWorkspaceRoleMap(workspaceRoleMap);
+            // 兜底 scopeTenantId
+            if (currentScopeTenantId == null) {
+                if (user.getTenantId() != null) {
+                    currentScopeTenantId = user.getTenantId();
+                }
+            }
+
+            loginUser.setScopeTenantId(currentScopeTenantId);
+
+            // 计算可见范围（scope 自身 + 所有后代）
+            if (currentScopeTenantId != null) {
+                List<Long> descendantIds = tenantRepository.selectDescendantIds(currentScopeTenantId);
+                loginUser.setVisibleTenantIds(descendantIds);
+            }
+
         } catch (Exception e) {
-            log.warn("failed to load tenant/workspace context: userId={}, error={}", userId, e.getMessage());
+            log.warn("加载租户作用域异常: userId={}, error={}", userId, e.getMessage());
         }
     }
 
     @Override
-    public void afterCompletion(HttpServletRequest request, HttpServletResponse response, Object handler, Exception ex) throws Exception {
+    public void afterCompletion(HttpServletRequest request, HttpServletResponse response, Object handler, Exception ex) {
         LoginContextHolder.clearContext();
-        log.debug("用户上下文已清理: uri={}", request.getRequestURI());
     }
 
     private String getClientIp(HttpServletRequest request) {
         String ip = request.getHeader("X-Forwarded-For");
-        if (ip == null || ip.isEmpty() || "unknown".equalsIgnoreCase(ip)) {
+        if (ip == null || ip.isEmpty() || "unknown".equalsIgnoreCase(ip))
             ip = request.getHeader("X-Real-IP");
-        }
-        if (ip == null || ip.isEmpty() || "unknown".equalsIgnoreCase(ip)) {
+        if (ip == null || ip.isEmpty() || "unknown".equalsIgnoreCase(ip))
             ip = request.getHeader("Proxy-Client-IP");
-        }
-        if (ip == null || ip.isEmpty() || "unknown".equalsIgnoreCase(ip)) {
+        if (ip == null || ip.isEmpty() || "unknown".equalsIgnoreCase(ip))
             ip = request.getHeader("WL-Proxy-Client-IP");
-        }
-        if (ip == null || ip.isEmpty() || "unknown".equalsIgnoreCase(ip)) {
+        if (ip == null || ip.isEmpty() || "unknown".equalsIgnoreCase(ip))
             ip = request.getRemoteAddr();
-        }
-        if (ip != null && ip.length() > 15) {
-            if (ip.indexOf(",") > 0) {
-                ip = ip.substring(0, ip.indexOf(","));
-            }
-        }
+        if (ip != null && ip.indexOf(",") > 0) ip = ip.substring(0, ip.indexOf(","));
         return ip;
     }
 
-    private String parseBrowser(String userAgent) {
-        if (userAgent.contains("Chrome")) return "Chrome";
-        else if (userAgent.contains("Firefox")) return "Firefox";
-        else if (userAgent.contains("Safari")) return "Safari";
-        else if (userAgent.contains("Edge")) return "Edge";
-        else if (userAgent.contains("MSIE") || userAgent.contains("Trident")) return "IE";
+    private String parseBrowser(String ua) {
+        if (ua.contains("Chrome")) return "Chrome";
+        if (ua.contains("Firefox")) return "Firefox";
+        if (ua.contains("Safari")) return "Safari";
+        if (ua.contains("Edge")) return "Edge";
+        if (ua.contains("MSIE") || ua.contains("Trident")) return "IE";
         return "Unknown";
     }
 
-    private DeviceTypeEnum parseOS(String userAgent) {
-        if (userAgent.contains("Windows")) return DeviceTypeEnum.WINDOWS;
-        else if (userAgent.contains("Mac OS")) return DeviceTypeEnum.MAC;
-        else if (userAgent.contains("Linux")) return DeviceTypeEnum.LINUX;
-        else if (userAgent.contains("Android")) return DeviceTypeEnum.ANDROID;
-        else if (userAgent.contains("iPhone") || userAgent.contains("iPad")) return DeviceTypeEnum.IOS;
+    private DeviceTypeEnum parseOS(String ua) {
+        if (ua.contains("Windows")) return DeviceTypeEnum.WINDOWS;
+        if (ua.contains("Mac OS")) return DeviceTypeEnum.MAC;
+        if (ua.contains("Linux")) return DeviceTypeEnum.LINUX;
+        if (ua.contains("Android")) return DeviceTypeEnum.ANDROID;
+        if (ua.contains("iPhone") || ua.contains("iPad")) return DeviceTypeEnum.IOS;
         return DeviceTypeEnum.UNKNOWN;
     }
 }

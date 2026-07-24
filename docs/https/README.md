@@ -12,7 +12,7 @@
 | `02-user.http` | User | 用户 CRUD、密码重置与修改 |
 | `03-role.http` | Role | 角色 CRUD、用户角色分配/移除 |
 | `04-tenant.http` | Tenant | 租户 CRUD（需 tenant:admin 权限） |
-| `05-workspace.http` | Workspace | 工作空间树形管理 |
+
 | `06-menu.http` | Menu | 菜单/权限树 CRUD、路由菜单查询 |
 | `07-captcha.http` | Captcha | 验证码获取与校验 |
 | `08-dict.http` | Dict | 字典项 CRUD、按类型查询 |

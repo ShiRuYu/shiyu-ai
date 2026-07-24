@@ -3,10 +3,10 @@ package com.shiyu.ai.dal.auth.repository;
 import com.mybatisflex.core.query.QueryWrapper;
 import com.shiyu.ai.dal.auth.dataobject.RoleDO;
 import com.shiyu.ai.dal.auth.dataobject.UserDO;
-import com.shiyu.ai.dal.auth.dataobject.UserWorkspaceRoleDO;
+import com.shiyu.ai.dal.auth.dataobject.UserScopeRoleDO;
 import com.shiyu.ai.dal.auth.mapper.RoleMapper;
 import com.shiyu.ai.dal.auth.mapper.UserMapper;
-import com.shiyu.ai.dal.auth.mapper.UserWorkspaceRoleMapper;
+import com.shiyu.ai.dal.auth.mapper.UserScopeRoleMapper;
 import com.shiyu.ai.dal.auth.bo.RoleBO;
 import com.shiyu.ai.dal.auth.bo.UserBO;
 import com.shiyu.ai.common.core.utils.MapstructUtils;
@@ -29,7 +29,7 @@ public class UserRepository {
     private UserMapper userMapper;
 
     @Resource
-    private UserWorkspaceRoleMapper userWorkspaceRoleMapper;
+    private UserScopeRoleMapper userWorkspaceRoleMapper;
 
     @Resource
     private RoleMapper roleMapper;
@@ -105,14 +105,14 @@ public class UserRepository {
     }
 
     /**
-     * 根据用户ID查询角色列表（从 user_workspace_role 去重获取）
+     * 根据用户ID查询角色列表（从 user_scope_role 去重获取）
      */
     public List<RoleBO> selectRolesByUserId(Long userId) {
         QueryWrapper qw = QueryWrapper.create()
             .from(RoleDO.class)
-            .innerJoin(UserWorkspaceRoleDO.class)
-                .on(column(RoleDO::getId).eq(column(UserWorkspaceRoleDO::getRoleId)))
-            .where(UserWorkspaceRoleDO::getUserId).eq(userId)
+            .innerJoin(UserScopeRoleDO.class)
+                .on(column(RoleDO::getId).eq(column(UserScopeRoleDO::getRoleId)))
+            .where(UserScopeRoleDO::getUserId).eq(userId)
             .and(RoleDO::getStatus).eq(1)
             .and(RoleDO::getDelFlag).eq(0);
         qw.orderBy(RoleDO::getId);

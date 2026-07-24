@@ -3,10 +3,10 @@ package com.shiyu.ai.dal.auth.repository;
 import com.mybatisflex.core.query.QueryWrapper;
 import com.shiyu.ai.dal.auth.dataobject.MenuDO;
 import com.shiyu.ai.dal.auth.dataobject.RoleDO;
-import com.shiyu.ai.dal.auth.dataobject.RoleWorkspaceMenuDO;
+import com.shiyu.ai.dal.auth.dataobject.RoleScopeMenuDO;
 import com.shiyu.ai.dal.auth.mapper.MenuMapper;
 import com.shiyu.ai.dal.auth.mapper.RoleMapper;
-import com.shiyu.ai.dal.auth.mapper.RoleWorkspaceMenuMapper;
+import com.shiyu.ai.dal.auth.mapper.RoleScopeMenuMapper;
 import com.shiyu.ai.dal.auth.bo.MenuBO;
 import com.shiyu.ai.dal.auth.bo.RoleBO;
 import com.shiyu.ai.common.core.utils.MapstructUtils;
@@ -30,7 +30,7 @@ public class RoleRepository {
     private RoleMapper roleMapper;
 
     @Resource
-    private RoleWorkspaceMenuMapper roleWorkspaceMenuMapper;
+    private RoleScopeMenuMapper roleWorkspaceMenuMapper;
 
     @Resource
     private MenuMapper menuMapper;
@@ -117,9 +117,9 @@ public class RoleRepository {
     public List<MenuBO> selectMenusByRoleId(Long roleId) {
         QueryWrapper qw = QueryWrapper.create()
             .from(MenuDO.class)
-            .innerJoin(RoleWorkspaceMenuDO.class)
-                .on(column(MenuDO::getId).eq(column(RoleWorkspaceMenuDO::getMenuId)))
-            .where(RoleWorkspaceMenuDO::getRoleId).eq(roleId)
+            .innerJoin(RoleScopeMenuDO.class)
+                .on(column(MenuDO::getId).eq(column(RoleScopeMenuDO::getMenuId)))
+            .where(RoleScopeMenuDO::getRoleId).eq(roleId)
             .and(MenuDO::getStatus).eq(1)
             .and(MenuDO::getDelFlag).eq(0);
         qw.orderBy(column(MenuDO::getOrder).asc(), column(MenuDO::getId).asc());
@@ -132,16 +132,16 @@ public class RoleRepository {
      */
     public List<Long> selectMenuIdsByRoleId(Long roleId) {
         QueryWrapper qw = QueryWrapper.create()
-            .select(column(RoleWorkspaceMenuDO::getMenuId))
-            .from(RoleWorkspaceMenuDO.class)
+            .select(column(RoleScopeMenuDO::getMenuId))
+            .from(RoleScopeMenuDO.class)
             .innerJoin(MenuDO.class)
-                .on(column(RoleWorkspaceMenuDO::getMenuId).eq(column(MenuDO::getId)))
-            .where(RoleWorkspaceMenuDO::getRoleId).eq(roleId)
+                .on(column(RoleScopeMenuDO::getMenuId).eq(column(MenuDO::getId)))
+            .where(RoleScopeMenuDO::getRoleId).eq(roleId)
             .and(MenuDO::getStatus).eq(1)
             .and(MenuDO::getDelFlag).eq(0);
         qw.orderBy(column(MenuDO::getOrder).asc(), column(MenuDO::getId).asc());
-        List<RoleWorkspaceMenuDO> list = roleWorkspaceMenuMapper.selectListByQuery(qw);
-        return list.stream().map(RoleWorkspaceMenuDO::getMenuId).collect(Collectors.toList());
+        List<RoleScopeMenuDO> list = roleWorkspaceMenuMapper.selectListByQuery(qw);
+        return list.stream().map(RoleScopeMenuDO::getMenuId).collect(Collectors.toList());
     }
 
     /**
@@ -152,18 +152,18 @@ public class RoleRepository {
             return Map.of();
         }
         QueryWrapper qw = QueryWrapper.create()
-            .select(column(RoleWorkspaceMenuDO::getRoleId), column(RoleWorkspaceMenuDO::getMenuId))
-            .from(RoleWorkspaceMenuDO.class)
+            .select(column(RoleScopeMenuDO::getRoleId), column(RoleScopeMenuDO::getMenuId))
+            .from(RoleScopeMenuDO.class)
             .innerJoin(MenuDO.class)
-                .on(column(RoleWorkspaceMenuDO::getMenuId).eq(column(MenuDO::getId)))
-            .where(RoleWorkspaceMenuDO::getRoleId).in(roleIds)
+                .on(column(RoleScopeMenuDO::getMenuId).eq(column(MenuDO::getId)))
+            .where(RoleScopeMenuDO::getRoleId).in(roleIds)
             .and(MenuDO::getStatus).eq(1)
             .and(MenuDO::getDelFlag).eq(0);
         qw.orderBy(column(MenuDO::getOrder).asc(), column(MenuDO::getId).asc());
-        List<RoleWorkspaceMenuDO> list = roleWorkspaceMenuMapper.selectListByQuery(qw);
+        List<RoleScopeMenuDO> list = roleWorkspaceMenuMapper.selectListByQuery(qw);
         return list.stream().collect(Collectors.groupingBy(
-            RoleWorkspaceMenuDO::getRoleId,
-            Collectors.mapping(RoleWorkspaceMenuDO::getMenuId, Collectors.toList())
+            RoleScopeMenuDO::getRoleId,
+            Collectors.mapping(RoleScopeMenuDO::getMenuId, Collectors.toList())
         ));
     }
 
@@ -175,13 +175,13 @@ public class RoleRepository {
             return;
         }
         
-        Long workspaceId = com.shiyu.ai.common.core.domain.LoginContextHolder.getCurrentWorkspaceId();
+        Long scopeTenantId = com.shiyu.ai.common.core.domain.LoginContextHolder.getScopeTenantId();
         Long tenantId = com.shiyu.ai.common.core.domain.LoginContextHolder.getTenantId();
         
-        List<RoleWorkspaceMenuDO> list = menuIds.stream().map(menuId -> {
-            RoleWorkspaceMenuDO rwm = new RoleWorkspaceMenuDO();
+        List<RoleScopeMenuDO> list = menuIds.stream().map(menuId -> {
+            RoleScopeMenuDO rwm = new RoleScopeMenuDO();
             rwm.setRoleId(roleId);
-            rwm.setWorkspaceId(workspaceId);
+            rwm.setScopedTenantId(scopeTenantId);
             rwm.setMenuId(menuId);
             rwm.setTenantId(tenantId);
             return rwm;
@@ -193,11 +193,11 @@ public class RoleRepository {
      * 删除角色的所有菜单关联（按当前工作空间过滤）
      */
     public void deleteRoleMenus(Long roleId) {
-        Long workspaceId = com.shiyu.ai.common.core.domain.LoginContextHolder.getCurrentWorkspaceId();
+        Long scopeTenantId = com.shiyu.ai.common.core.domain.LoginContextHolder.getScopeTenantId();
         QueryWrapper queryWrapper = new QueryWrapper();
-        queryWrapper.eq(RoleWorkspaceMenuDO::getRoleId, roleId);
-        if (workspaceId != null) {
-            queryWrapper.eq(RoleWorkspaceMenuDO::getWorkspaceId, workspaceId);
+        queryWrapper.eq(RoleScopeMenuDO::getRoleId, roleId);
+        if (scopeTenantId != null) {
+            queryWrapper.eq(RoleScopeMenuDO::getScopedTenantId, scopeTenantId);
         }
         roleWorkspaceMenuMapper.deleteByQuery(queryWrapper);
     }

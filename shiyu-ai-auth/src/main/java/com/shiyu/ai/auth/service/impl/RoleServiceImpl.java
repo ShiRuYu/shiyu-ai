@@ -2,8 +2,8 @@ package com.shiyu.ai.auth.service.impl;
 
 import com.shiyu.ai.dal.auth.repository.RoleRepository;
 import com.shiyu.ai.auth.service.RoleService;
-import com.shiyu.ai.dal.auth.dataobject.UserWorkspaceRoleDO;
-import com.shiyu.ai.dal.auth.repository.UserWorkspaceRoleRepository;
+import com.shiyu.ai.dal.auth.dataobject.UserScopeRoleDO;
+import com.shiyu.ai.dal.auth.repository.UserScopeRoleRepository;
 import com.shiyu.ai.dal.auth.bo.RoleBO;
 import com.shiyu.ai.auth.vo.RolePageResponse;
 import com.shiyu.ai.auth.vo.RoleVO;
@@ -24,9 +24,9 @@ import java.util.List;
 public class RoleServiceImpl implements RoleService {
 
     private final RoleRepository roleRepository;
-    private final UserWorkspaceRoleRepository userWorkspaceRoleRepository;
+    private final UserScopeRoleRepository userWorkspaceRoleRepository;
 
-    public RoleServiceImpl(RoleRepository roleRepository, UserWorkspaceRoleRepository userWorkspaceRoleRepository) {
+    public RoleServiceImpl(RoleRepository roleRepository, UserScopeRoleRepository userWorkspaceRoleRepository) {
         this.roleRepository = roleRepository;
         this.userWorkspaceRoleRepository = userWorkspaceRoleRepository;
     }
@@ -109,24 +109,21 @@ public class RoleServiceImpl implements RoleService {
     @Override
     @Transactional(rollbackFor = Exception.class)
     public boolean removeUserRoles(Long roleId, List<Long> userIds) {
-        Long workspaceId = LoginContextHolder.getCurrentWorkspaceId();
-        log.info("取消分配角色，roleId: {}, userIds: {}, workspaceId: {}", roleId, userIds, workspaceId);
+        Long scopeTenantId = LoginContextHolder.getScopeTenantId();
+        log.info("取消分配角色，roleId: {}, userIds: {}, scopeTenantId: {}", roleId, userIds, scopeTenantId);
         if (userIds == null || userIds.isEmpty()) {
             return true;
         }
-        if (workspaceId == null) {
-            log.warn("当前上下文中 workspaceId 为空，跳过角色移除");
+        if (scopeTenantId == null) {
+            log.warn("当前没有作用域租户，跳过角色移除");
             return false;
         }
-        Long tenantId = LoginContextHolder.getTenantId();
         for (Long userId : userIds) {
             com.mybatisflex.core.query.QueryWrapper qw = new com.mybatisflex.core.query.QueryWrapper();
-            qw.eq(UserWorkspaceRoleDO::getUserId, userId)
-               .eq(UserWorkspaceRoleDO::getRoleId, roleId)
-               .eq(UserWorkspaceRoleDO::getWorkspaceId, workspaceId);
-            if (tenantId != null) {
-                qw.eq(UserWorkspaceRoleDO::getTenantId, tenantId);
-            }
+            qw.eq(UserScopeRoleDO::getUserId, userId)
+               .eq(UserScopeRoleDO::getRoleId, roleId)
+               .eq(UserScopeRoleDO::getScopedTenantId, scopeTenantId)
+               .eq(UserScopeRoleDO::getTenantId, scopeTenantId);
             userWorkspaceRoleRepository.deleteByQuery(qw);
         }
         return true;
@@ -135,18 +132,21 @@ public class RoleServiceImpl implements RoleService {
     @Override
     @Transactional(rollbackFor = Exception.class)
     public boolean assignUserRoles(Long roleId, List<Long> userIds) {
-        Long workspaceId = LoginContextHolder.getCurrentWorkspaceId();
-        log.info("分配角色，roleId: {}, userIds: {}, workspaceId: {}", roleId, userIds, workspaceId);
+        Long scopeTenantId = LoginContextHolder.getScopeTenantId();
+        log.info("分配角色，roleId: {}, userIds: {}, scopeTenantId: {}", roleId, userIds, scopeTenantId);
         if (userIds == null || userIds.isEmpty()) {
             return true;
         }
-        Long tenantId = LoginContextHolder.getTenantId();
+        if (scopeTenantId == null) {
+            log.warn("当前没有作用域租户，跳过角色分配");
+            return false;
+        }
         for (Long userId : userIds) {
-            UserWorkspaceRoleDO uwr = new UserWorkspaceRoleDO();
+            UserScopeRoleDO uwr = new UserScopeRoleDO();
             uwr.setUserId(userId);
-            uwr.setWorkspaceId(workspaceId);
+            uwr.setScopedTenantId(scopeTenantId);
             uwr.setRoleId(roleId);
-            uwr.setTenantId(tenantId);
+            uwr.setTenantId(scopeTenantId);
             userWorkspaceRoleRepository.insert(uwr);
         }
         return true;

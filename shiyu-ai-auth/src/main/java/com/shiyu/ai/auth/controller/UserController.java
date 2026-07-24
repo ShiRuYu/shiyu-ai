@@ -4,7 +4,6 @@ import com.shiyu.ai.auth.request.*;
 import com.shiyu.ai.dal.auth.bo.UserBO;
 import com.shiyu.ai.auth.vo.UserPageResponse;
 import com.shiyu.ai.auth.vo.UserVO;
-import com.shiyu.ai.auth.vo.WorkspaceContextVO;
 import com.shiyu.ai.auth.service.AuthService;
 import com.shiyu.ai.auth.service.UserService;
 import com.shiyu.ai.common.core.api.Result;
@@ -56,8 +55,6 @@ public class UserController {
 
         try {
             userVO.setTenants(authService.getUserTenants(userId));
-            List<WorkspaceContextVO> workspaces = authService.getUserWorkspaces(userId);
-            userVO.setWorkspaces(workspaces);
 
             if (userVO.getExtInfo() != null) {
                 var extMap = com.shiyu.ai.common.core.utils.JSONUtils.parseObject(
@@ -65,8 +62,6 @@ public class UserController {
                 if (extMap != null) {
                     Object tid = extMap.get("currentTenantId");
                     if (tid instanceof Number) userVO.setCurrentTenantId(((Number) tid).longValue());
-                    Object wid = extMap.get("currentWorkspaceId");
-                    if (wid instanceof Number) userVO.setCurrentWorkspaceId(((Number) wid).longValue());
                 }
             }
         } catch (Exception e) {

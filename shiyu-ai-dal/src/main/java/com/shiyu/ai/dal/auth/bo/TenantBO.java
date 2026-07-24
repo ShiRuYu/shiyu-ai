@@ -5,6 +5,7 @@ import lombok.Data;
 import java.io.Serial;
 import java.io.Serializable;
 import java.time.LocalDateTime;
+import java.util.List;
 import io.github.linpeilie.annotations.AutoMapper;
 import com.shiyu.ai.dal.auth.dataobject.TenantDO;
 
@@ -16,6 +17,9 @@ public class TenantBO implements Serializable {
     private static final long serialVersionUID = 1L;
 
     private Long id;
+
+    /** 父租户ID（null=根租户） */
+    private Long parentId;
 
     private String code;
 
@@ -31,6 +35,21 @@ public class TenantBO implements Serializable {
 
     private String intro;
 
+    /** 排序 */
+    private Integer order;
+
+    /** 负责人 */
+    private String leader;
+
+    /** 联系电话 */
+    private String phone;
+
+    /** 邮箱 */
+    private String email;
+
+    /** 备注 */
+    private String remark;
+
     private Integer status;
 
     private Integer delFlag;
@@ -42,4 +61,7 @@ public class TenantBO implements Serializable {
     private String updateBy;
 
     private LocalDateTime updateTime;
+
+    /** 子租户列表 */
+    private List<TenantBO> children;
 }

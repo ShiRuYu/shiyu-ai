@@ -23,9 +23,7 @@ public class TenantEntity extends BaseEntity {
     @Column(tenantId = true)
     private Long tenantId;
 
-    /**
-     * 工作空间ID
-     */
-    private Long workspaceId;
+    /** 作用域租户ID（绑定 user_scope_role 的 scope） */
+    private Long scopedTenantId;
 
 }

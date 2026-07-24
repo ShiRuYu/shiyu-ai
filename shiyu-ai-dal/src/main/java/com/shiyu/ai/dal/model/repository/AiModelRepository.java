@@ -1,7 +1,6 @@
 package com.shiyu.ai.dal.model.repository;
 
 import com.mybatisflex.core.query.QueryWrapper;
-import com.shiyu.ai.dal.util.TenantWorkspaceHelper;
 import com.shiyu.ai.dal.model.dataobject.AiModelDO;
 import com.shiyu.ai.dal.model.mapper.AiModelMapper;
 import com.shiyu.ai.dal.model.bo.AiModelBO;
@@ -22,7 +21,6 @@ public class AiModelRepository {
 
     public Pair<Long, List<AiModelBO>> selectPage(Long platformId, Number pageNo, Number pageSize) {
         QueryWrapper countWrapper = new QueryWrapper();
-        TenantWorkspaceHelper.applyWorkspaceFilter(countWrapper);
         countWrapper.eq(AiModelDO::getDelFlag, "0");
         if (platformId != null) {
             countWrapper.eq(AiModelDO::getPlatformId, platformId);
@@ -30,7 +28,6 @@ public class AiModelRepository {
         long count = aiModelMapper.selectCountByQuery(countWrapper);
 
         QueryWrapper queryWrapper = new QueryWrapper();
-        TenantWorkspaceHelper.applyWorkspaceFilter(queryWrapper);
         queryWrapper.eq(AiModelDO::getDelFlag, "0");
         if (platformId != null) {
             queryWrapper.eq(AiModelDO::getPlatformId, platformId);
@@ -47,7 +44,6 @@ public class AiModelRepository {
 
     public List<AiModelBO> selectByPlatformId(Long platformId) {
         QueryWrapper queryWrapper = new QueryWrapper();
-        TenantWorkspaceHelper.applyWorkspaceFilter(queryWrapper);
         queryWrapper.eq(AiModelDO::getPlatformId, platformId);
         queryWrapper.eq(AiModelDO::getDelFlag, "0");
         queryWrapper.eq(AiModelDO::getStatus, 1);
@@ -65,7 +61,6 @@ public class AiModelRepository {
 
     public AiModelBO selectDefaultByPlatformId(Long platformId) {
         QueryWrapper queryWrapper = new QueryWrapper();
-        TenantWorkspaceHelper.applyWorkspaceFilter(queryWrapper);
         queryWrapper.eq(AiModelDO::getPlatformId, platformId);
         queryWrapper.eq(AiModelDO::getIsDefault, "Y");
         queryWrapper.eq(AiModelDO::getDelFlag, "0");
@@ -99,7 +94,6 @@ public class AiModelRepository {
 
     public List<IdNameOptionVO> selectOptions(Long platformId) {
         QueryWrapper queryWrapper = new QueryWrapper();
-        TenantWorkspaceHelper.applyWorkspaceFilter(queryWrapper);
         queryWrapper.eq(AiModelDO::getDelFlag, "0");
         queryWrapper.eq(AiModelDO::getStatus, 1);
         if (platformId != null) {
@@ -117,7 +111,6 @@ public class AiModelRepository {
 
     public void clearDefaultExcept(Long platformId, Long excludeId) {
         QueryWrapper queryWrapper = new QueryWrapper();
-        TenantWorkspaceHelper.applyWorkspaceFilter(queryWrapper);
         queryWrapper.eq(AiModelDO::getPlatformId, platformId);
         queryWrapper.eq(AiModelDO::getIsDefault, "Y");
         if (excludeId != null) {

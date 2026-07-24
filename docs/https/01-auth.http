@@ -17,7 +17,7 @@
 
 ### ------------------- 登录（获取 Token）-------------------
 ### @name Login
-# 无需认证。返回 accessToken + currentWorkspaceId + tenants + workspaces
+# 无需认证。返回 accessToken + scopeTenantId + tenants + subTenants
 POST {{baseUrl}}/auth/login HTTP/1.1
 Content-Type: application/json
 
@@ -88,7 +88,7 @@ Authorization: Bearer {{authToken}}
 
 ### ------------------- 切换角色 -------------------
 ### @name Switch Current Role
-# 需要认证。切换后在响应中返回完整上下文（userInfo + tenants + workspaces）
+# 需要认证。切换后在响应中返回完整上下文（userInfo + tenants）
 POST {{baseUrl}}/auth/current-role HTTP/1.1
 Authorization: Bearer {{authToken}}
 Content-Type: application/json
@@ -108,20 +108,9 @@ Content-Type: application/json
   "tenantId": 1
 }
 
-### ------------------- 切换工作空间 -------------------
-### @name Switch Workspace
-# 需要认证。切换后返回完整上下文
-POST {{baseUrl}}/auth/switch-workspace HTTP/1.1
-Authorization: Bearer {{authToken}}
-Content-Type: application/json
-
-{
-  "workspaceId": 1
-}
-
 ### ------------------- 获取用户工作空间列表 -------------------
 ### @name Get User Workspaces
-GET {{baseUrl}}/auth/workspaces HTTP/1.1
+GET {{baseUrl}}/auth/sub-tenants HTTP/1.1
 Authorization: Bearer {{authToken}}
 
 ### ------------------- 获取用户租户列表 -------------------

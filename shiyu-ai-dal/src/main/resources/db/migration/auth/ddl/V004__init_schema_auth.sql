@@ -31,7 +31,7 @@ CREATE TABLE IF NOT EXISTS `user` (
     `username` VARCHAR(64) NOT NULL COMMENT '用户名',
     `password` VARCHAR(255) COMMENT '密码',
     `tenant_id` BIGINT NOT NULL COMMENT '租户ID',
-    `workspace_id` BIGINT COMMENT '工作空间ID',
+    `scoped_tenant_id` BIGINT COMMENT '作用域租户ID',
     `status` TINYINT DEFAULT 1 COMMENT '状态（1正常 0停用）',
     `del_flag` TINYINT DEFAULT 0 COMMENT '删除标志（0：正常 1：已删除）',
     `create_by` VARCHAR(64) COMMENT '创建者',
@@ -57,7 +57,7 @@ CREATE TABLE IF NOT EXISTS `role` (
     `code` VARCHAR(64) NOT NULL COMMENT '角色编码',
     `name` VARCHAR(64) NOT NULL COMMENT '角色名称',
     `tenant_id` BIGINT NOT NULL COMMENT '租户ID',
-    `workspace_id` BIGINT COMMENT '工作空间ID',
+    `scoped_tenant_id` BIGINT COMMENT '作用域租户ID',
     `status` TINYINT DEFAULT 1 COMMENT '状态（1正常 0停用）',
     `remark` VARCHAR(500) COMMENT '备注',
     `del_flag` TINYINT DEFAULT 0 COMMENT '删除标志（0：正常 1：已删除）',
@@ -80,7 +80,7 @@ CREATE TABLE IF NOT EXISTS `menu` (
     `type` VARCHAR(20) NOT NULL COMMENT '菜单类型（MENU/BUTTON）',
     `parent_id` BIGINT COMMENT '父菜单 ID',
     `tenant_id` BIGINT NOT NULL COMMENT '租户ID',
-    `workspace_id` BIGINT COMMENT '工作空间ID',
+    `scoped_tenant_id` BIGINT COMMENT '作用域租户ID',
     `path` VARCHAR(255) COMMENT '路径',
     `redirect` VARCHAR(255) COMMENT '重定向地址',
     `icon` VARCHAR(64) COMMENT '图标',
@@ -105,9 +105,9 @@ CREATE INDEX IF NOT EXISTS `idx_parent_id` ON `menu` (`parent_id`);
 COMMENT ON TABLE `menu` IS '菜单表';
 
 
-CREATE TABLE IF NOT EXISTS `user_workspace_role` (
+CREATE TABLE IF NOT EXISTS `user_scope_role` (
     `user_id`      BIGINT NOT NULL COMMENT '用户 ID',
-    `workspace_id` BIGINT NOT NULL COMMENT '工作空间 ID',
+    `scoped_tenant_id` BIGINT NOT NULL COMMENT '工作空间 ID',
     `role_id`      BIGINT NOT NULL COMMENT '角色 ID',
     `tenant_id`    BIGINT NOT NULL COMMENT '租户ID',
     `status`       TINYINT      DEFAULT 1 COMMENT '状态（1正常 0停用）',
@@ -116,19 +116,19 @@ CREATE TABLE IF NOT EXISTS `user_workspace_role` (
     `create_time`  TIMESTAMP DEFAULT CURRENT_TIMESTAMP COMMENT '创建时间',
     `update_by`    VARCHAR(64)   COMMENT '更新者',
     `update_time`  TIMESTAMP DEFAULT CURRENT_TIMESTAMP COMMENT '更新时间',
-    PRIMARY KEY (`user_id`, `workspace_id`, `role_id`)
+    PRIMARY KEY (`user_id`, `scoped_tenant_id`, `role_id`)
 );
 
-CREATE INDEX IF NOT EXISTS `idx_uwr_workspace` ON `user_workspace_role` (`workspace_id`);
+CREATE INDEX IF NOT EXISTS `idx_usr_scope` ON `user_scope_role` (`scoped_tenant_id`);
 
-CREATE INDEX IF NOT EXISTS `idx_uwr_role` ON `user_workspace_role` (`role_id`);
+CREATE INDEX IF NOT EXISTS `idx_usr_role` ON `user_scope_role` (`role_id`);
 
-COMMENT ON TABLE `user_workspace_role` IS '用户空间角色关联表';
+COMMENT ON TABLE `user_scope_role` IS '用户作用域角色关联表';
 
 
-CREATE TABLE IF NOT EXISTS `role_workspace_menu` (
+CREATE TABLE IF NOT EXISTS `role_scope_menu` (
     `role_id`      BIGINT NOT NULL COMMENT '角色 ID',
-    `workspace_id` BIGINT NOT NULL COMMENT '工作空间 ID',
+    `scoped_tenant_id` BIGINT NOT NULL COMMENT '工作空间 ID',
     `menu_id`      BIGINT NOT NULL COMMENT '菜单 ID',
     `tenant_id`    BIGINT NOT NULL COMMENT '租户ID',
     `status`       TINYINT      DEFAULT 1 COMMENT '状态（1正常 0停用）',
@@ -137,12 +137,12 @@ CREATE TABLE IF NOT EXISTS `role_workspace_menu` (
     `create_time`  TIMESTAMP DEFAULT CURRENT_TIMESTAMP COMMENT '创建时间',
     `update_by`    VARCHAR(64)   COMMENT '更新者',
     `update_time`  TIMESTAMP DEFAULT CURRENT_TIMESTAMP COMMENT '更新时间',
-    PRIMARY KEY (`role_id`, `workspace_id`, `menu_id`)
+    PRIMARY KEY (`role_id`, `scoped_tenant_id`, `menu_id`)
 );
 
-CREATE INDEX IF NOT EXISTS `idx_rwm_menu_id` ON `role_workspace_menu` (`menu_id`);
+CREATE INDEX IF NOT EXISTS `idx_rsm_menu_id` ON `role_scope_menu` (`menu_id`);
 
-COMMENT ON TABLE `role_workspace_menu` IS '角色工作空间菜单关联表';
+COMMENT ON TABLE `role_scope_menu` IS '角色作用域菜单关联表';
 
 
 CREATE TABLE IF NOT EXISTS `auth_code` (
@@ -151,7 +151,7 @@ CREATE TABLE IF NOT EXISTS `auth_code` (
     `name` VARCHAR(128) COMMENT '权限名称',
     `role_id` BIGINT NOT NULL COMMENT '角色 ID',
     `tenant_id` BIGINT NOT NULL COMMENT '租户ID',
-    `workspace_id` BIGINT COMMENT '工作空间ID',
+    `scoped_tenant_id` BIGINT COMMENT '作用域租户ID',
     `status` TINYINT DEFAULT 1 COMMENT '状态（1正常 0停用）',
     `del_flag` TINYINT DEFAULT 0 COMMENT '删除标志（0：正常 1：已删除）',
     `create_by` VARCHAR(64) COMMENT '创建者',
@@ -168,26 +168,3 @@ CREATE INDEX IF NOT EXISTS `idx_auth_code` ON `auth_code` (`code`);
 COMMENT ON TABLE `auth_code` IS '权限码表';
 
 
-CREATE TABLE IF NOT EXISTS `workspace` (
-    `id` BIGINT NOT NULL AUTO_INCREMENT COMMENT '工作空间 ID',
-    `parent_id` BIGINT DEFAULT 0 COMMENT '父工作空间 ID',
-    `name` VARCHAR(64) NOT NULL COMMENT '工作空间名称',
-    `tenant_id` BIGINT NOT NULL COMMENT '租户ID',
-    `workspace_id` BIGINT COMMENT '工作空间ID',
-    `order` INT DEFAULT 0 COMMENT '排序',
-    `leader` VARCHAR(64) COMMENT '负责人',
-    `phone` VARCHAR(20) COMMENT '联系电话',
-    `email` VARCHAR(64) COMMENT '邮箱',
-    `status` TINYINT DEFAULT 1 COMMENT '状态（1正常 0停用）',
-    `remark` VARCHAR(500) COMMENT '备注',
-    `del_flag` TINYINT DEFAULT 0 COMMENT '删除标志（0：正常 1：已删除）',
-    `create_by` VARCHAR(64) COMMENT '创建者',
-    `create_time` TIMESTAMP DEFAULT CURRENT_TIMESTAMP COMMENT '创建时间',
-    `update_by` VARCHAR(64) COMMENT '更新者',
-    `update_time` TIMESTAMP DEFAULT CURRENT_TIMESTAMP COMMENT '更新时间',
-    PRIMARY KEY (`id`)
-);
-
-CREATE INDEX IF NOT EXISTS `idx_workspace_parent_id` ON `workspace` (`parent_id`);
-
-COMMENT ON TABLE `workspace` IS '工作空间表';

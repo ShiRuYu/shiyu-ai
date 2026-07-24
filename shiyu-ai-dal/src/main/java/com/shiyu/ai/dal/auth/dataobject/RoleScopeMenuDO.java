@@ -6,17 +6,16 @@ import lombok.Data;
 import lombok.EqualsAndHashCode;
 
 import java.io.Serial;
-import java.io.Serializable;
 
 @Data
 @EqualsAndHashCode(callSuper = true)
-@Table("user_workspace_role")
-public class UserWorkspaceRoleDO extends TenantEntity {
+@Table("role_scope_menu")
+public class RoleScopeMenuDO extends TenantEntity {
 
     @Serial
     private static final long serialVersionUID = 1L;
 
-    private Long userId;
-
     private Long roleId;
+
+    private Long menuId;
 }

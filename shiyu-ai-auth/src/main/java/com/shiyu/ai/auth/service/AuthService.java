@@ -2,7 +2,6 @@ package com.shiyu.ai.auth.service;
 
 import com.shiyu.ai.auth.vo.LoginResponseVO;
 import com.shiyu.ai.auth.vo.TenantInfoVO;
-import com.shiyu.ai.auth.vo.WorkspaceContextVO;
 
 import java.util.List;
 
@@ -28,10 +27,6 @@ public interface AuthService {
 
     boolean switchCurrentTenant(Long userId, Long tenantId);
 
-    boolean switchCurrentWorkspace(Long userId, Long workspaceId);
-
-    List<WorkspaceContextVO> getUserWorkspaces(Long userId);
-
     List<TenantInfoVO> getUserTenants(Long userId);
 
     LoginResponseVO register(String username, String password, String email);
@@ -39,4 +34,10 @@ public interface AuthService {
     LoginResponseVO codeLogin(String phone, String code);
 
     boolean forgetPassword(String email, String newPassword, String code);
+
+    /** 设置子租户筛选器（仅在根租户下有效） */
+    boolean setScopedTenant(Long userId, Long subTenantId);
+
+    /** 清除子租户筛选器 */
+    boolean clearScopedTenant(Long userId);
 }

@@ -1,7 +1,6 @@
 package com.shiyu.ai.dal.record.repository;
 
 import com.mybatisflex.core.query.QueryWrapper;
-import com.shiyu.ai.dal.util.TenantWorkspaceHelper;
 import com.shiyu.ai.dal.record.dataobject.MediaDO;
 import com.shiyu.ai.dal.record.dataobject.RecordDO;
 import com.shiyu.ai.dal.record.dataobject.TimelineEventDO;
@@ -38,13 +37,11 @@ public class TimelineEventRepository {
     public Pair<Long, List<TimelineEventBO>> selectPage(Number pageNo, Number pageSize, Long profileId) {
         QueryWrapper countWrapper = QueryWrapper.create()
                 .eq(TimelineEventDO::getProfileId, profileId);
-        TenantWorkspaceHelper.applyWorkspaceFilter(countWrapper);
         long total = timelineEventMapper.selectCountByQuery(countWrapper);
 
         QueryWrapper queryWrapper = QueryWrapper.create()
                 .eq(TimelineEventDO::getProfileId, profileId)
                 .orderBy(TimelineEventDO::getEventTime, false);
-        TenantWorkspaceHelper.applyWorkspaceFilter(queryWrapper);
         
         if (pageNo != null && pageSize != null) {
             queryWrapper.limit((pageNo.longValue() - 1) * pageSize.longValue(), pageSize.longValue());
@@ -69,14 +66,12 @@ public class TimelineEventRepository {
         
         QueryWrapper recordQuery = QueryWrapper.create()
                 .eq(RecordDO::getEventId, id);
-        TenantWorkspaceHelper.applyWorkspaceFilter(recordQuery);
         RecordDO recordDO = recordMapper.selectOneByQuery(recordQuery);
         
         if (recordDO != null) {
             QueryWrapper mediaQuery = QueryWrapper.create()
                     .eq(MediaDO::getRecordId, recordDO.getId())
                     .orderBy(MediaDO::getSort, true);
-            TenantWorkspaceHelper.applyWorkspaceFilter(mediaQuery);
             List<MediaDO> mediaDOs = mediaMapper.selectListByQuery(mediaQuery);
         }
         
@@ -121,7 +116,6 @@ public class TimelineEventRepository {
         QueryWrapper queryWrapper = QueryWrapper.create()
                 .eq(TimelineEventDO::getProfileId, profileId)
                 .orderBy(TimelineEventDO::getEventTime, false);
-        TenantWorkspaceHelper.applyWorkspaceFilter(queryWrapper);
         
         List<TimelineEventDO> eventDOs = timelineEventMapper.selectListByQuery(queryWrapper);
         return MapstructUtils.convert(eventDOs, TimelineEventBO.class);

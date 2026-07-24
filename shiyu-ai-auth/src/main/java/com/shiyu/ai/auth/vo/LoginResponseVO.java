@@ -5,7 +5,6 @@ import lombok.Data;
 
 import java.io.Serial;
 import java.io.Serializable;
-import java.util.ArrayList;
 import java.util.List;
 
 /**
@@ -74,9 +73,9 @@ public class LoginResponseVO implements Serializable {
     private String tenantName;
 
     /**
-     * 当前工作空间ID
+     * 当前作用域租户ID
      */
-    private Long currentWorkspaceId;
+    private Long scopeTenantId;
 
     /**
      * 可用租户列表
@@ -84,7 +83,7 @@ public class LoginResponseVO implements Serializable {
     private List<TenantInfoVO> tenants;
 
     /**
-     * 用户所属空间及角色列表
+     * 子租户列表（含角色）
      */
-    private List<WorkspaceContextVO> workspaces;
+    private List<TenantContextVO> subTenants;
 }

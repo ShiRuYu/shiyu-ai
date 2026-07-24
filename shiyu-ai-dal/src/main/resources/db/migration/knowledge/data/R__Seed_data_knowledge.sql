@@ -3,7 +3,7 @@
 -- ============================================
 
 -- 知识点
-INSERT IGNORE INTO `knowledge` (`id`, `code`, `name`, `description`, `difficulty`, `category`, `tags`, `tenant_id`, `workspace_id`, `create_by`, `update_by`) VALUES
+INSERT IGNORE INTO `knowledge` (`id`, `code`, `name`, `description`, `difficulty`, `category`, `tags`, `tenant_id`, `scoped_tenant_id`, `create_by`, `update_by`) VALUES
 (1, 'math_natural', '自然数', '用来表示物体个数的数: 0,1,2,3,...', 1, 'MATH', '["自然数","初等数学"]', 1, 1, 'system', 'system'),
 (2, 'math_integer', '整数', '正整数、零和负整数的统称', 1, 'MATH', '["整数"]', 1, 1, 'system', 'system'),
 (3, 'math_numberline', '数轴', '规定了原点、正方向和单位长度的直线', 2, 'MATH', '["数轴"]', 1, 1, 'system', 'system'),
@@ -19,7 +19,7 @@ INSERT IGNORE INTO `knowledge` (`id`, `code`, `name`, `description`, `difficulty
 (13, 'eng_verb_tense', '动词时态', '英语动词的时态变化', 2, 'ENG', '["时态"]', 1, 1, 'system', 'system');
 
 -- 知识点关系
-INSERT IGNORE INTO `knowledge_relation` (`id`, `source_id`, `target_id`, `relation_type`, `weight`, `tenant_id`, `workspace_id`, `create_by`, `update_by`) VALUES
+INSERT IGNORE INTO `knowledge_relation` (`id`, `source_id`, `target_id`, `relation_type`, `weight`, `tenant_id`, `scoped_tenant_id`, `create_by`, `update_by`) VALUES
 (1, 2, 1, 'PRE', 1.0, 1, 1, 'system', 'system'),
 (2, 3, 2, 'PRE', 1.0, 1, 1, 'system', 'system'),
 (3, 4, 3, 'PRE', 1.0, 1, 1, 'system', 'system'),
@@ -30,7 +30,7 @@ INSERT IGNORE INTO `knowledge_relation` (`id`, `source_id`, `target_id`, `relati
 (8, 9, 10, 'PRE', 1.0, 1, 1, 'system', 'system');
 
 -- 知识文档
-INSERT IGNORE INTO `knowledge_document` (`id`, `title`, `content`, `doc_type`, `source`, `tenant_id`, `workspace_id`, `create_by`, `update_by`) VALUES
+INSERT IGNORE INTO `knowledge_document` (`id`, `title`, `content`, `doc_type`, `source`, `tenant_id`, `scoped_tenant_id`, `create_by`, `update_by`) VALUES
 (1, '自然数概念', '自然数是指用以计量事物的件数或表示事物次序的数。即用数码0,1,2,3,4,……所表示的数。', 'ARTICLE', '人教版数学七年级上册', 1, 1, 'system', 'system'),
 (2, '绝对值的定义', '绝对值是一个数在数轴上对应的点到原点的距离，用符号|a|表示。', 'ARTICLE', '人教版数学七年级上册', 1, 1, 'system', 'system');
 

@@ -5,16 +5,16 @@ import com.shiyu.ai.dal.auth.repository.UserRepository;
 import com.shiyu.ai.auth.service.AuthService;
 import com.shiyu.ai.dal.auth.dataobject.RoleDO;
 import com.shiyu.ai.dal.auth.dataobject.TenantDO;
-import com.shiyu.ai.dal.auth.dataobject.UserWorkspaceRoleDO;
-import com.shiyu.ai.dal.auth.dataobject.WorkspaceDO;
-import com.shiyu.ai.dal.auth.repository.WorkspaceTenantRepository;
+import com.shiyu.ai.dal.auth.dataobject.UserScopeRoleDO;
+import com.shiyu.ai.dal.auth.dataobject.TenantDO;
+import com.shiyu.ai.dal.auth.repository.TenantRoleRepository;
 
-import com.shiyu.ai.dal.auth.repository.UserWorkspaceRoleRepository;
+import com.shiyu.ai.dal.auth.repository.UserScopeRoleRepository;
 
 import com.shiyu.ai.dal.auth.bo.RoleBO;
 import com.shiyu.ai.dal.auth.bo.UserBO;
 import com.shiyu.ai.auth.vo.LoginResponseVO;
-import com.shiyu.ai.auth.vo.WorkspaceContextVO;
+import com.shiyu.ai.auth.vo.TenantContextVO;
 import com.shiyu.ai.auth.vo.TenantInfoVO;
 import com.shiyu.ai.auth.utils.SaTokenHelper;
 import com.shiyu.ai.common.core.domain.LoginContextHolder;
@@ -36,8 +36,8 @@ public class AuthServiceImpl implements AuthService {
 
     private final AuthRepository authRepository;
     private final UserRepository userRepository;
-    private final UserWorkspaceRoleRepository userWorkspaceRoleRepository;
-    private final WorkspaceTenantRepository workspaceTenantRepository;
+    private final UserScopeRoleRepository userWorkspaceRoleRepository;
+    private final TenantRoleRepository tenantRoleRepository;
     
     
     private final HttpServletRequest request;
@@ -46,11 +46,11 @@ public class AuthServiceImpl implements AuthService {
     private long tokenTimeout;
 
     public AuthServiceImpl(AuthRepository authRepository, UserRepository userRepository,
-                           UserWorkspaceRoleRepository userWorkspaceRoleRepository, WorkspaceTenantRepository workspaceTenantRepository, HttpServletRequest request) {
+                           UserScopeRoleRepository userWorkspaceRoleRepository, TenantRoleRepository tenantRoleRepository, HttpServletRequest request) {
         this.authRepository = authRepository;
         this.userRepository = userRepository;
         this.userWorkspaceRoleRepository = userWorkspaceRoleRepository;
-        this.workspaceTenantRepository = workspaceTenantRepository;
+        this.tenantRoleRepository = tenantRoleRepository;
         
         
         this.request = request;
@@ -86,16 +86,15 @@ public class AuthServiceImpl implements AuthService {
             RoleBO currentRole = resolveCurrentRole(roleId, roles);
 
             // 查询用户工作空间角色列表
-            List<UserWorkspaceRoleDO> uwrList = userWorkspaceRoleRepository.selectByUserId(user.getId());
+            List<UserScopeRoleDO> uwrList = userWorkspaceRoleRepository.selectByUserId(user.getId());
 
-            // 从 ext_info 解析当前租户和工作空间
+            // 从 ext_info 解析当前租户
             Long currentTenantId = resolveCurrentTenantId(user.getExtInfo(), uwrList);
-            Long currentWorkspaceId = resolveCurrentWorkspaceId(user.getExtInfo(), uwrList, currentTenantId);
 
             // 获取租户名称
             String tenantName = null;
             if (currentTenantId != null) {
-                TenantDO tenant = workspaceTenantRepository.selectTenantById(currentTenantId);
+                TenantDO tenant = tenantRoleRepository.selectTenantById(currentTenantId);
                 if (tenant != null) {
                     tenantName = tenant.getName();
                 }
@@ -104,7 +103,7 @@ public class AuthServiceImpl implements AuthService {
             // 更新 ext_info
             String loginIp = getClientIp();
             LocalDateTime now = LocalDateTime.now();
-            Map<String, Object> extInfoMap = buildExtInfo(user.getExtInfo(), currentRole, currentTenantId, currentWorkspaceId, now, loginIp);
+            Map<String, Object> extInfoMap = buildExtInfo(user.getExtInfo(), currentRole, currentTenantId, now, loginIp);
             user.setExtInfo(JSONUtils.toJsonString(extInfoMap));
 
             // 设置 LoginUser 上下文（用于自动更新）
@@ -124,17 +123,17 @@ public class AuthServiceImpl implements AuthService {
             SaTokenHelper.clearLoginUserSession();
             long timeout = helper.getTokenTimeout();
 
-            // 构建工作空间上下文列表
-            List<WorkspaceContextVO> workspaces = buildWorkspaceContextList(uwrList, currentTenantId);
+            // 构建当前租户下的子租户列表（兼容返回）
+            List<TenantContextVO> subTenants = buildSubTenantList(uwrList, currentTenantId);
 
-            // 构建租户列表
+            // 构建用户所属租户列表
             List<TenantInfoVO> tenantList = buildTenantList(uwrList);
 
             LoginResponseVO response = new LoginResponseVO();
             response.setId(user.getId());
             response.setRealName(user.getNickName() != null ? user.getNickName() : user.getUsername());
             response.setUsername(user.getUsername());
-            response.setHomePath("/workspace");
+            response.setHomePath("/");
 
             if (roles != null && !roles.isEmpty()) {
                 response.setRoles(roles.stream()
@@ -149,12 +148,11 @@ public class AuthServiceImpl implements AuthService {
             response.setExpiresIn(timeout);
             response.setTenantId(currentTenantId);
             response.setTenantName(tenantName);
-            response.setCurrentWorkspaceId(currentWorkspaceId);
             response.setTenants(tenantList);
-            response.setWorkspaces(workspaces);
+            response.setSubTenants(subTenants);
 
-            log.info("用户登录成功, username={}, userId={}, tenantId={}, workspaceId={}, roles={}",
-                    username, user.getId(), currentTenantId, currentWorkspaceId, response.getRoles());
+            log.info("用户登录成功, username={}, userId={}, tenantId={}, roles={}",
+                    username, user.getId(), currentTenantId, response.getRoles());
             return response;
 
         } catch (Exception e) {
@@ -163,7 +161,7 @@ public class AuthServiceImpl implements AuthService {
         }
     }
 
-    private Long resolveCurrentTenantId(String extInfo, List<UserWorkspaceRoleDO> uwrList) {
+    private Long resolveCurrentTenantId(String extInfo, List<UserScopeRoleDO> uwrList) {
         if (extInfo != null && !extInfo.isEmpty()) {
             try {
                 Map<String, Object> map = JSONUtils.parseObject(extInfo, Map.class);
@@ -179,32 +177,13 @@ public class AuthServiceImpl implements AuthService {
         return null;
     }
 
-    private Long resolveCurrentWorkspaceId(String extInfo, List<UserWorkspaceRoleDO> uwrList, Long currentTenantId) {
-        if (extInfo != null && !extInfo.isEmpty()) {
-            try {
-                Map<String, Object> map = JSONUtils.parseObject(extInfo, Map.class);
-                if (map != null && map.get("currentWorkspaceId") instanceof Number) {
-                    return ((Number) map.get("currentWorkspaceId")).longValue();
-                }
-            } catch (Exception ignored) {
-            }
-        }
-        if (uwrList != null && !uwrList.isEmpty() && currentTenantId != null) {
-            return uwrList.stream()
-                    .filter(r -> currentTenantId.equals(r.getTenantId()))
-                    .map(UserWorkspaceRoleDO::getWorkspaceId)
-                    .findFirst().orElse(null);
-        }
-        return null;
-    }
-
     private Map<String, Object> buildExtInfo(String oldExtInfo, RoleBO currentRole,
-                                              Long currentTenantId, Long currentWorkspaceId,
+                                              Long currentTenantId,
                                               LocalDateTime now, String loginIp) {
         Map<String, Object> extInfoMap;
         if (oldExtInfo != null && !oldExtInfo.isEmpty()) {
-            extInfoMap = JSONUtils.parseObject(oldExtInfo, Map.class);
-            if (extInfoMap == null) extInfoMap = new LinkedHashMap<>();
+            Map<String, Object> parsed = JSONUtils.parseObject(oldExtInfo, Map.class);
+            extInfoMap = parsed != null ? parsed : new LinkedHashMap<>();
         } else {
             extInfoMap = new LinkedHashMap<>();
         }
@@ -221,34 +200,32 @@ public class AuthServiceImpl implements AuthService {
         }
 
         if (currentTenantId != null) {
+            extInfoMap.put("scopeTenantId", currentTenantId);
             extInfoMap.put("currentTenantId", currentTenantId);
-        }
-        if (currentWorkspaceId != null) {
-            extInfoMap.put("currentWorkspaceId", currentWorkspaceId);
         }
 
         return extInfoMap;
     }
 
-    private List<WorkspaceContextVO> buildWorkspaceContextList(List<UserWorkspaceRoleDO> uwrList, Long currentTenantId) {
+    private List<TenantContextVO> buildSubTenantList(List<UserScopeRoleDO> uwrList, Long currentTenantId) {
         if (uwrList == null || uwrList.isEmpty()) return new ArrayList<>();
 
-        List<UserWorkspaceRoleDO> filtered = uwrList;
+        List<UserScopeRoleDO> filtered = uwrList;
         if (currentTenantId != null) {
             filtered = uwrList.stream()
                     .filter(r -> currentTenantId.equals(r.getTenantId()))
                     .collect(Collectors.toList());
         }
 
-        List<WorkspaceContextVO> result = new ArrayList<>();
+        List<TenantContextVO> result = new ArrayList<>();
         Set<Long> seen = new HashSet<>();
-        for (UserWorkspaceRoleDO uwr : filtered) {
-            if (seen.add(uwr.getWorkspaceId())) {
-                WorkspaceDO ws = workspaceTenantRepository.selectWorkspaceById(uwr.getWorkspaceId());
-                RoleDO role = workspaceTenantRepository.selectRoleById(uwr.getRoleId());
-                result.add(WorkspaceContextVO.builder()
-                        .workspaceId(uwr.getWorkspaceId())
-                        .workspaceName(ws != null ? ws.getName() : "Unknown")
+        for (UserScopeRoleDO uwr : filtered) {
+            if (seen.add(uwr.getScopedTenantId())) {
+                TenantDO tenantWs = tenantRoleRepository.selectTenantById(uwr.getScopedTenantId());
+                RoleDO role = tenantRoleRepository.selectRoleById(uwr.getRoleId());
+                result.add(TenantContextVO.builder()
+                        .tenantId(uwr.getScopedTenantId())
+                        .tenantName(tenantWs != null ? tenantWs.getName() : "Unknown")
                         .roleCode(role != null ? role.getCode() : null)
                         .build());
             }
@@ -256,17 +233,17 @@ public class AuthServiceImpl implements AuthService {
         return result;
     }
 
-    private List<TenantInfoVO> buildTenantList(List<UserWorkspaceRoleDO> uwrList) {
+    private List<TenantInfoVO> buildTenantList(List<UserScopeRoleDO> uwrList) {
         if (uwrList == null || uwrList.isEmpty()) return new ArrayList<>();
 
         Set<Long> tenantIds = uwrList.stream()
-                .map(UserWorkspaceRoleDO::getTenantId)
+                .map(UserScopeRoleDO::getTenantId)
                 .filter(Objects::nonNull)
                 .collect(Collectors.toSet());
 
         List<TenantInfoVO> result = new ArrayList<>();
         for (Long tid : tenantIds) {
-            TenantDO tenant = workspaceTenantRepository.selectTenantById(tid);
+            TenantDO tenant = tenantRoleRepository.selectTenantById(tid);
             if (tenant != null) {
                 TenantInfoVO vo = new TenantInfoVO();
                 vo.setId(tenant.getId());
@@ -324,8 +301,8 @@ public class AuthServiceImpl implements AuthService {
     public List<String> getAuthCodesByUserId(Long userId) {
         log.info("获取权限编码, userId={}", userId);
         try {
-                    Long workspaceId = com.shiyu.ai.common.core.domain.LoginContextHolder.getCurrentWorkspaceId();
-            List<String> codes = authRepository.selectCodesByUserId(userId, workspaceId);
+                    Long scopeTenantId = com.shiyu.ai.common.core.domain.LoginContextHolder.getScopeTenantId();
+            List<String> codes = authRepository.selectCodesByUserId(userId, scopeTenantId);
             if (codes == null || codes.isEmpty()) {
                 return new ArrayList<>();
             }
@@ -398,19 +375,19 @@ public class AuthServiceImpl implements AuthService {
             if (user == null) return false;
 
             Map<String, Object> extInfoMap = parseExtInfo(user.getExtInfo());
+            extInfoMap.put("scopeTenantId", tenantId);
             extInfoMap.put("currentTenantId", tenantId);
-            extInfoMap.remove("currentWorkspaceId");
             extInfoMap.remove("currentRole");
 
             // 查询用户在当前租户下的工作空间角色
-            List<UserWorkspaceRoleDO> uwrList = userWorkspaceRoleRepository.selectByUserId(userId);
+            List<UserScopeRoleDO> uwrList = userWorkspaceRoleRepository.selectByUserId(userId);
             if (uwrList != null && !uwrList.isEmpty()) {
-                UserWorkspaceRoleDO first = uwrList.stream()
+                UserScopeRoleDO first = uwrList.stream()
                         .filter(r -> tenantId.equals(r.getTenantId()))
                         .findFirst().orElse(null);
                 if (first != null) {
-                    extInfoMap.put("currentWorkspaceId", first.getWorkspaceId());
-                    RoleDO role = workspaceTenantRepository.selectRoleById(first.getRoleId());
+
+                    RoleDO role = tenantRoleRepository.selectRoleById(first.getRoleId());
                     if (role != null) {
                         Map<String, Object> roleMap = new LinkedHashMap<>();
                         roleMap.put("roleId", role.getId());
@@ -434,69 +411,8 @@ public class AuthServiceImpl implements AuthService {
     }
 
     @Override
-    public boolean switchCurrentWorkspace(Long userId, Long workspaceId) {
-        log.info("切换工作空间, userId: {}, workspaceId: {}", userId, workspaceId);
-        try {
-            UserBO user = userRepository.selectById(userId);
-            if (user == null) return false;
-
-            Map<String, Object> extInfoMap = parseExtInfo(user.getExtInfo());
-            extInfoMap.put("currentWorkspaceId", workspaceId);
-
-            // 查询用户在当前工作空间下的角色
-            List<UserWorkspaceRoleDO> uwrList = userWorkspaceRoleRepository.selectByUserId(userId);
-            if (uwrList != null && !uwrList.isEmpty()) {
-                UserWorkspaceRoleDO match = uwrList.stream()
-                        .filter(r -> workspaceId.equals(r.getWorkspaceId()))
-                        .findFirst().orElse(null);
-                if (match != null) {
-                    RoleDO role = workspaceTenantRepository.selectRoleById(match.getRoleId());
-                    if (role != null) {
-                        Map<String, Object> roleMap = new LinkedHashMap<>();
-                        roleMap.put("roleId", role.getId());
-                        roleMap.put("roleName", role.getName());
-                        roleMap.put("roleKey", role.getCode());
-                        extInfoMap.put("currentRole", roleMap);
-                    }
-                }
-            }
-
-            user.setExtInfo(JSONUtils.toJsonString(extInfoMap));
-            userRepository.update(user);
-
-            log.info("切换工作空间成功, userId: {}, workspaceId: {}", userId, workspaceId);
-            SaTokenHelper.clearLoginUserSession();
-            return true;
-        } catch (Exception e) {
-            log.error("切换工作空间异常, userId: {}, workspaceId: {}", userId, workspaceId, e);
-            return false;
-        }
-    }
-
-    @Override
-    public List<WorkspaceContextVO> getUserWorkspaces(Long userId) {
-        List<UserWorkspaceRoleDO> uwrList = userWorkspaceRoleRepository.selectByUserId(userId);
-        if (uwrList == null || uwrList.isEmpty()) return new ArrayList<>();
-
-        UserBO user = userRepository.selectById(userId);
-        Long currentTenantId = null;
-        if (user != null && user.getExtInfo() != null) {
-            Map<String, Object> extMap = parseExtInfo(user.getExtInfo());
-            Object tid = extMap.get("currentTenantId");
-            if (tid instanceof Number) {
-                currentTenantId = ((Number) tid).longValue();
-            }
-        }
-        if (currentTenantId == null && !uwrList.isEmpty()) {
-            currentTenantId = uwrList.get(0).getTenantId();
-        }
-
-        return buildWorkspaceContextList(uwrList, currentTenantId);
-    }
-
-    @Override
     public List<TenantInfoVO> getUserTenants(Long userId) {
-        List<UserWorkspaceRoleDO> uwrList = userWorkspaceRoleRepository.selectByUserId(userId);
+        List<UserScopeRoleDO> uwrList = userWorkspaceRoleRepository.selectByUserId(userId);
         return buildTenantList(uwrList);
     }
 
@@ -533,7 +449,7 @@ public class AuthServiceImpl implements AuthService {
         // 设置默认租户上下文，确保多租户插件自动填充 tenantId
         LoginUser loginUser = new LoginUser();
         loginUser.setUserId(0L);
-        loginUser.setTenantId(1L);
+        loginUser.setScopeTenantId(1L);
         LoginContextHolder.setContext(loginUser);
         try {
             userRepository.insert(user);
@@ -558,7 +474,7 @@ public class AuthServiceImpl implements AuthService {
             // 设置默认租户上下文，确保多租户插件自动填充 tenantId
             LoginUser loginUser = new LoginUser();
             loginUser.setUserId(0L);
-            loginUser.setTenantId(1L);
+            loginUser.setScopeTenantId(1L);
             LoginContextHolder.setContext(loginUser);
             try {
                 userRepository.insert(user);
@@ -585,7 +501,7 @@ public class AuthServiceImpl implements AuthService {
     }
 
     /**
-     * 为新用户分配默认租户（tenantId=1）和默认工作空间（workspaceId=1）
+     * 为新用户分配默认租户（tenantId=1）和默认作用域租户（scopeTenantId=1）
      * 并查询系统第一个可用角色进行绑定，确保用户可正常登录
      */
     private void assignDefaultTenantWorkspaceRole(Long userId) {
@@ -605,9 +521,9 @@ public class AuthServiceImpl implements AuthService {
             }
 
             // 3. 分配默认工作空间和角色
-            UserWorkspaceRoleDO uwr = new UserWorkspaceRoleDO();
+            UserScopeRoleDO uwr = new UserScopeRoleDO();
             uwr.setUserId(userId);
-            uwr.setWorkspaceId(1L);
+            uwr.setScopedTenantId(1L);
             uwr.setRoleId(defaultRole.getId());
             uwr.setTenantId(1L);
             userWorkspaceRoleRepository.insert(uwr);
@@ -619,8 +535,8 @@ public class AuthServiceImpl implements AuthService {
             roleMap.put("roleKey", defaultRole.getCode());
 
             Map<String, Object> extInfoMap = new LinkedHashMap<>();
+            extInfoMap.put("scopeTenantId", 1L);
             extInfoMap.put("currentTenantId", 1L);
-            extInfoMap.put("currentWorkspaceId", 1L);
             extInfoMap.put("currentRole", roleMap);
 
             // 5. 更新用户 extInfo 和 tenantId
@@ -635,10 +551,50 @@ public class AuthServiceImpl implements AuthService {
                 LoginContextHolder.clearContext();
             }
 
-            log.info("新用户默认租户/空间分配成功: userId={}, tenantId=1, workspaceId=1, roleId={}",
+            log.info("新用户默认租户/作用域分配成功: userId={}, tenantId=1, scopeTenantId=1, roleId={}",
                     userId, defaultRole.getId());
         } catch (Exception e) {
             log.warn("新用户默认租户/空间分配异常，不影响用户登录: userId={}, error={}", userId, e.getMessage());
+        }
+    }
+
+    @Override
+    public boolean setScopedTenant(Long userId, Long subTenantId) {
+        log.info("设置子租户筛选器, userId: {}, subTenantId: {}", userId, subTenantId);
+        try {
+            UserBO user = userRepository.selectById(userId);
+            if (user == null) return false;
+
+            Map<String, Object> extInfoMap = parseExtInfo(user.getExtInfo());
+            extInfoMap.put("scopedTenantId", subTenantId);
+            user.setExtInfo(JSONUtils.toJsonString(extInfoMap));
+            userRepository.update(user);
+            SaTokenHelper.clearLoginUserSession();
+            log.info("子租户筛选器设置成功, userId: {}, subTenantId: {}", userId, subTenantId);
+            return true;
+        } catch (Exception e) {
+            log.error("设置子租户筛选器异常, userId: {}, subTenantId: {}", userId, subTenantId, e);
+            return false;
+        }
+    }
+
+    @Override
+    public boolean clearScopedTenant(Long userId) {
+        log.info("清除子租户筛选器, userId: {}", userId);
+        try {
+            UserBO user = userRepository.selectById(userId);
+            if (user == null) return false;
+
+            Map<String, Object> extInfoMap = parseExtInfo(user.getExtInfo());
+            extInfoMap.remove("scopedTenantId");
+            user.setExtInfo(JSONUtils.toJsonString(extInfoMap));
+            userRepository.update(user);
+            SaTokenHelper.clearLoginUserSession();
+            log.info("子租户筛选器已清除, userId: {}", userId);
+            return true;
+        } catch (Exception e) {
+            log.error("清除子租户筛选器异常, userId: {}", userId, e);
+            return false;
         }
     }
 

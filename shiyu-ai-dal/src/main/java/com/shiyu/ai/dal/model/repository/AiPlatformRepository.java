@@ -1,7 +1,6 @@
 package com.shiyu.ai.dal.model.repository;
 
 import com.mybatisflex.core.query.QueryWrapper;
-import com.shiyu.ai.dal.util.TenantWorkspaceHelper;
 import com.shiyu.ai.dal.model.dataobject.AiPlatformDO;
 import com.shiyu.ai.dal.model.mapper.AiPlatformMapper;
 import com.shiyu.ai.dal.model.bo.AiPlatformBO;
@@ -22,14 +21,12 @@ public class AiPlatformRepository {
 
     public Pair<Long, List<AiPlatformBO>> selectPage(Number pageNo, Number pageSize, String name, String code) {
         QueryWrapper countWrapper = new QueryWrapper();
-        TenantWorkspaceHelper.applyWorkspaceFilter(countWrapper);
         countWrapper.eq(AiPlatformDO::getDelFlag, "0");
         if (name != null) countWrapper.like(AiPlatformDO::getName, name);
         if (code != null) countWrapper.like(AiPlatformDO::getCode, code);
         long count = aiPlatformMapper.selectCountByQuery(countWrapper);
 
         QueryWrapper queryWrapper = new QueryWrapper();
-        TenantWorkspaceHelper.applyWorkspaceFilter(queryWrapper);
         queryWrapper.eq(AiPlatformDO::getDelFlag, "0");
         if (name != null) queryWrapper.like(AiPlatformDO::getName, name);
         if (code != null) queryWrapper.like(AiPlatformDO::getCode, code);
@@ -45,7 +42,6 @@ public class AiPlatformRepository {
 
     public List<AiPlatformBO> selectAllEnabled() {
         QueryWrapper queryWrapper = new QueryWrapper();
-        TenantWorkspaceHelper.applyWorkspaceFilter(queryWrapper);
         queryWrapper.eq(AiPlatformDO::getDelFlag, "0");
         queryWrapper.eq(AiPlatformDO::getStatus, 1);
         queryWrapper.orderBy(AiPlatformDO::getIsDefault, true);
@@ -61,7 +57,6 @@ public class AiPlatformRepository {
 
     public AiPlatformBO selectByCode(String code) {
         QueryWrapper queryWrapper = new QueryWrapper();
-        TenantWorkspaceHelper.applyWorkspaceFilter(queryWrapper);
         queryWrapper.eq(AiPlatformDO::getCode, code);
         queryWrapper.eq(AiPlatformDO::getDelFlag, "0");
         AiPlatformDO platformDO = aiPlatformMapper.selectOneByQuery(queryWrapper);
@@ -70,7 +65,6 @@ public class AiPlatformRepository {
 
     public AiPlatformBO selectDefault() {
         QueryWrapper queryWrapper = new QueryWrapper();
-        TenantWorkspaceHelper.applyWorkspaceFilter(queryWrapper);
         queryWrapper.eq(AiPlatformDO::getIsDefault, "Y");
         queryWrapper.eq(AiPlatformDO::getDelFlag, "0");
         queryWrapper.eq(AiPlatformDO::getStatus, 1);
@@ -97,7 +91,6 @@ public class AiPlatformRepository {
 
     public List<IdNameOptionVO> selectOptions() {
         QueryWrapper queryWrapper = new QueryWrapper();
-        TenantWorkspaceHelper.applyWorkspaceFilter(queryWrapper);
         queryWrapper.eq(AiPlatformDO::getDelFlag, "0");
         queryWrapper.eq(AiPlatformDO::getStatus, 1);
         queryWrapper.orderBy(AiPlatformDO::getIsDefault, true);
@@ -112,7 +105,6 @@ public class AiPlatformRepository {
 
     public void clearDefaultExcept(Long excludeId) {
         QueryWrapper queryWrapper = new QueryWrapper();
-        TenantWorkspaceHelper.applyWorkspaceFilter(queryWrapper);
         queryWrapper.eq(AiPlatformDO::getIsDefault, "Y");
         if (excludeId != null) {
             queryWrapper.ne(AiPlatformDO::getId, excludeId);

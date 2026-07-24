@@ -96,9 +96,9 @@ public class UserVO implements Serializable {
     private List<TenantInfoVO> tenants;
 
     /**
-     * 可用工作空间列表
+     * 子租户列表（含角色）
      */
-    private List<WorkspaceContextVO> workspaces;
+    private List<TenantContextVO> subTenants;
 
     /**
      * 当前租户ID
@@ -106,7 +106,7 @@ public class UserVO implements Serializable {
     private Long currentTenantId;
 
     /**
-     * 当前工作空间ID
+     * 当前作用域租户ID
      */
-    private Long currentWorkspaceId;
+    private Long scopeTenantId;
 }

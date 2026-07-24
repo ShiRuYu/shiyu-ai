@@ -2,8 +2,8 @@ package com.shiyu.ai.dal.auth.repository;
 
 import com.mybatisflex.core.query.QueryWrapper;
 import com.shiyu.ai.dal.auth.dataobject.MenuDO;
-import com.shiyu.ai.dal.auth.dataobject.RoleWorkspaceMenuDO;
-import com.shiyu.ai.dal.auth.dataobject.UserWorkspaceRoleDO;
+import com.shiyu.ai.dal.auth.dataobject.RoleScopeMenuDO;
+import com.shiyu.ai.dal.auth.dataobject.UserScopeRoleDO;
 import com.shiyu.ai.dal.auth.mapper.MenuMapper;
 import com.shiyu.ai.dal.auth.bo.MenuBO;
 import com.shiyu.ai.common.core.utils.MapstructUtils;
@@ -27,7 +27,8 @@ public class MenuRepository {
      * 查询所有菜单
      */
     public List<MenuBO> selectAll() {
-        List<MenuDO> menuDOs = menuMapper.selectListByQuery(new QueryWrapper());
+        QueryWrapper qw = new QueryWrapper();
+        List<MenuDO> menuDOs = menuMapper.selectListByQuery(qw);
         return MapstructUtils.convert(menuDOs, MenuBO.class);
     }
 
@@ -87,7 +88,7 @@ public class MenuRepository {
     /**
      * 通过用户ID查询菜单（单SQL JOIN，消除N+1）
      * <p>
-     * 一次性 JOIN user_workspace_role → role_workspace_menu → menu，
+     * 一次性 JOIN user_scope_role → role_scope_menu → menu，
      * 替代原来的 查角色→遍历查菜单→内存过滤 流程
      *
      * @param userId      用户ID
@@ -97,11 +98,11 @@ public class MenuRepository {
     public List<MenuBO> selectMenusByUserId(Long userId, String excludeType) {
         QueryWrapper qw = QueryWrapper.create()
                 .from(MenuDO.class)
-                .innerJoin(RoleWorkspaceMenuDO.class)
-                .on(column(MenuDO::getId).eq(column(RoleWorkspaceMenuDO::getMenuId)))
-                .innerJoin(UserWorkspaceRoleDO.class)
-                .on(column(RoleWorkspaceMenuDO::getRoleId).eq(column(UserWorkspaceRoleDO::getRoleId)))
-                .where(UserWorkspaceRoleDO::getUserId).eq(userId)
+                .innerJoin(RoleScopeMenuDO.class)
+                .on(column(MenuDO::getId).eq(column(RoleScopeMenuDO::getMenuId)))
+                .innerJoin(UserScopeRoleDO.class)
+                .on(column(RoleScopeMenuDO::getRoleId).eq(column(UserScopeRoleDO::getRoleId)))
+                .where(UserScopeRoleDO::getUserId).eq(userId)
                 .and(MenuDO::getStatus).eq(1)
                 .and(MenuDO::getDelFlag).eq(0);
         if (excludeType != null) {

@@ -17,6 +17,9 @@ public class TenantRequest implements Serializable {
     @Serial
     private static final long serialVersionUID = 1L;
 
+    @Schema(description = "父租户ID（null=根租户）")
+    private Long parentId;
+
     @NotBlank(message = "租户编码不能为空")
     @Schema(description = "租户编码（唯一）")
     private String code;
@@ -39,6 +42,18 @@ public class TenantRequest implements Serializable {
 
     @Schema(description = "简介")
     private String intro;
+
+    @Schema(description = "排序")
+    private Integer order;
+
+    @Schema(description = "负责人")
+    private String leader;
+
+    @Schema(description = "邮箱")
+    private String email;
+
+    @Schema(description = "备注")
+    private String remark;
 
     @Schema(description = "状态（0停用 1正常）")
     private String status;

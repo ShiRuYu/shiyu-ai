@@ -9,7 +9,7 @@ CREATE TABLE IF NOT EXISTS `dict` (
     `dict_label` VARCHAR(100) NOT NULL COMMENT '字典标签',
     `dict_value` VARCHAR(100) NOT NULL COMMENT '字典键值',
     `tenant_id` BIGINT NOT NULL COMMENT '租户ID',
-    `workspace_id` BIGINT COMMENT '工作空间ID',
+    `scoped_tenant_id` BIGINT COMMENT '作用域租户ID',
     `dict_sort` INT DEFAULT 0 COMMENT '字典排序',
     `css_class` VARCHAR(100) COMMENT '样式属性',
     `list_class` VARCHAR(100) COMMENT '表格回显样式',

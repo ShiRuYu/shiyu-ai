@@ -1,7 +1,6 @@
 package com.shiyu.ai.dal.record.repository;
 
 import com.mybatisflex.core.query.QueryWrapper;
-import com.shiyu.ai.dal.util.TenantWorkspaceHelper;
 import com.shiyu.ai.dal.record.dataobject.ProfileDO;
 import com.shiyu.ai.dal.record.mapper.ProfileMapper;
 import com.shiyu.ai.dal.record.bo.ProfileBO;
@@ -28,7 +27,6 @@ public class ProfileRepository {
     public Pair<Long, List<ProfileBO>> selectPage(Number pageNo, Number pageSize, String createBy) {
         QueryWrapper countWrapper = QueryWrapper.create()
                 .eq(ProfileDO::getDelFlag, 0);
-        TenantWorkspaceHelper.applyWorkspaceFilter(countWrapper);
         if (createBy != null && !createBy.isBlank()) {
             countWrapper.eq(ProfileDO::getCreateBy, createBy);
         }
@@ -36,7 +34,6 @@ public class ProfileRepository {
 
         QueryWrapper queryWrapper = QueryWrapper.create()
                 .eq(ProfileDO::getDelFlag, 0);
-        TenantWorkspaceHelper.applyWorkspaceFilter(queryWrapper);
         if (createBy != null && !createBy.isBlank()) {
             queryWrapper.eq(ProfileDO::getCreateBy, createBy);
         }

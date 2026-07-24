@@ -10,37 +10,17 @@ import org.apache.commons.lang3.tuple.Pair;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.util.List;
+import java.util.*;
+import java.util.stream.Collectors;
 
 @Component
 public class TenantRepository {
 
-    private final TenantMapper tenantMapper;
-
     @Resource
-    private UserMapper userMapper;
-
-    @Resource
-    private WorkspaceMapper workspaceMapper;
-
-    @Resource
-    private RoleMapper roleMapper;
-
-    @Resource
-    private MenuMapper menuMapper;
-
-    @Resource
-    private UserWorkspaceRoleMapper userWorkspaceRoleMapper;
-
-    @Resource
-    private RoleWorkspaceMenuMapper roleWorkspaceMenuMapper;
+    private TenantMapper tenantMapper;
 
     @Resource
     private TenantQuotaMapper tenantQuotaMapper;
-
-    public TenantRepository(TenantMapper tenantMapper) {
-        this.tenantMapper = tenantMapper;
-    }
 
     public Pair<Long, List<TenantBO>> selectPage(Number pageNo, Number pageSize, String name) {
         QueryWrapper countWrapper = new QueryWrapper();
@@ -99,25 +79,42 @@ public class TenantRepository {
 
     /**
      * 级联删除租户及其所有关联数据
-     * 清理顺序：先子表后父表，避免外键/数据残留
      */
     @Transactional(rollbackFor = Exception.class)
     public void cascadeDelete(Long tenantId) {
-        QueryWrapper byTenant = QueryWrapper.create().eq("tenant_id", tenantId);
+        // 先找出所有后代子租户，全部级联删除
+        List<Long> allIds = selectDescendantIds(tenantId);
+        allIds.add(tenantId);
 
-        // 菜单关联表
-        roleWorkspaceMenuMapper.deleteByQuery(byTenant);
-        // 用户-空间-角色关联表
-        userWorkspaceRoleMapper.deleteByQuery(byTenant);
-        // 租户配额
-        tenantQuotaMapper.deleteByQuery(
-            QueryWrapper.create().eq(TenantQuotaDO::getTenantId, tenantId));
-        // 业务表（带 tenantId）
-        menuMapper.deleteByQuery(byTenant);
-        roleMapper.deleteByQuery(byTenant);
-        workspaceMapper.deleteByQuery(byTenant);
-        userMapper.deleteByQuery(byTenant);
-        // 最后删除租户本身
+        for (Long id : allIds) {
+            QueryWrapper byTenant = QueryWrapper.create().eq("tenant_id", id);
+            tenantQuotaMapper.deleteByQuery(QueryWrapper.create().eq(TenantQuotaDO::getTenantId, id));
+        }
         tenantMapper.deleteById(tenantId);
+    }
+
+    /**
+     * 查询指定租户的所有后代租户 ID（包含自身）
+     */
+    public List<Long> selectDescendantIds(Long rootId) {
+        List<TenantDO> all = tenantMapper.selectAll();
+        // parentId → childrenId 映射
+        Map<Long, List<Long>> childrenMap = new HashMap<>();
+        for (TenantDO t : all) {
+            if (t.getParentId() != null) {
+                childrenMap.computeIfAbsent(t.getParentId(), k -> new ArrayList<>()).add(t.getId());
+            }
+        }
+        // BFS 收集所有后代
+        Set<Long> result = new HashSet<>();
+        Queue<Long> queue = new LinkedList<>();
+        if (rootId != null) queue.add(rootId);
+        while (!queue.isEmpty()) {
+            Long cur = queue.poll();
+            if (!result.add(cur)) continue; // 已访问
+            List<Long> children = childrenMap.get(cur);
+            if (children != null) queue.addAll(children);
+        }
+        return new ArrayList<>(result);
     }
 }
