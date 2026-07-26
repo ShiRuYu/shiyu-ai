@@ -18,8 +18,12 @@ public class UserScopeRoleRepository {
         return userWorkspaceRoleMapper.selectByUserId(userId);
     }
 
+    /**
+     * 插入用户-角色关联记录。
+     * 使用 insertSelective 忽略 null 字段，让数据库 DEFAULT 生效。
+     */
     public void insert(UserScopeRoleDO userWorkspaceRole) {
-        userWorkspaceRoleMapper.insert(userWorkspaceRole);
+        userWorkspaceRoleMapper.insertSelective(userWorkspaceRole);
     }
 
     public void deleteByQuery(QueryWrapper queryWrapper) {

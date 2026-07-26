@@ -60,7 +60,7 @@ public interface UserService {
      * @param UserBO UserBO
      * @return 处理结果
      */
-    boolean updateUser(Long userId, UserBO userBO);
+    boolean updateUser(Long userId, UserBO userBO, Long[] roleIds);
 
     /**
      * 重置用户密码
@@ -77,7 +77,7 @@ public interface UserService {
      * @param userBO 用户信息
      * @return Map 包含 id（用户ID）和 plainPassword（明文密码，自动生成时一并返回）
      */
-    java.util.Map<String, Object> createUser(UserBO userBO);
+    java.util.Map<String, Object> createUser(UserBO userBO, Long[] roleIds);
 
     /**
      * 修改密码（校验旧密码）

@@ -98,7 +98,7 @@ public class UserController {
     public Result<Map<String, Object>> createUser(@Valid @RequestBody UserRequest request) {
         log.info("新增用户");
         UserBO userBO = MapstructUtils.convert(request, UserBO.class);
-        Map<String, Object> result = userService.createUser(userBO);
+        Map<String, Object> result = userService.createUser(userBO, request.getRoleIds());
         return Result.success(result);
     }
 
@@ -112,7 +112,9 @@ public class UserController {
     public Result<Void> updateUser(@RequestParam Long userId, @Valid @RequestBody UserRequest request) {
         log.info("修改用户，userId: {}", userId);
         UserBO userBO = MapstructUtils.convert(request, UserBO.class);
-        return userService.updateUser(userId, userBO) ? Result.success() : Result.fail("用户不存在");
+        return userService.updateUser(userId, userBO, request.getRoleIds())
+                ? Result.success()
+                : Result.fail("用户不存在");
     }
 
     /**

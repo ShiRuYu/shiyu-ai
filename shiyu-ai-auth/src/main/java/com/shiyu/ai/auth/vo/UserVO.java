@@ -81,6 +81,11 @@ public class UserVO implements Serializable {
     private List<RoleVO> roles;
 
     /**
+     * 当前租户作用域下已分配的角色 ID。
+     */
+    private List<Long> roleIds;
+
+    /**
      * 当前角色
      */
     private RoleVO currentRole;
