@@ -477,6 +477,7 @@ CREATE TABLE IF NOT EXISTS `edu_review_task`(
     `update_by`       VARCHAR(64)  DEFAULT NULL COMMENT '更新者',
     `del_flag`        TINYINT      DEFAULT 0 COMMENT '删除标志（0：正常 1：已删除）',
     `create_time`     TIMESTAMP    DEFAULT CURRENT_TIMESTAMP,
+    `update_time`     TIMESTAMP    DEFAULT CURRENT_TIMESTAMP COMMENT '更新时间',
     PRIMARY KEY (`id`),
     KEY `idx_rt_student_date` (`student_id`, `review_date`),
     KEY `idx_rt_knowledge` (`knowledge_id`)
@@ -494,6 +495,7 @@ CREATE TABLE IF NOT EXISTS `edu_study_plan`(
     `end_date`            DATE         DEFAULT NULL COMMENT '结束日期',
     `status`              TINYINT      DEFAULT 0 COMMENT '状态(0进行中 1已完成 2已放弃)',
     `create_time`         TIMESTAMP    DEFAULT CURRENT_TIMESTAMP,
+    `update_time`         TIMESTAMP    DEFAULT CURRENT_TIMESTAMP COMMENT '更新时间',
     `tenant_id`     BIGINT       NOT NULL COMMENT '租户ID',
     `scoped_tenant_id`  BIGINT       DEFAULT NULL COMMENT '作用域租户ID',
     `create_by`     VARCHAR(64)  DEFAULT NULL COMMENT '创建者',
