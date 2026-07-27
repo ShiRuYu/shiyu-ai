@@ -223,7 +223,8 @@ public class MenuServiceImpl implements MenuService {
     }
 
     private String buildRouteMenuCacheKey(Long userId) {
-        return userId + ":" + LoginContextHolder.getCurrentTenantId() + ":" + LoginContextHolder.getFilterTenantId();
+        return userId + ":" + LoginContextHolder.getCurrentTenantId() + ":" 
+            + LoginContextHolder.getFilterTenantId() + ":" + LoginContextHolder.getCurrentRoleCode();
     }
 
     /**

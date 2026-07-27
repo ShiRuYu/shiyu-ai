@@ -195,6 +195,8 @@ public class MenuRepository {
         String roleCode = LoginContextHolder.getCurrentRoleCode();
         if (roleCode != null) {
             qw.and(RoleDO::getCode).eq(roleCode);
+        } else {
+            // 用户未选择角色时，不去重、不过滤角色（让 Service 层或前端处理）
         }
     }
 

@@ -437,6 +437,7 @@ public class AuthServiceImpl implements AuthService {
 
             log.info("切换角色成功, userId: {}, newRole: {}", userId, target.getName());
             SaTokenHelper.clearLoginUserSession();
+            menuService.evictRouteMenuCache(userId);
             return true;
         } catch (Exception e) {
             log.error("切换角色异常, userId: {}, roleId: {}", userId, roleId, e);
