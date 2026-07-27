@@ -49,22 +49,22 @@ INSERT IGNORE INTO `role` (`id`, `code`, `name`, `tenant_id`, `scoped_tenant_id`
 VALUES (6, 'parent', '家长', 1, 1, 1, '家长角色，可查看数据中心和学习报告', 0, 'system', 'system');
 
 -- ==============================
--- 子租户（原子租户，迁移为父子租户结构）
+-- 子租户（以默认租户为父节点的子租户）
 -- ==============================
 INSERT IGNORE INTO `tenant` (`id`, `parent_id`, `code`, `name`, `order`, `leader`, `phone`, `email`, `status`, `remark`, `del_flag`, `create_by`, `update_by`)
-VALUES (2, 1, 'default-space', '默认空间', 1, 'Admin', '13800000000', 'admin@example.com', 1, '系统默认子租户', 0, 'system', 'system');
+VALUES (2, 1, 'sub-tenant-a', '子租户A', 1, 'Admin', '13800000000', 'admin@example.com', 1, '默认租户下属子租户A，用于办公管理', 0, 'system', 'system');
 
 INSERT IGNORE INTO `tenant` (`id`, `parent_id`, `code`, `name`, `order`, `leader`, `phone`, `email`, `status`, `remark`, `del_flag`, `create_by`, `update_by`)
-VALUES (3, 1, 'tech-dept', '技术部', 1, 'Jack', '13900000001', 'jack@example.com', 1, '技术研发部门', 0, 'system', 'system');
+VALUES (3, 1, 'sub-tenant-b', '子租户B', 2, 'Jack', '13900000001', 'jack@example.com', 1, '默认租户下属子租户B，用于技术研发', 0, 'system', 'system');
 
 INSERT IGNORE INTO `tenant` (`id`, `parent_id`, `code`, `name`, `order`, `leader`, `phone`, `email`, `status`, `remark`, `del_flag`, `create_by`, `update_by`)
-VALUES (4, 1, 'edu-dept', '教务部', 2, '张老师', '13900000002', 'teacher01@example.com', 1, '教育教学部门', 0, 'system', 'system');
+VALUES (4, 1, 'sub-tenant-c', '子租户C', 3, '张老师', '13900000002', 'teacher@example.com', 1, '默认租户下属子租户C，用于教育教学', 0, 'system', 'system');
 
 INSERT IGNORE INTO `tenant` (`id`, `parent_id`, `code`, `name`, `order`, `leader`, `phone`, `email`, `status`, `remark`, `del_flag`, `create_by`, `update_by`)
-VALUES (5, 1, 'sales-dept', '销售部', 3, 'Sales', '13900000003', 'sales@example.com', 1, '市场营销部门', 0, 'system', 'system');
+VALUES (5, 1, 'sub-tenant-d', '子租户D', 4, 'Sales', '13900000003', 'sales@example.com', 1, '默认租户下属子租户D，用于市场营销', 0, 'system', 'system');
 
 INSERT IGNORE INTO `tenant` (`id`, `parent_id`, `code`, `name`, `order`, `leader`, `phone`, `email`, `status`, `remark`, `del_flag`, `create_by`, `update_by`)
-VALUES (6, 1, 'finance-dept', '财务部', 4, 'Finance', '13900000004', 'finance@example.com', 1, '财务管理部门', 0, 'system', 'system');
+VALUES (6, 1, 'sub-tenant-e', '子租户E', 5, 'Finance', '13900000004', 'finance@example.com', 1, '默认租户下属子租户E，用于财务管理', 0, 'system', 'system');
 
 -- ==============================
 -- 用户-空间-角色 关联
@@ -105,14 +105,12 @@ VALUES (4, '菜单管理', 'SystemMenu', 'MENU', 1, 1, '/system/menu', 'lucide:m
 INSERT IGNORE INTO `menu` (`id`, `name`, `code`, `type`, `parent_id`, `tenant_id`, `path`, `icon`, `component`, `show`, `status`, `order`, `del_flag`, `create_by`, `update_by`)
 VALUES (5, '租户管理', 'SystemTenant', 'MENU', 1, 1, '/system/tenant', 'lucide:building-2', '/system/tenant/index', TRUE, 1, 4, 0, 'system', 'system');
 
-INSERT IGNORE INTO `menu` (`id`, `name`, `code`, `type`, `parent_id`, `tenant_id`, `path`, `icon`, `component`, `show`, `status`, `order`, `del_flag`, `create_by`, `update_by`)
-VALUES (6, '子租户管理', 'SystemSubTenant', 'MENU', 1, 1, '/system/sub-tenant', 'lucide:layers', '/system/sub-tenant/index', TRUE, 1, 5, 0, 'system', 'system');
 
 INSERT IGNORE INTO `menu` (`id`, `name`, `code`, `type`, `parent_id`, `tenant_id`, `path`, `icon`, `component`, `show`, `status`, `order`, `del_flag`, `create_by`, `update_by`)
-VALUES (7, '字典管理', 'SystemDict', 'MENU', 1, 1, '/system/dict', 'lucide:book-type', '/system/dict/index', TRUE, 1, 6, 0, 'system', 'system');
+VALUES (7, '字典管理', 'SystemDict', 'MENU', 1, 1, '/system/dict', 'lucide:book-type', '/system/dict/index', TRUE, 1, 5, 0, 'system', 'system');
 
 INSERT IGNORE INTO `menu` (`id`, `name`, `code`, `type`, `parent_id`, `tenant_id`, `path`, `icon`, `component`, `show`, `status`, `order`, `del_flag`, `create_by`, `update_by`)
-VALUES (11, '权限码管理', 'SystemAuthCode', 'MENU', 1, 1, '/system/auth-code', 'lucide:shield-check', '/system/auth-code/index', TRUE, 1, 7, 0, 'system', 'system');
+VALUES (11, '权限码管理', 'SystemAuthCode', 'MENU', 1, 1, '/system/auth-code', 'lucide:shield-check', '/system/auth-code/index', TRUE, 1, 6, 0, 'system', 'system');
 
 -- ==============================
 -- 菜单（业务模块）
@@ -596,14 +594,6 @@ INSERT IGNORE INTO `auth_code` (`id`, `code`, `name`, `status`, `del_flag`, `cre
 VALUES (15, 'system:tenant:update', '更新租户', 1, 0, 'system', 'system');
 INSERT IGNORE INTO `auth_code` (`id`, `code`, `name`, `status`, `del_flag`, `create_by`, `update_by`)
 VALUES (16, 'system:tenant:delete', '删除租户', 1, 0, 'system', 'system');
-INSERT IGNORE INTO `auth_code` (`id`, `code`, `name`, `status`, `del_flag`, `create_by`, `update_by`)
-VALUES (17, 'system:sub-tenant:list', '查看子租户', 1, 0, 'system', 'system');
-INSERT IGNORE INTO `auth_code` (`id`, `code`, `name`, `status`, `del_flag`, `create_by`, `update_by`)
-VALUES (18, 'system:sub-tenant:create', '创建子租户', 1, 0, 'system', 'system');
-INSERT IGNORE INTO `auth_code` (`id`, `code`, `name`, `status`, `del_flag`, `create_by`, `update_by`)
-VALUES (19, 'system:sub-tenant:update', '更新子租户', 1, 0, 'system', 'system');
-INSERT IGNORE INTO `auth_code` (`id`, `code`, `name`, `status`, `del_flag`, `create_by`, `update_by`)
-VALUES (20, 'system:sub-tenant:delete', '删除子租户', 1, 0, 'system', 'system');
 INSERT IGNORE INTO `auth_code` (`id`, `code`, `name`, `status`, `del_flag`, `create_by`, `update_by`)
 VALUES (21, 'system:dict:list', '查看字典', 1, 0, 'system', 'system');
 INSERT IGNORE INTO `auth_code` (`id`, `code`, `name`, `status`, `del_flag`, `create_by`, `update_by`)

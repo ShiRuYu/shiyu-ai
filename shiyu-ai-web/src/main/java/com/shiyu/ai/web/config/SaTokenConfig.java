@@ -1,6 +1,5 @@
 package com.shiyu.ai.web.config;
 
-import cn.dev33.satoken.context.SaHolder;
 import cn.dev33.satoken.exception.NotLoginException;
 import cn.dev33.satoken.filter.SaServletFilter;
 import cn.dev33.satoken.stp.StpUtil;
@@ -19,6 +18,7 @@ import java.nio.charset.StandardCharsets;
 
 @Configuration
 public class SaTokenConfig {
+
     /**
      * 重写 Sa-Token 框架内部算法策略
      *

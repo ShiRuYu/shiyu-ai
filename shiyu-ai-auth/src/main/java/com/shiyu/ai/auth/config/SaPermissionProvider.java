@@ -28,7 +28,14 @@ public class SaPermissionProvider implements StpInterface {
         }
         try {
             Long userId = Long.valueOf(loginId.toString());
-            return authRepository.selectCodesByUserId(userId, LoginContextHolder.getCurrentTenantId());
+            Long tenantId = LoginContextHolder.getCurrentTenantId();
+            String roleCode = LoginContextHolder.getCurrentRoleCode();
+            // 按用户 + 租户 + 当前角色编码查询权限码，精准控制越权
+            if (roleCode != null && tenantId != null) {
+                return authRepository.selectCodesByUserIdAndRoleCode(userId, tenantId, roleCode);
+            }
+            // 兜底：没有角色或租户时，返回空列表
+            return Collections.emptyList();
         } catch (Exception ignored) {
             return Collections.emptyList();
         }
@@ -36,6 +43,18 @@ public class SaPermissionProvider implements StpInterface {
 
     @Override
     public List<String> getRoleList(Object loginId, String loginType) {
-        return Collections.emptyList();
+        if (loginId == null) {
+            return Collections.emptyList();
+        }
+        try {
+            Long userId = Long.valueOf(loginId.toString());
+            Long tenantId = LoginContextHolder.getCurrentTenantId();
+            if (tenantId == null) {
+                return Collections.emptyList();
+            }
+            return authRepository.selectRoleCodesByUserId(userId, tenantId);
+        } catch (Exception ignored) {
+            return Collections.emptyList();
+        }
     }
 }

@@ -2,10 +2,12 @@ package com.shiyu.ai.dal.auth.repository;
 
 import com.mybatisflex.core.query.QueryWrapper;
 import com.shiyu.ai.dal.auth.dataobject.MenuDO;
+import com.shiyu.ai.dal.auth.dataobject.RoleDO;
 import com.shiyu.ai.dal.auth.dataobject.RoleScopeMenuDO;
 import com.shiyu.ai.dal.auth.dataobject.UserScopeRoleDO;
 import com.shiyu.ai.dal.auth.mapper.MenuMapper;
 import com.shiyu.ai.dal.auth.bo.MenuBO;
+import com.shiyu.ai.common.core.domain.LoginContextHolder;
 import com.shiyu.ai.common.core.utils.MapstructUtils;
 import jakarta.annotation.Resource;
 import org.springframework.stereotype.Component;
@@ -28,6 +30,7 @@ public class MenuRepository {
      */
     public List<MenuBO> selectAll() {
         QueryWrapper qw = new QueryWrapper();
+        addMenuTenantFilter(qw);
         List<MenuDO> menuDOs = menuMapper.selectListByQuery(qw);
         return MapstructUtils.convert(menuDOs, MenuBO.class);
     }
@@ -38,6 +41,7 @@ public class MenuRepository {
     public List<MenuBO> selectAllByType(String type) {
         QueryWrapper queryWrapper = new QueryWrapper()
                 .where(MenuDO::getType).eq(type);
+        addMenuTenantFilter(queryWrapper);
         List<MenuDO> menuDOs = menuMapper.selectListByQuery(queryWrapper);
         return MapstructUtils.convert(menuDOs, MenuBO.class);
     }
@@ -48,6 +52,7 @@ public class MenuRepository {
     public List<MenuBO> selectAllExcludingType(String type) {
         QueryWrapper queryWrapper = new QueryWrapper()
                 .where(MenuDO::getType).ne(type);
+        addMenuTenantFilter(queryWrapper);
         List<MenuDO> menuDOs = menuMapper.selectListByQuery(queryWrapper);
         return MapstructUtils.convert(menuDOs, MenuBO.class);
     }
@@ -100,18 +105,27 @@ public class MenuRepository {
                 .from(MenuDO.class)
                 .innerJoin(RoleScopeMenuDO.class)
                 .on(column(MenuDO::getId).eq(column(RoleScopeMenuDO::getMenuId)))
+                .innerJoin(RoleDO.class)
+                .on(column(RoleScopeMenuDO::getRoleId).eq(column(RoleDO::getId)))
                 .innerJoin(UserScopeRoleDO.class)
-                .on(column(RoleScopeMenuDO::getRoleId).eq(column(UserScopeRoleDO::getRoleId)))
+                .on(column(RoleDO::getId).eq(column(UserScopeRoleDO::getRoleId)))
                 .where(UserScopeRoleDO::getUserId).eq(userId)
                 .and(column(RoleScopeMenuDO::getTenantId).eq(column(UserScopeRoleDO::getTenantId)))
                 .and(column(RoleScopeMenuDO::getScopedTenantId).eq(column(UserScopeRoleDO::getScopedTenantId)))
                 .and(MenuDO::getStatus).eq(1)
                 .and(MenuDO::getDelFlag).eq(0);
+        // 按当前角色编码过滤菜单，只返回当前角色有权限的菜单
+        addUserRoleFilter(qw);
+        addMenuTenantFilter(qw);
+        // 仅在当前租户下查询角色分配
+        addUserScopeTenantFilter(qw);
         if (excludeType != null) {
             qw.and(MenuDO::getType).ne(excludeType);
         }
-        qw.groupBy(column(MenuDO::getId)).orderBy(column(MenuDO::getOrder).asc(), column(MenuDO::getId).asc());
+        qw.orderBy(column(MenuDO::getOrder).asc(), column(MenuDO::getId).asc());
         List<MenuDO> menuDOs = menuMapper.selectListByQuery(qw);
+        // 一个用户可能在一个角色下拥有多个角色分配条目，用 Java 去重
+        menuDOs = menuDOs.stream().distinct().toList();
         return MapstructUtils.convert(menuDOs, MenuBO.class);
     }
 
@@ -121,6 +135,7 @@ public class MenuRepository {
     public boolean existsByName(String name, Long excludeId) {
         QueryWrapper qw = new QueryWrapper()
                 .where(MenuDO::getName).eq(name);
+        addMenuTenantFilter(qw);
         if (excludeId != null) {
             qw.and(MenuDO::getId).ne(excludeId);
         }
@@ -133,6 +148,7 @@ public class MenuRepository {
     public boolean existsByPath(String path, Long excludeId) {
         QueryWrapper qw = new QueryWrapper()
                 .where(MenuDO::getPath).eq(path);
+        addMenuTenantFilter(qw);
         if (excludeId != null) {
             qw.and(MenuDO::getId).ne(excludeId);
         }
@@ -147,6 +163,7 @@ public class MenuRepository {
                 .where(MenuDO::getParentId).eq(parentId)
                 .and(MenuDO::getStatus).eq(1)
                 .and(MenuDO::getDelFlag).eq(0);
+        addMenuTenantFilter(qw);
         qw.orderBy(column(MenuDO::getOrder).asc(), column(MenuDO::getId).asc());
         List<MenuDO> menuDOs = menuMapper.selectListByQuery(qw);
         return MapstructUtils.convert(menuDOs, MenuBO.class);
@@ -159,8 +176,48 @@ public class MenuRepository {
         QueryWrapper qw = new QueryWrapper()
                 .where(MenuDO::getParentId).eq(parentId)
                 .and(MenuDO::getType).eq(type);
+        addMenuTenantFilter(qw);
         List<MenuDO> menuDOs = menuMapper.selectListByQuery(qw);
         return MapstructUtils.convert(menuDOs, MenuBO.class);
+    }
+
+    // ========== 租户过滤辅助方法 ==========
+
+    /**
+     * 添加菜单表租户过滤：menu.tenant_id IN (visibleTenantIds)
+     * 确保查询的菜单属于当前用户可见的租户范围
+     */
+    /**
+     * 添加当前角色过滤：role.code = currentRoleCode
+     * 确保只查询当前角色有权限的菜单
+     */
+    private void addUserRoleFilter(QueryWrapper qw) {
+        String roleCode = LoginContextHolder.getCurrentRoleCode();
+        if (roleCode != null) {
+            qw.and(RoleDO::getCode).eq(roleCode);
+        }
+    }
+
+    /**
+     * 添加菜单表租户过滤：menu.tenant_id IN (visibleTenantIds)
+     * 确保查询的菜单属于当前用户可见的租户范围
+     */
+    private void addMenuTenantFilter(QueryWrapper qw) {
+        List<Long> visibleTenantIds = LoginContextHolder.getVisibleTenantIds();
+        if (visibleTenantIds != null && !visibleTenantIds.isEmpty()) {
+            qw.in(MenuDO::getTenantId, visibleTenantIds);
+        }
+    }
+
+    /**
+     * 添加用户作用域租户过滤：user_scope_role.scoped_tenant_id = currentTenantId
+     * 确保只查询当前租户下分配的角色菜单
+     */
+    private void addUserScopeTenantFilter(QueryWrapper qw) {
+        Long currentTenantId = LoginContextHolder.getCurrentTenantId();
+        if (currentTenantId != null) {
+            qw.eq(UserScopeRoleDO::getScopedTenantId, currentTenantId);
+        }
     }
 
 }

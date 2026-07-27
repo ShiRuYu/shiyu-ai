@@ -41,8 +41,8 @@ public class MenuController {
             List<MenuBO> menuBOs = menuService.getRouteMenusByUserId(userId);
             return Result.success(convertToRouteMenuVO(menuBOs));
         } catch (Exception e) {
-            log.error("鎿嶄綔澶辫触", e);
-            return Result.fail("鎿嶄綔澶辫触");
+            log.error("操作失败", e);
+            return Result.fail("操作失败");
         }
     }
 

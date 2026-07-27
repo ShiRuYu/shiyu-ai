@@ -11,10 +11,16 @@ import java.util.List;
 public interface TenantService {
 
     /**
-     * Get All Tenants
+     * Get All Tenants (flat list)
      * @return 处理结果
      */
     List<TenantBO> getAllTenants();
+
+    /**
+     * Get Tenant Tree (parent-child structure)
+     * @return 处理结果
+     */
+    List<TenantBO> getTenantTree();
 
     /**
      * Get Tenant By Id

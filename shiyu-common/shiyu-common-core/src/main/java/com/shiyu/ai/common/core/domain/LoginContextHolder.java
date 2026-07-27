@@ -88,6 +88,12 @@ public final class LoginContextHolder {
         return false;
     }
 
+    /** 当前角色编码 */
+    public static String getCurrentRoleCode() {
+        LoginUser user = getLoginUser();
+        return user != null ? user.getCurrentRoleCode() : null;
+    }
+
     public static boolean isSuperAdmin() {
         LoginUser user = getLoginUser();
         return user != null && user.isSuperAdmin();

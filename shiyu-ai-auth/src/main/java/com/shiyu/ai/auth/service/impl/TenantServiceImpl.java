@@ -7,7 +7,10 @@ import com.shiyu.ai.common.core.domain.LoginContextHolder;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 
+import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 @Slf4j
 @Service
@@ -113,6 +116,43 @@ public class TenantServiceImpl implements TenantService {
         }
         tenantRepository.cascadeDelete(id);
         return true;
+    }
+
+    @Override
+    public List<TenantBO> getTenantTree() {
+        List<TenantBO> allTenants = getAllTenants();
+        if (allTenants == null || allTenants.isEmpty()) {
+            return new ArrayList<>();
+        }
+
+        // 一次遍历建立 parentId → children 映射
+        Map<Long, List<TenantBO>> childrenMap = new HashMap<>();
+        List<TenantBO> roots = new ArrayList<>();
+
+        for (TenantBO tenant : allTenants) {
+            Long pid = tenant.getParentId();
+            if (pid == null) {
+                roots.add(tenant);
+            } else {
+                childrenMap.computeIfAbsent(pid, k -> new ArrayList<>()).add(tenant);
+            }
+        }
+
+        // 递归挂载子节点
+        for (TenantBO root : roots) {
+            attachChildren(root, childrenMap);
+        }
+        return roots;
+    }
+
+    private void attachChildren(TenantBO parent, Map<Long, List<TenantBO>> childrenMap) {
+        List<TenantBO> children = childrenMap.get(parent.getId());
+        if (children != null && !children.isEmpty()) {
+            parent.setChildren(children);
+            for (TenantBO child : children) {
+                attachChildren(child, childrenMap);
+            }
+        }
     }
 
     private boolean canAccessTenant(Long tenantId) {

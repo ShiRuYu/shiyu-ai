@@ -3,16 +3,18 @@ package com.shiyu.ai.web.config;
 import cn.dev33.satoken.interceptor.SaInterceptor;
 import com.shiyu.ai.web.interceptor.UserContextInterceptor;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.core.annotation.Order;
 import org.springframework.web.servlet.config.annotation.InterceptorRegistry;
 import org.springframework.web.servlet.config.annotation.WebMvcConfigurer;
 
 /**
  * 拦截器配置
- * 注册用户上下文拦截器（鉴权使用 SaServletFilter，在 SaTokenConfig 中配置）
  *
- * 注意：排除路径需要与 SaTokenConfig 保持一致
+ * 1. UserContextInterceptor — 填充 LoginContextHolder 登录上下文（@Order(1) 优先执行）
+ * 2. SaInterceptor           — Sa-Token 注解鉴权（@SaCheckPermission 等）
  */
 @Configuration
+@Order(1)
 public class SaInterceptorConfig implements WebMvcConfigurer {
 
     private final UserContextInterceptor userContextInterceptor;
@@ -41,6 +43,8 @@ public class SaInterceptorConfig implements WebMvcConfigurer {
                     "/webjars/**", "/v2/api-docs",
                     "/h2/**"
                 );
+        // Sa-Token 拦截器，开启注解式鉴权功能
+        // 默认构造函数 isAnnotation = true，自动扫描 @SaCheckPermission 等注解
         registry.addInterceptor(new SaInterceptor()).addPathPatterns("/**");
     }
 }
