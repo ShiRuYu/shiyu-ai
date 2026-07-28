@@ -26,7 +26,7 @@ public class MenuRequest implements Serializable {
     private String code;
 
     @NotBlank(message = "菜单类型不能为空")
-    @Schema(description = "菜单类型：CATALOG（目录）/ MENU（路由菜单）")
+    @Schema(description = "菜单类型：CATALOG（目录）/ MENU（路由菜单）/ LINK（外链）/ EMBEDDED（内嵌）")
     private String type;
 
     @JsonProperty("pid")

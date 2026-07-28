@@ -9,8 +9,7 @@ import java.util.Arrays;
 @AllArgsConstructor
 public enum MenuTypeEnum {
     DIRECTORY("目录"),
-    MENU("菜单"),
-    BUTTON("按钮");
+    MENU("菜单");
 
     private final String name;
 
@@ -32,8 +31,4 @@ public enum MenuTypeEnum {
         return this == MENU;
     }
 
-    public boolean isButton() {
-        return this == BUTTON;
-    }
 }
-

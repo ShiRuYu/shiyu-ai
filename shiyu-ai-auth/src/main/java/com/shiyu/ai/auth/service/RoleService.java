@@ -28,6 +28,11 @@ public interface RoleService {
     boolean updateRole(Long id, RoleBO roleBO);
 
     /**
+     * 替换当前租户作用域下的角色菜单。
+     */
+    boolean replaceRoleMenus(Long id, List<Long> menuIds);
+
+    /**
      * 删除角色
      */
     boolean deleteRole(Long id);

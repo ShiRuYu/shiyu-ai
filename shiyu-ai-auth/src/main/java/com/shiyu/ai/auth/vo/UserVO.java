@@ -76,6 +76,16 @@ public class UserVO implements Serializable {
     private String email;
 
     /**
+     * 手机号
+     */
+    private String phone;
+
+    /**
+     * 备注
+     */
+    private String remark;
+
+    /**
      * 角色列表
      */
     private List<RoleVO> roles;

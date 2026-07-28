@@ -43,7 +43,7 @@ public class RouteMenuVO implements Serializable {
     private String component;
 
     /**
-     * 类型（menu/catalog/button/embedded/link）
+     * 类型（menu/catalog/embedded/link）
      */
     private String type;
 
@@ -51,11 +51,6 @@ public class RouteMenuVO implements Serializable {
      * 状态（1 启用，0 禁用）
      */
     private Integer status;
-
-    /**
-     * 权限码
-     */
-    private String authCode;
 
     /**
      * 图标

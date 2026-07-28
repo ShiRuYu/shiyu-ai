@@ -20,7 +20,6 @@ public class AgentDefinition {
     private String currentVersion;
     private long createdAt;
     private long updatedAt;
-    private Long scopedTenantId;
     private String startNodeId;
 
     @Builder.Default

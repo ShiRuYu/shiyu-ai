@@ -36,42 +36,42 @@ springdoc:
       paths-to-match:
         - '/**'
       packages-to-scan:
-        - com.shiyu.ai.web.auth.controller
-        - com.shiyu.ai.web.agent.controller
-        - com.shiyu.ai.web.model.controller
-        - com.shiyu.ai.web.education.controller
-        - com.shiyu.ai.web.knowledge.controller
-        - com.shiyu.ai.web.record.controller
-        - com.shiyu.ai.web.usage.controller
-        - com.shiyu.ai.web.plugin.controller
-        - com.shiyu.ai.web.common.controller
+        - com.shiyu.ai.web.auth
+        - com.shiyu.ai.web.agent
+        - com.shiyu.ai.web.model
+        - com.shiyu.ai.web.education
+        - com.shiyu.ai.web.knowledge
+        - com.shiyu.ai.web.record
+        - com.shiyu.ai.web.usage
+        - com.shiyu.ai.web.plugin
+        - com.shiyu.ai.web.common
     - group: 'auth'
       packages-to-scan:
-        - com.shiyu.ai.web.auth.controller
+        - com.shiyu.ai.web.auth
     - group: 'agent'
       packages-to-scan:
-        - com.shiyu.ai.web.agent.controller
+        - com.shiyu.ai.web.agent
     - group: 'education'
       packages-to-scan:
-        - com.shiyu.ai.web.education.controller
+        - com.shiyu.ai.web.education
     - group: 'knowledge'
       packages-to-scan:
-        - com.shiyu.ai.web.knowledge.controller
+        - com.shiyu.ai.web.knowledge
     - group: 'model'
       packages-to-scan:
-        - com.shiyu.ai.web.model.controller
+        - com.shiyu.ai.web.model
     - group: 'record'
       packages-to-scan:
-        - com.shiyu.ai.web.record.controller
+        - com.shiyu.ai.web.record
     - group: 'usage'
       packages-to-scan:
-        - com.shiyu.ai.web.usage.controller
+        - com.shiyu.ai.web.usage
     - group: 'plugin'
       packages-to-scan:
-        - com.shiyu.ai.web.plugin.controller
+        - com.shiyu.ai.web.plugin
     - group: 'common'
       packages-to-scan:
-        - com.shiyu.ai.web.common.controller
+        - com.shiyu.ai.web.common
   swagger-ui:
     path: /swagger-ui/index.html      # Swagger UI 访问路径，默认 /swagger-ui/index.html
     display-request-duration: true  # 显示请求耗时

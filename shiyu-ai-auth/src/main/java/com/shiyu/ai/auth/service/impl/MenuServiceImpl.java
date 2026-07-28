@@ -14,6 +14,8 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Comparator;
+import java.util.Locale;
+import java.util.Set;
 import java.util.concurrent.TimeUnit;
 
 /**
@@ -22,6 +24,9 @@ import java.util.concurrent.TimeUnit;
 @Slf4j
 @Service
 public class MenuServiceImpl implements MenuService {
+
+    private static final Set<String> SUPPORTED_MENU_TYPES = Set.of(
+            "CATALOG", "MENU", "LINK", "EMBEDDED");
 
     private final MenuRepository menuRepository;
 
@@ -111,6 +116,9 @@ public class MenuServiceImpl implements MenuService {
     @Override
     public boolean createMenu(MenuBO menuBO) {
         log.info("新增菜单");
+        if (!isSupportedMenuType(menuBO)) {
+            return false;
+        }
         menuRepository.insert(menuBO);
         evictAllRouteMenuCache();
         return true;
@@ -122,6 +130,9 @@ public class MenuServiceImpl implements MenuService {
 
         MenuBO existingMenu = menuRepository.selectById(id);
         if (existingMenu == null) {
+            return false;
+        }
+        if (!isSupportedMenuType(menuBO)) {
             return false;
         }
 
@@ -148,12 +159,6 @@ public class MenuServiceImpl implements MenuService {
     public List<MenuBO> getChildrenByParentId(Long parentId) {
         log.info("获取子菜单，parentId: {}", parentId);
         return menuRepository.selectByParentId(parentId);
-    }
-
-    @Override
-    public List<MenuBO> getButtonsByParentId(Long parentId) {
-        log.info("BUTTON 菜单已废弃，返回空列表，parentId: {}", parentId);
-        return new ArrayList<>();
     }
 
     @Override
@@ -244,5 +249,11 @@ public class MenuServiceImpl implements MenuService {
         routeMenuCache.invalidateAll();
         log.info("全部路由菜单缓存已清除（菜单结构变更）");
     }
-}
 
+    private boolean isSupportedMenuType(MenuBO menuBO) {
+        if (menuBO == null || menuBO.getType() == null) {
+            return false;
+        }
+        return SUPPORTED_MENU_TYPES.contains(menuBO.getType().trim().toUpperCase(Locale.ROOT));
+    }
+}

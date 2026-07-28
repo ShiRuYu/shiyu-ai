@@ -9,44 +9,44 @@ VALUES (1, 'default', '默认租户', 'Admin', '13800000000', 1, 0, 'system', 's
 -- ==============================
 -- 用户（密码均为 vben123456）
 -- ==============================
-INSERT IGNORE INTO `user` (`id`, `username`, `password`, `tenant_id`, `scoped_tenant_id`, `status`, `del_flag`, `create_by`, `update_by`, `nick_name`, `email`)
-VALUES (1, 'vben', '$2a$10$upTL84vHb86f9vMVMn4m8uOGqGr9Pedo.CCsg.XmZ62xhU2IIHJvy', 1, 1, 1, 0, 'system', 'system', 'Vben', 'vben@example.com');
+INSERT IGNORE INTO `user` (`id`, `username`, `password`, `tenant_id`, `status`, `del_flag`, `create_by`, `update_by`, `nick_name`, `email`)
+VALUES (1, 'vben', '$2a$10$upTL84vHb86f9vMVMn4m8uOGqGr9Pedo.CCsg.XmZ62xhU2IIHJvy', 1, 1, 0, 'system', 'system', 'Vben', 'vben@example.com');
 
-INSERT IGNORE INTO `user` (`id`, `username`, `password`, `tenant_id`, `scoped_tenant_id`, `status`, `del_flag`, `create_by`, `update_by`, `nick_name`, `email`)
-VALUES (2, 'admin', '$2a$10$upTL84vHb86f9vMVMn4m8uOGqGr9Pedo.CCsg.XmZ62xhU2IIHJvy', 1, 1, 1, 0, 'system', 'system', 'Admin', 'admin@example.com');
+INSERT IGNORE INTO `user` (`id`, `username`, `password`, `tenant_id`, `status`, `del_flag`, `create_by`, `update_by`, `nick_name`, `email`)
+VALUES (2, 'admin', '$2a$10$upTL84vHb86f9vMVMn4m8uOGqGr9Pedo.CCsg.XmZ62xhU2IIHJvy', 1, 1, 0, 'system', 'system', 'Admin', 'admin@example.com');
 
-INSERT IGNORE INTO `user` (`id`, `username`, `password`, `tenant_id`, `scoped_tenant_id`, `status`, `del_flag`, `create_by`, `update_by`, `nick_name`, `email`)
-VALUES (3, 'jack', '$2a$10$upTL84vHb86f9vMVMn4m8uOGqGr9Pedo.CCsg.XmZ62xhU2IIHJvy', 1, 1, 1, 0, 'system', 'system', 'Jack', 'jack@example.com');
+INSERT IGNORE INTO `user` (`id`, `username`, `password`, `tenant_id`, `status`, `del_flag`, `create_by`, `update_by`, `nick_name`, `email`)
+VALUES (3, 'jack', '$2a$10$upTL84vHb86f9vMVMn4m8uOGqGr9Pedo.CCsg.XmZ62xhU2IIHJvy', 1, 1, 0, 'system', 'system', 'Jack', 'jack@example.com');
 
-INSERT IGNORE INTO `user` (`id`, `username`, `password`, `tenant_id`, `scoped_tenant_id`, `status`, `del_flag`, `create_by`, `update_by`, `nick_name`, `email`)
-VALUES (4, 'teacher01', '$2a$10$upTL84vHb86f9vMVMn4m8uOGqGr9Pedo.CCsg.XmZ62xhU2IIHJvy', 1, 1, 1, 0, 'system', 'system', '张老师', 'teacher01@example.com');
+INSERT IGNORE INTO `user` (`id`, `username`, `password`, `tenant_id`, `status`, `del_flag`, `create_by`, `update_by`, `nick_name`, `email`)
+VALUES (4, 'teacher01', '$2a$10$upTL84vHb86f9vMVMn4m8uOGqGr9Pedo.CCsg.XmZ62xhU2IIHJvy', 1, 1, 0, 'system', 'system', '张老师', 'teacher01@example.com');
 
-INSERT IGNORE INTO `user` (`id`, `username`, `password`, `tenant_id`, `scoped_tenant_id`, `status`, `del_flag`, `create_by`, `update_by`, `nick_name`, `email`)
-VALUES (5, 'student01', '$2a$10$upTL84vHb86f9vMVMn4m8uOGqGr9Pedo.CCsg.XmZ62xhU2IIHJvy', 1, 1, 1, 0, 'system', 'system', '王小明', 'student01@example.com');
+INSERT IGNORE INTO `user` (`id`, `username`, `password`, `tenant_id`, `status`, `del_flag`, `create_by`, `update_by`, `nick_name`, `email`)
+VALUES (5, 'student01', '$2a$10$upTL84vHb86f9vMVMn4m8uOGqGr9Pedo.CCsg.XmZ62xhU2IIHJvy', 1, 1, 0, 'system', 'system', '王小明', 'student01@example.com');
 
-INSERT IGNORE INTO `user` (`id`, `username`, `password`, `tenant_id`, `scoped_tenant_id`, `status`, `del_flag`, `create_by`, `update_by`, `nick_name`, `email`)
-VALUES (6, 'parent01', '$2a$10$upTL84vHb86f9vMVMn4m8uOGqGr9Pedo.CCsg.XmZ62xhU2IIHJvy', 1, 1, 1, 0, 'system', 'system', '李家长', 'parent01@example.com');
+INSERT IGNORE INTO `user` (`id`, `username`, `password`, `tenant_id`, `status`, `del_flag`, `create_by`, `update_by`, `nick_name`, `email`)
+VALUES (6, 'parent01', '$2a$10$upTL84vHb86f9vMVMn4m8uOGqGr9Pedo.CCsg.XmZ62xhU2IIHJvy', 1, 1, 0, 'system', 'system', '李家长', 'parent01@example.com');
 
 -- ==============================
 -- 角色
 -- ==============================
-INSERT IGNORE INTO `role` (`id`, `code`, `name`, `tenant_id`, `scoped_tenant_id`, `status`, `remark`, `del_flag`, `create_by`, `update_by`)
-VALUES (1, 'super', '超级管理员', 1, 1, 1, '拥有系统所有权限', 0, 'system', 'system');
+INSERT IGNORE INTO `role` (`id`, `code`, `name`, `tenant_id`, `status`, `remark`, `del_flag`, `create_by`, `update_by`)
+VALUES (1, 'super', '超级管理员', 1, 1, '拥有系统所有权限', 0, 'system', 'system');
 
-INSERT IGNORE INTO `role` (`id`, `code`, `name`, `tenant_id`, `scoped_tenant_id`, `status`, `remark`, `del_flag`, `create_by`, `update_by`)
-VALUES (2, 'admin', '管理员', 1, 1, 1, '系统管理员', 0, 'system', 'system');
+INSERT IGNORE INTO `role` (`id`, `code`, `name`, `tenant_id`, `status`, `remark`, `del_flag`, `create_by`, `update_by`)
+VALUES (2, 'admin', '管理员', 1, 1, '系统管理员', 0, 'system', 'system');
 
-INSERT IGNORE INTO `role` (`id`, `code`, `name`, `tenant_id`, `scoped_tenant_id`, `status`, `remark`, `del_flag`, `create_by`, `update_by`)
-VALUES (3, 'user', '普通用户', 1, 1, 1, '普通用户', 0, 'system', 'system');
+INSERT IGNORE INTO `role` (`id`, `code`, `name`, `tenant_id`, `status`, `remark`, `del_flag`, `create_by`, `update_by`)
+VALUES (3, 'user', '普通用户', 1, 1, '普通用户', 0, 'system', 'system');
 
-INSERT IGNORE INTO `role` (`id`, `code`, `name`, `tenant_id`, `scoped_tenant_id`, `status`, `remark`, `del_flag`, `create_by`, `update_by`)
-VALUES (4, 'teacher', '教师', 1, 1, 1, '教师角色，可管理教务和使用AI助手', 0, 'system', 'system');
+INSERT IGNORE INTO `role` (`id`, `code`, `name`, `tenant_id`, `status`, `remark`, `del_flag`, `create_by`, `update_by`)
+VALUES (4, 'teacher', '教师', 1, 1, '教师角色，可管理教务和使用AI助手', 0, 'system', 'system');
 
-INSERT IGNORE INTO `role` (`id`, `code`, `name`, `tenant_id`, `scoped_tenant_id`, `status`, `remark`, `del_flag`, `create_by`, `update_by`)
-VALUES (5, 'student', '学生', 1, 1, 1, '学生角色，可使用学习/练习/考试/复习/AI助手', 0, 'system', 'system');
+INSERT IGNORE INTO `role` (`id`, `code`, `name`, `tenant_id`, `status`, `remark`, `del_flag`, `create_by`, `update_by`)
+VALUES (5, 'student', '学生', 1, 1, '学生角色，可使用学习/练习/考试/复习/AI助手', 0, 'system', 'system');
 
-INSERT IGNORE INTO `role` (`id`, `code`, `name`, `tenant_id`, `scoped_tenant_id`, `status`, `remark`, `del_flag`, `create_by`, `update_by`)
-VALUES (6, 'parent', '家长', 1, 1, 1, '家长角色，可查看数据中心和学习报告', 0, 'system', 'system');
+INSERT IGNORE INTO `role` (`id`, `code`, `name`, `tenant_id`, `status`, `remark`, `del_flag`, `create_by`, `update_by`)
+VALUES (6, 'parent', '家长', 1, 1, '家长角色，可查看数据中心和学习报告', 0, 'system', 'system');
 
 -- ==============================
 -- 子租户（以默认租户为父节点的子租户）
@@ -579,6 +579,8 @@ VALUES (7, 'system:role:update', '更新角色', 1, 0, 'system', 'system');
 INSERT IGNORE INTO `auth_code` (`id`, `code`, `name`, `status`, `del_flag`, `create_by`, `update_by`)
 VALUES (8, 'system:role:delete', '删除角色', 1, 0, 'system', 'system');
 INSERT IGNORE INTO `auth_code` (`id`, `code`, `name`, `status`, `del_flag`, `create_by`, `update_by`)
+VALUES (115, 'system:role:assign', '分配角色权限', 1, 0, 'system', 'system');
+INSERT IGNORE INTO `auth_code` (`id`, `code`, `name`, `status`, `del_flag`, `create_by`, `update_by`)
 VALUES (9, 'system:menu:list', '查看菜单列表', 1, 0, 'system', 'system');
 INSERT IGNORE INTO `auth_code` (`id`, `code`, `name`, `status`, `del_flag`, `create_by`, `update_by`)
 VALUES (10, 'system:menu:create', '创建菜单', 1, 0, 'system', 'system');
@@ -594,6 +596,14 @@ INSERT IGNORE INTO `auth_code` (`id`, `code`, `name`, `status`, `del_flag`, `cre
 VALUES (15, 'system:tenant:update', '更新租户', 1, 0, 'system', 'system');
 INSERT IGNORE INTO `auth_code` (`id`, `code`, `name`, `status`, `del_flag`, `create_by`, `update_by`)
 VALUES (16, 'system:tenant:delete', '删除租户', 1, 0, 'system', 'system');
+INSERT IGNORE INTO `auth_code` (`id`, `code`, `name`, `status`, `del_flag`, `create_by`, `update_by`)
+VALUES (17, 'system:auth-code:list', '查看权限码列表', 1, 0, 'system', 'system');
+INSERT IGNORE INTO `auth_code` (`id`, `code`, `name`, `status`, `del_flag`, `create_by`, `update_by`)
+VALUES (18, 'system:auth-code:create', '创建权限码', 1, 0, 'system', 'system');
+INSERT IGNORE INTO `auth_code` (`id`, `code`, `name`, `status`, `del_flag`, `create_by`, `update_by`)
+VALUES (19, 'system:auth-code:update', '更新权限码', 1, 0, 'system', 'system');
+INSERT IGNORE INTO `auth_code` (`id`, `code`, `name`, `status`, `del_flag`, `create_by`, `update_by`)
+VALUES (20, 'system:auth-code:delete', '删除权限码', 1, 0, 'system', 'system');
 INSERT IGNORE INTO `auth_code` (`id`, `code`, `name`, `status`, `del_flag`, `create_by`, `update_by`)
 VALUES (21, 'system:dict:list', '查看字典', 1, 0, 'system', 'system');
 INSERT IGNORE INTO `auth_code` (`id`, `code`, `name`, `status`, `del_flag`, `create_by`, `update_by`)

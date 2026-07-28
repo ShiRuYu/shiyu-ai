@@ -61,6 +61,16 @@ public class UserDO extends TenantEntity {
     private String email;
 
     /**
+     * 手机号
+     */
+    private String phone;
+
+    /**
+     * 备注
+     */
+    private String remark;
+
+    /**
      * 扩展信息（JSON格式）
      */
     private String extInfo;

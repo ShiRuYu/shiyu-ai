@@ -5,6 +5,7 @@ import com.github.benmanes.caffeine.cache.Caffeine;
 import com.shiyu.ai.dal.common.repository.DictRepository;
 import com.shiyu.ai.auth.service.DictService;
 import com.shiyu.ai.dal.common.bo.DictBO;
+import com.shiyu.ai.common.core.domain.LoginContextHolder;
 import jakarta.annotation.Resource;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.tuple.Pair;
@@ -42,14 +43,15 @@ public class DictServiceImpl implements DictService {
 
     @Override
     public List<DictBO> getByDictType(String dictType) {
-        List<DictBO> cached = dictTypeCache.getIfPresent(dictType);
+        String cacheKey = cacheKey(dictType);
+        List<DictBO> cached = dictTypeCache.getIfPresent(cacheKey);
         if (cached != null) {
             log.debug("瀛楀吀缂撳瓨鍛戒腑: {}", dictType);
             return cached;
         }
         List<DictBO> list = dictRepository.selectByDictType(dictType);
         if (list != null) {
-            dictTypeCache.put(dictType, list);
+            dictTypeCache.put(cacheKey, list);
         }
         return list;
     }
@@ -57,14 +59,14 @@ public class DictServiceImpl implements DictService {
     @Override
     public DictBO create(DictBO dictBO) {
         DictBO created = dictRepository.create(dictBO);
-        dictTypeCache.invalidate(dictBO.getDictType());
+        dictTypeCache.invalidate(cacheKey(dictBO.getDictType()));
         return created;
     }
 
     @Override
     public DictBO update(DictBO dictBO) {
         DictBO updated = dictRepository.update(dictBO);
-        dictTypeCache.invalidate(dictBO.getDictType());
+        dictTypeCache.invalidate(cacheKey(dictBO.getDictType()));
         return updated;
     }
 
@@ -73,7 +75,7 @@ public class DictServiceImpl implements DictService {
         DictBO existing = dictRepository.selectById(id);
         if (existing != null) {
             dictRepository.deleteById(id);
-            dictTypeCache.invalidate(existing.getDictType());
+            dictTypeCache.invalidate(cacheKey(existing.getDictType()));
         }
     }
 
@@ -83,8 +85,19 @@ public class DictServiceImpl implements DictService {
             DictBO existing = dictRepository.selectById(id);
             if (existing != null) {
                 dictRepository.deleteById(id);
-                dictTypeCache.invalidate(existing.getDictType());
+                dictTypeCache.invalidate(cacheKey(existing.getDictType()));
             }
         }
+    }
+
+    private String cacheKey(String dictType) {
+        Long filterTenantId = LoginContextHolder.getFilterTenantId();
+        if (filterTenantId != null) {
+            return "filter:" + filterTenantId + ":" + dictType;
+        }
+        if (LoginContextHolder.isSuperAdmin()) {
+            return "all:" + dictType;
+        }
+        return "visible:" + String.valueOf(LoginContextHolder.getVisibleTenantIds()) + ":" + dictType;
     }
 }

@@ -82,18 +82,6 @@ public interface MenuService {
     boolean updateMenu(Long id, MenuBO menuBO);
 
     /**
-     * 获取按钮权限-by parentId
-     *
-     * @param parentId 父菜单 ID
-     * @return 按钮权限列表
-     */
-    /**
-     * Get Buttons By Parent Id
-     * @return 处理结果
-     */
-    List<MenuBO> getButtonsByParentId(Long parentId);
-    
-    /**
      * 根据用户 ID 获取菜单树
      *
      * @param userId 用户 ID

@@ -37,7 +37,6 @@ CREATE TABLE IF NOT EXISTS `user` (
     `username` VARCHAR(64) NOT NULL COMMENT '用户名',
     `password` VARCHAR(255) COMMENT '密码',
     `tenant_id` BIGINT NOT NULL COMMENT '租户ID',
-    `scoped_tenant_id` BIGINT COMMENT '作用域租户ID',
     `status` TINYINT DEFAULT 1 COMMENT '状态（1正常 0停用）',
     `del_flag` TINYINT DEFAULT 0 COMMENT '删除标志（0：正常 1：已删除）',
     `create_by` VARCHAR(64) COMMENT '创建者',
@@ -49,6 +48,8 @@ CREATE TABLE IF NOT EXISTS `user` (
     `avatar` VARCHAR(255) COMMENT '头像',
     `address` VARCHAR(255) COMMENT '地址',
     `email` VARCHAR(128) COMMENT '邮箱',
+    `phone` VARCHAR(20) COMMENT '手机号',
+    `remark` VARCHAR(500) COMMENT '备注',
     `ext_info` TEXT COMMENT '扩展信息(JSON)',
     PRIMARY KEY (`id`)
 );
@@ -63,7 +64,6 @@ CREATE TABLE IF NOT EXISTS `role` (
     `code` VARCHAR(64) NOT NULL COMMENT '角色编码',
     `name` VARCHAR(64) NOT NULL COMMENT '角色名称',
     `tenant_id` BIGINT NOT NULL COMMENT '租户ID',
-    `scoped_tenant_id` BIGINT COMMENT '作用域租户ID',
     `status` TINYINT DEFAULT 1 COMMENT '状态（1正常 0停用）',
     `remark` VARCHAR(500) COMMENT '备注',
     `del_flag` TINYINT DEFAULT 0 COMMENT '删除标志（0：正常 1：已删除）',
@@ -86,7 +86,6 @@ CREATE TABLE IF NOT EXISTS `menu` (
     `type` VARCHAR(20) NOT NULL COMMENT '菜单类型（CATALOG/MENU）',
     `parent_id` BIGINT COMMENT '父菜单 ID',
     `tenant_id` BIGINT NOT NULL COMMENT '租户ID',
-    `scoped_tenant_id` BIGINT COMMENT '作用域租户ID',
     `path` VARCHAR(255) COMMENT '路径',
     `redirect` VARCHAR(255) COMMENT '重定向地址',
     `icon` VARCHAR(64) COMMENT '图标',
@@ -125,7 +124,6 @@ CREATE TABLE IF NOT EXISTS `user_scope_role` (
     PRIMARY KEY (`user_id`, `scoped_tenant_id`, `role_id`)
 );
 
-CREATE INDEX IF NOT EXISTS `idx_usr_scope` ON `user_scope_role` (`scoped_tenant_id`);
 
 CREATE INDEX IF NOT EXISTS `idx_usr_role` ON `user_scope_role` (`role_id`);
 
@@ -185,7 +183,5 @@ CREATE TABLE IF NOT EXISTS `role_scope_auth_code` (
 );
 
 CREATE INDEX IF NOT EXISTS `idx_rsac_auth_code` ON `role_scope_auth_code` (`auth_code_id`);
-CREATE INDEX IF NOT EXISTS `idx_rsac_scope` ON `role_scope_auth_code` (`scoped_tenant_id`, `tenant_id`);
 
 COMMENT ON TABLE `role_scope_auth_code` IS '角色作用域权限授权表';
-

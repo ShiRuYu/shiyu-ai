@@ -106,6 +106,21 @@ public class RoleServiceImpl implements RoleService {
 
     @Override
     @Transactional(rollbackFor = Exception.class)
+    public boolean replaceRoleMenus(Long id, List<Long> menuIds) {
+        Long currentTenantId = LoginContextHolder.getCurrentTenantId();
+        if (currentTenantId == null || !roleRepository.isRoleInScope(id, currentTenantId)) {
+            return false;
+        }
+        roleRepository.deleteRoleMenus(id);
+        if (menuIds != null && !menuIds.isEmpty()) {
+            roleRepository.insertRoleMenus(id, menuIds.stream().distinct().toList());
+        }
+        menuService.evictAllRouteMenuCache();
+        return true;
+    }
+
+    @Override
+    @Transactional(rollbackFor = Exception.class)
     public boolean deleteRole(Long id) {
         log.info("删除角色，id: {}", id);
         

@@ -1,7 +1,7 @@
 package com.shiyu.ai.dal.auth.dataobject;
 
 import com.mybatisflex.annotation.Table;
-import com.shiyu.ai.common.mybatis.model.TenantEntity;
+import com.shiyu.ai.common.mybatis.model.ScopeTenantEntity;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
 
@@ -13,7 +13,7 @@ import java.io.Serial;
 @Data
 @EqualsAndHashCode(callSuper = true)
 @Table("role_scope_auth_code")
-public class RoleScopeAuthCodeDO extends TenantEntity {
+public class RoleScopeAuthCodeDO extends ScopeTenantEntity {
 
     @Serial
     private static final long serialVersionUID = 1L;

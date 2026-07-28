@@ -79,6 +79,7 @@ public class DictRepository {
      * 创建字典
      */
     public DictBO create(DictBO dictBO) {
+        // tenant_id 由 TenantManager + AuditFieldListener 自动填充。
         DictDO dictDO = MapstructUtils.convert(dictBO, DictDO.class);
         
         // 使用 insertSelective 忽略 null 值，让数据库 DEFAULT 生效
@@ -91,7 +92,12 @@ public class DictRepository {
      * 更新字典
      */
     public DictBO update(DictBO dictBO) {
+        if (dictBO == null || dictBO.getId() == null) {
+            return null;
+        }
         DictDO dictDO = MapstructUtils.convert(dictBO, DictDO.class);
+        // UPDATE SQL 的 tenant_id 条件由 TenantManager 自动追加。
+        // 不从请求体接收或覆盖 tenant_id，避免跨租户改写。
         dictMapper.update(dictDO);
         return dictBO;
     }
@@ -100,6 +106,7 @@ public class DictRepository {
      * 删除字典
      */
     public void deleteById(Long id) {
+        // DELETE SQL 的 tenant_id 条件由 TenantManager 自动追加。
         dictMapper.deleteById(id);
     }
 
@@ -108,7 +115,8 @@ public class DictRepository {
      */
     public void deleteByIds(List<Long> ids) {
         for (Long id : ids) {
-            dictMapper.deleteById(id);
+            deleteById(id);
         }
     }
+
 }

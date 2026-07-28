@@ -40,6 +40,9 @@ public class UserRequest implements Serializable {
     @Schema(description = "头像URL")
     private String avatar;
 
+    @Schema(description = "地址")
+    private String address;
+
     @Schema(description = "状态（0停用 1正常）")
     private String status;
 

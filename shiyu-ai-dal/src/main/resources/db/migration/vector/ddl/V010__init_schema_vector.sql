@@ -10,7 +10,6 @@ CREATE TABLE IF NOT EXISTS `knowledge_chunk` (
     `metadata`      TEXT         DEFAULT NULL COMMENT 'JSON map',
     `chunk_index`   INT          DEFAULT 0,
     `tenant_id`     BIGINT       DEFAULT NULL,
-    `scoped_tenant_id`  BIGINT       DEFAULT NULL,
     `create_by`     VARCHAR(64)  DEFAULT NULL,
     `create_time`   TIMESTAMP    DEFAULT CURRENT_TIMESTAMP,
     `update_by`     VARCHAR(64)  DEFAULT NULL,

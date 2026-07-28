@@ -124,7 +124,23 @@ public class UserServiceImpl implements UserService {
         if (existingUser == null) {
             return false;
         }
-        
+
+        // 更新接口允许只提交变更字段，避免 null 覆盖已有资料。
+        if (userBO.getUsername() == null) userBO.setUsername(existingUser.getUsername());
+        if (userBO.getPassword() == null || userBO.getPassword().isBlank()) {
+            userBO.setPassword(existingUser.getPassword());
+        }
+        if (userBO.getNickName() == null) userBO.setNickName(existingUser.getNickName());
+        if (userBO.getGender() == null) userBO.setGender(existingUser.getGender());
+        if (userBO.getAvatar() == null) userBO.setAvatar(existingUser.getAvatar());
+        if (userBO.getAddress() == null) userBO.setAddress(existingUser.getAddress());
+        if (userBO.getEmail() == null) userBO.setEmail(existingUser.getEmail());
+        if (userBO.getPhone() == null) userBO.setPhone(existingUser.getPhone());
+        if (userBO.getRemark() == null) userBO.setRemark(existingUser.getRemark());
+        if (userBO.getStatus() == null) userBO.setStatus(existingUser.getStatus());
+        if (userBO.getDelFlag() == null) userBO.setDelFlag(existingUser.getDelFlag());
+        if (userBO.getExtInfo() == null) userBO.setExtInfo(existingUser.getExtInfo());
+
         userBO.setId(userId);
         boolean updated = userRepository.update(userBO);
         if (updated && roleIds != null) {
