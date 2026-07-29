@@ -1,7 +1,8 @@
 package com.shiyu.ai.auth.service;
 
 import com.shiyu.ai.dal.auth.bo.UserBO;
-import com.shiyu.ai.auth.vo.UserPageResponse;
+import com.shiyu.ai.auth.vo.UserVO;
+import com.shiyu.ai.common.core.api.PageData;
 import com.shiyu.ai.auth.request.UserTenantRoleRequest;
 import com.shiyu.ai.auth.vo.UserTenantAssignmentVO;
 
@@ -38,7 +39,7 @@ public interface UserService {
      * @param Number Number
      * @return 处理结果
      */
-    UserPageResponse getUserList(String username, Number pageNo, Number pageSize);
+    PageData<UserVO> getUserList(String username, Number pageNum, Number pageSize);
 
     /**
      * 删除用户

@@ -163,13 +163,6 @@ public class AuthRepository {
     }
 
     /**
-     * 根据用户 ID 查询按钮级权限码列表（不按空间过滤，保留兼容）
-     */
-    public List<String> selectCodesByUserId(Long userId) {
-        return selectCodesByUserId(userId, null);
-    }
-
-    /**
      * 根据角色ID查询权限码列表
      */
     public List<String> selectCodesByRoleId(Long roleId) {

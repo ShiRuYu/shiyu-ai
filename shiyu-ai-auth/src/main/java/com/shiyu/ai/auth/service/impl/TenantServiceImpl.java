@@ -2,6 +2,9 @@ package com.shiyu.ai.auth.service.impl;
 
 import com.shiyu.ai.dal.auth.repository.TenantRepository;
 import com.shiyu.ai.auth.service.TenantService;
+import com.shiyu.ai.auth.vo.TenantVO;
+import com.shiyu.ai.common.core.api.PageData;
+import com.shiyu.ai.common.core.utils.MapstructUtils;
 import com.shiyu.ai.dal.auth.bo.TenantBO;
 import com.shiyu.ai.common.core.domain.LoginContextHolder;
 import lombok.extern.slf4j.Slf4j;
@@ -20,6 +23,13 @@ public class TenantServiceImpl implements TenantService {
 
     public TenantServiceImpl(TenantRepository tenantRepository) {
         this.tenantRepository = tenantRepository;
+    }
+
+    @Override
+    public PageData<TenantVO> getTenantPage(Number pageNo, Number pageSize,
+                                            String name, String code, Integer status) {
+        var page = tenantRepository.selectPage(pageNo, pageSize, name, code, status);
+        return new PageData<>(MapstructUtils.convert(page.getRight(), TenantVO.class), page.getLeft());
     }
 
     @Override

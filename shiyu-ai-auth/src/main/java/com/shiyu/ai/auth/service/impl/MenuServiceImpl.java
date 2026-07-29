@@ -6,6 +6,9 @@ import com.shiyu.ai.common.core.domain.LoginContextHolder;
 import com.shiyu.ai.dal.auth.repository.MenuRepository;
 import com.shiyu.ai.auth.service.MenuService;
 import com.shiyu.ai.dal.auth.bo.MenuBO;
+import com.shiyu.ai.auth.vo.MenuVO;
+import com.shiyu.ai.common.core.api.PageData;
+import com.shiyu.ai.common.core.utils.MapstructUtils;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 
@@ -119,6 +122,7 @@ public class MenuServiceImpl implements MenuService {
         if (!isSupportedMenuType(menuBO)) {
             return false;
         }
+        normalizeMenuType(menuBO);
         menuRepository.insert(menuBO);
         evictAllRouteMenuCache();
         return true;
@@ -135,6 +139,7 @@ public class MenuServiceImpl implements MenuService {
         if (!isSupportedMenuType(menuBO)) {
             return false;
         }
+        normalizeMenuType(menuBO);
 
         menuBO.setId(id);
         boolean result = menuRepository.update(menuBO);
@@ -255,5 +260,16 @@ public class MenuServiceImpl implements MenuService {
             return false;
         }
         return SUPPORTED_MENU_TYPES.contains(menuBO.getType().trim().toUpperCase(Locale.ROOT));
+    }
+
+    @Override
+    public PageData<MenuVO> getMenuPage(Number pageNo, Number pageSize,
+                                        String name, String code, String type, Integer status) {
+        var page = menuRepository.selectPage(pageNo, pageSize, name, code, type, status);
+        return new PageData<>(MapstructUtils.convert(page.getRight(), MenuVO.class), page.getLeft());
+    }
+
+    private void normalizeMenuType(MenuBO menuBO) {
+        menuBO.setType(menuBO.getType().trim().toUpperCase(Locale.ROOT));
     }
 }

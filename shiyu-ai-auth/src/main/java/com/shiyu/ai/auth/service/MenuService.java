@@ -1,6 +1,8 @@
 package com.shiyu.ai.auth.service;
 
 import com.shiyu.ai.dal.auth.bo.MenuBO;
+import com.shiyu.ai.common.core.api.PageData;
+import com.shiyu.ai.auth.vo.MenuVO;
 
 import java.util.List;
 
@@ -8,6 +10,8 @@ import java.util.List;
  * 菜单服务接口
  */
 public interface MenuService {
+    PageData<MenuVO> getMenuPage(Number pageNo, Number pageSize,
+                                 String name, String code, String type, Integer status);
 
     /**
      * 获取角色权限树 by token

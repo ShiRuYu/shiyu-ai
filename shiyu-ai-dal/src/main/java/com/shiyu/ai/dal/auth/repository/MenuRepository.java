@@ -6,11 +6,13 @@ import com.shiyu.ai.dal.auth.dataobject.RoleDO;
 import com.shiyu.ai.dal.auth.dataobject.RoleScopeMenuDO;
 import com.shiyu.ai.dal.auth.dataobject.UserScopeRoleDO;
 import com.shiyu.ai.dal.auth.mapper.MenuMapper;
+import com.shiyu.ai.dal.auth.mapper.RoleScopeMenuMapper;
 import com.shiyu.ai.dal.auth.bo.MenuBO;
 import com.shiyu.ai.common.core.domain.LoginContextHolder;
 import com.shiyu.ai.common.core.utils.MapstructUtils;
 import jakarta.annotation.Resource;
 import org.springframework.stereotype.Component;
+import org.apache.commons.lang3.tuple.Pair;
 
 import java.util.List;
 
@@ -24,6 +26,9 @@ public class MenuRepository {
 
     @Resource
     private MenuMapper menuMapper;
+
+    @Resource
+    private RoleScopeMenuMapper roleScopeMenuMapper;
 
     /**
      * 查询所有菜单
@@ -87,7 +92,54 @@ public class MenuRepository {
      * 删除菜单
      */
     public boolean deleteById(Long id) {
-        return menuMapper.deleteById(id) > 0;
+        List<Long> ids = new java.util.ArrayList<>();
+        collectSubtreeIds(id, ids);
+        if (ids.isEmpty()) {
+            return false;
+        }
+        roleScopeMenuMapper.deleteByQuery(QueryWrapper.create()
+                .where(RoleScopeMenuDO::getMenuId).in(ids));
+        menuMapper.deleteByQuery(QueryWrapper.create()
+                .where(MenuDO::getId).in(ids));
+        return true;
+    }
+
+    public Pair<Long, List<MenuBO>> selectPage(Number pageNo, Number pageSize,
+                                               String name, String code,
+                                               String type, Integer status) {
+        QueryWrapper count = buildManageQuery(name, code, type, status);
+        long total = menuMapper.selectCountByQuery(count);
+        QueryWrapper query = buildManageQuery(name, code, type, status);
+        int page = pageNo == null ? 1 : pageNo.intValue();
+        int size = pageSize == null ? 10 : pageSize.intValue();
+        query.limit((long) (page - 1) * size, size);
+        query.orderBy(MenuDO::getOrder, true).orderBy(MenuDO::getId, true);
+        return Pair.of(total, MapstructUtils.convert(
+                menuMapper.selectListByQuery(query), MenuBO.class));
+    }
+
+    private QueryWrapper buildManageQuery(String name, String code, String type, Integer status) {
+        QueryWrapper query = QueryWrapper.create()
+                .where(MenuDO::getDelFlag).eq(0);
+        if (name != null && !name.isBlank()) query.and(MenuDO::getName).like(name);
+        if (code != null && !code.isBlank()) query.and(MenuDO::getCode).like(code);
+        if (type != null && !type.isBlank()) query.and(MenuDO::getType).eq(type.toUpperCase());
+        if (status != null) query.and(MenuDO::getStatus).eq(status);
+        addMenuTenantFilter(query);
+        return query;
+    }
+
+    private void collectSubtreeIds(Long parentId, List<Long> ids) {
+        MenuDO current = menuMapper.selectOneById(parentId);
+        if (current == null) {
+            return;
+        }
+        ids.add(parentId);
+        List<MenuDO> children = menuMapper.selectListByQuery(QueryWrapper.create()
+                .where(MenuDO::getParentId).eq(parentId));
+        for (MenuDO child : children) {
+            collectSubtreeIds(child.getId(), ids);
+        }
     }
 
     /**

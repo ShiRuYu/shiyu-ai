@@ -1,6 +1,8 @@
 package com.shiyu.ai.auth.service;
 
 import com.shiyu.ai.dal.auth.bo.TenantBO;
+import com.shiyu.ai.common.core.api.PageData;
+import com.shiyu.ai.auth.vo.TenantVO;
 
 import java.util.List;
 
@@ -9,6 +11,8 @@ import java.util.List;
  */
 
 public interface TenantService {
+    PageData<TenantVO> getTenantPage(Number pageNo, Number pageSize,
+                                     String name, String code, Integer status);
 
     /**
      * Get All Tenants (flat list)

@@ -38,8 +38,8 @@ public class DictController {
     @SaCheckPermission("system:dict:list")
     @GetMapping("/list")
     public Result<PageData<DictVO>> getDictList(@Valid DictPageRequest request) {
-        log.info("获取字典列表，pageNo: {}, pageSize: {}", request.getPageNo(), request.getPageSize());
-        Pair<Long, List<DictBO>> result = dictService.getAll(request.getPageNo(), request.getPageSize());
+        log.info("获取字典列表，pageNum: {}, pageSize: {}", request.getPageNum(), request.getPageSize());
+        Pair<Long, List<DictBO>> result = dictService.getAll(request.getPageNum(), request.getPageSize());
         java.util.List<DictVO> dictVOs = com.shiyu.ai.auth.service.convert.DictConverter.INSTANCE.toVOList(result.getRight());
         return Result.success(new PageData<>(dictVOs, result.getLeft()));
     }

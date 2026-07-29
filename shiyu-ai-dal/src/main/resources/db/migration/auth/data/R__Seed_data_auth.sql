@@ -6,6 +6,10 @@
 INSERT IGNORE INTO `tenant` (`id`, `code`, `name`, `contact_name`, `contact_phone`, `status`, `del_flag`, `create_by`, `update_by`)
 VALUES (1, 'default', '默认租户', 'Admin', '13800000000', 1, 0, 'system', 'system');
 
+-- 默认租户配额
+INSERT IGNORE INTO `tenant_quota` (`tenant_id`, `max_agent_count`, `max_token_per_day`, `max_storage_mb`, `max_user_count`, `status`)
+VALUES (1, 50, 5000000, 5120, 500, 1);
+
 -- ==============================
 -- 用户（密码均为 vben123456）
 -- ==============================
@@ -571,6 +575,8 @@ VALUES (3, 'system:user:update', '更新用户', 1, 0, 'system', 'system');
 INSERT IGNORE INTO `auth_code` (`id`, `code`, `name`, `status`, `del_flag`, `create_by`, `update_by`)
 VALUES (4, 'system:user:delete', '删除用户', 1, 0, 'system', 'system');
 INSERT IGNORE INTO `auth_code` (`id`, `code`, `name`, `status`, `del_flag`, `create_by`, `update_by`)
+VALUES (116, 'system:user:password', '重置用户密码', 1, 0, 'system', 'system');
+INSERT IGNORE INTO `auth_code` (`id`, `code`, `name`, `status`, `del_flag`, `create_by`, `update_by`)
 VALUES (5, 'system:role:list', '查看角色列表', 1, 0, 'system', 'system');
 INSERT IGNORE INTO `auth_code` (`id`, `code`, `name`, `status`, `del_flag`, `create_by`, `update_by`)
 VALUES (6, 'system:role:create', '创建角色', 1, 0, 'system', 'system');
@@ -810,11 +816,11 @@ WHERE a.status = 1 AND a.del_flag = 0;
 
 -- 教师角色：教育权限。
 INSERT IGNORE INTO `role_scope_auth_code` (`role_id`, `auth_code_id`, `scoped_tenant_id`, `tenant_id`, `status`, `del_flag`, `create_by`, `create_time`, `update_by`, `update_time`)
-SELECT 3, a.id, 3, 1, 1, 0, 'system', CURRENT_TIMESTAMP, 'system', CURRENT_TIMESTAMP FROM `auth_code` a WHERE a.code LIKE 'edu:%' AND a.status = 1 AND a.del_flag = 0;
+SELECT 4, a.id, 3, 1, 1, 0, 'system', CURRENT_TIMESTAMP, 'system', CURRENT_TIMESTAMP FROM `auth_code` a WHERE a.code LIKE 'edu:%' AND a.status = 1 AND a.del_flag = 0;
 
 -- 学生角色：教育查看类权限。
 INSERT IGNORE INTO `role_scope_auth_code` (`role_id`, `auth_code_id`, `scoped_tenant_id`, `tenant_id`, `status`, `del_flag`, `create_by`, `create_time`, `update_by`, `update_time`)
-SELECT 4, a.id, 3, 1, 1, 0, 'system', CURRENT_TIMESTAMP, 'system', CURRENT_TIMESTAMP FROM `auth_code` a WHERE a.code IN ('edu:subject:list','edu:textbook:list','edu:chapter:list','edu:course:list','edu:question:list','edu:student:list','edu:plan:list','edu:review:list','edu:analytics','edu:wrong-question') AND a.status = 1 AND a.del_flag = 0;
+SELECT 5, a.id, 3, 1, 1, 0, 'system', CURRENT_TIMESTAMP, 'system', CURRENT_TIMESTAMP FROM `auth_code` a WHERE a.code IN ('edu:subject:list','edu:textbook:list','edu:chapter:list','edu:course:list','edu:question:list','edu:student:list','edu:plan:list','edu:review:list','edu:analytics','edu:wrong-question') AND a.status = 1 AND a.del_flag = 0;
 
 -- 家长角色：学生信息和分析查看权限。
 INSERT IGNORE INTO `role_scope_auth_code` (`role_id`, `auth_code_id`, `scoped_tenant_id`, `tenant_id`, `status`, `del_flag`, `create_by`, `create_time`, `update_by`, `update_time`)

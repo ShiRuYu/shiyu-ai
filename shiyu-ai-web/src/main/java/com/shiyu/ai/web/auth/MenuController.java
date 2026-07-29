@@ -4,8 +4,11 @@ import cn.dev33.satoken.annotation.SaCheckPermission;
 import com.shiyu.ai.auth.request.MenuRequest;
 import com.shiyu.ai.dal.auth.bo.MenuBO;
 import com.shiyu.ai.auth.vo.RouteMenuVO;
+import com.shiyu.ai.auth.vo.MenuVO;
 import com.shiyu.ai.auth.service.MenuService;
 import com.shiyu.ai.common.core.api.Result;
+import com.shiyu.ai.common.core.api.PageData;
+import com.shiyu.ai.auth.request.MenuPageRequest;
 import com.shiyu.ai.common.core.domain.LoginContextHolder;
 import com.shiyu.ai.common.core.utils.MapstructUtils;
 import lombok.extern.slf4j.Slf4j;
@@ -49,8 +52,17 @@ public class MenuController {
     @Operation(summary = "Get System Menu List")
     @SaCheckPermission("system:menu:list")
     @GetMapping("/list")
-    public Result<List<RouteMenuVO>> getSystemMenuList() {
-        return Result.success(convertToRouteMenuVO(menuService.getAllTree()));
+    public Result<List<MenuVO>> getSystemMenuList() {
+        return Result.success(MapstructUtils.convert(menuService.getAllTree(), MenuVO.class));
+    }
+
+    @Operation(summary = "Get System Menu Page")
+    @SaCheckPermission("system:menu:list")
+    @GetMapping("/page")
+    public Result<PageData<MenuVO>> getMenuPage(@Valid MenuPageRequest request) {
+        return Result.success(menuService.getMenuPage(
+                request.getPageNum(), request.getPageSize(), request.getName(),
+                request.getCode(), request.getType(), request.getStatus()));
     }
 
     @Operation(summary = "Get Menu Roots")

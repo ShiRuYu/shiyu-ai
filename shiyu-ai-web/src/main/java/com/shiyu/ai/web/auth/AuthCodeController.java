@@ -3,6 +3,8 @@ package com.shiyu.ai.web.auth;
 import cn.dev33.satoken.annotation.SaCheckPermission;
 import com.mybatisflex.core.query.QueryWrapper;
 import com.shiyu.ai.common.core.api.Result;
+import com.shiyu.ai.common.core.api.PageData;
+import com.shiyu.ai.auth.request.AuthCodePageRequest;
 import com.shiyu.ai.common.core.domain.LoginContextHolder;
 import com.shiyu.ai.auth.vo.AuthCodeOptionVO;
 import com.shiyu.ai.dal.auth.dataobject.AuthCodeDO;
@@ -10,6 +12,7 @@ import com.shiyu.ai.dal.auth.dataobject.RoleScopeAuthCodeDO;
 import com.shiyu.ai.dal.auth.mapper.AuthCodeMapper;
 import com.shiyu.ai.dal.auth.mapper.RoleScopeAuthCodeMapper;
 import com.shiyu.ai.dal.auth.repository.RoleRepository;
+import com.shiyu.ai.dal.auth.repository.TenantRepository;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.extern.slf4j.Slf4j;
@@ -35,13 +38,16 @@ public class AuthCodeController {
     private final AuthCodeMapper authCodeMapper;
     private final RoleScopeAuthCodeMapper roleScopeAuthCodeMapper;
     private final RoleRepository roleRepository;
+    private final TenantRepository tenantRepository;
 
     public AuthCodeController(AuthCodeMapper authCodeMapper,
                               RoleScopeAuthCodeMapper roleScopeAuthCodeMapper,
-                              RoleRepository roleRepository) {
+                              RoleRepository roleRepository,
+                              TenantRepository tenantRepository) {
         this.authCodeMapper = authCodeMapper;
         this.roleScopeAuthCodeMapper = roleScopeAuthCodeMapper;
         this.roleRepository = roleRepository;
+        this.tenantRepository = tenantRepository;
     }
 
     @Operation(summary = "List Auth Codes")
@@ -59,15 +65,16 @@ public class AuthCodeController {
     @Operation(summary = "查询角色已分配的权限码")
     @SaCheckPermission("system:role:list")
     @GetMapping("/roles/list")
-    public Result<List<String>> listRoleAuthCodes(@RequestParam Long roleId) {
+    public Result<List<String>> listRoleAuthCodes(@RequestParam Long roleId,
+                                                  @RequestParam Long scopedTenantId) {
         Long currentTenantId = LoginContextHolder.getCurrentTenantId();
-        if (currentTenantId == null || !roleRepository.isRoleInScope(roleId, currentTenantId)) {
+        if (!isValidScope(roleId, currentTenantId, scopedTenantId)) {
             return Result.fail("角色不属于当前租户作用域");
         }
         List<String> codes = roleScopeAuthCodeMapper.selectListByQuery(QueryWrapper.create()
                         .where(RoleScopeAuthCodeDO::getRoleId).eq(roleId)
                         .and(RoleScopeAuthCodeDO::getTenantId).eq(currentTenantId)
-                        .and(RoleScopeAuthCodeDO::getScopedTenantId).eq(currentTenantId)
+                        .and(RoleScopeAuthCodeDO::getScopedTenantId).eq(scopedTenantId)
                         .and(RoleScopeAuthCodeDO::getStatus).eq(1)
                         .and(RoleScopeAuthCodeDO::getDelFlag).eq(0))
                 .stream()
@@ -178,10 +185,12 @@ public class AuthCodeController {
     @SaCheckPermission("system:role:assign")
     @PostMapping("/roles/grant")
     @Transactional(rollbackFor = Exception.class)
-    public Result<Void> grant(@RequestParam Long roleId, @RequestBody List<Long> authCodeIds) {
+    public Result<Void> grant(@RequestParam Long roleId,
+                              @RequestParam Long scopedTenantId,
+                              @RequestBody List<Long> authCodeIds) {
         Long currentTenantId = LoginContextHolder.getCurrentTenantId();
         Long tenantId = LoginContextHolder.getCurrentTenantId();
-        if (currentTenantId == null || !roleRepository.isRoleInScope(roleId, currentTenantId)
+        if (!isValidScope(roleId, currentTenantId, scopedTenantId)
                 || authCodeIds == null || authCodeIds.isEmpty()) {
             return Result.fail("角色、作用域或权限码参数无效");
         }
@@ -195,7 +204,7 @@ public class AuthCodeController {
         Set<Long> existingIds = new HashSet<>(roleScopeAuthCodeMapper.selectListByQuery(
                 QueryWrapper.create()
                         .where(RoleScopeAuthCodeDO::getRoleId).eq(roleId)
-                        .and(RoleScopeAuthCodeDO::getScopedTenantId).eq(currentTenantId)
+                        .and(RoleScopeAuthCodeDO::getScopedTenantId).eq(scopedTenantId)
                         .and(RoleScopeAuthCodeDO::getStatus).eq(1)
                         .and(RoleScopeAuthCodeDO::getDelFlag).eq(0))
                 .stream().map(RoleScopeAuthCodeDO::getAuthCodeId).toList());
@@ -205,7 +214,7 @@ public class AuthCodeController {
             item.setRoleId(roleId);
             item.setAuthCodeId(authCodeId);
             item.setTenantId(tenantId);
-            item.setScopedTenantId(currentTenantId);
+            item.setScopedTenantId(scopedTenantId);
             item.setStatus(1);
             item.setDelFlag(0);
             item.setCreateTime(LocalDateTime.now());
@@ -222,9 +231,11 @@ public class AuthCodeController {
     @SaCheckPermission("system:role:assign")
     @PostMapping("/roles/replace")
     @Transactional(rollbackFor = Exception.class)
-    public Result<Void> replace(@RequestParam Long roleId, @RequestBody List<String> authCodes) {
+    public Result<Void> replace(@RequestParam Long roleId,
+                                @RequestParam Long scopedTenantId,
+                                @RequestBody List<String> authCodes) {
         Long currentTenantId = LoginContextHolder.getCurrentTenantId();
-        if (currentTenantId == null || !roleRepository.isRoleInScope(roleId, currentTenantId)) {
+        if (!isValidScope(roleId, currentTenantId, scopedTenantId)) {
             return Result.fail("角色不属于当前租户作用域");
         }
 
@@ -244,7 +255,7 @@ public class AuthCodeController {
         roleScopeAuthCodeMapper.deleteByQuery(QueryWrapper.create()
                 .where(RoleScopeAuthCodeDO::getRoleId).eq(roleId)
                 .and(RoleScopeAuthCodeDO::getTenantId).eq(currentTenantId)
-                .and(RoleScopeAuthCodeDO::getScopedTenantId).eq(currentTenantId));
+                .and(RoleScopeAuthCodeDO::getScopedTenantId).eq(scopedTenantId));
 
         if (!targetCodes.isEmpty()) {
             LocalDateTime now = LocalDateTime.now();
@@ -253,7 +264,7 @@ public class AuthCodeController {
                 item.setRoleId(roleId);
                 item.setAuthCodeId(authCode.getId());
                 item.setTenantId(currentTenantId);
-                item.setScopedTenantId(currentTenantId);
+                item.setScopedTenantId(scopedTenantId);
                 item.setStatus(1);
                 item.setDelFlag(0);
                 item.setCreateTime(now);
@@ -269,17 +280,61 @@ public class AuthCodeController {
     @SaCheckPermission("system:role:assign")
     @PostMapping("/roles/revoke")
     @Transactional(rollbackFor = Exception.class)
-    public Result<Void> revoke(@RequestParam Long roleId, @RequestParam Long authCodeId) {
+    public Result<Void> revoke(@RequestParam Long roleId,
+                               @RequestParam Long scopedTenantId,
+                               @RequestParam Long authCodeId) {
         Long currentTenantId = LoginContextHolder.getCurrentTenantId();
-        if (currentTenantId == null || !roleRepository.isRoleInScope(roleId, currentTenantId)) {
+        if (!isValidScope(roleId, currentTenantId, scopedTenantId)) {
             return Result.fail("角色不属于当前租户作用域");
         }
         QueryWrapper query = QueryWrapper.create()
                 .where(RoleScopeAuthCodeDO::getRoleId).eq(roleId)
                 .and(RoleScopeAuthCodeDO::getAuthCodeId).eq(authCodeId)
-                .and(RoleScopeAuthCodeDO::getScopedTenantId).eq(currentTenantId);
+                .and(RoleScopeAuthCodeDO::getTenantId).eq(currentTenantId)
+                .and(RoleScopeAuthCodeDO::getScopedTenantId).eq(scopedTenantId);
         roleScopeAuthCodeMapper.deleteByQuery(query);
         return Result.success();
+    }
+
+    @Operation(summary = "Page Auth Codes")
+    @SaCheckPermission("system:auth-code:list")
+    @GetMapping("/page")
+    public Result<PageData<AuthCodeOptionVO>> page(AuthCodePageRequest request) {
+        QueryWrapper countQuery = buildPageQuery(request);
+        long total = authCodeMapper.selectCountByQuery(countQuery);
+        QueryWrapper pageQuery = buildPageQuery(request);
+        int pageNum = request.getPageNum() == null ? 1 : request.getPageNum();
+        int pageSize = request.getPageSize() == null ? 10 : request.getPageSize();
+        pageQuery.limit((long) (pageNum - 1) * pageSize, pageSize);
+        pageQuery.orderBy(AuthCodeDO::getId, true);
+        List<AuthCodeOptionVO> items = authCodeMapper.selectListByQuery(pageQuery)
+                .stream().map(this::toOption).toList();
+        return Result.success(new PageData<>(items, total));
+    }
+
+    private QueryWrapper buildPageQuery(AuthCodePageRequest request) {
+        QueryWrapper query = QueryWrapper.create()
+                .where(AuthCodeDO::getStatus).eq(1)
+                .and(AuthCodeDO::getDelFlag).eq(0);
+        if (request.getCode() != null && !request.getCode().isBlank()) {
+            query.and(AuthCodeDO::getCode).like(request.getCode());
+        }
+        if (request.getName() != null && !request.getName().isBlank()) {
+            query.and(AuthCodeDO::getName).like(request.getName());
+        }
+        return query;
+    }
+
+    private boolean isValidScope(Long roleId, Long currentTenantId, Long scopedTenantId) {
+        if (currentTenantId == null || scopedTenantId == null
+                || !roleRepository.isRoleInScope(roleId, currentTenantId)) {
+            return false;
+        }
+        var tenant = tenantRepository.selectById(scopedTenantId);
+        return tenant != null
+                && tenant.getStatus() != null && tenant.getStatus() == 1
+                && (tenant.getDelFlag() == null || tenant.getDelFlag() == 0)
+                && tenantRepository.selectDescendantIds(currentTenantId).contains(scopedTenantId);
     }
 
     private boolean existsByCode(String code, Long excludeId) {

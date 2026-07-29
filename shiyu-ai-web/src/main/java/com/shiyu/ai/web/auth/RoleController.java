@@ -5,10 +5,10 @@ import com.shiyu.ai.auth.request.RolePageRequest;
 import com.shiyu.ai.auth.request.RoleRequest;
 import com.shiyu.ai.auth.request.AssignUserRolesRequest;
 import com.shiyu.ai.dal.auth.bo.RoleBO;
-import com.shiyu.ai.auth.vo.RolePageResponse;
 import com.shiyu.ai.auth.vo.RoleVO;
 import com.shiyu.ai.auth.service.RoleService;
 import com.shiyu.ai.common.core.api.Result;
+import com.shiyu.ai.common.core.api.PageData;
 import com.shiyu.ai.common.core.utils.MapstructUtils;
 import lombok.extern.slf4j.Slf4j;
 import jakarta.validation.Valid;
@@ -38,12 +38,11 @@ public class RoleController {
     @Operation(summary = "Get Role List")
     @SaCheckPermission("system:role:list")
     @GetMapping("/list")
-    public Result<RolePageResponse> getRoleList(@Valid RolePageRequest request) {
-        log.info("获取角色列表，pageNo: {}, pageSize: {}, name: {}",
-                request.getPageNo(), request.getPageSize(), request.getName());
-        if (request.getPageNo() == null) request.setPageNo(1);
-        if (request.getPageSize() == null) request.setPageSize(10);
-        return Result.success(roleService.getRoleList(request.getPageNo(), request.getPageSize(), request.getName()));
+    public Result<PageData<RoleVO>> getRoleList(@Valid RolePageRequest request) {
+        log.info("获取角色列表，pageNum: {}, pageSize: {}, name: {}",
+                request.getPageNum(), request.getPageSize(), request.getName());
+        return Result.success(roleService.getRoleList(
+                request.getPageNum(), request.getPageSize(), request.getName()));
     }
 
     @Operation(summary = "Get All Roles")
@@ -57,9 +56,10 @@ public class RoleController {
     @Operation(summary = "Get Role Detail")
     @SaCheckPermission("system:role:list")
     @GetMapping("/detail")
-    public Result<RoleVO> getRoleDetail(@RequestParam Long id) {
+    public Result<RoleVO> getRoleDetail(@RequestParam Long id,
+                                        @RequestParam Long scopedTenantId) {
         log.info("查询角色详情，id: {}", id);
-        RoleBO bo = roleService.getRoleDetail(id);
+        RoleBO bo = roleService.getRoleDetail(id, scopedTenantId);
         if (bo == null) return Result.fail("角色不存在");
         return Result.success(MapstructUtils.convert(bo, RoleVO.class));
     }
@@ -85,8 +85,11 @@ public class RoleController {
     @Operation(summary = "替换角色菜单")
     @SaCheckPermission("system:role:assign")
     @PostMapping("/menus/replace")
-    public Result<Void> replaceRoleMenus(@RequestParam Long id, @RequestBody List<Long> menuIds) {
-        return roleService.replaceRoleMenus(id, menuIds) ? Result.success() : Result.fail("角色不属于当前租户作用域");
+    public Result<Void> replaceRoleMenus(@RequestParam Long id,
+                                         @RequestParam Long scopedTenantId,
+                                         @RequestBody List<Long> menuIds) {
+        return roleService.replaceRoleMenus(id, scopedTenantId, menuIds)
+                ? Result.success() : Result.fail("角色、目标租户或菜单不属于当前租户作用域");
     }
 
     @Operation(summary = "Delete Role")
@@ -101,15 +104,19 @@ public class RoleController {
     @SaCheckPermission("system:role:assign")
     @PostMapping("/users/remove")
     public Result<Void> removeUserRoles(@RequestParam Long id, @Valid @RequestBody AssignUserRolesRequest request) {
-        log.info("取消分配角色，id: {}, userIds: {}", id, request.getUserIds());
-        return roleService.removeUserRoles(id, request.getUserIds()) ? Result.success() : Result.fail("取消分配失败");
+        log.info("取消分配角色，id: {}, scopedTenantId: {}, userIds: {}",
+                id, request.getScopedTenantId(), request.getUserIds());
+        return roleService.removeUserRoles(id, request.getScopedTenantId(), request.getUserIds())
+                ? Result.success() : Result.fail("取消分配失败");
     }
 
     @Operation(summary = "Assign User Roles")
     @SaCheckPermission("system:role:assign")
     @PostMapping("/users/add")
     public Result<Void> assignUserRoles(@RequestParam Long id, @Valid @RequestBody AssignUserRolesRequest request) {
-        log.info("分配角色，id: {}, userIds: {}", id, request.getUserIds());
-        return roleService.assignUserRoles(id, request.getUserIds()) ? Result.success() : Result.fail("分配失败");
+        log.info("分配角色，id: {}, scopedTenantId: {}, userIds: {}",
+                id, request.getScopedTenantId(), request.getUserIds());
+        return roleService.assignUserRoles(id, request.getScopedTenantId(), request.getUserIds())
+                ? Result.success() : Result.fail("分配失败");
     }
 }

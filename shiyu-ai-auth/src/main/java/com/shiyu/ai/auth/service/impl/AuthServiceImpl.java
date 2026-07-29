@@ -152,7 +152,7 @@ public class AuthServiceImpl implements AuthService {
             SaTokenHelper.clearLoginUserSession();
             long timeout = helper.getTokenTimeout();
 
-            // 构建当前租户下的子租户列表（兼容返回）
+            // 构建当前租户上下文列表
             List<TenantContextVO> subTenants = buildSubTenantList(uwrList, currentTenantId);
 
             // 构建用户所属租户列表

@@ -120,28 +120,17 @@ public class UserContextInterceptor implements HandlerInterceptor {
             loginUser.setAvatar(user.getAvatar());
 
             Long currentTenantId = null;
-            boolean migratedLegacyContext = false;
             if (user.getExtInfo() != null && !user.getExtInfo().isEmpty()) {
                 try {
                     Map<String, Object> extInfo = JSONUtils.parseObject(user.getExtInfo(), Map.class);
                     if (extInfo != null) {
                         // 作用域租户
                         Object tid = extInfo.get("currentTenantId");
-                        if (!(tid instanceof Number)) {
-                            // 兼容旧版本持久化字段：scopeTenantId -> currentTenantId
-                            tid = extInfo.get("scopeTenantId");
-                            migratedLegacyContext = tid instanceof Number;
-                        }
                         if (tid instanceof Number) {
                             currentTenantId = ((Number) tid).longValue();
                         }
                         // 子租户筛选器
                         Object sid = extInfo.get("filterTenantId");
-                        if (!(sid instanceof Number)) {
-                            // 兼容旧版本持久化字段：scopedTenantId -> filterTenantId
-                            sid = extInfo.get("scopedTenantId");
-                            migratedLegacyContext = migratedLegacyContext || sid instanceof Number;
-                        }
                         if (sid instanceof Number) {
                             loginUser.setFilterTenantId(((Number) sid).longValue());
                         }
@@ -156,16 +145,6 @@ public class UserContextInterceptor implements HandlerInterceptor {
                                     ((Number) roleId).longValue(), (String) roleKey)) {
                                 loginUser.setCurrentRoleCode((String) roleKey);
                             }
-                        }
-                        if (migratedLegacyContext) {
-                            extInfo.remove("scopeTenantId");
-                            extInfo.remove("scopedTenantId");
-                            extInfo.put("currentTenantId", currentTenantId);
-                            if (loginUser.getFilterTenantId() != null) {
-                                extInfo.put("filterTenantId", loginUser.getFilterTenantId());
-                            }
-                            user.setExtInfo(JSONUtils.toJsonString(extInfo));
-                            authUserLookupRepository.updateUserExtInfo(userId, user.getExtInfo());
                         }
                     }
                 } catch (Exception e) {

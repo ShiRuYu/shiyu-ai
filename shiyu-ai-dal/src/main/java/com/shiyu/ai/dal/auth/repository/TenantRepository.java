@@ -40,20 +40,27 @@ public class TenantRepository {
     @Resource
     private RoleScopeAuthCodeMapper roleScopeAuthCodeMapper;
 
-    public Pair<Long, List<TenantBO>> selectPage(Number pageNo, Number pageSize, String name) {
-        QueryWrapper countWrapper = new QueryWrapper();
-        if (name != null && !name.isEmpty()) {
+    public Pair<Long, List<TenantBO>> selectPage(Number pageNo, Number pageSize,
+                                                 String name, String code, Integer status) {
+        QueryWrapper countWrapper = QueryWrapper.create()
+                .where(TenantDO::getDelFlag).eq(0);
+        if (name != null && !name.isBlank()) {
             countWrapper.like(TenantDO::getName, name);
         }
+        if (code != null && !code.isBlank()) countWrapper.like(TenantDO::getCode, code);
+        if (status != null) countWrapper.eq(TenantDO::getStatus, status);
         long count = tenantMapper.selectCountByQuery(countWrapper);
 
-        QueryWrapper queryWrapper = new QueryWrapper();
-        if (name != null && !name.isEmpty()) {
+        QueryWrapper queryWrapper = QueryWrapper.create()
+                .where(TenantDO::getDelFlag).eq(0);
+        if (name != null && !name.isBlank()) {
             queryWrapper.like(TenantDO::getName, name);
         }
-        if (pageNo != null && pageSize != null) {
-            queryWrapper.limit((pageNo.longValue() - 1) * pageSize.longValue(), pageSize.longValue());
-        }
+        if (code != null && !code.isBlank()) queryWrapper.like(TenantDO::getCode, code);
+        if (status != null) queryWrapper.eq(TenantDO::getStatus, status);
+        long page = pageNo == null ? 1 : pageNo.longValue();
+        long size = pageSize == null ? 10 : pageSize.longValue();
+        queryWrapper.limit((page - 1) * size, size);
         queryWrapper.orderBy(TenantDO::getId, true);
 
         List<TenantDO> tenantDOs = tenantMapper.selectListByQuery(queryWrapper);

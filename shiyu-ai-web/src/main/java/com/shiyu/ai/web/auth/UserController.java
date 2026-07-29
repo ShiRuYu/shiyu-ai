@@ -3,11 +3,11 @@ package com.shiyu.ai.web.auth;
 import cn.dev33.satoken.annotation.SaCheckPermission;
 import com.shiyu.ai.auth.request.*;
 import com.shiyu.ai.dal.auth.bo.UserBO;
-import com.shiyu.ai.auth.vo.UserPageResponse;
 import com.shiyu.ai.auth.vo.UserVO;
 import com.shiyu.ai.auth.service.AuthService;
 import com.shiyu.ai.auth.service.UserService;
 import com.shiyu.ai.common.core.api.Result;
+import com.shiyu.ai.common.core.api.PageData;
 import com.shiyu.ai.common.core.domain.LoginContextHolder;
 import com.shiyu.ai.common.core.utils.MapstructUtils;
 import lombok.extern.slf4j.Slf4j;
@@ -81,11 +81,11 @@ public class UserController {
     @Operation(summary = "Get User List")
     @SaCheckPermission("system:user:list")
     @GetMapping("/list")
-    public Result<UserPageResponse> getUserList(@Valid UserPageRequest request) {
-        log.info("获取用户列表，username: {}, pageNo: {}, pageSize: {}",
-                request.getUsername(), request.getPageNo(), request.getPageSize());
+    public Result<PageData<UserVO>> getUserList(@Valid UserPageRequest request) {
+        log.info("获取用户列表，username: {}, pageNum: {}, pageSize: {}",
+                request.getUsername(), request.getPageNum(), request.getPageSize());
         return Result.success(userService.getUserList(
-                request.getUsername(), request.getPageNo(), request.getPageSize()));
+                request.getUsername(), request.getPageNum(), request.getPageSize()));
     }
 
     /**

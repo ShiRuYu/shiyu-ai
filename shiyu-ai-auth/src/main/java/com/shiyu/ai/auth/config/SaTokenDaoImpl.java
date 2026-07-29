@@ -452,8 +452,7 @@ public class SaTokenDaoImpl implements SaTokenDao {
     }
 
     /**
-     * 从 token 字符串中解析 userId（兜底方法，缓存未命中时调用）
-     * 新格式 Base64(userId)_random50 和旧格式 userId_random60 均可解析
+     * 从 token 字符串中解析 userId（缓存未命中时调用）。
      */
     private Long findUserIdByToken(String tokenValue) {
         try {
@@ -479,7 +478,7 @@ public class SaTokenDaoImpl implements SaTokenDao {
                 Long cached = tokenToUserCache.getIfPresent(tokenKey);
                 if (cached != null) return cached;
 
-                // 缓存未命中，尝试旧格式 token 兼容（含下划线的旧 token）
+                // 缓存未命中时从当前格式 token 中解析 userId
                 return parseUserIdFromToken(valueKey);
             }
 
@@ -500,10 +499,8 @@ public class SaTokenDaoImpl implements SaTokenDao {
     }
 
     /**
-     * 从 token 字符串中解析 userId
-     * 新格式：Base64(userId)_random50
-     * 旧格式：userId_random60（兼容兜底）
-     * 纯数字：session: 前缀场景，直接解析
+     * 从 token 字符串中解析 userId。
+     * token 格式：Base64(userId)_random50；纯数字仅用于 session: 前缀场景。
      */
     private Long parseUserIdFromToken(String token) {
         if (token == null || token.isEmpty()) return null;
@@ -517,16 +514,10 @@ public class SaTokenDaoImpl implements SaTokenDao {
             }
         }
         String prefix = token.substring(0, underscore);
-        // 先尝试 Base64 解码（新格式）
         try {
             byte[] decoded = Base64.getUrlDecoder().decode(prefix);
             return Long.parseLong(new String(decoded, StandardCharsets.UTF_8));
-        } catch (Exception ignored) {
-            // 不是 Base64，尝试纯数字解析（旧格式兼容）
-        }
-        try {
-            return Long.parseLong(prefix);
-        } catch (NumberFormatException e) {
+        } catch (Exception e) {
             return null;
         }
     }

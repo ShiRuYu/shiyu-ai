@@ -119,6 +119,8 @@ public class UserRepository {
      * 删除用户
      */
     public boolean deleteById(Long id) {
+        userWorkspaceRoleMapper.deleteByQuery(QueryWrapper.create()
+                .where(UserScopeRoleDO::getUserId).eq(id));
         return userMapper.deleteById(id) > 0;
     }
 

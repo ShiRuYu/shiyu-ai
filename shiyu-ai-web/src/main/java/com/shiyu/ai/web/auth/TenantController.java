@@ -7,6 +7,8 @@ import com.shiyu.ai.dal.auth.bo.TenantBO;
 import com.shiyu.ai.auth.request.TenantRequest;
 import com.shiyu.ai.auth.vo.TenantVO;
 import com.shiyu.ai.common.core.api.Result;
+import com.shiyu.ai.common.core.api.PageData;
+import com.shiyu.ai.auth.request.TenantPageRequest;
 import com.shiyu.ai.common.core.domain.LoginContextHolder;
 import com.shiyu.ai.common.core.utils.MapstructUtils;
 import jakarta.validation.Valid;
@@ -50,6 +52,16 @@ public class TenantController {
         List<TenantBO> tenantBOs = tenantService.getAllTenants();
         List<TenantVO> tenantVOs = MapstructUtils.convert(tenantBOs, TenantVO.class);
         return Result.success(tenantVOs);
+    }
+
+    @Operation(summary = "Get Tenant Page")
+    @SaCheckPermission("system:tenant:list")
+    @GetMapping("/page")
+    public Result<PageData<TenantVO>> getTenantPage(@Valid TenantPageRequest request) {
+        checkTenantAdmin();
+        return Result.success(tenantService.getTenantPage(
+                request.getPageNum(), request.getPageSize(),
+                request.getName(), request.getCode(), request.getStatus()));
     }
 
     @Operation(summary = "Get Tenant Detail")

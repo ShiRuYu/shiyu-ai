@@ -184,3 +184,20 @@ CREATE TABLE IF NOT EXISTS `role_scope_auth_code` (
 CREATE INDEX IF NOT EXISTS `idx_rsac_auth_code` ON `role_scope_auth_code` (`auth_code_id`);
 
 COMMENT ON TABLE `role_scope_auth_code` IS '角色作用域权限授权表';
+
+
+CREATE TABLE IF NOT EXISTS `tenant_quota` (
+    `id` BIGINT NOT NULL AUTO_INCREMENT COMMENT '租户配额 ID',
+    `tenant_id` BIGINT NOT NULL COMMENT '租户 ID',
+    `max_agent_count` BIGINT DEFAULT 10 COMMENT '最大 Agent 数量',
+    `max_token_per_day` BIGINT DEFAULT 1000000 COMMENT '每日最大 Token 数量',
+    `max_storage_mb` BIGINT DEFAULT 1024 COMMENT '最大存储空间（MB）',
+    `max_user_count` BIGINT DEFAULT 100 COMMENT '最大用户数量',
+    `status` TINYINT DEFAULT 1 COMMENT '状态（1正常 0停用）',
+    `create_time` TIMESTAMP DEFAULT CURRENT_TIMESTAMP COMMENT '创建时间',
+    `update_time` TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP COMMENT '更新时间',
+    PRIMARY KEY (`id`),
+    UNIQUE KEY `uk_tenant_quota_tenant_id` (`tenant_id`)
+);
+
+COMMENT ON TABLE `tenant_quota` IS '租户配额表';

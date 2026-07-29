@@ -10,7 +10,7 @@ import com.shiyu.ai.dal.auth.bo.RoleBO;
 import com.shiyu.ai.dal.auth.bo.UserBO;
 import com.shiyu.ai.dal.auth.dataobject.UserScopeRoleDO;
 import com.shiyu.ai.dal.auth.dataobject.RoleDO;
-import com.shiyu.ai.auth.vo.UserPageResponse;
+import com.shiyu.ai.common.core.api.PageData;
 import com.shiyu.ai.auth.vo.UserVO;
 import com.shiyu.ai.auth.vo.UserTenantAssignmentVO;
 import com.shiyu.ai.auth.request.UserTenantRoleRequest;
@@ -104,10 +104,10 @@ public class UserServiceImpl implements UserService {
     }
 
     @Override
-    public UserPageResponse getUserList(String username, Number pageNo, Number pageSize) {
-        log.info("获取用户列表，username: {}, pageNo: {}, pageSize: {}", username, pageNo, pageSize);
+    public PageData<UserVO> getUserList(String username, Number pageNum, Number pageSize) {
+        log.info("获取用户列表，username: {}, pageNum: {}, pageSize: {}", username, pageNum, pageSize);
         
-        Pair<Long, List<UserBO>> result = userRepository.selectPage(pageNo, pageSize, username);
+        Pair<Long, List<UserBO>> result = userRepository.selectPage(pageNum, pageSize, username);
         Long currentTenantId = LoginContextHolder.getCurrentTenantId();
         Map<Long, List<Long>> userRoleIds = new java.util.HashMap<>();
         if (currentTenantId != null) {
@@ -126,11 +126,7 @@ public class UserServiceImpl implements UserService {
         userVOs.forEach(user -> user.setRoleIds(
                 userRoleIds.getOrDefault(user.getId(), List.of())));
         
-        UserPageResponse response = new UserPageResponse();
-        response.setItems(userVOs);
-        response.setTotal(result.getLeft());
-        
-        return response;
+        return new PageData<>(userVOs, result.getLeft());
     }
 
     @Override

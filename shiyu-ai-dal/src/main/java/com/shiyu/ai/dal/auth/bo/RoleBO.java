@@ -24,6 +24,8 @@ public class RoleBO implements Serializable {
      */
     private Long id;
 
+    private Long tenantId;
+
     /**
      * 角色编码
      */

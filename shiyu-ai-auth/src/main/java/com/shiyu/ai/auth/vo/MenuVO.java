@@ -1,5 +1,6 @@
 package com.shiyu.ai.auth.vo;
 
+import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.shiyu.ai.dal.auth.bo.MenuBO;
 import io.github.linpeilie.annotations.AutoMapper;
@@ -44,6 +45,7 @@ public class MenuVO implements Serializable {
     /**
      * 父菜单 ID
      */
+    @JsonProperty("pid")
     private Long parentId;
 
     /**
