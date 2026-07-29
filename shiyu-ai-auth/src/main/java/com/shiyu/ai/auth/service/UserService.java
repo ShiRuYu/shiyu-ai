@@ -2,6 +2,10 @@ package com.shiyu.ai.auth.service;
 
 import com.shiyu.ai.dal.auth.bo.UserBO;
 import com.shiyu.ai.auth.vo.UserPageResponse;
+import com.shiyu.ai.auth.request.UserTenantRoleRequest;
+import com.shiyu.ai.auth.vo.UserTenantAssignmentVO;
+
+import java.util.List;
 
 /**
  * 用户服务接口
@@ -78,6 +82,10 @@ public interface UserService {
      * @return Map 包含 id（用户ID）和 plainPassword（明文密码，自动生成时一并返回）
      */
     java.util.Map<String, Object> createUser(UserBO userBO, Long[] roleIds);
+
+    List<UserTenantAssignmentVO> getTenantAssignments(Long userId);
+
+    boolean replaceTenantAssignments(Long userId, List<UserTenantRoleRequest> assignments);
 
     /**
      * 修改密码（校验旧密码）

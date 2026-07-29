@@ -117,6 +117,24 @@ public class UserController {
                 : Result.fail("用户不存在");
     }
 
+    @Operation(summary = "Get User Tenant Assignments")
+    @SaCheckPermission("system:user:list")
+    @GetMapping("/tenant-assignments")
+    public Result<List<com.shiyu.ai.auth.vo.UserTenantAssignmentVO>> getTenantAssignments(
+            @RequestParam Long userId) {
+        return Result.success(userService.getTenantAssignments(userId));
+    }
+
+    @Operation(summary = "Replace User Tenant Assignments")
+    @SaCheckPermission("system:user:update")
+    @PostMapping("/tenant-assignments/replace")
+    public Result<Void> replaceTenantAssignments(
+            @RequestParam Long userId,
+            @RequestBody List<com.shiyu.ai.auth.request.UserTenantRoleRequest> assignments) {
+        return userService.replaceTenantAssignments(userId, assignments)
+                ? Result.success() : Result.fail("租户分配失败");
+    }
+
     /**
      * 删除用户
      * POST /auth/user/delete?userId=

@@ -9,8 +9,11 @@ import com.shiyu.ai.auth.utils.SaTokenHelper;
 import com.shiyu.ai.dal.auth.bo.RoleBO;
 import com.shiyu.ai.dal.auth.bo.UserBO;
 import com.shiyu.ai.dal.auth.dataobject.UserScopeRoleDO;
+import com.shiyu.ai.dal.auth.dataobject.RoleDO;
 import com.shiyu.ai.auth.vo.UserPageResponse;
 import com.shiyu.ai.auth.vo.UserVO;
+import com.shiyu.ai.auth.vo.UserTenantAssignmentVO;
+import com.shiyu.ai.auth.request.UserTenantRoleRequest;
 import com.shiyu.ai.common.core.domain.LoginContextHolder;
 import com.shiyu.ai.common.core.utils.JSONUtils;
 import com.shiyu.ai.common.core.utils.MapstructUtils;
@@ -23,6 +26,8 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
 import java.util.Map;
+import java.util.ArrayList;
+import java.util.Objects;
 
 /**
  * 用户服务实现类
@@ -34,15 +39,21 @@ public class UserServiceImpl implements UserService {
     private final UserRepository userRepository;
     private final RoleRepository roleRepository;
     private final UserScopeRoleRepository userScopeRoleRepository;
+    private final com.shiyu.ai.dal.auth.repository.TenantRepository tenantRepository;
+    private final com.shiyu.ai.dal.auth.repository.TenantRoleRepository tenantRoleRepository;
     private final MenuService menuService;
 
     public UserServiceImpl(UserRepository userRepository,
                            RoleRepository roleRepository,
                            UserScopeRoleRepository userScopeRoleRepository,
+                           com.shiyu.ai.dal.auth.repository.TenantRepository tenantRepository,
+                           com.shiyu.ai.dal.auth.repository.TenantRoleRepository tenantRoleRepository,
                            MenuService menuService) {
         this.userRepository = userRepository;
         this.roleRepository = roleRepository;
         this.userScopeRoleRepository = userScopeRoleRepository;
+        this.tenantRepository = tenantRepository;
+        this.tenantRoleRepository = tenantRoleRepository;
         this.menuService = menuService;
     }
 
@@ -193,6 +204,85 @@ public class UserServiceImpl implements UserService {
         result.put("id", createdUser.getId());
         result.put("plainPassword", plainPassword);
         return result;
+    }
+
+    @Override
+    public List<UserTenantAssignmentVO> getTenantAssignments(Long userId) {
+        Long currentTenantId = LoginContextHolder.getCurrentTenantId();
+        if (currentTenantId == null || !userRepository.isUserInScope(userId, currentTenantId)) {
+            return List.of();
+        }
+        List<UserTenantAssignmentVO> result = new ArrayList<>();
+        for (UserScopeRoleDO assignment : userScopeRoleRepository.selectByUserId(userId)) {
+            if (!currentTenantId.equals(assignment.getTenantId())
+                    || !isActiveAssignment(assignment)) {
+                continue;
+            }
+            var tenant = tenantRoleRepository.selectTenantById(assignment.getScopedTenantId());
+            RoleDO role = tenantRoleRepository.selectRoleById(assignment.getRoleId());
+            if (tenant == null || role == null || !isActiveTenant(tenant)
+                    || role.getStatus() == null || role.getStatus() != 1) {
+                continue;
+            }
+            UserTenantAssignmentVO item = new UserTenantAssignmentVO();
+            item.setTenantId(tenant.getId());
+            item.setTenantName(tenant.getName());
+            item.setRoleId(role.getId());
+            item.setRoleName(role.getName());
+            item.setRoleCode(role.getCode());
+            result.add(item);
+        }
+        return result;
+    }
+
+    @Override
+    @Transactional(rollbackFor = Exception.class)
+    public boolean replaceTenantAssignments(Long userId, List<UserTenantRoleRequest> assignments) {
+        Long currentTenantId = LoginContextHolder.getCurrentTenantId();
+        if (currentTenantId == null || !userRepository.isUserInScope(userId, currentTenantId)) {
+            return false;
+        }
+
+        List<UserTenantRoleRequest> target = assignments == null ? List.of() : assignments.stream()
+                .filter(Objects::nonNull)
+                .filter(item -> item.getTenantId() != null && item.getRoleId() != null)
+                .toList();
+        List<Long> visibleTenantIds = tenantRepository.selectDescendantIds(currentTenantId);
+        for (UserTenantRoleRequest item : target) {
+            if (!visibleTenantIds.contains(item.getTenantId())) {
+                return false;
+            }
+            var tenant = tenantRoleRepository.selectTenantById(item.getTenantId());
+            if (!isActiveTenant(tenant) || !roleRepository.isRoleInScope(item.getRoleId(), currentTenantId)) {
+                return false;
+            }
+        }
+
+        QueryWrapper deleteWrapper = QueryWrapper.create()
+                .eq(UserScopeRoleDO::getUserId, userId)
+                .eq(UserScopeRoleDO::getTenantId, currentTenantId);
+        userScopeRoleRepository.deleteByQuery(deleteWrapper);
+
+        for (UserTenantRoleRequest item : target) {
+            UserScopeRoleDO assignment = new UserScopeRoleDO();
+            assignment.setUserId(userId);
+            assignment.setRoleId(item.getRoleId());
+            // tenantId 由 MyBatis-Flex 自动填充；scopedTenantId 是业务目标租户。
+            assignment.setScopedTenantId(item.getTenantId());
+            userScopeRoleRepository.insert(assignment);
+        }
+        menuService.evictRouteMenuCache(userId);
+        return true;
+    }
+
+    private boolean isActiveAssignment(UserScopeRoleDO item) {
+        return (item.getStatus() == null || item.getStatus() == 1)
+                && (item.getDelFlag() == null || item.getDelFlag() == 0);
+    }
+
+    private boolean isActiveTenant(com.shiyu.ai.dal.auth.dataobject.TenantDO tenant) {
+        return tenant != null && tenant.getStatus() != null && tenant.getStatus() == 1
+                && (tenant.getDelFlag() == null || tenant.getDelFlag() == 0);
     }
 
     /**
