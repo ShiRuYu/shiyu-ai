@@ -36,7 +36,6 @@ CREATE TABLE IF NOT EXISTS `user` (
     `id` BIGINT NOT NULL AUTO_INCREMENT COMMENT '用户 ID',
     `username` VARCHAR(64) NOT NULL COMMENT '用户名',
     `password` VARCHAR(255) COMMENT '密码',
-    `tenant_id` BIGINT NOT NULL COMMENT '租户ID',
     `status` TINYINT DEFAULT 1 COMMENT '状态（1正常 0停用）',
     `del_flag` TINYINT DEFAULT 0 COMMENT '删除标志（0：正常 1：已删除）',
     `create_by` VARCHAR(64) COMMENT '创建者',

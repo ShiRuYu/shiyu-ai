@@ -10,6 +10,7 @@ import com.shiyu.ai.dal.auth.mapper.UserScopeRoleMapper;
 import com.shiyu.ai.dal.auth.bo.RoleBO;
 import com.shiyu.ai.dal.auth.bo.UserBO;
 import com.shiyu.ai.common.core.utils.MapstructUtils;
+import com.shiyu.ai.common.core.domain.LoginContextHolder;
 import jakarta.annotation.Resource;
 import org.apache.commons.lang3.tuple.Pair;
 import org.springframework.stereotype.Component;
@@ -39,12 +40,29 @@ public class UserRepository {
      */
     public Pair<Long, List<UserBO>> selectPage(Number pageNo, Number pageSize, String username) {
         QueryWrapper countWrapper = new QueryWrapper();
+        Long currentTenantId = LoginContextHolder.getCurrentTenantId();
+        if (currentTenantId != null) {
+            countWrapper.from(UserDO.class)
+                    .innerJoin(UserScopeRoleDO.class)
+                    .on(column(UserDO::getId).eq(column(UserScopeRoleDO::getUserId)))
+                    .where(UserScopeRoleDO::getScopedTenantId).eq(currentTenantId)
+                    .and(UserScopeRoleDO::getStatus).eq(1)
+                    .and(UserScopeRoleDO::getDelFlag).eq(0);
+        }
         if (username != null && !username.isEmpty()) {
             countWrapper.like("username", username);
         }
         long total = userMapper.selectCountByQuery(countWrapper);
 
         QueryWrapper queryWrapper = new QueryWrapper();
+        if (currentTenantId != null) {
+            queryWrapper.from(UserDO.class)
+                    .innerJoin(UserScopeRoleDO.class)
+                    .on(column(UserDO::getId).eq(column(UserScopeRoleDO::getUserId)))
+                    .where(UserScopeRoleDO::getScopedTenantId).eq(currentTenantId)
+                    .and(UserScopeRoleDO::getStatus).eq(1)
+                    .and(UserScopeRoleDO::getDelFlag).eq(0);
+        }
         if (username != null && !username.isEmpty()) {
             queryWrapper.like("username", username);
         }
@@ -157,11 +175,17 @@ public class UserRepository {
             return false;
         }
         QueryWrapper qw = QueryWrapper.create()
-                .where(UserDO::getId).eq(userId)
-                .and(UserDO::getTenantId).eq(currentTenantId)
-                .and(UserDO::getStatus).eq(1)
+                .where(UserDO::getId).eq(userId);
+        qw.and(UserDO::getStatus).eq(1)
                 .and(UserDO::getDelFlag).eq(0);
-        return userMapper.selectCountByQuery(qw) > 0;
+        QueryWrapper assignmentQuery = QueryWrapper.create()
+                .from(UserScopeRoleDO.class)
+                .where(UserScopeRoleDO::getUserId).eq(userId)
+                .and(UserScopeRoleDO::getScopedTenantId).eq(currentTenantId)
+                .and(UserScopeRoleDO::getStatus).eq(1)
+                .and(UserScopeRoleDO::getDelFlag).eq(0);
+        return userMapper.selectCountByQuery(qw) > 0
+                && userWorkspaceRoleMapper.selectCountByQuery(assignmentQuery) > 0;
     }
 
 }

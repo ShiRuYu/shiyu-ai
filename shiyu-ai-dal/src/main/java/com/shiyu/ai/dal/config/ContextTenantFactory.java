@@ -5,6 +5,7 @@ import com.shiyu.ai.common.core.domain.LoginContextHolder;
 import com.shiyu.ai.common.core.domain.LoginUser;
 import org.springframework.stereotype.Component;
 
+import java.util.Set;
 import java.util.List;
 
 /**
@@ -43,7 +44,13 @@ public class ContextTenantFactory implements TenantFactory {
 
     @Override
     public Object[] getTenantIds(String tableName) {
-        if ("tenant".equalsIgnoreCase(tableName)) {
+        if (tableName != null && Set.of(
+                "user",
+                "tenant",
+                "user_scope_role",
+                "role_scope_menu",
+                "role_scope_auth_code"
+        ).contains(tableName.toLowerCase())) {
             return null;
         }
         return getTenantIds();

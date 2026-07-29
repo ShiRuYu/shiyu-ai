@@ -9,23 +9,23 @@ VALUES (1, 'default', '默认租户', 'Admin', '13800000000', 1, 0, 'system', 's
 -- ==============================
 -- 用户（密码均为 vben123456）
 -- ==============================
-INSERT IGNORE INTO `user` (`id`, `username`, `password`, `tenant_id`, `status`, `del_flag`, `create_by`, `update_by`, `nick_name`, `email`)
-VALUES (1, 'vben', '$2a$10$upTL84vHb86f9vMVMn4m8uOGqGr9Pedo.CCsg.XmZ62xhU2IIHJvy', 1, 1, 0, 'system', 'system', 'Vben', 'vben@example.com');
+INSERT IGNORE INTO `user` (`id`, `username`, `password`, `status`, `del_flag`, `create_by`, `update_by`, `nick_name`, `email`)
+VALUES (1, 'vben', '$2a$10$upTL84vHb86f9vMVMn4m8uOGqGr9Pedo.CCsg.XmZ62xhU2IIHJvy', 1, 0, 'system', 'system', 'Vben', 'vben@example.com');
 
-INSERT IGNORE INTO `user` (`id`, `username`, `password`, `tenant_id`, `status`, `del_flag`, `create_by`, `update_by`, `nick_name`, `email`)
-VALUES (2, 'admin', '$2a$10$upTL84vHb86f9vMVMn4m8uOGqGr9Pedo.CCsg.XmZ62xhU2IIHJvy', 1, 1, 0, 'system', 'system', 'Admin', 'admin@example.com');
+INSERT IGNORE INTO `user` (`id`, `username`, `password`, `status`, `del_flag`, `create_by`, `update_by`, `nick_name`, `email`)
+VALUES (2, 'admin', '$2a$10$upTL84vHb86f9vMVMn4m8uOGqGr9Pedo.CCsg.XmZ62xhU2IIHJvy', 1, 0, 'system', 'system', 'Admin', 'admin@example.com');
 
-INSERT IGNORE INTO `user` (`id`, `username`, `password`, `tenant_id`, `status`, `del_flag`, `create_by`, `update_by`, `nick_name`, `email`)
-VALUES (3, 'jack', '$2a$10$upTL84vHb86f9vMVMn4m8uOGqGr9Pedo.CCsg.XmZ62xhU2IIHJvy', 1, 1, 0, 'system', 'system', 'Jack', 'jack@example.com');
+INSERT IGNORE INTO `user` (`id`, `username`, `password`, `status`, `del_flag`, `create_by`, `update_by`, `nick_name`, `email`)
+VALUES (3, 'jack', '$2a$10$upTL84vHb86f9vMVMn4m8uOGqGr9Pedo.CCsg.XmZ62xhU2IIHJvy', 1, 0, 'system', 'system', 'Jack', 'jack@example.com');
 
-INSERT IGNORE INTO `user` (`id`, `username`, `password`, `tenant_id`, `status`, `del_flag`, `create_by`, `update_by`, `nick_name`, `email`)
-VALUES (4, 'teacher01', '$2a$10$upTL84vHb86f9vMVMn4m8uOGqGr9Pedo.CCsg.XmZ62xhU2IIHJvy', 1, 1, 0, 'system', 'system', '张老师', 'teacher01@example.com');
+INSERT IGNORE INTO `user` (`id`, `username`, `password`, `status`, `del_flag`, `create_by`, `update_by`, `nick_name`, `email`)
+VALUES (4, 'teacher01', '$2a$10$upTL84vHb86f9vMVMn4m8uOGqGr9Pedo.CCsg.XmZ62xhU2IIHJvy', 1, 0, 'system', 'system', '张老师', 'teacher01@example.com');
 
-INSERT IGNORE INTO `user` (`id`, `username`, `password`, `tenant_id`, `status`, `del_flag`, `create_by`, `update_by`, `nick_name`, `email`)
-VALUES (5, 'student01', '$2a$10$upTL84vHb86f9vMVMn4m8uOGqGr9Pedo.CCsg.XmZ62xhU2IIHJvy', 1, 1, 0, 'system', 'system', '王小明', 'student01@example.com');
+INSERT IGNORE INTO `user` (`id`, `username`, `password`, `status`, `del_flag`, `create_by`, `update_by`, `nick_name`, `email`)
+VALUES (5, 'student01', '$2a$10$upTL84vHb86f9vMVMn4m8uOGqGr9Pedo.CCsg.XmZ62xhU2IIHJvy', 1, 0, 'system', 'system', '王小明', 'student01@example.com');
 
-INSERT IGNORE INTO `user` (`id`, `username`, `password`, `tenant_id`, `status`, `del_flag`, `create_by`, `update_by`, `nick_name`, `email`)
-VALUES (6, 'parent01', '$2a$10$upTL84vHb86f9vMVMn4m8uOGqGr9Pedo.CCsg.XmZ62xhU2IIHJvy', 1, 1, 0, 'system', 'system', '李家长', 'parent01@example.com');
+INSERT IGNORE INTO `user` (`id`, `username`, `password`, `status`, `del_flag`, `create_by`, `update_by`, `nick_name`, `email`)
+VALUES (6, 'parent01', '$2a$10$upTL84vHb86f9vMVMn4m8uOGqGr9Pedo.CCsg.XmZ62xhU2IIHJvy', 1, 0, 'system', 'system', '李家长', 'parent01@example.com');
 
 -- ==============================
 -- 角色

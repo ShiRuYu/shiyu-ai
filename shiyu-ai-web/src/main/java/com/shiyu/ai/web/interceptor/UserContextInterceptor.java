@@ -185,9 +185,6 @@ public class UserContextInterceptor implements HandlerInterceptor {
                             .findFirst()
                             .orElse(null);
                 }
-                if (currentTenantId == null) {
-                    currentTenantId = user.getTenantId();
-                }
             }
 
             loginUser.setCurrentTenantId(currentTenantId);

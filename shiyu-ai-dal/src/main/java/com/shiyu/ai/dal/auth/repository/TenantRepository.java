@@ -110,7 +110,7 @@ public class TenantRepository {
             roleScopeAuthCodeMapper.deleteByQuery(QueryWrapper.create()
                     .eq(RoleScopeAuthCodeDO::getTenantId, id));
             userScopeRoleMapper.deleteByQuery(QueryWrapper.create().eq(UserScopeRoleDO::getTenantId, id));
-            userMapper.deleteByQuery(QueryWrapper.create().eq(UserDO::getTenantId, id));
+            // 用户是全局主体，不随租户级联删除；通过 user_scope_role 维护租户成员关系。
             roleMapper.deleteByQuery(QueryWrapper.create().eq(RoleDO::getTenantId, id));
             menuMapper.deleteByQuery(QueryWrapper.create().eq(MenuDO::getTenantId, id));
         }
