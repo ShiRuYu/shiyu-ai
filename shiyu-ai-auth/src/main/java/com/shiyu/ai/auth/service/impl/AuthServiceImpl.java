@@ -211,7 +211,7 @@ public class AuthServiceImpl implements AuthService {
         if (uwrList != null && !uwrList.isEmpty()) {
             assignedTenantId = uwrList.stream()
                     .filter(this::isActiveAssignment)
-                    .map(UserScopeRoleDO::getTenantId)
+                    .map(UserScopeRoleDO::getScopedTenantId)
                     .filter(Objects::nonNull)
                     .findFirst()
                     .orElse(null);
@@ -221,7 +221,7 @@ public class AuthServiceImpl implements AuthService {
 
     private boolean hasTenantAssignment(List<UserScopeRoleDO> uwrList, Long tenantId) {
         return tenantId != null && uwrList != null && uwrList.stream()
-                .anyMatch(r -> tenantId.equals(r.getTenantId()) && isActiveAssignment(r));
+                .anyMatch(r -> tenantId.equals(r.getScopedTenantId()) && isActiveAssignment(r));
     }
 
     private Map<String, Object> buildExtInfo(String oldExtInfo, RoleBO currentRole,
@@ -259,7 +259,7 @@ public class AuthServiceImpl implements AuthService {
         List<UserScopeRoleDO> filtered = uwrList;
         if (currentTenantId != null) {
             filtered = uwrList.stream()
-                    .filter(r -> currentTenantId.equals(r.getTenantId()) && isActiveAssignment(r))
+                    .filter(r -> currentTenantId.equals(r.getScopedTenantId()) && isActiveAssignment(r))
                     .collect(Collectors.toList());
         }
 
@@ -288,7 +288,7 @@ public class AuthServiceImpl implements AuthService {
 
         Set<Long> tenantIds = uwrList.stream()
                 .filter(this::isActiveAssignment)
-                .map(UserScopeRoleDO::getTenantId)
+                .map(UserScopeRoleDO::getScopedTenantId)
                 .filter(Objects::nonNull)
                 .collect(Collectors.toSet());
 
@@ -313,7 +313,7 @@ public class AuthServiceImpl implements AuthService {
             return null;
         }
         Set<Long> allowedRoleIds = uwrList.stream()
-                .filter(r -> tenantId.equals(r.getTenantId()) && isActiveAssignment(r))
+                .filter(r -> tenantId.equals(r.getScopedTenantId()) && isActiveAssignment(r))
                 .map(UserScopeRoleDO::getRoleId)
                 .filter(Objects::nonNull)
                 .collect(Collectors.toSet());
@@ -408,7 +408,7 @@ public class AuthServiceImpl implements AuthService {
             List<UserScopeRoleDO> uwrList = userWorkspaceRoleRepository.selectByUserId(userId);
             Long currentTenantId = resolveCurrentTenantId(user.getExtInfo(), uwrList);
             if (currentTenantId == null || uwrList == null || uwrList.stream()
-                    .noneMatch(r -> currentTenantId.equals(r.getTenantId())
+                    .noneMatch(r -> currentTenantId.equals(r.getScopedTenantId())
                             && roleId.equals(r.getRoleId())
                             && isActiveAssignment(r))) {
                 log.warn("角色不属于当前租户作用域, userId: {}, roleId: {}, currentTenantId: {}",
@@ -458,7 +458,7 @@ public class AuthServiceImpl implements AuthService {
 
             List<UserScopeRoleDO> uwrList = userWorkspaceRoleRepository.selectByUserId(userId);
             UserScopeRoleDO first = uwrList == null ? null : uwrList.stream()
-                    .filter(r -> tenantId.equals(r.getTenantId()) && isActiveAssignment(r))
+                    .filter(r -> tenantId.equals(r.getScopedTenantId()) && isActiveAssignment(r))
                     .findFirst()
                     .orElse(null);
             TenantDO targetTenant = tenantRoleRepository.selectTenantById(tenantId);

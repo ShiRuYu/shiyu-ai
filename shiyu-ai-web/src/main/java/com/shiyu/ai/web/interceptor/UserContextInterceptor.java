@@ -175,7 +175,17 @@ public class UserContextInterceptor implements HandlerInterceptor {
 
             // 兜底 currentTenantId
             if (currentTenantId == null) {
-                if (user.getTenantId() != null) {
+                List<UserScopeRoleDO> assignments =
+                        authUserLookupRepository.selectUserWorkspaceRoles(userId);
+                if (assignments != null) {
+                    currentTenantId = assignments.stream()
+                            .filter(this::isActive)
+                            .map(UserScopeRoleDO::getScopedTenantId)
+                            .filter(java.util.Objects::nonNull)
+                            .findFirst()
+                            .orElse(null);
+                }
+                if (currentTenantId == null) {
                     currentTenantId = user.getTenantId();
                 }
             }
@@ -192,7 +202,7 @@ public class UserContextInterceptor implements HandlerInterceptor {
                     authUserLookupRepository.selectUserWorkspaceRoles(userId);
             final Long contextTenantId = currentTenantId;
             boolean assigned = assignments != null && assignments.stream().anyMatch(item ->
-                    contextTenantId.equals(item.getTenantId())
+                    contextTenantId.equals(item.getScopedTenantId())
                             && isActive(item)
                             && item.getRoleId() != null
                             && isActive(authUserLookupRepository.selectRoleById(item.getRoleId())));
@@ -230,7 +240,7 @@ public class UserContextInterceptor implements HandlerInterceptor {
         boolean assigned = assignments != null && assignments.stream().anyMatch(item ->
                 item.getRoleId() != null
                         && roleId.equals(item.getRoleId())
-                        && currentTenantId.equals(item.getTenantId())
+                        && currentTenantId.equals(item.getScopedTenantId())
                         && (item.getStatus() == null || item.getStatus() == 1)
                         && (item.getDelFlag() == null || item.getDelFlag() == 0));
         if (!assigned) {
@@ -258,7 +268,7 @@ public class UserContextInterceptor implements HandlerInterceptor {
         List<UserScopeRoleDO> assignments =
                 authUserLookupRepository.selectUserWorkspaceRoles(loginUser.getUserId());
         boolean assigned = assignments != null && assignments.stream().anyMatch(item ->
-                loginUser.getCurrentTenantId().equals(item.getTenantId())
+                loginUser.getCurrentTenantId().equals(item.getScopedTenantId())
                         && isActive(item)
                         && item.getRoleId() != null
                         && isActive(authUserLookupRepository.selectRoleById(item.getRoleId())));
@@ -272,7 +282,7 @@ public class UserContextInterceptor implements HandlerInterceptor {
         }
         if (loginUser.getCurrentRoleCode() != null) {
             boolean roleValid = assignments.stream().anyMatch(item -> {
-                if (!loginUser.getCurrentTenantId().equals(item.getTenantId())
+                if (!loginUser.getCurrentTenantId().equals(item.getScopedTenantId())
                         || !isActive(item) || item.getRoleId() == null) {
                     return false;
                 }

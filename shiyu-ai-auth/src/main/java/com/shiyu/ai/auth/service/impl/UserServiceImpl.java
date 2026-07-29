@@ -64,26 +64,40 @@ public class UserServiceImpl implements UserService {
         
         if (userBO != null) {
             // 查询并设置用户角色列表
-            List<RoleBO> roles = userRepository.selectRolesByUserId(userId);
+            Long currentTenantId = LoginContextHolder.getCurrentTenantId();
+            List<UserScopeRoleDO> assignments = userScopeRoleRepository.selectByUserId(userId);
+            List<Long> currentRoleIds = assignments.stream()
+                    .filter(item -> currentTenantId == null
+                            || currentTenantId.equals(item.getScopedTenantId()))
+                    .filter(this::isActiveAssignment)
+                    .map(UserScopeRoleDO::getRoleId)
+                    .filter(Objects::nonNull)
+                    .distinct()
+                    .toList();
+            List<RoleBO> roles = userRepository.selectRolesByUserId(userId).stream()
+                    .filter(role -> currentRoleIds.contains(role.getId()))
+                    .toList();
             userBO.setRoles(roles);
+            userBO.setRoleIds(currentRoleIds);
 
-            // 从 extInfo 中解析当前角色
+            // 当前角色必须以当前租户的授权关系为准，不能直接信任 extInfo 中的历史值。
+            RoleBO currentRole = null;
             if (userBO.getExtInfo() != null && !userBO.getExtInfo().isEmpty()) {
                 Map<?, ?> extInfoMap = JSONUtils.parseObject(userBO.getExtInfo(), Map.class);
-                if (extInfoMap != null) {
-                    Map<?, ?> roleMap = (Map<?, ?>) extInfoMap.get("currentRole");
-                    if (roleMap != null) {
-                        RoleBO currentRole = new RoleBO();
+                if (extInfoMap != null && extInfoMap.get("currentRole") instanceof Map<?, ?> roleMap) {
                         Object roleId = roleMap.get("roleId");
-                        if (roleId instanceof Number) {
-                            currentRole.setId(((Number) roleId).longValue());
-                        }
-                        currentRole.setName((String) roleMap.get("roleName"));
-                        currentRole.setCode((String) roleMap.get("roleKey"));
-                        userBO.setCurrentRole(currentRole);
+                    if (roleId instanceof Number && currentRoleIds.contains(((Number) roleId).longValue())) {
+                        currentRole = roles.stream()
+                                .filter(role -> Objects.equals(((Number) roleId).longValue(), role.getId()))
+                                .findFirst()
+                                .orElse(null);
                     }
                 }
             }
+            if (currentRole == null && !roles.isEmpty()) {
+                currentRole = roles.get(0);
+            }
+            userBO.setCurrentRole(currentRole);
         }
         
         return userBO;
@@ -97,10 +111,9 @@ public class UserServiceImpl implements UserService {
         Long currentTenantId = LoginContextHolder.getCurrentTenantId();
         Map<Long, List<Long>> userRoleIds = new java.util.HashMap<>();
         if (currentTenantId != null) {
-            result.getRight().forEach(user -> {
+                result.getRight().forEach(user -> {
                 List<Long> roleIds = userScopeRoleRepository.selectByUserId(user.getId()).stream()
-                        .filter(item -> currentTenantId.equals(item.getTenantId())
-                                && currentTenantId.equals(item.getScopedTenantId())
+                        .filter(item -> currentTenantId.equals(item.getScopedTenantId())
                                 && item.getStatus() != null && item.getStatus() == 1
                                 && (item.getDelFlag() == null || item.getDelFlag() == 0))
                         .map(UserScopeRoleDO::getRoleId)

@@ -95,6 +95,11 @@ public class UserBO implements Serializable {
     private List<RoleBO> roles;
 
     /**
+     * 当前租户作用域下已分配的角色 ID（仅用于详情返回，不映射数据库字段）。
+     */
+    private List<Long> roleIds;
+
+    /**
      * 当前角色
      */
     private RoleBO currentRole;
