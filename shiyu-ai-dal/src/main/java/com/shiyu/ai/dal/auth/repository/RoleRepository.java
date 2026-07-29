@@ -193,16 +193,11 @@ public class RoleRepository {
         if (menuIds == null || menuIds.isEmpty()) {
             return;
         }
-        
-        Long currentTenantId = com.shiyu.ai.common.core.domain.LoginContextHolder.getCurrentTenantId();
-        Long tenantId = com.shiyu.ai.common.core.domain.LoginContextHolder.getCurrentTenantId();
-        
+        // tenantId/scopedTenantId 由 MyBatis-Flex 的 AuditFieldListener 自动填充。
         List<RoleScopeMenuDO> list = menuIds.stream().map(menuId -> {
             RoleScopeMenuDO rwm = new RoleScopeMenuDO();
             rwm.setRoleId(roleId);
-            rwm.setScopedTenantId(currentTenantId);
             rwm.setMenuId(menuId);
-            rwm.setTenantId(tenantId);
             return rwm;
         }).toList();
         roleWorkspaceMenuMapper.insertBatch(list);
@@ -212,7 +207,7 @@ public class RoleRepository {
      * 删除角色的所有菜单关联（按当前工作空间过滤）
      */
     public void deleteRoleMenus(Long roleId) {
-        Long currentTenantId = com.shiyu.ai.common.core.domain.LoginContextHolder.getCurrentTenantId();
+        Long currentTenantId = LoginContextHolder.getCurrentTenantId();
         QueryWrapper queryWrapper = new QueryWrapper();
         queryWrapper.eq(RoleScopeMenuDO::getRoleId, roleId);
         if (currentTenantId != null) {
