@@ -30,6 +30,9 @@ public class MenuRepository {
     @Resource
     private RoleScopeMenuMapper roleScopeMenuMapper;
 
+    @Resource
+    private TenantRepository tenantRepository;
+
     /**
      * 查询所有菜单
      */
@@ -66,7 +69,11 @@ public class MenuRepository {
      * 根据ID查询菜单
      */
     public MenuBO selectById(Long id) {
-        MenuDO menuDO = menuMapper.selectOneById(id);
+        QueryWrapper qw = QueryWrapper.create()
+                .where(MenuDO::getId).eq(id)
+                .and(MenuDO::getDelFlag).eq(0);
+        addMenuTenantFilter(qw);
+        MenuDO menuDO = menuMapper.selectOneByQuery(qw);
         return MapstructUtils.convert(menuDO, MenuBO.class);
     }
 
@@ -99,8 +106,10 @@ public class MenuRepository {
         }
         roleScopeMenuMapper.deleteByQuery(QueryWrapper.create()
                 .where(RoleScopeMenuDO::getMenuId).in(ids));
-        menuMapper.deleteByQuery(QueryWrapper.create()
-                .where(MenuDO::getId).in(ids));
+        QueryWrapper deleteQuery = QueryWrapper.create()
+                .where(MenuDO::getId).in(ids);
+        addMenuTenantFilter(deleteQuery);
+        menuMapper.deleteByQuery(deleteQuery);
         return true;
     }
 
@@ -130,13 +139,20 @@ public class MenuRepository {
     }
 
     private void collectSubtreeIds(Long parentId, List<Long> ids) {
-        MenuDO current = menuMapper.selectOneById(parentId);
+        QueryWrapper currentQuery = QueryWrapper.create()
+                .where(MenuDO::getId).eq(parentId)
+                .and(MenuDO::getDelFlag).eq(0);
+        addMenuTenantFilter(currentQuery);
+        MenuDO current = menuMapper.selectOneByQuery(currentQuery);
         if (current == null) {
             return;
         }
         ids.add(parentId);
-        List<MenuDO> children = menuMapper.selectListByQuery(QueryWrapper.create()
-                .where(MenuDO::getParentId).eq(parentId));
+        QueryWrapper childrenQuery = QueryWrapper.create()
+                .where(MenuDO::getParentId).eq(parentId)
+                .and(MenuDO::getDelFlag).eq(0);
+        addMenuTenantFilter(childrenQuery);
+        List<MenuDO> children = menuMapper.selectListByQuery(childrenQuery);
         for (MenuDO child : children) {
             collectSubtreeIds(child.getId(), ids);
         }
@@ -153,6 +169,25 @@ public class MenuRepository {
      * @return 用户有权限的菜单列表（平铺，不含树结构）
      */
     public List<MenuBO> selectMenusByUserId(Long userId, String excludeType) {
+        if (LoginContextHolder.isParentSuperAdminSwitch()) {
+            QueryWrapper delegated = QueryWrapper.create()
+                    .from(MenuDO.class)
+                    .innerJoin(RoleScopeMenuDO.class)
+                    .on(column(MenuDO::getId).eq(column(RoleScopeMenuDO::getMenuId)))
+                    .innerJoin(RoleDO.class)
+                    .on(column(RoleScopeMenuDO::getRoleId).eq(column(RoleDO::getId)))
+                    .where(RoleDO::getCode).eq(LoginContextHolder.getCurrentRoleCode())
+                    .and(RoleDO::getTenantId).eq(LoginContextHolder.getCurrentTenantId())
+                    .and(RoleScopeMenuDO::getTenantId).eq(LoginContextHolder.getCurrentTenantId())
+                    .and(MenuDO::getTenantId).eq(LoginContextHolder.getCurrentTenantId())
+                    .and(MenuDO::getStatus).eq(1)
+                    .and(MenuDO::getDelFlag).eq(0);
+            if (excludeType != null) {
+                delegated.and(MenuDO::getType).ne(excludeType);
+            }
+            delegated.orderBy(column(MenuDO::getOrder).asc(), column(MenuDO::getId).asc());
+            return MapstructUtils.convert(menuMapper.selectListByQuery(delegated), MenuBO.class);
+        }
         QueryWrapper qw = QueryWrapper.create()
                 .from(MenuDO.class)
                 .innerJoin(RoleScopeMenuDO.class)
@@ -163,7 +198,6 @@ public class MenuRepository {
                 .on(column(RoleDO::getId).eq(column(UserScopeRoleDO::getRoleId)))
                 .where(UserScopeRoleDO::getUserId).eq(userId)
                 .and(column(RoleScopeMenuDO::getTenantId).eq(column(UserScopeRoleDO::getTenantId)))
-                .and(column(RoleScopeMenuDO::getScopedTenantId).eq(column(UserScopeRoleDO::getScopedTenantId)))
                 .and(MenuDO::getStatus).eq(1)
                 .and(MenuDO::getDelFlag).eq(0);
         // 按当前角色编码过滤菜单，只返回当前角色有权限的菜单
@@ -236,8 +270,8 @@ public class MenuRepository {
     // ========== 租户过滤辅助方法 ==========
 
     /**
-     * 添加菜单表租户过滤：menu.tenant_id IN (visibleTenantIds)
-     * 确保查询的菜单属于当前用户可见的租户范围
+     * 菜单是根租户统一维护的权限资源，不按业务租户的可见后代范围过滤。
+     * 当前租户无论处于根租户还是子租户，都只能读取其所在租户树根节点的菜单。
      */
     /**
      * 添加当前角色过滤：role.code = currentRoleCode
@@ -253,24 +287,27 @@ public class MenuRepository {
     }
 
     /**
-     * 添加菜单表租户过滤：menu.tenant_id IN (visibleTenantIds)
+     * 添加菜单表租户过滤：menu.tenant_id = currentTenantId
      * 确保查询的菜单属于当前用户可见的租户范围
      */
     private void addMenuTenantFilter(QueryWrapper qw) {
-        List<Long> visibleTenantIds = LoginContextHolder.getVisibleTenantIds();
-        if (visibleTenantIds != null && !visibleTenantIds.isEmpty()) {
-            qw.in(MenuDO::getTenantId, visibleTenantIds);
+        Long currentTenantId = LoginContextHolder.getCurrentTenantId();
+        if (currentTenantId != null) {
+            qw.eq(MenuDO::getTenantId, currentTenantId);
+        } else {
+            // 没有租户上下文时不返回菜单，避免后台任务或异常上下文读取全量权限。
+            qw.eq(MenuDO::getTenantId, -1L);
         }
     }
 
     /**
-     * 添加用户作用域租户过滤：user_scope_role.scoped_tenant_id = currentTenantId
+     * 添加用户租户过滤：user_scope_role.tenant_id = currentTenantId
      * 确保只查询当前租户下分配的角色菜单
      */
     private void addUserScopeTenantFilter(QueryWrapper qw) {
         Long currentTenantId = LoginContextHolder.getCurrentTenantId();
         if (currentTenantId != null) {
-            qw.eq(UserScopeRoleDO::getScopedTenantId, currentTenantId);
+            qw.eq(UserScopeRoleDO::getTenantId, currentTenantId);
         }
     }
 

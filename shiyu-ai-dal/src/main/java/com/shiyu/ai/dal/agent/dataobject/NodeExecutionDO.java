@@ -14,7 +14,7 @@ import java.time.LocalDateTime;
  */
 @Data
 @EqualsAndHashCode(callSuper = true)
-@Table("node_execution")
+@Table("agent_node_execution")
 public class NodeExecutionDO extends TenantEntity {
 
     @Id(keyType = KeyType.Auto)

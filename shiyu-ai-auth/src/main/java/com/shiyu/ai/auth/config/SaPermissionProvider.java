@@ -30,6 +30,10 @@ public class SaPermissionProvider implements StpInterface {
             Long userId = Long.valueOf(loginId.toString());
             Long tenantId = LoginContextHolder.getCurrentTenantId();
             String roleCode = LoginContextHolder.getCurrentRoleCode();
+            if (LoginContextHolder.isParentSuperAdminSwitch()
+                    && roleCode != null && tenantId != null) {
+                return authRepository.selectCodesByRoleCodeAndTenant(roleCode, tenantId);
+            }
             // 按用户 + 租户 + 当前角色编码查询权限码，精准控制越权
             if (roleCode != null && tenantId != null) {
                 return authRepository.selectCodesByUserIdAndRoleCode(userId, tenantId, roleCode);

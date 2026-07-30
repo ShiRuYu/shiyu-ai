@@ -7,7 +7,7 @@ import lombok.Getter;
 import java.util.Arrays;
 
 /**
- * 租户配额状态枚举（对应 DB tenant_quota.status）
+ * 租户配额状态枚举（对应 DB auth_tenant_quota.status）
  */
 @Getter
 @AllArgsConstructor

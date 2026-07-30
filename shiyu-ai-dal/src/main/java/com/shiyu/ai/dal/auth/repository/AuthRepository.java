@@ -20,8 +20,8 @@ import static com.mybatisflex.core.query.QueryMethods.column;
 /**
  * 认证数据仓储层
  *
- * <p>权限码统一存储在 auth_code 表中，通过角色和租户作用域进行分配。
- * menu 表只负责菜单、路由和展示。</p>
+ * <p>权限码统一存储在 auth_auth_code 表中，通过角色和租户作用域进行分配。
+ * auth_menu 表只负责菜单、路由和展示。</p>
  */
 @Component
 public class AuthRepository {
@@ -35,7 +35,7 @@ public class AuthRepository {
     /**
      * 根据用户 ID + 当前租户查询角色编码列表
      *
-     * <p>JOIN: user_scope_role → role</p>
+     * <p>JOIN: auth_user_scope_role → auth_role</p>
      *
      * @param userId      用户ID
      * @param tenantId    当前租户ID
@@ -48,7 +48,7 @@ public class AuthRepository {
             .innerJoin(UserScopeRoleDO.class)
                 .on(column(RoleDO::getId).eq(column(UserScopeRoleDO::getRoleId)))
             .where(UserScopeRoleDO::getUserId).eq(userId)
-            .and(column(UserScopeRoleDO::getScopedTenantId).eq(tenantId))
+            .and(column(UserScopeRoleDO::getTenantId).eq(tenantId))
             .and(RoleDO::getStatus).eq(1)
             .and(RoleDO::getDelFlag).eq(0)
             .and(UserScopeRoleDO::getStatus).eq(1)
@@ -61,7 +61,7 @@ public class AuthRepository {
     /**
      * 根据用户 ID + 当前租户 + 角色编码查询权限码列表
      *
-     * <p>JOIN: user_scope_role → role → role_scope_auth_code → auth_code</p>
+     * <p>JOIN: auth_user_scope_role → auth_role → auth_role_scope_auth_code → auth_auth_code</p>
      * <p>仅返回用户在指定租户下、指定角色的权限码，避免跨角色越权。</p>
      *
      * @param userId      用户ID
@@ -82,8 +82,7 @@ public class AuthRepository {
             .where(UserScopeRoleDO::getUserId).eq(userId)
             .and(RoleDO::getCode).eq(roleCode)
             .and(column(RoleScopeAuthCodeDO::getTenantId).eq(column(UserScopeRoleDO::getTenantId)))
-            .and(column(RoleScopeAuthCodeDO::getScopedTenantId).eq(column(UserScopeRoleDO::getScopedTenantId)))
-            .and(column(UserScopeRoleDO::getScopedTenantId).eq(tenantId))
+            .and(column(UserScopeRoleDO::getTenantId).eq(tenantId))
             .and(AuthCodeDO::getStatus).eq(1)
             .and(AuthCodeDO::getDelFlag).eq(0)
             .and(RoleScopeAuthCodeDO::getStatus).eq(1)
@@ -97,10 +96,34 @@ public class AuthRepository {
         return list.stream().map(AuthCodeDO::getCode).distinct().collect(Collectors.toList());
     }
 
+    /** 父租户超级管理员切换到子租户时，按目标租户超级角色计算权限。 */
+    public List<String> selectCodesByRoleCodeAndTenant(String roleCode, Long tenantId) {
+        QueryWrapper qw = QueryWrapper.create()
+                .select(column(AuthCodeDO::getCode))
+                .from(AuthCodeDO.class)
+                .innerJoin(RoleScopeAuthCodeDO.class)
+                    .on(column(AuthCodeDO::getId).eq(column(RoleScopeAuthCodeDO::getAuthCodeId)))
+                .innerJoin(RoleDO.class)
+                    .on(column(RoleScopeAuthCodeDO::getRoleId).eq(column(RoleDO::getId)))
+                .where(RoleDO::getCode).eq(roleCode)
+                .and(RoleDO::getTenantId).eq(tenantId)
+                .and(RoleScopeAuthCodeDO::getTenantId).eq(tenantId)
+                .and(AuthCodeDO::getStatus).eq(1)
+                .and(AuthCodeDO::getDelFlag).eq(0)
+                .and(RoleScopeAuthCodeDO::getStatus).eq(1)
+                .and(RoleScopeAuthCodeDO::getDelFlag).eq(0)
+                .and(RoleDO::getStatus).eq(1)
+                .and(RoleDO::getDelFlag).eq(0);
+        return authCodeMapper.selectListByQuery(qw).stream()
+                .map(AuthCodeDO::getCode)
+                .distinct()
+                .toList();
+    }
+
     /**
      * 根据用户名查询按钮级权限码列表
      *
-     * <p>JOIN: user → user_scope_role → role_scope_auth_code → auth_code</p>
+     * <p>JOIN: auth_user → auth_user_scope_role → auth_role_scope_auth_code → auth_auth_code</p>
      */
     public List<String> selectCodesByUsername(String username) {
         QueryWrapper qw = QueryWrapper.create()
@@ -114,7 +137,6 @@ public class AuthRepository {
                 .on(column(UserScopeRoleDO::getUserId).eq(column(UserDO::getId)))
             .where(UserDO::getUsername).eq(username)
             .and(column(RoleScopeAuthCodeDO::getTenantId).eq(column(UserScopeRoleDO::getTenantId)))
-            .and(column(RoleScopeAuthCodeDO::getScopedTenantId).eq(column(UserScopeRoleDO::getScopedTenantId)))
             .and(AuthCodeDO::getStatus).eq(1)
             .and(AuthCodeDO::getDelFlag).eq(0)
             .and(RoleScopeAuthCodeDO::getStatus).eq(1)
@@ -131,7 +153,7 @@ public class AuthRepository {
     /**
      * 根据用户 ID 查询按钮级权限码列表
      *
-     * <p>JOIN: user_scope_role → role_scope_auth_code → auth_code</p>
+     * <p>JOIN: auth_user_scope_role → auth_role_scope_auth_code → auth_auth_code</p>
      *
      * @param userId      用户ID
      * @param currentTenantId 当前切换租户ID（null 表示查询所有空间）
@@ -146,7 +168,6 @@ public class AuthRepository {
                 .on(column(RoleScopeAuthCodeDO::getRoleId).eq(column(UserScopeRoleDO::getRoleId)))
             .where(UserScopeRoleDO::getUserId).eq(userId)
             .and(column(RoleScopeAuthCodeDO::getTenantId).eq(column(UserScopeRoleDO::getTenantId)))
-            .and(column(RoleScopeAuthCodeDO::getScopedTenantId).eq(column(UserScopeRoleDO::getScopedTenantId)))
             .and(AuthCodeDO::getStatus).eq(1)
             .and(AuthCodeDO::getDelFlag).eq(0)
             .and(RoleScopeAuthCodeDO::getStatus).eq(1)
@@ -155,7 +176,7 @@ public class AuthRepository {
             .and(UserScopeRoleDO::getDelFlag).eq(0);
         // ✅ 按当前工作空间过滤权限码，避免跨空间越权
         if (currentTenantId != null) {
-            qw.and(RoleScopeAuthCodeDO::getScopedTenantId).eq(currentTenantId);
+            qw.and(RoleScopeAuthCodeDO::getTenantId).eq(currentTenantId);
         }
         qw.orderBy(AuthCodeDO::getId);
         List<AuthCodeDO> list = authCodeMapper.selectListByQuery(qw);

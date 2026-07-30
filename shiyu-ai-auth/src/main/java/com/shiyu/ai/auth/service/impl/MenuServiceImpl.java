@@ -6,6 +6,7 @@ import com.shiyu.ai.common.core.domain.LoginContextHolder;
 import com.shiyu.ai.dal.auth.repository.MenuRepository;
 import com.shiyu.ai.auth.service.MenuService;
 import com.shiyu.ai.dal.auth.bo.MenuBO;
+import com.shiyu.ai.dal.auth.repository.TenantRepository;
 import com.shiyu.ai.auth.vo.MenuVO;
 import com.shiyu.ai.common.core.api.PageData;
 import com.shiyu.ai.common.core.utils.MapstructUtils;
@@ -32,15 +33,18 @@ public class MenuServiceImpl implements MenuService {
             "CATALOG", "MENU", "LINK", "EMBEDDED");
 
     private final MenuRepository menuRepository;
+    private final TenantRepository tenantRepository;
 
     /**
-     * 路由菜单缓存：userId:currentTenantId:filterTenantId → 菜单树
+     * 路由菜单缓存：userId:currentTenantId:currentRoleId → 菜单树
      * 菜单数据由管理员维护，变更频率极低，适合 5 分钟本地缓存
      */
     private final Cache<String, List<MenuBO>> routeMenuCache;
 
-    public MenuServiceImpl(MenuRepository menuRepository) {
+    public MenuServiceImpl(MenuRepository menuRepository,
+                           TenantRepository tenantRepository) {
         this.menuRepository = menuRepository;
+        this.tenantRepository = tenantRepository;
         this.routeMenuCache = Caffeine.newBuilder()
                 .maximumSize(1000)
                 .expireAfterWrite(5, TimeUnit.MINUTES)
@@ -109,6 +113,9 @@ public class MenuServiceImpl implements MenuService {
     @Override
     public boolean deleteMenu(Long id) {
         log.info("删除菜单，id: {}", id);
+        if (menuRepository.selectById(id) == null) {
+            return false;
+        }
         boolean result = menuRepository.deleteById(id);
         if (result) {
             evictAllRouteMenuCache();
@@ -123,6 +130,11 @@ public class MenuServiceImpl implements MenuService {
             return false;
         }
         normalizeMenuType(menuBO);
+        Long currentTenantId = LoginContextHolder.getCurrentTenantId();
+        if (currentTenantId == null || !isParentMenuInTenant(menuBO.getParentId(), currentTenantId)) {
+            return false;
+        }
+        menuBO.setTenantId(currentTenantId);
         menuRepository.insert(menuBO);
         evictAllRouteMenuCache();
         return true;
@@ -140,8 +152,13 @@ public class MenuServiceImpl implements MenuService {
             return false;
         }
         normalizeMenuType(menuBO);
+        Long currentTenantId = LoginContextHolder.getCurrentTenantId();
+        if (currentTenantId == null || !isParentMenuInTenant(menuBO.getParentId(), currentTenantId)) {
+            return false;
+        }
 
         menuBO.setId(id);
+        menuBO.setTenantId(currentTenantId);
         boolean result = menuRepository.update(menuBO);
         if (result) {
             evictAllRouteMenuCache();
@@ -233,8 +250,8 @@ public class MenuServiceImpl implements MenuService {
     }
 
     private String buildRouteMenuCacheKey(Long userId) {
-        return userId + ":" + LoginContextHolder.getCurrentTenantId() + ":" 
-            + LoginContextHolder.getFilterTenantId() + ":" + LoginContextHolder.getCurrentRoleCode();
+        return userId + ":" + LoginContextHolder.getCurrentTenantId() + ":"
+            + LoginContextHolder.getCurrentRoleId() + ":" + LoginContextHolder.getCurrentRoleCode();
     }
 
     /**
@@ -271,5 +288,13 @@ public class MenuServiceImpl implements MenuService {
 
     private void normalizeMenuType(MenuBO menuBO) {
         menuBO.setType(menuBO.getType().trim().toUpperCase(Locale.ROOT));
+    }
+
+    private boolean isParentMenuInTenant(Long parentId, Long tenantId) {
+        if (parentId == null) {
+            return true;
+        }
+        MenuBO parent = menuRepository.selectById(parentId);
+        return parent != null && tenantId.equals(parent.getTenantId());
     }
 }

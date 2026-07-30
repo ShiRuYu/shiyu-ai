@@ -15,7 +15,7 @@ import java.io.Serial;
  */
 @Data
 @EqualsAndHashCode(callSuper = true)
-@Table(value = "profile")
+@Table(value = "record_profile")
 public class ProfileDO extends TenantEntity {
 
     @Serial

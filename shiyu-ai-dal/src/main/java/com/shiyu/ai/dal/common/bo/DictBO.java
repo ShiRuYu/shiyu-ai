@@ -30,6 +30,11 @@ public class DictBO extends BaseEntity {
     private Long id;
 
     /**
+     * 字典归属租户。由 Service 显式设置，父租户操作子租户时为目标租户。
+     */
+    private Long tenantId;
+
+    /**
      * 字典类型
      */
     @NotBlank(message = "字典类型不能为空", groups = { AddGroup.class, EditGroup.class })

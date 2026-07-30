@@ -10,7 +10,7 @@ import java.io.Serializable;
 import java.time.LocalDateTime;
 
 @Data
-@Table("audit_log")
+@Table("observation_audit_log")
 public class AuditLogDO implements Serializable {
 
     @Serial

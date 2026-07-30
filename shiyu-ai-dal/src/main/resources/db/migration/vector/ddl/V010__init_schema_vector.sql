@@ -2,7 +2,7 @@
 -- 注意：embedding 以 JSON 数组文本存储，H2 不原生支持向量类型
 -- VectorStore（Qdrant/HNSW）负责向量索引，H2 仅作为 source of truth
 
-CREATE TABLE IF NOT EXISTS `knowledge_chunk` (
+CREATE TABLE IF NOT EXISTS `vector_knowledge_chunk` (
     `id`            BIGINT       NOT NULL AUTO_INCREMENT,
     `document_id`   BIGINT       NOT NULL,
     `content`       TEXT         NOT NULL,

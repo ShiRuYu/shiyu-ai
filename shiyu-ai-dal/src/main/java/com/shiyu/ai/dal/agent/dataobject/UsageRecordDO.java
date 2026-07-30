@@ -16,7 +16,7 @@ import java.time.LocalDateTime;
  * </p>
  */
 @Data
-@Table("usage_record")
+@Table("agent_usage_record")
 public class UsageRecordDO implements Serializable {
 
     @Serial

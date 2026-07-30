@@ -9,6 +9,7 @@ import com.shiyu.ai.dal.auth.bo.TenantBO;
 import com.shiyu.ai.common.core.domain.LoginContextHolder;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -35,13 +36,16 @@ public class TenantServiceImpl implements TenantService {
     @Override
     public List<TenantBO> getAllTenants() {
         List<TenantBO> tenants = tenantRepository.selectAll();
-        if (LoginContextHolder.isSuperAdmin()) {
-            return tenants;
-        }
-        List<Long> visible = LoginContextHolder.getVisibleTenantIds();
-        if (visible == null) {
+        if (LoginContextHolder.getUserId() == null) {
             return List.of();
         }
+        if (LoginContextHolder.getHomeTenantId() == null
+                && LoginContextHolder.isSuperAdmin()) {
+            return tenants;
+        }
+        Long currentTenantId = LoginContextHolder.getCurrentTenantId();
+        List<Long> visible = currentTenantId == null
+                ? List.of() : tenantRepository.selectDescendantIds(currentTenantId);
         return tenants.stream()
                 .filter(item -> item.getId() != null && visible.contains(item.getId()))
                 .toList();
@@ -56,6 +60,7 @@ public class TenantServiceImpl implements TenantService {
     }
 
     @Override
+    @Transactional(rollbackFor = Exception.class)
     public boolean createTenant(TenantBO tenantBO) {
         log.info("新增租户，code: {}, name: {}", tenantBO.getCode(), tenantBO.getName());
 
@@ -169,10 +174,10 @@ public class TenantServiceImpl implements TenantService {
         if (tenantId == null) {
             return false;
         }
-        if (LoginContextHolder.isSuperAdmin()) {
+        if (LoginContextHolder.getHomeTenantId() == null
+                && LoginContextHolder.isSuperAdmin()) {
             return true;
         }
-        List<Long> visible = LoginContextHolder.getVisibleTenantIds();
-        return visible != null && visible.contains(tenantId);
+        return tenantId.equals(LoginContextHolder.getCurrentTenantId());
     }
 }

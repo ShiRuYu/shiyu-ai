@@ -4,7 +4,7 @@
 -- ============================================
 
 -- 审计日志表
-CREATE TABLE IF NOT EXISTS `audit_log` (
+CREATE TABLE IF NOT EXISTS `observation_audit_log` (
     `id`          BIGINT       PRIMARY KEY AUTO_INCREMENT,
     `tenant_id`   BIGINT       DEFAULT NULL COMMENT '租户ID',
     `user_id`     BIGINT       DEFAULT NULL COMMENT '用户ID',
@@ -26,7 +26,7 @@ CREATE TABLE IF NOT EXISTS `audit_log` (
 ) COMMENT='审计日志表';
 
 -- 执行时间线表
-CREATE TABLE IF NOT EXISTS `execution_timeline` (
+CREATE TABLE IF NOT EXISTS `observation_execution_timeline` (
     `id`           BIGINT       PRIMARY KEY AUTO_INCREMENT,
     `tenant_id`    BIGINT       DEFAULT NULL COMMENT '租户ID',
     `execution_id` VARCHAR(128) NOT NULL COMMENT '执行ID',

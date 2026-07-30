@@ -35,9 +35,4 @@ public interface AuthService {
 
     boolean forgetPassword(String email, String newPassword, String code, String captchaKey);
 
-    /** 设置子租户筛选器（仅在根租户下有效） */
-    boolean setScopedTenant(Long userId, Long subTenantId);
-
-    /** 清除子租户筛选器 */
-    boolean clearScopedTenant(Long userId);
 }

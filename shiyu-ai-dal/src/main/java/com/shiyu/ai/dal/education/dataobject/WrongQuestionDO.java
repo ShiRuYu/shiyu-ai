@@ -11,7 +11,7 @@ import java.time.LocalDateTime;
 
 @Data
 @EqualsAndHashCode(callSuper = true)
-@Table("wrong_question")
+@Table("edu_wrong_question")
 public class WrongQuestionDO extends TenantEntity {
 
     @Id(keyType = KeyType.Auto)

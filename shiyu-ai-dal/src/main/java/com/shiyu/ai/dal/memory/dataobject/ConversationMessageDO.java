@@ -11,7 +11,7 @@ import java.io.Serial;
 
 @Data
 @EqualsAndHashCode(callSuper = true)
-@Table("conversation_message")
+@Table("memory_conversation_message")
 public class ConversationMessageDO extends TenantEntity {
 
     @Serial

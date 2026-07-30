@@ -1,9 +1,9 @@
 -- ============================================
--- Data: knowledge — 知识点/关系/文档
+-- Data: knowledge_base — 知识点/关系/文档
 -- ============================================
 
 -- 知识点
-INSERT IGNORE INTO `knowledge` (`id`, `code`, `name`, `description`, `difficulty`, `category`, `tags`, `tenant_id`, `create_by`, `update_by`) VALUES
+INSERT IGNORE INTO `knowledge_base` (`id`, `code`, `name`, `description`, `difficulty`, `category`, `tags`, `tenant_id`, `create_by`, `update_by`) VALUES
 (1, 'math_natural', '自然数', '用来表示物体个数的数: 0,1,2,3,...', 1, 'MATH', '["自然数","初等数学"]', 1, 'system', 'system'),
 (2, 'math_integer', '整数', '正整数、零和负整数的统称', 1, 'MATH', '["整数"]', 1, 'system', 'system'),
 (3, 'math_numberline', '数轴', '规定了原点、正方向和单位长度的直线', 2, 'MATH', '["数轴"]', 1, 'system', 'system'),

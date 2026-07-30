@@ -43,11 +43,7 @@ public class UserRepository {
         Long currentTenantId = LoginContextHolder.getCurrentTenantId();
         if (currentTenantId != null) {
             countWrapper.from(UserDO.class)
-                    .innerJoin(UserScopeRoleDO.class)
-                    .on(column(UserDO::getId).eq(column(UserScopeRoleDO::getUserId)))
-                    .where(UserScopeRoleDO::getScopedTenantId).eq(currentTenantId)
-                    .and(UserScopeRoleDO::getStatus).eq(1)
-                    .and(UserScopeRoleDO::getDelFlag).eq(0);
+                    .in(UserDO::getId, buildVisibleUserIdsQuery(currentTenantId));
         }
         if (username != null && !username.isEmpty()) {
             countWrapper.like("username", username);
@@ -57,11 +53,7 @@ public class UserRepository {
         QueryWrapper queryWrapper = new QueryWrapper();
         if (currentTenantId != null) {
             queryWrapper.from(UserDO.class)
-                    .innerJoin(UserScopeRoleDO.class)
-                    .on(column(UserDO::getId).eq(column(UserScopeRoleDO::getUserId)))
-                    .where(UserScopeRoleDO::getScopedTenantId).eq(currentTenantId)
-                    .and(UserScopeRoleDO::getStatus).eq(1)
-                    .and(UserScopeRoleDO::getDelFlag).eq(0);
+                    .in(UserDO::getId, buildVisibleUserIdsQuery(currentTenantId));
         }
         if (username != null && !username.isEmpty()) {
             queryWrapper.like("username", username);
@@ -74,6 +66,20 @@ public class UserRepository {
         List<UserBO> userBOs = MapstructUtils.convert(userDOs, UserBO.class);
         
         return Pair.of(total, userBOs);
+    }
+
+    /**
+     * 使用用户 ID 子查询代替直接 join 用户角色关系表。
+     * 一个用户在当前租户下有多个角色时，join 会把同一用户展开成多行，
+     * 进而导致列表重复、总数错误以及分页被重复记录占用。
+     */
+    private QueryWrapper buildVisibleUserIdsQuery(Long currentTenantId) {
+        return QueryWrapper.create()
+                .select(UserScopeRoleDO::getUserId)
+                .from(UserScopeRoleDO.class)
+                .where(UserScopeRoleDO::getTenantId).eq(currentTenantId)
+                .and(UserScopeRoleDO::getStatus).eq(1)
+                .and(UserScopeRoleDO::getDelFlag).eq(0);
     }
 
     /**
@@ -183,7 +189,7 @@ public class UserRepository {
         QueryWrapper assignmentQuery = QueryWrapper.create()
                 .from(UserScopeRoleDO.class)
                 .where(UserScopeRoleDO::getUserId).eq(userId)
-                .and(UserScopeRoleDO::getScopedTenantId).eq(currentTenantId)
+                .and(UserScopeRoleDO::getTenantId).eq(currentTenantId)
                 .and(UserScopeRoleDO::getStatus).eq(1)
                 .and(UserScopeRoleDO::getDelFlag).eq(0);
         return userMapper.selectCountByQuery(qw) > 0

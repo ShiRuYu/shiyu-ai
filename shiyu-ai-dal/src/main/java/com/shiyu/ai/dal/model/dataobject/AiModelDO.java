@@ -13,7 +13,7 @@ import java.io.Serial;
  */
 @Data
 @EqualsAndHashCode(callSuper = true)
-@Table(value = "ai_model")
+@Table(value = "agent_ai_model")
 public class AiModelDO extends TenantEntity {
 
     @Serial

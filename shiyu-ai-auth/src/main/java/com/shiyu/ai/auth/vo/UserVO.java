@@ -120,8 +120,8 @@ public class UserVO implements Serializable {
      */
     private Long currentTenantId;
 
-    /**
-     * 当前租户范围内的精确筛选租户ID
-     */
-    private Long filterTenantId;
+    private Long homeTenantId;
+
+    private String switchMode;
+
 }

@@ -10,7 +10,7 @@ import java.io.Serial;
 
 @Data
 @EqualsAndHashCode(callSuper = true)
-@Table(value = "tenant")
+@Table(value = "auth_tenant")
 public class TenantDO extends BaseEntity {
 
     @Serial

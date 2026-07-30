@@ -3,6 +3,7 @@ package com.shiyu.ai.auth.service.impl;
 import com.github.benmanes.caffeine.cache.Cache;
 import com.github.benmanes.caffeine.cache.Caffeine;
 import com.shiyu.ai.dal.common.repository.DictRepository;
+import com.shiyu.ai.dal.auth.repository.TenantRepository;
 import com.shiyu.ai.auth.service.DictService;
 import com.shiyu.ai.dal.common.bo.DictBO;
 import com.shiyu.ai.common.core.domain.LoginContextHolder;
@@ -20,6 +21,9 @@ public class DictServiceImpl implements DictService {
 
     @Resource
     private DictRepository dictRepository;
+
+    @Resource
+    private TenantRepository tenantRepository;
 
     private final Cache<String, List<DictBO>> dictTypeCache;
 
@@ -58,6 +62,11 @@ public class DictServiceImpl implements DictService {
 
     @Override
     public DictBO create(DictBO dictBO) {
+        Long targetTenantId = resolveTargetTenantId(dictBO == null ? null : dictBO.getTenantId());
+        if (targetTenantId == null) {
+            throw new IllegalArgumentException("目标租户不在当前租户可管理范围内");
+        }
+        dictBO.setTenantId(targetTenantId);
         DictBO created = dictRepository.create(dictBO);
         dictTypeCache.invalidate(cacheKey(dictBO.getDictType()));
         return created;
@@ -65,6 +74,18 @@ public class DictServiceImpl implements DictService {
 
     @Override
     public DictBO update(DictBO dictBO) {
+        if (dictBO == null || dictBO.getId() == null) {
+            return null;
+        }
+        DictBO existing = dictRepository.selectById(dictBO.getId());
+        if (existing == null) {
+            return null;
+        }
+        Long targetTenantId = resolveTargetTenantId(dictBO.getTenantId());
+        if (targetTenantId == null || !targetTenantId.equals(existing.getTenantId())) {
+            throw new IllegalArgumentException("字典不属于目标租户或超出当前租户范围");
+        }
+        dictBO.setTenantId(existing.getTenantId());
         DictBO updated = dictRepository.update(dictBO);
         dictTypeCache.invalidate(cacheKey(dictBO.getDictType()));
         return updated;
@@ -74,6 +95,7 @@ public class DictServiceImpl implements DictService {
     public void deleteById(Long id) {
         DictBO existing = dictRepository.selectById(id);
         if (existing != null) {
+            ensureTenantVisible(existing.getTenantId());
             dictRepository.deleteById(id);
             dictTypeCache.invalidate(cacheKey(existing.getDictType()));
         }
@@ -91,13 +113,21 @@ public class DictServiceImpl implements DictService {
     }
 
     private String cacheKey(String dictType) {
-        Long filterTenantId = LoginContextHolder.getFilterTenantId();
-        if (filterTenantId != null) {
-            return "filter:" + filterTenantId + ":" + dictType;
+        return "tenant:" + LoginContextHolder.getCurrentTenantId() + ":" + dictType;
+    }
+
+    private Long resolveTargetTenantId(Long requestedTenantId) {
+        Long currentTenantId = LoginContextHolder.getCurrentTenantId();
+        if (currentTenantId == null) {
+            return null;
         }
-        if (LoginContextHolder.isSuperAdmin()) {
-            return "all:" + dictType;
+        Long targetTenantId = requestedTenantId == null ? currentTenantId : requestedTenantId;
+        return currentTenantId.equals(targetTenantId) ? targetTenantId : null;
+    }
+
+    private void ensureTenantVisible(Long tenantId) {
+        if (resolveTargetTenantId(tenantId) == null) {
+            throw new IllegalArgumentException("字典不属于当前租户可管理范围");
         }
-        return "visible:" + String.valueOf(LoginContextHolder.getVisibleTenantIds()) + ":" + dictType;
     }
 }

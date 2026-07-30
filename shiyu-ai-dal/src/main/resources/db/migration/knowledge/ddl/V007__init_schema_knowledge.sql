@@ -3,7 +3,7 @@
 -- ============================================
 
 
-CREATE TABLE IF NOT EXISTS `knowledge` (
+CREATE TABLE IF NOT EXISTS `knowledge_base` (
     `id`              BIGINT       NOT NULL AUTO_INCREMENT COMMENT '知识点ID',
     `code`            VARCHAR(50)  NOT NULL UNIQUE COMMENT '知识点编码',
     `name`            VARCHAR(200) NOT NULL COMMENT '名称',
@@ -21,9 +21,9 @@ CREATE TABLE IF NOT EXISTS `knowledge` (
     PRIMARY KEY (`id`)
 );
 
-CREATE INDEX IF NOT EXISTS `idx_knowledge_category` ON `knowledge` (`category`);
+CREATE INDEX IF NOT EXISTS `idx_knowledge_category` ON `knowledge_base` (`category`);
 
-COMMENT ON TABLE `knowledge` IS '知识点表（通用，不绑定教育域）';
+COMMENT ON TABLE `knowledge_base` IS '知识点表（通用，不绑定教育域）';
 
 
 CREATE TABLE IF NOT EXISTS `knowledge_relation` (

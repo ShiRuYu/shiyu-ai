@@ -13,7 +13,7 @@ import java.io.Serial;
  */
 @Data
 @EqualsAndHashCode(callSuper = true)
-@Table(value = "record")
+@Table(value = "record_entry")
 public class RecordDO extends TenantEntity {
 
     @Serial

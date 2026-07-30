@@ -9,7 +9,7 @@ import lombok.EqualsAndHashCode;
 import java.io.Serial;
 
 @Data
-@Table("course_knowledge")
+@Table("edu_course_knowledge")
 @EqualsAndHashCode(callSuper = true)
 public class CourseKnowledgeDO extends TenantEntity {
 

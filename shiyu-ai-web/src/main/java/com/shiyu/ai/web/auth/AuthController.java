@@ -210,8 +210,6 @@ public class AuthController {
                     if (extMap != null) {
                         Object tid = extMap.get("currentTenantId");
                         if (tid instanceof Number) userVO.setCurrentTenantId(((Number) tid).longValue());
-                        Object fid = extMap.get("filterTenantId");
-                        if (fid instanceof Number) userVO.setFilterTenantId(((Number) fid).longValue());
                     }
                 }
             } catch (Exception e) {
@@ -258,36 +256,6 @@ public class AuthController {
         }
     }
     
-    /**
-     * 设置子租户筛选器
-     * POST /auth/scope-sub-tenant
-     * 仅在根租户上下文中有效，设置后只查看该子租户的数据
-     */
-    @Operation(summary = "Filter Sub Tenant")
-    @PostMapping("/scope-sub-tenant")
-    public Result<Void> filterSubTenant(@Valid @RequestBody FilterSubTenantRequest request) {
-        log.info("收到子租户筛选请求, subTenantId={}", request.getSubTenantId());
-        Long userId = LoginContextHolder.getUserId();
-        if (userId == null) return Result.fail("用户未登录");
-        boolean success = authService.setScopedTenant(userId, request.getSubTenantId());
-        return success ? Result.success() : Result.fail("设置子租户筛选器失败");
-    }
-
-    /**
-     * 清除子租户筛选器
-     * POST /auth/clear-scope
-     * 回到根租户全量视角
-     */
-    @Operation(summary = "Clear Sub Tenant Filter")
-    @PostMapping("/clear-scope")
-    public Result<Void> clearFilter() {
-        log.info("收到清除筛选器请求");
-        Long userId = LoginContextHolder.getUserId();
-        if (userId == null) return Result.fail("用户未登录");
-        boolean success = authService.clearScopedTenant(userId);
-        return success ? Result.success() : Result.fail("清除筛选器失败");
-    }
-
     private String extractTokenFromHeader(String tokenHeader) {
         if (tokenHeader == null || tokenHeader.trim().isEmpty()) return null;
         if (tokenHeader.startsWith("Bearer ")) return tokenHeader.substring(7);

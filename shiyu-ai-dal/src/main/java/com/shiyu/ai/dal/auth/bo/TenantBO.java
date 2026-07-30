@@ -64,4 +64,12 @@ public class TenantBO implements Serializable {
 
     /** 子租户列表 */
     private List<TenantBO> children;
+
+    private List<Long> menuIds;
+
+    private List<Long> authCodeIds;
+
+    private String adminUsername;
+
+    private String adminPassword;
 }

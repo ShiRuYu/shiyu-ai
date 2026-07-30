@@ -13,7 +13,7 @@ import java.io.Serial;
  */
 @Data
 @EqualsAndHashCode(callSuper = true)
-@Table(value = "auth_code")
+@Table(value = "auth_auth_code")
 public class AuthCodeDO extends BaseEntity {
 
     @Serial

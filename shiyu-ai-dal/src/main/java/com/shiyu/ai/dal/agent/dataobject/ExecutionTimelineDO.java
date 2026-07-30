@@ -10,7 +10,7 @@ import java.io.Serializable;
 import java.time.LocalDateTime;
 
 @Data
-@Table("execution_timeline")
+@Table("observation_execution_timeline")
 public class ExecutionTimelineDO implements Serializable {
 
     @Serial

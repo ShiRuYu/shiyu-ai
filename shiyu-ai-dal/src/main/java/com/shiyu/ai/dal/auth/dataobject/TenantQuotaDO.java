@@ -15,7 +15,7 @@ import java.time.LocalDateTime;
  */
 @Data
 @EqualsAndHashCode(callSuper = true)
-@Table("tenant_quota")
+@Table("auth_tenant_quota")
 public class TenantQuotaDO extends BaseEntity {
 
     @Id(keyType = KeyType.Auto)

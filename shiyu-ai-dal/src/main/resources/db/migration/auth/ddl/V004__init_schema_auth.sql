@@ -3,7 +3,7 @@
 -- ============================================
 
 
-CREATE TABLE IF NOT EXISTS `tenant` (
+CREATE TABLE IF NOT EXISTS `auth_tenant` (
     `id`              BIGINT       NOT NULL AUTO_INCREMENT COMMENT '租户ID',
     `parent_id`       BIGINT       DEFAULT NULL COMMENT '父租户ID（null=根租户）',
     `code`            VARCHAR(64)  NOT NULL COMMENT '租户编码',
@@ -27,12 +27,12 @@ CREATE TABLE IF NOT EXISTS `tenant` (
     PRIMARY KEY (`id`)
 );
 
-CREATE INDEX IF NOT EXISTS `idx_tenant_code` ON `tenant` (`code`);
+CREATE INDEX IF NOT EXISTS `idx_tenant_code` ON `auth_tenant` (`code`);
 
-COMMENT ON TABLE `tenant` IS '租户表';
+COMMENT ON TABLE `auth_tenant` IS '租户表';
 
 
-CREATE TABLE IF NOT EXISTS `user` (
+CREATE TABLE IF NOT EXISTS `auth_user` (
     `id` BIGINT NOT NULL AUTO_INCREMENT COMMENT '用户 ID',
     `username` VARCHAR(64) NOT NULL COMMENT '用户名',
     `password` VARCHAR(255) COMMENT '密码',
@@ -53,12 +53,12 @@ CREATE TABLE IF NOT EXISTS `user` (
     PRIMARY KEY (`id`)
 );
 
-CREATE INDEX IF NOT EXISTS `idx_username` ON `user` (`username`);
+CREATE INDEX IF NOT EXISTS `idx_username` ON `auth_user` (`username`);
 
-COMMENT ON TABLE `user` IS '用户表';
+COMMENT ON TABLE `auth_user` IS '用户表';
 
 
-CREATE TABLE IF NOT EXISTS `role` (
+CREATE TABLE IF NOT EXISTS `auth_role` (
     `id` BIGINT NOT NULL AUTO_INCREMENT COMMENT '角色 ID',
     `code` VARCHAR(64) NOT NULL COMMENT '角色编码',
     `name` VARCHAR(64) NOT NULL COMMENT '角色名称',
@@ -73,12 +73,12 @@ CREATE TABLE IF NOT EXISTS `role` (
     PRIMARY KEY (`id`)
 );
 
-CREATE INDEX IF NOT EXISTS `idx_code` ON `role` (`code`);
+CREATE INDEX IF NOT EXISTS `idx_code` ON `auth_role` (`code`);
 
-COMMENT ON TABLE `role` IS '角色表';
+COMMENT ON TABLE `auth_role` IS '角色表';
 
 
-CREATE TABLE IF NOT EXISTS `menu` (
+CREATE TABLE IF NOT EXISTS `auth_menu` (
     `id` BIGINT NOT NULL AUTO_INCREMENT COMMENT '菜单 ID',
     `name` VARCHAR(64) NOT NULL COMMENT '菜单名称',
     `code` VARCHAR(64) NOT NULL COMMENT '菜单编码',
@@ -104,14 +104,13 @@ CREATE TABLE IF NOT EXISTS `menu` (
     PRIMARY KEY (`id`)
 );
 
-CREATE INDEX IF NOT EXISTS `idx_parent_id` ON `menu` (`parent_id`);
+CREATE INDEX IF NOT EXISTS `idx_parent_id` ON `auth_menu` (`parent_id`);
 
-COMMENT ON TABLE `menu` IS '菜单表';
+COMMENT ON TABLE `auth_menu` IS '菜单表';
 
 
-CREATE TABLE IF NOT EXISTS `user_scope_role` (
+CREATE TABLE IF NOT EXISTS `auth_user_scope_role` (
     `user_id`      BIGINT NOT NULL COMMENT '用户 ID',
-    `scoped_tenant_id` BIGINT NOT NULL COMMENT '工作空间 ID',
     `role_id`      BIGINT NOT NULL COMMENT '角色 ID',
     `tenant_id`    BIGINT NOT NULL COMMENT '租户ID',
     `status`       TINYINT      DEFAULT 1 COMMENT '状态（1正常 0停用）',
@@ -120,18 +119,17 @@ CREATE TABLE IF NOT EXISTS `user_scope_role` (
     `create_time`  TIMESTAMP DEFAULT CURRENT_TIMESTAMP COMMENT '创建时间',
     `update_by`    VARCHAR(64)   COMMENT '更新者',
     `update_time`  TIMESTAMP DEFAULT CURRENT_TIMESTAMP COMMENT '更新时间',
-    PRIMARY KEY (`user_id`, `scoped_tenant_id`, `role_id`)
+    PRIMARY KEY (`user_id`, `tenant_id`, `role_id`)
 );
 
 
-CREATE INDEX IF NOT EXISTS `idx_usr_role` ON `user_scope_role` (`role_id`);
+CREATE INDEX IF NOT EXISTS `idx_usr_role` ON `auth_user_scope_role` (`role_id`);
 
-COMMENT ON TABLE `user_scope_role` IS '用户作用域角色关联表';
+COMMENT ON TABLE `auth_user_scope_role` IS '用户作用域角色关联表';
 
 
-CREATE TABLE IF NOT EXISTS `role_scope_menu` (
+CREATE TABLE IF NOT EXISTS `auth_role_scope_menu` (
     `role_id`      BIGINT NOT NULL COMMENT '角色 ID',
-    `scoped_tenant_id` BIGINT NOT NULL COMMENT '工作空间 ID',
     `menu_id`      BIGINT NOT NULL COMMENT '菜单 ID',
     `tenant_id`    BIGINT NOT NULL COMMENT '租户ID',
     `status`       TINYINT      DEFAULT 1 COMMENT '状态（1正常 0停用）',
@@ -140,15 +138,15 @@ CREATE TABLE IF NOT EXISTS `role_scope_menu` (
     `create_time`  TIMESTAMP DEFAULT CURRENT_TIMESTAMP COMMENT '创建时间',
     `update_by`    VARCHAR(64)   COMMENT '更新者',
     `update_time`  TIMESTAMP DEFAULT CURRENT_TIMESTAMP COMMENT '更新时间',
-    PRIMARY KEY (`role_id`, `scoped_tenant_id`, `menu_id`)
+    PRIMARY KEY (`role_id`, `tenant_id`, `menu_id`)
 );
 
-CREATE INDEX IF NOT EXISTS `idx_rsm_menu_id` ON `role_scope_menu` (`menu_id`);
+CREATE INDEX IF NOT EXISTS `idx_rsm_menu_id` ON `auth_role_scope_menu` (`menu_id`);
 
-COMMENT ON TABLE `role_scope_menu` IS '角色作用域菜单关联表';
+COMMENT ON TABLE `auth_role_scope_menu` IS '角色作用域菜单关联表';
 
 
-CREATE TABLE IF NOT EXISTS `auth_code` (
+CREATE TABLE IF NOT EXISTS `auth_auth_code` (
     `id` BIGINT NOT NULL AUTO_INCREMENT COMMENT '权限码 ID',
     `code` VARCHAR(64) NOT NULL COMMENT '权限编码',
     `name` VARCHAR(128) COMMENT '权限名称',
@@ -162,15 +160,14 @@ CREATE TABLE IF NOT EXISTS `auth_code` (
     UNIQUE KEY `uk_auth_code_code` (`code`)
 );
 
-CREATE INDEX IF NOT EXISTS `idx_auth_code` ON `auth_code` (`code`);
+CREATE INDEX IF NOT EXISTS `idx_auth_code` ON `auth_auth_code` (`code`);
 
-COMMENT ON TABLE `auth_code` IS '权限定义表';
+COMMENT ON TABLE `auth_auth_code` IS '权限定义表';
 
 
-CREATE TABLE IF NOT EXISTS `role_scope_auth_code` (
+CREATE TABLE IF NOT EXISTS `auth_role_scope_auth_code` (
     `role_id` BIGINT NOT NULL COMMENT '角色ID',
     `auth_code_id` BIGINT NOT NULL COMMENT '权限定义ID',
-    `scoped_tenant_id` BIGINT NOT NULL COMMENT '作用域租户ID',
     `tenant_id` BIGINT NOT NULL COMMENT '租户ID',
     `status` TINYINT DEFAULT 1 COMMENT '状态（1正常 0停用）',
     `del_flag` TINYINT DEFAULT 0 COMMENT '删除标志（0：正常 1：已删除）',
@@ -178,15 +175,15 @@ CREATE TABLE IF NOT EXISTS `role_scope_auth_code` (
     `create_time` TIMESTAMP DEFAULT CURRENT_TIMESTAMP COMMENT '创建时间',
     `update_by` VARCHAR(64) COMMENT '更新者',
     `update_time` TIMESTAMP DEFAULT CURRENT_TIMESTAMP COMMENT '更新时间',
-    PRIMARY KEY (`role_id`, `auth_code_id`, `scoped_tenant_id`)
+    PRIMARY KEY (`role_id`, `tenant_id`, `auth_code_id`)
 );
 
-CREATE INDEX IF NOT EXISTS `idx_rsac_auth_code` ON `role_scope_auth_code` (`auth_code_id`);
+CREATE INDEX IF NOT EXISTS `idx_rsac_auth_code` ON `auth_role_scope_auth_code` (`auth_code_id`);
 
-COMMENT ON TABLE `role_scope_auth_code` IS '角色作用域权限授权表';
+COMMENT ON TABLE `auth_role_scope_auth_code` IS '角色作用域权限授权表';
 
 
-CREATE TABLE IF NOT EXISTS `tenant_quota` (
+CREATE TABLE IF NOT EXISTS `auth_tenant_quota` (
     `id` BIGINT NOT NULL AUTO_INCREMENT COMMENT '租户配额 ID',
     `tenant_id` BIGINT NOT NULL COMMENT '租户 ID',
     `max_agent_count` BIGINT DEFAULT 10 COMMENT '最大 Agent 数量',
@@ -200,4 +197,4 @@ CREATE TABLE IF NOT EXISTS `tenant_quota` (
     UNIQUE KEY `uk_tenant_quota_tenant_id` (`tenant_id`)
 );
 
-COMMENT ON TABLE `tenant_quota` IS '租户配额表';
+COMMENT ON TABLE `auth_tenant_quota` IS '租户配额表';

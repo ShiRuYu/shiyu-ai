@@ -8,7 +8,7 @@
 --   EMBEDDING — ext_info: { model, textLength, estimatedTokens, vectorCount }
 -- ============================================
 
-CREATE TABLE IF NOT EXISTS `usage_record` (
+CREATE TABLE IF NOT EXISTS `agent_usage_record` (
     `id`               VARCHAR(64)  NOT NULL COMMENT 'UUID',
     `usage_type`       VARCHAR(32)  NOT NULL COMMENT '用量类型：LLM / EMBEDDING',
     `latency_ms`       BIGINT       NOT NULL DEFAULT 0 COMMENT '延迟(毫秒)',
@@ -19,8 +19,8 @@ CREATE TABLE IF NOT EXISTS `usage_record` (
     PRIMARY KEY (`id`)
 );
 
-CREATE INDEX IF NOT EXISTS `idx_usage_record_type` ON `usage_record` (`usage_type`);
-CREATE INDEX IF NOT EXISTS `idx_usage_record_user` ON `usage_record` (`user_id`);
-CREATE INDEX IF NOT EXISTS `idx_usage_record_time` ON `usage_record` (`create_time`);
+CREATE INDEX IF NOT EXISTS `idx_usage_record_type` ON `agent_usage_record` (`usage_type`);
+CREATE INDEX IF NOT EXISTS `idx_usage_record_user` ON `agent_usage_record` (`user_id`);
+CREATE INDEX IF NOT EXISTS `idx_usage_record_time` ON `agent_usage_record` (`create_time`);
 
-COMMENT ON TABLE `usage_record` IS '统一用量记录表';
+COMMENT ON TABLE `agent_usage_record` IS '统一用量记录表';

@@ -11,7 +11,7 @@ import lombok.EqualsAndHashCode;
 import java.io.Serial;
 
 @Data
-@Table("knowledge_textbook")
+@Table("edu_knowledge_textbook")
 @EqualsAndHashCode(callSuper = true)
 public class KnowledgeTextbookDO extends TenantEntity {
 

@@ -52,46 +52,37 @@ public final class LoginContextHolder {
         return getCurrentTenantId();
     }
 
-    /** 当前租户 ID */
+    /** 用户默认/登录租户。 */
+    public static Long getHomeTenantId() {
+        LoginUser user = getLoginUser();
+        return user != null ? user.getHomeTenantId() : null;
+    }
+
+    /** 当前操作租户 ID。 */
     public static Long getCurrentTenantId() {
         LoginUser user = getLoginUser();
         return user != null ? user.getCurrentTenantId() : null;
-    }
-
-    /** 可见租户 ID 列表（当前租户自身 + 所有后代） */
-    public static List<Long> getVisibleTenantIds() {
-        LoginUser user = getLoginUser();
-        return user != null ? user.getVisibleTenantIds() : null;
-    }
-
-    /** 租户筛选器 */
-    public static Long getFilterTenantId() {
-        LoginUser user = getLoginUser();
-        return user != null ? user.getFilterTenantId() : null;
-    }
-
-    /** @deprecated 改用 getFilterTenantId() */
-    @Deprecated
-    public static Long getCurrentWorkspaceId() {
-        return getFilterTenantId();
-    }
-
-    /** @deprecated 无需使用 */
-    @Deprecated
-    public static List<Long> getWorkspaceIds() {
-        return null;
-    }
-
-    /** @deprecated 改用 currentRoleCode == 'super' */
-    @Deprecated
-    public static boolean isRootTenant() {
-        return false;
     }
 
     /** 当前角色编码 */
     public static String getCurrentRoleCode() {
         LoginUser user = getLoginUser();
         return user != null ? user.getCurrentRoleCode() : null;
+    }
+
+    public static Long getCurrentRoleId() {
+        LoginUser user = getLoginUser();
+        return user != null ? user.getCurrentRoleId() : null;
+    }
+
+    public static String getSwitchMode() {
+        LoginUser user = getLoginUser();
+        return user != null ? user.getSwitchMode() : null;
+    }
+
+    public static boolean isParentSuperAdminSwitch() {
+        LoginUser user = getLoginUser();
+        return user != null && user.isParentSuperAdminSwitch();
     }
 
     public static boolean isSuperAdmin() {

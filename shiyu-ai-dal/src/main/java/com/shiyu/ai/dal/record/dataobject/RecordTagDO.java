@@ -9,7 +9,7 @@ import java.io.Serial;
 
 @Data
 @EqualsAndHashCode(callSuper = true)
-@Table("record_tag")
+@Table("record_record_tag")
 public class RecordTagDO extends TenantEntity {
 
     @Serial

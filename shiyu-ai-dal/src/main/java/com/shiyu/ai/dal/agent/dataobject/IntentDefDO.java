@@ -10,7 +10,7 @@ import java.io.Serial;
 
 @Data
 @EqualsAndHashCode(callSuper = true)
-@Table(value = "intent_def")
+@Table(value = "agent_intent_def")
 public class IntentDefDO extends TenantEntity {
 
     @Serial

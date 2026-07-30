@@ -8,6 +8,7 @@ import lombok.Data;
 
 import java.io.Serial;
 import java.io.Serializable;
+import java.util.List;
 
 @Data
 @AutoMapper(target = TenantBO.class, reverseConvertGenerate = false)
@@ -57,4 +58,12 @@ public class TenantRequest implements Serializable {
 
     @Schema(description = "状态（0停用 1正常）")
     private String status;
+
+    private List<Long> menuIds;
+
+    private List<Long> authCodeIds;
+
+    private String adminUsername;
+
+    private String adminPassword;
 }

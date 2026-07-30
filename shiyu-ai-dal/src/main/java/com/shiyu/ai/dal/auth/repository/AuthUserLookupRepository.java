@@ -9,6 +9,7 @@ import com.shiyu.ai.dal.auth.mapper.RoleMapper;
 import com.shiyu.ai.dal.auth.mapper.TenantMapper;
 import com.shiyu.ai.dal.auth.mapper.UserMapper;
 import com.shiyu.ai.dal.auth.mapper.UserScopeRoleMapper;
+import com.mybatisflex.core.tenant.TenantManager;
 import jakarta.annotation.Resource;
 import org.springframework.stereotype.Component;
 
@@ -45,11 +46,26 @@ public class AuthUserLookupRepository {
     }
 
     public List<UserScopeRoleDO> selectUserWorkspaceRoles(Long userId) {
-        return userWorkspaceRoleMapper.selectByUserId(userId);
+        // 登录上下文可能已经处于子租户，校验父租户超管身份时必须读取用户全部租户角色关系。
+        return TenantManager.withoutTenantCondition(
+                () -> userWorkspaceRoleMapper.selectByUserId(userId));
     }
 
     public RoleDO selectRoleById(Long roleId) {
-        return roleMapper.selectOneById(roleId);
+        return TenantManager.withoutTenantCondition(
+                () -> roleMapper.selectOneById(roleId));
+    }
+
+    public RoleDO selectTenantSuperRole(Long tenantId) {
+        if (tenantId == null) {
+            return null;
+        }
+        return TenantManager.withoutTenantCondition(() -> roleMapper.selectOneByQuery(QueryWrapper.create()
+                .where(RoleDO::getTenantId).eq(tenantId)
+                .and(RoleDO::getCode).in("tenant_super", "super")
+                .and(RoleDO::getStatus).eq(1)
+                .and(RoleDO::getDelFlag).eq(0)
+                .orderBy(RoleDO::getId, true)));
     }
 
     /**

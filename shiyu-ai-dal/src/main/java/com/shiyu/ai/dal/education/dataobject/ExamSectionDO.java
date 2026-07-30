@@ -13,7 +13,7 @@ import java.math.BigDecimal;
 import java.time.LocalDateTime;
 
 @Data
-@Table("exam_section")
+@Table("edu_exam_section")
 @EqualsAndHashCode(callSuper = true)
 public class ExamSectionDO extends TenantEntity {
 

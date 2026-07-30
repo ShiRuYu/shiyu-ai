@@ -9,7 +9,7 @@ import lombok.EqualsAndHashCode;
 
 @Data
 @EqualsAndHashCode(callSuper = true)
-@Table("subject")
+@Table("edu_subject")
 public class SubjectDO extends TenantEntity {
 
     @Id(keyType = KeyType.Auto)

@@ -52,6 +52,9 @@ public class UserRequest implements Serializable {
     @Schema(description = "角色ID数组")
     private Long[] roleIds;
 
+    @Schema(description = "目标租户ID，父租户管理子租户用户时使用")
+    private Long tenantId;
+
     @Schema(description = "岗位ID数组")
     private Long[] postIds;
 }

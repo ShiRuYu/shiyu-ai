@@ -48,18 +48,20 @@ public class RoleController {
     @Operation(summary = "Get All Roles")
     @SaCheckPermission("system:role:list")
     @GetMapping("/all")
-    public Result<List<RoleBO>> getAllRoles(@RequestParam(required = false) String status) {
-        log.info("获取所有角色，status: {}", status);
-        return Result.success(roleService.getAllRoles(status));
+    public Result<List<RoleBO>> getAllRoles(
+            @RequestParam(required = false) String status,
+            @RequestParam(required = false) Long tenantId) {
+        log.info("获取所有角色，status: {}, tenantId: {}", status, tenantId);
+        return Result.success(roleService.getAllRoles(status, tenantId));
     }
 
     @Operation(summary = "Get Role Detail")
     @SaCheckPermission("system:role:list")
     @GetMapping("/detail")
     public Result<RoleVO> getRoleDetail(@RequestParam Long id,
-                                        @RequestParam Long scopedTenantId) {
+                                        @RequestParam Long tenantId) {
         log.info("查询角色详情，id: {}", id);
-        RoleBO bo = roleService.getRoleDetail(id, scopedTenantId);
+        RoleBO bo = roleService.getRoleDetail(id, tenantId);
         if (bo == null) return Result.fail("角色不存在");
         return Result.success(MapstructUtils.convert(bo, RoleVO.class));
     }
@@ -86,9 +88,9 @@ public class RoleController {
     @SaCheckPermission("system:role:assign")
     @PostMapping("/menus/replace")
     public Result<Void> replaceRoleMenus(@RequestParam Long id,
-                                         @RequestParam Long scopedTenantId,
+                                         @RequestParam Long tenantId,
                                          @RequestBody List<Long> menuIds) {
-        return roleService.replaceRoleMenus(id, scopedTenantId, menuIds)
+        return roleService.replaceRoleMenus(id, tenantId, menuIds)
                 ? Result.success() : Result.fail("角色、目标租户或菜单不属于当前租户作用域");
     }
 
@@ -104,9 +106,9 @@ public class RoleController {
     @SaCheckPermission("system:role:assign")
     @PostMapping("/users/remove")
     public Result<Void> removeUserRoles(@RequestParam Long id, @Valid @RequestBody AssignUserRolesRequest request) {
-        log.info("取消分配角色，id: {}, scopedTenantId: {}, userIds: {}",
-                id, request.getScopedTenantId(), request.getUserIds());
-        return roleService.removeUserRoles(id, request.getScopedTenantId(), request.getUserIds())
+        log.info("取消分配角色，id: {}, tenantId: {}, userIds: {}",
+                id, request.getTenantId(), request.getUserIds());
+        return roleService.removeUserRoles(id, request.getTenantId(), request.getUserIds())
                 ? Result.success() : Result.fail("取消分配失败");
     }
 
@@ -114,9 +116,9 @@ public class RoleController {
     @SaCheckPermission("system:role:assign")
     @PostMapping("/users/add")
     public Result<Void> assignUserRoles(@RequestParam Long id, @Valid @RequestBody AssignUserRolesRequest request) {
-        log.info("分配角色，id: {}, scopedTenantId: {}, userIds: {}",
-                id, request.getScopedTenantId(), request.getUserIds());
-        return roleService.assignUserRoles(id, request.getScopedTenantId(), request.getUserIds())
+        log.info("分配角色，id: {}, tenantId: {}, userIds: {}",
+                id, request.getTenantId(), request.getUserIds());
+        return roleService.assignUserRoles(id, request.getTenantId(), request.getUserIds())
                 ? Result.success() : Result.fail("分配失败");
     }
 }

@@ -11,7 +11,7 @@ import java.io.Serial;
 
 @Data
 @EqualsAndHashCode(callSuper = true)
-@Table("long_term_memory")
+@Table("memory_long_term_memory")
 public class LongTermMemoryDO extends TenantEntity {
 
     @Serial

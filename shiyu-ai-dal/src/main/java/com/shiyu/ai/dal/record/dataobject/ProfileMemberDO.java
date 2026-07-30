@@ -13,7 +13,7 @@ import java.io.Serial;
  */
 @Data
 @EqualsAndHashCode(callSuper = true)
-@Table(value = "profile_member")
+@Table(value = "record_profile_member")
 public class ProfileMemberDO extends TenantEntity {
 
     @Serial

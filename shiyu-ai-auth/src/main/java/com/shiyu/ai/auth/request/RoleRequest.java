@@ -22,6 +22,12 @@ public class RoleRequest implements Serializable {
     @Schema(description = "角色编码")
     private String code;
 
+    /**
+     * 角色目标归属租户。父租户管理子租户角色时由 Service 校验后使用。
+     */
+    @Schema(description = "角色归属租户ID，不传则使用当前租户")
+    private Long tenantId;
+
     @NotBlank(message = "角色名称不能为空")
     @Schema(description = "角色名称")
     private String name;

@@ -12,7 +12,7 @@ import java.io.Serial;
 import java.time.LocalDateTime;
 
 @Data
-@Table("course_chapter")
+@Table("edu_course_chapter")
 @EqualsAndHashCode(callSuper = true)
 public class CourseChapterDO extends TenantEntity {
 

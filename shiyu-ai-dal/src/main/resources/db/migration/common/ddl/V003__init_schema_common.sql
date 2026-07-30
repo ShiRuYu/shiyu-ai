@@ -3,7 +3,7 @@
 -- ============================================
 
 
-CREATE TABLE IF NOT EXISTS `dict` (
+CREATE TABLE IF NOT EXISTS `common_dict` (
     `id` BIGINT NOT NULL AUTO_INCREMENT COMMENT '字典ID',
     `dict_type` VARCHAR(100) NOT NULL COMMENT '字典类型',
     `dict_label` VARCHAR(100) NOT NULL COMMENT '字典标签',
@@ -23,9 +23,9 @@ CREATE TABLE IF NOT EXISTS `dict` (
     PRIMARY KEY (`id`)
 );
 
-CREATE INDEX IF NOT EXISTS `idx_dict_type` ON `dict` (`dict_type`);
+CREATE INDEX IF NOT EXISTS `idx_dict_type` ON `common_dict` (`dict_type`);
 
-CREATE INDEX IF NOT EXISTS `idx_dict_sort` ON `dict` (`dict_sort`);
+CREATE INDEX IF NOT EXISTS `idx_dict_sort` ON `common_dict` (`dict_sort`);
 
-COMMENT ON TABLE `dict` IS '字典表';
+COMMENT ON TABLE `common_dict` IS '字典表';
 

@@ -15,7 +15,7 @@ import java.io.Serial;
  */
 @Data
 @EqualsAndHashCode(callSuper = true)
-@Table(value = "timeline_event")
+@Table(value = "record_timeline_event")
 public class TimelineEventDO extends TenantEntity {
 
     @Serial

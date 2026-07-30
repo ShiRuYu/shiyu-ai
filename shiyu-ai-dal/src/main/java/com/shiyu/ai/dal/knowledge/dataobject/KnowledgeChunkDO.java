@@ -9,7 +9,7 @@ import lombok.EqualsAndHashCode;
 
 @Data
 @EqualsAndHashCode(callSuper = true)
-@Table("knowledge_chunk")
+@Table("vector_knowledge_chunk")
 public class KnowledgeChunkDO extends TenantEntity {
 
     @Id(keyType = KeyType.Auto)

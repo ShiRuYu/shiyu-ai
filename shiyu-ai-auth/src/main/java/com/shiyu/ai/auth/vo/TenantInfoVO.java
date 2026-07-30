@@ -17,4 +17,7 @@ public class TenantInfoVO implements Serializable {
     private Long id;
     private String code;
     private String name;
+
+    /** 租户树展示路径，例如：A / A1 / A1-1。 */
+    private String pathName;
 }

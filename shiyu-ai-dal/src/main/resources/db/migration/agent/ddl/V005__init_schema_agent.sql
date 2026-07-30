@@ -3,7 +3,7 @@
 -- ============================================
 
 
-CREATE TABLE IF NOT EXISTS `ai_platform` (
+CREATE TABLE IF NOT EXISTS `agent_ai_platform` (
     `id`               BIGINT       NOT NULL AUTO_INCREMENT COMMENT '平台ID',
     `name`             VARCHAR(50)  NOT NULL COMMENT '平台名称（如 OpenAI、DeepSeek）',
     `code`             VARCHAR(50)  NOT NULL COMMENT '平台编码（如 OPENAI, DEEPSEEK, OLLAMA）',
@@ -27,12 +27,12 @@ CREATE TABLE IF NOT EXISTS `ai_platform` (
     PRIMARY KEY (`id`)
 );
 
-CREATE INDEX IF NOT EXISTS `idx_ai_platform_code` ON `ai_platform` (`code`);
+CREATE INDEX IF NOT EXISTS `idx_ai_platform_code` ON `agent_ai_platform` (`code`);
 
-COMMENT ON TABLE `ai_platform` IS 'AI 平台配置表';
+COMMENT ON TABLE `agent_ai_platform` IS 'AI 平台配置表';
 
 
-CREATE TABLE IF NOT EXISTS `ai_model` (
+CREATE TABLE IF NOT EXISTS `agent_ai_model` (
     `id`           BIGINT       NOT NULL AUTO_INCREMENT COMMENT '模型ID',
     `platform_id`  BIGINT       NOT NULL COMMENT '所属平台ID',
     `model_name`   VARCHAR(100) NOT NULL COMMENT '模型名称（如 gpt-4o, deepseek-chat）',
@@ -51,9 +51,9 @@ CREATE TABLE IF NOT EXISTS `ai_model` (
     PRIMARY KEY (`id`)
 );
 
-CREATE INDEX IF NOT EXISTS `idx_ai_model_platform_id` ON `ai_model` (`platform_id`);
+CREATE INDEX IF NOT EXISTS `idx_ai_model_platform_id` ON `agent_ai_model` (`platform_id`);
 
-COMMENT ON TABLE `ai_model` IS 'AI 模型配置表';
+COMMENT ON TABLE `agent_ai_model` IS 'AI 模型配置表';
 
 
 CREATE TABLE IF NOT EXISTS `agent_def` (
@@ -102,7 +102,7 @@ CREATE INDEX IF NOT EXISTS `idx_agent_version` ON `agent_version` (`agent_id`, `
 COMMENT ON TABLE `agent_version` IS 'Agent 版本表';
 
 
-CREATE TABLE IF NOT EXISTS `intent_def` (
+CREATE TABLE IF NOT EXISTS `agent_intent_def` (
     `id`               BIGINT       NOT NULL AUTO_INCREMENT COMMENT '主键ID',
     `agent_id`         VARCHAR(64)  NOT NULL DEFAULT 'default' COMMENT '所属Agent标识',
     `code`             VARCHAR(64)  NOT NULL COMMENT '意图代码',
@@ -128,7 +128,7 @@ CREATE TABLE IF NOT EXISTS `intent_def` (
     PRIMARY KEY (`id`)
 );
 
-CREATE INDEX IF NOT EXISTS `idx_intent_def_code_agent` ON `intent_def` (`agent_id`, `code`);
+CREATE INDEX IF NOT EXISTS `idx_intent_def_code_agent` ON `agent_intent_def` (`agent_id`, `code`);
 
-COMMENT ON TABLE `intent_def` IS '意图定义表';
+COMMENT ON TABLE `agent_intent_def` IS '意图定义表';
 

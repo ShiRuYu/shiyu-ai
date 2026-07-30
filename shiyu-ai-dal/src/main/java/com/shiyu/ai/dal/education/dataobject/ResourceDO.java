@@ -11,7 +11,7 @@ import java.time.LocalDateTime;
 
 @Data
 @EqualsAndHashCode(callSuper = true)
-@Table("resource")
+@Table("edu_resource")
 public class ResourceDO extends TenantEntity {
 
     @Id(keyType = KeyType.Auto)

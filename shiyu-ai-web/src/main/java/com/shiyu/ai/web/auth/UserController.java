@@ -57,14 +57,37 @@ public class UserController {
         try {
             userVO.setTenants(authService.getUserTenants(userId));
 
+            // 当前租户以请求上下文为准。切换到子租户时，extInfo/session 可能仍是旧快照，
+            // 不能因此把 user/detail 返回成登录租户。
+            Long contextTenantId = LoginContextHolder.getCurrentTenantId();
+            if (contextTenantId != null) {
+                userVO.setCurrentTenantId(contextTenantId);
+            }
+            Long contextHomeTenantId = LoginContextHolder.getHomeTenantId();
+            if (contextHomeTenantId != null) {
+                userVO.setHomeTenantId(contextHomeTenantId);
+            }
+            String contextSwitchMode = LoginContextHolder.getSwitchMode();
+            if (contextSwitchMode != null) {
+                userVO.setSwitchMode(contextSwitchMode);
+            }
+
             if (userVO.getExtInfo() != null) {
                 var extMap = com.shiyu.ai.common.core.utils.JSONUtils.parseObject(
                         userVO.getExtInfo(), java.util.Map.class);
                 if (extMap != null) {
-                    Object tid = extMap.get("currentTenantId");
-                    if (tid instanceof Number) userVO.setCurrentTenantId(((Number) tid).longValue());
-                    Object fid = extMap.get("filterTenantId");
-                    if (fid instanceof Number) userVO.setFilterTenantId(((Number) fid).longValue());
+                    if (userVO.getCurrentTenantId() == null) {
+                        Object tid = extMap.get("currentTenantId");
+                        if (tid instanceof Number) userVO.setCurrentTenantId(((Number) tid).longValue());
+                    }
+                    if (userVO.getHomeTenantId() == null) {
+                        Object homeTid = extMap.get("homeTenantId");
+                        if (homeTid instanceof Number) userVO.setHomeTenantId(((Number) homeTid).longValue());
+                    }
+                    if (userVO.getSwitchMode() == null) {
+                        Object mode = extMap.get("switchMode");
+                        if (mode instanceof String) userVO.setSwitchMode((String) mode);
+                    }
                 }
             }
         } catch (Exception e) {
@@ -98,7 +121,8 @@ public class UserController {
     public Result<Map<String, Object>> createUser(@Valid @RequestBody UserRequest request) {
         log.info("新增用户");
         UserBO userBO = MapstructUtils.convert(request, UserBO.class);
-        Map<String, Object> result = userService.createUser(userBO, request.getRoleIds());
+        Map<String, Object> result = userService.createUser(
+                userBO, request.getRoleIds(), request.getTenantId());
         return Result.success(result);
     }
 
@@ -112,7 +136,7 @@ public class UserController {
     public Result<Void> updateUser(@RequestParam Long userId, @Valid @RequestBody UserRequest request) {
         log.info("修改用户，userId: {}", userId);
         UserBO userBO = MapstructUtils.convert(request, UserBO.class);
-        return userService.updateUser(userId, userBO, request.getRoleIds())
+        return userService.updateUser(userId, userBO, request.getRoleIds(), request.getTenantId())
                 ? Result.success()
                 : Result.fail("用户不存在");
     }

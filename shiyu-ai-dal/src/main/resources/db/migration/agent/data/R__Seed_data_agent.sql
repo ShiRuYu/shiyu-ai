@@ -3,21 +3,21 @@
 -- ============================================
 
 -- AI 平台
-INSERT IGNORE INTO `ai_platform` (`id`, `name`, `code`, `tenant_id`, `base_url`, `api_key`, `temperature`, `max_tokens`, `max_retries`, `available_models`, `is_default`, `status`, `remark`, `create_by`, `update_by`)
+INSERT IGNORE INTO `agent_ai_platform` (`id`, `name`, `code`, `tenant_id`, `base_url`, `api_key`, `temperature`, `max_tokens`, `max_retries`, `available_models`, `is_default`, `status`, `remark`, `create_by`, `update_by`)
 VALUES (1, 'OpenAI', 'OPENAI', 1, 'https://api.openai.com/v1', '', 0.7, 4096, 3, '["gpt-4o","gpt-4o-mini","gpt-4-turbo","gpt-3.5-turbo"]', 'N', 1, 'OpenAI 官方 API', 'system', 'system');
 
-INSERT IGNORE INTO `ai_platform` (`id`, `name`, `code`, `tenant_id`, `base_url`, `api_key`, `temperature`, `max_tokens`, `max_retries`, `available_models`, `is_default`, `status`, `remark`, `create_by`, `update_by`)
+INSERT IGNORE INTO `agent_ai_platform` (`id`, `name`, `code`, `tenant_id`, `base_url`, `api_key`, `temperature`, `max_tokens`, `max_retries`, `available_models`, `is_default`, `status`, `remark`, `create_by`, `update_by`)
 VALUES (2, 'DeepSeek', 'DEEPSEEK', 1, 'https://api.deepseek.com', '', 0.7, 4096, 3, '["deepseek-chat","deepseek-reasoner"]', 'Y', 1, 'DeepSeek 官方 API', 'system', 'system');
 
-INSERT IGNORE INTO `ai_platform` (`id`, `name`, `code`, `tenant_id`, `base_url`, `api_key`, `temperature`, `max_tokens`, `max_retries`, `available_models`, `is_default`, `status`, `remark`, `create_by`, `update_by`)
+INSERT IGNORE INTO `agent_ai_platform` (`id`, `name`, `code`, `tenant_id`, `base_url`, `api_key`, `temperature`, `max_tokens`, `max_retries`, `available_models`, `is_default`, `status`, `remark`, `create_by`, `update_by`)
 VALUES (3, 'OpenRouter', 'OPENROUTER', 1, 'https://openrouter.ai/api', '', 0.7, 4096, 3, '["x-ai/grok-4.1-fast","anthropic/claude-3.5-sonnet","google/gemini-2.5-pro"]', 'N', 1, 'OpenRouter 聚合 API', 'system', 'system');
 
 -- 硅基流动（通义千问 Qwen 模型系列）
-INSERT IGNORE INTO `ai_platform` (`id`, `name`, `code`, `tenant_id`, `base_url`, `api_key`, `temperature`, `max_tokens`, `max_retries`, `available_models`, `is_default`, `status`, `remark`, `create_by`, `update_by`)
+INSERT IGNORE INTO `agent_ai_platform` (`id`, `name`, `code`, `tenant_id`, `base_url`, `api_key`, `temperature`, `max_tokens`, `max_retries`, `available_models`, `is_default`, `status`, `remark`, `create_by`, `update_by`)
 VALUES (4, '硅基流动（通义千问）', 'SILICON_FLOW', 1, 'https://api.siliconflow.cn', '', 0.7, 4096, 3, '["Qwen/Qwen3-14B","Qwen/Qwen3-8B"]', 'N', 1, '硅基流动（通义千问）平台 - 通义千问 Qwen 模型服务', 'system', 'system');
 
 -- AI 模型
-INSERT IGNORE INTO `ai_model` (`id`, `platform_id`, `model_name`, `tenant_id`, `display_name`, `is_default`, `status`, `sort`, `create_by`, `update_by`)
+INSERT IGNORE INTO `agent_ai_model` (`id`, `platform_id`, `model_name`, `tenant_id`, `display_name`, `is_default`, `status`, `sort`, `create_by`, `update_by`)
 VALUES (1, 1, 'gpt-4o', 1, 'GPT-4o', 'N', 1, 1, 'system', 'system'),
        (2, 1, 'gpt-4o-mini', 1, 'GPT-4o Mini', 'Y', 1, 2, 'system', 'system'),
        (3, 1, 'gpt-3.5-turbo', 1, 'GPT-3.5 Turbo', 'N', 1, 3, 'system', 'system'),
@@ -68,28 +68,28 @@ INSERT IGNORE INTO `agent_version` (`id`, `agent_id`, `version_number`, `tenant_
 VALUES (6, 'smart-agent', 'v1.0.0', 1, '初始版本', '1', '{"name":"smart-graph","description":"智能路由助手工作流程","startNode":"intent","endNode":"output","nodes":{"intent":{"nodeName":"意图识别","nodeType":"INTENT","enabled":true,"config":{"category":"general"}},"llm_chat":{"nodeName":"闲聊回答","nodeType":"LLM_CALL","enabled":true,"config":{"platform":"SILICON_FLOW","modelName":"Qwen/Qwen3-8B","defaultPrompt":"你是一个友好的 AI 助手，请用轻松自然的语气和用户聊天。"}},"rag_retrieval":{"nodeName":"知识库检索","nodeType":"RAG_RETRIEVAL","enabled":true,"config":{"topK":3}},"rag_enhance":{"nodeName":"检索增强","nodeType":"RAG_ENHANCEMENT","enabled":true,"config":{"enhancementStrategy":"SUMMARIZATION","contextWindowSize":3}},"rag_llm":{"nodeName":"RAG回答","nodeType":"LLM_CALL","enabled":true,"config":{"platform":"SILICON_FLOW","modelName":"Qwen/Qwen3-8B","promptTemplate":"基于以下检索到的文档回答用户问题。\n\n{context}\n\n用户问题: {query}"}},"tool_call_weather":{"nodeName":"天气查询工具","nodeType":"TOOL_CALL","enabled":true,"config":{"toolName":"WEATHER","enableCache":true}},"tool_call_calculator":{"nodeName":"计算器工具","nodeType":"TOOL_CALL","enabled":true,"config":{"toolName":"CALCULATOR","enableCache":true}},"tool_llm":{"nodeName":"工具结果回答","nodeType":"LLM_CALL","enabled":true,"config":{"platform":"SILICON_FLOW","modelName":"Qwen/Qwen3-8B","promptTemplate":"以下是工具执行结果，请用自然语言回复用户。\n\n工具结果: {toolResult}\n\n用户问题: {query}"}},"output":{"nodeName":"格式化输出","nodeType":"OUTPUT_FORMAT","enabled":true,"config":{"outputFormat":"TEXT","prettyPrint":true}}},"edges":{"rag_retrieval":["rag_enhance"],"rag_enhance":["rag_llm"],"rag_llm":["output"],"llm_chat":["output"],"tool_call_weather":["tool_llm"],"tool_call_calculator":["tool_llm"],"tool_llm":["output"]},"conditionalEdges":{"intent":{"conditionType":"INTENT","defaultTarget":"llm_chat","nodeMappings":{"CHITCHAT":"llm_chat","QUESTION":"rag_retrieval","CALCULATOR":"tool_call_calculator","WEATHER":"tool_call_weather"}}}}', '{"zoom":1,"offsetX":0,"offsetY":0,"nodePositions":{"intent":{"x":100,"y":100},"llm_chat":{"x":300,"y":50},"rag_retrieval":{"x":300,"y":150},"rag_enhance":{"x":500,"y":150},"rag_llm":{"x":700,"y":150},"tool_call_weather":{"x":300,"y":250},"tool_call_calculator":{"x":300,"y":350},"tool_llm":{"x":500,"y":300},"output":{"x":900,"y":200}}}', 'system', 'system');
 
 -- 意图定义
-INSERT IGNORE INTO `intent_def` (`id`, `agent_id`, `code`, `name`, `tenant_id`, `description`, `category`, `priority`, `confidence_threshold`, `enabled`, `status`, `create_by`, `update_by`)
+INSERT IGNORE INTO `agent_intent_def` (`id`, `agent_id`, `code`, `name`, `tenant_id`, `description`, `category`, `priority`, `confidence_threshold`, `enabled`, `status`, `create_by`, `update_by`)
 VALUES (1, 'default', 'CHITCHAT', '闲聊', 1, '日常闲聊对话', 'CONVERSATION', 10, 0.75, '1', 1, 'system', 'system');
 
-INSERT IGNORE INTO `intent_def` (`id`, `agent_id`, `code`, `name`, `tenant_id`, `description`, `category`, `priority`, `confidence_threshold`, `enabled`, `status`, `create_by`, `update_by`)
+INSERT IGNORE INTO `agent_intent_def` (`id`, `agent_id`, `code`, `name`, `tenant_id`, `description`, `category`, `priority`, `confidence_threshold`, `enabled`, `status`, `create_by`, `update_by`)
 VALUES (2, 'default', 'QUESTION', '问答', 1, '知识问答', 'KNOWLEDGE', 50, 0.80, '1', 1, 'system', 'system');
 
-INSERT IGNORE INTO `intent_def` (`id`, `agent_id`, `code`, `name`, `tenant_id`, `description`, `category`, `priority`, `confidence_threshold`, `enabled`, `status`, `create_by`, `update_by`)
+INSERT IGNORE INTO `agent_intent_def` (`id`, `agent_id`, `code`, `name`, `tenant_id`, `description`, `category`, `priority`, `confidence_threshold`, `enabled`, `status`, `create_by`, `update_by`)
 VALUES (3, 'default', 'TRANSLATION', '翻译', 1, '语言翻译', 'TASK', 60, 0.85, '1', 1, 'system', 'system');
 
-INSERT IGNORE INTO `intent_def` (`id`, `agent_id`, `code`, `name`, `tenant_id`, `description`, `category`, `priority`, `confidence_threshold`, `enabled`, `status`, `create_by`, `update_by`)
+INSERT IGNORE INTO `agent_intent_def` (`id`, `agent_id`, `code`, `name`, `tenant_id`, `description`, `category`, `priority`, `confidence_threshold`, `enabled`, `status`, `create_by`, `update_by`)
 VALUES (4, 'default', 'EDUCATION', '教育', 1, '学科教育辅导', 'TASK', 70, 0.80, '1', 1, 'system', 'system');
 
-INSERT IGNORE INTO `intent_def` (`id`, `agent_id`, `code`, `name`, `tenant_id`, `description`, `category`, `priority`, `confidence_threshold`, `enabled`, `status`, `create_by`, `update_by`)
+INSERT IGNORE INTO `agent_intent_def` (`id`, `agent_id`, `code`, `name`, `tenant_id`, `description`, `category`, `priority`, `confidence_threshold`, `enabled`, `status`, `create_by`, `update_by`)
 VALUES (5, 'default', 'CODE_HELP', '代码帮助', 1, '编程辅助与代码生成', 'TASK', 65, 0.80, '1', 1, 'system', 'system');
 
-INSERT IGNORE INTO `intent_def` (`id`, `agent_id`, `code`, `name`, `tenant_id`, `description`, `category`, `priority`, `confidence_threshold`, `enabled`, `status`, `create_by`, `update_by`)
+INSERT IGNORE INTO `agent_intent_def` (`id`, `agent_id`, `code`, `name`, `tenant_id`, `description`, `category`, `priority`, `confidence_threshold`, `enabled`, `status`, `create_by`, `update_by`)
 VALUES (6, 'default', 'WRITING_ASSISTANCE', '写作辅助', 1, '文章写作与润色', 'TASK', 55, 0.75, '1', 1, 'system', 'system');
 
-INSERT IGNORE INTO `intent_def` (`id`, `agent_id`, `code`, `name`, `tenant_id`, `description`, `category`, `priority`, `confidence_threshold`, `enabled`, `status`, `create_by`, `update_by`)
+INSERT IGNORE INTO `agent_intent_def` (`id`, `agent_id`, `code`, `name`, `tenant_id`, `description`, `category`, `priority`, `confidence_threshold`, `enabled`, `status`, `create_by`, `update_by`)
 VALUES (7, 'default', 'DATA_ANALYSIS', '数据分析', 1, '数据处理与分析', 'TASK', 60, 0.80, '1', 1, 'system', 'system');
 
-INSERT IGNORE INTO `intent_def` (`id`, `agent_id`, `code`, `name`, `tenant_id`, `description`, `category`, `priority`, `confidence_threshold`, `enabled`, `status`, `create_by`, `update_by`)
+INSERT IGNORE INTO `agent_intent_def` (`id`, `agent_id`, `code`, `name`, `tenant_id`, `description`, `category`, `priority`, `confidence_threshold`, `enabled`, `status`, `create_by`, `update_by`)
 VALUES (8, 'default', 'UNKNOWN', '未知意图', 1, '无法识别的意图', 'CONVERSATION', 0, 0.50, '1', 1, 'system', 'system');
 
 

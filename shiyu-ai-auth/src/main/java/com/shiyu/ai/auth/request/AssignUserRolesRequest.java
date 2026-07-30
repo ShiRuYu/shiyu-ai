@@ -29,5 +29,5 @@ public class AssignUserRolesRequest implements Serializable {
      */
     @NotNull
     @Schema(description = "角色生效的目标租户ID", requiredMode = Schema.RequiredMode.REQUIRED)
-    private Long scopedTenantId;
+    private Long tenantId;
 }

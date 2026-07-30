@@ -14,7 +14,7 @@ import java.time.LocalDateTime;
  */
 @Data
 @EqualsAndHashCode(callSuper = true)
-@Table("episodic_memory")
+@Table("memory_episodic_memory")
 public class EpisodicMemoryDO extends TenantEntity {
 
     @Id(keyType = KeyType.Auto)

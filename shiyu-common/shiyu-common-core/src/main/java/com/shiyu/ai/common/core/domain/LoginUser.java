@@ -34,20 +34,32 @@ public class LoginUser implements Serializable {
     private String avatar;
     private java.util.Map<String, Object> extInfo = Maps.newHashMap();
 
-    /** 当前租户 ID（用户切换到的租户，即角色分配的目标） */
+    /** 用户默认/登录租户，代表用户身份归属。 */
+    private Long homeTenantId;
+
+    /** 当前操作租户，业务数据严格按此租户过滤。 */
     private Long currentTenantId;
 
-    /** 可见租户 ID 列表（currentTenantId 自身及所有后代）
-     *  用于 ContextTenantFactory 控制数据可见范围 */
-    private List<Long> visibleTenantIds;
-
-    /** 租户筛选器（可选，在可见范围内进一步限定只看某个租户的数据） */
-    private Long filterTenantId;
-
-    /** 当前角色编码 */
+    /** 当前租户下生效的角色。 */
+    private Long currentRoleId;
     private String currentRoleCode;
 
     public boolean isSuperAdmin() {
-        return "super".equals(currentRoleCode);
+        return "tenant_super".equals(currentRoleCode)
+                || "super".equals(currentRoleCode);
+    }
+
+    /** NORMAL 或 PARENT_SUPER_ADMIN。 */
+    private String switchMode;
+
+    /** 父租户超级管理员切换前的租户。 */
+    private Long switchFromTenantId;
+
+    /** @deprecated 严格单租户模式不再使用。 */
+    @Deprecated
+    private Long rootTenantId;
+
+    public boolean isParentSuperAdminSwitch() {
+        return "PARENT_SUPER_ADMIN".equals(switchMode);
     }
 }

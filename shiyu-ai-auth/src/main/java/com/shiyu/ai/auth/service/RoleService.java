@@ -19,9 +19,9 @@ public interface RoleService {
     /**
      * 获取角色列表-all
      */
-    List<RoleBO> getAllRoles(String status);
+    List<RoleBO> getAllRoles(String status, Long tenantId);
 
-    RoleBO getRoleDetail(Long id, Long scopedTenantId);
+    RoleBO getRoleDetail(Long id, Long tenantId);
 
     /**
      * 修改角色
@@ -31,7 +31,7 @@ public interface RoleService {
     /**
      * 替换当前租户作用域下的角色菜单。
      */
-    boolean replaceRoleMenus(Long id, Long scopedTenantId, List<Long> menuIds);
+    boolean replaceRoleMenus(Long id, Long tenantId, List<Long> menuIds);
 
     /**
      * 删除角色
@@ -41,12 +41,12 @@ public interface RoleService {
     /**
      * 从指定租户作用域批量移除角色。
      */
-    boolean removeUserRoles(Long id, Long scopedTenantId, List<Long> userIds);
+    boolean removeUserRoles(Long id, Long tenantId, List<Long> userIds);
 
     /**
      * 向指定租户作用域批量分配角色。
      */
-    boolean assignUserRoles(Long id, Long scopedTenantId, List<Long> userIds);
+    boolean assignUserRoles(Long id, Long tenantId, List<Long> userIds);
 
     /**
      * 新增角色

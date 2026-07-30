@@ -12,7 +12,7 @@ import java.io.Serial;
 import java.math.BigDecimal;
 
 @Data
-@Table("exam_question")
+@Table("edu_exam_question")
 @EqualsAndHashCode(callSuper = true)
 public class ExamQuestionDO extends TenantEntity {
 

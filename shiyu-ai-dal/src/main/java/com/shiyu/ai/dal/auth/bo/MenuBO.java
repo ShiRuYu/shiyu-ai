@@ -25,6 +25,11 @@ public class MenuBO implements Serializable {
     private Long id;
 
     /**
+     * 菜单归属租户。按权限模型，始终为根租户 ID。
+     */
+    private Long tenantId;
+
+    /**
      * 菜单名称
      */
     private String name;

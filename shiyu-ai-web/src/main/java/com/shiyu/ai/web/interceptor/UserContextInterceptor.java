@@ -57,19 +57,23 @@ public class UserContextInterceptor implements HandlerInterceptor {
 
             if (loginUser != null && userId.equals(loginUser.getUserId())) {
                 // Session 只作为性能缓存，用户、角色、租户状态和范围必须实时以数据库为准。
-                if (!isCachedContextValid(loginUser)) {
+                if (isCachedContextValid(loginUser)) {
+                    loginUser.setToken(SaTokenHelper.getCurrentToken());
+                    loginUser.setIpaddr(getClientIp(request));
+                    String ua = request.getHeader("User-Agent");
+                    if (ua != null) {
+                        loginUser.setBrowser(parseBrowser(ua));
+                        loginUser.setOs(parseOS(ua));
+                    }
+                    LoginContextHolder.setContext(loginUser);
+                    return true;
+                } else {
+                    // 切换租户/角色后 ext_info 已更新，旧 session 可能仍保留旧上下文。
+                    // 不应直接拒绝请求，而应清除缓存并从数据库重新加载；
+                    // 如果数据库中的权限确实失效，loadScopeContext 会最终拒绝。
+                    log.debug("登录用户 session 上下文已过期，重新加载: userId={}", userId);
                     SaTokenHelper.clearLoginUserSession();
-                    throw new IllegalStateException("登录用户权限或租户范围已失效");
                 }
-                loginUser.setToken(SaTokenHelper.getCurrentToken());
-                loginUser.setIpaddr(getClientIp(request));
-                String ua = request.getHeader("User-Agent");
-                if (ua != null) {
-                    loginUser.setBrowser(parseBrowser(ua));
-                    loginUser.setOs(parseOS(ua));
-                }
-                LoginContextHolder.setContext(loginUser);
-                return true;
             }
 
             // 缓存未命中，重新加载
@@ -94,8 +98,9 @@ public class UserContextInterceptor implements HandlerInterceptor {
                 SaTokenHelper.saveLoginUserToSession(loginUser);
             } catch (Exception ignored) {}
 
-            log.debug("用户上下文加载: userId={}, currentTenantId={}, visibleTenantIds={}, filterTenantId={}",
-                    userId, loginUser.getCurrentTenantId(), loginUser.getVisibleTenantIds(), loginUser.getFilterTenantId());
+            log.debug("用户上下文加载: userId={}, homeTenantId={}, currentTenantId={}, currentRole={}, switchMode={}",
+                    userId, loginUser.getHomeTenantId(), loginUser.getCurrentTenantId(),
+                    loginUser.getCurrentRoleCode(), loginUser.getSwitchMode());
 
             return true;
         } catch (Exception e) {
@@ -124,15 +129,22 @@ public class UserContextInterceptor implements HandlerInterceptor {
                 try {
                     Map<String, Object> extInfo = JSONUtils.parseObject(user.getExtInfo(), Map.class);
                     if (extInfo != null) {
-                        // 作用域租户
+                        // 默认/当前租户
+                        Object homeTid = extInfo.get("homeTenantId");
+                        if (homeTid instanceof Number) {
+                            loginUser.setHomeTenantId(((Number) homeTid).longValue());
+                        }
                         Object tid = extInfo.get("currentTenantId");
                         if (tid instanceof Number) {
                             currentTenantId = ((Number) tid).longValue();
                         }
-                        // 子租户筛选器
-                        Object sid = extInfo.get("filterTenantId");
-                        if (sid instanceof Number) {
-                            loginUser.setFilterTenantId(((Number) sid).longValue());
+                        Object switchMode = extInfo.get("switchMode");
+                        if (switchMode instanceof String) {
+                            loginUser.setSwitchMode((String) switchMode);
+                        }
+                        Object fromTenantId = extInfo.get("switchFromTenantId");
+                        if (fromTenantId instanceof Number) {
+                            loginUser.setSwitchFromTenantId(((Number) fromTenantId).longValue());
                         }
                         // 当前角色
                         Object roleObj = extInfo.get("currentRole");
@@ -144,6 +156,7 @@ public class UserContextInterceptor implements HandlerInterceptor {
                                     && isCurrentRoleValid(userId, currentTenantId,
                                     ((Number) roleId).longValue(), (String) roleKey)) {
                                 loginUser.setCurrentRoleCode((String) roleKey);
+                                loginUser.setCurrentRoleId(((Number) roleId).longValue());
                             }
                         }
                     }
@@ -159,7 +172,7 @@ public class UserContextInterceptor implements HandlerInterceptor {
                 if (assignments != null) {
                     currentTenantId = assignments.stream()
                             .filter(this::isActive)
-                            .map(UserScopeRoleDO::getScopedTenantId)
+                            .map(UserScopeRoleDO::getTenantId)
                             .filter(java.util.Objects::nonNull)
                             .findFirst()
                             .orElse(null);
@@ -167,6 +180,9 @@ public class UserContextInterceptor implements HandlerInterceptor {
             }
 
             loginUser.setCurrentTenantId(currentTenantId);
+            if (loginUser.getHomeTenantId() == null) {
+                loginUser.setHomeTenantId(currentTenantId);
+            }
 
             TenantDO currentTenant = currentTenantId == null
                     ? null : authUserLookupRepository.selectTenantById(currentTenantId);
@@ -178,22 +194,23 @@ public class UserContextInterceptor implements HandlerInterceptor {
                     authUserLookupRepository.selectUserWorkspaceRoles(userId);
             final Long contextTenantId = currentTenantId;
             boolean assigned = assignments != null && assignments.stream().anyMatch(item ->
-                    contextTenantId.equals(item.getScopedTenantId())
+                    contextTenantId.equals(item.getTenantId())
                             && isActive(item)
                             && item.getRoleId() != null
                             && isActive(authUserLookupRepository.selectRoleById(item.getRoleId())));
-            if (!assigned) {
+            boolean delegated = "PARENT_SUPER_ADMIN".equals(loginUser.getSwitchMode())
+                    && isParentSuperAdmin(userId, loginUser.getHomeTenantId(), assignments)
+                    && tenantRepository.selectDescendantIds(loginUser.getHomeTenantId())
+                            .contains(currentTenantId);
+            if (!assigned && !delegated) {
                 throw new IllegalStateException("用户不再属于当前租户");
             }
-            if (loginUser.getFilterTenantId() != null
-                    && !isTenantVisibleAndActive(currentTenantId, loginUser.getFilterTenantId())) {
-                throw new IllegalStateException("租户筛选范围已失效");
-            }
-
-            // 计算可见范围（scope 自身 + 所有后代）
-            if (currentTenantId != null) {
-                List<Long> descendantIds = tenantRepository.selectDescendantIds(currentTenantId);
-                loginUser.setVisibleTenantIds(descendantIds);
+            if (delegated && loginUser.getCurrentRoleCode() == null) {
+                RoleDO role = authUserLookupRepository.selectTenantSuperRole(currentTenantId);
+                if (isActive(role)) {
+                    loginUser.setCurrentRoleId(role.getId());
+                    loginUser.setCurrentRoleCode(role.getCode());
+                }
             }
 
         } catch (Exception e) {
@@ -216,7 +233,7 @@ public class UserContextInterceptor implements HandlerInterceptor {
         boolean assigned = assignments != null && assignments.stream().anyMatch(item ->
                 item.getRoleId() != null
                         && roleId.equals(item.getRoleId())
-                        && currentTenantId.equals(item.getScopedTenantId())
+                        && currentTenantId.equals(item.getTenantId())
                         && (item.getStatus() == null || item.getStatus() == 1)
                         && (item.getDelFlag() == null || item.getDelFlag() == 0));
         if (!assigned) {
@@ -233,6 +250,11 @@ public class UserContextInterceptor implements HandlerInterceptor {
         if (loginUser.getCurrentTenantId() == null) {
             return false;
         }
+        // 委托到子租户时，homeTenant/currentTenant/currentRole 都来自 user.ext_info。
+        // 不复用旧 session，避免切换后仍按旧租户角色校验。
+        if (loginUser.isParentSuperAdminSwitch()) {
+            return false;
+        }
         UserDO user = authUserLookupRepository.selectUserById(loginUser.getUserId());
         if (!isActive(user)) {
             return false;
@@ -244,21 +266,22 @@ public class UserContextInterceptor implements HandlerInterceptor {
         List<UserScopeRoleDO> assignments =
                 authUserLookupRepository.selectUserWorkspaceRoles(loginUser.getUserId());
         boolean assigned = assignments != null && assignments.stream().anyMatch(item ->
-                loginUser.getCurrentTenantId().equals(item.getScopedTenantId())
+                loginUser.getCurrentTenantId().equals(item.getTenantId())
                         && isActive(item)
                         && item.getRoleId() != null
                         && isActive(authUserLookupRepository.selectRoleById(item.getRoleId())));
-        if (!assigned) {
-            return false;
-        }
-        if (loginUser.getFilterTenantId() != null
-                && !isTenantVisibleAndActive(loginUser.getCurrentTenantId(),
-                loginUser.getFilterTenantId())) {
+        boolean delegated = "PARENT_SUPER_ADMIN".equals(loginUser.getSwitchMode())
+                && isParentSuperAdmin(loginUser.getUserId(), loginUser.getHomeTenantId(), assignments)
+                && tenantRepository.selectDescendantIds(loginUser.getHomeTenantId())
+                    .contains(loginUser.getCurrentTenantId())
+                && authUserLookupRepository.selectTenantSuperRole(loginUser.getCurrentTenantId()) != null;
+        if (!assigned && !delegated) {
             return false;
         }
         if (loginUser.getCurrentRoleCode() != null) {
-            boolean roleValid = assignments.stream().anyMatch(item -> {
-                if (!loginUser.getCurrentTenantId().equals(item.getScopedTenantId())
+            boolean roleValid = delegated && isTenantSuperCode(loginUser.getCurrentRoleCode())
+                    || assignments.stream().anyMatch(item -> {
+                if (!loginUser.getCurrentTenantId().equals(item.getTenantId())
                         || !isActive(item) || item.getRoleId() == null) {
                     return false;
                 }
@@ -272,13 +295,21 @@ public class UserContextInterceptor implements HandlerInterceptor {
         return true;
     }
 
-    private boolean isTenantVisibleAndActive(Long currentTenantId, Long filterTenantId) {
-        if (filterTenantId == null) {
-            return true;
+    private boolean isTenantSuperCode(String roleCode) {
+        return "tenant_super".equals(roleCode) || "super".equals(roleCode);
+    }
+
+    private boolean isParentSuperAdmin(Long userId, Long homeTenantId,
+                                       List<UserScopeRoleDO> assignments) {
+        if (homeTenantId == null || assignments == null) {
+            return false;
         }
-        TenantDO filterTenant = authUserLookupRepository.selectTenantById(filterTenantId);
-        return isActive(filterTenant)
-                && tenantRepository.selectDescendantIds(currentTenantId).contains(filterTenantId);
+        return assignments.stream()
+                .filter(item -> homeTenantId.equals(item.getTenantId()) && isActive(item))
+                .map(UserScopeRoleDO::getRoleId)
+                .map(authUserLookupRepository::selectRoleById)
+                .anyMatch(role -> role != null && isTenantSuperCode(role.getCode())
+                        && isActive(role));
     }
 
     private boolean isActive(UserDO item) {
