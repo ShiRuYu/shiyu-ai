@@ -187,9 +187,21 @@ public class AuthServiceImpl implements AuthService {
 
             // 构建用户所属租户列表
             List<TenantInfoVO> tenantList = buildTenantList(uwrList);
-            if (currentRole != null && isTenantSuperRole(currentRole)
-                    && homeTenantId != null) {
-                tenantList = buildSwitchableTenantList(homeTenantId, tenantList);
+            String switchMode = (String) extInfoMap.getOrDefault("switchMode", "NORMAL");
+            final Long resolvedHomeTenantId = homeTenantId;
+            boolean homeTenantSuperAdmin = resolvedHomeTenantId != null
+                    && uwrList != null
+                    && uwrList.stream()
+                    .filter(item -> resolvedHomeTenantId.equals(item.getTenantId())
+                            && isActiveAssignment(item))
+                    .map(UserScopeRoleDO::getRoleId)
+                    .map(tenantRoleRepository::selectRoleById)
+                    .anyMatch(this::isTenantSuperRole);
+            if (homeTenantSuperAdmin) {
+                tenantList = currentTenantId != null
+                        && !resolvedHomeTenantId.equals(currentTenantId)
+                        ? buildScopedTenantList(currentTenantId, homeTenantId)
+                        : buildScopedTenantList(homeTenantId, homeTenantId);
             }
 
             LoginResponseVO response = new LoginResponseVO();
@@ -211,7 +223,7 @@ public class AuthServiceImpl implements AuthService {
             response.setExpiresIn(timeout);
             response.setCurrentTenantId(currentTenantId);
             response.setHomeTenantId(homeTenantId);
-            response.setSwitchMode((String) extInfoMap.getOrDefault("switchMode", "NORMAL"));
+            response.setSwitchMode(switchMode);
             response.setTenantName(tenantName);
             response.setTenants(tenantList);
             response.setSubTenants(subTenants);
@@ -372,19 +384,19 @@ public class AuthServiceImpl implements AuthService {
         return result;
     }
 
-    private List<TenantInfoVO> buildSwitchableTenantList(Long homeTenantId,
-                                                          List<TenantInfoVO> assigned) {
+    private List<TenantInfoVO> buildScopedTenantList(Long scopeRootTenantId,
+                                                      Long returnTenantId) {
         Map<Long, TenantInfoVO> result = new LinkedHashMap<>();
-        if (assigned != null) {
-            assigned.forEach(item -> result.put(item.getId(), item));
+        Set<Long> visibleTenantIds = new LinkedHashSet<>(
+                tenantRepository.selectDescendantIds(scopeRootTenantId));
+        if (returnTenantId != null) {
+            visibleTenantIds.add(returnTenantId);
         }
-        for (TenantBO tenant : tenantRepository.selectAll().stream()
-                .map(item -> item)
-                .toList()) {
+        for (TenantBO tenant : tenantRepository.selectAll()) {
             if (tenant.getId() == null
-                    || tenant.getId().equals(homeTenantId)
-                    || !tenantRepository.selectDescendantIds(homeTenantId).contains(tenant.getId())
-                    || tenant.getStatus() == null || tenant.getStatus() != 1) {
+                    || !visibleTenantIds.contains(tenant.getId())
+                    || tenant.getStatus() == null || tenant.getStatus() != 1
+                    || (tenant.getDelFlag() != null && tenant.getDelFlag() != 0)) {
                 continue;
             }
             TenantInfoVO vo = new TenantInfoVO();
@@ -473,8 +485,19 @@ public class AuthServiceImpl implements AuthService {
     public List<String> getAuthCodesByUserId(Long userId) {
         log.info("获取权限编码, userId={}", userId);
         try {
-                    Long currentTenantId = com.shiyu.ai.common.core.domain.LoginContextHolder.getCurrentTenantId();
-            List<String> codes = authRepository.selectCodesByUserId(userId, currentTenantId);
+            Long currentTenantId = LoginContextHolder.getCurrentTenantId();
+            String currentRoleCode = LoginContextHolder.getCurrentRoleCode();
+            List<String> codes;
+            if (LoginContextHolder.isParentSuperAdminSwitch()
+                    && currentTenantId != null && currentRoleCode != null) {
+                codes = authRepository.selectCodesByRoleCodeAndTenant(
+                        currentRoleCode, currentTenantId);
+            } else if (currentTenantId != null && currentRoleCode != null) {
+                codes = authRepository.selectCodesByUserIdAndRoleCode(
+                        userId, currentTenantId, currentRoleCode);
+            } else {
+                codes = authRepository.selectCodesByUserId(userId, currentTenantId);
+            }
             if (codes == null || codes.isEmpty()) {
                 return new ArrayList<>();
             }
@@ -582,33 +605,69 @@ public class AuthServiceImpl implements AuthService {
                 return false;
             }
             final Long homeTenant = homeTenantId;
+            Long currentTenantId = numberValue(extInfoMap.get("currentTenantId"));
+            if (currentTenantId == null) {
+                currentTenantId = homeTenantId;
+            }
             TenantDO targetTenant = tenantRoleRepository.selectTenantById(tenantId);
             if (!isActiveTenant(targetTenant)) {
                 return false;
             }
 
-            UserScopeRoleDO assigned = uwrList == null ? null : uwrList.stream()
+            List<RoleDO> assignedRoles = uwrList == null ? List.of() : uwrList.stream()
                     .filter(r -> tenantId.equals(r.getTenantId()) && isActiveAssignment(r))
-                    .findFirst().orElse(null);
+                    .map(UserScopeRoleDO::getRoleId)
+                    .filter(Objects::nonNull)
+                    .map(tenantRoleRepository::selectRoleById)
+                    .filter(role -> role != null
+                            && tenantId.equals(role.getTenantId())
+                            && role.getStatus() != null && role.getStatus() == 1
+                            && (role.getDelFlag() == null || role.getDelFlag() == 0))
+                    .sorted(Comparator.comparing(RoleDO::getId))
+                    .toList();
+            Long preferredRoleId = extInfoMap.get("currentRole") instanceof Map<?, ?> roleMap
+                    ? numberValue(roleMap.get("roleId")) : null;
+            RoleDO assignedRole = preferredRoleId == null ? null : assignedRoles.stream()
+                    .filter(role -> preferredRoleId.equals(role.getId()))
+                    .findFirst()
+                    .orElse(null);
+            if (assignedRole == null && !assignedRoles.isEmpty()) {
+                assignedRole = assignedRoles.get(0);
+            }
             boolean homeTenantSuper = uwrList != null && uwrList.stream()
                     .filter(r -> homeTenant.equals(r.getTenantId()) && isActiveAssignment(r))
                     .map(UserScopeRoleDO::getRoleId)
                     .map(tenantRoleRepository::selectRoleById)
                     .anyMatch(this::isTenantSuperRole);
-            boolean switchingChild = !homeTenantId.equals(tenantId)
-                    && tenantRepository.selectDescendantIds(homeTenantId).contains(tenantId);
-            if (assigned == null && !(homeTenantSuper && switchingChild)) {
+            boolean returningHome = homeTenantId.equals(tenantId);
+            boolean switchedAwayFromHome = !homeTenantId.equals(currentTenantId);
+            Long allowedRootTenantId = homeTenantSuper && switchedAwayFromHome
+                    ? currentTenantId : homeTenantId;
+            boolean targetInAllowedSubtree = tenantRepository
+                    .selectDescendantIds(allowedRootTenantId).contains(tenantId);
+            if (homeTenantSuper && switchedAwayFromHome
+                    && !returningHome && !targetInAllowedSubtree) {
+                return false;
+            }
+            if (assignedRole == null
+                    && !(homeTenantSuper && (returningHome || targetInAllowedSubtree))) {
                 log.warn("切换租户失败，缺少租户归属或父租户超级管理员权限, userId={}, tenantId={}",
                         userId, tenantId);
                 return false;
             }
 
+            boolean switchingChild = !returningHome;
+            // 直接分配的子租户角色优先；仅在没有有效直接角色时才使用父级超管委托。
+            boolean parentSuperAdminSwitch = switchingChild
+                    && assignedRole == null
+                    && homeTenantSuper
+                    && targetInAllowedSubtree;
             extInfoMap.put("currentTenantId", tenantId);
             extInfoMap.put("homeTenantId", homeTenantId);
 
-            RoleDO role = assigned == null
+            RoleDO role = parentSuperAdminSwitch
                     ? findTenantSuperRole(tenantId)
-                    : tenantRoleRepository.selectRoleById(assigned.getRoleId());
+                    : assignedRole;
             if (role != null) {
                 Map<String, Object> roleMap = new LinkedHashMap<>();
                 roleMap.put("roleId", role.getId());
@@ -616,9 +675,9 @@ public class AuthServiceImpl implements AuthService {
                 roleMap.put("roleKey", role.getCode());
                 extInfoMap.put("currentRole", roleMap);
             }
-            extInfoMap.put("switchMode", switchingChild
+            extInfoMap.put("switchMode", parentSuperAdminSwitch
                     ? "PARENT_SUPER_ADMIN" : "NORMAL");
-            if (switchingChild) {
+            if (parentSuperAdminSwitch) {
                 extInfoMap.put("switchFromTenantId", homeTenantId);
             } else {
                 extInfoMap.remove("switchFromTenantId");
@@ -654,10 +713,6 @@ public class AuthServiceImpl implements AuthService {
             }
             final Long resolvedHomeTenantId = homeTenantId;
 
-            boolean delegatedSwitch = "PARENT_SUPER_ADMIN".equals(extInfo.get("switchMode"))
-                    && resolvedHomeTenantId != null
-                    && currentTenantId != null
-                    && !resolvedHomeTenantId.equals(currentTenantId);
             boolean homeTenantSuperAdmin = resolvedHomeTenantId != null
                     && uwrList != null
                     && uwrList.stream()
@@ -668,8 +723,14 @@ public class AuthServiceImpl implements AuthService {
 
             // 租户切换后仍然返回完整租户树，不能只依赖当前子租户的角色
             // 或当前用户在子租户中的 user_scope_role 记录。
-            if (delegatedSwitch || homeTenantSuperAdmin) {
-                return buildSwitchableTenantList(resolvedHomeTenantId, tenants);
+            if (homeTenantSuperAdmin
+                    && resolvedHomeTenantId != null
+                    && currentTenantId != null
+                    && !resolvedHomeTenantId.equals(currentTenantId)) {
+                return buildScopedTenantList(currentTenantId, resolvedHomeTenantId);
+            }
+            if (homeTenantSuperAdmin) {
+                return buildScopedTenantList(resolvedHomeTenantId, resolvedHomeTenantId);
             }
         }
         return tenants;

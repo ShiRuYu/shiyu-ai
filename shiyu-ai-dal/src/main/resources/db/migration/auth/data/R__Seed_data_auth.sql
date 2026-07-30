@@ -11,7 +11,7 @@ INSERT IGNORE INTO `auth_tenant_quota` (`tenant_id`, `max_agent_count`, `max_tok
 VALUES (1, 50, 5000000, 5120, 500, 1);
 
 -- ==============================
--- 用户（密码均为 vben123456）
+-- 用户（密码均为 123456）
 -- ==============================
 INSERT IGNORE INTO `auth_user` (`id`, `username`, `password`, `status`, `del_flag`, `create_by`, `update_by`, `nick_name`, `email`)
 VALUES (1, 'vben', '$2a$10$upTL84vHb86f9vMVMn4m8uOGqGr9Pedo.CCsg.XmZ62xhU2IIHJvy', 1, 0, 'system', 'system', 'Vben', 'vben@example.com');
@@ -901,7 +901,8 @@ CROSS JOIN `auth_auth_code` a
 WHERE t.status = 1
   AND t.del_flag = 0
   AND a.status = 1
-  AND a.del_flag = 0;
+  AND a.del_flag = 0
+  AND a.create_by = 'system';
 
 -- 历史教育角色原来引用的是默认租户 menu_id。
 -- 改为引用子租户 3 的菜单副本，避免出现 role_scope_menu 有记录但
@@ -928,7 +929,9 @@ WHERE tenant_id = 3
         AND source_menu.tenant_id = 1
   );
 
--- 3. 每个子租户默认拥有超级管理员、管理员、普通用户角色。
+-- 3. 每个子租户只补齐租户超级管理员角色。
+-- 已存在的 admin/user 角色不删除，避免破坏历史用户授权关系；
+-- 但不再为新旧子租户自动创建这两个角色。
 INSERT INTO `auth_role`
     (`code`, `name`, `tenant_id`, `status`, `remark`, `del_flag`, `create_by`, `update_by`)
 SELECT 'tenant_super', '租户超级管理员', t.id, 1, '租户超级管理员', 0, 'system', 'system'
@@ -941,31 +944,8 @@ WHERE t.id <> 1
       WHERE r.tenant_id = t.id AND r.code IN ('tenant_super', 'super') AND r.del_flag = 0
   );
 
-INSERT INTO `auth_role`
-    (`code`, `name`, `tenant_id`, `status`, `remark`, `del_flag`, `create_by`, `update_by`)
-SELECT 'admin', '管理员', t.id, 1, '租户管理员', 0, 'system', 'system'
-FROM `auth_tenant` t
-WHERE t.id <> 1
-  AND t.status = 1
-  AND t.del_flag = 0
-  AND NOT EXISTS (
-      SELECT 1 FROM `auth_role` r
-      WHERE r.tenant_id = t.id AND r.code = 'admin' AND r.del_flag = 0
-  );
-
-INSERT INTO `auth_role`
-    (`code`, `name`, `tenant_id`, `status`, `remark`, `del_flag`, `create_by`, `update_by`)
-SELECT 'user', '普通用户', t.id, 1, '租户普通用户', 0, 'system', 'system'
-FROM `auth_tenant` t
-WHERE t.id <> 1
-  AND t.status = 1
-  AND t.del_flag = 0
-  AND NOT EXISTS (
-      SELECT 1 FROM `auth_role` r
-      WHERE r.tenant_id = t.id AND r.code = 'user' AND r.del_flag = 0
-  );
-
--- 4. 超级管理员和管理员拥有本租户全部菜单、权限码。
+-- 4. 租户超级管理员拥有本租户全部菜单、权限码。
+-- 历史 admin 角色及其已有授权保留，但不再由种子数据继续扩充授权。
 INSERT IGNORE INTO `auth_role_scope_menu`
     (`role_id`, `tenant_id`, `menu_id`, `status`, `del_flag`,
      `create_by`, `create_time`, `update_by`, `update_time`)
@@ -975,7 +955,7 @@ FROM `auth_role` r
 INNER JOIN `auth_tenant_menu` tm ON tm.tenant_id = r.tenant_id AND tm.status = 1
 WHERE r.status = 1
   AND r.del_flag = 0
-  AND r.code IN ('tenant_super', 'super', 'admin');
+  AND r.code IN ('tenant_super', 'super');
 
 INSERT IGNORE INTO `auth_role_scope_auth_code`
     (`role_id`, `auth_code_id`, `tenant_id`, `status`, `del_flag`,
@@ -986,7 +966,7 @@ FROM `auth_role` r
 INNER JOIN `auth_tenant_auth_code` ta ON ta.tenant_id = r.tenant_id AND ta.status = 1
 WHERE r.status = 1
   AND r.del_flag = 0
-  AND r.code IN ('tenant_super', 'super', 'admin');
+  AND r.code IN ('tenant_super', 'super');
 
 -- 5. 为每个已有子租户创建默认管理员用户，并绑定本租户超级管理员角色。
 -- 用户名按租户编码生成，避免不同租户的默认用户重名。

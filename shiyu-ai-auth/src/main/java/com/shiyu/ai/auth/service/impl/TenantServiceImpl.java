@@ -74,16 +74,14 @@ public class TenantServiceImpl implements TenantService {
         }
 
         Long currentTenantId = LoginContextHolder.getCurrentTenantId();
-        if (!LoginContextHolder.isSuperAdmin()) {
-            if (currentTenantId == null) {
-                return false;
-            }
-            if (tenantBO.getParentId() == null) {
-                tenantBO.setParentId(currentTenantId);
-            } else if (!canAccessTenant(tenantBO.getParentId())) {
-                log.warn("不能在当前作用域之外创建子租户，parentId={}", tenantBO.getParentId());
-                return false;
-            }
+        if (currentTenantId == null) {
+            return false;
+        }
+        if (tenantBO.getParentId() == null) {
+            tenantBO.setParentId(currentTenantId);
+        } else if (!canAccessTenant(tenantBO.getParentId())) {
+            log.warn("不能在当前作用域之外创建子租户，parentId={}", tenantBO.getParentId());
+            return false;
         }
 
         tenantRepository.insert(tenantBO);
@@ -99,10 +97,12 @@ public class TenantServiceImpl implements TenantService {
             return false;
         }
 
-        if (!LoginContextHolder.isSuperAdmin()
-                && tenantBO.getParentId() != null
-                && !canAccessTenant(tenantBO.getParentId())) {
-            return false;
+        if (tenantBO.getParentId() != null) {
+            if (!canAccessTenant(tenantBO.getParentId())
+                    || tenantRepository.selectDescendantIds(id)
+                            .contains(tenantBO.getParentId())) {
+                return false;
+            }
         }
 
         if (tenantBO.getCode() != null && !tenantBO.getCode().equals(existing.getCode())) {
@@ -120,8 +120,7 @@ public class TenantServiceImpl implements TenantService {
     public boolean deleteTenant(Long id) {
         log.info("删除租户，id: {}", id);
 
-        if (id == 1L || (!LoginContextHolder.isSuperAdmin()
-                && id.equals(LoginContextHolder.getCurrentTenantId()))) {
+        if (id == 1L || id.equals(LoginContextHolder.getCurrentTenantId())) {
             log.warn("禁止删除默认租户");
             return false;
         }
@@ -178,6 +177,8 @@ public class TenantServiceImpl implements TenantService {
                 && LoginContextHolder.isSuperAdmin()) {
             return true;
         }
-        return tenantId.equals(LoginContextHolder.getCurrentTenantId());
+        Long currentTenantId = LoginContextHolder.getCurrentTenantId();
+        return currentTenantId != null
+                && tenantRepository.selectDescendantIds(currentTenantId).contains(tenantId);
     }
 }

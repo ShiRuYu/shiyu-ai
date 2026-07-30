@@ -4,9 +4,11 @@ import com.mybatisflex.core.query.QueryWrapper;
 import com.shiyu.ai.dal.auth.dataobject.MenuDO;
 import com.shiyu.ai.dal.auth.dataobject.RoleDO;
 import com.shiyu.ai.dal.auth.dataobject.RoleScopeMenuDO;
+import com.shiyu.ai.dal.auth.dataobject.TenantMenuDO;
 import com.shiyu.ai.dal.auth.dataobject.UserScopeRoleDO;
 import com.shiyu.ai.dal.auth.mapper.MenuMapper;
 import com.shiyu.ai.dal.auth.mapper.RoleScopeMenuMapper;
+import com.shiyu.ai.dal.auth.mapper.TenantMenuMapper;
 import com.shiyu.ai.dal.auth.bo.MenuBO;
 import com.shiyu.ai.common.core.domain.LoginContextHolder;
 import com.shiyu.ai.common.core.utils.MapstructUtils;
@@ -29,6 +31,9 @@ public class MenuRepository {
 
     @Resource
     private RoleScopeMenuMapper roleScopeMenuMapper;
+
+    @Resource
+    private TenantMenuMapper tenantMenuMapper;
 
     @Resource
     private TenantRepository tenantRepository;
@@ -84,6 +89,13 @@ public class MenuRepository {
         MenuDO menuDO = MapstructUtils.convert(menuBO, MenuDO.class);
         menuMapper.insertSelective(menuDO);
         menuBO.setId(menuDO.getId());
+        if (menuBO.getTenantId() != null) {
+            TenantMenuDO tenantMenu = new TenantMenuDO();
+            tenantMenu.setTenantId(menuBO.getTenantId());
+            tenantMenu.setMenuId(menuDO.getId());
+            tenantMenu.setStatus(1);
+            tenantMenuMapper.insert(tenantMenu);
+        }
         return menuBO;
     }
 
@@ -106,6 +118,8 @@ public class MenuRepository {
         }
         roleScopeMenuMapper.deleteByQuery(QueryWrapper.create()
                 .where(RoleScopeMenuDO::getMenuId).in(ids));
+        tenantMenuMapper.deleteByQuery(QueryWrapper.create()
+                .where(TenantMenuDO::getMenuId).in(ids));
         QueryWrapper deleteQuery = QueryWrapper.create()
                 .where(MenuDO::getId).in(ids);
         addMenuTenantFilter(deleteQuery);

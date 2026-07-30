@@ -210,6 +210,10 @@ public class AuthController {
                     if (extMap != null) {
                         Object tid = extMap.get("currentTenantId");
                         if (tid instanceof Number) userVO.setCurrentTenantId(((Number) tid).longValue());
+                        Object homeTid = extMap.get("homeTenantId");
+                        if (homeTid instanceof Number) userVO.setHomeTenantId(((Number) homeTid).longValue());
+                        Object mode = extMap.get("switchMode");
+                        if (mode instanceof String) userVO.setSwitchMode((String) mode);
                     }
                 }
             } catch (Exception e) {

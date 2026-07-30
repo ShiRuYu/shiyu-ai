@@ -35,6 +35,9 @@ public class TenantRepository {
     private MenuMapper menuMapper;
 
     @Resource
+    private AuthCodeMapper authCodeMapper;
+
+    @Resource
     private UserScopeRoleMapper userScopeRoleMapper;
 
     @Resource
@@ -127,16 +130,16 @@ public class TenantRepository {
         }
         RoleDO superRole = new RoleDO();
         superRole.setCode("tenant_super");
-        superRole.setName("租户超级管理员");
+        superRole.setName(tenantBO.getAdminRoleName() == null
+                || tenantBO.getAdminRoleName().isBlank()
+                ? "租户超级管理员" : tenantBO.getAdminRoleName());
         superRole.setTenantId(tenantId);
         superRole.setStatus(1);
         superRole.setDelFlag(0);
         roleMapper.insertSelective(superRole);
 
-        List<Long> requestedMenuIds = tenantBO.getMenuIds() == null
-                ? List.of() : tenantBO.getMenuIds().stream().filter(Objects::nonNull).distinct().toList();
-        List<Long> authCodeIds = tenantBO.getAuthCodeIds() == null
-                ? List.of() : tenantBO.getAuthCodeIds().stream().filter(Objects::nonNull).distinct().toList();
+        List<Long> requestedMenuIds = resolveSourceMenuIds(tenantBO.getMenuIds());
+        List<Long> authCodeIds = resolveSourceAuthCodeIds(tenantBO.getAuthCodeIds());
 
         // 菜单属于租户私有数据。创建子租户时不能把父租户 menu_id
         // 直接写入 role_scope_menu，而要复制菜单树并使用新租户自己的 menu_id。
@@ -196,6 +199,57 @@ public class TenantRepository {
         assignment.setStatus(1);
         assignment.setDelFlag(0);
         userScopeRoleMapper.insert(assignment);
+    }
+
+    private List<Long> resolveSourceMenuIds(List<Long> requestedMenuIds) {
+        Long sourceTenantId = LoginContextHolder.getCurrentTenantId();
+        if (sourceTenantId == null) {
+            return List.of();
+        }
+        List<Long> availableIds = TenantManager.withoutTenantCondition(
+                () -> menuMapper.selectListByQuery(QueryWrapper.create()
+                        .where(MenuDO::getTenantId).eq(sourceTenantId)
+                        .and(MenuDO::getStatus).eq(1)
+                        .and(MenuDO::getDelFlag).eq(0)))
+                .stream().map(MenuDO::getId).filter(Objects::nonNull).toList();
+        if (requestedMenuIds == null || requestedMenuIds.isEmpty()) {
+            return availableIds;
+        }
+        Set<Long> available = new HashSet<>(availableIds);
+        return requestedMenuIds.stream()
+                .filter(Objects::nonNull)
+                .filter(available::contains)
+                .distinct()
+                .toList();
+    }
+
+    private List<Long> resolveSourceAuthCodeIds(List<Long> requestedAuthCodeIds) {
+        Long sourceTenantId = LoginContextHolder.getCurrentTenantId();
+        if (sourceTenantId == null) {
+            return List.of();
+        }
+        List<Long> availableIds = tenantAuthCodeMapper.selectListByQuery(QueryWrapper.create()
+                        .where(TenantAuthCodeDO::getTenantId).eq(sourceTenantId)
+                        .and(TenantAuthCodeDO::getStatus).eq(1))
+                .stream().map(TenantAuthCodeDO::getAuthCodeId)
+                .filter(Objects::nonNull)
+                .filter(id -> {
+                    AuthCodeDO authCode = authCodeMapper.selectOneById(id);
+                    return authCode != null
+                            && authCode.getStatus() != null && authCode.getStatus() == 1
+                            && (authCode.getDelFlag() == null || authCode.getDelFlag() == 0);
+                })
+                .distinct()
+                .toList();
+        if (requestedAuthCodeIds == null || requestedAuthCodeIds.isEmpty()) {
+            return availableIds;
+        }
+        Set<Long> available = new HashSet<>(availableIds);
+        return requestedAuthCodeIds.stream()
+                .filter(Objects::nonNull)
+                .filter(available::contains)
+                .distinct()
+                .toList();
     }
 
     /**
@@ -306,20 +360,60 @@ public class TenantRepository {
     @Transactional(rollbackFor = Exception.class)
     public void cascadeDelete(Long tenantId) {
         // 先找出所有后代子租户，全部级联删除
-        List<Long> allIds = selectDescendantIds(tenantId);
+        Set<Long> allIds = new LinkedHashSet<>(selectDescendantIds(tenantId));
         allIds.add(tenantId);
+        Set<Long> candidateUserIds = TenantManager.withoutTenantCondition(
+                () -> userScopeRoleMapper.selectListByQuery(QueryWrapper.create()
+                                .where(UserScopeRoleDO::getTenantId).in(allIds))
+                        .stream().map(UserScopeRoleDO::getUserId)
+                        .filter(Objects::nonNull)
+                        .collect(Collectors.toSet()));
+        Set<Long> candidateAuthCodeIds = TenantManager.withoutTenantCondition(
+                () -> tenantAuthCodeMapper.selectListByQuery(QueryWrapper.create()
+                                .where(TenantAuthCodeDO::getTenantId).in(allIds))
+                        .stream().map(TenantAuthCodeDO::getAuthCodeId)
+                        .filter(Objects::nonNull)
+                        .collect(Collectors.toSet()));
 
-        for (Long id : allIds) {
-            tenantQuotaMapper.deleteByQuery(QueryWrapper.create().eq(TenantQuotaDO::getTenantId, id));
-            roleScopeMenuMapper.deleteByQuery(QueryWrapper.create().eq(RoleScopeMenuDO::getTenantId, id));
-            roleScopeAuthCodeMapper.deleteByQuery(QueryWrapper.create()
-                    .eq(RoleScopeAuthCodeDO::getTenantId, id));
-            userScopeRoleMapper.deleteByQuery(QueryWrapper.create().eq(UserScopeRoleDO::getTenantId, id));
-            // 用户是全局主体，不随租户级联删除；通过 user_scope_role 维护租户成员关系。
-            roleMapper.deleteByQuery(QueryWrapper.create().eq(RoleDO::getTenantId, id));
-            menuMapper.deleteByQuery(QueryWrapper.create().eq(MenuDO::getTenantId, id));
+        TenantManager.withoutTenantCondition(() -> {
+            for (Long id : allIds) {
+                tenantQuotaMapper.deleteByQuery(QueryWrapper.create()
+                        .eq(TenantQuotaDO::getTenantId, id));
+                roleScopeMenuMapper.deleteByQuery(QueryWrapper.create()
+                        .eq(RoleScopeMenuDO::getTenantId, id));
+                roleScopeAuthCodeMapper.deleteByQuery(QueryWrapper.create()
+                        .eq(RoleScopeAuthCodeDO::getTenantId, id));
+                tenantMenuMapper.deleteByQuery(QueryWrapper.create()
+                        .eq(TenantMenuDO::getTenantId, id));
+                tenantAuthCodeMapper.deleteByQuery(QueryWrapper.create()
+                        .eq(TenantAuthCodeDO::getTenantId, id));
+                userScopeRoleMapper.deleteByQuery(QueryWrapper.create()
+                        .eq(UserScopeRoleDO::getTenantId, id));
+                roleMapper.deleteByQuery(QueryWrapper.create().eq(RoleDO::getTenantId, id));
+                menuMapper.deleteByQuery(QueryWrapper.create().eq(MenuDO::getTenantId, id));
+            }
+            tenantMapper.deleteByQuery(QueryWrapper.create()
+                    .where(TenantDO::getId).in(allIds));
+            return null;
+        });
+        for (Long userId : candidateUserIds) {
+            long remainingAssignments = TenantManager.withoutTenantCondition(
+                    () -> userScopeRoleMapper.selectCountByQuery(QueryWrapper.create()
+                            .where(UserScopeRoleDO::getUserId).eq(userId)
+                            .and(UserScopeRoleDO::getStatus).eq(1)
+                            .and(UserScopeRoleDO::getDelFlag).eq(0)));
+            if (remainingAssignments == 0) {
+                userMapper.deleteById(userId);
+            }
         }
-        tenantMapper.deleteById(tenantId);
+        for (Long authCodeId : candidateAuthCodeIds) {
+            long remainingTenantRelations = TenantManager.withoutTenantCondition(
+                    () -> tenantAuthCodeMapper.selectCountByQuery(QueryWrapper.create()
+                            .where(TenantAuthCodeDO::getAuthCodeId).eq(authCodeId)));
+            if (remainingTenantRelations == 0) {
+                authCodeMapper.deleteById(authCodeId);
+            }
+        }
     }
 
     /**

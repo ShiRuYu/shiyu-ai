@@ -63,7 +63,12 @@ public class TenantRequest implements Serializable {
 
     private List<Long> authCodeIds;
 
+    @Schema(description = "租户超级管理员角色名称")
+    private String adminRoleName;
+
+    @Schema(description = "租户管理员用户名")
     private String adminUsername;
 
+    @Schema(description = "租户管理员初始密码")
     private String adminPassword;
 }

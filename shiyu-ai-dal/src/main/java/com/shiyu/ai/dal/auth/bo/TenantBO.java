@@ -69,6 +69,8 @@ public class TenantBO implements Serializable {
 
     private List<Long> authCodeIds;
 
+    private String adminRoleName;
+
     private String adminUsername;
 
     private String adminPassword;

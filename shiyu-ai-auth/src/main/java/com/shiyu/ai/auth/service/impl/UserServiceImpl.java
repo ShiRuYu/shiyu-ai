@@ -66,13 +66,37 @@ public class UserServiceImpl implements UserService {
         
         if (userBO != null) {
             // 查询并设置用户角色列表
-            Long currentTenantId = LoginContextHolder.getCurrentTenantId();
             Map<String, Object> parsedExtInfo = userBO.getExtInfo() == null
                     ? null : JSONUtils.parseObject(userBO.getExtInfo(), Map.class);
             Map<String, Object> extInfoMap = parsedExtInfo == null ? Map.of() : parsedExtInfo;
+            Object extTenantId = extInfoMap.get("currentTenantId");
+            Long currentTenantId = extTenantId instanceof Number
+                    ? ((Number) extTenantId).longValue()
+                    : LoginContextHolder.getCurrentTenantId();
+            List<UserScopeRoleDO> assignments = userScopeRoleRepository.selectByUserId(userId);
             boolean parentSuperAdminSwitch = LoginContextHolder.isParentSuperAdminSwitch()
                     || "PARENT_SUPER_ADMIN".equals(extInfoMap.get("switchMode"));
-            if (parentSuperAdminSwitch) {
+            Long selectedRoleId = null;
+            String selectedRoleCode = null;
+            if (extInfoMap.get("currentRole") instanceof Map<?, ?> selectedRole) {
+                Object roleId = selectedRole.get("roleId");
+                if (roleId instanceof Number) {
+                    selectedRoleId = ((Number) roleId).longValue();
+                }
+                Object roleCode = selectedRole.get("roleKey");
+                if (roleCode instanceof String) {
+                    selectedRoleCode = (String) roleCode;
+                }
+            }
+            final Long resolvedSelectedRoleId = selectedRoleId;
+            boolean selectedAssignedRole = resolvedSelectedRoleId != null
+                    && !"tenant_super".equals(selectedRoleCode)
+                    && !"super".equals(selectedRoleCode)
+                    && assignments.stream().anyMatch(item ->
+                    Objects.equals(currentTenantId, item.getTenantId())
+                            && Objects.equals(resolvedSelectedRoleId, item.getRoleId())
+                            && isActiveAssignment(item));
+            if (parentSuperAdminSwitch && !selectedAssignedRole) {
                 RoleDO delegatedRoleDO = tenantRoleRepository.selectTenantSuperRole(currentTenantId);
                 RoleBO delegatedRole = delegatedRoleDO == null
                         ? null : MapstructUtils.convert(delegatedRoleDO, RoleBO.class);
@@ -86,7 +110,6 @@ public class UserServiceImpl implements UserService {
                     return userBO;
                 }
             }
-            List<UserScopeRoleDO> assignments = userScopeRoleRepository.selectByUserId(userId);
             List<Long> currentRoleIds = assignments.stream()
                     .filter(item -> currentTenantId == null
                             || Objects.equals(currentTenantId, item.getTenantId()))
