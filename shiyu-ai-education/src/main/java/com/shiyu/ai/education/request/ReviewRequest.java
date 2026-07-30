@@ -6,6 +6,7 @@ import lombok.Data;
 import java.io.Serial;
 import java.io.Serializable;
 import java.time.LocalDateTime;
+import java.time.LocalDate;
 
 @Data
 public class ReviewRequest implements Serializable {
@@ -21,7 +22,8 @@ public class ReviewRequest implements Serializable {
     @NotNull(message = "知识点ID不能为空")
     private Long knowledgeId;
 
-    private String status;
+    private Integer status;
+    private LocalDate reviewDate;
     private Integer reviewRound;
     private Double resultScore;
     private LocalDateTime completedAt;

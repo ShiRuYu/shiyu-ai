@@ -36,7 +36,9 @@ public class StudyRecordRepository {
 
     public int insert(StudyRecordBO record) {
         StudyRecordDO dataObj = MapstructUtils.convert(record, StudyRecordDO.class);
-        return studyRecordMapper.insert(dataObj);
+        int rows = studyRecordMapper.insert(dataObj);
+        record.setId(dataObj.getId());
+        return rows;
     }
 
 }

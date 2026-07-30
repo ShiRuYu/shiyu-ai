@@ -54,7 +54,19 @@ public class AnalyticsServiceImpl implements AnalyticsService {
 
     @Override
     public AbilityRadarResponse getAbilityRadar(Long studentId, Long knowledgeId) {
-        return null; // to be implemented
+        AbilityBO ability = abilityRepository.selectByStudentAndKnowledge(studentId, knowledgeId);
+        Map<String, Double> dimensions = new LinkedHashMap<>();
+        dimensions.put("remember", valueOf(ability == null ? null : ability.getRemember()));
+        dimensions.put("understand", valueOf(ability == null ? null : ability.getUnderstand()));
+        dimensions.put("apply", valueOf(ability == null ? null : ability.getApply()));
+        dimensions.put("analyze", valueOf(ability == null ? null : ability.getAnalyze()));
+        dimensions.put("evaluate", valueOf(ability == null ? null : ability.getEvaluate()));
+        dimensions.put("create", valueOf(ability == null ? null : ability.getCreateScore()));
+        return new AbilityRadarResponse(
+                studentId,
+                knowledgeId,
+                dimensions,
+                valueOf(ability == null ? null : ability.getOverallMastery()));
     }
 
     @Override
@@ -114,5 +126,9 @@ public class AnalyticsServiceImpl implements AnalyticsService {
             values.add((double) count);
         }
         return new TrendResponse(dates, values);
+    }
+
+    private static double valueOf(Double value) {
+        return value == null ? 0.0 : value;
     }
 }

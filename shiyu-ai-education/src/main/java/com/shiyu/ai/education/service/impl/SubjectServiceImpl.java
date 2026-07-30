@@ -53,6 +53,9 @@ public class SubjectServiceImpl implements SubjectService {
         bo.setCode(request.getCode());
         bo.setName(request.getName());
         bo.setGradeLevel(request.getGradeLevel());
+        bo.setIcon(request.getIcon());
+        bo.setSortOrder(request.getSortOrder());
+        bo.setStatus(request.getStatus() == null ? 1 : request.getStatus());
         subjectRepository.insert(bo);
         return MapstructUtils.convert(bo, SubjectResponse.class);
     }
@@ -65,6 +68,9 @@ public class SubjectServiceImpl implements SubjectService {
             bo.setCode(request.getCode());
             bo.setName(request.getName());
             bo.setGradeLevel(request.getGradeLevel());
+            bo.setIcon(request.getIcon());
+            bo.setSortOrder(request.getSortOrder());
+            if (request.getStatus() != null) bo.setStatus(request.getStatus());
             subjectRepository.update(bo);
         }
     }

@@ -52,8 +52,13 @@ public class ResourceServiceImpl implements ResourceService {
         ResourceBO bo = new ResourceBO();
         bo.setName(request.getName());
         bo.setType(request.getType());
+        bo.setSubjectCode(request.getSubjectCode());
+        bo.setGrade(request.getGrade());
+        bo.setDifficulty(request.getDifficulty());
+        bo.setCoverUrl(request.getCoverUrl());
         bo.setUrl(request.getUrl());
         bo.setDescription(request.getDescription());
+        bo.setStatus(request.getStatus() == null ? 1 : request.getStatus());
         resourceRepository.insert(bo);
         return MapstructUtils.convert(bo, ResourceResponse.class);
     }
@@ -65,8 +70,13 @@ public class ResourceServiceImpl implements ResourceService {
         if (bo != null) {
             bo.setName(request.getName());
             bo.setType(request.getType());
+            bo.setSubjectCode(request.getSubjectCode());
+            bo.setGrade(request.getGrade());
+            bo.setDifficulty(request.getDifficulty());
+            bo.setCoverUrl(request.getCoverUrl());
             bo.setUrl(request.getUrl());
             bo.setDescription(request.getDescription());
+            if (request.getStatus() != null) bo.setStatus(request.getStatus());
             resourceRepository.update(bo);
         }
     }

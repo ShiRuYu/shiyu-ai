@@ -51,12 +51,18 @@ public class ReviewTaskRepository {
 
     public int insert(ReviewTaskBO entity) {
         ReviewTaskDO dataObj = MapstructUtils.convert(entity, ReviewTaskDO.class);
-        return reviewTaskMapper.insert(dataObj);
+        int rows = reviewTaskMapper.insert(dataObj);
+        entity.setId(dataObj.getId());
+        return rows;
     }
 
     public int update(ReviewTaskBO entity) {
         ReviewTaskDO dataObj = MapstructUtils.convert(entity, ReviewTaskDO.class);
         return reviewTaskMapper.update(dataObj);
+    }
+
+    public int deleteById(Long id) {
+        return reviewTaskMapper.deleteById(id);
     }
 
 }

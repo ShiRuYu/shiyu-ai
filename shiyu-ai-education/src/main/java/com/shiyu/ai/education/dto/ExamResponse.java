@@ -10,6 +10,7 @@ public record ExamResponse(
         String type,
         String subjectCode,
         Integer grade,
+        Long teacherId,
         Integer durationMin,
         Integer totalScore,
         Integer status

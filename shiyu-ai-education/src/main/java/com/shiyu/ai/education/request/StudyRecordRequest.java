@@ -8,12 +8,15 @@ import java.io.Serializable;
 
 @Data
 public class StudyRecordRequest implements Serializable {
+
     @Serial
     private static final long serialVersionUID = 1L;
 
-    @NotNull
     private Long id;
+
+    @NotNull(message = "学生ID不能为空")
     private Long studentId;
+
     private Long knowledgeId;
     private String recordType;
     private Long questionId;

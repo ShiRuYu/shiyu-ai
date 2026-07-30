@@ -56,7 +56,9 @@ public class ResourceRepository {
 
     public int insert(ResourceBO entity) {
         ResourceDO dataObj = MapstructUtils.convert(entity, ResourceDO.class);
-        return resourceMapper.insert(dataObj);
+        int rows = resourceMapper.insert(dataObj);
+        entity.setId(dataObj.getId());
+        return rows;
     }
 
     public int update(ResourceBO entity) {

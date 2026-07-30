@@ -13,8 +13,9 @@ public class StudyPlanRequest implements Serializable {
     @Serial
     private static final long serialVersionUID = 1L;
 
-    @NotNull(message = "学生ID不能为空")
     private Long id;
+
+    @NotNull(message = "学生ID不能为空")
     private Long studentId;
 
     private String name;
@@ -22,4 +23,3 @@ public class StudyPlanRequest implements Serializable {
     private LocalDate endDate;
     private String status;
 }
-

@@ -49,7 +49,9 @@ public class ExamRepository {
 
     public int insert(ExamBO entity) {
         ExamDO dataObj = MapstructUtils.convert(entity, ExamDO.class);
-        return examMapper.insert(dataObj);
+        int rows = examMapper.insert(dataObj);
+        entity.setId(dataObj.getId());
+        return rows;
     }
 
 

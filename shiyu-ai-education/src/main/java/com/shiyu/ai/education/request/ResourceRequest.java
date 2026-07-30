@@ -12,8 +12,8 @@ public class ResourceRequest implements Serializable {
     @Serial
     private static final long serialVersionUID = 1L;
 
-    @NotBlank(message = "资源名称不能为空")
     private Long id;
+
     @NotBlank(message = "资源名称不能为空")
     private String name;
 
@@ -21,8 +21,10 @@ public class ResourceRequest implements Serializable {
     private String type;
 
     private String subjectCode;
+    private Integer grade;
+    private Integer difficulty;
+    private String coverUrl;
     private String url;
     private String description;
     private Integer status;
 }
-

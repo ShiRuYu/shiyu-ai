@@ -44,7 +44,9 @@ public class ChapterRepository {
 
     public int insert(ChapterBO entity) {
         ChapterDO dataObj = MapstructUtils.convert(entity, ChapterDO.class);
-        return chapterMapper.insert(dataObj);
+        int rows = chapterMapper.insert(dataObj);
+        entity.setId(dataObj.getId());
+        return rows;
     }
 
 

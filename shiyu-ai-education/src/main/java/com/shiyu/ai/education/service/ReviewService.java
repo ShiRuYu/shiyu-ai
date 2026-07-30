@@ -48,4 +48,8 @@ public interface ReviewService {
      * @return 处理结果
      */
     void update(ReviewRequest request);
+
+    void complete(Long id, Double resultScore);
+
+    void delete(Long id);
 }

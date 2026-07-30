@@ -60,8 +60,10 @@ public class ExamServiceImpl implements ExamService {
         bo.setType(request.getType());
         bo.setSubjectCode(request.getSubjectCode());
         bo.setGrade(request.getGrade());
+        bo.setTeacherId(request.getTeacherId());
         bo.setDurationMin(request.getDurationMin());
         bo.setTotalScore(request.getTotalScore());
+        bo.setStatus(request.getStatus() == null ? 1 : request.getStatus());
         examRepository.insert(bo);
         return MapstructUtils.convert(bo, ExamResponse.class);
     }
@@ -75,8 +77,10 @@ public class ExamServiceImpl implements ExamService {
             bo.setType(request.getType());
             bo.setSubjectCode(request.getSubjectCode());
             bo.setGrade(request.getGrade());
+            bo.setTeacherId(request.getTeacherId());
             bo.setDurationMin(request.getDurationMin());
             bo.setTotalScore(request.getTotalScore());
+            if (request.getStatus() != null) bo.setStatus(request.getStatus());
             examRepository.update(bo);
         }
     }

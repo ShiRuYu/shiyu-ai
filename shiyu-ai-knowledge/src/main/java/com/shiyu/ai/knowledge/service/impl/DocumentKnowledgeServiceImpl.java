@@ -1,15 +1,15 @@
 package com.shiyu.ai.knowledge.service.impl;
 
 import com.shiyu.ai.common.core.utils.JSONUtils;
-import com.shiyu.ai.model.embedding.EmbeddingService;
 import com.shiyu.ai.dal.knowledge.bo.KnowledgeChunkBO;
+import com.shiyu.ai.dal.knowledge.bo.KnowledgeDocRelationBO;
 import com.shiyu.ai.dal.knowledge.bo.KnowledgeDocumentBO;
-import com.shiyu.ai.knowledge.rag.DocumentIngestionService;
 import com.shiyu.ai.dal.knowledge.repository.KnowledgeChunkRepository;
 import com.shiyu.ai.dal.knowledge.repository.KnowledgeDocRelationRepository;
-import com.shiyu.ai.dal.knowledge.bo.KnowledgeDocRelationBO;
 import com.shiyu.ai.dal.knowledge.repository.KnowledgeDocumentRepository;
+import com.shiyu.ai.knowledge.rag.DocumentIngestionService;
 import com.shiyu.ai.knowledge.service.DocumentKnowledgeService;
+import com.shiyu.ai.model.embedding.EmbeddingService;
 import com.shiyu.ai.vector.VectorRecord;
 import com.shiyu.ai.vector.VectorStore;
 import lombok.extern.slf4j.Slf4j;
@@ -17,21 +17,25 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDateTime;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.LinkedHashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.Objects;
 import java.util.regex.Pattern;
 
 @Slf4j
 @Service
 public class DocumentKnowledgeServiceImpl implements DocumentKnowledgeService {
 
-    /** 文档 chunk ID 格式: {documentId}_{chunkIndex}，例如 "1_0", "2_3" */
     private static final Pattern CHUNK_ID_PATTERN = Pattern.compile("[0-9]+_[0-9]+");
 
     private final KnowledgeDocumentRepository documentRepository;
     private final DocumentIngestionService ingestionService;
     private final VectorStore vectorStore;
     private final EmbeddingService embeddingService;
-        private final KnowledgeChunkRepository chunkRepository;
+    private final KnowledgeChunkRepository chunkRepository;
     private final KnowledgeDocRelationRepository docRelationRepository;
 
     public DocumentKnowledgeServiceImpl(KnowledgeDocumentRepository documentRepository,
@@ -44,214 +48,233 @@ public class DocumentKnowledgeServiceImpl implements DocumentKnowledgeService {
         this.ingestionService = ingestionService;
         this.vectorStore = vectorStore;
         this.embeddingService = embeddingService;
-                this.chunkRepository = chunkRepository;
+        this.chunkRepository = chunkRepository;
         this.docRelationRepository = docRelationRepository;
     }
 
     @Override
     public KnowledgeDocumentVO getById(Long id) {
-        var doc = documentRepository.selectById(id);
-        if (doc == null) return null;
-        return toVO(doc, doc.getContent(), List.of());
+        KnowledgeDocumentBO document = documentRepository.selectById(id);
+        if (document == null) {
+            return null;
+        }
+        return toVO(document, document.getContent(), getKnowledgeIds(id));
     }
 
     @Override
     public List<KnowledgeDocumentVO> search(String query, int topK) {
-        if (vectorStore == null || embeddingService == null) {
-            log.warn("VectorStore 不可用，降级到 DB LIKE 搜索");
-            return dbLikeSearch(query, topK);
+        if (vectorStore == null || embeddingService == null || query == null || query.isBlank()) {
+            return dbLikeSearch(query == null ? "" : query, topK);
         }
-
         try {
-            // 1. Embed query → VectorStore 搜索文档 chunk
             float[] queryVector = embeddingService.embed(query);
-            // 多搜一些候选，因为同一个文档可能有多个 chunk 匹配
             List<VectorRecord> candidates = vectorStore.search(queryVector, topK * 3);
-
-            // 2. 过滤出文档 chunk（ID 匹配 documentId_chunkIndex 格式，排除 kp_* 知识点）
-            //    按 documentId 分组，每个文档只保留得分最高的 chunk
-            //    candidates 已按 score 降序排列，所以第一个遇到的 chunk 就是最高分
             Map<Long, ChunkResult> bestChunks = new LinkedHashMap<>();
 
-            for (VectorRecord vr : candidates) {
-                if (!CHUNK_ID_PATTERN.matcher(vr.id()).matches()) continue;
-
-                Long docId = parseDocumentId(vr.id());
-                Integer chunkIndex = parseChunkIndex(vr.id());
-                if (docId == null || chunkIndex == null) continue;
-
-                // 已为该文档找到最佳 chunk，跳过
-                if (bestChunks.containsKey(docId)) continue;
-
-                // 从 H2 拿 chunk 内容
-                KnowledgeChunkBO chunkDO = chunkRepository.getByDocumentIdAndIndex(docId, chunkIndex);
-                if (chunkDO == null) continue;
-
-                double score = (double) vr.metadata().getOrDefault("_score", 0.0);
-                List<Long> knowledgeIds = extractKnowledgeIds(chunkDO.getMetadata());
-
-                bestChunks.put(docId, new ChunkResult(docId, chunkDO.getContent(), score, knowledgeIds));
+            for (VectorRecord candidate : candidates) {
+                if (!CHUNK_ID_PATTERN.matcher(candidate.id()).matches()) {
+                    continue;
+                }
+                Long documentId = parseDocumentId(candidate.id());
+                Integer chunkIndex = parseChunkIndex(candidate.id());
+                if (documentId == null || chunkIndex == null || bestChunks.containsKey(documentId)) {
+                    continue;
+                }
+                KnowledgeChunkBO chunk = chunkRepository.getByDocumentIdAndIndex(documentId, chunkIndex);
+                if (chunk == null) {
+                    continue;
+                }
+                Object scoreValue = candidate.metadata().getOrDefault("_score", 0.0);
+                double score = scoreValue instanceof Number number ? number.doubleValue() : 0.0;
+                bestChunks.put(documentId,
+                        new ChunkResult(documentId, chunk.getContent(), score,
+                                extractKnowledgeIds(chunk.getMetadata())));
             }
 
-            // 3. 查询文档元信息并组装结果
             List<KnowledgeDocumentVO> results = new ArrayList<>();
-            for (ChunkResult cr : bestChunks.values()) {
-                if (results.size() >= topK) break;
-
-                KnowledgeDocumentBO doc = documentRepository.selectById(cr.documentId);
-                if (doc == null) continue;
-
-                results.add(toVO(doc, cr.snippet, cr.knowledgeIds));
+            for (ChunkResult chunk : bestChunks.values()) {
+                if (results.size() >= topK) {
+                    break;
+                }
+                KnowledgeDocumentBO document = documentRepository.selectById(chunk.documentId());
+                if (document != null) {
+                    results.add(toVO(document, chunk.snippet(), getKnowledgeIds(document.getId())));
+                }
             }
-
             return results;
-
-        } catch (Exception e) {
-            log.error("文档向量搜索失败，降级到 DB LIKE", e);
+        } catch (Exception exception) {
+            log.error("Document vector search failed; falling back to database search", exception);
             return dbLikeSearch(query, topK);
         }
     }
 
-    /** DB LIKE 降级搜索 */
     private List<KnowledgeDocumentVO> dbLikeSearch(String keyword, int topK) {
-        var docs = documentRepository.searchByKeyword(keyword, topK);
-        return docs.stream()
-                .map(doc -> toVO(doc, doc.getContent(), List.of()))
+        return documentRepository.searchByKeyword(keyword, topK).stream()
+                .map(document -> toVO(document, document.getContent(), getKnowledgeIds(document.getId())))
                 .toList();
     }
 
     @Override
     public List<KnowledgeDocumentVO> searchByKnowledgeId(Long knowledgeId) {
-        // 通过 knowledge_doc_relation 表 SQL 查询关联文档
-        var relations = docRelationRepository.selectByKnowledgeId(knowledgeId);
-        return relations.stream()
-                .map(r -> {
-                    var doc = documentRepository.selectById(r.getDocId());
-                    if (doc == null) return null;
-                    return toVO(doc, doc.getContent(), List.of(knowledgeId));
-                })
+        return docRelationRepository.selectByKnowledgeId(knowledgeId).stream()
+                .map(relation -> documentRepository.selectById(relation.getDocId()))
                 .filter(Objects::nonNull)
+                .map(document -> toVO(document, document.getContent(), getKnowledgeIds(document.getId())))
                 .toList();
     }
 
     @Override
     @Transactional(rollbackFor = Exception.class)
     public KnowledgeDocumentVO create(CreateDocumentRequest request) {
-        var doc = new KnowledgeDocumentBO();
-        doc.setTitle(request.title());
-        doc.setContent(request.content());
-        doc.setDocType(request.docType() != null ? request.docType() : "ARTICLE");
-        doc.setSource(request.source());
-        doc.setCreateTime(LocalDateTime.now());
-        documentRepository.insert(doc);
+        KnowledgeDocumentBO document = new KnowledgeDocumentBO();
+        document.setTitle(request.title());
+        document.setContent(request.content());
+        document.setDocType(request.docType() != null ? request.docType() : "ARTICLE");
+        document.setSource(request.source());
+        document.setCreateTime(LocalDateTime.now());
+        documentRepository.insert(document);
 
-        // 同步到 VectorStore（ChunkSplit + Embed + VectorStore）
-                ingestionService.ingest(doc.getId(), doc.getContent(), request.knowledgeIds());
-
-        // Save knowledge-doc relations to knowledge_doc_relation table
-        if (request.knowledgeIds() != null && !request.knowledgeIds().isEmpty()) {
-            List<KnowledgeDocRelationBO> relations = request.knowledgeIds().stream()
-                    .map(kid -> {
-                        KnowledgeDocRelationBO r = new KnowledgeDocRelationBO();
-                        r.setDocId(doc.getId());
-                        r.setKnowledgeId(kid);
-                        r.setRelationType("RELATED");
-                        r.setCreateTime(java.time.LocalDateTime.now());
-                        return r;
-                    })
-                    .toList();
-            docRelationRepository.insertBatch(relations);
-        }
-
-        return toVO(doc, doc.getContent(), request.knowledgeIds());
+        List<Long> knowledgeIds = normalizeKnowledgeIds(request.knowledgeIds());
+        replaceRelations(document.getId(), knowledgeIds);
+        ingestionService.ingest(document.getId(), document.getContent(), knowledgeIds);
+        return toVO(document, document.getContent(), knowledgeIds);
     }
 
     @Override
     @Transactional(rollbackFor = Exception.class)
     public void update(Long id, UpdateDocumentRequest request) {
-        var doc = documentRepository.selectById(id);
-        if (doc == null) return;
-        if (request.title() != null) doc.setTitle(request.title());
-        if (request.content() != null) {
-            doc.setContent(request.content());
-            // 内容变更时重新 ingest
-            ingestionService.ingest(doc.getId(), doc.getContent(), request.knowledgeIds());
+        KnowledgeDocumentBO document = documentRepository.selectById(id);
+        if (document == null) {
+            return;
         }
-        if (request.docType() != null) doc.setDocType(request.docType());
-        if (request.source() != null) doc.setSource(request.source());
-        doc.setUpdateTime(LocalDateTime.now());
-        documentRepository.update(doc);
+        boolean contentChanged = request.content() != null;
+        boolean relationsChanged = request.knowledgeIds() != null;
+        if (request.title() != null) {
+            document.setTitle(request.title());
+        }
+        if (request.content() != null) {
+            document.setContent(request.content());
+        }
+        if (request.docType() != null) {
+            document.setDocType(request.docType());
+        }
+        if (request.source() != null) {
+            document.setSource(request.source());
+        }
+        document.setUpdateTime(LocalDateTime.now());
+        documentRepository.update(document);
+
+        List<Long> knowledgeIds = relationsChanged
+                ? normalizeKnowledgeIds(request.knowledgeIds())
+                : getKnowledgeIds(id);
+        if (relationsChanged) {
+            replaceRelations(id, knowledgeIds);
+        }
+        if (contentChanged || relationsChanged) {
+            ingestionService.ingest(id, document.getContent(), knowledgeIds);
+        }
     }
 
     @Override
+    @Transactional(rollbackFor = Exception.class)
     public void delete(Long id) {
+        ingestionService.delete(id);
+        docRelationRepository.deleteByDocId(id);
         documentRepository.deleteById(id);
     }
 
     @Override
     public void deleteByKnowledgeId(Long knowledgeId) {
         docRelationRepository.deleteByKnowledgeId(knowledgeId);
-        log.info("已解除知识点 {} 与所有文档的关联", knowledgeId);
+        log.info("Removed all document relations for knowledge point {}", knowledgeId);
     }
 
-    // ---------------------------------------------------------------
-    // 辅助方法
-    // ---------------------------------------------------------------
+    private List<Long> getKnowledgeIds(Long documentId) {
+        return docRelationRepository.selectByDocId(documentId).stream()
+                .map(KnowledgeDocRelationBO::getKnowledgeId)
+                .filter(Objects::nonNull)
+                .distinct()
+                .toList();
+    }
 
-    private static KnowledgeDocumentVO toVO(KnowledgeDocumentBO doc, String content, List<Long> knowledgeIds) {
+    private void replaceRelations(Long documentId, List<Long> knowledgeIds) {
+        docRelationRepository.deleteByDocId(documentId);
+        if (knowledgeIds.isEmpty()) {
+            return;
+        }
+        List<KnowledgeDocRelationBO> relations = knowledgeIds.stream()
+                .map(knowledgeId -> {
+                    KnowledgeDocRelationBO relation = new KnowledgeDocRelationBO();
+                    relation.setDocId(documentId);
+                    relation.setKnowledgeId(knowledgeId);
+                    relation.setRelationType("RELATED");
+                    relation.setCreateTime(LocalDateTime.now());
+                    return relation;
+                })
+                .toList();
+        docRelationRepository.insertBatch(relations);
+    }
+
+    private static List<Long> normalizeKnowledgeIds(List<Long> knowledgeIds) {
+        if (knowledgeIds == null || knowledgeIds.isEmpty()) {
+            return List.of();
+        }
+        return knowledgeIds.stream().filter(Objects::nonNull).distinct().toList();
+    }
+
+    private static KnowledgeDocumentVO toVO(KnowledgeDocumentBO document, String content,
+                                             List<Long> knowledgeIds) {
         return new KnowledgeDocumentVO(
-                doc.getId(),
-                doc.getTitle(),
+                document.getId(),
+                document.getTitle(),
                 content,
-                doc.getDocType(),
-                doc.getSource(),
+                document.getDocType(),
+                document.getSource(),
                 knowledgeIds);
     }
 
-    /** 从 chunk metadata JSON 中提取关联的知识点 ID 列表 */
     @SuppressWarnings("unchecked")
     private static List<Long> extractKnowledgeIds(String metadataJson) {
-        if (metadataJson == null || metadataJson.isBlank()) return List.of();
+        if (metadataJson == null || metadataJson.isBlank()) {
+            return List.of();
+        }
         try {
-            Map<String, Object> meta = JSONUtils.parseObject(metadataJson, Map.class);
-            String ids = (String) meta.get("knowledgeIds");
-            if (ids == null || ids.isBlank()) return List.of();
+            Map<String, Object> metadata = JSONUtils.parseObject(metadataJson, Map.class);
+            String ids = (String) metadata.get("knowledgeIds");
+            if (ids == null || ids.isBlank()) {
+                return List.of();
+            }
             return Arrays.stream(ids.split(","))
                     .map(String::trim)
-                    .filter(s -> !s.isEmpty())
+                    .filter(value -> !value.isEmpty())
                     .map(Long::parseLong)
                     .toList();
-        } catch (Exception e) {
+        } catch (Exception ignored) {
             return List.of();
         }
     }
 
-    /** 从 chunk ID (documentId_chunkIndex) 解析 documentId */
     private static Long parseDocumentId(String chunkId) {
         try {
-            int underscore = chunkId.indexOf('_');
-            if (underscore > 0) {
-                return Long.parseLong(chunkId.substring(0, underscore));
-            }
-            return null;
-        } catch (NumberFormatException e) {
+            int separator = chunkId.indexOf('_');
+            return separator > 0 ? Long.parseLong(chunkId.substring(0, separator)) : null;
+        } catch (NumberFormatException ignored) {
             return null;
         }
     }
 
-    /** 从 chunk ID 解析 chunkIndex */
     private static Integer parseChunkIndex(String chunkId) {
         try {
-            int underscore = chunkId.indexOf('_');
-            if (underscore > 0 && underscore + 1 < chunkId.length()) {
-                return Integer.parseInt(chunkId.substring(underscore + 1));
-            }
-            return null;
-        } catch (NumberFormatException e) {
+            int separator = chunkId.indexOf('_');
+            return separator > 0 && separator + 1 < chunkId.length()
+                    ? Integer.parseInt(chunkId.substring(separator + 1))
+                    : null;
+        } catch (NumberFormatException ignored) {
             return null;
         }
     }
 
-    /** 内部结构：文档分组后的最佳 chunk 结果 */
-    private record ChunkResult(Long documentId, String snippet, double score, List<Long> knowledgeIds) {}
+    private record ChunkResult(Long documentId, String snippet, double score,
+                               List<Long> knowledgeIds) {
+    }
 }

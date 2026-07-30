@@ -23,6 +23,8 @@ public class AchievementRepository {
 
     public int insert(AchievementBO a) {
         AchievementDO dataObj = MapstructUtils.convert(a, AchievementDO.class);
-        return achievementMapper.insert(dataObj);
+        int rows = achievementMapper.insert(dataObj);
+        a.setId(dataObj.getId());
+        return rows;
     }
 }

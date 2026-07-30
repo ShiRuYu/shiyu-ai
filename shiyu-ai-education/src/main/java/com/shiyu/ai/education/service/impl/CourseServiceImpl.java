@@ -63,7 +63,10 @@ public class CourseServiceImpl implements CourseService {
         bo.setGrade(request.getGrade());
         bo.setDescription(request.getDescription());
         bo.setCoverUrl(request.getCoverUrl());
+        bo.setTextbookId(request.getTextbookId());
+        bo.setTeacherId(request.getTeacherId());
         bo.setTotalHours(request.getTotalHours());
+        bo.setStatus(request.getStatus() == null ? 1 : request.getStatus());
         courseRepository.insert(bo);
         return MapstructUtils.convert(bo, CourseResponse.class);
     }
@@ -78,7 +81,10 @@ public class CourseServiceImpl implements CourseService {
             bo.setGrade(request.getGrade());
             bo.setDescription(request.getDescription());
             bo.setCoverUrl(request.getCoverUrl());
+            bo.setTextbookId(request.getTextbookId());
+            bo.setTeacherId(request.getTeacherId());
             bo.setTotalHours(request.getTotalHours());
+            if (request.getStatus() != null) bo.setStatus(request.getStatus());
             courseRepository.update(bo);
         }
     }

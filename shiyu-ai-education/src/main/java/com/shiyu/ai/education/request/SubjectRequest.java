@@ -22,5 +22,7 @@ public class SubjectRequest implements Serializable {
 
     private String gradeLevel;
     private String description;
+    private String icon;
+    private Integer sortOrder;
     private Integer status;
 }

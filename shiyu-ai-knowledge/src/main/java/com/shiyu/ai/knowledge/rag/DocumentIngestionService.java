@@ -52,6 +52,7 @@ public class DocumentIngestionService {
      * @param knowledgeIds 关联知识点 ID
      */
     public List<KnowledgeChunkBO> ingest(Long documentId, String content, List<Long> knowledgeIds) {
+        delete(documentId);
         List<Chunk> chunks = chunkSplitter.split(content);
         log.info("文档 {} 切分为 {} 个 Chunk", documentId, chunks.size());
 
@@ -83,11 +84,20 @@ public class DocumentIngestionService {
             chunkDOs.add(chunkDO);
         }
 
-        chunkRepository.deleteByDocumentId(documentId);
         chunkRepository.insertBatch(chunkDOs);
         vectorStore.upsertBatch(vectorRecords);
 
         log.info("文档 {} 注入完成: {} chunks → H2 + VectorStore", documentId, chunkDOs.size());
         return chunkDOs;
+    }
+
+    public void delete(Long documentId) {
+        List<String> vectorIds = chunkRepository.getByDocumentId(documentId).stream()
+                .map(chunk -> documentId + "_" + chunk.getChunkIndex())
+                .toList();
+        if (!vectorIds.isEmpty()) {
+            vectorStore.deleteBatch(vectorIds);
+        }
+        chunkRepository.deleteByDocumentId(documentId);
     }
 }

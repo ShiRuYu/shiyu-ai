@@ -33,7 +33,9 @@ public class AbilityRepository {
 
     public int insert(AbilityBO ability) {
         AbilityDO dataObj = MapstructUtils.convert(ability, AbilityDO.class);
-        return abilityMapper.insert(dataObj);
+        int rows = abilityMapper.insert(dataObj);
+        ability.setId(dataObj.getId());
+        return rows;
     }
 
     public int update(AbilityBO ability) {

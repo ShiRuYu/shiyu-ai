@@ -47,6 +47,11 @@ public class StudentServiceImpl implements StudentService {
         bo.setName(request.getName());
         bo.setUserId(request.getUserId());
         bo.setStudentNo(request.getStudentNo());
+        bo.setGrade(request.getGrade());
+        bo.setGradeLevel(request.getGradeLevel());
+        bo.setSchool(request.getSchool());
+        bo.setClassName(request.getClassName());
+        bo.setStatus(request.getStatus() == null ? 1 : request.getStatus());
         studentRepository.insert(bo);
         return MapstructUtils.convert(bo, StudentResponse.class);
     }
@@ -59,6 +64,11 @@ public class StudentServiceImpl implements StudentService {
             bo.setName(request.getName());
             bo.setUserId(request.getUserId());
             bo.setStudentNo(request.getStudentNo());
+            bo.setGrade(request.getGrade());
+            bo.setGradeLevel(request.getGradeLevel());
+            bo.setSchool(request.getSchool());
+            bo.setClassName(request.getClassName());
+            if (request.getStatus() != null) bo.setStatus(request.getStatus());
             studentRepository.update(bo);
         }
     }

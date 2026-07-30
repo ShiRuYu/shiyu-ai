@@ -43,7 +43,9 @@ public class TextbookRepository {
 
     public int insert(TextbookBO entity) {
         TextbookDO dataObj = MapstructUtils.convert(entity, TextbookDO.class);
-        return textbookMapper.insert(dataObj);
+        int rows = textbookMapper.insert(dataObj);
+        entity.setId(dataObj.getId());
+        return rows;
     }
 
 

@@ -39,7 +39,9 @@ public class StudyPlanRepository {
 
     public int insert(StudyPlanBO entity) {
         StudyPlanDO dataObj = MapstructUtils.convert(entity, StudyPlanDO.class);
-        return studyPlanMapper.insert(dataObj);
+        int rows = studyPlanMapper.insert(dataObj);
+        entity.setId(dataObj.getId());
+        return rows;
     }
 
     public int update(StudyPlanBO entity) {

@@ -1,7 +1,10 @@
 package com.shiyu.ai.education.dto;
 
+import com.shiyu.ai.dal.education.bo.StudyRecordBO;
+import io.github.linpeilie.annotations.AutoMapper;
 import java.time.LocalDateTime;
 
+@AutoMapper(target = StudyRecordBO.class)
 public record StudyRecordResponse(
         Long id,
         Long studentId,

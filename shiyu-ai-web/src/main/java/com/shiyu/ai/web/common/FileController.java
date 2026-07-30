@@ -1,68 +1,121 @@
 package com.shiyu.ai.web.common;
 
 import com.shiyu.ai.common.core.api.Result;
-import jakarta.annotation.PostConstruct;
+import com.shiyu.ai.common.core.domain.LoginContextHolder;
+import com.shiyu.ai.web.common.storage.FileStorageManager;
+import com.shiyu.ai.web.common.storage.StorageObject;
+import com.shiyu.ai.web.common.storage.StoredFile;
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.tags.Tag;
+import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.beans.factory.annotation.Value;
+import org.springframework.core.io.InputStreamResource;
+import org.springframework.http.ContentDisposition;
+import org.springframework.http.HttpHeaders;
+import org.springframework.http.MediaType;
+import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.DeleteMapping;
+import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.multipart.MultipartFile;
-import io.swagger.v3.oas.annotations.tags.Tag;
-import io.swagger.v3.oas.annotations.Operation;
 
 import java.io.IOException;
-import java.nio.file.Files;
-import java.nio.file.Path;
-import java.nio.file.Paths;
-import java.util.UUID;
+import java.nio.charset.StandardCharsets;
+import java.util.List;
+import java.util.Map;
 
 @Slf4j
-@Tag(name = "File", description = "File")
+@Tag(name = "File", description = "文件管理")
 @RestController
 @RequestMapping("/system/file")
+@RequiredArgsConstructor
 public class FileController {
 
-    @Value("${shiyu.upload.path:./uploads}")
-    private String uploadPath;
+    private final FileStorageManager storageManager;
 
-    private Path uploadDir;
+    @Operation(summary = "获取文件存储配置")
+    @GetMapping("/config")
+    public Result<Map<String, Object>> config() {
+        return Result.success(Map.of(
+                "currentType", storageManager.type(),
+                "supportedTypes", FileStorageManager.SUPPORTED_TYPES));
+    }
 
-    @PostConstruct
-    public void init() {
-        this.uploadDir = Paths.get(uploadPath).toAbsolutePath().normalize();
+    @Operation(summary = "获取文件列表")
+    @GetMapping("/list")
+    public Result<List<StoredFile>> list() {
         try {
-            Files.createDirectories(uploadDir);
-            log.info("文件上传目录已初始化: {}", uploadDir);
-        } catch (IOException e) {
-            log.error("初始化文件上传目录失败: {}", uploadDir, e);
+            return Result.success(storageManager.list(tenantNamespace()));
+        } catch (IOException ex) {
+            log.error("读取文件列表失败", ex);
+            return Result.fail(ex.getMessage());
         }
     }
 
-    @Operation(summary = "Upload File")
+    @Operation(summary = "上传文件")
     @PostMapping("/upload")
-    public Result<String> uploadFile(@RequestParam("file") MultipartFile file) {
+    public Result<StoredFile> upload(@RequestParam("file") MultipartFile file) {
         if (file == null || file.isEmpty()) {
             return Result.fail("上传文件不能为空");
         }
+        try (var inputStream = file.getInputStream()) {
+            StoredFile storedFile = storageManager.upload(
+                    tenantNamespace(),
+                    file.getOriginalFilename(),
+                    file.getContentType(),
+                    file.getSize(),
+                    inputStream);
+            log.info("文件上传成功: {} -> {}", file.getOriginalFilename(), storedFile.key());
+            return Result.success(storedFile);
+        } catch (IOException ex) {
+            log.error("文件上传失败", ex);
+            return Result.fail(ex.getMessage());
+        }
+    }
 
+    @Operation(summary = "下载文件")
+    @GetMapping("/download")
+    public ResponseEntity<InputStreamResource> download(@RequestParam String key) throws IOException {
+        verifyTenantKey(key);
+        StorageObject object = storageManager.open(key);
+        ContentDisposition disposition = ContentDisposition.attachment()
+                .filename(object.name(), StandardCharsets.UTF_8)
+                .build();
+        return ResponseEntity.ok()
+                .contentType(MediaType.parseMediaType(object.contentType()))
+                .contentLength(object.size())
+                .header(HttpHeaders.CONTENT_DISPOSITION, disposition.toString())
+                .body(new InputStreamResource(object.inputStream()));
+    }
+
+    @Operation(summary = "删除文件")
+    @DeleteMapping
+    public Result<Boolean> delete(@RequestParam String key) {
         try {
-            String originalFilename = file.getOriginalFilename();
-            String ext = "";
-            if (originalFilename != null && originalFilename.contains(".")) {
-                ext = originalFilename.substring(originalFilename.lastIndexOf("."));
-            }
-            String filename = UUID.randomUUID() + ext;
-            Path targetPath = uploadDir.resolve(filename);
-            Files.copy(file.getInputStream(), targetPath);
+            verifyTenantKey(key);
+            storageManager.delete(key);
+            return Result.success(true);
+        } catch (IOException ex) {
+            log.error("删除文件失败: {}", key, ex);
+            return Result.fail(ex.getMessage());
+        }
+    }
 
-            String url = "/uploads/" + filename;
-            log.info("文件上传成功: {} -> {}", originalFilename, url);
-            return Result.success(url);
-        } catch (IOException e) {
-            log.error("文件上传失败", e);
-            return Result.fail("文件上传失败");
+    private String tenantNamespace() {
+        Long tenantId = LoginContextHolder.getCurrentTenantId();
+        if (tenantId == null) {
+            throw new IllegalStateException("当前租户上下文不存在");
+        }
+        return "tenant/" + tenantId;
+    }
+
+    private void verifyTenantKey(String key) throws IOException {
+        String prefix = tenantNamespace() + "/";
+        if (key == null || !key.startsWith(prefix)) {
+            throw new IOException("无权访问该文件");
         }
     }
 }

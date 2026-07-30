@@ -39,7 +39,9 @@ public class StudentRepository {
     }
     public int insert(StudentBO entity) {
         StudentDO dataObj = MapstructUtils.convert(entity, StudentDO.class);
-        return studentMapper.insert(dataObj);
+        int rows = studentMapper.insert(dataObj);
+        entity.setId(dataObj.getId());
+        return rows;
     }
 
 

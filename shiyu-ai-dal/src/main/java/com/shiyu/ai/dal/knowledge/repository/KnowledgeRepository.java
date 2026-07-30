@@ -61,7 +61,10 @@ public class KnowledgeRepository {
     }
 
     public int insert(KnowledgeBO bo) {
-        return knowledgeMapper.insert(MapstructUtils.convert(bo, KnowledgeDO.class));
+        KnowledgeDO dataObject = MapstructUtils.convert(bo, KnowledgeDO.class);
+        int rows = knowledgeMapper.insert(dataObject);
+        bo.setId(dataObject.getId());
+        return rows;
     }
 
     public int update(KnowledgeBO bo) {

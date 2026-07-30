@@ -44,9 +44,23 @@ public class ReviewController {
         return Result.success(reviewService.create(request));
     }
 
+    @PostMapping("/update")
+    public Result<Void> update(@RequestParam Long id, @Valid @RequestBody ReviewRequest request) {
+        request.setId(id);
+        reviewService.update(request);
+        return Result.success();
+    }
+
     @PostMapping("/complete")
     @SaCheckPermission("edu:review:list")
     public Result<Void> complete(@RequestParam Long id, @Valid @RequestBody CompleteReviewRequest request) {
+        reviewService.complete(id, request.resultScore());
+        return Result.success();
+    }
+
+    @PostMapping("/delete")
+    public Result<Void> delete(@RequestParam Long id) {
+        reviewService.delete(id);
         return Result.success();
     }
 }

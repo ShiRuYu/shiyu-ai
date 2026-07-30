@@ -19,5 +19,9 @@ public class StudentRequest implements Serializable {
 
     private Long userId;
     private String studentNo;
+    private Integer grade;
+    private String gradeLevel;
+    private String school;
+    private String className;
     private Integer status;
 }

@@ -1,5 +1,6 @@
 package com.shiyu.ai.education.request;
 
+import com.fasterxml.jackson.annotation.JsonAlias;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
 import lombok.Data;
@@ -22,7 +23,8 @@ public class ChapterRequest implements Serializable {
     private String name;
 
     private Long parentId;
-    private Integer sort;
+    @JsonAlias("sort")
+    private Integer chapterOrder;
     private Integer status;
 }
 

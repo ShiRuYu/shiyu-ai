@@ -25,6 +25,7 @@ public class QuestionRequest implements Serializable {
     private String subjectCode;
     private Integer grade;
     private Integer difficulty;
+    private String abilityDimension;
     private String options;
     private String answer;
     private String analysis;

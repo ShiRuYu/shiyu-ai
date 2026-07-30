@@ -27,5 +27,6 @@ public class TextbookRequest implements Serializable {
     private String publisher;
     private String author;
     private String edition;
+    private String isbn;
     private Integer status;
 }

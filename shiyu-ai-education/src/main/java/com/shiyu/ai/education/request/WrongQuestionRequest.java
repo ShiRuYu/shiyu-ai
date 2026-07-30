@@ -22,5 +22,6 @@ public class WrongQuestionRequest implements Serializable {
 
     private Long knowledgeId;
     private String studentAnswer;
+    private Integer correctTimes;
     private Integer status;
 }

@@ -52,9 +52,12 @@ public class ReviewServiceImpl implements ReviewService {
         ReviewTaskBO bo = new ReviewTaskBO();
         bo.setStudentId(request.getStudentId());
         bo.setKnowledgeId(request.getKnowledgeId());
-        bo.setReviewDate(java.time.LocalDate.now());
+        bo.setReviewDate(request.getReviewDate() != null
+                ? request.getReviewDate() : java.time.LocalDate.now());
         bo.setReviewRound(request.getReviewRound() != null ? request.getReviewRound() : 1);
-        bo.setStatus(ReviewTaskStatus.PENDING.getCode());
+        bo.setStatus(request.getStatus() != null
+                ? request.getStatus() : ReviewTaskStatus.PENDING.getCode());
+        bo.setResultScore(request.getResultScore());
         reviewTaskRepository.insert(bo);
         return MapstructUtils.convert(bo, ReviewTaskResponse.class);
     }
@@ -64,8 +67,32 @@ public class ReviewServiceImpl implements ReviewService {
     public void update(ReviewRequest request) {
         ReviewTaskBO bo = reviewTaskRepository.selectById(request.getId());
         if (bo != null) {
-            bo.setStatus(request.getStatus() != null ? Integer.valueOf(request.getStatus()) : null);
+            if (request.getStudentId() != null) bo.setStudentId(request.getStudentId());
+            if (request.getKnowledgeId() != null) bo.setKnowledgeId(request.getKnowledgeId());
+            if (request.getStatus() != null) bo.setStatus(request.getStatus());
+            if (request.getReviewRound() != null) bo.setReviewRound(request.getReviewRound());
+            if (request.getReviewDate() != null) bo.setReviewDate(request.getReviewDate());
+            if (request.getResultScore() != null) bo.setResultScore(request.getResultScore());
             reviewTaskRepository.update(bo);
         }
+    }
+
+    @Override
+    @Transactional(rollbackFor = Exception.class)
+    public void complete(Long id, Double resultScore) {
+        ReviewTaskBO task = reviewTaskRepository.selectById(id);
+        if (task == null) {
+            return;
+        }
+        task.setStatus(ReviewTaskStatus.COMPLETED.getCode());
+        task.setResultScore(resultScore);
+        task.setCompletedAt(java.time.LocalDateTime.now());
+        reviewTaskRepository.update(task);
+    }
+
+    @Override
+    @Transactional(rollbackFor = Exception.class)
+    public void delete(Long id) {
+        reviewTaskRepository.deleteById(id);
     }
 }

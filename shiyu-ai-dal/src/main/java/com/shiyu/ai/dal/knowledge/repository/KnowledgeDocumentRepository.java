@@ -30,7 +30,10 @@ public class KnowledgeDocumentRepository {
     }
 
     public int insert(KnowledgeDocumentBO bo) {
-        return knowledgeDocumentMapper.insert(MapstructUtils.convert(bo, KnowledgeDocumentDO.class));
+        KnowledgeDocumentDO dataObject = MapstructUtils.convert(bo, KnowledgeDocumentDO.class);
+        int rows = knowledgeDocumentMapper.insert(dataObject);
+        bo.setId(dataObject.getId());
+        return rows;
     }
 
     public int update(KnowledgeDocumentBO bo) {

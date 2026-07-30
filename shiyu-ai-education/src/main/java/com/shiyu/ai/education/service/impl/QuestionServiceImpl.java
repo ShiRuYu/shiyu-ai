@@ -67,11 +67,13 @@ public class QuestionServiceImpl implements QuestionService {
         bo.setSubjectCode(request.getSubjectCode());
         bo.setGrade(request.getGrade());
         bo.setDifficulty(request.getDifficulty());
+        bo.setAbilityDimension(request.getAbilityDimension());
         bo.setTitle(request.getTitle());
         bo.setOptions(request.getOptions());
         bo.setAnswer(request.getAnswer());
         bo.setAnalysis(request.getAnalysis());
         bo.setTags(request.getTags());
+        bo.setStatus(request.getStatus() == null ? 1 : request.getStatus());
         questionRepository.insert(bo);
         return MapstructUtils.convert(bo, QuestionResponse.class);
     }
@@ -86,11 +88,13 @@ public class QuestionServiceImpl implements QuestionService {
             bo.setSubjectCode(request.getSubjectCode());
             bo.setGrade(request.getGrade());
             bo.setDifficulty(request.getDifficulty());
+            bo.setAbilityDimension(request.getAbilityDimension());
             bo.setTitle(request.getTitle());
             bo.setOptions(request.getOptions());
             bo.setAnswer(request.getAnswer());
             bo.setAnalysis(request.getAnalysis());
             bo.setTags(request.getTags());
+            if (request.getStatus() != null) bo.setStatus(request.getStatus());
             questionRepository.update(bo);
         }
     }

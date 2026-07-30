@@ -1,6 +1,6 @@
 package com.shiyu.ai.knowledge.service;
 
-import com.shiyu.ai.knowledge.search.SearchResult;
+import jakarta.validation.constraints.NotBlank;
 
 import java.util.List;
 
@@ -56,7 +56,7 @@ public interface DocumentKnowledgeService {
     record KnowledgeDocumentVO(Long id, String title, String content, String docType,
                                String source, List<Long> knowledgeIds) {}
 
-    record CreateDocumentRequest(String title, String content, String docType,
+    record CreateDocumentRequest(@NotBlank String title, @NotBlank String content, String docType,
                                  String source, List<Long> knowledgeIds) {}
 
     record UpdateDocumentRequest(String title, String content, String docType,

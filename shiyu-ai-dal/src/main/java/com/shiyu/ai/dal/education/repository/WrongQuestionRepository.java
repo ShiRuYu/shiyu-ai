@@ -34,7 +34,9 @@ public class WrongQuestionRepository {
 
     public int insert(WrongQuestionBO entity) {
         WrongQuestionDO dataObj = MapstructUtils.convert(entity, WrongQuestionDO.class);
-        return wrongQuestionMapper.insert(dataObj);
+        int rows = wrongQuestionMapper.insert(dataObj);
+        entity.setId(dataObj.getId());
+        return rows;
     }
 
 

@@ -63,7 +63,9 @@ public class QuestionRepository {
 
     public int insert(QuestionBO entity) {
         QuestionDO dataObj = MapstructUtils.convert(entity, QuestionDO.class);
-        return questionMapper.insert(dataObj);
+        int rows = questionMapper.insert(dataObj);
+        entity.setId(dataObj.getId());
+        return rows;
     }
 
     public int update(QuestionBO entity) {

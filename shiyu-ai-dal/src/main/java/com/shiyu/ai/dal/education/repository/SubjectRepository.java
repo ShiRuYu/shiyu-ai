@@ -22,7 +22,8 @@ public class SubjectRepository {
     }
 
     public SubjectBO selectByCode(String code) {
-        return MapstructUtils.convert(subjectMapper.selectOneById(code), SubjectBO.class);
+        return MapstructUtils.convert(subjectMapper.selectOneByQuery(
+                QueryWrapper.create().eq(SubjectDO::getCode, code)), SubjectBO.class);
     }
 
     public PageData<SubjectBO> selectPage(int pageNum, int pageSize) {
@@ -46,7 +47,9 @@ public class SubjectRepository {
 
     public int insert(SubjectBO entity) {
         SubjectDO dataObj = MapstructUtils.convert(entity, SubjectDO.class);
-        return subjectMapper.insert(dataObj);
+        int rows = subjectMapper.insert(dataObj);
+        entity.setId(dataObj.getId());
+        return rows;
     }
 
 

@@ -57,6 +57,8 @@ public class TextbookServiceImpl implements TextbookService {
         bo.setSubjectCode(request.getSubjectCode());
         bo.setGrade(request.getGrade());
         bo.setPublisher(request.getPublisher());
+        bo.setIsbn(request.getIsbn());
+        bo.setStatus(request.getStatus() == null ? 1 : request.getStatus());
         textbookRepository.insert(bo);
         return MapstructUtils.convert(bo, TextbookResponse.class);
     }
@@ -70,6 +72,8 @@ public class TextbookServiceImpl implements TextbookService {
             bo.setSubjectCode(request.getSubjectCode());
             bo.setGrade(request.getGrade());
             bo.setPublisher(request.getPublisher());
+            bo.setIsbn(request.getIsbn());
+            if (request.getStatus() != null) bo.setStatus(request.getStatus());
             textbookRepository.update(bo);
         }
     }

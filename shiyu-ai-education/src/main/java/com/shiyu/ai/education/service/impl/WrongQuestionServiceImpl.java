@@ -46,6 +46,8 @@ public class WrongQuestionServiceImpl implements WrongQuestionService {
         bo.setQuestionId(request.getQuestionId());
         bo.setKnowledgeId(request.getKnowledgeId());
         bo.setStudentAnswer(request.getStudentAnswer());
+        bo.setCorrectTimes(request.getCorrectTimes() == null ? 0 : request.getCorrectTimes());
+        bo.setStatus(request.getStatus() == null ? 0 : request.getStatus());
         wrongQuestionRepository.insert(bo);
         return MapstructUtils.convert(bo, WrongQuestionResponse.class);
     }
@@ -59,6 +61,8 @@ public class WrongQuestionServiceImpl implements WrongQuestionService {
             bo.setQuestionId(request.getQuestionId());
             bo.setKnowledgeId(request.getKnowledgeId());
             bo.setStudentAnswer(request.getStudentAnswer());
+            bo.setCorrectTimes(request.getCorrectTimes());
+            if (request.getStatus() != null) bo.setStatus(request.getStatus());
             wrongQuestionRepository.update(bo);
         }
     }
