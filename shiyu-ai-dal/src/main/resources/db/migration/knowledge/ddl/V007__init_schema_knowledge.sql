@@ -75,11 +75,18 @@ COMMENT ON TABLE `knowledge_document` IS '文档知识表';
 
 
 CREATE TABLE IF NOT EXISTS `knowledge_doc_relation` (
-    `id`            BIGINT      NOT NULL AUTO_INCREMENT,
-    `doc_id`        BIGINT      NOT NULL COMMENT '文档ID',
-    `knowledge_id`  BIGINT      NOT NULL COMMENT '知识点ID',
-    `relation_type` VARCHAR(20) DEFAULT 'RELATED' COMMENT '关联类型',
-    `create_time`   TIMESTAMP   DEFAULT CURRENT_TIMESTAMP,
+    `id`            BIGINT       NOT NULL AUTO_INCREMENT,
+    `space_id`      BIGINT       DEFAULT NULL COMMENT '知识空间ID',
+    `doc_id`        BIGINT       NOT NULL COMMENT '文档ID',
+    `knowledge_id`  BIGINT       NOT NULL COMMENT '知识点ID',
+    `relation_type` VARCHAR(20)  DEFAULT 'RELATED' COMMENT '关联类型',
+    `create_time`   TIMESTAMP    DEFAULT CURRENT_TIMESTAMP COMMENT '创建时间',
+    `tenant_id`     BIGINT       COMMENT '租户ID',
+    `create_by`     VARCHAR(64)  DEFAULT NULL COMMENT '创建者',
+    `update_by`     VARCHAR(64)  DEFAULT NULL COMMENT '更新者',
+    `update_time`   TIMESTAMP    DEFAULT CURRENT_TIMESTAMP COMMENT '更新时间',
+    `status`        TINYINT      DEFAULT 1 COMMENT '0停 1启',
+    `del_flag`      TINYINT      DEFAULT 0 COMMENT '0正常 1删除',
     PRIMARY KEY (`id`),
     UNIQUE KEY `uk_kdr_doc_knowledge` (`doc_id`, `knowledge_id`)
 );

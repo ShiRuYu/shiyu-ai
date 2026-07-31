@@ -169,6 +169,11 @@ ALTER TABLE `knowledge_document` ADD COLUMN IF NOT EXISTS `file_size` BIGINT DEF
 ALTER TABLE `knowledge_document` ADD COLUMN IF NOT EXISTS `checksum` VARCHAR(64) DEFAULT NULL;
 ALTER TABLE `knowledge_doc_relation` ADD COLUMN IF NOT EXISTS `tenant_id` BIGINT DEFAULT NULL;
 ALTER TABLE `knowledge_doc_relation` ADD COLUMN IF NOT EXISTS `space_id` BIGINT DEFAULT NULL;
+ALTER TABLE `knowledge_doc_relation` ADD COLUMN IF NOT EXISTS `create_by` VARCHAR(64) DEFAULT NULL;
+ALTER TABLE `knowledge_doc_relation` ADD COLUMN IF NOT EXISTS `update_by` VARCHAR(64) DEFAULT NULL;
+ALTER TABLE `knowledge_doc_relation` ADD COLUMN IF NOT EXISTS `update_time` TIMESTAMP DEFAULT CURRENT_TIMESTAMP;
+ALTER TABLE `knowledge_doc_relation` ADD COLUMN IF NOT EXISTS `status` TINYINT DEFAULT 1;
+ALTER TABLE `knowledge_doc_relation` ADD COLUMN IF NOT EXISTS `del_flag` TINYINT DEFAULT 0;
 ALTER TABLE `vector_knowledge_chunk` ADD COLUMN IF NOT EXISTS `space_id` BIGINT DEFAULT NULL;
 ALTER TABLE `vector_knowledge_chunk` ADD COLUMN IF NOT EXISTS `version_id` BIGINT DEFAULT NULL;
 ALTER TABLE `vector_knowledge_chunk` ADD COLUMN IF NOT EXISTS `embedding_binary` BLOB DEFAULT NULL;
