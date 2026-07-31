@@ -495,6 +495,8 @@ CREATE TABLE IF NOT EXISTS `edu_study_plan_item`(
     `order_no`        INT          NOT NULL COMMENT '排序',
     `status`          TINYINT      DEFAULT 0 COMMENT '状态(0待处理 1进行中 2已完成 3已跳过)',
     `completed_at`    TIMESTAMP    NULL COMMENT '完成时间',
+    `create_time`     TIMESTAMP    DEFAULT CURRENT_TIMESTAMP COMMENT '创建时间',
+    `update_time`     TIMESTAMP    DEFAULT CURRENT_TIMESTAMP COMMENT '更新时间',
     `tenant_id`       BIGINT       NOT NULL COMMENT '租户ID',
     `create_by`       VARCHAR(64)  DEFAULT NULL COMMENT '创建者',
     `update_by`       VARCHAR(64)  DEFAULT NULL COMMENT '更新者',
