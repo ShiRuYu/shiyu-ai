@@ -3,6 +3,7 @@ package com.shiyu.ai.knowledge.document;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.poi.xwpf.extractor.XWPFWordExtractor;
 import org.apache.poi.xwpf.usermodel.XWPFDocument;
+import org.springframework.stereotype.Component;
 
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
@@ -12,6 +13,7 @@ import java.io.IOException;
  * 支持提取 .docx 纯文本内容（含标题、段落、表格）
  */
 @Slf4j
+@Component
 public class WordDocumentParser implements DocumentParser {
 
     @Override

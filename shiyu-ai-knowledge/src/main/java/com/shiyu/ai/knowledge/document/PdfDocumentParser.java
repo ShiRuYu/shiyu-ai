@@ -4,6 +4,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.apache.pdfbox.Loader;
 import org.apache.pdfbox.pdmodel.PDDocument;
 import org.apache.pdfbox.text.PDFTextStripper;
+import org.springframework.stereotype.Component;
 
 import java.io.IOException;
 
@@ -12,6 +13,7 @@ import java.io.IOException;
  * 支持提取纯文本内容
  */
 @Slf4j
+@Component
 public class PdfDocumentParser implements DocumentParser {
 
     @Override

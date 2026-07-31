@@ -15,6 +15,8 @@ public class KnowledgeRelationDO extends TenantEntity {
     @Id(keyType = KeyType.Auto)
     private Long id;
 
+    private Long spaceId;
+
     private Long sourceId;
 
     private Long targetId;

@@ -61,4 +61,27 @@ public class KnowledgeRelationRepository {
                 QueryWrapper.create().eq(KnowledgeRelationDO::getTargetId, knowledgeId));
         return count;
     }
+
+    public List<KnowledgeRelationBO> findBySpace(Long spaceId) {
+        return MapstructUtils.convert(relationMapper.selectListByQuery(
+                QueryWrapper.create().eq(KnowledgeRelationDO::getSpaceId, spaceId)),
+                KnowledgeRelationBO.class);
+    }
+
+    public boolean exists(Long spaceId, Long sourceId, Long targetId, String type) {
+        return relationMapper.selectCountByQuery(QueryWrapper.create()
+                .eq(KnowledgeRelationDO::getSpaceId, spaceId)
+                .eq(KnowledgeRelationDO::getSourceId, sourceId)
+                .eq(KnowledgeRelationDO::getTargetId, targetId)
+                .eq(KnowledgeRelationDO::getRelationType, type)) > 0;
+    }
+
+    public void assignDefaultSpace(Long spaceId) {
+        List<KnowledgeRelationDO> records = relationMapper.selectListByQuery(
+                QueryWrapper.create().isNull(KnowledgeRelationDO::getSpaceId));
+        for (KnowledgeRelationDO record : records) {
+            record.setSpaceId(spaceId);
+            relationMapper.update(record);
+        }
+    }
 }

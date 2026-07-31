@@ -19,7 +19,9 @@ public class KnowledgeChunkRepository {
     }
 
     public void insert(KnowledgeChunkBO bo) {
-        mapper.insert(MapstructUtils.convert(bo, KnowledgeChunkDO.class));
+        KnowledgeChunkDO dataObject = MapstructUtils.convert(bo, KnowledgeChunkDO.class);
+        mapper.insert(dataObject);
+        bo.setId(dataObject.getId());
     }
 
     public void insertBatch(List<KnowledgeChunkBO> boList) {
@@ -52,5 +54,21 @@ public class KnowledgeChunkRepository {
 
     public long count() {
         return mapper.selectCountByQuery(new QueryWrapper());
+    }
+
+    public List<KnowledgeChunkBO> findBySpace(Long spaceId) {
+        return MapstructUtils.convert(mapper.selectListByQuery(
+                QueryWrapper.create().eq(KnowledgeChunkDO::getSpaceId, spaceId)
+                        .orderBy(KnowledgeChunkDO::getDocumentId, true)
+                        .orderBy(KnowledgeChunkDO::getChunkIndex, true)), KnowledgeChunkBO.class);
+    }
+
+    public void assignDefaultSpace(Long spaceId) {
+        List<KnowledgeChunkDO> records = mapper.selectListByQuery(
+                QueryWrapper.create().isNull(KnowledgeChunkDO::getSpaceId));
+        for (KnowledgeChunkDO record : records) {
+            record.setSpaceId(spaceId);
+            mapper.update(record);
+        }
     }
 }

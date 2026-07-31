@@ -1,0 +1,68 @@
+package com.shiyu.ai.web.knowledge;
+
+import cn.dev33.satoken.annotation.SaCheckPermission;
+import com.shiyu.ai.common.core.api.Result;
+import com.shiyu.ai.common.core.domain.LoginContextHolder;
+import com.shiyu.ai.common.core.exception.ServiceException;
+import com.shiyu.ai.knowledge.index.KnowledgeIndexService;
+import com.shiyu.ai.knowledge.service.KnowledgeSpaceService;
+import io.swagger.v3.oas.annotations.tags.Tag;
+import jakarta.validation.Valid;
+import jakarta.validation.constraints.Max;
+import jakarta.validation.constraints.Min;
+import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.NotNull;
+import lombok.RequiredArgsConstructor;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RestController;
+
+import java.util.List;
+
+@RestController
+@RequestMapping("/knowledge/v2")
+@RequiredArgsConstructor
+@Tag(name = "知识检索 V2")
+@SaCheckPermission("knowledge:list")
+public class KnowledgeSearchV2Controller {
+
+    private final KnowledgeIndexService indexService;
+    private final KnowledgeSpaceService spaceService;
+
+    @PostMapping("/search")
+    public Result<SearchResponse> search(@RequestBody @Valid SearchRequest request) {
+        spaceService.requireAccess(request.spaceId(), KnowledgeSpaceService.SpaceRole.VIEWER);
+        Long tenantId = currentTenant();
+        List<KnowledgeIndexService.HybridHit> hits = indexService.hybridSearch(
+                tenantId, request.spaceId(), request.query(),
+                request.topK() == null ? 5 : request.topK(),
+                Boolean.TRUE.equals(request.rerank()));
+        return Result.success(new SearchResponse(request.spaceId(), "HYBRID", hits));
+    }
+
+    @PostMapping("/index-jobs/rebuild")
+    @SaCheckPermission("knowledge:index:rebuild")
+    public Result<Long> rebuild(@RequestBody @Valid RebuildRequest request) {
+        spaceService.requireAccess(request.spaceId(), KnowledgeSpaceService.SpaceRole.ADMIN);
+        return Result.success(indexService.rebuild(currentTenant(), request.spaceId()));
+    }
+
+    private Long currentTenant() {
+        Long tenantId = LoginContextHolder.getCurrentTenantId();
+        if (tenantId == null) throw new ServiceException("当前租户上下文不存在");
+        return tenantId;
+    }
+
+    public record SearchRequest(@NotNull Long spaceId, @NotBlank String query,
+                                String mode, @Min(1) @Max(100) Integer topK,
+                                Double threshold, Boolean rerank) {
+    }
+
+    public record SearchResponse(Long spaceId, String mode,
+                                 List<KnowledgeIndexService.HybridHit> hits) {
+    }
+
+    public record RebuildRequest(@NotNull Long spaceId) {
+    }
+}

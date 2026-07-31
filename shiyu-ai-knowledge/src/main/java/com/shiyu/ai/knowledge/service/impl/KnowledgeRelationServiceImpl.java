@@ -60,13 +60,27 @@ public class KnowledgeRelationServiceImpl implements KnowledgeRelationService {
     @Override
     @Transactional(rollbackFor = Exception.class)
     public void addRelation(Long sourceId, Long targetId, RelationType type, Double weight) {
+        if (sourceId.equals(targetId)) {
+            throw new ServiceException("知识关系不能指向自身");
+        }
         KnowledgeBO source = knowledgeRepository.findById(sourceId);
         KnowledgeBO target = knowledgeRepository.findById(targetId);
         if (source == null || target == null) {
             throw new ServiceException("知识点不存在", 2001);
         }
 
+        if (!java.util.Objects.equals(source.getSpaceId(), target.getSpaceId())) {
+            throw new ServiceException("不能创建跨知识空间关系");
+        }
+        if (relationRepository.exists(source.getSpaceId(), sourceId, targetId, type.name())) {
+            throw new ServiceException("知识关系已存在");
+        }
+        if (type == RelationType.PRE && !knowledgeGraph.findPath(sourceId, targetId).isEmpty()) {
+            throw new ServiceException("前置关系会形成循环依赖");
+        }
+
         KnowledgeRelationBO relation = new KnowledgeRelationBO();
+        relation.setSpaceId(source.getSpaceId());
         relation.setSourceId(sourceId);
         relation.setTargetId(targetId);
         relation.setRelationType(type.name());

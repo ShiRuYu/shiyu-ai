@@ -1,16 +1,18 @@
 package com.shiyu.ai.knowledge.document;
 
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.stereotype.Component;
 
 /**
  * Markdown 文档解析器
  */
 @Slf4j
+@Component
 public class MarkdownDocumentParser implements DocumentParser {
 
     @Override
     public String getSupportedFormat() {
-        return "markdown";
+        return "md";
     }
 
     @Override

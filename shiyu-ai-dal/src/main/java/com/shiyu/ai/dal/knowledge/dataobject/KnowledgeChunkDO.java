@@ -17,11 +17,31 @@ public class KnowledgeChunkDO extends TenantEntity {
 
     private Long documentId;
 
+    private Long spaceId;
+
+    private Long versionId;
+
     private String content;
 
     private String embedding;
 
+    private byte[] embeddingBinary;
+
+    private String embeddingModel;
+
+    private Integer embeddingDimension;
+
     private String metadata;
 
     private Integer chunkIndex;
+
+    private Integer pageNumber;
+
+    private String sectionPath;
+
+    private Integer startOffset;
+
+    private Integer endOffset;
+
+    private Integer tokenCount;
 }

@@ -11,6 +11,7 @@ import jakarta.annotation.Resource;
 import org.springframework.stereotype.Component;
 
 import java.util.List;
+import com.shiyu.ai.common.core.api.PageData;
 
 @Component
 public class KnowledgeDocumentRepository {
@@ -59,5 +60,56 @@ public class KnowledgeDocumentRepository {
         if (docIds.isEmpty()) return List.of();
         return MapstructUtils.convert(knowledgeDocumentMapper.selectListByQuery(
                 QueryWrapper.create().in("id", docIds)), KnowledgeDocumentBO.class);
+    }
+
+    public PageData<KnowledgeDocumentBO> pageBySpace(Long spaceId, int pageNum, int pageSize,
+                                                     String keyword, String lifecycleStatus) {
+        QueryWrapper query = QueryWrapper.create()
+                .eq(KnowledgeDocumentDO::getSpaceId, spaceId)
+                .eq(KnowledgeDocumentDO::getDelFlag, 0);
+        if (keyword != null && !keyword.isBlank()) {
+            query.like(KnowledgeDocumentDO::getTitle, keyword);
+        }
+        if (lifecycleStatus != null && !lifecycleStatus.isBlank()) {
+            query.eq(KnowledgeDocumentDO::getLifecycleStatus, lifecycleStatus);
+        }
+        var page = knowledgeDocumentMapper.paginate(pageNum, pageSize,
+                query.orderBy(KnowledgeDocumentDO::getId, false));
+        return new PageData<>(MapstructUtils.convert(page.getRecords(), KnowledgeDocumentBO.class),
+                page.getTotalRow());
+    }
+
+    public KnowledgeDocumentBO findBySpaceAndChecksum(Long spaceId, String checksum) {
+        KnowledgeDocumentDO dataObject = knowledgeDocumentMapper.selectOneByQuery(
+                QueryWrapper.create()
+                        .eq(KnowledgeDocumentDO::getSpaceId, spaceId)
+                        .eq(KnowledgeDocumentDO::getChecksum, checksum)
+                        .eq(KnowledgeDocumentDO::getDelFlag, 0)
+                        .limit(1));
+        return dataObject == null ? null
+                : MapstructUtils.convert(dataObject, KnowledgeDocumentBO.class);
+    }
+
+    public List<KnowledgeDocumentBO> findBySpace(Long spaceId) {
+        return MapstructUtils.convert(knowledgeDocumentMapper.selectListByQuery(
+                QueryWrapper.create()
+                        .eq(KnowledgeDocumentDO::getSpaceId, spaceId)
+                        .eq(KnowledgeDocumentDO::getDelFlag, 0)
+                        .orderBy(KnowledgeDocumentDO::getId, true)), KnowledgeDocumentBO.class);
+    }
+
+    public void assignDefaultSpace(Long spaceId) {
+        List<KnowledgeDocumentDO> records = knowledgeDocumentMapper.selectListByQuery(
+                QueryWrapper.create().isNull(KnowledgeDocumentDO::getSpaceId));
+        for (KnowledgeDocumentDO record : records) {
+            record.setSpaceId(spaceId);
+            if (record.getLifecycleStatus() == null) {
+                record.setLifecycleStatus("PUBLISHED");
+            }
+            if (record.getParseStatus() == null) {
+                record.setParseStatus("READY");
+            }
+            knowledgeDocumentMapper.update(record);
+        }
     }
 }

@@ -5,7 +5,7 @@
 
 CREATE TABLE IF NOT EXISTS `knowledge_base` (
     `id`              BIGINT       NOT NULL AUTO_INCREMENT COMMENT '知识点ID',
-    `code`            VARCHAR(50)  NOT NULL UNIQUE COMMENT '知识点编码',
+    `code`            VARCHAR(50)  NOT NULL COMMENT '知识点编码',
     `name`            VARCHAR(200) NOT NULL COMMENT '名称',
     `description`     TEXT         DEFAULT NULL COMMENT '描述',
     `difficulty`      TINYINT      DEFAULT 2 COMMENT '1~4',
@@ -22,6 +22,7 @@ CREATE TABLE IF NOT EXISTS `knowledge_base` (
 );
 
 CREATE INDEX IF NOT EXISTS `idx_knowledge_category` ON `knowledge_base` (`category`);
+CREATE UNIQUE INDEX IF NOT EXISTS `uk_knowledge_tenant_code` ON `knowledge_base` (`tenant_id`, `code`);
 
 COMMENT ON TABLE `knowledge_base` IS '知识点表（通用，不绑定教育域）';
 

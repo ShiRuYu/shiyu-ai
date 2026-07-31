@@ -78,4 +78,26 @@ public class KnowledgeRepository {
     public boolean existsByCode(String code) {
         return findByCode(code) != null;
     }
+
+    public boolean existsBySpaceAndCode(Long spaceId, String code) {
+        return knowledgeMapper.selectCountByQuery(QueryWrapper.create()
+                .eq(KnowledgeDO::getSpaceId, spaceId)
+                .eq(KnowledgeDO::getCode, code)) > 0;
+    }
+
+    public List<KnowledgeBO> findBySpace(Long spaceId) {
+        return MapstructUtils.convert(knowledgeMapper.selectListByQuery(
+                QueryWrapper.create()
+                        .eq(KnowledgeDO::getSpaceId, spaceId)
+                        .eq(KnowledgeDO::getStatus, 1)), KnowledgeBO.class);
+    }
+
+    public void assignDefaultSpace(Long spaceId) {
+        List<KnowledgeDO> records = knowledgeMapper.selectListByQuery(
+                QueryWrapper.create().isNull(KnowledgeDO::getSpaceId));
+        for (KnowledgeDO record : records) {
+            record.setSpaceId(spaceId);
+            knowledgeMapper.update(record);
+        }
+    }
 }

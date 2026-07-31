@@ -12,6 +12,7 @@ import lombok.EqualsAndHashCode;
 public class KnowledgeRelationBO extends TenantEntity {
 
     private Long id;
+    private Long spaceId;
     private Long sourceId;
     private Long targetId;
     private String relationType;

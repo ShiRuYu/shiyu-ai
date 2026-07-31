@@ -152,7 +152,7 @@ INSERT IGNORE INTO `auth_menu` (`id`, `name`, `code`, `type`, `parent_id`, `tena
 VALUES (72, '知识图谱', 'KnowledgeGraph', 'MENU', 70, 1, '/knowledge/graph', 'carbon:network-3', '/knowledge-engine/knowledge-graph/index', TRUE, 1, 2, 0, 'system', 'system');
 
 INSERT IGNORE INTO `auth_menu` (`id`, `name`, `code`, `type`, `parent_id`, `tenant_id`, `path`, `icon`, `component`, `show`, `status`, `order`, `del_flag`, `create_by`, `update_by`)
-VALUES (73, '文档管理', 'KnowledgeDocument', 'MENU', 70, 1, '/knowledge/document', 'carbon:document', '/knowledge-engine/document/list', TRUE, 1, 3, 0, 'system', 'system');
+VALUES (73, '企业知识工作台', 'KnowledgeDocument', 'MENU', 70, 1, '/knowledge/document', 'carbon:document', '/knowledge-engine/enterprise/index', TRUE, 1, 3, 0, 'system', 'system');
 
 INSERT IGNORE INTO `auth_menu` (`id`, `name`, `code`, `type`, `parent_id`, `tenant_id`, `path`, `icon`, `component`, `show`, `status`, `order`, `del_flag`, `create_by`, `update_by`)
 VALUES (74, '索引管理', 'KnowledgeIndex', 'MENU', 70, 1, '/knowledge/index', 'carbon:data-class', '/knowledge-engine/index-rebuild/list', TRUE, 1, 4, 0, 'system', 'system');

@@ -1,33 +1,25 @@
 package com.shiyu.ai.knowledge.graph;
 
+import com.github.benmanes.caffeine.cache.Cache;
+import com.github.benmanes.caffeine.cache.Caffeine;
+import com.shiyu.ai.dal.knowledge.bo.KnowledgeBO;
+import com.shiyu.ai.dal.knowledge.repository.KnowledgeRelationRepository;
+import com.shiyu.ai.dal.knowledge.repository.KnowledgeRepository;
 import com.shiyu.ai.knowledge.domain.GraphEdge;
 import com.shiyu.ai.knowledge.domain.GraphNode;
-import com.shiyu.ai.dal.knowledge.repository.KnowledgeRepository;
-import com.shiyu.ai.dal.knowledge.repository.KnowledgeRelationRepository;
-import lombok.extern.slf4j.Slf4j;
-import org.springframework.boot.ApplicationArguments;
-import org.springframework.boot.ApplicationRunner;
-import org.springframework.core.annotation.Order;
 import org.springframework.stereotype.Component;
 
+import java.time.Duration;
 import java.util.*;
-import java.util.concurrent.ConcurrentHashMap;
-import java.util.stream.Collectors;
 
-/**
- * 内存图存储 — 基于 ConcurrentHashMap 对象存储
- *
- * <p>使用 {@code Map<Long, GraphNode>} 直接存储节点对象，
- * 避免 JSON 序列化/反序列化带来的性能和类型安全问题。</p>
- */
-@Slf4j
+/** Tenant/space isolated lazy graph cache. H2 remains the source of truth. */
 @Component
-@Order(2)
-public class MemoryGraphStore implements GraphStore, ApplicationRunner {
+public class MemoryGraphStore implements GraphStore {
 
-    private final ConcurrentHashMap<Long, GraphNode> nodeStore = new ConcurrentHashMap<>();
     private final KnowledgeRepository knowledgeRepository;
     private final KnowledgeRelationRepository relationRepository;
+    private final Cache<GraphKey, Map<Long, GraphNode>> cache = Caffeine.newBuilder()
+            .maximumSize(100).expireAfterAccess(Duration.ofMinutes(15)).build();
 
     public MemoryGraphStore(KnowledgeRepository knowledgeRepository,
                             KnowledgeRelationRepository relationRepository) {
@@ -35,159 +27,26 @@ public class MemoryGraphStore implements GraphStore, ApplicationRunner {
         this.relationRepository = relationRepository;
     }
 
-    @Override
-    public void run(ApplicationArguments args) {
-        loadAll();
+    @Override public GraphNode getNode(Long id) { return graphForNode(id).get(id); }
+    @Override public List<Long> parents(Long id) { return ids(id, NodeList.PARENTS); }
+    @Override public List<Long> children(Long id) { return ids(id, NodeList.CHILDREN); }
+    @Override public List<Long> related(Long id) { return ids(id, NodeList.RELATED); }
+    @Override public List<GraphEdge> edges(Long id) {
+        GraphNode node = getNode(id);
+        return node == null ? List.of() : List.copyOf(node.getEdges());
     }
-
-    @Override
-    public void loadAll() {
-        log.info("开始从数据库加载知识图谱到内存");
-        nodeStore.clear();
-
-        var allNodes = knowledgeRepository.findAll();
-        var allEdges = relationRepository.findAll();
-
-        Map<Long, GraphNode> nodeMap = new HashMap<>();
-        for (var k : allNodes) {
-            GraphNode node = GraphNode.of(k.getId(), k.getName(), k.getCode());
-            nodeMap.put(k.getId(), node);
-        }
-
-        for (var e : allEdges) {
-            GraphEdge edge = new GraphEdge(e.getTargetId(), e.getRelationType(), e.getWeight());
-            GraphNode source = nodeMap.get(e.getSourceId());
-            if (source != null) {
-                source.getEdges().add(edge);
-                switch (e.getRelationType()) {
-                    case "PRE" -> {
-                        source.getParentIds().add(e.getTargetId());
-                        GraphNode target = nodeMap.get(e.getTargetId());
-                        if (target != null) {
-                            target.getChildIds().add(e.getSourceId());
-                        }
-                    }
-                    case "NEXT" -> source.getChildIds().add(e.getTargetId());
-                    case "RELATED", "SIMILAR" -> source.getRelatedIds().add(e.getTargetId());
-                    case "INCLUDE" -> source.getParentIds().add(e.getTargetId());
-                    case "BELONG" -> source.getRelatedIds().add(e.getTargetId());
-                    default -> { }
-                }
-            }
-        }
-
-        nodeStore.putAll(nodeMap);
-        log.info("知识图谱加载完成: {} 个节点, {} 条边", nodeMap.size(), allEdges.size());
-    }
-
-    @Override
-    public GraphNode getNode(Long id) {
-        return nodeStore.get(id);
-    }
-
-    @Override
-    public List<Long> parents(Long id) {
-        GraphNode node = nodeStore.get(id);
-        return node != null ? node.getParentIds() : Collections.emptyList();
-    }
-
-    @Override
-    public List<Long> children(Long id) {
-        GraphNode node = nodeStore.get(id);
-        return node != null ? node.getChildIds() : Collections.emptyList();
-    }
-
-    @Override
-    public List<Long> related(Long id) {
-        GraphNode node = nodeStore.get(id);
-        return node != null ? node.getRelatedIds() : Collections.emptyList();
-    }
-
-    @Override
-    public List<GraphNode> getParentNodes(Long id) {
-        return parents(id).stream()
-                .map(this::getNode)
-                .filter(Objects::nonNull)
-                .collect(Collectors.toList());
-    }
-
-    @Override
-    public List<GraphNode> getChildNodes(Long id) {
-        return children(id).stream()
-                .map(this::getNode)
-                .filter(Objects::nonNull)
-                .collect(Collectors.toList());
-    }
-
-    @Override
-    public List<GraphNode> getRelatedNodes(Long id) {
-        return related(id).stream()
-                .map(this::getNode)
-                .filter(Objects::nonNull)
-                .collect(Collectors.toList());
-    }
-
-    @Override
-    public List<GraphEdge> edges(Long id) {
-        GraphNode node = nodeStore.get(id);
-        return node != null ? node.getEdges() : Collections.emptyList();
-    }
-
-    @Override
-    public void addNode(GraphNode node) {
-        nodeStore.put(node.getId(), node);
-    }
-
-    @Override
-    public void addEdge(Long sourceId, Long targetId, String type, double weight) {
-        GraphNode source = nodeStore.get(sourceId);
-        if (source == null) {
-            log.warn("addEdge: 源节点 {} 不存在", sourceId);
-            return;
-        }
-        GraphEdge edge = new GraphEdge(targetId, type, weight);
-        source.getEdges().add(edge);
-
-        switch (type) {
-            case "PRE" -> source.getParentIds().add(targetId);
-            case "NEXT" -> source.getChildIds().add(targetId);
-            case "RELATED", "SIMILAR" -> source.getRelatedIds().add(targetId);
-            default -> { }
-        }
-
-        if ("PRE".equals(type)) {
-            GraphNode target = nodeStore.get(targetId);
-            if (target != null) {
-                target.getChildIds().add(sourceId);
-            }
-        }
-    }
-
-    @Override
-    public void removeEdge(Long sourceId, Long targetId, String type) {
-        GraphNode source = nodeStore.get(sourceId);
-        if (source == null) return;
-        source.getEdges().removeIf(e -> e.getTargetId().equals(targetId) && e.getType().equals(type));
-
-        switch (type) {
-            case "PRE" -> source.getParentIds().remove(targetId);
-            case "NEXT" -> source.getChildIds().remove(targetId);
-            case "RELATED", "SIMILAR" -> source.getRelatedIds().remove(targetId);
-            default -> { }
-        }
-    }
-
-    @Override
-    public void removeNode(Long id) {
-        nodeStore.remove(id);
-        log.info("Removed graph node: id={}", id);
-    }
+    @Override public void addNode(GraphNode node) { invalidate(node.getId()); }
+    @Override public void addEdge(Long sourceId, Long targetId, String type, double weight) { invalidate(sourceId); }
+    @Override public void removeEdge(Long sourceId, Long targetId, String type) { invalidate(sourceId); }
+    @Override public void removeNode(Long id) { invalidate(id); }
+    @Override public List<GraphNode> getParentNodes(Long id) { return nodes(parents(id)); }
+    @Override public List<GraphNode> getChildNodes(Long id) { return nodes(children(id)); }
+    @Override public List<GraphNode> getRelatedNodes(Long id) { return nodes(related(id)); }
 
     @Override
     public List<Long> topologicalSort(Long rootId) {
         List<Long> result = new ArrayList<>();
-        Set<Long> visited = new HashSet<>();
-        dfsVisit(rootId, visited, result);
+        visit(rootId, new HashSet<>(), result);
         Collections.reverse(result);
         return result;
     }
@@ -195,18 +54,8 @@ public class MemoryGraphStore implements GraphStore, ApplicationRunner {
     @Override
     public List<Long> dfs(Long startId) {
         List<Long> result = new ArrayList<>();
-        Set<Long> visited = new HashSet<>();
-        dfsVisit(startId, visited, result);
+        visit(startId, new HashSet<>(), result);
         return result;
-    }
-
-    private void dfsVisit(Long id, Set<Long> visited, List<Long> result) {
-        if (id == null || visited.contains(id)) return;
-        visited.add(id);
-        for (Long parentId : parents(id)) {
-            dfsVisit(parentId, visited, result);
-        }
-        result.add(id);
     }
 
     @Override
@@ -214,63 +63,109 @@ public class MemoryGraphStore implements GraphStore, ApplicationRunner {
         List<Long> result = new ArrayList<>();
         Set<Long> visited = new HashSet<>();
         Queue<Long> queue = new LinkedList<>();
-        queue.offer(startId);
+        queue.add(startId);
         visited.add(startId);
-
         while (!queue.isEmpty()) {
-            Long current = queue.poll();
+            Long current = queue.remove();
             result.add(current);
-            for (Long parentId : parents(current)) {
-                if (!visited.contains(parentId)) {
-                    visited.add(parentId);
-                    queue.offer(parentId);
-                }
-            }
+            for (Long parent : parents(current)) if (visited.add(parent)) queue.add(parent);
         }
         return result;
     }
 
     @Override
     public List<Long> findPath(Long from, Long to) {
-        Map<Long, Long> parentMap = new HashMap<>();
+        Map<Long, Long> previous = new HashMap<>();
         Set<Long> visited = new HashSet<>();
         Queue<Long> queue = new LinkedList<>();
-        queue.offer(from);
+        queue.add(from);
         visited.add(from);
-
         while (!queue.isEmpty()) {
-            Long current = queue.poll();
-            if (current.equals(to)) {
-                return reconstructPath(parentMap, from, to);
+            Long current = queue.remove();
+            if (Objects.equals(current, to)) {
+                List<Long> path = new ArrayList<>();
+                for (Long value = to; value != null; value = previous.get(value)) path.add(value);
+                Collections.reverse(path);
+                return path;
             }
-            for (Long childId : children(current)) {
-                if (!visited.contains(childId)) {
-                    visited.add(childId);
-                    parentMap.put(childId, current);
-                    queue.offer(childId);
+            for (Long child : children(current)) {
+                if (visited.add(child)) {
+                    previous.put(child, current);
+                    queue.add(child);
                 }
             }
         }
-        return Collections.emptyList();
-    }
-
-    private List<Long> reconstructPath(Map<Long, Long> parentMap, Long from, Long to) {
-        List<Long> path = new ArrayList<>();
-        Long current = to;
-        while (current != null) {
-            path.add(current);
-            current = parentMap.get(current);
-        }
-        Collections.reverse(path);
-        return path;
+        return List.of();
     }
 
     @Override
     public List<Long> findMissingPrerequisites(Long targetId, Set<Long> masteredIds) {
-        List<Long> all = topologicalSort(targetId);
-        return all.stream()
-                .filter(id -> !masteredIds.contains(id))
-                .filter(id -> !id.equals(targetId))
-                .collect(Collectors.toList());
+        return topologicalSort(targetId).stream()
+                .filter(id -> !Objects.equals(id, targetId))
+                .filter(id -> !masteredIds.contains(id)).toList();
     }
+
+    @Override public void loadAll() { cache.invalidateAll(); }
+
+    private List<Long> ids(Long id, NodeList type) {
+        GraphNode node = getNode(id);
+        if (node == null) return List.of();
+        return switch (type) {
+            case PARENTS -> List.copyOf(node.getParentIds());
+            case CHILDREN -> List.copyOf(node.getChildIds());
+            case RELATED -> List.copyOf(node.getRelatedIds());
+        };
+    }
+
+    private List<GraphNode> nodes(List<Long> ids) {
+        return ids.stream().map(this::getNode).filter(Objects::nonNull).toList();
+    }
+
+    private void visit(Long id, Set<Long> visited, List<Long> result) {
+        if (id == null || !visited.add(id)) return;
+        for (Long parentId : parents(id)) visit(parentId, visited, result);
+        result.add(id);
+    }
+
+    private Map<Long, GraphNode> graphForNode(Long nodeId) {
+        KnowledgeBO knowledge = knowledgeRepository.findById(nodeId);
+        if (knowledge == null || knowledge.getSpaceId() == null) return Map.of();
+        return cache.get(new GraphKey(knowledge.getTenantId(), knowledge.getSpaceId()),
+                ignored -> load(knowledge.getSpaceId()));
+    }
+
+    private Map<Long, GraphNode> load(Long spaceId) {
+        Map<Long, GraphNode> nodes = new HashMap<>();
+        for (KnowledgeBO knowledge : knowledgeRepository.findBySpace(spaceId)) {
+            nodes.put(knowledge.getId(),
+                    GraphNode.of(knowledge.getId(), knowledge.getName(), knowledge.getCode()));
+        }
+        relationRepository.findBySpace(spaceId).forEach(relation -> {
+            GraphNode source = nodes.get(relation.getSourceId());
+            if (source == null) return;
+            source.getEdges().add(new GraphEdge(relation.getTargetId(),
+                    relation.getRelationType(), relation.getWeight()));
+            switch (relation.getRelationType()) {
+                case "PRE" -> {
+                    source.getParentIds().add(relation.getTargetId());
+                    GraphNode target = nodes.get(relation.getTargetId());
+                    if (target != null) target.getChildIds().add(relation.getSourceId());
+                }
+                case "NEXT" -> source.getChildIds().add(relation.getTargetId());
+                case "RELATED", "SIMILAR", "BELONG" -> source.getRelatedIds().add(relation.getTargetId());
+                case "INCLUDE" -> source.getParentIds().add(relation.getTargetId());
+                default -> { }
+            }
+        });
+        return nodes;
+    }
+
+    private void invalidate(Long nodeId) {
+        KnowledgeBO knowledge = knowledgeRepository.findById(nodeId);
+        if (knowledge != null) cache.invalidate(
+                new GraphKey(knowledge.getTenantId(), knowledge.getSpaceId()));
+    }
+
+    private enum NodeList { PARENTS, CHILDREN, RELATED }
+    private record GraphKey(Long tenantId, Long spaceId) { }
 }

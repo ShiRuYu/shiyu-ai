@@ -44,7 +44,8 @@ public class RagOrchestrator {
 
     public RagResult retrieve(String query, int topK) {
         float[] queryVector = embeddingService.embed(query);
-        List<VectorRecord> vsResults = vectorStore.search(queryVector, topK);
+        int candidateCount = Math.max(topK, 20);
+        List<VectorRecord> vsResults = vectorStore.search(queryVector, candidateCount);
 
         List<RagChunk> chunks = new ArrayList<>();
         Set<String> relatedKnowledgeIds = new LinkedHashSet<>();
@@ -68,8 +69,13 @@ public class RagOrchestrator {
             chunks.add(new RagChunk(chunkDO.getContent(), score, meta));
         }
 
-        String graphContext = enrichWithGraph(relatedKnowledgeIds);
+        if (reranker != null && !chunks.isEmpty()) {
+            chunks = new ArrayList<>(reranker.rerank(query, chunks, topK));
+        } else if (chunks.size() > topK) {
+            chunks = new ArrayList<>(chunks.subList(0, topK));
+        }
 
+        String graphContext = enrichWithGraph(relatedKnowledgeIds);
         return new RagResult(chunks, graphContext);
     }
 
@@ -126,10 +132,6 @@ public class RagOrchestrator {
 
     private Long parseChunkId(String id) {
         try {
-            int underscore = id.indexOf('_');
-            if (underscore > 0) {
-                return Long.parseLong(id.substring(0, underscore));
-            }
             return Long.parseLong(id);
         } catch (NumberFormatException e) {
             return null;

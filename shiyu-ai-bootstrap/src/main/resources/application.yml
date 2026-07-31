@@ -11,7 +11,7 @@ shiyu:
   storage:
     type: ${SHIYU_STORAGE_TYPE:local}
     local:
-      path: ${SHIYU_STORAGE_LOCAL_PATH:${app.home}/data/uploads}
+      path: ${SHIYU_STORAGE_LOCAL_PATH:${app.home}/data/files}
     providers:
       s3:
         endpoint: ${SHIYU_STORAGE_S3_ENDPOINT:}
@@ -50,6 +50,28 @@ shiyu:
     type: jvector           # inmemory | jvector
     dimension: 512
     data-dir: ${app.home}/data/vector
+  knowledge:
+    data-dir: ${app.home}/data
+    default-space-code: default
+    upload:
+      max-file-size: 200MB
+      allowed-extensions: pdf,docx,md,markdown,txt,html,htm
+    task:
+      parser-concurrency: 2
+      embedding-concurrency: 4
+      stale-minutes: 10
+      max-attempts: 3
+      poll-delay-ms: 2000
+    index:
+      idle-minutes: 30
+      candidate-top-k: 20
+      default-top-k: 5
+      rrf-k: 60
+    backup:
+      enabled: true
+      directory: ${app.home}/data/backups
+      hourly-retention: 24
+      daily-retention: 30
 # 开发环境配置
 server:
   # 服务器的HTTP端口，默认为8080

@@ -41,4 +41,13 @@ public class KnowledgeDocRelationRepository {
         return MapstructUtils.convert(mapper.selectListByQuery(
                 QueryWrapper.create().eq("knowledge_id", id)), KnowledgeDocRelationBO.class);
     }
+
+    public void assignDefaultSpace(Long spaceId) {
+        List<KnowledgeDocRelationDO> records = mapper.selectListByQuery(
+                QueryWrapper.create().isNull(KnowledgeDocRelationDO::getSpaceId));
+        for (KnowledgeDocRelationDO record : records) {
+            record.setSpaceId(spaceId);
+            mapper.update(record);
+        }
+    }
 }

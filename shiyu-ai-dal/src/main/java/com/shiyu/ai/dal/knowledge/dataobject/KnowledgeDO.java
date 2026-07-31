@@ -19,6 +19,8 @@ public class KnowledgeDO extends TenantEntity {
     @Id(keyType = KeyType.Auto)
     private Long id;
 
+    private Long spaceId;
+
     private String code;
 
     private String name;
