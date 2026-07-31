@@ -11,6 +11,18 @@ import org.slf4j.helpers.MessageFormatter;
 public enum LoggerUtil {
     COMMON_LOGGER(LoggerFactory.getLogger("COMMON_LOGGER")),
     WEB_LOGGER(LoggerFactory.getLogger("WEB_LOGGER")),
+    SYSTEM_LOGGER(LoggerFactory.getLogger("SYSTEM_LOGGER")),
+    BUSINESS_LOGGER(LoggerFactory.getLogger("BUSINESS_LOGGER")),
+    AUDIT_LOGGER(LoggerFactory.getLogger("AUDIT_LOGGER")),
+    SECURITY_LOGGER(LoggerFactory.getLogger("SECURITY_LOGGER")),
+    AI_LOGGER(LoggerFactory.getLogger("AI_LOGGER")),
+    TOOL_LOGGER(LoggerFactory.getLogger("TOOL_LOGGER")),
+    KNOWLEDGE_LOGGER(LoggerFactory.getLogger("KNOWLEDGE_LOGGER")),
+    TASK_LOGGER(LoggerFactory.getLogger("TASK_LOGGER")),
+    INTEGRATION_LOGGER(LoggerFactory.getLogger("INTEGRATION_LOGGER")),
+    PERFORMANCE_LOGGER(LoggerFactory.getLogger("PERFORMANCE_LOGGER")),
+    DATABASE_LOGGER(LoggerFactory.getLogger("DATABASE_LOGGER")),
+    ERROR_LOGGER(LoggerFactory.getLogger("ERROR_LOGGER")),
     ;
 
     private final Logger normalLogger;
@@ -26,6 +38,9 @@ public enum LoggerUtil {
     }
     public void warn(String message,Object... objects){
         normalLogger.warn(msgHandle(message,objects));
+    }
+    public void debug(String message,Object... objects){
+        normalLogger.debug(msgHandle(message,objects));
     }
     public void error(String message){
         normalLogger.error(message);
