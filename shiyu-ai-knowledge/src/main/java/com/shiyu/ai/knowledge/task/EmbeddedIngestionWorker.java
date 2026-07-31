@@ -96,17 +96,26 @@ public class EmbeddedIngestionWorker {
                 throw new IllegalStateException("任务关联的文档或版本不存在");
             }
 
-            update(job, "READING", 10);
-            byte[] bytes;
-            try (ObjectStorage.ReadableObject object = objectStorage.open(version.getObjectKey())) {
-                bytes = object.inputStream().readAllBytes();
-                securityScanner.validate(object.originalName(), object.contentType(), bytes);
-            }
-
             update(job, "PARSING", 30);
             DocumentParser parser = parserFor(document.getDocType())
-                    .orElseThrow(() -> new IllegalStateException("缺少解析器: " + document.getDocType()));
-            DocumentParser.ParseResult parsed = parser.parse(bytes);
+                    .orElseThrow(() -> new IllegalStateException("Missing document parser: " + document.getDocType()));
+            DocumentParser.ParseResult parsed;
+            try {
+                update(job, "READING", 10);
+                byte[] bytes;
+                try (ObjectStorage.ReadableObject object = objectStorage.open(version.getObjectKey())) {
+                    bytes = object.inputStream().readAllBytes();
+                    securityScanner.validate(object.originalName(), object.contentType(), bytes);
+                }
+                parsed = parser.parse(bytes);
+            } catch (IOException storageException) {
+                if (version.getContent() == null || version.getContent().isBlank()) {
+                    throw storageException;
+                }
+                log.warn("Source object missing, reusing stored document content, jobId={}, objectKey={}",
+                        job.getId(), version.getObjectKey());
+                parsed = new DocumentParser.ParseResult(version.getTitle(), version.getContent(), "");
+            }
             if (parsed.text() == null || parsed.text().isBlank()) {
                 throw new IllegalStateException("文档未解析出有效文本");
             }

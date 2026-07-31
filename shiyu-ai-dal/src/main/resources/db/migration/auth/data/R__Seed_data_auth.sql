@@ -143,22 +143,45 @@ VALUES (15, '意图管理', 'AgentIntent', 'MENU', 10, 1, '/agent/intent', 'carb
 
 -- 知识库管理 CATALOG
 INSERT IGNORE INTO `auth_menu` (`id`, `name`, `code`, `type`, `parent_id`, `tenant_id`, `path`, `redirect`, `icon`, `component`, `show`, `status`, `order`, `del_flag`, `create_by`, `update_by`)
-VALUES (70, '知识引擎', 'KnowledgeEngine', 'CATALOG', NULL, 1, '/knowledge', '/knowledge/list', 'lucide:library', '', TRUE, 1, 15, 0, 'system', 'system');
+VALUES (70, '知识平台', 'KnowledgeEngine', 'CATALOG', NULL, 1, '/knowledge', '/knowledge/workbench', 'lucide:brain-circuit', '', TRUE, 1, 15, 0, 'system', 'system');
 
 INSERT IGNORE INTO `auth_menu` (`id`, `name`, `code`, `type`, `parent_id`, `tenant_id`, `path`, `icon`, `component`, `show`, `status`, `order`, `del_flag`, `create_by`, `update_by`)
-VALUES (71, '知识点管理', 'KnowledgeList', 'MENU', 70, 1, '/knowledge/list', 'carbon:concept', '/knowledge-engine/knowledge-list/list', TRUE, 1, 1, 0, 'system', 'system');
+VALUES (71, '知识资产', 'KnowledgeList', 'MENU', 70, 1, '/knowledge/assets', 'lucide:boxes', '/knowledge/assets/index', TRUE, 1, 2, 0, 'system', 'system');
 
 INSERT IGNORE INTO `auth_menu` (`id`, `name`, `code`, `type`, `parent_id`, `tenant_id`, `path`, `icon`, `component`, `show`, `status`, `order`, `del_flag`, `create_by`, `update_by`)
-VALUES (72, '知识图谱', 'KnowledgeGraph', 'MENU', 70, 1, '/knowledge/graph', 'carbon:network-3', '/knowledge-engine/knowledge-graph/index', TRUE, 1, 2, 0, 'system', 'system');
+VALUES (72, '图谱洞察', 'KnowledgeGraph', 'MENU', 70, 1, '/knowledge/graph', 'lucide:network', '/knowledge/graph/index', TRUE, 1, 3, 0, 'system', 'system');
 
 INSERT IGNORE INTO `auth_menu` (`id`, `name`, `code`, `type`, `parent_id`, `tenant_id`, `path`, `icon`, `component`, `show`, `status`, `order`, `del_flag`, `create_by`, `update_by`)
-VALUES (73, '企业知识工作台', 'KnowledgeDocument', 'MENU', 70, 1, '/knowledge/document', 'carbon:document', '/knowledge-engine/enterprise/index', TRUE, 1, 3, 0, 'system', 'system');
+VALUES (73, '企业知识工作台', 'KnowledgeDocument', 'MENU', 70, 1, '/knowledge/workbench', 'lucide:layout-dashboard', '/knowledge/workbench/index', TRUE, 1, 1, 0, 'system', 'system');
 
 INSERT IGNORE INTO `auth_menu` (`id`, `name`, `code`, `type`, `parent_id`, `tenant_id`, `path`, `icon`, `component`, `show`, `status`, `order`, `del_flag`, `create_by`, `update_by`)
-VALUES (74, '索引管理', 'KnowledgeIndex', 'MENU', 70, 1, '/knowledge/index', 'carbon:data-class', '/knowledge-engine/index-rebuild/list', TRUE, 1, 4, 0, 'system', 'system');
+VALUES (74, '索引与任务', 'KnowledgeIndex', 'MENU', 70, 1, '/knowledge/index', 'lucide:database-zap', '/knowledge/index/index', TRUE, 1, 7, 0, 'system', 'system');
 
 INSERT IGNORE INTO `auth_menu` (`id`, `name`, `code`, `type`, `parent_id`, `tenant_id`, `path`, `icon`, `component`, `show`, `status`, `order`, `del_flag`, `create_by`, `update_by`)
-VALUES (75, '知识关系', 'KnowledgeRelation', 'MENU', 70, 1, '/knowledge/relation', 'carbon:flow', '/knowledge-engine/knowledge-relation/index', TRUE, 1, 5, 0, 'system', 'system');
+VALUES (75, '关系编排', 'KnowledgeRelation', 'MENU', 70, 1, '/knowledge/relations', 'lucide:workflow', '/knowledge/relations/index', TRUE, 1, 5, 0, 'system', 'system');
+
+
+INSERT IGNORE INTO `auth_menu` (`id`, `name`, `code`, `type`, `parent_id`, `tenant_id`, `path`, `icon`, `component`, `show`, `status`, `order`, `del_flag`, `create_by`, `update_by`)
+VALUES (76, '空间管理', 'KnowledgeSpace', 'MENU', 70, 1, '/knowledge/spaces', 'lucide:layers-3', '/knowledge/spaces/index', TRUE, 1, 2, 0, 'system', 'system');
+INSERT IGNORE INTO `auth_menu` (`id`, `name`, `code`, `type`, `parent_id`, `tenant_id`, `path`, `icon`, `component`, `show`, `status`, `order`, `del_flag`, `create_by`, `update_by`)
+VALUES (77, '文档中心', 'KnowledgeDocuments', 'MENU', 70, 1, '/knowledge/documents', 'lucide:file-stack', '/knowledge/documents/index', TRUE, 1, 4, 0, 'system', 'system');
+INSERT IGNORE INTO `auth_menu` (`id`, `name`, `code`, `type`, `parent_id`, `tenant_id`, `path`, `icon`, `component`, `show`, `status`, `order`, `del_flag`, `create_by`, `update_by`)
+VALUES (78, '检索评估', 'KnowledgeSearch', 'MENU', 70, 1, '/knowledge/search', 'lucide:search-check', '/knowledge/search/index', TRUE, 1, 6, 0, 'system', 'system');
+INSERT IGNORE INTO `auth_menu` (`id`, `name`, `code`, `type`, `parent_id`, `tenant_id`, `path`, `icon`, `component`, `show`, `status`, `order`, `del_flag`, `create_by`, `update_by`)
+VALUES (79, '系统运维', 'KnowledgeOperations', 'MENU', 70, 1, '/knowledge/operations', 'lucide:server-cog', '/knowledge/operations/index', TRUE, 1, 8, 0, 'system', 'system');
+
+
+-- Keep knowledge-platform menu labels readable for existing databases.
+UPDATE `auth_menu` SET `name` = '知识平台', `path` = '/knowledge', `redirect` = '/knowledge/workbench' WHERE `code` = 'KnowledgeEngine' AND `tenant_id` = 1;
+UPDATE `auth_menu` SET `name` = '企业知识工作台', `path` = '/knowledge/workbench', `component` = '/knowledge/workbench/index', `order` = 1 WHERE `code` = 'KnowledgeDocument' AND `tenant_id` = 1;
+UPDATE `auth_menu` SET `name` = '空间管理', `path` = '/knowledge/spaces', `component` = '/knowledge/spaces/index', `order` = 2 WHERE `code` = 'KnowledgeSpace' AND `tenant_id` = 1;
+UPDATE `auth_menu` SET `name` = '知识资产', `path` = '/knowledge/assets', `component` = '/knowledge/assets/index', `order` = 3 WHERE `code` = 'KnowledgeList' AND `tenant_id` = 1;
+UPDATE `auth_menu` SET `name` = '文档中心', `path` = '/knowledge/documents', `component` = '/knowledge/documents/index', `order` = 4 WHERE `code` = 'KnowledgeDocuments' AND `tenant_id` = 1;
+UPDATE `auth_menu` SET `name` = '图谱洞察', `path` = '/knowledge/graph', `component` = '/knowledge/graph/index', `order` = 5 WHERE `code` = 'KnowledgeGraph' AND `tenant_id` = 1;
+UPDATE `auth_menu` SET `name` = '关系编排', `path` = '/knowledge/relations', `component` = '/knowledge/relations/index', `order` = 6 WHERE `code` = 'KnowledgeRelation' AND `tenant_id` = 1;
+UPDATE `auth_menu` SET `name` = '检索评估', `path` = '/knowledge/search', `component` = '/knowledge/search/index', `order` = 7 WHERE `code` = 'KnowledgeSearch' AND `tenant_id` = 1;
+UPDATE `auth_menu` SET `name` = '索引与任务', `path` = '/knowledge/index', `component` = '/knowledge/index/index', `order` = 8 WHERE `code` = 'KnowledgeIndex' AND `tenant_id` = 1;
+UPDATE `auth_menu` SET `name` = '系统运维', `path` = '/knowledge/operations', `component` = '/knowledge/operations/index', `order` = 9 WHERE `code` = 'KnowledgeOperations' AND `tenant_id` = 1;
 
 -- ============================================
 -- 教育空间 CATALOG（parent of 教育中心 + 学生端）
