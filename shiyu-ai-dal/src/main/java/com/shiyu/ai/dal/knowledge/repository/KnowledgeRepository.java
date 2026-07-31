@@ -1,6 +1,7 @@
 package com.shiyu.ai.dal.knowledge.repository;
 
 import com.mybatisflex.core.query.QueryWrapper;
+import com.shiyu.ai.common.core.api.PageData;
 import com.shiyu.ai.common.core.utils.MapstructUtils;
 import com.shiyu.ai.dal.knowledge.bo.KnowledgeBO;
 import com.shiyu.ai.dal.knowledge.dataobject.KnowledgeDO;
@@ -90,6 +91,29 @@ public class KnowledgeRepository {
                 QueryWrapper.create()
                         .eq(KnowledgeDO::getSpaceId, spaceId)
                         .eq(KnowledgeDO::getStatus, 1)), KnowledgeBO.class);
+    }
+
+    public PageData<KnowledgeBO> pageBySpace(Long spaceId, int pageNum, int pageSize,
+                                              String keyword, String category) {
+        QueryWrapper query = QueryWrapper.create()
+                .eq(KnowledgeDO::getSpaceId, spaceId)
+                .eq(KnowledgeDO::getStatus, 1);
+        if (keyword != null && !keyword.isBlank()) {
+            query.like(KnowledgeDO::getName, keyword);
+        }
+        if (category != null && !category.isBlank()) {
+            query.eq(KnowledgeDO::getCategory, category);
+        }
+        var page = knowledgeMapper.paginate(pageNum, pageSize,
+                query.orderBy(KnowledgeDO::getId, false));
+        return new PageData<>(MapstructUtils.convert(page.getRecords(), KnowledgeBO.class),
+                page.getTotalRow());
+    }
+
+    public int deleteByIdAndSpace(Long id, Long spaceId) {
+        return knowledgeMapper.deleteByQuery(QueryWrapper.create()
+                .eq(KnowledgeDO::getId, id)
+                .eq(KnowledgeDO::getSpaceId, spaceId));
     }
 
     public void assignDefaultSpace(Long spaceId) {

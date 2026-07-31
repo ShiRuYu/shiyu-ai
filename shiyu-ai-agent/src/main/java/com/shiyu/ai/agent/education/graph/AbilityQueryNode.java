@@ -8,8 +8,8 @@ import com.shiyu.ai.agent.node.NodeType;
 import com.shiyu.ai.education.service.AbilityService;
 import com.shiyu.ai.education.domain.AbilityValue;
 import com.shiyu.ai.knowledge.dto.KnowledgeResponse;
+import com.shiyu.ai.knowledge.point.KnowledgePointService;
 import com.shiyu.ai.knowledge.service.KnowledgeRelationService;
-import com.shiyu.ai.knowledge.service.KnowledgeService;
 import lombok.Getter;
 import lombok.Setter;
 import lombok.extern.slf4j.Slf4j;
@@ -31,17 +31,17 @@ import java.util.Map;
 @Setter
 public class AbilityQueryNode extends BaseNode {
 
-    private final KnowledgeService knowledgeService;
+    private final KnowledgePointService knowledgePointService;
     private final KnowledgeRelationService knowledgeRelationService;
     private final AbilityService abilityService;
 
-    public AbilityQueryNode(KnowledgeService knowledgeService,
+    public AbilityQueryNode(KnowledgePointService knowledgePointService,
                             KnowledgeRelationService knowledgeRelationService,
                             AbilityService abilityService) {
         super();
         this.getConfig().setNodeType(NodeType.TRANSFORM);
         this.getConfig().setNodeName("abilityQuery");
-        this.knowledgeService = knowledgeService;
+        this.knowledgePointService = knowledgePointService;
         this.knowledgeRelationService = knowledgeRelationService;
         this.abilityService = abilityService;
     }
@@ -61,7 +61,7 @@ public class AbilityQueryNode extends BaseNode {
         }
 
         // 1. 查询知识点
-        KnowledgeResponse knowledge = knowledgeService.getById(knowledgeId);
+        KnowledgeResponse knowledge = knowledgePointService.getResponse(knowledgeId);
         if (knowledge == null) {
             NodeOutput err = new NodeOutput();
             err.setSuccess(false);

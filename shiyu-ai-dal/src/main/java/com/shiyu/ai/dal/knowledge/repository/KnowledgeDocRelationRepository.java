@@ -32,14 +32,36 @@ public class KnowledgeDocRelationRepository {
         mapper.deleteByQuery(QueryWrapper.create().eq("knowledge_id", id));
     }
 
+    public void deleteByKnowledgeId(Long spaceId, Long id) {
+        mapper.deleteByQuery(QueryWrapper.create().eq("space_id", spaceId)
+                .eq("knowledge_id", id));
+    }
+
     public List<KnowledgeDocRelationBO> selectByDocId(Long id) {
         return MapstructUtils.convert(mapper.selectListByQuery(
                 QueryWrapper.create().eq("doc_id", id)), KnowledgeDocRelationBO.class);
     }
 
+    public List<KnowledgeDocRelationBO> selectByDocId(Long spaceId, Long id) {
+        return MapstructUtils.convert(mapper.selectListByQuery(
+                QueryWrapper.create().eq("space_id", spaceId).eq("doc_id", id)),
+                KnowledgeDocRelationBO.class);
+    }
+
     public List<KnowledgeDocRelationBO> selectByKnowledgeId(Long id) {
         return MapstructUtils.convert(mapper.selectListByQuery(
                 QueryWrapper.create().eq("knowledge_id", id)), KnowledgeDocRelationBO.class);
+    }
+
+    public List<KnowledgeDocRelationBO> selectByKnowledgeId(Long spaceId, Long id) {
+        return MapstructUtils.convert(mapper.selectListByQuery(
+                QueryWrapper.create().eq("space_id", spaceId).eq("knowledge_id", id)),
+                KnowledgeDocRelationBO.class);
+    }
+
+    public void deleteByDocId(Long spaceId, Long id) {
+        mapper.deleteByQuery(QueryWrapper.create().eq("space_id", spaceId)
+                .eq("doc_id", id));
     }
 
     public void assignDefaultSpace(Long spaceId) {

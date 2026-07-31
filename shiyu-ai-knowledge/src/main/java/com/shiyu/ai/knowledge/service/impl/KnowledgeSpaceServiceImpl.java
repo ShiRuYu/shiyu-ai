@@ -8,6 +8,7 @@ import com.shiyu.ai.dal.knowledge.dataobject.KnowledgeSpaceMemberDO;
 import com.shiyu.ai.dal.knowledge.repository.KnowledgeChunkRepository;
 import com.shiyu.ai.dal.knowledge.repository.KnowledgeDocRelationRepository;
 import com.shiyu.ai.dal.knowledge.repository.KnowledgeDocumentRepository;
+import com.shiyu.ai.dal.knowledge.repository.KnowledgeDifficultyScaleRepository;
 import com.shiyu.ai.dal.knowledge.repository.KnowledgeEnterpriseRepository;
 import com.shiyu.ai.dal.knowledge.repository.KnowledgeRelationRepository;
 import com.shiyu.ai.dal.knowledge.repository.KnowledgeRepository;
@@ -35,6 +36,7 @@ public class KnowledgeSpaceServiceImpl implements KnowledgeSpaceService {
     private final KnowledgeRepository knowledgeRepository;
     private final KnowledgeRelationRepository relationRepository;
     private final KnowledgeDocumentRepository documentRepository;
+    private final KnowledgeDifficultyScaleRepository difficultyScaleRepository;
     private final KnowledgeDocRelationRepository docRelationRepository;
     private final KnowledgeChunkRepository chunkRepository;
     private final KnowledgeAuditService auditService;
@@ -57,6 +59,7 @@ public class KnowledgeSpaceServiceImpl implements KnowledgeSpaceService {
         space.setDescription("兼容既有知识点、文档和教育关联的默认空间");
         space.setAccessMode("TENANT");
         space.setReviewMode("DIRECT");
+        space.setDifficultyScaleId(1L);
         applyDefaults(space);
         repository.insertSpace(space);
         assignLegacyData(space.getId());
@@ -69,6 +72,22 @@ public class KnowledgeSpaceServiceImpl implements KnowledgeSpaceService {
         requireAccess(id, SpaceRole.VIEWER);
         KnowledgeSpaceDO space = requireSpace(id);
         return toView(space);
+    }
+
+    @Override
+    public DifficultyScaleView difficultyScale(Long spaceId) {
+        requireAccess(spaceId, SpaceRole.VIEWER);
+        KnowledgeSpaceDO space = requireSpace(spaceId);
+        var scale = difficultyScaleRepository.findScale(space.getDifficultyScaleId());
+        if (scale == null) {
+            throw new ServiceException("知识空间未配置有效的难度量表");
+        }
+        List<DifficultyLevelView> levels = difficultyScaleRepository.findLevels(scale.getId()).stream()
+                .map(level -> new DifficultyLevelView(level.getLevel(), level.getLabel(),
+                        level.getDescription()))
+                .toList();
+        return new DifficultyScaleView(scale.getId(), scale.getCode(), scale.getName(),
+                scale.getDescription(), scale.getLevelCount(), levels);
     }
 
     @Override
@@ -95,6 +114,7 @@ public class KnowledgeSpaceServiceImpl implements KnowledgeSpaceService {
         space.setDescription(request.description());
         space.setAccessMode(normalizeEnum(request.accessMode(), "PRIVATE", ACCESS_MODES, "访问模式"));
         space.setReviewMode(normalizeEnum(request.reviewMode(), "OPTIONAL", REVIEW_MODES, "审核模式"));
+        space.setDifficultyScaleId(request.difficultyScaleId() == null ? 1L : request.difficultyScaleId());
         space.setEmbeddingProfile(defaultText(request.embeddingProfile(), "default"));
         space.setRerankProfile(defaultText(request.rerankProfile(), "default"));
         space.setChunkStrategy(defaultText(request.chunkStrategy(), "HEADING").toUpperCase(Locale.ROOT));
@@ -136,6 +156,9 @@ public class KnowledgeSpaceServiceImpl implements KnowledgeSpaceService {
         }
         if (request.reviewMode() != null) {
             space.setReviewMode(normalizeEnum(request.reviewMode(), null, REVIEW_MODES, "审核模式"));
+        }
+        if (request.difficultyScaleId() != null) {
+            space.setDifficultyScaleId(request.difficultyScaleId());
         }
         if (request.embeddingProfile() != null) {
             space.setEmbeddingProfile(request.embeddingProfile());
@@ -267,6 +290,7 @@ public class KnowledgeSpaceServiceImpl implements KnowledgeSpaceService {
         space.setChunkSize(800);
         space.setChunkOverlap(100);
         space.setActiveIndexVersion(0L);
+        space.setDifficultyScaleId(1L);
         space.setStatus(1);
         space.setDelFlag(0);
     }
@@ -300,6 +324,7 @@ public class KnowledgeSpaceServiceImpl implements KnowledgeSpaceService {
     private SpaceView toView(KnowledgeSpaceDO space) {
         return new SpaceView(space.getId(), space.getCode(), space.getName(),
                 space.getDescription(), space.getAccessMode(), space.getReviewMode(),
+                space.getDifficultyScaleId(),
                 space.getEmbeddingProfile(), space.getRerankProfile(),
                 space.getChunkStrategy(), space.getChunkSize(), space.getChunkOverlap(),
                 space.getActiveIndexVersion(), space.getStatus(),

@@ -1,9 +1,9 @@
 package com.shiyu.ai.agent.workflow.component;
 
 import com.shiyu.ai.knowledge.dto.KnowledgeResponse;
-import com.shiyu.ai.knowledge.path.LearningPathService;
+import com.shiyu.ai.knowledge.point.KnowledgePointService;
+import com.shiyu.ai.knowledge.path.KnowledgePathService;
 import com.shiyu.ai.knowledge.service.KnowledgeRelationService;
-import com.shiyu.ai.knowledge.service.KnowledgeService;
 import com.shiyu.ai.agent.workflow.context.LearningContext;
 import com.yomahub.liteflow.core.NodeComponent;
 import lombok.RequiredArgsConstructor;
@@ -25,9 +25,9 @@ import java.util.Set;
 @RequiredArgsConstructor
 public class CheckKnowledgeCmp extends NodeComponent {
 
-    private final KnowledgeService knowledgeService;
+    private final KnowledgePointService knowledgePointService;
     private final KnowledgeRelationService knowledgeRelationService;
-    private final LearningPathService learningPathService;
+    private final KnowledgePathService knowledgePathService;
 
     @Override
     public void process() throws Exception {
@@ -36,7 +36,7 @@ public class CheckKnowledgeCmp extends NodeComponent {
                 ctx.getStudentId(), ctx.getKnowledgeId());
 
         // 1. 获取知识点详情
-        KnowledgeResponse knowledge = knowledgeService.getById(ctx.getKnowledgeId());
+        KnowledgeResponse knowledge = knowledgePointService.getResponse(ctx.getKnowledgeId());
         ctx.setKnowledge(knowledge);
 
         // 2. 获取前置知识点列表
@@ -52,7 +52,7 @@ public class CheckKnowledgeCmp extends NodeComponent {
         // 3. 检测缺失的前置知识
         Set<Long> masteredIds = Collections.emptySet(); // 后续可从学生记录中获取已掌握的知识点
         try {
-            List<Long> missing = learningPathService.findMissingPrerequisites(
+            List<Long> missing = knowledgePathService.findMissingPrerequisites(
                     ctx.getKnowledgeId(), masteredIds);
             ctx.setMissingPrerequisiteIds(missing);
             if (!missing.isEmpty()) {

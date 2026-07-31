@@ -10,15 +10,16 @@ import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestHeader;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 @RestController
-@RequestMapping("/knowledge/v2/ingestion-jobs")
+@RequestMapping("/knowledge/ingestion-jobs")
 @RequiredArgsConstructor
-@Tag(name = "知识任务 V2")
+@Tag(name = "知识任务")
 @SaCheckPermission("knowledge:document:list")
-public class KnowledgeJobV2Controller {
+public class KnowledgeJobController {
 
     private final KnowledgeJobService service;
 
@@ -27,25 +28,37 @@ public class KnowledgeJobV2Controller {
             @RequestParam(defaultValue = "1") int pageNum,
             @RequestParam(defaultValue = "20") int pageSize,
             @RequestParam(required = false) Long spaceId,
-            @RequestParam(required = false) String status) {
+            @RequestParam(required = false) String status,
+            @RequestHeader(value = KnowledgeApiVersion.HEADER,
+                    defaultValue = KnowledgeApiVersion.CURRENT) String version) {
+        KnowledgeApiVersion.requireCurrent(version);
         return Result.success(service.page(pageNum, Math.min(pageSize, 100), spaceId, status));
     }
 
     @GetMapping("/{id}")
-    public Result<KnowledgeJobService.JobView> get(@PathVariable Long id) {
+    public Result<KnowledgeJobService.JobView> get(@PathVariable Long id,
+                                                   @RequestHeader(value = KnowledgeApiVersion.HEADER,
+                                                           defaultValue = KnowledgeApiVersion.CURRENT) String version) {
+        KnowledgeApiVersion.requireCurrent(version);
         return Result.success(service.get(id));
     }
 
     @PostMapping("/{id}/cancel")
     @SaCheckPermission("knowledge:index:rebuild")
-    public Result<Void> cancel(@PathVariable Long id) {
+    public Result<Void> cancel(@PathVariable Long id,
+                               @RequestHeader(value = KnowledgeApiVersion.HEADER,
+                                       defaultValue = KnowledgeApiVersion.CURRENT) String version) {
+        KnowledgeApiVersion.requireCurrent(version);
         service.cancel(id);
         return Result.success();
     }
 
     @PostMapping("/{id}/retry")
     @SaCheckPermission("knowledge:index:rebuild")
-    public Result<Void> retry(@PathVariable Long id) {
+    public Result<Void> retry(@PathVariable Long id,
+                              @RequestHeader(value = KnowledgeApiVersion.HEADER,
+                                      defaultValue = KnowledgeApiVersion.CURRENT) String version) {
+        KnowledgeApiVersion.requireCurrent(version);
         service.retry(id);
         return Result.success();
     }

@@ -15,6 +15,8 @@ public interface KnowledgeSpaceService {
 
     SpaceView get(Long id);
 
+    DifficultyScaleView difficultyScale(Long spaceId);
+
     PageData<SpaceView> page(int pageNum, int pageSize, String keyword);
 
     SpaceView create(CreateSpaceRequest request);
@@ -44,7 +46,8 @@ public interface KnowledgeSpaceService {
     }
 
     record SpaceView(Long id, String code, String name, String description,
-                     String accessMode, String reviewMode, String embeddingProfile,
+                     String accessMode, String reviewMode, Long difficultyScaleId,
+                     String embeddingProfile,
                      String rerankProfile, String chunkStrategy, Integer chunkSize,
                      Integer chunkOverlap, Long activeIndexVersion, Integer status,
                      LocalDateTime createTime, LocalDateTime updateTime) {
@@ -54,15 +57,24 @@ public interface KnowledgeSpaceService {
                       String spaceRole) {
     }
 
+    record DifficultyScaleView(Long id, String code, String name, String description,
+                               Integer levelCount, List<DifficultyLevelView> levels) {
+    }
+
+    record DifficultyLevelView(Integer level, String label, String description) {
+    }
+
     record CreateSpaceRequest(@NotBlank String code, @NotBlank String name,
                               String description, String accessMode, String reviewMode,
-                              String embeddingProfile, String rerankProfile,
+                              Long difficultyScaleId, String embeddingProfile,
+                              String rerankProfile,
                               String chunkStrategy, @Min(100) @Max(4000) Integer chunkSize,
                               @Min(0) @Max(1000) Integer chunkOverlap) {
     }
 
     record UpdateSpaceRequest(String name, String description, String accessMode,
-                              String reviewMode, String embeddingProfile,
+                              String reviewMode, Long difficultyScaleId,
+                              String embeddingProfile,
                               String rerankProfile, String chunkStrategy,
                               @Min(100) @Max(4000) Integer chunkSize,
                               @Min(0) @Max(1000) Integer chunkOverlap,

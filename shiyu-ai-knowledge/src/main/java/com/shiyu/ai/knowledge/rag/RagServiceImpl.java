@@ -6,7 +6,6 @@ import com.shiyu.ai.knowledge.rag.RagService;
 import com.shiyu.ai.knowledge.search.KnowledgeSearchService;
 import com.shiyu.ai.knowledge.search.SearchResult;
 import com.shiyu.ai.knowledge.search.SearchSource;
-import com.shiyu.ai.knowledge.service.DocumentKnowledgeService;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 
@@ -19,14 +18,11 @@ import java.util.stream.Collectors;
 public class RagServiceImpl implements RagService {
 
     private final KnowledgeSearchService knowledgeSearchService;
-    private final DocumentKnowledgeService documentKnowledgeService;
     private final RagOrchestrator ragOrchestrator;
 
     public RagServiceImpl(KnowledgeSearchService knowledgeSearchService,
-                          DocumentKnowledgeService documentKnowledgeService,
                           RagOrchestrator ragOrchestrator) {
         this.knowledgeSearchService = knowledgeSearchService;
-        this.documentKnowledgeService = documentKnowledgeService;
         this.ragOrchestrator = ragOrchestrator;
     }
 

@@ -9,21 +9,13 @@ import lombok.EqualsAndHashCode;
 
 @Data
 @EqualsAndHashCode(callSuper = true)
-@Table("knowledge_space")
-public class KnowledgeSpaceDO extends TenantEntity {
+@Table("knowledge_difficulty_scale")
+public class KnowledgeDifficultyScaleDO extends TenantEntity {
 
     @Id(keyType = KeyType.Auto)
     private Long id;
     private String code;
     private String name;
     private String description;
-    private String accessMode;
-    private String reviewMode;
-    private Long difficultyScaleId;
-    private String embeddingProfile;
-    private String rerankProfile;
-    private String chunkStrategy;
-    private Integer chunkSize;
-    private Integer chunkOverlap;
-    private Long activeIndexVersion;
+    private Integer levelCount;
 }

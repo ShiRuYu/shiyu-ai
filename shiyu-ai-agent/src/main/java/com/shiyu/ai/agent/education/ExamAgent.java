@@ -8,7 +8,7 @@ import com.shiyu.ai.education.domain.ExamType;
 import com.shiyu.ai.dal.education.repository.ExamRepository;
 import com.shiyu.ai.education.service.ExamService;
 import com.shiyu.ai.knowledge.dto.KnowledgeResponse;
-import com.shiyu.ai.knowledge.service.KnowledgeService;
+import com.shiyu.ai.knowledge.point.KnowledgePointService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Component;
@@ -27,7 +27,7 @@ import java.util.List;
 public class ExamAgent {
 
     private final ChatEngine chatEngine;
-    private final KnowledgeService knowledgeService;
+    private final KnowledgePointService knowledgePointService;
     private final ExamService examService;
     private final ExamRepository examRepository;
 
@@ -51,7 +51,7 @@ public class ExamAgent {
         List<String> knowledgeNames = new ArrayList<>();
         for (Long kid : knowledgeIds) {
             try {
-                KnowledgeResponse k = knowledgeService.getById(kid);
+                KnowledgeResponse k = knowledgePointService.getResponse(kid);
                 if (k != null) knowledgeNames.add(k.name());
             } catch (Exception e) {
                 log.warn("ExamAgent: 知识点 {} 不存在", kid);

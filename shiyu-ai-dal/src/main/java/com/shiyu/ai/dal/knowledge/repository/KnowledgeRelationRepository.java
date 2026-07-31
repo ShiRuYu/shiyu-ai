@@ -26,9 +26,21 @@ public class KnowledgeRelationRepository {
                 QueryWrapper.create().eq(KnowledgeRelationDO::getSourceId, sourceId)), KnowledgeRelationBO.class);
     }
 
+    public List<KnowledgeRelationBO> findBySourceId(Long spaceId, Long sourceId) {
+        return MapstructUtils.convert(relationMapper.selectListByQuery(
+                QueryWrapper.create().eq(KnowledgeRelationDO::getSpaceId, spaceId)
+                        .eq(KnowledgeRelationDO::getSourceId, sourceId)), KnowledgeRelationBO.class);
+    }
+
     public List<KnowledgeRelationBO> findByTargetId(Long targetId) {
         return MapstructUtils.convert(relationMapper.selectListByQuery(
                 QueryWrapper.create().eq(KnowledgeRelationDO::getTargetId, targetId)), KnowledgeRelationBO.class);
+    }
+
+    public List<KnowledgeRelationBO> findByTargetId(Long spaceId, Long targetId) {
+        return MapstructUtils.convert(relationMapper.selectListByQuery(
+                QueryWrapper.create().eq(KnowledgeRelationDO::getSpaceId, spaceId)
+                        .eq(KnowledgeRelationDO::getTargetId, targetId)), KnowledgeRelationBO.class);
     }
 
     public List<KnowledgeRelationBO> findBySourceIdAndType(Long sourceId, String type) {
@@ -37,9 +49,23 @@ public class KnowledgeRelationRepository {
                         .eq(KnowledgeRelationDO::getRelationType, type)), KnowledgeRelationBO.class);
     }
 
+    public List<KnowledgeRelationBO> findBySourceIdAndType(Long spaceId, Long sourceId, String type) {
+        return MapstructUtils.convert(relationMapper.selectListByQuery(
+                QueryWrapper.create().eq(KnowledgeRelationDO::getSpaceId, spaceId)
+                        .eq(KnowledgeRelationDO::getSourceId, sourceId)
+                        .eq(KnowledgeRelationDO::getRelationType, type)), KnowledgeRelationBO.class);
+    }
+
     public List<KnowledgeRelationBO> findByTargetIdAndType(Long targetId, String type) {
         return MapstructUtils.convert(relationMapper.selectListByQuery(
                 QueryWrapper.create().eq(KnowledgeRelationDO::getTargetId, targetId)
+                        .eq(KnowledgeRelationDO::getRelationType, type)), KnowledgeRelationBO.class);
+    }
+
+    public List<KnowledgeRelationBO> findByTargetIdAndType(Long spaceId, Long targetId, String type) {
+        return MapstructUtils.convert(relationMapper.selectListByQuery(
+                QueryWrapper.create().eq(KnowledgeRelationDO::getSpaceId, spaceId)
+                        .eq(KnowledgeRelationDO::getTargetId, targetId)
                         .eq(KnowledgeRelationDO::getRelationType, type)), KnowledgeRelationBO.class);
     }
 
@@ -54,11 +80,30 @@ public class KnowledgeRelationRepository {
                 .eq(KnowledgeRelationDO::getRelationType, type));
     }
 
+    public int deleteBySourceAndTargetAndType(Long spaceId, Long sourceId, Long targetId,
+                                              String type) {
+        return relationMapper.deleteByQuery(QueryWrapper.create()
+                .eq(KnowledgeRelationDO::getSpaceId, spaceId)
+                .eq(KnowledgeRelationDO::getSourceId, sourceId)
+                .eq(KnowledgeRelationDO::getTargetId, targetId)
+                .eq(KnowledgeRelationDO::getRelationType, type));
+    }
+
     public int deleteBySourceIdOrTargetId(Long knowledgeId) {
         int count = relationMapper.deleteByQuery(
                 QueryWrapper.create().eq(KnowledgeRelationDO::getSourceId, knowledgeId));
         count += relationMapper.deleteByQuery(
                 QueryWrapper.create().eq(KnowledgeRelationDO::getTargetId, knowledgeId));
+        return count;
+    }
+
+    public int deleteBySourceIdOrTargetId(Long spaceId, Long knowledgeId) {
+        int count = relationMapper.deleteByQuery(QueryWrapper.create()
+                .eq(KnowledgeRelationDO::getSpaceId, spaceId)
+                .eq(KnowledgeRelationDO::getSourceId, knowledgeId));
+        count += relationMapper.deleteByQuery(QueryWrapper.create()
+                .eq(KnowledgeRelationDO::getSpaceId, spaceId)
+                .eq(KnowledgeRelationDO::getTargetId, knowledgeId));
         return count;
     }
 

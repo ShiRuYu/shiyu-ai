@@ -3,7 +3,7 @@ package com.shiyu.ai.agent.workflow.component;
 import com.shiyu.ai.model.chat.ChatEngine;
 import com.shiyu.ai.model.chat.ChatRequest;
 import com.shiyu.ai.model.chat.ChatResponse;
-import com.shiyu.ai.knowledge.service.KnowledgeService;
+import com.shiyu.ai.knowledge.point.KnowledgePointService;
 import com.shiyu.ai.agent.workflow.context.LearningContext;
 import com.yomahub.liteflow.core.NodeComponent;
 import lombok.RequiredArgsConstructor;
@@ -19,7 +19,7 @@ import org.springframework.stereotype.Component;
 public class GenerateReviewQuestionsCmp extends NodeComponent {
 
     private final ChatEngine chatEngine;
-    private final KnowledgeService knowledgeService;
+    private final KnowledgePointService knowledgePointService;
 
     @Override
     public void process() throws Exception {
@@ -33,7 +33,7 @@ public class GenerateReviewQuestionsCmp extends NodeComponent {
 
         String knowledgeName = "知识点";
         try {
-            var k = knowledgeService.getById(ctx.getKnowledgeId());
+            var k = knowledgePointService.get(ctx.getKnowledgeId());
             if (k != null) knowledgeName = k.name();
         } catch (Exception e) {
             log.warn("生成复习题目异常: {}", e.getMessage());

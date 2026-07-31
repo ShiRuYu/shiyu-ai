@@ -12,8 +12,8 @@ import com.shiyu.ai.dal.education.repository.StudyPlanRepository;
 import com.shiyu.ai.dal.education.repository.StudyPlanItemRepository;
 import com.shiyu.ai.dal.education.repository.StudyPlanItemRepository;
 import com.shiyu.ai.knowledge.dto.KnowledgeResponse;
-import com.shiyu.ai.knowledge.path.LearningPathService;
-import com.shiyu.ai.knowledge.service.KnowledgeService;
+import com.shiyu.ai.knowledge.path.KnowledgePathService;
+import com.shiyu.ai.knowledge.point.KnowledgePointService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Component;
@@ -34,8 +34,8 @@ import java.util.List;
 public class PlannerAgent {
 
     private final ChatEngine chatEngine;
-    private final KnowledgeService knowledgeService;
-    private final LearningPathService learningPathService;
+    private final KnowledgePointService knowledgePointService;
+    private final KnowledgePathService knowledgePathService;
     private final StudyPlanRepository studyPlanRepository;
     private final StudyPlanItemRepository studyPlanItemRepository;
 
@@ -54,13 +54,13 @@ public class PlannerAgent {
                 studentId, targetKnowledgeId);
 
         // 1. 获取知识点详情
-        KnowledgeResponse target = knowledgeService.getById(targetKnowledgeId);
+        KnowledgeResponse target = knowledgePointService.getResponse(targetKnowledgeId);
         if (target == null) {
             throw new IllegalArgumentException("目标知识点不存在: " + targetKnowledgeId);
         }
 
         // 2. 获取学习路径（前置知识拓扑排序）
-        List<Long> path = learningPathService.generatePath(targetKnowledgeId);
+        List<Long> path = knowledgePathService.generatePath(targetKnowledgeId);
 
         // 3. 构建学习计划
         StudyPlanBO plan = new StudyPlanBO();

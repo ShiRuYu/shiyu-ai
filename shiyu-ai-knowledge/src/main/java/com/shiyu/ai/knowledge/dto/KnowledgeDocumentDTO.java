@@ -3,7 +3,7 @@ package com.shiyu.ai.knowledge.dto;
 import java.util.List;
 
 /**
- * 关联文档 DTO（从 KnowledgeResponse 中解耦，避免依赖 DocumentKnowledgeService 内部类型）
+ * 知识点关联文档摘要。
  */
 public record KnowledgeDocumentDTO(
         Long id,

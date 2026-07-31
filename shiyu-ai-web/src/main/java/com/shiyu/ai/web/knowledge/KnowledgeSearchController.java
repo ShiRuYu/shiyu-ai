@@ -15,23 +15,27 @@ import jakarta.validation.constraints.NotNull;
 import lombok.RequiredArgsConstructor;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestHeader;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 import java.util.List;
 
 @RestController
-@RequestMapping("/knowledge/v2")
+@RequestMapping("/knowledge")
 @RequiredArgsConstructor
-@Tag(name = "知识检索 V2")
+@Tag(name = "知识检索")
 @SaCheckPermission("knowledge:list")
-public class KnowledgeSearchV2Controller {
+public class KnowledgeSearchController {
 
     private final KnowledgeIndexService indexService;
     private final KnowledgeSpaceService spaceService;
 
     @PostMapping("/search")
-    public Result<SearchResponse> search(@RequestBody @Valid SearchRequest request) {
+    public Result<SearchResponse> search(@RequestBody @Valid SearchRequest request,
+                                         @RequestHeader(value = KnowledgeApiVersion.HEADER,
+                                                 defaultValue = KnowledgeApiVersion.CURRENT) String version) {
+        KnowledgeApiVersion.requireCurrent(version);
         spaceService.requireAccess(request.spaceId(), KnowledgeSpaceService.SpaceRole.VIEWER);
         Long tenantId = currentTenant();
         List<KnowledgeIndexService.HybridHit> hits = indexService.hybridSearch(
@@ -43,7 +47,10 @@ public class KnowledgeSearchV2Controller {
 
     @PostMapping("/index-jobs/rebuild")
     @SaCheckPermission("knowledge:index:rebuild")
-    public Result<Long> rebuild(@RequestBody @Valid RebuildRequest request) {
+    public Result<Long> rebuild(@RequestBody @Valid RebuildRequest request,
+                                @RequestHeader(value = KnowledgeApiVersion.HEADER,
+                                        defaultValue = KnowledgeApiVersion.CURRENT) String version) {
+        KnowledgeApiVersion.requireCurrent(version);
         spaceService.requireAccess(request.spaceId(), KnowledgeSpaceService.SpaceRole.ADMIN);
         return Result.success(indexService.rebuild(currentTenant(), request.spaceId()));
     }

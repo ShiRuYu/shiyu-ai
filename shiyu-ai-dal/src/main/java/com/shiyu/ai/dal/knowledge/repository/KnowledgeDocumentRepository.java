@@ -62,6 +62,16 @@ public class KnowledgeDocumentRepository {
                 QueryWrapper.create().in("id", docIds)), KnowledgeDocumentBO.class);
     }
 
+    public List<KnowledgeDocumentBO> selectByKnowledgeId(Long spaceId, Long knowledgeId) {
+        List<Long> docIds = knowledgeDocRelationMapper.selectListByQuery(
+                QueryWrapper.create().eq("space_id", spaceId).eq("knowledge_id", knowledgeId))
+                .stream().map(KnowledgeDocRelationDO::getDocId).toList();
+        if (docIds.isEmpty()) return List.of();
+        return MapstructUtils.convert(knowledgeDocumentMapper.selectListByQuery(
+                QueryWrapper.create().eq(KnowledgeDocumentDO::getSpaceId, spaceId)
+                        .in(KnowledgeDocumentDO::getId, docIds)), KnowledgeDocumentBO.class);
+    }
+
     public PageData<KnowledgeDocumentBO> pageBySpace(Long spaceId, int pageNum, int pageSize,
                                                      String keyword, String lifecycleStatus) {
         QueryWrapper query = QueryWrapper.create()

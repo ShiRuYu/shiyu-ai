@@ -11,6 +11,8 @@ import java.util.List;
 
 public interface KnowledgeRelationService {
 
+    List<RelationView> list(Long knowledgeId);
+
     /**
      * Get Prerequisites
      * @return 处理结果
@@ -47,4 +49,9 @@ public interface KnowledgeRelationService {
      * 移除指定知识点的所有关联关系
      */
     void removeAllRelations(Long knowledgeId);
+
+    record RelationView(Long sourceId, Long targetId, String relationType,
+                        Double weight, KnowledgeResponse source,
+                        KnowledgeResponse target) {
+    }
 }

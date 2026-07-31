@@ -6,33 +6,16 @@ import com.mybatisflex.annotation.Table;
 import com.shiyu.ai.common.mybatis.model.TenantEntity;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
-import java.io.Serial;
 
 @Data
 @EqualsAndHashCode(callSuper = true)
-@Table(value = "knowledge_base")
-public class KnowledgeDO extends TenantEntity {
-
-    @Serial
-    private static final long serialVersionUID = 1L;
+@Table("knowledge_difficulty_scale_level")
+public class KnowledgeDifficultyScaleLevelDO extends TenantEntity {
 
     @Id(keyType = KeyType.Auto)
     private Long id;
-
-    private Long spaceId;
-
-    private String code;
-
-    private String name;
-
+    private Long scaleId;
+    private Integer level;
+    private String label;
     private String description;
-
-    private Integer difficulty;
-
-    private Integer difficultyLevel;
-
-    private String category;
-
-    private String tags;
-
 }

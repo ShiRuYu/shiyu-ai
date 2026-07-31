@@ -5,24 +5,20 @@ import com.shiyu.ai.agent.node.BaseNode;
 import com.shiyu.ai.agent.node.NodeConfig;
 import com.shiyu.ai.agent.node.NodeType;
 import com.shiyu.ai.agent.node.creator.NodeCreator;
-import com.shiyu.ai.knowledge.path.LearningPathService;
+import com.shiyu.ai.knowledge.path.KnowledgePathService;
 import com.shiyu.ai.knowledge.service.KnowledgeRelationService;
-import com.shiyu.ai.knowledge.service.KnowledgeService;
 import org.springframework.stereotype.Component;
 
 @Component
 public class PrereqCheckNodeCreator implements NodeCreator {
 
-    private final KnowledgeService knowledgeService;
     private final KnowledgeRelationService knowledgeRelationService;
-    private final LearningPathService learningPathService;
+    private final KnowledgePathService knowledgePathService;
 
-    public PrereqCheckNodeCreator(KnowledgeService knowledgeService,
-                                  KnowledgeRelationService knowledgeRelationService,
-                                  LearningPathService learningPathService) {
-        this.knowledgeService = knowledgeService;
+    public PrereqCheckNodeCreator(KnowledgeRelationService knowledgeRelationService,
+                                  KnowledgePathService knowledgePathService) {
         this.knowledgeRelationService = knowledgeRelationService;
-        this.learningPathService = learningPathService;
+        this.knowledgePathService = knowledgePathService;
     }
 
     @Override
@@ -32,7 +28,7 @@ public class PrereqCheckNodeCreator implements NodeCreator {
 
     @Override
     public BaseNode create(NodeConfig config) {
-        PrereqCheckNode node = new PrereqCheckNode(knowledgeService, knowledgeRelationService, learningPathService);
+        PrereqCheckNode node = new PrereqCheckNode(knowledgeRelationService, knowledgePathService);
         node.setConfig(config);
         return node;
     }
