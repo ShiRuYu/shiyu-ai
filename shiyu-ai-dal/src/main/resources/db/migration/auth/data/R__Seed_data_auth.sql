@@ -181,7 +181,9 @@ UPDATE `auth_menu` SET `name` = '空间管理', `path` = '/knowledge/spaces', `c
 UPDATE `auth_menu` SET `name` = '知识资产', `path` = '/knowledge/assets', `component` = '/knowledge/assets/index', `order` = 3 WHERE `code` = 'KnowledgeList' AND `tenant_id` = 1;
 UPDATE `auth_menu` SET `name` = '文档中心', `path` = '/knowledge/documents', `component` = '/knowledge/documents/index', `order` = 4 WHERE `code` = 'KnowledgeDocuments' AND `tenant_id` = 1;
 UPDATE `auth_menu` SET `name` = '图谱洞察', `path` = '/knowledge/graph', `component` = '/knowledge/graph/index', `order` = 5 WHERE `code` = 'KnowledgeGraph' AND `tenant_id` = 1;
-UPDATE `auth_menu` SET `name` = '关系编排', `path` = '/knowledge/relations', `component` = '/knowledge/relations/index', `order` = 6 WHERE `code` = 'KnowledgeRelation' AND `tenant_id` = 1;
+-- Relationship editing is embedded in the graph insight canvas. Keep the
+-- legacy route for deep links, but remove the duplicate sidebar entry.
+UPDATE `auth_menu` SET `name` = '关系编排', `path` = '/knowledge/relations', `component` = '/knowledge/relations/index', `show` = FALSE, `order` = 6 WHERE `code` = 'KnowledgeRelation';
 UPDATE `auth_menu` SET `name` = '检索实验室', `path` = '/knowledge/search', `component` = '/knowledge/search/index', `order` = 7 WHERE `code` = 'KnowledgeSearch' AND `tenant_id` = 1;
 UPDATE `auth_menu` SET `name` = '索引与任务', `path` = '/knowledge/index', `component` = '/knowledge/index/index', `order` = 8 WHERE `code` = 'KnowledgeIndex' AND `tenant_id` = 1;
 UPDATE `auth_menu` SET `name` = '系统运维', `path` = '/knowledge/operations', `component` = '/knowledge/operations/index', `order` = 9 WHERE `code` = 'KnowledgeOperations' AND `tenant_id` = 1;
