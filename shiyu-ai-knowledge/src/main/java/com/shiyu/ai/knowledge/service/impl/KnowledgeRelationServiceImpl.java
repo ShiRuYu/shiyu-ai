@@ -111,7 +111,7 @@ public class KnowledgeRelationServiceImpl implements KnowledgeRelationService {
         if (relationRepository.exists(source.getSpaceId(), sourceId, targetId, type.name())) {
             throw new ServiceException("知识关系已存在");
         }
-        if (type == RelationType.PRE && !knowledgeGraph.findPath(sourceId, targetId).isEmpty()) {
+        if (type == RelationType.PRE && !knowledgeGraph.findPath(targetId, sourceId).isEmpty()) {
             throw new ServiceException("前置关系会形成循环依赖");
         }
 
@@ -122,6 +122,8 @@ public class KnowledgeRelationServiceImpl implements KnowledgeRelationService {
         relation.setRelationType(type.name());
         relation.setWeight(weight != null ? weight : 1.0);
         relation.setCreateTime(LocalDateTime.now());
+        relation.setStatus(1);
+        relation.setDelFlag(0);
         relationRepository.insert(relation);
 
         knowledgeGraph.addEdge(sourceId, targetId, type.name(), relation.getWeight());

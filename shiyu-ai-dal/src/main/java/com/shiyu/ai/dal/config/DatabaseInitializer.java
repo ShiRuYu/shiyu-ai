@@ -1,11 +1,8 @@
 package com.shiyu.ai.dal.config;
 
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.boot.ApplicationArguments;
-
-import org.springframework.boot.ApplicationRunner;
+import jakarta.annotation.PostConstruct;
 import org.springframework.context.ApplicationContext;
-import org.springframework.core.annotation.Order;
 import org.springframework.core.io.Resource;
 import org.springframework.core.io.support.PathMatchingResourcePatternResolver;
 import org.springframework.stereotype.Component;
@@ -24,28 +21,22 @@ import java.util.Map;
  */
 @Slf4j
 @Component
-@Order(0)
-public class DatabaseInitializer implements ApplicationRunner {
+public class DatabaseInitializer {
 
-        private final ApplicationContext applicationContext;
+    private final Map<String, DataSource> dataSources;
     private final PathMatchingResourcePatternResolver resourceResolver;
 
-        public DatabaseInitializer(ApplicationContext applicationContext) {
-        this.applicationContext = applicationContext;
+    public DatabaseInitializer(Map<String, DataSource> dataSources, ApplicationContext applicationContext) {
+        this.dataSources = dataSources;
         this.resourceResolver = new PathMatchingResourcePatternResolver(applicationContext);
     }
 
-    @Override
-    public void run(ApplicationArguments args) {
-        if (applicationContext.containsBean("flyway")) {
-            log.info("Flyway 已启用，跳过 DatabaseInitializer DDL 执行");
-            return;
-        }
-        Map<String, DataSource> beans = applicationContext.getBeansOfType(DataSource.class);
-        DataSource ds = beans.get("agent");
-        if (ds == null) ds = beans.get("agentDataSource");
-        if (ds == null && !beans.isEmpty()) ds = beans.values().iterator().next();
-        if (ds == null) { log.warn("未找到 DataSource，跳过"); return; }
+    @PostConstruct
+    public void initialize() {
+        DataSource ds = dataSources.get("agent");
+        if (ds == null) ds = dataSources.get("agentDataSource");
+        if (ds == null && !dataSources.isEmpty()) ds = dataSources.values().iterator().next();
+        if (ds == null) { log.warn("未找到 DataSource，跳过数据库初始化"); return; }
 
         try (Connection conn = ds.getConnection(); Statement stmt = conn.createStatement()) {
             log.info("开始执行 DDL 建表...");

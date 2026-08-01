@@ -26,6 +26,18 @@ public class KnowledgePathServiceImpl implements KnowledgePathService {
     }
 
     @Override
+    public List<Long> findPath(Long fromKnowledgeId, Long toKnowledgeId) {
+        requireAccess(fromKnowledgeId);
+        requireAccess(toKnowledgeId);
+        var from = knowledgeRepository.findById(fromKnowledgeId);
+        var to = knowledgeRepository.findById(toKnowledgeId);
+        if (!java.util.Objects.equals(from.getSpaceId(), to.getSpaceId())) {
+            throw new ServiceException("路径查询只能在同一知识空间内进行");
+        }
+        return knowledgeGraph.findPath(fromKnowledgeId, toKnowledgeId);
+    }
+
+    @Override
     public List<Long> findMissingPrerequisites(Long targetKnowledgeId,
                                                Set<Long> masteredIds) {
         requireAccess(targetKnowledgeId);

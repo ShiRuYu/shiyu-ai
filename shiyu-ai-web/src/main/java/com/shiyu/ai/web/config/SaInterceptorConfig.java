@@ -41,7 +41,8 @@ public class SaInterceptorConfig implements WebMvcConfigurer {
                     "/swagger-ui/**",
                     "/v3/api-docs/**",
                     "/webjars/**", "/v2/api-docs",
-                    "/h2/**"
+                    "/h2/**",
+                    "/education-resources/**"
                 );
         // Sa-Token 拦截器，开启注解式鉴权功能
         // 默认构造函数 isAnnotation = true，自动扫描 @SaCheckPermission 等注解

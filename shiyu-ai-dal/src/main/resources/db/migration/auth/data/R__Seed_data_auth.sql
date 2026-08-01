@@ -166,9 +166,12 @@ VALUES (76, '空间管理', 'KnowledgeSpace', 'MENU', 70, 1, '/knowledge/spaces'
 INSERT IGNORE INTO `auth_menu` (`id`, `name`, `code`, `type`, `parent_id`, `tenant_id`, `path`, `icon`, `component`, `show`, `status`, `order`, `del_flag`, `create_by`, `update_by`)
 VALUES (77, '文档中心', 'KnowledgeDocuments', 'MENU', 70, 1, '/knowledge/documents', 'lucide:file-stack', '/knowledge/documents/index', TRUE, 1, 4, 0, 'system', 'system');
 INSERT IGNORE INTO `auth_menu` (`id`, `name`, `code`, `type`, `parent_id`, `tenant_id`, `path`, `icon`, `component`, `show`, `status`, `order`, `del_flag`, `create_by`, `update_by`)
-VALUES (78, '检索评估', 'KnowledgeSearch', 'MENU', 70, 1, '/knowledge/search', 'lucide:search-check', '/knowledge/search/index', TRUE, 1, 6, 0, 'system', 'system');
+VALUES (78, '检索实验室', 'KnowledgeSearch', 'MENU', 70, 1, '/knowledge/search', 'lucide:search-check', '/knowledge/search/index', TRUE, 1, 6, 0, 'system', 'system');
 INSERT IGNORE INTO `auth_menu` (`id`, `name`, `code`, `type`, `parent_id`, `tenant_id`, `path`, `icon`, `component`, `show`, `status`, `order`, `del_flag`, `create_by`, `update_by`)
 VALUES (79, '系统运维', 'KnowledgeOperations', 'MENU', 70, 1, '/knowledge/operations', 'lucide:server-cog', '/knowledge/operations/index', TRUE, 1, 8, 0, 'system', 'system');
+
+INSERT IGNORE INTO `auth_menu` (`id`, `name`, `code`, `type`, `parent_id`, `tenant_id`, `path`, `icon`, `component`, `show`, `status`, `order`, `del_flag`, `create_by`, `update_by`)
+VALUES (86, '评测中心', 'KnowledgeEvaluations', 'MENU', 70, 1, '/knowledge/evaluations', 'lucide:chart-no-axes-combined', '/knowledge/evaluations/index', TRUE, 1, 10, 0, 'system', 'system');
 
 
 -- Keep knowledge-platform menu labels readable for existing databases.
@@ -179,9 +182,49 @@ UPDATE `auth_menu` SET `name` = '知识资产', `path` = '/knowledge/assets', `c
 UPDATE `auth_menu` SET `name` = '文档中心', `path` = '/knowledge/documents', `component` = '/knowledge/documents/index', `order` = 4 WHERE `code` = 'KnowledgeDocuments' AND `tenant_id` = 1;
 UPDATE `auth_menu` SET `name` = '图谱洞察', `path` = '/knowledge/graph', `component` = '/knowledge/graph/index', `order` = 5 WHERE `code` = 'KnowledgeGraph' AND `tenant_id` = 1;
 UPDATE `auth_menu` SET `name` = '关系编排', `path` = '/knowledge/relations', `component` = '/knowledge/relations/index', `order` = 6 WHERE `code` = 'KnowledgeRelation' AND `tenant_id` = 1;
-UPDATE `auth_menu` SET `name` = '检索评估', `path` = '/knowledge/search', `component` = '/knowledge/search/index', `order` = 7 WHERE `code` = 'KnowledgeSearch' AND `tenant_id` = 1;
+UPDATE `auth_menu` SET `name` = '检索实验室', `path` = '/knowledge/search', `component` = '/knowledge/search/index', `order` = 7 WHERE `code` = 'KnowledgeSearch' AND `tenant_id` = 1;
 UPDATE `auth_menu` SET `name` = '索引与任务', `path` = '/knowledge/index', `component` = '/knowledge/index/index', `order` = 8 WHERE `code` = 'KnowledgeIndex' AND `tenant_id` = 1;
 UPDATE `auth_menu` SET `name` = '系统运维', `path` = '/knowledge/operations', `component` = '/knowledge/operations/index', `order` = 9 WHERE `code` = 'KnowledgeOperations' AND `tenant_id` = 1;
+UPDATE `auth_menu` SET `name` = '评测中心', `path` = '/knowledge/evaluations', `component` = '/knowledge/evaluations/index', `order` = 10 WHERE `code` = 'KnowledgeEvaluations' AND `tenant_id` = 1;
+
+-- 修复历史版本中 KnowledgeEvaluations 与 Record 共用菜单 ID 80 的数据冲突。
+-- 先迁移旧的评测菜单及其授权，再插入真正的日常记录根菜单，保证两棵菜单树互不串联。
+UPDATE `auth_role_scope_menu`
+SET `menu_id` = 86
+WHERE `tenant_id` = 1
+  AND `menu_id` = 80
+  AND EXISTS (SELECT 1 FROM `auth_menu` WHERE `id` = 80 AND `tenant_id` = 1 AND `code` = 'KnowledgeEvaluations');
+UPDATE `auth_tenant_menu`
+SET `menu_id` = 86
+WHERE `tenant_id` = 1
+  AND `menu_id` = 80
+  AND EXISTS (SELECT 1 FROM `auth_menu` WHERE `id` = 80 AND `tenant_id` = 1 AND `code` = 'KnowledgeEvaluations');
+DELETE FROM `auth_menu`
+WHERE `id` = 80 AND `tenant_id` = 1 AND `code` = 'KnowledgeEvaluations';
+
+-- 子租户菜单使用 source_menu_id + tenant_id * 100000 的克隆规则，同步修复历史克隆数据。
+UPDATE `auth_role_scope_menu` r
+SET `menu_id` = 86 + (`tenant_id` * 100000)
+WHERE r.`menu_id` = 80 + (r.`tenant_id` * 100000)
+  AND EXISTS (
+      SELECT 1 FROM `auth_menu` m
+      WHERE m.`id` = r.`menu_id`
+        AND m.`tenant_id` = r.`tenant_id`
+        AND m.`code` = 'KnowledgeEvaluations'
+  );
+UPDATE `auth_tenant_menu` tm
+SET `menu_id` = 86 + (tm.`tenant_id` * 100000)
+WHERE tm.`menu_id` = 80 + (tm.`tenant_id` * 100000)
+  AND EXISTS (
+      SELECT 1 FROM `auth_menu` m
+      WHERE m.`id` = tm.`menu_id`
+        AND m.`tenant_id` = tm.`tenant_id`
+        AND m.`code` = 'KnowledgeEvaluations'
+  );
+DELETE FROM `auth_menu`
+WHERE `id` = 80 + (`tenant_id` * 100000)
+  AND `tenant_id` <> 1
+  AND `code` = 'KnowledgeEvaluations';
 
 -- ============================================
 -- 教育空间 CATALOG（parent of 教育中心 + 学生端）
@@ -414,6 +457,7 @@ VALUES (1, 1, 1, 1, 0, 'system', 'system'),
 (1, 1, 83, 1, 0, 'system', 'system'),
 (1, 1, 84, 1, 0, 'system', 'system'),
 (1, 1, 85, 1, 0, 'system', 'system'),
+(1, 1, 86, 1, 0, 'system', 'system'),
 (1, 1, 90, 1, 0, 'system', 'system');
 
 -- admin 角色（role_id=2）拥有系统管理 + 智能体 + 知识库 + 教育管理 + 日常记录 + 文件管理菜单
@@ -485,6 +529,7 @@ VALUES (2, 1, 1, 1, 0, 'system', 'system'),
 (2, 1, 83, 1, 0, 'system', 'system'),
 (2, 1, 84, 1, 0, 'system', 'system'),
 (2, 1, 85, 1, 0, 'system', 'system'),
+(2, 1, 86, 1, 0, 'system', 'system'),
 (2, 1, 90, 1, 0, 'system', 'system');
 
 -- user 角色（role_id=3）拥有教育中心菜单

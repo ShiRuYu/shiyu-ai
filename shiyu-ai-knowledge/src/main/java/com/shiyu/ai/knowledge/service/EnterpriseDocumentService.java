@@ -10,7 +10,7 @@ import java.util.List;
 public interface EnterpriseDocumentService {
 
     PageData<DocumentView> page(Long spaceId, int pageNum, int pageSize,
-                                String keyword, String lifecycleStatus);
+                                String keyword, String lifecycleStatus, String parseStatus);
 
     DocumentView get(Long documentId);
 
@@ -25,6 +25,8 @@ public interface EnterpriseDocumentService {
     DocumentView reject(Long documentId, String comment);
 
     DocumentView publish(Long documentId, String comment);
+
+    DocumentView archive(Long documentId, String comment);
 
     DocumentView rollback(Long documentId, Long versionId);
 

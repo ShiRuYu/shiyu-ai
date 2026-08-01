@@ -12,12 +12,28 @@ INSERT IGNORE INTO `edu_subject` (`id`, `code`, `name`, `grade_level`, `icon`, `
 
 -- 教材
 INSERT IGNORE INTO `edu_textbook` (tenant_id, `id`, `name`, `subject_code`, `grade`, `publisher`, `isbn`, `create_by`, `update_by`) VALUES
-(1, 1, '人教版数学七年级上册', 'MATH', 7, '人民教育出版社', '978-7-107-12345-6', 'system', 'system'),
-(1, 2, '人教版数学七年级下册', 'MATH', 7, '人民教育出版社', '978-7-107-12346-3', 'system', 'system'),
-(1, 3, '北师大版数学七年级上册', 'MATH', 7, '北京师范大学出版社', '978-7-303-12345-7', 'system', 'system'),
-(1, 4, '人教版物理八年级上册', 'PHYSICS', 8, '人民教育出版社', '978-7-107-23456-7', 'system', 'system'),
-(1, 5, '人教版英语七年级上册', 'ENGLISH', 7, '人民教育出版社', '978-7-107-34567-8', 'system', 'system'),
-(1, 6, '人教版化学九年级上册', 'CHEMISTRY', 9, '人民教育出版社', '978-7-107-45678-9', 'system', 'system');
+(1, 1, '人教版数学七年级上册', 'MATH', 7, '人民教育出版社', NULL, 'system', 'system'),
+(1, 2, '人教版数学七年级下册', 'MATH', 7, '人民教育出版社', NULL, 'system', 'system'),
+(1, 3, '北师大版数学七年级上册', 'MATH', 7, '北京师范大学出版社', NULL, 'system', 'system'),
+(1, 4, '人教版物理八年级上册', 'PHYSICS', 8, '人民教育出版社', NULL, 'system', 'system'),
+(1, 5, '人教版英语七年级上册', 'ENGLISH', 7, '人民教育出版社', NULL, 'system', 'system'),
+(1, 6, '人教版化学九年级上册', 'CHEMISTRY', 9, '人民教育出版社', NULL, 'system', 'system');
+
+-- 教材版本未标注具体出版年份，无法可靠匹配 ISBN；清理旧种子中的示例编号。
+UPDATE `edu_textbook`
+SET `isbn` = NULL,
+    `update_by` = 'system',
+    `update_time` = CURRENT_TIMESTAMP
+WHERE `tenant_id` = 1
+  AND `id` BETWEEN 1 AND 6
+  AND `isbn` IN (
+    '978-7-107-12345-6',
+    '978-7-107-12346-3',
+    '978-7-303-12345-7',
+    '978-7-107-23456-7',
+    '978-7-107-34567-8',
+    '978-7-107-45678-9'
+  );
 
 -- 章节（教材1：人教版数学七年级上册）
 INSERT IGNORE INTO `edu_chapter` (tenant_id, `id`, `textbook_id`, `parent_id`, `name`, `chapter_order`, `create_by`, `update_by`) VALUES
@@ -91,9 +107,48 @@ INSERT IGNORE INTO `edu_learning_state` (`student_id`, `knowledge_id`, `state`, 
 
 -- 学习资源
 INSERT IGNORE INTO `edu_resource` (`id`, `name`, `type`, `url`, `subject_code`, `grade`, `difficulty`, `cover_url`, `description`, `view_count`, `tenant_id`, `create_by`, `update_by`) VALUES
-(1, '有理数入门视频', 'VIDEO', 'https://example.com/video1.mp4', 'MATH', 7, 1, 'https://example.com/cover1.jpg', '有理数基础教学视频', 150, 1, 'system', 'system'),
-(2, '绝对值练习题集', 'EXERCISE', 'https://example.com/exercise1.pdf', 'MATH', 7, 2, 'https://example.com/cover2.jpg', '绝对值相关练习题', 89, 1, 'system', 'system'),
-(3, '数轴互动演示', 'INTERACTIVE', 'https://example.com/interactive1.html', 'MATH', 7, 1, 'https://example.com/cover3.jpg', '数轴概念互动学习', 67, 1, 'system', 'system');
+(1, '整数与数轴开放教材', 'DOCUMENT', '/api/education-resources/openstax-integers-number-line.pdf', 'MATH', 7, 1, '/api/education-resources/openstax-integers-cover.png', 'OpenStax Prealgebra 第 3.1 节节选，涵盖整数、相反数、数轴和绝对值，采用 CC BY 4.0 许可。', 150, 1, 'system', 'system'),
+(2, '绝对值例题与练习', 'EXERCISE', '/api/education-resources/openstax-absolute-value-exercises.pdf', 'MATH', 7, 2, '/api/education-resources/openstax-integers-cover.png', 'OpenStax Prealgebra 绝对值内容与练习节选，采用 CC BY 4.0 许可。', 89, 1, 'system', 'system'),
+(3, '整数数轴互动实验', 'INTERACTIVE', '/api/education-resources/number-line-integers-phet-1.0.0.html?locale=zh_CN', 'MATH', 7, 1, '/api/education-resources/openstax-integers-cover.png', 'PhET Number Line: Integers 1.0.0 离线版，可交互探索整数在数轴上的位置和变化，采用 CC BY 4.0 许可。', 67, 1, 'system', 'system');
+
+-- 兼容已经执行过旧版重复迁移的数据库：将占位 URL 更新为本地开放教育资源。
+UPDATE `edu_resource`
+SET `name` = '整数与数轴开放教材',
+    `type` = 'DOCUMENT',
+    `url` = '/api/education-resources/openstax-integers-number-line.pdf',
+    `cover_url` = '/api/education-resources/openstax-integers-cover.png',
+    `description` = 'OpenStax Prealgebra 第 3.1 节节选，涵盖整数、相反数、数轴和绝对值，采用 CC BY 4.0 许可。'
+WHERE `id` = 1 AND `tenant_id` = 1;
+
+UPDATE `edu_resource`
+SET `name` = '绝对值例题与练习',
+    `type` = 'EXERCISE',
+    `url` = '/api/education-resources/openstax-absolute-value-exercises.pdf',
+    `cover_url` = '/api/education-resources/openstax-integers-cover.png',
+    `description` = 'OpenStax Prealgebra 绝对值内容与练习节选，采用 CC BY 4.0 许可。'
+WHERE `id` = 2 AND `tenant_id` = 1;
+
+UPDATE `edu_resource`
+SET `name` = '整数数轴互动实验',
+    `type` = 'INTERACTIVE',
+    `url` = '/api/education-resources/number-line-integers-phet-1.0.0.html?locale=zh_CN',
+    `cover_url` = '/api/education-resources/openstax-integers-cover.png',
+    `description` = 'PhET Number Line: Integers 1.0.0 离线版，可交互探索整数在数轴上的位置和变化，采用 CC BY 4.0 许可。'
+WHERE `id` = 3 AND `tenant_id` = 1;
+
+-- 学习资源-知识点关联
+INSERT IGNORE INTO `edu_resource_knowledge` (`resource_id`, `knowledge_id`, `sort_order`, `tenant_id`, `create_by`, `update_by`) VALUES
+(1, 1, 1, 1, 'system', 'system'),
+(1, 2, 2, 1, 'system', 'system'),
+(1, 3, 3, 1, 'system', 'system'),
+(1, 4, 4, 1, 'system', 'system'),
+(1, 5, 5, 1, 'system', 'system'),
+(1, 6, 6, 1, 'system', 'system'),
+(2, 5, 1, 1, 'system', 'system'),
+(3, 2, 1, 1, 'system', 'system'),
+(3, 3, 2, 1, 'system', 'system'),
+(3, 4, 3, 1, 'system', 'system'),
+(3, 5, 4, 1, 'system', 'system');
 
 -- 考试
 INSERT IGNORE INTO `edu_exam` (`id`, `name`, `type`, `subject_code`, `grade`, `duration_min`, `total_score`, `status`, `teacher_id`, `tenant_id`, `create_by`, `update_by`) VALUES

@@ -18,55 +18,63 @@ public class KnowledgeRelationRepository {
 
     public List<KnowledgeRelationBO> findAll() {
         return MapstructUtils.convert(relationMapper.selectListByQuery(
-                QueryWrapper.create()), KnowledgeRelationBO.class);
+                QueryWrapper.create().eq(KnowledgeRelationDO::getDelFlag, 0)), KnowledgeRelationBO.class);
     }
 
     public List<KnowledgeRelationBO> findBySourceId(Long sourceId) {
         return MapstructUtils.convert(relationMapper.selectListByQuery(
-                QueryWrapper.create().eq(KnowledgeRelationDO::getSourceId, sourceId)), KnowledgeRelationBO.class);
+                QueryWrapper.create().eq(KnowledgeRelationDO::getSourceId, sourceId)
+                        .eq(KnowledgeRelationDO::getDelFlag, 0)), KnowledgeRelationBO.class);
     }
 
     public List<KnowledgeRelationBO> findBySourceId(Long spaceId, Long sourceId) {
         return MapstructUtils.convert(relationMapper.selectListByQuery(
                 QueryWrapper.create().eq(KnowledgeRelationDO::getSpaceId, spaceId)
-                        .eq(KnowledgeRelationDO::getSourceId, sourceId)), KnowledgeRelationBO.class);
+                        .eq(KnowledgeRelationDO::getSourceId, sourceId)
+                        .eq(KnowledgeRelationDO::getDelFlag, 0)), KnowledgeRelationBO.class);
     }
 
     public List<KnowledgeRelationBO> findByTargetId(Long targetId) {
         return MapstructUtils.convert(relationMapper.selectListByQuery(
-                QueryWrapper.create().eq(KnowledgeRelationDO::getTargetId, targetId)), KnowledgeRelationBO.class);
+                QueryWrapper.create().eq(KnowledgeRelationDO::getTargetId, targetId)
+                        .eq(KnowledgeRelationDO::getDelFlag, 0)), KnowledgeRelationBO.class);
     }
 
     public List<KnowledgeRelationBO> findByTargetId(Long spaceId, Long targetId) {
         return MapstructUtils.convert(relationMapper.selectListByQuery(
                 QueryWrapper.create().eq(KnowledgeRelationDO::getSpaceId, spaceId)
-                        .eq(KnowledgeRelationDO::getTargetId, targetId)), KnowledgeRelationBO.class);
+                        .eq(KnowledgeRelationDO::getTargetId, targetId)
+                        .eq(KnowledgeRelationDO::getDelFlag, 0)), KnowledgeRelationBO.class);
     }
 
     public List<KnowledgeRelationBO> findBySourceIdAndType(Long sourceId, String type) {
         return MapstructUtils.convert(relationMapper.selectListByQuery(
                 QueryWrapper.create().eq(KnowledgeRelationDO::getSourceId, sourceId)
-                        .eq(KnowledgeRelationDO::getRelationType, type)), KnowledgeRelationBO.class);
+                        .eq(KnowledgeRelationDO::getRelationType, type)
+                        .eq(KnowledgeRelationDO::getDelFlag, 0)), KnowledgeRelationBO.class);
     }
 
     public List<KnowledgeRelationBO> findBySourceIdAndType(Long spaceId, Long sourceId, String type) {
         return MapstructUtils.convert(relationMapper.selectListByQuery(
                 QueryWrapper.create().eq(KnowledgeRelationDO::getSpaceId, spaceId)
                         .eq(KnowledgeRelationDO::getSourceId, sourceId)
-                        .eq(KnowledgeRelationDO::getRelationType, type)), KnowledgeRelationBO.class);
+                        .eq(KnowledgeRelationDO::getRelationType, type)
+                        .eq(KnowledgeRelationDO::getDelFlag, 0)), KnowledgeRelationBO.class);
     }
 
     public List<KnowledgeRelationBO> findByTargetIdAndType(Long targetId, String type) {
         return MapstructUtils.convert(relationMapper.selectListByQuery(
                 QueryWrapper.create().eq(KnowledgeRelationDO::getTargetId, targetId)
-                        .eq(KnowledgeRelationDO::getRelationType, type)), KnowledgeRelationBO.class);
+                        .eq(KnowledgeRelationDO::getRelationType, type)
+                        .eq(KnowledgeRelationDO::getDelFlag, 0)), KnowledgeRelationBO.class);
     }
 
     public List<KnowledgeRelationBO> findByTargetIdAndType(Long spaceId, Long targetId, String type) {
         return MapstructUtils.convert(relationMapper.selectListByQuery(
                 QueryWrapper.create().eq(KnowledgeRelationDO::getSpaceId, spaceId)
                         .eq(KnowledgeRelationDO::getTargetId, targetId)
-                        .eq(KnowledgeRelationDO::getRelationType, type)), KnowledgeRelationBO.class);
+                        .eq(KnowledgeRelationDO::getRelationType, type)
+                        .eq(KnowledgeRelationDO::getDelFlag, 0)), KnowledgeRelationBO.class);
     }
 
     public int insert(KnowledgeRelationBO bo) {
@@ -109,7 +117,8 @@ public class KnowledgeRelationRepository {
 
     public List<KnowledgeRelationBO> findBySpace(Long spaceId) {
         return MapstructUtils.convert(relationMapper.selectListByQuery(
-                QueryWrapper.create().eq(KnowledgeRelationDO::getSpaceId, spaceId)),
+                QueryWrapper.create().eq(KnowledgeRelationDO::getSpaceId, spaceId)
+                        .eq(KnowledgeRelationDO::getDelFlag, 0)),
                 KnowledgeRelationBO.class);
     }
 
@@ -118,7 +127,8 @@ public class KnowledgeRelationRepository {
                 .eq(KnowledgeRelationDO::getSpaceId, spaceId)
                 .eq(KnowledgeRelationDO::getSourceId, sourceId)
                 .eq(KnowledgeRelationDO::getTargetId, targetId)
-                .eq(KnowledgeRelationDO::getRelationType, type)) > 0;
+                .eq(KnowledgeRelationDO::getRelationType, type)
+                .eq(KnowledgeRelationDO::getDelFlag, 0)) > 0;
     }
 
     public void assignDefaultSpace(Long spaceId) {

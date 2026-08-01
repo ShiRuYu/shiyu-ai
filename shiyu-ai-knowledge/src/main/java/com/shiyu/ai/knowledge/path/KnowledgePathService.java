@@ -10,6 +10,8 @@ public interface KnowledgePathService {
 
     List<Long> generatePath(Long targetKnowledgeId);
 
+    List<Long> findPath(Long fromKnowledgeId, Long toKnowledgeId);
+
     List<Long> findMissingPrerequisites(Long targetKnowledgeId,
                                         Set<Long> masteredIds);
 }

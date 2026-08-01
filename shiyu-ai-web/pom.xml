@@ -71,4 +71,18 @@
             <scope>test</scope>
         </dependency>
     </dependencies>
+
+    <build>
+        <plugins>
+            <!-- 按打包环境执行对应 @Tag 的测试（shiyu-ai-web 是唯一含测试类的模块） -->
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-surefire-plugin</artifactId>
+                <configuration>
+                    <groups>${profiles.active}</groups>
+                    <excludedGroups>exclude</excludedGroups>
+                </configuration>
+            </plugin>
+        </plugins>
+    </build>
 </project>

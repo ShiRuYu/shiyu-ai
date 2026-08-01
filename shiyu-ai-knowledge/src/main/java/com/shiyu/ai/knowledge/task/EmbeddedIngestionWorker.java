@@ -14,7 +14,8 @@ import jakarta.annotation.PreDestroy;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.DependsOn;
-import org.springframework.scheduling.annotation.Scheduled;
+import org.springframework.context.event.EventListener;
+import org.springframework.boot.context.event.ApplicationReadyEvent;
 import org.springframework.stereotype.Component;
 
 import java.io.IOException;
@@ -26,10 +27,13 @@ import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
+import java.util.concurrent.ScheduledExecutorService;
+import java.util.concurrent.ScheduledFuture;
+import java.util.concurrent.TimeUnit;
 
 @Slf4j
 @Component
-@DependsOn("embeddedDatabaseMigrations")
+@DependsOn("databaseInitializer")
 public class EmbeddedIngestionWorker {
 
     private final KnowledgeEnterpriseRepository enterpriseRepository;
@@ -38,28 +42,40 @@ public class EmbeddedIngestionWorker {
     private final ObjectStorage objectStorage;
     private final ContentSecurityScanner securityScanner;
     private final List<DocumentParser> parsers;
+    private final ScheduledExecutorService scheduler;
     private final Set<Long> inFlight = ConcurrentHashMap.newKeySet();
     private ExecutorService executor;
+    private ScheduledFuture<?> pollingTask;
 
     @Value("${shiyu.knowledge.task.parse-concurrency:2}")
     private int concurrency;
+
+    @Value("${shiyu.knowledge.task.poll-delay-ms:1000}")
+    private long pollDelayMs;
 
     public EmbeddedIngestionWorker(KnowledgeEnterpriseRepository enterpriseRepository,
                                    KnowledgeDocumentRepository documentRepository,
                                    DocumentIngestionService ingestionService,
                                    ObjectStorage objectStorage,
                                    ContentSecurityScanner securityScanner,
-                                   List<DocumentParser> parsers) {
+                                   List<DocumentParser> parsers,
+                                   ScheduledExecutorService scheduler) {
         this.enterpriseRepository = enterpriseRepository;
         this.documentRepository = documentRepository;
         this.ingestionService = ingestionService;
         this.objectStorage = objectStorage;
         this.securityScanner = securityScanner;
         this.parsers = parsers;
+        this.scheduler = scheduler;
+        log.info("Knowledge ingestion worker constructed");
     }
 
     @PostConstruct
-    void initialize() {
+    @EventListener(ApplicationReadyEvent.class)
+    public synchronized void initialize() {
+        if (executor != null) return;
+        log.info("Knowledge ingestion worker initializing, concurrency={}, pollDelayMs={}",
+                concurrency, pollDelayMs);
         executor = Executors.newFixedThreadPool(Math.max(1, concurrency),
                 Thread.ofPlatform().name("knowledge-ingest-", 0).factory());
         LocalDateTime staleBefore = LocalDateTime.now().minusMinutes(5);
@@ -69,13 +85,27 @@ public class EmbeddedIngestionWorker {
             job.setErrorMessage("应用重启后恢复");
             enterpriseRepository.updateJob(job);
         }
+        pollingTask = scheduler.scheduleWithFixedDelay(this::safePoll, Math.max(100, pollDelayMs),
+                Math.max(100, pollDelayMs), TimeUnit.MILLISECONDS);
+        log.info("Knowledge ingestion worker polling started");
     }
 
-    @Scheduled(fixedDelayString = "${shiyu.knowledge.task.poll-interval:1000}")
+    private void safePoll() {
+        try {
+            poll();
+        } catch (Exception exception) {
+            log.error("Knowledge ingestion poll failed; the next poll will retry", exception);
+        }
+    }
+
     void poll() {
         int capacity = Math.max(0, concurrency - inFlight.size());
         if (capacity == 0) return;
-        for (KnowledgeIngestionJobDO job : enterpriseRepository.pollPendingJobs(capacity)) {
+        List<KnowledgeIngestionJobDO> pendingJobs = enterpriseRepository.pollPendingJobs(capacity);
+        if (!pendingJobs.isEmpty()) {
+            log.info("Knowledge ingestion worker claimed {} pending jobs", pendingJobs.size());
+        }
+        for (KnowledgeIngestionJobDO job : pendingJobs) {
             if (inFlight.add(job.getId())) {
                 executor.submit(() -> execute(job.getId()));
             }
@@ -89,7 +119,9 @@ public class EmbeddedIngestionWorker {
             return;
         }
         try {
-            markRunning(job);
+            job = markRunning(job);
+            if (job == null) return;
+            if (isCancelled(jobId)) return;
             KnowledgeDocumentBO document = documentRepository.selectById(job.getDocumentId());
             KnowledgeDocumentVersionDO version = enterpriseRepository.findVersion(job.getVersionId());
             if (document == null || version == null) {
@@ -121,8 +153,14 @@ public class EmbeddedIngestionWorker {
             }
 
             update(job, "EMBEDDING", 55);
-            ingestionService.ingest(job.getSpaceId(), job.getDocumentId(), job.getVersionId(),
+            if (isCancelled(jobId)) return;
+            ingestionService.ingest(job.getTenantId(), job.getSpaceId(), job.getDocumentId(), job.getVersionId(),
                     parsed.text(), List.of());
+
+            if (isCancelled(jobId)) {
+                ingestionService.delete(job.getDocumentId());
+                return;
+            }
 
             version.setContent(parsed.text());
             version.setParseStatus("READY");
@@ -148,7 +186,12 @@ public class EmbeddedIngestionWorker {
         }
     }
 
-    private void markRunning(KnowledgeIngestionJobDO job) {
+    private KnowledgeIngestionJobDO markRunning(KnowledgeIngestionJobDO job) {
+        KnowledgeIngestionJobDO current = enterpriseRepository.findJob(job.getId());
+        if (current == null || !"PENDING".equals(current.getJobStatus())) {
+            return null;
+        }
+        job = current;
         job.setJobStatus("RUNNING");
         job.setStage("STARTING");
         job.setProgress(1);
@@ -156,6 +199,7 @@ public class EmbeddedIngestionWorker {
         job.setStartedTime(LocalDateTime.now());
         job.setHeartbeatTime(LocalDateTime.now());
         enterpriseRepository.updateJob(job);
+        return job;
     }
 
     private void update(KnowledgeIngestionJobDO job, String stage, int progress) {
@@ -167,6 +211,7 @@ public class EmbeddedIngestionWorker {
 
     private void fail(KnowledgeIngestionJobDO job, Exception exception) {
         log.error("Knowledge ingestion failed, jobId={}", job.getId(), exception);
+        if (isCancelled(job.getId())) return;
         boolean retry = job.getAttempts() < job.getMaxAttempts();
         job.setJobStatus(retry ? "PENDING" : "FAILED");
         job.setStage(retry ? "RETRY_WAIT" : "FAILED");
@@ -184,8 +229,19 @@ public class EmbeddedIngestionWorker {
     private Optional<DocumentParser> parserFor(String type) {
         String normalized = "markdown".equalsIgnoreCase(type) ? "md"
                 : "htm".equalsIgnoreCase(type) ? "html" : type;
-        return parsers.stream().filter(parser ->
+        Optional<DocumentParser> direct = parsers.stream().filter(parser ->
                 parser.getSupportedFormat().equalsIgnoreCase(normalized)).findFirst();
+        if (direct.isPresent()) return direct;
+        // 语义文档类型（如 REFERENCE/ARTICLE/TEXTBOOK/LECTURE 等）或未知类型：
+        // 回退到纯文本解析，避免后台摄取任务直接失败
+        log.warn("未找到文档类型 [{}] 的解析器，回退使用纯文本解析", type);
+        return parsers.stream().filter(parser ->
+                parser.getSupportedFormat().equalsIgnoreCase("txt")).findFirst();
+    }
+
+    private boolean isCancelled(Long jobId) {
+        KnowledgeIngestionJobDO current = enterpriseRepository.findJob(jobId);
+        return current != null && "CANCELLED".equals(current.getJobStatus());
     }
 
     private String limit(String value, int max) {
@@ -195,6 +251,7 @@ public class EmbeddedIngestionWorker {
 
     @PreDestroy
     void shutdown() {
+        if (pollingTask != null) pollingTask.cancel(false);
         if (executor != null) executor.shutdown();
     }
 }

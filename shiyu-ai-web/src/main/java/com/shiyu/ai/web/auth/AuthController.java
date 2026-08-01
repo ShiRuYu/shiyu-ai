@@ -9,6 +9,7 @@ import com.shiyu.ai.common.core.api.Result;
 import com.shiyu.ai.common.core.domain.LoginContextHolder;
 import com.shiyu.ai.common.core.utils.MapstructUtils;
 import com.shiyu.ai.dal.auth.bo.UserBO;
+import com.shiyu.ai.knowledge.service.KnowledgeSpaceService;
 import lombok.extern.slf4j.Slf4j;
 import jakarta.validation.Valid;
 import org.springframework.web.bind.annotation.*;
@@ -30,11 +31,15 @@ public class AuthController {
     private final AuthService authService;
     private final UserService userService;
     private final LoginRateLimiter loginRateLimiter;
+    private final KnowledgeSpaceService knowledgeSpaceService;
     
-    public AuthController(AuthService authService, UserService userService, LoginRateLimiter loginRateLimiter) {
+    public AuthController(AuthService authService, UserService userService,
+                          LoginRateLimiter loginRateLimiter,
+                          KnowledgeSpaceService knowledgeSpaceService) {
         this.authService = authService;
         this.userService = userService;
         this.loginRateLimiter = loginRateLimiter;
+        this.knowledgeSpaceService = knowledgeSpaceService;
     }
     
     /**
@@ -65,6 +70,9 @@ public class AuthController {
             }
             
             loginRateLimiter.reset(clientIp);
+            if (response.getCurrentTenantId() != null) {
+                knowledgeSpaceService.initializeTenantDefaults(response.getCurrentTenantId());
+            }
             return Result.success(response);
             
         } catch (Exception e) {
@@ -177,6 +185,7 @@ public class AuthController {
         if (userId == null) return Result.fail("用户未登录");
         boolean success = authService.switchCurrentRole(userId, request.getRoleId());
         if (!success) return Result.fail("切换角色失败");
+        knowledgeSpaceService.initializeTenantDefaults(LoginContextHolder.getCurrentTenantId());
         return Result.success(buildSwitchContext(userId));
     }
 
@@ -191,6 +200,9 @@ public class AuthController {
         Long userId = LoginContextHolder.getUserId();
         if (userId == null) return Result.fail("用户未登录");
         boolean success = authService.switchCurrentTenant(userId, request.getTenantId());
+        if (success) {
+            knowledgeSpaceService.initializeTenantDefaults(LoginContextHolder.getCurrentTenantId());
+        }
         if (!success) return Result.fail("切换租户失败");
         return Result.success(buildSwitchContext(userId));
     }

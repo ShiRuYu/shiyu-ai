@@ -9,11 +9,19 @@ public interface KnowledgeDocumentRelationService {
 
     List<DocumentSummary> listDocuments(Long pointId);
 
-    void replaceDocuments(Long pointId, List<Long> documentIds);
+    default void replaceDocuments(Long pointId, List<Long> documentIds) {
+        replaceDocuments(pointId, documentIds, "RELATED");
+    }
+
+    void replaceDocuments(Long pointId, List<Long> documentIds, String relationType);
 
     List<Long> listPointIds(Long documentId);
 
-    void replacePoints(Long documentId, List<Long> pointIds);
+    default void replacePoints(Long documentId, List<Long> pointIds) {
+        replacePoints(documentId, pointIds, "RELATED");
+    }
+
+    void replacePoints(Long documentId, List<Long> pointIds, String relationType);
 
     void removeDocumentRelations(Long documentId);
 

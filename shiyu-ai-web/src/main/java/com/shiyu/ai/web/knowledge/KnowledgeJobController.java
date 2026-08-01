@@ -44,7 +44,7 @@ public class KnowledgeJobController {
     }
 
     @PostMapping("/{id}/cancel")
-    @SaCheckPermission("knowledge:index:rebuild")
+    @SaCheckPermission("knowledge:edit")
     public Result<Void> cancel(@PathVariable Long id,
                                @RequestHeader(value = KnowledgeApiVersion.HEADER,
                                        defaultValue = KnowledgeApiVersion.CURRENT) String version) {
@@ -54,7 +54,7 @@ public class KnowledgeJobController {
     }
 
     @PostMapping("/{id}/retry")
-    @SaCheckPermission("knowledge:index:rebuild")
+    @SaCheckPermission("knowledge:edit")
     public Result<Void> retry(@PathVariable Long id,
                               @RequestHeader(value = KnowledgeApiVersion.HEADER,
                                       defaultValue = KnowledgeApiVersion.CURRENT) String version) {

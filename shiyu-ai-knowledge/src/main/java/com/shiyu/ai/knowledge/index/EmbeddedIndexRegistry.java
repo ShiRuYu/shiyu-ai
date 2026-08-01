@@ -92,6 +92,9 @@ public class EmbeddedIndexRegistry implements KnowledgeIndexService {
     public synchronized long rebuild(Long tenantId, Long spaceId) {
         KnowledgeSpaceDO space = enterpriseRepository.findSpace(spaceId);
         if (space == null) throw new ServiceException("知识空间不存在: " + spaceId);
+        if (tenantId == null || !tenantId.equals(space.getTenantId())) {
+            throw new ServiceException("租户与知识空间不匹配");
+        }
         long version = (space.getActiveIndexVersion() == null ? 0 : space.getActiveIndexVersion()) + 1;
         Path versionPath = path(tenantId, spaceId, version);
         try {
@@ -152,17 +155,34 @@ public class EmbeddedIndexRegistry implements KnowledgeIndexService {
 
     @Override
     public List<HybridHit> hybridSearch(Long tenantId, Long spaceId, String query,
-                                        int topK, boolean rerank) {
+                                        String mode, int topK, double threshold, boolean rerank) {
         KnowledgeSpaceDO space = enterpriseRepository.findSpace(spaceId);
         if (space == null || space.getActiveIndexVersion() == null
                 || space.getActiveIndexVersion() <= 0) {
             return List.of();
         }
-        int candidates = Math.max(20, topK);
+        String normalizedMode = mode == null || mode.isBlank()
+                ? "HYBRID" : mode.trim().toUpperCase(java.util.Locale.ROOT);
+        if (!Set.of("KEYWORD", "SEMANTIC", "VECTOR", "HYBRID").contains(normalizedMode)) {
+            throw new ServiceException("不支持的检索模式: " + mode);
+        }
+        int requestedTopK = Math.max(1, Math.min(100, topK));
+        double minScore = Math.max(0D, threshold);
+        int candidates = Math.max(20, requestedTopK);
         List<FullTextHit> textHits = search(tenantId, spaceId,
                 space.getActiveIndexVersion(), query, candidates);
+        if ("KEYWORD".equals(normalizedMode)) {
+            return keywordHits(textHits, requestedTopK, minScore);
+        }
         List<VectorHit> vectorHits = search(tenantId, spaceId,
                 space.getActiveIndexVersion(), embeddingProvider.embed(query), candidates);
+        if ("SEMANTIC".equals(normalizedMode) || "VECTOR".equals(normalizedMode)) {
+            return vectorHits.stream()
+                    .filter(hit -> minScore <= 0D || hit.score() >= minScore)
+                    .limit(requestedTopK)
+                    .map(hit -> vectorHit(hit, null))
+                    .toList();
+        }
         Map<Long, MutableHit> merged = new LinkedHashMap<>();
         for (int i = 0; i < textHits.size(); i++) {
             FullTextHit hit = textHits.get(i);
@@ -208,7 +228,8 @@ public class EmbeddedIndexRegistry implements KnowledgeIndexService {
                     .toList();
         }
         return ranked.stream()
-                .limit(topK)
+                .filter(item -> minScore <= 0D || item.vector >= minScore)
+                .limit(requestedTopK)
                 .map(item -> {
                     KnowledgeChunkBO chunk = chunks.get(item.chunkId);
                     return new HybridHit(item.chunkId,
@@ -218,6 +239,26 @@ public class EmbeddedIndexRegistry implements KnowledgeIndexService {
                             item.highlight, item.bm25, item.vector, item.rrf,
                             item.rerank);
                 }).toList();
+    }
+
+    private List<HybridHit> keywordHits(List<FullTextHit> textHits, int topK, double threshold) {
+        return textHits.stream()
+                .filter(hit -> threshold <= 0D || hit.score() >= threshold)
+                .limit(topK)
+                .map(hit -> {
+                    KnowledgeChunkBO chunk = chunkRepository.getById(hit.chunkId());
+                    return new HybridHit(hit.chunkId(), hit.documentId(),
+                            chunk == null ? "" : chunk.getContent(), hit.highlight(),
+                            hit.score(), 0D, hit.score(), 0D);
+                }).toList();
+    }
+
+    private HybridHit vectorHit(VectorHit hit, Map<Long, KnowledgeChunkBO> chunks) {
+        KnowledgeChunkBO chunk = chunks == null ? chunkRepository.getById(hit.chunkId())
+                : chunks.get(hit.chunkId());
+        return new HybridHit(hit.chunkId(), chunk == null ? null : chunk.getDocumentId(),
+                chunk == null ? "" : chunk.getContent(), null,
+                0D, hit.score(), hit.score(), 0D);
     }
 
     private void buildLucene(Path directoryPath, List<KnowledgeChunkBO> chunks,

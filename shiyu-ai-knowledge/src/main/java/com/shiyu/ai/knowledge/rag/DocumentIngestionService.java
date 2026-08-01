@@ -9,6 +9,7 @@ import com.shiyu.ai.dal.knowledge.repository.KnowledgeChunkRepository;
 import com.shiyu.ai.vector.VectorRecord;
 import com.shiyu.ai.vector.VectorStore;
 import com.shiyu.ai.common.core.utils.JSONUtils;
+import com.shiyu.ai.common.core.domain.LoginContextHolder;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 
@@ -59,6 +60,12 @@ public class DocumentIngestionService {
 
     public List<KnowledgeChunkBO> ingest(Long spaceId, Long documentId, Long versionId,
                                          String content, List<Long> knowledgeIds) {
+        return ingest(null, spaceId, documentId, versionId, content, knowledgeIds);
+    }
+
+    public List<KnowledgeChunkBO> ingest(Long tenantId, Long spaceId, Long documentId,
+                                         Long versionId, String content, List<Long> knowledgeIds) {
+        Long effectiveTenantId = tenantId != null ? tenantId : LoginContextHolder.getCurrentTenantId();
         delete(documentId);
         List<Chunk> chunks = chunkSplitter.split(content);
         log.info("文档 {} 切分为 {} 个 Chunk", documentId, chunks.size());
@@ -71,6 +78,12 @@ public class DocumentIngestionService {
 
             Map<String, Object> meta = new LinkedHashMap<>();
             meta.put("documentId", documentId);
+            if (effectiveTenantId != null) {
+                meta.put("tenantId", effectiveTenantId);
+            }
+            if (spaceId != null) {
+                meta.put("spaceId", spaceId);
+            }
             meta.put("chunkIndex", chunk.index());
             meta.put("startPos", chunk.startPos());
             meta.put("endPos", chunk.endPos());
@@ -80,6 +93,7 @@ public class DocumentIngestionService {
             }
             KnowledgeChunkBO chunkDO = new KnowledgeChunkBO();
             chunkDO.setDocumentId(documentId);
+            chunkDO.setTenantId(effectiveTenantId);
             chunkDO.setSpaceId(spaceId);
             chunkDO.setVersionId(versionId);
             chunkDO.setContent(chunk.content());
@@ -91,6 +105,8 @@ public class DocumentIngestionService {
             chunkDO.setStartOffset(chunk.startPos());
             chunkDO.setEndOffset(chunk.endPos());
             chunkDO.setTokenCount(Math.max(1, chunk.content().length() / 2));
+            chunkDO.setStatus(1);
+            chunkDO.setDelFlag(0);
             chunkRepository.insert(chunkDO);
             chunkDOs.add(chunkDO);
             vectorRecords.add(new VectorRecord(String.valueOf(chunkDO.getId()), vector, meta));

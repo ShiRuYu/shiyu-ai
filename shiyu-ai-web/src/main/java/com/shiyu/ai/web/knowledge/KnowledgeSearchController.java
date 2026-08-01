@@ -38,11 +38,14 @@ public class KnowledgeSearchController {
         KnowledgeApiVersion.requireCurrent(version);
         spaceService.requireAccess(request.spaceId(), KnowledgeSpaceService.SpaceRole.VIEWER);
         Long tenantId = currentTenant();
+        String mode = request.mode() == null || request.mode().isBlank()
+                ? "HYBRID" : request.mode().trim().toUpperCase(java.util.Locale.ROOT);
+        double threshold = request.threshold() == null ? 0D : request.threshold();
         List<KnowledgeIndexService.HybridHit> hits = indexService.hybridSearch(
-                tenantId, request.spaceId(), request.query(),
-                request.topK() == null ? 5 : request.topK(),
+                tenantId, request.spaceId(), request.query(), mode,
+                request.topK() == null ? 5 : request.topK(), threshold,
                 Boolean.TRUE.equals(request.rerank()));
-        return Result.success(new SearchResponse(request.spaceId(), "HYBRID", hits));
+        return Result.success(new SearchResponse(request.spaceId(), mode, hits));
     }
 
     @PostMapping("/index-jobs/rebuild")
@@ -63,6 +66,8 @@ public class KnowledgeSearchController {
 
     public record SearchRequest(@NotNull Long spaceId, @NotBlank String query,
                                 String mode, @Min(1) @Max(100) Integer topK,
+                                @jakarta.validation.constraints.DecimalMin("0.0")
+                                @jakarta.validation.constraints.DecimalMax("1.0")
                                 Double threshold, Boolean rerank) {
     }
 

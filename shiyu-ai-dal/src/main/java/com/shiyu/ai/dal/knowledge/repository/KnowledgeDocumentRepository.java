@@ -22,12 +22,15 @@ public class KnowledgeDocumentRepository {
     private KnowledgeDocRelationMapper knowledgeDocRelationMapper;
 
     public KnowledgeDocumentBO selectById(Long id) {
-        KnowledgeDocumentDO d = knowledgeDocumentMapper.selectOneById(id);
+        KnowledgeDocumentDO d = knowledgeDocumentMapper.selectOneByQuery(QueryWrapper.create()
+                .eq(KnowledgeDocumentDO::getId, id)
+                .eq(KnowledgeDocumentDO::getDelFlag, 0));
         return d != null ? MapstructUtils.convert(d, KnowledgeDocumentBO.class) : null;
     }
 
     public List<KnowledgeDocumentBO> selectAll() {
-        return MapstructUtils.convert(knowledgeDocumentMapper.selectAll(), KnowledgeDocumentBO.class);
+        return MapstructUtils.convert(knowledgeDocumentMapper.selectListByQuery(
+                QueryWrapper.create().eq(KnowledgeDocumentDO::getDelFlag, 0)), KnowledgeDocumentBO.class);
     }
 
     public int insert(KnowledgeDocumentBO bo) {
@@ -55,25 +58,30 @@ public class KnowledgeDocumentRepository {
 
     public List<KnowledgeDocumentBO> selectByKnowledgeId(Long knowledgeId) {
         List<Long> docIds = knowledgeDocRelationMapper.selectListByQuery(
-                QueryWrapper.create().eq("knowledge_id", knowledgeId))
+                QueryWrapper.create().eq("knowledge_id", knowledgeId)
+                        .eq("del_flag", 0))
                 .stream().map(KnowledgeDocRelationDO::getDocId).toList();
         if (docIds.isEmpty()) return List.of();
         return MapstructUtils.convert(knowledgeDocumentMapper.selectListByQuery(
-                QueryWrapper.create().in("id", docIds)), KnowledgeDocumentBO.class);
+                QueryWrapper.create().in("id", docIds)
+                        .eq(KnowledgeDocumentDO::getDelFlag, 0)), KnowledgeDocumentBO.class);
     }
 
     public List<KnowledgeDocumentBO> selectByKnowledgeId(Long spaceId, Long knowledgeId) {
         List<Long> docIds = knowledgeDocRelationMapper.selectListByQuery(
-                QueryWrapper.create().eq("space_id", spaceId).eq("knowledge_id", knowledgeId))
+                QueryWrapper.create().eq("space_id", spaceId).eq("knowledge_id", knowledgeId)
+                        .eq("del_flag", 0))
                 .stream().map(KnowledgeDocRelationDO::getDocId).toList();
         if (docIds.isEmpty()) return List.of();
         return MapstructUtils.convert(knowledgeDocumentMapper.selectListByQuery(
                 QueryWrapper.create().eq(KnowledgeDocumentDO::getSpaceId, spaceId)
-                        .in(KnowledgeDocumentDO::getId, docIds)), KnowledgeDocumentBO.class);
+                        .in(KnowledgeDocumentDO::getId, docIds)
+                        .eq(KnowledgeDocumentDO::getDelFlag, 0)), KnowledgeDocumentBO.class);
     }
 
     public PageData<KnowledgeDocumentBO> pageBySpace(Long spaceId, int pageNum, int pageSize,
-                                                     String keyword, String lifecycleStatus) {
+                                                     String keyword, String lifecycleStatus,
+                                                     String parseStatus) {
         QueryWrapper query = QueryWrapper.create()
                 .eq(KnowledgeDocumentDO::getSpaceId, spaceId)
                 .eq(KnowledgeDocumentDO::getDelFlag, 0);
@@ -82,6 +90,9 @@ public class KnowledgeDocumentRepository {
         }
         if (lifecycleStatus != null && !lifecycleStatus.isBlank()) {
             query.eq(KnowledgeDocumentDO::getLifecycleStatus, lifecycleStatus);
+        }
+        if (parseStatus != null && !parseStatus.isBlank()) {
+            query.eq(KnowledgeDocumentDO::getParseStatus, parseStatus);
         }
         var page = knowledgeDocumentMapper.paginate(pageNum, pageSize,
                 query.orderBy(KnowledgeDocumentDO::getId, false));

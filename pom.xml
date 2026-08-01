@@ -538,10 +538,6 @@
                     <useSystemClassLoader>false</useSystemClassLoader>
                     <!-- 建议设为false，让测试成为构建的一部分 -->
                     <skipTests>false</skipTests>
-                    <!-- 根据打包环境执行对应的@Tag测试方法 -->
-                    <groups>${profiles.active}</groups>
-                    <!-- 排除标签 -->
-                    <excludedGroups>exclude</excludedGroups>
                     <!-- 测试失败时继续运行 -->
                     <testFailureIgnore>false</testFailureIgnore>
                     <!-- 并行测试执行配置 -->

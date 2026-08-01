@@ -2,10 +2,12 @@ package com.shiyu.ai.knowledge.search.impl;
 
 import com.shiyu.ai.dal.knowledge.bo.KnowledgeBO;
 import com.shiyu.ai.dal.knowledge.repository.KnowledgeRepository;
+import com.shiyu.ai.common.core.domain.LoginContextHolder;
 import com.shiyu.ai.knowledge.search.KnowledgeSearchService;
 import com.shiyu.ai.knowledge.search.SearchResult;
 import com.shiyu.ai.model.embedding.EmbeddingService;
 import com.shiyu.ai.vector.VectorRecord;
+import com.shiyu.ai.vector.VectorSearchRequest;
 import com.shiyu.ai.vector.VectorStore;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
@@ -79,13 +81,20 @@ public class KnowledgeSearchServiceImpl implements KnowledgeSearchService {
         }
 
         float[] queryVector = embeddingService.embed(query);
-        List<VectorRecord> results = vectorStore.search(queryVector, topK);
+        Long tenantId = LoginContextHolder.getCurrentTenantId();
+        if (tenantId == null) return List.of();
+        List<VectorRecord> results = vectorStore.search(VectorSearchRequest.builder()
+                .queryVector(queryVector)
+                .topK(topK)
+                .filter(Map.of("tenantId", tenantId))
+                .build());
 
         List<SearchResult> list = new ArrayList<>();
         for (VectorRecord r : results) {
             if (!r.id().startsWith(VS_ID_PREFIX)) continue;
             try {
-                Long id = Long.parseLong(r.id().substring(VS_ID_PREFIX.length()));
+                String[] idParts = r.id().substring(VS_ID_PREFIX.length()).split("_", 2);
+                Long id = Long.parseLong(idParts.length == 2 ? idParts[1] : idParts[0]);
                 String name = (String) r.metadata().getOrDefault("name", "");
                 String code = (String) r.metadata().getOrDefault("code", "");
                 String category = (String) r.metadata().getOrDefault("category", "");
@@ -119,7 +128,10 @@ public class KnowledgeSearchServiceImpl implements KnowledgeSearchService {
     public void removeFromIndex(Long id) {
         if (vectorStore != null) {
             try {
-                vectorStore.delete(VS_ID_PREFIX + id);
+                KnowledgeBO knowledge = knowledgeRepository.findById(id);
+                Long tenantId = knowledge == null ? LoginContextHolder.getCurrentTenantId()
+                        : knowledge.getTenantId();
+                if (tenantId != null) vectorStore.delete(vectorId(tenantId, id));
             } catch (Exception e) {
                 log.error("从 VectorStore 移除索引失败: id={}", id, e);
             }
@@ -129,7 +141,10 @@ public class KnowledgeSearchServiceImpl implements KnowledgeSearchService {
 
     @Override
     public void indexKnowledge(KnowledgeBO knowledgeDO) {
-        String id = String.valueOf(knowledgeDO.getId());
+        Long tenantId = knowledgeDO.getTenantId() != null
+                ? knowledgeDO.getTenantId() : LoginContextHolder.getCurrentTenantId();
+        if (tenantId == null) return;
+        String id = vectorId(tenantId, knowledgeDO.getId());
         String content = knowledgeDO.getName() + " " +
                 (knowledgeDO.getDescription() != null ? knowledgeDO.getDescription() : "");
 
@@ -138,14 +153,19 @@ public class KnowledgeSearchServiceImpl implements KnowledgeSearchService {
         meta.put("code", knowledgeDO.getCode());
         meta.put("name", knowledgeDO.getName());
         meta.put("category", knowledgeDO.getCategory() != null ? knowledgeDO.getCategory() : "");
+        meta.put("tenantId", tenantId);
 
         if (vectorStore != null && embeddingService != null) {
             try {
                 float[] vector = embeddingService.embed(content);
-                vectorStore.upsert(new VectorRecord(VS_ID_PREFIX + id, vector, meta));
+                vectorStore.upsert(new VectorRecord(id, vector, meta));
             } catch (Exception e) {
                 log.error("索引知识点到 VectorStore 失败: id={}", id, e);
             }
         }
+    }
+
+    private String vectorId(Long tenantId, Long knowledgeId) {
+        return VS_ID_PREFIX + tenantId + "_" + knowledgeId;
     }
 }

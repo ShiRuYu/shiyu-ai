@@ -3,6 +3,8 @@ package com.shiyu.ai.knowledge.service.impl;
 import com.shiyu.ai.common.core.api.PageData;
 import com.shiyu.ai.common.core.domain.LoginContextHolder;
 import com.shiyu.ai.common.core.exception.ServiceException;
+import com.shiyu.ai.common.core.tx.TransactionTemplateExecutor;
+import com.shiyu.ai.common.core.tx.TransactionHookExecutor;
 import com.shiyu.ai.dal.knowledge.bo.KnowledgeDocumentBO;
 import com.shiyu.ai.dal.knowledge.dataobject.KnowledgeDocumentVersionDO;
 import com.shiyu.ai.dal.knowledge.dataobject.KnowledgeIngestionJobDO;
@@ -14,10 +16,13 @@ import com.shiyu.ai.knowledge.rag.DocumentIngestionService;
 import com.shiyu.ai.knowledge.index.KnowledgeIndexService;
 import com.shiyu.ai.knowledge.service.EnterpriseDocumentService;
 import com.shiyu.ai.knowledge.service.KnowledgeAuditService;
+import com.shiyu.ai.knowledge.service.KnowledgeDocumentRelationService;
 import com.shiyu.ai.knowledge.service.KnowledgeSpaceService;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.transaction.support.DefaultTransactionDefinition;
 
 import java.time.LocalDateTime;
 import java.util.List;
@@ -25,21 +30,24 @@ import java.util.Locale;
 
 @Service
 @RequiredArgsConstructor
+@Slf4j
 public class EnterpriseDocumentServiceImpl implements EnterpriseDocumentService {
 
     private final KnowledgeDocumentRepository documentRepository;
     private final KnowledgeEnterpriseRepository enterpriseRepository;
     private final KnowledgeSpaceService spaceService;
     private final KnowledgeAuditService auditService;
+    private final KnowledgeDocumentRelationService documentRelationService;
     private final DocumentIngestionService ingestionService;
     private final KnowledgeIndexService indexService;
+    private final TransactionTemplateExecutor transactionTemplateExecutor;
 
     @Override
     public PageData<DocumentView> page(Long spaceId, int pageNum, int pageSize,
-                                       String keyword, String lifecycleStatus) {
+                                       String keyword, String lifecycleStatus, String parseStatus) {
         spaceService.requireAccess(spaceId, KnowledgeSpaceService.SpaceRole.VIEWER);
         PageData<KnowledgeDocumentBO> result = documentRepository.pageBySpace(
-                spaceId, pageNum, pageSize, keyword, lifecycleStatus);
+                spaceId, pageNum, pageSize, keyword, lifecycleStatus, parseStatus);
         return new PageData<>(result.getItems().stream().map(this::toView).toList(),
                 result.getTotal());
     }
@@ -64,6 +72,10 @@ public class EnterpriseDocumentServiceImpl implements EnterpriseDocumentService 
         KnowledgeDocumentBO document = new KnowledgeDocumentBO();
         document.setSpaceId(request.spaceId());
         document.setTitle(request.title());
+        // The source text is populated by the ingestion worker. H2 keeps this
+        // legacy column non-null for backwards compatibility, so use an empty
+        // value until parsing completes instead of inserting SQL NULL.
+        document.setContent("");
         document.setDocType(extension(request.originalName()));
         document.setSource("UPLOAD");
         document.setLifecycleStatus("DRAFT");
@@ -74,6 +86,7 @@ public class EnterpriseDocumentServiceImpl implements EnterpriseDocumentService 
         document.setFileSize(request.fileSize());
         document.setChecksum(request.checksum());
         document.setStatus(1);
+        document.setDelFlag(0);
         documentRepository.insert(document);
 
         KnowledgeSpaceDO space = enterpriseRepository.findSpace(request.spaceId());
@@ -90,6 +103,7 @@ public class EnterpriseDocumentServiceImpl implements EnterpriseDocumentService 
         version.setLifecycleStatus("DRAFT");
         version.setParseStatus("PENDING");
         version.setModelProfile(space == null ? "default" : space.getEmbeddingProfile());
+        version.setDelFlag(0);
         enterpriseRepository.insertVersion(version);
 
         document.setCurrentVersionId(version.getId());
@@ -110,7 +124,28 @@ public class EnterpriseDocumentServiceImpl implements EnterpriseDocumentService 
             job.setAttempts(0);
             job.setMaxAttempts(3);
             job.setLockVersion(0L);
+            job.setDelFlag(0);
             enterpriseRepository.insertJob(job);
+        } else {
+            // A previous document with the same checksum may have been
+            // deleted. Rebind its idempotency record so a re-upload can be
+            // ingested again without violating the unique job key.
+            KnowledgeDocumentBO previous = job.getDocumentId() == null
+                    ? null : documentRepository.selectById(job.getDocumentId());
+            if (previous == null || Integer.valueOf(1).equals(previous.getDelFlag())) {
+                job.setDocumentId(document.getId());
+                job.setVersionId(version.getId());
+                job.setJobStatus("PENDING");
+                job.setStage("QUEUED");
+                job.setProgress(0);
+                job.setAttempts(0);
+                job.setErrorMessage(null);
+                job.setHeartbeatTime(null);
+                job.setStartedTime(null);
+                job.setFinishedTime(null);
+                job.setDelFlag(0);
+                enterpriseRepository.updateJob(job);
+            }
         }
         auditService.record(request.spaceId(), "DOCUMENT", document.getId(), "UPLOAD", request);
         return new UploadResult(toView(document), version.getId(), job.getId(), false);
@@ -149,6 +184,10 @@ public class EnterpriseDocumentServiceImpl implements EnterpriseDocumentService 
     public DocumentView publish(Long documentId, String comment) {
         KnowledgeDocumentBO document = requireDocument(documentId);
         KnowledgeSpaceDO space = enterpriseRepository.findSpace(document.getSpaceId());
+        if (space != null && "REQUIRED".equals(space.getBindingMode())
+                && documentRelationService.listPointIds(documentId).isEmpty()) {
+            throw new ServiceException("当前知识空间要求文档至少关联一个知识点后才能发布");
+        }
         KnowledgeSpaceService.SpaceRole required =
                 space != null && "REQUIRED".equals(space.getReviewMode())
                         ? KnowledgeSpaceService.SpaceRole.REVIEWER
@@ -158,9 +197,17 @@ public class EnterpriseDocumentServiceImpl implements EnterpriseDocumentService 
 
     @Override
     @Transactional(rollbackFor = Exception.class)
+    public DocumentView archive(Long documentId, String comment) {
+        return transition(documentId, "PUBLISHED", "ARCHIVED", "ARCHIVE",
+                KnowledgeSpaceService.SpaceRole.EDITOR, comment);
+    }
+
+    @Override
+    @Transactional(rollbackFor = Exception.class)
     public DocumentView rollback(Long documentId, Long versionId) {
         KnowledgeDocumentBO document = requireDocument(documentId);
         spaceService.requireAccess(document.getSpaceId(), KnowledgeSpaceService.SpaceRole.EDITOR);
+        boolean wasPublished = "PUBLISHED".equals(document.getLifecycleStatus());
         KnowledgeDocumentVersionDO source = enterpriseRepository.findVersion(versionId);
         if (source == null || !documentId.equals(source.getDocumentId())) {
             throw new ServiceException("文档版本不存在");
@@ -178,17 +225,38 @@ public class EnterpriseDocumentServiceImpl implements EnterpriseDocumentService 
         document.setChecksum(version.getChecksum());
         documentRepository.update(document);
         auditService.record(document.getSpaceId(), "DOCUMENT", documentId, "ROLLBACK", versionId);
+        if (wasPublished) {
+            scheduleIndexRebuild(document.getSpaceId());
+        }
         return toView(document);
     }
 
     @Override
-    @Transactional(rollbackFor = Exception.class)
     public void delete(Long documentId) {
-        KnowledgeDocumentBO document = requireDocument(documentId);
-        spaceService.requireAccess(document.getSpaceId(), KnowledgeSpaceService.SpaceRole.EDITOR);
-        ingestionService.delete(documentId);
-        documentRepository.deleteById(documentId);
-        auditService.record(document.getSpaceId(), "DOCUMENT", documentId, "DELETE", null);
+        DeletionContext deletion = transactionTemplateExecutor.execute(new DefaultTransactionDefinition(), () -> {
+            KnowledgeDocumentBO document = requireDocument(documentId);
+            spaceService.requireAccess(document.getSpaceId(), KnowledgeSpaceService.SpaceRole.EDITOR);
+            documentRelationService.removeDocumentRelations(documentId);
+            ingestionService.delete(documentId);
+            documentRepository.deleteById(documentId);
+            auditService.record(document.getSpaceId(), "DOCUMENT", documentId, "DELETE", null);
+            return new DeletionContext(LoginContextHolder.getCurrentTenantId(), document.getSpaceId());
+        });
+        // The database transaction must commit before a new physical index is activated.
+        // Otherwise a later rollback could leave the active index pointing at a deleted
+        // document or leave a new index version active without the corresponding rows.
+        if (deletion.tenantId() != null && deletion.spaceId() != null) {
+            try {
+                indexService.rebuild(deletion.tenantId(), deletion.spaceId());
+            } catch (RuntimeException exception) {
+                log.error("Document deleted but space index rebuild failed, documentId={}, spaceId={}",
+                        documentId, deletion.spaceId(), exception);
+                throw new ServiceException("文档已删除，但空间索引重建失败，请稍后在索引任务中重试");
+            }
+        }
+    }
+
+    private record DeletionContext(Long tenantId, Long spaceId) {
     }
 
     protected DocumentView transition(Long documentId, String expected, String target,
@@ -217,16 +285,31 @@ public class EnterpriseDocumentServiceImpl implements EnterpriseDocumentService 
         review.setVersionId(document.getCurrentVersionId());
         review.setAction(action);
         review.setCommentText(comment);
+        review.setStatus(1);
+        review.setDelFlag(0);
         enterpriseRepository.insertReview(review);
         auditService.record(document.getSpaceId(), "DOCUMENT", documentId, action, comment);
-        if ("PUBLISHED".equals(target)) {
+        if ("PUBLISHED".equals(target) || "ARCHIVED".equals(target)) {
             Long tenantId = LoginContextHolder.getCurrentTenantId();
             if (tenantId == null) {
                 throw new ServiceException("当前租户上下文不存在");
             }
-            indexService.rebuild(tenantId, document.getSpaceId());
+            scheduleIndexRebuild(document.getSpaceId());
         }
         return toView(document);
+    }
+
+    private void scheduleIndexRebuild(Long spaceId) {
+        Long tenantId = LoginContextHolder.getCurrentTenantId();
+        if (tenantId == null) {
+            throw new ServiceException("褰撳墠绉熸埛涓婁笅鏂囦笉瀛樺湪");
+        }
+        TransactionHookExecutor.register(new com.shiyu.ai.common.core.tx.TransactionHook() {
+            @Override
+            public void afterCommit() {
+                indexService.rebuild(tenantId, spaceId);
+            }
+        });
     }
 
     private KnowledgeDocumentBO requireDocument(Long documentId) {
@@ -250,6 +333,7 @@ public class EnterpriseDocumentServiceImpl implements EnterpriseDocumentService 
         target.setChecksum(source.getChecksum());
         target.setParseStatus(source.getParseStatus());
         target.setModelProfile(source.getModelProfile());
+        target.setDelFlag(0);
         return target;
     }
 

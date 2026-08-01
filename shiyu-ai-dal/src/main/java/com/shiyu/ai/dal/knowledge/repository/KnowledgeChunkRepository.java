@@ -29,19 +29,23 @@ public class KnowledgeChunkRepository {
     }
 
     public KnowledgeChunkBO getById(Long id) {
-        KnowledgeChunkDO d = mapper.selectOneById(id);
+        KnowledgeChunkDO d = mapper.selectOneByQuery(QueryWrapper.create()
+                .eq(KnowledgeChunkDO::getId, id)
+                .eq(KnowledgeChunkDO::getDelFlag, 0));
         return d != null ? MapstructUtils.convert(d, KnowledgeChunkBO.class) : null;
     }
 
     public KnowledgeChunkBO getByDocumentIdAndIndex(Long documentId, Integer chunkIndex) {
         KnowledgeChunkDO d = mapper.selectOneByQuery(
-                QueryWrapper.create().eq("document_id", documentId).eq("chunk_index", chunkIndex));
+                QueryWrapper.create().eq("document_id", documentId).eq("chunk_index", chunkIndex)
+                        .eq(KnowledgeChunkDO::getDelFlag, 0));
         return d != null ? MapstructUtils.convert(d, KnowledgeChunkBO.class) : null;
     }
 
     public List<KnowledgeChunkBO> getByDocumentId(Long documentId) {
         return MapstructUtils.convert(mapper.selectListByQuery(
-                QueryWrapper.create().eq("document_id", documentId)), KnowledgeChunkBO.class);
+                QueryWrapper.create().eq("document_id", documentId)
+                        .eq(KnowledgeChunkDO::getDelFlag, 0)), KnowledgeChunkBO.class);
     }
 
     public void deleteByDocumentId(Long documentId) {
@@ -49,16 +53,19 @@ public class KnowledgeChunkRepository {
     }
 
     public List<KnowledgeChunkBO> findAll() {
-        return MapstructUtils.convert(mapper.selectAll(), KnowledgeChunkBO.class);
+        return MapstructUtils.convert(mapper.selectListByQuery(QueryWrapper.create()
+                .eq(KnowledgeChunkDO::getDelFlag, 0)), KnowledgeChunkBO.class);
     }
 
     public long count() {
-        return mapper.selectCountByQuery(new QueryWrapper());
+        return mapper.selectCountByQuery(QueryWrapper.create()
+                .eq(KnowledgeChunkDO::getDelFlag, 0));
     }
 
     public List<KnowledgeChunkBO> findBySpace(Long spaceId) {
         return MapstructUtils.convert(mapper.selectListByQuery(
                 QueryWrapper.create().eq(KnowledgeChunkDO::getSpaceId, spaceId)
+                        .eq(KnowledgeChunkDO::getDelFlag, 0)
                         .orderBy(KnowledgeChunkDO::getDocumentId, true)
                         .orderBy(KnowledgeChunkDO::getChunkIndex, true)), KnowledgeChunkBO.class);
     }

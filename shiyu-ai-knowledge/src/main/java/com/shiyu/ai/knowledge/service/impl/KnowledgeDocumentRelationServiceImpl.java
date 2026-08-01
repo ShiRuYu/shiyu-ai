@@ -41,7 +41,7 @@ public class KnowledgeDocumentRelationServiceImpl
 
     @Override
     @Transactional(rollbackFor = Exception.class)
-    public void replaceDocuments(Long pointId, List<Long> documentIds) {
+    public void replaceDocuments(Long pointId, List<Long> documentIds, String relationType) {
         KnowledgeBO point = requirePoint(pointId);
         spaceService.requireAccess(point.getSpaceId(), KnowledgeSpaceService.SpaceRole.EDITOR);
         List<Long> normalized = documentIds == null ? List.of()
@@ -61,8 +61,9 @@ public class KnowledgeDocumentRelationServiceImpl
             relation.setSpaceId(point.getSpaceId());
             relation.setDocId(documentId);
             relation.setKnowledgeId(pointId);
-            relation.setRelationType("RELATED");
+            relation.setRelationType(normalizeRelationType(relationType));
             relation.setCreateTime(LocalDateTime.now());
+            relation.setDelFlag(0);
             return relation;
         }).toList());
     }
@@ -81,7 +82,7 @@ public class KnowledgeDocumentRelationServiceImpl
 
     @Override
     @Transactional(rollbackFor = Exception.class)
-    public void replacePoints(Long documentId, List<Long> pointIds) {
+    public void replacePoints(Long documentId, List<Long> pointIds, String relationType) {
         KnowledgeDocumentBO document = requireDocument(documentId);
         Long spaceId = document.getSpaceId();
         if (spaceId != null) {
@@ -104,8 +105,9 @@ public class KnowledgeDocumentRelationServiceImpl
             relation.setSpaceId(spaceId);
             relation.setDocId(documentId);
             relation.setKnowledgeId(pointId);
-            relation.setRelationType("RELATED");
+            relation.setRelationType(normalizeRelationType(relationType));
             relation.setCreateTime(LocalDateTime.now());
+            relation.setDelFlag(0);
             return relation;
         }).toList());
     }
@@ -114,6 +116,17 @@ public class KnowledgeDocumentRelationServiceImpl
     public void removeDocumentRelations(Long documentId) {
         requireDocument(documentId);
         relationRepository.deleteByDocId(documentId);
+    }
+
+    private String normalizeRelationType(String relationType) {
+        if (relationType == null || relationType.isBlank()) {
+            return "RELATED";
+        }
+        return switch (relationType.trim().toUpperCase()) {
+            case "SOURCE", "SUPPORTS", "EXPLAINS", "PRIMARY_SOURCE", "REFERENCE", "RELATED" ->
+                    relationType.trim().toUpperCase();
+            default -> throw new ServiceException("不支持的文档关联类型: " + relationType);
+        };
     }
 
     private KnowledgeBO requirePoint(Long pointId) {

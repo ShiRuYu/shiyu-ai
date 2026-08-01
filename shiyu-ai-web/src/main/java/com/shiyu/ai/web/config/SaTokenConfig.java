@@ -57,7 +57,12 @@ public class SaTokenConfig {
                 )
                 // 文档和监控接口
                 .addExclude("/doc.html", "/swagger-ui/**", "/v3/api-docs/**")
-                .addExclude("/webjars/**", "/v2/api-docs", "/h2/**")
+                .addExclude(
+                    "/webjars/**",
+                    "/v2/api-docs",
+                    "/h2/**",
+                    "/education-resources/**"
+                )
                 .setAuth(obj -> {
                     // 鉴权：检查是否登录
                     SaRouter.match("/**").check(r -> StpUtil.checkLogin());

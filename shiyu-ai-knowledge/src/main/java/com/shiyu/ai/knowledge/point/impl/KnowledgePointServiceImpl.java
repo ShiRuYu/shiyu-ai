@@ -81,6 +81,7 @@ public class KnowledgePointServiceImpl implements KnowledgePointService {
         point.setCategory(request.category());
         point.setTags(request.tags());
         point.setStatus(1);
+        point.setDelFlag(0);
         repository.insert(point);
         knowledgeGraph.addNode(GraphNode.of(point.getId(), point.getName(), point.getCode()));
         knowledgeSearchService.indexKnowledge(point);

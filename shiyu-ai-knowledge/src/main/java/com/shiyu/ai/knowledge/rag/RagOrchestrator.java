@@ -3,12 +3,14 @@ package com.shiyu.ai.knowledge.rag;
 import org.springframework.beans.factory.annotation.Autowired;
 
 import com.shiyu.ai.common.core.utils.JSONUtils;
+import com.shiyu.ai.common.core.domain.LoginContextHolder;
 import com.shiyu.ai.model.embedding.EmbeddingService;
 import com.shiyu.ai.dal.knowledge.bo.KnowledgeChunkBO;
 import com.shiyu.ai.knowledge.rag.Reranker;
 import com.shiyu.ai.knowledge.graph.GraphStore;
 import com.shiyu.ai.dal.knowledge.repository.KnowledgeChunkRepository;
 import com.shiyu.ai.vector.VectorRecord;
+import com.shiyu.ai.vector.VectorSearchRequest;
 import com.shiyu.ai.vector.VectorStore;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
@@ -43,9 +45,18 @@ public class RagOrchestrator {
     }
 
     public RagResult retrieve(String query, int topK) {
+        Long tenantId = LoginContextHolder.getCurrentTenantId();
+        if (tenantId == null) {
+            log.warn("拒绝在没有租户上下文的情况下执行文档 RAG 检索");
+            return new RagResult(List.of(), "");
+        }
         float[] queryVector = embeddingService.embed(query);
         int candidateCount = Math.max(topK, 20);
-        List<VectorRecord> vsResults = vectorStore.search(queryVector, candidateCount);
+        List<VectorRecord> vsResults = vectorStore.search(VectorSearchRequest.builder()
+                .queryVector(queryVector)
+                .topK(candidateCount)
+                .filter(Map.of("tenantId", tenantId))
+                .build());
 
         List<RagChunk> chunks = new ArrayList<>();
         Set<String> relatedKnowledgeIds = new LinkedHashSet<>();
@@ -53,6 +64,7 @@ public class RagOrchestrator {
         for (VectorRecord r : vsResults) {
             KnowledgeChunkBO chunkDO = chunkRepository.getById(parseChunkId(r.id()));
             if (chunkDO == null) continue;
+            if (!tenantId.equals(chunkDO.getTenantId())) continue;
 
             double score = (double) r.metadata().getOrDefault("_score", 0.0);
 

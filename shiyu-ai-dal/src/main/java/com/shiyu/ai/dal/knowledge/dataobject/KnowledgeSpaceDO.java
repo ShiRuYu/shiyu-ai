@@ -19,6 +19,7 @@ public class KnowledgeSpaceDO extends TenantEntity {
     private String description;
     private String accessMode;
     private String reviewMode;
+    private String bindingMode;
     private Long difficultyScaleId;
     private String embeddingProfile;
     private String rerankProfile;

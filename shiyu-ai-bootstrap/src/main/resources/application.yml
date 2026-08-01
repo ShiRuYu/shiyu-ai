@@ -5,6 +5,8 @@
 shiyu:
   # 名称
   name: "shiyu-ai"
+  tx:
+    enabled: true
   # 版本
   version: ${revision}
   # 文件存储：默认 local，可切换为 s3、minio、aliyun-oss、tencent-cos

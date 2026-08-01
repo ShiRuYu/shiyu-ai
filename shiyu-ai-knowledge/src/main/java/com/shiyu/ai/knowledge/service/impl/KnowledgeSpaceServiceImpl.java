@@ -30,6 +30,7 @@ public class KnowledgeSpaceServiceImpl implements KnowledgeSpaceService {
 
     private static final Set<String> ACCESS_MODES = Set.of("PRIVATE", "TENANT");
     private static final Set<String> REVIEW_MODES = Set.of("DIRECT", "OPTIONAL", "REQUIRED");
+    private static final Set<String> BINDING_MODES = Set.of("OPTIONAL", "REQUIRED");
     private static final Set<String> PRINCIPAL_TYPES = Set.of("USER", "ROLE");
 
     private final KnowledgeEnterpriseRepository repository;
@@ -59,12 +60,33 @@ public class KnowledgeSpaceServiceImpl implements KnowledgeSpaceService {
         space.setDescription("兼容既有知识点、文档和教育关联的默认空间");
         space.setAccessMode("TENANT");
         space.setReviewMode("DIRECT");
+        space.setBindingMode("OPTIONAL");
         space.setDifficultyScaleId(1L);
         applyDefaults(space);
         repository.insertSpace(space);
         assignLegacyData(space.getId());
         auditService.record(space.getId(), "SPACE", space.getId(), "CREATE_DEFAULT", null);
         return toView(space);
+    }
+
+    @Override
+    @Transactional(rollbackFor = Exception.class)
+    public void initializeTenantDefaults(Long tenantId) {
+        if (tenantId == null) {
+            throw new ServiceException("tenantId must not be null");
+        }
+        if (repository.findSpaceByTenantAndCode(tenantId, defaultSpaceCode) != null) {
+            return;
+        }
+        KnowledgeSpaceDO space = new KnowledgeSpaceDO();
+        space.setTenantId(tenantId);
+        space.setCode(defaultSpaceCode);
+        space.setName("默认知识空间");
+        space.setDescription("租户默认知识空间");
+        space.setAccessMode("TENANT");
+        space.setReviewMode("DIRECT");
+        applyDefaults(space);
+        repository.insertSpace(space);
     }
 
     @Override
@@ -115,6 +137,7 @@ public class KnowledgeSpaceServiceImpl implements KnowledgeSpaceService {
         space.setAccessMode(normalizeEnum(request.accessMode(), "PRIVATE", ACCESS_MODES, "访问模式"));
         space.setReviewMode(normalizeEnum(request.reviewMode(), "OPTIONAL", REVIEW_MODES, "审核模式"));
         space.setDifficultyScaleId(request.difficultyScaleId() == null ? 1L : request.difficultyScaleId());
+        space.setBindingMode(normalizeEnum(request.bindingMode(), "OPTIONAL", BINDING_MODES, "binding mode"));
         space.setEmbeddingProfile(defaultText(request.embeddingProfile(), "default"));
         space.setRerankProfile(defaultText(request.rerankProfile(), "default"));
         space.setChunkStrategy(defaultText(request.chunkStrategy(), "HEADING").toUpperCase(Locale.ROOT));
@@ -160,6 +183,9 @@ public class KnowledgeSpaceServiceImpl implements KnowledgeSpaceService {
         if (request.difficultyScaleId() != null) {
             space.setDifficultyScaleId(request.difficultyScaleId());
         }
+        if (request.bindingMode() != null) {
+            space.setBindingMode(normalizeEnum(request.bindingMode(), null, BINDING_MODES, "binding mode"));
+        }
         if (request.embeddingProfile() != null) {
             space.setEmbeddingProfile(request.embeddingProfile());
         }
@@ -190,6 +216,11 @@ public class KnowledgeSpaceServiceImpl implements KnowledgeSpaceService {
         KnowledgeSpaceDO space = requireSpace(id);
         if (defaultSpaceCode.equals(space.getCode())) {
             throw new ServiceException("默认知识空间不能删除");
+        }
+        boolean hasKnowledge = !knowledgeRepository.findBySpace(id).isEmpty();
+        boolean hasDocuments = !documentRepository.findBySpace(id).isEmpty();
+        if (hasKnowledge || hasDocuments) {
+            throw new ServiceException("知识空间仍包含知识点或文档，请先删除内容后再删除空间");
         }
         repository.deleteSpace(id);
         auditService.record(id, "SPACE", id, "DELETE", null);
@@ -284,6 +315,7 @@ public class KnowledgeSpaceServiceImpl implements KnowledgeSpaceService {
     }
 
     private void applyDefaults(KnowledgeSpaceDO space) {
+        space.setBindingMode("OPTIONAL");
         space.setEmbeddingProfile("default");
         space.setRerankProfile("default");
         space.setChunkStrategy("HEADING");
@@ -323,7 +355,7 @@ public class KnowledgeSpaceServiceImpl implements KnowledgeSpaceService {
 
     private SpaceView toView(KnowledgeSpaceDO space) {
         return new SpaceView(space.getId(), space.getCode(), space.getName(),
-                space.getDescription(), space.getAccessMode(), space.getReviewMode(),
+                space.getDescription(), space.getAccessMode(), space.getReviewMode(), space.getBindingMode(),
                 space.getDifficultyScaleId(),
                 space.getEmbeddingProfile(), space.getRerankProfile(),
                 space.getChunkStrategy(), space.getChunkSize(), space.getChunkOverlap(),

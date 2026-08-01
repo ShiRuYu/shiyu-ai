@@ -18,24 +18,29 @@ public class KnowledgeRepository {
     private KnowledgeMapper knowledgeMapper;
 
     public KnowledgeBO findById(Long id) {
-        KnowledgeDO d = knowledgeMapper.selectOneById(id);
+        KnowledgeDO d = knowledgeMapper.selectOneByQuery(QueryWrapper.create()
+                .eq(KnowledgeDO::getId, id)
+                .eq(KnowledgeDO::getDelFlag, 0));
         return d != null ? MapstructUtils.convert(d, KnowledgeBO.class) : null;
     }
 
     public KnowledgeBO findByCode(String code) {
         KnowledgeDO d = knowledgeMapper.selectOneByQuery(
-                QueryWrapper.create().eq(KnowledgeDO::getCode, code));
+                QueryWrapper.create().eq(KnowledgeDO::getCode, code)
+                        .eq(KnowledgeDO::getDelFlag, 0));
         return d != null ? MapstructUtils.convert(d, KnowledgeBO.class) : null;
     }
 
     public List<KnowledgeBO> findAll() {
         return MapstructUtils.convert(knowledgeMapper.selectListByQuery(
-                QueryWrapper.create().eq(KnowledgeDO::getStatus, 1)), KnowledgeBO.class);
+                QueryWrapper.create().eq(KnowledgeDO::getStatus, 1)
+                        .eq(KnowledgeDO::getDelFlag, 0)), KnowledgeBO.class);
     }
 
     public List<KnowledgeBO> searchByName(String keyword, int topK) {
         return MapstructUtils.convert(knowledgeMapper.selectListByQuery(
                 QueryWrapper.create().eq(KnowledgeDO::getStatus, 1)
+                        .eq(KnowledgeDO::getDelFlag, 0)
                         .like(KnowledgeDO::getName, keyword)
                         .orderBy(KnowledgeDO::getId, true).limit(0, topK)), KnowledgeBO.class);
     }
@@ -45,7 +50,8 @@ public class KnowledgeRepository {
     }
 
     public List<KnowledgeBO> page(int offset, int limit, String category, String keyword) {
-        QueryWrapper qw = QueryWrapper.create().eq(KnowledgeDO::getStatus, 1);
+        QueryWrapper qw = QueryWrapper.create().eq(KnowledgeDO::getStatus, 1)
+                .eq(KnowledgeDO::getDelFlag, 0);
         if (category != null && !category.isBlank()) qw.eq(KnowledgeDO::getCategory, category);
         if (keyword != null && !keyword.isBlank()) qw.like(KnowledgeDO::getName, keyword);
         qw.orderBy(KnowledgeDO::getId, true).limit(offset, limit);
@@ -55,7 +61,8 @@ public class KnowledgeRepository {
     public long count() { return count(null, null); }
 
     public long count(String category, String keyword) {
-        QueryWrapper qw = QueryWrapper.create().eq(KnowledgeDO::getStatus, 1);
+        QueryWrapper qw = QueryWrapper.create().eq(KnowledgeDO::getStatus, 1)
+                .eq(KnowledgeDO::getDelFlag, 0);
         if (category != null && !category.isBlank()) qw.eq(KnowledgeDO::getCategory, category);
         if (keyword != null && !keyword.isBlank()) qw.like(KnowledgeDO::getName, keyword);
         return knowledgeMapper.selectCountByQuery(qw);
@@ -83,21 +90,24 @@ public class KnowledgeRepository {
     public boolean existsBySpaceAndCode(Long spaceId, String code) {
         return knowledgeMapper.selectCountByQuery(QueryWrapper.create()
                 .eq(KnowledgeDO::getSpaceId, spaceId)
-                .eq(KnowledgeDO::getCode, code)) > 0;
+                .eq(KnowledgeDO::getCode, code)
+                .eq(KnowledgeDO::getDelFlag, 0)) > 0;
     }
 
     public List<KnowledgeBO> findBySpace(Long spaceId) {
         return MapstructUtils.convert(knowledgeMapper.selectListByQuery(
                 QueryWrapper.create()
                         .eq(KnowledgeDO::getSpaceId, spaceId)
-                        .eq(KnowledgeDO::getStatus, 1)), KnowledgeBO.class);
+                        .eq(KnowledgeDO::getStatus, 1)
+                        .eq(KnowledgeDO::getDelFlag, 0)), KnowledgeBO.class);
     }
 
     public PageData<KnowledgeBO> pageBySpace(Long spaceId, int pageNum, int pageSize,
                                               String keyword, String category) {
         QueryWrapper query = QueryWrapper.create()
                 .eq(KnowledgeDO::getSpaceId, spaceId)
-                .eq(KnowledgeDO::getStatus, 1);
+                .eq(KnowledgeDO::getStatus, 1)
+                .eq(KnowledgeDO::getDelFlag, 0);
         if (keyword != null && !keyword.isBlank()) {
             query.like(KnowledgeDO::getName, keyword);
         }
@@ -113,7 +123,8 @@ public class KnowledgeRepository {
     public int deleteByIdAndSpace(Long id, Long spaceId) {
         return knowledgeMapper.deleteByQuery(QueryWrapper.create()
                 .eq(KnowledgeDO::getId, id)
-                .eq(KnowledgeDO::getSpaceId, spaceId));
+                .eq(KnowledgeDO::getSpaceId, spaceId)
+                .eq(KnowledgeDO::getDelFlag, 0));
     }
 
     public void assignDefaultSpace(Long spaceId) {

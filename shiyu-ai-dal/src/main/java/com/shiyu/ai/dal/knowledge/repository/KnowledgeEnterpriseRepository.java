@@ -37,13 +37,23 @@ public class KnowledgeEnterpriseRepository {
     private final KnowledgeEvaluationCaseMapper evaluationMapper;
 
     public KnowledgeSpaceDO findSpace(Long id) {
-        return spaceMapper.selectOneById(id);
+        return spaceMapper.selectOneByQuery(QueryWrapper.create()
+                .eq(KnowledgeSpaceDO::getId, id)
+                .eq(KnowledgeSpaceDO::getDelFlag, 0));
     }
 
     public KnowledgeSpaceDO findSpaceByCode(String code) {
         return spaceMapper.selectOneByQuery(QueryWrapper.create()
                 .eq(KnowledgeSpaceDO::getCode, code)
                 .eq(KnowledgeSpaceDO::getDelFlag, 0));
+    }
+
+    /** Find a space by tenant while provisioning outside the current tenant context. */
+    public KnowledgeSpaceDO findSpaceByTenantAndCode(Long tenantId, String code) {
+        return TenantManager.withoutTenantCondition(() -> spaceMapper.selectOneByQuery(QueryWrapper.create()
+                .eq(KnowledgeSpaceDO::getTenantId, tenantId)
+                .eq(KnowledgeSpaceDO::getCode, code)
+                .eq(KnowledgeSpaceDO::getDelFlag, 0)));
     }
 
     public PageData<KnowledgeSpaceDO> pageSpaces(int pageNum, int pageSize, String keyword) {
@@ -98,7 +108,9 @@ public class KnowledgeEnterpriseRepository {
     }
 
     public KnowledgeDocumentVersionDO findVersion(Long id) {
-        return versionMapper.selectOneById(id);
+        return versionMapper.selectOneByQuery(QueryWrapper.create()
+                .eq(KnowledgeDocumentVersionDO::getId, id)
+                .eq(KnowledgeDocumentVersionDO::getDelFlag, 0));
     }
 
     public List<KnowledgeDocumentVersionDO> findVersions(Long documentId) {
@@ -130,12 +142,15 @@ public class KnowledgeEnterpriseRepository {
     }
 
     public KnowledgeIngestionJobDO findJob(Long id) {
-        return jobMapper.selectOneById(id);
+        return jobMapper.selectOneByQuery(QueryWrapper.create()
+                .eq(KnowledgeIngestionJobDO::getId, id)
+                .eq(KnowledgeIngestionJobDO::getDelFlag, 0));
     }
 
     public KnowledgeIngestionJobDO findJobByKey(String jobKey) {
         return jobMapper.selectOneByQuery(QueryWrapper.create()
-                .eq(KnowledgeIngestionJobDO::getJobKey, jobKey));
+                .eq(KnowledgeIngestionJobDO::getJobKey, jobKey)
+                .eq(KnowledgeIngestionJobDO::getDelFlag, 0));
     }
 
     public KnowledgeIngestionJobDO insertJob(KnowledgeIngestionJobDO job) {
@@ -175,7 +190,8 @@ public class KnowledgeEnterpriseRepository {
         return TenantManager.withoutTenantCondition(() ->
                 jobMapper.selectListByQuery(QueryWrapper.create()
                         .eq(KnowledgeIngestionJobDO::getJobStatus, "RUNNING")
-                        .lt(KnowledgeIngestionJobDO::getHeartbeatTime, heartbeatBefore)));
+                        .lt(KnowledgeIngestionJobDO::getHeartbeatTime, heartbeatBefore)
+                        .eq(KnowledgeIngestionJobDO::getDelFlag, 0)));
     }
 
     public void insertAudit(KnowledgeAuditLogDO audit) {
@@ -206,5 +222,15 @@ public class KnowledgeEnterpriseRepository {
                         .eq(KnowledgeEvaluationCaseDO::getDelFlag, 0)
                         .orderBy(KnowledgeEvaluationCaseDO::getId, false));
         return new PageData<>(page.getRecords(), page.getTotalRow());
+    }
+
+    public KnowledgeEvaluationCaseDO findEvaluation(Long id) {
+        return evaluationMapper.selectOneByQuery(QueryWrapper.create()
+                .eq(KnowledgeEvaluationCaseDO::getId, id)
+                .eq(KnowledgeEvaluationCaseDO::getDelFlag, 0));
+    }
+
+    public void deleteEvaluation(Long id) {
+        evaluationMapper.deleteById(id);
     }
 }

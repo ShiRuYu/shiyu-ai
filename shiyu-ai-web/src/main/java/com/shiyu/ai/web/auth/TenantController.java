@@ -11,6 +11,7 @@ import com.shiyu.ai.common.core.api.PageData;
 import com.shiyu.ai.auth.request.TenantPageRequest;
 import com.shiyu.ai.common.core.domain.LoginContextHolder;
 import com.shiyu.ai.common.core.utils.MapstructUtils;
+import com.shiyu.ai.knowledge.service.KnowledgeSpaceService;
 import jakarta.validation.Valid;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.web.bind.annotation.*;
@@ -27,10 +28,13 @@ public class TenantController {
 
     private final TenantService tenantService;
     private final AuthService authService;
+    private final KnowledgeSpaceService knowledgeSpaceService;
 
-    public TenantController(TenantService tenantService, AuthService authService) {
+    public TenantController(TenantService tenantService, AuthService authService,
+                            KnowledgeSpaceService knowledgeSpaceService) {
         this.tenantService = tenantService;
         this.authService = authService;
+        this.knowledgeSpaceService = knowledgeSpaceService;
     }
 
     /**
@@ -85,6 +89,7 @@ public class TenantController {
         TenantBO tenantBO = MapstructUtils.convert(request, TenantBO.class);
         boolean success = tenantService.createTenant(tenantBO);
         if (success) {
+            knowledgeSpaceService.initializeTenantDefaults(tenantBO.getId());
             return Result.success();
         } else {
             return Result.fail("新增失败，租户编码可能已存在");

@@ -41,4 +41,14 @@ public class KnowledgePathController {
         KnowledgeApiVersion.requireCurrent(version);
         return Result.success(service.findMissingPrerequisites(pointId, masteredIds));
     }
+
+    @GetMapping("/points/path")
+    public Result<List<Long>> findPath(
+            @RequestParam Long fromId,
+            @RequestParam Long toId,
+            @RequestHeader(value = KnowledgeApiVersion.HEADER,
+                    defaultValue = KnowledgeApiVersion.CURRENT) String version) {
+        KnowledgeApiVersion.requireCurrent(version);
+        return Result.success(service.findPath(fromId, toId));
+    }
 }

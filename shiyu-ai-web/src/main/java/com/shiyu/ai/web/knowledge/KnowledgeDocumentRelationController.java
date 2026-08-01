@@ -42,7 +42,7 @@ public class KnowledgeDocumentRelationController {
                                 @RequestHeader(value = KnowledgeApiVersion.HEADER,
                                         defaultValue = KnowledgeApiVersion.CURRENT) String version) {
         KnowledgeApiVersion.requireCurrent(version);
-        service.replaceDocuments(pointId, request.documentIds());
+        service.replaceDocuments(pointId, request.documentIds(), request.relationType());
         return Result.success();
     }
 
@@ -54,6 +54,20 @@ public class KnowledgeDocumentRelationController {
         return Result.success(service.listPointIds(documentId));
     }
 
-    public record ReplaceRequest(@NotNull List<Long> documentIds) {
+    @PutMapping("/documents/{documentId}/points")
+    @SaCheckPermission("knowledge:edit")
+    public Result<Void> replacePoints(@PathVariable Long documentId,
+                                      @RequestBody @Valid ReplacePointsRequest request,
+                                      @RequestHeader(value = KnowledgeApiVersion.HEADER,
+                                              defaultValue = KnowledgeApiVersion.CURRENT) String version) {
+        KnowledgeApiVersion.requireCurrent(version);
+        service.replacePoints(documentId, request.pointIds(), request.relationType());
+        return Result.success();
+    }
+
+    public record ReplaceRequest(@NotNull List<Long> documentIds, String relationType) {
+    }
+
+    public record ReplacePointsRequest(@NotNull List<Long> pointIds, String relationType) {
     }
 }

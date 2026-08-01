@@ -13,6 +13,8 @@ public interface KnowledgeSpaceService {
 
     SpaceView ensureDefaultSpace();
 
+    void initializeTenantDefaults(Long tenantId);
+
     SpaceView get(Long id);
 
     DifficultyScaleView difficultyScale(Long spaceId);
@@ -46,7 +48,7 @@ public interface KnowledgeSpaceService {
     }
 
     record SpaceView(Long id, String code, String name, String description,
-                     String accessMode, String reviewMode, Long difficultyScaleId,
+                     String accessMode, String reviewMode, String bindingMode, Long difficultyScaleId,
                      String embeddingProfile,
                      String rerankProfile, String chunkStrategy, Integer chunkSize,
                      Integer chunkOverlap, Long activeIndexVersion, Integer status,
@@ -66,14 +68,14 @@ public interface KnowledgeSpaceService {
 
     record CreateSpaceRequest(@NotBlank String code, @NotBlank String name,
                               String description, String accessMode, String reviewMode,
-                              Long difficultyScaleId, String embeddingProfile,
+                              String bindingMode, Long difficultyScaleId, String embeddingProfile,
                               String rerankProfile,
                               String chunkStrategy, @Min(100) @Max(4000) Integer chunkSize,
                               @Min(0) @Max(1000) Integer chunkOverlap) {
     }
 
     record UpdateSpaceRequest(String name, String description, String accessMode,
-                              String reviewMode, Long difficultyScaleId,
+                              String reviewMode, String bindingMode, Long difficultyScaleId,
                               String embeddingProfile,
                               String rerankProfile, String chunkStrategy,
                               @Min(100) @Max(4000) Integer chunkSize,
