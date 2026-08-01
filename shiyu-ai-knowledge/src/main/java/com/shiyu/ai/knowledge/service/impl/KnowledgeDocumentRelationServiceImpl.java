@@ -4,7 +4,9 @@ import com.shiyu.ai.common.core.exception.ServiceException;
 import com.shiyu.ai.dal.knowledge.bo.KnowledgeBO;
 import com.shiyu.ai.dal.knowledge.bo.KnowledgeDocRelationBO;
 import com.shiyu.ai.dal.knowledge.bo.KnowledgeDocumentBO;
+import com.shiyu.ai.dal.knowledge.bo.KnowledgeDocumentRelationBO;
 import com.shiyu.ai.dal.knowledge.repository.KnowledgeDocRelationRepository;
+import com.shiyu.ai.dal.knowledge.repository.KnowledgeDocumentRelationRepository;
 import com.shiyu.ai.dal.knowledge.repository.KnowledgeDocumentRepository;
 import com.shiyu.ai.dal.knowledge.repository.KnowledgeRepository;
 import com.shiyu.ai.knowledge.service.KnowledgeDocumentRelationService;
@@ -25,6 +27,7 @@ public class KnowledgeDocumentRelationServiceImpl
     private final KnowledgeRepository knowledgeRepository;
     private final KnowledgeDocumentRepository documentRepository;
     private final KnowledgeDocRelationRepository relationRepository;
+    private final KnowledgeDocumentRelationRepository documentRelationRepository;
     private final KnowledgeSpaceService spaceService;
 
     @Override
@@ -114,8 +117,72 @@ public class KnowledgeDocumentRelationServiceImpl
 
     @Override
     public void removeDocumentRelations(Long documentId) {
-        requireDocument(documentId);
+        KnowledgeDocumentBO document = requireDocument(documentId);
         relationRepository.deleteByDocId(documentId);
+        if (document.getTenantId() != null) {
+            documentRelationRepository.deleteByDocument(document.getTenantId(), documentId);
+        }
+    }
+
+    @Override
+    public List<DocumentRelationView> listDocumentRelations(Long documentId) {
+        KnowledgeDocumentBO source = requireDocument(documentId);
+        if (source.getSpaceId() == null) {
+            return List.of();
+        }
+        spaceService.requireAccess(source.getSpaceId(), KnowledgeSpaceService.SpaceRole.VIEWER);
+        return documentRelationRepository.selectBySource(source.getSpaceId(), documentId).stream()
+                .map(this::toDocumentRelationView).toList();
+    }
+
+    @Override
+    @Transactional(rollbackFor = Exception.class)
+    public void replaceDocumentRelations(Long documentId, List<DocumentRelationRequest> relations) {
+        KnowledgeDocumentBO source = requireDocument(documentId);
+        if (source.getSpaceId() == null || source.getTenantId() == null) {
+            throw new ServiceException("文档未绑定知识空间");
+        }
+        spaceService.requireAccess(source.getSpaceId(), KnowledgeSpaceService.SpaceRole.EDITOR);
+        List<DocumentRelationRequest> normalized = relations == null ? List.of() : relations.stream()
+                .filter(Objects::nonNull).filter(r -> r.documentId() != null).toList();
+        List<KnowledgeDocumentRelationBO> records = normalized.stream().map(request -> {
+            if (Objects.equals(documentId, request.documentId())) {
+                throw new ServiceException("文档不能关联自身");
+            }
+            KnowledgeDocumentBO target = requireDocument(request.documentId());
+            if (!Objects.equals(source.getSpaceId(), target.getSpaceId())
+                    || !Objects.equals(source.getTenantId(), target.getTenantId())) {
+                throw new ServiceException("文档必须属于同一租户和知识空间");
+            }
+            KnowledgeDocumentRelationBO relation = new KnowledgeDocumentRelationBO();
+            relation.setTenantId(source.getTenantId());
+            relation.setSpaceId(source.getSpaceId());
+            relation.setSourceDocumentId(documentId);
+            relation.setTargetDocumentId(target.getId());
+            relation.setRelationType(normalizeDocumentRelationType(request.relationType()));
+            relation.setStatus(1);
+            relation.setDelFlag(0);
+            return relation;
+        }).toList();
+        documentRelationRepository.replace(source.getTenantId(), source.getSpaceId(), documentId, records);
+    }
+
+    private DocumentRelationView toDocumentRelationView(KnowledgeDocumentRelationBO relation) {
+        KnowledgeDocumentBO target = documentRepository.selectById(relation.getTargetDocumentId());
+        return new DocumentRelationView(relation.getId(), relation.getSourceDocumentId(),
+                relation.getTargetDocumentId(), relation.getRelationType(),
+                target == null ? null : target.getTitle());
+    }
+
+    private String normalizeDocumentRelationType(String value) {
+        if (value == null || value.isBlank()) {
+            return "RELATED_TO";
+        }
+        return switch (value.trim().toUpperCase()) {
+            case "REFERENCES", "SUPERSEDES", "DERIVED_FROM", "TRANSLATION_OF",
+                    "DUPLICATE_OF", "RELATED_TO" -> value.trim().toUpperCase();
+            default -> throw new ServiceException("不支持的文档关系类型: " + value);
+        };
     }
 
     private String normalizeRelationType(String relationType) {

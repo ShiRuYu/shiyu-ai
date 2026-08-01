@@ -5,6 +5,8 @@ import com.shiyu.ai.common.core.domain.LoginContextHolder;
 import com.shiyu.ai.common.core.exception.ServiceException;
 import com.shiyu.ai.common.core.tx.TransactionTemplateExecutor;
 import com.shiyu.ai.common.core.tx.TransactionHookExecutor;
+import com.shiyu.ai.common.storage.StorageMetadataStore;
+import com.shiyu.ai.common.storage.ObjectStorage;
 import com.shiyu.ai.dal.knowledge.bo.KnowledgeDocumentBO;
 import com.shiyu.ai.dal.knowledge.dataobject.KnowledgeDocumentVersionDO;
 import com.shiyu.ai.dal.knowledge.dataobject.KnowledgeIngestionJobDO;
@@ -25,6 +27,7 @@ import org.springframework.transaction.annotation.Transactional;
 import org.springframework.transaction.support.DefaultTransactionDefinition;
 
 import java.time.LocalDateTime;
+import java.io.IOException;
 import java.util.List;
 import java.util.Locale;
 
@@ -41,6 +44,8 @@ public class EnterpriseDocumentServiceImpl implements EnterpriseDocumentService 
     private final DocumentIngestionService ingestionService;
     private final KnowledgeIndexService indexService;
     private final TransactionTemplateExecutor transactionTemplateExecutor;
+    private final StorageMetadataStore storageMetadataStore;
+    private final ObjectStorage objectStorage;
 
     @Override
     public PageData<DocumentView> page(Long spaceId, int pageNum, int pageSize,
@@ -81,6 +86,11 @@ public class EnterpriseDocumentServiceImpl implements EnterpriseDocumentService 
         document.setLifecycleStatus("DRAFT");
         document.setParseStatus("PENDING");
         document.setStorageProvider(defaultText(request.storageProvider(), "local"));
+        Long tenantId = LoginContextHolder.getCurrentTenantId();
+        Long storageObjectId = tenantId == null ? null
+                : storageMetadataStore.findObjectByKey(tenantId, request.objectKey())
+                .map(StorageMetadataStore.StorageObjectRecord::id).orElse(null);
+        document.setStorageObjectId(storageObjectId);
         document.setObjectKey(request.objectKey());
         document.setMimeType(request.mimeType());
         document.setFileSize(request.fileSize());
@@ -103,6 +113,7 @@ public class EnterpriseDocumentServiceImpl implements EnterpriseDocumentService 
         version.setLifecycleStatus("DRAFT");
         version.setParseStatus("PENDING");
         version.setModelProfile(space == null ? "default" : space.getEmbeddingProfile());
+        version.setStorageObjectId(storageObjectId);
         version.setDelFlag(0);
         enterpriseRepository.insertVersion(version);
 
@@ -240,8 +251,22 @@ public class EnterpriseDocumentServiceImpl implements EnterpriseDocumentService 
             ingestionService.delete(documentId);
             documentRepository.deleteById(documentId);
             auditService.record(document.getSpaceId(), "DOCUMENT", documentId, "DELETE", null);
-            return new DeletionContext(LoginContextHolder.getCurrentTenantId(), document.getSpaceId());
+            return new DeletionContext(LoginContextHolder.getCurrentTenantId(), document.getSpaceId(),
+                    document.getObjectKey());
         });
+        if (deletion.objectKey() != null && !deletion.objectKey().isBlank()) {
+            boolean physicalDeleted = false;
+            try {
+                objectStorage.delete(deletion.objectKey());
+                physicalDeleted = true;
+            } catch (IOException exception) {
+                log.warn("文档记录已删除，但物理对象删除失败，等待存储一致性任务处理，objectKey={}",
+                        deletion.objectKey(), exception);
+            }
+            if (physicalDeleted && deletion.tenantId() != null) {
+                storageMetadataStore.markObjectDeleted(deletion.tenantId(), deletion.objectKey());
+            }
+        }
         // The database transaction must commit before a new physical index is activated.
         // Otherwise a later rollback could leave the active index pointing at a deleted
         // document or leave a new index version active without the corresponding rows.
@@ -256,7 +281,7 @@ public class EnterpriseDocumentServiceImpl implements EnterpriseDocumentService 
         }
     }
 
-    private record DeletionContext(Long tenantId, Long spaceId) {
+    private record DeletionContext(Long tenantId, Long spaceId, String objectKey) {
     }
 
     protected DocumentView transition(Long documentId, String expected, String target,

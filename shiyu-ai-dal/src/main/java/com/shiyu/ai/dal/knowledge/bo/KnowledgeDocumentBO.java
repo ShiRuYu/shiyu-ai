@@ -22,6 +22,7 @@ public class KnowledgeDocumentBO extends TenantEntity {
     private String lifecycleStatus;
     private String parseStatus;
     private String storageProvider;
+    private Long storageObjectId;
     private String objectKey;
     private String mimeType;
     private Long fileSize;

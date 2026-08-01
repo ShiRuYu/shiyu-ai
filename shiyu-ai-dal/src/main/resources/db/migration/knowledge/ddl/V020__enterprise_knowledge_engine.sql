@@ -163,6 +163,7 @@ ALTER TABLE `knowledge_document` ADD COLUMN IF NOT EXISTS `current_version_id` B
 ALTER TABLE `knowledge_document` ADD COLUMN IF NOT EXISTS `lifecycle_status` VARCHAR(20) DEFAULT 'PUBLISHED';
 ALTER TABLE `knowledge_document` ADD COLUMN IF NOT EXISTS `parse_status` VARCHAR(20) DEFAULT 'READY';
 ALTER TABLE `knowledge_document` ADD COLUMN IF NOT EXISTS `storage_provider` VARCHAR(32) DEFAULT 'local';
+ALTER TABLE `knowledge_document` ADD COLUMN IF NOT EXISTS `storage_object_id` BIGINT DEFAULT NULL;
 ALTER TABLE `knowledge_document` ADD COLUMN IF NOT EXISTS `object_key` VARCHAR(1024) DEFAULT NULL;
 ALTER TABLE `knowledge_document` ADD COLUMN IF NOT EXISTS `mime_type` VARCHAR(128) DEFAULT NULL;
 ALTER TABLE `knowledge_document` ADD COLUMN IF NOT EXISTS `file_size` BIGINT DEFAULT 0;
@@ -174,6 +175,7 @@ ALTER TABLE `knowledge_doc_relation` ADD COLUMN IF NOT EXISTS `update_by` VARCHA
 ALTER TABLE `knowledge_doc_relation` ADD COLUMN IF NOT EXISTS `update_time` TIMESTAMP DEFAULT CURRENT_TIMESTAMP;
 ALTER TABLE `knowledge_doc_relation` ADD COLUMN IF NOT EXISTS `status` TINYINT DEFAULT 1;
 ALTER TABLE `knowledge_doc_relation` ADD COLUMN IF NOT EXISTS `del_flag` TINYINT DEFAULT 0;
+ALTER TABLE `knowledge_document_version` ADD COLUMN IF NOT EXISTS `storage_object_id` BIGINT DEFAULT NULL;
 ALTER TABLE `vector_knowledge_chunk` ADD COLUMN IF NOT EXISTS `space_id` BIGINT DEFAULT NULL;
 ALTER TABLE `vector_knowledge_chunk` ADD COLUMN IF NOT EXISTS `version_id` BIGINT DEFAULT NULL;
 ALTER TABLE `vector_knowledge_chunk` ADD COLUMN IF NOT EXISTS `embedding_binary` BLOB DEFAULT NULL;

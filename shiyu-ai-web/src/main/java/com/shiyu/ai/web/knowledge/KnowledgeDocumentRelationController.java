@@ -65,9 +65,33 @@ public class KnowledgeDocumentRelationController {
         return Result.success();
     }
 
+    @GetMapping("/documents/{documentId}/relations")
+    public Result<List<KnowledgeDocumentRelationService.DocumentRelationView>> listDocumentRelations(
+            @PathVariable Long documentId,
+            @RequestHeader(value = KnowledgeApiVersion.HEADER,
+                    defaultValue = KnowledgeApiVersion.CURRENT) String version) {
+        KnowledgeApiVersion.requireCurrent(version);
+        return Result.success(service.listDocumentRelations(documentId));
+    }
+
+    @PutMapping("/documents/{documentId}/relations")
+    @SaCheckPermission("knowledge:edit")
+    public Result<Void> replaceDocumentRelations(@PathVariable Long documentId,
+                                                  @RequestBody @Valid ReplaceDocumentRelationsRequest request,
+                                                  @RequestHeader(value = KnowledgeApiVersion.HEADER,
+                                                          defaultValue = KnowledgeApiVersion.CURRENT) String version) {
+        KnowledgeApiVersion.requireCurrent(version);
+        service.replaceDocumentRelations(documentId, request.relations());
+        return Result.success();
+    }
+
     public record ReplaceRequest(@NotNull List<Long> documentIds, String relationType) {
     }
 
     public record ReplacePointsRequest(@NotNull List<Long> pointIds, String relationType) {
+    }
+
+    public record ReplaceDocumentRelationsRequest(
+            @NotNull List<KnowledgeDocumentRelationService.DocumentRelationRequest> relations) {
     }
 }

@@ -33,6 +33,7 @@ public class ResumableUploadService {
     private final ObjectStorage objectStorage;
     private final ContentSecurityScanner securityScanner;
     private final ResumableUploadHandler uploadHandler;
+    private final StorageMetadataStore metadataStore;
 
     public UploadSession begin(Long spaceId, BeginRequest request) {
         if (request == null || request.fileName() == null || request.fileName().isBlank()) {
@@ -60,6 +61,14 @@ public class ResumableUploadService {
             try (OutputStream output = Files.newOutputStream(metadata(id), StandardOpenOption.CREATE_NEW)) {
                 properties.store(output, "storage resumable upload");
             }
+            if (metadataStore.persistent()) {
+                metadataStore.createUploadSession(new StorageMetadataStore.CreateUploadSession(
+                        id, tenantId, spaceId, properties.getProperty("namespace"),
+                        properties.getProperty("fileName"), properties.getProperty("contentType"),
+                        request.size(), properties.getProperty("checksum"),
+                        Integer.parseInt(properties.getProperty("totalChunks")),
+                        directory(id).toString(), java.time.Instant.now().plusSeconds(24 * 3600)));
+            }
             return session(id, properties);
         } catch (IOException exception) {
             throw new ServiceException("创建上传会话失败: " + exception.getMessage());
@@ -67,6 +76,11 @@ public class ResumableUploadService {
     }
 
     public UploadSession status(String id) {
+        if (metadataStore.persistent()) {
+            StorageMetadataStore.UploadSessionRecord record = metadataStore.findUploadSession(currentTenant(), id)
+                    .orElseThrow(() -> new ServiceException("上传会话不存在"));
+            return session(record);
+        }
         Properties properties = loadForCurrentTenant(id);
         return session(id, properties);
     }
@@ -82,6 +96,9 @@ public class ResumableUploadService {
         }
         try {
             Files.write(part(id, index), bytes, StandardOpenOption.CREATE, StandardOpenOption.TRUNCATE_EXISTING);
+            if (metadataStore.persistent()) {
+                metadataStore.markChunkUploaded(id, index, bytes.length, sha256(bytes));
+            }
             return session(id, properties);
         } catch (IOException exception) {
             throw new ServiceException("保存分片失败: " + exception.getMessage());
@@ -129,19 +146,37 @@ public class ResumableUploadService {
                                 fileName, stored.objectKey(), stored.provider(), stored.contentType(),
                                 stored.size(), checksum));
                 if (result.duplicate()) objectStorage.delete(stored.objectKey());
+                if (metadataStore.persistent()) {
+                    metadataStore.updateUploadSessionStatus(id, "COMPLETED", null);
+                }
                 cleanup(id);
                 return result;
             } catch (RuntimeException exception) {
+                if (metadataStore.persistent()) {
+                    metadataStore.updateUploadSessionStatus(id, "FAILED", exception.getMessage());
+                }
                 deleteQuietly(stored);
                 throw exception;
             }
+        } catch (ServiceException exception) {
+            markFailed(id, exception.getMessage());
+            deleteQuietly(stored);
+            throw exception;
         } catch (IOException exception) {
+            markFailed(id, exception.getMessage());
+            deleteQuietly(stored);
             throw new ServiceException("合并上传文件失败: " + exception.getMessage());
         }
     }
 
     public void cancel(String id) {
-        loadForCurrentTenant(id);
+        if (metadataStore.persistent()) {
+            StorageMetadataStore.UploadSessionRecord record = metadataStore.findUploadSession(currentTenant(), id)
+                    .orElseThrow(() -> new ServiceException("上传会话不存在"));
+            metadataStore.updateUploadSessionStatus(record.sessionId(), "CANCELLED", null);
+        } else {
+            loadForCurrentTenant(id);
+        }
         try {
             cleanup(id);
         } catch (IOException exception) {
@@ -164,12 +199,32 @@ public class ResumableUploadService {
                 total, uploaded, CHUNK_SIZE);
     }
 
+    private UploadSession session(StorageMetadataStore.UploadSessionRecord record) {
+        List<Integer> uploaded = metadataStore.uploadedChunks(record.sessionId());
+        return new UploadSession(record.sessionId(), record.spaceId(), record.fileName(), record.expectedSize(),
+                record.totalChunks(), uploaded, CHUNK_SIZE);
+    }
+
     private Properties loadForCurrentTenant(String id) {
         if (id == null || !id.matches(ID_PATTERN)) throw new ServiceException("上传会话不存在");
         try {
             Properties properties = new Properties();
-            try (InputStream input = Files.newInputStream(metadata(id))) {
-                properties.load(input);
+            try {
+                try (InputStream input = Files.newInputStream(metadata(id))) {
+                    properties.load(input);
+                }
+            } catch (java.nio.file.NoSuchFileException missingMetadata) {
+                if (!metadataStore.persistent()) throw missingMetadata;
+                StorageMetadataStore.UploadSessionRecord record = metadataStore.findUploadSession(currentTenant(), id)
+                        .orElseThrow(() -> new ServiceException("上传会话不存在"));
+                properties.setProperty("tenantId", Long.toString(record.tenantId()));
+                properties.setProperty("spaceId", Long.toString(record.spaceId()));
+                properties.setProperty("namespace", record.namespace());
+                properties.setProperty("fileName", record.fileName());
+                properties.setProperty("contentType", record.contentType());
+                properties.setProperty("size", Long.toString(record.expectedSize()));
+                properties.setProperty("totalChunks", Integer.toString(record.totalChunks()));
+                properties.setProperty("checksum", record.expectedChecksum() == null ? "" : record.expectedChecksum());
             }
             if (!properties.getProperty("tenantId").equals(currentTenant().toString())) {
                 throw new ServiceException("无权访问该上传会话");
@@ -213,6 +268,12 @@ public class ResumableUploadService {
             objectStorage.delete(stored.objectKey());
         } catch (IOException ignored) {
             // Preserve the registration error; the orphan can be reconciled from storage metadata.
+        }
+    }
+
+    private void markFailed(String id, String message) {
+        if (metadataStore.persistent()) {
+            metadataStore.updateUploadSessionStatus(id, "FAILED", message);
         }
     }
 

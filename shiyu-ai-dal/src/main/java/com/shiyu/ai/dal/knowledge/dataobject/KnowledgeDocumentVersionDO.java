@@ -22,6 +22,7 @@ public class KnowledgeDocumentVersionDO extends TenantEntity {
     private String title;
     private String content;
     private String storageProvider;
+    private Long storageObjectId;
     private String objectKey;
     private String mimeType;
     private Long fileSize;

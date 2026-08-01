@@ -25,6 +25,17 @@ public interface KnowledgeDocumentRelationService {
 
     void removeDocumentRelations(Long documentId);
 
+    List<DocumentRelationView> listDocumentRelations(Long documentId);
+
+    void replaceDocumentRelations(Long documentId, List<DocumentRelationRequest> relations);
+
+    record DocumentRelationRequest(Long documentId, String relationType) {
+    }
+
+    record DocumentRelationView(Long id, Long sourceDocumentId, Long targetDocumentId,
+                                String relationType, String targetTitle) {
+    }
+
     record DocumentSummary(Long id, Long spaceId, String title, String docType,
                            String lifecycleStatus, String parseStatus) {
     }

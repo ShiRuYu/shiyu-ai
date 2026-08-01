@@ -4,10 +4,13 @@ import org.springframework.util.StringUtils;
 
 import java.io.IOException;
 import java.io.InputStream;
+import java.security.MessageDigest;
+import java.security.NoSuchAlgorithmException;
 import java.nio.file.Path;
 import java.util.List;
 import java.util.Locale;
 import java.util.Set;
+import java.util.HexFormat;
 
 public class FileStorageManager implements AutoCloseable {
 
@@ -16,9 +19,15 @@ public class FileStorageManager implements AutoCloseable {
 
     private final String type;
     private final FileStorage storage;
+    private final StorageMetadataStore metadataStore;
 
     public FileStorageManager(StorageProperties properties) throws IOException {
+        this(properties, NoopStorageMetadataStore.INSTANCE);
+    }
+
+    public FileStorageManager(StorageProperties properties, StorageMetadataStore metadataStore) throws IOException {
         this.type = normalizeType(properties.getType());
+        this.metadataStore = metadataStore == null ? NoopStorageMetadataStore.INSTANCE : metadataStore;
         if (!SUPPORTED_TYPES.contains(type)) {
             throw new IllegalStateException("不支持的文件存储方式: " + type);
         }
@@ -44,19 +53,52 @@ public class FileStorageManager implements AutoCloseable {
     public StoredFile upload(
             String namespace, String originalName, String contentType, long size, InputStream inputStream)
             throws IOException {
-        return storage.upload(normalizeNamespace(namespace), originalName, contentType, size, inputStream);
+        String normalizedNamespace = normalizeNamespace(namespace);
+        java.security.DigestInputStream digestInput = new java.security.DigestInputStream(
+                inputStream, digest());
+        StoredFile stored = storage.upload(normalizedNamespace, originalName, contentType, size, digestInput);
+        if (!metadataStore.persistent()) return stored;
+        long tenantId = tenantId(normalizedNamespace);
+        Long spaceId = spaceId(normalizedNamespace);
+        String checksum = HexFormat.of().formatHex(digestInput.getMessageDigest().digest());
+        long metadataId = metadataStore.createObject(new StorageMetadataStore.CreateObject(
+                tenantId, spaceId, normalizedNamespace, stored.name(), stored.key(), stored.storageType(),
+                stored.contentType(), stored.size(), checksum, "AVAILABLE"));
+        if (metadataId <= 0) {
+            try { storage.delete(stored.key()); } catch (IOException ignored) { }
+            throw new IOException("文件记录写入数据库失败");
+        }
+        return new StoredFile(stored.key(), stored.name(), stored.size(), stored.contentType(),
+                stored.lastModified(), stored.url(), stored.storageType());
     }
 
     public List<StoredFile> list(String namespace) throws IOException {
-        return storage.list(normalizeNamespace(namespace));
+        String normalizedNamespace = normalizeNamespace(namespace);
+        if (!metadataStore.persistent()) return storage.list(normalizedNamespace);
+        long tenantId = tenantId(normalizedNamespace);
+        return metadataStore.listObjects(tenantId, normalizedNamespace, 0, 1000).stream()
+                .map(record -> new StoredFile(record.objectKey(), record.originalName(), record.size(),
+                        record.contentType(), record.updateTime(), null, record.provider()))
+                .toList();
     }
 
     public StorageObject open(String key) throws IOException {
+        if (metadataStore.persistent()) {
+            long tenantId = tenantIdFromKey(key);
+            StorageMetadataStore.StorageObjectRecord record = metadataStore.findObjectByKey(tenantId, key)
+                    .orElseThrow(() -> new IOException("文件记录不存在"));
+            if (!"AVAILABLE".equals(record.status())) {
+                throw new IOException("文件当前不可用: " + record.status());
+            }
+        }
         return storage.open(key);
     }
 
     public void delete(String key) throws IOException {
         storage.delete(key);
+        if (metadataStore.persistent()) {
+            metadataStore.markObjectDeleted(tenantIdFromKey(key), key);
+        }
     }
 
     @Override
@@ -76,5 +118,40 @@ public class FileStorageManager implements AutoCloseable {
             throw new IllegalArgumentException("非法文件命名空间");
         }
         return namespace.replace('\\', '/').replaceAll("/+$", "") + "/";
+    }
+
+    private long tenantId(String namespace) throws IOException {
+        String[] parts = namespace.split("/");
+        if (parts.length < 2 || (!"tenant".equals(parts[0]) && !"knowledge".equals(parts[0]))) {
+            throw new IOException("存储命名空间缺少租户标识");
+        }
+        try {
+            return Long.parseLong(parts[1]);
+        } catch (NumberFormatException ex) {
+            throw new IOException("存储命名空间租户标识无效", ex);
+        }
+    }
+
+    private long tenantIdFromKey(String key) throws IOException {
+        if (key == null) throw new IOException("文件标识不能为空");
+        return tenantId(key);
+    }
+
+    private Long spaceId(String namespace) {
+        String[] parts = namespace.split("/");
+        if (parts.length >= 3 && "knowledge".equals(parts[0])) {
+            try { return Long.parseLong(parts[2]); } catch (NumberFormatException ignored) { return null; }
+        }
+        for (int i = 0; i + 1 < parts.length; i++) {
+            if ("space".equals(parts[i])) {
+                try { return Long.parseLong(parts[i + 1]); } catch (NumberFormatException ignored) { return null; }
+            }
+        }
+        return null;
+    }
+
+    private MessageDigest digest() {
+        try { return MessageDigest.getInstance("SHA-256"); }
+        catch (NoSuchAlgorithmException ex) { throw new IllegalStateException(ex); }
     }
 }
