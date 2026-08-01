@@ -22,6 +22,7 @@
         <module>shiyu-common-mybatis</module>
         <module>shiyu-common-thread</module>
         <module>shiyu-common-web</module>
+        <module>shiyu-common-storage</module>
     </modules>
 
     <build>

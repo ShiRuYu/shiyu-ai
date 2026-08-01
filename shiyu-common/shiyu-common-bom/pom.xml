@@ -43,6 +43,11 @@
                 <artifactId>shiyu-common-web</artifactId>
                 <version>${revision}</version>
             </dependency>
+            <dependency>
+                <groupId>com.shiyu.ai</groupId>
+                <artifactId>shiyu-common-storage</artifactId>
+                <version>${revision}</version>
+            </dependency>
         </dependencies>
     </dependencyManagement>
 </project>

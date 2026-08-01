@@ -39,6 +39,10 @@
             <groupId>com.shiyu.ai</groupId>
             <artifactId>shiyu-common-mybatis</artifactId>
         </dependency>
+        <dependency>
+            <groupId>com.shiyu.ai</groupId>
+            <artifactId>shiyu-common-storage</artifactId>
+        </dependency>
 
         <dependency>
             <groupId>org.apache.commons</groupId>

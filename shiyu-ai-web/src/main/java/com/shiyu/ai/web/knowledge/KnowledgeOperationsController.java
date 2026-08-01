@@ -2,6 +2,7 @@ package com.shiyu.ai.web.knowledge;
 
 import cn.dev33.satoken.annotation.SaCheckPermission;
 import com.shiyu.ai.common.core.api.Result;
+import com.shiyu.ai.common.storage.EmbeddedBackupService;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
 import org.springframework.web.bind.annotation.GetMapping;

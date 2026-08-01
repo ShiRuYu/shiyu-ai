@@ -2,9 +2,9 @@ package com.shiyu.ai.web.common;
 
 import com.shiyu.ai.common.core.api.Result;
 import com.shiyu.ai.common.core.domain.LoginContextHolder;
-import com.shiyu.ai.web.common.storage.FileStorageManager;
-import com.shiyu.ai.web.common.storage.StorageObject;
-import com.shiyu.ai.web.common.storage.StoredFile;
+import com.shiyu.ai.common.storage.FileStorageManager;
+import com.shiyu.ai.common.storage.StorageObject;
+import com.shiyu.ai.common.storage.StoredFile;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
@@ -24,6 +24,7 @@ import org.springframework.web.multipart.MultipartFile;
 
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
+import java.net.URLEncoder;
 import java.util.List;
 import java.util.Map;
 
@@ -46,9 +47,9 @@ public class FileController {
 
     @Operation(summary = "获取文件列表")
     @GetMapping("/list")
-    public Result<List<StoredFile>> list() {
+    public Result<List<FileView>> list() {
         try {
-            return Result.success(storageManager.list(tenantNamespace()));
+            return Result.success(storageManager.list(tenantNamespace()).stream().map(this::toView).toList());
         } catch (IOException ex) {
             log.error("读取文件列表失败", ex);
             return Result.fail(ex.getMessage());
@@ -57,7 +58,7 @@ public class FileController {
 
     @Operation(summary = "上传文件")
     @PostMapping("/upload")
-    public Result<StoredFile> upload(@RequestParam("file") MultipartFile file) {
+    public Result<FileView> upload(@RequestParam("file") MultipartFile file) {
         if (file == null || file.isEmpty()) {
             return Result.fail("上传文件不能为空");
         }
@@ -69,7 +70,7 @@ public class FileController {
                     file.getSize(),
                     inputStream);
             log.info("文件上传成功: {} -> {}", file.getOriginalFilename(), storedFile.key());
-            return Result.success(storedFile);
+            return Result.success(toView(storedFile));
         } catch (IOException ex) {
             log.error("文件上传失败", ex);
             return Result.fail(ex.getMessage());
@@ -117,5 +118,17 @@ public class FileController {
         if (key == null || !key.startsWith(prefix)) {
             throw new IOException("无权访问该文件");
         }
+    }
+
+    private FileView toView(StoredFile file) {
+        String url = file.url() == null
+                ? "/api/system/file/download?key=" + URLEncoder.encode(file.key(), StandardCharsets.UTF_8)
+                : file.url();
+        return new FileView(file.key(), file.name(), file.size(), file.contentType(),
+                file.lastModified(), url, file.storageType());
+    }
+
+    public record FileView(String key, String name, long size, String contentType,
+                           java.time.Instant lastModified, String url, String storageType) {
     }
 }
