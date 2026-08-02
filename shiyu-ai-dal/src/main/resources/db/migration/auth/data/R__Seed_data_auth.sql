@@ -158,10 +158,6 @@ INSERT IGNORE INTO `auth_menu` (`id`, `name`, `code`, `type`, `parent_id`, `tena
 VALUES (74, '索引与任务', 'KnowledgeIndex', 'MENU', 70, 1, '/knowledge/index', 'lucide:database-zap', '/knowledge/index/index', TRUE, 1, 7, 0, 'system', 'system');
 
 INSERT IGNORE INTO `auth_menu` (`id`, `name`, `code`, `type`, `parent_id`, `tenant_id`, `path`, `icon`, `component`, `show`, `status`, `order`, `del_flag`, `create_by`, `update_by`)
-VALUES (75, '关系编排', 'KnowledgeRelation', 'MENU', 70, 1, '/knowledge/relations', 'lucide:workflow', '/knowledge/relations/index', TRUE, 1, 5, 0, 'system', 'system');
-
-
-INSERT IGNORE INTO `auth_menu` (`id`, `name`, `code`, `type`, `parent_id`, `tenant_id`, `path`, `icon`, `component`, `show`, `status`, `order`, `del_flag`, `create_by`, `update_by`)
 VALUES (76, '空间管理', 'KnowledgeSpace', 'MENU', 70, 1, '/knowledge/spaces', 'lucide:layers-3', '/knowledge/spaces/index', TRUE, 1, 2, 0, 'system', 'system');
 INSERT IGNORE INTO `auth_menu` (`id`, `name`, `code`, `type`, `parent_id`, `tenant_id`, `path`, `icon`, `component`, `show`, `status`, `order`, `del_flag`, `create_by`, `update_by`)
 VALUES (77, '文档中心', 'KnowledgeDocuments', 'MENU', 70, 1, '/knowledge/documents', 'lucide:file-stack', '/knowledge/documents/index', TRUE, 1, 4, 0, 'system', 'system');
@@ -181,9 +177,22 @@ UPDATE `auth_menu` SET `name` = '空间管理', `path` = '/knowledge/spaces', `c
 UPDATE `auth_menu` SET `name` = '知识资产', `path` = '/knowledge/assets', `component` = '/knowledge/assets/index', `order` = 3 WHERE `code` = 'KnowledgeList' AND `tenant_id` = 1;
 UPDATE `auth_menu` SET `name` = '文档中心', `path` = '/knowledge/documents', `component` = '/knowledge/documents/index', `order` = 4 WHERE `code` = 'KnowledgeDocuments' AND `tenant_id` = 1;
 UPDATE `auth_menu` SET `name` = '图谱洞察', `path` = '/knowledge/graph', `component` = '/knowledge/graph/index', `order` = 5 WHERE `code` = 'KnowledgeGraph' AND `tenant_id` = 1;
--- Relationship editing is embedded in the graph insight canvas. Keep the
--- legacy route for deep links, but remove the duplicate sidebar entry.
-UPDATE `auth_menu` SET `name` = '关系编排', `path` = '/knowledge/relations', `component` = '/knowledge/relations/index', `show` = FALSE, `order` = 6 WHERE `code` = 'KnowledgeRelation';
+-- Relationship editing is embedded in the graph insight canvas. Remove the
+-- retired standalone menu and all tenant/role bindings, including legacy
+-- cloned menu rows, so it cannot create a stale blank tab after an upgrade.
+DELETE FROM `auth_role_scope_menu`
+WHERE EXISTS (
+    SELECT 1 FROM `auth_menu` m
+    WHERE m.`id` = auth_role_scope_menu.`menu_id`
+      AND m.`code` = 'KnowledgeRelation'
+);
+DELETE FROM `auth_tenant_menu`
+WHERE EXISTS (
+    SELECT 1 FROM `auth_menu` m
+    WHERE m.`id` = auth_tenant_menu.`menu_id`
+      AND m.`code` = 'KnowledgeRelation'
+);
+DELETE FROM `auth_menu` WHERE `code` = 'KnowledgeRelation';
 UPDATE `auth_menu` SET `name` = '检索实验室', `path` = '/knowledge/search', `component` = '/knowledge/search/index', `order` = 7 WHERE `code` = 'KnowledgeSearch' AND `tenant_id` = 1;
 UPDATE `auth_menu` SET `name` = '索引与任务', `path` = '/knowledge/index', `component` = '/knowledge/index/index', `order` = 8 WHERE `code` = 'KnowledgeIndex' AND `tenant_id` = 1;
 UPDATE `auth_menu` SET `name` = '系统运维', `path` = '/knowledge/operations', `component` = '/knowledge/operations/index', `order` = 9 WHERE `code` = 'KnowledgeOperations' AND `tenant_id` = 1;
