@@ -268,9 +268,12 @@ shiyu:
 ### 启动
 
 ```bash
-cd shiyu-ai-bootstrap
-mvn spring-boot:run -Dspring-boot.run.profiles=dev
+cd shiyu-ai
+mvn -pl shiyu-ai-bootstrap -am -DskipTests package
+java -jar shiyu-ai-bootstrap/target/shiyu-ai-bootstrap-1.0.0.jar --spring.profiles.active=dev
 ```
+
+从 bootstrap 子目录直接执行 `spring-boot:run` 可能加载本机 Maven 仓库中的旧模块包；开发环境应先从根目录构建 reactor，确保运行的是当前源码。
 
 启动后访问：
 - 应用端口：`http://localhost:9000`
