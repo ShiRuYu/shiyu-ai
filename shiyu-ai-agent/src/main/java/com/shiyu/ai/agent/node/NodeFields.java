@@ -50,8 +50,8 @@ public interface NodeFields {
         TOOL_NAME("toolName"),
         /** 工具类型 */
         TOOL_TYPE("toolType"),
-        /** 知识库 ID */
-        KNOWLEDGE_BASE_ID("knowledgeBaseId"),
+        /** Knowledge space IDs; empty means all accessible spaces. */
+        SPACE_IDS("spaceIds"),
         /** 记忆检索范围 */
         RETRIEVAL_SCOPE("retrievalScope"),
         /** Top-K 检索数量 */
@@ -89,6 +89,14 @@ public interface NodeFields {
         DOCUMENTS("documents"),
         /** 文档数量 */
         DOCUMENT_COUNT("documentCount"),
+        /** Space-scoped retrieval hits. */
+        RETRIEVAL_HITS("retrievalHits"),
+        /** Structured retrieval citations. */
+        CITATIONS("citations"),
+        /** Retrieval diagnostics. */
+        RETRIEVAL_TRACE("retrievalTrace"),
+        /** Whether retrieval returned no hits. */
+        RETRIEVAL_EMPTY("retrievalEmpty"),
         /** 上下文文本（RAG / 记忆的上下文拼接结果） */
         CONTEXT("context"),
         /** 记忆条目列表 */
@@ -337,8 +345,8 @@ public interface NodeFields {
     /**
      * RAG 检索节点
      * <p>
-     * 输入: query, knowledgeBaseId
-     * 输出: documents, documentCount, context
+         * 输入: query, spaceIds
+         * 输出: retrievalHits, citations, context
      */
     enum RagRetrievalFields implements NodeFields {
         INSTANCE;
@@ -347,16 +355,18 @@ public interface NodeFields {
         public Set<FieldKey> inputFields() {
             return Set.of(
                     FieldKey.QUERY,
-                    FieldKey.KNOWLEDGE_BASE_ID
+                    FieldKey.SPACE_IDS
             );
         }
 
         @Override
         public Set<FieldKey> outputFields() {
             return Set.of(
-                    FieldKey.DOCUMENTS,
+                    FieldKey.RETRIEVAL_HITS,
+                    FieldKey.CITATIONS,
                     FieldKey.DOCUMENT_COUNT,
-                    FieldKey.CONTEXT
+                    FieldKey.CONTEXT,
+                    FieldKey.RETRIEVAL_EMPTY
             );
         }
     }

@@ -90,7 +90,7 @@ public class EmbeddedIndexRegistry implements KnowledgeIndexService {
 
     @Override
     public synchronized long rebuild(Long tenantId, Long spaceId) {
-        KnowledgeSpaceDO space = enterpriseRepository.findSpace(spaceId);
+        KnowledgeSpaceDO space = enterpriseRepository.findSpaceByTenant(tenantId, spaceId);
         if (space == null) throw new ServiceException("知识空间不存在: " + spaceId);
         if (tenantId == null || !tenantId.equals(space.getTenantId())) {
             throw new ServiceException("租户与知识空间不匹配");
@@ -156,7 +156,7 @@ public class EmbeddedIndexRegistry implements KnowledgeIndexService {
     @Override
     public List<HybridHit> hybridSearch(Long tenantId, Long spaceId, String query,
                                         String mode, int topK, double threshold, boolean rerank) {
-        KnowledgeSpaceDO space = enterpriseRepository.findSpace(spaceId);
+        KnowledgeSpaceDO space = enterpriseRepository.findSpaceByTenant(tenantId, spaceId);
         if (space == null || space.getActiveIndexVersion() == null
                 || space.getActiveIndexVersion() <= 0) {
             return List.of();

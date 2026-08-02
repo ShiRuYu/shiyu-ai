@@ -9,6 +9,8 @@ import jakarta.validation.constraints.NotNull;
 import java.time.LocalDateTime;
 import java.util.List;
 
+import com.shiyu.ai.knowledge.security.KnowledgeAccessContext;
+
 public interface KnowledgeSpaceService {
 
     SpaceView ensureDefaultSpace();
@@ -21,6 +23,8 @@ public interface KnowledgeSpaceService {
 
     PageData<SpaceView> page(int pageNum, int pageSize, String keyword);
 
+    PageData<SpaceView> page(int pageNum, int pageSize, String keyword, String domainCode);
+
     SpaceView create(CreateSpaceRequest request);
 
     SpaceView update(Long id, UpdateSpaceRequest request);
@@ -32,6 +36,10 @@ public interface KnowledgeSpaceService {
     void replaceMembers(Long spaceId, List<MemberRequest> members);
 
     void requireAccess(Long spaceId, SpaceRole minimumRole);
+
+    void requireAccess(Long spaceId, SpaceRole minimumRole, KnowledgeAccessContext context);
+
+    List<SpaceView> accessibleSpaces(KnowledgeAccessContext context);
 
     enum SpaceRole {
         VIEWER(1), REVIEWER(2), EDITOR(3), ADMIN(4);
@@ -47,7 +55,7 @@ public interface KnowledgeSpaceService {
         }
     }
 
-    record SpaceView(Long id, String code, String name, String description,
+    record SpaceView(Long id, String code, String domainCode, String name, String description,
                      String accessMode, String reviewMode, String bindingMode, Long difficultyScaleId,
                      String embeddingProfile,
                      String rerankProfile, String chunkStrategy, Integer chunkSize,
@@ -66,7 +74,7 @@ public interface KnowledgeSpaceService {
     record DifficultyLevelView(Integer level, String label, String description) {
     }
 
-    record CreateSpaceRequest(@NotBlank String code, @NotBlank String name,
+    record CreateSpaceRequest(@NotBlank String code, @NotBlank String name, String domainCode,
                               String description, String accessMode, String reviewMode,
                               String bindingMode, Long difficultyScaleId, String embeddingProfile,
                               String rerankProfile,
@@ -74,7 +82,7 @@ public interface KnowledgeSpaceService {
                               @Min(0) @Max(1000) Integer chunkOverlap) {
     }
 
-    record UpdateSpaceRequest(String name, String description, String accessMode,
+    record UpdateSpaceRequest(String name, String description, String domainCode, String accessMode,
                               String reviewMode, String bindingMode, Long difficultyScaleId,
                               String embeddingProfile,
                               String rerankProfile, String chunkStrategy,

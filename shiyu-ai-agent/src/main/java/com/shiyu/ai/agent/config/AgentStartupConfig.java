@@ -22,7 +22,7 @@ import com.shiyu.ai.agent.node.output.OutputFormatConfig;
 import com.shiyu.ai.agent.service.AgentService;
 import com.shiyu.ai.model.chat.ChatEngine;
 import com.shiyu.ai.model.adapter.ModelManager;
-import com.shiyu.ai.knowledge.rag.RagService;
+import com.shiyu.ai.knowledge.retrieval.KnowledgeRetrievalService;
 import com.shiyu.ai.tool.ToolService;
 import com.shiyu.ai.agent.service.IntentService;
 import lombok.extern.slf4j.Slf4j;
@@ -50,17 +50,17 @@ public class AgentStartupConfig implements ApplicationRunner {
     private final AgentService agentService;
     private final ChatEngine chatEngine;
     private final ModelManager modelManager;
-    private final RagService ragService;
+    private final KnowledgeRetrievalService retrievalService;
     private final ToolService toolService;
     private final IntentService intentService;
 
     public AgentStartupConfig(AgentService agentService, ChatEngine chatEngine, ModelManager modelManager,
-                              RagService ragService, ToolService toolService,
+                              KnowledgeRetrievalService retrievalService, ToolService toolService,
                               IntentService intentService) {
         this.agentService = agentService;
         this.chatEngine = chatEngine;
         this.modelManager = modelManager;
-        this.ragService = ragService;
+        this.retrievalService = retrievalService;
         this.toolService = toolService;
         this.intentService = intentService;
     }
@@ -109,11 +109,11 @@ public class AgentStartupConfig implements ApplicationRunner {
         try {
             // RAG 检索节点
             RagRetrievalNode ragRetrieval = RagRetrievalNode.builder()
-                    .ragService(ragService)
+                    .retrievalService(retrievalService)
                     .config(RagRetrievalConfig.builder()
                             .nodeName("知识库检索")
                             .topK(5)
-                            .similarityThreshold(0.6)
+                            .scoreThreshold(0.6)
                             .build())
                     .build();
 
@@ -235,7 +235,7 @@ public class AgentStartupConfig implements ApplicationRunner {
 
             // --- RAG 检索节点 ---
             RagRetrievalNode ragRetrieval = RagRetrievalNode.builder()
-                    .ragService(ragService)
+                    .retrievalService(retrievalService)
                     .config(RagRetrievalConfig.builder()
                             .nodeName("知识库检索")
                             .topK(3)

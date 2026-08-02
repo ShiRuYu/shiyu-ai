@@ -744,6 +744,8 @@ VALUES (41, 'agent:intent:create', '创建意图', 1, 0, 'system', 'system');
 INSERT IGNORE INTO `auth_auth_code` (`id`, `code`, `name`, `status`, `del_flag`, `create_by`, `update_by`)
 VALUES (42, 'agent:intent:delete', '删除意图', 1, 0, 'system', 'system');
 INSERT IGNORE INTO `auth_auth_code` (`id`, `code`, `name`, `status`, `del_flag`, `create_by`, `update_by`)
+VALUES (115, 'agent:execute', '执行 Agent', 1, 0, 'system', 'system');
+INSERT IGNORE INTO `auth_auth_code` (`id`, `code`, `name`, `status`, `del_flag`, `create_by`, `update_by`)
 VALUES (43, 'knowledge:list', '查看知识点', 1, 0, 'system', 'system');
 INSERT IGNORE INTO `auth_auth_code` (`id`, `code`, `name`, `status`, `del_flag`, `create_by`, `update_by`)
 VALUES (44, 'knowledge:create', '创建知识点', 1, 0, 'system', 'system');

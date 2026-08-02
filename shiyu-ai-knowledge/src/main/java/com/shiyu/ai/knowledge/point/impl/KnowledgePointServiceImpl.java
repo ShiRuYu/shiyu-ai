@@ -10,7 +10,6 @@ import com.shiyu.ai.knowledge.graph.KnowledgeGraph;
 import com.shiyu.ai.knowledge.point.KnowledgePointService;
 import com.shiyu.ai.knowledge.dto.KnowledgeGraphResponse;
 import com.shiyu.ai.knowledge.dto.KnowledgeResponse;
-import com.shiyu.ai.knowledge.search.KnowledgeSearchService;
 import com.shiyu.ai.knowledge.service.KnowledgeDocumentRelationService;
 import com.shiyu.ai.knowledge.service.KnowledgeRelationService;
 import com.shiyu.ai.knowledge.service.KnowledgeSpaceService;
@@ -25,7 +24,6 @@ public class KnowledgePointServiceImpl implements KnowledgePointService {
     private final KnowledgeRepository repository;
     private final KnowledgeSpaceService spaceService;
     private final KnowledgeGraph knowledgeGraph;
-    private final KnowledgeSearchService knowledgeSearchService;
     private final KnowledgeRelationService relationService;
     private final KnowledgeDocumentRelationService documentRelationService;
 
@@ -84,7 +82,6 @@ public class KnowledgePointServiceImpl implements KnowledgePointService {
         point.setDelFlag(0);
         repository.insert(point);
         knowledgeGraph.addNode(GraphNode.of(point.getId(), point.getName(), point.getCode()));
-        knowledgeSearchService.indexKnowledge(point);
         return toView(point);
     }
 
@@ -111,7 +108,6 @@ public class KnowledgePointServiceImpl implements KnowledgePointService {
             point.setTags(request.tags());
         }
         repository.update(point);
-        knowledgeSearchService.indexKnowledge(point);
         return toView(point);
     }
 
@@ -121,7 +117,6 @@ public class KnowledgePointServiceImpl implements KnowledgePointService {
         KnowledgeBO point = requirePoint(pointId);
         spaceService.requireAccess(point.getSpaceId(),
                 KnowledgeSpaceService.SpaceRole.EDITOR);
-        knowledgeSearchService.removeFromIndex(pointId);
         knowledgeGraph.removeNode(pointId);
         relationService.removeAllRelations(pointId);
         documentRelationService.replaceDocuments(pointId, java.util.List.of());

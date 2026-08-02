@@ -42,6 +42,27 @@ public class KnowledgeEnterpriseRepository {
                 .eq(KnowledgeSpaceDO::getDelFlag, 0));
     }
 
+    public KnowledgeSpaceDO findSpaceByTenant(Long tenantId, Long id) {
+        if (tenantId == null || id == null) {
+            return null;
+        }
+        return TenantManager.withoutTenantCondition(() -> spaceMapper.selectOneByQuery(QueryWrapper.create()
+                .eq(KnowledgeSpaceDO::getTenantId, tenantId)
+                .eq(KnowledgeSpaceDO::getId, id)
+                .eq(KnowledgeSpaceDO::getDelFlag, 0)));
+    }
+
+    public List<KnowledgeSpaceDO> findActiveSpacesByTenant(Long tenantId) {
+        if (tenantId == null) {
+            return List.of();
+        }
+        return TenantManager.withoutTenantCondition(() -> spaceMapper.selectListByQuery(QueryWrapper.create()
+                .eq(KnowledgeSpaceDO::getTenantId, tenantId)
+                .eq(KnowledgeSpaceDO::getStatus, 1)
+                .eq(KnowledgeSpaceDO::getDelFlag, 0)
+                .orderBy(KnowledgeSpaceDO::getId, true)));
+    }
+
     public KnowledgeSpaceDO findSpaceByCode(String code) {
         return spaceMapper.selectOneByQuery(QueryWrapper.create()
                 .eq(KnowledgeSpaceDO::getCode, code)
@@ -57,9 +78,17 @@ public class KnowledgeEnterpriseRepository {
     }
 
     public PageData<KnowledgeSpaceDO> pageSpaces(int pageNum, int pageSize, String keyword) {
+        return pageSpaces(pageNum, pageSize, keyword, null);
+    }
+
+    public PageData<KnowledgeSpaceDO> pageSpaces(int pageNum, int pageSize, String keyword,
+                                                 String domainCode) {
         QueryWrapper query = QueryWrapper.create().eq(KnowledgeSpaceDO::getDelFlag, 0);
         if (keyword != null && !keyword.isBlank()) {
             query.like(KnowledgeSpaceDO::getName, keyword);
+        }
+        if (domainCode != null && !domainCode.isBlank()) {
+            query.eq(KnowledgeSpaceDO::getDomainCode, domainCode);
         }
         Page<KnowledgeSpaceDO> page = spaceMapper.paginate(pageNum, pageSize,
                 query.orderBy(KnowledgeSpaceDO::getId, false));
@@ -100,6 +129,20 @@ public class KnowledgeEnterpriseRepository {
             return false;
         }
         return memberMapper.selectCountByQuery(QueryWrapper.create()
+                .eq(KnowledgeSpaceMemberDO::getSpaceId, spaceId)
+                .eq(KnowledgeSpaceMemberDO::getPrincipalType, principalType)
+                .eq(KnowledgeSpaceMemberDO::getPrincipalId, principalId)
+                .in(KnowledgeSpaceMemberDO::getSpaceRole, acceptedRoles)
+                .eq(KnowledgeSpaceMemberDO::getDelFlag, 0)) > 0;
+    }
+
+    public boolean hasMember(Long tenantId, Long spaceId, String principalType,
+                             Long principalId, List<String> acceptedRoles) {
+        if (tenantId == null || principalId == null) {
+            return false;
+        }
+        return memberMapper.selectCountByQuery(QueryWrapper.create()
+                .eq(KnowledgeSpaceMemberDO::getTenantId, tenantId)
                 .eq(KnowledgeSpaceMemberDO::getSpaceId, spaceId)
                 .eq(KnowledgeSpaceMemberDO::getPrincipalType, principalType)
                 .eq(KnowledgeSpaceMemberDO::getPrincipalId, principalId)

@@ -4,9 +4,16 @@
 
 -- ============================================
 -- 知识空间 (knowledge_space)
-INSERT IGNORE INTO `knowledge_space` (`id`, `code`, `name`, `description`, `access_mode`, `review_mode`, `embedding_profile`, `rerank_profile`, `chunk_strategy`, `chunk_size`, `chunk_overlap`, `active_index_version`, `tenant_id`, `status`, `del_flag`, `create_by`, `update_by`) VALUES
-(1, 'default', '默认知识空间', '兼容既有知识点、文档和教育关联的默认空间', 'TENANT', 'DIRECT', 'default', 'default', 'HEADING', 800, 100, 0, 1, 1, 0, 'system', 'system'),
-(2, 'enterprise-policy', '企业制度文档库', '企业管理制度与流程文档，用于 RAG 检索问答与评测', 'PRIVATE', 'REQUIRED', 'default', 'default', 'HEADING', 600, 80, 0, 1, 1, 0, 'system', 'system');
+INSERT IGNORE INTO `knowledge_space` (`id`, `code`, `domain_code`, `name`, `description`, `access_mode`, `review_mode`, `embedding_profile`, `rerank_profile`, `chunk_strategy`, `chunk_size`, `chunk_overlap`, `active_index_version`, `tenant_id`, `status`, `del_flag`, `create_by`, `update_by`) VALUES
+(1, 'default', 'GENERAL', '企业通用知识空间', '租户默认的企业通用知识空间', 'TENANT', 'DIRECT', 'default', 'default', 'HEADING', 800, 100, 0, 1, 1, 0, 'system', 'system'),
+(2, 'enterprise-policy', 'ENTERPRISE', '企业制度文档库', '企业管理制度与流程文档，用于 RAG 检索问答与评测', 'PRIVATE', 'REQUIRED', 'default', 'default', 'HEADING', 600, 80, 0, 1, 1, 0, 'system', 'system');
+
+-- 教育示例使用独立空间，知识点仍由 Knowledge 模块统一维护。
+INSERT INTO `knowledge_space` (`code`, `domain_code`, `name`, `description`, `access_mode`, `review_mode`, `embedding_profile`, `rerank_profile`, `chunk_strategy`, `chunk_size`, `chunk_overlap`, `active_index_version`, `tenant_id`, `status`, `del_flag`, `create_by`, `update_by`)
+SELECT 'education-default', 'EDUCATION', '教育知识空间', '学科知识点、教材内容及教育关联数据', 'PRIVATE', 'DIRECT', 'default', 'default', 'HEADING', 800, 100, 0, 1, 1, 0, 'system', 'system'
+WHERE NOT EXISTS (
+    SELECT 1 FROM `knowledge_space` WHERE `tenant_id` = 1 AND `code` = 'education-default'
+);
 
 -- 知识空间成员 (knowledge_space_member)
 INSERT IGNORE INTO `knowledge_space_member` (`id`, `space_id`, `principal_type`, `principal_id`, `space_role`, `tenant_id`, `status`, `del_flag`, `create_by`, `update_by`) VALUES
@@ -16,6 +23,24 @@ INSERT IGNORE INTO `knowledge_space_member` (`id`, `space_id`, `principal_type`,
 (4, 2, 'USER', 3, 'REVIEWER', 1, 1, 0, 'system', 'system'),
 (5, 2, 'USER', 4, 'EDITOR', 1, 1, 0, 'system', 'system'),
 (6, 2, 'ROLE', 1, 'ADMIN', 1, 1, 0, 'system', 'system');
+
+INSERT INTO `knowledge_space_member` (`space_id`, `principal_type`, `principal_id`, `space_role`, `tenant_id`, `status`, `del_flag`, `create_by`, `update_by`)
+SELECT s.`id`, 'USER', 2, 'ADMIN', 1, 1, 0, 'system', 'system'
+FROM `knowledge_space` s
+WHERE s.`tenant_id` = 1 AND s.`code` = 'education-default'
+  AND NOT EXISTS (
+      SELECT 1 FROM `knowledge_space_member` m
+      WHERE m.`space_id` = s.`id` AND m.`principal_type` = 'USER' AND m.`principal_id` = 2
+  );
+
+INSERT INTO `knowledge_space_member` (`space_id`, `principal_type`, `principal_id`, `space_role`, `tenant_id`, `status`, `del_flag`, `create_by`, `update_by`)
+SELECT s.`id`, 'ROLE', 1, 'ADMIN', 1, 1, 0, 'system', 'system'
+FROM `knowledge_space` s
+WHERE s.`tenant_id` = 1 AND s.`code` = 'education-default'
+  AND NOT EXISTS (
+      SELECT 1 FROM `knowledge_space_member` m
+      WHERE m.`space_id` = s.`id` AND m.`principal_type` = 'ROLE' AND m.`principal_id` = 1
+  );
 
 -- 知识点 (knowledge_base)
 INSERT IGNORE INTO `knowledge_base` (`id`, `space_id`, `code`, `name`, `description`, `difficulty`, `category`, `tags`, `tenant_id`, `create_by`, `update_by`) VALUES
@@ -446,3 +471,75 @@ WHERE `space_id` IS NULL AND `tenant_id` = 1;
 UPDATE `knowledge_document` d SET `current_version_id` = d.`id`
 WHERE d.`id` BETWEEN 1 AND 22 AND d.`current_version_id` IS NULL
   AND EXISTS (SELECT 1 FROM `knowledge_document_version` v WHERE v.`id` = d.`id`);
+
+-- 领域归属：默认空间面向企业通用知识，教育示例只进入教育空间。
+UPDATE `knowledge_space`
+SET `domain_code` = 'GENERAL', `name` = '企业通用知识空间',
+    `description` = '租户默认的企业通用知识空间'
+WHERE `tenant_id` = 1 AND `code` = 'default' AND `create_by` = 'system';
+
+UPDATE `knowledge_space`
+SET `domain_code` = 'ENTERPRISE'
+WHERE `tenant_id` = 1 AND `code` = 'enterprise-policy';
+
+UPDATE `knowledge_space`
+SET `domain_code` = 'EDUCATION'
+WHERE `tenant_id` = 1 AND `code` = 'education-default';
+
+-- 仅移动本文件创建的已知示例记录；用户自行创建的内容不会按分类自动迁移。
+UPDATE `knowledge_base`
+SET `space_id` = (SELECT `id` FROM `knowledge_space`
+                  WHERE `tenant_id` = 1 AND `code` = 'education-default')
+WHERE `tenant_id` = 1 AND `create_by` = 'system'
+  AND `id` BETWEEN 1 AND 74 AND `id` <> 45;
+
+UPDATE `knowledge_relation`
+SET `space_id` = (SELECT `id` FROM `knowledge_space`
+                  WHERE `tenant_id` = 1 AND `code` = 'education-default')
+WHERE `tenant_id` = 1 AND `create_by` = 'system'
+  AND `source_id` BETWEEN 1 AND 74 AND `target_id` BETWEEN 1 AND 74
+  AND `space_id` = 1;
+
+UPDATE `knowledge_document`
+SET `space_id` = (SELECT `id` FROM `knowledge_space`
+                  WHERE `tenant_id` = 1 AND `code` = 'education-default')
+WHERE `tenant_id` = 1 AND `create_by` = 'system'
+  AND `id` BETWEEN 1 AND 18 AND `object_key` LIKE 'seed/docs/%';
+
+UPDATE `knowledge_document_version`
+SET `space_id` = (SELECT `id` FROM `knowledge_space`
+                  WHERE `tenant_id` = 1 AND `code` = 'education-default')
+WHERE `tenant_id` = 1 AND `create_by` = 'system'
+  AND `document_id` BETWEEN 1 AND 18 AND `object_key` LIKE 'seed/docs/%';
+
+UPDATE `knowledge_doc_relation`
+SET `space_id` = (SELECT `id` FROM `knowledge_space`
+                  WHERE `tenant_id` = 1 AND `code` = 'education-default')
+WHERE `tenant_id` = 1 AND `create_by` = 'system'
+  AND `doc_id` BETWEEN 1 AND 18 AND `knowledge_id` BETWEEN 1 AND 74
+  AND `space_id` = 1;
+
+UPDATE `knowledge_ingestion_job`
+SET `space_id` = (SELECT `id` FROM `knowledge_space`
+                  WHERE `tenant_id` = 1 AND `code` = 'education-default')
+WHERE `tenant_id` = 1 AND `create_by` = 'system'
+  AND `job_key` LIKE 'INGEST:1:seed-doc-%' AND `space_id` = 1;
+
+UPDATE `knowledge_evaluation_case`
+SET `space_id` = (SELECT `id` FROM `knowledge_space`
+                  WHERE `tenant_id` = 1 AND `code` = 'education-default')
+WHERE `tenant_id` = 1 AND `create_by` = 'system'
+  AND `id` BETWEEN 1 AND 7 AND `space_id` = 1;
+
+UPDATE `vector_knowledge_chunk`
+SET `space_id` = (SELECT `id` FROM `knowledge_space`
+                  WHERE `tenant_id` = 1 AND `code` = 'education-default')
+WHERE `tenant_id` = 1 AND `create_by` = 'system'
+  AND `document_id` BETWEEN 1 AND 18 AND `space_id` = 1;
+
+UPDATE `knowledge_audit_log`
+SET `space_id` = (SELECT `id` FROM `knowledge_space`
+                  WHERE `tenant_id` = 1 AND `code` = 'education-default')
+WHERE `tenant_id` = 1 AND `create_by` = 'system'
+  AND `resource_type` = 'DOCUMENT' AND `resource_id` BETWEEN 1 AND 18
+  AND `space_id` = 1;

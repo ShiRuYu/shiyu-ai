@@ -1,53 +1,49 @@
 package com.shiyu.ai.agent.node.rag;
 
 import com.shiyu.ai.agent.node.NodeConfig;
+import com.shiyu.ai.knowledge.retrieval.KnowledgeSourceType;
+import com.shiyu.ai.knowledge.retrieval.RetrievalMode;
 import lombok.AllArgsConstructor;
+import lombok.Builder;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
 import lombok.NoArgsConstructor;
 import lombok.experimental.SuperBuilder;
-import lombok.Builder;
 
-/**
- * RAG 检索节点配置类
- * 用于配置 RAG 检索节点的各项参数
- *
- * @author shiyu-ai
- * @date 2026-03-28
- */
+import java.util.List;
+import java.util.Set;
+
+/** Configuration for the space-scoped Knowledge retrieval node. */
 @Data
 @SuperBuilder
 @NoArgsConstructor
 @AllArgsConstructor
 @EqualsAndHashCode(callSuper = true)
 public class RagRetrievalConfig extends NodeConfig {
-    
-    /**
-     * 检索知识库 ID
-     */
-    private String knowledgeBaseId;
-    
-    /**
-     * 检索策略（默认：VECTOR）
-     */
+
+    /** Empty means all spaces the calling user can view. */
     @Builder.Default
-    private String retrievalStrategy = "VECTOR";
-    
-    /**
-     * 最大检索结果数（默认 5）
-     */
+    private List<Long> spaceIds = List.of();
+
+    @Builder.Default
+    private Set<KnowledgeSourceType> sourceTypes = Set.of(
+            KnowledgeSourceType.DOCUMENT, KnowledgeSourceType.KNOWLEDGE_ENTRY);
+
+    @Builder.Default
+    private RetrievalMode retrievalMode = RetrievalMode.HYBRID;
+
+    @Builder.Default
+    private Integer candidateTopK = 20;
+
     @Builder.Default
     private Integer topK = 5;
-    
-    /**
-     * 相似度阈值（默认 0.7）
-     */
+
     @Builder.Default
-    private Double similarityThreshold = 0.7;
-    
-    /**
-     * 是否启用重排序（默认 false）
-     */
+    private Double scoreThreshold = 0D;
+
     @Builder.Default
-    private Boolean enableRerank = false;
+    private Boolean enableRerank = true;
+
+    @Builder.Default
+    private Integer rerankTopK = 5;
 }

@@ -172,6 +172,21 @@ public class AgentAdminServiceImpl implements AgentAdminService {
 
     private List<NodeTypeMetaVO.FieldMeta> buildFieldMetas(NodeType type) {
         List<NodeTypeMetaVO.FieldMeta> fields = new ArrayList<>();
+        if (type == NodeType.RAG_RETRIEVAL) {
+            fields.add(fieldWithSource(field("spaceIds", "知识空间", "select", List.of(), false,
+                            "为空时检索当前用户所有有权限空间"),
+                    new NodeTypeMetaVO.DataSourceConfig("api", "/knowledge/spaces/options", null,
+                            "name", "id", null)));
+            fields.add(field("sourceTypes", "内容来源", "select", List.of("DOCUMENT", "KNOWLEDGE_ENTRY"), false,
+                    Map.of("multiple", true, "options", Map.of("DOCUMENT", "文档", "KNOWLEDGE_ENTRY", "知识条目"))));
+            fields.add(field("retrievalMode", "检索模式", "select", "HYBRID", false,
+                    Map.of("options", Map.of("KEYWORD", "关键词", "VECTOR", "向量", "HYBRID", "混合"))));
+            fields.add(field("candidateTopK", "候选数量", "number", 20, false, "各空间召回候选数"));
+            fields.add(field("topK", "最终数量", "number", 5, false, "最终返回的结果数量"));
+            fields.add(field("scoreThreshold", "最低分数", "number", 0, false, "最低检索分数"));
+            fields.add(field("enableRerank", "启用重排", "boolean", true, false, "是否使用重排模型"));
+            return fields;
+        }
         switch (type) {
             case INTENT:
                 fields.add(fieldWithSource(field("category", "意图分类", "select", "", false, "意图分类"),
@@ -194,12 +209,6 @@ public class AgentAdminServiceImpl implements AgentAdminService {
                 fields.add(field("defaultPrompt", "默认提示词", "textarea", "", false, "默认的用户提示词"));
                 fields.add(field("promptTemplate", "提示词模板", "textarea", "", false, "支持{context}{query}占位符"));
                 fields.add(field("stream", "流式输出", "boolean", false, false, "是否使用流式输出"));
-                break;
-            case RAG_RETRIEVAL:
-                fields.add(field("knowledgeBaseId", "知识库ID", "text", "", false, "目标知识库ID"));
-                fields.add(field("topK", "检索数量", "number", 5, false, "返回的相关文档数量"));
-                fields.add(field("similarityThreshold", "相似度阈值", "number", 0.7, false, "最低相似度"));
-                fields.add(field("enableRerank", "重排序", "boolean", false, false, "是否启用重排序"));
                 break;
             case RAG_ENHANCEMENT:
                 fields.add(field("enhancementStrategy", "增强策略", "select", "SUMMARIZATION", false, Map.of("options", List.of("SUMMARIZATION", "CHUNKING", "HYBRID"))));

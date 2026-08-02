@@ -15,6 +15,8 @@ public class KnowledgeSpaceDO extends TenantEntity {
     @Id(keyType = KeyType.Auto)
     private Long id;
     private String code;
+    /** Business domain of the space, for example GENERAL, ENTERPRISE or EDUCATION. */
+    private String domainCode;
     private String name;
     private String description;
     private String accessMode;

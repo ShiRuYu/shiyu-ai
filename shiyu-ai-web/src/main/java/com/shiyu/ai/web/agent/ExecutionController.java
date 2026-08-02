@@ -6,6 +6,7 @@ import com.shiyu.ai.agent.execution.ExecutionStatus;
 import com.shiyu.ai.agent.runtime.AgentRuntime;
 import com.shiyu.ai.common.core.api.Result;
 import com.shiyu.ai.common.core.domain.LoginContextHolder;
+import com.shiyu.ai.knowledge.security.KnowledgeAccessContext;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.extern.slf4j.Slf4j;
@@ -39,7 +40,7 @@ public class ExecutionController {
     }
 
     @Operation(summary = "Execute Agent")
-    @SaCheckPermission("agent:admin:edit")
+    @SaCheckPermission("agent:execute")
     @PostMapping("/execute")
     public Result<Map<String, Object>> execute(
             @RequestParam String agentId,
@@ -50,6 +51,7 @@ public class ExecutionController {
             enrichedInput.put("agentId", agentId);
             enrichedInput.put("sessionId", UUID.randomUUID().toString());
             enrichedInput.put("userId", LoginContextHolder.getUserId());
+            enrichedInput.put("__knowledgeAccessContext", currentKnowledgeAccessContext());
 
             Execution execution = agentRuntime.execute(agentId, enrichedInput);
 
@@ -67,7 +69,7 @@ public class ExecutionController {
     }
 
     @Operation(summary = "Execute Agent Stream")
-    @SaCheckPermission("agent:admin:edit")
+    @SaCheckPermission("agent:execute")
     @PostMapping(value = "/execute-stream", produces = MediaType.TEXT_EVENT_STREAM_VALUE)
     public Flux<Result<Map<String, Object>>> executeStream(
             @RequestParam String agentId,
@@ -77,6 +79,7 @@ public class ExecutionController {
         enrichedInput.put("agentId", agentId);
         enrichedInput.put("sessionId", UUID.randomUUID().toString());
         enrichedInput.put("userId", LoginContextHolder.getUserId());
+        enrichedInput.put("__knowledgeAccessContext", currentKnowledgeAccessContext());
 
         return agentRuntime.executeStream(agentId, enrichedInput)
                 .map(output -> {
@@ -89,6 +92,15 @@ public class ExecutionController {
                     log.error("Agent 流式执行失败: agentId={}", agentId, e);
                     return Flux.just(Result.fail("流式执行失败: " + e.getMessage()));
                 });
+    }
+
+    private KnowledgeAccessContext currentKnowledgeAccessContext() {
+        Long tenantId = LoginContextHolder.getCurrentTenantId();
+        if (tenantId == null) {
+            throw new IllegalStateException("当前租户上下文不存在");
+        }
+        return new KnowledgeAccessContext(tenantId, LoginContextHolder.getUserId(),
+                LoginContextHolder.getCurrentRoleId(), LoginContextHolder.isSuperAdmin());
     }
 
     @Operation(summary = "Pause Execution")

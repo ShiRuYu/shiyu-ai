@@ -4,6 +4,8 @@ import cn.dev33.satoken.annotation.SaCheckPermission;
 import com.shiyu.ai.common.core.api.PageData;
 import com.shiyu.ai.common.core.api.Result;
 import com.shiyu.ai.knowledge.service.KnowledgeSpaceService;
+import com.shiyu.ai.common.core.domain.LoginContextHolder;
+import com.shiyu.ai.knowledge.security.KnowledgeAccessContext;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
@@ -34,10 +36,23 @@ public class KnowledgeSpaceController {
             @RequestParam(defaultValue = "1") int pageNum,
             @RequestParam(defaultValue = "20") int pageSize,
             @RequestParam(required = false) String keyword,
+            @RequestParam(required = false) String domainCode,
             @RequestHeader(value = KnowledgeApiVersion.HEADER,
                     defaultValue = KnowledgeApiVersion.CURRENT) String version) {
         KnowledgeApiVersion.requireCurrent(version);
-        return Result.success(service.page(pageNum, Math.min(pageSize, 100), keyword));
+        return Result.success(service.page(pageNum, Math.min(pageSize, 100), keyword, domainCode));
+    }
+
+    @GetMapping("/options")
+    public Result<List<KnowledgeSpaceService.SpaceView>> options() {
+        Long tenantId = LoginContextHolder.getCurrentTenantId();
+        if (tenantId == null) {
+            return Result.success(List.of());
+        }
+        KnowledgeAccessContext context = new KnowledgeAccessContext(
+                tenantId, LoginContextHolder.getUserId(), LoginContextHolder.getCurrentRoleId(),
+                LoginContextHolder.isSuperAdmin());
+        return Result.success(service.accessibleSpaces(context));
     }
 
     @GetMapping("/{id}")
