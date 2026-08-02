@@ -1,6 +1,7 @@
 package com.shiyu.ai.vector;
 
 import java.util.Map;
+import java.util.Objects;
 
 /**
  * 向量搜索请求 — Builder 模式
@@ -14,11 +15,14 @@ public class VectorSearchRequest {
     private final VectorSearchType searchType;
 
     private VectorSearchRequest(Builder builder) {
-        this.queryVector = builder.queryVector;
+        this.queryVector = Objects.requireNonNull(builder.queryVector, "Query vector must not be null");
+        if (builder.topK <= 0) {
+            throw new IllegalArgumentException("topK must be greater than zero");
+        }
         this.topK = builder.topK;
         this.minScore = builder.minScore;
-        this.filter = builder.filter;
-        this.searchType = builder.searchType;
+        this.filter = builder.filter == null ? Map.of() : Map.copyOf(builder.filter);
+        this.searchType = Objects.requireNonNull(builder.searchType, "Search type must not be null");
     }
 
     public static Builder builder() { return new Builder(); }

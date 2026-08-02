@@ -6,7 +6,7 @@ import java.util.List;
  * 向量存储 SPI — 统一接口
  * 支持 JVector / PGVector / InMemory 等多种实现
  */
-public interface VectorStore {
+public interface VectorStore extends AutoCloseable {
 
     /**
      * 返回向量存储类型标识（如 "inmemory", "jvector", "pgvector"）
@@ -64,5 +64,20 @@ public interface VectorStore {
      */
     default int size() {
         return 0;
+    }
+
+    /**
+     * Flush pending index changes to the configured backend.
+     * Embedded stores persist local state; remote stores may implement this as a no-op.
+     */
+    default void flush() {
+    }
+
+    /**
+     * Release resources owned by this store handle.
+     */
+    @Override
+    default void close() {
+        flush();
     }
 }

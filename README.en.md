@@ -50,7 +50,7 @@ Beneath the Agent engine, the platform provides a full suite of infrastructure c
 All-in-one knowledge service covering document management, RAG retrieval, and knowledge graphs:
 
 - **Document Management** — Knowledge point CRUD + relationship management (prerequisite/subsequent/includes/related/similar/belongs)
-- **Vector Retrieval** — Leverages JVector HNSW from the vector module
+- **Vector Retrieval** — Uses the vector module's isolated public API for HNSW retrieval
 - **Knowledge Graph** — Graph-structured storage of knowledge point relationships
 - **RAG Orchestration** — Vector retrieval → graph context enhancement → context assembly → LLM generation
 - **Chinese Chunking** — Document splitting strategy optimized for Chinese text
@@ -58,13 +58,16 @@ All-in-one knowledge service covering document management, RAG retrieval, and kn
 
 ### Vector Store (`shiyu-ai-vector`)
 
-High-performance vector storage powered by **JVector (pure Java HNSW)**:
+Backend-neutral `VectorStore` and `VectorStoreProvider` APIs, backed by **JVector (pure Java HNSW)** by default and InMemory for tests and lightweight use cases:
 
 - **HNSW Index** — Efficient approximate nearest neighbor search
 - **Disk Persistence** — Vector indexes persisted to disk, survivable across restarts
 - **Configurable Dimensions** — Dynamic vector dimension configuration (default 512)
 - **Multiple Search Strategies** — Exact search + approximate search
 - **Full CRUD** — Complete create/read/update/delete for vectors
+- **Namespace Isolation** — Opens independent stores per tenant, knowledge space, and index version
+- **Stable Module Boundary** — Knowledge and Memory depend only on public vector APIs
+- **Pluggable Backends** — ChromaDB or Milvus can be added later as provider adapters
 
 ### Memory System (`shiyu-ai-memory`)
 

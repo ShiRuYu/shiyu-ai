@@ -6,8 +6,6 @@ import com.shiyu.ai.dal.knowledge.bo.KnowledgeChunkBO;
 import com.shiyu.ai.knowledge.rag.ChunkSplitter.Chunk;
 import com.shiyu.ai.knowledge.rag.ChineseChunkSplitter;
 import com.shiyu.ai.dal.knowledge.repository.KnowledgeChunkRepository;
-import com.shiyu.ai.vector.VectorRecord;
-import com.shiyu.ai.vector.VectorStore;
 import com.shiyu.ai.common.core.utils.JSONUtils;
 import com.shiyu.ai.common.core.domain.LoginContextHolder;
 import lombok.extern.slf4j.Slf4j;
@@ -22,17 +20,14 @@ import java.nio.ByteOrder;
 public class DocumentIngestionService {
 
     private final EmbeddingService embeddingService;
-    private final VectorStore vectorStore;
     private final KnowledgeChunkRepository chunkRepository;
     private final ChunkSplitter chunkSplitter;
     private final List<DocumentParser> documentParsers;
 
     public DocumentIngestionService(EmbeddingService embeddingService,
-                                    VectorStore vectorStore,
                                     KnowledgeChunkRepository chunkRepository,
                                     List<DocumentParser> documentParsers) {
         this.embeddingService = embeddingService;
-        this.vectorStore = vectorStore;
         this.chunkRepository = chunkRepository;
         this.chunkSplitter = new ChineseChunkSplitter();
         this.documentParsers = documentParsers != null ? documentParsers : List.of();
@@ -71,7 +66,6 @@ public class DocumentIngestionService {
         log.info("文档 {} 切分为 {} 个 Chunk", documentId, chunks.size());
 
         List<KnowledgeChunkBO> chunkDOs = new ArrayList<>();
-        List<VectorRecord> vectorRecords = new ArrayList<>();
 
         for (Chunk chunk : chunks) {
             float[] vector = embeddingService.embed(chunk.content());
@@ -109,22 +103,14 @@ public class DocumentIngestionService {
             chunkDO.setDelFlag(0);
             chunkRepository.insert(chunkDO);
             chunkDOs.add(chunkDO);
-            vectorRecords.add(new VectorRecord(String.valueOf(chunkDO.getId()), vector, meta));
         }
 
-        vectorStore.upsertBatch(vectorRecords);
-
-        log.info("文档 {} 注入完成: {} chunks → H2 + VectorStore", documentId, chunkDOs.size());
+        log.info("文档 {} 注入完成: {} chunks → H2（发布时通过 VectorStoreProvider 构建版本索引）",
+                documentId, chunkDOs.size());
         return chunkDOs;
     }
 
     public void delete(Long documentId) {
-        List<String> vectorIds = chunkRepository.getByDocumentId(documentId).stream()
-                .map(chunk -> String.valueOf(chunk.getId()))
-                .toList();
-        if (!vectorIds.isEmpty()) {
-            vectorStore.deleteBatch(vectorIds);
-        }
         chunkRepository.deleteByDocumentId(documentId);
     }
 

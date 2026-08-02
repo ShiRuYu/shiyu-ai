@@ -98,8 +98,9 @@ shiyu-ai (POM)
 │   └── mcp/                      # MCP 工具注册/描述/调用
 │
 ├── shiyu-ai-vector               # 向量存储模块
-│   ├── config/                   # 向量库配置
-│   ├── factory/                  # 向量库工厂
+│   ├── VectorStore*              # 公共存储与隔离空间 Provider 接口
+│   ├── config/                   # 默认后端配置
+│   ├── factory/                  # Provider 与内部实现工厂
 │   └── impl/                     # InMemory / JVector 实现
 │
 ├── shiyu-ai-auth                 # 认证授权模块

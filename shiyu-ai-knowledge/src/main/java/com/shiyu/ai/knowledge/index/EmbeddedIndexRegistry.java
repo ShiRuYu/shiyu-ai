@@ -13,8 +13,10 @@ import com.shiyu.ai.dal.knowledge.repository.KnowledgeEnterpriseRepository;
 import com.shiyu.ai.knowledge.model.EmbeddingProvider;
 import com.shiyu.ai.knowledge.model.RerankProvider;
 import com.shiyu.ai.vector.VectorRecord;
-import com.shiyu.ai.vector.config.VectorStoreProperties;
-import com.shiyu.ai.vector.impl.JVectorStore;
+import com.shiyu.ai.vector.VectorStore;
+import com.shiyu.ai.vector.VectorStoreOptions;
+import com.shiyu.ai.vector.VectorStoreProvider;
+import jakarta.annotation.PreDestroy;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.lucene.analysis.Analyzer;
 import org.apache.lucene.analysis.cn.smart.SmartChineseAnalyzer;
@@ -50,6 +52,7 @@ import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
+import java.util.Properties;
 import java.util.Set;
 import java.util.function.Function;
 import java.util.stream.Collectors;
@@ -58,11 +61,14 @@ import java.util.stream.Collectors;
 @Service
 public class EmbeddedIndexRegistry implements KnowledgeIndexService {
 
+    private static final String VECTOR_MANIFEST = "manifest.properties";
+
     private final KnowledgeEnterpriseRepository enterpriseRepository;
     private final KnowledgeDocumentRepository documentRepository;
     private final KnowledgeChunkRepository chunkRepository;
     private final EmbeddingProvider embeddingProvider;
     private final RerankProvider rerankProvider;
+    private final VectorStoreProvider vectorStoreProvider;
     private final Path indexRoot;
     private final int rrfK;
     private final int rollbackVersions;
@@ -73,6 +79,7 @@ public class EmbeddedIndexRegistry implements KnowledgeIndexService {
                                  KnowledgeChunkRepository chunkRepository,
                                  EmbeddingProvider embeddingProvider,
                                  RerankProvider rerankProvider,
+                                 VectorStoreProvider vectorStoreProvider,
                                  @Value("${shiyu.knowledge.data-dir:${app.home}/data}") String dataDir,
                                  @Value("${shiyu.knowledge.index.idle-minutes:15}") long idleMinutes,
                                  @Value("${shiyu.knowledge.index.rrf-k:60}") int rrfK,
@@ -82,6 +89,7 @@ public class EmbeddedIndexRegistry implements KnowledgeIndexService {
         this.chunkRepository = chunkRepository;
         this.embeddingProvider = embeddingProvider;
         this.rerankProvider = rerankProvider;
+        this.vectorStoreProvider = vectorStoreProvider;
         this.indexRoot = Path.of(resolveAppHome(dataDir), "index");
         this.rrfK = rrfK;
         this.rollbackVersions = Math.max(0, rollbackVersions);
@@ -113,7 +121,7 @@ public class EmbeddedIndexRegistry implements KnowledgeIndexService {
                     .filter(chunk -> documents.containsKey(chunk.getDocumentId()))
                     .toList();
             buildLucene(versionPath.resolve("lucene"), chunks, documents);
-            buildVector(versionPath.resolve("jvector"), chunks);
+            buildVector(versionPath.resolve("vector"), tenantId, spaceId, version, chunks);
             space.setActiveIndexVersion(version);
             enterpriseRepository.updateSpace(space);
             handles.invalidate(new IndexKey(tenantId, spaceId, version));
@@ -121,7 +129,7 @@ public class EmbeddedIndexRegistry implements KnowledgeIndexService {
             log.info("Activated embedded index tenant={}, space={}, version={}, chunks={}",
                     tenantId, spaceId, version, chunks.size());
             return version;
-        } catch (IOException exception) {
+        } catch (Exception exception) {
             deleteTree(versionPath);
             throw new ServiceException("构建嵌入式索引失败: " + exception.getMessage());
         }
@@ -289,21 +297,25 @@ public class EmbeddedIndexRegistry implements KnowledgeIndexService {
         }
     }
 
-    private void buildVector(Path directoryPath, List<KnowledgeChunkBO> chunks) {
+    private void buildVector(Path directoryPath, Long tenantId, Long spaceId, long version,
+                             List<KnowledgeChunkBO> chunks) throws IOException {
         int dimension = chunks.stream().map(KnowledgeChunkBO::getEmbeddingDimension)
                 .filter(value -> value != null && value > 0).findFirst().orElse(512);
-        VectorStoreProperties properties = new VectorStoreProperties();
-        properties.setType("jvector");
-        properties.setDimension(dimension);
-        properties.setDataDir(directoryPath.toString());
-        JVectorStore store = new JVectorStore(properties);
-        for (KnowledgeChunkBO chunk : chunks) {
-            if (chunk.getEmbeddingBinary() != null) {
-                store.upsert(new VectorRecord(String.valueOf(chunk.getId()),
-                        fromBytes(chunk.getEmbeddingBinary()), Map.of("documentId", chunk.getDocumentId())));
+        Files.createDirectories(directoryPath);
+        VectorStoreOptions options = vectorOptions(tenantId, spaceId, version, dimension, directoryPath);
+        try (VectorStore store = vectorStoreProvider.open(options)) {
+            for (KnowledgeChunkBO chunk : chunks) {
+                if (chunk.getEmbeddingBinary() != null) {
+                    store.upsert(new VectorRecord(String.valueOf(chunk.getId()),
+                            fromBytes(chunk.getEmbeddingBinary()), Map.of("documentId", chunk.getDocumentId())));
+                }
             }
+            store.flush();
+            writeVectorManifest(directoryPath, dimension);
+        } catch (IOException | RuntimeException exception) {
+            vectorStoreProvider.drop(options);
+            throw exception;
         }
-        store.saveToDisk();
     }
 
     private IndexHandle handle(Long tenantId, Long spaceId, Long version) {
@@ -315,29 +327,71 @@ public class EmbeddedIndexRegistry implements KnowledgeIndexService {
     }
 
     private IndexHandle open(IndexKey key) {
+        Directory directory = null;
+        DirectoryReader reader = null;
+        Analyzer analyzer = null;
+        VectorStore vectorStore = null;
         try {
             Path versionPath = path(key.tenantId(), key.spaceId(), key.version());
-            Directory directory = FSDirectory.open(versionPath.resolve("lucene"));
-            DirectoryReader reader = DirectoryReader.open(directory);
-            Analyzer analyzer = new SmartChineseAnalyzer();
-            int dimension = dimensionFromIndex(versionPath.resolve("jvector"));
-            VectorStoreProperties properties = new VectorStoreProperties();
-            properties.setType("jvector");
-            properties.setDimension(dimension);
-            properties.setDataDir(versionPath.resolve("jvector").toString());
-            return new IndexHandle(directory, reader, new IndexSearcher(reader), analyzer,
-                    new JVectorStore(properties));
-        } catch (IOException exception) {
+            directory = FSDirectory.open(versionPath.resolve("lucene"));
+            reader = DirectoryReader.open(directory);
+            analyzer = new SmartChineseAnalyzer();
+            Path vectorPath = versionPath.resolve("vector");
+            VectorManifest manifest = readVectorManifest(vectorPath);
+            if (!vectorStoreProvider.type().equalsIgnoreCase(manifest.provider())) {
+                throw new IllegalStateException("Vector provider changed from " + manifest.provider()
+                        + " to " + vectorStoreProvider.type() + "; rebuild the space index");
+            }
+            vectorStore = vectorStoreProvider.open(vectorOptions(key.tenantId(), key.spaceId(), key.version(),
+                    manifest.dimension(), vectorPath));
+            return new IndexHandle(directory, reader, new IndexSearcher(reader), analyzer, vectorStore);
+        } catch (Exception exception) {
+            closeQuietly(vectorStore);
+            closeQuietly(reader);
+            closeQuietly(directory);
+            closeQuietly(analyzer);
             throw new IllegalStateException(exception);
         }
     }
 
-    private int dimensionFromIndex(Path vectorPath) throws IOException {
-        Path file = vectorPath.resolve("hnsw.index");
-        if (!Files.exists(file)) return 512;
-        try (var input = new java.io.DataInputStream(Files.newInputStream(file))) {
-            return input.readInt();
+    private void closeQuietly(AutoCloseable resource) {
+        if (resource == null) return;
+        try {
+            resource.close();
+        } catch (Exception exception) {
+            log.debug("Unable to close partially opened index resource", exception);
         }
+    }
+
+    private void writeVectorManifest(Path vectorPath, int dimension) throws IOException {
+        Properties properties = new Properties();
+        properties.setProperty("provider", vectorStoreProvider.type());
+        properties.setProperty("dimension", String.valueOf(dimension));
+        try (var output = Files.newOutputStream(vectorPath.resolve(VECTOR_MANIFEST))) {
+            properties.store(output, "Shiyu vector index manifest");
+        }
+    }
+
+    private VectorManifest readVectorManifest(Path vectorPath) throws IOException {
+        Path manifestPath = vectorPath.resolve(VECTOR_MANIFEST);
+        if (!Files.exists(manifestPath)) {
+            throw new IOException("Vector index manifest is missing: " + manifestPath);
+        }
+        Properties properties = new Properties();
+        try (var input = Files.newInputStream(manifestPath)) {
+            properties.load(input);
+        }
+        String provider = properties.getProperty("provider");
+        int dimension;
+        try {
+            dimension = Integer.parseInt(properties.getProperty("dimension", "0"));
+        } catch (NumberFormatException exception) {
+            throw new IOException("Invalid vector dimension in " + manifestPath, exception);
+        }
+        if (provider == null || provider.isBlank() || dimension <= 0) {
+            throw new IOException("Invalid vector index manifest: " + manifestPath);
+        }
+        return new VectorManifest(provider, dimension);
     }
 
     private float[] fromBytes(byte[] bytes) {
@@ -350,6 +404,12 @@ public class EmbeddedIndexRegistry implements KnowledgeIndexService {
     private Path path(Long tenantId, Long spaceId, Long version) {
         return indexRoot.resolve(String.valueOf(tenantId))
                 .resolve(String.valueOf(spaceId)).resolve(String.valueOf(version));
+    }
+
+    private VectorStoreOptions vectorOptions(Long tenantId, Long spaceId, long version,
+                                              int dimension, Path directoryPath) {
+        return VectorStoreOptions.of("knowledge/" + tenantId + "/" + spaceId + "/" + version,
+                dimension, directoryPath.toString());
     }
 
     /** Keep the active index and the configured number of previous existing versions. */
@@ -373,6 +433,7 @@ public class EmbeddedIndexRegistry implements KnowledgeIndexService {
                     Long version = parseVersion(versionPath.getFileName().toString());
                     if (version != null && !keep.contains(version)) {
                         handles.invalidate(new IndexKey(tenantId, spaceId, version));
+                        dropVectorStore(tenantId, spaceId, version, versionPath.resolve("vector"));
                         deleteTree(versionPath);
                     }
                 });
@@ -388,6 +449,16 @@ public class EmbeddedIndexRegistry implements KnowledgeIndexService {
             return Long.valueOf(value);
         } catch (NumberFormatException exception) {
             return null;
+        }
+    }
+
+    private void dropVectorStore(Long tenantId, Long spaceId, long version, Path vectorPath) {
+        try {
+            VectorManifest manifest = readVectorManifest(vectorPath);
+            vectorStoreProvider.drop(vectorOptions(tenantId, spaceId, version,
+                    manifest.dimension(), vectorPath));
+        } catch (IOException exception) {
+            log.debug("Unable to read vector manifest while dropping index: {}", vectorPath, exception);
         }
     }
 
@@ -413,7 +484,7 @@ public class EmbeddedIndexRegistry implements KnowledgeIndexService {
     private void close(IndexHandle handle) {
         if (handle == null) return;
         try {
-            handle.vectorStore().saveToDisk();
+            handle.vectorStore().close();
             handle.reader().close();
             handle.directory().close();
             handle.analyzer().close();
@@ -422,12 +493,21 @@ public class EmbeddedIndexRegistry implements KnowledgeIndexService {
         }
     }
 
+    @PreDestroy
+    public void closeAll() {
+        handles.invalidateAll();
+        handles.cleanUp();
+    }
+
     private record IndexKey(Long tenantId, Long spaceId, Long version) {
+    }
+
+    private record VectorManifest(String provider, int dimension) {
     }
 
     private record IndexHandle(Directory directory, DirectoryReader reader,
                                IndexSearcher searcher, Analyzer analyzer,
-                               JVectorStore vectorStore) {
+                               VectorStore vectorStore) {
     }
 
     private static final class MutableHit {

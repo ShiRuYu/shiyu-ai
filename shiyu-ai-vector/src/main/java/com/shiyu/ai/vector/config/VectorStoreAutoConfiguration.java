@@ -1,7 +1,9 @@
 package com.shiyu.ai.vector.config;
 
-import com.shiyu.ai.vector.factory.VectorStoreFactory;
 import com.shiyu.ai.vector.VectorStore;
+import com.shiyu.ai.vector.VectorStoreOptions;
+import com.shiyu.ai.vector.VectorStoreProvider;
+import com.shiyu.ai.vector.factory.ConfiguredVectorStoreProvider;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
@@ -17,9 +19,17 @@ import org.springframework.context.annotation.Configuration;
 public class VectorStoreAutoConfiguration {
 
     @Bean
-    @ConditionalOnMissingBean
-    public VectorStore vectorStore(VectorStoreProperties properties) {
-        log.info("创建 VectorStore: type={}", properties.getType());
-        return VectorStoreFactory.create(properties.getType(), properties);
+    @ConditionalOnMissingBean(VectorStoreProvider.class)
+    public VectorStoreProvider vectorStoreProvider(VectorStoreProperties properties) {
+        log.info("创建 VectorStoreProvider: type={}", properties.getType());
+        return new ConfiguredVectorStoreProvider(properties);
+    }
+
+    @Bean(destroyMethod = "close")
+    @ConditionalOnMissingBean(VectorStore.class)
+    public VectorStore vectorStore(VectorStoreProvider provider, VectorStoreProperties properties) {
+        log.info("创建默认 VectorStore: type={}, dataDir={}", provider.type(), properties.getResolvedDataDir());
+        return provider.open(VectorStoreOptions.of(
+                "global/default", properties.getDimension(), properties.getResolvedDataDir()));
     }
 }

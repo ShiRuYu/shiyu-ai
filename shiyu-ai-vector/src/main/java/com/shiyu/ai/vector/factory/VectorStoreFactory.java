@@ -17,7 +17,7 @@ public class VectorStoreFactory {
 
     public static VectorStore create(String type, VectorStoreProperties properties) {
         VectorStore store = switch (type.toLowerCase()) {
-            case "inmemory" -> new InMemoryVectorStore();
+            case "inmemory" -> new InMemoryVectorStore(properties.getDimension());
             case "jvector"  -> new JVectorStore(properties);
             default -> throw new IllegalArgumentException(
                     "未知的 VectorStore 类型: " + type + "，可用类型: inmemory, jvector");

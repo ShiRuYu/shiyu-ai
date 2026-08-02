@@ -81,7 +81,7 @@
             <artifactId>jsoup</artifactId>
         </dependency>
 
-        <!-- VectorStore 后端（通过反射加载，按需添加） -->
+        <!-- 向量存储公共接口及默认嵌入式实现 -->
 
             <!-- PDF parsing -->
         <dependency>
