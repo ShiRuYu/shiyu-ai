@@ -5,9 +5,10 @@ import com.shiyu.ai.model.event.EmbeddingCallEvent;
 import dev.langchain4j.data.embedding.Embedding;
 import dev.langchain4j.data.segment.TextSegment;
 import dev.langchain4j.model.embedding.EmbeddingModel;
-import dev.langchain4j.model.embedding.onnx.bgesmallzhv15.BgeSmallZhV15EmbeddingModel;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.context.ApplicationEventPublisher;
+import org.springframework.beans.factory.ObjectProvider;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
@@ -19,20 +20,23 @@ public class LangChain4jEmbeddingService implements EmbeddingService {
     private final EmbeddingModel embeddingModel;
     private final ApplicationEventPublisher eventPublisher;
 
-    public LangChain4jEmbeddingService(EmbeddingModel embeddingModel,
+    @Autowired
+    public LangChain4jEmbeddingService(ObjectProvider<EmbeddingModel> embeddingModels,
                                        ApplicationEventPublisher eventPublisher) {
-        this.embeddingModel = embeddingModel;
+        this.embeddingModel = embeddingModels.getIfAvailable(LangChain4jEmbeddingService::createOptionalLocalModel);
         this.eventPublisher = eventPublisher;
         log.info("EmbeddingService 初始化完成, 维度={}", dimension());
     }
 
     // 保留无参构造用于手动测试场景
     public LangChain4jEmbeddingService() {
-        this(new BgeSmallZhV15EmbeddingModel(), event -> {});
+        this.embeddingModel = createOptionalLocalModel();
+        this.eventPublisher = event -> {};
     }
 
     @Override
     public float[] embed(String text) {
+        requireModel();
         long startMs = System.currentTimeMillis();
         Embedding embedding = embeddingModel.embed(text).content();
         long latencyMs = System.currentTimeMillis() - startMs;
@@ -48,6 +52,7 @@ public class LangChain4jEmbeddingService implements EmbeddingService {
 
     @Override
     public List<float[]> embedBatch(List<String> texts) {
+        requireModel();
         long startMs = System.currentTimeMillis();
         List<TextSegment> segments = texts.stream()
                 .map(TextSegment::from)
@@ -69,7 +74,23 @@ public class LangChain4jEmbeddingService implements EmbeddingService {
 
     @Override
     public int dimension() {
-        return embeddingModel.dimension();
+        return embeddingModel == null ? 0 : embeddingModel.dimension();
+    }
+
+    private void requireModel() {
+        if (embeddingModel == null) {
+            throw new IllegalStateException("EmbeddingModel is not configured; enable a cloud provider or offline-models");
+        }
+    }
+
+    private static EmbeddingModel createOptionalLocalModel() {
+        try {
+            Class<?> type = Class.forName(
+                    "dev.langchain4j.model.embedding.onnx.bgesmallzhv15.BgeSmallZhV15EmbeddingModel");
+            return (EmbeddingModel) type.getDeclaredConstructor().newInstance();
+        } catch (ReflectiveOperationException | LinkageError exception) {
+            return null;
+        }
     }
 
     /**

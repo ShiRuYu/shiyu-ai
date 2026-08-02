@@ -4,7 +4,7 @@ package com.shiyu.ai.common.thread.core;
 import com.shiyu.ai.common.thread.api.TaskDecorator;
 import com.shiyu.ai.common.thread.context.ContextAwareCallable;
 import com.shiyu.ai.common.thread.context.ContextAwareRunnable;
-import com.shiyu.ai.common.thread.context.TaskContext;
+import com.shiyu.ai.common.thread.context.ContextTaskDecorator;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -79,10 +79,9 @@ public class SafeExecutorService extends AbstractExecutorService {
 
     @Override
     public List<Runnable> shutdownNow() {
-        if (state.compareAndSet(State.RUNNING, State.SHUTDOWN)) {
-            return delegate.shutdownNow();
-        }
-        return List.of();
+        if (state.get() == State.TERMINATED) return List.of();
+        state.set(State.SHUTDOWN);
+        return delegate.shutdownNow();
     }
 
     @Override
@@ -97,10 +96,9 @@ public class SafeExecutorService extends AbstractExecutorService {
 
     @Override
     public boolean awaitTermination(long timeout, TimeUnit unit) throws InterruptedException {
-        if (state.compareAndSet(State.SHUTDOWN, State.TERMINATED)) {
-            return delegate.awaitTermination(timeout, unit);
-        }
-        return delegate.awaitTermination(timeout, unit);
+        boolean terminated = delegate.awaitTermination(timeout, unit);
+        if (terminated) state.set(State.TERMINATED);
+        return terminated;
     }
 
     @Override
@@ -141,30 +139,6 @@ public class SafeExecutorService extends AbstractExecutorService {
 
         Runnable decoratedTask = taskDecorator.decorate(task);
         return delegate.submit(decoratedTask);
-    }
-
-    /**
-     * 上下文任务装饰器
-     */
-    private static class ContextTaskDecorator implements com.shiyu.ai.common.thread.api.TaskDecorator {
-        @Override
-        public Runnable decorate(Runnable runnable) {
-            return new ContextAwareRunnable(runnable);
-        }
-
-        @Override
-        public <V> java.util.concurrent.Callable<V> decorate(java.util.concurrent.Callable<V> callable) {
-            TaskContext contextSnapshot = TaskContext.current().snapshot();
-            return () -> {
-                TaskContext originalContext = TaskContext.current();
-                try {
-                    TaskContext.current().restore(contextSnapshot);
-                    return callable.call();
-                } finally {
-                    TaskContext.current().restore(originalContext);
-                }
-            };
-        }
     }
 
     /**

@@ -9,7 +9,7 @@ spring:
 mybatis-flex:
   datasource:
     agent:
-      type: druid
+      type: com.zaxxer.hikari.HikariDataSource
       driverClassName: org.h2.Driver
       url: jdbc:h2:file:${app.home}/data/db/shiyudb;MODE=MySQL;DB_CLOSE_DELAY=-1;AUTO_SERVER=FALSE
       username: sa

@@ -28,6 +28,11 @@ public interface StorageMetadataStore {
 
     Optional<UploadSessionRecord> findUploadSession(long tenantId, String sessionId);
 
+    /** Returns sessions whose resumable-upload lease has expired. */
+    default List<UploadSessionRecord> findExpiredUploadSessions(Instant now) {
+        return List.of();
+    }
+
     void markChunkUploaded(String sessionId, int chunkIndex, long size, String checksum);
 
     List<Integer> uploadedChunks(String sessionId);

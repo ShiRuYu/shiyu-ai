@@ -9,6 +9,8 @@
 
 拾羽 AI（ShiYu AI）不是一个单一功能的 AI 应用，而是一个**可接入多 LLM 平台、以自定义 Agent 为核心、向多个业务方向扩展**的 AI 智能体平台。
 
+当前根 Maven reactor 包含 19 个实际构建模块。版本管理已收敛到根 POM；Observation 空壳和 Excel 模块不再进入默认构建，Thread 模块作为 Knowledge Worker 的基础设施继续保留。
+
 ```
                      ┌──────────────────┐
                      │  多 LLM 平台接入    │
@@ -73,7 +75,7 @@
 - **压缩策略** — 智能压缩长对话历史（摘要/裁剪）
 - **SPI 扩展** — 支持自定义记忆存储后端
 
-### 工具体系 — Tool & MCP (`shiyu-ai-tool` + `shiyu-ai-mcp`)
+### 工具体系 — Tool & MCP (`shiyu-ai-tool`)
 
 基于 **Spring AI MCP 协议**的标准化工具调用服务：
 
@@ -191,23 +193,20 @@
 | 模块 | 职责 | 类型 |
 |------|------|------|
 | `shiyu-ai-agent` | **Agent 引擎**：图编排、节点系统、执行生命周期、检查点、重试/超时 | **平台核心** |
-| `shiyu-ai-core` | AI 核心：ChatEngine、对话接口 | 平台基础 |
 | `shiyu-ai-auth` | 认证授权：Sa-Token、多租户 RBAC | 平台基础 |
 | `shiyu-ai-model` | 模型管理：多平台适配器、热更新、熔断降级、嵌入模型 | 平台基础设施 |
 | `shiyu-ai-knowledge` | 知识引擎：文档管理、RAG 检索、知识图谱、中文分块 | 平台基础设施 |
 | `shiyu-ai-vector` | 向量存储：JVector HNSW 索引、磁盘持久化、CRUD | 平台基础设施 |
-| `shiyu-ai-rag` | RAG 检索服务 | 平台基础设施 |
 | `shiyu-ai-memory` | 记忆系统：短期/长期记忆、压缩策略、跨会话检索、SPI 扩展 | 平台基础设施 |
 | `shiyu-ai-tool` | 工具体系：MCP 协议集成、工具注册/调用/执行 | 平台基础设施 |
-| `shiyu-ai-mcp` | MCP 协议层：协议适配与通信 | 平台基础设施 |
 | `shiyu-ai-plugin` | 插件体系：生命周期管理、沙箱隔离、动态热插拔 | 平台基础设施 |
 | `shiyu-ai-usage` | 用量计量：Token 统计、实时推送、多维聚合 | 平台基础设施 |
-| `shiyu-ai-observation` | 可观测：监控采集配置 | 平台基础设施 |
 | `shiyu-ai-record` | **记录管理业务**：人物档案、时间线、多媒体、标签 | **业务扩展** |
 | `shiyu-ai-education` | **智能教育业务**：学练测评荐全链路 | **业务扩展** |
 | `shiyu-ai-bootstrap` | 应用启动入口 | 基础设施 |
 | `shiyu-ai-dal` | 数据访问层：DO/BO/Repository 模式 | 基础设施 |
-| `shiyu-common/*` | 公共基础：web 安全、线程池、Excel、MyBatis 封装 | 基础设施 |
+| `shiyu-common/*` | 公共基础：Web、线程 Worker、Storage、MyBatis 封装 | 基础设施 |
+| `shiyu-ai-web` | Controller、DTO 和 Web 适配层 | 基础设施 |
 
 ---
 
@@ -227,7 +226,7 @@
 | 嵌入模型 | BGE-small-zh（ONNX 本地部署） |
 | MCP 协议 | Spring AI MCP |
 | 缓存 | Caffeine |
-| API 文档 | SpringDoc OpenAPI + Knife4j |
+| API 文档 | SpringDoc OpenAPI（UI 为可选 profile） |
 | 可观测性 | OpenTelemetry + Micrometer + Prometheus |
 | 日志 | Log4j2 |
 | 调度 | XXL-Job |
@@ -251,7 +250,7 @@ mvn clean install -DskipTests
 
 ### 配置 AI 平台
 
-编辑 `shiyu-ai-core/src/main/resources/config/config.yml`，配置至少一个 LLM 平台：
+编辑 `shiyu-ai-bootstrap/src/main/resources/application.yml`，配置至少一个 LLM 平台：
 
 ```yaml
 shiyu:
@@ -275,9 +274,23 @@ java -jar shiyu-ai-bootstrap/target/shiyu-ai-bootstrap-1.0.0.jar --spring.profil
 
 从 bootstrap 子目录直接执行 `spring-boot:run` 可能加载本机 Maven 仓库中的旧模块包；开发环境应先从根目录构建 reactor，确保运行的是当前源码。
 
+### 发行包
+
+```powershell
+# Windows 云端基础包
+./scripts/package-cloud-windows.ps1
+# Windows 离线模型包（包含可选 BGE/ONNX 模型依赖）
+./scripts/package-offline-windows.ps1
+```
+
+Linux 使用对应的 `scripts/package-cloud-linux.sh` 和
+`scripts/package-offline-linux.sh`。生产包默认不包含观测、API 文档 UI 和 S3
+适配器；需要时分别启用 `observability`、`api-docs-ui`、`s3` profile。
+
 启动后访问：
 - 应用端口：`http://localhost:9000`
-- API 文档：`http://localhost:9000/doc.html`
+- API 文档 JSON：`http://localhost:9000/v3/api-docs`
+- API 文档 UI：仅在启用 `api-docs-ui` profile 时提供
 
 ---
 

@@ -49,6 +49,7 @@ import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.Set;
 import java.util.function.Function;
 import java.util.stream.Collectors;
@@ -64,6 +65,7 @@ public class EmbeddedIndexRegistry implements KnowledgeIndexService {
     private final RerankProvider rerankProvider;
     private final Path indexRoot;
     private final int rrfK;
+    private final int rollbackVersions;
     private final Cache<IndexKey, IndexHandle> handles;
 
     public EmbeddedIndexRegistry(KnowledgeEnterpriseRepository enterpriseRepository,
@@ -73,7 +75,8 @@ public class EmbeddedIndexRegistry implements KnowledgeIndexService {
                                  RerankProvider rerankProvider,
                                  @Value("${shiyu.knowledge.data-dir:${app.home}/data}") String dataDir,
                                  @Value("${shiyu.knowledge.index.idle-minutes:15}") long idleMinutes,
-                                 @Value("${shiyu.knowledge.index.rrf-k:60}") int rrfK) {
+                                 @Value("${shiyu.knowledge.index.rrf-k:60}") int rrfK,
+                                 @Value("${shiyu.knowledge.index.rollback-versions:1}") int rollbackVersions) {
         this.enterpriseRepository = enterpriseRepository;
         this.documentRepository = documentRepository;
         this.chunkRepository = chunkRepository;
@@ -81,6 +84,7 @@ public class EmbeddedIndexRegistry implements KnowledgeIndexService {
         this.rerankProvider = rerankProvider;
         this.indexRoot = Path.of(resolveAppHome(dataDir), "index");
         this.rrfK = rrfK;
+        this.rollbackVersions = Math.max(0, rollbackVersions);
         this.handles = Caffeine.<IndexKey, IndexHandle>newBuilder()
                 .expireAfterAccess(Duration.ofMinutes(Math.max(1, idleMinutes)))
                 .removalListener((RemovalListener<IndexKey, IndexHandle>)
@@ -95,7 +99,8 @@ public class EmbeddedIndexRegistry implements KnowledgeIndexService {
         if (tenantId == null || !tenantId.equals(space.getTenantId())) {
             throw new ServiceException("租户与知识空间不匹配");
         }
-        long version = (space.getActiveIndexVersion() == null ? 0 : space.getActiveIndexVersion()) + 1;
+        long previousVersion = space.getActiveIndexVersion() == null ? 0 : space.getActiveIndexVersion();
+        long version = previousVersion + 1;
         Path versionPath = path(tenantId, spaceId, version);
         try {
             Files.createDirectories(versionPath);
@@ -112,10 +117,12 @@ public class EmbeddedIndexRegistry implements KnowledgeIndexService {
             space.setActiveIndexVersion(version);
             enterpriseRepository.updateSpace(space);
             handles.invalidate(new IndexKey(tenantId, spaceId, version));
+            cleanupOldVersions(tenantId, spaceId, version);
             log.info("Activated embedded index tenant={}, space={}, version={}, chunks={}",
                     tenantId, spaceId, version, chunks.size());
             return version;
         } catch (IOException exception) {
+            deleteTree(versionPath);
             throw new ServiceException("构建嵌入式索引失败: " + exception.getMessage());
         }
     }
@@ -343,6 +350,60 @@ public class EmbeddedIndexRegistry implements KnowledgeIndexService {
     private Path path(Long tenantId, Long spaceId, Long version) {
         return indexRoot.resolve(String.valueOf(tenantId))
                 .resolve(String.valueOf(spaceId)).resolve(String.valueOf(version));
+    }
+
+    /** Keep the active index and the configured number of previous existing versions. */
+    private void cleanupOldVersions(Long tenantId, Long spaceId, long activeVersion) {
+        Path spaceRoot = indexRoot.resolve(String.valueOf(tenantId)).resolve(String.valueOf(spaceId));
+        if (!Files.isDirectory(spaceRoot)) return;
+        Set<Long> keep = new java.util.LinkedHashSet<>();
+        keep.add(activeVersion);
+        try (var versions = Files.list(spaceRoot)) {
+            List<Long> previousVersions = versions.filter(Files::isDirectory)
+                    .map(path -> parseVersion(path.getFileName().toString()))
+                    .filter(Objects::nonNull)
+                    .filter(version -> version < activeVersion)
+                    .sorted(Comparator.reverseOrder())
+                    .limit(rollbackVersions)
+                    .toList();
+            keep.addAll(previousVersions);
+
+            try (var paths = Files.list(spaceRoot)) {
+                paths.filter(Files::isDirectory).forEach(versionPath -> {
+                    Long version = parseVersion(versionPath.getFileName().toString());
+                    if (version != null && !keep.contains(version)) {
+                        handles.invalidate(new IndexKey(tenantId, spaceId, version));
+                        deleteTree(versionPath);
+                    }
+                });
+            }
+        } catch (IOException exception) {
+            log.warn("Failed to clean old embedded indexes: tenant={}, space={}, error={}", tenantId, spaceId,
+                    exception.getMessage());
+        }
+    }
+
+    private Long parseVersion(String value) {
+        try {
+            return Long.valueOf(value);
+        } catch (NumberFormatException exception) {
+            return null;
+        }
+    }
+
+    private void deleteTree(Path root) {
+        if (root == null || !Files.exists(root)) return;
+        try (var paths = Files.walk(root)) {
+            paths.sorted(Comparator.reverseOrder()).forEach(path -> {
+                try {
+                    Files.deleteIfExists(path);
+                } catch (IOException exception) {
+                    log.debug("Unable to delete old index path: {}", path, exception);
+                }
+            });
+        } catch (IOException exception) {
+            log.debug("Unable to enumerate old index path: {}", root, exception);
+        }
     }
 
     private String resolveAppHome(String value) {

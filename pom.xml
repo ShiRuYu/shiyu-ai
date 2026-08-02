@@ -29,7 +29,6 @@
         <liteflow-spring.version>2.16.0</liteflow-spring.version>
 
         <springdoc-openapi.version>3.0.2</springdoc-openapi.version>
-        <knife4j-openapi3.version>4.5.0</knife4j-openapi3.version>
         <therapi-runtime-javadoc.version>0.15.0</therapi-runtime-javadoc.version>
 
         <mapstruct-plus.version>1.5.0</mapstruct-plus.version>
@@ -38,17 +37,14 @@
         <hutool.version>5.8.43</hutool.version>
         <guava.version>33.5.0-jre</guava.version>
         <commons-lang3.version>3.20.0</commons-lang3.version>
-        <commons-collections4.version>4.5.0</commons-collections4.version>
         <caffeine.version>3.2.3</caffeine.version>
         <sensitive-word.version>0.29.4</sensitive-word.version>
         <jsoup.version>1.18.3</jsoup.version>
 
 
-        <fesod-parent.version>2.0.1-incubating</fesod-parent.version>
         <h2.version>2.4.240</h2.version>
 
         <mysql.version>9.4.0</mysql.version>
-        <druid.version>1.2.27</druid.version>
         <p6spy.version>3.9.1</p6spy.version>
         <mybatis.version>3.5.19</mybatis.version>
         <mybatis-flex.version>1.11.7</mybatis-flex.version>
@@ -107,7 +103,6 @@
         <module>shiyu-ai-tool</module>
         <module>shiyu-ai-vector</module>
         <module>shiyu-ai-usage</module>
-        <module>shiyu-ai-observation</module>
         <module>shiyu-ai-plugin</module>
         <module>shiyu-ai-knowledge</module>
         <module>shiyu-ai-education</module>
@@ -250,12 +245,6 @@
                 <artifactId>commons-lang3</artifactId>
                 <version>${commons-lang3.version}</version>
             </dependency>
-            <!-- https://mvnrepository.com/artifact/org.apache.commons/commons-collections4 -->
-            <dependency>
-                <groupId>org.apache.commons</groupId>
-                <artifactId>commons-collections4</artifactId>
-                <version>${commons-collections4.version}</version>
-            </dependency>
             <!-- https://mvnrepository.com/artifact/com.google.guava/guava -->
             <dependency>
                 <groupId>com.google.guava</groupId>
@@ -269,16 +258,14 @@
                 <version>${springdoc-openapi.version}</version>
             </dependency>
             <dependency>
+                <groupId>org.springdoc</groupId>
+                <artifactId>springdoc-openapi-starter-webmvc-api</artifactId>
+                <version>${springdoc-openapi.version}</version>
+            </dependency>
+            <dependency>
                 <groupId>com.github.therapi</groupId>
                 <artifactId>therapi-runtime-javadoc</artifactId>
                 <version>${therapi-runtime-javadoc.version}</version>
-            </dependency>
-            <!-- https://mvnrepository.com/artifact/com.github.xiaoymin/knife4j-openapi3-jakarta-spring-boot-starter -->
-            <!-- /doc.html -->
-            <dependency>
-                <groupId>com.github.xiaoymin</groupId>
-                <artifactId>knife4j-openapi3-jakarta-spring-boot-starter</artifactId>
-                <version>${knife4j-openapi3.version}</version>
             </dependency>
 
 
@@ -288,11 +275,6 @@
                 <version>${lombok.version}</version>
             </dependency>
 
-            <dependency>
-                <groupId>org.apache.fesod</groupId>
-                <artifactId>fesod-sheet</artifactId>
-                <version>${fesod-parent.version}</version>
-            </dependency>
 
             <dependency>
                 <groupId>com.yomahub</groupId>
@@ -318,11 +300,6 @@
                 <version>${mysql.version}</version>
             </dependency>
 
-            <dependency>
-                <groupId>com.alibaba</groupId>
-                <artifactId>druid</artifactId>
-                <version>${druid.version}</version>
-            </dependency>
             <dependency>
                 <groupId>org.mybatis</groupId>
                 <artifactId>mybatis</artifactId>
@@ -371,10 +348,28 @@
 
             <dependency>
                 <groupId>com.shiyu.ai</groupId>
-                <artifactId>shiyu-common-bom</artifactId>
+                <artifactId>shiyu-common-core</artifactId>
                 <version>${revision}</version>
-                <type>pom</type>
-                <scope>import</scope>
+            </dependency>
+            <dependency>
+                <groupId>com.shiyu.ai</groupId>
+                <artifactId>shiyu-common-mybatis</artifactId>
+                <version>${revision}</version>
+            </dependency>
+            <dependency>
+                <groupId>com.shiyu.ai</groupId>
+                <artifactId>shiyu-common-thread</artifactId>
+                <version>${revision}</version>
+            </dependency>
+            <dependency>
+                <groupId>com.shiyu.ai</groupId>
+                <artifactId>shiyu-common-web</artifactId>
+                <version>${revision}</version>
+            </dependency>
+            <dependency>
+                <groupId>com.shiyu.ai</groupId>
+                <artifactId>shiyu-common-storage</artifactId>
+                <version>${revision}</version>
             </dependency>
 
             <dependency>
@@ -436,11 +431,6 @@
             </dependency>
             <dependency>
                 <groupId>com.shiyu.ai</groupId>
-                <artifactId>shiyu-ai-observation</artifactId>
-                <version>${revision}</version>
-            </dependency>
-            <dependency>
-                <groupId>com.shiyu.ai</groupId>
                 <artifactId>shiyu-ai-plugin</artifactId>
                 <version>${revision}</version>
             </dependency>
@@ -466,6 +456,15 @@
         </dependency>
 </dependencies>
     </dependencyManagement>
+
+    <!-- Lombok is a compile-time annotation processor shared by every module. -->
+    <dependencies>
+        <dependency>
+            <groupId>org.projectlombok</groupId>
+            <artifactId>lombok</artifactId>
+            <scope>provided</scope>
+        </dependency>
+    </dependencies>
 
     <build>
         <plugins>

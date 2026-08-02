@@ -2,6 +2,7 @@
 package com.shiyu.ai.common.thread.core;
 
 import com.shiyu.ai.common.thread.api.PoolType;
+import com.shiyu.ai.common.thread.config.ThreadingProperties;
 
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.LinkedBlockingQueue;
@@ -17,6 +18,16 @@ import java.util.concurrent.atomic.AtomicInteger;
  * 创建基于平台线程的线程池
  */
 public class PlatformExecutorFactory implements ExecutorFactory {
+
+    private final ThreadingProperties properties;
+
+    public PlatformExecutorFactory() {
+        this(null);
+    }
+
+    public PlatformExecutorFactory(ThreadingProperties properties) {
+        this.properties = properties;
+    }
 
     @Override
     public ExecutorService createExecutor(PoolType poolType, String name) {
@@ -47,19 +58,21 @@ public class PlatformExecutorFactory implements ExecutorFactory {
      * @return 线程池执行器
      */
     private ExecutorService createDefaultExecutor(String name) {
-        int corePoolSize = Math.max(2, Runtime.getRuntime().availableProcessors() / 2);
-        int maximumPoolSize = Runtime.getRuntime().availableProcessors();
-        long keepAliveTime = 60L;
+        int corePoolSize = coreSize(name, Math.max(2, Runtime.getRuntime().availableProcessors() / 2));
+        int maximumPoolSize = maxSize(name, Math.max(corePoolSize, Runtime.getRuntime().availableProcessors()));
+        long keepAliveTime = keepAlive(name);
 
-        return new ThreadPoolExecutor(
+        ThreadPoolExecutor executor = new ThreadPoolExecutor(
                 corePoolSize,
                 maximumPoolSize,
                 keepAliveTime,
                 TimeUnit.SECONDS,
-                new LinkedBlockingQueue<>(100),
-                new NamedThreadFactory(name),
-                new ThreadPoolExecutor.CallerRunsPolicy()
+                new LinkedBlockingQueue<>(queueCapacity(name, 100)),
+                new NamedThreadFactory(threadName(name)),
+                rejectionHandler(name)
         );
+        executor.allowCoreThreadTimeOut(allowCoreThreadTimeOut(name));
+        return executor;
     }
 
     /**
@@ -69,17 +82,17 @@ public class PlatformExecutorFactory implements ExecutorFactory {
      * @return 线程池执行器
      */
     private ExecutorService createCpuIntensiveExecutor(String name) {
-        int corePoolSize = Runtime.getRuntime().availableProcessors();
-        int maximumPoolSize = corePoolSize;
+        int corePoolSize = coreSize(name, Runtime.getRuntime().availableProcessors());
+        int maximumPoolSize = maxSize(name, corePoolSize);
 
         return new ThreadPoolExecutor(
                 corePoolSize,
                 maximumPoolSize,
                 0L,
                 TimeUnit.MILLISECONDS,
-                new LinkedBlockingQueue<>(50),
-                new NamedThreadFactory(name + "-cpu"),
-                new ThreadPoolExecutor.CallerRunsPolicy()
+                new LinkedBlockingQueue<>(queueCapacity(name, 50)),
+                new NamedThreadFactory(threadName(name) + "-cpu"),
+                rejectionHandler(name)
         );
     }
 
@@ -90,19 +103,21 @@ public class PlatformExecutorFactory implements ExecutorFactory {
      * @return 线程池执行器
      */
     private ExecutorService createIoIntensiveExecutor(String name) {
-        int corePoolSize = Runtime.getRuntime().availableProcessors();
-        int maximumPoolSize = corePoolSize * 2;
-        long keepAliveTime = 60L;
+        int corePoolSize = coreSize(name, Runtime.getRuntime().availableProcessors());
+        int maximumPoolSize = maxSize(name, corePoolSize * 2);
+        long keepAliveTime = keepAlive(name);
 
-        return new ThreadPoolExecutor(
+        ThreadPoolExecutor executor = new ThreadPoolExecutor(
                 corePoolSize,
                 maximumPoolSize,
                 keepAliveTime,
                 TimeUnit.SECONDS,
-                new LinkedBlockingQueue<>(200),
-                new NamedThreadFactory(name + "-io"),
-                new ThreadPoolExecutor.CallerRunsPolicy()
+                new LinkedBlockingQueue<>(queueCapacity(name, 200)),
+                new NamedThreadFactory(threadName(name) + "-io"),
+                rejectionHandler(name)
         );
+        executor.allowCoreThreadTimeOut(allowCoreThreadTimeOut(name));
+        return executor;
     }
 
     /**
@@ -113,12 +128,12 @@ public class PlatformExecutorFactory implements ExecutorFactory {
      */
     private ScheduledThreadPoolExecutor createScheduledExecutor(String name) {
         ScheduledThreadPoolExecutor executor = new ScheduledThreadPoolExecutor(
-                Math.max(2, Runtime.getRuntime().availableProcessors() / 2),
-                new NamedThreadFactory(name + "-scheduled")
+                coreSize(name, Math.max(2, Runtime.getRuntime().availableProcessors() / 2)),
+                new NamedThreadFactory(threadName(name) + "-scheduled")
         );
         // 设置移除已取消任务的策略
         executor.setRemoveOnCancelPolicy(true);
-        executor.setRejectedExecutionHandler(new ThreadPoolExecutor.CallerRunsPolicy());
+        executor.setRejectedExecutionHandler(rejectionHandler(name));
         return executor;
     }
 
@@ -129,8 +144,8 @@ public class PlatformExecutorFactory implements ExecutorFactory {
      * @return 线程池执行器
      */
     private ExecutorService createPriorityExecutor(String name) {
-        int corePoolSize = Math.max(2, Runtime.getRuntime().availableProcessors() / 2);
-        int maximumPoolSize = Runtime.getRuntime().availableProcessors();
+        int corePoolSize = coreSize(name, Math.max(2, Runtime.getRuntime().availableProcessors() / 2));
+        int maximumPoolSize = maxSize(name, Math.max(corePoolSize, Runtime.getRuntime().availableProcessors()));
 
         return new ThreadPoolExecutor(
                 corePoolSize,
@@ -138,9 +153,59 @@ public class PlatformExecutorFactory implements ExecutorFactory {
                 60L,
                 TimeUnit.SECONDS,
                 new PriorityBlockingQueue<>(100),
-                new NamedThreadFactory(name + "-priority"),
-                new ThreadPoolExecutor.CallerRunsPolicy()
+                new NamedThreadFactory(threadName(name) + "-priority"),
+                rejectionHandler(name)
         );
+    }
+
+    private ThreadingProperties.PoolProperties pool(String name) {
+        if (properties == null) return null;
+        return properties.getPools().getOrDefault(name, properties.getDefaultPool());
+    }
+
+    private int coreSize(String name, int fallback) {
+        ThreadingProperties.PoolProperties pool = pool(name);
+        return pool != null && pool.getCoreSize() > 0 ? pool.getCoreSize() : Math.max(1, fallback);
+    }
+
+    private int maxSize(String name, int fallback) {
+        ThreadingProperties.PoolProperties pool = pool(name);
+        int configured = pool != null && pool.getMaxSize() > 0 ? pool.getMaxSize() : fallback;
+        return Math.max(coreSize(name, fallback), configured);
+    }
+
+    private long keepAlive(String name) {
+        ThreadingProperties.PoolProperties pool = pool(name);
+        return pool == null ? 60L : Math.max(0, pool.getKeepAliveTime());
+    }
+
+    private int queueCapacity(String name, int fallback) {
+        ThreadingProperties.PoolProperties pool = pool(name);
+        return pool != null && pool.getQueueCapacity() > 0 ? pool.getQueueCapacity() : fallback;
+    }
+
+    private boolean allowCoreThreadTimeOut(String name) {
+        ThreadingProperties.PoolProperties pool = pool(name);
+        return pool != null && pool.isAllowCoreThreadTimeOut() && keepAlive(name) > 0;
+    }
+
+    private String threadName(String name) {
+        ThreadingProperties.PoolProperties pool = pool(name);
+        return pool != null && pool.getThreadNamePrefix() != null && !pool.getThreadNamePrefix().isBlank()
+                ? pool.getThreadNamePrefix() : name;
+    }
+
+    private java.util.concurrent.RejectedExecutionHandler rejectionHandler(String name) {
+        ThreadingProperties.PoolProperties pool = pool(name);
+        ThreadingProperties.RejectionPolicy policy = pool == null
+                ? ThreadingProperties.RejectionPolicy.CALLER_RUNS : pool.getRejectionPolicy();
+        if (policy == null) policy = ThreadingProperties.RejectionPolicy.CALLER_RUNS;
+        return switch (policy) {
+            case ABORT -> new ThreadPoolExecutor.AbortPolicy();
+            case DISCARD -> new ThreadPoolExecutor.DiscardPolicy();
+            case DISCARD_OLDEST -> new ThreadPoolExecutor.DiscardOldestPolicy();
+            case CALLER_RUNS -> new ThreadPoolExecutor.CallerRunsPolicy();
+        };
     }
 
     /**

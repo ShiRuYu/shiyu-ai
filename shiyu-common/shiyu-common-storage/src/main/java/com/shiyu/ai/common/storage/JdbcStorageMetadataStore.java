@@ -121,6 +121,21 @@ public class JdbcStorageMetadataStore implements StorageMetadataStore {
     }
 
     @Override
+    public List<UploadSessionRecord> findExpiredUploadSessions(Instant now) {
+        Timestamp cutoff = Timestamp.from(now == null ? Instant.now() : now);
+        return jdbcTemplate.query(
+                "SELECT session_id, tenant_id, space_id, namespace, file_name, content_type, expected_size, "
+                        + "expected_checksum, total_chunks, status, temp_path, expires_at FROM storage_upload_session "
+                        + "WHERE expires_at IS NOT NULL AND expires_at < ? "
+                        + "AND status IN ('UPLOADING', 'FAILED', 'CANCELLED', 'COMPLETED')",
+                (rs, rowNum) -> new UploadSessionRecord(rs.getString("session_id"), rs.getLong("tenant_id"),
+                        rs.getObject("space_id", Long.class), rs.getString("namespace"), rs.getString("file_name"),
+                        rs.getString("content_type"), rs.getLong("expected_size"), rs.getString("expected_checksum"),
+                        rs.getInt("total_chunks"), rs.getString("status"), rs.getString("temp_path"),
+                        toInstant(rs.getTimestamp("expires_at"))), cutoff);
+    }
+
+    @Override
     public void markChunkUploaded(String sessionId, int chunkIndex, long size, String checksum) {
         jdbcTemplate.update("MERGE INTO storage_upload_chunk (session_id, chunk_index, chunk_size, chunk_checksum, status, uploaded_at) "
                         + "KEY(session_id, chunk_index) VALUES (?, ?, ?, ?, 'UPLOADED', CURRENT_TIMESTAMP)",

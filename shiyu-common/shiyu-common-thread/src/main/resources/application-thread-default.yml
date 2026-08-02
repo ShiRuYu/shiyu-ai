@@ -7,10 +7,10 @@ spring:
 shiyu:
   thread:
     # 是否启用指标收集
-    metrics-enabled: true
+    metrics-enabled: false
 
     # 是否启用OpenTelemetry集成
-    otel-enabled: true
+    otel-enabled: false
 
     # 默认线程池配置
     default-pool:
@@ -33,6 +33,18 @@ shiyu:
 
     # 命名线程池配置
     pools:
+      # Knowledge document parsing/embedding worker. Keep this bounded because
+      # each task can hold a complete source document and parsed text in memory.
+      knowledge-ingestion:
+        type: IO_INTENSIVE
+        core-size: ${shiyu.knowledge.task.parse-concurrency:2}
+        max-size: ${shiyu.knowledge.task.parse-concurrency:2}
+        queue-capacity: 100
+        keep-alive-time: 60
+        rejection-policy: CALLER_RUNS
+        allow-core-thread-time-out: false
+        thread-name-prefix: knowledge-ingest
+
       # 异步任务线程池
       async:
         core-size: ${JAVA_CORE_COUNT:4}

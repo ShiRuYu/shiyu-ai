@@ -9,6 +9,7 @@ import com.shiyu.ai.knowledge.document.DocumentParser;
 import com.shiyu.ai.knowledge.rag.DocumentIngestionService;
 import com.shiyu.ai.common.storage.ContentSecurityScanner;
 import com.shiyu.ai.common.storage.ObjectStorage;
+import com.shiyu.ai.common.thread.api.ThreadPoolManager;
 import jakarta.annotation.PostConstruct;
 import jakarta.annotation.PreDestroy;
 import lombok.extern.slf4j.Slf4j;
@@ -26,7 +27,6 @@ import java.util.Optional;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.ScheduledFuture;
 import java.util.concurrent.TimeUnit;
@@ -43,6 +43,7 @@ public class EmbeddedIngestionWorker {
     private final ContentSecurityScanner securityScanner;
     private final List<DocumentParser> parsers;
     private final ScheduledExecutorService scheduler;
+    private final ThreadPoolManager threadPoolManager;
     private final Set<Long> inFlight = ConcurrentHashMap.newKeySet();
     private ExecutorService executor;
     private ScheduledFuture<?> pollingTask;
@@ -59,7 +60,8 @@ public class EmbeddedIngestionWorker {
                                    ObjectStorage objectStorage,
                                    ContentSecurityScanner securityScanner,
                                    List<DocumentParser> parsers,
-                                   ScheduledExecutorService scheduler) {
+                                   ScheduledExecutorService scheduler,
+                                   ThreadPoolManager threadPoolManager) {
         this.enterpriseRepository = enterpriseRepository;
         this.documentRepository = documentRepository;
         this.ingestionService = ingestionService;
@@ -67,6 +69,7 @@ public class EmbeddedIngestionWorker {
         this.securityScanner = securityScanner;
         this.parsers = parsers;
         this.scheduler = scheduler;
+        this.threadPoolManager = threadPoolManager;
         log.info("Knowledge ingestion worker constructed");
     }
 
@@ -76,8 +79,7 @@ public class EmbeddedIngestionWorker {
         if (executor != null) return;
         log.info("Knowledge ingestion worker initializing, concurrency={}, pollDelayMs={}",
                 concurrency, pollDelayMs);
-        executor = Executors.newFixedThreadPool(Math.max(1, concurrency),
-                Thread.ofPlatform().name("knowledge-ingest-", 0).factory());
+        executor = threadPoolManager.getExecutor("knowledge-ingestion");
         LocalDateTime staleBefore = LocalDateTime.now().minusMinutes(5);
         for (KnowledgeIngestionJobDO job : enterpriseRepository.findStaleJobs(staleBefore)) {
             job.setJobStatus("PENDING");
@@ -252,6 +254,5 @@ public class EmbeddedIngestionWorker {
     @PreDestroy
     void shutdown() {
         if (pollingTask != null) pollingTask.cancel(false);
-        if (executor != null) executor.shutdown();
     }
 }

@@ -28,7 +28,7 @@ public class ContextAwareRunnable implements Runnable {
 
     @Override
     public void run() {
-        TaskContext originalContext = TaskContext.current();
+        TaskContext originalContext = TaskContext.current().snapshot();
         try {
             TaskContext.current().restore(contextSnapshot);
             delegate.run();

@@ -10,6 +10,15 @@ import java.util.concurrent.ExecutorService;
 public interface ThreadPoolManager {
 
     /**
+     * Get a named executor using the matching {@code shiyu.thread.pools} configuration.
+     * Falls back to the default pool configuration when the name is not configured.
+     *
+     * @param name configured pool name
+     * @return managed executor
+     */
+    ExecutorService getExecutor(String name);
+
+    /**
      * 获取指定类型的线程池执行器
      * 
      * @param poolType 线程池类型

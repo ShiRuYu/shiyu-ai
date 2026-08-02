@@ -3,6 +3,7 @@ package com.shiyu.ai.common.storage;
 import com.shiyu.ai.common.core.domain.LoginContextHolder;
 import com.shiyu.ai.common.core.exception.ServiceException;
 import lombok.RequiredArgsConstructor;
+import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
 
 import java.io.ByteArrayInputStream;
@@ -14,6 +15,7 @@ import java.nio.file.Path;
 import java.nio.file.StandardOpenOption;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
+import java.time.Instant;
 import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.HexFormat;
@@ -58,6 +60,7 @@ public class ResumableUploadService {
             properties.setProperty("totalChunks", Integer.toString(totalChunks(request.size())));
             properties.setProperty("checksum", request.checksum() == null ? "" : request.checksum().trim().toLowerCase());
             properties.setProperty("title", request.title() == null ? "" : request.title().trim());
+            properties.setProperty("expiresAt", Instant.now().plusSeconds(24 * 3600).toString());
             try (OutputStream output = Files.newOutputStream(metadata(id), StandardOpenOption.CREATE_NEW)) {
                 properties.store(output, "storage resumable upload");
             }
@@ -184,6 +187,47 @@ public class ResumableUploadService {
         }
     }
 
+    /** Removes expired database sessions and orphaned local chunk directories. */
+    @Scheduled(fixedDelayString = "${shiyu.storage.upload.cleanup-interval-ms:3600000}",
+            initialDelayString = "${shiyu.storage.upload.cleanup-initial-delay-ms:300000}")
+    void cleanupExpiredSessions() {
+        Instant now = Instant.now();
+        for (StorageMetadataStore.UploadSessionRecord record : metadataStore.findExpiredUploadSessions(now)) {
+            deleteWithinChunkRoot(record.tempPath());
+            metadataStore.deleteUploadSession(record.sessionId());
+        }
+        if (!"local".equalsIgnoreCase(storageProperties.getType())) return;
+        try {
+            Path chunkRoot = root();
+            try (var directories = Files.list(chunkRoot)) {
+                directories.filter(Files::isDirectory).forEach(directory -> {
+                    Path metadata = directory.resolve("metadata.properties");
+                    if (!Files.isRegularFile(metadata)) return;
+                    try (InputStream input = Files.newInputStream(metadata)) {
+                        Properties properties = new Properties();
+                        properties.load(input);
+                        String expiresAt = properties.getProperty("expiresAt");
+                        if (expiresAt != null && !expiresAt.isBlank()
+                                && Instant.parse(expiresAt).isBefore(now)) {
+                            deleteDirectory(directory, chunkRoot);
+                        }
+                    } catch (Exception exception) {
+                        try {
+                            if (Files.getLastModifiedTime(metadata).toInstant()
+                                    .plusSeconds(7 * 24 * 3600).isBefore(now)) {
+                                deleteDirectory(directory, chunkRoot);
+                            }
+                        } catch (IOException ignored) {
+                            // Best-effort cleanup; the next scheduled pass retries it.
+                        }
+                    }
+                });
+            }
+        } catch (IOException exception) {
+            throw new ServiceException("清理过期断点上传失败: " + exception.getMessage());
+        }
+    }
+
     private UploadSession session(String id, Properties properties) {
         int total = Integer.parseInt(properties.getProperty("totalChunks"));
         List<Integer> uploaded = new ArrayList<>();
@@ -248,6 +292,28 @@ public class ResumableUploadService {
     private Path directory(String id) throws IOException { return root().resolve(id).normalize(); }
     private Path metadata(String id) throws IOException { return directory(id).resolve("metadata.properties"); }
     private Path part(String id, int index) throws IOException { return directory(id).resolve("part-" + index); }
+
+    private void deleteWithinChunkRoot(String configuredPath) {
+        if (configuredPath == null || configuredPath.isBlank()
+                || !"local".equalsIgnoreCase(storageProperties.getType())) return;
+        try {
+            deleteDirectory(Path.of(configuredPath), root());
+        } catch (IOException ignored) {
+            // The next orphan scan retries locked or missing paths.
+        }
+    }
+
+    private void deleteDirectory(Path candidate, Path root) throws IOException {
+        Path normalizedRoot = root.toAbsolutePath().normalize();
+        Path normalized = candidate.toAbsolutePath().normalize();
+        if (!normalized.startsWith(normalizedRoot) || normalized.equals(normalizedRoot)) return;
+        if (!Files.exists(normalized)) return;
+        try (var paths = Files.walk(normalized)) {
+            paths.sorted(Comparator.reverseOrder()).forEach(path -> {
+                try { Files.deleteIfExists(path); } catch (IOException ignored) { }
+            });
+        }
+    }
 
     private void cleanup(String id) throws IOException {
         Path directory = directory(id);

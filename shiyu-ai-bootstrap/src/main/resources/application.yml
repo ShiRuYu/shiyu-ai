@@ -11,9 +11,17 @@ shiyu:
   version: ${revision}
   # 文件存储：默认 local，可切换为 s3、minio、aliyun-oss、tencent-cos
   storage:
+    seed:
+      education:
+        enabled: true
+        tenant-id: 1
+        namespace: education-resources
     type: ${SHIYU_STORAGE_TYPE:local}
     local:
       path: ${SHIYU_STORAGE_LOCAL_PATH:${app.home}/data/files}
+    upload:
+      cleanup-interval-ms: 3600000
+      cleanup-initial-delay-ms: 300000
     providers:
       s3:
         endpoint: ${SHIYU_STORAGE_S3_ENDPOINT:}
@@ -66,6 +74,7 @@ shiyu:
       poll-delay-ms: 2000
     index:
       idle-minutes: 30
+      rollback-versions: 1
       candidate-top-k: 20
       default-top-k: 5
       rrf-k: 60
@@ -74,6 +83,23 @@ shiyu:
       directory: ${app.home}/data/backups
       hourly-retention: 24
       daily-retention: 30
+      interval-ms: 3600000
+      max-total-bytes: 21474836480
+  retention:
+    logs:
+      enabled: true
+      max-age-days: 30
+      max-total-bytes: 2147483648
+      interval-ms: 3600000
+      initial-delay-ms: 120000
+    data:
+      enabled: true
+      execution-days: 30
+      audit-days: 180
+      usage-days: 365
+      task-days: 30
+      interval-ms: 3600000
+      initial-delay-ms: 180000
 # 开发环境配置
 server:
   # 服务器的HTTP端口，默认为8080

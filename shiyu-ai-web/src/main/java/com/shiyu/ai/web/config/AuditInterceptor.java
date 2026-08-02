@@ -72,8 +72,7 @@ public class AuditInterceptor implements HandlerInterceptor {
         return path.startsWith("/favicon")
                 || path.startsWith("/webjars")
                 || path.startsWith("/v3/api-docs")
-                || path.startsWith("/swagger")
-                || path.startsWith("/doc.html")
+                || path.startsWith("/swagger-ui/")
                 || path.startsWith("/actuator")
                 || path.startsWith("/uploads");
     }

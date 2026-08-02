@@ -9,6 +9,8 @@
 
 ShiYu AI is not a single-purpose AI application. It is an **AI agent platform that connects to multiple LLM providers, centers on a customizable Agent engine, and extends into various business directions**.
 
+The root Maven reactor currently contains 19 buildable modules. Version management is centralized in the root POM; the Observation shell and Excel module are outside the default build, while the Thread module remains active as the Knowledge Worker foundation.
+
 ```
                      ┌──────────────────┐
                      │ Multi-LLM Access │
@@ -74,7 +76,7 @@ Two-tier intelligent memory service:
 - **Compression Strategy** — Intelligent compression of long conversation histories (summarization/truncation)
 - **SPI Extension** — Customizable memory storage backends
 
-### Tool System — Tool & MCP (`shiyu-ai-tool` + `shiyu-ai-mcp`)
+### Tool System — Tool & MCP (`shiyu-ai-tool`)
 
 Standardized tool invocation service based on the **Spring AI MCP protocol**:
 
@@ -192,23 +194,20 @@ An **AI-powered tutoring system** for K-12 education, covering the full "learn �
 | Module | Responsibility | Category |
 |--------|---------------|----------|
 | `shiyu-ai-agent` | **Agent Engine**: Graph orchestration, Node system, Execution lifecycle, Checkpoint, Retry | **Platform Core** |
-| `shiyu-ai-core` | AI Core: ChatEngine, Conversation interface | Platform Foundation |
 | `shiyu-ai-auth` | Auth & RBAC: Sa-Token, Multi-tenant | Platform Foundation |
 | `shiyu-ai-model` | Model Management: Multi-platform adapters, Hot reload, Resilience, Embedding | Platform Infrastructure |
 | `shiyu-ai-knowledge` | Knowledge Engine: Document management, RAG retrieval, Knowledge graph, Chunking | Platform Infrastructure |
 | `shiyu-ai-vector` | Vector Store: JVector HNSW index, Disk persistence, CRUD | Platform Infrastructure |
-| `shiyu-ai-rag` | RAG Retrieval Service | Platform Infrastructure |
 | `shiyu-ai-memory` | Memory System: Short/long-term memory, Compression, Cross-session retrieval, SPI | Platform Infrastructure |
 | `shiyu-ai-tool` | Tool System: MCP protocol, Tool registration/invocation/execution | Platform Infrastructure |
-| `shiyu-ai-mcp` | MCP Protocol Layer: Protocol adaptation & communication | Platform Infrastructure |
 | `shiyu-ai-plugin` | Plugin System: Lifecycle management, Sandbox isolation, Hot-plug | Platform Infrastructure |
 | `shiyu-ai-usage` | Usage Tracking: Token metering, Real-time push, Multi-dimensional aggregation | Platform Infrastructure |
-| `shiyu-ai-observation` | Observability: Monitoring collection configuration | Platform Infrastructure |
 | `shiyu-ai-record` | **Record Business**: Profiles, Timeline, Media, Tags | **Business Extension** |
 | `shiyu-ai-education` | **Education Business**: Learn/Practice/Exam/Evaluate/Recommend | **Business Extension** |
 | `shiyu-ai-bootstrap` | Application boot entry | Infrastructure |
 | `shiyu-ai-dal` | Data Access Layer: DO/BO/Repository pattern | Infrastructure |
-| `shiyu-common/*` | Common: Web security, Thread pool, Excel, MyBatis wrapper | Infrastructure |
+| `shiyu-common/*` | Common: Web, worker threads, Storage, MyBatis wrapper | Infrastructure |
+| `shiyu-ai-web` | Controllers, DTOs and web adapters | Infrastructure |
 
 ---
 
@@ -228,7 +227,7 @@ An **AI-powered tutoring system** for K-12 education, covering the full "learn �
 | Embedding Model | BGE-small-zh (ONNX local) |
 | MCP Protocol | Spring AI MCP |
 | Cache | Caffeine |
-| API Docs | SpringDoc OpenAPI + Knife4j |
+| API Docs | SpringDoc OpenAPI (UI is an optional profile) |
 | Observability | OpenTelemetry + Micrometer + Prometheus |
 | Logging | Log4j2 |
 | Scheduling | XXL-Job |
@@ -252,7 +251,7 @@ mvn clean install -DskipTests
 
 ### Configure an LLM Platform
 
-Edit `shiyu-ai-core/src/main/resources/config/config.yml` and configure at least one platform:
+Edit `shiyu-ai-bootstrap/src/main/resources/application.yml` and configure at least one platform:
 
 ```yaml
 shiyu:
@@ -273,9 +272,24 @@ cd shiyu-ai-bootstrap
 mvn spring-boot:run -Dspring-boot.run.profiles=dev
 ```
 
+### Release packages
+
+```powershell
+# Windows cloud/base package
+./scripts/package-cloud-windows.ps1
+# Windows offline-model package (includes optional BGE/ONNX dependencies)
+./scripts/package-offline-windows.ps1
+```
+
+On Linux, use the corresponding `scripts/package-cloud-linux.sh` and
+`scripts/package-offline-linux.sh`. Production packages exclude observability,
+the API documentation UI, and the S3 adapter by default; enable the
+`observability`, `api-docs-ui`, or `s3` profiles explicitly when needed.
+
 After startup:
 - Application: `http://localhost:9000`
-- API docs: `http://localhost:9000/doc.html`
+- API docs JSON: `http://localhost:9000/v3/api-docs`
+- API docs UI: available only with the `api-docs-ui` profile
 
 ---
 

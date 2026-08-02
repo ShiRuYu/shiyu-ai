@@ -37,10 +37,9 @@ public class SaInterceptorConfig implements WebMvcConfigurer {
                     "/captcha/**",
                     "/auth/captcha",
                     // 文档和监控接口
-                    "/doc.html",
                     "/swagger-ui/**",
                     "/v3/api-docs/**",
-                    "/webjars/**", "/v2/api-docs",
+                    "/webjars/**",
                     "/h2/**",
                     "/education-resources/**"
                 );

@@ -4,6 +4,7 @@ package com.shiyu.ai.common.thread.core;
 import com.shiyu.ai.common.thread.api.PoolType;
 import com.shiyu.ai.common.thread.api.TaskDecorator;
 import com.shiyu.ai.common.thread.api.ThreadPoolManager;
+import com.shiyu.ai.common.thread.config.ThreadingProperties;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -30,28 +31,32 @@ public class DefaultThreadPoolManager implements ThreadPoolManager {
 
     private final TaskDecorator taskDecorator;
 
+    private final ThreadingProperties properties;
+
     public DefaultThreadPoolManager(TaskDecorator taskDecorator) {
-        this(new DefaultExecutorFactory(), taskDecorator);
+        this(new ThreadingProperties(), taskDecorator);
+    }
+
+    public DefaultThreadPoolManager(ThreadingProperties properties, TaskDecorator taskDecorator) {
+        this(new DefaultExecutorFactory(properties), taskDecorator, properties);
     }
 
     public DefaultThreadPoolManager(ExecutorFactory executorFactory, TaskDecorator taskDecorator) {
-        this.executorFactory = executorFactory;
-        this.taskDecorator = taskDecorator;
-        // 初始化默认线程池
-        initializeDefaultExecutors();
+        this(executorFactory, taskDecorator, new ThreadingProperties());
     }
 
-    /**
-     * 初始化默认线程池
-     */
-    @SuppressWarnings("this-escape")
-    private void initializeDefaultExecutors() {
-        // 创建默认线程池
-        getExecutor(PoolType.DEFAULT);
-        // 如果Java版本支持，创建虚拟线程池
-        if (VirtualExecutorFactory.isSupported()) {
-            getExecutor(PoolType.VIRTUAL);
-        }
+    public DefaultThreadPoolManager(ExecutorFactory executorFactory, TaskDecorator taskDecorator,
+                                    ThreadingProperties properties) {
+        this.executorFactory = executorFactory;
+        this.taskDecorator = taskDecorator;
+        this.properties = properties;
+    }
+
+    @Override
+    public ExecutorService getExecutor(String name) {
+        ThreadingProperties.PoolProperties pool = properties.getPools().get(name);
+        PoolType poolType = pool == null || pool.getType() == null ? PoolType.DEFAULT : pool.getType();
+        return getExecutor(poolType, name);
     }
 
     @Override
@@ -62,12 +67,11 @@ public class DefaultThreadPoolManager implements ThreadPoolManager {
     @Override
     public ExecutorService getExecutor(PoolType poolType, String name) {
         String key = poolType.getCode() + ":" + name;
-        ExecutorService executor1 = executorMap.computeIfAbsent(key, k -> {
+        return executorMap.computeIfAbsent(key, k -> {
             ExecutorService executor = executorFactory.createExecutor(poolType, name);
             logger.info("创建线程池: {}, 类型: {}", name, poolType.getDescription());
-            return executor;
+            return new SafeExecutorService(executor, taskDecorator);
         });
-        return new SafeExecutorService(executor1, taskDecorator);
     }
 
     @Override
@@ -81,11 +85,11 @@ public class DefaultThreadPoolManager implements ThreadPoolManager {
     public void shutdownAll() {
         executorMap.forEach((name, executor) -> {
             try {
-                if (executor instanceof ExecutorService service) {
-                    service.shutdown();
-                    if (!service.awaitTermination(30, TimeUnit.SECONDS)) {
+                if (executor != null) {
+                    executor.shutdown();
+                    if (!executor.awaitTermination(30, TimeUnit.SECONDS)) {
                         logger.warn("线程池 {} 在30秒内未能正常关闭，强制关闭", name);
-                        service.shutdownNow();
+                        executor.shutdownNow();
                     }
                     logger.info("线程池 {} 已关闭", name);
                 }

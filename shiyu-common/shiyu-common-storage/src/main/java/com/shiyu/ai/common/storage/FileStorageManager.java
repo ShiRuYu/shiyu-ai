@@ -103,8 +103,12 @@ public class FileStorageManager implements AutoCloseable {
 
     @Override
     public void close() {
-        if (storage instanceof S3CompatibleFileStorage s3Storage) {
-            s3Storage.close();
+        if (storage instanceof AutoCloseable closeable) {
+            try {
+                closeable.close();
+            } catch (Exception exception) {
+                // Backend shutdown is best-effort during application shutdown.
+            }
         }
     }
 

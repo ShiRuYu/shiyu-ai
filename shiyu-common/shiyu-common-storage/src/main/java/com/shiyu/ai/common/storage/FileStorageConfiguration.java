@@ -8,7 +8,7 @@ import org.springframework.beans.factory.ObjectProvider;
 import java.io.IOException;
 
 @Configuration
-@EnableConfigurationProperties(StorageProperties.class)
+@EnableConfigurationProperties({StorageProperties.class, StorageSeedProperties.class})
 public class FileStorageConfiguration {
 
     @Bean(destroyMethod = "close")

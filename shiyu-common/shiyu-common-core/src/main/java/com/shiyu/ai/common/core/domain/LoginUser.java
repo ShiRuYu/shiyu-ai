@@ -1,6 +1,5 @@
 package com.shiyu.ai.common.core.domain;
 
-import com.google.common.collect.Maps;
 import com.shiyu.ai.common.core.enums.DeviceTypeEnum;
 import com.shiyu.ai.common.core.enums.UserTypeEnum;
 import lombok.Data;
@@ -8,7 +7,7 @@ import lombok.NoArgsConstructor;
 
 import java.io.Serial;
 import java.io.Serializable;
-import java.util.List;
+import java.util.HashMap;
 
 /**
  * 登录用户
@@ -32,7 +31,7 @@ public class LoginUser implements Serializable {
     private String username;
     private String nickName;
     private String avatar;
-    private java.util.Map<String, Object> extInfo = Maps.newHashMap();
+    private java.util.Map<String, Object> extInfo = new HashMap<>();
 
     /** 用户默认/登录租户，代表用户身份归属。 */
     private Long homeTenantId;

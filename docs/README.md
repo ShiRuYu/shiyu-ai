@@ -1,6 +1,8 @@
 ﻿# shiyu-ai 项目架构概览
 
-> 版本: 1.0.0 | Java 21 | Spring Boot 4.1.0 | 最后更新: 2026-07-21
+> 版本: 1.0.0 | Java 21 | Spring Boot 4.1.0 | 最后更新: 2026-08-02
+
+> 当前 Maven 实际构建边界以根 `pom.xml` 为准：Common BOM、Observation 空壳和 Excel 模块已退出默认构建；线程模块仍被 Knowledge Worker 使用；向量模块保持独立领域边界。
 
 ---
 
@@ -18,12 +20,11 @@ shiyu-ai 是一个面向**企业级 AI 平台**的后端系统，基于 Spring B
 shiyu-ai (POM)
 │
 ├── shiyu-common                  # 公共基础模块（BOM 管理）
-│   ├── shiyu-common-bom          # 依赖版本统一管理
 │   ├── shiyu-common-core         # 核心工具类（Result, JSON, Mapstruct）
 │   ├── shiyu-common-web          # Web 通用配置（异常处理、跨域等）
-│   ├── shiyu-common-excel        # Excel 导入导出
 │   ├── shiyu-common-mybatis      # MyBatis 通用配置
-│   └── shiyu-common-thread       # 线程池配置
+│   ├── shiyu-common-thread       # Worker 线程池配置
+│   └── shiyu-common-storage      # 文件、断点上传、备份和存储元数据
 │
 ├── shiyu-ai-dal                  # 统一数据访问层
 │   ├── agent/                    # Agent 数据层（DO/BO/Mapper/Repository）
@@ -104,9 +105,9 @@ shiyu-ai (POM)
 ├── shiyu-ai-auth                 # 认证授权模块
 ├── shiyu-ai-record               # 记录存储模块
 ├── shiyu-ai-plugin               # 插件模块
-├── shiyu-ai-observation          # 可观测性（待完善）
 ├── shiyu-ai-usage                # 用量统计（待完善）
 ├── shiyu-ai-education            # 教育领域模块
+├── shiyu-ai-web                  # Controller、DTO 和 Web 适配层
 └── shiyu-ai-bootstrap            # 应用启动入口
 ``
 
@@ -123,7 +124,7 @@ shiyu-ai (POM)
 | 向量数据库 | JVector + 自研 InMemory | 4.0.0-beta.6 |
 | 数据库 | H2 / MySQL | 2.4.240 / 9.4.0 |
 | 响应式 | Project Reactor | Spring Boot 内置 |
-| API 文档 | Knife4j + SpringDoc OpenAPI | 4.5.0 / 3.0.2 |
+| API 文档 | SpringDoc OpenAPI（UI 可选） | 3.0.2 |
 | 映射工具 | MapStruct Plus | 1.5.0 |
 | 工具 | Hutool / Guava / Lombok | — |
 | 编排引擎 | LiteFlow | 2.16.0 |

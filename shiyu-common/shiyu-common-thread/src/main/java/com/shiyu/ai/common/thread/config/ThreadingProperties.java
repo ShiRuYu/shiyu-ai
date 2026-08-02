@@ -19,7 +19,7 @@ public class ThreadingProperties {
     /**
      * 是否启用指标收集
      */
-    private boolean metricsEnabled = true;
+    private boolean metricsEnabled = false;
 
     /**
      * 是否启用OpenTelemetry集成

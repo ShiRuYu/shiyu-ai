@@ -1,0 +1,34 @@
+spring:
+  config:
+    activate:
+      on-profile: observability
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health,info,metrics,prometheus
+  endpoint:
+    health:
+      show-details: when-authorized
+    metrics:
+      enabled: true
+    prometheus:
+      enabled: true
+  tracing:
+    sampling:
+      probability: 1.0
+  metrics:
+    export:
+      prometheus:
+        enabled: true
+    distribution:
+      percentiles-histogram:
+        http.server.requests: true
+  otlp:
+    metrics:
+      export:
+        enabled: false
+  observations:
+    key-values:
+      application: shiyu-ai

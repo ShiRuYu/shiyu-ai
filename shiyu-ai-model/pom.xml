@@ -46,10 +46,6 @@
         </dependency>
 
         <!-- ONNX 嵌入模型 -->
-        <dependency>
-            <groupId>dev.langchain4j</groupId>
-            <artifactId>langchain4j-embeddings-bge-small-zh-v15</artifactId>
-        </dependency>
 
         <!-- Caffeine Cache -->
         <dependency>
@@ -88,4 +84,15 @@
             <scope>test</scope>
         </dependency>
     </dependencies>
+    <profiles>
+        <profile>
+            <id>offline-models</id>
+            <dependencies>
+                <dependency>
+                    <groupId>dev.langchain4j</groupId>
+                    <artifactId>langchain4j-embeddings-bge-small-zh-v15</artifactId>
+                </dependency>
+            </dependencies>
+        </profile>
+    </profiles>
 </project>

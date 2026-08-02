@@ -109,7 +109,7 @@ INSERT IGNORE INTO `edu_learning_state` (`student_id`, `knowledge_id`, `state`, 
 INSERT IGNORE INTO `edu_resource` (`id`, `name`, `type`, `url`, `subject_code`, `grade`, `difficulty`, `cover_url`, `description`, `view_count`, `tenant_id`, `create_by`, `update_by`) VALUES
 (1, '整数与数轴开放教材', 'DOCUMENT', '/api/education-resources/openstax-integers-number-line.pdf', 'MATH', 7, 1, '/api/education-resources/openstax-integers-cover.png', 'OpenStax Prealgebra 第 3.1 节节选，涵盖整数、相反数、数轴和绝对值，采用 CC BY 4.0 许可。', 150, 1, 'system', 'system'),
 (2, '绝对值例题与练习', 'EXERCISE', '/api/education-resources/openstax-absolute-value-exercises.pdf', 'MATH', 7, 2, '/api/education-resources/openstax-integers-cover.png', 'OpenStax Prealgebra 绝对值内容与练习节选，采用 CC BY 4.0 许可。', 89, 1, 'system', 'system'),
-(3, '整数数轴互动实验', 'INTERACTIVE', '/api/education-resources/number-line-integers-phet-1.0.0.html?locale=zh_CN', 'MATH', 7, 1, '/api/education-resources/openstax-integers-cover.png', 'PhET Number Line: Integers 1.0.0 离线版，可交互探索整数在数轴上的位置和变化，采用 CC BY 4.0 许可。', 67, 1, 'system', 'system');
+(3, '整数数轴互动实验', 'INTERACTIVE', '/api/education-resources/number-line-integers-phet-1.0.0.html', 'MATH', 7, 1, '/api/education-resources/openstax-integers-cover.png', 'PhET Number Line: Integers 1.0.0 离线版，可交互探索整数在数轴上的位置和变化，采用 CC BY 4.0 许可。', 67, 1, 'system', 'system');
 
 -- 兼容已经执行过旧版重复迁移的数据库：将占位 URL 更新为本地开放教育资源。
 UPDATE `edu_resource`
@@ -131,7 +131,7 @@ WHERE `id` = 2 AND `tenant_id` = 1;
 UPDATE `edu_resource`
 SET `name` = '整数数轴互动实验',
     `type` = 'INTERACTIVE',
-    `url` = '/api/education-resources/number-line-integers-phet-1.0.0.html?locale=zh_CN',
+    `url` = '/api/education-resources/number-line-integers-phet-1.0.0.html',
     `cover_url` = '/api/education-resources/openstax-integers-cover.png',
     `description` = 'PhET Number Line: Integers 1.0.0 离线版，可交互探索整数在数轴上的位置和变化，采用 CC BY 4.0 许可。'
 WHERE `id` = 3 AND `tenant_id` = 1;

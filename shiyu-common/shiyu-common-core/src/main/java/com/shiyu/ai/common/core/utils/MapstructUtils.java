@@ -1,10 +1,8 @@
 package com.shiyu.ai.common.core.utils;
 
-import com.google.common.collect.Lists;
 import io.github.linpeilie.Converter;
-import org.apache.commons.collections4.CollectionUtils;
-import org.apache.commons.collections4.MapUtils;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 
@@ -72,8 +70,8 @@ public class MapstructUtils {
         if (ObjectUtils.isNull(sourceList)) {
             return null;
         }
-        if (CollectionUtils.isEmpty(sourceList)) {
-            return Lists.newArrayList();
+        if (sourceList.isEmpty()) {
+            return new ArrayList<>();
         }
         return getConverter().convert(sourceList, desc);
     }
@@ -86,7 +84,7 @@ public class MapstructUtils {
      * @return bean对象
      */
     public static <T> T convert(Map<String, Object> map, Class<T> beanClass) {
-        if (MapUtils.isEmpty(map)) {
+        if (map == null || map.isEmpty()) {
             return null;
         }
         if (ObjectUtils.isNull(beanClass)) {

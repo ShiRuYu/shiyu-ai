@@ -19,6 +19,18 @@
             <groupId>com.shiyu.ai</groupId>
             <artifactId>shiyu-common-core</artifactId>
         </dependency>
+        <!-- Keep only instrumentation APIs here. Runtime exporters and logging
+             backends are supplied by the bootstrap observability profile. -->
+        <dependency>
+            <groupId>io.micrometer</groupId>
+            <artifactId>micrometer-core</artifactId>
+            <optional>true</optional>
+        </dependency>
+        <dependency>
+            <groupId>io.opentelemetry</groupId>
+            <artifactId>opentelemetry-api</artifactId>
+            <optional>true</optional>
+        </dependency>
         <!-- Test -->
         <dependency>
             <groupId>org.springframework.boot</groupId>

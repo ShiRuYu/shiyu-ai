@@ -20,8 +20,8 @@ public class ApplicationStartupListener implements CommandLineRunner {
     public void run(String... args) {
         log.info("========================================");
         log.info("应用启动成功！");
-        log.info("Knife4j 文档地址: http://localhost:{}/doc.html", serverPort);
-        log.info("Swagger UI 地址: http://localhost:{}/swagger-ui/index.html", serverPort);
+        log.info("OpenAPI JSON 地址: http://localhost:{}/v3/api-docs", serverPort);
+        log.info("API 文档 UI 仅在启用 api-docs-ui profile 时提供");
         log.info("H2 控制台地址: http://localhost:{}/h2", serverPort);
         log.info("========================================");
     }

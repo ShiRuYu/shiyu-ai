@@ -56,10 +56,9 @@ public class SaTokenConfig {
                     "/auth/captcha"
                 )
                 // 文档和监控接口
-                .addExclude("/doc.html", "/swagger-ui/**", "/v3/api-docs/**")
+                .addExclude("/swagger-ui/**", "/v3/api-docs/**")
                 .addExclude(
                     "/webjars/**",
-                    "/v2/api-docs",
                     "/h2/**",
                     "/education-resources/**"
                 )

@@ -50,3 +50,10 @@ build/
 !**/db/migration/data/**
 !**/db/migration/**/data/
 !**/db/migration/**/data/**
+
+# Local runtime smoke-test environments
+runtime-smoke-*/
+
+# External runtime plugins; plugin binaries are not source files
+plugins/
+shiyu-ai-bootstrap/plugins/
