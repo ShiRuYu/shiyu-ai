@@ -221,7 +221,7 @@
 | 框架 | Spring Boot 4.1 |
 | AI 框架 | Spring AI 2.0 + LangChain4j |
 | Agent 引擎 | LangGraph4j |
-| 流程编排 | LiteFlow |
+| Agent 流程图 | LangGraph4j + BaseNode |
 | 认证授权 | Sa-Token |
 | ORM | MyBatis-Flex |
 | 数据库 | H2（开发）/ MySQL（生产） |

@@ -222,7 +222,7 @@ An **AI-powered tutoring system** for K-12 education, covering the full "learn â
 | Framework | Spring Boot 4.1 |
 | AI Framework | Spring AI 2.0 + LangChain4j |
 | Agent Engine | LangGraph4j |
-| Workflow Engine | LiteFlow |
+| Agent Flow Graph | LangGraph4j + BaseNode |
 | Authentication | Sa-Token |
 | ORM | MyBatis-Flex |
 | Database | H2 (dev) / MySQL (prod) |

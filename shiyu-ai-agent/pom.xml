@@ -25,11 +25,6 @@
             <groupId>com.shiyu.ai</groupId>
             <artifactId>shiyu-ai-dal</artifactId>
         </dependency>
-        <!-- 教育业务域依赖 -->
-        <dependency>
-            <groupId>com.shiyu.ai</groupId>
-            <artifactId>shiyu-ai-education</artifactId>
-        </dependency>
         <dependency>
             <groupId>com.shiyu.ai</groupId>
             <artifactId>shiyu-ai-knowledge</artifactId>
@@ -82,19 +77,9 @@
             <scope>test</scope>
         </dependency>
 
-        <!-- 从 shiyu-ai-workflow 合并 -->
         <dependency>
             <groupId>com.shiyu.ai</groupId>
             <artifactId>shiyu-common-core</artifactId>
-        </dependency>
-        <!-- LiteFlow workflow（从 shiyu-ai-workflow 合并） -->
-        <dependency>
-            <groupId>com.yomahub</groupId>
-            <artifactId>liteflow-spring-boot4-starter</artifactId>
-        </dependency>
-        <dependency>
-            <groupId>com.yomahub</groupId>
-            <artifactId>liteflow-el-builder</artifactId>
         </dependency>
     </dependencies>
 </project>

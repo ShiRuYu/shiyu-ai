@@ -11,11 +11,16 @@ shiyu:
   version: ${revision}
   # 文件存储：默认 local，可切换为 s3、minio、aliyun-oss、tencent-cos
   storage:
-    seed:
-      education:
-        enabled: true
-        tenant-id: 1
-        namespace: education-resources
+    data-dir: ${app.home}/data
+    security:
+      max-file-size: 200MB
+    backup:
+      enabled: true
+      directory: ${app.home}/data/backups
+      hourly-retention: 24
+      daily-retention: 30
+      interval-ms: 3600000
+      max-total-bytes: 21474836480
     type: ${SHIYU_STORAGE_TYPE:local}
     local:
       path: ${SHIYU_STORAGE_LOCAL_PATH:${app.home}/data/files}
@@ -55,6 +60,13 @@ shiyu:
         secret-key: ${SHIYU_STORAGE_COS_SECRET_KEY:}
         path-style-access: false
         public-base-url: ${SHIYU_STORAGE_COS_PUBLIC_BASE_URL:}
+  education:
+    storage:
+      seed:
+        education:
+          enabled: true
+          tenant-id: 1
+          namespace: education-resources
   # VectorStore 配置（Embedding 向量检索）
   vector-store:
     type: jvector           # inmemory | jvector
@@ -63,9 +75,6 @@ shiyu:
   knowledge:
     data-dir: ${app.home}/data
     default-space-code: default
-    upload:
-      max-file-size: 200MB
-      allowed-extensions: pdf,docx,md,markdown,txt,html,htm
     task:
       parser-concurrency: 2
       embedding-concurrency: 4
@@ -78,13 +87,6 @@ shiyu:
       candidate-top-k: 20
       default-top-k: 5
       rrf-k: 60
-    backup:
-      enabled: true
-      directory: ${app.home}/data/backups
-      hourly-retention: 24
-      daily-retention: 30
-      interval-ms: 3600000
-      max-total-bytes: 21474836480
   retention:
     logs:
       enabled: true

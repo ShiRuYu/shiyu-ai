@@ -2,8 +2,8 @@ package com.shiyu.ai.common.storage;
 
 import com.shiyu.ai.common.core.exception.ServiceException;
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.dao.DataAccessException;
 import org.springframework.jdbc.core.JdbcTemplate;
+import org.springframework.beans.factory.ObjectProvider;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
 
@@ -37,15 +37,17 @@ public class EmbeddedBackupService {
     private final int hourlyRetention;
     private final int dailyRetention;
     private final long maxTotalBytes;
+    private final List<BackupManifestContributor> manifestContributors;
 
     public EmbeddedBackupService(
             JdbcTemplate jdbcTemplate,
-            @Value("${shiyu.knowledge.data-dir:${app.home}/data}") String dataDir,
-            @Value("${shiyu.knowledge.backup.directory:${app.home}/data/backups}") String backupDir,
-            @Value("${shiyu.knowledge.backup.enabled:true}") boolean enabled,
-            @Value("${shiyu.knowledge.backup.hourly-retention:24}") int hourlyRetention,
-            @Value("${shiyu.knowledge.backup.daily-retention:30}") int dailyRetention,
-            @Value("${shiyu.knowledge.backup.max-total-bytes:21474836480}") long maxTotalBytes) {
+            @Value("${shiyu.storage.data-dir:${app.home}/data}") String dataDir,
+            @Value("${shiyu.storage.backup.directory:${app.home}/data/backups}") String backupDir,
+            @Value("${shiyu.storage.backup.enabled:true}") boolean enabled,
+            @Value("${shiyu.storage.backup.hourly-retention:24}") int hourlyRetention,
+            @Value("${shiyu.storage.backup.daily-retention:30}") int dailyRetention,
+            @Value("${shiyu.storage.backup.max-total-bytes:21474836480}") long maxTotalBytes,
+            ObjectProvider<BackupManifestContributor> manifestContributors) {
         this.jdbcTemplate = jdbcTemplate;
         this.dataRoot = resolve(dataDir);
         this.backupRoot = resolve(backupDir);
@@ -53,10 +55,11 @@ public class EmbeddedBackupService {
         this.hourlyRetention = Math.max(0, hourlyRetention);
         this.dailyRetention = Math.max(0, dailyRetention);
         this.maxTotalBytes = Math.max(0, maxTotalBytes);
+        this.manifestContributors = manifestContributors.orderedStream().toList();
     }
 
-    @Scheduled(fixedDelayString = "${shiyu.knowledge.backup.interval-ms:3600000}",
-            initialDelayString = "${shiyu.knowledge.backup.initial-delay-ms:300000}")
+    @Scheduled(fixedDelayString = "${shiyu.storage.backup.interval-ms:3600000}",
+            initialDelayString = "${shiyu.storage.backup.initial-delay-ms:300000}")
     void scheduledBackup() {
         if (!enabled) return;
         try {
@@ -87,7 +90,7 @@ public class EmbeddedBackupService {
                         "createdAt=" + OffsetDateTime.now() + "\n"
                                 + "formatVersion=1\n"
                                 + "database=H2-MVStore\n"
-                                + activeIndexManifest());
+                                + domainManifest());
             } finally {
                 Files.deleteIfExists(h2Backup);
             }
@@ -129,25 +132,16 @@ public class EmbeddedBackupService {
         return new RestoreCheckResult(errors.isEmpty(), entries, errors);
     }
 
-    private String activeIndexManifest() {
-        try {
-            StringBuilder manifest = new StringBuilder();
-            jdbcTemplate.query("SELECT tenant_id, id, active_index_version FROM knowledge_space "
-                            + "WHERE del_flag = 0 ORDER BY tenant_id, id",
-                    resultSet -> {
-                        manifest.append("activeIndex.")
-                                .append(resultSet.getLong("tenant_id"))
-                                .append('.')
-                                .append(resultSet.getLong("id"))
-                                .append('=')
-                                .append(resultSet.getLong("active_index_version"))
-                                .append('\n');
-                    });
-            return manifest.toString();
-        } catch (DataAccessException exception) {
-            // Lightweight storage-only deployments may not include Knowledge tables.
-            return "activeIndex.unavailable=true\n";
+    private String domainManifest() {
+        StringBuilder manifest = new StringBuilder();
+        for (BackupManifestContributor contributor : manifestContributors) {
+            String contribution = contributor.contribute();
+            if (contribution != null && !contribution.isBlank()) {
+                manifest.append(contribution);
+                if (!contribution.endsWith("\n")) manifest.append('\n');
+            }
         }
+        return manifest.toString();
     }
 
     /** Applies count and total-capacity retention to completed snapshots only. */

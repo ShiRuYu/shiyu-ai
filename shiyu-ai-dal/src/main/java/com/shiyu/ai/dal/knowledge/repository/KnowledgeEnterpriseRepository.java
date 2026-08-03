@@ -63,6 +63,15 @@ public class KnowledgeEnterpriseRepository {
                 .orderBy(KnowledgeSpaceDO::getId, true)));
     }
 
+    /** Returns active spaces for backup manifests without inheriting the request tenant filter. */
+    public List<KnowledgeSpaceDO> findAllActiveSpaces() {
+        return TenantManager.withoutTenantCondition(() -> spaceMapper.selectListByQuery(QueryWrapper.create()
+                .eq(KnowledgeSpaceDO::getStatus, 1)
+                .eq(KnowledgeSpaceDO::getDelFlag, 0)
+                .orderBy(KnowledgeSpaceDO::getTenantId, true)
+                .orderBy(KnowledgeSpaceDO::getId, true)));
+    }
+
     public KnowledgeSpaceDO findSpaceByCode(String code) {
         return spaceMapper.selectOneByQuery(QueryWrapper.create()
                 .eq(KnowledgeSpaceDO::getCode, code)

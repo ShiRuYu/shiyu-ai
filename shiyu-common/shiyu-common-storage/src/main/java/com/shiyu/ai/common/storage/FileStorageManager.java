@@ -126,14 +126,18 @@ public class FileStorageManager implements AutoCloseable {
 
     private long tenantId(String namespace) throws IOException {
         String[] parts = namespace.split("/");
-        if (parts.length < 2 || (!"tenant".equals(parts[0]) && !"knowledge".equals(parts[0]))) {
+        if (parts.length < 2) {
             throw new IOException("存储命名空间缺少租户标识");
         }
-        try {
-            return Long.parseLong(parts[1]);
-        } catch (NumberFormatException ex) {
-            throw new IOException("存储命名空间租户标识无效", ex);
+        for (String part : parts) {
+            try {
+                return Long.parseLong(part);
+            } catch (NumberFormatException ignored) {
+                // Namespace prefixes belong to the caller; storage only needs
+                // the tenant segment for metadata isolation.
+            }
         }
+        throw new IOException("存储命名空间租户标识无效");
     }
 
     private long tenantIdFromKey(String key) throws IOException {
@@ -142,13 +146,13 @@ public class FileStorageManager implements AutoCloseable {
     }
 
     private Long spaceId(String namespace) {
-        String[] parts = namespace.split("/");
-        if (parts.length >= 3 && "knowledge".equals(parts[0])) {
-            try { return Long.parseLong(parts[2]); } catch (NumberFormatException ignored) { return null; }
-        }
-        for (int i = 0; i + 1 < parts.length; i++) {
-            if ("space".equals(parts[i])) {
-                try { return Long.parseLong(parts[i + 1]); } catch (NumberFormatException ignored) { return null; }
+        int numericSegments = 0;
+        for (String part : namespace.split("/")) {
+            try {
+                Long value = Long.parseLong(part);
+                if (numericSegments++ == 1) return value;
+            } catch (NumberFormatException ignored) {
+                // Caller-defined namespace labels are intentionally opaque.
             }
         }
         return null;

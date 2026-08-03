@@ -1,6 +1,7 @@
 package com.shiyu.ai.web.config;
 
-import com.shiyu.ai.usage.websocket.UsageWebSocketHandler;
+import com.shiyu.ai.web.usage.UsageWebSocketHandler;
+import com.shiyu.ai.web.usage.UsageWebSocketService;
 
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -27,5 +28,10 @@ public class UsageWebSocketConfig implements WebSocketConfigurer {
     @Bean
     public UsageWebSocketHandler usageWebSocketHandler() {
         return new UsageWebSocketHandler();
+    }
+
+    @Bean
+    public UsageWebSocketService usageWebSocketService(UsageWebSocketHandler handler) {
+        return new UsageWebSocketService(handler);
     }
 }

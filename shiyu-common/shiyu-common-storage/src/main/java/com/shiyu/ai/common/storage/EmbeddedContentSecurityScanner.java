@@ -18,9 +18,10 @@ public class EmbeddedContentSecurityScanner implements ContentSecurityScanner {
     private static final Set<String> DANGEROUS =
             Set.of("exe", "dll", "com", "bat", "cmd", "ps1", "sh", "jar", "msi", "js");
     private static final Set<String> ALLOWED =
-            Set.of("pdf", "docx", "md", "markdown", "txt", "html", "htm");
+            Set.of("pdf", "docx", "md", "markdown", "txt", "html", "htm",
+                    "png", "jpg", "jpeg", "gif", "webp");
 
-    @Value("${shiyu.knowledge.upload.max-file-size:200MB}")
+    @Value("${shiyu.storage.security.max-file-size:200MB}")
     private DataSize maxFileSize;
 
     @Override

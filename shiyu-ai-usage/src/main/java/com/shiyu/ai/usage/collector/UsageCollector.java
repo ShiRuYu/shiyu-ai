@@ -4,7 +4,7 @@ import com.shiyu.ai.common.core.utils.JSONUtils;
 import com.shiyu.ai.dal.agent.dataobject.UsageRecordDO;
 import com.shiyu.ai.dal.agent.repository.UsageRecordRepository;
 import com.shiyu.ai.usage.model.ModelPricing;
-import com.shiyu.ai.usage.websocket.UsageWebSocketService;
+import com.shiyu.ai.usage.realtime.UsageRealtimePublisher;
 import lombok.extern.slf4j.Slf4j;
 
 import java.time.LocalDateTime;
@@ -24,15 +24,15 @@ public class UsageCollector {
 
     private final UsageRecordRepository usageRecordRepository;
     private final Map<String, ModelPricing> pricingMap = new ConcurrentHashMap<>();
-    private UsageWebSocketService webSocketService;
+    private UsageRealtimePublisher realtimePublisher;
 
     public UsageCollector(UsageRecordRepository usageRecordRepository) {
         this.usageRecordRepository = usageRecordRepository;
         registerPricing(ModelPricing.defaultOpenAI());
     }
 
-    public void setWebSocketService(UsageWebSocketService webSocketService) {
-        this.webSocketService = webSocketService;
+    public void setRealtimePublisher(UsageRealtimePublisher publisher) {
+        this.realtimePublisher = publisher;
     }
 
     public void registerPricing(ModelPricing pricing) {
@@ -71,7 +71,7 @@ public class UsageCollector {
             log.error("保存 LLM 用量失败: platform={}, model={}", platform, model, e);
         }
 
-        pushUsageToWebSocket(platform, model, promptTokens, completionTokens, latencyMs, cost);
+        publishUsageEvent(platform, model, promptTokens, completionTokens, latencyMs, cost);
     }
 
     /**
@@ -97,9 +97,9 @@ public class UsageCollector {
             log.error("保存 Embedding 用量失败: model={}", model, e);
         }
 
-        if (webSocketService != null) {
+        if (realtimePublisher != null) {
             try {
-                webSocketService.pushEmbeddingUsage(model, textLength, estimatedTokens, vectorCount, latencyMs);
+                realtimePublisher.publishEmbeddingUsage(model, textLength, estimatedTokens, vectorCount, latencyMs);
             } catch (Exception e) {
                 log.warn("WebSocket 推送 Embedding 用量失败: {}", e.getMessage());
             }
@@ -119,12 +119,12 @@ public class UsageCollector {
         return record;
     }
 
-    private void pushUsageToWebSocket(String platform, String model,
+    private void publishUsageEvent(String platform, String model,
                                        int promptTokens, int completionTokens,
                                        long latencyMs, double cost) {
-        if (webSocketService != null) {
+        if (realtimePublisher != null) {
             try {
-                webSocketService.pushUsageRecord(platform, model,
+                realtimePublisher.publishUsageRecord(platform, model,
                         promptTokens, completionTokens, latencyMs, cost);
             } catch (Exception e) {
                 log.warn("WebSocket 推送用量失败: {}", e.getMessage());

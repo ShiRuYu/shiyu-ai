@@ -128,7 +128,7 @@ shiyu-ai (POM)
 | API 文档 | SpringDoc OpenAPI（UI 可选） | 3.0.2 |
 | 映射工具 | MapStruct Plus | 1.5.0 |
 | 工具 | Hutool / Guava / Lombok | — |
-| 编排引擎 | LiteFlow | 2.16.0 |
+| Agent 流程图 | LangGraph4j + BaseNode | — |
 | 构建 | Maven (flatten 版本管理) | — |
 
 ---
