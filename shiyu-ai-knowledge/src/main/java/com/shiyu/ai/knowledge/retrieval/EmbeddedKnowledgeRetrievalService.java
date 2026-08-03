@@ -1,11 +1,11 @@
 package com.shiyu.ai.knowledge.retrieval;
 
 import com.shiyu.ai.common.core.exception.ServiceException;
-import com.shiyu.ai.dal.knowledge.bo.KnowledgeBO;
-import com.shiyu.ai.dal.knowledge.bo.KnowledgeChunkBO;
-import com.shiyu.ai.dal.knowledge.repository.KnowledgeChunkRepository;
-import com.shiyu.ai.dal.knowledge.repository.KnowledgeRepository;
-import com.shiyu.ai.dal.knowledge.repository.KnowledgeDocumentRepository;
+import com.shiyu.ai.knowledge.domain.model.KnowledgeBO;
+import com.shiyu.ai.knowledge.domain.model.KnowledgeChunkBO;
+import com.shiyu.ai.knowledge.port.repository.KnowledgeChunkRepository;
+import com.shiyu.ai.knowledge.port.repository.KnowledgeRepository;
+import com.shiyu.ai.knowledge.port.repository.KnowledgeDocumentRepository;
 import com.shiyu.ai.knowledge.index.KnowledgeIndexService;
 import com.shiyu.ai.knowledge.security.KnowledgeAccessContext;
 import com.shiyu.ai.knowledge.service.KnowledgeSpaceService;

@@ -3,7 +3,7 @@ package com.shiyu.ai.education.dto;
 import java.util.List;
 
 import io.github.linpeilie.annotations.AutoMapper;
-import com.shiyu.ai.dal.education.bo.ChapterBO;
+import com.shiyu.ai.education.domain.model.ChapterBO;
 
 @AutoMapper(target = ChapterBO.class)
 public record ChapterResponse(

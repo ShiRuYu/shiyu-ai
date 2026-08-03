@@ -3,7 +3,7 @@ package com.shiyu.ai.dal.record.repository;
 import com.mybatisflex.core.query.QueryWrapper;
 import com.shiyu.ai.dal.record.dataobject.RecordDO;
 import com.shiyu.ai.dal.record.mapper.RecordMapper;
-import com.shiyu.ai.dal.record.bo.RecordBO;
+import com.shiyu.ai.record.domain.model.RecordBO;
 import com.shiyu.ai.common.core.utils.MapstructUtils;
 import jakarta.annotation.Resource;
 import org.apache.commons.lang3.tuple.Pair;
@@ -12,7 +12,7 @@ import org.springframework.stereotype.Component;
 import java.util.List;
 
 @Component
-public class RecordRepository {
+public class RecordRepository implements com.shiyu.ai.record.port.repository.RecordRepository {
 
     @Resource
     private RecordMapper recordMapper;

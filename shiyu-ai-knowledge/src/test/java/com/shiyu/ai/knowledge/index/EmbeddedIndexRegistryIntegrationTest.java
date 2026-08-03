@@ -1,11 +1,11 @@
 package com.shiyu.ai.knowledge.index;
 
-import com.shiyu.ai.dal.knowledge.bo.KnowledgeChunkBO;
-import com.shiyu.ai.dal.knowledge.bo.KnowledgeDocumentBO;
-import com.shiyu.ai.dal.knowledge.dataobject.KnowledgeSpaceDO;
-import com.shiyu.ai.dal.knowledge.repository.KnowledgeChunkRepository;
-import com.shiyu.ai.dal.knowledge.repository.KnowledgeDocumentRepository;
-import com.shiyu.ai.dal.knowledge.repository.KnowledgeEnterpriseRepository;
+import com.shiyu.ai.knowledge.domain.model.KnowledgeChunkBO;
+import com.shiyu.ai.knowledge.domain.model.KnowledgeDocumentBO;
+import com.shiyu.ai.knowledge.domain.model.KnowledgeSpaceBO;
+import com.shiyu.ai.knowledge.port.repository.KnowledgeChunkRepository;
+import com.shiyu.ai.knowledge.port.repository.KnowledgeDocumentRepository;
+import com.shiyu.ai.knowledge.port.repository.KnowledgeEnterpriseRepository;
 import com.shiyu.ai.knowledge.model.EmbeddingProvider;
 import com.shiyu.ai.knowledge.model.RerankProvider;
 import com.shiyu.ai.vector.VectorStoreProvider;
@@ -44,7 +44,7 @@ class EmbeddedIndexRegistryIntegrationTest {
         KnowledgeDocumentRepository documentRepository = mock(KnowledgeDocumentRepository.class);
         KnowledgeChunkRepository chunkRepository = mock(KnowledgeChunkRepository.class);
 
-        KnowledgeSpaceDO space = new KnowledgeSpaceDO();
+        KnowledgeSpaceBO space = new KnowledgeSpaceBO();
         space.setId(10L);
         space.setTenantId(1L);
         space.setActiveIndexVersion(0L);
@@ -92,7 +92,7 @@ class EmbeddedIndexRegistryIntegrationTest {
         assertThat(hits.getFirst().chunkId()).isEqualTo(30L);
         assertThat(hits.getFirst().vectorScore()).isGreaterThan(0D);
         assertThat(hits.getFirst().bm25Score()).isGreaterThan(0D);
-        verify(enterpriseRepository).updateSpace(any(KnowledgeSpaceDO.class));
+        verify(enterpriseRepository).updateSpace(any(KnowledgeSpaceBO.class));
     }
 
     private byte[] toBytes(float[] vector) {

@@ -8,7 +8,7 @@ import com.shiyu.ai.agent.node.NodeType;
 import com.shiyu.ai.model.chat.ChatEngine;
 import com.shiyu.ai.model.chat.ChatRequest;
 import com.shiyu.ai.model.chat.ChatResponse;
-import com.shiyu.ai.dal.education.bo.QuestionBO;
+import com.shiyu.ai.education.domain.model.QuestionBO;
 import com.shiyu.ai.education.domain.DifficultyLevel;
 import com.shiyu.ai.knowledge.dto.KnowledgeResponse;
 import lombok.Getter;

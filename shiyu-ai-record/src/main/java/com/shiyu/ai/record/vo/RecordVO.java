@@ -9,7 +9,7 @@ import java.util.Date;
 import java.util.List;
 
 import io.github.linpeilie.annotations.AutoMapper;
-import com.shiyu.ai.dal.record.bo.RecordBO;
+import com.shiyu.ai.record.domain.model.RecordBO;
 /**
  * 记录内容视图对象
  */

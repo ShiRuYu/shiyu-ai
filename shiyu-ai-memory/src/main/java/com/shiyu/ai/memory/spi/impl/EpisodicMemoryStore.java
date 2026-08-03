@@ -1,7 +1,7 @@
 package com.shiyu.ai.memory.spi.impl;
 
-import com.shiyu.ai.dal.memory.bo.EpisodicMemoryBO;
-import com.shiyu.ai.dal.memory.repository.EpisodicMemoryRepository;
+import com.shiyu.ai.memory.domain.model.EpisodicMemoryBO;
+import com.shiyu.ai.memory.port.repository.EpisodicMemoryRepository;
 import com.shiyu.ai.memory.spi.Memory;
 import com.shiyu.ai.memory.spi.MemoryQuery;
 import com.shiyu.ai.memory.spi.MemoryStore;
@@ -36,7 +36,7 @@ public class EpisodicMemoryStore implements MemoryStore {
         bo.setSessionId(memory.getSessionId());
         bo.setTaskType(memory.getCategory());
         bo.setTaskDescription(memory.getContent());
-        bo.setStatus(com.shiyu.ai.dal.memory.enums.EpisodicMemoryStatus.SUCCESS.getCode());
+        bo.setStatus(com.shiyu.ai.memory.domain.enums.EpisodicMemoryStatus.SUCCESS.getCode());
         bo.setCreateTime(LocalDateTime.now());
         repository.insert(bo);
     }

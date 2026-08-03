@@ -5,14 +5,14 @@ import java.util.List;
 
 import com.shiyu.ai.common.core.api.PageData;
 import com.shiyu.ai.common.core.utils.MapstructUtils;
-import com.shiyu.ai.dal.education.bo.StudyRecordBO;
+import com.shiyu.ai.education.domain.model.StudyRecordBO;
 import com.shiyu.ai.dal.education.dataobject.StudyRecordDO;
 import com.shiyu.ai.dal.education.mapper.StudyRecordMapper;
 import jakarta.annotation.Resource;
 import org.springframework.stereotype.Component;
 
 @Component
-public class StudyRecordRepository {
+public class StudyRecordRepository implements com.shiyu.ai.education.port.repository.StudyRecordRepository {
 
     @Resource
     private StudyRecordMapper studyRecordMapper;

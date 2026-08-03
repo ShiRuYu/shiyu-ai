@@ -1,12 +1,12 @@
 package com.shiyu.ai.agent.service.impl;
 
-import com.shiyu.ai.dal.agent.enums.AgentVersionStatus;
+import com.shiyu.ai.agent.domain.enums.AgentVersionStatus;
 
-import com.shiyu.ai.dal.agent.repository.AgentAdminRepository;
+import com.shiyu.ai.agent.port.repository.AgentAdminRepository;
 import com.shiyu.ai.agent.service.AgentService;
 import com.shiyu.ai.agent.service.AgentVersionService;
-import com.shiyu.ai.dal.agent.bo.AgentDefBO;
-import com.shiyu.ai.dal.agent.bo.AgentVersionBO;
+import com.shiyu.ai.agent.domain.model.AgentDefBO;
+import com.shiyu.ai.agent.domain.model.AgentVersionBO;
 import com.shiyu.ai.agent.request.EdgeRequest;
 import com.shiyu.ai.agent.request.GraphConfigRequest;
 import com.shiyu.ai.agent.request.NodeConfigRequest;

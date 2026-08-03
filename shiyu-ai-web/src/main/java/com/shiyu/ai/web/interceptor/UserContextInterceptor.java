@@ -1,9 +1,9 @@
 package com.shiyu.ai.web.interceptor;
 
-import com.shiyu.ai.dal.auth.dataobject.TenantDO;
-import com.shiyu.ai.dal.auth.dataobject.UserDO;
-import com.shiyu.ai.dal.auth.dataobject.RoleDO;
-import com.shiyu.ai.dal.auth.dataobject.UserScopeRoleDO;
+import com.shiyu.ai.auth.api.response.AuthTenantResponse;
+import com.shiyu.ai.auth.api.response.AuthUserResponse;
+import com.shiyu.ai.auth.api.response.AuthRoleResponse;
+import com.shiyu.ai.auth.api.response.AuthScopeRoleResponse;
 import com.shiyu.ai.auth.utils.SaTokenHelper;
 import com.shiyu.ai.auth.service.AuthContextService;
 import com.shiyu.ai.common.core.domain.LoginContextHolder;
@@ -111,7 +111,7 @@ public class UserContextInterceptor implements HandlerInterceptor {
     @SuppressWarnings("unchecked")
     private void loadScopeContext(Long userId, LoginUser loginUser) {
         try {
-            UserDO user = authContextService.user(userId);
+            AuthUserResponse user = authContextService.user(userId);
             if (user == null) {
                 throw new IllegalStateException("登录用户不存在");
             }
@@ -163,12 +163,12 @@ public class UserContextInterceptor implements HandlerInterceptor {
 
             // 鍏滃簳 currentTenantId
             if (currentTenantId == null) {
-                List<UserScopeRoleDO> assignments =
+                List<AuthScopeRoleResponse> assignments =
                         authContextService.workspaceRoles(userId);
                 if (assignments != null) {
                     currentTenantId = assignments.stream()
                             .filter(this::isActive)
-                            .map(UserScopeRoleDO::getTenantId)
+                            .map(AuthScopeRoleResponse::getTenantId)
                             .filter(java.util.Objects::nonNull)
                             .findFirst()
                             .orElse(null);
@@ -180,13 +180,13 @@ public class UserContextInterceptor implements HandlerInterceptor {
                 loginUser.setHomeTenantId(currentTenantId);
             }
 
-            TenantDO currentTenant = currentTenantId == null
+            AuthTenantResponse currentTenant = currentTenantId == null
                     ? null : authContextService.tenant(currentTenantId);
             if (currentTenantId == null || !isActive(currentTenant)) {
                 throw new IllegalStateException("当前租户不存在或已停用");
             }
 
-            List<UserScopeRoleDO> assignments =
+            List<AuthScopeRoleResponse> assignments =
                     authContextService.workspaceRoles(userId);
             final Long contextTenantId = currentTenantId;
             boolean assigned = assignments != null && assignments.stream().anyMatch(item ->
@@ -202,7 +202,7 @@ public class UserContextInterceptor implements HandlerInterceptor {
                 throw new IllegalStateException("鐢ㄦ埛涓嶅啀灞炰簬褰撳墠绉熸埛");
             }
             if (delegated && loginUser.getCurrentRoleCode() == null) {
-                RoleDO role = authContextService.tenantSuperRole(currentTenantId);
+                AuthRoleResponse role = authContextService.tenantSuperRole(currentTenantId);
                 if (isActive(role)) {
                     loginUser.setCurrentRoleId(role.getId());
                     loginUser.setCurrentRoleCode(role.getCode());
@@ -224,7 +224,7 @@ public class UserContextInterceptor implements HandlerInterceptor {
         if (userId == null || currentTenantId == null || roleId == null || roleCode == null) {
             return false;
         }
-        List<UserScopeRoleDO> assignments =
+        List<AuthScopeRoleResponse> assignments =
                 authContextService.workspaceRoles(userId);
         boolean assigned = assignments != null && assignments.stream().anyMatch(item ->
                 item.getRoleId() != null
@@ -235,7 +235,7 @@ public class UserContextInterceptor implements HandlerInterceptor {
         if (!assigned) {
             return false;
         }
-        RoleDO role = authContextService.role(roleId);
+        AuthRoleResponse role = authContextService.role(roleId);
         return role != null
                 && roleCode.equals(role.getCode())
                 && (role.getStatus() == null || role.getStatus() == 1)
@@ -251,15 +251,15 @@ public class UserContextInterceptor implements HandlerInterceptor {
         if (loginUser.isParentSuperAdminSwitch()) {
             return false;
         }
-        UserDO user = authContextService.user(loginUser.getUserId());
+        AuthUserResponse user = authContextService.user(loginUser.getUserId());
         if (!isActive(user)) {
             return false;
         }
-        TenantDO tenant = authContextService.tenant(loginUser.getCurrentTenantId());
+        AuthTenantResponse tenant = authContextService.tenant(loginUser.getCurrentTenantId());
         if (!isActive(tenant)) {
             return false;
         }
-        List<UserScopeRoleDO> assignments =
+        List<AuthScopeRoleResponse> assignments =
                 authContextService.workspaceRoles(loginUser.getUserId());
         boolean assigned = assignments != null && assignments.stream().anyMatch(item ->
                 loginUser.getCurrentTenantId().equals(item.getTenantId())
@@ -281,7 +281,7 @@ public class UserContextInterceptor implements HandlerInterceptor {
                         || !isActive(item) || item.getRoleId() == null) {
                     return false;
                 }
-                RoleDO role = authContextService.role(item.getRoleId());
+                AuthRoleResponse role = authContextService.role(item.getRoleId());
                 return isActive(role) && loginUser.getCurrentRoleCode().equals(role.getCode());
             });
             if (!roleValid) {
@@ -296,34 +296,34 @@ public class UserContextInterceptor implements HandlerInterceptor {
     }
 
     private boolean isParentSuperAdmin(Long userId, Long homeTenantId,
-                                       List<UserScopeRoleDO> assignments) {
+                                       List<AuthScopeRoleResponse> assignments) {
         if (homeTenantId == null || assignments == null) {
             return false;
         }
         return assignments.stream()
                 .filter(item -> homeTenantId.equals(item.getTenantId()) && isActive(item))
-                .map(UserScopeRoleDO::getRoleId)
+                .map(AuthScopeRoleResponse::getRoleId)
                 .map(authContextService::role)
                 .anyMatch(role -> role != null && isTenantSuperCode(role.getCode())
                         && isActive(role));
     }
 
-    private boolean isActive(UserDO item) {
+    private boolean isActive(AuthUserResponse item) {
         return item != null && item.getStatus() != null && item.getStatus() == 1
                 && (item.getDelFlag() == null || item.getDelFlag() == 0);
     }
 
-    private boolean isActive(TenantDO item) {
+    private boolean isActive(AuthTenantResponse item) {
         return item != null && item.getStatus() != null && item.getStatus() == 1
                 && (item.getDelFlag() == null || item.getDelFlag() == 0);
     }
 
-    private boolean isActive(RoleDO item) {
+    private boolean isActive(AuthRoleResponse item) {
         return item != null && item.getStatus() != null && item.getStatus() == 1
                 && (item.getDelFlag() == null || item.getDelFlag() == 0);
     }
 
-    private boolean isActive(UserScopeRoleDO item) {
+    private boolean isActive(AuthScopeRoleResponse item) {
         return item != null && item.getStatus() != null && item.getStatus() == 1
                 && (item.getDelFlag() == null || item.getDelFlag() == 0);
     }

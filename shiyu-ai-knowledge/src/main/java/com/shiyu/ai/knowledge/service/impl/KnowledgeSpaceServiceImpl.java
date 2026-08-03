@@ -3,15 +3,15 @@ package com.shiyu.ai.knowledge.service.impl;
 import com.shiyu.ai.common.core.api.PageData;
 import com.shiyu.ai.common.core.domain.LoginContextHolder;
 import com.shiyu.ai.common.core.exception.ServiceException;
-import com.shiyu.ai.dal.knowledge.dataobject.KnowledgeSpaceDO;
-import com.shiyu.ai.dal.knowledge.dataobject.KnowledgeSpaceMemberDO;
-import com.shiyu.ai.dal.knowledge.repository.KnowledgeChunkRepository;
-import com.shiyu.ai.dal.knowledge.repository.KnowledgeDocRelationRepository;
-import com.shiyu.ai.dal.knowledge.repository.KnowledgeDocumentRepository;
-import com.shiyu.ai.dal.knowledge.repository.KnowledgeDifficultyScaleRepository;
-import com.shiyu.ai.dal.knowledge.repository.KnowledgeEnterpriseRepository;
-import com.shiyu.ai.dal.knowledge.repository.KnowledgeRelationRepository;
-import com.shiyu.ai.dal.knowledge.repository.KnowledgeRepository;
+import com.shiyu.ai.knowledge.domain.model.KnowledgeSpaceBO;
+import com.shiyu.ai.knowledge.domain.model.KnowledgeSpaceMemberBO;
+import com.shiyu.ai.knowledge.port.repository.KnowledgeChunkRepository;
+import com.shiyu.ai.knowledge.port.repository.KnowledgeDocRelationRepository;
+import com.shiyu.ai.knowledge.port.repository.KnowledgeDocumentRepository;
+import com.shiyu.ai.knowledge.port.repository.KnowledgeDifficultyScaleRepository;
+import com.shiyu.ai.knowledge.port.repository.KnowledgeEnterpriseRepository;
+import com.shiyu.ai.knowledge.port.repository.KnowledgeRelationRepository;
+import com.shiyu.ai.knowledge.port.repository.KnowledgeRepository;
 import com.shiyu.ai.knowledge.service.KnowledgeAuditService;
 import com.shiyu.ai.knowledge.service.KnowledgeSpaceService;
 import com.shiyu.ai.knowledge.security.KnowledgeAccessContext;
@@ -51,7 +51,7 @@ public class KnowledgeSpaceServiceImpl implements KnowledgeSpaceService {
     @Transactional(rollbackFor = Exception.class)
     public SpaceView ensureDefaultSpace() {
         requireTenant();
-        KnowledgeSpaceDO existing = repository.findSpaceByCode(defaultSpaceCode);
+        KnowledgeSpaceBO existing = repository.findSpaceByCode(defaultSpaceCode);
         if (existing != null) {
             if (existing.getDomainCode() == null || existing.getDomainCode().isBlank()) {
                 existing.setDomainCode(GENERAL_DOMAIN);
@@ -60,7 +60,7 @@ public class KnowledgeSpaceServiceImpl implements KnowledgeSpaceService {
             assignLegacyData(existing.getId());
             return toView(existing);
         }
-        KnowledgeSpaceDO space = new KnowledgeSpaceDO();
+        KnowledgeSpaceBO space = new KnowledgeSpaceBO();
         space.setCode(defaultSpaceCode);
         space.setDomainCode(GENERAL_DOMAIN);
         space.setName("默认知识空间");
@@ -85,7 +85,7 @@ public class KnowledgeSpaceServiceImpl implements KnowledgeSpaceService {
         if (repository.findSpaceByTenantAndCode(tenantId, defaultSpaceCode) != null) {
             return;
         }
-        KnowledgeSpaceDO space = new KnowledgeSpaceDO();
+        KnowledgeSpaceBO space = new KnowledgeSpaceBO();
         space.setTenantId(tenantId);
         space.setCode(defaultSpaceCode);
         space.setDomainCode(GENERAL_DOMAIN);
@@ -100,14 +100,14 @@ public class KnowledgeSpaceServiceImpl implements KnowledgeSpaceService {
     @Override
     public SpaceView get(Long id) {
         requireAccess(id, SpaceRole.VIEWER);
-        KnowledgeSpaceDO space = requireSpace(id);
+        KnowledgeSpaceBO space = requireSpace(id);
         return toView(space);
     }
 
     @Override
     public DifficultyScaleView difficultyScale(Long spaceId) {
         requireAccess(spaceId, SpaceRole.VIEWER);
-        KnowledgeSpaceDO space = requireSpace(spaceId);
+        KnowledgeSpaceBO space = requireSpace(spaceId);
         var scale = difficultyScaleRepository.findScale(space.getDifficultyScaleId());
         if (scale == null) {
             throw new ServiceException("知识空间未配置有效的难度量表");
@@ -128,7 +128,7 @@ public class KnowledgeSpaceServiceImpl implements KnowledgeSpaceService {
     @Override
     public PageData<SpaceView> page(int pageNum, int pageSize, String keyword, String domainCode) {
         String normalizedDomain = normalizeDomainCode(domainCode, null);
-        PageData<KnowledgeSpaceDO> page = repository.pageSpaces(pageNum, pageSize, keyword,
+        PageData<KnowledgeSpaceBO> page = repository.pageSpaces(pageNum, pageSize, keyword,
                 normalizedDomain);
         List<SpaceView> visible = page.getItems().stream()
                 .filter(this::canView)
@@ -145,7 +145,7 @@ public class KnowledgeSpaceServiceImpl implements KnowledgeSpaceService {
         if (repository.findSpaceByCode(code) != null) {
             throw new ServiceException("知识空间编码已存在: " + code);
         }
-        KnowledgeSpaceDO space = new KnowledgeSpaceDO();
+        KnowledgeSpaceBO space = new KnowledgeSpaceBO();
         space.setCode(code);
         space.setDomainCode(normalizeDomainCode(request.domainCode(), GENERAL_DOMAIN));
         space.setName(request.name().trim());
@@ -166,7 +166,7 @@ public class KnowledgeSpaceServiceImpl implements KnowledgeSpaceService {
 
         Long userId = LoginContextHolder.getUserId();
         if (userId != null) {
-            KnowledgeSpaceMemberDO owner = new KnowledgeSpaceMemberDO();
+            KnowledgeSpaceMemberBO owner = new KnowledgeSpaceMemberBO();
             owner.setSpaceId(space.getId());
             owner.setPrincipalType("USER");
             owner.setPrincipalId(userId);
@@ -183,7 +183,7 @@ public class KnowledgeSpaceServiceImpl implements KnowledgeSpaceService {
     @Transactional(rollbackFor = Exception.class)
     public SpaceView update(Long id, UpdateSpaceRequest request) {
         requireAccess(id, SpaceRole.ADMIN);
-        KnowledgeSpaceDO space = requireSpace(id);
+        KnowledgeSpaceBO space = requireSpace(id);
         if (request.name() != null && !request.name().isBlank()) {
             space.setName(request.name().trim());
         }
@@ -232,7 +232,7 @@ public class KnowledgeSpaceServiceImpl implements KnowledgeSpaceService {
     @Transactional(rollbackFor = Exception.class)
     public void delete(Long id) {
         requireAccess(id, SpaceRole.ADMIN);
-        KnowledgeSpaceDO space = requireSpace(id);
+        KnowledgeSpaceBO space = requireSpace(id);
         if (defaultSpaceCode.equals(space.getCode())) {
             throw new ServiceException("默认知识空间不能删除");
         }
@@ -258,7 +258,7 @@ public class KnowledgeSpaceServiceImpl implements KnowledgeSpaceService {
     @Transactional(rollbackFor = Exception.class)
     public void replaceMembers(Long spaceId, List<MemberRequest> requests) {
         requireAccess(spaceId, SpaceRole.ADMIN);
-        List<KnowledgeSpaceMemberDO> members = new ArrayList<>();
+        List<KnowledgeSpaceMemberBO> members = new ArrayList<>();
         for (MemberRequest request : requests == null ? List.<MemberRequest>of() : requests) {
             String principalType = request.principalType().toUpperCase(Locale.ROOT);
             if (!PRINCIPAL_TYPES.contains(principalType)) {
@@ -270,7 +270,7 @@ public class KnowledgeSpaceServiceImpl implements KnowledgeSpaceService {
             } catch (IllegalArgumentException exception) {
                 throw new ServiceException("不支持的空间角色: " + request.spaceRole());
             }
-            KnowledgeSpaceMemberDO member = new KnowledgeSpaceMemberDO();
+            KnowledgeSpaceMemberBO member = new KnowledgeSpaceMemberBO();
             member.setSpaceId(spaceId);
             member.setPrincipalType(principalType);
             member.setPrincipalId(request.principalId());
@@ -288,7 +288,7 @@ public class KnowledgeSpaceServiceImpl implements KnowledgeSpaceService {
 
     @Override
     public void requireAccess(Long spaceId, SpaceRole minimumRole) {
-        KnowledgeSpaceDO space = requireSpace(spaceId);
+        KnowledgeSpaceBO space = requireSpace(spaceId);
         if (LoginContextHolder.isSuperAdmin()) {
             return;
         }
@@ -313,7 +313,7 @@ public class KnowledgeSpaceServiceImpl implements KnowledgeSpaceService {
         if (context == null || context.tenantId() == null) {
             throw new ServiceException("当前租户上下文不存在");
         }
-        KnowledgeSpaceDO space = repository.findSpaceByTenant(context.tenantId(), spaceId);
+        KnowledgeSpaceBO space = repository.findSpaceByTenant(context.tenantId(), spaceId);
         if (space == null) {
             throw new ServiceException("知识空间不存在或不属于当前租户: " + spaceId);
         }
@@ -352,7 +352,7 @@ public class KnowledgeSpaceServiceImpl implements KnowledgeSpaceService {
                 .toList();
     }
 
-    private boolean canView(KnowledgeSpaceDO space) {
+    private boolean canView(KnowledgeSpaceBO space) {
         try {
             requireAccess(space.getId(), SpaceRole.VIEWER);
             return true;
@@ -361,9 +361,9 @@ public class KnowledgeSpaceServiceImpl implements KnowledgeSpaceService {
         }
     }
 
-    private KnowledgeSpaceDO requireSpace(Long id) {
+    private KnowledgeSpaceBO requireSpace(Long id) {
         Long tenantId = LoginContextHolder.getCurrentTenantId();
-        KnowledgeSpaceDO space = tenantId == null ? null : repository.findSpaceByTenant(tenantId, id);
+        KnowledgeSpaceBO space = tenantId == null ? null : repository.findSpaceByTenant(tenantId, id);
         if (space == null) {
             throw new ServiceException("知识空间不存在: " + id);
         }
@@ -378,7 +378,7 @@ public class KnowledgeSpaceServiceImpl implements KnowledgeSpaceService {
         chunkRepository.assignDefaultSpace(spaceId);
     }
 
-    private void applyDefaults(KnowledgeSpaceDO space) {
+    private void applyDefaults(KnowledgeSpaceBO space) {
         space.setBindingMode("OPTIONAL");
         space.setEmbeddingProfile("default");
         space.setRerankProfile("default");
@@ -429,7 +429,7 @@ public class KnowledgeSpaceServiceImpl implements KnowledgeSpaceService {
         return value == null || value.isBlank() ? fallback : value;
     }
 
-    private SpaceView toView(KnowledgeSpaceDO space) {
+    private SpaceView toView(KnowledgeSpaceBO space) {
         return new SpaceView(space.getId(), space.getCode(), space.getDomainCode(), space.getName(),
                 space.getDescription(), space.getAccessMode(), space.getReviewMode(), space.getBindingMode(),
                 space.getDifficultyScaleId(),

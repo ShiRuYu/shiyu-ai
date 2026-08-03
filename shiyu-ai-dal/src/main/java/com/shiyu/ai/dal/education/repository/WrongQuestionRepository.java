@@ -5,14 +5,14 @@ import java.util.List;
 
 import com.shiyu.ai.common.core.api.PageData;
 import com.shiyu.ai.common.core.utils.MapstructUtils;
-import com.shiyu.ai.dal.education.bo.WrongQuestionBO;
+import com.shiyu.ai.education.domain.model.WrongQuestionBO;
 import com.shiyu.ai.dal.education.dataobject.WrongQuestionDO;
 import com.shiyu.ai.dal.education.mapper.WrongQuestionMapper;
 import jakarta.annotation.Resource;
 import org.springframework.stereotype.Component;
 
 @Component
-public class WrongQuestionRepository {
+public class WrongQuestionRepository implements com.shiyu.ai.education.port.repository.WrongQuestionRepository {
 
     @Resource
     private WrongQuestionMapper wrongQuestionMapper;

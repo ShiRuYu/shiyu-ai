@@ -3,7 +3,7 @@ package com.shiyu.ai.dal.memory.repository;
 import com.mybatisflex.core.query.QueryWrapper;
 import com.shiyu.ai.dal.memory.dataobject.ConversationMessageDO;
 import com.shiyu.ai.dal.memory.mapper.ConversationMessageMapper;
-import com.shiyu.ai.dal.memory.bo.ConversationMessageBO;
+import com.shiyu.ai.memory.domain.model.ConversationMessageBO;
 import com.shiyu.ai.common.core.utils.MapstructUtils;
 import jakarta.annotation.Resource;
 import org.springframework.stereotype.Component;
@@ -11,7 +11,7 @@ import org.springframework.stereotype.Component;
 import java.util.List;
 
 @Component
-public class ConversationMessageRepository {
+public class ConversationMessageRepository implements com.shiyu.ai.memory.port.repository.ConversationMessageRepository {
 
     @Resource
     private ConversationMessageMapper conversationMessageMapper;

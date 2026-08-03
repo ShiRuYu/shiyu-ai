@@ -1,7 +1,7 @@
 package com.shiyu.ai.agent.service.convert;
 
 import com.shiyu.ai.agent.vo.IntentDefVO;
-import com.shiyu.ai.dal.agent.bo.IntentDefBO;
+import com.shiyu.ai.agent.domain.model.IntentDefBO;
 import org.mapstruct.Mapper;
 import org.mapstruct.factory.Mappers;
 

@@ -2,9 +2,9 @@ package com.shiyu.ai.knowledge.graph;
 
 import com.github.benmanes.caffeine.cache.Cache;
 import com.github.benmanes.caffeine.cache.Caffeine;
-import com.shiyu.ai.dal.knowledge.bo.KnowledgeBO;
-import com.shiyu.ai.dal.knowledge.repository.KnowledgeRelationRepository;
-import com.shiyu.ai.dal.knowledge.repository.KnowledgeRepository;
+import com.shiyu.ai.knowledge.domain.model.KnowledgeBO;
+import com.shiyu.ai.knowledge.port.repository.KnowledgeRelationRepository;
+import com.shiyu.ai.knowledge.port.repository.KnowledgeRepository;
 import com.shiyu.ai.knowledge.domain.GraphEdge;
 import com.shiyu.ai.knowledge.domain.GraphNode;
 import org.springframework.stereotype.Component;

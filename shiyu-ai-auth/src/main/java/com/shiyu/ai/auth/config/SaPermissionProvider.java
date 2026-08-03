@@ -2,7 +2,7 @@ package com.shiyu.ai.auth.config;
 
 import cn.dev33.satoken.stp.StpInterface;
 import com.shiyu.ai.common.core.domain.LoginContextHolder;
-import com.shiyu.ai.dal.auth.repository.AuthRepository;
+import com.shiyu.ai.auth.port.repository.AuthRepository;
 import org.springframework.stereotype.Component;
 
 import java.util.Collections;

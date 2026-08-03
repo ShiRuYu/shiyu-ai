@@ -2,10 +2,10 @@ package com.shiyu.ai.knowledge.rag;
 
 import com.shiyu.ai.knowledge.document.DocumentParser;
 import com.shiyu.ai.model.embedding.EmbeddingService;
-import com.shiyu.ai.dal.knowledge.bo.KnowledgeChunkBO;
+import com.shiyu.ai.knowledge.domain.model.KnowledgeChunkBO;
 import com.shiyu.ai.knowledge.rag.ChunkSplitter.Chunk;
 import com.shiyu.ai.knowledge.rag.ChineseChunkSplitter;
-import com.shiyu.ai.dal.knowledge.repository.KnowledgeChunkRepository;
+import com.shiyu.ai.knowledge.port.repository.KnowledgeChunkRepository;
 import com.shiyu.ai.common.core.utils.JSONUtils;
 import com.shiyu.ai.common.core.domain.LoginContextHolder;
 import lombok.extern.slf4j.Slf4j;

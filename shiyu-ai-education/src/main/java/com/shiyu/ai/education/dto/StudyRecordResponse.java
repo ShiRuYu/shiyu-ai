@@ -1,6 +1,6 @@
 package com.shiyu.ai.education.dto;
 
-import com.shiyu.ai.dal.education.bo.StudyRecordBO;
+import com.shiyu.ai.education.domain.model.StudyRecordBO;
 import io.github.linpeilie.annotations.AutoMapper;
 import java.time.LocalDateTime;
 

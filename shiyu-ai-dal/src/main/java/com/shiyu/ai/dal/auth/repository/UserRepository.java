@@ -7,8 +7,8 @@ import com.shiyu.ai.dal.auth.dataobject.UserScopeRoleDO;
 import com.shiyu.ai.dal.auth.mapper.RoleMapper;
 import com.shiyu.ai.dal.auth.mapper.UserMapper;
 import com.shiyu.ai.dal.auth.mapper.UserScopeRoleMapper;
-import com.shiyu.ai.dal.auth.bo.RoleBO;
-import com.shiyu.ai.dal.auth.bo.UserBO;
+import com.shiyu.ai.auth.domain.model.RoleBO;
+import com.shiyu.ai.auth.domain.model.UserBO;
 import com.shiyu.ai.common.core.utils.MapstructUtils;
 import com.shiyu.ai.common.core.domain.LoginContextHolder;
 import jakarta.annotation.Resource;
@@ -24,7 +24,7 @@ import static com.mybatisflex.core.query.QueryMethods.column;
  * 用户数据仓储层
  */
 @Component
-public class UserRepository {
+public class UserRepository implements com.shiyu.ai.auth.port.repository.UserRepository {
 
     @Resource
     private UserMapper userMapper;

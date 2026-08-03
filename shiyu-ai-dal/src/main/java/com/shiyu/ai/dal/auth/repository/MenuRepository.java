@@ -9,7 +9,7 @@ import com.shiyu.ai.dal.auth.dataobject.UserScopeRoleDO;
 import com.shiyu.ai.dal.auth.mapper.MenuMapper;
 import com.shiyu.ai.dal.auth.mapper.RoleScopeMenuMapper;
 import com.shiyu.ai.dal.auth.mapper.TenantMenuMapper;
-import com.shiyu.ai.dal.auth.bo.MenuBO;
+import com.shiyu.ai.auth.domain.model.MenuBO;
 import com.shiyu.ai.common.core.domain.LoginContextHolder;
 import com.shiyu.ai.common.core.utils.MapstructUtils;
 import jakarta.annotation.Resource;
@@ -24,7 +24,7 @@ import static com.mybatisflex.core.query.QueryMethods.column;
  * 菜单数据仓储层
  */
 @Component
-public class MenuRepository {
+public class MenuRepository implements com.shiyu.ai.auth.port.repository.MenuRepository {
 
     @Resource
     private MenuMapper menuMapper;

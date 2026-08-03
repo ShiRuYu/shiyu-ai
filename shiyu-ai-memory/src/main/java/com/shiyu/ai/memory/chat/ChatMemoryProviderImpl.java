@@ -1,7 +1,7 @@
 package com.shiyu.ai.memory.chat;
 
-import com.shiyu.ai.dal.memory.bo.ConversationMessageBO;
-import com.shiyu.ai.dal.memory.repository.ConversationMessageRepository;
+import com.shiyu.ai.memory.domain.model.ConversationMessageBO;
+import com.shiyu.ai.memory.port.repository.ConversationMessageRepository;
 import com.shiyu.ai.model.chat.ChatMemoryProvider;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Component;

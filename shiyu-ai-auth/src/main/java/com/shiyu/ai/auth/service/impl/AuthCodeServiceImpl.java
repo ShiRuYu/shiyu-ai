@@ -1,349 +1,244 @@
 package com.shiyu.ai.auth.service.impl;
 
-import com.mybatisflex.core.query.QueryWrapper;
-import com.shiyu.ai.common.core.api.Result;
-import com.shiyu.ai.common.core.api.PageData;
+import com.shiyu.ai.auth.api.request.AuthCodeRequest;
+import com.shiyu.ai.auth.api.response.AuthCodeResponse;
+import com.shiyu.ai.auth.application.assembler.AuthCodeAssembler;
+import com.shiyu.ai.auth.domain.model.AuthCodeBO;
+import com.shiyu.ai.auth.domain.model.RoleScopeAuthCodeBO;
+import com.shiyu.ai.auth.domain.model.TenantAuthCodeBO;
+import com.shiyu.ai.auth.port.repository.AuthCodeRepository;
+import com.shiyu.ai.auth.port.repository.RoleRepository;
+import com.shiyu.ai.auth.port.repository.TenantRepository;
 import com.shiyu.ai.auth.request.AuthCodePageRequest;
-import com.shiyu.ai.common.core.domain.LoginContextHolder;
+import com.shiyu.ai.auth.service.AuthCodeService;
 import com.shiyu.ai.auth.vo.AuthCodeOptionVO;
-import com.shiyu.ai.dal.auth.dataobject.AuthCodeDO;
-import com.shiyu.ai.dal.auth.dataobject.RoleScopeAuthCodeDO;
-import com.shiyu.ai.dal.auth.dataobject.TenantAuthCodeDO;
-import com.shiyu.ai.dal.auth.mapper.AuthCodeMapper;
-import com.shiyu.ai.dal.auth.mapper.RoleScopeAuthCodeMapper;
-import com.shiyu.ai.dal.auth.mapper.TenantAuthCodeMapper;
-import com.shiyu.ai.dal.auth.repository.RoleRepository;
-import com.shiyu.ai.dal.auth.repository.TenantRepository;
-import lombok.extern.slf4j.Slf4j;
-import org.springframework.transaction.annotation.Transactional;
+import com.shiyu.ai.common.core.api.PageData;
+import com.shiyu.ai.common.core.domain.LoginContextHolder;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDateTime;
+import java.util.Comparator;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Objects;
 import java.util.Set;
 
-import static com.mybatisflex.core.query.QueryMethods.column;
-
-/**
- * 权限码管理 Controller
- *
- * 注意：所有参数均通过 @RequestParam 或 @RequestBody 传入，不使用 @PathVariable。
- */
-@Slf4j
+/** Authorization-code application service. */
 @Service
-public class AuthCodeServiceImpl {
-
-    private final AuthCodeMapper authCodeMapper;
-    private final RoleScopeAuthCodeMapper roleScopeAuthCodeMapper;
-    private final TenantAuthCodeMapper tenantAuthCodeMapper;
+public class AuthCodeServiceImpl implements AuthCodeService {
+    private final AuthCodeRepository authCodeRepository;
     private final RoleRepository roleRepository;
     private final TenantRepository tenantRepository;
 
-    public AuthCodeServiceImpl(AuthCodeMapper authCodeMapper,
-                              RoleScopeAuthCodeMapper roleScopeAuthCodeMapper,
-                              TenantAuthCodeMapper tenantAuthCodeMapper,
-                              RoleRepository roleRepository,
-                              TenantRepository tenantRepository) {
-        this.authCodeMapper = authCodeMapper;
-        this.roleScopeAuthCodeMapper = roleScopeAuthCodeMapper;
-        this.tenantAuthCodeMapper = tenantAuthCodeMapper;
+    public AuthCodeServiceImpl(AuthCodeRepository authCodeRepository,
+                               RoleRepository roleRepository,
+                               TenantRepository tenantRepository) {
+        this.authCodeRepository = authCodeRepository;
         this.roleRepository = roleRepository;
         this.tenantRepository = tenantRepository;
     }
 
-    public Result<List<AuthCodeOptionVO>> list() {
-        QueryWrapper query = buildTenantAuthCodeQuery();
-        return Result.success(authCodeMapper.selectListByQuery(query).stream()
-                .map(this::toOption)
-                .toList());
+    @Override
+    public List<AuthCodeOptionVO> list() {
+        return authCodeRepository.selectByTenantId(LoginContextHolder.getCurrentTenantId())
+                .stream().map(this::toOption).toList();
     }
 
-    public Result<List<String>> listRoleAuthCodes(Long roleId, Long tenantId) {
-        Long currentTenantId = LoginContextHolder.getCurrentTenantId();
-        if (!isValidScope(roleId, currentTenantId, tenantId)) {
-            return Result.fail("角色不属于当前租户作用域");
+    @Override
+    public List<String> listRoleAuthCodes(Long roleId, Long tenantId) {
+        if (!isValidScope(roleId, LoginContextHolder.getCurrentTenantId(), tenantId)) {
+            throw new IllegalArgumentException("角色不属于当前租户作用域");
         }
-                List<String> codes = roleScopeAuthCodeMapper.selectListByQuery(QueryWrapper.create()
-                        .where(RoleScopeAuthCodeDO::getRoleId).eq(roleId)
-                        .and(RoleScopeAuthCodeDO::getTenantId).eq(tenantId)
-                        .and(RoleScopeAuthCodeDO::getStatus).eq(1)
-                        .and(RoleScopeAuthCodeDO::getDelFlag).eq(0))
-                .stream()
-                .map(RoleScopeAuthCodeDO::getAuthCodeId)
-                .map(id -> authCodeMapper.selectOneById(id))
-                .filter(java.util.Objects::nonNull)
-                .map(AuthCodeDO::getCode)
-                .distinct()
-                .toList();
-        return Result.success(codes);
+        return authCodeRepository.selectByRoleIdAndTenantId(roleId, tenantId)
+                .stream().map(AuthCodeBO::getCode).filter(Objects::nonNull).distinct().toList();
     }
 
-    public Result<List<AuthCodeOptionVO>> options() {
-        QueryWrapper query = buildTenantAuthCodeQuery();
-        List<AuthCodeOptionVO> options = authCodeMapper.selectListByQuery(query).stream()
-                .map(this::toOption)
-                .toList();
-        return Result.success(options);
+    @Override
+    public List<AuthCodeOptionVO> options() {
+        return list();
     }
 
-    private AuthCodeOptionVO toOption(AuthCodeDO authCode) {
-        String[] parts = authCode.getCode() == null
-                ? new String[0]
-                : authCode.getCode().split(":");
-        AuthCodeOptionVO option = new AuthCodeOptionVO();
-        option.setId(authCode.getId());
-        option.setName(authCode.getName());
-        option.setCode(authCode.getCode());
-        option.setModule(parts.length > 0 ? parts[0] : "");
-        option.setAction(parts.length > 1 ? parts[parts.length - 1] : "");
-        option.setResource(parts.length > 2
-                ? String.join(":", java.util.Arrays.copyOfRange(parts, 1, parts.length - 1))
-                : "");
-        option.setStatus(authCode.getStatus());
-        option.setCreateTime(authCode.getCreateTime());
-        return option;
-    }
-
+    @Override
     @Transactional(rollbackFor = Exception.class)
-    public Result<AuthCodeDO> create(AuthCodeDO authCode) {
-        if (authCode == null || authCode.getCode() == null || authCode.getCode().isBlank()
-                || authCode.getCode().length() > 64) {
-            return Result.fail("权限编码不能为空且长度不能超过64");
+    public AuthCodeResponse create(AuthCodeRequest request) {
+        AuthCodeBO authCode = AuthCodeAssembler.toBO(request);
+        validateCode(authCode);
+        if (authCodeRepository.existsByCode(authCode.getCode().trim(), null)) {
+            throw new IllegalArgumentException("权限编码已存在");
         }
-        if (existsByCode(authCode.getCode(), null)) {
-            return Result.fail("权限编码已存在");
+        Long tenantId = LoginContextHolder.getCurrentTenantId();
+        if (tenantId == null) {
+            throw new IllegalStateException("当前租户不存在");
         }
         authCode.setStatus(1);
         authCode.setDelFlag(0);
         authCode.setCreateTime(LocalDateTime.now());
-        authCodeMapper.insertSelective(authCode);
-        Long currentTenantId = LoginContextHolder.getCurrentTenantId();
-        if (currentTenantId == null) {
-            throw new IllegalStateException("Current tenant is required");
-        }
-        TenantAuthCodeDO tenantAuthCode = new TenantAuthCodeDO();
-        tenantAuthCode.setTenantId(currentTenantId);
-        tenantAuthCode.setAuthCodeId(authCode.getId());
-        tenantAuthCode.setStatus(1);
-        tenantAuthCodeMapper.insert(tenantAuthCode);
-        return Result.success(authCode);
+        AuthCodeBO saved = authCodeRepository.insert(authCode);
+        TenantAuthCodeBO assignment = new TenantAuthCodeBO();
+        assignment.setTenantId(tenantId);
+        assignment.setAuthCodeId(saved.getId());
+        assignment.setStatus(1);
+        authCodeRepository.insertTenantCode(assignment);
+        return AuthCodeAssembler.toResponse(saved);
     }
 
-    public Result<Void> update(Long id, AuthCodeDO authCode) {
-        AuthCodeDO existing = authCodeMapper.selectOneById(id);
-        Long currentTenantId = LoginContextHolder.getCurrentTenantId();
-        if (existing == null || !isAuthCodeAvailable(id, currentTenantId)) {
-            return Result.fail("权限码不存在");
+    @Override
+    public boolean update(Long id, AuthCodeRequest request) {
+        AuthCodeBO incoming = AuthCodeAssembler.toBO(request);
+        AuthCodeBO existing = authCodeRepository.selectById(id);
+        Long tenantId = LoginContextHolder.getCurrentTenantId();
+        if (existing == null || !authCodeRepository.isAvailable(id, tenantId)) {
+            return false;
         }
-        if (authCode == null || authCode.getCode() == null || authCode.getCode().isBlank()
-                || authCode.getCode().length() > 64) {
-            return Result.fail("权限编码不能为空且长度不能超过64");
+        validateCode(incoming);
+        if (authCodeRepository.existsByCode(incoming.getCode().trim(), id)) {
+            throw new IllegalArgumentException("权限编码已存在");
         }
-        if (existsByCode(authCode.getCode(), id)) {
-            return Result.fail("权限编码已存在");
-        }
-        authCode.setId(id);
-        authCode.setStatus(existing.getStatus());
-        authCode.setDelFlag(existing.getDelFlag());
-        authCode.setCreateTime(existing.getCreateTime());
-        authCode.setUpdateTime(LocalDateTime.now());
-        authCodeMapper.update(authCode);
-        return Result.success();
+        incoming.setId(id);
+        incoming.setStatus(existing.getStatus());
+        incoming.setDelFlag(existing.getDelFlag());
+        incoming.setCreateTime(existing.getCreateTime());
+        incoming.setUpdateTime(LocalDateTime.now());
+        authCodeRepository.update(incoming);
+        return true;
     }
 
+    @Override
     @Transactional(rollbackFor = Exception.class)
-    public Result<Void> delete(Long id) {
-        AuthCodeDO existing = authCodeMapper.selectOneById(id);
-        Long currentTenantId = LoginContextHolder.getCurrentTenantId();
-        if (existing == null || !isAuthCodeAvailable(id, currentTenantId)) {
-            return Result.fail("权限码不存在");
+    public boolean delete(Long id) {
+        AuthCodeBO existing = authCodeRepository.selectById(id);
+        Long tenantId = LoginContextHolder.getCurrentTenantId();
+        if (existing == null || !authCodeRepository.isAvailable(id, tenantId)) {
+            return false;
         }
-        boolean assigned = roleScopeAuthCodeMapper.selectCountByQuery(QueryWrapper.create()
-                .where(RoleScopeAuthCodeDO::getAuthCodeId).eq(id)
-                .and(RoleScopeAuthCodeDO::getDelFlag).eq(0)) > 0;
-        if (assigned) {
-            return Result.fail("权限码已分配给角色，请先取消授权");
+        if (authCodeRepository.hasRoleAssignments(id)) {
+            throw new IllegalStateException("权限码已分配给角色，请先取消授权");
         }
-        tenantAuthCodeMapper.deleteByQuery(QueryWrapper.create()
-                .where(TenantAuthCodeDO::getTenantId).eq(currentTenantId)
-                .and(TenantAuthCodeDO::getAuthCodeId).eq(id));
-        long remainingTenants = tenantAuthCodeMapper.selectCountByQuery(QueryWrapper.create()
-                .where(TenantAuthCodeDO::getAuthCodeId).eq(id)
-                .and(TenantAuthCodeDO::getStatus).eq(1));
-        if (remainingTenants == 0) {
+        authCodeRepository.deleteTenantCode(tenantId, id);
+        if (authCodeRepository.countActiveTenantLinks(id) == 0) {
             existing.setDelFlag(1);
             existing.setUpdateTime(LocalDateTime.now());
-            authCodeMapper.update(existing);
+            authCodeRepository.update(existing);
         }
-        return Result.success();
+        return true;
     }
 
+    @Override
     @Transactional(rollbackFor = Exception.class)
-    public Result<Void> grant(Long roleId, Long tenantId, List<Long> authCodeIds) {
-        Long currentTenantId = LoginContextHolder.getCurrentTenantId();
-        if (!isValidScope(roleId, currentTenantId, tenantId)
+    public boolean grant(Long roleId, Long tenantId, List<Long> authCodeIds) {
+        if (!isValidScope(roleId, LoginContextHolder.getCurrentTenantId(), tenantId)
                 || authCodeIds == null || authCodeIds.isEmpty()) {
-            return Result.fail("角色、作用域或权限码参数无效");
+            return false;
         }
-        List<AuthCodeDO> validAuthCodes = authCodeMapper.selectListByQuery(QueryWrapper.create()
-                .where(AuthCodeDO::getId).in(authCodeIds)
-                .and(AuthCodeDO::getStatus).eq(1)
-                .and(AuthCodeDO::getDelFlag).eq(0)).stream()
-                .filter(item -> isAuthCodeAvailable(item.getId(), tenantId))
-                .toList();
-        if (validAuthCodes.size() != authCodeIds.stream().distinct().count()) {
-            return Result.fail("包含不存在或已停用的权限码");
+        List<Long> distinctIds = authCodeIds.stream().filter(Objects::nonNull).distinct().toList();
+        List<AuthCodeBO> valid = authCodeRepository.selectAvailableByIds(distinctIds, tenantId);
+        if (valid.size() != distinctIds.size()) {
+            return false;
         }
-        Set<Long> existingIds = new HashSet<>(roleScopeAuthCodeMapper.selectListByQuery(
-                QueryWrapper.create()
-                        .where(RoleScopeAuthCodeDO::getRoleId).eq(roleId)
-                        .and(RoleScopeAuthCodeDO::getTenantId).eq(tenantId)
-                        .and(RoleScopeAuthCodeDO::getStatus).eq(1)
-                        .and(RoleScopeAuthCodeDO::getDelFlag).eq(0))
-                .stream().map(RoleScopeAuthCodeDO::getAuthCodeId).toList());
-        List<RoleScopeAuthCodeDO> records = authCodeIds.stream().distinct()
-                .filter(authCodeId -> !existingIds.contains(authCodeId)).map(authCodeId -> {
-            RoleScopeAuthCodeDO item = new RoleScopeAuthCodeDO();
+        Set<Long> existing = new HashSet<>(authCodeRepository.selectByRoleIdAndTenantId(roleId, tenantId)
+                .stream().map(AuthCodeBO::getId).toList());
+        LocalDateTime now = LocalDateTime.now();
+        List<RoleScopeAuthCodeBO> records = distinctIds.stream().filter(id -> !existing.contains(id)).map(id -> {
+            RoleScopeAuthCodeBO item = new RoleScopeAuthCodeBO();
             item.setRoleId(roleId);
-            item.setAuthCodeId(authCodeId);
+            item.setAuthCodeId(id);
             item.setTenantId(tenantId);
             item.setStatus(1);
             item.setDelFlag(0);
-            item.setCreateTime(LocalDateTime.now());
-            item.setUpdateTime(LocalDateTime.now());
+            item.setCreateTime(now);
+            item.setUpdateTime(now);
             return item;
         }).toList();
-        if (!records.isEmpty()) {
-            roleScopeAuthCodeMapper.insertBatch(records);
-        }
-        return Result.success();
+        authCodeRepository.insertRoleAssignments(records);
+        return true;
     }
 
+    @Override
     @Transactional(rollbackFor = Exception.class)
-    public Result<Void> replace(Long roleId, Long tenantId, List<String> authCodes) {
-        Long currentTenantId = LoginContextHolder.getCurrentTenantId();
-        if (!isValidScope(roleId, currentTenantId, tenantId)) {
-            return Result.fail("角色不属于当前租户作用域");
+    public boolean replace(Long roleId, Long tenantId, List<String> authCodes) {
+        if (!isValidScope(roleId, LoginContextHolder.getCurrentTenantId(), tenantId)) {
+            return false;
         }
-
-        List<String> targetCodes = authCodes == null
-                ? List.of()
-                : authCodes.stream().filter(java.util.Objects::nonNull).map(String::trim)
-                .filter(code -> !code.isEmpty()).distinct().toList();
-        List<AuthCodeDO> validAuthCodes = targetCodes.isEmpty() ? List.of()
-                : authCodeMapper.selectListByQuery(QueryWrapper.create()
-                    .where(AuthCodeDO::getCode).in(targetCodes)
-                    .and(AuthCodeDO::getStatus).eq(1)
-                    .and(AuthCodeDO::getDelFlag).eq(0)).stream()
-                    .filter(item -> isAuthCodeAvailable(item.getId(), tenantId))
-                    .toList();
-        if (validAuthCodes.size() != targetCodes.size()) {
-                return Result.fail("包含不存在或已停用的权限码");
+        List<String> target = authCodes == null ? List.of() : authCodes.stream()
+                .filter(Objects::nonNull).map(String::trim).filter(s -> !s.isEmpty()).distinct().toList();
+        List<AuthCodeBO> valid = target.isEmpty() ? List.of() : authCodeRepository.selectByTenantId(tenantId).stream()
+                .filter(a -> target.contains(a.getCode())).toList();
+        if (valid.size() != target.size()) {
+            return false;
         }
-
-        roleScopeAuthCodeMapper.deleteByQuery(QueryWrapper.create()
-                .where(RoleScopeAuthCodeDO::getRoleId).eq(roleId)
-                .and(RoleScopeAuthCodeDO::getTenantId).eq(tenantId)
-                .and(RoleScopeAuthCodeDO::getTenantId).eq(tenantId));
-
-        if (!targetCodes.isEmpty()) {
+        authCodeRepository.deleteRoleAssignments(roleId, tenantId, null);
+        if (!valid.isEmpty()) {
             LocalDateTime now = LocalDateTime.now();
-            List<RoleScopeAuthCodeDO> records = validAuthCodes.stream().map(authCode -> {
-                RoleScopeAuthCodeDO item = new RoleScopeAuthCodeDO();
+            authCodeRepository.insertRoleAssignments(valid.stream().map(a -> {
+                RoleScopeAuthCodeBO item = new RoleScopeAuthCodeBO();
                 item.setRoleId(roleId);
-                item.setAuthCodeId(authCode.getId());
+                item.setAuthCodeId(a.getId());
                 item.setTenantId(tenantId);
                 item.setStatus(1);
                 item.setDelFlag(0);
                 item.setCreateTime(now);
                 item.setUpdateTime(now);
                 return item;
-            }).toList();
-            roleScopeAuthCodeMapper.insertBatch(records);
+            }).toList());
         }
-        return Result.success();
+        return true;
     }
 
+    @Override
     @Transactional(rollbackFor = Exception.class)
-    public Result<Void> revoke(Long roleId, Long tenantId, Long authCodeId) {
-        Long currentTenantId = LoginContextHolder.getCurrentTenantId();
-        if (!isValidScope(roleId, currentTenantId, tenantId)) {
-            return Result.fail("角色不属于当前租户作用域");
+    public boolean revoke(Long roleId, Long tenantId, Long authCodeId) {
+        if (!isValidScope(roleId, LoginContextHolder.getCurrentTenantId(), tenantId)) {
+            return false;
         }
-        QueryWrapper query = QueryWrapper.create()
-                .where(RoleScopeAuthCodeDO::getRoleId).eq(roleId)
-                .and(RoleScopeAuthCodeDO::getAuthCodeId).eq(authCodeId)
-                .and(RoleScopeAuthCodeDO::getTenantId).eq(tenantId)
-                .and(RoleScopeAuthCodeDO::getTenantId).eq(tenantId);
-        roleScopeAuthCodeMapper.deleteByQuery(query);
-        return Result.success();
+        authCodeRepository.deleteRoleAssignments(roleId, tenantId, authCodeId);
+        return true;
     }
 
-    public Result<PageData<AuthCodeOptionVO>> page(AuthCodePageRequest request) {
-        QueryWrapper countQuery = buildPageQuery(request);
-        long total = authCodeMapper.selectCountByQuery(countQuery);
-        QueryWrapper pageQuery = buildPageQuery(request);
-        int pageNum = request.getPageNum() == null ? 1 : request.getPageNum();
-        int pageSize = request.getPageSize() == null ? 10 : request.getPageSize();
-        pageQuery.limit((long) (pageNum - 1) * pageSize, pageSize);
-        pageQuery.orderBy(AuthCodeDO::getId, true);
-        List<AuthCodeOptionVO> items = authCodeMapper.selectListByQuery(pageQuery)
-                .stream().map(this::toOption).toList();
-        return Result.success(new PageData<>(items, total));
+    @Override
+    public PageData<AuthCodeOptionVO> page(AuthCodePageRequest request) {
+        List<AuthCodeOptionVO> items = authCodeRepository.selectByTenantId(LoginContextHolder.getCurrentTenantId()).stream()
+                .filter(a -> request.getCode() == null || request.getCode().isBlank()
+                        || (a.getCode() != null && a.getCode().contains(request.getCode())))
+                .filter(a -> request.getName() == null || request.getName().isBlank()
+                        || (a.getName() != null && a.getName().contains(request.getName())))
+                .sorted(Comparator.comparing(AuthCodeBO::getId, Comparator.nullsLast(Long::compareTo)))
+                .map(this::toOption).toList();
+        int page = request.getPageNum() == null ? 1 : request.getPageNum();
+        int size = request.getPageSize() == null ? 10 : request.getPageSize();
+        int from = Math.min(Math.max(0, (page - 1) * size), items.size());
+        int to = Math.min(from + size, items.size());
+        return new PageData<>(items.subList(from, to), items.size());
     }
 
-    private QueryWrapper buildPageQuery(AuthCodePageRequest request) {
-        QueryWrapper query = buildTenantAuthCodeQuery();
-        if (request.getCode() != null && !request.getCode().isBlank()) {
-            query.and(AuthCodeDO::getCode).like(request.getCode());
+    private void validateCode(AuthCodeBO authCode) {
+        if (authCode == null || authCode.getCode() == null || authCode.getCode().isBlank()
+                || authCode.getCode().length() > 64) {
+            throw new IllegalArgumentException("权限编码不能为空且长度不能超过64");
         }
-        if (request.getName() != null && !request.getName().isBlank()) {
-            query.and(AuthCodeDO::getName).like(request.getName());
-        }
-        return query;
     }
 
-    private QueryWrapper buildTenantAuthCodeQuery() {
-        Long currentTenantId = LoginContextHolder.getCurrentTenantId();
-        return QueryWrapper.create()
-                .from(AuthCodeDO.class)
-                .innerJoin(TenantAuthCodeDO.class)
-                .on(column(AuthCodeDO::getId)
-                        .eq(column(TenantAuthCodeDO::getAuthCodeId)))
-                .where(TenantAuthCodeDO::getTenantId).eq(currentTenantId)
-                .and(TenantAuthCodeDO::getStatus).eq(1)
-                .and(AuthCodeDO::getStatus).eq(1)
-                .and(AuthCodeDO::getDelFlag).eq(0);
-    }
-
-    private boolean isAuthCodeAvailable(Long authCodeId, Long tenantId) {
-        return authCodeId != null && tenantId != null
-                && tenantAuthCodeMapper.selectCountByQuery(QueryWrapper.create()
-                .where(TenantAuthCodeDO::getTenantId).eq(tenantId)
-                .and(TenantAuthCodeDO::getAuthCodeId).eq(authCodeId)
-                .and(TenantAuthCodeDO::getStatus).eq(1)) > 0;
+    private AuthCodeOptionVO toOption(AuthCodeBO authCode) {
+        String[] parts = authCode.getCode() == null ? new String[0] : authCode.getCode().split(":");
+        AuthCodeOptionVO option = new AuthCodeOptionVO();
+        option.setId(authCode.getId());
+        option.setName(authCode.getName());
+        option.setCode(authCode.getCode());
+        option.setModule(parts.length > 0 ? parts[0] : "");
+        option.setAction(parts.length > 1 ? parts[parts.length - 1] : "");
+        option.setResource(parts.length > 2 ? String.join(":", java.util.Arrays.copyOfRange(parts, 1, parts.length - 1)) : "");
+        option.setStatus(authCode.getStatus());
+        option.setCreateTime(authCode.getCreateTime());
+        return option;
     }
 
     private boolean isValidScope(Long roleId, Long currentTenantId, Long tenantId) {
-        if (currentTenantId == null || tenantId == null
-                || !roleRepository.isRoleOwnedByTenant(roleId, tenantId)) {
+        if (currentTenantId == null || tenantId == null || !roleRepository.isRoleOwnedByTenant(roleId, tenantId)) {
             return false;
         }
         var tenant = tenantRepository.selectById(tenantId);
-        return tenant != null
-                && tenant.getStatus() != null && tenant.getStatus() == 1
+        return tenant != null && tenant.getStatus() != null && tenant.getStatus() == 1
                 && (tenant.getDelFlag() == null || tenant.getDelFlag() == 0)
                 && tenantRepository.selectDescendantIds(currentTenantId).contains(tenantId);
-    }
-
-    private boolean existsByCode(String code, Long excludeId) {
-        QueryWrapper query = QueryWrapper.create()
-                .where(AuthCodeDO::getCode).eq(code.trim())
-                .and(AuthCodeDO::getDelFlag).eq(0);
-        if (excludeId != null) {
-            query.and(AuthCodeDO::getId).ne(excludeId);
-        }
-        return authCodeMapper.selectCountByQuery(query) > 0;
     }
 }

@@ -3,7 +3,7 @@ package com.shiyu.ai.dal.knowledge.repository;
 import com.mybatisflex.core.query.QueryWrapper;
 import com.shiyu.ai.common.core.api.PageData;
 import com.shiyu.ai.common.core.utils.MapstructUtils;
-import com.shiyu.ai.dal.knowledge.bo.KnowledgeBO;
+import com.shiyu.ai.knowledge.domain.model.KnowledgeBO;
 import com.shiyu.ai.dal.knowledge.dataobject.KnowledgeDO;
 import com.shiyu.ai.dal.knowledge.mapper.KnowledgeMapper;
 import jakarta.annotation.Resource;
@@ -12,7 +12,7 @@ import org.springframework.stereotype.Component;
 import java.util.List;
 
 @Component
-public class KnowledgeRepository {
+public class KnowledgeRepository implements com.shiyu.ai.knowledge.port.repository.KnowledgeRepository {
 
     @Resource
     private KnowledgeMapper knowledgeMapper;

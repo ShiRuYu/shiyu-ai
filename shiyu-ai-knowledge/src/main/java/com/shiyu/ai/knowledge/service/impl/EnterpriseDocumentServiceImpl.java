@@ -7,13 +7,13 @@ import com.shiyu.ai.common.core.tx.TransactionTemplateExecutor;
 import com.shiyu.ai.common.core.tx.TransactionHookExecutor;
 import com.shiyu.ai.common.storage.StorageMetadataStore;
 import com.shiyu.ai.common.storage.ObjectStorage;
-import com.shiyu.ai.dal.knowledge.bo.KnowledgeDocumentBO;
-import com.shiyu.ai.dal.knowledge.dataobject.KnowledgeDocumentVersionDO;
-import com.shiyu.ai.dal.knowledge.dataobject.KnowledgeIngestionJobDO;
-import com.shiyu.ai.dal.knowledge.dataobject.KnowledgeReviewRecordDO;
-import com.shiyu.ai.dal.knowledge.dataobject.KnowledgeSpaceDO;
-import com.shiyu.ai.dal.knowledge.repository.KnowledgeDocumentRepository;
-import com.shiyu.ai.dal.knowledge.repository.KnowledgeEnterpriseRepository;
+import com.shiyu.ai.knowledge.domain.model.KnowledgeDocumentBO;
+import com.shiyu.ai.knowledge.domain.model.KnowledgeDocumentVersionBO;
+import com.shiyu.ai.knowledge.domain.model.KnowledgeIngestionJobBO;
+import com.shiyu.ai.knowledge.domain.model.KnowledgeReviewRecordBO;
+import com.shiyu.ai.knowledge.domain.model.KnowledgeSpaceBO;
+import com.shiyu.ai.knowledge.port.repository.KnowledgeDocumentRepository;
+import com.shiyu.ai.knowledge.port.repository.KnowledgeEnterpriseRepository;
 import com.shiyu.ai.knowledge.rag.DocumentIngestionService;
 import com.shiyu.ai.knowledge.index.KnowledgeIndexService;
 import com.shiyu.ai.knowledge.service.EnterpriseDocumentService;
@@ -99,8 +99,8 @@ public class EnterpriseDocumentServiceImpl implements EnterpriseDocumentService 
         document.setDelFlag(0);
         documentRepository.insert(document);
 
-        KnowledgeSpaceDO space = enterpriseRepository.findSpace(request.spaceId());
-        KnowledgeDocumentVersionDO version = new KnowledgeDocumentVersionDO();
+        KnowledgeSpaceBO space = enterpriseRepository.findSpace(request.spaceId());
+        KnowledgeDocumentVersionBO version = new KnowledgeDocumentVersionBO();
         version.setDocumentId(document.getId());
         version.setSpaceId(request.spaceId());
         version.setVersionNo(1);
@@ -121,9 +121,9 @@ public class EnterpriseDocumentServiceImpl implements EnterpriseDocumentService 
         documentRepository.update(document);
 
         String jobKey = "INGEST:" + request.spaceId() + ":" + request.checksum();
-        KnowledgeIngestionJobDO job = enterpriseRepository.findJobByKey(jobKey);
+        KnowledgeIngestionJobBO job = enterpriseRepository.findJobByKey(jobKey);
         if (job == null) {
-            job = new KnowledgeIngestionJobDO();
+            job = new KnowledgeIngestionJobBO();
             job.setJobKey(jobKey);
             job.setJobType("INGEST");
             job.setSpaceId(request.spaceId());
@@ -194,7 +194,7 @@ public class EnterpriseDocumentServiceImpl implements EnterpriseDocumentService 
     @Transactional(rollbackFor = Exception.class)
     public DocumentView publish(Long documentId, String comment) {
         KnowledgeDocumentBO document = requireDocument(documentId);
-        KnowledgeSpaceDO space = enterpriseRepository.findSpace(document.getSpaceId());
+        KnowledgeSpaceBO space = enterpriseRepository.findSpace(document.getSpaceId());
         if (space != null && "REQUIRED".equals(space.getBindingMode())
                 && documentRelationService.listPointIds(documentId).isEmpty()) {
             throw new ServiceException("当前知识空间要求文档至少关联一个知识点后才能发布");
@@ -219,11 +219,11 @@ public class EnterpriseDocumentServiceImpl implements EnterpriseDocumentService 
         KnowledgeDocumentBO document = requireDocument(documentId);
         spaceService.requireAccess(document.getSpaceId(), KnowledgeSpaceService.SpaceRole.EDITOR);
         boolean wasPublished = "PUBLISHED".equals(document.getLifecycleStatus());
-        KnowledgeDocumentVersionDO source = enterpriseRepository.findVersion(versionId);
+        KnowledgeDocumentVersionBO source = enterpriseRepository.findVersion(versionId);
         if (source == null || !documentId.equals(source.getDocumentId())) {
             throw new ServiceException("文档版本不存在");
         }
-        KnowledgeDocumentVersionDO version = copyVersion(source);
+        KnowledgeDocumentVersionBO version = copyVersion(source);
         version.setVersionNo(enterpriseRepository.nextVersionNo(documentId));
         version.setLifecycleStatus("DRAFT");
         version.setPublishedAt(null);
@@ -297,7 +297,7 @@ public class EnterpriseDocumentServiceImpl implements EnterpriseDocumentService 
         }
         document.setLifecycleStatus(target);
         documentRepository.update(document);
-        KnowledgeDocumentVersionDO version = enterpriseRepository.findVersion(document.getCurrentVersionId());
+        KnowledgeDocumentVersionBO version = enterpriseRepository.findVersion(document.getCurrentVersionId());
         if (version != null) {
             version.setLifecycleStatus(target);
             if ("PUBLISHED".equals(target)) {
@@ -305,7 +305,7 @@ public class EnterpriseDocumentServiceImpl implements EnterpriseDocumentService 
             }
             enterpriseRepository.updateVersion(version);
         }
-        KnowledgeReviewRecordDO review = new KnowledgeReviewRecordDO();
+        KnowledgeReviewRecordBO review = new KnowledgeReviewRecordBO();
         review.setDocumentId(documentId);
         review.setVersionId(document.getCurrentVersionId());
         review.setAction(action);
@@ -345,8 +345,8 @@ public class EnterpriseDocumentServiceImpl implements EnterpriseDocumentService 
         return document;
     }
 
-    private KnowledgeDocumentVersionDO copyVersion(KnowledgeDocumentVersionDO source) {
-        KnowledgeDocumentVersionDO target = new KnowledgeDocumentVersionDO();
+    private KnowledgeDocumentVersionBO copyVersion(KnowledgeDocumentVersionBO source) {
+        KnowledgeDocumentVersionBO target = new KnowledgeDocumentVersionBO();
         target.setDocumentId(source.getDocumentId());
         target.setSpaceId(source.getSpaceId());
         target.setTitle(source.getTitle());
@@ -370,7 +370,7 @@ public class EnterpriseDocumentServiceImpl implements EnterpriseDocumentService 
                 document.getChecksum(), document.getCreateTime(), document.getUpdateTime());
     }
 
-    private VersionView toVersionView(KnowledgeDocumentVersionDO version) {
+    private VersionView toVersionView(KnowledgeDocumentVersionBO version) {
         return new VersionView(version.getId(), version.getDocumentId(), version.getSpaceId(),
                 version.getVersionNo(), version.getTitle(), version.getLifecycleStatus(),
                 version.getParseStatus(), version.getObjectKey(), version.getMimeType(),

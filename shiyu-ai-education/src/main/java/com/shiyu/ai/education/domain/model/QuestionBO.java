@@ -1,0 +1,49 @@
+package com.shiyu.ai.education.domain.model;
+import lombok.Data;
+
+import java.io.Serial;
+import java.io.Serializable;
+
+/**
+ * Question 业务对象
+ */
+@Data
+public class QuestionBO implements Serializable {
+
+    @Serial
+    private static final long serialVersionUID = 1L;
+
+    private Long id;
+
+    private String code;
+
+    private String type;
+
+    private String subjectCode;
+
+    private Integer grade;
+
+    private Integer difficulty;
+
+    private String abilityDimension;
+
+    private String title;
+
+    private String options;
+
+    private String answer;
+
+    private String analysis;
+
+    private String source;
+
+    private String tags;
+
+    private Long usedCount;
+    /**
+     * 状态（依据业务灵活定义）
+     */
+    private Integer status;
+
+
+}

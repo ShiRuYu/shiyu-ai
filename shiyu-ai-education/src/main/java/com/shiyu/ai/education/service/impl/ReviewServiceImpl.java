@@ -1,10 +1,10 @@
 package com.shiyu.ai.education.service.impl;
 
-import com.shiyu.ai.dal.education.enums.ReviewTaskStatus;
+import com.shiyu.ai.education.domain.enums.ReviewTaskStatus;
 
 import com.shiyu.ai.common.core.utils.MapstructUtils;
-import com.shiyu.ai.dal.education.bo.ReviewTaskBO;
-import com.shiyu.ai.dal.education.repository.ReviewTaskRepository;
+import com.shiyu.ai.education.domain.model.ReviewTaskBO;
+import com.shiyu.ai.education.port.repository.ReviewTaskRepository;
 import com.shiyu.ai.education.dto.ReviewTaskResponse;
 import com.shiyu.ai.education.request.ReviewRequest;
 import com.shiyu.ai.education.service.ReviewService;

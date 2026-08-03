@@ -5,14 +5,14 @@ import java.util.List;
 
 import com.shiyu.ai.common.core.api.PageData;
 import com.shiyu.ai.common.core.utils.MapstructUtils;
-import com.shiyu.ai.dal.education.bo.QuestionBO;
+import com.shiyu.ai.education.domain.model.QuestionBO;
 import com.shiyu.ai.dal.education.dataobject.QuestionDO;
 import com.shiyu.ai.dal.education.mapper.QuestionMapper;
 import jakarta.annotation.Resource;
 import org.springframework.stereotype.Component;
 
 @Component
-public class QuestionRepository {
+public class QuestionRepository implements com.shiyu.ai.education.port.repository.QuestionRepository {
 
     @Resource
     private QuestionMapper questionMapper;

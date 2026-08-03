@@ -1,6 +1,6 @@
 package com.shiyu.ai.usage.config;
 
-import com.shiyu.ai.dal.agent.repository.UsageRecordRepository;
+import com.shiyu.ai.usage.port.repository.UsageRecordRepository;
 import com.shiyu.ai.usage.collector.UsageCollector;
 import com.shiyu.ai.usage.realtime.UsageRealtimePublisher;
 import lombok.extern.slf4j.Slf4j;

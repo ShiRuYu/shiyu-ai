@@ -1,6 +1,11 @@
 package com.shiyu.ai.dal.auth.repository;
 
 import com.mybatisflex.core.query.QueryWrapper;
+import com.shiyu.ai.auth.domain.model.RoleBO;
+import com.shiyu.ai.auth.domain.model.TenantBO;
+import com.shiyu.ai.auth.domain.model.UserBO;
+import com.shiyu.ai.auth.domain.model.UserScopeRoleBO;
+import com.shiyu.ai.common.core.utils.MapstructUtils;
 import com.shiyu.ai.dal.auth.dataobject.RoleDO;
 import com.shiyu.ai.dal.auth.dataobject.TenantDO;
 import com.shiyu.ai.dal.auth.dataobject.UserDO;
@@ -17,7 +22,7 @@ import java.util.List;
 import java.util.Set;
 
 @Component
-public class AuthUserLookupRepository {
+public class AuthUserLookupRepository implements com.shiyu.ai.auth.port.repository.AuthUserLookupRepository {
 
     @Resource
     private UserMapper userMapper;
@@ -31,8 +36,8 @@ public class AuthUserLookupRepository {
     @Resource
     private TenantMapper tenantMapper;
 
-    public UserDO selectUserById(Long userId) {
-        return userMapper.selectOneById(userId);
+    public UserBO selectUserById(Long userId) {
+        return MapstructUtils.convert(userMapper.selectOneById(userId), UserBO.class);
     }
 
     public boolean updateUserExtInfo(Long userId, String extInfo) {
@@ -45,44 +50,44 @@ public class AuthUserLookupRepository {
         return userMapper.update(user) > 0;
     }
 
-    public List<UserScopeRoleDO> selectUserWorkspaceRoles(Long userId) {
+    public List<UserScopeRoleBO> selectUserWorkspaceRoles(Long userId) {
         // 登录上下文可能已经处于子租户，校验父租户超管身份时必须读取用户全部租户角色关系。
-        return TenantManager.withoutTenantCondition(
-                () -> userWorkspaceRoleMapper.selectByUserId(userId));
+        return MapstructUtils.convert(TenantManager.withoutTenantCondition(
+                () -> userWorkspaceRoleMapper.selectByUserId(userId)), UserScopeRoleBO.class);
     }
 
-    public RoleDO selectRoleById(Long roleId) {
-        return TenantManager.withoutTenantCondition(
-                () -> roleMapper.selectOneById(roleId));
+    public RoleBO selectRoleById(Long roleId) {
+        return MapstructUtils.convert(TenantManager.withoutTenantCondition(
+                () -> roleMapper.selectOneById(roleId)), RoleBO.class);
     }
 
-    public RoleDO selectTenantSuperRole(Long tenantId) {
+    public RoleBO selectTenantSuperRole(Long tenantId) {
         if (tenantId == null) {
             return null;
         }
-        return TenantManager.withoutTenantCondition(() -> roleMapper.selectOneByQuery(QueryWrapper.create()
+        return MapstructUtils.convert(TenantManager.withoutTenantCondition(() -> roleMapper.selectOneByQuery(QueryWrapper.create()
                 .where(RoleDO::getTenantId).eq(tenantId)
                 .and(RoleDO::getCode).in("tenant_super", "super")
                 .and(RoleDO::getStatus).eq(1)
                 .and(RoleDO::getDelFlag).eq(0)
-                .orderBy(RoleDO::getId, true)));
+                .orderBy(RoleDO::getId, true))), RoleBO.class);
     }
 
     /**
      * 批量查询角色列表（按 ID 集合）
      */
-    public List<RoleDO> selectRolesByIds(Set<Long> roleIds) {
+    public List<RoleBO> selectRolesByIds(Set<Long> roleIds) {
         if (roleIds == null || roleIds.isEmpty()) {
             return List.of();
         }
         QueryWrapper qw = QueryWrapper.create().where(RoleDO::getId).in(roleIds);
-        return roleMapper.selectListByQuery(qw);
+        return MapstructUtils.convert(roleMapper.selectListByQuery(qw), RoleBO.class);
     }
 
     /**
      * 根据ID查询租户（含 parentId 判断是否根租户）
      */
-    public TenantDO selectTenantById(Long tenantId) {
-        return tenantMapper.selectOneById(tenantId);
+    public TenantBO selectTenantById(Long tenantId) {
+        return MapstructUtils.convert(tenantMapper.selectOneById(tenantId), TenantBO.class);
     }
 }

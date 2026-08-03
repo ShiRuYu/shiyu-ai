@@ -4,14 +4,14 @@ import com.mybatisflex.core.query.QueryWrapper;
 import java.util.List;
 
 import com.shiyu.ai.common.core.utils.MapstructUtils;
-import com.shiyu.ai.dal.education.bo.AbilityBO;
+import com.shiyu.ai.education.domain.model.AbilityBO;
 import com.shiyu.ai.dal.education.dataobject.AbilityDO;
 import com.shiyu.ai.dal.education.mapper.AbilityMapper;
 import jakarta.annotation.Resource;
 import org.springframework.stereotype.Component;
 
 @Component
-public class AbilityRepository {
+public class AbilityRepository implements com.shiyu.ai.education.port.repository.AbilityRepository {
 
     @Resource
     private AbilityMapper abilityMapper;

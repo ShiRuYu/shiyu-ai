@@ -1,10 +1,10 @@
 package com.shiyu.ai.knowledge.task;
 
-import com.shiyu.ai.dal.knowledge.bo.KnowledgeDocumentBO;
-import com.shiyu.ai.dal.knowledge.dataobject.KnowledgeDocumentVersionDO;
-import com.shiyu.ai.dal.knowledge.dataobject.KnowledgeIngestionJobDO;
-import com.shiyu.ai.dal.knowledge.repository.KnowledgeDocumentRepository;
-import com.shiyu.ai.dal.knowledge.repository.KnowledgeEnterpriseRepository;
+import com.shiyu.ai.knowledge.domain.model.KnowledgeDocumentBO;
+import com.shiyu.ai.knowledge.domain.model.KnowledgeDocumentVersionBO;
+import com.shiyu.ai.knowledge.domain.model.KnowledgeIngestionJobBO;
+import com.shiyu.ai.knowledge.port.repository.KnowledgeDocumentRepository;
+import com.shiyu.ai.knowledge.port.repository.KnowledgeEnterpriseRepository;
 import com.shiyu.ai.knowledge.document.DocumentParser;
 import com.shiyu.ai.knowledge.rag.DocumentIngestionService;
 import com.shiyu.ai.common.storage.ContentSecurityScanner;
@@ -81,7 +81,7 @@ public class EmbeddedIngestionWorker {
                 concurrency, pollDelayMs);
         executor = threadPoolManager.getExecutor("knowledge-ingestion");
         LocalDateTime staleBefore = LocalDateTime.now().minusMinutes(5);
-        for (KnowledgeIngestionJobDO job : enterpriseRepository.findStaleJobs(staleBefore)) {
+        for (KnowledgeIngestionJobBO job : enterpriseRepository.findStaleJobs(staleBefore)) {
             job.setJobStatus("PENDING");
             job.setStage("RECOVERED");
             job.setErrorMessage("应用重启后恢复");
@@ -103,11 +103,11 @@ public class EmbeddedIngestionWorker {
     void poll() {
         int capacity = Math.max(0, concurrency - inFlight.size());
         if (capacity == 0) return;
-        List<KnowledgeIngestionJobDO> pendingJobs = enterpriseRepository.pollPendingJobs(capacity);
+        List<KnowledgeIngestionJobBO> pendingJobs = enterpriseRepository.pollPendingJobs(capacity);
         if (!pendingJobs.isEmpty()) {
             log.info("Knowledge ingestion worker claimed {} pending jobs", pendingJobs.size());
         }
-        for (KnowledgeIngestionJobDO job : pendingJobs) {
+        for (KnowledgeIngestionJobBO job : pendingJobs) {
             if (inFlight.add(job.getId())) {
                 executor.submit(() -> execute(job.getId()));
             }
@@ -115,7 +115,7 @@ public class EmbeddedIngestionWorker {
     }
 
     private void execute(Long jobId) {
-        KnowledgeIngestionJobDO job = enterpriseRepository.findJob(jobId);
+        KnowledgeIngestionJobBO job = enterpriseRepository.findJob(jobId);
         if (job == null) {
             inFlight.remove(jobId);
             return;
@@ -125,7 +125,7 @@ public class EmbeddedIngestionWorker {
             if (job == null) return;
             if (isCancelled(jobId)) return;
             KnowledgeDocumentBO document = documentRepository.selectById(job.getDocumentId());
-            KnowledgeDocumentVersionDO version = enterpriseRepository.findVersion(job.getVersionId());
+            KnowledgeDocumentVersionBO version = enterpriseRepository.findVersion(job.getVersionId());
             if (document == null || version == null) {
                 throw new IllegalStateException("任务关联的文档或版本不存在");
             }
@@ -188,8 +188,8 @@ public class EmbeddedIngestionWorker {
         }
     }
 
-    private KnowledgeIngestionJobDO markRunning(KnowledgeIngestionJobDO job) {
-        KnowledgeIngestionJobDO current = enterpriseRepository.findJob(job.getId());
+    private KnowledgeIngestionJobBO markRunning(KnowledgeIngestionJobBO job) {
+        KnowledgeIngestionJobBO current = enterpriseRepository.findJob(job.getId());
         if (current == null || !"PENDING".equals(current.getJobStatus())) {
             return null;
         }
@@ -204,14 +204,14 @@ public class EmbeddedIngestionWorker {
         return job;
     }
 
-    private void update(KnowledgeIngestionJobDO job, String stage, int progress) {
+    private void update(KnowledgeIngestionJobBO job, String stage, int progress) {
         job.setStage(stage);
         job.setProgress(progress);
         job.setHeartbeatTime(LocalDateTime.now());
         enterpriseRepository.updateJob(job);
     }
 
-    private void fail(KnowledgeIngestionJobDO job, Exception exception) {
+    private void fail(KnowledgeIngestionJobBO job, Exception exception) {
         log.error("Knowledge ingestion failed, jobId={}", job.getId(), exception);
         if (isCancelled(job.getId())) return;
         boolean retry = job.getAttempts() < job.getMaxAttempts();
@@ -242,7 +242,7 @@ public class EmbeddedIngestionWorker {
     }
 
     private boolean isCancelled(Long jobId) {
-        KnowledgeIngestionJobDO current = enterpriseRepository.findJob(jobId);
+        KnowledgeIngestionJobBO current = enterpriseRepository.findJob(jobId);
         return current != null && "CANCELLED".equals(current.getJobStatus());
     }
 

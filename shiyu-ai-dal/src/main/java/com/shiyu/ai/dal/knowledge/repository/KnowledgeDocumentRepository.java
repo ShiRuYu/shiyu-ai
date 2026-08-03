@@ -2,7 +2,7 @@ package com.shiyu.ai.dal.knowledge.repository;
 
 import com.mybatisflex.core.query.QueryWrapper;
 import com.shiyu.ai.common.core.utils.MapstructUtils;
-import com.shiyu.ai.dal.knowledge.bo.KnowledgeDocumentBO;
+import com.shiyu.ai.knowledge.domain.model.KnowledgeDocumentBO;
 import com.shiyu.ai.dal.knowledge.dataobject.KnowledgeDocRelationDO;
 import com.shiyu.ai.dal.knowledge.dataobject.KnowledgeDocumentDO;
 import com.shiyu.ai.dal.knowledge.mapper.KnowledgeDocumentMapper;
@@ -14,7 +14,7 @@ import java.util.List;
 import com.shiyu.ai.common.core.api.PageData;
 
 @Component
-public class KnowledgeDocumentRepository {
+public class KnowledgeDocumentRepository implements com.shiyu.ai.knowledge.port.repository.KnowledgeDocumentRepository {
 
     @Resource
     private KnowledgeDocumentMapper knowledgeDocumentMapper;

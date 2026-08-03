@@ -7,7 +7,7 @@ import com.shiyu.ai.dal.record.dataobject.TimelineEventDO;
 import com.shiyu.ai.dal.record.mapper.MediaMapper;
 import com.shiyu.ai.dal.record.mapper.RecordMapper;
 import com.shiyu.ai.dal.record.mapper.TimelineEventMapper;
-import com.shiyu.ai.dal.record.bo.TimelineEventBO;
+import com.shiyu.ai.record.domain.model.TimelineEventBO;
 import com.shiyu.ai.common.core.utils.MapstructUtils;
 import jakarta.annotation.Resource;
 import org.apache.commons.lang3.tuple.Pair;
@@ -20,7 +20,7 @@ import java.util.List;
  * 时间轴事件数据仓储层
  */
 @Component
-public class TimelineEventRepository {
+public class TimelineEventRepository implements com.shiyu.ai.record.port.repository.TimelineEventRepository {
 
     @Resource
     private TimelineEventMapper timelineEventMapper;

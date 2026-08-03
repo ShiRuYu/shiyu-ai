@@ -4,14 +4,14 @@ import com.mybatisflex.core.query.QueryWrapper;
 import java.util.List;
 
 import com.shiyu.ai.common.core.utils.MapstructUtils;
-import com.shiyu.ai.dal.education.bo.LearningStateBO;
+import com.shiyu.ai.education.domain.model.LearningStateBO;
 import com.shiyu.ai.dal.education.dataobject.LearningStateDO;
 import com.shiyu.ai.dal.education.mapper.LearningStateMapper;
 import jakarta.annotation.Resource;
 import org.springframework.stereotype.Component;
 
 @Component
-public class LearningStateRepository {
+public class LearningStateRepository implements com.shiyu.ai.education.port.repository.LearningStateRepository {
 
     @Resource
     private LearningStateMapper learningStateMapper;

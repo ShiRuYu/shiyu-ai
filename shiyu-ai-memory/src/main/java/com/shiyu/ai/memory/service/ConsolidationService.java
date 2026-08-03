@@ -1,8 +1,8 @@
 package com.shiyu.ai.memory.service;
 
-import com.shiyu.ai.dal.memory.bo.LongTermMemoryBO;
-import com.shiyu.ai.dal.memory.repository.ConversationMessageRepository;
-import com.shiyu.ai.dal.memory.repository.LongTermMemoryRepository;
+import com.shiyu.ai.memory.domain.model.LongTermMemoryBO;
+import com.shiyu.ai.memory.port.repository.ConversationMessageRepository;
+import com.shiyu.ai.memory.port.repository.LongTermMemoryRepository;
 import com.shiyu.ai.memory.request.SaveLongTermMemoryRequest;
 import com.shiyu.ai.memory.spi.Memory;
 import com.shiyu.ai.memory.spi.MemoryType;

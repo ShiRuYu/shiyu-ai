@@ -3,7 +3,8 @@ package com.shiyu.ai.web.model;
 import cn.dev33.satoken.annotation.SaCheckPermission;
 import com.shiyu.ai.model.service.AiModelService;
 import com.shiyu.ai.model.vo.AiModelVO;
-import com.shiyu.ai.dal.model.bo.AiModelBO;
+import com.shiyu.ai.model.api.request.AiModelRequest;
+import com.shiyu.ai.model.api.response.AiModelResponse;
 import com.shiyu.ai.common.core.vo.IdNameOptionVO;
 import com.shiyu.ai.model.adapter.ModelManager;
 import com.shiyu.ai.common.core.api.PageData;
@@ -42,7 +43,7 @@ public class AiModelController {
             @RequestParam(required = false) Long platformId,
             @RequestParam(required = false, defaultValue = "1") Integer pageNo,
             @RequestParam(required = false, defaultValue = "10") Integer pageSize) {
-        var result = aiModelService.getPage(platformId, pageNo, pageSize);
+        var result = aiModelService.pageResponse(platformId, pageNo, pageSize);
         var vos = com.shiyu.ai.common.core.utils.MapstructUtils.convert(result.getRight(), AiModelVO.class);
         return Result.success(new PageData<>(vos, result.getLeft()));
     }
@@ -50,14 +51,14 @@ public class AiModelController {
     @Operation(summary = "Get by Platform Id")
     @GetMapping("/platform")
     public Result<List<AiModelVO>> getByPlatformId(@RequestParam Long platformId) {
-        var list = aiModelService.getByPlatformId(platformId);
+        var list = aiModelService.byPlatformResponse(platformId);
         return Result.success(com.shiyu.ai.common.core.utils.MapstructUtils.convert(list, AiModelVO.class));
     }
 
     @Operation(summary = "Get by Platform Code")
     @GetMapping("/platform/by-code")
-    public Result<List<AiModelBO>> getByPlatformCode(@RequestParam String platformCode) {
-        List<AiModelBO> list = aiModelService.getByPlatformCode(platformCode);
+    public Result<List<AiModelResponse>> getByPlatformCode(@RequestParam String platformCode) {
+        List<AiModelResponse> list = aiModelService.byPlatformCodeResponse(platformCode);
         return Result.success(list);
     }
 
@@ -72,9 +73,9 @@ public class AiModelController {
     @Operation(summary = "Get by Id")
     @GetMapping("/detail")
     public Result<AiModelVO> getById(@RequestParam Long id) {
-        AiModelBO bo = aiModelService.getById(id);
-        if (bo != null) {
-            return Result.success(com.shiyu.ai.common.core.utils.MapstructUtils.convert(bo, AiModelVO.class));
+        AiModelResponse response = aiModelService.detailResponse(id);
+        if (response != null) {
+            return Result.success(com.shiyu.ai.common.core.utils.MapstructUtils.convert(response, AiModelVO.class));
         }
         return Result.fail("模型不存在");
     }
@@ -82,9 +83,9 @@ public class AiModelController {
     @Operation(summary = "Get Default By Platform Id")
     @GetMapping("/platform/default")
     public Result<AiModelVO> getDefaultByPlatformId(@RequestParam Long platformId) {
-        AiModelBO bo = aiModelService.getDefaultByPlatformId(platformId);
-        if (bo != null) {
-            return Result.success(com.shiyu.ai.common.core.utils.MapstructUtils.convert(bo, AiModelVO.class));
+        AiModelResponse response = aiModelService.defaultResponse(platformId);
+        if (response != null) {
+            return Result.success(com.shiyu.ai.common.core.utils.MapstructUtils.convert(response, AiModelVO.class));
         }
         return Result.fail("未配置默认模型");
     }
@@ -92,9 +93,9 @@ public class AiModelController {
     @Operation(summary = "Create")
     @SaCheckPermission("agent:model:create")
     @PostMapping("/create")
-    public Result<AiModelVO> create(@Valid @RequestBody AiModelBO bo) {
+    public Result<AiModelVO> create(@Valid @RequestBody AiModelRequest request) {
         try {
-            AiModelBO created = aiModelService.create(bo);
+            AiModelResponse created = aiModelService.createResponse(request);
             modelManager.markDirty();
             return Result.success(com.shiyu.ai.common.core.utils.MapstructUtils.convert(created, AiModelVO.class));
         } catch (Exception e) {
@@ -106,10 +107,9 @@ public class AiModelController {
     @Operation(summary = "Update")
     @SaCheckPermission("agent:model:edit")
     @PostMapping("/update")
-    public Result<AiModelVO> update(@RequestParam Long id, @Valid @RequestBody AiModelBO bo) {
+    public Result<AiModelVO> update(@RequestParam Long id, @Valid @RequestBody AiModelRequest request) {
         try {
-            bo.setId(id);
-            AiModelBO updated = aiModelService.update(bo);
+            AiModelResponse updated = aiModelService.updateResponse(id, request);
             modelManager.markDirty();
             return Result.success(com.shiyu.ai.common.core.utils.MapstructUtils.convert(updated, AiModelVO.class));
         } catch (Exception e) {
@@ -151,9 +151,9 @@ public class AiModelController {
     @PostMapping("/set-default")
     public Result<AiModelVO> setDefault(@RequestParam Long id) {
         try {
-            AiModelBO bo = aiModelService.setDefault(id);
+            AiModelResponse response = aiModelService.setDefaultResponse(id);
             modelManager.markDirty();
-            return Result.success(com.shiyu.ai.common.core.utils.MapstructUtils.convert(bo, AiModelVO.class));
+            return Result.success(com.shiyu.ai.common.core.utils.MapstructUtils.convert(response, AiModelVO.class));
         } catch (Exception e) {
             log.error("设置默认模型失败", e);
             return Result.fail("设置失败");

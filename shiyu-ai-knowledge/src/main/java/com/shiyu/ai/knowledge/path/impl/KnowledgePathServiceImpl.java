@@ -2,7 +2,7 @@ package com.shiyu.ai.knowledge.path.impl;
 
 import com.shiyu.ai.knowledge.graph.KnowledgeGraph;
 import com.shiyu.ai.common.core.exception.ServiceException;
-import com.shiyu.ai.dal.knowledge.repository.KnowledgeRepository;
+import com.shiyu.ai.knowledge.port.repository.KnowledgeRepository;
 import com.shiyu.ai.knowledge.path.KnowledgePathService;
 import com.shiyu.ai.knowledge.service.KnowledgeSpaceService;
 import lombok.RequiredArgsConstructor;

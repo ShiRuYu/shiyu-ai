@@ -3,7 +3,7 @@ package com.shiyu.ai.dal.auth.repository;
 import com.mybatisflex.core.query.QueryWrapper;
 import com.shiyu.ai.dal.auth.dataobject.*;
 import com.shiyu.ai.dal.auth.mapper.*;
-import com.shiyu.ai.dal.auth.bo.TenantBO;
+import com.shiyu.ai.auth.domain.model.TenantBO;
 import com.shiyu.ai.common.core.utils.MapstructUtils;
 import com.shiyu.ai.common.core.utils.PasswordUtils;
 import com.shiyu.ai.common.core.domain.LoginContextHolder;
@@ -17,7 +17,7 @@ import java.util.*;
 import java.util.stream.Collectors;
 
 @Component
-public class TenantRepository {
+public class TenantRepository implements com.shiyu.ai.auth.port.repository.TenantRepository {
 
     @Resource
     private TenantMapper tenantMapper;

@@ -6,7 +6,7 @@ import java.io.Serial;
 import java.io.Serializable;
 import java.time.LocalDateTime;
 
-import com.shiyu.ai.dal.model.bo.AiPlatformBO;
+import com.shiyu.ai.model.domain.model.AiPlatformBO;
 import io.github.linpeilie.annotations.AutoMapper;
 
 @Data

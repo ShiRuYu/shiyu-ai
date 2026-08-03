@@ -1,6 +1,6 @@
 package com.shiyu.ai.usage.service.impl;
 
-import com.shiyu.ai.dal.agent.repository.UsageRecordRepository;
+import com.shiyu.ai.usage.port.repository.UsageRecordRepository;
 import com.shiyu.ai.usage.service.UsageService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;

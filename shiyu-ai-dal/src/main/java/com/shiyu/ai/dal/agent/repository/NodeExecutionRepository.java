@@ -3,7 +3,7 @@ package com.shiyu.ai.dal.agent.repository;
 import com.mybatisflex.core.query.QueryWrapper;
 import com.shiyu.ai.dal.agent.dataobject.NodeExecutionDO;
 import com.shiyu.ai.dal.agent.mapper.NodeExecutionMapper;
-import com.shiyu.ai.dal.agent.bo.NodeExecutionBO;
+import com.shiyu.ai.agent.domain.model.NodeExecutionBO;
 import com.shiyu.ai.common.core.utils.MapstructUtils;
 import jakarta.annotation.Resource;
 import org.springframework.stereotype.Component;
@@ -11,7 +11,7 @@ import org.springframework.stereotype.Component;
 import java.util.List;
 
 @Component
-public class NodeExecutionRepository {
+public class NodeExecutionRepository implements com.shiyu.ai.agent.port.repository.NodeExecutionRepository {
 
     @Resource
     private NodeExecutionMapper nodeExecutionMapper;

@@ -4,8 +4,8 @@ import cn.dev33.satoken.dao.SaTokenDao;
 import cn.dev33.satoken.session.SaSession;
 import com.github.benmanes.caffeine.cache.Cache;
 import com.github.benmanes.caffeine.cache.Caffeine;
-import com.shiyu.ai.dal.auth.repository.SaTokenUserRepository;
-import com.shiyu.ai.dal.auth.dataobject.UserDO;
+import com.shiyu.ai.auth.port.repository.SaTokenUserRepository;
+import com.shiyu.ai.auth.domain.model.UserBO;
 import com.shiyu.ai.auth.utils.UserLockManager;
 import com.shiyu.ai.common.core.utils.JSONUtils;
 import jakarta.annotation.PostConstruct;
@@ -534,7 +534,7 @@ public class SaTokenDaoImpl implements SaTokenDao {
     }
 
     private Map<String, Object> getExtInfo(Long userId) {
-        UserDO user = saTokenUserRepository.selectById(userId);
+        UserBO user = saTokenUserRepository.selectById(userId);
         if (user == null || user.getExtInfo() == null || user.getExtInfo().isBlank()) {
             return new LinkedHashMap<>();
         }
@@ -545,10 +545,10 @@ public class SaTokenDaoImpl implements SaTokenDao {
     private void saveExtInfo(Long userId, Map<String, Object> ext) {
         // 每次保存前清理过期 tokens，防止 extInfo 无限膨胀
         cleanupExpiredEntries(ext);
-        UserDO user = saTokenUserRepository.selectById(userId);
+        UserBO user = saTokenUserRepository.selectById(userId);
         if (user == null) return;
         user.setExtInfo(JSONUtils.toJsonString(ext));
-        user.setUpdateTime(LocalDateTime.now());
+        user.setUpdateTime(java.util.Date.from(java.time.Instant.now()));
         saTokenUserRepository.updateExtInfo(user);
     }
 

@@ -1,15 +1,17 @@
 package com.shiyu.ai.auth.service.impl;
 
-import com.shiyu.ai.dal.auth.repository.UserRepository;
-import com.shiyu.ai.dal.auth.repository.RoleRepository;
-import com.shiyu.ai.dal.auth.repository.UserScopeRoleRepository;
+import com.shiyu.ai.auth.port.repository.UserRepository;
+import com.shiyu.ai.auth.port.repository.RoleRepository;
+import com.shiyu.ai.auth.port.repository.UserScopeRoleRepository;
 import com.shiyu.ai.auth.service.UserService;
+import com.shiyu.ai.auth.request.UserRequest;
+import com.shiyu.ai.auth.vo.UserVO;
 import com.shiyu.ai.auth.service.MenuService;
 import com.shiyu.ai.auth.utils.SaTokenHelper;
-import com.shiyu.ai.dal.auth.bo.RoleBO;
-import com.shiyu.ai.dal.auth.bo.UserBO;
-import com.shiyu.ai.dal.auth.dataobject.UserScopeRoleDO;
-import com.shiyu.ai.dal.auth.dataobject.RoleDO;
+import com.shiyu.ai.auth.domain.model.RoleBO;
+import com.shiyu.ai.auth.domain.model.UserBO;
+import com.shiyu.ai.auth.domain.model.UserScopeRoleBO;
+import com.shiyu.ai.auth.domain.model.RoleBO;
 import com.shiyu.ai.common.core.api.PageData;
 import com.shiyu.ai.auth.vo.UserVO;
 import com.shiyu.ai.auth.vo.UserTenantAssignmentVO;
@@ -18,7 +20,6 @@ import com.shiyu.ai.common.core.domain.LoginContextHolder;
 import com.shiyu.ai.common.core.utils.JSONUtils;
 import com.shiyu.ai.common.core.utils.MapstructUtils;
 import com.shiyu.ai.common.core.utils.PasswordUtils;
-import com.mybatisflex.core.query.QueryWrapper;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.tuple.Pair;
 import org.springframework.stereotype.Service;
@@ -37,19 +38,22 @@ import java.util.stream.Collectors;
 @Slf4j
 @Service
 public class UserServiceImpl implements UserService {
+    @Override public UserVO detailView(Long userId) { return MapstructUtils.convert(getUserDetail(userId), UserVO.class); }
+    @Override public Map<String, Object> createUser(UserRequest request, Long[] roleIds, Long targetTenantId) { return createUser(MapstructUtils.convert(request, UserBO.class), roleIds, targetTenantId); }
+    @Override public boolean updateUser(Long userId, UserRequest request, Long[] roleIds, Long targetTenantId) { return updateUser(userId, MapstructUtils.convert(request, UserBO.class), roleIds, targetTenantId); }
 
     private final UserRepository userRepository;
     private final RoleRepository roleRepository;
     private final UserScopeRoleRepository userScopeRoleRepository;
-    private final com.shiyu.ai.dal.auth.repository.TenantRepository tenantRepository;
-    private final com.shiyu.ai.dal.auth.repository.TenantRoleRepository tenantRoleRepository;
+    private final com.shiyu.ai.auth.port.repository.TenantRepository tenantRepository;
+    private final com.shiyu.ai.auth.port.repository.TenantRoleRepository tenantRoleRepository;
     private final MenuService menuService;
 
     public UserServiceImpl(UserRepository userRepository,
                            RoleRepository roleRepository,
                            UserScopeRoleRepository userScopeRoleRepository,
-                           com.shiyu.ai.dal.auth.repository.TenantRepository tenantRepository,
-                           com.shiyu.ai.dal.auth.repository.TenantRoleRepository tenantRoleRepository,
+                           com.shiyu.ai.auth.port.repository.TenantRepository tenantRepository,
+                           com.shiyu.ai.auth.port.repository.TenantRoleRepository tenantRoleRepository,
                            MenuService menuService) {
         this.userRepository = userRepository;
         this.roleRepository = roleRepository;
@@ -59,8 +63,7 @@ public class UserServiceImpl implements UserService {
         this.menuService = menuService;
     }
 
-    @Override
-    public UserBO getUserDetail(Long userId) {
+    private UserBO getUserDetail(Long userId) {
         log.info("获取用户详情，userId: {}", userId);
         UserBO userBO = userRepository.selectById(userId);
         
@@ -73,7 +76,7 @@ public class UserServiceImpl implements UserService {
             Long currentTenantId = extTenantId instanceof Number
                     ? ((Number) extTenantId).longValue()
                     : LoginContextHolder.getCurrentTenantId();
-            List<UserScopeRoleDO> assignments = userScopeRoleRepository.selectByUserId(userId);
+            List<UserScopeRoleBO> assignments = userScopeRoleRepository.selectByUserId(userId);
             boolean parentSuperAdminSwitch = LoginContextHolder.isParentSuperAdminSwitch()
                     || "PARENT_SUPER_ADMIN".equals(extInfoMap.get("switchMode"));
             Long selectedRoleId = null;
@@ -97,9 +100,9 @@ public class UserServiceImpl implements UserService {
                             && Objects.equals(resolvedSelectedRoleId, item.getRoleId())
                             && isActiveAssignment(item));
             if (parentSuperAdminSwitch && !selectedAssignedRole) {
-                RoleDO delegatedRoleDO = tenantRoleRepository.selectTenantSuperRole(currentTenantId);
-                RoleBO delegatedRole = delegatedRoleDO == null
-                        ? null : MapstructUtils.convert(delegatedRoleDO, RoleBO.class);
+                RoleBO delegatedRoleBO = tenantRoleRepository.selectTenantSuperRole(currentTenantId);
+                RoleBO delegatedRole = delegatedRoleBO == null
+                        ? null : MapstructUtils.convert(delegatedRoleBO, RoleBO.class);
                 if (delegatedRole != null
                         && Objects.equals(currentTenantId, delegatedRole.getTenantId())
                         && ("tenant_super".equals(delegatedRole.getCode())
@@ -114,7 +117,7 @@ public class UserServiceImpl implements UserService {
                     .filter(item -> currentTenantId == null
                             || Objects.equals(currentTenantId, item.getTenantId()))
                     .filter(this::isActiveAssignment)
-                    .map(UserScopeRoleDO::getRoleId)
+                    .map(UserScopeRoleBO::getRoleId)
                     .filter(Objects::nonNull)
                     .distinct()
                     .toList();
@@ -163,7 +166,7 @@ public class UserServiceImpl implements UserService {
                         .filter(item -> Objects.equals(currentTenantId, item.getTenantId())
                                 && item.getStatus() != null && item.getStatus() == 1
                                 && (item.getDelFlag() == null || item.getDelFlag() == 0))
-                        .map(UserScopeRoleDO::getRoleId)
+                        .map(UserScopeRoleBO::getRoleId)
                         .distinct()
                         .toList();
                 userRoleIds.put(user.getId(), roleIds);
@@ -187,9 +190,8 @@ public class UserServiceImpl implements UserService {
         return userRepository.deleteById(userId);
     }
 
-    @Override
     @Transactional(rollbackFor = Exception.class)
-    public boolean updateUser(Long userId, UserBO userBO, Long[] roleIds, Long targetTenantId) {
+    private boolean updateUser(Long userId, UserBO userBO, Long[] roleIds, Long targetTenantId) {
         log.info("修改用户，userId: {}", userId);
         Long currentTenantId = LoginContextHolder.getCurrentTenantId();
         if (currentTenantId == null || !userRepository.isUserInScope(userId, currentTenantId)) {
@@ -249,9 +251,8 @@ public class UserServiceImpl implements UserService {
         return success ? newPassword : null;
     }
 
-    @Override
     @Transactional(rollbackFor = Exception.class)
-    public Map<String, Object> createUser(UserBO userBO, Long[] roleIds, Long targetTenantId) {
+    private Map<String, Object> createUser(UserBO userBO, Long[] roleIds, Long targetTenantId) {
         log.info("新增用户: {}", userBO.getUsername());
         String plainPassword = null;
         if (userBO.getPassword() == null || userBO.getPassword().isBlank()) {
@@ -278,13 +279,13 @@ public class UserServiceImpl implements UserService {
         }
         List<Long> accessibleTenantIds = tenantRepository.selectDescendantIds(currentTenantId);
         List<UserTenantAssignmentVO> result = new ArrayList<>();
-        for (UserScopeRoleDO assignment : userScopeRoleRepository.selectByUserId(userId)) {
+        for (UserScopeRoleBO assignment : userScopeRoleRepository.selectByUserId(userId)) {
             if (!isActiveAssignment(assignment)
                     || !accessibleTenantIds.contains(assignment.getTenantId())) {
                 continue;
             }
             var tenant = tenantRoleRepository.selectTenantById(assignment.getTenantId());
-            RoleDO role = tenantRoleRepository.selectRoleById(assignment.getRoleId());
+            RoleBO role = tenantRoleRepository.selectRoleById(assignment.getRoleId());
             if (tenant == null || role == null || !isActiveTenant(tenant)
                     || role.getStatus() == null || role.getStatus() != 1) {
                 continue;
@@ -338,13 +339,10 @@ public class UserServiceImpl implements UserService {
         target.stream()
                 .map(UserTenantRoleRequest::getTenantId)
                 .distinct()
-                .forEach(tenantId -> userScopeRoleRepository.deleteByQuery(
-                        QueryWrapper.create()
-                                .eq(UserScopeRoleDO::getUserId, userId)
-                                .eq(UserScopeRoleDO::getTenantId, tenantId)));
+                .forEach(tenantId -> userScopeRoleRepository.deleteByUserIdAndTenantId(userId, tenantId));
 
         for (UserTenantRoleRequest item : target) {
-            UserScopeRoleDO assignment = new UserScopeRoleDO();
+            UserScopeRoleBO assignment = new UserScopeRoleBO();
             assignment.setUserId(userId);
             assignment.setRoleId(item.getRoleId());
             // 角色和用户授权关系归属于目标租户，父租户仅负责授权操作。
@@ -394,12 +392,12 @@ public class UserServiceImpl implements UserService {
         return tenantRepository.selectDescendantIds(currentTenantId).contains(targetTenantId);
     }
 
-    private boolean isActiveAssignment(UserScopeRoleDO item) {
+    private boolean isActiveAssignment(UserScopeRoleBO item) {
         return (item.getStatus() == null || item.getStatus() == 1)
                 && (item.getDelFlag() == null || item.getDelFlag() == 0);
     }
 
-    private boolean isActiveTenant(com.shiyu.ai.dal.auth.dataobject.TenantDO tenant) {
+    private boolean isActiveTenant(com.shiyu.ai.auth.domain.model.TenantBO tenant) {
         return tenant != null && tenant.getStatus() != null && tenant.getStatus() == 1
                 && (tenant.getDelFlag() == null || tenant.getDelFlag() == 0);
     }
@@ -433,13 +431,10 @@ public class UserServiceImpl implements UserService {
             }
         }
 
-        QueryWrapper deleteWrapper = QueryWrapper.create()
-                .eq(UserScopeRoleDO::getUserId, userId)
-                .eq(UserScopeRoleDO::getTenantId, targetTenantId);
-        userScopeRoleRepository.deleteByQuery(deleteWrapper);
+        userScopeRoleRepository.deleteByUserIdAndTenantId(userId, targetTenantId);
 
         for (Long roleId : targetRoleIds) {
-            UserScopeRoleDO assignment = new UserScopeRoleDO();
+            UserScopeRoleBO assignment = new UserScopeRoleBO();
             assignment.setUserId(userId);
             assignment.setRoleId(roleId);
             assignment.setTenantId(targetTenantId);

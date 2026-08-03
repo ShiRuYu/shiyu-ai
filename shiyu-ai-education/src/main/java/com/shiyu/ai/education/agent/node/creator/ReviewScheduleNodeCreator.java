@@ -5,7 +5,7 @@ import com.shiyu.ai.agent.node.BaseNode;
 import com.shiyu.ai.agent.node.NodeConfig;
 import com.shiyu.ai.agent.node.NodeType;
 import com.shiyu.ai.agent.node.creator.NodeCreator;
-import com.shiyu.ai.dal.education.repository.ReviewTaskRepository;
+import com.shiyu.ai.education.port.repository.ReviewTaskRepository;
 import com.shiyu.ai.education.domain.ReviewScheduler;
 import com.shiyu.ai.education.service.ReviewService;
 import org.springframework.stereotype.Component;

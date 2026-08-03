@@ -1,7 +1,7 @@
 package com.shiyu.ai.agent.event;
 
-import com.shiyu.ai.dal.agent.dataobject.AuditLogDO;
-import com.shiyu.ai.dal.agent.repository.AuditLogRepository;
+import com.shiyu.ai.agent.domain.model.AuditLogBO;
+import com.shiyu.ai.agent.port.repository.AuditLogRepository;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.context.event.EventListener;
 import org.springframework.scheduling.annotation.Async;
@@ -28,7 +28,7 @@ public class AuditEventListener {
     @EventListener
     public void onAuditEvent(AuditEvent event) {
         try {
-            AuditLogDO record = new AuditLogDO();
+            AuditLogBO record = new AuditLogBO();
             record.setUserId(event.getUserId());
             record.setAction(event.getAction());
             record.setTargetType(event.getTargetType());

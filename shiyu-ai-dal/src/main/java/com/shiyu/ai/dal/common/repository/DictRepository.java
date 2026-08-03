@@ -3,7 +3,7 @@ package com.shiyu.ai.dal.common.repository;
 import com.mybatisflex.core.query.QueryWrapper;
 import com.shiyu.ai.dal.common.dataobject.DictDO;
 import com.shiyu.ai.dal.common.mapper.DictMapper;
-import com.shiyu.ai.dal.common.bo.DictBO;
+import com.shiyu.ai.auth.domain.model.DictBO;
 import com.shiyu.ai.common.core.utils.MapstructUtils;
 import jakarta.annotation.Resource;
 import org.apache.commons.lang3.tuple.Pair;
@@ -15,7 +15,7 @@ import java.util.List;
  * 字典数据仓储层
  */
 @Component
-public class DictRepository {
+public class DictRepository implements com.shiyu.ai.auth.port.repository.DictRepository {
 
     @Resource
     private DictMapper dictMapper;

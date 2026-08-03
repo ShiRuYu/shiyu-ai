@@ -1,7 +1,7 @@
 package com.shiyu.ai.auth.request;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
-import com.shiyu.ai.dal.auth.bo.MenuBO;
+import com.shiyu.ai.auth.domain.model.MenuBO;
 import io.github.linpeilie.annotations.AutoMapper;
 import jakarta.validation.constraints.NotBlank;
 import io.swagger.v3.oas.annotations.media.Schema;

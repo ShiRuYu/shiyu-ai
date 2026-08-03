@@ -3,8 +3,8 @@ package com.shiyu.ai.agent.service;
 import com.shiyu.ai.agent.event.NodeExecutionCompletedEvent;
 import com.shiyu.ai.agent.event.NodeExecutionStartedEvent;
 import com.shiyu.ai.common.core.utils.JSONUtils;
-import com.shiyu.ai.dal.agent.dataobject.ExecutionTimelineDO;
-import com.shiyu.ai.dal.agent.repository.ExecutionTimelineRepository;
+import com.shiyu.ai.agent.domain.model.ExecutionTimelineBO;
+import com.shiyu.ai.agent.port.repository.ExecutionTimelineRepository;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 
@@ -34,7 +34,7 @@ public class TimelineService {
      */
     public void onNodeStarted(NodeExecutionStartedEvent event) {
         try {
-            ExecutionTimelineDO record = new ExecutionTimelineDO();
+            ExecutionTimelineBO record = new ExecutionTimelineBO();
             record.setExecutionId(event.getExecutionId());
             record.setAgentId(event.getAgentId());
             record.setNodeId(event.getNodeId());
@@ -54,7 +54,7 @@ public class TimelineService {
      */
     public void onNodeCompleted(NodeExecutionCompletedEvent event) {
         try {
-            ExecutionTimelineDO record = new ExecutionTimelineDO();
+            ExecutionTimelineBO record = new ExecutionTimelineBO();
             record.setExecutionId(event.getExecutionId());
             record.setAgentId(event.getAgentId());
             record.setNodeId(event.getNodeId());

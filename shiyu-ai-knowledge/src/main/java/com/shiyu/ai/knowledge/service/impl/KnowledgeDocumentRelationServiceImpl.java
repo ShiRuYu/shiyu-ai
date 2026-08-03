@@ -1,14 +1,14 @@
 package com.shiyu.ai.knowledge.service.impl;
 
 import com.shiyu.ai.common.core.exception.ServiceException;
-import com.shiyu.ai.dal.knowledge.bo.KnowledgeBO;
-import com.shiyu.ai.dal.knowledge.bo.KnowledgeDocRelationBO;
-import com.shiyu.ai.dal.knowledge.bo.KnowledgeDocumentBO;
-import com.shiyu.ai.dal.knowledge.bo.KnowledgeDocumentRelationBO;
-import com.shiyu.ai.dal.knowledge.repository.KnowledgeDocRelationRepository;
-import com.shiyu.ai.dal.knowledge.repository.KnowledgeDocumentRelationRepository;
-import com.shiyu.ai.dal.knowledge.repository.KnowledgeDocumentRepository;
-import com.shiyu.ai.dal.knowledge.repository.KnowledgeRepository;
+import com.shiyu.ai.knowledge.domain.model.KnowledgeBO;
+import com.shiyu.ai.knowledge.domain.model.KnowledgeDocRelationBO;
+import com.shiyu.ai.knowledge.domain.model.KnowledgeDocumentBO;
+import com.shiyu.ai.knowledge.domain.model.KnowledgeDocumentRelationBO;
+import com.shiyu.ai.knowledge.port.repository.KnowledgeDocRelationRepository;
+import com.shiyu.ai.knowledge.port.repository.KnowledgeDocumentRelationRepository;
+import com.shiyu.ai.knowledge.port.repository.KnowledgeDocumentRepository;
+import com.shiyu.ai.knowledge.port.repository.KnowledgeRepository;
 import com.shiyu.ai.knowledge.service.KnowledgeDocumentRelationService;
 import com.shiyu.ai.knowledge.service.KnowledgeSpaceService;
 import lombok.RequiredArgsConstructor;

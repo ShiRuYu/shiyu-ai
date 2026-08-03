@@ -3,8 +3,8 @@ package com.shiyu.ai.knowledge.service.impl;
 import com.shiyu.ai.common.core.api.PageData;
 import com.shiyu.ai.common.core.domain.LoginContextHolder;
 import com.shiyu.ai.common.core.exception.ServiceException;
-import com.shiyu.ai.dal.knowledge.dataobject.KnowledgeEvaluationCaseDO;
-import com.shiyu.ai.dal.knowledge.repository.KnowledgeEnterpriseRepository;
+import com.shiyu.ai.knowledge.domain.model.KnowledgeEvaluationCaseBO;
+import com.shiyu.ai.knowledge.port.repository.KnowledgeEnterpriseRepository;
 import com.shiyu.ai.knowledge.index.KnowledgeIndexService;
 import com.shiyu.ai.knowledge.service.KnowledgeEvaluationService;
 import com.shiyu.ai.knowledge.service.KnowledgeSpaceService;
@@ -29,7 +29,7 @@ public class KnowledgeEvaluationServiceImpl implements KnowledgeEvaluationServic
     public PageData<CaseView> page(int pageNum, int pageSize, Long spaceId) {
         if (spaceId == null) throw new ServiceException("必须指定知识空间");
         spaceService.requireAccess(spaceId, KnowledgeSpaceService.SpaceRole.VIEWER);
-        PageData<KnowledgeEvaluationCaseDO> page = repository.pageEvaluations(pageNum, Math.min(pageSize, 100), spaceId);
+        PageData<KnowledgeEvaluationCaseBO> page = repository.pageEvaluations(pageNum, Math.min(pageSize, 100), spaceId);
         return new PageData<>(page.getItems().stream().map(this::toView).toList(), page.getTotal());
     }
 
@@ -38,7 +38,7 @@ public class KnowledgeEvaluationServiceImpl implements KnowledgeEvaluationServic
     public CaseView create(CreateCaseRequest request) {
         if (request.spaceId() == null) throw new ServiceException("必须指定知识空间");
         spaceService.requireAccess(request.spaceId(), KnowledgeSpaceService.SpaceRole.EDITOR);
-        KnowledgeEvaluationCaseDO evaluation = new KnowledgeEvaluationCaseDO();
+        KnowledgeEvaluationCaseBO evaluation = new KnowledgeEvaluationCaseBO();
         evaluation.setTenantId(LoginContextHolder.getCurrentTenantId());
         evaluation.setSpaceId(request.spaceId());
         evaluation.setQuestion(request.question().trim());
@@ -53,7 +53,7 @@ public class KnowledgeEvaluationServiceImpl implements KnowledgeEvaluationServic
     @Override
     @Transactional(rollbackFor = Exception.class)
     public void delete(Long id) {
-        KnowledgeEvaluationCaseDO evaluation = repository.findEvaluation(id);
+        KnowledgeEvaluationCaseBO evaluation = repository.findEvaluation(id);
         if (evaluation == null) throw new ServiceException("评测用例不存在: " + id);
         spaceService.requireAccess(evaluation.getSpaceId(), KnowledgeSpaceService.SpaceRole.EDITOR);
         repository.deleteEvaluation(id);
@@ -66,7 +66,7 @@ public class KnowledgeEvaluationServiceImpl implements KnowledgeEvaluationServic
         }
         spaceService.requireAccess(request.spaceId(), KnowledgeSpaceService.SpaceRole.VIEWER);
         int topK = request.topK() == null ? 5 : Math.max(1, Math.min(request.topK(), 100));
-        PageData<KnowledgeEvaluationCaseDO> page = repository.pageEvaluations(1, 1000, request.spaceId());
+        PageData<KnowledgeEvaluationCaseBO> page = repository.pageEvaluations(1, 1000, request.spaceId());
         Long tenantId = LoginContextHolder.getCurrentTenantId();
         if (tenantId == null) throw new ServiceException("当前租户上下文不存在");
         List<CaseResult> results = page.getItems().stream()
@@ -78,7 +78,7 @@ public class KnowledgeEvaluationServiceImpl implements KnowledgeEvaluationServic
         return new RunResult(request.spaceId(), results.size(), topK, recall, mrr, citationAccuracy, results);
     }
 
-    private CaseResult evaluateCase(KnowledgeEvaluationCaseDO value, Long tenantId, int topK) {
+    private CaseResult evaluateCase(KnowledgeEvaluationCaseBO value, Long tenantId, int topK) {
         Set<Long> expected = parseDocumentIds(value.getExpectedDocIds());
         List<Long> returned = indexService.hybridSearch(tenantId, value.getSpaceId(), value.getQuestion(), topK, true)
                 .stream().map(KnowledgeIndexService.HybridHit::documentId).filter(java.util.Objects::nonNull).distinct().toList();
@@ -110,7 +110,7 @@ public class KnowledgeEvaluationServiceImpl implements KnowledgeEvaluationServic
                 .collect(java.util.stream.Collectors.toCollection(LinkedHashSet::new));
     }
 
-    private CaseView toView(KnowledgeEvaluationCaseDO value) {
+    private CaseView toView(KnowledgeEvaluationCaseBO value) {
         return new CaseView(value.getId(), value.getSpaceId(), value.getQuestion(),
                 value.getExpectedDocIds(), value.getExpectedAnswer());
     }

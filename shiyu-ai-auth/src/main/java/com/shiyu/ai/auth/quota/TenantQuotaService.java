@@ -1,13 +1,12 @@
 package com.shiyu.ai.auth.quota;
 
-import com.shiyu.ai.dal.auth.enums.TenantQuotaStatus;
+import com.shiyu.ai.auth.domain.enums.TenantQuotaStatus;
 
 import com.shiyu.ai.common.core.domain.LoginContextHolder;
-import com.shiyu.ai.dal.auth.dataobject.TenantQuotaDO;
-import com.shiyu.ai.dal.auth.bo.TenantQuotaBO;
-import com.shiyu.ai.dal.auth.repository.TenantQuotaRepository;
-import com.shiyu.ai.dal.agent.repository.AgentDefRepository;
-import com.shiyu.ai.dal.agent.repository.UsageRecordRepository;
+import com.shiyu.ai.auth.domain.model.TenantQuotaBO;
+import com.shiyu.ai.auth.port.repository.TenantQuotaRepository;
+import com.shiyu.ai.agent.port.repository.AgentDefRepository;
+import com.shiyu.ai.usage.port.repository.UsageRecordRepository;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 
@@ -35,7 +34,7 @@ public class TenantQuotaService {
         this.usageRecordRepository = usageRecordRepository;
     }
 
-    private TenantQuotaBO toBO(TenantQuotaDO doObj) {
+    private TenantQuotaBO toBO(TenantQuotaBO doObj) {
         if (doObj == null) return null;
         TenantQuotaBO bo = new TenantQuotaBO();
         bo.setId(doObj.getId());
@@ -48,12 +47,12 @@ public class TenantQuotaService {
         return bo;
     }
 
-    public TenantQuotaBO getQuota(Long tenantId) {
+    private TenantQuotaBO getQuota(Long tenantId) {
         return toBO(tenantQuotaRepository.getByTenantId(tenantId));
     }
 
-    public void saveQuota(TenantQuotaBO quota) {
-        TenantQuotaDO doObj = new TenantQuotaDO();
+    private void saveQuota(TenantQuotaBO quota) {
+        TenantQuotaBO doObj = new TenantQuotaBO();
         doObj.setTenantId(quota.getTenantId());
         doObj.setMaxAgentCount(quota.getMaxAgentCount());
         doObj.setMaxTokenPerDay(quota.getMaxTokenPerDay());
@@ -78,7 +77,7 @@ public class TenantQuotaService {
         return (todayTokens == null ? 0 : todayTokens) + requestedTokens <= quota.getMaxTokenPerDay();
     }
 
-    public TenantQuotaBO getCurrentTenantQuota() {
+    private TenantQuotaBO getCurrentTenantQuota() {
         Long tenantId = LoginContextHolder.getCurrentTenantId();
         if (tenantId == null) return null;
         return getQuota(tenantId);

@@ -5,7 +5,7 @@ import com.shiyu.ai.agent.AgentVersion;
 import com.shiyu.ai.agent.cache.AgentCacheManager;
 import com.shiyu.ai.agent.cache.AgentLoader;
 import com.shiyu.ai.agent.service.AgentService;
-import com.shiyu.ai.dal.agent.repository.AgentAdminRepository;
+import com.shiyu.ai.agent.port.repository.AgentAdminRepository;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;

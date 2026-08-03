@@ -2,11 +2,11 @@ package com.shiyu.ai.agent.service.impl;
 
 import com.shiyu.ai.agent.config.DataSourceApiConstants;
 
-import com.shiyu.ai.dal.agent.repository.AgentAdminRepository;
+import com.shiyu.ai.agent.port.repository.AgentAdminRepository;
 import com.shiyu.ai.agent.service.AgentAdminService;
 import com.shiyu.ai.agent.service.AgentService;
-import com.shiyu.ai.dal.agent.bo.AgentDefBO;
-import com.shiyu.ai.dal.agent.bo.AgentVersionBO;
+import com.shiyu.ai.agent.domain.model.AgentDefBO;
+import com.shiyu.ai.agent.domain.model.AgentVersionBO;
 import com.shiyu.ai.agent.request.AgentRequest;
 import com.shiyu.ai.agent.vo.AgentVO;
 import com.shiyu.ai.agent.vo.AgentDetailVO;

@@ -2,7 +2,6 @@ package com.shiyu.ai.web.auth;
 
 import cn.dev33.satoken.annotation.SaCheckPermission;
 import com.shiyu.ai.auth.request.MenuRequest;
-import com.shiyu.ai.dal.auth.bo.MenuBO;
 import com.shiyu.ai.auth.vo.RouteMenuVO;
 import com.shiyu.ai.auth.vo.MenuVO;
 import com.shiyu.ai.auth.service.MenuService;
@@ -10,7 +9,6 @@ import com.shiyu.ai.common.core.api.Result;
 import com.shiyu.ai.common.core.api.PageData;
 import com.shiyu.ai.auth.request.MenuPageRequest;
 import com.shiyu.ai.common.core.domain.LoginContextHolder;
-import com.shiyu.ai.common.core.utils.MapstructUtils;
 import lombok.extern.slf4j.Slf4j;
 import jakarta.validation.Valid;
 import org.springframework.web.bind.annotation.*;
@@ -41,8 +39,7 @@ public class MenuController {
         log.info("getAllMenus");
         try {
             Long userId = LoginContextHolder.getUserId();
-            List<MenuBO> menuBOs = menuService.getRouteMenusByUserId(userId);
-            return Result.success(convertToRouteMenuVO(menuBOs));
+            return Result.success(menuService.routeMenusView(userId));
         } catch (Exception e) {
             log.error("操作失败", e);
             return Result.fail("操作失败");
@@ -53,7 +50,7 @@ public class MenuController {
     @SaCheckPermission("system:menu:list")
     @GetMapping("/list")
     public Result<List<MenuVO>> getSystemMenuList() {
-        return Result.success(MapstructUtils.convert(menuService.getAllTree(), MenuVO.class));
+        return Result.success(menuService.allTreeView());
     }
 
     @Operation(summary = "Get System Menu Page")
@@ -69,61 +66,28 @@ public class MenuController {
     @SaCheckPermission("system:menu:list")
     @GetMapping("/roots")
     public Result<List<RouteMenuVO>> getMenuRoots() {
-        return Result.success(convertToRouteMenuVO(menuService.getMenuRoots()));
+        return Result.success(menuService.menuRootsView());
     }
 
     @Operation(summary = "Get Menu Children")
     @SaCheckPermission("system:menu:list")
     @GetMapping("/children")
     public Result<List<RouteMenuVO>> getMenuChildren(@RequestParam Long parentId) {
-        return Result.success(convertToRouteMenuVO(menuService.getChildrenByParentId(parentId)));
-    }
-
-    private List<RouteMenuVO> convertToRouteMenuVO(List<MenuBO> menuBOs) {
-        if (menuBOs == null || menuBOs.isEmpty()) return new ArrayList<>();
-        List<RouteMenuVO> result = new ArrayList<>();
-        for (MenuBO menuBO : menuBOs) {
-            RouteMenuVO vo = new RouteMenuVO();
-            vo.setId(menuBO.getId());
-            vo.setPid(menuBO.getParentId());
-            vo.setName(menuBO.getCode());
-            vo.setPath(menuBO.getPath());
-            vo.setComponent(menuBO.getComponent());
-            vo.setRedirect(menuBO.getRedirect());
-            String type = menuBO.getType();
-            if ("MENU".equals(type)) vo.setType("menu");
-            else if ("CATALOG".equals(type)) vo.setType("catalog");
-            else vo.setType(type != null ? type.toLowerCase() : "menu");
-            vo.setStatus(menuBO.getStatus());
-            vo.setIcon(menuBO.getIcon());
-            RouteMenuVO.MetaVO meta = new RouteMenuVO.MetaVO();
-            meta.setTitle(menuBO.getName());
-            meta.setIcon(menuBO.getIcon());
-            meta.setOrder(menuBO.getOrder());
-            meta.setKeepAlive(menuBO.getKeepAlive());
-            if (menuBO.getShow() != null && !menuBO.getShow()) meta.setHideInMenu(true);
-            String layout = menuBO.getLayout();
-            if ("none".equalsIgnoreCase(layout) || "false".equalsIgnoreCase(layout)) meta.setNoBasicLayout(true);
-            vo.setMeta(meta);
-            if (menuBO.getChildren() != null && !menuBO.getChildren().isEmpty())
-                vo.setChildren(convertToRouteMenuVO(menuBO.getChildren()));
-            result.add(vo);
-        }
-        return result;
+        return Result.success(menuService.childrenView(parentId));
     }
 
     @Operation(summary = "Get Menu Permissions Tree")
     @SaCheckPermission("system:menu:list")
     @GetMapping("/permissions")
     public Result<List<RouteMenuVO>> getMenuPermissionsTree() {
-        return Result.success(convertToRouteMenuVO(menuService.getMenuPermissionsTree()));
+        return Result.success(menuService.permissionsView());
     }
 
     @Operation(summary = "Get All Tree")
     @SaCheckPermission("system:menu:list")
     @GetMapping("/tree")
     public Result<List<RouteMenuVO>> getAllTree() {
-        return Result.success(convertToRouteMenuVO(menuService.getAllTree()));
+        return Result.success(menuService.treeView());
     }
 
     @Operation(summary = "Delete Menu")
@@ -137,14 +101,14 @@ public class MenuController {
     @SaCheckPermission("system:menu:create")
     @PostMapping("/create")
     public Result<Void> createMenu(@Valid @RequestBody MenuRequest request) {
-        return menuService.createMenu(MapstructUtils.convert(request, MenuBO.class)) ? Result.success() : Result.fail("create fail");
+        return menuService.createMenu(request) ? Result.success() : Result.fail("create fail");
     }
 
     @Operation(summary = "Update Menu")
     @SaCheckPermission("system:menu:update")
     @PostMapping("/update")
     public Result<Void> updateMenu(@RequestParam Long id, @Valid @RequestBody MenuRequest request) {
-        return menuService.updateMenu(id, MapstructUtils.convert(request, MenuBO.class)) ? Result.success() : Result.fail("update fail");
+        return menuService.updateMenu(id, request) ? Result.success() : Result.fail("update fail");
     }
 
     @Operation(summary = "Is Menu Name Exists")

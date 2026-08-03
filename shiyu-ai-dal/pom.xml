@@ -21,5 +21,15 @@
             <groupId>com.shiyu.ai</groupId>
             <artifactId>shiyu-common-storage</artifactId>
         </dependency>
+        <dependency><groupId>com.shiyu.ai</groupId><artifactId>shiyu-ai-vector</artifactId></dependency>
+        <dependency><groupId>com.shiyu.ai</groupId><artifactId>shiyu-ai-model</artifactId></dependency>
+        <dependency><groupId>com.shiyu.ai</groupId><artifactId>shiyu-ai-memory</artifactId></dependency>
+        <dependency><groupId>com.shiyu.ai</groupId><artifactId>shiyu-ai-tool</artifactId></dependency>
+        <dependency><groupId>com.shiyu.ai</groupId><artifactId>shiyu-ai-knowledge</artifactId></dependency>
+        <dependency><groupId>com.shiyu.ai</groupId><artifactId>shiyu-ai-agent</artifactId></dependency>
+        <dependency><groupId>com.shiyu.ai</groupId><artifactId>shiyu-ai-usage</artifactId></dependency>
+        <dependency><groupId>com.shiyu.ai</groupId><artifactId>shiyu-ai-auth</artifactId></dependency>
+        <dependency><groupId>com.shiyu.ai</groupId><artifactId>shiyu-ai-record</artifactId></dependency>
+        <dependency><groupId>com.shiyu.ai</groupId><artifactId>shiyu-ai-education</artifactId></dependency>
     </dependencies>
 </project>

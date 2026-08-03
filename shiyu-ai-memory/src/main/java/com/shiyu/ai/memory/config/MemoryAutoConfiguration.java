@@ -1,9 +1,9 @@
 package com.shiyu.ai.memory.config;
 import com.shiyu.ai.memory.service.ConsolidationService;
 
-import com.shiyu.ai.dal.memory.repository.ConversationMessageRepository;
-import com.shiyu.ai.dal.memory.repository.LongTermMemoryRepository;
-import com.shiyu.ai.dal.memory.repository.EpisodicMemoryRepository;
+import com.shiyu.ai.memory.port.repository.ConversationMessageRepository;
+import com.shiyu.ai.memory.port.repository.LongTermMemoryRepository;
+import com.shiyu.ai.memory.port.repository.EpisodicMemoryRepository;
 import com.shiyu.ai.memory.spi.impl.EpisodicMemoryStore;
 import com.shiyu.ai.memory.impl.MemoryServiceImpl;
 import com.shiyu.ai.memory.spi.impl.LongTermMemoryStore;

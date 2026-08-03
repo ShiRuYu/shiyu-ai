@@ -5,14 +5,14 @@ import java.util.List;
 
 import com.shiyu.ai.common.core.api.PageData;
 import com.shiyu.ai.common.core.utils.MapstructUtils;
-import com.shiyu.ai.dal.education.bo.StudentBO;
+import com.shiyu.ai.education.domain.model.StudentBO;
 import com.shiyu.ai.dal.education.dataobject.StudentDO;
 import com.shiyu.ai.dal.education.mapper.StudentMapper;
 import jakarta.annotation.Resource;
 import org.springframework.stereotype.Component;
 
 @Component
-public class StudentRepository {
+public class StudentRepository implements com.shiyu.ai.education.port.repository.StudentRepository {
 
     @Resource
     private StudentMapper studentMapper;

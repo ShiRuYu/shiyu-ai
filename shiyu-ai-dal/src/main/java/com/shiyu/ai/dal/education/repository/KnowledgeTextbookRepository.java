@@ -4,14 +4,14 @@ import com.mybatisflex.core.query.QueryWrapper;
 import java.util.List;
 
 import com.shiyu.ai.common.core.utils.MapstructUtils;
-import com.shiyu.ai.dal.education.bo.KnowledgeTextbookBO;
+import com.shiyu.ai.education.domain.model.KnowledgeTextbookBO;
 import com.shiyu.ai.dal.education.dataobject.KnowledgeTextbookDO;
 import com.shiyu.ai.dal.education.mapper.KnowledgeTextbookMapper;
 import jakarta.annotation.Resource;
 import org.springframework.stereotype.Component;
 
 @Component
-public class KnowledgeTextbookRepository {
+public class KnowledgeTextbookRepository implements com.shiyu.ai.education.port.repository.KnowledgeTextbookRepository {
 
     @Resource
     private KnowledgeTextbookMapper mapper;

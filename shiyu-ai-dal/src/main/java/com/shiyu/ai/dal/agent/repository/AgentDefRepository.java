@@ -7,7 +7,7 @@ import jakarta.annotation.Resource;
 import org.springframework.stereotype.Component;
 
 @Component
-public class AgentDefRepository {
+public class AgentDefRepository implements com.shiyu.ai.agent.port.repository.AgentDefRepository {
 
     @Resource
     private AgentDefMapper agentDefMapper;

@@ -3,7 +3,7 @@ package com.shiyu.ai.dal.record.repository;
 import com.mybatisflex.core.query.QueryWrapper;
 import com.shiyu.ai.dal.record.dataobject.MediaDO;
 import com.shiyu.ai.dal.record.mapper.MediaMapper;
-import com.shiyu.ai.dal.record.bo.MediaBO;
+import com.shiyu.ai.record.domain.model.MediaBO;
 import com.shiyu.ai.common.core.utils.MapstructUtils;
 import jakarta.annotation.Resource;
 import org.apache.commons.lang3.tuple.Pair;
@@ -12,7 +12,7 @@ import org.springframework.stereotype.Component;
 import java.util.List;
 
 @Component
-public class MediaRepository {
+public class MediaRepository implements com.shiyu.ai.record.port.repository.MediaRepository {
 
     @Resource
     private MediaMapper mediaMapper;

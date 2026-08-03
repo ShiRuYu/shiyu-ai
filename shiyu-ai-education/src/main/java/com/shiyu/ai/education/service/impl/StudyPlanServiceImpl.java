@@ -1,13 +1,13 @@
 package com.shiyu.ai.education.service.impl;
 
-import com.shiyu.ai.dal.education.enums.StudyPlanStatus;
-import com.shiyu.ai.dal.education.enums.StudyPlanItemStatus;
+import com.shiyu.ai.education.domain.enums.StudyPlanStatus;
+import com.shiyu.ai.education.domain.enums.StudyPlanItemStatus;
 
 import com.shiyu.ai.common.core.utils.MapstructUtils;
-import com.shiyu.ai.dal.education.bo.StudyPlanBO;
-import com.shiyu.ai.dal.education.bo.StudyPlanItemBO;
-import com.shiyu.ai.dal.education.repository.StudyPlanItemRepository;
-import com.shiyu.ai.dal.education.repository.StudyPlanRepository;
+import com.shiyu.ai.education.domain.model.StudyPlanBO;
+import com.shiyu.ai.education.domain.model.StudyPlanItemBO;
+import com.shiyu.ai.education.port.repository.StudyPlanItemRepository;
+import com.shiyu.ai.education.port.repository.StudyPlanRepository;
 import com.shiyu.ai.education.dto.DailyTaskResponse;
 import com.shiyu.ai.education.dto.StudyPlanResponse;
 import com.shiyu.ai.education.request.StudyPlanRequest;

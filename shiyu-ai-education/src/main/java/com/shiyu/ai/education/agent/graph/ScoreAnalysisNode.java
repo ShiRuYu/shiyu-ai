@@ -5,7 +5,7 @@ import com.shiyu.ai.agent.node.BaseNode;
 import com.shiyu.ai.agent.node.NodeInput;
 import com.shiyu.ai.agent.node.NodeOutput;
 import com.shiyu.ai.agent.node.NodeType;
-import com.shiyu.ai.dal.education.bo.QuestionBO;
+import com.shiyu.ai.education.domain.model.QuestionBO;
 import com.shiyu.ai.education.service.AbilityService;
 import com.shiyu.ai.education.domain.BloomTaxonomy;
 import lombok.Getter;

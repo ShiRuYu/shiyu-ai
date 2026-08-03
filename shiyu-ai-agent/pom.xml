@@ -23,7 +23,7 @@
         </dependency>
         <dependency>
             <groupId>com.shiyu.ai</groupId>
-            <artifactId>shiyu-ai-dal</artifactId>
+            <artifactId>shiyu-ai-model</artifactId>
         </dependency>
         <dependency>
             <groupId>com.shiyu.ai</groupId>

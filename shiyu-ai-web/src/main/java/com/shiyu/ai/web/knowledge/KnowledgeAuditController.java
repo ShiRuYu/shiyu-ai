@@ -3,7 +3,7 @@ package com.shiyu.ai.web.knowledge;
 import cn.dev33.satoken.annotation.SaCheckPermission;
 import com.shiyu.ai.common.core.api.PageData;
 import com.shiyu.ai.common.core.api.Result;
-import com.shiyu.ai.dal.knowledge.dataobject.KnowledgeAuditLogDO;
+import com.shiyu.ai.knowledge.api.response.KnowledgeAuditResponse;
 import com.shiyu.ai.knowledge.service.KnowledgeAuditService;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
@@ -23,7 +23,7 @@ public class KnowledgeAuditController {
     private final KnowledgeAuditService auditService;
 
     @GetMapping
-    public Result<PageData<KnowledgeAuditLogDO>> page(
+    public Result<PageData<KnowledgeAuditResponse>> page(
             @RequestParam(defaultValue = "1") int pageNum,
             @RequestParam(defaultValue = "20") int pageSize,
             @RequestParam(required = false) Long spaceId,

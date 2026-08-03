@@ -1,37 +1,15 @@
 package com.shiyu.ai.record.service;
 
-import com.shiyu.ai.dal.record.bo.ProfileBO;
+import com.shiyu.ai.record.request.ProfileRequest;
+import com.shiyu.ai.record.vo.ProfileVO;
 import org.apache.commons.lang3.tuple.Pair;
 
 import java.util.List;
 
-/**
- * 人物服务接口
- */
 public interface ProfileService {
-
-    /**
-     * 分页查询人物列表
-     */
-    Pair<Long, List<ProfileBO>> getPage(Number pageNo, Number pageSize, String createBy);
-
-    /**
-     * 根据ID查询人物
-     */
-    ProfileBO getById(Long id);
-
-    /**
-     * 创建人物
-     */
-    ProfileBO create(ProfileBO profileBO);
-
-    /**
-     * 更新人物
-     */
-    boolean update(ProfileBO profileBO);
-
-    /**
-     * 删除人物
-     */
+    Pair<Long, List<ProfileVO>> pageView(Number pageNo, Number pageSize, String createBy);
+    ProfileVO detailView(Long id);
+    ProfileVO create(ProfileRequest request);
+    boolean update(Long id, ProfileRequest request);
     boolean delete(Long id);
 }

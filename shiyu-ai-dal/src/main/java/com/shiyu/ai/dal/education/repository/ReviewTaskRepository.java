@@ -6,14 +6,14 @@ import java.util.List;
 
 import com.shiyu.ai.common.core.api.PageData;
 import com.shiyu.ai.common.core.utils.MapstructUtils;
-import com.shiyu.ai.dal.education.bo.ReviewTaskBO;
+import com.shiyu.ai.education.domain.model.ReviewTaskBO;
 import com.shiyu.ai.dal.education.dataobject.ReviewTaskDO;
 import com.shiyu.ai.dal.education.mapper.ReviewTaskMapper;
 import jakarta.annotation.Resource;
 import org.springframework.stereotype.Component;
 
 @Component
-public class ReviewTaskRepository {
+public class ReviewTaskRepository implements com.shiyu.ai.education.port.repository.ReviewTaskRepository {
 
     @Resource
     private ReviewTaskMapper reviewTaskMapper;

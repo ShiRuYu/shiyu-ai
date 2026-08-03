@@ -2,7 +2,7 @@ package com.shiyu.ai.dal.knowledge.repository;
 
 import com.mybatisflex.core.query.QueryWrapper;
 import com.shiyu.ai.common.core.utils.MapstructUtils;
-import com.shiyu.ai.dal.knowledge.bo.KnowledgeRelationBO;
+import com.shiyu.ai.knowledge.domain.model.KnowledgeRelationBO;
 import com.shiyu.ai.dal.knowledge.dataobject.KnowledgeRelationDO;
 import com.shiyu.ai.dal.knowledge.mapper.KnowledgeRelationMapper;
 import jakarta.annotation.Resource;
@@ -11,7 +11,7 @@ import org.springframework.stereotype.Component;
 import java.util.List;
 
 @Component
-public class KnowledgeRelationRepository {
+public class KnowledgeRelationRepository implements com.shiyu.ai.knowledge.port.repository.KnowledgeRelationRepository {
 
     @Resource
     private KnowledgeRelationMapper relationMapper;

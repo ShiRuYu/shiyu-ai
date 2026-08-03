@@ -3,7 +3,7 @@ package com.shiyu.ai.dal.model.repository;
 import com.mybatisflex.core.query.QueryWrapper;
 import com.shiyu.ai.dal.model.dataobject.AiModelDO;
 import com.shiyu.ai.dal.model.mapper.AiModelMapper;
-import com.shiyu.ai.dal.model.bo.AiModelBO;
+import com.shiyu.ai.model.domain.model.AiModelBO;
 import com.shiyu.ai.common.core.vo.IdNameOptionVO;
 import com.shiyu.ai.common.core.utils.MapstructUtils;
 import jakarta.annotation.Resource;
@@ -14,7 +14,7 @@ import java.util.List;
 import java.util.stream.Collectors;
 
 @Component
-public class AiModelRepository {
+public class AiModelRepository implements com.shiyu.ai.model.port.repository.AiModelRepository {
 
     @Resource
     private AiModelMapper aiModelMapper;

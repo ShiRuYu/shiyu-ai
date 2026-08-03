@@ -1,9 +1,11 @@
 package com.shiyu.ai.knowledge.service.impl;
 
 import com.shiyu.ai.common.core.api.PageData;
+import com.shiyu.ai.common.core.utils.MapstructUtils;
+import com.shiyu.ai.knowledge.api.response.KnowledgeAuditResponse;
 import com.shiyu.ai.common.core.utils.JSONUtils;
-import com.shiyu.ai.dal.knowledge.dataobject.KnowledgeAuditLogDO;
-import com.shiyu.ai.dal.knowledge.repository.KnowledgeEnterpriseRepository;
+import com.shiyu.ai.knowledge.domain.model.KnowledgeAuditLogBO;
+import com.shiyu.ai.knowledge.port.repository.KnowledgeEnterpriseRepository;
 import com.shiyu.ai.knowledge.service.KnowledgeAuditService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
@@ -17,7 +19,7 @@ public class KnowledgeAuditServiceImpl implements KnowledgeAuditService {
     @Override
     public void record(Long spaceId, String resourceType, Long resourceId,
                        String action, Object detail) {
-        KnowledgeAuditLogDO audit = new KnowledgeAuditLogDO();
+        KnowledgeAuditLogBO audit = new KnowledgeAuditLogBO();
         audit.setSpaceId(spaceId);
         audit.setResourceType(resourceType);
         audit.setResourceId(resourceId);
@@ -29,7 +31,8 @@ public class KnowledgeAuditServiceImpl implements KnowledgeAuditService {
     }
 
     @Override
-    public PageData<KnowledgeAuditLogDO> page(int pageNum, int pageSize, Long spaceId) {
-        return repository.pageAudit(pageNum, pageSize, spaceId);
+    public PageData<KnowledgeAuditResponse> page(int pageNum, int pageSize, Long spaceId) {
+        PageData<KnowledgeAuditLogBO> data = repository.pageAudit(pageNum, pageSize, spaceId);
+        return new PageData<>(MapstructUtils.convert(data.getItems(), KnowledgeAuditResponse.class), data.getTotal());
     }
 }

@@ -4,14 +4,14 @@ import com.mybatisflex.core.query.QueryWrapper;
 import java.util.List;
 
 import com.shiyu.ai.common.core.utils.MapstructUtils;
-import com.shiyu.ai.dal.education.bo.AchievementBO;
+import com.shiyu.ai.education.domain.model.AchievementBO;
 import com.shiyu.ai.dal.education.dataobject.AchievementDO;
 import com.shiyu.ai.dal.education.mapper.AchievementMapper;
 import jakarta.annotation.Resource;
 import org.springframework.stereotype.Component;
 
 @Component
-public class AchievementRepository {
+public class AchievementRepository implements com.shiyu.ai.education.port.repository.AchievementRepository {
 
     @Resource
     private AchievementMapper achievementMapper;

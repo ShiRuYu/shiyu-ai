@@ -1,8 +1,11 @@
 package com.shiyu.ai.agent.service.impl;
 
-import com.shiyu.ai.dal.agent.repository.IntentDefRepository;
+import com.shiyu.ai.agent.port.repository.IntentDefRepository;
 import com.shiyu.ai.agent.service.IntentDefService;
-import com.shiyu.ai.dal.agent.bo.IntentDefBO;
+import com.shiyu.ai.agent.request.IntentDefRequest;
+import com.shiyu.ai.agent.vo.IntentDefVO;
+import com.shiyu.ai.common.core.utils.MapstructUtils;
+import com.shiyu.ai.agent.domain.model.IntentDefBO;
 import com.shiyu.ai.common.core.vo.IdNameOptionVO;
 import com.shiyu.ai.agent.node.intent.IntentDefinitionFactory;
 import jakarta.annotation.Resource;
@@ -18,29 +21,29 @@ import java.util.List;
 @Slf4j
 @Service
 public class IntentDefServiceImpl implements IntentDefService {
+    @Override public Pair<Long, List<IntentDefVO>> pageView(Number n, Number s, String a, String name, String code, String cat) { var p=getPageBO(n,s,a,name,code,cat); return Pair.of(p.getLeft(), MapstructUtils.convert(p.getRight(), IntentDefVO.class)); }
+    @Override public IntentDefVO detailView(Long id) { return MapstructUtils.convert(getByIdBO(id), IntentDefVO.class); }
+    @Override public IntentDefVO create(IntentDefRequest r) { return MapstructUtils.convert(createBO(MapstructUtils.convert(r, IntentDefBO.class)), IntentDefVO.class); }
+    @Override public IntentDefVO update(Long id, IntentDefRequest r) { IntentDefBO b=MapstructUtils.convert(r, IntentDefBO.class); b.setId(id); return MapstructUtils.convert(updateBO(b), IntentDefVO.class); }
 
     @Resource
     private IntentDefRepository intentDefRepository;
 
-    @Override
-    public Pair<Long, List<IntentDefBO>> getPage(Number pageNo, Number pageSize, String agentId, String name, String code, String category) {
+    private Pair<Long, List<IntentDefBO>> getPageBO(Number pageNo, Number pageSize, String agentId, String name, String code, String category) {
         return intentDefRepository.selectPage(pageNo, pageSize, agentId, name, code, category);
     }
 
-    @Override
-    public IntentDefBO getById(Long id) {
+    private IntentDefBO getByIdBO(Long id) {
         return intentDefRepository.selectById(id);
     }
 
-    @Override
-    public IntentDefBO create(IntentDefBO bo) {
+    private IntentDefBO createBO(IntentDefBO bo) {
         IntentDefBO result = intentDefRepository.create(bo);
         refreshFactory();
         return result;
     }
 
-    @Override
-    public IntentDefBO update(IntentDefBO bo) {
+    private IntentDefBO updateBO(IntentDefBO bo) {
         IntentDefBO result = intentDefRepository.update(bo);
         refreshFactory();
         return result;

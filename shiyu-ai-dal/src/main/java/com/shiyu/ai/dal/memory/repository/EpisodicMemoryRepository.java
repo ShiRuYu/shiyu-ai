@@ -3,7 +3,7 @@ package com.shiyu.ai.dal.memory.repository;
 import com.mybatisflex.core.query.QueryWrapper;
 import com.shiyu.ai.dal.memory.dataobject.EpisodicMemoryDO;
 import com.shiyu.ai.dal.memory.mapper.EpisodicMemoryMapper;
-import com.shiyu.ai.dal.memory.bo.EpisodicMemoryBO;
+import com.shiyu.ai.memory.domain.model.EpisodicMemoryBO;
 import com.shiyu.ai.common.core.utils.MapstructUtils;
 import jakarta.annotation.Resource;
 import org.springframework.stereotype.Component;
@@ -11,7 +11,7 @@ import org.springframework.stereotype.Component;
 import java.util.List;
 
 @Component
-public class EpisodicMemoryRepository {
+public class EpisodicMemoryRepository implements com.shiyu.ai.memory.port.repository.EpisodicMemoryRepository {
 
     @Resource
     private EpisodicMemoryMapper episodicMemoryMapper;

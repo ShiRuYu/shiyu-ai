@@ -4,14 +4,14 @@ import com.mybatisflex.core.query.QueryWrapper;
 import java.util.List;
 
 import com.shiyu.ai.common.core.utils.MapstructUtils;
-import com.shiyu.ai.dal.education.bo.CourseChapterBO;
+import com.shiyu.ai.education.domain.model.CourseChapterBO;
 import com.shiyu.ai.dal.education.dataobject.CourseChapterDO;
 import com.shiyu.ai.dal.education.mapper.CourseChapterMapper;
 import jakarta.annotation.Resource;
 import org.springframework.stereotype.Component;
 
 @Component
-public class CourseChapterRepository {
+public class CourseChapterRepository implements com.shiyu.ai.education.port.repository.CourseChapterRepository {
 
     @Resource
     private CourseChapterMapper courseChapterMapper;

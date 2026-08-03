@@ -24,7 +24,7 @@ import static com.mybatisflex.core.query.QueryMethods.column;
  * auth_menu 表只负责菜单、路由和展示。</p>
  */
 @Component
-public class AuthRepository {
+public class AuthRepository implements com.shiyu.ai.auth.port.repository.AuthRepository {
 
     @Resource
     private AuthCodeMapper authCodeMapper;

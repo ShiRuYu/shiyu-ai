@@ -4,6 +4,14 @@ import com.mybatisflex.core.paginate.Page;
 import com.mybatisflex.core.query.QueryWrapper;
 import com.mybatisflex.core.tenant.TenantManager;
 import com.shiyu.ai.common.core.api.PageData;
+import com.shiyu.ai.common.core.utils.MapstructUtils;
+import com.shiyu.ai.knowledge.domain.model.KnowledgeAuditLogBO;
+import com.shiyu.ai.knowledge.domain.model.KnowledgeDocumentVersionBO;
+import com.shiyu.ai.knowledge.domain.model.KnowledgeEvaluationCaseBO;
+import com.shiyu.ai.knowledge.domain.model.KnowledgeIngestionJobBO;
+import com.shiyu.ai.knowledge.domain.model.KnowledgeReviewRecordBO;
+import com.shiyu.ai.knowledge.domain.model.KnowledgeSpaceBO;
+import com.shiyu.ai.knowledge.domain.model.KnowledgeSpaceMemberBO;
 import com.shiyu.ai.dal.knowledge.dataobject.KnowledgeAuditLogDO;
 import com.shiyu.ai.dal.knowledge.dataobject.KnowledgeDocumentVersionDO;
 import com.shiyu.ai.dal.knowledge.dataobject.KnowledgeEvaluationCaseDO;
@@ -26,7 +34,7 @@ import java.util.List;
 
 @Repository
 @RequiredArgsConstructor
-public class KnowledgeEnterpriseRepository {
+public class KnowledgeEnterpriseRepository implements com.shiyu.ai.knowledge.port.repository.KnowledgeEnterpriseRepository {
 
     private final KnowledgeSpaceMapper spaceMapper;
     private final KnowledgeSpaceMemberMapper memberMapper;
@@ -36,61 +44,61 @@ public class KnowledgeEnterpriseRepository {
     private final KnowledgeAuditLogMapper auditMapper;
     private final KnowledgeEvaluationCaseMapper evaluationMapper;
 
-    public KnowledgeSpaceDO findSpace(Long id) {
-        return spaceMapper.selectOneByQuery(QueryWrapper.create()
+    public KnowledgeSpaceBO findSpace(Long id) {
+        return MapstructUtils.convert(spaceMapper.selectOneByQuery(QueryWrapper.create()
                 .eq(KnowledgeSpaceDO::getId, id)
-                .eq(KnowledgeSpaceDO::getDelFlag, 0));
+                .eq(KnowledgeSpaceDO::getDelFlag, 0)), KnowledgeSpaceBO.class);
     }
 
-    public KnowledgeSpaceDO findSpaceByTenant(Long tenantId, Long id) {
+    public KnowledgeSpaceBO findSpaceByTenant(Long tenantId, Long id) {
         if (tenantId == null || id == null) {
             return null;
         }
-        return TenantManager.withoutTenantCondition(() -> spaceMapper.selectOneByQuery(QueryWrapper.create()
+        return MapstructUtils.convert(TenantManager.withoutTenantCondition(() -> spaceMapper.selectOneByQuery(QueryWrapper.create()
                 .eq(KnowledgeSpaceDO::getTenantId, tenantId)
                 .eq(KnowledgeSpaceDO::getId, id)
-                .eq(KnowledgeSpaceDO::getDelFlag, 0)));
+                .eq(KnowledgeSpaceDO::getDelFlag, 0))), KnowledgeSpaceBO.class);
     }
 
-    public List<KnowledgeSpaceDO> findActiveSpacesByTenant(Long tenantId) {
+    public List<KnowledgeSpaceBO> findActiveSpacesByTenant(Long tenantId) {
         if (tenantId == null) {
             return List.of();
         }
-        return TenantManager.withoutTenantCondition(() -> spaceMapper.selectListByQuery(QueryWrapper.create()
+        return MapstructUtils.convert(TenantManager.withoutTenantCondition(() -> spaceMapper.selectListByQuery(QueryWrapper.create()
                 .eq(KnowledgeSpaceDO::getTenantId, tenantId)
                 .eq(KnowledgeSpaceDO::getStatus, 1)
                 .eq(KnowledgeSpaceDO::getDelFlag, 0)
-                .orderBy(KnowledgeSpaceDO::getId, true)));
+                .orderBy(KnowledgeSpaceDO::getId, true))), KnowledgeSpaceBO.class);
     }
 
     /** Returns active spaces for backup manifests without inheriting the request tenant filter. */
-    public List<KnowledgeSpaceDO> findAllActiveSpaces() {
-        return TenantManager.withoutTenantCondition(() -> spaceMapper.selectListByQuery(QueryWrapper.create()
+    public List<KnowledgeSpaceBO> findAllActiveSpaces() {
+        return MapstructUtils.convert(TenantManager.withoutTenantCondition(() -> spaceMapper.selectListByQuery(QueryWrapper.create()
                 .eq(KnowledgeSpaceDO::getStatus, 1)
                 .eq(KnowledgeSpaceDO::getDelFlag, 0)
                 .orderBy(KnowledgeSpaceDO::getTenantId, true)
-                .orderBy(KnowledgeSpaceDO::getId, true)));
+                .orderBy(KnowledgeSpaceDO::getId, true))), KnowledgeSpaceBO.class);
     }
 
-    public KnowledgeSpaceDO findSpaceByCode(String code) {
-        return spaceMapper.selectOneByQuery(QueryWrapper.create()
+    public KnowledgeSpaceBO findSpaceByCode(String code) {
+        return MapstructUtils.convert(spaceMapper.selectOneByQuery(QueryWrapper.create()
                 .eq(KnowledgeSpaceDO::getCode, code)
-                .eq(KnowledgeSpaceDO::getDelFlag, 0));
+                .eq(KnowledgeSpaceDO::getDelFlag, 0)), KnowledgeSpaceBO.class);
     }
 
     /** Find a space by tenant while provisioning outside the current tenant context. */
-    public KnowledgeSpaceDO findSpaceByTenantAndCode(Long tenantId, String code) {
-        return TenantManager.withoutTenantCondition(() -> spaceMapper.selectOneByQuery(QueryWrapper.create()
+    public KnowledgeSpaceBO findSpaceByTenantAndCode(Long tenantId, String code) {
+        return MapstructUtils.convert(TenantManager.withoutTenantCondition(() -> spaceMapper.selectOneByQuery(QueryWrapper.create()
                 .eq(KnowledgeSpaceDO::getTenantId, tenantId)
                 .eq(KnowledgeSpaceDO::getCode, code)
-                .eq(KnowledgeSpaceDO::getDelFlag, 0)));
+                .eq(KnowledgeSpaceDO::getDelFlag, 0))), KnowledgeSpaceBO.class);
     }
 
-    public PageData<KnowledgeSpaceDO> pageSpaces(int pageNum, int pageSize, String keyword) {
+    public PageData<KnowledgeSpaceBO> pageSpaces(int pageNum, int pageSize, String keyword) {
         return pageSpaces(pageNum, pageSize, keyword, null);
     }
 
-    public PageData<KnowledgeSpaceDO> pageSpaces(int pageNum, int pageSize, String keyword,
+    public PageData<KnowledgeSpaceBO> pageSpaces(int pageNum, int pageSize, String keyword,
                                                  String domainCode) {
         QueryWrapper query = QueryWrapper.create().eq(KnowledgeSpaceDO::getDelFlag, 0);
         if (keyword != null && !keyword.isBlank()) {
@@ -101,34 +109,36 @@ public class KnowledgeEnterpriseRepository {
         }
         Page<KnowledgeSpaceDO> page = spaceMapper.paginate(pageNum, pageSize,
                 query.orderBy(KnowledgeSpaceDO::getId, false));
-        return new PageData<>(page.getRecords(), page.getTotalRow());
+        return new PageData<>(MapstructUtils.convert(page.getRecords(), KnowledgeSpaceBO.class), page.getTotalRow());
     }
 
-    public KnowledgeSpaceDO insertSpace(KnowledgeSpaceDO space) {
-        spaceMapper.insert(space);
+    public KnowledgeSpaceBO insertSpace(KnowledgeSpaceBO space) {
+        KnowledgeSpaceDO data = MapstructUtils.convert(space, KnowledgeSpaceDO.class);
+        spaceMapper.insert(data);
+        space.setId(data.getId());
         return space;
     }
 
-    public void updateSpace(KnowledgeSpaceDO space) {
-        spaceMapper.update(space);
+    public void updateSpace(KnowledgeSpaceBO space) {
+        spaceMapper.update(MapstructUtils.convert(space, KnowledgeSpaceDO.class));
     }
 
     public void deleteSpace(Long id) {
         spaceMapper.deleteById(id);
     }
 
-    public List<KnowledgeSpaceMemberDO> findMembers(Long spaceId) {
-        return memberMapper.selectListByQuery(QueryWrapper.create()
+    public List<KnowledgeSpaceMemberBO> findMembers(Long spaceId) {
+        return MapstructUtils.convert(memberMapper.selectListByQuery(QueryWrapper.create()
                 .eq(KnowledgeSpaceMemberDO::getSpaceId, spaceId)
                 .eq(KnowledgeSpaceMemberDO::getDelFlag, 0)
-                .orderBy(KnowledgeSpaceMemberDO::getId, true));
+                .orderBy(KnowledgeSpaceMemberDO::getId, true)), KnowledgeSpaceMemberBO.class);
     }
 
-    public void replaceMembers(Long spaceId, List<KnowledgeSpaceMemberDO> members) {
+    public void replaceMembers(Long spaceId, List<KnowledgeSpaceMemberBO> members) {
         memberMapper.deleteByQuery(QueryWrapper.create()
                 .eq(KnowledgeSpaceMemberDO::getSpaceId, spaceId));
         if (!members.isEmpty()) {
-            memberMapper.insertBatch(members);
+            memberMapper.insertBatch(MapstructUtils.convert(members, KnowledgeSpaceMemberDO.class));
         }
     }
 
@@ -159,17 +169,17 @@ public class KnowledgeEnterpriseRepository {
                 .eq(KnowledgeSpaceMemberDO::getDelFlag, 0)) > 0;
     }
 
-    public KnowledgeDocumentVersionDO findVersion(Long id) {
-        return versionMapper.selectOneByQuery(QueryWrapper.create()
+    public KnowledgeDocumentVersionBO findVersion(Long id) {
+        return MapstructUtils.convert(versionMapper.selectOneByQuery(QueryWrapper.create()
                 .eq(KnowledgeDocumentVersionDO::getId, id)
-                .eq(KnowledgeDocumentVersionDO::getDelFlag, 0));
+                .eq(KnowledgeDocumentVersionDO::getDelFlag, 0)), KnowledgeDocumentVersionBO.class);
     }
 
-    public List<KnowledgeDocumentVersionDO> findVersions(Long documentId) {
-        return versionMapper.selectListByQuery(QueryWrapper.create()
+    public List<KnowledgeDocumentVersionBO> findVersions(Long documentId) {
+        return MapstructUtils.convert(versionMapper.selectListByQuery(QueryWrapper.create()
                 .eq(KnowledgeDocumentVersionDO::getDocumentId, documentId)
                 .eq(KnowledgeDocumentVersionDO::getDelFlag, 0)
-                .orderBy(KnowledgeDocumentVersionDO::getVersionNo, false));
+                .orderBy(KnowledgeDocumentVersionDO::getVersionNo, false)), KnowledgeDocumentVersionBO.class);
     }
 
     public int nextVersionNo(Long documentId) {
@@ -180,41 +190,47 @@ public class KnowledgeEnterpriseRepository {
         return latest == null ? 1 : latest.getVersionNo() + 1;
     }
 
-    public KnowledgeDocumentVersionDO insertVersion(KnowledgeDocumentVersionDO version) {
-        versionMapper.insert(version);
+    public KnowledgeDocumentVersionBO insertVersion(KnowledgeDocumentVersionBO version) {
+        KnowledgeDocumentVersionDO data = MapstructUtils.convert(version, KnowledgeDocumentVersionDO.class);
+        versionMapper.insert(data);
+        version.setId(data.getId());
         return version;
     }
 
-    public void updateVersion(KnowledgeDocumentVersionDO version) {
-        versionMapper.update(version);
+    public void updateVersion(KnowledgeDocumentVersionBO version) {
+        versionMapper.update(MapstructUtils.convert(version, KnowledgeDocumentVersionDO.class));
     }
 
-    public void insertReview(KnowledgeReviewRecordDO review) {
-        reviewMapper.insert(review);
+    public void insertReview(KnowledgeReviewRecordBO review) {
+        KnowledgeReviewRecordDO data = MapstructUtils.convert(review, KnowledgeReviewRecordDO.class);
+        reviewMapper.insert(data);
+        review.setId(data.getId());
     }
 
-    public KnowledgeIngestionJobDO findJob(Long id) {
-        return jobMapper.selectOneByQuery(QueryWrapper.create()
+    public KnowledgeIngestionJobBO findJob(Long id) {
+        return MapstructUtils.convert(jobMapper.selectOneByQuery(QueryWrapper.create()
                 .eq(KnowledgeIngestionJobDO::getId, id)
-                .eq(KnowledgeIngestionJobDO::getDelFlag, 0));
+                .eq(KnowledgeIngestionJobDO::getDelFlag, 0)), KnowledgeIngestionJobBO.class);
     }
 
-    public KnowledgeIngestionJobDO findJobByKey(String jobKey) {
-        return jobMapper.selectOneByQuery(QueryWrapper.create()
+    public KnowledgeIngestionJobBO findJobByKey(String jobKey) {
+        return MapstructUtils.convert(jobMapper.selectOneByQuery(QueryWrapper.create()
                 .eq(KnowledgeIngestionJobDO::getJobKey, jobKey)
-                .eq(KnowledgeIngestionJobDO::getDelFlag, 0));
+                .eq(KnowledgeIngestionJobDO::getDelFlag, 0)), KnowledgeIngestionJobBO.class);
     }
 
-    public KnowledgeIngestionJobDO insertJob(KnowledgeIngestionJobDO job) {
-        jobMapper.insert(job);
+    public KnowledgeIngestionJobBO insertJob(KnowledgeIngestionJobBO job) {
+        KnowledgeIngestionJobDO data = MapstructUtils.convert(job, KnowledgeIngestionJobDO.class);
+        jobMapper.insert(data);
+        job.setId(data.getId());
         return job;
     }
 
-    public void updateJob(KnowledgeIngestionJobDO job) {
-        jobMapper.update(job);
+    public void updateJob(KnowledgeIngestionJobBO job) {
+        jobMapper.update(MapstructUtils.convert(job, KnowledgeIngestionJobDO.class));
     }
 
-    public PageData<KnowledgeIngestionJobDO> pageJobs(int pageNum, int pageSize,
+    public PageData<KnowledgeIngestionJobBO> pageJobs(int pageNum, int pageSize,
                                                       Long spaceId, String status) {
         QueryWrapper query = QueryWrapper.create()
                 .eq(KnowledgeIngestionJobDO::getDelFlag, 0);
@@ -226,31 +242,33 @@ public class KnowledgeEnterpriseRepository {
         }
         Page<KnowledgeIngestionJobDO> page = jobMapper.paginate(pageNum, pageSize,
                 query.orderBy(KnowledgeIngestionJobDO::getId, false));
-        return new PageData<>(page.getRecords(), page.getTotalRow());
+        return new PageData<>(MapstructUtils.convert(page.getRecords(), KnowledgeIngestionJobBO.class), page.getTotalRow());
     }
 
-    public List<KnowledgeIngestionJobDO> pollPendingJobs(int limit) {
-        return TenantManager.withoutTenantCondition(() ->
+    public List<KnowledgeIngestionJobBO> pollPendingJobs(int limit) {
+        return MapstructUtils.convert(TenantManager.withoutTenantCondition(() ->
                 jobMapper.selectListByQuery(QueryWrapper.create()
                         .eq(KnowledgeIngestionJobDO::getJobStatus, "PENDING")
                         .eq(KnowledgeIngestionJobDO::getDelFlag, 0)
                         .orderBy(KnowledgeIngestionJobDO::getCreateTime, true)
-                        .limit(0, limit)));
+                        .limit(0, limit))), KnowledgeIngestionJobBO.class);
     }
 
-    public List<KnowledgeIngestionJobDO> findStaleJobs(LocalDateTime heartbeatBefore) {
-        return TenantManager.withoutTenantCondition(() ->
+    public List<KnowledgeIngestionJobBO> findStaleJobs(LocalDateTime heartbeatBefore) {
+        return MapstructUtils.convert(TenantManager.withoutTenantCondition(() ->
                 jobMapper.selectListByQuery(QueryWrapper.create()
                         .eq(KnowledgeIngestionJobDO::getJobStatus, "RUNNING")
                         .lt(KnowledgeIngestionJobDO::getHeartbeatTime, heartbeatBefore)
-                        .eq(KnowledgeIngestionJobDO::getDelFlag, 0)));
+                        .eq(KnowledgeIngestionJobDO::getDelFlag, 0))), KnowledgeIngestionJobBO.class);
     }
 
-    public void insertAudit(KnowledgeAuditLogDO audit) {
-        auditMapper.insert(audit);
+    public void insertAudit(KnowledgeAuditLogBO audit) {
+        KnowledgeAuditLogDO data = MapstructUtils.convert(audit, KnowledgeAuditLogDO.class);
+        auditMapper.insert(data);
+        audit.setId(data.getId());
     }
 
-    public PageData<KnowledgeAuditLogDO> pageAudit(int pageNum, int pageSize, Long spaceId) {
+    public PageData<KnowledgeAuditLogBO> pageAudit(int pageNum, int pageSize, Long spaceId) {
         QueryWrapper query = QueryWrapper.create()
                 .eq(KnowledgeAuditLogDO::getDelFlag, 0);
         if (spaceId != null) {
@@ -258,28 +276,30 @@ public class KnowledgeEnterpriseRepository {
         }
         Page<KnowledgeAuditLogDO> page = auditMapper.paginate(pageNum, pageSize,
                 query.orderBy(KnowledgeAuditLogDO::getId, false));
-        return new PageData<>(page.getRecords(), page.getTotalRow());
+        return new PageData<>(MapstructUtils.convert(page.getRecords(), KnowledgeAuditLogBO.class), page.getTotalRow());
     }
 
-    public KnowledgeEvaluationCaseDO insertEvaluation(KnowledgeEvaluationCaseDO evaluation) {
-        evaluationMapper.insert(evaluation);
+    public KnowledgeEvaluationCaseBO insertEvaluation(KnowledgeEvaluationCaseBO evaluation) {
+        KnowledgeEvaluationCaseDO data = MapstructUtils.convert(evaluation, KnowledgeEvaluationCaseDO.class);
+        evaluationMapper.insert(data);
+        evaluation.setId(data.getId());
         return evaluation;
     }
 
-    public PageData<KnowledgeEvaluationCaseDO> pageEvaluations(int pageNum, int pageSize,
+    public PageData<KnowledgeEvaluationCaseBO> pageEvaluations(int pageNum, int pageSize,
                                                                Long spaceId) {
         Page<KnowledgeEvaluationCaseDO> page = evaluationMapper.paginate(pageNum, pageSize,
                 QueryWrapper.create()
                         .eq(KnowledgeEvaluationCaseDO::getSpaceId, spaceId)
                         .eq(KnowledgeEvaluationCaseDO::getDelFlag, 0)
                         .orderBy(KnowledgeEvaluationCaseDO::getId, false));
-        return new PageData<>(page.getRecords(), page.getTotalRow());
+        return new PageData<>(MapstructUtils.convert(page.getRecords(), KnowledgeEvaluationCaseBO.class), page.getTotalRow());
     }
 
-    public KnowledgeEvaluationCaseDO findEvaluation(Long id) {
-        return evaluationMapper.selectOneByQuery(QueryWrapper.create()
+    public KnowledgeEvaluationCaseBO findEvaluation(Long id) {
+        return MapstructUtils.convert(evaluationMapper.selectOneByQuery(QueryWrapper.create()
                 .eq(KnowledgeEvaluationCaseDO::getId, id)
-                .eq(KnowledgeEvaluationCaseDO::getDelFlag, 0));
+                .eq(KnowledgeEvaluationCaseDO::getDelFlag, 0)), KnowledgeEvaluationCaseBO.class);
     }
 
     public void deleteEvaluation(Long id) {

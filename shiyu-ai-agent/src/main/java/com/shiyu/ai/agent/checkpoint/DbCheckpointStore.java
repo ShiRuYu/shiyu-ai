@@ -1,8 +1,8 @@
 package com.shiyu.ai.agent.checkpoint;
 
 import com.shiyu.ai.common.core.utils.JSONUtils;
-import com.shiyu.ai.dal.agent.dataobject.AgentCheckpointDO;
-import com.shiyu.ai.dal.agent.repository.AgentCheckpointRepository;
+import com.shiyu.ai.agent.domain.model.AgentCheckpointBO;
+import com.shiyu.ai.agent.port.repository.AgentCheckpointRepository;
 import lombok.extern.slf4j.Slf4j;
 
 import java.time.LocalDateTime;
@@ -25,7 +25,7 @@ public class DbCheckpointStore implements CheckpointStore {
 
     @Override
     public void save(Checkpoint checkpoint) {
-        AgentCheckpointDO doObj = new AgentCheckpointDO();
+        AgentCheckpointBO doObj = new AgentCheckpointBO();
         doObj.setCheckpointId(checkpoint.getCheckpointId());
         doObj.setExecutionId(checkpoint.getExecutionId());
         doObj.setNodeId(checkpoint.getNodeId());
@@ -36,13 +36,13 @@ public class DbCheckpointStore implements CheckpointStore {
 
     @Override
     public Checkpoint load(String checkpointId) {
-        AgentCheckpointDO doObj = checkpointRepository.selectByCheckpointId(checkpointId);
+        AgentCheckpointBO doObj = checkpointRepository.selectByCheckpointId(checkpointId);
         return doObj != null ? toCheckpoint(doObj) : null;
     }
 
     @Override
     public Checkpoint loadByExecutionId(String executionId) {
-        AgentCheckpointDO doObj = checkpointRepository.selectLatestByExecutionId(executionId);
+        AgentCheckpointBO doObj = checkpointRepository.selectLatestByExecutionId(executionId);
         return doObj != null ? toCheckpoint(doObj) : null;
     }
 
@@ -62,7 +62,7 @@ public class DbCheckpointStore implements CheckpointStore {
                 .stream().map(this::toCheckpoint).collect(Collectors.toList());
     }
 
-    private Checkpoint toCheckpoint(AgentCheckpointDO doObj) {
+    private Checkpoint toCheckpoint(AgentCheckpointBO doObj) {
         Checkpoint cp = new Checkpoint(
                 doObj.getExecutionId(),
                 doObj.getNodeId(),

@@ -2,7 +2,7 @@ package com.shiyu.ai.dal.knowledge.repository;
 
 import com.mybatisflex.core.query.QueryWrapper;
 import com.shiyu.ai.common.core.utils.MapstructUtils;
-import com.shiyu.ai.dal.knowledge.bo.KnowledgeChunkBO;
+import com.shiyu.ai.knowledge.domain.model.KnowledgeChunkBO;
 import com.shiyu.ai.dal.knowledge.dataobject.KnowledgeChunkDO;
 import com.shiyu.ai.dal.knowledge.mapper.KnowledgeChunkMapper;
 import org.springframework.stereotype.Repository;
@@ -10,7 +10,7 @@ import org.springframework.stereotype.Repository;
 import java.util.List;
 
 @Repository
-public class KnowledgeChunkRepository {
+public class KnowledgeChunkRepository implements com.shiyu.ai.knowledge.port.repository.KnowledgeChunkRepository {
 
     private final KnowledgeChunkMapper mapper;
 

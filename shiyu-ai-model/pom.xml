@@ -20,7 +20,7 @@
         </dependency>
         <dependency>
             <groupId>com.shiyu.ai</groupId>
-            <artifactId>shiyu-ai-dal</artifactId>
+            <artifactId>shiyu-common-core</artifactId>
         </dependency>
 
         <!-- LangChain4j core -->

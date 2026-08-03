@@ -12,8 +12,8 @@ import com.shiyu.ai.dal.auth.mapper.RoleMapper;
 import com.shiyu.ai.dal.auth.mapper.RoleScopeMenuMapper;
 import com.shiyu.ai.dal.auth.mapper.RoleScopeAuthCodeMapper;
 import com.shiyu.ai.dal.auth.mapper.UserScopeRoleMapper;
-import com.shiyu.ai.dal.auth.bo.MenuBO;
-import com.shiyu.ai.dal.auth.bo.RoleBO;
+import com.shiyu.ai.auth.domain.model.MenuBO;
+import com.shiyu.ai.auth.domain.model.RoleBO;
 import com.shiyu.ai.common.core.domain.LoginContextHolder;
 import com.shiyu.ai.common.core.utils.MapstructUtils;
 import com.mybatisflex.core.tenant.TenantManager;
@@ -31,7 +31,7 @@ import static com.mybatisflex.core.query.QueryMethods.column;
  * 角色数据仓储层
  */
 @Component
-public class RoleRepository {
+public class RoleRepository implements com.shiyu.ai.auth.port.repository.RoleRepository {
 
     @Resource
     private RoleMapper roleMapper;

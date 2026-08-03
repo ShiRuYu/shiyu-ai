@@ -1,16 +1,16 @@
 package com.shiyu.ai.education.agent;
 
-import com.shiyu.ai.dal.education.enums.StudyPlanStatus;
-import com.shiyu.ai.dal.education.enums.StudyPlanItemStatus;
+import com.shiyu.ai.education.domain.enums.StudyPlanStatus;
+import com.shiyu.ai.education.domain.enums.StudyPlanItemStatus;
 
 import com.shiyu.ai.model.chat.ChatEngine;
 import com.shiyu.ai.model.chat.ChatRequest;
 import com.shiyu.ai.model.chat.ChatResponse;
-import com.shiyu.ai.dal.education.bo.StudyPlanBO;
-import com.shiyu.ai.dal.education.bo.StudyPlanItemBO;
-import com.shiyu.ai.dal.education.repository.StudyPlanRepository;
-import com.shiyu.ai.dal.education.repository.StudyPlanItemRepository;
-import com.shiyu.ai.dal.education.repository.StudyPlanItemRepository;
+import com.shiyu.ai.education.domain.model.StudyPlanBO;
+import com.shiyu.ai.education.domain.model.StudyPlanItemBO;
+import com.shiyu.ai.education.port.repository.StudyPlanRepository;
+import com.shiyu.ai.education.port.repository.StudyPlanItemRepository;
+import com.shiyu.ai.education.port.repository.StudyPlanItemRepository;
 import com.shiyu.ai.knowledge.dto.KnowledgeResponse;
 import com.shiyu.ai.knowledge.path.KnowledgePathService;
 import com.shiyu.ai.knowledge.point.KnowledgePointService;

@@ -7,8 +7,6 @@ import com.shiyu.ai.auth.service.UserService;
 import com.shiyu.ai.auth.handler.LoginRateLimiter;
 import com.shiyu.ai.common.core.api.Result;
 import com.shiyu.ai.common.core.domain.LoginContextHolder;
-import com.shiyu.ai.common.core.utils.MapstructUtils;
-import com.shiyu.ai.dal.auth.bo.UserBO;
 import com.shiyu.ai.knowledge.service.KnowledgeSpaceService;
 import lombok.extern.slf4j.Slf4j;
 import jakarta.validation.Valid;
@@ -211,8 +209,7 @@ public class AuthController {
      * 构建切换后的完整上下文响应（消除 N+1 请求）
      */
     private SwitchContextResponse buildSwitchContext(Long userId) {
-        UserBO userBO = userService.getUserDetail(userId);
-        UserVO userVO = userBO != null ? MapstructUtils.convert(userBO, UserVO.class) : null;
+        UserVO userVO = userService.detailView(userId);
         if (userVO != null) {
             try {
                 userVO.setTenants(authService.getUserTenants(userId));

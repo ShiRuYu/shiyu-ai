@@ -1,10 +1,13 @@
 package com.shiyu.ai.model.service.impl;
 
-import com.shiyu.ai.dal.model.repository.AiModelRepository;
-import com.shiyu.ai.dal.model.repository.AiPlatformRepository;
+import com.shiyu.ai.model.port.repository.AiModelRepository;
+import com.shiyu.ai.model.port.repository.AiPlatformRepository;
 import com.shiyu.ai.model.service.AiModelService;
-import com.shiyu.ai.dal.model.bo.AiModelBO;
-import com.shiyu.ai.dal.model.bo.AiPlatformBO;
+import com.shiyu.ai.model.api.request.AiModelRequest;
+import com.shiyu.ai.model.api.response.AiModelResponse;
+import com.shiyu.ai.model.application.assembler.AiModelAssembler;
+import com.shiyu.ai.model.domain.model.AiModelBO;
+import com.shiyu.ai.model.domain.model.AiPlatformBO;
 import com.shiyu.ai.common.core.vo.IdNameOptionVO;
 import jakarta.annotation.Resource;
 import lombok.extern.slf4j.Slf4j;
@@ -14,11 +17,45 @@ import org.springframework.stereotype.Service;
 import java.util.List;
 
 /**
- * AI 模型服务实现层
+ * AI 妯″瀷鏈嶅姟瀹炵幇灞?
  */
 @Slf4j
 @Service
 public class AiModelServiceImpl implements AiModelService {
+
+    @Override
+    public Pair<Long, List<AiModelResponse>> pageResponse(Long platformId, Number pageNo, Number pageSize) {
+        Pair<Long, List<AiModelBO>> result = getPageBO(platformId, pageNo, pageSize);
+        return Pair.of(result.getLeft(), result.getRight().stream().map(AiModelAssembler::toResponse).toList());
+    }
+
+    @Override
+    public List<AiModelResponse> byPlatformResponse(Long platformId) {
+        return getByPlatformIdBO(platformId).stream().map(AiModelAssembler::toResponse).toList();
+    }
+
+    @Override
+    public List<AiModelResponse> byPlatformCodeResponse(String platformCode) {
+        return getByPlatformCodeBO(platformCode).stream().map(AiModelAssembler::toResponse).toList();
+    }
+
+    @Override
+    public AiModelResponse detailResponse(Long id) { return AiModelAssembler.toResponse(getByIdBO(id)); }
+
+    @Override
+    public AiModelResponse defaultResponse(Long platformId) { return AiModelAssembler.toResponse(getDefaultByPlatformIdBO(platformId)); }
+
+    @Override
+    public AiModelResponse createResponse(AiModelRequest request) { return AiModelAssembler.toResponse(createBO(AiModelAssembler.toBO(request))); }
+
+    @Override
+    public AiModelResponse updateResponse(Long id, AiModelRequest request) {
+        AiModelBO bo = AiModelAssembler.toBO(request); bo.setId(id);
+        return AiModelAssembler.toResponse(updateBO(bo));
+    }
+
+    @Override
+    public AiModelResponse setDefaultResponse(Long id) { return AiModelAssembler.toResponse(setDefaultBO(id)); }
 
     @Resource
     private AiModelRepository aiModelRepository;
@@ -26,31 +63,27 @@ public class AiModelServiceImpl implements AiModelService {
     @Resource
     private AiPlatformRepository aiPlatformRepository;
 
-    @Override
-    public Pair<Long, List<AiModelBO>> getPage(Long platformId, Number pageNo, Number pageSize) {
+    private Pair<Long, List<AiModelBO>> getPageBO(Long platformId, Number pageNo, Number pageSize) {
         Pair<Long, List<AiModelBO>> result = aiModelRepository.selectPage(platformId, pageNo, pageSize);
         fillPlatformName(result.getRight());
         return result;
     }
 
-    @Override
-    public List<AiModelBO> getByPlatformId(Long platformId) {
+    private List<AiModelBO> getByPlatformIdBO(Long platformId) {
         List<AiModelBO> list = aiModelRepository.selectByPlatformId(platformId);
         fillPlatformName(list);
         return list;
     }
 
-    @Override
-    public List<AiModelBO> getByPlatformCode(String platformCode) {
+    private List<AiModelBO> getByPlatformCodeBO(String platformCode) {
         AiPlatformBO platform = aiPlatformRepository.selectByCode(platformCode);
         if (platform == null) {
             return List.of();
         }
-        return getByPlatformId(platform.getId());
+        return getByPlatformIdBO(platform.getId());
     }
 
-    @Override
-    public AiModelBO getById(Long id) {
+    private AiModelBO getByIdBO(Long id) {
         AiModelBO bo = aiModelRepository.selectById(id);
         if (bo != null) {
             fillPlatformName(bo);
@@ -58,8 +91,7 @@ public class AiModelServiceImpl implements AiModelService {
         return bo;
     }
 
-    @Override
-    public AiModelBO getDefaultByPlatformId(Long platformId) {
+    private AiModelBO getDefaultByPlatformIdBO(Long platformId) {
         AiModelBO bo = aiModelRepository.selectDefaultByPlatformId(platformId);
         if (bo != null) {
             fillPlatformName(bo);
@@ -67,8 +99,7 @@ public class AiModelServiceImpl implements AiModelService {
         return bo;
     }
 
-    @Override
-    public AiModelBO create(AiModelBO bo) {
+    private AiModelBO createBO(AiModelBO bo) {
         if ("Y".equals(bo.getIsDefault())) {
             aiModelRepository.clearDefaultExcept(bo.getPlatformId(), null);
         }
@@ -77,8 +108,7 @@ public class AiModelServiceImpl implements AiModelService {
         return created;
     }
 
-    @Override
-    public AiModelBO update(AiModelBO bo) {
+    private AiModelBO updateBO(AiModelBO bo) {
         if ("Y".equals(bo.getIsDefault())) {
             aiModelRepository.clearDefaultExcept(bo.getPlatformId(), bo.getId());
         }
@@ -102,11 +132,10 @@ public class AiModelServiceImpl implements AiModelService {
         return aiModelRepository.selectOptions(platformId);
     }
 
-    @Override
-    public AiModelBO setDefault(Long id) {
+    private AiModelBO setDefaultBO(Long id) {
         AiModelBO bo = aiModelRepository.selectById(id);
         if (bo == null) {
-            throw new IllegalArgumentException("模型不存在: " + id);
+            throw new IllegalArgumentException("妯″瀷涓嶅瓨鍦? " + id);
         }
         aiModelRepository.clearDefaultExcept(bo.getPlatformId(), id);
         bo.setIsDefault("Y");

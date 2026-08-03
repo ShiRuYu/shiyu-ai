@@ -1,7 +1,7 @@
 package com.shiyu.ai.auth.service.convert;
 
 import com.shiyu.ai.auth.vo.DictVO;
-import com.shiyu.ai.dal.common.bo.DictBO;
+import com.shiyu.ai.auth.domain.model.DictBO;
 import org.mapstruct.Mapper;
 import org.mapstruct.factory.Mappers;
 

@@ -4,7 +4,7 @@ import cn.hutool.json.JSONUtil;
 import com.mybatisflex.core.query.QueryWrapper;
 import com.shiyu.ai.dal.agent.dataobject.IntentDefDO;
 import com.shiyu.ai.dal.agent.mapper.IntentDefMapper;
-import com.shiyu.ai.dal.agent.bo.IntentDefBO;
+import com.shiyu.ai.agent.domain.model.IntentDefBO;
 import com.shiyu.ai.common.core.vo.IdNameOptionVO;
 import jakarta.annotation.Resource;
 import org.apache.commons.lang3.tuple.Pair;
@@ -15,7 +15,7 @@ import java.util.HashMap;
 import java.util.List;
 
 @Component
-public class IntentDefRepository {
+public class IntentDefRepository implements com.shiyu.ai.agent.port.repository.IntentDefRepository {
 
     @Resource
     private IntentDefMapper intentDefMapper;

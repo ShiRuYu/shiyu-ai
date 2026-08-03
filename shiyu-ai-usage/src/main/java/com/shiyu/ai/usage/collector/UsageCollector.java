@@ -1,8 +1,8 @@
 package com.shiyu.ai.usage.collector;
 
 import com.shiyu.ai.common.core.utils.JSONUtils;
-import com.shiyu.ai.dal.agent.dataobject.UsageRecordDO;
-import com.shiyu.ai.dal.agent.repository.UsageRecordRepository;
+import com.shiyu.ai.usage.domain.model.UsageRecordBO;
+import com.shiyu.ai.usage.port.repository.UsageRecordRepository;
 import com.shiyu.ai.usage.model.ModelPricing;
 import com.shiyu.ai.usage.realtime.UsageRealtimePublisher;
 import lombok.extern.slf4j.Slf4j;
@@ -61,7 +61,7 @@ public class UsageCollector {
             "cost", cost
         ));
 
-        UsageRecordDO record = buildRecord("LLM", latencyMs, userId, sessionId, extInfo);
+        UsageRecordBO record = buildRecord("LLM", latencyMs, userId, sessionId, extInfo);
 
         try {
             usageRecordRepository.insert(record);
@@ -87,7 +87,7 @@ public class UsageCollector {
             "vectorCount", vectorCount
         ));
 
-        UsageRecordDO record = buildRecord("EMBEDDING", latencyMs, userId, sessionId, extInfo);
+        UsageRecordBO record = buildRecord("EMBEDDING", latencyMs, userId, sessionId, extInfo);
 
         try {
             usageRecordRepository.insert(record);
@@ -106,9 +106,9 @@ public class UsageCollector {
         }
     }
 
-    private UsageRecordDO buildRecord(String usageType, long latencyMs,
+    private UsageRecordBO buildRecord(String usageType, long latencyMs,
                                        Long userId, String sessionId, String extInfo) {
-        UsageRecordDO record = new UsageRecordDO();
+        UsageRecordBO record = new UsageRecordBO();
         record.setId(UUID.randomUUID().toString().replace("-", ""));
         record.setUsageType(usageType);
         record.setLatencyMs(latencyMs);

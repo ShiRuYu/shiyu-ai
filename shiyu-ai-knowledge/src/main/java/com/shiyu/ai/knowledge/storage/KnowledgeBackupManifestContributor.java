@@ -1,8 +1,8 @@
 package com.shiyu.ai.knowledge.storage;
 
 import com.shiyu.ai.common.storage.BackupManifestContributor;
-import com.shiyu.ai.dal.knowledge.dataobject.KnowledgeSpaceDO;
-import com.shiyu.ai.dal.knowledge.repository.KnowledgeEnterpriseRepository;
+import com.shiyu.ai.knowledge.domain.model.KnowledgeSpaceBO;
+import com.shiyu.ai.knowledge.port.repository.KnowledgeEnterpriseRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
 
@@ -16,7 +16,7 @@ public class KnowledgeBackupManifestContributor implements BackupManifestContrib
     @Override
     public String contribute() {
         StringBuilder manifest = new StringBuilder();
-        for (KnowledgeSpaceDO space : repository.findAllActiveSpaces()) {
+        for (KnowledgeSpaceBO space : repository.findAllActiveSpaces()) {
             manifest.append("knowledge.activeIndex.")
                     .append(space.getTenantId()).append('.')
                     .append(space.getId()).append('=')

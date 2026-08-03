@@ -72,7 +72,7 @@ public abstract class BaseNode implements NodeAction<AgentState> {
 
                     if (executionHistoryService != null && executionId != null) {
                         executionHistoryService.completeExecution(executionId,
-                                JSONUtils.toJsonString(output.toMap()), com.shiyu.ai.dal.agent.enums.AgentExecutionStatus.SUCCESS.getCode(), null);
+                                JSONUtils.toJsonString(output.toMap()), com.shiyu.ai.agent.domain.enums.AgentExecutionStatus.SUCCESS.getCode(), null);
                     }
                     return output.toMap();
 
@@ -85,7 +85,7 @@ public abstract class BaseNode implements NodeAction<AgentState> {
             Map<String, Object> fallback = handleException(state, lastError);
             if (executionHistoryService != null && executionId != null) {
                 executionHistoryService.completeExecution(executionId,
-                        JSONUtils.toJsonString(fallback), com.shiyu.ai.dal.agent.enums.AgentExecutionStatus.FAILED.getCode(),
+                        JSONUtils.toJsonString(fallback), com.shiyu.ai.agent.domain.enums.AgentExecutionStatus.FAILED.getCode(),
                         lastError != null ? lastError.getMessage() : "未知错误");
             }
             return fallback;
@@ -93,7 +93,7 @@ public abstract class BaseNode implements NodeAction<AgentState> {
         } catch (Exception e) {
             log.error("节点执行失败: {}", config.getNodeName(), e);
             if (executionHistoryService != null && executionId != null) {
-                executionHistoryService.completeExecution(executionId, null, com.shiyu.ai.dal.agent.enums.AgentExecutionStatus.FAILED.getCode(), e.getMessage());
+                executionHistoryService.completeExecution(executionId, null, com.shiyu.ai.agent.domain.enums.AgentExecutionStatus.FAILED.getCode(), e.getMessage());
             }
             throw e;
         } finally {

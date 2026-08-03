@@ -4,12 +4,12 @@ import com.github.benmanes.caffeine.cache.Cache;
 import com.github.benmanes.caffeine.cache.Caffeine;
 import com.github.benmanes.caffeine.cache.RemovalListener;
 import com.shiyu.ai.common.core.exception.ServiceException;
-import com.shiyu.ai.dal.knowledge.bo.KnowledgeChunkBO;
-import com.shiyu.ai.dal.knowledge.bo.KnowledgeDocumentBO;
-import com.shiyu.ai.dal.knowledge.dataobject.KnowledgeSpaceDO;
-import com.shiyu.ai.dal.knowledge.repository.KnowledgeChunkRepository;
-import com.shiyu.ai.dal.knowledge.repository.KnowledgeDocumentRepository;
-import com.shiyu.ai.dal.knowledge.repository.KnowledgeEnterpriseRepository;
+import com.shiyu.ai.knowledge.domain.model.KnowledgeChunkBO;
+import com.shiyu.ai.knowledge.domain.model.KnowledgeDocumentBO;
+import com.shiyu.ai.knowledge.domain.model.KnowledgeSpaceBO;
+import com.shiyu.ai.knowledge.port.repository.KnowledgeChunkRepository;
+import com.shiyu.ai.knowledge.port.repository.KnowledgeDocumentRepository;
+import com.shiyu.ai.knowledge.port.repository.KnowledgeEnterpriseRepository;
 import com.shiyu.ai.knowledge.model.EmbeddingProvider;
 import com.shiyu.ai.knowledge.model.RerankProvider;
 import com.shiyu.ai.vector.VectorRecord;
@@ -102,7 +102,7 @@ public class EmbeddedIndexRegistry implements KnowledgeIndexService {
 
     @Override
     public synchronized long rebuild(Long tenantId, Long spaceId) {
-        KnowledgeSpaceDO space = enterpriseRepository.findSpaceByTenant(tenantId, spaceId);
+        KnowledgeSpaceBO space = enterpriseRepository.findSpaceByTenant(tenantId, spaceId);
         if (space == null) throw new ServiceException("知识空间不存在: " + spaceId);
         if (tenantId == null || !tenantId.equals(space.getTenantId())) {
             throw new ServiceException("租户与知识空间不匹配");
@@ -171,7 +171,7 @@ public class EmbeddedIndexRegistry implements KnowledgeIndexService {
     @Override
     public List<HybridHit> hybridSearch(Long tenantId, Long spaceId, String query,
                                         String mode, int topK, double threshold, boolean rerank) {
-        KnowledgeSpaceDO space = enterpriseRepository.findSpaceByTenant(tenantId, spaceId);
+        KnowledgeSpaceBO space = enterpriseRepository.findSpaceByTenant(tenantId, spaceId);
         if (space == null || space.getActiveIndexVersion() == null
                 || space.getActiveIndexVersion() <= 0) {
             return List.of();

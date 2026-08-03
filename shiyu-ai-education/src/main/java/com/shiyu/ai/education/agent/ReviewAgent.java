@@ -1,8 +1,8 @@
 package com.shiyu.ai.education.agent;
 
-import com.shiyu.ai.dal.education.bo.ReviewTaskBO;
-import com.shiyu.ai.dal.education.enums.ReviewTaskStatus;
-import com.shiyu.ai.dal.education.repository.ReviewTaskRepository;
+import com.shiyu.ai.education.domain.model.ReviewTaskBO;
+import com.shiyu.ai.education.domain.enums.ReviewTaskStatus;
+import com.shiyu.ai.education.port.repository.ReviewTaskRepository;
 import com.shiyu.ai.education.service.ReviewService;
 import com.shiyu.ai.education.domain.ReviewScheduler;
 import lombok.RequiredArgsConstructor;

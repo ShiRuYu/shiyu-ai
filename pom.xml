@@ -96,18 +96,18 @@
 
     <modules>
         <module>shiyu-common</module>
-        <module>shiyu-ai-dal</module>
+        <module>shiyu-ai-vector</module>
         <module>shiyu-ai-model</module>
         <module>shiyu-ai-memory</module>
         <module>shiyu-ai-tool</module>
-        <module>shiyu-ai-vector</module>
+        <module>shiyu-ai-knowledge</module>
+        <module>shiyu-ai-agent</module>
         <module>shiyu-ai-usage</module>
         <module>shiyu-ai-plugin</module>
-        <module>shiyu-ai-knowledge</module>
-        <module>shiyu-ai-education</module>
-        <module>shiyu-ai-agent</module>
         <module>shiyu-ai-auth</module>
         <module>shiyu-ai-record</module>
+        <module>shiyu-ai-education</module>
+        <module>shiyu-ai-dal</module>
         <module>shiyu-ai-web</module>
         <module>shiyu-ai-bootstrap</module>
     </modules>

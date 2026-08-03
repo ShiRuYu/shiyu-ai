@@ -2,10 +2,9 @@ package com.shiyu.ai.education.service.impl;
 
 import com.shiyu.ai.common.core.api.PageData;
 import com.shiyu.ai.common.core.utils.MapstructUtils;
-import com.shiyu.ai.dal.education.bo.CourseBO;
-import com.shiyu.ai.dal.education.bo.StudyRecordBO;
-import com.shiyu.ai.dal.education.repository.CourseRepository;
-import com.shiyu.ai.dal.education.repository.StudyRecordRepository;
+import com.shiyu.ai.education.domain.model.CourseBO;
+import com.shiyu.ai.education.port.repository.CourseRepository;
+import com.shiyu.ai.education.port.repository.StudyRecordRepository;
 import com.shiyu.ai.education.dto.CourseProgressResponse;
 import com.shiyu.ai.education.dto.CourseResponse;
 import com.shiyu.ai.education.request.CourseRequest;
@@ -95,6 +94,4 @@ public class CourseServiceImpl implements CourseService {
         courseRepository.deleteById(id);
     }
 
-    public void recordStudy(StudyRecordBO record) {
-    }
 }

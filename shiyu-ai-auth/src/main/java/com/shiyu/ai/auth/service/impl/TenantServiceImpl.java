@@ -1,11 +1,14 @@
 package com.shiyu.ai.auth.service.impl;
 
-import com.shiyu.ai.dal.auth.repository.TenantRepository;
+import com.shiyu.ai.auth.port.repository.TenantRepository;
 import com.shiyu.ai.auth.service.TenantService;
+import com.shiyu.ai.auth.request.TenantRequest;
+import com.shiyu.ai.auth.vo.TenantVO;
+import com.shiyu.ai.common.core.utils.MapstructUtils;
 import com.shiyu.ai.auth.vo.TenantVO;
 import com.shiyu.ai.common.core.api.PageData;
 import com.shiyu.ai.common.core.utils.MapstructUtils;
-import com.shiyu.ai.dal.auth.bo.TenantBO;
+import com.shiyu.ai.auth.domain.model.TenantBO;
 import com.shiyu.ai.common.core.domain.LoginContextHolder;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
@@ -19,6 +22,10 @@ import java.util.Map;
 @Slf4j
 @Service
 public class TenantServiceImpl implements TenantService {
+    @Override public List<TenantVO> allTenantsView() { return MapstructUtils.convert(getAllTenants(), TenantVO.class); }
+    @Override public TenantVO detailView(Long id) { return MapstructUtils.convert(getTenantById(id), TenantVO.class); }
+    @Override public boolean createTenant(TenantRequest request) { return createTenant(MapstructUtils.convert(request, TenantBO.class)); }
+    @Override public boolean updateTenant(Long id, TenantRequest request) { return updateTenant(id, MapstructUtils.convert(request, TenantBO.class)); }
 
     private final TenantRepository tenantRepository;
 
@@ -33,8 +40,7 @@ public class TenantServiceImpl implements TenantService {
         return new PageData<>(MapstructUtils.convert(page.getRight(), TenantVO.class), page.getLeft());
     }
 
-    @Override
-    public List<TenantBO> getAllTenants() {
+    private List<TenantBO> getAllTenants() {
         List<TenantBO> tenants = tenantRepository.selectAll();
         if (LoginContextHolder.getUserId() == null) {
             return List.of();
@@ -51,17 +57,15 @@ public class TenantServiceImpl implements TenantService {
                 .toList();
     }
 
-    @Override
-    public TenantBO getTenantById(Long id) {
+    private TenantBO getTenantById(Long id) {
         if (!canAccessTenant(id)) {
             return null;
         }
         return tenantRepository.selectById(id);
     }
 
-    @Override
     @Transactional(rollbackFor = Exception.class)
-    public boolean createTenant(TenantBO tenantBO) {
+    private boolean createTenant(TenantBO tenantBO) {
         log.info("新增租户，code: {}, name: {}", tenantBO.getCode(), tenantBO.getName());
 
         if (tenantRepository.existsByCode(tenantBO.getCode(), null)) {
@@ -88,8 +92,7 @@ public class TenantServiceImpl implements TenantService {
         return true;
     }
 
-    @Override
-    public boolean updateTenant(Long id, TenantBO tenantBO) {
+    private boolean updateTenant(Long id, TenantBO tenantBO) {
         log.info("修改租户，id: {}", id);
 
         TenantBO existing = tenantRepository.selectById(id);
@@ -132,8 +135,7 @@ public class TenantServiceImpl implements TenantService {
         return true;
     }
 
-    @Override
-    public List<TenantBO> getTenantTree() {
+    private List<TenantBO> getTenantTree() {
         List<TenantBO> allTenants = getAllTenants();
         if (allTenants == null || allTenants.isEmpty()) {
             return new ArrayList<>();

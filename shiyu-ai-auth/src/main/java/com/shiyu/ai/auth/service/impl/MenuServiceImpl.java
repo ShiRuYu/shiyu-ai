@@ -3,11 +3,13 @@ package com.shiyu.ai.auth.service.impl;
 import com.github.benmanes.caffeine.cache.Cache;
 import com.github.benmanes.caffeine.cache.Caffeine;
 import com.shiyu.ai.common.core.domain.LoginContextHolder;
-import com.shiyu.ai.dal.auth.repository.MenuRepository;
+import com.shiyu.ai.auth.port.repository.MenuRepository;
 import com.shiyu.ai.auth.service.MenuService;
-import com.shiyu.ai.dal.auth.bo.MenuBO;
-import com.shiyu.ai.dal.auth.repository.TenantRepository;
+import com.shiyu.ai.auth.domain.model.MenuBO;
+import com.shiyu.ai.auth.port.repository.TenantRepository;
 import com.shiyu.ai.auth.vo.MenuVO;
+import com.shiyu.ai.auth.vo.RouteMenuVO;
+import com.shiyu.ai.auth.request.MenuRequest;
 import com.shiyu.ai.common.core.api.PageData;
 import com.shiyu.ai.common.core.utils.MapstructUtils;
 import lombok.extern.slf4j.Slf4j;
@@ -28,6 +30,29 @@ import java.util.concurrent.TimeUnit;
 @Slf4j
 @Service
 public class MenuServiceImpl implements MenuService {
+
+    @Override public List<RouteMenuVO> routeMenusView(Long userId) { return toRouteMenus(getRouteMenusByUserId(userId)); }
+    @Override public List<MenuVO> allTreeView() { return MapstructUtils.convert(getAllTree(), MenuVO.class); }
+    @Override public List<RouteMenuVO> menuRootsView() { return toRouteMenus(getMenuRoots()); }
+    @Override public List<RouteMenuVO> childrenView(Long parentId) { return toRouteMenus(getChildrenByParentId(parentId)); }
+    @Override public List<RouteMenuVO> permissionsView() { return toRouteMenus(getMenuPermissionsTree()); }
+    @Override public List<RouteMenuVO> treeView() { return toRouteMenus(getAllTree()); }
+    @Override public boolean createMenu(MenuRequest request) { return createMenu(MapstructUtils.convert(request, MenuBO.class)); }
+    @Override public boolean updateMenu(Long id, MenuRequest request) { return updateMenu(id, MapstructUtils.convert(request, MenuBO.class)); }
+
+    private List<RouteMenuVO> toRouteMenus(List<MenuBO> menus) {
+        if (menus == null) return List.of();
+        List<RouteMenuVO> result = new ArrayList<>();
+        for (MenuBO menu : menus) {
+            RouteMenuVO vo = new RouteMenuVO(); vo.setId(menu.getId()); vo.setPid(menu.getParentId()); vo.setName(menu.getCode());
+            vo.setPath(menu.getPath()); vo.setComponent(menu.getComponent()); vo.setRedirect(menu.getRedirect()); vo.setStatus(menu.getStatus()); vo.setIcon(menu.getIcon());
+            String type=menu.getType(); vo.setType(type == null ? "menu" : type.toLowerCase(Locale.ROOT));
+            RouteMenuVO.MetaVO meta = new RouteMenuVO.MetaVO(); meta.setTitle(menu.getName()); meta.setIcon(menu.getIcon()); meta.setOrder(menu.getOrder()); meta.setKeepAlive(menu.getKeepAlive());
+            if (Boolean.FALSE.equals(menu.getShow())) meta.setHideInMenu(true); if ("none".equalsIgnoreCase(menu.getLayout())) meta.setNoBasicLayout(true); vo.setMeta(meta);
+            vo.setChildren(toRouteMenus(menu.getChildren())); result.add(vo);
+        }
+        return result;
+    }
 
     private static final Set<String> SUPPORTED_MENU_TYPES = Set.of(
             "CATALOG", "MENU", "LINK", "EMBEDDED");
@@ -52,21 +77,18 @@ public class MenuServiceImpl implements MenuService {
                 .build();
     }
 
-    @Override
-    public List<MenuBO> getMenuPermissionsTree() {
+    private List<MenuBO> getMenuPermissionsTree() {
         log.info("获取角色权限树 by token");
         return getAllTree();
     }
 
-    @Override
-    public List<MenuBO> getMenuTree() {
+    private List<MenuBO> getMenuTree() {
         log.info("获取权限树 - 菜单");
         List<MenuBO> menus = menuRepository.selectAllByType("MENU");
         return buildMenuTree(menus);
     }
 
-    @Override
-    public List<MenuBO> getAllTree() {
+    private List<MenuBO> getAllTree() {
         log.info("获取权限树 all");
         List<MenuBO> allMenuBOs = menuRepository.selectAll();
         return buildMenuTree(allMenuBOs);
@@ -123,8 +145,7 @@ public class MenuServiceImpl implements MenuService {
         return result;
     }
 
-    @Override
-    public boolean createMenu(MenuBO menuBO) {
+    private boolean createMenu(MenuBO menuBO) {
         log.info("新增菜单");
         if (!isSupportedMenuType(menuBO)) {
             return false;
@@ -140,8 +161,7 @@ public class MenuServiceImpl implements MenuService {
         return true;
     }
 
-    @Override
-    public boolean updateMenu(Long id, MenuBO menuBO) {
+    private boolean updateMenu(Long id, MenuBO menuBO) {
         log.info("修改菜单，id: {}", id);
 
         MenuBO existingMenu = menuRepository.selectById(id);
@@ -166,8 +186,7 @@ public class MenuServiceImpl implements MenuService {
         return result;
     }
 
-    @Override
-    public List<MenuBO> getMenuRoots() {
+    private List<MenuBO> getMenuRoots() {
         log.info("获取根节点菜单（parentId 为 null）");
         List<MenuBO> allMenus = menuRepository.selectAll();
         return allMenus.stream()
@@ -177,14 +196,12 @@ public class MenuServiceImpl implements MenuService {
                 .toList();
     }
 
-    @Override
-    public List<MenuBO> getChildrenByParentId(Long parentId) {
+    private List<MenuBO> getChildrenByParentId(Long parentId) {
         log.info("获取子菜单，parentId: {}", parentId);
         return menuRepository.selectByParentId(parentId);
     }
 
-    @Override
-    public List<MenuBO> getMenuTreeByUserId(Long userId) {
+    private List<MenuBO> getMenuTreeByUserId(Long userId) {
         log.info("根据用户 ID 获取菜单树，userId: {}", userId);
         // 复用单 JOIN 查询 + 建树
         List<MenuBO> userMenus = menuRepository.selectMenusByUserId(userId, null);
@@ -194,8 +211,7 @@ public class MenuServiceImpl implements MenuService {
         return buildMenuTree(userMenus);
     }
 
-    @Override
-    public List<MenuBO> getMenusByUserIdAndType(Long userId, String type) {
+    private List<MenuBO> getMenusByUserIdAndType(Long userId, String type) {
         log.info("根据用户 ID 和类型获取菜单树，userId: {}, type: {}", userId, type);
         List<MenuBO> userMenus = menuRepository.selectMenusByUserId(userId, null);
         if (userMenus.isEmpty()) {
@@ -221,8 +237,7 @@ public class MenuServiceImpl implements MenuService {
         return menuRepository.existsByPath(path, id);
     }
 
-    @Override
-    public List<MenuBO> getRouteMenusByUserId(Long userId) {
+    private List<MenuBO> getRouteMenusByUserId(Long userId) {
         log.info("获取用户路由菜单，userId: {}", userId);
         String cacheKey = buildRouteMenuCacheKey(userId);
 

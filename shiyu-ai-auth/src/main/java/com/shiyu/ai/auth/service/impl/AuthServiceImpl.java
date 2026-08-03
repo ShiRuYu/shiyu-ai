@@ -1,21 +1,21 @@
 package com.shiyu.ai.auth.service.impl;
 
-import com.shiyu.ai.dal.auth.repository.AuthRepository;
-import com.shiyu.ai.dal.auth.repository.UserRepository;
+import com.shiyu.ai.auth.port.repository.AuthRepository;
+import com.shiyu.ai.auth.port.repository.UserRepository;
 import com.shiyu.ai.auth.service.AuthService;
 import com.shiyu.ai.auth.service.CaptchaService;
 import com.shiyu.ai.auth.service.MenuService;
-import com.shiyu.ai.dal.auth.dataobject.RoleDO;
-import com.shiyu.ai.dal.auth.dataobject.TenantDO;
-import com.shiyu.ai.dal.auth.dataobject.UserScopeRoleDO;
-import com.shiyu.ai.dal.auth.repository.TenantRepository;
-import com.shiyu.ai.dal.auth.repository.TenantRoleRepository;
+import com.shiyu.ai.auth.domain.model.RoleBO;
+import com.shiyu.ai.auth.domain.model.TenantBO;
+import com.shiyu.ai.auth.domain.model.UserScopeRoleBO;
+import com.shiyu.ai.auth.port.repository.TenantRepository;
+import com.shiyu.ai.auth.port.repository.TenantRoleRepository;
 
-import com.shiyu.ai.dal.auth.repository.UserScopeRoleRepository;
+import com.shiyu.ai.auth.port.repository.UserScopeRoleRepository;
 
-import com.shiyu.ai.dal.auth.bo.RoleBO;
-import com.shiyu.ai.dal.auth.bo.UserBO;
-import com.shiyu.ai.dal.auth.bo.TenantBO;
+import com.shiyu.ai.auth.domain.model.RoleBO;
+import com.shiyu.ai.auth.domain.model.UserBO;
+import com.shiyu.ai.auth.domain.model.TenantBO;
 import com.shiyu.ai.auth.vo.LoginResponseVO;
 import com.shiyu.ai.auth.vo.TenantContextVO;
 import com.shiyu.ai.auth.vo.TenantInfoVO;
@@ -114,7 +114,7 @@ public class AuthServiceImpl implements AuthService {
 
             List<RoleBO> roles = userRepository.selectRolesByUserId(user.getId());
             // 查询用户工作空间角色列表
-            List<UserScopeRoleDO> uwrList = userWorkspaceRoleRepository.selectByUserId(user.getId());
+            List<UserScopeRoleBO> uwrList = userWorkspaceRoleRepository.selectByUserId(user.getId());
 
             // 从 ext_info 解析当前租户
             Map<String, Object> savedExtInfo = parseExtInfo(user.getExtInfo());
@@ -127,7 +127,7 @@ public class AuthServiceImpl implements AuthService {
                     .filter(item -> currentTenantId != null
                             && currentTenantId.equals(item.getTenantId())
                             && isActiveAssignment(item))
-                    .map(UserScopeRoleDO::getRoleId)
+                    .map(UserScopeRoleBO::getRoleId)
                     .filter(Objects::nonNull)
                     .collect(Collectors.toSet());
             roles = roles.stream()
@@ -135,7 +135,7 @@ public class AuthServiceImpl implements AuthService {
                     .toList();
             RoleBO currentRole = resolveCurrentRoleForTenant(roleId, roles, uwrList, currentTenantId);
             if (currentRole == null && "PARENT_SUPER_ADMIN".equals(savedExtInfo.get("switchMode"))) {
-                RoleDO delegatedRole = findTenantSuperRole(currentTenantId);
+                RoleBO delegatedRole = findTenantSuperRole(currentTenantId);
                 if (delegatedRole != null) {
                     currentRole = new RoleBO();
                     currentRole.setId(delegatedRole.getId());
@@ -149,7 +149,7 @@ public class AuthServiceImpl implements AuthService {
             // 获取租户名称
             String tenantName = null;
             if (currentTenantId != null) {
-                TenantDO tenant = tenantRoleRepository.selectTenantById(currentTenantId);
+                TenantBO tenant = tenantRoleRepository.selectTenantById(currentTenantId);
                 if (tenant != null) {
                     tenantName = tenant.getName();
                 }
@@ -194,7 +194,7 @@ public class AuthServiceImpl implements AuthService {
                     && uwrList.stream()
                     .filter(item -> resolvedHomeTenantId.equals(item.getTenantId())
                             && isActiveAssignment(item))
-                    .map(UserScopeRoleDO::getRoleId)
+                    .map(UserScopeRoleBO::getRoleId)
                     .map(tenantRoleRepository::selectRoleById)
                     .anyMatch(this::isTenantSuperRole);
             if (homeTenantSuperAdmin) {
@@ -237,7 +237,7 @@ public class AuthServiceImpl implements AuthService {
         }
     }
 
-    private Long resolveCurrentTenantId(String extInfo, List<UserScopeRoleDO> uwrList) {
+    private Long resolveCurrentTenantId(String extInfo, List<UserScopeRoleBO> uwrList) {
         Long assignedTenantId = null;
         if (extInfo != null && !extInfo.isEmpty()) {
             try {
@@ -256,7 +256,7 @@ public class AuthServiceImpl implements AuthService {
         if (uwrList != null && !uwrList.isEmpty()) {
             assignedTenantId = uwrList.stream()
                     .filter(this::isActiveAssignment)
-                    .map(UserScopeRoleDO::getTenantId)
+                    .map(UserScopeRoleBO::getTenantId)
                     .filter(Objects::nonNull)
                     .findFirst()
                     .orElse(null);
@@ -264,7 +264,7 @@ public class AuthServiceImpl implements AuthService {
         return assignedTenantId;
     }
 
-    private boolean hasTenantAssignment(List<UserScopeRoleDO> uwrList, Long tenantId) {
+    private boolean hasTenantAssignment(List<UserScopeRoleBO> uwrList, Long tenantId) {
         return tenantId != null && uwrList != null && uwrList.stream()
                 .anyMatch(r -> tenantId.equals(r.getTenantId()) && isActiveAssignment(r));
     }
@@ -274,7 +274,7 @@ public class AuthServiceImpl implements AuthService {
     }
 
     private boolean isDelegatedTenantContext(Map<String, Object> extInfo,
-                                              List<UserScopeRoleDO> assignments,
+                                              List<UserScopeRoleBO> assignments,
                                               Long targetTenantId) {
         if (!"PARENT_SUPER_ADMIN".equals(extInfo.get("switchMode"))) {
             return false;
@@ -285,16 +285,16 @@ public class AuthServiceImpl implements AuthService {
                 && tenantRepository.selectDescendantIds(homeTenantId).contains(targetTenantId)
                 && assignments.stream()
                 .filter(item -> homeTenantId.equals(item.getTenantId()) && isActiveAssignment(item))
-                .map(UserScopeRoleDO::getRoleId)
+                .map(UserScopeRoleBO::getRoleId)
                 .map(tenantRoleRepository::selectRoleById)
                 .anyMatch(this::isTenantSuperRole);
     }
 
-    private RoleDO findTenantSuperRole(Long tenantId) {
+    private RoleBO findTenantSuperRole(Long tenantId) {
         return tenantRoleRepository.selectTenantSuperRole(tenantId);
     }
 
-    private boolean isTenantSuperRole(RoleDO role) {
+    private boolean isTenantSuperRole(RoleBO role) {
         return role != null
                 && ("tenant_super".equals(role.getCode()) || "super".equals(role.getCode()))
                 && role.getStatus() != null && role.getStatus() == 1
@@ -330,10 +330,10 @@ public class AuthServiceImpl implements AuthService {
         return extInfoMap;
     }
 
-    private List<TenantContextVO> buildSubTenantList(List<UserScopeRoleDO> uwrList, Long currentTenantId) {
+    private List<TenantContextVO> buildSubTenantList(List<UserScopeRoleBO> uwrList, Long currentTenantId) {
         if (uwrList == null || uwrList.isEmpty()) return new ArrayList<>();
 
-        List<UserScopeRoleDO> filtered = uwrList;
+        List<UserScopeRoleBO> filtered = uwrList;
         if (currentTenantId != null) {
             filtered = uwrList.stream()
                     .filter(r -> currentTenantId.equals(r.getTenantId()) && isActiveAssignment(r))
@@ -342,10 +342,10 @@ public class AuthServiceImpl implements AuthService {
 
         List<TenantContextVO> result = new ArrayList<>();
         Set<Long> seen = new HashSet<>();
-        for (UserScopeRoleDO uwr : filtered) {
+        for (UserScopeRoleBO uwr : filtered) {
             if (seen.add(uwr.getTenantId())) {
-                TenantDO tenantWs = tenantRoleRepository.selectTenantById(uwr.getTenantId());
-                RoleDO role = tenantRoleRepository.selectRoleById(uwr.getRoleId());
+                TenantBO tenantWs = tenantRoleRepository.selectTenantById(uwr.getTenantId());
+                RoleBO role = tenantRoleRepository.selectRoleById(uwr.getRoleId());
                 if (isActiveTenant(tenantWs) && role != null
                         && role.getStatus() != null && role.getStatus() == 1
                         && (role.getDelFlag() == null || role.getDelFlag() == 0)) {
@@ -360,18 +360,18 @@ public class AuthServiceImpl implements AuthService {
         return result;
     }
 
-    private List<TenantInfoVO> buildTenantList(List<UserScopeRoleDO> uwrList) {
+    private List<TenantInfoVO> buildTenantList(List<UserScopeRoleBO> uwrList) {
         if (uwrList == null || uwrList.isEmpty()) return new ArrayList<>();
 
         Set<Long> tenantIds = uwrList.stream()
                 .filter(this::isActiveAssignment)
-                .map(UserScopeRoleDO::getTenantId)
+                .map(UserScopeRoleBO::getTenantId)
                 .filter(Objects::nonNull)
                 .collect(Collectors.toSet());
 
         List<TenantInfoVO> result = new ArrayList<>();
         for (Long tid : tenantIds) {
-            TenantDO tenant = tenantRoleRepository.selectTenantById(tid);
+            TenantBO tenant = tenantRoleRepository.selectTenantById(tid);
             if (isActiveTenant(tenant)) {
                 TenantInfoVO vo = new TenantInfoVO();
                 vo.setId(tenant.getId());
@@ -424,20 +424,16 @@ public class AuthServiceImpl implements AuthService {
         return String.join(" / ", names);
     }
 
-    private boolean isTenantSuperRole(RoleBO role) {
-        return role != null
-                && ("tenant_super".equals(role.getCode()) || "super".equals(role.getCode()));
-    }
 
     private RoleBO resolveCurrentRoleForTenant(Long roleId, List<RoleBO> roles,
-                                                List<UserScopeRoleDO> uwrList,
+                                                List<UserScopeRoleBO> uwrList,
                                                 Long tenantId) {
         if (roles == null || roles.isEmpty() || tenantId == null || uwrList == null) {
             return null;
         }
         Set<Long> allowedRoleIds = uwrList.stream()
                 .filter(r -> tenantId.equals(r.getTenantId()) && isActiveAssignment(r))
-                .map(UserScopeRoleDO::getRoleId)
+                .map(UserScopeRoleBO::getRoleId)
                 .filter(Objects::nonNull)
                 .collect(Collectors.toSet());
         return roles.stream()
@@ -539,7 +535,7 @@ public class AuthServiceImpl implements AuthService {
                 log.warn("用户不存在, userId: {}", userId);
                 return false;
             }
-            List<UserScopeRoleDO> uwrList = userWorkspaceRoleRepository.selectByUserId(userId);
+            List<UserScopeRoleBO> uwrList = userWorkspaceRoleRepository.selectByUserId(userId);
             Long currentTenantId = resolveCurrentTenantId(user.getExtInfo(), uwrList);
             if (currentTenantId == null || uwrList == null || uwrList.stream()
                     .noneMatch(r -> currentTenantId.equals(r.getTenantId())
@@ -590,13 +586,13 @@ public class AuthServiceImpl implements AuthService {
             UserBO user = userRepository.selectById(userId);
             if (user == null) return false;
 
-            List<UserScopeRoleDO> uwrList = userWorkspaceRoleRepository.selectByUserId(userId);
+            List<UserScopeRoleBO> uwrList = userWorkspaceRoleRepository.selectByUserId(userId);
             Map<String, Object> extInfoMap = parseExtInfo(user.getExtInfo());
             Long homeTenantId = numberValue(extInfoMap.get("homeTenantId"));
             if (homeTenantId == null) {
                 homeTenantId = uwrList == null ? null : uwrList.stream()
                         .filter(this::isActiveAssignment)
-                        .map(UserScopeRoleDO::getTenantId)
+                        .map(UserScopeRoleBO::getTenantId)
                         .filter(Objects::nonNull)
                         .findFirst()
                         .orElse(null);
@@ -609,25 +605,25 @@ public class AuthServiceImpl implements AuthService {
             if (currentTenantId == null) {
                 currentTenantId = homeTenantId;
             }
-            TenantDO targetTenant = tenantRoleRepository.selectTenantById(tenantId);
+            TenantBO targetTenant = tenantRoleRepository.selectTenantById(tenantId);
             if (!isActiveTenant(targetTenant)) {
                 return false;
             }
 
-            List<RoleDO> assignedRoles = uwrList == null ? List.of() : uwrList.stream()
+            List<RoleBO> assignedRoles = uwrList == null ? List.of() : uwrList.stream()
                     .filter(r -> tenantId.equals(r.getTenantId()) && isActiveAssignment(r))
-                    .map(UserScopeRoleDO::getRoleId)
+                    .map(UserScopeRoleBO::getRoleId)
                     .filter(Objects::nonNull)
                     .map(tenantRoleRepository::selectRoleById)
                     .filter(role -> role != null
                             && tenantId.equals(role.getTenantId())
                             && role.getStatus() != null && role.getStatus() == 1
                             && (role.getDelFlag() == null || role.getDelFlag() == 0))
-                    .sorted(Comparator.comparing(RoleDO::getId))
+                    .sorted(Comparator.comparing(RoleBO::getId))
                     .toList();
             Long preferredRoleId = extInfoMap.get("currentRole") instanceof Map<?, ?> roleMap
                     ? numberValue(roleMap.get("roleId")) : null;
-            RoleDO assignedRole = preferredRoleId == null ? null : assignedRoles.stream()
+            RoleBO assignedRole = preferredRoleId == null ? null : assignedRoles.stream()
                     .filter(role -> preferredRoleId.equals(role.getId()))
                     .findFirst()
                     .orElse(null);
@@ -636,7 +632,7 @@ public class AuthServiceImpl implements AuthService {
             }
             boolean homeTenantSuper = uwrList != null && uwrList.stream()
                     .filter(r -> homeTenant.equals(r.getTenantId()) && isActiveAssignment(r))
-                    .map(UserScopeRoleDO::getRoleId)
+                    .map(UserScopeRoleBO::getRoleId)
                     .map(tenantRoleRepository::selectRoleById)
                     .anyMatch(this::isTenantSuperRole);
             boolean returningHome = homeTenantId.equals(tenantId);
@@ -665,7 +661,7 @@ public class AuthServiceImpl implements AuthService {
             extInfoMap.put("currentTenantId", tenantId);
             extInfoMap.put("homeTenantId", homeTenantId);
 
-            RoleDO role = parentSuperAdminSwitch
+            RoleBO role = parentSuperAdminSwitch
                     ? findTenantSuperRole(tenantId)
                     : assignedRole;
             if (role != null) {
@@ -698,7 +694,7 @@ public class AuthServiceImpl implements AuthService {
 
     @Override
     public List<TenantInfoVO> getUserTenants(Long userId) {
-        List<UserScopeRoleDO> uwrList = userWorkspaceRoleRepository.selectByUserId(userId);
+        List<UserScopeRoleBO> uwrList = userWorkspaceRoleRepository.selectByUserId(userId);
         List<TenantInfoVO> tenants = buildTenantList(uwrList);
         UserBO user = userRepository.selectById(userId);
         if (user != null) {
@@ -717,7 +713,7 @@ public class AuthServiceImpl implements AuthService {
                     && uwrList != null
                     && uwrList.stream()
                     .filter(item -> resolvedHomeTenantId.equals(item.getTenantId()) && isActiveAssignment(item))
-                    .map(UserScopeRoleDO::getRoleId)
+                    .map(UserScopeRoleBO::getRoleId)
                     .map(tenantRoleRepository::selectRoleById)
                     .anyMatch(this::isTenantSuperRole);
 
@@ -858,7 +854,7 @@ public class AuthServiceImpl implements AuthService {
             }
 
             // 3. 分配默认工作空间和角色
-            UserScopeRoleDO uwr = new UserScopeRoleDO();
+            UserScopeRoleBO uwr = new UserScopeRoleBO();
             uwr.setUserId(userId);
             uwr.setTenantId(1L);
             uwr.setRoleId(defaultRole.getId());
@@ -902,7 +898,7 @@ public class AuthServiceImpl implements AuthService {
         return new LinkedHashMap<>();
     }
 
-    private boolean isActiveAssignment(UserScopeRoleDO item) {
+    private boolean isActiveAssignment(UserScopeRoleBO item) {
         return item != null
                 && item.getStatus() != null && item.getStatus() == 1
                 && (item.getDelFlag() == null || item.getDelFlag() == 0)
@@ -910,7 +906,7 @@ public class AuthServiceImpl implements AuthService {
                 && item.getRoleId() != null;
     }
 
-    private boolean isActiveTenant(TenantDO item) {
+    private boolean isActiveTenant(TenantBO item) {
         return item != null
                 && item.getStatus() != null && item.getStatus() == 1
                 && (item.getDelFlag() == null || item.getDelFlag() == 0);

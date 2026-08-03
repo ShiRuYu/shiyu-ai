@@ -1,7 +1,7 @@
 package com.shiyu.ai.education.dto;
 
 import io.github.linpeilie.annotations.AutoMapper;
-import com.shiyu.ai.dal.education.bo.QuestionBO;
+import com.shiyu.ai.education.domain.model.QuestionBO;
 
 @AutoMapper(target = QuestionBO.class)
 public record QuestionResponse(

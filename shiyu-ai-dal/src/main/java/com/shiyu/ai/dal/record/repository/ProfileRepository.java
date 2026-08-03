@@ -3,7 +3,7 @@ package com.shiyu.ai.dal.record.repository;
 import com.mybatisflex.core.query.QueryWrapper;
 import com.shiyu.ai.dal.record.dataobject.ProfileDO;
 import com.shiyu.ai.dal.record.mapper.ProfileMapper;
-import com.shiyu.ai.dal.record.bo.ProfileBO;
+import com.shiyu.ai.record.domain.model.ProfileBO;
 import com.shiyu.ai.common.core.enums.GenderEnum;
 import com.shiyu.ai.common.core.utils.MapstructUtils;
 import jakarta.annotation.Resource;
@@ -16,7 +16,7 @@ import java.util.List;
  * 人物数据仓储层
  */
 @Component
-public class ProfileRepository {
+public class ProfileRepository implements com.shiyu.ai.record.port.repository.ProfileRepository {
 
     @Resource
     private ProfileMapper profileMapper;

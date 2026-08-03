@@ -5,8 +5,8 @@ import com.shiyu.ai.dal.agent.dataobject.AgentDefDO;
 import com.shiyu.ai.dal.agent.dataobject.AgentVersionDO;
 import com.shiyu.ai.dal.agent.mapper.AgentDefMapper;
 import com.shiyu.ai.dal.agent.mapper.AgentVersionMapper;
-import com.shiyu.ai.dal.agent.bo.AgentDefBO;
-import com.shiyu.ai.dal.agent.bo.AgentVersionBO;
+import com.shiyu.ai.agent.domain.model.AgentDefBO;
+import com.shiyu.ai.agent.domain.model.AgentVersionBO;
 import com.shiyu.ai.common.core.utils.MapstructUtils;
 import jakarta.annotation.Resource;
 import org.apache.commons.lang3.StringUtils;
@@ -16,7 +16,7 @@ import org.springframework.stereotype.Component;
 import java.util.List;
 
 @Component
-public class AgentAdminRepository {
+public class AgentAdminRepository implements com.shiyu.ai.agent.port.repository.AgentAdminRepository {
 
     @Resource
     private AgentDefMapper agentDefMapper;

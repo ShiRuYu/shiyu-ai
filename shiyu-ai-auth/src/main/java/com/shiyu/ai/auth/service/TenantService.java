@@ -1,54 +1,16 @@
 package com.shiyu.ai.auth.service;
 
-import com.shiyu.ai.dal.auth.bo.TenantBO;
-import com.shiyu.ai.common.core.api.PageData;
+import com.shiyu.ai.auth.request.TenantRequest;
 import com.shiyu.ai.auth.vo.TenantVO;
+import com.shiyu.ai.common.core.api.PageData;
 
-import java.util.List;
-
-/**
- * Tenant 接口
- */
-
+/** Tenant application contract. */
 public interface TenantService {
+    java.util.List<TenantVO> allTenantsView();
+    TenantVO detailView(Long id);
+    boolean createTenant(TenantRequest request);
+    boolean updateTenant(Long id, TenantRequest request);
     PageData<TenantVO> getTenantPage(Number pageNo, Number pageSize,
                                      String name, String code, Integer status);
-
-    /**
-     * Get All Tenants (flat list)
-     * @return 处理结果
-     */
-    List<TenantBO> getAllTenants();
-
-    /**
-     * Get Tenant Tree (parent-child structure)
-     * @return 处理结果
-     */
-    List<TenantBO> getTenantTree();
-
-    /**
-     * Get Tenant By Id
-     * @return 处理结果
-     */
-    TenantBO getTenantById(Long id);
-
-    /**
-     * Create Tenant
-     * @param TenantBO TenantBO
-     * @return 处理结果
-     */
-    boolean createTenant(TenantBO tenantBO);
-
-    /**
-     * Update Tenant
-     * @param TenantBO TenantBO
-     * @return 处理结果
-     */
-    boolean updateTenant(Long id, TenantBO tenantBO);
-
-    /**
-     * Delete Tenant
-     * @return 处理结果
-     */
     boolean deleteTenant(Long id);
 }

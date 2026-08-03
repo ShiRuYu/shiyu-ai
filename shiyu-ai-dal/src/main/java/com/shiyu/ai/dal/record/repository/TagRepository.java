@@ -3,7 +3,7 @@ package com.shiyu.ai.dal.record.repository;
 import com.mybatisflex.core.query.QueryWrapper;
 import com.shiyu.ai.dal.record.dataobject.TagDO;
 import com.shiyu.ai.dal.record.mapper.TagMapper;
-import com.shiyu.ai.dal.record.bo.TagBO;
+import com.shiyu.ai.record.domain.model.TagBO;
 import com.shiyu.ai.common.core.utils.MapstructUtils;
 import jakarta.annotation.Resource;
 import org.apache.commons.lang3.tuple.Pair;
@@ -12,7 +12,7 @@ import org.springframework.stereotype.Component;
 import java.util.List;
 
 @Component
-public class TagRepository {
+public class TagRepository implements com.shiyu.ai.record.port.repository.TagRepository {
 
     @Resource
     private TagMapper tagMapper;

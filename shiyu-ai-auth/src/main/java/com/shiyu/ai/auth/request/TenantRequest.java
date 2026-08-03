@@ -1,6 +1,6 @@
 package com.shiyu.ai.auth.request;
 
-import com.shiyu.ai.dal.auth.bo.TenantBO;
+import com.shiyu.ai.auth.domain.model.TenantBO;
 import io.github.linpeilie.annotations.AutoMapper;
 import jakarta.validation.constraints.NotBlank;
 import io.swagger.v3.oas.annotations.media.Schema;

@@ -8,7 +8,7 @@ import java.io.Serializable;
 import java.util.Date;
 
 import io.github.linpeilie.annotations.AutoMapper;
-import com.shiyu.ai.dal.record.bo.ProfileMemberBO;
+import com.shiyu.ai.record.domain.model.ProfileMemberBO;
 /**
  * 人物成员关系视图对象
  */

@@ -5,14 +5,14 @@ import java.util.List;
 
 import com.shiyu.ai.common.core.api.PageData;
 import com.shiyu.ai.common.core.utils.MapstructUtils;
-import com.shiyu.ai.dal.education.bo.ChapterBO;
+import com.shiyu.ai.education.domain.model.ChapterBO;
 import com.shiyu.ai.dal.education.dataobject.ChapterDO;
 import com.shiyu.ai.dal.education.mapper.ChapterMapper;
 import jakarta.annotation.Resource;
 import org.springframework.stereotype.Component;
 
 @Component
-public class ChapterRepository {
+public class ChapterRepository implements com.shiyu.ai.education.port.repository.ChapterRepository {
 
     @Resource
     private ChapterMapper chapterMapper;

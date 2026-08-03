@@ -2,10 +2,13 @@ package com.shiyu.ai.auth.service.impl;
 
 import com.github.benmanes.caffeine.cache.Cache;
 import com.github.benmanes.caffeine.cache.Caffeine;
-import com.shiyu.ai.dal.common.repository.DictRepository;
-import com.shiyu.ai.dal.auth.repository.TenantRepository;
+import com.shiyu.ai.auth.port.repository.DictRepository;
+import com.shiyu.ai.auth.port.repository.TenantRepository;
 import com.shiyu.ai.auth.service.DictService;
-import com.shiyu.ai.dal.common.bo.DictBO;
+import com.shiyu.ai.auth.request.DictRequest;
+import com.shiyu.ai.auth.vo.DictVO;
+import com.shiyu.ai.auth.service.convert.DictConverter;
+import com.shiyu.ai.auth.domain.model.DictBO;
 import com.shiyu.ai.common.core.domain.LoginContextHolder;
 import jakarta.annotation.Resource;
 import lombok.extern.slf4j.Slf4j;
@@ -18,6 +21,11 @@ import java.util.concurrent.TimeUnit;
 @Slf4j
 @Service
 public class DictServiceImpl implements DictService {
+    @Override public Pair<Long, List<DictVO>> pageView(Number n, Number s) { var p=getAll(n,s); return Pair.of(p.getLeft(), DictConverter.INSTANCE.toVOList(p.getRight())); }
+    @Override public List<DictVO> byTypeView(String type) { return DictConverter.INSTANCE.toVOList(getByDictType(type)); }
+    @Override public DictVO create(DictRequest r) { return DictConverter.INSTANCE.toVO(create(toBO(r))); }
+    @Override public DictVO update(Long id, DictRequest r) { DictBO b=toBO(r); b.setId(id); return DictConverter.INSTANCE.toVO(update(b)); }
+    private DictBO toBO(DictRequest r) { DictBO b=new DictBO(); b.setDictType(r.getDictType()); b.setDictLabel(r.getDictLabel()); b.setDictValue(r.getDictValue()); b.setDictSort(r.getDictSort()); b.setCssClass(r.getCssClass()); b.setListClass(r.getListClass()); b.setIsDefault(r.getIsDefault()); b.setRemark(r.getRemark()); b.setStatus(r.getStatus()); return b; }
 
     @Resource
     private DictRepository dictRepository;
@@ -35,18 +43,15 @@ public class DictServiceImpl implements DictService {
                 .build();
     }
 
-    @Override
-    public Pair<Long, List<DictBO>> getAll(Number pageNo, Number pageSize) {
+    private Pair<Long, List<DictBO>> getAll(Number pageNo, Number pageSize) {
         return dictRepository.selectPage(pageNo, pageSize);
     }
 
-    @Override
-    public DictBO getById(Long id) {
+    private DictBO getById(Long id) {
         return dictRepository.selectById(id);
     }
 
-    @Override
-    public List<DictBO> getByDictType(String dictType) {
+    private List<DictBO> getByDictType(String dictType) {
         String cacheKey = cacheKey(dictType);
         List<DictBO> cached = dictTypeCache.getIfPresent(cacheKey);
         if (cached != null) {
@@ -60,8 +65,7 @@ public class DictServiceImpl implements DictService {
         return list;
     }
 
-    @Override
-    public DictBO create(DictBO dictBO) {
+    private DictBO create(DictBO dictBO) {
         Long targetTenantId = resolveTargetTenantId(dictBO == null ? null : dictBO.getTenantId());
         if (targetTenantId == null) {
             throw new IllegalArgumentException("目标租户不在当前租户可管理范围内");
@@ -72,8 +76,7 @@ public class DictServiceImpl implements DictService {
         return created;
     }
 
-    @Override
-    public DictBO update(DictBO dictBO) {
+    private DictBO update(DictBO dictBO) {
         if (dictBO == null || dictBO.getId() == null) {
             return null;
         }

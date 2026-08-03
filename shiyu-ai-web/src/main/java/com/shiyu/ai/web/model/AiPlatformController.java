@@ -3,7 +3,8 @@ package com.shiyu.ai.web.model;
 import cn.dev33.satoken.annotation.SaCheckPermission;
 import com.shiyu.ai.model.service.AiPlatformService;
 import com.shiyu.ai.model.vo.AiPlatformVO;
-import com.shiyu.ai.dal.model.bo.AiPlatformBO;
+import com.shiyu.ai.model.api.request.AiPlatformRequest;
+import com.shiyu.ai.model.api.response.AiPlatformResponse;
 import com.shiyu.ai.common.core.vo.IdNameOptionVO;
 import com.shiyu.ai.model.adapter.ModelManager;
 import com.shiyu.ai.common.core.api.PageData;
@@ -43,7 +44,7 @@ public class AiPlatformController {
             @RequestParam(required = false) String code,
             @RequestParam(required = false, defaultValue = "1") Integer pageNo,
             @RequestParam(required = false, defaultValue = "10") Integer pageSize) {
-        var result = aiPlatformService.getPage(pageNo, pageSize, name, code);
+        var result = aiPlatformService.pageResponse(pageNo, pageSize, name, code);
         var vos = com.shiyu.ai.common.core.utils.MapstructUtils.convert(result.getRight(), AiPlatformVO.class);
         return Result.success(new PageData<>(vos, result.getLeft()));
     }
@@ -51,7 +52,7 @@ public class AiPlatformController {
     @Operation(summary = "Get All Enabled")
     @GetMapping("/enabled")
     public Result<List<AiPlatformVO>> getAllEnabled() {
-        var list = aiPlatformService.getAllEnabled();
+        var list = aiPlatformService.enabledResponse();
         return Result.success(com.shiyu.ai.common.core.utils.MapstructUtils.convert(list, AiPlatformVO.class));
     }
 
@@ -63,30 +64,30 @@ public class AiPlatformController {
 
     @Operation(summary = "Get by Id")
     @GetMapping("/detail")
-    public Result<AiPlatformBO> getById(@RequestParam Long id) {
-        AiPlatformBO bo = aiPlatformService.getById(id);
-        if (bo != null) {
-            return Result.success(bo);
+    public Result<AiPlatformResponse> getById(@RequestParam Long id) {
+        AiPlatformResponse response = aiPlatformService.detailResponse(id);
+        if (response != null) {
+            return Result.success(response);
         }
         return Result.fail("平台不存在");
     }
 
     @Operation(summary = "Get by Code")
     @GetMapping("/code")
-    public Result<AiPlatformBO> getByCode(@RequestParam String code) {
-        AiPlatformBO bo = aiPlatformService.getByCode(code);
-        if (bo != null) {
-            return Result.success(bo);
+    public Result<AiPlatformResponse> getByCode(@RequestParam String code) {
+        AiPlatformResponse response = aiPlatformService.codeResponse(code);
+        if (response != null) {
+            return Result.success(response);
         }
         return Result.fail("平台不存在");
     }
 
     @Operation(summary = "Get Default")
     @GetMapping("/default")
-    public Result<AiPlatformBO> getDefault() {
-        AiPlatformBO bo = aiPlatformService.getDefault();
-        if (bo != null) {
-            return Result.success(bo);
+    public Result<AiPlatformResponse> getDefault() {
+        AiPlatformResponse response = aiPlatformService.defaultResponse();
+        if (response != null) {
+            return Result.success(response);
         }
         return Result.fail("未配置默认平台");
     }
@@ -94,9 +95,9 @@ public class AiPlatformController {
     @Operation(summary = "Create")
     @SaCheckPermission("agent:platform:create")
     @PostMapping("/create")
-    public Result<AiPlatformVO> create(@Valid @RequestBody AiPlatformBO bo) {
+    public Result<AiPlatformVO> create(@Valid @RequestBody AiPlatformRequest request) {
         try {
-            AiPlatformBO created = aiPlatformService.create(bo);
+            AiPlatformResponse created = aiPlatformService.createResponse(request);
             modelManager.markDirty();
             return Result.success(com.shiyu.ai.common.core.utils.MapstructUtils.convert(created, AiPlatformVO.class));
         } catch (Exception e) {
@@ -108,10 +109,9 @@ public class AiPlatformController {
     @Operation(summary = "Update")
     @SaCheckPermission("agent:platform:edit")
     @PostMapping("/update")
-    public Result<AiPlatformVO> update(@RequestParam Long id, @Valid @RequestBody AiPlatformBO bo) {
+    public Result<AiPlatformVO> update(@RequestParam Long id, @Valid @RequestBody AiPlatformRequest request) {
         try {
-            bo.setId(id);
-            AiPlatformBO updated = aiPlatformService.update(bo);
+            AiPlatformResponse updated = aiPlatformService.updateResponse(id, request);
             modelManager.markDirty();
             return Result.success(com.shiyu.ai.common.core.utils.MapstructUtils.convert(updated, AiPlatformVO.class));
         } catch (Exception e) {
@@ -139,9 +139,9 @@ public class AiPlatformController {
     @PostMapping("/set-default")
     public Result<AiPlatformVO> setDefault(@RequestParam Long id) {
         try {
-            AiPlatformBO bo = aiPlatformService.setDefault(id);
+            AiPlatformResponse response = aiPlatformService.setDefaultResponse(id);
             modelManager.markDirty();
-            return Result.success(com.shiyu.ai.common.core.utils.MapstructUtils.convert(bo, AiPlatformVO.class));
+            return Result.success(com.shiyu.ai.common.core.utils.MapstructUtils.convert(response, AiPlatformVO.class));
         } catch (Exception e) {
             log.error("设置默认平台失败", e);
             return Result.fail("设置失败");

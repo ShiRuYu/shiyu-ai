@@ -3,7 +3,7 @@ package com.shiyu.ai.dal.memory.repository;
 import com.mybatisflex.core.query.QueryWrapper;
 import com.shiyu.ai.dal.memory.dataobject.LongTermMemoryDO;
 import com.shiyu.ai.dal.memory.mapper.LongTermMemoryMapper;
-import com.shiyu.ai.dal.memory.bo.LongTermMemoryBO;
+import com.shiyu.ai.memory.domain.model.LongTermMemoryBO;
 import com.shiyu.ai.common.core.utils.MapstructUtils;
 import jakarta.annotation.Resource;
 import org.springframework.stereotype.Component;
@@ -11,7 +11,7 @@ import org.springframework.stereotype.Component;
 import java.util.List;
 
 @Component
-public class LongTermMemoryRepository {
+public class LongTermMemoryRepository implements com.shiyu.ai.memory.port.repository.LongTermMemoryRepository {
 
     @Resource
     private LongTermMemoryMapper longTermMemoryMapper;

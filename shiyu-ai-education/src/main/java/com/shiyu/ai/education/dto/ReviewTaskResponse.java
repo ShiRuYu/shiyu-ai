@@ -2,7 +2,7 @@ package com.shiyu.ai.education.dto;
 
 import java.time.LocalDateTime;
 import io.github.linpeilie.annotations.AutoMapper;
-import com.shiyu.ai.dal.education.bo.ReviewTaskBO;
+import com.shiyu.ai.education.domain.model.ReviewTaskBO;
 
 @AutoMapper(target = ReviewTaskBO.class)
 public record ReviewTaskResponse(

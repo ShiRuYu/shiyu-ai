@@ -1,6 +1,6 @@
 package com.shiyu.ai.auth.vo;
 
-import com.shiyu.ai.dal.auth.bo.UserBO;
+import com.shiyu.ai.auth.domain.model.UserBO;
 import io.github.linpeilie.annotations.AutoMapper;
 import lombok.Data;
 

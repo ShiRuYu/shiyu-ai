@@ -1,13 +1,13 @@
 package com.shiyu.ai.agent.runtime;
 
-import com.shiyu.ai.dal.agent.enums.AgentExecutionStatus;
+import com.shiyu.ai.agent.domain.enums.AgentExecutionStatus;
 
 import com.shiyu.ai.agent.AgentDefinition;
 import com.shiyu.ai.agent.AgentVersion;
 import com.shiyu.ai.agent.cache.AgentCacheManager;
 import com.shiyu.ai.agent.cache.AgentLoader;
 import com.shiyu.ai.agent.checkpoint.Checkpoint;
-import com.shiyu.ai.dal.agent.repository.AgentCheckpointRepository;
+import com.shiyu.ai.agent.port.repository.AgentCheckpointRepository;
 import com.shiyu.ai.agent.checkpoint.CheckpointManager;
 import com.shiyu.ai.agent.checkpoint.DbCheckpointStore;
 import com.shiyu.ai.agent.event.AgentExecutionCompletedEvent;
@@ -17,8 +17,8 @@ import com.shiyu.ai.agent.event.EventPublisher;
 import com.shiyu.ai.agent.execution.Execution;
 import com.shiyu.ai.agent.execution.ExecutionStatus;
 import com.shiyu.ai.agent.lifecycle.AgentStateMachine;
-import com.shiyu.ai.dal.agent.bo.AgentExecutionBO;
-import com.shiyu.ai.dal.agent.repository.AgentExecutionRepository;
+import com.shiyu.ai.agent.domain.model.AgentExecutionBO;
+import com.shiyu.ai.agent.port.repository.AgentExecutionRepository;
 import com.shiyu.ai.common.core.utils.JSONUtils;
 import lombok.extern.slf4j.Slf4j;
 import org.bsc.langgraph4j.NodeOutput;

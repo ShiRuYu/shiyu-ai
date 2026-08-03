@@ -1,6 +1,6 @@
 package com.shiyu.ai.education.agent.graph;
 
-import com.shiyu.ai.dal.education.enums.ReviewTaskStatus;
+import com.shiyu.ai.education.domain.enums.ReviewTaskStatus;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.shiyu.ai.agent.node.NodeInputParam;
@@ -8,8 +8,8 @@ import com.shiyu.ai.agent.node.BaseNode;
 import com.shiyu.ai.agent.node.NodeInput;
 import com.shiyu.ai.agent.node.NodeOutput;
 import com.shiyu.ai.agent.node.NodeType;
-import com.shiyu.ai.dal.education.bo.ReviewTaskBO;
-import com.shiyu.ai.dal.education.repository.ReviewTaskRepository;
+import com.shiyu.ai.education.domain.model.ReviewTaskBO;
+import com.shiyu.ai.education.port.repository.ReviewTaskRepository;
 import com.shiyu.ai.education.service.ReviewService;
 import com.shiyu.ai.education.domain.ReviewScheduler;
 import lombok.Getter;

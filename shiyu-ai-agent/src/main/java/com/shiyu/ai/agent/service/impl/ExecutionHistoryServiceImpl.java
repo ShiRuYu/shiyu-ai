@@ -1,8 +1,8 @@
 package com.shiyu.ai.agent.service.impl;
 
-import com.shiyu.ai.dal.agent.repository.AgentExecutionRepository;
+import com.shiyu.ai.agent.port.repository.AgentExecutionRepository;
 import com.shiyu.ai.agent.service.ExecutionHistoryService;
-import com.shiyu.ai.dal.agent.bo.AgentExecutionBO;
+import com.shiyu.ai.agent.domain.model.AgentExecutionBO;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 
@@ -31,7 +31,7 @@ public class ExecutionHistoryServiceImpl implements ExecutionHistoryService {
         exec.setNodeId(nodeId);
         exec.setNodeType(nodeType);
         exec.setInputData(inputData);
-        exec.setStatus(com.shiyu.ai.dal.agent.enums.AgentExecutionStatus.RUNNING.getCode());
+        exec.setStatus(com.shiyu.ai.agent.domain.enums.AgentExecutionStatus.RUNNING.getCode());
         exec.setStartTime(LocalDateTime.now());
         exec.setCreateTime(LocalDateTime.now());
         agentExecutionRepository.insert(exec);

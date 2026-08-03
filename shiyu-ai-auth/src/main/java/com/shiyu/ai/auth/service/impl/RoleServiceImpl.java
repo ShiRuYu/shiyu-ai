@@ -1,13 +1,16 @@
 package com.shiyu.ai.auth.service.impl;
 
-import com.shiyu.ai.dal.auth.repository.RoleRepository;
-import com.shiyu.ai.dal.auth.repository.TenantRepository;
-import com.shiyu.ai.dal.auth.repository.UserRepository;
+import com.shiyu.ai.auth.port.repository.RoleRepository;
+import com.shiyu.ai.auth.port.repository.TenantRepository;
+import com.shiyu.ai.auth.port.repository.UserRepository;
 import com.shiyu.ai.auth.service.RoleService;
+import com.shiyu.ai.auth.request.RoleRequest;
+import com.shiyu.ai.auth.vo.RoleVO;
+import com.shiyu.ai.common.core.utils.MapstructUtils;
 import com.shiyu.ai.auth.service.MenuService;
-import com.shiyu.ai.dal.auth.dataobject.UserScopeRoleDO;
-import com.shiyu.ai.dal.auth.repository.UserScopeRoleRepository;
-import com.shiyu.ai.dal.auth.bo.RoleBO;
+import com.shiyu.ai.auth.domain.model.UserScopeRoleBO;
+import com.shiyu.ai.auth.port.repository.UserScopeRoleRepository;
+import com.shiyu.ai.auth.domain.model.RoleBO;
 import com.shiyu.ai.common.core.api.PageData;
 import com.shiyu.ai.auth.vo.RoleVO;
 import com.shiyu.ai.common.core.domain.LoginContextHolder;
@@ -25,6 +28,10 @@ import java.util.List;
 @Slf4j
 @Service
 public class RoleServiceImpl implements RoleService {
+    @Override public List<RoleVO> allRolesView(String status, Long tenantId) { return MapstructUtils.convert(getAllRoles(status, tenantId), RoleVO.class); }
+    @Override public RoleVO detailView(Long id, Long tenantId) { return MapstructUtils.convert(getRoleDetail(id, tenantId), RoleVO.class); }
+    @Override public boolean createRole(RoleRequest request) { return createRole(MapstructUtils.convert(request, RoleBO.class)); }
+    @Override public boolean updateRole(Long id, RoleRequest request) { return updateRole(id, MapstructUtils.convert(request, RoleBO.class)); }
 
     private final RoleRepository roleRepository;
     private final UserScopeRoleRepository userWorkspaceRoleRepository;
@@ -63,8 +70,7 @@ public class RoleServiceImpl implements RoleService {
         return new PageData<>(roleVOs, result.getLeft());
     }
 
-    @Override
-    public List<RoleBO> getAllRoles(String status, Long tenantId) {
+    private List<RoleBO> getAllRoles(String status, Long tenantId) {
         log.info("获取所有角色，status: {}, tenantId: {}", status, tenantId);
         Long currentTenantId = LoginContextHolder.getCurrentTenantId();
         if (!isAssignableTenantScope(currentTenantId,
@@ -77,8 +83,7 @@ public class RoleServiceImpl implements RoleService {
                 .toList();
     }
 
-    @Override
-    public RoleBO getRoleDetail(Long id, Long tenantId) {
+    private RoleBO getRoleDetail(Long id, Long tenantId) {
         Long currentTenantId = LoginContextHolder.getCurrentTenantId();
         if (!isAssignableTenantScope(currentTenantId, tenantId)
                 || !roleRepository.isRoleOwnedByTenant(id, tenantId)) {
@@ -92,9 +97,8 @@ public class RoleServiceImpl implements RoleService {
         return role;
     }
 
-    @Override
     @Transactional(rollbackFor = Exception.class)
-    public boolean updateRole(Long id, RoleBO roleBO) {
+    private boolean updateRole(Long id, RoleBO roleBO) {
         log.info("修改角色，id: {}", id);
         
         RoleBO existingRole = roleRepository.selectById(id);
@@ -191,11 +195,7 @@ public class RoleServiceImpl implements RoleService {
                         userId, currentTenantId);
                 return false;
             }
-            com.mybatisflex.core.query.QueryWrapper qw = new com.mybatisflex.core.query.QueryWrapper();
-            qw.eq(UserScopeRoleDO::getUserId, userId)
-               .eq(UserScopeRoleDO::getRoleId, roleId)
-               .eq(UserScopeRoleDO::getTenantId, tenantId);
-            userWorkspaceRoleRepository.deleteByQuery(qw);
+            userWorkspaceRoleRepository.deleteByUserIdRoleIdAndTenantId(userId, roleId, tenantId);
             menuService.evictRouteMenuCache(userId);
         }
         return true;
@@ -228,7 +228,7 @@ public class RoleServiceImpl implements RoleService {
                         userId, currentTenantId);
                 return false;
             }
-            UserScopeRoleDO uwr = new UserScopeRoleDO();
+            UserScopeRoleBO uwr = new UserScopeRoleBO();
             uwr.setUserId(userId);
             uwr.setTenantId(tenantId);
             uwr.setRoleId(roleId);
@@ -238,9 +238,8 @@ public class RoleServiceImpl implements RoleService {
         return true;
     }
 
-    @Override
     @Transactional(rollbackFor = Exception.class)
-    public boolean createRole(RoleBO roleBO) {
+    private boolean createRole(RoleBO roleBO) {
         log.info("新增角色");
         Long targetTenantId = resolveAssignableTenantId(roleBO.getTenantId());
         if (targetTenantId == null) {
