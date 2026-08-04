@@ -19,6 +19,10 @@
             <artifactId>shiyu-ai-web</artifactId>
         </dependency>
         <dependency>
+            <groupId>com.shiyu.ai</groupId>
+            <artifactId>shiyu-ai-dal</artifactId>
+        </dependency>
+        <dependency>
             <groupId>com.h2database</groupId>
             <artifactId>h2</artifactId>
         </dependency>

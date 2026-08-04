@@ -12,7 +12,8 @@ import org.springframework.context.annotation.Configuration;
     "com.shiyu.ai.dal.knowledge.mapper",
     "com.shiyu.ai.dal.memory.mapper",
     "com.shiyu.ai.dal.model.mapper",
-    "com.shiyu.ai.dal.record.mapper"
+    "com.shiyu.ai.dal.record.mapper",
+    "com.shiyu.ai.dal.usage.mapper"
 })
 public class DalConfig {
 }
