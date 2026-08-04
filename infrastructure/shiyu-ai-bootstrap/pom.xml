@@ -86,6 +86,9 @@
         </profile>
         <profile>
             <id>api-docs-ui</id>
+            <activation>
+                <activeByDefault>true</activeByDefault>
+            </activation>
             <dependencies>
                 <dependency>
                     <groupId>org.springdoc</groupId>

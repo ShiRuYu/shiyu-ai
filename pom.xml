@@ -27,7 +27,7 @@
 
         <sa-token.version>1.45.0</sa-token.version>
 
-        <springdoc-openapi.version>3.0.2</springdoc-openapi.version>
+        <springdoc-openapi.version>3.1.0</springdoc-openapi.version>
         <therapi-runtime-javadoc.version>0.15.0</therapi-runtime-javadoc.version>
 
         <mapstruct-plus.version>1.5.1</mapstruct-plus.version>
