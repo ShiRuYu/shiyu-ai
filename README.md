@@ -287,6 +287,35 @@ java -jar infrastructure/shiyu-ai-bootstrap/target/shiyu-ai-bootstrap-1.0.0.jar 
 
 从 bootstrap 子目录直接执行 `spring-boot:run` 可能加载本机 Maven 仓库中的旧模块包；开发环境应先从根目录构建 reactor，确保运行的是当前源码。
 
+#### Maven Profile（可选能力开关）
+
+`infrastructure/shiyu-ai-bootstrap/pom.xml` 定义了 3 个可选 Maven profile，用于按需加载依赖（生产包默认不启用）：
+
+| Profile | 添加的依赖 | 用途 |
+|---------|------------|------|
+| `observability` | `spring-boot-starter-actuator`、`spring-boot-starter-opentelemetry`、`micrometer-registry-prometheus` | 可观测性：健康/指标端点、链路追踪、Prometheus 指标 |
+| `api-docs-ui` | `springdoc-openapi-starter-webmvc-ui` | 提供 Swagger UI 页面（`/swagger-ui.html`）；不启用时仍可通过 `/v3/api-docs` 访问 JSON 文档 |
+| `s3` | `software.amazon.awssdk:s3` | 对象存储 S3 SDK，存储类型切换为 `s3` / `minio` / `aliyun-oss` / `tencent-cos` 时需要 |
+
+激活示例：
+
+```bash
+# 打包时启用观测
+mvn -Pobservability -pl infrastructure/shiyu-ai-bootstrap -am -DskipTests package
+# 运行时可同时启用多个
+mvn -Pobservability,api-docs-ui,s3 spring-boot:run
+```
+
+注意事项：
+
+1. **`api-docs-ui` 默认激活（`activeByDefault=true`）**：直接 `mvn spring-boot:run` 即可访问 Swagger UI；但一旦显式指定任意 `-P`（如 `-Pobservability` 或根 pom 的 `-Pprod`），它会自动被禁用，需要时须显式写回。
+2. **Maven profile ≠ Spring profile**：`observability` 只负责把依赖加进 classpath；对应配置 `application-observability.yml` 通过 `spring.config.activate.on-profile: observability` 加载，运行时需同时指定 Spring profile：
+   ```bash
+   mvn -Pobservability spring-boot:run \
+     -Dspring-boot.run.arguments="--spring.profiles.active=dev,observability"
+   ```
+3. **与 `dev` / `prod` 的关系**：根 pom 的 `dev` / `prod` profile 只决定环境标识（`spring.profiles.active`，对应 `application-dev.yml` / `application-prod.yml`），与上述 3 个能力开关互不影响，可自由组合（如 `-Pprod,observability,api-docs-ui`）。
+
 ### 发行包
 
 ```powershell

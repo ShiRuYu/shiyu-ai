@@ -285,6 +285,46 @@ cd infrastructure/shiyu-ai-bootstrap
 mvn spring-boot:run -Dspring-boot.run.profiles=dev
 ```
 
+#### Maven profiles (optional capability switches)
+
+`infrastructure/shiyu-ai-bootstrap/pom.xml` defines three optional Maven profiles
+that load dependencies on demand (excluded from production packages by default):
+
+| Profile | Dependencies added | Purpose |
+|---------|--------------------|---------|
+| `observability` | `spring-boot-starter-actuator`, `spring-boot-starter-opentelemetry`, `micrometer-registry-prometheus` | Health/metrics endpoints, distributed tracing, Prometheus metrics |
+| `api-docs-ui` | `springdoc-openapi-starter-webmvc-ui` | Swagger UI at `/swagger-ui.html`; without it the JSON docs at `/v3/api-docs` still work |
+| `s3` | `software.amazon.awssdk:s3` | Object storage S3 SDK; needed when the storage type is `s3` / `minio` / `aliyun-oss` / `tencent-cos` |
+
+Activation examples:
+
+```bash
+# Package with observability enabled
+mvn -Pobservability -pl infrastructure/shiyu-ai-bootstrap -am -DskipTests package
+# Run with several profiles at once
+mvn -Pobservability,api-docs-ui,s3 spring-boot:run
+```
+
+Notes:
+
+1. **`api-docs-ui` is active by default (`activeByDefault=true`)** — a plain
+   `mvn spring-boot:run` gives you the Swagger UI. However, once any `-P` flag
+   is given explicitly (e.g. `-Pobservability` or the root `-Pprod`), it is
+   automatically disabled and must be listed explicitly again.
+2. **Maven profile ≠ Spring profile** — `observability` only adds dependencies
+   to the classpath; the matching `application-observability.yml` is loaded via
+   `spring.config.activate.on-profile: observability`, so pass the Spring
+   profile at runtime too:
+   ```bash
+   mvn -Pobservability spring-boot:run \
+     -Dspring-boot.run.arguments="--spring.profiles.active=dev,observability"
+   ```
+3. **Relation to `dev` / `prod`** — the root POM's `dev` / `prod` profiles only
+   set the environment id (`spring.profiles.active`, mapped to
+   `application-dev.yml` / `application-prod.yml`) and are independent of the
+   three switches above, so they can be combined freely (e.g.
+   `-Pprod,observability,api-docs-ui`).
+
 ### Release packages
 
 ```powershell
