@@ -8,9 +8,12 @@ import lombok.Data;
 import java.io.Serial;
 import java.io.Serializable;
 import java.time.LocalDateTime;
+import com.shiyu.ai.agent.domain.model.ExecutionTimelineBO;
+import io.github.linpeilie.annotations.AutoMapper;
 
 @Data
 @Table("observation_execution_timeline")
+@AutoMapper(target = ExecutionTimelineBO.class, reverseConvertGenerate = true)
 public class ExecutionTimelineDO implements Serializable {
 
     @Serial

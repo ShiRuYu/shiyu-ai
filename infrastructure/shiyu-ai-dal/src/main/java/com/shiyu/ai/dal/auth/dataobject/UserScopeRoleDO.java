@@ -8,10 +8,13 @@ import lombok.EqualsAndHashCode;
 
 import java.io.Serial;
 import java.io.Serializable;
+import com.shiyu.ai.auth.domain.model.UserScopeRoleBO;
+import io.github.linpeilie.annotations.AutoMapper;
 
 @Data
 @EqualsAndHashCode(callSuper = true)
 @Table("auth_user_scope_role")
+@AutoMapper(target = UserScopeRoleBO.class, reverseConvertGenerate = true)
 public class UserScopeRoleDO extends ScopeTenantEntity implements ServiceAssignedTenantEntity {
 
     @Serial

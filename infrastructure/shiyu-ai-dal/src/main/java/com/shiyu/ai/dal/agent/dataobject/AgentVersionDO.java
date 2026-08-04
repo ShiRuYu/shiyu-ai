@@ -6,6 +6,8 @@ import com.mybatisflex.annotation.Table;
 import com.shiyu.ai.common.mybatis.model.TenantEntity;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
+import com.shiyu.ai.agent.domain.model.AgentVersionBO;
+import io.github.linpeilie.annotations.AutoMapper;
 
 /**
  * Agent 版本
@@ -13,6 +15,7 @@ import lombok.EqualsAndHashCode;
 @Data
 @EqualsAndHashCode(callSuper = true)
 @Table(value = "agent_version")
+@AutoMapper(target = AgentVersionBO.class, reverseConvertGenerate = true)
 public class AgentVersionDO extends TenantEntity {
 
     @Id(keyType = KeyType.Auto)

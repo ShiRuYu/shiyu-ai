@@ -7,6 +7,8 @@ import com.shiyu.ai.common.mybatis.model.TenantEntity;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
 import java.io.Serial;
+import com.shiyu.ai.record.domain.model.MediaBO;
+import io.github.linpeilie.annotations.AutoMapper;
 
 /**
  * 附件数据对象
@@ -14,6 +16,7 @@ import java.io.Serial;
 @Data
 @EqualsAndHashCode(callSuper = true)
 @Table(value = "record_media")
+@AutoMapper(target = MediaBO.class, reverseConvertGenerate = true)
 public class MediaDO extends TenantEntity {
 
     @Serial

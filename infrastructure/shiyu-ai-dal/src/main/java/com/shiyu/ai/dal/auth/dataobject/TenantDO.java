@@ -7,10 +7,13 @@ import com.shiyu.ai.common.core.domain.BaseEntity;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
 import java.io.Serial;
+import com.shiyu.ai.auth.domain.model.TenantBO;
+import io.github.linpeilie.annotations.AutoMapper;
 
 @Data
 @EqualsAndHashCode(callSuper = true)
 @Table(value = "auth_tenant")
+@AutoMapper(target = TenantBO.class, reverseConvertGenerate = true)
 public class TenantDO extends BaseEntity {
 
     @Serial

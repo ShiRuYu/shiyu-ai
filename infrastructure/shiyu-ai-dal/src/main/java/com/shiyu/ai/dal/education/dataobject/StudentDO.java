@@ -9,10 +9,13 @@ import lombok.EqualsAndHashCode;
 
 import java.time.LocalDate;
 import java.time.LocalDateTime;
+import com.shiyu.ai.education.domain.model.StudentBO;
+import io.github.linpeilie.annotations.AutoMapper;
 
 @Data
 @EqualsAndHashCode(callSuper = true)
 @Table("edu_student")
+@AutoMapper(target = StudentBO.class, reverseConvertGenerate = true)
 public class StudentDO extends TenantEntity {
 
     @Id(keyType = KeyType.Auto)

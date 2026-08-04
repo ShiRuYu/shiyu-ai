@@ -8,10 +8,13 @@ import lombok.Data;
 import lombok.EqualsAndHashCode;
 
 import java.time.LocalDateTime;
+import com.shiyu.ai.knowledge.domain.model.KnowledgeDocumentVersionBO;
+import io.github.linpeilie.annotations.AutoMapper;
 
 @Data
 @EqualsAndHashCode(callSuper = true)
 @Table("knowledge_document_version")
+@AutoMapper(target = KnowledgeDocumentVersionBO.class, reverseConvertGenerate = true)
 public class KnowledgeDocumentVersionDO extends TenantEntity {
 
     @Id(keyType = KeyType.Auto)

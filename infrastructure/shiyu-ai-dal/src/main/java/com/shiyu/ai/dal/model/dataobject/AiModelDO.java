@@ -7,6 +7,8 @@ import com.shiyu.ai.common.mybatis.model.TenantEntity;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
 import java.io.Serial;
+import com.shiyu.ai.model.domain.model.AiModelBO;
+import io.github.linpeilie.annotations.AutoMapper;
 
 /**
  * AI 模型数据对象
@@ -14,6 +16,7 @@ import java.io.Serial;
 @Data
 @EqualsAndHashCode(callSuper = true)
 @Table(value = "agent_ai_model")
+@AutoMapper(target = AiModelBO.class, reverseConvertGenerate = true)
 public class AiModelDO extends TenantEntity {
 
     @Serial

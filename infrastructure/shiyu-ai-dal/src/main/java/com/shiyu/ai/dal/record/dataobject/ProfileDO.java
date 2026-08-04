@@ -9,6 +9,8 @@ import lombok.EqualsAndHashCode;
 
 import java.time.LocalDate;
 import java.io.Serial;
+import com.shiyu.ai.record.domain.model.ProfileBO;
+import io.github.linpeilie.annotations.AutoMapper;
 
 /**
  * 人物数据对象
@@ -16,6 +18,7 @@ import java.io.Serial;
 @Data
 @EqualsAndHashCode(callSuper = true)
 @Table(value = "record_profile")
+@AutoMapper(target = ProfileBO.class, reverseConvertGenerate = true)
 public class ProfileDO extends TenantEntity {
 
     @Serial

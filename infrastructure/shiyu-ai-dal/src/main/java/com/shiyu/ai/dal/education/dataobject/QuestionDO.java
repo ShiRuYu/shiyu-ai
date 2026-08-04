@@ -8,10 +8,13 @@ import lombok.Data;
 import lombok.EqualsAndHashCode;
 
 import java.time.LocalDateTime;
+import com.shiyu.ai.education.domain.model.QuestionBO;
+import io.github.linpeilie.annotations.AutoMapper;
 
 @Data
 @EqualsAndHashCode(callSuper = true)
 @Table("edu_question")
+@AutoMapper(target = QuestionBO.class, reverseConvertGenerate = true)
 public class QuestionDO extends TenantEntity {
 
     @Id(keyType = KeyType.Auto)

@@ -9,6 +9,8 @@ import lombok.Data;
 import lombok.EqualsAndHashCode;
 
 import java.time.LocalDateTime;
+import com.shiyu.ai.auth.domain.model.TenantQuotaBO;
+import io.github.linpeilie.annotations.AutoMapper;
 
 /**
  * 租户配额
@@ -16,6 +18,7 @@ import java.time.LocalDateTime;
 @Data
 @EqualsAndHashCode(callSuper = true)
 @Table("auth_tenant_quota")
+@AutoMapper(target = TenantQuotaBO.class, reverseConvertGenerate = true)
 public class TenantQuotaDO extends BaseEntity {
 
     @Id(keyType = KeyType.Auto)

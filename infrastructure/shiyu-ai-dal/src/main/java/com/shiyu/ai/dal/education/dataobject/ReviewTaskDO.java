@@ -10,6 +10,8 @@ import lombok.EqualsAndHashCode;
 
 import java.time.LocalDate;
 import java.time.LocalDateTime;
+import com.shiyu.ai.education.domain.model.ReviewTaskBO;
+import io.github.linpeilie.annotations.AutoMapper;
 
 /**
  * 复习任务
@@ -17,6 +19,7 @@ import java.time.LocalDateTime;
 @Data
 @EqualsAndHashCode(callSuper = true)
 @Table("edu_review_task")
+@AutoMapper(target = ReviewTaskBO.class, reverseConvertGenerate = true)
 public class ReviewTaskDO extends TenantEntity {
 
     @Id(keyType = KeyType.Auto)

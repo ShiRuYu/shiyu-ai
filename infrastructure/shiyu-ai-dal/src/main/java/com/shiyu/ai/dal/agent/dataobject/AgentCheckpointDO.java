@@ -8,9 +8,12 @@ import lombok.Data;
 import java.io.Serial;
 import java.io.Serializable;
 import java.time.LocalDateTime;
+import com.shiyu.ai.agent.domain.model.AgentCheckpointBO;
+import io.github.linpeilie.annotations.AutoMapper;
 
 @Data
 @Table("agent_checkpoint")
+@AutoMapper(target = AgentCheckpointBO.class, reverseConvertGenerate = true)
 public class AgentCheckpointDO implements Serializable {
 
     @Serial

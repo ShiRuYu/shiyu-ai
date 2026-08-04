@@ -8,10 +8,13 @@ import lombok.Data;
 import lombok.EqualsAndHashCode;
 
 import java.io.Serial;
+import com.shiyu.ai.memory.domain.model.ConversationMessageBO;
+import io.github.linpeilie.annotations.AutoMapper;
 
 @Data
 @EqualsAndHashCode(callSuper = true)
 @Table("memory_conversation_message")
+@AutoMapper(target = ConversationMessageBO.class, reverseConvertGenerate = true)
 public class ConversationMessageDO extends TenantEntity {
 
     @Serial

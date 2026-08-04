@@ -8,6 +8,8 @@ import lombok.Data;
 import lombok.EqualsAndHashCode;
 
 import java.time.LocalDateTime;
+import com.shiyu.ai.agent.domain.model.NodeExecutionBO;
+import io.github.linpeilie.annotations.AutoMapper;
 
 /**
  * 节点执行记录
@@ -15,6 +17,7 @@ import java.time.LocalDateTime;
 @Data
 @EqualsAndHashCode(callSuper = true)
 @Table("agent_node_execution")
+@AutoMapper(target = NodeExecutionBO.class, reverseConvertGenerate = true)
 public class NodeExecutionDO extends TenantEntity {
 
     @Id(keyType = KeyType.Auto)

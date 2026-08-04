@@ -7,6 +7,8 @@ import lombok.Data;
 import java.io.Serial;
 import java.io.Serializable;
 import java.time.LocalDateTime;
+import com.shiyu.ai.usage.domain.model.UsageRecordBO;
+import io.github.linpeilie.annotations.AutoMapper;
 
 /**
  * 统一用量记录
@@ -17,6 +19,7 @@ import java.time.LocalDateTime;
  */
 @Data
 @Table("agent_usage_record")
+@AutoMapper(target = UsageRecordBO.class, reverseConvertGenerate = true)
 public class UsageRecordDO implements Serializable {
 
     @Serial

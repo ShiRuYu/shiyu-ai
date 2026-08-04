@@ -11,10 +11,13 @@ import lombok.EqualsAndHashCode;
 import java.io.Serial;
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
+import com.shiyu.ai.education.domain.model.ExamSectionBO;
+import io.github.linpeilie.annotations.AutoMapper;
 
 @Data
 @Table("edu_exam_section")
 @EqualsAndHashCode(callSuper = true)
+@AutoMapper(target = ExamSectionBO.class, reverseConvertGenerate = true)
 public class ExamSectionDO extends TenantEntity {
 
     @Serial

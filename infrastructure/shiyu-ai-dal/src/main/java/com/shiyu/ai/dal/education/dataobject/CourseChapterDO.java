@@ -10,10 +10,13 @@ import lombok.EqualsAndHashCode;
 
 import java.io.Serial;
 import java.time.LocalDateTime;
+import com.shiyu.ai.education.domain.model.CourseChapterBO;
+import io.github.linpeilie.annotations.AutoMapper;
 
 @Data
 @Table("edu_course_chapter")
 @EqualsAndHashCode(callSuper = true)
+@AutoMapper(target = CourseChapterBO.class, reverseConvertGenerate = true)
 public class CourseChapterDO extends TenantEntity {
 
     @Serial

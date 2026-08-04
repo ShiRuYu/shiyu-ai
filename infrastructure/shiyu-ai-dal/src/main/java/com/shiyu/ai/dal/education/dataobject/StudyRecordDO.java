@@ -10,10 +10,13 @@ import lombok.EqualsAndHashCode;
 
 import java.io.Serial;
 import java.time.LocalDateTime;
+import com.shiyu.ai.education.domain.model.StudyRecordBO;
+import io.github.linpeilie.annotations.AutoMapper;
 
 @Data
 @Table("edu_study_record")
 @EqualsAndHashCode(callSuper = true)
+@AutoMapper(target = StudyRecordBO.class, reverseConvertGenerate = true)
 public class StudyRecordDO extends TenantEntity {
 
     @Serial

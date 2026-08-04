@@ -8,10 +8,13 @@ import lombok.Data;
 import lombok.EqualsAndHashCode;
 
 import java.time.LocalDateTime;
+import com.shiyu.ai.knowledge.domain.model.KnowledgeIngestionJobBO;
+import io.github.linpeilie.annotations.AutoMapper;
 
 @Data
 @EqualsAndHashCode(callSuper = true)
 @Table("knowledge_ingestion_job")
+@AutoMapper(target = KnowledgeIngestionJobBO.class, reverseConvertGenerate = true)
 public class KnowledgeIngestionJobDO extends TenantEntity {
 
     @Id(keyType = KeyType.Auto)

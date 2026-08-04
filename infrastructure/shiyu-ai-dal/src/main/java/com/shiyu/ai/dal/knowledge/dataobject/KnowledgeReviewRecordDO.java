@@ -6,10 +6,13 @@ import com.mybatisflex.annotation.Table;
 import com.shiyu.ai.common.mybatis.model.TenantEntity;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
+import com.shiyu.ai.knowledge.domain.model.KnowledgeReviewRecordBO;
+import io.github.linpeilie.annotations.AutoMapper;
 
 @Data
 @EqualsAndHashCode(callSuper = true)
 @Table("knowledge_review_record")
+@AutoMapper(target = KnowledgeReviewRecordBO.class, reverseConvertGenerate = true)
 public class KnowledgeReviewRecordDO extends TenantEntity {
 
     @Id(keyType = KeyType.Auto)

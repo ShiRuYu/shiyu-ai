@@ -9,6 +9,8 @@ import lombok.EqualsAndHashCode;
 
 import java.time.LocalDate;
 import java.time.LocalDateTime;
+import com.shiyu.ai.education.domain.model.StudyPlanItemBO;
+import io.github.linpeilie.annotations.AutoMapper;
 
 /**
  * 学习计划项
@@ -16,6 +18,7 @@ import java.time.LocalDateTime;
 @Data
 @EqualsAndHashCode(callSuper = true)
 @Table("edu_study_plan_item")
+@AutoMapper(target = StudyPlanItemBO.class, reverseConvertGenerate = true)
 public class StudyPlanItemDO extends TenantEntity {
 
     @Id(keyType = KeyType.Auto)

@@ -8,6 +8,8 @@ import lombok.Data;
 import lombok.EqualsAndHashCode;
 
 import java.time.LocalDateTime;
+import com.shiyu.ai.memory.domain.model.EpisodicMemoryBO;
+import io.github.linpeilie.annotations.AutoMapper;
 
 /**
  * 情景记忆（Agent执行历史）
@@ -15,6 +17,7 @@ import java.time.LocalDateTime;
 @Data
 @EqualsAndHashCode(callSuper = true)
 @Table("memory_episodic_memory")
+@AutoMapper(target = EpisodicMemoryBO.class, reverseConvertGenerate = true)
 public class EpisodicMemoryDO extends TenantEntity {
 
     @Id(keyType = KeyType.Auto)

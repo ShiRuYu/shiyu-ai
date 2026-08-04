@@ -6,10 +6,13 @@ import com.mybatisflex.annotation.Table;
 import com.shiyu.ai.common.mybatis.model.TenantEntity;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
+import com.shiyu.ai.knowledge.domain.model.KnowledgeChunkBO;
+import io.github.linpeilie.annotations.AutoMapper;
 
 @Data
 @EqualsAndHashCode(callSuper = true)
 @Table("vector_knowledge_chunk")
+@AutoMapper(target = KnowledgeChunkBO.class, reverseConvertGenerate = true)
 public class KnowledgeChunkDO extends TenantEntity {
 
     @Id(keyType = KeyType.Auto)

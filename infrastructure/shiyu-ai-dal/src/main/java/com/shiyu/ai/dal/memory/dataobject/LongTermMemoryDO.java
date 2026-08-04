@@ -8,10 +8,13 @@ import lombok.Data;
 import lombok.EqualsAndHashCode;
 
 import java.io.Serial;
+import com.shiyu.ai.memory.domain.model.LongTermMemoryBO;
+import io.github.linpeilie.annotations.AutoMapper;
 
 @Data
 @EqualsAndHashCode(callSuper = true)
 @Table("memory_long_term_memory")
+@AutoMapper(target = LongTermMemoryBO.class, reverseConvertGenerate = true)
 public class LongTermMemoryDO extends TenantEntity {
 
     @Serial

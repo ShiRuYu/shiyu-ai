@@ -7,10 +7,13 @@ import com.shiyu.ai.common.mybatis.model.TenantEntity;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
 import java.io.Serial;
+import com.shiyu.ai.knowledge.domain.model.KnowledgeBO;
+import io.github.linpeilie.annotations.AutoMapper;
 
 @Data
 @EqualsAndHashCode(callSuper = true)
 @Table(value = "knowledge_base")
+@AutoMapper(target = KnowledgeBO.class, reverseConvertGenerate = true)
 public class KnowledgeDO extends TenantEntity {
 
     @Serial

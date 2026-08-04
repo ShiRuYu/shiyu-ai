@@ -7,10 +7,13 @@ import com.shiyu.ai.common.mybatis.model.TenantEntity;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
 import java.io.Serial;
+import com.shiyu.ai.agent.domain.model.AgentDefBO;
+import io.github.linpeilie.annotations.AutoMapper;
 
 @Data
 @EqualsAndHashCode(callSuper = true)
 @Table(value = "agent_def")
+@AutoMapper(target = AgentDefBO.class, reverseConvertGenerate = true)
 public class AgentDefDO extends TenantEntity {
 
     @Serial

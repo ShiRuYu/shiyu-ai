@@ -6,10 +6,13 @@ import lombok.Data;
 import lombok.EqualsAndHashCode;
 
 import java.io.Serial;
+import com.shiyu.ai.record.domain.model.RecordTagBO;
+import io.github.linpeilie.annotations.AutoMapper;
 
 @Data
 @EqualsAndHashCode(callSuper = true)
 @Table("record_record_tag")
+@AutoMapper(target = RecordTagBO.class, reverseConvertGenerate = true)
 public class RecordTagDO extends TenantEntity {
 
     @Serial

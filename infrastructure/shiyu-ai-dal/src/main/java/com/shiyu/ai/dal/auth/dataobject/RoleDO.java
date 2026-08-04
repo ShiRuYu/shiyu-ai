@@ -8,6 +8,8 @@ import com.shiyu.ai.common.mybatis.model.ServiceAssignedTenantEntity;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
 import java.io.Serial;
+import com.shiyu.ai.auth.domain.model.RoleBO;
+import io.github.linpeilie.annotations.AutoMapper;
 
 /**
  * 角色数据对象
@@ -15,6 +17,7 @@ import java.io.Serial;
 @Data
 @EqualsAndHashCode(callSuper = true)
 @Table(value = "auth_role")
+@AutoMapper(target = RoleBO.class, reverseConvertGenerate = true)
 public class RoleDO extends TenantEntity implements ServiceAssignedTenantEntity {
 
     @Serial

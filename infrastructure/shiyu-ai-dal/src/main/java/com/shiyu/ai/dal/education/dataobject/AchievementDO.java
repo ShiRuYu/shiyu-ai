@@ -9,10 +9,13 @@ import lombok.EqualsAndHashCode;
 
 import java.io.Serial;
 import java.time.LocalDateTime;
+import com.shiyu.ai.education.domain.model.AchievementBO;
+import io.github.linpeilie.annotations.AutoMapper;
 
 @Data
 @Table("edu_achievement")
 @EqualsAndHashCode(callSuper = true)
+@AutoMapper(target = AchievementBO.class, reverseConvertGenerate = true)
 public class AchievementDO extends TenantEntity {
     @Serial private static final long serialVersionUID = 1L;
     @Id(keyType = KeyType.Auto)

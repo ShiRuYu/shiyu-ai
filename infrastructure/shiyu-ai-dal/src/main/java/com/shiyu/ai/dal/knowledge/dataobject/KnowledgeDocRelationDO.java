@@ -7,10 +7,13 @@ import com.shiyu.ai.common.mybatis.model.TenantEntity;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
 import java.time.LocalDateTime;
+import com.shiyu.ai.knowledge.domain.model.KnowledgeDocRelationBO;
+import io.github.linpeilie.annotations.AutoMapper;
 
 @Data
 @EqualsAndHashCode(callSuper = true)
 @Table("knowledge_doc_relation")
+@AutoMapper(target = KnowledgeDocRelationBO.class, reverseConvertGenerate = true)
 public class KnowledgeDocRelationDO extends TenantEntity {
     private static final long serialVersionUID = 1L;
     

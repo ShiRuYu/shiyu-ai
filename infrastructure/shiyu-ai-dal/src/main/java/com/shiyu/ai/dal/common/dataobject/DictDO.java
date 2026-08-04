@@ -8,6 +8,8 @@ import com.shiyu.ai.common.mybatis.model.ServiceAssignedTenantEntity;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
 import java.io.Serial;
+import com.shiyu.ai.auth.domain.model.DictBO;
+import io.github.linpeilie.annotations.AutoMapper;
 
 /**
  * 字典数据对象
@@ -15,6 +17,7 @@ import java.io.Serial;
 @Data
 @EqualsAndHashCode(callSuper = true)
 @Table(value = "common_dict")
+@AutoMapper(target = DictBO.class, reverseConvertGenerate = true)
 public class DictDO extends TenantEntity implements ServiceAssignedTenantEntity {
 
     @Serial

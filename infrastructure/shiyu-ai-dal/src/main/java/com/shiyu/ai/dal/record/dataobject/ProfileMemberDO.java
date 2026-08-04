@@ -7,6 +7,8 @@ import com.shiyu.ai.common.mybatis.model.TenantEntity;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
 import java.io.Serial;
+import com.shiyu.ai.record.domain.model.ProfileMemberBO;
+import io.github.linpeilie.annotations.AutoMapper;
 
 /**
  * 人物成员关系数据对象
@@ -14,6 +16,7 @@ import java.io.Serial;
 @Data
 @EqualsAndHashCode(callSuper = true)
 @Table(value = "record_profile_member")
+@AutoMapper(target = ProfileMemberBO.class, reverseConvertGenerate = true)
 public class ProfileMemberDO extends TenantEntity {
 
     @Serial

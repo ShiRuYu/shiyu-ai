@@ -9,6 +9,8 @@ import lombok.EqualsAndHashCode;
 
 import java.time.LocalDateTime;
 import java.io.Serial;
+import com.shiyu.ai.record.domain.model.TimelineEventBO;
+import io.github.linpeilie.annotations.AutoMapper;
 
 /**
  * 时间轴事件数据对象
@@ -16,6 +18,7 @@ import java.io.Serial;
 @Data
 @EqualsAndHashCode(callSuper = true)
 @Table(value = "record_timeline_event")
+@AutoMapper(target = TimelineEventBO.class, reverseConvertGenerate = true)
 public class TimelineEventDO extends TenantEntity {
 
     @Serial

@@ -7,6 +7,8 @@ import lombok.Data;
 import lombok.EqualsAndHashCode;
 
 import java.io.Serial;
+import com.shiyu.ai.auth.domain.model.RoleScopeAuthCodeBO;
+import io.github.linpeilie.annotations.AutoMapper;
 
 /**
  * 角色作用域权限授权数据对象。
@@ -14,6 +16,7 @@ import java.io.Serial;
 @Data
 @EqualsAndHashCode(callSuper = true)
 @Table("auth_role_scope_auth_code")
+@AutoMapper(target = RoleScopeAuthCodeBO.class, reverseConvertGenerate = true)
 public class RoleScopeAuthCodeDO extends ScopeTenantEntity implements ServiceAssignedTenantEntity {
 
     @Serial

@@ -8,6 +8,8 @@ import com.shiyu.ai.common.mybatis.model.ServiceAssignedTenantEntity;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
 import java.io.Serial;
+import com.shiyu.ai.auth.domain.model.MenuBO;
+import io.github.linpeilie.annotations.AutoMapper;
 
 /**
  * 菜单数据对象
@@ -15,6 +17,7 @@ import java.io.Serial;
 @Data
 @EqualsAndHashCode(callSuper = true)
 @Table(value = "auth_menu")
+@AutoMapper(target = MenuBO.class, reverseConvertGenerate = true)
 public class MenuDO extends TenantEntity implements ServiceAssignedTenantEntity {
 
     @Serial

@@ -7,6 +7,8 @@ import com.shiyu.ai.common.core.domain.BaseEntity;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
 import java.io.Serial;
+import com.shiyu.ai.auth.domain.model.AuthCodeBO;
+import io.github.linpeilie.annotations.AutoMapper;
 
 /**
  * 权限码数据对象
@@ -14,6 +16,7 @@ import java.io.Serial;
 @Data
 @EqualsAndHashCode(callSuper = true)
 @Table(value = "auth_auth_code")
+@AutoMapper(target = AuthCodeBO.class, reverseConvertGenerate = true)
 public class AuthCodeDO extends BaseEntity {
 
     @Serial

@@ -7,10 +7,13 @@ import lombok.Data;
 import lombok.EqualsAndHashCode;
 
 import java.io.Serial;
+import com.shiyu.ai.auth.domain.model.RoleScopeMenuBO;
+import io.github.linpeilie.annotations.AutoMapper;
 
 @Data
 @EqualsAndHashCode(callSuper = true)
 @Table("auth_role_scope_menu")
+@AutoMapper(target = RoleScopeMenuBO.class, reverseConvertGenerate = true)
 public class RoleScopeMenuDO extends ScopeTenantEntity implements ServiceAssignedTenantEntity {
 
     @Serial

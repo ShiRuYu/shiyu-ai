@@ -7,6 +7,8 @@ import com.shiyu.ai.common.mybatis.model.TenantEntity;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
 import java.io.Serial;
+import com.shiyu.ai.record.domain.model.RecordBO;
+import io.github.linpeilie.annotations.AutoMapper;
 
 /**
  * 记录内容数据对象
@@ -14,6 +16,7 @@ import java.io.Serial;
 @Data
 @EqualsAndHashCode(callSuper = true)
 @Table(value = "record_entry")
+@AutoMapper(target = RecordBO.class, reverseConvertGenerate = true)
 public class RecordDO extends TenantEntity {
 
     @Serial

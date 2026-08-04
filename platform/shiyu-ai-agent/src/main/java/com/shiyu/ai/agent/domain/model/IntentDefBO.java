@@ -6,7 +6,6 @@ import lombok.EqualsAndHashCode;
 import java.io.Serial;
 import java.util.List;
 import java.util.Map;
-import io.github.linpeilie.annotations.AutoMapping;
 
 /**
  * 意图定义业务对象
@@ -26,18 +25,12 @@ public class IntentDefBO extends BaseEntity {
     private String category;
     private Integer priority;
     private Double confidenceThreshold;
-    @AutoMapping(ignore = true)
     private List<String> examples;
     private String targetNode;
-    @AutoMapping(ignore = true)
     private Boolean requireSlotFilling;
-    @AutoMapping(ignore = true)
     private Map<String, String> slots;
-    @AutoMapping(ignore = true)
     private Map<String, String> parameterMapping;
-    @AutoMapping(ignore = true)
     private Map<String, String> slotDefaults;
-    @AutoMapping(ignore = true)
     private Boolean enabled;
     /**
      * 状态（依据业务灵活定义）

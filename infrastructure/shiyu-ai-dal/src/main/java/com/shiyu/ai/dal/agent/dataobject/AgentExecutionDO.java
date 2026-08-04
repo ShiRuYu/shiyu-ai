@@ -8,6 +8,8 @@ import lombok.Data;
 import lombok.EqualsAndHashCode;
 
 import java.time.LocalDateTime;
+import com.shiyu.ai.agent.domain.model.AgentExecutionBO;
+import io.github.linpeilie.annotations.AutoMapper;
 
 /**
  * Agent 执行记录
@@ -15,6 +17,7 @@ import java.time.LocalDateTime;
 @Data
 @EqualsAndHashCode(callSuper = true)
 @Table("agent_execution")
+@AutoMapper(target = AgentExecutionBO.class, reverseConvertGenerate = true)
 public class AgentExecutionDO extends TenantEntity {
 
     @Id(keyType = KeyType.Auto)

@@ -7,10 +7,13 @@ import com.shiyu.ai.common.mybatis.model.TenantEntity;
 import lombok.EqualsAndHashCode;
 
 import java.io.Serial;
+import com.shiyu.ai.education.domain.model.ResourceKnowledgeBO;
+import io.github.linpeilie.annotations.AutoMapper;
 
 @Data
 @Table("edu_resource_knowledge")
 @EqualsAndHashCode(callSuper = true)
+@AutoMapper(target = ResourceKnowledgeBO.class, reverseConvertGenerate = true)
 public class ResourceKnowledgeDO extends TenantEntity {
 
     @Serial
