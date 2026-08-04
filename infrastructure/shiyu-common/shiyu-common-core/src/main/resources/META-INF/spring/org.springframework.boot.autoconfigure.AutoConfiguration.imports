@@ -1,4 +1,3 @@
 com.shiyu.ai.common.core.config.AsyncConfig
 com.shiyu.ai.common.core.config.ShiYuConfig
-com.shiyu.ai.common.core.config.ThreadPoolConfig
 com.shiyu.ai.common.core.config.ValidatorConfig

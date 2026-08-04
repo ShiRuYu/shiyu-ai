@@ -1,1 +1,2 @@
 com.shiyu.ai.common.thread.config.ThreadingAutoConfiguration
+com.shiyu.ai.common.thread.config.ThreadPoolConfig

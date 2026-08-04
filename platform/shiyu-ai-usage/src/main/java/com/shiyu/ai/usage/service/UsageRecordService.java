@@ -1,4 +1,4 @@
-package com.shiyu.ai.usage.collector;
+package com.shiyu.ai.usage.service;
 
 import com.shiyu.ai.common.core.utils.JSONUtils;
 import com.shiyu.ai.usage.domain.model.UsageRecordBO;
@@ -13,20 +13,20 @@ import java.util.UUID;
 import java.util.concurrent.ConcurrentHashMap;
 
 /**
- * 用量收集器
+ * 用量记录服务
  * <p>
  * 接收模型调用事件和 Embedding 事件，统一写入 usage_record 表。
  * 通用字段直接落列，类型专属字段以 JSON 存放于 ext_info。
  * </p>
  */
 @Slf4j
-public class UsageCollector {
+public class UsageRecordService {
 
     private final UsageRecordRepository usageRecordRepository;
     private final Map<String, ModelPricing> pricingMap = new ConcurrentHashMap<>();
     private UsageRealtimePublisher realtimePublisher;
 
-    public UsageCollector(UsageRecordRepository usageRecordRepository) {
+    public UsageRecordService(UsageRecordRepository usageRecordRepository) {
         this.usageRecordRepository = usageRecordRepository;
         registerPricing(ModelPricing.defaultOpenAI());
     }

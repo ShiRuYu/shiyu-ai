@@ -2,7 +2,7 @@ package com.shiyu.ai.usage.config;
 
 import com.shiyu.ai.model.event.ModelCallEvent;
 import com.shiyu.ai.model.event.EmbeddingCallEvent;
-import com.shiyu.ai.usage.collector.UsageCollector;
+import com.shiyu.ai.usage.service.UsageRecordService;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.context.event.EventListener;
 import org.springframework.scheduling.annotation.Async;
@@ -19,10 +19,10 @@ import org.springframework.stereotype.Component;
 @Component
 public class UsageEventListener {
 
-    private final UsageCollector usageCollector;
+    private final UsageRecordService usageRecordService;
 
-    public UsageEventListener(UsageCollector usageCollector) {
-        this.usageCollector = usageCollector;
+    public UsageEventListener(UsageRecordService usageRecordService) {
+        this.usageRecordService = usageRecordService;
     }
 
     /**
@@ -31,7 +31,7 @@ public class UsageEventListener {
     @EventListener
     @Async
     public void onModelCall(ModelCallEvent event) {
-        usageCollector.recordUsage(
+        usageRecordService.recordUsage(
             event.getPlatform(),
             event.getModel(),
             event.getPromptTokens(),
@@ -48,7 +48,7 @@ public class UsageEventListener {
     @EventListener
     @Async
     public void onEmbeddingCall(EmbeddingCallEvent event) {
-        usageCollector.recordEmbedding(
+        usageRecordService.recordEmbedding(
             event.getModel(),
             event.getTextLength(),
             event.getEstimatedTokens(),
