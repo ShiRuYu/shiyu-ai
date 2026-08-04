@@ -7,6 +7,6 @@ cd "$repo"
 
 mvn -Pprod,offline-models -DskipTests -Djacoco.skip=true clean package
 mkdir -p "$output"/data/{db,files,index,models,backups}
-cp shiyu-ai-bootstrap/target/shiyu-ai-bootstrap-*.jar "$output/"
+cp infrastructure/shiyu-ai-bootstrap/target/shiyu-ai-bootstrap-*.jar "$output/"
 cp README.md "$output/"
 echo "Offline Linux package created at $output"

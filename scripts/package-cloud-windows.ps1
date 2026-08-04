@@ -9,7 +9,7 @@ try {
     mvn -Pprod -DskipTests -Djacoco.skip=true clean package
     $target = Join-Path $repo $Output
     New-Item -ItemType Directory -Force -Path $target | Out-Null
-    Copy-Item "shiyu-ai-bootstrap\target\shiyu-ai-bootstrap-*.jar" $target -Force
+    Copy-Item "infrastructure\shiyu-ai-bootstrap\target\shiyu-ai-bootstrap-*.jar" $target -Force
     foreach ($directory in @("data\db", "data\files", "data\index", "data\models", "data\backups")) {
         New-Item -ItemType Directory -Force -Path (Join-Path $target $directory) | Out-Null
     }

@@ -193,25 +193,35 @@
 
 ## 模块全景
 
+### 🎯 业务层（面向场景的产品能力）
+
+| 模块 | 职责 | 类型 |
+|------|------|------|
+| `shiyu-ai-education` | **智能教育业务**：学练测评荐全链路 + 教育专用 Agent（组卷/复习/学情报告/教学节点） | **业务扩展** |
+| `shiyu-ai-record` | **记录管理业务**：人物档案、时间线、多媒体、标签 | **业务扩展** |
+
+### ⚙️ 平台层（可复用的 AI 能力）
+
 | 模块 | 职责 | 类型 |
 |------|------|------|
 | `shiyu-ai-agent` | **Agent 引擎**：图编排、节点系统、执行生命周期、检查点、重试/超时 | **平台核心** |
 | `shiyu-ai-auth` | 认证授权：Sa-Token、多租户 RBAC | 平台基础 |
 | `shiyu-ai-model` | 模型管理：多平台适配器、热更新、熔断降级、嵌入模型 | 平台基础设施 |
-| `shiyu-ai-knowledge` | 知识引擎：文档管理、RAG 检索、知识图谱、中文分块 | 平台基础设施 |
-| `shiyu-ai-vector` | 向量存储：JVector HNSW 索引、磁盘持久化、CRUD | 平台基础设施 |
+| `shiyu-ai-knowledge` | 知识引擎：文档管理、RAG 检索、知识图谱、中文分块、检索/审计/评测 | 平台基础设施 |
+| `shiyu-ai-vector` | 向量存储：JVector HNSW 索引、磁盘持久化、统一 Provider API | 平台基础设施 |
 | `shiyu-ai-memory` | 记忆系统：短期/长期记忆、压缩策略、跨会话检索、SPI 扩展 | 平台基础设施 |
 | `shiyu-ai-tool` | 工具体系：MCP 协议集成、工具注册/调用/执行 | 平台基础设施 |
 | `shiyu-ai-plugin` | 插件体系：生命周期管理、沙箱隔离、动态热插拔 | 平台基础设施 |
 | `shiyu-ai-usage` | 用量计量：Token 统计、实时推送、多维聚合 | 平台基础设施 |
-| `shiyu-ai-record` | **记录管理业务**：人物档案、时间线、多媒体、标签 | **业务扩展** |
-| `shiyu-ai-education` | **智能教育业务**：学练测评荐全链路 | **业务扩展** |
-| `shiyu-ai-bootstrap` | 应用启动入口 | 基础设施 |
-| `shiyu-ai-dal` | 数据访问层：DO/BO/Repository 模式 | 基础设施 |
-| `shiyu-common/*` | 公共基础：Web、线程 Worker、Storage、MyBatis 封装 | 基础设施 |
-| `shiyu-ai-web` | Controller、DTO 和 Web 适配层 | 基础设施 |
 
----
+### 🧱 基础设施层（纯技术底座）
+
+| 模块 | 职责 | 类型 |
+|------|------|------|
+| `shiyu-common/*` | 公共基础：core（工具/Result/异常）、web（XSS）、mybatis（ORM 封装）、thread（线程池）、excel、storage（文件存储） | 基础设施 |
+| `shiyu-ai-dal` | 数据访问实现层：DO/Mapper/Repository 实现 + Flyway 迁移 | 基础设施 |
+| `shiyu-ai-web` | REST 接入层：Controller、DTO、WebSocket、OpenAPI | 基础设施 |
+| `shiyu-ai-bootstrap` | 应用启动入口：日志/可观测/数据保留装配 | 基础设施 |
 
 ## 技术栈
 
@@ -253,7 +263,7 @@ mvn clean install -DskipTests
 
 ### 配置 AI 平台
 
-编辑 `shiyu-ai-bootstrap/src/main/resources/application.yml`，配置至少一个 LLM 平台：
+编辑 `infrastructure/shiyu-ai-bootstrap/src/main/resources/application.yml`，配置至少一个 LLM 平台：
 
 ```yaml
 shiyu:
@@ -271,8 +281,8 @@ shiyu:
 
 ```bash
 cd shiyu-ai
-mvn -pl shiyu-ai-bootstrap -am -DskipTests package
-java -jar shiyu-ai-bootstrap/target/shiyu-ai-bootstrap-1.0.0.jar --spring.profiles.active=dev
+mvn -pl infrastructure/shiyu-ai-bootstrap -am -DskipTests package
+java -jar infrastructure/shiyu-ai-bootstrap/target/shiyu-ai-bootstrap-1.0.0.jar --spring.profiles.active=dev
 ```
 
 从 bootstrap 子目录直接执行 `spring-boot:run` 可能加载本机 Maven 仓库中的旧模块包；开发环境应先从根目录构建 reactor，确保运行的是当前源码。

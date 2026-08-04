@@ -56,4 +56,4 @@ runtime-smoke-*/
 
 # External runtime plugins; plugin binaries are not source files
 plugins/
-shiyu-ai-bootstrap/plugins/
+infrastructure/shiyu-ai-bootstrap/plugins/

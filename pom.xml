@@ -41,6 +41,7 @@
         <jsoup.version>1.18.3</jsoup.version>
 
 
+        <fesod-parent.version>2.0.1-incubating</fesod-parent.version>
         <h2.version>2.4.240</h2.version>
 
         <mysql.version>9.4.0</mysql.version>
@@ -95,21 +96,21 @@
     </profiles>
 
     <modules>
-        <module>shiyu-common</module>
-        <module>shiyu-ai-vector</module>
-        <module>shiyu-ai-model</module>
-        <module>shiyu-ai-memory</module>
-        <module>shiyu-ai-tool</module>
-        <module>shiyu-ai-knowledge</module>
-        <module>shiyu-ai-agent</module>
-        <module>shiyu-ai-usage</module>
-        <module>shiyu-ai-plugin</module>
-        <module>shiyu-ai-auth</module>
-        <module>shiyu-ai-record</module>
-        <module>shiyu-ai-education</module>
-        <module>shiyu-ai-dal</module>
-        <module>shiyu-ai-web</module>
-        <module>shiyu-ai-bootstrap</module>
+        <module>infrastructure/shiyu-common</module>
+        <module>platform/shiyu-ai-vector</module>
+        <module>platform/shiyu-ai-model</module>
+        <module>platform/shiyu-ai-memory</module>
+        <module>platform/shiyu-ai-tool</module>
+        <module>platform/shiyu-ai-knowledge</module>
+        <module>platform/shiyu-ai-agent</module>
+        <module>platform/shiyu-ai-usage</module>
+        <module>platform/shiyu-ai-plugin</module>
+        <module>platform/shiyu-ai-auth</module>
+        <module>business/shiyu-ai-record</module>
+        <module>business/shiyu-ai-education</module>
+        <module>infrastructure/shiyu-ai-dal</module>
+        <module>infrastructure/shiyu-ai-web</module>
+        <module>infrastructure/shiyu-ai-bootstrap</module>
     </modules>
 
     <!-- 依赖声明 -->
@@ -276,6 +277,12 @@
 
 
 
+
+            <dependency>
+                <groupId>org.apache.fesod</groupId>
+                <artifactId>fesod-sheet</artifactId>
+                <version>${fesod-parent.version}</version>
+            </dependency>
 
             <dependency>
                 <groupId>com.h2database</groupId>

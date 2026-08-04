@@ -194,25 +194,35 @@ An **AI-powered tutoring system** for K-12 education, covering the full "learn �
 
 ## Module Overview
 
+### 🎯 Business Layer (scenario-facing capabilities)
+
 | Module | Responsibility | Category |
 |--------|---------------|----------|
-| `shiyu-ai-agent` | **Agent Engine**: Graph orchestration, Node system, Execution lifecycle, Checkpoint, Retry | **Platform Core** |
+| `shiyu-ai-education` | **Education Business**: Learn/Practice/Exam/Evaluate/Recommend + education-specific Agents (exam generation / review / report / teaching nodes) | **Business Extension** |
+| `shiyu-ai-record` | **Record Business**: Profiles, Timeline, Media, Tags | **Business Extension** |
+
+### ⚙️ Platform Layer (reusable AI capabilities)
+
+| Module | Responsibility | Category |
+|--------|---------------|----------|
+| `shiyu-ai-agent` | **Agent Engine**: Graph orchestration, Node system, Execution lifecycle, Checkpoint, Retry/Timeout | **Platform Core** |
 | `shiyu-ai-auth` | Auth & RBAC: Sa-Token, Multi-tenant | Platform Foundation |
 | `shiyu-ai-model` | Model Management: Multi-platform adapters, Hot reload, Resilience, Embedding | Platform Infrastructure |
-| `shiyu-ai-knowledge` | Knowledge Engine: Document management, RAG retrieval, Knowledge graph, Chunking | Platform Infrastructure |
-| `shiyu-ai-vector` | Vector Store: JVector HNSW index, Disk persistence, CRUD | Platform Infrastructure |
+| `shiyu-ai-knowledge` | Knowledge Engine: Document management, RAG retrieval, Knowledge graph, Chunking, Retrieval/Audit/Evaluation | Platform Infrastructure |
+| `shiyu-ai-vector` | Vector Store: JVector HNSW index, Disk persistence, Unified Provider API | Platform Infrastructure |
 | `shiyu-ai-memory` | Memory System: Short/long-term memory, Compression, Cross-session retrieval, SPI | Platform Infrastructure |
 | `shiyu-ai-tool` | Tool System: MCP protocol, Tool registration/invocation/execution | Platform Infrastructure |
 | `shiyu-ai-plugin` | Plugin System: Lifecycle management, Sandbox isolation, Hot-plug | Platform Infrastructure |
 | `shiyu-ai-usage` | Usage Tracking: Token metering, Real-time push, Multi-dimensional aggregation | Platform Infrastructure |
-| `shiyu-ai-record` | **Record Business**: Profiles, Timeline, Media, Tags | **Business Extension** |
-| `shiyu-ai-education` | **Education Business**: Learn/Practice/Exam/Evaluate/Recommend | **Business Extension** |
-| `shiyu-ai-bootstrap` | Application boot entry | Infrastructure |
-| `shiyu-ai-dal` | Data Access Layer: DO/BO/Repository pattern | Infrastructure |
-| `shiyu-common/*` | Common: Web, worker threads, Storage, MyBatis wrapper | Infrastructure |
-| `shiyu-ai-web` | Controllers, DTOs and web adapters | Infrastructure |
 
----
+### 🧱 Infrastructure Layer (technology foundation)
+
+| Module | Responsibility | Category |
+|--------|---------------|----------|
+| `shiyu-common/*` | Common: core (utils/Result/exceptions), web (XSS), mybatis (ORM), thread (pools), excel, storage (file storage) | Infrastructure |
+| `shiyu-ai-dal` | Data Access Implementation: DO/Mapper/Repository impl + Flyway migrations | Infrastructure |
+| `shiyu-ai-web` | REST adapters: Controllers, DTOs, WebSocket, OpenAPI | Infrastructure |
+| `shiyu-ai-bootstrap` | Application boot entry: logging/observability/data retention | Infrastructure |
 
 ## Technology Stack
 
@@ -254,7 +264,7 @@ mvn clean install -DskipTests
 
 ### Configure an LLM Platform
 
-Edit `shiyu-ai-bootstrap/src/main/resources/application.yml` and configure at least one platform:
+Edit `infrastructure/shiyu-ai-bootstrap/src/main/resources/application.yml` and configure at least one platform:
 
 ```yaml
 shiyu:
@@ -271,7 +281,7 @@ shiyu:
 ### Start
 
 ```bash
-cd shiyu-ai-bootstrap
+cd infrastructure/shiyu-ai-bootstrap
 mvn spring-boot:run -Dspring-boot.run.profiles=dev
 ```
 

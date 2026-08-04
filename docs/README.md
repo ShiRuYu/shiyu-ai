@@ -16,101 +16,50 @@ shiyu-ai 是一个面向**企业级 AI 平台**的后端系统，基于 Spring B
 
 ### 2.1 模块全景
 
-``
+```
 shiyu-ai (POM)
 │
-├── shiyu-common                  # 公共基础模块（BOM 管理）
-│   ├── shiyu-common-core         # 核心工具类（Result, JSON, Mapstruct）
-│   ├── shiyu-common-web          # Web 通用配置（异常处理、跨域等）
-│   ├── shiyu-common-mybatis      # MyBatis 通用配置
-│   ├── shiyu-common-thread       # Worker 线程池配置
-│   └── shiyu-common-storage      # 文件、断点上传、备份和存储元数据
+├── 🎯 业务层（面向场景的产品能力）
+│   ├── shiyu-ai-education        # 智能教育：学练测评荐 + 教育专用 Agent/节点
+│   │   ├── agent/                # 教育 Agent（Exam/Planner/Report/Review）+ 业务节点
+│   │   ├── domain/               # 领域模型（布鲁姆分类/艾宾浩斯曲线）+ BO
+│   │   ├── dto/                  # 业务响应模型
+│   │   ├── port/repository/      # 仓储接口（依赖倒置）
+│   │   ├── service/              # 业务服务
+│   │   └── storage/              # 教育资源种子
+│   └── shiyu-ai-record           # 记录管理：档案/时间线/媒体/标签
+│       ├── domain/  port/  service/  request/  vo/
 │
-├── shiyu-ai-dal                  # 统一数据访问层
-│   ├── agent/                    # Agent 数据层（DO/BO/Mapper/Repository）
-│   ├── auth/                     # 权限认证数据层
-│   ├── common/                   # 通用数据层
-│   ├── education/                # 教育领域数据层
-│   ├── knowledge/                # 知识库数据层
-│   ├── memory/                   # 记忆数据层
-│   ├── model/                    # 模型数据层
-│   └── record/                   # 记录数据层
+├── ⚙️ 平台层（可复用的 AI 能力）
+│   ├── shiyu-ai-agent            # ⭐ 平台核心：Agent 图编排引擎
+│   │   ├── builder/ cache/ checkpoint/ graph/ node/ runtime/
+│   │   ├── execution/ lifecycle/ retry/ timeout/ event/
+│   │   ├── service/ vo/ request/
+│   │   ├── domain/model/         # BO
+│   │   └── port/repository/      # 8 个仓储接口
+│   ├── shiyu-ai-auth             # 认证授权：Sa-Token / 多租户 RBAC
+│   ├── shiyu-ai-model            # 模型管理：适配器/热更新/弹性/嵌入
+│   ├── shiyu-ai-knowledge        # 知识引擎：文档/RAG/图谱/检索/审计/评测/上传
+│   ├── shiyu-ai-vector           # 向量存储：JVector HNSW + Provider API
+│   ├── shiyu-ai-memory           # 记忆系统：短期/长期/跨会话
+│   ├── shiyu-ai-tool             # MCP 工具体系
+│   ├── shiyu-ai-usage            # 用量计量：Token/实时推送
+│   └── shiyu-ai-plugin           # 插件体系：生命周期/沙箱/热插拔
 │
-├── shiyu-ai-model                # AI 模型适配层
-│   ├── adapter/                  # ModelAdapter SPI（GenericPlatform / Ollama）
-│   ├── chat/                     # ChatEngine 对话引擎
-│   ├── embedding/                # EmbeddingService 向量化服务
-│   ├── config/                   # 平台配置（PlatformProperties）
-│   ├── controller/               # 模型管理 API
-│   ├── event/                    # 模型调用事件
-│   ├── resilience/               # 弹性能力（熔断/限流/负载均衡）
-│   └── service/                  # 模型/平台管理服务
+├── 🧱 基础设施层（纯技术底座）
+│   ├── shiyu-common              # 公共基础
+│   │   ├── shiyu-common-core     # 工具/Result/异常/事务
+│   │   ├── shiyu-common-web      # XSS/请求包装/拦截器
+│   │   ├── shiyu-common-mybatis  # ORM 封装/租户/审计字段
+│   │   ├── shiyu-common-thread   # 线程池/Otel 链路
+│   │   ├── shiyu-common-excel    # Excel 导入导出
+│   │   └── shiyu-common-storage  # 文件存储/断点续传/备份
+│   ├── shiyu-ai-dal              # 数据访问实现层：DO/Mapper/Repo 实现 + Flyway
+│   ├── shiyu-ai-web              # REST 接入层：Controller/DTO/WebSocket/OpenAPI
+│   └── shiyu-ai-bootstrap        # 启动入口：日志/可观测/数据保留
 │
-├── shiyu-ai-memory               # 记忆管理模块
-│   ├── chat/                     # 对话记忆提供者
-│   ├── compressor/               # 记忆压缩（滑动窗口）
-│   ├── config/                   # 自动化配置
-│   ├── impl/                     # MemoryService 实现
-│   ├── pipeline/                 # 记忆整合管道
-│   ├── recall/                   # 混合召回策略
-│   ├── request/                  # 请求 DTO
-│   ├── service/                  # 摘要是生成服务
-│   └── spi/                      # MemoryStore SPI 接口
-│
-├── shiyu-ai-knowledge            # 知识库/RAG 模块
-│   ├── config/                   # 索引初始化
-│   ├── controller/               # 知识管理 API
-│   ├── document/                 # 文档解析器（PDF/Word/Markdown）
-│   ├── domain/                   # 知识图谱领域模型
-│   ├── dto/                      # 数据传输对象
-│   ├── graph/                    # 知识图谱存储
-│   ├── path/                     # 学习路径服务
-│   ├── rag/                      # RAG 核心（分块/检索/重排/编排）
-│   ├── request/                  # 请求 DTO
-│   ├── search/                   # 搜索服务
-│   ├── service/                  # 知识库管理服务
-│   └── task/                     # 索引重建定时任务
-│
-├── shiyu-ai-agent                # Agent 核心模块
-│   ├── builder/                  # Agent 构建器
-│   ├── cache/                    # Agent 缓存管理人
-│   ├── checkpoint/               # 检查点（暂停/恢复）
-│   ├── config/                   # WebMVC/拦截器/启动配置
-│   ├── controller/               # Agent 定义/版本/执行 API
-│   ├── education/                # 教育领域 Agent（考试/辅导/报告）
-│   ├── event/                    # Agent 执行事件体系
-│   ├── execution/                # 执行实例/状态管理
-│   ├── graph/                    # 图编排引擎（LangGraph4j）
-│   ├── lifecycle/                # Agent 状态机（CREATED→DEPLOYED→ARCHIVED）
-│   ├── node/                     # 节点系统（LLM/RAG/Memory/Tool 等 15+ 节点）
-│   ├── request/                  # 请求 DTO
-│   ├── retry/                    # 重试策略
-│   ├── runtime/                  # Agent 运行时（AgentRuntime / AgentExecutor）
-│   ├── service/                  # Agent 定义/版本/审计管理
-│   ├── timeout/                  # 超时策略
-│   ├── vo/                       # 视图对象
-│   └── workflow/                 # 工作流编排
-│       ├── component/            # 教育编排组件
-│       └── context/              # 上下文对象（Ability/Learning/Recommend/Tutor）
-│
-├── shiyu-ai-tool                 # 工具调用模块
-│   ├── config/                   # MCP 自动化配置
-│   └── mcp/                      # MCP 工具注册/描述/调用
-│
-├── shiyu-ai-vector               # 向量存储模块
-│   ├── VectorStore*              # 公共存储与隔离空间 Provider 接口
-│   ├── config/                   # 默认后端配置
-│   ├── factory/                  # Provider 与内部实现工厂
-│   └── impl/                     # InMemory / JVector 实现
-│
-├── shiyu-ai-auth                 # 认证授权模块
-├── shiyu-ai-record               # 记录存储模块
-├── shiyu-ai-plugin               # 插件模块
-├── shiyu-ai-usage                # 用量统计（待完善）
-├── shiyu-ai-education            # 教育领域模块
-├── shiyu-ai-web                  # Controller、DTO 和 Web 适配层
-└── shiyu-ai-bootstrap            # 应用启动入口
-``
+└── 📦 支撑：docs/ scripts/ plugins/ data/
+```
 
 ### 2.2 技术栈
 
@@ -188,7 +137,8 @@ AgentEventListener / AuditEventListener / TimelineEventListener
 
 新增节点类型只需：
 1. 创建 NodeConfig → Node 实现
-2. 注册 @Component NodeCreator 或通过 egisterNodeType()
+2. 注册 @Component NodeCreator 或通过 
+egisterNodeType()
 3. 在 NodeType 枚举中新增条目
 
 符合**开闭原则**，无需修改 NodeFactory。
@@ -212,21 +162,23 @@ CheckpointManager + DbCheckpointStore 支持 Agent 执行的暂停/恢复，通�
 
 ---
 
-## 五、评分汇总
+## 五、评分汇总（2026-08-04 更新）
 
 | 维度 | 评分 | 说明 |
 |------|:---:|------|
-| Maven 多模块设计 | 10/10 | 模块边界清晰，可扩展性好 |
-| 公共基础模块 | 9.5/10 | common-* 拆分合理 |
-| Spring Boot 工程规范 | 9/10 | 基础规范完善，待引入 Applicaton 层 |
-| AI 模型适配层 | 9/10 | 已有 Adapter，待引入 Capability |
-| Agent 架构 | 7.5/10 | 生命周期/状态管理待增强 |
-| RAG/Knowledge | 8/10 | 功能完整，职责待进一步拆分 |
-| Repository 抽象 | 7/10 | 已有 Repository，耦合度可控 |
-| 事件驱动 | 6.5/10 | 基础具备，需异步化 + 事件补全 |
-| Runtime | 5/10 | 缺少全局统一运行时 |
-| 可扩展性 | 8/10 | 企业级后台优秀，AI 平台待演进 |
-| **总体** | **8.8/10** | 基础扎实，演进路径清晰 |
+| Maven 多模块设计 | 10/10 | 15 个有效模块，边界清晰，依赖单向向下 |
+| 公共基础模块 | 9.5/10 | common-* 拆分合理（core/web/mybatis/thread/storage） |
+| DDD 分层落地 | 9.5/10 | domain/model + port/repository + dal 实现，LayerBoundaryArchTest 强制边界 |
+| Spring Boot 工程规范 | 9/10 | 基础规范完善，可继续引入 Application 层 |
+| AI 模型适配层 | 9/10 | Chat/Embedding 分离，多模态 Capability 待引入 |
+| Agent 架构 | 9/10 | 图编排完整；教育节点已解耦至 education |
+| RAG/Knowledge | 9/10 | 统一检索（retrieval/）+ 空间授权 + 审计/评测已落地 |
+| Repository 抽象 | 9/10 | 接口（port）+ 实现（dal）倒置，可加泛型实现基类 |
+| 事件驱动 | 7.5/10 | 事件体系健全，待异步化 + 细粒度事件 |
+| Runtime | 9/10 | 决策取消独立 runtime，Agent 引擎统一编排更简洁 |
+| 教育/业务解耦 | 9.5/10 | 教育 Agent 迁入 education，平台不依赖业务 |
+| 可扩展性 | 9/10 | 平台 + 插件化业务方向清晰 |
+| **总体** | **9.2/10** | 架构收敛，演进路径清晰 |
 
 ---
 
@@ -235,3 +187,5 @@ CheckpointManager + DbCheckpointStore 支持 Agent 执行的暂停/恢复，通�
 - [模块详解](./modules/模块详解.md)
 - [架构评审报告](./architecture/架构评审报告.md)
 - [演进路线图](./guides/演进路线图.md)
+- [知识平台迁移执行计划](./architecture/知识平台迁移执行计划.md)
+- [知识平台与教育模块调整方案](./architecture/知识平台与教育模块调整方案.md)
