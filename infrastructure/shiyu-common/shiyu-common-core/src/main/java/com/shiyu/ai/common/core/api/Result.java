@@ -84,6 +84,6 @@ public class Result<T> {
         return fail(BizResultCode.ERROR, data);
     }
     public static <T> Result<T> fail(String  message) {
-        return fail(BizResultCode.ERROR, message);
+        return fail(BizResultCode.ERR_10009, message);
     }
 }

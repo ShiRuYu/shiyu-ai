@@ -21,12 +21,17 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.multipart.MultipartFile;
+import org.springframework.web.server.ResponseStatusException;
 
+import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
 import java.net.URLEncoder;
 import java.util.List;
 import java.util.Map;
+
+import static org.springframework.http.HttpStatus.FORBIDDEN;
+import static org.springframework.http.HttpStatus.NOT_FOUND;
 
 @Slf4j
 @Tag(name = "File", description = "文件管理")
@@ -81,7 +86,12 @@ public class FileController {
     @GetMapping("/download")
     public ResponseEntity<InputStreamResource> download(@RequestParam String key) throws IOException {
         verifyTenantKey(key);
-        StorageObject object = storageManager.open(key);
+        StorageObject object;
+        try {
+            object = storageManager.open(key);
+        } catch (FileNotFoundException ex) {
+            throw new ResponseStatusException(NOT_FOUND, "文件不存在", ex);
+        }
         ContentDisposition disposition = ContentDisposition.attachment()
                 .filename(object.name(), StandardCharsets.UTF_8)
                 .build();
@@ -113,10 +123,10 @@ public class FileController {
         return "tenant/" + tenantId;
     }
 
-    private void verifyTenantKey(String key) throws IOException {
+    private void verifyTenantKey(String key) {
         String prefix = tenantNamespace() + "/";
         if (key == null || !key.startsWith(prefix)) {
-            throw new IOException("无权访问该文件");
+            throw new ResponseStatusException(FORBIDDEN, "无权访问该文件");
         }
     }
 

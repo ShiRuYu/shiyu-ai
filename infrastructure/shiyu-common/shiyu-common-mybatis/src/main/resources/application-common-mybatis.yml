@@ -9,7 +9,6 @@ mybatis-flex:
       keyType: Auto
     # 是否打印 Logo banner
     print-banner: true
-    version-column: version
     tenant-column: tenantId
     logic-delete-column: delFlag
     # 逻辑已删除值(可按需求随意修改)

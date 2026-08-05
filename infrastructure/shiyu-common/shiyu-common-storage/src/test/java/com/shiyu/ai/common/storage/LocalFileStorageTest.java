@@ -5,6 +5,7 @@ import org.junit.jupiter.api.Tag;
 import org.junit.jupiter.api.io.TempDir;
 
 import java.io.ByteArrayInputStream;
+import java.io.FileNotFoundException;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Path;
 
@@ -51,5 +52,13 @@ class LocalFileStorageTest {
 
         assertThrows(Exception.class, () -> storage.open("../secret.txt"));
         assertThrows(Exception.class, () -> storage.delete("tenant/1/../../secret.txt"));
+    }
+
+    @Test
+    void shouldExposeMissingObjectsAsFileNotFoundExceptions() throws Exception {
+        LocalFileStorage storage = new LocalFileStorage(tempDirectory, "local");
+
+        assertThrows(FileNotFoundException.class, () -> storage.open("tenant/1/missing.txt"));
+        assertThrows(FileNotFoundException.class, () -> storage.delete("tenant/1/missing.txt"));
     }
 }

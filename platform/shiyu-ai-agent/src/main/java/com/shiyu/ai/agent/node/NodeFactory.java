@@ -67,8 +67,10 @@ public class NodeFactory {
 
     private final java.util.List<com.shiyu.ai.agent.node.creator.NodeCreator> beanNodeCreators;
 
-    public NodeFactory(java.util.List<com.shiyu.ai.agent.node.creator.NodeCreator> beanNodeCreators) {
+    public NodeFactory(java.util.List<com.shiyu.ai.agent.node.creator.NodeCreator> beanNodeCreators,
+                       com.shiyu.ai.agent.service.ExecutionHistoryService executionHistoryService) {
         this.beanNodeCreators = beanNodeCreators;
+        this.executionHistoryService = executionHistoryService;
         // 注册默认节点类型
         registerDefaultNodeTypes();
     }

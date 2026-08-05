@@ -6,11 +6,16 @@ import java.io.Serial;
 import java.io.Serializable;
 import java.time.LocalDateTime;
 
+import com.shiyu.ai.model.api.response.AiModelResponse;
 import com.shiyu.ai.model.domain.model.AiModelBO;
 import io.github.linpeilie.annotations.AutoMapper;
+import io.github.linpeilie.annotations.AutoMappers;
 
 @Data
-@AutoMapper(target = AiModelBO.class)
+@AutoMappers({
+        @AutoMapper(target = AiModelBO.class),
+        @AutoMapper(target = AiModelResponse.class)
+})
 public class AiModelVO implements Serializable {
 
     @Serial

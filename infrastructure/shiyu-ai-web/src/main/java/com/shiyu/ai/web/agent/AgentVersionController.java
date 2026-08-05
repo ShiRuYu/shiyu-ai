@@ -10,6 +10,7 @@ import com.shiyu.ai.agent.vo.AgentVersionDetailVO;
 import com.shiyu.ai.agent.vo.AgentVersionVO;
 import com.shiyu.ai.agent.vo.GraphValidationVO;
 import com.shiyu.ai.common.core.api.Result;
+import com.shiyu.ai.common.core.enums.BizResultCode;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
@@ -50,7 +51,7 @@ public class AgentVersionController {
     public Result<AgentVersionDetailVO> getVersionDetail(
             @RequestParam String agentId, @RequestParam Long versionId) {
         AgentVersionDetailVO vo = agentVersionService.getVersionDetail(agentId, versionId);
-        if (vo == null) return Result.fail("版本不存在");
+        if (vo == null) return Result.fail(BizResultCode.NOT_FOUND, "版本不存在");
         return Result.success(vo);
     }
 
@@ -155,7 +156,7 @@ public class AgentVersionController {
     public Result<AgentVersionDetailVO> getGraph(
             @RequestParam String agentId, @RequestParam Long versionId) {
         AgentVersionDetailVO vo = agentVersionService.getGraphConfig(agentId, versionId);
-        if (vo == null) return Result.fail("版本不存在");
+        if (vo == null) return Result.fail(BizResultCode.NOT_FOUND, "版本不存在");
         return Result.success(vo);
     }
 

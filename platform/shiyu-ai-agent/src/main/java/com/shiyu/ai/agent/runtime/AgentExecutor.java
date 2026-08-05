@@ -44,11 +44,16 @@ public class AgentExecutor {
      */
     public Execution executeAgent(AgentDefinition definition, AgentVersion agentVersion,
                                    Map<String, Object> input, Execution execution) {
-        execution.start();
+        if (execution.getStatus() == com.shiyu.ai.agent.execution.ExecutionStatus.PENDING) {
+            execution.start();
+        }
         log.info("Agent 执行开始: agentId={}, executionId={}",
                 definition.getAgentId(), execution.getExecutionId());
 
         try {
+            if (!execution.awaitResumeOrCancellation()) {
+                return execution;
+            }
             Graph graph = agentVersion.getGraph();
             if (graph == null) {
                 throw new IllegalStateException("Agent 版本 graph 为空");
@@ -56,6 +61,10 @@ public class AgentExecutor {
 
             // 编译并执行图
             Map<String, Object> result = agentVersion.getGraph().execute(input);
+
+            if (!execution.awaitResumeOrCancellation()) {
+                return execution;
+            }
             
             // 记录节点执行（从结果中提取）
             NodeExecution nodeExec = new NodeExecution("graph_exec", "COMPILED_GRAPH");
@@ -74,6 +83,9 @@ public class AgentExecutor {
                     definition.getAgentId(), execution.getExecutionId(), execution.getDurationMs());
 
         } catch (Exception e) {
+            if (execution.getStatus() == com.shiyu.ai.agent.execution.ExecutionStatus.CANCELLED) {
+                return execution;
+            }
             execution.fail("执行异常: " + e.getMessage());
             log.error("Agent 执行异常: agentId={}, executionId={}",
                     definition.getAgentId(), execution.getExecutionId(), e);
@@ -94,6 +106,10 @@ public class AgentExecutor {
             Map<String, Object> state = checkpoint.getState();
             Map<String, Object> result = agentVersion.getGraph().execute(state);
 
+            if (!execution.awaitResumeOrCancellation()) {
+                return execution;
+            }
+
             NodeExecution nodeExec = new NodeExecution("graph_resume", "COMPILED_GRAPH");
             nodeExec.setInput(state);
             nodeExec.start();
@@ -102,6 +118,9 @@ public class AgentExecutor {
 
             execution.complete(result);
         } catch (Exception e) {
+            if (execution.getStatus() == com.shiyu.ai.agent.execution.ExecutionStatus.CANCELLED) {
+                return execution;
+            }
             execution.fail("恢复执行异常: " + e.getMessage());
         }
 

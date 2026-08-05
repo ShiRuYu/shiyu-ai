@@ -1,5 +1,7 @@
 package com.shiyu.ai.knowledge.security;
 
+import java.io.Serializable;
+
 /**
  * Immutable security context captured at the Agent execution boundary.
  * Knowledge services must use this context instead of reading request state
@@ -10,5 +12,5 @@ public record KnowledgeAccessContext(
         Long userId,
         Long roleId,
         boolean superAdmin
-) {
+) implements Serializable {
 }

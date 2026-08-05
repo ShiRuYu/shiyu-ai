@@ -6,6 +6,7 @@ import com.shiyu.ai.education.request.StudyRecordRequest;
 import com.shiyu.ai.education.dto.StudyRecordResponse;
 import com.shiyu.ai.education.dto.*;
 import com.shiyu.ai.education.service.AnalyticsService;
+import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.web.bind.annotation.*;
@@ -33,7 +34,7 @@ public class AnalyticsController {
     }
 
     @PostMapping("/record-create")
-    public Result<StudyRecordResponse> createRecord(@RequestBody StudyRecordRequest record) {
+    public Result<StudyRecordResponse> createRecord(@Valid @RequestBody StudyRecordRequest record) {
         return Result.success(analyticsService.createRecord(record));
     }
 

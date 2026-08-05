@@ -2,6 +2,7 @@ package com.shiyu.ai.common.storage;
 
 import org.springframework.util.StringUtils;
 
+import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStream;
 import java.security.MessageDigest;
@@ -86,7 +87,7 @@ public class FileStorageManager implements AutoCloseable {
         if (metadataStore.persistent()) {
             long tenantId = tenantIdFromKey(key);
             StorageMetadataStore.StorageObjectRecord record = metadataStore.findObjectByKey(tenantId, key)
-                    .orElseThrow(() -> new IOException("文件记录不存在"));
+                    .orElseThrow(() -> new FileNotFoundException("文件记录不存在"));
             if (!"AVAILABLE".equals(record.status())) {
                 throw new IOException("文件当前不可用: " + record.status());
             }

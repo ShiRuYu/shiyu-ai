@@ -1,9 +1,12 @@
 package com.shiyu.ai.model.api.response;
 
+import com.shiyu.ai.model.domain.model.AiPlatformBO;
+import io.github.linpeilie.annotations.AutoMapper;
 import lombok.Data;
 import java.time.LocalDateTime;
 
 @Data
+@AutoMapper(target = AiPlatformBO.class)
 public class AiPlatformResponse {
     private Long id;
     private String name;

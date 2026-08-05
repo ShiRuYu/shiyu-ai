@@ -37,7 +37,7 @@ public class UserContextInterceptor implements HandlerInterceptor {
     @Override
     public boolean preHandle(HttpServletRequest request, @NonNull HttpServletResponse response, @NonNull Object handler) throws Exception {
         if ("OPTIONS".equalsIgnoreCase(request.getMethod())) return true;
-        if (request.getDispatcherType() == DispatcherType.ASYNC) return true;
+        if (request.getDispatcherType() != DispatcherType.REQUEST) return true;
 
         try {
             SaTokenHelper helper = SaTokenHelper.getInstance();

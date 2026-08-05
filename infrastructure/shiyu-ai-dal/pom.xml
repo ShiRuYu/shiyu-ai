@@ -31,5 +31,21 @@
         <dependency><groupId>com.shiyu.ai</groupId><artifactId>shiyu-ai-auth</artifactId></dependency>
         <dependency><groupId>com.shiyu.ai</groupId><artifactId>shiyu-ai-record</artifactId></dependency>
         <dependency><groupId>com.shiyu.ai</groupId><artifactId>shiyu-ai-education</artifactId></dependency>
+        <dependency>
+            <groupId>com.h2database</groupId>
+            <artifactId>h2</artifactId>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-test</artifactId>
+            <scope>test</scope>
+            <exclusions>
+                <exclusion>
+                    <groupId>org.springframework.boot</groupId>
+                    <artifactId>spring-boot-starter-logging</artifactId>
+                </exclusion>
+            </exclusions>
+        </dependency>
     </dependencies>
 </project>

@@ -60,13 +60,6 @@ shiyu:
         secret-key: ${SHIYU_STORAGE_COS_SECRET_KEY:}
         path-style-access: false
         public-base-url: ${SHIYU_STORAGE_COS_PUBLIC_BASE_URL:}
-  education:
-    storage:
-      seed:
-        education:
-          enabled: true
-          tenant-id: 1
-          namespace: education-resources
   # VectorStore 配置（Embedding 向量检索）
   vector-store:
     type: jvector           # inmemory | jvector

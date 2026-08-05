@@ -2,6 +2,9 @@ package com.shiyu.ai.common.storage;
 
 import com.shiyu.ai.common.core.domain.UserContextHolder;
 import com.shiyu.ai.common.core.exception.ServiceException;
+import jakarta.validation.constraints.Max;
+import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.Positive;
 import lombok.RequiredArgsConstructor;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
@@ -363,7 +366,9 @@ public class ResumableUploadService {
         }
     }
 
-    public record BeginRequest(String fileName, String contentType, long size,
+    public record BeginRequest(@NotBlank(message = "文件名不能为空") String fileName, String contentType,
+                               @Positive(message = "文件大小必须大于 0") @Max(value = MAX_FILE_SIZE,
+                                       message = "文件大小不能超过 200 MB") long size,
                                String checksum, String title) { }
     public record UploadSession(String sessionId, Long spaceId, String fileName,
                                 long size, int totalChunks, List<Integer> uploadedChunks,

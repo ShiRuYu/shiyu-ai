@@ -15,7 +15,9 @@ public enum AgentExecutionStatus implements IntEnum {
 
     RUNNING(0, "运行中"),
     SUCCESS(1, "成功"),
-    FAILED(2, "失败");
+    FAILED(2, "失败"),
+    PAUSED(3, "已暂停"),
+    CANCELLED(4, "已取消");
 
     private final Integer code;
     private final String desc;

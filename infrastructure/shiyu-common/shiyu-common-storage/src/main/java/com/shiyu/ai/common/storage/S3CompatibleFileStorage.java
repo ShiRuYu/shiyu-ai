@@ -15,6 +15,7 @@ import software.amazon.awssdk.services.s3.model.NoSuchKeyException;
 import software.amazon.awssdk.services.s3.model.PutObjectRequest;
 import software.amazon.awssdk.services.s3.model.S3Exception;
 
+import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStream;
 import java.net.URI;
@@ -114,7 +115,9 @@ public class S3CompatibleFileStorage implements FileStorage, AutoCloseable {
                     normalizeContentType(metadata.contentType(), originalName),
                     metadata.contentLength());
         } catch (NoSuchKeyException ex) {
-            throw new IOException("文件不存在", ex);
+            FileNotFoundException notFound = new FileNotFoundException("文件不存在");
+            notFound.initCause(ex);
+            throw notFound;
         } catch (S3Exception ex) {
             throw new IOException("读取外部存储文件失败: " + ex.awsErrorDetails().errorMessage(), ex);
         }

@@ -107,6 +107,8 @@ public class AuthServiceImpl implements AuthService {
      * 凭证已经校验通过后，统一完成租户/角色上下文构建和 Token 签发。
      */
     private LoginResponseVO completeLogin(UserBO user, Long roleId) {
+        UserContext previousContext = UserContextHolder.getContext();
+        boolean loginContextEstablished = false;
         try {
             if (user == null || user.getId() == null) {
                 return null;
@@ -165,16 +167,22 @@ public class AuthServiceImpl implements AuthService {
             }
             user.setExtInfo(JSONUtils.toJsonString(extInfoMap));
 
-            // 设置 UserContext 上下文（用于自动更新）
+            // 登录接口允许匿名访问。凭证校验通过后，为后续用户更新、Token 持久化等
+            // 所有数据库写入建立临时上下文，确保审计字段记录真实登录用户。
+            String switchMode = (String) extInfoMap.getOrDefault("switchMode", "NORMAL");
             UserContext userContext = new UserContext();
             userContext.setUserId(user.getId());
             userContext.setUsername(user.getUsername());
-            UserContextHolder.setContext(userContext);
-            try {
-                userRepository.update(user);
-            } finally {
-                UserContextHolder.clearContext();
+            userContext.setHomeTenantId(homeTenantId);
+            userContext.setCurrentTenantId(currentTenantId);
+            userContext.setSwitchMode(switchMode);
+            if (currentRole != null) {
+                userContext.setCurrentRoleId(currentRole.getId());
+                userContext.setCurrentRoleCode(currentRole.getCode());
             }
+            UserContextHolder.setContext(userContext);
+            loginContextEstablished = true;
+            userRepository.update(user);
 
             // 生成 Token
             SaTokenHelper helper = SaTokenHelper.getInstance();
@@ -187,7 +195,6 @@ public class AuthServiceImpl implements AuthService {
 
             // 构建用户所属租户列表
             List<TenantInfoVO> tenantList = buildTenantList(uwrList);
-            String switchMode = (String) extInfoMap.getOrDefault("switchMode", "NORMAL");
             final Long resolvedHomeTenantId = homeTenantId;
             boolean homeTenantSuperAdmin = resolvedHomeTenantId != null
                     && uwrList != null
@@ -234,6 +241,14 @@ public class AuthServiceImpl implements AuthService {
         } catch (Exception e) {
             log.error("完成登录上下文构建异常, userId={}", user.getId(), e);
             return null;
+        } finally {
+            if (loginContextEstablished) {
+                if (previousContext == null) {
+                    UserContextHolder.clearContext();
+                } else {
+                    UserContextHolder.setContext(previousContext);
+                }
+            }
         }
     }
 
@@ -843,12 +858,9 @@ public class AuthServiceImpl implements AuthService {
             UserBO user = userRepository.selectById(userId);
             if (user == null) return;
 
-            // 2. 查询默认角色（第一个启用的角色）
-            List<RoleBO> roles = userRepository.selectRolesByUserId(1L);
-            RoleBO defaultRole;
-            if (roles != null && !roles.isEmpty()) {
-                defaultRole = roles.get(0);
-            } else {
+            // 2. 始终按角色编码分配普通用户角色，禁止复制管理员角色。
+            RoleBO defaultRole = tenantRoleRepository.selectEnabledRoleByCode(1L, "user");
+            if (defaultRole == null) {
                 log.warn("未找到可用角色，跳过用户默认角色分配");
                 return;
             }

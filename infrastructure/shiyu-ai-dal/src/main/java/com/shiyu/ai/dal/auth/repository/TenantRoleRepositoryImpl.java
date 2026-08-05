@@ -34,6 +34,21 @@ public class TenantRoleRepositoryImpl implements com.shiyu.ai.auth.port.reposito
                 () -> roleMapper.selectOneById(roleId)), RoleBO.class);
     }
 
+    @Override
+    public RoleBO selectEnabledRoleByCode(Long tenantId, String roleCode) {
+        if (tenantId == null || roleCode == null || roleCode.isBlank()) {
+            return null;
+        }
+        return MapstructUtils.convert(TenantManager.withoutTenantCondition(() ->
+                roleMapper.selectOneByQuery(QueryWrapper.create()
+                        .where(RoleDO::getTenantId).eq(tenantId)
+                        .and(RoleDO::getCode).eq(roleCode)
+                        .and(RoleDO::getStatus).eq(1)
+                        .and(RoleDO::getDelFlag).eq(0)
+                        .orderBy(RoleDO::getId, true))), RoleBO.class);
+    }
+
+    @Override
     public RoleBO selectTenantSuperRole(Long tenantId) {
         if (tenantId == null) {
             return null;

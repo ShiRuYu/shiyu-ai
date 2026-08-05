@@ -5,6 +5,7 @@ import com.shiyu.ai.agent.execution.Execution;
 import com.shiyu.ai.agent.execution.ExecutionStatus;
 import com.shiyu.ai.agent.runtime.AgentRuntime;
 import com.shiyu.ai.common.core.api.Result;
+import com.shiyu.ai.common.core.enums.BizResultCode;
 import com.shiyu.ai.common.core.domain.UserContextHolder;
 import com.shiyu.ai.knowledge.security.KnowledgeAccessContext;
 import io.swagger.v3.oas.annotations.Operation;
@@ -84,7 +85,7 @@ public class ExecutionController {
         return agentRuntime.executeStream(agentId, enrichedInput)
                 .map(output -> {
                     Map<String, Object> result = new HashMap<>();
-                    result.put("executionId", enrichedInput.get("sessionId"));
+                    result.put("executionId", output.get("executionId"));
                     result.put("data", output);
                     return Result.success(result);
                 })
@@ -146,7 +147,7 @@ public class ExecutionController {
     public Result<Map<String, Object>> getStatus(@RequestParam String executionId) {
         ExecutionStatus status = agentRuntime.getStatus(executionId);
         if (status == null) {
-            return Result.fail("执行记录不存在");
+            return Result.fail(BizResultCode.NOT_FOUND, "执行记录不存在");
         }
         return Result.success(Map.of("executionId", executionId, "status", status.name()));
     }
@@ -156,7 +157,7 @@ public class ExecutionController {
     public Result<Map<String, Object>> getExecution(@RequestParam String executionId) {
         Execution execution = agentRuntime.getExecution(executionId);
         if (execution == null) {
-            return Result.fail("执行记录不存在");
+            return Result.fail(BizResultCode.NOT_FOUND, "执行记录不存在");
         }
         Map<String, Object> result = new HashMap<>();
         result.put("executionId", execution.getExecutionId());

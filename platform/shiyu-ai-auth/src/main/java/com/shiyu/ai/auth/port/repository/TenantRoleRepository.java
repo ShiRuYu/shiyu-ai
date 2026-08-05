@@ -6,6 +6,7 @@ import com.shiyu.ai.auth.domain.model.TenantBO;
 public interface TenantRoleRepository {
     TenantBO selectTenantById(Long tenantId);
     RoleBO selectRoleById(Long roleId);
+    RoleBO selectEnabledRoleByCode(Long tenantId, String roleCode);
     RoleBO selectTenantSuperRole(Long tenantId);
     String selectTenantNameById(Long tenantId);
 }

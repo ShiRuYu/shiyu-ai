@@ -6,6 +6,7 @@ import com.shiyu.ai.auth.service.AuthService;
 import com.shiyu.ai.auth.service.UserService;
 import com.shiyu.ai.auth.handler.LoginRateLimiter;
 import com.shiyu.ai.common.core.api.Result;
+import com.shiyu.ai.common.core.domain.UserContext;
 import com.shiyu.ai.common.core.domain.UserContextHolder;
 import com.shiyu.ai.knowledge.service.KnowledgeSpaceService;
 import lombok.extern.slf4j.Slf4j;
@@ -69,13 +70,37 @@ public class AuthController {
             
             loginRateLimiter.reset(clientIp);
             if (response.getCurrentTenantId() != null) {
-                knowledgeSpaceService.initializeTenantDefaults(response.getCurrentTenantId());
+                initializeTenantDefaultsWithAuditContext(response);
             }
             return Result.success(response);
             
         } catch (Exception e) {
             log.error("登录失败：username={}", request.getUsername(), e);
             return Result.fail("登录失败");
+        }
+    }
+
+    /**
+     * The login endpoint is anonymous, so the request interceptor has not established a user context yet.
+     * Provide a scoped context while creating tenant defaults to populate audit fields with the authenticated user.
+     */
+    private void initializeTenantDefaultsWithAuditContext(LoginResponseVO response) {
+        UserContext previousContext = UserContextHolder.getContext();
+        UserContext loginContext = new UserContext();
+        loginContext.setUserId(response.getId());
+        loginContext.setUsername(response.getUsername());
+        loginContext.setHomeTenantId(response.getHomeTenantId());
+        loginContext.setCurrentTenantId(response.getCurrentTenantId());
+        loginContext.setSwitchMode(response.getSwitchMode());
+        try {
+            UserContextHolder.setContext(loginContext);
+            knowledgeSpaceService.initializeTenantDefaults(response.getCurrentTenantId());
+        } finally {
+            if (previousContext == null) {
+                UserContextHolder.clearContext();
+            } else {
+                UserContextHolder.setContext(previousContext);
+            }
         }
     }
 

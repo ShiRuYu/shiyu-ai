@@ -9,6 +9,7 @@ import com.shiyu.ai.common.core.vo.IdNameOptionVO;
 import com.shiyu.ai.model.adapter.ModelManager;
 import com.shiyu.ai.common.core.api.PageData;
 import com.shiyu.ai.common.core.api.Result;
+import com.shiyu.ai.common.core.enums.BizResultCode;
 import lombok.extern.slf4j.Slf4j;
 import jakarta.validation.Valid;
 import org.springframework.web.bind.annotation.*;
@@ -69,7 +70,7 @@ public class AiPlatformController {
         if (response != null) {
             return Result.success(response);
         }
-        return Result.fail("平台不存在");
+        return Result.fail(BizResultCode.NOT_FOUND, "平台不存在");
     }
 
     @Operation(summary = "Get by Code")
@@ -79,7 +80,7 @@ public class AiPlatformController {
         if (response != null) {
             return Result.success(response);
         }
-        return Result.fail("平台不存在");
+        return Result.fail(BizResultCode.NOT_FOUND, "平台不存在");
     }
 
     @Operation(summary = "Get Default")
@@ -89,7 +90,7 @@ public class AiPlatformController {
         if (response != null) {
             return Result.success(response);
         }
-        return Result.fail("未配置默认平台");
+        return Result.fail(BizResultCode.NOT_FOUND, "未配置默认平台");
     }
 
     @Operation(summary = "Create")

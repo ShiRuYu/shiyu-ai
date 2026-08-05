@@ -107,9 +107,6 @@ public class AgentServiceImpl implements AgentService {
         AgentDefinition definition = cacheManager.get(uid, agentId);
         if (definition != null) return definition;
         definition = cacheManager.getOrLoad(uid, agentId, agentLoader);
-        if (definition == null) {
-            throw new IllegalStateException("Agent 不存在：" + agentId);
-        }
         return definition;
     }
 

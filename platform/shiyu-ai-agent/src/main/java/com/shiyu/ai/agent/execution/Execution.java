@@ -14,7 +14,7 @@ public class Execution {
     private final String executionId;
     private final String agentId;
     private final String version;
-    private ExecutionStatus status;
+    private volatile ExecutionStatus status;
     private final Map<String, Object> input;
     private Map<String, Object> output;
     private String errorMessage;
@@ -27,49 +27,96 @@ public class Execution {
     private String lastCheckpointId;
 
     public Execution(String agentId, String version, Map<String, Object> input) {
-        this.executionId = UUID.randomUUID().toString().replace("-", "");
+        this(UUID.randomUUID().toString().replace("-", ""), agentId, version, ExecutionStatus.PENDING, input);
+    }
+
+    private Execution(String executionId, String agentId, String version,
+                      ExecutionStatus status, Map<String, Object> input) {
+        this.executionId = executionId;
         this.agentId = agentId;
         this.version = version;
-        this.status = ExecutionStatus.PENDING;
+        this.status = status;
         this.input = input;
         this.nodeExecutions = new ArrayList<>();
     }
 
-    public void start() {
+    /**
+     * Rebuild a persisted execution without changing its identity or lifecycle data.
+     */
+    public static Execution restore(String executionId, String agentId, String version,
+                                    ExecutionStatus status, Map<String, Object> input,
+                                    Map<String, Object> output, String errorMessage,
+                                    Long userId, String sessionId, LocalDateTime startTime,
+                                    LocalDateTime endTime, Long durationMs) {
+        Execution execution = new Execution(executionId, agentId, version,
+                status == null ? ExecutionStatus.PENDING : status, input);
+        execution.output = output;
+        execution.errorMessage = errorMessage;
+        execution.userId = userId;
+        execution.sessionId = sessionId;
+        execution.startTime = startTime;
+        execution.endTime = endTime;
+        execution.durationMs = durationMs;
+        return execution;
+    }
+
+    public synchronized void start() {
         this.status = ExecutionStatus.RUNNING;
         this.startTime = LocalDateTime.now();
     }
 
-    public void complete(Map<String, Object> output) {
+    public synchronized void complete(Map<String, Object> output) {
         this.status = ExecutionStatus.COMPLETED;
         this.output = output;
         this.endTime = LocalDateTime.now();
         this.durationMs = java.time.Duration.between(startTime, endTime).toMillis();
+        notifyAll();
     }
 
-    public void fail(String errorMessage) {
+    public synchronized void fail(String errorMessage) {
         this.status = ExecutionStatus.FAILED;
         this.errorMessage = errorMessage;
         this.endTime = LocalDateTime.now();
         if (startTime != null) {
             this.durationMs = java.time.Duration.between(startTime, endTime).toMillis();
         }
+        notifyAll();
     }
 
-    public void pause() {
+    public synchronized void pause() {
         this.status = ExecutionStatus.PAUSED;
     }
 
-    public void resume() {
+    public synchronized void resume() {
         this.status = ExecutionStatus.RUNNING;
+        notifyAll();
     }
 
-    public void cancel() {
+    public synchronized void cancel() {
         this.status = ExecutionStatus.CANCELLED;
         this.endTime = LocalDateTime.now();
         if (startTime != null) {
             this.durationMs = java.time.Duration.between(startTime, endTime).toMillis();
         }
+        notifyAll();
+    }
+
+    /**
+     * Blocks a cooperative executor while this execution is paused.
+     *
+     * @return {@code false} when the execution was cancelled or interrupted
+     */
+    public synchronized boolean awaitResumeOrCancellation() {
+        while (status == ExecutionStatus.PAUSED) {
+            try {
+                wait();
+            } catch (InterruptedException e) {
+                Thread.currentThread().interrupt();
+                cancel();
+                return false;
+            }
+        }
+        return status != ExecutionStatus.CANCELLED;
     }
 
     public void addNodeExecution(NodeExecution nodeExecution) {

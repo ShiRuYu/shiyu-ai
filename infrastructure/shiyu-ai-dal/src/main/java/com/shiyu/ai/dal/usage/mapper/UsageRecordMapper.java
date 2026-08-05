@@ -1,13 +1,14 @@
 package com.shiyu.ai.dal.usage.mapper;
 
 import com.mybatisflex.annotation.UseDataSource;
+import com.shiyu.ai.common.mybatis.core.mapper.BaseMapperFlex;
 import com.shiyu.ai.dal.datasource.DataSourceConfig;
 import com.shiyu.ai.dal.usage.dataobject.UsageRecordDO;
-import com.shiyu.ai.common.mybatis.core.mapper.BaseMapperFlex;
 import org.apache.ibatis.annotations.Mapper;
 import org.apache.ibatis.annotations.Param;
 import org.apache.ibatis.annotations.Select;
 
+import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Map;
 
@@ -15,110 +16,71 @@ import java.util.Map;
 @UseDataSource(DataSourceConfig.AGENT)
 public interface UsageRecordMapper extends BaseMapperFlex<UsageRecordDO> {
 
-    /** 按日聚合（按类型分组） */
-    @Select("SELECT DATE(create_time) as date, " +
+    /**
+     * Custom {@code @Select} statements do not use MyBatis-Flex's generated
+     * column mapping. Alias every snake-case column explicitly so a
+     * {@link UsageRecordDO} retains its JSON metadata and latency fields.
+     */
+    String RECORD_COLUMNS = "id, usage_type AS usageType, latency_ms AS latencyMs, "
+            + "user_id AS userId, session_id AS sessionId, ext_info AS extInfo, "
+            + "create_time AS createTime";
+
+    @Select("SELECT CAST(create_time AS DATE) as usage_date, " +
             "usage_type, " +
             "COUNT(*) as call_count, " +
             "AVG(latency_ms) as avg_latency_ms " +
             "FROM agent_usage_record " +
             "WHERE create_time >= DATEADD('DAY', -#{days}, CURRENT_TIMESTAMP) " +
-            "GROUP BY DATE(create_time), usage_type " +
-            "ORDER BY date DESC")
+            "GROUP BY CAST(create_time AS DATE), usage_type " +
+            "ORDER BY usage_date DESC")
     List<Map<String, Object>> aggregateByDay(@Param("days") int days);
 
-    /** 按周聚合 */
-    @Select("SELECT YEARWEEK(create_time) as week, " +
+    @Select("SELECT FORMATDATETIME(create_time, 'yyyy-ww') as usage_week, " +
             "usage_type, " +
             "COUNT(*) as call_count, " +
             "AVG(latency_ms) as avg_latency_ms " +
             "FROM agent_usage_record " +
             "WHERE create_time >= DATEADD('WEEK', -#{weeks}, CURRENT_TIMESTAMP) " +
-            "GROUP BY YEARWEEK(create_time), usage_type " +
-            "ORDER BY week DESC")
+            "GROUP BY FORMATDATETIME(create_time, 'yyyy-ww'), usage_type " +
+            "ORDER BY usage_week DESC")
     List<Map<String, Object>> aggregateByWeek(@Param("weeks") int weeks);
 
-    /** 按月聚合 */
-    @Select("SELECT FORMATDATETIME(create_time, 'YYYY-MM') as month, " +
+    @Select("SELECT FORMATDATETIME(create_time, 'yyyy-MM') as usage_month, " +
             "usage_type, " +
             "COUNT(*) as call_count, " +
             "AVG(latency_ms) as avg_latency_ms " +
             "FROM agent_usage_record " +
             "WHERE create_time >= DATEADD('MONTH', -#{months}, CURRENT_TIMESTAMP) " +
-            "GROUP BY FORMATDATETIME(create_time, 'YYYY-MM'), usage_type " +
-            "ORDER BY month DESC")
+            "GROUP BY FORMATDATETIME(create_time, 'yyyy-MM'), usage_type " +
+            "ORDER BY usage_month DESC")
     List<Map<String, Object>> aggregateByMonth(@Param("months") int months);
 
-    /** 全局概览 */
-    @Select("SELECT " +
-            "COUNT(*) as total_calls, " +
+    @Select("SELECT COUNT(*) as total_calls, " +
             "AVG(latency_ms) as avg_latency_ms, " +
             "COUNT(DISTINCT usage_type) as type_count " +
             "FROM agent_usage_record")
     Map<String, Object> getOverview();
 
-    /** LLM 按模型聚合 */
-    @Select("SELECT " +
-            "JSON_EXTRACT(ext_info, '$.platform') as platform, " +
-            "JSON_EXTRACT(ext_info, '$.model') as model, " +
-            "COUNT(*) as call_count, " +
-            "COALESCE(SUM(CAST(JSON_EXTRACT(ext_info, '$.totalTokens') AS NUMERIC)), 0) as total_tokens, " +
-            "COALESCE(SUM(CAST(JSON_EXTRACT(ext_info, '$.cost') AS NUMERIC)), 0) as total_cost, " +
-            "AVG(latency_ms) as avg_latency_ms " +
-            "FROM agent_usage_record " +
-            "WHERE usage_type = 'LLM' " +
-            "GROUP BY JSON_EXTRACT(ext_info, '$.platform'), JSON_EXTRACT(ext_info, '$.model') " +
-            "ORDER BY total_tokens DESC")
-    List<Map<String, Object>> aggregateByModel();
+    /**
+     * H2 does not expose the MySQL JSON extraction functions used by the old
+     * aggregation queries. The repository parses the JSON payloads after
+     * loading these bounded record sets instead.
+     */
+    @Select("SELECT " + RECORD_COLUMNS + " FROM agent_usage_record WHERE usage_type = 'LLM'")
+    List<UsageRecordDO> selectLlmRecords();
 
-    /** LLM 按日聚合（含 token/cost） */
-    @Select("SELECT DATE(create_time) as date, " +
-            "COUNT(*) as call_count, " +
-            "COALESCE(SUM(CAST(JSON_EXTRACT(ext_info, '$.totalTokens') AS NUMERIC)), 0) as total_tokens, " +
-            "COALESCE(SUM(CAST(JSON_EXTRACT(ext_info, '$.cost') AS NUMERIC)), 0) as total_cost, " +
-            "AVG(latency_ms) as avg_latency_ms " +
-            "FROM agent_usage_record " +
-            "WHERE usage_type = 'LLM' AND create_time >= DATEADD('DAY', -#{days}, CURRENT_TIMESTAMP) " +
-            "GROUP BY DATE(create_time) " +
-            "ORDER BY date DESC")
-    List<Map<String, Object>> aggregateLlmByDay(@Param("days") int days);
+    @Select("SELECT " + RECORD_COLUMNS
+            + " FROM agent_usage_record WHERE usage_type = 'LLM' AND create_time >= #{start}")
+    List<UsageRecordDO> selectLlmRecordsSince(@Param("start") LocalDateTime start);
 
-    /** LLM 按周聚合（含 token/cost） */
-    @Select("SELECT YEARWEEK(create_time) as week, " +
-            "COUNT(*) as call_count, " +
-            "COALESCE(SUM(CAST(JSON_EXTRACT(ext_info, '$.totalTokens') AS NUMERIC)), 0) as total_tokens, " +
-            "COALESCE(SUM(CAST(JSON_EXTRACT(ext_info, '$.cost') AS NUMERIC)), 0) as total_cost, " +
-            "AVG(latency_ms) as avg_latency_ms " +
-            "FROM agent_usage_record " +
-            "WHERE usage_type = 'LLM' AND create_time >= DATEADD('WEEK', -#{weeks}, CURRENT_TIMESTAMP) " +
-            "GROUP BY YEARWEEK(create_time) " +
-            "ORDER BY week DESC")
-    List<Map<String, Object>> aggregateLlmByWeek(@Param("weeks") int weeks);
+    @Select("SELECT " + RECORD_COLUMNS + " FROM agent_usage_record WHERE usage_type = 'EMBEDDING'")
+    List<UsageRecordDO> selectEmbeddingRecords();
 
-    /** LLM 按月聚合（含 token/cost） */
-    @Select("SELECT FORMATDATETIME(create_time, 'YYYY-MM') as month, " +
-            "COUNT(*) as call_count, " +
-            "COALESCE(SUM(CAST(JSON_EXTRACT(ext_info, '$.totalTokens') AS NUMERIC)), 0) as total_tokens, " +
-            "COALESCE(SUM(CAST(JSON_EXTRACT(ext_info, '$.cost') AS NUMERIC)), 0) as total_cost, " +
-            "AVG(latency_ms) as avg_latency_ms " +
-            "FROM agent_usage_record " +
-            "WHERE usage_type = 'LLM' AND create_time >= DATEADD('MONTH', -#{months}, CURRENT_TIMESTAMP) " +
-            "GROUP BY FORMATDATETIME(create_time, 'YYYY-MM') " +
-            "ORDER BY month DESC")
-    List<Map<String, Object>> aggregateLlmByMonth(@Param("months") int months);
-
-    /** Embedding 概览 */
-    @Select("SELECT " +
-            "COUNT(*) as total_calls, " +
-            "COALESCE(SUM(CAST(JSON_EXTRACT(ext_info, '$.estimatedTokens') AS NUMERIC)), 0) as total_estimated_tokens, " +
-            "COALESCE(SUM(CAST(JSON_EXTRACT(ext_info, '$.vectorCount') AS NUMERIC)), 0) as total_vectors, " +
-            "AVG(latency_ms) as avg_latency_ms " +
-            "FROM agent_usage_record WHERE usage_type = 'EMBEDDING'")
-    Map<String, Object> getEmbeddingOverview();
-
-    /** 查询指定租户当天的 LLM Token 总消耗 */
-    @Select("SELECT COALESCE(SUM(CAST(JSON_EXTRACT(ext_info, '$.totalTokens') AS NUMERIC)), 0) " +
-            "FROM agent_usage_record WHERE usage_type = 'LLM' " +
-            "AND user_id IN (SELECT id FROM auth_user WHERE tenant_id = #{tenantId}) " +
-            "AND create_time >= CURRENT_DATE")
-    Long sumLlmTodayTokensByTenantId(@Param("tenantId") Long tenantId);
+    @Select("SELECT r.id, r.usage_type AS usageType, r.latency_ms AS latencyMs, "
+            + "r.user_id AS userId, r.session_id AS sessionId, r.ext_info AS extInfo, "
+            + "r.create_time AS createTime FROM agent_usage_record r " +
+            "JOIN auth_user u ON r.user_id = u.id " +
+            "WHERE r.usage_type = 'LLM' AND u.tenant_id = #{tenantId} AND r.create_time >= #{start}")
+    List<UsageRecordDO> selectLlmTodayByTenantId(@Param("tenantId") Long tenantId,
+                                                   @Param("start") LocalDateTime start);
 }

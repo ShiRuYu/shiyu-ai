@@ -10,6 +10,8 @@ import java.io.Serializable;
 @Data
 public class MediaRequest implements Serializable {
     @Serial private static final long serialVersionUID = 1L;
+
+    @NotNull(message = "记录ID不能为空")
     private Long recordId;
     @NotBlank(message = "URL不能为空")
     private String url;

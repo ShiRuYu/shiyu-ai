@@ -38,7 +38,14 @@ public class AgentCacheManager {
     }
 
     public AgentDefinition get(Long userId, String agentId) {
-        return cache.getIfPresent(key(userId, agentId));
+        AgentDefinition scoped = cache.getIfPresent(key(userId, agentId));
+        if (scoped != null) {
+            return scoped;
+        }
+        // Legacy registration writes a globally available definition under user 0.
+        // Let authenticated callers resolve that definition while preserving a
+        // user-scoped cache entry as the higher-priority override.
+        return cache.getIfPresent(key(0L, agentId));
     }
 
     public void put(Long userId, String agentId, AgentDefinition agent) {
@@ -90,7 +97,7 @@ public class AgentCacheManager {
         return activeDefs.stream()
                 .map(def -> {
                     String agentId = def.getAgentId();
-                    AgentDefinition cached = cache.getIfPresent(key(userId, agentId));
+                    AgentDefinition cached = get(userId, agentId);
                     if (cached != null) return cached;
                     return getOrLoad(userId, agentId, agentLoader);
                 })

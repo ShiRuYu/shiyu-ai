@@ -1,5 +1,7 @@
 package com.shiyu.ai.agent.vo;
 
+import com.shiyu.ai.agent.domain.model.IntentDefBO;
+import io.github.linpeilie.annotations.AutoMapper;
 import lombok.Data;
 
 import java.io.Serial;
@@ -7,6 +9,7 @@ import java.io.Serializable;
 import java.time.LocalDateTime;
 
 @Data
+@AutoMapper(target = IntentDefBO.class)
 public class IntentDefVO implements Serializable {
 
     @Serial

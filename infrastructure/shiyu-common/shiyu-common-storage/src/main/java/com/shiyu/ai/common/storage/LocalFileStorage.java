@@ -1,5 +1,6 @@
 package com.shiyu.ai.common.storage;
 
+import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStream;
 import java.nio.file.Files;
@@ -50,7 +51,7 @@ public class LocalFileStorage implements FileStorage {
     public StorageObject open(String key) throws IOException {
         Path path = resolve(key);
         if (!Files.isRegularFile(path)) {
-            throw new IOException("文件不存在");
+            throw new FileNotFoundException("文件不存在");
         }
         return new StorageObject(
                 Files.newInputStream(path),
@@ -63,7 +64,7 @@ public class LocalFileStorage implements FileStorage {
     public void delete(String key) throws IOException {
         Path path = resolve(key);
         if (!Files.deleteIfExists(path)) {
-            throw new IOException("文件不存在");
+            throw new FileNotFoundException("文件不存在");
         }
         removeEmptyParents(path.getParent());
     }

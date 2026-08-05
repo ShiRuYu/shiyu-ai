@@ -27,7 +27,6 @@ import org.bsc.langgraph4j.state.AgentState;
 import reactor.core.publisher.Flux;
 import reactor.core.scheduler.Schedulers;
 
-import java.lang.reflect.Field;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
@@ -74,11 +73,13 @@ public class AgentRuntimeImpl implements AgentRuntime {
         Execution execution = createExecution(agentId, version, input);
         AgentDefinition definition = getAgentDefinition(agentId);
         AgentVersion agentVersion = definition.getVersion(version);
+        beginExecution(execution);
 
         eventPublisher.publish(new AgentExecutionStartedEvent(
                 execution.getExecutionId(), agentId, input));
 
-        Execution result = agentExecutor.executeAgent(definition, agentVersion, input, execution);
+        Map<String, Object> graphInput = withVersion(input, execution.getVersion());
+        Execution result = agentExecutor.executeAgent(definition, agentVersion, graphInput, execution);
         saveExecution(result);
 
         if (result.getStatus() == ExecutionStatus.COMPLETED) {
@@ -103,12 +104,10 @@ public class AgentRuntimeImpl implements AgentRuntime {
         Execution execution = createExecution(agentId, version, input);
         AgentDefinition definition = getAgentDefinition(agentId);
         AgentVersion agentVersion = definition.getVersion(version);
+        beginExecution(execution);
 
         eventPublisher.publish(new AgentExecutionStartedEvent(
                 execution.getExecutionId(), agentId, input));
-
-        // 记录执行开始时间
-        execution.start();
 
         return Flux.<Map<String, Object>>create(sink -> {
             try {
@@ -116,26 +115,34 @@ public class AgentRuntimeImpl implements AgentRuntime {
                 // stream() 返回 AsyncGenerator，forEach 遍历每个节点执行后的状态
                 final Map<String, Object>[] finalState = new Map[]{null};
 
-                agentVersion.getGraph().stream(input)
+                Map<String, Object> graphInput = withVersion(input, execution.getVersion());
+                agentVersion.getGraph().stream(graphInput)
                         .forEach(nodeOutput -> {
+                            if (!execution.awaitResumeOrCancellation()) {
+                                throw new ExecutionCancelledException();
+                            }
                             Map<String, Object> stateData = nodeOutput.state().data();
                             finalState[0] = stateData;
                             // 每个节点执行后的完整 State 作为一个 chunk 发出
                             sink.next(Map.of(
+                                    "executionId", execution.getExecutionId(),
                                     "node", nodeOutput.node(),
                                     "state", stateData
                             ));
                         });
 
-                // stream() 遍历完成后，finalState[0] 即为最后一个节点的输出
-                if (finalState[0] != null) {
-                    execution.complete(finalState[0]);
-                    saveExecution(execution);
-
-                    eventPublisher.publish(new AgentExecutionCompletedEvent(
-                            execution.getExecutionId(), agentId, finalState[0],
-                            execution.getDurationMs()));
+                if (!execution.awaitResumeOrCancellation()) {
+                    throw new ExecutionCancelledException();
                 }
+
+                // stream() 遍历完成后，finalState[0] 即为最后一个节点的输出
+                Map<String, Object> output = finalState[0] == null ? Map.of() : finalState[0];
+                execution.complete(output);
+                saveExecution(execution);
+
+                eventPublisher.publish(new AgentExecutionCompletedEvent(
+                        execution.getExecutionId(), agentId, output,
+                        execution.getDurationMs()));
 
                 // 发出完成标记
                 sink.next(Map.of(
@@ -145,6 +152,13 @@ public class AgentRuntimeImpl implements AgentRuntime {
 
                 sink.complete();
 
+            } catch (ExecutionCancelledException e) {
+                saveExecution(execution);
+                sink.next(Map.of(
+                        "status", "CANCELLED",
+                        "executionId", execution.getExecutionId()
+                ));
+                sink.complete();
             } catch (Exception e) {
                 log.error("Agent 流式执行失败: agentId={}, executionId={}",
                         agentId, execution.getExecutionId(), e);
@@ -175,13 +189,17 @@ public class AgentRuntimeImpl implements AgentRuntime {
 
     @Override
     public Execution resume(String executionId) {
+        Execution active = activeExecutions.get(executionId);
+        if (active != null) {
+            AgentStateMachine.transition(active.getStatus(), ExecutionStatus.RUNNING);
+            active.resume();
+            saveExecution(active);
+            return active;
+        }
+
         AgentExecutionBO execBO = executionRepository.selectByExecutionId(executionId);
         if (execBO == null) {
-            Execution execution = activeExecutions.get(executionId);
-            if (execution == null) {
-                throw new IllegalStateException("执行实例不存在: " + executionId);
-            }
-            return resumeFromCheckpoint(execution);
+            throw new IllegalStateException("执行实例不存在: " + executionId);
         }
         Execution execution = rebuildExecution(execBO);
         return resumeFromCheckpoint(execution);
@@ -189,6 +207,9 @@ public class AgentRuntimeImpl implements AgentRuntime {
 
     private Execution resumeFromCheckpoint(Execution execution) {
         AgentStateMachine.transition(execution.getStatus(), ExecutionStatus.RUNNING);
+        execution.resume();
+        activeExecutions.put(execution.getExecutionId(), execution);
+        saveExecution(execution);
 
         String agentId = execution.getAgentId();
         AgentDefinition definition = getAgentDefinition(agentId);
@@ -223,7 +244,6 @@ public class AgentRuntimeImpl implements AgentRuntime {
         }
         AgentStateMachine.transition(execution.getStatus(), ExecutionStatus.CANCELLED);
         execution.cancel();
-        activeExecutions.remove(executionId);
         saveExecution(execution);
         log.info("Agent 执行已取消: executionId={}", executionId);
     }
@@ -235,10 +255,7 @@ public class AgentRuntimeImpl implements AgentRuntime {
 
         AgentExecutionBO execBO = executionRepository.selectByExecutionId(executionId);
         if (execBO == null) return null;
-        if (execBO.getStatus() == null) return null;
-        AgentExecutionStatus aes = AgentExecutionStatus.fromCode(execBO.getStatus());
-        if (aes == null) return null;
-        return ExecutionStatus.valueOf(aes.name());
+        return resolveStatus(execBO);
     }
 
     @Override
@@ -268,7 +285,36 @@ public class AgentRuntimeImpl implements AgentRuntime {
     private Execution createExecution(String agentId, String version, Map<String, Object> input) {
         AgentDefinition definition = getAgentDefinition(agentId);
         String resolvedVersion = version != null ? version : definition.getCurrentVersion();
-        return new Execution(agentId, resolvedVersion, input);
+        Execution execution = new Execution(agentId, resolvedVersion, input);
+        if (input != null) {
+            Object userId = input.get("userId");
+            if (userId instanceof Number number) {
+                execution.setUserId(number.longValue());
+            } else if (userId instanceof String value && !value.isBlank()) {
+                try {
+                    execution.setUserId(Long.parseLong(value));
+                } catch (NumberFormatException ignored) {
+                    log.warn("Ignoring non-numeric execution userId: {}", value);
+                }
+            }
+            Object sessionId = input.get("sessionId");
+            if (sessionId != null) {
+                execution.setSessionId(String.valueOf(sessionId));
+            }
+        }
+        return execution;
+    }
+
+    private static Map<String, Object> withVersion(Map<String, Object> input, String version) {
+        Map<String, Object> graphInput = input == null ? new java.util.HashMap<>() : new java.util.HashMap<>(input);
+        graphInput.put("version", version);
+        return graphInput;
+    }
+
+    private void beginExecution(Execution execution) {
+        execution.start();
+        activeExecutions.put(execution.getExecutionId(), execution);
+        saveExecution(execution);
     }
 
     private AgentDefinition getAgentDefinition(String agentId) {
@@ -292,12 +338,7 @@ public class AgentRuntimeImpl implements AgentRuntime {
             bo.setSessionId(execution.getSessionId());
             bo.setInputData(JSONUtils.toJsonString(execution.getInput()));
             bo.setOutputData(JSONUtils.toJsonString(execution.getOutput()));
-            try {
-                bo.setStatus(AgentExecutionStatus.valueOf(execution.getStatus().name()).getCode());
-            } catch (IllegalArgumentException e) {
-                log.warn("无法映射执行状态: {}", execution.getStatus());
-                bo.setStatus(null);
-            }
+            bo.setStatus(toStoredStatus(execution.getStatus()));
             bo.setErrorMessage(execution.getErrorMessage());
             bo.setStartTime(execution.getStartTime());
             bo.setEndTime(execution.getEndTime());
@@ -317,18 +358,61 @@ public class AgentRuntimeImpl implements AgentRuntime {
 
     @SuppressWarnings("unchecked")
     private Execution rebuildExecution(AgentExecutionBO bo) {
-        Execution execution = new Execution(bo.getAgentId(), bo.getVersion(),
-                JSONUtils.parseObject(bo.getInputData(), Map.class));
-        if (bo.getOutputData() != null) {
-            try {
-                Field outputField = Execution.class.getDeclaredField("output");
-                outputField.setAccessible(true);
-                outputField.set(execution, JSONUtils.parseObject(bo.getOutputData(), Map.class));
-            } catch (Exception e) {
-                log.warn("重建 Execution output 失败", e);
-            }
+        return Execution.restore(
+                bo.getExecutionId(),
+                bo.getAgentId(),
+                bo.getVersion(),
+                resolveStatus(bo),
+                parseData(bo.getInputData()),
+                parseData(bo.getOutputData()),
+                bo.getErrorMessage(),
+                bo.getUserId(),
+                bo.getSessionId(),
+                bo.getStartTime(),
+                bo.getEndTime(),
+                bo.getDurationMs());
+    }
+
+    static Integer toStoredStatus(ExecutionStatus status) {
+        if (status == null) {
+            return null;
         }
-        return execution;
+        return switch (status) {
+            case PENDING, RUNNING -> AgentExecutionStatus.RUNNING.getCode();
+            case PAUSED -> AgentExecutionStatus.PAUSED.getCode();
+            case COMPLETED -> AgentExecutionStatus.SUCCESS.getCode();
+            case FAILED -> AgentExecutionStatus.FAILED.getCode();
+            case CANCELLED -> AgentExecutionStatus.CANCELLED.getCode();
+        };
+    }
+
+    static ExecutionStatus fromStoredStatus(Integer storedStatus) {
+        AgentExecutionStatus status = AgentExecutionStatus.fromCode(storedStatus);
+        if (status == null) {
+            return null;
+        }
+        return switch (status) {
+            case RUNNING -> ExecutionStatus.RUNNING;
+            case SUCCESS -> ExecutionStatus.COMPLETED;
+            case FAILED -> ExecutionStatus.FAILED;
+            case PAUSED -> ExecutionStatus.PAUSED;
+            case CANCELLED -> ExecutionStatus.CANCELLED;
+        };
+    }
+
+    private static ExecutionStatus resolveStatus(AgentExecutionBO bo) {
+        ExecutionStatus status = fromStoredStatus(bo.getStatus());
+        if (status == ExecutionStatus.RUNNING && bo.getEndTime() != null) {
+            return bo.getErrorMessage() == null || bo.getErrorMessage().isBlank()
+                    ? ExecutionStatus.COMPLETED
+                    : ExecutionStatus.FAILED;
+        }
+        return status;
+    }
+
+    @SuppressWarnings("unchecked")
+    private static Map<String, Object> parseData(String data) {
+        return data == null ? null : JSONUtils.parseObject(data, Map.class);
     }
 
     private void cleanupExecution(Execution execution) {
@@ -338,5 +422,10 @@ public class AgentRuntimeImpl implements AgentRuntime {
         } else {
             activeExecutions.put(execution.getExecutionId(), execution);
         }
+    }
+
+    private static final class ExecutionCancelledException extends RuntimeException {
+        @java.io.Serial
+        private static final long serialVersionUID = 1L;
     }
 }

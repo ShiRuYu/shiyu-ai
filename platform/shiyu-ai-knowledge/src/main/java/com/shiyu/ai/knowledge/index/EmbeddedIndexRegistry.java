@@ -189,8 +189,18 @@ public class EmbeddedIndexRegistry implements KnowledgeIndexService {
         if ("KEYWORD".equals(normalizedMode)) {
             return keywordHits(textHits, requestedTopK, minScore);
         }
-        List<VectorHit> vectorHits = search(tenantId, spaceId,
-                space.getActiveIndexVersion(), embeddingProvider.embed(query), candidates);
+        List<VectorHit> vectorHits;
+        try {
+            vectorHits = search(tenantId, spaceId,
+                    space.getActiveIndexVersion(), embeddingProvider.embed(query), candidates);
+        } catch (IllegalStateException exception) {
+            if ("HYBRID".equals(normalizedMode)) {
+                log.warn("向量检索未启用，HYBRID 降级为全文检索: {}", exception.getMessage());
+                return keywordHits(textHits, requestedTopK, minScore);
+            }
+            throw new ServiceException(
+                    "向量检索未启用，请配置 Embedding 模型或使用 KEYWORD/HYBRID 模式");
+        }
         if ("SEMANTIC".equals(normalizedMode) || "VECTOR".equals(normalizedMode)) {
             return vectorHits.stream()
                     .filter(hit -> minScore <= 0D || hit.score() >= minScore)
