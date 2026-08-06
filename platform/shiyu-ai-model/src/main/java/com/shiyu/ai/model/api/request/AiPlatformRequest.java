@@ -10,6 +10,13 @@ import lombok.Data;
 public class AiPlatformRequest {
     @NotBlank private String name;
     @NotBlank private String code;
+    private String baseUrl;
+    private String apiKey;
+    private Double temperature;
+    private Integer maxTokens;
+    private Integer maxRetries;
+    private String availableModels;
+    private String extraConfig;
     private String isDefault;
     private String status;
     private Integer sort;

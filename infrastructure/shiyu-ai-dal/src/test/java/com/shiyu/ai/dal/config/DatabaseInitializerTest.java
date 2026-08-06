@@ -27,7 +27,8 @@ class DatabaseInitializerTest {
             "AUTH_ROLE_SCOPE_MENU", "AUTH_TENANT", "AUTH_TENANT_AUTH_CODE",
             "AUTH_TENANT_MENU", "AUTH_TENANT_QUOTA", "AUTH_USER", "AUTH_USER_SCOPE_ROLE",
             "AGENT_AI_MODEL", "AGENT_AI_PLATFORM", "AGENT_DEF", "AGENT_INTENT_DEF",
-            "AGENT_VERSION"
+            "AGENT_VERSION",
+            "KNOWLEDGE_DIFFICULTY_SCALE", "KNOWLEDGE_DIFFICULTY_SCALE_LEVEL"
     );
 
     @Test
@@ -55,11 +56,11 @@ class DatabaseInitializerTest {
                 "SELECT COUNT(*) FROM AUTH_USER WHERE USERNAME='admin'"));
         assertEquals(3, scalar(dataSource, "SELECT COUNT(*) FROM AUTH_ROLE"));
         assertEquals(71, scalar(dataSource, "SELECT COUNT(*) FROM AUTH_MENU"));
-        assertEquals(117, scalar(dataSource, "SELECT COUNT(*) FROM AUTH_AUTH_CODE"));
+        assertEquals(131, scalar(dataSource, "SELECT COUNT(*) FROM AUTH_AUTH_CODE"));
         assertEquals(71, scalar(dataSource, "SELECT COUNT(*) FROM AUTH_TENANT_MENU"));
-        assertEquals(117, scalar(dataSource, "SELECT COUNT(*) FROM AUTH_TENANT_AUTH_CODE"));
+        assertEquals(131, scalar(dataSource, "SELECT COUNT(*) FROM AUTH_TENANT_AUTH_CODE"));
         assertEquals(169, scalar(dataSource, "SELECT COUNT(*) FROM AUTH_ROLE_SCOPE_MENU"));
-        assertEquals(234, scalar(dataSource, "SELECT COUNT(*) FROM AUTH_ROLE_SCOPE_AUTH_CODE"));
+        assertEquals(262, scalar(dataSource, "SELECT COUNT(*) FROM AUTH_ROLE_SCOPE_AUTH_CODE"));
         assertEquals(1, scalar(dataSource,
                 "SELECT COUNT(*) FROM AUTH_USER_SCOPE_ROLE usr "
                         + "JOIN AUTH_USER u ON u.ID=usr.USER_ID "
@@ -70,6 +71,8 @@ class DatabaseInitializerTest {
         assertEquals(9, scalar(dataSource, "SELECT COUNT(*) FROM AGENT_AI_MODEL"));
         assertEquals(11, scalar(dataSource, "SELECT COUNT(*) FROM AGENT_DEF"));
         assertEquals(11, scalar(dataSource, "SELECT COUNT(*) FROM AGENT_VERSION"));
+        assertEquals(1, scalar(dataSource, "SELECT COUNT(*) FROM KNOWLEDGE_DIFFICULTY_SCALE"));
+        assertEquals(5, scalar(dataSource, "SELECT COUNT(*) FROM KNOWLEDGE_DIFFICULTY_SCALE_LEVEL"));
         assertEquals(8, scalar(dataSource, "SELECT COUNT(*) FROM AGENT_INTENT_DEF"));
         assertEquals(1, scalar(dataSource,
                 "SELECT COUNT(*) FROM AGENT_INTENT_DEF "

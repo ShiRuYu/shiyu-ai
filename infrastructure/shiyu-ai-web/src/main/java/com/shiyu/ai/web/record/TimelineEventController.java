@@ -18,7 +18,7 @@ import org.springframework.web.bind.annotation.*;
 @RequestMapping("/record/timeline")
 public class TimelineEventController {
     @Resource private TimelineEventService timelineEventService;
-    @GetMapping("/list") public Result<PageData<TimelineEventVO>> getPage(PageQuery query, @RequestParam Long profileId) {
+    @GetMapping("/list") public Result<PageData<TimelineEventVO>> getPage(PageQuery query, @RequestParam(required = false) Long profileId) {
         var page = timelineEventService.pageView(query.getPageNum(), query.getPageSize(), profileId);
         return Result.success(new PageData<>(page.getRight(), page.getLeft()));
     }

@@ -36,11 +36,11 @@ public class TimelineEventRepositoryImpl implements com.shiyu.ai.record.port.rep
      */
     public Pair<Long, List<TimelineEventBO>> selectPage(Number pageNo, Number pageSize, Long profileId) {
         QueryWrapper countWrapper = QueryWrapper.create()
-                .eq(TimelineEventDO::getProfileId, profileId);
+                .eq(TimelineEventDO::getProfileId, profileId, profileId != null);
         long total = timelineEventMapper.selectCountByQuery(countWrapper);
 
         QueryWrapper queryWrapper = QueryWrapper.create()
-                .eq(TimelineEventDO::getProfileId, profileId)
+                .eq(TimelineEventDO::getProfileId, profileId, profileId != null)
                 .orderBy(TimelineEventDO::getEventTime, false);
         
         if (pageNo != null && pageSize != null) {

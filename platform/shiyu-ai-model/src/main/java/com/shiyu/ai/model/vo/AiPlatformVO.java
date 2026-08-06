@@ -24,6 +24,12 @@ public class AiPlatformVO implements Serializable {
     private Long id;
     private String name;
     private String code;
+    private String baseUrl;
+    private Double temperature;
+    private Integer maxTokens;
+    private Integer maxRetries;
+    private String availableModels;
+    private String extraConfig;
     private String isDefault;
     private String status;
     private Integer sort;

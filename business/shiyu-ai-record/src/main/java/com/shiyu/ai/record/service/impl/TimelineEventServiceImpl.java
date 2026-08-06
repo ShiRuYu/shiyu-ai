@@ -19,8 +19,8 @@ import java.util.List;
 public class TimelineEventServiceImpl implements TimelineEventService {
     @Override public Pair<Long, List<TimelineEventVO>> pageView(Number n, Number s, Long p) { var x=getPage(n,s,p); return Pair.of(x.getLeft(), MapstructUtils.convert(x.getRight(), TimelineEventVO.class)); }
     @Override public TimelineEventVO detailView(Long id) { return MapstructUtils.convert(getById(id), TimelineEventVO.class); }
-    @Override public TimelineEventVO create(TimelineEventRequest r) { TimelineEventBO b=new TimelineEventBO(); b.setProfileId(r.getProfileId()); b.setTitle(r.getTitle()); b.setType(r.getEventType()); if(r.getEventDate()!=null)b.setEventTime(r.getEventDate()); return MapstructUtils.convert(create(b), TimelineEventVO.class); }
-    @Override public boolean update(Long id, TimelineEventRequest r) { TimelineEventBO b=getById(id); if(b==null)return false; b.setTitle(r.getTitle()); b.setType(r.getEventType()); if(r.getEventDate()!=null)b.setEventTime(r.getEventDate()); return update(b); }
+    @Override public TimelineEventVO create(TimelineEventRequest r) { TimelineEventBO b=new TimelineEventBO(); b.setProfileId(r.getProfileId()); b.setTitle(r.getTitle()); b.setType(r.getEventType()); if(r.getEventTime()!=null)b.setEventTime(r.getEventTime()); else if(r.getEventDate()!=null)b.setEventTime(r.getEventDate()); return MapstructUtils.convert(create(b), TimelineEventVO.class); }
+    @Override public boolean update(Long id, TimelineEventRequest r) { TimelineEventBO b=getById(id); if(b==null)return false; b.setTitle(r.getTitle()); b.setType(r.getEventType()); if(r.getEventTime()!=null)b.setEventTime(r.getEventTime()); else if(r.getEventDate()!=null)b.setEventTime(r.getEventDate()); return update(b); }
     @Override public List<TimelineEventVO> timelineView(Long id) { return MapstructUtils.convert(getTimelineByProfileId(id), TimelineEventVO.class); }
 
     @Resource

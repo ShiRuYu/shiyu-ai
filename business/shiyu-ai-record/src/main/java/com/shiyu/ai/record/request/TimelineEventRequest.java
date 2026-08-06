@@ -2,6 +2,7 @@ package com.shiyu.ai.record.request;
 
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
+import com.fasterxml.jackson.annotation.JsonFormat;
 import lombok.Data;
 
 import java.io.Serial;
@@ -15,6 +16,8 @@ public class TimelineEventRequest implements Serializable {
     private Long profileId;
     @NotBlank(message = "事件标题不能为空")
     private String title;
+    @JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss")
+    private Date eventTime;
     private Date eventDate;
     private String eventType;
 }

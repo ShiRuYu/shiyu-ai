@@ -52,7 +52,8 @@ public class DatabaseInitializer {
     private static final List<String> DEFAULT_SEED_RESOURCES = List.of(
             "classpath:db/baseline/h2/seed/01_common.sql",
             "classpath:db/baseline/h2/seed/02_auth.sql",
-            "classpath:db/baseline/h2/seed/03_agent.sql"
+            "classpath:db/baseline/h2/seed/03_agent.sql",
+            "classpath:db/baseline/h2/seed/04_knowledge.sql"
     );
 
     private static final Set<String> EXPECTED_TABLES = Set.of(
