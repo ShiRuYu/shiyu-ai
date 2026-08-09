@@ -219,7 +219,7 @@
 | 模块 | 职责 | 类型 |
 |------|------|------|
 | `shiyu-common/*` | 公共基础：core（工具/Result/异常）、web（XSS）、mybatis（ORM 封装）、thread（线程池）、excel、storage（文件存储） | 基础设施 |
-| `shiyu-ai-dal` | 数据访问实现层：DO/Mapper/Repository 实现 + Flyway 迁移 | 基础设施 |
+| `shiyu-ai-dal` | 数据访问实现层：DO/Mapper/Repository + H2 基线与显式迁移链 | 基础设施 |
 | `shiyu-ai-web` | REST 接入层：Controller、DTO、WebSocket、OpenAPI | 基础设施 |
 | `shiyu-ai-bootstrap` | 应用启动入口：日志/可观测/数据保留装配 | 基础设施 |
 
@@ -350,6 +350,9 @@ Linux 使用对应的 `scripts/package-cloud-linux.sh` 和
 | 教育 | `/api/education/**` | 业务扩展 |
 | 记录 | `/api/record/**` | 业务扩展 |
 | 系统 | `/api/system/**` | 基础设施 |
+
+菜单层级、角色授权和 H2 基线升级规则见
+[菜单信息架构与数据契约](./docs/architecture/菜单信息架构.md)。
 
 ---
 

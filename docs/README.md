@@ -186,6 +186,7 @@ CheckpointManager + DbCheckpointStore 支持 Agent 执行的暂停/恢复，通�
 
 - [模块详解](./modules/模块详解.md)
 - [架构评审报告](./architecture/架构评审报告.md)
+- [菜单信息架构与数据契约](./architecture/菜单信息架构.md)
 - [演进路线图](./guides/演进路线图.md)
 - [知识平台迁移执行计划](./architecture/知识平台迁移执行计划.md)
 - [知识平台与教育模块调整方案](./architecture/知识平台与教育模块调整方案.md)
