@@ -14,6 +14,9 @@ import java.nio.file.StandardOpenOption;
  */
 final class EmbeddedDataDirectoryLock implements AutoCloseable {
 
+    private static final String APP_HOME_ENV = "APP_HOME";
+    private static final String APP_HOME_PROPERTY = "app.home";
+
     private final FileChannel channel;
     private final FileLock lock;
 
@@ -23,7 +26,15 @@ final class EmbeddedDataDirectoryLock implements AutoCloseable {
     }
 
     static EmbeddedDataDirectoryLock acquire() {
-        Path dataRoot = Path.of(System.getProperty("app.home", "."), "data")
+        String appHome = resolveAppHome(
+                System.getProperty(APP_HOME_PROPERTY),
+                System.getenv(APP_HOME_ENV),
+                System.getProperty("user.dir", "."));
+        // The lock is acquired before Spring's EnvironmentPostProcessor runs.
+        // Keep the system property aligned so all later non-Spring path users
+        // resolve the same data directory.
+        System.setProperty(APP_HOME_PROPERTY, appHome);
+        Path dataRoot = Path.of(appHome, "data")
                 .toAbsolutePath().normalize();
         try {
             Files.createDirectories(dataRoot);
@@ -43,6 +54,16 @@ final class EmbeddedDataDirectoryLock implements AutoCloseable {
         } catch (IOException exception) {
             throw new IllegalStateException("无法锁定嵌入式数据目录: " + dataRoot, exception);
         }
+    }
+
+    static String resolveAppHome(String systemProperty, String environmentValue, String fallback) {
+        if (systemProperty != null && !systemProperty.isBlank()) {
+            return systemProperty;
+        }
+        if (environmentValue != null && !environmentValue.isBlank()) {
+            return environmentValue;
+        }
+        return fallback == null || fallback.isBlank() ? "." : fallback;
     }
 
     @Override

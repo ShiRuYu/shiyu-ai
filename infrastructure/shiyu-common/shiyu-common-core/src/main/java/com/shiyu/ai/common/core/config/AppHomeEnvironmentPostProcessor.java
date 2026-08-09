@@ -95,6 +95,10 @@ public class AppHomeEnvironmentPostProcessor implements EnvironmentPostProcessor
         Map<String, Object> props = new HashMap<>();
         props.put(APP_HOME_KEY, appHome);
         environment.getPropertySources().addFirst(new MapPropertySource(PROPERTY_SOURCE_NAME, props));
+        // Some embedded-storage services intentionally resolve paths without a
+        // Spring dependency. Keep their system-property view consistent with
+        // the Environment value selected here.
+        System.setProperty(APP_HOME_KEY, appHome);
         log.info("app.home = {}", appHome);
     }
 }
