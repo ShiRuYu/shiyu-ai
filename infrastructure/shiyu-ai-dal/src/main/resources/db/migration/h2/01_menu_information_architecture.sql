@@ -32,7 +32,7 @@ WHERE "ID" = 40;
 INSERT INTO "PUBLIC"."AUTH_MENU" VALUES
 (1600, '学习', 'EduLearning', 'CATALOG', 1500, 1, '/education-center/learning', '/learning/course', 'lucide:book-open', '', NULL, NULL, NULL, '课程、知识、计划与学习资源', TRUE, 1, 1, 0, 'system', CURRENT_TIMESTAMP, 'system', CURRENT_TIMESTAMP),
 (1610, '练习与考试', 'EduPracticeExam', 'CATALOG', 1500, 1, '/education-center/practice-exam', '/practice/question', 'lucide:clipboard-check', '', NULL, NULL, NULL, '题库、错题、在线考试与 AI 组卷', TRUE, 1, 2, 0, 'system', CURRENT_TIMESTAMP, 'system', CURRENT_TIMESTAMP),
-(1620, '复习', 'EduReview', 'CATALOG', 1500, 1, '/education-center/review', '/review/today', 'lucide:history', '', NULL, NULL, NULL, '今日复习与复习历史', TRUE, 1, 3, 0, 'system', CURRENT_TIMESTAMP, 'system', CURRENT_TIMESTAMP),
+(1620, '复习', 'EduReviewCenter', 'CATALOG', 1500, 1, '/education-center/review', '/review/today', 'lucide:history', '', NULL, NULL, NULL, '今日复习与复习历史', TRUE, 1, 3, 0, 'system', CURRENT_TIMESTAMP, 'system', CURRENT_TIMESTAMP),
 (1630, 'AI 辅学', 'EduAiTutor', 'CATALOG', 1500, 1, '/education-center/ai-tutor', '/ai-tutor/teacher', 'lucide:sparkles', '', NULL, NULL, NULL, 'AI 讲解、出题、规划、对话与报告', TRUE, 1, 4, 0, 'system', CURRENT_TIMESTAMP, 'system', CURRENT_TIMESTAMP),
 (1640, '学习分析', 'EduLearningAnalytics', 'CATALOG', 1500, 1, '/education-center/analytics', '/analytics-center/report', 'lucide:chart-no-axes-combined', '', NULL, NULL, NULL, '学习报告、能力、趋势与薄弱点分析', TRUE, 1, 5, 0, 'system', CURRENT_TIMESTAMP, 'system', CURRENT_TIMESTAMP);
 

@@ -1,0 +1,35 @@
+name: Backend quality gate
+
+on:
+  pull_request:
+  push:
+    branches:
+      - master
+      - main
+      - 'releases/*'
+
+permissions:
+  contents: read
+
+concurrency:
+  group: backend-ci-${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  test:
+    name: Compile and test all modules
+    runs-on: ubuntu-latest
+    timeout-minutes: 35
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Java 21
+        uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: '21'
+          cache: maven
+
+      - name: Run Maven test suite
+        run: mvn --batch-mode --no-transfer-progress test

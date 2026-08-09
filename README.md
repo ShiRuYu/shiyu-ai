@@ -353,6 +353,8 @@ Linux 使用对应的 `scripts/package-cloud-linux.sh` 和
 
 菜单层级、角色授权和 H2 基线升级规则见
 [菜单信息架构与数据契约](./docs/architecture/菜单信息架构.md)。
+前端 API、权限上下文与流式输出约定见
+[前端集成契约](./docs/contracts/前端集成契约.md)。
 
 ---
 

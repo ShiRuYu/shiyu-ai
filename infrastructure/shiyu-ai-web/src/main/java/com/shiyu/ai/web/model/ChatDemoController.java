@@ -6,17 +6,18 @@ import com.shiyu.ai.model.chat.ChatRequest;
 import com.shiyu.ai.model.chat.ChatResponse;
 import com.shiyu.ai.model.adapter.ModelManager;
 import com.shiyu.ai.common.core.api.Result;
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.tags.Tag;
+import jakarta.validation.Valid;
 import lombok.Data;
 import lombok.extern.slf4j.Slf4j;
-import jakarta.validation.Valid;
+import org.springframework.http.MediaType;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
-import io.swagger.v3.oas.annotations.tags.Tag;
-import io.swagger.v3.oas.annotations.Operation;
 import reactor.core.publisher.Flux;
 
 import java.util.HashMap;
@@ -77,7 +78,7 @@ public class ChatDemoController {
     }
 
     @Operation(summary = "Stream Chat")
-    @PostMapping("/send-stream")
+    @PostMapping(value = "/send-stream", produces = MediaType.TEXT_EVENT_STREAM_VALUE)
     public Flux<ChatResponse> streamChat(@Valid @RequestBody DemoChatRequest request) {
         log.info("收到流式聊天请求：platform={}, model={}, prompt={}",
                 request.getPlatform(), request.getModel(), request.getPrompt());

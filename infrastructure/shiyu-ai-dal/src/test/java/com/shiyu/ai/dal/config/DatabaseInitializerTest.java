@@ -203,6 +203,9 @@ class DatabaseInitializerTest {
     }
 
     private void assertInformationArchitecture(DataSource dataSource) throws Exception {
+        assertEquals(0, scalar(dataSource,
+                "SELECT COUNT(*) FROM (SELECT CODE FROM AUTH_MENU "
+                        + "WHERE CODE IS NOT NULL AND CODE <> '' GROUP BY CODE HAVING COUNT(*) > 1)"));
         assertEquals(5, scalar(dataSource,
                 "SELECT COUNT(*) FROM AUTH_MENU WHERE PARENT_ID IS NULL"));
         assertEquals(1, scalar(dataSource,
