@@ -61,6 +61,12 @@ public interface UsageRecordMapper extends BaseMapperFlex<UsageRecordDO> {
             "FROM agent_usage_record")
     Map<String, Object> getOverview();
 
+    @Select("SELECT COUNT(*) FROM agent_ai_platform WHERE status = 1 AND del_flag = 0")
+    long countEnabledPlatforms();
+
+    @Select("SELECT COUNT(*) FROM agent_ai_model WHERE status = 1 AND del_flag = 0")
+    long countEnabledModels();
+
     /**
      * H2 does not expose the MySQL JSON extraction functions used by the old
      * aggregation queries. The repository parses the JSON payloads after

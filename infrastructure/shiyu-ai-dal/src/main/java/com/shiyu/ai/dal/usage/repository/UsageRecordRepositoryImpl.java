@@ -59,8 +59,24 @@ public class UsageRecordRepositoryImpl implements com.shiyu.ai.usage.port.reposi
 
     @Override
     public Map<String, Object> getOverview() {
-        Map<String, Object> overview = usageRecordMapper.getOverview();
-        return overview == null ? new LinkedHashMap<>() : overview;
+        Map<String, Object> databaseOverview = usageRecordMapper.getOverview();
+        Map<String, Object> raw = databaseOverview == null ? Map.of() : databaseOverview;
+        UsageMetrics llmMetrics = new UsageMetrics();
+        for (UsageRecordDO record : safeRecords(usageRecordMapper.selectLlmRecords())) {
+            llmMetrics.addLlm(record, parseExtInfo(record));
+        }
+        Map<String, Object> llmOverview = llmMetrics.toLlmRow();
+
+        // H2 uppercases unquoted aliases while other databases usually retain
+        // snake case. Return one stable API contract regardless of dialect.
+        Map<String, Object> result = new LinkedHashMap<>();
+        result.put("total_calls", longValue(valueIgnoreCase(raw, "total_calls")));
+        result.put("total_tokens", llmOverview.get("total_tokens"));
+        result.put("total_cost", llmOverview.get("total_cost"));
+        result.put("avg_latency_ms", valueIgnoreCase(raw, "avg_latency_ms"));
+        result.put("platform_count", usageRecordMapper.countEnabledPlatforms());
+        result.put("model_count", usageRecordMapper.countEnabledModels());
+        return result;
     }
 
     @Override
@@ -211,6 +227,17 @@ public class UsageRecordRepositoryImpl implements com.shiyu.ai.usage.port.reposi
         } catch (NumberFormatException ignored) {
             return 0L;
         }
+    }
+
+    private static Object valueIgnoreCase(Map<String, Object> values, String key) {
+        if (values.containsKey(key)) {
+            return values.get(key);
+        }
+        return values.entrySet().stream()
+                .filter(entry -> entry.getKey().equalsIgnoreCase(key))
+                .map(Map.Entry::getValue)
+                .findFirst()
+                .orElse(null);
     }
 
     private static BigDecimal decimalValue(Object value) {

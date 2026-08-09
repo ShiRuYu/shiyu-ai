@@ -48,6 +48,29 @@ class UsageRecordRepositoryImplTest {
     }
 
     @Test
+    void normalizesOverviewAliasesAndIncludesConfiguredCatalogCounts() {
+        when(mapper.getOverview()).thenReturn(Map.of(
+                "TOTAL_CALLS", 3L,
+                "AVG_LATENCY_MS", 12.5
+        ));
+        when(mapper.selectLlmRecords()).thenReturn(List.of(
+                record("LLM", "{\"totalTokens\":20,\"cost\":0.25}", 10),
+                record("LLM", "{\"totalTokens\":5,\"cost\":0.05}", 15)
+        ));
+        when(mapper.countEnabledPlatforms()).thenReturn(4L);
+        when(mapper.countEnabledModels()).thenReturn(9L);
+
+        Map<String, Object> overview = repository.getOverview();
+
+        assertEquals(3L, overview.get("total_calls"));
+        assertEquals(25L, overview.get("total_tokens"));
+        assertEquals(new BigDecimal("0.30"), overview.get("total_cost"));
+        assertEquals(12.5, overview.get("avg_latency_ms"));
+        assertEquals(4L, overview.get("platform_count"));
+        assertEquals(9L, overview.get("model_count"));
+    }
+
+    @Test
     void aggregatesPeriodsAndEmbeddingUsageInJava() {
         LocalDateTime now = LocalDateTime.now();
         when(mapper.selectLlmRecordsSince(any())).thenReturn(List.of(
