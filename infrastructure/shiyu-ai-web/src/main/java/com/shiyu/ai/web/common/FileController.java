@@ -1,5 +1,7 @@
 package com.shiyu.ai.web.common;
 
+import cn.dev33.satoken.annotation.SaCheckPermission;
+
 import com.shiyu.ai.common.core.api.Result;
 import com.shiyu.ai.common.core.domain.UserContextHolder;
 import com.shiyu.ai.common.storage.FileStorageManager;
@@ -62,6 +64,7 @@ public class FileController {
     }
 
     @Operation(summary = "上传文件")
+    @SaCheckPermission("file:upload")
     @PostMapping("/upload")
     public Result<FileView> upload(@RequestParam("file") MultipartFile file) {
         if (file == null || file.isEmpty()) {
@@ -103,6 +106,7 @@ public class FileController {
     }
 
     @Operation(summary = "删除文件")
+    @SaCheckPermission("file:delete")
     @DeleteMapping
     public Result<Boolean> delete(@RequestParam String key) {
         try {

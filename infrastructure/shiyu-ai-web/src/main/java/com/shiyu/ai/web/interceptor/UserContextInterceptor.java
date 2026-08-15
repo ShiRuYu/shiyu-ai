@@ -20,6 +20,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.jspecify.annotations.NonNull;
 import org.springframework.stereotype.Component;
 import org.springframework.web.servlet.HandlerInterceptor;
+import tools.jackson.core.type.TypeReference;
 
 import java.util.List;
 import java.util.Map;
@@ -42,7 +43,7 @@ public class UserContextInterceptor implements HandlerInterceptor {
         try {
             SaTokenHelper helper = SaTokenHelper.getInstance();
             if (!helper.isFrameworkLogin()) {
-                log.warn("鐢ㄦ埛鏈櫥褰曪紝鎷︽埅璇锋眰: uri={}", request.getRequestURI());
+                log.warn("用户未登录，拦截请求: uri={}", request.getRequestURI());
                 response.setContentType("application/json;charset=utf-8");
                 response.getWriter().print(JSONUtils.toJsonString(Result.fail(BizResultCode.UNAUTHORIZED, "未登录或登录已失效")));
                 return false;
@@ -52,7 +53,7 @@ public class UserContextInterceptor implements HandlerInterceptor {
             UserContext userContext = SaTokenHelper.getUserContextFromSession();
 
             if (userContext != null && userId.equals(userContext.getUserId())) {
-                // Session 鍙綔涓烘€ц兘缂撳瓨锛岀敤鎴枫€佽鑹层€佺鎴风姸鎬佸拰鑼冨洿蹇呴』瀹炴椂浠ユ暟鎹簱涓哄噯銆?
+                // Session 上下文仍需校验用户、租户和角色的运行期状态。
                 if (isCachedContextValid(userContext)) {
                     userContext.setToken(SaTokenHelper.getCurrentToken());
                     userContext.setIpaddr(getClientIp(request));
@@ -64,15 +65,14 @@ public class UserContextInterceptor implements HandlerInterceptor {
                     UserContextHolder.setContext(userContext);
                     return true;
                 } else {
-                    // 鍒囨崲绉熸埛/瑙掕壊鍚?ext_info 宸叉洿鏂帮紝鏃?session 鍙兘浠嶄繚鐣欐棫涓婁笅鏂囥€?
-                    // 涓嶅簲鐩存帴鎷掔粷璇锋眰锛岃€屽簲娓呴櫎缂撳瓨骞朵粠鏁版嵁搴撻噸鏂板姞杞斤紱
-                    // 濡傛灉鏁版嵁搴撲腑鐨勬潈闄愮‘瀹炲け鏁堬紝loadScopeContext 浼氭渶缁堟嫆缁濄€?
-                    log.debug("鐧诲綍鐢ㄦ埛 session 涓婁笅鏂囧凡杩囨湡锛岄噸鏂板姞杞? userId={}", userId);
+                    // 切换租户或角色后 ext_info 已持久化，旧 Session 不能继续作为授权依据。
+                    // 清除无效缓存，随后由 loadScopeContext 从持久层重新加载。
+                    log.debug("检测到用户 Session 上下文失效，重新加载: userId={}", userId);
                     SaTokenHelper.clearUserContextSession();
                 }
             }
 
-            // 缂撳瓨鏈懡涓紝閲嶆柊鍔犺浇
+            // 缓存不存在或已失效时，重新加载用户上下文。
             userContext = new UserContext();
             userContext.setUserId(userId);
             userContext.setToken(SaTokenHelper.getCurrentToken());
@@ -94,13 +94,13 @@ public class UserContextInterceptor implements HandlerInterceptor {
                 SaTokenHelper.saveUserContextToSession(userContext);
             } catch (Exception ignored) {}
 
-            log.debug("鐢ㄦ埛涓婁笅鏂囧姞杞? userId={}, homeTenantId={}, currentTenantId={}, currentRole={}, switchMode={}",
+            log.debug("用户上下文加载完成: userId={}, homeTenantId={}, currentTenantId={}, currentRole={}, switchMode={}",
                     userId, userContext.getHomeTenantId(), userContext.getCurrentTenantId(),
                     userContext.getCurrentRoleCode(), userContext.getSwitchMode());
 
             return true;
         } catch (Exception e) {
-            log.error("璁剧疆鐢ㄦ埛涓婁笅鏂囧け璐ワ紝鎷掔粷璇锋眰: uri={}", request.getRequestURI(), e);
+            log.error("加载用户上下文失败，拦截请求: uri={}", request.getRequestURI(), e);
             UserContextHolder.clearContext();
             response.setContentType("application/json;charset=utf-8");
             response.getWriter().print(JSONUtils.toJsonString(Result.fail(BizResultCode.UNAUTHORIZED, "用户上下文加载失败")));
@@ -123,9 +123,10 @@ public class UserContextInterceptor implements HandlerInterceptor {
             Long currentTenantId = null;
             if (user.getExtInfo() != null && !user.getExtInfo().isEmpty()) {
                 try {
-                    Map<String, Object> extInfo = JSONUtils.parseObject(user.getExtInfo(), Map.class);
+                    Map<String, Object> extInfo = JSONUtils.parseObject(
+                            user.getExtInfo(), new TypeReference<Map<String, Object>>() {});
                     if (extInfo != null) {
-                        // 榛樿/褰撳墠绉熸埛
+                        // 归属租户与当前租户。
                         Object homeTid = extInfo.get("homeTenantId");
                         if (homeTid instanceof Number) {
                             userContext.setHomeTenantId(((Number) homeTid).longValue());
@@ -142,11 +143,11 @@ public class UserContextInterceptor implements HandlerInterceptor {
                         if (fromTenantId instanceof Number) {
                             userContext.setSwitchFromTenantId(((Number) fromTenantId).longValue());
                         }
-                        // 褰撳墠瑙掕壊
+                        // 当前角色。
                         Object roleObj = extInfo.get("currentRole");
-                        if (roleObj instanceof Map roleMap) {
-                            Object roleKey = ((Map<String, Object>) roleMap).get("roleKey");
-                            Object roleId = ((Map<String, Object>) roleMap).get("roleId");
+                        if (roleObj instanceof Map<?, ?> roleMap) {
+                            Object roleKey = roleMap.get("roleKey");
+                            Object roleId = roleMap.get("roleId");
                             if (roleId instanceof Number
                                     && roleKey instanceof String
                                     && isCurrentRoleValid(userId, currentTenantId,
@@ -157,11 +158,11 @@ public class UserContextInterceptor implements HandlerInterceptor {
                         }
                     }
                 } catch (Exception e) {
-                    log.warn("extInfo 瑙ｆ瀽寮傚父: {}", e.getMessage());
+                    log.warn("extInfo 解析失败: {}", e.getMessage());
                 }
             }
 
-            // 鍏滃簳 currentTenantId
+            // 无持久化选择时，回退到第一个有效的租户作用域。
             if (currentTenantId == null) {
                 List<AuthScopeRoleResponse> assignments =
                         authContextService.workspaceRoles(userId);
@@ -210,14 +211,14 @@ public class UserContextInterceptor implements HandlerInterceptor {
             }
 
         } catch (Exception e) {
-            log.error("鍔犺浇绉熸埛浣滅敤鍩熷紓甯? userId={}", userId, e);
+            log.error("加载租户上下文失败: userId={}", userId, e);
             throw new IllegalStateException("加载用户租户作用域失败", e);
         }
     }
 
     /**
-     * currentRole 淇濆瓨鍦ㄧ敤鎴锋墿灞曚俊鎭腑锛屼絾鏄惁浠嶇劧鏈夋晥蹇呴』浠ュ綋鍓嶆巿鏉冨叧绯讳负鍑嗐€?
-     * 鐗瑰埆鏄?super 瑙掕壊涓嶈兘浠呬俊浠?extInfo锛屽惁鍒欐挙鏉冨悗浠嶅彲鑳界粫杩囩鎴疯繃婊ゃ€?
+     * 当前角色必须同时满足用户-租户-角色关联有效、角色本身有效。
+     * 即使 extInfo 中声明 super，也不能绕过用户的实际授权关系。
      */
     private boolean isCurrentRoleValid(Long userId, Long currentTenantId,
                                        Long roleId, String roleCode) {
@@ -246,8 +247,8 @@ public class UserContextInterceptor implements HandlerInterceptor {
         if (userContext.getCurrentTenantId() == null) {
             return false;
         }
-        // 濮旀墭鍒板瓙绉熸埛鏃讹紝homeTenant/currentTenant/currentRole 閮芥潵鑷?user.ext_info銆?
-        // 涓嶅鐢ㄦ棫 session锛岄伩鍏嶅垏鎹㈠悗浠嶆寜鏃х鎴疯鑹叉牎楠屻€?
+        // 租户或角色发生变化时，以 user.ext_info 中的持久化选择为准。
+        // 父级超级管理员切换属于临时上下文，不复用普通用户 Session。
         if (userContext.isParentSuperAdminSwitch()) {
             return false;
         }

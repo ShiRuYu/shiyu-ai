@@ -24,8 +24,8 @@ import java.util.TreeSet;
 /**
  * Installs the immutable H2 schema and system-ai seed baseline.
  *
- * <p>Schema changes still require a new baseline. Small reference-data changes can provide an
- * explicit, transactional migration chain so an installed baseline keeps its business data.</p>
+ * <p>The schema and seed resources always describe the final baseline directly. Installed
+ * databases are never patched in place by this initializer.</p>
  */
 @Slf4j
 @Component
@@ -54,13 +54,6 @@ public class DatabaseInitializer {
             "classpath:db/baseline/h2/seed/02_auth.sql",
             "classpath:db/baseline/h2/seed/03_agent.sql",
             "classpath:db/baseline/h2/seed/04_knowledge.sql"
-    );
-
-    private static final List<BaselineMigration> DEFAULT_MIGRATIONS = List.of(
-            new BaselineMigration(
-                    "1",
-                    "2",
-                    List.of("classpath:db/migration/h2/01_menu_information_architecture.sql"))
     );
 
     private static final Set<String> EXPECTED_TABLES = Set.of(
@@ -118,11 +111,7 @@ public class DatabaseInitializer {
                             BASELINE_VERSION, SEED_PROFILE);
                     return;
                 }
-                migrateInstalledBaseline(connection, marker);
-                validateInstalledBaseline(connection, existingTables);
-                log.info("Database baseline upgraded to {} ({}) successfully",
-                        BASELINE_VERSION, SEED_PROFILE);
-                return;
+                throw unsupportedBaseline(marker);
             }
             if (!existingTables.isEmpty()) {
                 throw new IllegalStateException("Refusing to initialize a non-empty database without "
@@ -145,10 +134,6 @@ public class DatabaseInitializer {
 
     List<String> seedResources() {
         return DEFAULT_SEED_RESOURCES;
-    }
-
-    List<BaselineMigration> baselineMigrations() {
-        return DEFAULT_MIGRATIONS;
     }
 
     private DataSource resolveDataSource() {
@@ -215,64 +200,6 @@ public class DatabaseInitializer {
             statement.setString(1, BASELINE_VERSION);
             statement.setString(2, SEED_PROFILE);
             statement.executeUpdate();
-        }
-    }
-
-    private void migrateInstalledBaseline(Connection connection, BaselineMarker installedMarker)
-            throws Exception {
-        if (!SEED_PROFILE.equals(installedMarker.seedProfile())) {
-            throw unsupportedBaseline(installedMarker);
-        }
-
-        boolean originalAutoCommit = connection.getAutoCommit();
-        String currentVersion = installedMarker.version();
-        try {
-            connection.setAutoCommit(false);
-            while (!BASELINE_VERSION.equals(currentVersion)) {
-                BaselineMigration migration = findMigration(currentVersion);
-                if (migration == null) {
-                    throw unsupportedBaseline(new BaselineMarker(currentVersion, SEED_PROFILE));
-                }
-                executeResources(connection, migration.resources(),
-                        "migration " + migration.fromVersion() + " -> " + migration.toVersion());
-                updateBaselineMarker(connection, migration.toVersion());
-                currentVersion = migration.toVersion();
-            }
-            connection.commit();
-        } catch (Exception migrationFailure) {
-            rollbackQuietly(connection, migrationFailure);
-            throw migrationFailure;
-        } finally {
-            if (!connection.isClosed()) {
-                connection.setAutoCommit(originalAutoCommit);
-            }
-        }
-    }
-
-    private BaselineMigration findMigration(String fromVersion) {
-        return baselineMigrations().stream()
-                .filter(migration -> migration.fromVersion().equals(fromVersion))
-                .findFirst()
-                .orElse(null);
-    }
-
-    private void updateBaselineMarker(Connection connection, String version) throws Exception {
-        try (PreparedStatement statement = connection.prepareStatement(
-                "UPDATE COMMON_SCHEMA_BASELINE SET BASELINE_VERSION = ?, INSTALLED_AT = CURRENT_TIMESTAMP "
-                        + "WHERE ID = 1")) {
-            statement.setString(1, version);
-            if (statement.executeUpdate() != 1) {
-                throw new IllegalStateException("Database baseline marker update affected an unexpected row count");
-            }
-        }
-    }
-
-    private void validateInstalledBaseline(Connection connection, Set<String> existingTables)
-            throws Exception {
-        assertExpectedTables(existingTables);
-        BaselineMarker marker = readBaselineMarker(connection);
-        if (!BASELINE_VERSION.equals(marker.version()) || !SEED_PROFILE.equals(marker.seedProfile())) {
-            throw unsupportedBaseline(marker);
         }
     }
 
@@ -343,9 +270,6 @@ public class DatabaseInitializer {
             initializationFailure.addSuppressed(cleanupFailure);
             log.error("Failed to clean up objects created by fresh database initialization", cleanupFailure);
         }
-    }
-
-    record BaselineMigration(String fromVersion, String toVersion, List<String> resources) {
     }
 
     private record BaselineMarker(String version, String seedProfile) {

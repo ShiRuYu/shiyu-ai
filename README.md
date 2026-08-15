@@ -219,7 +219,7 @@
 | 模块 | 职责 | 类型 |
 |------|------|------|
 | `shiyu-common/*` | 公共基础：core（工具/Result/异常）、web（XSS）、mybatis（ORM 封装）、thread（线程池）、excel、storage（文件存储） | 基础设施 |
-| `shiyu-ai-dal` | 数据访问实现层：DO/Mapper/Repository + H2 基线与显式迁移链 | 基础设施 |
+| `shiyu-ai-dal` | 数据访问实现层：DO/Mapper/Repository + 一次性最终 H2 基线 | 基础设施 |
 | `shiyu-ai-web` | REST 接入层：Controller、DTO、WebSocket、OpenAPI | 基础设施 |
 | `shiyu-ai-bootstrap` | 应用启动入口：日志/可观测/数据保留装配 | 基础设施 |
 
@@ -336,25 +336,24 @@ Linux 使用对应的 `scripts/package-cloud-linux.sh` 和
 
 ---
 
+## 项目文档
+
+完整的项目介绍、技术说明、使用说明、API、数据字典、权限矩阵、错误码、安全审计、部署运维和联调报告统一从 [后端文档导航](./docs/文档导航.md) 进入。前端页面手册与发布说明见 [ShiYu UI 文档导航](../shiyu-ui/docs/文档导航.md)。
+
 ## API 文档
+
+后端控制器的真实路径不包含 `/api`；`/api` 仅是 ShiYu UI 在开发和同源生产部署时使用的代理前缀。
 
 | 分组 | 路径前缀 | 所属 |
 |------|----------|------|
-| Agent | `/api/agent/**` | 平台核心 |
-| 模型 | `/api/model/**` | 平台基础设施 |
-| 知识库 | `/api/knowledge/**` | 平台基础设施 |
-| 记忆 | `/api/memory/**` | 平台基础设施 |
-| 认证 | `/api/auth/**` | 平台基础 |
-| 用量 | `/api/usage/**` | 平台基础设施 |
-| 插件 | `/api/plugin/**` | 平台基础设施 |
-| 教育 | `/api/education/**` | 业务扩展 |
-| 记录 | `/api/record/**` | 业务扩展 |
-| 系统 | `/api/system/**` | 基础设施 |
+| Agent | `/agent/**` | Agent 定义、模型平台与执行 |
+| 知识库 | `/knowledge/**` | 空间、文档、检索、图谱与任务 |
+| 教育 | `/edu/**` | 课程、题库、考试、学习与分析 |
+| 记录 | `/record/**` | 人物、记录、时间线、标签与附件 |
+| 认证授权 | `/auth/**`、`/user/**`、`/role/**`、`/menu/**`、`/tenant/**` | 登录、租户、角色与菜单 |
+| 平台治理 | `/system/**`、`/usage/**`、`/plugin/**`、`/tool/**` | 文件、用量、插件与工具 |
 
-菜单层级、角色授权和 H2 基线升级规则见
-[菜单信息架构与数据契约](./docs/architecture/菜单信息架构.md)。
-前端 API、权限上下文与流式输出约定见
-[前端集成契约](./docs/contracts/前端集成契约.md)。
+完整的 330 条路径、345 个 operation 见 [API 接口参考](./docs/参考/API接口参考.md)；菜单、角色和权限见 [菜单角色权限矩阵](./docs/参考/菜单角色权限矩阵.md)。
 
 ---
 

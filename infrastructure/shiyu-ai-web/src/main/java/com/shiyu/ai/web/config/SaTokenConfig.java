@@ -52,6 +52,7 @@ public class SaTokenConfig {
                     "/auth/register",
                     "/auth/code-login",
                     "/auth/forget-password",
+                    "/auth/refresh",
                     "/captcha/**",
                     "/auth/captcha"
                 )

@@ -26,6 +26,9 @@ public class ResourcesConfig implements WebMvcConfigurer {
     @Value("${app.home:${user.dir}}")
     private String appHome;
 
+    @Value("${shiyu.web.cors.allowed-origin-patterns:http://localhost:5888,http://127.0.0.1:5888,http://localhost:5173,http://127.0.0.1:5173}")
+    private String allowedOriginPatterns;
+
     @Override
     public void addInterceptors(InterceptorRegistry registry) {
         // 全局访问性能拦截
@@ -51,7 +54,12 @@ public class ResourcesConfig implements WebMvcConfigurer {
         CorsConfiguration config = new CorsConfiguration();
         config.setAllowCredentials(true);
         // 设置访问源地址
-        config.addAllowedOriginPattern("*");
+        for (String originPattern : allowedOriginPatterns.split(",")) {
+            String trimmedPattern = originPattern.trim();
+            if (!trimmedPattern.isEmpty()) {
+                config.addAllowedOriginPattern(trimmedPattern);
+            }
+        }
         // 设置访问源请求头
         config.addAllowedHeader("*");
         // 设置访问源请求方法

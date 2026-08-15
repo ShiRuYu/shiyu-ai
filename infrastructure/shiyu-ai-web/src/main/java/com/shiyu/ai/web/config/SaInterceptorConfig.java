@@ -37,6 +37,7 @@ public class SaInterceptorConfig implements WebMvcConfigurer {
                     "/auth/register",
                     "/auth/code-login",
                     "/auth/forget-password",
+                    "/auth/refresh",
                     "/captcha/**",
                     "/auth/captcha",
                     // 文档和监控接口

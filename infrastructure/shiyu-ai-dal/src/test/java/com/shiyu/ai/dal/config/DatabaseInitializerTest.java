@@ -93,32 +93,19 @@ class DatabaseInitializerTest {
     }
 
     @Test
-    void migratesBaselineOneMenuInformationArchitectureWithoutChangingBusinessPaths() throws Exception {
+    void refusesOlderBaselineInsteadOfApplyingSecondaryUpdates() throws Exception {
         DataSource dataSource = newDataSource();
         DatabaseInitializer initializer = newInitializer(dataSource);
         initializer.initialize();
 
-        execute(dataSource, "DELETE FROM AUTH_ROLE_SCOPE_MENU WHERE MENU_ID IN (1600,1610,1620,1630,1640)");
-        execute(dataSource, "DELETE FROM AUTH_TENANT_MENU WHERE MENU_ID IN (1600,1610,1620,1630,1640)");
-        execute(dataSource, "DELETE FROM AUTH_MENU WHERE ID IN (1600,1610,1620,1630,1640)");
-        execute(dataSource, "UPDATE AUTH_MENU SET PARENT_ID=1500 WHERE ID IN "
-                + "(1501,1502,1503,1508,1510,1511,1520,1521,1530,1531,1540,1541,1542,1543,1544,"
-                + "1550,1551,1552,1553,1560,1561,1562,1563,1564,1565,1566)");
-        execute(dataSource, "UPDATE AUTH_MENU SET NAME='教育中心', CODE='EduAdmin', "
-                + "PATH='/edu/admin', ICON='carbon:settings', \"ORDER\"=20 WHERE ID=40");
-        execute(dataSource, "UPDATE AUTH_MENU SET NAME='系统设置', \"ORDER\"=9998 WHERE ID=1");
-        execute(dataSource, "UPDATE AUTH_MENU SET NAME='AI管理' WHERE ID=10");
-        execute(dataSource, "UPDATE AUTH_MENU SET NAME='知识平台' WHERE ID=70");
-        execute(dataSource, "UPDATE AUTH_MENU SET PARENT_ID=NULL, \"ORDER\"=90 WHERE ID=90");
         execute(dataSource, "UPDATE COMMON_SCHEMA_BASELINE SET BASELINE_VERSION='1'");
 
-        initializer.initialize();
+        IllegalStateException error = assertThrows(IllegalStateException.class, initializer::initialize);
 
+        assertTrue(error.getMessage().contains("Unsupported database baseline"));
         assertEquals(1, scalar(dataSource,
-                "SELECT COUNT(*) FROM COMMON_SCHEMA_BASELINE WHERE BASELINE_VERSION='2'"));
+                "SELECT COUNT(*) FROM COMMON_SCHEMA_BASELINE WHERE BASELINE_VERSION='1'"));
         assertEquals(76, scalar(dataSource, "SELECT COUNT(*) FROM AUTH_MENU"));
-        assertEquals(76, scalar(dataSource, "SELECT COUNT(*) FROM AUTH_TENANT_MENU"));
-        assertEquals(184, scalar(dataSource, "SELECT COUNT(*) FROM AUTH_ROLE_SCOPE_MENU"));
         assertInformationArchitecture(dataSource);
     }
 

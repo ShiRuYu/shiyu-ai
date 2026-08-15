@@ -11,8 +11,8 @@ import org.apache.commons.lang3.tuple.Pair;
 import org.springframework.stereotype.Component;
 
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 @Component
 public class IntentDefRepositoryImpl implements com.shiyu.ai.agent.port.repository.IntentDefRepository {
@@ -158,13 +158,13 @@ public class IntentDefRepositoryImpl implements com.shiyu.ai.agent.port.reposito
             bo.setEnabled("1".equals(d.getEnabled()));
         }
         if (d.getSlots() != null) {
-            bo.setSlots(JSONUtil.toBean(d.getSlots(), HashMap.class));
+            bo.setSlots(JSONUtil.toBean(d.getSlots(), Map.class, true));
         }
         if (d.getParameterMapping() != null) {
-            bo.setParameterMapping(JSONUtil.toBean(d.getParameterMapping(), HashMap.class));
+            bo.setParameterMapping(JSONUtil.toBean(d.getParameterMapping(), Map.class, true));
         }
         if (d.getSlotDefaults() != null) {
-            bo.setSlotDefaults(JSONUtil.toBean(d.getSlotDefaults(), HashMap.class));
+            bo.setSlotDefaults(JSONUtil.toBean(d.getSlotDefaults(), Map.class, true));
         }
         return bo;
     }

@@ -128,19 +128,19 @@ public class ModelManager implements ApplicationRunner {
     private void loadHardcodedDefaults() {
         adapterMap.put("OPENAI", new GenericPlatformAdapter(
                 "OPENAI", "https://api.openai.com/v1",
-                StringUtils.defaultString(getExternalApiKey("OPENAI"), ""), "gpt-4o"));
+                StringUtils.getIfEmpty(getExternalApiKey("OPENAI"), () -> ""), "gpt-4o"));
 
         adapterMap.put("DEEPSEEK", new GenericPlatformAdapter(
                 "DEEPSEEK", "https://api.deepseek.com",
-                StringUtils.defaultString(getExternalApiKey("DEEPSEEK"), ""), "deepseek-chat"));
+                StringUtils.getIfEmpty(getExternalApiKey("DEEPSEEK"), () -> ""), "deepseek-chat"));
 
         adapterMap.put("OPENROUTER", new GenericPlatformAdapter(
                 "OPENROUTER", "https://openrouter.ai/api",
-                StringUtils.defaultString(getExternalApiKey("OPENROUTER"), ""), "x-ai/grok-4.1-fast"));
+                StringUtils.getIfEmpty(getExternalApiKey("OPENROUTER"), () -> ""), "x-ai/grok-4.1-fast"));
 
         adapterMap.put("SILICON_FLOW", new GenericPlatformAdapter(
                 "SILICON_FLOW", "https://api.siliconflow.cn",
-                StringUtils.defaultString(getExternalApiKey("SILICON_FLOW"), ""), "THUDM/GLM-Z1-9B-0414"));
+                StringUtils.getIfEmpty(getExternalApiKey("SILICON_FLOW"), () -> ""), "THUDM/GLM-Z1-9B-0414"));
 
         adapterMap.put("OLLAMA", new OllamaPlatformAdapter(
                 "http://localhost:11434", "gemma3:4b", 0.7, 3));

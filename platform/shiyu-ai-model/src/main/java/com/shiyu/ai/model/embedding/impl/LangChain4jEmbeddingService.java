@@ -25,7 +25,7 @@ public class LangChain4jEmbeddingService implements EmbeddingService {
                                        ApplicationEventPublisher eventPublisher) {
         this.embeddingModel = embeddingModels.getIfAvailable(LangChain4jEmbeddingService::createOptionalLocalModel);
         this.eventPublisher = eventPublisher;
-        log.info("EmbeddingService 初始化完成, 维度={}", dimension());
+        log.info("EmbeddingService 初始化完成, 维度={}", modelDimension(this.embeddingModel));
     }
 
     // 保留无参构造用于手动测试场景
@@ -74,7 +74,11 @@ public class LangChain4jEmbeddingService implements EmbeddingService {
 
     @Override
     public int dimension() {
-        return embeddingModel == null ? 0 : embeddingModel.dimension();
+        return modelDimension(embeddingModel);
+    }
+
+    private static int modelDimension(EmbeddingModel model) {
+        return model == null ? 0 : model.dimension();
     }
 
     private void requireModel() {

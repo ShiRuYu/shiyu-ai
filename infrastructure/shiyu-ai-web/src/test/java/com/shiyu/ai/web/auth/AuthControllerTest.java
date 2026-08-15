@@ -2,6 +2,7 @@ package com.shiyu.ai.web.auth;
 
 import com.shiyu.ai.auth.handler.LoginRateLimiter;
 import com.shiyu.ai.auth.request.LoginRequest;
+import com.shiyu.ai.auth.request.RefreshTokenRequest;
 import com.shiyu.ai.auth.service.AuthService;
 import com.shiyu.ai.auth.service.UserService;
 import com.shiyu.ai.auth.vo.LoginResponseVO;
@@ -68,5 +69,24 @@ class AuthControllerTest {
         assertNull(UserContextHolder.getContext());
         verify(knowledgeSpaceService).initializeTenantDefaults(1L);
         verify(rateLimiter).reset("127.0.0.1");
+    }
+
+    @Test
+    void rotatesAValidAccessTokenFromTheRequestBody() {
+        AuthService authService = mock(AuthService.class);
+        UserService userService = mock(UserService.class);
+        LoginRateLimiter rateLimiter = mock(LoginRateLimiter.class);
+        KnowledgeSpaceService knowledgeSpaceService = mock(KnowledgeSpaceService.class);
+        AuthController controller = new AuthController(
+                authService, userService, rateLimiter, knowledgeSpaceService);
+        RefreshTokenRequest request = new RefreshTokenRequest();
+        request.setAccessToken("old-access-token");
+        when(authService.refreshToken("old-access-token")).thenReturn("new-access-token");
+
+        Result<String> result = controller.refreshToken(request);
+
+        assertEquals(200, result.getCode());
+        assertEquals("new-access-token", result.getData());
+        verify(authService).refreshToken("old-access-token");
     }
 }
