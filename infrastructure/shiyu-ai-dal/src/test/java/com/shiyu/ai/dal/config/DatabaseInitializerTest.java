@@ -38,12 +38,12 @@ class DatabaseInitializerTest {
 
         initializer.initialize();
 
-        assertEquals(77, scalar(dataSource,
+        assertEquals(98, scalar(dataSource,
                 "SELECT COUNT(*) FROM INFORMATION_SCHEMA.TABLES "
                         + "WHERE TABLE_SCHEMA='PUBLIC' AND TABLE_TYPE='BASE TABLE'"));
         assertEquals(1, scalar(dataSource,
                 "SELECT COUNT(*) FROM COMMON_SCHEMA_BASELINE "
-                        + "WHERE BASELINE_VERSION='2' AND SEED_PROFILE='system-ai'"));
+                        + "WHERE BASELINE_VERSION='3' AND SEED_PROFILE='system-ai'"));
 
         assertEquals(18, scalar(dataSource, "SELECT COUNT(*) FROM COMMON_DICT"));
         assertEquals(1, scalar(dataSource,
@@ -93,20 +93,21 @@ class DatabaseInitializerTest {
     }
 
     @Test
-    void refusesOlderBaselineInsteadOfApplyingSecondaryUpdates() throws Exception {
+    void migratesV2BaselineToV3PlatformTables() throws Exception {
         DataSource dataSource = newDataSource();
         DatabaseInitializer initializer = newInitializer(dataSource);
         initializer.initialize();
 
-        execute(dataSource, "UPDATE COMMON_SCHEMA_BASELINE SET BASELINE_VERSION='1'");
-
-        IllegalStateException error = assertThrows(IllegalStateException.class, initializer::initialize);
-
-        assertTrue(error.getMessage().contains("Unsupported database baseline"));
+        execute(dataSource, "UPDATE COMMON_SCHEMA_BASELINE SET BASELINE_VERSION='2'");
+        initializer.initialize();
         assertEquals(1, scalar(dataSource,
-                "SELECT COUNT(*) FROM COMMON_SCHEMA_BASELINE WHERE BASELINE_VERSION='1'"));
-        assertEquals(76, scalar(dataSource, "SELECT COUNT(*) FROM AUTH_MENU"));
-        assertInformationArchitecture(dataSource);
+                "SELECT COUNT(*) FROM COMMON_SCHEMA_BASELINE WHERE BASELINE_VERSION='3'"));
+        assertEquals(1, scalar(dataSource,
+                "SELECT COUNT(*) FROM INFORMATION_SCHEMA.TABLES WHERE TABLE_NAME='MEMORY_EVENT'"));
+        assertEquals(0, scalar(dataSource,
+                "SELECT COUNT(*) FROM INFORMATION_SCHEMA.TABLES WHERE TABLE_NAME='MEMORY_LONG_TERM_MEMORY'"));
+        assertEquals(1, scalar(dataSource,
+                "SELECT COUNT(*) FROM INFORMATION_SCHEMA.TABLES WHERE TABLE_NAME='AI_RUN_EVENT'"));
     }
 
     @Test

@@ -3,6 +3,7 @@ package com.shiyu.ai.usage.service;
 import com.shiyu.ai.common.core.utils.JSONUtils;
 import com.shiyu.ai.usage.domain.model.UsageRecordBO;
 import com.shiyu.ai.usage.port.repository.UsageRecordRepository;
+import com.shiyu.ai.usage.port.BillingPriceProvider;
 import com.shiyu.ai.usage.model.ModelPricing;
 import com.shiyu.ai.usage.realtime.UsageRealtimePublisher;
 import lombok.extern.slf4j.Slf4j;
@@ -11,6 +12,7 @@ import java.time.LocalDateTime;
 import java.util.Map;
 import java.util.UUID;
 import java.util.concurrent.ConcurrentHashMap;
+import java.math.BigDecimal;
 
 /**
  * 用量记录服务
@@ -25,6 +27,7 @@ public class UsageRecordService {
     private final UsageRecordRepository usageRecordRepository;
     private final Map<String, ModelPricing> pricingMap = new ConcurrentHashMap<>();
     private UsageRealtimePublisher realtimePublisher;
+    private BillingPriceProvider billingPriceProvider;
 
     public UsageRecordService(UsageRecordRepository usageRecordRepository) {
         this.usageRecordRepository = usageRecordRepository;
@@ -33,6 +36,10 @@ public class UsageRecordService {
 
     public void setRealtimePublisher(UsageRealtimePublisher publisher) {
         this.realtimePublisher = publisher;
+    }
+
+    public void setBillingPriceProvider(BillingPriceProvider provider) {
+        this.billingPriceProvider = provider;
     }
 
     public void registerPricing(ModelPricing pricing) {
@@ -45,21 +52,31 @@ public class UsageRecordService {
     public void recordUsage(String platform, String model,
                             int promptTokens, int completionTokens,
                             long latencyMs, Long userId, String sessionId) {
-        ModelPricing pricing = pricingMap.getOrDefault(
-            platform + ":" + model,
-            new ModelPricing(platform, model, 0.0, 0.0)
-        );
-        double cost = pricing.calculateCost(promptTokens, completionTokens);
+        recordUsage(platform, model, promptTokens, completionTokens, latencyMs, userId, sessionId, null);
+    }
+
+    public void recordUsage(String platform, String model,
+                            int promptTokens, int completionTokens,
+                            long latencyMs, Long userId, String sessionId, String generationRunId) {
+        ModelPricing pricing = pricingMap.getOrDefault(platform + ":" + model, new ModelPricing(platform, model, 0.0, 0.0));
+        BillingPriceProvider.PriceSnapshot snapshot = billingPriceProvider == null ? null : billingPriceProvider.price(platform, model);
+        double cost = snapshot == null
+                ? pricing.calculateCost(promptTokens, completionTokens)
+                : snapshot.promptPerToken().multiply(BigDecimal.valueOf(promptTokens))
+                    .add(snapshot.completionPerToken().multiply(BigDecimal.valueOf(completionTokens))).doubleValue();
 
         int totalTokens = promptTokens + completionTokens;
-        String extInfo = JSONUtils.toJsonString(Map.of(
+        Map<String, Object> usage = new java.util.HashMap<>(Map.of(
             "platform", platform,
             "model", model,
             "promptTokens", promptTokens,
             "completionTokens", completionTokens,
             "totalTokens", totalTokens,
-            "cost", cost
+            "cost", cost,
+            "pricingVersion", snapshot == null ? "local-model-pricing" : snapshot.version()
         ));
+        if (generationRunId != null && !generationRunId.isBlank()) usage.put("generationRunId", generationRunId);
+        String extInfo = JSONUtils.toJsonString(usage);
 
         UsageRecordBO record = buildRecord("LLM", latencyMs, userId, sessionId, extInfo);
 

@@ -5,6 +5,8 @@ import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
+import java.util.List;
+
 @Data
 @Builder
 @NoArgsConstructor
@@ -20,4 +22,25 @@ public class ChatResponse {
     private String model;
 
     private String errorMessage;
+
+    private String eventType;
+
+    private Integer promptTokens;
+
+    private Integer completionTokens;
+
+    private Integer totalTokens;
+
+    private boolean estimatedUsage;
+
+    private String toolCallId;
+
+    private String toolName;
+
+    private String toolArguments;
+
+    /** Complete tool calls for non-streaming providers; streaming uses TOOL_CALL events. */
+    private List<ToolCall> toolCalls;
+
+    public record ToolCall(String id, String name, String arguments) { }
 }

@@ -32,6 +32,10 @@
             <artifactId>shiyu-common-mybatis</artifactId>
         </dependency>
         <dependency>
+            <groupId>com.shiyu.ai</groupId>
+            <artifactId>shiyu-ai-runtime</artifactId>
+        </dependency>
+        <dependency>
             <groupId>com.github.ben-manes.caffeine</groupId>
             <artifactId>caffeine</artifactId>
         </dependency>

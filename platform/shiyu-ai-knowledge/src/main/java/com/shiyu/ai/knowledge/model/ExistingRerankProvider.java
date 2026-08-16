@@ -3,6 +3,7 @@ package com.shiyu.ai.knowledge.model;
 import com.shiyu.ai.model.chat.ChatEngine;
 import com.shiyu.ai.model.chat.ChatRequest;
 import com.shiyu.ai.model.chat.ChatResponse;
+import com.shiyu.ai.model.chat.ChatMessage;
 import org.springframework.stereotype.Component;
 
 import java.util.ArrayList;
@@ -39,7 +40,8 @@ public class ExistingRerankProvider implements RerankProvider {
         }
         prompt.append("\n返回前 ").append(actualTopK).append(" 个编号，用逗号分隔。");
         try {
-            ChatResponse response = chatEngine.chat(ChatRequest.builder().prompt(prompt.toString()).build());
+            ChatResponse response = chatEngine.chat(ChatRequest.builder().platform("default")
+                    .messages(List.of(ChatMessage.text("user", prompt.toString()))).build());
             if (response != null && response.isSuccess() && response.getContent() != null) {
                 Set<Integer> indexes = new LinkedHashSet<>();
                 for (String value : response.getContent().split("[,\\s\\[\\]]+")) {

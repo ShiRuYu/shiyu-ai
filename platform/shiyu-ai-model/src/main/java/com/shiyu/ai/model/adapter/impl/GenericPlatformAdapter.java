@@ -37,7 +37,7 @@ public class GenericPlatformAdapter extends AbstractModelAdapter {
         }
         return OpenAiChatModel.builder()
                 .baseUrl(baseUrl).apiKey(apiKey).modelName(modelName)
-                .temperature(0.7).maxTokens(4096).build();
+                .temperature(0.7).maxTokens(4096).returnThinking(true).build();
     }
 
     @Override
@@ -48,7 +48,7 @@ public class GenericPlatformAdapter extends AbstractModelAdapter {
         }
         return OpenAiStreamingChatModel.builder()
                 .baseUrl(baseUrl).apiKey(apiKey).modelName(modelName)
-                .temperature(0.7).maxTokens(4096).build();
+                .temperature(0.7).maxTokens(4096).returnThinking(true).build();
     }
 
     @Override
@@ -69,7 +69,7 @@ public class GenericPlatformAdapter extends AbstractModelAdapter {
         }
         return OpenAiChatModel.builder()
                 .baseUrl(config.getBaseUrl()).apiKey(config.getApiKey()).modelName(modelName)
-                .temperature(config.getTemperature()).maxTokens(config.getMaxTokens()).build();
+                .temperature(config.getTemperature()).maxTokens(config.getMaxTokens()).returnThinking(true).build();
     }
 
     @Override
@@ -80,6 +80,6 @@ public class GenericPlatformAdapter extends AbstractModelAdapter {
         }
         return OpenAiStreamingChatModel.builder()
                 .baseUrl(config.getBaseUrl()).apiKey(config.getApiKey()).modelName(modelName)
-                .temperature(config.getTemperature()).maxTokens(config.getMaxTokens()).build();
+                .temperature(config.getTemperature()).maxTokens(config.getMaxTokens()).returnThinking(true).build();
     }
 }

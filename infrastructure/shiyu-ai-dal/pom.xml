@@ -23,11 +23,16 @@
         </dependency>
         <dependency><groupId>com.shiyu.ai</groupId><artifactId>shiyu-ai-vector</artifactId></dependency>
         <dependency><groupId>com.shiyu.ai</groupId><artifactId>shiyu-ai-model</artifactId></dependency>
+        <dependency><groupId>com.shiyu.ai</groupId><artifactId>shiyu-ai-conversation</artifactId></dependency>
+        <dependency><groupId>com.shiyu.ai</groupId><artifactId>shiyu-ai-runtime</artifactId></dependency>
+        <dependency><groupId>com.shiyu.ai</groupId><artifactId>shiyu-ai-evaluation</artifactId></dependency>
+        <dependency><groupId>com.shiyu.ai</groupId><artifactId>shiyu-ai-chat-product</artifactId></dependency>
         <dependency><groupId>com.shiyu.ai</groupId><artifactId>shiyu-ai-memory</artifactId></dependency>
         <dependency><groupId>com.shiyu.ai</groupId><artifactId>shiyu-ai-tool</artifactId></dependency>
         <dependency><groupId>com.shiyu.ai</groupId><artifactId>shiyu-ai-knowledge</artifactId></dependency>
         <dependency><groupId>com.shiyu.ai</groupId><artifactId>shiyu-ai-agent</artifactId></dependency>
         <dependency><groupId>com.shiyu.ai</groupId><artifactId>shiyu-ai-usage</artifactId></dependency>
+        <dependency><groupId>com.shiyu.ai</groupId><artifactId>shiyu-ai-plugin</artifactId></dependency>
         <dependency><groupId>com.shiyu.ai</groupId><artifactId>shiyu-ai-auth</artifactId></dependency>
         <dependency><groupId>com.shiyu.ai</groupId><artifactId>shiyu-ai-record</artifactId></dependency>
         <dependency><groupId>com.shiyu.ai</groupId><artifactId>shiyu-ai-education</artifactId></dependency>

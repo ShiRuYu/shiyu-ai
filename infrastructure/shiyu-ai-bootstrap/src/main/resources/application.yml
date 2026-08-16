@@ -5,6 +5,12 @@
 shiyu:
   # 名称
   name: "shiyu-ai"
+  # ModelManager/PlatformProperties 的统一 OpenAI-compatible 配置
+  ai:
+    openai:
+      base-url: ${AI_OPENAI_BASE_URL:https://api.openai.com/v1}
+      api-key: ${AI_OPENAI_API_KEY:}
+      model: ${AI_OPENAI_MODEL:gpt-4o-mini}
   tx:
     enabled: true
   # 版本

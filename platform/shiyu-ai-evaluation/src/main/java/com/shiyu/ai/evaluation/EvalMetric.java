@@ -1,0 +1,5 @@
+package com.shiyu.ai.evaluation;
+
+public enum EvalMetric {
+    EXACT_MATCH, CONTAINS, JSON_SCHEMA, TOOL_CALL_SCHEMA, CITATION_COVERAGE, RETRIEVAL_HIT, TOKEN_BUDGET, COST_BUDGET
+}

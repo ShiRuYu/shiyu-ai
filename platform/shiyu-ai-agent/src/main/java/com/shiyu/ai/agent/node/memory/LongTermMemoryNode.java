@@ -1,6 +1,8 @@
 package com.shiyu.ai.agent.node.memory;
 
-import com.shiyu.ai.memory.MemoryService;
+import com.shiyu.ai.memory.magma.ConfirmationPolicy;
+import com.shiyu.ai.memory.magma.IngestMemoryCommand;
+import com.shiyu.ai.memory.magma.MemoryIngestionPort;
 import com.shiyu.ai.agent.node.BaseNode;
 import com.shiyu.ai.agent.node.NodeInput;
 import com.shiyu.ai.agent.node.NodeOutput;
@@ -20,9 +22,9 @@ public class LongTermMemoryNode extends BaseNode {
 
     private LongTermMemoryConfig config;
 
-    private final MemoryService memoryService;
+    private final MemoryIngestionPort memoryService;
 
-    private LongTermMemoryNode(LongTermMemoryConfig config, MemoryService memoryService) {
+    private LongTermMemoryNode(LongTermMemoryConfig config, MemoryIngestionPort memoryService) {
         super(config != null ? config : new LongTermMemoryConfig());
         this.config = config != null ? config : new LongTermMemoryConfig();
         this.config.setNodeType(NodeType.MEMORY_LONG_TERM);
@@ -35,14 +37,14 @@ public class LongTermMemoryNode extends BaseNode {
 
     public static class Builder {
         private LongTermMemoryConfig config;
-        private MemoryService memoryService;
+        private MemoryIngestionPort memoryService;
 
         public Builder config(LongTermMemoryConfig config) {
             this.config = config;
             return this;
         }
 
-        public Builder memoryService(MemoryService memoryService) {
+        public Builder memoryService(MemoryIngestionPort memoryService) {
             this.memoryService = memoryService;
             return this;
         }
@@ -86,7 +88,7 @@ public class LongTermMemoryNode extends BaseNode {
                 return output;
             }
 
-            memoryService.saveLongTermMemory(userId, agentId, category, memoryKey, memoryContent, importance, sessionId);
+            memoryService.ingest(new IngestMemoryCommand(userId == null ? 1L : userId, "agent", "USER", String.valueOf(userId == null ? "anonymous" : userId), category, memoryContent, java.time.Instant.now(), "AGENT_EXECUTION", sessionId, Map.of("agentId", agentId, "memoryKey", memoryKey), 0.8, importance, ConfirmationPolicy.REQUIRED));
 
             NodeOutput output = new NodeOutput();
             output.setSuccess(true);

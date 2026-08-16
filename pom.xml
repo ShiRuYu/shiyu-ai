@@ -99,6 +99,10 @@
         <module>infrastructure/shiyu-common</module>
         <module>platform/shiyu-ai-vector</module>
         <module>platform/shiyu-ai-model</module>
+        <module>platform/shiyu-ai-conversation</module>
+        <module>platform/shiyu-ai-runtime</module>
+        <module>platform/shiyu-ai-evaluation</module>
+        <module>platform/shiyu-ai-chat-product</module>
         <module>platform/shiyu-ai-memory</module>
         <module>platform/shiyu-ai-tool</module>
         <module>platform/shiyu-ai-knowledge</module>
@@ -408,6 +412,26 @@
             <dependency>
                 <groupId>com.shiyu.ai</groupId>
                 <artifactId>shiyu-ai-memory</artifactId>
+                <version>${revision}</version>
+            </dependency>
+            <dependency>
+                <groupId>com.shiyu.ai</groupId>
+                <artifactId>shiyu-ai-conversation</artifactId>
+                <version>${revision}</version>
+            </dependency>
+            <dependency>
+                <groupId>com.shiyu.ai</groupId>
+                <artifactId>shiyu-ai-runtime</artifactId>
+                <version>${revision}</version>
+            </dependency>
+            <dependency>
+                <groupId>com.shiyu.ai</groupId>
+                <artifactId>shiyu-ai-evaluation</artifactId>
+                <version>${revision}</version>
+            </dependency>
+            <dependency>
+                <groupId>com.shiyu.ai</groupId>
+                <artifactId>shiyu-ai-chat-product</artifactId>
                 <version>${revision}</version>
             </dependency>
             <dependency>

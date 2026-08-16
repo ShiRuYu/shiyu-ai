@@ -8,6 +8,7 @@ import com.shiyu.ai.agent.node.NodeType;
 import com.shiyu.ai.model.chat.ChatEngine;
 import com.shiyu.ai.model.chat.ChatRequest;
 import com.shiyu.ai.model.chat.ChatResponse;
+import com.shiyu.ai.model.chat.ChatMessage;
 import com.shiyu.ai.education.domain.model.QuestionBO;
 import com.shiyu.ai.education.domain.DifficultyLevel;
 import com.shiyu.ai.knowledge.dto.KnowledgeResponse;
@@ -72,7 +73,7 @@ public class PracticeNode extends BaseNode {
         String prompt = buildPracticePrompt(knowledge, difficulty, count);
 
         // 调用 LLM
-        ChatResponse resp = chatEngine.chat(ChatRequest.builder().prompt(prompt).build());
+        ChatResponse resp = chatEngine.chat(ChatRequest.builder().platform("default").messages(java.util.List.of(ChatMessage.text("user", prompt))).build());
 
         NodeOutput output = new NodeOutput();
         if (!resp.isSuccess()) {

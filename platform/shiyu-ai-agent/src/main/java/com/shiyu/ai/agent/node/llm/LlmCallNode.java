@@ -91,7 +91,7 @@ public class LlmCallNode extends BaseNode {
             ChatRequest request = ChatRequest.builder()
                     .platform(platform)
                     .model(modelName)
-                    .prompt(prompt)
+                    .messages(List.of(com.shiyu.ai.model.chat.ChatMessage.text("user", prompt)))
                     .chatType(chatType)
                     .build();
 
@@ -141,8 +141,11 @@ public class LlmCallNode extends BaseNode {
                 })
                 .build();
 
-        UserMessage userMessage = UserMessage.from(request.getPrompt());
-        streamingChatModel.chat(List.of(userMessage), generator.handler());
+        List<dev.langchain4j.data.message.ChatMessage> userMessages = request.getMessages().stream()
+                .map(message -> (dev.langchain4j.data.message.ChatMessage) UserMessage.from(message.content().stream().map(com.shiyu.ai.model.chat.ChatMessage.ContentPart::text)
+                        .filter(java.util.Objects::nonNull).reduce("", String::concat)))
+                .toList();
+        streamingChatModel.chat(userMessages, generator.handler());
 
         NodeOutput output = new NodeOutput();
         output.setSuccess(true);

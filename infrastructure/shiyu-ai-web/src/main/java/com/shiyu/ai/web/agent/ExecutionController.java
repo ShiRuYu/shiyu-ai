@@ -52,6 +52,7 @@ public class ExecutionController {
             enrichedInput.put("agentId", agentId);
             enrichedInput.put("sessionId", UUID.randomUUID().toString());
             enrichedInput.put("userId", UserContextHolder.getUserId());
+            enrichedInput.put("tenantId", UserContextHolder.getCurrentTenantId());
             enrichedInput.put("__knowledgeAccessContext", currentKnowledgeAccessContext());
 
             Execution execution = agentRuntime.execute(agentId, enrichedInput);
@@ -80,6 +81,7 @@ public class ExecutionController {
         enrichedInput.put("agentId", agentId);
         enrichedInput.put("sessionId", UUID.randomUUID().toString());
         enrichedInput.put("userId", UserContextHolder.getUserId());
+        enrichedInput.put("tenantId", UserContextHolder.getCurrentTenantId());
         enrichedInput.put("__knowledgeAccessContext", currentKnowledgeAccessContext());
 
         return agentRuntime.executeStream(agentId, enrichedInput)

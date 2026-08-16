@@ -3,6 +3,7 @@ package com.shiyu.ai.education.agent;
 import com.shiyu.ai.model.chat.ChatEngine;
 import com.shiyu.ai.model.chat.ChatRequest;
 import com.shiyu.ai.model.chat.ChatResponse;
+import com.shiyu.ai.model.chat.ChatMessage;
 import com.shiyu.ai.education.domain.model.StudyRecordBO;
 import com.shiyu.ai.education.service.AbilityService;
 import com.shiyu.ai.education.port.repository.StudyRecordRepository;
@@ -61,7 +62,7 @@ public class ReportAgent {
 
         // 4. 调用 LLM 生成报告
         ChatResponse resp = chatEngine.chat(ChatRequest.builder()
-                .prompt(prompt)
+                .messages(java.util.List.of(ChatMessage.text("user", prompt)))
                 .build());
 
         if (!resp.isSuccess()) {

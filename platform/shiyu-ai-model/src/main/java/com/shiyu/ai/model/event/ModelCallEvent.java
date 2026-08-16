@@ -14,14 +14,21 @@ public class ModelCallEvent {
     private final int promptTokens;
     private final int completionTokens;
     private final long latencyMs;
+    private final String generationRunId;
 
     public ModelCallEvent(String platform, String model,
                           int promptTokens, int completionTokens, long latencyMs) {
+        this(platform, model, promptTokens, completionTokens, latencyMs, null);
+    }
+
+    public ModelCallEvent(String platform, String model,
+                          int promptTokens, int completionTokens, long latencyMs, String generationRunId) {
         this.platform = platform;
         this.model = model;
         this.promptTokens = promptTokens;
         this.completionTokens = completionTokens;
         this.latencyMs = latencyMs;
+        this.generationRunId = generationRunId;
     }
 
     public String getPlatform() { return platform; }
@@ -30,4 +37,5 @@ public class ModelCallEvent {
     public int getCompletionTokens() { return completionTokens; }
     public int getTotalTokens() { return promptTokens + completionTokens; }
     public long getLatencyMs() { return latencyMs; }
+    public String getGenerationRunId() { return generationRunId; }
 }

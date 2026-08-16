@@ -3,6 +3,7 @@ package com.shiyu.ai.education.agent;
 import com.shiyu.ai.model.chat.ChatEngine;
 import com.shiyu.ai.model.chat.ChatRequest;
 import com.shiyu.ai.model.chat.ChatResponse;
+import com.shiyu.ai.model.chat.ChatMessage;
 import com.shiyu.ai.education.domain.model.ExamBO;
 import com.shiyu.ai.education.domain.ExamType;
 import com.shiyu.ai.education.port.repository.ExamRepository;
@@ -63,7 +64,7 @@ public class ExamAgent {
 
         // 3. 调用 LLM 生成试卷
         ChatResponse resp = chatEngine.chat(ChatRequest.builder()
-                .prompt(prompt)
+                .messages(java.util.List.of(ChatMessage.text("user", prompt)))
                 .build());
 
         if (!resp.isSuccess()) {

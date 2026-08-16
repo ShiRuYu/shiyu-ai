@@ -2,8 +2,8 @@
 <Configuration monitorInterval="30" status="WARN">
     <Properties>
         <Property name="project">shiyu-ai</Property>
-        <Property name="logDir">${spring:app.home}/data/log</Property>
-        <Property name="historyLogDir">${spring:app.home}/data/log/history</Property>
+        <Property name="logDir">${sys:app.home:-.}/data/log</Property>
+        <Property name="historyLogDir">${sys:app.home:-.}/data/log/history</Property>
         <Property name="splitSize">100MB</Property>
         <Property name="fileCount">30</Property>
         <Property name="pattern">%d{yyyy-MM-dd HH:mm:ss.SSS} [%thread] [%X{traceId}] %-5level %logger{50} - %msg%n</Property>

@@ -94,6 +94,18 @@ public class ShiYuDefaultExceptionHandler {
         return Result.fail(BizResultCode.FORBIDDEN, e.getMessage());
     }
 
+    /** Domain validation failures are client errors, never opaque 500 responses. */
+    @ExceptionHandler(IllegalArgumentException.class)
+    public Result<String> invalidArgument(IllegalArgumentException e) {
+        return Result.common(null, 422, e.getMessage(), false);
+    }
+
+    /** Optimistic-lock and state-machine conflicts have a stable 409 contract. */
+    @ExceptionHandler(IllegalStateException.class)
+    public Result<String> invalidState(IllegalStateException e) {
+        return Result.common(null, 409, e.getMessage(), false);
+    }
+
     @ExceptionHandler(BaseBizException.class)
     public Result<String> exception(BaseBizException e) {
         log.warn("业务异常: {}", e.getMessage());

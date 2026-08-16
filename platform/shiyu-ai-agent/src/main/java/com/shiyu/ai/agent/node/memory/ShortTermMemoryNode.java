@@ -1,6 +1,6 @@
 package com.shiyu.ai.agent.node.memory;
 
-import com.shiyu.ai.memory.MemoryService;
+import com.shiyu.ai.agent.runtime.AgentExecutionContext;
 import com.shiyu.ai.agent.node.BaseNode;
 import com.shiyu.ai.agent.node.NodeInput;
 import com.shiyu.ai.agent.node.NodeOutput;
@@ -21,9 +21,9 @@ public class ShortTermMemoryNode extends BaseNode {
 
     private ShortTermMemoryConfig config;
 
-    private final MemoryService memoryService;
+    private final AgentExecutionContext memoryService;
 
-    private ShortTermMemoryNode(ShortTermMemoryConfig config, MemoryService memoryService) {
+    private ShortTermMemoryNode(ShortTermMemoryConfig config, AgentExecutionContext memoryService) {
         super(config != null ? config : new ShortTermMemoryConfig());
         this.config = config != null ? config : new ShortTermMemoryConfig();
         this.config.setNodeType(NodeType.MEMORY_SHORT_TERM);
@@ -36,14 +36,14 @@ public class ShortTermMemoryNode extends BaseNode {
 
     public static class Builder {
         private ShortTermMemoryConfig config;
-        private MemoryService memoryService;
+        private AgentExecutionContext memoryService;
 
         public Builder config(ShortTermMemoryConfig config) {
             this.config = config;
             return this;
         }
 
-        public Builder memoryService(MemoryService memoryService) {
+        public Builder memoryService(AgentExecutionContext memoryService) {
             this.memoryService = memoryService;
             return this;
         }
@@ -62,7 +62,7 @@ public class ShortTermMemoryNode extends BaseNode {
 
         try {
             String sessionId = input.getParameter(FieldKey.SESSION_ID, "");
-            Long userId = input.getParameter(FieldKey.USER_ID, null);
+            Long userId = input.getParameter(FieldKey.USER_ID, 0L);
             String agentId = input.getParameter(FieldKey.AGENT_ID, "");
             String userMessage = input.getParameter(FieldKey.QUERY, "");
             String assistantResponse = input.getParameter(FieldKey.CONTENT, input.getParameter(FieldKey.RESPONSE, ""));
@@ -78,13 +78,13 @@ public class ShortTermMemoryNode extends BaseNode {
             }
 
             if (!userMessage.isEmpty()) {
-                memoryService.saveMessage(sessionId, userId, agentId, "user", userMessage);
+                memoryService.append(userId, sessionId, "user", userMessage);
             }
             if (!assistantResponse.isEmpty()) {
-                memoryService.saveMessage(sessionId, userId, agentId, "assistant", assistantResponse);
+                memoryService.append(userId, sessionId, "assistant", assistantResponse);
             }
 
-            String conversationHistory = memoryService.buildConversationHistory(sessionId, maxMessages);
+            String conversationHistory = String.join("\n", memoryService.messages(userId, sessionId, maxMessages));
 
             NodeOutput output = new NodeOutput();
             output.setSuccess(true);

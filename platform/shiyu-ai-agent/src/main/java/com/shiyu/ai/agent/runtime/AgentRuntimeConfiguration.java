@@ -5,6 +5,7 @@ import com.shiyu.ai.agent.cache.AgentLoader;
 import com.shiyu.ai.agent.event.EventPublisher;
 import com.shiyu.ai.agent.port.repository.AgentCheckpointRepository;
 import com.shiyu.ai.agent.port.repository.AgentExecutionRepository;
+import com.shiyu.ai.runtime.AiRuntimeService;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 
@@ -16,13 +17,15 @@ public class AgentRuntimeConfiguration {
                                      AgentLoader agentLoader,
                                      AgentExecutionRepository executionRepository,
                                      AgentCheckpointRepository checkpointRepository,
-                                     EventPublisher eventPublisher) {
+                                     EventPublisher eventPublisher,
+                                     AiRuntimeService runtime) {
         return new AgentRuntimeImpl(
             cacheManager,
             agentLoader,
             executionRepository,
             checkpointRepository,
-            eventPublisher
+            eventPublisher,
+            runtime
         );
     }
 }

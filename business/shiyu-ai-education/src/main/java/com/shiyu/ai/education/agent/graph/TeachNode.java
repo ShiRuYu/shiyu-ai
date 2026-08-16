@@ -8,6 +8,7 @@ import com.shiyu.ai.agent.node.NodeType;
 import com.shiyu.ai.model.chat.ChatEngine;
 import com.shiyu.ai.model.chat.ChatRequest;
 import com.shiyu.ai.model.chat.ChatResponse;
+import com.shiyu.ai.model.chat.ChatMessage;
 import com.shiyu.ai.education.domain.AbilityValue;
 import com.shiyu.ai.knowledge.dto.KnowledgeResponse;
 import lombok.Getter;
@@ -65,7 +66,7 @@ public class TeachNode extends BaseNode {
         String prompt = buildTeachPrompt(knowledge, prerequisites, overallScore, ability);
 
         // 调用 LLM
-        ChatResponse resp = chatEngine.chat(ChatRequest.builder().prompt(prompt).build());
+        ChatResponse resp = chatEngine.chat(ChatRequest.builder().platform("default").messages(java.util.List.of(ChatMessage.text("user", prompt))).build());
 
         NodeOutput output = new NodeOutput();
         if (!resp.isSuccess()) {

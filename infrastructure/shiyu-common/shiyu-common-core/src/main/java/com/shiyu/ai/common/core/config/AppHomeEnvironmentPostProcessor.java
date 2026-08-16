@@ -15,7 +15,7 @@ import java.util.HashMap;
 import java.util.Map;
 
 /**
- * 自动探测应用根目录（app.home），优先级：APP_HOME 环境变量 > 项目根目录探测 > user.dir
+ * 自动探测应用根目录（app.home），优先级：app.home 系统属性 > APP_HOME 环境变量 > 项目根目录探测 > user.dir
  * <p>
  * 项目根目录探测逻辑：从 user.dir 开始向上遍历父目录，
  * 找到第一个包含 pom.xml 的目录，即为项目根目录。
@@ -30,11 +30,21 @@ public class AppHomeEnvironmentPostProcessor implements EnvironmentPostProcessor
 
     private static final String PROPERTY_SOURCE_NAME = "appHomeProperties";
     private static final String APP_HOME_KEY = "app.home";
+    private static final String APP_HOME_PROPERTY = "app.home";
     private static final String APP_HOME_ENV = "APP_HOME";
     private static final String USER_DIR_KEY = "user.dir";
 
     @Override
     public void postProcessEnvironment(ConfigurableEnvironment environment, SpringApplication application) {
+        // 0. The bootstrap lock sets this before Spring starts; preserve it so
+        // smoke tests and operators can isolate the embedded data directory.
+        String appHomeProperty = System.getProperty(APP_HOME_PROPERTY);
+        if (appHomeProperty != null && !appHomeProperty.isBlank()) {
+            log.info("app.home 系统属性: {}", appHomeProperty);
+            setAppHome(environment, appHomeProperty);
+            return;
+        }
+
         // 1. 优先使用环境变量 APP_HOME
         String appHomeEnv = environment.getProperty(APP_HOME_ENV);
         if (appHomeEnv != null && !appHomeEnv.isBlank()) {

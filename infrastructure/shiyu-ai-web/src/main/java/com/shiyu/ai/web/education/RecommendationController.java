@@ -4,6 +4,7 @@ import cn.dev33.satoken.annotation.SaCheckPermission;
 import com.shiyu.ai.common.core.api.Result;
 import com.shiyu.ai.model.chat.ChatEngine;
 import com.shiyu.ai.model.chat.ChatRequest;
+import com.shiyu.ai.model.chat.ChatMessage;
 import com.shiyu.ai.education.dto.*;
 import com.shiyu.ai.education.service.RecommendationService;
 import io.swagger.v3.oas.annotations.Operation;
@@ -89,7 +90,8 @@ public class RecommendationController {
                     
                     要求：简洁有重点，带鼓励性语气。
                     """.formatted(studentId, weakCount);
-            var resp = chatEngine.chat(ChatRequest.builder().prompt(prompt).build());
+            var resp = chatEngine.chat(ChatRequest.builder().platform("default")
+                    .messages(List.of(ChatMessage.text("user", prompt))).build());
             if (resp.isSuccess() && resp.getContent() != null && !resp.getContent().isBlank()) {
                 return resp.getContent();
             }

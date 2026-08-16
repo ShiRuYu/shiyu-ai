@@ -20,6 +20,7 @@ import com.shiyu.ai.agent.lifecycle.AgentStateMachine;
 import com.shiyu.ai.agent.domain.model.AgentExecutionBO;
 import com.shiyu.ai.agent.port.repository.AgentExecutionRepository;
 import com.shiyu.ai.common.core.utils.JSONUtils;
+import com.shiyu.ai.runtime.*;
 import lombok.extern.slf4j.Slf4j;
 import org.bsc.langgraph4j.NodeOutput;
 import org.bsc.langgraph4j.state.AgentState;
@@ -45,6 +46,7 @@ public class AgentRuntimeImpl implements AgentRuntime {
     private final AgentExecutor agentExecutor;
     private final CheckpointManager checkpointManager;
     private final EventPublisher eventPublisher;
+    private final AiRuntimeService runtime;
 
     private final ConcurrentHashMap<String, Execution> activeExecutions = new ConcurrentHashMap<>();
 
@@ -53,10 +55,20 @@ public class AgentRuntimeImpl implements AgentRuntime {
                             AgentExecutionRepository executionRepository,
                             AgentCheckpointRepository checkpointRepository,
                             EventPublisher eventPublisher) {
+        this(cacheManager, agentLoader, executionRepository, checkpointRepository, eventPublisher, null);
+    }
+
+    public AgentRuntimeImpl(AgentCacheManager cacheManager,
+                            AgentLoader agentLoader,
+                            AgentExecutionRepository executionRepository,
+                            AgentCheckpointRepository checkpointRepository,
+                            EventPublisher eventPublisher,
+                            AiRuntimeService runtime) {
         this.cacheManager = cacheManager;
         this.agentLoader = agentLoader;
         this.executionRepository = executionRepository;
         this.eventPublisher = eventPublisher;
+        this.runtime = runtime;
 
         DbCheckpointStore checkpointStore = new DbCheckpointStore(checkpointRepository);
         this.checkpointManager = new CheckpointManager(checkpointStore);
@@ -74,13 +86,26 @@ public class AgentRuntimeImpl implements AgentRuntime {
         AgentDefinition definition = getAgentDefinition(agentId);
         AgentVersion agentVersion = definition.getVersion(version);
         beginExecution(execution);
+        AiRun runtimeRun = startRuntime(execution, input);
 
         eventPublisher.publish(new AgentExecutionStartedEvent(
                 execution.getExecutionId(), agentId, input));
 
         Map<String, Object> graphInput = withVersion(input, execution.getVersion());
-        Execution result = agentExecutor.executeAgent(definition, agentVersion, graphInput, execution);
-        saveExecution(result);
+        Execution result;
+        try {
+            result = agentExecutor.executeAgent(definition, agentVersion, graphInput, execution);
+            saveExecution(result);
+        } catch (Exception e) {
+            execution.fail(e.getMessage());
+            saveExecution(execution);
+            finishRuntime(runtimeRun, execution);
+            eventPublisher.publish(new AgentExecutionFailedEvent(
+                    execution.getExecutionId(), agentId, e.getMessage()));
+            cleanupExecution(execution);
+            throw e;
+        }
+        finishRuntime(runtimeRun, result);
 
         if (result.getStatus() == ExecutionStatus.COMPLETED) {
             eventPublisher.publish(new AgentExecutionCompletedEvent(
@@ -105,6 +130,7 @@ public class AgentRuntimeImpl implements AgentRuntime {
         AgentDefinition definition = getAgentDefinition(agentId);
         AgentVersion agentVersion = definition.getVersion(version);
         beginExecution(execution);
+        AiRun runtimeRun = startRuntime(execution, input);
 
         eventPublisher.publish(new AgentExecutionStartedEvent(
                 execution.getExecutionId(), agentId, input));
@@ -123,6 +149,7 @@ public class AgentRuntimeImpl implements AgentRuntime {
                             }
                             Map<String, Object> stateData = nodeOutput.state().data();
                             finalState[0] = stateData;
+                            appendRuntime(runtimeRun, AiRunEventType.MODEL_DELTA, JSONUtils.toJsonString(Map.of("node", nodeOutput.node())));
                             // 每个节点执行后的完整 State 作为一个 chunk 发出
                             sink.next(Map.of(
                                     "executionId", execution.getExecutionId(),
@@ -139,6 +166,7 @@ public class AgentRuntimeImpl implements AgentRuntime {
                 Map<String, Object> output = finalState[0] == null ? Map.of() : finalState[0];
                 execution.complete(output);
                 saveExecution(execution);
+                finishRuntime(runtimeRun, execution);
 
                 eventPublisher.publish(new AgentExecutionCompletedEvent(
                         execution.getExecutionId(), agentId, output,
@@ -153,7 +181,9 @@ public class AgentRuntimeImpl implements AgentRuntime {
                 sink.complete();
 
             } catch (ExecutionCancelledException e) {
+                execution.cancel();
                 saveExecution(execution);
+                finishRuntime(runtimeRun, execution);
                 sink.next(Map.of(
                         "status", "CANCELLED",
                         "executionId", execution.getExecutionId()
@@ -164,6 +194,7 @@ public class AgentRuntimeImpl implements AgentRuntime {
                         agentId, execution.getExecutionId(), e);
                 execution.fail(e.getMessage());
                 saveExecution(execution);
+                finishRuntime(runtimeRun, execution);
 
                 eventPublisher.publish(new AgentExecutionFailedEvent(
                         execution.getExecutionId(), agentId, e.getMessage()));
@@ -423,6 +454,44 @@ public class AgentRuntimeImpl implements AgentRuntime {
             activeExecutions.put(execution.getExecutionId(), execution);
         }
     }
+
+    private AiRun startRuntime(Execution execution, Map<String, Object> input) {
+        if (runtime == null) return null;
+        long tenant = number(input == null ? null : input.get("tenantId"));
+        long owner = execution.getUserId() == null ? number(input == null ? null : input.get("userId")) : execution.getUserId();
+        if (tenant <= 0 || owner <= 0) return null;
+        try {
+            String appId = input == null ? null : string(input.get("__appId"));
+            String appVersionId = input == null ? null : string(input.get("__appVersionId"));
+            AiRun run = runtime.startRun(new AiRunContext(tenant, owner, appId, appVersionId, null, null,
+                    execution.getExecutionId(), null, Map.of("agentId", execution.getAgentId())),
+                    AiRunSource.AGENT, execution.getAgentId(), null, JSONUtils.toJsonString(input));
+            runtime.append(run, AiRunEventType.MODEL_STARTED, "{}", true);
+            return run;
+        } catch (RuntimeException ignored) { return null; }
+    }
+
+    private void appendRuntime(AiRun run, AiRunEventType type, String payload) {
+        if (run == null || runtime == null) return;
+        try { runtime.append(run, type, payload, true); } catch (RuntimeException ignored) { }
+    }
+
+    private void finishRuntime(AiRun run, Execution execution) {
+        if (run == null || runtime == null) return;
+        try {
+            AiRunStatus status = execution.getStatus() == ExecutionStatus.COMPLETED ? AiRunStatus.COMPLETED
+                    : execution.getStatus() == ExecutionStatus.CANCELLED ? AiRunStatus.CANCELLED : AiRunStatus.FAILED;
+            runtime.finish(run.id(), run.tenantId(), run.ownerUserId(), status, execution.getErrorMessage());
+        } catch (RuntimeException ignored) { }
+    }
+
+    private long number(Object value) {
+        if (value instanceof Number n) return n.longValue();
+        if (value != null) try { return Long.parseLong(String.valueOf(value)); } catch (NumberFormatException ignored) { }
+        return 0;
+    }
+
+    private String string(Object value) { return value == null ? null : String.valueOf(value); }
 
     private static final class ExecutionCancelledException extends RuntimeException {
         @java.io.Serial

@@ -8,7 +8,4 @@ public interface ChatEngine {
 
     Flux<ChatResponse> stream(ChatRequest request);
 
-    ChatResponse chatWithMemory(String sessionId, ChatRequest request);
-
-    Flux<ChatResponse> streamWithMemory(String sessionId, ChatRequest request);
 }

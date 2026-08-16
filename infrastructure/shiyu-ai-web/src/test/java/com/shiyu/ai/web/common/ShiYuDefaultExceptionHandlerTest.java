@@ -45,6 +45,12 @@ class ShiYuDefaultExceptionHandlerTest {
     }
 
     @Test
+    void mapsValidationAndStateConflictsToStableHttpCodes() {
+        assertEquals(422, handler.invalidArgument(new IllegalArgumentException("invalid input")).getCode());
+        assertEquals(409, handler.invalidState(new IllegalStateException("version conflict")).getCode());
+    }
+
+    @Test
     void mapsHandledFailureMessagesToBusinessErrors() {
         Result<Void> result = Result.fail("handled failure");
 

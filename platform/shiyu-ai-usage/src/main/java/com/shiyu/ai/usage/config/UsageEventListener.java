@@ -31,6 +31,9 @@ public class UsageEventListener {
     @EventListener
     @Async
     public void onModelCall(ModelCallEvent event) {
+        // ConversationUsageSink records GenerationRun calls after the durable
+        // terminal transition; do not create a second billable ledger row here.
+        if (event.getGenerationRunId() != null && !event.getGenerationRunId().isBlank()) return;
         usageRecordService.recordUsage(
             event.getPlatform(),
             event.getModel(),

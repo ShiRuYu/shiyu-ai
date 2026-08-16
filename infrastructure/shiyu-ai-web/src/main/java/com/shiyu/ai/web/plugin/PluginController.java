@@ -5,6 +5,8 @@ import com.shiyu.ai.common.core.api.Result;
 import com.shiyu.ai.plugin.registry.PluginRegistry;
 import com.shiyu.ai.plugin.spi.PluginDescriptor;
 import com.shiyu.ai.plugin.vo.PluginInfoVO;
+import com.shiyu.ai.plugin.market.PluginMarketEntry;
+import com.shiyu.ai.plugin.market.PluginMarketService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.extern.slf4j.Slf4j;
@@ -25,9 +27,11 @@ import java.util.stream.Collectors;
 public class PluginController {
 
     private final PluginRegistry registry;
+    private final PluginMarketService market;
 
-    public PluginController(PluginRegistry pluginRegistry) {
+    public PluginController(PluginRegistry pluginRegistry, PluginMarketService market) {
         this.registry = pluginRegistry;
+        this.market = market;
     }
 
     @Operation(summary = "列出所有插件")
@@ -96,4 +100,19 @@ public class PluginController {
             return Result.fail("扫描失败: " + e.getMessage());
         }
     }
+
+    @SaCheckPermission("plugin:market")
+    @GetMapping("/market")
+    public Result<List<PluginMarketEntry>> market() { return Result.success(market.list()); }
+
+    @SaCheckPermission("plugin:market")
+    @PostMapping("/market/publish")
+    public Result<PluginMarketEntry> publish(@RequestBody PluginMarketEntry entry,
+                                             @RequestParam(defaultValue = "false") boolean developmentMode) {
+        return Result.success(market.publish(entry, developmentMode));
+    }
+
+    @SaCheckPermission("plugin:market")
+    @PostMapping("/market/{pluginId}/disable")
+    public Result<Void> disable(@PathVariable String pluginId) { market.disable(pluginId); return Result.success(); }
 }
