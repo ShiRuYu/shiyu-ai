@@ -68,15 +68,14 @@
 - **统一边界** — Knowledge 与 Memory 仅依赖公共接口，不直接实例化 JVector
 - **可替换后端** — 后续接入 ChromaDB、Milvus 时新增 Provider 适配器即可
 
-### 记忆系统 — Memory System (`shiyu-ai-memory`)
+### Conversation 与 MAGMA Memory (`shiyu-ai-conversation` / `shiyu-ai-memory`)
 
-支持两级记忆的智能记忆服务：
+平台将原始交互和派生记忆明确分离：
 
-- **短期记忆** — 对话上下文管理，自动裁剪，保持会话连贯性
-- **长期记忆** — 持久化存储 + 重要性衰减机制，提取关键信息长期保留
-- **跨会话检索** — 跨不同会话检索相关历史记忆
-- **压缩策略** — 智能压缩长对话历史（摘要/裁剪）
-- **SPI 扩展** — 支持自定义记忆存储后端
+- **Conversation** — 保存原始会话、结构化消息树、编辑/重试/分支、GenerationRun 和 SSE 事件事实。
+- **MAGMA Memory** — 以统一事件节点承载 Temporal、Semantic、Causal、Entity 四类关系图，支持向量/关键词/时间联合锚点、受限遍历和带来源路径的上下文召回。
+- **单一事实源** — Memory 不复制完整聊天，只引用来源消息；流式草稿、取消和生成状态只属于 Conversation/Runtime。
+- **单机基线** — 当前使用 H2、JVector、本地关键词索引和本地 consolidation job，不引入外部图数据库、Redis 或分布式向量库。
 
 ### 工具体系 — Tool & MCP (`shiyu-ai-tool`)
 
@@ -209,7 +208,8 @@
 | `shiyu-ai-model` | 模型管理：多平台适配器、热更新、熔断降级、嵌入模型 | 平台基础设施 |
 | `shiyu-ai-knowledge` | 知识引擎：文档管理、RAG 检索、知识图谱、中文分块、检索/审计/评测 | 平台基础设施 |
 | `shiyu-ai-vector` | 向量存储：JVector HNSW 索引、磁盘持久化、统一 Provider API | 平台基础设施 |
-| `shiyu-ai-memory` | 记忆系统：短期/长期记忆、压缩策略、跨会话检索、SPI 扩展 | 平台基础设施 |
+| `shiyu-ai-conversation` | 原始会话、消息树、生成生命周期、SSE 续传和 Prompt Preview | 平台基础设施 |
+| `shiyu-ai-memory` | MAGMA-based 事件、实体、多图关系、治理和可解释检索 | 平台基础设施 |
 | `shiyu-ai-tool` | 工具体系：MCP 协议集成、工具注册/调用/执行 | 平台基础设施 |
 | `shiyu-ai-plugin` | 插件体系：生命周期管理、沙箱隔离、动态热插拔 | 平台基础设施 |
 | `shiyu-ai-usage` | 用量计量：Token 统计、实时推送、多维聚合 | 平台基础设施 |
@@ -338,7 +338,7 @@ Linux 使用对应的 `scripts/package-cloud-linux.sh` 和
 
 ## 项目文档
 
-完整的项目介绍、技术说明、使用说明、API、数据字典、权限矩阵、错误码、安全审计、部署运维和联调报告统一从 [后端文档导航](./docs/文档导航.md) 进入。前端页面手册与发布说明见 [ShiYu UI 文档导航](../shiyu-ui/docs/文档导航.md)。
+完整的项目介绍、技术说明、使用说明、开发规范、API、数据字典、权限矩阵、错误码、安全审计、部署运维和联调报告统一从 [后端文档导航](./docs/文档导航.md) 进入。前端页面手册与发布说明见 [ShiYu UI 文档导航](../shiyu-ui/docs/文档导航.md)。
 
 ## API 文档
 
@@ -347,6 +347,8 @@ Linux 使用对应的 `scripts/package-cloud-linux.sh` 和
 | 分组 | 路径前缀 | 所属 |
 |------|----------|------|
 | Agent | `/v1/agents/**`、`/v1/agent-versions/**`、`/v1/agent-executions/**` | Agent 定义、版本与执行 |
+| Conversation | `/conversations/**`、`/generations/**` | 原始消息、生成生命周期和 SSE 事件 |
+| Runtime | `/v1/runs/**` | 统一运行轨迹、Trace、usage 和审批 |
 | 知识库 | `/v1/knowledge/**` | 空间、文档、检索、图谱与任务 |
 | 教育 | `/v1/education/**` | 课程、题库、考试、学习与分析 |
 | 记录 | `/v1/record/**` | 人物、记录、时间线、标签与附件 |

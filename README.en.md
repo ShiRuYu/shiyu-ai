@@ -69,15 +69,14 @@ Backend-neutral `VectorStore` and `VectorStoreProvider` APIs, backed by **JVecto
 - **Stable Module Boundary** — Knowledge and Memory depend only on public vector APIs
 - **Pluggable Backends** — ChromaDB or Milvus can be added later as provider adapters
 
-### Memory System (`shiyu-ai-memory`)
+### Conversation and MAGMA Memory (`shiyu-ai-conversation` / `shiyu-ai-memory`)
 
-Two-tier intelligent memory service:
+The platform separates raw interaction facts from derived long-term cognition:
 
-- **Short-term Memory** — Conversation context management with automatic truncation for coherent sessions
-- **Long-term Memory** — Persistent storage with importance decay, retaining key information long-term
-- **Cross-session Retrieval** — Retrieve relevant historical memories across different sessions
-- **Compression Strategy** — Intelligent compression of long conversation histories (summarization/truncation)
-- **SPI Extension** — Customizable memory storage backends
+- **Conversation** — Structured message trees, edits, retries, branches, GenerationRun and resumable SSE events.
+- **MAGMA-based Memory** — One event model participating in Temporal, Semantic, Causal and Entity graphs with explainable retrieval paths.
+- **Single source of truth** — Memory stores extracted events and source references, never a second copy of complete chat messages.
+- **Local baseline** — H2, JVector, local keyword indexes and consolidation jobs; no external graph database, Redis or distributed vector store in the current baseline.
 
 ### Tool System — Tool & MCP (`shiyu-ai-tool`)
 
@@ -210,7 +209,8 @@ An **AI-powered tutoring system** for K-12 education, covering the full "learn �
 | `shiyu-ai-model` | Model Management: Multi-platform adapters, Hot reload, Resilience, Embedding | Platform Infrastructure |
 | `shiyu-ai-knowledge` | Knowledge Engine: Document management, RAG retrieval, Knowledge graph, Chunking, Retrieval/Audit/Evaluation | Platform Infrastructure |
 | `shiyu-ai-vector` | Vector Store: JVector HNSW index, Disk persistence, Unified Provider API | Platform Infrastructure |
-| `shiyu-ai-memory` | Memory System: Short/long-term memory, Compression, Cross-session retrieval, SPI | Platform Infrastructure |
+| `shiyu-ai-conversation` | Conversation, structured messages, generation lifecycle, SSE resume and Prompt Preview | Platform Infrastructure |
+| `shiyu-ai-memory` | MAGMA-based events, entities, multi-graph relations, governance and explainable retrieval | Platform Infrastructure |
 | `shiyu-ai-tool` | Tool System: MCP protocol, Tool registration/invocation/execution | Platform Infrastructure |
 | `shiyu-ai-plugin` | Plugin System: Lifecycle management, Sandbox isolation, Hot-plug | Platform Infrastructure |
 | `shiyu-ai-usage` | Usage Tracking: Token metering, Real-time push, Multi-dimensional aggregation | Platform Infrastructure |
@@ -353,6 +353,8 @@ After startup:
 | Agent | `/v1/agents/**`, `/v1/agent-versions/**`, `/v1/agent-executions/**` | Platform Core |
 | Model | `/v1/platform/models/**`, `/v1/platform/providers/**` | Platform Infrastructure |
 | Knowledge | `/v1/knowledge/**` | Platform Infrastructure |
+| Conversation | `/conversations/**`, `/generations/**` | Platform Infrastructure |
+| Runtime | `/v1/runs/**` | Platform Infrastructure |
 | Memory | `/memory/**` | Platform Infrastructure |
 | Auth | `/v1/auth/**`, `/v1/system/users/**`, `/v1/system/roles/**`, `/v1/system/menus/**`, `/v1/system/tenants/**` | Platform Foundation |
 | Usage | `/v1/usage/**` | Platform Infrastructure |
