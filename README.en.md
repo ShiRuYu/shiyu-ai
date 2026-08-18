@@ -350,16 +350,16 @@ After startup:
 
 | Group | Path Prefix | Category |
 |-------|-------------|----------|
-| Agent | `/api/agent/**` | Platform Core |
-| Model | `/api/model/**` | Platform Infrastructure |
-| Knowledge | `/api/knowledge/**` | Platform Infrastructure |
-| Memory | `/api/memory/**` | Platform Infrastructure |
-| Auth | `/api/auth/**` | Platform Foundation |
-| Usage | `/api/usage/**` | Platform Infrastructure |
-| Plugin | `/api/plugin/**` | Platform Infrastructure |
-| Education | `/api/education/**` | Business Extension |
-| Record | `/api/record/**` | Business Extension |
-| System | `/api/system/**` | Infrastructure |
+| Agent | `/v1/agents/**`, `/v1/agent-versions/**`, `/v1/agent-executions/**` | Platform Core |
+| Model | `/v1/platform/models/**`, `/v1/platform/providers/**` | Platform Infrastructure |
+| Knowledge | `/v1/knowledge/**` | Platform Infrastructure |
+| Memory | `/memory/**` | Platform Infrastructure |
+| Auth | `/auth/**`, `/user/**`, `/role/**`, `/menu/**`, `/tenant/**` | Platform Foundation |
+| Usage | `/usage/**` | Platform Infrastructure |
+| Plugin | `/v1/plugins/**` | Platform Infrastructure |
+| Education | `/edu/**` | Business Extension |
+| Record | `/record/**` | Business Extension |
+| System | `/system/**` | Infrastructure |
 
 ---
 

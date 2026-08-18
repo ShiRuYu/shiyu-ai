@@ -29,7 +29,7 @@ import java.util.List;
 @Tag(name = "Agent Version", description = "Agent Version & Graph")
 @SaCheckPermission("agent:admin:list")
 @RestController
-@RequestMapping("/agent/version")
+@RequestMapping("/v1/agent-versions")
 public class AgentVersionController {
 
     private final AgentVersionService agentVersionService;

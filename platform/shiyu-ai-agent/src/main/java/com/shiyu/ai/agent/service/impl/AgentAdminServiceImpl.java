@@ -175,7 +175,7 @@ public class AgentAdminServiceImpl implements AgentAdminService {
         if (type == NodeType.RAG_RETRIEVAL) {
             fields.add(fieldWithSource(field("spaceIds", "知识空间", "select", List.of(), false,
                             "为空时检索当前用户所有有权限空间"),
-                    new NodeTypeMetaVO.DataSourceConfig("api", "/knowledge/spaces/options", null,
+                    new NodeTypeMetaVO.DataSourceConfig("api", "/v1/knowledge/spaces/options", null,
                             "name", "id", null)));
             fields.add(field("sourceTypes", "内容来源", "select", List.of("DOCUMENT", "KNOWLEDGE_ENTRY"), false,
                     Map.of("multiple", true, "options", Map.of("DOCUMENT", "文档", "KNOWLEDGE_ENTRY", "知识条目"))));

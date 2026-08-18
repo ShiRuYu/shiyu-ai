@@ -14,6 +14,7 @@ public class ToolApprovalService {
     @Autowired public ToolApprovalService(ToolApprovalRepository approvals) { this.approvals = approvals; }
     public ToolApproval request(String runId, long tenantId, long ownerUserId, String toolName, String argumentsRedacted) { Instant now = Instant.now(); ToolApproval value = new ToolApproval(UUID.randomUUID().toString(), runId, tenantId, ownerUserId, toolName, argumentsRedacted, ToolApprovalStatus.PENDING, now, null, now.plusSeconds(300)); approvals.insert(value); return value; }
     public List<ToolApproval> list(String runId, long tenantId, long ownerUserId) { approvals.expirePending(tenantId, ownerUserId); return approvals.list(runId, tenantId, ownerUserId); }
+    public List<ToolApproval> listAll(long tenantId, long ownerUserId) { approvals.expirePending(tenantId, ownerUserId); return approvals.listAll(tenantId, ownerUserId); }
     public ToolApproval require(String id, long tenantId, long ownerUserId) { approvals.expirePending(tenantId, ownerUserId); return approvals.find(id, tenantId, ownerUserId).orElseThrow(() -> new IllegalArgumentException("approval not found")); }
     public ToolApproval decide(String id, long tenantId, long ownerUserId, ToolApprovalStatus status) {
         approvals.expirePending(tenantId, ownerUserId);

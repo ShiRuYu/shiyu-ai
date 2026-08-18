@@ -23,7 +23,7 @@ import java.util.stream.Collectors;
 @Slf4j
 @Tag(name = "插件系统", description = "Plugin System")
 @RestController
-@RequestMapping("/plugin")
+@RequestMapping("/v1/plugins")
 public class PluginController {
 
     private final PluginRegistry registry;
@@ -36,7 +36,7 @@ public class PluginController {
 
     @Operation(summary = "列出所有插件")
     @SaCheckPermission("plugin:list")
-    @GetMapping("/list")
+    @GetMapping
     public Result<List<PluginInfoVO>> listPlugins() {
         List<PluginInfoVO> plugins = registry.listPlugins().stream()
                 .map(d -> {

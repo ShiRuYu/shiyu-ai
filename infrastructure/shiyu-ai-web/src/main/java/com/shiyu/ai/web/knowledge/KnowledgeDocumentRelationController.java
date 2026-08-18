@@ -18,7 +18,7 @@ import org.springframework.web.bind.annotation.RestController;
 import java.util.List;
 
 @RestController
-@RequestMapping("/knowledge")
+@RequestMapping("/v1/knowledge")
 @RequiredArgsConstructor
 @Tag(name = "知识点文档关系")
 @SaCheckPermission("knowledge:list")

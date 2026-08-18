@@ -15,7 +15,7 @@ import org.springframework.web.bind.annotation.RestController;
 import java.util.Map;
 
 @RestController
-@RequestMapping("/knowledge/system")
+@RequestMapping("/v1/knowledge/system")
 @RequiredArgsConstructor
 @Tag(name = "知识引擎运维")
 @SaCheckPermission("system:tenant:update")

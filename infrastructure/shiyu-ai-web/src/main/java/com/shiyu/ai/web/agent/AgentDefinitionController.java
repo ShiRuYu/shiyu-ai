@@ -28,13 +28,13 @@ import java.util.Map;
  * 职责：Agent 定义的全生命周期管理（CRUD）、节点类型元数据。
  * 合并来源：AgentAdminController + AgentController（非执行部分）+ NodeTypeController
  *
- * 注意：Agent 执行统一走 ExecutionController (/agent/execution)
+ * 注意：Agent 执行统一走 ExecutionController (/v1/agent-executions)
  */
 @Slf4j
 @Tag(name = "Agent Definition", description = "Agent Definition")
 @SaCheckPermission("agent:admin:list")
 @RestController
-@RequestMapping("/agent/definition")
+@RequestMapping("/v1/agents")
 public class AgentDefinitionController {
 
     private final AgentAdminService agentAdminService;

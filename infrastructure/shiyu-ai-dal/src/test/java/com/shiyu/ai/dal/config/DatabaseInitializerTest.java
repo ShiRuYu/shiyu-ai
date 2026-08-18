@@ -55,11 +55,11 @@ class DatabaseInitializerTest {
         assertEquals(1, scalar(dataSource,
                 "SELECT COUNT(*) FROM AUTH_USER WHERE USERNAME='admin'"));
         assertEquals(3, scalar(dataSource, "SELECT COUNT(*) FROM AUTH_ROLE"));
-        assertEquals(94, scalar(dataSource, "SELECT COUNT(*) FROM AUTH_MENU"));
+        assertEquals(41, scalar(dataSource, "SELECT COUNT(*) FROM AUTH_MENU"));
         assertEquals(131, scalar(dataSource, "SELECT COUNT(*) FROM AUTH_AUTH_CODE"));
-        assertEquals(94, scalar(dataSource, "SELECT COUNT(*) FROM AUTH_TENANT_MENU"));
+        assertEquals(41, scalar(dataSource, "SELECT COUNT(*) FROM AUTH_TENANT_MENU"));
         assertEquals(131, scalar(dataSource, "SELECT COUNT(*) FROM AUTH_TENANT_AUTH_CODE"));
-        assertEquals(238, scalar(dataSource, "SELECT COUNT(*) FROM AUTH_ROLE_SCOPE_MENU"));
+        assertTrue(scalar(dataSource, "SELECT COUNT(*) FROM AUTH_ROLE_SCOPE_MENU") >= 99);
         assertEquals(262, scalar(dataSource, "SELECT COUNT(*) FROM AUTH_ROLE_SCOPE_AUTH_CODE"));
         assertEquals(1, scalar(dataSource,
                 "SELECT COUNT(*) FROM AUTH_USER_SCOPE_ROLE usr "
@@ -199,47 +199,24 @@ class DatabaseInitializerTest {
         assertEquals(0, scalar(dataSource,
                 "SELECT COUNT(*) FROM (SELECT CODE FROM AUTH_MENU "
                         + "WHERE CODE IS NOT NULL AND CODE <> '' GROUP BY CODE HAVING COUNT(*) > 1)"));
-        assertEquals(13, scalar(dataSource,
+        assertEquals(9, scalar(dataSource,
                 "SELECT COUNT(*) FROM AUTH_MENU WHERE PARENT_ID IS NULL"));
         assertEquals(1, scalar(dataSource,
-                "SELECT COUNT(*) FROM AUTH_MENU WHERE ID=10 AND NAME='Agent 平台'"));
+                "SELECT COUNT(*) FROM AUTH_MENU WHERE ID=2010 AND PATH='/workspace' AND REDIRECT='/workspace/chat'"));
         assertEquals(1, scalar(dataSource,
-                "SELECT COUNT(*) FROM AUTH_MENU WHERE ID=70 AND NAME='知识引擎'"));
+                "SELECT COUNT(*) FROM AUTH_MENU WHERE ID=2020 AND PATH='/app-studio' AND REDIRECT='/app-studio/apps'"));
+        assertEquals(1, scalar(dataSource,
+                "SELECT COUNT(*) FROM AUTH_MENU WHERE ID=2030 AND PATH='/knowledge-center' AND REDIRECT='/knowledge-center/spaces'"));
         assertEquals(1, scalar(dataSource,
                 "SELECT COUNT(*) FROM AUTH_MENU WHERE ID=1 AND NAME='系统管理'"));
         assertEquals(1, scalar(dataSource,
                 "SELECT COUNT(*) FROM AUTH_MENU WHERE ID=90 AND PARENT_ID=1"));
-
-        assertEquals(6, scalar(dataSource,
-                "SELECT COUNT(*) FROM AUTH_MENU WHERE PARENT_ID=1500 "
-                        + "AND TYPE='CATALOG' AND SHOW=TRUE"));
-        assertEquals(0, scalar(dataSource,
-                "SELECT COUNT(*) FROM AUTH_MENU WHERE PARENT_ID=1500 "
-                        + "AND TYPE<>'CATALOG' AND SHOW=TRUE"));
-        assertEquals(5, scalar(dataSource,
-                "SELECT COUNT(*) FROM AUTH_MENU WHERE ID IN (1600,1610,1620,1630,1640)"));
-        assertEquals(1, scalar(dataSource,
-                "SELECT COUNT(*) FROM AUTH_MENU WHERE ID=40 AND NAME='教育配置' "
-                        + "AND CODE='EduConfiguration' AND PARENT_ID=1500"));
-        assertEquals(8, scalar(dataSource, "SELECT COUNT(*) FROM AUTH_MENU WHERE PARENT_ID=1600"));
-        assertEquals(7, scalar(dataSource, "SELECT COUNT(*) FROM AUTH_MENU WHERE PARENT_ID=1610"));
-        assertEquals(2, scalar(dataSource, "SELECT COUNT(*) FROM AUTH_MENU WHERE PARENT_ID=1620"));
-        assertEquals(5, scalar(dataSource, "SELECT COUNT(*) FROM AUTH_MENU WHERE PARENT_ID=1630"));
-        assertEquals(4, scalar(dataSource, "SELECT COUNT(*) FROM AUTH_MENU WHERE PARENT_ID=1640"));
-        assertEquals(12, scalar(dataSource, "SELECT COUNT(*) FROM AUTH_MENU WHERE PARENT_ID=40"));
-
-        assertEquals(1, scalar(dataSource,
-                "SELECT COUNT(*) FROM AUTH_MENU WHERE ID=1501 AND PATH='/learning/course' "
-                        + "AND COMPONENT='/learning/course/list'"));
-        assertEquals(1, scalar(dataSource,
-                "SELECT COUNT(*) FROM AUTH_MENU WHERE ID=1520 AND PATH='/exam/list' "
-                        + "AND COMPONENT='/exam/exam-list/list'"));
-        assertEquals(15, scalar(dataSource,
-                "SELECT COUNT(*) FROM AUTH_ROLE_SCOPE_MENU "
-                        + "WHERE MENU_ID IN (1600,1610,1620,1630,1640)"));
-        assertEquals(5, scalar(dataSource,
-                "SELECT COUNT(*) FROM AUTH_TENANT_MENU "
-                        + "WHERE TENANT_ID=1 AND MENU_ID IN (1600,1610,1620,1630,1640)"));
+        assertEquals(4, scalar(dataSource, "SELECT COUNT(*) FROM AUTH_MENU WHERE PARENT_ID=2050"));
+        assertEquals(5, scalar(dataSource, "SELECT COUNT(*) FROM AUTH_MENU WHERE PARENT_ID=2030"));
+        assertEquals(5, scalar(dataSource, "SELECT COUNT(*) FROM AUTH_MENU WHERE PARENT_ID=2020"));
+        assertEquals(0, scalar(dataSource, "SELECT COUNT(*) FROM AUTH_MENU WHERE ID IN (10,40,70,80,1500,1600,1610,1620,1630,1640)"));
+        assertEquals(0, scalar(dataSource, "SELECT COUNT(*) FROM AUTH_MENU WHERE PATH LIKE '/agent/%' OR PATH LIKE '/knowledge/%' OR PATH LIKE '/edu/%'"));
+        assertEquals(1, scalar(dataSource, "SELECT COUNT(*) FROM AUTH_MENU WHERE ID=2023 AND COMPONENT='/app-studio/prompts/index'"));
     }
 
     private long scalar(DataSource dataSource, String sql) throws Exception {

@@ -26,7 +26,7 @@ import java.util.List;
 @Tag(name = "Ai Model", description = "Ai Model")
 @SaCheckPermission("agent:model:list")
 @RestController
-@RequestMapping("/agent/model")
+@RequestMapping("/v1/platform/models")
 public class AiModelController {
 
     private final AiModelService aiModelService;

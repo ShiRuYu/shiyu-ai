@@ -313,6 +313,22 @@ def seed_rows(text: str, table: str) -> list[list[str]]:
     return [sql_values(match.group(1)) for match in pattern.finditer(text)]
 
 
+def canonical_menu_rows(text: str) -> list[list[str]]:
+    """Read v3 menu rows from the MERGE statement in 05_navigation.sql."""
+    rows = []
+    for line in text.splitlines():
+        value = line.strip()
+        if not re.match(r"^\(20\d{2},", value):
+            continue
+        value = value[1:]
+        if value.endswith(");"):
+            value = value[:-2]
+        elif value.endswith(",") or value.endswith(")"):
+            value = value[:-1]
+        rows.append(sql_values(value))
+    return rows
+
+
 def parse_controller_permissions(repo: Path) -> list[dict[str, str]]:
     rows = []
     mapping_pattern = re.compile(r"@(Get|Post|Put|Delete|Patch)Mapping(?:\s*\((.*?)\))?", re.S)
@@ -352,11 +368,15 @@ def parse_controller_permissions(repo: Path) -> list[dict[str, str]]:
     return rows
 
 
-def generate_permission_matrix(repo: Path, seed_file: Path, output: Path) -> tuple[int, int]:
+def generate_permission_matrix(repo: Path, seed_file: Path, navigation_file: Path, output: Path) -> tuple[int, int]:
     seed = seed_file.read_text(encoding="utf-8")
+    navigation = navigation_file.read_text(encoding="utf-8")
     roles = {int(row[0]): {"code": row[1], "name": row[2]} for row in seed_rows(seed, "AUTH_ROLE")}
     menus = {}
-    for row in seed_rows(seed, "AUTH_MENU"):
+    system_menu_ids = {1, 2, 3, 4, 5, 7, 11, 90}
+    menu_rows = [row for row in seed_rows(seed, "AUTH_MENU") if int(row[0]) in system_menu_ids]
+    menu_rows.extend(canonical_menu_rows(navigation))
+    for row in menu_rows:
         menus[int(row[0])] = {
             "name": row[1],
             "code": row[2],
@@ -382,7 +402,7 @@ def generate_permission_matrix(repo: Path, seed_file: Path, output: Path) -> tup
     lines = [
         "# 菜单、角色与权限矩阵",
         "",
-        "> 菜单与初始授权来自 `02_auth.sql`，接口权限来自 Controller 的 `@SaCheckPermission`。运行期管理员可修改授权，因此本表描述“空库初始化基线”，不是某一运行库的实时快照。",
+        "> 系统菜单与角色来自 `02_auth.sql`，平台菜单来自 `05_navigation.sql`，接口权限来自 Controller 的 `@SaCheckPermission`。运行期管理员可修改授权，因此本表描述“空库初始化基线”，不是某一运行库的实时快照。",
         "",
         "## 权限判定链路",
         "",
@@ -405,7 +425,8 @@ def generate_permission_matrix(repo: Path, seed_file: Path, output: Path) -> tup
         ]
     )
     for menu_id, menu in sorted(menus.items()):
-        assigned = ", ".join(roles[role_id]["code"] for role_id in sorted(menu_roles.get(menu_id, set())) if role_id in roles)
+        assigned_roles = menu_roles.get(menu_id, set()) or ({1, 2, 3} if menu_id >= 2000 else set())
+        assigned = ", ".join(roles[role_id]["code"] for role_id in sorted(assigned_roles) if role_id in roles)
         lines.append(
             f"| {menu_id} | {md(menu['type'])} | {md(menu['name'])} | `{md(menu['path'])}` | `{md(menu['component'])}` | {md(menu['show'])} | {md(assigned or '-')} |"
         )
@@ -469,7 +490,8 @@ def main() -> None:
     generate_data_dictionary(tables, repo / "docs/参考/领域模型与数据字典.md")
 
     seed_file = repo / "infrastructure/shiyu-ai-dal/src/main/resources/db/baseline/h2/seed/02_auth.sql"
-    menus, auth_codes = generate_permission_matrix(repo, seed_file, repo / "docs/参考/菜单角色权限矩阵.md")
+    navigation_file = repo / "infrastructure/shiyu-ai-dal/src/main/resources/db/baseline/h2/seed/05_navigation.sql"
+    menus, auth_codes = generate_permission_matrix(repo, seed_file, navigation_file, repo / "docs/参考/菜单角色权限矩阵.md")
     print(
         f"generated: paths={paths}, operations={operations}, tables={len(tables)}, "
         f"menus={menus}, auth_codes={auth_codes}"

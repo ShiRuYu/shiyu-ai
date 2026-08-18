@@ -19,7 +19,7 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 @RestController
-@RequestMapping("/knowledge")
+@RequestMapping("/v1/knowledge")
 @RequiredArgsConstructor
 @Tag(name = "知识点")
 @SaCheckPermission("knowledge:list")

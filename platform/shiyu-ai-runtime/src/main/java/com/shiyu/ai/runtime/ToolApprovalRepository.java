@@ -6,6 +6,7 @@ import java.util.Optional;
 public interface ToolApprovalRepository {
     void insert(ToolApproval approval);
     List<ToolApproval> list(String runId, long tenantId, long ownerUserId);
+    default List<ToolApproval> listAll(long tenantId, long ownerUserId) { return List.of(); }
     Optional<ToolApproval> find(String id, long tenantId, long ownerUserId);
     int update(ToolApproval approval, ToolApprovalStatus expectedStatus);
     default int expirePending(long tenantId, long ownerUserId) { return 0; }

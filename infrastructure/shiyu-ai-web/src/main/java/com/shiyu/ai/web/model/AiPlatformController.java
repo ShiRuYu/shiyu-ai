@@ -27,7 +27,7 @@ import java.util.List;
 @Tag(name = "Ai Platform", description = "Ai Platform")
 @SaCheckPermission("agent:platform:list")
 @RestController
-@RequestMapping("/admin/platform")
+@RequestMapping("/v1/platform/providers")
 public class AiPlatformController {
 
     private final AiPlatformService aiPlatformService;

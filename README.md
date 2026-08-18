@@ -346,8 +346,8 @@ Linux 使用对应的 `scripts/package-cloud-linux.sh` 和
 
 | 分组 | 路径前缀 | 所属 |
 |------|----------|------|
-| Agent | `/agent/**` | Agent 定义、模型平台与执行 |
-| 知识库 | `/knowledge/**` | 空间、文档、检索、图谱与任务 |
+| Agent | `/v1/agents/**`、`/v1/agent-versions/**`、`/v1/agent-executions/**` | Agent 定义、版本与执行 |
+| 知识库 | `/v1/knowledge/**` | 空间、文档、检索、图谱与任务 |
 | 教育 | `/edu/**` | 课程、题库、考试、学习与分析 |
 | 记录 | `/record/**` | 人物、记录、时间线、标签与附件 |
 | 认证授权 | `/auth/**`、`/user/**`、`/role/**`、`/menu/**`、`/tenant/**` | 登录、租户、角色与菜单 |

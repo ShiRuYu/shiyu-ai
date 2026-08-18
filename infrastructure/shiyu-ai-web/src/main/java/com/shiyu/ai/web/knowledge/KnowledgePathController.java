@@ -16,7 +16,7 @@ import java.util.List;
 import java.util.Set;
 
 @RestController
-@RequestMapping("/knowledge")
+@RequestMapping("/v1/knowledge")
 @RequiredArgsConstructor
 @Tag(name = "知识路径")
 @SaCheckPermission("knowledge:list")

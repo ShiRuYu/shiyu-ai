@@ -34,7 +34,7 @@ import java.nio.charset.StandardCharsets;
 import java.util.List;
 
 @RestController
-@RequestMapping("/knowledge")
+@RequestMapping("/v1/knowledge")
 @RequiredArgsConstructor
 @Tag(name = "知识文档")
 @SaCheckPermission("knowledge:document:list")

@@ -23,7 +23,7 @@ import org.springframework.web.bind.annotation.RestController;
 import java.util.List;
 
 @RestController
-@RequestMapping("/knowledge/spaces")
+@RequestMapping("/v1/knowledge/spaces")
 @RequiredArgsConstructor
 @Tag(name = "知识空间")
 @SaCheckPermission("knowledge:list")

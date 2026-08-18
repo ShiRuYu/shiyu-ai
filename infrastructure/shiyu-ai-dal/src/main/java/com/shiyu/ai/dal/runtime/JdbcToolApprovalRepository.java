@@ -32,6 +32,12 @@ public class JdbcToolApprovalRepository implements ToolApprovalRepository {
     }
 
     @Override
+    public List<ToolApproval> listAll(long tenantId, long ownerUserId) {
+        return jdbc.query("SELECT * FROM AI_TOOL_APPROVAL WHERE TENANT_ID=? AND OWNER_USER_ID=? ORDER BY CREATED_AT DESC,ID",
+                (rs, n) -> map(rs), tenantId, ownerUserId);
+    }
+
+    @Override
     public Optional<ToolApproval> find(String id, long tenantId, long ownerUserId) {
         return jdbc.query("SELECT * FROM AI_TOOL_APPROVAL WHERE ID=? AND TENANT_ID=? AND OWNER_USER_ID=?",
                 (rs, n) -> map(rs), id, tenantId, ownerUserId).stream().findFirst();

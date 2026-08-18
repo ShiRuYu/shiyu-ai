@@ -16,6 +16,7 @@ public class ToolApprovalController {
     private final AiRuntimeService runtime;
     public ToolApprovalController(ToolApprovalService approvals, AiRuntimeService runtime) { this.approvals = approvals; this.runtime = runtime; }
     @GetMapping("/runs/{runId}/approvals") public Result<List<ToolApproval>> list(@PathVariable String runId) { runtime.requireRun(runId, tenant(), user()); return Result.success(approvals.list(runId, tenant(), user())); }
+    @GetMapping("/approvals") public Result<List<ToolApproval>> listAll() { return Result.success(approvals.listAll(tenant(), user())); }
     @PostMapping("/runs/{runId}/approvals") public Result<ToolApproval> request(@PathVariable String runId, @Valid @RequestBody Request request) { runtime.requireRun(runId, tenant(), user()); ToolApproval approval = approvals.request(runId, tenant(), user(), request.toolName, request.argumentsRedacted); try { runtime.append(runtime.requireRun(runId, tenant(), user()), AiRunEventType.TOOL_APPROVAL_REQUIRED, "{\"approvalId\":\"" + approval.id() + "\"}", true); } catch (RuntimeException ignored) { } return Result.success(approval); }
     @PostMapping("/approvals/{id}/approve") public Result<ToolApproval> approve(@PathVariable String id) { return Result.success(decide(id, ToolApprovalStatus.APPROVED)); }
     @PostMapping("/approvals/{id}/reject") public Result<ToolApproval> reject(@PathVariable String id) { return Result.success(decide(id, ToolApprovalStatus.REJECTED)); }

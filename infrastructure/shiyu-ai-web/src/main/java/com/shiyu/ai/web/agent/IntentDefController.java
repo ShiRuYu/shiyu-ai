@@ -13,7 +13,7 @@ import org.springframework.web.bind.annotation.*;
 import java.util.List;
 
 @RestController
-@RequestMapping("/admin/intent")
+@RequestMapping("/v1/intents")
 @RequiredArgsConstructor
 public class IntentDefController {
     private final IntentDefService service;

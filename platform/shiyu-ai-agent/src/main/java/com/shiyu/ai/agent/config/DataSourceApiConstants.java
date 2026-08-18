@@ -11,12 +11,12 @@ public final class DataSourceApiConstants {
     private DataSourceApiConstants() {}
 
     /** AI平台管理（已启用平台列表） */
-    public static final String PLATFORM_ENABLED = "/admin/platform/enabled";
+    public static final String PLATFORM_ENABLED = "/v1/platform/providers/enabled";
 
     /** 按平台编码获取模型列表 */
-    public static final String MODEL_BY_PLATFORM = "/agent/model/platform/by-code";
+    public static final String MODEL_BY_PLATFORM = "/v1/platform/models/platform/by-code";
 
     /** Agent 列表（全部） */
-    public static final String AGENT_LIST_ALL = "/admin/agent/list/all";
+    public static final String AGENT_LIST_ALL = "/v1/agents/options";
 
 }

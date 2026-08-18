@@ -31,7 +31,7 @@ import java.util.stream.Collectors;
 @Tag(name = "Execution", description = "Agent Execution")
 @SaCheckPermission("agent:admin:list")
 @RestController
-@RequestMapping("/agent/execution")
+@RequestMapping("/v1/agent-executions")
 public class ExecutionController {
 
     private final AgentRuntime agentRuntime;
