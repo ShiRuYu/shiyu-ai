@@ -23,7 +23,7 @@ import java.util.List;
 @Slf4j
 @Tag(name = "智能推荐")
 @RestController
-@RequestMapping("/api/v1/recommend")
+@RequestMapping("/recommend")
 @RequiredArgsConstructor
 @SaCheckPermission("edu:analytics")
 public class RecommendationController {

@@ -12,7 +12,7 @@ import java.util.List;
 
 /** HTTP adapter for timezone preferences. */
 @RestController
-@RequestMapping("/system/timezone")
+@RequestMapping("/v1/system/timezone")
 @RequiredArgsConstructor
 public class TimezoneController {
 

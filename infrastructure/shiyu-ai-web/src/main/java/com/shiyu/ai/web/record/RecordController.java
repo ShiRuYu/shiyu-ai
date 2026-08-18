@@ -15,7 +15,7 @@ import org.springframework.web.bind.annotation.*;
 @Tag(name = "记录管理")
 @SaCheckPermission("record:profile:list")
 @RestController
-@RequestMapping("/record/record")
+@RequestMapping("/v1/record/record")
 public class RecordController {
     @Resource private RecordService recordService;
     @GetMapping("/list") public Result<PageData<RecordVO>> getPage(PageQuery query, @RequestParam(required = false) Long eventId) {

@@ -15,7 +15,7 @@ import org.springframework.web.bind.annotation.*;
 @Tag(name = "标签管理")
 @SaCheckPermission("record:tags:list")
 @RestController
-@RequestMapping("/record/tag")
+@RequestMapping("/v1/record/tag")
 public class TagController {
     @Resource private TagService tagService;
     @GetMapping("/list") public Result<PageData<TagVO>> getPage(PageQuery query, @RequestParam(required = false) String name) {

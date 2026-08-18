@@ -18,7 +18,7 @@ import io.swagger.v3.oas.annotations.Operation;
 @Slf4j
 @Tag(name = "User Context Test", description = "User Context Test")
 @RestController
-@RequestMapping("/test/user-context")
+@RequestMapping("/v1/test/user-context")
 public class UserContextTestController {
 
     /**

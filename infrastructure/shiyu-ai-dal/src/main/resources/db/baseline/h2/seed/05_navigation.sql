@@ -12,7 +12,7 @@ WHERE "ID" IN (10,12,13,14,15,16,40,41,42,43,44,45,46,47,48,49,50,51,52,70,71,72
   1500,1501,1502,1503,1508,1510,1511,1520,1521,1530,1531,1532,1540,1541,1542,1543,1544,1550,1551,1552,1553,1560,1561,1562,1563,1564,1565,1566,1600,1610,1620,1630,1640);
 
 MERGE INTO "PUBLIC"."AUTH_MENU" ("ID","NAME","CODE","TYPE","PARENT_ID","TENANT_ID","PATH","REDIRECT","ICON","COMPONENT","DESCRIPTION","SHOW","STATUS","ORDER","DEL_FLAG","CREATE_BY","CREATE_TIME","UPDATE_BY","UPDATE_TIME") KEY("ID") VALUES
-(2000,'工作台','Workbench','CATALOG',NULL,1,'/workbench','/dashboard/overview','lucide:layout-dashboard','','待办、最近会话、审批与运行状态',TRUE,1,1,0,'system',CURRENT_TIMESTAMP,'system',CURRENT_TIMESTAMP),
+(2000,'工作台','Workbench','CATALOG',NULL,1,'/workbench','/workbench/overview','lucide:layout-dashboard','','待办、最近会话、审批与运行状态',TRUE,1,1,0,'system',CURRENT_TIMESTAMP,'system',CURRENT_TIMESTAMP),
 (2010,'AI 工作区','AiWorkspace','CATALOG',NULL,1,'/workspace','/workspace/chat','lucide:sparkles','','Chat、Agent、RAG 与历史会话',TRUE,1,2,0,'system',CURRENT_TIMESTAMP,'system',CURRENT_TIMESTAMP),
 (2020,'应用开发','AppStudio','CATALOG',NULL,1,'/app-studio','/app-studio/apps','lucide:blocks','','AI App、Agent、Prompt 与 Evaluation',TRUE,1,3,0,'system',CURRENT_TIMESTAMP,'system',CURRENT_TIMESTAMP),
 (2030,'知识中心','KnowledgeCenter','CATALOG',NULL,1,'/knowledge-center','/knowledge-center/spaces','lucide:brain-circuit','','知识空间、检索与图谱洞察',TRUE,1,4,0,'system',CURRENT_TIMESTAMP,'system',CURRENT_TIMESTAMP),

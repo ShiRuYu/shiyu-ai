@@ -17,7 +17,7 @@ import java.util.Map;
 @Slf4j
 @Tag(name = "Usage", description = "Usage Stats")
 @RestController
-@RequestMapping("/usage")
+@RequestMapping("/v1/usage")
 public class UsageController {
 
     private final UsageService usageService;

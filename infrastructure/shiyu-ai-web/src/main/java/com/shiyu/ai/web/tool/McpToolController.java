@@ -23,7 +23,7 @@ import java.util.Set;
 @Slf4j
 @Tag(name = "MCP 工具市场", description = "MCP Tool Marketplace")
 @RestController
-@RequestMapping("/tool/mcp")
+@RequestMapping("/v1/tools/mcp")
 public class McpToolController {
 
     private final McpToolRegistry registry;

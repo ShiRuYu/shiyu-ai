@@ -15,7 +15,7 @@ import org.springframework.web.bind.annotation.*;
 import java.util.List;
 
 @RestController
-@RequestMapping("/tenant")
+@RequestMapping("/v1/system/tenants")
 @RequiredArgsConstructor
 public class TenantController {
     private final TenantService tenantService;

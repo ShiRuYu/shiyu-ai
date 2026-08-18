@@ -354,12 +354,12 @@ After startup:
 | Model | `/v1/platform/models/**`, `/v1/platform/providers/**` | Platform Infrastructure |
 | Knowledge | `/v1/knowledge/**` | Platform Infrastructure |
 | Memory | `/memory/**` | Platform Infrastructure |
-| Auth | `/auth/**`, `/user/**`, `/role/**`, `/menu/**`, `/tenant/**` | Platform Foundation |
-| Usage | `/usage/**` | Platform Infrastructure |
+| Auth | `/v1/auth/**`, `/v1/system/users/**`, `/v1/system/roles/**`, `/v1/system/menus/**`, `/v1/system/tenants/**` | Platform Foundation |
+| Usage | `/v1/usage/**` | Platform Infrastructure |
 | Plugin | `/v1/plugins/**` | Platform Infrastructure |
-| Education | `/edu/**` | Business Extension |
-| Record | `/record/**` | Business Extension |
-| System | `/system/**` | Infrastructure |
+| Education | `/v1/education/**` | Business Extension |
+| Record | `/v1/record/**` | Business Extension |
+| System | `/v1/system/**` | Infrastructure |
 
 ---
 

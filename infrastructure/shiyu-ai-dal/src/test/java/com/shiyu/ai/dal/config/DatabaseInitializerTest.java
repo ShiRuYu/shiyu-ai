@@ -215,7 +215,7 @@ class DatabaseInitializerTest {
         assertEquals(5, scalar(dataSource, "SELECT COUNT(*) FROM AUTH_MENU WHERE PARENT_ID=2030"));
         assertEquals(5, scalar(dataSource, "SELECT COUNT(*) FROM AUTH_MENU WHERE PARENT_ID=2020"));
         assertEquals(0, scalar(dataSource, "SELECT COUNT(*) FROM AUTH_MENU WHERE ID IN (10,40,70,80,1500,1600,1610,1620,1630,1640)"));
-        assertEquals(0, scalar(dataSource, "SELECT COUNT(*) FROM AUTH_MENU WHERE PATH LIKE '/agent/%' OR PATH LIKE '/knowledge/%' OR PATH LIKE '/edu/%'"));
+        assertEquals(0, scalar(dataSource, "SELECT COUNT(*) FROM AUTH_MENU WHERE PATH LIKE '/agent/%' OR PATH LIKE '/knowledge/%' OR PATH LIKE '/dashboard/%'"));
         assertEquals(1, scalar(dataSource, "SELECT COUNT(*) FROM AUTH_MENU WHERE ID=2023 AND COMPONENT='/app-studio/prompts/index'"));
     }
 

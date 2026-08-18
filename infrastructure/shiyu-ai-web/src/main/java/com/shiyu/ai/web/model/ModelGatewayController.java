@@ -12,6 +12,7 @@ import java.util.List;
 import java.util.Set;
 
 @RestController
+@RequestMapping("/v1")
 @SaCheckPermission("model:admin")
 public class ModelGatewayController {
     private final ModelRouter router;

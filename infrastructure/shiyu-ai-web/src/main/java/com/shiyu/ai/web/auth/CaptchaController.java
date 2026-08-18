@@ -16,7 +16,7 @@ import io.swagger.v3.oas.annotations.Operation;
 @Slf4j
 @Tag(name = "Captcha", description = "Captcha")
 @RestController
-@RequestMapping("/captcha")
+@RequestMapping("/v1/auth/captcha")
 public class CaptchaController {
     
     private final CaptchaService captchaService;

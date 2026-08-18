@@ -48,20 +48,19 @@ public class SaTokenConfig {
                 .addInclude("/**")
                 // 认证相关公开接口（无需登录即可访问）
                 .addExclude(
-                    "/auth/login",
-                    "/auth/register",
-                    "/auth/code-login",
-                    "/auth/forget-password",
-                    "/auth/refresh",
-                    "/captcha/**",
-                    "/auth/captcha"
+                    "/v1/auth/login",
+                    "/v1/auth/register",
+                    "/v1/auth/code-login",
+                    "/v1/auth/forget-password",
+                    "/v1/auth/refresh",
+                    "/v1/auth/captcha/**"
                 )
                 // 文档和监控接口
                 .addExclude("/swagger-ui/**", "/v3/api-docs/**")
                 .addExclude(
                     "/webjars/**",
                     "/h2/**",
-                    "/education-resources/**"
+                    "/v1/education/education-resources/**"
                 )
                 .setAuth(obj -> {
                     // 鉴权：检查是否登录

@@ -18,7 +18,7 @@ import java.util.List;
 /** HTTP adapter for authorization-code use cases. */
 @Tag(name = "Auth Code", description = "Auth Code")
 @RestController
-@RequestMapping("/auth-code")
+@RequestMapping("/v1/system/auth-codes")
 @RequiredArgsConstructor
 public class AuthCodeController {
 

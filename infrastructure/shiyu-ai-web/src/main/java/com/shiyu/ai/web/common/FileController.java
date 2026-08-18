@@ -38,7 +38,7 @@ import static org.springframework.http.HttpStatus.NOT_FOUND;
 @Slf4j
 @Tag(name = "File", description = "文件管理")
 @RestController
-@RequestMapping("/system/file")
+@RequestMapping("/v1/system/files")
 @RequiredArgsConstructor
 public class FileController {
 
@@ -136,7 +136,7 @@ public class FileController {
 
     private FileView toView(StoredFile file) {
         String url = file.url() == null
-                ? "/api/system/file/download?key=" + URLEncoder.encode(file.key(), StandardCharsets.UTF_8)
+                ? "/api/v1/system/files/download?key=" + URLEncoder.encode(file.key(), StandardCharsets.UTF_8)
                 : file.url();
         return new FileView(file.key(), file.name(), file.size(), file.contentType(),
                 file.lastModified(), url, file.storageType());

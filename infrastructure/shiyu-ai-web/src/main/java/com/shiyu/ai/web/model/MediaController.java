@@ -9,7 +9,7 @@ import java.util.Base64;
 import java.util.Map;
 
 @RestController("modelMediaController")
-@RequestMapping("/media")
+@RequestMapping("/v1/media")
 public class MediaController {
     private final MediaProviderRegistry registry;
     public MediaController(MediaProviderRegistry registry) { this.registry = registry; }

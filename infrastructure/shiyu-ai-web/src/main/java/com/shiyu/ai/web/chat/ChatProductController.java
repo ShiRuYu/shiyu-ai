@@ -23,7 +23,7 @@ import java.io.ByteArrayInputStream;
 
 @Tag(name = "Chat Product Assets")
 @RestController
-@RequestMapping("/chat-products")
+@RequestMapping("/v1/chat-products")
 public class ChatProductController {
     private final ChatProductRepository repository;
     private final ConversationRepository conversations;

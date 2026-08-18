@@ -15,7 +15,7 @@ import org.springframework.web.bind.annotation.*;
 @Tag(name = "档案管理")
 @SaCheckPermission("record:profile:list")
 @RestController
-@RequestMapping("/record/profile")
+@RequestMapping("/v1/record/profile")
 public class ProfileController {
     @Resource private ProfileService profileService;
     @GetMapping("/list")

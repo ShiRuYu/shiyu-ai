@@ -24,7 +24,7 @@ import java.util.List;
 @Slf4j
 @Tag(name = "Auth", description = "Auth")
 @RestController
-@RequestMapping("/auth")
+@RequestMapping("/v1/auth")
 public class AuthController {
     
     private final AuthService authService;
@@ -43,7 +43,7 @@ public class AuthController {
     
     /**
      * 用户登录
-     * POST /auth/login
+     * POST /v1/auth/login
      */
     @Operation(summary = "Login")
     @PostMapping("/login")
@@ -106,7 +106,7 @@ public class AuthController {
 
     /**
      * 用户注册
-     * POST /auth/register
+     * POST /v1/auth/register
      */
     @Operation(summary = "Register")
     @PostMapping("/register")
@@ -123,7 +123,7 @@ public class AuthController {
 
     /**
      * 验证码登录
-     * POST /auth/code-login
+     * POST /v1/auth/code-login
      */
     @Operation(summary = "Code Login")
     @PostMapping("/code-login")
@@ -140,7 +140,7 @@ public class AuthController {
 
     /**
      * 忘记密码
-     * POST /auth/forget-password
+     * POST /v1/auth/forget-password
      */
     @Operation(summary = "Forget Password")
     @PostMapping("/forget-password")
@@ -158,7 +158,7 @@ public class AuthController {
 
     /**
      * 获取用户权限码
-     * GET /auth/codes
+     * GET /v1/auth/codes
      */
     @Operation(summary = "Get Auth Codes")
     @GetMapping("/codes")
@@ -178,7 +178,7 @@ public class AuthController {
     
     /**
      * 刷新访问令牌
-     * POST /auth/refresh
+     * POST /v1/auth/refresh
      */
     @Operation(summary = "Refresh Token")
     @PostMapping("/refresh")
@@ -198,7 +198,7 @@ public class AuthController {
     
     /**
      * 切换当前角色
-     * POST /auth/current-role
+     * POST /v1/auth/current-role
      */
     @Operation(summary = "Switch Current Role")
     @PostMapping("/current-role")
@@ -214,7 +214,7 @@ public class AuthController {
 
     /**
      * 切换当前租户
-     * POST /auth/switch-tenant
+     * POST /v1/auth/switch-tenant
      */
     @Operation(summary = "Switch Tenant")
     @PostMapping("/switch-tenant")
@@ -262,7 +262,7 @@ public class AuthController {
 
     /**
      * 获取用户租户列表
-     * GET /auth/tenants
+     * GET /v1/auth/tenants
      */
     @Operation(summary = "Get User Tenants")
     @GetMapping("/tenants")
@@ -275,7 +275,7 @@ public class AuthController {
 
     /**
      * 用户登出
-     * POST /auth/logout
+     * POST /v1/auth/logout
      */
     @Operation(summary = "Logout")
     @PostMapping("/logout")

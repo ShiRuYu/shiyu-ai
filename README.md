@@ -348,10 +348,10 @@ Linux 使用对应的 `scripts/package-cloud-linux.sh` 和
 |------|----------|------|
 | Agent | `/v1/agents/**`、`/v1/agent-versions/**`、`/v1/agent-executions/**` | Agent 定义、版本与执行 |
 | 知识库 | `/v1/knowledge/**` | 空间、文档、检索、图谱与任务 |
-| 教育 | `/edu/**` | 课程、题库、考试、学习与分析 |
-| 记录 | `/record/**` | 人物、记录、时间线、标签与附件 |
-| 认证授权 | `/auth/**`、`/user/**`、`/role/**`、`/menu/**`、`/tenant/**` | 登录、租户、角色与菜单 |
-| 平台治理 | `/system/**`、`/usage/**`、`/plugin/**`、`/tool/**` | 文件、用量、插件与工具 |
+| 教育 | `/v1/education/**` | 课程、题库、考试、学习与分析 |
+| 记录 | `/v1/record/**` | 人物、记录、时间线、标签与附件 |
+| 认证授权 | `/v1/auth/**`、`/v1/system/users/**`、`/v1/system/roles/**`、`/v1/system/menus/**`、`/v1/system/tenants/**` | 登录、租户、角色与菜单 |
+| 平台治理 | `/v1/system/**`、`/v1/usage/**`、`/v1/plugins/**`、`/v1/tools/**` | 文件、用量、插件与工具 |
 
 完整的 400 条路径、434 个 operation 见 [API 接口参考](./docs/参考/API接口参考.md)；菜单、角色和权限见 [菜单角色权限矩阵](./docs/参考/菜单角色权限矩阵.md)。
 

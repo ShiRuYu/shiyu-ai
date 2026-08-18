@@ -24,7 +24,7 @@ import java.util.List;
 @Slf4j
 @Tag(name = "Menu", description = "Menu")
 @RestController
-@RequestMapping("/menu")
+@RequestMapping("/v1/system/menus")
 public class MenuController {
 
     private final MenuService menuService;

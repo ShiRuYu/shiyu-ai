@@ -78,19 +78,19 @@ public class AuditInterceptor implements HandlerInterceptor {
     }
 
     private String resolveAction(String method, String path) {
-        if (path.startsWith("/api/auth")) return "AUTH_" + method;
-        if (path.startsWith("/api/agent")) return "AGENT_" + method;
-        if (path.startsWith("/api/knowledge")) return "KNOWLEDGE_" + method;
-        if (path.startsWith("/api/education")) return "EDUCATION_" + method;
-        if (path.startsWith("/api/record")) return "RECORD_" + method;
-        if (path.startsWith("/api/system")) return "SYSTEM_" + method;
-        if (path.startsWith("/api/usage")) return "USAGE_" + method;
+        if (path.startsWith("/v1/auth")) return "AUTH_" + method;
+        if (path.startsWith("/v1/agents") || path.startsWith("/v1/agent-")) return "AGENT_" + method;
+        if (path.startsWith("/v1/knowledge")) return "KNOWLEDGE_" + method;
+        if (path.startsWith("/v1/education")) return "EDUCATION_" + method;
+        if (path.startsWith("/v1/record")) return "RECORD_" + method;
+        if (path.startsWith("/v1/system")) return "SYSTEM_" + method;
+        if (path.startsWith("/v1/usage")) return "USAGE_" + method;
         return "API_" + method;
     }
 
     private String resolveTargetType(String path) {
         String[] segments = path.split("/");
-        if (segments.length >= 3 && "api".equals(segments[1])) {
+        if (segments.length >= 3 && "v1".equals(segments[1])) {
             return segments[2];
         }
         return "unknown";

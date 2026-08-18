@@ -16,7 +16,7 @@ import org.springframework.web.bind.annotation.*;
 @Tag(name = "附件管理")
 @SaCheckPermission("record:media:list")
 @RestController
-@RequestMapping("/record/media")
+@RequestMapping("/v1/record/media")
 public class MediaController {
     @Resource private MediaService mediaService;
     @Operation(summary = "分页查询附件列表")

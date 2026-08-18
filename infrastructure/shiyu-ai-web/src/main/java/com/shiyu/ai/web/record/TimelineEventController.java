@@ -15,7 +15,7 @@ import org.springframework.web.bind.annotation.*;
 @Tag(name = "时间线事件管理")
 @SaCheckPermission("record:timeline:list")
 @RestController
-@RequestMapping("/record/timeline")
+@RequestMapping("/v1/record/timeline")
 public class TimelineEventController {
     @Resource private TimelineEventService timelineEventService;
     @GetMapping("/list") public Result<PageData<TimelineEventVO>> getPage(PageQuery query, @RequestParam(required = false) Long profileId) {
