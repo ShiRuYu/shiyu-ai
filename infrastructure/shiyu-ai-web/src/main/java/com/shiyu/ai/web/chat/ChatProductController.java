@@ -196,7 +196,9 @@ public class ChatProductController {
         GenerationRun run;
         try {
             var input = conversationService.appendUserMessage(conversation, request.content);
-            run = conversationService.createGeneration(conversation, input, platform, model, decision.participant().id());
+            var latestConversation = conversations.findConversation(request.conversationId, tenant(), user())
+                    .orElseThrow(() -> new IllegalArgumentException("conversation not found"));
+            run = conversationService.createGeneration(latestConversation, input, platform, model, decision.participant().id());
         } catch (IllegalStateException ex) {
             throw new org.springframework.web.server.ResponseStatusException(org.springframework.http.HttpStatus.CONFLICT, ex.getMessage(), ex);
         }

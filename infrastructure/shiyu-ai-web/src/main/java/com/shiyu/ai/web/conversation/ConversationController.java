@@ -21,8 +21,6 @@ import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
 import java.util.Set;
-import java.util.UUID;
-import java.util.concurrent.ConcurrentHashMap;
 import org.springframework.http.MediaType;
 
 @Tag(name = "Conversation Platform")
@@ -36,7 +34,6 @@ public class ConversationController {
     private final GenerationRepository generationRepository;
     private final ConversationImportPreviewStore importPreviews;
     private final ConversationPromptService promptService;
-    private final ConcurrentHashMap<String, Object> idempotencyLocks = new ConcurrentHashMap<>();
 
     public ConversationController(ConversationService conversations, ConversationRepository conversationRepository, GenerationRunner generationRunner, IdempotencyRepository idempotency, GenerationRepository generationRepository, ConversationImportPreviewStore importPreviews, ConversationPromptService promptService) {
         this.conversations = conversations;
@@ -94,12 +91,7 @@ public class ConversationController {
 
     @PostMapping("/{id}/messages")
     public Result<GenerationRun> message(@PathVariable String id, @RequestHeader(value = "Idempotency-Key", required = false) String idempotencyKey, @Valid @RequestBody MessageRequest request) {
-        String lockKey = currentTenant() + ":" + currentUser() + ":" + id + ":" + (idempotencyKey == null ? UUID.randomUUID() : idempotencyKey);
-        Object lock = idempotencyLocks.computeIfAbsent(lockKey, ignored -> new Object());
-        synchronized (lock) {
-            try { return messageInternal(id, idempotencyKey, request); }
-            finally { idempotencyLocks.remove(lockKey, lock); }
-        }
+        return messageInternal(id, idempotencyKey, request);
     }
 
     private Result<GenerationRun> messageInternal(String id, String idempotencyKey, MessageRequest request) {
@@ -111,6 +103,12 @@ public class ConversationController {
         }
         Conversation conversation = conversationRepository.findConversation(id, currentTenant(), currentUser()).orElseThrow(() -> new IllegalArgumentException("conversation not found"));
         ConversationMessage message = conversations.appendUserMessage(conversation, request.content);
+        // appendUserMessage advances the conversation's optimistic-lock
+        // version and active leaf. Refresh before admission so the generation
+        // is created against the exact leaf that was persisted, even when a
+        // different request won a concurrent update.
+        conversation = conversationRepository.findConversation(id, currentTenant(), currentUser())
+                .orElseThrow(() -> new IllegalArgumentException("conversation not found"));
         GenerationRun run;
         try { run = conversations.createGeneration(conversation, message, request.platform, request.model); }
         catch (IllegalStateException conflict) { throw new org.springframework.web.server.ResponseStatusException(org.springframework.http.HttpStatus.CONFLICT, conflict.getMessage(), conflict); }
@@ -149,8 +147,17 @@ public class ConversationController {
                 conversationRepository.listMessages(id, currentTenant(), currentUser(), 1000).reversed(), currentTenant(), currentUser());
         List<ConversationMessage> messages = assembly.conversationMessages();
         long estimated = assembly.modelMessages().stream().mapToLong(m -> m.content().stream().mapToLong(p -> PromptSafety.estimateTokens(p.text())).sum()).sum();
-        List<PromptSegment> segments = new java.util.ArrayList<>(messages.stream().map(m -> new PromptSegment(m.role().name(), m.textContent(), PromptSafety.estimateTokens(m.textContent()))).toList());
+        // Keep the source breakdown in the same order as the actual structured
+        // request: system instructions, retrieved context, then the active
+        // conversation path.  The context is intentionally shown as its own
+        // cited segments even though the provider receives one bounded system
+        // message containing those references.
+        List<PromptSegment> segments = new java.util.ArrayList<>();
+        messages.stream().filter(m -> m.role() == MessageRole.SYSTEM)
+                .forEach(m -> segments.add(new PromptSegment(m.role().name(), m.textContent(), PromptSafety.estimateTokens(m.textContent()))));
         for (ContextItem item : assembly.contextItems()) segments.add(new PromptSegment(item.sourceType() + ":" + item.sourceId(), item.content(), PromptSafety.estimateTokens(item.content())));
+        messages.stream().filter(m -> m.role() != MessageRole.SYSTEM)
+                .forEach(m -> segments.add(new PromptSegment(m.role().name(), m.textContent(), PromptSafety.estimateTokens(m.textContent()))));
         String canonicalPrompt = JSONUtils.toJsonString(assembly.modelMessages());
         return Result.success(new PromptPreview(messages, segments, estimated, false, true, "local-character-estimate", java.util.Map.of("platform", c.platform(), "model", c.model()), sha256(canonicalPrompt), assembly.contextItems(), assembly.contextTrace()));
     }

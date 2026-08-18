@@ -42,7 +42,7 @@ public class PlatformProperties {
     public static class DeepSeekConfig {
         private String baseUrl = "https://api.deepseek.com";
         private String apiKey = "";
-        private String model = "deepseek-chat";
+        private String model = "deepseek-v4-flash";
     }
 
     @Data

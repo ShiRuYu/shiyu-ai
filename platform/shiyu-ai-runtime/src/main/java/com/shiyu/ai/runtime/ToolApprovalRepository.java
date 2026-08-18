@@ -8,4 +8,5 @@ public interface ToolApprovalRepository {
     List<ToolApproval> list(String runId, long tenantId, long ownerUserId);
     Optional<ToolApproval> find(String id, long tenantId, long ownerUserId);
     int update(ToolApproval approval, ToolApprovalStatus expectedStatus);
+    default int expirePending(long tenantId, long ownerUserId) { return 0; }
 }

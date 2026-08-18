@@ -24,6 +24,6 @@ public class KnowledgeContextRetrievalAdapter implements ContextRetrievalPort {
             throw new IllegalArgumentException("spaceIds must be numeric", ex);
         }
         KnowledgeRetrievalResult result = retrieval.retrieve(new KnowledgeRetrievalRequest(new KnowledgeAccessContext(query.tenantId(), query.ownerUserId(), null, false), spaces, null, null, query.text(), Math.max(query.topK() * 4, 20), query.topK(), 0D, true));
-        return result.hits().stream().map(hit -> new ContextItem("KNOWLEDGE_CHUNK", String.valueOf(hit.chunkId()), hit.content(), hit.rerankScore() > 0 ? hit.rerankScore() : hit.rrfScore(), new ContextCitation(hit.title(), null, hit.sectionPath(), null), List.of("space:" + hit.spaceId(), "document:" + hit.documentId(), "version:" + hit.documentVersionId()), "knowledge-access", null)).toList();
+        return result.hits().stream().map(hit -> new ContextItem("KNOWLEDGE_CHUNK", String.valueOf(hit.chunkId()), String.valueOf(hit.documentVersionId()), hit.content(), hit.rerankScore() > 0 ? hit.rerankScore() : hit.rrfScore(), new ContextCitation(hit.title(), null, hit.sectionPath(), null), List.of("space:" + hit.spaceId(), "document:" + hit.documentId(), "version:" + hit.documentVersionId()), "knowledge-access", 0, null)).toList();
     }
 }

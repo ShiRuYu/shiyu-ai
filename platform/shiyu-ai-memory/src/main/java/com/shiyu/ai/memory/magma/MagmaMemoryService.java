@@ -16,10 +16,17 @@ public class MagmaMemoryService implements MemoryIngestionPort, MemoryQueryPort,
     private static final Logger log = LoggerFactory.getLogger(MagmaMemoryService.class);
     private final MagmaMemoryRepository repository;
     private final MemorySemanticIndex semanticIndex;
+    private final MemoryAccessPolicy accessPolicy;
 
     public MagmaMemoryService(MagmaMemoryRepository repository, MemorySemanticIndex semanticIndex) {
+        this(repository, semanticIndex, (tenantId, namespace, subjectType, subjectId, sourceType, sourceId) -> true);
+    }
+
+    public MagmaMemoryService(MagmaMemoryRepository repository, MemorySemanticIndex semanticIndex,
+                               MemoryAccessPolicy accessPolicy) {
         this.repository = repository;
         this.semanticIndex = semanticIndex;
+        this.accessPolicy = accessPolicy == null ? (tenantId, namespace, subjectType, subjectId, sourceType, sourceId) -> true : accessPolicy;
     }
 
     @Override
@@ -32,18 +39,29 @@ public class MagmaMemoryService implements MemoryIngestionPort, MemoryQueryPort,
                 command.subjectType(), command.subjectId(), command.eventType(), command.content(),
                 command.occurredAt(), command.sourceType(), command.sourceId(), command.attributes(),
                 command.confidence(), command.importance(), status, command.confirmationPolicy(), now, now);
-        MemoryEvent previous = repository.findLatestEvent(
-                command.tenantId(), command.namespace(), command.subjectType(), command.subjectId()).orElse(null);
+        MemoryEvent previous = repository.findPreviousEvent(
+                command.tenantId(), command.namespace(), command.subjectType(), command.subjectId(), command.occurredAt()).orElse(null);
+        MemoryEvent next = repository.findNextEvent(
+                command.tenantId(), command.namespace(), command.subjectType(), command.subjectId(), command.occurredAt()).orElse(null);
         repository.insertEvent(event);
         if (previous != null && !previous.id().equals(event.id())) {
-            repository.insertEdge(new MemoryEdge(
-                    UUID.randomUUID().toString(), command.tenantId(), previous.id(), event.id(),
-                    GraphType.TEMPORAL, "after", true, 1.0d, 1.0d, EdgeOrigin.RULE,
-                    event.sourceId(), true, now));
+            insertTemporalEdgeIfMissing(command.tenantId(), previous.id(), event.id(), "after", event.sourceId(), now);
+        }
+        if (next != null && !next.id().equals(event.id())) {
+            insertTemporalEdgeIfMissing(command.tenantId(), event.id(), next.id(), "before", event.sourceId(), now);
         }
         try { semanticIndex.upsert(event); } catch (RuntimeException ex) { log.warn("memory semantic index unavailable; event remains durable: {}", ex.getMessage()); }
         try { repository.enqueueConsolidation(command.tenantId(), event.id()); } catch (RuntimeException ex) { log.warn("memory consolidation enqueue failed: {}", ex.getMessage()); }
         return event;
+    }
+
+    private void insertTemporalEdgeIfMissing(long tenantId, String sourceId, String targetId,
+                                             String relation, String evidence, Instant createdAt) {
+        boolean exists = repository.findEdges(tenantId, sourceId, GraphType.TEMPORAL, 200).stream()
+                .anyMatch(edge -> sourceId.equals(edge.sourceNodeId()) && targetId.equals(edge.targetNodeId())
+                        && relation.equals(edge.relationType()));
+        if (!exists) repository.insertEdge(new MemoryEdge(UUID.randomUUID().toString(), tenantId, sourceId, targetId,
+                GraphType.TEMPORAL, relation, true, 1.0d, 1.0d, EdgeOrigin.RULE, evidence, true, createdAt));
     }
 
     public void confirm(long tenantId, String eventId) {
@@ -58,11 +76,40 @@ public class MagmaMemoryService implements MemoryIngestionPort, MemoryQueryPort,
         try { semanticIndex.delete(eventId); } catch (RuntimeException ex) { log.warn("memory semantic delete failed: {}", ex.getMessage()); }
     }
 
+    /** Returns an event only after the configured source policy has approved it. */
+    public MemoryEvent requireAccessibleEvent(long tenantId, String eventId) {
+        return requireEvent(tenantId, eventId);
+    }
+
     public List<MemoryEdge> relations(long tenantId, String eventId, GraphType graphType, int limit) {
         requireEvent(tenantId, eventId);
         return repository.findEdges(tenantId, eventId, graphType, Math.min(Math.max(limit, 1), 200));
     }
-    public MemoryRetrievalTrace trace(long tenantId, String traceId) { return repository.findRetrievalTrace(tenantId, traceId).orElseThrow(() -> new IllegalArgumentException("retrieval trace not found")); }
+    public MemoryRetrievalTrace trace(long tenantId, String traceId) {
+        return trace(tenantId, traceId, null, null);
+    }
+
+    /**
+     * Reads a trace while constraining every referenced event to one subject.
+     * This prevents a trace id from becoming an oracle for another user's
+     * memory in a shared tenant. Administrators can pass null subject values.
+     */
+    public MemoryRetrievalTrace trace(long tenantId, String traceId, String subjectType, String subjectId) {
+        MemoryRetrievalTrace trace = repository.findRetrievalTrace(tenantId, traceId)
+                .orElseThrow(() -> new IllegalArgumentException("retrieval trace not found"));
+        java.util.stream.Stream.concat(trace.anchorEventIds().stream(), trace.resultEventIds().stream())
+                .distinct()
+                .forEach(id -> repository.findEvent(tenantId, id).ifPresent(event -> {
+                    if (!accessPolicy.canRead(tenantId, event.namespace(), event.subjectType(), event.subjectId(), event.sourceType(), event.sourceId())) {
+                        throw new MemoryAccessDeniedException();
+                    }
+                    if (subjectType != null && subjectId != null
+                            && (!subjectType.equalsIgnoreCase(event.subjectType()) || !subjectId.equals(event.subjectId()))) {
+                        throw new MemoryAccessDeniedException();
+                    }
+                }));
+        return trace;
+    }
 
     @Override
     public List<MemoryPath> retrieve(MemoryQuery query) {
@@ -74,14 +121,15 @@ public class MagmaMemoryService implements MemoryIngestionPort, MemoryQueryPort,
         try { semantic.addAll(semanticIndex.search(query, query.maxNodes())); } catch (RuntimeException ex) { log.warn("semantic recall failed; using durable anchors: {}", ex.getMessage()); }
         Map<String, Double> rrf = new HashMap<>();
         Map<String, MemoryEvent> events = new HashMap<>();
+        List<String> filtered = new ArrayList<>();
         int rank = 1;
         for (MemoryPath path : semantic) {
-            if (!matches(query, path.event())) continue;
+            if (!matches(query, path.event())) { filtered.add(path.event().id()); continue; }
             rrf.merge(path.event().id(), 1d / (60 + rank++), Double::sum); events.put(path.event().id(), path.event());
         }
         String[] terms = query.text().toLowerCase().split("\\s+");
         for (MemoryEvent event : repository.findByNamespace(query.tenantId(), query.namespace(), 1000)) {
-            if (!matches(query, event)) continue;
+            if (!matches(query, event)) { filtered.add(event.id()); continue; }
             long hits = java.util.Arrays.stream(terms).filter(t -> event.content().toLowerCase().contains(t)).count();
             if (hits > 0) { rrf.merge(event.id(), (double) hits / (60 + rank++), Double::sum); events.put(event.id(), event); }
         }
@@ -89,7 +137,11 @@ public class MagmaMemoryService implements MemoryIngestionPort, MemoryQueryPort,
                 .limit(query.maxNodes()).map(e -> new MemoryPath(e.getValue(), e.getValue() == null ? 0 : rrf.get(e.getKey()), List.of())).toList();
         List<MemoryPath> result = beam(anchors, query);
         String traceId = UUID.randomUUID().toString();
-        repository.recordRetrievalTrace(new MemoryRetrievalTrace(traceId, query.tenantId(), query.namespace(), query.text(), result.stream().map(path -> path.event().id()).toList(), Instant.now()));
+        Map<GraphType, Double> weights = query.graphTypes().stream().collect(java.util.stream.Collectors.toMap(graph -> graph, graph -> graphWeight(query.intent(), graph)));
+        List<List<String>> relationPaths = result.stream().map(path -> path.edges().stream().map(edge -> edge.graphType().name() + ":" + edge.relationType() + ":" + edge.sourceNodeId() + "->" + edge.targetNodeId()).toList()).toList();
+        repository.recordRetrievalTrace(new MemoryRetrievalTrace(traceId, query.tenantId(), query.namespace(), query.text(),
+                anchors.stream().map(path -> path.event().id()).toList(), weights, relationPaths, filtered,
+                result.stream().map(path -> path.event().id()).toList(), Instant.now()));
         return new MemoryRetrievalResult(result, traceId);
     }
 
@@ -97,6 +149,7 @@ public class MagmaMemoryService implements MemoryIngestionPort, MemoryQueryPort,
         if (event.status() != MemoryEventStatus.ACTIVE || !query.namespace().equals(event.namespace())) return false;
         if (query.subjectType() != null && !query.subjectType().isBlank() && !query.subjectType().equals(event.subjectType())) return false;
         if (query.subjectId() != null && !query.subjectId().isBlank() && !query.subjectId().equals(event.subjectId())) return false;
+        if (!accessPolicy.canRead(query.tenantId(), event.namespace(), event.subjectType(), event.subjectId(), event.sourceType(), event.sourceId())) return false;
         return (query.from() == null || !event.occurredAt().isBefore(query.from())) && (query.to() == null || !event.occurredAt().isAfter(query.to()));
     }
 
@@ -154,9 +207,17 @@ public class MagmaMemoryService implements MemoryIngestionPort, MemoryQueryPort,
         return next;
     }
 
-    private void requireEvent(long tenantId, String eventId) {
-        if (repository.findEvent(tenantId, eventId).isEmpty()) {
-            throw new IllegalArgumentException("memory event not found");
+    private MemoryEvent requireEvent(long tenantId, String eventId) {
+        MemoryEvent event = repository.findEvent(tenantId, eventId)
+                .orElseThrow(() -> new IllegalArgumentException("memory event not found"));
+        if (!accessPolicy.canRead(tenantId, event.namespace(), event.subjectType(), event.subjectId(),
+                event.sourceType(), event.sourceId())) {
+            throw new IllegalArgumentException("memory access denied");
         }
+        return event;
+    }
+
+    private static final class MemoryAccessDeniedException extends IllegalArgumentException {
+        private MemoryAccessDeniedException() { super("memory access denied"); }
     }
 }

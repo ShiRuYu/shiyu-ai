@@ -91,7 +91,7 @@ public class AgentRuntimeImpl implements AgentRuntime {
         eventPublisher.publish(new AgentExecutionStartedEvent(
                 execution.getExecutionId(), agentId, input));
 
-        Map<String, Object> graphInput = withVersion(input, execution.getVersion());
+        Map<String, Object> graphInput = withRuntime(withVersion(input, execution.getVersion()), runtimeRun);
         Execution result;
         try {
             result = agentExecutor.executeAgent(definition, agentVersion, graphInput, execution);
@@ -141,7 +141,7 @@ public class AgentRuntimeImpl implements AgentRuntime {
                 // stream() 返回 AsyncGenerator，forEach 遍历每个节点执行后的状态
                 final Map<String, Object>[] finalState = new Map[]{null};
 
-                Map<String, Object> graphInput = withVersion(input, execution.getVersion());
+                Map<String, Object> graphInput = withRuntime(withVersion(input, execution.getVersion()), runtimeRun);
                 agentVersion.getGraph().stream(graphInput)
                         .forEach(nodeOutput -> {
                             if (!execution.awaitResumeOrCancellation()) {
@@ -342,6 +342,11 @@ public class AgentRuntimeImpl implements AgentRuntime {
         return graphInput;
     }
 
+    private static Map<String, Object> withRuntime(Map<String, Object> input, AiRun run) {
+        if (run != null) input.put("__aiRunId", run.id());
+        return input;
+    }
+
     private void beginExecution(Execution execution) {
         execution.start();
         activeExecutions.put(execution.getExecutionId(), execution);
@@ -468,12 +473,23 @@ public class AgentRuntimeImpl implements AgentRuntime {
                     AiRunSource.AGENT, execution.getAgentId(), null, JSONUtils.toJsonString(input));
             runtime.append(run, AiRunEventType.MODEL_STARTED, "{}", true);
             return run;
-        } catch (RuntimeException ignored) { return null; }
+        } catch (RuntimeException failure) {
+            // An AI App execution is only valid when it has a durable Runtime
+            // run.  Do not silently execute an untraced app when H2/event
+            // admission fails; that would break the single-run audit model.
+            if (input != null && input.get("__appId") != null) {
+                throw new IllegalStateException("runtime admission failed", failure);
+            }
+            return null;
+        }
     }
 
     private void appendRuntime(AiRun run, AiRunEventType type, String payload) {
         if (run == null || runtime == null) return;
-        try { runtime.append(run, type, payload, true); } catch (RuntimeException ignored) { }
+        // Once an execution has been admitted as an AI App run, event writes
+        // are part of its durable contract. Let a failed append fail the
+        // execution rather than returning an untraceable successful result.
+        runtime.append(run, type, payload, true);
     }
 
     private void finishRuntime(AiRun run, Execution execution) {

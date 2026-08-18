@@ -274,8 +274,8 @@ shiyu:
       model: gemma3:4b
     deepseek:
       base-url: https://api.deepseek.com
-      api-key: sk-your-key
-      model: deepseek-chat
+      api-key: ${AI_DEEPSEEK_API_KEY:}
+      model: deepseek-v4-flash
 ```
 
 ### Start

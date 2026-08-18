@@ -20,6 +20,7 @@ public class InMemoryAiAppRepository implements AiAppRepository {
     @Override public int publishVersion(String appId, String versionId, long tenantId) {
         AiAppVersion current = findVersion(appId, versionId, tenantId).orElseThrow(() -> new IllegalArgumentException("app version not found"));
         if ("ARCHIVED".equals(current.status())) throw new IllegalStateException("archived version cannot publish");
+        if ("PUBLISHED".equals(current.status())) return 0;
         versions.put(versionId, new AiAppVersion(current.id(), current.appId(), current.tenantId(), current.version(), current.configJson(), "PUBLISHED", current.createdAt(), Instant.now()));
         apps.computeIfPresent(appId, (id, app) -> new AiApp(app.id(), app.tenantId(), app.ownerUserId(), app.name(), app.description(), app.status(), versionId, app.createdAt(), Instant.now()));
         return 1;

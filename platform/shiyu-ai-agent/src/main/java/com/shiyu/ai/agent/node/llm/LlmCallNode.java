@@ -20,6 +20,8 @@ import org.bsc.langgraph4j.state.AgentState;
 
 import java.util.List;
 import java.util.Map;
+import java.util.ArrayList;
+import java.util.Objects;
 import com.shiyu.ai.agent.node.NodeInputParam;
 
 @Setter
@@ -91,7 +93,7 @@ public class LlmCallNode extends BaseNode {
             ChatRequest request = ChatRequest.builder()
                     .platform(platform)
                     .model(modelName)
-                    .messages(List.of(com.shiyu.ai.model.chat.ChatMessage.text("user", prompt)))
+                    .messages(buildMessages(input, prompt))
                     .chatType(chatType)
                     .build();
 
@@ -132,6 +134,14 @@ public class LlmCallNode extends BaseNode {
     }
 
     private NodeOutput executeStream(ChatRequest request) {
+        // DeepSeek (and future structured providers) must use the same
+        // provider-neutral gateway as synchronous calls.  Do not convert the
+        // request back into a single LangChain user prompt, otherwise
+        // reasoning/tool/content-part events are lost before they reach the
+        // Runtime event log.
+        if ("DEEPSEEK".equalsIgnoreCase(request.getPlatform())) {
+            return executeStructuredStream(request);
+        }
         StreamingChatModel streamingChatModel = modelManager.getStreamingChatModel(request.getPlatform(), request.getModel());
 
         StreamingChatGenerator<AgentState> generator = StreamingChatGenerator.builder()
@@ -158,6 +168,57 @@ public class LlmCallNode extends BaseNode {
 
         log.info("LLM 流式调用完成");
         return output;
+    }
+
+    private NodeOutput executeStructuredStream(ChatRequest request) {
+        StreamingChatGenerator<AgentState> generator = StreamingChatGenerator.builder()
+                .mapResult(r -> {
+                    String content = r != null && r.aiMessage() != null ? r.aiMessage().text() : "";
+                    return Map.<String, Object>of(FieldKey.CONTENT.key(), content);
+                })
+                .build();
+        StringBuilder answer = new StringBuilder();
+        StringBuilder reasoning = new StringBuilder();
+        chatEngine.stream(request).subscribe(event -> {
+            if ("DELTA".equals(event.getEventType()) && event.getContent() != null) {
+                answer.append(event.getContent());
+                generator.handler().onPartialResponse(event.getContent());
+            } else if ("REASONING_DELTA".equals(event.getEventType()) && event.getReasoningContent() != null) {
+                reasoning.append(event.getReasoningContent());
+            }
+        }, generator.handler()::onError, () -> generator.handler().onCompleteResponse(
+                dev.langchain4j.model.chat.response.ChatResponse.builder()
+                        .aiMessage(dev.langchain4j.data.message.AiMessage.builder()
+                                .text(answer.toString()).thinking(reasoning.toString()).build())
+                        .modelName(request.getModel()).build()));
+        NodeOutput output = new NodeOutput();
+        output.setSuccess(true);
+        output.setMsg("LLM 结构化流式调用成功");
+        output.addData(FieldKey.PLATFORM_OUTPUT, request.getPlatform());
+        output.addData(FieldKey.MODEL_OUTPUT, request.getModel());
+        output.addData(FieldKey.STREAM, true);
+        output.addData(FieldKey.CHAT_TYPE, ChatType.STREAM.name());
+        output.addData(FieldKey.STREAMING_GENERATOR, generator);
+        return output;
+    }
+
+    @SuppressWarnings("unchecked")
+    private List<com.shiyu.ai.model.chat.ChatMessage> buildMessages(NodeInput input, String prompt) {
+        Object raw = input.toMap().get(FieldKey.MESSAGES.key());
+        if (!(raw instanceof List<?> list) || list.isEmpty()) {
+            return List.of(com.shiyu.ai.model.chat.ChatMessage.text("user", prompt));
+        }
+        List<com.shiyu.ai.model.chat.ChatMessage> messages = new ArrayList<>();
+        for (Object item : list) {
+            if (item instanceof com.shiyu.ai.model.chat.ChatMessage message) {
+                messages.add(message);
+            } else if (item instanceof Map<?, ?> map) {
+                String role = Objects.toString(map.get("role"), "user");
+                Object content = map.get("content");
+                messages.add(com.shiyu.ai.model.chat.ChatMessage.text(role, Objects.toString(content, "")));
+            }
+        }
+        return messages.isEmpty() ? List.of(com.shiyu.ai.model.chat.ChatMessage.text("user", prompt)) : List.copyOf(messages);
     }
 
     private String buildPrompt(NodeInput input) {

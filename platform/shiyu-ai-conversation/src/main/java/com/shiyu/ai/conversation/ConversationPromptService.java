@@ -40,7 +40,16 @@ public final class ConversationPromptService {
                         .append("] ").append(item.content()).append('\n');
             }
             // Ephemeral context is deliberately not written as a conversation message.
-            modelMessages.add(0, ChatMessage.text("system", contextText.toString()));
+            // Keep platform/system instructions first, then place retrieved context
+            // before the historical user/assistant turns.  This is also the order
+            // exposed by Prompt Preview, so preview and provider requests hash the
+            // same structured message sequence.
+            int insertionPoint = 0;
+            while (insertionPoint < modelMessages.size()
+                    && "system".equalsIgnoreCase(modelMessages.get(insertionPoint).role())) {
+                insertionPoint++;
+            }
+            modelMessages.add(insertionPoint, ChatMessage.text("system", contextText.toString()));
         }
         return new PromptAssembly(List.copyOf(active), List.copyOf(modelMessages), List.copyOf(contextItems),
                 contextItems.isEmpty() ? null : new ContextTrace("local", tenantId, lastUserText(active),
@@ -57,7 +66,11 @@ public final class ConversationPromptService {
         if (text.isBlank()) return List.of();
         try {
             return contextAssembly.retrieve(new ContextQuery(tenantId, ownerUserId, namespace, text, 5,
-                    Map.of("conversationId", conversation.id()))).items();
+                    Map.of("conversationId", conversation.id(),
+                            // Long-term memory is scoped to the current user;
+                            // other domains must supply their own typed subject.
+                            "subjectType", "USER",
+                            "subjectId", String.valueOf(ownerUserId)))).items();
         } catch (RuntimeException ignored) {
             // Retrieval is an enrichment path; it must not block a chat request.
             return List.of();

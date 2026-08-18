@@ -17,4 +17,10 @@ public class RuntimeAutoConfiguration {
     @Bean
     @ConditionalOnMissingBean(ToolApprovalRepository.class)
     public ToolApprovalRepository inMemoryToolApprovalRepository() { return new InMemoryToolApprovalRepository(); }
+
+    @Bean
+    @ConditionalOnMissingBean(ToolExecutionPipeline.class)
+    public ToolExecutionPipeline toolExecutionPipeline(AiRuntimeService runtime, ToolApprovalService approvals) {
+        return new ToolExecutionPipeline(runtime, approvals);
+    }
 }

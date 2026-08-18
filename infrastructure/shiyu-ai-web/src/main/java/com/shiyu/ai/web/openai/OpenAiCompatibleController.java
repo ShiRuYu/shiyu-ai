@@ -3,6 +3,8 @@ package com.shiyu.ai.web.openai;
 import com.shiyu.ai.common.core.domain.UserContextHolder;
 import com.shiyu.ai.common.core.utils.JSONUtils;
 import com.shiyu.ai.conversation.ConversationService;
+import com.shiyu.ai.conversation.PromptAssembler;
+import com.shiyu.ai.conversation.domain.ConversationMessage;
 import com.shiyu.ai.conversation.domain.MessageRole;
 import com.shiyu.ai.conversation.port.ConversationRepository;
 import com.shiyu.ai.model.adapter.ModelManager;
@@ -53,7 +55,7 @@ public class OpenAiCompatibleController {
         String provider = platform(request.model(), request.platform());
         ChatRequest modelRequest = ChatRequest.builder().platform(provider).model(request.model()).messages(messages)
                 .temperature(request.temperature()).maxOutputTokens(request.maxOutputTokens())
-                .tools(tools(request.tools())).build();
+                .reasoningEffort(request.reasoningEffort()).tools(tools(request.tools())).build();
         AiRun run = beginRun(request.model(), messages, request.conversationId());
         boolean store = Boolean.TRUE.equals(request.store()) || hasText(request.conversationId());
         if (Boolean.TRUE.equals(request.stream())) return stream(modelRequest, request.model(), provider, "chat.completion", store, request.conversationId(), messages, run);
@@ -62,8 +64,8 @@ public class OpenAiCompatibleController {
         try { response = chatEngine.chat(modelRequest); }
         catch (RuntimeException ex) { failRun(run, ex); throw ex; }
         requireSuccessful(response, run);
+        persistIfRequested(store, request.conversationId(), messages, response.getContent(), provider, request.model(), run);
         completeRun(run, response);
-        persistIfRequested(store, request.conversationId(), messages, response.getContent(), provider, request.model());
         return completion(request.model(), response);
     }
 
@@ -75,7 +77,7 @@ public class OpenAiCompatibleController {
         String provider = platform(request.model(), request.platform());
         ChatRequest modelRequest = ChatRequest.builder().platform(provider).model(request.model()).messages(messages)
                 .temperature(request.temperature()).maxOutputTokens(request.maxOutputTokens())
-                .tools(tools(request.tools())).build();
+                .reasoningEffort(request.reasoningEffort()).tools(tools(request.tools())).build();
         AiRun run = beginRun(request.model(), messages, request.conversationId());
         boolean store = Boolean.TRUE.equals(request.store()) || hasText(request.conversationId());
         if (Boolean.TRUE.equals(request.stream())) return stream(modelRequest, request.model(), provider, "response.output_text.delta", store, request.conversationId(), messages, run);
@@ -84,8 +86,8 @@ public class OpenAiCompatibleController {
         try { response = chatEngine.chat(modelRequest); }
         catch (RuntimeException ex) { failRun(run, ex); throw ex; }
         requireSuccessful(response, run);
+        persistIfRequested(store, request.conversationId(), messages, response.getContent(), provider, request.model(), run);
         completeRun(run, response);
-        persistIfRequested(store, request.conversationId(), messages, response.getContent(), provider, request.model());
         Map<String, Object> output = new LinkedHashMap<>();
         output.put("type", "message"); output.put("role", "assistant");
         output.put("content", List.of(Map.of("type", "output_text", "text", Optional.ofNullable(response.getContent()).orElse(""))));
@@ -102,9 +104,11 @@ public class OpenAiCompatibleController {
         boolean responses = event.startsWith("response.");
         StringBuilder answer = new StringBuilder();
         AtomicInteger seq = new AtomicInteger();
+        java.util.concurrent.atomic.AtomicReference<String> terminal = new java.util.concurrent.atomic.AtomicReference<>();
         if (run != null) runtime.append(run, AiRunEventType.MODEL_STARTED, "{}", true);
         return chatEngine.stream(request).map(chunk -> {
             String type = chunk.getEventType() == null ? "DELTA" : chunk.getEventType();
+            if ("COMPLETED".equals(type) || "FAILED".equals(type) || "CANCELLED".equals(type)) terminal.set(type);
             appendRuntimeEvent(run, chunk, type);
             Map<String, Object> payload;
             if ("TOOL_CALL".equals(type)) {
@@ -114,6 +118,11 @@ public class OpenAiCompatibleController {
                         "tool_call_id", Optional.ofNullable(chunk.getToolCallId()).orElse(""),
                         "name", Optional.ofNullable(chunk.getToolName()).orElse("tool"),
                         "arguments", Optional.ofNullable(chunk.getToolArguments()).orElse("{}")))));
+            } else if ("REASONING_DELTA".equals(type)) {
+                String reasoning = Optional.ofNullable(chunk.getReasoningContent()).orElse("");
+                payload = responses
+                        ? Map.of("type", "response.reasoning_text.delta", "response_id", id, "delta", reasoning)
+                        : Map.of("id", id, "object", "chat.completion.chunk", "model", model, "choices", List.of(Map.of("index", 0, "delta", Map.of("reasoning_content", reasoning))));
             } else if ("USAGE".equals(type)) {
                 payload = responses
                         ? Map.of("type", "response.usage", "response_id", id, "usage", usage(chunk))
@@ -137,7 +146,16 @@ public class OpenAiCompatibleController {
             }
             return ServerSentEvent.<String>builder().id(String.valueOf(seq.getAndIncrement())).event(event).data(JSONUtils.toJsonString(payload)).build();
         }).concatWith(Flux.just(ServerSentEvent.<String>builder().id(String.valueOf(seq.getAndIncrement())).data("[DONE]").build()))
-                .doOnComplete(() -> { completeRun(run, null); if (Boolean.TRUE.equals(store)) persistIfRequested(true, conversationId, storeMessages, answer.toString(), provider, model); })
+                .doOnComplete(() -> {
+                    if ("COMPLETED".equals(terminal.get())) {
+                        if (Boolean.TRUE.equals(store)) persistIfRequested(true, conversationId, storeMessages, answer.toString(), provider, model, run);
+                        completeRun(run, null);
+                    } else if ("CANCELLED".equals(terminal.get())) {
+                        cancelRun(run);
+                    } else {
+                        failRun(run, new IllegalStateException("model stream ended without completion"));
+                    }
+                })
                 .doOnError(error -> failRun(run, error));
     }
 
@@ -153,7 +171,10 @@ public class OpenAiCompatibleController {
             int completion = chunk.getCompletionTokens() == null ? 0 : chunk.getCompletionTokens();
             runtime.recordUsage(run.id(), run.tenantId(), run.ownerUserId(), prompt, completion, chunk.isEstimatedUsage(), null);
             runtime.append(run, AiRunEventType.MODEL_USAGE, JSONUtils.toJsonString(Map.of("promptTokens", prompt, "completionTokens", completion, "estimated", chunk.isEstimatedUsage())), true);
-        } else if ("TOOL_CALL".equals(type)) runtime.append(run, AiRunEventType.TOOL_REQUESTED, "{}", true);
+        } else if ("TOOL_CALL".equals(type)) runtime.append(run, AiRunEventType.MODEL_TOOL_CALL_DELTA, JSONUtils.toJsonString(Map.of("id", Optional.ofNullable(chunk.getToolCallId()).orElse(""), "name", Optional.ofNullable(chunk.getToolName()).orElse("tool"))), true);
+        else if ("REASONING_DELTA".equals(type)) runtime.append(run, AiRunEventType.MODEL_REASONING_DELTA, "{}", true);
+        else if ("BLOCK_STARTED".equals(type)) runtime.append(run, AiRunEventType.MODEL_BLOCK_STARTED, "{}", true);
+        else if ("BLOCK_COMPLETED".equals(type)) runtime.append(run, AiRunEventType.MODEL_BLOCK_COMPLETED, "{}", true);
         else if (!"COMPLETED".equals(type)) runtime.append(run, AiRunEventType.MODEL_DELTA, "{}", true);
     }
     private void completeRun(AiRun run, ChatResponse response) {
@@ -177,6 +198,10 @@ public class OpenAiCompatibleController {
     private void failRun(AiRun run, Throwable error) {
         if (run == null) return;
         try { runtime.finish(run.id(), run.tenantId(), run.ownerUserId(), AiRunStatus.FAILED, error == null ? "MODEL_ERROR" : error.getClass().getSimpleName()); } catch (RuntimeException ignored) { }
+    }
+    private void cancelRun(AiRun run) {
+        if (run == null) return;
+        try { runtime.finish(run.id(), run.tenantId(), run.ownerUserId(), AiRunStatus.CANCELLED, "MODEL_CANCELLED"); } catch (RuntimeException ignored) { }
     }
 
     private Map<String, Object> completion(String model, ChatResponse response) {
@@ -225,13 +250,15 @@ public class OpenAiCompatibleController {
                     Object fn = map.get("function");
                     if (fn instanceof Map<?, ?> function) content.add(new ChatMessage.ContentPart("tool_call",
                             String.valueOf(value(function, "arguments", "{}")),
+                            null, null,
                             String.valueOf(value(map, "id", "tool-call")),
-                            String.valueOf(value(function, "name", "tool"))));
+                            String.valueOf(value(function, "name", "tool")),
+                            String.valueOf(value(function, "arguments", "{}")), null));
                 }
             }
             if ("tool".equalsIgnoreCase(role)) {
                 String id = String.valueOf(message.getOrDefault("tool_call_id", "tool"));
-                content = List.of(new ChatMessage.ContentPart("tool_result", textContent(content), id, String.valueOf(message.getOrDefault("name", "tool"))));
+                content = List.of(new ChatMessage.ContentPart("tool_result", textContent(content), null, null, id, String.valueOf(message.getOrDefault("name", "tool")), null, null));
             }
             return new ChatMessage(role, content);
         }).toList();
@@ -279,7 +306,7 @@ public class OpenAiCompatibleController {
         return collection.stream().filter(Map.class::isInstance).map(value -> (Map<String, Object>) value).toList();
     }
 
-    private void persistIfRequested(Boolean store, String conversationId, List<ChatMessage> messages, String answer, String provider, String model) {
+    private void persistIfRequested(Boolean store, String conversationId, List<ChatMessage> messages, String answer, String provider, String model, AiRun runtimeRun) {
         if (!Boolean.TRUE.equals(store)) return;
         Long tenant = UserContextHolder.getCurrentTenantId(); Long owner = UserContextHolder.getUserId();
         if (tenant == null || owner == null) return;
@@ -287,28 +314,48 @@ public class OpenAiCompatibleController {
                 ? conversationRepository.findConversation(conversationId, tenant, owner)
                 .orElseThrow(() -> new org.springframework.web.server.ResponseStatusException(org.springframework.http.HttpStatus.NOT_FOUND, "conversation not found"))
                 : conversationService.create(tenant, owner, provider, provider + " API", provider, model, null);
-        com.shiyu.ai.conversation.domain.ConversationMessage lastUser = null;
+        // OpenAI clients normally send the complete visible history on every
+        // request.  Persist only the suffix that is not already present on the
+        // active message path; otherwise store=true would duplicate the entire
+        // conversation on every call.
+        List<ConversationMessage> existingPath = PromptAssembler.activePath(
+                conversationRepository.listMessages(conversation.id(), tenant, owner, 1000).reversed(),
+                conversation.activeLeafMessageId(), 1000);
+        int existingCursor = 0;
+        ConversationMessage lastUser = null;
         for (ChatMessage message : messages) {
             var current = conversationRepository.findConversation(conversation.id(), tenant, owner).orElse(conversation);
             MessageRole role; try { role = MessageRole.valueOf(message.role().toUpperCase(Locale.ROOT)); } catch (IllegalArgumentException ex) { role = MessageRole.USER; }
-            var saved = conversationService.appendMessage(current, current.activeLeafMessageId(), role, message.content().stream().map(ChatMessage.ContentPart::text).filter(Objects::nonNull).reduce("", String::concat), null, null);
+            String text = message.content().stream().map(ChatMessage.ContentPart::text).filter(Objects::nonNull).reduce("", String::concat);
+            if (existingCursor < existingPath.size() && sameMessage(existingPath.get(existingCursor), role, text)) {
+                if (role == MessageRole.USER) lastUser = existingPath.get(existingCursor);
+                existingCursor++;
+                continue;
+            }
+            var saved = conversationService.appendMessage(current, current.activeLeafMessageId(), role, text, null, null);
             if (role == MessageRole.USER) lastUser = saved;
         }
         if (lastUser != null) {
             int promptTokens = messages.stream().mapToInt(message -> estimate(message.content().stream().map(ChatMessage.ContentPart::text).filter(Objects::nonNull).reduce("", String::concat))).sum();
             int completionTokens = estimate(answer);
-            conversationService.recordCompletedGeneration(conversation, lastUser, answer, provider, model, promptTokens, completionTokens);
+            conversationService.recordCompletedGeneration(conversation, lastUser, answer, provider, model, promptTokens, completionTokens, runtime, runtimeRun);
         }
+    }
+
+    private boolean sameMessage(ConversationMessage existing, MessageRole role, String text) {
+        return existing.role() == role && Objects.equals(existing.textContent(), text);
     }
 
     public record ChatCompletionRequest(String model, String platform, List<Map<String, Object>> messages, Boolean stream, Boolean store,
                                         Double temperature, @JsonAlias({"max_tokens", "max_output_tokens"}) Integer maxOutputTokens,
                                         List<Map<String, Object>> tools,
-                                        @JsonAlias({"conversation_id", "shiyu_conversation_id"}) String conversationId) {}
+                                        @JsonAlias({"conversation_id", "shiyu_conversation_id"}) String conversationId,
+                                        @JsonAlias({"reasoning_effort"}) String reasoningEffort) {}
     public record ResponsesRequest(String model, String platform, Object input, Boolean stream, Boolean store,
                                    Double temperature, @JsonAlias({"max_output_tokens", "max_tokens"}) Integer maxOutputTokens,
                                    List<Map<String, Object>> tools,
-                                   @JsonAlias({"conversation_id", "shiyu_conversation_id"}) String conversationId) {}
+                                   @JsonAlias({"conversation_id", "shiyu_conversation_id"}) String conversationId,
+                                   @JsonAlias({"reasoning_effort"}) String reasoningEffort) {}
 
     private boolean hasText(String value) { return value != null && !value.isBlank(); }
 }

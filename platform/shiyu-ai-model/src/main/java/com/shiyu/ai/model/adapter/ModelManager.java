@@ -8,6 +8,7 @@ import com.shiyu.ai.model.domain.model.AiPlatformBO;
 import com.shiyu.ai.model.adapter.config.PlatformConfig;
 import com.shiyu.ai.model.adapter.impl.GenericPlatformAdapter;
 import com.shiyu.ai.model.adapter.impl.OllamaPlatformAdapter;
+import com.shiyu.ai.model.adapter.impl.DeepSeekHttpProvider;
 import dev.langchain4j.model.chat.ChatModel;
 import dev.langchain4j.model.chat.StreamingChatModel;
 import lombok.extern.slf4j.Slf4j;
@@ -34,6 +35,7 @@ public class ModelManager implements ApplicationRunner {
     private final AiPlatformRepository platformRepository;
     private final AiModelRepository modelRepository;
     private final PlatformProperties platformProperties;
+    private final DeepSeekHttpProvider deepSeekProvider;
 
     public ModelManager(AiPlatformRepository platformRepository,
                         AiModelRepository modelRepository,
@@ -41,6 +43,9 @@ public class ModelManager implements ApplicationRunner {
         this.platformRepository = platformRepository;
         this.modelRepository = modelRepository;
         this.platformProperties = platformProperties;
+        this.deepSeekProvider = new DeepSeekHttpProvider(platformProperties.getDeepseek().getBaseUrl(),
+                StringUtils.getIfEmpty(platformProperties.getDeepseek().getApiKey(), () -> getExternalApiKey("DEEPSEEK")),
+                platformProperties.getDeepseek().getModel());
         log.info("模型管理器已创建，等待启动后加载适配器");
     }
 
@@ -115,7 +120,7 @@ public class ModelManager implements ApplicationRunner {
             return new OllamaPlatformAdapter(baseUrl, defaultModelName, temperature, maxRetries);
         }
 
-        return new GenericPlatformAdapter(code, baseUrl, apiKey, defaultModelName);
+        return new GenericPlatformAdapter(code, baseUrl, apiKey, defaultModelName, maxRetries);
     }
 
     private String getExternalApiKey(String code) {
@@ -128,19 +133,20 @@ public class ModelManager implements ApplicationRunner {
     private void loadHardcodedDefaults() {
         adapterMap.put("OPENAI", new GenericPlatformAdapter(
                 "OPENAI", "https://api.openai.com/v1",
-                StringUtils.getIfEmpty(getExternalApiKey("OPENAI"), () -> ""), "gpt-4o"));
+                StringUtils.getIfEmpty(getExternalApiKey("OPENAI"), () -> ""), "gpt-4o", 3));
 
         adapterMap.put("DEEPSEEK", new GenericPlatformAdapter(
-                "DEEPSEEK", "https://api.deepseek.com",
-                StringUtils.getIfEmpty(getExternalApiKey("DEEPSEEK"), () -> ""), "deepseek-chat"));
+                "DEEPSEEK", platformProperties.getDeepseek().getBaseUrl(),
+                StringUtils.getIfEmpty(getExternalApiKey("DEEPSEEK"), () -> ""),
+                platformProperties.getDeepseek().getModel(), 3));
 
         adapterMap.put("OPENROUTER", new GenericPlatformAdapter(
                 "OPENROUTER", "https://openrouter.ai/api",
-                StringUtils.getIfEmpty(getExternalApiKey("OPENROUTER"), () -> ""), "x-ai/grok-4.1-fast"));
+                StringUtils.getIfEmpty(getExternalApiKey("OPENROUTER"), () -> ""), "x-ai/grok-4.1-fast", 3));
 
         adapterMap.put("SILICON_FLOW", new GenericPlatformAdapter(
                 "SILICON_FLOW", "https://api.siliconflow.cn",
-                StringUtils.getIfEmpty(getExternalApiKey("SILICON_FLOW"), () -> ""), "THUDM/GLM-Z1-9B-0414"));
+                StringUtils.getIfEmpty(getExternalApiKey("SILICON_FLOW"), () -> ""), "THUDM/GLM-Z1-9B-0414", 3));
 
         adapterMap.put("OLLAMA", new OllamaPlatformAdapter(
                 "http://localhost:11434", "gemma3:4b", 0.7, 3));
@@ -165,6 +171,11 @@ public class ModelManager implements ApplicationRunner {
 
     public ChatModel getChatModel(String platformType, String modelName) {
         return getAdapter(platformType).getChatModel(modelName);
+    }
+
+    /** Dedicated structured DeepSeek transport; generic providers remain available for other platforms. */
+    public DeepSeekHttpProvider getDeepSeekProvider() {
+        return deepSeekProvider;
     }
 
     public ChatModel getChatModel(PlatformConfig config, String modelName) {

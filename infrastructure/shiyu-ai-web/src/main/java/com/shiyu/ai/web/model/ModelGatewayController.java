@@ -5,12 +5,14 @@ import com.shiyu.ai.common.core.domain.UserContextHolder;
 import com.shiyu.ai.model.gateway.*;
 import jakarta.validation.Valid;
 import lombok.Data;
+import cn.dev33.satoken.annotation.SaCheckPermission;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
 import java.util.Set;
 
 @RestController
+@SaCheckPermission("model:admin")
 public class ModelGatewayController {
     private final ModelRouter router;
     public ModelGatewayController(ModelRouter router) { this.router = router; }

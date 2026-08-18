@@ -6,6 +6,8 @@ import com.shiyu.ai.agent.node.NodeOutput;
 import com.shiyu.ai.agent.node.NodeType;
 import com.shiyu.ai.agent.node.NodeFields.FieldKey;
 import com.shiyu.ai.tool.ToolService;
+import com.shiyu.ai.runtime.AiRun;
+import com.shiyu.ai.runtime.ToolExecutionPipeline;
 import lombok.Getter;
 import lombok.Setter;
 import lombok.extern.slf4j.Slf4j;
@@ -28,18 +30,20 @@ public class ToolCallNode extends BaseNode {
      * 工具调用服务（必须依赖）
      */
     private final ToolService toolService;
+    private final ToolExecutionPipeline executionPipeline;
 
     /**
      * 私有构造函数，强制使用 Builder 模式
      * @param config 节点配置
      * @param toolService 工具调用服务
      */
-    private ToolCallNode(ToolCallConfig config, ToolService toolService) {
+    private ToolCallNode(ToolCallConfig config, ToolService toolService, ToolExecutionPipeline executionPipeline) {
         super(config != null ? config : new ToolCallConfig());
         this.config = config != null ? config : new ToolCallConfig();
         // 设置节点类型为 TOOL_CALL
         this.config.setNodeType(NodeType.TOOL_CALL);
         this.toolService = toolService;
+        this.executionPipeline = executionPipeline;
     }
 
     /**
@@ -56,6 +60,7 @@ public class ToolCallNode extends BaseNode {
     public static class Builder {
         private ToolCallConfig config;
         private ToolService toolService;
+        private ToolExecutionPipeline executionPipeline;
 
         /**
          * 设置节点配置
@@ -77,6 +82,11 @@ public class ToolCallNode extends BaseNode {
             return this;
         }
 
+        public Builder executionPipeline(ToolExecutionPipeline executionPipeline) {
+            this.executionPipeline = executionPipeline;
+            return this;
+        }
+
         /**
          * 构建并返回 ToolCallNode 实例
          * 在构建前会进行必要的校验
@@ -90,7 +100,7 @@ public class ToolCallNode extends BaseNode {
             }
             
             // 所有校验通过，创建并返回实例
-            return new ToolCallNode(config, toolService);
+            return new ToolCallNode(config, toolService, executionPipeline);
         }
     }
 
@@ -115,7 +125,36 @@ public class ToolCallNode extends BaseNode {
             java.util.Map<String, Object> parameters = prepareToolParameters(input);
             
             // 3. 调用工具服务
-            ToolService.ToolExecutionResult result = toolService.execute(toolName, parameters);
+            ToolService.ToolExecutionResult result;
+            Object runtimeRun = input.getParameter("_aiRun", null);
+            Object runtimeRunId = input.getParameter("__aiRunId", null);
+            if (executionPipeline != null && (runtimeRun instanceof AiRun || runtimeRunId != null)) {
+                boolean highRisk = "HIGH".equalsIgnoreCase(config.getToolType())
+                        || "HIGH_RISK".equalsIgnoreCase(config.getToolType());
+                ToolExecutionPipeline.Request request = new ToolExecutionPipeline.Request(toolName, parameters,
+                        "{\"tool\":\"" + toolName.replace("\"", "") + "\"}", highRisk,
+                        input.getParameter("_toolApprovalId", null));
+                ToolExecutionPipeline.Result pipelineResult;
+                if (runtimeRun instanceof AiRun run) {
+                    pipelineResult = executionPipeline.execute(run, request, args -> executeTool(toolName, args));
+                } else {
+                    pipelineResult = executionPipeline.executeById(String.valueOf(runtimeRunId),
+                            number(input.getParameter("tenantId", null)),
+                            number(input.getParameter("userId", null)), request,
+                            args -> executeTool(toolName, args));
+                }
+                if (pipelineResult.status() == ToolExecutionPipeline.Result.Status.APPROVAL_REQUIRED) {
+                    NodeOutput pending = new NodeOutput();
+                    pending.setSuccess(false);
+                    pending.setMsg("工具等待用户审批: " + pipelineResult.approval().id());
+                    pending.addData(FieldKey.TOOL_NAME, toolName);
+                    pending.addData("approvalId", pipelineResult.approval().id());
+                    return pending;
+                }
+                result = new ToolService.ToolExecutionResult(true, pipelineResult.value(), null);
+            } else {
+                result = toolService.execute(toolName, parameters);
+            }
             
             // 4. 构建输出结果
             NodeOutput output = new NodeOutput();
@@ -140,6 +179,18 @@ public class ToolCallNode extends BaseNode {
             output.setMsg("工具调用节点执行失败：" + e.getMessage());
             return output;
         }
+    }
+
+    private Object executeTool(String toolName, java.util.Map<String, Object> args) {
+        ToolService.ToolExecutionResult value = toolService.execute(toolName, args);
+        if (!value.success()) throw new IllegalStateException(value.errorMessage());
+        return value.result();
+    }
+
+    private long number(Object value) {
+        if (value instanceof Number number) return number.longValue();
+        try { return value == null ? 0 : Long.parseLong(String.valueOf(value)); }
+        catch (NumberFormatException ignored) { return 0; }
     }
     
     /**

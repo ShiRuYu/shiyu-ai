@@ -2,11 +2,14 @@ package com.shiyu.ai.memory.magma;
 
 import java.util.List;
 import java.util.Optional;
+import java.time.Instant;
 
 public interface MagmaMemoryRepository {
     void insertEvent(MemoryEvent event);
     Optional<MemoryEvent> findEvent(long tenantId, String eventId);
     Optional<MemoryEvent> findLatestEvent(long tenantId, String namespace, String subjectType, String subjectId);
+    default Optional<MemoryEvent> findPreviousEvent(long tenantId, String namespace, String subjectType, String subjectId, Instant occurredAt) { return findLatestEvent(tenantId, namespace, subjectType, subjectId); }
+    default Optional<MemoryEvent> findNextEvent(long tenantId, String namespace, String subjectType, String subjectId, Instant occurredAt) { return Optional.empty(); }
     List<MemoryEvent> findCandidates(long tenantId, String namespace, String subjectType, String subjectId, int limit);
     default List<MemoryEvent> findByNamespace(long tenantId, String namespace, int limit) { return List.of(); }
     default List<MemoryEvent> findByNamespace(String namespace, int limit) { return List.of(); }

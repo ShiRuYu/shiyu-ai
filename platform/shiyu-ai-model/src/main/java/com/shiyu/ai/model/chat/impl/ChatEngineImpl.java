@@ -6,6 +6,9 @@ import com.shiyu.ai.model.chat.ChatMessage;
 import com.shiyu.ai.model.chat.ChatRequest;
 import com.shiyu.ai.model.chat.ChatResponse;
 import com.shiyu.ai.model.event.ModelCallEvent;
+import com.shiyu.ai.model.gateway.ModelRouter;
+import com.shiyu.ai.model.gateway.ModelProviderCapabilities;
+import com.shiyu.ai.model.gateway.ModelRoutePolicy;
 import dev.langchain4j.agent.tool.ToolExecutionRequest;
 import dev.langchain4j.agent.tool.ToolSpecification;
 import dev.langchain4j.data.message.AiMessage;
@@ -23,6 +26,7 @@ import dev.langchain4j.model.chat.response.PartialToolCall;
 import dev.langchain4j.model.chat.response.StreamingChatResponseHandler;
 import dev.langchain4j.model.output.TokenUsage;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.stereotype.Service;
 import reactor.core.publisher.Flux;
@@ -39,10 +43,18 @@ import java.util.concurrent.atomic.AtomicBoolean;
 public class ChatEngineImpl implements ChatEngine {
     private final ModelManager modelManager;
     private final ApplicationEventPublisher eventPublisher;
+    private final ModelRouter modelRouter;
 
-    public ChatEngineImpl(ModelManager modelManager, ApplicationEventPublisher eventPublisher) {
+    @Autowired
+    public ChatEngineImpl(ModelManager modelManager, ApplicationEventPublisher eventPublisher, ModelRouter modelRouter) {
         this.modelManager = modelManager;
         this.eventPublisher = eventPublisher;
+        this.modelRouter = modelRouter;
+    }
+
+    /** Compatibility constructor for lightweight module tests. */
+    public ChatEngineImpl(ModelManager modelManager, ApplicationEventPublisher eventPublisher) {
+        this(modelManager, eventPublisher, new ModelRouter());
     }
 
     @Override
@@ -50,22 +62,36 @@ public class ChatEngineImpl implements ChatEngine {
         String error = validate(request);
         if (error != null) return error(error, request);
         long started = System.currentTimeMillis();
+        if (request.getModelRouteId() != null && !request.getModelRouteId().isBlank() && request.getTenantId() > 0) {
+            try { return routedChat(request, started); }
+            catch (Exception ex) {
+                log.error("model route failed route={} errorCode={}", request.getModelRouteId(), ex.getClass().getSimpleName());
+                return error("model call failed", request);
+            }
+        }
         try {
-            ChatModel model = modelManager.getChatModel(request.getPlatform(), request.getModel());
+            ChatRequest resolved = resolveRequest(request, false);
+            if (isDeepSeekPlatform(resolved)) {
+                requireDeepSeekProvider();
+                ChatResponse response = modelManager.getDeepSeekProvider().chat(resolved);
+                publishUsageValues(resolved, response, started);
+                return response;
+            }
+            ChatModel model = modelManager.getChatModel(resolved.getPlatform(), resolved.getModel());
             if (model == null) throw new IllegalStateException("model is unavailable");
-            dev.langchain4j.model.chat.response.ChatResponse response = model.chat(nativeRequest(request));
+            dev.langchain4j.model.chat.response.ChatResponse response = model.chat(nativeRequest(resolved));
             TokenUsage usage = response.tokenUsage();
-            String actual = response.modelName() == null ? request.getModel() : response.modelName();
-            publishUsage(request, actual, usage, started);
+            String actual = response.modelName() == null ? resolved.getModel() : response.modelName();
+            publishUsage(resolved, actual, usage, started);
             String content = response.aiMessage() == null ? "" : Objects.toString(response.aiMessage().text(), "");
             List<ChatResponse.ToolCall> toolCalls = response.aiMessage() == null ? List.of()
                     : response.aiMessage().toolExecutionRequests().stream()
                     .map(call -> new ChatResponse.ToolCall(call.id(), call.name(), call.arguments()))
                     .toList();
-            int promptTokens = usage == null ? estimateInput(request) : input(usage);
+            int promptTokens = usage == null ? estimateInput(resolved) : input(usage);
             int completionTokens = usage == null ? estimate(content) : output(usage);
             return ChatResponse.builder().success(true).eventType("COMPLETED")
-                    .content(content).platform(request.getPlatform()).model(actual).promptTokens(promptTokens)
+                    .content(content).platform(resolved.getPlatform()).model(actual).promptTokens(promptTokens)
                     .completionTokens(completionTokens).totalTokens(usage == null ? promptTokens + completionTokens : total(usage)).estimatedUsage(usage == null)
                     .toolCalls(toolCalls).build();
         } catch (Exception ex) {
@@ -74,32 +100,80 @@ public class ChatEngineImpl implements ChatEngine {
         }
     }
 
+    private ChatResponse routedChat(ChatRequest request, long started) {
+        java.util.Set<String> required = new java.util.HashSet<>(java.util.Set.of("chat"));
+        if (request.getTools() != null && !request.getTools().isEmpty()) required.add("tool_calls");
+        ChatResponse result = modelRouter.executeWithFallback(request.getModelRouteId(), request.getTenantId(), required, candidate -> {
+            ChatRequest resolved = copyWithModel(request, candidate.provider(), candidate.model());
+            if (isDeepSeekPlatform(resolved)) {
+                requireDeepSeekProvider();
+                ChatResponse response = modelManager.getDeepSeekProvider().chat(resolved);
+                publishUsageValues(resolved, response, started);
+                return response;
+            }
+            ChatModel model = modelManager.getChatModel(resolved.getPlatform(), resolved.getModel());
+            if (model == null) throw new IllegalStateException("model is unavailable");
+            var response = model.chat(nativeRequest(resolved));
+            TokenUsage usage = response.tokenUsage();
+            String actual = response.modelName() == null ? resolved.getModel() : response.modelName();
+            publishUsage(resolved, actual, usage, started);
+            String content = response.aiMessage() == null ? "" : Objects.toString(response.aiMessage().text(), "");
+            int promptTokens = usage == null ? estimateInput(resolved) : input(usage);
+            int completionTokens = usage == null ? estimate(content) : output(usage);
+            List<ChatResponse.ToolCall> toolCalls = response.aiMessage() == null ? List.of() : response.aiMessage().toolExecutionRequests().stream()
+                    .map(call -> new ChatResponse.ToolCall(call.id(), call.name(), call.arguments())).toList();
+            return ChatResponse.builder().success(true).eventType("COMPLETED").content(content).platform(resolved.getPlatform()).model(actual)
+                    .promptTokens(promptTokens).completionTokens(completionTokens).totalTokens(usage == null ? promptTokens + completionTokens : total(usage))
+                    .estimatedUsage(usage == null).toolCalls(toolCalls).build();
+        });
+        return result;
+    }
+
     @Override
     public Flux<ChatResponse> stream(ChatRequest request) {
         String error = validate(request);
         if (error != null) return Flux.error(new IllegalArgumentException(error));
+        if (request.getModelRouteId() != null && !request.getModelRouteId().isBlank() && request.getTenantId() > 0) {
+            return routedStream(request);
+        }
         return Flux.defer(() -> {
             Sinks.Many<ChatResponse> sink = Sinks.many().unicast().onBackpressureBuffer();
             long started = System.currentTimeMillis();
             AtomicBoolean emittedDelta = new AtomicBoolean();
             try {
-                StreamingChatModel model = modelManager.getStreamingChatModel(request.getPlatform(), request.getModel());
+                ChatRequest resolved = resolveRequest(request, true);
+                if (isDeepSeekPlatform(resolved)) {
+                    requireDeepSeekProvider();
+                    return modelManager.getDeepSeekProvider().stream(resolved)
+                            .doOnNext(event -> {
+                                if ("USAGE".equals(event.getEventType())) publishUsageValues(resolved, event, started);
+                            });
+                }
+                StreamingChatModel model = modelManager.getStreamingChatModel(resolved.getPlatform(), resolved.getModel());
                 if (model == null) return Flux.error(new IllegalStateException("streaming model is unavailable"));
-                String actual = request.getModel();
-                model.chat(nativeRequest(request), new StreamingChatResponseHandler() {
+                String actual = resolved.getModel();
+                sink.tryEmitNext(ChatResponse.builder().success(true).eventType("BLOCK_STARTED")
+                        .blockIndex(0).platform(resolved.getPlatform()).model(actual).build());
+                model.chat(nativeRequest(resolved), new StreamingChatResponseHandler() {
                     @Override public void onPartialResponse(String text) {
                         if (text == null || text.isEmpty()) return;
                         emittedDelta.set(true);
-                        sink.tryEmitNext(ChatResponse.builder().success(true).eventType("DELTA").content(text).platform(request.getPlatform()).model(actual).build());
+                        sink.tryEmitNext(ChatResponse.builder().success(true).eventType("DELTA").content(text).platform(resolved.getPlatform()).model(actual).build());
+                    }
+                    @Override public void onPartialThinking(dev.langchain4j.model.chat.response.PartialThinking thinking) {
+                        if (thinking == null || thinking.text() == null || thinking.text().isEmpty()) return;
+                        sink.tryEmitNext(ChatResponse.builder().success(true).eventType("REASONING_DELTA")
+                                .reasoningContent(thinking.text()).platform(resolved.getPlatform()).model(actual).build());
                     }
                     @Override public void onPartialToolCall(PartialToolCall call) {
                         sink.tryEmitNext(ChatResponse.builder().success(true).eventType("TOOL_CALL")
-                                .platform(request.getPlatform()).model(actual).toolCallId(call.id()).toolName(call.name()).toolArguments(call.partialArguments()).build());
+                                .platform(resolved.getPlatform()).model(actual).toolCallId(call.id()).toolName(call.name()).toolArguments(call.partialArguments()).build());
                     }
                     @Override public void onCompleteResponse(dev.langchain4j.model.chat.response.ChatResponse response) {
                         TokenUsage usage = response.tokenUsage();
-                        publishUsage(request, response.modelName() == null ? actual : response.modelName(), usage, started);
+                        publishUsage(resolved, response.modelName() == null ? actual : response.modelName(), usage, started);
                         String content = response.aiMessage() == null ? "" : Objects.toString(response.aiMessage().text(), "");
+                        String thinking = response.aiMessage() == null ? null : response.aiMessage().thinking();
                         // Reasoning-first providers may not emit answer deltas through
                         // onPartialResponse. Flush the final answer once so SSE clients
                         // receive content even when the provider only streams thinking.
@@ -111,8 +185,13 @@ public class ChatEngineImpl implements ChatEngine {
                         int completionTokens = usage == null ? estimate(content) : output(usage);
                         sink.tryEmitNext(ChatResponse.builder().success(true).eventType("USAGE")
                                 .platform(request.getPlatform()).model(actual).promptTokens(promptTokens).completionTokens(completionTokens)
-                                .totalTokens(usage == null ? promptTokens + completionTokens : total(usage)).estimatedUsage(usage == null).build());
-                        sink.tryEmitNext(ChatResponse.builder().success(true).eventType("COMPLETED").platform(request.getPlatform()).model(actual).build());
+                                .totalTokens(usage == null ? promptTokens + completionTokens : total(usage)).estimatedUsage(usage == null)
+                                .providerRequestId(response.id()).finishReason(response.finishReason() == null ? null : response.finishReason().name()).build());
+                        sink.tryEmitNext(ChatResponse.builder().success(true).eventType("BLOCK_COMPLETED").content(content)
+                                .reasoningContent(thinking).platform(request.getPlatform()).model(actual)
+                                .providerRequestId(response.id()).finishReason(response.finishReason() == null ? null : response.finishReason().name()).build());
+                        sink.tryEmitNext(ChatResponse.builder().success(true).eventType("COMPLETED").platform(request.getPlatform()).model(actual)
+                                .providerRequestId(response.id()).finishReason(response.finishReason() == null ? null : response.finishReason().name()).build());
                         sink.tryEmitComplete();
                     }
                     @Override public void onError(Throwable throwable) {
@@ -127,6 +206,26 @@ public class ChatEngineImpl implements ChatEngine {
         });
     }
 
+    private Flux<ChatResponse> routedStream(ChatRequest request) {
+        java.util.Set<String> required = new java.util.HashSet<>(java.util.Set.of("stream"));
+        if (request.getTools() != null && !request.getTools().isEmpty()) required.add("tool_calls");
+        List<ModelProviderCapabilities> candidates = modelRouter.candidates(request.getModelRouteId(), request.getTenantId(), required);
+        if (candidates.isEmpty()) return Flux.error(new IllegalStateException("no healthy model matches required capabilities"));
+        ModelRoutePolicy policy = modelRouter.requirePolicy(request.getModelRouteId(), request.getTenantId());
+        java.util.concurrent.atomic.AtomicBoolean visibleOutput = new java.util.concurrent.atomic.AtomicBoolean();
+        java.util.function.Function<Integer, Flux<ChatResponse>> attempt = new java.util.function.Function<>() {
+            @Override public Flux<ChatResponse> apply(Integer index) {
+                ModelProviderCapabilities candidate = candidates.get(index);
+                Flux<ChatResponse> current = ChatEngineImpl.this.stream(copyWithoutRoute(request, candidate.provider(), candidate.model()))
+                        .doOnNext(event -> { if ("DELTA".equals(event.getEventType()) || "REASONING_DELTA".equals(event.getEventType()) || "TOOL_CALL".equals(event.getEventType())) visibleOutput.set(true); })
+                        .doOnError(error -> modelRouter.markFailure(candidate.provider(), candidate.model(), error.getClass().getSimpleName()));
+                if (!policy.fallbackOnError() || index + 1 >= candidates.size()) return current;
+                return current.onErrorResume(error -> visibleOutput.get() ? Flux.error(error) : apply(index + 1));
+            }
+        };
+        return attempt.apply(0);
+    }
+
     private dev.langchain4j.model.chat.request.ChatRequest nativeRequest(ChatRequest request) {
         Builder builder = dev.langchain4j.model.chat.request.ChatRequest.builder()
                 .messages(request.getMessages().stream().map(this::nativeMessage).toList())
@@ -137,6 +236,34 @@ public class ChatEngineImpl implements ChatEngine {
             builder.toolSpecifications(request.getTools().stream().map(this::nativeTool).toList());
         }
         return builder.build();
+    }
+
+    private ChatRequest resolveRequest(ChatRequest request, boolean streaming) {
+        if (request.getModelRouteId() == null || request.getModelRouteId().isBlank() || request.getTenantId() <= 0) {
+            return request;
+        }
+        java.util.Set<String> required = new java.util.HashSet<>();
+        required.add(streaming ? "stream" : "chat");
+        if (request.getTools() != null && !request.getTools().isEmpty()) required.add("tool_calls");
+        boolean multimodal = request.getMessages().stream().flatMap(m -> m.content().stream())
+                .anyMatch(part -> "image".equalsIgnoreCase(part.type()) || "audio".equalsIgnoreCase(part.type()));
+        if (multimodal) required.add("multimodal");
+        ModelProviderCapabilities selected = modelRouter.choose(request.getModelRouteId(), request.getTenantId(), required);
+        return copyWithModel(request, selected.provider(), selected.model());
+    }
+
+    private ChatRequest copyWithModel(ChatRequest request, String platform, String model) {
+        return ChatRequest.builder().platform(platform).model(model)
+                .generationRunId(request.getGenerationRunId()).modelRouteId(request.getModelRouteId()).tenantId(request.getTenantId())
+                .messages(request.getMessages()).chatType(request.getChatType()).temperature(request.getTemperature())
+                .maxOutputTokens(request.getMaxOutputTokens()).reasoningEffort(request.getReasoningEffort()).tools(request.getTools()).build();
+    }
+
+    private ChatRequest copyWithoutRoute(ChatRequest request, String platform, String model) {
+        return ChatRequest.builder().platform(platform).model(model)
+                .generationRunId(request.getGenerationRunId()).tenantId(request.getTenantId()).messages(request.getMessages()).chatType(request.getChatType())
+                .temperature(request.getTemperature()).maxOutputTokens(request.getMaxOutputTokens())
+                .reasoningEffort(request.getReasoningEffort()).tools(request.getTools()).build();
     }
 
     private ToolSpecification nativeTool(ChatRequest.ToolDefinition tool) {
@@ -159,19 +286,20 @@ public class ChatEngineImpl implements ChatEngine {
         if ("SYSTEM".equals(role)) return SystemMessage.from(text);
         if ("TOOL".equals(role)) {
             ChatMessage.ContentPart result = message.content().isEmpty() ? null : message.content().get(0);
-            String id = result == null || result.uri() == null ? "tool" : result.uri();
-            String name = result == null || result.mimeType() == null ? "tool" : result.mimeType();
+            String id = result == null || result.toolCallId() == null ? "tool" : result.toolCallId();
+            String name = result == null || result.toolName() == null ? "tool" : result.toolName();
             return ToolExecutionResultMessage.from(id, name, text);
         }
         if ("ASSISTANT".equals(role)) {
             List<ToolExecutionRequest> calls = message.content().stream().filter(p -> "tool_call".equalsIgnoreCase(p.type()))
-                    .map(p -> ToolExecutionRequest.builder().id(p.uri()).name(p.mimeType()).arguments(Objects.toString(p.text(), "{}")).build()).toList();
+                    .map(p -> ToolExecutionRequest.builder().id(p.toolCallId()).name(p.toolName()).arguments(Objects.toString(p.toolArguments(), Objects.toString(p.text(), "{}"))).build()).toList();
             return calls.isEmpty() ? AiMessage.from(text) : AiMessage.from(text, calls);
         }
         List<Content> contents = new ArrayList<>();
         for (ChatMessage.ContentPart part : message.content()) {
             if ("image".equalsIgnoreCase(part.type()) && part.uri() != null) contents.add(ImageContent.from(part.uri()));
             else if ("audio".equalsIgnoreCase(part.type()) && part.uri() != null) contents.add(AudioContent.from(part.uri()));
+            else if ("file".equalsIgnoreCase(part.type())) throw new IllegalArgumentException("configured provider does not support file content parts");
             else if (part.text() != null) contents.add(TextContent.from(part.text()));
         }
         return UserMessage.from(contents.isEmpty() ? List.of(TextContent.from(text)) : contents);
@@ -180,6 +308,16 @@ public class ChatEngineImpl implements ChatEngine {
     private String validate(ChatRequest request) {
         if (request == null || request.getPlatform() == null || request.getPlatform().isBlank()) return "platform is required";
         if (request.getMessages() == null || request.getMessages().isEmpty()) return "messages cannot be empty";
+        for (ChatMessage message : request.getMessages()) {
+            if (message == null || message.role() == null || message.role().isBlank()) return "message role is required";
+            for (ChatMessage.ContentPart part : message.content()) {
+                if (part == null || part.type() == null || part.type().isBlank()) return "content part type is required";
+                String type = part.type().toLowerCase(java.util.Locale.ROOT);
+                if (!java.util.Set.of("text", "reasoning", "image", "audio", "file", "tool_call", "tool_result").contains(type)) {
+                    return "unsupported content part type: " + type;
+                }
+            }
+        }
         return null;
     }
 
@@ -191,6 +329,25 @@ public class ChatEngineImpl implements ChatEngine {
     private void publishUsage(ChatRequest request, String model, TokenUsage usage, long started) {
         eventPublisher.publishEvent(new ModelCallEvent(request.getPlatform(), model,
                 input(usage), output(usage), System.currentTimeMillis() - started, request.getGenerationRunId()));
+    }
+
+    private void publishUsageValues(ChatRequest request, ChatResponse response, long started) {
+        if (response == null) return;
+        eventPublisher.publishEvent(new ModelCallEvent(request.getPlatform(),
+                response.getModel() == null ? request.getModel() : response.getModel(),
+                response.getPromptTokens() == null ? 0 : response.getPromptTokens(),
+                response.getCompletionTokens() == null ? 0 : response.getCompletionTokens(),
+                System.currentTimeMillis() - started, request.getGenerationRunId()));
+    }
+
+    private boolean isDeepSeekPlatform(ChatRequest request) {
+        return request != null && "DEEPSEEK".equalsIgnoreCase(request.getPlatform());
+    }
+
+    private void requireDeepSeekProvider() {
+        if (modelManager.getDeepSeekProvider() == null || !modelManager.getDeepSeekProvider().isAvailable()) {
+            throw new IllegalStateException("DeepSeek structured provider is not configured");
+        }
     }
 
     private int input(TokenUsage usage) { return usage == null || usage.inputTokenCount() == null ? 0 : usage.inputTokenCount(); }

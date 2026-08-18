@@ -17,6 +17,8 @@ public class ChatResponse {
 
     private String content;
 
+    private String reasoningContent;
+
     private String platform;
 
     private String model;
@@ -38,6 +40,18 @@ public class ChatResponse {
     private String toolName;
 
     private String toolArguments;
+
+    private Integer blockIndex;
+
+    private String finishReason;
+
+    private String providerRequestId;
+
+    private Integer cacheReadTokens;
+
+    private Integer cacheWriteTokens;
+
+    private Integer reasoningTokens;
 
     /** Complete tool calls for non-streaming providers; streaming uses TOOL_CALL events. */
     private List<ToolCall> toolCalls;

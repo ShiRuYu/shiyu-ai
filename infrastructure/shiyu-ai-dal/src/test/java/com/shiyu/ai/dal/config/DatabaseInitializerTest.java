@@ -55,11 +55,11 @@ class DatabaseInitializerTest {
         assertEquals(1, scalar(dataSource,
                 "SELECT COUNT(*) FROM AUTH_USER WHERE USERNAME='admin'"));
         assertEquals(3, scalar(dataSource, "SELECT COUNT(*) FROM AUTH_ROLE"));
-        assertEquals(76, scalar(dataSource, "SELECT COUNT(*) FROM AUTH_MENU"));
+        assertEquals(94, scalar(dataSource, "SELECT COUNT(*) FROM AUTH_MENU"));
         assertEquals(131, scalar(dataSource, "SELECT COUNT(*) FROM AUTH_AUTH_CODE"));
-        assertEquals(76, scalar(dataSource, "SELECT COUNT(*) FROM AUTH_TENANT_MENU"));
+        assertEquals(94, scalar(dataSource, "SELECT COUNT(*) FROM AUTH_TENANT_MENU"));
         assertEquals(131, scalar(dataSource, "SELECT COUNT(*) FROM AUTH_TENANT_AUTH_CODE"));
-        assertEquals(184, scalar(dataSource, "SELECT COUNT(*) FROM AUTH_ROLE_SCOPE_MENU"));
+        assertEquals(238, scalar(dataSource, "SELECT COUNT(*) FROM AUTH_ROLE_SCOPE_MENU"));
         assertEquals(262, scalar(dataSource, "SELECT COUNT(*) FROM AUTH_ROLE_SCOPE_AUTH_CODE"));
         assertEquals(1, scalar(dataSource,
                 "SELECT COUNT(*) FROM AUTH_USER_SCOPE_ROLE usr "
@@ -98,6 +98,9 @@ class DatabaseInitializerTest {
         DatabaseInitializer initializer = newInitializer(dataSource);
         initializer.initialize();
 
+        execute(dataSource, "INSERT INTO COMMON_DICT (ID,DICT_TYPE,DICT_LABEL,DICT_VALUE,TENANT_ID,REMARK,CREATE_BY,UPDATE_BY) VALUES (9999,'migration-check','保留业务数据','kept',1,'must survive v2-v3','test','test')");
+        execute(dataSource, "CREATE TABLE MEMORY_LONG_TERM_MEMORY (ID BIGINT PRIMARY KEY, CONTENT VARCHAR(255))");
+        execute(dataSource, "INSERT INTO MEMORY_LONG_TERM_MEMORY VALUES (1,'legacy memory is intentionally removed')");
         execute(dataSource, "UPDATE COMMON_SCHEMA_BASELINE SET BASELINE_VERSION='2'");
         initializer.initialize();
         assertEquals(1, scalar(dataSource,
@@ -108,6 +111,8 @@ class DatabaseInitializerTest {
                 "SELECT COUNT(*) FROM INFORMATION_SCHEMA.TABLES WHERE TABLE_NAME='MEMORY_LONG_TERM_MEMORY'"));
         assertEquals(1, scalar(dataSource,
                 "SELECT COUNT(*) FROM INFORMATION_SCHEMA.TABLES WHERE TABLE_NAME='AI_RUN_EVENT'"));
+        assertEquals(1, scalar(dataSource,
+                "SELECT COUNT(*) FROM COMMON_DICT WHERE ID=9999 AND DICT_VALUE='kept'"));
     }
 
     @Test
@@ -194,7 +199,7 @@ class DatabaseInitializerTest {
         assertEquals(0, scalar(dataSource,
                 "SELECT COUNT(*) FROM (SELECT CODE FROM AUTH_MENU "
                         + "WHERE CODE IS NOT NULL AND CODE <> '' GROUP BY CODE HAVING COUNT(*) > 1)"));
-        assertEquals(5, scalar(dataSource,
+        assertEquals(13, scalar(dataSource,
                 "SELECT COUNT(*) FROM AUTH_MENU WHERE PARENT_ID IS NULL"));
         assertEquals(1, scalar(dataSource,
                 "SELECT COUNT(*) FROM AUTH_MENU WHERE ID=10 AND NAME='Agent 平台'"));

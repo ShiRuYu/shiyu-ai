@@ -273,8 +273,8 @@ shiyu:
       model: gemma3:4b
     deepseek:
       base-url: https://api.deepseek.com
-      api-key: sk-your-key
-      model: deepseek-chat
+      api-key: ${AI_DEEPSEEK_API_KEY:}
+      model: deepseek-v4-flash
 ```
 
 ### 启动
@@ -353,7 +353,7 @@ Linux 使用对应的 `scripts/package-cloud-linux.sh` 和
 | 认证授权 | `/auth/**`、`/user/**`、`/role/**`、`/menu/**`、`/tenant/**` | 登录、租户、角色与菜单 |
 | 平台治理 | `/system/**`、`/usage/**`、`/plugin/**`、`/tool/**` | 文件、用量、插件与工具 |
 
-完整的 330 条路径、345 个 operation 见 [API 接口参考](./docs/参考/API接口参考.md)；菜单、角色和权限见 [菜单角色权限矩阵](./docs/参考/菜单角色权限矩阵.md)。
+完整的 400 条路径、434 个 operation 见 [API 接口参考](./docs/参考/API接口参考.md)；菜单、角色和权限见 [菜单角色权限矩阵](./docs/参考/菜单角色权限矩阵.md)。
 
 ---
 

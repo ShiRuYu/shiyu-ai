@@ -70,6 +70,10 @@ public class GenerationRunner {
                 .orElseThrow(() -> new IllegalArgumentException("input message not found"));
         Conversation conversation = conversations.findConversation(input.conversationId(), tenantId, ownerUserId)
                 .orElseThrow(() -> new IllegalArgumentException("conversation not found"));
+        if (conversation.activeLeafMessageId() != null
+                && !conversation.activeLeafMessageId().equals(input.id())) {
+            throw new IllegalStateException("generation input is not the active conversation leaf");
+        }
         ConversationPromptService.PromptAssembly assembly = promptService.assemble(conversation,
                 conversations.listMessages(conversation.id(), tenantId, ownerUserId, 1000).reversed(), tenantId, ownerUserId);
         List<ChatMessage> messages = assembly.modelMessages();
@@ -83,16 +87,31 @@ public class GenerationRunner {
             throw new IllegalStateException("generation is already running");
         }
         AtomicInteger nextSequence = new AtomicInteger(0);
-        append(running, tenantId, nextSequence.getAndIncrement(), GenerationEventType.STARTED, "{}");
+        appendProjection(running, tenantId, nextSequence.getAndIncrement(), GenerationEventType.STARTED, "{}");
         AtomicReference<GenerationRun> state = new AtomicReference<>(running);
         AtomicReference<AiRun> runtimeState = new AtomicReference<>();
         if (runtime != null) {
             try {
                 runtimeState.set(runtime.startRun(new AiRunContext(tenantId, ownerUserId, null, null, conversation.id(), created.id(), null, null, java.util.Map.of()), AiRunSource.GENERATION, created.id(), created.model(), JSONUtils.toJsonString(messages)));
-                runtime.append(runtimeState.get(), AiRunEventType.PROMPT_ASSEMBLED, JSONUtils.toJsonString(java.util.Map.of("messageCount", messages.size(), "estimatedTokens", estimatedPromptTokens)), true);
-                runtime.append(runtimeState.get(), AiRunEventType.MODEL_STARTED, "{}", true);
+                GenerationRun traced = running.withRuntimeRunId(runtimeState.get().id());
+                if (generations.update(traced, running.version()) == 1) {
+                    running = traced;
+                    state.set(traced);
+                }
+                String turnId = "turn-" + created.id();
+                String stepId = "model-" + created.id();
+                runtime.append(runtimeState.get(), AiRunEventType.TURN_STARTED, "{}", true, turnId, null, null);
+                runtime.append(runtimeState.get(), AiRunEventType.STEP_STARTED, "{}", true, turnId, stepId, null);
+                runtime.append(runtimeState.get(), AiRunEventType.PROMPT_ASSEMBLED, JSONUtils.toJsonString(java.util.Map.of("messageCount", messages.size(), "estimatedTokens", estimatedPromptTokens)), true, turnId, "prompt-" + created.id(), null);
+                runtime.append(runtimeState.get(), AiRunEventType.MODEL_STARTED, "{}", true, turnId, stepId, null);
+            } catch (RuntimeException runtimeFailure) {
+                // AI_RUN_EVENT is the durable runtime fact source in the
+                // application. If it cannot be started or traced, do not call
+                // the provider and leave a generation with an unverifiable
+                // execution history.
+                finishFailure(state, runtimeState, tenantId, ownerUserId, nextSequence, runtimeFailure);
+                return;
             }
-            catch (RuntimeException ignored) { /* runtime tracing is non-blocking */ }
         }
         StringBuilder answer = new StringBuilder();
         try {
@@ -127,25 +146,37 @@ public class GenerationRunner {
         if (eventType == GenerationEventType.DELTA && value.getContent() != null) answer.append(value.getContent());
         String payload = switch (eventType) {
             case DELTA -> Objects.toString(value.getContent(), "");
+            case REASONING_DELTA -> Objects.toString(value.getReasoningContent(), "");
             case TOOL_CALL -> JSONUtils.toJsonString(java.util.Map.of("id", value.getToolCallId(), "name", value.getToolName(), "arguments", Objects.toString(value.getToolArguments(), "{}")));
             case USAGE -> JSONUtils.toJsonString(java.util.Map.of("promptTokens", value.getPromptTokens(), "completionTokens", value.getCompletionTokens(), "totalTokens", value.getTotalTokens(), "estimated", value.isEstimatedUsage()));
             default -> "{}";
         };
         int sequence = nextSequence.getAndIncrement();
-        append(state.get(), tenantId, sequence, eventType, payload);
+        appendProjection(state.get(), tenantId, sequence, eventType, payload);
         if (runtime != null && runtimeState.get() != null) {
-            AiRunEventType runtimeType = eventType == GenerationEventType.TOOL_CALL ? AiRunEventType.TOOL_REQUESTED : eventType == GenerationEventType.USAGE ? AiRunEventType.MODEL_USAGE : AiRunEventType.MODEL_DELTA;
-            try { runtime.append(runtimeState.get(), runtimeType, payload, true); } catch (RuntimeException ignored) { }
+            AiRunEventType runtimeType = switch (eventType) {
+                case TOOL_CALL -> AiRunEventType.MODEL_TOOL_CALL_DELTA;
+                case REASONING_DELTA -> AiRunEventType.MODEL_REASONING_DELTA;
+                case USAGE -> AiRunEventType.MODEL_USAGE;
+                case BLOCK_STARTED -> AiRunEventType.MODEL_BLOCK_STARTED;
+                case BLOCK_COMPLETED -> AiRunEventType.MODEL_BLOCK_COMPLETED;
+                default -> AiRunEventType.MODEL_DELTA;
+            };
+            // Runtime is the durable stream used for replay.  A failed append
+            // must terminate the generation rather than silently advancing the
+            // provider stream with an unverifiable gap.
+            runtime.append(runtimeState.get(), runtimeType, payload, true,
+                    "turn-" + state.get().id(), "model-" + state.get().id(), value.getProviderRequestId());
         }
         if (eventType == GenerationEventType.USAGE) {
             GenerationRun before = state.get();
             GenerationRun usage = withUsageAndSequence(before, value, sequence, before.version() + 1);
             if (generations.update(usage, before.version()) == 1) state.set(usage);
             if (runtime != null && runtimeState.get() != null) {
-                try { runtime.recordUsage(runtimeState.get().id(), tenantId, ownerUserId,
+                runtime.recordUsage(runtimeState.get().id(), tenantId, ownerUserId,
                         value.getPromptTokens() == null ? usage.promptTokens() : value.getPromptTokens(),
                         value.getCompletionTokens() == null ? usage.completionTokens() : value.getCompletionTokens(),
-                        value.isEstimatedUsage(), null); } catch (RuntimeException ignored) { }
+                        value.isEstimatedUsage(), null);
             }
         } else {
             state.updateAndGet(s -> withUsageAndSequence(s, value, sequence, s.version()));
@@ -164,7 +195,7 @@ public class GenerationRunner {
                 terminal == GenerationStatus.FAILED ? Objects.toString(errorCode, "provider_failed") : null,
                 next.lastEventSequence(), terminal == GenerationStatus.CANCELLED, next.version(), next.createdAt(), Instant.now());
         if (generations.update(next, current.version()) != 1) return;
-        append(next, tenantId, nextSequence.getAndIncrement(),
+        appendProjection(next, tenantId, nextSequence.getAndIncrement(),
                 terminal == GenerationStatus.CANCELLED ? GenerationEventType.CANCELLED : GenerationEventType.FAILED,
                 terminal == GenerationStatus.CANCELLED ? "{}" : Objects.toString(errorCode, "provider_failed"));
         admission.release(tenantId, next);
@@ -202,10 +233,15 @@ public class GenerationRunner {
                 completed.promptTokens(), Math.max(completed.completionTokens(), Math.max(1, answer.length() / 4)),
                 java.time.Duration.between(current.createdAt(), Instant.now()).toMillis(), null, sequence, false, completed.version(), completed.createdAt(), Instant.now());
         if (generations.update(completed, current.version()) == 1) {
-            append(completed, tenantId, sequence, GenerationEventType.COMPLETED, "{}");
+            appendProjection(completed, tenantId, sequence, GenerationEventType.COMPLETED, "{}");
             admission.settle(tenantId, completed);
                 usageSink.completed(completed);
-            if (runtime != null && runtimeState.get() != null) try { runtime.finish(runtimeState.get().id(), tenantId, ownerUserId, AiRunStatus.COMPLETED, null); } catch (RuntimeException ignored) { }
+            if (runtime != null && runtimeState.get() != null) try {
+                runtime.append(runtimeState.get(), AiRunEventType.MODEL_COMPLETED, "{}", true, "turn-" + completed.id(), "model-" + completed.id(), null);
+                runtime.append(runtimeState.get(), AiRunEventType.STEP_COMPLETED, "{}", true, "turn-" + completed.id(), "model-" + completed.id(), null);
+                runtime.append(runtimeState.get(), AiRunEventType.TURN_COMPLETED, "{}", true, "turn-" + completed.id(), null, null);
+                runtime.finish(runtimeState.get().id(), tenantId, ownerUserId, AiRunStatus.COMPLETED, null);
+            } catch (RuntimeException ignored) { }
         } else {
             // Cancellation or another terminal transition won the run CAS after the
             // conversation update. Restore the leaf only if nobody changed it again,
@@ -229,14 +265,20 @@ public class GenerationRunner {
             // append a contradictory FAILED event or settle admission twice.
             return;
         }
-        append(failed, tenantId, nextSequence.getAndIncrement(), GenerationEventType.FAILED, error.getClass().getSimpleName());
+        appendProjection(failed, tenantId, nextSequence.getAndIncrement(), GenerationEventType.FAILED, error.getClass().getSimpleName());
         admission.release(tenantId, failed);
         usageSink.failed(failed);
         state.set(failed);
         if (runtime != null && runtimeState.get() != null) try { runtime.finish(runtimeState.get().id(), tenantId, ownerUserId, AiRunStatus.FAILED, error.getClass().getSimpleName()); } catch (RuntimeException ignored) { }
     }
 
-    private void append(GenerationRun run, long tenantId, int sequence, GenerationEventType type, String payload) {
+    /**
+     * Runtime is the physical event source in production. The legacy generation
+     * event table is retained only as a projection for lightweight deployments
+     * that do not install the runtime module (and for isolated unit tests).
+     */
+    private void appendProjection(GenerationRun run, long tenantId, int sequence, GenerationEventType type, String payload) {
+        if (runtime != null) return;
         generations.appendEvent(new GenerationEvent(run.id(), sequence, type, payload, Instant.now()), tenantId);
     }
 

@@ -34,7 +34,7 @@ public class AiModelDO extends TenantEntity {
     private Long platformId;
 
     /**
-     * 模型名称（如：gpt-4o, deepseek-chat）
+     * 模型名称（如：gpt-4o, deepseek-v4-flash）
      */
     private String modelName;
 

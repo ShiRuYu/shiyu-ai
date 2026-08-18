@@ -15,6 +15,11 @@ public class ChatRequest {
 
     private String model;
 
+    /** Optional tenant-scoped route. When present, provider/model are resolved by ModelRouter. */
+    private String modelRouteId;
+
+    private long tenantId;
+
     /** Durable Conversation GenerationRun id, when this call is billed from the run ledger. */
     private String generationRunId;
 
@@ -25,6 +30,8 @@ public class ChatRequest {
     private Double temperature;
 
     private Integer maxOutputTokens;
+
+    private String reasoningEffort;
 
     private List<ToolDefinition> tools;
 

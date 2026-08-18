@@ -23,7 +23,7 @@ public class ToolApprovalController {
         ToolApproval before = approvals.require(id, tenant(), user());
         ToolApproval value = approvals.decide(id, tenant(), user(), status);
         if (before == null || before.status() == ToolApprovalStatus.PENDING && value.status() != ToolApprovalStatus.PENDING) {
-            try { runtime.append(runtime.requireRun(value.runId(), tenant(), user()), AiRunEventType.TOOL_COMPLETED,
+            try { runtime.append(runtime.requireRun(value.runId(), tenant(), user()), AiRunEventType.TOOL_APPROVAL_DECIDED,
                     "{\"approvalId\":\"" + value.id() + "\",\"status\":\"" + value.status().name() + "\"}", true); } catch (RuntimeException ignored) { }
         }
         return value;

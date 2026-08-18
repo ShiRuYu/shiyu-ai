@@ -37,7 +37,15 @@ public class MessageController {
     }
 
     @PostMapping("/{messageId}/edits")
-    public Result<ConversationMessage> edit(@PathVariable String messageId, @Valid @RequestBody EditRequest request) {
+    public Result<ConversationMessage> edit(@PathVariable String messageId,
+                                             @RequestHeader(value = "Idempotency-Key", required = false) String idempotencyKey,
+                                             @Valid @RequestBody EditRequest request) {
+        String operation = "message.edit:" + messageId;
+        if (idempotencyKey != null && !idempotencyKey.isBlank()) {
+            var existing = idempotency.find(tenant(), user(), operation, idempotencyKey)
+                    .flatMap(id -> repository.findMessage(id, tenant(), user()));
+            if (existing.isPresent()) return Result.success(existing.get());
+        }
         ConversationMessage original = repository.findMessage(messageId, tenant(), user())
                 .orElseThrow(() -> new org.springframework.web.server.ResponseStatusException(HttpStatus.NOT_FOUND, "message not found"));
         if (request == null || request.content == null || request.content.isBlank()) {
@@ -47,7 +55,14 @@ public class MessageController {
                 .orElseThrow(() -> new org.springframework.web.server.ResponseStatusException(HttpStatus.NOT_FOUND, "conversation not found"));
         // An edit is a new node under the original parent; the old message remains
         // available as a branch candidate and is never overwritten.
-        return Result.success(conversations.appendMessage(conversation, original.parentMessageId(), original.role(), request.content, null, null, original.id()));
+        ConversationMessage edited = conversations.appendMessage(conversation, original.parentMessageId(), original.role(), request.content, null, null, original.id());
+        if (idempotencyKey != null && !idempotencyKey.isBlank() && !idempotency.claim(tenant(), user(), operation, idempotencyKey, edited.id())) {
+            var existing = idempotency.find(tenant(), user(), operation, idempotencyKey)
+                    .flatMap(id -> repository.findMessage(id, tenant(), user()));
+            if (existing.isPresent()) return Result.success(existing.get());
+            throw new org.springframework.web.server.ResponseStatusException(HttpStatus.CONFLICT, "idempotency key is already in use");
+        }
+        return Result.success(edited);
     }
 
     @PostMapping("/{messageId}/generations")
@@ -69,6 +84,19 @@ public class MessageController {
         }
         Conversation conversation = repository.findConversation(input.conversationId(), tenant, user)
                 .orElseThrow(() -> new org.springframework.web.server.ResponseStatusException(HttpStatus.NOT_FOUND, "conversation not found"));
+        // Retrying a user turn creates a sibling assistant candidate. Make the
+        // retried user node the active leaf before assembling the prompt so the
+        // model does not accidentally include the previously selected answer.
+        if (!messageId.equals(conversation.activeLeafMessageId())) {
+            Conversation active = new Conversation(conversation.id(), conversation.tenantId(), conversation.ownerUserId(),
+                    conversation.sceneType(), conversation.title(), conversation.status(), conversation.parentConversationId(),
+                    conversation.branchFromMessageId(), input.id(), conversation.rollingSummary(), conversation.platform(),
+                    conversation.model(), conversation.version() + 1, conversation.createdAt(), java.time.Instant.now());
+            if (repository.updateConversation(active, conversation.version()) != 1) {
+                throw new org.springframework.web.server.ResponseStatusException(HttpStatus.CONFLICT, "conversation was modified");
+            }
+            conversation = active;
+        }
         String platform = request == null ? null : request.platform;
         String model = request == null ? null : request.model;
         GenerationRun run;

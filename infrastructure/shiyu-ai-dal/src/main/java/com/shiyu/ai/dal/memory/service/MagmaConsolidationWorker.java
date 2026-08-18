@@ -23,9 +23,12 @@ public class MagmaConsolidationWorker {
 
     @Scheduled(fixedDelayString = "${shiyu.memory.consolidation-delay-ms:3000}")
     public void processBatch() {
-        List<Long> ids = jdbc.query("SELECT ID FROM MEMORY_CONSOLIDATION_JOB WHERE STATUS='PENDING' AND AVAILABLE_AT<=CURRENT_TIMESTAMP AND (LEASED_UNTIL IS NULL OR LEASED_UNTIL<CURRENT_TIMESTAMP) ORDER BY ID LIMIT 10", (r,n)->r.getLong(1));
+        // A process crash leaves a RUNNING lease behind.  Expired RUNNING
+        // jobs are eligible again so restart recovery does not require a
+        // manual status repair.
+        List<Long> ids = jdbc.query("SELECT ID FROM MEMORY_CONSOLIDATION_JOB WHERE STATUS IN ('PENDING','RUNNING') AND AVAILABLE_AT<=CURRENT_TIMESTAMP AND (LEASED_UNTIL IS NULL OR LEASED_UNTIL<CURRENT_TIMESTAMP) ORDER BY ID LIMIT 10", (r,n)->r.getLong(1));
         for (Long id : ids) {
-            int claimed = jdbc.update("UPDATE MEMORY_CONSOLIDATION_JOB SET STATUS='RUNNING',LEASED_UNTIL=?,UPDATED_AT=CURRENT_TIMESTAMP,ATTEMPTS=ATTEMPTS+1 WHERE ID=? AND STATUS='PENDING'", Timestamp.from(Instant.now().plusSeconds(60)), id);
+            int claimed = jdbc.update("UPDATE MEMORY_CONSOLIDATION_JOB SET STATUS='RUNNING',LEASED_UNTIL=?,UPDATED_AT=CURRENT_TIMESTAMP,ATTEMPTS=ATTEMPTS+1 WHERE ID=? AND STATUS IN ('PENDING','RUNNING') AND (LEASED_UNTIL IS NULL OR LEASED_UNTIL<CURRENT_TIMESTAMP)", Timestamp.from(Instant.now().plusSeconds(60)), id);
             if (claimed == 0) continue;
             try {
                 consolidate(id);

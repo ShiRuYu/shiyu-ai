@@ -32,14 +32,29 @@ public class MemoryController {
         return Result.success(memory.retrieveWithTrace(new MemoryQuery(tenant(), request.namespace, request.subjectType, request.subjectId, request.text, graphs, request.from, request.to,
                 Math.min(Math.max(request.maxDepth, 0), 8), Math.min(Math.max(request.maxNodes, 1), 500), Math.min(Math.max(request.maxTokens, 1), 20_000), request.intent)));
     }
-    @PostMapping("/events/{id}/confirm") public Result<Void> confirm(@PathVariable String id) { memory.confirm(tenant(), id); return Result.success(); }
-    @PostMapping("/events/{id}/revoke") public Result<Void> revoke(@PathVariable String id) { memory.revoke(tenant(), id); return Result.success(); }
+    @PostMapping("/events/{id}/confirm") public Result<Void> confirm(@PathVariable String id) {
+        enforceEventSubject(memory.requireAccessibleEvent(tenant(), id));
+        memory.confirm(tenant(), id); return Result.success();
+    }
+    @PostMapping("/events/{id}/revoke") public Result<Void> revoke(@PathVariable String id) {
+        enforceEventSubject(memory.requireAccessibleEvent(tenant(), id));
+        memory.revoke(tenant(), id); return Result.success();
+    }
     @PostMapping("/events/{id}/supersede") public Result<MemoryEvent> supersede(@PathVariable String id, @Valid @RequestBody EventRequest request) {
+        enforceEventSubject(memory.requireAccessibleEvent(tenant(), id));
         enforceSubject(request.subjectType, request.subjectId);
         return Result.success(memory.supersede(tenant(), id, new IngestMemoryCommand(tenant(), request.namespace, request.subjectType, request.subjectId, request.eventType, request.content, request.occurredAt, request.sourceType, request.sourceId, request.attributes, request.confidence, request.importance, request.confirmationPolicy)));
     }
-    @GetMapping("/events/{id}/relations") public Result<List<MemoryEdge>> relations(@PathVariable String id, @RequestParam GraphType graphType, @RequestParam(defaultValue = "50") int limit) { return Result.success(memory.relations(tenant(), id, graphType, limit)); }
-    @GetMapping("/retrieval-traces/{traceId}") public Result<MemoryRetrievalTrace> trace(@PathVariable String traceId) { return Result.success(memory.trace(tenant(), traceId)); }
+    @GetMapping("/events/{id}/relations") public Result<List<MemoryEdge>> relations(@PathVariable String id, @RequestParam GraphType graphType, @RequestParam(defaultValue = "50") int limit) {
+        enforceEventSubject(memory.requireAccessibleEvent(tenant(), id));
+        return Result.success(memory.relations(tenant(), id, graphType, limit));
+    }
+    @GetMapping("/retrieval-traces/{traceId}") public Result<MemoryRetrievalTrace> trace(@PathVariable String traceId) {
+        Long user = UserContextHolder.getUserId();
+        String subjectType = UserContextHolder.isSuperAdmin() ? null : "USER";
+        String subjectId = UserContextHolder.isSuperAdmin() ? null : String.valueOf(user);
+        return Result.success(memory.trace(tenant(), traceId, subjectType, subjectId));
+    }
     @SaCheckPermission("memory:admin")
     @PostMapping("/admin/indexes/rebuild") public Result<Void> rebuild(@RequestParam String namespace) { index.rebuild(namespace); return Result.success(); }
 
@@ -50,6 +65,7 @@ public class MemoryController {
             throw new org.springframework.web.server.ResponseStatusException(org.springframework.http.HttpStatus.FORBIDDEN, "subject access denied");
         }
     }
+    private void enforceEventSubject(MemoryEvent event) { enforceSubject(event.subjectType(), event.subjectId()); }
     @Data public static class EventRequest { private String namespace; private String subjectType; private String subjectId; private String eventType; private String content; private java.time.Instant occurredAt; private String sourceType; private String sourceId; private java.util.Map<String,Object> attributes; private double confidence = 0.5; private double importance = 0.5; private ConfirmationPolicy confirmationPolicy = ConfirmationPolicy.REQUIRED; }
     @Data public static class QueryRequest { private String namespace; private String subjectType; private String subjectId; private String text; private Set<GraphType> graphTypes; private java.time.Instant from; private java.time.Instant to; private int maxDepth = 2; private int maxNodes = 20; private int maxTokens = 2000; private MemoryQueryIntent intent; }
 }

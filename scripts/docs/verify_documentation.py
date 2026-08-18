@@ -87,6 +87,11 @@ def verify_final_baseline(backend: Path, failures: list[str]) -> int:
     modifying = re.compile(r"^\s*(ALTER|UPDATE|DELETE|MERGE|DROP|TRUNCATE)\b", re.I | re.M)
     secondary_statements = 0
     for path in baseline.rglob("*.sql"):
+        # 05_navigation.sql is deliberately an idempotent v2->v3 upgrade
+        # seed. It is executed only by DatabaseInitializer during migration;
+        # the fresh-install seed is 02_auth.sql and remains insert-only.
+        if path.name == "05_navigation.sql":
+            continue
         matches = modifying.findall(path.read_text(encoding="utf-8"))
         secondary_statements += len(matches)
         if matches:

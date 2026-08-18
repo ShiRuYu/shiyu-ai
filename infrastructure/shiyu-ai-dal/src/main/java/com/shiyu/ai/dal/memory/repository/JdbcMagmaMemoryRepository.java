@@ -21,7 +21,13 @@ public class JdbcMagmaMemoryRepository implements MagmaMemoryRepository {
 
     public void insertEvent(MemoryEvent e) { jdbc.update("INSERT INTO MEMORY_EVENT (ID,TENANT_ID,NAMESPACE,SUBJECT_TYPE,SUBJECT_ID,EVENT_TYPE,CONTENT,OCCURRED_AT,SOURCE_TYPE,SOURCE_ID,ATTRIBUTES,CONFIDENCE,IMPORTANCE,STATUS,CONFIRMATION_POLICY,CREATED_AT,UPDATED_AT) VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)", e.id(),e.tenantId(),e.namespace(),e.subjectType(),e.subjectId(),e.eventType(),e.content(),ts(e.occurredAt()),e.sourceType(),e.sourceId(),JSONUtils.toJsonString(e.attributes()),e.confidence(),e.importance(),e.status().name(),e.confirmationPolicy().name(),ts(e.createdAt()),ts(e.updatedAt())); }
     public Optional<MemoryEvent> findEvent(long tenantId,String id) { return jdbc.query("SELECT * FROM MEMORY_EVENT WHERE TENANT_ID=? AND ID=?",this::mapEvent,tenantId,id).stream().findFirst(); }
-    public Optional<MemoryEvent> findLatestEvent(long tenantId,String ns,String st,String sid) { return jdbc.query("SELECT * FROM MEMORY_EVENT WHERE TENANT_ID=? AND NAMESPACE=? AND SUBJECT_TYPE=? AND SUBJECT_ID=? AND STATUS<>'REVOKED' ORDER BY OCCURRED_AT DESC, CREATED_AT DESC LIMIT 1",this::mapEvent,tenantId,ns,st,sid).stream().findFirst(); }
+    public Optional<MemoryEvent> findLatestEvent(long tenantId,String ns,String st,String sid) { return jdbc.query("SELECT * FROM MEMORY_EVENT WHERE TENANT_ID=? AND NAMESPACE=? AND SUBJECT_TYPE=? AND SUBJECT_ID=? AND STATUS IN ('ACTIVE','CANDIDATE') ORDER BY OCCURRED_AT DESC, CREATED_AT DESC LIMIT 1",this::mapEvent,tenantId,ns,st,sid).stream().findFirst(); }
+    @Override public Optional<MemoryEvent> findPreviousEvent(long tenantId,String ns,String st,String sid,Instant occurredAt) {
+        return jdbc.query("SELECT * FROM MEMORY_EVENT WHERE TENANT_ID=? AND NAMESPACE=? AND SUBJECT_TYPE=? AND SUBJECT_ID=? AND STATUS IN ('ACTIVE','CANDIDATE') AND OCCURRED_AT<=? ORDER BY OCCURRED_AT DESC, CREATED_AT DESC LIMIT 1",this::mapEvent,tenantId,ns,st,sid,ts(occurredAt)).stream().findFirst();
+    }
+    @Override public Optional<MemoryEvent> findNextEvent(long tenantId,String ns,String st,String sid,Instant occurredAt) {
+        return jdbc.query("SELECT * FROM MEMORY_EVENT WHERE TENANT_ID=? AND NAMESPACE=? AND SUBJECT_TYPE=? AND SUBJECT_ID=? AND STATUS IN ('ACTIVE','CANDIDATE') AND OCCURRED_AT>? ORDER BY OCCURRED_AT, CREATED_AT LIMIT 1",this::mapEvent,tenantId,ns,st,sid,ts(occurredAt)).stream().findFirst();
+    }
     public List<MemoryEvent> findCandidates(long tenantId,String ns,String st,String sid,int limit) { return jdbc.query("SELECT * FROM MEMORY_EVENT WHERE TENANT_ID=? AND NAMESPACE=? AND SUBJECT_TYPE=? AND SUBJECT_ID=? AND STATUS IN ('ACTIVE','CANDIDATE') ORDER BY OCCURRED_AT DESC LIMIT ?",this::mapEvent,tenantId,ns,st,sid,Math.min(Math.max(limit,1),200)); }
     @Override public List<MemoryEvent> findByNamespace(long tenantId,String ns,int limit) { return jdbc.query("SELECT * FROM MEMORY_EVENT WHERE TENANT_ID=? AND NAMESPACE=? AND STATUS<>'REVOKED' ORDER BY OCCURRED_AT LIMIT ?",this::mapEvent,tenantId,ns,Math.min(Math.max(limit,1),100000)); }
     @Override public List<MemoryEvent> findByNamespace(String ns,int limit) { return jdbc.query("SELECT * FROM MEMORY_EVENT WHERE NAMESPACE=? AND STATUS<>'REVOKED' ORDER BY OCCURRED_AT LIMIT ?",this::mapEvent,ns,Math.min(Math.max(limit,1),100000)); }
@@ -33,10 +39,28 @@ public class JdbcMagmaMemoryRepository implements MagmaMemoryRepository {
     public void insertEdge(MemoryEdge e) { jdbc.update("INSERT INTO MEMORY_EDGE (ID,TENANT_ID,SOURCE_NODE_ID,TARGET_NODE_ID,GRAPH_TYPE,RELATION_TYPE,DIRECTED,WEIGHT,CONFIDENCE,ORIGIN,EVIDENCE_SOURCE,ACTIVE,CREATED_AT) VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?)",e.id(),e.tenantId(),e.sourceNodeId(),e.targetNodeId(),e.graphType().name(),e.relationType(),e.directed(),e.weight(),e.confidence(),e.origin().name(),e.evidenceSource(),e.active(),ts(e.createdAt())); }
     public List<MemoryEdge> findEdges(long tenantId,String nodeId,GraphType graphType,int limit) { return jdbc.query("SELECT * FROM MEMORY_EDGE WHERE TENANT_ID=? AND (SOURCE_NODE_ID=? OR TARGET_NODE_ID=?) AND GRAPH_TYPE=? AND ACTIVE=TRUE ORDER BY CONFIDENCE DESC LIMIT ?",this::mapEdge,tenantId,nodeId,nodeId,graphType.name(),Math.min(Math.max(limit,1),200)); }
     public void enqueueConsolidation(long tenantId,String eventId) { Instant now=Instant.now(); jdbc.update("INSERT INTO MEMORY_CONSOLIDATION_JOB (TENANT_ID,EVENT_ID,STATUS,ATTEMPTS,AVAILABLE_AT,CREATED_AT,UPDATED_AT) VALUES (?,?, 'PENDING',0,?,?,?)",tenantId,eventId,ts(now),ts(now),ts(now)); }
-    @Override public void recordRetrievalTrace(MemoryRetrievalTrace trace) { jdbc.update("INSERT INTO MEMORY_RETRIEVAL_TRACE (ID,TENANT_ID,NAMESPACE,QUERY_TEXT,ANCHOR_EVENT_IDS,CREATED_AT) VALUES (?,?,?,?,?,?)", trace.id(), trace.tenantId(), trace.namespace(), trace.queryText(), JSONUtils.toJsonString(trace.anchorEventIds()), ts(trace.createdAt())); }
-    @Override public Optional<MemoryRetrievalTrace> findRetrievalTrace(long tenantId,String id) { return jdbc.query("SELECT * FROM MEMORY_RETRIEVAL_TRACE WHERE TENANT_ID=? AND ID=?", (r,n)->new MemoryRetrievalTrace(r.getString("ID"),r.getLong("TENANT_ID"),r.getString("NAMESPACE"),r.getString("QUERY_TEXT"),JSONUtils.parseObject(r.getString("ANCHOR_EVENT_IDS"),List.class),r.getTimestamp("CREATED_AT").toInstant()), tenantId,id).stream().findFirst(); }
+    @Override public void recordRetrievalTrace(MemoryRetrievalTrace trace) {
+        Map<String, Double> weights = trace.graphWeights().entrySet().stream().collect(java.util.stream.Collectors.toMap(e -> e.getKey().name(), Map.Entry::getValue));
+        jdbc.update("INSERT INTO MEMORY_RETRIEVAL_TRACE (ID,TENANT_ID,NAMESPACE,QUERY_TEXT,ANCHOR_EVENT_IDS,GRAPH_WEIGHTS_JSON,RELATION_PATHS_JSON,FILTERED_EVENT_IDS,RESULT_EVENT_IDS,CREATED_AT) VALUES (?,?,?,?,?,?,?,?,?,?)",
+                trace.id(), trace.tenantId(), trace.namespace(), trace.queryText(), JSONUtils.toJsonString(trace.anchorEventIds()),
+                JSONUtils.toJsonString(weights), JSONUtils.toJsonString(trace.relationPaths()), JSONUtils.toJsonString(trace.filteredEventIds()),
+                JSONUtils.toJsonString(trace.resultEventIds()), ts(trace.createdAt()));
+    }
+    @Override public Optional<MemoryRetrievalTrace> findRetrievalTrace(long tenantId,String id) {
+        return jdbc.query("SELECT * FROM MEMORY_RETRIEVAL_TRACE WHERE TENANT_ID=? AND ID=?", (r,n)-> {
+            List<String> anchors = parseList(r.getString("ANCHOR_EVENT_IDS"));
+            Map<String,Object> rawWeights = parseMap(r.getString("GRAPH_WEIGHTS_JSON"));
+            Map<GraphType,Double> weights = rawWeights.entrySet().stream().collect(java.util.stream.Collectors.toMap(e -> GraphType.valueOf(e.getKey()), e -> ((Number)e.getValue()).doubleValue()));
+            List<List<String>> paths = parsePaths(r.getString("RELATION_PATHS_JSON"));
+            return new MemoryRetrievalTrace(r.getString("ID"),r.getLong("TENANT_ID"),r.getString("NAMESPACE"),r.getString("QUERY_TEXT"),anchors,
+                    weights, paths, parseList(r.getString("FILTERED_EVENT_IDS")), parseList(r.getString("RESULT_EVENT_IDS")), r.getTimestamp("CREATED_AT").toInstant());
+        }, tenantId,id).stream().findFirst();
+    }
 
     private MemoryEvent mapEvent(ResultSet r,int n)throws java.sql.SQLException { Map<String,Object> attrs=JSONUtils.parseObject(r.getString("ATTRIBUTES"),Map.class); return new MemoryEvent(r.getString("ID"),r.getLong("TENANT_ID"),r.getString("NAMESPACE"),r.getString("SUBJECT_TYPE"),r.getString("SUBJECT_ID"),r.getString("EVENT_TYPE"),r.getString("CONTENT"),r.getTimestamp("OCCURRED_AT").toInstant(),r.getString("SOURCE_TYPE"),r.getString("SOURCE_ID"),attrs,r.getDouble("CONFIDENCE"),r.getDouble("IMPORTANCE"),MemoryEventStatus.valueOf(r.getString("STATUS")),ConfirmationPolicy.valueOf(r.getString("CONFIRMATION_POLICY")),r.getTimestamp("CREATED_AT").toInstant(),r.getTimestamp("UPDATED_AT").toInstant()); }
     private MemoryEdge mapEdge(ResultSet r,int n)throws java.sql.SQLException { return new MemoryEdge(r.getString("ID"),r.getLong("TENANT_ID"),r.getString("SOURCE_NODE_ID"),r.getString("TARGET_NODE_ID"),GraphType.valueOf(r.getString("GRAPH_TYPE")),r.getString("RELATION_TYPE"),r.getBoolean("DIRECTED"),r.getDouble("WEIGHT"),r.getDouble("CONFIDENCE"),EdgeOrigin.valueOf(r.getString("ORIGIN")),r.getString("EVIDENCE_SOURCE"),r.getBoolean("ACTIVE"),r.getTimestamp("CREATED_AT").toInstant()); }
+    private List<String> parseList(String value) { return value == null || value.isBlank() ? List.of() : JSONUtils.parseObject(value, List.class); }
+    private Map<String,Object> parseMap(String value) { return value == null || value.isBlank() ? Map.of() : JSONUtils.parseObject(value, Map.class); }
+    private List<List<String>> parsePaths(String value) { return value == null || value.isBlank() ? List.of() : JSONUtils.parseObject(value, List.class); }
     private static Timestamp ts(Instant i){return Timestamp.from(i==null?Instant.now():i);}
 }

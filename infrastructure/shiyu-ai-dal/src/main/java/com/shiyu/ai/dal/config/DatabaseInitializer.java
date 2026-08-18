@@ -59,7 +59,8 @@ public class DatabaseInitializer {
             "classpath:db/baseline/h2/seed/01_common.sql",
             "classpath:db/baseline/h2/seed/02_auth.sql",
             "classpath:db/baseline/h2/seed/03_agent.sql",
-            "classpath:db/baseline/h2/seed/04_knowledge.sql"
+            "classpath:db/baseline/h2/seed/04_knowledge.sql",
+            "classpath:db/baseline/h2/seed/05_navigation.sql"
     );
 
     private static final Set<String> EXPECTED_TABLES = Set.of(
@@ -85,7 +86,7 @@ public class DatabaseInitializer {
             "KNOWLEDGE_DOC_RELATION", "KNOWLEDGE_EVALUATION_CASE",
             "KNOWLEDGE_INGESTION_JOB", "KNOWLEDGE_RELATION", "KNOWLEDGE_REVIEW_RECORD",
             "KNOWLEDGE_SPACE", "KNOWLEDGE_SPACE_MEMBER",
-            "CHAT_CONVERSATION", "CHAT_MESSAGE", "CHAT_GENERATION_RUN", "CHAT_GENERATION_EVENT", "CHAT_IDEMPOTENCY_KEY",
+            "CHAT_CONVERSATION", "CHAT_MESSAGE", "CHAT_GENERATION_RUN", "CHAT_GENERATION_ACTIVE", "CHAT_IDEMPOTENCY_KEY",
             "CHAT_CHARACTER_ASSET", "CHAT_PERSONA_ASSET", "CHAT_LOREBOOK_ASSET", "CHAT_PROMPT_TEMPLATE", "CHAT_GROUP_CHAT",
             "PLUGIN_MARKET_ENTRY",
             "AI_APP", "AI_APP_VERSION", "AI_RUN", "AI_RUN_EVENT", "AI_TOOL_APPROVAL",
@@ -125,6 +126,8 @@ public class DatabaseInitializer {
                         executeResources(connection, List.of("classpath:db/baseline/h2/schema/15_plugin_market.sql"), "additive-v3");
                     }
                     executeResources(connection, List.of("classpath:db/baseline/h2/schema/16_ai_runtime.sql", "classpath:db/baseline/h2/schema/17_ai_evaluation.sql"), "additive-v3");
+                    executeResources(connection, List.of("classpath:db/baseline/h2/seed/05_navigation.sql"), "additive-v3-navigation");
+                    dropLegacyMemoryTables(connection);
                     migratePluginMarketKey(connection);
                     assertExpectedTables(loadPublicTables(connection));
                     log.info("Database baseline {} ({}) is already installed; initialization skipped",
@@ -221,17 +224,24 @@ public class DatabaseInitializer {
                     "classpath:db/baseline/h2/schema/15_plugin_market.sql",
                     "classpath:db/baseline/h2/schema/16_ai_runtime.sql",
                     "classpath:db/baseline/h2/schema/17_ai_evaluation.sql"), "migration");
+            executeResources(connection, List.of("classpath:db/baseline/h2/seed/05_navigation.sql"), "migration-navigation");
             migratePluginMarketKey(connection);
+            dropLegacyMemoryTables(connection);
             try (Statement statement = connection.createStatement()) {
-                statement.execute("DROP TABLE IF EXISTS MEMORY_CONVERSATION_MESSAGE");
-                statement.execute("DROP TABLE IF EXISTS MEMORY_LONG_TERM_MEMORY");
-                statement.execute("DROP TABLE IF EXISTS MEMORY_EPISODIC_MEMORY");
                 statement.execute("UPDATE COMMON_SCHEMA_BASELINE SET BASELINE_VERSION = '3', SEED_PROFILE = 'system-ai' WHERE ID = 1");
             }
         } finally {
             if (!connection.isClosed()) connection.setAutoCommit(originalAutoCommit);
         }
         assertExpectedTables(loadPublicTables(connection));
+    }
+
+    private void dropLegacyMemoryTables(Connection connection) throws Exception {
+        try (Statement statement = connection.createStatement()) {
+            statement.execute("DROP TABLE IF EXISTS MEMORY_CONVERSATION_MESSAGE");
+            statement.execute("DROP TABLE IF EXISTS MEMORY_LONG_TERM_MEMORY");
+            statement.execute("DROP TABLE IF EXISTS MEMORY_EPISODIC_MEMORY");
+        }
     }
 
     /** Upgrade the first plugin catalog shape (ID-only key) to immutable ID+VERSION entries. */

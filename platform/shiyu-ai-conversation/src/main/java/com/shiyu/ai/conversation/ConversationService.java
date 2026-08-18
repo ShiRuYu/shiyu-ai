@@ -12,6 +12,9 @@ import com.shiyu.ai.conversation.domain.MessageRole;
 import com.shiyu.ai.conversation.domain.MessageStatus;
 import com.shiyu.ai.conversation.port.ConversationRepository;
 import com.shiyu.ai.conversation.port.GenerationRepository;
+import com.shiyu.ai.runtime.AiRun;
+import com.shiyu.ai.runtime.AiRunEventType;
+import com.shiyu.ai.runtime.AiRuntimeService;
 import org.springframework.stereotype.Service;
 
 import java.time.Instant;
@@ -80,6 +83,11 @@ public class ConversationService {
                 conversation.branchFromMessageId(), message.id(), conversation.rollingSummary(), conversation.platform(),
                 conversation.model(), conversation.version() + 1, conversation.updatedAt(), now), conversation.version());
         if (updated != 1) {
+            // The message insert and conversation CAS are separate repository
+            // operations. Remove the newly-created node when another writer
+            // wins the conversation version, otherwise a failed append leaves
+            // an unreachable message in the source-of-truth table.
+            repository.deleteMessage(message.id(), conversation.tenantId(), conversation.ownerUserId());
             throw new IllegalStateException("conversation was modified; retry against the latest active leaf");
         }
         return message;
@@ -92,6 +100,12 @@ public class ConversationService {
 
     public GenerationRun createGeneration(Conversation conversation, ConversationMessage userMessage,
                                           String platform, String model, String speakerId) {
+        if (conversation == null || userMessage == null || !conversation.id().equals(userMessage.conversationId())) {
+            throw new IllegalArgumentException("generation input does not belong to conversation");
+        }
+        if (conversation.activeLeafMessageId() != null && !conversation.activeLeafMessageId().equals(userMessage.id())) {
+            throw new IllegalStateException("generation input is not the active conversation leaf");
+        }
         if (generationRepository.hasRunning(conversation.id(), userMessage.id())) {
             throw new IllegalStateException("a generation is already running for this message");
         }
@@ -106,6 +120,21 @@ public class ConversationService {
     public GenerationRun recordCompletedGeneration(Conversation conversation, ConversationMessage input,
                                                    String answer, String platform, String model,
                                                    long promptTokens, long completionTokens) {
+        return recordCompletedGeneration(conversation, input, answer, platform, model, promptTokens, completionTokens, null, null);
+    }
+
+    /**
+     * Persists an explicitly stored OpenAI-compatible response while projecting
+     * its generation facts into the already-created Runtime run. Runtime is the
+     * physical event source; the legacy GenerationRepository is retained only
+     * for callers that do not have a Runtime run (unit tests and old adapters).
+     */
+    public GenerationRun recordCompletedGeneration(Conversation conversation, ConversationMessage input,
+                                                   String answer, String platform, String model,
+                                                   long promptTokens, long completionTokens,
+                                                   AiRuntimeService runtime, AiRun runtimeRun) {
+        conversation = repository.findConversation(conversation.id(), conversation.tenantId(), conversation.ownerUserId())
+                .orElseThrow(() -> new IllegalArgumentException("conversation not found"));
         GenerationRun created = createGeneration(conversation, input, platform, model);
         GenerationRun running = created.transition(GenerationStatus.RUNNING);
         if (generationRepository.update(running, created.version()) != 1) {
@@ -122,20 +151,48 @@ public class ConversationService {
                 latest.parentConversationId(), latest.branchFromMessageId(), assistant.id(), latest.rollingSummary(), latest.platform(), latest.model(),
                 latest.version() + 1, latest.createdAt(), now);
         if (repository.updateConversation(updated, latest.version()) != 1) {
+            repository.deleteMessage(assistant.id(), conversation.tenantId(), conversation.ownerUserId());
+            GenerationRun failed = running.transition(GenerationStatus.FAILED);
+            GenerationRun failedState = new GenerationRun(failed.id(), failed.conversationId(), failed.inputMessageId(), null,
+                    failed.speakerId(), failed.platform(), failed.model(), failed.status(), failed.promptTokens(), failed.completionTokens(),
+                    java.time.Duration.between(created.createdAt(), Instant.now()).toMillis(), "conversation_modified",
+                    failed.lastEventSequence(), false, failed.version(), failed.createdAt(), Instant.now());
+            generationRepository.update(failedState, running.version());
+            if (runtime == null || runtimeRun == null) {
+                generationRepository.appendEvent(new GenerationEvent(created.id(), 0, GenerationEventType.STARTED, "{}", now), conversation.tenantId());
+                generationRepository.appendEvent(new GenerationEvent(created.id(), 1, GenerationEventType.FAILED, "conversation_modified", Instant.now()), conversation.tenantId());
+            }
+            if (runtime != null && runtimeRun != null) {
+                try { runtime.finish(runtimeRun.id(), conversation.tenantId(), conversation.ownerUserId(), com.shiyu.ai.runtime.AiRunStatus.FAILED, "conversation_modified"); }
+                catch (RuntimeException ignored) { }
+            }
             throw new IllegalStateException("conversation was modified while storing generation");
         }
-        generationRepository.appendEvent(new GenerationEvent(created.id(), 0, GenerationEventType.STARTED, "{}", now), conversation.tenantId());
-        if (!content.isEmpty()) generationRepository.appendEvent(new GenerationEvent(created.id(), 1, GenerationEventType.DELTA, content, now), conversation.tenantId());
-        generationRepository.appendEvent(new GenerationEvent(created.id(), 2, GenerationEventType.USAGE,
-                "{\"promptTokens\":" + promptTokens + ",\"completionTokens\":" + completionTokens + ",\"estimated\":true}", now), conversation.tenantId());
+        if (runtime != null && runtimeRun != null) {
+            runtimeRun = runtime.linkGeneration(runtimeRun, created.id());
+            runtime.append(runtimeRun, AiRunEventType.MODEL_DELTA, "{}", true);
+            runtime.append(runtimeRun, AiRunEventType.MODEL_USAGE,
+                    "{\"promptTokens\":" + promptTokens + ",\"completionTokens\":" + completionTokens + ",\"estimated\":false}", true);
+            runtime.recordUsage(runtimeRun.id(), conversation.tenantId(), conversation.ownerUserId(), promptTokens, completionTokens, false, null);
+            runtime.append(runtimeRun, AiRunEventType.MODEL_COMPLETED, "{}", true);
+            runtime.finish(runtimeRun.id(), conversation.tenantId(), conversation.ownerUserId(), com.shiyu.ai.runtime.AiRunStatus.COMPLETED, null);
+        } else {
+            generationRepository.appendEvent(new GenerationEvent(created.id(), 0, GenerationEventType.STARTED, "{}", now), conversation.tenantId());
+            if (!content.isEmpty()) generationRepository.appendEvent(new GenerationEvent(created.id(), 1, GenerationEventType.DELTA, content, now), conversation.tenantId());
+            generationRepository.appendEvent(new GenerationEvent(created.id(), 2, GenerationEventType.USAGE,
+                    "{\"promptTokens\":" + promptTokens + ",\"completionTokens\":" + completionTokens + ",\"estimated\":false}", now), conversation.tenantId());
+        }
         GenerationRun completed = running.transition(GenerationStatus.COMPLETED);
         completed = new GenerationRun(completed.id(), completed.conversationId(), completed.inputMessageId(), assistant.id(), completed.speakerId(),
                 completed.platform(), completed.model(), completed.status(), promptTokens, completionTokens,
                 java.time.Duration.between(created.createdAt(), now).toMillis(), null, 3, false, completed.version(), completed.createdAt(), now);
+        if (runtimeRun != null) completed = completed.withRuntimeRunId(runtimeRun.id());
         if (generationRepository.update(completed, running.version()) != 1) {
             throw new IllegalStateException("stored generation completion conflict");
         }
-        generationRepository.appendEvent(new GenerationEvent(created.id(), 3, GenerationEventType.COMPLETED, "{}", now), conversation.tenantId());
+        if (runtime == null || runtimeRun == null) {
+            generationRepository.appendEvent(new GenerationEvent(created.id(), 3, GenerationEventType.COMPLETED, "{}", now), conversation.tenantId());
+        }
         return completed;
     }
 }

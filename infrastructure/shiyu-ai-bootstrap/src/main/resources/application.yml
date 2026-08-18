@@ -11,6 +11,11 @@ shiyu:
       base-url: ${AI_OPENAI_BASE_URL:https://api.openai.com/v1}
       api-key: ${AI_OPENAI_API_KEY:}
       model: ${AI_OPENAI_MODEL:gpt-4o-mini}
+    deepseek:
+      # Credentials are injected only through the process environment/secret manager.
+      base-url: ${AI_DEEPSEEK_BASE_URL:https://api.deepseek.com}
+      api-key: ${AI_DEEPSEEK_API_KEY:}
+      model: ${AI_DEEPSEEK_MODEL:deepseek-v4-flash}
   tx:
     enabled: true
   # 版本
