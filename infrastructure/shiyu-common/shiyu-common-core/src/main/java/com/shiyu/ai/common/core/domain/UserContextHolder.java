@@ -46,12 +46,6 @@ public final class UserContextHolder {
         return getUserContext() != null;
     }
 
-    /** @deprecated 改用 getCurrentTenantId() */
-    @Deprecated
-    public static Long getTenantId() {
-        return getCurrentTenantId();
-    }
-
     /** 用户默认/登录租户。 */
     public static Long getHomeTenantId() {
         UserContext user = getUserContext();

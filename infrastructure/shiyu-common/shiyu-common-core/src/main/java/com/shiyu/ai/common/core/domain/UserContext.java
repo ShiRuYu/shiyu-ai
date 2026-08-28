@@ -55,10 +55,6 @@ public class UserContext implements Serializable {
     /** 父租户超级管理员切换前的租户。 */
     private Long switchFromTenantId;
 
-    /** @deprecated 严格单租户模式不再使用。 */
-    @Deprecated
-    private Long rootTenantId;
-
     public boolean isParentSuperAdminSwitch() {
         return "PARENT_SUPER_ADMIN".equals(switchMode);
     }
