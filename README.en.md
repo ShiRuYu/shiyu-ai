@@ -9,7 +9,7 @@
 
 ShiYu AI is not a single-purpose AI application. It is an **AI agent platform that connects to multiple LLM providers, centers on a customizable Agent engine, and extends into various business directions**.
 
-The root Maven reactor currently contains 19 buildable modules. Version management is centralized in the root POM; the Observation shell and Excel module are outside the default build, while the Thread module remains active as the Knowledge Worker foundation.
+The root Maven reactor currently contains 19 buildable modules. Version management is centralized in the root POM; the Observation shell is outside the default build, while the Thread module remains active as the Knowledge Worker foundation.
 
 ```
                      ┌──────────────────┐
@@ -69,7 +69,7 @@ Backend-neutral `VectorStore` and `VectorStoreProvider` APIs, backed by **JVecto
 - **Stable Module Boundary** — Knowledge and Memory depend only on public vector APIs
 - **Pluggable Backends** — ChromaDB or Milvus can be added later as provider adapters
 
-### Conversation and MAGMA Memory (`shiyu-ai-conversation` / `shiyu-ai-memory`)
+### Conversation and MAGMA Memory (`shiyu-conversation-implementation` / `shiyu-ai-memory`)
 
 The platform separates raw interaction facts from derived long-term cognition:
 
@@ -98,7 +98,7 @@ Unified multi-platform LLM model adaptation and management:
 - **Resilience** — Circuit breaking, backoff retry, graceful degradation
 - **Embedding Model** — Built-in BGE-small-zh ONNX local embedding, zero external dependencies
 
-### Usage Tracking (`shiyu-ai-usage`)
+### Governance & Usage (`shiyu-governance-implementation`)
 
 Full-stack usage metering and billing:
 
@@ -209,18 +209,18 @@ An **AI-powered tutoring system** for K-12 education, covering the full "learn �
 | `shiyu-ai-model` | Model Management: Multi-platform adapters, Hot reload, Resilience, Embedding | Platform Infrastructure |
 | `shiyu-ai-knowledge` | Knowledge Engine: Document management, RAG retrieval, Knowledge graph, Chunking, Retrieval/Audit/Evaluation | Platform Infrastructure |
 | `shiyu-ai-vector` | Vector Store: JVector HNSW index, Disk persistence, Unified Provider API | Platform Infrastructure |
-| `shiyu-ai-conversation` | Conversation, structured messages, generation lifecycle, SSE resume and Prompt Preview | Platform Infrastructure |
+| `shiyu-conversation-implementation` | Conversation, structured messages, generation lifecycle, SSE resume and Prompt Preview | Conversation domain implementation |
 | `shiyu-ai-memory` | MAGMA-based events, entities, multi-graph relations, governance and explainable retrieval | Platform Infrastructure |
 | `shiyu-ai-tool` | Tool System: MCP protocol, Tool registration/invocation/execution | Platform Infrastructure |
 | `shiyu-ai-plugin` | Plugin System: Lifecycle management, Sandbox isolation, Hot-plug | Platform Infrastructure |
-| `shiyu-ai-usage` | Usage Tracking: Token metering, Real-time push, Multi-dimensional aggregation | Platform Infrastructure |
+| `shiyu-governance-implementation` | Governance and usage: quotas, token metering, real-time push, multi-dimensional aggregation | Domain implementation |
 
 ### 🧱 Infrastructure Layer (technology foundation)
 
 | Module | Responsibility | Category |
 |--------|---------------|----------|
-| `shiyu-common/*` | Common: core (utils/Result/exceptions), web (XSS), mybatis (ORM), thread (pools), excel, storage (file storage) | Infrastructure |
-| `shiyu-ai-dal` | Data Access Implementation: DO/Mapper/Repository impl + Flyway migrations | Infrastructure |
+| `shiyu-common/*` | Common: core (utils/Result/exceptions), web (XSS), mybatis (ORM), thread (pools), storage (file storage) | Infrastructure |
+| `shiyu-common/mybatis` | MyBatis technical support: tenant datasource, interceptors, and common mapper infrastructure | Infrastructure |
 | `shiyu-ai-web` | REST adapters: Controllers, DTOs, WebSocket, OpenAPI | Infrastructure |
 | `shiyu-ai-bootstrap` | Application boot entry: logging/observability/data retention | Infrastructure |
 
@@ -350,18 +350,18 @@ After startup:
 
 | Group | Path Prefix | Category |
 |-------|-------------|----------|
-| Agent | `/v1/agents/**`, `/v1/agent-versions/**`, `/v1/agent-executions/**` | Platform Core |
-| Model | `/v1/platform/models/**`, `/v1/platform/providers/**` | Platform Infrastructure |
-| Knowledge | `/v1/knowledge/**` | Platform Infrastructure |
+| Agent | `/api/agent/agents/**`, `/api/agent/versions/**`, `/api/agent/executions/**` | Platform Core |
+| Model | `/api/model/models/**`, `/api/model/providers/**` | Platform Infrastructure |
+| Knowledge | `/api/knowledge/**` | Platform Infrastructure |
 | Conversation | `/conversations/**`, `/generations/**` | Platform Infrastructure |
-| Runtime | `/v1/runs/**` | Platform Infrastructure |
+| Runtime | `/api/agent/runs/**` | Platform Infrastructure |
 | Memory | `/memory/**` | Platform Infrastructure |
-| Auth | `/v1/auth/**`, `/v1/system/users/**`, `/v1/system/roles/**`, `/v1/system/menus/**`, `/v1/system/tenants/**` | Platform Foundation |
-| Usage | `/v1/usage/**` | Platform Infrastructure |
-| Plugin | `/v1/plugins/**` | Platform Infrastructure |
-| Education | `/v1/education/**` | Business Extension |
-| Record | `/v1/record/**` | Business Extension |
-| System | `/v1/system/**` | Infrastructure |
+| Auth | `/api/iam/auth/**`, `/api/iam/users/**`, `/api/iam/roles/**`, `/api/iam/menus/**`, `/api/iam/tenants/**` | Platform Foundation |
+| Usage | `/api/governance/usage/**` | Platform Infrastructure |
+| Plugin | `/api/tooling/plugins/**` | Platform Infrastructure |
+| Education | `/api/education/**` | Business Extension |
+| Record | `/api/record/**` | Business Extension |
+| System | `/api/iam/**` | Infrastructure |
 
 ---
 

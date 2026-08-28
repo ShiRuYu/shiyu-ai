@@ -1,4 +1,4 @@
-package com.shiyu.ai.dal.config;
+package com.shiyu.ai.application.db;
 
 import jakarta.annotation.PostConstruct;
 import lombok.extern.slf4j.Slf4j;
@@ -31,46 +31,44 @@ import java.util.TreeSet;
 @Component
 public class DatabaseInitializer {
 
-    static final String BASELINE_VERSION = "3";
+    static final String BASELINE_VERSION = "4";
     static final String SEED_PROFILE = "system-ai";
     static final String BASELINE_TABLE = "COMMON_SCHEMA_BASELINE";
 
     private static final List<String> DEFAULT_SCHEMA_RESOURCES = List.of(
-            "classpath:db/baseline/h2/schema/00_baseline.sql",
-            "classpath:db/baseline/h2/schema/01_storage.sql",
-            "classpath:db/baseline/h2/schema/02_common.sql",
-            "classpath:db/baseline/h2/schema/03_auth.sql",
-            "classpath:db/baseline/h2/schema/04_agent.sql",
-            "classpath:db/baseline/h2/schema/06_knowledge.sql",
-            "classpath:db/baseline/h2/schema/07_education.sql",
-            "classpath:db/baseline/h2/schema/08_record.sql",
-            "classpath:db/baseline/h2/schema/09_vector.sql",
-            "classpath:db/baseline/h2/schema/10_observation.sql",
-            "classpath:db/baseline/h2/schema/11_conversation.sql",
-            "classpath:db/baseline/h2/schema/12_memory_magma.sql",
-            "classpath:db/baseline/h2/schema/13_chat_product.sql",
-            "classpath:db/baseline/h2/schema/14_chat_group.sql",
-            "classpath:db/baseline/h2/schema/15_plugin_market.sql"
-            ,"classpath:db/baseline/h2/schema/16_ai_runtime.sql"
-            ,"classpath:db/baseline/h2/schema/17_ai_evaluation.sql"
+            "classpath:db/baseline/h2/schema/application/00_baseline.sql",
+            "classpath:db/baseline/h2/schema/storage/01_storage.sql",
+            "classpath:db/baseline/h2/schema/common/02_common.sql",
+            "classpath:db/baseline/h2/schema/iam/03_auth.sql",
+            "classpath:db/baseline/h2/schema/agent/04_agent.sql",
+            "classpath:db/baseline/h2/schema/governance/05_governance.sql",
+            "classpath:db/baseline/h2/schema/knowledge/06_knowledge.sql",
+            "classpath:db/baseline/h2/schema/education/07_education.sql",
+            "classpath:db/baseline/h2/schema/record/08_record.sql",
+            "classpath:db/baseline/h2/schema/knowledge/09_vector.sql",
+            "classpath:db/baseline/h2/schema/governance/10_observation.sql",
+            "classpath:db/baseline/h2/schema/conversation/11_conversation.sql",
+            "classpath:db/baseline/h2/schema/memory/12_memory_magma.sql",
+            "classpath:db/baseline/h2/schema/tooling/15_plugin_market.sql",
+            "classpath:db/baseline/h2/schema/agent/16_ai_runtime.sql"
     );
 
     private static final List<String> DEFAULT_SEED_RESOURCES = List.of(
-            "classpath:db/baseline/h2/seed/01_common.sql",
-            "classpath:db/baseline/h2/seed/02_auth.sql",
-            "classpath:db/baseline/h2/seed/03_agent.sql",
-            "classpath:db/baseline/h2/seed/04_knowledge.sql",
-            "classpath:db/baseline/h2/seed/05_navigation.sql"
+            "classpath:db/baseline/h2/seed/common/01_common.sql",
+            "classpath:db/baseline/h2/seed/iam/02_auth.sql",
+            "classpath:db/baseline/h2/seed/agent/03_agent.sql",
+            "classpath:db/baseline/h2/seed/knowledge/04_knowledge.sql",
+            "classpath:db/baseline/h2/seed/iam/05_navigation.sql"
     );
 
     private static final Set<String> EXPECTED_TABLES = Set.of(
             BASELINE_TABLE,
             "AGENT_AI_MODEL", "AGENT_AI_PLATFORM", "AGENT_CHECKPOINT", "AGENT_DEF",
             "AGENT_EXECUTION", "AGENT_INTENT_DEF", "AGENT_NODE_EXECUTION",
-            "AGENT_USAGE_RECORD", "AGENT_VERSION",
+            "AGENT_VERSION", "GOVERNANCE_USAGE_RECORD",
             "AUTH_AUTH_CODE", "AUTH_MENU", "AUTH_ROLE", "AUTH_ROLE_SCOPE_AUTH_CODE",
             "AUTH_ROLE_SCOPE_MENU", "AUTH_TENANT", "AUTH_TENANT_AUTH_CODE",
-            "AUTH_TENANT_MENU", "AUTH_TENANT_QUOTA", "AUTH_USER", "AUTH_USER_SCOPE_ROLE",
+            "AUTH_TENANT_MENU", "AUTH_USER", "AUTH_USER_SCOPE_ROLE",
             "COMMON_DICT",
             "EDU_ABILITY", "EDU_ACHIEVEMENT", "EDU_CHAPTER", "EDU_COURSE",
             "EDU_COURSE_CHAPTER", "EDU_COURSE_KNOWLEDGE", "EDU_COURSE_SECTION",
@@ -90,7 +88,7 @@ public class DatabaseInitializer {
             "CHAT_CHARACTER_ASSET", "CHAT_PERSONA_ASSET", "CHAT_LOREBOOK_ASSET", "CHAT_PROMPT_TEMPLATE", "CHAT_GROUP_CHAT",
             "PLUGIN_MARKET_ENTRY",
             "AI_APP", "AI_APP_VERSION", "AI_RUN", "AI_RUN_EVENT", "AI_TOOL_APPROVAL",
-            "AI_EVAL_DATASET", "AI_EVAL_CASE", "AI_EVAL_RUN",
+            "AGENT_EVAL_DATASET", "AGENT_EVAL_CASE", "AGENT_EVAL_RUN",
             "MEMORY_EVENT", "MEMORY_ENTITY", "MEMORY_EDGE", "MEMORY_CONSOLIDATION_JOB", "MEMORY_RETRIEVAL_TRACE",
             "OBSERVATION_AUDIT_LOG", "OBSERVATION_EXECUTION_TIMELINE",
             "RECORD_ENTRY", "RECORD_MEDIA", "RECORD_PROFILE", "RECORD_PROFILE_MEMBER",
@@ -117,26 +115,9 @@ public class DatabaseInitializer {
             if (existingTables.contains(BASELINE_TABLE)) {
                 BaselineMarker marker = readBaselineMarker(connection);
                 if (BASELINE_VERSION.equals(marker.version())) {
-                    // v3 is the final baseline, but additive platform catalogs may be introduced
-                    // after the original v3 rollout. Install only missing additive tables.
-                    // Re-run the idempotent conversation DDL so columns added after the
-                    // original v3 rollout (for example group speaker binding) are patched too.
-                    executeResources(connection, List.of("classpath:db/baseline/h2/schema/11_conversation.sql"), "additive-v3");
-                    if (!existingTables.contains("PLUGIN_MARKET_ENTRY")) {
-                        executeResources(connection, List.of("classpath:db/baseline/h2/schema/15_plugin_market.sql"), "additive-v3");
-                    }
-                    executeResources(connection, List.of("classpath:db/baseline/h2/schema/16_ai_runtime.sql", "classpath:db/baseline/h2/schema/17_ai_evaluation.sql"), "additive-v3");
-                    executeResources(connection, List.of("classpath:db/baseline/h2/seed/05_navigation.sql"), "additive-v3-navigation");
-                    dropLegacyMemoryTables(connection);
-                    migratePluginMarketKey(connection);
                     assertExpectedTables(loadPublicTables(connection));
                     log.info("Database baseline {} ({}) is already installed; initialization skipped",
                             BASELINE_VERSION, SEED_PROFILE);
-                    return;
-                }
-                if ("2".equals(marker.version())) {
-                    migrateV2ToV3(connection);
-                    log.info("Database baseline migrated from 2 to 3");
                     return;
                 }
                 throw unsupportedBaseline(marker);
@@ -199,57 +180,11 @@ public class DatabaseInitializer {
             connection.commit();
         } catch (Exception initializationFailure) {
             rollbackQuietly(connection, initializationFailure);
-            cleanupFailedFreshInstall(connection, initializationFailure);
             throw initializationFailure;
         } finally {
             if (!connection.isClosed()) {
                 connection.setAutoCommit(originalAutoCommit);
             }
-        }
-    }
-
-    private void migrateV2ToV3(Connection connection) throws Exception {
-        boolean originalAutoCommit = connection.getAutoCommit();
-        try {
-            connection.setAutoCommit(true);
-            try (Statement statement = connection.createStatement()) {
-                statement.execute("BACKUP TO 'data/db/backup-baseline-v2.zip'");
-            } catch (Exception backupFailure) {
-                log.warn("Unable to create automatic H2 baseline backup; continue with explicit operator backup", backupFailure);
-            }
-            executeResources(connection, List.of(
-                    "classpath:db/baseline/h2/schema/11_conversation.sql",
-                    "classpath:db/baseline/h2/schema/12_memory_magma.sql",
-                    "classpath:db/baseline/h2/schema/13_chat_product.sql", "classpath:db/baseline/h2/schema/14_chat_group.sql",
-                    "classpath:db/baseline/h2/schema/15_plugin_market.sql",
-                    "classpath:db/baseline/h2/schema/16_ai_runtime.sql",
-                    "classpath:db/baseline/h2/schema/17_ai_evaluation.sql"), "migration");
-            executeResources(connection, List.of("classpath:db/baseline/h2/seed/05_navigation.sql"), "migration-navigation");
-            migratePluginMarketKey(connection);
-            dropLegacyMemoryTables(connection);
-            try (Statement statement = connection.createStatement()) {
-                statement.execute("UPDATE COMMON_SCHEMA_BASELINE SET BASELINE_VERSION = '3', SEED_PROFILE = 'system-ai' WHERE ID = 1");
-            }
-        } finally {
-            if (!connection.isClosed()) connection.setAutoCommit(originalAutoCommit);
-        }
-        assertExpectedTables(loadPublicTables(connection));
-    }
-
-    private void dropLegacyMemoryTables(Connection connection) throws Exception {
-        try (Statement statement = connection.createStatement()) {
-            statement.execute("DROP TABLE IF EXISTS MEMORY_CONVERSATION_MESSAGE");
-            statement.execute("DROP TABLE IF EXISTS MEMORY_LONG_TERM_MEMORY");
-            statement.execute("DROP TABLE IF EXISTS MEMORY_EPISODIC_MEMORY");
-        }
-    }
-
-    /** Upgrade the first plugin catalog shape (ID-only key) to immutable ID+VERSION entries. */
-    private void migratePluginMarketKey(Connection connection) throws Exception {
-        if (!loadPublicTables(connection).contains("PLUGIN_MARKET_ENTRY")) return;
-        try (Statement statement = connection.createStatement()) {
-            statement.execute("ALTER TABLE PLUGIN_MARKET_ENTRY DROP CONSTRAINT IF EXISTS PK_PLUGIN_MARKET_ENTRY");
-            statement.execute("ALTER TABLE PLUGIN_MARKET_ENTRY ADD CONSTRAINT PK_PLUGIN_MARKET_ENTRY PRIMARY KEY (ID, VERSION)");
         }
     }
 
@@ -295,7 +230,7 @@ public class DatabaseInitializer {
     private IllegalStateException unsupportedBaseline(BaselineMarker marker) {
         return new IllegalStateException("Unsupported database baseline: version=" + marker.version()
                 + ", seedProfile=" + marker.seedProfile() + "; expected version=" + BASELINE_VERSION
-                + ", seedProfile=" + SEED_PROFILE);
+                + ", seedProfile=" + SEED_PROFILE + "; manual rebuild required");
     }
 
     private Set<String> loadPublicTables(Connection connection) throws Exception {
@@ -329,19 +264,6 @@ public class DatabaseInitializer {
             }
         } catch (Exception rollbackFailure) {
             initializationFailure.addSuppressed(rollbackFailure);
-        }
-    }
-
-    private void cleanupFailedFreshInstall(Connection connection, Exception initializationFailure) {
-        try {
-            connection.setAutoCommit(true);
-            try (Statement statement = connection.createStatement()) {
-                statement.execute("DROP ALL OBJECTS");
-            }
-            log.warn("Removed all objects created by the failed fresh database initialization");
-        } catch (Exception cleanupFailure) {
-            initializationFailure.addSuppressed(cleanupFailure);
-            log.error("Failed to clean up objects created by fresh database initialization", cleanupFailure);
         }
     }
 

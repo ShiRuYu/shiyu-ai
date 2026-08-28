@@ -14,6 +14,7 @@ import java.util.List;
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
+@SuppressWarnings("serial")
 public class PageData<T> implements Serializable {
     @Serial
     private static final long serialVersionUID = 1L;

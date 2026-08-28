@@ -9,7 +9,7 @@
 
 拾羽 AI（ShiYu AI）不是一个单一功能的 AI 应用，而是一个**可接入多 LLM 平台、以自定义 Agent 为核心、向多个业务方向扩展**的 AI 智能体平台。
 
-当前根 Maven reactor 包含 19 个实际构建模块。版本管理已收敛到根 POM；Observation 空壳和 Excel 模块不再进入默认构建，Thread 模块作为 Knowledge Worker 的基础设施继续保留。
+当前根 Maven reactor 包含 19 个实际构建模块。版本管理已收敛到根 POM；Observation 空壳不再进入默认构建，Thread 模块作为 Knowledge Worker 的基础设施继续保留。
 
 ```
                      ┌──────────────────┐
@@ -68,7 +68,7 @@
 - **统一边界** — Knowledge 与 Memory 仅依赖公共接口，不直接实例化 JVector
 - **可替换后端** — 后续接入 ChromaDB、Milvus 时新增 Provider 适配器即可
 
-### Conversation 与 MAGMA Memory (`shiyu-ai-conversation` / `shiyu-ai-memory`)
+### Conversation 与 MAGMA Memory (`shiyu-conversation-implementation` / `shiyu-ai-memory`)
 
 平台将原始交互和派生记忆明确分离：
 
@@ -97,7 +97,7 @@
 - **弹性容错** — 熔断降级、退避重试，保障服务可用性
 - **嵌入模型** — 内置 BGE-small-zh ONNX 本地嵌入模型，无外部依赖
 
-### 用量计量 — Usage Tracking (`shiyu-ai-usage`)
+### 治理与用量计量 — Governance & Usage (`shiyu-governance-implementation`)
 
 全链路用量与计费跟踪：
 
@@ -208,18 +208,18 @@
 | `shiyu-ai-model` | 模型管理：多平台适配器、热更新、熔断降级、嵌入模型 | 平台基础设施 |
 | `shiyu-ai-knowledge` | 知识引擎：文档管理、RAG 检索、知识图谱、中文分块、检索/审计/评测 | 平台基础设施 |
 | `shiyu-ai-vector` | 向量存储：JVector HNSW 索引、磁盘持久化、统一 Provider API | 平台基础设施 |
-| `shiyu-ai-conversation` | 原始会话、消息树、生成生命周期、SSE 续传和 Prompt Preview | 平台基础设施 |
+| `shiyu-conversation-implementation` | 原始会话、消息树、生成生命周期、SSE 续传和 Prompt Preview | Conversation 领域实现 |
 | `shiyu-ai-memory` | MAGMA-based 事件、实体、多图关系、治理和可解释检索 | 平台基础设施 |
 | `shiyu-ai-tool` | 工具体系：MCP 协议集成、工具注册/调用/执行 | 平台基础设施 |
 | `shiyu-ai-plugin` | 插件体系：生命周期管理、沙箱隔离、动态热插拔 | 平台基础设施 |
-| `shiyu-ai-usage` | 用量计量：Token 统计、实时推送、多维聚合 | 平台基础设施 |
+| `shiyu-governance-implementation` | 治理与用量计量：配额、Token 统计、实时推送、多维聚合 | 领域实现 |
 
 ### 🧱 基础设施层（纯技术底座）
 
 | 模块 | 职责 | 类型 |
 |------|------|------|
-| `shiyu-common/*` | 公共基础：core（工具/Result/异常）、web（XSS）、mybatis（ORM 封装）、thread（线程池）、excel、storage（文件存储） | 基础设施 |
-| `shiyu-ai-dal` | 数据访问实现层：DO/Mapper/Repository + 一次性最终 H2 基线 | 基础设施 |
+| `shiyu-common/*` | 公共基础：core（工具/Result/异常）、web（XSS）、mybatis（ORM 封装）、thread（线程池）、storage（文件存储） | 基础设施 |
+| `shiyu-common/mybatis` | MyBatis 技术支持：租户数据源、拦截器与通用 Mapper 基础设施 | 基础设施 |
 | `shiyu-ai-web` | REST 接入层：Controller、DTO、WebSocket、OpenAPI | 基础设施 |
 | `shiyu-ai-bootstrap` | 应用启动入口：日志/可观测/数据保留装配 | 基础设施 |
 
@@ -346,16 +346,16 @@ Linux 使用对应的 `scripts/package-cloud-linux.sh` 和
 
 | 分组 | 路径前缀 | 所属 |
 |------|----------|------|
-| Agent | `/v1/agents/**`、`/v1/agent-versions/**`、`/v1/agent-executions/**` | Agent 定义、版本与执行 |
+| Agent | `/api/agent/agents/**`、`/api/agent/versions/**`、`/api/agent/executions/**` | Agent 定义、版本与执行 |
 | Conversation | `/conversations/**`、`/generations/**` | 原始消息、生成生命周期和 SSE 事件 |
-| Runtime | `/v1/runs/**` | 统一运行轨迹、Trace、usage 和审批 |
-| 知识库 | `/v1/knowledge/**` | 空间、文档、检索、图谱与任务 |
-| 教育 | `/v1/education/**` | 课程、题库、考试、学习与分析 |
-| 记录 | `/v1/record/**` | 人物、记录、时间线、标签与附件 |
-| 认证授权 | `/v1/auth/**`、`/v1/system/users/**`、`/v1/system/roles/**`、`/v1/system/menus/**`、`/v1/system/tenants/**` | 登录、租户、角色与菜单 |
-| 平台治理 | `/v1/system/**`、`/v1/usage/**`、`/v1/plugins/**`、`/v1/tools/**` | 文件、用量、插件与工具 |
+| Runtime | `/api/agent/runs/**` | 统一运行轨迹、Trace、usage 和审批 |
+| 知识库 | `/api/knowledge/**` | 空间、文档、检索、图谱与任务 |
+| 教育 | `/api/education/**` | 课程、题库、考试、学习与分析 |
+| 记录 | `/api/record/**` | 人物、记录、时间线、标签与附件 |
+| 认证授权 | `/api/iam/auth/**`、`/api/iam/users/**`、`/api/iam/roles/**`、`/api/iam/menus/**`、`/api/iam/tenants/**` | 登录、租户、角色与菜单 |
+| 平台治理 | `/api/iam/**`、`/api/governance/usage/**`、`/api/tooling/plugins/**`、`/api/tooling/tools/**` | 文件、用量、插件与工具 |
 
-完整的 400 条路径、434 个 operation 见 [API 接口参考](./docs/参考/API接口参考.md)；菜单、角色和权限见 [菜单角色权限矩阵](./docs/参考/菜单角色权限矩阵.md)。
+完整的 404 条路径、440 个 operation 见 [API 接口参考](./docs/参考/API接口参考.md)；菜单、角色和权限见 [菜单角色权限矩阵](./docs/参考/菜单角色权限矩阵.md)。
 
 ---
 

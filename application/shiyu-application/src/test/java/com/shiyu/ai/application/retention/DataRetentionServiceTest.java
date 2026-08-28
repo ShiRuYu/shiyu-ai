@@ -1,4 +1,4 @@
-package com.shiyu.ai.dal.retention;
+package com.shiyu.ai.application.retention;
 
 import org.h2.jdbcx.JdbcDataSource;
 import org.junit.jupiter.api.Test;
@@ -10,6 +10,13 @@ import java.time.temporal.ChronoUnit;
 import java.util.UUID;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.anyString;
+import static org.mockito.ArgumentMatchers.contains;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.never;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
 
 class DataRetentionServiceTest {
 
@@ -26,8 +33,8 @@ class DataRetentionServiceTest {
         Instant current = Instant.now();
         for (String table : new String[]{
                 "agent_node_execution", "agent_checkpoint", "observation_execution_timeline",
-                "memory_episodic_memory", "agent_execution", "observation_audit_log",
-                "knowledge_audit_log", "agent_usage_record"}) {
+                "agent_execution", "observation_audit_log",
+                "knowledge_audit_log", "governance_usage_record"}) {
             insertTimestamped(jdbcTemplate, table, old);
             insertTimestamped(jdbcTemplate, table, current);
         }
@@ -49,8 +56,8 @@ class DataRetentionServiceTest {
 
         for (String table : new String[]{
                 "agent_node_execution", "agent_checkpoint", "observation_execution_timeline",
-                "memory_episodic_memory", "agent_execution", "observation_audit_log",
-                "knowledge_audit_log", "agent_usage_record"}) {
+                "agent_execution", "observation_audit_log",
+                "knowledge_audit_log", "governance_usage_record"}) {
             assertEquals(1, count(jdbcTemplate, table), table);
         }
         assertEquals(2, count(jdbcTemplate, "knowledge_ingestion_job"));
@@ -58,11 +65,24 @@ class DataRetentionServiceTest {
                 "SELECT COUNT(*) FROM knowledge_ingestion_job WHERE job_status = 'RUNNING'", Integer.class));
     }
 
+    @Test
+    void doesNotReferenceRetiredMemoryEpisodicTable() {
+        JdbcTemplate jdbcTemplate = mock(JdbcTemplate.class);
+        when(jdbcTemplate.update(anyString(), any(Timestamp.class))).thenReturn(0);
+
+        DataRetentionProperties properties = new DataRetentionProperties();
+        properties.setEnabled(true);
+
+        new DataRetentionService(jdbcTemplate, properties).cleanup();
+
+        verify(jdbcTemplate, never()).update(contains("memory_episodic_memory"), any(Timestamp.class));
+    }
+
     private void createOperationalTables(JdbcTemplate jdbcTemplate) {
         for (String table : new String[]{
                 "agent_node_execution", "agent_checkpoint", "observation_execution_timeline",
-                "memory_episodic_memory", "agent_execution", "observation_audit_log",
-                "knowledge_audit_log", "agent_usage_record"}) {
+                "agent_execution", "observation_audit_log",
+                "knowledge_audit_log", "governance_usage_record"}) {
             jdbcTemplate.execute("CREATE TABLE " + table + " (id BIGINT AUTO_INCREMENT PRIMARY KEY, create_time TIMESTAMP)");
         }
         jdbcTemplate.execute("CREATE TABLE knowledge_ingestion_job (id BIGINT AUTO_INCREMENT PRIMARY KEY, "

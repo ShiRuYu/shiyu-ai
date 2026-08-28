@@ -7,7 +7,7 @@ import jakarta.servlet.ReadListener;
 import jakarta.servlet.ServletInputStream;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletRequestWrapper;
-import org.apache.commons.lang3.StringUtils;
+import org.apache.commons.lang3.Strings;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.MediaType;
 
@@ -50,7 +50,7 @@ public class XssHttpServletRequestWrapper extends HttpServletRequestWrapper {
 
         // 为空，直接返回
         String json = StrUtil.str(IoUtil.readBytes(super.getInputStream(), false), StandardCharsets.UTF_8);
-        if (StringUtils.isEmpty(json)) {
+        if (json == null || json.isEmpty()) {
             return super.getInputStream();
         }
 
@@ -90,6 +90,6 @@ public class XssHttpServletRequestWrapper extends HttpServletRequestWrapper {
      */
     public boolean isJsonRequest() {
         String header = super.getHeader(HttpHeaders.CONTENT_TYPE);
-        return StringUtils.startsWithIgnoreCase(header, MediaType.APPLICATION_JSON_VALUE);
+        return Strings.CI.startsWith(header, MediaType.APPLICATION_JSON_VALUE);
     }
 }

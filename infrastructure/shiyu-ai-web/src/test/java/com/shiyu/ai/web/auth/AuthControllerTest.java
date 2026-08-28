@@ -6,10 +6,12 @@ import com.shiyu.ai.auth.request.RefreshTokenRequest;
 import com.shiyu.ai.auth.service.AuthService;
 import com.shiyu.ai.auth.service.UserService;
 import com.shiyu.ai.auth.vo.LoginResponseVO;
+import com.shiyu.ai.auth.web.AuthController;
 import com.shiyu.ai.common.core.api.Result;
 import com.shiyu.ai.common.core.domain.UserContext;
 import com.shiyu.ai.common.core.domain.UserContextHolder;
-import com.shiyu.ai.knowledge.service.KnowledgeSpaceService;
+import com.shiyu.ai.knowledge.contract.KnowledgeTenantProvisioning;
+import com.shiyu.ai.kernel.context.TenantId;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Tag;
 import org.junit.jupiter.api.Test;
@@ -37,7 +39,7 @@ class AuthControllerTest {
         AuthService authService = mock(AuthService.class);
         UserService userService = mock(UserService.class);
         LoginRateLimiter rateLimiter = mock(LoginRateLimiter.class);
-        KnowledgeSpaceService knowledgeSpaceService = mock(KnowledgeSpaceService.class);
+        KnowledgeTenantProvisioning knowledgeSpaceService = mock(KnowledgeTenantProvisioning.class);
         AuthController controller = new AuthController(
                 authService, userService, rateLimiter, knowledgeSpaceService);
 
@@ -52,13 +54,13 @@ class AuthControllerTest {
         response.setSwitchMode("NORMAL");
         when(rateLimiter.getClientIp()).thenReturn("127.0.0.1");
         when(rateLimiter.isAllowed("127.0.0.1")).thenReturn(true);
-        when(authService.login("admin", "123456", null)).thenReturn(response);
+        when(authService.login("admin", "123456", null, "127.0.0.1")).thenReturn(response);
 
         AtomicReference<UserContext> observedContext = new AtomicReference<>();
         doAnswer(invocation -> {
             observedContext.set(UserContextHolder.getContext());
             return null;
-        }).when(knowledgeSpaceService).initializeTenantDefaults(1L);
+        }).when(knowledgeSpaceService).initializeTenantDefaults(new TenantId(1L));
 
         Result<LoginResponseVO> result = controller.login(request);
 
@@ -67,7 +69,7 @@ class AuthControllerTest {
         assertEquals("admin", observedContext.get().getUsername());
         assertEquals(1L, observedContext.get().getCurrentTenantId());
         assertNull(UserContextHolder.getContext());
-        verify(knowledgeSpaceService).initializeTenantDefaults(1L);
+        verify(knowledgeSpaceService).initializeTenantDefaults(new TenantId(1L));
         verify(rateLimiter).reset("127.0.0.1");
     }
 
@@ -76,7 +78,7 @@ class AuthControllerTest {
         AuthService authService = mock(AuthService.class);
         UserService userService = mock(UserService.class);
         LoginRateLimiter rateLimiter = mock(LoginRateLimiter.class);
-        KnowledgeSpaceService knowledgeSpaceService = mock(KnowledgeSpaceService.class);
+        KnowledgeTenantProvisioning knowledgeSpaceService = mock(KnowledgeTenantProvisioning.class);
         AuthController controller = new AuthController(
                 authService, userService, rateLimiter, knowledgeSpaceService);
         RefreshTokenRequest request = new RefreshTokenRequest();

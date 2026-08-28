@@ -17,63 +17,19 @@
     <dependencies>
         <dependency>
             <groupId>com.shiyu.ai</groupId>
+            <artifactId>shiyu-shared-kernel</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>com.shiyu.ai</groupId>
             <artifactId>shiyu-common-web</artifactId>
         </dependency>
         <dependency>
             <groupId>com.shiyu.ai</groupId>
-            <artifactId>shiyu-common-storage</artifactId>
+            <artifactId>shiyu-iam-implementation</artifactId>
         </dependency>
         <dependency>
             <groupId>com.shiyu.ai</groupId>
-            <artifactId>shiyu-ai-auth</artifactId>
-        </dependency>
-        <dependency>
-            <groupId>com.shiyu.ai</groupId>
-            <artifactId>shiyu-ai-agent</artifactId>
-        </dependency>
-        <dependency>
-            <groupId>com.shiyu.ai</groupId>
-            <artifactId>shiyu-ai-education</artifactId>
-        </dependency>
-        <dependency>
-            <groupId>com.shiyu.ai</groupId>
-            <artifactId>shiyu-ai-knowledge</artifactId>
-        </dependency>
-        <dependency>
-            <groupId>com.shiyu.ai</groupId>
-            <artifactId>shiyu-ai-model</artifactId>
-        </dependency>
-        <dependency>
-            <groupId>com.shiyu.ai</groupId>
-            <artifactId>shiyu-ai-conversation</artifactId>
-        </dependency>
-        <dependency>
-            <groupId>com.shiyu.ai</groupId>
-            <artifactId>shiyu-ai-runtime</artifactId>
-        </dependency>
-        <dependency>
-            <groupId>com.shiyu.ai</groupId>
-            <artifactId>shiyu-ai-evaluation</artifactId>
-        </dependency>
-        <dependency>
-            <groupId>com.shiyu.ai</groupId>
-            <artifactId>shiyu-ai-chat-product</artifactId>
-        </dependency>
-        <dependency>
-            <groupId>com.shiyu.ai</groupId>
-            <artifactId>shiyu-ai-memory</artifactId>
-        </dependency>
-        <dependency>
-            <groupId>com.shiyu.ai</groupId>
-            <artifactId>shiyu-ai-record</artifactId>
-        </dependency>
-        <dependency>
-            <groupId>com.shiyu.ai</groupId>
-            <artifactId>shiyu-ai-usage</artifactId>
-        </dependency>
-        <dependency>
-            <groupId>com.shiyu.ai</groupId>
-            <artifactId>shiyu-ai-plugin</artifactId>
+            <artifactId>shiyu-agent-implementation</artifactId>
         </dependency>
         <dependency>
             <groupId>org.springframework.boot</groupId>

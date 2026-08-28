@@ -116,7 +116,7 @@ logging:
   level:
     # Project packages - use Maven profile level
     root: info
-    com.shiyu: @logging.level@
+    com.shiyu: ${logging.level}
 springdoc:
   api-docs:
     enabled: true               # 是否启用 API 文档
@@ -126,6 +126,16 @@ springdoc:
       paths-to-match:
         - '/**'
       packages-to-scan:
+        - com.shiyu.ai.auth.web
+        - com.shiyu.ai.agent.web
+        - com.shiyu.ai.conversation.web
+        - com.shiyu.ai.education.web
+        - com.shiyu.ai.knowledge.web
+        - com.shiyu.ai.model.web
+        - com.shiyu.ai.record.web
+        - com.shiyu.ai.governance.web
+        - com.shiyu.ai.tooling.web
+        - com.shiyu.ai.common.storage.web
         - com.shiyu.ai.web.auth
         - com.shiyu.ai.web.agent
         - com.shiyu.ai.web.model
@@ -137,31 +147,45 @@ springdoc:
         - com.shiyu.ai.web.common
     - group: 'auth'
       packages-to-scan:
+        - com.shiyu.ai.auth.web
         - com.shiyu.ai.web.auth
     - group: 'agent'
       packages-to-scan:
+        - com.shiyu.ai.agent.web
         - com.shiyu.ai.web.agent
+    - group: 'conversation'
+      packages-to-scan:
+        - com.shiyu.ai.conversation.web
+        - com.shiyu.ai.web.conversation
+        - com.shiyu.ai.web.chat
     - group: 'education'
       packages-to-scan:
+        - com.shiyu.ai.education.web
         - com.shiyu.ai.web.education
     - group: 'knowledge'
       packages-to-scan:
+        - com.shiyu.ai.knowledge.web
         - com.shiyu.ai.web.knowledge
     - group: 'model'
       packages-to-scan:
+        - com.shiyu.ai.model.web
         - com.shiyu.ai.web.model
     - group: 'record'
       packages-to-scan:
+        - com.shiyu.ai.record.web
         - com.shiyu.ai.web.record
     - group: 'usage'
       packages-to-scan:
+        - com.shiyu.ai.governance.web
         - com.shiyu.ai.web.usage
     - group: 'plugin'
       packages-to-scan:
+        - com.shiyu.ai.tooling.web
         - com.shiyu.ai.web.plugin
     - group: 'common'
       packages-to-scan:
         - com.shiyu.ai.web.common
+        - com.shiyu.ai.common.storage.web
   swagger-ui:
     path: /swagger-ui/index.html      # Swagger UI 访问路径，默认 /swagger-ui/index.html
     display-request-duration: true  # 显示请求耗时
@@ -180,7 +204,7 @@ spring:
     # 国际化资源文件路径
     basename: i18n/messages
   profiles:
-    active: @profiles.active@
+    active: ${profiles.active}
     group:
       dev: ai, h2 #,mcp
 

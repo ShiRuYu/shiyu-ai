@@ -1,4 +1,4 @@
-package com.shiyu.ai.dal.config;
+package com.shiyu.ai.common.mybatis.config;
 
 import com.mybatisflex.core.tenant.TenantManager;
 import org.springframework.context.annotation.Configuration;

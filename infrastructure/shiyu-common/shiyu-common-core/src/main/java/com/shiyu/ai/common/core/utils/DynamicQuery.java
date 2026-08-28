@@ -86,6 +86,7 @@ public class DynamicQuery {
     }
 
     // ----------------------- Comparator 构建 -----------------------
+    @SuppressWarnings({"unchecked", "rawtypes"})
     private static <T> Comparator<T> buildComparator(List<SortRule> sorts) {
         if (sorts == null || sorts.isEmpty()) return (o1, o2) -> 0;
 

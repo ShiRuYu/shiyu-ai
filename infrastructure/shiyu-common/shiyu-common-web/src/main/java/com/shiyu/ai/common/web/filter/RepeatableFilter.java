@@ -2,7 +2,7 @@ package com.shiyu.ai.common.web.filter;
 
 import jakarta.servlet.*;
 import jakarta.servlet.http.HttpServletRequest;
-import org.apache.commons.lang3.StringUtils;
+import org.apache.commons.lang3.Strings;
 import org.springframework.http.MediaType;
 
 import java.io.IOException;
@@ -27,7 +27,7 @@ public class RepeatableFilter implements Filter {
                 return;
             }
             // 只对Content-Type为JSON的请求进行包装
-            if (StringUtils.startsWithIgnoreCase(request.getContentType(), MediaType.APPLICATION_JSON_VALUE)) {
+            if (Strings.CI.startsWith(request.getContentType(), MediaType.APPLICATION_JSON_VALUE)) {
                 requestWrapper = new RepeatedlyRequestWrapper(httpServletRequest, response);
             }
         }

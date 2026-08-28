@@ -1,0 +1,112 @@
+package com.shiyu.ai.auth.web;
+
+import com.shiyu.ai.auth.vo.CaptchaVO;
+import com.shiyu.ai.auth.service.CaptchaService;
+import com.shiyu.ai.common.core.api.Result;
+import lombok.extern.slf4j.Slf4j;
+import jakarta.validation.Valid;
+import org.springframework.web.bind.annotation.*;
+import io.swagger.v3.oas.annotations.tags.Tag;
+import io.swagger.v3.oas.annotations.Operation;
+
+/**
+ * 验证码 Controller
+ * 提供验证码生成和验证功能
+ */
+@Slf4j
+@Tag(name = "Captcha", description = "Captcha")
+@RestController
+@RequestMapping("/api/iam/auth/captcha")
+public class CaptchaController {
+    
+    private final CaptchaService captchaService;
+    
+    public CaptchaController(CaptchaService captchaService) {
+        this.captchaService = captchaService;
+    }
+    
+    /**
+     * 获取验证码
+     * @return SVG 格式的验证码图片
+     */
+    @Operation(summary = "Get Captcha")
+    @GetMapping("")
+    public Result<CaptchaVO> getCaptcha() {
+        log.info("收到验证码请求");
+        
+        try {
+            // 生成验证码
+            CaptchaVO captchaVO = captchaService.generateCaptcha();
+            
+            // 返回结果
+            return Result.success(captchaVO);
+            
+        } catch (Exception e) {
+            log.error("生成验证码失败", e);
+            return Result.fail("生成验证码失败");
+        }
+    }
+    
+    /**
+     * 验证验证码
+     * @param request 验证请求（包含 key 和 code）
+     * @return 验证结果
+     */
+    @Operation(summary = "Validate Captcha")
+    @PostMapping("/validate")
+    public Result<ValidateCaptchaResponse> validateCaptcha(@Valid @RequestBody ValidateCaptchaRequest request) {
+        log.info("收到验证码验证请求：key={}", request.getKey());
+        
+        try {
+            // 验证验证码
+            boolean valid = captchaService.validateCaptcha(request.getKey(), request.getCode());
+            
+            ValidateCaptchaResponse response;
+            if (valid) {
+                response = new ValidateCaptchaResponse(true, "验证码正确");
+                return Result.success(response);
+            } else {
+                response = new ValidateCaptchaResponse(false, "验证码错误");
+                return Result.success(response);
+            }
+            
+        } catch (Exception e) {
+            log.error("验证验证码失败", e);
+            return Result.fail("验证验证码失败");
+        }
+    }
+    
+    /**
+     * 验证请求参数
+     */
+    @lombok.Data
+    @lombok.AllArgsConstructor
+    public static class ValidateCaptchaRequest {
+        /**
+         * 验证码 key
+         */
+        private String key;
+        
+        /**
+         * 用户输入的验证码
+         */
+        private String code;
+    }
+    
+    /**
+     * 验证响应
+     */
+    @lombok.Data
+    @lombok.AllArgsConstructor
+    public static class ValidateCaptchaResponse {
+        /**
+         * 是否成功
+         */
+        private Boolean success;
+        
+        /**
+         * 消息
+         */
+        private String message;
+    }
+}

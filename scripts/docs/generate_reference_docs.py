@@ -314,7 +314,7 @@ def seed_rows(text: str, table: str) -> list[list[str]]:
 
 
 def canonical_menu_rows(text: str) -> list[list[str]]:
-    """Read v3 menu rows from the MERGE statement in 05_navigation.sql."""
+    """Read v4 domain navigation rows from 05_navigation.sql."""
     rows = []
     for line in text.splitlines():
         value = line.strip()
@@ -485,12 +485,26 @@ def main() -> None:
     source = args.openapi_file or args.openapi_url
     paths, operations = generate_api_reference(spec, repo / "docs/参考/API接口参考.md", source)
 
-    schema_dir = repo / "infrastructure/shiyu-ai-dal/src/main/resources/db/baseline/h2/schema"
-    tables = parse_tables(sorted(schema_dir.glob("*.sql")))
+    schema_roots = [
+        repo / "application/shiyu-application/src/main/resources/db/baseline/h2/schema",
+        repo / "infrastructure/shiyu-common/shiyu-common-core/src/main/resources/db/baseline/h2/schema",
+        repo / "infrastructure/shiyu-common/shiyu-common-storage/src/main/resources/db/baseline/h2/schema",
+        repo / "shiyu-domains/iam/shiyu-iam-implementation/src/main/resources/db/baseline/h2/schema",
+        repo / "shiyu-domains/agent/shiyu-agent-implementation/src/main/resources/db/baseline/h2/schema",
+        repo / "shiyu-domains/conversation/shiyu-conversation-implementation/src/main/resources/db/baseline/h2/schema",
+        repo / "shiyu-domains/education/shiyu-education-implementation/src/main/resources/db/baseline/h2/schema",
+        repo / "shiyu-domains/governance/shiyu-governance-implementation/src/main/resources/db/baseline/h2/schema",
+        repo / "shiyu-domains/knowledge/shiyu-knowledge-implementation/src/main/resources/db/baseline/h2/schema",
+        repo / "shiyu-domains/memory/shiyu-memory-implementation/src/main/resources/db/baseline/h2/schema",
+        repo / "shiyu-domains/record/shiyu-record-implementation/src/main/resources/db/baseline/h2/schema",
+        repo / "shiyu-domains/tooling/shiyu-tooling-implementation/src/main/resources/db/baseline/h2/schema",
+    ]
+    schema_files = sorted(path for root in schema_roots if root.exists() for path in root.rglob("*.sql"))
+    tables = parse_tables(schema_files)
     generate_data_dictionary(tables, repo / "docs/参考/领域模型与数据字典.md")
 
-    seed_file = repo / "infrastructure/shiyu-ai-dal/src/main/resources/db/baseline/h2/seed/02_auth.sql"
-    navigation_file = repo / "infrastructure/shiyu-ai-dal/src/main/resources/db/baseline/h2/seed/05_navigation.sql"
+    seed_file = repo / "shiyu-domains/iam/shiyu-iam-implementation/src/main/resources/db/baseline/h2/seed/iam/02_auth.sql"
+    navigation_file = repo / "shiyu-domains/iam/shiyu-iam-implementation/src/main/resources/db/baseline/h2/seed/iam/05_navigation.sql"
     menus, auth_codes = generate_permission_matrix(repo, seed_file, navigation_file, repo / "docs/参考/菜单角色权限矩阵.md")
     print(
         f"generated: paths={paths}, operations={operations}, tables={len(tables)}, "

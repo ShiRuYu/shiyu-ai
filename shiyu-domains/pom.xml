@@ -1,0 +1,37 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0"
+         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 https://maven.apache.org/xsd/maven-4.0.0.xsd">
+    <modelVersion>4.0.0</modelVersion>
+    <parent>
+        <groupId>com.shiyu.ai</groupId>
+        <artifactId>shiyu-ai</artifactId>
+        <version>${revision}</version>
+        <relativePath>../pom.xml</relativePath>
+    </parent>
+    <artifactId>shiyu-domains</artifactId>
+    <packaging>pom</packaging>
+    <name>shiyu-domains</name>
+    <modules>
+        <module>iam/shiyu-iam-contract</module>
+        <module>iam/shiyu-iam-implementation</module>
+        <module>agent/shiyu-agent-contract</module>
+        <module>agent/shiyu-agent-implementation</module>
+        <module>conversation/shiyu-conversation-contract</module>
+        <module>conversation/shiyu-conversation-implementation</module>
+        <module>model/shiyu-model-contract</module>
+        <module>model/shiyu-model-implementation</module>
+        <module>memory/shiyu-memory-contract</module>
+        <module>memory/shiyu-memory-implementation</module>
+        <module>knowledge/shiyu-knowledge-contract</module>
+        <module>knowledge/shiyu-knowledge-implementation</module>
+        <module>tooling/shiyu-tooling-contract</module>
+        <module>tooling/shiyu-tooling-implementation</module>
+        <module>governance/shiyu-governance-contract</module>
+        <module>governance/shiyu-governance-implementation</module>
+        <module>education/shiyu-education-contract</module>
+        <module>education/shiyu-education-implementation</module>
+        <module>record/shiyu-record-contract</module>
+        <module>record/shiyu-record-implementation</module>
+    </modules>
+</project>

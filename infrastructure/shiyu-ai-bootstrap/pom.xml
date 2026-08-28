@@ -16,11 +16,17 @@
     <dependencies>
         <dependency>
             <groupId>com.shiyu.ai</groupId>
-            <artifactId>shiyu-ai-web</artifactId>
+            <artifactId>shiyu-application</artifactId>
+            <version>${revision}</version>
         </dependency>
         <dependency>
             <groupId>com.shiyu.ai</groupId>
-            <artifactId>shiyu-ai-dal</artifactId>
+            <artifactId>shiyu-governance-implementation</artifactId>
+            <version>${revision}</version>
+        </dependency>
+        <dependency>
+            <groupId>com.shiyu.ai</groupId>
+            <artifactId>shiyu-ai-web</artifactId>
         </dependency>
         <dependency>
             <groupId>com.h2database</groupId>

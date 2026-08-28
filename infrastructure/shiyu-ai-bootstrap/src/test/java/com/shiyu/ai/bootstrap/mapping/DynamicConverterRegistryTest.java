@@ -264,9 +264,10 @@ class DynamicConverterRegistryTest {
 
     private Path findProjectRoot() {
         for (Path current = Path.of("").toAbsolutePath().normalize(); current != null; current = current.getParent()) {
-            if (Files.isDirectory(current.resolve("platform"))
-                    && Files.isDirectory(current.resolve("business"))
-                    && Files.isDirectory(current.resolve("infrastructure"))) {
+            if (Files.isDirectory(current.resolve("application"))
+                    && Files.isDirectory(current.resolve("shiyu-domains"))
+                    && Files.isDirectory(current.resolve("infrastructure"))
+                    && Files.isDirectory(current.resolve("shared"))) {
                 return current;
             }
         }

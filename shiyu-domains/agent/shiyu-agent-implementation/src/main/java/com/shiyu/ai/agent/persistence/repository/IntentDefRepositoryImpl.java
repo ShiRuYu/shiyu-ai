@@ -1,0 +1,217 @@
+package com.shiyu.ai.agent.persistence.repository;
+
+import cn.hutool.json.JSONUtil;
+import com.mybatisflex.core.query.QueryWrapper;
+import com.shiyu.ai.agent.persistence.dataobject.IntentDefDO;
+import com.shiyu.ai.agent.persistence.mapper.IntentDefMapper;
+import com.shiyu.ai.agent.domain.model.IntentDefBO;
+import com.shiyu.ai.common.core.vo.IdNameOptionVO;
+import com.shiyu.ai.kernel.context.TenantId;
+import jakarta.annotation.Resource;
+import org.apache.commons.lang3.tuple.Pair;
+import org.springframework.stereotype.Component;
+
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Map;
+
+@Component
+public class IntentDefRepositoryImpl implements com.shiyu.ai.agent.port.repository.IntentDefRepository {
+
+    @Resource
+    private IntentDefMapper intentDefMapper;
+
+    public Pair<Long, List<IntentDefBO>> selectPage(TenantId tenantId, Number pageNo, Number pageSize, String agentId, String name, String code, String category) {
+        requireTenant(tenantId);
+        QueryWrapper countWrapper = new QueryWrapper();
+        countWrapper.eq(IntentDefDO::getTenantId, tenantId.value()).eq(IntentDefDO::getDelFlag, "0");
+        if (agentId != null) countWrapper.eq(IntentDefDO::getAgentId, agentId);
+        if (name != null) countWrapper.like(IntentDefDO::getName, name);
+        if (code != null) countWrapper.like(IntentDefDO::getCode, code);
+        if (category != null) countWrapper.eq(IntentDefDO::getCategory, category);
+        long count = intentDefMapper.selectCountByQuery(countWrapper);
+
+        QueryWrapper queryWrapper = new QueryWrapper();
+        queryWrapper.eq(IntentDefDO::getTenantId, tenantId.value()).eq(IntentDefDO::getDelFlag, "0");
+        if (agentId != null) queryWrapper.eq(IntentDefDO::getAgentId, agentId);
+        if (name != null) queryWrapper.like(IntentDefDO::getName, name);
+        if (code != null) queryWrapper.like(IntentDefDO::getCode, code);
+        if (category != null) queryWrapper.eq(IntentDefDO::getCategory, category);
+        queryWrapper.orderBy(IntentDefDO::getPriority, true);
+        if (pageNo != null && pageSize != null) {
+            queryWrapper.limit((pageNo.longValue() - 1) * pageSize.longValue(), pageSize.longValue());
+        }
+
+        List<IntentDefDO> doList = intentDefMapper.selectListByQuery(queryWrapper);
+        List<IntentDefBO> boList = new ArrayList<>(doList.size());
+        for (IntentDefDO d : doList) {
+            boList.add(convertToBo(d));
+        }
+        return Pair.of(count, boList);
+    }
+
+    public List<IntentDefBO> selectByAgentId(TenantId tenantId, String agentId) {
+        requireTenant(tenantId);
+        // WHERE del_flag='0' AND enabled='1' AND status='1' AND (agent_id=? OR agent_id='default')
+        QueryWrapper qw = new QueryWrapper();
+        qw.eq(IntentDefDO::getTenantId, tenantId.value())
+          .eq(IntentDefDO::getDelFlag, "0")
+          .eq(IntentDefDO::getEnabled, "1")
+          .eq(IntentDefDO::getStatus, 1)
+          .and("(agent_id = ? OR agent_id = 'default')", agentId)
+          .orderBy(IntentDefDO::getPriority, true);
+        List<IntentDefDO> doList = intentDefMapper.selectListByQuery(qw);
+        List<IntentDefBO> boList = new ArrayList<>(doList.size());
+        for (IntentDefDO d : doList) {
+            boList.add(convertToBo(d));
+        }
+        return boList;
+    }
+
+    public List<IntentDefBO> selectByCategory(TenantId tenantId, String agentId, String category) {
+        requireTenant(tenantId);
+        // WHERE del_flag='0' AND enabled='1' AND status='1' AND category=? AND (agent_id=? OR agent_id='default')
+        QueryWrapper qw = new QueryWrapper();
+        qw.eq(IntentDefDO::getTenantId, tenantId.value())
+          .eq(IntentDefDO::getDelFlag, "0")
+          .eq(IntentDefDO::getEnabled, "1")
+          .eq(IntentDefDO::getStatus, 1)
+          .eq(IntentDefDO::getCategory, category)
+          .and("(agent_id = ? OR agent_id = 'default')", agentId)
+          .orderBy(IntentDefDO::getPriority, true);
+        List<IntentDefDO> doList = intentDefMapper.selectListByQuery(qw);
+        List<IntentDefBO> boList = new ArrayList<>(doList.size());
+        for (IntentDefDO d : doList) {
+            boList.add(convertToBo(d));
+        }
+        return boList;
+    }
+
+    public IntentDefBO selectById(TenantId tenantId, Long id) {
+        requireTenant(tenantId);
+        IntentDefDO intentDO = intentDefMapper.selectOneByQuery(QueryWrapper.create()
+                .eq(IntentDefDO::getTenantId, tenantId.value())
+                .eq(IntentDefDO::getId, id));
+        if (intentDO == null) return null;
+        return convertToBo(intentDO);
+    }
+
+    public IntentDefBO create(TenantId tenantId, IntentDefBO bo) {
+        requireTenant(tenantId);
+        if (bo == null) throw new IllegalArgumentException("intent definition must not be null");
+        bo.setTenantId(tenantId.value());
+        IntentDefDO intentDO = new IntentDefDO();
+        copyToDo(bo, intentDO);
+        intentDefMapper.insertSelective(intentDO);
+        bo.setId(intentDO.getId());
+        return bo;
+    }
+
+    public IntentDefBO update(TenantId tenantId, IntentDefBO bo) {
+        requireTenant(tenantId);
+        if (bo == null || bo.getId() == null) throw new IllegalArgumentException("intent definition and id are required");
+        bo.setTenantId(tenantId.value());
+        IntentDefDO intentDO = new IntentDefDO();
+        copyToDo(bo, intentDO);
+        intentDO.setId(bo.getId());
+        intentDefMapper.updateByQuery(intentDO, QueryWrapper.create()
+                .eq(IntentDefDO::getTenantId, tenantId.value())
+                .eq(IntentDefDO::getId, bo.getId()));
+        return bo;
+    }
+
+    public void deleteById(TenantId tenantId, Long id) {
+        requireTenant(tenantId);
+        intentDefMapper.deleteByQuery(QueryWrapper.create()
+                .eq(IntentDefDO::getTenantId, tenantId.value()).eq(IntentDefDO::getId, id));
+    }
+
+    public void deleteByIds(TenantId tenantId, List<Long> ids) {
+        requireTenant(tenantId);
+        for (Long id : ids) {
+            deleteById(tenantId, id);
+        }
+    }
+
+    /**
+     * 获取所有启用意图定义选项（下拉选择用）
+     */
+    public List<IdNameOptionVO> selectAllOptions(TenantId tenantId) {
+        requireTenant(tenantId);
+        QueryWrapper qw = new QueryWrapper();
+        qw.eq(IntentDefDO::getTenantId, tenantId.value())
+          .eq(IntentDefDO::getDelFlag, "0")
+          .eq(IntentDefDO::getEnabled, "1")
+          .eq(IntentDefDO::getStatus, 1)
+          .orderBy(IntentDefDO::getPriority, true);
+        List<IntentDefDO> doList = intentDefMapper.selectListByQuery(qw);
+        return doList.stream().map(d -> IdNameOptionVO.builder()
+                .id(d.getId())
+                .name(d.getName())
+                .code(d.getCode())
+                .build()).collect(java.util.stream.Collectors.toList());
+    }
+
+    private IntentDefBO convertToBo(IntentDefDO d) {
+        IntentDefBO bo = new IntentDefBO();
+        bo.setId(d.getId());
+        bo.setAgentId(d.getAgentId());
+        bo.setCode(d.getCode());
+        bo.setName(d.getName());
+        bo.setDescription(d.getDescription());
+        bo.setCategory(d.getCategory());
+        bo.setPriority(d.getPriority());
+        bo.setConfidenceThreshold(d.getConfidenceThreshold());
+        bo.setTargetNode(d.getTargetNode());
+        bo.setStatus(d.getStatus());
+        bo.setDelFlag(d.getDelFlag());
+        bo.setCreateBy(d.getCreateBy());
+        bo.setCreateTime(d.getCreateTime());
+        bo.setUpdateBy(d.getUpdateBy());
+        bo.setUpdateTime(d.getUpdateTime());
+        // JSON fields
+        if (d.getExamples() != null) {
+            bo.setExamples(JSONUtil.toList(d.getExamples(), String.class));
+        }
+        if (d.getRequireSlotFilling() != null) {
+            bo.setRequireSlotFilling("1".equals(d.getRequireSlotFilling()));
+        }
+        if (d.getEnabled() != null) {
+            bo.setEnabled("1".equals(d.getEnabled()));
+        }
+        if (d.getSlots() != null) {
+            bo.setSlots(JSONUtil.toBean(d.getSlots(), Map.class, true));
+        }
+        if (d.getParameterMapping() != null) {
+            bo.setParameterMapping(JSONUtil.toBean(d.getParameterMapping(), Map.class, true));
+        }
+        if (d.getSlotDefaults() != null) {
+            bo.setSlotDefaults(JSONUtil.toBean(d.getSlotDefaults(), Map.class, true));
+        }
+        return bo;
+    }
+
+    private void copyToDo(IntentDefBO bo, IntentDefDO d) {
+        d.setTenantId(bo.getTenantId());
+        d.setAgentId(bo.getAgentId());
+        d.setCode(bo.getCode());
+        d.setName(bo.getName());
+        d.setDescription(bo.getDescription());
+        d.setCategory(bo.getCategory());
+        d.setPriority(bo.getPriority());
+        d.setConfidenceThreshold(bo.getConfidenceThreshold());
+        d.setExamples(bo.getExamples() != null ? JSONUtil.toJsonStr(bo.getExamples()) : null);
+        d.setTargetNode(bo.getTargetNode());
+        d.setRequireSlotFilling(Boolean.TRUE.equals(bo.getRequireSlotFilling()) ? "1" : "0");
+        d.setSlots(bo.getSlots() != null ? JSONUtil.toJsonStr(bo.getSlots()) : null);
+        d.setParameterMapping(bo.getParameterMapping() != null ? JSONUtil.toJsonStr(bo.getParameterMapping()) : null);
+        d.setSlotDefaults(bo.getSlotDefaults() != null ? JSONUtil.toJsonStr(bo.getSlotDefaults()) : null);
+        d.setEnabled(Boolean.TRUE.equals(bo.getEnabled()) ? "1" : "0");
+        d.setStatus(1);
+        d.setDelFlag(0);
+    }
+
+    private static void requireTenant(TenantId tenantId) {
+        if (tenantId == null) throw new IllegalArgumentException("tenantId must not be null");
+    }
+}

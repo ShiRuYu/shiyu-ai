@@ -14,6 +14,7 @@ import java.util.HashMap;
  */
 @Data
 @NoArgsConstructor
+@SuppressWarnings("serial")
 public class UserContext implements Serializable {
 
     @Serial

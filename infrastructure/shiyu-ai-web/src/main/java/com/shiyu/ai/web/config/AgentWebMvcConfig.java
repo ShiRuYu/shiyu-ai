@@ -22,6 +22,6 @@ public class AgentWebMvcConfig implements WebMvcConfigurer {
     @Override
     public void addInterceptors(InterceptorRegistry registry) {
         registry.addInterceptor(new AuditInterceptor(auditService))
-                .addPathPatterns("/v1/**", "/conversations/**", "/messages/**", "/generations/**", "/memory/**");
+                .addPathPatterns("/api/**");
     }
 }

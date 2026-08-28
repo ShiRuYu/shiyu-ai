@@ -110,6 +110,15 @@ public class JSONUtils {
         }
     }
 
+    /**
+     * Parse a JSON object into a typed string/object map without exposing a raw
+     * {@code Map.class} call at every caller.  Keeping this helper here also
+     * makes the unchecked boundary explicit and consistent across domains.
+     */
+    public static Map<String, Object> parseMap(String text) {
+        return parseObject(text, new TypeReference<Map<String, Object>>() { });
+    }
+
     public static <T> T convertValue(Object fromValue, Class<T> toValueType) {
         if (fromValue == null) {
             return null;

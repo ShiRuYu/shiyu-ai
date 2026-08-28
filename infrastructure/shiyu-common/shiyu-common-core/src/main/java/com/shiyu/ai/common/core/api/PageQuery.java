@@ -12,6 +12,7 @@ import java.util.Objects;
  * 分页查询实体类
  */
 @Data
+@SuppressWarnings("serial")
 public class PageQuery implements Serializable {
 
     @Serial

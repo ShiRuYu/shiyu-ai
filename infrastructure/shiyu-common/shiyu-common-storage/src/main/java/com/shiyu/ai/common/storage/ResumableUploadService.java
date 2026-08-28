@@ -1,7 +1,7 @@
 package com.shiyu.ai.common.storage;
 
-import com.shiyu.ai.common.core.domain.UserContextHolder;
 import com.shiyu.ai.common.core.exception.ServiceException;
+import com.shiyu.ai.kernel.context.TenantId;
 import jakarta.validation.constraints.Max;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.Positive;
@@ -40,21 +40,22 @@ public class ResumableUploadService {
     private final ResumableUploadHandler uploadHandler;
     private final StorageMetadataStore metadataStore;
 
-    public UploadSession begin(Long spaceId, BeginRequest request) {
+    public UploadSession begin(ResumableUploadHandler.UploadActor actor, Long spaceId, BeginRequest request) {
         if (request == null || request.fileName() == null || request.fileName().isBlank()) {
             throw new ServiceException("文件名不能为空");
         }
         if (request.size() <= 0 || request.size() > MAX_FILE_SIZE) {
             throw new ServiceException("文件大小必须在 1 字节至 200 MB 之间");
         }
-        Long tenantId = currentTenant();
-        uploadHandler.authorize(tenantId, spaceId);
+        requireActor(actor);
+        TenantId tenantId = actor.tenantId();
+        uploadHandler.authorize(actor, spaceId);
         try {
             String id = UUID.randomUUID().toString();
             Path directory = directory(id);
             Files.createDirectories(directory);
             Properties properties = new Properties();
-            properties.setProperty("tenantId", tenantId.toString());
+            properties.setProperty("tenantId", Long.toString(tenantId.value()));
             properties.setProperty("spaceId", spaceId.toString());
             properties.setProperty("namespace", uploadHandler.namespace(tenantId, spaceId));
             properties.setProperty("fileName", safeFileName(request.fileName()));
@@ -69,7 +70,7 @@ public class ResumableUploadService {
             }
             if (metadataStore.persistent()) {
                 metadataStore.createUploadSession(new StorageMetadataStore.CreateUploadSession(
-                        id, tenantId, spaceId, properties.getProperty("namespace"),
+                        id, tenantId.value(), spaceId, properties.getProperty("namespace"),
                         properties.getProperty("fileName"), properties.getProperty("contentType"),
                         request.size(), properties.getProperty("checksum"),
                         Integer.parseInt(properties.getProperty("totalChunks")),
@@ -81,18 +82,21 @@ public class ResumableUploadService {
         }
     }
 
-    public UploadSession status(String id) {
+    public UploadSession status(ResumableUploadHandler.UploadActor actor, String id) {
+        requireActor(actor);
+        TenantId tenantId = actor.tenantId();
         if (metadataStore.persistent()) {
-            StorageMetadataStore.UploadSessionRecord record = metadataStore.findUploadSession(currentTenant(), id)
+            StorageMetadataStore.UploadSessionRecord record = metadataStore.findUploadSession(tenantId.value(), id)
                     .orElseThrow(() -> new ServiceException("上传会话不存在"));
             return session(record);
         }
-        Properties properties = loadForCurrentTenant(id);
+        Properties properties = loadForActor(actor, id);
         return session(id, properties);
     }
 
-    public UploadSession writeChunk(String id, int index, int totalChunks, byte[] bytes) {
-        Properties properties = loadForCurrentTenant(id);
+    public UploadSession writeChunk(ResumableUploadHandler.UploadActor actor, String id,
+                                    int index, int totalChunks, byte[] bytes) {
+        Properties properties = loadForActor(actor, id);
         int expectedTotal = Integer.parseInt(properties.getProperty("totalChunks"));
         if (totalChunks != expectedTotal || index < 0 || index >= expectedTotal) {
             throw new ServiceException("分片序号或总数不正确");
@@ -111,8 +115,8 @@ public class ResumableUploadService {
         }
     }
 
-    public ResumableUploadHandler.RegistrationResult complete(String id) {
-        Properties properties = loadForCurrentTenant(id);
+    public ResumableUploadHandler.RegistrationResult complete(ResumableUploadHandler.UploadActor actor, String id) {
+        Properties properties = loadForActor(actor, id);
         int totalChunks = Integer.parseInt(properties.getProperty("totalChunks"));
         long expectedSize = Long.parseLong(properties.getProperty("size"));
         ObjectStorage.StoredObject stored = null;
@@ -141,13 +145,13 @@ public class ResumableUploadService {
             String fileName = properties.getProperty("fileName");
             String contentType = properties.getProperty("contentType");
             securityScanner.validate(fileName, contentType, content);
-            Long tenantId = Long.valueOf(properties.getProperty("tenantId"));
+            TenantId sessionTenantId = new TenantId(Long.parseLong(properties.getProperty("tenantId")));
             Long spaceId = Long.valueOf(properties.getProperty("spaceId"));
             stored = objectStorage.put(properties.getProperty("namespace"),
                     fileName, contentType, content.length, new ByteArrayInputStream(content));
             try {
-                ResumableUploadHandler.RegistrationResult result = uploadHandler.register(
-                        new ResumableUploadHandler.UploadRegistration(tenantId, spaceId,
+                ResumableUploadHandler.RegistrationResult result = uploadHandler.register(actor,
+                        new ResumableUploadHandler.UploadRegistration(sessionTenantId, spaceId,
                                 properties.getProperty("title").isBlank() ? fileName : properties.getProperty("title"),
                                 fileName, stored.objectKey(), stored.provider(), stored.contentType(),
                                 stored.size(), checksum));
@@ -175,13 +179,15 @@ public class ResumableUploadService {
         }
     }
 
-    public void cancel(String id) {
+    public void cancel(ResumableUploadHandler.UploadActor actor, String id) {
+        requireActor(actor);
+        TenantId tenantId = actor.tenantId();
         if (metadataStore.persistent()) {
-            StorageMetadataStore.UploadSessionRecord record = metadataStore.findUploadSession(currentTenant(), id)
+            StorageMetadataStore.UploadSessionRecord record = metadataStore.findUploadSession(tenantId.value(), id)
                     .orElseThrow(() -> new ServiceException("上传会话不存在"));
             metadataStore.updateUploadSessionStatus(record.sessionId(), "CANCELLED", null);
         } else {
-            loadForCurrentTenant(id);
+            loadForActor(actor, id);
         }
         try {
             cleanup(id);
@@ -252,7 +258,9 @@ public class ResumableUploadService {
                 record.totalChunks(), uploaded, CHUNK_SIZE);
     }
 
-    private Properties loadForCurrentTenant(String id) {
+    private Properties loadForActor(ResumableUploadHandler.UploadActor actor, String id) {
+        requireActor(actor);
+        TenantId tenantId = actor.tenantId();
         if (id == null || !id.matches(ID_PATTERN)) throw new ServiceException("上传会话不存在");
         try {
             Properties properties = new Properties();
@@ -262,7 +270,7 @@ public class ResumableUploadService {
                 }
             } catch (java.nio.file.NoSuchFileException missingMetadata) {
                 if (!metadataStore.persistent()) throw missingMetadata;
-                StorageMetadataStore.UploadSessionRecord record = metadataStore.findUploadSession(currentTenant(), id)
+                StorageMetadataStore.UploadSessionRecord record = metadataStore.findUploadSession(tenantId.value(), id)
                         .orElseThrow(() -> new ServiceException("上传会话不存在"));
                 properties.setProperty("tenantId", Long.toString(record.tenantId()));
                 properties.setProperty("spaceId", Long.toString(record.spaceId()));
@@ -273,10 +281,10 @@ public class ResumableUploadService {
                 properties.setProperty("totalChunks", Integer.toString(record.totalChunks()));
                 properties.setProperty("checksum", record.expectedChecksum() == null ? "" : record.expectedChecksum());
             }
-            if (!properties.getProperty("tenantId").equals(currentTenant().toString())) {
+            if (!properties.getProperty("tenantId").equals(Long.toString(tenantId.value()))) {
                 throw new ServiceException("无权访问该上传会话");
             }
-            uploadHandler.authorize(currentTenant(), Long.valueOf(properties.getProperty("spaceId")));
+            uploadHandler.authorize(actor, Long.valueOf(properties.getProperty("spaceId")));
             return properties;
         } catch (IOException | NumberFormatException exception) {
             throw new ServiceException("上传会话不存在");
@@ -347,10 +355,10 @@ public class ResumableUploadService {
     }
 
     private int totalChunks(long size) { return (int) ((size + CHUNK_SIZE - 1) / CHUNK_SIZE); }
-    private Long currentTenant() {
-        Long tenantId = UserContextHolder.getCurrentTenantId();
-        if (tenantId == null) throw new ServiceException("当前租户上下文不存在");
-        return tenantId;
+    private static void requireActor(ResumableUploadHandler.UploadActor actor) {
+        if (actor == null) {
+            throw new ServiceException("合法租户与用户标识不能为空");
+        }
     }
     private String safeFileName(String value) {
         String name = value.replace('\\', '/');

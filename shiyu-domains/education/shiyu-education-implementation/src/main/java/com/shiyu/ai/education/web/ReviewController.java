@@ -1,0 +1,67 @@
+package com.shiyu.ai.education.web;
+
+import cn.dev33.satoken.annotation.SaCheckPermission;
+import com.shiyu.ai.common.core.api.Result;
+import com.shiyu.ai.education.dto.ReviewTaskResponse;
+import com.shiyu.ai.education.dto.CompleteReviewRequest;
+import com.shiyu.ai.education.request.ReviewRequest;
+import com.shiyu.ai.education.service.ReviewService;
+import com.shiyu.ai.common.web.auth.ActorContextHttpAdapter;
+import jakarta.validation.Valid;
+import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
+import org.springframework.web.bind.annotation.*;
+
+import java.util.List;
+import com.shiyu.ai.education.dto.ReviewTaskResponse;
+
+@Slf4j
+@RestController
+@RequestMapping("/review")
+@RequiredArgsConstructor
+@SaCheckPermission("edu:review:list")
+public class ReviewController {
+
+    private final ReviewService reviewService;
+
+    @GetMapping("/detail")
+    public Result<ReviewTaskResponse> getById(@RequestParam Long id) {
+        return Result.success(reviewService.getById(ActorContextHttpAdapter.currentActor(), id));
+    }
+
+    @GetMapping("/today")
+    public Result<List<ReviewTaskResponse>> listTodayTasks(@RequestParam Long studentId) {
+        return Result.success(reviewService.listTodayTasks(ActorContextHttpAdapter.currentActor(), studentId));
+    }
+
+    @GetMapping("/list")
+    public Result<List<ReviewTaskResponse>> list(@RequestParam Long studentId, @RequestParam Integer status) {
+        return Result.success(reviewService.listByStudentAndStatus(ActorContextHttpAdapter.currentActor(), studentId, status));
+    }
+
+    @PostMapping("/create")
+    @SaCheckPermission("edu:review:list")
+    public Result<ReviewTaskResponse> create(@Valid @RequestBody ReviewRequest request) {
+        return Result.success(reviewService.create(ActorContextHttpAdapter.currentActor(), request));
+    }
+
+    @PostMapping("/update")
+    public Result<Void> update(@RequestParam Long id, @Valid @RequestBody ReviewRequest request) {
+        request.setId(id);
+        reviewService.update(ActorContextHttpAdapter.currentActor(), request);
+        return Result.success();
+    }
+
+    @PostMapping("/complete")
+    @SaCheckPermission("edu:review:list")
+    public Result<Void> complete(@RequestParam Long id, @Valid @RequestBody CompleteReviewRequest request) {
+        reviewService.complete(ActorContextHttpAdapter.currentActor(), id, request.resultScore());
+        return Result.success();
+    }
+
+    @PostMapping("/delete")
+    public Result<Void> delete(@RequestParam Long id) {
+        reviewService.delete(ActorContextHttpAdapter.currentActor(), id);
+        return Result.success();
+    }
+}

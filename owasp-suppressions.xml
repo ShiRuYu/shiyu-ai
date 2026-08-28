@@ -9,4 +9,44 @@
         <notes><![CDATA[file name: h2-*.jar - H2 database is dev-only, not exposed to production]]></notes>
         <cve>CVE-2022-45868</cve>
     </suppress>
+    <suppress>
+        <notes><![CDATA[False positive: these CVEs target org.mybatis:mybatis before 3.5.6 or MyBatis-Plus before 3.5.3.1. MyBatis Flex is a distinct artifact and resolves org.mybatis:mybatis 3.5.19.]]></notes>
+        <packageUrl>pkg:maven/com.mybatis-flex/mybatis-flex-core@1.11.7</packageUrl>
+        <cve>CVE-2020-26945</cve>
+    </suppress>
+    <suppress>
+        <notes><![CDATA[False positive: CVE-2023-25330 affects MyBatis-Plus tenant SQL injection, not com.mybatis-flex:mybatis-flex-core.]]></notes>
+        <packageUrl>pkg:maven/com.mybatis-flex/mybatis-flex-core@1.11.7</packageUrl>
+        <cve>CVE-2023-25330</cve>
+    </suppress>
+    <suppress>
+        <notes><![CDATA[False positive: these CVEs are mapped to the MyBatis CPE, but com.mybatis-flex:mybatis-flex-spring is not org.mybatis:mybatis or MyBatis-Plus.]]></notes>
+        <packageUrl>pkg:maven/com.mybatis-flex/mybatis-flex-spring@1.11.7</packageUrl>
+        <cve>CVE-2020-26945</cve>
+    </suppress>
+    <suppress>
+        <notes><![CDATA[False positive: CVE-2023-25330 affects MyBatis-Plus tenant SQL injection, not com.mybatis-flex:mybatis-flex-spring.]]></notes>
+        <packageUrl>pkg:maven/com.mybatis-flex/mybatis-flex-spring@1.11.7</packageUrl>
+        <cve>CVE-2023-25330</cve>
+    </suppress>
+    <suppress>
+        <notes><![CDATA[False positive CPE match: all com.mybatis-flex 1.11.7 artifacts are distinct from org.mybatis:mybatis and MyBatis-Plus, the products affected by these CVEs.]]></notes>
+        <filePath regex="true">.*[\\/]mybatis-flex-[^\\/]+-1\.11\.7\.jar</filePath>
+        <cve>CVE-2020-26945</cve>
+    </suppress>
+    <suppress>
+        <notes><![CDATA[False positive CPE match: all com.mybatis-flex 1.11.7 artifacts are distinct from org.mybatis:mybatis and MyBatis-Plus, the products affected by these CVEs.]]></notes>
+        <filePath regex="true">.*[\\/]mybatis-flex-[^\\/]+-1\.11\.7\.jar</filePath>
+        <cve>CVE-2023-25330</cve>
+    </suppress>
+    <suppress>
+        <notes><![CDATA[False positive CPE match: this is the ShiYu support module, not org.mybatis:mybatis or MyBatis-Plus.]]></notes>
+        <packageUrl>pkg:maven/com.shiyu.ai/shiyu-common-mybatis@1.0.0</packageUrl>
+        <cve>CVE-2020-26945</cve>
+    </suppress>
+    <suppress>
+        <notes><![CDATA[False positive CPE match: this is the ShiYu support module, not MyBatis-Plus.]]></notes>
+        <packageUrl>pkg:maven/com.shiyu.ai/shiyu-common-mybatis@1.0.0</packageUrl>
+        <cve>CVE-2023-25330</cve>
+    </suppress>
 </suppressions>

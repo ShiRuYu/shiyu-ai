@@ -2,7 +2,6 @@ package com.shiyu.ai.common.web.interceptor;
 
 import cn.hutool.core.io.IoUtil;
 import cn.hutool.core.map.MapUtil;
-import com.shiyu.ai.common.core.domain.UserContextHolder;
 import com.shiyu.ai.common.core.domain.UserGlobalContext;
 import com.shiyu.ai.common.core.utils.JSONUtils;
 import com.shiyu.ai.common.core.utils.LoggerUtil;
@@ -22,6 +21,9 @@ import java.util.UUID;
  * web拦截器
  */
 public class WebInvokeInterceptor implements HandlerInterceptor {
+
+    public static final String ACTOR_USER_ID = "shiyu.actor.userId";
+    public static final String ACTOR_TENANT_ID = "shiyu.actor.tenantId";
 
     private static final String TRACE_ID = "traceId";
     private static final String START_NANOS = WebInvokeInterceptor.class.getName() + ".startNanos";
@@ -43,7 +45,7 @@ public class WebInvokeInterceptor implements HandlerInterceptor {
         LoggerUtil.WEB_LOGGER.info(
                 "request started method={}, uri={}, traceId={}, userId={}, tenantId={}",
                 request.getMethod(), request.getRequestURI(), traceId,
-                UserContextHolder.getUserId(), UserContextHolder.getCurrentTenantId());
+                request.getAttribute(ACTOR_USER_ID), request.getAttribute(ACTOR_TENANT_ID));
 
                 // 打印请求参数
         if (isJsonRequest(request)) {
@@ -80,8 +82,8 @@ public class WebInvokeInterceptor implements HandlerInterceptor {
             String message = "request completed method={}, uri={}, status={}, costMs={}, traceId={}, userId={}, tenantId={}, error={}";
             Object[] args = {
                     request.getMethod(), request.getRequestURI(), response.getStatus(), costMs,
-                    MDC.get(TRACE_ID), UserContextHolder.getUserId(),
-                    UserContextHolder.getCurrentTenantId(), ex == null ? null : ex.getMessage()
+                    MDC.get(TRACE_ID), request.getAttribute(ACTOR_USER_ID),
+                    request.getAttribute(ACTOR_TENANT_ID), ex == null ? null : ex.getMessage()
             };
             if (ex != null || response.getStatus() >= 500) {
                 LoggerUtil.ERROR_LOGGER.error(ex, message, args);

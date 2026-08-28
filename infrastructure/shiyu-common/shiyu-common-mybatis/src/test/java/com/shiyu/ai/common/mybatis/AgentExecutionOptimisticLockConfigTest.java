@@ -1,4 +1,4 @@
-package com.shiyu.ai.dal.agent.repository;
+package com.shiyu.ai.common.mybatis;
 
 import org.junit.jupiter.api.Test;
 

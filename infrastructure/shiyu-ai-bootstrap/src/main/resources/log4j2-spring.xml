@@ -123,7 +123,7 @@
         <Logger name="com.shiyu.ai.tool" level="INFO" additivity="false"><AppenderRef ref="toolFile"/></Logger>
         <Logger name="com.shiyu.ai.plugin" level="INFO" additivity="false"><AppenderRef ref="toolFile"/></Logger>
         <Logger name="com.shiyu.ai.knowledge" level="INFO" additivity="false"><AppenderRef ref="knowledgeFile"/></Logger>
-        <Logger name="com.shiyu.ai.dal" level="INFO" additivity="false"><AppenderRef ref="databaseFile"/></Logger>
+        <Logger name="com.shiyu.ai.common.mybatis" level="INFO" additivity="false"><AppenderRef ref="databaseFile"/></Logger>
 
         <Logger name="WEB_LOGGER" level="INFO" additivity="false"><AppenderRef ref="webFile"/></Logger>
         <Logger name="AUDIT_LOGGER" level="INFO" additivity="false"><AppenderRef ref="auditFile"/></Logger>

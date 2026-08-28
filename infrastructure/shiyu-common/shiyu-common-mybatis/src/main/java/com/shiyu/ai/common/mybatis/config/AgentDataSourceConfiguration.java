@@ -1,4 +1,4 @@
-package com.shiyu.ai.dal.config;
+package com.shiyu.ai.common.mybatis.config;
 
 import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean;
 import org.springframework.boot.context.properties.ConfigurationProperties;

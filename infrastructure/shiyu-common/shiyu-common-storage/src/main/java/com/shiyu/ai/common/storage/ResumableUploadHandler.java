@@ -1,5 +1,9 @@
 package com.shiyu.ai.common.storage;
 
+import com.shiyu.ai.kernel.context.RoleId;
+import com.shiyu.ai.kernel.context.TenantId;
+import com.shiyu.ai.kernel.context.UserId;
+
 /**
  * Domain callback used by the generic storage upload pipeline. The storage
  * module owns bytes and upload sessions; a domain module owns authorization
@@ -7,13 +11,21 @@ package com.shiyu.ai.common.storage;
  */
 public interface ResumableUploadHandler {
 
-    void authorize(Long tenantId, Long spaceId);
+    void authorize(UploadActor actor, Long spaceId);
 
-    String namespace(Long tenantId, Long spaceId);
+    String namespace(TenantId tenantId, Long spaceId);
 
-    RegistrationResult register(UploadRegistration request);
+    RegistrationResult register(UploadActor actor, UploadRegistration request);
 
-    record UploadRegistration(Long tenantId, Long spaceId, String title,
+    record UploadActor(TenantId tenantId, UserId userId, RoleId roleId, boolean platformAdmin) {
+        public UploadActor {
+            if (tenantId == null || userId == null) {
+                throw new IllegalArgumentException("tenantId and userId are required");
+            }
+        }
+    }
+
+    record UploadRegistration(TenantId tenantId, Long spaceId, String title,
                                String originalName, String objectKey,
                                String storageProvider, String contentType,
                                long size, String checksum) {

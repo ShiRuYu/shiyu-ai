@@ -1,5 +1,7 @@
 package com.shiyu.ai.common.storage;
 
+import com.shiyu.ai.kernel.context.TenantId;
+
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.io.TempDir;
 
@@ -10,6 +12,7 @@ import java.util.List;
 import java.util.Properties;
 
 import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
@@ -19,6 +22,26 @@ class ResumableUploadServiceTest {
 
     @TempDir
     Path tempDirectory;
+
+    @Test
+    void rejectsMissingTenantBeforeStartingUpload() {
+        StorageProperties properties = new StorageProperties();
+        properties.setType("local");
+        properties.getLocal().setPath(tempDirectory.resolve("uploads").toString());
+        ResumableUploadService service = new ResumableUploadService(properties,
+                mock(ObjectStorage.class), mock(ContentSecurityScanner.class),
+                mock(ResumableUploadHandler.class), mock(StorageMetadataStore.class));
+
+        assertThrows(RuntimeException.class, () -> service.begin(
+                null, 1L, new ResumableUploadService.BeginRequest(
+                        "example.txt", "text/plain", 1L, null, null)));
+    }
+
+    @Test
+    void rejectsUploadActorWithoutAUser() {
+        assertThrows(IllegalArgumentException.class,
+                () -> new ResumableUploadHandler.UploadActor(new TenantId(1L), null, null, false));
+    }
 
     @Test
     void removesExpiredPersistentSessionsAndLocalOrphans() throws Exception {

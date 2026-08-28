@@ -31,5 +31,29 @@ jobs:
           java-version: '21'
           cache: maven
 
-      - name: Run Maven test suite
-        run: mvn --batch-mode --no-transfer-progress test
+      - name: Run Maven compile, architecture and test gates
+        run: mvn --batch-mode --no-transfer-progress -Pstrict-warnings verify -Ddependency-check.skip=true
+
+      - name: Verify packaged application starts with a fresh APP_HOME
+        run: python scripts/verify_fresh_startup.py
+
+      - name: Enforce per-domain JaCoCo thresholds
+        run: python scripts/architecture/check_domain_coverage.py
+
+      - name: Verify generated documentation and route inventory
+        run: python scripts/docs/verify_documentation.py
+
+      - name: Reject legacy /v1 controller routes
+        run: python scripts/architecture/check_legacy_routes.py
+
+      - name: Reject retired Workspace backend identifiers
+        run: python scripts/architecture/check_backend_terminology.py
+
+      - name: Enforce contract-only domain dependencies
+        run: python scripts/architecture/check_domain_module_dependencies.py
+
+      - name: Enforce domain schema ownership
+        run: python scripts/architecture/check_schema_ownership.py
+
+      - name: Enforce backend module naming consistency
+        run: python scripts/architecture/check_backend_module_names.py

@@ -1,4 +1,4 @@
-package com.shiyu.ai.dal.retention;
+package com.shiyu.ai.application.retention;
 
 import lombok.Data;
 import org.springframework.boot.context.properties.ConfigurationProperties;

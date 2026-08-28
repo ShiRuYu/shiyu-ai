@@ -14,6 +14,7 @@ import java.io.Serial;
 @Data
 @EqualsAndHashCode(callSuper = true)
 @NoArgsConstructor
+@SuppressWarnings("serial")
 public class BaseException extends RuntimeException {
 
     @Serial

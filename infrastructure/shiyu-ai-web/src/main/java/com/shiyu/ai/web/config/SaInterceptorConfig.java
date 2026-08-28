@@ -33,18 +33,18 @@ public class SaInterceptorConfig implements WebMvcConfigurer {
                 .addPathPatterns("/**")
                 .excludePathPatterns(
                     // 认证相关公开接口（无需登录即可访问）
-                    "/v1/auth/login",
-                    "/v1/auth/register",
-                    "/v1/auth/code-login",
-                    "/v1/auth/forget-password",
-                    "/v1/auth/refresh",
-                    "/v1/auth/captcha/**",
+                    "/api/iam/auth/login",
+                    "/api/iam/auth/register",
+                    "/api/iam/auth/code-login",
+                    "/api/iam/auth/forget-password",
+                    "/api/iam/auth/refresh",
+                    "/api/iam/auth/captcha/**",
                     // 文档和监控接口
                     "/swagger-ui/**",
                     "/v3/api-docs/**",
                     "/webjars/**",
                     "/h2/**",
-                    "/v1/education/education-resources/**"
+                    "/api/education/education-resources/**"
                 );
         // Sa-Token 拦截器，开启注解式鉴权功能
         // 默认构造函数 isAnnotation = true，自动扫描 @SaCheckPermission 等注解

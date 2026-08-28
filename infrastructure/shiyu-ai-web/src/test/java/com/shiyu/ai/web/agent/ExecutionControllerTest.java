@@ -1,8 +1,10 @@
 package com.shiyu.ai.web.agent;
 
 import com.shiyu.ai.agent.runtime.AgentRuntime;
+import com.shiyu.ai.agent.web.ExecutionController;
 import com.shiyu.ai.common.core.domain.UserContext;
 import com.shiyu.ai.common.core.domain.UserContextHolder;
+import cn.dev33.satoken.annotation.SaCheckPermission;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Tag;
 import org.junit.jupiter.api.Test;
@@ -15,6 +17,8 @@ import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
+import static org.junit.jupiter.api.Assertions.assertArrayEquals;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
 
 @Tag("dev")
 class ExecutionControllerTest {
@@ -34,7 +38,7 @@ class ExecutionControllerTest {
         UserContextHolder.setContext(context);
 
         AgentRuntime runtime = mock(AgentRuntime.class);
-        when(runtime.executeStream(eq("agent-1"), any()))
+        when(runtime.executeStream(any(), eq("agent-1"), any()))
                 .thenReturn(Flux.just(Map.of("executionId", "execution-1", "node", "start")));
         ExecutionController controller = new ExecutionController(runtime);
 
@@ -43,5 +47,16 @@ class ExecutionControllerTest {
         assertEquals(200, result.getCode());
         assertEquals("execution-1", result.getData().get("executionId"));
         assertEquals("execution-1", ((Map<?, ?>) result.getData().get("data")).get("executionId"));
+    }
+
+    @Test
+    void lifecycleMutationsRequireExecutionPermission() throws NoSuchMethodException {
+        for (String method : new String[]{"pause", "resume", "cancel"}) {
+            SaCheckPermission permission = ExecutionController.class
+                    .getMethod(method, String.class)
+                    .getAnnotation(SaCheckPermission.class);
+            assertNotNull(permission, method);
+            assertArrayEquals(new String[]{"agent:execute"}, permission.value(), method);
+        }
     }
 }

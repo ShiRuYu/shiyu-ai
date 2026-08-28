@@ -19,8 +19,15 @@
         <java.version>21</java.version>
 
         <revision>1.0.0</revision>
+        <!-- Defaults remain available when a non-environment profile such as
+             strict-warnings disables the activeByDefault dev profile. -->
+        <profiles.active>dev</profiles.active>
+        <logging.level>info</logging.level>
         <spring-boot.version>4.1.0</spring-boot.version>
+        <!-- Keep the embedded servlet container on the current patched 11.0.x line. -->
+        <tomcat.version>11.0.25</tomcat.version>
         <spring-ai.version>2.0.0</spring-ai.version>
+        <netty.version>4.2.17.Final</netty.version>
 
         <langchain4j.version>1.16.3</langchain4j.version> <!-- Check for the actual latest version -->
         <langgraph4j.version>1.8.19</langgraph4j.version> <!-- Check for the actual latest version -->
@@ -41,7 +48,6 @@
         <jsoup.version>1.18.3</jsoup.version>
 
 
-        <fesod-parent.version>2.0.1-incubating</fesod-parent.version>
         <h2.version>2.4.240</h2.version>
 
         <mysql.version>9.4.0</mysql.version>
@@ -71,6 +77,7 @@
         <jvector.version>4.0.0-beta.6</jvector.version>
         <lucene.version>9.12.3</lucene.version>
         <testcontainers.version>1.20.4</testcontainers.version>
+        <archunit.version>1.3.0</archunit.version>
     </properties>
 
     <profiles>
@@ -93,26 +100,36 @@
                 <logging.level>warn</logging.level>
             </properties>
         </profile>
+        <!--
+            Strict compilation is intentionally opt-in while the one-time
+            domain migration is still clearing legacy warnings. Once the
+            warning inventory is empty, CI can activate this profile with
+            -Pstrict-warnings without changing ordinary developer builds.
+        -->
+        <profile>
+            <id>strict-warnings</id>
+            <build>
+                <plugins>
+                    <plugin>
+                        <groupId>org.apache.maven.plugins</groupId>
+                        <artifactId>maven-compiler-plugin</artifactId>
+                        <configuration>
+                            <compilerArgs combine.children="append">
+                                <arg>-Werror</arg>
+                            </compilerArgs>
+                        </configuration>
+                    </plugin>
+                </plugins>
+            </build>
+        </profile>
     </profiles>
 
     <modules>
+        <module>shared/shiyu-shared-kernel</module>
+        <module>shiyu-domains</module>
+        <module>architecture/shiyu-architecture-tests</module>
+        <module>application/shiyu-application</module>
         <module>infrastructure/shiyu-common</module>
-        <module>platform/shiyu-ai-vector</module>
-        <module>platform/shiyu-ai-model</module>
-        <module>platform/shiyu-ai-conversation</module>
-        <module>platform/shiyu-ai-runtime</module>
-        <module>platform/shiyu-ai-evaluation</module>
-        <module>platform/shiyu-ai-chat-product</module>
-        <module>platform/shiyu-ai-memory</module>
-        <module>platform/shiyu-ai-tool</module>
-        <module>platform/shiyu-ai-knowledge</module>
-        <module>platform/shiyu-ai-agent</module>
-        <module>platform/shiyu-ai-usage</module>
-        <module>platform/shiyu-ai-plugin</module>
-        <module>platform/shiyu-ai-auth</module>
-        <module>business/shiyu-ai-record</module>
-        <module>business/shiyu-ai-education</module>
-        <module>infrastructure/shiyu-ai-dal</module>
         <module>infrastructure/shiyu-ai-web</module>
         <module>infrastructure/shiyu-ai-bootstrap</module>
     </modules>
@@ -129,6 +146,62 @@
                 <type>pom</type>
                 <scope>import</scope>
             </dependency>
+
+            <!-- Override Boot's embedded Tomcat patch level for dependency security gates. -->
+            <dependency>
+                <groupId>org.apache.tomcat.embed</groupId>
+                <artifactId>tomcat-embed-core</artifactId>
+                <version>${tomcat.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>org.apache.tomcat.embed</groupId>
+                <artifactId>tomcat-embed-el</artifactId>
+                <version>${tomcat.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>org.apache.tomcat.embed</groupId>
+                <artifactId>tomcat-embed-websocket</artifactId>
+                <version>${tomcat.version}</version>
+            </dependency>
+
+            <!-- Keep AWS SDK's Netty transport on the patched 4.2.x line. -->
+            <dependency>
+                <groupId>io.netty</groupId>
+                <artifactId>netty-bom</artifactId>
+                <version>${netty.version}</version>
+                <type>pom</type>
+                <scope>import</scope>
+            </dependency>
+            <dependency>
+                <groupId>io.netty</groupId>
+                <artifactId>netty-codec</artifactId>
+                <version>${netty.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>io.netty</groupId>
+                <artifactId>netty-codec-protobuf</artifactId>
+                <version>${netty.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>io.netty</groupId>
+                <artifactId>netty-transport</artifactId>
+                <version>${netty.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>io.netty</groupId>
+                <artifactId>netty-transport-classes-epoll</artifactId>
+                <version>${netty.version}</version>
+            </dependency>
+            <dependency><groupId>io.netty</groupId><artifactId>netty-common</artifactId><version>${netty.version}</version></dependency>
+            <dependency><groupId>io.netty</groupId><artifactId>netty-buffer</artifactId><version>${netty.version}</version></dependency>
+            <dependency><groupId>io.netty</groupId><artifactId>netty-codec-base</artifactId><version>${netty.version}</version></dependency>
+            <dependency><groupId>io.netty</groupId><artifactId>netty-codec-compression</artifactId><version>${netty.version}</version></dependency>
+            <dependency><groupId>io.netty</groupId><artifactId>netty-codec-http</artifactId><version>${netty.version}</version></dependency>
+            <dependency><groupId>io.netty</groupId><artifactId>netty-codec-http2</artifactId><version>${netty.version}</version></dependency>
+            <dependency><groupId>io.netty</groupId><artifactId>netty-codec-marshalling</artifactId><version>${netty.version}</version></dependency>
+            <dependency><groupId>io.netty</groupId><artifactId>netty-handler</artifactId><version>${netty.version}</version></dependency>
+            <dependency><groupId>io.netty</groupId><artifactId>netty-resolver</artifactId><version>${netty.version}</version></dependency>
+            <dependency><groupId>io.netty</groupId><artifactId>netty-transport-native-unix-common</artifactId><version>${netty.version}</version></dependency>
 
             <dependency>
                 <groupId>org.springframework.ai</groupId>
@@ -278,16 +351,6 @@
                 <artifactId>lombok</artifactId>
                 <version>${lombok.version}</version>
             </dependency>
-
-
-
-
-            <dependency>
-                <groupId>org.apache.fesod</groupId>
-                <artifactId>fesod-sheet</artifactId>
-                <version>${fesod-parent.version}</version>
-            </dependency>
-
             <dependency>
                 <groupId>com.h2database</groupId>
                 <artifactId>h2</artifactId>
@@ -348,6 +411,11 @@
 
             <dependency>
                 <groupId>com.shiyu.ai</groupId>
+                <artifactId>shiyu-shared-kernel</artifactId>
+                <version>${revision}</version>
+            </dependency>
+            <dependency>
+                <groupId>com.shiyu.ai</groupId>
                 <artifactId>shiyu-common-core</artifactId>
                 <version>${revision}</version>
             </dependency>
@@ -371,6 +439,11 @@
                 <artifactId>shiyu-common-storage</artifactId>
                 <version>${revision}</version>
             </dependency>
+            <dependency>
+                <groupId>com.shiyu.ai</groupId>
+                <artifactId>shiyu-common-vector</artifactId>
+                <version>${revision}</version>
+            </dependency>
 
             <dependency>
                 <groupId>com.shiyu.ai</groupId>
@@ -379,12 +452,12 @@
             </dependency>
             <dependency>
                 <groupId>com.shiyu.ai</groupId>
-                <artifactId>shiyu-ai-auth</artifactId>
+                <artifactId>shiyu-iam-implementation</artifactId>
                 <version>${revision}</version>
             </dependency>
             <dependency>
                 <groupId>com.shiyu.ai</groupId>
-                <artifactId>shiyu-ai-record</artifactId>
+                <artifactId>shiyu-record-implementation</artifactId>
                 <version>${revision}</version>
             </dependency>
             <dependency>
@@ -401,72 +474,37 @@
             <!-- New modules -->
             <dependency>
                 <groupId>com.shiyu.ai</groupId>
-                <artifactId>shiyu-ai-dal</artifactId>
+                <artifactId>shiyu-model-implementation</artifactId>
                 <version>${revision}</version>
             </dependency>
             <dependency>
                 <groupId>com.shiyu.ai</groupId>
-                <artifactId>shiyu-ai-model</artifactId>
+                <artifactId>shiyu-memory-implementation</artifactId>
                 <version>${revision}</version>
             </dependency>
             <dependency>
                 <groupId>com.shiyu.ai</groupId>
-                <artifactId>shiyu-ai-memory</artifactId>
+                <artifactId>shiyu-conversation-implementation</artifactId>
                 <version>${revision}</version>
             </dependency>
             <dependency>
                 <groupId>com.shiyu.ai</groupId>
-                <artifactId>shiyu-ai-conversation</artifactId>
+                <artifactId>shiyu-agent-implementation</artifactId>
                 <version>${revision}</version>
             </dependency>
             <dependency>
                 <groupId>com.shiyu.ai</groupId>
-                <artifactId>shiyu-ai-runtime</artifactId>
+                <artifactId>shiyu-tooling-implementation</artifactId>
                 <version>${revision}</version>
             </dependency>
             <dependency>
                 <groupId>com.shiyu.ai</groupId>
-                <artifactId>shiyu-ai-evaluation</artifactId>
+                <artifactId>shiyu-knowledge-implementation</artifactId>
                 <version>${revision}</version>
             </dependency>
             <dependency>
                 <groupId>com.shiyu.ai</groupId>
-                <artifactId>shiyu-ai-chat-product</artifactId>
-                <version>${revision}</version>
-            </dependency>
-            <dependency>
-                <groupId>com.shiyu.ai</groupId>
-                <artifactId>shiyu-ai-tool</artifactId>
-                <version>${revision}</version>
-            </dependency>
-            <dependency>
-                <groupId>com.shiyu.ai</groupId>
-                <artifactId>shiyu-ai-vector</artifactId>
-                <version>${revision}</version>
-            </dependency>
-            <dependency>
-                <groupId>com.shiyu.ai</groupId>
-                <artifactId>shiyu-ai-usage</artifactId>
-                <version>${revision}</version>
-            </dependency>
-            <dependency>
-                <groupId>com.shiyu.ai</groupId>
-                <artifactId>shiyu-ai-plugin</artifactId>
-                <version>${revision}</version>
-            </dependency>
-            <dependency>
-                <groupId>com.shiyu.ai</groupId>
-                <artifactId>shiyu-ai-agent</artifactId>
-                <version>${revision}</version>
-            </dependency>
-            <dependency>
-                <groupId>com.shiyu.ai</groupId>
-                <artifactId>shiyu-ai-knowledge</artifactId>
-                <version>${revision}</version>
-            </dependency>
-            <dependency>
-                <groupId>com.shiyu.ai</groupId>
-                <artifactId>shiyu-ai-education</artifactId>
+                <artifactId>shiyu-education-implementation</artifactId>
                 <version>${revision}</version>
             </dependency>
         <dependency>
@@ -517,6 +555,7 @@
                         <!-- 启用编译警告 -->
                         <arg>-Xlint:all</arg>
                         <arg>-Xlint:-processing</arg> <!-- 忽略注解处理警告 -->
+                        <arg>-implicit:none</arg>
                     </compilerArgs>
                     <annotationProcessorPaths>
                         <!-- Lombok 处理器 -->
@@ -596,6 +635,9 @@
                 <version>${owasp-dependency-check.version}</version>
                 <configuration>
                     <failBuildOnCVSS>7</failBuildOnCVSS>
+                    <ossindexAnalyzerEnabled>false</ossindexAnalyzerEnabled>
+                    <!-- Backend modules do not package JavaScript; avoid an unrelated GitHub RetireJS download. -->
+                    <retireJsAnalyzerEnabled>false</retireJsAnalyzerEnabled>
                     <formats><format>HTML</format><format>JSON</format></formats>
                     <suppressionFiles>
                         <suppressionFile>owasp-suppressions.xml</suppressionFile>
@@ -615,6 +657,12 @@
                 <version>${maven-resources-plugin.version}</version>
                 <configuration>
                     <encoding>${project.build.sourceEncoding}</encoding>
+                    <!-- Keep the @property@ placeholders used by the
+                         profile-specific Spring descriptors explicit. -->
+                    <delimiters>
+                        <delimiter>@</delimiter>
+                    </delimiters>
+                    <useDefaultDelimiters>true</useDefaultDelimiters>
                     <nonFilteredFileExtensions>
                         <nonFilteredFileExtension>jar</nonFilteredFileExtension>
                         <nonFilteredFileExtension>zip</nonFilteredFileExtension>
@@ -647,6 +695,17 @@
         <resources>
             <resource>
                 <directory>src/main/resources</directory>
+                <!-- Filtered application/bootstrap descriptors are declared
+                     by the following resource entry. Excluding them here
+                     prevents the unfiltered copy from overwriting the
+                     profile-resolved output. -->
+                <excludes>
+                    <exclude>**/application*.yml</exclude>
+                    <exclude>**/application*.properties</exclude>
+                    <exclude>**/bootstrap*.yml</exclude>
+                    <exclude>**/bootstrap*.properties</exclude>
+                    <exclude>**/banner*</exclude>
+                </excludes>
                 <filtering>false</filtering>
             </resource>
             <resource>

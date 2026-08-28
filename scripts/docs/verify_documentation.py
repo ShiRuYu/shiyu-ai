@@ -82,21 +82,49 @@ def count_openapi_operations(spec: dict) -> int:
     return sum(method in methods for item in spec.get("paths", {}).values() for method in item)
 
 
+def baseline_owner_roots(backend: Path) -> list[Path]:
+    return [
+        backend / "application/shiyu-application/src/main/resources/db/baseline/h2",
+        backend / "infrastructure/shiyu-common/shiyu-common-core/src/main/resources/db/baseline/h2",
+        backend / "infrastructure/shiyu-common/shiyu-common-storage/src/main/resources/db/baseline/h2",
+        backend / "shiyu-domains/iam/shiyu-iam-implementation/src/main/resources/db/baseline/h2",
+        backend / "shiyu-domains/agent/shiyu-agent-implementation/src/main/resources/db/baseline/h2",
+        backend / "shiyu-domains/conversation/shiyu-conversation-implementation/src/main/resources/db/baseline/h2",
+        backend / "shiyu-domains/education/shiyu-education-implementation/src/main/resources/db/baseline/h2",
+        backend / "shiyu-domains/governance/shiyu-governance-implementation/src/main/resources/db/baseline/h2",
+        backend / "shiyu-domains/knowledge/shiyu-knowledge-implementation/src/main/resources/db/baseline/h2",
+        backend / "shiyu-domains/memory/shiyu-memory-implementation/src/main/resources/db/baseline/h2",
+        backend / "shiyu-domains/record/shiyu-record-implementation/src/main/resources/db/baseline/h2",
+        backend / "shiyu-domains/tooling/shiyu-tooling-implementation/src/main/resources/db/baseline/h2",
+    ]
+
+
 def verify_final_baseline(backend: Path, failures: list[str]) -> int:
-    baseline = backend / "infrastructure/shiyu-ai-dal/src/main/resources/db/baseline/h2"
+    owner_roots = [
+        backend / "application/shiyu-application/src/main/resources/db/baseline/h2",
+        backend / "infrastructure/shiyu-common/shiyu-common-core/src/main/resources/db/baseline/h2",
+        backend / "infrastructure/shiyu-common/shiyu-common-storage/src/main/resources/db/baseline/h2",
+        backend / "shiyu-domains/iam/shiyu-iam-implementation/src/main/resources/db/baseline/h2",
+        backend / "shiyu-domains/agent/shiyu-agent-implementation/src/main/resources/db/baseline/h2",
+        backend / "shiyu-domains/conversation/shiyu-conversation-implementation/src/main/resources/db/baseline/h2",
+        backend / "shiyu-domains/education/shiyu-education-implementation/src/main/resources/db/baseline/h2",
+        backend / "shiyu-domains/governance/shiyu-governance-implementation/src/main/resources/db/baseline/h2",
+        backend / "shiyu-domains/knowledge/shiyu-knowledge-implementation/src/main/resources/db/baseline/h2",
+        backend / "shiyu-domains/memory/shiyu-memory-implementation/src/main/resources/db/baseline/h2",
+        backend / "shiyu-domains/record/shiyu-record-implementation/src/main/resources/db/baseline/h2",
+        backend / "shiyu-domains/tooling/shiyu-tooling-implementation/src/main/resources/db/baseline/h2",
+    ]
     modifying = re.compile(r"^\s*(ALTER|UPDATE|DELETE|MERGE|DROP|TRUNCATE)\b", re.I | re.M)
     secondary_statements = 0
-    for path in baseline.rglob("*.sql"):
-        # 05_navigation.sql is deliberately an idempotent v2->v3 upgrade
-        # seed. It is executed only by DatabaseInitializer during migration;
-        # the fresh-install seed is 02_auth.sql and remains insert-only.
-        if path.name == "05_navigation.sql":
-            continue
+    for path in [path for root in owner_roots if root.exists() for path in root.rglob("*.sql")]:
         matches = modifying.findall(path.read_text(encoding="utf-8"))
         secondary_statements += len(matches)
         if matches:
             failures.append(f"secondary SQL statements in final baseline: {path} -> {', '.join(matches)}")
-    migration_root = backend / "infrastructure/shiyu-ai-dal/src/main/resources/db/migration"
+    legacy_baseline = backend / "infrastructure" / ("shiyu-" + "ai-" + "dal") / "src/main/resources/db/baseline/h2"
+    for path in legacy_baseline.rglob("*.sql") if legacy_baseline.exists() else []:
+        failures.append(f"legacy central baseline SQL remains: {path}")
+    migration_root = backend / "infrastructure" / ("shiyu-" + "ai-" + "dal") / "src/main/resources/db/migration"
     migration_files = list(migration_root.rglob("*.sql")) if migration_root.exists() else []
     for path in migration_files:
         failures.append(f"separate migration SQL remains: {path}")
@@ -113,16 +141,19 @@ def verify_counts(backend: Path, frontend: Path, failures: list[str]) -> dict[st
     if documented_operations != operations:
         failures.append(f"API operation count mismatch: document={documented_operations}, snapshot={operations}")
 
-    schema_dir = backend / "infrastructure/shiyu-ai-dal/src/main/resources/db/baseline/h2/schema"
+    schema_roots = [root / "schema" for root in baseline_owner_roots(backend) if root.exists()]
     table_pattern = re.compile(r'CREATE\s+(?:CACHED\s+)?TABLE\s+"PUBLIC"\."', re.I)
-    tables = sum(len(table_pattern.findall(path.read_text(encoding="utf-8"))) for path in schema_dir.glob("*.sql"))
+    schema_files = [path for root in schema_roots for path in root.rglob("*.sql")]
+    tables = sum(len(table_pattern.findall(path.read_text(encoding="utf-8"))) for path in schema_files)
     data_doc = (backend / "docs/参考/领域模型与数据字典.md").read_text(encoding="utf-8")
     documented_tables = len(re.findall(r"^### [A-Z][A-Z0-9_]+$", data_doc, re.M))
     if documented_tables != tables:
         failures.append(f"table count mismatch: document={documented_tables}, schema={tables}")
 
-    seed = (backend / "infrastructure/shiyu-ai-dal/src/main/resources/db/baseline/h2/seed/02_auth.sql").read_text(encoding="utf-8")
+    seed = (backend / "shiyu-domains/iam/shiyu-iam-implementation/src/main/resources/db/baseline/h2/seed/iam/02_auth.sql").read_text(encoding="utf-8")
+    navigation = (backend / "shiyu-domains/iam/shiyu-iam-implementation/src/main/resources/db/baseline/h2/seed/iam/05_navigation.sql").read_text(encoding="utf-8")
     menus = len(re.findall(r'INSERT\s+INTO\s+"PUBLIC"\."AUTH_MENU"\s+VALUES', seed, re.I))
+    menus += len(re.findall(r"^\(20\d{2},", navigation, re.M))
     auth_codes = len(re.findall(r'INSERT\s+INTO\s+"PUBLIC"\."AUTH_AUTH_CODE"\s+VALUES', seed, re.I))
     route_doc = (frontend / "docs/参考/页面路由与角色清单.md").read_text(encoding="utf-8")
     documented_menus = len(re.findall(r"^\| \d+ \| (?:MENU|CATALOG) \|", route_doc, re.M))

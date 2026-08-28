@@ -17,11 +17,11 @@
 
     <modules>
         <module>shiyu-common-core</module>
-        <module>shiyu-common-excel</module>
         <module>shiyu-common-mybatis</module>
         <module>shiyu-common-thread</module>
         <module>shiyu-common-web</module>
         <module>shiyu-common-storage</module>
+        <module>shiyu-common-vector</module>
     </modules>
 
     <build>

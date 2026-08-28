@@ -1,4 +1,4 @@
-package com.shiyu.ai.dal.config;
+package com.shiyu.ai.application.db;
 
 import org.h2.jdbcx.JdbcDataSource;
 import org.junit.jupiter.api.Test;
@@ -25,7 +25,7 @@ class DatabaseInitializerTest {
             "COMMON_DICT",
             "AUTH_AUTH_CODE", "AUTH_MENU", "AUTH_ROLE", "AUTH_ROLE_SCOPE_AUTH_CODE",
             "AUTH_ROLE_SCOPE_MENU", "AUTH_TENANT", "AUTH_TENANT_AUTH_CODE",
-            "AUTH_TENANT_MENU", "AUTH_TENANT_QUOTA", "AUTH_USER", "AUTH_USER_SCOPE_ROLE",
+            "AUTH_TENANT_MENU", "AUTH_USER", "AUTH_USER_SCOPE_ROLE",
             "AGENT_AI_MODEL", "AGENT_AI_PLATFORM", "AGENT_DEF", "AGENT_INTENT_DEF",
             "AGENT_VERSION",
             "KNOWLEDGE_DIFFICULTY_SCALE", "KNOWLEDGE_DIFFICULTY_SCALE_LEVEL"
@@ -38,12 +38,12 @@ class DatabaseInitializerTest {
 
         initializer.initialize();
 
-        assertEquals(98, scalar(dataSource,
+        assertEquals(97, scalar(dataSource,
                 "SELECT COUNT(*) FROM INFORMATION_SCHEMA.TABLES "
                         + "WHERE TABLE_SCHEMA='PUBLIC' AND TABLE_TYPE='BASE TABLE'"));
         assertEquals(1, scalar(dataSource,
                 "SELECT COUNT(*) FROM COMMON_SCHEMA_BASELINE "
-                        + "WHERE BASELINE_VERSION='3' AND SEED_PROFILE='system-ai'"));
+                        + "WHERE BASELINE_VERSION='4' AND SEED_PROFILE='system-ai'"));
 
         assertEquals(18, scalar(dataSource, "SELECT COUNT(*) FROM COMMON_DICT"));
         assertEquals(1, scalar(dataSource,
@@ -51,16 +51,15 @@ class DatabaseInitializerTest {
         assertEquals(1, scalar(dataSource, "SELECT COUNT(*) FROM AUTH_TENANT"));
         assertEquals(1, scalar(dataSource,
                 "SELECT COUNT(*) FROM AUTH_TENANT WHERE NAME='默认租户'"));
-        assertEquals(1, scalar(dataSource, "SELECT COUNT(*) FROM AUTH_TENANT_QUOTA"));
         assertEquals(1, scalar(dataSource,
                 "SELECT COUNT(*) FROM AUTH_USER WHERE USERNAME='admin'"));
         assertEquals(3, scalar(dataSource, "SELECT COUNT(*) FROM AUTH_ROLE"));
         assertEquals(41, scalar(dataSource, "SELECT COUNT(*) FROM AUTH_MENU"));
-        assertEquals(131, scalar(dataSource, "SELECT COUNT(*) FROM AUTH_AUTH_CODE"));
+        assertEquals(132, scalar(dataSource, "SELECT COUNT(*) FROM AUTH_AUTH_CODE"));
         assertEquals(41, scalar(dataSource, "SELECT COUNT(*) FROM AUTH_TENANT_MENU"));
-        assertEquals(131, scalar(dataSource, "SELECT COUNT(*) FROM AUTH_TENANT_AUTH_CODE"));
+        assertEquals(132, scalar(dataSource, "SELECT COUNT(*) FROM AUTH_TENANT_AUTH_CODE"));
         assertTrue(scalar(dataSource, "SELECT COUNT(*) FROM AUTH_ROLE_SCOPE_MENU") >= 99);
-        assertEquals(262, scalar(dataSource, "SELECT COUNT(*) FROM AUTH_ROLE_SCOPE_AUTH_CODE"));
+        assertEquals(264, scalar(dataSource, "SELECT COUNT(*) FROM AUTH_ROLE_SCOPE_AUTH_CODE"));
         assertEquals(1, scalar(dataSource,
                 "SELECT COUNT(*) FROM AUTH_USER_SCOPE_ROLE usr "
                         + "JOIN AUTH_USER u ON u.ID=usr.USER_ID "
@@ -86,6 +85,27 @@ class DatabaseInitializerTest {
 
         assertAllNonSeedTablesEmpty(dataSource);
 
+        execute(dataSource, "INSERT INTO GOVERNANCE_USAGE_RECORD "
+                + "(ID,TENANT_ID,USER_ID,CORRELATION_ID,SOURCE_TYPE,SOURCE_ID,INPUT_TOKENS,OUTPUT_TOKENS,COST,OCCURRED_AT) "
+                + "VALUES ('usage-1',1,1,'trace-1','MODEL_INVOCATION','call-42',10,2,0.01,CURRENT_TIMESTAMP)");
+        assertThrows(Exception.class, () -> execute(dataSource, "INSERT INTO GOVERNANCE_USAGE_RECORD "
+                + "(ID,TENANT_ID,USER_ID,CORRELATION_ID,SOURCE_TYPE,SOURCE_ID,INPUT_TOKENS,OUTPUT_TOKENS,COST,OCCURRED_AT) "
+                + "VALUES ('usage-2',1,1,'trace-2','MODEL_INVOCATION','call-42',10,2,0.01,CURRENT_TIMESTAMP)"));
+        assertThrows(Exception.class, () -> execute(dataSource, "INSERT INTO GOVERNANCE_USAGE_RECORD "
+                + "(ID,TENANT_ID,USER_ID,CORRELATION_ID,SOURCE_TYPE,SOURCE_ID,INPUT_TOKENS,OUTPUT_TOKENS,COST,OCCURRED_AT) "
+                + "VALUES ('usage-3',NULL,1,'trace-3','MODEL_INVOCATION','call-43',10,2,0.01,CURRENT_TIMESTAMP)"));
+
+        execute(dataSource, "INSERT INTO EDU_STUDENT (ID,TENANT_ID,USER_ID,NAME,GRADE) "
+                + "VALUES (101,1,88,'tenant-one-student',7)");
+        execute(dataSource, "INSERT INTO EDU_STUDENT (ID,TENANT_ID,USER_ID,NAME,GRADE) "
+                + "VALUES (102,2,88,'tenant-two-student',7)");
+        assertThrows(Exception.class, () -> execute(dataSource,
+                "INSERT INTO EDU_STUDENT (ID,TENANT_ID,USER_ID,NAME,GRADE) "
+                        + "VALUES (103,1,88,'duplicate-in-tenant',7)"));
+        assertThrows(Exception.class, () -> execute(dataSource,
+                "INSERT INTO EDU_STUDENT (ID,TENANT_ID,USER_ID,NAME,GRADE) "
+                        + "VALUES (104,NULL,99,'missing-tenant',7)"));
+
         initializer.initialize();
         assertEquals(18, scalar(dataSource, "SELECT COUNT(*) FROM COMMON_DICT"));
         assertEquals(1, scalar(dataSource, "SELECT COUNT(*) FROM AUTH_USER"));
@@ -93,26 +113,25 @@ class DatabaseInitializerTest {
     }
 
     @Test
-    void migratesV2BaselineToV3PlatformTables() throws Exception {
+    void refusesOldBaselineWithoutChangingExistingData() throws Exception {
         DataSource dataSource = newDataSource();
         DatabaseInitializer initializer = newInitializer(dataSource);
         initializer.initialize();
 
-        execute(dataSource, "INSERT INTO COMMON_DICT (ID,DICT_TYPE,DICT_LABEL,DICT_VALUE,TENANT_ID,REMARK,CREATE_BY,UPDATE_BY) VALUES (9999,'migration-check','保留业务数据','kept',1,'must survive v2-v3','test','test')");
+        execute(dataSource, "INSERT INTO COMMON_DICT (ID,DICT_TYPE,DICT_LABEL,DICT_VALUE,TENANT_ID,REMARK,CREATE_BY,UPDATE_BY) VALUES (9999,'migration-check','保留业务数据','kept',1,'must survive rejected rebuild','test','test')");
         execute(dataSource, "CREATE TABLE MEMORY_LONG_TERM_MEMORY (ID BIGINT PRIMARY KEY, CONTENT VARCHAR(255))");
-        execute(dataSource, "INSERT INTO MEMORY_LONG_TERM_MEMORY VALUES (1,'legacy memory is intentionally removed')");
-        execute(dataSource, "UPDATE COMMON_SCHEMA_BASELINE SET BASELINE_VERSION='2'");
-        initializer.initialize();
+        execute(dataSource, "INSERT INTO MEMORY_LONG_TERM_MEMORY VALUES (1,'legacy memory remains untouched')");
+        execute(dataSource, "UPDATE COMMON_SCHEMA_BASELINE SET BASELINE_VERSION='3'");
+
+        IllegalStateException error = assertThrows(IllegalStateException.class, initializer::initialize);
+
+        assertTrue(error.getMessage().contains("manual rebuild required"));
         assertEquals(1, scalar(dataSource,
                 "SELECT COUNT(*) FROM COMMON_SCHEMA_BASELINE WHERE BASELINE_VERSION='3'"));
         assertEquals(1, scalar(dataSource,
-                "SELECT COUNT(*) FROM INFORMATION_SCHEMA.TABLES WHERE TABLE_NAME='MEMORY_EVENT'"));
-        assertEquals(0, scalar(dataSource,
-                "SELECT COUNT(*) FROM INFORMATION_SCHEMA.TABLES WHERE TABLE_NAME='MEMORY_LONG_TERM_MEMORY'"));
-        assertEquals(1, scalar(dataSource,
-                "SELECT COUNT(*) FROM INFORMATION_SCHEMA.TABLES WHERE TABLE_NAME='AI_RUN_EVENT'"));
-        assertEquals(1, scalar(dataSource,
                 "SELECT COUNT(*) FROM COMMON_DICT WHERE ID=9999 AND DICT_VALUE='kept'"));
+        assertEquals(1, scalar(dataSource,
+                "SELECT COUNT(*) FROM MEMORY_LONG_TERM_MEMORY WHERE ID=1"));
     }
 
     @Test
@@ -142,7 +161,7 @@ class DatabaseInitializerTest {
     }
 
     @Test
-    void removesAllObjectsAfterFailedFreshInstall() throws Exception {
+    void doesNotDeleteObjectsAfterFailedFreshInstall() throws Exception {
         DataSource dataSource = newDataSource();
         DatabaseInitializer initializer = new DatabaseInitializer(
                 Map.of("agent", dataSource), new StaticApplicationContext()) {
@@ -157,9 +176,9 @@ class DatabaseInitializerTest {
         };
 
         assertThrows(RuntimeException.class, initializer::initialize);
-        assertEquals(0, scalar(dataSource,
+        assertTrue(scalar(dataSource,
                 "SELECT COUNT(*) FROM INFORMATION_SCHEMA.TABLES "
-                        + "WHERE TABLE_SCHEMA='PUBLIC' AND TABLE_TYPE='BASE TABLE'"));
+                        + "WHERE TABLE_SCHEMA='PUBLIC' AND TABLE_TYPE='BASE TABLE'") > 0);
     }
 
     private DatabaseInitializer newInitializer(DataSource dataSource) {
@@ -208,6 +227,12 @@ class DatabaseInitializerTest {
         assertEquals(1, scalar(dataSource,
                 "SELECT COUNT(*) FROM AUTH_MENU WHERE ID=2030 AND PATH='/knowledge-center' AND REDIRECT='/knowledge-center/spaces'"));
         assertEquals(1, scalar(dataSource,
+                "SELECT COUNT(*) FROM AUTH_MENU WHERE ID=2050 AND CODE='EducationCenter'"));
+        assertEquals(0, scalar(dataSource,
+                "SELECT COUNT(*) FROM AUTH_MENU WHERE COMPONENT LIKE '%Workspace%'"));
+        assertEquals(0, scalar(dataSource,
+                "SELECT COUNT(*) FROM AUTH_MENU WHERE NAME LIKE '%工作区%' OR DESCRIPTION LIKE '%工作区%'"));
+        assertEquals(1, scalar(dataSource,
                 "SELECT COUNT(*) FROM AUTH_MENU WHERE ID=1 AND NAME='系统管理'"));
         assertEquals(1, scalar(dataSource,
                 "SELECT COUNT(*) FROM AUTH_MENU WHERE ID=90 AND PARENT_ID=1"));
@@ -216,7 +241,7 @@ class DatabaseInitializerTest {
         assertEquals(5, scalar(dataSource, "SELECT COUNT(*) FROM AUTH_MENU WHERE PARENT_ID=2020"));
         assertEquals(0, scalar(dataSource, "SELECT COUNT(*) FROM AUTH_MENU WHERE ID IN (10,40,70,80,1500,1600,1610,1620,1630,1640)"));
         assertEquals(0, scalar(dataSource, "SELECT COUNT(*) FROM AUTH_MENU WHERE PATH LIKE '/agent/%' OR PATH LIKE '/knowledge/%' OR PATH LIKE '/dashboard/%'"));
-        assertEquals(1, scalar(dataSource, "SELECT COUNT(*) FROM AUTH_MENU WHERE ID=2023 AND COMPONENT='/app-studio/prompts/index'"));
+        assertEquals(1, scalar(dataSource, "SELECT COUNT(*) FROM AUTH_MENU WHERE ID=2023 AND COMPONENT='feature:conversation.prompts'"));
     }
 
     private long scalar(DataSource dataSource, String sql) throws Exception {

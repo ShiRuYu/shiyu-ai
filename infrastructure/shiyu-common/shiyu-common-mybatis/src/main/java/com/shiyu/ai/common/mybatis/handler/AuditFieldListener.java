@@ -1,8 +1,6 @@
 package com.shiyu.ai.common.mybatis.handler;
 
 import com.shiyu.ai.common.core.domain.BaseEntity;
-import com.shiyu.ai.common.core.domain.UserContextHolder;
-import com.shiyu.ai.common.mybatis.model.ServiceAssignedTenantEntity;
 import lombok.extern.slf4j.Slf4j;
 
 import java.time.LocalDateTime;
@@ -38,11 +36,6 @@ public class AuditFieldListener implements com.mybatisflex.annotation.InsertList
             }
         }
 
-        // auth 授权域实体的 tenantId 必须由 Service 显式设置。
-        // 其他尚未迁移的业务实体暂保留兼容性兜底，避免本次 auth 改造影响业务模块。
-        if (!(entity instanceof ServiceAssignedTenantEntity)) {
-            fillLegacyTenantFields(entity);
-        }
     }
 
     @Override
@@ -57,48 +50,9 @@ public class AuditFieldListener implements com.mybatisflex.annotation.InsertList
         }
     }
 
-    private void fillLegacyTenantFields(Object entity) {
-        fillIfPresent(entity, "tenantId", UserContextHolder.getCurrentTenantId());
-    }
-
-    private void fillIfPresent(Object entity, String fieldName, Object value) {
-        if (value == null) {
-            return;
-        }
-        try {
-            var field = findField(entity.getClass(), fieldName);
-            if (field == null) {
-                return;
-            }
-            field.setAccessible(true);
-            if (field.get(entity) == null) {
-                field.set(entity, value);
-            }
-        } catch (Exception e) {
-            log.warn("Failed to auto-fill {} on {}", fieldName, entity.getClass().getSimpleName(), e);
-        }
-    }
-
-    private java.lang.reflect.Field findField(Class<?> type, String fieldName) {
-        Class<?> current = type;
-        while (current != null && current != Object.class) {
-            try {
-                return current.getDeclaredField(fieldName);
-            } catch (NoSuchFieldException ignored) {
-                current = current.getSuperclass();
-            }
-        }
-        return null;
-    }
-
     private String getCurrentUser() {
-        if (UserContextHolder.isLogin()) {
-            String username = UserContextHolder.getUsername();
-            if (username != null && !username.isBlank()) {
-                return username;
-            }
-        }
-        log.warn("Current user is not logged");
+        // 审计字段不能从线程上下文推断身份。命令/Repository 应在持久化前显式设置
+        // createBy/updateBy；未提供时保留稳定占位值，避免把认证上下文泄漏到 MyBatis 层。
         return "unknown";
     }
 }

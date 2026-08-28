@@ -1,9 +1,9 @@
 package com.shiyu.ai.web.config;
 
-import com.shiyu.ai.common.core.domain.UserContextHolder;
 import com.shiyu.ai.common.core.utils.JSONUtils;
 import com.shiyu.ai.common.core.utils.LoggerUtil;
 import com.shiyu.ai.agent.service.AuditService;
+import com.shiyu.ai.common.web.auth.ActorContextHttpAdapter;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import lombok.extern.slf4j.Slf4j;
@@ -59,7 +59,12 @@ public class AuditInterceptor implements HandlerInterceptor {
             Map<String, Object> detail = Map.of(
                     "method", method, "path", path, "status", response.getStatus());
 
-            auditService.record(action, targetType, targetId, detail, result, errorMsg, durationMs);
+            var actor = ActorContextHttpAdapter.currentActorOrNull();
+            auditService.record(
+                    actor == null ? null : actor.tenantId(),
+                    actor == null ? null : actor.userId().value(),
+                    request.getRemoteAddr(),
+                    action, targetType, targetId, detail, result, errorMsg, durationMs);
 
         } catch (Exception e) {
             log.warn("审计拦截器异常: {}", e.getMessage());
@@ -78,19 +83,19 @@ public class AuditInterceptor implements HandlerInterceptor {
     }
 
     private String resolveAction(String method, String path) {
-        if (path.startsWith("/v1/auth")) return "AUTH_" + method;
-        if (path.startsWith("/v1/agents") || path.startsWith("/v1/agent-")) return "AGENT_" + method;
-        if (path.startsWith("/v1/knowledge")) return "KNOWLEDGE_" + method;
-        if (path.startsWith("/v1/education")) return "EDUCATION_" + method;
-        if (path.startsWith("/v1/record")) return "RECORD_" + method;
-        if (path.startsWith("/v1/system")) return "SYSTEM_" + method;
-        if (path.startsWith("/v1/usage")) return "USAGE_" + method;
+        if (path.startsWith("/api/iam/auth")) return "AUTH_" + method;
+        if (path.startsWith("/api/agent")) return "AGENT_" + method;
+        if (path.startsWith("/api/knowledge")) return "KNOWLEDGE_" + method;
+        if (path.startsWith("/api/education")) return "EDUCATION_" + method;
+        if (path.startsWith("/api/record")) return "RECORD_" + method;
+        if (path.startsWith("/api/iam")) return "SYSTEM_" + method;
+        if (path.startsWith("/api/governance/usage")) return "USAGE_" + method;
         return "API_" + method;
     }
 
     private String resolveTargetType(String path) {
         String[] segments = path.split("/");
-        if (segments.length >= 3 && "v1".equals(segments[1])) {
+        if (segments.length >= 3 && "api".equals(segments[1])) {
             return segments[2];
         }
         return "unknown";

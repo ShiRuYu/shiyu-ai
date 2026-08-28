@@ -6,6 +6,10 @@ target/
 
 .flattened-pom.xml
 
+# Python tooling caches
+**/__pycache__/
+*.py[cod]
+
 .logs
 
 **/src/main/resources/config/config.yml

@@ -1,4 +1,4 @@
-package com.shiyu.ai.dal.retention;
+package com.shiyu.ai.application.retention;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -37,11 +37,10 @@ public class DataRetentionService {
         deleteBefore("agent_node_execution", "create_time", executionCutoff);
         deleteBefore("agent_checkpoint", "create_time", executionCutoff);
         deleteBefore("observation_execution_timeline", "create_time", executionCutoff);
-        deleteBefore("memory_episodic_memory", "create_time", executionCutoff);
         deleteBefore("agent_execution", "create_time", executionCutoff);
         deleteBefore("observation_audit_log", "create_time", auditCutoff);
         deleteBefore("knowledge_audit_log", "create_time", auditCutoff);
-        deleteBefore("agent_usage_record", "create_time", usageCutoff);
+        deleteBefore("governance_usage_record", "create_time", usageCutoff);
         deleteCompletedTasks(taskCutoff);
     }
 

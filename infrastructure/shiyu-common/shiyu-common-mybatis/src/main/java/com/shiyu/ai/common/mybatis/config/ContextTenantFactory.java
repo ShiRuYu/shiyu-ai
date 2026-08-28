@@ -1,41 +1,26 @@
-package com.shiyu.ai.dal.config;
+package com.shiyu.ai.common.mybatis.config;
 
 import com.mybatisflex.core.tenant.TenantFactory;
-import com.shiyu.ai.common.core.domain.UserContextHolder;
-import com.shiyu.ai.common.core.domain.UserContext;
+import com.shiyu.ai.kernel.context.TenantScope;
 import org.springframework.stereotype.Component;
 
 /**
  * 基于当前操作租户的严格单租户过滤工厂。
  */
 @Component
+@SuppressWarnings("deprecation")
 public class ContextTenantFactory implements TenantFactory {
 
     @Override
     public Object[] getTenantIds() {
-        UserContext user = UserContextHolder.getContext();
-        if (user == null) return new Object[0];
-
-        return user.getCurrentTenantId() == null
-                ? new Object[0]
-                : new Object[]{user.getCurrentTenantId()};
+        return new Object[]{TenantScope.require().value()};
     }
 
     @Override
     public Object[] getTenantIds(String tableName) {
-        // 认证关系表由仓储层显式按当前上下文校验。
-        if (tableName != null && java.util.Set.of(
-                "auth_user",
-                "auth_tenant",
-                "auth_user_scope_role",
-                "auth_role_scope_menu",
-                "auth_role_scope_auth_code",
-                "auth_tenant_menu",
-                "auth_tenant_auth_code",
-                "auth_tenant_quota"
-        ).contains(tableName.toLowerCase())) {
-            return null;
-        }
+        // 所有带租户归属的数据访问都必须拥有有效上下文。
+        // 需要跨租户执行的认证管理查询必须显式使用 TenantManager.withoutTenantCondition，
+        // 不能通过返回 null 绕过租户过滤器。
         return getTenantIds();
     }
 }
