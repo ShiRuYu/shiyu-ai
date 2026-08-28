@@ -26,7 +26,7 @@ class DatabaseInitializerTest {
             "AUTH_AUTH_CODE", "AUTH_MENU", "AUTH_ROLE", "AUTH_ROLE_SCOPE_AUTH_CODE",
             "AUTH_ROLE_SCOPE_MENU", "AUTH_TENANT", "AUTH_TENANT_AUTH_CODE",
             "AUTH_TENANT_MENU", "AUTH_USER", "AUTH_USER_SCOPE_ROLE",
-            "AGENT_AI_MODEL", "AGENT_AI_PLATFORM", "AGENT_DEF", "AGENT_INTENT_DEF",
+            "MODEL_AI_MODEL", "MODEL_AI_PLATFORM", "AGENT_DEF", "AGENT_INTENT_DEF",
             "AGENT_VERSION",
             "KNOWLEDGE_DIFFICULTY_SCALE", "KNOWLEDGE_DIFFICULTY_SCALE_LEVEL"
     );
@@ -66,8 +66,10 @@ class DatabaseInitializerTest {
                         + "JOIN AUTH_ROLE r ON r.ID=usr.ROLE_ID "
                         + "WHERE u.USERNAME='admin' AND r.CODE='super'"));
 
-        assertEquals(4, scalar(dataSource, "SELECT COUNT(*) FROM AGENT_AI_PLATFORM"));
-        assertEquals(9, scalar(dataSource, "SELECT COUNT(*) FROM AGENT_AI_MODEL"));
+        assertEquals(4, scalar(dataSource, "SELECT COUNT(*) FROM MODEL_AI_PLATFORM"));
+        assertEquals(9, scalar(dataSource, "SELECT COUNT(*) FROM MODEL_AI_MODEL"));
+        assertEquals(0, scalar(dataSource, "SELECT COUNT(*) FROM INFORMATION_SCHEMA.TABLES "
+                + "WHERE TABLE_SCHEMA='PUBLIC' AND TABLE_NAME IN ('AGENT_AI_" + "PLATFORM','AGENT_AI_" + "MODEL')"));
         assertEquals(11, scalar(dataSource, "SELECT COUNT(*) FROM AGENT_DEF"));
         assertEquals(11, scalar(dataSource, "SELECT COUNT(*) FROM AGENT_VERSION"));
         assertEquals(1, scalar(dataSource, "SELECT COUNT(*) FROM KNOWLEDGE_DIFFICULTY_SCALE"));
