@@ -1,7 +1,7 @@
 # API 接口参考
 
 > 本文档由 `scripts/docs/generate_reference_docs.py` 从 SpringDoc OpenAPI 自动生成。
-> 生成源：`..\shiyu-ui\tests\contracts\shiyu-ai-openapi.json`；OpenAPI：`3.1.0`；服务版本：`0.1`。
+> 生成源：`..\\shiyu-ui\\tests\\contracts\\shiyu-ai-openapi.json`；OpenAPI：`3.1.0`；服务版本：`0.1`。
 
 ## 契约约定
 
@@ -160,8 +160,8 @@
 
 | 方法 | 路径 | 摘要 | 鉴权 | 请求 | 响应 |
 |---|---|---|---|---|---|
-| GET | `/api/conversation/conversations` | list_4 | 登录态；细粒度权限见权限矩阵 | limit[query,可选]:integer/int32; offset[query,可选]:integer/int32 | 200=*/*:ResultListConversation |
-| POST | `/api/conversation/conversations` | create_27 | 登录态；细粒度权限见权限矩阵 | Idempotency-Key[header,可选]:string; body[必填]=application/json:CreateConversationRequest | 200=*/*:ResultConversation |
+| GET | `/api/conversation/conversations` | list_3 | 登录态；细粒度权限见权限矩阵 | limit[query,可选]:integer/int32; offset[query,可选]:integer/int32 | 200=*/*:ResultListConversation |
+| POST | `/api/conversation/conversations` | create_24 | 登录态；细粒度权限见权限矩阵 | Idempotency-Key[header,可选]:string; body[必填]=application/json:CreateConversationRequest | 200=*/*:ResultConversation |
 | POST | `/api/conversation/conversations/import` | importConversation | 登录态；细粒度权限见权限矩阵 | body[必填]=application/json:ImportRequest/text/plain:ImportRequest | 200=*/*:ResultConversation |
 | POST | `/api/conversation/conversations/import/preview` | importPreview | 登录态；细粒度权限见权限矩阵 | body[必填]=application/json:ImportRequest | 200=*/*:ResultPreview |
 | GET | `/api/conversation/conversations/{id}` | detail | 登录态；细粒度权限见权限矩阵 | id[path,必填]:string | 200=*/*:ResultConversation |
@@ -214,11 +214,11 @@
 
 | 方法 | 路径 | 摘要 | 鉴权 | 请求 | 响应 |
 |---|---|---|---|---|---|
-| POST | `/api/memory/admin/indexes/rebuild` | rebuild_1 | 登录态；细粒度权限见权限矩阵 | namespace[query,必填]:string | 200=*/*:ResultVoid |
+| POST | `/api/memory/admin/indexes/rebuild` | rebuild | 登录态；细粒度权限见权限矩阵 | namespace[query,必填]:string | 200=*/*:ResultVoid |
 | POST | `/api/memory/events` | ingest | 登录态；细粒度权限见权限矩阵 | body[必填]=application/json:EventRequest | 200=*/*:ResultMemoryEvent |
 | POST | `/api/memory/events/{id}/confirm` | confirm | 登录态；细粒度权限见权限矩阵 | id[path,必填]:string | 200=*/*:ResultVoid |
 | GET | `/api/memory/events/{id}/relations` | relations | 登录态；细粒度权限见权限矩阵 | id[path,必填]:string; graphType[query,必填]:string(TEMPORAL,SEMANTIC,CAUSAL,ENTITY); limit[query,可选]:integer/int32 | 200=*/*:ResultListMemoryEdge |
-| POST | `/api/memory/events/{id}/revoke` | revoke_1 | 登录态；细粒度权限见权限矩阵 | id[path,必填]:string | 200=*/*:ResultVoid |
+| POST | `/api/memory/events/{id}/revoke` | revoke | 登录态；细粒度权限见权限矩阵 | id[path,必填]:string | 200=*/*:ResultVoid |
 | POST | `/api/memory/events/{id}/supersede` | supersede | 登录态；细粒度权限见权限矩阵 | id[path,必填]:string; body[必填]=application/json:EventRequest | 200=*/*:ResultMemoryEvent |
 | POST | `/api/memory/query` | query | 登录态；细粒度权限见权限矩阵 | body[必填]=application/json:QueryRequest | 200=*/*:ResultMemoryRetrievalResult |
 | GET | `/api/memory/retrieval-traces/{traceId}` | trace | 登录态；细粒度权限见权限矩阵 | traceId[path,必填]:string | 200=*/*:ResultMemoryRetrievalTrace |
@@ -274,17 +274,17 @@
 | POST | `/api/agent/apps/{id}/preview` | preview_2 | 登录态；细粒度权限见权限矩阵 | id[path,必填]:string; body[必填]=application/json:PreviewRequest | 200=*/*:ResultAiAppPreview |
 | GET | `/api/agent/apps/{id}/versions` | versions | 登录态；细粒度权限见权限矩阵 | id[path,必填]:string | 200=*/*:ResultListAiAppVersion |
 | POST | `/api/agent/apps/{id}/versions` | version | 登录态；细粒度权限见权限矩阵 | id[path,必填]:string; body[必填]=application/json:VersionRequest | 200=*/*:ResultAiAppVersion |
-| POST | `/api/agent/apps/{id}/versions/{versionId}/archive` | archive_1 | 登录态；细粒度权限见权限矩阵 | id[path,必填]:string; versionId[path,必填]:string | 200=*/*:ResultAiAppVersion |
-| POST | `/api/agent/apps/{id}/versions/{versionId}/publish` | publish_3 | 登录态；细粒度权限见权限矩阵 | id[path,必填]:string; versionId[path,必填]:string | 200=*/*:ResultAiAppVersion |
+| POST | `/api/agent/apps/{id}/versions/{versionId}/archive` | archive_2 | 登录态；细粒度权限见权限矩阵 | id[path,必填]:string; versionId[path,必填]:string | 200=*/*:ResultAiAppVersion |
+| POST | `/api/agent/apps/{id}/versions/{versionId}/publish` | publish_4 | 登录态；细粒度权限见权限矩阵 | id[path,必填]:string; versionId[path,必填]:string | 200=*/*:ResultAiAppVersion |
+| GET | `/api/agent/generations/{generationId}/runtime-events` | generationEvents | 登录态；细粒度权限见权限矩阵 | generationId[path,必填]:string; afterSeq[query,可选]:integer/int64; follow[query,可选]:boolean; waitMs[query,可选]:integer/int32; Last-Event-ID[header,可选]:string | 200=text/event-stream:array<ServerSentEventAiRunEvent> |
 | GET | `/api/agent/runs` | runs | 登录态；细粒度权限见权限矩阵 | limit[query,可选]:integer/int32 | 200=*/*:ResultListAiRun |
 | POST | `/api/agent/runs` | startRun | 登录态；细粒度权限见权限矩阵 | body[必填]=application/json:RunRequest | 200=*/*:ResultAiRun |
 | GET | `/api/agent/runs/{id}` | run_2 | 登录态；细粒度权限见权限矩阵 | id[path,必填]:string | 200=*/*:ResultAiRun |
-| POST | `/api/agent/runs/{id}/cancel` | cancel | 登录态；细粒度权限见权限矩阵 | id[path,必填]:string | 200=*/*:ResultAiRun |
+| POST | `/api/agent/runs/{id}/cancel` | cancel_2 | 登录态；细粒度权限见权限矩阵 | id[path,必填]:string | 200=*/*:ResultAiRun |
 | GET | `/api/agent/runs/{id}/event-history` | eventHistory | 登录态；细粒度权限见权限矩阵 | id[path,必填]:string; afterSeq[query,可选]:integer/int64; limit[query,可选]:integer/int32 | 200=application/json:ResultListAiRunEvent |
 | GET | `/api/agent/runs/{id}/events` | events | 登录态；细粒度权限见权限矩阵 | id[path,必填]:string; afterSeq[query,可选]:integer/int64; limit[query,可选]:integer/int32; follow[query,可选]:boolean; waitMs[query,可选]:integer/int32; Last-Event-ID[header,可选]:string | 200=text/event-stream:array<ServerSentEventAiRunEvent> |
 | GET | `/api/agent/runs/{id}/prompt-snapshot` | promptSnapshot | 登录态；细粒度权限见权限矩阵 | id[path,必填]:string | 200=*/*:ResultMapStringObject |
 | GET | `/api/agent/runs/{id}/trajectory` | trajectory | 登录态；细粒度权限见权限矩阵 | id[path,必填]:string | 200=*/*:ResultListAiRunEvent |
-| GET | `/api/conversation/generations/{generationId}/runtime-events` | generationEvents | 登录态；细粒度权限见权限矩阵 | generationId[path,必填]:string; afterSeq[query,可选]:integer/int64; follow[query,可选]:boolean; waitMs[query,可选]:integer/int32; Last-Event-ID[header,可选]:string | 200=text/event-stream:array<ServerSentEventAiRunEvent> |
 
 ### analytics-controller
 
@@ -303,27 +303,27 @@
 | 方法 | 路径 | 摘要 | 鉴权 | 请求 | 响应 |
 |---|---|---|---|---|---|
 | GET | `/api/education/chapter/children` | listByParentId | 登录态；细粒度权限见权限矩阵 | parentId[query,必填]:integer/int64 | 200=*/*:ResultListChapterResponse |
-| POST | `/api/education/chapter/create` | create_25 | 登录态；细粒度权限见权限矩阵 | body[必填]=application/json:ChapterRequest | 200=*/*:ResultChapterResponse |
-| POST | `/api/education/chapter/delete` | delete_21 | 登录态；细粒度权限见权限矩阵 | id[query,必填]:integer/int64 | 200=*/*:ResultVoid |
+| POST | `/api/education/chapter/create` | create_22 | 登录态；细粒度权限见权限矩阵 | body[必填]=application/json:ChapterRequest | 200=*/*:ResultChapterResponse |
+| POST | `/api/education/chapter/delete` | delete_20 | 登录态；细粒度权限见权限矩阵 | id[query,必填]:integer/int64 | 200=*/*:ResultVoid |
 | GET | `/api/education/chapter/detail` | getById_17 | 登录态；细粒度权限见权限矩阵 | id[query,必填]:integer/int64 | 200=*/*:ResultChapterResponse |
 | POST | `/api/education/chapter/knowledge/bind` | replaceKnowledgeIds | 登录态；细粒度权限见权限矩阵 | chapterId[query,必填]:integer/int64; body[必填]=application/json:array<integer/int64> | 200=*/*:ResultVoid |
 | GET | `/api/education/chapter/knowledge/list` | listKnowledgeIds | 登录态；细粒度权限见权限矩阵 | chapterId[query,必填]:integer/int64 | 200=*/*:ResultListLong |
 | GET | `/api/education/chapter/textbook` | listByTextbookId | 登录态；细粒度权限见权限矩阵 | textbookId[query,必填]:integer/int64 | 200=*/*:ResultListChapterResponse |
 | GET | `/api/education/chapter/tree` | getChapterTree | 登录态；细粒度权限见权限矩阵 | textbookId[query,必填]:integer/int64 | 200=*/*:ResultListChapterResponse |
-| POST | `/api/education/chapter/update` | update_21 | 登录态；细粒度权限见权限矩阵 | id[query,必填]:integer/int64; body[必填]=application/json:ChapterRequest | 200=*/*:ResultVoid |
+| POST | `/api/education/chapter/update` | update_20 | 登录态；细粒度权限见权限矩阵 | id[query,必填]:integer/int64; body[必填]=application/json:ChapterRequest | 200=*/*:ResultVoid |
 
 ### course-controller
 
 | 方法 | 路径 | 摘要 | 鉴权 | 请求 | 响应 |
 |---|---|---|---|---|---|
-| POST | `/api/education/course/create` | create_24 | 登录态；细粒度权限见权限矩阵 | body[必填]=application/json:CourseRequest | 200=*/*:ResultCourseResponse |
-| POST | `/api/education/course/delete` | delete_20 | 登录态；细粒度权限见权限矩阵 | id[query,必填]:integer/int64 | 200=*/*:ResultVoid |
+| POST | `/api/education/course/create` | create_21 | 登录态；细粒度权限见权限矩阵 | body[必填]=application/json:CourseRequest | 200=*/*:ResultCourseResponse |
+| POST | `/api/education/course/delete` | delete_19 | 登录态；细粒度权限见权限矩阵 | id[query,必填]:integer/int64 | 200=*/*:ResultVoid |
 | GET | `/api/education/course/detail` | getById_16 | 登录态；细粒度权限见权限矩阵 | id[query,必填]:integer/int64 | 200=*/*:ResultCourseResponse |
 | GET | `/api/education/course/grade` | listByGrade | 登录态；细粒度权限见权限矩阵 | grade[query,必填]:integer/int32 | 200=*/*:ResultListCourseResponse |
 | POST | `/api/education/course/learn` | startLearning | 登录态；细粒度权限见权限矩阵 | courseId[query,必填]:integer/int64; studentId[query,必填]:integer/int64 | 200=*/*:ResultCourseResponse |
 | GET | `/api/education/course/list` | list_14 | 登录态；细粒度权限见权限矩阵 | pageNum[query,可选]:integer/int32; pageSize[query,可选]:integer/int32 | 200=*/*:ResultPageDataCourseResponse |
 | GET | `/api/education/course/subject` | listBySubjectCode_2 | 登录态；细粒度权限见权限矩阵 | subjectCode[query,必填]:string | 200=*/*:ResultListCourseResponse |
-| POST | `/api/education/course/update` | update_20 | 登录态；细粒度权限见权限矩阵 | id[query,必填]:integer/int64; body[必填]=application/json:CourseRequest | 200=*/*:ResultVoid |
+| POST | `/api/education/course/update` | update_19 | 登录态；细粒度权限见权限矩阵 | id[query,必填]:integer/int64; body[必填]=application/json:CourseRequest | 200=*/*:ResultVoid |
 
 ### education-resource-content-controller
 
@@ -335,7 +335,7 @@
 
 | 方法 | 路径 | 摘要 | 鉴权 | 请求 | 响应 |
 |---|---|---|---|---|---|
-| POST | `/api/agent/evaluations/datasets` | create_14 | 登录态；细粒度权限见权限矩阵 | body[必填]=application/json:DatasetRequest | 200=*/*:ResultEvalDataset |
+| POST | `/api/agent/evaluations/datasets` | create_26 | 登录态；细粒度权限见权限矩阵 | body[必填]=application/json:DatasetRequest | 200=*/*:ResultEvalDataset |
 | GET | `/api/agent/evaluations/datasets/{id}/cases` | cases | 登录态；细粒度权限见权限矩阵 | id[path,必填]:string | 200=*/*:ResultListEvalCase |
 | POST | `/api/agent/evaluations/datasets/{id}/cases` | addCase | 登录态；细粒度权限见权限矩阵 | id[path,必填]:string; body[必填]=application/json:CaseRequest | 200=*/*:ResultEvalCase |
 | POST | `/api/agent/evaluations/runs` | run_1 | 登录态；细粒度权限见权限矩阵 | body[必填]=application/json:RunRequest | 200=*/*:ResultEvalRun |
@@ -346,19 +346,19 @@
 
 | 方法 | 路径 | 摘要 | 鉴权 | 请求 | 响应 |
 |---|---|---|---|---|---|
-| POST | `/api/education/exam/create` | create_23 | 登录态；细粒度权限见权限矩阵 | body[必填]=application/json:ExamRequest | 200=*/*:ResultExamResponse |
-| POST | `/api/education/exam/delete` | delete_19 | 登录态；细粒度权限见权限矩阵 | id[query,必填]:integer/int64 | 200=*/*:ResultVoid |
+| POST | `/api/education/exam/create` | create_20 | 登录态；细粒度权限见权限矩阵 | body[必填]=application/json:ExamRequest | 200=*/*:ResultExamResponse |
+| POST | `/api/education/exam/delete` | delete_18 | 登录态；细粒度权限见权限矩阵 | id[query,必填]:integer/int64 | 200=*/*:ResultVoid |
 | GET | `/api/education/exam/detail` | getById_15 | 登录态；细粒度权限见权限矩阵 | id[query,必填]:integer/int64 | 200=*/*:ResultExamResponse |
 | GET | `/api/education/exam/list` | list_13 | 登录态；细粒度权限见权限矩阵 | pageNum[query,可选]:integer/int32; pageSize[query,可选]:integer/int32 | 200=*/*:ResultPageDataExamResponse |
 | GET | `/api/education/exam/subject` | listBySubjectCode_1 | 登录态；细粒度权限见权限矩阵 | subjectCode[query,必填]:string | 200=*/*:ResultListExamResponse |
 | GET | `/api/education/exam/teacher` | listByTeacherId | 登录态；细粒度权限见权限矩阵 | teacherId[query,必填]:integer/int64 | 200=*/*:ResultListExamResponse |
-| POST | `/api/education/exam/update` | update_19 | 登录态；细粒度权限见权限矩阵 | id[query,必填]:integer/int64; body[必填]=application/json:ExamRequest | 200=*/*:ResultVoid |
+| POST | `/api/education/exam/update` | update_18 | 登录态；细粒度权限见权限矩阵 | id[query,必填]:integer/int64; body[必填]=application/json:ExamRequest | 200=*/*:ResultVoid |
 
 ### generation-controller
 
 | 方法 | 路径 | 摘要 | 鉴权 | 请求 | 响应 |
 |---|---|---|---|---|---|
-| POST | `/api/conversation/generations/{id}/cancel` | cancel_3 | 登录态；细粒度权限见权限矩阵 | id[path,必填]:string | 200=*/*:ResultVoid |
+| POST | `/api/conversation/generations/{id}/cancel` | cancel_1 | 登录态；细粒度权限见权限矩阵 | id[path,必填]:string | 200=*/*:ResultVoid |
 | GET | `/api/conversation/generations/{id}/events` | stream | 登录态；细粒度权限见权限矩阵 | id[path,必填]:string; afterSeq[query,可选]:integer/int32; follow[query,可选]:boolean; waitMs[query,可选]:integer/int32; Last-Event-ID[header,可选]:string | 200=text/event-stream:array<ServerSentEventGenerationEvent> |
 
 ### intent-def-controller
@@ -366,12 +366,12 @@
 | 方法 | 路径 | 摘要 | 鉴权 | 请求 | 响应 |
 |---|---|---|---|---|---|
 | POST | `/api/agent/intents/batch-delete` | deleteBatch_1 | 登录态；细粒度权限见权限矩阵 | body[必填]=application/json:array<integer/int64> | 200=*/*:ResultVoid |
-| POST | `/api/agent/intents/create` | create_13 | 登录态；细粒度权限见权限矩阵 | body[必填]=application/json:IntentDefRequest | 200=*/*:ResultIntentDefVO |
-| POST | `/api/agent/intents/delete` | delete_10 | 登录态；细粒度权限见权限矩阵 | id[query,必填]:integer/int64 | 200=*/*:ResultVoid |
+| POST | `/api/agent/intents/create` | create_25 | 登录态；细粒度权限见权限矩阵 | body[必填]=application/json:IntentDefRequest | 200=*/*:ResultIntentDefVO |
+| POST | `/api/agent/intents/delete` | delete_21 | 登录态；细粒度权限见权限矩阵 | id[query,必填]:integer/int64 | 200=*/*:ResultVoid |
 | GET | `/api/agent/intents/detail` | detail_1 | 登录态；细粒度权限见权限矩阵 | id[query,必填]:integer/int64 | 200=*/*:ResultIntentDefVO |
 | GET | `/api/agent/intents/options` | options_2 | 登录态；细粒度权限见权限矩阵 | - | 200=*/*:ResultListIdNameOptionVO |
 | GET | `/api/agent/intents/page` | page_7 | 登录态；细粒度权限见权限矩阵 | agentId[query,可选]:string; name[query,可选]:string; code[query,可选]:string; category[query,可选]:string; pageNo[query,可选]:integer/int32; pageSize[query,可选]:integer/int32 | 200=*/*:ResultPageDataIntentDefVO |
-| POST | `/api/agent/intents/update` | update_10 | 登录态；细粒度权限见权限矩阵 | id[query,必填]:integer/int64; body[必填]=application/json:IntentDefRequest | 200=*/*:ResultIntentDefVO |
+| POST | `/api/agent/intents/update` | update_21 | 登录态；细粒度权限见权限矩阵 | id[query,必填]:integer/int64; body[必填]=application/json:IntentDefRequest | 200=*/*:ResultIntentDefVO |
 
 ### media-controller
 
@@ -393,7 +393,7 @@
 
 | 方法 | 路径 | 摘要 | 鉴权 | 请求 | 响应 |
 |---|---|---|---|---|---|
-| GET | `/api/model/providers` | models_1 | 登录态；细粒度权限见权限矩阵 | - | 200=*/*:ResultListModelProviderCapabilities |
+| GET | `/api/model/providers` | models | 登录态；细粒度权限见权限矩阵 | - | 200=*/*:ResultListModelProviderCapabilities |
 | GET | `/api/model/providers/{id}/health` | healthById | 登录态；细粒度权限见权限矩阵 | id[path,必填]:string | 200=*/*:ResultProviderHealth |
 | GET | `/api/model/providers/{provider}/{model}/health` | health | 登录态；细粒度权限见权限矩阵 | provider[path,必填]:string; model[path,必填]:string | 200=*/*:ResultProviderHealth |
 | GET | `/api/model/routes` | routes | 登录态；细粒度权限见权限矩阵 | - | 200=*/*:ResultListModelRoutePolicy |
@@ -406,59 +406,59 @@
 |---|---|---|---|---|---|
 | POST | `/api/conversation/chat/completions` | chatCompletions | 登录态；细粒度权限见权限矩阵 | body[必填]=application/json:ChatCompletionRequest | 200=application/json:object/text/event-stream:object |
 | POST | `/api/conversation/responses` | responses | 登录态；细粒度权限见权限矩阵 | body[必填]=application/json:ResponsesRequest | 200=application/json:object/text/event-stream:object |
-| GET | `/api/model/models` | models | 登录态；细粒度权限见权限矩阵 | - | 200=*/*:object |
+| GET | `/api/model/models` | models_1 | 登录态；细粒度权限见权限矩阵 | - | 200=*/*:object |
 
 ### prompt-controller
 
 | 方法 | 路径 | 摘要 | 鉴权 | 请求 | 响应 |
 |---|---|---|---|---|---|
 | GET | `/api/conversation/prompts` | list_2 | 登录态；细粒度权限见权限矩阵 | - | 200=*/*:ResultListPromptTemplate |
-| POST | `/api/conversation/prompts` | create_6 | 登录态；细粒度权限见权限矩阵 | body[必填]=application/json:CreateRequest | 200=*/*:ResultPromptTemplate |
+| POST | `/api/conversation/prompts` | create_23 | 登录态；细粒度权限见权限矩阵 | body[必填]=application/json:CreateRequest | 200=*/*:ResultPromptTemplate |
 | POST | `/api/conversation/prompts/preview` | preview | 登录态；细粒度权限见权限矩阵 | body[必填]=application/json:PreviewRequest | 200=*/*:ResultPromptPreview |
-| POST | `/api/conversation/prompts/{id}/publish` | publish | 登录态；细粒度权限见权限矩阵 | id[path,必填]:string | 200=*/*:ResultPromptTemplate |
+| POST | `/api/conversation/prompts/{id}/publish` | publish_2 | 登录态；细粒度权限见权限矩阵 | id[path,必填]:string | 200=*/*:ResultPromptTemplate |
 
 ### question-controller
 
 | 方法 | 路径 | 摘要 | 鉴权 | 请求 | 响应 |
 |---|---|---|---|---|---|
-| POST | `/api/education/question/create` | create_22 | 登录态；细粒度权限见权限矩阵 | body[必填]=application/json:QuestionRequest | 200=*/*:ResultQuestionResponse |
-| POST | `/api/education/question/delete` | delete_18 | 登录态；细粒度权限见权限矩阵 | id[query,必填]:integer/int64 | 200=*/*:ResultVoid |
+| POST | `/api/education/question/create` | create_19 | 登录态；细粒度权限见权限矩阵 | body[必填]=application/json:QuestionRequest | 200=*/*:ResultQuestionResponse |
+| POST | `/api/education/question/delete` | delete_17 | 登录态；细粒度权限见权限矩阵 | id[query,必填]:integer/int64 | 200=*/*:ResultVoid |
 | GET | `/api/education/question/detail` | getById_14 | 登录态；细粒度权限见权限矩阵 | id[query,必填]:integer/int64 | 200=*/*:ResultQuestionResponse |
 | GET | `/api/education/question/difficulty` | listByDifficulty | 登录态；细粒度权限见权限矩阵 | difficulty[query,必填]:integer/int32 | 200=*/*:ResultListQuestionResponse |
 | GET | `/api/education/question/list` | list_12 | 登录态；细粒度权限见权限矩阵 | pageNum[query,可选]:integer/int32; pageSize[query,可选]:integer/int32 | 200=*/*:ResultPageDataQuestionResponse |
 | GET | `/api/education/question/subject-grade` | listBySubjectAndGrade_1 | 登录态；细粒度权限见权限矩阵 | subjectCode[query,必填]:string; grade[query,必填]:integer/int32 | 200=*/*:ResultListQuestionResponse |
 | GET | `/api/education/question/type` | listByType_1 | 登录态；细粒度权限见权限矩阵 | type[query,必填]:string | 200=*/*:ResultListQuestionResponse |
-| POST | `/api/education/question/update` | update_18 | 登录态；细粒度权限见权限矩阵 | id[query,必填]:integer/int64; body[必填]=application/json:QuestionRequest | 200=*/*:ResultVoid |
+| POST | `/api/education/question/update` | update_17 | 登录态；细粒度权限见权限矩阵 | id[query,必填]:integer/int64; body[必填]=application/json:QuestionRequest | 200=*/*:ResultVoid |
 
 ### resource-controller
 
 | 方法 | 路径 | 摘要 | 鉴权 | 请求 | 响应 |
 |---|---|---|---|---|---|
-| POST | `/api/education/resource/create` | create_21 | 登录态；细粒度权限见权限矩阵 | body[必填]=application/json:ResourceRequest | 200=*/*:ResultResourceResponse |
-| POST | `/api/education/resource/delete` | delete_17 | 登录态；细粒度权限见权限矩阵 | id[query,必填]:integer/int64 | 200=*/*:ResultVoid |
+| POST | `/api/education/resource/create` | create_18 | 登录态；细粒度权限见权限矩阵 | body[必填]=application/json:ResourceRequest | 200=*/*:ResultResourceResponse |
+| POST | `/api/education/resource/delete` | delete_16 | 登录态；细粒度权限见权限矩阵 | id[query,必填]:integer/int64 | 200=*/*:ResultVoid |
 | GET | `/api/education/resource/detail` | getById_13 | 登录态；细粒度权限见权限矩阵 | id[query,必填]:integer/int64 | 200=*/*:ResultResourceResponse |
 | GET | `/api/education/resource/list` | list_11 | 登录态；细粒度权限见权限矩阵 | pageNum[query,可选]:integer/int32; pageSize[query,可选]:integer/int32 | 200=*/*:ResultPageDataResourceResponse |
 | GET | `/api/education/resource/subject` | listBySubjectCode | 登录态；细粒度权限见权限矩阵 | subjectCode[query,必填]:string | 200=*/*:ResultListResourceResponse |
 | GET | `/api/education/resource/type` | listByType | 登录态；细粒度权限见权限矩阵 | type[query,必填]:string | 200=*/*:ResultListResourceResponse |
-| POST | `/api/education/resource/update` | update_17 | 登录态；细粒度权限见权限矩阵 | id[query,必填]:integer/int64; body[必填]=application/json:ResourceRequest | 200=*/*:ResultVoid |
+| POST | `/api/education/resource/update` | update_16 | 登录态；细粒度权限见权限矩阵 | id[query,必填]:integer/int64; body[必填]=application/json:ResourceRequest | 200=*/*:ResultVoid |
 
 ### review-controller
 
 | 方法 | 路径 | 摘要 | 鉴权 | 请求 | 响应 |
 |---|---|---|---|---|---|
 | POST | `/api/education/review/complete` | complete | 登录态；细粒度权限见权限矩阵 | id[query,必填]:integer/int64; body[必填]=application/json:CompleteReviewRequest | 200=*/*:ResultVoid |
-| POST | `/api/education/review/create` | create_20 | 登录态；细粒度权限见权限矩阵 | body[必填]=application/json:ReviewRequest | 200=*/*:ResultReviewTaskResponse |
-| POST | `/api/education/review/delete` | delete_16 | 登录态；细粒度权限见权限矩阵 | id[query,必填]:integer/int64 | 200=*/*:ResultVoid |
+| POST | `/api/education/review/create` | create_17 | 登录态；细粒度权限见权限矩阵 | body[必填]=application/json:ReviewRequest | 200=*/*:ResultReviewTaskResponse |
+| POST | `/api/education/review/delete` | delete_15 | 登录态；细粒度权限见权限矩阵 | id[query,必填]:integer/int64 | 200=*/*:ResultVoid |
 | GET | `/api/education/review/detail` | getById_12 | 登录态；细粒度权限见权限矩阵 | id[query,必填]:integer/int64 | 200=*/*:ResultReviewTaskResponse |
 | GET | `/api/education/review/list` | list_10 | 登录态；细粒度权限见权限矩阵 | studentId[query,必填]:integer/int64; status[query,必填]:integer/int32 | 200=*/*:ResultListReviewTaskResponse |
 | GET | `/api/education/review/today` | listTodayTasks | 登录态；细粒度权限见权限矩阵 | studentId[query,必填]:integer/int64 | 200=*/*:ResultListReviewTaskResponse |
-| POST | `/api/education/review/update` | update_16 | 登录态；细粒度权限见权限矩阵 | id[query,必填]:integer/int64; body[必填]=application/json:ReviewRequest | 200=*/*:ResultVoid |
+| POST | `/api/education/review/update` | update_15 | 登录态；细粒度权限见权限矩阵 | id[query,必填]:integer/int64; body[必填]=application/json:ReviewRequest | 200=*/*:ResultVoid |
 
 ### role-controller
 
 | 方法 | 路径 | 摘要 | 鉴权 | 请求 | 响应 |
 |---|---|---|---|---|---|
-| GET | `/api/iam/roles/all` | getAllRoles | 登录态；细粒度权限见权限矩阵 | status[query,可选]:string; tenantId[query,可选]:integer/int64 | 200=*/*:ResultListRoleVO |
+| GET | `/api/iam/roles/all` | getAllRoles | 登录态；细粒度权限见权限矩阵 | status[query,可选]:string; tenantId[query,必填]:integer/int64 | 200=*/*:ResultListRoleVO |
 | POST | `/api/iam/roles/create` | createRole | 登录态；细粒度权限见权限矩阵 | body[必填]=application/json:RoleRequest | 200=*/*:ResultVoid |
 | POST | `/api/iam/roles/delete` | deleteRole | 登录态；细粒度权限见权限矩阵 | id[query,必填]:integer/int64 | 200=*/*:ResultVoid |
 | GET | `/api/iam/roles/detail` | getRoleDetail | 登录态；细粒度权限见权限矩阵 | id[query,必填]:integer/int64; tenantId[query,必填]:integer/int64 | 200=*/*:ResultRoleVO |
@@ -472,36 +472,36 @@
 
 | 方法 | 路径 | 摘要 | 鉴权 | 请求 | 响应 |
 |---|---|---|---|---|---|
-| POST | `/api/education/student/create` | create_19 | 登录态；细粒度权限见权限矩阵 | body[必填]=application/json:StudentRequest | 200=*/*:ResultStudentResponse |
-| POST | `/api/education/student/delete` | delete_15 | 登录态；细粒度权限见权限矩阵 | id[query,必填]:integer/int64 | 200=*/*:ResultVoid |
-| GET | `/api/education/student/detail` | getById_11 | 登录态；细粒度权限见权限矩阵 | id[query,必填]:integer/int64 | 200=*/*:ResultStudentResponse |
-| GET | `/api/education/student/list` | list_9 | 登录态；细粒度权限见权限矩阵 | pageNum[query,可选]:integer/int32; pageSize[query,可选]:integer/int32 | 200=*/*:ResultPageDataStudentResponse |
-| POST | `/api/education/student/update` | update_15 | 登录态；细粒度权限见权限矩阵 | id[query,必填]:integer/int64; body[必填]=application/json:StudentRequest | 200=*/*:ResultVoid |
-| GET | `/api/education/student/user` | getByUserId | 登录态；细粒度权限见权限矩阵 | userId[query,必填]:integer/int64 | 200=*/*:ResultStudentResponse |
+| POST | `/api/education/students/create` | create_16 | 登录态；细粒度权限见权限矩阵 | body[必填]=application/json:StudentRequest | 200=*/*:ResultStudentResponse |
+| POST | `/api/education/students/delete` | delete_14 | 登录态；细粒度权限见权限矩阵 | id[query,必填]:integer/int64 | 200=*/*:ResultVoid |
+| GET | `/api/education/students/detail` | getById_11 | 登录态；细粒度权限见权限矩阵 | id[query,必填]:integer/int64 | 200=*/*:ResultStudentResponse |
+| GET | `/api/education/students/list` | list_9 | 登录态；细粒度权限见权限矩阵 | pageNum[query,可选]:integer/int32; pageSize[query,可选]:integer/int32 | 200=*/*:ResultPageDataStudentResponse |
+| POST | `/api/education/students/update` | update_14 | 登录态；细粒度权限见权限矩阵 | id[query,必填]:integer/int64; body[必填]=application/json:StudentRequest | 200=*/*:ResultVoid |
+| GET | `/api/education/students/user` | getByUserId | 登录态；细粒度权限见权限矩阵 | userId[query,必填]:integer/int64 | 200=*/*:ResultStudentResponse |
 
 ### study-plan-controller
 
 | 方法 | 路径 | 摘要 | 鉴权 | 请求 | 响应 |
 |---|---|---|---|---|---|
 | GET | `/api/education/study-plan/active` | listActiveByStudent | 登录态；细粒度权限见权限矩阵 | studentId[query,必填]:integer/int64 | 200=*/*:ResultListStudyPlanResponse |
-| POST | `/api/education/study-plan/create` | create_18 | 登录态；细粒度权限见权限矩阵 | body[必填]=application/json:StudyPlanRequest | 200=*/*:ResultStudyPlanResponse |
-| POST | `/api/education/study-plan/delete` | delete_14 | 登录态；细粒度权限见权限矩阵 | id[query,必填]:integer/int64 | 200=*/*:ResultVoid |
+| POST | `/api/education/study-plan/create` | create_15 | 登录态；细粒度权限见权限矩阵 | body[必填]=application/json:StudyPlanRequest | 200=*/*:ResultStudyPlanResponse |
+| POST | `/api/education/study-plan/delete` | delete_13 | 登录态；细粒度权限见权限矩阵 | id[query,必填]:integer/int64 | 200=*/*:ResultVoid |
 | GET | `/api/education/study-plan/detail` | getById_10 | 登录态；细粒度权限见权限矩阵 | id[query,必填]:integer/int64 | 200=*/*:ResultStudyPlanResponse |
 | GET | `/api/education/study-plan/student` | listByStudentId_1 | 登录态；细粒度权限见权限矩阵 | studentId[query,必填]:integer/int64 | 200=*/*:ResultListStudyPlanResponse |
 | GET | `/api/education/study-plan/today-tasks` | getTodayTasks | 登录态；细粒度权限见权限矩阵 | studentId[query,必填]:integer/int64 | 200=*/*:ResultListDailyTaskResponse |
-| POST | `/api/education/study-plan/update` | update_14 | 登录态；细粒度权限见权限矩阵 | id[query,必填]:integer/int64; body[必填]=application/json:StudyPlanRequest | 200=*/*:ResultVoid |
+| POST | `/api/education/study-plan/update` | update_13 | 登录态；细粒度权限见权限矩阵 | id[query,必填]:integer/int64; body[必填]=application/json:StudyPlanRequest | 200=*/*:ResultVoid |
 
 ### subject-controller
 
 | 方法 | 路径 | 摘要 | 鉴权 | 请求 | 响应 |
 |---|---|---|---|---|---|
 | GET | `/api/education/subject/code` | getByCode_1 | 登录态；细粒度权限见权限矩阵 | code[query,必填]:string | 200=*/*:ResultSubjectResponse |
-| POST | `/api/education/subject/create` | create_17 | 登录态；细粒度权限见权限矩阵 | body[必填]=application/json:SubjectRequest | 200=*/*:ResultSubjectResponse |
-| POST | `/api/education/subject/delete` | delete_13 | 登录态；细粒度权限见权限矩阵 | id[query,必填]:integer/int64 | 200=*/*:ResultVoid |
+| POST | `/api/education/subject/create` | create_14 | 登录态；细粒度权限见权限矩阵 | body[必填]=application/json:SubjectRequest | 200=*/*:ResultSubjectResponse |
+| POST | `/api/education/subject/delete` | delete_12 | 登录态；细粒度权限见权限矩阵 | id[query,必填]:integer/int64 | 200=*/*:ResultVoid |
 | GET | `/api/education/subject/detail` | getById_9 | 登录态；细粒度权限见权限矩阵 | id[query,必填]:integer/int64 | 200=*/*:ResultSubjectResponse |
 | GET | `/api/education/subject/grade-level` | listByGradeLevel | 登录态；细粒度权限见权限矩阵 | gradeLevel[query,必填]:string | 200=*/*:ResultListSubjectResponse |
 | GET | `/api/education/subject/list` | list_8 | 登录态；细粒度权限见权限矩阵 | pageNum[query,可选]:integer/int32; pageSize[query,可选]:integer/int32 | 200=*/*:ResultPageDataSubjectResponse |
-| POST | `/api/education/subject/update` | update_13 | 登录态；细粒度权限见权限矩阵 | id[query,必填]:integer/int64; body[必填]=application/json:SubjectRequest | 200=*/*:ResultVoid |
+| POST | `/api/education/subject/update` | update_12 | 登录态；细粒度权限见权限矩阵 | id[query,必填]:integer/int64; body[必填]=application/json:SubjectRequest | 200=*/*:ResultVoid |
 
 ### tenant-controller
 
@@ -518,12 +518,12 @@
 
 | 方法 | 路径 | 摘要 | 鉴权 | 请求 | 响应 |
 |---|---|---|---|---|---|
-| POST | `/api/education/textbook/create` | create_16 | 登录态；细粒度权限见权限矩阵 | body[必填]=application/json:TextbookRequest | 200=*/*:ResultTextbookResponse |
-| POST | `/api/education/textbook/delete` | delete_12 | 登录态；细粒度权限见权限矩阵 | id[query,必填]:integer/int64 | 200=*/*:ResultVoid |
+| POST | `/api/education/textbook/create` | create_13 | 登录态；细粒度权限见权限矩阵 | body[必填]=application/json:TextbookRequest | 200=*/*:ResultTextbookResponse |
+| POST | `/api/education/textbook/delete` | delete_11 | 登录态；细粒度权限见权限矩阵 | id[query,必填]:integer/int64 | 200=*/*:ResultVoid |
 | GET | `/api/education/textbook/detail` | getById_8 | 登录态；细粒度权限见权限矩阵 | id[query,必填]:integer/int64 | 200=*/*:ResultTextbookResponse |
 | GET | `/api/education/textbook/list` | list_7 | 登录态；细粒度权限见权限矩阵 | pageNum[query,可选]:integer/int32; pageSize[query,可选]:integer/int32 | 200=*/*:ResultPageDataTextbookResponse |
 | GET | `/api/education/textbook/subject-grade` | listBySubjectAndGrade | 登录态；细粒度权限见权限矩阵 | subjectCode[query,必填]:string; grade[query,必填]:integer/int32 | 200=*/*:ResultListTextbookResponse |
-| POST | `/api/education/textbook/update` | update_12 | 登录态；细粒度权限见权限矩阵 | id[query,必填]:integer/int64; body[必填]=application/json:TextbookRequest | 200=*/*:ResultVoid |
+| POST | `/api/education/textbook/update` | update_11 | 登录态；细粒度权限见权限矩阵 | id[query,必填]:integer/int64; body[必填]=application/json:TextbookRequest | 200=*/*:ResultVoid |
 
 ### timezone-controller
 
@@ -540,7 +540,7 @@
 | GET | `/api/agent/approvals` | listAll | 登录态；细粒度权限见权限矩阵 | - | 200=*/*:ResultListToolApproval |
 | POST | `/api/agent/approvals/{id}/approve` | approve_1 | 登录态；细粒度权限见权限矩阵 | id[path,必填]:string | 200=*/*:ResultToolApproval |
 | POST | `/api/agent/approvals/{id}/reject` | reject_1 | 登录态；细粒度权限见权限矩阵 | id[path,必填]:string | 200=*/*:ResultToolApproval |
-| GET | `/api/agent/runs/{runId}/approvals` | list_1 | 登录态；细粒度权限见权限矩阵 | runId[path,必填]:string | 200=*/*:ResultListToolApproval |
+| GET | `/api/agent/runs/{runId}/approvals` | list_4 | 登录态；细粒度权限见权限矩阵 | runId[path,必填]:string | 200=*/*:ResultListToolApproval |
 | POST | `/api/agent/runs/{runId}/approvals` | request | 登录态；细粒度权限见权限矩阵 | runId[path,必填]:string; body[必填]=application/json:Request | 200=*/*:ResultToolApproval |
 
 ### user-controller
@@ -561,11 +561,11 @@
 
 | 方法 | 路径 | 摘要 | 鉴权 | 请求 | 响应 |
 |---|---|---|---|---|---|
-| POST | `/api/education/wrong-question/create` | create_15 | 登录态；细粒度权限见权限矩阵 | body[必填]=application/json:WrongQuestionRequest | 200=*/*:ResultWrongQuestionResponse |
-| POST | `/api/education/wrong-question/delete` | delete_11 | 登录态；细粒度权限见权限矩阵 | id[query,必填]:integer/int64 | 200=*/*:ResultVoid |
+| POST | `/api/education/wrong-question/create` | create_12 | 登录态；细粒度权限见权限矩阵 | body[必填]=application/json:WrongQuestionRequest | 200=*/*:ResultWrongQuestionResponse |
+| POST | `/api/education/wrong-question/delete` | delete_10 | 登录态；细粒度权限见权限矩阵 | id[query,必填]:integer/int64 | 200=*/*:ResultVoid |
 | GET | `/api/education/wrong-question/detail` | getById_7 | 登录态；细粒度权限见权限矩阵 | id[query,必填]:integer/int64 | 200=*/*:ResultWrongQuestionResponse |
 | GET | `/api/education/wrong-question/student` | listByStudentId | 登录态；细粒度权限见权限矩阵 | studentId[query,必填]:integer/int64 | 200=*/*:ResultListWrongQuestionResponse |
-| POST | `/api/education/wrong-question/update` | update_11 | 登录态；细粒度权限见权限矩阵 | id[query,必填]:integer/int64; body[必填]=application/json:WrongQuestionRequest | 200=*/*:ResultVoid |
+| POST | `/api/education/wrong-question/update` | update_10 | 登录态；细粒度权限见权限矩阵 | id[query,必填]:integer/int64; body[必填]=application/json:WrongQuestionRequest | 200=*/*:ResultVoid |
 
 ### 插件系统
 
@@ -573,7 +573,7 @@
 |---|---|---|---|---|---|
 | GET | `/api/tooling/plugins` | 列出所有插件 | 登录态；细粒度权限见权限矩阵 | - | 200=*/*:ResultListPluginInfoVO |
 | GET | `/api/tooling/plugins/market` | market | 登录态；细粒度权限见权限矩阵 | - | 200=*/*:ResultListPluginMarketEntry |
-| POST | `/api/tooling/plugins/market/publish` | publish_1 | 登录态；细粒度权限见权限矩阵 | developmentMode[query,可选]:boolean; body[必填]=application/json:PluginMarketEntry | 200=*/*:ResultPluginMarketEntry |
+| POST | `/api/tooling/plugins/market/publish` | publish | 登录态；细粒度权限见权限矩阵 | developmentMode[query,可选]:boolean; body[必填]=application/json:PluginMarketEntry | 200=*/*:ResultPluginMarketEntry |
 | POST | `/api/tooling/plugins/market/{pluginId}/disable` | disable | 登录态；细粒度权限见权限矩阵 | pluginId[path,必填]:string | 200=*/*:ResultVoid |
 | POST | `/api/tooling/plugins/scan` | 重新扫描插件目录 | 登录态；细粒度权限见权限矩阵 | - | 200=*/*:ResultVoid |
 | POST | `/api/tooling/plugins/start` | 启动插件 | 登录态；细粒度权限见权限矩阵 | pluginId[query,必填]:string | 200=*/*:ResultVoid |
@@ -584,12 +584,12 @@
 
 | 方法 | 路径 | 摘要 | 鉴权 | 请求 | 响应 |
 |---|---|---|---|---|---|
-| POST | `/api/record/timeline/create` | create_1 | 登录态；细粒度权限见权限矩阵 | body[必填]=application/json:TimelineEventRequest | 200=*/*:ResultTimelineEventVO |
-| POST | `/api/record/timeline/delete` | delete_3 | 登录态；细粒度权限见权限矩阵 | id[query,必填]:integer/int64 | 200=*/*:ResultBoolean |
+| POST | `/api/record/timeline/create` | create | 登录态；细粒度权限见权限矩阵 | body[必填]=application/json:TimelineEventRequest | 200=*/*:ResultTimelineEventVO |
+| POST | `/api/record/timeline/delete` | delete_2 | 登录态；细粒度权限见权限矩阵 | id[query,必填]:integer/int64 | 200=*/*:ResultBoolean |
 | GET | `/api/record/timeline/detail` | getById | 登录态；细粒度权限见权限矩阵 | id[query,必填]:integer/int64 | 200=*/*:ResultTimelineEventVO |
 | GET | `/api/record/timeline/list` | getPage | 登录态；细粒度权限见权限矩阵 | query[query,必填]:PageQuery; profileId[query,可选]:integer/int64 | 200=*/*:ResultPageDataTimelineEventVO |
 | GET | `/api/record/timeline/profile` | getTimelineByProfileId | 登录态；细粒度权限见权限矩阵 | profileId[query,必填]:integer/int64 | 200=*/*:ResultListTimelineEventVO |
-| POST | `/api/record/timeline/update` | update_3 | 登录态；细粒度权限见权限矩阵 | id[query,必填]:integer/int64; body[必填]=application/json:TimelineEventRequest | 200=*/*:ResultBoolean |
+| POST | `/api/record/timeline/update` | update_2 | 登录态；细粒度权限见权限矩阵 | id[query,必填]:integer/int64; body[必填]=application/json:TimelineEventRequest | 200=*/*:ResultBoolean |
 
 ### 智能推荐
 
@@ -606,44 +606,44 @@
 | 方法 | 路径 | 摘要 | 鉴权 | 请求 | 响应 |
 |---|---|---|---|---|---|
 | GET | `/api/record/tag/all` | getAll | 登录态；细粒度权限见权限矩阵 | - | 200=*/*:ResultListTagVO |
-| POST | `/api/record/tag/create` | create_2 | 登录态；细粒度权限见权限矩阵 | body[必填]=application/json:TagRequest | 200=*/*:ResultTagVO |
-| POST | `/api/record/tag/delete` | delete_4 | 登录态；细粒度权限见权限矩阵 | id[query,必填]:integer/int64 | 200=*/*:ResultBoolean |
+| POST | `/api/record/tag/create` | create_1 | 登录态；细粒度权限见权限矩阵 | body[必填]=application/json:TagRequest | 200=*/*:ResultTagVO |
+| POST | `/api/record/tag/delete` | delete_3 | 登录态；细粒度权限见权限矩阵 | id[query,必填]:integer/int64 | 200=*/*:ResultBoolean |
 | GET | `/api/record/tag/detail` | getById_1 | 登录态；细粒度权限见权限矩阵 | id[query,必填]:integer/int64 | 200=*/*:ResultTagVO |
 | GET | `/api/record/tag/list` | getPage_1 | 登录态；细粒度权限见权限矩阵 | query[query,必填]:PageQuery; name[query,可选]:string | 200=*/*:ResultPageDataTagVO |
-| POST | `/api/record/tag/update` | update_4 | 登录态；细粒度权限见权限矩阵 | id[query,必填]:integer/int64; body[必填]=application/json:TagRequest | 200=*/*:ResultBoolean |
+| POST | `/api/record/tag/update` | update_3 | 登录态；细粒度权限见权限矩阵 | id[query,必填]:integer/int64; body[必填]=application/json:TagRequest | 200=*/*:ResultBoolean |
 
 ### 档案管理
 
 | 方法 | 路径 | 摘要 | 鉴权 | 请求 | 响应 |
 |---|---|---|---|---|---|
-| POST | `/api/record/profile/create` | create_4 | 登录态；细粒度权限见权限矩阵 | body[必填]=application/json:ProfileRequest | 200=*/*:ResultProfileVO |
-| POST | `/api/record/profile/delete` | delete_6 | 登录态；细粒度权限见权限矩阵 | id[query,必填]:integer/int64 | 200=*/*:ResultBoolean |
+| POST | `/api/record/profile/create` | create_3 | 登录态；细粒度权限见权限矩阵 | body[必填]=application/json:ProfileRequest | 200=*/*:ResultProfileVO |
+| POST | `/api/record/profile/delete` | delete_5 | 登录态；细粒度权限见权限矩阵 | id[query,必填]:integer/int64 | 200=*/*:ResultBoolean |
 | GET | `/api/record/profile/detail` | getById_3 | 登录态；细粒度权限见权限矩阵 | id[query,必填]:integer/int64 | 200=*/*:ResultProfileVO |
 | GET | `/api/record/profile/list` | getPage_3 | 登录态；细粒度权限见权限矩阵 | query[query,必填]:PageQuery; createBy[query,可选]:string | 200=*/*:ResultPageDataProfileVO |
-| POST | `/api/record/profile/update` | update_6 | 登录态；细粒度权限见权限矩阵 | id[query,必填]:integer/int64; body[必填]=application/json:ProfileRequest | 200=*/*:ResultBoolean |
+| POST | `/api/record/profile/update` | update_5 | 登录态；细粒度权限见权限矩阵 | id[query,必填]:integer/int64; body[必填]=application/json:ProfileRequest | 200=*/*:ResultBoolean |
 
 ### 知识任务
 
 | 方法 | 路径 | 摘要 | 鉴权 | 请求 | 响应 |
 |---|---|---|---|---|---|
-| GET | `/api/knowledge/ingestion-jobs` | page_5 | 登录态；细粒度权限见权限矩阵 | pageNum[query,可选]:integer/int32; pageSize[query,可选]:integer/int32; spaceId[query,可选]:integer/int64; status[query,可选]:string; version[header,可选]:string | 200=*/*:ResultPageDataJobView |
+| GET | `/api/knowledge/ingestion-jobs` | page_4 | 登录态；细粒度权限见权限矩阵 | pageNum[query,可选]:integer/int32; pageSize[query,可选]:integer/int32; spaceId[query,可选]:integer/int64; status[query,可选]:string; version[header,可选]:string | 200=*/*:ResultPageDataJobView |
 | GET | `/api/knowledge/ingestion-jobs/{id}` | get_2 | 登录态；细粒度权限见权限矩阵 | id[path,必填]:integer/int64; version[header,可选]:string | 200=*/*:ResultJobView |
-| POST | `/api/knowledge/ingestion-jobs/{id}/cancel` | cancel_1 | 登录态；细粒度权限见权限矩阵 | id[path,必填]:integer/int64; version[header,可选]:string | 200=*/*:ResultVoid |
+| POST | `/api/knowledge/ingestion-jobs/{id}/cancel` | cancel | 登录态；细粒度权限见权限矩阵 | id[path,必填]:integer/int64; version[header,可选]:string | 200=*/*:ResultVoid |
 | POST | `/api/knowledge/ingestion-jobs/{id}/retry` | retry | 登录态；细粒度权限见权限矩阵 | id[path,必填]:integer/int64; version[header,可选]:string | 200=*/*:ResultVoid |
 
 ### 知识关系
 
 | 方法 | 路径 | 摘要 | 鉴权 | 请求 | 响应 |
 |---|---|---|---|---|---|
-| GET | `/api/knowledge/points/{pointId}/relations` | list_3 | 登录态；细粒度权限见权限矩阵 | pointId[path,必填]:integer/int64; version[header,可选]:string | 200=*/*:ResultListRelationView |
-| POST | `/api/knowledge/points/{pointId}/relations` | create_11 | 登录态；细粒度权限见权限矩阵 | pointId[path,必填]:integer/int64; version[header,可选]:string; body[必填]=application/json:RelationRequest | 200=*/*:ResultVoid |
-| DELETE | `/api/knowledge/points/{pointId}/relations/{targetId}` | delete_26 | 登录态；细粒度权限见权限矩阵 | pointId[path,必填]:integer/int64; targetId[path,必填]:integer/int64; type[query,必填]:string(PRE,NEXT,INCLUDE,RELATED,SIMILAR,BELONG); version[header,可选]:string | 200=*/*:ResultVoid |
+| GET | `/api/knowledge/points/{pointId}/relations` | list_1 | 登录态；细粒度权限见权限矩阵 | pointId[path,必填]:integer/int64; version[header,可选]:string | 200=*/*:ResultListRelationView |
+| POST | `/api/knowledge/points/{pointId}/relations` | create_9 | 登录态；细粒度权限见权限矩阵 | pointId[path,必填]:integer/int64; version[header,可选]:string; body[必填]=application/json:RelationRequest | 200=*/*:ResultVoid |
+| DELETE | `/api/knowledge/points/{pointId}/relations/{targetId}` | delete_25 | 登录态；细粒度权限见权限矩阵 | pointId[path,必填]:integer/int64; targetId[path,必填]:integer/int64; type[query,必填]:string(PRE,NEXT,INCLUDE,RELATED,SIMILAR,BELONG); version[header,可选]:string | 200=*/*:ResultVoid |
 
 ### 知识平台审计
 
 | 方法 | 路径 | 摘要 | 鉴权 | 请求 | 响应 |
 |---|---|---|---|---|---|
-| GET | `/api/knowledge/audits` | page_6 | 登录态；细粒度权限见权限矩阵 | pageNum[query,可选]:integer/int32; pageSize[query,可选]:integer/int32; spaceId[query,可选]:integer/int64; version[header,可选]:string | 200=*/*:ResultPageDataKnowledgeAuditResponse |
+| GET | `/api/knowledge/audits` | page_5 | 登录态；细粒度权限见权限矩阵 | pageNum[query,可选]:integer/int32; pageSize[query,可选]:integer/int32; spaceId[query,可选]:integer/int64; version[header,可选]:string | 200=*/*:ResultPageDataKnowledgeAuditResponse |
 
 ### 知识引擎运维
 
@@ -666,13 +666,13 @@
 | POST | `/api/knowledge/documents/{id}/approve` | approve | 登录态；细粒度权限见权限矩阵 | id[path,必填]:integer/int64; comment[query,可选]:string; version[header,可选]:string | 200=*/*:ResultDocumentView |
 | POST | `/api/knowledge/documents/{id}/archive` | archive | 登录态；细粒度权限见权限矩阵 | id[path,必填]:integer/int64; comment[query,可选]:string; version[header,可选]:string | 200=*/*:ResultDocumentView |
 | GET | `/api/knowledge/documents/{id}/preview` | preview_3 | 登录态；细粒度权限见权限矩阵 | id[path,必填]:integer/int64; version[header,可选]:string | 200=*/*:string/byte |
-| POST | `/api/knowledge/documents/{id}/publish` | publish_2 | 登录态；细粒度权限见权限矩阵 | id[path,必填]:integer/int64; comment[query,可选]:string; version[header,可选]:string | 200=*/*:ResultDocumentView |
+| POST | `/api/knowledge/documents/{id}/publish` | publish_1 | 登录态；细粒度权限见权限矩阵 | id[path,必填]:integer/int64; comment[query,可选]:string; version[header,可选]:string | 200=*/*:ResultDocumentView |
 | POST | `/api/knowledge/documents/{id}/reject` | reject | 登录态；细粒度权限见权限矩阵 | id[path,必填]:integer/int64; comment[query,可选]:string; version[header,可选]:string | 200=*/*:ResultDocumentView |
 | POST | `/api/knowledge/documents/{id}/submit` | submit | 登录态；细粒度权限见权限矩阵 | id[path,必填]:integer/int64; comment[query,可选]:string; version[header,可选]:string | 200=*/*:ResultDocumentView |
 | GET | `/api/knowledge/documents/{id}/versions` | versions_1 | 登录态；细粒度权限见权限矩阵 | id[path,必填]:integer/int64; version[header,可选]:string | 200=*/*:ResultListVersionView |
 | POST | `/api/knowledge/documents/{id}/versions/{versionId}/rollback` | rollback | 登录态；细粒度权限见权限矩阵 | id[path,必填]:integer/int64; versionId[path,必填]:integer/int64; version[header,可选]:string | 200=*/*:ResultDocumentView |
 | GET | `/api/knowledge/spaces/{spaceId}/documents` | page_2 | 登录态；细粒度权限见权限矩阵 | spaceId[path,必填]:integer/int64; pageNum[query,可选]:integer/int32; pageSize[query,可选]:integer/int32; keyword[query,可选]:string; lifecycleStatus[query,可选]:string; parseStatus[query,可选]:string; version[header,可选]:string | 200=*/*:ResultPageDataDocumentView |
-| POST | `/api/knowledge/spaces/{spaceId}/documents` | upload_1 | 登录态；细粒度权限见权限矩阵 | spaceId[path,必填]:integer/int64; title[query,可选]:string; version[header,可选]:string; body[可选]=multipart/form-data:object | 200=*/*:ResultUploadResult |
+| POST | `/api/knowledge/spaces/{spaceId}/documents` | upload | 登录态；细粒度权限见权限矩阵 | spaceId[path,必填]:integer/int64; title[query,可选]:string; version[header,可选]:string; body[可选]=multipart/form-data:object | 200=*/*:ResultUploadResult |
 | POST | `/api/knowledge/spaces/{spaceId}/documents/import-url` | importUrl | 登录态；细粒度权限见权限矩阵 | spaceId[path,必填]:integer/int64; version[header,可选]:string; body[必填]=application/json:ImportUrlRequest | 200=*/*:ResultUploadResult |
 | POST | `/api/knowledge/spaces/{spaceId}/documents/upload-sessions` | beginUpload | 登录态；细粒度权限见权限矩阵 | spaceId[path,必填]:integer/int64; version[header,可选]:string; body[必填]=application/json:BeginRequest | 200=*/*:ResultUploadSession |
 
@@ -680,7 +680,7 @@
 
 | 方法 | 路径 | 摘要 | 鉴权 | 请求 | 响应 |
 |---|---|---|---|---|---|
-| POST | `/api/knowledge/index-jobs/rebuild` | rebuild | 登录态；细粒度权限见权限矩阵 | version[header,可选]:string; body[必填]=application/json:RebuildRequest | 200=*/*:ResultLong |
+| POST | `/api/knowledge/index-jobs/rebuild` | rebuild_1 | 登录态；细粒度权限见权限矩阵 | version[header,可选]:string; body[必填]=application/json:RebuildRequest | 200=*/*:ResultLong |
 | POST | `/api/knowledge/search` | search | 登录态；细粒度权限见权限矩阵 | version[header,可选]:string; body[必填]=application/json:SearchRequest | 200=*/*:ResultSearchResponse |
 
 ### 知识点
@@ -692,7 +692,7 @@
 | DELETE | `/api/knowledge/points/{id}` | delete_1 | 登录态；细粒度权限见权限矩阵 | id[path,必填]:integer/int64; version[header,可选]:string | 200=*/*:ResultVoid |
 | GET | `/api/knowledge/points/{id}/graph` | graph | 登录态；细粒度权限见权限矩阵 | id[path,必填]:integer/int64; version[header,可选]:string | 200=*/*:ResultKnowledgeGraphResponse |
 | GET | `/api/knowledge/spaces/{spaceId}/points` | page_1 | 登录态；细粒度权限见权限矩阵 | spaceId[path,必填]:integer/int64; pageNum[query,可选]:integer/int32; pageSize[query,可选]:integer/int32; keyword[query,可选]:string; category[query,可选]:string; version[header,可选]:string | 200=*/*:ResultPageDataPointView |
-| POST | `/api/knowledge/spaces/{spaceId}/points` | create_10 | 登录态；细粒度权限见权限矩阵 | spaceId[path,必填]:integer/int64; version[header,可选]:string; body[必填]=application/json:CreatePointRequest | 200=*/*:ResultPointView |
+| POST | `/api/knowledge/spaces/{spaceId}/points` | create_8 | 登录态；细粒度权限见权限矩阵 | spaceId[path,必填]:integer/int64; version[header,可选]:string; body[必填]=application/json:CreatePointRequest | 200=*/*:ResultPointView |
 
 ### 知识点文档关系
 
@@ -710,9 +710,9 @@
 | 方法 | 路径 | 摘要 | 鉴权 | 请求 | 响应 |
 |---|---|---|---|---|---|
 | GET | `/api/knowledge/spaces` | page | 登录态；细粒度权限见权限矩阵 | pageNum[query,可选]:integer/int32; pageSize[query,可选]:integer/int32; keyword[query,可选]:string; domainCode[query,可选]:string; version[header,可选]:string | 200=*/*:ResultPageDataSpaceView |
-| POST | `/api/knowledge/spaces` | create_9 | 登录态；细粒度权限见权限矩阵 | version[header,可选]:string; body[必填]=application/json:CreateSpaceRequest | 200=*/*:ResultSpaceView |
+| POST | `/api/knowledge/spaces` | create_7 | 登录态；细粒度权限见权限矩阵 | version[header,可选]:string; body[必填]=application/json:CreateSpaceRequest | 200=*/*:ResultSpaceView |
 | POST | `/api/knowledge/spaces/default` | ensureDefault | 登录态；细粒度权限见权限矩阵 | version[header,可选]:string | 200=*/*:ResultSpaceView |
-| GET | `/api/knowledge/spaces/options` | options_1 | 登录态；细粒度权限见权限矩阵 | - | 200=*/*:ResultListSpaceView |
+| GET | `/api/knowledge/spaces/options` | options | 登录态；细粒度权限见权限矩阵 | - | 200=*/*:ResultListSpaceView |
 | GET | `/api/knowledge/spaces/{id}` | get | 登录态；细粒度权限见权限矩阵 | id[path,必填]:integer/int64; version[header,可选]:string | 200=*/*:ResultSpaceView |
 | PUT | `/api/knowledge/spaces/{id}` | update | 登录态；细粒度权限见权限矩阵 | id[path,必填]:integer/int64; version[header,可选]:string; body[必填]=application/json:UpdateSpaceRequest | 200=*/*:ResultSpaceView |
 | DELETE | `/api/knowledge/spaces/{id}` | delete | 登录态；细粒度权限见权限矩阵 | id[path,必填]:integer/int64; version[header,可选]:string | 200=*/*:ResultVoid |
@@ -725,9 +725,9 @@
 | 方法 | 路径 | 摘要 | 鉴权 | 请求 | 响应 |
 |---|---|---|---|---|---|
 | GET | `/api/knowledge/evaluations` | page_3 | 登录态；细粒度权限见权限矩阵 | spaceId[query,必填]:integer/int64; pageNum[query,可选]:integer/int32; pageSize[query,可选]:integer/int32; version[header,可选]:string | 200=*/*:ResultPageDataCaseView |
-| POST | `/api/knowledge/evaluations` | create_12 | 登录态；细粒度权限见权限矩阵 | version[header,可选]:string; body[必填]=application/json:CreateCaseRequest | 200=*/*:ResultCaseView |
+| POST | `/api/knowledge/evaluations` | create_10 | 登录态；细粒度权限见权限矩阵 | version[header,可选]:string; body[必填]=application/json:CreateCaseRequest | 200=*/*:ResultCaseView |
 | POST | `/api/knowledge/evaluations/run` | run | 登录态；细粒度权限见权限矩阵 | version[header,可选]:string; body[必填]=application/json:RunRequest | 200=*/*:ResultRunResult |
-| DELETE | `/api/knowledge/evaluations/{id}` | delete_27 | 登录态；细粒度权限见权限矩阵 | id[path,必填]:integer/int64; version[header,可选]:string | 200=*/*:ResultVoid |
+| DELETE | `/api/knowledge/evaluations/{id}` | delete_26 | 登录态；细粒度权限见权限矩阵 | id[path,必填]:integer/int64; version[header,可选]:string | 200=*/*:ResultVoid |
 
 ### 知识路径
 
@@ -741,21 +741,21 @@
 
 | 方法 | 路径 | 摘要 | 鉴权 | 请求 | 响应 |
 |---|---|---|---|---|---|
-| POST | `/api/record/record/create` | create_3 | 登录态；细粒度权限见权限矩阵 | body[必填]=application/json:RecordRequest | 200=*/*:ResultRecordVO |
-| POST | `/api/record/record/delete` | delete_5 | 登录态；细粒度权限见权限矩阵 | id[query,必填]:integer/int64 | 200=*/*:ResultBoolean |
+| POST | `/api/record/record/create` | create_2 | 登录态；细粒度权限见权限矩阵 | body[必填]=application/json:RecordRequest | 200=*/*:ResultRecordVO |
+| POST | `/api/record/record/delete` | delete_4 | 登录态；细粒度权限见权限矩阵 | id[query,必填]:integer/int64 | 200=*/*:ResultBoolean |
 | GET | `/api/record/record/detail` | getById_2 | 登录态；细粒度权限见权限矩阵 | id[query,必填]:integer/int64 | 200=*/*:ResultRecordVO |
 | GET | `/api/record/record/list` | getPage_2 | 登录态；细粒度权限见权限矩阵 | query[query,必填]:PageQuery; eventId[query,可选]:integer/int64 | 200=*/*:ResultPageDataRecordVO |
-| POST | `/api/record/record/update` | update_5 | 登录态；细粒度权限见权限矩阵 | id[query,必填]:integer/int64; body[必填]=application/json:RecordRequest | 200=*/*:ResultBoolean |
+| POST | `/api/record/record/update` | update_4 | 登录态；细粒度权限见权限矩阵 | id[query,必填]:integer/int64; body[必填]=application/json:RecordRequest | 200=*/*:ResultBoolean |
 
 ### 附件管理
 
 | 方法 | 路径 | 摘要 | 鉴权 | 请求 | 响应 |
 |---|---|---|---|---|---|
-| POST | `/api/record/media/create` | create_5 | 登录态；细粒度权限见权限矩阵 | body[必填]=application/json:MediaRequest | 200=*/*:ResultMediaVO |
-| POST | `/api/record/media/delete` | delete_7 | 登录态；细粒度权限见权限矩阵 | id[query,必填]:integer/int64 | 200=*/*:ResultBoolean |
+| POST | `/api/record/media/create` | create_4 | 登录态；细粒度权限见权限矩阵 | body[必填]=application/json:MediaRequest | 200=*/*:ResultMediaVO |
+| POST | `/api/record/media/delete` | delete_6 | 登录态；细粒度权限见权限矩阵 | id[query,必填]:integer/int64 | 200=*/*:ResultBoolean |
 | GET | `/api/record/media/detail` | 查询附件 | 登录态；细粒度权限见权限矩阵 | id[query,必填]:integer/int64 | 200=*/*:ResultMediaVO |
 | GET | `/api/record/media/list` | 分页查询附件列表 | 登录态；细粒度权限见权限矩阵 | query[query,必填]:PageQuery; recordId[query,可选]:integer/int64 | 200=*/*:ResultPageDataMediaVO |
-| POST | `/api/record/media/update` | update_7 | 登录态；细粒度权限见权限矩阵 | id[query,必填]:integer/int64; body[必填]=application/json:MediaRequest | 200=*/*:ResultBoolean |
+| POST | `/api/record/media/update` | update_6 | 登录态；细粒度权限见权限矩阵 | id[query,必填]:integer/int64; body[必填]=application/json:MediaRequest | 200=*/*:ResultBoolean |
 
 ## 组件模型
 
@@ -771,17 +771,17 @@
 | `AgentVersion` | object | - | versionNumber:string; description:string; createdAt:integer/int64 |
 | `AgentVersionDetailVO` | object | - | id:integer/int64; agentId:string; versionNumber:string; description:string; status:integer/int32; statusDesc:string; graphConfig:GraphConfigVO; canvasConfig:string; createTime:string/date-time; updateTime:string/date-time |
 | `AgentVersionVO` | object | - | id:integer/int64; agentId:string; versionNumber:string; description:string; status:integer/int32; statusDesc:string; createTime:string/date-time; updateTime:string/date-time |
-| `AiApp` | object | - | id:string; tenantId:integer/int64; ownerUserId:integer/int64; name:string; description:string; status:string; publishedVersionId:string; createdAt:string/date-time; updatedAt:string/date-time |
+| `AiApp` | object | - | id:string; tenantId:TenantId; ownerUserId:UserId; name:string; description:string; status:string; publishedVersionId:string; createdAt:string/date-time; updatedAt:string/date-time |
 | `AiAppPreview` | object | - | appId:string; appVersionId:string; status:string; promptHash:string; model:string; configuration:object; executable:boolean |
-| `AiAppVersion` | object | - | id:string; appId:string; tenantId:integer/int64; version:string; configJson:string; status:string; createdAt:string/date-time; publishedAt:string/date-time |
+| `AiAppVersion` | object | - | id:string; appId:string; tenantId:TenantId; version:string; configJson:string; status:string; createdAt:string/date-time; publishedAt:string/date-time |
 | `AiModelRequest` | object | modelName | platformId:integer/int64; modelName*:string; displayName:string; description:string; modelConfig:string; isDefault:string; sort:integer/int32; status:string |
 | `AiModelResponse` | object | - | id:integer/int64; platformId:integer/int64; modelName:string; displayName:string; description:string; modelConfig:string; platformName:string; isDefault:string; sort:integer/int32; status:string; createTime:string/date-time; updateTime:string/date-time |
 | `AiModelVO` | object | - | id:integer/int64; platformId:integer/int64; modelName:string; displayName:string; description:string; modelConfig:string; platformName:string; isDefault:string; sort:integer/int32; status:string; createTime:string/date-time; updateTime:string/date-time |
 | `AiPlatformRequest` | object | code, name | name*:string; code*:string; baseUrl:string; apiKey:string; temperature:number/double; maxTokens:integer/int32; maxRetries:integer/int32; availableModels:string; extraConfig:string; isDefault:string; status:string; sort:integer/int32; remark:string |
 | `AiPlatformResponse` | object | - | id:integer/int64; name:string; code:string; baseUrl:string; temperature:number/double; maxTokens:integer/int32; maxRetries:integer/int32; availableModels:string; extraConfig:string; isDefault:string; status:string; sort:integer/int32; remark:string; createTime:string/date-time; updateTime:string/date-time |
 | `AiPlatformVO` | object | - | id:integer/int64; name:string; code:string; baseUrl:string; temperature:number/double; maxTokens:integer/int32; maxRetries:integer/int32; availableModels:string; extraConfig:string; isDefault:string; status:string; sort:integer/int32; remark:string; createTime:string/date-time; updateTime:string/date-time |
-| `AiRun` | object | - | id:string; tenantId:integer/int64; ownerUserId:integer/int64; appId:string; appVersionId:string; sourceType:string(CONVERSATION,GENERATION,AGENT,KNOWLEDGE,MEMORY,TOOL,API); sourceId:string; parentRunId:string; traceId:string; conversationId:string; generationId:string; executionId:string; model:string; promptHash:string; status:string(CREATED,RUNNING,COMPLETED,FAILED,CANCELLED); promptTokens:integer/int64; completionTokens:integer/int64; estimatedUsage:boolean; costSnapshot:string; createdAt:string/date-time; completedAt:string/date-time; errorCode:string; version:integer/int64; lastEventSeq:integer/int64 |
-| `AiRunEvent` | object | - | runId:string; tenantId:integer/int64; seq:integer/int64; type:string(RUN_STARTED,TURN_STARTED,TURN_COMPLETED,STEP_STARTED,STEP_COMPLETED,PROMPT_ASSEMBLED,RETRIEVAL_STARTED,RETRIEVAL_COMPLETED,MODEL_STARTED,MODEL_BLOCK_STARTED,MODEL_DELTA,MODEL_REASONING_DELTA,MODEL_TOOL_CALL_DELTA,MODEL_BLOCK_COMPLETED,TOOL_REQUESTED,TOOL_APPROVAL_REQUIRED,TOOL_APPROVAL_DECIDED,TOOL_COMPLETED,MEMORY_READ,MEMORY_WRITE,MODEL_USAGE,MODEL_COMPLETED,RUN_COMPLETED,RUN_FAILED,RUN_CANCELLED); schemaVersion:integer/int32; turnId:string; stepId:string; parentEventSeq:integer/int64; conversationId:string; generationId:string; executionId:string; appId:string; appVersionId:string; providerRequestId:string; traceId:string; payload:string; redacted:boolean; createdAt:string/date-time |
+| `AiRun` | object | - | id:string; tenantId:TenantId; ownerUserId:UserId; appId:string; appVersionId:string; sourceType:string(CONVERSATION,GENERATION,AGENT,KNOWLEDGE,MEMORY,TOOL,API); sourceId:string; parentRunId:string; traceId:string; conversationId:string; generationId:string; executionId:string; model:string; promptHash:string; status:string(CREATED,RUNNING,COMPLETED,FAILED,CANCELLED); promptTokens:integer/int64; completionTokens:integer/int64; estimatedUsage:boolean; costSnapshot:string; createdAt:string/date-time; completedAt:string/date-time; errorCode:string; version:integer/int64; lastEventSeq:integer/int64 |
+| `AiRunEvent` | object | - | runId:string; tenantId:TenantId; seq:integer/int64; type:string(RUN_STARTED,TURN_STARTED,TURN_COMPLETED,STEP_STARTED,STEP_COMPLETED,PROMPT_ASSEMBLED,RETRIEVAL_STARTED,RETRIEVAL_COMPLETED,MODEL_STARTED,MODEL_BLOCK_STARTED,MODEL_DELTA,MODEL_REASONING_DELTA,MODEL_TOOL_CALL_DELTA,MODEL_BLOCK_COMPLETED,TOOL_REQUESTED,TOOL_APPROVAL_REQUIRED,TOOL_APPROVAL_DECIDED,TOOL_COMPLETED,MEMORY_READ,MEMORY_WRITE,MODEL_USAGE,MODEL_COMPLETED,RUN_COMPLETED,RUN_FAILED,RUN_CANCELLED); schemaVersion:integer/int32; turnId:string; stepId:string; parentEventSeq:integer/int64; conversationId:string; generationId:string; executionId:string; appId:string; appVersionId:string; providerRequestId:string; traceId:string; payload:string; redacted:boolean; createdAt:string/date-time |
 | `AppExecutionRequest` | object | - | prompt:string; appVersionId:string; input:object |
 | `AppRequest` | object | - | name:string; description:string |
 | `AssignUserRolesRequest` | object | tenantId | userIds:array<integer/int64>; tenantId*:integer/int64 |
@@ -864,6 +864,7 @@
 | `ImageResult` | object | - | objectKey:string; mimeType:string; width:integer/int32; height:integer/int32 |
 | `ImportRequest` | object | - | format:string; previewToken:string; title:string; sceneType:string; platform:string; model:string; systemPrompt:string; content:string |
 | `ImportUrlRequest` | object | url | url*:string; title:string |
+| `ImportedMessage` | object | - | role:string; content:string |
 | `IntentDefRequest` | object | agentId, code, name | agentId*:string; code*:string; name*:string; description:string; category:string; priority:integer/int32; confidenceThreshold:number/double; targetNode:string; status:integer/int32 |
 | `IntentDefVO` | object | - | id:integer/int64; agentId:string; name:string; code:string; category:string; description:string; status:string; createTime:string/date-time; updateTime:string/date-time |
 | `JobView` | object | - | id:integer/int64; jobKey:string; jobType:string; spaceId:integer/int64; documentId:integer/int64; versionId:integer/int64; status:string; stage:string; progress:integer/int32; attempts:integer/int32; maxAttempts:integer/int32; errorMessage:string; heartbeatTime:string/date-time; startedTime:string/date-time; finishedTime:string/date-time; createTime:string/date-time |
@@ -881,11 +882,11 @@
 | `MediaVO` | object | - | id:integer/int64; recordId:integer/int64; url:string; type:string; size:integer/int64; duration:integer/int32; width:integer/int32; height:integer/int32; sort:integer/int32; createTime:string/date-time |
 | `MemberRequest` | object | principalId, principalType, spaceRole | principalType*:string; principalId*:integer/int64; spaceRole*:string |
 | `MemberView` | object | - | id:integer/int64; spaceId:integer/int64; principalType:string; principalId:integer/int64; spaceRole:string |
-| `MemoryEdge` | object | - | id:string; tenantId:integer/int64; sourceNodeId:string; targetNodeId:string; graphType:string(TEMPORAL,SEMANTIC,CAUSAL,ENTITY); relationType:string; directed:boolean; weight:number/double; confidence:number/double; origin:string(RULE,DOMAIN,MODEL); evidenceSource:string; active:boolean; createdAt:string/date-time |
-| `MemoryEvent` | object | - | id:string; tenantId:integer/int64; namespace:string; subjectType:string; subjectId:string; eventType:string; content:string; occurredAt:string/date-time; sourceType:string; sourceId:string; attributes:object; confidence:number/double; importance:number/double; status:string(CANDIDATE,ACTIVE,SUPERSEDED,REVOKED); confirmationPolicy:string(AUTO,REQUIRED,DISABLED); createdAt:string/date-time; updatedAt:string/date-time |
+| `MemoryEdge` | object | - | id:string; tenantId:TenantId; sourceNodeId:string; targetNodeId:string; graphType:string(TEMPORAL,SEMANTIC,CAUSAL,ENTITY); relationType:string; directed:boolean; weight:number/double; confidence:number/double; origin:string(RULE,DOMAIN,MODEL); evidenceSource:string; active:boolean; createdAt:string/date-time |
+| `MemoryEvent` | object | - | id:string; tenantId:TenantId; namespace:string; subjectType:string; subjectId:string; eventType:string; content:string; occurredAt:string/date-time; sourceType:string; sourceId:string; attributes:object; confidence:number/double; importance:number/double; status:string(CANDIDATE,ACTIVE,SUPERSEDED,REVOKED); confirmationPolicy:string(AUTO,REQUIRED,DISABLED); createdAt:string/date-time; updatedAt:string/date-time |
 | `MemoryPath` | object | - | event:MemoryEvent; score:number/double; edges:array<MemoryEdge> |
 | `MemoryRetrievalResult` | object | - | paths:array<MemoryPath>; traceId:string |
-| `MemoryRetrievalTrace` | object | - | id:string; tenantId:integer/int64; namespace:string; queryText:string; anchorEventIds:array<string>; graphWeights:object; relationPaths:array<array<string>>; filteredEventIds:array<string>; resultEventIds:array<string>; createdAt:string/date-time |
+| `MemoryRetrievalTrace` | object | - | id:string; tenantId:TenantId; namespace:string; queryText:string; anchorEventIds:array<string>; graphWeights:object; relationPaths:array<array<string>>; filteredEventIds:array<string>; resultEventIds:array<string>; createdAt:string/date-time |
 | `MenuPageRequest` | object | - | pageSize:integer/int32; pageNum:integer/int32; orderByColumn:string; isAsc:string; orderFields:array<OrderField>; filterConditions:array<FilterCondition>; name:string; code:string; type:string; status:integer/int32 |
 | `MenuRequest` | object | name, type | name*:string; code:string; type*:string; path:string; redirect:string; icon:string; component:string; layout:string; keepAlive:boolean; method:string; description:string; show:boolean; status:string; order:integer/int32; pid:integer/int64 |
 | `MenuVO` | object | - | id:integer/int64; name:string; code:string; type:string; path:string; redirect:string; icon:string; component:string; layout:string; keepAlive:boolean; method:string; description:string; show:boolean; status:integer/int32; order:integer/int32; delFlag:integer/int32; createTime:string/date-time; updateTime:string/date-time; children:array<MenuVO>; pid:integer/int64 |
@@ -937,7 +938,7 @@
 | `PluginMarketEntry` | object | - | id:string; version:string; source:string; manifest:string; signature:string; publisherKey:string; permissions:array<string>; checksum:string; updatePolicy:string; publishedAt:string/date-time; enabled:boolean |
 | `PointView` | object | - | id:integer/int64; spaceId:integer/int64; code:string; name:string; description:string; difficultyLevel:integer/int32; category:string; tags:string |
 | `PredicateCondition` | object | - | predicate:-; target:string |
-| `Preview` | object | - | token:string; expiresAt:string/date-time; filename:string; card:CharacterCardV2 |
+| `Preview` | object | - | token:string; expiresAt:string/date-time; messages:array<ImportedMessage> |
 | `PreviewRequest` | object | - | template:string; variables:object |
 | `ProfileRequest` | object | name | name*:string; avatar:string |
 | `ProfileVO` | object | - | id:integer/int64; name:string; gender:string; birthDate:string/date-time; avatar:string; status:integer/int32; createTime:string/date-time; updateTime:string/date-time |
@@ -953,7 +954,7 @@
 | `PublishRequest` | object | - | version:integer/int32 |
 | `QueryRequest` | object | - | namespace:string; subjectType:string; subjectId:string; text:string; graphTypes:array<string(TEMPORAL,SEMANTIC,CAUSAL,ENTITY)>; from:string/date-time; to:string/date-time; maxDepth:integer/int32; maxNodes:integer/int32; maxTokens:integer/int32; intent:string(SEMANTIC,TEMPORAL,CAUSAL,ENTITY,HYBRID) |
 | `QuestionRecommendResponse` | object | - | questionId:integer/int64; title:string; type:string; difficulty:integer/int32; knowledgeId:integer/int64; knowledgeName:string; recommendType:string; reason:string; score:integer/int32 |
-| `QuestionRequest` | object | title, type | id:integer/int64; title*:string; type*:string; code:string; subjectCode:string; grade:integer/int32; difficulty:integer/int32; abilityDimension:string; options:string; answer:string; analysis:string; tags:string; status:integer/int32 |
+| `QuestionRequest` | object | answer, difficulty, grade, subjectCode, title, type | id:integer/int64; title*:string; type*:string; code:string; subjectCode*:string; grade*:integer/int32; difficulty*:integer/int32; abilityDimension:string; options:string; answer*:string; analysis:string; tags:string; status:integer/int32 |
 | `QuestionResponse` | object | - | id:integer/int64; code:string; type:string; subjectCode:string; grade:integer/int32; difficulty:integer/int32; abilityDimension:string; title:string; options:string; answer:string; analysis:string; tags:string; usedCount:integer/int64 |
 | `RebuildRequest` | object | spaceId | spaceId*:integer/int64 |
 | `RecordRequest` | object | eventId | eventId*:integer/int64; content:string |
@@ -969,7 +970,7 @@
 | `Request` | object | - | toolName:string; argumentsRedacted:string |
 | `ResetPasswordRequest` | object | - | password:string |
 | `ResourceRecommendResponse` | object | - | resourceId:integer/int64; title:string; type:string; knowledgeId:integer/int64; knowledgeName:string; recommendType:string; reason:string; score:integer/int32 |
-| `ResourceRequest` | object | name, type | id:integer/int64; name*:string; type*:string; subjectCode:string; grade:integer/int32; difficulty:integer/int32; coverUrl:string; url:string; description:string; status:integer/int32 |
+| `ResourceRequest` | object | name, type, url | id:integer/int64; name*:string; type*:string; subjectCode:string; grade:integer/int32; difficulty:integer/int32; coverUrl:string; url*:string; description:string; status:integer/int32 |
 | `ResourceResponse` | object | - | id:integer/int64; name:string; type:string; url:string; subjectCode:string; grade:integer/int32; difficulty:integer/int32; coverUrl:string; description:string; viewCount:integer/int64 |
 | `ResponsesRequest` | object | - | model:string; platform:string; input:-; stream:boolean; store:boolean; temperature:number/double; maxOutputTokens:integer/int32; tools:array<object>; conversationId:string; reasoningEffort:string |
 | `RestoreCheckResult` | object | - | valid:boolean; entries:integer/int64; errors:array<string> |
@@ -1157,7 +1158,6 @@
 | `ResultTurnDecision` | object | - | code:integer/int32; data:TurnDecision; message:string; error:string; success:boolean |
 | `ResultUploadResult` | object | - | code:integer/int32; data:UploadResult; message:string; error:string; success:boolean |
 | `ResultUploadSession` | object | - | code:integer/int32; data:UploadSession; message:string; error:string; success:boolean |
-| `ResultUserContextVO` | object | - | code:integer/int32; data:UserContextVO; message:string; error:string; success:boolean |
 | `ResultUserVO` | object | - | code:integer/int32; data:UserVO; message:string; error:string; success:boolean |
 | `ResultValidateCaptchaResponse` | object | - | code:integer/int32; data:ValidateCaptchaResponse; message:string; error:string; success:boolean |
 | `ResultVisionResult` | object | - | code:integer/int32; data:VisionResult; message:string; error:string; success:boolean |
@@ -1167,11 +1167,11 @@
 | `ReviewRequest` | object | knowledgeId, studentId | id:integer/int64; studentId*:integer/int64; knowledgeId*:integer/int64; status:integer/int32; reviewDate:string/date; reviewRound:integer/int32; resultScore:number/double; completedAt:string/date-time |
 | `ReviewTaskResponse` | object | - | id:integer/int64; studentId:integer/int64; knowledgeId:integer/int64; knowledgeName:string; reviewRound:integer/int32; reviewDate:string; status:integer/int32; statusDesc:string; resultScore:number/double; completedAt:string/date-time |
 | `RolePageRequest` | object | - | pageSize:integer/int32; pageNum:integer/int32; orderByColumn:string; isAsc:string; orderFields:array<OrderField>; filterConditions:array<FilterCondition>; name:string |
-| `RoleRequest` | object | code, name | code*:string; tenantId:integer/int64; name*:string; status:string; remark:string; permissions:array<integer/int64> |
+| `RoleRequest` | object | code, name, tenantId | code*:string; tenantId*:integer/int64; name*:string; status:string; remark:string; permissions:array<integer/int64> |
 | `RoleVO` | object | - | id:integer/int64; tenantId:integer/int64; code:string; name:string; status:integer/int32; remark:string; delFlag:integer/int32; createTime:string/date-time; updateTime:string/date-time; permissions:array<integer/int64> |
 | `RouteMenuVO` | object | - | id:integer/int64; pid:integer/int64; name:string; path:string; component:string; type:string; status:integer/int32; icon:string; redirect:string; meta:MetaVO; children:array<RouteMenuVO> |
 | `RouteRequest` | object | - | name:string; orderedModels:array<string>; timeoutMs:integer/int32; fallbackOnError:boolean; maxTokens:integer/int64 |
-| `RunRequest` | object | - | appId:string; appVersionId:string; sourceType:string(CONVERSATION,GENERATION,AGENT,KNOWLEDGE,MEMORY,TOOL,API); sourceId:string; conversationId:string; generationId:string; executionId:string; traceId:string; model:string; prompt:string; attributes:object |
+| `RunRequest` | object | - | spaceId:integer/int64; topK:integer/int32 |
 | `RunResult` | object | - | spaceId:integer/int64; caseCount:integer/int32; topK:integer/int32; recallAtK:number/double; mrr:number/double; citationAccuracy:number/double; cases:array<CaseResult> |
 | `SearchRequest` | object | query, spaceId | spaceId*:integer/int64; query*:string; mode:string; topK:integer/int32; threshold:number/double; rerank:boolean |
 | `SearchResponse` | object | - | spaceId:integer/int64; mode:string; hits:array<HybridHit> |
@@ -1195,12 +1195,13 @@
 | `TagRequest` | object | name | name*:string |
 | `TagVO` | object | - | id:integer/int64; name:string; createTime:string/date-time |
 | `TenantContextVO` | object | - | tenantId:integer/int64; tenantName:string; roleCode:string |
+| `TenantId` | object | - | value:integer/int64 |
 | `TenantInfoVO` | object | - | id:integer/int64; code:string; name:string; pathName:string |
 | `TenantPageRequest` | object | - | pageSize:integer/int32; pageNum:integer/int32; orderByColumn:string; isAsc:string; orderFields:array<OrderField>; filterConditions:array<FilterCondition>; name:string; code:string; status:integer/int32 |
 | `TenantRequest` | object | code, name | parentId:integer/int64; code*:string; name*:string; contactName:string; contactPhone:string; address:string; domain:string; intro:string; order:integer/int32; leader:string; email:string; remark:string; status:string; menuIds:array<integer/int64>; authCodeIds:array<integer/int64>; adminRoleName:string; adminUsername:string; adminPassword:string |
 | `TenantVO` | object | - | id:integer/int64; parentId:integer/int64; code:string; name:string; contactName:string; contactPhone:string; address:string; domain:string; intro:string; order:integer/int32; leader:string; phone:string; email:string; remark:string; status:integer/int32; createTime:string/date-time; updateTime:string/date-time; children:array<TenantVO> |
 | `TestRequest` | object | - | requiredFeatures:array<string> |
-| `TextbookRequest` | object | grade, name, subjectCode | id:integer/int64; name*:string; subjectCode*:string; grade*:integer/int32; publisher:string; author:string; edition:string; isbn:string; status:integer/int32 |
+| `TextbookRequest` | object | grade, name, publisher, subjectCode | id:integer/int64; name*:string; subjectCode*:string; grade*:integer/int32; publisher*:string; author:string; edition:string; isbn:string; status:integer/int32 |
 | `TextbookResponse` | object | - | id:integer/int64; name:string; subjectCode:string; grade:integer/int32; publisher:string; isbn:string |
 | `TimelineEventRequest` | object | profileId, title | profileId*:integer/int64; title*:string; eventTime:string/date-time; eventDate:string/date-time; eventType:string |
 | `TimelineEventVO` | object | - | id:integer/int64; profileId:integer/int64; title:string; eventTime:string/date-time; type:string; visibility:string; createdBy:integer/int64; createTime:string/date-time; record:RecordVO; mediaList:array<MediaVO> |
@@ -1217,15 +1218,15 @@
 | `UpdateSpaceRequest` | object | - | name:string; description:string; domainCode:string; accessMode:string; reviewMode:string; bindingMode:string; difficultyScaleId:integer/int64; embeddingProfile:string; rerankProfile:string; chunkStrategy:string; chunkSize:integer/int32; chunkOverlap:integer/int32; status:integer/int32 |
 | `UploadResult` | object | - | document:DocumentView; versionId:integer/int64; jobId:integer/int64; duplicate:boolean |
 | `UploadSession` | object | - | sessionId:string; spaceId:integer/int64; fileName:string; size:integer/int64; totalChunks:integer/int32; uploadedChunks:array<integer/int32>; chunkSize:integer/int32 |
-| `UserContextVO` | object | - | userId:integer/int64; username:string; userType:string; token:string; loginTime:integer/int64; expireTime:integer/int64; ipaddr:string; loginLocation:string; browser:string; os:string; nickName:string; avatar:string; extInfo:string; isLogin:boolean; message:string; deviceInfo:string |
+| `UserId` | object | - | value:integer/int64 |
 | `UserPageRequest` | object | - | pageSize:integer/int32; pageNum:integer/int32; orderByColumn:string; isAsc:string; orderFields:array<OrderField>; filterConditions:array<FilterCondition>; username:string |
-| `UserRequest` | object | username | username*:string; password:string; nickName:string; email:string; phone:string; gender:string; avatar:string; address:string; status:string; remark:string; roleIds:array<integer/int64>; tenantId:integer/int64; postIds:array<integer/int64> |
+| `UserRequest` | object | tenantId, username | username*:string; password:string; nickName:string; email:string; phone:string; gender:string; avatar:string; address:string; status:string; remark:string; roleIds:array<integer/int64>; tenantId*:integer/int64; postIds:array<integer/int64> |
 | `UserTenantAssignmentVO` | object | - | tenantId:integer/int64; tenantName:string; roleId:integer/int64; roleName:string; roleCode:string |
 | `UserTenantRoleRequest` | object | roleId, tenantId | tenantId*:integer/int64; roleId*:integer/int64 |
 | `UserVO` | object | - | id:integer/int64; username:string; status:string; delFlag:integer/int32; createTime:string/date-time; updateTime:string/date-time; nickName:string; gender:string; avatar:string; address:string; email:string; phone:string; remark:string; roles:array<RoleVO>; roleIds:array<integer/int64>; currentRole:RoleVO; extInfo:string; tenants:array<TenantInfoVO>; subTenants:array<TenantContextVO>; currentTenantId:integer/int64; homeTenantId:integer/int64; switchMode:string |
 | `ValidateCaptchaRequest` | object | - | key:string; code:string |
 | `ValidateCaptchaResponse` | object | - | success:boolean; message:string |
-| `VersionRequest` | object | - | version:string; configJson:string |
+| `VersionRequest` | object | versionNumber | versionNumber*:string; description:string; copyFromVersionId:integer/int64 |
 | `VersionView` | object | - | id:integer/int64; documentId:integer/int64; spaceId:integer/int64; versionNo:integer/int32; title:string; lifecycleStatus:string; parseStatus:string; objectKey:string; mimeType:string; fileSize:integer/int64; checksum:string; modelProfile:string; publishedAt:string/date-time; createTime:string/date-time |
 | `VisionResult` | object | - | text:string; labels:array<string> |
 | `WeakPointResponse` | object | - | knowledgeId:integer/int64; knowledgeName:string; mastery:number/double |

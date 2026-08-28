@@ -15,7 +15,7 @@ import io.github.linpeilie.annotations.AutoMapper;
  */
 @Data
 @EqualsAndHashCode(callSuper = true)
-@Table(value = "agent_ai_platform")
+@Table(value = "model_ai_platform")
 @AutoMapper(target = AiPlatformBO.class, reverseConvertGenerate = true)
 public class AiPlatformDO extends TenantEntity {
 

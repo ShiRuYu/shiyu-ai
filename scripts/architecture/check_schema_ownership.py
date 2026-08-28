@@ -14,6 +14,7 @@ OWNER_ROOTS = {
     "common-storage": "infrastructure/shiyu-common/shiyu-common-storage/src/main/resources/db/baseline/h2",
     "iam": "shiyu-domains/iam/shiyu-iam-implementation/src/main/resources/db/baseline/h2",
     "agent": "shiyu-domains/agent/shiyu-agent-implementation/src/main/resources/db/baseline/h2",
+    "model": "shiyu-domains/model/shiyu-model-implementation/src/main/resources/db/baseline/h2",
     "conversation": "shiyu-domains/conversation/shiyu-conversation-implementation/src/main/resources/db/baseline/h2",
     "education": "shiyu-domains/education/shiyu-education-implementation/src/main/resources/db/baseline/h2",
     "governance": "shiyu-domains/governance/shiyu-governance-implementation/src/main/resources/db/baseline/h2",
@@ -35,6 +36,7 @@ INDEX_COLUMNS = re.compile(
     r'CREATE\s+(?:UNIQUE\s+(?:NULLS\s+DISTINCT\s+)?)?INDEX.*?ON\s+"PUBLIC"\."([A-Z0-9_]+)"\s*\(([^)]*)\)',
     re.I | re.S,
 )
+INSERT_TABLE = re.compile(r'INSERT\s+INTO\s+"PUBLIC"\."([A-Z0-9_]+)"', re.I)
 
 
 def strip_comments(text: str) -> str:
@@ -96,6 +98,18 @@ def main() -> int:
                 )
 
     for owner, path, sql in sql_by_file:
+        for inserted in INSERT_TABLE.findall(sql):
+            normalized = inserted.upper()
+            inserted_owner = tables.get(normalized, (None, None))[0]
+            if inserted_owner is None:
+                failures.append(
+                    f"seed targets unknown table {normalized}: {path.relative_to(repo)}"
+                )
+            elif inserted_owner != owner:
+                failures.append(
+                    f"cross-domain seed write {owner}->{inserted_owner} for {normalized}: "
+                    f"{path.relative_to(repo)}"
+                )
         for referenced in TABLE_REF.findall(sql):
             normalized = referenced.upper()
             referenced_owner = tables.get(normalized, (None, None))[0]
@@ -103,6 +117,12 @@ def main() -> int:
                 failures.append(
                     f"cross-domain SQL reference {owner}->{referenced_owner} for {normalized}: {path.relative_to(repo)}"
                 )
+
+    legacy_model_platform = "AGENT_AI_" + "PLATFORM"
+    legacy_model_model = "AGENT_AI_" + "MODEL"
+    legacy_tables = sorted(table for table in tables if table in {legacy_model_platform, legacy_model_model})
+    if legacy_tables:
+        failures.append(f"legacy model table names remain: {', '.join(legacy_tables)}")
 
     if failures:
         print(f"Schema ownership failures ({len(failures)}):", file=sys.stderr)
