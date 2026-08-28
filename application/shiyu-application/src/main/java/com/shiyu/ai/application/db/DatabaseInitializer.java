@@ -41,6 +41,7 @@ public class DatabaseInitializer {
             "classpath:db/baseline/h2/schema/common/02_common.sql",
             "classpath:db/baseline/h2/schema/iam/03_auth.sql",
             "classpath:db/baseline/h2/schema/agent/04_agent.sql",
+            "classpath:db/baseline/h2/schema/model/04_model.sql",
             "classpath:db/baseline/h2/schema/governance/05_governance.sql",
             "classpath:db/baseline/h2/schema/knowledge/06_knowledge.sql",
             "classpath:db/baseline/h2/schema/education/07_education.sql",
@@ -57,13 +58,14 @@ public class DatabaseInitializer {
             "classpath:db/baseline/h2/seed/common/01_common.sql",
             "classpath:db/baseline/h2/seed/iam/02_auth.sql",
             "classpath:db/baseline/h2/seed/agent/03_agent.sql",
+            "classpath:db/baseline/h2/seed/model/03_model.sql",
             "classpath:db/baseline/h2/seed/knowledge/04_knowledge.sql",
             "classpath:db/baseline/h2/seed/iam/05_navigation.sql"
     );
 
     private static final Set<String> EXPECTED_TABLES = Set.of(
             BASELINE_TABLE,
-            "AGENT_AI_MODEL", "AGENT_AI_PLATFORM", "AGENT_CHECKPOINT", "AGENT_DEF",
+            "MODEL_AI_MODEL", "MODEL_AI_PLATFORM", "AGENT_CHECKPOINT", "AGENT_DEF",
             "AGENT_EXECUTION", "AGENT_INTENT_DEF", "AGENT_NODE_EXECUTION",
             "AGENT_VERSION", "GOVERNANCE_USAGE_RECORD",
             "AUTH_AUTH_CODE", "AUTH_MENU", "AUTH_ROLE", "AUTH_ROLE_SCOPE_AUTH_CODE",
@@ -111,6 +113,13 @@ public class DatabaseInitializer {
         try (Connection connection = dataSource.getConnection()) {
             validateH2(connection);
             Set<String> existingTables = loadPublicTables(connection);
+
+            Set<String> legacyModelTables = new TreeSet<>(existingTables);
+            legacyModelTables.retainAll(Set.of("AGENT_AI_" + "PLATFORM", "AGENT_AI_" + "MODEL"));
+            if (!legacyModelTables.isEmpty()) {
+                throw new IllegalStateException("Legacy model tables detected: " + legacyModelTables
+                        + "; manual rebuild required for baseline " + BASELINE_VERSION);
+            }
 
             if (existingTables.contains(BASELINE_TABLE)) {
                 BaselineMarker marker = readBaselineMarker(connection);
