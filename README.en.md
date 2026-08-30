@@ -360,7 +360,6 @@ After startup:
 | Usage | `/api/governance/usage/**` | Platform Infrastructure |
 | Plugin | `/api/tooling/plugins/**` | Platform Infrastructure |
 | Education | `/api/education/**` | Business Extension |
-| Record | `/api/record/**` | Business Extension |
 | System | `/api/iam/**` | Infrastructure |
 
 ---

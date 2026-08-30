@@ -20,7 +20,6 @@ OWNER_ROOTS = {
     "governance": "shiyu-domains/governance/shiyu-governance-implementation/src/main/resources/db/baseline/h2",
     "knowledge": "shiyu-domains/knowledge/shiyu-knowledge-implementation/src/main/resources/db/baseline/h2",
     "memory": "shiyu-domains/memory/shiyu-memory-implementation/src/main/resources/db/baseline/h2",
-    "record": "shiyu-domains/record/shiyu-record-implementation/src/main/resources/db/baseline/h2",
     "tooling": "shiyu-domains/tooling/shiyu-tooling-implementation/src/main/resources/db/baseline/h2",
 }
 

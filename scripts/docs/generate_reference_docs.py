@@ -498,7 +498,6 @@ def main() -> None:
         repo / "shiyu-domains/governance/shiyu-governance-implementation/src/main/resources/db/baseline/h2/schema",
         repo / "shiyu-domains/knowledge/shiyu-knowledge-implementation/src/main/resources/db/baseline/h2/schema",
         repo / "shiyu-domains/memory/shiyu-memory-implementation/src/main/resources/db/baseline/h2/schema",
-        repo / "shiyu-domains/record/shiyu-record-implementation/src/main/resources/db/baseline/h2/schema",
         repo / "shiyu-domains/tooling/shiyu-tooling-implementation/src/main/resources/db/baseline/h2/schema",
     ]
     schema_files = sorted(path for root in schema_roots if root.exists() for path in root.rglob("*.sql"))

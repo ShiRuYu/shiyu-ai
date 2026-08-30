@@ -36,7 +36,7 @@ class LayerBoundaryArchTest {
             .that().resideInAnyPackage(
                     "com.shiyu.ai.agent..", "com.shiyu.ai.auth..", "com.shiyu.ai.education..",
                     "com.shiyu.ai.knowledge..", "com.shiyu.ai.memory..", "com.shiyu.ai.model..",
-                    "com.shiyu.ai.record..", "com.shiyu.ai.governance..", "com.shiyu.ai.tool..")
+                    "com.shiyu.ai.governance..", "com.shiyu.ai.tool..")
             .should().dependOnClassesThat()
             .resideInAnyPackage("com.shiyu.ai.common.mybatis..dataobject..")
             .because("DO and Mapper types belong exclusively to their domain implementation or technical support");
@@ -53,7 +53,7 @@ class LayerBoundaryArchTest {
             .that().resideInAnyPackage(
                     "com.shiyu.ai.agent..", "com.shiyu.ai.auth..", "com.shiyu.ai.conversation..",
                     "com.shiyu.ai.education..", "com.shiyu.ai.knowledge..", "com.shiyu.ai.memory..",
-                    "com.shiyu.ai.model..", "com.shiyu.ai.record..", "com.shiyu.ai.governance..",
+                    "com.shiyu.ai.model..", "com.shiyu.ai.governance..",
                     "com.shiyu.ai.tooling..")
             .and().resideOutsideOfPackages("..web..")
             .should().dependOnClassesThat()
@@ -65,7 +65,7 @@ class LayerBoundaryArchTest {
             .that().resideInAnyPackage(
                     "com.shiyu.ai.agent..", "com.shiyu.ai.auth..", "com.shiyu.ai.conversation..",
                     "com.shiyu.ai.education..", "com.shiyu.ai.knowledge..", "com.shiyu.ai.memory..",
-                    "com.shiyu.ai.model..", "com.shiyu.ai.record..", "com.shiyu.ai.governance..",
+                    "com.shiyu.ai.model..", "com.shiyu.ai.governance..",
                     "com.shiyu.ai.tooling..")
             .and().resideOutsideOfPackages("..web..")
             .should().dependOnClassesThat()

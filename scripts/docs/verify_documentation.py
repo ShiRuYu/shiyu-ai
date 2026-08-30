@@ -95,7 +95,6 @@ def baseline_owner_roots(backend: Path) -> list[Path]:
         backend / "shiyu-domains/governance/shiyu-governance-implementation/src/main/resources/db/baseline/h2",
         backend / "shiyu-domains/knowledge/shiyu-knowledge-implementation/src/main/resources/db/baseline/h2",
         backend / "shiyu-domains/memory/shiyu-memory-implementation/src/main/resources/db/baseline/h2",
-        backend / "shiyu-domains/record/shiyu-record-implementation/src/main/resources/db/baseline/h2",
         backend / "shiyu-domains/tooling/shiyu-tooling-implementation/src/main/resources/db/baseline/h2",
     ]
 
@@ -113,7 +112,6 @@ def verify_final_baseline(backend: Path, failures: list[str]) -> int:
         backend / "shiyu-domains/governance/shiyu-governance-implementation/src/main/resources/db/baseline/h2",
         backend / "shiyu-domains/knowledge/shiyu-knowledge-implementation/src/main/resources/db/baseline/h2",
         backend / "shiyu-domains/memory/shiyu-memory-implementation/src/main/resources/db/baseline/h2",
-        backend / "shiyu-domains/record/shiyu-record-implementation/src/main/resources/db/baseline/h2",
         backend / "shiyu-domains/tooling/shiyu-tooling-implementation/src/main/resources/db/baseline/h2",
     ]
     modifying = re.compile(r"^\s*(ALTER|UPDATE|DELETE|MERGE|DROP|TRUNCATE)\b", re.I | re.M)

@@ -87,7 +87,6 @@ public class AuditInterceptor implements HandlerInterceptor {
         if (path.startsWith("/api/agent")) return "AGENT_" + method;
         if (path.startsWith("/api/knowledge")) return "KNOWLEDGE_" + method;
         if (path.startsWith("/api/education")) return "EDUCATION_" + method;
-        if (path.startsWith("/api/record")) return "RECORD_" + method;
         if (path.startsWith("/api/iam")) return "SYSTEM_" + method;
         if (path.startsWith("/api/governance/usage")) return "USAGE_" + method;
         return "API_" + method;

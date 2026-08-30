@@ -38,7 +38,7 @@ class DatabaseInitializerTest {
 
         initializer.initialize();
 
-        assertEquals(97, scalar(dataSource,
+        assertEquals(90, scalar(dataSource,
                 "SELECT COUNT(*) FROM INFORMATION_SCHEMA.TABLES "
                         + "WHERE TABLE_SCHEMA='PUBLIC' AND TABLE_TYPE='BASE TABLE'"));
         assertEquals(1, scalar(dataSource,
@@ -54,12 +54,12 @@ class DatabaseInitializerTest {
         assertEquals(1, scalar(dataSource,
                 "SELECT COUNT(*) FROM AUTH_USER WHERE USERNAME='admin'"));
         assertEquals(3, scalar(dataSource, "SELECT COUNT(*) FROM AUTH_ROLE"));
-        assertEquals(41, scalar(dataSource, "SELECT COUNT(*) FROM AUTH_MENU"));
-        assertEquals(132, scalar(dataSource, "SELECT COUNT(*) FROM AUTH_AUTH_CODE"));
-        assertEquals(41, scalar(dataSource, "SELECT COUNT(*) FROM AUTH_TENANT_MENU"));
-        assertEquals(132, scalar(dataSource, "SELECT COUNT(*) FROM AUTH_TENANT_AUTH_CODE"));
+        assertEquals(37, scalar(dataSource, "SELECT COUNT(*) FROM AUTH_MENU"));
+        assertEquals(111, scalar(dataSource, "SELECT COUNT(*) FROM AUTH_AUTH_CODE"));
+        assertEquals(37, scalar(dataSource, "SELECT COUNT(*) FROM AUTH_TENANT_MENU"));
+        assertEquals(111, scalar(dataSource, "SELECT COUNT(*) FROM AUTH_TENANT_AUTH_CODE"));
         assertTrue(scalar(dataSource, "SELECT COUNT(*) FROM AUTH_ROLE_SCOPE_MENU") >= 99);
-        assertEquals(264, scalar(dataSource, "SELECT COUNT(*) FROM AUTH_ROLE_SCOPE_AUTH_CODE"));
+        assertEquals(222, scalar(dataSource, "SELECT COUNT(*) FROM AUTH_ROLE_SCOPE_AUTH_CODE"));
         assertEquals(1, scalar(dataSource,
                 "SELECT COUNT(*) FROM AUTH_USER_SCOPE_ROLE usr "
                         + "JOIN AUTH_USER u ON u.ID=usr.USER_ID "
@@ -70,6 +70,8 @@ class DatabaseInitializerTest {
         assertEquals(9, scalar(dataSource, "SELECT COUNT(*) FROM MODEL_AI_MODEL"));
         assertEquals(0, scalar(dataSource, "SELECT COUNT(*) FROM INFORMATION_SCHEMA.TABLES "
                 + "WHERE TABLE_SCHEMA='PUBLIC' AND TABLE_NAME IN ('AGENT_AI_" + "PLATFORM','AGENT_AI_" + "MODEL')"));
+        assertEquals(0, scalar(dataSource, "SELECT COUNT(*) FROM INFORMATION_SCHEMA.TABLES "
+                + "WHERE TABLE_SCHEMA='PUBLIC' AND TABLE_NAME LIKE 'RECORD_%'"));
         assertEquals(11, scalar(dataSource, "SELECT COUNT(*) FROM AGENT_DEF"));
         assertEquals(11, scalar(dataSource, "SELECT COUNT(*) FROM AGENT_VERSION"));
         assertEquals(1, scalar(dataSource, "SELECT COUNT(*) FROM KNOWLEDGE_DIFFICULTY_SCALE"));
@@ -112,6 +114,20 @@ class DatabaseInitializerTest {
         assertEquals(18, scalar(dataSource, "SELECT COUNT(*) FROM COMMON_DICT"));
         assertEquals(1, scalar(dataSource, "SELECT COUNT(*) FROM AUTH_USER"));
         assertEquals(11, scalar(dataSource, "SELECT COUNT(*) FROM AGENT_VERSION"));
+    }
+
+    @Test
+    void refusesDatabaseContainingRemovedRecordTables() throws Exception {
+        DataSource dataSource = newDataSource();
+        DatabaseInitializer initializer = newInitializer(dataSource);
+        initializer.initialize();
+
+        execute(dataSource, "CREATE TABLE RECORD_LEGACY_SENTINEL (ID BIGINT PRIMARY KEY)");
+
+        IllegalStateException error = assertThrows(IllegalStateException.class, initializer::initialize);
+
+        assertTrue(error.getMessage().contains("schema does not match baseline"));
+        assertTrue(error.getMessage().contains("RECORD_LEGACY_SENTINEL"));
     }
 
     @Test
@@ -220,7 +236,7 @@ class DatabaseInitializerTest {
         assertEquals(0, scalar(dataSource,
                 "SELECT COUNT(*) FROM (SELECT CODE FROM AUTH_MENU "
                         + "WHERE CODE IS NOT NULL AND CODE <> '' GROUP BY CODE HAVING COUNT(*) > 1)"));
-        assertEquals(9, scalar(dataSource,
+        assertEquals(8, scalar(dataSource,
                 "SELECT COUNT(*) FROM AUTH_MENU WHERE PARENT_ID IS NULL"));
         assertEquals(1, scalar(dataSource,
                 "SELECT COUNT(*) FROM AUTH_MENU WHERE ID=2010 AND PATH='/workspace' AND REDIRECT='/workspace/chat'"));

@@ -31,7 +31,5 @@
         <module>governance/shiyu-governance-implementation</module>
         <module>education/shiyu-education-contract</module>
         <module>education/shiyu-education-implementation</module>
-        <module>record/shiyu-record-contract</module>
-        <module>record/shiyu-record-implementation</module>
     </modules>
 </project>

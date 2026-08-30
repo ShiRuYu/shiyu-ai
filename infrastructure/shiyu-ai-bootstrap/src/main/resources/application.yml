@@ -132,7 +132,6 @@ springdoc:
         - com.shiyu.ai.education.web
         - com.shiyu.ai.knowledge.web
         - com.shiyu.ai.model.web
-        - com.shiyu.ai.record.web
         - com.shiyu.ai.governance.web
         - com.shiyu.ai.tooling.web
         - com.shiyu.ai.common.storage.web
@@ -141,7 +140,6 @@ springdoc:
         - com.shiyu.ai.web.model
         - com.shiyu.ai.web.education
         - com.shiyu.ai.web.knowledge
-        - com.shiyu.ai.web.record
         - com.shiyu.ai.web.usage
         - com.shiyu.ai.web.plugin
         - com.shiyu.ai.web.common
@@ -170,10 +168,6 @@ springdoc:
       packages-to-scan:
         - com.shiyu.ai.model.web
         - com.shiyu.ai.web.model
-    - group: 'record'
-      packages-to-scan:
-        - com.shiyu.ai.record.web
-        - com.shiyu.ai.web.record
     - group: 'usage'
       packages-to-scan:
         - com.shiyu.ai.governance.web

@@ -45,7 +45,6 @@ public class DatabaseInitializer {
             "classpath:db/baseline/h2/schema/governance/05_governance.sql",
             "classpath:db/baseline/h2/schema/knowledge/06_knowledge.sql",
             "classpath:db/baseline/h2/schema/education/07_education.sql",
-            "classpath:db/baseline/h2/schema/record/08_record.sql",
             "classpath:db/baseline/h2/schema/knowledge/09_vector.sql",
             "classpath:db/baseline/h2/schema/governance/10_observation.sql",
             "classpath:db/baseline/h2/schema/conversation/11_conversation.sql",
@@ -93,8 +92,6 @@ public class DatabaseInitializer {
             "AGENT_EVAL_DATASET", "AGENT_EVAL_CASE", "AGENT_EVAL_RUN",
             "MEMORY_EVENT", "MEMORY_ENTITY", "MEMORY_EDGE", "MEMORY_CONSOLIDATION_JOB", "MEMORY_RETRIEVAL_TRACE",
             "OBSERVATION_AUDIT_LOG", "OBSERVATION_EXECUTION_TIMELINE",
-            "RECORD_ENTRY", "RECORD_MEDIA", "RECORD_PROFILE", "RECORD_PROFILE_MEMBER",
-            "RECORD_RECORD_TAG", "RECORD_TAG", "RECORD_TIMELINE_EVENT",
             "STORAGE_OBJECT", "STORAGE_UPLOAD_CHUNK", "STORAGE_UPLOAD_SESSION",
             "VECTOR_KNOWLEDGE_CHUNK"
     );

@@ -457,11 +457,6 @@
             </dependency>
             <dependency>
                 <groupId>com.shiyu.ai</groupId>
-                <artifactId>shiyu-record-implementation</artifactId>
-                <version>${revision}</version>
-            </dependency>
-            <dependency>
-                <groupId>com.shiyu.ai</groupId>
                 <artifactId>shiyu-ai-bootstrap</artifactId>
                 <version>${revision}</version>
             </dependency>

@@ -58,11 +58,6 @@
             <artifactId>shiyu-education-implementation</artifactId>
             <version>${revision}</version>
         </dependency>
-        <dependency>
-            <groupId>com.shiyu.ai</groupId>
-            <artifactId>shiyu-record-implementation</artifactId>
-            <version>${revision}</version>
-        </dependency>
         <!-- Cross-domain event adapters belong to the application composition root. -->
         <dependency>
             <groupId>org.springframework</groupId>

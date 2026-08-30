@@ -351,7 +351,6 @@ Linux 使用对应的 `scripts/package-cloud-linux.sh` 和
 | Runtime | `/api/agent/runs/**` | 统一运行轨迹、Trace、usage 和审批 |
 | 知识库 | `/api/knowledge/**` | 空间、文档、检索、图谱与任务 |
 | 教育 | `/api/education/**` | 课程、题库、考试、学习与分析 |
-| 记录 | `/api/record/**` | 人物、记录、时间线、标签与附件 |
 | 认证授权 | `/api/iam/auth/**`、`/api/iam/users/**`、`/api/iam/roles/**`、`/api/iam/menus/**`、`/api/iam/tenants/**` | 登录、租户、角色与菜单 |
 | 平台治理 | `/api/iam/**`、`/api/governance/usage/**`、`/api/tooling/plugins/**`、`/api/tooling/tools/**` | 文件、用量、插件与工具 |
 
