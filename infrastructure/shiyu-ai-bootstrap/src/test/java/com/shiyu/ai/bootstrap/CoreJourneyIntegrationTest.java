@@ -2,8 +2,6 @@ package com.shiyu.ai.bootstrap;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.shiyu.ai.common.core.utils.PasswordUtils;
-import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
@@ -12,7 +10,6 @@ import org.springframework.boot.test.web.server.LocalServerPort;
 import org.springframework.test.context.DynamicPropertyRegistry;
 import org.springframework.test.context.DynamicPropertySource;
 
-import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.UUID;
 
@@ -48,18 +45,10 @@ class CoreJourneyIntegrationTest {
     @Autowired
     private JdbcTemplate jdbcTemplate;
 
-    @BeforeEach
-    void setKnownPassword() throws Exception {
-        Files.createDirectories(APP_HOME);
-        jdbcTemplate.update(
-                "UPDATE AUTH_USER SET PASSWORD = ? WHERE USERNAME = 'admin'",
-                PasswordUtils.encode("smoke-password"));
-    }
-
     @Test
     void completesAuthenticatedAgentConversationAndKnowledgeJourney() throws Exception {
         HttpResponse<String> loginResponse = request("POST", "/api/iam/auth/login", null,
-                "{\"username\":\"admin\",\"password\":\"smoke-password\"}");
+                "{\"username\":\"admin\",\"password\":\"123456\"}");
         assertThat(loginResponse.statusCode()).isEqualTo(200);
         JsonNode login = body(loginResponse.body());
         assertThat(login.path("success").asBoolean()).isTrue();

@@ -122,6 +122,7 @@ public class DatabaseInitializer {
                 BaselineMarker marker = readBaselineMarker(connection);
                 if (BASELINE_VERSION.equals(marker.version())) {
                     assertExpectedTables(loadPublicTables(connection));
+                    assertExpectedColumns(connection);
                     log.info("Database baseline {} ({}) is already installed; initialization skipped",
                             BASELINE_VERSION, SEED_PROFILE);
                     return;
@@ -260,6 +261,22 @@ public class DatabaseInitializer {
         if (!missing.isEmpty() || !unexpected.isEmpty()) {
             throw new IllegalStateException("Database schema does not match baseline; missing=" + missing
                     + ", unexpected=" + unexpected);
+        }
+    }
+
+    private void assertExpectedColumns(Connection connection) throws Exception {
+        try (PreparedStatement statement = connection.prepareStatement(
+                "SELECT COUNT(*) FROM INFORMATION_SCHEMA.COLUMNS "
+                        + "WHERE TABLE_SCHEMA='PUBLIC' AND TABLE_NAME=? AND COLUMN_NAME=?")) {
+            statement.setString(1, "MODEL_AI_PLATFORM");
+            statement.setString(2, "ADAPTER_TYPE");
+            try (ResultSet resultSet = statement.executeQuery()) {
+                resultSet.next();
+                if (resultSet.getInt(1) == 0) {
+                    throw new IllegalStateException("Database schema does not match baseline; "
+                            + "missing=[MODEL_AI_PLATFORM.ADAPTER_TYPE]; manual rebuild required");
+                }
+            }
         }
     }
 

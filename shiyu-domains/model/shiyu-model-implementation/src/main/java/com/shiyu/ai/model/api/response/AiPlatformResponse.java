@@ -2,6 +2,7 @@ package com.shiyu.ai.model.api.response;
 
 import com.shiyu.ai.model.domain.model.AiPlatformBO;
 import io.github.linpeilie.annotations.AutoMapper;
+import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.Data;
 import java.time.LocalDateTime;
 
@@ -11,6 +12,8 @@ public class AiPlatformResponse {
     private Long id;
     private String name;
     private String code;
+    @Schema(description = "平台接口适配器协议", allowableValues = {"OPENAI_COMPATIBLE", "OLLAMA"})
+    private String adapterType;
     private String baseUrl;
     private Double temperature;
     private Integer maxTokens;

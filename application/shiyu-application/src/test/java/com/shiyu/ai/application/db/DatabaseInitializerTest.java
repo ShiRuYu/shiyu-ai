@@ -54,9 +54,9 @@ class DatabaseInitializerTest {
         assertEquals(1, scalar(dataSource,
                 "SELECT COUNT(*) FROM AUTH_USER WHERE USERNAME='admin'"));
         assertEquals(3, scalar(dataSource, "SELECT COUNT(*) FROM AUTH_ROLE"));
-        assertEquals(37, scalar(dataSource, "SELECT COUNT(*) FROM AUTH_MENU"));
+        assertEquals(38, scalar(dataSource, "SELECT COUNT(*) FROM AUTH_MENU"));
         assertEquals(111, scalar(dataSource, "SELECT COUNT(*) FROM AUTH_AUTH_CODE"));
-        assertEquals(37, scalar(dataSource, "SELECT COUNT(*) FROM AUTH_TENANT_MENU"));
+        assertEquals(38, scalar(dataSource, "SELECT COUNT(*) FROM AUTH_TENANT_MENU"));
         assertEquals(111, scalar(dataSource, "SELECT COUNT(*) FROM AUTH_TENANT_AUTH_CODE"));
         assertTrue(scalar(dataSource, "SELECT COUNT(*) FROM AUTH_ROLE_SCOPE_MENU") >= 99);
         assertEquals(222, scalar(dataSource, "SELECT COUNT(*) FROM AUTH_ROLE_SCOPE_AUTH_CODE"));
@@ -67,6 +67,7 @@ class DatabaseInitializerTest {
                         + "WHERE u.USERNAME='admin' AND r.CODE='super'"));
 
         assertEquals(4, scalar(dataSource, "SELECT COUNT(*) FROM MODEL_AI_PLATFORM"));
+        assertEquals(4, scalar(dataSource, "SELECT COUNT(*) FROM MODEL_AI_PLATFORM WHERE ADAPTER_TYPE='OPENAI_COMPATIBLE'"));
         assertEquals(9, scalar(dataSource, "SELECT COUNT(*) FROM MODEL_AI_MODEL"));
         assertEquals(0, scalar(dataSource, "SELECT COUNT(*) FROM INFORMATION_SCHEMA.TABLES "
                 + "WHERE TABLE_SCHEMA='PUBLIC' AND TABLE_NAME IN ('AGENT_AI_" + "PLATFORM','AGENT_AI_" + "MODEL')"));
@@ -150,6 +151,20 @@ class DatabaseInitializerTest {
                 "SELECT COUNT(*) FROM COMMON_DICT WHERE ID=9999 AND DICT_VALUE='kept'"));
         assertEquals(1, scalar(dataSource,
                 "SELECT COUNT(*) FROM MEMORY_LONG_TERM_MEMORY WHERE ID=1"));
+    }
+
+    @Test
+    void refusesV4DatabaseWithOutdatedModelPlatformSchema() throws Exception {
+        DataSource dataSource = newDataSource();
+        DatabaseInitializer initializer = newInitializer(dataSource);
+        initializer.initialize();
+
+        execute(dataSource, "ALTER TABLE MODEL_AI_PLATFORM DROP COLUMN ADAPTER_TYPE");
+
+        IllegalStateException error = assertThrows(IllegalStateException.class, initializer::initialize);
+
+        assertTrue(error.getMessage().contains("ADAPTER_TYPE"));
+        assertTrue(error.getMessage().contains("manual rebuild required"));
     }
 
     @Test

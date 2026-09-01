@@ -1,6 +1,7 @@
 package com.shiyu.ai.model.vo;
 
 import lombok.Data;
+import io.swagger.v3.oas.annotations.media.Schema;
 
 import java.io.Serial;
 import java.io.Serializable;
@@ -24,6 +25,8 @@ public class AiPlatformVO implements Serializable {
     private Long id;
     private String name;
     private String code;
+    @Schema(description = "平台接口适配器协议", allowableValues = {"OPENAI_COMPATIBLE", "OLLAMA"})
+    private String adapterType;
     private String baseUrl;
     private Double temperature;
     private Integer maxTokens;

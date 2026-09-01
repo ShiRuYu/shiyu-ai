@@ -41,6 +41,9 @@ public class AiPlatformBO extends BaseEntity {
     @Size(max = 50, message = "平台编码长度不能超过{max}个字符")
     private String code;
 
+    /** Transport adapter type, defaulting to the OpenAI-compatible protocol. */
+    private String adapterType = PlatformAdapterType.OPENAI_COMPATIBLE.name();
+
     /**
      * Base URL
      */

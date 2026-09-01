@@ -25,6 +25,7 @@ import java.util.List;
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.*;
 import static org.mockito.Mockito.*;
+import org.mockito.ArgumentCaptor;
 
 class ModelCatalogServiceTest {
     private static final ActorContext ACTOR = new ActorContext(new TenantId(81), new UserId(82), false);
@@ -69,6 +70,9 @@ class ModelCatalogServiceTest {
         AiPlatformRequest request = new AiPlatformRequest();
         request.setName("DeepSeek"); request.setCode("DEEPSEEK"); request.setIsDefault("Y");
         assertNotNull(service.createResponse(ACTOR, request));
+        ArgumentCaptor<AiPlatformBO> createdPlatform = ArgumentCaptor.forClass(AiPlatformBO.class);
+        verify(repository).create(eq(ACTOR.tenantId()), createdPlatform.capture());
+        assertEquals("OPENAI_COMPATIBLE", createdPlatform.getValue().getAdapterType());
         assertNotNull(service.updateResponse(ACTOR, 1L, request));
         assertNotNull(service.setDefaultResponse(ACTOR, 1L));
         service.deleteById(ACTOR, 1L);

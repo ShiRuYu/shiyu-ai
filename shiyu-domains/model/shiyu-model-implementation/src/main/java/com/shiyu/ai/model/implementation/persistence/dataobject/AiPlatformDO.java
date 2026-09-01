@@ -38,6 +38,9 @@ public class AiPlatformDO extends TenantEntity {
      */
     private String code;
 
+    /** Transport adapter type persisted with the platform configuration. */
+    private String adapterType;
+
     /**
      * Base URL
      */

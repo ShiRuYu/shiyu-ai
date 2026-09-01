@@ -6,6 +6,7 @@ import com.shiyu.ai.model.port.repository.AiPlatformRepository;
 import com.shiyu.ai.model.port.ModelRoutingPort;
 import com.shiyu.ai.model.domain.model.AiModelBO;
 import com.shiyu.ai.model.domain.model.AiPlatformBO;
+import com.shiyu.ai.model.domain.model.PlatformAdapterType;
 import com.shiyu.ai.model.adapter.config.PlatformConfig;
 import com.shiyu.ai.model.adapter.impl.GenericPlatformAdapter;
 import com.shiyu.ai.model.adapter.impl.OllamaPlatformAdapter;
@@ -27,8 +28,6 @@ import com.shiyu.ai.kernel.context.TenantId;
 @Slf4j
 @Service
 public class ModelManager implements ApplicationRunner, ModelRoutingPort {
-
-    private static final String OLLAMA = "OLLAMA";
 
     private final Map<String, ModelAdapter> adapterMap = new ConcurrentHashMap<>();
 
@@ -67,10 +66,15 @@ public class ModelManager implements ApplicationRunner, ModelRoutingPort {
             List<AiPlatformBO> platforms = platformRepository.selectAllEnabled(tenantId);
             if (platforms != null && !platforms.isEmpty()) {
                 for (AiPlatformBO platform : platforms) {
-                    ModelAdapter adapter = createAdapterFromDb(tenantId, platform);
-                    if (adapter != null) {
-                        adapterMap.put(platform.getCode(), adapter);
-                        log.info("从数据库注册适配器: {} ({})", platform.getCode(), platform.getName());
+                    try {
+                        ModelAdapter adapter = createAdapterFromDb(tenantId, platform);
+                        if (adapter != null) {
+                            adapterMap.put(platform.getCode(), adapter);
+                            log.info("从数据库注册适配器: {} ({})", platform.getCode(), platform.getName());
+                        }
+                    } catch (IllegalArgumentException e) {
+                        // A malformed platform must not discard every other tenant platform.
+                        log.error("跳过协议配置无效的平台 {} ({}): {}", platform.getCode(), platform.getName(), e.getMessage());
                     }
                 }
                 dbLoaded = true;
@@ -119,7 +123,7 @@ public class ModelManager implements ApplicationRunner, ModelRoutingPort {
             log.debug("查询平台 {} 默认模型失败: {}", code, e.getMessage());
         }
 
-        if (OLLAMA.equalsIgnoreCase(code)) {
+        if (PlatformAdapterType.OLLAMA == PlatformAdapterType.parse(platform.getAdapterType())) {
             return new OllamaPlatformAdapter(baseUrl, defaultModelName, temperature, maxRetries);
         }
 
@@ -185,7 +189,7 @@ public class ModelManager implements ApplicationRunner, ModelRoutingPort {
         if (config == null) {
             throw new IllegalArgumentException("平台配置不能为空");
         }
-        ModelAdapter adapter = getAdapter(config.getPlatformType());
+        ModelAdapter adapter = adapterForConfig(config);
         return adapter.createChatModel(config, modelName != null ? modelName : config.getModelName());
     }
 
@@ -201,12 +205,30 @@ public class ModelManager implements ApplicationRunner, ModelRoutingPort {
         if (config == null) {
             throw new IllegalArgumentException("平台配置不能为空");
         }
-        ModelAdapter adapter = getAdapter(config.getPlatformType());
+        ModelAdapter adapter = adapterForConfig(config);
         return adapter.createStreamingChatModel(config, modelName != null ? modelName : config.getModelName());
     }
 
     public StreamingChatModel getStreamingChatModel(PlatformConfig config) {
         return getStreamingChatModel(config, null);
+    }
+
+    private ModelAdapter adapterForConfig(PlatformConfig config) {
+        PlatformAdapterType adapterType = PlatformAdapterType.parse(config.getAdapterType());
+        if (adapterType == PlatformAdapterType.OLLAMA) {
+            return new OllamaPlatformAdapter(config.getBaseUrl(), config.getModelName(),
+                    config.getTemperature(), config.getMaxRetries());
+        }
+
+        String platformType = StringUtils.defaultIfBlank(config.getPlatformType(), "OPENAI_COMPATIBLE");
+        ModelAdapter registered = adapterMap.get(platformType);
+        // An explicit OpenAI-compatible configuration must not accidentally
+        // reuse an Ollama adapter registered under the same platform code.
+        if (registered != null && !(registered instanceof OllamaPlatformAdapter)) {
+            return registered;
+        }
+        return new GenericPlatformAdapter(platformType, config.getBaseUrl(), config.getApiKey(),
+                config.getModelName(), config.getMaxRetries() == null ? 3 : config.getMaxRetries());
     }
 
     public ChatModel getDefaultChatModel(String platformType) {

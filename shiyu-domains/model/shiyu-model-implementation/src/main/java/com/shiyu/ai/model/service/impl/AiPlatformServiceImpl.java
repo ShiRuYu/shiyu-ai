@@ -7,6 +7,7 @@ import com.shiyu.ai.model.api.request.AiPlatformRequest;
 import com.shiyu.ai.model.api.response.AiPlatformResponse;
 import com.shiyu.ai.model.application.assembler.AiPlatformAssembler;
 import com.shiyu.ai.model.domain.model.AiPlatformBO;
+import com.shiyu.ai.model.domain.model.PlatformAdapterType;
 import com.shiyu.ai.common.core.vo.IdNameOptionVO;
 import jakarta.annotation.Resource;
 import lombok.extern.slf4j.Slf4j;
@@ -84,6 +85,7 @@ public class AiPlatformServiceImpl implements AiPlatformService {
     }
 
     private AiPlatformBO createBO(ActorContext actor, AiPlatformBO bo) {
+        bo.setAdapterType(PlatformAdapterType.parse(bo.getAdapterType()).name());
         if ("Y".equals(bo.getIsDefault())) {
             aiPlatformRepository.clearDefaultExcept(actor.tenantId(), null);
         }
@@ -91,6 +93,15 @@ public class AiPlatformServiceImpl implements AiPlatformService {
     }
 
     private AiPlatformBO updateBO(ActorContext actor, AiPlatformBO bo) {
+        if (StringUtils.isBlank(bo.getAdapterType())) {
+            AiPlatformBO existing = aiPlatformRepository.selectById(actor.tenantId(), bo.getId());
+            if (existing == null) {
+                throw new IllegalArgumentException("平台不存在: " + bo.getId());
+            }
+            bo.setAdapterType(PlatformAdapterType.parse(existing.getAdapterType()).name());
+        } else {
+            bo.setAdapterType(PlatformAdapterType.parse(bo.getAdapterType()).name());
+        }
         if ("Y".equals(bo.getIsDefault())) {
             aiPlatformRepository.clearDefaultExcept(actor.tenantId(), bo.getId());
         }

@@ -26,6 +26,7 @@ INSERT INTO "PUBLIC"."AUTH_MENU" ("ID","NAME","CODE","TYPE","PARENT_ID","TENANT_
 (2071,'模型与 Provider','PlatformModels','MENU',2070,1,'/platform-admin/models',NULL,'lucide:cpu','feature:model.models','模型能力、路由与健康',TRUE,1,1,0,'system',CURRENT_TIMESTAMP,'system',CURRENT_TIMESTAMP),
 (2072,'插件市场','PluginMarket','MENU',2070,1,'/platform-admin/plugins',NULL,'lucide:puzzle','feature:tooling.plugins','签名插件、权限与审计',TRUE,1,2,0,'system',CURRENT_TIMESTAMP,'system',CURRENT_TIMESTAMP),
 (2073,'配额与审计','PlatformQuotas','MENU',2070,1,'/platform-admin/quotas',NULL,'lucide:gauge','feature:governance.quotas','租户配额、用量与审计',TRUE,1,3,0,'system',CURRENT_TIMESTAMP,'system',CURRENT_TIMESTAMP),
+(2074,'平台配置','PlatformProviders','MENU',2070,1,'/platform-admin/platforms',NULL,'lucide:server-cog','feature:model.platforms','平台连接、协议与密钥配置',TRUE,1,4,0,'system',CURRENT_TIMESTAMP,'system',CURRENT_TIMESTAMP),
 (2051,'学习','EducationLearning','MENU',2050,1,'/education-center/learning',NULL,'lucide:book-open','feature:education.learning','课程与学习资源',TRUE,1,1,0,'system',CURRENT_TIMESTAMP,'system',CURRENT_TIMESTAMP),
 (2052,'练习','EducationPractice','MENU',2050,1,'/education-center/practice',NULL,'lucide:clipboard-check','feature:education.practice','题库、错题与考试',TRUE,1,2,0,'system',CURRENT_TIMESTAMP,'system',CURRENT_TIMESTAMP),
 (2053,'AI 辅学','EducationTutor','MENU',2050,1,'/education-center/ai-tutor',NULL,'lucide:sparkles','feature:education.tutor','讲解、出题、规划与报告',TRUE,1,3,0,'system',CURRENT_TIMESTAMP,'system',CURRENT_TIMESTAMP),
@@ -34,8 +35,8 @@ INSERT INTO "PUBLIC"."AUTH_MENU" ("ID","NAME","CODE","TYPE","PARENT_ID","TENANT_
 INSERT INTO "PUBLIC"."AUTH_ROLE_SCOPE_MENU" ("ROLE_ID","MENU_ID","TENANT_ID","STATUS","DEL_FLAG","CREATE_BY","CREATE_TIME","UPDATE_BY","UPDATE_TIME")
 SELECT R."ID", M."ID", 1, 1, 0, 'system', CURRENT_TIMESTAMP, 'system', CURRENT_TIMESTAMP
 FROM "PUBLIC"."AUTH_ROLE" R CROSS JOIN "PUBLIC"."AUTH_MENU" M
-WHERE R."ID" IN (1,2,3) AND M."ID" BETWEEN 2000 AND 2073;
+WHERE R."ID" IN (1,2,3) AND M."ID" BETWEEN 2000 AND 2074;
 
 INSERT INTO "PUBLIC"."AUTH_TENANT_MENU" ("TENANT_ID","MENU_ID","STATUS","CREATE_TIME","UPDATE_TIME")
 SELECT 1, M."ID", 1, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP
-FROM "PUBLIC"."AUTH_MENU" M WHERE M."ID" BETWEEN 2000 AND 2073;
+FROM "PUBLIC"."AUTH_MENU" M WHERE M."ID" BETWEEN 2000 AND 2074;

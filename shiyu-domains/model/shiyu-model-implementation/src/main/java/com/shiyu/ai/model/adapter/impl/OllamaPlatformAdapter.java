@@ -2,6 +2,7 @@ package com.shiyu.ai.model.adapter.impl;
 
 import com.shiyu.ai.model.adapter.AbstractModelAdapter;
 import com.shiyu.ai.model.adapter.config.PlatformConfig;
+import com.shiyu.ai.model.domain.model.PlatformAdapterType;
 import dev.langchain4j.model.chat.ChatModel;
 import dev.langchain4j.model.chat.StreamingChatModel;
 import dev.langchain4j.model.ollama.OllamaChatModel;
@@ -64,6 +65,11 @@ public class OllamaPlatformAdapter extends AbstractModelAdapter {
     @Override
     public boolean isAvailable() {
         return isBaseUrlConfigured(baseUrl);
+    }
+
+    @Override
+    protected boolean validateConfig(PlatformConfig config) {
+        return PlatformAdapterType.OLLAMA == PlatformAdapterType.parse(config.getAdapterType());
     }
 
     @Override
