@@ -1,7 +1,7 @@
 # ShiYu AI Platform
 
 > **A multi-platform AI agent platform** — Built on a custom Agent orchestration engine, empowering rapid business agent development.
-> Currently extended into two business domains: **Record (Personal Timeline & Media)** and **Education (Intelligent Tutoring)**.
+> Current business extension: **Education (Intelligent Tutoring)**. Record is no longer part of the current build.
 
 ---
 
@@ -9,34 +9,14 @@
 
 ShiYu AI is not a single-purpose AI application. It is an **AI agent platform that connects to multiple LLM providers, centers on a customizable Agent engine, and extends into various business directions**.
 
-The root Maven reactor currently contains 19 buildable modules. Version management is centralized in the root POM; the Observation shell is outside the default build, while the Thread module remains active as the Knowledge Worker foundation.
+The Maven reactor contains 32 projects including the root and aggregator POMs. Each of the nine domains has separate Contract and Implementation modules. Versions are managed in the root POM.
 
-```
-                     ┌──────────────────┐
-                     │ Multi-LLM Access │
-                     │ OpenAI / DeepSeek│
-                     │ Ollama / Silicon │
-                     │  Flow / More...  │
-                     └────────┬─────────┘
-                              │ Unified Adapter
-                     ┌────────▼─────────┐
-                     │   Agent Engine   │ ◄── Platform Core
-                     │ Graph · 13 Nodes │
-                     │ Memory · Tools · │
-                     │   RAG · Retry    │
-                     └────────┬─────────┘
-                              │
-              ┌───────────────┼───────────────────┐
-              │               │                   │
-     ┌────────▼──────┐  ┌────▼────┐      ┌──────▼──────┐
-     │  Record       │  │Education│      │   More...    │
-     │  Timeline     │  │  K-12   │      │  Future      │
-     │  Media · Tags │  │  Tutoring│      │  Extensions  │
-     └───────────────┘  └─────────┘      └─────────────┘
-
-         ▲  Platform Infrastructure: Knowledge · Vector Store · Usage
-         │  Memory · Plugins · Tools · MCP · Model Management
-         └────────────────────────────────────────────────┘
+```text
+LLM providers -> Model -> Agent orchestration -> Education
+                           | Knowledge / Memory / Tooling
+Conversation: messages and generation lifecycle
+IAM: users, tenants and permissions
+Governance: usage and quotas
 ```
 
 ---
@@ -45,7 +25,7 @@ The root Maven reactor currently contains 19 buildable modules. Version manageme
 
 Beneath the Agent engine, the platform provides a full suite of infrastructure capabilities that power Agent nodes and business extensions.
 
-### Knowledge Engine (`shiyu-ai-knowledge`)
+### Knowledge Engine (`shiyu-knowledge-implementation`)
 
 All-in-one knowledge service covering document management, RAG retrieval, and knowledge graphs:
 
@@ -56,7 +36,7 @@ All-in-one knowledge service covering document management, RAG retrieval, and kn
 - **Chinese Chunking** — Document splitting strategy optimized for Chinese text
 - **Index Rebuild** — Asynchronous full vector index rebuild support
 
-### Vector Store (`shiyu-ai-vector`)
+### Vector Store (`shiyu-common-vector`)
 
 Backend-neutral `VectorStore` and `VectorStoreProvider` APIs, backed by **JVector (pure Java HNSW)** by default and InMemory for tests and lightweight use cases:
 
@@ -69,7 +49,7 @@ Backend-neutral `VectorStore` and `VectorStoreProvider` APIs, backed by **JVecto
 - **Stable Module Boundary** — Knowledge and Memory depend only on public vector APIs
 - **Pluggable Backends** — ChromaDB or Milvus can be added later as provider adapters
 
-### Conversation and MAGMA Memory (`shiyu-conversation-implementation` / `shiyu-ai-memory`)
+### Conversation and MAGMA Memory (`shiyu-conversation-implementation` / `shiyu-memory-implementation`)
 
 The platform separates raw interaction facts from derived long-term cognition:
 
@@ -78,7 +58,7 @@ The platform separates raw interaction facts from derived long-term cognition:
 - **Single source of truth** — Memory stores extracted events and source references, never a second copy of complete chat messages.
 - **Local baseline** — H2, JVector, local keyword indexes and consolidation jobs; no external graph database, Redis or distributed vector store in the current baseline.
 
-### Tool System — Tool & MCP (`shiyu-ai-tool`)
+### Tool System — Tool & MCP (`shiyu-tooling-implementation`)
 
 Standardized tool invocation service based on the **Spring AI MCP protocol**:
 
@@ -88,7 +68,7 @@ Standardized tool invocation service based on the **Spring AI MCP protocol**:
 - **Dynamic Discovery** — Auto-discover and register tools from MCP servers
 - **Agent Integration** — Agent `TOOL_CALL` nodes directly invoke registered tools
 
-### Model Management (`shiyu-ai-model`)
+### Model Management (`shiyu-model-implementation`)
 
 Unified multi-platform LLM model adaptation and management:
 
@@ -107,7 +87,7 @@ Full-stack usage metering and billing:
 - **Real-time Push** — WebSocket-based live usage data streaming
 - **Multi-dimensional Statistics** — Aggregated by user, tenant, model, time period
 
-### Plugin System (`shiyu-ai-plugin`)
+### Plugin System (`shiyu-tooling-implementation`)
 
 Lightweight plugin extension framework:
 
@@ -169,16 +149,7 @@ Engine capabilities:
 
 ## Business Extensions
 
-### Extension 1: Record — Personal Timeline & Media
-
-A lightweight **personal record and timeline** management system for journaling, note-taking, event archiving, and more.
-
-- **Profiles** — Person/character profile management with member associations
-- **Timeline** — Chronological event recording and timeline display
-- **Media Management** — Image / video / audio attachment upload and management
-- **Tag System** — Flexible classification and filtering with tags
-
-### Extension 2: Education — Intelligent K-12 Tutoring
+### Education — Intelligent K-12 Tutoring
 
 An **AI-powered tutoring system** for K-12 education, covering the full "learn → practice → test → evaluate → recommend" loop.
 
@@ -197,30 +168,29 @@ An **AI-powered tutoring system** for K-12 education, covering the full "learn �
 
 | Module | Responsibility | Category |
 |--------|---------------|----------|
-| `shiyu-ai-education` | **Education Business**: Learn/Practice/Exam/Evaluate/Recommend + education-specific Agents (exam generation / review / report / teaching nodes) | **Business Extension** |
-| `shiyu-ai-record` | **Record Business**: Profiles, Timeline, Media, Tags | **Business Extension** |
+| `shiyu-education-implementation` | **Education Business**: Learn/Practice/Exam/Evaluate/Recommend + education-specific Agents (exam generation / review / report / teaching nodes) | **Business Extension** |
 
 ### ⚙️ Platform Layer (reusable AI capabilities)
 
 | Module | Responsibility | Category |
 |--------|---------------|----------|
-| `shiyu-ai-agent` | **Agent Engine**: Graph orchestration, Node system, Execution lifecycle, Checkpoint, Retry/Timeout | **Platform Core** |
-| `shiyu-ai-auth` | Auth & RBAC: Sa-Token, Multi-tenant | Platform Foundation |
-| `shiyu-ai-model` | Model Management: Multi-platform adapters, Hot reload, Resilience, Embedding | Platform Infrastructure |
-| `shiyu-ai-knowledge` | Knowledge Engine: Document management, RAG retrieval, Knowledge graph, Chunking, Retrieval/Audit/Evaluation | Platform Infrastructure |
-| `shiyu-ai-vector` | Vector Store: JVector HNSW index, Disk persistence, Unified Provider API | Platform Infrastructure |
+| `shiyu-agent-implementation` | **Agent Engine**: Graph orchestration, Node system, Execution lifecycle, Checkpoint, Retry/Timeout | **Platform Core** |
+| `shiyu-iam-implementation` | Auth & RBAC: Sa-Token, Multi-tenant | Platform Foundation |
+| `shiyu-model-implementation` | Model Management: Multi-platform adapters, Hot reload, Resilience, Embedding | Platform Infrastructure |
+| `shiyu-knowledge-implementation` | Knowledge Engine: Document management, RAG retrieval, Knowledge graph, Chunking, Retrieval/Audit/Evaluation | Platform Infrastructure |
+| `shiyu-common-vector` | Vector Store: JVector HNSW index, Disk persistence, Unified Provider API | Platform Infrastructure |
 | `shiyu-conversation-implementation` | Conversation, structured messages, generation lifecycle, SSE resume and Prompt Preview | Conversation domain implementation |
-| `shiyu-ai-memory` | MAGMA-based events, entities, multi-graph relations, governance and explainable retrieval | Platform Infrastructure |
-| `shiyu-ai-tool` | Tool System: MCP protocol, Tool registration/invocation/execution | Platform Infrastructure |
-| `shiyu-ai-plugin` | Plugin System: Lifecycle management, Sandbox isolation, Hot-plug | Platform Infrastructure |
+| `shiyu-memory-implementation` | MAGMA-based events, entities, multi-graph relations, governance and explainable retrieval | Platform Infrastructure |
+| `shiyu-tooling-implementation` | Tool System: MCP protocol, Tool registration/invocation/execution | Platform Infrastructure |
+| `shiyu-tooling-implementation` | Plugin System: Lifecycle management, Sandbox isolation, Hot-plug | Platform Infrastructure |
 | `shiyu-governance-implementation` | Governance and usage: quotas, token metering, real-time push, multi-dimensional aggregation | Domain implementation |
 
 ### 🧱 Infrastructure Layer (technology foundation)
 
 | Module | Responsibility | Category |
 |--------|---------------|----------|
-| `shiyu-common/*` | Common: core (utils/Result/exceptions), web (XSS), mybatis (ORM), thread (pools), storage (file storage) | Infrastructure |
-| `shiyu-common/mybatis` | MyBatis technical support: tenant datasource, interceptors, and common mapper infrastructure | Infrastructure |
+| `infrastructure/shiyu-common/*` | Common: core (utils/Result/exceptions), web (XSS), mybatis (ORM), thread (pools), storage (file storage) | Infrastructure |
+| `shiyu-common-mybatis` | MyBatis technical support: tenant datasource, interceptors, and common mapper infrastructure | Infrastructure |
 | `shiyu-ai-web` | REST adapters: Controllers, DTOs, WebSocket, OpenAPI | Infrastructure |
 | `shiyu-ai-bootstrap` | Application boot entry: logging/observability/data retention | Infrastructure |
 
@@ -379,7 +349,6 @@ Phase 1 (Complete)    Platform Foundation
   └── Multi-tenant RBAC           ✅
 
 Phase 2 (Current)      Business Extensions
-  ├── Record Management           ✅ Launched
   ├── Education Tutoring          ✅ Launched
   └── More directions...          🔜 Upcoming
 

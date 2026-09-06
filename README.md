@@ -1,7 +1,7 @@
 # ShiYu AI · 拾羽 AI
 
 > **多平台可接入的 AI 智能体平台** — 以自定义 Agent 编排引擎为基石，快速构建业务智能体。
-> 当前已扩展：**Record（记录管理）** 与 **Education（智能教育）** 两大业务方向。
+> 当前业务扩展：**Education（智能教育）**；Record 已退出当前构建。
 
 ---
 
@@ -9,33 +9,14 @@
 
 拾羽 AI（ShiYu AI）不是一个单一功能的 AI 应用，而是一个**可接入多 LLM 平台、以自定义 Agent 为核心、向多个业务方向扩展**的 AI 智能体平台。
 
-当前根 Maven reactor 包含 19 个实际构建模块。版本管理已收敛到根 POM；Observation 空壳不再进入默认构建，Thread 模块作为 Knowledge Worker 的基础设施继续保留。
+当前 Maven reactor 包含 32 个项目（含根项目及聚合 POM），其中 9 个业务域分别拆分为 Contract 和 Implementation。版本统一由根 POM 管理。
 
-```
-                     ┌──────────────────┐
-                     │  多 LLM 平台接入    │
-                     │ OpenAI / DeepSeek  │
-                     │  Ollama / Silicon  │
-                     │   Flow / 更多...   │
-                     └────────┬─────────┘
-                              │ 统一适配层
-                     ┌────────▼─────────┐
-                     │    Agent 引擎     │ ◄── 平台核心
-                     │ 图编排 · 13 种节点 │
-                     │ 记忆 · 工具 · RAG │
-                     └────────┬─────────┘
-                              │
-              ┌───────────────┼───────────────────┐
-              │               │                   │
-     ┌────────▼──────┐  ┌────▼────┐      ┌──────▼──────┐
-     │  Record       │  │Education│      │   更多...     │
-     │  记录管理      │  │ 智能教育  │      │  待扩展...    │
-     │  时间线·媒体   │  │ 学练测评  │      │              │
-     └───────────────┘  └─────────┘      └─────────────┘
-
-            ▲  平台基础设施：知识库 · 向量存储 · 用量计量
-            │  记忆系统 · 插件 · 工具 · MCP · 模型管理
-            └────────────────────────────────────────┘
+```text
+模型平台 -> Model -> Agent 编排 -> Education
+                       | Knowledge / Memory / Tooling
+Conversation：消息与生成生命周期
+IAM：用户、租户与权限
+Governance：用量与配额
 ```
 
 ---
@@ -44,7 +25,7 @@
 
 平台在 Agent 引擎之下，提供了一整套基础设施能力，为 Agent 节点和业务扩展赋能。
 
-### 知识引擎 — Knowledge Engine (`shiyu-ai-knowledge`)
+### 知识引擎 — Knowledge Engine (`shiyu-knowledge-implementation`)
 
 涵盖文档管理、RAG 检索、知识图谱的一站式知识服务：
 
@@ -55,7 +36,7 @@
 - **中文分块** — 针对中文优化的文档分块策略
 - **索引重建** — 支持异步全量重建向量索引
 
-### 向量存储 — Vector Store (`shiyu-ai-vector`)
+### 向量存储 — Vector Store (`shiyu-common-vector`)
 
 提供与具体后端解耦的 `VectorStore` / `VectorStoreProvider` 公共接口，默认使用 **JVector（纯 Java HNSW）**，测试和轻量场景可使用 InMemory：
 
@@ -68,7 +49,7 @@
 - **统一边界** — Knowledge 与 Memory 仅依赖公共接口，不直接实例化 JVector
 - **可替换后端** — 后续接入 ChromaDB、Milvus 时新增 Provider 适配器即可
 
-### Conversation 与 MAGMA Memory (`shiyu-conversation-implementation` / `shiyu-ai-memory`)
+### Conversation 与 MAGMA Memory (`shiyu-conversation-implementation` / `shiyu-memory-implementation`)
 
 平台将原始交互和派生记忆明确分离：
 
@@ -77,7 +58,7 @@
 - **单一事实源** — Memory 不复制完整聊天，只引用来源消息；流式草稿、取消和生成状态只属于 Conversation/Runtime。
 - **单机基线** — 当前使用 H2、JVector、本地关键词索引和本地 consolidation job，不引入外部图数据库、Redis 或分布式向量库。
 
-### 工具体系 — Tool & MCP (`shiyu-ai-tool`)
+### 工具体系 — Tool & MCP (`shiyu-tooling-implementation`)
 
 基于 **Spring AI MCP 协议**的标准化工具调用服务：
 
@@ -87,7 +68,7 @@
 - **动态发现** — 自动发现并注册 MCP 服务器提供的工具
 - **与 Agent 打通** — Agent 的 `TOOL_CALL` 节点直接调用注册的工具
 
-### 模型管理 — Model Management (`shiyu-ai-model`)
+### 模型管理 — Model Management (`shiyu-model-implementation`)
 
 统一的多平台 LLM 模型适配与管理：
 
@@ -106,7 +87,7 @@
 - **实时推送** — WebSocket 实时推送用量数据
 - **多维统计** — 按用户、租户、模型、时间段聚合
 
-### 插件体系 — Plugin System (`shiyu-ai-plugin`)
+### 插件体系 — Plugin System (`shiyu-tooling-implementation`)
 
 轻量级插件扩展框架：
 
@@ -168,16 +149,7 @@
 
 ## 业务扩展
 
-### 扩展一：Record（记录管理）
-
-一个轻量级的**个人记录与时间线**管理系统，适用于日记、笔记、事件归档等场景。
-
-- **人物档案** — 档案管理，支持成员关联
-- **时间线** — 按时间轴记录和展示事件
-- **多媒体管理** — 图片 / 视频 / 音频附件的上传与管理
-- **标签系统** — 灵活的标签分类与筛选
-
-### 扩展二：Education（智能教育）
+### Education（智能教育）
 
 面向 K12 教育场景的 **AI 智能辅导**系统，覆盖"学、练、测、评、荐"全链路。
 
@@ -196,30 +168,29 @@
 
 | 模块 | 职责 | 类型 |
 |------|------|------|
-| `shiyu-ai-education` | **智能教育业务**：学练测评荐全链路 + 教育专用 Agent（组卷/复习/学情报告/教学节点） | **业务扩展** |
-| `shiyu-ai-record` | **记录管理业务**：人物档案、时间线、多媒体、标签 | **业务扩展** |
+| `shiyu-education-implementation` | **智能教育业务**：学练测评荐全链路 + 教育专用 Agent（组卷/复习/学情报告/教学节点） | **业务扩展** |
 
 ### ⚙️ 平台层（可复用的 AI 能力）
 
 | 模块 | 职责 | 类型 |
 |------|------|------|
-| `shiyu-ai-agent` | **Agent 引擎**：图编排、节点系统、执行生命周期、检查点、重试/超时 | **平台核心** |
-| `shiyu-ai-auth` | 认证授权：Sa-Token、多租户 RBAC | 平台基础 |
-| `shiyu-ai-model` | 模型管理：多平台适配器、热更新、熔断降级、嵌入模型 | 平台基础设施 |
-| `shiyu-ai-knowledge` | 知识引擎：文档管理、RAG 检索、知识图谱、中文分块、检索/审计/评测 | 平台基础设施 |
-| `shiyu-ai-vector` | 向量存储：JVector HNSW 索引、磁盘持久化、统一 Provider API | 平台基础设施 |
+| `shiyu-agent-implementation` | **Agent 引擎**：图编排、节点系统、执行生命周期、检查点、重试/超时 | **平台核心** |
+| `shiyu-iam-implementation` | 认证授权：Sa-Token、多租户 RBAC | 平台基础 |
+| `shiyu-model-implementation` | 模型管理：多平台适配器、热更新、熔断降级、嵌入模型 | 平台基础设施 |
+| `shiyu-knowledge-implementation` | 知识引擎：文档管理、RAG 检索、知识图谱、中文分块、检索/审计/评测 | 平台基础设施 |
+| `shiyu-common-vector` | 向量存储：JVector HNSW 索引、磁盘持久化、统一 Provider API | 平台基础设施 |
 | `shiyu-conversation-implementation` | 原始会话、消息树、生成生命周期、SSE 续传和 Prompt Preview | Conversation 领域实现 |
-| `shiyu-ai-memory` | MAGMA-based 事件、实体、多图关系、治理和可解释检索 | 平台基础设施 |
-| `shiyu-ai-tool` | 工具体系：MCP 协议集成、工具注册/调用/执行 | 平台基础设施 |
-| `shiyu-ai-plugin` | 插件体系：生命周期管理、沙箱隔离、动态热插拔 | 平台基础设施 |
+| `shiyu-memory-implementation` | MAGMA-based 事件、实体、多图关系、治理和可解释检索 | 平台基础设施 |
+| `shiyu-tooling-implementation` | 工具体系：MCP 协议集成、工具注册/调用/执行 | 平台基础设施 |
+| `shiyu-tooling-implementation` | 插件体系：生命周期管理、沙箱隔离、动态热插拔 | 平台基础设施 |
 | `shiyu-governance-implementation` | 治理与用量计量：配额、Token 统计、实时推送、多维聚合 | 领域实现 |
 
 ### 🧱 基础设施层（纯技术底座）
 
 | 模块 | 职责 | 类型 |
 |------|------|------|
-| `shiyu-common/*` | 公共基础：core（工具/Result/异常）、web（XSS）、mybatis（ORM 封装）、thread（线程池）、storage（文件存储） | 基础设施 |
-| `shiyu-common/mybatis` | MyBatis 技术支持：租户数据源、拦截器与通用 Mapper 基础设施 | 基础设施 |
+| `infrastructure/shiyu-common/*` | 公共基础：core（工具/Result/异常）、web（XSS）、mybatis（ORM 封装）、thread（线程池）、storage（文件存储） | 基础设施 |
+| `shiyu-common-mybatis` | MyBatis 技术支持：租户数据源、拦截器与通用 Mapper 基础设施 | 基础设施 |
 | `shiyu-ai-web` | REST 接入层：Controller、DTO、WebSocket、OpenAPI | 基础设施 |
 | `shiyu-ai-bootstrap` | 应用启动入口：日志/可观测/数据保留装配 | 基础设施 |
 
@@ -373,7 +344,6 @@ Linux 使用对应的 `scripts/package-cloud-linux.sh` 和
   └── 多租户 RBAC 权限     ✅
 
 第二阶段（当前）    业务方向扩展
-  ├── Record 记录管理     ✅ 已上线
   ├── Education 智能教育  ✅ 已上线
   └── 更多业务方向...     🔜 待扩展
 
