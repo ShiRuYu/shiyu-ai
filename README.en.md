@@ -9,7 +9,7 @@
 
 ShiYu AI is not a single-purpose AI application. It is an **AI agent platform that connects to multiple LLM providers, centers on a customizable Agent engine, and extends into various business directions**.
 
-The Maven reactor contains 32 projects including the root and aggregator POMs. Each of the nine domains has separate Contract and Implementation modules. Versions are managed in the root POM.
+The Maven reactor contains 30 projects: the root POM and 29 leaf modules. Each of the nine domains has separate Contract and Implementation modules. Versions are managed in the root POM.
 
 ```text
 LLM providers -> Model -> Agent orchestration -> Education
@@ -189,7 +189,7 @@ An **AI-powered tutoring system** for K-12 education, covering the full "learn â
 
 | Module | Responsibility | Category |
 |--------|---------------|----------|
-| `infrastructure/shiyu-common/*` | Common: core (utils/Result/exceptions), web (XSS), mybatis (ORM), thread (pools), storage (file storage) | Infrastructure |
+| `modules/infrastructure/*` | Common: core (utils/Result/exceptions), web (XSS), mybatis (ORM), thread (pools), storage (file storage) | Infrastructure |
 | `shiyu-common-mybatis` | MyBatis technical support: tenant datasource, interceptors, and common mapper infrastructure | Infrastructure |
 | `shiyu-ai-web` | REST adapters: Controllers, DTOs, WebSocket, OpenAPI | Infrastructure |
 | `shiyu-ai-bootstrap` | Application boot entry: logging/observability/data retention | Infrastructure |
@@ -234,7 +234,7 @@ mvn clean install -DskipTests
 
 ### Configure an LLM Platform
 
-Edit `infrastructure/shiyu-ai-bootstrap/src/main/resources/application.yml` and configure at least one platform:
+Edit `modules/application/shiyu-ai-bootstrap/src/main/resources/application.yml` and configure at least one platform:
 
 ```yaml
 shiyu:
@@ -251,13 +251,13 @@ shiyu:
 ### Start
 
 ```bash
-cd infrastructure/shiyu-ai-bootstrap
+cd modules/application/shiyu-ai-bootstrap
 mvn spring-boot:run -Dspring-boot.run.profiles=dev
 ```
 
 #### Maven profiles (optional capability switches)
 
-`infrastructure/shiyu-ai-bootstrap/pom.xml` defines three optional Maven profiles
+`modules/application/shiyu-ai-bootstrap/pom.xml` defines three optional Maven profiles
 that load dependencies on demand (excluded from production packages by default):
 
 | Profile | Dependencies added | Purpose |
@@ -270,7 +270,7 @@ Activation examples:
 
 ```bash
 # Package with observability enabled
-mvn -Pobservability -pl infrastructure/shiyu-ai-bootstrap -am -DskipTests package
+mvn -Pobservability -pl modules/application/shiyu-ai-bootstrap -am -DskipTests package
 # Run with several profiles at once
 mvn -Pobservability,api-docs-ui,s3 spring-boot:run
 ```

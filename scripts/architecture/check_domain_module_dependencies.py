@@ -15,9 +15,9 @@ from pathlib import Path
 
 
 ROOT = Path(__file__).resolve().parents[2]
-DOMAINS = ROOT / "shiyu-domains"
-APPLICATION = ROOT / "application"
-WEB_POM = ROOT / "infrastructure" / "shiyu-ai-web" / "pom.xml"
+DOMAINS = ROOT / "modules/domains"
+APPLICATION = ROOT / "modules/application"
+WEB_POM = ROOT / "modules/application" / "shiyu-ai-web" / "pom.xml"
 NS = {"m": "http://maven.apache.org/POM/4.0.0"}
 
 

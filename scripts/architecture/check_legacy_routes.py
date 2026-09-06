@@ -14,8 +14,8 @@ from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[2]
 WEB_SOURCES = (
-    ROOT / "infrastructure" / "shiyu-ai-web" / "src" / "main" / "java",
-    ROOT / "shiyu-domains",
+    ROOT / "modules/application" / "shiyu-ai-web" / "src" / "main" / "java",
+    ROOT / "modules/domains",
 )
 MAPPING = re.compile(
     r"@(RequestMapping|GetMapping|PostMapping|PutMapping|DeleteMapping|PatchMapping)"

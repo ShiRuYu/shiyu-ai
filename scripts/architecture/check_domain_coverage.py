@@ -66,7 +66,7 @@ def coverage(report: Path, source_root: Path, counter_type: str) -> float:
 def implementation_modules(root: Path) -> list[Path]:
     return sorted(
         module
-        for module in (root / "shiyu-domains").glob("*/*-implementation")
+        for module in (root / "modules/domains").glob("*/*-implementation")
         if (module / "src" / "main" / "java").is_dir()
     )
 

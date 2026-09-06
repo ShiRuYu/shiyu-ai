@@ -9,7 +9,7 @@
 
 拾羽 AI（ShiYu AI）不是一个单一功能的 AI 应用，而是一个**可接入多 LLM 平台、以自定义 Agent 为核心、向多个业务方向扩展**的 AI 智能体平台。
 
-当前 Maven reactor 包含 32 个项目（含根项目及聚合 POM），其中 9 个业务域分别拆分为 Contract 和 Implementation。版本统一由根 POM 管理。
+当前 Maven reactor 包含 30 个项目（根 POM 和 29 个叶子模块），其中 9 个业务域分别拆分为 Contract 和 Implementation。版本统一由根 POM 管理。
 
 ```text
 模型平台 -> Model -> Agent 编排 -> Education
@@ -189,7 +189,7 @@ Governance：用量与配额
 
 | 模块 | 职责 | 类型 |
 |------|------|------|
-| `infrastructure/shiyu-common/*` | 公共基础：core（工具/Result/异常）、web（XSS）、mybatis（ORM 封装）、thread（线程池）、storage（文件存储） | 基础设施 |
+| `modules/infrastructure/*` | 公共基础：core（工具/Result/异常）、web（XSS）、mybatis（ORM 封装）、thread（线程池）、storage（文件存储） | 基础设施 |
 | `shiyu-common-mybatis` | MyBatis 技术支持：租户数据源、拦截器与通用 Mapper 基础设施 | 基础设施 |
 | `shiyu-ai-web` | REST 接入层：Controller、DTO、WebSocket、OpenAPI | 基础设施 |
 | `shiyu-ai-bootstrap` | 应用启动入口：日志/可观测/数据保留装配 | 基础设施 |
@@ -234,7 +234,7 @@ mvn clean install -DskipTests
 
 ### 配置 AI 平台
 
-编辑 `infrastructure/shiyu-ai-bootstrap/src/main/resources/application.yml`，配置至少一个 LLM 平台：
+编辑 `modules/application/shiyu-ai-bootstrap/src/main/resources/application.yml`，配置至少一个 LLM 平台：
 
 ```yaml
 shiyu:
@@ -252,15 +252,15 @@ shiyu:
 
 ```bash
 cd shiyu-ai
-mvn -pl infrastructure/shiyu-ai-bootstrap -am -DskipTests package
-java -jar infrastructure/shiyu-ai-bootstrap/target/shiyu-ai-bootstrap-1.0.0.jar --spring.profiles.active=dev
+mvn -pl modules/application/shiyu-ai-bootstrap -am -DskipTests package
+java -jar modules/application/shiyu-ai-bootstrap/target/shiyu-ai-bootstrap-1.0.0.jar --spring.profiles.active=dev
 ```
 
 从 bootstrap 子目录直接执行 `spring-boot:run` 可能加载本机 Maven 仓库中的旧模块包；开发环境应先从根目录构建 reactor，确保运行的是当前源码。
 
 #### Maven Profile（可选能力开关）
 
-`infrastructure/shiyu-ai-bootstrap/pom.xml` 定义了 3 个可选 Maven profile，用于按需加载依赖（生产包默认不启用）：
+`modules/application/shiyu-ai-bootstrap/pom.xml` 定义了 3 个可选 Maven profile，用于按需加载依赖（生产包默认不启用）：
 
 | Profile | 添加的依赖 | 用途 |
 |---------|------------|------|
@@ -272,7 +272,7 @@ java -jar infrastructure/shiyu-ai-bootstrap/target/shiyu-ai-bootstrap-1.0.0.jar 
 
 ```bash
 # 打包时启用观测
-mvn -Pobservability -pl infrastructure/shiyu-ai-bootstrap -am -DskipTests package
+mvn -Pobservability -pl modules/application/shiyu-ai-bootstrap -am -DskipTests package
 # 运行时可同时启用多个
 mvn -Pobservability,api-docs-ui,s3 spring-boot:run
 ```

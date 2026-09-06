@@ -18,9 +18,23 @@ NS = {"m": "http://maven.apache.org/POM/4.0.0"}
 
 def main() -> int:
     violations: list[str] = []
+    root_model = ET.parse(ROOT / "pom.xml")
+    declared = {node.text.strip() for node in root_model.findall("m:modules/m:module", NS)}
+    actual = {pom.parent.relative_to(ROOT).as_posix() for base in (ROOT / "modules", ROOT / "tests") for pom in base.rglob("pom.xml") if "target" not in pom.parts}
+    if declared != actual:
+        violations.append(f"Root reactor mismatch: missing={sorted(actual - declared)}, unexpected={sorted(declared - actual)}")
+    if not actual:
+        violations.append("No leaf modules found under modules/ or tests/")
     for pom in sorted(ROOT.rglob("pom.xml")):
         if "target" in pom.parts:
             continue
+        model = ET.parse(pom)
+        if pom != ROOT / "pom.xml":
+            if model.find("m:modules", NS) is not None or model.findtext("m:packaging", default="jar", namespaces=NS) == "pom":
+                violations.append(f"{pom.relative_to(ROOT)}: only root may aggregate modules")
+            parent = model.findtext("m:parent/m:relativePath", default="", namespaces=NS)
+            if (pom.parent / parent).resolve() != ROOT / "pom.xml":
+                violations.append(f"{pom.relative_to(ROOT)}: leaf must inherit root POM")
         artifact_id = (ET.parse(pom).findtext("m:artifactId", default="", namespaces=NS) or "").strip()
         if not artifact_id:
             continue

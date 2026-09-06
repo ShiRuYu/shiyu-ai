@@ -16,10 +16,10 @@ from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[2]
 SOURCE_ROOTS = (
-    ROOT / "shiyu-domains",
-    ROOT / "application",
-    ROOT / "infrastructure",
-    ROOT / "shared",
+    ROOT / "modules/domains",
+    ROOT / "modules/application",
+    ROOT / "modules/infrastructure",
+    ROOT / "modules/shared",
 )
 IDENTIFIER = re.compile(r"\b[A-Za-z_$][A-Za-z0-9_$]*workspace[A-Za-z0-9_$]*\b", re.IGNORECASE)
 SQL_IDENTIFIER = re.compile(r"\b[A-Za-z_$][A-Za-z0-9_$]*Workspace[A-Za-z0-9_$]*\b")
