@@ -93,11 +93,14 @@ class GenerationControllerRuntimeTest {
         when(runtime.requireGenerationRun("g1", new TenantId(7), 8)).thenReturn(run);
         when(runtime.events(eq("r1"), eq(new TenantId(7L)), eq(8L), anyLong(), eq(1000)))
                 .thenReturn(List.of(), List.of(terminal));
-        var result = controller.stream("g1", -1, true, 1000, null)
-                .take(2).collectList().block(Duration.ofSeconds(3));
+        var stream = controller.stream("g1", -1, true, 2000, null);
+        UserContextHolder.clearContext();
+        var result = stream.collectList().block(Duration.ofSeconds(3));
         assertNotNull(result);
         assertEquals(2, result.size());
-        assertTrue(result.getFirst().data() == null || result.get(1).data().type() == GenerationEventType.FAILED);
+        assertNull(result.getFirst().data());
+        assertEquals(GenerationEventType.FAILED, result.get(1).data().type());
+        verify(runtime, times(2)).events(eq("r1"), eq(new TenantId(7)), eq(8L), anyLong(), eq(1000));
     }
 
     @Test

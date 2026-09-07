@@ -11,6 +11,7 @@ import com.shiyu.ai.knowledge.port.repository.KnowledgeDocumentRepository;
 import com.shiyu.ai.knowledge.port.repository.KnowledgeEnterpriseRepository;
 import com.shiyu.ai.knowledge.rag.DocumentIngestionService;
 import com.shiyu.ai.kernel.context.TenantId;
+import com.shiyu.ai.kernel.context.TenantScope;
 import org.junit.jupiter.api.Test;
 
 import java.io.ByteArrayInputStream;
@@ -28,6 +29,36 @@ import static org.mockito.Mockito.*;
 
 class EmbeddedIngestionWorkerTest {
     @Test
+    void bindsJobTenantAndReleasesCapacityWhenInitialLookupFails() throws Exception {
+        KnowledgeEnterpriseRepository enterprise = mock(KnowledgeEnterpriseRepository.class);
+        EmbeddedIngestionWorker worker = worker(enterprise, mock(KnowledgeDocumentRepository.class),
+                mock(DocumentIngestionService.class), mock(ObjectStorage.class),
+                mock(ContentSecurityScanner.class), List.of(), mock(ScheduledExecutorService.class),
+                mock(ThreadPoolManager.class));
+        Set<Long> inFlight = new java.util.HashSet<>(Set.of(17L));
+        set(worker, "inFlight", inFlight);
+        when(enterprise.findJob(new TenantId(10L), 17L)).thenAnswer(invocation -> {
+            assertEquals(new TenantId(10L), TenantScope.require());
+            throw new IllegalStateException("database unavailable");
+        });
+        TenantScope.set(new TenantId(99L));
+        try {
+            Exception failure = assertThrows(Exception.class, () -> invokeExecute(worker, new TenantId(10L), 17L));
+            assertEquals("database unavailable", failure.getCause().getMessage());
+            assertEquals(new TenantId(99L), TenantScope.require());
+            assertFalse(inFlight.contains(17L));
+        } finally {
+            TenantScope.clear();
+        }
+        when(enterprise.findJob(new TenantId(10L), 18L)).thenAnswer(invocation -> {
+            assertEquals(new TenantId(10L), TenantScope.require());
+            return null;
+        });
+        invokeExecute(worker, new TenantId(10L), 18L);
+        assertTrue(TenantScope.current().isEmpty());
+    }
+
+    @Test
     void initializesRecoversStaleJobsAndPollsPendingJobs() throws Exception {
         KnowledgeEnterpriseRepository enterprise = mock(KnowledgeEnterpriseRepository.class);
         KnowledgeDocumentRepository documents = mock(KnowledgeDocumentRepository.class);
@@ -42,7 +73,12 @@ class EmbeddedIngestionWorkerTest {
                 mock(ObjectStorage.class), mock(ContentSecurityScanner.class), List.of(), scheduler, pools);
         set(worker, "concurrency", 2);
         set(worker, "pollDelayMs", 0L);
+        doAnswer(invocation -> {
+            assertEquals(new TenantId(10L), TenantScope.require());
+            return null;
+        }).when(enterprise).updateJob(new TenantId(10L), stale);
         worker.initialize();
+        assertTrue(TenantScope.current().isEmpty());
         assertEquals("PENDING", stale.getJobStatus());
         assertEquals("RECOVERED", stale.getStage());
         verify(enterprise).updateJob(new TenantId(10L), stale);

@@ -12,6 +12,7 @@ import com.shiyu.ai.common.storage.ObjectStorage;
 import com.shiyu.ai.common.thread.api.ThreadPoolManager;
 import com.shiyu.ai.kernel.context.ActorContext;
 import com.shiyu.ai.kernel.context.TenantId;
+import com.shiyu.ai.kernel.context.TenantScope;
 import com.shiyu.ai.kernel.context.UserId;
 import jakarta.annotation.PostConstruct;
 import jakarta.annotation.PreDestroy;
@@ -88,7 +89,10 @@ public class EmbeddedIngestionWorker {
             job.setJobStatus("PENDING");
             job.setStage("RECOVERED");
             job.setErrorMessage("应用重启后恢复");
-            enterpriseRepository.updateJob(jobTenant(job), job);
+            TenantScope.withTenant(jobTenant(job), () -> {
+                enterpriseRepository.updateJob(jobTenant(job), job);
+                return null;
+            });
         }
         pollingTask = scheduler.scheduleWithFixedDelay(this::safePoll, Math.max(100, pollDelayMs),
                 Math.max(100, pollDelayMs), TimeUnit.MILLISECONDS);
@@ -118,11 +122,21 @@ public class EmbeddedIngestionWorker {
     }
 
     private void execute(TenantId tenantId, Long jobId) {
-        KnowledgeIngestionJobBO job = enterpriseRepository.findJob(tenantId, jobId);
-        if (job == null) {
+        // The scheduled worker is an inbound adapter, just like the HTTP edge.
+        // Bind from the persisted job rather than an unrelated request thread.
+        try {
+            TenantScope.withTenant(tenantId, () -> {
+                executeInTenant(tenantId, jobId);
+                return null;
+            });
+        } finally {
             inFlight.remove(jobId);
-            return;
         }
+    }
+
+    private void executeInTenant(TenantId tenantId, Long jobId) {
+        KnowledgeIngestionJobBO job = enterpriseRepository.findJob(tenantId, jobId);
+        if (job == null) return;
         try {
             job = markRunning(tenantId, job);
             if (job == null) return;
@@ -192,8 +206,6 @@ public class EmbeddedIngestionWorker {
             enterpriseRepository.updateJob(tenantId, job);
         } catch (Exception exception) {
             fail(tenantId, job, exception);
-        } finally {
-            inFlight.remove(jobId);
         }
     }
 

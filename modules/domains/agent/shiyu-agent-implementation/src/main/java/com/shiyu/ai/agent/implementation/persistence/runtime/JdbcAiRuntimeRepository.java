@@ -19,7 +19,7 @@ public class JdbcAiRuntimeRepository implements AiRunRepository {
     private final JdbcTemplate jdbc;
     public JdbcAiRuntimeRepository(JdbcTemplate jdbc) { this.jdbc = jdbc; }
     @Override public void insert(AiRun r) {
-        jdbc.update("INSERT INTO AI_RUN (ID,TENANT_ID,OWNER_USER_ID,APP_ID,APP_VERSION_ID,SOURCE_TYPE,SOURCE_ID,PARENT_RUN_ID,TRACE_ID,CONVERSATION_ID,GENERATION_ID,EXECUTION_ID,MODEL,PROMPT_HASH,STATUS,PROMPT_TOKENS,COMPLETION_TOKENS,ESTIMATED_USAGE,COST_SNAPSHOT,CREATED_AT,COMPLETED_AT,ERROR_CODE,LAST_EVENT_SEQ,VERSION) VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)",
+        jdbc.update("INSERT INTO AI_RUN (ID,TENANT_ID,OWNER_USER_ID,APP_ID,APP_VERSION_ID,SOURCE_TYPE,SOURCE_ID,PARENT_RUN_ID,TRACE_ID,CONVERSATION_ID,GENERATION_ID,EXECUTION_ID,MODEL,PROMPT_HASH,STATUS,PROMPT_TOKENS,COMPLETION_TOKENS,ESTIMATED_USAGE,COST_SNAPSHOT,CREATED_AT,COMPLETED_AT,ERROR_CODE,LAST_EVENT_SEQ,VERSION) VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)",
                 r.id(),r.tenantId().value(),r.ownerUserId().value(),r.appId(),r.appVersionId(),r.sourceType().name(),r.sourceId(),r.parentRunId(),r.traceId(),r.conversationId(),r.generationId(),r.executionId(),r.model(),r.promptHash(),r.status().name(),r.promptTokens(),r.completionTokens(),r.estimatedUsage(),r.costSnapshot(),Timestamp.from(r.createdAt()),r.completedAt()==null?null:Timestamp.from(r.completedAt()),r.errorCode(),0L,r.version());
     }
     @Override public Optional<AiRun> find(String id,TenantId tenant,long owner) { return jdbc.query("SELECT * FROM AI_RUN WHERE ID=? AND TENANT_ID=? AND OWNER_USER_ID=?", rs -> rs.next()?Optional.of(mapRun(rs)):Optional.empty(), id,tenant(tenant),owner); }

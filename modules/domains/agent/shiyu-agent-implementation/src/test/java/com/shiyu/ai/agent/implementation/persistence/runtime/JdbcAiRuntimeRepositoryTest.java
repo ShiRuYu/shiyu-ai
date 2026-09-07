@@ -23,6 +23,25 @@ import static org.mockito.Mockito.*;
 
 @SuppressWarnings({"rawtypes", "unchecked"})
 class JdbcAiRuntimeRepositoryTest {
+    @Test
+    void roundTripsRunThroughRealDatabaseWithTenantIsolation() {
+        var database = new org.springframework.jdbc.datasource.embedded.EmbeddedDatabaseBuilder()
+                .generateUniqueName(true)
+                .setType(org.springframework.jdbc.datasource.embedded.EmbeddedDatabaseType.H2)
+                .addScript("db/baseline/h2/schema/agent/16_ai_runtime.sql")
+                .build();
+        try {
+            var realRepository = new JdbcAiRuntimeRepository(new JdbcTemplate(database));
+            AiRun expected = run(AiRunStatus.RUNNING);
+            realRepository.insert(expected);
+            assertEquals(expected, realRepository.findByGeneration("generation", new TenantId(7), 9).orElseThrow());
+            assertTrue(realRepository.findByGeneration("generation", new TenantId(8), 9).isEmpty());
+            assertTrue(realRepository.findByGeneration("generation", new TenantId(7), 10).isEmpty());
+        } finally {
+            database.shutdown();
+        }
+    }
+
     private final JdbcTemplate jdbc = mock(JdbcTemplate.class);
     private final JdbcAiRuntimeRepository repository = new JdbcAiRuntimeRepository(jdbc);
     private final Instant now = Instant.parse("2025-01-01T00:00:00Z");

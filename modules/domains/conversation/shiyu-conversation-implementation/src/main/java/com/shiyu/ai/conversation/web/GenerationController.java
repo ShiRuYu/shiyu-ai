@@ -47,15 +47,18 @@ public class GenerationController {
     }
 
     private Flux<ServerSentEvent<GenerationEvent>> runtimeEventStream(AiRun run, long afterSeq, boolean follow, int waitMs) {
+        // Capture the authenticated caller before polling moves to a Reactor thread.
+        TenantId tenantId = tenant();
+        long ownerUserId = user();
         if (!follow) {
-            return Flux.fromIterable(runtime.events(run.id(), tenant(), user(), afterSeq, 1000))
+            return Flux.fromIterable(runtime.events(run.id(), tenantId, ownerUserId, afterSeq, 1000))
                     .map(this::projectRuntimeEvent)
                     .map(this::sse);
         }
         AtomicLong cursor = new AtomicLong(Math.max(-1, afterSeq));
         return Flux.interval(Duration.ZERO, Duration.ofMillis(500))
                 .concatMap(tick -> Flux.defer(() -> {
-                    List<com.shiyu.ai.runtime.AiRunEvent> events = runtime.events(run.id(), tenant(), user(), cursor.get(), 1000);
+                    List<com.shiyu.ai.runtime.AiRunEvent> events = runtime.events(run.id(), tenantId, ownerUserId, cursor.get(), 1000);
                     if (events.isEmpty()) return Flux.just(ServerSentEvent.<GenerationEvent>builder().comment("heartbeat").build());
                     return Flux.fromIterable(events).map(event -> {
                         cursor.accumulateAndGet(event.seq(), Math::max);
