@@ -20,6 +20,27 @@ import static org.mockito.Mockito.*;
 
 class ModelManagerTest {
     @Test
+    void refreshesDedicatedDeepSeekProviderFromDatabase() {
+        AiPlatformRepository platforms = mock(AiPlatformRepository.class);
+        AiModelRepository models = mock(AiModelRepository.class);
+        PlatformProperties props = new PlatformProperties();
+        props.setTenantId(9L);
+        props.init();
+        AiPlatformBO platform = new AiPlatformBO();
+        platform.setId(2L);
+        platform.setCode("DEEPSEEK");
+        platform.setBaseUrl("https://api.deepseek.com");
+        platform.setApiKey("test-only-key");
+        when(platforms.selectAllEnabled(new TenantId(9))).thenReturn(List.of(platform));
+        ModelManager manager = new ModelManager(platforms, models, props);
+        manager.reloadFromDb();
+        assertTrue(manager.getDeepSeekProvider().isAvailable());
+        platform.setApiKey("");
+        manager.markDirty();
+        assertFalse(manager.getDeepSeekProvider().isAvailable());
+    }
+
+    @Test
     void loadsDatabaseAdaptersAndRoutesByModel() {
         AiPlatformRepository platforms = mock(AiPlatformRepository.class); AiModelRepository models = mock(AiModelRepository.class);
         PlatformProperties props = new PlatformProperties(); props.setTenantId(9L); props.getOpenai().setApiKey("key"); props.init();

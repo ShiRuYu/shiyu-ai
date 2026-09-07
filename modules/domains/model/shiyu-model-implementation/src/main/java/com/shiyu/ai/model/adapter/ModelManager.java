@@ -36,7 +36,7 @@ public class ModelManager implements ApplicationRunner, ModelRoutingPort {
     private final AiPlatformRepository platformRepository;
     private final AiModelRepository modelRepository;
     private final PlatformProperties platformProperties;
-    private final DeepSeekHttpProvider deepSeekProvider;
+    private volatile DeepSeekHttpProvider deepSeekProvider;
 
     public ModelManager(AiPlatformRepository platformRepository,
                         AiModelRepository modelRepository,
@@ -60,6 +60,9 @@ public class ModelManager implements ApplicationRunner, ModelRoutingPort {
 
         adapterMap.values().forEach(ModelAdapter::clearCache);
         adapterMap.clear();
+        // Do not retain credentials from a platform removed or disabled in the database.
+        deepSeekProvider = new DeepSeekHttpProvider(platformProperties.getDeepseek().getBaseUrl(),
+                "", platformProperties.getDeepseek().getModel());
 
         try {
             TenantId tenantId = configuredTenant();
@@ -127,6 +130,11 @@ public class ModelManager implements ApplicationRunner, ModelRoutingPort {
             return new OllamaPlatformAdapter(baseUrl, defaultModelName, temperature, maxRetries);
         }
 
+        if ("DEEPSEEK".equals(code)) {
+            deepSeekProvider = new DeepSeekHttpProvider(baseUrl, apiKey,
+                    StringUtils.defaultIfBlank(defaultModelName, platformProperties.getDeepseek().getModel()));
+        }
+
         return new GenericPlatformAdapter(code, baseUrl, apiKey, defaultModelName, maxRetries);
     }
 
@@ -138,6 +146,8 @@ public class ModelManager implements ApplicationRunner, ModelRoutingPort {
     }
 
     private void loadHardcodedDefaults() {
+        deepSeekProvider = new DeepSeekHttpProvider(platformProperties.getDeepseek().getBaseUrl(),
+                getExternalApiKey("DEEPSEEK"), platformProperties.getDeepseek().getModel());
         adapterMap.put("OPENAI", new GenericPlatformAdapter(
                 "OPENAI", "https://api.openai.com/v1",
                 StringUtils.getIfEmpty(getExternalApiKey("OPENAI"), () -> ""), "gpt-4o", 3));
@@ -182,6 +192,11 @@ public class ModelManager implements ApplicationRunner, ModelRoutingPort {
 
     /** Dedicated structured DeepSeek transport; generic providers remain available for other platforms. */
     public DeepSeekHttpProvider getDeepSeekProvider() {
+        if (!dbLoaded) {
+            synchronized (this) {
+                if (!dbLoaded) reloadFromDb();
+            }
+        }
         return deepSeekProvider;
     }
 
