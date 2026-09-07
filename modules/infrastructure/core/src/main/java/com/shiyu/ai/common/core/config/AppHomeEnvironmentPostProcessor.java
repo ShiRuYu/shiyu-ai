@@ -15,7 +15,7 @@ import java.util.HashMap;
 import java.util.Map;
 
 /**
- * 自动探测应用根目录（app.home），优先级：app.home 系统属性 > APP_HOME 环境变量 > 项目根目录探测 > user.dir
+ * 自动探测应用根目录（app.home），优先级：app.home 系统属性 > APP_HOME 环境变量 > runtime/dev > 项目根目录探测 > user.dir
  * <p>
  * 项目根目录探测逻辑：从 user.dir 开始向上遍历父目录，
  * 找到第一个包含 pom.xml 的目录，即为项目根目录。
@@ -63,8 +63,10 @@ public class AppHomeEnvironmentPostProcessor implements EnvironmentPostProcessor
 
         Path projectRoot = findProjectRoot(Paths.get(userDir));
         if (projectRoot != null) {
-            log.info("自动探测到项目根目录: {} (从 {} 向上查找)", projectRoot, userDir);
-            setAppHome(environment, projectRoot.toString());
+            Path localRuntime = projectRoot.resolve("runtime").resolve("dev");
+            Path appHome = Files.isDirectory(localRuntime) ? localRuntime : projectRoot;
+            log.info("自动探测到应用运行目录: {} (项目根目录: {}, 从 {} 向上查找)", appHome, projectRoot, userDir);
+            setAppHome(environment, appHome.toString());
             return;
         }
 
