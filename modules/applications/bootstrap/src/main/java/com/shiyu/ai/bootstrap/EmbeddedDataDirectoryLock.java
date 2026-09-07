@@ -29,7 +29,7 @@ final class EmbeddedDataDirectoryLock implements AutoCloseable {
         String appHome = resolveAppHome(
                 System.getProperty(APP_HOME_PROPERTY),
                 System.getenv(APP_HOME_ENV),
-                System.getProperty("user.dir", "."));
+                resolveDefaultAppHome(System.getProperty("user.dir", ".")));
         // The lock is acquired before Spring's EnvironmentPostProcessor runs.
         // Keep the system property aligned so all later non-Spring path users
         // resolve the same data directory.
@@ -64,6 +64,12 @@ final class EmbeddedDataDirectoryLock implements AutoCloseable {
             return environmentValue;
         }
         return fallback == null || fallback.isBlank() ? "." : fallback;
+    }
+
+    static String resolveDefaultAppHome(String userDir) {
+        if (userDir == null || userDir.isBlank()) return ".";
+        Path runtime = Path.of(userDir, "runtime", "dev");
+        return Files.isDirectory(runtime) ? runtime.toString() : userDir;
     }
 
     @Override
