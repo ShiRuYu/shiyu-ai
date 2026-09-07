@@ -84,35 +84,35 @@ def count_openapi_operations(spec: dict) -> int:
 
 def baseline_owner_roots(backend: Path) -> list[Path]:
     return [
-        backend / "modules/application/shiyu-application/src/main/resources/db/baseline/h2",
-        backend / "modules/infrastructure/shiyu-common-core/src/main/resources/db/baseline/h2",
-        backend / "modules/infrastructure/shiyu-common-storage/src/main/resources/db/baseline/h2",
-        backend / "modules/domains/iam/shiyu-iam-implementation/src/main/resources/db/baseline/h2",
-        backend / "modules/domains/agent/shiyu-agent-implementation/src/main/resources/db/baseline/h2",
-        backend / "modules/domains/model/shiyu-model-implementation/src/main/resources/db/baseline/h2",
-        backend / "modules/domains/conversation/shiyu-conversation-implementation/src/main/resources/db/baseline/h2",
-        backend / "modules/domains/education/shiyu-education-implementation/src/main/resources/db/baseline/h2",
-        backend / "modules/domains/governance/shiyu-governance-implementation/src/main/resources/db/baseline/h2",
-        backend / "modules/domains/knowledge/shiyu-knowledge-implementation/src/main/resources/db/baseline/h2",
-        backend / "modules/domains/memory/shiyu-memory-implementation/src/main/resources/db/baseline/h2",
-        backend / "modules/domains/tooling/shiyu-tooling-implementation/src/main/resources/db/baseline/h2",
+        backend / "modules/applications/composition/src/main/resources/db/baseline/h2",
+        backend / "modules/infrastructure/core/src/main/resources/db/baseline/h2",
+        backend / "modules/infrastructure/storage/src/main/resources/db/baseline/h2",
+        backend / "modules/domains/iam/implementation/src/main/resources/db/baseline/h2",
+        backend / "modules/domains/agent/implementation/src/main/resources/db/baseline/h2",
+        backend / "modules/domains/model/implementation/src/main/resources/db/baseline/h2",
+        backend / "modules/domains/conversation/implementation/src/main/resources/db/baseline/h2",
+        backend / "modules/domains/education/implementation/src/main/resources/db/baseline/h2",
+        backend / "modules/domains/governance/implementation/src/main/resources/db/baseline/h2",
+        backend / "modules/domains/knowledge/implementation/src/main/resources/db/baseline/h2",
+        backend / "modules/domains/memory/implementation/src/main/resources/db/baseline/h2",
+        backend / "modules/domains/tooling/implementation/src/main/resources/db/baseline/h2",
     ]
 
 
 def verify_final_baseline(backend: Path, failures: list[str]) -> int:
     owner_roots = [
-        backend / "modules/application/shiyu-application/src/main/resources/db/baseline/h2",
-        backend / "modules/infrastructure/shiyu-common-core/src/main/resources/db/baseline/h2",
-        backend / "modules/infrastructure/shiyu-common-storage/src/main/resources/db/baseline/h2",
-        backend / "modules/domains/iam/shiyu-iam-implementation/src/main/resources/db/baseline/h2",
-        backend / "modules/domains/agent/shiyu-agent-implementation/src/main/resources/db/baseline/h2",
-        backend / "modules/domains/model/shiyu-model-implementation/src/main/resources/db/baseline/h2",
-        backend / "modules/domains/conversation/shiyu-conversation-implementation/src/main/resources/db/baseline/h2",
-        backend / "modules/domains/education/shiyu-education-implementation/src/main/resources/db/baseline/h2",
-        backend / "modules/domains/governance/shiyu-governance-implementation/src/main/resources/db/baseline/h2",
-        backend / "modules/domains/knowledge/shiyu-knowledge-implementation/src/main/resources/db/baseline/h2",
-        backend / "modules/domains/memory/shiyu-memory-implementation/src/main/resources/db/baseline/h2",
-        backend / "modules/domains/tooling/shiyu-tooling-implementation/src/main/resources/db/baseline/h2",
+        backend / "modules/applications/composition/src/main/resources/db/baseline/h2",
+        backend / "modules/infrastructure/core/src/main/resources/db/baseline/h2",
+        backend / "modules/infrastructure/storage/src/main/resources/db/baseline/h2",
+        backend / "modules/domains/iam/implementation/src/main/resources/db/baseline/h2",
+        backend / "modules/domains/agent/implementation/src/main/resources/db/baseline/h2",
+        backend / "modules/domains/model/implementation/src/main/resources/db/baseline/h2",
+        backend / "modules/domains/conversation/implementation/src/main/resources/db/baseline/h2",
+        backend / "modules/domains/education/implementation/src/main/resources/db/baseline/h2",
+        backend / "modules/domains/governance/implementation/src/main/resources/db/baseline/h2",
+        backend / "modules/domains/knowledge/implementation/src/main/resources/db/baseline/h2",
+        backend / "modules/domains/memory/implementation/src/main/resources/db/baseline/h2",
+        backend / "modules/domains/tooling/implementation/src/main/resources/db/baseline/h2",
     ]
     modifying = re.compile(r"^\s*(ALTER|UPDATE|DELETE|MERGE|DROP|TRUNCATE)\b", re.I | re.M)
     secondary_statements = 0
@@ -150,8 +150,8 @@ def verify_counts(backend: Path, frontend: Path, failures: list[str]) -> dict[st
     if documented_tables != tables:
         failures.append(f"table count mismatch: document={documented_tables}, schema={tables}")
 
-    seed = (backend / "modules/domains/iam/shiyu-iam-implementation/src/main/resources/db/baseline/h2/seed/iam/02_auth.sql").read_text(encoding="utf-8")
-    navigation = (backend / "modules/domains/iam/shiyu-iam-implementation/src/main/resources/db/baseline/h2/seed/iam/05_navigation.sql").read_text(encoding="utf-8")
+    seed = (backend / "modules/domains/iam/implementation/src/main/resources/db/baseline/h2/seed/iam/02_auth.sql").read_text(encoding="utf-8")
+    navigation = (backend / "modules/domains/iam/implementation/src/main/resources/db/baseline/h2/seed/iam/05_navigation.sql").read_text(encoding="utf-8")
     menus = len(re.findall(r'INSERT\s+INTO\s+"PUBLIC"\."AUTH_MENU"\s+VALUES', seed, re.I))
     menus += len(re.findall(r"^\(20\d{2},", navigation, re.M))
     auth_codes = len(re.findall(r'INSERT\s+INTO\s+"PUBLIC"\."AUTH_AUTH_CODE"\s+VALUES', seed, re.I))

@@ -20,7 +20,7 @@ def parse_args() -> argparse.Namespace:
     parser.add_argument(
         "--jar",
         type=Path,
-        default=Path("modules/application/shiyu-ai-bootstrap/target/shiyu-ai-bootstrap-1.0.0.jar"),
+        default=Path("modules/applications/bootstrap/target/shiyu-ai-bootstrap-1.0.0.jar"),
         help="packaged Spring Boot jar",
     )
     parser.add_argument("--port", type=int, default=19090)

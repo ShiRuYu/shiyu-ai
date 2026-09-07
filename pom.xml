@@ -125,35 +125,35 @@
     </profiles>
 
     <modules>
-        <module>modules/application/shiyu-ai-bootstrap</module>
-        <module>modules/application/shiyu-ai-web</module>
-        <module>modules/application/shiyu-application</module>
-        <module>modules/domains/agent/shiyu-agent-contract</module>
-        <module>modules/domains/agent/shiyu-agent-implementation</module>
-        <module>modules/domains/conversation/shiyu-conversation-contract</module>
-        <module>modules/domains/conversation/shiyu-conversation-implementation</module>
-        <module>modules/domains/education/shiyu-education-contract</module>
-        <module>modules/domains/education/shiyu-education-implementation</module>
-        <module>modules/domains/governance/shiyu-governance-contract</module>
-        <module>modules/domains/governance/shiyu-governance-implementation</module>
-        <module>modules/domains/iam/shiyu-iam-contract</module>
-        <module>modules/domains/iam/shiyu-iam-implementation</module>
-        <module>modules/domains/knowledge/shiyu-knowledge-contract</module>
-        <module>modules/domains/knowledge/shiyu-knowledge-implementation</module>
-        <module>modules/domains/memory/shiyu-memory-contract</module>
-        <module>modules/domains/memory/shiyu-memory-implementation</module>
-        <module>modules/domains/model/shiyu-model-contract</module>
-        <module>modules/domains/model/shiyu-model-implementation</module>
-        <module>modules/domains/tooling/shiyu-tooling-contract</module>
-        <module>modules/domains/tooling/shiyu-tooling-implementation</module>
-        <module>modules/infrastructure/shiyu-common-core</module>
-        <module>modules/infrastructure/shiyu-common-mybatis</module>
-        <module>modules/infrastructure/shiyu-common-storage</module>
-        <module>modules/infrastructure/shiyu-common-thread</module>
-        <module>modules/infrastructure/shiyu-common-vector</module>
-        <module>modules/infrastructure/shiyu-common-web</module>
-        <module>modules/shared/shiyu-shared-kernel</module>
-        <module>tests/shiyu-architecture-tests</module>
+        <module>modules/applications/bootstrap</module>
+        <module>modules/applications/web</module>
+        <module>modules/applications/composition</module>
+        <module>modules/domains/agent/contract</module>
+        <module>modules/domains/agent/implementation</module>
+        <module>modules/domains/conversation/contract</module>
+        <module>modules/domains/conversation/implementation</module>
+        <module>modules/domains/education/contract</module>
+        <module>modules/domains/education/implementation</module>
+        <module>modules/domains/governance/contract</module>
+        <module>modules/domains/governance/implementation</module>
+        <module>modules/domains/iam/contract</module>
+        <module>modules/domains/iam/implementation</module>
+        <module>modules/domains/knowledge/contract</module>
+        <module>modules/domains/knowledge/implementation</module>
+        <module>modules/domains/memory/contract</module>
+        <module>modules/domains/memory/implementation</module>
+        <module>modules/domains/model/contract</module>
+        <module>modules/domains/model/implementation</module>
+        <module>modules/domains/tooling/contract</module>
+        <module>modules/domains/tooling/implementation</module>
+        <module>modules/infrastructure/core</module>
+        <module>modules/infrastructure/mybatis</module>
+        <module>modules/infrastructure/storage</module>
+        <module>modules/infrastructure/thread</module>
+        <module>modules/infrastructure/vector</module>
+        <module>modules/infrastructure/web</module>
+        <module>modules/shared/kernel</module>
+        <module>tests/architecture</module>
     </modules>
 
     <!-- 依赖声明 -->

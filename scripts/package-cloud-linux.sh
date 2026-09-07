@@ -7,6 +7,6 @@ cd "$repo"
 
 mvn -Pprod -DskipTests -Djacoco.skip=true clean package
 mkdir -p "$output"/data/{db,files,index,models,backups}
-cp modules/application/shiyu-ai-bootstrap/target/shiyu-ai-bootstrap-*.jar "$output/"
+cp modules/applications/bootstrap/target/shiyu-ai-bootstrap-*.jar "$output/"
 cp README.md "$output/"
 echo "Cloud Linux package created at $output"
