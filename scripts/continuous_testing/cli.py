@@ -31,6 +31,9 @@ def main(argv=None) -> int:
     elif args.command == "status":
         store.write_snapshot(root / "state.json")
         payload = {"runs": store.list_runs(), "tasks": store.list_tasks()}
+        for name in ("pending-version.json", "running-version.json"):
+            file = root / name
+            if file.exists(): payload[name.removesuffix(".json")] = json.loads(file.read_text(encoding="utf-8"))
         if payload["runs"]:
             payload["latest_report"] = build_report(store, payload["runs"][0]["id"])
         print(json.dumps(payload, ensure_ascii=False, indent=2))
