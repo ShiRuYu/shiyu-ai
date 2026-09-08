@@ -95,6 +95,20 @@ class StateStore:
                 result.append(item)
             return result
 
+    def add_failure(self, task_id: str, signature: str, evidence_path: str) -> str:
+        failure_id = uuid.uuid4().hex
+        with self._connect() as db:
+            db.execute("INSERT INTO failures VALUES (?, ?, ?, ?, ?)",
+                       (failure_id, task_id, signature, evidence_path, _now()))
+        return failure_id
+
+    def get_failure(self, failure_id: str) -> dict[str, Any]:
+        with self._connect() as db:
+            row = db.execute("SELECT * FROM failures WHERE id=?", (failure_id,)).fetchone()
+        if row is None:
+            raise KeyError(failure_id)
+        return dict(row)
+
     def write_snapshot(self, target: Path) -> None:
         payload = {"runs": self.list_runs(), "tasks": self.list_tasks()}
         target.parent.mkdir(parents=True, exist_ok=True)

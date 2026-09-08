@@ -10,7 +10,8 @@ def _root() -> Path:
 
 def main(argv=None) -> int:
     parser = argparse.ArgumentParser(prog="continuous-testing")
-    parser.add_argument("command", choices=["start", "status", "pause", "resume", "stop"])
+    parser.add_argument("command", choices=["start", "status", "pause", "resume", "stop", "replay"])
+    parser.add_argument("failure_id", nargs="?")
     args = parser.parse_args(argv)
     root = _root(); store = StateStore(root / "state.sqlite"); store.initialize()
     if args.command == "start":
@@ -21,6 +22,14 @@ def main(argv=None) -> int:
     elif args.command == "status":
         store.write_snapshot(root / "state.json")
         print(json.dumps({"runs": store.list_runs(), "tasks": store.list_tasks()}, ensure_ascii=False, indent=2))
+    elif args.command == "replay":
+        if not args.failure_id:
+            parser.error("replay requires failure-id")
+        try:
+            print(json.dumps(store.get_failure(args.failure_id)))
+        except KeyError:
+            print(json.dumps({"failure_id": args.failure_id, "status": "BLOCKED", "error": "failure not found"}))
+            return 1
     else:
         runs = store.list_runs()
         if not runs:
