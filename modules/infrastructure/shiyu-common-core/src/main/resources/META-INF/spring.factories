@@ -1,0 +1,2 @@
+# EnvironmentPostProcessor - 解析应用运行目录 app.home
+org.springframework.boot.EnvironmentPostProcessor=com.shiyu.ai.common.core.config.AppHomeEnvironmentPostProcessor

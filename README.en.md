@@ -234,7 +234,7 @@ mvn clean install -DskipTests
 
 ### Configure an LLM Platform
 
-Edit `modules/applications/bootstrap/src/main/resources/application.yml` and configure at least one platform:
+Edit `modules/applications/shiyu-ai-bootstrap/src/main/resources/application.yml` and configure at least one platform:
 
 ```yaml
 shiyu:
@@ -251,13 +251,13 @@ shiyu:
 ### Start
 
 ```bash
-cd modules/applications/bootstrap
+cd modules/applications/shiyu-ai-bootstrap
 mvn spring-boot:run -Dspring-boot.run.profiles=dev
 ```
 
 #### Maven profiles (optional capability switches)
 
-`modules/applications/bootstrap/pom.xml` defines three optional Maven profiles
+`modules/applications/shiyu-ai-bootstrap/pom.xml` defines three optional Maven profiles
 that load dependencies on demand (excluded from production packages by default):
 
 | Profile | Dependencies added | Purpose |
@@ -270,7 +270,7 @@ Activation examples:
 
 ```bash
 # Package with observability enabled
-mvn -Pobservability -pl modules/applications/bootstrap -am -DskipTests package
+mvn -Pobservability -pl modules/applications/shiyu-ai-bootstrap -am -DskipTests package
 # Run with several profiles at once
 mvn -Pobservability,api-docs-ui,s3 spring-boot:run
 ```

@@ -1,0 +1,50 @@
+-- Realistic conversation seed matching the usage record and default admin user.
+INSERT INTO "PUBLIC"."CHAT_CONVERSATION"
+    ("ID", "TENANT_ID", "OWNER_USER_ID", "SCENE_TYPE", "TITLE", "STATUS", "PLATFORM", "MODEL", "VERSION", "CREATED_AT", "UPDATED_AT")
+VALUES ('demo-conversation-20260908', 1, 2, 'EDUCATION_TUTOR', '一元一次方程复习', 'ACTIVE',
+        'DEEPSEEK', 'deepseek-v4-flash', 2,
+        TIMESTAMP '2026-09-08 09:14:00', TIMESTAMP '2026-09-08 09:15:01');
+
+INSERT INTO "PUBLIC"."CHAT_MESSAGE"
+    ("ID", "TENANT_ID", "CONVERSATION_ID", "ROLE", "CONTENT", "STATUS", "SEQUENCE", "CREATED_AT", "UPDATED_AT")
+VALUES ('demo-message-user-20260908', 1, 'demo-conversation-20260908', 'USER',
+        '请用一个生活中的例子解释一元一次方程。', 'COMPLETED', 0,
+        TIMESTAMP '2026-09-08 09:14:10', TIMESTAMP '2026-09-08 09:14:10');
+
+INSERT INTO "PUBLIC"."CHAT_MESSAGE"
+    ("ID", "TENANT_ID", "CONVERSATION_ID", "PARENT_MESSAGE_ID", "ROLE", "CONTENT", "STATUS", "SEQUENCE", "GENERATION_ID", "CREATED_AT", "UPDATED_AT")
+VALUES ('demo-message-assistant-20260908', 1, 'demo-conversation-20260908', 'demo-message-user-20260908', 'ASSISTANT',
+        '例如购物时已知总价和单价，可以用方程求购买数量。', 'COMPLETED', 1,
+        'demo-generation-20260908-001', TIMESTAMP '2026-09-08 09:15:01', TIMESTAMP '2026-09-08 09:15:01');
+
+INSERT INTO "PUBLIC"."CHAT_GENERATION_RUN"
+    ("ID", "TENANT_ID", "CONVERSATION_ID", "INPUT_MESSAGE_ID", "ASSISTANT_MESSAGE_ID", "PLATFORM", "MODEL", "STATUS", "PROMPT_TOKENS", "COMPLETION_TOKENS", "LATENCY_MS", "LAST_EVENT_SEQUENCE", "CANCEL_REQUESTED", "VERSION", "CREATED_AT", "UPDATED_AT")
+VALUES ('demo-generation-20260908-001', 1, 'demo-conversation-20260908', 'demo-message-user-20260908',
+        'demo-message-assistant-20260908', 'DEEPSEEK', 'deepseek-v4-flash', 'COMPLETED',
+        842, 316, 1280, -1, FALSE, 1,
+        TIMESTAMP '2026-09-08 09:14:00', TIMESTAMP '2026-09-08 09:15:01');
+
+INSERT INTO "PUBLIC"."CHAT_CONVERSATION"
+    ("ID", "TENANT_ID", "OWNER_USER_ID", "SCENE_TYPE", "TITLE", "STATUS", "PLATFORM", "MODEL", "VERSION", "CREATED_AT", "UPDATED_AT")
+VALUES ('demo-conversation-knowledge-20260908', 1, 2, 'KNOWLEDGE_QA', '课程资料检索', 'ACTIVE',
+        'DEEPSEEK', 'deepseek-v4-flash', 1,
+        TIMESTAMP '2026-09-08 10:02:00', TIMESTAMP '2026-09-08 10:03:12');
+
+INSERT INTO "PUBLIC"."CHAT_MESSAGE"
+    ("ID", "TENANT_ID", "CONVERSATION_ID", "ROLE", "CONTENT", "STATUS", "SEQUENCE", "CREATED_AT", "UPDATED_AT")
+VALUES ('demo-message-knowledge-user-20260908', 1, 'demo-conversation-knowledge-20260908', 'USER',
+        '课程资料中，一元一次方程的移项规则是什么？', 'COMPLETED', 0,
+        TIMESTAMP '2026-09-08 10:02:10', TIMESTAMP '2026-09-08 10:02:10');
+
+INSERT INTO "PUBLIC"."CHAT_MESSAGE"
+    ("ID", "TENANT_ID", "CONVERSATION_ID", "PARENT_MESSAGE_ID", "ROLE", "CONTENT", "STATUS", "SEQUENCE", "GENERATION_ID", "CREATED_AT", "UPDATED_AT")
+VALUES ('demo-message-knowledge-assistant-20260908', 1, 'demo-conversation-knowledge-20260908', 'demo-message-knowledge-user-20260908', 'ASSISTANT',
+        '移项时要把项从等号一侧移到另一侧，并同时改变它的符号。', 'COMPLETED', 1,
+        'demo-generation-knowledge-20260908-001', TIMESTAMP '2026-09-08 10:03:12', TIMESTAMP '2026-09-08 10:03:12');
+
+INSERT INTO "PUBLIC"."CHAT_GENERATION_RUN"
+    ("ID", "TENANT_ID", "CONVERSATION_ID", "INPUT_MESSAGE_ID", "ASSISTANT_MESSAGE_ID", "PLATFORM", "MODEL", "STATUS", "PROMPT_TOKENS", "COMPLETION_TOKENS", "LATENCY_MS", "LAST_EVENT_SEQUENCE", "CANCEL_REQUESTED", "VERSION", "CREATED_AT", "UPDATED_AT")
+VALUES ('demo-generation-knowledge-20260908-001', 1, 'demo-conversation-knowledge-20260908', 'demo-message-knowledge-user-20260908',
+        'demo-message-knowledge-assistant-20260908', 'DEEPSEEK', 'deepseek-v4-flash', 'COMPLETED',
+        516, 118, 940, -1, FALSE, 1,
+        TIMESTAMP '2026-09-08 10:02:00', TIMESTAMP '2026-09-08 10:03:12');

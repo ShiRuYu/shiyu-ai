@@ -46,8 +46,9 @@ build/
 /data/
 
 # Runtime data directory (H2, RogueMap, logs, uploads)
-# Keep local state under one ignored runtime root; production uses APP_HOME.
-runtime/
+# Keep local state under the repository root's ignored runtime directory;
+# do not hide Java packages such as com.shiyu.ai.runtime.
+/runtime/
 **/data/
 
 # 例外：Flyway 种子数据文件

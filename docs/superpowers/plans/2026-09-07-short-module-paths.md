@@ -1,4 +1,6 @@
-# Short Module Paths Implementation Plan
+# Short Module Paths Implementation Plan (superseded)
+
+> This historical plan records the concise-path layout that was later replaced by the artifactId-matching layout. Current module paths use the Maven artifactId as the leaf directory name.
 
 > **For agentic workers:** REQUIRED SUB-SKILL: Use `subagent-driven-development` (recommended) or `executing-plans` to implement this plan task-by-task. Steps use checkbox (`- [ ]`) syntax for tracking.
 
@@ -23,14 +25,14 @@
 ### Task 1: Rename leaf module directories
 
 **Files:**
-- Move: `modules/applications/bootstrap` to `modules/applications/bootstrap`
-- Move: `modules/applications/web` to `modules/applications/web`
-- Move: `modules/applications/composition` to `modules/applications/composition`
-- Move: each `modules/domains/<domain>/shiyu-<domain>-contract` to `contract`
-- Move: each `modules/domains/<domain>/shiyu-<domain>-implementation` to `implementation`
-- Move: `modules/infrastructure/shiyu-common-*` to its role name
-- Move: `modules/shared/kernel` to `modules/shared/kernel`
-- Move: `tests/architecture` to `tests/architecture`
+- Move: `modules/application/shiyu-ai-bootstrap` to `modules/applications/bootstrap`
+- Move: `modules/application/shiyu-ai-web` to `modules/applications/web`
+- Move: `modules/application/shiyu-application` to `modules/applications/composition`
+- Move: each `modules/domains/<domain>/shiyu-<domain>-contract` to `modules/domains/<domain>/contract`
+- Move: each `modules/domains/<domain>/shiyu-<domain>-implementation` to `modules/domains/<domain>/implementation`
+- Move: `modules/infrastructure/shiyu-common-*` to `modules/infrastructure/<role>`
+- Move: `modules/shared/shiyu-shared-kernel` to `modules/shared/kernel`
+- Move: `tests/shiyu-architecture-tests` to `tests/architecture`
 
 **Interfaces:**
 - Produces: the concise module filesystem paths used by the root reactor and tools.

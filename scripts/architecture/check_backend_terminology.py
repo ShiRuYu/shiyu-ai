@@ -17,7 +17,7 @@ from pathlib import Path
 ROOT = Path(__file__).resolve().parents[2]
 SOURCE_ROOTS = (
     ROOT / "modules/domains",
-    ROOT / "modules/application",
+    ROOT / "modules/applications",
     ROOT / "modules/infrastructure",
     ROOT / "modules/shared",
 )

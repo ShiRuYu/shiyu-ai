@@ -1,0 +1,228 @@
+# 应用运行目录 - 由 AppHomeEnvironmentPostProcessor 解析
+# 优先使用系统属性 app.home、环境变量 APP_HOME 和本地 runtime/dev
+# 部署时应通过 APP_HOME 显式指定独立持久化目录
+
+shiyu:
+  # 名称
+  name: "shiyu-ai"
+  # ModelManager/PlatformProperties 的统一 OpenAI-compatible 配置
+  ai:
+    openai:
+      base-url: ${AI_OPENAI_BASE_URL:https://api.openai.com/v1}
+      api-key: ${AI_OPENAI_API_KEY:}
+      model: ${AI_OPENAI_MODEL:gpt-4o-mini}
+    deepseek:
+      # Credentials are injected only through the process environment/secret manager.
+      base-url: ${AI_DEEPSEEK_BASE_URL:https://api.deepseek.com}
+      api-key: ${AI_DEEPSEEK_API_KEY:}
+      model: ${AI_DEEPSEEK_MODEL:deepseek-v4-flash}
+  tx:
+    enabled: true
+  # 版本
+  version: ${revision}
+  # 文件存储：默认 local，可切换为 s3、minio、aliyun-oss、tencent-cos
+  storage:
+    data-dir: ${app.home}/data
+    security:
+      max-file-size: 200MB
+    backup:
+      enabled: true
+      directory: ${app.home}/data/backups
+      hourly-retention: 24
+      daily-retention: 30
+      interval-ms: 3600000
+      max-total-bytes: 21474836480
+    type: ${SHIYU_STORAGE_TYPE:local}
+    local:
+      path: ${SHIYU_STORAGE_LOCAL_PATH:${app.home}/data/files}
+    upload:
+      cleanup-interval-ms: 3600000
+      cleanup-initial-delay-ms: 300000
+    providers:
+      s3:
+        endpoint: ${SHIYU_STORAGE_S3_ENDPOINT:}
+        region: ${SHIYU_STORAGE_S3_REGION:us-east-1}
+        bucket: ${SHIYU_STORAGE_S3_BUCKET:}
+        access-key: ${SHIYU_STORAGE_S3_ACCESS_KEY:}
+        secret-key: ${SHIYU_STORAGE_S3_SECRET_KEY:}
+        path-style-access: false
+        public-base-url: ${SHIYU_STORAGE_S3_PUBLIC_BASE_URL:}
+      minio:
+        endpoint: ${SHIYU_STORAGE_MINIO_ENDPOINT:http://127.0.0.1:9001}
+        region: ${SHIYU_STORAGE_MINIO_REGION:us-east-1}
+        bucket: ${SHIYU_STORAGE_MINIO_BUCKET:}
+        access-key: ${SHIYU_STORAGE_MINIO_ACCESS_KEY:}
+        secret-key: ${SHIYU_STORAGE_MINIO_SECRET_KEY:}
+        path-style-access: true
+        public-base-url: ${SHIYU_STORAGE_MINIO_PUBLIC_BASE_URL:}
+      aliyun-oss:
+        endpoint: ${SHIYU_STORAGE_OSS_ENDPOINT:}
+        region: ${SHIYU_STORAGE_OSS_REGION:cn-hangzhou}
+        bucket: ${SHIYU_STORAGE_OSS_BUCKET:}
+        access-key: ${SHIYU_STORAGE_OSS_ACCESS_KEY:}
+        secret-key: ${SHIYU_STORAGE_OSS_SECRET_KEY:}
+        path-style-access: false
+        public-base-url: ${SHIYU_STORAGE_OSS_PUBLIC_BASE_URL:}
+      tencent-cos:
+        endpoint: ${SHIYU_STORAGE_COS_ENDPOINT:}
+        region: ${SHIYU_STORAGE_COS_REGION:ap-guangzhou}
+        bucket: ${SHIYU_STORAGE_COS_BUCKET:}
+        access-key: ${SHIYU_STORAGE_COS_SECRET_ID:}
+        secret-key: ${SHIYU_STORAGE_COS_SECRET_KEY:}
+        path-style-access: false
+        public-base-url: ${SHIYU_STORAGE_COS_PUBLIC_BASE_URL:}
+  # VectorStore 配置（Embedding 向量检索）
+  vector-store:
+    type: jvector           # inmemory | jvector
+    dimension: 512
+    data-dir: ${app.home}/data/vector
+  knowledge:
+    data-dir: ${app.home}/data
+    default-space-code: default
+    task:
+      parser-concurrency: 2
+      embedding-concurrency: 4
+      stale-minutes: 10
+      max-attempts: 3
+      poll-delay-ms: 2000
+    index:
+      idle-minutes: 30
+      rollback-versions: 1
+      candidate-top-k: 20
+      default-top-k: 5
+      rrf-k: 60
+  retention:
+    logs:
+      enabled: true
+      max-age-days: 30
+      max-total-bytes: 2147483648
+      interval-ms: 3600000
+      initial-delay-ms: 120000
+    data:
+      enabled: true
+      execution-days: 30
+      audit-days: 180
+      usage-days: 365
+      task-days: 30
+      interval-ms: 3600000
+      initial-delay-ms: 180000
+# 开发环境配置
+server:
+  # 服务器的HTTP端口，默认为8080
+  port: 9000
+
+# Logging levels (package hierarchy)
+logging:
+  level:
+    # Project packages - use Maven profile level
+    root: info
+    com.shiyu: ${logging.level}
+springdoc:
+  api-docs:
+    enabled: true               # 是否启用 API 文档
+    path: /v3/api-docs         # OpenAPI JSON 文档访问路径，默认 /v3/api-docs
+  group-configs:
+    - group: 'default'
+      paths-to-match:
+        - '/**'
+      packages-to-scan:
+        - com.shiyu.ai.auth.web
+        - com.shiyu.ai.agent.web
+        - com.shiyu.ai.conversation.web
+        - com.shiyu.ai.education.web
+        - com.shiyu.ai.knowledge.web
+        - com.shiyu.ai.model.web
+        - com.shiyu.ai.governance.web
+        - com.shiyu.ai.tooling.web
+        - com.shiyu.ai.common.storage.web
+        - com.shiyu.ai.web.auth
+        - com.shiyu.ai.web.agent
+        - com.shiyu.ai.web.model
+        - com.shiyu.ai.web.education
+        - com.shiyu.ai.web.knowledge
+        - com.shiyu.ai.web.usage
+        - com.shiyu.ai.web.plugin
+        - com.shiyu.ai.web.common
+    - group: 'auth'
+      packages-to-scan:
+        - com.shiyu.ai.auth.web
+        - com.shiyu.ai.web.auth
+    - group: 'agent'
+      packages-to-scan:
+        - com.shiyu.ai.agent.web
+        - com.shiyu.ai.web.agent
+    - group: 'conversation'
+      packages-to-scan:
+        - com.shiyu.ai.conversation.web
+        - com.shiyu.ai.web.conversation
+        - com.shiyu.ai.web.chat
+    - group: 'education'
+      packages-to-scan:
+        - com.shiyu.ai.education.web
+        - com.shiyu.ai.web.education
+    - group: 'knowledge'
+      packages-to-scan:
+        - com.shiyu.ai.knowledge.web
+        - com.shiyu.ai.web.knowledge
+    - group: 'model'
+      packages-to-scan:
+        - com.shiyu.ai.model.web
+        - com.shiyu.ai.web.model
+    - group: 'usage'
+      packages-to-scan:
+        - com.shiyu.ai.governance.web
+        - com.shiyu.ai.web.usage
+    - group: 'plugin'
+      packages-to-scan:
+        - com.shiyu.ai.tooling.web
+        - com.shiyu.ai.web.plugin
+    - group: 'common'
+      packages-to-scan:
+        - com.shiyu.ai.web.common
+        - com.shiyu.ai.common.storage.web
+  swagger-ui:
+    path: /swagger-ui/index.html      # Swagger UI 访问路径，默认 /swagger-ui/index.html
+    display-request-duration: true  # 显示请求耗时
+    operations-sorter: alpha     # 按字母排序接口
+    tags-sorter: alpha           # 按标签排序
+    default-model-rendering: example # 默认显示 model 示例
+
+# Spring 配置
+spring:
+  main:
+    allow-circular-references: true
+  application:
+    name: ${shiyu.name}
+  # 资源信息
+  messages:
+    # 国际化资源文件路径
+    basename: i18n/messages
+  profiles:
+    active: ${profiles.active}
+    group:
+      dev: ai, h2 #,mcp
+
+# Sa-Token 配置
+sa-token:
+  # Token 名称（同时也是 Cookie 名称）
+  token-name: Authorization
+  # Token 有效期，单位秒（默认 7200 秒 = 2 小时）
+  timeout: 7200
+  # Token 临时有效期（指定时间内无操作就视为 Token 过期），单位秒（默认 -1 表示不启用）
+  active-timeout: -1
+  # 是否允许同一账号并发登录（为 false 时新登录挤掉旧登录，实现单设备登录）
+  is-concurrent: false
+  # 在多人登录同一账号时，是否共用一个 Token（为 false 时每次登录新建一个 Token）
+  is-share: false
+  # Token 风格（默认可取值：uuid、simple-uuid、random-32、random-64、random-128、tik）
+  token-style: uuid
+  # 是否输出操作日志
+  is-log: false
+  # 是否从 Cookie 中读取 Token
+  is-read-cookie: false
+  # 是否从 Header 中读取 Token
+  is-read-header: true
+  # Token 前缀
+  token-prefix: Bearer
+
+

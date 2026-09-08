@@ -1,2 +1,0 @@
-# EnvironmentPostProcessor - 自动探测项目根目录 app.home
-org.springframework.boot.EnvironmentPostProcessor=com.shiyu.ai.common.core.config.AppHomeEnvironmentPostProcessor

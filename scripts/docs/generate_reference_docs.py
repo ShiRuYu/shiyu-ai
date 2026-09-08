@@ -487,25 +487,25 @@ def main() -> None:
     paths, operations = generate_api_reference(spec, repo / "docs/参考/API接口参考.md", source)
 
     schema_roots = [
-        repo / "modules/applications/composition/src/main/resources/db/baseline/h2/schema",
-        repo / "modules/infrastructure/core/src/main/resources/db/baseline/h2/schema",
-        repo / "modules/infrastructure/storage/src/main/resources/db/baseline/h2/schema",
-        repo / "modules/domains/iam/implementation/src/main/resources/db/baseline/h2/schema",
-        repo / "modules/domains/agent/implementation/src/main/resources/db/baseline/h2/schema",
-        repo / "modules/domains/model/implementation/src/main/resources/db/baseline/h2/schema",
-        repo / "modules/domains/conversation/implementation/src/main/resources/db/baseline/h2/schema",
-        repo / "modules/domains/education/implementation/src/main/resources/db/baseline/h2/schema",
-        repo / "modules/domains/governance/implementation/src/main/resources/db/baseline/h2/schema",
-        repo / "modules/domains/knowledge/implementation/src/main/resources/db/baseline/h2/schema",
-        repo / "modules/domains/memory/implementation/src/main/resources/db/baseline/h2/schema",
-        repo / "modules/domains/tooling/implementation/src/main/resources/db/baseline/h2/schema",
+        repo / "modules/applications/shiyu-application/src/main/resources/db/baseline/h2/schema",
+        repo / "modules/infrastructure/shiyu-common-core/src/main/resources/db/baseline/h2/schema",
+        repo / "modules/infrastructure/shiyu-common-storage/src/main/resources/db/baseline/h2/schema",
+        repo / "modules/domains/iam/shiyu-iam-implementation/src/main/resources/db/baseline/h2/schema",
+        repo / "modules/domains/agent/shiyu-agent-implementation/src/main/resources/db/baseline/h2/schema",
+        repo / "modules/domains/model/shiyu-model-implementation/src/main/resources/db/baseline/h2/schema",
+        repo / "modules/domains/conversation/shiyu-conversation-implementation/src/main/resources/db/baseline/h2/schema",
+        repo / "modules/domains/education/shiyu-education-implementation/src/main/resources/db/baseline/h2/schema",
+        repo / "modules/domains/governance/shiyu-governance-implementation/src/main/resources/db/baseline/h2/schema",
+        repo / "modules/domains/knowledge/shiyu-knowledge-implementation/src/main/resources/db/baseline/h2/schema",
+        repo / "modules/domains/memory/shiyu-memory-implementation/src/main/resources/db/baseline/h2/schema",
+        repo / "modules/domains/tooling/shiyu-tooling-implementation/src/main/resources/db/baseline/h2/schema",
     ]
     schema_files = sorted(path for root in schema_roots if root.exists() for path in root.rglob("*.sql"))
     tables = parse_tables(schema_files)
     generate_data_dictionary(tables, repo / "docs/参考/领域模型与数据字典.md")
 
-    seed_file = repo / "modules/domains/iam/implementation/src/main/resources/db/baseline/h2/seed/iam/02_auth.sql"
-    navigation_file = repo / "modules/domains/iam/implementation/src/main/resources/db/baseline/h2/seed/iam/05_navigation.sql"
+    seed_file = repo / "modules/domains/iam/shiyu-iam-implementation/src/main/resources/db/baseline/h2/seed/iam/02_auth.sql"
+    navigation_file = repo / "modules/domains/iam/shiyu-iam-implementation/src/main/resources/db/baseline/h2/seed/iam/05_navigation.sql"
     menus, auth_codes = generate_permission_matrix(repo, seed_file, navigation_file, repo / "docs/参考/菜单角色权限矩阵.md")
     print(
         f"generated: paths={paths}, operations={operations}, tables={len(tables)}, "

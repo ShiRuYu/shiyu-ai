@@ -1,0 +1,20 @@
+-- Realistic memory event and graph seed for the default tenant.
+INSERT INTO "PUBLIC"."MEMORY_ENTITY"
+    ("ID", "TENANT_ID", "ENTITY_TYPE", "EXTERNAL_REF", "DISPLAY_NAME", "NORMALIZED_NAME", "ATTRIBUTES", "ACTIVE")
+VALUES ('demo-memory-entity-math', 1, 'KNOWLEDGE', 'knowledge:1001', '一元一次方程', '一元一次方程', '{"subject":"MATH","grade":7}', TRUE);
+
+INSERT INTO "PUBLIC"."MEMORY_EVENT"
+    ("ID", "TENANT_ID", "NAMESPACE", "SUBJECT_TYPE", "SUBJECT_ID", "EVENT_TYPE", "CONTENT", "OCCURRED_AT", "SOURCE_TYPE", "SOURCE_ID", "ATTRIBUTES", "CONFIDENCE", "IMPORTANCE", "STATUS", "CONFIRMATION_POLICY", "CREATED_AT", "UPDATED_AT")
+VALUES ('demo-memory-event-math', 1, 'student:1', 'STUDENT', '1', 'LEARNING_MILESTONE',
+        '学生在一元一次方程阶段测验中取得 95 分，能够独立完成移项和检验。',
+        TIMESTAMP '2026-09-08 09:15:01', 'CHAT_GENERATION', 'demo-generation-20260908-001',
+        '{"score":95,"subject":"MATH"}', 0.98, 0.85, 'ACTIVE', 'AUTO',
+        TIMESTAMP '2026-09-08 09:15:02', TIMESTAMP '2026-09-08 09:15:02');
+
+INSERT INTO "PUBLIC"."MEMORY_EDGE"
+    ("ID", "TENANT_ID", "SOURCE_NODE_ID", "TARGET_NODE_ID", "GRAPH_TYPE", "RELATION_TYPE", "DIRECTED", "WEIGHT", "CONFIDENCE", "ORIGIN", "EVIDENCE_SOURCE", "ACTIVE", "CREATED_AT")
+VALUES ('demo-memory-edge-math', 1, 'demo-memory-event-math', 'demo-memory-entity-math', 'SEMANTIC', 'ABOUT', TRUE, 0.95, 0.98, 'SYSTEM', 'demo-generation-20260908-001', TRUE, TIMESTAMP '2026-09-08 09:15:02');
+
+INSERT INTO "PUBLIC"."MEMORY_CONSOLIDATION_JOB"
+    ("ID", "TENANT_ID", "EVENT_ID", "STATUS", "ATTEMPTS", "AVAILABLE_AT", "CREATED_AT", "UPDATED_AT")
+VALUES (1, 1, 'demo-memory-event-math', 'COMPLETED', 1, TIMESTAMP '2026-09-08 09:16:00', TIMESTAMP '2026-09-08 09:15:02', TIMESTAMP '2026-09-08 09:16:00');

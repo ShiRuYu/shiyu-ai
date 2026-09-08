@@ -16,8 +16,8 @@ from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[2]
 DOMAINS = ROOT / "modules/domains"
-APPLICATION = ROOT / "modules/application"
-WEB_POM = ROOT / "modules/application" / "shiyu-ai-web" / "pom.xml"
+APPLICATION = ROOT / "modules/applications"
+WEB_POM = ROOT / "modules/applications" / "web" / "pom.xml"
 NS = {"m": "http://maven.apache.org/POM/4.0.0"}
 
 
@@ -27,6 +27,14 @@ def dependencies(pom: Path) -> list[str]:
         (node.findtext("m:artifactId", default="", namespaces=NS) or "").strip()
         for node in tree.findall("m:dependencies/m:dependency", NS)
     ]
+
+
+def own_implementation_artifact(pom: Path) -> str | None:
+    """Return the implementation coordinate owned by a domain module."""
+    relative = pom.parent.relative_to(DOMAINS).parts
+    if len(relative) == 2 and relative[1] == "implementation":
+        return f"shiyu-{relative[0]}-implementation"
+    return None
 
 
 def check_web_adapter_dependencies() -> list[str]:
@@ -56,7 +64,7 @@ THREAD_CONTEXT_REFERENCES = re.compile(
 def implementation_modules() -> list[Path]:
     return sorted(
         path
-        for path in DOMAINS.glob("*/*-implementation")
+        for path in DOMAINS.glob("*/implementation")
         if (path / "src/main/java").is_dir()
     )
 
@@ -133,11 +141,10 @@ def check_thread_context_access() -> list[str]:
 def main() -> int:
     violations: list[str] = []
     for pom in sorted(DOMAINS.rglob("pom.xml")):
+        own_implementation = own_implementation_artifact(pom)
         for artifact in dependencies(pom):
-            if artifact.endswith("-implementation"):
-                own = pom.parent.name
-                if artifact != own:
-                    violations.append(f"{pom.relative_to(ROOT)} -> {artifact}")
+            if artifact.endswith("-implementation") and artifact != own_implementation:
+                violations.append(f"{pom.relative_to(ROOT)} -> {artifact}")
 
     violations.extend(check_web_adapter_dependencies())
     violations.extend(check_java_imports())

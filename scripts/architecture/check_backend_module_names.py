@@ -1,9 +1,4 @@
-"""Fail when a backend Maven module directory differs from its artifact id.
-
-Keeping the directory and Maven module names identical avoids ambiguous IDE
-module labels such as ``conversation-implementation [shiyu-conversation-implementation]``
-and makes paths in build, documentation, and schema tooling unambiguous.
-"""
+"""Validate that filesystem module directories match Maven coordinates."""
 
 from __future__ import annotations
 
@@ -14,18 +9,40 @@ from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[2]
 NS = {"m": "http://maven.apache.org/POM/4.0.0"}
+SCAN_ROOTS = (ROOT / "modules", ROOT / "tests")
+
+LEGACY_PATHS = (
+    ROOT / "modules/application",
+    ROOT / "modules/applications/bootstrap",
+    ROOT / "modules/applications/web",
+    ROOT / "modules/applications/composition",
+    ROOT / "tests/architecture",
+    ROOT / "modules/shared/kernel",
+    ROOT / "data",
+)
 
 
 def main() -> int:
     violations: list[str] = []
+    for legacy_path in LEGACY_PATHS:
+        if legacy_path.exists():
+            violations.append(
+                f"legacy path must stay absent: {legacy_path.relative_to(ROOT).as_posix()}"
+            )
     root_model = ET.parse(ROOT / "pom.xml")
     declared = {node.text.strip() for node in root_model.findall("m:modules/m:module", NS)}
-    actual = {pom.parent.relative_to(ROOT).as_posix() for base in (ROOT / "modules", ROOT / "tests") for pom in base.rglob("pom.xml") if "target" not in pom.parts}
+    actual = {
+        pom.parent.relative_to(ROOT).as_posix()
+        for base in SCAN_ROOTS
+        for pom in base.rglob("pom.xml")
+        if "target" not in pom.parts
+    }
     if declared != actual:
         violations.append(f"Root reactor mismatch: missing={sorted(actual - declared)}, unexpected={sorted(declared - actual)}")
     if not actual:
         violations.append("No leaf modules found under modules/ or tests/")
-    for pom in sorted(ROOT.rglob("pom.xml")):
+    project_poms = [ROOT / "pom.xml"] + [pom for base in SCAN_ROOTS for pom in base.rglob("pom.xml")]
+    for pom in sorted(set(project_poms)):
         if "target" in pom.parts:
             continue
         model = ET.parse(pom)
@@ -38,14 +55,13 @@ def main() -> int:
         artifact_id = (ET.parse(pom).findtext("m:artifactId", default="", namespaces=NS) or "").strip()
         if not artifact_id:
             continue
-        directory_name = pom.parent.name
-        if directory_name != artifact_id:
+        if pom.parent.name != artifact_id:
             violations.append(
-                f"{pom.relative_to(ROOT)}: directory '{directory_name}' != artifactId '{artifact_id}'"
+                f"{pom.relative_to(ROOT)}: directory '{pom.parent.name}' != artifactId '{artifact_id}'"
             )
 
     if violations:
-        print("Backend Maven module directories must match their artifactId:")
+        print("Backend Maven module paths and artifactIds are inconsistent:")
         print("\n".join(f"- {violation}" for violation in violations))
         return 1
 

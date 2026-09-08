@@ -234,7 +234,7 @@ mvn clean install -DskipTests
 
 ### 配置 AI 平台
 
-编辑 `modules/applications/bootstrap/src/main/resources/application.yml`，配置至少一个 LLM 平台：
+编辑 `modules/applications/shiyu-ai-bootstrap/src/main/resources/application.yml`，配置至少一个 LLM 平台：
 
 ```yaml
 shiyu:
@@ -252,15 +252,15 @@ shiyu:
 
 ```bash
 cd shiyu-ai
-mvn -pl modules/applications/bootstrap -am -DskipTests package
-java -jar modules/applications/bootstrap/target/shiyu-ai-bootstrap-1.0.0.jar --spring.profiles.active=dev
+mvn -pl modules/applications/shiyu-ai-bootstrap -am -DskipTests package
+java -jar modules/applications/shiyu-ai-bootstrap/target/shiyu-ai-bootstrap-1.0.0.jar --spring.profiles.active=dev
 ```
 
 从 bootstrap 子目录直接执行 `spring-boot:run` 可能加载本机 Maven 仓库中的旧模块包；开发环境应先从根目录构建 reactor，确保运行的是当前源码。
 
 #### Maven Profile（可选能力开关）
 
-`modules/applications/bootstrap/pom.xml` 定义了 3 个可选 Maven profile，用于按需加载依赖（生产包默认不启用）：
+`modules/applications/shiyu-ai-bootstrap/pom.xml` 定义了 3 个可选 Maven profile，用于按需加载依赖（生产包默认不启用）：
 
 | Profile | 添加的依赖 | 用途 |
 |---------|------------|------|
@@ -272,7 +272,7 @@ java -jar modules/applications/bootstrap/target/shiyu-ai-bootstrap-1.0.0.jar --s
 
 ```bash
 # 打包时启用观测
-mvn -Pobservability -pl modules/applications/bootstrap -am -DskipTests package
+mvn -Pobservability -pl modules/applications/shiyu-ai-bootstrap -am -DskipTests package
 # 运行时可同时启用多个
 mvn -Pobservability,api-docs-ui,s3 spring-boot:run
 ```
@@ -325,7 +325,7 @@ Linux 使用对应的 `scripts/package-cloud-linux.sh` 和
 | 认证授权 | `/api/iam/auth/**`、`/api/iam/users/**`、`/api/iam/roles/**`、`/api/iam/menus/**`、`/api/iam/tenants/**` | 登录、租户、角色与菜单 |
 | 平台治理 | `/api/iam/**`、`/api/governance/usage/**`、`/api/tooling/plugins/**`、`/api/tooling/tools/**` | 文件、用量、插件与工具 |
 
-完整的 404 条路径、440 个 operation 见 [API 接口参考](./docs/参考/API接口参考.md)；菜单、角色和权限见 [菜单角色权限矩阵](./docs/参考/菜单角色权限矩阵.md)。
+完整的 377 条路径、413 个 operation 见 [API 接口参考](./docs/参考/API接口参考.md)；菜单、角色和权限见 [菜单角色权限矩阵](./docs/参考/菜单角色权限矩阵.md)。
 
 ---
 

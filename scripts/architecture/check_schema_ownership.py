@@ -9,18 +9,18 @@ from pathlib import Path
 
 
 OWNER_ROOTS = {
-    "application": "modules/applications/composition/src/main/resources/db/baseline/h2",
-    "common-core": "modules/infrastructure/core/src/main/resources/db/baseline/h2",
-    "common-storage": "modules/infrastructure/storage/src/main/resources/db/baseline/h2",
-    "iam": "modules/domains/iam/implementation/src/main/resources/db/baseline/h2",
-    "agent": "modules/domains/agent/implementation/src/main/resources/db/baseline/h2",
-    "model": "modules/domains/model/implementation/src/main/resources/db/baseline/h2",
-    "conversation": "modules/domains/conversation/implementation/src/main/resources/db/baseline/h2",
-    "education": "modules/domains/education/implementation/src/main/resources/db/baseline/h2",
-    "governance": "modules/domains/governance/implementation/src/main/resources/db/baseline/h2",
-    "knowledge": "modules/domains/knowledge/implementation/src/main/resources/db/baseline/h2",
-    "memory": "modules/domains/memory/implementation/src/main/resources/db/baseline/h2",
-    "tooling": "modules/domains/tooling/implementation/src/main/resources/db/baseline/h2",
+    "application": "modules/applications/shiyu-application/src/main/resources/db/baseline/h2",
+    "common-core": "modules/infrastructure/shiyu-common-core/src/main/resources/db/baseline/h2",
+    "common-storage": "modules/infrastructure/shiyu-common-storage/src/main/resources/db/baseline/h2",
+    "iam": "modules/domains/iam/shiyu-iam-implementation/src/main/resources/db/baseline/h2",
+    "agent": "modules/domains/agent/shiyu-agent-implementation/src/main/resources/db/baseline/h2",
+    "model": "modules/domains/model/shiyu-model-implementation/src/main/resources/db/baseline/h2",
+    "conversation": "modules/domains/conversation/shiyu-conversation-implementation/src/main/resources/db/baseline/h2",
+    "education": "modules/domains/education/shiyu-education-implementation/src/main/resources/db/baseline/h2",
+    "governance": "modules/domains/governance/shiyu-governance-implementation/src/main/resources/db/baseline/h2",
+    "knowledge": "modules/domains/knowledge/shiyu-knowledge-implementation/src/main/resources/db/baseline/h2",
+    "memory": "modules/domains/memory/shiyu-memory-implementation/src/main/resources/db/baseline/h2",
+    "tooling": "modules/domains/tooling/shiyu-tooling-implementation/src/main/resources/db/baseline/h2",
 }
 
 CREATE_TABLE = re.compile(
