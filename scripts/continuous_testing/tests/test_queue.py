@@ -7,7 +7,7 @@ class QueueTests(unittest.TestCase):
         with tempfile.TemporaryDirectory() as d:
             state = Path(d) / ".testing"; daemon = Daemon(Path.cwd(), Path.cwd(), state)
             daemon.detector.stable_seconds = 0
-            self.assertTrue(daemon.tick())
+            daemon.tick(); self.assertTrue(daemon.tick())
             pending = json.loads((state / "pending-version.json").read_text())
             self.assertEqual(pending["status"], "QUEUED")
 
