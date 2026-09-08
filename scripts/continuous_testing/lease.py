@@ -12,6 +12,12 @@ class Lease:
             with os.fdopen(fd, "w", encoding="utf-8") as handle: json.dump({"pid": os.getpid()}, handle)
             self.held = True; return True
         except FileExistsError:
+            try:
+                pid = int(json.loads(self.path.read_text(encoding="utf-8"))["pid"])
+                os.kill(pid, 0)
+            except (FileNotFoundError, ProcessLookupError, ValueError, KeyError, json.JSONDecodeError, PermissionError):
+                self.path.unlink(missing_ok=True)
+                return self.acquire()
             return False
     def release(self) -> None:
         if self.held:
