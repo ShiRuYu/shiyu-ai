@@ -51,6 +51,9 @@ build/
 /runtime/
 **/data/
 
+# Continuous testing runtime state and evidence
+/.testing/
+
 # 例外：Flyway 种子数据文件
 !**/db/migration/data/
 !**/db/migration/data/**
