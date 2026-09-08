@@ -24,6 +24,8 @@ class Daemon:
     def stop(self, *_): self.stop_requested = True
     def tick(self) -> bool:
         current = Snapshot.capture(self.backend, self.frontend)
+        self.state_dir.mkdir(parents=True, exist_ok=True)
+        (self.state_dir / "heartbeat.json").write_text(json.dumps({"pid": os.getpid(), "observed": time.time()}), encoding="utf-8")
         marker = self.state_dir / "version.json"
         previous = json.loads(marker.read_text()) if marker.exists() else None
         fingerprint = json.dumps(current, sort_keys=True)
