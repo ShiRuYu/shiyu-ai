@@ -4,6 +4,7 @@ import json, os, signal, time
 from pathlib import Path
 from .snapshot import Snapshot
 from .store import StateStore
+from .lease import Lease
 
 class StableChangeDetector:
     def __init__(self, stable_seconds: int = 30, clock=time.monotonic):
@@ -34,8 +35,9 @@ class Daemon:
         return changed
     def run(self) -> None:
         signal.signal(signal.SIGINT, self.stop); signal.signal(signal.SIGTERM, self.stop)
-        while not self.stop_requested:
-            self.tick(); time.sleep(self.interval)
+        with Lease(self.state_dir / "scheduler.lock"):
+            while not self.stop_requested:
+                self.tick(); time.sleep(self.interval)
 
 def main() -> int:
     root = Path(os.environ.get("SHIYU_BACKEND_ROOT", Path.cwd()))
