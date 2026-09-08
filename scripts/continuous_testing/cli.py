@@ -4,6 +4,7 @@ import argparse, json, os, platform, sys
 from pathlib import Path
 from .store import StateStore
 from .snapshot import Snapshot
+from .report import build_report
 
 def _root() -> Path:
     return Path(os.environ.get("SHIYU_TESTING_ROOT", Path.cwd() / ".testing"))
@@ -19,9 +20,6 @@ def main(argv=None) -> int:
         store.update_run(run_id, "RUNNING")
         store.write_snapshot(root / "state.json")
         print(json.dumps({"run_id": run_id, "status": "RUNNING"}))
-    elif args.command == "status":
-        store.write_snapshot(root / "state.json")
-        print(json.dumps({"runs": store.list_runs(), "tasks": store.list_tasks()}, ensure_ascii=False, indent=2))
     elif args.command == "replay":
         if not args.failure_id:
             parser.error("replay requires failure-id")
@@ -30,6 +28,12 @@ def main(argv=None) -> int:
         except KeyError:
             print(json.dumps({"failure_id": args.failure_id, "status": "BLOCKED", "error": "failure not found"}))
             return 1
+    elif args.command == "status":
+        store.write_snapshot(root / "state.json")
+        payload = {"runs": store.list_runs(), "tasks": store.list_tasks()}
+        if payload["runs"]:
+            payload["latest_report"] = build_report(store, payload["runs"][0]["id"])
+        print(json.dumps(payload, ensure_ascii=False, indent=2))
     else:
         runs = store.list_runs()
         if not runs:
