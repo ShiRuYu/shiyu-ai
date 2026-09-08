@@ -34,6 +34,8 @@ class Daemon:
         if changed:
             marker.parent.mkdir(parents=True, exist_ok=True)
             marker.write_text(json.dumps(current, indent=2), encoding="utf-8")
+            pending = marker.with_name("pending-version.json")
+            pending.write_text(json.dumps({"status": "QUEUED", "version": current}, indent=2), encoding="utf-8")
         return changed
     def run(self) -> None:
         signal.signal(signal.SIGINT, self.stop); signal.signal(signal.SIGTERM, self.stop)
