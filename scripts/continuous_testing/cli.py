@@ -5,6 +5,7 @@ from pathlib import Path
 from .store import StateStore
 from .snapshot import Snapshot
 from .report import build_report
+from .process_control import stop_owned
 
 def _root() -> Path:
     return Path(os.environ.get("SHIYU_TESTING_ROOT", Path.cwd() / ".testing"))
@@ -43,9 +44,10 @@ def main(argv=None) -> int:
             print("no runs")
             return 0
         status = {"pause": "PAUSED", "resume": "RUNNING", "stop": "STOPPED"}[args.command]
+        stopped = stop_owned(root / "scheduler.lock") if args.command == "stop" else False
         store.update_run(runs[0]["id"], status)
         store.write_snapshot(root / "state.json")
-        print(json.dumps({"run_id": runs[0]["id"], "status": status}))
+        print(json.dumps({"run_id": runs[0]["id"], "status": status, "process_stop_requested": stopped}))
     return 0
 
 if __name__ == "__main__":
