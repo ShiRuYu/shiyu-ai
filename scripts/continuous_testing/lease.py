@@ -15,7 +15,7 @@ class Lease:
             try:
                 pid = int(json.loads(self.path.read_text(encoding="utf-8"))["pid"])
                 os.kill(pid, 0)
-            except (FileNotFoundError, ProcessLookupError, ValueError, KeyError, json.JSONDecodeError, PermissionError):
+            except (FileNotFoundError, ProcessLookupError, ValueError, KeyError, json.JSONDecodeError, PermissionError, OSError):
                 self.path.unlink(missing_ok=True)
                 return self.acquire()
             return False
