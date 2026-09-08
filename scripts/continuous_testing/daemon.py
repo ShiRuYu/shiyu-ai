@@ -5,17 +5,29 @@ from pathlib import Path
 from .snapshot import Snapshot
 from .store import StateStore
 
+class StableChangeDetector:
+    def __init__(self, stable_seconds: int = 30, clock=time.monotonic):
+        self.stable_seconds = stable_seconds; self.clock = clock; self.fingerprint = None; self.started = None
+    def observe(self, fingerprint: str) -> bool:
+        now = self.clock()
+        if fingerprint != self.fingerprint:
+            self.fingerprint, self.started = fingerprint, now
+            return False
+        return self.started is not None and now - self.started >= self.stable_seconds
+
 class Daemon:
     def __init__(self, backend: Path, frontend: Path, state_dir: Path, interval: int = 60):
         self.backend, self.frontend, self.state_dir = backend, frontend, state_dir
         self.interval = interval; self.stop_requested = False
-        self.state = StateStore(state_dir / "state.sqlite"); self.state.initialize()
+        self.state = StateStore(state_dir / "state.sqlite"); self.state.initialize(); self.detector = StableChangeDetector()
     def stop(self, *_): self.stop_requested = True
     def tick(self) -> bool:
         current = Snapshot.capture(self.backend, self.frontend)
         marker = self.state_dir / "version.json"
         previous = json.loads(marker.read_text()) if marker.exists() else None
-        changed = previous != current
+        fingerprint = json.dumps(current, sort_keys=True)
+        stable = self.detector.observe(fingerprint)
+        changed = stable and previous != current
         if changed:
             marker.parent.mkdir(parents=True, exist_ok=True)
             marker.write_text(json.dumps(current, indent=2), encoding="utf-8")

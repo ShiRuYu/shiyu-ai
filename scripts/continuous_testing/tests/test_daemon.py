@@ -7,8 +7,7 @@ class DaemonTests(unittest.TestCase):
         with tempfile.TemporaryDirectory() as d:
             root = Path(d); state = root / ".testing"
             daemon = Daemon(Path.cwd(), Path.cwd(), state)
-            self.assertTrue(daemon.tick()); self.assertFalse(daemon.tick())
-            (state / "version.json").write_text("{}")
-            self.assertTrue(daemon.tick())
+            self.assertFalse(daemon.tick()); self.assertFalse(daemon.tick())
+            self.assertFalse((state / "version.json").exists())
 
 if __name__ == "__main__": unittest.main()
