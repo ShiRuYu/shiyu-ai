@@ -95,6 +95,17 @@ class StateStore:
                 result.append(item)
             return result
 
+    def update_task(self, task_id: str, status: str, **fields: Any) -> None:
+        if status not in TASK_STATUSES:
+            raise ValueError(f"invalid task status: {status}")
+        allowed = {k: v for k, v in fields.items() if k in {"started_at", "finished_at", "exit_code", "output_path", "error"}}
+        sets = ["status=?"]; values: list[Any] = [status]
+        for key, value in allowed.items(): sets.append(f"{key}=?"); values.append(value)
+        values.append(task_id)
+        with self._connect() as db:
+            if not db.execute("SELECT 1 FROM tasks WHERE id=?", (task_id,)).fetchone(): raise KeyError(task_id)
+            db.execute(f"UPDATE tasks SET {', '.join(sets)} WHERE id=?", values)
+
     def add_failure(self, task_id: str, signature: str, evidence_path: str) -> str:
         failure_id = uuid.uuid4().hex
         with self._connect() as db:
