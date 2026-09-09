@@ -1,6 +1,6 @@
 """Restart-safe polling daemon for the continuous testing controller."""
 from __future__ import annotations
-import json, os, signal, time
+import json, os, signal, sys, subprocess, time
 from pathlib import Path
 from .snapshot import Snapshot
 from .store import StateStore
@@ -18,11 +18,31 @@ class StableChangeDetector:
         return self.started is not None and now - self.started >= self.stable_seconds
 
 class Daemon:
-    def __init__(self, backend: Path, frontend: Path, state_dir: Path, interval: int = 60):
+    def __init__(self, backend: Path, frontend: Path, state_dir: Path, interval: int = 60, auto_run: bool = False):
         self.backend, self.frontend, self.state_dir = backend, frontend, state_dir
         self.interval = interval; self.stop_requested = False
         self.state = StateStore(state_dir / "state.sqlite"); self.state.initialize(); self.detector = StableChangeDetector()
         self.exploration_ticks = 0
+        self.auto_run = auto_run
+        self.baseline_process = None
+    def _consume_pending(self) -> None:
+        if not self.auto_run:
+            return
+        if self.baseline_process is not None:
+            if self.baseline_process.poll() is None:
+                return
+            self.baseline_process = None
+        pending = self.state_dir / "pending-version.json"
+        if not pending.exists() or (self.state_dir / "running-version.json").exists():
+            return
+        log_dir = self.state_dir / "runs" / "daemon-baseline"
+        log_dir.mkdir(parents=True, exist_ok=True)
+        log = (log_dir / "launcher.log").open("a", encoding="utf-8")
+        self.baseline_process = subprocess.Popen(
+            [sys.executable, "-m", "scripts.continuous_testing.cli", "run-baseline"],
+            cwd=str(self.backend), stdout=log, stderr=subprocess.STDOUT,
+            creationflags=getattr(subprocess, "CREATE_NEW_PROCESS_GROUP", 0),
+        )
     def stop(self, *_): self.stop_requested = True
     def tick(self) -> bool:
         current = Snapshot.capture(self.backend, self.frontend)
@@ -52,6 +72,7 @@ class Daemon:
                 temp = pending.with_suffix(".tmp")
                 temp.write_text(json.dumps({"status": "QUEUED", "version": current}, indent=2), encoding="utf-8")
                 os.replace(temp, pending)
+        self._consume_pending()
         return changed
     def run(self) -> None:
         signal.signal(signal.SIGINT, self.stop); signal.signal(signal.SIGTERM, self.stop)
@@ -62,6 +83,6 @@ class Daemon:
 def main() -> int:
     root = Path(os.environ.get("SHIYU_BACKEND_ROOT", Path.cwd()))
     frontend = Path(os.environ.get("SHIYU_FRONTEND_ROOT", root.parent / "shiyu-ui"))
-    Daemon(root, frontend, root / ".testing").run(); return 0
+    Daemon(root, frontend, root / ".testing", auto_run=True).run(); return 0
 
 if __name__ == "__main__": raise SystemExit(main())
