@@ -15,14 +15,14 @@ import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Future;
 import java.util.concurrent.TimeoutException;
 
-@Setter
-@Getter
-@Slf4j
 /**
  * Framework-neutral node execution template. The LangGraph adapter lives in
  * the implementation module and converts its AgentState to the map accepted
  * by this contract type.
  */
+@Setter
+@Getter
+@Slf4j
 public abstract class BaseNode {
 
     protected NodeConfig config;

@@ -6,6 +6,7 @@ import java.time.Duration;
 import java.util.Set;
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
+import java.nio.file.Path;
 import static org.mockito.Mockito.*;
 
 import static org.junit.jupiter.api.Assertions.*;
@@ -13,8 +14,8 @@ import static org.junit.jupiter.api.Assertions.*;
 class PluginWorkerRpcClientTest {
     @Test
     void exchangesNewlineDelimitedRequestAndRejectsInvalidPayloads() throws Exception {
-        String executable = System.getenv().getOrDefault("ComSpec", "C:/Windows/System32/cmd.exe");
-        PluginWorkerSpec spec = new PluginWorkerSpec(executable, Set.of(java.nio.file.Path.of(executable).getParent().toString()), Set.of(), Set.of(), Duration.ofSeconds(1));
+        Path executable = javaExecutable();
+        PluginWorkerSpec spec = spec(executable);
         Process worker = mock(Process.class);
         when(worker.isAlive()).thenReturn(true);
         when(worker.getOutputStream()).thenReturn(new ByteArrayOutputStream());
@@ -26,10 +27,10 @@ class PluginWorkerRpcClientTest {
 
     @Test
     void rejectsDeadWorker() throws Exception {
-        String executable = System.getenv().getOrDefault("ComSpec", "C:/Windows/System32/cmd.exe");
-        Process worker = new ProcessBuilder(executable, "/c", "exit", "0").start();
+        Path executable = javaExecutable();
+        Process worker = new ProcessBuilder(executable.toString(), "-version").start();
         worker.waitFor();
-        PluginWorkerSpec spec = new PluginWorkerSpec(executable, Set.of(java.nio.file.Path.of(executable).getParent().toString()), Set.of(), Set.of(), Duration.ofSeconds(1));
+        PluginWorkerSpec spec = spec(executable);
         assertThrows(java.io.IOException.class, () -> PluginWorkerRpcClient.call(worker, "request", spec));
     }
 
@@ -47,5 +48,14 @@ class PluginWorkerRpcClientTest {
         PluginWorkerSpec spec = new PluginWorkerSpec("worker", Set.of(), Set.of(), Set.of(), Duration.ofMillis(1));
         assertThrows(java.util.concurrent.TimeoutException.class, () -> PluginWorkerRpcClient.call(worker, "request", spec));
         verify(worker).destroyForcibly();
+    }
+
+    private static Path javaExecutable() {
+        String executableName = System.getProperty("os.name").toLowerCase().contains("win") ? "java.exe" : "java";
+        return Path.of(System.getProperty("java.home"), "bin", executableName);
+    }
+
+    private static PluginWorkerSpec spec(Path executable) {
+        return new PluginWorkerSpec(executable.toString(), Set.of(executable.getParent().toString()), Set.of(), Set.of(), Duration.ofSeconds(1));
     }
 }
