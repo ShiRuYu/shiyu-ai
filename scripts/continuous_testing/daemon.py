@@ -24,6 +24,7 @@ class Daemon:
         self.state = StateStore(state_dir / "state.sqlite"); self.state.initialize(); self.detector = StableChangeDetector()
         self._recover_orphaned_runs()
         self.exploration_ticks = 0
+        self.exploration_strategy = 1
         self.auto_run = auto_run
         self.baseline_process = None
         self.baseline_log = None
@@ -69,11 +70,18 @@ class Daemon:
         (self.state_dir / "heartbeat.json").write_text(json.dumps({"pid": os.getpid(), "observed": time.time()}), encoding="utf-8")
         self.exploration_ticks += 1
         if self.exploration_ticks % 20 == 0:
-            try:
-                ledger = ScenarioLedger(self.state_dir / "explored-space.json")
-                generate_batch(ledger)
-            except RuntimeError as exc:
-                (self.state_dir / "pause-reason.txt").write_text(str(exc), encoding="utf-8")
+            ledger = ScenarioLedger(self.state_dir / "explored-space.json")
+            batch = None
+            for offset in range(9):
+                strategy_id = ((self.exploration_strategy - 1 + offset) % 9) + 1
+                try:
+                    batch = generate_batch(ledger, strategy=f"adaptive-v{strategy_id}")
+                    self.exploration_strategy = (strategy_id % 9) + 1
+                    break
+                except RuntimeError:
+                    continue
+            if batch is None:
+                (self.state_dir / "pause-reason.txt").write_text("all adaptive exploration strategies exhausted", encoding="utf-8")
         marker = self.state_dir / "version.json"
         previous = json.loads(marker.read_text()) if marker.exists() else None
         fingerprint = json.dumps(current, sort_keys=True)
