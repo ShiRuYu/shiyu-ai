@@ -87,7 +87,13 @@ class Daemon:
             # newest stable snapshot. Once execution claims it, the running
             # snapshot is immutable so long-running work never changes version.
             running = marker.with_name("running-version.json")
-            if not running.exists():
+            running_active = False
+            if running.exists():
+                try:
+                    running_active = json.loads(running.read_text(encoding="utf-8")).get("status") == "RUNNING"
+                except (OSError, json.JSONDecodeError):
+                    running_active = True
+            if not running_active:
                 temp = pending.with_suffix(".tmp")
                 temp.write_text(json.dumps({"status": "QUEUED", "version": current}, indent=2), encoding="utf-8")
                 os.replace(temp, pending)
