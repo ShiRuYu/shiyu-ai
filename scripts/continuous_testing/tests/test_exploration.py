@@ -1,4 +1,5 @@
-import unittest
+import unittest, tempfile
+from pathlib import Path
 from scripts.continuous_testing.exploration import Scenario, ScenarioLedger, dispatch_plan
 
 class ExplorationTests(unittest.TestCase):
@@ -12,5 +13,12 @@ class ExplorationTests(unittest.TestCase):
         self.assertEqual(plan.count("risk-gap"), 12)
         self.assertEqual(plan.count("stale-area"), 5)
         self.assertEqual(plan.count("historical-failure"), 3)
+
+    def test_ledger_survives_restart(self):
+        with tempfile.TemporaryDirectory() as d:
+            path = Path(d) / "explored-space.json"
+            scenario = Scenario("api-fuzz", "search", "member", "empty", 100, "serial", "none")
+            self.assertTrue(ScenarioLedger(path).add(scenario))
+            self.assertFalse(ScenarioLedger(path).add(scenario))
 
 if __name__ == "__main__": unittest.main()
