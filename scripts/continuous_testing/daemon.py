@@ -77,6 +77,7 @@ class Daemon:
                 try:
                     batch = generate_batch(ledger, strategy=f"adaptive-v{strategy_id}")
                     self.exploration_strategy = (strategy_id % 9) + 1
+                    (self.state_dir / "pause-reason.txt").unlink(missing_ok=True)
                     break
                 except RuntimeError:
                     continue
