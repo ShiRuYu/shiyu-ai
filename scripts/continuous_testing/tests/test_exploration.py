@@ -28,4 +28,15 @@ class ExplorationTests(unittest.TestCase):
         self.assertEqual([s.purpose for s in batch].count("risk-gap"), 12)
         self.assertEqual(len({s.key() for s in batch}), 20)
 
+    def test_exhausted_space_fails_explicitly(self):
+        ledger = ScenarioLedger()
+        exhausted = False
+        for _ in range(12):
+            try:
+                generate_batch(ledger, 20)
+            except RuntimeError:
+                exhausted = True
+                break
+        self.assertTrue(exhausted)
+
 if __name__ == "__main__": unittest.main()

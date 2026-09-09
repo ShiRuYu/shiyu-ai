@@ -56,9 +56,14 @@ def generate_batch(ledger: ScenarioLedger, total: int = 20) -> list[Scenario]:
     boundaries = ("empty", "unicode", "max-length", "pagination")
     result: list[Scenario] = []
     index = 0
-    while len(result) < total:
+    attempts = 0
+    max_attempts = max(total * 20, 100)
+    while len(result) < total and attempts < max_attempts:
         purpose = purposes[len(result)]
         scenario = Scenario("adaptive-v1", operations[index % len(operations)], "member", boundaries[index % len(boundaries)], 100 * (1 + index % 3), "serial", "none", purpose)
         index += 1
+        attempts += 1
         if ledger.add(scenario): result.append(scenario)
+    if len(result) < total:
+        raise RuntimeError("exploration semantic space exhausted; change strategy or expand dimensions")
     return result
