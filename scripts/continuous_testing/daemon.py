@@ -35,11 +35,11 @@ class Daemon:
             marker.parent.mkdir(parents=True, exist_ok=True)
             marker.write_text(json.dumps(current, indent=2), encoding="utf-8")
             pending = marker.with_name("pending-version.json")
-            # Keep an already queued or running snapshot intact.  The consumer
-            # must finish that version before a later snapshot can be queued;
-            # otherwise a restart/change during execution silently loses work.
+            # A queued snapshot has not started and may be replaced by the
+            # newest stable snapshot. Once execution claims it, the running
+            # snapshot is immutable so long-running work never changes version.
             running = marker.with_name("running-version.json")
-            if not pending.exists() and not running.exists():
+            if not running.exists():
                 temp = pending.with_suffix(".tmp")
                 temp.write_text(json.dumps({"status": "QUEUED", "version": current}, indent=2), encoding="utf-8")
                 os.replace(temp, pending)
