@@ -6,7 +6,7 @@ import com.mybatisflex.annotation.Table;
 import com.shiyu.ai.common.mybatis.model.TenantEntity;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
-import com.shiyu.ai.knowledge.domain.model.KnowledgeReviewRecordBO;
+import com.shiyu.ai.knowledge.implementation.domain.model.KnowledgeReviewRecordBO;
 import io.github.linpeilie.annotations.AutoMapper;
 
 @Data
@@ -23,4 +23,5 @@ public class KnowledgeReviewRecordDO extends TenantEntity {
     private String action;
     private String commentText;
 }
+
 

@@ -8,7 +8,7 @@ import lombok.Data;
 import lombok.EqualsAndHashCode;
 
 import java.time.LocalDateTime;
-import com.shiyu.ai.knowledge.domain.model.KnowledgeDocumentVersionBO;
+import com.shiyu.ai.knowledge.implementation.domain.model.KnowledgeDocumentVersionBO;
 import io.github.linpeilie.annotations.AutoMapper;
 
 @Data
@@ -36,4 +36,5 @@ public class KnowledgeDocumentVersionDO extends TenantEntity {
     private String modelProfile;
     private LocalDateTime publishedAt;
 }
+
 

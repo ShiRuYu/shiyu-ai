@@ -5,7 +5,7 @@ import java.util.List;
 
 import com.shiyu.ai.common.core.api.PageData;
 import com.shiyu.ai.common.core.utils.MapstructUtils;
-import com.shiyu.ai.education.domain.model.ChapterBO;
+import com.shiyu.ai.education.implementation.domain.model.ChapterBO;
 import com.shiyu.ai.education.implementation.persistence.dataobject.ChapterDO;
 import com.shiyu.ai.education.implementation.persistence.mapper.ChapterMapper;
 import com.shiyu.ai.kernel.context.TenantId;
@@ -13,7 +13,7 @@ import jakarta.annotation.Resource;
 import org.springframework.stereotype.Component;
 
 @Component
-public class ChapterRepositoryImpl implements com.shiyu.ai.education.port.repository.ChapterRepository {
+public class ChapterRepositoryImpl implements com.shiyu.ai.education.implementation.domain.port.repository.ChapterRepository {
 
     @Resource
     private ChapterMapper chapterMapper;
@@ -67,4 +67,5 @@ public class ChapterRepositoryImpl implements com.shiyu.ai.education.port.reposi
     }
 
 }
+
 

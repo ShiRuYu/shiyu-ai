@@ -5,7 +5,7 @@ import java.util.List;
 
 import com.shiyu.ai.common.core.api.PageData;
 import com.shiyu.ai.common.core.utils.MapstructUtils;
-import com.shiyu.ai.education.domain.model.ResourceBO;
+import com.shiyu.ai.education.implementation.domain.model.ResourceBO;
 import com.shiyu.ai.education.implementation.persistence.dataobject.ResourceDO;
 import com.shiyu.ai.education.implementation.persistence.mapper.ResourceMapper;
 import com.shiyu.ai.kernel.context.TenantId;
@@ -13,7 +13,7 @@ import jakarta.annotation.Resource;
 import org.springframework.stereotype.Component;
 
 @Component
-public class ResourceRepositoryImpl implements com.shiyu.ai.education.port.repository.ResourceRepository {
+public class ResourceRepositoryImpl implements com.shiyu.ai.education.implementation.domain.port.repository.ResourceRepository {
 
     @Resource
     private ResourceMapper resourceMapper;
@@ -73,4 +73,5 @@ public class ResourceRepositoryImpl implements com.shiyu.ai.education.port.repos
         return EducationWriteGuard.require(resourceMapper.deleteByQuery(QueryWrapper.create().eq("tenant_id", tenantId.value()).eq("id", id)), "delete resource");
     }
 }
+
 

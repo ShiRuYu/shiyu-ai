@@ -7,7 +7,7 @@ import com.shiyu.ai.governance.implementation.usage.port.repository.UsageRecordR
 import com.shiyu.ai.governance.implementation.usage.persistence.dataobject.UsageRecordDO;
 import com.shiyu.ai.governance.implementation.usage.persistence.mapper.UsageRecordMapper;
 import com.shiyu.ai.kernel.context.TenantId;
-import com.shiyu.ai.model.port.ModelCatalogPort;
+import com.shiyu.ai.model.contract.api.ModelCatalogPort;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.dao.DuplicateKeyException;

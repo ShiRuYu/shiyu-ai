@@ -2,8 +2,8 @@ package com.shiyu.ai.model.implementation.persistence.repository;
 
 import com.shiyu.ai.common.core.utils.MapstructUtils;
 import com.shiyu.ai.kernel.context.TenantId;
-import com.shiyu.ai.model.domain.model.AiModelBO;
-import com.shiyu.ai.model.domain.model.AiPlatformBO;
+import com.shiyu.ai.model.implementation.domain.model.AiModelBO;
+import com.shiyu.ai.model.implementation.domain.model.AiPlatformBO;
 import com.shiyu.ai.model.implementation.persistence.dataobject.AiModelDO;
 import com.shiyu.ai.model.implementation.persistence.dataobject.AiPlatformDO;
 import org.junit.jupiter.api.Test;

@@ -8,7 +8,7 @@ import lombok.Data;
 import lombok.EqualsAndHashCode;
 
 import java.time.LocalDateTime;
-import com.shiyu.ai.education.domain.model.TeacherBO;
+import com.shiyu.ai.education.implementation.domain.model.TeacherBO;
 import io.github.linpeilie.annotations.AutoMapper;
 
 @Data
@@ -30,4 +30,5 @@ public class TeacherDO extends TenantEntity {
     private String phone;
     private LocalDateTime createdAt;
 }
+
 

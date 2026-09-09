@@ -5,7 +5,7 @@ import java.util.List;
 
 import com.shiyu.ai.common.core.api.PageData;
 import com.shiyu.ai.common.core.utils.MapstructUtils;
-import com.shiyu.ai.education.domain.model.QuestionBO;
+import com.shiyu.ai.education.implementation.domain.model.QuestionBO;
 import com.shiyu.ai.education.implementation.persistence.dataobject.QuestionDO;
 import com.shiyu.ai.education.implementation.persistence.mapper.QuestionMapper;
 import com.shiyu.ai.kernel.context.TenantId;
@@ -13,7 +13,7 @@ import jakarta.annotation.Resource;
 import org.springframework.stereotype.Component;
 
 @Component
-public class QuestionRepositoryImpl implements com.shiyu.ai.education.port.repository.QuestionRepository {
+public class QuestionRepositoryImpl implements com.shiyu.ai.education.implementation.domain.port.repository.QuestionRepository {
 
     @Resource
     private QuestionMapper questionMapper;
@@ -81,4 +81,5 @@ public class QuestionRepositoryImpl implements com.shiyu.ai.education.port.repos
         return EducationWriteGuard.require(questionMapper.deleteByQuery(QueryWrapper.create().eq("tenant_id", tenantId.value()).eq("id", id)), "delete question");
     }
 }
+
 

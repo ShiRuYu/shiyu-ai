@@ -1,12 +1,12 @@
 package com.shiyu.ai.web.auth;
 
-import com.shiyu.ai.auth.handler.LoginRateLimiter;
-import com.shiyu.ai.auth.request.LoginRequest;
-import com.shiyu.ai.auth.request.RefreshTokenRequest;
-import com.shiyu.ai.auth.service.AuthService;
-import com.shiyu.ai.auth.service.UserService;
-import com.shiyu.ai.auth.vo.LoginResponseVO;
-import com.shiyu.ai.auth.web.AuthController;
+import com.shiyu.ai.iam.implementation.handler.LoginRateLimiter;
+import com.shiyu.ai.iam.implementation.request.LoginRequest;
+import com.shiyu.ai.iam.implementation.request.RefreshTokenRequest;
+import com.shiyu.ai.iam.implementation.service.AuthService;
+import com.shiyu.ai.iam.implementation.service.UserService;
+import com.shiyu.ai.iam.implementation.vo.LoginResponseVO;
+import com.shiyu.ai.iam.implementation.web.AuthController;
 import com.shiyu.ai.common.core.api.Result;
 import com.shiyu.ai.common.core.domain.UserContext;
 import com.shiyu.ai.common.core.domain.UserContextHolder;
@@ -92,3 +92,4 @@ class AuthControllerTest {
         verify(authService).refreshToken("old-access-token");
     }
 }
+

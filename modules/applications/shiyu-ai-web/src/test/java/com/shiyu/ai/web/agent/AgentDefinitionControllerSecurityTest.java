@@ -1,7 +1,7 @@
 package com.shiyu.ai.web.agent;
 
 import cn.dev33.satoken.annotation.SaCheckPermission;
-import com.shiyu.ai.agent.web.AgentDefinitionController;
+import com.shiyu.ai.agent.implementation.web.AgentDefinitionController;
 import org.junit.jupiter.api.Tag;
 import org.junit.jupiter.api.Test;
 

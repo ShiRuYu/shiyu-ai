@@ -8,7 +8,7 @@ import lombok.Data;
 import lombok.EqualsAndHashCode;
 
 import java.time.LocalDateTime;
-import com.shiyu.ai.education.domain.model.QuestionBO;
+import com.shiyu.ai.education.implementation.domain.model.QuestionBO;
 import io.github.linpeilie.annotations.AutoMapper;
 
 @Data
@@ -35,4 +35,5 @@ public class QuestionDO extends TenantEntity {
     private String tags;
     private Long usedCount;
 }
+
 

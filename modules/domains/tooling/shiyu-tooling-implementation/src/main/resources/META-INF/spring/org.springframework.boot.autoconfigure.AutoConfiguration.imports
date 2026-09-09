@@ -1,2 +1,2 @@
-com.shiyu.ai.plugin.config.PluginAutoConfiguration
-com.shiyu.ai.tool.config.McpToolAutoConfiguration
+com.shiyu.ai.tooling.implementation.plugin.config.PluginAutoConfiguration
+com.shiyu.ai.tooling.implementation.tool.config.McpToolAutoConfiguration

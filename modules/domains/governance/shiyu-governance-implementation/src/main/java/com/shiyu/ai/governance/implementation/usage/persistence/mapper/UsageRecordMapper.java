@@ -1,7 +1,7 @@
 package com.shiyu.ai.governance.implementation.usage.persistence.mapper;
 
 import com.mybatisflex.annotation.UseDataSource;
-import com.shiyu.ai.common.mybatis.core.mapper.BaseMapperFlex;
+import com.shiyu.ai.common.mybatis.mapper.BaseMapperFlex;
 import com.shiyu.ai.governance.implementation.usage.persistence.dataobject.UsageRecordDO;
 import org.apache.ibatis.annotations.Mapper;
 import org.apache.ibatis.annotations.Param;

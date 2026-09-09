@@ -1,5 +1,9 @@
 package com.shiyu.ai.memory.implementation.persistence.service;
 
+import com.shiyu.ai.memory.implementation.domain.magma.*;
+
+import com.shiyu.ai.memory.contract.model.*;
+
 import com.shiyu.ai.common.core.utils.JSONUtils;
 import java.util.Map;
 import java.util.HashSet;
@@ -99,4 +103,6 @@ public class MagmaConsolidationWorker {
         return result;
     }
 }
+
+
 

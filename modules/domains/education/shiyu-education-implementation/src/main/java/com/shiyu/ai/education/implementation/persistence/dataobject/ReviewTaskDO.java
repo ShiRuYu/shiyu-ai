@@ -10,7 +10,7 @@ import lombok.EqualsAndHashCode;
 
 import java.time.LocalDate;
 import java.time.LocalDateTime;
-import com.shiyu.ai.education.domain.model.ReviewTaskBO;
+import com.shiyu.ai.education.implementation.domain.model.ReviewTaskBO;
 import io.github.linpeilie.annotations.AutoMapper;
 
 /**
@@ -37,4 +37,5 @@ public class ReviewTaskDO extends TenantEntity {
     private Double resultScore;
     private LocalDateTime completedAt;
 }
+
 

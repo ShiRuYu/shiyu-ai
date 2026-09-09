@@ -7,7 +7,7 @@ import com.shiyu.ai.common.mybatis.model.TenantEntity;
 import lombok.EqualsAndHashCode;
 
 import java.io.Serial;
-import com.shiyu.ai.education.domain.model.CourseKnowledgeBO;
+import com.shiyu.ai.education.implementation.domain.model.CourseKnowledgeBO;
 import io.github.linpeilie.annotations.AutoMapper;
 
 @Data
@@ -24,4 +24,5 @@ public class CourseKnowledgeDO extends TenantEntity {
     private Long sectionId;
     private Integer sortOrder;
 }
+
 

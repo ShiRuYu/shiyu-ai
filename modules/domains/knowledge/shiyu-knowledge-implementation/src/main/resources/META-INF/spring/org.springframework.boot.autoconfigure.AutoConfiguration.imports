@@ -1,1 +1,1 @@
-com.shiyu.ai.vector.config.VectorStoreAutoConfiguration
+com.shiyu.ai.common.vector.config.VectorStoreAutoConfiguration

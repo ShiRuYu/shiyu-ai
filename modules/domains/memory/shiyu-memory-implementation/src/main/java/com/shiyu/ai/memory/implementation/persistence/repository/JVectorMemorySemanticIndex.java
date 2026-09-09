@@ -1,11 +1,13 @@
 package com.shiyu.ai.memory.implementation.persistence.repository;
 
-import com.shiyu.ai.memory.magma.*;
+import com.shiyu.ai.memory.implementation.domain.magma.*;
+
+import com.shiyu.ai.memory.contract.model.*;
 import com.shiyu.ai.kernel.context.TenantId;
-import com.shiyu.ai.vector.VectorRecord;
-import com.shiyu.ai.vector.VectorSearchRequest;
-import com.shiyu.ai.vector.VectorStore;
-import com.shiyu.ai.vector.config.VectorStoreProperties;
+import com.shiyu.ai.common.vector.model.VectorRecord;
+import com.shiyu.ai.common.vector.model.VectorSearchRequest;
+import com.shiyu.ai.common.vector.api.VectorStore;
+import com.shiyu.ai.common.vector.config.VectorStoreProperties;
 import org.springframework.stereotype.Component;
 
 import java.nio.charset.StandardCharsets;
@@ -27,4 +29,8 @@ public class JVectorMemorySemanticIndex implements MemorySemanticIndex {
     }
     private float[] embed(String text){int d=Math.max(8,properties.getDimension());float[] v=new float[d];byte[] bytes=text.getBytes(StandardCharsets.UTF_8);for(int i=0;i<bytes.length;i++)v[i%d]+=((bytes[i]&0xff)-128)/128f;float norm=0;for(float x:v)norm+=x*x;norm=(float)Math.sqrt(norm);if(norm>0)for(int i=0;i<v.length;i++)v[i]/=norm;return v;}
 }
+
+
+
+
 

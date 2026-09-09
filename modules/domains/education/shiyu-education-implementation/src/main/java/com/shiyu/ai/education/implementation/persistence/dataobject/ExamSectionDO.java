@@ -11,7 +11,7 @@ import lombok.EqualsAndHashCode;
 import java.io.Serial;
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
-import com.shiyu.ai.education.domain.model.ExamSectionBO;
+import com.shiyu.ai.education.implementation.domain.model.ExamSectionBO;
 import io.github.linpeilie.annotations.AutoMapper;
 
 @Data
@@ -32,4 +32,5 @@ public class ExamSectionDO extends TenantEntity {
     private BigDecimal scorePerQ;
     private LocalDateTime createdAt;
 }
+
 

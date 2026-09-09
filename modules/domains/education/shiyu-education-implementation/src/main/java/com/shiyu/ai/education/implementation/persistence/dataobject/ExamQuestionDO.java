@@ -10,7 +10,7 @@ import lombok.EqualsAndHashCode;
 
 import java.io.Serial;
 import java.math.BigDecimal;
-import com.shiyu.ai.education.domain.model.ExamQuestionBO;
+import com.shiyu.ai.education.implementation.domain.model.ExamQuestionBO;
 import io.github.linpeilie.annotations.AutoMapper;
 
 @Data
@@ -31,4 +31,5 @@ public class ExamQuestionDO extends TenantEntity {
     private Integer orderNo;
     private BigDecimal score;
 }
+
 

@@ -1,7 +1,9 @@
 package com.shiyu.ai.memory.implementation.persistence.repository;
 
+import com.shiyu.ai.memory.implementation.domain.magma.*;
+
 import com.shiyu.ai.common.core.utils.JSONUtils;
-import com.shiyu.ai.memory.magma.*;
+import com.shiyu.ai.memory.contract.model.*;
 import com.shiyu.ai.kernel.context.TenantId;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.stereotype.Component;
@@ -65,4 +67,6 @@ public class JdbcMagmaMemoryRepository implements MagmaMemoryRepository {
     private List<List<String>> parsePaths(String value) { return value == null || value.isBlank() ? List.of() : JSONUtils.parseObject(value, new TypeReference<List<List<String>>>() { }); }
     private static Timestamp ts(Instant i){return Timestamp.from(i==null?Instant.now():i);}
 }
+
+
 

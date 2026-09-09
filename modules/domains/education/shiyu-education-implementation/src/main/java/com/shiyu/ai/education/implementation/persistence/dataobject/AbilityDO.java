@@ -10,7 +10,7 @@ import lombok.EqualsAndHashCode;
 
 import java.io.Serial;
 import java.time.LocalDateTime;
-import com.shiyu.ai.education.domain.model.AbilityBO;
+import com.shiyu.ai.education.implementation.domain.model.AbilityBO;
 import io.github.linpeilie.annotations.AutoMapper;
 
 @Data
@@ -36,4 +36,5 @@ public class AbilityDO extends TenantEntity {
     private Double overallMastery;
     private LocalDateTime lastUpdate;
 }
+
 

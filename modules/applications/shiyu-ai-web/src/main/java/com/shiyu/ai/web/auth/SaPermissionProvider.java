@@ -2,7 +2,7 @@ package com.shiyu.ai.web.auth;
 
 import com.shiyu.ai.common.web.auth.ActorContextHttpAdapter;
 import cn.dev33.satoken.stp.StpInterface;
-import com.shiyu.ai.auth.port.repository.AuthRepository;
+import com.shiyu.ai.iam.implementation.port.repository.AuthRepository;
 import com.shiyu.ai.kernel.context.ActorContext;
 import com.shiyu.ai.kernel.context.UserId;
 import org.springframework.stereotype.Component;
@@ -56,3 +56,4 @@ public class SaPermissionProvider implements StpInterface {
         }
     }
 }
+

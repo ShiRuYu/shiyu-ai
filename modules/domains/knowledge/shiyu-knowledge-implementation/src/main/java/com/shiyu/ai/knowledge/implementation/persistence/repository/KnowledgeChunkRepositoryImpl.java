@@ -2,7 +2,7 @@ package com.shiyu.ai.knowledge.implementation.persistence.repository;
 
 import com.mybatisflex.core.query.QueryWrapper;
 import com.shiyu.ai.common.core.utils.MapstructUtils;
-import com.shiyu.ai.knowledge.domain.model.KnowledgeChunkBO;
+import com.shiyu.ai.knowledge.implementation.domain.model.KnowledgeChunkBO;
 import com.shiyu.ai.knowledge.implementation.persistence.dataobject.KnowledgeChunkDO;
 import com.shiyu.ai.knowledge.implementation.persistence.mapper.KnowledgeChunkMapper;
 import com.shiyu.ai.kernel.context.TenantId;
@@ -11,7 +11,7 @@ import org.springframework.stereotype.Repository;
 import java.util.List;
 
 @Repository
-public class KnowledgeChunkRepositoryImpl implements com.shiyu.ai.knowledge.port.repository.KnowledgeChunkRepository {
+public class KnowledgeChunkRepositoryImpl implements com.shiyu.ai.knowledge.implementation.domain.port.repository.KnowledgeChunkRepository {
 
     private final KnowledgeChunkMapper mapper;
 
@@ -74,4 +74,6 @@ public class KnowledgeChunkRepositoryImpl implements com.shiyu.ai.knowledge.port
         }
     }
 }
+
+
 

@@ -1,7 +1,7 @@
 package com.shiyu.ai.web.common;
 
 import com.shiyu.ai.common.core.api.Result;
-import com.shiyu.ai.common.core.domain.ShiYuDefaultExceptionHandler;
+import com.shiyu.ai.common.web.exception.ShiYuDefaultExceptionHandler;
 import com.shiyu.ai.common.core.enums.BizResultCode;
 import com.shiyu.ai.common.core.exception.ServiceException;
 import org.junit.jupiter.api.Test;

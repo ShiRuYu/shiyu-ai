@@ -5,7 +5,7 @@ import java.util.List;
 
 import com.shiyu.ai.common.core.api.PageData;
 import com.shiyu.ai.common.core.utils.MapstructUtils;
-import com.shiyu.ai.education.domain.model.StudyPlanBO;
+import com.shiyu.ai.education.implementation.domain.model.StudyPlanBO;
 import com.shiyu.ai.education.implementation.persistence.dataobject.StudyPlanDO;
 import com.shiyu.ai.education.implementation.persistence.mapper.StudyPlanMapper;
 import com.shiyu.ai.kernel.context.TenantId;
@@ -13,7 +13,7 @@ import jakarta.annotation.Resource;
 import org.springframework.stereotype.Component;
 
 @Component
-public class StudyPlanRepositoryImpl implements com.shiyu.ai.education.port.repository.StudyPlanRepository {
+public class StudyPlanRepositoryImpl implements com.shiyu.ai.education.implementation.domain.port.repository.StudyPlanRepository {
 
     @Resource
     private StudyPlanMapper studyPlanMapper;
@@ -57,4 +57,5 @@ public class StudyPlanRepositoryImpl implements com.shiyu.ai.education.port.repo
     }
 
 }
+
 

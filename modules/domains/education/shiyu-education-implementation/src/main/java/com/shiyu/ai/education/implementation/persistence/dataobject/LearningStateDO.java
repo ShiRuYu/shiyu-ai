@@ -10,7 +10,7 @@ import lombok.EqualsAndHashCode;
 
 import java.io.Serial;
 import java.time.LocalDateTime;
-import com.shiyu.ai.education.domain.model.LearningStateBO;
+import com.shiyu.ai.education.implementation.domain.model.LearningStateBO;
 import io.github.linpeilie.annotations.AutoMapper;
 
 @Data
@@ -29,4 +29,5 @@ public class LearningStateDO extends TenantEntity {
     private Long knowledgeId;
     private String state;
 }
+
 

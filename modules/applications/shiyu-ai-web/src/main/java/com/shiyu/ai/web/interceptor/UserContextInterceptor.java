@@ -1,11 +1,11 @@
 package com.shiyu.ai.web.interceptor;
 
-import com.shiyu.ai.auth.api.response.AuthTenantResponse;
-import com.shiyu.ai.auth.api.response.AuthUserResponse;
-import com.shiyu.ai.auth.api.response.AuthRoleResponse;
-import com.shiyu.ai.auth.api.response.AuthScopeRoleResponse;
-import com.shiyu.ai.auth.utils.SaTokenHelper;
-import com.shiyu.ai.auth.service.AuthContextService;
+import com.shiyu.ai.iam.implementation.api.response.AuthTenantResponse;
+import com.shiyu.ai.iam.implementation.api.response.AuthUserResponse;
+import com.shiyu.ai.iam.implementation.api.response.AuthRoleResponse;
+import com.shiyu.ai.iam.implementation.api.response.AuthScopeRoleResponse;
+import com.shiyu.ai.iam.implementation.utils.SaTokenHelper;
+import com.shiyu.ai.iam.implementation.service.AuthContextService;
 import com.shiyu.ai.common.core.domain.UserContextHolder;
 import com.shiyu.ai.common.core.domain.UserContext;
 import com.shiyu.ai.common.core.enums.DeviceTypeEnum;
@@ -392,3 +392,4 @@ public class UserContextInterceptor implements HandlerInterceptor {
         return DeviceTypeEnum.UNKNOWN;
     }
 }
+

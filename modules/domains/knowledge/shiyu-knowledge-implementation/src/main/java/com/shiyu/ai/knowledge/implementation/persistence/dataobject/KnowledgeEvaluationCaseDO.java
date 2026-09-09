@@ -6,7 +6,7 @@ import com.mybatisflex.annotation.Table;
 import com.shiyu.ai.common.mybatis.model.TenantEntity;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
-import com.shiyu.ai.knowledge.domain.model.KnowledgeEvaluationCaseBO;
+import com.shiyu.ai.knowledge.implementation.domain.model.KnowledgeEvaluationCaseBO;
 import io.github.linpeilie.annotations.AutoMapper;
 
 @Data
@@ -23,4 +23,5 @@ public class KnowledgeEvaluationCaseDO extends TenantEntity {
     private String expectedDocIds;
     private String expectedAnswer;
 }
+
 

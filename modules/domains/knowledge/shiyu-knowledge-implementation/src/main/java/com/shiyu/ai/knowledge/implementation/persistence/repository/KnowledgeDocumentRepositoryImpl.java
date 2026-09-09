@@ -4,12 +4,12 @@ import com.mybatisflex.core.query.QueryWrapper;
 import com.shiyu.ai.common.core.api.PageData;
 import com.shiyu.ai.common.core.utils.MapstructUtils;
 import com.shiyu.ai.kernel.context.TenantId;
-import com.shiyu.ai.knowledge.domain.model.KnowledgeDocumentBO;
+import com.shiyu.ai.knowledge.implementation.domain.model.KnowledgeDocumentBO;
 import com.shiyu.ai.knowledge.implementation.persistence.dataobject.KnowledgeDocRelationDO;
 import com.shiyu.ai.knowledge.implementation.persistence.dataobject.KnowledgeDocumentDO;
 import com.shiyu.ai.knowledge.implementation.persistence.mapper.KnowledgeDocRelationMapper;
 import com.shiyu.ai.knowledge.implementation.persistence.mapper.KnowledgeDocumentMapper;
-import com.shiyu.ai.knowledge.port.repository.KnowledgeDocumentRepository;
+import com.shiyu.ai.knowledge.implementation.domain.port.repository.KnowledgeDocumentRepository;
 import jakarta.annotation.Resource;
 import org.springframework.stereotype.Component;
 
@@ -151,3 +151,5 @@ public class KnowledgeDocumentRepositoryImpl implements KnowledgeDocumentReposit
         return MapstructUtils.convert(data, KnowledgeDocumentBO.class);
     }
 }
+
+

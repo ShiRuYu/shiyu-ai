@@ -15,9 +15,6 @@ from pathlib import Path
 
 
 ROOT = Path(__file__).resolve().parents[2]
-DOMAINS = ROOT / "modules/domains"
-APPLICATION = ROOT / "modules/applications"
-WEB_POM = ROOT / "modules/applications" / "web" / "pom.xml"
 NS = {"m": "http://maven.apache.org/POM/4.0.0"}
 
 
@@ -31,20 +28,21 @@ def dependencies(pom: Path) -> list[str]:
 
 def own_implementation_artifact(pom: Path) -> str | None:
     """Return the implementation coordinate owned by a domain module."""
-    relative = pom.parent.relative_to(DOMAINS).parts
-    if len(relative) == 2 and relative[1] == "implementation":
-        return f"shiyu-{relative[0]}-implementation"
-    return None
+    artifact = ET.parse(pom).getroot().findtext(
+        "m:artifactId", default="", namespaces=NS
+    ).strip()
+    return artifact if artifact.endswith("-implementation") else None
 
 
-def check_web_adapter_dependencies() -> list[str]:
+def check_web_adapter_dependencies(root: Path) -> list[str]:
     """Keep the technical Web adapter from becoming a central domain hub."""
-    if not WEB_POM.exists():
-        return []
+    web_pom = root / "modules/applications/shiyu-ai-web/pom.xml"
+    if not web_pom.exists():
+        return ["Missing required modules/applications/shiyu-ai-web/pom.xml"]
     allowed = {"shiyu-iam-implementation", "shiyu-agent-implementation"}
     return [
-        f"{WEB_POM.relative_to(ROOT)} -> {artifact}"
-        for artifact in dependencies(WEB_POM)
+        f"{web_pom.relative_to(root)} -> {artifact}"
+        for artifact in dependencies(web_pom)
         if artifact.endswith("-implementation") and artifact not in allowed
     ]
 
@@ -61,15 +59,16 @@ THREAD_CONTEXT_REFERENCES = re.compile(
 )
 
 
-def implementation_modules() -> list[Path]:
+def implementation_modules(root: Path) -> list[Path]:
+    domains = root / "modules/domains"
     return sorted(
-        path
-        for path in DOMAINS.glob("*/implementation")
-        if (path / "src/main/java").is_dir()
+        pom.parent
+        for pom in domains.glob("*/*/pom.xml")
+        if own_implementation_artifact(pom)
     )
 
 
-def implementation_classes() -> dict[str, Path]:
+def implementation_classes(root: Path) -> dict[str, Path]:
     """Return the concrete classes published by each implementation module.
 
     Package names overlap with contract modules (for example model.chat), so
@@ -78,7 +77,7 @@ def implementation_classes() -> dict[str, Path]:
     from contract types while still catching nested/static imports.
     """
     classes: dict[str, Path] = {}
-    for module in implementation_modules():
+    for module in implementation_modules(root):
         source_root = module / "src/main/java"
         for source in source_root.rglob("*.java"):
             text = source.read_text(encoding="utf-8", errors="ignore")
@@ -90,11 +89,11 @@ def implementation_classes() -> dict[str, Path]:
     return classes
 
 
-def check_java_imports() -> list[str]:
+def check_java_imports(root: Path) -> list[str]:
     """Reject direct imports of another bounded context's implementation type."""
-    published = implementation_classes()
+    published = implementation_classes(root)
     violations: list[str] = []
-    for source_module in implementation_modules():
+    for source_module in implementation_modules(root):
         source_root = source_module / "src/main/java"
         for source in source_root.rglob("*.java"):
             text = source.read_text(encoding="utf-8", errors="ignore")
@@ -110,18 +109,21 @@ def check_java_imports() -> list[str]:
                 )
                 if owner is not None and owner != source_module:
                     violations.append(
-                        f"{source.relative_to(ROOT)} -> {imported} "
-                        f"({owner.relative_to(ROOT)})"
+                        f"{source.relative_to(root)} -> {imported} "
+                        f"({owner.relative_to(root)})"
                     )
     return violations
 
 
-def check_thread_context_access() -> list[str]:
+def check_thread_context_access(root: Path) -> list[str]:
     """Keep domain/application code independent of request/thread context."""
     violations: list[str] = []
-    roots = tuple(root for root in (DOMAINS, APPLICATION) if root.exists())
-    for root in roots:
-        for source in root.rglob("*.java"):
+    scan_roots = tuple(
+        path for path in (root / "modules/domains", root / "modules/applications")
+        if path.exists()
+    )
+    for scan_root in scan_roots:
+        for source in scan_root.rglob("*.java"):
             normalized = source.as_posix()
             if "/target/" in normalized or "/src/test/" in normalized:
                 continue
@@ -132,23 +134,48 @@ def check_thread_context_access() -> list[str]:
             text = source.read_text(encoding="utf-8", errors="ignore")
             for match in THREAD_CONTEXT_REFERENCES.finditer(text):
                 violations.append(
-                    f"{source.relative_to(ROOT)}:{text.count(chr(10), 0, match.start()) + 1}"
+                    f"{source.relative_to(root)}:{text.count(chr(10), 0, match.start()) + 1}"
                     f" -> {match.group(0)}"
                 )
     return violations
 
 
-def main() -> int:
+def check_migrated_package_ownership(root: Path) -> list[str]:
+    """Require completed pilot modules to use their declared package boundary."""
+    source_root = root / "modules/domains/conversation/shiyu-conversation-implementation/src/main/java"
+    if not source_root.is_dir():
+        return []
     violations: list[str] = []
-    for pom in sorted(DOMAINS.rglob("pom.xml")):
+    for source in source_root.rglob("*.java"):
+        text = source.read_text(encoding="utf-8", errors="ignore")
+        package = PACKAGE_DECLARATION.search(text)
+        if package and not package.group(1).startswith("com.shiyu.ai.conversation.implementation"):
+            violations.append(
+                f"{source.relative_to(root)} -> package {package.group(1)} must be under "
+                "com.shiyu.ai.conversation.implementation"
+            )
+    return violations
+
+
+def analyze_repository(root: Path) -> list[str]:
+    root = root.resolve()
+    domains = root / "modules/domains"
+    violations: list[str] = []
+    for pom in sorted(domains.rglob("pom.xml")):
         own_implementation = own_implementation_artifact(pom)
         for artifact in dependencies(pom):
             if artifact.endswith("-implementation") and artifact != own_implementation:
-                violations.append(f"{pom.relative_to(ROOT)} -> {artifact}")
+                violations.append(f"{pom.relative_to(root)} -> {artifact}")
 
-    violations.extend(check_web_adapter_dependencies())
-    violations.extend(check_java_imports())
-    violations.extend(check_thread_context_access())
+    violations.extend(check_web_adapter_dependencies(root))
+    violations.extend(check_java_imports(root))
+    violations.extend(check_thread_context_access(root))
+    violations.extend(check_migrated_package_ownership(root))
+    return violations
+
+
+def main() -> int:
+    violations = analyze_repository(ROOT)
 
     if violations:
         print("Cross-domain implementation dependencies are forbidden:")

@@ -1,7 +1,7 @@
 package com.shiyu.ai.agent;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
-import com.shiyu.ai.agent.graph.Graph;
+import com.shiyu.ai.agent.implementation.graph.Graph;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;

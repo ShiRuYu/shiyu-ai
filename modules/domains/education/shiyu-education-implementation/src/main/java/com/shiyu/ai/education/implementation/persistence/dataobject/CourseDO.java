@@ -8,7 +8,7 @@ import lombok.Data;
 import lombok.EqualsAndHashCode;
 
 import java.time.LocalDateTime;
-import com.shiyu.ai.education.domain.model.CourseBO;
+import com.shiyu.ai.education.implementation.domain.model.CourseBO;
 import io.github.linpeilie.annotations.AutoMapper;
 
 @Data
@@ -33,4 +33,5 @@ public class CourseDO extends TenantEntity {
     private LocalDateTime createdAt;
     private LocalDateTime updatedAt;
 }
+
 

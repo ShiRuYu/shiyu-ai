@@ -72,8 +72,8 @@ class EducationRepositoryCoverageTest {
         try (MockedStatic<MapstructUtils> conversions = mockStatic(MapstructUtils.class)) {
             conversions.when(() -> MapstructUtils.convert(any(Object.class), any(Class.class)))
                     .thenAnswer(invocation -> convert(invocation.getArgument(0), invocation.getArgument(1)));
-            com.shiyu.ai.education.domain.model.StudentBO student =
-                    new com.shiyu.ai.education.domain.model.StudentBO();
+            com.shiyu.ai.education.implementation.domain.model.StudentBO student =
+                    new com.shiyu.ai.education.implementation.domain.model.StudentBO();
             assertThrows(IllegalStateException.class, () -> repository.insert(TENANT, student));
         }
     }
@@ -90,7 +90,7 @@ class EducationRepositoryCoverageTest {
             conversions.when(() -> MapstructUtils.convert(any(Object.class), any(Class.class)))
                     .thenAnswer(invocation -> convert(invocation.getArgument(0), invocation.getArgument(1)));
             assertThrows(IllegalStateException.class,
-                    () -> repository.upsert(TENANT, new com.shiyu.ai.education.domain.model.LearningStateBO()));
+                    () -> repository.upsert(TENANT, new com.shiyu.ai.education.implementation.domain.model.LearningStateBO()));
         }
     }
 
@@ -105,7 +105,7 @@ class EducationRepositoryCoverageTest {
             conversions.when(() -> MapstructUtils.convert(any(Object.class), any(Class.class)))
                     .thenAnswer(invocation -> convert(invocation.getArgument(0), invocation.getArgument(1)));
             assertThrows(IllegalStateException.class,
-                    () -> repository.insert(TENANT, new com.shiyu.ai.education.domain.model.KnowledgeTextbookBO()));
+                    () -> repository.insert(TENANT, new com.shiyu.ai.education.implementation.domain.model.KnowledgeTextbookBO()));
         }
     }
 
@@ -121,7 +121,7 @@ class EducationRepositoryCoverageTest {
                     .thenAnswer(invocation -> convert(invocation.getArgument(0), invocation.getArgument(1)));
             assertThrows(IllegalStateException.class,
                     () -> repository.insertBatch(TENANT,
-                            List.of(new com.shiyu.ai.education.domain.model.StudyPlanItemBO())));
+                            List.of(new com.shiyu.ai.education.implementation.domain.model.StudyPlanItemBO())));
         }
     }
 
@@ -223,3 +223,4 @@ class EducationRepositoryCoverageTest {
         }
     }
 }
+

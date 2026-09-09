@@ -5,7 +5,7 @@ import java.util.List;
 
 import com.shiyu.ai.common.core.api.PageData;
 import com.shiyu.ai.common.core.utils.MapstructUtils;
-import com.shiyu.ai.education.domain.model.WrongQuestionBO;
+import com.shiyu.ai.education.implementation.domain.model.WrongQuestionBO;
 import com.shiyu.ai.education.implementation.persistence.dataobject.WrongQuestionDO;
 import com.shiyu.ai.education.implementation.persistence.mapper.WrongQuestionMapper;
 import com.shiyu.ai.kernel.context.TenantId;
@@ -13,7 +13,7 @@ import jakarta.annotation.Resource;
 import org.springframework.stereotype.Component;
 
 @Component
-public class WrongQuestionRepositoryImpl implements com.shiyu.ai.education.port.repository.WrongQuestionRepository {
+public class WrongQuestionRepositoryImpl implements com.shiyu.ai.education.implementation.domain.port.repository.WrongQuestionRepository {
 
     @Resource
     private WrongQuestionMapper wrongQuestionMapper;
@@ -53,4 +53,5 @@ public class WrongQuestionRepositoryImpl implements com.shiyu.ai.education.port.
     }
 
 }
+
 

@@ -7,7 +7,7 @@ import com.shiyu.ai.common.mybatis.model.TenantEntity;
 import lombok.EqualsAndHashCode;
 
 import java.io.Serial;
-import com.shiyu.ai.education.domain.model.ResourceKnowledgeBO;
+import com.shiyu.ai.education.implementation.domain.model.ResourceKnowledgeBO;
 import io.github.linpeilie.annotations.AutoMapper;
 
 @Data
@@ -23,4 +23,5 @@ public class ResourceKnowledgeDO extends TenantEntity {
     private Long knowledgeId;
     private Integer sortOrder;
 }
+
 

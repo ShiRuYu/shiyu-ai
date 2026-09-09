@@ -1,7 +1,7 @@
 
 package com.shiyu.ai.common.thread.metrics;
 
-import com.shiyu.ai.common.thread.core.SafeExecutorService;
+import com.shiyu.ai.common.thread.executor.SafeExecutorService;
 import io.micrometer.core.instrument.Gauge;
 import io.micrometer.core.instrument.MeterRegistry;
 import io.micrometer.core.instrument.Timer;

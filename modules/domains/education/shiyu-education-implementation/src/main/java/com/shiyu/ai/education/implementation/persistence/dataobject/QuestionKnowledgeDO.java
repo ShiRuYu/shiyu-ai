@@ -7,7 +7,7 @@ import com.shiyu.ai.common.mybatis.model.TenantEntity;
 import lombok.EqualsAndHashCode;
 
 import java.io.Serial;
-import com.shiyu.ai.education.domain.model.QuestionKnowledgeBO;
+import com.shiyu.ai.education.implementation.domain.model.QuestionKnowledgeBO;
 import io.github.linpeilie.annotations.AutoMapper;
 
 @Data
@@ -23,4 +23,5 @@ public class QuestionKnowledgeDO extends TenantEntity {
     private Long knowledgeId;
     private Double weight;
 }
+
 

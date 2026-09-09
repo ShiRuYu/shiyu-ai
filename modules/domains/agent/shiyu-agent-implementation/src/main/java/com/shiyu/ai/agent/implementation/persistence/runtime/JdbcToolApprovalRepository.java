@@ -1,9 +1,9 @@
 package com.shiyu.ai.agent.implementation.persistence.runtime;
 
 import com.shiyu.ai.kernel.context.TenantId;
-import com.shiyu.ai.runtime.ToolApproval;
-import com.shiyu.ai.runtime.ToolApprovalRepository;
-import com.shiyu.ai.runtime.ToolApprovalStatus;
+import com.shiyu.ai.agent.implementation.runtime.ToolApproval;
+import com.shiyu.ai.agent.implementation.runtime.ToolApprovalRepository;
+import com.shiyu.ai.agent.implementation.runtime.ToolApprovalStatus;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.stereotype.Repository;
 

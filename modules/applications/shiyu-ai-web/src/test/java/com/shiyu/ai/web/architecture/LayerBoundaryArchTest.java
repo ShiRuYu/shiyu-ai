@@ -34,9 +34,9 @@ class LayerBoundaryArchTest {
     @ArchTest
     static final ArchRule businessMustNotDependOnPersistenceTypes = noClasses()
             .that().resideInAnyPackage(
-                    "com.shiyu.ai.agent..", "com.shiyu.ai.auth..", "com.shiyu.ai.education..",
+                    "com.shiyu.ai.agent..", "com.shiyu.ai.iam.implementation..", "com.shiyu.ai.education..",
                     "com.shiyu.ai.knowledge..", "com.shiyu.ai.memory..", "com.shiyu.ai.model..",
-                    "com.shiyu.ai.governance..", "com.shiyu.ai.tool..")
+                    "com.shiyu.ai.governance..", "com.shiyu.ai.tooling..")
             .should().dependOnClassesThat()
             .resideInAnyPackage("com.shiyu.ai.common.mybatis..dataobject..")
             .because("DO and Mapper types belong exclusively to their domain implementation or technical support");
@@ -51,7 +51,7 @@ class LayerBoundaryArchTest {
     @ArchTest
     static final ArchRule domainApplicationMustNotReadUserContextHolder = noClasses()
             .that().resideInAnyPackage(
-                    "com.shiyu.ai.agent..", "com.shiyu.ai.auth..", "com.shiyu.ai.conversation..",
+                    "com.shiyu.ai.agent..", "com.shiyu.ai.iam.implementation..", "com.shiyu.ai.conversation..",
                     "com.shiyu.ai.education..", "com.shiyu.ai.knowledge..", "com.shiyu.ai.memory..",
                     "com.shiyu.ai.model..", "com.shiyu.ai.governance..",
                     "com.shiyu.ai.tooling..")
@@ -63,7 +63,7 @@ class LayerBoundaryArchTest {
     @ArchTest
     static final ArchRule domainApplicationMustNotReadTenantScope = noClasses()
             .that().resideInAnyPackage(
-                    "com.shiyu.ai.agent..", "com.shiyu.ai.auth..", "com.shiyu.ai.conversation..",
+                    "com.shiyu.ai.agent..", "com.shiyu.ai.iam.implementation..", "com.shiyu.ai.conversation..",
                     "com.shiyu.ai.education..", "com.shiyu.ai.knowledge..", "com.shiyu.ai.memory..",
                     "com.shiyu.ai.model..", "com.shiyu.ai.governance..",
                     "com.shiyu.ai.tooling..")
@@ -72,3 +72,4 @@ class LayerBoundaryArchTest {
             .haveFullyQualifiedName("com.shiyu.ai.kernel.context.TenantScope")
             .because("Domain/application code must receive ActorContext explicitly; thread context is an HTTP adapter concern");
 }
+

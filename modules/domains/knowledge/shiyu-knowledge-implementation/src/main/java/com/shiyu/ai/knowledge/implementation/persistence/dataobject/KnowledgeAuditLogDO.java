@@ -6,7 +6,7 @@ import com.mybatisflex.annotation.Table;
 import com.shiyu.ai.common.mybatis.model.TenantEntity;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
-import com.shiyu.ai.knowledge.domain.model.KnowledgeAuditLogBO;
+import com.shiyu.ai.knowledge.implementation.domain.model.KnowledgeAuditLogBO;
 import io.github.linpeilie.annotations.AutoMapper;
 
 @Data
@@ -24,4 +24,5 @@ public class KnowledgeAuditLogDO extends TenantEntity {
     private String action;
     private String detailJson;
 }
+
 

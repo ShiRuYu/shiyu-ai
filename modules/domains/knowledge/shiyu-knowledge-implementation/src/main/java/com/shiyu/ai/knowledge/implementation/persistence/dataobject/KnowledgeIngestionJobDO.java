@@ -8,7 +8,7 @@ import lombok.Data;
 import lombok.EqualsAndHashCode;
 
 import java.time.LocalDateTime;
-import com.shiyu.ai.knowledge.domain.model.KnowledgeIngestionJobBO;
+import com.shiyu.ai.knowledge.implementation.domain.model.KnowledgeIngestionJobBO;
 import io.github.linpeilie.annotations.AutoMapper;
 
 @Data
@@ -38,4 +38,5 @@ public class KnowledgeIngestionJobDO extends TenantEntity {
     private LocalDateTime finishedTime;
     private Long lockVersion;
 }
+
 

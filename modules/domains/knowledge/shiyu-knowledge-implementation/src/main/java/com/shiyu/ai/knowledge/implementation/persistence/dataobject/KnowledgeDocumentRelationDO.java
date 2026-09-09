@@ -8,7 +8,7 @@ import lombok.Data;
 import lombok.EqualsAndHashCode;
 
 import java.io.Serial;
-import com.shiyu.ai.knowledge.domain.model.KnowledgeDocumentRelationBO;
+import com.shiyu.ai.knowledge.implementation.domain.model.KnowledgeDocumentRelationBO;
 import io.github.linpeilie.annotations.AutoMapper;
 
 @Data
@@ -25,4 +25,5 @@ public class KnowledgeDocumentRelationDO extends TenantEntity {
     private Long targetDocumentId;
     private String relationType;
 }
+
 

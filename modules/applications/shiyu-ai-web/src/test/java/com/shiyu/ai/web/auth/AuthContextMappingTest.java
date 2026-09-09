@@ -1,17 +1,17 @@
 package com.shiyu.ai.web.auth;
 
-import com.shiyu.ai.auth.api.response.AuthRoleResponse;
-import com.shiyu.ai.auth.api.response.AuthScopeRoleResponse;
-import com.shiyu.ai.auth.api.response.AuthTenantResponse;
-import com.shiyu.ai.auth.api.response.AuthUserResponse;
-import com.shiyu.ai.auth.domain.model.RoleBO;
-import com.shiyu.ai.auth.domain.model.RoleBOToAuthRoleResponseMapperImpl;
-import com.shiyu.ai.auth.domain.model.TenantBO;
-import com.shiyu.ai.auth.domain.model.TenantBOToAuthTenantResponseMapperImpl;
-import com.shiyu.ai.auth.domain.model.UserBO;
-import com.shiyu.ai.auth.domain.model.UserBOToAuthUserResponseMapperImpl;
-import com.shiyu.ai.auth.domain.model.UserScopeRoleBO;
-import com.shiyu.ai.auth.domain.model.UserScopeRoleBOToAuthScopeRoleResponseMapperImpl;
+import com.shiyu.ai.iam.implementation.api.response.AuthRoleResponse;
+import com.shiyu.ai.iam.implementation.api.response.AuthScopeRoleResponse;
+import com.shiyu.ai.iam.implementation.api.response.AuthTenantResponse;
+import com.shiyu.ai.iam.implementation.api.response.AuthUserResponse;
+import com.shiyu.ai.iam.implementation.domain.model.RoleBO;
+import com.shiyu.ai.iam.implementation.domain.model.RoleBOToAuthRoleResponseMapperImpl;
+import com.shiyu.ai.iam.implementation.domain.model.TenantBO;
+import com.shiyu.ai.iam.implementation.domain.model.TenantBOToAuthTenantResponseMapperImpl;
+import com.shiyu.ai.iam.implementation.domain.model.UserBO;
+import com.shiyu.ai.iam.implementation.domain.model.UserBOToAuthUserResponseMapperImpl;
+import com.shiyu.ai.iam.implementation.domain.model.UserScopeRoleBO;
+import com.shiyu.ai.iam.implementation.domain.model.UserScopeRoleBOToAuthScopeRoleResponseMapperImpl;
 import org.junit.jupiter.api.Tag;
 import org.junit.jupiter.api.Test;
 
@@ -67,3 +67,4 @@ class AuthContextMappingTest {
                 () -> assertEquals(1L, assignmentResponse.getRoleId()));
     }
 }
+

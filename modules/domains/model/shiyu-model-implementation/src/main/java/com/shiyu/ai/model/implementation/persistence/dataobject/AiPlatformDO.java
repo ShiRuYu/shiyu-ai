@@ -7,7 +7,7 @@ import com.shiyu.ai.common.mybatis.model.TenantEntity;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
 import java.io.Serial;
-import com.shiyu.ai.model.domain.model.AiPlatformBO;
+import com.shiyu.ai.model.implementation.domain.model.AiPlatformBO;
 import io.github.linpeilie.annotations.AutoMapper;
 
 /**

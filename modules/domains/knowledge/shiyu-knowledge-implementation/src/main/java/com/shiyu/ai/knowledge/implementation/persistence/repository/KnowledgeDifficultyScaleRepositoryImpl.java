@@ -6,8 +6,8 @@ import com.shiyu.ai.knowledge.implementation.persistence.dataobject.KnowledgeDif
 import com.shiyu.ai.knowledge.implementation.persistence.mapper.KnowledgeDifficultyScaleLevelMapper;
 import com.shiyu.ai.knowledge.implementation.persistence.mapper.KnowledgeDifficultyScaleMapper;
 import com.shiyu.ai.common.core.utils.MapstructUtils;
-import com.shiyu.ai.knowledge.domain.model.KnowledgeDifficultyScaleBO;
-import com.shiyu.ai.knowledge.domain.model.KnowledgeDifficultyScaleLevelBO;
+import com.shiyu.ai.knowledge.implementation.domain.model.KnowledgeDifficultyScaleBO;
+import com.shiyu.ai.knowledge.implementation.domain.model.KnowledgeDifficultyScaleLevelBO;
 import com.shiyu.ai.kernel.context.TenantId;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Repository;
@@ -16,7 +16,7 @@ import java.util.List;
 
 @Repository
 @RequiredArgsConstructor
-public class KnowledgeDifficultyScaleRepositoryImpl implements com.shiyu.ai.knowledge.port.repository.KnowledgeDifficultyScaleRepository {
+public class KnowledgeDifficultyScaleRepositoryImpl implements com.shiyu.ai.knowledge.implementation.domain.port.repository.KnowledgeDifficultyScaleRepository {
 
     private final KnowledgeDifficultyScaleMapper scaleMapper;
     private final KnowledgeDifficultyScaleLevelMapper levelMapper;
@@ -46,4 +46,6 @@ public class KnowledgeDifficultyScaleRepositoryImpl implements com.shiyu.ai.know
         }
     }
 }
+
+
 

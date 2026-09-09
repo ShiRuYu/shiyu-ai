@@ -6,7 +6,7 @@ import com.mybatisflex.annotation.Table;
 import com.shiyu.ai.common.mybatis.model.TenantEntity;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
-import com.shiyu.ai.knowledge.domain.model.KnowledgeDifficultyScaleBO;
+import com.shiyu.ai.knowledge.implementation.domain.model.KnowledgeDifficultyScaleBO;
 import io.github.linpeilie.annotations.AutoMapper;
 
 @Data
@@ -23,4 +23,5 @@ public class KnowledgeDifficultyScaleDO extends TenantEntity {
     private String description;
     private Integer levelCount;
 }
+
 

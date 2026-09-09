@@ -8,7 +8,7 @@ import lombok.Data;
 import lombok.EqualsAndHashCode;
 
 import java.time.LocalDateTime;
-import com.shiyu.ai.education.domain.model.ResourceBO;
+import com.shiyu.ai.education.implementation.domain.model.ResourceBO;
 import io.github.linpeilie.annotations.AutoMapper;
 
 @Data
@@ -34,4 +34,5 @@ public class ResourceDO extends TenantEntity {
     private Long viewCount;
     private LocalDateTime createdAt;
 }
+
 

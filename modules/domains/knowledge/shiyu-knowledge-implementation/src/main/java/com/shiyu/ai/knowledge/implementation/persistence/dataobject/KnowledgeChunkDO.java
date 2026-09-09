@@ -6,7 +6,7 @@ import com.mybatisflex.annotation.Table;
 import com.shiyu.ai.common.mybatis.model.TenantEntity;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
-import com.shiyu.ai.knowledge.domain.model.KnowledgeChunkBO;
+import com.shiyu.ai.knowledge.implementation.domain.model.KnowledgeChunkBO;
 import io.github.linpeilie.annotations.AutoMapper;
 
 @Data
@@ -49,4 +49,5 @@ public class KnowledgeChunkDO extends TenantEntity {
 
     private Integer tokenCount;
 }
+
 

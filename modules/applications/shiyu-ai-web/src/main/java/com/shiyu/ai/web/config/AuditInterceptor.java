@@ -2,7 +2,7 @@ package com.shiyu.ai.web.config;
 
 import com.shiyu.ai.common.core.utils.JSONUtils;
 import com.shiyu.ai.common.core.utils.LoggerUtil;
-import com.shiyu.ai.agent.service.AuditService;
+import com.shiyu.ai.agent.implementation.service.AuditService;
 import com.shiyu.ai.common.web.auth.ActorContextHttpAdapter;
 import com.shiyu.ai.common.web.auth.ClientIpResolver;
 import jakarta.servlet.http.HttpServletRequest;

@@ -1,6 +1,7 @@
 package com.shiyu.ai.agent.implementation.persistence.runtime;
 
-import com.shiyu.ai.runtime.*;
+import com.shiyu.ai.agent.contract.runtime.*;
+import com.shiyu.ai.agent.implementation.runtime.*;
 import com.shiyu.ai.kernel.context.TenantId;
 import com.shiyu.ai.kernel.context.UserId;
 import org.springframework.context.annotation.Primary;

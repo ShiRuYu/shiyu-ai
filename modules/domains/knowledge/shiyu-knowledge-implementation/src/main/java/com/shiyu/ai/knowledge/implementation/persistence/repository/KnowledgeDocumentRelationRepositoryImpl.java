@@ -2,7 +2,7 @@ package com.shiyu.ai.knowledge.implementation.persistence.repository;
 
 import com.mybatisflex.core.query.QueryWrapper;
 import com.shiyu.ai.common.core.utils.MapstructUtils;
-import com.shiyu.ai.knowledge.domain.model.KnowledgeDocumentRelationBO;
+import com.shiyu.ai.knowledge.implementation.domain.model.KnowledgeDocumentRelationBO;
 import com.shiyu.ai.knowledge.implementation.persistence.dataobject.KnowledgeDocumentRelationDO;
 import com.shiyu.ai.knowledge.implementation.persistence.mapper.KnowledgeDocumentRelationMapper;
 import com.shiyu.ai.kernel.context.TenantId;
@@ -12,7 +12,7 @@ import org.springframework.stereotype.Component;
 import java.util.List;
 
 @Component
-public class KnowledgeDocumentRelationRepositoryImpl implements com.shiyu.ai.knowledge.port.repository.KnowledgeDocumentRelationRepository {
+public class KnowledgeDocumentRelationRepositoryImpl implements com.shiyu.ai.knowledge.implementation.domain.port.repository.KnowledgeDocumentRelationRepository {
     @Resource
     private KnowledgeDocumentRelationMapper mapper;
 
@@ -57,4 +57,6 @@ public class KnowledgeDocumentRelationRepositoryImpl implements com.shiyu.ai.kno
         }
     }
 }
+
+
 

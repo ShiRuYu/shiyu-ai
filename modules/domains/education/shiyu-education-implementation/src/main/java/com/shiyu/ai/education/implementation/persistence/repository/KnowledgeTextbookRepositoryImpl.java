@@ -4,7 +4,7 @@ import com.mybatisflex.core.query.QueryWrapper;
 import java.util.List;
 
 import com.shiyu.ai.common.core.utils.MapstructUtils;
-import com.shiyu.ai.education.domain.model.KnowledgeTextbookBO;
+import com.shiyu.ai.education.implementation.domain.model.KnowledgeTextbookBO;
 import com.shiyu.ai.education.implementation.persistence.dataobject.KnowledgeTextbookDO;
 import com.shiyu.ai.education.implementation.persistence.mapper.KnowledgeTextbookMapper;
 import com.shiyu.ai.kernel.context.TenantId;
@@ -12,7 +12,7 @@ import jakarta.annotation.Resource;
 import org.springframework.stereotype.Component;
 
 @Component
-public class KnowledgeTextbookRepositoryImpl implements com.shiyu.ai.education.port.repository.KnowledgeTextbookRepository {
+public class KnowledgeTextbookRepositoryImpl implements com.shiyu.ai.education.implementation.domain.port.repository.KnowledgeTextbookRepository {
 
     @Resource
     private KnowledgeTextbookMapper mapper;
@@ -54,4 +54,5 @@ public class KnowledgeTextbookRepositoryImpl implements com.shiyu.ai.education.p
                 QueryWrapper.create().eq(KnowledgeTextbookDO::getTenantId, tenantId.value()).eq("textbook_id", tid)), KnowledgeTextbookBO.class);
     }
 }
+
 

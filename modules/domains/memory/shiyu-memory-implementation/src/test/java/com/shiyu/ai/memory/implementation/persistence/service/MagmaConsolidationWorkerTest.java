@@ -1,5 +1,9 @@
 package com.shiyu.ai.memory.implementation.persistence.service;
 
+import com.shiyu.ai.memory.implementation.domain.magma.*;
+
+import com.shiyu.ai.memory.contract.model.*;
+
 import org.junit.jupiter.api.Test;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.core.RowMapper;
@@ -152,3 +156,4 @@ class MagmaConsolidationWorkerTest {
         return worker;
     }
 }
+

@@ -6,7 +6,7 @@ import com.mybatisflex.annotation.Table;
 import com.shiyu.ai.common.mybatis.model.TenantEntity;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
-import com.shiyu.ai.knowledge.domain.model.KnowledgeSpaceMemberBO;
+import com.shiyu.ai.knowledge.implementation.domain.model.KnowledgeSpaceMemberBO;
 import io.github.linpeilie.annotations.AutoMapper;
 
 @Data
@@ -23,4 +23,5 @@ public class KnowledgeSpaceMemberDO extends TenantEntity {
     private Long principalId;
     private String spaceRole;
 }
+
 

@@ -6,7 +6,7 @@ import com.mybatisflex.annotation.Table;
 import com.shiyu.ai.common.mybatis.model.TenantEntity;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
-import com.shiyu.ai.education.domain.model.SubjectBO;
+import com.shiyu.ai.education.implementation.domain.model.SubjectBO;
 import io.github.linpeilie.annotations.AutoMapper;
 
 @Data
@@ -25,4 +25,5 @@ public class SubjectDO extends TenantEntity {
     private String icon;
     private Integer sortOrder;
 }
+
 

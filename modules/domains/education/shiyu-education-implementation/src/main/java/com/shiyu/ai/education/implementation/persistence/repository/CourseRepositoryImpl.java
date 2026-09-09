@@ -5,7 +5,7 @@ import java.util.List;
 
 import com.shiyu.ai.common.core.api.PageData;
 import com.shiyu.ai.common.core.utils.MapstructUtils;
-import com.shiyu.ai.education.domain.model.CourseBO;
+import com.shiyu.ai.education.implementation.domain.model.CourseBO;
 import com.shiyu.ai.education.implementation.persistence.dataobject.CourseDO;
 import com.shiyu.ai.education.implementation.persistence.mapper.CourseMapper;
 import com.shiyu.ai.kernel.context.TenantId;
@@ -13,7 +13,7 @@ import jakarta.annotation.Resource;
 import org.springframework.stereotype.Component;
 
 @Component
-public class CourseRepositoryImpl implements com.shiyu.ai.education.port.repository.CourseRepository {
+public class CourseRepositoryImpl implements com.shiyu.ai.education.implementation.domain.port.repository.CourseRepository {
 
     @Resource
     private CourseMapper courseMapper;
@@ -72,4 +72,5 @@ public class CourseRepositoryImpl implements com.shiyu.ai.education.port.reposit
     }
 
 }
+
 

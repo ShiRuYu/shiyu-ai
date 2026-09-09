@@ -4,7 +4,7 @@ import com.mybatisflex.core.query.QueryWrapper;
 import java.util.List;
 
 import com.shiyu.ai.common.core.utils.MapstructUtils;
-import com.shiyu.ai.education.domain.model.AbilityBO;
+import com.shiyu.ai.education.implementation.domain.model.AbilityBO;
 import com.shiyu.ai.education.implementation.persistence.dataobject.AbilityDO;
 import com.shiyu.ai.education.implementation.persistence.mapper.AbilityMapper;
 import com.shiyu.ai.kernel.context.TenantId;
@@ -12,7 +12,7 @@ import jakarta.annotation.Resource;
 import org.springframework.stereotype.Component;
 
 @Component
-public class AbilityRepositoryImpl implements com.shiyu.ai.education.port.repository.AbilityRepository {
+public class AbilityRepositoryImpl implements com.shiyu.ai.education.implementation.domain.port.repository.AbilityRepository {
 
     @Resource
     private AbilityMapper abilityMapper;
@@ -46,4 +46,5 @@ public class AbilityRepositoryImpl implements com.shiyu.ai.education.port.reposi
         return EducationWriteGuard.require(abilityMapper.updateByQuery(dataObj, QueryWrapper.create().eq("tenant_id", tenantId.value()).eq("id", ability.getId())), "update ability");
     }
 }
+
 

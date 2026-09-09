@@ -7,7 +7,7 @@ import com.shiyu.ai.common.mybatis.model.TenantEntity;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
 import java.time.LocalDateTime;
-import com.shiyu.ai.knowledge.domain.model.KnowledgeDocRelationBO;
+import com.shiyu.ai.knowledge.implementation.domain.model.KnowledgeDocRelationBO;
 import io.github.linpeilie.annotations.AutoMapper;
 
 @Data
@@ -25,4 +25,5 @@ public class KnowledgeDocRelationDO extends TenantEntity {
     private String relationType;
     private LocalDateTime createTime;
 }
+
 

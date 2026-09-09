@@ -1,6 +1,6 @@
 package com.shiyu.ai.web.config;
 
-import com.shiyu.ai.agent.service.AuditService;
+import com.shiyu.ai.agent.implementation.service.AuditService;
 import com.shiyu.ai.common.web.auth.ClientIpResolver;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.Tag;

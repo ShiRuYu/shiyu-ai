@@ -2,7 +2,7 @@ package com.shiyu.ai.knowledge.implementation.persistence.repository;
 
 import com.mybatisflex.core.paginate.Page;
 import com.shiyu.ai.common.core.utils.MapstructUtils;
-import com.shiyu.ai.knowledge.domain.model.KnowledgeBO;
+import com.shiyu.ai.knowledge.implementation.domain.model.KnowledgeBO;
 import com.shiyu.ai.knowledge.implementation.persistence.dataobject.KnowledgeDO;
 import com.shiyu.ai.knowledge.implementation.persistence.mapper.KnowledgeMapper;
 import com.shiyu.ai.kernel.context.TenantId;
@@ -101,3 +101,4 @@ class KnowledgeRepositoryCoverageTest {
         repository.assignDefaultSpace(TENANT, 4L);
     }
 }
+

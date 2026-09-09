@@ -4,10 +4,10 @@ import com.mybatisflex.core.query.QueryWrapper;
 import com.shiyu.ai.common.core.api.PageData;
 import com.shiyu.ai.common.core.utils.MapstructUtils;
 import com.shiyu.ai.kernel.context.TenantId;
-import com.shiyu.ai.knowledge.domain.model.KnowledgeBO;
+import com.shiyu.ai.knowledge.implementation.domain.model.KnowledgeBO;
 import com.shiyu.ai.knowledge.implementation.persistence.dataobject.KnowledgeDO;
 import com.shiyu.ai.knowledge.implementation.persistence.mapper.KnowledgeMapper;
-import com.shiyu.ai.knowledge.port.repository.KnowledgeRepository;
+import com.shiyu.ai.knowledge.implementation.domain.port.repository.KnowledgeRepository;
 import jakarta.annotation.Resource;
 import org.springframework.stereotype.Component;
 
@@ -156,3 +156,5 @@ public class KnowledgeRepositoryImpl implements KnowledgeRepository {
         return MapstructUtils.convert(data, KnowledgeBO.class);
     }
 }
+
+

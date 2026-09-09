@@ -1,6 +1,6 @@
 package com.shiyu.ai.web.auth;
 
-import com.shiyu.ai.auth.port.repository.AuthRepository;
+import com.shiyu.ai.iam.implementation.port.repository.AuthRepository;
 import com.shiyu.ai.common.core.domain.UserContext;
 import com.shiyu.ai.common.core.domain.UserContextHolder;
 import com.shiyu.ai.kernel.context.TenantId;
@@ -76,3 +76,4 @@ class SaPermissionProviderTest {
         verifyNoInteractions(repository);
     }
 }
+

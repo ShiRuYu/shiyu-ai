@@ -1,7 +1,7 @@
 package com.shiyu.ai.agent.implementation.persistence.runtime;
 
-import com.shiyu.ai.runtime.AiApp;
-import com.shiyu.ai.runtime.AiAppVersion;
+import com.shiyu.ai.agent.implementation.runtime.AiApp;
+import com.shiyu.ai.agent.implementation.runtime.AiAppVersion;
 import com.shiyu.ai.kernel.context.TenantId;
 import com.shiyu.ai.kernel.context.UserId;
 import org.junit.jupiter.api.Test;

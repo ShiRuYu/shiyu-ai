@@ -4,7 +4,7 @@ import com.mybatisflex.core.query.QueryWrapper;
 import java.util.List;
 
 import com.shiyu.ai.common.core.utils.MapstructUtils;
-import com.shiyu.ai.education.domain.model.AchievementBO;
+import com.shiyu.ai.education.implementation.domain.model.AchievementBO;
 import com.shiyu.ai.education.implementation.persistence.dataobject.AchievementDO;
 import com.shiyu.ai.education.implementation.persistence.mapper.AchievementMapper;
 import com.shiyu.ai.kernel.context.TenantId;
@@ -12,7 +12,7 @@ import jakarta.annotation.Resource;
 import org.springframework.stereotype.Component;
 
 @Component
-public class AchievementRepositoryImpl implements com.shiyu.ai.education.port.repository.AchievementRepository {
+public class AchievementRepositoryImpl implements com.shiyu.ai.education.implementation.domain.port.repository.AchievementRepository {
 
     @Resource
     private AchievementMapper achievementMapper;
@@ -30,4 +30,5 @@ public class AchievementRepositoryImpl implements com.shiyu.ai.education.port.re
         return rows;
     }
 }
+
 

@@ -3,7 +3,7 @@ package com.shiyu.ai.model.implementation.persistence.repository;
 import com.mybatisflex.core.query.QueryWrapper;
 import com.shiyu.ai.model.implementation.persistence.dataobject.AiPlatformDO;
 import com.shiyu.ai.model.implementation.persistence.mapper.AiPlatformMapper;
-import com.shiyu.ai.model.domain.model.AiPlatformBO;
+import com.shiyu.ai.model.implementation.domain.model.AiPlatformBO;
 import com.shiyu.ai.common.core.vo.IdNameOptionVO;
 import com.shiyu.ai.common.core.utils.MapstructUtils;
 import jakarta.annotation.Resource;
@@ -16,7 +16,7 @@ import java.util.stream.Collectors;
 
 @SuppressWarnings("unchecked")
 @Component
-public class AiPlatformRepositoryImpl implements com.shiyu.ai.model.port.repository.AiPlatformRepository {
+public class AiPlatformRepositoryImpl implements com.shiyu.ai.model.implementation.domain.port.repository.AiPlatformRepository {
 
     @Resource
     private AiPlatformMapper aiPlatformMapper;

@@ -8,7 +8,7 @@ import lombok.Data;
 import lombok.EqualsAndHashCode;
 
 import java.time.LocalDateTime;
-import com.shiyu.ai.education.domain.model.TextbookBO;
+import com.shiyu.ai.education.implementation.domain.model.TextbookBO;
 import io.github.linpeilie.annotations.AutoMapper;
 
 @Data
@@ -28,4 +28,5 @@ public class TextbookDO extends TenantEntity {
     private String isbn;
     private LocalDateTime createTime;
 }
+
 

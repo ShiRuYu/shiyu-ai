@@ -1,7 +1,8 @@
 package com.shiyu.ai.memory.implementation.persistence.repository;
 
 import com.shiyu.ai.kernel.context.TenantId;
-import com.shiyu.ai.memory.magma.*;
+import com.shiyu.ai.memory.contract.model.*;
+import com.shiyu.ai.memory.implementation.domain.magma.*;
 import org.junit.jupiter.api.Test;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.core.RowMapper;
@@ -116,3 +117,4 @@ class JdbcMagmaMemoryRepositoryTest {
         return repository;
     }
 }
+

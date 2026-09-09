@@ -9,7 +9,7 @@ import lombok.EqualsAndHashCode;
 
 import java.io.Serial;
 import java.time.LocalDateTime;
-import com.shiyu.ai.education.domain.model.AchievementBO;
+import com.shiyu.ai.education.implementation.domain.model.AchievementBO;
 import io.github.linpeilie.annotations.AutoMapper;
 
 @Data
@@ -27,4 +27,5 @@ public class AchievementDO extends TenantEntity {
     private String icon;
     private LocalDateTime earnedAt;
 }
+
 

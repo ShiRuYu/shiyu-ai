@@ -1,6 +1,12 @@
 package com.shiyu.ai.agent.evaluation;
 
-import com.shiyu.ai.application.db.DatabaseInitializer;
+import com.shiyu.ai.agent.implementation.evaluation.EvalCase;
+import com.shiyu.ai.agent.implementation.evaluation.EvalDataset;
+import com.shiyu.ai.agent.implementation.evaluation.EvalMetric;
+import com.shiyu.ai.agent.implementation.evaluation.EvalResult;
+import com.shiyu.ai.agent.implementation.evaluation.EvalRun;
+import com.shiyu.ai.agent.implementation.evaluation.JdbcEvaluationRepository;
+import com.shiyu.ai.composition.database.DatabaseInitializer;
 import com.shiyu.ai.kernel.context.TenantId;
 import org.h2.jdbcx.JdbcDataSource;
 import org.junit.jupiter.api.Test;
@@ -39,3 +45,4 @@ class JdbcEvaluationRepositoryTest {
         assertEquals(run.results(), repository.findRun(run.id(), tenant, 2).orElseThrow().results());
     }
 }
+

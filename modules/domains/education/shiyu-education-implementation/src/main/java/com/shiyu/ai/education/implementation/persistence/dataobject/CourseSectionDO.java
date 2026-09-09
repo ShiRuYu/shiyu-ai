@@ -10,7 +10,7 @@ import lombok.EqualsAndHashCode;
 
 import java.io.Serial;
 import java.time.LocalDateTime;
-import com.shiyu.ai.education.domain.model.CourseSectionBO;
+import com.shiyu.ai.education.implementation.domain.model.CourseSectionBO;
 import io.github.linpeilie.annotations.AutoMapper;
 
 @Data
@@ -33,4 +33,5 @@ public class CourseSectionDO extends TenantEntity {
     private Integer durationMin;
     private LocalDateTime createdAt;
 }
+
 

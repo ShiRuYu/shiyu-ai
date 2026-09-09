@@ -1,7 +1,7 @@
 package com.shiyu.ai.web.agent;
 
-import com.shiyu.ai.agent.runtime.AgentRuntime;
-import com.shiyu.ai.agent.web.ExecutionController;
+import com.shiyu.ai.agent.implementation.runtime.AgentRuntime;
+import com.shiyu.ai.agent.implementation.web.ExecutionController;
 import com.shiyu.ai.common.core.domain.UserContext;
 import com.shiyu.ai.common.core.domain.UserContextHolder;
 import cn.dev33.satoken.annotation.SaCheckPermission;

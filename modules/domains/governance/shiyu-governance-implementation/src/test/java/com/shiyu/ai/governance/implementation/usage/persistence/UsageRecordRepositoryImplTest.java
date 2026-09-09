@@ -6,7 +6,7 @@ import com.shiyu.ai.governance.implementation.usage.domain.model.UsageRecordBO;
 import com.shiyu.ai.governance.implementation.usage.persistence.mapper.UsageRecordMapper;
 import com.shiyu.ai.governance.implementation.usage.persistence.repository.UsageRecordRepositoryImpl;
 import com.shiyu.ai.kernel.context.TenantId;
-import com.shiyu.ai.model.port.ModelCatalogPort;
+import com.shiyu.ai.model.contract.api.ModelCatalogPort;
 import org.springframework.dao.DuplicateKeyException;
 import org.mockito.MockedStatic;
 import org.junit.jupiter.api.BeforeEach;

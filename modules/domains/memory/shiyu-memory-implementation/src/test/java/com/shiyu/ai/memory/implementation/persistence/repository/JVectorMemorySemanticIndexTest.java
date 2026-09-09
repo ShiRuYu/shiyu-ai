@@ -1,10 +1,10 @@
 package com.shiyu.ai.memory.implementation.persistence.repository;
 
 import com.shiyu.ai.kernel.context.TenantId;
-import com.shiyu.ai.memory.magma.*;
-import com.shiyu.ai.vector.VectorRecord;
-import com.shiyu.ai.vector.VectorStore;
-import com.shiyu.ai.vector.config.VectorStoreProperties;
+import com.shiyu.ai.memory.contract.model.*;
+import com.shiyu.ai.common.vector.model.VectorRecord;
+import com.shiyu.ai.common.vector.api.VectorStore;
+import com.shiyu.ai.common.vector.config.VectorStoreProperties;
 import org.junit.jupiter.api.Test;
 
 import java.time.Instant;
@@ -27,7 +27,7 @@ class JVectorMemorySemanticIndexTest {
         JdbcMagmaMemoryRepository repository = mock(JdbcMagmaMemoryRepository.class);
         JVectorMemorySemanticIndex index = new JVectorMemorySemanticIndex(store, properties, repository);
         MemoryEvent event = event("e1", "hello world", MemoryEventStatus.ACTIVE);
-        when(store.search(any(com.shiyu.ai.vector.VectorSearchRequest.class))).thenReturn(
+        when(store.search(any(com.shiyu.ai.common.vector.model.VectorSearchRequest.class))).thenReturn(
                 List.of(new VectorRecord("e1", new float[]{1}, Map.of("_score", 0.8d))));
         when(repository.findEvent(TENANT, "e1")).thenReturn(Optional.of(event));
         when(repository.findByNamespace(TENANT, "notes", 100000)).thenReturn(List.of(event));
@@ -52,7 +52,7 @@ class JVectorMemorySemanticIndexTest {
         JdbcMagmaMemoryRepository repository = mock(JdbcMagmaMemoryRepository.class);
         JVectorMemorySemanticIndex index = new JVectorMemorySemanticIndex(store, properties, repository);
         MemoryEvent inactive = event("e2", "old", MemoryEventStatus.REVOKED);
-        when(store.search(any(com.shiyu.ai.vector.VectorSearchRequest.class))).thenReturn(
+        when(store.search(any(com.shiyu.ai.common.vector.model.VectorSearchRequest.class))).thenReturn(
                 List.of(new VectorRecord("e2", new float[]{1}, Map.of())));
         when(repository.findEvent(TENANT, "e2")).thenReturn(Optional.of(inactive));
 
@@ -65,3 +65,6 @@ class JVectorMemorySemanticIndexTest {
                 now, "TEST", id, Map.of(), 0.8, 0.5, status, ConfirmationPolicy.AUTO, now, now);
     }
 }
+
+
+

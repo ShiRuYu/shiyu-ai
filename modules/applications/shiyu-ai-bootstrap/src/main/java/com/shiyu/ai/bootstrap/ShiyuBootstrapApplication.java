@@ -1,5 +1,7 @@
 package com.shiyu.ai.bootstrap;
 
+import com.shiyu.ai.bootstrap.lock.EmbeddedDataDirectoryLock;
+
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 

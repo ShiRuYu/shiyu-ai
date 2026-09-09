@@ -7,7 +7,7 @@ import com.shiyu.ai.common.mybatis.model.TenantEntity;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
 import java.io.Serial;
-import com.shiyu.ai.knowledge.domain.model.KnowledgeBO;
+import com.shiyu.ai.knowledge.implementation.domain.model.KnowledgeBO;
 import io.github.linpeilie.annotations.AutoMapper;
 
 @Data
@@ -39,4 +39,5 @@ public class KnowledgeDO extends TenantEntity {
     private String tags;
 
 }
+
 

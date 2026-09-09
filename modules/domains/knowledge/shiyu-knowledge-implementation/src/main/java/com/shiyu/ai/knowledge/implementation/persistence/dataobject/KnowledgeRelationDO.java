@@ -6,7 +6,7 @@ import com.mybatisflex.annotation.Table;
 import com.shiyu.ai.common.mybatis.model.TenantEntity;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
-import com.shiyu.ai.knowledge.domain.model.KnowledgeRelationBO;
+import com.shiyu.ai.knowledge.implementation.domain.model.KnowledgeRelationBO;
 import io.github.linpeilie.annotations.AutoMapper;
 
 @Data
@@ -29,4 +29,5 @@ public class KnowledgeRelationDO extends TenantEntity {
 
     private Double weight;
 }
+
 

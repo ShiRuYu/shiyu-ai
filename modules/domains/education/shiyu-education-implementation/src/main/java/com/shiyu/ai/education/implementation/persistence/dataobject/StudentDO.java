@@ -9,7 +9,7 @@ import lombok.EqualsAndHashCode;
 
 import java.time.LocalDate;
 import java.time.LocalDateTime;
-import com.shiyu.ai.education.domain.model.StudentBO;
+import com.shiyu.ai.education.implementation.domain.model.StudentBO;
 import io.github.linpeilie.annotations.AutoMapper;
 
 @Data
@@ -36,4 +36,5 @@ public class StudentDO extends TenantEntity {
     private LocalDateTime createdAt;
     private LocalDateTime updatedAt;
 }
+
 

@@ -3,7 +3,7 @@ package com.shiyu.ai.model.implementation.persistence;
 import com.shiyu.ai.model.implementation.persistence.mapper.AiModelMapper;
 import com.shiyu.ai.model.implementation.persistence.mapper.AiPlatformMapper;
 import com.mybatisflex.core.query.QueryWrapper;
-import com.shiyu.ai.model.port.ModelCatalogPort;
+import com.shiyu.ai.model.contract.api.ModelCatalogPort;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
 

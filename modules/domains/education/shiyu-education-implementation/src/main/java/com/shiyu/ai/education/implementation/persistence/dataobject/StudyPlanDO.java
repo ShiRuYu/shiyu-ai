@@ -8,7 +8,7 @@ import lombok.Data;
 import lombok.EqualsAndHashCode;
 
 import java.time.LocalDate;
-import com.shiyu.ai.education.domain.model.StudyPlanBO;
+import com.shiyu.ai.education.implementation.domain.model.StudyPlanBO;
 import io.github.linpeilie.annotations.AutoMapper;
 
 /**
@@ -30,4 +30,5 @@ public class StudyPlanDO extends TenantEntity {
     private LocalDate startDate;
     private LocalDate endDate;
 }
+
 

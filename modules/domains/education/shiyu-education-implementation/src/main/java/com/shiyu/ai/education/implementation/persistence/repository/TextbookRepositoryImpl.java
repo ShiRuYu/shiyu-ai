@@ -5,7 +5,7 @@ import java.util.List;
 
 import com.shiyu.ai.common.core.api.PageData;
 import com.shiyu.ai.common.core.utils.MapstructUtils;
-import com.shiyu.ai.education.domain.model.TextbookBO;
+import com.shiyu.ai.education.implementation.domain.model.TextbookBO;
 import com.shiyu.ai.education.implementation.persistence.dataobject.TextbookDO;
 import com.shiyu.ai.education.implementation.persistence.mapper.TextbookMapper;
 import com.shiyu.ai.kernel.context.TenantId;
@@ -13,7 +13,7 @@ import jakarta.annotation.Resource;
 import org.springframework.stereotype.Component;
 
 @Component
-public class TextbookRepositoryImpl implements com.shiyu.ai.education.port.repository.TextbookRepository {
+public class TextbookRepositoryImpl implements com.shiyu.ai.education.implementation.domain.port.repository.TextbookRepository {
 
     @Resource
     private TextbookMapper textbookMapper;
@@ -66,4 +66,5 @@ public class TextbookRepositoryImpl implements com.shiyu.ai.education.port.repos
     }
 
 }
+
 

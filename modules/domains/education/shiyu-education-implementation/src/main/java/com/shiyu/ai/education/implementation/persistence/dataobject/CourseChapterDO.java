@@ -10,7 +10,7 @@ import lombok.EqualsAndHashCode;
 
 import java.io.Serial;
 import java.time.LocalDateTime;
-import com.shiyu.ai.education.domain.model.CourseChapterBO;
+import com.shiyu.ai.education.implementation.domain.model.CourseChapterBO;
 import io.github.linpeilie.annotations.AutoMapper;
 
 @Data
@@ -30,4 +30,5 @@ public class CourseChapterDO extends TenantEntity {
     private Integer orderNo;
     private LocalDateTime createdAt;
 }
+
 

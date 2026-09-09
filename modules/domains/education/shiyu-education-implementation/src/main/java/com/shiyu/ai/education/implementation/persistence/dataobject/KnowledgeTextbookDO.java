@@ -9,7 +9,7 @@ import com.shiyu.ai.common.mybatis.model.TenantEntity;
 import lombok.EqualsAndHashCode;
 
 import java.io.Serial;
-import com.shiyu.ai.education.domain.model.KnowledgeTextbookBO;
+import com.shiyu.ai.education.implementation.domain.model.KnowledgeTextbookBO;
 import io.github.linpeilie.annotations.AutoMapper;
 
 @Data
@@ -28,4 +28,5 @@ public class KnowledgeTextbookDO extends TenantEntity {
     private Long textbookId;
     private Long chapterId;
 }
+
 

@@ -4,7 +4,7 @@ import com.mybatisflex.core.query.QueryWrapper;
 import java.util.List;
 
 import com.shiyu.ai.common.core.utils.MapstructUtils;
-import com.shiyu.ai.education.domain.model.LearningStateBO;
+import com.shiyu.ai.education.implementation.domain.model.LearningStateBO;
 import com.shiyu.ai.education.implementation.persistence.dataobject.LearningStateDO;
 import com.shiyu.ai.education.implementation.persistence.mapper.LearningStateMapper;
 import com.shiyu.ai.kernel.context.TenantId;
@@ -12,7 +12,7 @@ import jakarta.annotation.Resource;
 import org.springframework.stereotype.Component;
 
 @Component
-public class LearningStateRepositoryImpl implements com.shiyu.ai.education.port.repository.LearningStateRepository {
+public class LearningStateRepositoryImpl implements com.shiyu.ai.education.implementation.domain.port.repository.LearningStateRepository {
 
     @Resource
     private LearningStateMapper learningStateMapper;
@@ -37,4 +37,5 @@ public class LearningStateRepositoryImpl implements com.shiyu.ai.education.port.
         return EducationWriteGuard.require(learningStateMapper.insert(dataObj), "insert learning state");
     }
 }
+
 

@@ -5,13 +5,13 @@ import com.mybatisflex.core.query.QueryWrapper;
 import com.mybatisflex.core.tenant.TenantManager;
 import com.shiyu.ai.common.core.api.PageData;
 import com.shiyu.ai.common.core.utils.MapstructUtils;
-import com.shiyu.ai.knowledge.domain.model.KnowledgeAuditLogBO;
-import com.shiyu.ai.knowledge.domain.model.KnowledgeDocumentVersionBO;
-import com.shiyu.ai.knowledge.domain.model.KnowledgeEvaluationCaseBO;
-import com.shiyu.ai.knowledge.domain.model.KnowledgeIngestionJobBO;
-import com.shiyu.ai.knowledge.domain.model.KnowledgeReviewRecordBO;
-import com.shiyu.ai.knowledge.domain.model.KnowledgeSpaceBO;
-import com.shiyu.ai.knowledge.domain.model.KnowledgeSpaceMemberBO;
+import com.shiyu.ai.knowledge.implementation.domain.model.KnowledgeAuditLogBO;
+import com.shiyu.ai.knowledge.implementation.domain.model.KnowledgeDocumentVersionBO;
+import com.shiyu.ai.knowledge.implementation.domain.model.KnowledgeEvaluationCaseBO;
+import com.shiyu.ai.knowledge.implementation.domain.model.KnowledgeIngestionJobBO;
+import com.shiyu.ai.knowledge.implementation.domain.model.KnowledgeReviewRecordBO;
+import com.shiyu.ai.knowledge.implementation.domain.model.KnowledgeSpaceBO;
+import com.shiyu.ai.knowledge.implementation.domain.model.KnowledgeSpaceMemberBO;
 import com.shiyu.ai.knowledge.implementation.persistence.dataobject.KnowledgeAuditLogDO;
 import com.shiyu.ai.knowledge.implementation.persistence.dataobject.KnowledgeDocumentVersionDO;
 import com.shiyu.ai.knowledge.implementation.persistence.dataobject.KnowledgeEvaluationCaseDO;
@@ -35,7 +35,7 @@ import java.util.List;
 
 @Repository
 @RequiredArgsConstructor
-public class KnowledgeEnterpriseRepositoryImpl implements com.shiyu.ai.knowledge.port.repository.KnowledgeEnterpriseRepository {
+public class KnowledgeEnterpriseRepositoryImpl implements com.shiyu.ai.knowledge.implementation.domain.port.repository.KnowledgeEnterpriseRepository {
 
     private final KnowledgeSpaceMapper spaceMapper;
     private final KnowledgeSpaceMemberMapper memberMapper;
@@ -384,4 +384,6 @@ public class KnowledgeEnterpriseRepositoryImpl implements com.shiyu.ai.knowledge
         }
     }
 }
+
+
 

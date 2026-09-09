@@ -117,11 +117,11 @@
         </Logger>
 
         <Logger name="com.shiyu.ai.web" level="INFO" additivity="false"><AppenderRef ref="webFile"/></Logger>
-        <Logger name="com.shiyu.ai.auth" level="INFO" additivity="false"><AppenderRef ref="securityFile"/></Logger>
+        <Logger name="com.shiyu.ai.iam.implementation" level="INFO" additivity="false"><AppenderRef ref="securityFile"/></Logger>
         <Logger name="com.shiyu.ai.agent" level="INFO" additivity="false"><AppenderRef ref="commonInfo"/></Logger>
         <Logger name="com.shiyu.ai.model" level="INFO" additivity="false"><AppenderRef ref="aiFile"/></Logger>
         <Logger name="com.shiyu.ai.tool" level="INFO" additivity="false"><AppenderRef ref="toolFile"/></Logger>
-        <Logger name="com.shiyu.ai.plugin" level="INFO" additivity="false"><AppenderRef ref="toolFile"/></Logger>
+        <Logger name="com.shiyu.ai.tooling.implementation.plugin" level="INFO" additivity="false"><AppenderRef ref="toolFile"/></Logger>
         <Logger name="com.shiyu.ai.knowledge" level="INFO" additivity="false"><AppenderRef ref="knowledgeFile"/></Logger>
         <Logger name="com.shiyu.ai.common.mybatis" level="INFO" additivity="false"><AppenderRef ref="databaseFile"/></Logger>
 
@@ -145,3 +145,4 @@
         <Root level="INFO"><AppenderRef ref="Console"/></Root>
     </Loggers>
 </Configuration>
+

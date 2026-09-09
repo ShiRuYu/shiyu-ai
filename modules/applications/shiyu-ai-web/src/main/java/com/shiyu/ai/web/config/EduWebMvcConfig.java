@@ -19,8 +19,9 @@ public class EduWebMvcConfig implements WebMvcConfigurer {
     @Override
     public void configurePathMatch(PathMatchConfigurer configurer) {
         configurer.addPathPrefix("/api/education", clazz ->
-            clazz.getPackageName().startsWith("com.shiyu.ai.education.web")
+            clazz.getPackageName().startsWith("com.shiyu.ai.education.implementation.web")
                 || clazz.getPackageName().startsWith("com.shiyu.ai.web.education")
         );
     }
 }
+
