@@ -1,6 +1,6 @@
 import unittest, tempfile
 from pathlib import Path
-from scripts.continuous_testing.exploration import Scenario, ScenarioLedger, dispatch_plan
+from scripts.continuous_testing.exploration import Scenario, ScenarioLedger, dispatch_plan, generate_batch
 
 class ExplorationTests(unittest.TestCase):
     def test_seed_is_not_part_of_semantic_identity(self):
@@ -20,5 +20,12 @@ class ExplorationTests(unittest.TestCase):
             scenario = Scenario("api-fuzz", "search", "member", "empty", 100, "serial", "none")
             self.assertTrue(ScenarioLedger(path).add(scenario))
             self.assertFalse(ScenarioLedger(path).add(scenario))
+
+    def test_batch_keeps_required_purpose_mix_and_is_unique(self):
+        ledger = ScenarioLedger()
+        batch = generate_batch(ledger)
+        self.assertEqual(len(batch), 20)
+        self.assertEqual([s.purpose for s in batch].count("risk-gap"), 12)
+        self.assertEqual(len({s.key() for s in batch}), 20)
 
 if __name__ == "__main__": unittest.main()

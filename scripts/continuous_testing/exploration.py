@@ -48,3 +48,17 @@ def dispatch_plan(total: int = 20) -> list[str]:
     """Return purpose slots with the required 12/5/3 ratio."""
     high = round(total * 12 / 20); stale = round(total * 5 / 20)
     return ["risk-gap"] * high + ["stale-area"] * stale + ["historical-failure"] * (total - high - stale)
+
+def generate_batch(ledger: ScenarioLedger, total: int = 20) -> list[Scenario]:
+    """Generate and record a deterministic semantic batch without seed-only duplicates."""
+    purposes = dispatch_plan(total)
+    operations = ("upload", "search", "delete", "refresh", "stream")
+    boundaries = ("empty", "unicode", "max-length", "pagination")
+    result: list[Scenario] = []
+    index = 0
+    while len(result) < total:
+        purpose = purposes[len(result)]
+        scenario = Scenario("adaptive-v1", operations[index % len(operations)], "member", boundaries[index % len(boundaries)], 100 * (1 + index % 3), "serial", "none", purpose)
+        index += 1
+        if ledger.add(scenario): result.append(scenario)
+    return result
