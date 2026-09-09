@@ -1,4 +1,4 @@
-package com.shiyu.ai.common.storage.persistence;
+package com.shiyu.ai.common.storage.metadata;
 import com.shiyu.ai.common.storage.api.*;
 import com.shiyu.ai.common.storage.backup.*;
 import com.shiyu.ai.common.storage.config.*;
