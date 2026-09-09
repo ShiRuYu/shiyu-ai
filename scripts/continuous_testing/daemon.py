@@ -22,10 +22,22 @@ class Daemon:
         self.backend, self.frontend, self.state_dir = backend, frontend, state_dir
         self.interval = interval; self.stop_requested = False
         self.state = StateStore(state_dir / "state.sqlite"); self.state.initialize(); self.detector = StableChangeDetector()
+        self._recover_orphaned_runs()
         self.exploration_ticks = 0
         self.auto_run = auto_run
         self.baseline_process = None
         self.baseline_log = None
+    def _recover_orphaned_runs(self) -> None:
+        for run in self.state.list_runs():
+            if run.get("status") != "RUNNING":
+                continue
+            pid = run.get("metadata", {}).get("pid")
+            alive = False
+            if isinstance(pid, int):
+                try: os.kill(pid, 0); alive = True
+                except (OSError, ProcessLookupError): pass
+            if not alive:
+                self.state.update_run(run["id"], "FAILED", error="orphaned after scheduler restart")
     def _consume_pending(self) -> None:
         if not self.auto_run:
             return
