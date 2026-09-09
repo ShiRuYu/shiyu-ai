@@ -97,6 +97,24 @@ class Daemon:
                 temp = pending.with_suffix(".tmp")
                 temp.write_text(json.dumps({"status": "QUEUED", "version": current}, indent=2), encoding="utf-8")
                 os.replace(temp, pending)
+        # A change observed while another run was active is persisted in
+        # version.json but cannot be queued until that run reaches a terminal
+        # state. Reconcile it on every tick so the latest version is not lost.
+        running = marker.with_name("running-version.json")
+        running_active = False
+        running_version = None
+        if running.exists():
+            try:
+                data = json.loads(running.read_text(encoding="utf-8"))
+                running_active = data.get("status") == "RUNNING"
+                running_version = data.get("version")
+            except (OSError, json.JSONDecodeError):
+                running_active = True
+        if not running_active and not (self.state_dir / "pending-version.json").exists() and running_version != current:
+            pending = self.state_dir / "pending-version.json"
+            temp = pending.with_suffix(".tmp")
+            temp.write_text(json.dumps({"status": "QUEUED", "version": current}, indent=2), encoding="utf-8")
+            os.replace(temp, pending)
         self._consume_pending()
         return changed
     def run(self) -> None:
