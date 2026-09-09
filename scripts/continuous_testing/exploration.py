@@ -49,7 +49,7 @@ def dispatch_plan(total: int = 20) -> list[str]:
     high = round(total * 12 / 20); stale = round(total * 5 / 20)
     return ["risk-gap"] * high + ["stale-area"] * stale + ["historical-failure"] * (total - high - stale)
 
-def generate_batch(ledger: ScenarioLedger, total: int = 20) -> list[Scenario]:
+def generate_batch(ledger: ScenarioLedger, total: int = 20, strategy: str = "adaptive-v1") -> list[Scenario]:
     """Generate and record a deterministic semantic batch without seed-only duplicates."""
     purposes = dispatch_plan(total)
     operations = ("upload", "search", "delete", "refresh", "stream")
@@ -60,7 +60,7 @@ def generate_batch(ledger: ScenarioLedger, total: int = 20) -> list[Scenario]:
     max_attempts = max(total * 20, 100)
     while len(result) < total and attempts < max_attempts:
         purpose = purposes[len(result)]
-        scenario = Scenario("adaptive-v1", operations[index % len(operations)], "member", boundaries[index % len(boundaries)], 100 * (1 + index % 3), "serial", "none", purpose)
+        scenario = Scenario(strategy, operations[index % len(operations)], "member", boundaries[index % len(boundaries)], 100 * (1 + index % 3), "serial", "none", purpose)
         index += 1
         attempts += 1
         if ledger.add(scenario): result.append(scenario)
