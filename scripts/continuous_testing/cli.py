@@ -63,12 +63,17 @@ def main(argv=None) -> int:
         final = "COMPLETED" if all(r["status"] == "PASS" for r in results) else "FAILED"; store.update_run(run_id, final); VersionQueue(root).complete(final); store.write_snapshot(root / "state.json"); print(json.dumps({"run_id": run_id, "status": final, "results": results}))
     elif args.command == "explore":
         ledger = ScenarioLedger(root / "explored-space.json")
+        batch = None
         strategy = "adaptive-v1"
-        try:
-            batch = generate_batch(ledger, strategy=strategy)
-        except RuntimeError:
-            strategy = "adaptive-v2"
-            batch = generate_batch(ledger, strategy=strategy)
+        for index in range(1, 10):
+            strategy = f"adaptive-v{index}"
+            try:
+                batch = generate_batch(ledger, strategy=strategy)
+                break
+            except RuntimeError:
+                continue
+        if batch is None:
+            raise RuntimeError("all adaptive exploration strategies exhausted")
         print(json.dumps({"status": "QUEUED", "strategy": strategy, "count": len(batch), "purposes": {p: sum(s.purpose == p for s in batch) for p in {s.purpose for s in batch}}}, ensure_ascii=False))
     else:
         runs = store.list_runs()
