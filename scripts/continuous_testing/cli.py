@@ -10,13 +10,14 @@ from .process_control import stop_owned
 from .queue import VersionQueue
 from .gates import all_gates
 from .runner import run
+from .exploration import ScenarioLedger, generate_batch
 
 def _root() -> Path:
     return Path(os.environ.get("SHIYU_TESTING_ROOT", Path.cwd() / ".testing"))
 
 def main(argv=None) -> int:
     parser = argparse.ArgumentParser(prog="continuous-testing")
-    parser.add_argument("command", choices=["start", "status", "pause", "resume", "stop", "replay", "run-baseline"])
+    parser.add_argument("command", choices=["start", "status", "pause", "resume", "stop", "replay", "run-baseline", "explore"])
     parser.add_argument("failure_id", nargs="?")
     args = parser.parse_args(argv)
     root = _root(); store = StateStore(root / "state.sqlite"); store.initialize()
@@ -54,6 +55,10 @@ def main(argv=None) -> int:
             result = run(command, str(cwd), 3600); output = reports / f"{task}.log"; output.write_text(result.output, encoding="utf-8", errors="replace")
             store.update_task(task, result.status, started_at=started, finished_at=datetime.now(timezone.utc).isoformat(), exit_code=result.exit_code, output_path=str(output)); results.append({"task_id": task, "kind": kind, "status": result.status})
         final = "COMPLETED" if all(r["status"] == "PASS" for r in results) else "FAILED"; store.update_run(run_id, final); VersionQueue(root).complete(final); store.write_snapshot(root / "state.json"); print(json.dumps({"run_id": run_id, "status": final, "results": results}))
+    elif args.command == "explore":
+        ledger = ScenarioLedger(root / "explored-space.json")
+        batch = generate_batch(ledger)
+        print(json.dumps({"status": "QUEUED", "count": len(batch), "purposes": {p: sum(s.purpose == p for s in batch) for p in {s.purpose for s in batch}}}, ensure_ascii=False))
     else:
         runs = store.list_runs()
         if not runs:
