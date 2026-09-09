@@ -5,6 +5,7 @@ from pathlib import Path
 from .snapshot import Snapshot
 from .store import StateStore
 from .lease import Lease
+from .exploration import ScenarioLedger, generate_batch
 
 class StableChangeDetector:
     def __init__(self, stable_seconds: int = 30, clock=time.monotonic):
@@ -21,11 +22,19 @@ class Daemon:
         self.backend, self.frontend, self.state_dir = backend, frontend, state_dir
         self.interval = interval; self.stop_requested = False
         self.state = StateStore(state_dir / "state.sqlite"); self.state.initialize(); self.detector = StableChangeDetector()
+        self.exploration_ticks = 0
     def stop(self, *_): self.stop_requested = True
     def tick(self) -> bool:
         current = Snapshot.capture(self.backend, self.frontend)
         self.state_dir.mkdir(parents=True, exist_ok=True)
         (self.state_dir / "heartbeat.json").write_text(json.dumps({"pid": os.getpid(), "observed": time.time()}), encoding="utf-8")
+        self.exploration_ticks += 1
+        if self.exploration_ticks % 20 == 0:
+            try:
+                ledger = ScenarioLedger(self.state_dir / "explored-space.json")
+                generate_batch(ledger)
+            except RuntimeError as exc:
+                (self.state_dir / "pause-reason.txt").write_text(str(exc), encoding="utf-8")
         marker = self.state_dir / "version.json"
         previous = json.loads(marker.read_text()) if marker.exists() else None
         fingerprint = json.dumps(current, sort_keys=True)
