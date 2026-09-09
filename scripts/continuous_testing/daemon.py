@@ -25,6 +25,7 @@ class Daemon:
         self.exploration_ticks = 0
         self.auto_run = auto_run
         self.baseline_process = None
+        self.baseline_log = None
     def _consume_pending(self) -> None:
         if not self.auto_run:
             return
@@ -38,12 +39,18 @@ class Daemon:
         log_dir = self.state_dir / "runs" / "daemon-baseline"
         log_dir.mkdir(parents=True, exist_ok=True)
         log = (log_dir / "launcher.log").open("a", encoding="utf-8")
+        self.baseline_log = log
         self.baseline_process = subprocess.Popen(
             [sys.executable, "-m", "scripts.continuous_testing.cli", "run-baseline"],
             cwd=str(self.backend), stdout=log, stderr=subprocess.STDOUT,
             creationflags=getattr(subprocess, "CREATE_NEW_PROCESS_GROUP", 0),
         )
-    def stop(self, *_): self.stop_requested = True
+    def stop(self, *_):
+        self.stop_requested = True
+        if self.baseline_process is not None and self.baseline_process.poll() is None:
+            self.baseline_process.terminate()
+        if self.baseline_log is not None:
+            self.baseline_log.close(); self.baseline_log = None
     def tick(self) -> bool:
         current = Snapshot.capture(self.backend, self.frontend)
         self.state_dir.mkdir(parents=True, exist_ok=True)
@@ -77,8 +84,11 @@ class Daemon:
     def run(self) -> None:
         signal.signal(signal.SIGINT, self.stop); signal.signal(signal.SIGTERM, self.stop)
         with Lease(self.state_dir / "scheduler.lock"):
-            while not self.stop_requested:
-                self.tick(); time.sleep(self.interval)
+            try:
+                while not self.stop_requested:
+                    self.tick(); time.sleep(self.interval)
+            finally:
+                self.stop()
 
 def main() -> int:
     root = Path(os.environ.get("SHIYU_BACKEND_ROOT", Path.cwd()))
