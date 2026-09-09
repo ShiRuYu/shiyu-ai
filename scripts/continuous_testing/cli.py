@@ -74,6 +74,7 @@ def main(argv=None) -> int:
                 continue
         if batch is None:
             raise RuntimeError("all adaptive exploration strategies exhausted")
+        (root / "pause-reason.txt").unlink(missing_ok=True)
         print(json.dumps({"status": "QUEUED", "strategy": strategy, "count": len(batch), "purposes": {p: sum(s.purpose == p for s in batch) for p in {s.purpose for s in batch}}}, ensure_ascii=False))
     else:
         runs = store.list_runs()
