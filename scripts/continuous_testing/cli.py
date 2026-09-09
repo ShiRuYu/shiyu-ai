@@ -65,7 +65,11 @@ def main(argv=None) -> int:
         ledger = ScenarioLedger(root / "explored-space.json")
         batch = None
         strategy = "adaptive-v1"
-        for index in range(1, 10):
+        # Keep rotating through fresh strategy identities so the ledger can
+        # continue exploring after the initial nine curated strategies are
+        # exhausted.  The generator derives semantic combinations from the
+        # strategy name, so this remains deterministic and resumable.
+        for index in range(1, 10001):
             strategy = f"adaptive-v{index}"
             try:
                 batch = generate_batch(ledger, strategy=strategy)
