@@ -13,7 +13,7 @@ mybatis-flex:
     agent:
       type: com.zaxxer.hikari.HikariDataSource
       driver-class-name: org.postgresql.Driver
-      url: ${SHIYU_DB_URL:jdbc:postgresql://127.0.0.1:5432/shiyu}
-      username: ${SHIYU_DB_USERNAME:shiyu}
+      url: ${SHIYU_DB_URL:}
+      username: ${SHIYU_DB_USERNAME:}
       password: ${SHIYU_DB_PASSWORD:}
       validation-query: SELECT 1

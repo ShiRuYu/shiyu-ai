@@ -53,6 +53,8 @@ public class EventInfrastructureConfiguration {
         config.put(ProducerConfig.VALUE_SERIALIZER_CLASS_CONFIG, StringSerializer.class);
         config.put(ProducerConfig.ACKS_CONFIG, "all");
         config.put(ProducerConfig.ENABLE_IDEMPOTENCE_CONFIG, true);
+        config.put(ProducerConfig.RETRIES_CONFIG, Integer.MAX_VALUE);
+        config.put(ProducerConfig.MAX_IN_FLIGHT_REQUESTS_PER_CONNECTION, 5);
         return new DefaultKafkaProducerFactory<>(config);
     }
 
@@ -69,6 +71,12 @@ public class EventInfrastructureConfiguration {
             JdbcTemplate jdbc, EventInfrastructureProperties properties,
             KafkaTemplate<String, String> kafka) {
         return new KafkaOutboxEventPublisher(jdbc, properties, kafka);
+    }
+
+    @Bean
+    @ConditionalOnProperty(prefix = "shiyu.infrastructure.event", name = "provider", havingValue = "kafka")
+    public EventConsumptionDeduplicator eventConsumptionDeduplicator(JdbcTemplate jdbc) {
+        return new EventConsumptionDeduplicator(jdbc);
     }
 
     public record EventProviderValidator(String provider) {

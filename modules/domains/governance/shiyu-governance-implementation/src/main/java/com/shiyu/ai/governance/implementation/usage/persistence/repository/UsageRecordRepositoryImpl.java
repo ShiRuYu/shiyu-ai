@@ -2,16 +2,19 @@ package com.shiyu.ai.governance.implementation.usage.persistence.repository;
 
 import com.shiyu.ai.common.core.utils.JSONUtils;
 import com.shiyu.ai.common.core.utils.MapstructUtils;
+import com.shiyu.ai.common.core.jdbc.JdbcDialect;
 import com.shiyu.ai.governance.implementation.usage.domain.model.UsageRecordBO;
 import com.shiyu.ai.governance.implementation.usage.port.repository.UsageRecordRepository;
 import com.shiyu.ai.governance.implementation.usage.persistence.dataobject.UsageRecordDO;
 import com.shiyu.ai.governance.implementation.usage.persistence.mapper.UsageRecordMapper;
 import com.shiyu.ai.kernel.context.TenantId;
 import com.shiyu.ai.model.contract.api.ModelCatalogPort;
-import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.dao.DuplicateKeyException;
 import org.springframework.stereotype.Component;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Qualifier;
+import org.springframework.jdbc.core.JdbcTemplate;
 
 import java.math.BigDecimal;
 import java.time.LocalDate;
@@ -27,19 +30,38 @@ import java.util.Map;
 import java.util.Objects;
 import java.util.TreeMap;
 import java.util.function.Function;
+import javax.sql.DataSource;
 
 /**
  * Unified usage-record data access and H2-compatible usage aggregation.
  */
 @Slf4j
 @Component
-@RequiredArgsConstructor
 public class UsageRecordRepositoryImpl implements UsageRecordRepository {
 
     private static final WeekFields ISO_WEEK = WeekFields.ISO;
 
     private final UsageRecordMapper usageRecordMapper;
     private final ModelCatalogPort modelCatalog;
+    private final JdbcDialect dialect;
+
+    /** Constructor retained for unit tests that use a mocked mapper. */
+    public UsageRecordRepositoryImpl(UsageRecordMapper usageRecordMapper, ModelCatalogPort modelCatalog) {
+        this(usageRecordMapper, modelCatalog, JdbcDialect.fromProduct("H2"));
+    }
+
+    @Autowired
+    public UsageRecordRepositoryImpl(UsageRecordMapper usageRecordMapper, ModelCatalogPort modelCatalog,
+                                     @Qualifier("agentDataSource") DataSource dataSource) {
+        this(usageRecordMapper, modelCatalog, JdbcDialect.detect(new JdbcTemplate(dataSource)));
+    }
+
+    private UsageRecordRepositoryImpl(UsageRecordMapper usageRecordMapper, ModelCatalogPort modelCatalog,
+                                      JdbcDialect dialect) {
+        this.usageRecordMapper = usageRecordMapper;
+        this.modelCatalog = modelCatalog;
+        this.dialect = dialect;
+    }
 
     @Override
     public void insert(UsageRecordBO record) {
@@ -61,16 +83,31 @@ public class UsageRecordRepositoryImpl implements UsageRecordRepository {
 
     @Override
     public List<Map<String, Object>> aggregateByDay(int days) {
+        if (days <= 0) return List.of();
+        List<UsageRecordDO> portable = usageRecordMapper.selectRecordsSince(daysBefore(days));
+        if (usesPortableAggregation() && portable != null) {
+            return aggregateRecords(portable, "usage_date", time -> time.toLocalDate().toString());
+        }
         return safeRows(usageRecordMapper.aggregateByDay(days));
     }
 
     @Override
     public List<Map<String, Object>> aggregateByWeek(int weeks) {
+        if (weeks <= 0) return List.of();
+        List<UsageRecordDO> portable = usageRecordMapper.selectRecordsSince(weeksBefore(weeks));
+        if (usesPortableAggregation() && portable != null) {
+            return aggregateRecords(portable, "usage_week", this::weekKey);
+        }
         return safeRows(usageRecordMapper.aggregateByWeek(weeks));
     }
 
     @Override
     public List<Map<String, Object>> aggregateByMonth(int months) {
+        if (months <= 0) return List.of();
+        List<UsageRecordDO> portable = usageRecordMapper.selectRecordsSince(monthsBefore(months));
+        if (usesPortableAggregation() && portable != null) {
+            return aggregateRecords(portable, "usage_month", time -> YearMonth.from(time).toString());
+        }
         return safeRows(usageRecordMapper.aggregateByMonth(months));
     }
 
@@ -202,8 +239,53 @@ public class UsageRecordRepositoryImpl implements UsageRecordRepository {
         return result;
     }
 
+    private List<Map<String, Object>> aggregateRecords(List<UsageRecordDO> records, String keyName,
+                                                        Function<LocalDateTime, String> keyFunction) {
+        Map<String, AggregateRow> groups = new TreeMap<>(Comparator.reverseOrder());
+        for (UsageRecordDO record : records) {
+            if (record == null || record.getCreateTime() == null) continue;
+            String key = keyFunction.apply(record.getCreateTime());
+            String usageType = record.getUsageType();
+            String groupKey = key + '\u0000' + (usageType == null ? "" : usageType);
+            AggregateRow row = groups.computeIfAbsent(groupKey, ignored -> new AggregateRow(key, usageType));
+            row.calls++;
+            if (record.getLatencyMs() != null) {
+                row.latencyTotal += record.getLatencyMs();
+                row.latencySamples++;
+            }
+        }
+        List<Map<String, Object>> result = new ArrayList<>(groups.size());
+        groups.forEach((ignored, row) -> {
+            Map<String, Object> values = new LinkedHashMap<>();
+            values.put(keyName, row.periodKey);
+            values.put("usage_type", row.usageType);
+            values.put("call_count", row.calls);
+            values.put("avg_latency_ms", row.latencySamples == 0 ? null
+                    : row.latencyTotal / (double) row.latencySamples);
+            result.add(values);
+        });
+        return result;
+    }
+
+    private static final class AggregateRow {
+        private final String periodKey;
+        private final String usageType;
+        private long calls;
+        private long latencyTotal;
+        private long latencySamples;
+
+        private AggregateRow(String periodKey, String usageType) {
+            this.periodKey = periodKey;
+            this.usageType = usageType;
+        }
+    }
+
     private LocalDateTime daysBefore(int days) {
         return LocalDateTime.now().minusDays(Math.max(0, days));
+    }
+
+    private boolean usesPortableAggregation() {
+        return dialect.kind() == JdbcDialect.Kind.POSTGRESQL || dialect.kind() == JdbcDialect.Kind.MYSQL;
     }
 
     private LocalDateTime weeksBefore(int weeks) {

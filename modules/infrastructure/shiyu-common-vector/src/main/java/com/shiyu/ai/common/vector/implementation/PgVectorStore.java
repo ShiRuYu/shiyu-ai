@@ -45,13 +45,13 @@ public final class PgVectorStore implements VectorStore {
         jdbc.update("""
                         INSERT INTO shiyu_vector_item
                             (vector_namespace, vector_id, dimension, embedding, metadata, updated_at)
-                        VALUES (?, ?, ?, CAST(? AS vector), CAST(? AS jsonb), CURRENT_TIMESTAMP)
+                        VALUES (?, ?, ?, CAST(? AS %s), CAST(? AS jsonb), CURRENT_TIMESTAMP)
                         ON CONFLICT (vector_namespace, vector_id) DO UPDATE SET
                             dimension = EXCLUDED.dimension,
                             embedding = EXCLUDED.embedding,
                             metadata = EXCLUDED.metadata,
                             updated_at = CURRENT_TIMESTAMP
-                        """,
+                        """.formatted(vectorType()),
                 namespace, record.id(), dimension, literal(record.vector()), metadata);
     }
 
@@ -66,12 +66,12 @@ public final class PgVectorStore implements VectorStore {
         validateVector(request.getQueryVector());
         if (request.getTopK() <= 0) return List.of();
 
-        StringBuilder sql = new StringBuilder("""
-                SELECT vector_id, embedding::text AS embedding_text, metadata::text AS metadata_text,
-                       1 - (embedding <=> CAST(? AS vector)) AS score
-                FROM shiyu_vector_item
-                WHERE vector_namespace = ? AND dimension = ?
-                """);
+        String vectorType = vectorType();
+        String vectorColumn = "embedding::" + vectorType;
+        StringBuilder sql = new StringBuilder(
+                "SELECT vector_id, embedding::text AS embedding_text, metadata::text AS metadata_text, "
+                        + "1 - (" + vectorColumn + " <=> CAST(? AS " + vectorType + ")) AS score "
+                        + "FROM shiyu_vector_item WHERE vector_namespace = ? AND dimension = ?");
         List<Object> arguments = new ArrayList<>(List.of(
                 literal(request.getQueryVector()), namespace, dimension));
         for (Map.Entry<String, Object> entry : request.getFilter().entrySet()) {
@@ -79,10 +79,12 @@ public final class PgVectorStore implements VectorStore {
             arguments.add(entry.getKey());
             arguments.add(String.valueOf(entry.getValue()));
         }
-        sql.append(" AND 1 - (embedding <=> CAST(? AS vector)) >= ?");
+        sql.append(" AND 1 - (").append(vectorColumn).append(" <=> CAST(? AS ")
+                .append(vectorType).append(")) >= ?");
         arguments.add(literal(request.getQueryVector()));
         arguments.add(request.getMinScore());
-        sql.append(" ORDER BY embedding <=> CAST(? AS vector) LIMIT ?");
+        sql.append(" ORDER BY ").append(vectorColumn).append(" <=> CAST(? AS ")
+                .append(vectorType).append(") LIMIT ?");
         arguments.add(literal(request.getQueryVector()));
         arguments.add(request.getTopK());
 
@@ -119,7 +121,11 @@ public final class PgVectorStore implements VectorStore {
     }
 
     private void initializeSchema() {
-        jdbc.execute("CREATE EXTENSION IF NOT EXISTS vector");
+        Boolean extensionPresent = jdbc.queryForObject(
+                "SELECT EXISTS (SELECT 1 FROM pg_extension WHERE extname = 'vector')", Boolean.class);
+        if (!Boolean.TRUE.equals(extensionPresent)) {
+            throw new IllegalStateException("PostgreSQL extension 'vector' is required; install pgvector before startup");
+        }
         jdbc.execute("""
                 CREATE TABLE IF NOT EXISTS shiyu_vector_item (
                     vector_namespace VARCHAR(512) NOT NULL,
@@ -131,10 +137,21 @@ public final class PgVectorStore implements VectorStore {
                     PRIMARY KEY (vector_namespace, vector_id)
                 )
                 """);
-        jdbc.execute("""
-                CREATE INDEX IF NOT EXISTS shiyu_vector_item_embedding_idx
-                ON shiyu_vector_item USING hnsw (embedding vector_cosine_ops)
-                """);
+        Integer mismatched = jdbc.queryForObject(
+                "SELECT COUNT(*) FROM shiyu_vector_item WHERE vector_namespace = ? "
+                        + "AND (dimension <> ? OR vector_dims(embedding::vector) <> ?)",
+                Integer.class, namespace, dimension, dimension);
+        if (mismatched != null && mismatched > 0) {
+            throw new IllegalStateException("Vector dimension mismatch in namespace " + namespace
+                    + ": expected " + dimension);
+        }
+        // pgvector HNSW indexes require a fixed dimension. The table remains
+        // dimension-flexible so different tenants can migrate independently;
+        // each dimension gets a partial index covering only valid rows.
+        String indexName = "shiyu_vector_item_embedding_d" + dimension;
+        jdbc.execute("CREATE INDEX IF NOT EXISTS " + indexName
+                + " ON shiyu_vector_item USING hnsw ((embedding::vector(" + dimension + ")) vector_cosine_ops)"
+                + " WHERE dimension = " + dimension + " AND vector_dims(embedding::vector) = " + dimension);
     }
 
     private void validateVector(float[] vector) {
@@ -152,6 +169,10 @@ public final class PgVectorStore implements VectorStore {
             value.append(Float.toString(vector[i]));
         }
         return value.append(']').toString();
+    }
+
+    private String vectorType() {
+        return "vector(" + dimension + ")";
     }
 
     private float[] parseVector(String value) {

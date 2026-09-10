@@ -15,6 +15,7 @@ import java.util.Set;
 import java.util.UUID;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
@@ -231,6 +232,19 @@ class DatabaseInitializerTest {
 
         assertTrue(error.getMessage().contains("ADAPTER_TYPE"));
         assertTrue(error.getMessage().contains("manual rebuild required"));
+    }
+
+    @Test
+    void allowsOptionalInfrastructureTablesOnSubsequentValidation() throws Exception {
+        DataSource dataSource = newDataSource();
+        DatabaseInitializer initializer = newInitializer(dataSource);
+        initializer.initialize();
+
+        execute(dataSource, "CREATE TABLE SHIYU_EVENT_INBOX (EVENT_ID VARCHAR(64) PRIMARY KEY, CONSUMED_AT TIMESTAMP NOT NULL)");
+        execute(dataSource, "CREATE TABLE SHIYU_EVENT_OUTBOX (EVENT_ID VARCHAR(64) PRIMARY KEY, PAYLOAD TEXT NOT NULL)");
+        execute(dataSource, "CREATE TABLE SHIYU_VECTOR_ITEM (VECTOR_NAMESPACE VARCHAR(512) NOT NULL, ITEM_ID VARCHAR(255) NOT NULL)");
+
+        assertDoesNotThrow(initializer::initialize);
     }
 
     @Test

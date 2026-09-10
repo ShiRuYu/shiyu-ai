@@ -34,8 +34,10 @@ shiyu:
       provider: ${SHIYU_INFRA_EVENT_PROVIDER:in-process}
       topic: ${SHIYU_KAFKA_TOPIC:shiyu.domain-events.v1}
       bootstrap-servers: ${SHIYU_KAFKA_BOOTSTRAP_SERVERS:127.0.0.1:9092}
+      dead-letter-topic: ${SHIYU_KAFKA_DEAD_LETTER_TOPIC:shiyu.domain-events.v1.dlq}
       relay-interval-ms: ${SHIYU_KAFKA_RELAY_INTERVAL_MS:5000}
       relay-batch-size: ${SHIYU_KAFKA_RELAY_BATCH_SIZE:100}
+      max-attempts: ${SHIYU_KAFKA_MAX_ATTEMPTS:5}
   # 版本
   version: ${revision}
   # 文件存储：默认 local，可切换为 s3、minio、aliyun-oss、tencent-cos
@@ -66,7 +68,7 @@ shiyu:
         path-style-access: false
         public-base-url: ${SHIYU_STORAGE_S3_PUBLIC_BASE_URL:}
       minio:
-        endpoint: ${SHIYU_STORAGE_MINIO_ENDPOINT:http://127.0.0.1:9001}
+        endpoint: ${SHIYU_STORAGE_MINIO_ENDPOINT:http://127.0.0.1:9000}
         region: ${SHIYU_STORAGE_MINIO_REGION:us-east-1}
         bucket: ${SHIYU_STORAGE_MINIO_BUCKET:}
         access-key: ${SHIYU_STORAGE_MINIO_ACCESS_KEY:}

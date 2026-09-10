@@ -1,5 +1,6 @@
 package com.shiyu.ai.memory.implementation.persistence.repository;
 
+import com.shiyu.ai.common.core.jdbc.JdbcDialect;
 import com.shiyu.ai.memory.implementation.domain.magma.*;
 
 import com.shiyu.ai.common.core.utils.JSONUtils;
@@ -21,7 +22,11 @@ import tools.jackson.core.type.TypeReference;
 @Component
 public class JdbcMagmaMemoryRepository implements MagmaMemoryRepository {
     private final JdbcTemplate jdbc;
-    public JdbcMagmaMemoryRepository(@Qualifier("agentDataSource") DataSource dataSource) { this.jdbc = new JdbcTemplate(dataSource); }
+    private final JdbcDialect dialect;
+    public JdbcMagmaMemoryRepository(@Qualifier("agentDataSource") DataSource dataSource) {
+        this.jdbc = new JdbcTemplate(dataSource);
+        this.dialect = JdbcDialect.detect(jdbc);
+    }
 
     public void insertEvent(MemoryEvent e) { jdbc.update("INSERT INTO MEMORY_EVENT (ID,TENANT_ID,NAMESPACE,SUBJECT_TYPE,SUBJECT_ID,EVENT_TYPE,CONTENT,OCCURRED_AT,SOURCE_TYPE,SOURCE_ID,ATTRIBUTES,CONFIDENCE,IMPORTANCE,STATUS,CONFIRMATION_POLICY,CREATED_AT,UPDATED_AT) VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)", e.id(),e.tenantId().value(),e.namespace(),e.subjectType(),e.subjectId(),e.eventType(),e.content(),ts(e.occurredAt()),e.sourceType(),e.sourceId(),JSONUtils.toJsonString(e.attributes()),e.confidence(),e.importance(),e.status().name(),e.confirmationPolicy().name(),ts(e.createdAt()),ts(e.updatedAt())); }
     public Optional<MemoryEvent> findEvent(TenantId tenantId,String id) { return jdbc.query("SELECT * FROM MEMORY_EVENT WHERE TENANT_ID=? AND ID=?",this::mapEvent,tenantId.value(),id).stream().findFirst(); }
@@ -38,7 +43,16 @@ public class JdbcMagmaMemoryRepository implements MagmaMemoryRepository {
     @Override public void deactivateEdgesForNode(TenantId tenantId, String nodeId) {
         jdbc.update("UPDATE MEMORY_EDGE SET ACTIVE=FALSE WHERE TENANT_ID=? AND (SOURCE_NODE_ID=? OR TARGET_NODE_ID=?)", tenantId.value(), nodeId, nodeId);
     }
-    public void upsertEntity(MemoryEntity e) { jdbc.update("MERGE INTO MEMORY_ENTITY (ID,TENANT_ID,ENTITY_TYPE,EXTERNAL_REF,DISPLAY_NAME,NORMALIZED_NAME,ATTRIBUTES,ACTIVE) KEY(TENANT_ID,ENTITY_TYPE,EXTERNAL_REF) VALUES (?,?,?,?,?,?,?,?)",e.id(),e.tenantId().value(),e.entityType(),e.externalRef(),e.displayName(),e.normalizedName(),JSONUtils.toJsonString(e.attributes()),e.active()); }
+    public void upsertEntity(MemoryEntity e) {
+        jdbc.update(dialect.upsert("MEMORY_ENTITY",
+                        List.of("ID", "TENANT_ID", "ENTITY_TYPE", "EXTERNAL_REF", "DISPLAY_NAME",
+                                "NORMALIZED_NAME", "ATTRIBUTES", "ACTIVE"),
+                        "?, ?, ?, ?, ?, ?, ?, ?",
+                        List.of("TENANT_ID", "ENTITY_TYPE", "EXTERNAL_REF"),
+                        List.of("ID", "DISPLAY_NAME", "NORMALIZED_NAME", "ATTRIBUTES", "ACTIVE")),
+                e.id(), e.tenantId().value(), e.entityType(), e.externalRef(), e.displayName(),
+                e.normalizedName(), JSONUtils.toJsonString(e.attributes()), e.active());
+    }
     public void insertEdge(MemoryEdge e) { jdbc.update("INSERT INTO MEMORY_EDGE (ID,TENANT_ID,SOURCE_NODE_ID,TARGET_NODE_ID,GRAPH_TYPE,RELATION_TYPE,DIRECTED,WEIGHT,CONFIDENCE,ORIGIN,EVIDENCE_SOURCE,ACTIVE,CREATED_AT) VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?)",e.id(),e.tenantId().value(),e.sourceNodeId(),e.targetNodeId(),e.graphType().name(),e.relationType(),e.directed(),e.weight(),e.confidence(),e.origin().name(),e.evidenceSource(),e.active(),ts(e.createdAt())); }
     public List<MemoryEdge> findEdges(TenantId tenantId,String nodeId,GraphType graphType,int limit) { return jdbc.query("SELECT * FROM MEMORY_EDGE WHERE TENANT_ID=? AND (SOURCE_NODE_ID=? OR TARGET_NODE_ID=?) AND GRAPH_TYPE=? AND ACTIVE=TRUE ORDER BY CONFIDENCE DESC, ID ASC LIMIT ?",this::mapEdge,tenantId.value(),nodeId,nodeId,graphType.name(),Math.min(Math.max(limit,1),200)); }
     public void enqueueConsolidation(TenantId tenantId,String eventId) { Instant now=Instant.now(); jdbc.update("INSERT INTO MEMORY_CONSOLIDATION_JOB (TENANT_ID,EVENT_ID,STATUS,ATTEMPTS,AVAILABLE_AT,CREATED_AT,UPDATED_AT) VALUES (?,?, 'PENDING',0,?,?,?)",tenantId.value(),eventId,ts(now),ts(now),ts(now)); }

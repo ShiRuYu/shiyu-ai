@@ -113,7 +113,7 @@ public class DatabaseInitializer {
 
     /** Tables created by optional infrastructure adapters, outside the application baseline. */
     private static final Set<String> INFRASTRUCTURE_TABLES = Set.of(
-            "SHIYU_VECTOR_ITEM", "SHIYU_EVENT_OUTBOX");
+            "SHIYU_VECTOR_ITEM", "SHIYU_EVENT_OUTBOX", "SHIYU_EVENT_INBOX");
 
     private final Map<String, DataSource> dataSources;
     private final PathMatchingResourcePatternResolver resourceResolver;

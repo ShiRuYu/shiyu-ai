@@ -1,4 +1,5 @@
 package com.shiyu.ai.conversation.implementation.infrastructure.persistence.repository;
+import com.shiyu.ai.common.core.jdbc.JdbcDialect;
 
 import com.shiyu.ai.conversation.implementation.domain.chat.*;
 import com.shiyu.ai.conversation.implementation.domain.port.ChatProductRepository;
@@ -17,10 +18,17 @@ import java.util.Optional;
 @Component
 public class JdbcChatProductRepository implements ChatProductRepository {
     private final JdbcTemplate jdbc;
-    public JdbcChatProductRepository(@Qualifier("agentDataSource") DataSource dataSource) { this.jdbc = new JdbcTemplate(dataSource); }
+    private final JdbcDialect dialect;
+    public JdbcChatProductRepository(@Qualifier("agentDataSource") DataSource dataSource) {
+        this.jdbc = new JdbcTemplate(dataSource);
+        this.dialect = JdbcDialect.detect(jdbc);
+    }
 
     @Override public CharacterAsset saveCharacter(CharacterAsset asset) {
-        jdbc.update("MERGE INTO CHAT_CHARACTER_ASSET (ID,TENANT_ID,OWNER_USER_ID,CARD_JSON,VISIBILITY,PNG_DATA,CREATED_AT,UPDATED_AT) KEY(ID) VALUES (?,?,?,?,?,?,?,?)",
+        jdbc.update(dialect.upsert("CHAT_CHARACTER_ASSET",
+                        List.of("ID", "TENANT_ID", "OWNER_USER_ID", "CARD_JSON", "VISIBILITY", "PNG_DATA", "CREATED_AT", "UPDATED_AT"),
+                        "?, ?, ?, ?, ?, ?, ?, ?", List.of("ID"),
+                        List.of("TENANT_ID", "OWNER_USER_ID", "CARD_JSON", "VISIBILITY", "PNG_DATA", "CREATED_AT", "UPDATED_AT")),
                 asset.id(), asset.tenantId(), asset.ownerUserId(), JSONUtils.toJsonString(asset.card()), asset.visibility(), asset.pngData(), ts(asset.createdAt()), ts(asset.updatedAt()));
         return asset;
     }
@@ -39,14 +47,22 @@ public class JdbcChatProductRepository implements ChatProductRepository {
     @Override public void deleteCharacter(TenantId tenant, long owner, String id) { jdbc.update("DELETE FROM CHAT_CHARACTER_ASSET WHERE TENANT_ID=? AND OWNER_USER_ID=? AND ID=?", tenant(tenant), owner, id); }
 
     @Override public PersonaAsset savePersona(PersonaAsset asset) {
-        jdbc.update("MERGE INTO CHAT_PERSONA_ASSET (ID,TENANT_ID,OWNER_USER_ID,PERSONA_JSON,CREATED_AT,UPDATED_AT) KEY(ID) VALUES (?,?,?,?,?,?)", asset.id(), asset.tenantId(), asset.ownerUserId(), JSONUtils.toJsonString(asset.persona()), ts(asset.createdAt()), ts(asset.updatedAt())); return asset;
+        jdbc.update(dialect.upsert("CHAT_PERSONA_ASSET",
+                        List.of("ID", "TENANT_ID", "OWNER_USER_ID", "PERSONA_JSON", "CREATED_AT", "UPDATED_AT"),
+                        "?, ?, ?, ?, ?, ?", List.of("ID"),
+                        List.of("TENANT_ID", "OWNER_USER_ID", "PERSONA_JSON", "CREATED_AT", "UPDATED_AT")),
+                asset.id(), asset.tenantId(), asset.ownerUserId(), JSONUtils.toJsonString(asset.persona()), ts(asset.createdAt()), ts(asset.updatedAt())); return asset;
     }
     @Override public Optional<PersonaAsset> findPersona(TenantId tenant, long owner, String id) { long value = tenant(tenant); return jdbc.query("SELECT * FROM CHAT_PERSONA_ASSET WHERE TENANT_ID=? AND OWNER_USER_ID=? AND ID=?", (r,n) -> new PersonaAsset(r.getString("ID"), value, owner, JSONUtils.parseObject(r.getString("PERSONA_JSON"), Persona.class), instant(r.getTimestamp("CREATED_AT")), instant(r.getTimestamp("UPDATED_AT"))), value, owner, id).stream().findFirst(); }
     @Override public List<PersonaAsset> listPersonas(TenantId tenant, long owner) { long value = tenant(tenant); return jdbc.query("SELECT * FROM CHAT_PERSONA_ASSET WHERE TENANT_ID=? AND OWNER_USER_ID=? ORDER BY UPDATED_AT DESC,ID ASC", (r,n) -> new PersonaAsset(r.getString("ID"), value, owner, JSONUtils.parseObject(r.getString("PERSONA_JSON"), Persona.class), instant(r.getTimestamp("CREATED_AT")), instant(r.getTimestamp("UPDATED_AT"))), value, owner); }
     @Override public void deletePersona(TenantId tenant, long owner, String id) { jdbc.update("DELETE FROM CHAT_PERSONA_ASSET WHERE TENANT_ID=? AND OWNER_USER_ID=? AND ID=?", tenant(tenant), owner, id); }
 
     @Override public LorebookAsset saveLorebook(LorebookAsset asset) {
-        jdbc.update("MERGE INTO CHAT_LOREBOOK_ASSET (ID,TENANT_ID,OWNER_USER_ID,ENTRY_JSON,CREATED_AT,UPDATED_AT) KEY(ID) VALUES (?,?,?,?,?,?)", asset.id(), asset.tenantId(), asset.ownerUserId(), JSONUtils.toJsonString(asset.entry()), ts(asset.createdAt()), ts(asset.updatedAt())); return asset;
+        jdbc.update(dialect.upsert("CHAT_LOREBOOK_ASSET",
+                        List.of("ID", "TENANT_ID", "OWNER_USER_ID", "ENTRY_JSON", "CREATED_AT", "UPDATED_AT"),
+                        "?, ?, ?, ?, ?, ?", List.of("ID"),
+                        List.of("TENANT_ID", "OWNER_USER_ID", "ENTRY_JSON", "CREATED_AT", "UPDATED_AT")),
+                asset.id(), asset.tenantId(), asset.ownerUserId(), JSONUtils.toJsonString(asset.entry()), ts(asset.createdAt()), ts(asset.updatedAt())); return asset;
     }
     @Override public Optional<LorebookAsset> findLorebook(TenantId tenant, long owner, String id) { long value = tenant(tenant); return jdbc.query("SELECT * FROM CHAT_LOREBOOK_ASSET WHERE TENANT_ID=? AND OWNER_USER_ID=? AND ID=?", (r,n) -> new LorebookAsset(r.getString("ID"), value, owner, JSONUtils.parseObject(r.getString("ENTRY_JSON"), LorebookEntry.class), instant(r.getTimestamp("CREATED_AT")), instant(r.getTimestamp("UPDATED_AT"))), value, owner, id).stream().findFirst(); }
     @Override public List<LorebookAsset> listLorebooks(TenantId tenant, long owner) { long value = tenant(tenant); return jdbc.query("SELECT * FROM CHAT_LOREBOOK_ASSET WHERE TENANT_ID=? AND OWNER_USER_ID=? ORDER BY UPDATED_AT DESC,ID ASC", (r,n) -> new LorebookAsset(r.getString("ID"), value, owner, JSONUtils.parseObject(r.getString("ENTRY_JSON"), LorebookEntry.class), instant(r.getTimestamp("CREATED_AT")), instant(r.getTimestamp("UPDATED_AT"))), value, owner); }
@@ -62,7 +78,10 @@ public class JdbcChatProductRepository implements ChatProductRepository {
         return jdbc.query("SELECT * FROM CHAT_PROMPT_TEMPLATE WHERE TENANT_ID=? AND OWNER_USER_ID=? AND (? IS NULL OR TEMPLATE_ID=?) ORDER BY TEMPLATE_ID, VERSION DESC, ID ASC", (r,n) -> new PromptTemplateVersion(r.getString("ID"), r.getString("TEMPLATE_ID"), r.getInt("VERSION"), r.getString("STATUS"), r.getString("BODY"), JSONUtils.parseObject(r.getString("VARIABLE_SCHEMA"), new tools.jackson.core.type.TypeReference<java.util.Map<String, String>>() { }), JSONUtils.parseObject(r.getString("TEST_CASES"), new tools.jackson.core.type.TypeReference<java.util.List<String>>() { }), instant(r.getTimestamp("CREATED_AT")), instant(r.getTimestamp("PUBLISHED_AT"))), value, owner, templateId, templateId);
     }
     @Override public GroupChatAsset saveGroup(GroupChatAsset asset) {
-        jdbc.update("MERGE INTO CHAT_GROUP_CHAT (ID,TENANT_ID,OWNER_USER_ID,NAME,PARTICIPANTS_JSON,SPEAKER_POLICY,MAX_TURNS,TOKEN_BUDGET,CREATED_AT,UPDATED_AT) KEY(ID) VALUES (?,?,?,?,?,?,?,?,?,?)",
+        jdbc.update(dialect.upsert("CHAT_GROUP_CHAT",
+                        List.of("ID", "TENANT_ID", "OWNER_USER_ID", "NAME", "PARTICIPANTS_JSON", "SPEAKER_POLICY", "MAX_TURNS", "TOKEN_BUDGET", "CREATED_AT", "UPDATED_AT"),
+                        "?, ?, ?, ?, ?, ?, ?, ?, ?, ?", List.of("ID"),
+                        List.of("TENANT_ID", "OWNER_USER_ID", "NAME", "PARTICIPANTS_JSON", "SPEAKER_POLICY", "MAX_TURNS", "TOKEN_BUDGET", "CREATED_AT", "UPDATED_AT")),
                 asset.id(), asset.tenantId(), asset.ownerUserId(), asset.group().name(), JSONUtils.toJsonString(asset.group().participants()), asset.group().speakerPolicy().name(), asset.group().maxTurns(), asset.group().tokenBudget(), ts(asset.createdAt()), ts(asset.updatedAt()));
         return asset;
     }

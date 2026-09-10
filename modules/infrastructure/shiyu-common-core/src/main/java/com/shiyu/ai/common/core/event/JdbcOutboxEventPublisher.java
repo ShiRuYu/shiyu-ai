@@ -46,9 +46,13 @@ public class JdbcOutboxEventPublisher implements InfrastructureEventPublisher {
                     payload TEXT NOT NULL,
                     created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
                     published_at TIMESTAMP NULL,
+                    dead_lettered_at TIMESTAMP NULL,
                     attempts INTEGER NOT NULL DEFAULT 0,
                     last_error TEXT NULL
                 )
                 """);
+        // Keep upgrades idempotent for outbox tables created by the previous
+        // provider implementation.
+        jdbc.execute("ALTER TABLE shiyu_event_outbox ADD COLUMN IF NOT EXISTS dead_lettered_at TIMESTAMP NULL");
     }
 }

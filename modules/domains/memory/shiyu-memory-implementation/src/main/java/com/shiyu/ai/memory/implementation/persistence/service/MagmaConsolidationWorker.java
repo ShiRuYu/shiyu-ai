@@ -1,5 +1,6 @@
 package com.shiyu.ai.memory.implementation.persistence.service;
 
+import com.shiyu.ai.common.core.jdbc.JdbcDialect;
 import com.shiyu.ai.memory.implementation.domain.magma.*;
 
 import com.shiyu.ai.memory.contract.model.*;
@@ -25,7 +26,11 @@ import tools.jackson.core.type.TypeReference;
 public class MagmaConsolidationWorker {
     private static final String CONSOLIDATION_FAILURE_MESSAGE = "记忆整理失败，请稍后重试";
     private final JdbcTemplate jdbc;
-    public MagmaConsolidationWorker(@Qualifier("agentDataSource") DataSource dataSource) { this.jdbc = new JdbcTemplate(dataSource); }
+    private final JdbcDialect dialect;
+    public MagmaConsolidationWorker(@Qualifier("agentDataSource") DataSource dataSource) {
+        this.jdbc = new JdbcTemplate(dataSource);
+        this.dialect = JdbcDialect.detect(jdbc);
+    }
 
     @Scheduled(fixedDelayString = "${shiyu.memory.consolidation-delay-ms:3000}")
     public void processBatch() {
@@ -40,7 +45,10 @@ public class MagmaConsolidationWorker {
                 consolidate(id);
                 jdbc.update("UPDATE MEMORY_CONSOLIDATION_JOB SET STATUS='COMPLETED',LEASED_UNTIL=NULL,UPDATED_AT=CURRENT_TIMESTAMP WHERE ID=?", id);
             } catch (RuntimeException failure) {
-                jdbc.update("UPDATE MEMORY_CONSOLIDATION_JOB SET STATUS=CASE WHEN ATTEMPTS>=5 THEN 'FAILED' ELSE 'PENDING' END,LEASED_UNTIL=NULL,AVAILABLE_AT=DATEADD('SECOND', POWER(2, ATTEMPTS), CURRENT_TIMESTAMP),LAST_ERROR=?,UPDATED_AT=CURRENT_TIMESTAMP WHERE ID=?", CONSOLIDATION_FAILURE_MESSAGE, id);
+                jdbc.update("UPDATE MEMORY_CONSOLIDATION_JOB SET STATUS=CASE WHEN ATTEMPTS>=5 THEN 'FAILED' ELSE 'PENDING' END,LEASED_UNTIL=NULL,AVAILABLE_AT="
+                                + dialect.retryTimestampExpression("ATTEMPTS")
+                                + ",LAST_ERROR=?,UPDATED_AT=CURRENT_TIMESTAMP WHERE ID=?",
+                        CONSOLIDATION_FAILURE_MESSAGE, id);
             }
         }
     }
@@ -59,7 +67,12 @@ public class MagmaConsolidationWorker {
         String entityType = String.valueOf(event.get("SUBJECT_TYPE"));
         String externalRef = String.valueOf(event.get("SUBJECT_ID"));
         String displayName = String.valueOf(event.get("SUBJECT_ID"));
-        jdbc.update("MERGE INTO MEMORY_ENTITY (ID,TENANT_ID,ENTITY_TYPE,EXTERNAL_REF,DISPLAY_NAME,NORMALIZED_NAME,ATTRIBUTES,ACTIVE) KEY(TENANT_ID,ENTITY_TYPE,EXTERNAL_REF) VALUES (?,?,?,?,?,?,?,TRUE)",
+        jdbc.update(dialect.upsert("MEMORY_ENTITY",
+                        List.of("ID", "TENANT_ID", "ENTITY_TYPE", "EXTERNAL_REF", "DISPLAY_NAME",
+                                "NORMALIZED_NAME", "ATTRIBUTES", "ACTIVE"),
+                        "?, ?, ?, ?, ?, ?, ?, TRUE",
+                        List.of("TENANT_ID", "ENTITY_TYPE", "EXTERNAL_REF"),
+                        List.of("ID", "DISPLAY_NAME", "NORMALIZED_NAME", "ATTRIBUTES", "ACTIVE")),
                 entityId, tenant, entityType, externalRef, displayName, displayName.toLowerCase(), "{}");
         edgeIfAbsent(tenant, eventId, entityId, "ENTITY", "about", 1.0, 1.0, "RULE", eventId);
 

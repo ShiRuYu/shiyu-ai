@@ -1,4 +1,5 @@
 package com.shiyu.ai.common.storage.metadata;
+import com.shiyu.ai.common.core.jdbc.JdbcDialect;
 import com.shiyu.ai.common.storage.api.*;
 import com.shiyu.ai.common.storage.backup.*;
 import com.shiyu.ai.common.storage.config.*;
@@ -27,9 +28,11 @@ import java.util.Optional;
 public class JdbcStorageMetadataStore implements StorageMetadataStore {
 
     private final JdbcTemplate jdbcTemplate;
+    private final JdbcDialect dialect;
 
     public JdbcStorageMetadataStore(JdbcTemplate jdbcTemplate) {
         this.jdbcTemplate = jdbcTemplate;
+        this.dialect = JdbcDialect.detect(jdbcTemplate);
     }
 
     @Override
@@ -154,8 +157,11 @@ public class JdbcStorageMetadataStore implements StorageMetadataStore {
 
     @Override
     public void markChunkUploaded(String sessionId, int chunkIndex, long size, String checksum) {
-        jdbcTemplate.update("MERGE INTO storage_upload_chunk (session_id, chunk_index, chunk_size, chunk_checksum, status, uploaded_at) "
-                        + "KEY(session_id, chunk_index) VALUES (?, ?, ?, ?, 'UPLOADED', CURRENT_TIMESTAMP)",
+        jdbcTemplate.update(dialect.upsert("storage_upload_chunk",
+                        List.of("session_id", "chunk_index", "chunk_size", "chunk_checksum", "status", "uploaded_at"),
+                        "?, ?, ?, ?, 'UPLOADED', CURRENT_TIMESTAMP",
+                        List.of("session_id", "chunk_index"),
+                        List.of("chunk_size", "chunk_checksum", "status", "uploaded_at")),
                 sessionId, chunkIndex, size, checksum);
         jdbcTemplate.update("UPDATE storage_upload_session SET update_time=CURRENT_TIMESTAMP WHERE session_id=?",
                 sessionId);

@@ -69,6 +69,16 @@ public interface UsageRecordMapper extends BaseMapperFlex<UsageRecordDO> {
     @Select("SELECT " + RECORD_COLUMNS + " FROM governance_usage_record WHERE usage_type = 'LLM'")
     List<UsageRecordDO> selectLlmRecords();
 
+    /**
+     * Portable bounded read used by the Java aggregation adapter. Keeping the
+     * time boundary as a bound value avoids vendor-specific DATEADD and
+     * FORMATDATETIME functions when the application runs on PostgreSQL or
+     * MySQL.
+     */
+    @Select("SELECT " + RECORD_COLUMNS
+            + " FROM governance_usage_record WHERE create_time >= #{start}")
+    List<UsageRecordDO> selectRecordsSince(@Param("start") LocalDateTime start);
+
     @Select("SELECT " + RECORD_COLUMNS
             + " FROM governance_usage_record WHERE usage_type = 'LLM' AND create_time >= #{start}")
     List<UsageRecordDO> selectLlmRecordsSince(@Param("start") LocalDateTime start);
