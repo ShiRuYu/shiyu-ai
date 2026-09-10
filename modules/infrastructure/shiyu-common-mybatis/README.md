@@ -2,15 +2,16 @@
 
 - **模块坐标**：`com.shiyu.ai:shiyu-common-mybatis`
 - **分类**：基础设施模块
-- **源码规模**：生产 Java 11 个，测试 Java 3 个
+- **源码规模**：生产 Java 13 个，测试 Java 4 个
 
 ## 作用
 
-提供 MyBatis/MyBatis-Flex 配置、数据源、映射器和持久化通用模型。
+提供 MyBatis/MyBatis-Flex 配置、H2/MySQL/PostgreSQL 数据源校验、映射器和持久化通用模型。
 
 ## 职责
 
-- 提供 MyBatis/MyBatis-Flex 配置、数据源、映射器和持久化通用模型。
+- 提供 MyBatis/MyBatis-Flex 配置、H2/MySQL/PostgreSQL 数据源校验、映射器和持久化通用模型。
+- 数据库 provider 由 `shiyu.infrastructure.database.provider` 选择；JDBC 方言由连接元数据决定，业务 Repository 不写数据库专用 SQL。
 - 保持与业务领域解耦，通过稳定接口为多个领域提供横切能力。
 - 避免把具体业务用例、领域实体或领域数据库表放入公共基础设施。
 

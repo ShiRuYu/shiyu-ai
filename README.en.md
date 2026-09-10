@@ -38,7 +38,7 @@ All-in-one knowledge service covering document management, RAG retrieval, and kn
 
 ### Vector Store (`shiyu-common-vector`)
 
-Backend-neutral `VectorStore` and `VectorStoreProvider` APIs, backed by **JVector (pure Java HNSW)** by default and InMemory for tests and lightweight use cases:
+Backend-neutral `VectorStore` and `VectorStoreProvider` APIs, backed by **JVector (pure Java HNSW)** by default, InMemory for tests, and PostgreSQL pgvector for production deployments:
 
 - **HNSW Index** — Efficient approximate nearest neighbor search
 - **Disk Persistence** — Vector indexes persisted to disk, survivable across restarts
@@ -47,7 +47,7 @@ Backend-neutral `VectorStore` and `VectorStoreProvider` APIs, backed by **JVecto
 - **Full CRUD** — Complete create/read/update/delete for vectors
 - **Namespace Isolation** — Opens independent stores per tenant, knowledge space, and index version
 - **Stable Module Boundary** — Knowledge and Memory depend only on public vector APIs
-- **Pluggable Backends** — ChromaDB or Milvus can be added later as provider adapters
+- **Pluggable Backends** — Select InMemory, JVector, or pgvector with provider configuration; add other backends as adapters
 
 ### Conversation and MAGMA Memory (`shiyu-conversation-implementation` / `shiyu-memory-implementation`)
 
@@ -56,7 +56,7 @@ The platform separates raw interaction facts from derived long-term cognition:
 - **Conversation** — Structured message trees, edits, retries, branches, GenerationRun and resumable SSE events.
 - **MAGMA-based Memory** — One event model participating in Temporal, Semantic, Causal and Entity graphs with explainable retrieval paths.
 - **Single source of truth** — Memory stores extracted events and source references, never a second copy of complete chat messages.
-- **Local baseline** — H2, JVector, local keyword indexes and consolidation jobs; no external graph database, Redis or distributed vector store in the current baseline.
+- **Local baseline** — H2, JVector, local keyword indexes and consolidation jobs by default; database, object storage, Redis, pgvector and event transport can be switched independently.
 
 ### Tool System — Tool & MCP (`shiyu-tooling-implementation`)
 
@@ -181,15 +181,17 @@ An **AI-powered tutoring system** for K-12 education, covering the full "learn �
 | `shiyu-common-vector` | Vector Store: JVector HNSW index, Disk persistence, Unified Provider API | Platform Infrastructure |
 | `shiyu-conversation-implementation` | Conversation, structured messages, generation lifecycle, SSE resume and Prompt Preview | Conversation domain implementation |
 | `shiyu-memory-implementation` | MAGMA-based events, entities, multi-graph relations, governance and explainable retrieval | Platform Infrastructure |
-| `shiyu-tooling-implementation` | Tool System: MCP protocol, Tool registration/invocation/execution | Platform Infrastructure |
-| `shiyu-tooling-implementation` | Plugin System: Lifecycle management, Sandbox isolation, Hot-plug | Platform Infrastructure |
+| `shiyu-tooling-implementation` | Tool and Plugin System: MCP, registration/invocation, lifecycle, sandbox isolation and hot-plug | Platform Infrastructure |
 | `shiyu-governance-implementation` | Governance and usage: quotas, token metering, real-time push, multi-dimensional aggregation | Domain implementation |
 
 ### 🧱 Infrastructure Layer (technology foundation)
 
 | Module | Responsibility | Category |
 |--------|---------------|----------|
-| `modules/infrastructure/*` | Common: core (utils/Result/exceptions), web (XSS), mybatis (ORM), thread (pools), storage (file storage) | Infrastructure |
+| `shiyu-common-core` | Common core: Result, exceptions, SQL dialects, event bus and outbox | Infrastructure |
+| `shiyu-common-storage` | File/object storage, metadata, backups, Redis lease/rate-limit/idempotency adapters | Infrastructure |
+| `shiyu-common-vector` | Unified vector port for InMemory, JVector and pgvector | Infrastructure |
+| `shiyu-common-thread` / `shiyu-common-web` | Thread pools, HTTP filters, exceptions and validation | Infrastructure |
 | `shiyu-common-mybatis` | MyBatis technical support: tenant datasource, interceptors, and common mapper infrastructure | Infrastructure |
 | `shiyu-ai-web` | REST adapters: Controllers, DTOs, WebSocket, OpenAPI | Infrastructure |
 | `shiyu-ai-bootstrap` | Application boot entry: logging/observability/data retention | Infrastructure |
@@ -205,8 +207,11 @@ An **AI-powered tutoring system** for K-12 education, covering the full "learn �
 | Agent Flow Graph | LangGraph4j + BaseNode |
 | Authentication | Sa-Token |
 | ORM | MyBatis-Flex |
-| Database | H2 (dev) / MySQL (prod) |
-| Vector Search | JVector (HNSW) |
+| Database | H2 (default) / MySQL / PostgreSQL |
+| File Storage | Local directory (default) / S3 / MinIO |
+| Vector Search | JVector (default) / InMemory / PostgreSQL pgvector |
+| Redis State | disabled (default, in-process) / Redis |
+| Event Bus | in-process (default) / PostgreSQL outbox / Kafka |
 | Embedding Model | BGE-small-zh (ONNX local) |
 | MCP Protocol | Spring AI MCP |
 | Cache | Caffeine |
@@ -234,10 +239,21 @@ mvn clean install -DskipTests
 
 ### Configure an LLM Platform
 
-Edit `modules/applications/shiyu-ai-bootstrap/src/main/resources/application.yml` and configure at least one platform:
+Edit `modules/applications/shiyu-ai-bootstrap/src/main/resources/application.yml` and configure at least one platform. Infrastructure providers can be selected with environment variables or Spring configuration:
 
 ```yaml
 shiyu:
+  infrastructure:
+    database:
+      provider: h2 # h2 / mysql / postgresql
+    file:
+      provider: local # local / s3 / minio
+    vector:
+      provider: jvector # inmemory / jvector / pgvector
+    redis:
+      provider: disabled # disabled / redis
+    event:
+      provider: in-process # in-process / postgres-outbox / kafka
   ai:
     ollama:
       base-url: http://localhost:11434
@@ -305,9 +321,7 @@ Notes:
 ```
 
 On Linux, use the corresponding `scripts/package-cloud-linux.sh` and
-`scripts/package-offline-linux.sh`. Production packages exclude observability,
-the API documentation UI, and the S3 adapter by default; enable the
-`observability`, `api-docs-ui`, or `s3` profiles explicitly when needed.
+`scripts/package-offline-linux.sh`. Production packages exclude observability, the API documentation UI, and the S3 adapter by default; enable the `observability`, `api-docs-ui`, or `s3` profiles explicitly when needed. PostgreSQL/MySQL drivers are supplied by the bootstrap module; external database credentials and baseline migration remain deployment responsibilities.
 
 After startup:
 - Application: `http://localhost:9000`
@@ -323,9 +337,9 @@ After startup:
 | Agent | `/api/agent/agents/**`, `/api/agent/versions/**`, `/api/agent/executions/**` | Platform Core |
 | Model | `/api/model/models/**`, `/api/model/providers/**` | Platform Infrastructure |
 | Knowledge | `/api/knowledge/**` | Platform Infrastructure |
-| Conversation | `/conversations/**`, `/generations/**` | Platform Infrastructure |
+| Conversation | `/api/conversation/conversations/**`, `/api/conversation/generations/**` | Platform Infrastructure |
 | Runtime | `/api/agent/runs/**` | Platform Infrastructure |
-| Memory | `/memory/**` | Platform Infrastructure |
+| Memory | `/api/memory/**` | Platform Infrastructure |
 | Auth | `/api/iam/auth/**`, `/api/iam/users/**`, `/api/iam/roles/**`, `/api/iam/menus/**`, `/api/iam/tenants/**` | Platform Foundation |
 | Usage | `/api/governance/usage/**` | Platform Infrastructure |
 | Plugin | `/api/tooling/plugins/**` | Platform Infrastructure |
@@ -333,6 +347,8 @@ After startup:
 | System | `/api/iam/**` | Infrastructure |
 
 ---
+
+Provider switching, migration boundaries, and rollback procedures are documented in [External Infrastructure Switching](./docs/外部基础设施切换.md).
 
 ## Roadmap
 

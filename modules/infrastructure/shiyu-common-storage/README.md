@@ -2,15 +2,17 @@
 
 - **模块坐标**：`com.shiyu.ai:shiyu-common-storage`
 - **分类**：基础设施模块
-- **源码规模**：生产 Java 26 个，测试 Java 6 个
+- **源码规模**：生产 Java 39 个，测试 Java 12 个
 
 ## 作用
 
-提供文件、备份、元数据、租约、限流、安全和向量文件存储能力。
+提供 local/S3/MinIO 文件存储、备份、元数据、Redis 租约/限流/幂等、安全和向量文件存储能力。
 
 ## 职责
 
-- 提供文件、备份、元数据、租约、限流、安全和向量文件存储能力。
+- 提供 local/S3/MinIO 文件存储、备份、元数据、Redis 租约/限流/幂等、安全和向量文件存储能力。
+- `shiyu.infrastructure.file.provider` 选择文件后端，`shiyu.infrastructure.redis.provider` 选择短期状态后端；旧 `shiyu.storage.type` 保留为兼容别名。
+- 文件元数据始终写入数据库，local 到 S3/MinIO 的迁移由一次性 runner 执行并保留原 object key。
 - 保持与业务领域解耦，通过稳定接口为多个领域提供横切能力。
 - 避免把具体业务用例、领域实体或领域数据库表放入公共基础设施。
 

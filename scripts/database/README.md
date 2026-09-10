@@ -2,6 +2,8 @@
 
 应用启动器只会在 H2 空库上安装本地基线。MySQL、PostgreSQL 是外部托管数据库，启动时只校验 `COMMON_SCHEMA_BASELINE` 的版本和种子标识，不会自动建表或复制数据。切换 provider 前必须先完成一次离线迁移并核对数据量。
 
+应用通过 `shiyu.infrastructure.database.provider`（`h2`、`mysql`、`postgresql`）选择数据库；连接地址、账号和密码只从环境变量或密钥管理系统注入。向量、文件、Redis 和事件 provider 的切换规则见[外部基础设施切换](../../docs/外部基础设施切换.md)。
+
 `postgresql/baseline-schema.sql` 和 `postgresql/baseline-seed.sql` 是按应用启动器资源顺序生成的 PostgreSQL 脚本。脚本将 H2 的 `CACHED TABLE`、内联 `COMMENT`、`TINYINT`、大对象类型和带引号的大写标识符转换为 PostgreSQL 语法，并保留表名、列名和索引语义。源基线变更后，应重新生成这两个文件并进行人工审阅。
 
 ## 使用方式

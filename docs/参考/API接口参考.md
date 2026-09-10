@@ -1,11 +1,11 @@
 # API 接口参考
 
 > 本文档由 `scripts/docs/generate_reference_docs.py` 从 SpringDoc OpenAPI 自动生成。
-> 生成源：`E:\Dev\shiyu\shiyu-ui\tests\contracts\shiyu-ai-openapi.json`；OpenAPI：`3.1.0`；服务版本：`0.1`。
+> 生成源：`../shiyu-ui/tests/contracts/shiyu-ai-openapi.json`；OpenAPI：`3.1.0`；服务版本：`0.1`。
 
 ## 契约约定
 
-- 浏览器开发环境使用 `/api` 作为 Vite 代理前缀；后端控制器路径本身不包含 `/api`。
+- 后端 Controller 原生保留 `/api/{domain}` 前缀；浏览器开发环境和生产网关原样转发该前缀，不移除或重复添加。
 - 除登录、注册、验证码等公开入口外，请求使用 `Authorization: Bearer <accessToken>`。
 - 普通 JSON 接口通常返回 `Result<T>`；流式接口按 OpenAPI 标注返回 SSE 或二进制内容。
 - `requestBody` 与响应栏保留 OpenAPI schema 名称，具体字段见“组件模型”。
@@ -725,9 +725,9 @@
 | `AiModelRequest` | object | modelName | platformId:integer/int64; modelName*:string; displayName:string; description:string; modelConfig:string; isDefault:string; sort:integer/int32; status:string |
 | `AiModelResponse` | object | - | id:integer/int64; platformId:integer/int64; modelName:string; displayName:string; description:string; modelConfig:string; platformName:string; isDefault:string; sort:integer/int32; status:string; createTime:string/date-time; updateTime:string/date-time |
 | `AiModelVO` | object | - | id:integer/int64; platformId:integer/int64; modelName:string; displayName:string; description:string; modelConfig:string; platformName:string; isDefault:string; sort:integer/int32; status:string; createTime:string/date-time; updateTime:string/date-time |
-| `AiPlatformRequest` | object | code, name | name*:string; code*:string; adapterType:string; baseUrl:string; apiKey:string; temperature:number/double; maxTokens:integer/int32; maxRetries:integer/int32; availableModels:string; extraConfig:string; isDefault:string; status:string; sort:integer/int32; remark:string |
-| `AiPlatformResponse` | object | - | id:integer/int64; name:string; code:string; adapterType:string; baseUrl:string; temperature:number/double; maxTokens:integer/int32; maxRetries:integer/int32; availableModels:string; extraConfig:string; isDefault:string; status:string; sort:integer/int32; remark:string; createTime:string/date-time; updateTime:string/date-time |
-| `AiPlatformVO` | object | - | id:integer/int64; name:string; code:string; adapterType:string; baseUrl:string; temperature:number/double; maxTokens:integer/int32; maxRetries:integer/int32; availableModels:string; extraConfig:string; isDefault:string; status:string; sort:integer/int32; remark:string; createTime:string/date-time; updateTime:string/date-time |
+| `AiPlatformRequest` | object | code, name | name*:string; code*:string; adapterType:string(OPENAI_COMPATIBLE,OLLAMA); baseUrl:string; apiKey:string; temperature:number/double; maxTokens:integer/int32; maxRetries:integer/int32; availableModels:string; extraConfig:string; isDefault:string; status:string; sort:integer/int32; remark:string |
+| `AiPlatformResponse` | object | - | id:integer/int64; name:string; code:string; adapterType:string(OPENAI_COMPATIBLE,OLLAMA); baseUrl:string; temperature:number/double; maxTokens:integer/int32; maxRetries:integer/int32; availableModels:string; extraConfig:string; isDefault:string; status:string; sort:integer/int32; remark:string; createTime:string/date-time; updateTime:string/date-time |
+| `AiPlatformVO` | object | - | id:integer/int64; name:string; code:string; adapterType:string(OPENAI_COMPATIBLE,OLLAMA); baseUrl:string; temperature:number/double; maxTokens:integer/int32; maxRetries:integer/int32; availableModels:string; extraConfig:string; isDefault:string; status:string; sort:integer/int32; remark:string; createTime:string/date-time; updateTime:string/date-time |
 | `AiRun` | object | - | id:string; tenantId:TenantId; ownerUserId:UserId; appId:string; appVersionId:string; sourceType:string(CONVERSATION,GENERATION,AGENT,KNOWLEDGE,MEMORY,TOOL,API); sourceId:string; parentRunId:string; traceId:string; conversationId:string; generationId:string; executionId:string; model:string; promptHash:string; status:string(CREATED,RUNNING,COMPLETED,FAILED,CANCELLED); promptTokens:integer/int64; completionTokens:integer/int64; estimatedUsage:boolean; costSnapshot:string; createdAt:string/date-time; completedAt:string/date-time; errorCode:string; version:integer/int64; lastEventSeq:integer/int64 |
 | `AiRunEvent` | object | - | runId:string; tenantId:TenantId; seq:integer/int64; type:string(RUN_STARTED,TURN_STARTED,TURN_COMPLETED,STEP_STARTED,STEP_COMPLETED,PROMPT_ASSEMBLED,RETRIEVAL_STARTED,RETRIEVAL_COMPLETED,MODEL_STARTED,MODEL_BLOCK_STARTED,MODEL_DELTA,MODEL_REASONING_DELTA,MODEL_TOOL_CALL_DELTA,MODEL_BLOCK_COMPLETED,TOOL_REQUESTED,TOOL_APPROVAL_REQUIRED,TOOL_APPROVAL_DECIDED,TOOL_COMPLETED,MEMORY_READ,MEMORY_WRITE,MODEL_USAGE,MODEL_COMPLETED,RUN_COMPLETED,RUN_FAILED,RUN_CANCELLED); schemaVersion:integer/int32; turnId:string; stepId:string; parentEventSeq:integer/int64; conversationId:string; generationId:string; executionId:string; appId:string; appVersionId:string; providerRequestId:string; traceId:string; payload:string; redacted:boolean; createdAt:string/date-time |
 | `AppExecutionRequest` | object | - | prompt:string; appVersionId:string; input:object |

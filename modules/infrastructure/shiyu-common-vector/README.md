@@ -2,15 +2,17 @@
 
 - **模块坐标**：`com.shiyu.ai:shiyu-common-vector`
 - **分类**：基础设施模块
-- **源码规模**：生产 Java 12 个，测试 Java 1 个
+- **源码规模**：生产 Java 14 个，测试 Java 4 个
 
 ## 作用
 
-提供向量存储 SPI、JVector/InMemory 实现、命名空间和搜索工厂。
+提供向量存储 SPI、InMemory/JVector/pgvector 实现、命名空间和搜索工厂。
 
 ## 职责
 
-- 提供向量存储 SPI、JVector/InMemory 实现、命名空间和搜索工厂。
+- 提供向量存储 SPI、InMemory/JVector/pgvector 实现、命名空间和搜索工厂。
+- `shiyu.infrastructure.vector.provider` 优先于兼容键 `shiyu.vector-store.type`；pgvector 启动时校验 PostgreSQL、`vector` 扩展、租户隔离和向量维度。
+- pgvector 使用按维度的 HNSW 部分索引；切换 provider 或嵌入模型前必须执行知识索引重建。
 - 保持与业务领域解耦，通过稳定接口为多个领域提供横切能力。
 - 避免把具体业务用例、领域实体或领域数据库表放入公共基础设施。
 

@@ -38,7 +38,7 @@ Governance：用量与配额
 
 ### 向量存储 — Vector Store (`shiyu-common-vector`)
 
-提供与具体后端解耦的 `VectorStore` / `VectorStoreProvider` 公共接口，默认使用 **JVector（纯 Java HNSW）**，测试和轻量场景可使用 InMemory：
+提供与具体后端解耦的 `VectorStore` / `VectorStoreProvider` 公共接口，默认使用 **JVector（纯 Java HNSW）**，测试和轻量场景可使用 InMemory，生产可切换到 PostgreSQL pgvector：
 
 - **HNSW 索引** — 高效的近似最近邻搜索算法
 - **磁盘持久化** — 向量索引持久化到磁盘，搜索重启不丢失
@@ -47,7 +47,7 @@ Governance：用量与配额
 - **CRUD 操作** — 向量的增删改查完全覆盖
 - **空间隔离** — 按租户、知识空间和索引版本打开独立命名空间
 - **统一边界** — Knowledge 与 Memory 仅依赖公共接口，不直接实例化 JVector
-- **可替换后端** — 后续接入 ChromaDB、Milvus 时新增 Provider 适配器即可
+- **可替换后端** — 通过 provider 配置切换 InMemory、JVector、pgvector；新增后端只需增加适配器
 
 ### Conversation 与 MAGMA Memory (`shiyu-conversation-implementation` / `shiyu-memory-implementation`)
 
@@ -56,7 +56,7 @@ Governance：用量与配额
 - **Conversation** — 保存原始会话、结构化消息树、编辑/重试/分支、GenerationRun 和 SSE 事件事实。
 - **MAGMA Memory** — 以统一事件节点承载 Temporal、Semantic、Causal、Entity 四类关系图，支持向量/关键词/时间联合锚点、受限遍历和带来源路径的上下文召回。
 - **单一事实源** — Memory 不复制完整聊天，只引用来源消息；流式草稿、取消和生成状态只属于 Conversation/Runtime。
-- **单机基线** — 当前使用 H2、JVector、本地关键词索引和本地 consolidation job，不引入外部图数据库、Redis 或分布式向量库。
+- **本地基线** — 默认使用 H2、JVector、本地关键词索引和本地 consolidation job；数据库、对象存储、Redis、pgvector 和事件总线均可独立切换。
 
 ### 工具体系 — Tool & MCP (`shiyu-tooling-implementation`)
 
@@ -181,15 +181,17 @@ Governance：用量与配额
 | `shiyu-common-vector` | 向量存储：JVector HNSW 索引、磁盘持久化、统一 Provider API | 平台基础设施 |
 | `shiyu-conversation-implementation` | 原始会话、消息树、生成生命周期、SSE 续传和 Prompt Preview | Conversation 领域实现 |
 | `shiyu-memory-implementation` | MAGMA-based 事件、实体、多图关系、治理和可解释检索 | 平台基础设施 |
-| `shiyu-tooling-implementation` | 工具体系：MCP 协议集成、工具注册/调用/执行 | 平台基础设施 |
-| `shiyu-tooling-implementation` | 插件体系：生命周期管理、沙箱隔离、动态热插拔 | 平台基础设施 |
+| `shiyu-tooling-implementation` | 工具与插件体系：MCP 协议、工具注册/调用、生命周期、沙箱隔离和动态热插拔 | 平台基础设施 |
 | `shiyu-governance-implementation` | 治理与用量计量：配额、Token 统计、实时推送、多维聚合 | 领域实现 |
 
 ### 🧱 基础设施层（纯技术底座）
 
 | 模块 | 职责 | 类型 |
 |------|------|------|
-| `modules/infrastructure/*` | 公共基础：core（工具/Result/异常）、web（XSS）、mybatis（ORM 封装）、thread（线程池）、storage（文件存储） | 基础设施 |
+| `shiyu-common-core` | 公共核心：Result、异常、方言 SQL、事件总线和 outbox | 基础设施 |
+| `shiyu-common-storage` | 文件/对象存储、元数据、备份、Redis 租约/限流/幂等适配 | 基础设施 |
+| `shiyu-common-vector` | InMemory、JVector、pgvector 的统一向量端口 | 基础设施 |
+| `shiyu-common-thread` / `shiyu-common-web` | 线程池、HTTP 过滤器、异常与校验支持 | 基础设施 |
 | `shiyu-common-mybatis` | MyBatis 技术支持：租户数据源、拦截器与通用 Mapper 基础设施 | 基础设施 |
 | `shiyu-ai-web` | REST 接入层：Controller、DTO、WebSocket、OpenAPI | 基础设施 |
 | `shiyu-ai-bootstrap` | 应用启动入口：日志/可观测/数据保留装配 | 基础设施 |
@@ -205,8 +207,11 @@ Governance：用量与配额
 | Agent 流程图 | LangGraph4j + BaseNode |
 | 认证授权 | Sa-Token |
 | ORM | MyBatis-Flex |
-| 数据库 | H2（开发）/ MySQL（生产） |
-| 向量检索 | JVector（HNSW） |
+| 数据库 | H2（默认）/ MySQL / PostgreSQL |
+| 文件存储 | 本地目录（默认）/ S3 / MinIO |
+| 向量检索 | JVector（默认）/ InMemory / PostgreSQL pgvector |
+| Redis 状态 | disabled（默认，进程内）/ Redis |
+| 事件总线 | in-process（默认）/ PostgreSQL outbox / Kafka |
 | 嵌入模型 | BGE-small-zh（ONNX 本地部署） |
 | MCP 协议 | Spring AI MCP |
 | 缓存 | Caffeine |
@@ -234,10 +239,21 @@ mvn clean install -DskipTests
 
 ### 配置 AI 平台
 
-编辑 `modules/applications/shiyu-ai-bootstrap/src/main/resources/application.yml`，配置至少一个 LLM 平台：
+编辑 `modules/applications/shiyu-ai-bootstrap/src/main/resources/application.yml`，配置至少一个 LLM 平台。基础设施 provider 通过环境变量或 Spring 配置选择：
 
 ```yaml
 shiyu:
+  infrastructure:
+    database:
+      provider: h2 # h2 / mysql / postgresql
+    file:
+      provider: local # local / s3 / minio
+    vector:
+      provider: jvector # inmemory / jvector / pgvector
+    redis:
+      provider: disabled # disabled / redis
+    event:
+      provider: in-process # in-process / postgres-outbox / kafka
   ai:
     ollama:
       base-url: http://localhost:11434
@@ -297,8 +313,7 @@ mvn -Pobservability,api-docs-ui,s3 spring-boot:run
 ```
 
 Linux 使用对应的 `scripts/package-cloud-linux.sh` 和
-`scripts/package-offline-linux.sh`。生产包默认不包含观测、API 文档 UI 和 S3
-适配器；需要时分别启用 `observability`、`api-docs-ui`、`s3` profile。
+`scripts/package-offline-linux.sh`。生产包默认不包含观测、API 文档 UI 和 S3 适配器；需要时分别启用 `observability`、`api-docs-ui`、`s3` profile。PostgreSQL/MySQL 驱动由 bootstrap 模块提供，外部数据库仍需通过环境变量注入连接信息并提前完成基线迁移。
 
 启动后访问：
 - 应用端口：`http://localhost:9000`
@@ -313,19 +328,19 @@ Linux 使用对应的 `scripts/package-cloud-linux.sh` 和
 
 ## API 文档
 
-后端控制器的真实路径不包含 `/api`；`/api` 仅是 ShiYu UI 在开发和同源生产部署时使用的代理前缀。
+后端 Controller 原生保留 `/api/{domain}` 前缀；ShiYu UI 在开发和同源生产部署时直接代理该路径，不能移除或重复添加 `/api`。
 
 | 分组 | 路径前缀 | 所属 |
 |------|----------|------|
 | Agent | `/api/agent/agents/**`、`/api/agent/versions/**`、`/api/agent/executions/**` | Agent 定义、版本与执行 |
-| Conversation | `/conversations/**`、`/generations/**` | 原始消息、生成生命周期和 SSE 事件 |
+| Conversation | `/api/conversation/conversations/**`、`/api/conversation/generations/**` | 原始消息、生成生命周期和 SSE 事件 |
 | Runtime | `/api/agent/runs/**` | 统一运行轨迹、Trace、usage 和审批 |
 | 知识库 | `/api/knowledge/**` | 空间、文档、检索、图谱与任务 |
 | 教育 | `/api/education/**` | 课程、题库、考试、学习与分析 |
 | 认证授权 | `/api/iam/auth/**`、`/api/iam/users/**`、`/api/iam/roles/**`、`/api/iam/menus/**`、`/api/iam/tenants/**` | 登录、租户、角色与菜单 |
-| 平台治理 | `/api/iam/**`、`/api/governance/usage/**`、`/api/tooling/plugins/**`、`/api/tooling/tools/**` | 文件、用量、插件与工具 |
+| 平台治理 | `/api/iam/files/**`、`/api/governance/usage/**`、`/api/tooling/plugins/**`、`/api/tooling/tools/**` | 文件、用量、插件与工具 |
 
-完整的 377 条路径、413 个 operation 见 [API 接口参考](./docs/参考/API接口参考.md)；菜单、角色和权限见 [菜单角色权限矩阵](./docs/参考/菜单角色权限矩阵.md)。
+完整的 377 条路径、413 个 operation 见 [API 接口参考](./docs/参考/API接口参考.md)；菜单、角色和权限见 [菜单角色权限矩阵](./docs/参考/菜单角色权限矩阵.md)。基础设施切换、迁移与回滚见 [外部基础设施切换](./docs/外部基础设施切换.md)。
 
 ---
 

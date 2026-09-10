@@ -1,11 +1,11 @@
 # 主分支验证与分支、模块盘点
 
-> 盘点基准：`master` / `d743f4eb`（2026-09-10）。本文件只记录状态和删除建议，不自动删除任何分支。
+> 盘点基准：`master` / `f416eb0c`（2026-09-11）。本文件只记录状态和删除建议，不自动删除任何分支；分支关系变化后应重新运行 Git 盘点命令。
 
 ## 主分支状态
 
 - 当前主分支：`master`，已跟踪 `origin/master`。
-- 当前工作树：无未提交变更（文档提交完成后再次确认）。
+- 当前工作树：以 `git status --short` 为准；本次文档更新提交前会再次确认。
 - Maven reactor：根 POM、29 个叶子模块，共 30 个项目。
 - 叶子模块文档：每个模块目录均有 `README.md`。
 
@@ -72,7 +72,7 @@
 ## 验证命令
 
 ```powershell
-mvn --batch-mode --no-transfer-progress -Pstrict-warnings verify -Ddependency-check.skip=true
+mvn --batch-mode --no-transfer-progress clean verify -Dmaven.compiler.useIncrementalCompilation=false -Ddependency-check.skip=true
 python -m unittest discover -s scripts/architecture/tests -p "test_*.py"
 python scripts/architecture/inventory_java_packages.py
 python scripts/architecture/check_domain_coverage.py
@@ -83,6 +83,8 @@ python scripts/architecture/check_schema_ownership.py
 python scripts/architecture/check_backend_module_names.py
 python scripts/docs/verify_documentation.py
 python scripts/verify_fresh_startup.py
+# 需先注入 PGHOST/PGPORT/PGDATABASE/PGUSER/PGPASSWORD 等环境变量
+pwsh ./scripts/database/migrate.ps1 -Action baseline -Provider postgresql
 ```
 
 应用运行验证使用 `modules/applications/shiyu-ai-bootstrap` 的 dev 配置；运行时数据写入 `runtime/`，禁止把凭据写入模块文档或提交。

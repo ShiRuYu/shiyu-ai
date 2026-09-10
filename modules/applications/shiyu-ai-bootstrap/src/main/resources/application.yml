@@ -96,9 +96,9 @@ shiyu:
       source-path: ${SHIYU_STORAGE_MIGRATION_SOURCE_PATH:}
       destination-provider: ${SHIYU_STORAGE_MIGRATION_DESTINATION_PROVIDER:}
       namespace: ${SHIYU_STORAGE_MIGRATION_NAMESPACE:}
-  # VectorStore 配置（Embedding 向量检索）
+  # VectorStore 配置（Embedding 向量检索）；新 provider 支持 inmemory、jvector、pgvector
   vector-store:
-    type: jvector           # inmemory | jvector
+    type: jvector           # 兼容别名：inmemory | jvector | pgvector
     dimension: 512
     data-dir: ${app.home}/data/vector
   knowledge:
