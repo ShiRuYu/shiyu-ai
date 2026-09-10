@@ -1,8 +1,11 @@
 package com.shiyu.ai.composition.database;
 
+import com.shiyu.ai.common.mybatis.config.DatabaseInfrastructureProperties;
+
 import jakarta.annotation.PostConstruct;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.context.ApplicationContext;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.core.io.Resource;
 import org.springframework.core.io.support.EncodedResource;
 import org.springframework.core.io.support.PathMatchingResourcePatternResolver;
@@ -17,12 +20,13 @@ import java.sql.ResultSet;
 import java.sql.Statement;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Locale;
 import java.util.Map;
 import java.util.Set;
 import java.util.TreeSet;
 
 /**
- * Installs the immutable H2 schema and system-ai seed baseline.
+ * Installs the immutable local schema baseline and validates externally managed databases.
  *
  * <p>The schema and seed resources always describe the final baseline directly. Installed
  * databases are never patched in place by this initializer.</p>
@@ -107,19 +111,37 @@ public class DatabaseInitializer {
             "VECTOR_KNOWLEDGE_CHUNK"
     );
 
+    /** Tables created by optional infrastructure adapters, outside the application baseline. */
+    private static final Set<String> INFRASTRUCTURE_TABLES = Set.of(
+            "SHIYU_VECTOR_ITEM", "SHIYU_EVENT_OUTBOX");
+
     private final Map<String, DataSource> dataSources;
     private final PathMatchingResourcePatternResolver resourceResolver;
+    private final DatabaseInfrastructureProperties databaseProperties;
 
     public DatabaseInitializer(Map<String, DataSource> dataSources, ApplicationContext applicationContext) {
+        this(dataSources, applicationContext, new DatabaseInfrastructureProperties());
+    }
+
+    @Autowired
+    public DatabaseInitializer(Map<String, DataSource> dataSources, ApplicationContext applicationContext,
+                               DatabaseInfrastructureProperties databaseProperties) {
         this.dataSources = dataSources;
         this.resourceResolver = new PathMatchingResourcePatternResolver(applicationContext);
+        this.databaseProperties = databaseProperties;
     }
 
     @PostConstruct
     public void initialize() {
         DataSource dataSource = resolveDataSource();
         try (Connection connection = dataSource.getConnection()) {
-            validateH2(connection);
+            databaseProperties.validate();
+            String productName = connection.getMetaData().getDatabaseProductName();
+            validateProvider(productName);
+            if (!"H2".equalsIgnoreCase(productName)) {
+                validateExternalDatabase(connection, productName);
+                return;
+            }
             Set<String> existingTables = loadPublicTables(connection);
 
             Set<String> legacyModelTables = new TreeSet<>(existingTables);
@@ -177,12 +199,34 @@ public class DatabaseInitializer {
         return dataSource;
     }
 
-    private void validateH2(Connection connection) throws Exception {
-        String productName = connection.getMetaData().getDatabaseProductName();
-        if (!"H2".equalsIgnoreCase(productName)) {
-            throw new IllegalStateException("Unsupported database " + productName
-                    + "; this baseline supports H2 only");
+    private void validateProvider(String productName) {
+        String provider = databaseProperties.normalizedProvider();
+        boolean matches = switch (provider) {
+            case "h2" -> "H2".equalsIgnoreCase(productName);
+            case "mysql" -> productName.toLowerCase(Locale.ROOT).contains("mysql");
+            case "postgresql" -> productName.toLowerCase(Locale.ROOT).contains("postgresql");
+            default -> false;
+        };
+        if (!matches) {
+            throw new IllegalStateException("Database provider mismatch: configured=" + provider
+                    + ", actual=" + productName);
         }
+    }
+
+    private void validateExternalDatabase(Connection connection, String productName) throws Exception {
+        Set<String> existingTables = loadPublicTables(connection);
+        if (!existingTables.contains(BASELINE_TABLE)) {
+            throw new IllegalStateException("External database " + productName
+                    + " requires a pre-provisioned schema baseline marked by " + BASELINE_TABLE);
+        }
+        BaselineMarker marker = readBaselineMarker(connection);
+        if (!BASELINE_VERSION.equals(marker.version()) || !SEED_PROFILE.equals(marker.seedProfile())) {
+            throw unsupportedBaseline(marker);
+        }
+        assertExpectedTables(existingTables);
+        assertExpectedColumns(connection);
+        log.info("External database baseline {} ({}) validated: {} application tables",
+                BASELINE_VERSION, SEED_PROFILE, EXPECTED_TABLES.size() - 1);
     }
 
     private void installFreshBaseline(Connection connection) throws Exception {
@@ -253,15 +297,30 @@ public class DatabaseInitializer {
 
     private Set<String> loadPublicTables(Connection connection) throws Exception {
         Set<String> tables = new HashSet<>();
-        try (PreparedStatement statement = connection.prepareStatement(
-                "SELECT TABLE_NAME FROM INFORMATION_SCHEMA.TABLES "
-                        + "WHERE TABLE_SCHEMA = 'PUBLIC' AND TABLE_TYPE = 'BASE TABLE'");
-             ResultSet resultSet = statement.executeQuery()) {
+        String product = connection.getMetaData().getDatabaseProductName().toLowerCase(Locale.ROOT);
+        String catalog = connection.getCatalog();
+        try (ResultSet resultSet = connection.getMetaData().getTables(null, null, "%", new String[]{"TABLE"})) {
             while (resultSet.next()) {
-                tables.add(resultSet.getString(1).toUpperCase());
+                String schema = resultSet.getString("TABLE_SCHEM");
+                if (isApplicationSchema(product, schema, catalog)) {
+                    tables.add(resultSet.getString("TABLE_NAME").toUpperCase());
+                }
             }
         }
         return tables;
+    }
+
+    private boolean isApplicationSchema(String product, String schema, String catalog) {
+        if (product.contains("h2")) {
+            return "PUBLIC".equalsIgnoreCase(schema);
+        }
+        if (product.contains("postgresql")) {
+            return "public".equalsIgnoreCase(schema);
+        }
+        if (product.contains("mysql")) {
+            return schema == null || schema.isBlank() || (catalog != null && catalog.equalsIgnoreCase(schema));
+        }
+        return schema == null || schema.isBlank();
     }
 
     private void assertExpectedTables(Set<String> actualTables) {
@@ -269,6 +328,7 @@ public class DatabaseInitializer {
         missing.removeAll(actualTables);
         Set<String> unexpected = new TreeSet<>(actualTables);
         unexpected.removeAll(EXPECTED_TABLES);
+        unexpected.removeAll(INFRASTRUCTURE_TABLES);
         if (!missing.isEmpty() || !unexpected.isEmpty()) {
             throw new IllegalStateException("Database schema does not match baseline; missing=" + missing
                     + ", unexpected=" + unexpected);
@@ -276,18 +336,20 @@ public class DatabaseInitializer {
     }
 
     private void assertExpectedColumns(Connection connection) throws Exception {
-        try (PreparedStatement statement = connection.prepareStatement(
-                "SELECT COUNT(*) FROM INFORMATION_SCHEMA.COLUMNS "
-                        + "WHERE TABLE_SCHEMA='PUBLIC' AND TABLE_NAME=? AND COLUMN_NAME=?")) {
-            statement.setString(1, "MODEL_AI_PLATFORM");
-            statement.setString(2, "ADAPTER_TYPE");
-            try (ResultSet resultSet = statement.executeQuery()) {
-                resultSet.next();
-                if (resultSet.getInt(1) == 0) {
-                    throw new IllegalStateException("Database schema does not match baseline; "
-                            + "missing=[MODEL_AI_PLATFORM.ADAPTER_TYPE]; manual rebuild required");
+        boolean found = false;
+        try (ResultSet resultSet = connection.getMetaData().getColumns(null, null, "%", "%")) {
+            while (resultSet.next()) {
+                String table = resultSet.getString("TABLE_NAME");
+                String column = resultSet.getString("COLUMN_NAME");
+                if ("MODEL_AI_PLATFORM".equalsIgnoreCase(table) && "ADAPTER_TYPE".equalsIgnoreCase(column)) {
+                    found = true;
+                    break;
                 }
             }
+        }
+        if (!found) {
+            throw new IllegalStateException("Database schema does not match baseline; "
+                    + "missing=[MODEL_AI_PLATFORM.ADAPTER_TYPE]; manual rebuild required");
         }
     }
 

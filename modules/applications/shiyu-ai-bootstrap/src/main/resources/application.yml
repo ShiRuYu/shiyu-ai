@@ -18,6 +18,24 @@ shiyu:
       model: ${AI_DEEPSEEK_MODEL:deepseek-v4-flash}
   tx:
     enabled: true
+  infrastructure:
+    database:
+      provider: ${SHIYU_INFRA_DATABASE_PROVIDER:h2}
+    file:
+      provider: ${SHIYU_INFRA_FILE_PROVIDER:}
+    vector:
+      provider: ${SHIYU_INFRA_VECTOR_PROVIDER:}
+    redis:
+      provider: ${SHIYU_INFRA_REDIS_PROVIDER:disabled}
+      url: ${SHIYU_REDIS_URL:redis://127.0.0.1:6379/0}
+      password: ${SHIYU_REDIS_PASSWORD:}
+      key-prefix: ${SHIYU_REDIS_KEY_PREFIX:shiyu}
+    event:
+      provider: ${SHIYU_INFRA_EVENT_PROVIDER:in-process}
+      topic: ${SHIYU_KAFKA_TOPIC:shiyu.domain-events.v1}
+      bootstrap-servers: ${SHIYU_KAFKA_BOOTSTRAP_SERVERS:127.0.0.1:9092}
+      relay-interval-ms: ${SHIYU_KAFKA_RELAY_INTERVAL_MS:5000}
+      relay-batch-size: ${SHIYU_KAFKA_RELAY_BATCH_SIZE:100}
   # 版本
   version: ${revision}
   # 文件存储：默认 local，可切换为 s3、minio、aliyun-oss、tencent-cos
@@ -71,6 +89,11 @@ shiyu:
         secret-key: ${SHIYU_STORAGE_COS_SECRET_KEY:}
         path-style-access: false
         public-base-url: ${SHIYU_STORAGE_COS_PUBLIC_BASE_URL:}
+    migration:
+      enabled: ${SHIYU_STORAGE_MIGRATION_ENABLED:false}
+      source-path: ${SHIYU_STORAGE_MIGRATION_SOURCE_PATH:}
+      destination-provider: ${SHIYU_STORAGE_MIGRATION_DESTINATION_PROVIDER:}
+      namespace: ${SHIYU_STORAGE_MIGRATION_NAMESPACE:}
   # VectorStore 配置（Embedding 向量检索）
   vector-store:
     type: jvector           # inmemory | jvector

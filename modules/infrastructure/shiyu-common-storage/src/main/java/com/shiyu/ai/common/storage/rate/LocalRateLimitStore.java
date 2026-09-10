@@ -10,10 +10,12 @@ import com.shiyu.ai.common.storage.security.*;
 import com.shiyu.ai.common.storage.vector.*;
 
 import org.springframework.stereotype.Component;
+import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import java.time.Duration;
 import java.util.concurrent.ConcurrentHashMap;
 
 @Component
+@ConditionalOnProperty(prefix = "shiyu.infrastructure.redis", name = "provider", havingValue = "disabled", matchIfMissing = true)
 public class LocalRateLimitStore implements RateLimitStore {
     private final ConcurrentHashMap<String, Window> windows = new ConcurrentHashMap<>();
     public boolean consume(String key, long permits, long limit, Duration window) {

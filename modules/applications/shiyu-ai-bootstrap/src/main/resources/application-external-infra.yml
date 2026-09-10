@@ -1,0 +1,23 @@
+spring:
+  config:
+    activate:
+      on-profile: external-infra
+
+shiyu:
+  infrastructure:
+    database:
+      provider: ${SHIYU_INFRA_DATABASE_PROVIDER:postgresql}
+  storage:
+    type: ${SHIYU_STORAGE_TYPE:local}
+  vector-store:
+    type: ${SHIYU_VECTOR_STORE_TYPE:jvector}
+
+mybatis-flex:
+  datasource:
+    agent:
+      type: com.zaxxer.hikari.HikariDataSource
+      driver-class-name: ${SHIYU_DB_DRIVER:org.postgresql.Driver}
+      url: ${SHIYU_DB_URL:jdbc:postgresql://127.0.0.1:5432/shiyu}
+      username: ${SHIYU_DB_USERNAME:shiyu}
+      password: ${SHIYU_DB_PASSWORD:}
+      validation-query: SELECT 1

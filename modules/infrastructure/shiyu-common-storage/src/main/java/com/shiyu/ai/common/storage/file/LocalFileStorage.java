@@ -20,7 +20,7 @@ import java.time.Instant;
 import java.util.Comparator;
 import java.util.List;
 
-public class LocalFileStorage implements FileStorage {
+public class LocalFileStorage implements KeyedFileStorage {
 
     private final Path root;
     private final String storageType;
@@ -36,6 +36,13 @@ public class LocalFileStorage implements FileStorage {
             String namespace, String originalName, String contentType, long size, InputStream inputStream)
             throws IOException {
         String key = StorageKeys.create(namespace, originalName);
+        return uploadAtKey(key, originalName, contentType, size, inputStream);
+    }
+
+    @Override
+    public StoredFile uploadAtKey(
+            String key, String originalName, String contentType, long size, InputStream inputStream)
+            throws IOException {
         Path target = resolve(key);
         Files.createDirectories(target.getParent());
         Files.copy(inputStream, target, StandardCopyOption.REPLACE_EXISTING);

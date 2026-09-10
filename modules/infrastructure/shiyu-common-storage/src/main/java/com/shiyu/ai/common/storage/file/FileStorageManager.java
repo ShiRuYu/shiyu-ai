@@ -82,6 +82,16 @@ public class FileStorageManager implements AutoCloseable {
                 stored.lastModified(), stored.url(), stored.storageType());
     }
 
+    /** Writes an object with an existing key for an operator-controlled migration. */
+    public StoredFile uploadAtKey(String key, String originalName, String contentType,
+                                  long size, InputStream inputStream) throws IOException {
+        if (!(storage instanceof KeyedFileStorage keyedStorage)) {
+            throw new IOException("当前文件存储不支持保留对象 key 的迁移");
+        }
+        validateKey(key);
+        return keyedStorage.uploadAtKey(key, originalName, contentType, size, inputStream);
+    }
+
     public List<StoredFile> list(String namespace) throws IOException {
         String normalizedNamespace = normalizeNamespace(namespace);
         if (!metadataStore.persistent()) return storage.list(normalizedNamespace);
@@ -153,6 +163,13 @@ public class FileStorageManager implements AutoCloseable {
     private long tenantIdFromKey(String key) throws IOException {
         if (key == null) throw new IOException("文件标识不能为空");
         return tenantId(key);
+    }
+
+    private void validateKey(String key) throws IOException {
+        if (key == null || key.isBlank() || key.startsWith("/") || key.startsWith("\\")
+                || key.contains("..") || key.contains("\\")) {
+            throw new IOException("非法文件标识");
+        }
     }
 
     private Long spaceId(String namespace) {

@@ -29,6 +29,10 @@ public interface StorageMetadataStore {
 
     void markObjectDeleted(long tenantId, String objectKey);
 
+    /** Updates the physical provider after an operator-controlled object migration. */
+    default void updateObjectProvider(long tenantId, String objectKey, String provider) {
+    }
+
     Optional<StorageObjectRecord> findObjectByKey(long tenantId, String objectKey);
 
     List<StorageObjectRecord> listObjects(long tenantId, String namespace, int offset, int limit);

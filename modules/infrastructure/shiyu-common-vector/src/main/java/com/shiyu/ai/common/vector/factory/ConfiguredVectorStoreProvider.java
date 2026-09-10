@@ -9,15 +9,22 @@ import java.nio.file.Path;
 import java.util.Locale;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
+import org.springframework.jdbc.core.JdbcTemplate;
 
 /** Default provider backed by the configured vector implementation. */
 public final class ConfiguredVectorStoreProvider implements VectorStoreProvider {
 
     private final VectorStoreProperties defaults;
+    private final JdbcTemplate jdbcTemplate;
     private final Map<String, InMemoryHandle> inMemoryStores = new ConcurrentHashMap<>();
 
     public ConfiguredVectorStoreProvider(VectorStoreProperties defaults) {
+        this(defaults, null);
+    }
+
+    public ConfiguredVectorStoreProvider(VectorStoreProperties defaults, JdbcTemplate jdbcTemplate) {
         this.defaults = defaults;
+        this.jdbcTemplate = jdbcTemplate;
     }
 
     @Override
@@ -42,6 +49,11 @@ public final class ConfiguredVectorStoreProvider implements VectorStoreProvider 
 
     @Override
     public void drop(VectorStoreOptions options) {
+        if ("pgvector".equals(type())) {
+            new com.shiyu.ai.common.vector.implementation.PgVectorStore(
+                    jdbcTemplate, options.namespace(), options.dimension()).rebuild();
+            return;
+        }
         InMemoryHandle handle = inMemoryStores.remove(options.namespace());
         if (handle != null) {
             handle.store().rebuild();
@@ -60,7 +72,11 @@ public final class ConfiguredVectorStoreProvider implements VectorStoreProvider 
         properties.setType(type());
         properties.setDimension(options.dimension());
         properties.setDataDir(resolveDataDir(options));
-        return VectorStoreFactory.create(type(), properties);
+        if ("pgvector".equals(type())) {
+            return new com.shiyu.ai.common.vector.implementation.PgVectorStore(
+                    jdbcTemplate, options.namespace(), options.dimension());
+        }
+        return VectorStoreFactory.create(type(), properties, jdbcTemplate);
     }
 
     private String resolveDataDir(VectorStoreOptions options) {

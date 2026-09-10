@@ -51,6 +51,7 @@
         <h2.version>2.4.240</h2.version>
 
         <mysql.version>9.4.0</mysql.version>
+        <postgresql.version>42.7.7</postgresql.version>
         <p6spy.version>3.9.1</p6spy.version>
         <mybatis.version>3.5.19</mybatis.version>
         <mybatis-flex.version>1.11.7</mybatis-flex.version>
@@ -386,6 +387,12 @@
             </dependency>
 
             <dependency>
+                <groupId>org.postgresql</groupId>
+                <artifactId>postgresql</artifactId>
+                <version>${postgresql.version}</version>
+            </dependency>
+
+            <dependency>
                 <groupId>org.mybatis</groupId>
                 <artifactId>mybatis</artifactId>
                 <version>${mybatis.version}</version>
@@ -567,6 +574,10 @@
                 <configuration>
                     <release>${java.version}</release>
                     <encoding>${project.build.sourceEncoding}</encoding>
+                    <!-- Keep javac isolated from annotation processors. In-process
+                         compilation on the current JDK can mutate the compiler's
+                         source path and fail with ConcurrentModificationException. -->
+                    <fork>true</fork>
                     <compilerArgs>
                         <arg>-parameters</arg>
                         <!-- 启用编译警告 -->

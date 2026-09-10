@@ -33,7 +33,7 @@ import java.nio.file.Path;
 import java.util.List;
 import java.util.Map;
 
-public class S3CompatibleFileStorage implements FileStorage, AutoCloseable {
+public class S3CompatibleFileStorage implements KeyedFileStorage, AutoCloseable {
 
     private final String storageType;
     private final StorageProperties.S3Provider properties;
@@ -62,6 +62,13 @@ public class S3CompatibleFileStorage implements FileStorage, AutoCloseable {
             String namespace, String originalName, String contentType, long size, InputStream inputStream)
             throws IOException {
         String key = StorageKeys.create(namespace, originalName);
+        return uploadAtKey(key, originalName, contentType, size, inputStream);
+    }
+
+    @Override
+    public StoredFile uploadAtKey(
+            String key, String originalName, String contentType, long size, InputStream inputStream)
+            throws IOException {
         try {
             client.putObject(
                     PutObjectRequest.builder()

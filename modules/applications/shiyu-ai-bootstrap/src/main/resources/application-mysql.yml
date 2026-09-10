@@ -1,0 +1,19 @@
+spring:
+  config:
+    activate:
+      on-profile: mysql
+
+shiyu:
+  infrastructure:
+    database:
+      provider: mysql
+
+mybatis-flex:
+  datasource:
+    agent:
+      type: com.zaxxer.hikari.HikariDataSource
+      driver-class-name: com.mysql.cj.jdbc.Driver
+      url: ${SHIYU_DB_URL:jdbc:mysql://127.0.0.1:3306/shiyu?useUnicode=true&characterEncoding=utf8&serverTimezone=UTC}
+      username: ${SHIYU_DB_USERNAME:shiyu}
+      password: ${SHIYU_DB_PASSWORD:}
+      validation-query: SELECT 1

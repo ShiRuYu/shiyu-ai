@@ -86,6 +86,13 @@ public class JdbcStorageMetadataStore implements StorageMetadataStore {
     }
 
     @Override
+    public void updateObjectProvider(long tenantId, String objectKey, String provider) {
+        jdbcTemplate.update("UPDATE storage_object SET storage_provider=?, update_time=CURRENT_TIMESTAMP "
+                        + "WHERE tenant_id=? AND object_key=? AND status='AVAILABLE'",
+                provider, tenantId, objectKey);
+    }
+
+    @Override
     public Optional<StorageObjectRecord> findObjectByKey(long tenantId, String objectKey) {
         List<StorageObjectRecord> rows = jdbcTemplate.query(
                 "SELECT id, tenant_id, space_id, namespace, object_key, storage_provider, original_name, "

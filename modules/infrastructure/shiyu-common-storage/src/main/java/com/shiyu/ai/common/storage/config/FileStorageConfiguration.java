@@ -17,12 +17,15 @@ import org.springframework.beans.factory.ObjectProvider;
 import java.io.IOException;
 
 @Configuration
-@EnableConfigurationProperties(StorageProperties.class)
+@EnableConfigurationProperties({StorageProperties.class, FileInfrastructureProperties.class,
+        StorageMigrationProperties.class})
 public class FileStorageConfiguration {
 
     @Bean(destroyMethod = "close")
     public FileStorageManager fileStorageManager(StorageProperties properties,
+                                                 FileInfrastructureProperties infrastructureProperties,
                                                  ObjectProvider<StorageMetadataStore> metadataStores) throws IOException {
+        properties.setType(infrastructureProperties.resolveProvider(properties.getType()));
         return new FileStorageManager(properties,
                 metadataStores.getIfAvailable(() -> NoopStorageMetadataStore.INSTANCE));
     }
