@@ -6,5 +6,6 @@ import com.shiyu.ai.kernel.event.DomainEventEnvelope;
 @FunctionalInterface
 public interface DomainEventPublisher {
 
+    /** Publishes a redaction-safe domain event to the configured event transport. */
     void publish(DomainEventEnvelope<?> event);
 }

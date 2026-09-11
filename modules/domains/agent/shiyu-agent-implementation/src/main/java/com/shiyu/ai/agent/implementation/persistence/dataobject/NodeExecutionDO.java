@@ -3,17 +3,17 @@ package com.shiyu.ai.agent.implementation.persistence.dataobject;
 import com.mybatisflex.annotation.Id;
 import com.mybatisflex.annotation.KeyType;
 import com.mybatisflex.annotation.Table;
+import com.shiyu.ai.agent.implementation.domain.model.NodeExecutionBO;
 import com.shiyu.ai.common.mybatis.model.TenantEntity;
+
+import io.github.linpeilie.annotations.AutoMapper;
+
 import lombok.Data;
 import lombok.EqualsAndHashCode;
 
 import java.time.LocalDateTime;
-import com.shiyu.ai.agent.implementation.domain.model.NodeExecutionBO;
-import io.github.linpeilie.annotations.AutoMapper;
 
-/**
- * 节点执行记录
- */
+/** 节点执行记录 */
 @Data
 @EqualsAndHashCode(callSuper = true)
 @SuppressWarnings("serial")

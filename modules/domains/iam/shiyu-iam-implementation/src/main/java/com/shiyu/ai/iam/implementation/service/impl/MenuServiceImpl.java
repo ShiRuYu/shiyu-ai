@@ -2,58 +2,73 @@ package com.shiyu.ai.iam.implementation.service.impl;
 
 import com.github.benmanes.caffeine.cache.Cache;
 import com.github.benmanes.caffeine.cache.Caffeine;
-import com.shiyu.ai.iam.implementation.port.repository.MenuRepository;
-import com.shiyu.ai.iam.implementation.service.MenuService;
-import com.shiyu.ai.iam.implementation.domain.model.MenuBO;
-import com.shiyu.ai.iam.implementation.port.repository.TenantRepository;
-import com.shiyu.ai.iam.implementation.vo.MenuVO;
-import com.shiyu.ai.iam.implementation.vo.RouteMenuVO;
-import com.shiyu.ai.iam.implementation.request.MenuRequest;
 import com.shiyu.ai.common.core.api.PageData;
 import com.shiyu.ai.common.core.utils.MapstructUtils;
+import com.shiyu.ai.iam.implementation.domain.model.MenuBO;
+import com.shiyu.ai.iam.implementation.port.repository.MenuRepository;
+import com.shiyu.ai.iam.implementation.port.repository.TenantRepository;
+import com.shiyu.ai.iam.implementation.request.MenuRequest;
+import com.shiyu.ai.iam.implementation.service.MenuService;
+import com.shiyu.ai.iam.implementation.vo.MenuVO;
+import com.shiyu.ai.iam.implementation.vo.RouteMenuVO;
 import com.shiyu.ai.kernel.context.ActorContext;
+
 import lombok.extern.slf4j.Slf4j;
+
 import org.springframework.stereotype.Service;
 
 import java.util.ArrayList;
+import java.util.Comparator;
 import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
-import java.util.Comparator;
 import java.util.Locale;
+import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.TimeUnit;
 
-/**
- * 菜单服务实现类
- */
+/** 菜单服务实现类 */
 @Slf4j
 @Service
 public class MenuServiceImpl implements MenuService {
 
-    @Override public List<RouteMenuVO> routeMenusView(ActorContext actor) {
+    @Override
+    public List<RouteMenuVO> routeMenusView(ActorContext actor) {
         actor = requireActor(actor);
         return toRouteMenus(getRouteMenusByUserId(actor, actor.userId().value()));
     }
-    @Override public List<MenuVO> allTreeView(ActorContext actor) {
+
+    @Override
+    public List<MenuVO> allTreeView(ActorContext actor) {
         return MapstructUtils.convert(getAllTree(requireActor(actor)), MenuVO.class);
     }
-    @Override public List<RouteMenuVO> menuRootsView(ActorContext actor) {
+
+    @Override
+    public List<RouteMenuVO> menuRootsView(ActorContext actor) {
         return toRouteMenus(getMenuRoots(requireActor(actor)));
     }
-    @Override public List<RouteMenuVO> childrenView(ActorContext actor, Long parentId) {
+
+    @Override
+    public List<RouteMenuVO> childrenView(ActorContext actor, Long parentId) {
         return toRouteMenus(getChildrenByParentId(requireActor(actor), parentId));
     }
-    @Override public List<RouteMenuVO> permissionsView(ActorContext actor) {
+
+    @Override
+    public List<RouteMenuVO> permissionsView(ActorContext actor) {
         return toRouteMenus(getMenuPermissionsTree(requireActor(actor)));
     }
-    @Override public List<RouteMenuVO> treeView(ActorContext actor) {
+
+    @Override
+    public List<RouteMenuVO> treeView(ActorContext actor) {
         return toRouteMenus(getAllTree(requireActor(actor)));
     }
-    @Override public boolean createMenu(ActorContext actor, MenuRequest request) {
+
+    @Override
+    public boolean createMenu(ActorContext actor, MenuRequest request) {
         return createMenu(requireActor(actor), MapstructUtils.convert(request, MenuBO.class));
     }
-    @Override public boolean updateMenu(ActorContext actor, Long id, MenuRequest request) {
+
+    @Override
+    public boolean updateMenu(ActorContext actor, Long id, MenuRequest request) {
         return updateMenu(requireActor(actor), id, MapstructUtils.convert(request, MenuBO.class));
     }
 
@@ -61,37 +76,49 @@ public class MenuServiceImpl implements MenuService {
         if (menus == null) return List.of();
         List<RouteMenuVO> result = new ArrayList<>();
         for (MenuBO menu : menus) {
-            RouteMenuVO vo = new RouteMenuVO(); vo.setId(menu.getId()); vo.setPid(menu.getParentId()); vo.setName(menu.getCode());
-            vo.setPath(menu.getPath()); vo.setComponent(menu.getComponent()); vo.setRedirect(menu.getRedirect()); vo.setStatus(menu.getStatus()); vo.setIcon(menu.getIcon());
-            String type=menu.getType(); vo.setType(type == null ? "menu" : type.toLowerCase(Locale.ROOT));
-            RouteMenuVO.MetaVO meta = new RouteMenuVO.MetaVO(); meta.setTitle(menu.getName()); meta.setIcon(menu.getIcon()); meta.setOrder(menu.getOrder()); meta.setKeepAlive(menu.getKeepAlive());
-            if (Boolean.FALSE.equals(menu.getShow())) meta.setHideInMenu(true); if ("none".equalsIgnoreCase(menu.getLayout())) meta.setNoBasicLayout(true); vo.setMeta(meta);
-            vo.setChildren(toRouteMenus(menu.getChildren())); result.add(vo);
+            RouteMenuVO vo = new RouteMenuVO();
+            vo.setId(menu.getId());
+            vo.setPid(menu.getParentId());
+            vo.setName(menu.getCode());
+            vo.setPath(menu.getPath());
+            vo.setComponent(menu.getComponent());
+            vo.setRedirect(menu.getRedirect());
+            vo.setStatus(menu.getStatus());
+            vo.setIcon(menu.getIcon());
+            String type = menu.getType();
+            vo.setType(type == null ? "menu" : type.toLowerCase(Locale.ROOT));
+            RouteMenuVO.MetaVO meta = new RouteMenuVO.MetaVO();
+            meta.setTitle(menu.getName());
+            meta.setIcon(menu.getIcon());
+            meta.setOrder(menu.getOrder());
+            meta.setKeepAlive(menu.getKeepAlive());
+            if (Boolean.FALSE.equals(menu.getShow())) meta.setHideInMenu(true);
+            if ("none".equalsIgnoreCase(menu.getLayout())) meta.setNoBasicLayout(true);
+            vo.setMeta(meta);
+            vo.setChildren(toRouteMenus(menu.getChildren()));
+            result.add(vo);
         }
         return result;
     }
 
-    private static final Set<String> SUPPORTED_MENU_TYPES = Set.of(
-            "CATALOG", "MENU", "LINK", "EMBEDDED");
+    private static final Set<String> SUPPORTED_MENU_TYPES =
+            Set.of("CATALOG", "MENU", "LINK", "EMBEDDED");
 
     private final MenuRepository menuRepository;
     private final TenantRepository tenantRepository;
 
-    /**
-     * 路由菜单缓存：userId:currentTenantId:currentRoleId → 菜单树
-     * 菜单数据由管理员维护，变更频率极低，适合 5 分钟本地缓存
-     */
+    /** 路由菜单缓存：userId:currentTenantId:currentRoleId → 菜单树 菜单数据由管理员维护，变更频率极低，适合 5 分钟本地缓存 */
     private final Cache<String, List<MenuBO>> routeMenuCache;
 
-    public MenuServiceImpl(MenuRepository menuRepository,
-                           TenantRepository tenantRepository) {
+    public MenuServiceImpl(MenuRepository menuRepository, TenantRepository tenantRepository) {
         this.menuRepository = menuRepository;
         this.tenantRepository = tenantRepository;
-        this.routeMenuCache = Caffeine.newBuilder()
-                .maximumSize(1000)
-                .expireAfterWrite(5, TimeUnit.MINUTES)
-                .recordStats()
-                .build();
+        this.routeMenuCache =
+                Caffeine.newBuilder()
+                        .maximumSize(1000)
+                        .expireAfterWrite(5, TimeUnit.MINUTES)
+                        .recordStats()
+                        .build();
     }
 
     private List<MenuBO> getMenuPermissionsTree(ActorContext actor) {
@@ -111,9 +138,7 @@ public class MenuServiceImpl implements MenuService {
         return buildMenuTree(allMenuBOs);
     }
 
-    /**
-     * 构建菜单树形结构（O(n) Map 分组，替代原 O(n²) 递归）
-     */
+    /** 构建菜单树形结构（O(n) Map 分组，替代原 O(n²) 递归） */
     private List<MenuBO> buildMenuTree(List<MenuBO> allMenus) {
         if (allMenus == null || allMenus.isEmpty()) {
             return new ArrayList<>();
@@ -207,8 +232,13 @@ public class MenuServiceImpl implements MenuService {
         List<MenuBO> allMenus = menuRepository.selectAll(actor.tenantId());
         return allMenus.stream()
                 .filter(m -> m.getParentId() == null)
-                .sorted(Comparator.comparing(MenuBO::getOrder, Comparator.nullsLast(Comparator.naturalOrder()))
-                        .thenComparing(MenuBO::getId, Comparator.nullsLast(Comparator.naturalOrder())))
+                .sorted(
+                        Comparator.comparing(
+                                        MenuBO::getOrder,
+                                        Comparator.nullsLast(Comparator.naturalOrder()))
+                                .thenComparing(
+                                        MenuBO::getId,
+                                        Comparator.nullsLast(Comparator.naturalOrder())))
                 .toList();
     }
 
@@ -220,8 +250,13 @@ public class MenuServiceImpl implements MenuService {
     private List<MenuBO> getMenuTreeByUserId(ActorContext actor, Long userId) {
         log.info("根据用户 ID 获取菜单树，userIdPresent: {}", userId != null);
         // 复用单 JOIN 查询 + 建树
-        List<MenuBO> userMenus = menuRepository.selectMenusByUserId(actor.tenantId(), userId,
-                actor.activeRoleCode(), actor.parentSuperAdminSwitch(), null);
+        List<MenuBO> userMenus =
+                menuRepository.selectMenusByUserId(
+                        actor.tenantId(),
+                        userId,
+                        actor.activeRoleCode(),
+                        actor.parentSuperAdminSwitch(),
+                        null);
         if (userMenus.isEmpty()) {
             return new ArrayList<>();
         }
@@ -229,15 +264,22 @@ public class MenuServiceImpl implements MenuService {
     }
 
     private List<MenuBO> getMenusByUserIdAndType(ActorContext actor, Long userId, String type) {
-        log.info("根据用户 ID 和类型获取菜单树，userIdPresent: {}, typePresent: {}", userId != null, type != null);
-        List<MenuBO> userMenus = menuRepository.selectMenusByUserId(actor.tenantId(), userId,
-                actor.activeRoleCode(), actor.parentSuperAdminSwitch(), null);
+        log.info(
+                "根据用户 ID 和类型获取菜单树，userIdPresent: {}, typePresent: {}",
+                userId != null,
+                type != null);
+        List<MenuBO> userMenus =
+                menuRepository.selectMenusByUserId(
+                        actor.tenantId(),
+                        userId,
+                        actor.activeRoleCode(),
+                        actor.parentSuperAdminSwitch(),
+                        null);
         if (userMenus.isEmpty()) {
             return new ArrayList<>();
         }
-        List<MenuBO> filtered = userMenus.stream()
-                .filter(menu -> type.equals(menu.getType()))
-                .toList();
+        List<MenuBO> filtered =
+                userMenus.stream().filter(menu -> type.equals(menu.getType())).toList();
         return buildMenuTree(filtered);
     }
 
@@ -267,8 +309,13 @@ public class MenuServiceImpl implements MenuService {
         }
 
         // 2. 单 SQL JOIN 查询，替代原来的 查角色→遍历查菜单→全表查→内存过滤 流程
-        List<MenuBO> userMenus = menuRepository.selectMenusByUserId(actor.tenantId(), userId,
-                actor.activeRoleCode(), actor.parentSuperAdminSwitch(), null);
+        List<MenuBO> userMenus =
+                menuRepository.selectMenusByUserId(
+                        actor.tenantId(),
+                        userId,
+                        actor.activeRoleCode(),
+                        actor.parentSuperAdminSwitch(),
+                        null);
         if (userMenus.isEmpty()) {
             log.warn("用户没有分配菜单，userIdPresent={}", userId != null);
             return new ArrayList<>();
@@ -284,13 +331,16 @@ public class MenuServiceImpl implements MenuService {
     }
 
     private String buildRouteMenuCacheKey(ActorContext actor, Long userId) {
-        return userId + ":" + actor.tenantId().value() + ":"
-            + actor.activeRoleId() + ":" + actor.activeRoleCode();
+        return userId
+                + ":"
+                + actor.tenantId().value()
+                + ":"
+                + actor.activeRoleId()
+                + ":"
+                + actor.activeRoleCode();
     }
 
-    /**
-     * 清除指定用户的路由菜单缓存
-     */
+    /** 清除指定用户的路由菜单缓存 */
     public void evictRouteMenuCache(Long userId) {
         if (userId != null) {
             routeMenuCache.asMap().keySet().removeIf(key -> key.startsWith(userId + ":"));
@@ -298,9 +348,7 @@ public class MenuServiceImpl implements MenuService {
         }
     }
 
-    /**
-     * 清除所有用户的路由菜单缓存（菜单增删改后调用）
-     */
+    /** 清除所有用户的路由菜单缓存（菜单增删改后调用） */
     public void evictAllRouteMenuCache() {
         routeMenuCache.invalidateAll();
         log.info("全部路由菜单缓存已清除（菜单结构变更）");
@@ -314,11 +362,20 @@ public class MenuServiceImpl implements MenuService {
     }
 
     @Override
-    public PageData<MenuVO> getMenuPage(ActorContext actor, Number pageNo, Number pageSize,
-                                        String name, String code, String type, Integer status) {
+    public PageData<MenuVO> getMenuPage(
+            ActorContext actor,
+            Number pageNo,
+            Number pageSize,
+            String name,
+            String code,
+            String type,
+            Integer status) {
         actor = requireActor(actor);
-        var page = menuRepository.selectPage(actor.tenantId(), pageNo, pageSize, name, code, type, status);
-        return new PageData<>(MapstructUtils.convert(page.getRight(), MenuVO.class), page.getLeft());
+        var page =
+                menuRepository.selectPage(
+                        actor.tenantId(), pageNo, pageSize, name, code, type, status);
+        return new PageData<>(
+                MapstructUtils.convert(page.getRight(), MenuVO.class), page.getLeft());
     }
 
     private void normalizeMenuType(MenuBO menuBO) {
@@ -338,4 +395,3 @@ public class MenuServiceImpl implements MenuService {
         return actor;
     }
 }
-

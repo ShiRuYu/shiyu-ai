@@ -2,9 +2,7 @@ package com.shiyu.ai.tooling.implementation.plugin.spi;
 
 import java.util.Map;
 
-/**
- * 插件运行上下文
- */
+/** 插件运行上下文 */
 public class PluginContext {
 
     private final String pluginId;
@@ -17,7 +15,15 @@ public class PluginContext {
         this.config = config;
     }
 
-    public String getPluginId() { return pluginId; }
-    public String getPluginDir() { return pluginDir; }
-    public Map<String, Object> getConfig() { return config; }
+    public String getPluginId() {
+        return pluginId;
+    }
+
+    public String getPluginDir() {
+        return pluginDir;
+    }
+
+    public Map<String, Object> getConfig() {
+        return config;
+    }
 }

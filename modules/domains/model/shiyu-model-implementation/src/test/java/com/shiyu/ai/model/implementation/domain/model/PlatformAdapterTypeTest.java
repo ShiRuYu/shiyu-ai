@@ -1,8 +1,8 @@
 package com.shiyu.ai.model.implementation.domain.model;
 
-import org.junit.jupiter.api.Test;
-
 import static org.junit.jupiter.api.Assertions.assertEquals;
+
+import org.junit.jupiter.api.Test;
 
 class PlatformAdapterTypeTest {
 
@@ -17,5 +17,4 @@ class PlatformAdapterTypeTest {
     void parsesOnlySupportedAdapterTypes() {
         assertEquals(PlatformAdapterType.OLLAMA, PlatformAdapterType.parse("ollama"));
     }
-
 }

@@ -1,28 +1,30 @@
 package com.shiyu.ai.web.interceptor;
 
-import com.shiyu.ai.iam.implementation.service.AuthContextService;
-import com.shiyu.ai.iam.implementation.utils.SaTokenHelper;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.verifyNoInteractions;
+import static org.mockito.Mockito.when;
+
+import com.shiyu.ai.common.core.domain.UserContext;
+import com.shiyu.ai.common.web.auth.ClientIpResolver;
 import com.shiyu.ai.iam.implementation.api.response.AuthRoleResponse;
 import com.shiyu.ai.iam.implementation.api.response.AuthScopeRoleResponse;
 import com.shiyu.ai.iam.implementation.api.response.AuthTenantResponse;
 import com.shiyu.ai.iam.implementation.api.response.AuthUserResponse;
-import com.shiyu.ai.common.core.domain.UserContext;
-import com.shiyu.ai.common.web.auth.ClientIpResolver;
+import com.shiyu.ai.iam.implementation.service.AuthContextService;
+import com.shiyu.ai.iam.implementation.utils.SaTokenHelper;
 import com.shiyu.ai.kernel.context.TenantId;
 import com.shiyu.ai.kernel.context.TenantScope;
+
 import jakarta.servlet.DispatcherType;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
-import org.springframework.mock.web.MockHttpServletResponse;
+
 import org.junit.jupiter.api.Tag;
 import org.junit.jupiter.api.Test;
-
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertTrue;
-import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.when;
-import static org.mockito.Mockito.verifyNoInteractions;
-import static org.mockito.Mockito.verify;
+import org.springframework.mock.web.MockHttpServletResponse;
 
 @Tag("dev")
 class UserContextInterceptorTest {
@@ -30,7 +32,8 @@ class UserContextInterceptorTest {
     @Test
     void skipsNonInitialDispatcherTypesBeforeUsingThreadLocalAuthentication() throws Exception {
         AuthContextService authContextService = mock(AuthContextService.class);
-        UserContextInterceptor interceptor = new UserContextInterceptor(authContextService, mock(ClientIpResolver.class));
+        UserContextInterceptor interceptor =
+                new UserContextInterceptor(authContextService, mock(ClientIpResolver.class));
         HttpServletRequest request = mock(HttpServletRequest.class);
         HttpServletResponse response = mock(HttpServletResponse.class);
         when(request.getDispatcherType()).thenReturn(DispatcherType.ASYNC);
@@ -43,10 +46,15 @@ class UserContextInterceptorTest {
     @Test
     void clearsTenantScopeAfterRequestCompletion() {
         TenantScope.set(new TenantId(42L));
-        UserContextInterceptor interceptor = new UserContextInterceptor(mock(AuthContextService.class), mock(ClientIpResolver.class));
+        UserContextInterceptor interceptor =
+                new UserContextInterceptor(
+                        mock(AuthContextService.class), mock(ClientIpResolver.class));
 
-        interceptor.afterCompletion(mock(HttpServletRequest.class), mock(HttpServletResponse.class),
-                new Object(), null);
+        interceptor.afterCompletion(
+                mock(HttpServletRequest.class),
+                mock(HttpServletResponse.class),
+                new Object(),
+                null);
 
         assertTrue(TenantScope.current().isEmpty());
     }
@@ -54,7 +62,8 @@ class UserContextInterceptorTest {
     @Test
     void unauthenticatedRequestsUseHttpUnauthorizedStatus() throws Exception {
         AuthContextService authContextService = mock(AuthContextService.class);
-        UserContextInterceptor interceptor = new UserContextInterceptor(authContextService, mock(ClientIpResolver.class));
+        UserContextInterceptor interceptor =
+                new UserContextInterceptor(authContextService, mock(ClientIpResolver.class));
         HttpServletRequest request = mock(HttpServletRequest.class);
         MockHttpServletResponse response = new MockHttpServletResponse();
         when(request.getMethod()).thenReturn("GET");
@@ -108,7 +117,8 @@ class UserContextInterceptorTest {
         cachedContext.setCurrentTenantId(7L);
         cachedContext.setCurrentRoleId(9L);
         cachedContext.setCurrentRoleCode("member");
-        UserContextInterceptor interceptor = new UserContextInterceptor(authContextService, clientIpResolver);
+        UserContextInterceptor interceptor =
+                new UserContextInterceptor(authContextService, clientIpResolver);
         HttpServletRequest request = mock(HttpServletRequest.class);
         HttpServletResponse response = mock(HttpServletResponse.class);
         when(request.getMethod()).thenReturn("GET");
@@ -130,4 +140,3 @@ class UserContextInterceptorTest {
         interceptor.afterCompletion(request, response, new Object(), null);
     }
 }
-

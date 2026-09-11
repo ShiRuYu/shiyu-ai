@@ -1,14 +1,15 @@
 package com.shiyu.ai.tooling.implementation.tool;
 
+import static org.junit.jupiter.api.Assertions.*;
+
 import com.shiyu.ai.tooling.implementation.tool.mcp.McpToolDescriptor.ParameterInfo;
+
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
 import java.lang.reflect.Field;
 import java.util.HashMap;
 import java.util.Map;
-
-import static org.junit.jupiter.api.Assertions.*;
 
 class ToolServiceImplTest {
     private ToolServiceImpl service;
@@ -48,22 +49,88 @@ class ToolServiceImplTest {
 
         var date = service.execute("DATETIME", Map.of("timezone", "Asia/Shanghai"));
         assertTrue(date.success());
-        assertEquals("Asia/Shanghai", ((Map<?, ?>) ((Map<?, ?>) date.result()).get("result")).get("timezone_id"));
+        assertEquals(
+                "Asia/Shanghai",
+                ((Map<?, ?>) ((Map<?, ?>) date.result()).get("result")).get("timezone_id"));
         assertTrue(service.execute("DATETIME", Map.of()).success());
     }
 
     @Test
     void evaluatesArithmeticIncludingErrors() {
-        assertEquals(7.0, ((Map<?, ?>) ((Map<?, ?>) service.execute("CALCULATOR", Map.of("expression", "1+2*3")).result()).get("result")).get("result"));
-        assertEquals(5.0, ((Map<?, ?>) ((Map<?, ?>) service.execute("CALCULATOR", Map.of("expression", "-(2-7)")).result()).get("result")).get("result"));
-        assertEquals(3.0, ((Map<?, ?>) ((Map<?, ?>) service.execute("CALCULATOR", Map.of("expression", "(8+4)/4")).result()).get("result")).get("result"));
-        assertTrue(((Map<?, ?>) ((Map<?, ?>) service.execute("CALCULATOR", Map.of("expression", "1/0")).result()).get("result")).containsKey("error"));
-        Map<?, ?> invalidExpression = (Map<?, ?>) ((Map<?, ?>) service.execute("CALCULATOR", Map.of("expression", "1+a")).result()).get("result");
+        assertEquals(
+                7.0,
+                ((Map<?, ?>)
+                                ((Map<?, ?>)
+                                                service.execute(
+                                                                "CALCULATOR",
+                                                                Map.of("expression", "1+2*3"))
+                                                        .result())
+                                        .get("result"))
+                        .get("result"));
+        assertEquals(
+                5.0,
+                ((Map<?, ?>)
+                                ((Map<?, ?>)
+                                                service.execute(
+                                                                "CALCULATOR",
+                                                                Map.of("expression", "-(2-7)"))
+                                                        .result())
+                                        .get("result"))
+                        .get("result"));
+        assertEquals(
+                3.0,
+                ((Map<?, ?>)
+                                ((Map<?, ?>)
+                                                service.execute(
+                                                                "CALCULATOR",
+                                                                Map.of("expression", "(8+4)/4"))
+                                                        .result())
+                                        .get("result"))
+                        .get("result"));
+        assertTrue(
+                ((Map<?, ?>)
+                                ((Map<?, ?>)
+                                                service.execute(
+                                                                "CALCULATOR",
+                                                                Map.of("expression", "1/0"))
+                                                        .result())
+                                        .get("result"))
+                        .containsKey("error"));
+        Map<?, ?> invalidExpression =
+                (Map<?, ?>)
+                        ((Map<?, ?>)
+                                        service.execute("CALCULATOR", Map.of("expression", "1+a"))
+                                                .result())
+                                .get("result");
         assertEquals("计算失败，请检查表达式后重试", invalidExpression.get("error"));
         assertFalse(String.valueOf(invalidExpression.get("error")).contains("非法字符"));
-        assertTrue(((Map<?, ?>) ((Map<?, ?>) service.execute("CALCULATOR", Map.of("expression", "(1+2")).result()).get("result")).containsKey("error"));
-        assertTrue(((Map<?, ?>) ((Map<?, ?>) service.execute("CALCULATOR", Map.of("expression", "1)")).result()).get("result")).containsKey("error"));
-        assertTrue(((Map<?, ?>) ((Map<?, ?>) service.execute("CALCULATOR", Map.of("expression", ".")).result()).get("result")).containsKey("error"));
+        assertTrue(
+                ((Map<?, ?>)
+                                ((Map<?, ?>)
+                                                service.execute(
+                                                                "CALCULATOR",
+                                                                Map.of("expression", "(1+2"))
+                                                        .result())
+                                        .get("result"))
+                        .containsKey("error"));
+        assertTrue(
+                ((Map<?, ?>)
+                                ((Map<?, ?>)
+                                                service.execute(
+                                                                "CALCULATOR",
+                                                                Map.of("expression", "1)"))
+                                                        .result())
+                                        .get("result"))
+                        .containsKey("error"));
+        assertTrue(
+                ((Map<?, ?>)
+                                ((Map<?, ?>)
+                                                service.execute(
+                                                                "CALCULATOR",
+                                                                Map.of("expression", "."))
+                                                        .result())
+                                        .get("result"))
+                        .containsKey("error"));
     }
 
     @Test
@@ -84,19 +151,32 @@ class ToolServiceImplTest {
 
     @Test
     void supportsCustomRegistrationValidationAndExecutorFailures() throws Exception {
-        service.registerTool("CUSTOM", "custom", Map.of("value", new ParameterInfo("string", "value", true)), p -> p.get("value"));
+        service.registerTool(
+                "CUSTOM",
+                "custom",
+                Map.of("value", new ParameterInfo("string", "value", true)),
+                p -> p.get("value"));
         assertEquals("custom", service.getToolDefinition("CUSTOM").description());
         assertFalse(service.execute("CUSTOM", Map.of()).success());
         Map<String, Object> nullValue = new HashMap<>();
         nullValue.put("value", null);
         assertFalse(service.execute("CUSTOM", nullValue).success());
-        assertEquals("ok", ((Map<?, ?>) service.execute("CUSTOM", Map.of("value", "ok")).result()).get("result"));
+        assertEquals(
+                "ok",
+                ((Map<?, ?>) service.execute("CUSTOM", Map.of("value", "ok")).result())
+                        .get("result"));
 
         service.registerTool("EMPTY", "empty", null, p -> "empty");
         assertNotNull(service.getToolDefinition("EMPTY"));
         assertTrue(service.execute("EMPTY", null).success());
 
-        service.registerTool("BROKEN", "broken", Map.of(), p -> { throw new IllegalStateException("boom"); });
+        service.registerTool(
+                "BROKEN",
+                "broken",
+                Map.of(),
+                p -> {
+                    throw new IllegalStateException("boom");
+                });
         var failed = service.execute("BROKEN", Map.of());
         assertFalse(failed.success());
         assertEquals("工具执行失败，请稍后重试", failed.errorMessage());
@@ -104,7 +184,8 @@ class ToolServiceImplTest {
 
         Field executors = ToolServiceImpl.class.getDeclaredField("executorRegistry");
         executors.setAccessible(true);
-        @SuppressWarnings("unchecked") Map<String, Object> executorRegistry = (Map<String, Object>) executors.get(service);
+        @SuppressWarnings("unchecked")
+        Map<String, Object> executorRegistry = (Map<String, Object>) executors.get(service);
         executorRegistry.remove("EMPTY");
         var missingExecutor = service.execute("EMPTY", null);
         assertFalse(missingExecutor.success());
@@ -112,7 +193,8 @@ class ToolServiceImplTest {
 
         assertNotNull(service.getToolDescriptor("CUSTOM"));
         assertTrue(service.listTools().stream().anyMatch(t -> t.name().equals("CUSTOM")));
-        assertTrue(service.listToolDescriptors().stream().anyMatch(t -> t.getName().equals("CUSTOM")));
+        assertTrue(
+                service.listToolDescriptors().stream().anyMatch(t -> t.getName().equals("CUSTOM")));
         service.unregisterTool("CUSTOM");
         assertNull(service.getToolDefinition("CUSTOM"));
     }

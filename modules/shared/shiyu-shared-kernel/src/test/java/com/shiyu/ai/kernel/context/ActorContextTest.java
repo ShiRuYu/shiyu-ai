@@ -1,11 +1,12 @@
 package com.shiyu.ai.kernel.context;
 
-import com.shiyu.ai.kernel.error.DomainAccessDeniedException;
-import org.junit.jupiter.api.Test;
-
 import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
+
+import com.shiyu.ai.kernel.error.DomainAccessDeniedException;
+
+import org.junit.jupiter.api.Test;
 
 class ActorContextTest {
 
@@ -21,8 +22,8 @@ class ActorContextTest {
 
     @Test
     void actorCanCarryTheSelectedRoleAcrossAsyncBoundaries() {
-        ActorContext actor = new ActorContext(
-                new TenantId(3), new UserId(7), new RoleId(11), false);
+        ActorContext actor =
+                new ActorContext(new TenantId(3), new UserId(7), new RoleId(11), false);
 
         assertEquals(11L, actor.activeRoleId().value());
         assertDoesNotThrow(() -> serialize(actor));
@@ -54,10 +55,10 @@ class ActorContextTest {
         ActorContext actor = new ActorContext(new TenantId(3), new UserId(7), false);
 
         assertDoesNotThrow(() -> actor.requireTenant(new TenantId(3)));
-        DomainAccessDeniedException error = assertThrows(
-                DomainAccessDeniedException.class,
-                () -> actor.requireTenant(new TenantId(4))
-        );
+        DomainAccessDeniedException error =
+                assertThrows(
+                        DomainAccessDeniedException.class,
+                        () -> actor.requireTenant(new TenantId(4)));
 
         assertEquals("TENANT_MISMATCH", error.code());
     }

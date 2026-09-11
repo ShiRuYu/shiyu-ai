@@ -2,14 +2,16 @@ package com.shiyu.ai.iam.implementation.service.impl;
 
 import com.github.benmanes.caffeine.cache.Cache;
 import com.github.benmanes.caffeine.cache.Caffeine;
-import com.shiyu.ai.iam.implementation.port.repository.DictRepository;
-import com.shiyu.ai.iam.implementation.service.DictService;
-import com.shiyu.ai.iam.implementation.request.DictRequest;
-import com.shiyu.ai.iam.implementation.vo.DictVO;
-import com.shiyu.ai.iam.implementation.service.convert.DictConverter;
 import com.shiyu.ai.iam.implementation.domain.model.DictBO;
+import com.shiyu.ai.iam.implementation.port.repository.DictRepository;
+import com.shiyu.ai.iam.implementation.request.DictRequest;
+import com.shiyu.ai.iam.implementation.service.DictService;
+import com.shiyu.ai.iam.implementation.service.convert.DictConverter;
+import com.shiyu.ai.iam.implementation.vo.DictVO;
 import com.shiyu.ai.kernel.context.ActorContext;
+
 import lombok.extern.slf4j.Slf4j;
+
 import org.apache.commons.lang3.tuple.Pair;
 import org.springframework.stereotype.Service;
 
@@ -19,11 +21,44 @@ import java.util.concurrent.TimeUnit;
 @Slf4j
 @Service
 public class DictServiceImpl implements DictService {
-    @Override public Pair<Long, List<DictVO>> pageView(ActorContext actor, Number n, Number s) { actor = requireActor(actor); var p=getAll(actor, n,s); return Pair.of(p.getLeft(), DictConverter.INSTANCE.toVOList(p.getRight())); }
-    @Override public List<DictVO> byTypeView(ActorContext actor, String type) { actor = requireActor(actor); return DictConverter.INSTANCE.toVOList(getByDictType(actor, type)); }
-    @Override public DictVO create(ActorContext actor, DictRequest r) { return DictConverter.INSTANCE.toVO(create(requireActor(actor), toBO(r))); }
-    @Override public DictVO update(ActorContext actor, Long id, DictRequest r) { DictBO b=toBO(r); b.setId(id); return DictConverter.INSTANCE.toVO(update(requireActor(actor), b)); }
-    private DictBO toBO(DictRequest r) { DictBO b=new DictBO(); b.setDictType(r.getDictType()); b.setDictLabel(r.getDictLabel()); b.setDictValue(r.getDictValue()); b.setDictSort(r.getDictSort()); b.setCssClass(r.getCssClass()); b.setListClass(r.getListClass()); b.setIsDefault(r.getIsDefault()); b.setRemark(r.getRemark()); b.setStatus(r.getStatus()); return b; }
+    @Override
+    public Pair<Long, List<DictVO>> pageView(ActorContext actor, Number n, Number s) {
+        actor = requireActor(actor);
+        var p = getAll(actor, n, s);
+        return Pair.of(p.getLeft(), DictConverter.INSTANCE.toVOList(p.getRight()));
+    }
+
+    @Override
+    public List<DictVO> byTypeView(ActorContext actor, String type) {
+        actor = requireActor(actor);
+        return DictConverter.INSTANCE.toVOList(getByDictType(actor, type));
+    }
+
+    @Override
+    public DictVO create(ActorContext actor, DictRequest r) {
+        return DictConverter.INSTANCE.toVO(create(requireActor(actor), toBO(r)));
+    }
+
+    @Override
+    public DictVO update(ActorContext actor, Long id, DictRequest r) {
+        DictBO b = toBO(r);
+        b.setId(id);
+        return DictConverter.INSTANCE.toVO(update(requireActor(actor), b));
+    }
+
+    private DictBO toBO(DictRequest r) {
+        DictBO b = new DictBO();
+        b.setDictType(r.getDictType());
+        b.setDictLabel(r.getDictLabel());
+        b.setDictValue(r.getDictValue());
+        b.setDictSort(r.getDictSort());
+        b.setCssClass(r.getCssClass());
+        b.setListClass(r.getListClass());
+        b.setIsDefault(r.getIsDefault());
+        b.setRemark(r.getRemark());
+        b.setStatus(r.getStatus());
+        return b;
+    }
 
     private final DictRepository dictRepository;
 
@@ -31,11 +66,12 @@ public class DictServiceImpl implements DictService {
 
     public DictServiceImpl(DictRepository dictRepository) {
         this.dictRepository = dictRepository;
-        this.dictTypeCache = Caffeine.newBuilder()
-                .maximumSize(500)
-                .expireAfterWrite(10, TimeUnit.MINUTES)
-                .recordStats()
-                .build();
+        this.dictTypeCache =
+                Caffeine.newBuilder()
+                        .maximumSize(500)
+                        .expireAfterWrite(10, TimeUnit.MINUTES)
+                        .recordStats()
+                        .build();
     }
 
     private Pair<Long, List<DictBO>> getAll(ActorContext actor, Number pageNo, Number pageSize) {
@@ -122,4 +158,3 @@ public class DictServiceImpl implements DictService {
         return actor;
     }
 }
-

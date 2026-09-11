@@ -1,8 +1,6 @@
-
 package com.shiyu.ai.common.thread.executor;
 
 import com.shiyu.ai.common.thread.api.ExecutorFactory;
-
 import com.shiyu.ai.common.thread.api.PoolType;
 
 import java.lang.reflect.Method;
@@ -10,15 +8,12 @@ import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ThreadFactory;
 
-/**
- * 虚拟线程池工厂
- * 创建基于Java 21+虚拟线程的线程池
- */
+/** 虚拟线程池工厂 创建基于Java 21+虚拟线程的线程池 */
 public class VirtualExecutorFactory implements ExecutorFactory {
 
     /**
      * 检查当前JVM是否支持虚拟线程
-     * 
+     *
      * @return 是否支持虚拟线程
      */
     public static boolean isSupported() {
@@ -63,15 +58,13 @@ public class VirtualExecutorFactory implements ExecutorFactory {
 
     /**
      * 创建虚拟线程执行器
-     * 
+     *
      * @param name 线程池名称
      * @return 虚拟线程执行器
      */
     private ExecutorService createVirtualExecutor(String name) {
         // 使用官方推荐的API创建虚拟线程池
-        ThreadFactory factory = Thread.ofVirtual()
-                .name("shiyu-" + name + "-virtual-", 0)
-                .factory();
+        ThreadFactory factory = Thread.ofVirtual().name("shiyu-" + name + "-virtual-", 0).factory();
         return Executors.newThreadPerTaskExecutor(factory);
     }
 }

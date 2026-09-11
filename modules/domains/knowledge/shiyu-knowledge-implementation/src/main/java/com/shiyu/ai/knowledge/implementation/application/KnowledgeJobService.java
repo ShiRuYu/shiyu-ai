@@ -7,7 +7,8 @@ import java.time.LocalDateTime;
 
 public interface KnowledgeJobService {
 
-    PageData<JobView> page(ActorContext actor, int pageNum, int pageSize, Long spaceId, String status);
+    PageData<JobView> page(
+            ActorContext actor, int pageNum, int pageSize, Long spaceId, String status);
 
     JobView get(ActorContext actor, Long id);
 
@@ -15,12 +16,21 @@ public interface KnowledgeJobService {
 
     void retry(ActorContext actor, Long id);
 
-    record JobView(Long id, String jobKey, String jobType, Long spaceId,
-                   Long documentId, Long versionId, String status, String stage,
-                   Integer progress, Integer attempts, Integer maxAttempts,
-                   String errorMessage, LocalDateTime heartbeatTime,
-                   LocalDateTime startedTime, LocalDateTime finishedTime,
-                   LocalDateTime createTime) {
-    }
+    record JobView(
+            Long id,
+            String jobKey,
+            String jobType,
+            Long spaceId,
+            Long documentId,
+            Long versionId,
+            String status,
+            String stage,
+            Integer progress,
+            Integer attempts,
+            Integer maxAttempts,
+            String errorMessage,
+            LocalDateTime heartbeatTime,
+            LocalDateTime startedTime,
+            LocalDateTime finishedTime,
+            LocalDateTime createTime) {}
 }
-

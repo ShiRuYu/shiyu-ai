@@ -1,8 +1,6 @@
 package com.shiyu.ai.agent.implementation.retry;
 
-/**
- * 重试配置
- */
+/** 重试配置 */
 public class RetryConfig {
 
     private final int maxRetries;
@@ -19,7 +17,15 @@ public class RetryConfig {
         return new RetryConfig(3, 1000, 2.0);
     }
 
-    public int getMaxRetries() { return maxRetries; }
-    public long getInitialDelayMs() { return initialDelayMs; }
-    public double getBackoffMultiplier() { return backoffMultiplier; }
+    public int getMaxRetries() {
+        return maxRetries;
+    }
+
+    public long getInitialDelayMs() {
+        return initialDelayMs;
+    }
+
+    public double getBackoffMultiplier() {
+        return backoffMultiplier;
+    }
 }

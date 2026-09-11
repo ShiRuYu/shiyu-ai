@@ -1,5 +1,8 @@
 package com.shiyu.ai.web.auth;
 
+import static org.junit.jupiter.api.Assertions.assertAll;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+
 import com.shiyu.ai.iam.implementation.api.response.AuthRoleResponse;
 import com.shiyu.ai.iam.implementation.api.response.AuthScopeRoleResponse;
 import com.shiyu.ai.iam.implementation.api.response.AuthTenantResponse;
@@ -12,11 +15,9 @@ import com.shiyu.ai.iam.implementation.domain.model.UserBO;
 import com.shiyu.ai.iam.implementation.domain.model.UserBOToAuthUserResponseMapperImpl;
 import com.shiyu.ai.iam.implementation.domain.model.UserScopeRoleBO;
 import com.shiyu.ai.iam.implementation.domain.model.UserScopeRoleBOToAuthScopeRoleResponseMapperImpl;
+
 import org.junit.jupiter.api.Tag;
 import org.junit.jupiter.api.Test;
-
-import static org.junit.jupiter.api.Assertions.assertAll;
-import static org.junit.jupiter.api.Assertions.assertEquals;
 
 @Tag("dev")
 class AuthContextMappingTest {
@@ -28,8 +29,7 @@ class AuthContextMappingTest {
         user.setUsername("admin");
         user.setStatus(1);
         user.setDelFlag(0);
-        AuthUserResponse userResponse =
-                new UserBOToAuthUserResponseMapperImpl().convert(user);
+        AuthUserResponse userResponse = new UserBOToAuthUserResponseMapperImpl().convert(user);
 
         TenantBO tenant = new TenantBO();
         tenant.setId(1L);
@@ -45,8 +45,7 @@ class AuthContextMappingTest {
         role.setCode("super");
         role.setStatus(1);
         role.setDelFlag(0);
-        AuthRoleResponse roleResponse =
-                new RoleBOToAuthRoleResponseMapperImpl().convert(role);
+        AuthRoleResponse roleResponse = new RoleBOToAuthRoleResponseMapperImpl().convert(role);
 
         UserScopeRoleBO assignment = new UserScopeRoleBO();
         assignment.setUserId(2L);
@@ -67,4 +66,3 @@ class AuthContextMappingTest {
                 () -> assertEquals(1L, assignmentResponse.getRoleId()));
     }
 }
-

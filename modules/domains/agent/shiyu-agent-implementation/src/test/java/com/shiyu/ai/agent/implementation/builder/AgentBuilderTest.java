@@ -1,18 +1,18 @@
 package com.shiyu.ai.agent.implementation.builder;
 
+import static org.junit.jupiter.api.Assertions.*;
+import static org.mockito.Mockito.*;
+
 import com.shiyu.ai.agent.AgentDefinition;
 import com.shiyu.ai.agent.contract.node.BaseNode;
 import com.shiyu.ai.agent.contract.node.NodeConfig;
 import com.shiyu.ai.agent.contract.node.NodeInput;
 import com.shiyu.ai.agent.contract.node.NodeOutput;
 import com.shiyu.ai.agent.implementation.service.AgentService;
+
 import org.junit.jupiter.api.Test;
 
-import java.util.List;
 import java.util.Map;
-
-import static org.junit.jupiter.api.Assertions.*;
-import static org.mockito.Mockito.*;
 
 class AgentBuilderTest {
     @Test
@@ -20,18 +20,22 @@ class AgentBuilderTest {
         BaseNode start = node("start");
         BaseNode end = node("end");
         AgentService service = mock(AgentService.class);
-        AgentBuilder builder = new AgentBuilder()
-                .agentId("demo")
-                .name("Demo")
-                .description("demo agent")
-                .version("v2")
-                .versionDescription("version")
-                .addNode("start", start)
-                .addNode("end", end)
-                .setStartNode("start")
-                .setEndNode("end")
-                .addEdge("start", "end")
-                .addConditionalEdge("start", "end", Map.of(value -> Boolean.TRUE.equals(value.get("ok")), "end"));
+        AgentBuilder builder =
+                new AgentBuilder()
+                        .agentId("demo")
+                        .name("Demo")
+                        .description("demo agent")
+                        .version("v2")
+                        .versionDescription("version")
+                        .addNode("start", start)
+                        .addNode("end", end)
+                        .setStartNode("start")
+                        .setEndNode("end")
+                        .addEdge("start", "end")
+                        .addConditionalEdge(
+                                "start",
+                                "end",
+                                Map.of(value -> Boolean.TRUE.equals(value.get("ok")), "end"));
 
         AgentDefinition definition = builder.build();
         assertEquals("demo", definition.getAgentId());
@@ -44,13 +48,27 @@ class AgentBuilderTest {
     @Test
     void rejectsIncompleteDefinitionsAndWrapsRegistrationFailures() {
         assertThrows(RuntimeException.class, () -> new AgentBuilder().build());
-        assertThrows(RuntimeException.class, () -> new AgentBuilder().name("n").setStartNode("s").addNode("s", node("s")).build());
-        assertThrows(RuntimeException.class, () -> new AgentBuilder().agentId("a").setStartNode("s").addNode("s", node("s")).build());
+        assertThrows(
+                RuntimeException.class,
+                () ->
+                        new AgentBuilder()
+                                .name("n")
+                                .setStartNode("s")
+                                .addNode("s", node("s"))
+                                .build());
+        assertThrows(
+                RuntimeException.class,
+                () ->
+                        new AgentBuilder()
+                                .agentId("a")
+                                .setStartNode("s")
+                                .addNode("s", node("s"))
+                                .build());
 
         AgentService service = mock(AgentService.class);
         doThrow(new IllegalStateException("blocked")).when(service).registerSystemAgent(any());
-        AgentBuilder valid = new AgentBuilder().agentId("a").name("A")
-                .addNode("s", node("s")).setStartNode("s");
+        AgentBuilder valid =
+                new AgentBuilder().agentId("a").name("A").addNode("s", node("s")).setStartNode("s");
         assertThrows(RuntimeException.class, () -> valid.buildAndRegister(service));
     }
 

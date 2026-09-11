@@ -1,9 +1,8 @@
 package com.shiyu.ai.education.implementation.application.impl;
 
-import com.shiyu.ai.education.implementation.domain.enums.StudyPlanStatus;
-import com.shiyu.ai.education.implementation.domain.enums.StudyPlanItemStatus;
-
 import com.shiyu.ai.common.core.utils.MapstructUtils;
+import com.shiyu.ai.education.implementation.application.StudyPlanService;
+import com.shiyu.ai.education.implementation.domain.enums.StudyPlanStatus;
 import com.shiyu.ai.education.implementation.domain.model.StudyPlanBO;
 import com.shiyu.ai.education.implementation.domain.model.StudyPlanItemBO;
 import com.shiyu.ai.education.implementation.domain.port.repository.StudyPlanItemRepository;
@@ -11,10 +10,11 @@ import com.shiyu.ai.education.implementation.domain.port.repository.StudyPlanRep
 import com.shiyu.ai.education.implementation.web.dto.DailyTaskResponse;
 import com.shiyu.ai.education.implementation.web.dto.StudyPlanResponse;
 import com.shiyu.ai.education.implementation.web.request.StudyPlanRequest;
-import com.shiyu.ai.education.implementation.application.StudyPlanService;
 import com.shiyu.ai.kernel.context.ActorContext;
+
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -37,13 +37,15 @@ public class StudyPlanServiceImpl implements StudyPlanService {
 
     @Override
     public List<StudyPlanResponse> listByStudentId(ActorContext actor, Long studentId) {
-        List<StudyPlanBO> boList = studyPlanRepository.selectByStudentId(actor.tenantId(), studentId);
+        List<StudyPlanBO> boList =
+                studyPlanRepository.selectByStudentId(actor.tenantId(), studentId);
         return MapstructUtils.convert(boList, StudyPlanResponse.class);
     }
 
     @Override
     public List<StudyPlanResponse> listActiveByStudent(ActorContext actor, Long studentId) {
-        List<StudyPlanBO> boList = studyPlanRepository.selectActiveByStudent(actor.tenantId(), studentId);
+        List<StudyPlanBO> boList =
+                studyPlanRepository.selectActiveByStudent(actor.tenantId(), studentId);
         return MapstructUtils.convert(boList, StudyPlanResponse.class);
     }
 
@@ -81,19 +83,23 @@ public class StudyPlanServiceImpl implements StudyPlanService {
 
     @Override
     public List<DailyTaskResponse> getTodayTasks(ActorContext actor, Long studentId) {
-        List<StudyPlanBO> plans = studyPlanRepository.selectByStudentId(actor.tenantId(), studentId);
+        List<StudyPlanBO> plans =
+                studyPlanRepository.selectByStudentId(actor.tenantId(), studentId);
         List<Long> planIds = plans.stream().map(StudyPlanBO::getId).collect(Collectors.toList());
         if (planIds.isEmpty()) return List.of();
-        List<StudyPlanItemBO> items = studyPlanItemRepository.selectTodayItems(actor.tenantId(), planIds);
-        return items.stream().map(item -> new DailyTaskResponse(
-                item.getId(),
-                item.getKnowledgeId(),
-                null,
-                item.getPlanDate().toString(),
-                item.getStatus(),
-                item.getStatusDesc(),
-                item.getOrderNo()
-        )).collect(Collectors.toList());
+        List<StudyPlanItemBO> items =
+                studyPlanItemRepository.selectTodayItems(actor.tenantId(), planIds);
+        return items.stream()
+                .map(
+                        item ->
+                                new DailyTaskResponse(
+                                        item.getId(),
+                                        item.getKnowledgeId(),
+                                        null,
+                                        item.getPlanDate().toString(),
+                                        item.getStatus(),
+                                        item.getStatusDesc(),
+                                        item.getOrderNo()))
+                .collect(Collectors.toList());
     }
 }
-

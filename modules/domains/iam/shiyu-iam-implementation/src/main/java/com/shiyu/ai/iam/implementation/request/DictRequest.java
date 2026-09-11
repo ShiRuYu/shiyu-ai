@@ -1,5 +1,7 @@
 package com.shiyu.ai.iam.implementation.request;
+
 import lombok.Data;
+
 @Data
 public class DictRequest {
     private String dictType;
@@ -12,4 +14,3 @@ public class DictRequest {
     private String remark;
     private Integer status;
 }
-

@@ -1,6 +1,7 @@
 package com.shiyu.ai.agent.implementation.web;
 
 import cn.dev33.satoken.annotation.SaCheckPermission;
+
 import com.shiyu.ai.agent.implementation.execution.Execution;
 import com.shiyu.ai.agent.implementation.execution.ExecutionStatus;
 import com.shiyu.ai.agent.implementation.runtime.AgentRuntime;
@@ -8,11 +9,15 @@ import com.shiyu.ai.common.core.api.Result;
 import com.shiyu.ai.common.core.enums.BizResultCode;
 import com.shiyu.ai.common.web.auth.ActorContextHttpAdapter;
 import com.shiyu.ai.kernel.context.ActorContext;
+
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
+
 import lombok.extern.slf4j.Slf4j;
+
 import org.springframework.http.MediaType;
 import org.springframework.web.bind.annotation.*;
+
 import reactor.core.publisher.Flux;
 
 import java.util.HashMap;
@@ -24,8 +29,8 @@ import java.util.stream.Collectors;
 /**
  * Agent 执行生命周期管理 Controller
  *
- * 职责：Agent 执行的唯一入口，提供执行、流式执行、暂停/恢复/取消、状态查询、历史记录。
- * 注意：所有参数均通过 @RequestParam 或 @RequestBody 传入，不使用 @PathVariable。
+ * <p>职责：Agent 执行的唯一入口，提供执行、流式执行、暂停/恢复/取消、状态查询、历史记录。 注意：所有参数均通过 @RequestParam 或 @RequestBody
+ * 传入，不使用 @PathVariable。
  */
 @Slf4j
 @Tag(name = "Execution", description = "Agent Execution")
@@ -63,8 +68,11 @@ public class ExecutionController {
 
             return Result.success(result);
         } catch (Exception e) {
-            log.error("Agent 执行失败: agentIdPresent={}, errorType={}, errorMessageLength={}",
-                    agentId != null, e.getClass().getSimpleName(), e.getMessage() == null ? 0 : e.getMessage().length());
+            log.error(
+                    "Agent 执行失败: agentIdPresent={}, errorType={}, errorMessageLength={}",
+                    agentId != null,
+                    e.getClass().getSimpleName(),
+                    e.getMessage() == null ? 0 : e.getMessage().length());
             return failure("执行", agentId, e);
         }
     }
@@ -81,18 +89,25 @@ public class ExecutionController {
         enrichedInput.put("sessionId", UUID.randomUUID().toString());
         enrichedInput.put("__knowledgeAccessContext", actor());
 
-        return agentRuntime.executeStream(actor(), agentId, enrichedInput)
-                .map(output -> {
-                    Map<String, Object> result = new HashMap<>();
-                    result.put("executionId", output.get("executionId"));
-                    result.put("data", output);
-                    return Result.success(result);
-                })
-                .onErrorResume(e -> {
-                    log.error("Agent 流式执行失败: agentIdPresent={}, errorType={}, errorMessageLength={}",
-                            agentId != null, e.getClass().getSimpleName(), e.getMessage() == null ? 0 : e.getMessage().length());
-                    return Flux.just(failure("流式执行", agentId, e));
-                });
+        return agentRuntime
+                .executeStream(actor(), agentId, enrichedInput)
+                .map(
+                        output -> {
+                            Map<String, Object> result = new HashMap<>();
+                            result.put("executionId", output.get("executionId"));
+                            result.put("data", output);
+                            return Result.success(result);
+                        })
+                .onErrorResume(
+                        e -> {
+                            log.error(
+                                    "Agent 流式执行失败: agentIdPresent={}, errorType={},"
+                                            + " errorMessageLength={}",
+                                    agentId != null,
+                                    e.getClass().getSimpleName(),
+                                    e.getMessage() == null ? 0 : e.getMessage().length());
+                            return Flux.just(failure("流式执行", agentId, e));
+                        });
     }
 
     @Operation(summary = "Pause Execution")
@@ -170,19 +185,22 @@ public class ExecutionController {
     @Operation(summary = "Get Execution History")
     @GetMapping("/history")
     public Result<List<Map<String, Object>>> getHistory(
-            @RequestParam String agentId,
-            @RequestParam(defaultValue = "20") int limit) {
-        List<Execution> executions = agentRuntime.getHistory(
-                actor(), agentId, Math.max(1, Math.min(limit, 100)));
-        List<Map<String, Object>> result = executions.stream().map(exec -> {
-            Map<String, Object> item = new HashMap<>();
-            item.put("executionId", exec.getExecutionId());
-            item.put("status", exec.getStatus().name());
-            item.put("durationMs", exec.getDurationMs());
-            item.put("startTime", exec.getStartTime());
-            item.put("errorMessage", publicErrorMessage(exec));
-            return item;
-        }).collect(Collectors.toList());
+            @RequestParam String agentId, @RequestParam(defaultValue = "20") int limit) {
+        List<Execution> executions =
+                agentRuntime.getHistory(actor(), agentId, Math.max(1, Math.min(limit, 100)));
+        List<Map<String, Object>> result =
+                executions.stream()
+                        .map(
+                                exec -> {
+                                    Map<String, Object> item = new HashMap<>();
+                                    item.put("executionId", exec.getExecutionId());
+                                    item.put("status", exec.getStatus().name());
+                                    item.put("durationMs", exec.getDurationMs());
+                                    item.put("startTime", exec.getStartTime());
+                                    item.put("errorMessage", publicErrorMessage(exec));
+                                    return item;
+                                })
+                        .collect(Collectors.toList());
         return Result.success(result);
     }
 
@@ -191,13 +209,15 @@ public class ExecutionController {
     }
 
     private String publicErrorMessage(Execution execution) {
-        return execution.getStatus() == ExecutionStatus.FAILED
-                ? "执行失败，请稍后重试" : null;
+        return execution.getStatus() == ExecutionStatus.FAILED ? "执行失败，请稍后重试" : null;
     }
 
     private <T> Result<T> failure(String operation, String resourceId, Throwable exception) {
-        log.error("Agent{}失败: resourceIdPresent={}, errorType={}, errorMessageLength={}", operation,
-                resourceId != null, exception.getClass().getSimpleName(),
+        log.error(
+                "Agent{}失败: resourceIdPresent={}, errorType={}, errorMessageLength={}",
+                operation,
+                resourceId != null,
+                exception.getClass().getSimpleName(),
                 exception.getMessage() == null ? 0 : exception.getMessage().length());
         return Result.fail(operation + "失败，请稍后重试");
     }

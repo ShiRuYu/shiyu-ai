@@ -1,13 +1,14 @@
 package com.shiyu.ai.iam.implementation.service.impl;
 
+import static org.junit.jupiter.api.Assertions.*;
+
 import com.shiyu.ai.iam.implementation.vo.CaptchaVO;
+
 import org.junit.jupiter.api.Test;
 
 import java.lang.reflect.Constructor;
 import java.lang.reflect.Field;
 import java.util.Map;
-
-import static org.junit.jupiter.api.Assertions.*;
 
 class CaptchaServiceImplTest {
     @Test
@@ -33,11 +34,15 @@ class CaptchaServiceImplTest {
         try {
             Field storeField = CaptchaServiceImpl.class.getDeclaredField("captchaStore");
             storeField.setAccessible(true);
-            @SuppressWarnings("unchecked") Map<String, Object> store = (Map<String, Object>) storeField.get(service);
+            @SuppressWarnings("unchecked")
+            Map<String, Object> store = (Map<String, Object>) storeField.get(service);
             Field attemptsField = CaptchaServiceImpl.class.getDeclaredField("attemptCount");
             attemptsField.setAccessible(true);
-            @SuppressWarnings("unchecked") Map<String, Integer> attempts = (Map<String, Integer>) attemptsField.get(service);
-            Class<?> dataType = Class.forName("com.shiyu.ai.iam.implementation.service.impl.CaptchaServiceImpl$CaptchaData");
+            @SuppressWarnings("unchecked")
+            Map<String, Integer> attempts = (Map<String, Integer>) attemptsField.get(service);
+            Class<?> dataType =
+                    Class.forName(
+                            "com.shiyu.ai.iam.implementation.service.impl.CaptchaServiceImpl$CaptchaData");
             Constructor<?> ctor = dataType.getDeclaredConstructor(String.class, long.class);
             ctor.setAccessible(true);
 
@@ -57,4 +62,3 @@ class CaptchaServiceImplTest {
         }
     }
 }
-

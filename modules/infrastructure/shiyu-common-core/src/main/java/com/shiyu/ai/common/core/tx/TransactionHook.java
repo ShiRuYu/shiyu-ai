@@ -10,4 +10,3 @@ public interface TransactionHook {
 
     default void afterCompletion() {}
 }
-

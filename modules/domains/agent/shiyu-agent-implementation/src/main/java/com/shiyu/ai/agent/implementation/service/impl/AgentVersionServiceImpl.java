@@ -1,28 +1,29 @@
 package com.shiyu.ai.agent.implementation.service.impl;
 
+import com.shiyu.ai.agent.contract.node.BaseNode;
 import com.shiyu.ai.agent.implementation.domain.enums.AgentVersionStatus;
-
-import com.shiyu.ai.agent.implementation.port.repository.AgentAdminRepository;
-import com.shiyu.ai.agent.implementation.service.AgentService;
-import com.shiyu.ai.agent.implementation.service.AgentVersionService;
 import com.shiyu.ai.agent.implementation.domain.model.AgentDefBO;
 import com.shiyu.ai.agent.implementation.domain.model.AgentVersionBO;
+import com.shiyu.ai.agent.implementation.graph.ConditionEdge;
+import com.shiyu.ai.agent.implementation.graph.Graph;
+import com.shiyu.ai.agent.implementation.node.NodeFactory;
+import com.shiyu.ai.agent.implementation.port.repository.AgentAdminRepository;
 import com.shiyu.ai.agent.implementation.request.EdgeRequest;
 import com.shiyu.ai.agent.implementation.request.GraphConfigRequest;
 import com.shiyu.ai.agent.implementation.request.NodeConfigRequest;
 import com.shiyu.ai.agent.implementation.request.VersionRequest;
+import com.shiyu.ai.agent.implementation.service.AgentService;
+import com.shiyu.ai.agent.implementation.service.AgentVersionService;
 import com.shiyu.ai.agent.implementation.vo.AgentVersionDetailVO;
 import com.shiyu.ai.agent.implementation.vo.AgentVersionVO;
 import com.shiyu.ai.agent.implementation.vo.GraphValidationVO;
-import com.shiyu.ai.agent.implementation.graph.ConditionEdge;
-import com.shiyu.ai.agent.implementation.graph.Graph;
-import com.shiyu.ai.agent.contract.node.BaseNode;
-import com.shiyu.ai.agent.implementation.node.NodeFactory;
 import com.shiyu.ai.common.core.utils.JSONUtils;
+import com.shiyu.ai.kernel.context.ActorContext;
+
 import lombok.extern.slf4j.Slf4j;
+
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-import com.shiyu.ai.kernel.context.ActorContext;
 
 import java.time.LocalDateTime;
 import java.util.*;
@@ -35,9 +36,10 @@ public class AgentVersionServiceImpl implements AgentVersionService {
     private final AgentService agentService;
     private final NodeFactory nodeFactory;
 
-    public AgentVersionServiceImpl(AgentAdminRepository agentAdminRepository,
-                                   AgentService agentService,
-                                   NodeFactory nodeFactory) {
+    public AgentVersionServiceImpl(
+            AgentAdminRepository agentAdminRepository,
+            AgentService agentService,
+            NodeFactory nodeFactory) {
         this.agentAdminRepository = agentAdminRepository;
         this.agentService = agentService;
         this.nodeFactory = nodeFactory;
@@ -47,12 +49,16 @@ public class AgentVersionServiceImpl implements AgentVersionService {
 
     @Override
     public List<AgentVersionVO> getVersions(ActorContext actor, String agentId) {
-        List<AgentVersionBO> versions = agentAdminRepository.selectVersionsByAgentId(actor.tenantId(), agentId);
-        return versions.stream().map(this::toVersionVO).collect(java.util.stream.Collectors.toList());
+        List<AgentVersionBO> versions =
+                agentAdminRepository.selectVersionsByAgentId(actor.tenantId(), agentId);
+        return versions.stream()
+                .map(this::toVersionVO)
+                .collect(java.util.stream.Collectors.toList());
     }
 
     @Override
-    public AgentVersionDetailVO getVersionDetail(ActorContext actor, String agentId, Long versionId) {
+    public AgentVersionDetailVO getVersionDetail(
+            ActorContext actor, String agentId, Long versionId) {
         AgentVersionBO v = agentAdminRepository.selectVersionById(actor.tenantId(), versionId);
         if (v == null || !v.getAgentId().equals(agentId)) return null;
         return toVersionDetailVO(v);
@@ -60,12 +66,16 @@ public class AgentVersionServiceImpl implements AgentVersionService {
 
     @Override
     @Transactional(rollbackFor = Exception.class)
-    public AgentVersionVO createVersion(ActorContext actor, String agentId, VersionRequest request) {
+    public AgentVersionVO createVersion(
+            ActorContext actor, String agentId, VersionRequest request) {
         AgentDefBO def = agentAdminRepository.selectByAgentId(actor.tenantId(), agentId);
         if (def == null) throw new IllegalArgumentException("Agent不存在: " + agentId);
 
-        AgentVersionBO existing = agentAdminRepository.selectVersionByAgentIdAndNumber(actor.tenantId(), agentId, request.getVersionNumber());
-        if (existing != null) throw new IllegalArgumentException("版本号已存在: " + request.getVersionNumber());
+        AgentVersionBO existing =
+                agentAdminRepository.selectVersionByAgentIdAndNumber(
+                        actor.tenantId(), agentId, request.getVersionNumber());
+        if (existing != null)
+            throw new IllegalArgumentException("版本号已存在: " + request.getVersionNumber());
 
         AgentVersionBO version = new AgentVersionBO();
         version.setAgentId(agentId);
@@ -74,7 +84,9 @@ public class AgentVersionServiceImpl implements AgentVersionService {
         version.setStatus(AgentVersionStatus.DRAFT.getCode());
 
         if (request.getCopyFromVersionId() != null) {
-            AgentVersionBO source = agentAdminRepository.selectVersionById(actor.tenantId(), request.getCopyFromVersionId());
+            AgentVersionBO source =
+                    agentAdminRepository.selectVersionById(
+                            actor.tenantId(), request.getCopyFromVersionId());
             if (source != null) {
                 version.setGraphConfig(source.getGraphConfig());
                 version.setCanvasConfig(source.getCanvasConfig());
@@ -87,9 +99,11 @@ public class AgentVersionServiceImpl implements AgentVersionService {
     }
 
     @Override
-    public AgentVersionVO updateVersion(ActorContext actor, String agentId, Long versionId, VersionRequest request) {
+    public AgentVersionVO updateVersion(
+            ActorContext actor, String agentId, Long versionId, VersionRequest request) {
         AgentVersionBO v = agentAdminRepository.selectVersionById(actor.tenantId(), versionId);
-        if (v == null || !v.getAgentId().equals(agentId)) throw new IllegalArgumentException("版本不存在: " + versionId);
+        if (v == null || !v.getAgentId().equals(agentId))
+            throw new IllegalArgumentException("版本不存在: " + versionId);
         if (request.getDescription() != null) v.setDescription(request.getDescription());
         v.setUpdateTime(LocalDateTime.now());
         agentAdminRepository.updateVersion(actor.tenantId(), v);
@@ -110,7 +124,8 @@ public class AgentVersionServiceImpl implements AgentVersionService {
     @Transactional(rollbackFor = Exception.class)
     public void publishVersion(ActorContext actor, String agentId, Long versionId) {
         AgentVersionBO v = getVersionOrThrow(actor, agentId, versionId);
-        if (!AgentVersionStatus.DRAFT.getCode().equals(v.getStatus())) throw new IllegalArgumentException("只有草稿状态才能发布");
+        if (!AgentVersionStatus.DRAFT.getCode().equals(v.getStatus()))
+            throw new IllegalArgumentException("只有草稿状态才能发布");
         v.setStatus(AgentVersionStatus.PUBLISHED.getCode());
         v.setUpdateTime(LocalDateTime.now());
         agentAdminRepository.updateVersion(actor.tenantId(), v);
@@ -120,7 +135,8 @@ public class AgentVersionServiceImpl implements AgentVersionService {
     @Override
     public void archiveVersion(ActorContext actor, String agentId, Long versionId) {
         AgentVersionBO v = getVersionOrThrow(actor, agentId, versionId);
-        if (AgentVersionStatus.ARCHIVED.getCode().equals(v.getStatus())) throw new IllegalArgumentException("版本已归档");
+        if (AgentVersionStatus.ARCHIVED.getCode().equals(v.getStatus()))
+            throw new IllegalArgumentException("版本已归档");
         v.setStatus(AgentVersionStatus.ARCHIVED.getCode());
         v.setUpdateTime(LocalDateTime.now());
         agentAdminRepository.updateVersion(actor.tenantId(), v);
@@ -131,7 +147,8 @@ public class AgentVersionServiceImpl implements AgentVersionService {
     @Transactional(rollbackFor = Exception.class)
     public void activateVersion(ActorContext actor, String agentId, Long versionId) {
         AgentVersionBO v = getVersionOrThrow(actor, agentId, versionId);
-        if (!AgentVersionStatus.PUBLISHED.getCode().equals(v.getStatus())) throw new IllegalArgumentException("只有已发布版本才能激活");
+        if (!AgentVersionStatus.PUBLISHED.getCode().equals(v.getStatus()))
+            throw new IllegalArgumentException("只有已发布版本才能激活");
 
         AgentDefBO def = agentAdminRepository.selectByAgentId(actor.tenantId(), agentId);
         if (def == null) throw new IllegalArgumentException("Agent不存在");
@@ -155,7 +172,8 @@ public class AgentVersionServiceImpl implements AgentVersionService {
 
     @Override
     @Transactional(rollbackFor = Exception.class)
-    public AgentVersionDetailVO updateGraphConfig(ActorContext actor, String agentId, Long versionId, GraphConfigRequest request) {
+    public AgentVersionDetailVO updateGraphConfig(
+            ActorContext actor, String agentId, Long versionId, GraphConfigRequest request) {
         AgentVersionBO v = getVersionOrThrow(actor, agentId, versionId);
         try {
             String json = JSONUtils.toJsonString(request);
@@ -188,29 +206,45 @@ public class AgentVersionServiceImpl implements AgentVersionService {
                 request.getNodes().keySet().forEach(nodeId -> nodes.put(nodeId, null));
             }
             graph.setNodes(nodes);
-            graph.setEdges(request.getEdges() == null
-                    ? new LinkedHashMap<>() : new LinkedHashMap<>(request.getEdges()));
+            graph.setEdges(
+                    request.getEdges() == null
+                            ? new LinkedHashMap<>()
+                            : new LinkedHashMap<>(request.getEdges()));
 
             Map<String, ConditionEdge> conditionalEdges = new LinkedHashMap<>();
             if (request.getConditionalEdges() != null) {
-                request.getConditionalEdges().forEach((sourceId, config) -> {
-                    ConditionEdge edge = ConditionEdge.builder()
-                            .from(sourceId)
-                            .defaultTarget(config == null ? null : config.getDefaultTarget())
-                            .nodeMappings(config == null || config.getNodeMappings() == null
-                                    ? new LinkedHashMap<>() : new LinkedHashMap<>(config.getNodeMappings()))
-                            // 结构校验不执行条件表达式，只满足 ConditionEdge 的配置不变量。
-                            .functionCondition(state -> null)
-                            .build();
-                    conditionalEdges.put(sourceId, edge);
-                });
+                request.getConditionalEdges()
+                        .forEach(
+                                (sourceId, config) -> {
+                                    ConditionEdge edge =
+                                            ConditionEdge.builder()
+                                                    .from(sourceId)
+                                                    .defaultTarget(
+                                                            config == null
+                                                                    ? null
+                                                                    : config.getDefaultTarget())
+                                                    .nodeMappings(
+                                                            config == null
+                                                                            || config
+                                                                                            .getNodeMappings()
+                                                                                    == null
+                                                                    ? new LinkedHashMap<>()
+                                                                    : new LinkedHashMap<>(
+                                                                            config
+                                                                                    .getNodeMappings()))
+                                                    // 结构校验不执行条件表达式，只满足 ConditionEdge 的配置不变量。
+                                                    .functionCondition(state -> null)
+                                                    .build();
+                                    conditionalEdges.put(sourceId, edge);
+                                });
             }
             graph.setConditionalEdges(conditionalEdges);
             graph.validate();
-            List<String> warnings = graph.findUnreachableNodes().stream()
-                    .sorted()
-                    .map(nodeId -> "节点不可达: " + nodeId)
-                    .toList();
+            List<String> warnings =
+                    graph.findUnreachableNodes().stream()
+                            .sorted()
+                            .map(nodeId -> "节点不可达: " + nodeId)
+                            .toList();
             return GraphValidationVO.success(warnings);
         } catch (Exception e) {
             return GraphValidationVO.fail(List.of("图配置校验失败，请检查配置"), List.of());
@@ -221,27 +255,39 @@ public class AgentVersionServiceImpl implements AgentVersionService {
 
     @Override
     @Transactional(rollbackFor = Exception.class)
-    public void addNode(ActorContext actor, String agentId, Long versionId, NodeConfigRequest request) {
+    public void addNode(
+            ActorContext actor, String agentId, Long versionId, NodeConfigRequest request) {
         AgentVersionBO v = getVersionOrThrow(actor, agentId, versionId);
         Map<String, Object> graphData = parseGraphConfig(v.getGraphConfig());
         Map<String, Object> nodes = getMap(graphData, "nodes");
         Map<String, Object> nodeConfig = new LinkedHashMap<>();
         nodeConfig.put("nodeName", request.getNodeName());
-        nodeConfig.put("description", request.getDescription() != null ? request.getDescription() : "");
+        nodeConfig.put(
+                "description", request.getDescription() != null ? request.getDescription() : "");
         nodeConfig.put("nodeType", request.getNodeType());
         nodeConfig.put("enabled", request.getEnabled() != null ? request.getEnabled() : true);
         nodeConfig.put("timeout", request.getTimeout() != null ? request.getTimeout() : 30000L);
         nodeConfig.put("retryCount", request.getRetryCount() != null ? request.getRetryCount() : 0);
-        nodeConfig.put("retryInterval", request.getRetryInterval() != null ? request.getRetryInterval() : 1000L);
-        nodeConfig.put("errorStrategy", request.getErrorStrategy() != null ? request.getErrorStrategy() : "THROW");
-        nodeConfig.put("config", request.getConfig() != null ? request.getConfig() : new HashMap<>());
+        nodeConfig.put(
+                "retryInterval",
+                request.getRetryInterval() != null ? request.getRetryInterval() : 1000L);
+        nodeConfig.put(
+                "errorStrategy",
+                request.getErrorStrategy() != null ? request.getErrorStrategy() : "THROW");
+        nodeConfig.put(
+                "config", request.getConfig() != null ? request.getConfig() : new HashMap<>());
         nodes.put(request.getNodeId(), nodeConfig);
         saveGraphConfig(actor, v, graphData);
     }
 
     @Override
     @Transactional(rollbackFor = Exception.class)
-    public void updateNode(ActorContext actor, String agentId, Long versionId, String nodeId, NodeConfigRequest request) {
+    public void updateNode(
+            ActorContext actor,
+            String agentId,
+            Long versionId,
+            String nodeId,
+            NodeConfigRequest request) {
         AgentVersionBO v = getVersionOrThrow(actor, agentId, versionId);
         Map<String, Object> graphData = parseGraphConfig(v.getGraphConfig());
         Map<String, Object> nodes = getMap(graphData, "nodes");
@@ -250,12 +296,14 @@ public class AgentVersionServiceImpl implements AgentVersionService {
         @SuppressWarnings("unchecked")
         Map<String, Object> nodeConfig = (Map<String, Object>) nodes.get(nodeId);
         if (request.getNodeName() != null) nodeConfig.put("nodeName", request.getNodeName());
-        if (request.getDescription() != null) nodeConfig.put("description", request.getDescription());
+        if (request.getDescription() != null)
+            nodeConfig.put("description", request.getDescription());
         if (request.getNodeType() != null) nodeConfig.put("nodeType", request.getNodeType());
         if (request.getEnabled() != null) nodeConfig.put("enabled", request.getEnabled());
         if (request.getTimeout() != null) nodeConfig.put("timeout", request.getTimeout());
         if (request.getRetryCount() != null) nodeConfig.put("retryCount", request.getRetryCount());
-        if (request.getErrorStrategy() != null) nodeConfig.put("errorStrategy", request.getErrorStrategy());
+        if (request.getErrorStrategy() != null)
+            nodeConfig.put("errorStrategy", request.getErrorStrategy());
         if (request.getConfig() != null) nodeConfig.put("config", request.getConfig());
 
         saveGraphConfig(actor, v, graphData);
@@ -300,12 +348,19 @@ public class AgentVersionServiceImpl implements AgentVersionService {
             Map<String, Object> conditionalEdges = getMap(graphData, "conditionalEdges");
             Map<String, Object> condConfig = new LinkedHashMap<>();
             condConfig.put("defaultTarget", request.getDefaultTarget());
-            condConfig.put("nodeMappings", request.getConditionMappings() != null ? request.getConditionMappings() : new HashMap<>());
+            condConfig.put(
+                    "nodeMappings",
+                    request.getConditionMappings() != null
+                            ? request.getConditionMappings()
+                            : new HashMap<>());
             condConfig.put("conditionType", request.getConditionType());
             conditionalEdges.put(request.getSourceNodeId(), condConfig);
         } else {
             Map<String, Object> edges = getMap(graphData, "edges");
-            List<String> targets = (List<String>) edges.computeIfAbsent(request.getSourceNodeId(), k -> new ArrayList<>());
+            List<String> targets =
+                    (List<String>)
+                            edges.computeIfAbsent(
+                                    request.getSourceNodeId(), k -> new ArrayList<>());
             if (!targets.contains(request.getTargetNodeId())) {
                 targets.add(request.getTargetNodeId());
             }
@@ -317,7 +372,12 @@ public class AgentVersionServiceImpl implements AgentVersionService {
     @Override
     @Transactional(rollbackFor = Exception.class)
     @SuppressWarnings("unchecked")
-    public void deleteEdge(ActorContext actor, String agentId, Long versionId, String sourceNodeId, String targetNodeId) {
+    public void deleteEdge(
+            ActorContext actor,
+            String agentId,
+            Long versionId,
+            String sourceNodeId,
+            String targetNodeId) {
         AgentVersionBO v = getVersionOrThrow(actor, agentId, versionId);
         Map<String, Object> graphData = parseGraphConfig(v.getGraphConfig());
 
@@ -349,7 +409,8 @@ public class AgentVersionServiceImpl implements AgentVersionService {
 
     @Override
     @Transactional(rollbackFor = Exception.class)
-    public void updateCanvasConfig(ActorContext actor, String agentId, Long versionId, String canvasConfig) {
+    public void updateCanvasConfig(
+            ActorContext actor, String agentId, Long versionId, String canvasConfig) {
         AgentVersionBO v = getVersionOrThrow(actor, agentId, versionId);
         v.setCanvasConfig(canvasConfig);
         v.setUpdateTime(LocalDateTime.now());
@@ -376,7 +437,9 @@ public class AgentVersionServiceImpl implements AgentVersionService {
             return empty;
         }
         try {
-            return JSONUtils.parseObject(graphConfig, new tools.jackson.core.type.TypeReference<Map<String, Object>>(){});
+            return JSONUtils.parseObject(
+                    graphConfig,
+                    new tools.jackson.core.type.TypeReference<Map<String, Object>>() {});
         } catch (Exception e) {
             throw new RuntimeException("解析Graph配置失败", e);
         }
@@ -389,7 +452,8 @@ public class AgentVersionServiceImpl implements AgentVersionService {
     }
 
     @SuppressWarnings("unchecked")
-    private void saveGraphConfig(ActorContext actor, AgentVersionBO v, Map<String, Object> graphData) {
+    private void saveGraphConfig(
+            ActorContext actor, AgentVersionBO v, Map<String, Object> graphData) {
         try {
             v.setGraphConfig(JSONUtils.toJsonString(graphData));
             v.setUpdateTime(LocalDateTime.now());
@@ -403,29 +467,44 @@ public class AgentVersionServiceImpl implements AgentVersionService {
                             Map<String, Object> nodeData = (Map<String, Object>) nodes.get(nodeId);
                             String nodeTypeStr = (String) nodeData.get("nodeType");
                             if (nodeTypeStr != null) {
-                                com.shiyu.ai.agent.contract.node.NodeType nt = com.shiyu.ai.agent.contract.node.NodeType.fromCode(nodeTypeStr);
-                                com.shiyu.ai.agent.contract.node.NodeConfig cfg = new com.shiyu.ai.agent.contract.node.NodeConfig();
+                                com.shiyu.ai.agent.contract.node.NodeType nt =
+                                        com.shiyu.ai.agent.contract.node.NodeType.fromCode(
+                                                nodeTypeStr);
+                                com.shiyu.ai.agent.contract.node.NodeConfig cfg =
+                                        new com.shiyu.ai.agent.contract.node.NodeConfig();
                                 cfg.setNodeId(nodeId);
                                 cfg.setNodeType(nt);
-                                com.shiyu.ai.agent.contract.node.BaseNode node = nodeFactory.createNode(cfg);
+                                com.shiyu.ai.agent.contract.node.BaseNode node =
+                                        nodeFactory.createNode(cfg);
                                 if (node != null) {
-                                    List<com.shiyu.ai.agent.contract.node.NodeInputParam> inputs = node.getRequiredInputs();
-                                    for (com.shiyu.ai.agent.contract.node.NodeInputParam p : inputs) {
-                                        allInputs.add(new com.shiyu.ai.agent.contract.node.NodeInputParam(
-                                                p.name(), p.type(), p.source(), p.required(),
-                                                "[" + nodeId + "] " + p.description(), p.defaultValue()
-                                        ));
+                                    List<com.shiyu.ai.agent.contract.node.NodeInputParam> inputs =
+                                            node.getRequiredInputs();
+                                    for (com.shiyu.ai.agent.contract.node.NodeInputParam p :
+                                            inputs) {
+                                        allInputs.add(
+                                                new com.shiyu.ai.agent.contract.node.NodeInputParam(
+                                                        p.name(),
+                                                        p.type(),
+                                                        p.source(),
+                                                        p.required(),
+                                                        "[" + nodeId + "] " + p.description(),
+                                                        p.defaultValue()));
                                     }
                                 }
                             }
                         } catch (Exception ex) {
-                            log.warn("获取节点入参定义失败: nodeIdPresent={}, errorType={}, errorMessageLength={}",
-                                    nodeId != null, ex.getClass().getSimpleName(), ex.getMessage() == null ? 0 : ex.getMessage().length());
+                            log.warn(
+                                    "获取节点入参定义失败: nodeIdPresent={}, errorType={},"
+                                            + " errorMessageLength={}",
+                                    nodeId != null,
+                                    ex.getClass().getSimpleName(),
+                                    ex.getMessage() == null ? 0 : ex.getMessage().length());
                         }
                     }
                 }
                 // 去重
-                LinkedHashMap<String, com.shiyu.ai.agent.contract.node.NodeInputParam> deduped = new LinkedHashMap<>();
+                LinkedHashMap<String, com.shiyu.ai.agent.contract.node.NodeInputParam> deduped =
+                        new LinkedHashMap<>();
                 for (com.shiyu.ai.agent.contract.node.NodeInputParam p : allInputs) {
                     String key = p.name() + "|" + p.source().name();
                     if (!deduped.containsKey(key)) deduped.put(key, p);
@@ -449,10 +528,17 @@ public class AgentVersionServiceImpl implements AgentVersionService {
 
     private AgentVersionVO toVersionVO(AgentVersionBO v) {
         return AgentVersionVO.builder()
-                .id(v.getId()).agentId(v.getAgentId()).versionNumber(v.getVersionNumber())
-                .description(v.getDescription()).status(v.getStatus())
-                .statusDesc(v.getStatus() != null ? AgentVersionStatus.fromCode(v.getStatus()).getDesc() : null)
-                .createTime(v.getCreateTime()).updateTime(v.getUpdateTime())
+                .id(v.getId())
+                .agentId(v.getAgentId())
+                .versionNumber(v.getVersionNumber())
+                .description(v.getDescription())
+                .status(v.getStatus())
+                .statusDesc(
+                        v.getStatus() != null
+                                ? AgentVersionStatus.fromCode(v.getStatus()).getDesc()
+                                : null)
+                .createTime(v.getCreateTime())
+                .updateTime(v.getUpdateTime())
                 .build();
     }
 
@@ -460,28 +546,43 @@ public class AgentVersionServiceImpl implements AgentVersionService {
         AgentVersionDetailVO.GraphConfigVO graphVO = null;
         if (v.getGraphConfig() != null && !v.getGraphConfig().isEmpty()) {
             try {
-                Map<String, Object> graphData = JSONUtils.parseObject(v.getGraphConfig(),
-                        new tools.jackson.core.type.TypeReference<Map<String, Object>>(){});
-                graphVO = AgentVersionDetailVO.GraphConfigVO.builder()
-                        .name((String) graphData.get("name"))
-                        .description((String) graphData.get("description"))
-                        .startNode((String) graphData.get("startNode"))
-                        .endNode((String) graphData.get("endNode"))
-                        .nodes(getMap(graphData, "nodes"))
-                        .edges(getMap(graphData, "edges"))
-                        .conditionalEdges(getMap(graphData, "conditionalEdges"))
-                        .build();
+                Map<String, Object> graphData =
+                        JSONUtils.parseObject(
+                                v.getGraphConfig(),
+                                new tools.jackson.core.type.TypeReference<
+                                        Map<String, Object>>() {});
+                graphVO =
+                        AgentVersionDetailVO.GraphConfigVO.builder()
+                                .name((String) graphData.get("name"))
+                                .description((String) graphData.get("description"))
+                                .startNode((String) graphData.get("startNode"))
+                                .endNode((String) graphData.get("endNode"))
+                                .nodes(getMap(graphData, "nodes"))
+                                .edges(getMap(graphData, "edges"))
+                                .conditionalEdges(getMap(graphData, "conditionalEdges"))
+                                .build();
             } catch (Exception ex) {
-                log.warn("解析图谱配置失败: versionIdPresent={}, errorType={}, errorMessageLength={}",
-                        v.getId() != null, ex.getClass().getSimpleName(), ex.getMessage() == null ? 0 : ex.getMessage().length());
+                log.warn(
+                        "解析图谱配置失败: versionIdPresent={}, errorType={}, errorMessageLength={}",
+                        v.getId() != null,
+                        ex.getClass().getSimpleName(),
+                        ex.getMessage() == null ? 0 : ex.getMessage().length());
             }
         }
         return AgentVersionDetailVO.builder()
-                .id(v.getId()).agentId(v.getAgentId()).versionNumber(v.getVersionNumber())
-                .description(v.getDescription()).status(v.getStatus())
-                .statusDesc(v.getStatus() != null ? AgentVersionStatus.fromCode(v.getStatus()).getDesc() : null)
-                .graphConfig(graphVO).canvasConfig(v.getCanvasConfig())
-                .createTime(v.getCreateTime()).updateTime(v.getUpdateTime())
+                .id(v.getId())
+                .agentId(v.getAgentId())
+                .versionNumber(v.getVersionNumber())
+                .description(v.getDescription())
+                .status(v.getStatus())
+                .statusDesc(
+                        v.getStatus() != null
+                                ? AgentVersionStatus.fromCode(v.getStatus()).getDesc()
+                                : null)
+                .graphConfig(graphVO)
+                .canvasConfig(v.getCanvasConfig())
+                .createTime(v.getCreateTime())
+                .updateTime(v.getUpdateTime())
                 .build();
     }
 }

@@ -1,13 +1,12 @@
 package com.shiyu.ai.agent.implementation.checkpoint;
 
+import com.shiyu.ai.kernel.context.TenantId;
+
 import java.time.LocalDateTime;
 import java.util.Map;
 import java.util.UUID;
-import com.shiyu.ai.kernel.context.TenantId;
 
-/**
- * 检查点数据
- */
+/** 检查点数据 */
 public class Checkpoint {
 
     private final String checkpointId;
@@ -18,7 +17,8 @@ public class Checkpoint {
     private byte[] serializedState;
     private final LocalDateTime createdAt;
 
-    public Checkpoint(TenantId tenantId, String executionId, String nodeId, Map<String, Object> state) {
+    public Checkpoint(
+            TenantId tenantId, String executionId, String nodeId, Map<String, Object> state) {
         if (tenantId == null) throw new IllegalArgumentException("tenantId must not be null");
         this.checkpointId = UUID.randomUUID().toString().replace("-", "");
         this.tenantId = tenantId;
@@ -28,13 +28,35 @@ public class Checkpoint {
         this.createdAt = LocalDateTime.now();
     }
 
-    public String getCheckpointId() { return checkpointId; }
-    public TenantId getTenantId() { return tenantId; }
-    public String getExecutionId() { return executionId; }
-    public String getNodeId() { return nodeId; }
-    public Map<String, Object> getState() { return state; }
-    public byte[] getSerializedState() { return serializedState; }
-    public LocalDateTime getCreatedAt() { return createdAt; }
+    public String getCheckpointId() {
+        return checkpointId;
+    }
 
-    public void setSerializedState(byte[] serializedState) { this.serializedState = serializedState; }
+    public TenantId getTenantId() {
+        return tenantId;
+    }
+
+    public String getExecutionId() {
+        return executionId;
+    }
+
+    public String getNodeId() {
+        return nodeId;
+    }
+
+    public Map<String, Object> getState() {
+        return state;
+    }
+
+    public byte[] getSerializedState() {
+        return serializedState;
+    }
+
+    public LocalDateTime getCreatedAt() {
+        return createdAt;
+    }
+
+    public void setSerializedState(byte[] serializedState) {
+        this.serializedState = serializedState;
+    }
 }

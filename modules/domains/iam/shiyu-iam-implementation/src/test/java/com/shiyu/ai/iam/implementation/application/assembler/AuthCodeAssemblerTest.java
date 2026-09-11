@@ -1,11 +1,12 @@
 package com.shiyu.ai.iam.implementation.application.assembler;
 
+import static org.junit.jupiter.api.Assertions.*;
+
 import com.shiyu.ai.iam.implementation.api.request.AuthCodeRequest;
 import com.shiyu.ai.iam.implementation.api.response.AuthCodeResponse;
 import com.shiyu.ai.iam.implementation.domain.model.AuthCodeBO;
-import org.junit.jupiter.api.Test;
 
-import static org.junit.jupiter.api.Assertions.*;
+import org.junit.jupiter.api.Test;
 
 class AuthCodeAssemblerTest {
     @Test
@@ -27,4 +28,3 @@ class AuthCodeAssemblerTest {
         assertEquals(1, response.getStatus());
     }
 }
-

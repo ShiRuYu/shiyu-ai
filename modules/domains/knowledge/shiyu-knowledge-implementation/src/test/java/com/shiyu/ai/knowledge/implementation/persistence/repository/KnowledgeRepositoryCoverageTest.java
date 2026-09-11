@@ -1,20 +1,21 @@
 package com.shiyu.ai.knowledge.implementation.persistence.repository;
 
+import static org.junit.jupiter.api.Assertions.*;
+import static org.mockito.ArgumentMatchers.*;
+import static org.mockito.Mockito.*;
+
 import com.mybatisflex.core.paginate.Page;
 import com.shiyu.ai.common.core.utils.MapstructUtils;
+import com.shiyu.ai.kernel.context.TenantId;
 import com.shiyu.ai.knowledge.implementation.domain.model.KnowledgeBO;
 import com.shiyu.ai.knowledge.implementation.persistence.dataobject.KnowledgeDO;
 import com.shiyu.ai.knowledge.implementation.persistence.mapper.KnowledgeMapper;
-import com.shiyu.ai.kernel.context.TenantId;
+
 import org.junit.jupiter.api.Test;
 import org.mockito.MockedStatic;
 
 import java.lang.reflect.Field;
 import java.util.List;
-
-import static org.junit.jupiter.api.Assertions.*;
-import static org.mockito.ArgumentMatchers.*;
-import static org.mockito.Mockito.*;
 
 @SuppressWarnings({"rawtypes", "unchecked"})
 class KnowledgeRepositoryCoverageTest {
@@ -39,14 +40,19 @@ class KnowledgeRepositoryCoverageTest {
         when(mapper.selectCountByQuery(any())).thenReturn(1L);
         when(mapper.deleteByQuery(any())).thenReturn(1);
         when(mapper.updateByQuery(any(), any())).thenReturn(1);
-        when(mapper.insert(any(KnowledgeDO.class))).thenAnswer(invocation -> {
-            KnowledgeDO value = invocation.getArgument(0);
-            value.setId(99L);
-            return 1;
-        });
+        when(mapper.insert(any(KnowledgeDO.class)))
+                .thenAnswer(
+                        invocation -> {
+                            KnowledgeDO value = invocation.getArgument(0);
+                            value.setId(99L);
+                            return 1;
+                        });
         Page<KnowledgeDO> page = Page.of(1, 10, 1);
         page.setRecords(List.of(data));
-        when(mapper.paginate(any(Number.class), any(Number.class), any(com.mybatisflex.core.query.QueryWrapper.class)))
+        when(mapper.paginate(
+                        any(Number.class),
+                        any(Number.class),
+                        any(com.mybatisflex.core.query.QueryWrapper.class)))
                 .thenReturn(page);
 
         KnowledgeBO converted = new KnowledgeBO();
@@ -54,11 +60,20 @@ class KnowledgeRepositoryCoverageTest {
         KnowledgeBO source = new KnowledgeBO();
         source.setId(8L);
         try (MockedStatic<MapstructUtils> conversions = mockStatic(MapstructUtils.class)) {
-            conversions.when(() -> MapstructUtils.convert(any(KnowledgeDO.class), eq(KnowledgeBO.class)))
+            conversions
+                    .when(
+                            () ->
+                                    MapstructUtils.convert(
+                                            any(KnowledgeDO.class), eq(KnowledgeBO.class)))
                     .thenReturn(converted);
-            conversions.when(() -> MapstructUtils.convert(any(KnowledgeBO.class), eq(KnowledgeDO.class)))
+            conversions
+                    .when(
+                            () ->
+                                    MapstructUtils.convert(
+                                            any(KnowledgeBO.class), eq(KnowledgeDO.class)))
                     .thenAnswer(invocation -> new KnowledgeDO());
-            conversions.when(() -> MapstructUtils.convert(any(List.class), eq(KnowledgeBO.class)))
+            conversions
+                    .when(() -> MapstructUtils.convert(any(List.class), eq(KnowledgeBO.class)))
                     .thenReturn(List.of(converted));
 
             assertNotNull(repository.findById(TENANT, 8L));
@@ -101,4 +116,3 @@ class KnowledgeRepositoryCoverageTest {
         repository.assignDefaultSpace(TENANT, 4L);
     }
 }
-

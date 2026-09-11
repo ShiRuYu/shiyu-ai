@@ -14,7 +14,4 @@ public record KnowledgeRetrievalHit(
         double bm25Score,
         double vectorScore,
         double rrfScore,
-        double rerankScore
-) {
-}
-
+        double rerankScore) {}

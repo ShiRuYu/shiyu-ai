@@ -1,4 +1,5 @@
 package com.shiyu.ai.education.implementation.domain.model;
+
 import lombok.Data;
 
 import java.io.Serial;
@@ -6,14 +7,11 @@ import java.io.Serializable;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 
-/**
- * ReviewTask 业务对象
- */
+/** ReviewTask 业务对象 */
 @Data
 public class ReviewTaskBO implements Serializable {
 
-    @Serial
-    private static final long serialVersionUID = 1L;
+    @Serial private static final long serialVersionUID = 1L;
 
     private Long id;
 
@@ -34,6 +32,4 @@ public class ReviewTaskBO implements Serializable {
     private Double resultScore;
 
     private LocalDateTime completedAt;
-
 }
-

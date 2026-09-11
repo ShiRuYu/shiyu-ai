@@ -1,16 +1,18 @@
 package com.shiyu.ai.education.implementation.application.impl;
 
 import com.shiyu.ai.common.core.utils.MapstructUtils;
+import com.shiyu.ai.education.implementation.application.AnalyticsService;
 import com.shiyu.ai.education.implementation.domain.model.AbilityBO;
 import com.shiyu.ai.education.implementation.domain.model.StudyRecordBO;
 import com.shiyu.ai.education.implementation.domain.port.repository.AbilityRepository;
 import com.shiyu.ai.education.implementation.domain.port.repository.StudyRecordRepository;
 import com.shiyu.ai.education.implementation.web.dto.*;
 import com.shiyu.ai.education.implementation.web.request.StudyRecordRequest;
-import com.shiyu.ai.education.implementation.application.AnalyticsService;
 import com.shiyu.ai.kernel.context.ActorContext;
+
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -28,13 +30,17 @@ public class AnalyticsServiceImpl implements AnalyticsService {
 
     @Override
     public List<StudyRecordResponse> listRecordsByStudent(ActorContext actor, Long studentId) {
-        List<StudyRecordBO> boList = studyRecordRepository.selectByStudent(actor.tenantId(), studentId);
+        List<StudyRecordBO> boList =
+                studyRecordRepository.selectByStudent(actor.tenantId(), studentId);
         return MapstructUtils.convert(boList, StudyRecordResponse.class);
     }
 
     @Override
-    public List<StudyRecordResponse> listRecordsByStudentAndKnowledge(ActorContext actor, Long studentId, Long knowledgeId) {
-        List<StudyRecordBO> boList = studyRecordRepository.selectByStudentAndKnowledge(actor.tenantId(), studentId, knowledgeId);
+    public List<StudyRecordResponse> listRecordsByStudentAndKnowledge(
+            ActorContext actor, Long studentId, Long knowledgeId) {
+        List<StudyRecordBO> boList =
+                studyRecordRepository.selectByStudentAndKnowledge(
+                        actor.tenantId(), studentId, knowledgeId);
         return MapstructUtils.convert(boList, StudyRecordResponse.class);
     }
 
@@ -54,8 +60,11 @@ public class AnalyticsServiceImpl implements AnalyticsService {
     }
 
     @Override
-    public AbilityRadarResponse getAbilityRadar(ActorContext actor, Long studentId, Long knowledgeId) {
-        AbilityBO ability = abilityRepository.selectByStudentAndKnowledge(actor.tenantId(), studentId, knowledgeId);
+    public AbilityRadarResponse getAbilityRadar(
+            ActorContext actor, Long studentId, Long knowledgeId) {
+        AbilityBO ability =
+                abilityRepository.selectByStudentAndKnowledge(
+                        actor.tenantId(), studentId, knowledgeId);
         Map<String, Double> dimensions = new LinkedHashMap<>();
         dimensions.put("remember", valueOf(ability == null ? null : ability.getRemember()));
         dimensions.put("understand", valueOf(ability == null ? null : ability.getUnderstand()));
@@ -72,7 +81,8 @@ public class AnalyticsServiceImpl implements AnalyticsService {
 
     @Override
     public OverviewResponse getOverview(ActorContext actor, Long studentId) {
-        List<StudyRecordBO> records = studyRecordRepository.selectByStudent(actor.tenantId(), studentId);
+        List<StudyRecordBO> records =
+                studyRecordRepository.selectByStudent(actor.tenantId(), studentId);
         if (records.isEmpty()) {
             return new OverviewResponse(0, 0, 0, 0, 0.0, 0.0, 0);
         }
@@ -89,16 +99,24 @@ public class AnalyticsServiceImpl implements AnalyticsService {
                 if (r.getKnowledgeId() != null) knowledgePracticed.add(r.getKnowledgeId());
                 totalQuestions++;
             }
-            if (r.getAccuracy() != null) { totalAccuracy += r.getAccuracy(); accuracyCount++; }
+            if (r.getAccuracy() != null) {
+                totalAccuracy += r.getAccuracy();
+                accuracyCount++;
+            }
             if (r.getDurationSec() != null) totalDurationSec += r.getDurationSec();
-            if (r.getCreateTime() != null) studyDays.add(r.getCreateTime().toLocalDate().toString());
+            if (r.getCreateTime() != null)
+                studyDays.add(r.getCreateTime().toLocalDate().toString());
         }
         double avgAccuracy = accuracyCount > 0 ? totalAccuracy / accuracyCount * 100 : 0.0;
         double weeklyHours = totalDurationSec / 3600.0;
         return new OverviewResponse(
-                studyDays.size(), knowledgeLearned.size(), knowledgePracticed.size(),
-                totalQuestions, Math.round(avgAccuracy * 10.0) / 10.0,
-                Math.round(weeklyHours * 10.0) / 10.0, studyDays.size());
+                studyDays.size(),
+                knowledgeLearned.size(),
+                knowledgePracticed.size(),
+                totalQuestions,
+                Math.round(avgAccuracy * 10.0) / 10.0,
+                Math.round(weeklyHours * 10.0) / 10.0,
+                studyDays.size());
     }
 
     @Override
@@ -113,17 +131,21 @@ public class AnalyticsServiceImpl implements AnalyticsService {
 
     @Override
     public TrendResponse getTrend(ActorContext actor, Long studentId) {
-        List<StudyRecordBO> records = studyRecordRepository.selectByStudent(actor.tenantId(), studentId);
+        List<StudyRecordBO> records =
+                studyRecordRepository.selectByStudent(actor.tenantId(), studentId);
         List<String> dates = new ArrayList<>();
         List<Double> values = new ArrayList<>();
         LocalDate today = LocalDate.now();
         for (int i = 6; i >= 0; i--) {
             LocalDate day = today.minusDays(i);
             dates.add(day.toString());
-            long count = records.stream()
-                    .filter(r -> r.getCreateTime() != null
-                            && r.getCreateTime().toLocalDate().equals(day))
-                    .count();
+            long count =
+                    records.stream()
+                            .filter(
+                                    r ->
+                                            r.getCreateTime() != null
+                                                    && r.getCreateTime().toLocalDate().equals(day))
+                            .count();
             values.add((double) count);
         }
         return new TrendResponse(dates, values);
@@ -133,4 +155,3 @@ public class AnalyticsServiceImpl implements AnalyticsService {
         return value == null ? 0.0 : value;
     }
 }
-

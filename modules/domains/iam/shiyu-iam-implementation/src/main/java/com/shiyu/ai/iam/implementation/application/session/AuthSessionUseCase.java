@@ -1,6 +1,7 @@
 package com.shiyu.ai.iam.implementation.application.session;
 
 import com.shiyu.ai.iam.implementation.utils.SaTokenHelper;
+
 import lombok.extern.slf4j.Slf4j;
 
 /** Session lifecycle use cases: refresh and logout. */
@@ -19,8 +20,10 @@ public final class AuthSessionUseCase {
             log.info("刷新Token成功, userIdPresent={}", userId > 0);
             return newAccessToken;
         } catch (Exception e) {
-            log.error("刷新Token异常: errorType={}, errorMessageLength={}",
-                    e.getClass().getSimpleName(), valueLength(e.getMessage()));
+            log.error(
+                    "刷新Token异常: errorType={}, errorMessageLength={}",
+                    e.getClass().getSimpleName(),
+                    valueLength(e.getMessage()));
             return null;
         }
     }
@@ -37,8 +40,10 @@ public final class AuthSessionUseCase {
                 log.warn("无效的token, 注销失败");
             }
         } catch (Exception e) {
-            log.error("注销异常: errorType={}, errorMessageLength={}",
-                    e.getClass().getSimpleName(), valueLength(e.getMessage()));
+            log.error(
+                    "注销异常: errorType={}, errorMessageLength={}",
+                    e.getClass().getSimpleName(),
+                    valueLength(e.getMessage()));
         }
     }
 

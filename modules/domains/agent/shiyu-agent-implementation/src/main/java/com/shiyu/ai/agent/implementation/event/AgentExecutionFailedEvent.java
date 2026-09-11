@@ -13,7 +13,15 @@ public class AgentExecutionFailedEvent extends DomainEvent {
         this.errorMessage = errorMessage;
     }
 
-    public String getExecutionId() { return executionId; }
-    public String getAgentId() { return agentId; }
-    public String getErrorMessage() { return errorMessage; }
+    public String getExecutionId() {
+        return executionId;
+    }
+
+    public String getAgentId() {
+        return agentId;
+    }
+
+    public String getErrorMessage() {
+        return errorMessage;
+    }
 }

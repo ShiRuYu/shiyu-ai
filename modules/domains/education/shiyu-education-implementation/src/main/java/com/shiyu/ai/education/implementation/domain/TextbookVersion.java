@@ -6,7 +6,6 @@ import lombok.Getter;
 @Getter
 @AllArgsConstructor
 public enum TextbookVersion {
-
     PEP("PEP", "人教版"),
     BNUP("BNUP", "北师大版"),
     JSEP("JSEP", "苏教版"),
@@ -18,4 +17,3 @@ public enum TextbookVersion {
     private final String code;
     private final String name;
 }
-

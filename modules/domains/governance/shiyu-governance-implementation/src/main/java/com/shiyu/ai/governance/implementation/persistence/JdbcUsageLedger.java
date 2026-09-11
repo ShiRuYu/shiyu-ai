@@ -11,7 +11,8 @@ import java.util.function.Supplier;
 /** JDBC adapter relying on the database unique constraint for concurrency safety. */
 public final class JdbcUsageLedger implements UsageLedger {
 
-    private static final String INSERT_SQL = """
+    private static final String INSERT_SQL =
+            """
             INSERT INTO GOVERNANCE_USAGE_RECORD
                 (ID, TENANT_ID, USER_ID, CORRELATION_ID, SOURCE_TYPE, SOURCE_ID,
                  INPUT_TOKENS, OUTPUT_TOKENS, COST, OCCURRED_AT)
@@ -45,8 +46,7 @@ public final class JdbcUsageLedger implements UsageLedger {
                     entry.inputTokens(),
                     entry.outputTokens(),
                     entry.cost(),
-                    Timestamp.from(entry.occurredAt())
-            );
+                    Timestamp.from(entry.occurredAt()));
             return true;
         } catch (DuplicateKeyException duplicate) {
             return false;

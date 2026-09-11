@@ -1,7 +1,9 @@
 package com.shiyu.ai.knowledge.implementation.web.response;
 
 import com.shiyu.ai.knowledge.implementation.domain.model.KnowledgeAuditLogBO;
+
 import io.github.linpeilie.annotations.AutoMapper;
+
 import lombok.Data;
 
 import java.time.LocalDateTime;
@@ -22,4 +24,3 @@ public class KnowledgeAuditResponse {
     private LocalDateTime createTime;
     private LocalDateTime updateTime;
 }
-

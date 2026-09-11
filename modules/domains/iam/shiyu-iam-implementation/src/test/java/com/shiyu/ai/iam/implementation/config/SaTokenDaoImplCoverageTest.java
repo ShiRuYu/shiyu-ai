@@ -1,21 +1,22 @@
 package com.shiyu.ai.iam.implementation.config;
 
+import static org.junit.jupiter.api.Assertions.*;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.Mockito.*;
+
 import cn.dev33.satoken.session.SaSession;
+
+import com.shiyu.ai.common.core.utils.JSONUtils;
 import com.shiyu.ai.iam.implementation.domain.model.UserBO;
 import com.shiyu.ai.iam.implementation.port.repository.SaTokenUserRepository;
-import com.shiyu.ai.common.core.utils.JSONUtils;
+
 import org.junit.jupiter.api.Test;
 
-import java.nio.charset.StandardCharsets;
 import java.lang.reflect.Method;
+import java.nio.charset.StandardCharsets;
 import java.util.Base64;
 import java.util.LinkedHashMap;
 import java.util.Map;
-
-import static org.junit.jupiter.api.Assertions.*;
-import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.ArgumentMatchers.eq;
-import static org.mockito.Mockito.*;
 
 class SaTokenDaoImplCoverageTest {
     @Test
@@ -24,7 +25,11 @@ class SaTokenDaoImplCoverageTest {
         UserBO user = user(7L, "{}");
         when(repository.selectById(7L)).thenReturn(user);
         SaTokenDaoImpl dao = new SaTokenDaoImpl(repository);
-        String token = Base64.getUrlEncoder().withoutPadding().encodeToString("7".getBytes(StandardCharsets.UTF_8)) + "_random";
+        String token =
+                Base64.getUrlEncoder()
+                                .withoutPadding()
+                                .encodeToString("7".getBytes(StandardCharsets.UTF_8))
+                        + "_random";
         String tokenKey = "Authorization:login:token:" + token;
 
         dao.set(tokenKey, "7", 60);
@@ -64,15 +69,29 @@ class SaTokenDaoImplCoverageTest {
     @Test
     void handlesMalformedAndExpiredEntriesWithoutOpeningAccess() {
         SaTokenUserRepository repository = mock(SaTokenUserRepository.class);
-        UserBO user = user(7L, JSONUtils.toJsonString(Map.of(
-                "tokens", Map.of("expired", Map.of("loginId", "7", "expireTime", 1L)),
-                "sessions", Map.of("7", Map.of("data", "bad", "expireTime", 1L)))));
+        UserBO user =
+                user(
+                        7L,
+                        JSONUtils.toJsonString(
+                                Map.of(
+                                        "tokens",
+                                                Map.of(
+                                                        "expired",
+                                                        Map.of("loginId", "7", "expireTime", 1L)),
+                                        "sessions",
+                                                Map.of(
+                                                        "7",
+                                                        Map.of("data", "bad", "expireTime", 1L)))));
         when(repository.selectById(7L)).thenReturn(user);
         SaTokenDaoImpl dao = new SaTokenDaoImpl(repository);
         assertNull(dao.get("Authorization:login:token:expired"));
-        assertEquals(SaTokenDaoImpl.NOT_VALUE_EXPIRE, dao.getTimeout("Authorization:login:token:expired"));
+        assertEquals(
+                SaTokenDaoImpl.NOT_VALUE_EXPIRE,
+                dao.getTimeout("Authorization:login:token:expired"));
         assertNull(dao.getSession("Authorization:login:session:7"));
-        assertEquals(SaTokenDaoImpl.NOT_VALUE_EXPIRE, dao.getSessionTimeout("Authorization:login:session:7"));
+        assertEquals(
+                SaTokenDaoImpl.NOT_VALUE_EXPIRE,
+                dao.getSessionTimeout("Authorization:login:session:7"));
         assertNull(dao.get("Authorization:login:token:not-a-valid-token"));
         assertNull(dao.getSession("unknown"));
         dao.delete("Authorization:login:token:not-a-valid-token");
@@ -85,11 +104,19 @@ class SaTokenDaoImplCoverageTest {
         SaTokenUserRepository repository = mock(SaTokenUserRepository.class);
         UserBO user = user(7L, "{}");
         when(repository.selectById(7L)).thenReturn(user);
-        String tokenValue = Base64.getUrlEncoder().withoutPadding()
-                .encodeToString("7".getBytes(StandardCharsets.UTF_8)) + "_random";
+        String tokenValue =
+                Base64.getUrlEncoder()
+                                .withoutPadding()
+                                .encodeToString("7".getBytes(StandardCharsets.UTF_8))
+                        + "_random";
         String tokenKey = "Authorization:login:token:" + tokenValue;
-        user.setExtInfo(JSONUtils.toJsonString(Map.of(
-                "tokens", Map.of(tokenValue, Map.of("loginId", "7", "expireTime", Long.MAX_VALUE)))));
+        user.setExtInfo(
+                JSONUtils.toJsonString(
+                        Map.of(
+                                "tokens",
+                                Map.of(
+                                        tokenValue,
+                                        Map.of("loginId", "7", "expireTime", Long.MAX_VALUE)))));
 
         SaTokenDaoImpl dao = new SaTokenDaoImpl(repository);
         assertEquals("7", dao.get(tokenKey));
@@ -97,8 +124,9 @@ class SaTokenDaoImplCoverageTest {
         assertEquals("8", dao.get(tokenKey));
         dao.updateTimeout(tokenKey, 0);
 
-        SaSession tokenSession = new SaSession("Authorization:login:token-session:" + tokenValue)
-                .set("scope", "agent");
+        SaSession tokenSession =
+                new SaSession("Authorization:login:token-session:" + tokenValue)
+                        .set("scope", "agent");
         dao.setSession(tokenSession, 60);
         SaTokenDaoImpl reader = new SaTokenDaoImpl(repository);
         assertNotNull(reader.getSession(tokenSession.getId()));
@@ -138,25 +166,37 @@ class SaTokenDaoImplCoverageTest {
         SaTokenDaoImpl dao = new SaTokenDaoImpl(repository);
 
         assertNull(dao.get("Authorization:login:token:7_random"));
-        assertEquals(SaTokenDaoImpl.NOT_VALUE_EXPIRE,
+        assertEquals(
+                SaTokenDaoImpl.NOT_VALUE_EXPIRE,
                 dao.getTimeout("Authorization:login:token:7_random"));
-        assertThrows(NumberFormatException.class,
+        assertThrows(
+                NumberFormatException.class,
                 () -> dao.set("Authorization:login:token:7_random", "not-a-user", 1));
 
         dao.update("Authorization:login:token:7_random", "not-a-user");
         dao.updateTimeout("Authorization:login:token:7_random", 0);
         dao.delete("Authorization:login:token:7_random");
         assertNull(dao.getSession("Authorization:login:token-session:7"));
-        assertEquals(SaTokenDaoImpl.NOT_VALUE_EXPIRE,
+        assertEquals(
+                SaTokenDaoImpl.NOT_VALUE_EXPIRE,
                 dao.getSessionTimeout("Authorization:login:token-session:7"));
         dao.setSession(new SaSession("Authorization:login:token-session:7"), 1);
         dao.updateSession(new SaSession("Authorization:login:token-session:7"));
         dao.updateSessionTimeout("Authorization:login:token-session:7", 1);
         dao.deleteSession("Authorization:login:token-session:7");
 
-        when(repository.selectById(7L)).thenReturn(user(7L,
-                JSONUtils.toJsonString(Map.of("tokens", "wrong", "sessions", Map.of("7", Map.of()),
-                        "tokenSessions", Map.of("7_random", Map.of("data", "not-json"))))));
+        when(repository.selectById(7L))
+                .thenReturn(
+                        user(
+                                7L,
+                                JSONUtils.toJsonString(
+                                        Map.of(
+                                                "tokens",
+                                                "wrong",
+                                                "sessions",
+                                                Map.of("7", Map.of()),
+                                                "tokenSessions",
+                                                Map.of("7_random", Map.of("data", "not-json"))))));
         assertNull(dao.get("Authorization:login:token:7_random"));
         assertNull(dao.getSession("Authorization:login:token-session:7_random"));
         dao.destroy();
@@ -167,12 +207,14 @@ class SaTokenDaoImplCoverageTest {
         SaTokenDaoImpl dao = new SaTokenDaoImpl(mock(SaTokenUserRepository.class));
         Method parse = SaTokenDaoImpl.class.getDeclaredMethod("parseUserIdFromToken", String.class);
         parse.setAccessible(true);
-        assertNull(parse.invoke(dao, new Object[]{null}));
+        assertNull(parse.invoke(dao, new Object[] {null}));
         assertNull(parse.invoke(dao, ""));
         assertEquals(7L, parse.invoke(dao, "7"));
         assertNull(parse.invoke(dao, "not-a-number"));
-        String encoded = Base64.getUrlEncoder().withoutPadding()
-                .encodeToString("7".getBytes(StandardCharsets.UTF_8));
+        String encoded =
+                Base64.getUrlEncoder()
+                        .withoutPadding()
+                        .encodeToString("7".getBytes(StandardCharsets.UTF_8));
         assertEquals(7L, parse.invoke(dao, encoded + "_random"));
         assertNull(parse.invoke(dao, "%%%_random"));
 
@@ -186,7 +228,8 @@ class SaTokenDaoImplCoverageTest {
         cast.setAccessible(true);
         assertTrue(cast.invoke(dao, Map.of()) instanceof Map);
         assertNull(cast.invoke(dao, "wrong"));
-        Method create = SaTokenDaoImpl.class.getDeclaredMethod("getOrCreateMap", Map.class, String.class);
+        Method create =
+                SaTokenDaoImpl.class.getDeclaredMethod("getOrCreateMap", Map.class, String.class);
         create.setAccessible(true);
         Map<String, Object> parent = new LinkedHashMap<>();
         assertTrue(create.invoke(dao, parent, "tokens") instanceof Map);
@@ -199,15 +242,26 @@ class SaTokenDaoImplCoverageTest {
         assertFalse((Boolean) expired.invoke(dao, Map.of("expireTime", "later")));
         Method remaining = SaTokenDaoImpl.class.getDeclaredMethod("getRemainingTimeout", Map.class);
         remaining.setAccessible(true);
-        assertEquals(SaTokenDaoImpl.NEVER_EXPIRE, remaining.invoke(dao, Map.of("expireTime", Long.MAX_VALUE)));
-        assertEquals(SaTokenDaoImpl.NOT_VALUE_EXPIRE, remaining.invoke(dao, Map.of("expireTime", 1L)));
-        assertEquals(SaTokenDaoImpl.NOT_VALUE_EXPIRE, remaining.invoke(dao, Map.of("expireTime", "later")));
+        assertEquals(
+                SaTokenDaoImpl.NEVER_EXPIRE,
+                remaining.invoke(dao, Map.of("expireTime", Long.MAX_VALUE)));
+        assertEquals(
+                SaTokenDaoImpl.NOT_VALUE_EXPIRE, remaining.invoke(dao, Map.of("expireTime", 1L)));
+        assertEquals(
+                SaTokenDaoImpl.NOT_VALUE_EXPIRE,
+                remaining.invoke(dao, Map.of("expireTime", "later")));
 
         Method cleanup = SaTokenDaoImpl.class.getDeclaredMethod("cleanupExpiredEntries", Map.class);
         cleanup.setAccessible(true);
         Map<String, Object> ext = new LinkedHashMap<>();
-        ext.put("tokens", new LinkedHashMap<>(Map.of("expired", Map.of("expireTime", 1L),
-                "live", Map.of("expireTime", Long.MAX_VALUE))));
+        ext.put(
+                "tokens",
+                new LinkedHashMap<>(
+                        Map.of(
+                                "expired",
+                                Map.of("expireTime", 1L),
+                                "live",
+                                Map.of("expireTime", Long.MAX_VALUE))));
         cleanup.invoke(dao, ext);
         assertFalse(((Map<?, ?>) ext.get("tokens")).containsKey("expired"));
         dao.destroy();
@@ -220,4 +274,3 @@ class SaTokenDaoImplCoverageTest {
         return user;
     }
 }
-

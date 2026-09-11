@@ -6,9 +6,12 @@ import com.shiyu.ai.kernel.context.TenantId;
 
 public interface TenantRoleRepository {
     TenantBO selectTenantById(TenantId tenantId);
+
     RoleBO selectRoleById(Long roleId);
+
     RoleBO selectEnabledRoleByCode(TenantId tenantId, String roleCode);
+
     RoleBO selectTenantSuperRole(TenantId tenantId);
+
     String selectTenantNameById(TenantId tenantId);
 }
-

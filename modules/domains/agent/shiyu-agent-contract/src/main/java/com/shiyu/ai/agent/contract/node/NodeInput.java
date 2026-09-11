@@ -1,6 +1,7 @@
 package com.shiyu.ai.agent.contract.node;
 
 import com.shiyu.ai.agent.contract.node.NodeFields.FieldKey;
+
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
@@ -8,21 +9,15 @@ import lombok.NoArgsConstructor;
 
 import java.util.Map;
 
-/**
- * 节点输入类
- * 用于封装节点的输入参数
- */
+/** 节点输入类 用于封装节点的输入参数 */
 @Data
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor
 public class NodeInput {
 
-    /**
-     * 输入参数 Map
-     */
-    @Builder.Default
-    private Map<String, Object> parameters = new java.util.HashMap<>();
+    /** 输入参数 Map */
+    @Builder.Default private Map<String, Object> parameters = new java.util.HashMap<>();
 
     /**
      * 从 Map 创建 NodeInput
@@ -50,9 +45,9 @@ public class NodeInput {
     /**
      * 获取参数
      *
-     * @param key          参数键
+     * @param key 参数键
      * @param defaultValue 默认值
-     * @param <T>          值类型
+     * @param <T> 值类型
      * @return 参数值
      */
     @SuppressWarnings("unchecked")
@@ -75,7 +70,7 @@ public class NodeInput {
     /**
      * 添加参数
      *
-     * @param key   键
+     * @param key 键
      * @param value 值
      */
     public void addParameter(String key, Object value) {
@@ -87,9 +82,9 @@ public class NodeInput {
     /**
      * 通过 {@link FieldKey} 获取参数
      *
-     * @param field        字段键枚举
+     * @param field 字段键枚举
      * @param defaultValue 默认值
-     * @param <T>          值类型
+     * @param <T> 值类型
      * @return 参数值
      * @see #getParameter(String, Object)
      */
@@ -101,7 +96,7 @@ public class NodeInput {
      * 通过 {@link FieldKey} 获取参数
      *
      * @param field 字段键枚举
-     * @param <T>   值类型
+     * @param <T> 值类型
      * @return 参数值，不存在返回 {@code null}
      */
     public <T> T getParameter(FieldKey field) {

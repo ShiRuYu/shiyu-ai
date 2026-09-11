@@ -8,5 +8,4 @@ import org.apache.ibatis.annotations.Mapper;
 
 @Mapper
 @UseDataSource("agent")
-public interface KnowledgeDocRelationMapper extends BaseMapper<KnowledgeDocRelationDO> {
-}
+public interface KnowledgeDocRelationMapper extends BaseMapper<KnowledgeDocRelationDO> {}

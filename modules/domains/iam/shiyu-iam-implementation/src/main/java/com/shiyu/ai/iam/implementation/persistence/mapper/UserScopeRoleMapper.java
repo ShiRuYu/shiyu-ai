@@ -3,8 +3,9 @@ package com.shiyu.ai.iam.implementation.persistence.mapper;
 import com.mybatisflex.annotation.UseDataSource;
 import com.mybatisflex.core.query.QueryWrapper;
 import com.shiyu.ai.common.mybatis.datasource.DataSourceConfig;
-import com.shiyu.ai.iam.implementation.persistence.dataobject.UserScopeRoleDO;
 import com.shiyu.ai.common.mybatis.mapper.BaseMapperFlex;
+import com.shiyu.ai.iam.implementation.persistence.dataobject.UserScopeRoleDO;
+
 import org.apache.ibatis.annotations.Mapper;
 
 import java.util.List;
@@ -14,8 +15,7 @@ import java.util.List;
 public interface UserScopeRoleMapper extends BaseMapperFlex<UserScopeRoleDO> {
 
     default List<UserScopeRoleDO> selectByUserId(Long userId) {
-        QueryWrapper qw = QueryWrapper.create()
-            .eq(UserScopeRoleDO::getUserId, userId);
+        QueryWrapper qw = QueryWrapper.create().eq(UserScopeRoleDO::getUserId, userId);
         return selectListByQuery(qw);
     }
 
@@ -25,5 +25,3 @@ public interface UserScopeRoleMapper extends BaseMapperFlex<UserScopeRoleDO> {
         return selectListByQuery(qw);
     }
 }
-
-

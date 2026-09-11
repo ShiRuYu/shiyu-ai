@@ -6,7 +6,6 @@ import lombok.Getter;
 @Getter
 @AllArgsConstructor
 public enum ExamType {
-
     DAILY_QUIZ("DAILY_QUIZ", "随堂测验"),
     UNIT_TEST("UNIT_TEST", "单元测试"),
     MIDTERM("MIDTERM", "期中考试"),
@@ -17,4 +16,3 @@ public enum ExamType {
     private final String code;
     private final String name;
 }
-

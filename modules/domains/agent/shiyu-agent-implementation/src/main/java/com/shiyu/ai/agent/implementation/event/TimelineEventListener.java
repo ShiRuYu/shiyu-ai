@@ -1,15 +1,17 @@
 package com.shiyu.ai.agent.implementation.event;
 
 import com.shiyu.ai.agent.implementation.service.TimelineService;
+
 import lombok.extern.slf4j.Slf4j;
+
 import org.springframework.context.event.EventListener;
 import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Component;
 
 /**
  * 时间线事件监听器
- * <p>
- * 异步消费节点执行事件，写入 {@code execution_timeline} 表。
+ *
+ * <p>异步消费节点执行事件，写入 {@code execution_timeline} 表。
  */
 @Slf4j
 @Component

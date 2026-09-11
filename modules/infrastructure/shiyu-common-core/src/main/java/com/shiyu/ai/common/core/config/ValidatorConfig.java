@@ -1,6 +1,7 @@
 package com.shiyu.ai.common.core.config;
 
 import jakarta.validation.Validator;
+
 import org.hibernate.validator.HibernateValidator;
 import org.springframework.boot.autoconfigure.AutoConfiguration;
 import org.springframework.context.MessageSource;
@@ -9,15 +10,11 @@ import org.springframework.validation.beanvalidation.LocalValidatorFactoryBean;
 
 import java.util.Properties;
 
-/**
- * 校验框架配置类
- */
+/** 校验框架配置类 */
 @AutoConfiguration
 public class ValidatorConfig {
 
-    /**
-     * 配置校验框架
-     */
+    /** 配置校验框架 */
     @Bean
     public Validator validator(MessageSource messageSource) {
         LocalValidatorFactoryBean factoryBean = new LocalValidatorFactoryBean();
@@ -33,5 +30,4 @@ public class ValidatorConfig {
         factoryBean.afterPropertiesSet();
         return factoryBean.getValidator();
     }
-
 }

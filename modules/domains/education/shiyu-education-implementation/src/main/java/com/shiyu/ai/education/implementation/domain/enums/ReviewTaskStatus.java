@@ -1,18 +1,16 @@
 package com.shiyu.ai.education.implementation.domain.enums;
 
 import com.shiyu.ai.common.core.enums.IntEnum;
+
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 
 import java.util.Arrays;
 
-/**
- * 复习任务状态枚举（对应 DB edu_review_task.status）
- */
+/** 复习任务状态枚举（对应 DB edu_review_task.status） */
 @Getter
 @AllArgsConstructor
 public enum ReviewTaskStatus implements IntEnum {
-
     PENDING(0, "待复习"),
     IN_REVIEW(1, "复习中"),
     COMPLETED(2, "已完成"),
@@ -29,4 +27,3 @@ public enum ReviewTaskStatus implements IntEnum {
                 .orElse(null);
     }
 }
-

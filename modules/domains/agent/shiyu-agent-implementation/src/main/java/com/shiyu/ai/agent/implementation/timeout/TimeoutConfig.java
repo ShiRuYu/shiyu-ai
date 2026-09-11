@@ -1,8 +1,6 @@
 package com.shiyu.ai.agent.implementation.timeout;
 
-/**
- * 超时配置
- */
+/** 超时配置 */
 public class TimeoutConfig {
 
     private final long globalTimeoutMs;
@@ -17,6 +15,11 @@ public class TimeoutConfig {
         return new TimeoutConfig(300000, 60000); // 全局5分钟，节点1分钟
     }
 
-    public long getGlobalTimeoutMs() { return globalTimeoutMs; }
-    public long getNodeTimeoutMs() { return nodeTimeoutMs; }
+    public long getGlobalTimeoutMs() {
+        return globalTimeoutMs;
+    }
+
+    public long getNodeTimeoutMs() {
+        return nodeTimeoutMs;
+    }
 }

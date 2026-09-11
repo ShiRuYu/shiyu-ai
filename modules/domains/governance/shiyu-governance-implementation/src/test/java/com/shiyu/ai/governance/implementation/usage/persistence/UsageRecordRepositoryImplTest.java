@@ -1,32 +1,33 @@
 package com.shiyu.ai.governance.implementation.usage.persistence;
 
-import com.shiyu.ai.common.core.utils.MapstructUtils;
-import com.shiyu.ai.governance.implementation.usage.persistence.dataobject.UsageRecordDO;
-import com.shiyu.ai.governance.implementation.usage.domain.model.UsageRecordBO;
-import com.shiyu.ai.governance.implementation.usage.persistence.mapper.UsageRecordMapper;
-import com.shiyu.ai.governance.implementation.usage.persistence.repository.UsageRecordRepositoryImpl;
-import com.shiyu.ai.kernel.context.TenantId;
-import com.shiyu.ai.model.contract.api.ModelCatalogPort;
-import org.springframework.dao.DuplicateKeyException;
-import org.mockito.MockedStatic;
-import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.Test;
-
-import java.math.BigDecimal;
-import java.time.LocalDateTime;
-import java.util.List;
-import java.util.Map;
-
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
-import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.mockStatic;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
+
+import com.shiyu.ai.common.core.utils.MapstructUtils;
+import com.shiyu.ai.governance.implementation.usage.domain.model.UsageRecordBO;
+import com.shiyu.ai.governance.implementation.usage.persistence.dataobject.UsageRecordDO;
+import com.shiyu.ai.governance.implementation.usage.persistence.mapper.UsageRecordMapper;
+import com.shiyu.ai.governance.implementation.usage.persistence.repository.UsageRecordRepositoryImpl;
+import com.shiyu.ai.kernel.context.TenantId;
+import com.shiyu.ai.model.contract.api.ModelCatalogPort;
+
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import org.mockito.MockedStatic;
+import org.springframework.dao.DuplicateKeyException;
+
+import java.math.BigDecimal;
+import java.time.LocalDateTime;
+import java.util.List;
+import java.util.Map;
 
 class UsageRecordRepositoryImplTest {
 
@@ -45,17 +46,28 @@ class UsageRecordRepositoryImplTest {
 
     @Test
     void aggregatesLlmRecordsWithoutDatabaseJsonFunctions() {
-        when(mapper.selectLlmRecords()).thenReturn(List.of(
-                record("LLM", "{\"platform\":\"openai\",\"model\":\"gpt\",\"totalTokens\":12,\"cost\":0.1}", 10),
-                record("LLM", "{\"platform\":\"openai\",\"model\":\"gpt\",\"totalTokens\":8,\"cost\":0.2}", 30),
-                record("LLM", "{\"platform\":\"deepseek\",\"model\":\"chat\",\"totalTokens\":30,\"cost\":0.3}", 5)
-        ));
+        when(mapper.selectLlmRecords())
+                .thenReturn(
+                        List.of(
+                                record(
+                                        "LLM",
+                                        "{\"platform\":\"openai\",\"model\":\"gpt\",\"totalTokens\":12,\"cost\":0.1}",
+                                        10),
+                                record(
+                                        "LLM",
+                                        "{\"platform\":\"openai\",\"model\":\"gpt\",\"totalTokens\":8,\"cost\":0.2}",
+                                        30),
+                                record(
+                                        "LLM",
+                                        "{\"platform\":\"deepseek\",\"model\":\"chat\",\"totalTokens\":30,\"cost\":0.3}",
+                                        5)));
 
         List<Map<String, Object>> rows = repository.aggregateByModel();
-        Map<String, Object> openAi = rows.stream()
-                .filter(row -> "openai".equals(row.get("platform")))
-                .findFirst()
-                .orElseThrow();
+        Map<String, Object> openAi =
+                rows.stream()
+                        .filter(row -> "openai".equals(row.get("platform")))
+                        .findFirst()
+                        .orElseThrow();
 
         assertEquals(2L, openAi.get("call_count"));
         assertEquals(20L, openAi.get("total_tokens"));
@@ -65,14 +77,12 @@ class UsageRecordRepositoryImplTest {
 
     @Test
     void normalizesOverviewAliasesAndIncludesConfiguredCatalogCounts() {
-        when(mapper.getOverview()).thenReturn(Map.of(
-                "TOTAL_CALLS", 3L,
-                "AVG_LATENCY_MS", 12.5
-        ));
-        when(mapper.selectLlmRecords()).thenReturn(List.of(
-                record("LLM", "{\"totalTokens\":20,\"cost\":0.25}", 10),
-                record("LLM", "{\"totalTokens\":5,\"cost\":0.05}", 15)
-        ));
+        when(mapper.getOverview()).thenReturn(Map.of("TOTAL_CALLS", 3L, "AVG_LATENCY_MS", 12.5));
+        when(mapper.selectLlmRecords())
+                .thenReturn(
+                        List.of(
+                                record("LLM", "{\"totalTokens\":20,\"cost\":0.25}", 10),
+                                record("LLM", "{\"totalTokens\":5,\"cost\":0.05}", 15)));
         Map<String, Object> overview = repository.getOverview();
 
         assertEquals(3L, overview.get("total_calls"));
@@ -86,14 +96,24 @@ class UsageRecordRepositoryImplTest {
     @Test
     void aggregatesPeriodsAndEmbeddingUsageInJava() {
         LocalDateTime now = LocalDateTime.now();
-        when(mapper.selectLlmRecordsSince(any())).thenReturn(List.of(
-                record("LLM", "{\"totalTokens\":7,\"cost\":0.2}", 14, now),
-                record("LLM", "{\"totalTokens\":3,\"cost\":0.1}", 6, now)
-        ));
-        when(mapper.selectEmbeddingRecords()).thenReturn(List.of(
-                record("EMBEDDING", "{\"estimatedTokens\":11,\"vectorCount\":2}", 8, now),
-                record("EMBEDDING", "{\"estimatedTokens\":9,\"vectorCount\":3}", 12, now)
-        ));
+        when(mapper.selectLlmRecordsSince(any()))
+                .thenReturn(
+                        List.of(
+                                record("LLM", "{\"totalTokens\":7,\"cost\":0.2}", 14, now),
+                                record("LLM", "{\"totalTokens\":3,\"cost\":0.1}", 6, now)));
+        when(mapper.selectEmbeddingRecords())
+                .thenReturn(
+                        List.of(
+                                record(
+                                        "EMBEDDING",
+                                        "{\"estimatedTokens\":11,\"vectorCount\":2}",
+                                        8,
+                                        now),
+                                record(
+                                        "EMBEDDING",
+                                        "{\"estimatedTokens\":9,\"vectorCount\":3}",
+                                        12,
+                                        now)));
 
         Map<String, Object> llm = repository.aggregateLlmByDay(1).getFirst();
         Map<String, Object> embedding = repository.getEmbeddingOverview();
@@ -110,14 +130,15 @@ class UsageRecordRepositoryImplTest {
 
     @Test
     void sumsTodayTokensForTheSpecifiedTenant() {
-        when(mapper.selectLlmTodayByTenantId(eq(1L), any())).thenReturn(List.of(
-                record("LLM", "{\"totalTokens\":4}", 1),
-                record("LLM", "{\"totalTokens\":6}", 1)
-        ));
+        when(mapper.selectLlmTodayByTenantId(eq(1L), any()))
+                .thenReturn(
+                        List.of(
+                                record("LLM", "{\"totalTokens\":4}", 1),
+                                record("LLM", "{\"totalTokens\":6}", 1)));
 
         assertEquals(10L, repository.sumLlmTodayTokensByTenantId(new TenantId(1L)));
-        assertThrows(NullPointerException.class,
-                () -> repository.sumLlmTodayTokensByTenantId(null));
+        assertThrows(
+                NullPointerException.class, () -> repository.sumLlmTodayTokensByTenantId(null));
     }
 
     @Test
@@ -141,7 +162,11 @@ class UsageRecordRepositoryImplTest {
         record.setExtInfo("{}");
 
         try (MockedStatic<MapstructUtils> mapstruct = mockStatic(MapstructUtils.class)) {
-            mapstruct.when(() -> MapstructUtils.convert(any(UsageRecordBO.class), eq(UsageRecordDO.class)))
+            mapstruct
+                    .when(
+                            () ->
+                                    MapstructUtils.convert(
+                                            any(UsageRecordBO.class), eq(UsageRecordDO.class)))
                     .thenReturn(new UsageRecordDO());
             repository.insert(record);
             verify(mapper).insertSelective(any(UsageRecordDO.class));
@@ -152,10 +177,15 @@ class UsageRecordRepositoryImplTest {
     void treatsDuplicateInsertAsAnIdempotentNoOp() {
         UsageRecordBO record = validRecord();
         try (MockedStatic<MapstructUtils> mapstruct = mockStatic(MapstructUtils.class)) {
-            mapstruct.when(() -> MapstructUtils.convert(any(UsageRecordBO.class), eq(UsageRecordDO.class)))
+            mapstruct
+                    .when(
+                            () ->
+                                    MapstructUtils.convert(
+                                            any(UsageRecordBO.class), eq(UsageRecordDO.class)))
                     .thenReturn(new UsageRecordDO());
             org.mockito.Mockito.doThrow(new DuplicateKeyException("duplicate"))
-                    .when(mapper).insertSelective(any(UsageRecordDO.class));
+                    .when(mapper)
+                    .insertSelective(any(UsageRecordDO.class));
             assertFalse(repository.insertIfAbsent(record));
         }
     }
@@ -194,18 +224,18 @@ class UsageRecordRepositoryImplTest {
     void groupsPeriodsInReverseChronologicalOrderAndUsesUnknownModelLabels() {
         LocalDateTime older = LocalDateTime.of(2026, 1, 2, 3, 4);
         LocalDateTime newer = LocalDateTime.of(2026, 2, 3, 4, 5);
-        when(mapper.selectLlmRecordsSince(any())).thenReturn(List.of(
-                record("LLM", "{\"totalTokens\":2,\"cost\":\"0.1\"}", 1, older),
-                record("LLM", "{\"totalTokens\":4,\"cost\":\"0.2\"}", 2, newer)
-        ));
+        when(mapper.selectLlmRecordsSince(any()))
+                .thenReturn(
+                        List.of(
+                                record("LLM", "{\"totalTokens\":2,\"cost\":\"0.1\"}", 1, older),
+                                record("LLM", "{\"totalTokens\":4,\"cost\":\"0.2\"}", 2, newer)));
         List<Map<String, Object>> rows = repository.aggregateLlmByMonth(12);
         assertEquals(2, rows.size());
         assertEquals("2026-02", rows.getFirst().get("usage_month"));
         assertEquals(4L, rows.getFirst().get("total_tokens"));
 
-        when(mapper.selectLlmRecords()).thenReturn(List.of(
-                record("LLM", "{\"totalTokens\":1,\"cost\":\"0.1\"}", 1)
-        ));
+        when(mapper.selectLlmRecords())
+                .thenReturn(List.of(record("LLM", "{\"totalTokens\":1,\"cost\":\"0.1\"}", 1)));
         Map<String, Object> fallback = repository.aggregateByModel().getFirst();
         assertEquals("UNKNOWN", fallback.get("platform"));
         assertEquals("UNKNOWN", fallback.get("model"));
@@ -222,10 +252,15 @@ class UsageRecordRepositoryImplTest {
         assertEquals(rows, repository.aggregateByMonth(1));
 
         when(mapper.getOverview()).thenReturn(Map.of("total_calls", "5"));
-        when(mapper.selectLlmRecords()).thenReturn(List.of(
-                record("LLM", "{\"totalTokens\":\"bad\",\"cost\":\"bad\",\"platform\":\" \"}", 0),
-                record("LLM", "{\"totalTokens\":2,\"cost\":0.1}", 0)
-        ));
+        when(mapper.selectLlmRecords())
+                .thenReturn(
+                        List.of(
+                                record(
+                                        "LLM",
+                                        "{\"totalTokens\":\"bad\",\"cost\":\"bad\",\"platform\":\""
+                                                + " \"}",
+                                        0),
+                                record("LLM", "{\"totalTokens\":2,\"cost\":0.1}", 0)));
         Map<String, Object> overview = repository.getOverview();
         assertEquals(5L, overview.get("total_calls"));
         assertEquals(2L, overview.get("total_tokens"));
@@ -252,7 +287,8 @@ class UsageRecordRepositoryImplTest {
         return record(usageType, extInfo, latencyMs, LocalDateTime.now());
     }
 
-    private static UsageRecordDO record(String usageType, String extInfo, long latencyMs, LocalDateTime createTime) {
+    private static UsageRecordDO record(
+            String usageType, String extInfo, long latencyMs, LocalDateTime createTime) {
         UsageRecordDO record = new UsageRecordDO();
         record.setUsageType(usageType);
         record.setExtInfo(extInfo);

@@ -1,36 +1,40 @@
 package com.shiyu.ai.agent.implementation.web;
 
 import cn.dev33.satoken.annotation.SaCheckPermission;
+
 import com.shiyu.ai.agent.AgentDefinition;
+import com.shiyu.ai.agent.implementation.request.AgentRequest;
 import com.shiyu.ai.agent.implementation.service.AgentAdminService;
 import com.shiyu.ai.agent.implementation.service.AgentService;
-import com.shiyu.ai.agent.implementation.request.AgentRequest;
 import com.shiyu.ai.agent.implementation.vo.AgentDetailVO;
 import com.shiyu.ai.agent.implementation.vo.AgentVO;
 import com.shiyu.ai.agent.implementation.vo.NodeTypeMetaVO;
-import com.shiyu.ai.common.core.vo.IdNameOptionVO;
 import com.shiyu.ai.common.core.api.PageData;
 import com.shiyu.ai.common.core.api.Result;
+import com.shiyu.ai.common.core.vo.IdNameOptionVO;
 import com.shiyu.ai.common.web.auth.ActorContextHttpAdapter;
 import com.shiyu.ai.kernel.context.ActorContext;
+
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
+
 import jakarta.validation.Valid;
+
 import lombok.extern.slf4j.Slf4j;
+
 import org.apache.commons.lang3.tuple.Pair;
 import org.springframework.web.bind.annotation.*;
 
-import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
 /**
  * Agent 定义管理 Controller
  *
- * 职责：Agent 定义的全生命周期管理（CRUD）、节点类型元数据。
- * 合并来源：AgentAdminController + AgentController（非执行部分）+ NodeTypeController
+ * <p>职责：Agent 定义的全生命周期管理（CRUD）、节点类型元数据。 合并来源：AgentAdminController + AgentController（非执行部分）+
+ * NodeTypeController
  *
- * 注意：Agent 执行统一走 ExecutionController (/api/agent/executions)
+ * <p>注意：Agent 执行统一走 ExecutionController (/api/agent/executions)
  */
 @Slf4j
 @Tag(name = "Agent Definition", description = "Agent Definition")
@@ -42,8 +46,8 @@ public class AgentDefinitionController {
     private final AgentAdminService agentAdminService;
     private final AgentService agentService;
 
-    public AgentDefinitionController(AgentAdminService agentAdminService,
-                                     AgentService agentService) {
+    public AgentDefinitionController(
+            AgentAdminService agentAdminService, AgentService agentService) {
         this.agentAdminService = agentAdminService;
         this.agentService = agentService;
     }
@@ -57,7 +61,8 @@ public class AgentDefinitionController {
             @RequestParam(required = false, defaultValue = "10") Integer pageSize,
             @RequestParam(required = false) String name,
             @RequestParam(required = false) Integer status) {
-        Pair<Long, List<AgentVO>> result = agentAdminService.getPage(actor(), pageNo, pageSize, name, status);
+        Pair<Long, List<AgentVO>> result =
+                agentAdminService.getPage(actor(), pageNo, pageSize, name, status);
         return Result.success(new PageData<>(result.getRight(), result.getLeft()));
     }
 
@@ -77,8 +82,10 @@ public class AgentDefinitionController {
             AgentVO vo = agentAdminService.create(actor(), request);
             return Result.success(vo);
         } catch (Exception e) {
-            log.error("新增Agent失败: errorType={}, errorMessageLength={}",
-                    e.getClass().getSimpleName(), e.getMessage() == null ? 0 : e.getMessage().length());
+            log.error(
+                    "新增Agent失败: errorType={}, errorMessageLength={}",
+                    e.getClass().getSimpleName(),
+                    e.getMessage() == null ? 0 : e.getMessage().length());
             return Result.fail("新增失败");
         }
     }
@@ -91,8 +98,10 @@ public class AgentDefinitionController {
             AgentVO vo = agentAdminService.update(actor(), id, request);
             return Result.success(vo);
         } catch (Exception e) {
-            log.error("修改Agent失败: errorType={}, errorMessageLength={}",
-                    e.getClass().getSimpleName(), e.getMessage() == null ? 0 : e.getMessage().length());
+            log.error(
+                    "修改Agent失败: errorType={}, errorMessageLength={}",
+                    e.getClass().getSimpleName(),
+                    e.getMessage() == null ? 0 : e.getMessage().length());
             return Result.fail("修改失败");
         }
     }
@@ -105,8 +114,10 @@ public class AgentDefinitionController {
             agentAdminService.deleteById(actor(), id);
             return Result.success();
         } catch (Exception e) {
-            log.error("删除Agent失败: errorType={}, errorMessageLength={}",
-                    e.getClass().getSimpleName(), e.getMessage() == null ? 0 : e.getMessage().length());
+            log.error(
+                    "删除Agent失败: errorType={}, errorMessageLength={}",
+                    e.getClass().getSimpleName(),
+                    e.getMessage() == null ? 0 : e.getMessage().length());
             return Result.fail("删除失败");
         }
     }
@@ -121,8 +132,10 @@ public class AgentDefinitionController {
             agentAdminService.update(actor(), id, request);
             return Result.success();
         } catch (Exception e) {
-            log.error("更新Agent状态失败: errorType={}, errorMessageLength={}",
-                    e.getClass().getSimpleName(), e.getMessage() == null ? 0 : e.getMessage().length());
+            log.error(
+                    "更新Agent状态失败: errorType={}, errorMessageLength={}",
+                    e.getClass().getSimpleName(),
+                    e.getMessage() == null ? 0 : e.getMessage().length());
             return Result.fail("更新失败");
         }
     }
@@ -139,24 +152,31 @@ public class AgentDefinitionController {
     @SaCheckPermission("agent:admin:create")
     @PostMapping("/register")
     public Result<Map<String, Object>> registerAgent(@RequestBody RegisterAgentRequest request) {
-        log.info("收到 Agent 注册请求：agentIdPresent={}, namePresent={}",
-                request.getAgentId() != null, request.getName() != null);
+        log.info(
+                "收到 Agent 注册请求：agentIdPresent={}, namePresent={}",
+                request.getAgentId() != null,
+                request.getName() != null);
         try {
-            AgentDefinition definition = AgentDefinition.builder()
-                    .agentId(request.getAgentId())
-                    .name(request.getName())
-                    .description(request.getDescription())
-                    .createdAt(System.currentTimeMillis())
-                    .updatedAt(System.currentTimeMillis())
-                    .build();
+            AgentDefinition definition =
+                    AgentDefinition.builder()
+                            .agentId(request.getAgentId())
+                            .name(request.getName())
+                            .description(request.getDescription())
+                            .createdAt(System.currentTimeMillis())
+                            .updatedAt(System.currentTimeMillis())
+                            .build();
 
             if (request.getGraph() != null) {
-                com.shiyu.ai.agent.AgentVersion version = com.shiyu.ai.agent.AgentVersion.builder()
-                        .versionNumber(request.getVersionNumber() != null ? request.getVersionNumber() : "v1.0.0")
-                        .description(request.getVersionDescription())
-                        .graph(request.getGraph())
-                        .createdAt(System.currentTimeMillis())
-                        .build();
+                com.shiyu.ai.agent.AgentVersion version =
+                        com.shiyu.ai.agent.AgentVersion.builder()
+                                .versionNumber(
+                                        request.getVersionNumber() != null
+                                                ? request.getVersionNumber()
+                                                : "v1.0.0")
+                                .description(request.getVersionDescription())
+                                .graph(request.getGraph())
+                                .createdAt(System.currentTimeMillis())
+                                .build();
                 definition.addVersion(version);
                 definition.setCurrentVersion(version.getVersionNumber());
             }
@@ -164,8 +184,10 @@ public class AgentDefinitionController {
             agentService.registerAgent(actor(), definition);
             return Result.success(Map.of("agentId", request.getAgentId()));
         } catch (Exception e) {
-            log.error("Agent 注册失败：agentIdPresent={}, errorType={}, errorMessageLength={}",
-                    request.getAgentId() != null, e.getClass().getSimpleName(),
+            log.error(
+                    "Agent 注册失败：agentIdPresent={}, errorType={}, errorMessageLength={}",
+                    request.getAgentId() != null,
+                    e.getClass().getSimpleName(),
                     e.getMessage() == null ? 0 : e.getMessage().length());
             return Result.fail("Agent 注册失败");
         }
@@ -198,11 +220,11 @@ public class AgentDefinitionController {
     @Operation(summary = "Switch Version")
     @SaCheckPermission("agent:admin:edit")
     @PostMapping("/version/switch")
-    public Result<Void> switchVersion(
-            @RequestParam String agentId,
-            @RequestParam String version) {
-        log.info("收到 Agent 版本切换请求：agentIdPresent={}, versionPresent={}",
-                agentId != null, version != null);
+    public Result<Void> switchVersion(@RequestParam String agentId, @RequestParam String version) {
+        log.info(
+                "收到 Agent 版本切换请求：agentIdPresent={}, versionPresent={}",
+                agentId != null,
+                version != null);
         boolean success = agentService.switchVersion(actor(), agentId, version);
         if (success) {
             return Result.success();

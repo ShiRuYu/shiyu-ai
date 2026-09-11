@@ -1,5 +1,9 @@
 package com.shiyu.ai.agent.implementation.web;
 
+import static org.junit.jupiter.api.Assertions.*;
+import static org.mockito.ArgumentMatchers.*;
+import static org.mockito.Mockito.*;
+
 import com.shiyu.ai.agent.AgentDefinition;
 import com.shiyu.ai.agent.implementation.graph.Graph;
 import com.shiyu.ai.agent.implementation.request.AgentRequest;
@@ -12,15 +16,11 @@ import com.shiyu.ai.common.web.auth.ActorContextHttpAdapter;
 import com.shiyu.ai.kernel.context.ActorContext;
 import com.shiyu.ai.kernel.context.TenantId;
 import com.shiyu.ai.kernel.context.UserId;
+
 import org.apache.commons.lang3.tuple.Pair;
 import org.junit.jupiter.api.Test;
 
 import java.util.List;
-import java.util.Map;
-
-import static org.junit.jupiter.api.Assertions.*;
-import static org.mockito.ArgumentMatchers.*;
-import static org.mockito.Mockito.*;
 
 class AgentDefinitionControllerCoverageTest {
     @Test
@@ -38,7 +38,8 @@ class AgentDefinitionControllerCoverageTest {
         when(admin.update(eq(actor), eq(3L), any())).thenReturn(vo);
         when(admin.getNodeTypes()).thenReturn(List.of(node));
         when(admin.listAllOptions(actor)).thenReturn(List.of());
-        when(service.getAgent(actor, "a1")).thenReturn(AgentDefinition.builder().agentId("a1").name("A").build());
+        when(service.getAgent(actor, "a1"))
+                .thenReturn(AgentDefinition.builder().agentId("a1").name("A").build());
         when(service.unregisterAgent(actor, "a1")).thenReturn(true);
         when(service.switchVersion(actor, "a1", "v2")).thenReturn(true);
         when(service.listAgents(actor)).thenReturn(List.of());
@@ -51,8 +52,11 @@ class AgentDefinitionControllerCoverageTest {
             assertTrue(controller.delete(3L).isSuccess());
             assertTrue(controller.updateStatus(3L, 1).isSuccess());
             assertTrue(controller.listAllOptions().isSuccess());
-            AgentDefinitionController.RegisterAgentRequest request = new AgentDefinitionController.RegisterAgentRequest();
-            request.setAgentId("a1"); request.setName("A"); request.setGraph(mock(Graph.class));
+            AgentDefinitionController.RegisterAgentRequest request =
+                    new AgentDefinitionController.RegisterAgentRequest();
+            request.setAgentId("a1");
+            request.setName("A");
+            request.setGraph(mock(Graph.class));
             assertTrue(controller.registerAgent(request).isSuccess());
             assertTrue(controller.getAgent("a1").isSuccess());
             assertTrue(controller.deleteAgent("a1").isSuccess());

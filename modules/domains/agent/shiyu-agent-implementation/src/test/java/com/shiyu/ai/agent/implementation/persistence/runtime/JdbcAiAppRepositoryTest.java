@@ -1,22 +1,5 @@
 package com.shiyu.ai.agent.implementation.persistence.runtime;
 
-import com.shiyu.ai.agent.implementation.runtime.AiApp;
-import com.shiyu.ai.agent.implementation.runtime.AiAppVersion;
-import com.shiyu.ai.kernel.context.TenantId;
-import com.shiyu.ai.kernel.context.UserId;
-import org.junit.jupiter.api.Test;
-import org.springframework.jdbc.core.ResultSetExtractor;
-import org.springframework.jdbc.core.RowMapper;
-import org.springframework.jdbc.core.JdbcTemplate;
-import org.springframework.transaction.annotation.Transactional;
-
-import java.lang.reflect.Method;
-import java.sql.ResultSet;
-import java.sql.Timestamp;
-import java.time.Instant;
-import java.util.List;
-import java.util.Optional;
-
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertTrue;
@@ -26,6 +9,24 @@ import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
+import com.shiyu.ai.agent.implementation.runtime.AiApp;
+import com.shiyu.ai.agent.implementation.runtime.AiAppVersion;
+import com.shiyu.ai.kernel.context.TenantId;
+import com.shiyu.ai.kernel.context.UserId;
+
+import org.junit.jupiter.api.Test;
+import org.springframework.jdbc.core.JdbcTemplate;
+import org.springframework.jdbc.core.ResultSetExtractor;
+import org.springframework.jdbc.core.RowMapper;
+import org.springframework.transaction.annotation.Transactional;
+
+import java.lang.reflect.Method;
+import java.sql.ResultSet;
+import java.sql.Timestamp;
+import java.time.Instant;
+import java.util.List;
+import java.util.Optional;
+
 @SuppressWarnings({"rawtypes", "unchecked"})
 class JdbcAiAppRepositoryTest {
     private final JdbcTemplate jdbc = mock(JdbcTemplate.class);
@@ -34,8 +35,19 @@ class JdbcAiAppRepositoryTest {
 
     @Test
     void persistsAndQueriesTenantScopedAppsAndVersions() {
-        AiApp app = new AiApp("app", new TenantId(1L), new UserId(2L), "Tutor", "desc", "ACTIVE", null, now, now);
-        AiAppVersion draft = new AiAppVersion("version", "app", new TenantId(1L), "1", null, "DRAFT", now, null);
+        AiApp app =
+                new AiApp(
+                        "app",
+                        new TenantId(1L),
+                        new UserId(2L),
+                        "Tutor",
+                        "desc",
+                        "ACTIVE",
+                        null,
+                        now,
+                        now);
+        AiAppVersion draft =
+                new AiAppVersion("version", "app", new TenantId(1L), "1", null, "DRAFT", now, null);
         when(jdbc.update(anyString(), any(Object[].class))).thenReturn(1);
         when(jdbc.query(anyString(), any(ResultSetExtractor.class), any(Object[].class)))
                 .thenReturn(Optional.empty());
@@ -50,7 +62,10 @@ class JdbcAiAppRepositoryTest {
         assertTrue(repository.findVersion("app", "version", new TenantId(1)).isEmpty());
         assertTrue(repository.versions("app", new TenantId(1)).isEmpty());
         assertEquals(1, repository.archiveVersion("app", "version", new TenantId(1)));
-        verify(jdbc).update(org.mockito.ArgumentMatchers.startsWith("INSERT INTO AI_APP ("), any(Object[].class));
+        verify(jdbc)
+                .update(
+                        org.mockito.ArgumentMatchers.startsWith("INSERT INTO AI_APP ("),
+                        any(Object[].class));
     }
 
     @Test
@@ -62,8 +77,11 @@ class JdbcAiAppRepositoryTest {
 
     @Test
     void publishesVersionsWithinOneTransaction() throws Exception {
-        assertTrue(JdbcAiAppRepository.class.getDeclaredMethod("publishVersion", String.class, String.class, TenantId.class)
-                .isAnnotationPresent(Transactional.class));
+        assertTrue(
+                JdbcAiAppRepository.class
+                        .getDeclaredMethod(
+                                "publishVersion", String.class, String.class, TenantId.class)
+                        .isAnnotationPresent(Transactional.class));
     }
 
     @Test
@@ -93,7 +111,8 @@ class JdbcAiAppRepositoryTest {
         Method mapApp = JdbcAiAppRepository.class.getDeclaredMethod("mapApp", ResultSet.class);
         mapApp.setAccessible(true);
         assertEquals("app", ((AiApp) mapApp.invoke(repository, rs)).id());
-        Method mapVersion = JdbcAiAppRepository.class.getDeclaredMethod("mapVersion", ResultSet.class);
+        Method mapVersion =
+                JdbcAiAppRepository.class.getDeclaredMethod("mapVersion", ResultSet.class);
         mapVersion.setAccessible(true);
         assertFalse(((AiAppVersion) mapVersion.invoke(repository, rs)).published());
         assertEquals(now, ((AiAppVersion) mapVersion.invoke(repository, rs)).publishedAt());

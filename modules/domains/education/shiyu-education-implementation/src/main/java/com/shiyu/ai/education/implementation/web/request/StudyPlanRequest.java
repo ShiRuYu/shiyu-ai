@@ -1,6 +1,7 @@
 package com.shiyu.ai.education.implementation.web.request;
 
 import jakarta.validation.constraints.NotNull;
+
 import lombok.Data;
 
 import java.io.Serial;
@@ -10,8 +11,7 @@ import java.time.LocalDate;
 @Data
 public class StudyPlanRequest implements Serializable {
 
-    @Serial
-    private static final long serialVersionUID = 1L;
+    @Serial private static final long serialVersionUID = 1L;
 
     private Long id;
 
@@ -23,4 +23,3 @@ public class StudyPlanRequest implements Serializable {
     private LocalDate endDate;
     private String status;
 }
-

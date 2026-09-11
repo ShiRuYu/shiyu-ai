@@ -6,5 +6,4 @@ import org.springframework.context.annotation.Configuration;
 /** Registers persistence adapters owned by the Knowledge bounded context. */
 @Configuration
 @MapperScan("com.shiyu.ai.knowledge.implementation.persistence.mapper")
-public class KnowledgePersistenceConfiguration {
-}
+public class KnowledgePersistenceConfiguration {}

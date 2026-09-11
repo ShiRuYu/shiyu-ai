@@ -3,12 +3,15 @@ package com.shiyu.ai.agent.implementation.persistence.dataobject;
 import com.mybatisflex.annotation.Id;
 import com.mybatisflex.annotation.KeyType;
 import com.mybatisflex.annotation.Table;
+import com.shiyu.ai.agent.implementation.domain.model.AgentDefBO;
 import com.shiyu.ai.common.mybatis.model.TenantEntity;
+
+import io.github.linpeilie.annotations.AutoMapper;
+
 import lombok.Data;
 import lombok.EqualsAndHashCode;
+
 import java.io.Serial;
-import com.shiyu.ai.agent.implementation.domain.model.AgentDefBO;
-import io.github.linpeilie.annotations.AutoMapper;
 
 @Data
 @EqualsAndHashCode(callSuper = true)
@@ -16,8 +19,7 @@ import io.github.linpeilie.annotations.AutoMapper;
 @AutoMapper(target = AgentDefBO.class, reverseConvertGenerate = true)
 public class AgentDefDO extends TenantEntity {
 
-    @Serial
-    private static final long serialVersionUID = 1L;
+    @Serial private static final long serialVersionUID = 1L;
 
     @Id(keyType = KeyType.Auto)
     private Long id;

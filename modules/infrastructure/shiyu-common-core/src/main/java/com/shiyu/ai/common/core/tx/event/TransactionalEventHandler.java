@@ -17,4 +17,3 @@ public abstract class TransactionalEventHandler<T extends DomainEvent> {
     @TransactionalEventListener(phase = TransactionPhase.AFTER_COMPLETION)
     public void afterCompletion(T event) {}
 }
-

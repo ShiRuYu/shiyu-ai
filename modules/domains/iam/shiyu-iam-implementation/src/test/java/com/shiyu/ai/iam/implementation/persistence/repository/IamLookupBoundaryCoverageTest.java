@@ -1,20 +1,21 @@
 package com.shiyu.ai.iam.implementation.persistence.repository;
 
-import com.shiyu.ai.iam.implementation.port.repository.AuthUserLookupRepository;
-import com.shiyu.ai.iam.implementation.port.repository.TenantRepository;
-import com.shiyu.ai.iam.implementation.persistence.mapper.UserMapper;
-import com.shiyu.ai.iam.implementation.persistence.mapper.UserScopeRoleMapper;
-import com.shiyu.ai.iam.implementation.service.AuthContextService;
-import com.shiyu.ai.kernel.context.TenantId;
-import org.junit.jupiter.api.Test;
-import org.springframework.test.util.ReflectionTestUtils;
-
-import java.util.List;
-
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.mockito.ArgumentMatchers.*;
 import static org.mockito.Mockito.*;
+
+import com.shiyu.ai.iam.implementation.persistence.mapper.UserMapper;
+import com.shiyu.ai.iam.implementation.persistence.mapper.UserScopeRoleMapper;
+import com.shiyu.ai.iam.implementation.port.repository.AuthUserLookupRepository;
+import com.shiyu.ai.iam.implementation.port.repository.TenantRepository;
+import com.shiyu.ai.iam.implementation.service.AuthContextService;
+import com.shiyu.ai.kernel.context.TenantId;
+
+import org.junit.jupiter.api.Test;
+import org.springframework.test.util.ReflectionTestUtils;
+
+import java.util.List;
 
 class IamLookupBoundaryCoverageTest {
     @Test
@@ -44,12 +45,12 @@ class IamLookupBoundaryCoverageTest {
         assertNull(context.tenant(null));
         assertNull(context.role(3L));
         assertNull(context.tenantSuperRole(new TenantId(7L)));
-        org.junit.jupiter.api.Assertions.assertThrows(IllegalArgumentException.class,
-                () -> context.tenantSuperRole(null));
+        org.junit.jupiter.api.Assertions.assertThrows(
+                IllegalArgumentException.class, () -> context.tenantSuperRole(null));
         assertEquals(List.of(), context.scopeRoles(8L));
         assertEquals(List.of(), context.descendantTenantIds(new TenantId(7L)));
-        org.junit.jupiter.api.Assertions.assertThrows(IllegalArgumentException.class,
-                () -> context.descendantTenantIds(null));
+        org.junit.jupiter.api.Assertions.assertThrows(
+                IllegalArgumentException.class, () -> context.descendantTenantIds(null));
 
         UserMapper mapper = mock(UserMapper.class);
         SaTokenUserRepositoryImpl repository = new SaTokenUserRepositoryImpl();
@@ -59,4 +60,3 @@ class IamLookupBoundaryCoverageTest {
         verify(mapper).update(isNull());
     }
 }
-

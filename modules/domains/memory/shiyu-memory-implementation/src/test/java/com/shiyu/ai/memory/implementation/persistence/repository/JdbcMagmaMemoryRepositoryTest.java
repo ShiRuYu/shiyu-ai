@@ -1,41 +1,89 @@
 package com.shiyu.ai.memory.implementation.persistence.repository;
 
-import com.shiyu.ai.kernel.context.TenantId;
-import com.shiyu.ai.memory.contract.model.*;
-import com.shiyu.ai.memory.implementation.domain.magma.*;
-import org.junit.jupiter.api.Test;
-import org.springframework.jdbc.core.JdbcTemplate;
-import org.springframework.jdbc.core.RowMapper;
-
-import javax.sql.DataSource;
-import java.lang.reflect.Field;
-import java.time.Instant;
-import java.sql.ResultSet;
-import java.sql.Timestamp;
-import java.lang.reflect.Method;
-import java.util.List;
-import java.util.Map;
-
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.Mockito.*;
 
+import com.shiyu.ai.kernel.context.TenantId;
+import com.shiyu.ai.memory.contract.model.*;
+import com.shiyu.ai.memory.implementation.domain.magma.*;
+
+import org.junit.jupiter.api.Test;
+import org.springframework.jdbc.core.JdbcTemplate;
+import org.springframework.jdbc.core.RowMapper;
+
+import java.lang.reflect.Field;
+import java.lang.reflect.Method;
+import java.sql.ResultSet;
+import java.sql.Timestamp;
+import java.time.Instant;
+import java.util.List;
+import java.util.Map;
+
+import javax.sql.DataSource;
+
 class JdbcMagmaMemoryRepositoryTest {
     private static final TenantId TENANT = new TenantId(7L);
+
     @Test
     void delegatesTenantScopedEventEntityEdgeAndTraceOperations() throws Exception {
         JdbcTemplate jdbc = mock(JdbcTemplate.class);
-        doReturn(List.of()).when(jdbc).query(anyString(), org.mockito.ArgumentMatchers.<RowMapper<Object>>any(), any(Object[].class));
+        doReturn(List.of())
+                .when(jdbc)
+                .query(
+                        anyString(),
+                        org.mockito.ArgumentMatchers.<RowMapper<Object>>any(),
+                        any(Object[].class));
         JdbcMagmaMemoryRepository repository = newRepository(jdbc);
         Instant now = Instant.parse("2026-01-01T00:00:00Z");
-        MemoryEvent event = new MemoryEvent("e1", TENANT, "notes", "PROFILE", "u1", "OBSERVED", "hello",
-                now, "TEST", "s1", Map.of("k", "v"), .8, .4, MemoryEventStatus.ACTIVE,
-                ConfirmationPolicy.AUTO, now, now);
-        MemoryEntity entity = new MemoryEntity("n1", TENANT, "PROFILE", "u1", "User", "user", Map.of(), true);
-        MemoryEdge edge = new MemoryEdge("edge1", TENANT, "e1", "n1", GraphType.ENTITY, "about", true,
-                .9, .8, EdgeOrigin.RULE, "s1", true, now);
-        MemoryRetrievalTrace trace = new MemoryRetrievalTrace("trace1", TENANT, "notes", "hello", List.of("e1"),
-                Map.of(GraphType.SEMANTIC, .8), List.of(List.of("e1", "n1")), List.of(), List.of("e1"), now);
+        MemoryEvent event =
+                new MemoryEvent(
+                        "e1",
+                        TENANT,
+                        "notes",
+                        "PROFILE",
+                        "u1",
+                        "OBSERVED",
+                        "hello",
+                        now,
+                        "TEST",
+                        "s1",
+                        Map.of("k", "v"),
+                        .8,
+                        .4,
+                        MemoryEventStatus.ACTIVE,
+                        ConfirmationPolicy.AUTO,
+                        now,
+                        now);
+        MemoryEntity entity =
+                new MemoryEntity("n1", TENANT, "PROFILE", "u1", "User", "user", Map.of(), true);
+        MemoryEdge edge =
+                new MemoryEdge(
+                        "edge1",
+                        TENANT,
+                        "e1",
+                        "n1",
+                        GraphType.ENTITY,
+                        "about",
+                        true,
+                        .9,
+                        .8,
+                        EdgeOrigin.RULE,
+                        "s1",
+                        true,
+                        now);
+        MemoryRetrievalTrace trace =
+                new MemoryRetrievalTrace(
+                        "trace1",
+                        TENANT,
+                        "notes",
+                        "hello",
+                        List.of("e1"),
+                        Map.of(GraphType.SEMANTIC, .8),
+                        List.of(List.of("e1", "n1")),
+                        List.of(),
+                        List.of("e1"),
+                        now);
 
         repository.insertEvent(event);
         repository.findEvent(TENANT, "e1");
@@ -54,7 +102,11 @@ class JdbcMagmaMemoryRepositoryTest {
         repository.findRetrievalTrace(TENANT, "trace1");
 
         verify(jdbc, atLeast(7)).update(anyString(), any(Object[].class));
-        verify(jdbc, atLeast(8)).query(anyString(), org.mockito.ArgumentMatchers.<RowMapper<Object>>any(), any(Object[].class));
+        verify(jdbc, atLeast(8))
+                .query(
+                        anyString(),
+                        org.mockito.ArgumentMatchers.<RowMapper<Object>>any(),
+                        any(Object[].class));
     }
 
     @Test
@@ -77,7 +129,9 @@ class JdbcMagmaMemoryRepositoryTest {
         when(eventRow.getDouble("IMPORTANCE")).thenReturn(.4);
         when(eventRow.getString("STATUS")).thenReturn("ACTIVE");
         when(eventRow.getString("CONFIRMATION_POLICY")).thenReturn("AUTO");
-        Method mapEvent = JdbcMagmaMemoryRepository.class.getDeclaredMethod("mapEvent", ResultSet.class, int.class);
+        Method mapEvent =
+                JdbcMagmaMemoryRepository.class.getDeclaredMethod(
+                        "mapEvent", ResultSet.class, int.class);
         mapEvent.setAccessible(true);
         mapEvent.invoke(repository, eventRow, 0);
 
@@ -95,26 +149,37 @@ class JdbcMagmaMemoryRepositoryTest {
         when(edgeRow.getString("EVIDENCE_SOURCE")).thenReturn("s1");
         when(edgeRow.getBoolean("ACTIVE")).thenReturn(true);
         when(edgeRow.getTimestamp("CREATED_AT")).thenReturn(now);
-        Method mapEdge = JdbcMagmaMemoryRepository.class.getDeclaredMethod("mapEdge", ResultSet.class, int.class);
+        Method mapEdge =
+                JdbcMagmaMemoryRepository.class.getDeclaredMethod(
+                        "mapEdge", ResultSet.class, int.class);
         mapEdge.setAccessible(true);
         mapEdge.invoke(repository, edgeRow, 0);
 
-        Method parseList = JdbcMagmaMemoryRepository.class.getDeclaredMethod("parseList", String.class);
-        Method parseMap = JdbcMagmaMemoryRepository.class.getDeclaredMethod("parseMap", String.class);
-        Method parsePaths = JdbcMagmaMemoryRepository.class.getDeclaredMethod("parsePaths", String.class);
-        parseList.setAccessible(true); parseMap.setAccessible(true); parsePaths.setAccessible(true);
-        org.junit.jupiter.api.Assertions.assertTrue(((List<?>) parseList.invoke(repository, (Object) null)).isEmpty());
-        org.junit.jupiter.api.Assertions.assertTrue(((Map<?, ?>) parseMap.invoke(repository, "")).isEmpty());
-        org.junit.jupiter.api.Assertions.assertTrue(((List<?>) parsePaths.invoke(repository, " ")).isEmpty());
-        org.junit.jupiter.api.Assertions.assertEquals(List.of("e1"), parseList.invoke(repository, "[\"e1\"]"));
+        Method parseList =
+                JdbcMagmaMemoryRepository.class.getDeclaredMethod("parseList", String.class);
+        Method parseMap =
+                JdbcMagmaMemoryRepository.class.getDeclaredMethod("parseMap", String.class);
+        Method parsePaths =
+                JdbcMagmaMemoryRepository.class.getDeclaredMethod("parsePaths", String.class);
+        parseList.setAccessible(true);
+        parseMap.setAccessible(true);
+        parsePaths.setAccessible(true);
+        org.junit.jupiter.api.Assertions.assertTrue(
+                ((List<?>) parseList.invoke(repository, (Object) null)).isEmpty());
+        org.junit.jupiter.api.Assertions.assertTrue(
+                ((Map<?, ?>) parseMap.invoke(repository, "")).isEmpty());
+        org.junit.jupiter.api.Assertions.assertTrue(
+                ((List<?>) parsePaths.invoke(repository, " ")).isEmpty());
+        org.junit.jupiter.api.Assertions.assertEquals(
+                List.of("e1"), parseList.invoke(repository, "[\"e1\"]"));
     }
 
     private static JdbcMagmaMemoryRepository newRepository(JdbcTemplate jdbc) throws Exception {
-        JdbcMagmaMemoryRepository repository = new JdbcMagmaMemoryRepository(mock(DataSource.class));
+        JdbcMagmaMemoryRepository repository =
+                new JdbcMagmaMemoryRepository(mock(DataSource.class));
         Field field = JdbcMagmaMemoryRepository.class.getDeclaredField("jdbc");
         field.setAccessible(true);
         field.set(repository, jdbc);
         return repository;
     }
 }
-

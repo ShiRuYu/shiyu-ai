@@ -4,7 +4,6 @@ import lombok.Getter;
 
 @Getter
 public enum BloomTaxonomy {
-
     REMEMBER("记忆", 1, 0.15),
     UNDERSTAND("理解", 2, 0.20),
     APPLY("应用", 3, 0.25),
@@ -22,4 +21,3 @@ public enum BloomTaxonomy {
         this.weight = weight;
     }
 }
-

@@ -5,9 +5,7 @@ import lombok.Data;
 
 import java.io.Serializable;
 
-/**
- * 租户上下文 VO
- */
+/** 租户上下文 VO */
 @Data
 @Builder
 public class TenantContextVO implements Serializable {
@@ -23,4 +21,3 @@ public class TenantContextVO implements Serializable {
     /** 角色编码 */
     private String roleCode;
 }
-

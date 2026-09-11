@@ -1,6 +1,7 @@
 package com.shiyu.ai.memory.contract.model;
 
 import com.shiyu.ai.kernel.context.TenantId;
+
 import java.time.Instant;
 import java.util.Objects;
 
@@ -17,13 +18,14 @@ public record MemoryEdge(
         EdgeOrigin origin,
         String evidenceSource,
         boolean active,
-        Instant createdAt
-) {
+        Instant createdAt) {
     public MemoryEdge {
         tenantId = Objects.requireNonNull(tenantId, "tenantId is required");
         if (id == null || id.isBlank()) throw new IllegalArgumentException("edge id is required");
-        if (sourceNodeId == null || targetNodeId == null) throw new IllegalArgumentException("edge nodes are required");
-        if (graphType == null || origin == null) throw new IllegalArgumentException("edge type is required");
+        if (sourceNodeId == null || targetNodeId == null)
+            throw new IllegalArgumentException("edge nodes are required");
+        if (graphType == null || origin == null)
+            throw new IllegalArgumentException("edge type is required");
         weight = clamp(weight);
         confidence = clamp(confidence);
     }
@@ -32,4 +34,3 @@ public record MemoryEdge(
         return Math.max(0.0d, Math.min(1.0d, value));
     }
 }
-

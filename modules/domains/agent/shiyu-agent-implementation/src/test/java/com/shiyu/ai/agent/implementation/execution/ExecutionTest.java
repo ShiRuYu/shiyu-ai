@@ -1,5 +1,10 @@
 package com.shiyu.ai.agent.implementation.execution;
 
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertSame;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+
 import org.junit.jupiter.api.Test;
 
 import java.time.LocalDateTime;
@@ -8,11 +13,6 @@ import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
 import java.util.concurrent.TimeUnit;
-
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertFalse;
-import static org.junit.jupiter.api.Assertions.assertSame;
-import static org.junit.jupiter.api.Assertions.assertTrue;
 
 class ExecutionTest {
 
@@ -23,9 +23,20 @@ class ExecutionTest {
         Map<String, Object> input = Map.of("message", "hello");
         Map<String, Object> output = Map.of("answer", "world");
 
-        Execution execution = Execution.restore(
-                "execution-1", "agent-1", "v1", ExecutionStatus.COMPLETED,
-                input, output, null, 42L, "session-1", start, end, 2_000L);
+        Execution execution =
+                Execution.restore(
+                        "execution-1",
+                        "agent-1",
+                        "v1",
+                        ExecutionStatus.COMPLETED,
+                        input,
+                        output,
+                        null,
+                        42L,
+                        "session-1",
+                        start,
+                        end,
+                        2_000L);
 
         assertEquals("execution-1", execution.getExecutionId());
         assertEquals("agent-1", execution.getAgentId());

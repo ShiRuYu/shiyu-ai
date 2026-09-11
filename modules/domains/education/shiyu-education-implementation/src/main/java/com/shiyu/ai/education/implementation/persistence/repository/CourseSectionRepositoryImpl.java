@@ -1,26 +1,31 @@
 package com.shiyu.ai.education.implementation.persistence.repository;
 
 import com.mybatisflex.core.query.QueryWrapper;
-import java.util.List;
-
 import com.shiyu.ai.common.core.utils.MapstructUtils;
 import com.shiyu.ai.education.implementation.domain.model.CourseSectionBO;
-import com.shiyu.ai.education.implementation.persistence.dataobject.CourseSectionDO;
 import com.shiyu.ai.education.implementation.persistence.mapper.CourseSectionMapper;
 import com.shiyu.ai.kernel.context.TenantId;
+
 import jakarta.annotation.Resource;
+
 import org.springframework.stereotype.Component;
 
-@Component
-public class CourseSectionRepositoryImpl implements com.shiyu.ai.education.implementation.domain.port.repository.CourseSectionRepository {
+import java.util.List;
 
-    @Resource
-    private CourseSectionMapper courseSectionMapper;
+@Component
+public class CourseSectionRepositoryImpl
+        implements com.shiyu.ai.education.implementation.domain.port.repository
+                .CourseSectionRepository {
+
+    @Resource private CourseSectionMapper courseSectionMapper;
 
     public List<CourseSectionBO> selectByChapterIds(TenantId tenantId, List<Long> chapterIds) {
-        return MapstructUtils.convert(courseSectionMapper.selectListByQuery(
-                QueryWrapper.create().eq("tenant_id", tenantId.value()).in("chapter_id", chapterIds).orderBy("order_no", true)), CourseSectionBO.class);
+        return MapstructUtils.convert(
+                courseSectionMapper.selectListByQuery(
+                        QueryWrapper.create()
+                                .eq("tenant_id", tenantId.value())
+                                .in("chapter_id", chapterIds)
+                                .orderBy("order_no", true)),
+                CourseSectionBO.class);
     }
 }
-
-

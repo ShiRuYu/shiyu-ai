@@ -1,4 +1,11 @@
 package com.shiyu.ai.common.storage.web;
+
+import static org.springframework.http.HttpStatus.FORBIDDEN;
+import static org.springframework.http.HttpStatus.NOT_FOUND;
+
+import cn.dev33.satoken.annotation.SaCheckPermission;
+
+import com.shiyu.ai.common.core.api.Result;
 import com.shiyu.ai.common.storage.api.*;
 import com.shiyu.ai.common.storage.backup.*;
 import com.shiyu.ai.common.storage.config.*;
@@ -8,15 +15,14 @@ import com.shiyu.ai.common.storage.metadata.*;
 import com.shiyu.ai.common.storage.rate.*;
 import com.shiyu.ai.common.storage.security.*;
 import com.shiyu.ai.common.storage.vector.*;
-
-import cn.dev33.satoken.annotation.SaCheckPermission;
-
-import com.shiyu.ai.common.core.api.Result;
 import com.shiyu.ai.common.web.auth.ActorContextHttpAdapter;
+
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
+
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+
 import org.springframework.core.io.InputStreamResource;
 import org.springframework.http.ContentDisposition;
 import org.springframework.http.HttpHeaders;
@@ -33,13 +39,10 @@ import org.springframework.web.server.ResponseStatusException;
 
 import java.io.FileNotFoundException;
 import java.io.IOException;
-import java.nio.charset.StandardCharsets;
 import java.net.URLEncoder;
+import java.nio.charset.StandardCharsets;
 import java.util.List;
 import java.util.Map;
-
-import static org.springframework.http.HttpStatus.FORBIDDEN;
-import static org.springframework.http.HttpStatus.NOT_FOUND;
 
 @Slf4j
 @Tag(name = "File", description = "文件管理")
@@ -54,9 +57,12 @@ public class FileController {
     @SaCheckPermission("file:list")
     @GetMapping("/config")
     public Result<Map<String, Object>> config() {
-        return Result.success(Map.of(
-                "currentType", storageManager.type(),
-                "supportedTypes", FileStorageManager.SUPPORTED_TYPES));
+        return Result.success(
+                Map.of(
+                        "currentType",
+                        storageManager.type(),
+                        "supportedTypes",
+                        FileStorageManager.SUPPORTED_TYPES));
     }
 
     @Operation(summary = "获取文件列表")
@@ -64,10 +70,13 @@ public class FileController {
     @GetMapping("/list")
     public Result<List<FileView>> list() {
         try {
-            return Result.success(storageManager.list(tenantNamespace()).stream().map(this::toView).toList());
+            return Result.success(
+                    storageManager.list(tenantNamespace()).stream().map(this::toView).toList());
         } catch (IOException ex) {
-            log.error("读取文件列表失败: errorType={}, errorMessageLength={}",
-                    ex.getClass().getSimpleName(), messageLength(ex));
+            log.error(
+                    "读取文件列表失败: errorType={}, errorMessageLength={}",
+                    ex.getClass().getSimpleName(),
+                    messageLength(ex));
             return Result.fail("读取文件列表失败");
         }
     }
@@ -80,26 +89,32 @@ public class FileController {
             return Result.fail("上传文件不能为空");
         }
         try (var inputStream = file.getInputStream()) {
-            StoredFile storedFile = storageManager.upload(
-                    tenantNamespace(),
-                    file.getOriginalFilename(),
-                    file.getContentType(),
-                    file.getSize(),
-                    inputStream);
-            log.info("文件上传成功: keyLength={}, size={}, contentType={}",
+            StoredFile storedFile =
+                    storageManager.upload(
+                            tenantNamespace(),
+                            file.getOriginalFilename(),
+                            file.getContentType(),
+                            file.getSize(),
+                            inputStream);
+            log.info(
+                    "文件上传成功: keyLength={}, size={}, contentType={}",
                     storedFile.key() == null ? 0 : storedFile.key().length(),
-                    file.getSize(), file.getContentType());
+                    file.getSize(),
+                    file.getContentType());
             return Result.success(toView(storedFile));
         } catch (IOException ex) {
-            log.error("文件上传失败: errorType={}, errorMessageLength={}",
-                    ex.getClass().getSimpleName(), messageLength(ex));
+            log.error(
+                    "文件上传失败: errorType={}, errorMessageLength={}",
+                    ex.getClass().getSimpleName(),
+                    messageLength(ex));
             return Result.fail("文件上传失败");
         }
     }
 
     @Operation(summary = "下载文件")
     @GetMapping("/download")
-    public ResponseEntity<InputStreamResource> download(@RequestParam String key) throws IOException {
+    public ResponseEntity<InputStreamResource> download(@RequestParam String key)
+            throws IOException {
         verifyTenantKey(key);
         StorageObject object;
         try {
@@ -107,9 +122,10 @@ public class FileController {
         } catch (FileNotFoundException ex) {
             throw new ResponseStatusException(NOT_FOUND, "文件不存在", ex);
         }
-        ContentDisposition disposition = ContentDisposition.attachment()
-                .filename(object.name(), StandardCharsets.UTF_8)
-                .build();
+        ContentDisposition disposition =
+                ContentDisposition.attachment()
+                        .filename(object.name(), StandardCharsets.UTF_8)
+                        .build();
         return ResponseEntity.ok()
                 .contentType(MediaType.parseMediaType(object.contentType()))
                 .contentLength(object.size())
@@ -126,8 +142,11 @@ public class FileController {
             storageManager.delete(key);
             return Result.success(true);
         } catch (IOException ex) {
-            log.error("删除文件失败: keyLength={}, errorType={}, errorMessageLength={}",
-                    key == null ? 0 : key.length(), ex.getClass().getSimpleName(), messageLength(ex));
+            log.error(
+                    "删除文件失败: keyLength={}, errorType={}, errorMessageLength={}",
+                    key == null ? 0 : key.length(),
+                    ex.getClass().getSimpleName(),
+                    messageLength(ex));
             return Result.fail("文件删除失败");
         }
     }
@@ -149,14 +168,27 @@ public class FileController {
     }
 
     private FileView toView(StoredFile file) {
-        String url = file.url() == null
-                ? "/api/iam/files/download?key=" + URLEncoder.encode(file.key(), StandardCharsets.UTF_8)
-                : file.url();
-        return new FileView(file.key(), file.name(), file.size(), file.contentType(),
-                file.lastModified(), url, file.storageType());
+        String url =
+                file.url() == null
+                        ? "/api/iam/files/download?key="
+                                + URLEncoder.encode(file.key(), StandardCharsets.UTF_8)
+                        : file.url();
+        return new FileView(
+                file.key(),
+                file.name(),
+                file.size(),
+                file.contentType(),
+                file.lastModified(),
+                url,
+                file.storageType());
     }
 
-    public record FileView(String key, String name, long size, String contentType,
-                           java.time.Instant lastModified, String url, String storageType) {
-    }
+    public record FileView(
+            String key,
+            String name,
+            long size,
+            String contentType,
+            java.time.Instant lastModified,
+            String url,
+            String storageType) {}
 }

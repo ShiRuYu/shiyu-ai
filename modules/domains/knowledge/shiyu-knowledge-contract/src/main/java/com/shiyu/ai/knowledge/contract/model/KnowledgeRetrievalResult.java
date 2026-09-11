@@ -7,8 +7,7 @@ public record KnowledgeRetrievalResult(
         List<KnowledgeRetrievalHit> hits,
         List<KnowledgeCitation> citations,
         String context,
-        String errorMessage
-) {
+        String errorMessage) {
     public KnowledgeRetrievalResult {
         hits = hits == null ? List.of() : List.copyOf(hits);
         citations = citations == null ? List.of() : List.copyOf(citations);
@@ -19,4 +18,3 @@ public record KnowledgeRetrievalResult(
         return new KnowledgeRetrievalResult(false, List.of(), List.of(), "", message);
     }
 }
-

@@ -2,16 +2,13 @@ package com.shiyu.ai.knowledge.implementation.web;
 
 import com.shiyu.ai.common.core.exception.ServiceException;
 
-/**
- * 知识库接口版本通过请求头控制，不通过 URL 暴露版本号。
- */
+/** 知识库接口版本通过请求头控制，不通过 URL 暴露版本号。 */
 public final class KnowledgeApiVersion {
 
     public static final String HEADER = "version";
     public static final String CURRENT = "1";
 
-    private KnowledgeApiVersion() {
-    }
+    private KnowledgeApiVersion() {}
 
     public static void requireCurrent(String version) {
         if (version == null || version.isBlank()) {
@@ -22,4 +19,3 @@ public final class KnowledgeApiVersion {
         }
     }
 }
-

@@ -1,8 +1,8 @@
 package com.shiyu.ai.common.storage.config;
 
-import org.junit.jupiter.api.Test;
-
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
+
+import org.junit.jupiter.api.Test;
 
 class StorageMigrationPropertiesTest {
 

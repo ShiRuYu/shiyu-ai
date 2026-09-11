@@ -10,6 +10,3 @@ public record MemoryRetrievalResult(List<MemoryPath> paths, String traceId) {
         paths = paths == null ? List.of() : List.copyOf(paths);
     }
 }
-
-
-

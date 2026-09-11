@@ -1,11 +1,10 @@
 package com.shiyu.ai.common.vector.config;
 
 import lombok.Data;
+
 import org.springframework.boot.context.properties.ConfigurationProperties;
 
-/**
- * 向量存储配置
- */
+/** 向量存储配置 */
 @Data
 @ConfigurationProperties(prefix = "shiyu.vector-store")
 public class VectorStoreProperties {
@@ -28,4 +27,3 @@ public class VectorStoreProperties {
         return dir;
     }
 }
-

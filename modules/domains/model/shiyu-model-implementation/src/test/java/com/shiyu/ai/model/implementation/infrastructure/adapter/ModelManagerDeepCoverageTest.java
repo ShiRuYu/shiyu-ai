@@ -1,27 +1,26 @@
 package com.shiyu.ai.model.implementation.infrastructure.adapter;
 
-import com.shiyu.ai.kernel.context.TenantId;
-import com.shiyu.ai.model.implementation.infrastructure.adapter.config.PlatformConfig;
-import com.shiyu.ai.model.implementation.infrastructure.config.PlatformProperties;
-import com.shiyu.ai.model.implementation.domain.model.AiModelBO;
-import com.shiyu.ai.model.implementation.domain.model.AiPlatformBO;
-import com.shiyu.ai.model.implementation.domain.port.repository.AiModelRepository;
-import com.shiyu.ai.model.implementation.domain.port.repository.AiPlatformRepository;
-import org.junit.jupiter.api.Test;
-
-import java.util.List;
-
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
-import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
-import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
+
+import com.shiyu.ai.kernel.context.TenantId;
+import com.shiyu.ai.model.implementation.domain.model.AiModelBO;
+import com.shiyu.ai.model.implementation.domain.model.AiPlatformBO;
+import com.shiyu.ai.model.implementation.domain.port.repository.AiModelRepository;
+import com.shiyu.ai.model.implementation.domain.port.repository.AiPlatformRepository;
+import com.shiyu.ai.model.implementation.infrastructure.adapter.config.PlatformConfig;
+import com.shiyu.ai.model.implementation.infrastructure.config.PlatformProperties;
+
+import org.junit.jupiter.api.Test;
+
+import java.util.List;
 
 class ModelManagerDeepCoverageTest {
     @Test
@@ -34,10 +33,12 @@ class ModelManagerDeepCoverageTest {
         properties.init();
         AiPlatformBO openai = platform(1L, "OPENAI", "http://openai");
         AiPlatformBO ollama = platform(2L, "OLLAMA", "http://ollama");
-        AiModelBO model = new AiModelBO(); model.setModelName("gpt-db");
+        AiModelBO model = new AiModelBO();
+        model.setModelName("gpt-db");
         when(platforms.selectAllEnabled(new TenantId(3L))).thenReturn(List.of(openai, ollama));
         when(models.selectDefaultByPlatformId(new TenantId(3L), 1L)).thenReturn(model);
-        when(models.selectDefaultByPlatformId(new TenantId(3L), 2L)).thenThrow(new IllegalStateException("db"));
+        when(models.selectDefaultByPlatformId(new TenantId(3L), 2L))
+                .thenThrow(new IllegalStateException("db"));
         when(platforms.selectDefault(new TenantId(3L))).thenReturn(openai);
 
         ModelManager manager = new ModelManager(platforms, models, properties);
@@ -51,7 +52,8 @@ class ModelManagerDeepCoverageTest {
         assertEquals("OPENAI", manager.resolvePlatform(" "));
         assertNull(manager.getDefaultModelName("MISSING"));
 
-        PlatformConfig config = new PlatformConfig("OPENAI", "http://override", "key", "configured", .2, 10, 1);
+        PlatformConfig config =
+                new PlatformConfig("OPENAI", "http://override", "key", "configured", .2, 10, 1);
         assertTrue(manager.getChatModel(config, "gpt-db") != null);
         assertTrue(manager.getStreamingChatModel(config, null) != null);
         manager.refreshCache("MISSING");
@@ -67,8 +69,9 @@ class ModelManagerDeepCoverageTest {
         ModelManager manager = new ModelManager(platforms, models, properties);
         manager.reloadFromDb();
         assertFalse(manager.isDbLoaded());
-        assertTrue(List.of("OPENAI", "DEEPSEEK", "OPENROUTER", "SILICON_FLOW", "OLLAMA")
-                .contains(manager.getDefaultPlatform()));
+        assertTrue(
+                List.of("OPENAI", "DEEPSEEK", "OPENROUTER", "SILICON_FLOW", "OLLAMA")
+                        .contains(manager.getDefaultPlatform()));
         assertTrue(manager.availableModels().size() >= 5);
         manager.getAdapter("OPENAI");
         verify(platforms, times(1)).selectAllEnabled(new TenantId(4L));
@@ -81,14 +84,19 @@ class ModelManagerDeepCoverageTest {
 
     @Test
     void refreshesAndReplacesRegisteredAdapters() {
-        ModelManager manager = new ModelManager(mock(AiPlatformRepository.class), mock(AiModelRepository.class), new PlatformProperties());
+        ModelManager manager =
+                new ModelManager(
+                        mock(AiPlatformRepository.class),
+                        mock(AiModelRepository.class),
+                        new PlatformProperties());
         ModelAdapter adapter = mock(ModelAdapter.class);
         when(adapter.getPlatformType()).thenReturn("CUSTOM");
         when(adapter.getDefaultModelName()).thenReturn("");
         when(adapter.isAvailable()).thenReturn(false);
         manager.registerAdapter(adapter);
         assertEquals("CUSTOM", manager.getAllAdapters().get("CUSTOM").getPlatformType());
-        assertTrue(manager.availableModels().stream().anyMatch(value -> "CUSTOM".equals(value.id())));
+        assertTrue(
+                manager.availableModels().stream().anyMatch(value -> "CUSTOM".equals(value.id())));
         assertFalse(manager.isPlatformAvailable("CUSTOM"));
         manager.refreshAllCache();
         manager.unregisterAdapter("CUSTOM");
@@ -101,10 +109,16 @@ class ModelManagerDeepCoverageTest {
         AiModelRepository models = mock(AiModelRepository.class);
         PlatformProperties properties = new PlatformProperties();
         ModelManager manager = new ModelManager(platforms, models, properties);
-        assertThrows(IllegalArgumentException.class, () -> manager.getChatModel((PlatformConfig) null));
-        assertThrows(IllegalArgumentException.class, () -> manager.getStreamingChatModel((PlatformConfig) null));
-        assertThrows(IllegalArgumentException.class, () -> manager.getChatModel("UNKNOWN", "model"));
-        assertThrows(IllegalArgumentException.class, () -> manager.getStreamingChatModel("UNKNOWN", "model"));
+        assertThrows(
+                IllegalArgumentException.class, () -> manager.getChatModel((PlatformConfig) null));
+        assertThrows(
+                IllegalArgumentException.class,
+                () -> manager.getStreamingChatModel((PlatformConfig) null));
+        assertThrows(
+                IllegalArgumentException.class, () -> manager.getChatModel("UNKNOWN", "model"));
+        assertThrows(
+                IllegalArgumentException.class,
+                () -> manager.getStreamingChatModel("UNKNOWN", "model"));
         manager.markDirty();
         assertFalse(manager.isDbLoaded());
         assertTrue(manager.getAllAdapters().isEmpty() || manager.getAllAdapters().size() >= 5);
@@ -119,8 +133,10 @@ class ModelManagerDeepCoverageTest {
         properties.setTenantId(9L);
         properties.getDeepseek().setBaseUrl("http://deepseek");
         properties.getDeepseek().setModel("deep-model");
-        when(platforms.selectAllEnabled(new TenantId(9L))).thenThrow(new IllegalStateException("database down"));
-        when(platforms.selectDefault(new TenantId(9L))).thenThrow(new IllegalStateException("database down"));
+        when(platforms.selectAllEnabled(new TenantId(9L)))
+                .thenThrow(new IllegalStateException("database down"));
+        when(platforms.selectDefault(new TenantId(9L)))
+                .thenThrow(new IllegalStateException("database down"));
 
         ModelManager manager = new ModelManager(platforms, models, properties);
         manager.reloadFromDb();
@@ -141,14 +157,18 @@ class ModelManagerDeepCoverageTest {
         when(platforms.selectAllEnabled(new TenantId(10L))).thenReturn(null);
         ModelManager manager = new ModelManager(platforms, models, properties);
         manager.reloadFromDb();
-        PlatformConfig config = new PlatformConfig("OPENAI", null, null, "gpt-4o", null, null, null);
+        PlatformConfig config =
+                new PlatformConfig("OPENAI", null, null, "gpt-4o", null, null, null);
         assertNull(manager.getChatModel(config));
         assertNull(manager.getStreamingChatModel(config));
     }
 
     private AiPlatformBO platform(long id, String code, String url) {
         AiPlatformBO value = new AiPlatformBO();
-        value.setId(id); value.setCode(code); value.setName(code); value.setBaseUrl(url);
+        value.setId(id);
+        value.setCode(code);
+        value.setName(code);
+        value.setBaseUrl(url);
         return value;
     }
 }

@@ -2,13 +2,11 @@ package com.shiyu.ai.common.web.validation;
 
 import jakarta.validation.ConstraintValidator;
 import jakarta.validation.ConstraintValidatorContext;
+
 import org.jsoup.Jsoup;
 import org.jsoup.safety.Safelist;
 
-/**
- * 自定义 XSS 校验注解实现
- * 使用 Jsoup 白名单方式净化并比对，比正则更全面
- */
+/** 自定义 XSS 校验注解实现 使用 Jsoup 白名单方式净化并比对，比正则更全面 */
 public class XssValidator implements ConstraintValidator<Xss, String> {
 
     @Override
@@ -20,5 +18,4 @@ public class XssValidator implements ConstraintValidator<Xss, String> {
         String cleaned = Jsoup.clean(value, Safelist.basic());
         return cleaned.equals(value);
     }
-
 }

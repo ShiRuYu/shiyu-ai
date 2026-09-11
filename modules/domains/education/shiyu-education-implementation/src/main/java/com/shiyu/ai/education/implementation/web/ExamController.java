@@ -1,15 +1,19 @@
 package com.shiyu.ai.education.implementation.web;
 
 import cn.dev33.satoken.annotation.SaCheckPermission;
+
 import com.shiyu.ai.common.core.api.PageData;
 import com.shiyu.ai.common.core.api.Result;
+import com.shiyu.ai.common.web.auth.ActorContextHttpAdapter;
+import com.shiyu.ai.education.implementation.application.ExamService;
 import com.shiyu.ai.education.implementation.web.dto.ExamResponse;
 import com.shiyu.ai.education.implementation.web.request.ExamRequest;
-import com.shiyu.ai.education.implementation.application.ExamService;
-import com.shiyu.ai.common.web.auth.ActorContextHttpAdapter;
+
 import jakarta.validation.Valid;
+
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -32,17 +36,20 @@ public class ExamController {
     public Result<PageData<ExamResponse>> list(
             @RequestParam(defaultValue = "1") Integer pageNum,
             @RequestParam(defaultValue = "10") Integer pageSize) {
-        return Result.success(examService.page(ActorContextHttpAdapter.currentActor(), pageNum, pageSize));
+        return Result.success(
+                examService.page(ActorContextHttpAdapter.currentActor(), pageNum, pageSize));
     }
 
     @GetMapping("/subject")
     public Result<List<ExamResponse>> listBySubjectCode(@RequestParam String subjectCode) {
-        return Result.success(examService.listBySubjectCode(ActorContextHttpAdapter.currentActor(), subjectCode));
+        return Result.success(
+                examService.listBySubjectCode(ActorContextHttpAdapter.currentActor(), subjectCode));
     }
 
     @GetMapping("/teacher")
     public Result<List<ExamResponse>> listByTeacherId(@RequestParam Long teacherId) {
-        return Result.success(examService.listByTeacherId(ActorContextHttpAdapter.currentActor(), teacherId));
+        return Result.success(
+                examService.listByTeacherId(ActorContextHttpAdapter.currentActor(), teacherId));
     }
 
     @PostMapping("/create")
@@ -66,4 +73,3 @@ public class ExamController {
         return Result.success();
     }
 }
-

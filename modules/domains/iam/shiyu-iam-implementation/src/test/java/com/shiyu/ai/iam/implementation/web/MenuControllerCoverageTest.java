@@ -1,21 +1,20 @@
 package com.shiyu.ai.iam.implementation.web;
 
+import static org.junit.jupiter.api.Assertions.*;
+import static org.mockito.ArgumentMatchers.*;
+import static org.mockito.Mockito.*;
+
+import com.shiyu.ai.common.core.domain.UserContext;
+import com.shiyu.ai.common.core.domain.UserContextHolder;
 import com.shiyu.ai.iam.implementation.request.MenuPageRequest;
 import com.shiyu.ai.iam.implementation.request.MenuRequest;
 import com.shiyu.ai.iam.implementation.service.MenuService;
-import com.shiyu.ai.iam.implementation.vo.MenuVO;
-import com.shiyu.ai.iam.implementation.vo.RouteMenuVO;
-import com.shiyu.ai.common.core.domain.UserContext;
-import com.shiyu.ai.common.core.domain.UserContextHolder;
+
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
 import java.util.List;
-
-import static org.junit.jupiter.api.Assertions.*;
-import static org.mockito.ArgumentMatchers.*;
-import static org.mockito.Mockito.*;
 
 class MenuControllerCoverageTest {
     private final MenuService service = mock(MenuService.class);
@@ -37,14 +36,21 @@ class MenuControllerCoverageTest {
     }
 
     @AfterEach
-    void clear() { UserContextHolder.clearContext(); }
+    void clear() {
+        UserContextHolder.clearContext();
+    }
 
     @Test
     void mapsAllMenuQueriesMutationsAndExistenceChecks() {
         assertTrue(controller.getAllMenus().isSuccess());
         assertTrue(controller.getSystemMenuList().isSuccess());
         MenuPageRequest page = new MenuPageRequest();
-        page.setPageNum(2); page.setPageSize(10); page.setName("menu"); page.setCode("menu:list"); page.setType("M"); page.setStatus(1);
+        page.setPageNum(2);
+        page.setPageSize(10);
+        page.setName("menu");
+        page.setCode("menu:list");
+        page.setType("M");
+        page.setStatus(1);
         assertTrue(controller.getMenuPage(page).isSuccess());
         assertTrue(controller.getMenuRoots().isSuccess());
         assertTrue(controller.getMenuChildren(3L).isSuccess());
@@ -76,4 +82,3 @@ class MenuControllerCoverageTest {
         assertFalse(controller.updateMenu(1L, new MenuRequest()).isSuccess());
     }
 }
-

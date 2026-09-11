@@ -5,26 +5,24 @@ import java.util.Map;
 
 public class FlattenUtil {
 
-    /**
-     * 将多层 JSON Map 扁平化为 key=value
-     * 例如 app.name -> MyApp
-     */
+    /** 将多层 JSON Map 扁平化为 key=value 例如 app.name -> MyApp */
     public static Map<String, Object> flatten(Map<String, Object> map) {
         return flattenMap("", map);
     }
 
     private static Map<String, Object> flattenMap(String prefix, Map<String, Object> map) {
         Map<String, Object> result = new HashMap<>();
-        map.forEach((key, value) -> {
-            String fullKey = prefix.isEmpty() ? key : prefix + "." + key;
+        map.forEach(
+                (key, value) -> {
+                    String fullKey = prefix.isEmpty() ? key : prefix + "." + key;
 
-            if (value instanceof Map<?, ?> nested) {
-                // nested 是 Map<?, ?>，仍然不能保证 <String, Object> ，需要过滤
-                result.putAll(flattenMap(fullKey, castToStringObjectMap(nested)));
-            } else {
-                result.put(fullKey, value);
-            }
-        });
+                    if (value instanceof Map<?, ?> nested) {
+                        // nested 是 Map<?, ?>，仍然不能保证 <String, Object> ，需要过滤
+                        result.putAll(flattenMap(fullKey, castToStringObjectMap(nested)));
+                    } else {
+                        result.put(fullKey, value);
+                    }
+                });
         return result;
     }
 
@@ -38,5 +36,4 @@ public class FlattenUtil {
         }
         return (Map<String, Object>) map;
     }
-
 }

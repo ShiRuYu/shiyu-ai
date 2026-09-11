@@ -1,20 +1,22 @@
 package com.shiyu.ai.tooling.implementation.tool.mcp;
 
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+
 import org.junit.jupiter.api.Test;
 
 import java.util.List;
 import java.util.Map;
-
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertTrue;
 
 class McpToolRegistryTest {
 
     @Test
     void indexesSearchesAndUnregistersTools() {
         McpToolRegistry registry = new McpToolRegistry();
-        McpToolDescriptor search = tool("web.search", "Search the web", "search", List.of("web", "read"), "network");
-        McpToolDescriptor write = tool("web.write", "Write a page", "write", List.of("web", "write"), "network");
+        McpToolDescriptor search =
+                tool("web.search", "Search the web", "search", List.of("web", "read"), "network");
+        McpToolDescriptor write =
+                tool("web.write", "Write a page", "write", List.of("web", "write"), "network");
         registry.registerAll(List.of(search, write));
 
         assertEquals(2, registry.size());
@@ -33,8 +35,8 @@ class McpToolRegistryTest {
         assertEquals(1, registry.size());
     }
 
-    private static McpToolDescriptor tool(String name, String description, String server,
-                                           List<String> tags, String category) {
+    private static McpToolDescriptor tool(
+            String name, String description, String server, List<String> tags, String category) {
         return new McpToolDescriptor(name, description, server, Map.of(), tags, category, false);
     }
 }

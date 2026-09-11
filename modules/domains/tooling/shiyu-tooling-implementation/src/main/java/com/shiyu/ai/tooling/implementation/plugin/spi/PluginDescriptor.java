@@ -2,9 +2,7 @@ package com.shiyu.ai.tooling.implementation.plugin.spi;
 
 import java.util.Map;
 
-/**
- * 插件描述符
- */
+/** 插件描述符 */
 public class PluginDescriptor {
 
     private final String id;
@@ -18,12 +16,23 @@ public class PluginDescriptor {
     private volatile PluginState state;
 
     public enum PluginState {
-        INSTALLED, RESOLVED, STARTING, ACTIVE, STOPPING, STOPPED, FAILED
+        INSTALLED,
+        RESOLVED,
+        STARTING,
+        ACTIVE,
+        STOPPING,
+        STOPPED,
+        FAILED
     }
 
-    public PluginDescriptor(String id, String name, String version,
-                            String description, String author,
-                            String entryClass, Map<String, Object> config) {
+    public PluginDescriptor(
+            String id,
+            String name,
+            String version,
+            String description,
+            String author,
+            String entryClass,
+            Map<String, Object> config) {
         this.id = id;
         this.name = name;
         this.version = version;
@@ -36,14 +45,43 @@ public class PluginDescriptor {
     }
 
     // Getters
-    public String getId() { return id; }
-    public String getName() { return name; }
-    public String getVersion() { return version; }
-    public String getDescription() { return description; }
-    public String getAuthor() { return author; }
-    public String getEntryClass() { return entryClass; }
-    public Map<String, Object> getConfig() { return config; }
-    public long getLoadedAt() { return loadedAt; }
-    public PluginState getState() { return state; }
-    public void setState(PluginState state) { this.state = state; }
+    public String getId() {
+        return id;
+    }
+
+    public String getName() {
+        return name;
+    }
+
+    public String getVersion() {
+        return version;
+    }
+
+    public String getDescription() {
+        return description;
+    }
+
+    public String getAuthor() {
+        return author;
+    }
+
+    public String getEntryClass() {
+        return entryClass;
+    }
+
+    public Map<String, Object> getConfig() {
+        return config;
+    }
+
+    public long getLoadedAt() {
+        return loadedAt;
+    }
+
+    public PluginState getState() {
+        return state;
+    }
+
+    public void setState(PluginState state) {
+        this.state = state;
+    }
 }

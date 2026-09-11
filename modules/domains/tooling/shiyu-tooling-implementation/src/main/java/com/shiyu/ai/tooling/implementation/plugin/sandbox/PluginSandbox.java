@@ -6,10 +6,7 @@ import java.security.*;
 import java.util.HashSet;
 import java.util.Set;
 
-/**
- * 插件沙箱
- * 通过 SecurityManager 限制插件的权限
- */
+/** 插件沙箱 通过 SecurityManager 限制插件的权限 */
 @Slf4j
 public class PluginSandbox {
 
@@ -17,32 +14,38 @@ public class PluginSandbox {
     private final Set<String> blockedPackages;
 
     public PluginSandbox() {
-        this.allowedPackages = new HashSet<>(Set.of(
-                "java.util", "java.lang", "java.io",
-                "org.slf4j", "com.shiyu.ai.tooling.implementation.plugin.spi"
-        ));
-        this.blockedPackages = new HashSet<>(Set.of(
-                "java.net", "java.security", "java.lang.reflect",
-                "java.nio.file", "java.io.FileOutputStream"
-        ));
+        this.allowedPackages =
+                new HashSet<>(
+                        Set.of(
+                                "java.util",
+                                "java.lang",
+                                "java.io",
+                                "org.slf4j",
+                                "com.shiyu.ai.tooling.implementation.plugin.spi"));
+        this.blockedPackages =
+                new HashSet<>(
+                        Set.of(
+                                "java.net",
+                                "java.security",
+                                "java.lang.reflect",
+                                "java.nio.file",
+                                "java.io.FileOutputStream"));
     }
 
-    /**
-     * 插件沙箱权限检查
-     */
+    /** 插件沙箱权限检查 */
     public void checkPermission(String pluginId, String targetPackage) {
         for (String blocked : blockedPackages) {
             if (targetPackage.startsWith(blocked)) {
-                log.warn("插件尝试访问被禁止的包: pluginIdLength={}, packageNameLength={}",
-                        valueLength(pluginId), valueLength(targetPackage));
+                log.warn(
+                        "插件尝试访问被禁止的包: pluginIdLength={}, packageNameLength={}",
+                        valueLength(pluginId),
+                        valueLength(targetPackage));
                 throw new SecurityException("插件 [" + pluginId + "] 不允许访问: " + targetPackage);
             }
         }
     }
 
-    /**
-     * 在沙箱中执行插件
-     */
+    /** 在沙箱中执行插件 */
     public <T> T executeInSandbox(String pluginId, SandboxCallable<T> callable) {
         // 简化实现：使用线程上下文检查
         Thread currentThread = Thread.currentThread();
@@ -51,8 +54,11 @@ public class PluginSandbox {
         try {
             return callable.call();
         } catch (SecurityException e) {
-            log.error("插件沙箱拦截: pluginIdLength={}, errorType={}, errorMessageLength={}",
-                    valueLength(pluginId), e.getClass().getSimpleName(), valueLength(e.getMessage()));
+            log.error(
+                    "插件沙箱拦截: pluginIdLength={}, errorType={}, errorMessageLength={}",
+                    valueLength(pluginId),
+                    e.getClass().getSimpleName(),
+                    valueLength(e.getMessage()));
             throw e;
         } catch (Exception e) {
             throw new RuntimeException("插件执行异常", e);

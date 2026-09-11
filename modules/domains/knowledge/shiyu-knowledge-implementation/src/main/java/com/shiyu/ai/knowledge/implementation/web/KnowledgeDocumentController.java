@@ -1,4 +1,10 @@
 package com.shiyu.ai.knowledge.implementation.web;
+
+import cn.dev33.satoken.annotation.SaCheckPermission;
+
+import com.shiyu.ai.common.core.api.PageData;
+import com.shiyu.ai.common.core.api.Result;
+import com.shiyu.ai.common.core.exception.ServiceException;
 import com.shiyu.ai.common.storage.api.*;
 import com.shiyu.ai.common.storage.backup.*;
 import com.shiyu.ai.common.storage.config.*;
@@ -8,21 +14,18 @@ import com.shiyu.ai.common.storage.metadata.*;
 import com.shiyu.ai.common.storage.rate.*;
 import com.shiyu.ai.common.storage.security.*;
 import com.shiyu.ai.common.storage.vector.*;
-
-import com.shiyu.ai.knowledge.implementation.web.KnowledgeApiVersion;
-
-import cn.dev33.satoken.annotation.SaCheckPermission;
-import com.shiyu.ai.common.core.api.PageData;
-import com.shiyu.ai.common.core.api.Result;
-import com.shiyu.ai.common.core.exception.ServiceException;
+import com.shiyu.ai.common.web.auth.ActorContextHttpAdapter;
+import com.shiyu.ai.kernel.context.ActorContext;
 import com.shiyu.ai.knowledge.implementation.application.EnterpriseDocumentService;
 import com.shiyu.ai.knowledge.implementation.application.KnowledgeDocumentUploadService;
-import com.shiyu.ai.kernel.context.ActorContext;
-import com.shiyu.ai.common.web.auth.ActorContextHttpAdapter;
+
 import io.swagger.v3.oas.annotations.tags.Tag;
+
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.NotBlank;
+
 import lombok.RequiredArgsConstructor;
+
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
@@ -63,29 +66,51 @@ public class KnowledgeDocumentController {
             @RequestParam(required = false) String keyword,
             @RequestParam(required = false) String lifecycleStatus,
             @RequestParam(required = false) String parseStatus,
-            @RequestHeader(value = KnowledgeApiVersion.HEADER,
-                    defaultValue = KnowledgeApiVersion.CURRENT) String version) {
+            @RequestHeader(
+                            value = KnowledgeApiVersion.HEADER,
+                            defaultValue = KnowledgeApiVersion.CURRENT)
+                    String version) {
         KnowledgeApiVersion.requireCurrent(version);
-        return Result.success(documentService.page(currentActor(), spaceId, pageNum, Math.min(pageSize, 100),
-                keyword, lifecycleStatus, parseStatus));
+        return Result.success(
+                documentService.page(
+                        currentActor(),
+                        spaceId,
+                        pageNum,
+                        Math.min(pageSize, 100),
+                        keyword,
+                        lifecycleStatus,
+                        parseStatus));
     }
 
-    @PostMapping(value = "/spaces/{spaceId}/documents", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
+    @PostMapping(
+            value = "/spaces/{spaceId}/documents",
+            consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
     @SaCheckPermission("knowledge:document:upload")
     public Result<EnterpriseDocumentService.UploadResult> upload(
             @PathVariable Long spaceId,
             @RequestPart("file") MultipartFile file,
             @RequestParam(required = false) String title,
-            @RequestHeader(value = KnowledgeApiVersion.HEADER,
-                    defaultValue = KnowledgeApiVersion.CURRENT) String version) {
+            @RequestHeader(
+                            value = KnowledgeApiVersion.HEADER,
+                            defaultValue = KnowledgeApiVersion.CURRENT)
+                    String version) {
         KnowledgeApiVersion.requireCurrent(version);
         if (file == null || file.isEmpty()) {
             throw new ServiceException("上传文件不能为空");
         }
         try {
-            String originalName = file.getOriginalFilename() == null ? "document.txt" : file.getOriginalFilename();
-            return Result.success(uploadService.upload(currentActor(), spaceId, title, originalName,
-                    file.getContentType(), file.getBytes()));
+            String originalName =
+                    file.getOriginalFilename() == null
+                            ? "document.txt"
+                            : file.getOriginalFilename();
+            return Result.success(
+                    uploadService.upload(
+                            currentActor(),
+                            spaceId,
+                            title,
+                            originalName,
+                            file.getContentType(),
+                            file.getBytes()));
         } catch (IOException exception) {
             throw new ServiceException("读取上传文件失败");
         }
@@ -96,10 +121,13 @@ public class KnowledgeDocumentController {
     public Result<EnterpriseDocumentService.UploadResult> importUrl(
             @PathVariable Long spaceId,
             @RequestBody @Valid ImportUrlRequest request,
-            @RequestHeader(value = KnowledgeApiVersion.HEADER,
-                    defaultValue = KnowledgeApiVersion.CURRENT) String version) {
+            @RequestHeader(
+                            value = KnowledgeApiVersion.HEADER,
+                            defaultValue = KnowledgeApiVersion.CURRENT)
+                    String version) {
         KnowledgeApiVersion.requireCurrent(version);
-        return Result.success(uploadService.importUrl(currentActor(), spaceId, request.title(), request.url()));
+        return Result.success(
+                uploadService.importUrl(currentActor(), spaceId, request.title(), request.url()));
     }
 
     @PostMapping("/spaces/{spaceId}/documents/upload-sessions")
@@ -107,8 +135,10 @@ public class KnowledgeDocumentController {
     public Result<ResumableUploadService.UploadSession> beginUpload(
             @PathVariable Long spaceId,
             @RequestBody @Valid ResumableUploadService.BeginRequest request,
-            @RequestHeader(value = KnowledgeApiVersion.HEADER,
-                    defaultValue = KnowledgeApiVersion.CURRENT) String version) {
+            @RequestHeader(
+                            value = KnowledgeApiVersion.HEADER,
+                            defaultValue = KnowledgeApiVersion.CURRENT)
+                    String version) {
         KnowledgeApiVersion.requireCurrent(version);
         return Result.success(resumableUploadService.begin(currentUploadActor(), spaceId, request));
     }
@@ -117,13 +147,16 @@ public class KnowledgeDocumentController {
     @SaCheckPermission("knowledge:document:upload")
     public Result<ResumableUploadService.UploadSession> uploadStatus(
             @PathVariable String sessionId,
-            @RequestHeader(value = KnowledgeApiVersion.HEADER,
-                    defaultValue = KnowledgeApiVersion.CURRENT) String version) {
+            @RequestHeader(
+                            value = KnowledgeApiVersion.HEADER,
+                            defaultValue = KnowledgeApiVersion.CURRENT)
+                    String version) {
         KnowledgeApiVersion.requireCurrent(version);
         return Result.success(resumableUploadService.status(currentUploadActor(), sessionId));
     }
 
-    @PostMapping(value = "/documents/upload-sessions/{sessionId}/chunks/{index}",
+    @PostMapping(
+            value = "/documents/upload-sessions/{sessionId}/chunks/{index}",
             consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
     @SaCheckPermission("knowledge:document:upload")
     public Result<ResumableUploadService.UploadSession> uploadChunk(
@@ -131,12 +164,15 @@ public class KnowledgeDocumentController {
             @PathVariable int index,
             @RequestParam int totalChunks,
             @RequestPart("file") MultipartFile chunk,
-            @RequestHeader(value = KnowledgeApiVersion.HEADER,
-                    defaultValue = KnowledgeApiVersion.CURRENT) String version) {
+            @RequestHeader(
+                            value = KnowledgeApiVersion.HEADER,
+                            defaultValue = KnowledgeApiVersion.CURRENT)
+                    String version) {
         KnowledgeApiVersion.requireCurrent(version);
         try {
-            return Result.success(resumableUploadService.writeChunk(
-                    currentUploadActor(), sessionId, index, totalChunks, chunk.getBytes()));
+            return Result.success(
+                    resumableUploadService.writeChunk(
+                            currentUploadActor(), sessionId, index, totalChunks, chunk.getBytes()));
         } catch (IOException exception) {
             throw new ServiceException("读取上传分片失败");
         }
@@ -146,11 +182,13 @@ public class KnowledgeDocumentController {
     @SaCheckPermission("knowledge:document:upload")
     public Result<EnterpriseDocumentService.UploadResult> completeUpload(
             @PathVariable String sessionId,
-            @RequestHeader(value = KnowledgeApiVersion.HEADER,
-                    defaultValue = KnowledgeApiVersion.CURRENT) String version) {
+            @RequestHeader(
+                            value = KnowledgeApiVersion.HEADER,
+                            defaultValue = KnowledgeApiVersion.CURRENT)
+                    String version) {
         KnowledgeApiVersion.requireCurrent(version);
-        ResumableUploadHandler.RegistrationResult registration = resumableUploadService.complete(
-                currentUploadActor(), sessionId);
+        ResumableUploadHandler.RegistrationResult registration =
+                resumableUploadService.complete(currentUploadActor(), sessionId);
         if (!(registration.value() instanceof EnterpriseDocumentService.UploadResult result)) {
             throw new ServiceException("上传结果未完成知识文档注册");
         }
@@ -161,119 +199,157 @@ public class KnowledgeDocumentController {
     @SaCheckPermission("knowledge:document:upload")
     public Result<Void> cancelUpload(
             @PathVariable String sessionId,
-            @RequestHeader(value = KnowledgeApiVersion.HEADER,
-                    defaultValue = KnowledgeApiVersion.CURRENT) String version) {
+            @RequestHeader(
+                            value = KnowledgeApiVersion.HEADER,
+                            defaultValue = KnowledgeApiVersion.CURRENT)
+                    String version) {
         KnowledgeApiVersion.requireCurrent(version);
         resumableUploadService.cancel(currentUploadActor(), sessionId);
         return Result.success();
     }
 
     @GetMapping("/documents/{id}")
-    public Result<EnterpriseDocumentService.DocumentView> get(@PathVariable Long id,
-                                                              @RequestHeader(value = KnowledgeApiVersion.HEADER,
-                                                                      defaultValue = KnowledgeApiVersion.CURRENT) String version) {
+    public Result<EnterpriseDocumentService.DocumentView> get(
+            @PathVariable Long id,
+            @RequestHeader(
+                            value = KnowledgeApiVersion.HEADER,
+                            defaultValue = KnowledgeApiVersion.CURRENT)
+                    String version) {
         KnowledgeApiVersion.requireCurrent(version);
         return Result.success(documentService.get(currentActor(), id));
     }
 
     @GetMapping("/documents/{id}/versions")
-    public Result<List<EnterpriseDocumentService.VersionView>> versions(@PathVariable Long id,
-                                                                         @RequestHeader(value = KnowledgeApiVersion.HEADER,
-                                                                                 defaultValue = KnowledgeApiVersion.CURRENT) String version) {
+    public Result<List<EnterpriseDocumentService.VersionView>> versions(
+            @PathVariable Long id,
+            @RequestHeader(
+                            value = KnowledgeApiVersion.HEADER,
+                            defaultValue = KnowledgeApiVersion.CURRENT)
+                    String version) {
         KnowledgeApiVersion.requireCurrent(version);
         return Result.success(documentService.versions(currentActor(), id));
     }
 
     @PostMapping("/documents/{id}/submit")
     @SaCheckPermission("knowledge:document:upload")
-    public Result<EnterpriseDocumentService.DocumentView> submit(@PathVariable Long id,
-                                                                  @RequestParam(required = false) String comment,
-                                                                  @RequestHeader(value = KnowledgeApiVersion.HEADER,
-                                                                          defaultValue = KnowledgeApiVersion.CURRENT) String version) {
+    public Result<EnterpriseDocumentService.DocumentView> submit(
+            @PathVariable Long id,
+            @RequestParam(required = false) String comment,
+            @RequestHeader(
+                            value = KnowledgeApiVersion.HEADER,
+                            defaultValue = KnowledgeApiVersion.CURRENT)
+                    String version) {
         KnowledgeApiVersion.requireCurrent(version);
         return Result.success(documentService.submit(currentActor(), id, comment));
     }
 
     @PostMapping("/documents/{id}/approve")
     @SaCheckPermission("knowledge:edit")
-    public Result<EnterpriseDocumentService.DocumentView> approve(@PathVariable Long id,
-                                                                   @RequestParam(required = false) String comment,
-                                                                   @RequestHeader(value = KnowledgeApiVersion.HEADER,
-                                                                           defaultValue = KnowledgeApiVersion.CURRENT) String version) {
+    public Result<EnterpriseDocumentService.DocumentView> approve(
+            @PathVariable Long id,
+            @RequestParam(required = false) String comment,
+            @RequestHeader(
+                            value = KnowledgeApiVersion.HEADER,
+                            defaultValue = KnowledgeApiVersion.CURRENT)
+                    String version) {
         KnowledgeApiVersion.requireCurrent(version);
         return Result.success(documentService.approve(currentActor(), id, comment));
     }
 
     @PostMapping("/documents/{id}/reject")
     @SaCheckPermission("knowledge:edit")
-    public Result<EnterpriseDocumentService.DocumentView> reject(@PathVariable Long id,
-                                                                  @RequestParam(required = false) String comment,
-                                                                  @RequestHeader(value = KnowledgeApiVersion.HEADER,
-                                                                          defaultValue = KnowledgeApiVersion.CURRENT) String version) {
+    public Result<EnterpriseDocumentService.DocumentView> reject(
+            @PathVariable Long id,
+            @RequestParam(required = false) String comment,
+            @RequestHeader(
+                            value = KnowledgeApiVersion.HEADER,
+                            defaultValue = KnowledgeApiVersion.CURRENT)
+                    String version) {
         KnowledgeApiVersion.requireCurrent(version);
         return Result.success(documentService.reject(currentActor(), id, comment));
     }
 
     @PostMapping("/documents/{id}/publish")
     @SaCheckPermission("knowledge:edit")
-    public Result<EnterpriseDocumentService.DocumentView> publish(@PathVariable Long id,
-                                                                   @RequestParam(required = false) String comment,
-                                                                   @RequestHeader(value = KnowledgeApiVersion.HEADER,
-                                                                           defaultValue = KnowledgeApiVersion.CURRENT) String version) {
+    public Result<EnterpriseDocumentService.DocumentView> publish(
+            @PathVariable Long id,
+            @RequestParam(required = false) String comment,
+            @RequestHeader(
+                            value = KnowledgeApiVersion.HEADER,
+                            defaultValue = KnowledgeApiVersion.CURRENT)
+                    String version) {
         KnowledgeApiVersion.requireCurrent(version);
         return Result.success(documentService.publish(currentActor(), id, comment));
     }
 
     @PostMapping("/documents/{id}/archive")
     @SaCheckPermission("knowledge:edit")
-    public Result<EnterpriseDocumentService.DocumentView> archive(@PathVariable Long id,
-                                                                   @RequestParam(required = false) String comment,
-                                                                   @RequestHeader(value = KnowledgeApiVersion.HEADER,
-                                                                           defaultValue = KnowledgeApiVersion.CURRENT) String version) {
+    public Result<EnterpriseDocumentService.DocumentView> archive(
+            @PathVariable Long id,
+            @RequestParam(required = false) String comment,
+            @RequestHeader(
+                            value = KnowledgeApiVersion.HEADER,
+                            defaultValue = KnowledgeApiVersion.CURRENT)
+                    String version) {
         KnowledgeApiVersion.requireCurrent(version);
         return Result.success(documentService.archive(currentActor(), id, comment));
     }
 
     @PostMapping("/documents/{id}/versions/{versionId}/rollback")
     @SaCheckPermission("knowledge:edit")
-    public Result<EnterpriseDocumentService.DocumentView> rollback(@PathVariable Long id,
-                                                                    @PathVariable Long versionId,
-                                                                    @RequestHeader(value = KnowledgeApiVersion.HEADER,
-                                                                            defaultValue = KnowledgeApiVersion.CURRENT) String version) {
+    public Result<EnterpriseDocumentService.DocumentView> rollback(
+            @PathVariable Long id,
+            @PathVariable Long versionId,
+            @RequestHeader(
+                            value = KnowledgeApiVersion.HEADER,
+                            defaultValue = KnowledgeApiVersion.CURRENT)
+                    String version) {
         KnowledgeApiVersion.requireCurrent(version);
         return Result.success(documentService.rollback(currentActor(), id, versionId));
     }
 
     @DeleteMapping("/documents/{id}")
     @SaCheckPermission("knowledge:document:delete")
-    public Result<Void> delete(@PathVariable Long id,
-                               @RequestHeader(value = KnowledgeApiVersion.HEADER,
-                                       defaultValue = KnowledgeApiVersion.CURRENT) String version) {
+    public Result<Void> delete(
+            @PathVariable Long id,
+            @RequestHeader(
+                            value = KnowledgeApiVersion.HEADER,
+                            defaultValue = KnowledgeApiVersion.CURRENT)
+                    String version) {
         KnowledgeApiVersion.requireCurrent(version);
         documentService.delete(currentActor(), id);
         return Result.success();
     }
 
     @GetMapping("/documents/{id}/preview")
-    public ResponseEntity<byte[]> preview(@PathVariable Long id,
-                                          @RequestHeader(value = KnowledgeApiVersion.HEADER,
-                                                  defaultValue = KnowledgeApiVersion.CURRENT) String version) {
+    public ResponseEntity<byte[]> preview(
+            @PathVariable Long id,
+            @RequestHeader(
+                            value = KnowledgeApiVersion.HEADER,
+                            defaultValue = KnowledgeApiVersion.CURRENT)
+                    String version) {
         KnowledgeApiVersion.requireCurrent(version);
         EnterpriseDocumentService.DocumentView document = documentService.get(currentActor(), id);
         try (ObjectStorage.ReadableObject object = objectStorage.open(document.objectKey())) {
-            String encodedName = URLEncoder.encode(object.originalName(), StandardCharsets.UTF_8).replace("+", "%20");
+            String encodedName =
+                    URLEncoder.encode(object.originalName(), StandardCharsets.UTF_8)
+                            .replace("+", "%20");
             return ResponseEntity.ok()
-                    .contentType(MediaType.parseMediaType(object.contentType() == null
-                            ? MediaType.APPLICATION_OCTET_STREAM_VALUE : object.contentType()))
-                    .header(HttpHeaders.CONTENT_DISPOSITION, "inline; filename*=UTF-8''" + encodedName)
+                    .contentType(
+                            MediaType.parseMediaType(
+                                    object.contentType() == null
+                                            ? MediaType.APPLICATION_OCTET_STREAM_VALUE
+                                            : object.contentType()))
+                    .header(
+                            HttpHeaders.CONTENT_DISPOSITION,
+                            "inline; filename*=UTF-8''" + encodedName)
                     .body(object.inputStream().readAllBytes());
         } catch (IOException exception) {
             throw new ServiceException("文件预览失败");
         }
     }
 
-    public record ImportUrlRequest(@NotBlank String url, String title) {
-    }
+    public record ImportUrlRequest(@NotBlank String url, String title) {}
 
     private ActorContext currentActor() {
         return ActorContextHttpAdapter.currentActor();
@@ -281,8 +357,7 @@ public class KnowledgeDocumentController {
 
     private ResumableUploadHandler.UploadActor currentUploadActor() {
         ActorContext actor = currentActor();
-        return new ResumableUploadHandler.UploadActor(actor.tenantId(), actor.userId(), actor.activeRoleId(),
-                actor.platformAdmin());
+        return new ResumableUploadHandler.UploadActor(
+                actor.tenantId(), actor.userId(), actor.activeRoleId(), actor.platformAdmin());
     }
 }
-

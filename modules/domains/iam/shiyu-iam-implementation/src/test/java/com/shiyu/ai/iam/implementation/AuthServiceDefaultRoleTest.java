@@ -1,5 +1,12 @@
 package com.shiyu.ai.iam.implementation;
 
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.never;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
+
 import com.shiyu.ai.iam.implementation.domain.model.RoleBO;
 import com.shiyu.ai.iam.implementation.domain.model.UserBO;
 import com.shiyu.ai.iam.implementation.domain.model.UserScopeRoleBO;
@@ -12,16 +19,10 @@ import com.shiyu.ai.iam.implementation.service.CaptchaService;
 import com.shiyu.ai.iam.implementation.service.MenuService;
 import com.shiyu.ai.iam.implementation.service.impl.AuthServiceImpl;
 import com.shiyu.ai.kernel.context.TenantId;
+
 import org.junit.jupiter.api.Test;
 import org.mockito.ArgumentCaptor;
 import org.springframework.test.util.ReflectionTestUtils;
-
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertThrows;
-import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.never;
-import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.when;
 
 class AuthServiceDefaultRoleTest {
 
@@ -34,9 +35,15 @@ class AuthServiceDefaultRoleTest {
         TenantRepository tenantRepository = mock(TenantRepository.class);
         MenuService menuService = mock(MenuService.class);
         CaptchaService captchaService = mock(CaptchaService.class);
-        AuthServiceImpl service = new AuthServiceImpl(authRepository, userRepository,
-                userScopeRoleRepository, tenantRoleRepository, tenantRepository,
-                menuService, captchaService);
+        AuthServiceImpl service =
+                new AuthServiceImpl(
+                        authRepository,
+                        userRepository,
+                        userScopeRoleRepository,
+                        tenantRoleRepository,
+                        tenantRepository,
+                        menuService,
+                        captchaService);
 
         UserBO user = new UserBO();
         user.setId(42L);
@@ -45,7 +52,8 @@ class AuthServiceDefaultRoleTest {
         userRole.setCode("user");
         userRole.setName("User");
         when(userRepository.selectById(42L)).thenReturn(user);
-        when(tenantRoleRepository.selectEnabledRoleByCode(new TenantId(1L), "user")).thenReturn(userRole);
+        when(tenantRoleRepository.selectEnabledRoleByCode(new TenantId(1L), "user"))
+                .thenReturn(userRole);
         when(userRepository.update(user)).thenReturn(true);
 
         ReflectionTestUtils.invokeMethod(service, "assignDefaultTenantScopeRole", 42L);
@@ -68,9 +76,15 @@ class AuthServiceDefaultRoleTest {
         TenantRepository tenantRepository = mock(TenantRepository.class);
         MenuService menuService = mock(MenuService.class);
         CaptchaService captchaService = mock(CaptchaService.class);
-        AuthServiceImpl service = new AuthServiceImpl(authRepository, userRepository,
-                userScopeRoleRepository, tenantRoleRepository, tenantRepository,
-                menuService, captchaService);
+        AuthServiceImpl service =
+                new AuthServiceImpl(
+                        authRepository,
+                        userRepository,
+                        userScopeRoleRepository,
+                        tenantRoleRepository,
+                        tenantRepository,
+                        menuService,
+                        captchaService);
 
         UserBO user = new UserBO();
         user.setId(43L);
@@ -78,12 +92,14 @@ class AuthServiceDefaultRoleTest {
         userRole.setId(3L);
         userRole.setCode("user");
         when(userRepository.selectById(43L)).thenReturn(user);
-        when(tenantRoleRepository.selectEnabledRoleByCode(new TenantId(1L), "user")).thenReturn(userRole);
+        when(tenantRoleRepository.selectEnabledRoleByCode(new TenantId(1L), "user"))
+                .thenReturn(userRole);
         when(userRepository.update(user)).thenReturn(false);
 
-        assertThrows(IllegalStateException.class,
-                () -> ReflectionTestUtils.invokeMethod(service, "assignDefaultTenantScopeRole", 43L));
+        assertThrows(
+                IllegalStateException.class,
+                () ->
+                        ReflectionTestUtils.invokeMethod(
+                                service, "assignDefaultTenantScopeRole", 43L));
     }
 }
-
-

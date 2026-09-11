@@ -1,6 +1,7 @@
 package com.shiyu.ai.agent.implementation.request;
 
 import jakarta.validation.constraints.NotBlank;
+
 import lombok.Data;
 
 import java.util.Map;

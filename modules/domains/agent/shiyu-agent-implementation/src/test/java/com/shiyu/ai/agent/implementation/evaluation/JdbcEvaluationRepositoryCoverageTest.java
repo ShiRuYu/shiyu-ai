@@ -1,16 +1,17 @@
 package com.shiyu.ai.agent.implementation.evaluation;
 
+import static org.junit.jupiter.api.Assertions.*;
+import static org.mockito.Mockito.*;
+
 import org.junit.jupiter.api.Test;
 
-import javax.sql.DataSource;
 import java.lang.reflect.Method;
 import java.sql.ResultSet;
 import java.sql.Timestamp;
 import java.time.Instant;
 import java.util.Map;
 
-import static org.junit.jupiter.api.Assertions.*;
-import static org.mockito.Mockito.*;
+import javax.sql.DataSource;
 
 class JdbcEvaluationRepositoryCoverageTest {
     @Test
@@ -18,8 +19,9 @@ class JdbcEvaluationRepositoryCoverageTest {
         JdbcEvaluationRepository repository = new JdbcEvaluationRepository(mock(DataSource.class));
         ResultSet rs = mock(ResultSet.class);
         Instant created = Instant.parse("2025-01-01T00:00:00Z");
-        when(rs.getString("RESULTS_JSON")).thenReturn(
-                "[{\"caseId\":\"c1\",\"metric\":\"EXACT_MATCH\",\"score\":\"0.75\",\"passed\":true,\"detail\":\"ok\"}]");
+        when(rs.getString("RESULTS_JSON"))
+                .thenReturn(
+                        "[{\"caseId\":\"c1\",\"metric\":\"EXACT_MATCH\",\"score\":\"0.75\",\"passed\":true,\"detail\":\"ok\"}]");
         when(rs.getString("ID")).thenReturn("run-1");
         when(rs.getString("DATASET_ID")).thenReturn("set-1");
         when(rs.getString("APP_VERSION_ID")).thenReturn("version-1");
@@ -43,11 +45,14 @@ class JdbcEvaluationRepositoryCoverageTest {
     @Test
     void handlesEmptyMetadataAndNumericConversionHelpers() throws Exception {
         JdbcEvaluationRepository repository = new JdbcEvaluationRepository(mock(DataSource.class));
-        Method parseMap = JdbcEvaluationRepository.class.getDeclaredMethod("parseMap", String.class);
+        Method parseMap =
+                JdbcEvaluationRepository.class.getDeclaredMethod("parseMap", String.class);
         parseMap.setAccessible(true);
-        assertEquals(Map.of(), parseMap.invoke(repository, new Object[]{null}));
+        assertEquals(Map.of(), parseMap.invoke(repository, new Object[] {null}));
         assertEquals(Map.of(), parseMap.invoke(repository, " "));
-        assertEquals("value", ((Map<?, ?>) parseMap.invoke(repository, "{\"key\":\"value\"}")).get("key"));
+        assertEquals(
+                "value",
+                ((Map<?, ?>) parseMap.invoke(repository, "{\"key\":\"value\"}")).get("key"));
 
         Method number = JdbcEvaluationRepository.class.getDeclaredMethod("number", Object.class);
         number.setAccessible(true);
@@ -56,7 +61,7 @@ class JdbcEvaluationRepositoryCoverageTest {
 
         Method timestamp = JdbcEvaluationRepository.class.getDeclaredMethod("ts", Instant.class);
         timestamp.setAccessible(true);
-        assertNotNull(timestamp.invoke(null, new Object[]{null}));
+        assertNotNull(timestamp.invoke(null, new Object[] {null}));
         Instant now = Instant.parse("2025-02-01T00:00:00Z");
         assertEquals(now, ((Timestamp) timestamp.invoke(null, now)).toInstant());
     }

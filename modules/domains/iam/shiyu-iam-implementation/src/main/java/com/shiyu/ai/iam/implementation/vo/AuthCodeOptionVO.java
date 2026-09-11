@@ -6,14 +6,11 @@ import java.io.Serial;
 import java.io.Serializable;
 import java.time.LocalDateTime;
 
-/**
- * 权限码下拉及授权选项。
- */
+/** 权限码下拉及授权选项。 */
 @Data
 public class AuthCodeOptionVO implements Serializable {
 
-    @Serial
-    private static final long serialVersionUID = 1L;
+    @Serial private static final long serialVersionUID = 1L;
 
     private Long id;
 
@@ -31,4 +28,3 @@ public class AuthCodeOptionVO implements Serializable {
 
     private LocalDateTime createTime;
 }
-

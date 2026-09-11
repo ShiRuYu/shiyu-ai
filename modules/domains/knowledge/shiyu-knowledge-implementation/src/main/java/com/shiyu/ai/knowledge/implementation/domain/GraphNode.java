@@ -17,8 +17,7 @@ import java.util.List;
 @SuppressWarnings("serial")
 public class GraphNode implements Serializable {
 
-    @Serial
-    private static final long serialVersionUID = 1L;
+    @Serial private static final long serialVersionUID = 1L;
 
     private Long id;
 
@@ -46,4 +45,3 @@ public class GraphNode implements Serializable {
                 .build();
     }
 }
-

@@ -2,9 +2,12 @@ package com.shiyu.ai.iam.implementation.service.impl;
 
 import com.shiyu.ai.iam.implementation.service.CaptchaService;
 import com.shiyu.ai.iam.implementation.vo.CaptchaVO;
+
 import jakarta.annotation.PostConstruct;
 import jakarta.annotation.PreDestroy;
+
 import lombok.extern.slf4j.Slf4j;
+
 import org.springframework.stereotype.Service;
 
 import java.util.Map;
@@ -15,106 +18,90 @@ import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
 
-/**
- * 验证码服务实现类
- */
+/** 验证码服务实现类 */
 @Slf4j
 @Service
 public class CaptchaServiceImpl implements CaptchaService {
-    
-    /**
-     * 验证码存储（使用 ConcurrentHashMap 保证线程安全）
-     * key: 验证码 key
-     * value: 验证码信息（包含 code 和 expireTime）
-     */
+
+    /** 验证码存储（使用 ConcurrentHashMap 保证线程安全） key: 验证码 key value: 验证码信息（包含 code 和 expireTime） */
     private final Map<String, CaptchaData> captchaStore = new ConcurrentHashMap<>();
 
-    /**
-     * 验证码尝试次数计数（同一 key 最多尝试 MAX_ATTEMPTS 次）
-     */
+    /** 验证码尝试次数计数（同一 key 最多尝试 MAX_ATTEMPTS 次） */
     private final Map<String, Integer> attemptCount = new ConcurrentHashMap<>();
 
-    /**
-     * 每个验证码 key 允许的最大验证尝试次数
-     */
+    /** 每个验证码 key 允许的最大验证尝试次数 */
     private static final int MAX_ATTEMPTS = 3;
 
-    /**
-     * 验证码过期时间（5 分钟）
-     */
+    /** 验证码过期时间（5 分钟） */
     private static final long CAPTCHA_EXPIRE_TIME = 5 * 60 * 1000;
 
-    /**
-     * 验证码字符集（排除容易混淆的字符：0, O, 1, I, l）
-     */
-    private static final String CAPTCHA_CHARS = "23456789abcdefghjkmnpqrstuvwxyzABCDEFGHJKMNPQRSTUVWXYZ";
+    /** 验证码字符集（排除容易混淆的字符：0, O, 1, I, l） */
+    private static final String CAPTCHA_CHARS =
+            "23456789abcdefghjkmnpqrstuvwxyzABCDEFGHJKMNPQRSTUVWXYZ";
 
-    /**
-     * 验证码长度
-     */
+    /** 验证码长度 */
     private static final int CAPTCHA_LENGTH = 6;
 
-    /**
-     * 定时清理过期验证码
-     */
-    private final ScheduledExecutorService cleanupScheduler = Executors.newSingleThreadScheduledExecutor(r -> {
-        Thread thread = new Thread(r, "captcha-cleanup");
-        thread.setDaemon(true);
-        return thread;
-    });
-    
-    /**
-     * 图片宽度
-     */
+    /** 定时清理过期验证码 */
+    private final ScheduledExecutorService cleanupScheduler =
+            Executors.newSingleThreadScheduledExecutor(
+                    r -> {
+                        Thread thread = new Thread(r, "captcha-cleanup");
+                        thread.setDaemon(true);
+                        return thread;
+                    });
+
+    /** 图片宽度 */
     private static final int WIDTH = 120;
-    
-    /**
-     * 图片高度
-     */
+
+    /** 图片高度 */
     private static final int HEIGHT = 40;
-    
-    /**
-     * 随机数生成器
-     */
+
+    /** 随机数生成器 */
     private final Random random = new Random();
-    
-    /**
-     * 内部类：验证码数据
-     */
+
+    /** 内部类：验证码数据 */
     private static class CaptchaData {
         private final String code;
         private final long expireTime;
-        
+
         public CaptchaData(String code, long expireTime) {
             this.code = code;
             this.expireTime = expireTime;
         }
-        
+
         public String getCode() {
             return code;
         }
-        
+
         public long getExpireTime() {
             return expireTime;
         }
-        
+
         public boolean isExpired() {
             return System.currentTimeMillis() > expireTime;
         }
     }
-    
+
     @PostConstruct
     public void init() {
         // 每 5 分钟清理过期验证码和尝试计数，防止内存泄漏
-        cleanupScheduler.scheduleAtFixedRate(() -> {
-            long now = System.currentTimeMillis();
-            captchaStore.entrySet().removeIf(e -> e.getValue().isExpired());
-            // 清理已过期或已销毁的验证码对应的尝试计数
-            attemptCount.keySet().removeIf(key -> {
-                CaptchaData data = captchaStore.get(key);
-                return data == null || data.isExpired();
-            });
-        }, 5, 5, TimeUnit.MINUTES);
+        cleanupScheduler.scheduleAtFixedRate(
+                () -> {
+                    long now = System.currentTimeMillis();
+                    captchaStore.entrySet().removeIf(e -> e.getValue().isExpired());
+                    // 清理已过期或已销毁的验证码对应的尝试计数
+                    attemptCount
+                            .keySet()
+                            .removeIf(
+                                    key -> {
+                                        CaptchaData data = captchaStore.get(key);
+                                        return data == null || data.isExpired();
+                                    });
+                },
+                5,
+                5,
+                TimeUnit.MINUTES);
     }
 
     @PreDestroy
@@ -152,7 +139,7 @@ public class CaptchaServiceImpl implements CaptchaService {
         // 返回 CaptchaVO 对象
         return new CaptchaVO(key, svgImage, CAPTCHA_EXPIRE_TIME / 1000); // 转换为秒
     }
-    
+
     @Override
     public boolean validateCaptcha(String key, String code) {
         if (key == null || code == null) {
@@ -193,16 +180,14 @@ public class CaptchaServiceImpl implements CaptchaService {
 
         return valid;
     }
-    
+
     @Override
     public void destroyCaptcha(String key) {
         captchaStore.remove(key);
         log.debug("销毁验证码：key={}", key);
     }
-    
-    /**
-     * 生成随机验证码
-     */
+
+    /** 生成随机验证码 */
     private String generateRandomCode() {
         StringBuilder sb = new StringBuilder(CAPTCHA_LENGTH);
         for (int i = 0; i < CAPTCHA_LENGTH; i++) {
@@ -210,44 +195,45 @@ public class CaptchaServiceImpl implements CaptchaService {
         }
         return sb.toString();
     }
-    
-    /**
-     * 生成唯一 key（使用 UUID，不可预测）
-     */
+
+    /** 生成唯一 key（使用 UUID，不可预测） */
     private String generateCaptchaKey() {
         return "captcha_" + UUID.randomUUID();
     }
-    
-    /**
-     * 生成 SVG 验证码
-     */
+
+    /** 生成 SVG 验证码 */
     private String generateSvgCaptcha(String code) {
         StringBuilder svg = new StringBuilder();
-        svg.append("<svg xmlns=\"http://www.w3.org/2000/svg\" width=\"").append(WIDTH).append("\" height=\"").append(HEIGHT)
-                .append("\" viewBox=\"0,0,").append(WIDTH).append(",").append(HEIGHT).append("\">");
-        
+        svg.append("<svg xmlns=\"http://www.w3.org/2000/svg\" width=\"")
+                .append(WIDTH)
+                .append("\" height=\"")
+                .append(HEIGHT)
+                .append("\" viewBox=\"0,0,")
+                .append(WIDTH)
+                .append(",")
+                .append(HEIGHT)
+                .append("\">");
+
         // 背景
         svg.append("<rect width=\"100%\" height=\"100%\" fill=\"#f0f0f0\"/>");
-        
+
         // 绘制干扰线
         drawNoiseLines(svg);
-        
+
         // 绘制干扰点
         drawNoisePoints(svg);
-        
+
         // 绘制验证码文字
         drawCaptchaText(svg, code);
-        
+
         // 绘制贝塞尔曲线干扰
         drawBezierCurves(svg);
-        
+
         svg.append("</svg>");
         return svg.toString();
     }
-    
-    /**
-     * 绘制干扰线
-     */
+
+    /** 绘制干扰线 */
     private void drawNoiseLines(StringBuilder svg) {
         int lineCount = 5;
         for (int i = 0; i < lineCount; i++) {
@@ -256,58 +242,79 @@ public class CaptchaServiceImpl implements CaptchaService {
             int x2 = random.nextInt(WIDTH);
             int y2 = random.nextInt(HEIGHT);
             String color = getRandomColor();
-            svg.append("<line x1=\"").append(x1).append("\" y1=\"").append(y1)
-                    .append("\" x2=\"").append(x2).append("\" y2=\"").append(y2)
-                    .append("\" stroke=\"").append(color).append("\" stroke-width=\"").append(random.nextInt(2) + 1)
+            svg.append("<line x1=\"")
+                    .append(x1)
+                    .append("\" y1=\"")
+                    .append(y1)
+                    .append("\" x2=\"")
+                    .append(x2)
+                    .append("\" y2=\"")
+                    .append(y2)
+                    .append("\" stroke=\"")
+                    .append(color)
+                    .append("\" stroke-width=\"")
+                    .append(random.nextInt(2) + 1)
                     .append("\" opacity=\"0.5\"/>");
         }
     }
-    
-    /**
-     * 绘制干扰点
-     */
+
+    /** 绘制干扰点 */
     private void drawNoisePoints(StringBuilder svg) {
         int pointCount = 50;
         for (int i = 0; i < pointCount; i++) {
             int x = random.nextInt(WIDTH);
             int y = random.nextInt(HEIGHT);
             String color = getRandomColor();
-            svg.append("<circle cx=\"").append(x).append("\" cy=\"").append(y)
-                    .append("\" r=\"").append(random.nextInt(2) + 1)
-                    .append("\" fill=\"").append(color).append("\" opacity=\"0.5\"/>");
+            svg.append("<circle cx=\"")
+                    .append(x)
+                    .append("\" cy=\"")
+                    .append(y)
+                    .append("\" r=\"")
+                    .append(random.nextInt(2) + 1)
+                    .append("\" fill=\"")
+                    .append(color)
+                    .append("\" opacity=\"0.5\"/>");
         }
     }
-    
-    /**
-     * 绘制验证码文字
-     */
+
+    /** 绘制验证码文字 */
     private void drawCaptchaText(StringBuilder svg, String code) {
         int fontSize = 28;
         int charWidth = WIDTH / (code.length() + 1);
-        
+
         for (int i = 0; i < code.length(); i++) {
             char c = code.charAt(i);
             int x = charWidth * (i + 1) - 10;
             int y = HEIGHT / 2 + fontSize / 2 - 5;
-            
+
             // 随机旋转角度（-15 到 15 度）
             double rotation = (random.nextInt(30) - 15) * Math.PI / 180.0;
-            
+
             // 随机颜色
             String color = getRandomDarkColor();
-            
+
             // 添加文字变换效果
-            svg.append("<text x=\"").append(x).append("\" y=\"").append(y)
-                    .append("\" font-family=\"Arial, sans-serif\" font-size=\"").append(fontSize)
-                    .append("\" font-weight=\"bold\" fill=\"").append(color).append("\"")
-                    .append(" transform=\"rotate(").append(rotation * 180 / Math.PI).append(",").append(x).append(",").append(y).append(")\"");
+            svg.append("<text x=\"")
+                    .append(x)
+                    .append("\" y=\"")
+                    .append(y)
+                    .append("\" font-family=\"Arial, sans-serif\" font-size=\"")
+                    .append(fontSize)
+                    .append("\" font-weight=\"bold\" fill=\"")
+                    .append(color)
+                    .append("\"")
+                    .append(" transform=\"rotate(")
+                    .append(rotation * 180 / Math.PI)
+                    .append(",")
+                    .append(x)
+                    .append(",")
+                    .append(y)
+                    .append(")\"");
             svg.append(">").append(c).append("</text>");
         }
     }
-    
-    /**
-     * 绘制贝塞尔曲线干扰
-     */
+
+    /** 绘制贝塞尔曲线干扰 */
     private void drawBezierCurves(StringBuilder svg) {
         int curveCount = 3;
         for (int i = 0; i < curveCount; i++) {
@@ -317,42 +324,49 @@ public class CaptchaServiceImpl implements CaptchaService {
             int ctrlY = random.nextInt(HEIGHT);
             int x2 = random.nextInt(WIDTH / 2, WIDTH);
             int y2 = random.nextInt(HEIGHT);
-            
+
             String color = getRandomLightColor();
-            
+
             // 使用二次贝塞尔曲线
-            svg.append("<path d=\"M").append(x1).append(",").append(y1)
-                    .append(" Q").append(ctrlX).append(",").append(ctrlY)
-                    .append(" ").append(x2).append(",").append(y2).append("\"")
-                    .append(" stroke=\"").append(color).append("\"")
-                    .append(" fill=\"none\" stroke-width=\"").append(random.nextInt(2) + 1)
+            svg.append("<path d=\"M")
+                    .append(x1)
+                    .append(",")
+                    .append(y1)
+                    .append(" Q")
+                    .append(ctrlX)
+                    .append(",")
+                    .append(ctrlY)
+                    .append(" ")
+                    .append(x2)
+                    .append(",")
+                    .append(y2)
+                    .append("\"")
+                    .append(" stroke=\"")
+                    .append(color)
+                    .append("\"")
+                    .append(" fill=\"none\" stroke-width=\"")
+                    .append(random.nextInt(2) + 1)
                     .append("\" opacity=\"0.3\"/>");
         }
     }
-    
-    /**
-     * 获取随机颜色（浅色）
-     */
+
+    /** 获取随机颜色（浅色） */
     private String getRandomColor() {
         int r = random.nextInt(256);
         int g = random.nextInt(256);
         int b = random.nextInt(256);
         return String.format("#%02x%02x%02x", r, g, b);
     }
-    
-    /**
-     * 获取随机深色颜色（用于文字）
-     */
+
+    /** 获取随机深色颜色（用于文字） */
     private String getRandomDarkColor() {
         int r = random.nextInt(128);
         int g = random.nextInt(128);
         int b = random.nextInt(128);
         return String.format("#%02x%02x%02x", r, g, b);
     }
-    
-    /**
-     * 获取随机浅色颜色（用于干扰线）
-     */
+
+    /** 获取随机浅色颜色（用于干扰线） */
     private String getRandomLightColor() {
         int r = 128 + random.nextInt(128);
         int g = 128 + random.nextInt(128);
@@ -360,4 +374,3 @@ public class CaptchaServiceImpl implements CaptchaService {
         return String.format("#%02x%02x%02x", r, g, b);
     }
 }
-

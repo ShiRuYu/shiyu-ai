@@ -1,20 +1,22 @@
 package com.shiyu.ai.governance.implementation.usage.persistence.repository;
 
+import com.shiyu.ai.common.core.jdbc.JdbcDialect;
 import com.shiyu.ai.common.core.utils.JSONUtils;
 import com.shiyu.ai.common.core.utils.MapstructUtils;
-import com.shiyu.ai.common.core.jdbc.JdbcDialect;
 import com.shiyu.ai.governance.implementation.usage.domain.model.UsageRecordBO;
-import com.shiyu.ai.governance.implementation.usage.port.repository.UsageRecordRepository;
 import com.shiyu.ai.governance.implementation.usage.persistence.dataobject.UsageRecordDO;
 import com.shiyu.ai.governance.implementation.usage.persistence.mapper.UsageRecordMapper;
+import com.shiyu.ai.governance.implementation.usage.port.repository.UsageRecordRepository;
 import com.shiyu.ai.kernel.context.TenantId;
 import com.shiyu.ai.model.contract.api.ModelCatalogPort;
+
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.dao.DuplicateKeyException;
-import org.springframework.stereotype.Component;
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
+import org.springframework.dao.DuplicateKeyException;
 import org.springframework.jdbc.core.JdbcTemplate;
+import org.springframework.stereotype.Component;
 
 import java.math.BigDecimal;
 import java.time.LocalDate;
@@ -30,11 +32,10 @@ import java.util.Map;
 import java.util.Objects;
 import java.util.TreeMap;
 import java.util.function.Function;
+
 import javax.sql.DataSource;
 
-/**
- * Unified usage-record data access and H2-compatible usage aggregation.
- */
+/** Unified usage-record data access and H2-compatible usage aggregation. */
 @Slf4j
 @Component
 public class UsageRecordRepositoryImpl implements UsageRecordRepository {
@@ -46,18 +47,23 @@ public class UsageRecordRepositoryImpl implements UsageRecordRepository {
     private final JdbcDialect dialect;
 
     /** Constructor retained for unit tests that use a mocked mapper. */
-    public UsageRecordRepositoryImpl(UsageRecordMapper usageRecordMapper, ModelCatalogPort modelCatalog) {
+    public UsageRecordRepositoryImpl(
+            UsageRecordMapper usageRecordMapper, ModelCatalogPort modelCatalog) {
         this(usageRecordMapper, modelCatalog, JdbcDialect.fromProduct("H2"));
     }
 
     @Autowired
-    public UsageRecordRepositoryImpl(UsageRecordMapper usageRecordMapper, ModelCatalogPort modelCatalog,
-                                     @Qualifier("agentDataSource") DataSource dataSource) {
+    public UsageRecordRepositoryImpl(
+            UsageRecordMapper usageRecordMapper,
+            ModelCatalogPort modelCatalog,
+            @Qualifier("agentDataSource") DataSource dataSource) {
         this(usageRecordMapper, modelCatalog, JdbcDialect.detect(new JdbcTemplate(dataSource)));
     }
 
-    private UsageRecordRepositoryImpl(UsageRecordMapper usageRecordMapper, ModelCatalogPort modelCatalog,
-                                      JdbcDialect dialect) {
+    private UsageRecordRepositoryImpl(
+            UsageRecordMapper usageRecordMapper,
+            ModelCatalogPort modelCatalog,
+            JdbcDialect dialect) {
         this.usageRecordMapper = usageRecordMapper;
         this.modelCatalog = modelCatalog;
         this.dialect = dialect;
@@ -106,7 +112,8 @@ public class UsageRecordRepositoryImpl implements UsageRecordRepository {
         if (months <= 0) return List.of();
         List<UsageRecordDO> portable = usageRecordMapper.selectRecordsSince(monthsBefore(months));
         if (usesPortableAggregation() && portable != null) {
-            return aggregateRecords(portable, "usage_month", time -> YearMonth.from(time).toString());
+            return aggregateRecords(
+                    portable, "usage_month", time -> YearMonth.from(time).toString());
         }
         return safeRows(usageRecordMapper.aggregateByMonth(months));
     }
@@ -140,28 +147,33 @@ public class UsageRecordRepositoryImpl implements UsageRecordRepository {
             Map<String, Object> extInfo = parseExtInfo(record);
             String platform = textValue(extInfo.get("platform"), "UNKNOWN");
             String model = textValue(extInfo.get("model"), "UNKNOWN");
-            ModelMetrics metrics = groups.computeIfAbsent(platform + '\u0000' + model,
-                    ignored -> new ModelMetrics(platform, model));
+            ModelMetrics metrics =
+                    groups.computeIfAbsent(
+                            platform + '\u0000' + model,
+                            ignored -> new ModelMetrics(platform, model));
             metrics.addLlm(record, extInfo);
         }
 
         return groups.values().stream()
-                .sorted(Comparator.comparingLong(ModelMetrics::totalTokens).reversed()
-                        .thenComparing(metrics -> metrics.platform)
-                        .thenComparing(metrics -> metrics.model))
-                .map(metrics -> {
-                    Map<String, Object> row = metrics.toLlmRow();
-                    row.put("platform", metrics.platform);
-                    row.put("model", metrics.model);
-                    return row;
-                })
+                .sorted(
+                        Comparator.comparingLong(ModelMetrics::totalTokens)
+                                .reversed()
+                                .thenComparing(metrics -> metrics.platform)
+                                .thenComparing(metrics -> metrics.model))
+                .map(
+                        metrics -> {
+                            Map<String, Object> row = metrics.toLlmRow();
+                            row.put("platform", metrics.platform);
+                            row.put("model", metrics.model);
+                            return row;
+                        })
                 .toList();
     }
 
     @Override
     public List<Map<String, Object>> aggregateLlmByDay(int days) {
-        return aggregateLlmByPeriod(daysBefore(days), "usage_date",
-                time -> time.toLocalDate().toString());
+        return aggregateLlmByPeriod(
+                daysBefore(days), "usage_date", time -> time.toLocalDate().toString());
     }
 
     @Override
@@ -171,8 +183,8 @@ public class UsageRecordRepositoryImpl implements UsageRecordRepository {
 
     @Override
     public List<Map<String, Object>> aggregateLlmByMonth(int months) {
-        return aggregateLlmByPeriod(monthsBefore(months), "usage_month",
-                time -> YearMonth.from(time).toString());
+        return aggregateLlmByPeriod(
+                monthsBefore(months), "usage_month", time -> YearMonth.from(time).toString());
     }
 
     @Override
@@ -192,7 +204,9 @@ public class UsageRecordRepositoryImpl implements UsageRecordRepository {
     @Override
     public Long sumLlmTodayTokensByTenantId(TenantId tenantId) {
         Objects.requireNonNull(tenantId, "tenantId must not be null");
-        return safeRecords(usageRecordMapper.selectLlmTodayByTenantId(tenantId.value(), LocalDate.now().atStartOfDay()))
+        return safeRecords(
+                        usageRecordMapper.selectLlmTodayByTenantId(
+                                tenantId.value(), LocalDate.now().atStartOfDay()))
                 .stream()
                 .map(this::parseExtInfo)
                 .mapToLong(extInfo -> longValue(extInfo.get("totalTokens")))
@@ -200,9 +214,8 @@ public class UsageRecordRepositoryImpl implements UsageRecordRepository {
     }
 
     /**
-     * Usage is a tenant-owned ledger. Keep the invariant at the repository
-     * boundary as well as in the application service so an adapter cannot
-     * accidentally create an unattributed row.
+     * Usage is a tenant-owned ledger. Keep the invariant at the repository boundary as well as in
+     * the application service so an adapter cannot accidentally create an unattributed row.
      */
     private static void validateTenantScopedRecord(UsageRecordBO record) {
         if (record == null) {
@@ -214,40 +227,48 @@ public class UsageRecordRepositoryImpl implements UsageRecordRepository {
         if (record.getUserId() == null || record.getUserId() <= 0) {
             throw new IllegalArgumentException("usage record userId must be positive");
         }
-        if (record.getSourceType() == null || record.getSourceType().isBlank()
-                || record.getSourceId() == null || record.getSourceId().isBlank()) {
+        if (record.getSourceType() == null
+                || record.getSourceType().isBlank()
+                || record.getSourceId() == null
+                || record.getSourceId().isBlank()) {
             throw new IllegalArgumentException("usage record sourceType and sourceId are required");
         }
     }
 
-    private List<Map<String, Object>> aggregateLlmByPeriod(LocalDateTime start, String keyName,
-                                                             Function<LocalDateTime, String> keyFunction) {
+    private List<Map<String, Object>> aggregateLlmByPeriod(
+            LocalDateTime start, String keyName, Function<LocalDateTime, String> keyFunction) {
         Map<String, UsageMetrics> groups = new TreeMap<>(Comparator.reverseOrder());
         for (UsageRecordDO record : safeRecords(usageRecordMapper.selectLlmRecordsSince(start))) {
             if (record.getCreateTime() == null) {
                 continue;
             }
-            groups.computeIfAbsent(keyFunction.apply(record.getCreateTime()), ignored -> new UsageMetrics())
+            groups.computeIfAbsent(
+                            keyFunction.apply(record.getCreateTime()),
+                            ignored -> new UsageMetrics())
                     .addLlm(record, parseExtInfo(record));
         }
         List<Map<String, Object>> result = new ArrayList<>(groups.size());
-        groups.forEach((key, metrics) -> {
-            Map<String, Object> row = metrics.toLlmRow();
-            row.put(keyName, key);
-            result.add(row);
-        });
+        groups.forEach(
+                (key, metrics) -> {
+                    Map<String, Object> row = metrics.toLlmRow();
+                    row.put(keyName, key);
+                    result.add(row);
+                });
         return result;
     }
 
-    private List<Map<String, Object>> aggregateRecords(List<UsageRecordDO> records, String keyName,
-                                                        Function<LocalDateTime, String> keyFunction) {
+    private List<Map<String, Object>> aggregateRecords(
+            List<UsageRecordDO> records,
+            String keyName,
+            Function<LocalDateTime, String> keyFunction) {
         Map<String, AggregateRow> groups = new TreeMap<>(Comparator.reverseOrder());
         for (UsageRecordDO record : records) {
             if (record == null || record.getCreateTime() == null) continue;
             String key = keyFunction.apply(record.getCreateTime());
             String usageType = record.getUsageType();
             String groupKey = key + '\u0000' + (usageType == null ? "" : usageType);
-            AggregateRow row = groups.computeIfAbsent(groupKey, ignored -> new AggregateRow(key, usageType));
+            AggregateRow row =
+                    groups.computeIfAbsent(groupKey, ignored -> new AggregateRow(key, usageType));
             row.calls++;
             if (record.getLatencyMs() != null) {
                 row.latencyTotal += record.getLatencyMs();
@@ -255,15 +276,19 @@ public class UsageRecordRepositoryImpl implements UsageRecordRepository {
             }
         }
         List<Map<String, Object>> result = new ArrayList<>(groups.size());
-        groups.forEach((ignored, row) -> {
-            Map<String, Object> values = new LinkedHashMap<>();
-            values.put(keyName, row.periodKey);
-            values.put("usage_type", row.usageType);
-            values.put("call_count", row.calls);
-            values.put("avg_latency_ms", row.latencySamples == 0 ? null
-                    : row.latencyTotal / (double) row.latencySamples);
-            result.add(values);
-        });
+        groups.forEach(
+                (ignored, row) -> {
+                    Map<String, Object> values = new LinkedHashMap<>();
+                    values.put(keyName, row.periodKey);
+                    values.put("usage_type", row.usageType);
+                    values.put("call_count", row.calls);
+                    values.put(
+                            "avg_latency_ms",
+                            row.latencySamples == 0
+                                    ? null
+                                    : row.latencyTotal / (double) row.latencySamples);
+                    result.add(values);
+                });
         return result;
     }
 
@@ -285,7 +310,8 @@ public class UsageRecordRepositoryImpl implements UsageRecordRepository {
     }
 
     private boolean usesPortableAggregation() {
-        return dialect.kind() == JdbcDialect.Kind.POSTGRESQL || dialect.kind() == JdbcDialect.Kind.MYSQL;
+        return dialect.kind() == JdbcDialect.Kind.POSTGRESQL
+                || dialect.kind() == JdbcDialect.Kind.MYSQL;
     }
 
     private LocalDateTime weeksBefore(int weeks) {
@@ -298,8 +324,11 @@ public class UsageRecordRepositoryImpl implements UsageRecordRepository {
 
     private String weekKey(LocalDateTime time) {
         LocalDate date = time.toLocalDate();
-        return String.format(Locale.ROOT, "%04d-%02d",
-                date.get(ISO_WEEK.weekBasedYear()), date.get(ISO_WEEK.weekOfWeekBasedYear()));
+        return String.format(
+                Locale.ROOT,
+                "%04d-%02d",
+                date.get(ISO_WEEK.weekBasedYear()),
+                date.get(ISO_WEEK.weekOfWeekBasedYear()));
     }
 
     @SuppressWarnings("unchecked")

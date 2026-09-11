@@ -6,9 +6,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.UUID;
 
-/**
- * Agent 执行实例
- */
+/** Agent 执行实例 */
 public class Execution {
 
     private final String executionId;
@@ -27,11 +25,20 @@ public class Execution {
     private String lastCheckpointId;
 
     public Execution(String agentId, String version, Map<String, Object> input) {
-        this(UUID.randomUUID().toString().replace("-", ""), agentId, version, ExecutionStatus.PENDING, input);
+        this(
+                UUID.randomUUID().toString().replace("-", ""),
+                agentId,
+                version,
+                ExecutionStatus.PENDING,
+                input);
     }
 
-    private Execution(String executionId, String agentId, String version,
-                      ExecutionStatus status, Map<String, Object> input) {
+    private Execution(
+            String executionId,
+            String agentId,
+            String version,
+            ExecutionStatus status,
+            Map<String, Object> input) {
         this.executionId = executionId;
         this.agentId = agentId;
         this.version = version;
@@ -40,16 +47,27 @@ public class Execution {
         this.nodeExecutions = new ArrayList<>();
     }
 
-    /**
-     * Rebuild a persisted execution without changing its identity or lifecycle data.
-     */
-    public static Execution restore(String executionId, String agentId, String version,
-                                    ExecutionStatus status, Map<String, Object> input,
-                                    Map<String, Object> output, String errorMessage,
-                                    Long userId, String sessionId, LocalDateTime startTime,
-                                    LocalDateTime endTime, Long durationMs) {
-        Execution execution = new Execution(executionId, agentId, version,
-                status == null ? ExecutionStatus.PENDING : status, input);
+    /** Rebuild a persisted execution without changing its identity or lifecycle data. */
+    public static Execution restore(
+            String executionId,
+            String agentId,
+            String version,
+            ExecutionStatus status,
+            Map<String, Object> input,
+            Map<String, Object> output,
+            String errorMessage,
+            Long userId,
+            String sessionId,
+            LocalDateTime startTime,
+            LocalDateTime endTime,
+            Long durationMs) {
+        Execution execution =
+                new Execution(
+                        executionId,
+                        agentId,
+                        version,
+                        status == null ? ExecutionStatus.PENDING : status,
+                        input);
         execution.output = output;
         execution.errorMessage = errorMessage;
         execution.userId = userId;
@@ -124,22 +142,71 @@ public class Execution {
     }
 
     // Getters
-    public String getExecutionId() { return executionId; }
-    public String getAgentId() { return agentId; }
-    public String getVersion() { return version; }
-    public ExecutionStatus getStatus() { return status; }
-    public Map<String, Object> getInput() { return input; }
-    public Map<String, Object> getOutput() { return output; }
-    public String getErrorMessage() { return errorMessage; }
-    public Long getUserId() { return userId; }
-    public String getSessionId() { return sessionId; }
-    public LocalDateTime getStartTime() { return startTime; }
-    public LocalDateTime getEndTime() { return endTime; }
-    public Long getDurationMs() { return durationMs; }
-    public List<NodeExecution> getNodeExecutions() { return nodeExecutions; }
-    public String getLastCheckpointId() { return lastCheckpointId; }
+    public String getExecutionId() {
+        return executionId;
+    }
 
-    public void setUserId(Long userId) { this.userId = userId; }
-    public void setSessionId(String sessionId) { this.sessionId = sessionId; }
-    public void setLastCheckpointId(String lastCheckpointId) { this.lastCheckpointId = lastCheckpointId; }
+    public String getAgentId() {
+        return agentId;
+    }
+
+    public String getVersion() {
+        return version;
+    }
+
+    public ExecutionStatus getStatus() {
+        return status;
+    }
+
+    public Map<String, Object> getInput() {
+        return input;
+    }
+
+    public Map<String, Object> getOutput() {
+        return output;
+    }
+
+    public String getErrorMessage() {
+        return errorMessage;
+    }
+
+    public Long getUserId() {
+        return userId;
+    }
+
+    public String getSessionId() {
+        return sessionId;
+    }
+
+    public LocalDateTime getStartTime() {
+        return startTime;
+    }
+
+    public LocalDateTime getEndTime() {
+        return endTime;
+    }
+
+    public Long getDurationMs() {
+        return durationMs;
+    }
+
+    public List<NodeExecution> getNodeExecutions() {
+        return nodeExecutions;
+    }
+
+    public String getLastCheckpointId() {
+        return lastCheckpointId;
+    }
+
+    public void setUserId(Long userId) {
+        this.userId = userId;
+    }
+
+    public void setSessionId(String sessionId) {
+        this.sessionId = sessionId;
+    }
+
+    public void setLastCheckpointId(String lastCheckpointId) {
+        this.lastCheckpointId = lastCheckpointId;
+    }
 }

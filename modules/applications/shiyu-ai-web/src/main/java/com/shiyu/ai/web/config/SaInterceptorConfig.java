@@ -1,10 +1,13 @@
 package com.shiyu.ai.web.config;
 
 import cn.dev33.satoken.interceptor.SaInterceptor;
+
 import com.shiyu.ai.web.interceptor.UserContextInterceptor;
+
 import jakarta.servlet.DispatcherType;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
+
 import org.springframework.context.annotation.Configuration;
 import org.springframework.core.annotation.Order;
 import org.springframework.web.servlet.config.annotation.InterceptorRegistry;
@@ -13,8 +16,8 @@ import org.springframework.web.servlet.config.annotation.WebMvcConfigurer;
 /**
  * 拦截器配置
  *
- * 1. UserContextInterceptor — 填充 UserContextHolder 登录上下文（@Order(1) 优先执行）
- * 2. SaInterceptor           — Sa-Token 注解鉴权（@SaCheckPermission 等）
+ * <p>1. UserContextInterceptor — 填充 UserContextHolder 登录上下文（@Order(1) 优先执行） 2. SaInterceptor —
+ * Sa-Token 注解鉴权（@SaCheckPermission 等）
  */
 @Configuration
 @Order(1)
@@ -32,31 +35,35 @@ public class SaInterceptorConfig implements WebMvcConfigurer {
         registry.addInterceptor(userContextInterceptor)
                 .addPathPatterns("/**")
                 .excludePathPatterns(
-                    // 认证相关公开接口（无需登录即可访问）
-                    "/api/iam/auth/login",
-                    "/api/iam/auth/register",
-                    "/api/iam/auth/code-login",
-                    "/api/iam/auth/forget-password",
-                    "/api/iam/auth/refresh",
-                    "/api/iam/auth/captcha/**",
-                    // 文档和监控接口
-                    "/swagger-ui/**",
-                    "/v3/api-docs/**",
-                    "/webjars/**",
-                    "/h2/**",
-                    "/api/education/education-resources/**"
-                );
+                        // 认证相关公开接口（无需登录即可访问）
+                        "/api/iam/auth/login",
+                        "/api/iam/auth/register",
+                        "/api/iam/auth/code-login",
+                        "/api/iam/auth/forget-password",
+                        "/api/iam/auth/refresh",
+                        "/api/iam/auth/captcha/**",
+                        // 文档和监控接口
+                        "/swagger-ui/**",
+                        "/v3/api-docs/**",
+                        "/webjars/**",
+                        "/h2/**",
+                        "/api/education/education-resources/**");
         // Sa-Token 拦截器，开启注解式鉴权功能
         // 默认构造函数 isAnnotation = true，自动扫描 @SaCheckPermission 等注解
-        registry.addInterceptor(new SaInterceptor() {
-            @Override
-            public boolean preHandle(HttpServletRequest request, HttpServletResponse response, Object handler)
-                    throws Exception {
-                if (request.getDispatcherType() != DispatcherType.REQUEST) {
-                    return true;
-                }
-                return super.preHandle(request, response, handler);
-            }
-        }).addPathPatterns("/**");
+        registry.addInterceptor(
+                        new SaInterceptor() {
+                            @Override
+                            public boolean preHandle(
+                                    HttpServletRequest request,
+                                    HttpServletResponse response,
+                                    Object handler)
+                                    throws Exception {
+                                if (request.getDispatcherType() != DispatcherType.REQUEST) {
+                                    return true;
+                                }
+                                return super.preHandle(request, response, handler);
+                            }
+                        })
+                .addPathPatterns("/**");
     }
 }

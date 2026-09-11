@@ -1,6 +1,7 @@
 package com.shiyu.ai.agent.implementation.config;
 
 import lombok.extern.slf4j.Slf4j;
+
 import org.springframework.boot.ApplicationArguments;
 import org.springframework.boot.ApplicationRunner;
 import org.springframework.stereotype.Component;
@@ -8,10 +9,9 @@ import org.springframework.stereotype.Component;
 /**
  * Agent startup hook.
  *
- * <p>Agent definitions are owned by the Agent bounded context and seeded by
- * its schema. The application must not create sample agents at startup: that
- * made boot non-idempotent, coupled Agent to every optional capability, and
- * hid persistence failures behind broad exception handling.</p>
+ * <p>Agent definitions are owned by the Agent bounded context and seeded by its schema. The
+ * application must not create sample agents at startup: that made boot non-idempotent, coupled
+ * Agent to every optional capability, and hid persistence failures behind broad exception handling.
  */
 @Slf4j
 @Component

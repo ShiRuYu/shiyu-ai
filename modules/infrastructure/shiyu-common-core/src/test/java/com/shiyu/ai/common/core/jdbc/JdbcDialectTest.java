@@ -1,11 +1,11 @@
 package com.shiyu.ai.common.core.jdbc;
 
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
+
 import org.junit.jupiter.api.Test;
 
 import java.util.List;
-
-import static org.assertj.core.api.Assertions.assertThat;
-import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 class JdbcDialectTest {
 
@@ -15,9 +15,13 @@ class JdbcDialectTest {
         List<String> keys = List.of("ID");
         List<String> updates = List.of("VALUE");
 
-        assertThat(JdbcDialect.fromProduct("PostgreSQL").upsert("example", columns, "?, ?", keys, updates))
+        assertThat(
+                        JdbcDialect.fromProduct("PostgreSQL")
+                                .upsert("example", columns, "?, ?", keys, updates))
                 .contains("ON CONFLICT (ID) DO UPDATE SET VALUE=EXCLUDED.VALUE");
-        assertThat(JdbcDialect.fromProduct("MySQL").upsert("example", columns, "?, ?", keys, updates))
+        assertThat(
+                        JdbcDialect.fromProduct("MySQL")
+                                .upsert("example", columns, "?, ?", keys, updates))
                 .contains("ON DUPLICATE KEY UPDATE VALUE=VALUES(VALUE)");
         assertThat(JdbcDialect.fromProduct("H2").upsert("example", columns, "?, ?", keys, updates))
                 .startsWith("MERGE INTO example");
@@ -25,8 +29,15 @@ class JdbcDialectTest {
 
     @Test
     void rejectsUntrustedIdentifiers() {
-        assertThatThrownBy(() -> JdbcDialect.fromProduct("PostgreSQL")
-                .upsert("example;drop", List.of("ID"), "?", List.of("ID"), List.of()))
+        assertThatThrownBy(
+                        () ->
+                                JdbcDialect.fromProduct("PostgreSQL")
+                                        .upsert(
+                                                "example;drop",
+                                                List.of("ID"),
+                                                "?",
+                                                List.of("ID"),
+                                                List.of()))
                 .isInstanceOf(IllegalArgumentException.class);
     }
 

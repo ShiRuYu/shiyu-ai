@@ -12,8 +12,7 @@ import java.io.Serializable;
 @AllArgsConstructor
 public class GraphEdge implements Serializable {
 
-    @Serial
-    private static final long serialVersionUID = 1L;
+    @Serial private static final long serialVersionUID = 1L;
 
     private Long targetId;
 
@@ -21,4 +20,3 @@ public class GraphEdge implements Serializable {
 
     private Double weight;
 }
-

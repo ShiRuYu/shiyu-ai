@@ -1,11 +1,13 @@
 package com.shiyu.ai.agent.implementation.node;
 
 import cn.hutool.core.bean.BeanUtil;
+
 import com.shiyu.ai.agent.contract.ExecutionHistoryService;
 import com.shiyu.ai.agent.contract.node.BaseNode;
 import com.shiyu.ai.agent.contract.node.NodeConfig;
 import com.shiyu.ai.agent.contract.node.NodeType;
 import com.shiyu.ai.agent.contract.node.creator.NodeCreator;
+
 import lombok.extern.slf4j.Slf4j;
 
 import java.util.List;
@@ -17,9 +19,10 @@ final class NodeInstanceFactory {
     private final List<NodeCreator> beanNodeCreators;
     private final ExecutionHistoryService executionHistoryService;
 
-    NodeInstanceFactory(NodeTypeRegistry registry,
-                        List<com.shiyu.ai.agent.contract.node.creator.NodeCreator> beanNodeCreators,
-                        ExecutionHistoryService executionHistoryService) {
+    NodeInstanceFactory(
+            NodeTypeRegistry registry,
+            List<com.shiyu.ai.agent.contract.node.creator.NodeCreator> beanNodeCreators,
+            ExecutionHistoryService executionHistoryService) {
         this.registry = registry;
         this.beanNodeCreators = beanNodeCreators;
         this.executionHistoryService = executionHistoryService;
@@ -52,14 +55,20 @@ final class NodeInstanceFactory {
             if (executionHistoryService != null) {
                 node.setExecutionHistoryService(executionHistoryService);
             }
-            log.info("成功创建节点：classPresent={}, nodeTypePresent={}, nodeIdPresent={}",
-                    node.getClass().getSimpleName() != null, nodeType.getName() != null,
+            log.info(
+                    "成功创建节点：classPresent={}, nodeTypePresent={}, nodeIdPresent={}",
+                    node.getClass().getSimpleName() != null,
+                    nodeType.getName() != null,
                     config.getNodeId() != null);
             return node;
         } catch (Exception e) {
-            log.error("创建节点失败：nodeIdPresent={}, nodeTypePresent={}, errorType={}, errorMessageLength={}",
-                    sourceConfig.getNodeId() != null, nodeType.getName() != null,
-                    e.getClass().getSimpleName(), messageLength(e));
+            log.error(
+                    "创建节点失败：nodeIdPresent={}, nodeTypePresent={}, errorType={},"
+                            + " errorMessageLength={}",
+                    sourceConfig.getNodeId() != null,
+                    nodeType.getName() != null,
+                    e.getClass().getSimpleName(),
+                    messageLength(e));
             throw new RuntimeException("创建节点失败：" + sourceConfig.getNodeId(), e);
         }
     }
@@ -73,8 +82,11 @@ final class NodeInstanceFactory {
                 try {
                     return creator.create(config);
                 } catch (Exception e) {
-                    log.error("节点创建失败: typePresent={}, errorType={}, errorMessageLength={}",
-                            nodeType != null, e.getClass().getSimpleName(), messageLength(e));
+                    log.error(
+                            "节点创建失败: typePresent={}, errorType={}, errorMessageLength={}",
+                            nodeType != null,
+                            e.getClass().getSimpleName(),
+                            messageLength(e));
                     return null;
                 }
             }
@@ -83,7 +95,8 @@ final class NodeInstanceFactory {
     }
 
     @SuppressWarnings("unchecked")
-    private BaseNode createFromFallback(NodeTypeRegistry.CreatorInfo<?> creatorInfo, NodeConfig config) {
+    private BaseNode createFromFallback(
+            NodeTypeRegistry.CreatorInfo<?> creatorInfo, NodeConfig config) {
         return ((NodeFactory.NodeCreator<NodeConfig>) creatorInfo.nodeCreator()).create(config);
     }
 
@@ -91,9 +104,12 @@ final class NodeInstanceFactory {
     private <T extends NodeConfig> T convertConfig(NodeConfig sourceConfig, Class<T> targetClass) {
         try {
             T targetConfig = targetClass.getDeclaredConstructor().newInstance();
-            BeanUtil.copyProperties(sourceConfig, targetConfig,
+            BeanUtil.copyProperties(
+                    sourceConfig,
+                    targetConfig,
                     cn.hutool.core.bean.copier.CopyOptions.create()
-                            .ignoreNullValue().ignoreError());
+                            .ignoreNullValue()
+                            .ignoreError());
             return targetConfig;
         } catch (Exception e) {
             throw new RuntimeException("配置转换失败", e);

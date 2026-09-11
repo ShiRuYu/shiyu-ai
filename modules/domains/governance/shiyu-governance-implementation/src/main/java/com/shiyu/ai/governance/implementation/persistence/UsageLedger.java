@@ -24,8 +24,7 @@ public interface UsageLedger {
             long inputTokens,
             long outputTokens,
             BigDecimal cost,
-            Instant occurredAt
-    ) {
+            Instant occurredAt) {
         public Entry {
             Objects.requireNonNull(tenantId, "tenantId must not be null");
             Objects.requireNonNull(userId, "userId must not be null");

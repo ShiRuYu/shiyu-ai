@@ -1,5 +1,14 @@
 package com.shiyu.ai.iam.implementation.service.impl;
 
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.eq;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.never;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
+
 import com.shiyu.ai.iam.implementation.domain.model.RoleBO;
 import com.shiyu.ai.iam.implementation.domain.model.TenantBO;
 import com.shiyu.ai.iam.implementation.port.repository.RoleRepository;
@@ -10,32 +19,25 @@ import com.shiyu.ai.iam.implementation.service.MenuService;
 import com.shiyu.ai.kernel.context.ActorContext;
 import com.shiyu.ai.kernel.context.TenantId;
 import com.shiyu.ai.kernel.context.UserId;
+
 import org.apache.commons.lang3.tuple.Pair;
 import org.junit.jupiter.api.Test;
 import org.mockito.MockedStatic;
 
 import java.util.List;
 
-import static org.junit.jupiter.api.Assertions.assertFalse;
-import static org.junit.jupiter.api.Assertions.assertTrue;
-import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.ArgumentMatchers.eq;
-import static org.mockito.Mockito.doNothing;
-import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.never;
-import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.when;
-
 @SuppressWarnings({"unchecked", "rawtypes"})
 class RoleServiceTenantScopeTest {
 
-    private static final ActorContext ACTOR = new ActorContext(new TenantId(9), new UserId(7), false);
+    private static final ActorContext ACTOR =
+            new ActorContext(new TenantId(9), new UserId(7), false);
     private final RoleRepository roles = mock(RoleRepository.class);
     private final UserScopeRoleRepository assignments = mock(UserScopeRoleRepository.class);
     private final UserRepository users = mock(UserRepository.class);
     private final TenantRepository tenants = mock(TenantRepository.class);
     private final MenuService menus = mock(MenuService.class);
-    private final RoleServiceImpl service = new RoleServiceImpl(roles, assignments, users, tenants, menus);
+    private final RoleServiceImpl service =
+            new RoleServiceImpl(roles, assignments, users, tenants, menus);
 
     @Test
     void missingOrForeignTenantIsDeniedBeforeRepositoryMutation() {
@@ -99,9 +101,13 @@ class RoleServiceTenantScopeTest {
                 .thenReturn(java.util.Map.of(20L, List.of(99L)));
 
         try (MockedStatic<com.shiyu.ai.common.core.utils.MapstructUtils> mapper =
-                     org.mockito.Mockito.mockStatic(com.shiyu.ai.common.core.utils.MapstructUtils.class)) {
-            mapper.when(() -> com.shiyu.ai.common.core.utils.MapstructUtils.convert(any(List.class),
-                    eq(com.shiyu.ai.iam.implementation.vo.RoleVO.class)))
+                org.mockito.Mockito.mockStatic(
+                        com.shiyu.ai.common.core.utils.MapstructUtils.class)) {
+            mapper.when(
+                            () ->
+                                    com.shiyu.ai.common.core.utils.MapstructUtils.convert(
+                                            any(List.class),
+                                            eq(com.shiyu.ai.iam.implementation.vo.RoleVO.class)))
                     .thenReturn(List.of(mock(com.shiyu.ai.iam.implementation.vo.RoleVO.class)));
             service.getRoleList(ACTOR, 1, 10, "admin");
         }
@@ -117,4 +123,3 @@ class RoleServiceTenantScopeTest {
         return tenant;
     }
 }
-

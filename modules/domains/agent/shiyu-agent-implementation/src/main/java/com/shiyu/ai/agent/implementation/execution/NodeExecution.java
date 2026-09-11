@@ -2,9 +2,7 @@ package com.shiyu.ai.agent.implementation.execution;
 
 import java.time.LocalDateTime;
 
-/**
- * 节点执行记录
- */
+/** 节点执行记录 */
 public class NodeExecution {
 
     private final String nodeId;
@@ -53,16 +51,47 @@ public class NodeExecution {
     }
 
     // Getters
-    public String getNodeId() { return nodeId; }
-    public String getNodeType() { return nodeType; }
-    public ExecutionStatus getStatus() { return status; }
-    public Object getInput() { return input; }
-    public Object getOutput() { return output; }
-    public String getErrorMessage() { return errorMessage; }
-    public LocalDateTime getStartTime() { return startTime; }
-    public LocalDateTime getEndTime() { return endTime; }
-    public Long getDurationMs() { return durationMs; }
-    public int getRetryCount() { return retryCount; }
+    public String getNodeId() {
+        return nodeId;
+    }
 
-    public void setInput(Object input) { this.input = input; }
+    public String getNodeType() {
+        return nodeType;
+    }
+
+    public ExecutionStatus getStatus() {
+        return status;
+    }
+
+    public Object getInput() {
+        return input;
+    }
+
+    public Object getOutput() {
+        return output;
+    }
+
+    public String getErrorMessage() {
+        return errorMessage;
+    }
+
+    public LocalDateTime getStartTime() {
+        return startTime;
+    }
+
+    public LocalDateTime getEndTime() {
+        return endTime;
+    }
+
+    public Long getDurationMs() {
+        return durationMs;
+    }
+
+    public int getRetryCount() {
+        return retryCount;
+    }
+
+    public void setInput(Object input) {
+        this.input = input;
+    }
 }

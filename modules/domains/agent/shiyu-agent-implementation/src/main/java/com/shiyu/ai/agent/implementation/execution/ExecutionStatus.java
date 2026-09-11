@@ -1,8 +1,6 @@
 package com.shiyu.ai.agent.implementation.execution;
 
-/**
- * 执行实例状态枚举
- */
+/** 执行实例状态枚举 */
 public enum ExecutionStatus {
     /** 等待执行 */
     PENDING,

@@ -1,20 +1,23 @@
 package com.shiyu.ai.web.common;
 
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+
 import com.shiyu.ai.common.core.api.Result;
 import com.shiyu.ai.common.core.enums.BizResultCode;
+
 import org.junit.jupiter.api.Test;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.server.ResponseStatusException;
-
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertFalse;
 
 class ApiExceptionHandlerTest {
     private final ApiExceptionHandler handler = new ApiExceptionHandler();
 
     @Test
     void mapsValidationToHttpAndStableBusinessCodeWithoutLeakingDetails() {
-        var response = handler.invalidArgument(new IllegalArgumentException("SQL table secret does not exist"));
+        var response =
+                handler.invalidArgument(
+                        new IllegalArgumentException("SQL table secret does not exist"));
         Result<Void> body = response.getBody();
         assertEquals(HttpStatus.UNPROCESSABLE_CONTENT, response.getStatusCode());
         assertEquals(BizResultCode.ERR_10007.getCode(), body.getCode());
@@ -24,7 +27,8 @@ class ApiExceptionHandlerTest {
 
     @Test
     void mapsTenantAccessAndNotFoundToStableCodes() {
-        var forbidden = handler.invalidArgument(new IllegalArgumentException("access denied for tenant"));
+        var forbidden =
+                handler.invalidArgument(new IllegalArgumentException("access denied for tenant"));
         var missing = handler.invalidState(new IllegalStateException("resource not found"));
         assertEquals(HttpStatus.FORBIDDEN, forbidden.getStatusCode());
         assertEquals(BizResultCode.FORBIDDEN.getCode(), forbidden.getBody().getCode());
@@ -42,7 +46,10 @@ class ApiExceptionHandlerTest {
 
     @Test
     void preservesExplicitResponseStatusExceptions() {
-        var response = handler.responseStatus(new ResponseStatusException(HttpStatus.CONFLICT, "generation was modified"));
+        var response =
+                handler.responseStatus(
+                        new ResponseStatusException(
+                                HttpStatus.CONFLICT, "generation was modified"));
         assertEquals(HttpStatus.CONFLICT, response.getStatusCode());
         assertEquals(BizResultCode.ERR_10008.getCode(), response.getBody().getCode());
     }

@@ -1,32 +1,34 @@
 package com.shiyu.ai.agent.implementation.node.rag;
 
 import com.shiyu.ai.agent.contract.node.*;
-
 import com.shiyu.ai.agent.contract.node.BaseNode;
+import com.shiyu.ai.agent.contract.node.NodeFields.FieldKey;
 import com.shiyu.ai.agent.contract.node.NodeInput;
+import com.shiyu.ai.agent.contract.node.NodeInputParam;
 import com.shiyu.ai.agent.contract.node.NodeOutput;
 import com.shiyu.ai.agent.contract.node.NodeType;
-import com.shiyu.ai.agent.contract.node.NodeFields.FieldKey;
+
 import lombok.Getter;
 import lombok.Setter;
 import lombok.extern.slf4j.Slf4j;
 
 import java.util.*;
 import java.util.stream.Collectors;
-import com.shiyu.ai.agent.contract.node.NodeInputParam;
 
 /**
  * RAG 增强节点
- * <p>
- * 对检索到的文档执行增强处理，支持三种策略：
+ *
+ * <p>对检索到的文档执行增强处理，支持三种策略：
+ *
  * <ul>
- *   <li><b>SUMMARIZATION</b> — 对文档进行摘要合并，控制输出长度</li>
- *   <li><b>RE_RANK</b> — 根据分数重新排序，并结合 contextWindowSize 截取</li>
- *   <li><b>FILTER</b> — 按相似度阈值过滤低分文档</li>
+ *   <li><b>SUMMARIZATION</b> — 对文档进行摘要合并，控制输出长度
+ *   <li><b>RE_RANK</b> — 根据分数重新排序，并结合 contextWindowSize 截取
+ *   <li><b>FILTER</b> — 按相似度阈值过滤低分文档
  * </ul>
+ *
  * 处理后的上下文内容写入 FieldKey#CONTEXT 供后续 LLM 使用。
- * <p>
- * 所有配置参数优先从 input (AgentState) 读取，未提供时回退到 config 默认值。
+ *
+ * <p>所有配置参数优先从 input (AgentState) 读取，未提供时回退到 config 默认值。
  */
 @Setter
 @Getter
@@ -61,14 +63,17 @@ public class RagEnhancementNode extends BaseNode {
     @Override
     protected NodeOutput doExecute(NodeInput input) throws Exception {
         log.info("执行 RAG 增强节点: {}", config.getNodeName());
-        log.debug("增强配置: strategy={}, addContext={}, contextWindowSize={}, maxLength={}",
-                config.getEnhancementStrategy(), config.getAddContext(),
-                config.getContextWindowSize(), config.getMaxLength());
+        log.debug(
+                "增强配置: strategy={}, addContext={}, contextWindowSize={}, maxLength={}",
+                config.getEnhancementStrategy(),
+                config.getAddContext(),
+                config.getContextWindowSize(),
+                config.getMaxLength());
 
         try {
             // 1. 从输入中提取文档列表
-            List<Map<String, Object>> documents = input.getParameter(
-                    FieldKey.DOCUMENTS, Collections.emptyList());
+            List<Map<String, Object>> documents =
+                    input.getParameter(FieldKey.DOCUMENTS, Collections.emptyList());
             String originalContext = input.getParameter(FieldKey.CONTEXT, "");
 
             if (documents == null || documents.isEmpty()) {
@@ -76,8 +81,10 @@ public class RagEnhancementNode extends BaseNode {
                 NodeOutput output = new NodeOutput();
                 output.setSuccess(true);
                 output.setMsg("RAG 增强跳过: 无输入文档");
-                Boolean addCtx = input.getParameter(FieldKey.ADD_CONTEXT,
-                        config.getAddContext() != null && config.getAddContext());
+                Boolean addCtx =
+                        input.getParameter(
+                                FieldKey.ADD_CONTEXT,
+                                config.getAddContext() != null && config.getAddContext());
                 if (addCtx != null && addCtx) {
                     output.addData(FieldKey.CONTEXT, originalContext);
                 }
@@ -85,31 +92,49 @@ public class RagEnhancementNode extends BaseNode {
             }
 
             // 2. 读取配置参数（优先从 input，回退到 config）
-            String strategy = input.getParameter(FieldKey.ENHANCEMENT_STRATEGY,
-                    config.getEnhancementStrategy());
+            String strategy =
+                    input.getParameter(
+                            FieldKey.ENHANCEMENT_STRATEGY, config.getEnhancementStrategy());
             if (strategy == null) {
                 strategy = "SUMMARIZATION";
             }
             strategy = strategy.toUpperCase();
 
-            int windowSize = input.getParameter(FieldKey.CONTEXT_WINDOW_SIZE,
-                    config.getContextWindowSize() != null ? config.getContextWindowSize() : 3);
-            int maxLen = input.getParameter(FieldKey.MAX_LENGTH,
-                    config.getMaxLength() != null ? config.getMaxLength() : 2000);
-            double threshold = input.getParameter(FieldKey.SIMILARITY_THRESHOLD,
-                    config.getSimilarityThreshold() != null ? config.getSimilarityThreshold() : 0.5);
-            Boolean addContext = input.getParameter(FieldKey.ADD_CONTEXT,
-                    config.getAddContext() != null && config.getAddContext());
+            int windowSize =
+                    input.getParameter(
+                            FieldKey.CONTEXT_WINDOW_SIZE,
+                            config.getContextWindowSize() != null
+                                    ? config.getContextWindowSize()
+                                    : 3);
+            int maxLen =
+                    input.getParameter(
+                            FieldKey.MAX_LENGTH,
+                            config.getMaxLength() != null ? config.getMaxLength() : 2000);
+            double threshold =
+                    input.getParameter(
+                            FieldKey.SIMILARITY_THRESHOLD,
+                            config.getSimilarityThreshold() != null
+                                    ? config.getSimilarityThreshold()
+                                    : 0.5);
+            Boolean addContext =
+                    input.getParameter(
+                            FieldKey.ADD_CONTEXT,
+                            config.getAddContext() != null && config.getAddContext());
 
             // 3. 执行增强策略
-            EnhancedResult enhanced = switch (strategy) {
-                case "RE_RANK" -> reRank(documents, windowSize, maxLen);
-                case "FILTER" -> filter(documents, threshold, maxLen);
-                default -> summarize(documents, windowSize, maxLen);
-            };
+            EnhancedResult enhanced =
+                    switch (strategy) {
+                        case "RE_RANK" -> reRank(documents, windowSize, maxLen);
+                        case "FILTER" -> filter(documents, threshold, maxLen);
+                        default -> summarize(documents, windowSize, maxLen);
+                    };
 
-            log.info("增强策略 [{}]: 输入 {} 篇文档, 输出 {} 篇, 上下文长度 {} 字符",
-                    strategy, documents.size(), enhanced.documents().size(), enhanced.context().length());
+            log.info(
+                    "增强策略 [{}]: 输入 {} 篇文档, 输出 {} 篇, 上下文长度 {} 字符",
+                    strategy,
+                    documents.size(),
+                    enhanced.documents().size(),
+                    enhanced.context().length());
 
             // 4. 构建输出
             NodeOutput output = new NodeOutput();
@@ -137,10 +162,12 @@ public class RagEnhancementNode extends BaseNode {
     // ======================== 增强策略 ========================
 
     /** SUMMARIZATION: 摘要合并 + 上下文窗口截断 */
-    private EnhancedResult summarize(List<Map<String, Object>> documents, int windowSize, int maxLen) {
-        List<Map<String, Object>> topDocs = sortByScore(documents).stream()
-                .limit(Math.max(1, windowSize))
-                .collect(Collectors.toList());
+    private EnhancedResult summarize(
+            List<Map<String, Object>> documents, int windowSize, int maxLen) {
+        List<Map<String, Object>> topDocs =
+                sortByScore(documents).stream()
+                        .limit(Math.max(1, windowSize))
+                        .collect(Collectors.toList());
 
         StringBuilder sb = new StringBuilder();
         sb.append("以下是检索到的相关文档摘要：\n\n");
@@ -148,8 +175,11 @@ public class RagEnhancementNode extends BaseNode {
             Map<String, Object> doc = topDocs.get(i);
             String content = strField(doc, "content", "");
             double score = numField(doc, "score", 0.0);
-            sb.append("【文档 ").append(i + 1).append("】(相关度: ")
-                    .append(String.format("%.2f", score)).append(")\n");
+            sb.append("【文档 ")
+                    .append(i + 1)
+                    .append("】(相关度: ")
+                    .append(String.format("%.2f", score))
+                    .append(")\n");
             if (content.length() > maxLen / Math.max(1, topDocs.size())) {
                 content = content.substring(0, maxLen / Math.max(1, topDocs.size())) + "...(截断)";
             }
@@ -166,9 +196,8 @@ public class RagEnhancementNode extends BaseNode {
     /** RE_RANK: 按分数重排序 + 上下文窗口 */
     private EnhancedResult reRank(List<Map<String, Object>> documents, int windowSize, int maxLen) {
         List<Map<String, Object>> sorted = sortByScore(documents);
-        List<Map<String, Object>> topDocs = sorted.stream()
-                .limit(Math.max(1, windowSize))
-                .collect(Collectors.toList());
+        List<Map<String, Object>> topDocs =
+                sorted.stream().limit(Math.max(1, windowSize)).collect(Collectors.toList());
 
         StringBuilder sb = new StringBuilder();
         sb.append("重排序后的相关文档（按相关度降序）：\n\n");
@@ -176,9 +205,13 @@ public class RagEnhancementNode extends BaseNode {
             Map<String, Object> doc = topDocs.get(i);
             String content = strField(doc, "content", "");
             double score = numField(doc, "score", 0.0);
-            sb.append("[").append(i + 1).append("] score=")
-                    .append(String.format("%.2f", score)).append("\n")
-                    .append(content).append("\n\n");
+            sb.append("[")
+                    .append(i + 1)
+                    .append("] score=")
+                    .append(String.format("%.2f", score))
+                    .append("\n")
+                    .append(content)
+                    .append("\n\n");
         }
 
         String context = sb.toString();
@@ -189,10 +222,12 @@ public class RagEnhancementNode extends BaseNode {
     }
 
     /** FILTER: 按相似度阈值过滤 + 分数排序 */
-    private EnhancedResult filter(List<Map<String, Object>> documents, double threshold, int maxLen) {
-        List<Map<String, Object>> filtered = sortByScore(documents).stream()
-                .filter(doc -> numField(doc, "score", 0.0) >= threshold)
-                .collect(Collectors.toList());
+    private EnhancedResult filter(
+            List<Map<String, Object>> documents, double threshold, int maxLen) {
+        List<Map<String, Object>> filtered =
+                sortByScore(documents).stream()
+                        .filter(doc -> numField(doc, "score", 0.0) >= threshold)
+                        .collect(Collectors.toList());
 
         StringBuilder sb = new StringBuilder();
         sb.append("过滤后的相关文档（阈值: ").append(String.format("%.2f", threshold)).append("）：\n\n");
@@ -200,9 +235,13 @@ public class RagEnhancementNode extends BaseNode {
             Map<String, Object> doc = filtered.get(i);
             String content = strField(doc, "content", "");
             double score = numField(doc, "score", 0.0);
-            sb.append("【文档 ").append(i + 1).append("】(score=")
-                    .append(String.format("%.2f", score)).append(")\n")
-                    .append(content).append("\n\n");
+            sb.append("【文档 ")
+                    .append(i + 1)
+                    .append("】(score=")
+                    .append(String.format("%.2f", score))
+                    .append(")\n")
+                    .append(content)
+                    .append("\n\n");
         }
 
         String context = sb.toString();
@@ -217,11 +256,12 @@ public class RagEnhancementNode extends BaseNode {
     @SuppressWarnings("unchecked")
     private List<Map<String, Object>> sortByScore(List<Map<String, Object>> documents) {
         List<Map<String, Object>> sorted = new ArrayList<>(documents);
-        sorted.sort((a, b) -> {
-            double sa = numField(a, "score", 0.0);
-            double sb = numField(b, "score", 0.0);
-            return Double.compare(sb, sa);
-        });
+        sorted.sort(
+                (a, b) -> {
+                    double sa = numField(a, "score", 0.0);
+                    double sb = numField(b, "score", 0.0);
+                    return Double.compare(sb, sa);
+                });
         return sorted;
     }
 
@@ -234,7 +274,10 @@ public class RagEnhancementNode extends BaseNode {
         Object v = map.get(key);
         if (v instanceof Number n) return n.doubleValue();
         if (v instanceof String s) {
-            try { return Double.parseDouble(s); } catch (NumberFormatException ignored) {}
+            try {
+                return Double.parseDouble(s);
+            } catch (NumberFormatException ignored) {
+            }
         }
         return def;
     }
@@ -245,10 +288,9 @@ public class RagEnhancementNode extends BaseNode {
     @Override
     public java.util.List<NodeInputParam> getRequiredInputs() {
         return java.util.List.of(
-            NodeInputParam.previous("documents", "array", "检索到的文档列表"),
-            NodeInputParam.config("enhancementStrategy", "string", "增强策略"),
-            NodeInputParam.config("contextWindowSize", "number", "上下文窗口大小"),
-            NodeInputParam.config("maxLength", "number", "最大长度")
-        );
+                NodeInputParam.previous("documents", "array", "检索到的文档列表"),
+                NodeInputParam.config("enhancementStrategy", "string", "增强策略"),
+                NodeInputParam.config("contextWindowSize", "number", "上下文窗口大小"),
+                NodeInputParam.config("maxLength", "number", "最大长度"));
     }
 }

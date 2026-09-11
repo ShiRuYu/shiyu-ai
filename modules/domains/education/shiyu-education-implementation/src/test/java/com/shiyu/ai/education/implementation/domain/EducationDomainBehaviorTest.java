@@ -1,19 +1,20 @@
 package com.shiyu.ai.education.implementation.domain;
 
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertNull;
+import static org.junit.jupiter.api.Assertions.assertThrows;
+
 import com.shiyu.ai.education.implementation.domain.enums.ReviewTaskStatus;
 import com.shiyu.ai.education.implementation.domain.enums.StudyPlanItemStatus;
 import com.shiyu.ai.education.implementation.domain.enums.StudyPlanStatus;
+
 import org.junit.jupiter.api.Test;
 
 import java.time.Instant;
 import java.time.LocalDate;
 import java.time.ZoneId;
 import java.util.List;
-
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertNotNull;
-import static org.junit.jupiter.api.Assertions.assertNull;
-import static org.junit.jupiter.api.Assertions.assertThrows;
 
 class EducationDomainBehaviorTest {
 
@@ -39,8 +40,13 @@ class EducationDomainBehaviorTest {
     void schedulesEbbinghausReviewsAndAdvancesRounds() {
         LocalDate learned = LocalDate.of(2026, 8, 25);
         assertEquals(
-                List.of(learned.plusDays(1), learned.plusDays(3), learned.plusDays(7),
-                        learned.plusDays(15), learned.plusDays(30), learned.plusDays(90)),
+                List.of(
+                        learned.plusDays(1),
+                        learned.plusDays(3),
+                        learned.plusDays(7),
+                        learned.plusDays(15),
+                        learned.plusDays(30),
+                        learned.plusDays(90)),
                 EbbinghausCurve.scheduleReviewDates(learned));
 
         Instant recent = Instant.now().minusSeconds(2 * 24 * 60 * 60L);
@@ -69,7 +75,8 @@ class EducationDomainBehaviorTest {
         assertEquals(6, tasks.size());
         assertEquals(1, tasks.get(0).reviewRound());
         assertEquals(6, tasks.get(5).reviewRound());
-        assertEquals(learnedAt.atZone(ZoneId.systemDefault()).toLocalDate().plusDays(1),
+        assertEquals(
+                learnedAt.atZone(ZoneId.systemDefault()).toLocalDate().plusDays(1),
                 tasks.get(0).reviewDate());
         assertNotNull(scheduler.nextReview(7L, 9L, Instant.now().minusSeconds(2 * 24 * 60 * 60L)));
         assertNull(scheduler.nextReview(7L, 9L, Instant.now().minusSeconds(365 * 24 * 60 * 60L)));
@@ -85,4 +92,3 @@ class EducationDomainBehaviorTest {
         assertNull(StudyPlanStatus.fromCode(99));
     }
 }
-

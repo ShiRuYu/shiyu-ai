@@ -1,8 +1,8 @@
 package com.shiyu.ai.tooling.implementation.plugin.config;
 
-import org.junit.jupiter.api.Test;
-
 import static org.junit.jupiter.api.Assertions.assertNotNull;
+
+import org.junit.jupiter.api.Test;
 
 class PluginAutoConfigurationTest {
     @Test

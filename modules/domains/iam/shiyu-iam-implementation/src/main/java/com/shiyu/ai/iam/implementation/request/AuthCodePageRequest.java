@@ -1,8 +1,9 @@
 package com.shiyu.ai.iam.implementation.request;
 
 import com.shiyu.ai.common.core.api.PageQuery;
-import lombok.EqualsAndHashCode;
+
 import lombok.Data;
+import lombok.EqualsAndHashCode;
 
 @Data
 @EqualsAndHashCode(callSuper = true)
@@ -11,4 +12,3 @@ public class AuthCodePageRequest extends PageQuery {
     private String code;
     private String name;
 }
-

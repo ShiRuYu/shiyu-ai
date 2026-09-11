@@ -4,16 +4,16 @@ import com.mybatisflex.annotation.Id;
 import com.mybatisflex.annotation.KeyType;
 import com.mybatisflex.annotation.Table;
 import com.shiyu.ai.common.mybatis.model.TenantEntity;
+import com.shiyu.ai.education.implementation.domain.model.StudyPlanBO;
+
+import io.github.linpeilie.annotations.AutoMapper;
+
 import lombok.Data;
 import lombok.EqualsAndHashCode;
 
 import java.time.LocalDate;
-import com.shiyu.ai.education.implementation.domain.model.StudyPlanBO;
-import io.github.linpeilie.annotations.AutoMapper;
 
-/**
- * 学习计划
- */
+/** 学习计划 */
 @Data
 @EqualsAndHashCode(callSuper = true)
 @Table("edu_study_plan")
@@ -30,5 +30,3 @@ public class StudyPlanDO extends TenantEntity {
     private LocalDate startDate;
     private LocalDate endDate;
 }
-
-

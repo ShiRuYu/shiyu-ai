@@ -1,7 +1,8 @@
 package com.shiyu.ai.education.implementation.web.dto;
 
-import io.github.linpeilie.annotations.AutoMapper;
 import com.shiyu.ai.education.implementation.domain.model.ExamBO;
+
+import io.github.linpeilie.annotations.AutoMapper;
 
 @AutoMapper(target = ExamBO.class)
 public record ExamResponse(
@@ -13,6 +14,4 @@ public record ExamResponse(
         Long teacherId,
         Integer durationMin,
         Integer totalScore,
-        Integer status
-) {}
-
+        Integer status) {}

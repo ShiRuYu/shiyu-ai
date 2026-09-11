@@ -1,16 +1,19 @@
 package com.shiyu.ai.knowledge.implementation.web;
 
-import com.shiyu.ai.knowledge.implementation.web.KnowledgeApiVersion;
-
 import cn.dev33.satoken.annotation.SaCheckPermission;
+
 import com.shiyu.ai.common.core.api.PageData;
 import com.shiyu.ai.common.core.api.Result;
-import com.shiyu.ai.kernel.context.ActorContext;
 import com.shiyu.ai.common.web.auth.ActorContextHttpAdapter;
+import com.shiyu.ai.kernel.context.ActorContext;
 import com.shiyu.ai.knowledge.implementation.application.KnowledgeEvaluationService;
+
 import io.swagger.v3.oas.annotations.tags.Tag;
+
 import jakarta.validation.Valid;
+
 import lombok.RequiredArgsConstructor;
+
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -35,8 +38,10 @@ public class KnowledgeEvaluationController {
             @RequestParam Long spaceId,
             @RequestParam(defaultValue = "1") int pageNum,
             @RequestParam(defaultValue = "20") int pageSize,
-            @RequestHeader(value = KnowledgeApiVersion.HEADER,
-                    defaultValue = KnowledgeApiVersion.CURRENT) String version) {
+            @RequestHeader(
+                            value = KnowledgeApiVersion.HEADER,
+                            defaultValue = KnowledgeApiVersion.CURRENT)
+                    String version) {
         KnowledgeApiVersion.requireCurrent(version);
         return Result.success(service.page(currentActor(), pageNum, pageSize, spaceId));
     }
@@ -45,8 +50,10 @@ public class KnowledgeEvaluationController {
     @SaCheckPermission("knowledge:edit")
     public Result<KnowledgeEvaluationService.CaseView> create(
             @RequestBody @Valid KnowledgeEvaluationService.CreateCaseRequest request,
-            @RequestHeader(value = KnowledgeApiVersion.HEADER,
-                    defaultValue = KnowledgeApiVersion.CURRENT) String version) {
+            @RequestHeader(
+                            value = KnowledgeApiVersion.HEADER,
+                            defaultValue = KnowledgeApiVersion.CURRENT)
+                    String version) {
         KnowledgeApiVersion.requireCurrent(version);
         return Result.success(service.create(currentActor(), request));
     }
@@ -55,17 +62,22 @@ public class KnowledgeEvaluationController {
     @SaCheckPermission("knowledge:list")
     public Result<KnowledgeEvaluationService.RunResult> run(
             @RequestBody @Valid KnowledgeEvaluationService.RunRequest request,
-            @RequestHeader(value = KnowledgeApiVersion.HEADER,
-                    defaultValue = KnowledgeApiVersion.CURRENT) String version) {
+            @RequestHeader(
+                            value = KnowledgeApiVersion.HEADER,
+                            defaultValue = KnowledgeApiVersion.CURRENT)
+                    String version) {
         KnowledgeApiVersion.requireCurrent(version);
         return Result.success(service.run(currentActor(), request));
     }
 
     @DeleteMapping("/{id}")
     @SaCheckPermission("knowledge:edit")
-    public Result<Void> delete(@PathVariable Long id,
-                               @RequestHeader(value = KnowledgeApiVersion.HEADER,
-                                       defaultValue = KnowledgeApiVersion.CURRENT) String version) {
+    public Result<Void> delete(
+            @PathVariable Long id,
+            @RequestHeader(
+                            value = KnowledgeApiVersion.HEADER,
+                            defaultValue = KnowledgeApiVersion.CURRENT)
+                    String version) {
         KnowledgeApiVersion.requireCurrent(version);
         service.delete(currentActor(), id);
         return Result.success();
@@ -75,4 +87,3 @@ public class KnowledgeEvaluationController {
         return ActorContextHttpAdapter.currentActor();
     }
 }
-

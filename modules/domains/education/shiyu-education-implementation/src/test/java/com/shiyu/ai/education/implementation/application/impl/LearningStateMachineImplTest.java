@@ -1,13 +1,5 @@
 package com.shiyu.ai.education.implementation.application.impl;
 
-import com.shiyu.ai.education.implementation.domain.LearningState;
-import com.shiyu.ai.education.implementation.domain.model.LearningStateBO;
-import com.shiyu.ai.education.implementation.domain.port.repository.LearningStateRepository;
-import com.shiyu.ai.kernel.context.ActorContext;
-import com.shiyu.ai.kernel.context.TenantId;
-import com.shiyu.ai.kernel.context.UserId;
-import org.junit.jupiter.api.Test;
-
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.eq;
@@ -15,9 +7,19 @@ import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
+import com.shiyu.ai.education.implementation.domain.LearningState;
+import com.shiyu.ai.education.implementation.domain.model.LearningStateBO;
+import com.shiyu.ai.education.implementation.domain.port.repository.LearningStateRepository;
+import com.shiyu.ai.kernel.context.ActorContext;
+import com.shiyu.ai.kernel.context.TenantId;
+import com.shiyu.ai.kernel.context.UserId;
+
+import org.junit.jupiter.api.Test;
+
 class LearningStateMachineImplTest {
 
-    private static final ActorContext ACTOR = new ActorContext(new TenantId(9), new UserId(7), false);
+    private static final ActorContext ACTOR =
+            new ActorContext(new TenantId(9), new UserId(7), false);
     private final LearningStateRepository repository = mock(LearningStateRepository.class);
     private final LearningStateMachineImpl machine = new LearningStateMachineImpl(repository);
 
@@ -28,7 +30,8 @@ class LearningStateMachineImplTest {
 
         LearningStateBO invalid = new LearningStateBO();
         invalid.setState("REMOVED");
-        when(repository.selectByStudentAndKnowledge(ACTOR.tenantId(), 10L, 20L)).thenReturn(invalid);
+        when(repository.selectByStudentAndKnowledge(ACTOR.tenantId(), 10L, 20L))
+                .thenReturn(invalid);
         assertEquals(LearningState.NOT_STARTED, machine.getState(ACTOR, 10L, 20L));
     }
 
@@ -63,4 +66,3 @@ class LearningStateMachineImplTest {
                 .upsert(eq(ACTOR.tenantId()), any(LearningStateBO.class));
     }
 }
-

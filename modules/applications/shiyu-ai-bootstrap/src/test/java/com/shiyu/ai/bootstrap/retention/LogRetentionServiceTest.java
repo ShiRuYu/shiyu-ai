@@ -1,5 +1,8 @@
 package com.shiyu.ai.bootstrap.retention;
 
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.io.TempDir;
@@ -10,13 +13,9 @@ import java.nio.file.attribute.FileTime;
 import java.time.Instant;
 import java.time.temporal.ChronoUnit;
 
-import static org.junit.jupiter.api.Assertions.assertFalse;
-import static org.junit.jupiter.api.Assertions.assertTrue;
-
 class LogRetentionServiceTest {
 
-    @TempDir
-    Path tempDirectory;
+    @TempDir Path tempDirectory;
 
     private String previousAppHome;
 

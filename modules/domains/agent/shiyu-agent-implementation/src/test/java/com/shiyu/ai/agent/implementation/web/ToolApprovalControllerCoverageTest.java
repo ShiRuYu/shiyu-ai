@@ -1,17 +1,18 @@
 package com.shiyu.ai.agent.implementation.web;
 
-import com.shiyu.ai.common.web.auth.ActorContextHttpAdapter;
-import com.shiyu.ai.kernel.context.TenantId;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.mockito.ArgumentMatchers.*;
+import static org.mockito.Mockito.*;
+
 import com.shiyu.ai.agent.contract.runtime.*;
 import com.shiyu.ai.agent.implementation.runtime.*;
+import com.shiyu.ai.common.web.auth.ActorContextHttpAdapter;
+import com.shiyu.ai.kernel.context.TenantId;
+
 import org.junit.jupiter.api.Test;
 
 import java.time.Instant;
 import java.util.List;
-
-import static org.junit.jupiter.api.Assertions.assertTrue;
-import static org.mockito.ArgumentMatchers.*;
-import static org.mockito.Mockito.*;
 
 class ToolApprovalControllerCoverageTest {
     @Test
@@ -27,7 +28,8 @@ class ToolApprovalControllerCoverageTest {
         TenantId tenantId = new TenantId(7);
         when(approvals.list("run-1", tenantId, 9)).thenReturn(List.of(pending));
         when(approvals.listAll(tenantId, 9)).thenReturn(List.of(pending));
-        when(approvals.request(eq("run-1"), eq(tenantId), eq(9L), eq("search"), eq("{}"))).thenReturn(pending);
+        when(approvals.request(eq("run-1"), eq(tenantId), eq(9L), eq("search"), eq("{}")))
+                .thenReturn(pending);
         when(approvals.require("a1", tenantId, 9)).thenReturn(pending);
         when(approvals.decide("a1", tenantId, 9, ToolApprovalStatus.APPROVED)).thenReturn(approved);
         when(approvals.require("a2", tenantId, 9)).thenReturn(approved);
@@ -42,12 +44,14 @@ class ToolApprovalControllerCoverageTest {
             assertTrue(controller.request("run-1", request).isSuccess());
             assertTrue(controller.approve("a1").isSuccess());
             assertTrue(controller.reject("a2").isSuccess());
-            verify(runtime, atLeastOnce()).append(eq(run), any(AiRunEventType.class), anyString(), eq(true));
+            verify(runtime, atLeastOnce())
+                    .append(eq(run), any(AiRunEventType.class), anyString(), eq(true));
         }
     }
 
     private static ToolApproval approval(String id, String runId, ToolApprovalStatus status) {
         Instant now = Instant.now();
-        return new ToolApproval(id, runId, 7, 9, "search", "{}", status, now, null, now.plusSeconds(300));
+        return new ToolApproval(
+                id, runId, 7, 9, "search", "{}", status, now, null, now.plusSeconds(300));
     }
 }

@@ -1,15 +1,18 @@
 package com.shiyu.ai.tooling.implementation.web;
 
 import cn.dev33.satoken.annotation.SaCheckPermission;
+
 import com.shiyu.ai.common.core.api.Result;
-import com.shiyu.ai.tooling.implementation.plugin.registry.PluginRegistry;
-import com.shiyu.ai.tooling.implementation.plugin.spi.PluginDescriptor;
-import com.shiyu.ai.tooling.implementation.plugin.vo.PluginInfoVO;
 import com.shiyu.ai.tooling.implementation.plugin.market.PluginMarketEntry;
 import com.shiyu.ai.tooling.implementation.plugin.market.PluginMarketService;
+import com.shiyu.ai.tooling.implementation.plugin.registry.PluginRegistry;
+import com.shiyu.ai.tooling.implementation.plugin.vo.PluginInfoVO;
+
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
+
 import lombok.extern.slf4j.Slf4j;
+
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -18,7 +21,7 @@ import java.util.stream.Collectors;
 /**
  * 插件系统 Controller
  *
- * 注意：所有参数均通过 @RequestParam 或 @RequestBody 传入，不使用 @PathVariable。
+ * <p>注意：所有参数均通过 @RequestParam 或 @RequestBody 传入，不使用 @PathVariable。
  */
 @Slf4j
 @Tag(name = "插件系统", description = "Plugin System")
@@ -38,18 +41,20 @@ public class PluginController {
     @SaCheckPermission("plugin:list")
     @GetMapping
     public Result<List<PluginInfoVO>> listPlugins() {
-        List<PluginInfoVO> plugins = registry.listPlugins().stream()
-                .map(d -> {
-                    PluginInfoVO vo = new PluginInfoVO();
-                    vo.setId(d.getId());
-                    vo.setName(d.getName());
-                    vo.setVersion(d.getVersion());
-                    vo.setDescription(d.getDescription());
-                    vo.setState(d.getState().name());
-                    vo.setLoadedAt(String.valueOf(d.getLoadedAt()));
-                    return vo;
-                })
-                .collect(Collectors.toList());
+        List<PluginInfoVO> plugins =
+                registry.listPlugins().stream()
+                        .map(
+                                d -> {
+                                    PluginInfoVO vo = new PluginInfoVO();
+                                    vo.setId(d.getId());
+                                    vo.setName(d.getName());
+                                    vo.setVersion(d.getVersion());
+                                    vo.setDescription(d.getDescription());
+                                    vo.setState(d.getState().name());
+                                    vo.setLoadedAt(String.valueOf(d.getLoadedAt()));
+                                    return vo;
+                                })
+                        .collect(Collectors.toList());
         return Result.success(plugins);
     }
 
@@ -102,9 +107,12 @@ public class PluginController {
     }
 
     private Result<Void> lifecycleFailure(String operation, String pluginId, Exception exception) {
-        log.warn("插件{}失败: pluginIdLength={}, errorType={}, errorMessageLength={}",
-                operation, pluginId == null ? 0 : pluginId.length(),
-                exception.getClass().getSimpleName(), messageLength(exception));
+        log.warn(
+                "插件{}失败: pluginIdLength={}, errorType={}, errorMessageLength={}",
+                operation,
+                pluginId == null ? 0 : pluginId.length(),
+                exception.getClass().getSimpleName(),
+                messageLength(exception));
         return Result.fail(operation + "失败，请稍后重试");
     }
 
@@ -114,17 +122,22 @@ public class PluginController {
 
     @SaCheckPermission("plugin:market")
     @GetMapping("/market")
-    public Result<List<PluginMarketEntry>> market() { return Result.success(market.list()); }
+    public Result<List<PluginMarketEntry>> market() {
+        return Result.success(market.list());
+    }
 
     @SaCheckPermission("plugin:market")
     @PostMapping("/market/publish")
-    public Result<PluginMarketEntry> publish(@RequestBody PluginMarketEntry entry,
-                                             @RequestParam(defaultValue = "false") boolean developmentMode) {
+    public Result<PluginMarketEntry> publish(
+            @RequestBody PluginMarketEntry entry,
+            @RequestParam(defaultValue = "false") boolean developmentMode) {
         return Result.success(market.publish(entry, developmentMode));
     }
 
     @SaCheckPermission("plugin:market")
     @PostMapping("/market/{pluginId}/disable")
-    public Result<Void> disable(@PathVariable String pluginId) { market.disable(pluginId); return Result.success(); }
+    public Result<Void> disable(@PathVariable String pluginId) {
+        market.disable(pluginId);
+        return Result.success();
+    }
 }
-

@@ -1,18 +1,19 @@
 package com.shiyu.ai.agent.implementation.service;
 
+import static org.junit.jupiter.api.Assertions.*;
+import static org.mockito.ArgumentMatchers.*;
+import static org.mockito.Mockito.*;
+
 import com.shiyu.ai.agent.implementation.domain.model.ExecutionTimelineBO;
 import com.shiyu.ai.agent.implementation.event.NodeExecutionCompletedEvent;
 import com.shiyu.ai.agent.implementation.event.NodeExecutionStartedEvent;
 import com.shiyu.ai.agent.implementation.port.repository.ExecutionTimelineRepository;
 import com.shiyu.ai.kernel.context.TenantId;
+
 import org.junit.jupiter.api.Test;
 
 import java.util.List;
 import java.util.Map;
-
-import static org.junit.jupiter.api.Assertions.*;
-import static org.mockito.ArgumentMatchers.*;
-import static org.mockito.Mockito.*;
 
 class TimelineServiceCoverageTest {
     @Test
@@ -20,10 +21,29 @@ class TimelineServiceCoverageTest {
         ExecutionTimelineRepository repository = mock(ExecutionTimelineRepository.class);
         TimelineService service = new TimelineService(repository);
         TenantId tenant = new TenantId(5);
-        service.onNodeStarted(new NodeExecutionStartedEvent(tenant, "exec", "agent", "node", "HTTP", Map.of("q", "x")));
-        service.onNodeCompleted(new NodeExecutionCompletedEvent(tenant, "exec", "agent", "node", "HTTP", Map.of("ok", true), "SUCCESS", 42));
-        ExecutionTimelineBO row = new ExecutionTimelineBO(); row.setId(1L); row.setTenantId(5L); row.setExecutionId("exec"); row.setAgentId("agent");
-        row.setNodeId("node"); row.setNodeType("HTTP"); row.setEventType("NODE_END"); row.setPayload("{}"); row.setDurationMs(42L);
+        service.onNodeStarted(
+                new NodeExecutionStartedEvent(
+                        tenant, "exec", "agent", "node", "HTTP", Map.of("q", "x")));
+        service.onNodeCompleted(
+                new NodeExecutionCompletedEvent(
+                        tenant,
+                        "exec",
+                        "agent",
+                        "node",
+                        "HTTP",
+                        Map.of("ok", true),
+                        "SUCCESS",
+                        42));
+        ExecutionTimelineBO row = new ExecutionTimelineBO();
+        row.setId(1L);
+        row.setTenantId(5L);
+        row.setExecutionId("exec");
+        row.setAgentId("agent");
+        row.setNodeId("node");
+        row.setNodeType("HTTP");
+        row.setEventType("NODE_END");
+        row.setPayload("{}");
+        row.setDurationMs(42L);
         when(repository.listByExecutionId(tenant, "exec")).thenReturn(List.of(row));
         List<Map<String, Object>> timeline = service.getTimeline(tenant, "exec");
         assertEquals(1, timeline.size());
@@ -37,7 +57,16 @@ class TimelineServiceCoverageTest {
         doThrow(new IllegalStateException("telemetry down")).when(repository).insert(any(), any());
         TimelineService service = new TimelineService(repository);
         TenantId tenant = new TenantId(5);
-        assertDoesNotThrow(() -> service.onNodeStarted(new NodeExecutionStartedEvent(tenant, "exec", "agent", "node", "HTTP", Map.of())));
-        assertDoesNotThrow(() -> service.onNodeCompleted(new NodeExecutionCompletedEvent(tenant, "exec", "agent", "node", "HTTP", Map.of(), "FAILED", 1)));
+        assertDoesNotThrow(
+                () ->
+                        service.onNodeStarted(
+                                new NodeExecutionStartedEvent(
+                                        tenant, "exec", "agent", "node", "HTTP", Map.of())));
+        assertDoesNotThrow(
+                () ->
+                        service.onNodeCompleted(
+                                new NodeExecutionCompletedEvent(
+                                        tenant, "exec", "agent", "node", "HTTP", Map.of(), "FAILED",
+                                        1)));
     }
 }

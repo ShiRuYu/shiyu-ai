@@ -1,8 +1,10 @@
 package com.shiyu.ai.tooling.implementation.plugin.config;
-import com.shiyu.ai.tooling.implementation.plugin.sandbox.PluginSandbox;
 
 import com.shiyu.ai.tooling.implementation.plugin.registry.PluginRegistry;
+import com.shiyu.ai.tooling.implementation.plugin.sandbox.PluginSandbox;
+
 import lombok.extern.slf4j.Slf4j;
+
 import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.context.annotation.Bean;

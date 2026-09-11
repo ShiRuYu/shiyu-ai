@@ -2,18 +2,17 @@ package com.shiyu.ai.common.mybatis.config;
 
 import com.mybatisflex.core.tenant.TenantFactory;
 import com.shiyu.ai.kernel.context.TenantScope;
+
 import org.springframework.stereotype.Component;
 
-/**
- * 基于当前操作租户的严格单租户过滤工厂。
- */
+/** 基于当前操作租户的严格单租户过滤工厂。 */
 @Component
 @SuppressWarnings("deprecation")
 public class ContextTenantFactory implements TenantFactory {
 
     @Override
     public Object[] getTenantIds() {
-        return new Object[]{TenantScope.require().value()};
+        return new Object[] {TenantScope.require().value()};
     }
 
     @Override

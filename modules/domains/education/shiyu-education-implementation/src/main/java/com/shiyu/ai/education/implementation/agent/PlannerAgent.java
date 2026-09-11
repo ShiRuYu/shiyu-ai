@@ -1,22 +1,20 @@
 package com.shiyu.ai.education.implementation.agent;
 
-import com.shiyu.ai.education.implementation.domain.enums.StudyPlanStatus;
 import com.shiyu.ai.education.implementation.domain.enums.StudyPlanItemStatus;
-
-import com.shiyu.ai.model.contract.api.ChatEngine;
-import com.shiyu.ai.model.contract.model.ChatRequest;
-import com.shiyu.ai.model.contract.model.ChatResponse;
+import com.shiyu.ai.education.implementation.domain.enums.StudyPlanStatus;
 import com.shiyu.ai.education.implementation.domain.model.StudyPlanBO;
 import com.shiyu.ai.education.implementation.domain.model.StudyPlanItemBO;
+import com.shiyu.ai.education.implementation.domain.port.repository.StudyPlanItemRepository;
 import com.shiyu.ai.education.implementation.domain.port.repository.StudyPlanRepository;
-import com.shiyu.ai.education.implementation.domain.port.repository.StudyPlanItemRepository;
-import com.shiyu.ai.education.implementation.domain.port.repository.StudyPlanItemRepository;
-import com.shiyu.ai.knowledge.contract.model.KnowledgeResponse;
+import com.shiyu.ai.kernel.context.ActorContext;
 import com.shiyu.ai.knowledge.contract.api.KnowledgePathPort;
 import com.shiyu.ai.knowledge.contract.api.KnowledgePointPort;
-import com.shiyu.ai.kernel.context.ActorContext;
+import com.shiyu.ai.knowledge.contract.model.KnowledgeResponse;
+import com.shiyu.ai.model.contract.api.ChatEngine;
+
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+
 import org.springframework.stereotype.Component;
 
 import java.time.LocalDate;
@@ -27,7 +25,7 @@ import java.util.List;
 /**
  * PlannerAgent — 学习计划 Agent
  *
- * 职责：根据学习目标和时间范围，自动生成学习计划。
+ * <p>职责：根据学习目标和时间范围，自动生成学习计划。
  */
 @Slf4j
 @Component
@@ -43,16 +41,22 @@ public class PlannerAgent {
     /**
      * 生成学习计划
      *
-     * @param studentId         学生 ID
+     * @param studentId 学生 ID
      * @param targetKnowledgeId 目标知识点 ID
-     * @param startDate         开始日期
-     * @param endDate           结束日期
+     * @param startDate 开始日期
+     * @param endDate 结束日期
      * @return 生成的学习计划
      */
-    public StudyPlanBO generatePlan(ActorContext actor, Long studentId, Long targetKnowledgeId,
-                                     LocalDate startDate, LocalDate endDate) {
-        log.info("PlannerAgent.generatePlan: studentIdPresent={}, targetKnowledgeIdPresent={}",
-                studentId != null, targetKnowledgeId != null);
+    public StudyPlanBO generatePlan(
+            ActorContext actor,
+            Long studentId,
+            Long targetKnowledgeId,
+            LocalDate startDate,
+            LocalDate endDate) {
+        log.info(
+                "PlannerAgent.generatePlan: studentIdPresent={}, targetKnowledgeIdPresent={}",
+                studentId != null,
+                targetKnowledgeId != null);
 
         // 1. 获取知识点详情
         KnowledgeResponse target = knowledgePointService.getResponse(actor, targetKnowledgeId);
@@ -80,23 +84,26 @@ public class PlannerAgent {
         studyPlanRepository.insert(actor.tenantId(), savedPlan);
 
         // 4. 生成每日任务
-        List<StudyPlanItemBO> items = generatePlanItems(
-                savedPlan.getId(), path.size() > 0 ? path : List.of(targetKnowledgeId),
-                startDate, endDate);
+        List<StudyPlanItemBO> items =
+                generatePlanItems(
+                        savedPlan.getId(),
+                        path.size() > 0 ? path : List.of(targetKnowledgeId),
+                        startDate,
+                        endDate);
         // 保存每日任务（当前仅创建计划本身，items 持久化后续扩展）
         studyPlanItemRepository.insertBatch(actor.tenantId(), items);
         log.info("PlannerAgent: {} 条计划明细已持久化", items.size());
 
-        log.info("PlannerAgent.generatePlan: 计划创建完成, planIdPresent={}, totalDays={}",
-                savedPlan.getId() != null, ChronoUnit.DAYS.between(startDate, endDate));
+        log.info(
+                "PlannerAgent.generatePlan: 计划创建完成, planIdPresent={}, totalDays={}",
+                savedPlan.getId() != null,
+                ChronoUnit.DAYS.between(startDate, endDate));
         return savedPlan;
     }
 
-    /**
-     * 根据总天数和知识点数量，生成按天分配的学习计划
-     */
-    private List<StudyPlanItemBO> generatePlanItems(Long planId, List<Long> knowledgeIds,
-                                                      LocalDate startDate, LocalDate endDate) {
+    /** 根据总天数和知识点数量，生成按天分配的学习计划 */
+    private List<StudyPlanItemBO> generatePlanItems(
+            Long planId, List<Long> knowledgeIds, LocalDate startDate, LocalDate endDate) {
         List<StudyPlanItemBO> items = new ArrayList<>();
         long totalDays = ChronoUnit.DAYS.between(startDate, endDate) + 1;
         int knowledgeCount = knowledgeIds.size();

@@ -1,21 +1,5 @@
 package com.shiyu.ai.education.implementation.application.impl;
 
-import com.shiyu.ai.common.core.exception.ServiceException;
-import com.shiyu.ai.common.core.utils.MapstructUtils;
-import com.shiyu.ai.education.implementation.domain.model.ChapterBO;
-import com.shiyu.ai.education.implementation.domain.model.KnowledgeTextbookBO;
-import com.shiyu.ai.education.implementation.web.dto.ChapterResponse;
-import com.shiyu.ai.education.implementation.domain.port.repository.ChapterRepository;
-import com.shiyu.ai.education.implementation.domain.port.repository.KnowledgeTextbookRepository;
-import com.shiyu.ai.education.implementation.web.request.ChapterRequest;
-import com.shiyu.ai.kernel.context.ActorContext;
-import com.shiyu.ai.kernel.context.TenantId;
-import com.shiyu.ai.kernel.context.UserId;
-import org.junit.jupiter.api.Test;
-import org.mockito.MockedStatic;
-
-import java.util.List;
-
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.ArgumentMatchers.any;
@@ -25,10 +9,28 @@ import static org.mockito.Mockito.mockStatic;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
+import com.shiyu.ai.common.core.exception.ServiceException;
+import com.shiyu.ai.common.core.utils.MapstructUtils;
+import com.shiyu.ai.education.implementation.domain.model.ChapterBO;
+import com.shiyu.ai.education.implementation.domain.model.KnowledgeTextbookBO;
+import com.shiyu.ai.education.implementation.domain.port.repository.ChapterRepository;
+import com.shiyu.ai.education.implementation.domain.port.repository.KnowledgeTextbookRepository;
+import com.shiyu.ai.education.implementation.web.dto.ChapterResponse;
+import com.shiyu.ai.education.implementation.web.request.ChapterRequest;
+import com.shiyu.ai.kernel.context.ActorContext;
+import com.shiyu.ai.kernel.context.TenantId;
+import com.shiyu.ai.kernel.context.UserId;
+
+import org.junit.jupiter.api.Test;
+import org.mockito.MockedStatic;
+
+import java.util.List;
+
 @SuppressWarnings("unchecked")
 class ChapterServiceImplTest {
 
-    private static final ActorContext ACTOR = new ActorContext(new TenantId(9), new UserId(7), false);
+    private static final ActorContext ACTOR =
+            new ActorContext(new TenantId(9), new UserId(7), false);
     private final ChapterRepository chapters = mock(ChapterRepository.class);
     private final KnowledgeTextbookRepository links = mock(KnowledgeTextbookRepository.class);
     private final ChapterServiceImpl service = new ChapterServiceImpl(chapters, links);
@@ -45,7 +47,10 @@ class ChapterServiceImplTest {
 
         try (MockedStatic<MapstructUtils> mapper = mockStatic(MapstructUtils.class)) {
             ChapterResponse response = mock(ChapterResponse.class);
-            mapper.when(() -> MapstructUtils.convert(any(ChapterBO.class), eq(ChapterResponse.class)))
+            mapper.when(
+                            () ->
+                                    MapstructUtils.convert(
+                                            any(ChapterBO.class), eq(ChapterResponse.class)))
                     .thenReturn(response);
             mapper.when(() -> MapstructUtils.convert(any(List.class), eq(ChapterResponse.class)))
                     .thenReturn(List.of(response));
@@ -63,7 +68,9 @@ class ChapterServiceImplTest {
         ChapterBO chapter = new ChapterBO();
         chapter.setId(1L);
         when(chapters.selectById(ACTOR.tenantId(), 1L)).thenReturn(chapter).thenReturn(null);
-        when(chapters.selectByParentId(ACTOR.tenantId(), 1L)).thenReturn(List.of()).thenReturn(List.of(new ChapterBO()));
+        when(chapters.selectByParentId(ACTOR.tenantId(), 1L))
+                .thenReturn(List.of())
+                .thenReturn(List.of(new ChapterBO()));
         service.update(ACTOR, 1L, request());
         verify(chapters).update(eq(ACTOR.tenantId()), eq(chapter));
         service.delete(ACTOR, 1L);
@@ -82,12 +89,14 @@ class ChapterServiceImplTest {
         KnowledgeTextbookBO duplicate = new KnowledgeTextbookBO();
         duplicate.setKnowledgeId(4L);
         KnowledgeTextbookBO missing = new KnowledgeTextbookBO();
-        when(links.selectByChapterId(ACTOR.tenantId(), 1L)).thenReturn(List.of(first, duplicate, missing));
+        when(links.selectByChapterId(ACTOR.tenantId(), 1L))
+                .thenReturn(List.of(first, duplicate, missing));
         assertEquals(List.of(4L), service.listKnowledgeIds(ACTOR, 1L));
 
         service.replaceKnowledgeIds(ACTOR, 1L, java.util.Arrays.asList(4L, null, 4L, 5L));
         verify(links).deleteByChapterId(ACTOR.tenantId(), 1L);
-        verify(links, org.mockito.Mockito.times(2)).insert(eq(ACTOR.tenantId()), any(KnowledgeTextbookBO.class));
+        verify(links, org.mockito.Mockito.times(2))
+                .insert(eq(ACTOR.tenantId()), any(KnowledgeTextbookBO.class));
         service.replaceKnowledgeIds(ACTOR, 1L, null);
     }
 
@@ -98,4 +107,3 @@ class ChapterServiceImplTest {
         return request;
     }
 }
-

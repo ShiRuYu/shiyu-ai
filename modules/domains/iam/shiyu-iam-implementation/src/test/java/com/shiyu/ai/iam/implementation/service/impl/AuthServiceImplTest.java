@@ -1,5 +1,9 @@
 package com.shiyu.ai.iam.implementation.service.impl;
 
+import static org.junit.jupiter.api.Assertions.*;
+import static org.mockito.ArgumentMatchers.*;
+import static org.mockito.Mockito.*;
+
 import com.shiyu.ai.iam.implementation.domain.model.RoleBO;
 import com.shiyu.ai.iam.implementation.domain.model.TenantBO;
 import com.shiyu.ai.iam.implementation.domain.model.UserBO;
@@ -7,23 +11,19 @@ import com.shiyu.ai.iam.implementation.domain.model.UserScopeRoleBO;
 import com.shiyu.ai.iam.implementation.port.repository.*;
 import com.shiyu.ai.iam.implementation.service.CaptchaService;
 import com.shiyu.ai.iam.implementation.service.MenuService;
-import com.shiyu.ai.iam.implementation.vo.TenantInfoVO;
-import com.shiyu.ai.iam.implementation.vo.LoginResponseVO;
 import com.shiyu.ai.iam.implementation.utils.SaTokenHelper;
+import com.shiyu.ai.iam.implementation.vo.LoginResponseVO;
 import com.shiyu.ai.kernel.context.ActorContext;
 import com.shiyu.ai.kernel.context.RoleId;
 import com.shiyu.ai.kernel.context.TenantId;
 import com.shiyu.ai.kernel.context.UserId;
+
 import org.junit.jupiter.api.Test;
 
+import java.time.LocalDateTime;
+import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
-import java.util.Arrays;
-import java.time.LocalDateTime;
-
-import static org.junit.jupiter.api.Assertions.*;
-import static org.mockito.ArgumentMatchers.*;
-import static org.mockito.Mockito.*;
 
 class AuthServiceImplTest {
     private final AuthRepository auth = mock(AuthRepository.class);
@@ -33,26 +33,47 @@ class AuthServiceImplTest {
     private final TenantRepository tenants = mock(TenantRepository.class);
     private final MenuService menus = mock(MenuService.class);
     private final CaptchaService captcha = mock(CaptchaService.class);
-    private final AuthServiceImpl service = new AuthServiceImpl(auth, users, assignments, tenantRoles, tenants, menus, captcha);
+    private final AuthServiceImpl service =
+            new AuthServiceImpl(auth, users, assignments, tenantRoles, tenants, menus, captcha);
 
     @Test
     void selectsPermissionCodesForUsernameAndActorModes() {
-        ActorContext normal = new ActorContext(new TenantId(10), new UserId(20), new RoleId(3), "editor", new TenantId(10), null, false);
+        ActorContext normal =
+                new ActorContext(
+                        new TenantId(10),
+                        new UserId(20),
+                        new RoleId(3),
+                        "editor",
+                        new TenantId(10),
+                        null,
+                        false);
         when(auth.selectCodesByUsername("alice", new TenantId(10L))).thenReturn(List.of("read"));
         assertEquals(List.of("read"), service.getAuthCodes(normal, "alice"));
         when(auth.selectCodesByUsername("empty", new TenantId(10L))).thenReturn(null);
         assertTrue(service.getAuthCodes(normal, "empty").isEmpty());
-        when(auth.selectCodesByUsername("broken", new TenantId(10L))).thenThrow(new IllegalStateException("db"));
+        when(auth.selectCodesByUsername("broken", new TenantId(10L)))
+                .thenThrow(new IllegalStateException("db"));
         assertTrue(service.getAuthCodes(normal, "broken").isEmpty());
         assertTrue(service.getAuthCodes(null, "alice").isEmpty());
 
-        when(auth.selectCodesByUserIdAndRoleCode(new UserId(20L), new TenantId(10L), "editor")).thenReturn(List.of("write"));
+        when(auth.selectCodesByUserIdAndRoleCode(new UserId(20L), new TenantId(10L), "editor"))
+                .thenReturn(List.of("write"));
         assertEquals(List.of("write"), service.getAuthCodesByUserId(normal, new UserId(20L)));
-        ActorContext delegated = new ActorContext(new TenantId(11), new UserId(20), new RoleId(3), "tenant_super", new TenantId(10), "PARENT_SUPER_ADMIN", false);
-        when(auth.selectCodesByRoleCodeAndTenant("tenant_super", new TenantId(11L))).thenReturn(List.of("admin"));
+        ActorContext delegated =
+                new ActorContext(
+                        new TenantId(11),
+                        new UserId(20),
+                        new RoleId(3),
+                        "tenant_super",
+                        new TenantId(10),
+                        "PARENT_SUPER_ADMIN",
+                        false);
+        when(auth.selectCodesByRoleCodeAndTenant("tenant_super", new TenantId(11L)))
+                .thenReturn(List.of("admin"));
         assertEquals(List.of("admin"), service.getAuthCodesByUserId(delegated, new UserId(20L)));
         ActorContext noRole = new ActorContext(new TenantId(10), new UserId(20), false);
-        when(auth.selectCodesByUserId(new UserId(20L), new TenantId(10L))).thenReturn(List.of("read"));
+        when(auth.selectCodesByUserId(new UserId(20L), new TenantId(10L)))
+                .thenReturn(List.of("read"));
         assertEquals(List.of("read"), service.getAuthCodesByUserId(noRole, new UserId(20L)));
         assertTrue(service.getAuthCodesByUserId(null, new UserId(20L)).isEmpty());
         assertTrue(service.getAuthCodesByUserId(noRole, new UserId(21L)).isEmpty());
@@ -72,7 +93,8 @@ class AuthServiceImplTest {
 
     @Test
     void handlesAuthenticationAndRoleResolutionFailurePaths() {
-        when(users.selectActiveUserByUsername("broken")).thenThrow(new IllegalStateException("database down"));
+        when(users.selectActiveUserByUsername("broken"))
+                .thenThrow(new IllegalStateException("database down"));
         assertNull(service.login("broken", "secret"));
 
         UserBO withoutId = user(null, "no-id", "secret", 1);
@@ -91,7 +113,8 @@ class AuthServiceImplTest {
     @Test
     void coversPermissionFallbackAndRoleSwitchFailure() {
         ActorContext actor = new ActorContext(new TenantId(10), new UserId(20), false);
-        when(auth.selectCodesByUserIdAndRoleCode(new UserId(20L), new TenantId(10L), "editor")).thenReturn(null);
+        when(auth.selectCodesByUserIdAndRoleCode(new UserId(20L), new TenantId(10L), "editor"))
+                .thenReturn(null);
         assertTrue(service.getAuthCodesByUserId(actor, new UserId(20L)).isEmpty());
         when(auth.selectCodesByUserIdAndRoleCode(new UserId(20L), new TenantId(10L), "editor"))
                 .thenThrow(new IllegalStateException("permission lookup failed"));
@@ -219,7 +242,8 @@ class AuthServiceImplTest {
         when(assignments.selectByUserId(20L)).thenReturn(List.of());
         assertFalse(service.switchCurrentTenant(20L, new TenantId(10L)));
         when(assignments.selectByUserId(20L)).thenReturn(List.of(assignment(20L, 10L, 3L)));
-        when(tenantRoles.selectTenantById(new TenantId(10L))).thenReturn(tenant(10L, "TENANT", "Tenant"));
+        when(tenantRoles.selectTenantById(new TenantId(10L)))
+                .thenReturn(tenant(10L, "TENANT", "Tenant"));
         RoleBO disabled = role(3L, 10L, "user", "User");
         disabled.setStatus(0);
         when(tenantRoles.selectRoleById(3L)).thenReturn(disabled);
@@ -269,11 +293,16 @@ class AuthServiceImplTest {
         UserBO user = user(20L, "alice", "secret", 1);
         when(assignments.selectByUserId(20L)).thenReturn(List.of(assignment(20L, 10L, 3L)));
         when(users.selectById(20L)).thenReturn(user);
-        when(tenantRoles.selectTenantById(new TenantId(10L))).thenReturn(tenant(10L, "TENANT", "Tenant"));
+        when(tenantRoles.selectTenantById(new TenantId(10L)))
+                .thenReturn(tenant(10L, "TENANT", "Tenant"));
         assertEquals(1, service.getUserTenants(actor, 20L).size());
-        assertThrows(IllegalArgumentException.class, () -> service.forgetPassword("a@b.test", "new", "bad", "captcha"));
+        assertThrows(
+                IllegalArgumentException.class,
+                () -> service.forgetPassword("a@b.test", "new", "bad", "captcha"));
         when(captcha.validateCaptcha("captcha", "ok")).thenReturn(true);
-        assertThrows(IllegalArgumentException.class, () -> service.forgetPassword("a@b.test", "new", "ok", "captcha"));
+        assertThrows(
+                IllegalArgumentException.class,
+                () -> service.forgetPassword("a@b.test", "new", "ok", "captcha"));
     }
 
     @Test
@@ -315,18 +344,22 @@ class AuthServiceImplTest {
         RoleBO defaultRole = role(3L, 1L, "user", "User");
         UserBO registered = user(21L, "new-user", "secret", 1);
         when(users.selectByUsername("new-user")).thenReturn(null);
-        doAnswer(invocation -> {
-            UserBO value = invocation.getArgument(0);
-            value.setId(21L);
-            return value;
-        }).when(users).insert(any(UserBO.class));
+        doAnswer(
+                        invocation -> {
+                            UserBO value = invocation.getArgument(0);
+                            value.setId(21L);
+                            return value;
+                        })
+                .when(users)
+                .insert(any(UserBO.class));
         when(users.selectById(21L)).thenReturn(registered);
         when(tenantRoles.selectEnabledRoleByCode(new TenantId(1L), "user")).thenReturn(defaultRole);
         when(users.update(any(UserBO.class))).thenReturn(true);
         when(users.selectActiveUserByUsername("new-user")).thenReturn(registered);
         when(users.selectRolesByUserId(21L)).thenReturn(List.of(defaultRole));
         when(assignments.selectByUserId(21L)).thenReturn(List.of(assignment(21L, 1L, 3L)));
-        when(tenantRoles.selectTenantById(new TenantId(1L))).thenReturn(tenant(1L, "default", "Default"));
+        when(tenantRoles.selectTenantById(new TenantId(1L)))
+                .thenReturn(tenant(1L, "default", "Default"));
         when(tenantRoles.selectRoleById(3L)).thenReturn(defaultRole);
         SaTokenHelper helper = mock(SaTokenHelper.class);
         when(helper.loginWithKickout(21L)).thenReturn("registered-token");
@@ -339,17 +372,23 @@ class AuthServiceImplTest {
             verify(assignments).insert(any(UserScopeRoleBO.class));
 
             when(captcha.validateCaptcha("key", "code")).thenReturn(false);
-            assertThrows(IllegalArgumentException.class, () -> service.codeLogin("phone", "code", "key"));
+            assertThrows(
+                    IllegalArgumentException.class,
+                    () -> service.codeLogin("phone", "code", "key"));
             when(captcha.validateCaptcha("key", "code")).thenReturn(true);
             when(users.selectByUsername("phone")).thenReturn(null);
             UserBO phoneUser = user(22L, "phone", "unused", 1);
-            doAnswer(invocation -> {
-                UserBO value = invocation.getArgument(0);
-                value.setId(22L);
-                return value;
-            }).when(users).insert(argThat(value -> "phone".equals(value.getUsername())));
+            doAnswer(
+                            invocation -> {
+                                UserBO value = invocation.getArgument(0);
+                                value.setId(22L);
+                                return value;
+                            })
+                    .when(users)
+                    .insert(argThat(value -> "phone".equals(value.getUsername())));
             when(users.selectById(22L)).thenReturn(phoneUser);
-            when(tenantRoles.selectEnabledRoleByCode(new TenantId(1L), "user")).thenReturn(defaultRole);
+            when(tenantRoles.selectEnabledRoleByCode(new TenantId(1L), "user"))
+                    .thenReturn(defaultRole);
             when(users.selectRolesByUserId(22L)).thenReturn(List.of(defaultRole));
             when(assignments.selectByUserId(22L)).thenReturn(List.of(assignment(22L, 1L, 3L)));
             LoginResponseVO codeResponse = service.codeLogin("phone", "code", "key");
@@ -361,7 +400,8 @@ class AuthServiceImplTest {
     @Test
     void buildsDelegatedTenantTreeAndTenantPaths() {
         UserBO user = user(20L, "parent-admin", "secret", 1);
-        user.setExtInfo("{\"homeTenantId\":10,\"currentTenantId\":11,\"switchMode\":\"PARENT_SUPER_ADMIN\"}");
+        user.setExtInfo(
+                "{\"homeTenantId\":10,\"currentTenantId\":11,\"switchMode\":\"PARENT_SUPER_ADMIN\"}");
         RoleBO homeSuper = role(7L, 10L, "tenant_super", "Tenant Admin");
         RoleBO childSuper = role(8L, 11L, "tenant_super", "Tenant Admin");
         when(users.selectActiveUserByUsername("parent-admin")).thenReturn(user);
@@ -371,7 +411,8 @@ class AuthServiceImplTest {
         when(tenants.selectDescendantIds(new TenantId(11L))).thenReturn(List.of(11L));
         when(tenantRoles.selectRoleById(7L)).thenReturn(homeSuper);
         when(tenantRoles.selectTenantSuperRole(new TenantId(11L))).thenReturn(childSuper);
-        when(tenantRoles.selectTenantById(new TenantId(11L))).thenReturn(tenant(11L, "child", "Child"));
+        when(tenantRoles.selectTenantById(new TenantId(11L)))
+                .thenReturn(tenant(11L, "child", "Child"));
         when(users.update(user)).thenReturn(true);
         TenantBO parent = tenant(10L, "parent", "Parent");
         TenantBO child = tenant(11L, "child", "Child");
@@ -388,7 +429,9 @@ class AuthServiceImplTest {
             assertNotNull(response);
             assertEquals(11L, response.getCurrentTenantId());
             assertEquals(2, response.getTenants().size());
-            assertTrue(response.getTenants().stream().anyMatch(item -> "Parent / Child".equals(item.getPathName())));
+            assertTrue(
+                    response.getTenants().stream()
+                            .anyMatch(item -> "Parent / Child".equals(item.getPathName())));
             assertEquals(List.of("tenant_super"), response.getRoles());
         }
     }
@@ -402,7 +445,8 @@ class AuthServiceImplTest {
         when(users.selectActiveUserByUsername("alice")).thenReturn(user);
         when(users.selectRolesByUserId(20L)).thenReturn(List.of(editor));
         when(assignments.selectByUserId(20L)).thenReturn(List.of(assignment));
-        when(tenantRoles.selectTenantById(new TenantId(10L))).thenReturn(tenant(10L, "TENANT", "Tenant"));
+        when(tenantRoles.selectTenantById(new TenantId(10L)))
+                .thenReturn(tenant(10L, "TENANT", "Tenant"));
         when(tenantRoles.selectRoleById(3L)).thenReturn(editor);
         when(users.update(user)).thenReturn(false);
         SaTokenHelper helper = mock(SaTokenHelper.class);
@@ -417,13 +461,20 @@ class AuthServiceImplTest {
     void resolvesRoleSelectionBoundaries() throws Exception {
         RoleBO role = role(3L, 10L, "editor", "Editor");
         UserScopeRoleBO assignment = assignment(20L, 10L, 3L);
-        assertEquals(role, invoke(service, "resolveCurrentRoleForTenant", null,
-                List.of(role), List.of(assignment), 10L));
+        assertEquals(
+                role,
+                invoke(
+                        service,
+                        "resolveCurrentRoleForTenant",
+                        null,
+                        List.of(role),
+                        List.of(assignment),
+                        10L));
         assertNull(invoke(service, "resolveCurrentRoleForTenant", null, List.of(), List.of(), 10L));
         assertNull(invoke(service, "resolveCurrentRoleForTenant", null, List.of(role), null, 10L));
 
-        Map<String, Object> ext = invoke(service, "buildExtInfo", null, null, null,
-                LocalDateTime.now(), "127.0.0.1");
+        Map<String, Object> ext =
+                invoke(service, "buildExtInfo", null, null, null, LocalDateTime.now(), "127.0.0.1");
         assertEquals("127.0.0.1", ext.get("lastLoginIp"));
         role.setStatus(null);
         assertFalse((Boolean) invoke(service, "isTenantSuperRole", role));
@@ -433,7 +484,10 @@ class AuthServiceImplTest {
     void coversTenantResolutionAndCollectionBoundaryBranches() throws Exception {
         assertTrue(((Map<?, ?>) invoke(service, "parseExtInfo", (Object) null)).isEmpty());
         assertTrue(((Map<?, ?>) invoke(service, "parseExtInfo", "")).isEmpty());
-        assertEquals(10, ((Map<?, ?>) invoke(service, "parseExtInfo", "{\"currentTenantId\":10}")).get("currentTenantId"));
+        assertEquals(
+                10,
+                ((Map<?, ?>) invoke(service, "parseExtInfo", "{\"currentTenantId\":10}"))
+                        .get("currentTenantId"));
 
         UserScopeRoleBO active = assignment(20L, 10L, 3L);
         UserScopeRoleBO inactive = assignment(20L, 10L, 3L);
@@ -459,8 +513,22 @@ class AuthServiceImplTest {
         assertFalse((Boolean) invoke(service, "isActiveTenant", disabledTenant));
         assertFalse((Boolean) invoke(service, "isActiveTenant", deletedTenant));
 
-        assertEquals(10L, (Long) invoke(service, "resolveCurrentTenantId", "{\"currentTenantId\":10}", List.of(active)));
-        assertEquals(10L, (Long) invoke(service, "resolveCurrentTenantId", "{\"currentTenantId\":99}", List.of(active)));
+        assertEquals(
+                10L,
+                (Long)
+                        invoke(
+                                service,
+                                "resolveCurrentTenantId",
+                                "{\"currentTenantId\":10}",
+                                List.of(active)));
+        assertEquals(
+                10L,
+                (Long)
+                        invoke(
+                                service,
+                                "resolveCurrentTenantId",
+                                "{\"currentTenantId\":99}",
+                                List.of(active)));
         assertNull(invoke(service, "resolveCurrentTenantId", "{}", List.of(inactive)));
         assertNull(invoke(service, "resolveCurrentTenantId", null, null));
         assertFalse((Boolean) invoke(service, "hasTenantAssignment", null, 10L));
@@ -468,26 +536,58 @@ class AuthServiceImplTest {
         assertTrue((Boolean) invoke(service, "hasTenantAssignment", List.of(active), 10L));
 
         Map<String, Object> normal = Map.of("switchMode", "NORMAL", "homeTenantId", 10L);
-        assertFalse((Boolean) invoke(service, "isDelegatedTenantContext", normal, List.of(active), 11L));
-        Map<String, Object> delegated = Map.of("switchMode", "PARENT_SUPER_ADMIN", "homeTenantId", 10L);
+        assertFalse(
+                (Boolean)
+                        invoke(service, "isDelegatedTenantContext", normal, List.of(active), 11L));
+        Map<String, Object> delegated =
+                Map.of("switchMode", "PARENT_SUPER_ADMIN", "homeTenantId", 10L);
         RoleBO parentSuper = role(7L, 10L, "tenant_super", "Parent");
         when(tenants.selectDescendantIds(new TenantId(10L))).thenReturn(List.of(11L));
         when(tenantRoles.selectRoleById(7L)).thenReturn(parentSuper);
-        assertTrue((Boolean) invoke(service, "isDelegatedTenantContext", delegated,
-                List.of(assignment(20L, 10L, 7L)), 11L));
-        assertFalse((Boolean) invoke(service, "isDelegatedTenantContext", delegated, List.of(active), 99L));
+        assertTrue(
+                (Boolean)
+                        invoke(
+                                service,
+                                "isDelegatedTenantContext",
+                                delegated,
+                                List.of(assignment(20L, 10L, 7L)),
+                                11L));
+        assertFalse(
+                (Boolean)
+                        invoke(
+                                service,
+                                "isDelegatedTenantContext",
+                                delegated,
+                                List.of(active),
+                                99L));
         assertTrue((Boolean) invoke(service, "isTenantSuperRole", parentSuper));
         RoleBO ordinary = role(8L, 10L, "user", "User");
         ordinary.setDelFlag(1);
         assertFalse((Boolean) invoke(service, "isTenantSuperRole", ordinary));
         assertFalse((Boolean) invoke(service, "isTenantSuperRole", (Object) null));
 
-        Map<String, Object> ext = invoke(service, "buildExtInfo", "{\"existing\":true}", parentSuper,
-                10L, LocalDateTime.now(), "127.0.0.1");
+        Map<String, Object> ext =
+                invoke(
+                        service,
+                        "buildExtInfo",
+                        "{\"existing\":true}",
+                        parentSuper,
+                        10L,
+                        LocalDateTime.now(),
+                        "127.0.0.1");
         assertEquals(true, ext.get("existing"));
         assertTrue(ext.containsKey("currentRole"));
-        assertFalse(((Map<?, ?>) invoke(service, "buildExtInfo", "{}", null, null,
-                LocalDateTime.now(), null)).isEmpty());
+        assertFalse(
+                ((Map<?, ?>)
+                                invoke(
+                                        service,
+                                        "buildExtInfo",
+                                        "{}",
+                                        null,
+                                        null,
+                                        LocalDateTime.now(),
+                                        null))
+                        .isEmpty());
 
         when(tenantRoles.selectTenantById(new TenantId(10L))).thenReturn(validTenant);
         when(tenantRoles.selectRoleById(3L)).thenReturn(role(3L, 10L, "editor", "Editor"));
@@ -497,8 +597,9 @@ class AuthServiceImplTest {
         assertEquals(1, ((List<?>) invoke(service, "buildTenantList", mixed)).size());
         assertTrue(((List<?>) invoke(service, "buildTenantList", (Object) null)).isEmpty());
         when(tenants.selectDescendantIds(new TenantId(10L))).thenReturn(List.of(10L, 11L));
-        when(tenants.selectAll()).thenReturn(Arrays.asList(validTenant, disabledTenant, deletedTenant,
-                new TenantBO()));
+        when(tenants.selectAll())
+                .thenReturn(
+                        Arrays.asList(validTenant, disabledTenant, deletedTenant, new TenantBO()));
         List<?> scoped = invoke(service, "buildScopedTenantList", 10L, 10L);
         assertEquals(1, scoped.size());
         assertTrue(((List<?>) invoke(service, "buildScopedTenantList", 10L, null)).size() >= 1);
@@ -512,12 +613,40 @@ class AuthServiceImplTest {
 
         RoleBO inactiveRole = role(9L, 10L, "inactive", "Inactive");
         inactiveRole.setStatus(0);
-        assertEquals(parentSuper, invoke(service, "resolveCurrentRoleForTenant", 7L,
-                Arrays.asList(parentSuper, inactiveRole), List.of(assignment(20L, 10L, 7L)), 10L));
-        assertNull(invoke(service, "resolveCurrentRoleForTenant", null, List.of(parentSuper), List.of(active), null));
-        assertNull(invoke(service, "resolveCurrentRoleForTenant", 99L, List.of(inactiveRole), List.of(active), 10L));
-        assertEquals(parentSuper, invoke(service, "resolveCurrentRoleForTenant", 99L,
-                List.of(parentSuper), List.of(assignment(20L, 10L, 7L)), 10L));
+        assertEquals(
+                parentSuper,
+                invoke(
+                        service,
+                        "resolveCurrentRoleForTenant",
+                        7L,
+                        Arrays.asList(parentSuper, inactiveRole),
+                        List.of(assignment(20L, 10L, 7L)),
+                        10L));
+        assertNull(
+                invoke(
+                        service,
+                        "resolveCurrentRoleForTenant",
+                        null,
+                        List.of(parentSuper),
+                        List.of(active),
+                        null));
+        assertNull(
+                invoke(
+                        service,
+                        "resolveCurrentRoleForTenant",
+                        99L,
+                        List.of(inactiveRole),
+                        List.of(active),
+                        10L));
+        assertEquals(
+                parentSuper,
+                invoke(
+                        service,
+                        "resolveCurrentRoleForTenant",
+                        99L,
+                        List.of(parentSuper),
+                        List.of(assignment(20L, 10L, 7L)),
+                        10L));
     }
 
     @Test
@@ -532,7 +661,8 @@ class AuthServiceImplTest {
         when(tenantRoles.selectRoleById(70L)).thenReturn(parentSuper);
         when(tenants.selectDescendantIds(new TenantId(10L))).thenReturn(List.of(11L, 12L));
         when(tenants.selectDescendantIds(new TenantId(11L))).thenReturn(List.of(11L, 12L));
-        when(tenantRoles.selectTenantSuperRole(new TenantId(12L))).thenReturn(role(72L, 12L, "tenant_super", "Child Admin"));
+        when(tenantRoles.selectTenantSuperRole(new TenantId(12L)))
+                .thenReturn(role(72L, 12L, "tenant_super", "Child Admin"));
         when(users.update(parent)).thenReturn(true);
         assertTrue(service.switchCurrentTenant(40L, new TenantId(12L)));
 
@@ -560,23 +690,29 @@ class AuthServiceImplTest {
         assertNull(service.login("null-status", "secret"));
 
         when(users.selectByUsername("taken")).thenReturn(user(51L, "taken", "secret", 1));
-        assertThrows(IllegalArgumentException.class, () -> service.register("taken", "secret", "x@y"));
+        assertThrows(
+                IllegalArgumentException.class, () -> service.register("taken", "secret", "x@y"));
 
         when(users.selectByUsername("new")).thenReturn(null);
-        doAnswer(invocation -> { invocation.<UserBO>getArgument(0).setId(52L); return null; })
-                .when(users).insert(any(UserBO.class));
+        doAnswer(
+                        invocation -> {
+                            invocation.<UserBO>getArgument(0).setId(52L);
+                            return null;
+                        })
+                .when(users)
+                .insert(any(UserBO.class));
         when(users.selectById(52L)).thenReturn(user(52L, "new", "secret", 1));
         when(tenantRoles.selectEnabledRoleByCode(new TenantId(1L), "user")).thenReturn(null);
         when(users.selectActiveUserByUsername("new")).thenReturn(null);
-        assertThrows(IllegalStateException.class,
-                () -> service.register("new", "secret", "x@y"));
+        assertThrows(IllegalStateException.class, () -> service.register("new", "secret", "x@y"));
 
         when(captcha.validateCaptcha("key", "code")).thenReturn(true);
         UserBO existing = user(53L, "phone", "secret", 1);
         when(users.selectByUsername("phone")).thenReturn(existing);
         assertNull(service.codeLogin("phone", "code", "key"));
         when(users.selectByEmail("missing@y")).thenReturn(null);
-        assertThrows(IllegalArgumentException.class,
+        assertThrows(
+                IllegalArgumentException.class,
                 () -> service.forgetPassword("missing@y", "new", "code", "key"));
 
         UserBO recover = user(54L, "recover", "secret", 1);
@@ -593,13 +729,17 @@ class AuthServiceImplTest {
         // A tenant-super user can return home, use a preferred child role, or be rejected
         // when the target tenant is inactive/outside the currently allowed subtree.
         UserBO admin = user(60L, "admin", "secret", 1);
-        admin.setExtInfo("{\"homeTenantId\":10,\"currentTenantId\":11,\"currentRole\":{\"roleId\":71}}");
+        admin.setExtInfo(
+                "{\"homeTenantId\":10,\"currentTenantId\":11,\"currentRole\":{\"roleId\":71}}");
         RoleBO homeSuper = role(70L, 10L, "tenant_super", "Home");
         RoleBO childRole = role(71L, 12L, "editor", "Child");
         when(users.selectById(60L)).thenReturn(admin);
-        when(assignments.selectByUserId(60L)).thenReturn(List.of(assignment(60L, 10L, 70L), assignment(60L, 12L, 71L)));
-        when(tenantRoles.selectTenantById(new TenantId(10L))).thenReturn(tenant(10L, "home", "Home"));
-        when(tenantRoles.selectTenantById(new TenantId(12L))).thenReturn(tenant(12L, "child", "Child"));
+        when(assignments.selectByUserId(60L))
+                .thenReturn(List.of(assignment(60L, 10L, 70L), assignment(60L, 12L, 71L)));
+        when(tenantRoles.selectTenantById(new TenantId(10L)))
+                .thenReturn(tenant(10L, "home", "Home"));
+        when(tenantRoles.selectTenantById(new TenantId(12L)))
+                .thenReturn(tenant(12L, "child", "Child"));
         when(tenantRoles.selectRoleById(70L)).thenReturn(homeSuper);
         when(tenantRoles.selectRoleById(71L)).thenReturn(childRole);
         when(tenants.selectDescendantIds(new TenantId(10L))).thenReturn(List.of(10L, 12L));
@@ -623,10 +763,15 @@ class AuthServiceImplTest {
     }
 
     @SuppressWarnings("unchecked")
-    private static <T> T invoke(AuthServiceImpl service, String name, Object... args) throws Exception {
-        Class<?>[] types = Arrays.stream(args).map(value -> value == null ? Object.class : value.getClass()).toArray(Class<?>[]::new);
+    private static <T> T invoke(AuthServiceImpl service, String name, Object... args)
+            throws Exception {
+        Class<?>[] types =
+                Arrays.stream(args)
+                        .map(value -> value == null ? Object.class : value.getClass())
+                        .toArray(Class<?>[]::new);
         for (var method : AuthServiceImpl.class.getDeclaredMethods()) {
-            if (!method.getName().equals(name) || method.getParameterCount() != args.length) continue;
+            if (!method.getName().equals(name) || method.getParameterCount() != args.length)
+                continue;
             method.setAccessible(true);
             try {
                 return (T) method.invoke(service, args);
@@ -639,20 +784,41 @@ class AuthServiceImplTest {
 
     private static UserBO user(Long id, String username, String password, int status) {
         UserBO value = new UserBO();
-        value.setId(id); value.setUsername(username); value.setPassword(com.shiyu.ai.common.core.utils.PasswordUtils.encode(password)); value.setStatus(status);
+        value.setId(id);
+        value.setUsername(username);
+        value.setPassword(com.shiyu.ai.common.core.utils.PasswordUtils.encode(password));
+        value.setStatus(status);
         return value;
     }
 
     private static RoleBO role(Long id, Long tenantId, String code, String name) {
-        RoleBO value = new RoleBO(); value.setId(id); value.setTenantId(tenantId); value.setCode(code); value.setName(name); value.setStatus(1); value.setDelFlag(0); return value;
+        RoleBO value = new RoleBO();
+        value.setId(id);
+        value.setTenantId(tenantId);
+        value.setCode(code);
+        value.setName(name);
+        value.setStatus(1);
+        value.setDelFlag(0);
+        return value;
     }
 
     private static TenantBO tenant(Long id, String code, String name) {
-        TenantBO value = new TenantBO(); value.setId(id); value.setCode(code); value.setName(name); value.setStatus(1); value.setDelFlag(0); return value;
+        TenantBO value = new TenantBO();
+        value.setId(id);
+        value.setCode(code);
+        value.setName(name);
+        value.setStatus(1);
+        value.setDelFlag(0);
+        return value;
     }
 
     private static UserScopeRoleBO assignment(Long userId, Long tenantId, Long roleId) {
-        UserScopeRoleBO value = new UserScopeRoleBO(); value.setUserId(userId); value.setTenantId(tenantId); value.setRoleId(roleId); value.setStatus(1); value.setDelFlag(0); return value;
+        UserScopeRoleBO value = new UserScopeRoleBO();
+        value.setUserId(userId);
+        value.setTenantId(tenantId);
+        value.setRoleId(roleId);
+        value.setStatus(1);
+        value.setDelFlag(0);
+        return value;
     }
 }
-

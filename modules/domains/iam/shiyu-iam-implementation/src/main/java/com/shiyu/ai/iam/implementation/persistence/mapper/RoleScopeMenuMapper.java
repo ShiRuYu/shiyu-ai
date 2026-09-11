@@ -2,17 +2,12 @@ package com.shiyu.ai.iam.implementation.persistence.mapper;
 
 import com.mybatisflex.annotation.UseDataSource;
 import com.shiyu.ai.common.mybatis.datasource.DataSourceConfig;
-import com.shiyu.ai.iam.implementation.persistence.dataobject.RoleScopeMenuDO;
 import com.shiyu.ai.common.mybatis.mapper.BaseMapperFlex;
+import com.shiyu.ai.iam.implementation.persistence.dataobject.RoleScopeMenuDO;
+
 import org.apache.ibatis.annotations.Mapper;
 
-/**
- * 角色作用域菜单关联表数据层
- */
+/** 角色作用域菜单关联表数据层 */
 @Mapper
 @UseDataSource(DataSourceConfig.AGENT)
-public interface RoleScopeMenuMapper extends BaseMapperFlex<RoleScopeMenuDO> {
-
-}
-
-
+public interface RoleScopeMenuMapper extends BaseMapperFlex<RoleScopeMenuDO> {}

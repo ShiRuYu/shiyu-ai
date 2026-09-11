@@ -1,15 +1,19 @@
 package com.shiyu.ai.education.implementation.web;
 
 import cn.dev33.satoken.annotation.SaCheckPermission;
+
 import com.shiyu.ai.common.core.api.PageData;
 import com.shiyu.ai.common.core.api.Result;
+import com.shiyu.ai.common.web.auth.ActorContextHttpAdapter;
+import com.shiyu.ai.education.implementation.application.TextbookService;
 import com.shiyu.ai.education.implementation.web.dto.TextbookResponse;
 import com.shiyu.ai.education.implementation.web.request.TextbookRequest;
-import com.shiyu.ai.education.implementation.application.TextbookService;
-import com.shiyu.ai.common.web.auth.ActorContextHttpAdapter;
+
 import jakarta.validation.Valid;
+
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -32,19 +36,23 @@ public class TextbookController {
     public Result<PageData<TextbookResponse>> list(
             @RequestParam(defaultValue = "1") Integer pageNum,
             @RequestParam(defaultValue = "10") Integer pageSize) {
-        return Result.success(textbookService.page(ActorContextHttpAdapter.currentActor(), pageNum, pageSize));
+        return Result.success(
+                textbookService.page(ActorContextHttpAdapter.currentActor(), pageNum, pageSize));
     }
 
     @GetMapping("/subject-grade")
     public Result<List<TextbookResponse>> listBySubjectAndGrade(
             @RequestParam String subjectCode, @RequestParam Integer grade) {
-        return Result.success(textbookService.listBySubjectAndGrade(ActorContextHttpAdapter.currentActor(), subjectCode, grade));
+        return Result.success(
+                textbookService.listBySubjectAndGrade(
+                        ActorContextHttpAdapter.currentActor(), subjectCode, grade));
     }
 
     @PostMapping("/create")
     @SaCheckPermission("edu:textbook:create")
     public Result<TextbookResponse> create(@Valid @RequestBody TextbookRequest request) {
-        return Result.success(textbookService.create(ActorContextHttpAdapter.currentActor(), request));
+        return Result.success(
+                textbookService.create(ActorContextHttpAdapter.currentActor(), request));
     }
 
     @PostMapping("/update")
@@ -62,4 +70,3 @@ public class TextbookController {
         return Result.success();
     }
 }
-

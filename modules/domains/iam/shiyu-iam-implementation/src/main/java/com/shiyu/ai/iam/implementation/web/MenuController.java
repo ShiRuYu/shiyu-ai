@@ -1,26 +1,28 @@
 package com.shiyu.ai.iam.implementation.web;
 
 import cn.dev33.satoken.annotation.SaCheckPermission;
-import com.shiyu.ai.iam.implementation.request.MenuRequest;
-import com.shiyu.ai.iam.implementation.vo.RouteMenuVO;
-import com.shiyu.ai.iam.implementation.vo.MenuVO;
-import com.shiyu.ai.iam.implementation.service.MenuService;
-import com.shiyu.ai.common.core.api.Result;
-import com.shiyu.ai.common.core.api.PageData;
-import com.shiyu.ai.iam.implementation.request.MenuPageRequest;
-import com.shiyu.ai.common.web.auth.ActorContextHttpAdapter;
-import lombok.extern.slf4j.Slf4j;
-import jakarta.validation.Valid;
-import org.springframework.web.bind.annotation.*;
-import io.swagger.v3.oas.annotations.tags.Tag;
-import io.swagger.v3.oas.annotations.Operation;
 
-import java.util.ArrayList;
+import com.shiyu.ai.common.core.api.PageData;
+import com.shiyu.ai.common.core.api.Result;
+import com.shiyu.ai.common.web.auth.ActorContextHttpAdapter;
+import com.shiyu.ai.iam.implementation.request.MenuPageRequest;
+import com.shiyu.ai.iam.implementation.request.MenuRequest;
+import com.shiyu.ai.iam.implementation.service.MenuService;
+import com.shiyu.ai.iam.implementation.vo.MenuVO;
+import com.shiyu.ai.iam.implementation.vo.RouteMenuVO;
+
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.tags.Tag;
+
+import jakarta.validation.Valid;
+
+import lombok.extern.slf4j.Slf4j;
+
+import org.springframework.web.bind.annotation.*;
+
 import java.util.List;
 
-/**
- * Menu Controller
- */
+/** Menu Controller */
 @Slf4j
 @Tag(name = "Menu", description = "Menu")
 @RestController
@@ -38,7 +40,8 @@ public class MenuController {
     public Result<List<RouteMenuVO>> getAllMenus() {
         log.info("getAllMenus");
         try {
-            return Result.success(menuService.routeMenusView(ActorContextHttpAdapter.currentActor()));
+            return Result.success(
+                    menuService.routeMenusView(ActorContextHttpAdapter.currentActor()));
         } catch (Exception e) {
             log.error("操作失败", e);
             return Result.fail("操作失败");
@@ -56,9 +59,15 @@ public class MenuController {
     @SaCheckPermission("system:menu:list")
     @GetMapping("/page")
     public Result<PageData<MenuVO>> getMenuPage(@Valid MenuPageRequest request) {
-        return Result.success(menuService.getMenuPage(ActorContextHttpAdapter.currentActor(),
-                request.getPageNum(), request.getPageSize(), request.getName(),
-                request.getCode(), request.getType(), request.getStatus()));
+        return Result.success(
+                menuService.getMenuPage(
+                        ActorContextHttpAdapter.currentActor(),
+                        request.getPageNum(),
+                        request.getPageSize(),
+                        request.getName(),
+                        request.getCode(),
+                        request.getType(),
+                        request.getStatus()));
     }
 
     @Operation(summary = "Get Menu Roots")
@@ -72,7 +81,8 @@ public class MenuController {
     @SaCheckPermission("system:menu:list")
     @GetMapping("/children")
     public Result<List<RouteMenuVO>> getMenuChildren(@RequestParam Long parentId) {
-        return Result.success(menuService.childrenView(ActorContextHttpAdapter.currentActor(), parentId));
+        return Result.success(
+                menuService.childrenView(ActorContextHttpAdapter.currentActor(), parentId));
     }
 
     @Operation(summary = "Get Menu Permissions Tree")
@@ -93,36 +103,44 @@ public class MenuController {
     @SaCheckPermission("system:menu:delete")
     @PostMapping("/delete")
     public Result<Void> deleteMenu(@RequestParam Long id) {
-        return menuService.deleteMenu(ActorContextHttpAdapter.currentActor(), id) ? Result.success() : Result.fail("delete fail");
+        return menuService.deleteMenu(ActorContextHttpAdapter.currentActor(), id)
+                ? Result.success()
+                : Result.fail("delete fail");
     }
 
     @Operation(summary = "Create Menu")
     @SaCheckPermission("system:menu:create")
     @PostMapping("/create")
     public Result<Void> createMenu(@Valid @RequestBody MenuRequest request) {
-        return menuService.createMenu(ActorContextHttpAdapter.currentActor(), request) ? Result.success() : Result.fail("create fail");
+        return menuService.createMenu(ActorContextHttpAdapter.currentActor(), request)
+                ? Result.success()
+                : Result.fail("create fail");
     }
 
     @Operation(summary = "Update Menu")
     @SaCheckPermission("system:menu:update")
     @PostMapping("/update")
     public Result<Void> updateMenu(@RequestParam Long id, @Valid @RequestBody MenuRequest request) {
-        return menuService.updateMenu(ActorContextHttpAdapter.currentActor(), id, request) ? Result.success() : Result.fail("update fail");
+        return menuService.updateMenu(ActorContextHttpAdapter.currentActor(), id, request)
+                ? Result.success()
+                : Result.fail("update fail");
     }
 
     @Operation(summary = "Is Menu Name Exists")
     @SaCheckPermission("system:menu:list")
     @GetMapping("/name-exists")
-    public Result<Boolean> isMenuNameExists(@RequestParam String name, @RequestParam(required = false) Long id) {
-        return Result.success(menuService.isMenuNameExists(ActorContextHttpAdapter.currentActor(), name, id));
+    public Result<Boolean> isMenuNameExists(
+            @RequestParam String name, @RequestParam(required = false) Long id) {
+        return Result.success(
+                menuService.isMenuNameExists(ActorContextHttpAdapter.currentActor(), name, id));
     }
 
     @Operation(summary = "Is Menu Path Exists")
     @SaCheckPermission("system:menu:list")
     @GetMapping("/path-exists")
-    public Result<Boolean> isMenuPathExists(@RequestParam String path, @RequestParam(required = false) Long id) {
-        return Result.success(menuService.isMenuPathExists(ActorContextHttpAdapter.currentActor(), path, id));
+    public Result<Boolean> isMenuPathExists(
+            @RequestParam String path, @RequestParam(required = false) Long id) {
+        return Result.success(
+                menuService.isMenuPathExists(ActorContextHttpAdapter.currentActor(), path, id));
     }
-
 }
-

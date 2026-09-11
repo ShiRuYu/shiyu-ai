@@ -1,30 +1,29 @@
 package com.shiyu.ai.education.implementation.agent.graph;
 
-import com.shiyu.ai.agent.contract.node.NodeInputParam;
 import com.shiyu.ai.agent.contract.node.BaseNode;
 import com.shiyu.ai.agent.contract.node.NodeInput;
+import com.shiyu.ai.agent.contract.node.NodeInputParam;
 import com.shiyu.ai.agent.contract.node.NodeOutput;
 import com.shiyu.ai.agent.contract.node.NodeType;
-import com.shiyu.ai.model.contract.api.ChatEngine;
-import com.shiyu.ai.model.contract.model.ChatRequest;
-import com.shiyu.ai.model.contract.model.ChatResponse;
-import com.shiyu.ai.model.contract.model.ChatMessage;
 import com.shiyu.ai.education.implementation.domain.AbilityValue;
 import com.shiyu.ai.knowledge.contract.model.KnowledgeResponse;
+import com.shiyu.ai.model.contract.api.ChatEngine;
+import com.shiyu.ai.model.contract.model.ChatMessage;
+import com.shiyu.ai.model.contract.model.ChatRequest;
+import com.shiyu.ai.model.contract.model.ChatResponse;
+
 import lombok.Getter;
 import lombok.Setter;
 import lombok.extern.slf4j.Slf4j;
 
 import java.util.List;
-import java.util.Map;
 
 /**
  * 教学讲解节点
  *
- * LangGraph4j 节点，从 AgentState 读取 knowledge/ability 等上下文，
- * 构建教学 Prompt 并调用 LLM 生成个性化教学内容。
+ * <p>LangGraph4j 节点，从 AgentState 读取 knowledge/ability 等上下文， 构建教学 Prompt 并调用 LLM 生成个性化教学内容。
  *
- * 输入字段：knowledge, knowledgeName, knowledgeDesc, prerequisites, ability, overallScore
+ * <p>输入字段：knowledge, knowledgeName, knowledgeDesc, prerequisites, ability, overallScore
  * 输出字段：teachContent, teachDone
  */
 @Slf4j
@@ -69,9 +68,14 @@ public class TeachNode extends BaseNode {
         // 调用 LLM
         long tenantId = requirePositiveLong(input, "tenantId");
         long userId = requirePositiveLong(input, "userId");
-        ChatResponse resp = chatEngine.chat(ChatRequest.builder().platform("default")
-                .tenantId(tenantId).userId(userId)
-                .messages(java.util.List.of(ChatMessage.text("user", prompt))).build());
+        ChatResponse resp =
+                chatEngine.chat(
+                        ChatRequest.builder()
+                                .platform("default")
+                                .tenantId(tenantId)
+                                .userId(userId)
+                                .messages(java.util.List.of(ChatMessage.text("user", prompt)))
+                                .build());
 
         NodeOutput output = new NodeOutput();
         if (!resp.isSuccess()) {
@@ -85,14 +89,17 @@ public class TeachNode extends BaseNode {
         }
         output.addData("teachDone", true);
 
-        log.info("TeachNode: 讲解完成, 内容长度={}",
+        log.info(
+                "TeachNode: 讲解完成, 内容长度={}",
                 resp.getContent() != null ? resp.getContent().length() : 0);
         return output;
     }
 
-    private String buildTeachPrompt(KnowledgeResponse knowledge,
-                                    List<KnowledgeResponse> prerequisites,
-                                    double overallScore, AbilityValue ability) {
+    private String buildTeachPrompt(
+            KnowledgeResponse knowledge,
+            List<KnowledgeResponse> prerequisites,
+            double overallScore,
+            AbilityValue ability) {
         StringBuilder sb = new StringBuilder();
         sb.append("你是一位经验丰富的 K12 教师，请根据以下信息为学生讲解知识点。\n\n");
         sb.append("## 当前知识点\n");
@@ -100,7 +107,9 @@ public class TeachNode extends BaseNode {
         if (knowledge.description() != null && !knowledge.description().isBlank()) {
             sb.append("- 描述：").append(knowledge.description()).append("\n");
         }
-        sb.append("- 难度等级：").append(knowledge.difficulty() != null ? knowledge.difficulty() : "未标注").append("\n\n");
+        sb.append("- 难度等级：")
+                .append(knowledge.difficulty() != null ? knowledge.difficulty() : "未标注")
+                .append("\n\n");
 
         if (prerequisites != null && !prerequisites.isEmpty()) {
             sb.append("## 前置知识（学生已掌握）\n");
@@ -141,10 +150,9 @@ public class TeachNode extends BaseNode {
     @Override
     public java.util.List<NodeInputParam> getRequiredInputs() {
         return java.util.List.of(
-            NodeInputParam.previous("knowledge", "object", "知识点详情（由 AbilityQueryNode 传入）"),
-            NodeInputParam.previous("prerequisites", "array", "前置知识点列表"),
-            NodeInputParam.previous("ability", "object", "学生能力值"),
-            NodeInputParam.previous("overallScore", "number", "总体掌握度")
-        );
+                NodeInputParam.previous("knowledge", "object", "知识点详情（由 AbilityQueryNode 传入）"),
+                NodeInputParam.previous("prerequisites", "array", "前置知识点列表"),
+                NodeInputParam.previous("ability", "object", "学生能力值"),
+                NodeInputParam.previous("overallScore", "number", "总体掌握度"));
     }
 }

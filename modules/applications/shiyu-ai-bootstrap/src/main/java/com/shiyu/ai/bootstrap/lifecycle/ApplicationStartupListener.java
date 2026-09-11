@@ -1,14 +1,12 @@
 package com.shiyu.ai.bootstrap.lifecycle;
 
 import lombok.extern.slf4j.Slf4j;
+
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.CommandLineRunner;
 import org.springframework.stereotype.Component;
 
-/**
- * 应用启动监听器
- * 在应用启动完成后打印相关访问地址
- */
+/** 应用启动监听器 在应用启动完成后打印相关访问地址 */
 @Slf4j
 @Component
 public class ApplicationStartupListener implements CommandLineRunner {

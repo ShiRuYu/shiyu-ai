@@ -7,6 +7,4 @@ public record DailyTaskResponse(
         String planDate,
         Integer status,
         String statusDesc,
-        Integer orderNo
-) {}
-
+        Integer orderNo) {}

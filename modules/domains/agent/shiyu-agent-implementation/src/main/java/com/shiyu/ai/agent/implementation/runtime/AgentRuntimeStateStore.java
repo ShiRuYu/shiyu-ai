@@ -1,14 +1,15 @@
 package com.shiyu.ai.agent.implementation.runtime;
 
+import com.shiyu.ai.agent.implementation.checkpoint.CheckpointManager;
 import com.shiyu.ai.agent.implementation.domain.enums.AgentExecutionStatus;
 import com.shiyu.ai.agent.implementation.domain.model.AgentExecutionBO;
 import com.shiyu.ai.agent.implementation.execution.Execution;
 import com.shiyu.ai.agent.implementation.execution.ExecutionStatus;
-import com.shiyu.ai.agent.implementation.checkpoint.CheckpointManager;
 import com.shiyu.ai.agent.implementation.port.repository.AgentExecutionRepository;
 import com.shiyu.ai.common.core.utils.JSONUtils;
 import com.shiyu.ai.kernel.context.ActorContext;
 import com.shiyu.ai.kernel.context.TenantId;
+
 import lombok.extern.slf4j.Slf4j;
 
 import java.util.HashMap;
@@ -22,7 +23,8 @@ final class AgentRuntimeStateStore {
     private final CheckpointManager checkpointManager;
     private final ConcurrentHashMap<String, Execution> activeExecutions = new ConcurrentHashMap<>();
 
-    AgentRuntimeStateStore(AgentExecutionRepository executionRepository, CheckpointManager checkpointManager) {
+    AgentRuntimeStateStore(
+            AgentExecutionRepository executionRepository, CheckpointManager checkpointManager) {
         this.executionRepository = executionRepository;
         this.checkpointManager = checkpointManager;
     }
@@ -51,8 +53,9 @@ final class AgentRuntimeStateStore {
         bo.setEndTime(execution.getEndTime());
         bo.setDurationMs(execution.getDurationMs());
 
-        AgentExecutionBO existing = executionRepository.selectByExecutionId(
-                actor.tenantId(), execution.getExecutionId());
+        AgentExecutionBO existing =
+                executionRepository.selectByExecutionId(
+                        actor.tenantId(), execution.getExecutionId());
         if (existing != null) {
             bo.setId(existing.getId());
             executionRepository.update(actor.tenantId(), bo);
@@ -68,9 +71,18 @@ final class AgentRuntimeStateStore {
             input.put("tenantId", bo.getTenantId());
         }
         return Execution.restore(
-                bo.getExecutionId(), bo.getAgentId(), bo.getVersion(), resolveStatus(bo), input,
-                parseData(bo.getOutputData()), bo.getErrorMessage(), bo.getUserId(), bo.getSessionId(),
-                bo.getStartTime(), bo.getEndTime(), bo.getDurationMs());
+                bo.getExecutionId(),
+                bo.getAgentId(),
+                bo.getVersion(),
+                resolveStatus(bo),
+                input,
+                parseData(bo.getOutputData()),
+                bo.getErrorMessage(),
+                bo.getUserId(),
+                bo.getSessionId(),
+                bo.getStartTime(),
+                bo.getEndTime(),
+                bo.getDurationMs());
     }
 
     AgentExecutionBO persisted(ActorContext actor, String executionId) {
@@ -78,7 +90,8 @@ final class AgentRuntimeStateStore {
     }
 
     void ensureAccessible(ActorContext actor, Execution execution) {
-        long executionTenant = number(execution.getInput() == null ? null : execution.getInput().get("tenantId"));
+        long executionTenant =
+                number(execution.getInput() == null ? null : execution.getInput().get("tenantId"));
         if (executionTenant <= 0) {
             throw new IllegalStateException("执行实例不存在");
         }
@@ -121,7 +134,8 @@ final class AgentRuntimeStateStore {
         ExecutionStatus status = fromStoredStatus(bo.getStatus());
         if (status == ExecutionStatus.RUNNING && bo.getEndTime() != null) {
             return bo.getErrorMessage() == null || bo.getErrorMessage().isBlank()
-                    ? ExecutionStatus.COMPLETED : ExecutionStatus.FAILED;
+                    ? ExecutionStatus.COMPLETED
+                    : ExecutionStatus.FAILED;
         }
         return status;
     }
@@ -133,8 +147,10 @@ final class AgentRuntimeStateStore {
     static long number(Object value) {
         if (value instanceof Number n) return n.longValue();
         if (value != null) {
-            try { return Long.parseLong(String.valueOf(value)); }
-            catch (NumberFormatException ignored) { }
+            try {
+                return Long.parseLong(String.valueOf(value));
+            } catch (NumberFormatException ignored) {
+            }
         }
         return 0;
     }

@@ -1,11 +1,10 @@
 package com.shiyu.ai.common.thread.config;
 
 import lombok.Data;
+
 import org.springframework.boot.context.properties.ConfigurationProperties;
 
-/**
- * 线程池 配置属性
- */
+/** 线程池 配置属性 */
 @Data
 @ConfigurationProperties(prefix = "thread-pool")
 public class ThreadPoolProperties {

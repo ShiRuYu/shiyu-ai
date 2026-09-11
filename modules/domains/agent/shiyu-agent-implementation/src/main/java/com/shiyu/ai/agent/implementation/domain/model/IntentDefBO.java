@@ -1,22 +1,21 @@
 package com.shiyu.ai.agent.implementation.domain.model;
 
 import com.shiyu.ai.common.core.domain.TenantModel;
+
 import lombok.Data;
 import lombok.EqualsAndHashCode;
+
 import java.io.Serial;
 import java.util.List;
 import java.util.Map;
 
-/**
- * 意图定义业务对象
- */
+/** 意图定义业务对象 */
 @Data
 @EqualsAndHashCode(callSuper = true)
 @SuppressWarnings("serial")
 public class IntentDefBO extends TenantModel {
 
-    @Serial
-    private static final long serialVersionUID = 1L;
+    @Serial private static final long serialVersionUID = 1L;
 
     private Long id;
     private String agentId;
@@ -33,9 +32,7 @@ public class IntentDefBO extends TenantModel {
     private Map<String, String> parameterMapping;
     private Map<String, String> slotDefaults;
     private Boolean enabled;
-    /**
-     * 状态（依据业务灵活定义）
-     */
-    private Integer status;
 
+    /** 状态（依据业务灵活定义） */
+    private Integer status;
 }

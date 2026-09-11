@@ -2,16 +2,22 @@ package com.shiyu.ai.knowledge.implementation.infrastructure.point;
 
 import com.shiyu.ai.common.core.api.PageData;
 import com.shiyu.ai.kernel.context.ActorContext;
-import com.shiyu.ai.knowledge.implementation.web.response.KnowledgeGraphResponse;
 import com.shiyu.ai.knowledge.contract.model.KnowledgeResponse;
+import com.shiyu.ai.knowledge.implementation.web.response.KnowledgeGraphResponse;
+
 import jakarta.validation.constraints.Max;
 import jakarta.validation.constraints.Min;
 import jakarta.validation.constraints.NotBlank;
 
 public interface KnowledgePointService {
 
-    PageData<PointView> page(ActorContext actor, Long spaceId, int pageNum, int pageSize,
-                             String keyword, String category);
+    PageData<PointView> page(
+            ActorContext actor,
+            Long spaceId,
+            int pageNum,
+            int pageSize,
+            String keyword,
+            String category);
 
     PointView get(ActorContext actor, Long pointId);
 
@@ -25,21 +31,28 @@ public interface KnowledgePointService {
 
     void delete(ActorContext actor, Long pointId);
 
-    record PointView(Long id, Long spaceId, String code, String name,
-                     String description, Integer difficultyLevel,
-                     String category, String tags) {
-    }
+    record PointView(
+            Long id,
+            Long spaceId,
+            String code,
+            String name,
+            String description,
+            Integer difficultyLevel,
+            String category,
+            String tags) {}
 
-    record CreatePointRequest(@NotBlank String code, @NotBlank String name,
-                              String description,
-                              @Min(1) @Max(100) Integer difficultyLevel,
-                              String category, String tags) {
-    }
+    record CreatePointRequest(
+            @NotBlank String code,
+            @NotBlank String name,
+            String description,
+            @Min(1) @Max(100) Integer difficultyLevel,
+            String category,
+            String tags) {}
 
-    record UpdatePointRequest(String name, String description,
-                              @Min(1) @Max(100) Integer difficultyLevel,
-                              String category, String tags) {
-    }
+    record UpdatePointRequest(
+            String name,
+            String description,
+            @Min(1) @Max(100) Integer difficultyLevel,
+            String category,
+            String tags) {}
 }
-
-

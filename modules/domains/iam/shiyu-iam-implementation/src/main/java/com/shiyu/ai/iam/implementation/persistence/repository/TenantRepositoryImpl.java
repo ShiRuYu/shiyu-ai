@@ -1,59 +1,56 @@
 package com.shiyu.ai.iam.implementation.persistence.repository;
 
 import com.mybatisflex.core.query.QueryWrapper;
-import com.shiyu.ai.iam.implementation.persistence.dataobject.*;
-import com.shiyu.ai.iam.implementation.persistence.mapper.*;
-import com.shiyu.ai.iam.implementation.domain.model.TenantBO;
+import com.mybatisflex.core.tenant.TenantManager;
 import com.shiyu.ai.common.core.utils.MapstructUtils;
 import com.shiyu.ai.common.core.utils.PasswordUtils;
+import com.shiyu.ai.iam.implementation.domain.model.TenantBO;
+import com.shiyu.ai.iam.implementation.persistence.dataobject.*;
+import com.shiyu.ai.iam.implementation.persistence.mapper.*;
 import com.shiyu.ai.kernel.context.TenantId;
+
 import jakarta.annotation.Resource;
+
 import org.apache.commons.lang3.tuple.Pair;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
-import com.mybatisflex.core.tenant.TenantManager;
 
 import java.util.*;
 import java.util.stream.Collectors;
 
 @Component
-public class TenantRepositoryImpl implements com.shiyu.ai.iam.implementation.port.repository.TenantRepository {
+public class TenantRepositoryImpl
+        implements com.shiyu.ai.iam.implementation.port.repository.TenantRepository {
 
-    @Resource
-    private TenantMapper tenantMapper;
+    @Resource private TenantMapper tenantMapper;
 
-    @Resource
-    private UserMapper userMapper;
+    @Resource private UserMapper userMapper;
 
-    @Resource
-    private RoleMapper roleMapper;
+    @Resource private RoleMapper roleMapper;
 
-    @Resource
-    private MenuMapper menuMapper;
+    @Resource private MenuMapper menuMapper;
 
-    @Resource
-    private AuthCodeMapper authCodeMapper;
+    @Resource private AuthCodeMapper authCodeMapper;
 
-    @Resource
-    private UserScopeRoleMapper userScopeRoleMapper;
+    @Resource private UserScopeRoleMapper userScopeRoleMapper;
 
-    @Resource
-    private RoleScopeMenuMapper roleScopeMenuMapper;
+    @Resource private RoleScopeMenuMapper roleScopeMenuMapper;
 
-    @Resource
-    private RoleScopeAuthCodeMapper roleScopeAuthCodeMapper;
+    @Resource private RoleScopeAuthCodeMapper roleScopeAuthCodeMapper;
 
-    @Resource
-    private TenantMenuMapper tenantMenuMapper;
+    @Resource private TenantMenuMapper tenantMenuMapper;
 
-    @Resource
-    private TenantAuthCodeMapper tenantAuthCodeMapper;
+    @Resource private TenantAuthCodeMapper tenantAuthCodeMapper;
 
-    public Pair<Long, List<TenantBO>> selectPage(TenantId tenantId, Number pageNo, Number pageSize,
-                                                 String name, String code, Integer status) {
+    public Pair<Long, List<TenantBO>> selectPage(
+            TenantId tenantId,
+            Number pageNo,
+            Number pageSize,
+            String name,
+            String code,
+            Integer status) {
         requireTenant(tenantId);
-        QueryWrapper countWrapper = QueryWrapper.create()
-                .where(TenantDO::getDelFlag).eq(0);
+        QueryWrapper countWrapper = QueryWrapper.create().where(TenantDO::getDelFlag).eq(0);
         countWrapper.in(TenantDO::getId, selectDescendantIds(tenantId));
         if (name != null && !name.isBlank()) {
             countWrapper.like(TenantDO::getName, name);
@@ -62,8 +59,7 @@ public class TenantRepositoryImpl implements com.shiyu.ai.iam.implementation.por
         if (status != null) countWrapper.eq(TenantDO::getStatus, status);
         long count = tenantMapper.selectCountByQuery(countWrapper);
 
-        QueryWrapper queryWrapper = QueryWrapper.create()
-                .where(TenantDO::getDelFlag).eq(0);
+        QueryWrapper queryWrapper = QueryWrapper.create().where(TenantDO::getDelFlag).eq(0);
         queryWrapper.in(TenantDO::getId, selectDescendantIds(tenantId));
         if (name != null && !name.isBlank()) {
             queryWrapper.like(TenantDO::getName, name);
@@ -85,20 +81,20 @@ public class TenantRepositoryImpl implements com.shiyu.ai.iam.implementation.por
     }
 
     public TenantBO selectById(Long id) {
-        TenantDO tenantDO = TenantManager.withoutTenantCondition(
-                () -> tenantMapper.selectOneById(id));
+        TenantDO tenantDO =
+                TenantManager.withoutTenantCondition(() -> tenantMapper.selectOneById(id));
         return MapstructUtils.convert(tenantDO, TenantBO.class);
     }
 
-    /**
-     * 获取指定租户所在租户树的根租户。
-     * 当前数据模型以 parent_id 为 null 的租户作为根租户。
-     */
+    /** 获取指定租户所在租户树的根租户。 当前数据模型以 parent_id 为 null 的租户作为根租户。 */
     public Long selectRootTenantId(TenantId tenantId) {
         long tenantValue = requireTenant(tenantId);
-        Map<Long, TenantDO> tenantMap = tenantMapper.selectAll().stream()
-                .filter(item -> item.getId() != null)
-                .collect(Collectors.toMap(TenantDO::getId, item -> item, (first, ignored) -> first));
+        Map<Long, TenantDO> tenantMap =
+                tenantMapper.selectAll().stream()
+                        .filter(item -> item.getId() != null)
+                        .collect(
+                                Collectors.toMap(
+                                        TenantDO::getId, item -> item, (first, ignored) -> first));
         TenantDO current = tenantMap.get(tenantValue);
         Set<Long> visited = new HashSet<>();
         while (current != null && current.getParentId() != null && visited.add(current.getId())) {
@@ -123,64 +119,85 @@ public class TenantRepositoryImpl implements com.shiyu.ai.iam.implementation.por
         }
         RoleDO superRole = new RoleDO();
         superRole.setCode("tenant_super");
-        superRole.setName(tenantBO.getAdminRoleName() == null
-                || tenantBO.getAdminRoleName().isBlank()
-                ? "租户超级管理员" : tenantBO.getAdminRoleName());
+        superRole.setName(
+                tenantBO.getAdminRoleName() == null || tenantBO.getAdminRoleName().isBlank()
+                        ? "租户超级管理员"
+                        : tenantBO.getAdminRoleName());
         superRole.setTenantId(tenantId);
         superRole.setStatus(1);
         superRole.setDelFlag(0);
         roleMapper.insertSelective(superRole);
 
         List<Long> requestedMenuIds = resolveSourceMenuIds(sourceTenantId, tenantBO.getMenuIds());
-        List<Long> authCodeIds = resolveSourceAuthCodeIds(sourceTenantId, tenantBO.getAuthCodeIds());
+        List<Long> authCodeIds =
+                resolveSourceAuthCodeIds(sourceTenantId, tenantBO.getAuthCodeIds());
 
         // 菜单属于租户私有数据。创建子租户时不能把父租户 menu_id
         // 直接写入 role_scope_menu，而要复制菜单树并使用新租户自己的 menu_id。
         List<Long> menuIds = cloneMenusForTenant(sourceTenantId, tenantId, requestedMenuIds);
         if (!menuIds.isEmpty()) {
-            tenantMenuMapper.insertBatch(menuIds.stream().map(menuId -> {
-                TenantMenuDO item = new TenantMenuDO();
-                item.setTenantId(tenantId);
-                item.setMenuId(menuId);
-                item.setStatus(1);
-                return item;
-            }).toList());
-            roleScopeMenuMapper.insertBatch(menuIds.stream().map(menuId -> {
-                RoleScopeMenuDO item = new RoleScopeMenuDO();
-                item.setRoleId(superRole.getId());
-                item.setTenantId(tenantId);
-                item.setMenuId(menuId);
-                item.setStatus(1);
-                item.setDelFlag(0);
-                return item;
-            }).toList());
+            tenantMenuMapper.insertBatch(
+                    menuIds.stream()
+                            .map(
+                                    menuId -> {
+                                        TenantMenuDO item = new TenantMenuDO();
+                                        item.setTenantId(tenantId);
+                                        item.setMenuId(menuId);
+                                        item.setStatus(1);
+                                        return item;
+                                    })
+                            .toList());
+            roleScopeMenuMapper.insertBatch(
+                    menuIds.stream()
+                            .map(
+                                    menuId -> {
+                                        RoleScopeMenuDO item = new RoleScopeMenuDO();
+                                        item.setRoleId(superRole.getId());
+                                        item.setTenantId(tenantId);
+                                        item.setMenuId(menuId);
+                                        item.setStatus(1);
+                                        item.setDelFlag(0);
+                                        return item;
+                                    })
+                            .toList());
         }
         if (!authCodeIds.isEmpty()) {
-            tenantAuthCodeMapper.insertBatch(authCodeIds.stream().map(authCodeId -> {
-                TenantAuthCodeDO item = new TenantAuthCodeDO();
-                item.setTenantId(tenantId);
-                item.setAuthCodeId(authCodeId);
-                item.setStatus(1);
-                return item;
-            }).toList());
-            roleScopeAuthCodeMapper.insertBatch(authCodeIds.stream().map(authCodeId -> {
-                RoleScopeAuthCodeDO item = new RoleScopeAuthCodeDO();
-                item.setRoleId(superRole.getId());
-                item.setTenantId(tenantId);
-                item.setAuthCodeId(authCodeId);
-                item.setStatus(1);
-                item.setDelFlag(0);
-                return item;
-            }).toList());
+            tenantAuthCodeMapper.insertBatch(
+                    authCodeIds.stream()
+                            .map(
+                                    authCodeId -> {
+                                        TenantAuthCodeDO item = new TenantAuthCodeDO();
+                                        item.setTenantId(tenantId);
+                                        item.setAuthCodeId(authCodeId);
+                                        item.setStatus(1);
+                                        return item;
+                                    })
+                            .toList());
+            roleScopeAuthCodeMapper.insertBatch(
+                    authCodeIds.stream()
+                            .map(
+                                    authCodeId -> {
+                                        RoleScopeAuthCodeDO item = new RoleScopeAuthCodeDO();
+                                        item.setRoleId(superRole.getId());
+                                        item.setTenantId(tenantId);
+                                        item.setAuthCodeId(authCodeId);
+                                        item.setStatus(1);
+                                        item.setDelFlag(0);
+                                        return item;
+                                    })
+                            .toList());
         }
 
         UserDO admin = new UserDO();
-        admin.setUsername(tenantBO.getAdminUsername() == null
-                || tenantBO.getAdminUsername().isBlank()
-                ? tenantBO.getCode() + "_admin" : tenantBO.getAdminUsername());
-        admin.setPassword(PasswordUtils.encode(
-                tenantBO.getAdminPassword() == null || tenantBO.getAdminPassword().isBlank()
-                        ? PasswordUtils.generateDefaultPassword() : tenantBO.getAdminPassword()));
+        admin.setUsername(
+                tenantBO.getAdminUsername() == null || tenantBO.getAdminUsername().isBlank()
+                        ? tenantBO.getCode() + "_admin"
+                        : tenantBO.getAdminUsername());
+        admin.setPassword(
+                PasswordUtils.encode(
+                        tenantBO.getAdminPassword() == null || tenantBO.getAdminPassword().isBlank()
+                                ? PasswordUtils.generateDefaultPassword()
+                                : tenantBO.getAdminPassword()));
         admin.setStatus(1);
         admin.setDelFlag(0);
         userMapper.insertSelective(admin);
@@ -195,12 +212,21 @@ public class TenantRepositoryImpl implements com.shiyu.ai.iam.implementation.por
     }
 
     private List<Long> resolveSourceMenuIds(Long sourceTenantId, List<Long> requestedMenuIds) {
-        List<Long> availableIds = TenantManager.withoutTenantCondition(
-                () -> menuMapper.selectListByQuery(QueryWrapper.create()
-                        .where(MenuDO::getTenantId).eq(sourceTenantId)
-                        .and(MenuDO::getStatus).eq(1)
-                        .and(MenuDO::getDelFlag).eq(0)))
-                .stream().map(MenuDO::getId).filter(Objects::nonNull).toList();
+        List<Long> availableIds =
+                TenantManager.withoutTenantCondition(
+                                () ->
+                                        menuMapper.selectListByQuery(
+                                                QueryWrapper.create()
+                                                        .where(MenuDO::getTenantId)
+                                                        .eq(sourceTenantId)
+                                                        .and(MenuDO::getStatus)
+                                                        .eq(1)
+                                                        .and(MenuDO::getDelFlag)
+                                                        .eq(0)))
+                        .stream()
+                        .map(MenuDO::getId)
+                        .filter(Objects::nonNull)
+                        .toList();
         if (requestedMenuIds == null || requestedMenuIds.isEmpty()) {
             return availableIds;
         }
@@ -212,20 +238,30 @@ public class TenantRepositoryImpl implements com.shiyu.ai.iam.implementation.por
                 .toList();
     }
 
-    private List<Long> resolveSourceAuthCodeIds(Long sourceTenantId, List<Long> requestedAuthCodeIds) {
-        List<Long> availableIds = tenantAuthCodeMapper.selectListByQuery(QueryWrapper.create()
-                        .where(TenantAuthCodeDO::getTenantId).eq(sourceTenantId)
-                        .and(TenantAuthCodeDO::getStatus).eq(1))
-                .stream().map(TenantAuthCodeDO::getAuthCodeId)
-                .filter(Objects::nonNull)
-                .filter(id -> {
-                    AuthCodeDO authCode = authCodeMapper.selectOneById(id);
-                    return authCode != null
-                            && authCode.getStatus() != null && authCode.getStatus() == 1
-                            && (authCode.getDelFlag() == null || authCode.getDelFlag() == 0);
-                })
-                .distinct()
-                .toList();
+    private List<Long> resolveSourceAuthCodeIds(
+            Long sourceTenantId, List<Long> requestedAuthCodeIds) {
+        List<Long> availableIds =
+                tenantAuthCodeMapper
+                        .selectListByQuery(
+                                QueryWrapper.create()
+                                        .where(TenantAuthCodeDO::getTenantId)
+                                        .eq(sourceTenantId)
+                                        .and(TenantAuthCodeDO::getStatus)
+                                        .eq(1))
+                        .stream()
+                        .map(TenantAuthCodeDO::getAuthCodeId)
+                        .filter(Objects::nonNull)
+                        .filter(
+                                id -> {
+                                    AuthCodeDO authCode = authCodeMapper.selectOneById(id);
+                                    return authCode != null
+                                            && authCode.getStatus() != null
+                                            && authCode.getStatus() == 1
+                                            && (authCode.getDelFlag() == null
+                                                    || authCode.getDelFlag() == 0);
+                                })
+                        .distinct()
+                        .toList();
         if (requestedAuthCodeIds == null || requestedAuthCodeIds.isEmpty()) {
             return availableIds;
         }
@@ -240,26 +276,33 @@ public class TenantRepositoryImpl implements com.shiyu.ai.iam.implementation.por
     /**
      * 复制请求中选择的菜单及其祖先节点，返回新租户菜单 ID。
      *
-     * <p>租户创建请求中的 menuIds 来自当前操作租户，因此这里以当前租户
-     * 作为源租户。祖先节点必须一并复制，否则前端菜单树会出现断链。</p>
+     * <p>租户创建请求中的 menuIds 来自当前操作租户，因此这里以当前租户 作为源租户。祖先节点必须一并复制，否则前端菜单树会出现断链。
      */
-    private List<Long> cloneMenusForTenant(Long sourceTenantId, Long targetTenantId, List<Long> requestedMenuIds) {
+    private List<Long> cloneMenusForTenant(
+            Long sourceTenantId, Long targetTenantId, List<Long> requestedMenuIds) {
         if (targetTenantId == null || requestedMenuIds == null || requestedMenuIds.isEmpty()) {
             return List.of();
         }
 
-        QueryWrapper sourceQuery = QueryWrapper.create()
-                .where(MenuDO::getTenantId).eq(sourceTenantId)
-                .and(MenuDO::getDelFlag).eq(0);
-        List<MenuDO> sourceMenus = TenantManager.withoutTenantCondition(
-                () -> menuMapper.selectListByQuery(sourceQuery));
+        QueryWrapper sourceQuery =
+                QueryWrapper.create()
+                        .where(MenuDO::getTenantId)
+                        .eq(sourceTenantId)
+                        .and(MenuDO::getDelFlag)
+                        .eq(0);
+        List<MenuDO> sourceMenus =
+                TenantManager.withoutTenantCondition(
+                        () -> menuMapper.selectListByQuery(sourceQuery));
         if (sourceMenus.isEmpty()) {
             return List.of();
         }
 
-        Map<Long, MenuDO> menuById = sourceMenus.stream()
-                .filter(item -> item.getId() != null)
-                .collect(Collectors.toMap(MenuDO::getId, item -> item, (first, ignored) -> first));
+        Map<Long, MenuDO> menuById =
+                sourceMenus.stream()
+                        .filter(item -> item.getId() != null)
+                        .collect(
+                                Collectors.toMap(
+                                        MenuDO::getId, item -> item, (first, ignored) -> first));
         Set<Long> selectedIds = new LinkedHashSet<>();
         for (Long requestedId : requestedMenuIds) {
             MenuDO menu = menuById.get(requestedId);
@@ -268,10 +311,11 @@ public class TenantRepositoryImpl implements com.shiyu.ai.iam.implementation.por
             }
         }
 
-        List<MenuDO> menusToClone = sourceMenus.stream()
-                .filter(item -> item.getId() != null && selectedIds.contains(item.getId()))
-                .sorted(Comparator.comparingInt(item -> menuDepth(item, menuById)))
-                .toList();
+        List<MenuDO> menusToClone =
+                sourceMenus.stream()
+                        .filter(item -> item.getId() != null && selectedIds.contains(item.getId()))
+                        .sorted(Comparator.comparingInt(item -> menuDepth(item, menuById)))
+                        .toList();
         Map<Long, Long> idMapping = new HashMap<>();
         List<Long> clonedIds = new ArrayList<>(menusToClone.size());
 
@@ -280,8 +324,8 @@ public class TenantRepositoryImpl implements com.shiyu.ai.iam.implementation.por
             target.setName(source.getName());
             target.setCode(source.getCode());
             target.setType(source.getType());
-            target.setParentId(source.getParentId() == null
-                    ? null : idMapping.get(source.getParentId()));
+            target.setParentId(
+                    source.getParentId() == null ? null : idMapping.get(source.getParentId()));
             target.setTenantId(targetTenantId);
             target.setPath(source.getPath());
             target.setRedirect(source.getRedirect());
@@ -308,8 +352,7 @@ public class TenantRepositoryImpl implements com.shiyu.ai.iam.implementation.por
         int depth = 0;
         Set<Long> visited = new HashSet<>();
         MenuDO current = menu;
-        while (current != null && current.getParentId() != null
-                && visited.add(current.getId())) {
+        while (current != null && current.getParentId() != null && visited.add(current.getId())) {
             depth++;
             current = menuById.get(current.getParentId());
         }
@@ -334,70 +377,89 @@ public class TenantRepositoryImpl implements com.shiyu.ai.iam.implementation.por
         return tenantMapper.selectCountByQuery(qw) > 0;
     }
 
-    /**
-     * 级联删除租户及其所有关联数据
-     */
+    /** 级联删除租户及其所有关联数据 */
     @Transactional(rollbackFor = Exception.class)
     public void cascadeDelete(TenantId tenantId) {
         long tenantValue = requireTenant(tenantId);
         // 先找出所有后代子租户，全部级联删除
         Set<Long> allIds = new LinkedHashSet<>(selectDescendantIds(tenantId));
         allIds.add(tenantValue);
-        Set<Long> candidateUserIds = TenantManager.withoutTenantCondition(
-                () -> userScopeRoleMapper.selectListByQuery(QueryWrapper.create()
-                                .where(UserScopeRoleDO::getTenantId).in(allIds))
-                        .stream().map(UserScopeRoleDO::getUserId)
-                        .filter(Objects::nonNull)
-                        .collect(Collectors.toSet()));
-        Set<Long> candidateAuthCodeIds = TenantManager.withoutTenantCondition(
-                () -> tenantAuthCodeMapper.selectListByQuery(QueryWrapper.create()
-                                .where(TenantAuthCodeDO::getTenantId).in(allIds))
-                        .stream().map(TenantAuthCodeDO::getAuthCodeId)
-                        .filter(Objects::nonNull)
-                        .collect(Collectors.toSet()));
+        Set<Long> candidateUserIds =
+                TenantManager.withoutTenantCondition(
+                        () ->
+                                userScopeRoleMapper
+                                        .selectListByQuery(
+                                                QueryWrapper.create()
+                                                        .where(UserScopeRoleDO::getTenantId)
+                                                        .in(allIds))
+                                        .stream()
+                                        .map(UserScopeRoleDO::getUserId)
+                                        .filter(Objects::nonNull)
+                                        .collect(Collectors.toSet()));
+        Set<Long> candidateAuthCodeIds =
+                TenantManager.withoutTenantCondition(
+                        () ->
+                                tenantAuthCodeMapper
+                                        .selectListByQuery(
+                                                QueryWrapper.create()
+                                                        .where(TenantAuthCodeDO::getTenantId)
+                                                        .in(allIds))
+                                        .stream()
+                                        .map(TenantAuthCodeDO::getAuthCodeId)
+                                        .filter(Objects::nonNull)
+                                        .collect(Collectors.toSet()));
 
-        TenantManager.withoutTenantCondition(() -> {
-            for (Long id : allIds) {
-                roleScopeMenuMapper.deleteByQuery(QueryWrapper.create()
-                        .eq(RoleScopeMenuDO::getTenantId, id));
-                roleScopeAuthCodeMapper.deleteByQuery(QueryWrapper.create()
-                        .eq(RoleScopeAuthCodeDO::getTenantId, id));
-                tenantMenuMapper.deleteByQuery(QueryWrapper.create()
-                        .eq(TenantMenuDO::getTenantId, id));
-                tenantAuthCodeMapper.deleteByQuery(QueryWrapper.create()
-                        .eq(TenantAuthCodeDO::getTenantId, id));
-                userScopeRoleMapper.deleteByQuery(QueryWrapper.create()
-                        .eq(UserScopeRoleDO::getTenantId, id));
-                roleMapper.deleteByQuery(QueryWrapper.create().eq(RoleDO::getTenantId, id));
-                menuMapper.deleteByQuery(QueryWrapper.create().eq(MenuDO::getTenantId, id));
-            }
-            tenantMapper.deleteByQuery(QueryWrapper.create()
-                    .where(TenantDO::getId).in(allIds));
-            return null;
-        });
+        TenantManager.withoutTenantCondition(
+                () -> {
+                    for (Long id : allIds) {
+                        roleScopeMenuMapper.deleteByQuery(
+                                QueryWrapper.create().eq(RoleScopeMenuDO::getTenantId, id));
+                        roleScopeAuthCodeMapper.deleteByQuery(
+                                QueryWrapper.create().eq(RoleScopeAuthCodeDO::getTenantId, id));
+                        tenantMenuMapper.deleteByQuery(
+                                QueryWrapper.create().eq(TenantMenuDO::getTenantId, id));
+                        tenantAuthCodeMapper.deleteByQuery(
+                                QueryWrapper.create().eq(TenantAuthCodeDO::getTenantId, id));
+                        userScopeRoleMapper.deleteByQuery(
+                                QueryWrapper.create().eq(UserScopeRoleDO::getTenantId, id));
+                        roleMapper.deleteByQuery(QueryWrapper.create().eq(RoleDO::getTenantId, id));
+                        menuMapper.deleteByQuery(QueryWrapper.create().eq(MenuDO::getTenantId, id));
+                    }
+                    tenantMapper.deleteByQuery(
+                            QueryWrapper.create().where(TenantDO::getId).in(allIds));
+                    return null;
+                });
         for (Long userId : candidateUserIds) {
-            long remainingAssignments = TenantManager.withoutTenantCondition(
-                    () -> userScopeRoleMapper.selectCountByQuery(QueryWrapper.create()
-                            .where(UserScopeRoleDO::getUserId).eq(userId)
-                            .and(UserScopeRoleDO::getStatus).eq(1)
-                            .and(UserScopeRoleDO::getDelFlag).eq(0)));
+            long remainingAssignments =
+                    TenantManager.withoutTenantCondition(
+                            () ->
+                                    userScopeRoleMapper.selectCountByQuery(
+                                            QueryWrapper.create()
+                                                    .where(UserScopeRoleDO::getUserId)
+                                                    .eq(userId)
+                                                    .and(UserScopeRoleDO::getStatus)
+                                                    .eq(1)
+                                                    .and(UserScopeRoleDO::getDelFlag)
+                                                    .eq(0)));
             if (remainingAssignments == 0) {
                 userMapper.deleteById(userId);
             }
         }
         for (Long authCodeId : candidateAuthCodeIds) {
-            long remainingTenantRelations = TenantManager.withoutTenantCondition(
-                    () -> tenantAuthCodeMapper.selectCountByQuery(QueryWrapper.create()
-                            .where(TenantAuthCodeDO::getAuthCodeId).eq(authCodeId)));
+            long remainingTenantRelations =
+                    TenantManager.withoutTenantCondition(
+                            () ->
+                                    tenantAuthCodeMapper.selectCountByQuery(
+                                            QueryWrapper.create()
+                                                    .where(TenantAuthCodeDO::getAuthCodeId)
+                                                    .eq(authCodeId)));
             if (remainingTenantRelations == 0) {
                 authCodeMapper.deleteById(authCodeId);
             }
         }
     }
 
-    /**
-     * 查询指定租户的所有后代租户 ID（包含自身）
-     */
+    /** 查询指定租户的所有后代租户 ID（包含自身） */
     public List<Long> selectDescendantIds(TenantId rootId) {
         long rootValue = requireTenant(rootId);
         // 租户树查询用于校验父子关系，不能被当前业务租户的自动过滤截断。
@@ -429,5 +491,3 @@ public class TenantRepositoryImpl implements com.shiyu.ai.iam.implementation.por
         return tenantId.value();
     }
 }
-
-

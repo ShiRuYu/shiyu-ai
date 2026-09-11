@@ -1,12 +1,12 @@
 package com.shiyu.ai.agent.implementation.runtime;
 
-import com.shiyu.ai.agent.contract.runtime.*;
-
-import com.shiyu.ai.agent.implementation.execution.ExecutionStatus;
-import org.junit.jupiter.api.Test;
-
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNull;
+
+import com.shiyu.ai.agent.contract.runtime.*;
+import com.shiyu.ai.agent.implementation.execution.ExecutionStatus;
+
+import org.junit.jupiter.api.Test;
 
 class AgentRuntimeImplStatusTest {
 

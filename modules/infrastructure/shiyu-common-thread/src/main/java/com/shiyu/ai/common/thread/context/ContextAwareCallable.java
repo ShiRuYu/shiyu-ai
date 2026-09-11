@@ -2,9 +2,7 @@ package com.shiyu.ai.common.thread.context;
 
 import java.util.concurrent.Callable;
 
-/**
- * 上下文感知的Callable
- */
+/** 上下文感知的Callable */
 public class ContextAwareCallable<T> implements Callable<T> {
 
     private final Callable<T> delegate;

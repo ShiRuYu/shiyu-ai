@@ -2,14 +2,16 @@ package com.shiyu.ai.education.implementation.application.impl;
 
 import com.shiyu.ai.common.core.api.PageData;
 import com.shiyu.ai.common.core.utils.MapstructUtils;
+import com.shiyu.ai.education.implementation.application.SubjectService;
 import com.shiyu.ai.education.implementation.domain.model.SubjectBO;
 import com.shiyu.ai.education.implementation.domain.port.repository.SubjectRepository;
 import com.shiyu.ai.education.implementation.web.dto.SubjectResponse;
 import com.shiyu.ai.education.implementation.web.request.SubjectRequest;
-import com.shiyu.ai.education.implementation.application.SubjectService;
 import com.shiyu.ai.kernel.context.ActorContext;
+
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -36,14 +38,17 @@ public class SubjectServiceImpl implements SubjectService {
 
     @Override
     public List<SubjectResponse> listByGradeLevel(ActorContext actor, String gradeLevel) {
-        List<SubjectBO> boList = subjectRepository.selectByGradeLevel(requireActor(actor).tenantId(), gradeLevel);
+        List<SubjectBO> boList =
+                subjectRepository.selectByGradeLevel(requireActor(actor).tenantId(), gradeLevel);
         return MapstructUtils.convert(boList, SubjectResponse.class);
     }
 
     @Override
     public PageData<SubjectResponse> page(ActorContext actor, int pageNum, int pageSize) {
-        PageData<SubjectBO> boPage = subjectRepository.selectPage(requireActor(actor).tenantId(), pageNum, pageSize);
-        List<SubjectResponse> items = MapstructUtils.convert(boPage.getItems(), SubjectResponse.class);
+        PageData<SubjectBO> boPage =
+                subjectRepository.selectPage(requireActor(actor).tenantId(), pageNum, pageSize);
+        List<SubjectResponse> items =
+                MapstructUtils.convert(boPage.getItems(), SubjectResponse.class);
         return new PageData<>(items, boPage.getTotal());
     }
 
@@ -88,4 +93,3 @@ public class SubjectServiceImpl implements SubjectService {
         return java.util.Objects.requireNonNull(actor, "actor is required");
     }
 }
-

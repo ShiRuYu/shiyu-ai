@@ -1,6 +1,7 @@
 package com.shiyu.ai.common.web.auth;
 
 import jakarta.servlet.http.HttpServletRequest;
+
 import org.springframework.stereotype.Component;
 
 /** HTTP adapter for resolving the originating client address. */
@@ -15,18 +16,21 @@ public class HttpClientIpResolver implements ClientIpResolver {
 
     @Override
     public String currentClientIp() {
-        String ip = firstUsable(
-                request.getHeader("X-Forwarded-For"),
-                request.getHeader("X-Real-IP"),
-                request.getHeader("Proxy-Client-IP"),
-                request.getHeader("WL-Proxy-Client-IP"),
-                request.getRemoteAddr());
+        String ip =
+                firstUsable(
+                        request.getHeader("X-Forwarded-For"),
+                        request.getHeader("X-Real-IP"),
+                        request.getHeader("Proxy-Client-IP"),
+                        request.getHeader("WL-Proxy-Client-IP"),
+                        request.getRemoteAddr());
         return ip == null ? "unknown" : firstForwardedAddress(ip);
     }
 
     private static String firstUsable(String... candidates) {
         for (String candidate : candidates) {
-            if (candidate != null && !candidate.isBlank() && !"unknown".equalsIgnoreCase(candidate.trim())) {
+            if (candidate != null
+                    && !candidate.isBlank()
+                    && !"unknown".equalsIgnoreCase(candidate.trim())) {
                 return candidate.trim();
             }
         }

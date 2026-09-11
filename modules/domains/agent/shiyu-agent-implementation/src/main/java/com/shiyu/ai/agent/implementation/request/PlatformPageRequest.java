@@ -8,8 +8,7 @@ import java.io.Serializable;
 @Data
 public class PlatformPageRequest implements Serializable {
 
-    @Serial
-    private static final long serialVersionUID = 1L;
+    @Serial private static final long serialVersionUID = 1L;
 
     private String name;
     private String code;

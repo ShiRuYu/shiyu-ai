@@ -1,14 +1,16 @@
 package com.shiyu.ai.education.implementation.application.impl;
 
 import com.shiyu.ai.common.core.utils.MapstructUtils;
+import com.shiyu.ai.education.implementation.application.WrongQuestionService;
 import com.shiyu.ai.education.implementation.domain.model.WrongQuestionBO;
 import com.shiyu.ai.education.implementation.domain.port.repository.WrongQuestionRepository;
 import com.shiyu.ai.education.implementation.web.dto.WrongQuestionResponse;
 import com.shiyu.ai.education.implementation.web.request.WrongQuestionRequest;
-import com.shiyu.ai.education.implementation.application.WrongQuestionService;
 import com.shiyu.ai.kernel.context.ActorContext;
+
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -29,13 +31,17 @@ public class WrongQuestionServiceImpl implements WrongQuestionService {
 
     @Override
     public List<WrongQuestionResponse> listByStudentId(ActorContext actor, Long studentId) {
-        List<WrongQuestionBO> boList = wrongQuestionRepository.selectByStudentId(actor.tenantId(), studentId);
+        List<WrongQuestionBO> boList =
+                wrongQuestionRepository.selectByStudentId(actor.tenantId(), studentId);
         return MapstructUtils.convert(boList, WrongQuestionResponse.class);
     }
 
     @Override
-    public WrongQuestionResponse getByStudentAndQuestion(ActorContext actor, Long studentId, Long questionId) {
-        WrongQuestionBO bo = wrongQuestionRepository.selectByStudentAndQuestion(actor.tenantId(), studentId, questionId);
+    public WrongQuestionResponse getByStudentAndQuestion(
+            ActorContext actor, Long studentId, Long questionId) {
+        WrongQuestionBO bo =
+                wrongQuestionRepository.selectByStudentAndQuestion(
+                        actor.tenantId(), studentId, questionId);
         return MapstructUtils.convert(bo, WrongQuestionResponse.class);
     }
 
@@ -74,4 +80,3 @@ public class WrongQuestionServiceImpl implements WrongQuestionService {
         wrongQuestionRepository.deleteById(actor.tenantId(), id);
     }
 }
-

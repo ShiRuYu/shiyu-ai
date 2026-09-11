@@ -1,21 +1,22 @@
 package com.shiyu.ai.iam.implementation.persistence.repository;
 
+import static org.junit.jupiter.api.Assertions.*;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.Mockito.*;
+
+import com.shiyu.ai.common.core.utils.MapstructUtils;
 import com.shiyu.ai.iam.implementation.domain.model.RoleBO;
 import com.shiyu.ai.iam.implementation.domain.model.TenantBO;
 import com.shiyu.ai.iam.implementation.persistence.dataobject.RoleDO;
 import com.shiyu.ai.iam.implementation.persistence.dataobject.TenantDO;
 import com.shiyu.ai.iam.implementation.persistence.mapper.RoleMapper;
 import com.shiyu.ai.iam.implementation.persistence.mapper.TenantMapper;
-import com.shiyu.ai.common.core.utils.MapstructUtils;
 import com.shiyu.ai.kernel.context.TenantId;
+
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.mockito.MockedStatic;
 import org.springframework.test.util.ReflectionTestUtils;
-
-import static org.junit.jupiter.api.Assertions.*;
-import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.Mockito.*;
 
 class TenantRoleRepositoryImplTest {
     private TenantMapper tenants;
@@ -33,21 +34,31 @@ class TenantRoleRepositoryImplTest {
 
     @Test
     void rejectsMissingRoleArgumentsAndMissingTenantSuperRole() {
-        assertThrows(IllegalArgumentException.class, () -> repository.selectEnabledRoleByCode(null, "editor"));
+        assertThrows(
+                IllegalArgumentException.class,
+                () -> repository.selectEnabledRoleByCode(null, "editor"));
         assertNull(repository.selectEnabledRoleByCode(new TenantId(7L), null));
         assertNull(repository.selectEnabledRoleByCode(new TenantId(7L), " "));
         assertThrows(IllegalArgumentException.class, () -> repository.selectTenantSuperRole(null));
-        assertThrows(IllegalArgumentException.class, () -> repository.selectTenantSuperRole(new TenantId(0L)));
+        assertThrows(
+                IllegalArgumentException.class,
+                () -> repository.selectTenantSuperRole(new TenantId(0L)));
         assertEquals("Unknown", repository.selectTenantNameById(new TenantId(7L)));
         verifyNoInteractions(roles);
     }
 
     @Test
     void mapsTenantAndRoleQueriesAndUnknownTenantName() {
-        TenantDO tenantRow = new TenantDO(); tenantRow.setId(7L); tenantRow.setName("ShiYu");
-        RoleDO roleRow = new RoleDO(); roleRow.setId(3L); roleRow.setCode("editor");
-        TenantBO tenant = new TenantBO(); tenant.setId(7L);
-        RoleBO role = new RoleBO(); role.setId(3L);
+        TenantDO tenantRow = new TenantDO();
+        tenantRow.setId(7L);
+        tenantRow.setName("ShiYu");
+        RoleDO roleRow = new RoleDO();
+        roleRow.setId(3L);
+        roleRow.setCode("editor");
+        TenantBO tenant = new TenantBO();
+        tenant.setId(7L);
+        RoleBO role = new RoleBO();
+        role.setId(3L);
         when(tenants.selectOneById(7L)).thenReturn(tenantRow);
         when(roles.selectOneById(3L)).thenReturn(roleRow);
         when(roles.selectOneByQuery(any())).thenReturn(roleRow);
@@ -63,4 +74,3 @@ class TenantRoleRepositoryImplTest {
         verify(roles, times(2)).selectOneByQuery(any());
     }
 }
-

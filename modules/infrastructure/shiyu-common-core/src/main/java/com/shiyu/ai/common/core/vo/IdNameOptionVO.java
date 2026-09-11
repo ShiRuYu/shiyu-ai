@@ -15,13 +15,9 @@ public class IdNameOptionVO {
 
     private String name;
 
-    /**
-     * 平台编码
-     */
+    /** 平台编码 */
     private String code;
 
-    /**
-     * 业务值（模型名称等）
-     */
+    /** 业务值（模型名称等） */
     private String value;
 }

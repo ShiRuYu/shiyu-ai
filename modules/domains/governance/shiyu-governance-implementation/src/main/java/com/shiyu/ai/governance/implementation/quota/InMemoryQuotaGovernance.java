@@ -6,6 +6,7 @@ import com.shiyu.ai.governance.contract.QuotaRequest;
 import com.shiyu.ai.governance.contract.QuotaUsage;
 import com.shiyu.ai.kernel.context.ActorContext;
 import com.shiyu.ai.kernel.context.TenantId;
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
@@ -21,9 +22,9 @@ import java.util.concurrent.atomic.AtomicLong;
 /**
  * Single-node Governance quota implementation.
  *
- * The contract is deliberately actor-first so callers cannot reserve capacity
- * without proving both tenant and user identity. A distributed lease adapter
- * can replace this implementation without changing the bounded-context API.
+ * <p>The contract is deliberately actor-first so callers cannot reserve capacity without proving
+ * both tenant and user identity. A distributed lease adapter can replace this implementation
+ * without changing the bounded-context API.
  */
 @Component
 public final class InMemoryQuotaGovernance implements QuotaGovernance {
@@ -43,8 +44,8 @@ public final class InMemoryQuotaGovernance implements QuotaGovernance {
         this(dailyTokenLimit, defaultConcurrentLimit, requestsPerMinute, Clock.systemUTC());
     }
 
-    public InMemoryQuotaGovernance(long dailyTokenLimit, int defaultConcurrentLimit,
-                                   long requestsPerMinute, Clock clock) {
+    public InMemoryQuotaGovernance(
+            long dailyTokenLimit, int defaultConcurrentLimit, long requestsPerMinute, Clock clock) {
         this.dailyTokenLimit = Math.max(0, dailyTokenLimit);
         this.defaultConcurrentLimit = Math.max(1, defaultConcurrentLimit);
         this.requestsPerMinute = requestsPerMinute <= 0 ? Long.MAX_VALUE : requestsPerMinute;
@@ -62,22 +63,24 @@ public final class InMemoryQuotaGovernance implements QuotaGovernance {
             if (bucket.requestsThisMinute >= requestsPerMinute) {
                 return denied("QUOTA_RPM");
             }
-            int concurrentLimit = request.maxConcurrent() > 0
-                    ? Math.min(request.maxConcurrent(), defaultConcurrentLimit)
-                    : defaultConcurrentLimit;
+            int concurrentLimit =
+                    request.maxConcurrent() > 0
+                            ? Math.min(request.maxConcurrent(), defaultConcurrentLimit)
+                            : defaultConcurrentLimit;
             if (bucket.concurrent >= concurrentLimit) {
                 return denied("QUOTA_CONCURRENT");
             }
             if (dailyTokenLimit > 0
-                    && bucket.tokens + bucket.reservedTokens + request.estimatedPromptTokens() > dailyTokenLimit) {
+                    && bucket.tokens + bucket.reservedTokens + request.estimatedPromptTokens()
+                            > dailyTokenLimit) {
                 return denied("QUOTA_TOKENS");
             }
             long reservationId = reservationSequence.getAndIncrement();
             bucket.requestsThisMinute++;
             bucket.concurrent++;
             bucket.reservedTokens += request.estimatedPromptTokens();
-            reservations.put(reservationId,
-                    new Reservation(tenantId, request.estimatedPromptTokens()));
+            reservations.put(
+                    reservationId, new Reservation(tenantId, request.estimatedPromptTokens()));
             return new QuotaDecision(true, null, reservationId);
         }
     }
@@ -142,5 +145,5 @@ public final class InMemoryQuotaGovernance implements QuotaGovernance {
         private int concurrent;
     }
 
-    private record Reservation(TenantId tenantId, int promptTokens) { }
+    private record Reservation(TenantId tenantId, int promptTokens) {}
 }

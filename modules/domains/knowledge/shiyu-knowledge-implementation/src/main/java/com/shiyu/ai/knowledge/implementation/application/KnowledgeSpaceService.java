@@ -1,6 +1,9 @@
 package com.shiyu.ai.knowledge.implementation.application;
 
 import com.shiyu.ai.common.core.api.PageData;
+import com.shiyu.ai.kernel.context.ActorContext;
+import com.shiyu.ai.knowledge.contract.KnowledgeTenantProvisioning;
+
 import jakarta.validation.constraints.Max;
 import jakarta.validation.constraints.Min;
 import jakarta.validation.constraints.NotBlank;
@@ -8,9 +11,6 @@ import jakarta.validation.constraints.NotNull;
 
 import java.time.LocalDateTime;
 import java.util.List;
-
-import com.shiyu.ai.kernel.context.ActorContext;
-import com.shiyu.ai.knowledge.contract.KnowledgeTenantProvisioning;
 
 public interface KnowledgeSpaceService extends KnowledgeTenantProvisioning {
 
@@ -25,7 +25,8 @@ public interface KnowledgeSpaceService extends KnowledgeTenantProvisioning {
 
     PageData<SpaceView> page(ActorContext actor, int pageNum, int pageSize, String keyword);
 
-    PageData<SpaceView> page(ActorContext actor, int pageNum, int pageSize, String keyword, String domainCode);
+    PageData<SpaceView> page(
+            ActorContext actor, int pageNum, int pageSize, String keyword, String domainCode);
 
     SpaceView create(ActorContext actor, CreateSpaceRequest request);
 
@@ -42,7 +43,10 @@ public interface KnowledgeSpaceService extends KnowledgeTenantProvisioning {
     List<SpaceView> accessibleSpaces(ActorContext context);
 
     enum SpaceRole {
-        VIEWER(1), REVIEWER(2), EDITOR(3), ADMIN(4);
+        VIEWER(1),
+        REVIEWER(2),
+        EDITOR(3),
+        ADMIN(4);
 
         private final int rank;
 
@@ -55,44 +59,71 @@ public interface KnowledgeSpaceService extends KnowledgeTenantProvisioning {
         }
     }
 
-    record SpaceView(Long id, String code, String domainCode, String name, String description,
-                     String accessMode, String reviewMode, String bindingMode, Long difficultyScaleId,
-                     String embeddingProfile,
-                     String rerankProfile, String chunkStrategy, Integer chunkSize,
-                     Integer chunkOverlap, Long activeIndexVersion, Integer status,
-                     LocalDateTime createTime, LocalDateTime updateTime) {
-    }
+    record SpaceView(
+            Long id,
+            String code,
+            String domainCode,
+            String name,
+            String description,
+            String accessMode,
+            String reviewMode,
+            String bindingMode,
+            Long difficultyScaleId,
+            String embeddingProfile,
+            String rerankProfile,
+            String chunkStrategy,
+            Integer chunkSize,
+            Integer chunkOverlap,
+            Long activeIndexVersion,
+            Integer status,
+            LocalDateTime createTime,
+            LocalDateTime updateTime) {}
 
-    record MemberView(Long id, Long spaceId, String principalType, Long principalId,
-                      String spaceRole) {
-    }
+    record MemberView(
+            Long id, Long spaceId, String principalType, Long principalId, String spaceRole) {}
 
-    record DifficultyScaleView(Long id, String code, String name, String description,
-                               Integer levelCount, List<DifficultyLevelView> levels) {
-    }
+    record DifficultyScaleView(
+            Long id,
+            String code,
+            String name,
+            String description,
+            Integer levelCount,
+            List<DifficultyLevelView> levels) {}
 
-    record DifficultyLevelView(Integer level, String label, String description) {
-    }
+    record DifficultyLevelView(Integer level, String label, String description) {}
 
-    record CreateSpaceRequest(@NotBlank String code, @NotBlank String name, String domainCode,
-                              String description, String accessMode, String reviewMode,
-                              String bindingMode, Long difficultyScaleId, String embeddingProfile,
-                              String rerankProfile,
-                              String chunkStrategy, @Min(100) @Max(4000) Integer chunkSize,
-                              @Min(0) @Max(1000) Integer chunkOverlap) {
-    }
+    record CreateSpaceRequest(
+            @NotBlank String code,
+            @NotBlank String name,
+            String domainCode,
+            String description,
+            String accessMode,
+            String reviewMode,
+            String bindingMode,
+            Long difficultyScaleId,
+            String embeddingProfile,
+            String rerankProfile,
+            String chunkStrategy,
+            @Min(100) @Max(4000) Integer chunkSize,
+            @Min(0) @Max(1000) Integer chunkOverlap) {}
 
-    record UpdateSpaceRequest(String name, String description, String domainCode, String accessMode,
-                              String reviewMode, String bindingMode, Long difficultyScaleId,
-                              String embeddingProfile,
-                              String rerankProfile, String chunkStrategy,
-                              @Min(100) @Max(4000) Integer chunkSize,
-                              @Min(0) @Max(1000) Integer chunkOverlap,
-                              Integer status) {
-    }
+    record UpdateSpaceRequest(
+            String name,
+            String description,
+            String domainCode,
+            String accessMode,
+            String reviewMode,
+            String bindingMode,
+            Long difficultyScaleId,
+            String embeddingProfile,
+            String rerankProfile,
+            String chunkStrategy,
+            @Min(100) @Max(4000) Integer chunkSize,
+            @Min(0) @Max(1000) Integer chunkOverlap,
+            Integer status) {}
 
-    record MemberRequest(@NotBlank String principalType, @NotNull Long principalId,
-                         @NotBlank String spaceRole) {
-    }
+    record MemberRequest(
+            @NotBlank String principalType,
+            @NotNull Long principalId,
+            @NotBlank String spaceRole) {}
 }
-

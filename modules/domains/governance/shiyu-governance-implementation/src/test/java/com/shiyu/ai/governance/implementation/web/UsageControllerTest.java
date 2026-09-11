@@ -1,17 +1,18 @@
 package com.shiyu.ai.governance.implementation.web;
 
-import com.shiyu.ai.common.core.api.Result;
-import com.shiyu.ai.governance.implementation.usage.service.UsageService;
-import org.junit.jupiter.api.Test;
-
-import java.util.List;
-import java.util.Map;
-
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
+
+import com.shiyu.ai.common.core.api.Result;
+import com.shiyu.ai.governance.implementation.usage.service.UsageService;
+
+import org.junit.jupiter.api.Test;
+
+import java.util.List;
+import java.util.Map;
 
 class UsageControllerTest {
 
@@ -73,4 +74,3 @@ class UsageControllerTest {
         assertEquals(message, result.getMessage());
     }
 }
-

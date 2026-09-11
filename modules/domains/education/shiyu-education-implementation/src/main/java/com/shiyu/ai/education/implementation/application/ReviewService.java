@@ -6,38 +6,42 @@ import com.shiyu.ai.kernel.context.ActorContext;
 
 import java.util.List;
 
-/**
- * Review 接口
- */
-
+/** Review 接口 */
 public interface ReviewService {
 
     /**
      * Get By Id
+     *
      * @return 处理结果
      */
     ReviewTaskResponse getById(ActorContext actor, Long id);
 
     /**
      * List Today Tasks
+     *
      * @return 处理结果
      */
     List<ReviewTaskResponse> listTodayTasks(ActorContext actor, Long studentId);
 
     /**
      * List By Student And Status
+     *
      * @return 处理结果
      */
-    List<ReviewTaskResponse> listByStudentAndStatus(ActorContext actor, Long studentId, Integer status);
+    List<ReviewTaskResponse> listByStudentAndStatus(
+            ActorContext actor, Long studentId, Integer status);
 
     /**
      * List By Student And Knowledge
+     *
      * @return 处理结果
      */
-    List<ReviewTaskResponse> listByStudentAndKnowledge(ActorContext actor, Long studentId, Long knowledgeId);
+    List<ReviewTaskResponse> listByStudentAndKnowledge(
+            ActorContext actor, Long studentId, Long knowledgeId);
 
     /**
      * Create
+     *
      * @param ReviewRequest ReviewRequest
      * @return 处理结果
      */
@@ -45,6 +49,7 @@ public interface ReviewService {
 
     /**
      * Update
+     *
      * @param ReviewRequest ReviewRequest
      * @return 处理结果
      */
@@ -54,4 +59,3 @@ public interface ReviewService {
 
     void delete(ActorContext actor, Long id);
 }
-

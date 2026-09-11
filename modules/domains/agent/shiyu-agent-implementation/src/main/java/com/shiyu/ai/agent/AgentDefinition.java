@@ -22,8 +22,7 @@ public class AgentDefinition {
     private long updatedAt;
     private String startNodeId;
 
-    @Builder.Default
-    private Map<String, AgentVersion> versions = new HashMap<>();
+    @Builder.Default private Map<String, AgentVersion> versions = new HashMap<>();
 
     public void addVersion(AgentVersion version) {
         if (versions == null) {

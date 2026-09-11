@@ -1,40 +1,57 @@
 package com.shiyu.ai.memory.implementation.persistence.service;
 
-import com.shiyu.ai.memory.implementation.domain.magma.*;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.mockito.ArgumentMatchers.*;
+import static org.mockito.Mockito.*;
 
 import com.shiyu.ai.memory.contract.model.*;
+import com.shiyu.ai.memory.implementation.domain.magma.*;
 
 import org.junit.jupiter.api.Test;
+import org.mockito.ArgumentCaptor;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.core.RowMapper;
 
-import javax.sql.DataSource;
 import java.lang.reflect.Field;
-import java.util.List;
-import java.util.Map;
 import java.sql.ResultSet;
 import java.util.ArrayList;
-import org.mockito.ArgumentCaptor;
+import java.util.List;
+import java.util.Map;
 
-import static org.mockito.ArgumentMatchers.*;
-import static org.mockito.Mockito.*;
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertTrue;
+import javax.sql.DataSource;
 
 class MagmaConsolidationWorkerTest {
     @Test
     void leasesAndCompletesPendingJobs() throws Exception {
         JdbcTemplate jdbc = mock(JdbcTemplate.class);
-        when(jdbc.query(anyString(), org.mockito.ArgumentMatchers.<RowMapper<Long>>any(), any(Object[].class)))
+        when(jdbc.query(
+                        anyString(),
+                        org.mockito.ArgumentMatchers.<RowMapper<Long>>any(),
+                        any(Object[].class)))
                 .thenReturn(List.of(1L));
-        when(jdbc.query(anyString(), org.mockito.ArgumentMatchers.<RowMapper<Long>>any())).thenReturn(List.of(1L));
+        when(jdbc.query(anyString(), org.mockito.ArgumentMatchers.<RowMapper<Long>>any()))
+                .thenReturn(List.of(1L));
         when(jdbc.update(anyString(), any(), any())).thenReturn(1);
         when(jdbc.update(anyString(), any(Object[].class))).thenReturn(1);
         when(jdbc.queryForMap(anyString(), any(Object[].class)))
                 .thenReturn(Map.of("TENANT_ID", 7L, "EVENT_ID", "e1"))
-                .thenReturn(Map.of("STATUS", "ACTIVE", "SUBJECT_TYPE", "PROFILE", "SUBJECT_ID", "u1",
-                        "CONTENT", "hello world", "NAMESPACE", "notes", "ATTRIBUTES", "{}"));
-        when(jdbc.queryForObject(anyString(), eq(Integer.class), any(Object[].class))).thenReturn(0);
+                .thenReturn(
+                        Map.of(
+                                "STATUS",
+                                "ACTIVE",
+                                "SUBJECT_TYPE",
+                                "PROFILE",
+                                "SUBJECT_ID",
+                                "u1",
+                                "CONTENT",
+                                "hello world",
+                                "NAMESPACE",
+                                "notes",
+                                "ATTRIBUTES",
+                                "{}"));
+        when(jdbc.queryForObject(anyString(), eq(Integer.class), any(Object[].class)))
+                .thenReturn(0);
         MagmaConsolidationWorker worker = newWorker(jdbc);
 
         worker.processBatch();
@@ -46,18 +63,26 @@ class MagmaConsolidationWorkerTest {
     void recordsRetryWhenConsolidationFails() throws Exception {
         JdbcTemplate jdbc = mock(JdbcTemplate.class);
         List<Object[]> updateArgs = new ArrayList<>();
-        when(jdbc.query(anyString(), org.mockito.ArgumentMatchers.<RowMapper<Long>>any(), any(Object[].class)))
+        when(jdbc.query(
+                        anyString(),
+                        org.mockito.ArgumentMatchers.<RowMapper<Long>>any(),
+                        any(Object[].class)))
                 .thenReturn(List.of(2L));
-        when(jdbc.query(anyString(), org.mockito.ArgumentMatchers.<RowMapper<Long>>any())).thenReturn(List.of(2L));
-        org.mockito.stubbing.Answer<Integer> captureUpdate = invocation -> {
-            Object[] arguments = invocation.getArguments();
-            updateArgs.add(arguments.length == 2 && arguments[1] instanceof Object[] nested
-                    ? nested : java.util.Arrays.copyOfRange(arguments, 1, arguments.length));
-            return 1;
-        };
+        when(jdbc.query(anyString(), org.mockito.ArgumentMatchers.<RowMapper<Long>>any()))
+                .thenReturn(List.of(2L));
+        org.mockito.stubbing.Answer<Integer> captureUpdate =
+                invocation -> {
+                    Object[] arguments = invocation.getArguments();
+                    updateArgs.add(
+                            arguments.length == 2 && arguments[1] instanceof Object[] nested
+                                    ? nested
+                                    : java.util.Arrays.copyOfRange(arguments, 1, arguments.length));
+                    return 1;
+                };
         when(jdbc.update(anyString(), any(), any())).thenAnswer(captureUpdate);
         when(jdbc.update(anyString(), any(Object[].class))).thenAnswer(captureUpdate);
-        when(jdbc.queryForMap(anyString(), any(Object[].class))).thenThrow(new IllegalStateException("db unavailable"));
+        when(jdbc.queryForMap(anyString(), any(Object[].class)))
+                .thenThrow(new IllegalStateException("db unavailable"));
         MagmaConsolidationWorker worker = newWorker(jdbc);
 
         worker.processBatch();
@@ -103,30 +128,53 @@ class MagmaConsolidationWorkerTest {
         when(jdbc.update(anyString(), any(Object[].class))).thenReturn(1);
         when(jdbc.queryForMap(anyString(), any(Object[].class)))
                 .thenReturn(Map.of("TENANT_ID", 7L, "EVENT_ID", "e1"))
-                .thenReturn(Map.of("STATUS", "ACTIVE", "SUBJECT_TYPE", "PROFILE", "SUBJECT_ID", "u1",
-                        "CONTENT", "hello world", "NAMESPACE", "notes",
-                        "ATTRIBUTES", "{\"causesEventId\":\"cause-1\"}"));
+                .thenReturn(
+                        Map.of(
+                                "STATUS",
+                                "ACTIVE",
+                                "SUBJECT_TYPE",
+                                "PROFILE",
+                                "SUBJECT_ID",
+                                "u1",
+                                "CONTENT",
+                                "hello world",
+                                "NAMESPACE",
+                                "notes",
+                                "ATTRIBUTES",
+                                "{\"causesEventId\":\"cause-1\"}"));
         when(jdbc.queryForObject(anyString(), eq(Integer.class), any(Object[].class)))
                 .thenReturn(0, 1, 1, 0);
-        when(jdbc.query(anyString(), org.mockito.ArgumentMatchers.<RowMapper<Object>>any(), any(Object[].class)))
-                .thenAnswer(invocation -> {
-                    String sql = invocation.getArgument(0, String.class);
-                    if (!sql.contains("MEMORY_EVENT")) return List.of();
-                    @SuppressWarnings("unchecked") RowMapper<Object> mapper = invocation.getArgument(1);
-                    ResultSet rs = mock(ResultSet.class);
-                    when(rs.getString(1)).thenReturn("e2");
-                    when(rs.getString(2)).thenReturn("hello there");
-                    mapper.mapRow(rs, 0);
-                    return List.of();
-                });
+        when(jdbc.query(
+                        anyString(),
+                        org.mockito.ArgumentMatchers.<RowMapper<Object>>any(),
+                        any(Object[].class)))
+                .thenAnswer(
+                        invocation -> {
+                            String sql = invocation.getArgument(0, String.class);
+                            if (!sql.contains("MEMORY_EVENT")) return List.of();
+                            @SuppressWarnings("unchecked")
+                            RowMapper<Object> mapper = invocation.getArgument(1);
+                            ResultSet rs = mock(ResultSet.class);
+                            when(rs.getString(1)).thenReturn("e2");
+                            when(rs.getString(2)).thenReturn("hello there");
+                            mapper.mapRow(rs, 0);
+                            return List.of();
+                        });
 
         newWorker(jdbc).processBatch();
 
         verify(jdbc, atLeast(4)).update(anyString(), any(Object[].class));
         ArgumentCaptor<String> sql = ArgumentCaptor.forClass(String.class);
-        verify(jdbc, atLeastOnce()).query(sql.capture(), org.mockito.ArgumentMatchers.<RowMapper<Object>>any(), any(Object[].class));
-        assertTrue(sql.getAllValues().stream().anyMatch(statement ->
-                statement.contains("ORDER BY OCCURRED_AT DESC, ID ASC")));
+        verify(jdbc, atLeastOnce())
+                .query(
+                        sql.capture(),
+                        org.mockito.ArgumentMatchers.<RowMapper<Object>>any(),
+                        any(Object[].class));
+        assertTrue(
+                sql.getAllValues().stream()
+                        .anyMatch(
+                                statement ->
+                                        statement.contains("ORDER BY OCCURRED_AT DESC, ID ASC")));
     }
 
     @Test
@@ -138,9 +186,24 @@ class MagmaConsolidationWorkerTest {
         when(jdbc.update(anyString(), any(Object[].class))).thenReturn(1);
         when(jdbc.queryForMap(anyString(), any(Object[].class)))
                 .thenReturn(Map.of("TENANT_ID", 7L, "EVENT_ID", "e-empty"))
-                .thenReturn(Map.of("STATUS", "ACTIVE", "SUBJECT_TYPE", "PROFILE", "SUBJECT_ID", "u1",
-                        "CONTENT", "", "NAMESPACE", "notes", "ATTRIBUTES", "{}"));
-        when(jdbc.query(anyString(), org.mockito.ArgumentMatchers.<RowMapper<Object>>any(), any(Object[].class)))
+                .thenReturn(
+                        Map.of(
+                                "STATUS",
+                                "ACTIVE",
+                                "SUBJECT_TYPE",
+                                "PROFILE",
+                                "SUBJECT_ID",
+                                "u1",
+                                "CONTENT",
+                                "",
+                                "NAMESPACE",
+                                "notes",
+                                "ATTRIBUTES",
+                                "{}"));
+        when(jdbc.query(
+                        anyString(),
+                        org.mockito.ArgumentMatchers.<RowMapper<Object>>any(),
+                        any(Object[].class)))
                 .thenReturn(List.of());
 
         newWorker(jdbc).processBatch();
@@ -156,4 +219,3 @@ class MagmaConsolidationWorkerTest {
         return worker;
     }
 }
-

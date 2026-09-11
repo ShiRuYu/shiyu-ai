@@ -1,16 +1,19 @@
 package com.shiyu.ai.education.implementation.web;
 
 import cn.dev33.satoken.annotation.SaCheckPermission;
+
 import com.shiyu.ai.common.core.api.PageData;
 import com.shiyu.ai.common.core.api.Result;
-import com.shiyu.ai.education.implementation.web.dto.QuestionResponse;
+import com.shiyu.ai.common.web.auth.ActorContextHttpAdapter;
+import com.shiyu.ai.education.implementation.application.QuestionService;
 import com.shiyu.ai.education.implementation.web.dto.QuestionResponse;
 import com.shiyu.ai.education.implementation.web.request.QuestionRequest;
-import com.shiyu.ai.education.implementation.application.QuestionService;
-import com.shiyu.ai.common.web.auth.ActorContextHttpAdapter;
+
 import jakarta.validation.Valid;
+
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -28,7 +31,8 @@ public class QuestionController {
     public Result<PageData<QuestionResponse>> list(
             @RequestParam(defaultValue = "1") Integer pageNum,
             @RequestParam(defaultValue = "10") Integer pageSize) {
-        return Result.success(questionService.page(ActorContextHttpAdapter.currentActor(), pageNum, pageSize));
+        return Result.success(
+                questionService.page(ActorContextHttpAdapter.currentActor(), pageNum, pageSize));
     }
 
     @GetMapping("/detail")
@@ -39,23 +43,29 @@ public class QuestionController {
     @GetMapping("/subject-grade")
     public Result<List<QuestionResponse>> listBySubjectAndGrade(
             @RequestParam String subjectCode, @RequestParam Integer grade) {
-        return Result.success(questionService.listBySubjectAndGrade(ActorContextHttpAdapter.currentActor(), subjectCode, grade));
+        return Result.success(
+                questionService.listBySubjectAndGrade(
+                        ActorContextHttpAdapter.currentActor(), subjectCode, grade));
     }
 
     @GetMapping("/difficulty")
     public Result<List<QuestionResponse>> listByDifficulty(@RequestParam Integer difficulty) {
-        return Result.success(questionService.listByDifficulty(ActorContextHttpAdapter.currentActor(), difficulty));
+        return Result.success(
+                questionService.listByDifficulty(
+                        ActorContextHttpAdapter.currentActor(), difficulty));
     }
 
     @GetMapping("/type")
     public Result<List<QuestionResponse>> listByType(@RequestParam String type) {
-        return Result.success(questionService.listByType(ActorContextHttpAdapter.currentActor(), type));
+        return Result.success(
+                questionService.listByType(ActorContextHttpAdapter.currentActor(), type));
     }
 
     @PostMapping("/create")
     @SaCheckPermission("edu:question:create")
     public Result<QuestionResponse> create(@Valid @RequestBody QuestionRequest request) {
-        return Result.success(questionService.create(ActorContextHttpAdapter.currentActor(), request));
+        return Result.success(
+                questionService.create(ActorContextHttpAdapter.currentActor(), request));
     }
 
     @PostMapping("/update")
@@ -73,4 +83,3 @@ public class QuestionController {
         return Result.success();
     }
 }
-

@@ -1,8 +1,8 @@
 package com.shiyu.ai.memory.implementation.domain.magma;
 
+import com.shiyu.ai.kernel.context.TenantId;
 import com.shiyu.ai.memory.contract.model.*;
 
-import com.shiyu.ai.kernel.context.TenantId;
 import java.util.Map;
 import java.util.Objects;
 
@@ -14,16 +14,14 @@ public record MemoryEntity(
         String displayName,
         String normalizedName,
         Map<String, Object> attributes,
-        boolean active
-) {
+        boolean active) {
     public MemoryEntity {
         tenantId = Objects.requireNonNull(tenantId, "tenantId is required");
         if (id == null || id.isBlank()) throw new IllegalArgumentException("entity id is required");
-        if (entityType == null || entityType.isBlank()) throw new IllegalArgumentException("entityType is required");
-        if (externalRef == null || externalRef.isBlank()) throw new IllegalArgumentException("externalRef is required");
+        if (entityType == null || entityType.isBlank())
+            throw new IllegalArgumentException("entityType is required");
+        if (externalRef == null || externalRef.isBlank())
+            throw new IllegalArgumentException("externalRef is required");
         attributes = attributes == null ? Map.of() : Map.copyOf(attributes);
     }
 }
-
-
-

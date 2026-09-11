@@ -1,17 +1,15 @@
 package com.shiyu.ai.education.implementation.domain.model;
+
 import lombok.Data;
 
 import java.io.Serial;
 import java.io.Serializable;
 
-/**
- * Chapter 业务对象
- */
+/** Chapter 业务对象 */
 @Data
 public class ChapterBO implements Serializable {
 
-    @Serial
-    private static final long serialVersionUID = 1L;
+    @Serial private static final long serialVersionUID = 1L;
 
     private Long id;
 
@@ -22,11 +20,7 @@ public class ChapterBO implements Serializable {
     private String name;
 
     private Integer chapterOrder;
-    /**
-     * 状态（依据业务灵活定义）
-     */
+
+    /** 状态（依据业务灵活定义） */
     private Integer status;
-
-
 }
-

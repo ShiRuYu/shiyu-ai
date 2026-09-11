@@ -5,4 +5,3 @@ public enum EdgeOrigin {
     DOMAIN,
     MODEL
 }
-

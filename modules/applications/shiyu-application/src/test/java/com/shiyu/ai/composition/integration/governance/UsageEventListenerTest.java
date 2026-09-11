@@ -1,20 +1,21 @@
 package com.shiyu.ai.composition.integration.governance;
 
-import com.shiyu.ai.model.implementation.domain.event.EmbeddingCallEvent;
-import com.shiyu.ai.model.implementation.domain.event.ModelCallEvent;
-import com.shiyu.ai.governance.contract.UsageGovernance;
-import com.shiyu.ai.governance.contract.UsageMeasurement;
-import com.shiyu.ai.kernel.event.DomainEventEnvelope;
-import com.shiyu.ai.kernel.context.TenantId;
-import com.shiyu.ai.kernel.context.UserId;
-import org.junit.jupiter.api.Test;
-import org.mockito.ArgumentCaptor;
-
-import static org.mockito.Mockito.mock;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.verifyNoInteractions;
-import static org.junit.jupiter.api.Assertions.assertEquals;
+
+import com.shiyu.ai.governance.contract.UsageGovernance;
+import com.shiyu.ai.governance.contract.UsageMeasurement;
+import com.shiyu.ai.kernel.context.TenantId;
+import com.shiyu.ai.kernel.context.UserId;
+import com.shiyu.ai.kernel.event.DomainEventEnvelope;
+import com.shiyu.ai.model.implementation.domain.event.EmbeddingCallEvent;
+import com.shiyu.ai.model.implementation.domain.event.ModelCallEvent;
+
+import org.junit.jupiter.api.Test;
+import org.mockito.ArgumentCaptor;
 
 class UsageEventListenerTest {
 
@@ -23,16 +24,17 @@ class UsageEventListenerTest {
 
     @Test
     void rejectsModelEventsWithoutCompleteActorAttribution() {
-        listener.onModelCall(new ModelCallEvent(
-                "OPENAI", "gpt", 10, 4, 12, null, new TenantId(7L), null));
+        listener.onModelCall(
+                new ModelCallEvent("OPENAI", "gpt", 10, 4, 12, null, new TenantId(7L), null));
 
         verifyNoInteractions(usage);
     }
 
     @Test
     void recordsModelEventsWithTenantAndUserAttribution() {
-        ModelCallEvent event = new ModelCallEvent(
-                "OPENAI", "gpt", 10, 4, 12, null, new TenantId(7L), new UserId(11L));
+        ModelCallEvent event =
+                new ModelCallEvent(
+                        "OPENAI", "gpt", 10, 4, 12, null, new TenantId(7L), new UserId(11L));
         listener.onModelCall(event);
 
         ArgumentCaptor<DomainEventEnvelope<UsageMeasurement>> captor = ArgumentCaptor.captor();
@@ -43,8 +45,8 @@ class UsageEventListenerTest {
 
     @Test
     void rejectsEmbeddingEventsWithoutCompleteActorAttribution() {
-        listener.onEmbeddingCall(new EmbeddingCallEvent(
-                "embedding", 20, 5, 1, 8, new TenantId(7L), null));
+        listener.onEmbeddingCall(
+                new EmbeddingCallEvent("embedding", 20, 5, 1, 8, new TenantId(7L), null));
 
         verifyNoInteractions(usage);
     }

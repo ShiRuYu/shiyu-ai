@@ -12,8 +12,7 @@ public final class EbbinghausCurve {
 
     private static final double[] LAMBDAS = {0.20, 0.15, 0.10, 0.07, 0.04, 0.02, 0.01};
 
-    private EbbinghausCurve() {
-    }
+    private EbbinghausCurve() {}
 
     public static double mastery(Instant lastStudyAt, int reviewRound) {
         double lambda = LAMBDAS[Math.min(reviewRound, LAMBDAS.length - 1)];
@@ -22,9 +21,7 @@ public final class EbbinghausCurve {
     }
 
     public static List<LocalDate> scheduleReviewDates(LocalDate learnedAt) {
-        return Arrays.stream(INTERVALS_DAYS)
-                .mapToObj(learnedAt::plusDays)
-                .toList();
+        return Arrays.stream(INTERVALS_DAYS).mapToObj(learnedAt::plusDays).toList();
     }
 
     public static int currentRound(Instant lastStudyAt) {
@@ -39,4 +36,3 @@ public final class EbbinghausCurve {
         return Math.min(round, INTERVALS_DAYS.length);
     }
 }
-

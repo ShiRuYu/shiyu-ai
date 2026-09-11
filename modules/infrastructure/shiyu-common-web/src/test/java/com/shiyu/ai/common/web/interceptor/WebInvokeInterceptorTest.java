@@ -1,9 +1,9 @@
 package com.shiyu.ai.common.web.interceptor;
 
-import org.junit.jupiter.api.Test;
-
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
+
+import org.junit.jupiter.api.Test;
 
 class WebInvokeInterceptorTest {
 
@@ -32,11 +32,14 @@ class WebInvokeInterceptorTest {
 
     @Test
     void masksApiKeyNamingVariants() {
-        String input = "{\"apiKey\":\"key-one\",\"api-key\":\"key-two\",\"api_key\":\"key-three\",\"safe\":\"keep\"}";
+        String input =
+                "{\"apiKey\":\"key-one\",\"api-key\":\"key-two\",\"api_key\":\"key-three\",\"safe\":\"keep\"}";
 
         String sanitized = interceptor.sanitize(input);
 
-        assertEquals("{\"apiKey\":\"***\",\"api-key\":\"***\",\"api_key\":\"***\",\"safe\":\"keep\"}", sanitized);
+        assertEquals(
+                "{\"apiKey\":\"***\",\"api-key\":\"***\",\"api_key\":\"***\",\"safe\":\"keep\"}",
+                sanitized);
         assertFalse(sanitized.contains("key-one"));
         assertFalse(sanitized.contains("key-two"));
         assertFalse(sanitized.contains("key-three"));
@@ -44,11 +47,14 @@ class WebInvokeInterceptorTest {
 
     @Test
     void masksAccessAndRefreshCredentialVariants() {
-        String input = "{\"accessToken\":\"access-value\",\"refreshToken\":\"refresh-value\",\"clientSecret\":\"client-value\",\"safe\":\"keep\"}";
+        String input =
+                "{\"accessToken\":\"access-value\",\"refreshToken\":\"refresh-value\",\"clientSecret\":\"client-value\",\"safe\":\"keep\"}";
 
         String sanitized = interceptor.sanitize(input);
 
-        assertEquals("{\"accessToken\":\"***\",\"refreshToken\":\"***\",\"clientSecret\":\"***\",\"safe\":\"keep\"}", sanitized);
+        assertEquals(
+                "{\"accessToken\":\"***\",\"refreshToken\":\"***\",\"clientSecret\":\"***\",\"safe\":\"keep\"}",
+                sanitized);
         assertFalse(sanitized.contains("access-value"));
         assertFalse(sanitized.contains("refresh-value"));
         assertFalse(sanitized.contains("client-value"));

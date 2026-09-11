@@ -1,4 +1,5 @@
 package com.shiyu.ai.education.implementation.domain.model;
+
 import lombok.Data;
 
 import java.io.Serial;
@@ -6,14 +7,11 @@ import java.io.Serializable;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 
-/**
- * StudyPlanItem 业务对象
- */
+/** StudyPlanItem 业务对象 */
 @Data
 public class StudyPlanItemBO implements Serializable {
 
-    @Serial
-    private static final long serialVersionUID = 1L;
+    @Serial private static final long serialVersionUID = 1L;
 
     private Long id;
 
@@ -31,4 +29,3 @@ public class StudyPlanItemBO implements Serializable {
 
     private LocalDateTime completedAt;
 }
-

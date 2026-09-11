@@ -1,6 +1,7 @@
 package com.shiyu.ai.tooling.implementation.plugin.vo;
 
 import lombok.Data;
+
 import java.io.Serial;
 import java.io.Serializable;
 

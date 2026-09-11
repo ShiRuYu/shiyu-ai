@@ -1,12 +1,11 @@
 package com.shiyu.ai.agent.implementation.node;
 
 import com.shiyu.ai.agent.contract.node.BaseNode;
+
 import lombok.extern.slf4j.Slf4j;
 
 import java.lang.reflect.Field;
-import java.util.ArrayList;
 import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 
@@ -47,8 +46,11 @@ final class RegisteredNodeStore {
             injected = injectByType(node, service);
         }
         if (!injected) {
-            log.warn("服务注册到节点失败，未找到匹配的字段：nodeIdPresent={}, serviceNamePresent={}, serviceTypePresent={}",
-                    nodeId != null, serviceName != null,
+            log.warn(
+                    "服务注册到节点失败，未找到匹配的字段：nodeIdPresent={}, serviceNamePresent={},"
+                            + " serviceTypePresent={}",
+                    nodeId != null,
+                    serviceName != null,
                     service != null && service.getClass().getSimpleName() != null);
         }
     }
@@ -65,14 +67,18 @@ final class RegisteredNodeStore {
         } catch (NoSuchFieldException ignored) {
             // Fall through to type matching.
         } catch (Exception exception) {
-            log.warn("服务字段注入失败：errorType={}, errorMessageLength={}",
-                    exception.getClass().getSimpleName(), messageLength(exception));
+            log.warn(
+                    "服务字段注入失败：errorType={}, errorMessageLength={}",
+                    exception.getClass().getSimpleName(),
+                    messageLength(exception));
         }
         return false;
     }
 
     private boolean injectByType(BaseNode node, Object service) {
-        for (Class<?> type = node.getClass(); type != null && type != Object.class; type = type.getSuperclass()) {
+        for (Class<?> type = node.getClass();
+                type != null && type != Object.class;
+                type = type.getSuperclass()) {
             for (Field field : type.getDeclaredFields()) {
                 if (!field.getType().isInstance(service)) continue;
                 try {
@@ -80,8 +86,10 @@ final class RegisteredNodeStore {
                     field.set(node, service);
                     return true;
                 } catch (Exception exception) {
-                    log.warn("按类型匹配注入失败：errorType={}, errorMessageLength={}",
-                            exception.getClass().getSimpleName(), messageLength(exception));
+                    log.warn(
+                            "按类型匹配注入失败：errorType={}, errorMessageLength={}",
+                            exception.getClass().getSimpleName(),
+                            messageLength(exception));
                 }
             }
         }

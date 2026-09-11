@@ -1,15 +1,17 @@
 package com.shiyu.ai.knowledge.implementation.application.service;
 
 import com.shiyu.ai.common.core.api.PageData;
-import com.shiyu.ai.common.core.utils.MapstructUtils;
-import com.shiyu.ai.knowledge.implementation.web.response.KnowledgeAuditResponse;
+import com.shiyu.ai.common.core.exception.ServiceException;
 import com.shiyu.ai.common.core.utils.JSONUtils;
+import com.shiyu.ai.common.core.utils.MapstructUtils;
+import com.shiyu.ai.kernel.context.ActorContext;
+import com.shiyu.ai.knowledge.implementation.application.KnowledgeAuditService;
 import com.shiyu.ai.knowledge.implementation.domain.model.KnowledgeAuditLogBO;
 import com.shiyu.ai.knowledge.implementation.domain.port.repository.KnowledgeEnterpriseRepository;
-import com.shiyu.ai.knowledge.implementation.application.KnowledgeAuditService;
-import com.shiyu.ai.kernel.context.ActorContext;
-import com.shiyu.ai.common.core.exception.ServiceException;
+import com.shiyu.ai.knowledge.implementation.web.response.KnowledgeAuditResponse;
+
 import lombok.RequiredArgsConstructor;
+
 import org.springframework.stereotype.Service;
 
 @Service
@@ -19,8 +21,13 @@ public class KnowledgeAuditServiceImpl implements KnowledgeAuditService {
     private final KnowledgeEnterpriseRepository repository;
 
     @Override
-    public void record(ActorContext actor, Long spaceId, String resourceType, Long resourceId,
-                       String action, Object detail) {
+    public void record(
+            ActorContext actor,
+            Long spaceId,
+            String resourceType,
+            Long resourceId,
+            String action,
+            Object detail) {
         requireActor(actor);
         KnowledgeAuditLogBO audit = new KnowledgeAuditLogBO();
         audit.setTenantId(actor.tenantId().value());
@@ -35,10 +42,14 @@ public class KnowledgeAuditServiceImpl implements KnowledgeAuditService {
     }
 
     @Override
-    public PageData<KnowledgeAuditResponse> page(ActorContext actor, int pageNum, int pageSize, Long spaceId) {
+    public PageData<KnowledgeAuditResponse> page(
+            ActorContext actor, int pageNum, int pageSize, Long spaceId) {
         requireActor(actor);
-        PageData<KnowledgeAuditLogBO> data = repository.pageAudit(actor.tenantId(), pageNum, pageSize, spaceId);
-        return new PageData<>(MapstructUtils.convert(data.getItems(), KnowledgeAuditResponse.class), data.getTotal());
+        PageData<KnowledgeAuditLogBO> data =
+                repository.pageAudit(actor.tenantId(), pageNum, pageSize, spaceId);
+        return new PageData<>(
+                MapstructUtils.convert(data.getItems(), KnowledgeAuditResponse.class),
+                data.getTotal());
     }
 
     private void requireActor(ActorContext actor) {
@@ -47,5 +58,3 @@ public class KnowledgeAuditServiceImpl implements KnowledgeAuditService {
         }
     }
 }
-
-

@@ -1,11 +1,11 @@
 package com.shiyu.ai.kernel.context;
 
-import org.junit.jupiter.api.AfterEach;
-import org.junit.jupiter.api.Test;
-
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
+
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.Test;
 
 class TenantScopeTest {
 
@@ -25,10 +25,13 @@ class TenantScopeTest {
     void restoresThePreviousScopeAfterACommand() {
         TenantScope.set(new TenantId(7L));
 
-        String result = TenantScope.withTenant(new TenantId(9L), () -> {
-            assertEquals(9L, TenantScope.require().value());
-            return "done";
-        });
+        String result =
+                TenantScope.withTenant(
+                        new TenantId(9L),
+                        () -> {
+                            assertEquals(9L, TenantScope.require().value());
+                            return "done";
+                        });
 
         assertEquals("done", result);
         assertEquals(7L, TenantScope.require().value());

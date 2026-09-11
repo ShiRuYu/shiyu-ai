@@ -1,31 +1,29 @@
 package com.shiyu.ai.education.implementation.agent.graph;
 
-import com.shiyu.ai.agent.contract.node.NodeInputParam;
 import com.shiyu.ai.agent.contract.node.BaseNode;
 import com.shiyu.ai.agent.contract.node.NodeInput;
+import com.shiyu.ai.agent.contract.node.NodeInputParam;
 import com.shiyu.ai.agent.contract.node.NodeOutput;
 import com.shiyu.ai.agent.contract.node.NodeType;
 import com.shiyu.ai.education.implementation.application.AbilityService;
 import com.shiyu.ai.education.implementation.domain.AbilityValue;
-import com.shiyu.ai.knowledge.contract.model.KnowledgeResponse;
+import com.shiyu.ai.kernel.context.ActorContext;
 import com.shiyu.ai.knowledge.contract.api.KnowledgePointPort;
 import com.shiyu.ai.knowledge.contract.api.KnowledgeRelationPort;
-import com.shiyu.ai.kernel.context.ActorContext;
+import com.shiyu.ai.knowledge.contract.model.KnowledgeResponse;
+
 import lombok.Getter;
 import lombok.Setter;
 import lombok.extern.slf4j.Slf4j;
 
 import java.util.List;
-import java.util.Map;
 
 /**
  * 能力值查询节点
  *
- * LangGraph4j 节点，从 AgentState 读取 studentId/knowledgeId，
- * 查询学生的 Bloom 能力值和知识点详情，写回 State。
+ * <p>LangGraph4j 节点，从 AgentState 读取 studentId/knowledgeId， 查询学生的 Bloom 能力值和知识点详情，写回 State。
  *
- * 输入字段（AgentState）：studentId, knowledgeId
- * 输出字段：knowledge, prerequisites, ability, overallScore
+ * <p>输入字段（AgentState）：studentId, knowledgeId 输出字段：knowledge, prerequisites, ability, overallScore
  */
 @Slf4j
 @Getter
@@ -37,9 +35,10 @@ public class AbilityQueryNode extends BaseNode {
     private final KnowledgeRelationPort knowledgeRelationService;
     private final AbilityService abilityService;
 
-    public AbilityQueryNode(KnowledgePointPort knowledgePointService,
-                            KnowledgeRelationPort knowledgeRelationService,
-                            AbilityService abilityService) {
+    public AbilityQueryNode(
+            KnowledgePointPort knowledgePointService,
+            KnowledgeRelationPort knowledgeRelationService,
+            AbilityService abilityService) {
         super();
         this.getConfig().setNodeType(NodeType.TRANSFORM);
         this.getConfig().setNodeName("abilityQuery");
@@ -76,7 +75,8 @@ public class AbilityQueryNode extends BaseNode {
         }
 
         // 2. 查询前置知识
-        List<KnowledgeResponse> prerequisites = knowledgeRelationService.getPrerequisites(actor, knowledgeId);
+        List<KnowledgeResponse> prerequisites =
+                knowledgeRelationService.getPrerequisites(actor, knowledgeId);
 
         // 3. 查询能力值
         AbilityValue ability = abilityService.get(actor, studentId, knowledgeId);
@@ -94,17 +94,16 @@ public class AbilityQueryNode extends BaseNode {
         output.addData("studentId", studentId);
         output.addData("knowledgeId", knowledgeId);
 
-        log.info("AbilityQueryNode: 知识点={}, 掌握度={}%", knowledge.name(), String.format("%.1f", overallScore));
+        log.info(
+                "AbilityQueryNode: 知识点={}, 掌握度={}%",
+                knowledge.name(), String.format("%.1f", overallScore));
         return output;
     }
 
     @Override
     public java.util.List<NodeInputParam> getRequiredInputs() {
         return java.util.List.of(
-            NodeInputParam.apiRequired("studentId", "number", "学生 ID"),
-            NodeInputParam.apiRequired("knowledgeId", "number", "知识点 ID")
-        );
+                NodeInputParam.apiRequired("studentId", "number", "学生 ID"),
+                NodeInputParam.apiRequired("knowledgeId", "number", "知识点 ID"));
     }
 }
-
-

@@ -1,16 +1,17 @@
 package com.shiyu.ai.iam.implementation.service.impl;
 
+import static org.junit.jupiter.api.Assertions.*;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.Mockito.*;
+
 import com.shiyu.ai.iam.implementation.domain.model.UserBO;
 import com.shiyu.ai.iam.implementation.port.repository.UserRepository;
 import com.shiyu.ai.iam.implementation.request.SetTimezoneRequest;
 import com.shiyu.ai.kernel.context.ActorContext;
 import com.shiyu.ai.kernel.context.TenantId;
 import com.shiyu.ai.kernel.context.UserId;
-import org.junit.jupiter.api.Test;
 
-import static org.junit.jupiter.api.Assertions.*;
-import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.Mockito.*;
+import org.junit.jupiter.api.Test;
 
 class TimezoneServiceImplCoverageTest {
     private final UserRepository repository = mock(UserRepository.class);
@@ -23,7 +24,8 @@ class TimezoneServiceImplCoverageTest {
         assertThrows(IllegalArgumentException.class, () -> service.getTimezone(null));
         when(repository.selectById(8L)).thenReturn(null);
         assertEquals("Asia/Shanghai", service.getTimezone(actor));
-        UserBO user = new UserBO(); user.setExtInfo(null);
+        UserBO user = new UserBO();
+        user.setExtInfo(null);
         when(repository.selectById(8L)).thenReturn(user);
         assertEquals("Asia/Shanghai", service.getTimezone(actor));
         user.setExtInfo("{}");
@@ -35,22 +37,29 @@ class TimezoneServiceImplCoverageTest {
     @Test
     void validatesAndPersistsTimezoneWhileRetainingExtensionFields() {
         assertFalse(service.setTimezone(actor, null));
-        var invalid = new SetTimezoneRequest(); invalid.setTimezone("Mars/Phobos");
+        var invalid = new SetTimezoneRequest();
+        invalid.setTimezone("Mars/Phobos");
         assertFalse(service.setTimezone(actor, invalid));
-        assertThrows(IllegalArgumentException.class, () -> service.setTimezone(null, validRequest("Europe/London")));
+        assertThrows(
+                IllegalArgumentException.class,
+                () -> service.setTimezone(null, validRequest("Europe/London")));
         when(repository.selectById(8L)).thenReturn(null);
         assertFalse(service.setTimezone(actor, validRequest("UTC")));
-        UserBO user = new UserBO(); user.setExtInfo("{\"theme\":\"dark\"}");
+        UserBO user = new UserBO();
+        user.setExtInfo("{\"theme\":\"dark\"}");
         when(repository.selectById(8L)).thenReturn(user);
         when(repository.update(any(UserBO.class))).thenReturn(true);
         assertTrue(service.setTimezone(actor, validRequest("Europe/London")));
         assertTrue(user.getExtInfo().contains("theme"));
         user.setExtInfo("not-json");
-        assertThrows(RuntimeException.class, () -> service.setTimezone(actor, validRequest("Asia/Shanghai")));
+        assertThrows(
+                RuntimeException.class,
+                () -> service.setTimezone(actor, validRequest("Asia/Shanghai")));
     }
 
     private static SetTimezoneRequest validRequest(String timezone) {
-        var request = new SetTimezoneRequest(); request.setTimezone(timezone); return request;
+        var request = new SetTimezoneRequest();
+        request.setTimezone(timezone);
+        return request;
     }
 }
-

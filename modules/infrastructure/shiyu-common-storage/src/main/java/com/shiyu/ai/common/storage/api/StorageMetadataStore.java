@@ -1,5 +1,5 @@
 package com.shiyu.ai.common.storage.api;
-import com.shiyu.ai.common.storage.api.*;
+
 import com.shiyu.ai.common.storage.backup.*;
 import com.shiyu.ai.common.storage.config.*;
 import com.shiyu.ai.common.storage.file.*;
@@ -14,24 +14,28 @@ import java.util.List;
 import java.util.Optional;
 
 /**
- * Persistent metadata boundary for storage objects and resumable uploads.
- * The physical object stays in the configured storage provider; this contract
- * keeps the database as the source of truth after an application restart.
+ * Persistent metadata boundary for storage objects and resumable uploads. The physical object stays
+ * in the configured storage provider; this contract keeps the database as the source of truth after
+ * an application restart.
  */
 public interface StorageMetadataStore {
 
     long createObject(CreateObject command);
 
-    void markObjectAvailable(long objectId, String objectKey, String provider,
-                             long size, String contentType, String checksum);
+    void markObjectAvailable(
+            long objectId,
+            String objectKey,
+            String provider,
+            long size,
+            String contentType,
+            String checksum);
 
     void markObjectFailed(long objectId, String message);
 
     void markObjectDeleted(long tenantId, String objectKey);
 
     /** Updates the physical provider after an operator-controlled object migration. */
-    default void updateObjectProvider(long tenantId, String objectKey, String provider) {
-    }
+    default void updateObjectProvider(long tenantId, String objectKey, String provider) {}
 
     Optional<StorageObjectRecord> findObjectByKey(long tenantId, String objectKey);
 
@@ -58,26 +62,57 @@ public interface StorageMetadataStore {
         return true;
     }
 
-    record CreateObject(long tenantId, Long spaceId, String namespace, String originalName,
-                        String objectKey, String provider, String contentType,
-                        long size, String checksum, String status) {
-    }
+    record CreateObject(
+            long tenantId,
+            Long spaceId,
+            String namespace,
+            String originalName,
+            String objectKey,
+            String provider,
+            String contentType,
+            long size,
+            String checksum,
+            String status) {}
 
-    record CreateUploadSession(String sessionId, long tenantId, Long spaceId,
-                               String namespace, String fileName, String contentType,
-                               long expectedSize, String expectedChecksum, int totalChunks,
-                               String tempPath, Instant expiresAt) {
-    }
+    record CreateUploadSession(
+            String sessionId,
+            long tenantId,
+            Long spaceId,
+            String namespace,
+            String fileName,
+            String contentType,
+            long expectedSize,
+            String expectedChecksum,
+            int totalChunks,
+            String tempPath,
+            Instant expiresAt) {}
 
-    record StorageObjectRecord(long id, long tenantId, Long spaceId, String namespace,
-                               String objectKey, String provider, String originalName,
-                               String contentType, long size, String checksum, String status,
-                               Instant createTime, Instant updateTime) {
-    }
+    record StorageObjectRecord(
+            long id,
+            long tenantId,
+            Long spaceId,
+            String namespace,
+            String objectKey,
+            String provider,
+            String originalName,
+            String contentType,
+            long size,
+            String checksum,
+            String status,
+            Instant createTime,
+            Instant updateTime) {}
 
-    record UploadSessionRecord(String sessionId, long tenantId, Long spaceId,
-                               String namespace, String fileName, String contentType,
-                               long expectedSize, String expectedChecksum, int totalChunks,
-                               String status, String tempPath, Instant expiresAt) {
-    }
+    record UploadSessionRecord(
+            String sessionId,
+            long tenantId,
+            Long spaceId,
+            String namespace,
+            String fileName,
+            String contentType,
+            long expectedSize,
+            String expectedChecksum,
+            int totalChunks,
+            String status,
+            String tempPath,
+            Instant expiresAt) {}
 }

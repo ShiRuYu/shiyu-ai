@@ -1,18 +1,5 @@
 package com.shiyu.ai.education.implementation.application.impl;
 
-import com.shiyu.ai.education.implementation.domain.model.StudentBO;
-import com.shiyu.ai.education.implementation.web.dto.StudentResponse;
-import com.shiyu.ai.education.implementation.domain.port.repository.StudentRepository;
-import com.shiyu.ai.education.implementation.web.request.StudentRequest;
-import com.shiyu.ai.common.core.api.PageData;
-import com.shiyu.ai.common.core.utils.MapstructUtils;
-import com.shiyu.ai.kernel.context.ActorContext;
-import com.shiyu.ai.kernel.context.TenantId;
-import com.shiyu.ai.kernel.context.UserId;
-import org.junit.jupiter.api.Test;
-import org.springframework.dao.DuplicateKeyException;
-import org.mockito.MockedStatic;
-
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.ArgumentMatchers.any;
@@ -24,16 +11,34 @@ import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
+import com.shiyu.ai.common.core.api.PageData;
+import com.shiyu.ai.common.core.utils.MapstructUtils;
+import com.shiyu.ai.education.implementation.domain.model.StudentBO;
+import com.shiyu.ai.education.implementation.domain.port.repository.StudentRepository;
+import com.shiyu.ai.education.implementation.web.dto.StudentResponse;
+import com.shiyu.ai.education.implementation.web.request.StudentRequest;
+import com.shiyu.ai.kernel.context.ActorContext;
+import com.shiyu.ai.kernel.context.TenantId;
+import com.shiyu.ai.kernel.context.UserId;
+
+import org.junit.jupiter.api.Test;
+import org.mockito.MockedStatic;
+import org.springframework.dao.DuplicateKeyException;
+
 class StudentServiceImplTest {
 
-    private static final ActorContext ACTOR = new ActorContext(new TenantId(9), new UserId(7), false);
+    private static final ActorContext ACTOR =
+            new ActorContext(new TenantId(9), new UserId(7), false);
     private final StudentRepository repository = mock(StudentRepository.class);
     private final StudentServiceImpl service = new StudentServiceImpl(repository);
 
     @Test
     void reliesOnTheTenantUserUniqueConstraintInsteadOfCheckThenInsert() {
         try (MockedStatic<MapstructUtils> mapper = mockStatic(MapstructUtils.class)) {
-            mapper.when(() -> MapstructUtils.convert(any(StudentBO.class), eq(StudentResponse.class)))
+            mapper.when(
+                            () ->
+                                    MapstructUtils.convert(
+                                            any(StudentBO.class), eq(StudentResponse.class)))
                     .thenReturn(mock(StudentResponse.class));
 
             service.create(ACTOR, request());
@@ -46,7 +51,8 @@ class StudentServiceImplTest {
     @Test
     void duplicateStudentCreationFailsTheCommand() {
         doThrow(new DuplicateKeyException("tenant/user already exists"))
-                .when(repository).insert(any(TenantId.class), any(StudentBO.class));
+                .when(repository)
+                .insert(any(TenantId.class), any(StudentBO.class));
 
         assertThrows(DuplicateKeyException.class, () -> service.create(ACTOR, request()));
     }
@@ -111,4 +117,3 @@ class StudentServiceImplTest {
         return request;
     }
 }
-

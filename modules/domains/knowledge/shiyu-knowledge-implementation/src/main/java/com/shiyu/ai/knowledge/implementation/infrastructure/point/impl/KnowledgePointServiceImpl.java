@@ -3,18 +3,20 @@ package com.shiyu.ai.knowledge.implementation.infrastructure.point.impl;
 import com.shiyu.ai.common.core.api.PageData;
 import com.shiyu.ai.common.core.exception.ServiceException;
 import com.shiyu.ai.kernel.context.ActorContext;
-import com.shiyu.ai.knowledge.implementation.domain.model.KnowledgeBO;
-import com.shiyu.ai.knowledge.implementation.domain.port.repository.KnowledgeRepository;
-import com.shiyu.ai.knowledge.implementation.domain.GraphNode;
-import com.shiyu.ai.knowledge.implementation.application.graph.KnowledgeGraph;
-import com.shiyu.ai.knowledge.implementation.infrastructure.point.KnowledgePointService;
 import com.shiyu.ai.knowledge.contract.api.KnowledgePointPort;
-import com.shiyu.ai.knowledge.implementation.web.response.KnowledgeGraphResponse;
 import com.shiyu.ai.knowledge.contract.model.KnowledgeResponse;
 import com.shiyu.ai.knowledge.implementation.application.KnowledgeDocumentRelationService;
 import com.shiyu.ai.knowledge.implementation.application.KnowledgeRelationService;
 import com.shiyu.ai.knowledge.implementation.application.KnowledgeSpaceService;
+import com.shiyu.ai.knowledge.implementation.application.graph.KnowledgeGraph;
+import com.shiyu.ai.knowledge.implementation.domain.GraphNode;
+import com.shiyu.ai.knowledge.implementation.domain.model.KnowledgeBO;
+import com.shiyu.ai.knowledge.implementation.domain.port.repository.KnowledgeRepository;
+import com.shiyu.ai.knowledge.implementation.infrastructure.point.KnowledgePointService;
+import com.shiyu.ai.knowledge.implementation.web.response.KnowledgeGraphResponse;
+
 import lombok.RequiredArgsConstructor;
+
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -29,21 +31,31 @@ public class KnowledgePointServiceImpl implements KnowledgePointService, Knowled
     private final KnowledgeDocumentRelationService documentRelationService;
 
     @Override
-    public PageData<PointView> page(ActorContext actor, Long spaceId, int pageNum, int pageSize,
-                                    String keyword, String category) {
+    public PageData<PointView> page(
+            ActorContext actor,
+            Long spaceId,
+            int pageNum,
+            int pageSize,
+            String keyword,
+            String category) {
         requireActor(actor);
         spaceService.requireAccess(spaceId, KnowledgeSpaceService.SpaceRole.VIEWER, actor);
-        PageData<KnowledgeBO> page = repository.pageBySpace(
-                actor.tenantId(), spaceId, pageNum, Math.min(pageSize, 100), keyword, category);
-        return new PageData<>(page.getItems().stream().map(this::toView).toList(),
-                page.getTotal());
+        PageData<KnowledgeBO> page =
+                repository.pageBySpace(
+                        actor.tenantId(),
+                        spaceId,
+                        pageNum,
+                        Math.min(pageSize, 100),
+                        keyword,
+                        category);
+        return new PageData<>(page.getItems().stream().map(this::toView).toList(), page.getTotal());
     }
 
     @Override
     public PointView get(ActorContext actor, Long pointId) {
         KnowledgeBO point = requirePoint(actor, pointId);
-        spaceService.requireAccess(point.getSpaceId(),
-                KnowledgeSpaceService.SpaceRole.VIEWER, actor);
+        spaceService.requireAccess(
+                point.getSpaceId(), KnowledgeSpaceService.SpaceRole.VIEWER, actor);
         return toView(point);
     }
 
@@ -84,7 +96,8 @@ public class KnowledgePointServiceImpl implements KnowledgePointService, Knowled
         point.setStatus(1);
         point.setDelFlag(0);
         requireWrite(repository.insert(actor.tenantId(), point), "create knowledge point");
-        knowledgeGraph.addNode(actor.tenantId(), GraphNode.of(point.getId(), point.getName(), point.getCode()));
+        knowledgeGraph.addNode(
+                actor.tenantId(), GraphNode.of(point.getId(), point.getName(), point.getCode()));
         return toView(point);
     }
 
@@ -92,8 +105,8 @@ public class KnowledgePointServiceImpl implements KnowledgePointService, Knowled
     @Transactional(rollbackFor = Exception.class)
     public PointView update(ActorContext actor, Long pointId, UpdatePointRequest request) {
         KnowledgeBO point = requirePoint(actor, pointId);
-        spaceService.requireAccess(point.getSpaceId(),
-                KnowledgeSpaceService.SpaceRole.EDITOR, actor);
+        spaceService.requireAccess(
+                point.getSpaceId(), KnowledgeSpaceService.SpaceRole.EDITOR, actor);
         if (request.name() != null && !request.name().isBlank()) {
             point.setName(request.name().trim());
         }
@@ -118,12 +131,13 @@ public class KnowledgePointServiceImpl implements KnowledgePointService, Knowled
     @Transactional(rollbackFor = Exception.class)
     public void delete(ActorContext actor, Long pointId) {
         KnowledgeBO point = requirePoint(actor, pointId);
-        spaceService.requireAccess(point.getSpaceId(),
-                KnowledgeSpaceService.SpaceRole.EDITOR, actor);
+        spaceService.requireAccess(
+                point.getSpaceId(), KnowledgeSpaceService.SpaceRole.EDITOR, actor);
         knowledgeGraph.removeNode(actor.tenantId(), pointId);
         relationService.removeAllRelations(actor, pointId);
         documentRelationService.replaceDocuments(actor, pointId, java.util.List.of());
-        requireWrite(repository.deleteByIdAndSpace(actor.tenantId(), pointId, point.getSpaceId()),
+        requireWrite(
+                repository.deleteByIdAndSpace(actor.tenantId(), pointId, point.getSpaceId()),
                 "delete knowledge point");
     }
 
@@ -147,18 +161,31 @@ public class KnowledgePointServiceImpl implements KnowledgePointService, Knowled
     }
 
     private PointView toView(KnowledgeBO point) {
-        return new PointView(point.getId(), point.getSpaceId(), point.getCode(),
-                point.getName(), point.getDescription(),
-                point.getDifficultyLevel() != null ? point.getDifficultyLevel() : point.getDifficulty(),
-                point.getCategory(), point.getTags());
+        return new PointView(
+                point.getId(),
+                point.getSpaceId(),
+                point.getCode(),
+                point.getName(),
+                point.getDescription(),
+                point.getDifficultyLevel() != null
+                        ? point.getDifficultyLevel()
+                        : point.getDifficulty(),
+                point.getCategory(),
+                point.getTags());
     }
 
-    private com.shiyu.ai.knowledge.contract.model.KnowledgeResponse toKnowledgeResponse(PointView point) {
+    private com.shiyu.ai.knowledge.contract.model.KnowledgeResponse toKnowledgeResponse(
+            PointView point) {
         return new com.shiyu.ai.knowledge.contract.model.KnowledgeResponse(
-                point.id(), point.code(), point.name(), point.description(),
-                point.difficultyLevel(), point.category(), point.tags(),
-                java.util.List.of(), java.util.List.of(), java.util.List.of());
+                point.id(),
+                point.code(),
+                point.name(),
+                point.description(),
+                point.difficultyLevel(),
+                point.category(),
+                point.tags(),
+                java.util.List.of(),
+                java.util.List.of(),
+                java.util.List.of());
     }
 }
-
-

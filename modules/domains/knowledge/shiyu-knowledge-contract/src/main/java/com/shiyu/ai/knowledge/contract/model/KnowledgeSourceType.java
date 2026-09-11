@@ -4,4 +4,3 @@ public enum KnowledgeSourceType {
     DOCUMENT,
     KNOWLEDGE_ENTRY
 }
-

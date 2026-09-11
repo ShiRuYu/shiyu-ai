@@ -7,6 +7,7 @@ import lombok.NoArgsConstructor;
 
 import java.util.List;
 
+/** Provider-neutral completed or streaming chat event returned by the model boundary. */
 @Data
 @Builder
 @NoArgsConstructor
@@ -34,5 +35,6 @@ public class ChatResponse {
     private Integer reasoningTokens;
     private List<ToolCall> toolCalls;
 
-    public record ToolCall(String id, String name, String arguments) { }
+    /** Normalized function call emitted by a provider. */
+    public record ToolCall(String id, String name, String arguments) {}
 }

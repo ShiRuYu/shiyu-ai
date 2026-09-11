@@ -13,8 +13,7 @@ public record DomainEventEnvelope<E extends DomainEvent>(
         UserId userId,
         CorrelationId correlationId,
         Instant occurredAt,
-        E event
-) {
+        E event) {
 
     public DomainEventEnvelope {
         Objects.requireNonNull(tenantId, "tenantId must not be null");

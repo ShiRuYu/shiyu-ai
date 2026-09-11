@@ -1,6 +1,7 @@
 package com.shiyu.ai.education.implementation.web.request;
 
 import jakarta.validation.constraints.NotBlank;
+
 import lombok.Data;
 
 import java.io.Serial;
@@ -11,8 +12,7 @@ public class CourseRequest implements Serializable {
 
     private Long id;
 
-    @Serial
-    private static final long serialVersionUID = 1L;
+    @Serial private static final long serialVersionUID = 1L;
 
     @NotBlank(message = "课程名称不能为空")
     private String name;
@@ -26,4 +26,3 @@ public class CourseRequest implements Serializable {
     private Integer totalHours;
     private Integer status;
 }
-

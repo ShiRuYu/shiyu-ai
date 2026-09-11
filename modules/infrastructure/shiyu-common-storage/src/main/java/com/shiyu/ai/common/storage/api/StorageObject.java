@@ -1,5 +1,5 @@
 package com.shiyu.ai.common.storage.api;
-import com.shiyu.ai.common.storage.api.*;
+
 import com.shiyu.ai.common.storage.backup.*;
 import com.shiyu.ai.common.storage.config.*;
 import com.shiyu.ai.common.storage.file.*;
@@ -11,10 +11,4 @@ import com.shiyu.ai.common.storage.vector.*;
 
 import java.io.InputStream;
 
-public record StorageObject(
-        InputStream inputStream,
-        String name,
-        String contentType,
-        long size
-) {
-}
+public record StorageObject(InputStream inputStream, String name, String contentType, long size) {}

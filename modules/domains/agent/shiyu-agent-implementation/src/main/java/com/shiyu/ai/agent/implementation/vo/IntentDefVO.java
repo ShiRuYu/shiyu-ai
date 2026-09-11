@@ -1,7 +1,9 @@
 package com.shiyu.ai.agent.implementation.vo;
 
 import com.shiyu.ai.agent.implementation.domain.model.IntentDefBO;
+
 import io.github.linpeilie.annotations.AutoMapper;
+
 import lombok.Data;
 
 import java.io.Serial;
@@ -12,8 +14,7 @@ import java.time.LocalDateTime;
 @AutoMapper(target = IntentDefBO.class)
 public class IntentDefVO implements Serializable {
 
-    @Serial
-    private static final long serialVersionUID = 1L;
+    @Serial private static final long serialVersionUID = 1L;
 
     private Long id;
     private String agentId;

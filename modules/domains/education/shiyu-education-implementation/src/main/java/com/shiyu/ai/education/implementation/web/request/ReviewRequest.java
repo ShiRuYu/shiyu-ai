@@ -1,18 +1,18 @@
 package com.shiyu.ai.education.implementation.web.request;
 
 import jakarta.validation.constraints.NotNull;
+
 import lombok.Data;
 
 import java.io.Serial;
 import java.io.Serializable;
-import java.time.LocalDateTime;
 import java.time.LocalDate;
+import java.time.LocalDateTime;
 
 @Data
 public class ReviewRequest implements Serializable {
 
-    @Serial
-    private static final long serialVersionUID = 1L;
+    @Serial private static final long serialVersionUID = 1L;
 
     private Long id;
 
@@ -28,4 +28,3 @@ public class ReviewRequest implements Serializable {
     private Double resultScore;
     private LocalDateTime completedAt;
 }
-

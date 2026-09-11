@@ -1,18 +1,16 @@
 package com.shiyu.ai.education.implementation.domain.model;
+
 import lombok.Data;
 
 import java.io.Serial;
 import java.io.Serializable;
 import java.time.LocalDateTime;
 
-/**
- * Resource 业务对象
- */
+/** Resource 业务对象 */
 @Data
 public class ResourceBO implements Serializable {
 
-    @Serial
-    private static final long serialVersionUID = 1L;
+    @Serial private static final long serialVersionUID = 1L;
 
     private Long id;
 
@@ -39,11 +37,7 @@ public class ResourceBO implements Serializable {
     private Long viewCount;
 
     private LocalDateTime createdAt;
-    /**
-     * 状态（依据业务灵活定义）
-     */
+
+    /** 状态（依据业务灵活定义） */
     private Integer status;
-
-
 }
-

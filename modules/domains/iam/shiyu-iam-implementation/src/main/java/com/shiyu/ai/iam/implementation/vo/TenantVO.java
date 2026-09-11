@@ -1,7 +1,9 @@
 package com.shiyu.ai.iam.implementation.vo;
 
 import com.shiyu.ai.iam.implementation.domain.model.TenantBO;
+
 import io.github.linpeilie.annotations.AutoMapper;
+
 import lombok.Data;
 
 import java.io.Serial;
@@ -14,8 +16,7 @@ import java.util.List;
 @AutoMapper(target = TenantBO.class)
 public class TenantVO implements Serializable {
 
-    @Serial
-    private static final long serialVersionUID = 1L;
+    @Serial private static final long serialVersionUID = 1L;
 
     private Long id;
 
@@ -60,4 +61,3 @@ public class TenantVO implements Serializable {
     /** 子租户列表 */
     private List<TenantVO> children;
 }
-

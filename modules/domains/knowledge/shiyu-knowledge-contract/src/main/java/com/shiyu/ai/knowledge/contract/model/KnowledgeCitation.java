@@ -10,7 +10,4 @@ public record KnowledgeCitation(
         String title,
         Integer pageNumber,
         String sectionPath,
-        String excerpt
-) {
-}
-
+        String excerpt) {}

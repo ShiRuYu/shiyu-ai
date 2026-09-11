@@ -1,41 +1,38 @@
 package com.shiyu.ai.iam.implementation.persistence.repository;
 
 import com.mybatisflex.core.query.QueryWrapper;
+import com.mybatisflex.core.tenant.TenantManager;
+import com.shiyu.ai.common.core.utils.MapstructUtils;
 import com.shiyu.ai.iam.implementation.domain.model.RoleBO;
 import com.shiyu.ai.iam.implementation.domain.model.TenantBO;
 import com.shiyu.ai.iam.implementation.domain.model.UserBO;
 import com.shiyu.ai.iam.implementation.domain.model.UserScopeRoleBO;
-import com.shiyu.ai.common.core.utils.MapstructUtils;
 import com.shiyu.ai.iam.implementation.persistence.dataobject.RoleDO;
-import com.shiyu.ai.iam.implementation.persistence.dataobject.TenantDO;
 import com.shiyu.ai.iam.implementation.persistence.dataobject.UserDO;
-import com.shiyu.ai.iam.implementation.persistence.dataobject.UserScopeRoleDO;
 import com.shiyu.ai.iam.implementation.persistence.mapper.RoleMapper;
 import com.shiyu.ai.iam.implementation.persistence.mapper.TenantMapper;
 import com.shiyu.ai.iam.implementation.persistence.mapper.UserMapper;
 import com.shiyu.ai.iam.implementation.persistence.mapper.UserScopeRoleMapper;
-import com.mybatisflex.core.tenant.TenantManager;
-import jakarta.annotation.Resource;
-import org.springframework.stereotype.Component;
 import com.shiyu.ai.kernel.context.TenantId;
+
+import jakarta.annotation.Resource;
+
+import org.springframework.stereotype.Component;
 
 import java.util.List;
 import java.util.Set;
 
 @Component
-public class AuthUserLookupRepositoryImpl implements com.shiyu.ai.iam.implementation.port.repository.AuthUserLookupRepository {
+public class AuthUserLookupRepositoryImpl
+        implements com.shiyu.ai.iam.implementation.port.repository.AuthUserLookupRepository {
 
-    @Resource
-    private UserMapper userMapper;
+    @Resource private UserMapper userMapper;
 
-    @Resource
-    private UserScopeRoleMapper userScopeRoleMapper;
+    @Resource private UserScopeRoleMapper userScopeRoleMapper;
 
-    @Resource
-    private RoleMapper roleMapper;
+    @Resource private RoleMapper roleMapper;
 
-    @Resource
-    private TenantMapper tenantMapper;
+    @Resource private TenantMapper tenantMapper;
 
     public UserBO selectUserById(Long userId) {
         return MapstructUtils.convert(userMapper.selectOneById(userId), UserBO.class);
@@ -53,28 +50,38 @@ public class AuthUserLookupRepositoryImpl implements com.shiyu.ai.iam.implementa
 
     public List<UserScopeRoleBO> selectUserScopeRoles(Long userId) {
         // 登录上下文可能已经处于子租户，校验父租户超管身份时必须读取用户全部租户角色关系。
-        return MapstructUtils.convert(TenantManager.withoutTenantCondition(
-                () -> userScopeRoleMapper.selectByUserId(userId)), UserScopeRoleBO.class);
+        return MapstructUtils.convert(
+                TenantManager.withoutTenantCondition(
+                        () -> userScopeRoleMapper.selectByUserId(userId)),
+                UserScopeRoleBO.class);
     }
 
     public RoleBO selectRoleById(Long roleId) {
-        return MapstructUtils.convert(TenantManager.withoutTenantCondition(
-                () -> roleMapper.selectOneById(roleId)), RoleBO.class);
+        return MapstructUtils.convert(
+                TenantManager.withoutTenantCondition(() -> roleMapper.selectOneById(roleId)),
+                RoleBO.class);
     }
 
     public RoleBO selectTenantSuperRole(TenantId tenantId) {
         long tenantValue = requireTenant(tenantId);
-        return MapstructUtils.convert(TenantManager.withoutTenantCondition(() -> roleMapper.selectOneByQuery(QueryWrapper.create()
-                .where(RoleDO::getTenantId).eq(tenantValue)
-                .and(RoleDO::getCode).in("tenant_super", "super")
-                .and(RoleDO::getStatus).eq(1)
-                .and(RoleDO::getDelFlag).eq(0)
-                .orderBy(RoleDO::getId, true))), RoleBO.class);
+        return MapstructUtils.convert(
+                TenantManager.withoutTenantCondition(
+                        () ->
+                                roleMapper.selectOneByQuery(
+                                        QueryWrapper.create()
+                                                .where(RoleDO::getTenantId)
+                                                .eq(tenantValue)
+                                                .and(RoleDO::getCode)
+                                                .in("tenant_super", "super")
+                                                .and(RoleDO::getStatus)
+                                                .eq(1)
+                                                .and(RoleDO::getDelFlag)
+                                                .eq(0)
+                                                .orderBy(RoleDO::getId, true))),
+                RoleBO.class);
     }
 
-    /**
-     * 批量查询角色列表（按 ID 集合）
-     */
+    /** 批量查询角色列表（按 ID 集合） */
     public List<RoleBO> selectRolesByIds(Set<Long> roleIds) {
         if (roleIds == null || roleIds.isEmpty()) {
             return List.of();
@@ -83,11 +90,10 @@ public class AuthUserLookupRepositoryImpl implements com.shiyu.ai.iam.implementa
         return MapstructUtils.convert(roleMapper.selectListByQuery(qw), RoleBO.class);
     }
 
-    /**
-     * 根据ID查询租户（含 parentId 判断是否根租户）
-     */
+    /** 根据ID查询租户（含 parentId 判断是否根租户） */
     public TenantBO selectTenantById(TenantId tenantId) {
-        return MapstructUtils.convert(tenantMapper.selectOneById(requireTenant(tenantId)), TenantBO.class);
+        return MapstructUtils.convert(
+                tenantMapper.selectOneById(requireTenant(tenantId)), TenantBO.class);
     }
 
     private static long requireTenant(TenantId tenantId) {
@@ -97,5 +103,3 @@ public class AuthUserLookupRepositoryImpl implements com.shiyu.ai.iam.implementa
         return tenantId.value();
     }
 }
-
-

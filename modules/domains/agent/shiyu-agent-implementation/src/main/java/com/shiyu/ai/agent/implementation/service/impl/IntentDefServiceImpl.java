@@ -1,38 +1,76 @@
 package com.shiyu.ai.agent.implementation.service.impl;
 
-import com.shiyu.ai.agent.implementation.port.repository.IntentDefRepository;
-import com.shiyu.ai.agent.implementation.service.IntentDefService;
-import com.shiyu.ai.agent.implementation.request.IntentDefRequest;
-import com.shiyu.ai.agent.implementation.vo.IntentDefVO;
-import com.shiyu.ai.common.core.utils.MapstructUtils;
 import com.shiyu.ai.agent.implementation.domain.model.IntentDefBO;
-import com.shiyu.ai.common.core.vo.IdNameOptionVO;
 import com.shiyu.ai.agent.implementation.node.intent.IntentDefinitionFactory;
+import com.shiyu.ai.agent.implementation.port.repository.IntentDefRepository;
+import com.shiyu.ai.agent.implementation.request.IntentDefRequest;
+import com.shiyu.ai.agent.implementation.service.IntentDefService;
+import com.shiyu.ai.agent.implementation.vo.IntentDefVO;
+import com.shiyu.ai.common.core.exception.ServiceException;
+import com.shiyu.ai.common.core.utils.MapstructUtils;
+import com.shiyu.ai.common.core.vo.IdNameOptionVO;
+import com.shiyu.ai.kernel.context.ActorContext;
+
 import jakarta.annotation.Resource;
+
 import lombok.extern.slf4j.Slf4j;
+
 import org.apache.commons.lang3.tuple.Pair;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
-import com.shiyu.ai.kernel.context.ActorContext;
-import com.shiyu.ai.common.core.exception.ServiceException;
 
-/**
- * 意图定义服务实现层
- */
+/** 意图定义服务实现层 */
 @Slf4j
 @Service
 public class IntentDefServiceImpl implements IntentDefService {
-    @Override public Pair<Long, List<IntentDefVO>> pageView(ActorContext actor, Number n, Number s, String a, String name, String code, String cat) { requireActor(actor); var p=getPageBO(actor,n,s,a,name,code,cat); return Pair.of(p.getLeft(), MapstructUtils.convert(p.getRight(), IntentDefVO.class)); }
-    @Override public IntentDefVO detailView(ActorContext actor, Long id) { requireActor(actor); return MapstructUtils.convert(getByIdBO(actor,id), IntentDefVO.class); }
-    @Override public IntentDefVO create(ActorContext actor, IntentDefRequest r) { requireActor(actor); return MapstructUtils.convert(createBO(actor,MapstructUtils.convert(r, IntentDefBO.class)), IntentDefVO.class); }
-    @Override public IntentDefVO update(ActorContext actor, Long id, IntentDefRequest r) { requireActor(actor); IntentDefBO b=MapstructUtils.convert(r, IntentDefBO.class); b.setId(id); return MapstructUtils.convert(updateBO(actor,b), IntentDefVO.class); }
+    @Override
+    public Pair<Long, List<IntentDefVO>> pageView(
+            ActorContext actor,
+            Number n,
+            Number s,
+            String a,
+            String name,
+            String code,
+            String cat) {
+        requireActor(actor);
+        var p = getPageBO(actor, n, s, a, name, code, cat);
+        return Pair.of(p.getLeft(), MapstructUtils.convert(p.getRight(), IntentDefVO.class));
+    }
 
-    @Resource
-    private IntentDefRepository intentDefRepository;
+    @Override
+    public IntentDefVO detailView(ActorContext actor, Long id) {
+        requireActor(actor);
+        return MapstructUtils.convert(getByIdBO(actor, id), IntentDefVO.class);
+    }
 
-    private Pair<Long, List<IntentDefBO>> getPageBO(ActorContext actor, Number pageNo, Number pageSize, String agentId, String name, String code, String category) {
-        return intentDefRepository.selectPage(actor.tenantId(), pageNo, pageSize, agentId, name, code, category);
+    @Override
+    public IntentDefVO create(ActorContext actor, IntentDefRequest r) {
+        requireActor(actor);
+        return MapstructUtils.convert(
+                createBO(actor, MapstructUtils.convert(r, IntentDefBO.class)), IntentDefVO.class);
+    }
+
+    @Override
+    public IntentDefVO update(ActorContext actor, Long id, IntentDefRequest r) {
+        requireActor(actor);
+        IntentDefBO b = MapstructUtils.convert(r, IntentDefBO.class);
+        b.setId(id);
+        return MapstructUtils.convert(updateBO(actor, b), IntentDefVO.class);
+    }
+
+    @Resource private IntentDefRepository intentDefRepository;
+
+    private Pair<Long, List<IntentDefBO>> getPageBO(
+            ActorContext actor,
+            Number pageNo,
+            Number pageSize,
+            String agentId,
+            String name,
+            String code,
+            String category) {
+        return intentDefRepository.selectPage(
+                actor.tenantId(), pageNo, pageSize, agentId, name, code, category);
     }
 
     private IntentDefBO getByIdBO(ActorContext actor, Long id) {
@@ -78,7 +116,8 @@ public class IntentDefServiceImpl implements IntentDefService {
 
     private void refreshFactory(ActorContext actor) {
         try {
-            List<IntentDefBO> all = intentDefRepository.selectByAgentId(actor.tenantId(), "default");
+            List<IntentDefBO> all =
+                    intentDefRepository.selectByAgentId(actor.tenantId(), "default");
             IntentDefinitionFactory.reloadFromDb(all);
             log.info("IntentDefinitionFactory 已刷新，共计 {} 条意图定义", all != null ? all.size() : 0);
         } catch (Exception e) {

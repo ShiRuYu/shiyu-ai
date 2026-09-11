@@ -1,5 +1,5 @@
 package com.shiyu.ai.common.storage.api;
-import com.shiyu.ai.common.storage.api.*;
+
 import com.shiyu.ai.common.storage.backup.*;
 import com.shiyu.ai.common.storage.config.*;
 import com.shiyu.ai.common.storage.file.*;
@@ -18,6 +18,4 @@ public record StoredFile(
         String contentType,
         Instant lastModified,
         String url,
-        String storageType
-) {
-}
+        String storageType) {}

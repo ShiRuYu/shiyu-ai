@@ -1,4 +1,9 @@
 package com.shiyu.ai.education.implementation.web;
+
+import static org.springframework.http.HttpStatus.NOT_FOUND;
+
+import cn.dev33.satoken.annotation.SaCheckPermission;
+
 import com.shiyu.ai.common.storage.api.*;
 import com.shiyu.ai.common.storage.backup.*;
 import com.shiyu.ai.common.storage.config.*;
@@ -8,10 +13,10 @@ import com.shiyu.ai.common.storage.metadata.*;
 import com.shiyu.ai.common.storage.rate.*;
 import com.shiyu.ai.common.storage.security.*;
 import com.shiyu.ai.common.storage.vector.*;
-
-import cn.dev33.satoken.annotation.SaCheckPermission;
 import com.shiyu.ai.common.web.auth.ActorContextHttpAdapter;
+
 import lombok.RequiredArgsConstructor;
+
 import org.springframework.core.io.InputStreamResource;
 import org.springframework.http.ContentDisposition;
 import org.springframework.http.HttpHeaders;
@@ -26,8 +31,6 @@ import org.springframework.web.server.ResponseStatusException;
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
 
-import static org.springframework.http.HttpStatus.NOT_FOUND;
-
 /** Serves bundled education resources through the tenant-scoped Storage API. */
 @RestController
 @RequestMapping("/education-resources")
@@ -38,22 +41,25 @@ public class EducationResourceContentController {
     private final FileStorageManager storageManager;
 
     @GetMapping("/{fileName:.+}")
-    public ResponseEntity<InputStreamResource> open(@PathVariable String fileName) throws IOException {
-        if (fileName.isBlank() || fileName.contains("..") || fileName.contains("/")
+    public ResponseEntity<InputStreamResource> open(@PathVariable String fileName)
+            throws IOException {
+        if (fileName.isBlank()
+                || fileName.contains("..")
+                || fileName.contains("/")
                 || fileName.contains("\\")) {
             throw new ResponseStatusException(NOT_FOUND);
         }
         long tenantId = ActorContextHttpAdapter.tenantId();
         String namespace = "tenant/" + tenantId + "/education-resources";
-        StoredFile file = storageManager.list(namespace).stream()
-                .filter(candidate -> fileName.equals(candidate.name()))
-                .findFirst()
-                .orElseThrow(() -> new ResponseStatusException(NOT_FOUND));
+        StoredFile file =
+                storageManager.list(namespace).stream()
+                        .filter(candidate -> fileName.equals(candidate.name()))
+                        .findFirst()
+                        .orElseThrow(() -> new ResponseStatusException(NOT_FOUND));
         StorageObject object = storageManager.open(file.key());
         MediaType contentType = mediaType(object.contentType());
-        ContentDisposition disposition = ContentDisposition.inline()
-                .filename(object.name(), StandardCharsets.UTF_8)
-                .build();
+        ContentDisposition disposition =
+                ContentDisposition.inline().filename(object.name(), StandardCharsets.UTF_8).build();
         return ResponseEntity.ok()
                 .contentType(contentType)
                 .contentLength(object.size())
@@ -63,11 +69,10 @@ public class EducationResourceContentController {
 
     private MediaType mediaType(String contentType) {
         try {
-            return MediaType.parseMediaType(contentType == null
-                    ? MediaType.APPLICATION_OCTET_STREAM_VALUE : contentType);
+            return MediaType.parseMediaType(
+                    contentType == null ? MediaType.APPLICATION_OCTET_STREAM_VALUE : contentType);
         } catch (IllegalArgumentException ignored) {
             return MediaType.APPLICATION_OCTET_STREAM;
         }
     }
 }
-

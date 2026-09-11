@@ -1,15 +1,16 @@
 package com.shiyu.ai.iam.implementation.utils;
 
 import cn.dev33.satoken.stp.StpUtil;
+
 import com.shiyu.ai.common.core.domain.LoginHelper;
 import com.shiyu.ai.common.core.domain.UserContext;
+
 import lombok.extern.slf4j.Slf4j;
 
 /**
- * Sa-Token 认证助手
- * LoginHelper 的 Sa-Token 实现类
- * 
- * 注意：此类只在 shiyu-agent 模块中使用，用于封装 Sa-Token 的具体实现
+ * Sa-Token 认证助手 LoginHelper 的 Sa-Token 实现类
+ *
+ * <p>注意：此类只在 shiyu-agent 模块中使用，用于封装 Sa-Token 的具体实现
  */
 @Slf4j
 public class SaTokenHelper extends LoginHelper {
@@ -17,14 +18,10 @@ public class SaTokenHelper extends LoginHelper {
     /** session 中 UserContext 的键名 */
     private static final String SESSION_KEY_LOGIN_USER = "userContext";
 
-    /**
-     * 单例实例（用于调用实例方法）
-     */
+    /** 单例实例（用于调用实例方法） */
     private static final SaTokenHelper INSTANCE = new SaTokenHelper();
 
-    /**
-     * 获取实例
-     */
+    /** 获取实例 */
     public static SaTokenHelper getInstance() {
         return INSTANCE;
     }
@@ -57,8 +54,10 @@ public class SaTokenHelper extends LoginHelper {
                 return Long.parseLong(loginId.toString());
             }
         } catch (Exception e) {
-            log.warn("从 Token 中获取用户 ID 失败: errorType={}, errorMessageLength={}",
-                    e.getClass().getSimpleName(), e.getMessage() == null ? 0 : e.getMessage().length());
+            log.warn(
+                    "从 Token 中获取用户 ID 失败: errorType={}, errorMessageLength={}",
+                    e.getClass().getSimpleName(),
+                    e.getMessage() == null ? 0 : e.getMessage().length());
         }
         return null;
     }
@@ -82,30 +81,22 @@ public class SaTokenHelper extends LoginHelper {
 
     // ==================== 额外工具方法 ====================
 
-    /**
-     * 获取当前登录用户 ID（基于 Sa-Token）
-     */
+    /** 获取当前登录用户 ID（基于 Sa-Token） */
     public static Long getCurrentUserId() {
         return StpUtil.getLoginIdAsLong();
     }
 
-    /**
-     * 获取当前 Token 值
-     */
+    /** 获取当前 Token 值 */
     public static String getCurrentToken() {
         return StpUtil.getTokenValue();
     }
 
-    /**
-     * 缓存当前 UserContext 到 session
-     */
+    /** 缓存当前 UserContext 到 session */
     public static void saveUserContextToSession(UserContext userContext) {
         StpUtil.getSession().set(SESSION_KEY_LOGIN_USER, userContext);
     }
 
-    /**
-     * 从 session 中读取缓存的 UserContext
-     */
+    /** 从 session 中读取缓存的 UserContext */
     public static UserContext getUserContextFromSession() {
         try {
             return (UserContext) StpUtil.getSession().get(SESSION_KEY_LOGIN_USER);
@@ -114,10 +105,7 @@ public class SaTokenHelper extends LoginHelper {
         }
     }
 
-    /**
-     * 清除 session 中的 UserContext 缓存
-     * 在切换租户作用域或角色后调用，确保下次请求从数据库重新加载
-     */
+    /** 清除 session 中的 UserContext 缓存 在切换租户作用域或角色后调用，确保下次请求从数据库重新加载 */
     public static void clearUserContextSession() {
         try {
             StpUtil.getSession().delete(SESSION_KEY_LOGIN_USER);
@@ -126,4 +114,3 @@ public class SaTokenHelper extends LoginHelper {
         }
     }
 }
-

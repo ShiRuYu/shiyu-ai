@@ -1,13 +1,15 @@
 package com.shiyu.ai.knowledge.implementation.infrastructure.path.impl;
 
-import com.shiyu.ai.knowledge.implementation.application.graph.KnowledgeGraph;
 import com.shiyu.ai.common.core.exception.ServiceException;
-import com.shiyu.ai.knowledge.implementation.domain.port.repository.KnowledgeRepository;
-import com.shiyu.ai.knowledge.implementation.infrastructure.path.KnowledgePathService;
+import com.shiyu.ai.kernel.context.ActorContext;
 import com.shiyu.ai.knowledge.contract.api.KnowledgePathPort;
 import com.shiyu.ai.knowledge.implementation.application.KnowledgeSpaceService;
-import com.shiyu.ai.kernel.context.ActorContext;
+import com.shiyu.ai.knowledge.implementation.application.graph.KnowledgeGraph;
+import com.shiyu.ai.knowledge.implementation.domain.port.repository.KnowledgeRepository;
+import com.shiyu.ai.knowledge.implementation.infrastructure.path.KnowledgePathService;
+
 import lombok.RequiredArgsConstructor;
+
 import org.springframework.stereotype.Service;
 
 import java.util.List;
@@ -38,10 +40,11 @@ public class KnowledgePathServiceImpl implements KnowledgePathService, Knowledge
     }
 
     @Override
-    public List<Long> findMissingPrerequisites(ActorContext actor, Long targetKnowledgeId,
-                                               Set<Long> masteredIds) {
+    public List<Long> findMissingPrerequisites(
+            ActorContext actor, Long targetKnowledgeId, Set<Long> masteredIds) {
         requireAccess(actor, targetKnowledgeId);
-        return knowledgeGraph.findMissingPrerequisites(actor.tenantId(), targetKnowledgeId, masteredIds);
+        return knowledgeGraph.findMissingPrerequisites(
+                actor.tenantId(), targetKnowledgeId, masteredIds);
     }
 
     private com.shiyu.ai.knowledge.implementation.domain.model.KnowledgeBO requireAccess(
@@ -53,9 +56,8 @@ public class KnowledgePathServiceImpl implements KnowledgePathService, Knowledge
         if (point == null || point.getSpaceId() == null) {
             throw new ServiceException("知识点不存在: " + pointId);
         }
-        spaceService.requireAccess(point.getSpaceId(), KnowledgeSpaceService.SpaceRole.VIEWER, actor);
+        spaceService.requireAccess(
+                point.getSpaceId(), KnowledgeSpaceService.SpaceRole.VIEWER, actor);
         return point;
     }
 }
-
-

@@ -22,14 +22,16 @@ public class DatabaseInfrastructureProperties {
     }
 
     public String normalizedProvider() {
-        return provider == null || provider.isBlank() ? "h2" : provider.trim().toLowerCase(Locale.ROOT);
+        return provider == null || provider.isBlank()
+                ? "h2"
+                : provider.trim().toLowerCase(Locale.ROOT);
     }
 
     public void validate() {
         String normalized = normalizedProvider();
         if (!SUPPORTED.contains(normalized)) {
-            throw new IllegalArgumentException("不支持的数据库 provider: " + provider
-                    + "，可用类型: " + SUPPORTED);
+            throw new IllegalArgumentException(
+                    "不支持的数据库 provider: " + provider + "，可用类型: " + SUPPORTED);
         }
     }
 }

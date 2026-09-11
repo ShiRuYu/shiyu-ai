@@ -1,7 +1,8 @@
 package com.shiyu.ai.education.implementation.web.dto;
 
-import io.github.linpeilie.annotations.AutoMapper;
 import com.shiyu.ai.education.implementation.domain.model.QuestionBO;
+
+import io.github.linpeilie.annotations.AutoMapper;
 
 @AutoMapper(target = QuestionBO.class)
 public record QuestionResponse(
@@ -17,6 +18,4 @@ public record QuestionResponse(
         String answer,
         String analysis,
         String tags,
-        Long usedCount
-) {}
-
+        Long usedCount) {}

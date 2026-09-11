@@ -11,8 +11,8 @@ import java.util.List;
 import java.util.UUID;
 
 /**
- * Single assembly boundary for Knowledge, MAGMA and future context providers.
- * Providers remain domain-owned; callers only receive the common contract.
+ * Single assembly boundary for Knowledge, MAGMA and future context providers. Providers remain
+ * domain-owned; callers only receive the common contract.
  */
 @Service
 public class ContextAssemblyService implements ContextAssemblyPort {
@@ -26,14 +26,21 @@ public class ContextAssemblyService implements ContextAssemblyPort {
     }
 
     public ContextAssemblyPort.ContextResult retrieve(ContextQuery query) {
-        List<ContextItem> items = providers.stream()
-                .flatMap(provider -> provider.retrieve(query).stream())
-                .filter(item -> policy.canRead(item, query))
-                .sorted(Comparator.comparingDouble(ContextItem::score).reversed())
-                .limit(query.topK())
-                .toList();
-        return new ContextAssemblyPort.ContextResult(items, new ContextTrace(UUID.randomUUID().toString(), query.tenantId(), query.text(),
-                items.stream().map(ContextItem::sourceId).toList(), query.namespace(), Instant.now()));
+        List<ContextItem> items =
+                providers.stream()
+                        .flatMap(provider -> provider.retrieve(query).stream())
+                        .filter(item -> policy.canRead(item, query))
+                        .sorted(Comparator.comparingDouble(ContextItem::score).reversed())
+                        .limit(query.topK())
+                        .toList();
+        return new ContextAssemblyPort.ContextResult(
+                items,
+                new ContextTrace(
+                        UUID.randomUUID().toString(),
+                        query.tenantId(),
+                        query.text(),
+                        items.stream().map(ContextItem::sourceId).toList(),
+                        query.namespace(),
+                        Instant.now()));
     }
-
 }

@@ -1,12 +1,14 @@
 package com.shiyu.ai.model.implementation.infrastructure.adapter.impl;
 
+import com.shiyu.ai.model.implementation.domain.model.PlatformAdapterType;
 import com.shiyu.ai.model.implementation.infrastructure.adapter.AbstractModelAdapter;
 import com.shiyu.ai.model.implementation.infrastructure.adapter.config.PlatformConfig;
-import com.shiyu.ai.model.implementation.domain.model.PlatformAdapterType;
+
 import dev.langchain4j.model.chat.ChatModel;
 import dev.langchain4j.model.chat.StreamingChatModel;
 import dev.langchain4j.model.ollama.OllamaChatModel;
 import dev.langchain4j.model.ollama.OllamaStreamingChatModel;
+
 import lombok.extern.slf4j.Slf4j;
 
 @Slf4j
@@ -17,12 +19,16 @@ public class OllamaPlatformAdapter extends AbstractModelAdapter {
     private final double temperature;
     private final int maxRetries;
 
-    public OllamaPlatformAdapter(String baseUrl, String defaultModel, Double temperature, Integer maxRetries) {
+    public OllamaPlatformAdapter(
+            String baseUrl, String defaultModel, Double temperature, Integer maxRetries) {
         this.baseUrl = baseUrl != null ? baseUrl : "http://localhost:11434";
         this.defaultModel = defaultModel != null ? defaultModel : "gemma3:4b";
         this.temperature = temperature != null ? temperature : 0.7;
         this.maxRetries = maxRetries != null ? maxRetries : 3;
-        log.info("Ollama Adapter 初始化成功，baseUrl: {}, defaultModel: {}", this.baseUrl, this.defaultModel);
+        log.info(
+                "Ollama Adapter 初始化成功，baseUrl: {}, defaultModel: {}",
+                this.baseUrl,
+                this.defaultModel);
     }
 
     @Override
@@ -87,7 +93,8 @@ public class OllamaPlatformAdapter extends AbstractModelAdapter {
     }
 
     @Override
-    protected StreamingChatModel createStreamingChatModelWithConfig(PlatformConfig config, String modelName) {
+    protected StreamingChatModel createStreamingChatModelWithConfig(
+            PlatformConfig config, String modelName) {
         if (!config.isBaseUrlConfigured()) {
             log.warn("Ollama Base URL 未配置");
             return null;

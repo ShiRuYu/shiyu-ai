@@ -1,20 +1,16 @@
 package com.shiyu.ai.education.implementation.domain.model;
+
 import lombok.Data;
 
 import java.io.Serial;
 import java.io.Serializable;
 import java.time.LocalDateTime;
 
-/**
- * Ability 业务对象
- */
+/** Ability 业务对象 */
 @Data
 public class AbilityBO implements Serializable {
 
-    @Serial
-    private static final long serialVersionUID = 1L;
-
-
+    @Serial private static final long serialVersionUID = 1L;
 
     private Long id;
 
@@ -39,11 +35,7 @@ public class AbilityBO implements Serializable {
     private LocalDateTime lastUpdate;
 
     private LocalDateTime createTime;
-    /**
-     * 状态（依据业务灵活定义）
-     */
+
+    /** 状态（依据业务灵活定义） */
     private Integer status;
-
-
 }
-

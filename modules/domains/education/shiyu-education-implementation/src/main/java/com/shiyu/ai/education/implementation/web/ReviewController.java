@@ -1,19 +1,22 @@
 package com.shiyu.ai.education.implementation.web;
 
 import cn.dev33.satoken.annotation.SaCheckPermission;
+
 import com.shiyu.ai.common.core.api.Result;
-import com.shiyu.ai.education.implementation.web.dto.ReviewTaskResponse;
-import com.shiyu.ai.education.implementation.web.dto.CompleteReviewRequest;
-import com.shiyu.ai.education.implementation.web.request.ReviewRequest;
-import com.shiyu.ai.education.implementation.application.ReviewService;
 import com.shiyu.ai.common.web.auth.ActorContextHttpAdapter;
+import com.shiyu.ai.education.implementation.application.ReviewService;
+import com.shiyu.ai.education.implementation.web.dto.CompleteReviewRequest;
+import com.shiyu.ai.education.implementation.web.dto.ReviewTaskResponse;
+import com.shiyu.ai.education.implementation.web.request.ReviewRequest;
+
 import jakarta.validation.Valid;
+
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
-import com.shiyu.ai.education.implementation.web.dto.ReviewTaskResponse;
 
 @Slf4j
 @RestController
@@ -31,18 +34,23 @@ public class ReviewController {
 
     @GetMapping("/today")
     public Result<List<ReviewTaskResponse>> listTodayTasks(@RequestParam Long studentId) {
-        return Result.success(reviewService.listTodayTasks(ActorContextHttpAdapter.currentActor(), studentId));
+        return Result.success(
+                reviewService.listTodayTasks(ActorContextHttpAdapter.currentActor(), studentId));
     }
 
     @GetMapping("/list")
-    public Result<List<ReviewTaskResponse>> list(@RequestParam Long studentId, @RequestParam Integer status) {
-        return Result.success(reviewService.listByStudentAndStatus(ActorContextHttpAdapter.currentActor(), studentId, status));
+    public Result<List<ReviewTaskResponse>> list(
+            @RequestParam Long studentId, @RequestParam Integer status) {
+        return Result.success(
+                reviewService.listByStudentAndStatus(
+                        ActorContextHttpAdapter.currentActor(), studentId, status));
     }
 
     @PostMapping("/create")
     @SaCheckPermission("edu:review:list")
     public Result<ReviewTaskResponse> create(@Valid @RequestBody ReviewRequest request) {
-        return Result.success(reviewService.create(ActorContextHttpAdapter.currentActor(), request));
+        return Result.success(
+                reviewService.create(ActorContextHttpAdapter.currentActor(), request));
     }
 
     @PostMapping("/update")
@@ -54,7 +62,8 @@ public class ReviewController {
 
     @PostMapping("/complete")
     @SaCheckPermission("edu:review:list")
-    public Result<Void> complete(@RequestParam Long id, @Valid @RequestBody CompleteReviewRequest request) {
+    public Result<Void> complete(
+            @RequestParam Long id, @Valid @RequestBody CompleteReviewRequest request) {
         reviewService.complete(ActorContextHttpAdapter.currentActor(), id, request.resultScore());
         return Result.success();
     }
@@ -65,4 +74,3 @@ public class ReviewController {
         return Result.success();
     }
 }
-

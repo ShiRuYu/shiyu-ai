@@ -1,13 +1,14 @@
 package com.shiyu.ai.iam.implementation.service.impl;
 
+import com.shiyu.ai.common.core.utils.JSONUtils;
+import com.shiyu.ai.iam.implementation.domain.enums.TimezoneEnum;
 import com.shiyu.ai.iam.implementation.domain.model.UserBO;
 import com.shiyu.ai.iam.implementation.port.repository.UserRepository;
 import com.shiyu.ai.iam.implementation.request.SetTimezoneRequest;
 import com.shiyu.ai.iam.implementation.service.TimezoneService;
 import com.shiyu.ai.iam.implementation.vo.TimezoneOptionVO;
 import com.shiyu.ai.kernel.context.ActorContext;
-import com.shiyu.ai.iam.implementation.domain.enums.TimezoneEnum;
-import com.shiyu.ai.common.core.utils.JSONUtils;
+
 import org.springframework.stereotype.Service;
 
 import java.util.Arrays;
@@ -26,8 +27,12 @@ public class TimezoneServiceImpl implements TimezoneService {
     @Override
     public List<TimezoneOptionVO> getTimezoneOptions() {
         return Arrays.stream(TimezoneEnum.values())
-                .map(timezone -> TimezoneOptionVO.builder()
-                        .label(timezone.getLabel()).value(timezone.getValue()).build())
+                .map(
+                        timezone ->
+                                TimezoneOptionVO.builder()
+                                        .label(timezone.getLabel())
+                                        .value(timezone.getValue())
+                                        .build())
                 .toList();
     }
 
@@ -72,4 +77,3 @@ public class TimezoneServiceImpl implements TimezoneService {
         return userRepository.update(user);
     }
 }
-

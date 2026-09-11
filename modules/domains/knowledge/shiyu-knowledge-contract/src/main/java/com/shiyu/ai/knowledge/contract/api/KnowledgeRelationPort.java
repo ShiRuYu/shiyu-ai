@@ -9,4 +9,3 @@ import java.util.List;
 public interface KnowledgeRelationPort {
     List<KnowledgeResponse> getPrerequisites(ActorContext actor, Long knowledgeId);
 }
-

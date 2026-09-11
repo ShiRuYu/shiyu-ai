@@ -1,21 +1,18 @@
 package com.shiyu.ai.agent.implementation.node.memory;
 
 import com.shiyu.ai.agent.contract.node.*;
-
-import com.shiyu.ai.agent.implementation.runtime.AgentExecutionContext;
 import com.shiyu.ai.agent.contract.node.BaseNode;
+import com.shiyu.ai.agent.contract.node.NodeFields.FieldKey;
 import com.shiyu.ai.agent.contract.node.NodeInput;
+import com.shiyu.ai.agent.contract.node.NodeInputParam;
 import com.shiyu.ai.agent.contract.node.NodeOutput;
 import com.shiyu.ai.agent.contract.node.NodeType;
-import com.shiyu.ai.agent.contract.node.NodeFields.FieldKey;
+import com.shiyu.ai.agent.implementation.runtime.AgentExecutionContext;
+import com.shiyu.ai.kernel.context.TenantId;
+
 import lombok.Getter;
 import lombok.Setter;
 import lombok.extern.slf4j.Slf4j;
-
-import java.util.List;
-import java.util.Map;
-import com.shiyu.ai.agent.contract.node.NodeInputParam;
-import com.shiyu.ai.kernel.context.TenantId;
 
 @Setter
 @Getter
@@ -69,9 +66,11 @@ public class ShortTermMemoryNode extends BaseNode {
             Long userId = input.getParameter(FieldKey.USER_ID, null);
             String agentId = input.getParameter(FieldKey.AGENT_ID, "");
             String userMessage = input.getParameter(FieldKey.QUERY, "");
-            String assistantResponse = input.getParameter(FieldKey.CONTENT, input.getParameter(FieldKey.RESPONSE, ""));
+            String assistantResponse =
+                    input.getParameter(FieldKey.CONTENT, input.getParameter(FieldKey.RESPONSE, ""));
             int maxMessages = config.getMaxMessages() != null ? config.getMaxMessages() : 20;
-            boolean slidingWindow = config.getEnableSlidingWindow() != null && config.getEnableSlidingWindow();
+            boolean slidingWindow =
+                    config.getEnableSlidingWindow() != null && config.getEnableSlidingWindow();
 
             if (sessionId.isEmpty()) {
                 log.warn("sessionId 为空，跳过短期记忆存储");
@@ -105,7 +104,8 @@ public class ShortTermMemoryNode extends BaseNode {
                 memoryService.append(tenant, sessionId, "assistant", assistantResponse);
             }
 
-            String conversationHistory = String.join("\n", memoryService.messages(tenant, sessionId, maxMessages));
+            String conversationHistory =
+                    String.join("\n", memoryService.messages(tenant, sessionId, maxMessages));
 
             NodeOutput output = new NodeOutput();
             output.setSuccess(true);
@@ -128,12 +128,11 @@ public class ShortTermMemoryNode extends BaseNode {
     @Override
     public java.util.List<NodeInputParam> getRequiredInputs() {
         return java.util.List.of(
-            NodeInputParam.previous("sessionId", "string", "会话 ID"),
-            NodeInputParam.previous("agentId", "string", "Agent ID"),
-            NodeInputParam.previous("tenantId", "number", "租户 ID"),
-            NodeInputParam.previous("userId", "number", "用户 ID"),
-            NodeInputParam.previous("query", "string", "用户输入"),
-            NodeInputParam.previous("content", "string", "AI 回复内容")
-        );
+                NodeInputParam.previous("sessionId", "string", "会话 ID"),
+                NodeInputParam.previous("agentId", "string", "Agent ID"),
+                NodeInputParam.previous("tenantId", "number", "租户 ID"),
+                NodeInputParam.previous("userId", "number", "用户 ID"),
+                NodeInputParam.previous("query", "string", "用户输入"),
+                NodeInputParam.previous("content", "string", "AI 回复内容"));
     }
 }

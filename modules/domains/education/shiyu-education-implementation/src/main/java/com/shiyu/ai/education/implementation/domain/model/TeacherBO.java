@@ -1,5 +1,7 @@
 package com.shiyu.ai.education.implementation.domain.model;
+
 import com.shiyu.ai.common.core.domain.TenantModel;
+
 import lombok.Data;
 import lombok.EqualsAndHashCode;
 
@@ -20,4 +22,3 @@ public class TeacherBO extends TenantModel {
     private String phone;
     private LocalDateTime createdAt;
 }
-

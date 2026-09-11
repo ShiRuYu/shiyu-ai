@@ -1,9 +1,10 @@
 package com.shiyu.ai.knowledge.implementation.domain.model;
 
 import com.shiyu.ai.model.contract.api.ChatEngine;
+import com.shiyu.ai.model.contract.model.ChatMessage;
 import com.shiyu.ai.model.contract.model.ChatRequest;
 import com.shiyu.ai.model.contract.model.ChatResponse;
-import com.shiyu.ai.model.contract.model.ChatMessage;
+
 import org.springframework.stereotype.Component;
 
 import java.util.ArrayList;
@@ -30,18 +31,23 @@ public class ExistingRerankProvider implements RerankProvider {
     public List<Integer> rerank(String query, List<String> candidates, int topK) {
         if (candidates == null || candidates.size() <= 1) {
             return java.util.stream.IntStream.range(0, candidates == null ? 0 : candidates.size())
-                    .boxed().toList();
+                    .boxed()
+                    .toList();
         }
         int actualTopK = Math.min(Math.max(1, topK), candidates.size());
-        StringBuilder prompt = new StringBuilder("请按与问题的相关性对候选片段排序，只返回编号：\n问题：")
-                .append(query).append("\n\n");
+        StringBuilder prompt =
+                new StringBuilder("请按与问题的相关性对候选片段排序，只返回编号：\n问题：").append(query).append("\n\n");
         for (int i = 0; i < candidates.size(); i++) {
             prompt.append('[').append(i).append("] ").append(candidates.get(i)).append('\n');
         }
         prompt.append("\n返回前 ").append(actualTopK).append(" 个编号，用逗号分隔。");
         try {
-            ChatResponse response = chatEngine.chat(ChatRequest.builder().platform("default")
-                    .messages(List.of(ChatMessage.text("user", prompt.toString()))).build());
+            ChatResponse response =
+                    chatEngine.chat(
+                            ChatRequest.builder()
+                                    .platform("default")
+                                    .messages(List.of(ChatMessage.text("user", prompt.toString())))
+                                    .build());
             if (response != null && response.isSuccess() && response.getContent() != null) {
                 Set<Integer> indexes = new LinkedHashSet<>();
                 for (String value : response.getContent().split("[,\\s\\[\\]]+")) {
@@ -51,8 +57,9 @@ public class ExistingRerankProvider implements RerankProvider {
                     } catch (NumberFormatException ignored) {
                     }
                 }
-                if (!indexes.isEmpty()) return new ArrayList<>(indexes).subList(0,
-                        Math.min(actualTopK, indexes.size()));
+                if (!indexes.isEmpty())
+                    return new ArrayList<>(indexes)
+                            .subList(0, Math.min(actualTopK, indexes.size()));
             }
         } catch (Exception ignored) {
             // Fall back to the deterministic RRF order when the model is unavailable.

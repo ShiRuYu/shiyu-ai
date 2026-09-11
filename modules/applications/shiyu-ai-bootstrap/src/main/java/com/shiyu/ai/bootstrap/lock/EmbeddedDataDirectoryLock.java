@@ -10,8 +10,8 @@ import java.nio.file.StandardOpenOption;
 import java.util.regex.Pattern;
 
 /**
- * Prevents two application processes from opening the embedded database and
- * indexes for writing at the same time.
+ * Prevents two application processes from opening the embedded database and indexes for writing at
+ * the same time.
  */
 public final class EmbeddedDataDirectoryLock implements AutoCloseable {
 
@@ -29,20 +29,23 @@ public final class EmbeddedDataDirectoryLock implements AutoCloseable {
     }
 
     public static EmbeddedDataDirectoryLock acquire() {
-        String appHome = resolveAppHome(
-                System.getProperty(APP_HOME_PROPERTY),
-                System.getenv(APP_HOME_ENV),
-                resolveDefaultAppHome(System.getProperty("user.dir", ".")));
+        String appHome =
+                resolveAppHome(
+                        System.getProperty(APP_HOME_PROPERTY),
+                        System.getenv(APP_HOME_ENV),
+                        resolveDefaultAppHome(System.getProperty("user.dir", ".")));
         // The lock is acquired before Spring's EnvironmentPostProcessor runs.
         // Keep the system property aligned so all later non-Spring path users
         // resolve the same data directory.
         System.setProperty(APP_HOME_PROPERTY, appHome);
-        Path dataRoot = Path.of(appHome, "data")
-                .toAbsolutePath().normalize();
+        Path dataRoot = Path.of(appHome, "data").toAbsolutePath().normalize();
         try {
             Files.createDirectories(dataRoot);
-            FileChannel channel = FileChannel.open(dataRoot.resolve(".shiyu-write.lock"),
-                    StandardOpenOption.CREATE, StandardOpenOption.WRITE);
+            FileChannel channel =
+                    FileChannel.open(
+                            dataRoot.resolve(".shiyu-write.lock"),
+                            StandardOpenOption.CREATE,
+                            StandardOpenOption.WRITE);
             FileLock lock;
             try {
                 lock = channel.tryLock();

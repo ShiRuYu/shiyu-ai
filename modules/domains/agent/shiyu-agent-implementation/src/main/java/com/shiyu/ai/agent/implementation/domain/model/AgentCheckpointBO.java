@@ -9,8 +9,7 @@ import java.time.LocalDateTime;
 @Data
 public class AgentCheckpointBO implements Serializable {
 
-    @Serial
-    private static final long serialVersionUID = 1L;
+    @Serial private static final long serialVersionUID = 1L;
 
     private Long id;
 

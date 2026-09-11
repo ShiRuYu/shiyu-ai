@@ -1,6 +1,7 @@
 package com.shiyu.ai.memory.contract.model;
 
 import com.shiyu.ai.kernel.context.TenantId;
+
 import java.time.Instant;
 import java.util.Map;
 import java.util.Objects;
@@ -22,15 +23,19 @@ public record MemoryEvent(
         MemoryEventStatus status,
         ConfirmationPolicy confirmationPolicy,
         Instant createdAt,
-        Instant updatedAt
-) {
+        Instant updatedAt) {
     public MemoryEvent {
         tenantId = Objects.requireNonNull(tenantId, "tenantId is required");
-        if (id == null || id.isBlank()) throw new IllegalArgumentException("memory event id is required");
-        if (namespace == null || namespace.isBlank()) throw new IllegalArgumentException("namespace is required");
-        if (eventType == null || eventType.isBlank()) throw new IllegalArgumentException("eventType is required");
-        if (content == null || content.isBlank()) throw new IllegalArgumentException("content is required");
-        if (status == null || confirmationPolicy == null) throw new IllegalArgumentException("event policy is required");
+        if (id == null || id.isBlank())
+            throw new IllegalArgumentException("memory event id is required");
+        if (namespace == null || namespace.isBlank())
+            throw new IllegalArgumentException("namespace is required");
+        if (eventType == null || eventType.isBlank())
+            throw new IllegalArgumentException("eventType is required");
+        if (content == null || content.isBlank())
+            throw new IllegalArgumentException("content is required");
+        if (status == null || confirmationPolicy == null)
+            throw new IllegalArgumentException("event policy is required");
         attributes = attributes == null ? Map.of() : Map.copyOf(attributes);
         confidence = clamp(confidence);
         importance = clamp(importance);
@@ -40,4 +45,3 @@ public record MemoryEvent(
         return Math.max(0.0d, Math.min(1.0d, value));
     }
 }
-

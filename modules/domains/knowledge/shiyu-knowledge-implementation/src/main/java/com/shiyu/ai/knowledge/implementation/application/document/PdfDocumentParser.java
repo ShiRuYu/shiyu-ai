@@ -1,6 +1,7 @@
 package com.shiyu.ai.knowledge.implementation.application.document;
 
 import lombok.extern.slf4j.Slf4j;
+
 import org.apache.pdfbox.Loader;
 import org.apache.pdfbox.pdmodel.PDDocument;
 import org.apache.pdfbox.text.PDFTextStripper;
@@ -8,10 +9,7 @@ import org.springframework.stereotype.Component;
 
 import java.io.IOException;
 
-/**
- * PDF 文档解析器 — 基于 Apache PDFBox 3.x
- * 支持提取纯文本内容
- */
+/** PDF 文档解析器 — 基于 Apache PDFBox 3.x 支持提取纯文本内容 */
 @Slf4j
 @Component
 public class PdfDocumentParser implements DocumentParser {
@@ -78,9 +76,7 @@ public class PdfDocumentParser implements DocumentParser {
         }
     }
 
-    /**
-     * 解析 PDF 字节数组
-     */
+    /** 解析 PDF 字节数组 */
     public ParseResult parse(byte[] pdfBytes) {
         if (pdfBytes == null || pdfBytes.length == 0) {
             return new ParseResult("", "", "");
@@ -111,4 +107,3 @@ public class PdfDocumentParser implements DocumentParser {
         }
     }
 }
-

@@ -3,10 +3,7 @@ package com.shiyu.ai.tooling.implementation.tool.mcp;
 import java.util.List;
 import java.util.Map;
 
-/**
- * MCP 工具描述符
- * 描述一个可注册和发现的工具
- */
+/** MCP 工具描述符 描述一个可注册和发现的工具 */
 public class McpToolDescriptor {
 
     private final String name;
@@ -18,14 +15,22 @@ public class McpToolDescriptor {
     private final boolean builtin;
     private final long registeredAt;
 
-    public McpToolDescriptor(String name, String description, String serverId,
-                             Map<String, ParameterInfo> parameters) {
+    public McpToolDescriptor(
+            String name,
+            String description,
+            String serverId,
+            Map<String, ParameterInfo> parameters) {
         this(name, description, serverId, parameters, List.of(), "default", false);
     }
 
-    public McpToolDescriptor(String name, String description, String serverId,
-                             Map<String, ParameterInfo> parameters,
-                             List<String> tags, String category, boolean builtin) {
+    public McpToolDescriptor(
+            String name,
+            String description,
+            String serverId,
+            Map<String, ParameterInfo> parameters,
+            List<String> tags,
+            String category,
+            boolean builtin) {
         this.name = name;
         this.description = description;
         this.serverId = serverId;
@@ -36,24 +41,41 @@ public class McpToolDescriptor {
         this.registeredAt = System.currentTimeMillis();
     }
 
-    public String getName() { return name; }
-    public String getDescription() { return description; }
-    public String getServerId() { return serverId; }
-    public Map<String, ParameterInfo> getParameters() { return parameters; }
-    public List<String> getTags() { return tags; }
-    public String getCategory() { return category; }
-    public boolean isBuiltin() { return builtin; }
-    public long getRegisteredAt() { return registeredAt; }
+    public String getName() {
+        return name;
+    }
 
-    /**
-     * 参数信息
-     */
+    public String getDescription() {
+        return description;
+    }
+
+    public String getServerId() {
+        return serverId;
+    }
+
+    public Map<String, ParameterInfo> getParameters() {
+        return parameters;
+    }
+
+    public List<String> getTags() {
+        return tags;
+    }
+
+    public String getCategory() {
+        return category;
+    }
+
+    public boolean isBuiltin() {
+        return builtin;
+    }
+
+    public long getRegisteredAt() {
+        return registeredAt;
+    }
+
+    /** 参数信息 */
     public record ParameterInfo(
-            String type,
-            String description,
-            boolean required,
-            Object defaultValue
-    ) {
+            String type, String description, boolean required, Object defaultValue) {
         public ParameterInfo(String type, String description, boolean required) {
             this(type, description, required, null);
         }

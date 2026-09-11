@@ -14,20 +14,36 @@ public class PlatformConfig {
     private Integer maxTokens = 4096;
     private Integer maxRetries = 3;
 
-    public PlatformConfig() {
-    }
+    public PlatformConfig() {}
 
-    public PlatformConfig(String platformType, String baseUrl, String apiKey,
-                          String modelName, Double temperature,
-                          Integer maxTokens, Integer maxRetries) {
-        this(platformType,
+    public PlatformConfig(
+            String platformType,
+            String baseUrl,
+            String apiKey,
+            String modelName,
+            Double temperature,
+            Integer maxTokens,
+            Integer maxRetries) {
+        this(
+                platformType,
                 "OLLAMA".equalsIgnoreCase(platformType) ? "OLLAMA" : "OPENAI_COMPATIBLE",
-                baseUrl, apiKey, modelName, temperature, maxTokens, maxRetries);
+                baseUrl,
+                apiKey,
+                modelName,
+                temperature,
+                maxTokens,
+                maxRetries);
     }
 
-    public PlatformConfig(String platformType, String adapterType, String baseUrl, String apiKey,
-                          String modelName, Double temperature,
-                          Integer maxTokens, Integer maxRetries) {
+    public PlatformConfig(
+            String platformType,
+            String adapterType,
+            String baseUrl,
+            String apiKey,
+            String modelName,
+            Double temperature,
+            Integer maxTokens,
+            Integer maxRetries) {
         this.platformType = platformType;
         this.adapterType = adapterType;
         this.baseUrl = baseUrl;

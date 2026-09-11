@@ -7,4 +7,3 @@ public record MemoryPath(MemoryEvent event, double score, List<MemoryEdge> edges
         edges = edges == null ? List.of() : List.copyOf(edges);
     }
 }
-

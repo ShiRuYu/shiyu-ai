@@ -1,18 +1,19 @@
 package com.shiyu.ai.web.auth;
 
-import com.shiyu.ai.common.web.auth.ActorContextHttpAdapter;
-import com.shiyu.ai.common.core.domain.UserContext;
-import com.shiyu.ai.common.core.domain.UserContextHolder;
-import com.shiyu.ai.common.core.exception.ServiceException;
-import org.junit.jupiter.api.AfterEach;
-import org.junit.jupiter.api.Tag;
-import org.junit.jupiter.api.Test;
-
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
+
+import com.shiyu.ai.common.core.domain.UserContext;
+import com.shiyu.ai.common.core.domain.UserContextHolder;
+import com.shiyu.ai.common.core.exception.ServiceException;
+import com.shiyu.ai.common.web.auth.ActorContextHttpAdapter;
+
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.Tag;
+import org.junit.jupiter.api.Test;
 
 @Tag("dev")
 class ActorContextHttpAdapterTest {

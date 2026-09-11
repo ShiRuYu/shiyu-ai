@@ -1,17 +1,21 @@
 package com.shiyu.ai.education.implementation.web;
 
 import cn.dev33.satoken.annotation.SaCheckPermission;
+
 import com.shiyu.ai.common.core.api.Result;
+import com.shiyu.ai.common.web.auth.ActorContextHttpAdapter;
+import com.shiyu.ai.education.implementation.application.ChapterService;
 import com.shiyu.ai.education.implementation.web.dto.ChapterResponse;
 import com.shiyu.ai.education.implementation.web.request.ChapterRequest;
-import com.shiyu.ai.education.implementation.application.ChapterService;
-import com.shiyu.ai.common.web.auth.ActorContextHttpAdapter;
+
+import jakarta.validation.Valid;
+
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
-import jakarta.validation.Valid;
 
 @Slf4j
 @RestController
@@ -29,23 +33,29 @@ public class ChapterController {
 
     @GetMapping("/textbook")
     public Result<List<ChapterResponse>> listByTextbookId(@RequestParam Long textbookId) {
-        return Result.success(chapterService.listByTextbookId(ActorContextHttpAdapter.currentActor(), textbookId));
+        return Result.success(
+                chapterService.listByTextbookId(
+                        ActorContextHttpAdapter.currentActor(), textbookId));
     }
 
     @GetMapping("/tree")
     public Result<List<ChapterResponse>> getChapterTree(@RequestParam Long textbookId) {
-        return Result.success(chapterService.listRootChapters(ActorContextHttpAdapter.currentActor(), textbookId));
+        return Result.success(
+                chapterService.listRootChapters(
+                        ActorContextHttpAdapter.currentActor(), textbookId));
     }
 
     @GetMapping("/children")
     public Result<List<ChapterResponse>> listByParentId(@RequestParam Long parentId) {
-        return Result.success(chapterService.listByParentId(ActorContextHttpAdapter.currentActor(), parentId));
+        return Result.success(
+                chapterService.listByParentId(ActorContextHttpAdapter.currentActor(), parentId));
     }
 
     @PostMapping("/create")
     @SaCheckPermission("edu:chapter:create")
     public Result<ChapterResponse> create(@Valid @RequestBody ChapterRequest request) {
-        return Result.success(chapterService.create(ActorContextHttpAdapter.currentActor(), request));
+        return Result.success(
+                chapterService.create(ActorContextHttpAdapter.currentActor(), request));
     }
 
     @PostMapping("/update")
@@ -64,15 +74,16 @@ public class ChapterController {
 
     @GetMapping("/knowledge/list")
     public Result<List<Long>> listKnowledgeIds(@RequestParam Long chapterId) {
-        return Result.success(chapterService.listKnowledgeIds(ActorContextHttpAdapter.currentActor(), chapterId));
+        return Result.success(
+                chapterService.listKnowledgeIds(ActorContextHttpAdapter.currentActor(), chapterId));
     }
 
     @PostMapping("/knowledge/bind")
     @SaCheckPermission("edu:chapter:edit")
-    public Result<Void> replaceKnowledgeIds(@RequestParam Long chapterId,
-                                            @RequestBody List<Long> knowledgeIds) {
-        chapterService.replaceKnowledgeIds(ActorContextHttpAdapter.currentActor(), chapterId, knowledgeIds);
+    public Result<Void> replaceKnowledgeIds(
+            @RequestParam Long chapterId, @RequestBody List<Long> knowledgeIds) {
+        chapterService.replaceKnowledgeIds(
+                ActorContextHttpAdapter.currentActor(), chapterId, knowledgeIds);
         return Result.success();
     }
 }
-

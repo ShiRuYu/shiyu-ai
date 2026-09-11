@@ -1,5 +1,7 @@
 package com.shiyu.ai.knowledge.implementation.domain.model;
+
 import com.shiyu.ai.common.core.domain.TenantModel;
+
 import lombok.Data;
 import lombok.EqualsAndHashCode;
 
@@ -15,8 +17,10 @@ public class KnowledgeIngestionJobBO extends TenantModel {
     private Long spaceId;
     private Long documentId;
     private Long versionId;
+
     /** User who submitted the job; used to attribute embedding usage. */
     private Long actorUserId;
+
     private String jobStatus;
     private String stage;
     private Integer progress;
@@ -29,4 +33,3 @@ public class KnowledgeIngestionJobBO extends TenantModel {
     private LocalDateTime finishedTime;
     private Long lockVersion;
 }
-

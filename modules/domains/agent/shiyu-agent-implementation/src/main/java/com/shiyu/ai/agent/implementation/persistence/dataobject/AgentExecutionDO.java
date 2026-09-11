@@ -3,17 +3,17 @@ package com.shiyu.ai.agent.implementation.persistence.dataobject;
 import com.mybatisflex.annotation.Id;
 import com.mybatisflex.annotation.KeyType;
 import com.mybatisflex.annotation.Table;
+import com.shiyu.ai.agent.implementation.domain.model.AgentExecutionBO;
 import com.shiyu.ai.common.mybatis.model.TenantEntity;
+
+import io.github.linpeilie.annotations.AutoMapper;
+
 import lombok.Data;
 import lombok.EqualsAndHashCode;
 
 import java.time.LocalDateTime;
-import com.shiyu.ai.agent.implementation.domain.model.AgentExecutionBO;
-import io.github.linpeilie.annotations.AutoMapper;
 
-/**
- * Agent 执行记录
- */
+/** Agent 执行记录 */
 @Data
 @EqualsAndHashCode(callSuper = true)
 @SuppressWarnings("serial")
@@ -49,5 +49,4 @@ public class AgentExecutionDO extends TenantEntity {
     private LocalDateTime endTime;
 
     private Long durationMs;
-
 }

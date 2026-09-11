@@ -1,21 +1,23 @@
 package com.shiyu.ai.agent.implementation.persistence.repository;
 
 import com.mybatisflex.core.query.QueryWrapper;
+import com.shiyu.ai.agent.implementation.domain.model.NodeExecutionBO;
 import com.shiyu.ai.agent.implementation.persistence.dataobject.NodeExecutionDO;
 import com.shiyu.ai.agent.implementation.persistence.mapper.NodeExecutionMapper;
-import com.shiyu.ai.agent.implementation.domain.model.NodeExecutionBO;
 import com.shiyu.ai.common.core.utils.MapstructUtils;
 import com.shiyu.ai.kernel.context.TenantId;
+
 import jakarta.annotation.Resource;
+
 import org.springframework.stereotype.Component;
 
 import java.util.List;
 
 @Component
-public class NodeExecutionRepositoryImpl implements com.shiyu.ai.agent.implementation.port.repository.NodeExecutionRepository {
+public class NodeExecutionRepositoryImpl
+        implements com.shiyu.ai.agent.implementation.port.repository.NodeExecutionRepository {
 
-    @Resource
-    private NodeExecutionMapper nodeExecutionMapper;
+    @Resource private NodeExecutionMapper nodeExecutionMapper;
 
     public void insert(TenantId tenantId, NodeExecutionBO bo) {
         requireTenant(tenantId);
@@ -30,9 +32,10 @@ public class NodeExecutionRepositoryImpl implements com.shiyu.ai.agent.implement
         requireTenant(tenantId);
         NodeExecutionDO d = MapstructUtils.convert(bo, NodeExecutionDO.class);
         d.setTenantId(tenantId.value());
-        QueryWrapper query = QueryWrapper.create()
-                .eq(NodeExecutionDO::getTenantId, tenantId.value())
-                .eq(NodeExecutionDO::getId, bo.getId());
+        QueryWrapper query =
+                QueryWrapper.create()
+                        .eq(NodeExecutionDO::getTenantId, tenantId.value())
+                        .eq(NodeExecutionDO::getId, bo.getId());
         nodeExecutionMapper.updateByQuery(d, query);
     }
 

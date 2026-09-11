@@ -1,39 +1,40 @@
 package com.shiyu.ai.education.implementation.application;
 
-
-import java.util.List;
 import com.shiyu.ai.common.core.api.PageData;
 import com.shiyu.ai.education.implementation.web.dto.TextbookResponse;
 import com.shiyu.ai.education.implementation.web.request.TextbookRequest;
 import com.shiyu.ai.kernel.context.ActorContext;
 
-/**
- * Textbook 接口
- */
+import java.util.List;
 
+/** Textbook 接口 */
 public interface TextbookService {
 
     /**
      * Get By Id
+     *
      * @return 处理结果
      */
     TextbookResponse getById(ActorContext actor, Long id);
 
     /**
      * List By Subject And Grade
+     *
      * @return 处理结果
      */
-    List<TextbookResponse> listBySubjectAndGrade(ActorContext actor, String subjectCode, Integer grade);
+    List<TextbookResponse> listBySubjectAndGrade(
+            ActorContext actor, String subjectCode, Integer grade);
 
     /**
      * List All
+     *
      * @return 处理结果
      */
-
     PageData<TextbookResponse> page(ActorContext actor, int pageNum, int pageSize);
 
     /**
      * Create
+     *
      * @param TextbookResponse TextbookDO
      * @return 处理结果
      */
@@ -41,6 +42,7 @@ public interface TextbookService {
 
     /**
      * Update
+     *
      * @param TextbookResponse TextbookDO
      * @return 处理结果
      */
@@ -48,8 +50,8 @@ public interface TextbookService {
 
     /**
      * Delete By Id
+     *
      * @return 处理结果
      */
     void deleteById(ActorContext actor, Long id);
 }
-

@@ -1,9 +1,9 @@
 package com.shiyu.ai.agent.implementation.node.intent;
 
-import com.shiyu.ai.agent.contract.node.*;
-import com.shiyu.ai.agent.implementation.domain.model.IntentDefBO;
 import com.google.common.collect.HashBasedTable;
 import com.google.common.collect.Table;
+import com.shiyu.ai.agent.contract.node.*;
+import com.shiyu.ai.agent.implementation.domain.model.IntentDefBO;
 
 import java.util.ArrayList;
 import java.util.Collections;
@@ -16,20 +16,18 @@ import java.util.function.Predicate;
 
 /**
  * 意图定义工厂
- * <p>
- * 使用 Guava {@link HashBasedTable} 管理意图定义，rowKey = row，columnKey = column。
- * 每个 (row, column) 单元格持有 {@link List}&lt;{@link IntentDefinition}&gt;，
- * 支持同一分类下注册多个意图定义。
+ *
+ * <p>使用 Guava {@link HashBasedTable} 管理意图定义，rowKey = row，columnKey = column。 每个 (row, column) 单元格持有
+ * {@link List}&lt;{@link IntentDefinition}&gt;， 支持同一分类下注册多个意图定义。
  *
  * @author shiyu-ai
  * @date 2026-03-28
  */
 public class IntentDefinitionFactory {
 
-    /**
-     * intentTable: row = agentId, column = category, value = List&lt;IntentDefinition&gt;
-     */
-    private static Table<String, String, List<IntentDefinition>> intentTable = HashBasedTable.create();
+    /** intentTable: row = agentId, column = category, value = List&lt;IntentDefinition&gt; */
+    private static Table<String, String, List<IntentDefinition>> intentTable =
+            HashBasedTable.create();
 
     static {
         // 意图定义现在由 DB 驱动，启动时由 IntentDefApplicationRunner 从 DB 加载
@@ -47,21 +45,36 @@ public class IntentDefinitionFactory {
             return;
         }
         for (IntentDefBO bo : boList) {
-            IntentDefinition def = IntentDefinition.builder()
-                    .code(bo.getCode())
-                    .name(bo.getName())
-                    .description(bo.getDescription())
-                    .category(bo.getCategory())
-                    .priority(bo.getPriority())
-                    .confidenceThreshold(bo.getConfidenceThreshold())
-                    .examples(bo.getExamples() != null ? bo.getExamples().toArray(new String[0]) : new String[0])
-                    .targetNode(bo.getTargetNode())
-                    .requireSlotFilling(bo.getRequireSlotFilling() != null && bo.getRequireSlotFilling())
-                    .slots(bo.getSlots() != null ? new HashMap<>(bo.getSlots()) : new HashMap<>())
-                    .parameterMapping(bo.getParameterMapping() != null ? new HashMap<>(bo.getParameterMapping()) : new HashMap<>())
-                    .slotDefaults(bo.getSlotDefaults() != null ? new HashMap<>(bo.getSlotDefaults()) : new HashMap<>())
-                    .enabled(bo.getEnabled() != null && bo.getEnabled())
-                    .build();
+            IntentDefinition def =
+                    IntentDefinition.builder()
+                            .code(bo.getCode())
+                            .name(bo.getName())
+                            .description(bo.getDescription())
+                            .category(bo.getCategory())
+                            .priority(bo.getPriority())
+                            .confidenceThreshold(bo.getConfidenceThreshold())
+                            .examples(
+                                    bo.getExamples() != null
+                                            ? bo.getExamples().toArray(new String[0])
+                                            : new String[0])
+                            .targetNode(bo.getTargetNode())
+                            .requireSlotFilling(
+                                    bo.getRequireSlotFilling() != null
+                                            && bo.getRequireSlotFilling())
+                            .slots(
+                                    bo.getSlots() != null
+                                            ? new HashMap<>(bo.getSlots())
+                                            : new HashMap<>())
+                            .parameterMapping(
+                                    bo.getParameterMapping() != null
+                                            ? new HashMap<>(bo.getParameterMapping())
+                                            : new HashMap<>())
+                            .slotDefaults(
+                                    bo.getSlotDefaults() != null
+                                            ? new HashMap<>(bo.getSlotDefaults())
+                                            : new HashMap<>())
+                            .enabled(bo.getEnabled() != null && bo.getEnabled())
+                            .build();
             String row = bo.getAgentId() != null ? bo.getAgentId() : "default";
             String column = bo.getCategory() != null ? bo.getCategory() : "CONVERSATION";
             put(row, column, def);
@@ -70,9 +83,7 @@ public class IntentDefinitionFactory {
 
     // ==================== 内部辅助 ====================
 
-    /**
-     * 向表中追加一条意图定义，如果该 (row, column) 已存在列表则追加，否则新建列表。
-     */
+    /** 向表中追加一条意图定义，如果该 (row, column) 已存在列表则追加，否则新建列表。 */
     private static void put(String row, String column, IntentDefinition def) {
         List<IntentDefinition> list = intentTable.get(row, column);
         if (list == null) {
@@ -87,7 +98,7 @@ public class IntentDefinitionFactory {
     /**
      * 根据 row 和 column 获取该分类下的所有意图定义
      *
-     * @param row    row key（agentId）
+     * @param row row key（agentId）
      * @param column column key（意图分类）
      * @return 意图定义列表（不可变），不存在时返回空列表
      */
@@ -153,7 +164,7 @@ public class IntentDefinitionFactory {
     /**
      * 根据 row + column 获取第一个匹配的意图定义
      *
-     * @param row    row key（agentId）
+     * @param row row key（agentId）
      * @param column column key（意图分类）
      * @return 第一个意图定义，不存在时返回 {@code null}
      */
@@ -165,9 +176,9 @@ public class IntentDefinitionFactory {
     /**
      * 注册自定义意图定义（添加到已有列表或新建列表）
      *
-     * @param row    row key（agentId）
+     * @param row row key（agentId）
      * @param column column key（意图分类）
-     * @param def    意图定义
+     * @param def 意图定义
      */
     public static void register(String row, String column, IntentDefinition def) {
         put(row, column, def);
@@ -193,13 +204,12 @@ public class IntentDefinitionFactory {
 
     /**
      * 根据指定 agent 和 category 下的所有意图定义，动态构建条件边路由谓词映射。
-     * <p>
-     * 每个意图定义的 {@link IntentDefinition#getCode()} 作为判断条件，
-     * {@link IntentDefinition#getTargetNode()} 作为路由目标。
-     * 由此替代硬编码的 {@code addConditionalEdge} 谓词列表，
-     * 新增意图时只需 {@link #register(String, String, IntentDefinition)}，路由自动适配。
      *
-     * @param agentId  agent ID
+     * <p>每个意图定义的 {@link IntentDefinition#getCode()} 作为判断条件， {@link
+     * IntentDefinition#getTargetNode()} 作为路由目标。 由此替代硬编码的 {@code addConditionalEdge} 谓词列表， 新增意图时只需
+     * {@link #register(String, String, IntentDefinition)}，路由自动适配。
+     *
+     * @param agentId agent ID
      * @param category 意图分类
      * @return 条件边谓词映射（{@link Predicate} → 目标节点 ID）
      */
@@ -211,10 +221,7 @@ public class IntentDefinitionFactory {
             String code = def.getCode();
             String targetNode = def.getTargetNode();
             if (targetNode != null && !targetNode.trim().isEmpty()) {
-                routing.put(
-                        state -> code.equals(state.get("intentCode")),
-                        targetNode
-                );
+                routing.put(state -> code.equals(state.get("intentCode")), targetNode);
             }
         }
         return routing;

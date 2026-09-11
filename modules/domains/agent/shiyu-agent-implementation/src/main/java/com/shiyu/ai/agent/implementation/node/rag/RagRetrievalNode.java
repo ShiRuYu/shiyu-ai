@@ -1,23 +1,23 @@
 package com.shiyu.ai.agent.implementation.node.rag;
 
 import com.shiyu.ai.agent.contract.node.*;
-
 import com.shiyu.ai.agent.contract.node.BaseNode;
 import com.shiyu.ai.agent.contract.node.NodeFields.FieldKey;
 import com.shiyu.ai.agent.contract.node.NodeInput;
 import com.shiyu.ai.agent.contract.node.NodeInputParam;
 import com.shiyu.ai.agent.contract.node.NodeOutput;
 import com.shiyu.ai.agent.contract.node.NodeType;
+import com.shiyu.ai.kernel.context.ActorContext;
+import com.shiyu.ai.knowledge.contract.api.KnowledgeRetrievalService;
 import com.shiyu.ai.knowledge.contract.model.KnowledgeRetrievalRequest;
 import com.shiyu.ai.knowledge.contract.model.KnowledgeRetrievalResult;
-import com.shiyu.ai.knowledge.contract.api.KnowledgeRetrievalService;
-import com.shiyu.ai.kernel.context.ActorContext;
+
 import lombok.Getter;
 import lombok.Setter;
 import lombok.extern.slf4j.Slf4j;
 
-import java.util.List;
 import java.util.LinkedHashMap;
+import java.util.List;
 import java.util.Map;
 
 @Setter
@@ -28,7 +28,8 @@ public class RagRetrievalNode extends BaseNode {
     private RagRetrievalConfig config;
     private final KnowledgeRetrievalService retrievalService;
 
-    private RagRetrievalNode(RagRetrievalConfig config, KnowledgeRetrievalService retrievalService) {
+    private RagRetrievalNode(
+            RagRetrievalConfig config, KnowledgeRetrievalService retrievalService) {
         super(config != null ? config : new RagRetrievalConfig());
         this.config = config != null ? config : new RagRetrievalConfig();
         this.config.setNodeType(NodeType.RAG_RETRIEVAL);
@@ -73,42 +74,53 @@ public class RagRetrievalNode extends BaseNode {
             throw new IllegalStateException("knowledge access context is required");
         }
 
-        KnowledgeRetrievalRequest request = new KnowledgeRetrievalRequest(
-                context,
-                config.getSpaceIds(),
-                config.getSourceTypes(),
-                config.getRetrievalMode(),
-                query,
-                config.getCandidateTopK(),
-                config.getTopK(),
-                config.getScoreThreshold(),
-                config.getEnableRerank());
+        KnowledgeRetrievalRequest request =
+                new KnowledgeRetrievalRequest(
+                        context,
+                        config.getSpaceIds(),
+                        config.getSourceTypes(),
+                        config.getRetrievalMode(),
+                        query,
+                        config.getCandidateTopK(),
+                        config.getTopK(),
+                        config.getScoreThreshold(),
+                        config.getEnableRerank());
         KnowledgeRetrievalResult result = retrievalService.retrieve(request);
 
-        NodeOutput output = NodeOutput.builder()
-                .success(result.success())
-                .msg(result.success() ? "知识检索完成" : "知识检索失败，请稍后重试")
-                .build();
+        NodeOutput output =
+                NodeOutput.builder()
+                        .success(result.success())
+                        .msg(result.success() ? "知识检索完成" : "知识检索失败，请稍后重试")
+                        .build();
         output.addData(FieldKey.CONTEXT, result.context());
         output.addData("retrievalHits", result.hits());
         output.addData("citations", result.citations());
         output.addData("retrievalEmpty", result.hits().isEmpty());
         // RAG enhancement nodes consume the same hit list without a second retrieval service.
-        output.addData(FieldKey.DOCUMENTS, result.hits().stream().map(hit -> {
-            Map<String, Object> document = new LinkedHashMap<>();
-            document.put("spaceId", hit.spaceId());
-            document.put("knowledgeId", hit.knowledgeId());
-            document.put("documentId", hit.documentId());
-            document.put("documentVersionId", hit.documentVersionId());
-            document.put("chunkId", hit.chunkId());
-            document.put("title", hit.title());
-            document.put("content", hit.content());
-            document.put("highlight", hit.highlight());
-            document.put("pageNumber", hit.pageNumber());
-            document.put("sectionPath", hit.sectionPath());
-            document.put("score", hit.rerankScore() > 0 ? hit.rerankScore() : hit.rrfScore());
-            return document;
-        }).toList());
+        output.addData(
+                FieldKey.DOCUMENTS,
+                result.hits().stream()
+                        .map(
+                                hit -> {
+                                    Map<String, Object> document = new LinkedHashMap<>();
+                                    document.put("spaceId", hit.spaceId());
+                                    document.put("knowledgeId", hit.knowledgeId());
+                                    document.put("documentId", hit.documentId());
+                                    document.put("documentVersionId", hit.documentVersionId());
+                                    document.put("chunkId", hit.chunkId());
+                                    document.put("title", hit.title());
+                                    document.put("content", hit.content());
+                                    document.put("highlight", hit.highlight());
+                                    document.put("pageNumber", hit.pageNumber());
+                                    document.put("sectionPath", hit.sectionPath());
+                                    document.put(
+                                            "score",
+                                            hit.rerankScore() > 0
+                                                    ? hit.rerankScore()
+                                                    : hit.rrfScore());
+                                    return document;
+                                })
+                        .toList());
         output.addData(FieldKey.DOCUMENT_COUNT, result.hits().size());
         return output;
     }
@@ -120,8 +132,6 @@ public class RagRetrievalNode extends BaseNode {
                 NodeInputParam.config("spaceIds", "array", "知识空间 ID；为空时检索所有有权限空间"),
                 NodeInputParam.config("retrievalMode", "string", "KEYWORD、VECTOR 或 HYBRID"),
                 NodeInputParam.config("topK", "number", "最终返回数量"),
-                NodeInputParam.config("scoreThreshold", "number", "最低分数阈值")
-        );
+                NodeInputParam.config("scoreThreshold", "number", "最低分数阈值"));
     }
 }
-

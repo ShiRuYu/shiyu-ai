@@ -1,11 +1,13 @@
 package com.shiyu.ai.common.storage.file;
 
-import com.shiyu.ai.common.storage.api.StoredFile;
 import com.shiyu.ai.common.storage.api.StorageMetadataStore;
+import com.shiyu.ai.common.storage.api.StoredFile;
 import com.shiyu.ai.common.storage.config.StorageMigrationProperties;
 import com.shiyu.ai.common.storage.config.StorageProperties;
 import com.shiyu.ai.common.storage.metadata.NoopStorageMetadataStore;
+
 import lombok.extern.slf4j.Slf4j;
+
 import org.springframework.beans.factory.ObjectProvider;
 import org.springframework.boot.ApplicationArguments;
 import org.springframework.boot.ApplicationRunner;
@@ -17,8 +19,8 @@ import java.util.List;
 import java.util.Locale;
 
 /**
- * One-shot local to S3-compatible migration. It is disabled by default and keeps
- * every source key unchanged; metadata remains owned by the application database.
+ * One-shot local to S3-compatible migration. It is disabled by default and keeps every source key
+ * unchanged; metadata remains owned by the application database.
  */
 @Component
 @Slf4j
@@ -28,9 +30,10 @@ public class FileStorageMigrationRunner implements ApplicationRunner {
     private final StorageProperties storageProperties;
     private final StorageMetadataStore metadataStore;
 
-    public FileStorageMigrationRunner(StorageMigrationProperties migration,
-                                      StorageProperties storageProperties,
-                                      ObjectProvider<StorageMetadataStore> metadataStores) {
+    public FileStorageMigrationRunner(
+            StorageMigrationProperties migration,
+            StorageProperties storageProperties,
+            ObjectProvider<StorageMetadataStore> metadataStores) {
         this.migration = migration;
         this.storageProperties = storageProperties;
         this.metadataStore = metadataStores.getIfAvailable(() -> NoopStorageMetadataStore.INSTANCE);
@@ -44,18 +47,27 @@ public class FileStorageMigrationRunner implements ApplicationRunner {
         String destinationType = migration.getDestinationProvider().trim().toLowerCase(Locale.ROOT);
         StorageProperties destination = copyForDestination(destinationType);
         try (FileStorageManager target = new FileStorageManager(destination)) {
-            LocalFileStorage source = new LocalFileStorage(Path.of(migration.getSourcePath()), "local");
+            LocalFileStorage source =
+                    new LocalFileStorage(Path.of(migration.getSourcePath()), "local");
             List<StoredFile> objects = source.list(migration.getNamespace());
             int copied = 0;
             for (StoredFile object : objects) {
                 try (var input = source.open(object.key()).inputStream()) {
-                    target.uploadAtKey(object.key(), object.name(), object.contentType(), object.size(), input);
+                    target.uploadAtKey(
+                            object.key(),
+                            object.name(),
+                            object.contentType(),
+                            object.size(),
+                            input);
                     updateMetadataProvider(object.key(), destinationType);
                     copied++;
                 }
             }
-            log.info("File storage migration completed: provider={}, namespace={}, copied={}", destinationType,
-                    migration.getNamespace(), copied);
+            log.info(
+                    "File storage migration completed: provider={}, namespace={}, copied={}",
+                    destinationType,
+                    migration.getNamespace(),
+                    copied);
         }
     }
 

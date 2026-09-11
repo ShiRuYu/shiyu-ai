@@ -1,6 +1,7 @@
 package com.shiyu.ai.agent.implementation.request;
 
 import jakarta.validation.constraints.NotBlank;
+
 import lombok.Data;
 
 import java.io.Serial;
@@ -11,8 +12,7 @@ import java.util.Map;
 @SuppressWarnings("serial")
 public class ExecuteRequest implements Serializable {
 
-    @Serial
-    private static final long serialVersionUID = 1L;
+    @Serial private static final long serialVersionUID = 1L;
 
     @NotBlank(message = "Agent ID 不能为空")
     private String agentId;

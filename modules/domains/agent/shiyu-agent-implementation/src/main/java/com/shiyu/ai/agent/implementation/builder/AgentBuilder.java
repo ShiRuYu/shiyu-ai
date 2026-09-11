@@ -1,11 +1,12 @@
 package com.shiyu.ai.agent.implementation.builder;
 
-import com.shiyu.ai.agent.implementation.service.AgentService;
 import com.shiyu.ai.agent.AgentDefinition;
 import com.shiyu.ai.agent.AgentVersion;
+import com.shiyu.ai.agent.contract.node.BaseNode;
 import com.shiyu.ai.agent.implementation.graph.ConditionEdge;
 import com.shiyu.ai.agent.implementation.graph.Graph;
-import com.shiyu.ai.agent.contract.node.BaseNode;
+import com.shiyu.ai.agent.implementation.service.AgentService;
+
 import lombok.extern.slf4j.Slf4j;
 
 import java.util.ArrayList;
@@ -17,12 +18,11 @@ import java.util.function.Predicate;
 import java.util.stream.Collectors;
 
 /**
- * Agent Builder
- * 用于便捷构建和注册 Agent 的工具类
- * 
- * 使用示例:
- * <pre>
- * {@code
+ * Agent Builder 用于便捷构建和注册 Agent 的工具类
+ *
+ * <p>使用示例:
+ *
+ * <pre>{@code
  * AgentBuilder builder = new AgentBuilder();
  * AgentDefinition agent = builder
  *     .agentId("customer-service-agent")
@@ -39,64 +39,44 @@ import java.util.stream.Collectors;
  *     .addEdge("intent", "llm")
  *     .addEdge("llm", "end")
  *     .buildAndRegister(agentService);
- * }
- * </pre>
+ * }</pre>
  */
 @Slf4j
 public class AgentBuilder {
 
-    /**
-     * Agent ID
-     */
+    /** Agent ID */
     private String agentId;
 
-    /**
-     * Agent 名称
-     */
+    /** Agent 名称 */
     private String name;
 
-    /**
-     * Agent 描述
-     */
+    /** Agent 描述 */
     private String description;
 
-    /**
-     * 版本号
-     */
+    /** 版本号 */
     private String versionNumber = "v1.0.0";
 
-    /**
-     * 版本描述
-     */
+    /** 版本描述 */
     private String versionDescription;
 
-    /**
-     * 节点列表（临时存储）
-     */
+    /** 节点列表（临时存储） */
     private final Map<String, BaseNode> nodes = new HashMap<>();
 
-    /**
-     * 边列表（临时存储）
-     */
+    /** 边列表（临时存储） */
     private final List<EdgeConfig> edges = new ArrayList<>();
 
-    /**
-     * 条件边列表（临时存储）
-     */
+    /** 条件边列表（临时存储） */
     private final List<ConditionalEdgeConfig> conditionalEdges = new ArrayList<>();
 
-    /**
-     * 起始节点
-     */
+    /** 起始节点 */
     private String startNode;
 
-    /**
-     * 结束节点
-     */
+    /** 结束节点 */
     private String endNode;
 
     /**
      * 设置 Agent ID
+     *
      * @param agentId Agent ID
      * @return 当前 Builder 实例
      */
@@ -107,6 +87,7 @@ public class AgentBuilder {
 
     /**
      * 设置 Agent 名称
+     *
      * @param name Agent 名称
      * @return 当前 Builder 实例
      */
@@ -117,6 +98,7 @@ public class AgentBuilder {
 
     /**
      * 设置 Agent 描述
+     *
      * @param description Agent 描述
      * @return 当前 Builder 实例
      */
@@ -127,6 +109,7 @@ public class AgentBuilder {
 
     /**
      * 设置版本号
+     *
      * @param versionNumber 版本号
      * @return 当前 Builder 实例
      */
@@ -137,6 +120,7 @@ public class AgentBuilder {
 
     /**
      * 设置版本描述
+     *
      * @param versionDescription 版本描述
      * @return 当前 Builder 实例
      */
@@ -147,6 +131,7 @@ public class AgentBuilder {
 
     /**
      * 添加节点
+     *
      * @param nodeId 节点 ID
      * @param node 节点实例
      * @return 当前 Builder 实例
@@ -159,6 +144,7 @@ public class AgentBuilder {
 
     /**
      * 添加普通边
+     *
      * @param from 源节点 ID
      * @param to 目标节点 ID
      * @return 当前 Builder 实例
@@ -171,53 +157,65 @@ public class AgentBuilder {
 
     /**
      * 添加条件边
+     *
      * @param from 源节点 ID
      * @param condition 条件函数
      * @param mappings 条件映射（条件结果 -> 目标节点 ID）
      * @return 当前 Builder 实例
      */
-    public AgentBuilder addConditionalEdge(String from, 
-                                          Function<Map<String, Object>, String> condition,
-                                          Map<String, String> mappings) {
+    public AgentBuilder addConditionalEdge(
+            String from,
+            Function<Map<String, Object>, String> condition,
+            Map<String, String> mappings) {
         this.conditionalEdges.add(new ConditionalEdgeConfig(from, condition, mappings));
-        log.debug("添加条件边：fromPresent={}, mappingCount={}", from != null, mappings == null ? 0 : mappings.size());
+        log.debug(
+                "添加条件边：fromPresent={}, mappingCount={}",
+                from != null,
+                mappings == null ? 0 : mappings.size());
         return this;
     }
 
     /**
      * 添加条件边（简化的谓语形式）
+     *
      * @param from 源节点 ID
      * @param defaultTarget 默认目标节点
      * @param conditions 条件列表（谓语 -> 目标节点）
      * @return 当前 Builder 实例
      */
-    public AgentBuilder addConditionalEdge(String from,
-                                           String defaultTarget,
-                                           Map<Predicate<Map<String, Object>>, String> conditions) {
-        List<ConditionEdge.PredicateCondition> conditionList = conditions.entrySet().stream()
-                .map(e -> new ConditionEdge.PredicateCondition(e.getKey(), e.getValue()))
-                .collect(Collectors.toList());
+    public AgentBuilder addConditionalEdge(
+            String from,
+            String defaultTarget,
+            Map<Predicate<Map<String, Object>>, String> conditions) {
+        List<ConditionEdge.PredicateCondition> conditionList =
+                conditions.entrySet().stream()
+                        .map(e -> new ConditionEdge.PredicateCondition(e.getKey(), e.getValue()))
+                        .collect(Collectors.toList());
 
         Map<String, String> mappings = new HashMap<>();
         for (String target : conditions.values()) {
             mappings.put(target, target);
         }
 
-        ConditionEdge edge = ConditionEdge.builder()
-                .from(from)
-                .defaultTarget(defaultTarget)
-                .predicateConditions(conditionList)
-                .nodeMappings(mappings)
-                .build();
-        
+        ConditionEdge edge =
+                ConditionEdge.builder()
+                        .from(from)
+                        .defaultTarget(defaultTarget)
+                        .predicateConditions(conditionList)
+                        .nodeMappings(mappings)
+                        .build();
+
         this.conditionalEdges.add(new ConditionalEdgeConfig(from, edge));
-        log.debug("添加条件边（谓语形式）：fromPresent={}, defaultTargetPresent={}",
-                from != null, defaultTarget != null);
+        log.debug(
+                "添加条件边（谓语形式）：fromPresent={}, defaultTargetPresent={}",
+                from != null,
+                defaultTarget != null);
         return this;
     }
 
     /**
      * 设置起始节点
+     *
      * @param nodeId 节点 ID
      * @return 当前 Builder 实例
      */
@@ -228,6 +226,7 @@ public class AgentBuilder {
 
     /**
      * 设置结束节点
+     *
      * @param nodeId 节点 ID
      * @return 当前 Builder 实例
      */
@@ -238,75 +237,84 @@ public class AgentBuilder {
 
     /**
      * 构建并注册 Agent
+     *
      * @param agentService AgentService 实例
      * @return 注册后的 AgentDefinition
      */
     public AgentDefinition buildAndRegister(AgentService agentService) {
         log.info("开始构建并注册 Agent：agentIdPresent={}", agentId != null);
-        
+
         try {
             // 验证必填参数
             validate();
-            
+
             // 构建 Graph
             Graph graph = buildGraph();
-            
+
             // 构建 AgentDefinition
             AgentDefinition definition = buildAgentDefinition(graph);
-            
+
             // 注册 Agent
             agentService.registerSystemAgent(definition);
-            
-            log.info("Agent 构建并注册成功：agentIdPresent={}, namePresent={}", agentId != null, name != null);
+
+            log.info(
+                    "Agent 构建并注册成功：agentIdPresent={}, namePresent={}",
+                    agentId != null,
+                    name != null);
             return definition;
-            
+
         } catch (Exception e) {
-            log.error("Agent 构建失败：agentIdPresent={}, errorType={}, errorMessageLength={}",
-                    agentId != null, e.getClass().getSimpleName(), e.getMessage() == null ? 0 : e.getMessage().length());
+            log.error(
+                    "Agent 构建失败：agentIdPresent={}, errorType={}, errorMessageLength={}",
+                    agentId != null,
+                    e.getClass().getSimpleName(),
+                    e.getMessage() == null ? 0 : e.getMessage().length());
             throw new RuntimeException("Agent 构建失败：" + e.getMessage(), e);
         }
     }
 
     /**
      * 仅构建 AgentDefinition，不注册
+     *
      * @return AgentDefinition
      */
     public AgentDefinition build() {
         log.info("开始构建 Agent：agentIdPresent={}", agentId != null);
-        
+
         try {
             // 验证必填参数
             validate();
-            
+
             // 构建 Graph
             Graph graph = buildGraph();
-            
+
             // 构建 AgentDefinition
             return buildAgentDefinition(graph);
-            
+
         } catch (Exception e) {
-            log.error("Agent 构建失败：agentIdPresent={}, errorType={}, errorMessageLength={}",
-                    agentId != null, e.getClass().getSimpleName(), e.getMessage() == null ? 0 : e.getMessage().length());
+            log.error(
+                    "Agent 构建失败：agentIdPresent={}, errorType={}, errorMessageLength={}",
+                    agentId != null,
+                    e.getClass().getSimpleName(),
+                    e.getMessage() == null ? 0 : e.getMessage().length());
             throw new RuntimeException("Agent 构建失败：" + e.getMessage(), e);
         }
     }
 
-    /**
-     * 验证必填参数
-     */
+    /** 验证必填参数 */
     private void validate() {
         if (agentId == null || agentId.trim().isEmpty()) {
             throw new IllegalArgumentException("agentId 不能为空");
         }
-        
+
         if (name == null || name.trim().isEmpty()) {
             throw new IllegalArgumentException("name 不能为空");
         }
-        
+
         if (startNode == null || startNode.trim().isEmpty()) {
             throw new IllegalArgumentException("startNode 不能为空");
         }
-        
+
         if (nodes.isEmpty()) {
             throw new IllegalArgumentException("至少需要添加一个节点");
         }
@@ -314,6 +322,7 @@ public class AgentBuilder {
 
     /**
      * 构建 Graph
+     *
      * @return Graph 实例
      */
     private Graph buildGraph() {
@@ -322,15 +331,15 @@ public class AgentBuilder {
         graph.setDescription(description != null ? description : "");
         graph.setStartNode(startNode);
         graph.setEndNode(endNode != null ? endNode : "");
-        
+
         // 添加节点
         graph.addAllNodes(nodes);
-        
+
         // 添加边
         for (EdgeConfig edge : edges) {
             graph.addEdge(edge.from, edge.to);
         }
-        
+
         // 添加条件边
         for (ConditionalEdgeConfig edge : conditionalEdges) {
             if (edge.conditionEdge != null) {
@@ -339,27 +348,29 @@ public class AgentBuilder {
                 graph.addConditionalEdge(edge.from, edge.condition, edge.mappings);
             }
         }
-        
+
         // 验证 Graph
         graph.validate();
-        
+
         return graph;
     }
 
     /**
      * 构建 AgentDefinition
+     *
      * @param graph Graph 实例
      * @return AgentDefinition
      */
     private AgentDefinition buildAgentDefinition(Graph graph) {
         // 构建 AgentVersion
-        AgentVersion version = AgentVersion.builder()
-                .versionNumber(versionNumber)
-                .description(versionDescription)
-                .graph(graph)
-                .createdAt(System.currentTimeMillis())
-                .build();
-        
+        AgentVersion version =
+                AgentVersion.builder()
+                        .versionNumber(versionNumber)
+                        .description(versionDescription)
+                        .graph(graph)
+                        .createdAt(System.currentTimeMillis())
+                        .build();
+
         // 构建 AgentDefinition
         return AgentDefinition.builder()
                 .agentId(agentId)
@@ -372,36 +383,33 @@ public class AgentBuilder {
                 .build();
     }
 
-    /**
-     * 边配置
-     */
+    /** 边配置 */
     private static class EdgeConfig {
         String from;
         String to;
-        
+
         EdgeConfig(String from, String to) {
             this.from = from;
             this.to = to;
         }
     }
 
-    /**
-     * 条件边配置
-     */
+    /** 条件边配置 */
     private static class ConditionalEdgeConfig {
         String from;
         Function<Map<String, Object>, String> condition;
         Map<String, String> mappings;
         ConditionEdge conditionEdge;
-        
-        ConditionalEdgeConfig(String from, 
-                            Function<Map<String, Object>, String> condition,
-                            Map<String, String> mappings) {
+
+        ConditionalEdgeConfig(
+                String from,
+                Function<Map<String, Object>, String> condition,
+                Map<String, String> mappings) {
             this.from = from;
             this.condition = condition;
             this.mappings = mappings;
         }
-        
+
         ConditionalEdgeConfig(String from, ConditionEdge conditionEdge) {
             this.from = from;
             this.conditionEdge = conditionEdge;

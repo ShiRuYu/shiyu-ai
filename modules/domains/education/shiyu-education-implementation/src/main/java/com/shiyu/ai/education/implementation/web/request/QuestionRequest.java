@@ -2,6 +2,7 @@ package com.shiyu.ai.education.implementation.web.request;
 
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
+
 import lombok.Data;
 
 import java.io.Serial;
@@ -10,8 +11,7 @@ import java.io.Serializable;
 @Data
 public class QuestionRequest implements Serializable {
 
-    @Serial
-    private static final long serialVersionUID = 1L;
+    @Serial private static final long serialVersionUID = 1L;
 
     private Long id;
 
@@ -31,12 +31,14 @@ public class QuestionRequest implements Serializable {
 
     @NotNull(message = "难度不能为空")
     private Integer difficulty;
+
     private String abilityDimension;
     private String options;
+
     @NotBlank(message = "答案不能为空")
     private String answer;
+
     private String analysis;
     private String tags;
     private Integer status;
 }
-

@@ -1,8 +1,8 @@
 package com.shiyu.ai.common.storage.file;
+
 import com.shiyu.ai.common.storage.api.*;
 import com.shiyu.ai.common.storage.backup.*;
 import com.shiyu.ai.common.storage.config.*;
-import com.shiyu.ai.common.storage.file.*;
 import com.shiyu.ai.common.storage.lease.*;
 import com.shiyu.ai.common.storage.metadata.*;
 import com.shiyu.ai.common.storage.rate.*;
@@ -10,6 +10,7 @@ import com.shiyu.ai.common.storage.security.*;
 import com.shiyu.ai.common.storage.vector.*;
 
 import lombok.RequiredArgsConstructor;
+
 import org.springframework.stereotype.Component;
 
 import java.io.IOException;
@@ -22,16 +23,24 @@ public class FileStorageObjectStorage implements ObjectStorage {
     private final FileStorageManager storageManager;
 
     @Override
-    public StoredObject put(String namespace, String originalName, String contentType,
-                            long size, InputStream inputStream) throws IOException {
-        StoredFile file = storageManager.upload(namespace, originalName, contentType, size, inputStream);
-        return new StoredObject(file.key(), file.name(), file.contentType(), file.size(), file.storageType());
+    public StoredObject put(
+            String namespace,
+            String originalName,
+            String contentType,
+            long size,
+            InputStream inputStream)
+            throws IOException {
+        StoredFile file =
+                storageManager.upload(namespace, originalName, contentType, size, inputStream);
+        return new StoredObject(
+                file.key(), file.name(), file.contentType(), file.size(), file.storageType());
     }
 
     @Override
     public ReadableObject open(String objectKey) throws IOException {
         StorageObject object = storageManager.open(objectKey);
-        return new ReadableObject(object.inputStream(), object.name(), object.contentType(), object.size());
+        return new ReadableObject(
+                object.inputStream(), object.name(), object.contentType(), object.size());
     }
 
     @Override

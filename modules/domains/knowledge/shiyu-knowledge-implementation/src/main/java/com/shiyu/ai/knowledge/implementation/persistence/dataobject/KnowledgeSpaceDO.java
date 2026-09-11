@@ -4,10 +4,12 @@ import com.mybatisflex.annotation.Id;
 import com.mybatisflex.annotation.KeyType;
 import com.mybatisflex.annotation.Table;
 import com.shiyu.ai.common.mybatis.model.TenantEntity;
+import com.shiyu.ai.knowledge.implementation.domain.model.KnowledgeSpaceBO;
+
+import io.github.linpeilie.annotations.AutoMapper;
+
 import lombok.Data;
 import lombok.EqualsAndHashCode;
-import com.shiyu.ai.knowledge.implementation.domain.model.KnowledgeSpaceBO;
-import io.github.linpeilie.annotations.AutoMapper;
 
 @Data
 @EqualsAndHashCode(callSuper = true)
@@ -18,9 +20,12 @@ public class KnowledgeSpaceDO extends TenantEntity {
 
     @Id(keyType = KeyType.Auto)
     private Long id;
+
     private String code;
+
     /** Business domain of the space, for example GENERAL, ENTERPRISE or EDUCATION. */
     private String domainCode;
+
     private String name;
     private String description;
     private String accessMode;
@@ -34,5 +39,3 @@ public class KnowledgeSpaceDO extends TenantEntity {
     private Integer chunkOverlap;
     private Long activeIndexVersion;
 }
-
-

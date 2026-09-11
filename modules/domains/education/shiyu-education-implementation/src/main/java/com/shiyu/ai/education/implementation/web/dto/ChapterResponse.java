@@ -1,9 +1,10 @@
 package com.shiyu.ai.education.implementation.web.dto;
 
-import java.util.List;
+import com.shiyu.ai.education.implementation.domain.model.ChapterBO;
 
 import io.github.linpeilie.annotations.AutoMapper;
-import com.shiyu.ai.education.implementation.domain.model.ChapterBO;
+
+import java.util.List;
 
 @AutoMapper(target = ChapterBO.class)
 public record ChapterResponse(
@@ -12,6 +13,4 @@ public record ChapterResponse(
         Long parentId,
         String name,
         Integer chapterOrder,
-        List<ChapterResponse> children
-) {}
-
+        List<ChapterResponse> children) {}

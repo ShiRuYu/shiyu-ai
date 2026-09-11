@@ -1,25 +1,26 @@
 package com.shiyu.ai.iam.implementation.service.impl;
 
+import static org.junit.jupiter.api.Assertions.*;
+import static org.mockito.ArgumentMatchers.*;
+import static org.mockito.Mockito.*;
+
+import com.shiyu.ai.common.core.utils.MapstructUtils;
 import com.shiyu.ai.iam.implementation.domain.model.MenuBO;
 import com.shiyu.ai.iam.implementation.port.repository.MenuRepository;
 import com.shiyu.ai.iam.implementation.port.repository.TenantRepository;
 import com.shiyu.ai.iam.implementation.request.MenuRequest;
 import com.shiyu.ai.iam.implementation.vo.MenuVO;
 import com.shiyu.ai.iam.implementation.vo.RouteMenuVO;
-import com.shiyu.ai.common.core.utils.MapstructUtils;
 import com.shiyu.ai.kernel.context.ActorContext;
 import com.shiyu.ai.kernel.context.TenantId;
 import com.shiyu.ai.kernel.context.UserId;
+
 import org.apache.commons.lang3.tuple.Pair;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.mockito.MockedStatic;
 
 import java.util.List;
-
-import static org.junit.jupiter.api.Assertions.*;
-import static org.mockito.ArgumentMatchers.*;
-import static org.mockito.Mockito.*;
 
 class MenuServiceImplTest {
     private final MenuRepository menus = mock(MenuRepository.class);
@@ -36,10 +37,16 @@ class MenuServiceImplTest {
     @Test
     void buildsRouteTreesAndUsesTenantScopedCache() {
         MenuBO root = menu(1L, null, "CATALOG", 7L);
-        root.setName("Root"); root.setCode("root"); root.setShow(true);
+        root.setName("Root");
+        root.setCode("root");
+        root.setShow(true);
         MenuBO child = menu(2L, 1L, "MENU", 7L);
-        child.setName("Child"); child.setCode("child"); child.setShow(false); child.setLayout("none");
-        when(menus.selectMenusByUserId(new TenantId(7), 8L, null, false, null)).thenReturn(List.of(root, child));
+        child.setName("Child");
+        child.setCode("child");
+        child.setShow(false);
+        child.setLayout("none");
+        when(menus.selectMenusByUserId(new TenantId(7), 8L, null, false, null))
+                .thenReturn(List.of(root, child));
 
         List<RouteMenuVO> first = service.routeMenusView(actor);
         List<RouteMenuVO> cached = service.routeMenusView(actor);
@@ -60,7 +67,8 @@ class MenuServiceImplTest {
         when(menus.selectAll(new TenantId(7))).thenReturn(List.of(root, child));
         when(menus.selectAllByType(new TenantId(7), "MENU")).thenReturn(List.of(root));
         when(menus.selectByParentId(new TenantId(7), 1L)).thenReturn(List.of(child));
-        when(menus.selectMenusByUserId(new TenantId(7), 8L, null, false, null)).thenReturn(List.of(root));
+        when(menus.selectMenusByUserId(new TenantId(7), 8L, null, false, null))
+                .thenReturn(List.of(root));
         when(menus.existsByName(new TenantId(7), "root", null)).thenReturn(true);
         when(menus.existsByPath(new TenantId(7), "/root", null)).thenReturn(true);
         when(menus.selectById(new TenantId(7), 1L)).thenReturn(root);
@@ -78,7 +86,9 @@ class MenuServiceImplTest {
 
         MenuRequest request = new MenuRequest();
         try (MockedStatic<MapstructUtils> mapstruct = mockStatic(MapstructUtils.class)) {
-            mapstruct.when(() -> MapstructUtils.convert(any(MenuRequest.class), eq(MenuBO.class))).thenReturn(menu(3L, null, "menu", 0L));
+            mapstruct
+                    .when(() -> MapstructUtils.convert(any(MenuRequest.class), eq(MenuBO.class)))
+                    .thenReturn(menu(3L, null, "menu", 0L));
             assertTrue(service.createMenu(actor, request));
             assertTrue(service.updateMenu(actor, 1L, request));
         }
@@ -86,7 +96,9 @@ class MenuServiceImplTest {
         Pair<Long, List<MenuBO>> page = Pair.of(1L, List.of(root));
         when(menus.selectPage(new TenantId(7), 1, 10, null, null, null, null)).thenReturn(page);
         try (MockedStatic<MapstructUtils> mapstruct = mockStatic(MapstructUtils.class)) {
-            mapstruct.when(() -> MapstructUtils.convert(anyList(), eq(MenuVO.class))).thenReturn(List.of(new MenuVO()));
+            mapstruct
+                    .when(() -> MapstructUtils.convert(anyList(), eq(MenuVO.class)))
+                    .thenReturn(List.of(new MenuVO()));
             assertEquals(1L, service.getMenuPage(actor, 1, 10, null, null, null, null).getTotal());
         }
     }
@@ -96,7 +108,9 @@ class MenuServiceImplTest {
         assertThrows(IllegalArgumentException.class, () -> service.treeView(null));
         MenuRequest request = new MenuRequest();
         try (MockedStatic<MapstructUtils> mapstruct = mockStatic(MapstructUtils.class)) {
-            mapstruct.when(() -> MapstructUtils.convert(any(MenuRequest.class), eq(MenuBO.class))).thenReturn(menu(3L, null, "BUTTON", 7L));
+            mapstruct
+                    .when(() -> MapstructUtils.convert(any(MenuRequest.class), eq(MenuBO.class)))
+                    .thenReturn(menu(3L, null, "BUTTON", 7L));
             assertFalse(service.createMenu(actor, request));
         }
     }
@@ -107,7 +121,9 @@ class MenuServiceImplTest {
         MenuBO child = menu(3L, 99L, "MENU", 7L);
         when(menus.selectById(new TenantId(7), 99L)).thenReturn(null);
         try (MockedStatic<MapstructUtils> mapstruct = mockStatic(MapstructUtils.class)) {
-            mapstruct.when(() -> MapstructUtils.convert(any(MenuRequest.class), eq(MenuBO.class))).thenReturn(child);
+            mapstruct
+                    .when(() -> MapstructUtils.convert(any(MenuRequest.class), eq(MenuBO.class)))
+                    .thenReturn(child);
             assertFalse(service.createMenu(actor, request));
             assertFalse(service.updateMenu(actor, 3L, request));
         }
@@ -116,13 +132,21 @@ class MenuServiceImplTest {
         child.setParentId(100L);
         when(menus.selectById(new TenantId(7), 100L)).thenReturn(foreignParent);
         try (MockedStatic<MapstructUtils> mapstruct = mockStatic(MapstructUtils.class)) {
-            mapstruct.when(() -> MapstructUtils.convert(any(MenuRequest.class), eq(MenuBO.class))).thenReturn(child);
+            mapstruct
+                    .when(() -> MapstructUtils.convert(any(MenuRequest.class), eq(MenuBO.class)))
+                    .thenReturn(child);
             assertFalse(service.createMenu(actor, request));
         }
     }
 
     private static MenuBO menu(Long id, Long parentId, String type, Long tenantId) {
-        MenuBO menu = new MenuBO(); menu.setId(id); menu.setParentId(parentId); menu.setType(type); menu.setTenantId(tenantId); menu.setStatus(1); menu.setOrder(id == null ? 0 : id.intValue()); return menu;
+        MenuBO menu = new MenuBO();
+        menu.setId(id);
+        menu.setParentId(parentId);
+        menu.setType(type);
+        menu.setTenantId(tenantId);
+        menu.setStatus(1);
+        menu.setOrder(id == null ? 0 : id.intValue());
+        return menu;
     }
 }
-

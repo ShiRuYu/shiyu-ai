@@ -1,28 +1,56 @@
 package com.shiyu.ai.common.storage.lease;
+
 import com.shiyu.ai.common.storage.api.DistributedLeaseStore;
 import com.shiyu.ai.common.storage.backup.*;
 import com.shiyu.ai.common.storage.config.*;
 import com.shiyu.ai.common.storage.file.*;
-import com.shiyu.ai.common.storage.lease.*;
 import com.shiyu.ai.common.storage.metadata.*;
 import com.shiyu.ai.common.storage.rate.*;
 import com.shiyu.ai.common.storage.security.*;
 import com.shiyu.ai.common.storage.vector.*;
 
-import org.springframework.stereotype.Component;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
+import org.springframework.stereotype.Component;
+
 import java.time.Duration;
 import java.util.concurrent.ConcurrentHashMap;
 
 @Component
-@ConditionalOnProperty(prefix = "shiyu.infrastructure.redis", name = "provider", havingValue = "disabled", matchIfMissing = true)
+@ConditionalOnProperty(
+        prefix = "shiyu.infrastructure.redis",
+        name = "provider",
+        havingValue = "disabled",
+        matchIfMissing = true)
 public class LocalLeaseStore implements DistributedLeaseStore {
     private final ConcurrentHashMap<String, Lease> leases = new ConcurrentHashMap<>();
+
     public boolean tryAcquire(String key, String owner, Duration ttl) {
         long expires = System.nanoTime() + ttl.toNanos();
-        return leases.compute(key, (k, old) -> old == null || old.expiresAt < System.nanoTime() ? new Lease(owner, expires) : old).owner.equals(owner);
+        return leases.compute(
+                        key,
+                        (k, old) ->
+                                old == null || old.expiresAt < System.nanoTime()
+                                        ? new Lease(owner, expires)
+                                        : old)
+                .owner
+                .equals(owner);
     }
-    public boolean renew(String key, String owner, Duration ttl) { return leases.computeIfPresent(key, (k, old) -> old.owner.equals(owner) ? new Lease(owner, System.nanoTime() + ttl.toNanos()) : old) != null && owner.equals(leases.get(key).owner); }
-    public void release(String key, String owner) { leases.computeIfPresent(key, (k, old) -> old.owner.equals(owner) ? null : old); }
-    private record Lease(String owner, long expiresAt) { }
+
+    public boolean renew(String key, String owner, Duration ttl) {
+        return leases.computeIfPresent(
+                                key,
+                                (k, old) ->
+                                        old.owner.equals(owner)
+                                                ? new Lease(
+                                                        owner, System.nanoTime() + ttl.toNanos())
+                                                : old)
+                        != null
+                && owner.equals(leases.get(key).owner);
+    }
+
+    public void release(String key, String owner) {
+        leases.computeIfPresent(key, (k, old) -> old.owner.equals(owner) ? null : old);
+    }
+
+    private record Lease(String owner, long expiresAt) {}
 }

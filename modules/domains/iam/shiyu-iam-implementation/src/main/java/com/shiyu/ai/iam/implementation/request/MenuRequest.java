@@ -2,9 +2,12 @@ package com.shiyu.ai.iam.implementation.request;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.shiyu.ai.iam.implementation.domain.model.MenuBO;
+
 import io.github.linpeilie.annotations.AutoMapper;
-import jakarta.validation.constraints.NotBlank;
 import io.swagger.v3.oas.annotations.media.Schema;
+
+import jakarta.validation.constraints.NotBlank;
+
 import lombok.Data;
 
 import java.io.Serial;
@@ -15,8 +18,7 @@ import java.io.Serializable;
 @Schema(description = "菜单创建/更新请求")
 public class MenuRequest implements Serializable {
 
-    @Serial
-    private static final long serialVersionUID = 1L;
+    @Serial private static final long serialVersionUID = 1L;
 
     @NotBlank(message = "菜单名称不能为空")
     @Schema(description = "菜单名称")
@@ -66,4 +68,3 @@ public class MenuRequest implements Serializable {
     @Schema(description = "排序号")
     private Integer order;
 }
-

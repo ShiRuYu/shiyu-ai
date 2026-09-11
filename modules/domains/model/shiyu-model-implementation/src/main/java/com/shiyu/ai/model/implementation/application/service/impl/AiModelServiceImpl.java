@@ -1,71 +1,88 @@
 package com.shiyu.ai.model.implementation.application.service.impl;
 
-import com.shiyu.ai.model.implementation.domain.port.repository.AiModelRepository;
-import com.shiyu.ai.model.implementation.domain.port.repository.AiPlatformRepository;
-import com.shiyu.ai.model.implementation.application.service.AiModelService;
-import com.shiyu.ai.model.implementation.web.request.AiModelRequest;
-import com.shiyu.ai.model.implementation.web.response.AiModelResponse;
+import com.shiyu.ai.common.core.vo.IdNameOptionVO;
+import com.shiyu.ai.kernel.context.ActorContext;
 import com.shiyu.ai.model.implementation.application.assembler.AiModelAssembler;
+import com.shiyu.ai.model.implementation.application.service.AiModelService;
 import com.shiyu.ai.model.implementation.domain.model.AiModelBO;
 import com.shiyu.ai.model.implementation.domain.model.AiPlatformBO;
-import com.shiyu.ai.common.core.vo.IdNameOptionVO;
+import com.shiyu.ai.model.implementation.domain.port.repository.AiModelRepository;
+import com.shiyu.ai.model.implementation.domain.port.repository.AiPlatformRepository;
+import com.shiyu.ai.model.implementation.web.request.AiModelRequest;
+import com.shiyu.ai.model.implementation.web.response.AiModelResponse;
+
 import jakarta.annotation.Resource;
+
 import lombok.extern.slf4j.Slf4j;
+
 import org.apache.commons.lang3.tuple.Pair;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
-import com.shiyu.ai.kernel.context.ActorContext;
 
-/**
- * AI 模型服务实现。
- */
+/** AI 模型服务实现。 */
 @Slf4j
 @Service
 public class AiModelServiceImpl implements AiModelService {
 
     @Override
-    public Pair<Long, List<AiModelResponse>> pageResponse(ActorContext actor, Long platformId, Number pageNo, Number pageSize) {
+    public Pair<Long, List<AiModelResponse>> pageResponse(
+            ActorContext actor, Long platformId, Number pageNo, Number pageSize) {
         Pair<Long, List<AiModelBO>> result = getPageBO(actor, platformId, pageNo, pageSize);
-        return Pair.of(result.getLeft(), result.getRight().stream().map(AiModelAssembler::toResponse).toList());
+        return Pair.of(
+                result.getLeft(),
+                result.getRight().stream().map(AiModelAssembler::toResponse).toList());
     }
 
     @Override
     public List<AiModelResponse> byPlatformResponse(ActorContext actor, Long platformId) {
-        return getByPlatformIdBO(actor, platformId).stream().map(AiModelAssembler::toResponse).toList();
+        return getByPlatformIdBO(actor, platformId).stream()
+                .map(AiModelAssembler::toResponse)
+                .toList();
     }
 
     @Override
     public List<AiModelResponse> byPlatformCodeResponse(ActorContext actor, String platformCode) {
-        return getByPlatformCodeBO(actor, platformCode).stream().map(AiModelAssembler::toResponse).toList();
+        return getByPlatformCodeBO(actor, platformCode).stream()
+                .map(AiModelAssembler::toResponse)
+                .toList();
     }
 
     @Override
-    public AiModelResponse detailResponse(ActorContext actor, Long id) { return AiModelAssembler.toResponse(getByIdBO(actor, id)); }
+    public AiModelResponse detailResponse(ActorContext actor, Long id) {
+        return AiModelAssembler.toResponse(getByIdBO(actor, id));
+    }
 
     @Override
-    public AiModelResponse defaultResponse(ActorContext actor, Long platformId) { return AiModelAssembler.toResponse(getDefaultByPlatformIdBO(actor, platformId)); }
+    public AiModelResponse defaultResponse(ActorContext actor, Long platformId) {
+        return AiModelAssembler.toResponse(getDefaultByPlatformIdBO(actor, platformId));
+    }
 
     @Override
-    public AiModelResponse createResponse(ActorContext actor, AiModelRequest request) { return AiModelAssembler.toResponse(createBO(actor, AiModelAssembler.toBO(request))); }
+    public AiModelResponse createResponse(ActorContext actor, AiModelRequest request) {
+        return AiModelAssembler.toResponse(createBO(actor, AiModelAssembler.toBO(request)));
+    }
 
     @Override
     public AiModelResponse updateResponse(ActorContext actor, Long id, AiModelRequest request) {
-        AiModelBO bo = AiModelAssembler.toBO(request); bo.setId(id);
+        AiModelBO bo = AiModelAssembler.toBO(request);
+        bo.setId(id);
         return AiModelAssembler.toResponse(updateBO(actor, bo));
     }
 
     @Override
-    public AiModelResponse setDefaultResponse(ActorContext actor, Long id) { return AiModelAssembler.toResponse(setDefaultBO(actor, id)); }
+    public AiModelResponse setDefaultResponse(ActorContext actor, Long id) {
+        return AiModelAssembler.toResponse(setDefaultBO(actor, id));
+    }
 
-    @Resource
-    private AiModelRepository aiModelRepository;
+    @Resource private AiModelRepository aiModelRepository;
 
-    @Resource
-    private AiPlatformRepository aiPlatformRepository;
+    @Resource private AiPlatformRepository aiPlatformRepository;
 
-    private Pair<Long, List<AiModelBO>> getPageBO(ActorContext actor, Long platformId, Number pageNo, Number pageSize) {
-        Pair<Long, List<AiModelBO>> result = aiModelRepository.selectPage(actor.tenantId(), platformId, pageNo, pageSize);
+    private Pair<Long, List<AiModelBO>> getPageBO(
+            ActorContext actor, Long platformId, Number pageNo, Number pageSize) {
+        Pair<Long, List<AiModelBO>> result =
+                aiModelRepository.selectPage(actor.tenantId(), platformId, pageNo, pageSize);
         fillPlatformName(actor, result.getRight());
         return result;
     }
@@ -156,7 +173,8 @@ public class AiModelServiceImpl implements AiModelService {
         if (bo == null || bo.getPlatformId() == null) {
             return;
         }
-        AiPlatformBO platform = aiPlatformRepository.selectById(actor.tenantId(), bo.getPlatformId());
+        AiPlatformBO platform =
+                aiPlatformRepository.selectById(actor.tenantId(), bo.getPlatformId());
         if (platform != null) {
             bo.setPlatformName(platform.getName());
         }

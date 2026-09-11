@@ -1,45 +1,62 @@
 package com.shiyu.ai.agent.implementation.persistence.repository;
 
 import com.mybatisflex.core.query.QueryWrapper;
+import com.shiyu.ai.agent.implementation.domain.model.AgentDefBO;
+import com.shiyu.ai.agent.implementation.domain.model.AgentVersionBO;
 import com.shiyu.ai.agent.implementation.persistence.dataobject.AgentDefDO;
 import com.shiyu.ai.agent.implementation.persistence.dataobject.AgentVersionDO;
 import com.shiyu.ai.agent.implementation.persistence.mapper.AgentDefMapper;
 import com.shiyu.ai.agent.implementation.persistence.mapper.AgentVersionMapper;
-import com.shiyu.ai.agent.implementation.domain.model.AgentDefBO;
-import com.shiyu.ai.agent.implementation.domain.model.AgentVersionBO;
 import com.shiyu.ai.common.core.utils.MapstructUtils;
 import com.shiyu.ai.kernel.context.TenantId;
+
 import jakarta.annotation.Resource;
+
 import org.apache.commons.lang3.tuple.Pair;
 import org.springframework.stereotype.Component;
 
 import java.util.List;
 
 @Component
-public class AgentAdminRepositoryImpl implements com.shiyu.ai.agent.implementation.port.repository.AgentAdminRepository {
+public class AgentAdminRepositoryImpl
+        implements com.shiyu.ai.agent.implementation.port.repository.AgentAdminRepository {
 
-    @Resource
-    private AgentDefMapper agentDefMapper;
+    @Resource private AgentDefMapper agentDefMapper;
 
-    @Resource
-    private AgentVersionMapper agentVersionMapper;
+    @Resource private AgentVersionMapper agentVersionMapper;
 
     @Override
-    public Pair<Long, List<AgentDefBO>> selectPage(TenantId tenantId, Number pageNo, Number pageSize, String name, Integer status) {
-        QueryWrapper count = QueryWrapper.create().eq(AgentDefDO::getTenantId, tenantId.value()).eq(AgentDefDO::getDelFlag, 0);
-        if (org.apache.commons.lang3.StringUtils.isNotBlank(name)) count.like(AgentDefDO::getName, name);
+    public Pair<Long, List<AgentDefBO>> selectPage(
+            TenantId tenantId, Number pageNo, Number pageSize, String name, Integer status) {
+        QueryWrapper count =
+                QueryWrapper.create()
+                        .eq(AgentDefDO::getTenantId, tenantId.value())
+                        .eq(AgentDefDO::getDelFlag, 0);
+        if (org.apache.commons.lang3.StringUtils.isNotBlank(name))
+            count.like(AgentDefDO::getName, name);
         if (status != null) count.eq(AgentDefDO::getStatus, status);
         long total = agentDefMapper.selectCountByQuery(count);
-        QueryWrapper query = QueryWrapper.create().eq(AgentDefDO::getTenantId, tenantId.value()).eq(AgentDefDO::getDelFlag, 0);
-        if (org.apache.commons.lang3.StringUtils.isNotBlank(name)) query.like(AgentDefDO::getName, name);
+        QueryWrapper query =
+                QueryWrapper.create()
+                        .eq(AgentDefDO::getTenantId, tenantId.value())
+                        .eq(AgentDefDO::getDelFlag, 0);
+        if (org.apache.commons.lang3.StringUtils.isNotBlank(name))
+            query.like(AgentDefDO::getName, name);
         if (status != null) query.eq(AgentDefDO::getStatus, status);
-        if (pageNo != null && pageSize != null) query.limit((pageNo.longValue() - 1) * pageSize.longValue(), pageSize.longValue());
-        return Pair.of(total, MapstructUtils.convert(agentDefMapper.selectListByQuery(query), AgentDefBO.class));
+        if (pageNo != null && pageSize != null)
+            query.limit((pageNo.longValue() - 1) * pageSize.longValue(), pageSize.longValue());
+        return Pair.of(
+                total,
+                MapstructUtils.convert(agentDefMapper.selectListByQuery(query), AgentDefBO.class));
     }
 
     @Override
     public AgentDefBO selectById(TenantId tenantId, Long id) {
-        QueryWrapper query = QueryWrapper.create().eq(AgentDefDO::getTenantId, tenantId.value()).eq(AgentDefDO::getId, id).eq(AgentDefDO::getDelFlag, 0);
+        QueryWrapper query =
+                QueryWrapper.create()
+                        .eq(AgentDefDO::getTenantId, tenantId.value())
+                        .eq(AgentDefDO::getId, id)
+                        .eq(AgentDefDO::getDelFlag, 0);
         return MapstructUtils.convert(agentDefMapper.selectOneByQuery(query), AgentDefBO.class);
     }
 
@@ -49,7 +66,8 @@ public class AgentAdminRepositoryImpl implements com.shiyu.ai.agent.implementati
         queryWrapper.eq(AgentDefDO::getTenantId, tenantId.value());
         queryWrapper.eq(AgentDefDO::getAgentId, agentId);
         queryWrapper.eq(AgentDefDO::getDelFlag, 0);
-        return MapstructUtils.convert(agentDefMapper.selectOneByQuery(queryWrapper), AgentDefBO.class);
+        return MapstructUtils.convert(
+                agentDefMapper.selectOneByQuery(queryWrapper), AgentDefBO.class);
     }
 
     @Override
@@ -59,7 +77,8 @@ public class AgentAdminRepositoryImpl implements com.shiyu.ai.agent.implementati
         queryWrapper.eq(AgentDefDO::getDelFlag, 0);
         queryWrapper.eq(AgentDefDO::getStatus, 1);
         queryWrapper.orderBy(AgentDefDO::getName, true);
-        return MapstructUtils.convert(agentDefMapper.selectListByQuery(queryWrapper), AgentDefBO.class);
+        return MapstructUtils.convert(
+                agentDefMapper.selectListByQuery(queryWrapper), AgentDefBO.class);
     }
 
     @Override
@@ -88,9 +107,15 @@ public class AgentAdminRepositoryImpl implements com.shiyu.ai.agent.implementati
 
     @Override
     public void deleteById(TenantId tenantId, Long id) {
-        QueryWrapper query = QueryWrapper.create().eq(AgentDefDO::getTenantId, tenantId.value()).eq(AgentDefDO::getId, id);
+        QueryWrapper query =
+                QueryWrapper.create()
+                        .eq(AgentDefDO::getTenantId, tenantId.value())
+                        .eq(AgentDefDO::getId, id);
         AgentDefDO data = agentDefMapper.selectOneByQuery(query);
-        if (data != null) { data.setDelFlag(1); requireAffected(agentDefMapper.update(data), "delete agent definition"); }
+        if (data != null) {
+            data.setDelFlag(1);
+            requireAffected(agentDefMapper.update(data), "delete agent definition");
+        }
     }
 
     @Override
@@ -108,14 +133,25 @@ public class AgentAdminRepositoryImpl implements com.shiyu.ai.agent.implementati
 
     @Override
     public List<AgentVersionBO> selectVersionsByAgentId(TenantId tenantId, String agentId) {
-        QueryWrapper query = QueryWrapper.create().eq(AgentVersionDO::getTenantId, tenantId.value()).eq(AgentVersionDO::getAgentId, agentId).eq(AgentVersionDO::getDelFlag, 0).orderBy(AgentVersionDO::getCreateTime, false);
-        return MapstructUtils.convert(agentVersionMapper.selectListByQuery(query), AgentVersionBO.class);
+        QueryWrapper query =
+                QueryWrapper.create()
+                        .eq(AgentVersionDO::getTenantId, tenantId.value())
+                        .eq(AgentVersionDO::getAgentId, agentId)
+                        .eq(AgentVersionDO::getDelFlag, 0)
+                        .orderBy(AgentVersionDO::getCreateTime, false);
+        return MapstructUtils.convert(
+                agentVersionMapper.selectListByQuery(query), AgentVersionBO.class);
     }
 
     @Override
     public AgentVersionBO selectVersionById(TenantId tenantId, Long versionId) {
-        QueryWrapper query = QueryWrapper.create().eq(AgentVersionDO::getTenantId, tenantId.value()).eq(AgentVersionDO::getId, versionId).eq(AgentVersionDO::getDelFlag, 0);
-        return MapstructUtils.convert(agentVersionMapper.selectOneByQuery(query), AgentVersionBO.class);
+        QueryWrapper query =
+                QueryWrapper.create()
+                        .eq(AgentVersionDO::getTenantId, tenantId.value())
+                        .eq(AgentVersionDO::getId, versionId)
+                        .eq(AgentVersionDO::getDelFlag, 0);
+        return MapstructUtils.convert(
+                agentVersionMapper.selectOneByQuery(query), AgentVersionBO.class);
     }
 
     @Override
@@ -126,7 +162,8 @@ public class AgentAdminRepositoryImpl implements com.shiyu.ai.agent.implementati
         queryWrapper.eq(AgentVersionDO::getAgentId, agentId);
         queryWrapper.eq(AgentVersionDO::getVersionNumber, versionNumber);
         queryWrapper.eq(AgentVersionDO::getDelFlag, 0);
-        return MapstructUtils.convert(agentVersionMapper.selectOneByQuery(queryWrapper), AgentVersionBO.class);
+        return MapstructUtils.convert(
+                agentVersionMapper.selectOneByQuery(queryWrapper), AgentVersionBO.class);
     }
 
     @Override
@@ -155,9 +192,15 @@ public class AgentAdminRepositoryImpl implements com.shiyu.ai.agent.implementati
 
     @Override
     public void deleteVersionById(TenantId tenantId, Long versionId) {
-        QueryWrapper query = QueryWrapper.create().eq(AgentVersionDO::getTenantId, tenantId.value()).eq(AgentVersionDO::getId, versionId);
+        QueryWrapper query =
+                QueryWrapper.create()
+                        .eq(AgentVersionDO::getTenantId, tenantId.value())
+                        .eq(AgentVersionDO::getId, versionId);
         AgentVersionDO data = agentVersionMapper.selectOneByQuery(query);
-        if (data != null) { data.setDelFlag(1); requireAffected(agentVersionMapper.update(data), "delete agent version"); }
+        if (data != null) {
+            data.setDelFlag(1);
+            requireAffected(agentVersionMapper.update(data), "delete agent version");
+        }
     }
 
     private static void requireAffected(int rows, String operation) {

@@ -1,9 +1,10 @@
 package com.shiyu.ai.education.implementation.web.dto;
 
-import java.util.List;
+import com.shiyu.ai.education.implementation.domain.model.StudyPlanBO;
 
 import io.github.linpeilie.annotations.AutoMapper;
-import com.shiyu.ai.education.implementation.domain.model.StudyPlanBO;
+
+import java.util.List;
 
 @AutoMapper(target = StudyPlanBO.class)
 public record StudyPlanResponse(
@@ -16,6 +17,4 @@ public record StudyPlanResponse(
         String statusDesc,
         Integer totalItems,
         Integer completedItems,
-        List<DailyTaskResponse> items
-) {}
-
+        List<DailyTaskResponse> items) {}

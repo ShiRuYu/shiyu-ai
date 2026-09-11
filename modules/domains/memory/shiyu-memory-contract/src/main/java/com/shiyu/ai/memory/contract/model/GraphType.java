@@ -6,4 +6,3 @@ public enum GraphType {
     CAUSAL,
     ENTITY
 }
-

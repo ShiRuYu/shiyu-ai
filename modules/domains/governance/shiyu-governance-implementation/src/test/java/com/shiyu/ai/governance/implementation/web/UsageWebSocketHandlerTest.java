@@ -1,18 +1,18 @@
 package com.shiyu.ai.governance.implementation.web;
 
-import org.junit.jupiter.api.Test;
-import org.springframework.web.socket.CloseStatus;
-import org.springframework.web.socket.TextMessage;
-import org.springframework.web.socket.WebSocketSession;
-
-import java.io.IOException;
-
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.doThrow;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
+
+import org.junit.jupiter.api.Test;
+import org.springframework.web.socket.CloseStatus;
+import org.springframework.web.socket.TextMessage;
+import org.springframework.web.socket.WebSocketSession;
+
+import java.io.IOException;
 
 class UsageWebSocketHandlerTest {
 
@@ -49,10 +49,12 @@ class UsageWebSocketHandlerTest {
         doThrow(new IOException("socket closed")).when(session).sendMessage(any(TextMessage.class));
 
         handler.broadcast("message");
-        assertEquals(1, handler.getActiveSessionCount(), "send failures are logged but retain the session until transport closes");
+        assertEquals(
+                1,
+                handler.getActiveSessionCount(),
+                "send failures are logged but retain the session until transport closes");
         handler.handleTransportError(session, new IOException("transport"));
         assertEquals(0, handler.getActiveSessionCount());
         handler.broadcast("ignored");
     }
 }
-

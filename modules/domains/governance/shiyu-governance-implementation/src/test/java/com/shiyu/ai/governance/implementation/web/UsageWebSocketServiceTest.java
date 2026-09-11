@@ -1,13 +1,13 @@
 package com.shiyu.ai.governance.implementation.web;
 
-import org.junit.jupiter.api.Test;
-
 import static org.mockito.ArgumentMatchers.argThat;
 import static org.mockito.Mockito.doThrow;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
+
+import org.junit.jupiter.api.Test;
 
 class UsageWebSocketServiceTest {
 
@@ -21,9 +21,16 @@ class UsageWebSocketServiceTest {
         service.publishEmbeddingUsage("embed", 10, 4, 2, 5);
         service.pushDailyAggregate(7);
 
-        verify(handler).broadcast(argThat(payload -> payload.contains("\"type\":\"USAGE_RECORD\"")));
-        verify(handler).broadcast(argThat(payload -> payload.contains("\"type\":\"EMBEDDING_USAGE_RECORD\"")));
-        verify(handler).broadcast(argThat(payload -> payload.contains("\"type\":\"USAGE_DAILY_AGGREGATE\"")));
+        verify(handler)
+                .broadcast(argThat(payload -> payload.contains("\"type\":\"USAGE_RECORD\"")));
+        verify(handler)
+                .broadcast(
+                        argThat(
+                                payload ->
+                                        payload.contains("\"type\":\"EMBEDDING_USAGE_RECORD\"")));
+        verify(handler)
+                .broadcast(
+                        argThat(payload -> payload.contains("\"type\":\"USAGE_DAILY_AGGREGATE\"")));
     }
 
     @Test
@@ -38,10 +45,10 @@ class UsageWebSocketServiceTest {
 
         when(handler.getActiveSessionCount()).thenReturn(1);
         doThrow(new RuntimeException("connection lost"))
-                .when(handler).broadcast(org.mockito.ArgumentMatchers.anyString());
+                .when(handler)
+                .broadcast(org.mockito.ArgumentMatchers.anyString());
         service.publishUsageRecord("OPENAI", "gpt", 1, 1, 1, 0.01);
         service.publishEmbeddingUsage("embed", 1, 1, 1, 1);
         service.pushDailyAggregate(1);
     }
 }
-

@@ -1,21 +1,20 @@
 package com.shiyu.ai.agent.implementation.service.impl;
 
 import com.shiyu.ai.agent.AgentDefinition;
-import com.shiyu.ai.agent.AgentVersion;
 import com.shiyu.ai.agent.implementation.cache.AgentCacheManager;
 import com.shiyu.ai.agent.implementation.cache.AgentLoader;
-import com.shiyu.ai.agent.implementation.service.AgentService;
 import com.shiyu.ai.agent.implementation.port.repository.AgentAdminRepository;
+import com.shiyu.ai.agent.implementation.service.AgentService;
 import com.shiyu.ai.kernel.context.ActorContext;
+
 import lombok.extern.slf4j.Slf4j;
+
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
 
-/**
- * AgentService 实现 — 仅提供定义管理，执行统一走 AgentRuntime。
- */
+/** AgentService 实现 — 仅提供定义管理，执行统一走 AgentRuntime。 */
 @Slf4j
 @Service
 public class AgentServiceImpl implements AgentService {
@@ -24,9 +23,10 @@ public class AgentServiceImpl implements AgentService {
     private final AgentLoader agentLoader;
     private final AgentAdminRepository agentAdminRepository;
 
-    public AgentServiceImpl(AgentCacheManager cacheManager,
-                            AgentLoader agentLoader,
-                            AgentAdminRepository agentAdminRepository) {
+    public AgentServiceImpl(
+            AgentCacheManager cacheManager,
+            AgentLoader agentLoader,
+            AgentAdminRepository agentAdminRepository) {
         this.cacheManager = cacheManager;
         this.agentLoader = agentLoader;
         this.agentAdminRepository = agentAdminRepository;
@@ -41,14 +41,18 @@ public class AgentServiceImpl implements AgentService {
         if (agentId == null || agentId.trim().isEmpty()) {
             throw new IllegalArgumentException("AgentId 不能为空");
         }
-        log.info("注册 Agent：agentIdPresent={}, namePresent={}", agentId != null, agentDefinition.getName() != null);
+        log.info(
+                "注册 Agent：agentIdPresent={}, namePresent={}",
+                agentId != null,
+                agentDefinition.getName() != null);
         cacheManager.put(actor, agentId, agentDefinition);
         log.info("Agent 注册成功（缓存）：agentIdPresent={}", agentId != null);
     }
 
     @Override
     public void registerSystemAgent(AgentDefinition agentDefinition) {
-        if (agentDefinition == null || agentDefinition.getAgentId() == null
+        if (agentDefinition == null
+                || agentDefinition.getAgentId() == null
                 || agentDefinition.getAgentId().isBlank()) {
             throw new IllegalArgumentException("AgentDefinition 和 AgentId 不能为空");
         }
@@ -81,14 +85,20 @@ public class AgentServiceImpl implements AgentService {
 
     @Override
     public boolean switchVersion(ActorContext actor, String agentId, String version) {
-        log.info("切换 Agent 版本：agentIdPresent={}, targetVersionPresent={}", agentId != null, version != null);
+        log.info(
+                "切换 Agent 版本：agentIdPresent={}, targetVersionPresent={}",
+                agentId != null,
+                version != null);
         AgentDefinition definition = getOrLoadAgent(actor, agentId);
         if (definition == null) {
             log.warn("Agent 不存在，切换失败：agentIdPresent={}", agentId != null);
             return false;
         }
         if (definition.getVersion(version) == null) {
-            log.warn("版本切换失败，版本不存在：agentIdPresent={}, versionPresent={}", agentId != null, version != null);
+            log.warn(
+                    "版本切换失败，版本不存在：agentIdPresent={}, versionPresent={}",
+                    agentId != null,
+                    version != null);
             return false;
         }
         definition.setCurrentVersion(version);
@@ -117,5 +127,4 @@ public class AgentServiceImpl implements AgentService {
         definition = cacheManager.getOrLoad(actor, agentId, agentLoader);
         return definition;
     }
-
 }

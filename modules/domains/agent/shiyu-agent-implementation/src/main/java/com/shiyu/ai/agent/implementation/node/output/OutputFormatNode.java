@@ -1,23 +1,22 @@
 package com.shiyu.ai.agent.implementation.node.output;
 
 import com.shiyu.ai.agent.contract.node.*;
-
 import com.shiyu.ai.agent.contract.node.BaseNode;
+import com.shiyu.ai.agent.contract.node.NodeFields.FieldKey;
 import com.shiyu.ai.agent.contract.node.NodeInput;
+import com.shiyu.ai.agent.contract.node.NodeInputParam;
 import com.shiyu.ai.agent.contract.node.NodeOutput;
 import com.shiyu.ai.agent.contract.node.NodeType;
-import com.shiyu.ai.agent.contract.node.NodeFields.FieldKey;
 import com.shiyu.ai.common.core.utils.JSONUtils;
+
 import lombok.Getter;
 import lombok.Setter;
 import lombok.extern.slf4j.Slf4j;
 
 import java.util.Map;
-import com.shiyu.ai.agent.contract.node.NodeInputParam;
 
 /**
- * 输出格式化节点
- * 用于格式化最终输出结果
+ * 输出格式化节点 用于格式化最终输出结果
  *
  * @author shiyu-ai
  * @date 2026-03-28
@@ -29,16 +28,15 @@ public class OutputFormatNode extends BaseNode {
 
     private OutputFormatConfig config;
 
-    /**
-     * 备选的输入字段键集合，按优先级从高到低排列
-     */
+    /** 备选的输入字段键集合，按优先级从高到低排列 */
     private static final FieldKey[] GET_CONTENT_KEYS = {
-            FieldKey.CONTENT, FieldKey.RESPONSE, FieldKey.RESULT,
-            FieldKey.OUTPUT, FieldKey.ANSWER, FieldKey.MESSAGES
+        FieldKey.CONTENT, FieldKey.RESPONSE, FieldKey.RESULT,
+        FieldKey.OUTPUT, FieldKey.ANSWER, FieldKey.MESSAGES
     };
 
     /**
      * 私有构造函数，强制使用 Builder 模式
+     *
      * @param config 节点配置
      */
     private OutputFormatNode(OutputFormatConfig config) {
@@ -50,20 +48,20 @@ public class OutputFormatNode extends BaseNode {
 
     /**
      * 获取 Builder 实例
+     *
      * @return Builder 实例
      */
     public static Builder builder() {
         return new Builder();
     }
 
-    /**
-     * Builder 类，用于构建 OutputFormatNode 实例
-     */
+    /** Builder 类，用于构建 OutputFormatNode 实例 */
     public static class Builder {
         private OutputFormatConfig config;
 
         /**
          * 设置节点配置
+         *
          * @param config 节点配置
          * @return Builder 实例
          */
@@ -74,6 +72,7 @@ public class OutputFormatNode extends BaseNode {
 
         /**
          * 构建并返回 OutputFormatNode 实例
+         *
          * @return OutputFormatNode 实例
          */
         public OutputFormatNode build() {
@@ -84,26 +83,29 @@ public class OutputFormatNode extends BaseNode {
     @Override
     protected NodeOutput doExecute(NodeInput input) throws Exception {
         log.info("执行输出格式化节点：{}", config.getNodeName());
-        log.debug("格式化配置：outputFormat={}, prettyPrint={}, template={}", 
-                config.getOutputFormat(), config.getPrettyPrint(), config.getTemplate());
-        
+        log.debug(
+                "格式化配置：outputFormat={}, prettyPrint={}, template={}",
+                config.getOutputFormat(),
+                config.getPrettyPrint(),
+                config.getTemplate());
+
         try {
             // 1. 获取待格式化的内容
             String content = getContent(input);
-            
+
             // 2. 根据配置进行格式化
             String formattedContent = formatContent(content);
-            
+
             // 3. 构建输出结果
             NodeOutput output = new NodeOutput();
             output.setSuccess(true);
             output.setMsg("输出格式化成功");
             output.addData(FieldKey.FORMATTED_CONTENT, formattedContent);
             output.addData(FieldKey.MESSAGES, formattedContent);
-            
+
             log.info("输出格式化成功");
             return output;
-            
+
         } catch (Exception e) {
             log.error("输出格式化节点执行失败", e);
             NodeOutput output = new NodeOutput();
@@ -112,10 +114,8 @@ public class OutputFormatNode extends BaseNode {
             return output;
         }
     }
-    
-    /**
-     * 获取待格式化的内容
-     */
+
+    /** 获取待格式化的内容 */
     private String getContent(NodeInput input) {
         // 尝试多个可能的键，按优先级查找
         for (FieldKey fieldKey : GET_CONTENT_KEYS) {
@@ -127,13 +127,11 @@ public class OutputFormatNode extends BaseNode {
 
         return "";
     }
-    
-    /**
-     * 格式化内容
-     */
+
+    /** 格式化内容 */
     private String formatContent(String content) {
         String format = config.getOutputFormat();
-        
+
         // 根据格式类型进行处理
         if (format != null) {
             switch (format) {
@@ -151,21 +149,19 @@ public class OutputFormatNode extends BaseNode {
                     log.warn("未知的输出格式：{}，使用纯文本", format);
             }
         }
-        
+
         // 如果有模板，使用模板
         if (config.getTemplate() != null && !config.getTemplate().isEmpty()) {
             return applyTemplate(content);
         }
-        
+
         // 默认返回原始内容（可能进行美化）
-        return config.getPrettyPrint() != null && config.getPrettyPrint() 
-            ? prettifyContent(content) 
-            : content;
+        return config.getPrettyPrint() != null && config.getPrettyPrint()
+                ? prettifyContent(content)
+                : content;
     }
-    
-    /**
-     * 格式化为 JSON
-     */
+
+    /** 格式化为 JSON */
     private String formatAsJson(String content) {
         try {
             Map<String, Object> parsed = JSONUtils.parseMap(content);
@@ -180,41 +176,30 @@ public class OutputFormatNode extends BaseNode {
         String escaped = content.replace("\"", "\\\"");
         return "{\"result\": \"" + escaped + "\"}";
     }
-    
-    /**
-     * 格式化为 XML
-     */
+
+    /** 格式化为 XML */
     private String formatAsXml(String content) {
         return "<response>\n  <content>" + content + "</content>\n</response>";
     }
-    
-    /**
-     * 格式化为 Markdown
-     */
+
+    /** 格式化为 Markdown */
     private String formatAsMarkdown(String content) {
         // 简单的 Markdown 格式化
         return "## 回复\n\n" + content + "\n";
     }
-    
-    /**
-     * 格式化为 HTML
-     */
+
+    /** 格式化为 HTML */
     private String formatAsHtml(String content) {
         return "<div class=\"response\">\n  <p>" + content + "</p>\n</div>";
     }
-    
-    /**
-     * 应用模板
-     */
+
+    /** 应用模板 */
     private String applyTemplate(String content) {
         String template = config.getTemplate();
-        return template.replace("{content}", content)
-                      .replace("{result}", content);
+        return template.replace("{content}", content).replace("{result}", content);
     }
-    
-    /**
-     * 美化内容
-     */
+
+    /** 美化内容 */
     private String prettifyContent(String content) {
         // 简单的文本美化：添加适当的换行和空格
         return content.trim().replaceAll("\\s+", " ");
@@ -223,12 +208,9 @@ public class OutputFormatNode extends BaseNode {
     @Override
     public java.util.List<NodeInputParam> getRequiredInputs() {
         return java.util.List.of(
-            NodeInputParam.previous("content", "string", "待格式化内容"),
-            NodeInputParam.previous("response", "object", "响应内容"),
-            NodeInputParam.config("outputFormat", "string", "输出格式（TEXT/JSON/MARKDOWN）"),
-            NodeInputParam.config("prettyPrint", "boolean", "是否美化输出")
-        );
+                NodeInputParam.previous("content", "string", "待格式化内容"),
+                NodeInputParam.previous("response", "object", "响应内容"),
+                NodeInputParam.config("outputFormat", "string", "输出格式（TEXT/JSON/MARKDOWN）"),
+                NodeInputParam.config("prettyPrint", "boolean", "是否美化输出"));
     }
 }
-
-

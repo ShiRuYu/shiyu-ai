@@ -1,5 +1,9 @@
 package com.shiyu.ai.agent.implementation.persistence.repository;
 
+import static org.junit.jupiter.api.Assertions.*;
+import static org.mockito.ArgumentMatchers.*;
+import static org.mockito.Mockito.*;
+
 import com.mybatisflex.core.query.QueryWrapper;
 import com.shiyu.ai.agent.implementation.domain.model.AgentCheckpointBO;
 import com.shiyu.ai.agent.implementation.domain.model.AgentExecutionBO;
@@ -12,14 +16,11 @@ import com.shiyu.ai.agent.implementation.persistence.mapper.AgentExecutionMapper
 import com.shiyu.ai.agent.implementation.persistence.mapper.NodeExecutionMapper;
 import com.shiyu.ai.common.core.utils.MapstructUtils;
 import com.shiyu.ai.kernel.context.TenantId;
+
 import org.junit.jupiter.api.Test;
 
 import java.lang.reflect.Field;
 import java.util.List;
-
-import static org.junit.jupiter.api.Assertions.*;
-import static org.mockito.ArgumentMatchers.*;
-import static org.mockito.Mockito.*;
 
 class AgentExecutionRepositoryCoverageTest {
     private static final TenantId TENANT = new TenantId(7);
@@ -42,25 +43,56 @@ class AgentExecutionRepositoryCoverageTest {
         nodeData.setId(12L);
         NodeExecutionBO nodeResult = new NodeExecutionBO();
         when(executionMapper.selectOneByQuery(any(QueryWrapper.class))).thenReturn(executionData);
-        when(executionMapper.selectListByQuery(any(QueryWrapper.class))).thenReturn(List.of(executionData));
+        when(executionMapper.selectListByQuery(any(QueryWrapper.class)))
+                .thenReturn(List.of(executionData));
         when(nodeMapper.selectListByQuery(any(QueryWrapper.class))).thenReturn(List.of(nodeData));
-        doAnswer(invocation -> { ((AgentExecutionDO) invocation.getArgument(0)).setId(11L); return 1; })
-                .when(executionMapper).insertSelective(any(AgentExecutionDO.class));
-        doAnswer(invocation -> { ((NodeExecutionDO) invocation.getArgument(0)).setId(12L); return 1; })
-                .when(nodeMapper).insertSelective(any(NodeExecutionDO.class));
+        doAnswer(
+                        invocation -> {
+                            ((AgentExecutionDO) invocation.getArgument(0)).setId(11L);
+                            return 1;
+                        })
+                .when(executionMapper)
+                .insertSelective(any(AgentExecutionDO.class));
+        doAnswer(
+                        invocation -> {
+                            ((NodeExecutionDO) invocation.getArgument(0)).setId(12L);
+                            return 1;
+                        })
+                .when(nodeMapper)
+                .insertSelective(any(NodeExecutionDO.class));
 
         try (var conversion = mockStatic(MapstructUtils.class)) {
-            conversion.when(() -> MapstructUtils.convert(any(AgentExecutionBO.class), eq(AgentExecutionDO.class)))
+            conversion
+                    .when(
+                            () ->
+                                    MapstructUtils.convert(
+                                            any(AgentExecutionBO.class),
+                                            eq(AgentExecutionDO.class)))
                     .thenReturn(executionData);
-            conversion.when(() -> MapstructUtils.convert(any(AgentExecutionDO.class), eq(AgentExecutionBO.class)))
+            conversion
+                    .when(
+                            () ->
+                                    MapstructUtils.convert(
+                                            any(AgentExecutionDO.class),
+                                            eq(AgentExecutionBO.class)))
                     .thenReturn(executionResult);
-            conversion.when(() -> MapstructUtils.convert(anyList(), eq(AgentExecutionBO.class)))
+            conversion
+                    .when(() -> MapstructUtils.convert(anyList(), eq(AgentExecutionBO.class)))
                     .thenReturn(List.of(executionResult));
-            conversion.when(() -> MapstructUtils.convert(any(NodeExecutionBO.class), eq(NodeExecutionDO.class)))
+            conversion
+                    .when(
+                            () ->
+                                    MapstructUtils.convert(
+                                            any(NodeExecutionBO.class), eq(NodeExecutionDO.class)))
                     .thenReturn(nodeData);
-            conversion.when(() -> MapstructUtils.convert(any(NodeExecutionDO.class), eq(NodeExecutionBO.class)))
+            conversion
+                    .when(
+                            () ->
+                                    MapstructUtils.convert(
+                                            any(NodeExecutionDO.class), eq(NodeExecutionBO.class)))
                     .thenReturn(nodeResult);
-            conversion.when(() -> MapstructUtils.convert(anyList(), eq(NodeExecutionBO.class)))
+            conversion
+                    .when(() -> MapstructUtils.convert(anyList(), eq(NodeExecutionBO.class)))
                     .thenReturn(List.of(nodeResult));
 
             executions.insert(TENANT, execution);
@@ -88,14 +120,30 @@ class AgentExecutionRepositoryCoverageTest {
         AgentCheckpointBO mapped = new AgentCheckpointBO();
         when(mapper.selectOneByQuery(any(QueryWrapper.class))).thenReturn(data);
         when(mapper.selectListByQuery(any(QueryWrapper.class))).thenReturn(List.of(data));
-        doAnswer(invocation -> { ((AgentCheckpointDO) invocation.getArgument(0)).setId(3L); return 1; })
-                .when(mapper).insertSelective(any(AgentCheckpointDO.class));
+        doAnswer(
+                        invocation -> {
+                            ((AgentCheckpointDO) invocation.getArgument(0)).setId(3L);
+                            return 1;
+                        })
+                .when(mapper)
+                .insertSelective(any(AgentCheckpointDO.class));
         try (var conversion = mockStatic(MapstructUtils.class)) {
-            conversion.when(() -> MapstructUtils.convert(any(AgentCheckpointBO.class), eq(AgentCheckpointDO.class)))
+            conversion
+                    .when(
+                            () ->
+                                    MapstructUtils.convert(
+                                            any(AgentCheckpointBO.class),
+                                            eq(AgentCheckpointDO.class)))
                     .thenReturn(data);
-            conversion.when(() -> MapstructUtils.convert(any(AgentCheckpointDO.class), eq(AgentCheckpointBO.class)))
+            conversion
+                    .when(
+                            () ->
+                                    MapstructUtils.convert(
+                                            any(AgentCheckpointDO.class),
+                                            eq(AgentCheckpointBO.class)))
                     .thenReturn(mapped);
-            conversion.when(() -> MapstructUtils.convert(anyList(), eq(AgentCheckpointBO.class)))
+            conversion
+                    .when(() -> MapstructUtils.convert(anyList(), eq(AgentCheckpointBO.class)))
                     .thenReturn(List.of(mapped));
             repository.insert(TENANT, checkpoint);
             assertEquals(3L, checkpoint.getId());
@@ -107,7 +155,9 @@ class AgentExecutionRepositoryCoverageTest {
             verify(mapper, times(2)).deleteByQuery(any(QueryWrapper.class));
             assertThrows(IllegalArgumentException.class, () -> repository.insert(null, checkpoint));
             assertThrows(IllegalArgumentException.class, () -> repository.insert(TENANT, null));
-            assertThrows(IllegalArgumentException.class, () -> repository.listByExecutionId(null, "execution"));
+            assertThrows(
+                    IllegalArgumentException.class,
+                    () -> repository.listByExecutionId(null, "execution"));
         }
     }
 

@@ -1,9 +1,11 @@
 package com.shiyu.ai.knowledge.implementation.domain.model;
 
-import com.shiyu.ai.model.contract.api.EmbeddingService;
-import com.shiyu.ai.kernel.context.TenantId;
 import com.shiyu.ai.kernel.context.ActorContext;
+import com.shiyu.ai.kernel.context.TenantId;
+import com.shiyu.ai.model.contract.api.EmbeddingService;
+
 import lombok.RequiredArgsConstructor;
+
 import org.springframework.context.annotation.Primary;
 import org.springframework.stereotype.Component;
 

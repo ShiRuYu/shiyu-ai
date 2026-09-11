@@ -6,5 +6,3 @@ public enum VectorSearchType {
     /** 精确搜索（暴力扫描） */
     EXACT
 }
-
-

@@ -1,18 +1,16 @@
 package com.shiyu.ai.education.implementation.domain.model;
+
 import lombok.Data;
 
 import java.io.Serial;
 import java.io.Serializable;
 import java.time.LocalDate;
 
-/**
- * StudyPlan 业务对象
- */
+/** StudyPlan 业务对象 */
 @Data
 public class StudyPlanBO implements Serializable {
 
-    @Serial
-    private static final long serialVersionUID = 1L;
+    @Serial private static final long serialVersionUID = 1L;
 
     private Long id;
 
@@ -30,4 +28,3 @@ public class StudyPlanBO implements Serializable {
 
     private LocalDate endDate;
 }
-

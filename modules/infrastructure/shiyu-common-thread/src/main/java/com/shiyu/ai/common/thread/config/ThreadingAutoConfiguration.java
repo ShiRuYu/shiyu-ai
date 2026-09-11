@@ -3,14 +3,16 @@ package com.shiyu.ai.common.thread.config;
 import com.shiyu.ai.common.core.factory.YmlPropertySourceFactory;
 import com.shiyu.ai.common.thread.api.TaskDecorator;
 import com.shiyu.ai.common.thread.api.ThreadPoolManager;
-import com.shiyu.ai.common.thread.context.ContextTaskDecorator;
 import com.shiyu.ai.common.thread.context.CompositeTaskDecorator;
+import com.shiyu.ai.common.thread.context.ContextTaskDecorator;
 import com.shiyu.ai.common.thread.executor.DefaultThreadPoolManager;
 import com.shiyu.ai.common.thread.metrics.MicrometerExecutorBinder;
 import com.shiyu.ai.common.thread.otel.OtelTaskDecorator;
+
 import io.micrometer.core.instrument.MeterRegistry;
 import io.opentelemetry.api.OpenTelemetry;
 import io.opentelemetry.api.trace.Tracer;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.ObjectProvider;
@@ -31,7 +33,9 @@ import java.util.List;
 /** Auto-configuration for managed background worker executors. */
 @AutoConfiguration
 @EnableConfigurationProperties(ThreadingProperties.class)
-@PropertySource(value = "classpath:application-thread-default.yml", factory = YmlPropertySourceFactory.class)
+@PropertySource(
+        value = "classpath:application-thread-default.yml",
+        factory = YmlPropertySourceFactory.class)
 public class ThreadingAutoConfiguration {
 
     private static final Logger logger = LoggerFactory.getLogger(ThreadingAutoConfiguration.class);
@@ -56,8 +60,11 @@ public class ThreadingAutoConfiguration {
     @Bean
     @ConditionalOnClass(MeterRegistry.class)
     @ConditionalOnBean(MeterRegistry.class)
-    @ConditionalOnProperty(prefix = "shiyu.thread", name = "metrics-enabled",
-            havingValue = "true", matchIfMissing = false)
+    @ConditionalOnProperty(
+            prefix = "shiyu.thread",
+            name = "metrics-enabled",
+            havingValue = "true",
+            matchIfMissing = false)
     public SmartLifecycle threadPoolMetricsLifecycle(
             ThreadPoolManager threadPoolManager,
             MeterRegistry meterRegistry,
@@ -67,10 +74,14 @@ public class ThreadingAutoConfiguration {
 
             @Override
             public void start() {
-                properties.getPools().forEach((name, ignored) -> {
-                    new MicrometerExecutorBinder(threadPoolManager.getExecutor(name), name)
-                            .bindTo(meterRegistry);
-                });
+                properties
+                        .getPools()
+                        .forEach(
+                                (name, ignored) -> {
+                                    new MicrometerExecutorBinder(
+                                                    threadPoolManager.getExecutor(name), name)
+                                            .bindTo(meterRegistry);
+                                });
                 running = true;
                 logger.info("Managed worker thread pool metrics enabled");
             }
@@ -90,8 +101,11 @@ public class ThreadingAutoConfiguration {
     @Bean
     @ConditionalOnClass(Tracer.class)
     @ConditionalOnBean(OpenTelemetry.class)
-    @ConditionalOnProperty(prefix = "shiyu.thread", name = "otel-enabled",
-            havingValue = "true", matchIfMissing = false)
+    @ConditionalOnProperty(
+            prefix = "shiyu.thread",
+            name = "otel-enabled",
+            havingValue = "true",
+            matchIfMissing = false)
     public OtelTaskDecorator otelTaskDecorator(OpenTelemetry openTelemetry) {
         logger.info("OpenTelemetry propagation enabled for managed worker threads");
         return new OtelTaskDecorator(openTelemetry.getTracer("shiyu-threading", "1.0.0"));

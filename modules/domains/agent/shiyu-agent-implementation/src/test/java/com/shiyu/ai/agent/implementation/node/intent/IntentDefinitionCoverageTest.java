@@ -1,14 +1,14 @@
 package com.shiyu.ai.agent.implementation.node.intent;
 
-import com.shiyu.ai.agent.contract.node.*;
+import static org.junit.jupiter.api.Assertions.*;
 
+import com.shiyu.ai.agent.contract.node.*;
 import com.shiyu.ai.agent.implementation.domain.model.IntentDefBO;
+
 import org.junit.jupiter.api.Test;
 
 import java.util.List;
 import java.util.Map;
-
-import static org.junit.jupiter.api.Assertions.*;
 
 class IntentDefinitionCoverageTest {
     @Test
@@ -28,7 +28,9 @@ class IntentDefinitionCoverageTest {
         definition.buildWithDefaults();
         assertEquals(0.75, definition.getConfidenceThreshold());
         definition.buildWithDefaults();
-        assertEquals(IntentType.WEATHER.getCode(), IntentDefinition.fromIntentType(IntentType.WEATHER).getCode());
+        assertEquals(
+                IntentType.WEATHER.getCode(),
+                IntentDefinition.fromIntentType(IntentType.WEATHER).getCode());
     }
 
     @Test
@@ -54,17 +56,26 @@ class IntentDefinitionCoverageTest {
         var predicates = IntentDefinitionFactory.buildRoutingPredicates("agent-1", "TASK");
         assertEquals(1, predicates.size());
         assertTrue(predicates.keySet().iterator().next().test(Map.of("intentCode", "custom")));
-        IntentDefinitionFactory.register("agent-1", "TASK", IntentDefinition.builder().code("other").targetNode("node").build());
+        IntentDefinitionFactory.register(
+                "agent-1",
+                "TASK",
+                IntentDefinition.builder().code("other").targetNode("node").build());
         assertEquals(3, IntentDefinitionFactory.getByCategory("agent-1", "TASK").size());
         IntentDefinitionFactory.reloadFromDb(null);
         assertTrue(IntentDefinitionFactory.getAll("default").isEmpty());
     }
 
-    private static IntentDefBO definition(String code, String agentId, String category, String targetNode) {
+    private static IntentDefBO definition(
+            String code, String agentId, String category, String targetNode) {
         IntentDefBO value = new IntentDefBO();
-        value.setCode(code); value.setAgentId(agentId); value.setCategory(category);
-        value.setTargetNode(targetNode); value.setExamples(List.of("example"));
-        value.setEnabled(true); value.setRequireSlotFilling(false); value.setPriority(50);
+        value.setCode(code);
+        value.setAgentId(agentId);
+        value.setCategory(category);
+        value.setTargetNode(targetNode);
+        value.setExamples(List.of("example"));
+        value.setEnabled(true);
+        value.setRequireSlotFilling(false);
+        value.setPriority(50);
         return value;
     }
 }

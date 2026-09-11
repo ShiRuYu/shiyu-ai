@@ -1,4 +1,6 @@
 package com.shiyu.ai.common.storage.security;
+
+import com.shiyu.ai.common.core.exception.ServiceException;
 import com.shiyu.ai.common.storage.api.*;
 import com.shiyu.ai.common.storage.backup.*;
 import com.shiyu.ai.common.storage.config.*;
@@ -6,13 +8,11 @@ import com.shiyu.ai.common.storage.file.*;
 import com.shiyu.ai.common.storage.lease.*;
 import com.shiyu.ai.common.storage.metadata.*;
 import com.shiyu.ai.common.storage.rate.*;
-import com.shiyu.ai.common.storage.security.*;
 import com.shiyu.ai.common.storage.vector.*;
 
-import com.shiyu.ai.common.core.exception.ServiceException;
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.util.unit.DataSize;
 import org.springframework.stereotype.Component;
+import org.springframework.util.unit.DataSize;
 
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
@@ -27,8 +27,19 @@ public class EmbeddedContentSecurityScanner implements ContentSecurityScanner {
     private static final Set<String> DANGEROUS =
             Set.of("exe", "dll", "com", "bat", "cmd", "ps1", "sh", "jar", "msi", "js");
     private static final Set<String> ALLOWED =
-            Set.of("pdf", "docx", "md", "markdown", "txt", "html", "htm",
-                    "png", "jpg", "jpeg", "gif", "webp");
+            Set.of(
+                    "pdf",
+                    "docx",
+                    "md",
+                    "markdown",
+                    "txt",
+                    "html",
+                    "htm",
+                    "png",
+                    "jpg",
+                    "jpeg",
+                    "gif",
+                    "webp");
 
     @Value("${shiyu.storage.security.max-file-size:200MB}")
     private DataSize maxFileSize;

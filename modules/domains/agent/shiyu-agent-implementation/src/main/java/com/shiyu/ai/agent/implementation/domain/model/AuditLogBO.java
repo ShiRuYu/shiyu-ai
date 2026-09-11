@@ -1,4 +1,5 @@
 package com.shiyu.ai.agent.implementation.domain.model;
+
 import lombok.Data;
 
 import java.io.Serial;
@@ -8,8 +9,7 @@ import java.time.LocalDateTime;
 @Data
 public class AuditLogBO implements Serializable {
 
-    @Serial
-    private static final long serialVersionUID = 1L;
+    @Serial private static final long serialVersionUID = 1L;
     private Long id;
 
     private Long tenantId;

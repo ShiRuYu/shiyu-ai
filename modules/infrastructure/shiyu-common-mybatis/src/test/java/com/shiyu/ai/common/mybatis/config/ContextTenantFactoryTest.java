@@ -1,12 +1,13 @@
 package com.shiyu.ai.common.mybatis.config;
 
-import com.shiyu.ai.kernel.context.TenantId;
-import com.shiyu.ai.kernel.context.TenantScope;
-import org.junit.jupiter.api.AfterEach;
-import org.junit.jupiter.api.Test;
-
 import static org.junit.jupiter.api.Assertions.assertArrayEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
+
+import com.shiyu.ai.kernel.context.TenantId;
+import com.shiyu.ai.kernel.context.TenantScope;
+
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.Test;
 
 class ContextTenantFactoryTest {
 
@@ -28,7 +29,7 @@ class ContextTenantFactoryTest {
     void suppliesExactlyTheCurrentTenant() {
         TenantScope.set(new TenantId(9L));
 
-        assertArrayEquals(new Object[]{9L}, factory.getTenantIds());
+        assertArrayEquals(new Object[] {9L}, factory.getTenantIds());
     }
 
     @Test
@@ -37,6 +38,6 @@ class ContextTenantFactoryTest {
 
         TenantScope.set(new TenantId(9L));
 
-        assertArrayEquals(new Object[]{9L}, factory.getTenantIds("auth_user"));
+        assertArrayEquals(new Object[] {9L}, factory.getTenantIds("auth_user"));
     }
 }

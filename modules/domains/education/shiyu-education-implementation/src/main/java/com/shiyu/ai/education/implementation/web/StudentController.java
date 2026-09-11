@@ -1,16 +1,20 @@
 package com.shiyu.ai.education.implementation.web;
 
 import cn.dev33.satoken.annotation.SaCheckPermission;
+
 import com.shiyu.ai.common.core.api.PageData;
 import com.shiyu.ai.common.core.api.Result;
 import com.shiyu.ai.common.web.auth.ActorContextHttpAdapter;
+import com.shiyu.ai.education.implementation.application.StudentService;
 import com.shiyu.ai.education.implementation.web.dto.StudentResponse;
 import com.shiyu.ai.education.implementation.web.request.StudentRequest;
-import com.shiyu.ai.education.implementation.application.StudentService;
 import com.shiyu.ai.kernel.context.ActorContext;
+
 import jakarta.validation.Valid;
+
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+
 import org.springframework.web.bind.annotation.*;
 
 @Slf4j
@@ -64,4 +68,3 @@ public class StudentController {
         return ActorContextHttpAdapter.currentActor();
     }
 }
-

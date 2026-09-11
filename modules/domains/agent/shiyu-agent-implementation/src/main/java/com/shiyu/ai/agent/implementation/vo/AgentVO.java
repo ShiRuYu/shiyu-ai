@@ -25,6 +25,7 @@ public class AgentVO {
     private String currentVersion;
 
     private Integer status;
+
     /** 扩展字段：该 Agent 当前版本所需的接口入参定义 */
     private Map<String, Object> extInfo;
 

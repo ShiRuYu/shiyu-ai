@@ -1,35 +1,37 @@
 package com.shiyu.ai.agent.implementation.cache;
 
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertNull;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.times;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
+
 import com.shiyu.ai.agent.AgentDefinition;
-import com.shiyu.ai.agent.implementation.domain.model.AgentDefBO;
-import com.shiyu.ai.agent.implementation.domain.model.AgentVersionBO;
 import com.shiyu.ai.agent.contract.node.BaseNode;
 import com.shiyu.ai.agent.contract.node.NodeConfig;
-import com.shiyu.ai.agent.implementation.node.NodeFactory;
 import com.shiyu.ai.agent.contract.node.NodeInput;
 import com.shiyu.ai.agent.contract.node.NodeInputParam;
 import com.shiyu.ai.agent.contract.node.NodeOutput;
+import com.shiyu.ai.agent.implementation.domain.model.AgentDefBO;
+import com.shiyu.ai.agent.implementation.domain.model.AgentVersionBO;
+import com.shiyu.ai.agent.implementation.node.NodeFactory;
 import com.shiyu.ai.agent.implementation.port.repository.AgentAdminRepository;
 import com.shiyu.ai.kernel.context.ActorContext;
 import com.shiyu.ai.kernel.context.TenantId;
 import com.shiyu.ai.kernel.context.UserId;
+
 import org.junit.jupiter.api.Test;
 
 import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Map;
 
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertNotNull;
-import static org.junit.jupiter.api.Assertions.assertNull;
-import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.when;
-import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.times;
-
 class AgentLoaderDatabaseCoverageTest {
-    private static final ActorContext ACTOR = new ActorContext(new TenantId(7L), new UserId(9L), false);
+    private static final ActorContext ACTOR =
+            new ActorContext(new TenantId(7L), new UserId(9L), false);
 
     @Test
     void loadsPublishedDefinitionAndSynchronizesRequiredInputs() {
@@ -37,13 +39,21 @@ class AgentLoaderDatabaseCoverageTest {
         NodeFactory factory = mock(NodeFactory.class);
         when(factory.createNode(any())).thenReturn(new RequiredNode());
         AgentDefBO definition = new AgentDefBO();
-        definition.setAgentId("agent-1"); definition.setStatus(1); definition.setCurrentVersion("v1");
-        definition.setName("Agent"); definition.setCreateTime(LocalDateTime.now()); definition.setUpdateTime(LocalDateTime.now());
+        definition.setAgentId("agent-1");
+        definition.setStatus(1);
+        definition.setCurrentVersion("v1");
+        definition.setName("Agent");
+        definition.setCreateTime(LocalDateTime.now());
+        definition.setUpdateTime(LocalDateTime.now());
         AgentVersionBO version = new AgentVersionBO();
-        version.setVersionNumber("v1"); version.setDescription("Version"); version.setCreateTime(LocalDateTime.now());
-        version.setGraphConfig("{\"name\":\"graph\",\"startNode\":\"n\",\"endNode\":\"n\",\"nodes\":{\"n\":{\"nodeType\":\"DEFAULT\"}}}");
+        version.setVersionNumber("v1");
+        version.setDescription("Version");
+        version.setCreateTime(LocalDateTime.now());
+        version.setGraphConfig(
+                "{\"name\":\"graph\",\"startNode\":\"n\",\"endNode\":\"n\",\"nodes\":{\"n\":{\"nodeType\":\"DEFAULT\"}}}");
         when(repository.selectByAgentId(ACTOR.tenantId(), "agent-1")).thenReturn(definition);
-        when(repository.selectVersionByAgentIdAndNumber(ACTOR.tenantId(), "agent-1", "v1")).thenReturn(version);
+        when(repository.selectVersionByAgentIdAndNumber(ACTOR.tenantId(), "agent-1", "v1"))
+                .thenReturn(version);
 
         AgentDefinition loaded = new AgentLoader(factory, repository).loadFromDb(ACTOR, "agent-1");
         assertNotNull(loaded);
@@ -55,11 +65,15 @@ class AgentLoaderDatabaseCoverageTest {
     void returnsNullForMalformedGraphAndNodeConstructionFailure() {
         AgentAdminRepository repository = mock(AgentAdminRepository.class);
         AgentDefBO definition = new AgentDefBO();
-        definition.setStatus(1); definition.setCurrentVersion("v1");
-        AgentVersionBO version = new AgentVersionBO(); version.setGraphConfig("not-json");
+        definition.setStatus(1);
+        definition.setCurrentVersion("v1");
+        AgentVersionBO version = new AgentVersionBO();
+        version.setGraphConfig("not-json");
         when(repository.selectByAgentId(ACTOR.tenantId(), "agent-1")).thenReturn(definition);
-        when(repository.selectVersionByAgentIdAndNumber(ACTOR.tenantId(), "agent-1", "v1")).thenReturn(version);
-        assertNull(new AgentLoader(mock(NodeFactory.class), repository).loadFromDb(ACTOR, "agent-1"));
+        when(repository.selectVersionByAgentIdAndNumber(ACTOR.tenantId(), "agent-1", "v1"))
+                .thenReturn(version);
+        assertNull(
+                new AgentLoader(mock(NodeFactory.class), repository).loadFromDb(ACTOR, "agent-1"));
     }
 
     @Test
@@ -78,9 +92,11 @@ class AgentLoaderDatabaseCoverageTest {
         AgentVersionBO version = new AgentVersionBO();
         version.setVersionNumber("v1");
         version.setCreateTime(LocalDateTime.now());
-        version.setGraphConfig("{\"startNode\":\"n\",\"endNode\":\"n\",\"nodes\":{\"n\":{\"nodeType\":\"DEFAULT\",\"config\":{\"description\":\"custom\"}}},\"edges\":{},\"conditionalEdges\":{}}");
+        version.setGraphConfig(
+                "{\"startNode\":\"n\",\"endNode\":\"n\",\"nodes\":{\"n\":{\"nodeType\":\"DEFAULT\",\"config\":{\"description\":\"custom\"}}},\"edges\":{},\"conditionalEdges\":{}}");
         when(repository.selectByAgentId(ACTOR.tenantId(), "agent-1")).thenReturn(definition);
-        when(repository.selectVersionByAgentIdAndNumber(ACTOR.tenantId(), "agent-1", "v1")).thenReturn(version);
+        when(repository.selectVersionByAgentIdAndNumber(ACTOR.tenantId(), "agent-1", "v1"))
+                .thenReturn(version);
 
         AgentLoader loader = new AgentLoader(factory, repository);
         assertNotNull(loader.loadFromDb(ACTOR, "agent-1"));

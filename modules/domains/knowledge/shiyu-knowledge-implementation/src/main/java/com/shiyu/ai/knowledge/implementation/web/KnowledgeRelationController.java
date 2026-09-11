@@ -1,17 +1,20 @@
 package com.shiyu.ai.knowledge.implementation.web;
 
-import com.shiyu.ai.knowledge.implementation.web.KnowledgeApiVersion;
-
 import cn.dev33.satoken.annotation.SaCheckPermission;
+
 import com.shiyu.ai.common.core.api.Result;
 import com.shiyu.ai.common.core.exception.ServiceException;
-import com.shiyu.ai.knowledge.implementation.domain.RelationType;
-import com.shiyu.ai.knowledge.implementation.application.KnowledgeRelationService;
-import com.shiyu.ai.kernel.context.ActorContext;
 import com.shiyu.ai.common.web.auth.ActorContextHttpAdapter;
+import com.shiyu.ai.kernel.context.ActorContext;
+import com.shiyu.ai.knowledge.implementation.application.KnowledgeRelationService;
+import com.shiyu.ai.knowledge.implementation.domain.RelationType;
+
 import io.swagger.v3.oas.annotations.tags.Tag;
+
 import jakarta.validation.constraints.NotNull;
+
 import lombok.RequiredArgsConstructor;
+
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -35,47 +38,58 @@ public class KnowledgeRelationController {
     @GetMapping("/points/{pointId}/relations")
     public Result<List<KnowledgeRelationService.RelationView>> list(
             @PathVariable Long pointId,
-            @RequestHeader(value = KnowledgeApiVersion.HEADER,
-                    defaultValue = KnowledgeApiVersion.CURRENT) String version) {
+            @RequestHeader(
+                            value = KnowledgeApiVersion.HEADER,
+                            defaultValue = KnowledgeApiVersion.CURRENT)
+                    String version) {
         KnowledgeApiVersion.requireCurrent(version);
         return Result.success(service.list(currentActor(), pointId));
     }
 
     @PostMapping("/points/{pointId}/relations")
     @SaCheckPermission("knowledge:relation")
-    public Result<Void> create(@PathVariable Long pointId,
-                               @RequestBody RelationRequest request,
-                               @RequestHeader(value = KnowledgeApiVersion.HEADER,
-                                       defaultValue = KnowledgeApiVersion.CURRENT) String version) {
+    public Result<Void> create(
+            @PathVariable Long pointId,
+            @RequestBody RelationRequest request,
+            @RequestHeader(
+                            value = KnowledgeApiVersion.HEADER,
+                            defaultValue = KnowledgeApiVersion.CURRENT)
+                    String version) {
         KnowledgeApiVersion.requireCurrent(version);
         if (!pointId.equals(request.sourceId())) {
             throw new ServiceException("sourceId 必须与路径中的 pointId 一致");
         }
-        service.addRelation(currentActor(), request.sourceId(), request.targetId(),
-                request.type(), request.weight());
+        service.addRelation(
+                currentActor(),
+                request.sourceId(),
+                request.targetId(),
+                request.type(),
+                request.weight());
         return Result.success();
     }
 
     @DeleteMapping("/points/{pointId}/relations/{targetId}")
     @SaCheckPermission("knowledge:relation")
-    public Result<Void> delete(@PathVariable Long pointId,
-                               @PathVariable Long targetId,
-                               RelationType type,
-                               @RequestHeader(value = KnowledgeApiVersion.HEADER,
-                                       defaultValue = KnowledgeApiVersion.CURRENT) String version) {
+    public Result<Void> delete(
+            @PathVariable Long pointId,
+            @PathVariable Long targetId,
+            RelationType type,
+            @RequestHeader(
+                            value = KnowledgeApiVersion.HEADER,
+                            defaultValue = KnowledgeApiVersion.CURRENT)
+                    String version) {
         KnowledgeApiVersion.requireCurrent(version);
         service.removeRelation(currentActor(), pointId, targetId, type);
         return Result.success();
     }
 
-    public record RelationRequest(@NotNull Long sourceId,
-                                  @NotNull Long targetId,
-                                  @NotNull RelationType type,
-                                  Double weight) {
-    }
+    public record RelationRequest(
+            @NotNull Long sourceId,
+            @NotNull Long targetId,
+            @NotNull RelationType type,
+            Double weight) {}
 
     private ActorContext currentActor() {
         return ActorContextHttpAdapter.currentActor();
     }
 }
-

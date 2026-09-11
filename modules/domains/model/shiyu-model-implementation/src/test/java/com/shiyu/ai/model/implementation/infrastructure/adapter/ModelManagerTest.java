@@ -1,22 +1,21 @@
 package com.shiyu.ai.model.implementation.infrastructure.adapter;
 
+import static org.junit.jupiter.api.Assertions.*;
+import static org.mockito.ArgumentMatchers.*;
+import static org.mockito.Mockito.*;
+
 import com.shiyu.ai.kernel.context.TenantId;
-import com.shiyu.ai.model.implementation.infrastructure.adapter.config.PlatformConfig;
-import com.shiyu.ai.model.implementation.infrastructure.config.PlatformProperties;
 import com.shiyu.ai.model.implementation.domain.model.AiModelBO;
 import com.shiyu.ai.model.implementation.domain.model.AiPlatformBO;
 import com.shiyu.ai.model.implementation.domain.port.repository.AiModelRepository;
 import com.shiyu.ai.model.implementation.domain.port.repository.AiPlatformRepository;
+import com.shiyu.ai.model.implementation.infrastructure.adapter.config.PlatformConfig;
 import com.shiyu.ai.model.implementation.infrastructure.adapter.impl.OllamaPlatformAdapter;
-import dev.langchain4j.model.chat.ChatModel;
-import dev.langchain4j.model.chat.StreamingChatModel;
+import com.shiyu.ai.model.implementation.infrastructure.config.PlatformProperties;
+
 import org.junit.jupiter.api.Test;
 
 import java.util.List;
-
-import static org.junit.jupiter.api.Assertions.*;
-import static org.mockito.ArgumentMatchers.*;
-import static org.mockito.Mockito.*;
 
 class ModelManagerTest {
     @Test
@@ -42,21 +41,41 @@ class ModelManagerTest {
 
     @Test
     void loadsDatabaseAdaptersAndRoutesByModel() {
-        AiPlatformRepository platforms = mock(AiPlatformRepository.class); AiModelRepository models = mock(AiModelRepository.class);
-        PlatformProperties props = new PlatformProperties(); props.setTenantId(9L); props.getOpenai().setApiKey("key"); props.init();
-        AiPlatformBO platform = new AiPlatformBO(); platform.setId(1L); platform.setCode("OPENAI"); platform.setName("OpenAI"); platform.setBaseUrl("http://openai");
-        AiModelBO model = new AiModelBO(); model.setModelName("gpt-test");
-        when(platforms.selectAllEnabled(new TenantId(9L))).thenReturn(List.of(platform)); when(models.selectDefaultByPlatformId(new TenantId(9L), 1L)).thenReturn(model);
+        AiPlatformRepository platforms = mock(AiPlatformRepository.class);
+        AiModelRepository models = mock(AiModelRepository.class);
+        PlatformProperties props = new PlatformProperties();
+        props.setTenantId(9L);
+        props.getOpenai().setApiKey("key");
+        props.init();
+        AiPlatformBO platform = new AiPlatformBO();
+        platform.setId(1L);
+        platform.setCode("OPENAI");
+        platform.setName("OpenAI");
+        platform.setBaseUrl("http://openai");
+        AiModelBO model = new AiModelBO();
+        model.setModelName("gpt-test");
+        when(platforms.selectAllEnabled(new TenantId(9L))).thenReturn(List.of(platform));
+        when(models.selectDefaultByPlatformId(new TenantId(9L), 1L)).thenReturn(model);
         when(platforms.selectDefault(new TenantId(9L))).thenReturn(platform);
         ModelManager manager = new ModelManager(platforms, models, props);
         manager.reloadFromDb();
-        assertTrue(manager.isDbLoaded()); assertEquals("OPENAI", manager.getDefaultPlatform()); assertEquals("gpt-test", manager.getDefaultModelName("OPENAI"));
-        assertEquals("OPENAI", manager.resolvePlatform("gpt-test")); assertTrue(manager.getAvailablePlatforms().contains("OPENAI"));
+        assertTrue(manager.isDbLoaded());
+        assertEquals("OPENAI", manager.getDefaultPlatform());
+        assertEquals("gpt-test", manager.getDefaultModelName("OPENAI"));
+        assertEquals("OPENAI", manager.resolvePlatform("gpt-test"));
+        assertTrue(manager.getAvailablePlatforms().contains("OPENAI"));
         assertTrue(manager.availableModels().stream().anyMatch(x -> x.platform().equals("OPENAI")));
-        PlatformConfig config = new PlatformConfig("OPENAI", "http://openai", "key", "gpt-test", .7, 10, 1);
-        assertNotNull(manager.getChatModel(config)); assertNotNull(manager.getStreamingChatModel(config));
-        manager.markDirty(); assertFalse(manager.isDbLoaded()); assertNotNull(manager.getAdapter("OPENAI"));
-        manager.refreshCache("OPENAI"); manager.refreshAllCache(); manager.unregisterAdapter("OPENAI"); assertFalse(manager.isPlatformAvailable("OPENAI"));
+        PlatformConfig config =
+                new PlatformConfig("OPENAI", "http://openai", "key", "gpt-test", .7, 10, 1);
+        assertNotNull(manager.getChatModel(config));
+        assertNotNull(manager.getStreamingChatModel(config));
+        manager.markDirty();
+        assertFalse(manager.isDbLoaded());
+        assertNotNull(manager.getAdapter("OPENAI"));
+        manager.refreshCache("OPENAI");
+        manager.refreshAllCache();
+        manager.unregisterAdapter("OPENAI");
+        assertFalse(manager.isPlatformAvailable("OPENAI"));
         assertThrows(IllegalArgumentException.class, () -> manager.getAdapter("MISSING"));
     }
 
@@ -148,31 +167,63 @@ class ModelManagerTest {
 
     @Test
     void selectsAdapterByAdapterTypeForStandaloneConfiguration() {
-        ModelManager manager = new ModelManager(mock(AiPlatformRepository.class), mock(AiModelRepository.class), new PlatformProperties());
-        PlatformConfig config = new PlatformConfig("LOCAL", "OLLAMA", "http://localhost:11434", null, "llama3", .7, 128, 1);
+        ModelManager manager =
+                new ModelManager(
+                        mock(AiPlatformRepository.class),
+                        mock(AiModelRepository.class),
+                        new PlatformProperties());
+        PlatformConfig config =
+                new PlatformConfig(
+                        "LOCAL", "OLLAMA", "http://localhost:11434", null, "llama3", .7, 128, 1);
 
         assertNotNull(manager.getChatModel(config));
     }
 
     @Test
     void doesNotReuseOllamaAdapterForExplicitOpenAiCompatibleConfiguration() {
-        ModelManager manager = new ModelManager(mock(AiPlatformRepository.class), mock(AiModelRepository.class), new PlatformProperties());
-        manager.registerAdapter(new OllamaPlatformAdapter("http://localhost:11434", "llama3", .7, 1));
-        PlatformConfig config = new PlatformConfig("OLLAMA", "OPENAI_COMPATIBLE", "http://openai", "key", "gpt-test", .7, 128, 1);
+        ModelManager manager =
+                new ModelManager(
+                        mock(AiPlatformRepository.class),
+                        mock(AiModelRepository.class),
+                        new PlatformProperties());
+        manager.registerAdapter(
+                new OllamaPlatformAdapter("http://localhost:11434", "llama3", .7, 1));
+        PlatformConfig config =
+                new PlatformConfig(
+                        "OLLAMA",
+                        "OPENAI_COMPATIBLE",
+                        "http://openai",
+                        "key",
+                        "gpt-test",
+                        .7,
+                        128,
+                        1);
 
         assertNotNull(manager.getChatModel(config));
     }
 
     @Test
     void fallsBackToDefaultsWhenDatabaseUnavailableAndSupportsRegistration() {
-        AiPlatformRepository platforms = mock(AiPlatformRepository.class); AiModelRepository models = mock(AiModelRepository.class);
-        PlatformProperties props = new PlatformProperties(); props.setTenantId(null);
+        AiPlatformRepository platforms = mock(AiPlatformRepository.class);
+        AiModelRepository models = mock(AiModelRepository.class);
+        PlatformProperties props = new PlatformProperties();
+        props.setTenantId(null);
         ModelManager manager = new ModelManager(platforms, models, props);
         manager.reloadFromDb();
-        assertFalse(manager.isDbLoaded()); assertTrue(List.of("OPENAI", "DEEPSEEK", "OPENROUTER", "SILICON_FLOW", "OLLAMA").contains(manager.getDefaultPlatform()));
-        ModelAdapter adapter = mock(ModelAdapter.class); when(adapter.getPlatformType()).thenReturn("CUSTOM"); when(adapter.isAvailable()).thenReturn(true); when(adapter.getDefaultModelName()).thenReturn("custom-model");
-        manager.registerAdapter(adapter); assertTrue(manager.isPlatformAvailable("CUSTOM")); assertEquals("CUSTOM", manager.resolvePlatform("custom-model"));
-        manager.unregisterAdapter("CUSTOM"); verify(adapter).clearCache();
-        assertThrows(IllegalArgumentException.class, () -> manager.getChatModel((PlatformConfig) null));
+        assertFalse(manager.isDbLoaded());
+        assertTrue(
+                List.of("OPENAI", "DEEPSEEK", "OPENROUTER", "SILICON_FLOW", "OLLAMA")
+                        .contains(manager.getDefaultPlatform()));
+        ModelAdapter adapter = mock(ModelAdapter.class);
+        when(adapter.getPlatformType()).thenReturn("CUSTOM");
+        when(adapter.isAvailable()).thenReturn(true);
+        when(adapter.getDefaultModelName()).thenReturn("custom-model");
+        manager.registerAdapter(adapter);
+        assertTrue(manager.isPlatformAvailable("CUSTOM"));
+        assertEquals("CUSTOM", manager.resolvePlatform("custom-model"));
+        manager.unregisterAdapter("CUSTOM");
+        verify(adapter).clearCache();
+        assertThrows(
+                IllegalArgumentException.class, () -> manager.getChatModel((PlatformConfig) null));
     }
 }

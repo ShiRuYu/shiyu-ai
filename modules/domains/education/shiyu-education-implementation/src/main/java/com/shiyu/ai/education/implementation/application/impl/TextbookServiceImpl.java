@@ -2,14 +2,16 @@ package com.shiyu.ai.education.implementation.application.impl;
 
 import com.shiyu.ai.common.core.api.PageData;
 import com.shiyu.ai.common.core.utils.MapstructUtils;
+import com.shiyu.ai.education.implementation.application.TextbookService;
 import com.shiyu.ai.education.implementation.domain.model.TextbookBO;
 import com.shiyu.ai.education.implementation.domain.port.repository.TextbookRepository;
 import com.shiyu.ai.education.implementation.web.dto.TextbookResponse;
 import com.shiyu.ai.education.implementation.web.request.TextbookRequest;
-import com.shiyu.ai.education.implementation.application.TextbookService;
 import com.shiyu.ai.kernel.context.ActorContext;
+
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -22,8 +24,10 @@ public class TextbookServiceImpl implements TextbookService {
 
     @Override
     public PageData<TextbookResponse> page(ActorContext actor, int pageNum, int pageSize) {
-        PageData<TextbookBO> boPage = textbookRepository.selectPage(requireActor(actor).tenantId(), pageNum, pageSize);
-        List<TextbookResponse> items = MapstructUtils.convert(boPage.getItems(), TextbookResponse.class);
+        PageData<TextbookBO> boPage =
+                textbookRepository.selectPage(requireActor(actor).tenantId(), pageNum, pageSize);
+        List<TextbookResponse> items =
+                MapstructUtils.convert(boPage.getItems(), TextbookResponse.class);
         return new PageData<>(items, boPage.getTotal());
     }
 
@@ -35,10 +39,12 @@ public class TextbookServiceImpl implements TextbookService {
         return MapstructUtils.convert(bo, TextbookResponse.class);
     }
 
-
     @Override
-    public List<TextbookResponse> listBySubjectAndGrade(ActorContext actor, String subjectCode, Integer grade) {
-        List<TextbookBO> boList = textbookRepository.selectBySubjectAndGrade(requireActor(actor).tenantId(), subjectCode, grade);
+    public List<TextbookResponse> listBySubjectAndGrade(
+            ActorContext actor, String subjectCode, Integer grade) {
+        List<TextbookBO> boList =
+                textbookRepository.selectBySubjectAndGrade(
+                        requireActor(actor).tenantId(), subjectCode, grade);
         return MapstructUtils.convert(boList, TextbookResponse.class);
     }
 
@@ -46,9 +52,6 @@ public class TextbookServiceImpl implements TextbookService {
         List<TextbookBO> boList = textbookRepository.selectAll(requireActor(actor).tenantId());
         return MapstructUtils.convert(boList, TextbookResponse.class);
     }
-
-
-
 
     @Override
     @Transactional(rollbackFor = Exception.class)
@@ -91,4 +94,3 @@ public class TextbookServiceImpl implements TextbookService {
         return java.util.Objects.requireNonNull(actor, "actor is required");
     }
 }
-

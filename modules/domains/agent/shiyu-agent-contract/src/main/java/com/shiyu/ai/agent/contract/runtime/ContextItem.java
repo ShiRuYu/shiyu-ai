@@ -3,14 +3,37 @@ package com.shiyu.ai.agent.contract.runtime;
 import java.time.Instant;
 import java.util.List;
 
-public record ContextItem(String sourceType, String sourceId, String version, String content, double score,
-                          ContextCitation citation, List<String> relationPath, String accessScope,
-                          int tokenCount, Instant createdAt) {
-    public ContextItem(String sourceType, String sourceId, String content, double score,
-                       ContextCitation citation, List<String> relationPath, String accessScope,
-                       Instant createdAt) {
-        this(sourceType, sourceId, null, content, score, citation, relationPath, accessScope,
-                estimateTokens(content), createdAt);
+public record ContextItem(
+        String sourceType,
+        String sourceId,
+        String version,
+        String content,
+        double score,
+        ContextCitation citation,
+        List<String> relationPath,
+        String accessScope,
+        int tokenCount,
+        Instant createdAt) {
+    public ContextItem(
+            String sourceType,
+            String sourceId,
+            String content,
+            double score,
+            ContextCitation citation,
+            List<String> relationPath,
+            String accessScope,
+            Instant createdAt) {
+        this(
+                sourceType,
+                sourceId,
+                null,
+                content,
+                score,
+                citation,
+                relationPath,
+                accessScope,
+                estimateTokens(content),
+                createdAt);
     }
 
     public ContextItem {

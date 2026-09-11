@@ -2,4 +2,10 @@ package com.shiyu.ai.conversation.implementation.domain.chat;
 
 import java.time.Instant;
 
-public record GroupChatAsset(String id, long tenantId, long ownerUserId, GroupChat group, Instant createdAt, Instant updatedAt) { }
+public record GroupChatAsset(
+        String id,
+        long tenantId,
+        long ownerUserId,
+        GroupChat group,
+        Instant createdAt,
+        Instant updatedAt) {}

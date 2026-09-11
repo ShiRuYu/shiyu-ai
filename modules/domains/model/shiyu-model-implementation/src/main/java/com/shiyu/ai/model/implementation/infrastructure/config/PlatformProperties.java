@@ -1,8 +1,11 @@
 package com.shiyu.ai.model.implementation.infrastructure.config;
 
 import com.shiyu.ai.common.core.factory.YmlPropertySourceFactory;
+
 import jakarta.annotation.PostConstruct;
+
 import lombok.Data;
+
 import org.springframework.boot.context.properties.ConfigurationProperties;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.PropertySource;
@@ -13,20 +16,24 @@ import java.util.Map;
 @Data
 @Configuration
 @ConfigurationProperties(prefix = "shiyu.ai")
-@PropertySource(value = "classpath:/config/config.yml", factory = YmlPropertySourceFactory.class, ignoreResourceNotFound = true)
+@PropertySource(
+        value = "classpath:/config/config.yml",
+        factory = YmlPropertySourceFactory.class,
+        ignoreResourceNotFound = true)
 public class PlatformProperties {
 
-    /**
-     * 平台编码 -> API Key 映射表，由 @PostConstruct 从各子配置中汇总
-     */
+    /** 平台编码 -> API Key 映射表，由 @PostConstruct 从各子配置中汇总 */
     private final Map<String, String> platformApiKeys = new HashMap<>();
 
-    /**
-     * ???? -> ???????
-     */
+    /** ???? -> ??????? */
     private final Map<String, String> platformDefaultModels = new HashMap<>();
-    /** Tenant used only for optional startup-time database loading; HTTP commands pass ActorContext directly. */
+
+    /**
+     * Tenant used only for optional startup-time database loading; HTTP commands pass ActorContext
+     * directly.
+     */
     private Long tenantId;
+
     private OllamaConfig ollama = new OllamaConfig();
     private DeepSeekConfig deepseek = new DeepSeekConfig();
     private OpenAIConfig openai = new OpenAIConfig();
@@ -61,9 +68,7 @@ public class PlatformProperties {
         private String model = "x-ai/grok-4.1-fast";
     }
 
-    /**
-     * ?????????????????? Map ?
-     */
+    /** ?????????????????? Map ? */
     @PostConstruct
     public void init() {
         platformApiKeys.put("OPENAI", openai.getApiKey());
@@ -79,18 +84,13 @@ public class PlatformProperties {
         platformDefaultModels.put("OLLAMA", ollama.getModel());
     }
 
-    /**
-     * ?????????? API Key
-     * ?? ModelManager ?? switch-case ???
-     */
+    /** ?????????? API Key ?? ModelManager ?? switch-case ??? */
     public String getApiKey(String platformCode) {
         if (platformCode == null) return null;
         return platformApiKeys.get(platformCode.toUpperCase());
     }
 
-    /**
-     * ??????????????
-     */
+    /** ?????????????? */
     public String getDefaultModel(String platformCode) {
         if (platformCode == null) return null;
         return platformDefaultModels.get(platformCode.toUpperCase());

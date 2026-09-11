@@ -1,18 +1,19 @@
 package com.shiyu.ai.agent.implementation.persistence.repository;
 
+import static org.junit.jupiter.api.Assertions.*;
+import static org.mockito.ArgumentMatchers.*;
+import static org.mockito.Mockito.*;
+
 import com.mybatisflex.core.query.QueryWrapper;
 import com.shiyu.ai.agent.implementation.domain.model.IntentDefBO;
 import com.shiyu.ai.agent.implementation.persistence.dataobject.IntentDefDO;
 import com.shiyu.ai.agent.implementation.persistence.mapper.IntentDefMapper;
 import com.shiyu.ai.kernel.context.TenantId;
+
 import org.junit.jupiter.api.Test;
 
 import java.util.List;
 import java.util.Map;
-
-import static org.junit.jupiter.api.Assertions.*;
-import static org.mockito.ArgumentMatchers.*;
-import static org.mockito.Mockito.*;
 
 class IntentDefRepositoryImplTest {
     private static final TenantId TENANT = new TenantId(7L);
@@ -50,11 +51,14 @@ class IntentDefRepositoryImplTest {
     void createsUpdatesDeletesAndListsOptionsWithTenantScope() {
         IntentDefMapper mapper = mock(IntentDefMapper.class);
         IntentDefRepositoryImpl repository = repository(mapper);
-        doAnswer(invocation -> {
-            IntentDefDO inserted = invocation.getArgument(0);
-            inserted.setId(22L);
-            return 1;
-        }).when(mapper).insertSelective(any(IntentDefDO.class));
+        doAnswer(
+                        invocation -> {
+                            IntentDefDO inserted = invocation.getArgument(0);
+                            inserted.setId(22L);
+                            return 1;
+                        })
+                .when(mapper)
+                .insertSelective(any(IntentDefDO.class));
         IntentDefBO bo = businessObject();
         IntentDefBO created = repository.create(TENANT, bo);
         assertEquals(22L, created.getId());
@@ -79,17 +83,22 @@ class IntentDefRepositoryImplTest {
     @Test
     void rejectsMissingTenantAndInvalidCommands() {
         IntentDefRepositoryImpl repository = repository(mock(IntentDefMapper.class));
-        assertThrows(IllegalArgumentException.class, () -> repository.selectPage(null, 1, 10, null, null, null, null));
+        assertThrows(
+                IllegalArgumentException.class,
+                () -> repository.selectPage(null, 1, 10, null, null, null, null));
         assertThrows(IllegalArgumentException.class, () -> repository.selectByAgentId(null, "a"));
-        assertThrows(IllegalArgumentException.class, () -> repository.selectByCategory(null, "a", "c"));
+        assertThrows(
+                IllegalArgumentException.class, () -> repository.selectByCategory(null, "a", "c"));
         assertThrows(IllegalArgumentException.class, () -> repository.selectById(null, 1L));
-        assertThrows(IllegalArgumentException.class, () -> repository.create(null, businessObject()));
+        assertThrows(
+                IllegalArgumentException.class, () -> repository.create(null, businessObject()));
         assertThrows(IllegalArgumentException.class, () -> repository.create(TENANT, null));
         assertThrows(IllegalArgumentException.class, () -> repository.update(TENANT, null));
         IntentDefBO missingId = businessObject();
         assertThrows(IllegalArgumentException.class, () -> repository.update(TENANT, missingId));
         assertThrows(IllegalArgumentException.class, () -> repository.deleteById(null, 1L));
-        assertThrows(IllegalArgumentException.class, () -> repository.deleteByIds(null, List.of(1L)));
+        assertThrows(
+                IllegalArgumentException.class, () -> repository.deleteByIds(null, List.of(1L)));
         assertThrows(IllegalArgumentException.class, () -> repository.selectAllOptions(null));
     }
 
@@ -97,11 +106,14 @@ class IntentDefRepositoryImplTest {
     void handlesSparseDefinitionsAndNullJsonColumns() {
         IntentDefMapper mapper = mock(IntentDefMapper.class);
         IntentDefRepositoryImpl repository = repository(mapper);
-        doAnswer(invocation -> {
-            IntentDefDO inserted = invocation.getArgument(0);
-            inserted.setId(44L);
-            return 1;
-        }).when(mapper).insertSelective(any(IntentDefDO.class));
+        doAnswer(
+                        invocation -> {
+                            IntentDefDO inserted = invocation.getArgument(0);
+                            inserted.setId(44L);
+                            return 1;
+                        })
+                .when(mapper)
+                .insertSelective(any(IntentDefDO.class));
         IntentDefBO sparse = new IntentDefBO();
         IntentDefBO created = repository.create(TENANT, sparse);
         assertEquals(44L, created.getId());
@@ -137,22 +149,43 @@ class IntentDefRepositoryImplTest {
 
     private static IntentDefDO row(long id) {
         IntentDefDO row = new IntentDefDO();
-        row.setId(id); row.setTenantId(7L); row.setAgentId("agent"); row.setCode("WEATHER");
-        row.setName("Weather"); row.setDescription("weather lookup"); row.setCategory("conversation");
-        row.setPriority(1); row.setConfidenceThreshold(0.8); row.setExamples("[\"rain\"]");
-        row.setTargetNode("weather-node"); row.setRequireSlotFilling("1"); row.setSlots("{\"city\":\"city name\"}");
-        row.setParameterMapping("{\"city\":\"query\"}"); row.setSlotDefaults("{\"city\":\"Beijing\"}");
-        row.setEnabled("1"); row.setStatus(1); row.setDelFlag(0);
+        row.setId(id);
+        row.setTenantId(7L);
+        row.setAgentId("agent");
+        row.setCode("WEATHER");
+        row.setName("Weather");
+        row.setDescription("weather lookup");
+        row.setCategory("conversation");
+        row.setPriority(1);
+        row.setConfidenceThreshold(0.8);
+        row.setExamples("[\"rain\"]");
+        row.setTargetNode("weather-node");
+        row.setRequireSlotFilling("1");
+        row.setSlots("{\"city\":\"city name\"}");
+        row.setParameterMapping("{\"city\":\"query\"}");
+        row.setSlotDefaults("{\"city\":\"Beijing\"}");
+        row.setEnabled("1");
+        row.setStatus(1);
+        row.setDelFlag(0);
         return row;
     }
 
     private static IntentDefBO businessObject() {
         IntentDefBO bo = new IntentDefBO();
-        bo.setAgentId("agent"); bo.setCode("WEATHER"); bo.setName("Weather"); bo.setDescription("weather lookup");
-        bo.setCategory("conversation"); bo.setPriority(1); bo.setConfidenceThreshold(0.8);
-        bo.setExamples(List.of("rain")); bo.setTargetNode("weather-node"); bo.setRequireSlotFilling(true);
-        bo.setSlots(Map.of("city", "city name")); bo.setParameterMapping(Map.of("city", "query"));
-        bo.setSlotDefaults(Map.of("city", "Beijing")); bo.setEnabled(true);
+        bo.setAgentId("agent");
+        bo.setCode("WEATHER");
+        bo.setName("Weather");
+        bo.setDescription("weather lookup");
+        bo.setCategory("conversation");
+        bo.setPriority(1);
+        bo.setConfidenceThreshold(0.8);
+        bo.setExamples(List.of("rain"));
+        bo.setTargetNode("weather-node");
+        bo.setRequireSlotFilling(true);
+        bo.setSlots(Map.of("city", "city name"));
+        bo.setParameterMapping(Map.of("city", "query"));
+        bo.setSlotDefaults(Map.of("city", "Beijing"));
+        bo.setEnabled(true);
         return bo;
     }
 }

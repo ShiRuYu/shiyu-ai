@@ -12,8 +12,9 @@ public class ShiyuBootstrapApplication {
 
     public static void main(String[] args) {
         dataDirectoryLock = EmbeddedDataDirectoryLock.acquire();
-        Runtime.getRuntime().addShutdownHook(new Thread(
-                () -> dataDirectoryLock.close(), "embedded-data-lock-release"));
+        Runtime.getRuntime()
+                .addShutdownHook(
+                        new Thread(() -> dataDirectoryLock.close(), "embedded-data-lock-release"));
         try {
             SpringApplication.run(ShiyuBootstrapApplication.class, args);
         } catch (RuntimeException exception) {
@@ -21,5 +22,4 @@ public class ShiyuBootstrapApplication {
             throw exception;
         }
     }
-
 }

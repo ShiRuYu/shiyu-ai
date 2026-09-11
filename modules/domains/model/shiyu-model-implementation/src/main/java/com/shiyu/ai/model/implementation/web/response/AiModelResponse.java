@@ -1,8 +1,11 @@
 package com.shiyu.ai.model.implementation.web.response;
 
 import com.shiyu.ai.model.implementation.domain.model.AiModelBO;
+
 import io.github.linpeilie.annotations.AutoMapper;
+
 import lombok.Data;
+
 import java.time.LocalDateTime;
 
 @Data

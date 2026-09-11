@@ -1,16 +1,17 @@
 package com.shiyu.ai.agent.implementation.checkpoint;
 
+import static org.junit.jupiter.api.Assertions.*;
+import static org.mockito.ArgumentMatchers.*;
+import static org.mockito.Mockito.*;
+
 import com.shiyu.ai.agent.implementation.domain.model.AgentCheckpointBO;
 import com.shiyu.ai.agent.implementation.port.repository.AgentCheckpointRepository;
 import com.shiyu.ai.kernel.context.TenantId;
+
 import org.junit.jupiter.api.Test;
 
 import java.util.List;
 import java.util.Map;
-
-import static org.junit.jupiter.api.Assertions.*;
-import static org.mockito.ArgumentMatchers.*;
-import static org.mockito.Mockito.*;
 
 class DbCheckpointStoreCoverageTest {
     @Test
@@ -23,8 +24,11 @@ class DbCheckpointStoreCoverageTest {
         verify(repository).insert(eq(tenant), any(AgentCheckpointBO.class));
 
         var row = new AgentCheckpointBO();
-        row.setTenantId(3L); row.setCheckpointId("cp"); row.setExecutionId("exec");
-        row.setNodeId("node"); row.setStateData("{\"answer\":42}");
+        row.setTenantId(3L);
+        row.setCheckpointId("cp");
+        row.setExecutionId("exec");
+        row.setNodeId("node");
+        row.setStateData("{\"answer\":42}");
         when(repository.selectByCheckpointId(tenant, "cp")).thenReturn(row);
         when(repository.selectLatestByExecutionId(tenant, "exec")).thenReturn(row);
         when(repository.listByExecutionId(tenant, "exec")).thenReturn(List.of(row));

@@ -1,14 +1,17 @@
 package com.shiyu.ai.tooling.implementation.web;
 
+import cn.dev33.satoken.annotation.SaCheckPermission;
+
+import com.shiyu.ai.common.core.api.Result;
+import com.shiyu.ai.tooling.contract.api.ToolService;
 import com.shiyu.ai.tooling.implementation.tool.mcp.McpToolDescriptor;
 import com.shiyu.ai.tooling.implementation.tool.mcp.McpToolRegistry;
 
-import cn.dev33.satoken.annotation.SaCheckPermission;
-import com.shiyu.ai.common.core.api.Result;
-import com.shiyu.ai.tooling.contract.api.ToolService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
+
 import lombok.extern.slf4j.Slf4j;
+
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -18,7 +21,7 @@ import java.util.Set;
 /**
  * MCP 工具市场 Controller
  *
- * 注意：所有参数均通过 @RequestParam 或 @RequestBody 传入，不使用 @PathVariable。
+ * <p>注意：所有参数均通过 @RequestParam 或 @RequestBody 传入，不使用 @PathVariable。
  */
 @Slf4j
 @Tag(name = "MCP 工具市场", description = "MCP Tool Marketplace")
@@ -69,8 +72,7 @@ public class McpToolController {
     @SaCheckPermission("tool:mcp:execute")
     @PostMapping("/tools/execute")
     public Result<Object> executeTool(
-            @RequestParam String name,
-            @RequestBody(required = false) Map<String, Object> params) {
+            @RequestParam String name, @RequestBody(required = false) Map<String, Object> params) {
         McpToolDescriptor tool = registry.getTool(name);
         if (tool == null) {
             return Result.fail("工具不存在: " + name);
@@ -79,7 +81,9 @@ public class McpToolController {
         if (result.success()) {
             return Result.success(result.result());
         }
-        log.warn("MCP 工具执行失败: tool={}, errorMessageLength={}", name,
+        log.warn(
+                "MCP 工具执行失败: tool={}, errorMessageLength={}",
+                name,
                 result.errorMessage() == null ? 0 : result.errorMessage().length());
         return Result.fail("工具执行失败，请稍后重试");
     }
@@ -95,10 +99,9 @@ public class McpToolController {
     @SaCheckPermission("tool:mcp:stats")
     @GetMapping("/stats")
     public Result<Map<String, Object>> getStats() {
-        return Result.success(Map.of(
-                "totalTools", registry.size(),
-                "categories", registry.getCategories().size()
-        ));
+        return Result.success(
+                Map.of(
+                        "totalTools", registry.size(),
+                        "categories", registry.getCategories().size()));
     }
 }
-

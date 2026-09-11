@@ -1,17 +1,12 @@
-
 package com.shiyu.ai.common.thread.executor;
 
 import com.shiyu.ai.common.thread.api.ExecutorFactory;
-
 import com.shiyu.ai.common.thread.api.PoolType;
 import com.shiyu.ai.common.thread.config.ThreadingProperties;
 
 import java.util.concurrent.ExecutorService;
 
-/**
- * 默认执行器工厂
- * 根据环境自动选择使用平台线程或虚拟线程
- */
+/** 默认执行器工厂 根据环境自动选择使用平台线程或虚拟线程 */
 public class DefaultExecutorFactory implements ExecutorFactory {
 
     private final ExecutorFactory platformExecutorFactory;
@@ -23,9 +18,8 @@ public class DefaultExecutorFactory implements ExecutorFactory {
 
     public DefaultExecutorFactory(ThreadingProperties properties) {
         this.platformExecutorFactory = new PlatformExecutorFactory(properties);
-        this.virtualExecutorFactory = VirtualExecutorFactory.isSupported() 
-            ? new VirtualExecutorFactory() 
-            : null;
+        this.virtualExecutorFactory =
+                VirtualExecutorFactory.isSupported() ? new VirtualExecutorFactory() : null;
     }
 
     @Override

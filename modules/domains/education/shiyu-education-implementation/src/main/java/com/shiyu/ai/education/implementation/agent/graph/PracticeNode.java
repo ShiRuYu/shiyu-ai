@@ -1,17 +1,18 @@
 package com.shiyu.ai.education.implementation.agent.graph;
 
-import com.shiyu.ai.agent.contract.node.NodeInputParam;
 import com.shiyu.ai.agent.contract.node.BaseNode;
 import com.shiyu.ai.agent.contract.node.NodeInput;
+import com.shiyu.ai.agent.contract.node.NodeInputParam;
 import com.shiyu.ai.agent.contract.node.NodeOutput;
 import com.shiyu.ai.agent.contract.node.NodeType;
+import com.shiyu.ai.education.implementation.domain.DifficultyLevel;
+import com.shiyu.ai.education.implementation.domain.model.QuestionBO;
+import com.shiyu.ai.knowledge.contract.model.KnowledgeResponse;
 import com.shiyu.ai.model.contract.api.ChatEngine;
+import com.shiyu.ai.model.contract.model.ChatMessage;
 import com.shiyu.ai.model.contract.model.ChatRequest;
 import com.shiyu.ai.model.contract.model.ChatResponse;
-import com.shiyu.ai.model.contract.model.ChatMessage;
-import com.shiyu.ai.education.implementation.domain.model.QuestionBO;
-import com.shiyu.ai.education.implementation.domain.DifficultyLevel;
-import com.shiyu.ai.knowledge.contract.model.KnowledgeResponse;
+
 import lombok.Getter;
 import lombok.Setter;
 import lombok.extern.slf4j.Slf4j;
@@ -22,10 +23,10 @@ import java.util.List;
 /**
  * 智能出题节点
  *
- * LangGraph4j 节点，根据知识点和学生能力水平生成练习题。
+ * <p>LangGraph4j 节点，根据知识点和学生能力水平生成练习题。
  *
- * 输入字段：knowledge, knowledgeName, overallScore, studentId
- * 输出字段：practiceQuestions, questionCount, practiceDone
+ * <p>输入字段：knowledge, knowledgeName, overallScore, studentId 输出字段：practiceQuestions, questionCount,
+ * practiceDone
  */
 @Slf4j
 @Getter
@@ -76,9 +77,14 @@ public class PracticeNode extends BaseNode {
         // 调用 LLM
         long tenantId = requirePositiveLong(input, "tenantId");
         long userId = requirePositiveLong(input, "userId");
-        ChatResponse resp = chatEngine.chat(ChatRequest.builder().platform("default")
-                .tenantId(tenantId).userId(userId)
-                .messages(java.util.List.of(ChatMessage.text("user", prompt))).build());
+        ChatResponse resp =
+                chatEngine.chat(
+                        ChatRequest.builder()
+                                .platform("default")
+                                .tenantId(tenantId)
+                                .userId(userId)
+                                .messages(java.util.List.of(ChatMessage.text("user", prompt)))
+                                .build());
 
         NodeOutput output = new NodeOutput();
         if (!resp.isSuccess()) {
@@ -98,12 +104,15 @@ public class PracticeNode extends BaseNode {
         output.addData("difficultyLevel", difficulty.getLevel());
         output.addData("difficultyName", difficulty.getName());
 
-        log.info("PracticeNode: 生成 {} 道 {} 难度的题目", output.getData("questionCount", 0), difficulty.getName());
+        log.info(
+                "PracticeNode: 生成 {} 道 {} 难度的题目",
+                output.getData("questionCount", 0),
+                difficulty.getName());
         return output;
     }
 
-    private String buildPracticePrompt(KnowledgeResponse knowledge,
-                                       DifficultyLevel difficulty, int count) {
+    private String buildPracticePrompt(
+            KnowledgeResponse knowledge, DifficultyLevel difficulty, int count) {
         StringBuilder sb = new StringBuilder();
         sb.append("你是一位经验丰富的 K12 出题教师，请根据以下要求生成练习题。\n\n");
         sb.append("## 知识点\n");
@@ -118,8 +127,10 @@ public class PracticeNode extends BaseNode {
         sb.append("- 题目类型：选择题（60%）和填空题（40%）\n\n");
         sb.append("## 输出格式\n");
         sb.append("每行一个 JSON：\n");
-        sb.append("{\"type\":\"CHOICE\",\"title\":\"题干\",\"options\":[\"A.\",\"B.\",\"C.\",\"D.\"],\"answer\":\"A\",\"analysis\":\"解析\",\"ability_dimension\":\"apply\"}\n");
-        sb.append("{\"type\":\"FILL\",\"title\":\"题干___\",\"options\":null,\"answer\":\"答案\",\"analysis\":\"解析\",\"ability_dimension\":\"remember\"}\n");
+        sb.append(
+                "{\"type\":\"CHOICE\",\"title\":\"题干\",\"options\":[\"A.\",\"B.\",\"C.\",\"D.\"],\"answer\":\"A\",\"analysis\":\"解析\",\"ability_dimension\":\"apply\"}\n");
+        sb.append(
+                "{\"type\":\"FILL\",\"title\":\"题干___\",\"options\":null,\"answer\":\"答案\",\"analysis\":\"解析\",\"ability_dimension\":\"remember\"}\n");
         sb.append("仅输出 JSON 数据，用中文出题。\n");
         return sb.toString();
     }
@@ -131,8 +142,8 @@ public class PracticeNode extends BaseNode {
         return DifficultyLevel.COMPETITION;
     }
 
-    private List<QuestionBO> parseQuestions(String content, KnowledgeResponse knowledge,
-                                            DifficultyLevel difficulty) {
+    private List<QuestionBO> parseQuestions(
+            String content, KnowledgeResponse knowledge, DifficultyLevel difficulty) {
         List<QuestionBO> questions = new ArrayList<>();
         for (String line : content.split("\n")) {
             line = line.trim();
@@ -141,15 +152,17 @@ public class PracticeNode extends BaseNode {
                 QuestionBO q = parseJsonLine(line, knowledge, difficulty);
                 if (q != null) questions.add(q);
             } catch (Exception e) {
-                log.warn("解析题目行失败: errorType={}, errorMessageLength={}",
-                        e.getClass().getSimpleName(), e.getMessage() == null ? 0 : e.getMessage().length());
+                log.warn(
+                        "解析题目行失败: errorType={}, errorMessageLength={}",
+                        e.getClass().getSimpleName(),
+                        e.getMessage() == null ? 0 : e.getMessage().length());
             }
         }
         return questions;
     }
 
-    private QuestionBO parseJsonLine(String json, KnowledgeResponse knowledge,
-                                     DifficultyLevel difficulty) {
+    private QuestionBO parseJsonLine(
+            String json, KnowledgeResponse knowledge, DifficultyLevel difficulty) {
         if (!json.startsWith("{") || !json.endsWith("}")) return null;
         QuestionBO q = new QuestionBO();
         q.setDifficulty(difficulty.getLevel());
@@ -207,9 +220,8 @@ public class PracticeNode extends BaseNode {
     @Override
     public java.util.List<NodeInputParam> getRequiredInputs() {
         return java.util.List.of(
-            NodeInputParam.previous("knowledge", "object", "知识点详情"),
-            NodeInputParam.previous("overallScore", "number", "总体掌握度（用于自动适配难度）"),
-            NodeInputParam.apiOptional("practiceCount", "number", "题目数量（默认5）", 5)
-        );
+                NodeInputParam.previous("knowledge", "object", "知识点详情"),
+                NodeInputParam.previous("overallScore", "number", "总体掌握度（用于自动适配难度）"),
+                NodeInputParam.apiOptional("practiceCount", "number", "题目数量（默认5）", 5));
     }
 }

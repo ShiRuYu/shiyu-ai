@@ -1,15 +1,19 @@
 package com.shiyu.ai.education.implementation.web;
 
 import cn.dev33.satoken.annotation.SaCheckPermission;
+
 import com.shiyu.ai.common.core.api.Result;
+import com.shiyu.ai.common.web.auth.ActorContextHttpAdapter;
+import com.shiyu.ai.education.implementation.application.StudyPlanService;
 import com.shiyu.ai.education.implementation.web.dto.DailyTaskResponse;
 import com.shiyu.ai.education.implementation.web.dto.StudyPlanResponse;
 import com.shiyu.ai.education.implementation.web.request.StudyPlanRequest;
-import com.shiyu.ai.education.implementation.application.StudyPlanService;
-import com.shiyu.ai.common.web.auth.ActorContextHttpAdapter;
+
 import jakarta.validation.Valid;
+
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -30,28 +34,35 @@ public class StudyPlanController {
 
     @GetMapping("/student")
     public Result<List<StudyPlanResponse>> listByStudentId(@RequestParam Long studentId) {
-        return Result.success(studyPlanService.listByStudentId(ActorContextHttpAdapter.currentActor(), studentId));
+        return Result.success(
+                studyPlanService.listByStudentId(
+                        ActorContextHttpAdapter.currentActor(), studentId));
     }
 
     @GetMapping("/active")
     public Result<List<StudyPlanResponse>> listActiveByStudent(@RequestParam Long studentId) {
-        return Result.success(studyPlanService.listActiveByStudent(ActorContextHttpAdapter.currentActor(), studentId));
+        return Result.success(
+                studyPlanService.listActiveByStudent(
+                        ActorContextHttpAdapter.currentActor(), studentId));
     }
 
     @GetMapping("/today-tasks")
     public Result<List<DailyTaskResponse>> getTodayTasks(@RequestParam Long studentId) {
-        return Result.success(studyPlanService.getTodayTasks(ActorContextHttpAdapter.currentActor(), studentId));
+        return Result.success(
+                studyPlanService.getTodayTasks(ActorContextHttpAdapter.currentActor(), studentId));
     }
 
     @PostMapping("/create")
     @SaCheckPermission("edu:plan:list")
     public Result<StudyPlanResponse> create(@Valid @RequestBody StudyPlanRequest request) {
-        return Result.success(studyPlanService.create(ActorContextHttpAdapter.currentActor(), request));
+        return Result.success(
+                studyPlanService.create(ActorContextHttpAdapter.currentActor(), request));
     }
 
     @PostMapping("/update")
     @SaCheckPermission("edu:plan:list")
-    public Result<Void> update(@RequestParam Long id, @Valid @RequestBody StudyPlanRequest request) {
+    public Result<Void> update(
+            @RequestParam Long id, @Valid @RequestBody StudyPlanRequest request) {
         request.setId(id);
         studyPlanService.update(ActorContextHttpAdapter.currentActor(), request);
         return Result.success();
@@ -64,4 +75,3 @@ public class StudyPlanController {
         return Result.success();
     }
 }
-

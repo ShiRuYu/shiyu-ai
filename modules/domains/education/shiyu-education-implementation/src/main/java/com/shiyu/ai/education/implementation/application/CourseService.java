@@ -1,46 +1,47 @@
 package com.shiyu.ai.education.implementation.application;
 
-import com.shiyu.ai.education.implementation.web.dto.CourseProgressResponse;
-
-import java.util.List;
 import com.shiyu.ai.common.core.api.PageData;
+import com.shiyu.ai.education.implementation.web.dto.CourseProgressResponse;
 import com.shiyu.ai.education.implementation.web.dto.CourseResponse;
 import com.shiyu.ai.education.implementation.web.request.CourseRequest;
 import com.shiyu.ai.kernel.context.ActorContext;
 
-/**
- * Course 接口
- */
+import java.util.List;
 
+/** Course 接口 */
 public interface CourseService {
 
     /**
      * Get By Id
+     *
      * @return 处理结果
      */
     CourseResponse getById(ActorContext actor, Long id);
 
     /**
      * List By Subject Code
+     *
      * @return 处理结果
      */
     List<CourseResponse> listBySubjectCode(ActorContext actor, String subjectCode);
 
     /**
      * List By Grade
+     *
      * @return 处理结果
      */
     List<CourseResponse> listByGrade(ActorContext actor, Integer grade);
 
     /**
      * List All
+     *
      * @return 处理结果
      */
-
     PageData<CourseResponse> page(ActorContext actor, int pageNum, int pageSize);
 
     /**
      * Create
+     *
      * @param CourseResponse CourseDO
      * @return 处理结果
      */
@@ -53,8 +54,8 @@ public interface CourseService {
 
     /**
      * Delete By Id
+     *
      * @return 处理结果
      */
     void deleteById(ActorContext actor, Long id);
 }
-

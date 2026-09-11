@@ -6,7 +6,6 @@ import lombok.Getter;
 @Getter
 @AllArgsConstructor
 public enum DifficultyLevel {
-
     BASIC(1, "基础", 0.40),
     MEDIUM(2, "中等", 0.40),
     HARD(3, "困难", 0.15),
@@ -23,4 +22,3 @@ public enum DifficultyLevel {
         throw new IllegalArgumentException("Invalid difficulty level: " + level);
     }
 }
-

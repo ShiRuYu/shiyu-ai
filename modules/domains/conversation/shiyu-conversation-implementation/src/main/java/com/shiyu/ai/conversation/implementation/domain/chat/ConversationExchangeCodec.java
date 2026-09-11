@@ -1,23 +1,30 @@
 package com.shiyu.ai.conversation.implementation.domain.chat;
 
-import com.shiyu.ai.conversation.implementation.domain.model.ConversationMessage;
 import com.shiyu.ai.common.core.utils.JSONUtils;
+import com.shiyu.ai.conversation.implementation.domain.model.ConversationMessage;
 
-import java.util.List;
 import java.util.ArrayList;
+import java.util.List;
 import java.util.Locale;
 import java.util.Map;
 import java.util.stream.Collectors;
 
 public final class ConversationExchangeCodec {
-    private ConversationExchangeCodec() { }
+    private ConversationExchangeCodec() {}
 
     public static String toJsonl(List<ConversationMessage> messages) {
         return messages.stream().map(JSONUtils::toJsonString).collect(Collectors.joining("\n"));
     }
 
     public static String toMarkdown(List<ConversationMessage> messages) {
-        return messages.stream().map(message -> "## " + message.role().name() + "\n\n" + message.textContent() + "\n")
+        return messages.stream()
+                .map(
+                        message ->
+                                "## "
+                                        + message.role().name()
+                                        + "\n\n"
+                                        + message.textContent()
+                                        + "\n")
                 .collect(Collectors.joining("\n"));
     }
 
@@ -32,9 +39,13 @@ public final class ConversationExchangeCodec {
             String role = String.valueOf(value.getOrDefault("role", "USER"));
             String text = String.valueOf(value.getOrDefault("textContent", ""));
             if (text.isBlank() && value.get("contentParts") instanceof List<?> parts) {
-                text = parts.stream().filter(Map.class::isInstance).map(Map.class::cast)
-                        .filter(part -> "text".equals(String.valueOf(part.get("type"))))
-                        .map(part -> String.valueOf(part.getOrDefault("text", ""))).collect(Collectors.joining());
+                text =
+                        parts.stream()
+                                .filter(Map.class::isInstance)
+                                .map(Map.class::cast)
+                                .filter(part -> "text".equals(String.valueOf(part.get("type"))))
+                                .map(part -> String.valueOf(part.getOrDefault("text", "")))
+                                .collect(Collectors.joining());
             }
             result.add(new ImportedMessage(role.toUpperCase(Locale.ROOT), text));
         }
@@ -57,5 +68,5 @@ public final class ConversationExchangeCodec {
         return List.copyOf(result);
     }
 
-    public record ImportedMessage(String role, String content) { }
+    public record ImportedMessage(String role, String content) {}
 }

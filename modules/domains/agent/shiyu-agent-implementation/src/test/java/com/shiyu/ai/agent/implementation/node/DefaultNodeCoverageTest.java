@@ -1,10 +1,10 @@
 package com.shiyu.ai.agent.implementation.node;
 
+import static org.junit.jupiter.api.Assertions.*;
+
 import com.shiyu.ai.agent.contract.node.*;
 
 import org.junit.jupiter.api.Test;
-
-import static org.junit.jupiter.api.Assertions.*;
 
 class DefaultNodeCoverageTest {
     @Test

@@ -2,15 +2,10 @@ package com.shiyu.ai.common.core.exception;
 
 import java.io.Serial;
 
-/**
- * 业务异常基类
- * 提供 message、detailMessage、code 的统一管理
- * GlobalException 和 ServiceException 继承此类
- */
+/** 业务异常基类 提供 message、detailMessage、code 的统一管理 GlobalException 和 ServiceException 继承此类 */
 public abstract class BaseBizException extends RuntimeException {
 
-    @Serial
-    private static final long serialVersionUID = 1L;
+    @Serial private static final long serialVersionUID = 1L;
 
     private String message;
 
@@ -18,8 +13,7 @@ public abstract class BaseBizException extends RuntimeException {
 
     private Integer code;
 
-    protected BaseBizException() {
-    }
+    protected BaseBizException() {}
 
     protected BaseBizException(String message) {
         this.message = message;

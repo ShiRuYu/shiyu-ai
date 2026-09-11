@@ -2,12 +2,14 @@ package com.shiyu.ai.knowledge.implementation.application.service;
 
 import com.shiyu.ai.common.core.api.PageData;
 import com.shiyu.ai.common.core.exception.ServiceException;
-import com.shiyu.ai.knowledge.implementation.domain.model.KnowledgeIngestionJobBO;
-import com.shiyu.ai.knowledge.implementation.domain.port.repository.KnowledgeEnterpriseRepository;
+import com.shiyu.ai.kernel.context.ActorContext;
 import com.shiyu.ai.knowledge.implementation.application.KnowledgeJobService;
 import com.shiyu.ai.knowledge.implementation.application.KnowledgeSpaceService;
-import com.shiyu.ai.kernel.context.ActorContext;
+import com.shiyu.ai.knowledge.implementation.domain.model.KnowledgeIngestionJobBO;
+import com.shiyu.ai.knowledge.implementation.domain.port.repository.KnowledgeEnterpriseRepository;
+
 import lombok.RequiredArgsConstructor;
+
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -19,16 +21,20 @@ public class KnowledgeJobServiceImpl implements KnowledgeJobService {
     private final KnowledgeSpaceService spaceService;
 
     @Override
-    public PageData<JobView> page(ActorContext actor, int pageNum, int pageSize, Long spaceId, String status) {
+    public PageData<JobView> page(
+            ActorContext actor, int pageNum, int pageSize, Long spaceId, String status) {
         requireActor(actor);
         if (spaceId != null) {
             spaceService.requireAccess(spaceId, KnowledgeSpaceService.SpaceRole.VIEWER, actor);
         }
-        PageData<KnowledgeIngestionJobBO> page = repository.pageJobsByTenant(
-                actor.tenantId(), pageNum, pageSize, spaceId, status);
-        return new PageData<>(page.getItems().stream()
-                .filter(job -> canView(actor, job.getSpaceId()))
-                .map(this::toView).toList(), page.getTotal());
+        PageData<KnowledgeIngestionJobBO> page =
+                repository.pageJobsByTenant(actor.tenantId(), pageNum, pageSize, spaceId, status);
+        return new PageData<>(
+                page.getItems().stream()
+                        .filter(job -> canView(actor, job.getSpaceId()))
+                        .map(this::toView)
+                        .toList(),
+                page.getTotal());
     }
 
     @Override
@@ -89,12 +95,22 @@ public class KnowledgeJobServiceImpl implements KnowledgeJobService {
     }
 
     private JobView toView(KnowledgeIngestionJobBO job) {
-        return new JobView(job.getId(), job.getJobKey(), job.getJobType(), job.getSpaceId(),
-                job.getDocumentId(), job.getVersionId(), job.getJobStatus(), job.getStage(),
-                job.getProgress(), job.getAttempts(), job.getMaxAttempts(), job.getErrorMessage(),
-                job.getHeartbeatTime(), job.getStartedTime(), job.getFinishedTime(),
+        return new JobView(
+                job.getId(),
+                job.getJobKey(),
+                job.getJobType(),
+                job.getSpaceId(),
+                job.getDocumentId(),
+                job.getVersionId(),
+                job.getJobStatus(),
+                job.getStage(),
+                job.getProgress(),
+                job.getAttempts(),
+                job.getMaxAttempts(),
+                job.getErrorMessage(),
+                job.getHeartbeatTime(),
+                job.getStartedTime(),
+                job.getFinishedTime(),
                 job.getCreateTime());
     }
 }
-
-

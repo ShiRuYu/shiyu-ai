@@ -1,8 +1,11 @@
 package com.shiyu.ai.model.implementation.web.request;
 
 import com.shiyu.ai.model.implementation.domain.model.AiModelBO;
+
 import io.github.linpeilie.annotations.AutoMapper;
+
 import jakarta.validation.constraints.NotBlank;
+
 import lombok.Data;
 
 @Data

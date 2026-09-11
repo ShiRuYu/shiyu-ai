@@ -3,9 +3,7 @@ package com.shiyu.ai.agent.implementation.event;
 import java.time.Instant;
 import java.util.UUID;
 
-/**
- * 领域事件基类
- */
+/** 领域事件基类 */
 public abstract class DomainEvent {
 
     private final String eventId;
@@ -18,7 +16,15 @@ public abstract class DomainEvent {
         this.eventType = eventType;
     }
 
-    public String getEventId() { return eventId; }
-    public Instant getOccurredAt() { return occurredAt; }
-    public String getEventType() { return eventType; }
+    public String getEventId() {
+        return eventId;
+    }
+
+    public Instant getOccurredAt() {
+        return occurredAt;
+    }
+
+    public String getEventType() {
+        return eventType;
+    }
 }

@@ -1,10 +1,10 @@
 package com.shiyu.ai.iam.implementation.utils;
 
+import static org.junit.jupiter.api.Assertions.*;
+
 import org.junit.jupiter.api.Test;
 
 import java.util.concurrent.atomic.AtomicBoolean;
-
-import static org.junit.jupiter.api.Assertions.*;
 
 class UserLockManagerCoverageTest {
     @Test
@@ -16,7 +16,14 @@ class UserLockManagerCoverageTest {
         AtomicBoolean ran = new AtomicBoolean();
         manager.executeWithLock(991L, () -> ran.set(true));
         assertTrue(ran.get());
-        assertThrows(IllegalStateException.class, () -> manager.executeWithLock(991L, () -> { throw new IllegalStateException("boom"); }));
+        assertThrows(
+                IllegalStateException.class,
+                () ->
+                        manager.executeWithLock(
+                                991L,
+                                () -> {
+                                    throw new IllegalStateException("boom");
+                                }));
     }
 
     @Test
@@ -33,4 +40,3 @@ class UserLockManagerCoverageTest {
         manager.cleanUp();
     }
 }
-

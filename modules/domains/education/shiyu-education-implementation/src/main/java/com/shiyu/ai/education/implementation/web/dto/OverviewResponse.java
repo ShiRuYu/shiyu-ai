@@ -7,6 +7,4 @@ public record OverviewResponse(
         Integer totalQuestions,
         Double accuracy,
         Double weeklyHours,
-        Integer streakDays
-) {}
-
+        Integer streakDays) {}

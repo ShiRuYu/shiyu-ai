@@ -1,8 +1,9 @@
 package com.shiyu.ai.iam.implementation.request;
 
 import com.shiyu.ai.common.core.api.PageQuery;
-import lombok.EqualsAndHashCode;
+
 import lombok.Data;
+import lombok.EqualsAndHashCode;
 
 @Data
 @EqualsAndHashCode(callSuper = true)
@@ -13,4 +14,3 @@ public class MenuPageRequest extends PageQuery {
     private String type;
     private Integer status;
 }
-

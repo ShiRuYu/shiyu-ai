@@ -1,21 +1,24 @@
 package com.shiyu.ai.governance.implementation.quota;
 
+import static org.junit.jupiter.api.Assertions.*;
+
 import com.shiyu.ai.governance.contract.QuotaRequest;
 import com.shiyu.ai.governance.contract.QuotaUsage;
 import com.shiyu.ai.kernel.context.ActorContext;
 import com.shiyu.ai.kernel.context.TenantId;
 import com.shiyu.ai.kernel.context.UserId;
+
 import org.junit.jupiter.api.Test;
 
 import java.time.Clock;
 import java.time.Instant;
 import java.time.ZoneOffset;
 
-import static org.junit.jupiter.api.Assertions.*;
-
 class InMemoryQuotaGovernanceTest {
-    private static final ActorContext ACTOR = new ActorContext(new TenantId(7), new UserId(11), false);
-    private static final Clock CLOCK = Clock.fixed(Instant.parse("2026-01-01T00:00:30Z"), ZoneOffset.UTC);
+    private static final ActorContext ACTOR =
+            new ActorContext(new TenantId(7), new UserId(11), false);
+    private static final Clock CLOCK =
+            Clock.fixed(Instant.parse("2026-01-01T00:00:30Z"), ZoneOffset.UTC);
 
     @Test
     void reservesSettlesAndEnforcesDailyTokensPerTenant() {
@@ -48,7 +51,8 @@ class InMemoryQuotaGovernanceTest {
         var reservation = quota.reserve(ACTOR, new QuotaRequest(1, 0));
         ActorContext otherTenant = new ActorContext(new TenantId(8), new UserId(11), false);
 
-        assertThrows(RuntimeException.class,
+        assertThrows(
+                RuntimeException.class,
                 () -> quota.settle(otherTenant, reservation.reservationId(), new QuotaUsage(1, 1)));
     }
 
@@ -60,7 +64,8 @@ class InMemoryQuotaGovernanceTest {
 
         InMemoryQuotaGovernance concurrent = new InMemoryQuotaGovernance(100, 4, 100, CLOCK);
         assertTrue(concurrent.reserve(ACTOR, new QuotaRequest(1, 1)).allowed());
-        assertEquals("QUOTA_CONCURRENT", concurrent.reserve(ACTOR, new QuotaRequest(1, 1)).errorCode());
+        assertEquals(
+                "QUOTA_CONCURRENT", concurrent.reserve(ACTOR, new QuotaRequest(1, 1)).errorCode());
     }
 
     @Test
@@ -85,10 +90,28 @@ class InMemoryQuotaGovernanceTest {
 
     private static final class MutableClock extends java.time.Clock {
         private Instant instant;
-        private MutableClock(Instant instant) { this.instant = instant; }
-        private void advanceSeconds(long seconds) { instant = instant.plusSeconds(seconds); }
-        @Override public java.time.ZoneId getZone() { return ZoneOffset.UTC; }
-        @Override public java.time.Clock withZone(java.time.ZoneId zone) { return this; }
-        @Override public Instant instant() { return instant; }
+
+        private MutableClock(Instant instant) {
+            this.instant = instant;
+        }
+
+        private void advanceSeconds(long seconds) {
+            instant = instant.plusSeconds(seconds);
+        }
+
+        @Override
+        public java.time.ZoneId getZone() {
+            return ZoneOffset.UTC;
+        }
+
+        @Override
+        public java.time.Clock withZone(java.time.ZoneId zone) {
+            return this;
+        }
+
+        @Override
+        public Instant instant() {
+            return instant;
+        }
     }
 }

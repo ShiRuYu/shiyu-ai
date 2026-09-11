@@ -1,18 +1,20 @@
 package com.shiyu.ai.web.auth;
 
-import com.shiyu.ai.common.web.auth.ActorContextHttpAdapter;
 import cn.dev33.satoken.stp.StpInterface;
+
+import com.shiyu.ai.common.web.auth.ActorContextHttpAdapter;
 import com.shiyu.ai.iam.implementation.port.repository.AuthRepository;
 import com.shiyu.ai.kernel.context.ActorContext;
 import com.shiyu.ai.kernel.context.UserId;
+
 import org.springframework.stereotype.Component;
 
 import java.util.Collections;
 import java.util.List;
 
 /**
- * HTTP-edge permission adapter. The authentication thread context is translated
- * once into ActorContext; IAM services and repositories remain thread-context free.
+ * HTTP-edge permission adapter. The authentication thread context is translated once into
+ * ActorContext; IAM services and repositories remain thread-context free.
  */
 @Component
 public class SaPermissionProvider implements StpInterface {
@@ -33,8 +35,7 @@ public class SaPermissionProvider implements StpInterface {
             String roleCode = actor.activeRoleCode();
             if (roleCode == null || roleCode.isBlank()) return Collections.emptyList();
             if (actor.parentSuperAdminSwitch()) {
-                return authRepository.selectCodesByRoleCodeAndTenant(
-                        roleCode, actor.tenantId());
+                return authRepository.selectCodesByRoleCodeAndTenant(roleCode, actor.tenantId());
             }
             return authRepository.selectCodesByUserIdAndRoleCode(
                     userId, actor.tenantId(), roleCode);
@@ -56,4 +57,3 @@ public class SaPermissionProvider implements StpInterface {
         }
     }
 }
-

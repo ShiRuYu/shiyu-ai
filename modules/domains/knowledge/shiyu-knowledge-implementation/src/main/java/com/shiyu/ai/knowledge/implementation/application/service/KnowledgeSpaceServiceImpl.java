@@ -2,20 +2,22 @@ package com.shiyu.ai.knowledge.implementation.application.service;
 
 import com.shiyu.ai.common.core.api.PageData;
 import com.shiyu.ai.common.core.exception.ServiceException;
+import com.shiyu.ai.kernel.context.ActorContext;
+import com.shiyu.ai.kernel.context.TenantId;
+import com.shiyu.ai.knowledge.implementation.application.KnowledgeAuditService;
+import com.shiyu.ai.knowledge.implementation.application.KnowledgeSpaceService;
 import com.shiyu.ai.knowledge.implementation.domain.model.KnowledgeSpaceBO;
 import com.shiyu.ai.knowledge.implementation.domain.model.KnowledgeSpaceMemberBO;
 import com.shiyu.ai.knowledge.implementation.domain.port.repository.KnowledgeChunkRepository;
+import com.shiyu.ai.knowledge.implementation.domain.port.repository.KnowledgeDifficultyScaleRepository;
 import com.shiyu.ai.knowledge.implementation.domain.port.repository.KnowledgeDocRelationRepository;
 import com.shiyu.ai.knowledge.implementation.domain.port.repository.KnowledgeDocumentRepository;
-import com.shiyu.ai.knowledge.implementation.domain.port.repository.KnowledgeDifficultyScaleRepository;
 import com.shiyu.ai.knowledge.implementation.domain.port.repository.KnowledgeEnterpriseRepository;
 import com.shiyu.ai.knowledge.implementation.domain.port.repository.KnowledgeRelationRepository;
 import com.shiyu.ai.knowledge.implementation.domain.port.repository.KnowledgeRepository;
-import com.shiyu.ai.knowledge.implementation.application.KnowledgeAuditService;
-import com.shiyu.ai.knowledge.implementation.application.KnowledgeSpaceService;
-import com.shiyu.ai.kernel.context.ActorContext;
-import com.shiyu.ai.kernel.context.TenantId;
+
 import lombok.RequiredArgsConstructor;
+
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -51,7 +53,8 @@ public class KnowledgeSpaceServiceImpl implements KnowledgeSpaceService {
     @Transactional(rollbackFor = Exception.class)
     public SpaceView ensureDefaultSpace(ActorContext actor) {
         requireActor(actor);
-        KnowledgeSpaceBO existing = repository.findSpaceByTenantAndCode(actor.tenantId(), defaultSpaceCode);
+        KnowledgeSpaceBO existing =
+                repository.findSpaceByTenantAndCode(actor.tenantId(), defaultSpaceCode);
         if (existing != null) {
             if (existing.getDomainCode() == null || existing.getDomainCode().isBlank()) {
                 existing.setDomainCode(GENERAL_DOMAIN);
@@ -109,16 +112,27 @@ public class KnowledgeSpaceServiceImpl implements KnowledgeSpaceService {
     public DifficultyScaleView difficultyScale(ActorContext actor, Long spaceId) {
         requireAccess(spaceId, SpaceRole.VIEWER, actor);
         KnowledgeSpaceBO space = requireSpace(actor, spaceId);
-        var scale = difficultyScaleRepository.findScale(actor.tenantId(), space.getDifficultyScaleId());
+        var scale =
+                difficultyScaleRepository.findScale(actor.tenantId(), space.getDifficultyScaleId());
         if (scale == null) {
             throw new ServiceException("知识空间未配置有效的难度量表");
         }
-        List<DifficultyLevelView> levels = difficultyScaleRepository.findLevels(actor.tenantId(), scale.getId()).stream()
-                .map(level -> new DifficultyLevelView(level.getLevel(), level.getLabel(),
-                        level.getDescription()))
-                .toList();
-        return new DifficultyScaleView(scale.getId(), scale.getCode(), scale.getName(),
-                scale.getDescription(), scale.getLevelCount(), levels);
+        List<DifficultyLevelView> levels =
+                difficultyScaleRepository.findLevels(actor.tenantId(), scale.getId()).stream()
+                        .map(
+                                level ->
+                                        new DifficultyLevelView(
+                                                level.getLevel(),
+                                                level.getLabel(),
+                                                level.getDescription()))
+                        .toList();
+        return new DifficultyScaleView(
+                scale.getId(),
+                scale.getCode(),
+                scale.getName(),
+                scale.getDescription(),
+                scale.getLevelCount(),
+                levels);
     }
 
     @Override
@@ -127,15 +141,18 @@ public class KnowledgeSpaceServiceImpl implements KnowledgeSpaceService {
     }
 
     @Override
-    public PageData<SpaceView> page(ActorContext actor, int pageNum, int pageSize, String keyword, String domainCode) {
+    public PageData<SpaceView> page(
+            ActorContext actor, int pageNum, int pageSize, String keyword, String domainCode) {
         requireActor(actor);
         String normalizedDomain = normalizeDomainCode(domainCode, null);
-        PageData<KnowledgeSpaceBO> page = repository.pageSpacesByTenant(
-                actor.tenantId(), pageNum, pageSize, keyword, normalizedDomain);
-        List<SpaceView> visible = page.getItems().stream()
-                .filter(space -> canView(actor, space))
-                .map(this::toView)
-                .toList();
+        PageData<KnowledgeSpaceBO> page =
+                repository.pageSpacesByTenant(
+                        actor.tenantId(), pageNum, pageSize, keyword, normalizedDomain);
+        List<SpaceView> visible =
+                page.getItems().stream()
+                        .filter(space -> canView(actor, space))
+                        .map(this::toView)
+                        .toList();
         return new PageData<>(visible, page.getTotal());
     }
 
@@ -155,11 +172,14 @@ public class KnowledgeSpaceServiceImpl implements KnowledgeSpaceService {
         space.setDescription(request.description());
         space.setAccessMode(normalizeEnum(request.accessMode(), "PRIVATE", ACCESS_MODES, "访问模式"));
         space.setReviewMode(normalizeEnum(request.reviewMode(), "OPTIONAL", REVIEW_MODES, "审核模式"));
-        space.setDifficultyScaleId(request.difficultyScaleId() == null ? 1L : request.difficultyScaleId());
-        space.setBindingMode(normalizeEnum(request.bindingMode(), "OPTIONAL", BINDING_MODES, "binding mode"));
+        space.setDifficultyScaleId(
+                request.difficultyScaleId() == null ? 1L : request.difficultyScaleId());
+        space.setBindingMode(
+                normalizeEnum(request.bindingMode(), "OPTIONAL", BINDING_MODES, "binding mode"));
         space.setEmbeddingProfile(defaultText(request.embeddingProfile(), "default"));
         space.setRerankProfile(defaultText(request.rerankProfile(), "default"));
-        space.setChunkStrategy(defaultText(request.chunkStrategy(), "HEADING").toUpperCase(Locale.ROOT));
+        space.setChunkStrategy(
+                defaultText(request.chunkStrategy(), "HEADING").toUpperCase(Locale.ROOT));
         space.setChunkSize(request.chunkSize() == null ? 800 : request.chunkSize());
         space.setChunkOverlap(request.chunkOverlap() == null ? 100 : request.chunkOverlap());
         space.setActiveIndexVersion(0L);
@@ -204,7 +224,8 @@ public class KnowledgeSpaceServiceImpl implements KnowledgeSpaceService {
             space.setDifficultyScaleId(request.difficultyScaleId());
         }
         if (request.bindingMode() != null) {
-            space.setBindingMode(normalizeEnum(request.bindingMode(), null, BINDING_MODES, "binding mode"));
+            space.setBindingMode(
+                    normalizeEnum(request.bindingMode(), null, BINDING_MODES, "binding mode"));
         }
         if (request.embeddingProfile() != null) {
             space.setEmbeddingProfile(request.embeddingProfile());
@@ -250,8 +271,14 @@ public class KnowledgeSpaceServiceImpl implements KnowledgeSpaceService {
     public List<MemberView> members(ActorContext actor, Long spaceId) {
         requireAccess(spaceId, SpaceRole.ADMIN, actor);
         return repository.findMembers(actor.tenantId(), spaceId).stream()
-                .map(member -> new MemberView(member.getId(), member.getSpaceId(),
-                        member.getPrincipalType(), member.getPrincipalId(), member.getSpaceRole()))
+                .map(
+                        member ->
+                                new MemberView(
+                                        member.getId(),
+                                        member.getSpaceId(),
+                                        member.getPrincipalType(),
+                                        member.getPrincipalId(),
+                                        member.getSpaceRole()))
                 .toList();
     }
 
@@ -304,10 +331,11 @@ public class KnowledgeSpaceServiceImpl implements KnowledgeSpaceService {
         if (minimumRole == SpaceRole.VIEWER && "TENANT".equals(space.getAccessMode())) {
             return;
         }
-        List<String> acceptedRoles = java.util.Arrays.stream(SpaceRole.values())
-                .filter(role -> role.includes(minimumRole))
-                .map(Enum::name)
-                .toList();
+        List<String> acceptedRoles =
+                java.util.Arrays.stream(SpaceRole.values())
+                        .filter(role -> role.includes(minimumRole))
+                        .map(Enum::name)
+                        .toList();
         Long roleId = context.activeRoleId() == null ? null : context.activeRoleId().value();
         if (repository.hasMember(tenantId, spaceId, "USER", context.userId().value(), acceptedRoles)
                 || repository.hasMember(tenantId, spaceId, "ROLE", roleId, acceptedRoles)) {
@@ -320,14 +348,15 @@ public class KnowledgeSpaceServiceImpl implements KnowledgeSpaceService {
     public List<SpaceView> accessibleSpaces(ActorContext context) {
         requireActor(context);
         return repository.findActiveSpacesByTenant(context.tenantId()).stream()
-                .filter(space -> {
-                    try {
-                        requireAccess(space.getId(), SpaceRole.VIEWER, context);
-                        return true;
-                    } catch (ServiceException ignored) {
-                        return false;
-                    }
-                })
+                .filter(
+                        space -> {
+                            try {
+                                requireAccess(space.getId(), SpaceRole.VIEWER, context);
+                                return true;
+                            } catch (ServiceException ignored) {
+                                return false;
+                            }
+                        })
                 .map(this::toView)
                 .toList();
     }
@@ -379,10 +408,10 @@ public class KnowledgeSpaceServiceImpl implements KnowledgeSpaceService {
         return code.trim().toLowerCase(Locale.ROOT).replaceAll("[^a-z0-9_-]", "-");
     }
 
-    private String normalizeEnum(String value, String defaultValue,
-                                 Set<String> values, String label) {
-        String normalized = value == null || value.isBlank()
-                ? defaultValue : value.toUpperCase(Locale.ROOT);
+    private String normalizeEnum(
+            String value, String defaultValue, Set<String> values, String label) {
+        String normalized =
+                value == null || value.isBlank() ? defaultValue : value.toUpperCase(Locale.ROOT);
         if (normalized == null || !values.contains(normalized)) {
             throw new ServiceException(label + "不合法: " + value);
         }
@@ -390,8 +419,10 @@ public class KnowledgeSpaceServiceImpl implements KnowledgeSpaceService {
     }
 
     private String normalizeDomainCode(String value, String defaultValue) {
-        String normalized = value == null || value.isBlank()
-                ? defaultValue : value.trim().toUpperCase(Locale.ROOT);
+        String normalized =
+                value == null || value.isBlank()
+                        ? defaultValue
+                        : value.trim().toUpperCase(Locale.ROOT);
         if (normalized == null) {
             return null;
         }
@@ -406,14 +437,24 @@ public class KnowledgeSpaceServiceImpl implements KnowledgeSpaceService {
     }
 
     private SpaceView toView(KnowledgeSpaceBO space) {
-        return new SpaceView(space.getId(), space.getCode(), space.getDomainCode(), space.getName(),
-                space.getDescription(), space.getAccessMode(), space.getReviewMode(), space.getBindingMode(),
+        return new SpaceView(
+                space.getId(),
+                space.getCode(),
+                space.getDomainCode(),
+                space.getName(),
+                space.getDescription(),
+                space.getAccessMode(),
+                space.getReviewMode(),
+                space.getBindingMode(),
                 space.getDifficultyScaleId(),
-                space.getEmbeddingProfile(), space.getRerankProfile(),
-                space.getChunkStrategy(), space.getChunkSize(), space.getChunkOverlap(),
-                space.getActiveIndexVersion(), space.getStatus(),
-                space.getCreateTime(), space.getUpdateTime());
+                space.getEmbeddingProfile(),
+                space.getRerankProfile(),
+                space.getChunkStrategy(),
+                space.getChunkSize(),
+                space.getChunkOverlap(),
+                space.getActiveIndexVersion(),
+                space.getStatus(),
+                space.getCreateTime(),
+                space.getUpdateTime());
     }
 }
-
-

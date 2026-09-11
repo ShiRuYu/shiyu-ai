@@ -5,6 +5,7 @@ import com.shiyu.ai.iam.implementation.domain.model.UserBO;
 import com.shiyu.ai.iam.implementation.port.repository.UserRepository;
 import com.shiyu.ai.iam.implementation.service.CaptchaService;
 import com.shiyu.ai.iam.implementation.utils.SaTokenHelper;
+
 import lombok.extern.slf4j.Slf4j;
 
 /** Password recovery flow. Credential mutation happens only after captcha validation. */
@@ -18,7 +19,8 @@ public final class AuthRecoveryUseCase {
         this.captchaService = captchaService;
     }
 
-    public boolean forgetPassword(String email, String newPassword, String code, String captchaKey) {
+    public boolean forgetPassword(
+            String email, String newPassword, String code, String captchaKey) {
         log.info("忘记密码: emailPresent={}", email != null);
         if (!captchaService.validateCaptcha(captchaKey, code)) {
             throw new IllegalArgumentException("验证码错误或已过期");

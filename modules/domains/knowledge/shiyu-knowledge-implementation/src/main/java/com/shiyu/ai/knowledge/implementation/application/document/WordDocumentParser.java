@@ -1,6 +1,7 @@
 package com.shiyu.ai.knowledge.implementation.application.document;
 
 import lombok.extern.slf4j.Slf4j;
+
 import org.apache.poi.xwpf.extractor.XWPFWordExtractor;
 import org.apache.poi.xwpf.usermodel.XWPFDocument;
 import org.springframework.stereotype.Component;
@@ -8,10 +9,7 @@ import org.springframework.stereotype.Component;
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
 
-/**
- * Word 文档解析器 — 基于 Apache POI 5.x
- * 支持提取 .docx 纯文本内容（含标题、段落、表格）
- */
+/** Word 文档解析器 — 基于 Apache POI 5.x 支持提取 .docx 纯文本内容（含标题、段落、表格） */
 @Slf4j
 @Component
 public class WordDocumentParser implements DocumentParser {
@@ -43,17 +41,15 @@ public class WordDocumentParser implements DocumentParser {
         return parse(docxBytes);
     }
 
-    /**
-     * 解析 .docx 字节数组
-     */
+    /** 解析 .docx 字节数组 */
     public ParseResult parse(byte[] docxBytes) {
         if (docxBytes == null || docxBytes.length == 0) {
             return new ParseResult("", "", "");
         }
 
         try (ByteArrayInputStream bais = new ByteArrayInputStream(docxBytes);
-             XWPFDocument document = new XWPFDocument(bais);
-             XWPFWordExtractor extractor = new XWPFWordExtractor(document)) {
+                XWPFDocument document = new XWPFDocument(bais);
+                XWPFWordExtractor extractor = new XWPFWordExtractor(document)) {
 
             String text = extractor.getText();
 
@@ -82,8 +78,11 @@ public class WordDocumentParser implements DocumentParser {
             int tableCount = document.getTables().size();
             String metadata = String.format("paragraphs=%d, tables=%d", paragraphCount, tableCount);
 
-            log.debug("Word 解析完成: paragraphs={}, tables={}, textLength={}",
-                    paragraphCount, tableCount, text.length());
+            log.debug(
+                    "Word 解析完成: paragraphs={}, tables={}, textLength={}",
+                    paragraphCount,
+                    tableCount,
+                    text.length());
             return new ParseResult(title, text, metadata);
 
         } catch (IOException e) {
@@ -92,4 +91,3 @@ public class WordDocumentParser implements DocumentParser {
         }
     }
 }
-

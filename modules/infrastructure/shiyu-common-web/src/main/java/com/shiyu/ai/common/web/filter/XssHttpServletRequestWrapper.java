@@ -3,10 +3,12 @@ package com.shiyu.ai.common.web.filter;
 import cn.hutool.core.io.IoUtil;
 import cn.hutool.core.util.StrUtil;
 import cn.hutool.http.HtmlUtil;
+
 import jakarta.servlet.ReadListener;
 import jakarta.servlet.ServletInputStream;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletRequestWrapper;
+
 import org.apache.commons.lang3.Strings;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.MediaType;
@@ -15,9 +17,7 @@ import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
 
-/**
- * XSS过滤处理
- */
+/** XSS过滤处理 */
 public class XssHttpServletRequestWrapper extends HttpServletRequestWrapper {
     /**
      * @param request
@@ -49,7 +49,9 @@ public class XssHttpServletRequestWrapper extends HttpServletRequestWrapper {
         }
 
         // 为空，直接返回
-        String json = StrUtil.str(IoUtil.readBytes(super.getInputStream(), false), StandardCharsets.UTF_8);
+        String json =
+                StrUtil.str(
+                        IoUtil.readBytes(super.getInputStream(), false), StandardCharsets.UTF_8);
         if (json == null || json.isEmpty()) {
             return super.getInputStream();
         }
@@ -75,8 +77,7 @@ public class XssHttpServletRequestWrapper extends HttpServletRequestWrapper {
             }
 
             @Override
-            public void setReadListener(ReadListener readListener) {
-            }
+            public void setReadListener(ReadListener readListener) {}
 
             @Override
             public int read() throws IOException {
@@ -85,9 +86,7 @@ public class XssHttpServletRequestWrapper extends HttpServletRequestWrapper {
         };
     }
 
-    /**
-     * 是否是Json请求
-     */
+    /** 是否是Json请求 */
     public boolean isJsonRequest() {
         String header = super.getHeader(HttpHeaders.CONTENT_TYPE);
         return Strings.CI.startsWith(header, MediaType.APPLICATION_JSON_VALUE);

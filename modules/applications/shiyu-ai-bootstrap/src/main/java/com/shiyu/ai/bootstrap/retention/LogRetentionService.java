@@ -1,6 +1,7 @@
 package com.shiyu.ai.bootstrap.retention;
 
 import lombok.extern.slf4j.Slf4j;
+
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
 
@@ -22,11 +23,14 @@ public class LogRetentionService {
 
     public LogRetentionService(LogRetentionProperties properties) {
         this.properties = properties;
-        this.historyRoot = Path.of(System.getProperty("app.home", "."), "data", "log", "history")
-                .toAbsolutePath().normalize();
+        this.historyRoot =
+                Path.of(System.getProperty("app.home", "."), "data", "log", "history")
+                        .toAbsolutePath()
+                        .normalize();
     }
 
-    @Scheduled(fixedDelayString = "${shiyu.retention.logs.interval-ms:3600000}",
+    @Scheduled(
+            fixedDelayString = "${shiyu.retention.logs.interval-ms:3600000}",
             initialDelayString = "${shiyu.retention.logs.initial-delay-ms:120000}")
     public void scheduledCleanup() {
         if (properties.isEnabled()) {
@@ -39,11 +43,13 @@ public class LogRetentionService {
         try {
             List<Path> files;
             try (var stream = Files.walk(historyRoot)) {
-                files = stream.filter(Files::isRegularFile)
-                        .sorted(Comparator.comparing(this::lastModified))
-                        .toList();
+                files =
+                        stream.filter(Files::isRegularFile)
+                                .sorted(Comparator.comparing(this::lastModified))
+                                .toList();
             }
-            Instant cutoff = Instant.now().minus(Math.max(1, properties.getMaxAgeDays()), ChronoUnit.DAYS);
+            Instant cutoff =
+                    Instant.now().minus(Math.max(1, properties.getMaxAgeDays()), ChronoUnit.DAYS);
             for (Path file : files) {
                 if (lastModified(file).isBefore(cutoff)) {
                     Files.deleteIfExists(file);

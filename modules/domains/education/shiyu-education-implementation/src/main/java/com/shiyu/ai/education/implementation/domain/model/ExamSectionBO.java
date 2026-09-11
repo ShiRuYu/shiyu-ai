@@ -1,7 +1,8 @@
 package com.shiyu.ai.education.implementation.domain.model;
-import lombok.Data;
 
 import com.shiyu.ai.common.core.domain.TenantModel;
+
+import lombok.Data;
 import lombok.EqualsAndHashCode;
 
 import java.io.Serial;
@@ -12,8 +13,7 @@ import java.time.LocalDateTime;
 @EqualsAndHashCode(callSuper = true)
 public class ExamSectionBO extends TenantModel {
 
-    @Serial
-    private static final long serialVersionUID = 1L;
+    @Serial private static final long serialVersionUID = 1L;
     private Long id;
 
     private Long examId;
@@ -22,4 +22,3 @@ public class ExamSectionBO extends TenantModel {
     private BigDecimal scorePerQ;
     private LocalDateTime createdAt;
 }
-

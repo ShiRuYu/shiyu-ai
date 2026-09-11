@@ -1,4 +1,6 @@
 package com.shiyu.ai.knowledge.implementation.application.service;
+
+import com.shiyu.ai.common.core.exception.ServiceException;
 import com.shiyu.ai.common.storage.api.*;
 import com.shiyu.ai.common.storage.backup.*;
 import com.shiyu.ai.common.storage.config.*;
@@ -8,13 +10,13 @@ import com.shiyu.ai.common.storage.metadata.*;
 import com.shiyu.ai.common.storage.rate.*;
 import com.shiyu.ai.common.storage.security.*;
 import com.shiyu.ai.common.storage.vector.*;
-
-import com.shiyu.ai.common.core.exception.ServiceException;
+import com.shiyu.ai.kernel.context.ActorContext;
 import com.shiyu.ai.knowledge.implementation.application.EnterpriseDocumentService;
 import com.shiyu.ai.knowledge.implementation.application.KnowledgeDocumentUploadService;
 import com.shiyu.ai.knowledge.implementation.application.KnowledgeSpaceService;
-import com.shiyu.ai.kernel.context.ActorContext;
+
 import lombok.RequiredArgsConstructor;
+
 import org.springframework.stereotype.Service;
 
 import java.io.ByteArrayInputStream;
@@ -40,27 +42,44 @@ public class KnowledgeDocumentUploadServiceImpl implements KnowledgeDocumentUplo
     private final EnterpriseDocumentService documentService;
     private final KnowledgeSpaceService spaceService;
 
-    private final HttpClient httpClient = HttpClient.newBuilder()
-            .connectTimeout(Duration.ofSeconds(10))
-            .followRedirects(HttpClient.Redirect.NEVER)
-            .build();
+    private final HttpClient httpClient =
+            HttpClient.newBuilder()
+                    .connectTimeout(Duration.ofSeconds(10))
+                    .followRedirects(HttpClient.Redirect.NEVER)
+                    .build();
 
     @Override
-    public EnterpriseDocumentService.UploadResult upload(ActorContext actor, Long spaceId, String title,
-                                                           String originalName, String contentType,
-                                                           byte[] content) {
+    public EnterpriseDocumentService.UploadResult upload(
+            ActorContext actor,
+            Long spaceId,
+            String title,
+            String originalName,
+            String contentType,
+            byte[] content) {
         requireEditor(actor, spaceId);
         securityScanner.validate(originalName, contentType, content);
         String checksum = sha256(content);
         ObjectStorage.StoredObject stored = null;
         try {
-            stored = objectStorage.put(namespace(actor, spaceId), originalName, contentType, content.length,
-                    new ByteArrayInputStream(content));
-            EnterpriseDocumentService.UploadResult result = documentService.registerStoredFile(actor,
-                    new EnterpriseDocumentService.StoredFileRequest(spaceId,
-                            title == null || title.isBlank() ? originalName : title.trim(),
-                            originalName, stored.objectKey(), stored.provider(), stored.contentType(),
-                            stored.size(), checksum));
+            stored =
+                    objectStorage.put(
+                            namespace(actor, spaceId),
+                            originalName,
+                            contentType,
+                            content.length,
+                            new ByteArrayInputStream(content));
+            EnterpriseDocumentService.UploadResult result =
+                    documentService.registerStoredFile(
+                            actor,
+                            new EnterpriseDocumentService.StoredFileRequest(
+                                    spaceId,
+                                    title == null || title.isBlank() ? originalName : title.trim(),
+                                    originalName,
+                                    stored.objectKey(),
+                                    stored.provider(),
+                                    stored.contentType(),
+                                    stored.size(),
+                                    checksum));
             if (result.duplicate()) {
                 objectStorage.delete(stored.objectKey());
             }
@@ -75,19 +94,23 @@ public class KnowledgeDocumentUploadServiceImpl implements KnowledgeDocumentUplo
     }
 
     @Override
-    public EnterpriseDocumentService.UploadResult importUrl(ActorContext actor, Long spaceId,
-                                                              String title, String url) {
+    public EnterpriseDocumentService.UploadResult importUrl(
+            ActorContext actor, Long spaceId, String title, String url) {
         requireEditor(actor, spaceId);
         URI uri;
         try {
             uri = URI.create(url == null ? "" : url.trim());
             validateExternalUrl(uri);
-            HttpRequest request = HttpRequest.newBuilder(uri)
-                    .timeout(Duration.ofSeconds(60))
-                    .header("Accept", "text/plain,text/html,application/pdf,application/vnd.openxmlformats-officedocument.wordprocessingml.document,*/*")
-                    .GET()
-                    .build();
-            HttpResponse<byte[]> response = httpClient.send(request, HttpResponse.BodyHandlers.ofByteArray());
+            HttpRequest request =
+                    HttpRequest.newBuilder(uri)
+                            .timeout(Duration.ofSeconds(60))
+                            .header(
+                                    "Accept",
+                                    "text/plain,text/html,application/pdf,application/vnd.openxmlformats-officedocument.wordprocessingml.document,*/*")
+                            .GET()
+                            .build();
+            HttpResponse<byte[]> response =
+                    httpClient.send(request, HttpResponse.BodyHandlers.ofByteArray());
             if (response.statusCode() < 200 || response.statusCode() >= 300) {
                 throw new ServiceException("网页内容获取失败，HTTP 状态码: " + response.statusCode());
             }
@@ -96,9 +119,11 @@ public class KnowledgeDocumentUploadServiceImpl implements KnowledgeDocumentUplo
                 throw new ServiceException("网页内容为空或超过 200 MB 限制");
             }
             String originalName = fileName(uri);
-            String contentType = response.headers().firstValue("Content-Type")
-                    .map(value -> value.split(";", 2)[0].trim())
-                    .orElse("text/html");
+            String contentType =
+                    response.headers()
+                            .firstValue("Content-Type")
+                            .map(value -> value.split(";", 2)[0].trim())
+                            .orElse("text/html");
             return upload(actor, spaceId, title, originalName, contentType, content);
         } catch (IllegalArgumentException exception) {
             throw new ServiceException("URL 格式不正确");
@@ -131,13 +156,17 @@ public class KnowledgeDocumentUploadServiceImpl implements KnowledgeDocumentUplo
     }
 
     private void validateExternalUrl(URI uri) throws IOException {
-        if (uri.getScheme() == null || (!"http".equalsIgnoreCase(uri.getScheme())
-                && !"https".equalsIgnoreCase(uri.getScheme())) || uri.getHost() == null) {
+        if (uri.getScheme() == null
+                || (!"http".equalsIgnoreCase(uri.getScheme())
+                        && !"https".equalsIgnoreCase(uri.getScheme()))
+                || uri.getHost() == null) {
             throw new ServiceException("仅支持 http/https URL");
         }
         for (InetAddress address : InetAddress.getAllByName(uri.getHost())) {
-            if (address.isAnyLocalAddress() || address.isLoopbackAddress()
-                    || address.isLinkLocalAddress() || address.isSiteLocalAddress()
+            if (address.isAnyLocalAddress()
+                    || address.isLoopbackAddress()
+                    || address.isLinkLocalAddress()
+                    || address.isSiteLocalAddress()
                     || address.isMulticastAddress()) {
                 throw new ServiceException("不允许访问内网或本机地址");
             }
@@ -159,4 +188,3 @@ public class KnowledgeDocumentUploadServiceImpl implements KnowledgeDocumentUplo
         }
     }
 }
-

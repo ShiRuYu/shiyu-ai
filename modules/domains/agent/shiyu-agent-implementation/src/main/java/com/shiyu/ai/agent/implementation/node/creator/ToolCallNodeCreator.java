@@ -1,16 +1,15 @@
 package com.shiyu.ai.agent.implementation.node.creator;
 
-import com.shiyu.ai.agent.contract.node.creator.NodeCreator;
-
 import com.shiyu.ai.agent.contract.node.*;
-
 import com.shiyu.ai.agent.contract.node.BaseNode;
 import com.shiyu.ai.agent.contract.node.NodeConfig;
 import com.shiyu.ai.agent.contract.node.NodeType;
+import com.shiyu.ai.agent.contract.node.creator.NodeCreator;
 import com.shiyu.ai.agent.implementation.node.tool.ToolCallConfig;
 import com.shiyu.ai.agent.implementation.node.tool.ToolCallNode;
-import com.shiyu.ai.tooling.contract.api.ToolService;
 import com.shiyu.ai.agent.implementation.runtime.ToolExecutionPipeline;
+import com.shiyu.ai.tooling.contract.api.ToolService;
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
@@ -18,21 +17,34 @@ import org.springframework.stereotype.Component;
 public class ToolCallNodeCreator implements NodeCreator {
     private final ToolService toolService;
     private final ToolExecutionPipeline executionPipeline;
+
     /**
-     * Explicitly select the full constructor.  This creator has two constructors
-     * because a few unit tests instantiate it with only the tool service; without
-     * an explicit injection marker Spring treats the class as requiring a default
-     * constructor and the application fails during bootstrap.
+     * Explicitly select the full constructor. This creator has two constructors because a few unit
+     * tests instantiate it with only the tool service; without an explicit injection marker Spring
+     * treats the class as requiring a default constructor and the application fails during
+     * bootstrap.
      */
-    public ToolCallNodeCreator(ToolService toolService) { this(toolService, null); }
+    public ToolCallNodeCreator(ToolService toolService) {
+        this(toolService, null);
+    }
+
     @Autowired
     public ToolCallNodeCreator(ToolService toolService, ToolExecutionPipeline executionPipeline) {
         this.toolService = toolService;
         this.executionPipeline = executionPipeline;
     }
-    @Override public NodeType getType() { return NodeType.TOOL_CALL; }
-    @Override public BaseNode create(NodeConfig config) {
-        return ToolCallNode.builder().config((ToolCallConfig) config).toolService(toolService)
-                .executionPipeline(executionPipeline).build();
+
+    @Override
+    public NodeType getType() {
+        return NodeType.TOOL_CALL;
+    }
+
+    @Override
+    public BaseNode create(NodeConfig config) {
+        return ToolCallNode.builder()
+                .config((ToolCallConfig) config)
+                .toolService(toolService)
+                .executionPipeline(executionPipeline)
+                .build();
     }
 }

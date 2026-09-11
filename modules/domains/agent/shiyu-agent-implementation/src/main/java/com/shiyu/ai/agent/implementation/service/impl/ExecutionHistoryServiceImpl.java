@@ -1,10 +1,12 @@
 package com.shiyu.ai.agent.implementation.service.impl;
 
-import com.shiyu.ai.agent.implementation.port.repository.AgentExecutionRepository;
 import com.shiyu.ai.agent.contract.ExecutionHistoryService;
 import com.shiyu.ai.agent.implementation.domain.model.AgentExecutionBO;
+import com.shiyu.ai.agent.implementation.port.repository.AgentExecutionRepository;
 import com.shiyu.ai.kernel.context.ActorContext;
+
 import lombok.extern.slf4j.Slf4j;
+
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDateTime;
@@ -21,8 +23,14 @@ public class ExecutionHistoryServiceImpl implements ExecutionHistoryService {
     }
 
     @Override
-    public String startExecution(ActorContext actor, String agentId, String version, String sessionId,
-                                 String nodeId, String nodeType, String inputData) {
+    public String startExecution(
+            ActorContext actor,
+            String agentId,
+            String version,
+            String sessionId,
+            String nodeId,
+            String nodeType,
+            String inputData) {
         String executionId = UUID.randomUUID().toString().replace("-", "");
         AgentExecutionBO exec = new AgentExecutionBO();
         exec.setExecutionId(executionId);
@@ -34,7 +42,9 @@ public class ExecutionHistoryServiceImpl implements ExecutionHistoryService {
         exec.setNodeId(nodeId);
         exec.setNodeType(nodeType);
         exec.setInputData(inputData);
-        exec.setStatus(com.shiyu.ai.agent.implementation.domain.enums.AgentExecutionStatus.RUNNING.getCode());
+        exec.setStatus(
+                com.shiyu.ai.agent.implementation.domain.enums.AgentExecutionStatus.RUNNING
+                        .getCode());
         exec.setStartTime(LocalDateTime.now());
         exec.setCreateTime(LocalDateTime.now());
         agentExecutionRepository.insert(actor.tenantId(), exec);
@@ -42,9 +52,14 @@ public class ExecutionHistoryServiceImpl implements ExecutionHistoryService {
     }
 
     @Override
-    public void completeExecution(ActorContext actor, String executionId, String outputData,
-                                  Integer status, String errorMessage) {
-        AgentExecutionBO exec = agentExecutionRepository.selectByExecutionId(actor.tenantId(), executionId);
+    public void completeExecution(
+            ActorContext actor,
+            String executionId,
+            String outputData,
+            Integer status,
+            String errorMessage) {
+        AgentExecutionBO exec =
+                agentExecutionRepository.selectByExecutionId(actor.tenantId(), executionId);
         if (exec == null) {
             throw new IllegalStateException("执行记录不存在: " + executionId);
         }
@@ -52,7 +67,8 @@ public class ExecutionHistoryServiceImpl implements ExecutionHistoryService {
         exec.setStatus(status);
         exec.setErrorMessage(errorMessage);
         exec.setEndTime(LocalDateTime.now());
-        exec.setDurationMs(java.time.Duration.between(exec.getStartTime(), exec.getEndTime()).toMillis());
+        exec.setDurationMs(
+                java.time.Duration.between(exec.getStartTime(), exec.getEndTime()).toMillis());
         agentExecutionRepository.update(actor.tenantId(), exec);
     }
 }

@@ -1,11 +1,11 @@
 package com.shiyu.ai.iam.implementation.utils;
 
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+
 import org.junit.jupiter.api.Test;
 
 import java.util.concurrent.atomic.AtomicBoolean;
-
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertFalse;
 
 class UserLockManagerTest {
     @Test
@@ -19,4 +19,3 @@ class UserLockManagerTest {
         manager.cleanUp();
     }
 }
-

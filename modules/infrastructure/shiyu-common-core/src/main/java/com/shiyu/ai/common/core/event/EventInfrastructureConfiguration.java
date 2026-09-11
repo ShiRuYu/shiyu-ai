@@ -4,10 +4,10 @@ import org.apache.kafka.clients.producer.ProducerConfig;
 import org.apache.kafka.common.serialization.StringSerializer;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
+import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Primary;
-import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.kafka.core.DefaultKafkaProducerFactory;
 import org.springframework.kafka.core.KafkaTemplate;
@@ -29,15 +29,21 @@ public class EventInfrastructureConfiguration {
 
     @Bean
     @Primary
-    @ConditionalOnProperty(prefix = "shiyu.infrastructure.event", name = "provider",
-            havingValue = "in-process", matchIfMissing = true)
-    public InfrastructureEventPublisher inProcessEventPublisher(ApplicationEventPublisher publisher) {
+    @ConditionalOnProperty(
+            prefix = "shiyu.infrastructure.event",
+            name = "provider",
+            havingValue = "in-process",
+            matchIfMissing = true)
+    public InfrastructureEventPublisher inProcessEventPublisher(
+            ApplicationEventPublisher publisher) {
         return new InProcessEventPublisher(publisher);
     }
 
     @Bean
     @Primary
-    @ConditionalOnProperty(prefix = "shiyu.infrastructure.event", name = "provider",
+    @ConditionalOnProperty(
+            prefix = "shiyu.infrastructure.event",
+            name = "provider",
             havingValue = "postgres-outbox")
     public InfrastructureEventPublisher jdbcOutboxEventPublisher(
             JdbcTemplate jdbc, EventInfrastructureProperties properties) {
@@ -45,8 +51,12 @@ public class EventInfrastructureConfiguration {
     }
 
     @Bean
-    @ConditionalOnProperty(prefix = "shiyu.infrastructure.event", name = "provider", havingValue = "kafka")
-    public ProducerFactory<String, String> eventProducerFactory(EventInfrastructureProperties properties) {
+    @ConditionalOnProperty(
+            prefix = "shiyu.infrastructure.event",
+            name = "provider",
+            havingValue = "kafka")
+    public ProducerFactory<String, String> eventProducerFactory(
+            EventInfrastructureProperties properties) {
         Map<String, Object> config = new HashMap<>();
         config.put(ProducerConfig.BOOTSTRAP_SERVERS_CONFIG, properties.getBootstrapServers());
         config.put(ProducerConfig.KEY_SERIALIZER_CLASS_CONFIG, StringSerializer.class);
@@ -59,26 +69,36 @@ public class EventInfrastructureConfiguration {
     }
 
     @Bean
-    @ConditionalOnProperty(prefix = "shiyu.infrastructure.event", name = "provider", havingValue = "kafka")
-    public KafkaTemplate<String, String> eventKafkaTemplate(ProducerFactory<String, String> factory) {
+    @ConditionalOnProperty(
+            prefix = "shiyu.infrastructure.event",
+            name = "provider",
+            havingValue = "kafka")
+    public KafkaTemplate<String, String> eventKafkaTemplate(
+            ProducerFactory<String, String> factory) {
         return new KafkaTemplate<>(factory);
     }
 
     @Bean
     @Primary
-    @ConditionalOnProperty(prefix = "shiyu.infrastructure.event", name = "provider", havingValue = "kafka")
+    @ConditionalOnProperty(
+            prefix = "shiyu.infrastructure.event",
+            name = "provider",
+            havingValue = "kafka")
     public InfrastructureEventPublisher kafkaEventPublisher(
-            JdbcTemplate jdbc, EventInfrastructureProperties properties,
+            JdbcTemplate jdbc,
+            EventInfrastructureProperties properties,
             KafkaTemplate<String, String> kafka) {
         return new KafkaOutboxEventPublisher(jdbc, properties, kafka);
     }
 
     @Bean
-    @ConditionalOnProperty(prefix = "shiyu.infrastructure.event", name = "provider", havingValue = "kafka")
+    @ConditionalOnProperty(
+            prefix = "shiyu.infrastructure.event",
+            name = "provider",
+            havingValue = "kafka")
     public EventConsumptionDeduplicator eventConsumptionDeduplicator(JdbcTemplate jdbc) {
         return new EventConsumptionDeduplicator(jdbc);
     }
 
-    public record EventProviderValidator(String provider) {
-    }
+    public record EventProviderValidator(String provider) {}
 }

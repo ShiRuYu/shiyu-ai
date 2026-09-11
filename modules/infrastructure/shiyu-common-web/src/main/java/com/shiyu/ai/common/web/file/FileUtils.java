@@ -1,8 +1,11 @@
 package com.shiyu.ai.common.web.file;
 
 import cn.hutool.core.io.FileUtil;
+
 import com.shiyu.ai.common.core.utils.StringUtils;
+
 import jakarta.servlet.http.HttpServletResponse;
+
 import org.springframework.web.multipart.MultipartFile;
 
 import java.net.URLEncoder;
@@ -10,9 +13,7 @@ import java.nio.charset.StandardCharsets;
 import java.util.Arrays;
 import java.util.UUID;
 
-/**
- * 文件处理工具类
- */
+/** 文件处理工具类 */
 public class FileUtils extends FileUtil {
 
     private static final String FILE_EXTENTION_SPLIT = ".";
@@ -20,13 +21,17 @@ public class FileUtils extends FileUtil {
     /**
      * 下载文件名重新编码
      *
-     * @param response     响应对象
+     * @param response 响应对象
      * @param realFileName 真实文件名
      */
-    public static void setAttachmentResponseHeader(HttpServletResponse response, String realFileName) {
+    public static void setAttachmentResponseHeader(
+            HttpServletResponse response, String realFileName) {
         String percentEncodedFileName = percentEncode(realFileName);
-        String contentDispositionValue = "attachment; filename=%s;filename*=utf-8''%s".formatted(percentEncodedFileName, percentEncodedFileName);
-        response.addHeader("Access-Control-Expose-Headers", "Content-Disposition,download-filename");
+        String contentDispositionValue =
+                "attachment; filename=%s;filename*=utf-8''%s"
+                        .formatted(percentEncodedFileName, percentEncodedFileName);
+        response.addHeader(
+                "Access-Control-Expose-Headers", "Content-Disposition,download-filename");
         response.setHeader("Content-disposition", contentDispositionValue);
         response.setHeader("download-filename", percentEncodedFileName);
     }
@@ -66,11 +71,13 @@ public class FileUtils extends FileUtil {
      * 获取安全的文件路径
      *
      * @param originalFilename 原始文件名
-     * @param secureFilePath   安全路径
+     * @param secureFilePath 安全路径
      * @return 安全文件路径
      */
-    public static String getSecureFilePathForUpload(final String originalFilename, final String secureFilePath) {
-        String extension = originalFilename.substring(originalFilename.lastIndexOf(FILE_EXTENTION_SPLIT));
+    public static String getSecureFilePathForUpload(
+            final String originalFilename, final String secureFilePath) {
+        String extension =
+                originalFilename.substring(originalFilename.lastIndexOf(FILE_EXTENTION_SPLIT));
         String newFileName = UUID.randomUUID() + extension;
 
         return secureFilePath + newFileName; // 预定义安全路径

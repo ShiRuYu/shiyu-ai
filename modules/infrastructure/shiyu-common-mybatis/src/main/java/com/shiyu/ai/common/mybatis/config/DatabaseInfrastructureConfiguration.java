@@ -16,6 +16,5 @@ public class DatabaseInfrastructureConfiguration {
         return new DatabaseProviderValidator(properties.normalizedProvider());
     }
 
-    public record DatabaseProviderValidator(String provider) {
-    }
+    public record DatabaseProviderValidator(String provider) {}
 }

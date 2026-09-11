@@ -1,11 +1,12 @@
 package com.shiyu.ai.agent.implementation.web;
 
 import cn.dev33.satoken.annotation.SaCheckPermission;
-import com.shiyu.ai.agent.implementation.service.AgentVersionService;
+
 import com.shiyu.ai.agent.implementation.request.EdgeRequest;
 import com.shiyu.ai.agent.implementation.request.GraphConfigRequest;
 import com.shiyu.ai.agent.implementation.request.NodeConfigRequest;
 import com.shiyu.ai.agent.implementation.request.VersionRequest;
+import com.shiyu.ai.agent.implementation.service.AgentVersionService;
 import com.shiyu.ai.agent.implementation.vo.AgentVersionDetailVO;
 import com.shiyu.ai.agent.implementation.vo.AgentVersionVO;
 import com.shiyu.ai.agent.implementation.vo.GraphValidationVO;
@@ -13,10 +14,14 @@ import com.shiyu.ai.common.core.api.Result;
 import com.shiyu.ai.common.core.enums.BizResultCode;
 import com.shiyu.ai.common.web.auth.ActorContextHttpAdapter;
 import com.shiyu.ai.kernel.context.ActorContext;
+
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
+
 import jakarta.validation.Valid;
+
 import lombok.extern.slf4j.Slf4j;
+
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -24,8 +29,8 @@ import java.util.List;
 /**
  * Agent 版本 + Graph 配置管理 Controller
  *
- * 职责：版本 CRUD、版本生命周期（发布/归档/激活）、Graph 配置、节点/边管理、画布管理。
- * 合并来源：AgentVersionController + AgentGraphController
+ * <p>职责：版本 CRUD、版本生命周期（发布/归档/激活）、Graph 配置、节点/边管理、画布管理。 合并来源：AgentVersionController +
+ * AgentGraphController
  */
 @Slf4j
 @Tag(name = "Agent Version", description = "Agent Version & Graph")
@@ -78,10 +83,12 @@ public class AgentVersionController {
     @SaCheckPermission("agent:admin:edit")
     @PostMapping("/update")
     public Result<AgentVersionVO> updateVersion(
-            @RequestParam String agentId, @RequestParam Long versionId,
+            @RequestParam String agentId,
+            @RequestParam Long versionId,
             @Valid @RequestBody VersionRequest request) {
         try {
-            return Result.success(agentVersionService.updateVersion(actor(), agentId, versionId, request));
+            return Result.success(
+                    agentVersionService.updateVersion(actor(), agentId, versionId, request));
         } catch (Exception e) {
             log.error("修改版本失败", e);
             return Result.fail("修改失败");
@@ -91,8 +98,7 @@ public class AgentVersionController {
     @Operation(summary = "Delete Version")
     @SaCheckPermission("agent:admin:delete")
     @PostMapping("/delete")
-    public Result<Void> deleteVersion(
-            @RequestParam String agentId, @RequestParam Long versionId) {
+    public Result<Void> deleteVersion(@RequestParam String agentId, @RequestParam Long versionId) {
         try {
             agentVersionService.deleteVersion(actor(), agentId, versionId);
             return Result.success();
@@ -146,7 +152,8 @@ public class AgentVersionController {
     @Operation(summary = "Copy")
     @SaCheckPermission("agent:admin:create")
     @PostMapping("/copy")
-    public Result<AgentVersionVO> copy(@RequestParam String agentId, @Valid @RequestBody VersionRequest request) {
+    public Result<AgentVersionVO> copy(
+            @RequestParam String agentId, @Valid @RequestBody VersionRequest request) {
         try {
             return Result.success(agentVersionService.copyVersion(actor(), agentId, request));
         } catch (Exception e) {
@@ -170,10 +177,12 @@ public class AgentVersionController {
     @SaCheckPermission("agent:admin:edit")
     @PostMapping("/graph/update")
     public Result<AgentVersionDetailVO> updateGraph(
-            @RequestParam String agentId, @RequestParam Long versionId,
+            @RequestParam String agentId,
+            @RequestParam Long versionId,
             @Valid @RequestBody GraphConfigRequest request) {
         try {
-            return Result.success(agentVersionService.updateGraphConfig(actor(), agentId, versionId, request));
+            return Result.success(
+                    agentVersionService.updateGraphConfig(actor(), agentId, versionId, request));
         } catch (Exception e) {
             log.error("更新Graph配置失败", e);
             return Result.fail("更新失败");
@@ -183,7 +192,8 @@ public class AgentVersionController {
     @Operation(summary = "Validate Graph")
     @PostMapping("/graph/validate")
     public Result<GraphValidationVO> validate(
-            @RequestParam String agentId, @RequestParam Long versionId,
+            @RequestParam String agentId,
+            @RequestParam Long versionId,
             @Valid @RequestBody GraphConfigRequest request) {
         return Result.success(agentVersionService.validateGraphConfig(request));
     }
@@ -192,7 +202,8 @@ public class AgentVersionController {
     @SaCheckPermission("agent:admin:edit")
     @PostMapping("/graph/node/create")
     public Result<Void> addNode(
-            @RequestParam String agentId, @RequestParam Long versionId,
+            @RequestParam String agentId,
+            @RequestParam Long versionId,
             @Valid @RequestBody NodeConfigRequest request) {
         try {
             agentVersionService.addNode(actor(), agentId, versionId, request);
@@ -207,8 +218,10 @@ public class AgentVersionController {
     @SaCheckPermission("agent:admin:edit")
     @PostMapping("/graph/node/update")
     public Result<Void> updateNode(
-            @RequestParam String agentId, @RequestParam Long versionId,
-            @RequestParam String nodeId, @Valid @RequestBody NodeConfigRequest request) {
+            @RequestParam String agentId,
+            @RequestParam Long versionId,
+            @RequestParam String nodeId,
+            @Valid @RequestBody NodeConfigRequest request) {
         try {
             agentVersionService.updateNode(actor(), agentId, versionId, nodeId, request);
             return Result.success();
@@ -222,7 +235,8 @@ public class AgentVersionController {
     @SaCheckPermission("agent:admin:edit")
     @PostMapping("/graph/node/delete")
     public Result<Void> deleteNode(
-            @RequestParam String agentId, @RequestParam Long versionId,
+            @RequestParam String agentId,
+            @RequestParam Long versionId,
             @RequestParam String nodeId) {
         try {
             agentVersionService.deleteNode(actor(), agentId, versionId, nodeId);
@@ -237,7 +251,8 @@ public class AgentVersionController {
     @SaCheckPermission("agent:admin:edit")
     @PostMapping("/graph/edge/create")
     public Result<Void> addEdge(
-            @RequestParam String agentId, @RequestParam Long versionId,
+            @RequestParam String agentId,
+            @RequestParam Long versionId,
             @Valid @RequestBody EdgeRequest request) {
         try {
             agentVersionService.addEdge(actor(), agentId, versionId, request);
@@ -252,8 +267,10 @@ public class AgentVersionController {
     @SaCheckPermission("agent:admin:edit")
     @PostMapping("/graph/edge/delete")
     public Result<Void> deleteEdge(
-            @RequestParam String agentId, @RequestParam Long versionId,
-            @RequestParam String sourceNodeId, @RequestParam String targetNodeId) {
+            @RequestParam String agentId,
+            @RequestParam Long versionId,
+            @RequestParam String sourceNodeId,
+            @RequestParam String targetNodeId) {
         try {
             agentVersionService.deleteEdge(actor(), agentId, versionId, sourceNodeId, targetNodeId);
             return Result.success();
@@ -265,8 +282,7 @@ public class AgentVersionController {
 
     @Operation(summary = "Get Canvas")
     @GetMapping("/graph/canvas")
-    public Result<String> getCanvas(
-            @RequestParam String agentId, @RequestParam Long versionId) {
+    public Result<String> getCanvas(@RequestParam String agentId, @RequestParam Long versionId) {
         String canvas = agentVersionService.getCanvasConfig(actor(), agentId, versionId);
         return Result.success(canvas);
     }
@@ -275,7 +291,8 @@ public class AgentVersionController {
     @SaCheckPermission("agent:admin:edit")
     @PostMapping("/graph/canvas-update")
     public Result<Void> updateCanvas(
-            @RequestParam String agentId, @RequestParam Long versionId,
+            @RequestParam String agentId,
+            @RequestParam Long versionId,
             @RequestBody String canvasConfig) {
         try {
             agentVersionService.updateCanvasConfig(actor(), agentId, versionId, canvasConfig);

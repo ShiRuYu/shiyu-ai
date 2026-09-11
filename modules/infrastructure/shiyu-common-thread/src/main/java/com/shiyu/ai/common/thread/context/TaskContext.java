@@ -4,13 +4,11 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.Optional;
 
-/**
- * 任务上下文
- * 用于在线程间传递上下文信息
- */
+/** 任务上下文 用于在线程间传递上下文信息 */
 public class TaskContext {
 
-    private static final ThreadLocal<TaskContext> CONTEXT_HOLDER = ThreadLocal.withInitial(TaskContext::new);
+    private static final ThreadLocal<TaskContext> CONTEXT_HOLDER =
+            ThreadLocal.withInitial(TaskContext::new);
 
     private final Map<String, Object> attributes = new HashMap<>();
 
@@ -23,9 +21,7 @@ public class TaskContext {
         return CONTEXT_HOLDER.get();
     }
 
-    /**
-     * 清除当前线程的上下文
-     */
+    /** 清除当前线程的上下文 */
     public static void clear() {
         CONTEXT_HOLDER.remove();
     }
@@ -99,9 +95,7 @@ public class TaskContext {
         }
     }
 
-    /**
-     * 清空所有属性
-     */
+    /** 清空所有属性 */
     public void clearAttributes() {
         attributes.clear();
     }

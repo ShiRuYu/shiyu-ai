@@ -1,12 +1,14 @@
 package com.shiyu.ai.education.implementation.application.impl;
 
-import com.shiyu.ai.education.implementation.domain.model.AbilityBO;
+import com.shiyu.ai.education.implementation.application.AbilityService;
 import com.shiyu.ai.education.implementation.domain.AbilityValue;
 import com.shiyu.ai.education.implementation.domain.BloomTaxonomy;
-import com.shiyu.ai.education.implementation.application.AbilityService;
+import com.shiyu.ai.education.implementation.domain.model.AbilityBO;
 import com.shiyu.ai.education.implementation.domain.port.repository.AbilityRepository;
 import com.shiyu.ai.kernel.context.ActorContext;
+
 import lombok.extern.slf4j.Slf4j;
+
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDateTime;
@@ -24,14 +26,23 @@ public class AbilityServiceImpl implements AbilityService {
     @Override
     public AbilityValue get(ActorContext actor, Long studentId, Long knowledgeId) {
         requireActor(actor);
-        AbilityBO d = abilityRepository.selectByStudentAndKnowledge(actor.tenantId(), studentId, knowledgeId);
+        AbilityBO d =
+                abilityRepository.selectByStudentAndKnowledge(
+                        actor.tenantId(), studentId, knowledgeId);
         return d != null ? fromDO(d) : AbilityValue.empty(studentId, knowledgeId);
     }
 
     @Override
-    public void update(ActorContext actor, Long studentId, Long knowledgeId, BloomTaxonomy dimension, double accuracy) {
+    public void update(
+            ActorContext actor,
+            Long studentId,
+            Long knowledgeId,
+            BloomTaxonomy dimension,
+            double accuracy) {
         requireActor(actor);
-        AbilityBO d = abilityRepository.selectByStudentAndKnowledge(actor.tenantId(), studentId, knowledgeId);
+        AbilityBO d =
+                abilityRepository.selectByStudentAndKnowledge(
+                        actor.tenantId(), studentId, knowledgeId);
         boolean isNew = false;
         if (d == null) {
             d = new AbilityBO();
@@ -52,13 +63,12 @@ public class AbilityServiceImpl implements AbilityService {
 
         setScore(d, dimension, updated);
         d.setOverallMastery(
-            d.getRemember() * 0.15 +
-            d.getUnderstand() * 0.20 +
-            d.getApply() * 0.25 +
-            d.getAnalyze() * 0.20 +
-            d.getEvaluate() * 0.10 +
-            d.getCreateScore() * 0.10
-        );
+                d.getRemember() * 0.15
+                        + d.getUnderstand() * 0.20
+                        + d.getApply() * 0.25
+                        + d.getAnalyze() * 0.20
+                        + d.getEvaluate() * 0.10
+                        + d.getCreateScore() * 0.10);
         d.setLastUpdate(LocalDateTime.now());
 
         if (isNew) {
@@ -67,37 +77,46 @@ public class AbilityServiceImpl implements AbilityService {
             abilityRepository.update(actor.tenantId(), d);
         }
 
-        log.info("能力值更新: studentIdPresent={}, knowledgeIdPresent={}, dimension={}, score={}",
-                studentId != null, knowledgeId != null, dimension, updated);
+        log.info(
+                "能力值更新: studentIdPresent={}, knowledgeIdPresent={}, dimension={}, score={}",
+                studentId != null,
+                knowledgeId != null,
+                dimension,
+                updated);
     }
 
     private double getScore(AbilityBO d, BloomTaxonomy dim) {
         return switch (dim) {
-            case REMEMBER   -> d.getRemember();
+            case REMEMBER -> d.getRemember();
             case UNDERSTAND -> d.getUnderstand();
-            case APPLY      -> d.getApply();
-            case ANALYZE    -> d.getAnalyze();
-            case EVALUATE   -> d.getEvaluate();
-            case CREATE     -> d.getCreateScore();
+            case APPLY -> d.getApply();
+            case ANALYZE -> d.getAnalyze();
+            case EVALUATE -> d.getEvaluate();
+            case CREATE -> d.getCreateScore();
         };
     }
 
     private void setScore(AbilityBO d, BloomTaxonomy dim, double score) {
         switch (dim) {
-            case REMEMBER   -> d.setRemember(score);
+            case REMEMBER -> d.setRemember(score);
             case UNDERSTAND -> d.setUnderstand(score);
-            case APPLY      -> d.setApply(score);
-            case ANALYZE    -> d.setAnalyze(score);
-            case EVALUATE   -> d.setEvaluate(score);
-            case CREATE     -> d.setCreateScore(score);
+            case APPLY -> d.setApply(score);
+            case ANALYZE -> d.setAnalyze(score);
+            case EVALUATE -> d.setEvaluate(score);
+            case CREATE -> d.setCreateScore(score);
         }
     }
 
     private AbilityValue fromDO(AbilityBO d) {
         return new AbilityValue(
-                d.getStudentId(), d.getKnowledgeId(),
-                d.getRemember(), d.getUnderstand(), d.getApply(),
-                d.getAnalyze(), d.getEvaluate(), d.getCreateScore(),
+                d.getStudentId(),
+                d.getKnowledgeId(),
+                d.getRemember(),
+                d.getUnderstand(),
+                d.getApply(),
+                d.getAnalyze(),
+                d.getEvaluate(),
+                d.getCreateScore(),
                 d.getLastUpdate());
     }
 
@@ -105,4 +124,3 @@ public class AbilityServiceImpl implements AbilityService {
         java.util.Objects.requireNonNull(actor, "actor must not be null");
     }
 }
-

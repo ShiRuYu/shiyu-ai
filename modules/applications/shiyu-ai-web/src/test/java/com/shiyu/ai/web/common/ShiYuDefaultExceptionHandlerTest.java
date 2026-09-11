@@ -1,16 +1,17 @@
 package com.shiyu.ai.web.common;
 
-import com.shiyu.ai.common.core.api.Result;
-import com.shiyu.ai.common.web.exception.ShiYuDefaultExceptionHandler;
-import com.shiyu.ai.common.core.enums.BizResultCode;
-import com.shiyu.ai.common.core.exception.ServiceException;
-import org.junit.jupiter.api.Test;
-import org.junit.jupiter.api.Tag;
-import org.springframework.http.HttpStatus;
-import org.springframework.web.server.ResponseStatusException;
-
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
+
+import com.shiyu.ai.common.core.api.Result;
+import com.shiyu.ai.common.core.enums.BizResultCode;
+import com.shiyu.ai.common.core.exception.ServiceException;
+import com.shiyu.ai.common.web.exception.ShiYuDefaultExceptionHandler;
+
+import org.junit.jupiter.api.Tag;
+import org.junit.jupiter.api.Test;
+import org.springframework.http.HttpStatus;
+import org.springframework.web.server.ResponseStatusException;
 
 @Tag("dev")
 class ShiYuDefaultExceptionHandlerTest {
@@ -37,7 +38,9 @@ class ShiYuDefaultExceptionHandlerTest {
 
     @Test
     void mapsResponseStatusExceptionsWithoutTurningThemIntoInternalErrors() {
-        Result<String> result = handler.exception(new ResponseStatusException(HttpStatus.NOT_FOUND, "resource absent"));
+        Result<String> result =
+                handler.exception(
+                        new ResponseStatusException(HttpStatus.NOT_FOUND, "resource absent"));
 
         assertEquals(HttpStatus.NOT_FOUND.value(), result.getCode());
         assertEquals("resource absent", result.getMessage());
@@ -46,8 +49,11 @@ class ShiYuDefaultExceptionHandlerTest {
 
     @Test
     void mapsValidationAndStateConflictsToStableHttpCodes() {
-        assertEquals(422, handler.invalidArgument(new IllegalArgumentException("invalid input")).getCode());
-        assertEquals(409, handler.invalidState(new IllegalStateException("version conflict")).getCode());
+        assertEquals(
+                422,
+                handler.invalidArgument(new IllegalArgumentException("invalid input")).getCode());
+        assertEquals(
+                409, handler.invalidState(new IllegalStateException("version conflict")).getCode());
     }
 
     @Test
@@ -75,5 +81,4 @@ class ShiYuDefaultExceptionHandlerTest {
         assertEquals(BizResultCode.ERROR.getCode(), result.getCode());
         assertFalse(result.isSuccess());
     }
-
 }

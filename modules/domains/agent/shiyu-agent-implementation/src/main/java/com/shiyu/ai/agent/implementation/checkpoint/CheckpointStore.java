@@ -1,11 +1,10 @@
 package com.shiyu.ai.agent.implementation.checkpoint;
 
-import java.util.List;
 import com.shiyu.ai.kernel.context.TenantId;
 
-/**
- * 检查点存储接口
- */
+import java.util.List;
+
+/** 检查点存储接口 */
 public interface CheckpointStore {
 
     void save(TenantId tenantId, Checkpoint checkpoint);

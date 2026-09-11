@@ -1,6 +1,7 @@
 package com.shiyu.ai.common.core.config;
 
 import lombok.extern.slf4j.Slf4j;
+
 import org.springframework.aop.interceptor.AsyncUncaughtExceptionHandler;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -9,19 +10,14 @@ import org.springframework.scheduling.annotation.EnableAsync;
 import org.springframework.scheduling.annotation.EnableScheduling;
 import org.springframework.scheduling.concurrent.ThreadPoolTaskExecutor;
 
-/**
- * 异步配置
- * 使用 @Bean 方式提供 AsyncTaskExecutor，避免 AsyncConfigurer 接口冲突
- */
+/** 异步配置 使用 @Bean 方式提供 AsyncTaskExecutor，避免 AsyncConfigurer 接口冲突 */
 @Slf4j
 @EnableAsync(proxyTargetClass = true)
 @EnableScheduling
 @Configuration
 public class AsyncConfig {
 
-    /**
-     * 自定义 @Async 注解使用的线程池
-     */
+    /** 自定义 @Async 注解使用的线程池 */
     @Bean
     public AsyncTaskExecutor shiyuAsyncExecutor() {
         ThreadPoolTaskExecutor executor = new ThreadPoolTaskExecutor();
@@ -35,16 +31,14 @@ public class AsyncConfig {
         return executor;
     }
 
-    /**
-     * 异步执行异常处理
-     */
+    /** 异步执行异常处理 */
     @Bean
     public AsyncUncaughtExceptionHandler asyncUncaughtExceptionHandler() {
         return (throwable, method, objects) ->
-            log.error(
-                    "Async method [{}] failed (paramCount={})",
-                    method.getName(),
-                    objects == null ? 0 : objects.length,
-                    throwable);
+                log.error(
+                        "Async method [{}] failed (paramCount={})",
+                        method.getName(),
+                        objects == null ? 0 : objects.length,
+                        throwable);
     }
 }

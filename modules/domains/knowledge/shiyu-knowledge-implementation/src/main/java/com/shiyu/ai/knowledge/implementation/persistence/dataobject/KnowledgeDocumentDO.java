@@ -4,10 +4,12 @@ import com.mybatisflex.annotation.Id;
 import com.mybatisflex.annotation.KeyType;
 import com.mybatisflex.annotation.Table;
 import com.shiyu.ai.common.mybatis.model.TenantEntity;
+import com.shiyu.ai.knowledge.implementation.domain.model.KnowledgeDocumentBO;
+
+import io.github.linpeilie.annotations.AutoMapper;
+
 import lombok.Data;
 import lombok.EqualsAndHashCode;
-import com.shiyu.ai.knowledge.implementation.domain.model.KnowledgeDocumentBO;
-import io.github.linpeilie.annotations.AutoMapper;
 
 @Data
 @EqualsAndHashCode(callSuper = true)
@@ -35,5 +37,3 @@ public class KnowledgeDocumentDO extends TenantEntity {
     private Long fileSize;
     private String checksum;
 }
-
-

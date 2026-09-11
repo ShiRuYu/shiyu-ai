@@ -1,5 +1,7 @@
 package com.shiyu.ai.knowledge.implementation.domain.model;
+
 import com.shiyu.ai.common.core.domain.TenantModel;
+
 import lombok.Data;
 import lombok.EqualsAndHashCode;
 
@@ -26,4 +28,3 @@ public class KnowledgeDocumentVersionBO extends TenantModel {
     private String modelProfile;
     private LocalDateTime publishedAt;
 }
-

@@ -1,22 +1,22 @@
 package com.shiyu.ai.agent.implementation.node.memory;
 
 import com.shiyu.ai.agent.contract.node.*;
-
-import com.shiyu.ai.memory.contract.model.ConfirmationPolicy;
-import com.shiyu.ai.memory.contract.model.IngestMemoryCommand;
-import com.shiyu.ai.memory.contract.api.MemoryIngestionPort;
-import com.shiyu.ai.kernel.context.TenantId;
 import com.shiyu.ai.agent.contract.node.BaseNode;
+import com.shiyu.ai.agent.contract.node.NodeFields.FieldKey;
 import com.shiyu.ai.agent.contract.node.NodeInput;
+import com.shiyu.ai.agent.contract.node.NodeInputParam;
 import com.shiyu.ai.agent.contract.node.NodeOutput;
 import com.shiyu.ai.agent.contract.node.NodeType;
-import com.shiyu.ai.agent.contract.node.NodeFields.FieldKey;
+import com.shiyu.ai.kernel.context.TenantId;
+import com.shiyu.ai.memory.contract.api.MemoryIngestionPort;
+import com.shiyu.ai.memory.contract.model.ConfirmationPolicy;
+import com.shiyu.ai.memory.contract.model.IngestMemoryCommand;
+
 import lombok.Getter;
 import lombok.Setter;
 import lombok.extern.slf4j.Slf4j;
 
 import java.util.Map;
-import com.shiyu.ai.agent.contract.node.NodeInputParam;
 
 @Setter
 @Getter
@@ -73,7 +73,8 @@ public class LongTermMemoryNode extends BaseNode {
             String memoryKey = input.getParameter(FieldKey.MEMORY_KEY, "");
             String memoryContent = input.getParameter(FieldKey.MEMORY_CONTENT, "");
             String category = input.getParameter(FieldKey.CATEGORY, "general");
-            double minImportance = config.getMinImportanceScore() != null ? config.getMinImportanceScore() : 0.5;
+            double minImportance =
+                    config.getMinImportanceScore() != null ? config.getMinImportanceScore() : 0.5;
             double importance = input.getParameter(FieldKey.IMPORTANCE, 0.5);
 
             if (memoryContent == null || memoryContent.isBlank()) {
@@ -92,8 +93,23 @@ public class LongTermMemoryNode extends BaseNode {
                 return output;
             }
 
-            if (tenantId == null || userId == null || userId <= 0) throw new IllegalArgumentException("tenantId and userId are required");
-            memoryService.ingest(new IngestMemoryCommand(new TenantId(tenantId), "agent", "USER", String.valueOf(userId), category, memoryContent, java.time.Instant.now(), "AGENT_EXECUTION", sessionId, Map.of("agentId", agentId, "memoryKey", memoryKey), 0.8, importance, ConfirmationPolicy.REQUIRED));
+            if (tenantId == null || userId == null || userId <= 0)
+                throw new IllegalArgumentException("tenantId and userId are required");
+            memoryService.ingest(
+                    new IngestMemoryCommand(
+                            new TenantId(tenantId),
+                            "agent",
+                            "USER",
+                            String.valueOf(userId),
+                            category,
+                            memoryContent,
+                            java.time.Instant.now(),
+                            "AGENT_EXECUTION",
+                            sessionId,
+                            Map.of("agentId", agentId, "memoryKey", memoryKey),
+                            0.8,
+                            importance,
+                            ConfirmationPolicy.REQUIRED));
 
             NodeOutput output = new NodeOutput();
             output.setSuccess(true);
@@ -116,13 +132,11 @@ public class LongTermMemoryNode extends BaseNode {
     @Override
     public java.util.List<NodeInputParam> getRequiredInputs() {
         return java.util.List.of(
-            NodeInputParam.previous("tenantId", "number", "租户 ID"),
-            NodeInputParam.previous("userId", "number", "用户 ID"),
-            NodeInputParam.previous("sessionId", "string", "会话 ID"),
-            NodeInputParam.config("memoryKey", "string", "记忆键"),
-            NodeInputParam.config("category", "string", "记忆分类"),
-            NodeInputParam.config("importance", "number", "重要度（0-1）")
-        );
+                NodeInputParam.previous("tenantId", "number", "租户 ID"),
+                NodeInputParam.previous("userId", "number", "用户 ID"),
+                NodeInputParam.previous("sessionId", "string", "会话 ID"),
+                NodeInputParam.config("memoryKey", "string", "记忆键"),
+                NodeInputParam.config("category", "string", "记忆分类"),
+                NodeInputParam.config("importance", "number", "重要度（0-1）"));
     }
 }
-

@@ -1,8 +1,6 @@
 package com.shiyu.ai.agent.implementation.lifecycle;
 
-/**
- * Agent 生命周期管理接口
- */
+/** Agent 生命周期管理接口 */
 public interface AgentLifecycle {
 
     AgentState getState(String agentId);

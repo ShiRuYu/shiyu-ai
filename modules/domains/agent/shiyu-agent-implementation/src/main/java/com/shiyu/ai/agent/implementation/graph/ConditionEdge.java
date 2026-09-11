@@ -10,10 +10,7 @@ import java.util.*;
 import java.util.function.Function;
 import java.util.function.Predicate;
 
-/**
- * 条件边
- * 用于定义节点之间的条件连接关系
- */
+/** 条件边 用于定义节点之间的条件连接关系 */
 @Slf4j
 @Data
 @Builder
@@ -21,43 +18,26 @@ import java.util.function.Predicate;
 @AllArgsConstructor
 public class ConditionEdge {
 
-    /**
-     * 源节点 ID（from）
-     */
-    @Builder.Default
-    private String from = "";
+    /** 源节点 ID（from） */
+    @Builder.Default private String from = "";
 
-    /**
-     * 默认目标节点
-     */
-    @Builder.Default
-    private String defaultTarget = "";
+    /** 默认目标节点 */
+    @Builder.Default private String defaultTarget = "";
 
-    /**
-     * 函数式条件
-     * 接收 AgentState，返回 Boolean 或其他类型结果
-     */
-    @Builder.Default
-    private Function<Map<String, Object>, String> functionCondition = null;
+    /** 函数式条件 接收 AgentState，返回 Boolean 或其他类型结果 */
+    @Builder.Default private Function<Map<String, Object>, String> functionCondition = null;
 
-    /**
-     * 节点映射
-     */
-    @Builder.Default
-    private Map<String, String> nodeMappings = new HashMap<>();
+    /** 节点映射 */
+    @Builder.Default private Map<String, String> nodeMappings = new HashMap<>();
 
-    /**
-     * 谓语条件列表（有序）
-     * 使用 List 而非 Map 以避免 Predicate 作为 HashMap key 的身份等价问题
-     */
-    @Builder.Default
-    private List<PredicateCondition> predicateConditions = new ArrayList<>();
+    /** 谓语条件列表（有序） 使用 List 而非 Map 以避免 Predicate 作为 HashMap key 的身份等价问题 */
+    @Builder.Default private List<PredicateCondition> predicateConditions = new ArrayList<>();
 
     /**
      * 添加节点映射
      *
      * @param conditionResult 条件结果标识
-     * @param target          映射的目标节点 ID
+     * @param target 映射的目标节点 ID
      */
     public void addNodeMapping(String conditionResult, String target) {
         this.nodeMappings.put(conditionResult, target);
@@ -67,7 +47,7 @@ public class ConditionEdge {
      * 添加谓语条件
      *
      * @param predicate 谓语条件
-     * @param target    目标节点 ID
+     * @param target 目标节点 ID
      */
     public void addPredicateCondition(Predicate<Map<String, Object>> predicate, String target) {
         this.predicateConditions.add(new PredicateCondition(predicate, target));
@@ -77,17 +57,16 @@ public class ConditionEdge {
      * 链式添加谓语条件（Builder 模式辅助方法）
      *
      * @param predicate 谓语条件
-     * @param target    目标节点 ID
+     * @param target 目标节点 ID
      * @return 当前 ConditionEdge 实例
      */
-    public ConditionEdge predicateCondition(Predicate<Map<String, Object>> predicate, String target) {
+    public ConditionEdge predicateCondition(
+            Predicate<Map<String, Object>> predicate, String target) {
         addPredicateCondition(predicate, target);
         return this;
     }
 
-    /**
-     * 谓语条件记录
-     */
+    /** 谓语条件记录 */
     @lombok.Value
     public static class PredicateCondition {
         Predicate<Map<String, Object>> predicate;
@@ -114,6 +93,7 @@ public class ConditionEdge {
 
     /**
      * 是否有谓语条件
+     *
      * @return true-有谓语条件，false-无
      */
     public boolean hasPredicateCondition() {
@@ -122,6 +102,7 @@ public class ConditionEdge {
 
     /**
      * 获取谓语条件列表（不可变视图）
+     *
      * @return 谓语条件列表
      */
     public List<PredicateCondition> getPredicateConditions() {

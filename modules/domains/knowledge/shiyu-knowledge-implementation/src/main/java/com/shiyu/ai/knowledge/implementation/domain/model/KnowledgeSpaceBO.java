@@ -1,5 +1,7 @@
 package com.shiyu.ai.knowledge.implementation.domain.model;
+
 import com.shiyu.ai.common.core.domain.TenantModel;
+
 import lombok.Data;
 import lombok.EqualsAndHashCode;
 
@@ -9,8 +11,10 @@ import lombok.EqualsAndHashCode;
 public class KnowledgeSpaceBO extends TenantModel {
     private Long id;
     private String code;
+
     /** Business domain of the space, for example GENERAL, ENTERPRISE or EDUCATION. */
     private String domainCode;
+
     private String name;
     private String description;
     private String accessMode;
@@ -24,4 +28,3 @@ public class KnowledgeSpaceBO extends TenantModel {
     private Integer chunkOverlap;
     private Long activeIndexVersion;
 }
-

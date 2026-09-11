@@ -1,18 +1,20 @@
 package com.shiyu.ai.agent.implementation.persistence.repository;
 
 import com.shiyu.ai.agent.implementation.domain.model.AuditLogBO;
-import com.shiyu.ai.common.core.utils.MapstructUtils;
 import com.shiyu.ai.agent.implementation.persistence.dataobject.AuditLogDO;
 import com.shiyu.ai.agent.implementation.persistence.mapper.AuditLogMapper;
+import com.shiyu.ai.common.core.utils.MapstructUtils;
 import com.shiyu.ai.kernel.context.TenantId;
+
 import jakarta.annotation.Resource;
+
 import org.springframework.stereotype.Component;
 
 @Component
-public class AuditLogRepositoryImpl implements com.shiyu.ai.agent.implementation.port.repository.AuditLogRepository {
+public class AuditLogRepositoryImpl
+        implements com.shiyu.ai.agent.implementation.port.repository.AuditLogRepository {
 
-    @Resource
-    private AuditLogMapper auditLogMapper;
+    @Resource private AuditLogMapper auditLogMapper;
 
     public void insert(TenantId tenantId, AuditLogBO auditLog) {
         if (tenantId == null || tenantId.value() <= 0 || auditLog == null) {

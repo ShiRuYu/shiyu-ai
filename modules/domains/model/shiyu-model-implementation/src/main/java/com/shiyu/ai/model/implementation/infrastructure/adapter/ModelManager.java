@@ -1,19 +1,23 @@
 package com.shiyu.ai.model.implementation.infrastructure.adapter;
 
-import com.shiyu.ai.model.implementation.infrastructure.config.PlatformProperties;
-import com.shiyu.ai.model.implementation.domain.port.repository.AiModelRepository;
-import com.shiyu.ai.model.implementation.domain.port.repository.AiPlatformRepository;
+import com.shiyu.ai.kernel.context.TenantId;
 import com.shiyu.ai.model.contract.api.ModelRoutingPort;
 import com.shiyu.ai.model.implementation.domain.model.AiModelBO;
 import com.shiyu.ai.model.implementation.domain.model.AiPlatformBO;
 import com.shiyu.ai.model.implementation.domain.model.PlatformAdapterType;
+import com.shiyu.ai.model.implementation.domain.port.repository.AiModelRepository;
+import com.shiyu.ai.model.implementation.domain.port.repository.AiPlatformRepository;
 import com.shiyu.ai.model.implementation.infrastructure.adapter.config.PlatformConfig;
+import com.shiyu.ai.model.implementation.infrastructure.adapter.impl.DeepSeekHttpProvider;
 import com.shiyu.ai.model.implementation.infrastructure.adapter.impl.GenericPlatformAdapter;
 import com.shiyu.ai.model.implementation.infrastructure.adapter.impl.OllamaPlatformAdapter;
-import com.shiyu.ai.model.implementation.infrastructure.adapter.impl.DeepSeekHttpProvider;
+import com.shiyu.ai.model.implementation.infrastructure.config.PlatformProperties;
+
 import dev.langchain4j.model.chat.ChatModel;
 import dev.langchain4j.model.chat.StreamingChatModel;
+
 import lombok.extern.slf4j.Slf4j;
+
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.boot.ApplicationArguments;
 import org.springframework.boot.ApplicationRunner;
@@ -23,7 +27,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.stream.Collectors;
-import com.shiyu.ai.kernel.context.TenantId;
 
 @Slf4j
 @Service
@@ -39,15 +42,20 @@ public class ModelManager implements ApplicationRunner, ModelRoutingPort {
     private final PlatformProperties platformProperties;
     private volatile DeepSeekHttpProvider deepSeekProvider;
 
-    public ModelManager(AiPlatformRepository platformRepository,
-                        AiModelRepository modelRepository,
-                        PlatformProperties platformProperties) {
+    public ModelManager(
+            AiPlatformRepository platformRepository,
+            AiModelRepository modelRepository,
+            PlatformProperties platformProperties) {
         this.platformRepository = platformRepository;
         this.modelRepository = modelRepository;
         this.platformProperties = platformProperties;
-        this.deepSeekProvider = new DeepSeekHttpProvider(platformProperties.getDeepseek().getBaseUrl(),
-                StringUtils.getIfEmpty(platformProperties.getDeepseek().getApiKey(), () -> getExternalApiKey("DEEPSEEK")),
-                platformProperties.getDeepseek().getModel());
+        this.deepSeekProvider =
+                new DeepSeekHttpProvider(
+                        platformProperties.getDeepseek().getBaseUrl(),
+                        StringUtils.getIfEmpty(
+                                platformProperties.getDeepseek().getApiKey(),
+                                () -> getExternalApiKey("DEEPSEEK")),
+                        platformProperties.getDeepseek().getModel());
         log.info("模型管理器已创建，等待启动后加载适配器");
     }
 
@@ -63,8 +71,11 @@ public class ModelManager implements ApplicationRunner, ModelRoutingPort {
         adapterMap.values().forEach(ModelAdapter::clearCache);
         adapterMap.clear();
         // Do not retain credentials from a platform removed or disabled in the database.
-        deepSeekProvider = new DeepSeekHttpProvider(platformProperties.getDeepseek().getBaseUrl(),
-                "", platformProperties.getDeepseek().getModel());
+        deepSeekProvider =
+                new DeepSeekHttpProvider(
+                        platformProperties.getDeepseek().getBaseUrl(),
+                        "",
+                        platformProperties.getDeepseek().getModel());
 
         try {
             TenantId tenantId = configuredTenant();
@@ -79,9 +90,13 @@ public class ModelManager implements ApplicationRunner, ModelRoutingPort {
                         }
                     } catch (IllegalArgumentException e) {
                         // A malformed platform must not discard every other tenant platform.
-                        log.error("跳过协议配置无效的平台: codePresent={}, namePresent={}, errorType={}, errorMessageLength={}",
-                                platform.getCode() != null, platform.getName() != null,
-                                e.getClass().getSimpleName(), e.getMessage() == null ? 0 : e.getMessage().length());
+                        log.error(
+                                "跳过协议配置无效的平台: codePresent={}, namePresent={}, errorType={},"
+                                        + " errorMessageLength={}",
+                                platform.getCode() != null,
+                                platform.getName() != null,
+                                e.getClass().getSimpleName(),
+                                e.getMessage() == null ? 0 : e.getMessage().length());
                     }
                 }
                 dbLoaded = true;
@@ -91,18 +106,24 @@ public class ModelManager implements ApplicationRunner, ModelRoutingPort {
                 loadHardcodedDefaults();
             }
         } catch (Exception e) {
-            log.warn("从数据库加载平台配置失败，使用硬编码默认值: errorType={}, errorMessageLength={}",
-                    e.getClass().getSimpleName(), e.getMessage() == null ? 0 : e.getMessage().length());
+            log.warn(
+                    "从数据库加载平台配置失败，使用硬编码默认值: errorType={}, errorMessageLength={}",
+                    e.getClass().getSimpleName(),
+                    e.getMessage() == null ? 0 : e.getMessage().length());
             loadHardcodedDefaults();
         }
 
         log.info("=== 平台适配器加载结果 ===");
-        adapterMap.forEach((code, adapter) -> {
-            log.info("  {} | {} | 默认模型: {}",
-                    code,
-                    adapter.isAvailable() ? "可用" : "不可用",
-                    adapter.getDefaultModelName() != null ? adapter.getDefaultModelName() : "未配置");
-        });
+        adapterMap.forEach(
+                (code, adapter) -> {
+                    log.info(
+                            "  {} | {} | 默认模型: {}",
+                            code,
+                            adapter.isAvailable() ? "可用" : "不可用",
+                            adapter.getDefaultModelName() != null
+                                    ? adapter.getDefaultModelName()
+                                    : "未配置");
+                });
         log.info("==========================");
         initialized = true;
     }
@@ -127,13 +148,17 @@ public class ModelManager implements ApplicationRunner, ModelRoutingPort {
 
         String defaultModelName = null;
         try {
-            AiModelBO defaultModel = modelRepository.selectDefaultByPlatformId(tenantId, platform.getId());
+            AiModelBO defaultModel =
+                    modelRepository.selectDefaultByPlatformId(tenantId, platform.getId());
             if (defaultModel != null) {
                 defaultModelName = defaultModel.getModelName();
             }
         } catch (Exception e) {
-            log.debug("查询平台默认模型失败: codePresent={}, errorType={}, errorMessageLength={}",
-                    code != null, e.getClass().getSimpleName(), e.getMessage() == null ? 0 : e.getMessage().length());
+            log.debug(
+                    "查询平台默认模型失败: codePresent={}, errorType={}, errorMessageLength={}",
+                    code != null,
+                    e.getClass().getSimpleName(),
+                    e.getMessage() == null ? 0 : e.getMessage().length());
         }
 
         if (PlatformAdapterType.OLLAMA == PlatformAdapterType.parse(platform.getAdapterType())) {
@@ -141,8 +166,12 @@ public class ModelManager implements ApplicationRunner, ModelRoutingPort {
         }
 
         if ("DEEPSEEK".equals(code)) {
-            deepSeekProvider = new DeepSeekHttpProvider(baseUrl, apiKey,
-                    StringUtils.defaultIfBlank(defaultModelName, platformProperties.getDeepseek().getModel()));
+            deepSeekProvider =
+                    new DeepSeekHttpProvider(
+                            baseUrl,
+                            apiKey,
+                            StringUtils.defaultIfBlank(
+                                    defaultModelName, platformProperties.getDeepseek().getModel()));
         }
 
         return new GenericPlatformAdapter(code, baseUrl, apiKey, defaultModelName, maxRetries);
@@ -156,27 +185,49 @@ public class ModelManager implements ApplicationRunner, ModelRoutingPort {
     }
 
     private void loadHardcodedDefaults() {
-        deepSeekProvider = new DeepSeekHttpProvider(platformProperties.getDeepseek().getBaseUrl(),
-                getExternalApiKey("DEEPSEEK"), platformProperties.getDeepseek().getModel());
-        adapterMap.put("OPENAI", new GenericPlatformAdapter(
-                "OPENAI", "https://api.openai.com/v1",
-                StringUtils.getIfEmpty(getExternalApiKey("OPENAI"), () -> ""), "gpt-4o", 3));
+        deepSeekProvider =
+                new DeepSeekHttpProvider(
+                        platformProperties.getDeepseek().getBaseUrl(),
+                        getExternalApiKey("DEEPSEEK"),
+                        platformProperties.getDeepseek().getModel());
+        adapterMap.put(
+                "OPENAI",
+                new GenericPlatformAdapter(
+                        "OPENAI",
+                        "https://api.openai.com/v1",
+                        StringUtils.getIfEmpty(getExternalApiKey("OPENAI"), () -> ""),
+                        "gpt-4o",
+                        3));
 
-        adapterMap.put("DEEPSEEK", new GenericPlatformAdapter(
-                "DEEPSEEK", platformProperties.getDeepseek().getBaseUrl(),
-                StringUtils.getIfEmpty(getExternalApiKey("DEEPSEEK"), () -> ""),
-                platformProperties.getDeepseek().getModel(), 3));
+        adapterMap.put(
+                "DEEPSEEK",
+                new GenericPlatformAdapter(
+                        "DEEPSEEK",
+                        platformProperties.getDeepseek().getBaseUrl(),
+                        StringUtils.getIfEmpty(getExternalApiKey("DEEPSEEK"), () -> ""),
+                        platformProperties.getDeepseek().getModel(),
+                        3));
 
-        adapterMap.put("OPENROUTER", new GenericPlatformAdapter(
-                "OPENROUTER", "https://openrouter.ai/api",
-                StringUtils.getIfEmpty(getExternalApiKey("OPENROUTER"), () -> ""), "x-ai/grok-4.1-fast", 3));
+        adapterMap.put(
+                "OPENROUTER",
+                new GenericPlatformAdapter(
+                        "OPENROUTER",
+                        "https://openrouter.ai/api",
+                        StringUtils.getIfEmpty(getExternalApiKey("OPENROUTER"), () -> ""),
+                        "x-ai/grok-4.1-fast",
+                        3));
 
-        adapterMap.put("SILICON_FLOW", new GenericPlatformAdapter(
-                "SILICON_FLOW", "https://api.siliconflow.cn",
-                StringUtils.getIfEmpty(getExternalApiKey("SILICON_FLOW"), () -> ""), "THUDM/GLM-Z1-9B-0414", 3));
+        adapterMap.put(
+                "SILICON_FLOW",
+                new GenericPlatformAdapter(
+                        "SILICON_FLOW",
+                        "https://api.siliconflow.cn",
+                        StringUtils.getIfEmpty(getExternalApiKey("SILICON_FLOW"), () -> ""),
+                        "THUDM/GLM-Z1-9B-0414",
+                        3));
 
-        adapterMap.put("OLLAMA", new OllamaPlatformAdapter(
-                "http://localhost:11434", "gemma3:4b", 0.7, 3));
+        adapterMap.put(
+                "OLLAMA", new OllamaPlatformAdapter("http://localhost:11434", "gemma3:4b", 0.7, 3));
 
         dbLoaded = false;
         log.info("已加载 {} 个硬编码默认平台适配器", adapterMap.size());
@@ -200,7 +251,10 @@ public class ModelManager implements ApplicationRunner, ModelRoutingPort {
         return getAdapter(platformType).getChatModel(modelName);
     }
 
-    /** Dedicated structured DeepSeek transport; generic providers remain available for other platforms. */
+    /**
+     * Dedicated structured DeepSeek transport; generic providers remain available for other
+     * platforms.
+     */
     public DeepSeekHttpProvider getDeepSeekProvider() {
         if (!initialized) {
             synchronized (this) {
@@ -215,7 +269,8 @@ public class ModelManager implements ApplicationRunner, ModelRoutingPort {
             throw new IllegalArgumentException("平台配置不能为空");
         }
         ModelAdapter adapter = adapterForConfig(config);
-        return adapter.createChatModel(config, modelName != null ? modelName : config.getModelName());
+        return adapter.createChatModel(
+                config, modelName != null ? modelName : config.getModelName());
     }
 
     public ChatModel getChatModel(PlatformConfig config) {
@@ -231,7 +286,8 @@ public class ModelManager implements ApplicationRunner, ModelRoutingPort {
             throw new IllegalArgumentException("平台配置不能为空");
         }
         ModelAdapter adapter = adapterForConfig(config);
-        return adapter.createStreamingChatModel(config, modelName != null ? modelName : config.getModelName());
+        return adapter.createStreamingChatModel(
+                config, modelName != null ? modelName : config.getModelName());
     }
 
     public StreamingChatModel getStreamingChatModel(PlatformConfig config) {
@@ -241,19 +297,27 @@ public class ModelManager implements ApplicationRunner, ModelRoutingPort {
     private ModelAdapter adapterForConfig(PlatformConfig config) {
         PlatformAdapterType adapterType = PlatformAdapterType.parse(config.getAdapterType());
         if (adapterType == PlatformAdapterType.OLLAMA) {
-            return new OllamaPlatformAdapter(config.getBaseUrl(), config.getModelName(),
-                    config.getTemperature(), config.getMaxRetries());
+            return new OllamaPlatformAdapter(
+                    config.getBaseUrl(),
+                    config.getModelName(),
+                    config.getTemperature(),
+                    config.getMaxRetries());
         }
 
-        String platformType = StringUtils.defaultIfBlank(config.getPlatformType(), "OPENAI_COMPATIBLE");
+        String platformType =
+                StringUtils.defaultIfBlank(config.getPlatformType(), "OPENAI_COMPATIBLE");
         ModelAdapter registered = adapterMap.get(platformType);
         // An explicit OpenAI-compatible configuration must not accidentally
         // reuse an Ollama adapter registered under the same platform code.
         if (registered != null && !(registered instanceof OllamaPlatformAdapter)) {
             return registered;
         }
-        return new GenericPlatformAdapter(platformType, config.getBaseUrl(), config.getApiKey(),
-                config.getModelName(), config.getMaxRetries() == null ? 3 : config.getMaxRetries());
+        return new GenericPlatformAdapter(
+                platformType,
+                config.getBaseUrl(),
+                config.getApiKey(),
+                config.getModelName(),
+                config.getMaxRetries() == null ? 3 : config.getMaxRetries());
     }
 
     public ChatModel getDefaultChatModel(String platformType) {
@@ -294,10 +358,13 @@ public class ModelManager implements ApplicationRunner, ModelRoutingPort {
     @Override
     public List<ModelDescriptor> availableModels() {
         return adapterMap.entrySet().stream()
-                .map(entry -> new ModelDescriptor(
-                        StringUtils.isBlank(entry.getValue().getDefaultModelName())
-                                ? entry.getKey() : entry.getValue().getDefaultModelName(),
-                        entry.getKey()))
+                .map(
+                        entry ->
+                                new ModelDescriptor(
+                                        StringUtils.isBlank(entry.getValue().getDefaultModelName())
+                                                ? entry.getKey()
+                                                : entry.getValue().getDefaultModelName(),
+                                        entry.getKey()))
                 .toList();
     }
 
@@ -340,8 +407,10 @@ public class ModelManager implements ApplicationRunner, ModelRoutingPort {
                 return defaultPlatform.getCode();
             }
         } catch (Exception e) {
-            log.debug("查询 DB 默认平台失败: errorType={}, errorMessageLength={}",
-                    e.getClass().getSimpleName(), e.getMessage() == null ? 0 : e.getMessage().length());
+            log.debug(
+                    "查询 DB 默认平台失败: errorType={}, errorMessageLength={}",
+                    e.getClass().getSimpleName(),
+                    e.getMessage() == null ? 0 : e.getMessage().length());
         }
 
         if (!adapterMap.isEmpty()) {
@@ -354,7 +423,8 @@ public class ModelManager implements ApplicationRunner, ModelRoutingPort {
     private TenantId configuredTenant() {
         Long value = platformProperties.getTenantId();
         if (value == null || value <= 0) {
-            throw new IllegalStateException("shiyu.ai.tenant-id is required for database-backed model loading");
+            throw new IllegalStateException(
+                    "shiyu.ai.tenant-id is required for database-backed model loading");
         }
         return new TenantId(value);
     }

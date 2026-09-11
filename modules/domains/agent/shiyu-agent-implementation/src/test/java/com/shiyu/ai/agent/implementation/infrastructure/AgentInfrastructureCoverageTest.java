@@ -1,16 +1,21 @@
 package com.shiyu.ai.agent.implementation.infrastructure;
 
+import static org.junit.jupiter.api.Assertions.*;
+import static org.mockito.ArgumentMatchers.*;
+import static org.mockito.Mockito.*;
+
 import com.shiyu.ai.agent.implementation.config.IntentDefApplicationRunner;
 import com.shiyu.ai.agent.implementation.domain.model.IntentDefBO;
 import com.shiyu.ai.agent.implementation.event.AuditEvent;
 import com.shiyu.ai.agent.implementation.event.AuditEventListener;
-import com.shiyu.ai.agent.implementation.persistence.runtime.JdbcToolApprovalRepository;
 import com.shiyu.ai.agent.implementation.persistence.repository.ExecutionTimelineRepositoryImpl;
+import com.shiyu.ai.agent.implementation.persistence.runtime.JdbcToolApprovalRepository;
 import com.shiyu.ai.agent.implementation.port.repository.AuditLogRepository;
 import com.shiyu.ai.agent.implementation.port.repository.IntentDefRepository;
-import com.shiyu.ai.kernel.context.TenantId;
 import com.shiyu.ai.agent.implementation.runtime.ToolApproval;
 import com.shiyu.ai.agent.implementation.runtime.ToolApprovalStatus;
+import com.shiyu.ai.kernel.context.TenantId;
+
 import org.junit.jupiter.api.Test;
 import org.springframework.boot.ApplicationArguments;
 import org.springframework.jdbc.core.JdbcTemplate;
@@ -23,15 +28,12 @@ import java.sql.Timestamp;
 import java.time.Instant;
 import java.util.List;
 
-import static org.junit.jupiter.api.Assertions.*;
-import static org.mockito.ArgumentMatchers.*;
-import static org.mockito.Mockito.*;
-
 @SuppressWarnings({"rawtypes", "unchecked"})
 class AgentInfrastructureCoverageTest {
     @Test
     void mapsJdbcApprovalRowsWithOptionalDecisionAndExpiry() throws Exception {
-        JdbcToolApprovalRepository repository = new JdbcToolApprovalRepository(mock(JdbcTemplate.class));
+        JdbcToolApprovalRepository repository =
+                new JdbcToolApprovalRepository(mock(JdbcTemplate.class));
         ResultSet rs = mock(ResultSet.class);
         Instant created = Instant.parse("2025-01-01T00:00:00Z");
         when(rs.getString("ID")).thenReturn("approval");
@@ -59,9 +61,12 @@ class AgentInfrastructureCoverageTest {
 
     @Test
     void rejectsMissingTimelineTenantBeforeMapperAccess() throws Exception {
-        Method require = ExecutionTimelineRepositoryImpl.class.getDeclaredMethod("requireTenant", TenantId.class);
+        Method require =
+                ExecutionTimelineRepositoryImpl.class.getDeclaredMethod(
+                        "requireTenant", TenantId.class);
         require.setAccessible(true);
-        assertThrows(InvocationTargetException.class, () -> require.invoke(null, new Object[]{null}));
+        assertThrows(
+                InvocationTargetException.class, () -> require.invoke(null, new Object[] {null}));
         assertDoesNotThrow(() -> require.invoke(null, new TenantId(7)));
     }
 
@@ -79,9 +84,11 @@ class AgentInfrastructureCoverageTest {
         when(repository.selectByAgentId(any(TenantId.class), eq("default"))).thenReturn(List.of());
         runner.run(args);
         IntentDefBO definition = new IntentDefBO();
-        when(repository.selectByAgentId(any(TenantId.class), eq("default"))).thenReturn(List.of(definition));
+        when(repository.selectByAgentId(any(TenantId.class), eq("default")))
+                .thenReturn(List.of(definition));
         runner.run(args);
-        when(repository.selectByAgentId(any(TenantId.class), eq("default"))).thenThrow(new IllegalStateException("db"));
+        when(repository.selectByAgentId(any(TenantId.class), eq("default")))
+                .thenThrow(new IllegalStateException("db"));
         runner.run(args);
         verify(repository, times(4)).selectByAgentId(any(TenantId.class), eq("default"));
     }
@@ -90,10 +97,35 @@ class AgentInfrastructureCoverageTest {
     void recordsAuditOnlyForValidTenantAndContainsListenerFailures() {
         AuditLogRepository repository = mock(AuditLogRepository.class);
         AuditEventListener listener = new AuditEventListener(repository);
-        AuditEvent valid = new AuditEvent(new TenantId(7L), 9L, "CREATE", "AGENT", "a1", "{}", "127.0.0.1", "SUCCESS", null, 3L);
+        AuditEvent valid =
+                new AuditEvent(
+                        new TenantId(7L),
+                        9L,
+                        "CREATE",
+                        "AGENT",
+                        "a1",
+                        "{}",
+                        "127.0.0.1",
+                        "SUCCESS",
+                        null,
+                        3L);
         listener.onAuditEvent(valid);
-        listener.onAuditEvent(new AuditEvent(null, 9L, "CREATE", "AGENT", "a1", "{}", null, "FAILED", "bad", 4L));
-        assertThrows(IllegalArgumentException.class, () -> new AuditEvent(new TenantId(0L), 9L, "CREATE", "AGENT", "a1", "{}", null, "FAILED", "bad", 4L));
+        listener.onAuditEvent(
+                new AuditEvent(null, 9L, "CREATE", "AGENT", "a1", "{}", null, "FAILED", "bad", 4L));
+        assertThrows(
+                IllegalArgumentException.class,
+                () ->
+                        new AuditEvent(
+                                new TenantId(0L),
+                                9L,
+                                "CREATE",
+                                "AGENT",
+                                "a1",
+                                "{}",
+                                null,
+                                "FAILED",
+                                "bad",
+                                4L));
         assertThrows(NullPointerException.class, () -> listener.onAuditEvent(null));
         verify(repository).insert(eq(new TenantId(7L)), any());
     }
@@ -103,9 +135,24 @@ class AgentInfrastructureCoverageTest {
         JdbcTemplate jdbc = mock(JdbcTemplate.class);
         JdbcToolApprovalRepository repository = new JdbcToolApprovalRepository(jdbc);
         Instant now = Instant.parse("2025-01-01T00:00:00Z");
-        ToolApproval approval = new ToolApproval("a", "r", 7L, 9L, "tool", "{}", ToolApprovalStatus.PENDING, now, null, now.plusSeconds(300));
+        ToolApproval approval =
+                new ToolApproval(
+                        "a",
+                        "r",
+                        7L,
+                        9L,
+                        "tool",
+                        "{}",
+                        ToolApprovalStatus.PENDING,
+                        now,
+                        null,
+                        now.plusSeconds(300));
         when(jdbc.update(anyString(), any(Object[].class))).thenReturn(1);
-        when(jdbc.query(anyString(), any(org.springframework.jdbc.core.RowMapper.class), any(Object[].class))).thenReturn(List.of());
+        when(jdbc.query(
+                        anyString(),
+                        any(org.springframework.jdbc.core.RowMapper.class),
+                        any(Object[].class)))
+                .thenReturn(List.of());
         repository.insert(approval);
         assertTrue(repository.list("r", new TenantId(7L), 9L).isEmpty());
         assertTrue(repository.listAll(new TenantId(7L), 9L).isEmpty());

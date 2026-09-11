@@ -1,17 +1,17 @@
 package com.shiyu.ai.iam.implementation.service.impl;
 
-import com.shiyu.ai.iam.implementation.port.repository.TenantRepository;
-import com.shiyu.ai.iam.implementation.service.TenantService;
-import com.shiyu.ai.iam.implementation.request.TenantRequest;
-import com.shiyu.ai.iam.implementation.vo.TenantVO;
-import com.shiyu.ai.common.core.utils.MapstructUtils;
-import com.shiyu.ai.iam.implementation.vo.TenantVO;
 import com.shiyu.ai.common.core.api.PageData;
 import com.shiyu.ai.common.core.utils.MapstructUtils;
 import com.shiyu.ai.iam.implementation.domain.model.TenantBO;
+import com.shiyu.ai.iam.implementation.port.repository.TenantRepository;
+import com.shiyu.ai.iam.implementation.request.TenantRequest;
+import com.shiyu.ai.iam.implementation.service.TenantService;
+import com.shiyu.ai.iam.implementation.vo.TenantVO;
 import com.shiyu.ai.kernel.context.ActorContext;
 import com.shiyu.ai.kernel.context.TenantId;
+
 import lombok.extern.slf4j.Slf4j;
+
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -23,17 +23,34 @@ import java.util.Map;
 @Slf4j
 @Service
 public class TenantServiceImpl implements TenantService {
-    @Override public List<TenantVO> allTenantsView(ActorContext actor) { return MapstructUtils.convert(getAllTenants(requireActor(actor)), TenantVO.class); }
-    @Override public TenantVO detailView(ActorContext actor, Long id) {
-        ActorContext currentActor = requireActor(actor);
-        TenantId targetTenantId = toTenantId(id);
-        return MapstructUtils.convert(targetTenantId == null ? null : getTenantById(currentActor, targetTenantId), TenantVO.class);
+    @Override
+    public List<TenantVO> allTenantsView(ActorContext actor) {
+        return MapstructUtils.convert(getAllTenants(requireActor(actor)), TenantVO.class);
     }
-    @Override public boolean createTenant(ActorContext actor, TenantRequest request) { return createTenant(requireActor(actor), MapstructUtils.convert(request, TenantBO.class)); }
-    @Override public boolean updateTenant(ActorContext actor, Long id, TenantRequest request) {
+
+    @Override
+    public TenantVO detailView(ActorContext actor, Long id) {
         ActorContext currentActor = requireActor(actor);
         TenantId targetTenantId = toTenantId(id);
-        return targetTenantId != null && updateTenant(currentActor, targetTenantId, MapstructUtils.convert(request, TenantBO.class));
+        return MapstructUtils.convert(
+                targetTenantId == null ? null : getTenantById(currentActor, targetTenantId),
+                TenantVO.class);
+    }
+
+    @Override
+    public boolean createTenant(ActorContext actor, TenantRequest request) {
+        return createTenant(requireActor(actor), MapstructUtils.convert(request, TenantBO.class));
+    }
+
+    @Override
+    public boolean updateTenant(ActorContext actor, Long id, TenantRequest request) {
+        ActorContext currentActor = requireActor(actor);
+        TenantId targetTenantId = toTenantId(id);
+        return targetTenantId != null
+                && updateTenant(
+                        currentActor,
+                        targetTenantId,
+                        MapstructUtils.convert(request, TenantBO.class));
     }
 
     private final TenantRepository tenantRepository;
@@ -43,11 +60,18 @@ public class TenantServiceImpl implements TenantService {
     }
 
     @Override
-    public PageData<TenantVO> getTenantPage(ActorContext actor, Number pageNo, Number pageSize,
-                                            String name, String code, Integer status) {
+    public PageData<TenantVO> getTenantPage(
+            ActorContext actor,
+            Number pageNo,
+            Number pageSize,
+            String name,
+            String code,
+            Integer status) {
         requireActor(actor);
-        var page = tenantRepository.selectPage(actor.tenantId(), pageNo, pageSize, name, code, status);
-        return new PageData<>(MapstructUtils.convert(page.getRight(), TenantVO.class), page.getLeft());
+        var page =
+                tenantRepository.selectPage(actor.tenantId(), pageNo, pageSize, name, code, status);
+        return new PageData<>(
+                MapstructUtils.convert(page.getRight(), TenantVO.class), page.getLeft());
     }
 
     private List<TenantBO> getAllTenants(ActorContext actor) {
@@ -71,8 +95,10 @@ public class TenantServiceImpl implements TenantService {
 
     @Transactional(rollbackFor = Exception.class)
     private boolean createTenant(ActorContext actor, TenantBO tenantBO) {
-        log.info("新增租户，codePresent: {}, namePresent: {}",
-                tenantBO.getCode() != null, tenantBO.getName() != null);
+        log.info(
+                "新增租户，codePresent: {}, namePresent: {}",
+                tenantBO.getCode() != null,
+                tenantBO.getName() != null);
 
         if (tenantRepository.existsByCode(tenantBO.getCode(), null)) {
             log.warn("租户编码已存在，codePresent={}", tenantBO.getCode() != null);
@@ -106,8 +132,7 @@ public class TenantServiceImpl implements TenantService {
         if (tenantBO.getParentId() != null) {
             TenantId parentTenantId = toTenantId(tenantBO.getParentId());
             if (!canAccessTenant(actor, parentTenantId)
-                    || tenantRepository.selectDescendantIds(id)
-                            .contains(tenantBO.getParentId())) {
+                    || tenantRepository.selectDescendantIds(id).contains(tenantBO.getParentId())) {
                 return false;
             }
         }
@@ -129,7 +154,9 @@ public class TenantServiceImpl implements TenantService {
 
         requireActor(actor);
         TenantId targetTenantId = toTenantId(id);
-        if (targetTenantId == null || targetTenantId.value() == 1L || targetTenantId.equals(actor.tenantId())) {
+        if (targetTenantId == null
+                || targetTenantId.value() == 1L
+                || targetTenantId.equals(actor.tenantId())) {
             log.warn("禁止删除默认租户");
             return false;
         }
@@ -198,4 +225,3 @@ public class TenantServiceImpl implements TenantService {
         return actor;
     }
 }
-

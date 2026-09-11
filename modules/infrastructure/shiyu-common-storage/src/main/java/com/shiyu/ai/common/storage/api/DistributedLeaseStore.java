@@ -18,7 +18,12 @@ public interface DistributedLeaseStore extends LeaseStore {
     }
 
     private String owner(String key) {
-        return getClass().getName() + "@" + System.identityHashCode(this)
-                + ":thread-" + Thread.currentThread().threadId() + ":" + key;
+        return getClass().getName()
+                + "@"
+                + System.identityHashCode(this)
+                + ":thread-"
+                + Thread.currentThread().threadId()
+                + ":"
+                + key;
     }
 }

@@ -1,30 +1,22 @@
 package com.shiyu.ai.common.core.api;
 
 import com.shiyu.ai.common.core.enums.FilterOperatorEnum;
+
 import lombok.Data;
 
-/**
- * 过滤条件实体类
- */
+/** 过滤条件实体类 */
 @Data
 public class FilterCondition {
-    /**
-     * 过滤字段名
-     */
+    /** 过滤字段名 */
     private String field;
 
-    /**
-     * 过滤操作符 (eq, ne, gt, ge, lt, le, like, in 等)
-     */
+    /** 过滤操作符 (eq, ne, gt, ge, lt, le, like, in 等) */
     private FilterOperatorEnum operator;
 
-    /**
-     * 过滤值
-     */
+    /** 过滤值 */
     private Object value;
 
-    public FilterCondition() {
-    }
+    public FilterCondition() {}
 
     public FilterCondition(String field, FilterOperatorEnum operator, Object value) {
         this.field = field;

@@ -1,17 +1,15 @@
 package com.shiyu.ai.education.implementation.domain.model;
+
 import lombok.Data;
 
 import java.io.Serial;
 import java.io.Serializable;
 
-/**
- * Question 业务对象
- */
+/** Question 业务对象 */
 @Data
 public class QuestionBO implements Serializable {
 
-    @Serial
-    private static final long serialVersionUID = 1L;
+    @Serial private static final long serialVersionUID = 1L;
 
     private Long id;
 
@@ -40,11 +38,7 @@ public class QuestionBO implements Serializable {
     private String tags;
 
     private Long usedCount;
-    /**
-     * 状态（依据业务灵活定义）
-     */
+
+    /** 状态（依据业务灵活定义） */
     private Integer status;
-
-
 }
-

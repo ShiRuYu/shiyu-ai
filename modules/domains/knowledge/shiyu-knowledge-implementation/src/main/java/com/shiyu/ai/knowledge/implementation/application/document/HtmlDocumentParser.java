@@ -17,4 +17,3 @@ public class HtmlDocumentParser implements DocumentParser {
         return new ParseResult(document.title(), document.text(), "");
     }
 }
-

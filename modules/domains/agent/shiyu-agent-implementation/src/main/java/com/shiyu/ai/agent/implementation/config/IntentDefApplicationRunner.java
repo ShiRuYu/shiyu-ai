@@ -1,31 +1,32 @@
 package com.shiyu.ai.agent.implementation.config;
 
-import com.shiyu.ai.agent.implementation.port.repository.IntentDefRepository;
 import com.shiyu.ai.agent.implementation.domain.model.IntentDefBO;
 import com.shiyu.ai.agent.implementation.node.intent.IntentDefinitionFactory;
+import com.shiyu.ai.agent.implementation.port.repository.IntentDefRepository;
+import com.shiyu.ai.kernel.context.TenantId;
+
 import jakarta.annotation.Resource;
+
 import lombok.extern.slf4j.Slf4j;
+
 import org.springframework.boot.ApplicationArguments;
 import org.springframework.boot.ApplicationRunner;
 import org.springframework.stereotype.Component;
 
 import java.util.List;
-import com.shiyu.ai.kernel.context.TenantId;
 
-/**
- * 应用启动时从 DB 加载意图定义到 IntentDefinitionFactory
- */
+/** 应用启动时从 DB 加载意图定义到 IntentDefinitionFactory */
 @Slf4j
 @Component
 public class IntentDefApplicationRunner implements ApplicationRunner {
 
-    @Resource
-    private IntentDefRepository intentDefRepository;
+    @Resource private IntentDefRepository intentDefRepository;
 
     @Override
     public void run(ApplicationArguments args) {
         try {
-            List<IntentDefBO> boList = intentDefRepository.selectByAgentId(new TenantId(1L), "default");
+            List<IntentDefBO> boList =
+                    intentDefRepository.selectByAgentId(new TenantId(1L), "default");
             if (boList == null || boList.isEmpty()) {
                 log.warn("DB 中未找到意图定义数据（agentId=default），使用空表");
                 // 即使没有数据也要调用 reloadFromDb 以清空 static 块可能遗留的数据

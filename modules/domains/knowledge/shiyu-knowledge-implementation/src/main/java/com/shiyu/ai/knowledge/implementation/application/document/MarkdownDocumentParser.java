@@ -1,11 +1,10 @@
 package com.shiyu.ai.knowledge.implementation.application.document;
 
 import lombok.extern.slf4j.Slf4j;
+
 import org.springframework.stereotype.Component;
 
-/**
- * Markdown 文档解析器
- */
+/** Markdown 文档解析器 */
 @Slf4j
 @Component
 public class MarkdownDocumentParser implements DocumentParser {
@@ -46,4 +45,3 @@ public class MarkdownDocumentParser implements DocumentParser {
         return new ParseResult(title, body, metadata);
     }
 }
-

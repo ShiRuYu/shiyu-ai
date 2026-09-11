@@ -16,11 +16,12 @@ public record ConversationMessage(
         int sequence,
         String generationId,
         Instant createdAt,
-        Instant updatedAt
-) {
+        Instant updatedAt) {
     public ConversationMessage {
-        if (id == null || id.isBlank()) throw new IllegalArgumentException("message id is required");
-        if (conversationId == null || conversationId.isBlank()) throw new IllegalArgumentException("conversation id is required");
+        if (id == null || id.isBlank())
+            throw new IllegalArgumentException("message id is required");
+        if (conversationId == null || conversationId.isBlank())
+            throw new IllegalArgumentException("conversation id is required");
         if (role == null) throw new IllegalArgumentException("message role is required");
         if (status == null) throw new IllegalArgumentException("message status is required");
         contentParts = contentParts == null ? List.of() : List.copyOf(contentParts);
@@ -28,7 +29,10 @@ public record ConversationMessage(
     }
 
     public String textContent() {
-        return contentParts.stream().filter(p -> "text".equals(p.type())).map(ContentPart::text)
-                .filter(java.util.Objects::nonNull).reduce("", String::concat);
+        return contentParts.stream()
+                .filter(p -> "text".equals(p.type()))
+                .map(ContentPart::text)
+                .filter(java.util.Objects::nonNull)
+                .reduce("", String::concat);
     }
 }

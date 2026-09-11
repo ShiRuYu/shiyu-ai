@@ -1,8 +1,10 @@
 package com.shiyu.ai.education.implementation.web.request;
 
 import com.fasterxml.jackson.annotation.JsonAlias;
+
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
+
 import lombok.Data;
 
 import java.io.Serial;
@@ -13,8 +15,7 @@ public class ChapterRequest implements Serializable {
 
     private Long id;
 
-    @Serial
-    private static final long serialVersionUID = 1L;
+    @Serial private static final long serialVersionUID = 1L;
 
     @NotNull(message = "教材ID不能为空")
     private Long textbookId;
@@ -23,9 +24,9 @@ public class ChapterRequest implements Serializable {
     private String name;
 
     private Long parentId;
+
     @JsonAlias("sort")
     private Integer chapterOrder;
+
     private Integer status;
 }
-
-

@@ -3,10 +3,7 @@ package com.shiyu.ai.agent.contract.node;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 
-/**
- * 节点类型枚举
- * 定义 Agent 中可使用的各种组件类型
- */
+/** 节点类型枚举 定义 Agent 中可使用的各种组件类型 */
 @Getter
 @AllArgsConstructor
 public enum NodeType {

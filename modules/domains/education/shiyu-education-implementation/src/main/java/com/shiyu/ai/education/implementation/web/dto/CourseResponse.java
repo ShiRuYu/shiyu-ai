@@ -1,7 +1,8 @@
 package com.shiyu.ai.education.implementation.web.dto;
 
-import io.github.linpeilie.annotations.AutoMapper;
 import com.shiyu.ai.education.implementation.domain.model.CourseBO;
+
+import io.github.linpeilie.annotations.AutoMapper;
 
 @AutoMapper(target = CourseBO.class)
 public record CourseResponse(
@@ -14,6 +15,4 @@ public record CourseResponse(
         Long teacherId,
         String coverUrl,
         Integer totalHours,
-        Integer status
-) {}
-
+        Integer status) {}

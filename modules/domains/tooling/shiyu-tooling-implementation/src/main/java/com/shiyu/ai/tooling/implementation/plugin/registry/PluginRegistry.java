@@ -4,17 +4,16 @@ import com.shiyu.ai.tooling.implementation.plugin.lifecycle.PluginLoader;
 import com.shiyu.ai.tooling.implementation.plugin.lifecycle.PluginManager;
 import com.shiyu.ai.tooling.implementation.plugin.spi.Plugin;
 import com.shiyu.ai.tooling.implementation.plugin.spi.PluginDescriptor;
+
 import jakarta.annotation.PostConstruct;
 import jakarta.annotation.PreDestroy;
+
 import lombok.extern.slf4j.Slf4j;
 
 import java.nio.file.Path;
 import java.util.List;
 
-/**
- * 插件注册表（高层封装）
- * 自动扫描插件目录、生命周期管理
- */
+/** 插件注册表（高层封装） 自动扫描插件目录、生命周期管理 */
 @Slf4j
 public class PluginRegistry {
 
@@ -24,7 +23,9 @@ public class PluginRegistry {
     private final boolean inProcessEnabled;
 
     public PluginRegistry(String pluginsDir) {
-        this(pluginsDir, Boolean.parseBoolean(System.getProperty("shiyu.plugins.in-process", "false")));
+        this(
+                pluginsDir,
+                Boolean.parseBoolean(System.getProperty("shiyu.plugins.in-process", "false")));
     }
 
     public PluginRegistry(String pluginsDir, boolean inProcessEnabled) {
@@ -36,13 +37,13 @@ public class PluginRegistry {
 
     @PostConstruct
     public void init() {
-        log.info("插件注册表初始化, pluginDirectoryConfigured={}", pluginsDir != null && !pluginsDir.isBlank());
+        log.info(
+                "插件注册表初始化, pluginDirectoryConfigured={}",
+                pluginsDir != null && !pluginsDir.isBlank());
         scanAndLoadPlugins();
     }
 
-    /**
-     * 扫描并加载插件目录
-     */
+    /** 扫描并加载插件目录 */
     public void scanAndLoadPlugins() {
         if (!inProcessEnabled) {
             log.info("插件目录扫描已跳过：生产模式只允许通过受控 Worker RPC 执行插件");
@@ -61,8 +62,11 @@ public class PluginRegistry {
             try {
                 pluginManager.start(desc.getId());
             } catch (Exception e) {
-                log.warn("插件自动启动失败: pluginIdLength={}, errorType={}, errorMessageLength={}",
-                        valueLength(desc.getId()), e.getClass().getSimpleName(), valueLength(e.getMessage()));
+                log.warn(
+                        "插件自动启动失败: pluginIdLength={}, errorType={}, errorMessageLength={}",
+                        valueLength(desc.getId()),
+                        e.getClass().getSimpleName(),
+                        valueLength(e.getMessage()));
             }
         }
     }
@@ -78,24 +82,46 @@ public class PluginRegistry {
     }
 
     public void install(PluginDescriptor descriptor, Plugin plugin) {
-        if (!inProcessEnabled) throw new SecurityException("in-process plugins are disabled; use a Worker RPC plugin");
+        if (!inProcessEnabled)
+            throw new SecurityException("in-process plugins are disabled; use a Worker RPC plugin");
         pluginManager.install(descriptor, plugin);
     }
 
-    public void start(String pluginId) { requireInProcess(); pluginManager.start(pluginId); }
-    public void stop(String pluginId) { requireInProcess(); pluginManager.stop(pluginId); }
-    public void uninstall(String pluginId) { requireInProcess(); pluginManager.uninstall(pluginId); }
+    public void start(String pluginId) {
+        requireInProcess();
+        pluginManager.start(pluginId);
+    }
+
+    public void stop(String pluginId) {
+        requireInProcess();
+        pluginManager.stop(pluginId);
+    }
+
+    public void uninstall(String pluginId) {
+        requireInProcess();
+        pluginManager.uninstall(pluginId);
+    }
 
     public PluginDescriptor getDescriptor(String pluginId) {
         return pluginManager.getDescriptor(pluginId);
     }
 
-    public Plugin getPlugin(String pluginId) { requireInProcess(); return pluginManager.getPlugin(pluginId); }
-    public List<PluginDescriptor> listPlugins() { return pluginManager.listPlugins(); }
-    public PluginManager getPluginManager() { return pluginManager; }
+    public Plugin getPlugin(String pluginId) {
+        requireInProcess();
+        return pluginManager.getPlugin(pluginId);
+    }
+
+    public List<PluginDescriptor> listPlugins() {
+        return pluginManager.listPlugins();
+    }
+
+    public PluginManager getPluginManager() {
+        return pluginManager;
+    }
 
     private void requireInProcess() {
-        if (!inProcessEnabled) throw new SecurityException("in-process plugins are disabled; use a Worker RPC plugin");
+        if (!inProcessEnabled)
+            throw new SecurityException("in-process plugins are disabled; use a Worker RPC plugin");
     }
 
     private static int valueLength(String value) {

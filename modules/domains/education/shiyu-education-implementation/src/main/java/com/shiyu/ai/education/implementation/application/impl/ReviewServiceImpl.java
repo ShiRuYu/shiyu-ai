@@ -1,16 +1,17 @@
 package com.shiyu.ai.education.implementation.application.impl;
 
-import com.shiyu.ai.education.implementation.domain.enums.ReviewTaskStatus;
-
 import com.shiyu.ai.common.core.utils.MapstructUtils;
+import com.shiyu.ai.education.implementation.application.ReviewService;
+import com.shiyu.ai.education.implementation.domain.enums.ReviewTaskStatus;
 import com.shiyu.ai.education.implementation.domain.model.ReviewTaskBO;
 import com.shiyu.ai.education.implementation.domain.port.repository.ReviewTaskRepository;
 import com.shiyu.ai.education.implementation.web.dto.ReviewTaskResponse;
 import com.shiyu.ai.education.implementation.web.request.ReviewRequest;
-import com.shiyu.ai.education.implementation.application.ReviewService;
 import com.shiyu.ai.kernel.context.ActorContext;
+
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -31,19 +32,25 @@ public class ReviewServiceImpl implements ReviewService {
 
     @Override
     public List<ReviewTaskResponse> listTodayTasks(ActorContext actor, Long studentId) {
-        List<ReviewTaskBO> boList = reviewTaskRepository.selectTodayTasks(actor.tenantId(), studentId);
+        List<ReviewTaskBO> boList =
+                reviewTaskRepository.selectTodayTasks(actor.tenantId(), studentId);
         return MapstructUtils.convert(boList, ReviewTaskResponse.class);
     }
 
     @Override
-    public List<ReviewTaskResponse> listByStudentAndStatus(ActorContext actor, Long studentId, Integer status) {
-        List<ReviewTaskBO> boList = reviewTaskRepository.selectByStudentAndStatus(actor.tenantId(), studentId, status);
+    public List<ReviewTaskResponse> listByStudentAndStatus(
+            ActorContext actor, Long studentId, Integer status) {
+        List<ReviewTaskBO> boList =
+                reviewTaskRepository.selectByStudentAndStatus(actor.tenantId(), studentId, status);
         return MapstructUtils.convert(boList, ReviewTaskResponse.class);
     }
 
     @Override
-    public List<ReviewTaskResponse> listByStudentAndKnowledge(ActorContext actor, Long studentId, Long knowledgeId) {
-        List<ReviewTaskBO> boList = reviewTaskRepository.selectByStudentAndKnowledge(actor.tenantId(), studentId, knowledgeId);
+    public List<ReviewTaskResponse> listByStudentAndKnowledge(
+            ActorContext actor, Long studentId, Long knowledgeId) {
+        List<ReviewTaskBO> boList =
+                reviewTaskRepository.selectByStudentAndKnowledge(
+                        actor.tenantId(), studentId, knowledgeId);
         return MapstructUtils.convert(boList, ReviewTaskResponse.class);
     }
 
@@ -53,11 +60,15 @@ public class ReviewServiceImpl implements ReviewService {
         ReviewTaskBO bo = new ReviewTaskBO();
         bo.setStudentId(request.getStudentId());
         bo.setKnowledgeId(request.getKnowledgeId());
-        bo.setReviewDate(request.getReviewDate() != null
-                ? request.getReviewDate() : java.time.LocalDate.now());
+        bo.setReviewDate(
+                request.getReviewDate() != null
+                        ? request.getReviewDate()
+                        : java.time.LocalDate.now());
         bo.setReviewRound(request.getReviewRound() != null ? request.getReviewRound() : 1);
-        bo.setStatus(request.getStatus() != null
-                ? request.getStatus() : ReviewTaskStatus.PENDING.getCode());
+        bo.setStatus(
+                request.getStatus() != null
+                        ? request.getStatus()
+                        : ReviewTaskStatus.PENDING.getCode());
         bo.setResultScore(request.getResultScore());
         reviewTaskRepository.insert(actor.tenantId(), bo);
         return MapstructUtils.convert(bo, ReviewTaskResponse.class);
@@ -97,4 +108,3 @@ public class ReviewServiceImpl implements ReviewService {
         reviewTaskRepository.deleteById(actor.tenantId(), id);
     }
 }
-

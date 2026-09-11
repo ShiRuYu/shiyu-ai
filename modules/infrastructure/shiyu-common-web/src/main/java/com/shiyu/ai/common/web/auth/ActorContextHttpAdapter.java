@@ -5,20 +5,19 @@ import com.shiyu.ai.common.core.exception.ServiceException;
 import com.shiyu.ai.kernel.context.ActorContext;
 import com.shiyu.ai.kernel.context.RoleId;
 import com.shiyu.ai.kernel.context.TenantId;
-import com.shiyu.ai.kernel.context.UserId;
 import com.shiyu.ai.kernel.context.TenantScope;
+import com.shiyu.ai.kernel.context.UserId;
 
 /**
  * Converts the authenticated HTTP thread context into the explicit application context.
  *
- * <p>This is the only bridge from the legacy request context to domain commands. It belongs
- * to the technical web support library so domain-owned HTTP adapters can use it without
- * depending on the application shell.</p>
+ * <p>This is the only bridge from the legacy request context to domain commands. It belongs to the
+ * technical web support library so domain-owned HTTP adapters can use it without depending on the
+ * application shell.
  */
 public final class ActorContextHttpAdapter {
 
-    private ActorContextHttpAdapter() {
-    }
+    private ActorContextHttpAdapter() {}
 
     public static ActorContext currentActor() {
         Long tenantId = UserContextHolder.getCurrentTenantId();
@@ -28,10 +27,14 @@ public final class ActorContextHttpAdapter {
         }
         Long currentRoleId = UserContextHolder.getCurrentRoleId();
         RoleId roleId = currentRoleId == null ? null : new RoleId(currentRoleId);
-        return new ActorContext(new TenantId(tenantId), new UserId(userId), roleId,
+        return new ActorContext(
+                new TenantId(tenantId),
+                new UserId(userId),
+                roleId,
                 UserContextHolder.getCurrentRoleCode(),
                 toTenantId(UserContextHolder.getHomeTenantId(), tenantId),
-                UserContextHolder.getSwitchMode(), UserContextHolder.isSuperAdmin());
+                UserContextHolder.getSwitchMode(),
+                UserContextHolder.isSuperAdmin());
     }
 
     private static TenantId toTenantId(Long homeTenantId, long currentTenantId) {
@@ -74,16 +77,19 @@ public final class ActorContextHttpAdapter {
     }
 
     /**
-     * Runs an anonymous-login bootstrap operation with the authenticated actor
-     * temporarily installed at the HTTP boundary. Domain/application code still
-     * receives explicit parameters and never touches either thread context.
+     * Runs an anonymous-login bootstrap operation with the authenticated actor temporarily
+     * installed at the HTTP boundary. Domain/application code still receives explicit parameters
+     * and never touches either thread context.
      */
-    public static void runWithContext(com.shiyu.ai.common.core.domain.UserContext context,
-                                      TenantId tenantId, Runnable action) {
+    public static void runWithContext(
+            com.shiyu.ai.common.core.domain.UserContext context,
+            TenantId tenantId,
+            Runnable action) {
         if (context == null || tenantId == null || action == null) {
             throw new IllegalArgumentException("context, tenantId and action are required");
         }
-        com.shiyu.ai.common.core.domain.UserContext previousContext = UserContextHolder.getContext();
+        com.shiyu.ai.common.core.domain.UserContext previousContext =
+                UserContextHolder.getContext();
         TenantId previousTenant = TenantScope.current().orElse(null);
         try {
             UserContextHolder.setContext(context);

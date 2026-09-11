@@ -2,6 +2,7 @@ package com.shiyu.ai.common.core.utils;
 
 import lombok.AllArgsConstructor;
 import lombok.Getter;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.slf4j.helpers.MessageFormatter;
@@ -27,46 +28,50 @@ public enum LoggerUtil {
 
     private final Logger normalLogger;
 
-    public void info(String message){
+    public void info(String message) {
         normalLogger.info(message);
     }
-    public void info(String message,Object... objects){
-        normalLogger.info(msgHandle(message,objects));
+
+    public void info(String message, Object... objects) {
+        normalLogger.info(msgHandle(message, objects));
     }
-    public void warn(String message){
+
+    public void warn(String message) {
         normalLogger.warn(message);
     }
-    public void warn(String message,Object... objects){
-        normalLogger.warn(msgHandle(message,objects));
+
+    public void warn(String message, Object... objects) {
+        normalLogger.warn(msgHandle(message, objects));
     }
-    public void debug(String message,Object... objects){
-        normalLogger.debug(msgHandle(message,objects));
+
+    public void debug(String message, Object... objects) {
+        normalLogger.debug(msgHandle(message, objects));
     }
-    public void error(String message){
+
+    public void error(String message) {
         normalLogger.error(message);
     }
-    public void error(String message,Object... objects){
+
+    public void error(String message, Object... objects) {
         Throwable throwable = getThrowable(objects);
-        normalLogger.error(msgHandle(message,objects),throwable);
+        normalLogger.error(msgHandle(message, objects), throwable);
     }
-    public void error(Throwable throwable,String message,Object... objects){
-        normalLogger.error(msgHandle(message,objects),throwable);
+
+    public void error(Throwable throwable, String message, Object... objects) {
+        normalLogger.error(msgHandle(message, objects), throwable);
     }
 
     private Throwable getThrowable(Object[] objects) {
         Throwable throwable = null;
         for (Object object : objects) {
-            if (object instanceof Throwable ofThrowable){
+            if (object instanceof Throwable ofThrowable) {
                 throwable = ofThrowable;
             }
         }
         return throwable;
     }
 
-
     private String msgHandle(String message, Object[] objects) {
         return MessageFormatter.arrayFormat(message, objects).getMessage();
     }
-
 }
-

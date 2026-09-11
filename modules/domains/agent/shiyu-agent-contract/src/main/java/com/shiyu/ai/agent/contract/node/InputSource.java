@@ -8,12 +8,22 @@ public enum InputSource {
     private final String code;
     private final String label;
     private final String description;
+
     InputSource(String code, String label, String description) {
         this.code = code;
         this.label = label;
         this.description = description;
     }
-    public String getCode() { return code; }
-    public String getLabel() { return label; }
-    public String getDescription() { return description; }
+
+    public String getCode() {
+        return code;
+    }
+
+    public String getLabel() {
+        return label;
+    }
+
+    public String getDescription() {
+        return description;
+    }
 }

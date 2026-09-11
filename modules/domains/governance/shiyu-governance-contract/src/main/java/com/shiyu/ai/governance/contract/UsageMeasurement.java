@@ -14,11 +14,15 @@ public record UsageMeasurement(
         long outputTokens,
         BigDecimal cost,
         long latencyMs,
-        Map<String, String> attributes
-) implements DomainEvent {
+        Map<String, String> attributes)
+        implements DomainEvent {
 
-    public UsageMeasurement(UsageSourceType sourceType, String sourceId,
-                            long inputTokens, long outputTokens, BigDecimal cost) {
+    public UsageMeasurement(
+            UsageSourceType sourceType,
+            String sourceId,
+            long inputTokens,
+            long outputTokens,
+            BigDecimal cost) {
         this(sourceType, sourceId, inputTokens, outputTokens, cost, 0L, Map.of());
     }
 

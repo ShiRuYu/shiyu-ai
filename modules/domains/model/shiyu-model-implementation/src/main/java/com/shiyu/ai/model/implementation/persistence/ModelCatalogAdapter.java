@@ -1,10 +1,12 @@
 package com.shiyu.ai.model.implementation.persistence;
 
-import com.shiyu.ai.model.implementation.persistence.mapper.AiModelMapper;
-import com.shiyu.ai.model.implementation.persistence.mapper.AiPlatformMapper;
 import com.mybatisflex.core.query.QueryWrapper;
 import com.shiyu.ai.model.contract.api.ModelCatalogPort;
+import com.shiyu.ai.model.implementation.persistence.mapper.AiModelMapper;
+import com.shiyu.ai.model.implementation.persistence.mapper.AiPlatformMapper;
+
 import lombok.RequiredArgsConstructor;
+
 import org.springframework.stereotype.Component;
 
 /** Adapts the Model-owned repositories to its public read-only contract. */
@@ -16,13 +18,13 @@ public class ModelCatalogAdapter implements ModelCatalogPort {
 
     @Override
     public long countEnabledPlatforms() {
-        return platformMapper.selectCountByQuery(QueryWrapper.create()
-                .eq("status", 1).eq("del_flag", 0));
+        return platformMapper.selectCountByQuery(
+                QueryWrapper.create().eq("status", 1).eq("del_flag", 0));
     }
 
     @Override
     public long countEnabledModels() {
-        return modelMapper.selectCountByQuery(QueryWrapper.create()
-                .eq("status", 1).eq("del_flag", 0));
+        return modelMapper.selectCountByQuery(
+                QueryWrapper.create().eq("status", 1).eq("del_flag", 0));
     }
 }

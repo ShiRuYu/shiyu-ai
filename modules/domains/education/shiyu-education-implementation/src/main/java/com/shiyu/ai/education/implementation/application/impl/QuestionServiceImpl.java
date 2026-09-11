@@ -2,14 +2,16 @@ package com.shiyu.ai.education.implementation.application.impl;
 
 import com.shiyu.ai.common.core.api.PageData;
 import com.shiyu.ai.common.core.utils.MapstructUtils;
+import com.shiyu.ai.education.implementation.application.QuestionService;
 import com.shiyu.ai.education.implementation.domain.model.QuestionBO;
 import com.shiyu.ai.education.implementation.domain.port.repository.QuestionRepository;
 import com.shiyu.ai.education.implementation.web.dto.QuestionResponse;
 import com.shiyu.ai.education.implementation.web.request.QuestionRequest;
-import com.shiyu.ai.education.implementation.application.QuestionService;
 import com.shiyu.ai.kernel.context.ActorContext;
+
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -35,14 +37,17 @@ public class QuestionServiceImpl implements QuestionService {
     }
 
     @Override
-    public List<QuestionResponse> listBySubjectAndGrade(ActorContext actor, String subjectCode, Integer grade) {
-        List<QuestionBO> boList = questionRepository.selectBySubjectAndGrade(actor.tenantId(), subjectCode, grade);
+    public List<QuestionResponse> listBySubjectAndGrade(
+            ActorContext actor, String subjectCode, Integer grade) {
+        List<QuestionBO> boList =
+                questionRepository.selectBySubjectAndGrade(actor.tenantId(), subjectCode, grade);
         return MapstructUtils.convert(boList, QuestionResponse.class);
     }
 
     @Override
     public List<QuestionResponse> listByDifficulty(ActorContext actor, Integer difficulty) {
-        List<QuestionBO> boList = questionRepository.selectByDifficulty(actor.tenantId(), difficulty);
+        List<QuestionBO> boList =
+                questionRepository.selectByDifficulty(actor.tenantId(), difficulty);
         return MapstructUtils.convert(boList, QuestionResponse.class);
     }
 
@@ -54,8 +59,10 @@ public class QuestionServiceImpl implements QuestionService {
 
     @Override
     public PageData<QuestionResponse> page(ActorContext actor, int pageNum, int pageSize) {
-        PageData<QuestionBO> boPage = questionRepository.selectPage(actor.tenantId(), pageNum, pageSize);
-        List<QuestionResponse> items = MapstructUtils.convert(boPage.getItems(), QuestionResponse.class);
+        PageData<QuestionBO> boPage =
+                questionRepository.selectPage(actor.tenantId(), pageNum, pageSize);
+        List<QuestionResponse> items =
+                MapstructUtils.convert(boPage.getItems(), QuestionResponse.class);
         return new PageData<>(items, boPage.getTotal());
     }
 
@@ -111,4 +118,3 @@ public class QuestionServiceImpl implements QuestionService {
         questionRepository.deleteById(actor.tenantId(), id);
     }
 }
-

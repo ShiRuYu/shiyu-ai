@@ -27,4 +27,3 @@ public final class AuthCodeAssembler {
         return response;
     }
 }
-

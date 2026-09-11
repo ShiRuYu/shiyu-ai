@@ -1,19 +1,22 @@
 package com.shiyu.ai.conversation.implementation.web;
+
+import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.mockito.ArgumentMatchers.*;
+import static org.mockito.Mockito.*;
+
+import com.shiyu.ai.common.core.domain.UserContext;
+import com.shiyu.ai.common.core.domain.UserContextHolder;
 import com.shiyu.ai.conversation.contract.api.*;
+import com.shiyu.ai.conversation.contract.api.GenerationAdmission;
 import com.shiyu.ai.conversation.contract.model.*;
 import com.shiyu.ai.conversation.implementation.application.*;
 import com.shiyu.ai.conversation.implementation.domain.chat.*;
 import com.shiyu.ai.conversation.implementation.domain.model.*;
 import com.shiyu.ai.conversation.implementation.domain.port.*;
-
-
-
+import com.shiyu.ai.conversation.implementation.domain.port.GenerationRepository;
 import com.shiyu.ai.kernel.context.TenantId;
 
-import com.shiyu.ai.common.core.domain.UserContext;
-import com.shiyu.ai.common.core.domain.UserContextHolder;
-import com.shiyu.ai.conversation.contract.api.GenerationAdmission;
-import com.shiyu.ai.conversation.implementation.domain.port.GenerationRepository;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -22,15 +25,11 @@ import java.time.Instant;
 import java.util.List;
 import java.util.Optional;
 
-import static org.junit.jupiter.api.Assertions.assertThrows;
-import static org.junit.jupiter.api.Assertions.assertTrue;
-import static org.mockito.ArgumentMatchers.*;
-import static org.mockito.Mockito.*;
-
 class GenerationControllerTest {
     private final GenerationRepository generations = mock(GenerationRepository.class);
     private final GenerationAdmission admission = mock(GenerationAdmission.class);
-    private final GenerationController controller = new GenerationController(generations, admission);
+    private final GenerationController controller =
+            new GenerationController(generations, admission);
     private final Instant now = Instant.now();
 
     @BeforeEach
@@ -43,12 +42,15 @@ class GenerationControllerTest {
     }
 
     @AfterEach
-    void clear() { UserContextHolder.clearContext(); }
+    void clear() {
+        UserContextHolder.clearContext();
+    }
 
     @Test
     void streamsDurableEventsAndHonorsLastEventId() {
         GenerationRun run = generation(GenerationStatus.RUNNING);
-        GenerationEvent event = new GenerationEvent("g1", 2, GenerationEventType.DELTA, "hello", now);
+        GenerationEvent event =
+                new GenerationEvent("g1", 2, GenerationEventType.DELTA, "hello", now);
         when(generations.find("g1", new TenantId(7), 8)).thenReturn(Optional.of(run));
         when(generations.listEvents("g1", new TenantId(7), 2, 1000)).thenReturn(List.of(event));
 
@@ -66,8 +68,17 @@ class GenerationControllerTest {
         when(generations.nextEventSequence("g1", new TenantId(7))).thenReturn(3);
 
         assertTrue(controller.cancel("g1").isSuccess());
-        verify(generations).appendEvent(argThat(event -> event.type() == GenerationEventType.CANCELLED && event.sequence() == 3), eq(new TenantId(7L)));
-        verify(admission).release(any(), argThat(cancelled -> cancelled.status() == GenerationStatus.CANCELLED));
+        verify(generations)
+                .appendEvent(
+                        argThat(
+                                event ->
+                                        event.type() == GenerationEventType.CANCELLED
+                                                && event.sequence() == 3),
+                        eq(new TenantId(7L)));
+        verify(admission)
+                .release(
+                        any(),
+                        argThat(cancelled -> cancelled.status() == GenerationStatus.CANCELLED));
     }
 
     @Test
@@ -80,7 +91,8 @@ class GenerationControllerTest {
     }
 
     private GenerationRun generation(GenerationStatus status) {
-        return new GenerationRun("g1", "c1", "m1", null, null, "OPENAI", "gpt", status,
-                0, 0, 0, null, -1, false, 0, now, now);
+        return new GenerationRun(
+                "g1", "c1", "m1", null, null, "OPENAI", "gpt", status, 0, 0, 0, null, -1, false, 0,
+                now, now);
     }
 }

@@ -1,27 +1,29 @@
 package com.shiyu.ai.model.implementation.infrastructure.embedding;
 
-import com.shiyu.ai.model.implementation.infrastructure.embedding.impl.LangChain4jEmbeddingService;
-import com.shiyu.ai.kernel.context.TenantId;
-import com.shiyu.ai.kernel.context.ActorContext;
-import com.shiyu.ai.kernel.context.UserId;
-import dev.langchain4j.data.embedding.Embedding;
-import dev.langchain4j.model.embedding.EmbeddingModel;
-import dev.langchain4j.model.output.Response;
-import org.springframework.beans.factory.ObjectProvider;
-import org.springframework.context.ApplicationEventPublisher;
-import org.junit.jupiter.api.Test;
-
-import java.util.List;
-
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
-import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.junit.jupiter.api.Assumptions.assumeTrue;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.doReturn;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
+
+import com.shiyu.ai.kernel.context.ActorContext;
+import com.shiyu.ai.kernel.context.TenantId;
+import com.shiyu.ai.kernel.context.UserId;
+import com.shiyu.ai.model.implementation.infrastructure.embedding.impl.LangChain4jEmbeddingService;
+
+import dev.langchain4j.data.embedding.Embedding;
+import dev.langchain4j.model.embedding.EmbeddingModel;
+import dev.langchain4j.model.output.Response;
+
+import org.junit.jupiter.api.Test;
+import org.springframework.beans.factory.ObjectProvider;
+import org.springframework.context.ApplicationEventPublisher;
+
+import java.util.List;
 
 class LangChain4jEmbeddingServiceTest {
 
@@ -56,13 +58,23 @@ class LangChain4jEmbeddingServiceTest {
         ApplicationEventPublisher publisher = mock(ApplicationEventPublisher.class);
         doReturn(model).when(models).getIfAvailable(any());
         doReturn(3).when(model).dimension();
-        doReturn(Response.from(Embedding.from(new float[] {1, 2, 3}))).when(model).embed(any(String.class));
-        doReturn(Response.from(List.of(Embedding.from(new float[] {4, 5, 6}), Embedding.from(new float[] {7, 8, 9}))))
-                .when(model).embedAll(any());
+        doReturn(Response.from(Embedding.from(new float[] {1, 2, 3})))
+                .when(model)
+                .embed(any(String.class));
+        doReturn(
+                        Response.from(
+                                List.of(
+                                        Embedding.from(new float[] {4, 5, 6}),
+                                        Embedding.from(new float[] {7, 8, 9}))))
+                .when(model)
+                .embedAll(any());
 
         LangChain4jEmbeddingService service = new LangChain4jEmbeddingService(models, publisher);
         assertEquals(3, service.dimension());
-        assertEquals(3, service.embed(new ActorContext(new TenantId(7), new UserId(8), false), "中文abc").length);
+        assertEquals(
+                3,
+                service.embed(new ActorContext(new TenantId(7), new UserId(8), false), "中文abc")
+                        .length);
         assertEquals(2, service.embedBatch(new TenantId(7), List.of("中文", "abc")).size());
         verify(publisher, org.mockito.Mockito.times(2)).publishEvent(any(Object.class));
     }
@@ -71,14 +83,17 @@ class LangChain4jEmbeddingServiceTest {
     void rejectsMissingTenantActorAndModel() {
         LangChain4jEmbeddingService service = new LangChain4jEmbeddingService();
         assertThrows(IllegalArgumentException.class, () -> service.embed((TenantId) null, "text"));
-        assertThrows(IllegalArgumentException.class, () -> service.embed((ActorContext) null, "text"));
+        assertThrows(
+                IllegalArgumentException.class, () -> service.embed((ActorContext) null, "text"));
         assertThrows(IllegalStateException.class, () -> service.embed(new TenantId(1), "text"));
-        assertThrows(IllegalStateException.class, () -> service.embedBatch(new TenantId(1), List.of()));
+        assertThrows(
+                IllegalStateException.class, () -> service.embedBatch(new TenantId(1), List.of()));
     }
 
     private boolean localModelAvailable() {
         try {
-            Class.forName("dev.langchain4j.model.embedding.onnx.bgesmallzhv15.BgeSmallZhV15EmbeddingModel");
+            Class.forName(
+                    "dev.langchain4j.model.embedding.onnx.bgesmallzhv15.BgeSmallZhV15EmbeddingModel");
             return true;
         } catch (ClassNotFoundException | LinkageError exception) {
             return false;

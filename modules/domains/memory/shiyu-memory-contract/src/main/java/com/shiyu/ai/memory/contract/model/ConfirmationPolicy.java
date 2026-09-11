@@ -5,4 +5,3 @@ public enum ConfirmationPolicy {
     REQUIRED,
     DISABLED
 }
-

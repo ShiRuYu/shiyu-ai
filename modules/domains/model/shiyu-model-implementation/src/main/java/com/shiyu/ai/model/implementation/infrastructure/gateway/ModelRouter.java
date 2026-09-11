@@ -1,15 +1,15 @@
 package com.shiyu.ai.model.implementation.infrastructure.gateway;
 
 import com.shiyu.ai.kernel.context.TenantId;
+
 import org.springframework.stereotype.Service;
 
 import java.time.Instant;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
-import java.util.function.Function;
-import java.util.UUID;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.function.Function;
 
 @SuppressWarnings("this-escape")
 @Service
@@ -17,54 +17,134 @@ public class ModelRouter {
     private final Map<String, ModelProviderCapabilities> capabilities = new ConcurrentHashMap<>();
     private final Map<String, ModelRoutePolicy> policies = new ConcurrentHashMap<>();
     private final Map<String, ProviderHealth> health = new ConcurrentHashMap<>();
+
     public ModelRouter() {
-        ModelProviderCapabilities configured = new ModelProviderCapabilities("default", "configured", java.util.Set.of("chat", "stream", "tool_calls", "structured"), 128000);
+        ModelProviderCapabilities configured =
+                new ModelProviderCapabilities(
+                        "default",
+                        "configured",
+                        java.util.Set.of("chat", "stream", "tool_calls", "structured"),
+                        128000);
         register(configured);
-        register(new ModelProviderCapabilities("DEEPSEEK", "deepseek-v4-flash",
-                java.util.Set.of("chat", "stream", "tool_calls", "parallel_tool_calls", "structured", "multimodal", "reasoning", "json_schema"),
-                128000, true, true, true, true, true, List.of("low", "medium", "high"), 8192, true, true, true));
-        register(new ModelProviderCapabilities("OPENAI", "gpt-4o",
-                java.util.Set.of("chat", "stream", "tool_calls", "parallel_tool_calls", "structured", "multimodal", "json_schema"),
-                128000, true, true, true, true, true, List.of(), 16384, true, true, true));
+        register(
+                new ModelProviderCapabilities(
+                        "DEEPSEEK",
+                        "deepseek-v4-flash",
+                        java.util.Set.of(
+                                "chat",
+                                "stream",
+                                "tool_calls",
+                                "parallel_tool_calls",
+                                "structured",
+                                "multimodal",
+                                "reasoning",
+                                "json_schema"),
+                        128000,
+                        true,
+                        true,
+                        true,
+                        true,
+                        true,
+                        List.of("low", "medium", "high"),
+                        8192,
+                        true,
+                        true,
+                        true));
+        register(
+                new ModelProviderCapabilities(
+                        "OPENAI",
+                        "gpt-4o",
+                        java.util.Set.of(
+                                "chat",
+                                "stream",
+                                "tool_calls",
+                                "parallel_tool_calls",
+                                "structured",
+                                "multimodal",
+                                "json_schema"),
+                        128000,
+                        true,
+                        true,
+                        true,
+                        true,
+                        true,
+                        List.of(),
+                        16384,
+                        true,
+                        true,
+                        true));
     }
-    public void register(ModelProviderCapabilities value) { capabilities.put(key(value.provider(), value.model()), value); health.put(key(value.provider(), value.model()), new ProviderHealth(value.provider(), value.model(), true, 0, Instant.now(), "registered")); }
-    public List<ModelProviderCapabilities> models() { return capabilities.values().stream().toList(); }
+
+    public void register(ModelProviderCapabilities value) {
+        capabilities.put(key(value.provider(), value.model()), value);
+        health.put(
+                key(value.provider(), value.model()),
+                new ProviderHealth(
+                        value.provider(), value.model(), true, 0, Instant.now(), "registered"));
+    }
+
+    public List<ModelProviderCapabilities> models() {
+        return capabilities.values().stream().toList();
+    }
+
     public void savePolicy(ModelRoutePolicy policy) {
         if (policy == null) throw new IllegalArgumentException("route is required");
-        if (policy.orderedModels().stream().map(this::parse).anyMatch(model -> !capabilities.containsKey(model))) {
+        if (policy.orderedModels().stream()
+                .map(this::parse)
+                .anyMatch(model -> !capabilities.containsKey(model))) {
             throw new IllegalArgumentException("route contains unknown model");
         }
         policies.put(policy.id(), policy);
     }
+
     public List<ModelRoutePolicy> policies(TenantId tenantId) {
-        return policies.values().stream().filter(p -> tenantId != null && p.tenantId() == tenantId.value()).toList();
+        return policies.values().stream()
+                .filter(p -> tenantId != null && p.tenantId() == tenantId.value())
+                .toList();
     }
+
     public ModelRoutePolicy requirePolicy(String id, TenantId tenantId) {
         return Optional.ofNullable(policies.get(id))
                 .filter(p -> tenantId != null && p.tenantId() == tenantId.value())
                 .orElseThrow(() -> new IllegalArgumentException("model route not found"));
     }
-    public ModelProviderCapabilities choose(String policyId, TenantId tenantId, java.util.Set<String> requiredFeatures) {
+
+    public ModelProviderCapabilities choose(
+            String policyId, TenantId tenantId, java.util.Set<String> requiredFeatures) {
         return candidates(policyId, tenantId, requiredFeatures).stream()
                 .findFirst()
-                .orElseThrow(() -> new IllegalStateException("no healthy model matches required capabilities"));
+                .orElseThrow(
+                        () ->
+                                new IllegalStateException(
+                                        "no healthy model matches required capabilities"));
     }
+
     /** Returns healthy, capability-compatible candidates in route priority order. */
-    public List<ModelProviderCapabilities> candidates(String policyId, TenantId tenantId, java.util.Set<String> requiredFeatures) {
+    public List<ModelProviderCapabilities> candidates(
+            String policyId, TenantId tenantId, java.util.Set<String> requiredFeatures) {
         ModelRoutePolicy policy = requirePolicy(policyId, tenantId);
-        return policy.orderedModels().stream().map(this::parse)
+        return policy.orderedModels().stream()
+                .map(this::parse)
                 .map(capabilities::get)
                 .filter(java.util.Objects::nonNull)
                 .filter(c -> requiredFeatures == null || c.features().containsAll(requiredFeatures))
                 .filter(c -> health(c.provider(), c.model()).healthy())
                 .toList();
     }
-    /** Executes a provider call in route order. Fallback is only attempted before a result is returned. */
-    public <T> T executeWithFallback(String policyId, TenantId tenantId, java.util.Set<String> requiredFeatures,
-                                     Function<ModelProviderCapabilities, T> call) {
+
+    /**
+     * Executes a provider call in route order. Fallback is only attempted before a result is
+     * returned.
+     */
+    public <T> T executeWithFallback(
+            String policyId,
+            TenantId tenantId,
+            java.util.Set<String> requiredFeatures,
+            Function<ModelProviderCapabilities, T> call) {
         ModelRoutePolicy policy = requirePolicy(policyId, tenantId);
         RuntimeException last = null;
-        for (ModelProviderCapabilities candidate : candidates(policyId, tenantId, requiredFeatures)) {
+        for (ModelProviderCapabilities candidate :
+                candidates(policyId, tenantId, requiredFeatures)) {
             try {
                 T result = call.apply(candidate);
                 if (result != null) return result;
@@ -74,22 +154,33 @@ public class ModelRouter {
                 if (!policy.fallbackOnError()) throw ex;
             }
         }
-        throw last == null ? new IllegalStateException("no healthy model matches required capabilities") : last;
+        throw last == null
+                ? new IllegalStateException("no healthy model matches required capabilities")
+                : last;
     }
-    public ProviderHealth health(String provider, String model) { return health.getOrDefault(key(provider, model), new ProviderHealth(provider, model, false, 0, Instant.now(), "unknown model")); }
+
+    public ProviderHealth health(String provider, String model) {
+        return health.getOrDefault(
+                key(provider, model),
+                new ProviderHealth(provider, model, false, 0, Instant.now(), "unknown model"));
+    }
+
     public void markFailure(String provider, String model, String message) {
         String modelKey = key(provider, model);
-        health.compute(modelKey, (ignored, old) -> {
-            int failures = old == null ? 1 : old.consecutiveFailures() + 1;
-            return new ProviderHealth(
-                    provider,
-                    model,
-                    failures < 3,
-                    failures,
-                    Instant.now(),
-                    message);
-        });
+        health.compute(
+                modelKey,
+                (ignored, old) -> {
+                    int failures = old == null ? 1 : old.consecutiveFailures() + 1;
+                    return new ProviderHealth(
+                            provider, model, failures < 3, failures, Instant.now(), message);
+                });
     }
-    private String key(String provider,String model){return provider+":"+model;}
-    private String parse(String model){return model.contains(":")?model:key("default",model);}
+
+    private String key(String provider, String model) {
+        return provider + ":" + model;
+    }
+
+    private String parse(String model) {
+        return model.contains(":") ? model : key("default", model);
+    }
 }

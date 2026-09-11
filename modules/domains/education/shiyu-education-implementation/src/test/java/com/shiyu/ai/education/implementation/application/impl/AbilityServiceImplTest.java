@@ -1,14 +1,5 @@
 package com.shiyu.ai.education.implementation.application.impl;
 
-import com.shiyu.ai.education.implementation.domain.AbilityValue;
-import com.shiyu.ai.education.implementation.domain.BloomTaxonomy;
-import com.shiyu.ai.education.implementation.domain.model.AbilityBO;
-import com.shiyu.ai.education.implementation.domain.port.repository.AbilityRepository;
-import com.shiyu.ai.kernel.context.ActorContext;
-import com.shiyu.ai.kernel.context.TenantId;
-import com.shiyu.ai.kernel.context.UserId;
-import org.junit.jupiter.api.Test;
-
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.ArgumentMatchers.any;
@@ -17,9 +8,20 @@ import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
+import com.shiyu.ai.education.implementation.domain.AbilityValue;
+import com.shiyu.ai.education.implementation.domain.BloomTaxonomy;
+import com.shiyu.ai.education.implementation.domain.model.AbilityBO;
+import com.shiyu.ai.education.implementation.domain.port.repository.AbilityRepository;
+import com.shiyu.ai.kernel.context.ActorContext;
+import com.shiyu.ai.kernel.context.TenantId;
+import com.shiyu.ai.kernel.context.UserId;
+
+import org.junit.jupiter.api.Test;
+
 class AbilityServiceImplTest {
 
-    private static final ActorContext ACTOR = new ActorContext(new TenantId(9), new UserId(7), false);
+    private static final ActorContext ACTOR =
+            new ActorContext(new TenantId(9), new UserId(7), false);
     private final AbilityRepository repository = mock(AbilityRepository.class);
     private final AbilityServiceImpl service = new AbilityServiceImpl(repository);
 
@@ -50,18 +52,21 @@ class AbilityServiceImplTest {
     @Test
     void insertsNewAbilityAndUpdatesEveryBloomDimension() {
         for (BloomTaxonomy dimension : BloomTaxonomy.values()) {
-            when(repository.selectByStudentAndKnowledge(ACTOR.tenantId(), 10L, 20L)).thenReturn(null);
+            when(repository.selectByStudentAndKnowledge(ACTOR.tenantId(), 10L, 20L))
+                    .thenReturn(null);
             service.update(ACTOR, 10L, 20L, dimension, 1.0);
         }
         verify(repository, org.mockito.Mockito.times(BloomTaxonomy.values().length))
                 .insert(eq(ACTOR.tenantId()), any(AbilityBO.class));
 
         AbilityBO existing = ability(10L, 20L, 50.0);
-        when(repository.selectByStudentAndKnowledge(ACTOR.tenantId(), 10L, 20L)).thenReturn(existing);
+        when(repository.selectByStudentAndKnowledge(ACTOR.tenantId(), 10L, 20L))
+                .thenReturn(existing);
         service.update(ACTOR, 10L, 20L, BloomTaxonomy.CREATE, 10.0);
         assertEquals(100.0, existing.getCreateScore());
         verify(repository).update(ACTOR.tenantId(), existing);
-        assertThrows(NullPointerException.class,
+        assertThrows(
+                NullPointerException.class,
                 () -> service.update(null, 10L, 20L, BloomTaxonomy.APPLY, 1.0));
     }
 
@@ -78,4 +83,3 @@ class AbilityServiceImplTest {
         return value;
     }
 }
-

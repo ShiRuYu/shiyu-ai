@@ -1,22 +1,22 @@
 package com.shiyu.ai.web.config;
 
-import com.shiyu.ai.common.core.utils.JSONUtils;
-import com.shiyu.ai.common.core.utils.LoggerUtil;
 import com.shiyu.ai.agent.implementation.service.AuditService;
 import com.shiyu.ai.common.web.auth.ActorContextHttpAdapter;
 import com.shiyu.ai.common.web.auth.ClientIpResolver;
+
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
+
 import lombok.extern.slf4j.Slf4j;
+
 import org.springframework.web.servlet.HandlerInterceptor;
 
 import java.util.Map;
 
 /**
  * 审计拦截器
- * <p>
- * 在每次请求完成后自动记录审计日志。
- * 不拦截不需要审计的路径（静态资源、健康检查等）。
+ *
+ * <p>在每次请求完成后自动记录审计日志。 不拦截不需要审计的路径（静态资源、健康检查等）。
  */
 @Slf4j
 public class AuditInterceptor implements HandlerInterceptor {
@@ -33,15 +33,18 @@ public class AuditInterceptor implements HandlerInterceptor {
     }
 
     @Override
-    public boolean preHandle(HttpServletRequest request, HttpServletResponse response,
-                             Object handler) {
+    public boolean preHandle(
+            HttpServletRequest request, HttpServletResponse response, Object handler) {
         START_TIME.set(System.currentTimeMillis());
         return true;
     }
 
     @Override
-    public void afterCompletion(HttpServletRequest request, HttpServletResponse response,
-                                Object handler, Exception ex) {
+    public void afterCompletion(
+            HttpServletRequest request,
+            HttpServletResponse response,
+            Object handler,
+            Exception ex) {
         try {
             Long startTime = START_TIME.get();
             if (startTime == null) return;
@@ -59,19 +62,27 @@ public class AuditInterceptor implements HandlerInterceptor {
             String result = ex == null && response.getStatus() < 400 ? "SUCCESS" : "FAILED";
             String errorMsg = ex != null ? ex.getMessage() : null;
 
-            Map<String, Object> detail = Map.of(
-                    "method", method, "path", path, "status", response.getStatus());
+            Map<String, Object> detail =
+                    Map.of("method", method, "path", path, "status", response.getStatus());
 
             var actor = ActorContextHttpAdapter.currentActorOrNull();
             auditService.record(
                     actor == null ? null : actor.tenantId(),
                     actor == null ? null : actor.userId().value(),
                     clientIpResolver.currentClientIp(),
-                    action, targetType, targetId, detail, result, errorMsg, durationMs);
+                    action,
+                    targetType,
+                    targetId,
+                    detail,
+                    result,
+                    errorMsg,
+                    durationMs);
 
         } catch (Exception e) {
-            log.warn("审计拦截器异常: errorType={}, errorMessageLength={}",
-                    e.getClass().getSimpleName(), valueLength(e.getMessage()));
+            log.warn(
+                    "审计拦截器异常: errorType={}, errorMessageLength={}",
+                    e.getClass().getSimpleName(),
+                    valueLength(e.getMessage()));
         } finally {
             START_TIME.remove();
         }

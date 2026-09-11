@@ -22,5 +22,3 @@ public record VectorStoreOptions(String namespace, int dimension, String dataDir
         return new VectorStoreOptions(namespace, dimension, dataDir);
     }
 }
-
-

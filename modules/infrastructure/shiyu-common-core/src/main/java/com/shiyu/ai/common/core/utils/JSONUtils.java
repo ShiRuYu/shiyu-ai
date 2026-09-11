@@ -27,29 +27,38 @@ import java.util.TimeZone;
 
 public class JSONUtils {
 
-    private static final ObjectMapper OBJECT_MAPPER = JsonMapper.builder()
-            .findAndAddModules()
-            // 禁止序列化时失败因未知属性导致的异常（兼容性更强）
-            .disable(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES)
-            // 禁止序列化时将空对象转换为空 JSON 对象时抛出异常
-            .disable(SerializationFeature.FAIL_ON_EMPTY_BEANS)
-            // 时间格式输出为字符串而不是时间戳
-            // 设置默认时区为系统默认
-            .defaultTimeZone(TimeZone.getDefault())
-            // 设置默认的属性命名策略（如驼峰转下划线等，可选）
-            // .setPropertyNamingStrategy(PropertyNamingStrategies.SNAKE_CASE)
-            // 设置可见性规则（如允许序列化 private 字段，可选）
-            // .setVisibility(PropertyAccessor.ALL, JsonAutoDetect.Visibility.ANY)
-            // 注册 JavaTimeModule 并配置自定义序列化器
-            .addModule(new SimpleModule()
-                    .addSerializer(Long.class, BigNumberSerializer.INSTANCE)
-                    .addSerializer(Long.TYPE, BigNumberSerializer.INSTANCE)
-                    .addSerializer(BigInteger.class, BigNumberSerializer.INSTANCE)
-                    .addSerializer(BigDecimal.class, ToStringSerializer.instance)
-                    .addSerializer(LocalDateTime.class, new LocalDateTimeSerializer(DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss")))
-                    .addDeserializer(LocalDateTime.class, new LocalDateTimeDeserializer(DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss")))
-            )
-            .build();
+    private static final ObjectMapper OBJECT_MAPPER =
+            JsonMapper.builder()
+                    .findAndAddModules()
+                    // 禁止序列化时失败因未知属性导致的异常（兼容性更强）
+                    .disable(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES)
+                    // 禁止序列化时将空对象转换为空 JSON 对象时抛出异常
+                    .disable(SerializationFeature.FAIL_ON_EMPTY_BEANS)
+                    // 时间格式输出为字符串而不是时间戳
+                    // 设置默认时区为系统默认
+                    .defaultTimeZone(TimeZone.getDefault())
+                    // 设置默认的属性命名策略（如驼峰转下划线等，可选）
+                    // .setPropertyNamingStrategy(PropertyNamingStrategies.SNAKE_CASE)
+                    // 设置可见性规则（如允许序列化 private 字段，可选）
+                    // .setVisibility(PropertyAccessor.ALL, JsonAutoDetect.Visibility.ANY)
+                    // 注册 JavaTimeModule 并配置自定义序列化器
+                    .addModule(
+                            new SimpleModule()
+                                    .addSerializer(Long.class, BigNumberSerializer.INSTANCE)
+                                    .addSerializer(Long.TYPE, BigNumberSerializer.INSTANCE)
+                                    .addSerializer(BigInteger.class, BigNumberSerializer.INSTANCE)
+                                    .addSerializer(BigDecimal.class, ToStringSerializer.instance)
+                                    .addSerializer(
+                                            LocalDateTime.class,
+                                            new LocalDateTimeSerializer(
+                                                    DateTimeFormatter.ofPattern(
+                                                            "yyyy-MM-dd HH:mm:ss")))
+                                    .addDeserializer(
+                                            LocalDateTime.class,
+                                            new LocalDateTimeDeserializer(
+                                                    DateTimeFormatter.ofPattern(
+                                                            "yyyy-MM-dd HH:mm:ss"))))
+                    .build();
 
     public static ObjectMapper getObjectMapper() {
         return OBJECT_MAPPER;
@@ -75,8 +84,8 @@ public class JSONUtils {
         } catch (JacksonException e) {
             throw new RuntimeException(e);
         }
-
     }
+
     public static <T> T parseObject(String text, Class<T> clazz) {
         if (text.isBlank()) {
             return null;
@@ -111,12 +120,12 @@ public class JSONUtils {
     }
 
     /**
-     * Parse a JSON object into a typed string/object map without exposing a raw
-     * {@code Map.class} call at every caller.  Keeping this helper here also
-     * makes the unchecked boundary explicit and consistent across domains.
+     * Parse a JSON object into a typed string/object map without exposing a raw {@code Map.class}
+     * call at every caller. Keeping this helper here also makes the unchecked boundary explicit and
+     * consistent across domains.
      */
     public static Map<String, Object> parseMap(String text) {
-        return parseObject(text, new TypeReference<Map<String, Object>>() { });
+        return parseObject(text, new TypeReference<Map<String, Object>>() {});
     }
 
     public static <T> T convertValue(Object fromValue, Class<T> toValueType) {
@@ -135,7 +144,9 @@ public class JSONUtils {
             return new ArrayList<>();
         }
         try {
-            return OBJECT_MAPPER.readValue(text, OBJECT_MAPPER.getTypeFactory().constructCollectionType(List.class, clazz));
+            return OBJECT_MAPPER.readValue(
+                    text,
+                    OBJECT_MAPPER.getTypeFactory().constructCollectionType(List.class, clazz));
         } catch (JacksonException e) {
             throw new RuntimeException(e);
         }
@@ -143,9 +154,8 @@ public class JSONUtils {
 
     /**
      * 从 LLM 响应或任意字符串中提取第一个 JSON 片段（{} 或 []）。
-     * <p>
-     * 通过括号匹配定位 JSON，不依赖任何外层包裹格式。
-     * 因此无论外层是 Markdown 代码块、{@code <|begin_of_box|>}、XML 还是纯文本，
+     *
+     * <p>通过括号匹配定位 JSON，不依赖任何外层包裹格式。 因此无论外层是 Markdown 代码块、{@code <|begin_of_box|>}、XML 还是纯文本，
      * 都能正确提取。支持转义引号内的括号，避免误判。
      *
      * @param raw 原始字符串（可为 null）
@@ -209,15 +219,14 @@ public class JSONUtils {
 
     public static Map<String, Object> parseMap(File file) {
         try {
-            return OBJECT_MAPPER.readValue(file, OBJECT_MAPPER.getTypeFactory().constructType(Map.class));
+            return OBJECT_MAPPER.readValue(
+                    file, OBJECT_MAPPER.getTypeFactory().constructType(Map.class));
         } catch (JacksonException e) {
             throw new RuntimeException(e);
         }
     }
 
-    /**
-     * 加载 JSON 文件（绝对路径）到 Map<String, Object>
-     */
+    /** 加载 JSON 文件（绝对路径）到 Map<String, Object> */
     public static Map<String, Object> loadJsonFile(String absolutePath) {
         try {
             File file = new File(absolutePath);
@@ -231,21 +240,16 @@ public class JSONUtils {
         }
     }
 
-    /**
-     * 超出 JS 最大最小值 处理
-     */
+    /** 超出 JS 最大最小值 处理 */
     @JacksonStdImpl
     public static class BigNumberSerializer extends NumberSerializer {
 
-        /**
-         * 根据 JS Number.MAX_SAFE_INTEGER 与 Number.MIN_SAFE_INTEGER 得来
-         */
+        /** 根据 JS Number.MAX_SAFE_INTEGER 与 Number.MIN_SAFE_INTEGER 得来 */
         private static final long MAX_SAFE_INTEGER = 9007199254740991L;
+
         private static final long MIN_SAFE_INTEGER = -9007199254740991L;
 
-        /**
-         * 提供实例
-         */
+        /** 提供实例 */
         public static final BigNumberSerializer INSTANCE = new BigNumberSerializer(Number.class);
 
         public BigNumberSerializer(Class<? extends Number> rawType) {

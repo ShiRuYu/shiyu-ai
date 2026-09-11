@@ -1,15 +1,19 @@
 package com.shiyu.ai.education.implementation.web;
 
 import cn.dev33.satoken.annotation.SaCheckPermission;
+
 import com.shiyu.ai.common.core.api.PageData;
 import com.shiyu.ai.common.core.api.Result;
+import com.shiyu.ai.common.web.auth.ActorContextHttpAdapter;
+import com.shiyu.ai.education.implementation.application.SubjectService;
 import com.shiyu.ai.education.implementation.web.dto.SubjectResponse;
 import com.shiyu.ai.education.implementation.web.request.SubjectRequest;
-import com.shiyu.ai.education.implementation.application.SubjectService;
-import com.shiyu.ai.common.web.auth.ActorContextHttpAdapter;
+
 import jakarta.validation.Valid;
+
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -30,25 +34,30 @@ public class SubjectController {
 
     @GetMapping("/code")
     public Result<SubjectResponse> getByCode(@RequestParam String code) {
-        return Result.success(subjectService.getByCode(ActorContextHttpAdapter.currentActor(), code));
+        return Result.success(
+                subjectService.getByCode(ActorContextHttpAdapter.currentActor(), code));
     }
 
     @GetMapping("/list")
     public Result<PageData<SubjectResponse>> list(
             @RequestParam(defaultValue = "1") Integer pageNum,
             @RequestParam(defaultValue = "10") Integer pageSize) {
-        return Result.success(subjectService.page(ActorContextHttpAdapter.currentActor(), pageNum, pageSize));
+        return Result.success(
+                subjectService.page(ActorContextHttpAdapter.currentActor(), pageNum, pageSize));
     }
 
     @GetMapping("/grade-level")
     public Result<List<SubjectResponse>> listByGradeLevel(@RequestParam String gradeLevel) {
-        return Result.success(subjectService.listByGradeLevel(ActorContextHttpAdapter.currentActor(), gradeLevel));
+        return Result.success(
+                subjectService.listByGradeLevel(
+                        ActorContextHttpAdapter.currentActor(), gradeLevel));
     }
 
     @PostMapping("/create")
     @SaCheckPermission("edu:subject:create")
     public Result<SubjectResponse> create(@Valid @RequestBody SubjectRequest request) {
-        return Result.success(subjectService.create(ActorContextHttpAdapter.currentActor(), request));
+        return Result.success(
+                subjectService.create(ActorContextHttpAdapter.currentActor(), request));
     }
 
     @PostMapping("/update")
@@ -66,4 +75,3 @@ public class SubjectController {
         return Result.success();
     }
 }
-

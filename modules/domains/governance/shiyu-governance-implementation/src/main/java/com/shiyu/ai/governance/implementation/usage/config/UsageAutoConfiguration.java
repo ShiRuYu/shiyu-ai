@@ -1,11 +1,13 @@
 package com.shiyu.ai.governance.implementation.usage.config;
 
-import com.shiyu.ai.governance.implementation.usage.port.repository.UsageRecordRepository;
-import com.shiyu.ai.governance.implementation.usage.service.UsageRecordService;
-import com.shiyu.ai.governance.implementation.usage.port.BillingPriceProvider;
-import com.shiyu.ai.governance.implementation.usage.realtime.UsageRealtimePublisher;
 import com.shiyu.ai.governance.contract.UsageGovernance;
+import com.shiyu.ai.governance.implementation.usage.port.BillingPriceProvider;
+import com.shiyu.ai.governance.implementation.usage.port.repository.UsageRecordRepository;
+import com.shiyu.ai.governance.implementation.usage.realtime.UsageRealtimePublisher;
+import com.shiyu.ai.governance.implementation.usage.service.UsageRecordService;
+
 import lombok.extern.slf4j.Slf4j;
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean;
 import org.springframework.context.annotation.Bean;
@@ -17,9 +19,10 @@ public class UsageAutoConfiguration {
 
     @Bean
     @ConditionalOnMissingBean
-    public UsageRecordService usageRecordService(UsageRecordRepository usageRecordRepository,
-                                         @Autowired(required = false) UsageRealtimePublisher publisher,
-                                         @Autowired(required = false) BillingPriceProvider billingPriceProvider) {
+    public UsageRecordService usageRecordService(
+            UsageRecordRepository usageRecordRepository,
+            @Autowired(required = false) UsageRealtimePublisher publisher,
+            @Autowired(required = false) BillingPriceProvider billingPriceProvider) {
         UsageRecordService service = new UsageRecordService(usageRecordRepository);
         if (publisher != null) {
             service.setRealtimePublisher(publisher);

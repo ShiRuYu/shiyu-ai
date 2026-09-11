@@ -1,16 +1,19 @@
 package com.shiyu.ai.knowledge.implementation.web;
 
-import com.shiyu.ai.knowledge.implementation.web.KnowledgeApiVersion;
-
 import cn.dev33.satoken.annotation.SaCheckPermission;
+
 import com.shiyu.ai.common.core.api.PageData;
 import com.shiyu.ai.common.core.api.Result;
-import com.shiyu.ai.knowledge.implementation.application.KnowledgeSpaceService;
-import com.shiyu.ai.kernel.context.ActorContext;
 import com.shiyu.ai.common.web.auth.ActorContextHttpAdapter;
+import com.shiyu.ai.kernel.context.ActorContext;
+import com.shiyu.ai.knowledge.implementation.application.KnowledgeSpaceService;
+
 import io.swagger.v3.oas.annotations.tags.Tag;
+
 import jakarta.validation.Valid;
+
 import lombok.RequiredArgsConstructor;
+
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -39,10 +42,14 @@ public class KnowledgeSpaceController {
             @RequestParam(defaultValue = "20") int pageSize,
             @RequestParam(required = false) String keyword,
             @RequestParam(required = false) String domainCode,
-            @RequestHeader(value = KnowledgeApiVersion.HEADER,
-                    defaultValue = KnowledgeApiVersion.CURRENT) String version) {
+            @RequestHeader(
+                            value = KnowledgeApiVersion.HEADER,
+                            defaultValue = KnowledgeApiVersion.CURRENT)
+                    String version) {
         KnowledgeApiVersion.requireCurrent(version);
-        return Result.success(service.page(currentActor(), pageNum, Math.min(pageSize, 100), keyword, domainCode));
+        return Result.success(
+                service.page(
+                        currentActor(), pageNum, Math.min(pageSize, 100), keyword, domainCode));
     }
 
     @GetMapping("/options")
@@ -51,9 +58,12 @@ public class KnowledgeSpaceController {
     }
 
     @GetMapping("/{id}")
-    public Result<KnowledgeSpaceService.SpaceView> get(@PathVariable Long id,
-                                                        @RequestHeader(value = KnowledgeApiVersion.HEADER,
-                                                                defaultValue = KnowledgeApiVersion.CURRENT) String version) {
+    public Result<KnowledgeSpaceService.SpaceView> get(
+            @PathVariable Long id,
+            @RequestHeader(
+                            value = KnowledgeApiVersion.HEADER,
+                            defaultValue = KnowledgeApiVersion.CURRENT)
+                    String version) {
         KnowledgeApiVersion.requireCurrent(version);
         return Result.success(service.get(currentActor(), id));
     }
@@ -61,8 +71,10 @@ public class KnowledgeSpaceController {
     @GetMapping("/{id}/difficulty-scale")
     public Result<KnowledgeSpaceService.DifficultyScaleView> difficultyScale(
             @PathVariable Long id,
-            @RequestHeader(value = KnowledgeApiVersion.HEADER,
-                    defaultValue = KnowledgeApiVersion.CURRENT) String version) {
+            @RequestHeader(
+                            value = KnowledgeApiVersion.HEADER,
+                            defaultValue = KnowledgeApiVersion.CURRENT)
+                    String version) {
         KnowledgeApiVersion.requireCurrent(version);
         return Result.success(service.difficultyScale(currentActor(), id));
     }
@@ -71,8 +83,10 @@ public class KnowledgeSpaceController {
     @SaCheckPermission("knowledge:create")
     public Result<KnowledgeSpaceService.SpaceView> create(
             @RequestBody @Valid KnowledgeSpaceService.CreateSpaceRequest request,
-            @RequestHeader(value = KnowledgeApiVersion.HEADER,
-                    defaultValue = KnowledgeApiVersion.CURRENT) String version) {
+            @RequestHeader(
+                            value = KnowledgeApiVersion.HEADER,
+                            defaultValue = KnowledgeApiVersion.CURRENT)
+                    String version) {
         KnowledgeApiVersion.requireCurrent(version);
         return Result.success(service.create(currentActor(), request));
     }
@@ -82,26 +96,34 @@ public class KnowledgeSpaceController {
     public Result<KnowledgeSpaceService.SpaceView> update(
             @PathVariable Long id,
             @RequestBody @Valid KnowledgeSpaceService.UpdateSpaceRequest request,
-            @RequestHeader(value = KnowledgeApiVersion.HEADER,
-                    defaultValue = KnowledgeApiVersion.CURRENT) String version) {
+            @RequestHeader(
+                            value = KnowledgeApiVersion.HEADER,
+                            defaultValue = KnowledgeApiVersion.CURRENT)
+                    String version) {
         KnowledgeApiVersion.requireCurrent(version);
         return Result.success(service.update(currentActor(), id, request));
     }
 
     @DeleteMapping("/{id}")
     @SaCheckPermission("knowledge:delete")
-    public Result<Void> delete(@PathVariable Long id,
-                               @RequestHeader(value = KnowledgeApiVersion.HEADER,
-                                       defaultValue = KnowledgeApiVersion.CURRENT) String version) {
+    public Result<Void> delete(
+            @PathVariable Long id,
+            @RequestHeader(
+                            value = KnowledgeApiVersion.HEADER,
+                            defaultValue = KnowledgeApiVersion.CURRENT)
+                    String version) {
         KnowledgeApiVersion.requireCurrent(version);
         service.delete(currentActor(), id);
         return Result.success();
     }
 
     @GetMapping("/{id}/members")
-    public Result<List<KnowledgeSpaceService.MemberView>> members(@PathVariable Long id,
-                                                                   @RequestHeader(value = KnowledgeApiVersion.HEADER,
-                                                                           defaultValue = KnowledgeApiVersion.CURRENT) String version) {
+    public Result<List<KnowledgeSpaceService.MemberView>> members(
+            @PathVariable Long id,
+            @RequestHeader(
+                            value = KnowledgeApiVersion.HEADER,
+                            defaultValue = KnowledgeApiVersion.CURRENT)
+                    String version) {
         KnowledgeApiVersion.requireCurrent(version);
         return Result.success(service.members(currentActor(), id));
     }
@@ -111,8 +133,10 @@ public class KnowledgeSpaceController {
     public Result<Void> replaceMembers(
             @PathVariable Long id,
             @RequestBody @Valid List<KnowledgeSpaceService.MemberRequest> members,
-            @RequestHeader(value = KnowledgeApiVersion.HEADER,
-                    defaultValue = KnowledgeApiVersion.CURRENT) String version) {
+            @RequestHeader(
+                            value = KnowledgeApiVersion.HEADER,
+                            defaultValue = KnowledgeApiVersion.CURRENT)
+                    String version) {
         KnowledgeApiVersion.requireCurrent(version);
         service.replaceMembers(currentActor(), id, members);
         return Result.success();
@@ -120,8 +144,10 @@ public class KnowledgeSpaceController {
 
     @PostMapping("/default")
     public Result<KnowledgeSpaceService.SpaceView> ensureDefault(
-            @RequestHeader(value = KnowledgeApiVersion.HEADER,
-                    defaultValue = KnowledgeApiVersion.CURRENT) String version) {
+            @RequestHeader(
+                            value = KnowledgeApiVersion.HEADER,
+                            defaultValue = KnowledgeApiVersion.CURRENT)
+                    String version) {
         KnowledgeApiVersion.requireCurrent(version);
         return Result.success(service.ensureDefaultSpace(currentActor()));
     }
@@ -130,4 +156,3 @@ public class KnowledgeSpaceController {
         return ActorContextHttpAdapter.currentActor();
     }
 }
-

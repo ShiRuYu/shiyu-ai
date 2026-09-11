@@ -5,14 +5,33 @@ import com.shiyu.ai.model.contract.model.ChatResponse;
 import java.util.List;
 
 /** Provider-neutral stream vocabulary. Adapters must preserve block ordering and tool indexes. */
-public record ModelStreamEvent(Type type, int blockIndex, String text, String reasoning,
-                               String toolCallId, String toolName, String toolArguments,
-                               Integer promptTokens, Integer completionTokens, Integer totalTokens,
-                               Integer cacheReadTokens, Integer cacheWriteTokens, Integer reasoningTokens,
-                               String finishReason, String providerRequestId, List<ChatResponse.ToolCall> toolCalls) {
+public record ModelStreamEvent(
+        Type type,
+        int blockIndex,
+        String text,
+        String reasoning,
+        String toolCallId,
+        String toolName,
+        String toolArguments,
+        Integer promptTokens,
+        Integer completionTokens,
+        Integer totalTokens,
+        Integer cacheReadTokens,
+        Integer cacheWriteTokens,
+        Integer reasoningTokens,
+        String finishReason,
+        String providerRequestId,
+        List<ChatResponse.ToolCall> toolCalls) {
     public enum Type {
-        BLOCK_STARTED, TEXT_DELTA, REASONING_DELTA, TOOL_CALL_DELTA, BLOCK_COMPLETED,
-        USAGE, COMPLETED, FAILED, CANCELLED
+        BLOCK_STARTED,
+        TEXT_DELTA,
+        REASONING_DELTA,
+        TOOL_CALL_DELTA,
+        BLOCK_COMPLETED,
+        USAGE,
+        COMPLETED,
+        FAILED,
+        CANCELLED
     }
 
     public ModelStreamEvent {
@@ -24,7 +43,22 @@ public record ModelStreamEvent(Type type, int blockIndex, String text, String re
     }
 
     public static ModelStreamEvent text(int blockIndex, String text, String providerRequestId) {
-        return new ModelStreamEvent(Type.TEXT_DELTA, blockIndex, text, "", null, null, null,
-                null, null, null, null, null, null, null, providerRequestId, List.of());
+        return new ModelStreamEvent(
+                Type.TEXT_DELTA,
+                blockIndex,
+                text,
+                "",
+                null,
+                null,
+                null,
+                null,
+                null,
+                null,
+                null,
+                null,
+                null,
+                null,
+                providerRequestId,
+                List.of());
     }
 }

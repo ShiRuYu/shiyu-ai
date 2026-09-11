@@ -6,16 +6,14 @@ import lombok.NoArgsConstructor;
 
 import java.time.LocalDateTime;
 
-/**
- * 索引重建任务状态
- */
+/** 索引重建任务状态 */
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
 public class RebuildStatus {
     private String taskId;
-    private String status;  // PENDING, RUNNING, COMPLETED, FAILED
-    private int progress;   // 0-100
+    private String status; // PENDING, RUNNING, COMPLETED, FAILED
+    private int progress; // 0-100
     private int total;
     private int indexed;
     private String error;
@@ -32,4 +30,3 @@ public class RebuildStatus {
         this.retryCount = 0;
     }
 }
-

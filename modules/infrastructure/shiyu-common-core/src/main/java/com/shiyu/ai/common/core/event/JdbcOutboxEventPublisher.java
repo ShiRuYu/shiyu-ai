@@ -2,6 +2,7 @@ package com.shiyu.ai.common.core.event;
 
 import com.shiyu.ai.common.core.utils.JSONUtils;
 import com.shiyu.ai.kernel.event.DomainEventEnvelope;
+
 import org.springframework.jdbc.core.JdbcTemplate;
 
 import java.sql.Timestamp;
@@ -23,19 +24,26 @@ public class JdbcOutboxEventPublisher implements InfrastructureEventPublisher {
     @Override
     public void publish(DomainEventEnvelope<?> event) {
         String eventId = UUID.randomUUID().toString();
-        jdbc.update("""
+        jdbc.update(
+                """
                 INSERT INTO shiyu_event_outbox
                     (event_id, event_type, tenant_id, user_id, correlation_id,
                      occurred_at, payload, created_at, published_at, attempts)
                 VALUES (?, ?, ?, ?, ?, ?, ?, ?, NULL, 0)
                 """,
-                eventId, event.eventType(), event.tenantId().value(), event.userId().value(),
-                event.correlationId().value(), Timestamp.from(event.occurredAt()),
-                JSONUtils.toJsonString(event), Timestamp.from(Instant.now()));
+                eventId,
+                event.eventType(),
+                event.tenantId().value(),
+                event.userId().value(),
+                event.correlationId().value(),
+                Timestamp.from(event.occurredAt()),
+                JSONUtils.toJsonString(event),
+                Timestamp.from(Instant.now()));
     }
 
     private void initializeSchema() {
-        jdbc.execute("""
+        jdbc.execute(
+                """
                 CREATE TABLE IF NOT EXISTS shiyu_event_outbox (
                     event_id VARCHAR(64) PRIMARY KEY,
                     event_type VARCHAR(255) NOT NULL,
@@ -53,6 +61,8 @@ public class JdbcOutboxEventPublisher implements InfrastructureEventPublisher {
                 """);
         // Keep upgrades idempotent for outbox tables created by the previous
         // provider implementation.
-        jdbc.execute("ALTER TABLE shiyu_event_outbox ADD COLUMN IF NOT EXISTS dead_lettered_at TIMESTAMP NULL");
+        jdbc.execute(
+                "ALTER TABLE shiyu_event_outbox ADD COLUMN IF NOT EXISTS dead_lettered_at TIMESTAMP"
+                        + " NULL");
     }
 }

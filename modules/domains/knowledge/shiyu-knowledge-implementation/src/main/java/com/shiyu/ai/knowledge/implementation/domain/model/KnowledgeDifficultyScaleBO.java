@@ -1,5 +1,7 @@
 package com.shiyu.ai.knowledge.implementation.domain.model;
+
 import com.shiyu.ai.common.core.domain.TenantModel;
+
 import lombok.Data;
 import lombok.EqualsAndHashCode;
 
@@ -13,4 +15,3 @@ public class KnowledgeDifficultyScaleBO extends TenantModel {
     private String description;
     private Integer levelCount;
 }
-

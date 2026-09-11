@@ -1,5 +1,9 @@
 package com.shiyu.ai.agent.implementation.web;
 
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.mockito.Mockito.*;
+
 import com.shiyu.ai.agent.implementation.request.IntentDefRequest;
 import com.shiyu.ai.agent.implementation.service.IntentDefService;
 import com.shiyu.ai.agent.implementation.vo.IntentDefVO;
@@ -7,15 +11,11 @@ import com.shiyu.ai.common.web.auth.ActorContextHttpAdapter;
 import com.shiyu.ai.kernel.context.ActorContext;
 import com.shiyu.ai.kernel.context.TenantId;
 import com.shiyu.ai.kernel.context.UserId;
+
 import org.apache.commons.lang3.tuple.Pair;
 import org.junit.jupiter.api.Test;
 
 import java.util.List;
-
-import static org.junit.jupiter.api.Assertions.assertFalse;
-import static org.junit.jupiter.api.Assertions.assertTrue;
-import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.Mockito.*;
 
 class IntentDefControllerCoverageTest {
     @Test
@@ -24,7 +24,8 @@ class IntentDefControllerCoverageTest {
         var controller = new IntentDefController(service);
         var actor = new ActorContext(new TenantId(7L), new UserId(9L), false);
         var request = new IntentDefRequest();
-        when(service.pageView(actor, 1, 10, "a", "n", "c", "cat")).thenReturn(Pair.of(1L, List.of(new IntentDefVO())));
+        when(service.pageView(actor, 1, 10, "a", "n", "c", "cat"))
+                .thenReturn(Pair.of(1L, List.of(new IntentDefVO())));
         when(service.detailView(actor, 1L)).thenReturn(new IntentDefVO()).thenReturn(null);
         when(service.create(actor, request)).thenReturn(new IntentDefVO());
         when(service.update(actor, 1L, request)).thenReturn(new IntentDefVO());

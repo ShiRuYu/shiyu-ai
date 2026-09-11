@@ -1,12 +1,15 @@
 package com.shiyu.ai.iam.implementation.web;
 
+import com.shiyu.ai.common.core.api.Result;
+import com.shiyu.ai.common.web.auth.ActorContextHttpAdapter;
 import com.shiyu.ai.iam.implementation.request.SetTimezoneRequest;
 import com.shiyu.ai.iam.implementation.service.TimezoneService;
 import com.shiyu.ai.iam.implementation.vo.TimezoneOptionVO;
-import com.shiyu.ai.common.web.auth.ActorContextHttpAdapter;
-import com.shiyu.ai.common.core.api.Result;
+
 import jakarta.validation.Valid;
+
 import lombok.RequiredArgsConstructor;
+
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -31,7 +34,8 @@ public class TimezoneController {
 
     @PostMapping("/set")
     public Result<Void> setTimezone(@Valid @RequestBody SetTimezoneRequest request) {
-        return service.setTimezone(ActorContextHttpAdapter.currentActor(), request) ? Result.success() : Result.fail("时区设置失败");
+        return service.setTimezone(ActorContextHttpAdapter.currentActor(), request)
+                ? Result.success()
+                : Result.fail("时区设置失败");
     }
 }
-

@@ -1,8 +1,9 @@
 package com.shiyu.ai.common.core.config;
 
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.boot.SpringApplication;
+
 import org.springframework.boot.EnvironmentPostProcessor;
+import org.springframework.boot.SpringApplication;
 import org.springframework.core.Ordered;
 import org.springframework.core.annotation.Order;
 import org.springframework.core.env.ConfigurableEnvironment;
@@ -17,13 +18,11 @@ import java.util.regex.Pattern;
 
 /**
  * 自动探测应用根目录（app.home），优先级：app.home 系统属性 > APP_HOME 环境变量 > runtime/dev > 项目根目录探测 > user.dir
- * <p>
- * 项目根目录探测逻辑：从 user.dir 开始向上遍历父目录，
- * 找到第一个包含 pom.xml 的目录，即为项目根目录。
- * 这解决了 IDEA 中 user.dir 指向 compile-server 缓存目录导致的路径错误问题。
- * <p>
- * 所有模块统一通过 {@code ${app.home}} 引用该路径。
- * </p>
+ *
+ * <p>项目根目录探测逻辑：从 user.dir 开始向上遍历父目录， 找到第一个包含 pom.xml 的目录，即为项目根目录。 这解决了 IDEA 中 user.dir 指向
+ * compile-server 缓存目录导致的路径错误问题。
+ *
+ * <p>所有模块统一通过 {@code ${app.home}} 引用该路径。
  */
 @Slf4j
 @Order(Ordered.LOWEST_PRECEDENCE - 100)
@@ -38,7 +37,8 @@ public class AppHomeEnvironmentPostProcessor implements EnvironmentPostProcessor
             Pattern.compile("<packaging>\\s*pom\\s*</packaging>");
 
     @Override
-    public void postProcessEnvironment(ConfigurableEnvironment environment, SpringApplication application) {
+    public void postProcessEnvironment(
+            ConfigurableEnvironment environment, SpringApplication application) {
         // 0. The bootstrap lock sets this before Spring starts; preserve it so
         // smoke tests and operators can isolate the embedded data directory.
         String appHomeProperty = System.getProperty(APP_HOME_PROPERTY);
@@ -79,9 +79,8 @@ public class AppHomeEnvironmentPostProcessor implements EnvironmentPostProcessor
     }
 
     /**
-     * 从给定路径向上遍历父目录，找到项目根目录。
-     * 项目根目录的判断标准：pom.xml 中包含 {@code <packaging>pom</packaging>}（即 parent pom）。
-     * 这可以避免错误地将子模块目录识别为项目根目录。
+     * 从给定路径向上遍历父目录，找到项目根目录。 项目根目录的判断标准：pom.xml 中包含 {@code <packaging>pom</packaging>}（即 parent
+     * pom）。 这可以避免错误地将子模块目录识别为项目根目录。
      */
     private Path findProjectRoot(Path start) {
         Path current = start.toAbsolutePath().normalize();
@@ -109,7 +108,9 @@ public class AppHomeEnvironmentPostProcessor implements EnvironmentPostProcessor
     private void setAppHome(ConfigurableEnvironment environment, String appHome) {
         Map<String, Object> props = new HashMap<>();
         props.put(APP_HOME_KEY, appHome);
-        environment.getPropertySources().addFirst(new MapPropertySource(PROPERTY_SOURCE_NAME, props));
+        environment
+                .getPropertySources()
+                .addFirst(new MapPropertySource(PROPERTY_SOURCE_NAME, props));
         // Some embedded-storage services intentionally resolve paths without a
         // Spring dependency. Keep their system-property view consistent with
         // the Environment value selected here.

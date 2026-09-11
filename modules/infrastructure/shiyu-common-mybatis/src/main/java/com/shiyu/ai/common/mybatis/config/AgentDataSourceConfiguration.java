@@ -11,11 +11,11 @@ import javax.sql.DataSource;
 /**
  * Registers the single local application data source used by the platform repositories.
  *
- * <p>The MyBatis-Flex datasource properties are intentionally kept as the public
- * configuration contract.  Some Boot 4 starter combinations no longer expose the
- * named datasource bean expected by the JDBC repositories, so the platform owns this
- * small binding explicitly.  The conditional keeps deployments that provide their own
- * datasource implementation (for example the future P3 adapters) in control.</p>
+ * <p>The MyBatis-Flex datasource properties are intentionally kept as the public configuration
+ * contract. Some Boot 4 starter combinations no longer expose the named datasource bean expected by
+ * the JDBC repositories, so the platform owns this small binding explicitly. The conditional keeps
+ * deployments that provide their own datasource implementation (for example the future P3 adapters)
+ * in control.
  */
 @Configuration(proxyBeanMethods = false)
 @ConditionalOnMissingBean(DataSource.class)

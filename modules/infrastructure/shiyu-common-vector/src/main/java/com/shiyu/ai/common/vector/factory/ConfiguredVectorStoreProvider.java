@@ -1,15 +1,16 @@
 package com.shiyu.ai.common.vector.factory;
 
 import com.shiyu.ai.common.vector.api.VectorStore;
-import com.shiyu.ai.common.vector.model.VectorStoreOptions;
 import com.shiyu.ai.common.vector.api.VectorStoreProvider;
 import com.shiyu.ai.common.vector.config.VectorStoreProperties;
+import com.shiyu.ai.common.vector.model.VectorStoreOptions;
+
+import org.springframework.jdbc.core.JdbcTemplate;
 
 import java.nio.file.Path;
 import java.util.Locale;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
-import org.springframework.jdbc.core.JdbcTemplate;
 
 /** Default provider backed by the configured vector implementation. */
 public final class ConfiguredVectorStoreProvider implements VectorStoreProvider {
@@ -22,7 +23,8 @@ public final class ConfiguredVectorStoreProvider implements VectorStoreProvider 
         this(defaults, null);
     }
 
-    public ConfiguredVectorStoreProvider(VectorStoreProperties defaults, JdbcTemplate jdbcTemplate) {
+    public ConfiguredVectorStoreProvider(
+            VectorStoreProperties defaults, JdbcTemplate jdbcTemplate) {
         this.defaults = defaults;
         this.jdbcTemplate = jdbcTemplate;
     }
@@ -35,13 +37,24 @@ public final class ConfiguredVectorStoreProvider implements VectorStoreProvider 
     @Override
     public VectorStore open(VectorStoreOptions options) {
         if ("inmemory".equals(type())) {
-            InMemoryHandle handle = inMemoryStores.compute(options.namespace(), (namespace, existing) -> {
-                if (existing != null && existing.dimension() != options.dimension()) {
-                    throw new IllegalArgumentException("Vector dimension mismatch for namespace " + namespace
-                            + ": expected " + existing.dimension() + ", actual " + options.dimension());
-                }
-                return existing != null ? existing : new InMemoryHandle(options.dimension(), create(options));
-            });
+            InMemoryHandle handle =
+                    inMemoryStores.compute(
+                            options.namespace(),
+                            (namespace, existing) -> {
+                                if (existing != null
+                                        && existing.dimension() != options.dimension()) {
+                                    throw new IllegalArgumentException(
+                                            "Vector dimension mismatch for namespace "
+                                                    + namespace
+                                                    + ": expected "
+                                                    + existing.dimension()
+                                                    + ", actual "
+                                                    + options.dimension());
+                                }
+                                return existing != null
+                                        ? existing
+                                        : new InMemoryHandle(options.dimension(), create(options));
+                            });
             return handle.store();
         }
         return create(options);
@@ -51,7 +64,8 @@ public final class ConfiguredVectorStoreProvider implements VectorStoreProvider 
     public void drop(VectorStoreOptions options) {
         if ("pgvector".equals(type())) {
             new com.shiyu.ai.common.vector.implementation.PgVectorStore(
-                    jdbcTemplate, options.namespace(), options.dimension()).rebuild();
+                            jdbcTemplate, options.namespace(), options.dimension())
+                    .rebuild();
             return;
         }
         InMemoryHandle handle = inMemoryStores.remove(options.namespace());
@@ -87,8 +101,5 @@ public final class ConfiguredVectorStoreProvider implements VectorStoreProvider 
         return Path.of(defaults.getResolvedDataDir(), safeNamespace).toString();
     }
 
-    private record InMemoryHandle(int dimension, VectorStore store) {
-    }
+    private record InMemoryHandle(int dimension, VectorStore store) {}
 }
-
-

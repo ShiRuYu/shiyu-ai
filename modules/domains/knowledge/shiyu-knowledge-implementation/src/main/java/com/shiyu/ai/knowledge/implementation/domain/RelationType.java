@@ -4,7 +4,6 @@ import lombok.Getter;
 
 @Getter
 public enum RelationType {
-
     PRE("前置知识"),
     NEXT("后续知识"),
     INCLUDE("包含关系"),
@@ -18,4 +17,3 @@ public enum RelationType {
         this.label = label;
     }
 }
-

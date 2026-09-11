@@ -1,8 +1,8 @@
 package com.shiyu.ai.common.storage.file;
+
 import com.shiyu.ai.common.storage.api.*;
 import com.shiyu.ai.common.storage.backup.*;
 import com.shiyu.ai.common.storage.config.*;
-import com.shiyu.ai.common.storage.file.*;
 import com.shiyu.ai.common.storage.lease.*;
 import com.shiyu.ai.common.storage.metadata.*;
 import com.shiyu.ai.common.storage.rate.*;
@@ -16,7 +16,6 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.StandardCopyOption;
 import java.nio.file.attribute.BasicFileAttributes;
-import java.time.Instant;
 import java.util.Comparator;
 import java.util.List;
 
@@ -33,7 +32,11 @@ public class LocalFileStorage implements KeyedFileStorage {
 
     @Override
     public StoredFile upload(
-            String namespace, String originalName, String contentType, long size, InputStream inputStream)
+            String namespace,
+            String originalName,
+            String contentType,
+            long size,
+            InputStream inputStream)
             throws IOException {
         String key = StorageKeys.create(namespace, originalName);
         return uploadAtKey(key, originalName, contentType, size, inputStream);
@@ -57,7 +60,11 @@ public class LocalFileStorage implements KeyedFileStorage {
         }
         try (var paths = Files.walk(namespaceRoot)) {
             return paths.filter(Files::isRegularFile)
-                    .map(path -> toStoredFileUnchecked(root.relativize(path).toString().replace('\\', '/'), path))
+                    .map(
+                            path ->
+                                    toStoredFileUnchecked(
+                                            root.relativize(path).toString().replace('\\', '/'),
+                                            path))
                     .sorted(Comparator.comparing(StoredFile::lastModified).reversed())
                     .toList();
         }

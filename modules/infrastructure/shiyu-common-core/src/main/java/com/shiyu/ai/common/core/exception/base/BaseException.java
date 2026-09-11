@@ -2,42 +2,32 @@ package com.shiyu.ai.common.core.exception.base;
 
 import com.shiyu.ai.common.core.utils.MessageUtils;
 import com.shiyu.ai.common.core.utils.StringUtils;
+
 import lombok.Data;
 import lombok.EqualsAndHashCode;
 import lombok.NoArgsConstructor;
 
 import java.io.Serial;
 
-/**
- * 基础异常
- */
+/** 基础异常 */
 @Data
 @EqualsAndHashCode(callSuper = true)
 @NoArgsConstructor
 @SuppressWarnings("serial")
 public class BaseException extends RuntimeException {
 
-    @Serial
-    private static final long serialVersionUID = 1L;
+    @Serial private static final long serialVersionUID = 1L;
 
-    /**
-     * 所属模块
-     */
+    /** 所属模块 */
     private String module;
 
-    /**
-     * 错误码
-     */
+    /** 错误码 */
     private String code;
 
-    /**
-     * 错误码对应的参数
-     */
+    /** 错误码对应的参数 */
     private Object[] args;
 
-    /**
-     * 错误消息
-     */
+    /** 错误消息 */
     private String defaultMessage;
 
     public BaseException(String module, String code, Object[] args, String defaultMessage) {
@@ -74,5 +64,4 @@ public class BaseException extends RuntimeException {
         }
         return message;
     }
-
 }

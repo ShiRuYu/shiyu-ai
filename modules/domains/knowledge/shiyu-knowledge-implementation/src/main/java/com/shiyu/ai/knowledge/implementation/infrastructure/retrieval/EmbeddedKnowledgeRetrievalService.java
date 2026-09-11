@@ -1,21 +1,23 @@
 package com.shiyu.ai.knowledge.implementation.infrastructure.retrieval;
 
 import com.shiyu.ai.common.core.exception.ServiceException;
+import com.shiyu.ai.kernel.context.ActorContext;
 import com.shiyu.ai.knowledge.contract.api.KnowledgeRetrievalService;
 import com.shiyu.ai.knowledge.contract.model.KnowledgeCitation;
 import com.shiyu.ai.knowledge.contract.model.KnowledgeRetrievalHit;
 import com.shiyu.ai.knowledge.contract.model.KnowledgeRetrievalRequest;
 import com.shiyu.ai.knowledge.contract.model.KnowledgeRetrievalResult;
 import com.shiyu.ai.knowledge.contract.model.KnowledgeSourceType;
+import com.shiyu.ai.knowledge.implementation.application.KnowledgeSpaceService;
 import com.shiyu.ai.knowledge.implementation.domain.model.KnowledgeBO;
 import com.shiyu.ai.knowledge.implementation.domain.model.KnowledgeChunkBO;
 import com.shiyu.ai.knowledge.implementation.domain.port.repository.KnowledgeChunkRepository;
-import com.shiyu.ai.knowledge.implementation.domain.port.repository.KnowledgeRepository;
 import com.shiyu.ai.knowledge.implementation.domain.port.repository.KnowledgeDocumentRepository;
+import com.shiyu.ai.knowledge.implementation.domain.port.repository.KnowledgeRepository;
 import com.shiyu.ai.knowledge.implementation.infrastructure.index.KnowledgeIndexService;
-import com.shiyu.ai.kernel.context.ActorContext;
-import com.shiyu.ai.knowledge.implementation.application.KnowledgeSpaceService;
+
 import lombok.RequiredArgsConstructor;
+
 import org.springframework.stereotype.Service;
 
 import java.util.ArrayList;
@@ -61,23 +63,42 @@ public class EmbeddedKnowledgeRetrievalService implements KnowledgeRetrievalServ
         Map<String, KnowledgeRetrievalHit> unique = new LinkedHashMap<>();
         hits.stream()
                 .sorted(Comparator.comparingDouble(this::rankScore).reversed())
-                .forEach(hit -> unique.putIfAbsent(hit.spaceId() + ":" +
-                        (hit.chunkId() != null ? "c" + hit.chunkId() : "k" + hit.knowledgeId()), hit));
-        List<KnowledgeRetrievalHit> selected = unique.values().stream()
-                .limit(Math.max(1, Math.min(100, request.topK())))
-                .toList();
+                .forEach(
+                        hit ->
+                                unique.putIfAbsent(
+                                        hit.spaceId()
+                                                + ":"
+                                                + (hit.chunkId() != null
+                                                        ? "c" + hit.chunkId()
+                                                        : "k" + hit.knowledgeId()),
+                                        hit));
+        List<KnowledgeRetrievalHit> selected =
+                unique.values().stream().limit(Math.max(1, Math.min(100, request.topK()))).toList();
 
         List<KnowledgeCitation> citations = new ArrayList<>();
         StringBuilder context = new StringBuilder();
         for (int i = 0; i < selected.size(); i++) {
             KnowledgeRetrievalHit hit = selected.get(i);
             String citationId = "c" + (i + 1);
-            citations.add(new KnowledgeCitation(citationId, hit.spaceId(), hit.knowledgeId(),
-                    hit.documentId(), hit.documentVersionId(), hit.chunkId(), hit.title(),
-                    hit.pageNumber(), hit.sectionPath(), excerpt(hit.content())));
-            context.append("[").append(citationId).append("] ")
-                    .append(hit.title() == null ? "" : hit.title()).append("\n")
-                    .append(hit.content() == null ? "" : hit.content()).append("\n\n");
+            citations.add(
+                    new KnowledgeCitation(
+                            citationId,
+                            hit.spaceId(),
+                            hit.knowledgeId(),
+                            hit.documentId(),
+                            hit.documentVersionId(),
+                            hit.chunkId(),
+                            hit.title(),
+                            hit.pageNumber(),
+                            hit.sectionPath(),
+                            excerpt(hit.content())));
+            context.append("[")
+                    .append(citationId)
+                    .append("] ")
+                    .append(hit.title() == null ? "" : hit.title())
+                    .append("\n")
+                    .append(hit.content() == null ? "" : hit.content())
+                    .append("\n\n");
         }
         return new KnowledgeRetrievalResult(true, selected, citations, context.toString(), null);
     }
@@ -87,60 +108,117 @@ public class EmbeddedKnowledgeRetrievalService implements KnowledgeRetrievalServ
         if (request.spaceIds() == null || request.spaceIds().isEmpty()) {
             return spaceService.accessibleSpaces(context);
         }
-        Map<Long, KnowledgeSpaceService.SpaceView> accessible = spaceService.accessibleSpaces(context).stream()
-                .collect(java.util.stream.Collectors.toMap(KnowledgeSpaceService.SpaceView::id, value -> value));
-        return request.spaceIds().stream().distinct().map(id -> {
-            spaceService.requireAccess(id, KnowledgeSpaceService.SpaceRole.VIEWER, context);
-            KnowledgeSpaceService.SpaceView space = accessible.get(id);
-            if (space == null) {
-                throw new ServiceException("无权访问知识空间: " + id);
-            }
-            return space;
-        }).toList();
-    }
-
-    private List<KnowledgeRetrievalHit> searchDocuments(KnowledgeRetrievalRequest request,
-                                                         KnowledgeSpaceService.SpaceView space) {
-        String mode = request.retrievalMode().name();
-        List<KnowledgeIndexService.HybridHit> indexHits = indexService.hybridSearch(
-                request.accessContext(), space.id(), request.query(), mode,
-                Math.max(request.candidateTopK(), request.topK()), request.scoreThreshold(),
-                Boolean.TRUE.equals(request.enableRerank()));
-        return indexHits.stream().map(hit -> {
-            KnowledgeChunkBO chunk = chunkRepository.getById(
-                    request.accessContext().tenantId(), hit.chunkId());
-            return new KnowledgeRetrievalHit(space.id(), knowledgeId(chunk), hit.documentId(),
-                    chunk == null ? null : chunk.getVersionId(), hit.chunkId(),
-                    documentTitle(request.accessContext().tenantId(), hit.documentId()), hit.content(), hit.highlight(),
-                    chunk == null ? null : chunk.getPageNumber(),
-                    chunk == null ? null : chunk.getSectionPath(), hit.bm25Score(),
-                    hit.vectorScore(), hit.rrfScore(), hit.rerankScore());
-        }).toList();
-    }
-
-    private List<KnowledgeRetrievalHit> searchKnowledgeEntries(KnowledgeRetrievalRequest request,
-                                                                KnowledgeSpaceService.SpaceView space) {
-        List<KnowledgeBO> entries = knowledgeRepository.findBySpace(request.accessContext().tenantId(), space.id()).stream()
-                .filter(k -> contains(k.getName(), request.query()) || contains(k.getDescription(), request.query()))
-                .limit(Math.max(request.candidateTopK(), request.topK()))
+        Map<Long, KnowledgeSpaceService.SpaceView> accessible =
+                spaceService.accessibleSpaces(context).stream()
+                        .collect(
+                                java.util.stream.Collectors.toMap(
+                                        KnowledgeSpaceService.SpaceView::id, value -> value));
+        return request.spaceIds().stream()
+                .distinct()
+                .map(
+                        id -> {
+                            spaceService.requireAccess(
+                                    id, KnowledgeSpaceService.SpaceRole.VIEWER, context);
+                            KnowledgeSpaceService.SpaceView space = accessible.get(id);
+                            if (space == null) {
+                                throw new ServiceException("无权访问知识空间: " + id);
+                            }
+                            return space;
+                        })
                 .toList();
-        return entries.stream().map(k -> new KnowledgeRetrievalHit(space.id(), k.getId(), null,
-                null, null, k.getName(), k.getDescription() == null ? k.getName() : k.getDescription(),
-                null, null, null, 1D, 0D, 1D, 0D)).toList();
+    }
+
+    private List<KnowledgeRetrievalHit> searchDocuments(
+            KnowledgeRetrievalRequest request, KnowledgeSpaceService.SpaceView space) {
+        String mode = request.retrievalMode().name();
+        List<KnowledgeIndexService.HybridHit> indexHits =
+                indexService.hybridSearch(
+                        request.accessContext(),
+                        space.id(),
+                        request.query(),
+                        mode,
+                        Math.max(request.candidateTopK(), request.topK()),
+                        request.scoreThreshold(),
+                        Boolean.TRUE.equals(request.enableRerank()));
+        return indexHits.stream()
+                .map(
+                        hit -> {
+                            KnowledgeChunkBO chunk =
+                                    chunkRepository.getById(
+                                            request.accessContext().tenantId(), hit.chunkId());
+                            return new KnowledgeRetrievalHit(
+                                    space.id(),
+                                    knowledgeId(chunk),
+                                    hit.documentId(),
+                                    chunk == null ? null : chunk.getVersionId(),
+                                    hit.chunkId(),
+                                    documentTitle(
+                                            request.accessContext().tenantId(), hit.documentId()),
+                                    hit.content(),
+                                    hit.highlight(),
+                                    chunk == null ? null : chunk.getPageNumber(),
+                                    chunk == null ? null : chunk.getSectionPath(),
+                                    hit.bm25Score(),
+                                    hit.vectorScore(),
+                                    hit.rrfScore(),
+                                    hit.rerankScore());
+                        })
+                .toList();
+    }
+
+    private List<KnowledgeRetrievalHit> searchKnowledgeEntries(
+            KnowledgeRetrievalRequest request, KnowledgeSpaceService.SpaceView space) {
+        List<KnowledgeBO> entries =
+                knowledgeRepository
+                        .findBySpace(request.accessContext().tenantId(), space.id())
+                        .stream()
+                        .filter(
+                                k ->
+                                        contains(k.getName(), request.query())
+                                                || contains(k.getDescription(), request.query()))
+                        .limit(Math.max(request.candidateTopK(), request.topK()))
+                        .toList();
+        return entries.stream()
+                .map(
+                        k ->
+                                new KnowledgeRetrievalHit(
+                                        space.id(),
+                                        k.getId(),
+                                        null,
+                                        null,
+                                        null,
+                                        k.getName(),
+                                        k.getDescription() == null
+                                                ? k.getName()
+                                                : k.getDescription(),
+                                        null,
+                                        null,
+                                        null,
+                                        1D,
+                                        0D,
+                                        1D,
+                                        0D))
+                .toList();
     }
 
     private Long knowledgeId(KnowledgeChunkBO chunk) {
         if (chunk == null || chunk.getMetadata() == null) return null;
-        String value = chunk.getMetadata().replaceAll(".*\\\"knowledgeId\\\"\\s*:\\s*\\\"?([0-9]+).*", "$1");
-        try { return value.equals(chunk.getMetadata()) ? null : Long.valueOf(value); }
-        catch (NumberFormatException ignored) { return null; }
+        String value =
+                chunk.getMetadata()
+                        .replaceAll(".*\\\"knowledgeId\\\"\\s*:\\s*\\\"?([0-9]+).*", "$1");
+        try {
+            return value.equals(chunk.getMetadata()) ? null : Long.valueOf(value);
+        } catch (NumberFormatException ignored) {
+            return null;
+        }
     }
 
     private String documentTitle(com.shiyu.ai.kernel.context.TenantId tenantId, Long documentId) {
         if (documentId == null) return "";
         var document = documentRepository.selectById(tenantId, documentId);
         return document == null || document.getTitle() == null
-                ? "文档 " + documentId : document.getTitle();
+                ? "文档 " + documentId
+                : document.getTitle();
     }
 
     private double rankScore(KnowledgeRetrievalHit hit) {

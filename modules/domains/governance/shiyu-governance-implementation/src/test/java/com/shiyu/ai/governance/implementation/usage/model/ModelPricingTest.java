@@ -1,8 +1,8 @@
 package com.shiyu.ai.governance.implementation.usage.model;
 
-import org.junit.jupiter.api.Test;
-
 import static org.junit.jupiter.api.Assertions.assertEquals;
+
+import org.junit.jupiter.api.Test;
 
 class ModelPricingTest {
     @Test

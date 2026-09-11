@@ -6,16 +6,22 @@ import java.io.Serializable;
 import java.util.Objects;
 
 /** Explicit caller identity passed into application commands and queries. */
-public record ActorContext(TenantId tenantId, UserId userId, RoleId activeRoleId,
-                           String activeRoleCode, TenantId homeTenantId,
-                           String switchMode, boolean platformAdmin) implements Serializable {
+public record ActorContext(
+        TenantId tenantId,
+        UserId userId,
+        RoleId activeRoleId,
+        String activeRoleCode,
+        TenantId homeTenantId,
+        String switchMode,
+        boolean platformAdmin)
+        implements Serializable {
 
     public ActorContext(TenantId tenantId, UserId userId, boolean platformAdmin) {
         this(tenantId, userId, null, null, tenantId, null, platformAdmin);
     }
 
-    public ActorContext(TenantId tenantId, UserId userId, RoleId activeRoleId,
-                        boolean platformAdmin) {
+    public ActorContext(
+            TenantId tenantId, UserId userId, RoleId activeRoleId, boolean platformAdmin) {
         this(tenantId, userId, activeRoleId, null, tenantId, null, platformAdmin);
     }
 
@@ -34,8 +40,7 @@ public record ActorContext(TenantId tenantId, UserId userId, RoleId activeRoleId
         if (!tenantId.equals(resourceTenantId)) {
             throw new DomainAccessDeniedException(
                     "TENANT_MISMATCH",
-                    "The requested resource does not belong to the actor tenant"
-            );
+                    "The requested resource does not belong to the actor tenant");
         }
     }
 }

@@ -1,5 +1,9 @@
 package com.shiyu.ai.agent.implementation.web;
 
+import static org.junit.jupiter.api.Assertions.*;
+import static org.mockito.ArgumentMatchers.*;
+import static org.mockito.Mockito.*;
+
 import com.shiyu.ai.agent.implementation.request.EdgeRequest;
 import com.shiyu.ai.agent.implementation.request.GraphConfigRequest;
 import com.shiyu.ai.agent.implementation.request.NodeConfigRequest;
@@ -12,13 +16,10 @@ import com.shiyu.ai.common.web.auth.ActorContextHttpAdapter;
 import com.shiyu.ai.kernel.context.ActorContext;
 import com.shiyu.ai.kernel.context.TenantId;
 import com.shiyu.ai.kernel.context.UserId;
+
 import org.junit.jupiter.api.Test;
 
 import java.util.List;
-
-import static org.junit.jupiter.api.Assertions.*;
-import static org.mockito.ArgumentMatchers.*;
-import static org.mockito.Mockito.*;
 
 class AgentVersionControllerCoverageTest {
     @Test
@@ -30,7 +31,8 @@ class AgentVersionControllerCoverageTest {
         when(service.getVersions(actor, "a1")).thenReturn(List.of(new AgentVersionVO()));
         when(service.getVersionDetail(actor, "a1", 1L)).thenReturn(detail);
         when(service.createVersion(eq(actor), eq("a1"), any())).thenReturn(new AgentVersionVO());
-        when(service.updateVersion(eq(actor), eq("a1"), eq(1L), any())).thenReturn(new AgentVersionVO());
+        when(service.updateVersion(eq(actor), eq("a1"), eq(1L), any()))
+                .thenReturn(new AgentVersionVO());
         when(service.copyVersion(eq(actor), eq("a1"), any())).thenReturn(new AgentVersionVO());
         when(service.getGraphConfig(actor, "a1", 1L)).thenReturn(detail);
         when(service.updateGraphConfig(eq(actor), eq("a1"), eq(1L), any())).thenReturn(detail);
@@ -71,20 +73,43 @@ class AgentVersionControllerCoverageTest {
         ActorContext actor = new ActorContext(new TenantId(7L), new UserId(9L), false);
         when(service.getVersionDetail(any(), anyString(), anyLong())).thenReturn(null);
         when(service.getGraphConfig(any(), anyString(), anyLong())).thenReturn(null);
-        when(service.createVersion(any(), anyString(), any())).thenThrow(new IllegalStateException());
-        doThrow(new IllegalStateException()).when(service).deleteVersion(any(), anyString(), anyLong());
-        doThrow(new IllegalStateException()).when(service).publishVersion(any(), anyString(), anyLong());
-        doThrow(new IllegalStateException()).when(service).archiveVersion(any(), anyString(), anyLong());
-        doThrow(new IllegalStateException()).when(service).activateVersion(any(), anyString(), anyLong());
-        when(service.updateVersion(any(), anyString(), anyLong(), any())).thenThrow(new IllegalStateException());
+        when(service.createVersion(any(), anyString(), any()))
+                .thenThrow(new IllegalStateException());
+        doThrow(new IllegalStateException())
+                .when(service)
+                .deleteVersion(any(), anyString(), anyLong());
+        doThrow(new IllegalStateException())
+                .when(service)
+                .publishVersion(any(), anyString(), anyLong());
+        doThrow(new IllegalStateException())
+                .when(service)
+                .archiveVersion(any(), anyString(), anyLong());
+        doThrow(new IllegalStateException())
+                .when(service)
+                .activateVersion(any(), anyString(), anyLong());
+        when(service.updateVersion(any(), anyString(), anyLong(), any()))
+                .thenThrow(new IllegalStateException());
         when(service.copyVersion(any(), anyString(), any())).thenThrow(new IllegalStateException());
-        when(service.updateGraphConfig(any(), anyString(), anyLong(), any())).thenThrow(new IllegalStateException());
-        doThrow(new IllegalStateException()).when(service).addNode(any(), anyString(), anyLong(), any());
-        doThrow(new IllegalStateException()).when(service).updateNode(any(), anyString(), anyLong(), anyString(), any());
-        doThrow(new IllegalStateException()).when(service).deleteNode(any(), anyString(), anyLong(), anyString());
-        doThrow(new IllegalStateException()).when(service).addEdge(any(), anyString(), anyLong(), any());
-        doThrow(new IllegalStateException()).when(service).deleteEdge(any(), anyString(), anyLong(), anyString(), anyString());
-        doThrow(new IllegalStateException()).when(service).updateCanvasConfig(any(), anyString(), anyLong(), anyString());
+        when(service.updateGraphConfig(any(), anyString(), anyLong(), any()))
+                .thenThrow(new IllegalStateException());
+        doThrow(new IllegalStateException())
+                .when(service)
+                .addNode(any(), anyString(), anyLong(), any());
+        doThrow(new IllegalStateException())
+                .when(service)
+                .updateNode(any(), anyString(), anyLong(), anyString(), any());
+        doThrow(new IllegalStateException())
+                .when(service)
+                .deleteNode(any(), anyString(), anyLong(), anyString());
+        doThrow(new IllegalStateException())
+                .when(service)
+                .addEdge(any(), anyString(), anyLong(), any());
+        doThrow(new IllegalStateException())
+                .when(service)
+                .deleteEdge(any(), anyString(), anyLong(), anyString(), anyString());
+        doThrow(new IllegalStateException())
+                .when(service)
+                .updateCanvasConfig(any(), anyString(), anyLong(), anyString());
         try (var ignored = mockStatic(ActorContextHttpAdapter.class)) {
             ignored.when(ActorContextHttpAdapter::currentActor).thenReturn(actor);
             assertFalse(controller.getVersionDetail("a", 1L).isSuccess());

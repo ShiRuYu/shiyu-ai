@@ -1,13 +1,11 @@
 package com.shiyu.ai.education.implementation.persistence.mapper;
 
 import com.mybatisflex.annotation.UseDataSource;
-
-import com.shiyu.ai.education.implementation.persistence.dataobject.CourseChapterDO;
 import com.shiyu.ai.common.mybatis.mapper.BaseMapperFlex;
+import com.shiyu.ai.education.implementation.persistence.dataobject.CourseChapterDO;
+
 import org.apache.ibatis.annotations.Mapper;
 
 @Mapper
 @UseDataSource("agent")
-public interface CourseChapterMapper extends BaseMapperFlex<CourseChapterDO> {
-}
-
+public interface CourseChapterMapper extends BaseMapperFlex<CourseChapterDO> {}

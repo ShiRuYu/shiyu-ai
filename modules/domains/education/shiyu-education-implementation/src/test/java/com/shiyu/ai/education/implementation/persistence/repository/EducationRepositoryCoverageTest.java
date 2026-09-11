@@ -1,8 +1,14 @@
 package com.shiyu.ai.education.implementation.persistence.repository;
 
+import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
+import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.Mockito.*;
+
 import com.mybatisflex.core.paginate.Page;
 import com.shiyu.ai.common.core.utils.MapstructUtils;
 import com.shiyu.ai.kernel.context.TenantId;
+
 import org.junit.jupiter.api.Test;
 import org.mockito.Answers;
 import org.mockito.MockedStatic;
@@ -15,40 +21,39 @@ import java.lang.reflect.Modifier;
 import java.lang.reflect.ParameterizedType;
 import java.lang.reflect.Type;
 import java.util.List;
-import java.util.Map;
-
-import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
-import static org.junit.jupiter.api.Assertions.assertThrows;
-import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.Mockito.*;
 
 /**
- * Exercises every tenant-scoped repository operation against a mapper double.
- * The repository SQL/query construction is the subject under test; generated
- * MapStruct implementations are intentionally not part of this test.
+ * Exercises every tenant-scoped repository operation against a mapper double. The repository
+ * SQL/query construction is the subject under test; generated MapStruct implementations are
+ * intentionally not part of this test.
  */
 @SuppressWarnings({"rawtypes", "unchecked"})
 class EducationRepositoryCoverageTest {
     private static final TenantId TENANT = new TenantId(7L);
 
-    private static final List<Class<?>> REPOSITORIES = List.of(
-            AbilityRepositoryImpl.class, AchievementRepositoryImpl.class,
-            ChapterRepositoryImpl.class, CourseChapterRepositoryImpl.class,
-            CourseKnowledgeRepositoryImpl.class, CourseRepositoryImpl.class,
-            CourseSectionRepositoryImpl.class, ExamRepositoryImpl.class,
-            KnowledgeTextbookRepositoryImpl.class, LearningStateRepositoryImpl.class,
-            QuestionRepositoryImpl.class, ResourceRepositoryImpl.class,
-            ReviewTaskRepositoryImpl.class, StudentRepositoryImpl.class,
-            StudyPlanItemRepositoryImpl.class, StudyPlanRepositoryImpl.class,
-            StudyRecordRepositoryImpl.class, SubjectRepositoryImpl.class,
-            TextbookRepositoryImpl.class, WrongQuestionRepositoryImpl.class);
+    private static final List<Class<?>> REPOSITORIES =
+            List.of(
+                    AbilityRepositoryImpl.class, AchievementRepositoryImpl.class,
+                    ChapterRepositoryImpl.class, CourseChapterRepositoryImpl.class,
+                    CourseKnowledgeRepositoryImpl.class, CourseRepositoryImpl.class,
+                    CourseSectionRepositoryImpl.class, ExamRepositoryImpl.class,
+                    KnowledgeTextbookRepositoryImpl.class, LearningStateRepositoryImpl.class,
+                    QuestionRepositoryImpl.class, ResourceRepositoryImpl.class,
+                    ReviewTaskRepositoryImpl.class, StudentRepositoryImpl.class,
+                    StudyPlanItemRepositoryImpl.class, StudyPlanRepositoryImpl.class,
+                    StudyRecordRepositoryImpl.class, SubjectRepositoryImpl.class,
+                    TextbookRepositoryImpl.class, WrongQuestionRepositoryImpl.class);
 
     @Test
     void executesAllTenantScopedRepositoryOperations() {
         try (MockedStatic<MapstructUtils> conversions = mockStatic(MapstructUtils.class)) {
-            conversions.when(() -> MapstructUtils.convert(any(Object.class), any(Class.class)))
-                    .thenAnswer(invocation -> convert(invocation.getArgument(0), invocation.getArgument(1)));
-            conversions.when(() -> MapstructUtils.convert(any(List.class), any(Class.class)))
+            conversions
+                    .when(() -> MapstructUtils.convert(any(Object.class), any(Class.class)))
+                    .thenAnswer(
+                            invocation ->
+                                    convert(invocation.getArgument(0), invocation.getArgument(1)));
+            conversions
+                    .when(() -> MapstructUtils.convert(any(List.class), any(Class.class)))
                     .thenAnswer(invocation -> List.of());
             for (Class<?> repositoryType : REPOSITORIES) {
                 assertDoesNotThrow(() -> invokeRepository(repositoryType));
@@ -70,8 +75,11 @@ class EducationRepositoryCoverageTest {
         }
         when(mapper.insert(any())).thenReturn(0);
         try (MockedStatic<MapstructUtils> conversions = mockStatic(MapstructUtils.class)) {
-            conversions.when(() -> MapstructUtils.convert(any(Object.class), any(Class.class)))
-                    .thenAnswer(invocation -> convert(invocation.getArgument(0), invocation.getArgument(1)));
+            conversions
+                    .when(() -> MapstructUtils.convert(any(Object.class), any(Class.class)))
+                    .thenAnswer(
+                            invocation ->
+                                    convert(invocation.getArgument(0), invocation.getArgument(1)));
             com.shiyu.ai.education.implementation.domain.model.StudentBO student =
                     new com.shiyu.ai.education.implementation.domain.model.StudentBO();
             assertThrows(IllegalStateException.class, () -> repository.insert(TENANT, student));
@@ -82,15 +90,25 @@ class EducationRepositoryCoverageTest {
     void rejectsLearningStateInsertWhenTenantScopedMutationAffectsNoRows() {
         LearningStateRepositoryImpl repository = new LearningStateRepositoryImpl();
         com.shiyu.ai.education.implementation.persistence.mapper.LearningStateMapper mapper =
-                mock(com.shiyu.ai.education.implementation.persistence.mapper.LearningStateMapper.class);
+                mock(
+                        com.shiyu.ai.education.implementation.persistence.mapper.LearningStateMapper
+                                .class);
         setMapper(repository, "learningStateMapper", mapper);
         when(mapper.selectOneByQuery(any())).thenReturn(null);
         when(mapper.insert(any())).thenReturn(0);
         try (MockedStatic<MapstructUtils> conversions = mockStatic(MapstructUtils.class)) {
-            conversions.when(() -> MapstructUtils.convert(any(Object.class), any(Class.class)))
-                    .thenAnswer(invocation -> convert(invocation.getArgument(0), invocation.getArgument(1)));
-            assertThrows(IllegalStateException.class,
-                    () -> repository.upsert(TENANT, new com.shiyu.ai.education.implementation.domain.model.LearningStateBO()));
+            conversions
+                    .when(() -> MapstructUtils.convert(any(Object.class), any(Class.class)))
+                    .thenAnswer(
+                            invocation ->
+                                    convert(invocation.getArgument(0), invocation.getArgument(1)));
+            assertThrows(
+                    IllegalStateException.class,
+                    () ->
+                            repository.upsert(
+                                    TENANT,
+                                    new com.shiyu.ai.education.implementation.domain.model
+                                            .LearningStateBO()));
         }
     }
 
@@ -98,14 +116,24 @@ class EducationRepositoryCoverageTest {
     void rejectsKnowledgeTextbookInsertWhenTenantScopedMutationAffectsNoRows() {
         KnowledgeTextbookRepositoryImpl repository = new KnowledgeTextbookRepositoryImpl();
         com.shiyu.ai.education.implementation.persistence.mapper.KnowledgeTextbookMapper mapper =
-                mock(com.shiyu.ai.education.implementation.persistence.mapper.KnowledgeTextbookMapper.class);
+                mock(
+                        com.shiyu.ai.education.implementation.persistence.mapper
+                                .KnowledgeTextbookMapper.class);
         setMapper(repository, "mapper", mapper);
         when(mapper.insert(any())).thenReturn(0);
         try (MockedStatic<MapstructUtils> conversions = mockStatic(MapstructUtils.class)) {
-            conversions.when(() -> MapstructUtils.convert(any(Object.class), any(Class.class)))
-                    .thenAnswer(invocation -> convert(invocation.getArgument(0), invocation.getArgument(1)));
-            assertThrows(IllegalStateException.class,
-                    () -> repository.insert(TENANT, new com.shiyu.ai.education.implementation.domain.model.KnowledgeTextbookBO()));
+            conversions
+                    .when(() -> MapstructUtils.convert(any(Object.class), any(Class.class)))
+                    .thenAnswer(
+                            invocation ->
+                                    convert(invocation.getArgument(0), invocation.getArgument(1)));
+            assertThrows(
+                    IllegalStateException.class,
+                    () ->
+                            repository.insert(
+                                    TENANT,
+                                    new com.shiyu.ai.education.implementation.domain.model
+                                            .KnowledgeTextbookBO()));
         }
     }
 
@@ -113,15 +141,25 @@ class EducationRepositoryCoverageTest {
     void rejectsStudyPlanItemBatchWhenTenantScopedMutationAffectsNoRows() {
         StudyPlanItemRepositoryImpl repository = new StudyPlanItemRepositoryImpl();
         com.shiyu.ai.education.implementation.persistence.mapper.StudyPlanItemMapper mapper =
-                mock(com.shiyu.ai.education.implementation.persistence.mapper.StudyPlanItemMapper.class);
+                mock(
+                        com.shiyu.ai.education.implementation.persistence.mapper.StudyPlanItemMapper
+                                .class);
         setMapper(repository, "studyPlanItemMapper", mapper);
         when(mapper.insert(any())).thenReturn(0);
         try (MockedStatic<MapstructUtils> conversions = mockStatic(MapstructUtils.class)) {
-            conversions.when(() -> MapstructUtils.convert(any(Object.class), any(Class.class)))
-                    .thenAnswer(invocation -> convert(invocation.getArgument(0), invocation.getArgument(1)));
-            assertThrows(IllegalStateException.class,
-                    () -> repository.insertBatch(TENANT,
-                            List.of(new com.shiyu.ai.education.implementation.domain.model.StudyPlanItemBO())));
+            conversions
+                    .when(() -> MapstructUtils.convert(any(Object.class), any(Class.class)))
+                    .thenAnswer(
+                            invocation ->
+                                    convert(invocation.getArgument(0), invocation.getArgument(1)));
+            assertThrows(
+                    IllegalStateException.class,
+                    () ->
+                            repository.insertBatch(
+                                    TENANT,
+                                    List.of(
+                                            new com.shiyu.ai.education.implementation.domain.model
+                                                    .StudyPlanItemBO())));
         }
     }
 
@@ -154,13 +192,17 @@ class EducationRepositoryCoverageTest {
         mapperField.set(repository, mapper);
         if (repositoryType == QuestionRepositoryImpl.class) {
             when(((com.shiyu.ai.education.implementation.persistence.mapper.QuestionMapper) mapper)
-                    .selectOneByQuery(any())).thenReturn(new com.shiyu.ai.education.implementation.persistence.dataobject.QuestionDO());
+                            .selectOneByQuery(any()))
+                    .thenReturn(
+                            new com.shiyu.ai.education.implementation.persistence.dataobject
+                                    .QuestionDO());
         }
         for (Method method : repositoryType.getDeclaredMethods()) {
             if (!Modifier.isPublic(method.getModifiers())) continue;
-            Object[] arguments = java.util.Arrays.stream(method.getGenericParameterTypes())
-                    .map(EducationRepositoryCoverageTest::argumentFor)
-                    .toArray();
+            Object[] arguments =
+                    java.util.Arrays.stream(method.getGenericParameterTypes())
+                            .map(EducationRepositoryCoverageTest::argumentFor)
+                            .toArray();
             method.setAccessible(true);
             method.invoke(repository, arguments);
         }
@@ -179,7 +221,8 @@ class EducationRepositoryCoverageTest {
             if (name.startsWith("selectList") || name.startsWith("selectAll")) return List.of();
             if (name.startsWith("selectOne")) return null;
             if (name.equals("paginate")) return mock(Page.class);
-            if (name.startsWith("insert") || name.startsWith("update") || name.startsWith("delete")) return 1;
+            if (name.startsWith("insert") || name.startsWith("update") || name.startsWith("delete"))
+                return 1;
             return Answers.RETURNS_DEFAULTS.answer(invocation);
         };
     }
@@ -192,8 +235,10 @@ class EducationRepositoryCoverageTest {
         if (type instanceof ParameterizedType parameterized
                 && parameterized.getRawType() == List.class) {
             Type element = parameterized.getActualTypeArguments()[0];
-            if (element instanceof Class<?> elementType && elementType != Long.class
-                    && elementType != Integer.class && elementType != String.class) {
+            if (element instanceof Class<?> elementType
+                    && elementType != Long.class
+                    && elementType != Integer.class
+                    && elementType != String.class) {
                 Object value = argumentFor(elementType);
                 return value == null ? List.of() : List.of(value);
             }
@@ -223,4 +268,3 @@ class EducationRepositoryCoverageTest {
         }
     }
 }
-

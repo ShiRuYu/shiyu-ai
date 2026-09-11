@@ -3,8 +3,11 @@ package com.shiyu.ai.tooling.implementation.tool;
 import com.shiyu.ai.tooling.contract.api.ToolService;
 import com.shiyu.ai.tooling.implementation.tool.mcp.McpToolDescriptor;
 import com.shiyu.ai.tooling.implementation.tool.mcp.McpToolDescriptor.ParameterInfo;
+
 import jakarta.annotation.PostConstruct;
+
 import lombok.extern.slf4j.Slf4j;
+
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDateTime;
@@ -17,10 +20,8 @@ import java.util.stream.Collectors;
 /**
  * 内存模拟工具调用服务实现
  *
- * <p>内部使用 {@link McpToolDescriptor} 统一工具描述模型，
- * 维护工具定义注册表和执行器映射，支持动态注册/注销工具。
- * 内置 5 个示例工具（天气查询、计算器、时间日期、随机数、文本统计），
- * 模拟 MCP/API 调用的行为模式。</p>
+ * <p>内部使用 {@link McpToolDescriptor} 统一工具描述模型， 维护工具定义注册表和执行器映射，支持动态注册/注销工具。 内置 5
+ * 个示例工具（天气查询、计算器、时间日期、随机数、文本统计）， 模拟 MCP/API 调用的行为模式。
  */
 @Slf4j
 @Service
@@ -30,7 +31,8 @@ public class ToolServiceImpl implements ToolService {
     private final Map<String, McpToolDescriptor> toolRegistry = new ConcurrentHashMap<>();
 
     /** 工具名 → 执行器 */
-    private final Map<String, Function<Map<String, Object>, Object>> executorRegistry = new ConcurrentHashMap<>();
+    private final Map<String, Function<Map<String, Object>, Object>> executorRegistry =
+            new ConcurrentHashMap<>();
 
     @PostConstruct
     public void init() {
@@ -41,104 +43,98 @@ public class ToolServiceImpl implements ToolService {
 
     // ======================== 兼容旧接口的工具定义包装 ========================
 
-    /**
-     * 兼容 {@link McpToolAutoConfiguration} 使用的旧 ToolDefinition 视图
-     */
+    /** 兼容 {@link McpToolAutoConfiguration} 使用的旧 ToolDefinition 视图 */
     public record ToolDefinition(
             String name,
             String description,
             Map<String, ParameterDef> parameters,
-            boolean builtin
-    ) {}
+            boolean builtin) {}
 
-    public record ParameterDef(
-            String type,
-            String description,
-            boolean required
-    ) {}
+    public record ParameterDef(String type, String description, boolean required) {}
 
     private ToolDefinition toToolDefinition(McpToolDescriptor desc) {
-        Map<String, ParameterDef> params = desc.getParameters() != null
-                ? desc.getParameters().entrySet().stream()
-                        .collect(Collectors.toMap(
-                                Map.Entry::getKey,
-                                e -> new ParameterDef(
-                                        e.getValue().type(),
-                                        e.getValue().description(),
-                                        e.getValue().required()
-                                )
-                        ))
-                : Map.of();
+        Map<String, ParameterDef> params =
+                desc.getParameters() != null
+                        ? desc.getParameters().entrySet().stream()
+                                .collect(
+                                        Collectors.toMap(
+                                                Map.Entry::getKey,
+                                                e ->
+                                                        new ParameterDef(
+                                                                e.getValue().type(),
+                                                                e.getValue().description(),
+                                                                e.getValue().required())))
+                        : Map.of();
         return new ToolDefinition(desc.getName(), desc.getDescription(), params, desc.isBuiltin());
     }
 
     // ======================== 公开管理 API ========================
 
-    /**
-     * 注册工具
-     */
-    public void registerTool(String name, String description,
-                             Map<String, ParameterInfo> parameters,
-                             Function<Map<String, Object>, Object> executor) {
-        McpToolDescriptor descriptor = new McpToolDescriptor(
-                name, description, "builtin",
-                parameters != null ? parameters : Map.of(),
-                List.of("custom"), "custom", false);
+    /** 注册工具 */
+    public void registerTool(
+            String name,
+            String description,
+            Map<String, ParameterInfo> parameters,
+            Function<Map<String, Object>, Object> executor) {
+        McpToolDescriptor descriptor =
+                new McpToolDescriptor(
+                        name,
+                        description,
+                        "builtin",
+                        parameters != null ? parameters : Map.of(),
+                        List.of("custom"),
+                        "custom",
+                        false);
         toolRegistry.put(name, descriptor);
         executorRegistry.put(name, executor);
         log.info("工具已注册: {} - {}", name, description);
     }
 
-    /**
-     * 注册内置工具
-     */
-    private void registerBuiltinTool(String name, String description,
-                                     Map<String, ParameterInfo> parameters,
-                                     Function<Map<String, Object>, Object> executor) {
-        McpToolDescriptor descriptor = new McpToolDescriptor(
-                name, description, "builtin",
-                parameters != null ? parameters : Map.of(),
-                List.of("builtin"), "builtin", true);
+    /** 注册内置工具 */
+    private void registerBuiltinTool(
+            String name,
+            String description,
+            Map<String, ParameterInfo> parameters,
+            Function<Map<String, Object>, Object> executor) {
+        McpToolDescriptor descriptor =
+                new McpToolDescriptor(
+                        name,
+                        description,
+                        "builtin",
+                        parameters != null ? parameters : Map.of(),
+                        List.of("builtin"),
+                        "builtin",
+                        true);
         toolRegistry.put(name, descriptor);
         executorRegistry.put(name, executor);
     }
 
-    /**
-     * 注销工具
-     */
+    /** 注销工具 */
     public void unregisterTool(String name) {
         toolRegistry.remove(name);
         executorRegistry.remove(name);
         log.info("工具已注销: {}", name);
     }
 
-    /**
-     * 获取所有已注册的工具定义（兼容旧接口）
-     */
+    /** 获取所有已注册的工具定义（兼容旧接口） */
     public List<ToolDefinition> listTools() {
         return toolRegistry.values().stream()
                 .map(this::toToolDefinition)
                 .collect(Collectors.toList());
     }
 
-    /**
-     * 获取所有已注册的工具描述符
-     */
+    /** 获取所有已注册的工具描述符 */
     public List<McpToolDescriptor> listToolDescriptors() {
         return new ArrayList<>(toolRegistry.values());
     }
 
-    /**
-     * 获取单个工具定义
-     */
+    /** 获取单个工具定义 */
     public ToolDefinition getToolDefinition(String name) {
         McpToolDescriptor desc = toolRegistry.get(name);
         return desc != null ? toToolDefinition(desc) : null;
     }
 
-    /**
-     * 获取单个工具描述符
-     */
+    /** 获取单个工具描述符 */
     public McpToolDescriptor getToolDescriptor(String name) {
         return toolRegistry.get(name);
     }
@@ -159,8 +155,8 @@ public class ToolServiceImpl implements ToolService {
 
         McpToolDescriptor def = toolRegistry.get(toolName);
         if (def == null) {
-            return new ToolExecutionResult(false, null,
-                    "未知工具: " + toolName + "，可用工具: " + toolRegistry.keySet());
+            return new ToolExecutionResult(
+                    false, null, "未知工具: " + toolName + "，可用工具: " + toolRegistry.keySet());
         }
 
         // 参数校验
@@ -188,8 +184,11 @@ public class ToolServiceImpl implements ToolService {
             return new ToolExecutionResult(true, enriched, null);
 
         } catch (Exception e) {
-            log.error("工具执行异常: toolNameLength={}, errorType={}, errorMessageLength={}",
-                    valueLength(toolName), e.getClass().getSimpleName(), valueLength(e.getMessage()));
+            log.error(
+                    "工具执行异常: toolNameLength={}, errorType={}, errorMessageLength={}",
+                    valueLength(toolName),
+                    e.getClass().getSimpleName(),
+                    valueLength(e.getMessage()));
             return new ToolExecutionResult(false, null, "工具执行失败，请稍后重试");
         }
     }
@@ -210,7 +209,8 @@ public class ToolServiceImpl implements ToolService {
             if (safeParams.containsKey(key) && safeParams.get(key) == null && paramDef.required()) {
                 return "必填参数不能为 null: " + key;
             }
-            if (safeParams.containsKey(key) && safeParams.get(key) != null
+            if (safeParams.containsKey(key)
+                    && safeParams.get(key) != null
                     && !matchesType(paramDef.type(), safeParams.get(key))) {
                 return "参数类型错误: " + key + " 应为 " + paramDef.type();
             }
@@ -223,9 +223,12 @@ public class ToolServiceImpl implements ToolService {
         return switch (declaredType.trim().toLowerCase(Locale.ROOT)) {
             case "string" -> value instanceof CharSequence;
             case "boolean", "bool" -> value instanceof Boolean;
-            case "integer", "int", "long" -> value instanceof Byte || value instanceof Short
-                    || value instanceof Integer || value instanceof Long
-                    || value instanceof java.math.BigInteger;
+            case "integer", "int", "long" ->
+                    value instanceof Byte
+                            || value instanceof Short
+                            || value instanceof Integer
+                            || value instanceof Long
+                            || value instanceof java.math.BigInteger;
             case "number", "double", "float", "decimal" -> value instanceof Number;
             case "object", "map" -> value instanceof Map<?, ?>;
             case "array", "list" -> value instanceof Collection<?> || value.getClass().isArray();
@@ -258,9 +261,7 @@ public class ToolServiceImpl implements ToolService {
         registerBuiltinTool(
                 "WEATHER",
                 "查询指定城市的当前天气信息",
-                Map.of(
-                        "location", new ParameterInfo("string", "城市名称，如 北京、上海（支持别名映射）", true, null)
-                ),
+                Map.of("location", new ParameterInfo("string", "城市名称，如 北京、上海（支持别名映射）", true, null)),
                 params -> {
                     String location = (String) params.get("location");
                     String city = location != null ? location : "未知";
@@ -269,54 +270,60 @@ public class ToolServiceImpl implements ToolService {
                     String condition = conditions[code];
                     int temp = 20 + Math.floorMod(city.hashCode(), 15);
                     return Map.of(
-                            "city", city,
-                            "temperature", temp + "°C",
-                            "condition", condition,
-                            "humidity", (40 + Math.floorMod(city.hashCode() * 7, 40)) + "%",
-                            "wind", (2 + Math.floorMod(city.hashCode() * 3, 4)) + "级",
-                            "updated_at", LocalDateTime.now().format(DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm"))
-                    );
-                }
-        );
+                            "city",
+                            city,
+                            "temperature",
+                            temp + "°C",
+                            "condition",
+                            condition,
+                            "humidity",
+                            (40 + Math.floorMod(city.hashCode() * 7, 40)) + "%",
+                            "wind",
+                            (2 + Math.floorMod(city.hashCode() * 3, 4)) + "级",
+                            "updated_at",
+                            LocalDateTime.now()
+                                    .format(DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm")));
+                });
 
         // 2. 计算器
         registerBuiltinTool(
                 "CALCULATOR",
                 "执行基础的数学运算（加、减、乘、除）",
-                Map.of(
-                        "expression", new ParameterInfo("string", "数学表达式，如 1+2*3", true, null)
-                ),
+                Map.of("expression", new ParameterInfo("string", "数学表达式，如 1+2*3", true, null)),
                 params -> {
                     String expr = ((String) params.get("expression")).trim();
                     try {
                         double result = evaluateSimpleExpression(expr);
                         return Map.of("expression", expr, "result", result);
                     } catch (Exception e) {
-                        log.warn("计算器表达式执行失败: expressionLength={}, errorType={}",
-                                expr.length(), e.getClass().getSimpleName());
+                        log.warn(
+                                "计算器表达式执行失败: expressionLength={}, errorType={}",
+                                expr.length(),
+                                e.getClass().getSimpleName());
                         return Map.of("error", "计算失败，请检查表达式后重试", "expression", expr);
                     }
-                }
-        );
+                });
 
         // 3. 时间日期
         registerBuiltinTool(
                 "DATETIME",
                 "获取当前日期和时间信息",
                 Map.of(
-                        "timezone", new ParameterInfo("string", "时区，如 Asia/Shanghai（可选）", false, null)
-                ),
+                        "timezone",
+                        new ParameterInfo("string", "时区，如 Asia/Shanghai（可选）", false, null)),
                 params -> {
                     String tz = (String) params.get("timezone");
                     TimeZone zone = tz != null ? TimeZone.getTimeZone(tz) : TimeZone.getDefault();
                     return Map.of(
-                            "datetime", LocalDateTime.now().format(DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss")),
+                            "datetime",
+                                    LocalDateTime.now()
+                                            .format(
+                                                    DateTimeFormatter.ofPattern(
+                                                            "yyyy-MM-dd HH:mm:ss")),
                             "timezone", zone.getDisplayName(),
                             "timezone_id", zone.getID(),
-                            "timestamp", System.currentTimeMillis()
-                    );
-                }
-        );
+                            "timestamp", System.currentTimeMillis());
+                });
 
         // 4. 随机数生成
         registerBuiltinTool(
@@ -324,34 +331,40 @@ public class ToolServiceImpl implements ToolService {
                 "生成指定范围内的随机整数",
                 Map.of(
                         "min", new ParameterInfo("integer", "最小值（包含），默认 0", false, 0),
-                        "max", new ParameterInfo("integer", "最大值（包含），默认 100", false, 100)
-                ),
+                        "max", new ParameterInfo("integer", "最大值（包含），默认 100", false, 100)),
                 params -> {
-                    int min = params.get("min") != null ? ((Number) params.get("min")).intValue() : 0;
-                    int max = params.get("max") != null ? ((Number) params.get("max")).intValue() : 100;
-                    if (min > max) { int t = min; min = max; max = t; }
+                    int min =
+                            params.get("min") != null ? ((Number) params.get("min")).intValue() : 0;
+                    int max =
+                            params.get("max") != null
+                                    ? ((Number) params.get("max")).intValue()
+                                    : 100;
+                    if (min > max) {
+                        int t = min;
+                        min = max;
+                        max = t;
+                    }
                     int value = min + new Random().nextInt(max - min + 1);
                     return Map.of("min", min, "max", max, "value", value);
-                }
-        );
+                });
 
         // 5. 文本统计
         registerBuiltinTool(
                 "TEXT_STATS",
                 "统计文本的字数、字符数等信息",
-                Map.of(
-                        "text", new ParameterInfo("string", "要统计的文本", true, null)
-                ),
+                Map.of("text", new ParameterInfo("string", "要统计的文本", true, null)),
                 params -> {
                     String text = (String) params.get("text");
                     return Map.of(
-                            "char_count", text.length(),
-                            "word_count", text.split("\\s+").length,
-                            "chinese_char_count", text.replaceAll("[^\\u4e00-\\u9fa5]", "").length(),
-                            "line_count", text.split("\n").length
-                    );
-                }
-        );
+                            "char_count",
+                            text.length(),
+                            "word_count",
+                            text.split("\\s+").length,
+                            "chinese_char_count",
+                            text.replaceAll("[^\\u4e00-\\u9fa5]", "").length(),
+                            "line_count",
+                            text.split("\n").length);
+                });
     }
 
     // ======================== 简易表达式求值器 ========================
@@ -385,9 +398,13 @@ public class ToolServiceImpl implements ToolService {
             double left = parseMulDiv();
             while (pos < input.length()) {
                 char c = input.charAt(pos);
-                if (c == '+') { pos++; left += parseMulDiv(); }
-                else if (c == '-') { pos++; left -= parseMulDiv(); }
-                else break;
+                if (c == '+') {
+                    pos++;
+                    left += parseMulDiv();
+                } else if (c == '-') {
+                    pos++;
+                    left -= parseMulDiv();
+                } else break;
             }
             return left;
         }
@@ -396,14 +413,15 @@ public class ToolServiceImpl implements ToolService {
             double left = parseAtom();
             while (pos < input.length()) {
                 char c = input.charAt(pos);
-                if (c == '*') { pos++; left *= parseAtom(); }
-                else if (c == '/') {
+                if (c == '*') {
+                    pos++;
+                    left *= parseAtom();
+                } else if (c == '/') {
                     pos++;
                     double right = parseAtom();
                     if (right == 0) throw new ArithmeticException("除数不能为 0");
                     left /= right;
-                }
-                else break;
+                } else break;
             }
             return left;
         }
@@ -426,7 +444,8 @@ public class ToolServiceImpl implements ToolService {
             }
             if (c >= '0' && c <= '9') {
                 int start = pos;
-                while (pos < input.length() && (Character.isDigit(input.charAt(pos)) || input.charAt(pos) == '.')) {
+                while (pos < input.length()
+                        && (Character.isDigit(input.charAt(pos)) || input.charAt(pos) == '.')) {
                     pos++;
                 }
                 return Double.parseDouble(input.substring(start, pos));

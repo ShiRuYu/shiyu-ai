@@ -1,7 +1,8 @@
 package com.shiyu.ai.education.implementation.web.dto;
 
-import io.github.linpeilie.annotations.AutoMapper;
 import com.shiyu.ai.education.implementation.domain.model.WrongQuestionBO;
+
+import io.github.linpeilie.annotations.AutoMapper;
 
 @AutoMapper(target = WrongQuestionBO.class)
 public record WrongQuestionResponse(
@@ -12,6 +13,4 @@ public record WrongQuestionResponse(
         String questionTitle,
         String studentAnswer,
         String correctAnswer,
-        Integer correctTimes
-) {}
-
+        Integer correctTimes) {}

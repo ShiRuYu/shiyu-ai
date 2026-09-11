@@ -1,8 +1,6 @@
-
 package com.shiyu.ai.common.thread.executor;
 
 import com.shiyu.ai.common.thread.api.ExecutorFactory;
-
 import com.shiyu.ai.common.thread.api.PoolType;
 import com.shiyu.ai.common.thread.config.ThreadingProperties;
 
@@ -15,10 +13,7 @@ import java.util.concurrent.ThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicInteger;
 
-/**
- * 平台线程池工厂
- * 创建基于平台线程的线程池
- */
+/** 平台线程池工厂 创建基于平台线程的线程池 */
 public class PlatformExecutorFactory implements ExecutorFactory {
 
     private final ThreadingProperties properties;
@@ -55,31 +50,33 @@ public class PlatformExecutorFactory implements ExecutorFactory {
 
     /**
      * 创建默认线程池
-     * 
+     *
      * @param name 线程池名称
      * @return 线程池执行器
      */
     private ExecutorService createDefaultExecutor(String name) {
-        int corePoolSize = coreSize(name, Math.max(2, Runtime.getRuntime().availableProcessors() / 2));
-        int maximumPoolSize = maxSize(name, Math.max(corePoolSize, Runtime.getRuntime().availableProcessors()));
+        int corePoolSize =
+                coreSize(name, Math.max(2, Runtime.getRuntime().availableProcessors() / 2));
+        int maximumPoolSize =
+                maxSize(name, Math.max(corePoolSize, Runtime.getRuntime().availableProcessors()));
         long keepAliveTime = keepAlive(name);
 
-        ThreadPoolExecutor executor = new ThreadPoolExecutor(
-                corePoolSize,
-                maximumPoolSize,
-                keepAliveTime,
-                TimeUnit.SECONDS,
-                new LinkedBlockingQueue<>(queueCapacity(name, 100)),
-                new NamedThreadFactory(threadName(name)),
-                rejectionHandler(name)
-        );
+        ThreadPoolExecutor executor =
+                new ThreadPoolExecutor(
+                        corePoolSize,
+                        maximumPoolSize,
+                        keepAliveTime,
+                        TimeUnit.SECONDS,
+                        new LinkedBlockingQueue<>(queueCapacity(name, 100)),
+                        new NamedThreadFactory(threadName(name)),
+                        rejectionHandler(name));
         executor.allowCoreThreadTimeOut(allowCoreThreadTimeOut(name));
         return executor;
     }
 
     /**
      * 创建CPU密集型任务线程池
-     * 
+     *
      * @param name 线程池名称
      * @return 线程池执行器
      */
@@ -94,13 +91,12 @@ public class PlatformExecutorFactory implements ExecutorFactory {
                 TimeUnit.MILLISECONDS,
                 new LinkedBlockingQueue<>(queueCapacity(name, 50)),
                 new NamedThreadFactory(threadName(name) + "-cpu"),
-                rejectionHandler(name)
-        );
+                rejectionHandler(name));
     }
 
     /**
      * 创建IO密集型任务线程池
-     * 
+     *
      * @param name 线程池名称
      * @return 线程池执行器
      */
@@ -109,30 +105,30 @@ public class PlatformExecutorFactory implements ExecutorFactory {
         int maximumPoolSize = maxSize(name, corePoolSize * 2);
         long keepAliveTime = keepAlive(name);
 
-        ThreadPoolExecutor executor = new ThreadPoolExecutor(
-                corePoolSize,
-                maximumPoolSize,
-                keepAliveTime,
-                TimeUnit.SECONDS,
-                new LinkedBlockingQueue<>(queueCapacity(name, 200)),
-                new NamedThreadFactory(threadName(name) + "-io"),
-                rejectionHandler(name)
-        );
+        ThreadPoolExecutor executor =
+                new ThreadPoolExecutor(
+                        corePoolSize,
+                        maximumPoolSize,
+                        keepAliveTime,
+                        TimeUnit.SECONDS,
+                        new LinkedBlockingQueue<>(queueCapacity(name, 200)),
+                        new NamedThreadFactory(threadName(name) + "-io"),
+                        rejectionHandler(name));
         executor.allowCoreThreadTimeOut(allowCoreThreadTimeOut(name));
         return executor;
     }
 
     /**
      * 创建调度任务线程池
-     * 
+     *
      * @param name 线程池名称
      * @return 调度线程池执行器
      */
     private ScheduledThreadPoolExecutor createScheduledExecutor(String name) {
-        ScheduledThreadPoolExecutor executor = new ScheduledThreadPoolExecutor(
-                coreSize(name, Math.max(2, Runtime.getRuntime().availableProcessors() / 2)),
-                new NamedThreadFactory(threadName(name) + "-scheduled")
-        );
+        ScheduledThreadPoolExecutor executor =
+                new ScheduledThreadPoolExecutor(
+                        coreSize(name, Math.max(2, Runtime.getRuntime().availableProcessors() / 2)),
+                        new NamedThreadFactory(threadName(name) + "-scheduled"));
         // 设置移除已取消任务的策略
         executor.setRemoveOnCancelPolicy(true);
         executor.setRejectedExecutionHandler(rejectionHandler(name));
@@ -141,13 +137,15 @@ public class PlatformExecutorFactory implements ExecutorFactory {
 
     /**
      * 创建优先级任务线程池
-     * 
+     *
      * @param name 线程池名称
      * @return 线程池执行器
      */
     private ExecutorService createPriorityExecutor(String name) {
-        int corePoolSize = coreSize(name, Math.max(2, Runtime.getRuntime().availableProcessors() / 2));
-        int maximumPoolSize = maxSize(name, Math.max(corePoolSize, Runtime.getRuntime().availableProcessors()));
+        int corePoolSize =
+                coreSize(name, Math.max(2, Runtime.getRuntime().availableProcessors() / 2));
+        int maximumPoolSize =
+                maxSize(name, Math.max(corePoolSize, Runtime.getRuntime().availableProcessors()));
 
         return new ThreadPoolExecutor(
                 corePoolSize,
@@ -156,8 +154,7 @@ public class PlatformExecutorFactory implements ExecutorFactory {
                 TimeUnit.SECONDS,
                 new PriorityBlockingQueue<>(100),
                 new NamedThreadFactory(threadName(name) + "-priority"),
-                rejectionHandler(name)
-        );
+                rejectionHandler(name));
     }
 
     private ThreadingProperties.PoolProperties pool(String name) {
@@ -193,14 +190,19 @@ public class PlatformExecutorFactory implements ExecutorFactory {
 
     private String threadName(String name) {
         ThreadingProperties.PoolProperties pool = pool(name);
-        return pool != null && pool.getThreadNamePrefix() != null && !pool.getThreadNamePrefix().isBlank()
-                ? pool.getThreadNamePrefix() : name;
+        return pool != null
+                        && pool.getThreadNamePrefix() != null
+                        && !pool.getThreadNamePrefix().isBlank()
+                ? pool.getThreadNamePrefix()
+                : name;
     }
 
     private java.util.concurrent.RejectedExecutionHandler rejectionHandler(String name) {
         ThreadingProperties.PoolProperties pool = pool(name);
-        ThreadingProperties.RejectionPolicy policy = pool == null
-                ? ThreadingProperties.RejectionPolicy.CALLER_RUNS : pool.getRejectionPolicy();
+        ThreadingProperties.RejectionPolicy policy =
+                pool == null
+                        ? ThreadingProperties.RejectionPolicy.CALLER_RUNS
+                        : pool.getRejectionPolicy();
         if (policy == null) policy = ThreadingProperties.RejectionPolicy.CALLER_RUNS;
         return switch (policy) {
             case ABORT -> new ThreadPoolExecutor.AbortPolicy();
@@ -210,9 +212,7 @@ public class PlatformExecutorFactory implements ExecutorFactory {
         };
     }
 
-    /**
-     * 命名线程工厂
-     */
+    /** 命名线程工厂 */
     private static class NamedThreadFactory implements ThreadFactory {
         private final AtomicInteger threadNumber = new AtomicInteger(1);
         private final String namePrefix;

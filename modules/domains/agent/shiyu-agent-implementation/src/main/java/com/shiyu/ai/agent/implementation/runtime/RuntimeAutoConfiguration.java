@@ -10,19 +10,26 @@ import org.springframework.context.annotation.Configuration;
 public class RuntimeAutoConfiguration {
     @Bean
     @ConditionalOnMissingBean(AiRunRepository.class)
-    public AiRunRepository inMemoryAiRunRepository() { return new InMemoryAiRunRepository(); }
+    public AiRunRepository inMemoryAiRunRepository() {
+        return new InMemoryAiRunRepository();
+    }
 
     @Bean
     @ConditionalOnMissingBean(AiAppRepository.class)
-    public AiAppRepository inMemoryAiAppRepository() { return new InMemoryAiAppRepository(); }
+    public AiAppRepository inMemoryAiAppRepository() {
+        return new InMemoryAiAppRepository();
+    }
 
     @Bean
     @ConditionalOnMissingBean(ToolApprovalRepository.class)
-    public ToolApprovalRepository inMemoryToolApprovalRepository() { return new InMemoryToolApprovalRepository(); }
+    public ToolApprovalRepository inMemoryToolApprovalRepository() {
+        return new InMemoryToolApprovalRepository();
+    }
 
     @Bean
     @ConditionalOnMissingBean(ToolExecutionPipeline.class)
-    public ToolExecutionPipeline toolExecutionPipeline(AiRuntimeService runtime, ToolApprovalService approvals) {
+    public ToolExecutionPipeline toolExecutionPipeline(
+            AiRuntimeService runtime, ToolApprovalService approvals) {
         return new ToolExecutionPipeline(runtime, approvals);
     }
 }

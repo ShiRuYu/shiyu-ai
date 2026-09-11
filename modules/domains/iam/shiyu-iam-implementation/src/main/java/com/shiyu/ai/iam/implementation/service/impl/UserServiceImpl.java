@@ -1,71 +1,89 @@
 package com.shiyu.ai.iam.implementation.service.impl;
 
-import com.shiyu.ai.iam.implementation.port.repository.UserRepository;
-import com.shiyu.ai.iam.implementation.port.repository.RoleRepository;
-import com.shiyu.ai.iam.implementation.port.repository.UserScopeRoleRepository;
-import com.shiyu.ai.iam.implementation.service.UserService;
-import com.shiyu.ai.iam.implementation.request.UserRequest;
-import com.shiyu.ai.iam.implementation.vo.UserVO;
-import com.shiyu.ai.iam.implementation.service.MenuService;
-import com.shiyu.ai.iam.implementation.utils.SaTokenHelper;
-import com.shiyu.ai.iam.implementation.domain.model.RoleBO;
-import com.shiyu.ai.iam.implementation.domain.model.UserBO;
-import com.shiyu.ai.iam.implementation.domain.model.UserScopeRoleBO;
-import com.shiyu.ai.iam.implementation.domain.model.RoleBO;
 import com.shiyu.ai.common.core.api.PageData;
-import com.shiyu.ai.iam.implementation.vo.UserVO;
-import com.shiyu.ai.iam.implementation.vo.UserTenantAssignmentVO;
-import com.shiyu.ai.iam.implementation.request.UserTenantRoleRequest;
-import com.shiyu.ai.kernel.context.ActorContext;
-import com.shiyu.ai.kernel.context.TenantId;
 import com.shiyu.ai.common.core.utils.JSONUtils;
 import com.shiyu.ai.common.core.utils.MapstructUtils;
 import com.shiyu.ai.common.core.utils.PasswordUtils;
+import com.shiyu.ai.iam.implementation.domain.model.RoleBO;
+import com.shiyu.ai.iam.implementation.domain.model.UserBO;
+import com.shiyu.ai.iam.implementation.domain.model.UserScopeRoleBO;
+import com.shiyu.ai.iam.implementation.port.repository.RoleRepository;
+import com.shiyu.ai.iam.implementation.port.repository.UserRepository;
+import com.shiyu.ai.iam.implementation.port.repository.UserScopeRoleRepository;
+import com.shiyu.ai.iam.implementation.request.UserRequest;
+import com.shiyu.ai.iam.implementation.request.UserTenantRoleRequest;
+import com.shiyu.ai.iam.implementation.service.MenuService;
+import com.shiyu.ai.iam.implementation.service.UserService;
+import com.shiyu.ai.iam.implementation.utils.SaTokenHelper;
+import com.shiyu.ai.iam.implementation.vo.UserTenantAssignmentVO;
+import com.shiyu.ai.iam.implementation.vo.UserVO;
+import com.shiyu.ai.kernel.context.ActorContext;
+import com.shiyu.ai.kernel.context.TenantId;
+
 import lombok.extern.slf4j.Slf4j;
+
 import org.apache.commons.lang3.tuple.Pair;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.util.List;
-import java.util.Map;
 import java.util.ArrayList;
 import java.util.LinkedHashMap;
+import java.util.List;
+import java.util.Map;
 import java.util.Objects;
 import java.util.stream.Collectors;
 
-/**
- * 用户服务实现类
- */
+/** 用户服务实现类 */
 @Slf4j
 @Service
 public class UserServiceImpl implements UserService {
-    @Override public UserVO detailView(ActorContext actor, Long userId) {
+    @Override
+    public UserVO detailView(ActorContext actor, Long userId) {
         return MapstructUtils.convert(getUserDetail(requireActor(actor), userId), UserVO.class);
     }
-    @Override public Map<String, Object> createUser(ActorContext actor, UserRequest request, Long[] roleIds, Long targetTenantId) {
+
+    @Override
+    public Map<String, Object> createUser(
+            ActorContext actor, UserRequest request, Long[] roleIds, Long targetTenantId) {
         actor = requireActor(actor);
         requireTargetTenant(targetTenantId);
-        return createUser(actor, MapstructUtils.convert(request, UserBO.class), roleIds, targetTenantId);
+        return createUser(
+                actor, MapstructUtils.convert(request, UserBO.class), roleIds, targetTenantId);
     }
-    @Override public boolean updateUser(ActorContext actor, Long userId, UserRequest request, Long[] roleIds, Long targetTenantId) {
+
+    @Override
+    public boolean updateUser(
+            ActorContext actor,
+            Long userId,
+            UserRequest request,
+            Long[] roleIds,
+            Long targetTenantId) {
         actor = requireActor(actor);
         requireTargetTenant(targetTenantId);
-        return updateUser(actor, userId, MapstructUtils.convert(request, UserBO.class), roleIds, targetTenantId);
+        return updateUser(
+                actor,
+                userId,
+                MapstructUtils.convert(request, UserBO.class),
+                roleIds,
+                targetTenantId);
     }
 
     private final UserRepository userRepository;
     private final RoleRepository roleRepository;
     private final UserScopeRoleRepository userScopeRoleRepository;
     private final com.shiyu.ai.iam.implementation.port.repository.TenantRepository tenantRepository;
-    private final com.shiyu.ai.iam.implementation.port.repository.TenantRoleRepository tenantRoleRepository;
+    private final com.shiyu.ai.iam.implementation.port.repository.TenantRoleRepository
+            tenantRoleRepository;
     private final MenuService menuService;
 
-    public UserServiceImpl(UserRepository userRepository,
-                           RoleRepository roleRepository,
-                           UserScopeRoleRepository userScopeRoleRepository,
-                           com.shiyu.ai.iam.implementation.port.repository.TenantRepository tenantRepository,
-                           com.shiyu.ai.iam.implementation.port.repository.TenantRoleRepository tenantRoleRepository,
-                           MenuService menuService) {
+    public UserServiceImpl(
+            UserRepository userRepository,
+            RoleRepository roleRepository,
+            UserScopeRoleRepository userScopeRoleRepository,
+            com.shiyu.ai.iam.implementation.port.repository.TenantRepository tenantRepository,
+            com.shiyu.ai.iam.implementation.port.repository.TenantRoleRepository
+                    tenantRoleRepository,
+            MenuService menuService) {
         this.userRepository = userRepository;
         this.roleRepository = roleRepository;
         this.userScopeRoleRepository = userScopeRoleRepository;
@@ -80,19 +98,20 @@ public class UserServiceImpl implements UserService {
             return null;
         }
         UserBO userBO = userRepository.selectById(userId);
-        
+
         if (userBO != null) {
             // 查询并设置用户角色列表
-            Map<String, Object> parsedExtInfo = userBO.getExtInfo() == null
-                    ? null : JSONUtils.parseMap(userBO.getExtInfo());
+            Map<String, Object> parsedExtInfo =
+                    userBO.getExtInfo() == null ? null : JSONUtils.parseMap(userBO.getExtInfo());
             Map<String, Object> extInfoMap = parsedExtInfo == null ? Map.of() : parsedExtInfo;
             // The authenticated actor, not persisted extInfo, is the tenant
             // authority for this query. Persisted context may be stale or
             // tampered with and must never widen the read scope.
             Long currentTenantId = actor.tenantId().value();
             List<UserScopeRoleBO> assignments = userScopeRoleRepository.selectByUserId(userId);
-            boolean parentSuperAdminSwitch = actor.parentSuperAdminSwitch()
-                    || "PARENT_SUPER_ADMIN".equals(extInfoMap.get("switchMode"));
+            boolean parentSuperAdminSwitch =
+                    actor.parentSuperAdminSwitch()
+                            || "PARENT_SUPER_ADMIN".equals(extInfoMap.get("switchMode"));
             Long selectedRoleId = null;
             String selectedRoleCode = null;
             if (extInfoMap.get("currentRole") instanceof Map<?, ?> selectedRole) {
@@ -106,43 +125,56 @@ public class UserServiceImpl implements UserService {
                 }
             }
             final Long resolvedSelectedRoleId = selectedRoleId;
-            boolean selectedAssignedRole = resolvedSelectedRoleId != null
-                    && !"tenant_super".equals(selectedRoleCode)
-                    && !"super".equals(selectedRoleCode)
-                    && assignments.stream().anyMatch(item ->
-                    Objects.equals(currentTenantId, item.getTenantId())
-                            && Objects.equals(resolvedSelectedRoleId, item.getRoleId())
-                            && isActiveAssignment(item));
+            boolean selectedAssignedRole =
+                    resolvedSelectedRoleId != null
+                            && !"tenant_super".equals(selectedRoleCode)
+                            && !"super".equals(selectedRoleCode)
+                            && assignments.stream()
+                                    .anyMatch(
+                                            item ->
+                                                    Objects.equals(
+                                                                    currentTenantId,
+                                                                    item.getTenantId())
+                                                            && Objects.equals(
+                                                                    resolvedSelectedRoleId,
+                                                                    item.getRoleId())
+                                                            && isActiveAssignment(item));
             if (parentSuperAdminSwitch && !selectedAssignedRole) {
-                RoleBO delegatedRoleBO = tenantRoleRepository.selectTenantSuperRole(new TenantId(currentTenantId));
-                RoleBO delegatedRole = delegatedRoleBO == null
-                        ? null : MapstructUtils.convert(delegatedRoleBO, RoleBO.class);
+                RoleBO delegatedRoleBO =
+                        tenantRoleRepository.selectTenantSuperRole(new TenantId(currentTenantId));
+                RoleBO delegatedRole =
+                        delegatedRoleBO == null
+                                ? null
+                                : MapstructUtils.convert(delegatedRoleBO, RoleBO.class);
                 if (delegatedRole != null
                         && Objects.equals(currentTenantId, delegatedRole.getTenantId())
                         && ("tenant_super".equals(delegatedRole.getCode())
-                        || "super".equals(delegatedRole.getCode()))) {
+                                || "super".equals(delegatedRole.getCode()))) {
                     userBO.setRoles(List.of(delegatedRole));
                     userBO.setRoleIds(List.of(delegatedRole.getId()));
                     userBO.setCurrentRole(delegatedRole);
                     return userBO;
                 }
             }
-            List<Long> currentRoleIds = assignments.stream()
-                    .filter(item -> Objects.equals(currentTenantId, item.getTenantId()))
-                    .filter(this::isActiveAssignment)
-                    .map(UserScopeRoleBO::getRoleId)
-                    .filter(Objects::nonNull)
-                    .distinct()
-                    .toList();
-            List<RoleBO> roles = userRepository.selectRolesByUserId(userId).stream()
-                    .filter(role -> currentRoleIds.contains(role.getId()))
-                    .collect(Collectors.collectingAndThen(
-                            Collectors.toMap(
-                                    RoleBO::getId,
-                                    role -> role,
-                                    (first, ignored) -> first,
-                                    LinkedHashMap::new),
-                            map -> new ArrayList<>(map.values())));
+            List<Long> currentRoleIds =
+                    assignments.stream()
+                            .filter(item -> Objects.equals(currentTenantId, item.getTenantId()))
+                            .filter(this::isActiveAssignment)
+                            .map(UserScopeRoleBO::getRoleId)
+                            .filter(Objects::nonNull)
+                            .distinct()
+                            .toList();
+            List<RoleBO> roles =
+                    userRepository.selectRolesByUserId(userId).stream()
+                            .filter(role -> currentRoleIds.contains(role.getId()))
+                            .collect(
+                                    Collectors.collectingAndThen(
+                                            Collectors.toMap(
+                                                    RoleBO::getId,
+                                                    role -> role,
+                                                    (first, ignored) -> first,
+                                                    LinkedHashMap::new),
+                                            map -> new ArrayList<>(map.values())));
             userBO.setRoles(roles);
             userBO.setRoleIds(currentRoleIds);
 
@@ -150,11 +182,17 @@ public class UserServiceImpl implements UserService {
             RoleBO currentRole = null;
             if (extInfoMap != null && extInfoMap.get("currentRole") instanceof Map<?, ?> roleMap) {
                 Object roleId = roleMap.get("roleId");
-                if (roleId instanceof Number && currentRoleIds.contains(((Number) roleId).longValue())) {
-                    currentRole = roles.stream()
-                            .filter(role -> Objects.equals(((Number) roleId).longValue(), role.getId()))
-                            .findFirst()
-                            .orElse(null);
+                if (roleId instanceof Number
+                        && currentRoleIds.contains(((Number) roleId).longValue())) {
+                    currentRole =
+                            roles.stream()
+                                    .filter(
+                                            role ->
+                                                    Objects.equals(
+                                                            ((Number) roleId).longValue(),
+                                                            role.getId()))
+                                    .findFirst()
+                                    .orElse(null);
                 }
             }
             if (currentRole == null && !roles.isEmpty()) {
@@ -162,35 +200,52 @@ public class UserServiceImpl implements UserService {
             }
             userBO.setCurrentRole(currentRole);
         }
-        
+
         return userBO;
     }
 
     @Override
-    public PageData<UserVO> getUserList(ActorContext actor, String username, Number pageNum, Number pageSize) {
+    public PageData<UserVO> getUserList(
+            ActorContext actor, String username, Number pageNum, Number pageSize) {
         actor = requireActor(actor);
-        log.info("获取用户列表，usernamePresent={}, pageNum: {}, pageSize: {}", username != null, pageNum, pageSize);
-        
-        Pair<Long, List<UserBO>> result = userRepository.selectPage(actor.tenantId(), pageNum, pageSize, username);
+        log.info(
+                "获取用户列表，usernamePresent={}, pageNum: {}, pageSize: {}",
+                username != null,
+                pageNum,
+                pageSize);
+
+        Pair<Long, List<UserBO>> result =
+                userRepository.selectPage(actor.tenantId(), pageNum, pageSize, username);
         Long currentTenantId = actor.tenantId().value();
         Map<Long, List<Long>> userRoleIds = new java.util.HashMap<>();
-        List<Long> userIds = result.getRight().stream().map(UserBO::getId).filter(Objects::nonNull).toList();
-        Map<Long, List<UserScopeRoleBO>> assignmentsByUser = userScopeRoleRepository.selectByUserIds(userIds).stream()
-                .collect(Collectors.groupingBy(UserScopeRoleBO::getUserId));
-        result.getRight().forEach(user -> {
-            List<Long> roleIds = assignmentsByUser.getOrDefault(user.getId(), List.of()).stream()
-                    .filter(item -> Objects.equals(currentTenantId, item.getTenantId())
-                            && item.getStatus() != null && item.getStatus() == 1
-                            && (item.getDelFlag() == null || item.getDelFlag() == 0))
-                    .map(UserScopeRoleBO::getRoleId)
-                    .distinct()
-                    .toList();
-            userRoleIds.put(user.getId(), roleIds);
-        });
+        List<Long> userIds =
+                result.getRight().stream().map(UserBO::getId).filter(Objects::nonNull).toList();
+        Map<Long, List<UserScopeRoleBO>> assignmentsByUser =
+                userScopeRoleRepository.selectByUserIds(userIds).stream()
+                        .collect(Collectors.groupingBy(UserScopeRoleBO::getUserId));
+        result.getRight()
+                .forEach(
+                        user -> {
+                            List<Long> roleIds =
+                                    assignmentsByUser.getOrDefault(user.getId(), List.of()).stream()
+                                            .filter(
+                                                    item ->
+                                                            Objects.equals(
+                                                                            currentTenantId,
+                                                                            item.getTenantId())
+                                                                    && item.getStatus() != null
+                                                                    && item.getStatus() == 1
+                                                                    && (item.getDelFlag() == null
+                                                                            || item.getDelFlag()
+                                                                                    == 0))
+                                            .map(UserScopeRoleBO::getRoleId)
+                                            .distinct()
+                                            .toList();
+                            userRoleIds.put(user.getId(), roleIds);
+                        });
         List<UserVO> userVOs = MapstructUtils.convert(result.getRight(), UserVO.class);
-        userVOs.forEach(user -> user.setRoleIds(
-                userRoleIds.getOrDefault(user.getId(), List.of())));
-        
+        userVOs.forEach(user -> user.setRoleIds(userRoleIds.getOrDefault(user.getId(), List.of())));
+
         return new PageData<>(userVOs, result.getLeft());
     }
 
@@ -207,7 +262,8 @@ public class UserServiceImpl implements UserService {
     }
 
     @Transactional(rollbackFor = Exception.class)
-    private boolean updateUser(ActorContext actor, Long userId, UserBO userBO, Long[] roleIds, Long targetTenantId) {
+    private boolean updateUser(
+            ActorContext actor, Long userId, UserBO userBO, Long[] roleIds, Long targetTenantId) {
         actor = requireActor(actor);
         log.info("修改用户，userIdPresent={}", userId != null);
         Long currentTenantId = actor.tenantId().value();
@@ -250,8 +306,10 @@ public class UserServiceImpl implements UserService {
         log.info("重置用户密码，userIdPresent={}", userId != null);
         Long currentTenantId = actor.tenantId().value();
         if (!canManageUser(actor, userId, currentTenantId)) {
-            log.warn("拒绝越权重置用户密码，userIdPresent={}, tenantSelected={}",
-                    userId != null, currentTenantId != null);
+            log.warn(
+                    "拒绝越权重置用户密码，userIdPresent={}, tenantSelected={}",
+                    userId != null,
+                    currentTenantId != null);
             return null;
         }
         UserBO userBO = userRepository.selectById(userId);
@@ -259,24 +317,26 @@ public class UserServiceImpl implements UserService {
             return null;
         }
 
-        String newPassword = (password == null || password.isBlank())
-                ? PasswordUtils.generateRandomPassword()
-                : password;
+        String newPassword =
+                (password == null || password.isBlank())
+                        ? PasswordUtils.generateRandomPassword()
+                        : password;
         userBO.setPassword(PasswordUtils.encode(newPassword));
         boolean success = userRepository.update(userBO);
-        
+
         if (success) {
             // 🔐 重置密码后踢出用户所有会话，强制重新登录
             SaTokenHelper.getInstance().logout(userId);
             SaTokenHelper.clearUserContextSession();
             log.info("重置密码后已踢出用户会话: userIdPresent={}", userId != null);
         }
-        
+
         return success ? newPassword : null;
     }
 
     @Transactional(rollbackFor = Exception.class)
-    private Map<String, Object> createUser(ActorContext actor, UserBO userBO, Long[] roleIds, Long targetTenantId) {
+    private Map<String, Object> createUser(
+            ActorContext actor, UserBO userBO, Long[] roleIds, Long targetTenantId) {
         actor = requireActor(actor);
         log.info("新增用户: usernamePresent={}", userBO.getUsername() != null);
         String plainPassword = null;
@@ -303,17 +363,22 @@ public class UserServiceImpl implements UserService {
         if (!canManageUser(actor, userId, currentTenantId)) {
             return List.of();
         }
-        List<Long> accessibleTenantIds = tenantRepository.selectDescendantIds(new TenantId(currentTenantId));
+        List<Long> accessibleTenantIds =
+                tenantRepository.selectDescendantIds(new TenantId(currentTenantId));
         List<UserTenantAssignmentVO> result = new ArrayList<>();
         for (UserScopeRoleBO assignment : userScopeRoleRepository.selectByUserId(userId)) {
             if (!isActiveAssignment(assignment)
                     || !accessibleTenantIds.contains(assignment.getTenantId())) {
                 continue;
             }
-            var tenant = tenantRoleRepository.selectTenantById(new TenantId(assignment.getTenantId()));
+            var tenant =
+                    tenantRoleRepository.selectTenantById(new TenantId(assignment.getTenantId()));
             RoleBO role = tenantRoleRepository.selectRoleById(assignment.getRoleId());
-            if (tenant == null || role == null || !isActiveTenant(tenant)
-                    || role.getStatus() == null || role.getStatus() != 1) {
+            if (tenant == null
+                    || role == null
+                    || !isActiveTenant(tenant)
+                    || role.getStatus() == null
+                    || role.getStatus() != 1) {
                 continue;
             }
             UserTenantAssignmentVO item = new UserTenantAssignmentVO();
@@ -329,23 +394,34 @@ public class UserServiceImpl implements UserService {
 
     @Override
     @Transactional(rollbackFor = Exception.class)
-    public boolean replaceTenantAssignments(ActorContext actor, Long userId, List<UserTenantRoleRequest> assignments) {
+    public boolean replaceTenantAssignments(
+            ActorContext actor, Long userId, List<UserTenantRoleRequest> assignments) {
         actor = requireActor(actor);
         Long currentTenantId = actor.tenantId().value();
         if (!canManageUser(actor, userId, currentTenantId)) {
             return false;
         }
 
-        List<UserTenantRoleRequest> target = assignments == null ? List.of() : assignments.stream()
-                .filter(Objects::nonNull)
-                .filter(item -> item.getTenantId() != null && item.getRoleId() != null)
-                .collect(Collectors.collectingAndThen(
-                        Collectors.toMap(
-                                item -> item.getTenantId() + ":" + item.getRoleId(),
-                                item -> item,
-                                (first, ignored) -> first,
-                                LinkedHashMap::new),
-                        map -> new ArrayList<>(map.values())));
+        List<UserTenantRoleRequest> target =
+                assignments == null
+                        ? List.of()
+                        : assignments.stream()
+                                .filter(Objects::nonNull)
+                                .filter(
+                                        item ->
+                                                item.getTenantId() != null
+                                                        && item.getRoleId() != null)
+                                .collect(
+                                        Collectors.collectingAndThen(
+                                                Collectors.toMap(
+                                                        item ->
+                                                                item.getTenantId()
+                                                                        + ":"
+                                                                        + item.getRoleId(),
+                                                        item -> item,
+                                                        (first, ignored) -> first,
+                                                        LinkedHashMap::new),
+                                                map -> new ArrayList<>(map.values())));
         for (UserTenantRoleRequest item : target) {
             if (!isTenantManageable(actor, currentTenantId, item.getTenantId())) {
                 return false;
@@ -353,7 +429,8 @@ public class UserServiceImpl implements UserService {
             var tenant = tenantRoleRepository.selectTenantById(new TenantId(item.getTenantId()));
             if (!isActiveTenant(tenant)
                     || !roleRepository.isRoleOwnedByTenant(
-                            item.getRoleId(), new com.shiyu.ai.kernel.context.TenantId(item.getTenantId()))) {
+                            item.getRoleId(),
+                            new com.shiyu.ai.kernel.context.TenantId(item.getTenantId()))) {
                 return false;
             }
         }
@@ -366,8 +443,11 @@ public class UserServiceImpl implements UserService {
         target.stream()
                 .map(UserTenantRoleRequest::getTenantId)
                 .distinct()
-                .forEach(tenantId -> userScopeRoleRepository.deleteByUserIdAndTenantId(
-                        userId, new com.shiyu.ai.kernel.context.TenantId(tenantId)));
+                .forEach(
+                        tenantId ->
+                                userScopeRoleRepository.deleteByUserIdAndTenantId(
+                                        userId,
+                                        new com.shiyu.ai.kernel.context.TenantId(tenantId)));
 
         for (UserTenantRoleRequest item : target) {
             UserScopeRoleBO assignment = new UserScopeRoleBO();
@@ -384,15 +464,15 @@ public class UserServiceImpl implements UserService {
     /**
      * 当前操作者是否可以管理指定用户。
      *
-     * 父租户超级管理员切换到子租户后，用户本身通常没有该子租户的
-     * user_scope_role 记录（当前用户是被委托为子租户超管），因此不能
-     * 只用 isUserInScope(currentTenantId) 判断。
+     * <p>父租户超级管理员切换到子租户后，用户本身通常没有该子租户的 user_scope_role 记录（当前用户是被委托为子租户超管），因此不能 只用
+     * isUserInScope(currentTenantId) 判断。
      */
     private boolean canManageUser(ActorContext actor, Long userId, Long currentTenantId) {
         if (userId == null || currentTenantId == null) {
             return false;
         }
-        if (userRepository.isUserInScope(userId, new com.shiyu.ai.kernel.context.TenantId(currentTenantId))) {
+        if (userRepository.isUserInScope(
+                userId, new com.shiyu.ai.kernel.context.TenantId(currentTenantId))) {
             return true;
         }
         if (!actor.parentSuperAdminSwitch()) {
@@ -402,11 +482,9 @@ public class UserServiceImpl implements UserService {
                 && userRepository.isUserInScope(userId, actor.homeTenantId());
     }
 
-    /**
-     * 当前租户只能操作自身，或由当前租户超级管理员操作其后代租户。
-     * 兄弟租户和其他根租户永远不在可管理范围内。
-     */
-    private boolean isTenantManageable(ActorContext actor, Long currentTenantId, Long targetTenantId) {
+    /** 当前租户只能操作自身，或由当前租户超级管理员操作其后代租户。 兄弟租户和其他根租户永远不在可管理范围内。 */
+    private boolean isTenantManageable(
+            ActorContext actor, Long currentTenantId, Long targetTenantId) {
         if (currentTenantId == null || targetTenantId == null) {
             return false;
         }
@@ -416,7 +494,9 @@ public class UserServiceImpl implements UserService {
         if (!actor.platformAdmin()) {
             return false;
         }
-        return tenantRepository.selectDescendantIds(new TenantId(currentTenantId)).contains(targetTenantId);
+        return tenantRepository
+                .selectDescendantIds(new TenantId(currentTenantId))
+                .contains(targetTenantId);
     }
 
     private boolean isActiveAssignment(UserScopeRoleBO item) {
@@ -425,14 +505,15 @@ public class UserServiceImpl implements UserService {
     }
 
     private boolean isActiveTenant(com.shiyu.ai.iam.implementation.domain.model.TenantBO tenant) {
-        return tenant != null && tenant.getStatus() != null && tenant.getStatus() == 1
+        return tenant != null
+                && tenant.getStatus() != null
+                && tenant.getStatus() == 1
                 && (tenant.getDelFlag() == null || tenant.getDelFlag() == 0);
     }
 
-    /**
-     * roleIds 不属于 users 表，必须同步到当前租户作用域下的关系表。
-     */
-    private void syncUserRoles(ActorContext actor, Long userId, Long[] roleIds, Long requestedTenantId) {
+    /** roleIds 不属于 users 表，必须同步到当前租户作用域下的关系表。 */
+    private void syncUserRoles(
+            ActorContext actor, Long userId, Long[] roleIds, Long requestedTenantId) {
         actor = requireActor(actor);
         Long currentTenantId = actor.tenantId().value();
         Long targetTenantId = requireTargetTenant(requestedTenantId);
@@ -443,15 +524,17 @@ public class UserServiceImpl implements UserService {
             throw new IllegalArgumentException("用户不属于当前租户作用域");
         }
 
-        List<Long> targetRoleIds = roleIds == null
-                ? List.of()
-                : java.util.Arrays.stream(roleIds)
-                    .filter(java.util.Objects::nonNull)
-                    .distinct()
-                    .toList();
+        List<Long> targetRoleIds =
+                roleIds == null
+                        ? List.of()
+                        : java.util.Arrays.stream(roleIds)
+                                .filter(java.util.Objects::nonNull)
+                                .distinct()
+                                .toList();
 
         for (Long roleId : targetRoleIds) {
-            if (!roleRepository.isRoleOwnedByTenant(roleId, new com.shiyu.ai.kernel.context.TenantId(targetTenantId))) {
+            if (!roleRepository.isRoleOwnedByTenant(
+                    roleId, new com.shiyu.ai.kernel.context.TenantId(targetTenantId))) {
                 throw new IllegalArgumentException("角色不属于目标租户: " + roleId);
             }
         }
@@ -468,19 +551,25 @@ public class UserServiceImpl implements UserService {
         }
 
         menuService.evictRouteMenuCache(userId);
-        log.info("用户角色同步成功, userIdPresent={}, tenantSelected={}, roleCount={}",
-                userId != null, targetTenantId != null, targetRoleIds.size());
+        log.info(
+                "用户角色同步成功, userIdPresent={}, tenantSelected={}, roleCount={}",
+                userId != null,
+                targetTenantId != null,
+                targetRoleIds.size());
     }
 
     @Override
     @Transactional(rollbackFor = Exception.class)
-    public boolean changePassword(ActorContext actor, Long userId, String oldPassword, String newPassword) {
+    public boolean changePassword(
+            ActorContext actor, Long userId, String oldPassword, String newPassword) {
         actor = requireActor(actor);
         log.info("修改密码，userIdPresent={}", userId != null);
         Long currentUserId = actor.userId().value();
         if (!currentUserId.equals(userId)) {
-            log.warn("拒绝为其他用户修改密码，requestUserIdPresent={}, currentUserIdPresent={}",
-                    userId != null, currentUserId != null);
+            log.warn(
+                    "拒绝为其他用户修改密码，requestUserIdPresent={}, currentUserIdPresent={}",
+                    userId != null,
+                    currentUserId != null);
             return false;
         }
         UserBO userBO = userRepository.selectById(userId);
@@ -493,14 +582,14 @@ public class UserServiceImpl implements UserService {
         }
         userBO.setPassword(PasswordUtils.encode(newPassword));
         boolean success = userRepository.update(userBO);
-        
+
         if (success) {
             // 🔐 修改密码后踢出用户所有会话，强制重新登录
             SaTokenHelper.getInstance().logout(userId);
             SaTokenHelper.clearUserContextSession();
             log.info("修改密码后已踢出用户会话: userIdPresent={}", userId != null);
         }
-        
+
         return success;
     }
 
@@ -515,4 +604,3 @@ public class UserServiceImpl implements UserService {
         return targetTenantId;
     }
 }
-

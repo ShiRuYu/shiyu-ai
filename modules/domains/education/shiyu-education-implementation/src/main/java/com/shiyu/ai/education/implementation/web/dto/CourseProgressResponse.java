@@ -5,6 +5,4 @@ public record CourseProgressResponse(
         String courseName,
         Integer completedSections,
         Integer totalSections,
-        Double progress
-) {}
-
+        Double progress) {}

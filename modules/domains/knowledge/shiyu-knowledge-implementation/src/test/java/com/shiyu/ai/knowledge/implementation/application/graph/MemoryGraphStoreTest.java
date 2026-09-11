@@ -1,20 +1,20 @@
 package com.shiyu.ai.knowledge.implementation.application.graph;
 
+import static org.junit.jupiter.api.Assertions.*;
+import static org.mockito.ArgumentMatchers.*;
+import static org.mockito.Mockito.*;
+
+import com.shiyu.ai.kernel.context.TenantId;
 import com.shiyu.ai.knowledge.implementation.domain.GraphNode;
 import com.shiyu.ai.knowledge.implementation.domain.model.KnowledgeBO;
 import com.shiyu.ai.knowledge.implementation.domain.model.KnowledgeRelationBO;
 import com.shiyu.ai.knowledge.implementation.domain.port.repository.KnowledgeRelationRepository;
 import com.shiyu.ai.knowledge.implementation.domain.port.repository.KnowledgeRepository;
-import com.shiyu.ai.kernel.context.TenantId;
+
 import org.junit.jupiter.api.Test;
 
 import java.util.List;
-import java.util.Map;
 import java.util.Set;
-
-import static org.junit.jupiter.api.Assertions.*;
-import static org.mockito.ArgumentMatchers.*;
-import static org.mockito.Mockito.*;
 
 class MemoryGraphStoreTest {
     private static final TenantId TENANT = new TenantId(7L);
@@ -23,15 +23,27 @@ class MemoryGraphStoreTest {
     void buildsTenantSpaceGraphAndSupportsTraversalAndInvalidation() {
         KnowledgeRepository knowledge = mock(KnowledgeRepository.class);
         KnowledgeRelationRepository relations = mock(KnowledgeRelationRepository.class);
-        when(knowledge.findById(eq(TENANT), anyLong())).thenAnswer(invocation -> {
-            long id = invocation.getArgument(1);
-            if (id < 1 || id > 3) return null;
-            KnowledgeBO value = new KnowledgeBO(); value.setId(id); value.setSpaceId(10L); value.setName("N" + id); value.setCode("n" + id); return value;
-        });
+        when(knowledge.findById(eq(TENANT), anyLong()))
+                .thenAnswer(
+                        invocation -> {
+                            long id = invocation.getArgument(1);
+                            if (id < 1 || id > 3) return null;
+                            KnowledgeBO value = new KnowledgeBO();
+                            value.setId(id);
+                            value.setSpaceId(10L);
+                            value.setName("N" + id);
+                            value.setCode("n" + id);
+                            return value;
+                        });
         when(knowledge.findBySpace(TENANT, 10L)).thenReturn(List.of(node(1L), node(2L), node(3L)));
-        when(relations.findBySpace(TENANT, 10L)).thenReturn(List.of(
-                relation(1L, 2L, "PRE"), relation(2L, 3L, "NEXT"),
-                relation(1L, 3L, "RELATED"), relation(3L, 1L, "INCLUDE"), relation(3L, 2L, "UNKNOWN")));
+        when(relations.findBySpace(TENANT, 10L))
+                .thenReturn(
+                        List.of(
+                                relation(1L, 2L, "PRE"),
+                                relation(2L, 3L, "NEXT"),
+                                relation(1L, 3L, "RELATED"),
+                                relation(3L, 1L, "INCLUDE"),
+                                relation(3L, 2L, "UNKNOWN")));
         MemoryGraphStore store = new MemoryGraphStore(knowledge, relations);
 
         GraphNode first = store.getNode(TENANT, 1L);
@@ -66,7 +78,9 @@ class MemoryGraphStoreTest {
     void handlesKnowledgeWithoutSpaceAndNullTraversalRoot() {
         KnowledgeRepository knowledge = mock(KnowledgeRepository.class);
         KnowledgeRelationRepository relations = mock(KnowledgeRelationRepository.class);
-        KnowledgeBO noSpace = new KnowledgeBO(); noSpace.setId(1L); noSpace.setSpaceId(null);
+        KnowledgeBO noSpace = new KnowledgeBO();
+        noSpace.setId(1L);
+        noSpace.setSpaceId(null);
         when(knowledge.findById(TENANT, 1L)).thenReturn(noSpace);
         MemoryGraphStore store = new MemoryGraphStore(knowledge, relations);
         assertNull(store.getNode(TENANT, 1L));
@@ -76,12 +90,21 @@ class MemoryGraphStoreTest {
     }
 
     private static KnowledgeBO node(Long id) {
-        KnowledgeBO value = new KnowledgeBO(); value.setId(id); value.setSpaceId(10L); value.setName("N" + id); value.setCode("n" + id); return value;
+        KnowledgeBO value = new KnowledgeBO();
+        value.setId(id);
+        value.setSpaceId(10L);
+        value.setName("N" + id);
+        value.setCode("n" + id);
+        return value;
     }
 
     private static KnowledgeRelationBO relation(Long source, Long target, String type) {
-        KnowledgeRelationBO value = new KnowledgeRelationBO(); value.setSpaceId(10L); value.setSourceId(source); value.setTargetId(target); value.setRelationType(type); value.setWeight(1D); return value;
+        KnowledgeRelationBO value = new KnowledgeRelationBO();
+        value.setSpaceId(10L);
+        value.setSourceId(source);
+        value.setTargetId(target);
+        value.setRelationType(type);
+        value.setWeight(1D);
+        return value;
     }
 }
-
-

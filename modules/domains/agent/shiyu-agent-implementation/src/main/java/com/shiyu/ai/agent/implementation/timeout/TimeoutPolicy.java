@@ -1,14 +1,8 @@
 package com.shiyu.ai.agent.implementation.timeout;
 
 import java.util.concurrent.Callable;
-import java.util.concurrent.Executors;
-import java.util.concurrent.Future;
-import java.util.concurrent.TimeUnit;
-import java.util.concurrent.TimeoutException;
 
-/**
- * 超时策略
- */
+/** 超时策略 */
 public interface TimeoutPolicy extends AutoCloseable {
 
     <T> T executeWithTimeout(Callable<T> callable, TimeoutConfig config) throws Exception;

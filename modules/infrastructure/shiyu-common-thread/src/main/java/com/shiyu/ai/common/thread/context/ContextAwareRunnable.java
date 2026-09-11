@@ -5,10 +5,7 @@ import org.slf4j.LoggerFactory;
 
 import java.util.concurrent.CompletableFuture;
 
-/**
- * 上下文感知的Runnable实现
- * 能够在任务执行时保持线程上下文的一致性
- */
+/** 上下文感知的Runnable实现 能够在任务执行时保持线程上下文的一致性 */
 public class ContextAwareRunnable implements Runnable {
 
     private static final Logger logger = LoggerFactory.getLogger(ContextAwareRunnable.class);
@@ -59,14 +56,15 @@ public class ContextAwareRunnable implements Runnable {
      */
     public static <T> CompletableFuture<T> supplyAsync(java.util.function.Supplier<T> supplier) {
         TaskContext contextSnapshot = TaskContext.current().snapshot();
-        return CompletableFuture.supplyAsync(() -> {
-            TaskContext originalContext = TaskContext.current();
-            try {
-                TaskContext.current().restore(contextSnapshot);
-                return supplier.get();
-            } finally {
-                TaskContext.current().restore(originalContext);
-            }
-        });
+        return CompletableFuture.supplyAsync(
+                () -> {
+                    TaskContext originalContext = TaskContext.current();
+                    try {
+                        TaskContext.current().restore(contextSnapshot);
+                        return supplier.get();
+                    } finally {
+                        TaskContext.current().restore(originalContext);
+                    }
+                });
     }
 }

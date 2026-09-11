@@ -1,4 +1,5 @@
 package com.shiyu.ai.knowledge.implementation.infrastructure.storage;
+
 import com.shiyu.ai.common.storage.api.*;
 import com.shiyu.ai.common.storage.backup.*;
 import com.shiyu.ai.common.storage.config.*;
@@ -8,10 +9,11 @@ import com.shiyu.ai.common.storage.metadata.*;
 import com.shiyu.ai.common.storage.rate.*;
 import com.shiyu.ai.common.storage.security.*;
 import com.shiyu.ai.common.storage.vector.*;
-
 import com.shiyu.ai.knowledge.implementation.domain.model.KnowledgeSpaceBO;
 import com.shiyu.ai.knowledge.implementation.domain.port.repository.KnowledgeEnterpriseRepository;
+
 import lombok.RequiredArgsConstructor;
+
 import org.springframework.stereotype.Component;
 
 /** Adds Knowledge's active index versions to the generic Storage backup manifest. */
@@ -26,13 +28,16 @@ public class KnowledgeBackupManifestContributor implements BackupManifestContrib
         StringBuilder manifest = new StringBuilder();
         for (KnowledgeSpaceBO space : repository.findAllActiveSpaces()) {
             manifest.append("knowledge.activeIndex.")
-                    .append(space.getTenantId()).append('.')
-                    .append(space.getId()).append('=')
-                    .append(space.getActiveIndexVersion() == null ? "" : space.getActiveIndexVersion())
+                    .append(space.getTenantId())
+                    .append('.')
+                    .append(space.getId())
+                    .append('=')
+                    .append(
+                            space.getActiveIndexVersion() == null
+                                    ? ""
+                                    : space.getActiveIndexVersion())
                     .append('\n');
         }
         return manifest.toString();
     }
 }
-
-

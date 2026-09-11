@@ -1,16 +1,19 @@
 package com.shiyu.ai.knowledge.implementation.web;
 
-import com.shiyu.ai.knowledge.implementation.web.KnowledgeApiVersion;
-
 import cn.dev33.satoken.annotation.SaCheckPermission;
+
 import com.shiyu.ai.common.core.api.PageData;
 import com.shiyu.ai.common.core.api.Result;
-import com.shiyu.ai.kernel.context.ActorContext;
 import com.shiyu.ai.common.web.auth.ActorContextHttpAdapter;
+import com.shiyu.ai.kernel.context.ActorContext;
 import com.shiyu.ai.knowledge.implementation.infrastructure.point.KnowledgePointService;
+
 import io.swagger.v3.oas.annotations.tags.Tag;
+
 import jakarta.validation.Valid;
+
 import lombok.RequiredArgsConstructor;
+
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -38,16 +41,22 @@ public class KnowledgePointController {
             @RequestParam(defaultValue = "20") int pageSize,
             @RequestParam(required = false) String keyword,
             @RequestParam(required = false) String category,
-            @RequestHeader(value = KnowledgeApiVersion.HEADER,
-                    defaultValue = KnowledgeApiVersion.CURRENT) String version) {
+            @RequestHeader(
+                            value = KnowledgeApiVersion.HEADER,
+                            defaultValue = KnowledgeApiVersion.CURRENT)
+                    String version) {
         KnowledgeApiVersion.requireCurrent(version);
-        return Result.success(service.page(currentActor(), spaceId, pageNum, pageSize, keyword, category));
+        return Result.success(
+                service.page(currentActor(), spaceId, pageNum, pageSize, keyword, category));
     }
 
     @GetMapping("/points/{id}")
-    public Result<KnowledgePointService.PointView> get(@PathVariable Long id,
-                                                        @RequestHeader(value = KnowledgeApiVersion.HEADER,
-                                                                defaultValue = KnowledgeApiVersion.CURRENT) String version) {
+    public Result<KnowledgePointService.PointView> get(
+            @PathVariable Long id,
+            @RequestHeader(
+                            value = KnowledgeApiVersion.HEADER,
+                            defaultValue = KnowledgeApiVersion.CURRENT)
+                    String version) {
         KnowledgeApiVersion.requireCurrent(version);
         return Result.success(service.get(currentActor(), id));
     }
@@ -55,8 +64,10 @@ public class KnowledgePointController {
     @GetMapping("/points/{id}/graph")
     public Result<com.shiyu.ai.knowledge.implementation.web.response.KnowledgeGraphResponse> graph(
             @PathVariable Long id,
-            @RequestHeader(value = KnowledgeApiVersion.HEADER,
-                    defaultValue = KnowledgeApiVersion.CURRENT) String version) {
+            @RequestHeader(
+                            value = KnowledgeApiVersion.HEADER,
+                            defaultValue = KnowledgeApiVersion.CURRENT)
+                    String version) {
         KnowledgeApiVersion.requireCurrent(version);
         return Result.success(service.graph(currentActor(), id));
     }
@@ -66,8 +77,10 @@ public class KnowledgePointController {
     public Result<KnowledgePointService.PointView> create(
             @PathVariable Long spaceId,
             @RequestBody @Valid KnowledgePointService.CreatePointRequest request,
-            @RequestHeader(value = KnowledgeApiVersion.HEADER,
-                    defaultValue = KnowledgeApiVersion.CURRENT) String version) {
+            @RequestHeader(
+                            value = KnowledgeApiVersion.HEADER,
+                            defaultValue = KnowledgeApiVersion.CURRENT)
+                    String version) {
         KnowledgeApiVersion.requireCurrent(version);
         return Result.success(service.create(currentActor(), spaceId, request));
     }
@@ -77,17 +90,22 @@ public class KnowledgePointController {
     public Result<KnowledgePointService.PointView> update(
             @PathVariable Long id,
             @RequestBody @Valid KnowledgePointService.UpdatePointRequest request,
-            @RequestHeader(value = KnowledgeApiVersion.HEADER,
-                    defaultValue = KnowledgeApiVersion.CURRENT) String version) {
+            @RequestHeader(
+                            value = KnowledgeApiVersion.HEADER,
+                            defaultValue = KnowledgeApiVersion.CURRENT)
+                    String version) {
         KnowledgeApiVersion.requireCurrent(version);
         return Result.success(service.update(currentActor(), id, request));
     }
 
     @DeleteMapping("/points/{id}")
     @SaCheckPermission("knowledge:delete")
-    public Result<Void> delete(@PathVariable Long id,
-                               @RequestHeader(value = KnowledgeApiVersion.HEADER,
-                                       defaultValue = KnowledgeApiVersion.CURRENT) String version) {
+    public Result<Void> delete(
+            @PathVariable Long id,
+            @RequestHeader(
+                            value = KnowledgeApiVersion.HEADER,
+                            defaultValue = KnowledgeApiVersion.CURRENT)
+                    String version) {
         KnowledgeApiVersion.requireCurrent(version);
         service.delete(currentActor(), id);
         return Result.success();
@@ -97,5 +115,3 @@ public class KnowledgePointController {
         return ActorContextHttpAdapter.currentActor();
     }
 }
-
-

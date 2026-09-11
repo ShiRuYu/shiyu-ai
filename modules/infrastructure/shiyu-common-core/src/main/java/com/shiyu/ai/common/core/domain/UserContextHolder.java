@@ -2,11 +2,7 @@ package com.shiyu.ai.common.core.domain;
 
 import com.shiyu.ai.common.core.enums.UserTypeEnum;
 
-import java.util.List;
-
-/**
- * 登录上下文持有者
- */
+/** 登录上下文持有者 */
 public final class UserContextHolder {
 
     private UserContextHolder() {}

@@ -1,5 +1,9 @@
 package com.shiyu.ai.education.implementation.agent;
 
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertSame;
+import static org.mockito.Mockito.mock;
+
 import com.shiyu.ai.agent.contract.node.BaseNode;
 import com.shiyu.ai.agent.contract.node.NodeConfig;
 import com.shiyu.ai.agent.contract.node.NodeType;
@@ -9,19 +13,16 @@ import com.shiyu.ai.education.implementation.agent.node.creator.PrereqCheckNodeC
 import com.shiyu.ai.education.implementation.agent.node.creator.ReviewScheduleNodeCreator;
 import com.shiyu.ai.education.implementation.agent.node.creator.ScoreAnalysisNodeCreator;
 import com.shiyu.ai.education.implementation.agent.node.creator.TeachNodeCreator;
-import com.shiyu.ai.education.implementation.domain.ReviewScheduler;
 import com.shiyu.ai.education.implementation.application.AbilityService;
 import com.shiyu.ai.education.implementation.application.ReviewService;
+import com.shiyu.ai.education.implementation.domain.ReviewScheduler;
 import com.shiyu.ai.education.implementation.domain.port.repository.ReviewTaskRepository;
 import com.shiyu.ai.knowledge.contract.api.KnowledgePathPort;
 import com.shiyu.ai.knowledge.contract.api.KnowledgePointPort;
 import com.shiyu.ai.knowledge.contract.api.KnowledgeRelationPort;
 import com.shiyu.ai.model.contract.api.ChatEngine;
-import org.junit.jupiter.api.Test;
 
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertSame;
-import static org.mockito.Mockito.mock;
+import org.junit.jupiter.api.Test;
 
 class EducationNodeCreatorTest {
     private static final NodeConfig CONFIG = NodeConfig.builder().nodeId("education-node").build();
@@ -37,15 +38,18 @@ class EducationNodeCreatorTest {
         ReviewScheduler scheduler = mock(ReviewScheduler.class);
         ReviewTaskRepository tasks = mock(ReviewTaskRepository.class);
 
-        assertCreated(new AbilityQueryNodeCreator(points, relations, ability), NodeType.ABILITY_QUERY);
+        assertCreated(
+                new AbilityQueryNodeCreator(points, relations, ability), NodeType.ABILITY_QUERY);
         assertCreated(new PracticeNodeCreator(chat), NodeType.EDUCATION_PRACTICE);
         assertCreated(new PrereqCheckNodeCreator(relations, paths), NodeType.PREREQ_CHECK);
-        assertCreated(new ReviewScheduleNodeCreator(scheduler, review, tasks), NodeType.REVIEW_SCHEDULE);
+        assertCreated(
+                new ReviewScheduleNodeCreator(scheduler, review, tasks), NodeType.REVIEW_SCHEDULE);
         assertCreated(new ScoreAnalysisNodeCreator(ability), NodeType.SCORE_ANALYSIS);
         assertCreated(new TeachNodeCreator(chat), NodeType.EDUCATION_TEACH);
     }
 
-    private static void assertCreated(com.shiyu.ai.agent.contract.node.creator.NodeCreator creator, NodeType type) {
+    private static void assertCreated(
+            com.shiyu.ai.agent.contract.node.creator.NodeCreator creator, NodeType type) {
         assertEquals(type, creator.getType());
         BaseNode node = creator.create(CONFIG);
         assertSame(CONFIG, node.getConfig());

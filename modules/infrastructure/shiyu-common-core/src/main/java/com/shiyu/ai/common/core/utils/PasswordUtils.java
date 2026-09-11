@@ -4,19 +4,15 @@ import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 
 import java.security.SecureRandom;
 
-/**
- * 密码加密工具类（BCrypt）
- * 提供密码加密和验证功能
- */
+/** 密码加密工具类（BCrypt） 提供密码加密和验证功能 */
 public class PasswordUtils {
 
     private static final BCryptPasswordEncoder PASSWORD_ENCODER = new BCryptPasswordEncoder();
     private static final SecureRandom SECURE_RANDOM = new SecureRandom();
-    private static final String CHARS = "ABCDEFGHJKLMNPQRSTUVWXYZabcdefghjkmnpqrstuvwxyz23456789!@#$%";
+    private static final String CHARS =
+            "ABCDEFGHJKLMNPQRSTUVWXYZabcdefghjkmnpqrstuvwxyz23456789!@#$%";
 
-    /**
-     * 生成随机密码（12 位，含大小写字母、数字、特殊字符）
-     */
+    /** 生成随机密码（12 位，含大小写字母、数字、特殊字符） */
     public static String generateRandomPassword() {
         StringBuilder sb = new StringBuilder(12);
         for (int i = 0; i < 12; i++) {
@@ -25,9 +21,7 @@ public class PasswordUtils {
         return sb.toString();
     }
 
-    /**
-     * 生成默认密码（每次调用生成不同的随机密码，避免所有用户共享同一默认密码）
-     */
+    /** 生成默认密码（每次调用生成不同的随机密码，避免所有用户共享同一默认密码） */
     public static String generateDefaultPassword() {
         return generateRandomPassword();
     }
@@ -48,7 +42,7 @@ public class PasswordUtils {
     /**
      * 验证密码
      *
-     * @param rawPassword     原始密码
+     * @param rawPassword 原始密码
      * @param encodedPassword 加密后的密码
      * @return true-密码正确，false-密码错误
      */

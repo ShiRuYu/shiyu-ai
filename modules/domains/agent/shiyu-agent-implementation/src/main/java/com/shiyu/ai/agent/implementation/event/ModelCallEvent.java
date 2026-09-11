@@ -8,8 +8,8 @@ public class ModelCallEvent extends DomainEvent {
     private final int completionTokens;
     private final long latencyMs;
 
-    public ModelCallEvent(String platform, String model,
-                          int promptTokens, int completionTokens, long latencyMs) {
+    public ModelCallEvent(
+            String platform, String model, int promptTokens, int completionTokens, long latencyMs) {
         super("MODEL_CALL");
         this.platform = platform;
         this.model = model;
@@ -18,9 +18,23 @@ public class ModelCallEvent extends DomainEvent {
         this.latencyMs = latencyMs;
     }
 
-    public String getPlatform() { return platform; }
-    public String getModel() { return model; }
-    public int getPromptTokens() { return promptTokens; }
-    public int getCompletionTokens() { return completionTokens; }
-    public long getLatencyMs() { return latencyMs; }
+    public String getPlatform() {
+        return platform;
+    }
+
+    public String getModel() {
+        return model;
+    }
+
+    public int getPromptTokens() {
+        return promptTokens;
+    }
+
+    public int getCompletionTokens() {
+        return completionTokens;
+    }
+
+    public long getLatencyMs() {
+        return latencyMs;
+    }
 }

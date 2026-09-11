@@ -1,15 +1,14 @@
 package com.shiyu.ai.iam.implementation.service.convert;
 
-import com.shiyu.ai.iam.implementation.vo.DictVO;
 import com.shiyu.ai.iam.implementation.domain.model.DictBO;
+import com.shiyu.ai.iam.implementation.vo.DictVO;
+
 import org.mapstruct.Mapper;
 import org.mapstruct.factory.Mappers;
 
 import java.util.List;
 
-/**
- * DictBO → DictVO 转换器
- */
+/** DictBO → DictVO 转换器 */
 @Mapper
 public interface DictConverter {
 
@@ -19,4 +18,3 @@ public interface DictConverter {
 
     List<DictVO> toVOList(List<DictBO> boList);
 }
-

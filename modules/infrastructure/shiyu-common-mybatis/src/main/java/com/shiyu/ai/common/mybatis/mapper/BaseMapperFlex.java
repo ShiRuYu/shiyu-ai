@@ -7,6 +7,4 @@ import com.mybatisflex.core.BaseMapper;
  *
  * @param <T> table 泛型
  */
-public interface BaseMapperFlex<T> extends BaseMapper<T> {
-
-}
+public interface BaseMapperFlex<T> extends BaseMapper<T> {}

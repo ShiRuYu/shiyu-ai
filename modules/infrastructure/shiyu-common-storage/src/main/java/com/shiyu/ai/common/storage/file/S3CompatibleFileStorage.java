@@ -1,8 +1,8 @@
 package com.shiyu.ai.common.storage.file;
+
 import com.shiyu.ai.common.storage.api.*;
 import com.shiyu.ai.common.storage.backup.*;
 import com.shiyu.ai.common.storage.config.*;
-import com.shiyu.ai.common.storage.file.*;
 import com.shiyu.ai.common.storage.lease.*;
 import com.shiyu.ai.common.storage.metadata.*;
 import com.shiyu.ai.common.storage.rate.*;
@@ -44,13 +44,18 @@ public class S3CompatibleFileStorage implements KeyedFileStorage, AutoCloseable 
         this.properties = properties;
         validate();
 
-        var builder = S3Client.builder()
-                .credentialsProvider(StaticCredentialsProvider.create(
-                        AwsBasicCredentials.create(properties.getAccessKey(), properties.getSecretKey())))
-                .region(Region.of(properties.getRegion()))
-                .serviceConfiguration(S3Configuration.builder()
-                        .pathStyleAccessEnabled(properties.isPathStyleAccess())
-                        .build());
+        var builder =
+                S3Client.builder()
+                        .credentialsProvider(
+                                StaticCredentialsProvider.create(
+                                        AwsBasicCredentials.create(
+                                                properties.getAccessKey(),
+                                                properties.getSecretKey())))
+                        .region(Region.of(properties.getRegion()))
+                        .serviceConfiguration(
+                                S3Configuration.builder()
+                                        .pathStyleAccessEnabled(properties.isPathStyleAccess())
+                                        .build());
         if (properties.getEndpoint() != null && !properties.getEndpoint().isBlank()) {
             builder.endpointOverride(URI.create(properties.getEndpoint()));
         }
@@ -59,7 +64,11 @@ public class S3CompatibleFileStorage implements KeyedFileStorage, AutoCloseable 
 
     @Override
     public StoredFile upload(
-            String namespace, String originalName, String contentType, long size, InputStream inputStream)
+            String namespace,
+            String originalName,
+            String contentType,
+            long size,
+            InputStream inputStream)
             throws IOException {
         String key = StorageKeys.create(namespace, originalName);
         return uploadAtKey(key, originalName, contentType, size, inputStream);
@@ -94,23 +103,26 @@ public class S3CompatibleFileStorage implements KeyedFileStorage, AutoCloseable 
     @Override
     public List<StoredFile> list(String namespace) throws IOException {
         try {
-            return client.listObjectsV2Paginator(ListObjectsV2Request.builder()
-                            .bucket(properties.getBucket())
-                            .prefix(namespace)
-                            .build())
+            return client
+                    .listObjectsV2Paginator(
+                            ListObjectsV2Request.builder()
+                                    .bucket(properties.getBucket())
+                                    .prefix(namespace)
+                                    .build())
                     .contents()
                     .stream()
-                    .map(item -> {
-                        String originalName = StorageKeys.originalName(item.key());
-                        return new StoredFile(
-                                item.key(),
-                                originalName,
-                                item.size(),
-                                normalizeContentType(null, originalName),
-                                item.lastModified(),
-                                publicUrl(item.key()),
-                                storageType);
-                    })
+                    .map(
+                            item -> {
+                                String originalName = StorageKeys.originalName(item.key());
+                                return new StoredFile(
+                                        item.key(),
+                                        originalName,
+                                        item.size(),
+                                        normalizeContentType(null, originalName),
+                                        item.lastModified(),
+                                        publicUrl(item.key()),
+                                        storageType);
+                            })
                     .sorted(java.util.Comparator.comparing(StoredFile::lastModified).reversed())
                     .toList();
         } catch (S3Exception ex) {
@@ -121,10 +133,16 @@ public class S3CompatibleFileStorage implements KeyedFileStorage, AutoCloseable 
     @Override
     public StorageObject open(String key) throws IOException {
         try {
-            ResponseInputStream<GetObjectResponse> response = client.getObject(
-                    GetObjectRequest.builder().bucket(properties.getBucket()).key(key).build());
+            ResponseInputStream<GetObjectResponse> response =
+                    client.getObject(
+                            GetObjectRequest.builder()
+                                    .bucket(properties.getBucket())
+                                    .key(key)
+                                    .build());
             GetObjectResponse metadata = response.response();
-            String originalName = metadata.metadata().getOrDefault("original-name", StorageKeys.originalName(key));
+            String originalName =
+                    metadata.metadata()
+                            .getOrDefault("original-name", StorageKeys.originalName(key));
             return new StorageObject(
                     response,
                     originalName,
@@ -142,10 +160,8 @@ public class S3CompatibleFileStorage implements KeyedFileStorage, AutoCloseable 
     @Override
     public void delete(String key) throws IOException {
         try {
-            client.deleteObject(DeleteObjectRequest.builder()
-                    .bucket(properties.getBucket())
-                    .key(key)
-                    .build());
+            client.deleteObject(
+                    DeleteObjectRequest.builder().bucket(properties.getBucket()).key(key).build());
         } catch (S3Exception ex) {
             throw new IOException("删除外部存储文件失败", ex);
         }
@@ -157,10 +173,14 @@ public class S3CompatibleFileStorage implements KeyedFileStorage, AutoCloseable 
     }
 
     private void validate() {
-        if (properties.getBucket() == null || properties.getBucket().isBlank()
-                || properties.getAccessKey() == null || properties.getAccessKey().isBlank()
-                || properties.getSecretKey() == null || properties.getSecretKey().isBlank()) {
-            throw new IllegalStateException("存储方式 " + storageType + " 缺少 bucket/access-key/secret-key 配置");
+        if (properties.getBucket() == null
+                || properties.getBucket().isBlank()
+                || properties.getAccessKey() == null
+                || properties.getAccessKey().isBlank()
+                || properties.getSecretKey() == null
+                || properties.getSecretKey().isBlank()) {
+            throw new IllegalStateException(
+                    "存储方式 " + storageType + " 缺少 bucket/access-key/secret-key 配置");
         }
     }
 

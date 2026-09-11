@@ -1,20 +1,5 @@
 package com.shiyu.ai.agent.implementation.service.impl;
 
-import com.shiyu.ai.agent.implementation.domain.model.IntentDefBO;
-import com.shiyu.ai.agent.implementation.port.repository.IntentDefRepository;
-import com.shiyu.ai.agent.implementation.request.IntentDefRequest;
-import com.shiyu.ai.agent.implementation.vo.IntentDefVO;
-import com.shiyu.ai.common.core.utils.MapstructUtils;
-import com.shiyu.ai.kernel.context.ActorContext;
-import com.shiyu.ai.kernel.context.TenantId;
-import com.shiyu.ai.kernel.context.UserId;
-import org.apache.commons.lang3.tuple.Pair;
-import org.junit.jupiter.api.Test;
-import org.mockito.MockedStatic;
-import org.springframework.test.util.ReflectionTestUtils;
-
-import java.util.List;
-
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.eq;
@@ -24,6 +9,22 @@ import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
+import com.shiyu.ai.agent.implementation.domain.model.IntentDefBO;
+import com.shiyu.ai.agent.implementation.port.repository.IntentDefRepository;
+import com.shiyu.ai.agent.implementation.request.IntentDefRequest;
+import com.shiyu.ai.agent.implementation.vo.IntentDefVO;
+import com.shiyu.ai.common.core.utils.MapstructUtils;
+import com.shiyu.ai.kernel.context.ActorContext;
+import com.shiyu.ai.kernel.context.TenantId;
+import com.shiyu.ai.kernel.context.UserId;
+
+import org.apache.commons.lang3.tuple.Pair;
+import org.junit.jupiter.api.Test;
+import org.mockito.MockedStatic;
+import org.springframework.test.util.ReflectionTestUtils;
+
+import java.util.List;
+
 @SuppressWarnings({"rawtypes", "unchecked"})
 class IntentDefServiceCoverageTest {
     @Test
@@ -32,7 +33,10 @@ class IntentDefServiceCoverageTest {
         IntentDefServiceImpl service = new IntentDefServiceImpl();
         ReflectionTestUtils.setField(service, "intentDefRepository", repository);
         ActorContext actor = new ActorContext(new TenantId(7L), new UserId(9L), false);
-        IntentDefBO bo = new IntentDefBO(); bo.setId(1L); bo.setCode("WEATHER"); bo.setAgentId("agent-1");
+        IntentDefBO bo = new IntentDefBO();
+        bo.setId(1L);
+        bo.setCode("WEATHER");
+        bo.setAgentId("agent-1");
         IntentDefVO vo = mock(IntentDefVO.class);
         IntentDefRequest request = new IntentDefRequest();
         when(repository.selectPage(actor.tenantId(), 1, 20, "agent-1", "name", "code", "TASK"))
@@ -43,7 +47,8 @@ class IntentDefServiceCoverageTest {
         when(repository.create(actor.tenantId(), bo)).thenReturn(bo);
         when(repository.update(actor.tenantId(), bo)).thenReturn(bo);
         try (MockedStatic<MapstructUtils> mapper = mockStatic(MapstructUtils.class)) {
-            mapper.when(() -> MapstructUtils.convert(any(List.class), eq(IntentDefVO.class))).thenReturn(List.of(vo));
+            mapper.when(() -> MapstructUtils.convert(any(List.class), eq(IntentDefVO.class)))
+                    .thenReturn(List.of(vo));
             mapper.when(() -> MapstructUtils.convert(bo, IntentDefVO.class)).thenReturn(vo);
             mapper.when(() -> MapstructUtils.convert(request, IntentDefBO.class)).thenReturn(bo);
             mapper.when(() -> MapstructUtils.convert(bo, IntentDefBO.class)).thenReturn(bo);
@@ -63,9 +68,12 @@ class IntentDefServiceCoverageTest {
     @Test
     void rejectsMissingActorForEveryPublicOperation() {
         IntentDefServiceImpl service = new IntentDefServiceImpl();
-        ReflectionTestUtils.setField(service, "intentDefRepository", mock(IntentDefRepository.class));
+        ReflectionTestUtils.setField(
+                service, "intentDefRepository", mock(IntentDefRepository.class));
         IntentDefRequest request = new IntentDefRequest();
-        assertThrows(RuntimeException.class, () -> service.pageView(null, 1, 10, null, null, null, null));
+        assertThrows(
+                RuntimeException.class,
+                () -> service.pageView(null, 1, 10, null, null, null, null));
         assertThrows(RuntimeException.class, () -> service.detailView(null, 1L));
         assertThrows(RuntimeException.class, () -> service.create(null, request));
         assertThrows(RuntimeException.class, () -> service.update(null, 1L, request));

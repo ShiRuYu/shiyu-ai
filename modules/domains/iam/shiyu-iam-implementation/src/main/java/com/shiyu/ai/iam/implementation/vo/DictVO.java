@@ -6,14 +6,11 @@ import java.io.Serial;
 import java.io.Serializable;
 import java.time.LocalDateTime;
 
-/**
- * 字典视图对象
- */
+/** 字典视图对象 */
 @Data
 public class DictVO implements Serializable {
 
-    @Serial
-    private static final long serialVersionUID = 1L;
+    @Serial private static final long serialVersionUID = 1L;
 
     private Long id;
     private Long tenantId;
@@ -29,4 +26,3 @@ public class DictVO implements Serializable {
     private LocalDateTime createTime;
     private LocalDateTime updateTime;
 }
-

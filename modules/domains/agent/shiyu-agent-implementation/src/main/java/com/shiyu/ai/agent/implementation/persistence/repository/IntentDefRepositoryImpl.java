@@ -1,13 +1,16 @@
 package com.shiyu.ai.agent.implementation.persistence.repository;
 
 import cn.hutool.json.JSONUtil;
+
 import com.mybatisflex.core.query.QueryWrapper;
+import com.shiyu.ai.agent.implementation.domain.model.IntentDefBO;
 import com.shiyu.ai.agent.implementation.persistence.dataobject.IntentDefDO;
 import com.shiyu.ai.agent.implementation.persistence.mapper.IntentDefMapper;
-import com.shiyu.ai.agent.implementation.domain.model.IntentDefBO;
 import com.shiyu.ai.common.core.vo.IdNameOptionVO;
 import com.shiyu.ai.kernel.context.TenantId;
+
 import jakarta.annotation.Resource;
+
 import org.apache.commons.lang3.tuple.Pair;
 import org.springframework.stereotype.Component;
 
@@ -16,15 +19,24 @@ import java.util.List;
 import java.util.Map;
 
 @Component
-public class IntentDefRepositoryImpl implements com.shiyu.ai.agent.implementation.port.repository.IntentDefRepository {
+public class IntentDefRepositoryImpl
+        implements com.shiyu.ai.agent.implementation.port.repository.IntentDefRepository {
 
-    @Resource
-    private IntentDefMapper intentDefMapper;
+    @Resource private IntentDefMapper intentDefMapper;
 
-    public Pair<Long, List<IntentDefBO>> selectPage(TenantId tenantId, Number pageNo, Number pageSize, String agentId, String name, String code, String category) {
+    public Pair<Long, List<IntentDefBO>> selectPage(
+            TenantId tenantId,
+            Number pageNo,
+            Number pageSize,
+            String agentId,
+            String name,
+            String code,
+            String category) {
         requireTenant(tenantId);
         QueryWrapper countWrapper = new QueryWrapper();
-        countWrapper.eq(IntentDefDO::getTenantId, tenantId.value()).eq(IntentDefDO::getDelFlag, "0");
+        countWrapper
+                .eq(IntentDefDO::getTenantId, tenantId.value())
+                .eq(IntentDefDO::getDelFlag, "0");
         if (agentId != null) countWrapper.eq(IntentDefDO::getAgentId, agentId);
         if (name != null) countWrapper.like(IntentDefDO::getName, name);
         if (code != null) countWrapper.like(IntentDefDO::getCode, code);
@@ -32,14 +44,17 @@ public class IntentDefRepositoryImpl implements com.shiyu.ai.agent.implementatio
         long count = intentDefMapper.selectCountByQuery(countWrapper);
 
         QueryWrapper queryWrapper = new QueryWrapper();
-        queryWrapper.eq(IntentDefDO::getTenantId, tenantId.value()).eq(IntentDefDO::getDelFlag, "0");
+        queryWrapper
+                .eq(IntentDefDO::getTenantId, tenantId.value())
+                .eq(IntentDefDO::getDelFlag, "0");
         if (agentId != null) queryWrapper.eq(IntentDefDO::getAgentId, agentId);
         if (name != null) queryWrapper.like(IntentDefDO::getName, name);
         if (code != null) queryWrapper.like(IntentDefDO::getCode, code);
         if (category != null) queryWrapper.eq(IntentDefDO::getCategory, category);
         queryWrapper.orderBy(IntentDefDO::getPriority, true);
         if (pageNo != null && pageSize != null) {
-            queryWrapper.limit((pageNo.longValue() - 1) * pageSize.longValue(), pageSize.longValue());
+            queryWrapper.limit(
+                    (pageNo.longValue() - 1) * pageSize.longValue(), pageSize.longValue());
         }
 
         List<IntentDefDO> doList = intentDefMapper.selectListByQuery(queryWrapper);
@@ -55,11 +70,11 @@ public class IntentDefRepositoryImpl implements com.shiyu.ai.agent.implementatio
         // WHERE del_flag='0' AND enabled='1' AND status='1' AND (agent_id=? OR agent_id='default')
         QueryWrapper qw = new QueryWrapper();
         qw.eq(IntentDefDO::getTenantId, tenantId.value())
-          .eq(IntentDefDO::getDelFlag, "0")
-          .eq(IntentDefDO::getEnabled, "1")
-          .eq(IntentDefDO::getStatus, 1)
-          .and("(agent_id = ? OR agent_id = 'default')", agentId)
-          .orderBy(IntentDefDO::getPriority, true);
+                .eq(IntentDefDO::getDelFlag, "0")
+                .eq(IntentDefDO::getEnabled, "1")
+                .eq(IntentDefDO::getStatus, 1)
+                .and("(agent_id = ? OR agent_id = 'default')", agentId)
+                .orderBy(IntentDefDO::getPriority, true);
         List<IntentDefDO> doList = intentDefMapper.selectListByQuery(qw);
         List<IntentDefBO> boList = new ArrayList<>(doList.size());
         for (IntentDefDO d : doList) {
@@ -70,15 +85,16 @@ public class IntentDefRepositoryImpl implements com.shiyu.ai.agent.implementatio
 
     public List<IntentDefBO> selectByCategory(TenantId tenantId, String agentId, String category) {
         requireTenant(tenantId);
-        // WHERE del_flag='0' AND enabled='1' AND status='1' AND category=? AND (agent_id=? OR agent_id='default')
+        // WHERE del_flag='0' AND enabled='1' AND status='1' AND category=? AND (agent_id=? OR
+        // agent_id='default')
         QueryWrapper qw = new QueryWrapper();
         qw.eq(IntentDefDO::getTenantId, tenantId.value())
-          .eq(IntentDefDO::getDelFlag, "0")
-          .eq(IntentDefDO::getEnabled, "1")
-          .eq(IntentDefDO::getStatus, 1)
-          .eq(IntentDefDO::getCategory, category)
-          .and("(agent_id = ? OR agent_id = 'default')", agentId)
-          .orderBy(IntentDefDO::getPriority, true);
+                .eq(IntentDefDO::getDelFlag, "0")
+                .eq(IntentDefDO::getEnabled, "1")
+                .eq(IntentDefDO::getStatus, 1)
+                .eq(IntentDefDO::getCategory, category)
+                .and("(agent_id = ? OR agent_id = 'default')", agentId)
+                .orderBy(IntentDefDO::getPriority, true);
         List<IntentDefDO> doList = intentDefMapper.selectListByQuery(qw);
         List<IntentDefBO> boList = new ArrayList<>(doList.size());
         for (IntentDefDO d : doList) {
@@ -89,9 +105,11 @@ public class IntentDefRepositoryImpl implements com.shiyu.ai.agent.implementatio
 
     public IntentDefBO selectById(TenantId tenantId, Long id) {
         requireTenant(tenantId);
-        IntentDefDO intentDO = intentDefMapper.selectOneByQuery(QueryWrapper.create()
-                .eq(IntentDefDO::getTenantId, tenantId.value())
-                .eq(IntentDefDO::getId, id));
+        IntentDefDO intentDO =
+                intentDefMapper.selectOneByQuery(
+                        QueryWrapper.create()
+                                .eq(IntentDefDO::getTenantId, tenantId.value())
+                                .eq(IntentDefDO::getId, id));
         if (intentDO == null) return null;
         return convertToBo(intentDO);
     }
@@ -109,21 +127,26 @@ public class IntentDefRepositoryImpl implements com.shiyu.ai.agent.implementatio
 
     public IntentDefBO update(TenantId tenantId, IntentDefBO bo) {
         requireTenant(tenantId);
-        if (bo == null || bo.getId() == null) throw new IllegalArgumentException("intent definition and id are required");
+        if (bo == null || bo.getId() == null)
+            throw new IllegalArgumentException("intent definition and id are required");
         bo.setTenantId(tenantId.value());
         IntentDefDO intentDO = new IntentDefDO();
         copyToDo(bo, intentDO);
         intentDO.setId(bo.getId());
-        intentDefMapper.updateByQuery(intentDO, QueryWrapper.create()
-                .eq(IntentDefDO::getTenantId, tenantId.value())
-                .eq(IntentDefDO::getId, bo.getId()));
+        intentDefMapper.updateByQuery(
+                intentDO,
+                QueryWrapper.create()
+                        .eq(IntentDefDO::getTenantId, tenantId.value())
+                        .eq(IntentDefDO::getId, bo.getId()));
         return bo;
     }
 
     public void deleteById(TenantId tenantId, Long id) {
         requireTenant(tenantId);
-        intentDefMapper.deleteByQuery(QueryWrapper.create()
-                .eq(IntentDefDO::getTenantId, tenantId.value()).eq(IntentDefDO::getId, id));
+        intentDefMapper.deleteByQuery(
+                QueryWrapper.create()
+                        .eq(IntentDefDO::getTenantId, tenantId.value())
+                        .eq(IntentDefDO::getId, id));
     }
 
     public void deleteByIds(TenantId tenantId, List<Long> ids) {
@@ -133,23 +156,25 @@ public class IntentDefRepositoryImpl implements com.shiyu.ai.agent.implementatio
         }
     }
 
-    /**
-     * 获取所有启用意图定义选项（下拉选择用）
-     */
+    /** 获取所有启用意图定义选项（下拉选择用） */
     public List<IdNameOptionVO> selectAllOptions(TenantId tenantId) {
         requireTenant(tenantId);
         QueryWrapper qw = new QueryWrapper();
         qw.eq(IntentDefDO::getTenantId, tenantId.value())
-          .eq(IntentDefDO::getDelFlag, "0")
-          .eq(IntentDefDO::getEnabled, "1")
-          .eq(IntentDefDO::getStatus, 1)
-          .orderBy(IntentDefDO::getPriority, true);
+                .eq(IntentDefDO::getDelFlag, "0")
+                .eq(IntentDefDO::getEnabled, "1")
+                .eq(IntentDefDO::getStatus, 1)
+                .orderBy(IntentDefDO::getPriority, true);
         List<IntentDefDO> doList = intentDefMapper.selectListByQuery(qw);
-        return doList.stream().map(d -> IdNameOptionVO.builder()
-                .id(d.getId())
-                .name(d.getName())
-                .code(d.getCode())
-                .build()).collect(java.util.stream.Collectors.toList());
+        return doList.stream()
+                .map(
+                        d ->
+                                IdNameOptionVO.builder()
+                                        .id(d.getId())
+                                        .name(d.getName())
+                                        .code(d.getCode())
+                                        .build())
+                .collect(java.util.stream.Collectors.toList());
     }
 
     private IntentDefBO convertToBo(IntentDefDO d) {
@@ -204,8 +229,12 @@ public class IntentDefRepositoryImpl implements com.shiyu.ai.agent.implementatio
         d.setTargetNode(bo.getTargetNode());
         d.setRequireSlotFilling(Boolean.TRUE.equals(bo.getRequireSlotFilling()) ? "1" : "0");
         d.setSlots(bo.getSlots() != null ? JSONUtil.toJsonStr(bo.getSlots()) : null);
-        d.setParameterMapping(bo.getParameterMapping() != null ? JSONUtil.toJsonStr(bo.getParameterMapping()) : null);
-        d.setSlotDefaults(bo.getSlotDefaults() != null ? JSONUtil.toJsonStr(bo.getSlotDefaults()) : null);
+        d.setParameterMapping(
+                bo.getParameterMapping() != null
+                        ? JSONUtil.toJsonStr(bo.getParameterMapping())
+                        : null);
+        d.setSlotDefaults(
+                bo.getSlotDefaults() != null ? JSONUtil.toJsonStr(bo.getSlotDefaults()) : null);
         d.setEnabled(Boolean.TRUE.equals(bo.getEnabled()) ? "1" : "0");
         d.setStatus(1);
         d.setDelFlag(0);

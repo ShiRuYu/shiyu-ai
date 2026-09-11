@@ -1,15 +1,19 @@
 package com.shiyu.ai.education.implementation.web;
 
 import cn.dev33.satoken.annotation.SaCheckPermission;
+
 import com.shiyu.ai.common.core.api.PageData;
 import com.shiyu.ai.common.core.api.Result;
+import com.shiyu.ai.common.web.auth.ActorContextHttpAdapter;
+import com.shiyu.ai.education.implementation.application.ResourceService;
 import com.shiyu.ai.education.implementation.web.dto.ResourceResponse;
 import com.shiyu.ai.education.implementation.web.request.ResourceRequest;
-import com.shiyu.ai.education.implementation.application.ResourceService;
-import com.shiyu.ai.common.web.auth.ActorContextHttpAdapter;
+
 import jakarta.validation.Valid;
+
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -32,23 +36,28 @@ public class ResourceController {
     public Result<PageData<ResourceResponse>> list(
             @RequestParam(defaultValue = "1") Integer pageNum,
             @RequestParam(defaultValue = "10") Integer pageSize) {
-        return Result.success(resourceService.page(ActorContextHttpAdapter.currentActor(), pageNum, pageSize));
+        return Result.success(
+                resourceService.page(ActorContextHttpAdapter.currentActor(), pageNum, pageSize));
     }
 
     @GetMapping("/subject")
     public Result<List<ResourceResponse>> listBySubjectCode(@RequestParam String subjectCode) {
-        return Result.success(resourceService.listBySubjectCode(ActorContextHttpAdapter.currentActor(), subjectCode));
+        return Result.success(
+                resourceService.listBySubjectCode(
+                        ActorContextHttpAdapter.currentActor(), subjectCode));
     }
 
     @GetMapping("/type")
     public Result<List<ResourceResponse>> listByType(@RequestParam String type) {
-        return Result.success(resourceService.listByType(ActorContextHttpAdapter.currentActor(), type));
+        return Result.success(
+                resourceService.listByType(ActorContextHttpAdapter.currentActor(), type));
     }
 
     @PostMapping("/create")
     @SaCheckPermission("edu:resource:upload")
     public Result<ResourceResponse> create(@Valid @RequestBody ResourceRequest request) {
-        return Result.success(resourceService.create(ActorContextHttpAdapter.currentActor(), request));
+        return Result.success(
+                resourceService.create(ActorContextHttpAdapter.currentActor(), request));
     }
 
     @PostMapping("/update")
@@ -66,4 +75,3 @@ public class ResourceController {
         return Result.success();
     }
 }
-

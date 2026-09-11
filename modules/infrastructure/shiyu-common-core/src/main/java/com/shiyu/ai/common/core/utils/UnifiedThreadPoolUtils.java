@@ -10,9 +10,8 @@ import java.util.concurrent.atomic.AtomicInteger;
 /**
  * Unified Thread Pool Utils for JDK8 ~ JDK21
  *
- * - JDK21+: Use Virtual Threads (Executors.newVirtualThreadPerTaskExecutor)
- * - JDK8~20: Use ThreadPoolExecutor
- * - Support multiple named pools
+ * <p>- JDK21+: Use Virtual Threads (Executors.newVirtualThreadPerTaskExecutor) - JDK8~20: Use
+ * ThreadPoolExecutor - Support multiple named pools
  */
 @Slf4j
 public class UnifiedThreadPoolUtils {
@@ -25,6 +24,7 @@ public class UnifiedThreadPoolUtils {
 
     /** Default ThreadPool config (for JDK8) */
     private static final int CORE_POOL_SIZE = Runtime.getRuntime().availableProcessors();
+
     private static final int MAX_POOL_SIZE = CORE_POOL_SIZE * 2;
     private static final int QUEUE_CAPACITY = 1000;
     private static final long KEEP_ALIVE_TIME = 60L;
@@ -59,9 +59,7 @@ public class UnifiedThreadPoolUtils {
         }
     }
 
-    /**
-     * 根据线程池名称关闭线程池
-     */
+    /** 根据线程池名称关闭线程池 */
     public static void shutdown(String poolName) {
         ExecutorService executor = NAMED_EXECUTORS.remove(poolName);
         if (executor != null) {
@@ -76,9 +74,7 @@ public class UnifiedThreadPoolUtils {
         }
     }
 
-    /**
-     * 根据ExecutorService关闭线程池
-     */
+    /** 根据ExecutorService关闭线程池 */
     public static void shutdown(ExecutorService executor) {
         if (executor == null) {
             return;
@@ -110,11 +106,10 @@ public class UnifiedThreadPoolUtils {
         return DEFAULT_EXECUTOR;
     }
 
-    /**
-     * Get or create a named thread pool JDK8 only
-     */
+    /** Get or create a named thread pool JDK8 only */
     public static ExecutorService getNamedExecutor(String name) {
-        return NAMED_EXECUTORS.computeIfAbsent(name, UnifiedThreadPoolUtils::createThreadPoolExecutor);
+        return NAMED_EXECUTORS.computeIfAbsent(
+                name, UnifiedThreadPoolUtils::createThreadPoolExecutor);
     }
 
     // ========================= Internal =========================
@@ -164,14 +159,15 @@ public class UnifiedThreadPoolUtils {
 
     /** Create JDK8 ThreadPoolExecutor with name prefix, and put into NAMED_EXECUTORS */
     private static ExecutorService createThreadPoolExecutor(String poolName) {
-        ThreadFactory factory = new ThreadFactory() {
-            private final AtomicInteger count = new AtomicInteger(1);
+        ThreadFactory factory =
+                new ThreadFactory() {
+                    private final AtomicInteger count = new AtomicInteger(1);
 
-            @Override
-            public Thread newThread(Runnable r) {
-                return new Thread(r, poolName + "-pool-" + count.getAndIncrement());
-            }
-        };
+                    @Override
+                    public Thread newThread(Runnable r) {
+                        return new Thread(r, poolName + "-pool-" + count.getAndIncrement());
+                    }
+                };
 
         return new ThreadPoolExecutor(
                 CORE_POOL_SIZE,
@@ -180,36 +176,29 @@ public class UnifiedThreadPoolUtils {
                 TimeUnit.SECONDS,
                 new LinkedBlockingQueue<>(QUEUE_CAPACITY),
                 factory,
-                new ThreadPoolExecutor.CallerRunsPolicy()
-        );
+                new ThreadPoolExecutor.CallerRunsPolicy());
     }
 
-    /**
-     * Sleep 等待（毫秒）
-     * 建议在任务中使用，不会抛出受检异常
-     */
+    /** Sleep 等待（毫秒） 建议在任务中使用，不会抛出受检异常 */
     public static void sleep(long milliseconds) {
         try {
             Thread.sleep(milliseconds);
         } catch (InterruptedException e) {
             // 恢复中断状态，保证上层代码能感知
             Thread.currentThread().interrupt();
-            log.error("[ThreadPool] Sleep interrupted: errorType={}, errorMessageLength={}",
-                    e.getClass().getSimpleName(), e.getMessage() == null ? 0 : e.getMessage().length());
+            log.error(
+                    "[ThreadPool] Sleep interrupted: errorType={}, errorMessageLength={}",
+                    e.getClass().getSimpleName(),
+                    e.getMessage() == null ? 0 : e.getMessage().length());
         }
     }
 
-    /**
-     * Sleep 等待（秒）
-     */
+    /** Sleep 等待（秒） */
     public static void sleepSeconds(long seconds) {
         sleep(TimeUnit.SECONDS.toMillis(seconds));
     }
 
-    /**
-     * 打印线程异常信息
-     * 用于线程池执行任务时捕获 Future 异常
-     */
+    /** 打印线程异常信息 用于线程池执行任务时捕获 Future 异常 */
     public static void printException(Runnable r, Throwable t) {
         if (t == null && r instanceof Future<?> future) {
             try {
@@ -229,5 +218,4 @@ public class UnifiedThreadPoolUtils {
             log.error("[ThreadPool] Uncaught exception: {}", t.getMessage());
         }
     }
-
 }

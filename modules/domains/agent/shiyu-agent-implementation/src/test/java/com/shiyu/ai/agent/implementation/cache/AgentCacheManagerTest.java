@@ -1,30 +1,34 @@
 package com.shiyu.ai.agent.implementation.cache;
 
-import com.shiyu.ai.agent.AgentDefinition;
-import com.shiyu.ai.agent.implementation.port.repository.AgentAdminRepository;
-import com.shiyu.ai.kernel.context.ActorContext;
-import com.shiyu.ai.kernel.context.TenantId;
-import com.shiyu.ai.kernel.context.UserId;
-import org.junit.jupiter.api.Test;
-
-import java.util.List;
-
-import static org.junit.jupiter.api.Assertions.assertSame;
-import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNull;
+import static org.junit.jupiter.api.Assertions.assertSame;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
+import com.shiyu.ai.agent.AgentDefinition;
+import com.shiyu.ai.agent.implementation.port.repository.AgentAdminRepository;
+import com.shiyu.ai.kernel.context.ActorContext;
+import com.shiyu.ai.kernel.context.TenantId;
+import com.shiyu.ai.kernel.context.UserId;
+
+import org.junit.jupiter.api.Test;
+
+import java.util.List;
+
 class AgentCacheManagerTest {
 
     @Test
     void resolvesExplicitSystemRegistrationsWithoutOverridingTenantScopedEntries() {
-        AgentCacheManager cache = new AgentCacheManager(mock(AgentAdminRepository.class), mock(AgentLoader.class));
+        AgentCacheManager cache =
+                new AgentCacheManager(mock(AgentAdminRepository.class), mock(AgentLoader.class));
         ActorContext actor = actor(7, 42);
-        AgentDefinition global = AgentDefinition.builder().agentId("global-agent").name("System").build();
-        AgentDefinition scoped = AgentDefinition.builder().agentId("global-agent").name("Scoped").build();
+        AgentDefinition global =
+                AgentDefinition.builder().agentId("global-agent").name("System").build();
+        AgentDefinition scoped =
+                AgentDefinition.builder().agentId("global-agent").name("Scoped").build();
 
         cache.putSystem(global);
         assertSame(global, cache.get(actor, "global-agent"));
@@ -35,8 +39,10 @@ class AgentCacheManagerTest {
 
     @Test
     void neverSharesTenantScopedEntriesAcrossTenants() {
-        AgentCacheManager cache = new AgentCacheManager(mock(AgentAdminRepository.class), mock(AgentLoader.class));
-        AgentDefinition scoped = AgentDefinition.builder().agentId("private-agent").name("Private").build();
+        AgentCacheManager cache =
+                new AgentCacheManager(mock(AgentAdminRepository.class), mock(AgentLoader.class));
+        AgentDefinition scoped =
+                AgentDefinition.builder().agentId("private-agent").name("Private").build();
 
         cache.put(actor(7, 42), "private-agent", scoped);
 

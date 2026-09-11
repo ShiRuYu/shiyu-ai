@@ -1,18 +1,20 @@
 package com.shiyu.ai.education.implementation.agent;
 
+import com.shiyu.ai.education.implementation.application.ExamService;
+import com.shiyu.ai.education.implementation.domain.ExamType;
+import com.shiyu.ai.education.implementation.domain.model.ExamBO;
+import com.shiyu.ai.education.implementation.domain.port.repository.ExamRepository;
+import com.shiyu.ai.kernel.context.ActorContext;
+import com.shiyu.ai.knowledge.contract.api.KnowledgePointPort;
+import com.shiyu.ai.knowledge.contract.model.KnowledgeResponse;
 import com.shiyu.ai.model.contract.api.ChatEngine;
+import com.shiyu.ai.model.contract.model.ChatMessage;
 import com.shiyu.ai.model.contract.model.ChatRequest;
 import com.shiyu.ai.model.contract.model.ChatResponse;
-import com.shiyu.ai.model.contract.model.ChatMessage;
-import com.shiyu.ai.education.implementation.domain.model.ExamBO;
-import com.shiyu.ai.education.implementation.domain.ExamType;
-import com.shiyu.ai.education.implementation.domain.port.repository.ExamRepository;
-import com.shiyu.ai.education.implementation.application.ExamService;
-import com.shiyu.ai.knowledge.contract.model.KnowledgeResponse;
-import com.shiyu.ai.knowledge.contract.api.KnowledgePointPort;
-import com.shiyu.ai.kernel.context.ActorContext;
+
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+
 import org.springframework.stereotype.Component;
 
 import java.util.ArrayList;
@@ -21,7 +23,7 @@ import java.util.List;
 /**
  * ExamAgent — AI 智能组卷 Agent
  *
- * 职责：根据学科、年级、知识点范围，自动生成试卷并进行评分分析。
+ * <p>职责：根据学科、年级、知识点范围，自动生成试卷并进行评分分析。
  */
 @Slf4j
 @Component
@@ -36,18 +38,25 @@ public class ExamAgent {
     /**
      * 智能组卷
      *
-     * @param subjectCode  学科编码
-     * @param grade        年级
+     * @param subjectCode 学科编码
+     * @param grade 年级
      * @param knowledgeIds 知识点范围
-     * @param durationMin  考试时长（分钟）
-     * @param teacherId    出卷教师 ID
+     * @param durationMin 考试时长（分钟）
+     * @param teacherId 出卷教师 ID
      * @return 生成的试卷
      */
-    public ExamBO generateExam(ActorContext actor, String subjectCode, Integer grade,
-                                List<Long> knowledgeIds, Integer durationMin,
-                                Long teacherId) {
-        log.info("ExamAgent.generateExam: subject={}, grade={}, knowledgeIds={}",
-                subjectCode, grade, knowledgeIds);
+    public ExamBO generateExam(
+            ActorContext actor,
+            String subjectCode,
+            Integer grade,
+            List<Long> knowledgeIds,
+            Integer durationMin,
+            Long teacherId) {
+        log.info(
+                "ExamAgent.generateExam: subject={}, grade={}, knowledgeIds={}",
+                subjectCode,
+                grade,
+                knowledgeIds);
 
         // 1. 收集知识点详情
         List<String> knowledgeNames = new ArrayList<>();
@@ -64,11 +73,13 @@ public class ExamAgent {
         String prompt = buildExamPrompt(subjectCode, grade, knowledgeNames, durationMin);
 
         // 3. 调用 LLM 生成试卷
-        ChatResponse resp = chatEngine.chat(ChatRequest.builder()
-                .tenantId(actor.tenantId().value())
-                .userId(actor.userId().value())
-                .messages(java.util.List.of(ChatMessage.text("user", prompt)))
-                .build());
+        ChatResponse resp =
+                chatEngine.chat(
+                        ChatRequest.builder()
+                                .tenantId(actor.tenantId().value())
+                                .userId(actor.userId().value())
+                                .messages(java.util.List.of(ChatMessage.text("user", prompt)))
+                                .build());
 
         if (!resp.isSuccess()) {
             log.error("ExamAgent: LLM 组卷失败: {}", resp.getErrorMessage());
@@ -91,8 +102,8 @@ public class ExamAgent {
         return exam;
     }
 
-    private String buildExamPrompt(String subjectCode, Integer grade,
-                                    List<String> knowledgeNames, Integer durationMin) {
+    private String buildExamPrompt(
+            String subjectCode, Integer grade, List<String> knowledgeNames, Integer durationMin) {
         StringBuilder sb = new StringBuilder();
         sb.append("你是一位经验丰富的 K12 出卷教师，请根据以下要求生成一份试卷。\n\n");
         sb.append("## 基本信息\n");

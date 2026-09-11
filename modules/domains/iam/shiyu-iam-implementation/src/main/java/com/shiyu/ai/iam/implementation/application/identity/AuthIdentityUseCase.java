@@ -14,6 +14,7 @@ import com.shiyu.ai.iam.implementation.utils.SaTokenHelper;
 import com.shiyu.ai.iam.implementation.vo.TenantInfoVO;
 import com.shiyu.ai.kernel.context.ActorContext;
 import com.shiyu.ai.kernel.context.TenantId;
+
 import lombok.extern.slf4j.Slf4j;
 
 import java.util.Comparator;
@@ -32,12 +33,13 @@ public final class AuthIdentityUseCase {
     private final MenuService menuService;
     private final AuthTenantContextSupport contextSupport;
 
-    public AuthIdentityUseCase(UserRepository userRepository,
-                               UserScopeRoleRepository userScopeRoleRepository,
-                               TenantRoleRepository tenantRoleRepository,
-                               TenantRepository tenantRepository,
-                               MenuService menuService,
-                               AuthTenantContextSupport contextSupport) {
+    public AuthIdentityUseCase(
+            UserRepository userRepository,
+            UserScopeRoleRepository userScopeRoleRepository,
+            TenantRoleRepository tenantRoleRepository,
+            TenantRepository tenantRepository,
+            MenuService menuService,
+            AuthTenantContextSupport contextSupport) {
         this.userRepository = userRepository;
         this.userScopeRoleRepository = userScopeRoleRepository;
         this.tenantRoleRepository = tenantRoleRepository;
@@ -58,20 +60,31 @@ public final class AuthIdentityUseCase {
                 return false;
             }
             List<UserScopeRoleBO> assignments = userScopeRoleRepository.selectByUserId(userId);
-            Long currentTenantId = contextSupport.resolveCurrentTenantId(user.getExtInfo(), assignments);
-            if (currentTenantId == null || assignments == null || assignments.stream()
-                    .noneMatch(item -> currentTenantId.equals(item.getTenantId())
-                            && roleId.equals(item.getRoleId())
-                            && contextSupport.isActiveAssignment(item))) {
-                log.warn("角色不属于当前租户作用域, userIdPresent={}, roleIdPresent={}, tenantSelected={}",
-                        userId != null, roleId != null, currentTenantId != null);
+            Long currentTenantId =
+                    contextSupport.resolveCurrentTenantId(user.getExtInfo(), assignments);
+            if (currentTenantId == null
+                    || assignments == null
+                    || assignments.stream()
+                            .noneMatch(
+                                    item ->
+                                            currentTenantId.equals(item.getTenantId())
+                                                    && roleId.equals(item.getRoleId())
+                                                    && contextSupport.isActiveAssignment(item))) {
+                log.warn(
+                        "角色不属于当前租户作用域, userIdPresent={}, roleIdPresent={}, tenantSelected={}",
+                        userId != null,
+                        roleId != null,
+                        currentTenantId != null);
                 return false;
             }
             List<RoleBO> roles = userRepository.selectRolesByUserId(userId);
-            RoleBO target = roles == null ? null : roles.stream()
-                    .filter(role -> roleId.equals(role.getId()))
-                    .findFirst()
-                    .orElse(null);
+            RoleBO target =
+                    roles == null
+                            ? null
+                            : roles.stream()
+                                    .filter(role -> roleId.equals(role.getId()))
+                                    .findFirst()
+                                    .orElse(null);
             if (target == null) {
                 log.warn("角色不存在, userIdPresent={}", userId != null);
                 return false;
@@ -84,19 +97,27 @@ public final class AuthIdentityUseCase {
             extInfoMap.put("currentRole", roleMap);
             user.setExtInfo(JSONUtils.toJsonString(extInfoMap));
             if (!userRepository.update(user)) {
-                log.warn("切换角色失败，租户上下文持久化被拒绝, userIdPresent={}, roleIdPresent={}",
-                        userId != null, roleId != null);
+                log.warn(
+                        "切换角色失败，租户上下文持久化被拒绝, userIdPresent={}, roleIdPresent={}",
+                        userId != null,
+                        roleId != null);
                 return false;
             }
-            log.info("切换角色成功, userIdPresent={}, roleNamePresent={}",
-                    userId != null, target.getName() != null);
+            log.info(
+                    "切换角色成功, userIdPresent={}, roleNamePresent={}",
+                    userId != null,
+                    target.getName() != null);
             SaTokenHelper.clearUserContextSession();
             menuService.evictRouteMenuCache(userId);
             return true;
         } catch (Exception e) {
-            log.error("切换角色异常, userIdPresent={}, roleIdPresent={}, errorType={}, errorMessageLength={}",
-                    userId != null, roleId != null,
-                    e.getClass().getSimpleName(), valueLength(e.getMessage()));
+            log.error(
+                    "切换角色异常, userIdPresent={}, roleIdPresent={}, errorType={},"
+                            + " errorMessageLength={}",
+                    userId != null,
+                    roleId != null,
+                    e.getClass().getSimpleName(),
+                    valueLength(e.getMessage()));
             return false;
         }
     }
@@ -116,12 +137,13 @@ public final class AuthIdentityUseCase {
             Map<String, Object> extInfoMap = contextSupport.parseExtInfo(user.getExtInfo());
             Long homeTenantId = contextSupport.numberValue(extInfoMap.get("homeTenantId"));
             if (homeTenantId == null && assignments != null) {
-                homeTenantId = assignments.stream()
-                        .filter(contextSupport::isActiveAssignment)
-                        .map(UserScopeRoleBO::getTenantId)
-                        .filter(Objects::nonNull)
-                        .findFirst()
-                        .orElse(null);
+                homeTenantId =
+                        assignments.stream()
+                                .filter(contextSupport::isActiveAssignment)
+                                .map(UserScopeRoleBO::getTenantId)
+                                .filter(Objects::nonNull)
+                                .findFirst()
+                                .orElse(null);
             }
             if (homeTenantId == null) {
                 return false;
@@ -136,61 +158,91 @@ public final class AuthIdentityUseCase {
                 return false;
             }
 
-            List<RoleBO> assignedRoles = assignments == null ? List.of() : assignments.stream()
-                    .filter(item -> Long.valueOf(targetTenantValue).equals(item.getTenantId())
-                            && contextSupport.isActiveAssignment(item))
-                    .map(UserScopeRoleBO::getRoleId)
-                    .filter(Objects::nonNull)
-                    .map(tenantRoleRepository::selectRoleById)
-                    .filter(role -> role != null
-                            && Long.valueOf(targetTenantValue).equals(role.getTenantId())
-                            && role.getStatus() != null && role.getStatus() == 1
-                            && (role.getDelFlag() == null || role.getDelFlag() == 0))
-                    .sorted(Comparator.comparing(RoleBO::getId))
-                    .toList();
-            Long preferredRoleId = extInfoMap.get("currentRole") instanceof Map<?, ?> roleMap
-                    ? contextSupport.numberValue(roleMap.get("roleId")) : null;
-            RoleBO assignedRole = preferredRoleId == null ? null : assignedRoles.stream()
-                    .filter(role -> preferredRoleId.equals(role.getId()))
-                    .findFirst()
-                    .orElse(null);
+            List<RoleBO> assignedRoles =
+                    assignments == null
+                            ? List.of()
+                            : assignments.stream()
+                                    .filter(
+                                            item ->
+                                                    Long.valueOf(targetTenantValue)
+                                                                    .equals(item.getTenantId())
+                                                            && contextSupport.isActiveAssignment(
+                                                                    item))
+                                    .map(UserScopeRoleBO::getRoleId)
+                                    .filter(Objects::nonNull)
+                                    .map(tenantRoleRepository::selectRoleById)
+                                    .filter(
+                                            role ->
+                                                    role != null
+                                                            && Long.valueOf(targetTenantValue)
+                                                                    .equals(role.getTenantId())
+                                                            && role.getStatus() != null
+                                                            && role.getStatus() == 1
+                                                            && (role.getDelFlag() == null
+                                                                    || role.getDelFlag() == 0))
+                                    .sorted(Comparator.comparing(RoleBO::getId))
+                                    .toList();
+            Long preferredRoleId =
+                    extInfoMap.get("currentRole") instanceof Map<?, ?> roleMap
+                            ? contextSupport.numberValue(roleMap.get("roleId"))
+                            : null;
+            RoleBO assignedRole =
+                    preferredRoleId == null
+                            ? null
+                            : assignedRoles.stream()
+                                    .filter(role -> preferredRoleId.equals(role.getId()))
+                                    .findFirst()
+                                    .orElse(null);
             if (assignedRole == null && !assignedRoles.isEmpty()) {
                 assignedRole = assignedRoles.get(0);
             }
             final Long homeTenant = homeTenantId;
-            boolean homeTenantSuper = assignments != null && assignments.stream()
-                    .filter(item -> homeTenant.equals(item.getTenantId())
-                            && contextSupport.isActiveAssignment(item))
-                    .map(UserScopeRoleBO::getRoleId)
-                    .map(tenantRoleRepository::selectRoleById)
-                    .anyMatch(contextSupport::isTenantSuperRole);
+            boolean homeTenantSuper =
+                    assignments != null
+                            && assignments.stream()
+                                    .filter(
+                                            item ->
+                                                    homeTenant.equals(item.getTenantId())
+                                                            && contextSupport.isActiveAssignment(
+                                                                    item))
+                                    .map(UserScopeRoleBO::getRoleId)
+                                    .map(tenantRoleRepository::selectRoleById)
+                                    .anyMatch(contextSupport::isTenantSuperRole);
             boolean returningHome = homeTenantId.equals(targetTenantValue);
             boolean switchedAwayFromHome = !homeTenantId.equals(currentTenantId);
-            Long allowedRootTenantId = homeTenantSuper && switchedAwayFromHome
-                    ? currentTenantId : homeTenantId;
-            boolean targetInAllowedSubtree = tenantRepository
-                    .selectDescendantIds(new TenantId(allowedRootTenantId)).contains(targetTenantValue);
-            if (homeTenantSuper && switchedAwayFromHome
-                    && !returningHome && !targetInAllowedSubtree) {
+            Long allowedRootTenantId =
+                    homeTenantSuper && switchedAwayFromHome ? currentTenantId : homeTenantId;
+            boolean targetInAllowedSubtree =
+                    tenantRepository
+                            .selectDescendantIds(new TenantId(allowedRootTenantId))
+                            .contains(targetTenantValue);
+            if (homeTenantSuper
+                    && switchedAwayFromHome
+                    && !returningHome
+                    && !targetInAllowedSubtree) {
                 return false;
             }
             if (assignedRole == null
                     && !(homeTenantSuper && (returningHome || targetInAllowedSubtree))) {
-                log.warn("切换租户失败，缺少租户归属或父租户超级管理员权限, userIdPresent={}, tenantPresent={}",
-                        userId != null, tenantId != null);
+                log.warn(
+                        "切换租户失败，缺少租户归属或父租户超级管理员权限, userIdPresent={}, tenantPresent={}",
+                        userId != null,
+                        tenantId != null);
                 return false;
             }
 
             boolean switchingChild = !returningHome;
-            boolean parentSuperAdminSwitch = switchingChild
-                    && assignedRole == null
-                    && homeTenantSuper
-                    && targetInAllowedSubtree;
+            boolean parentSuperAdminSwitch =
+                    switchingChild
+                            && assignedRole == null
+                            && homeTenantSuper
+                            && targetInAllowedSubtree;
             extInfoMap.put("currentTenantId", targetTenantValue);
             extInfoMap.put("homeTenantId", homeTenantId);
-            RoleBO role = parentSuperAdminSwitch
-                    ? contextSupport.findTenantSuperRole(targetTenantValue)
-                    : assignedRole;
+            RoleBO role =
+                    parentSuperAdminSwitch
+                            ? contextSupport.findTenantSuperRole(targetTenantValue)
+                            : assignedRole;
             if (role != null) {
                 Map<String, Object> roleMap = new LinkedHashMap<>();
                 roleMap.put("roleId", role.getId());
@@ -198,8 +250,7 @@ public final class AuthIdentityUseCase {
                 roleMap.put("roleKey", role.getCode());
                 extInfoMap.put("currentRole", roleMap);
             }
-            extInfoMap.put("switchMode", parentSuperAdminSwitch
-                    ? "PARENT_SUPER_ADMIN" : "NORMAL");
+            extInfoMap.put("switchMode", parentSuperAdminSwitch ? "PARENT_SUPER_ADMIN" : "NORMAL");
             if (parentSuperAdminSwitch) {
                 extInfoMap.put("switchFromTenantId", homeTenantId);
             } else {
@@ -207,18 +258,25 @@ public final class AuthIdentityUseCase {
             }
             user.setExtInfo(JSONUtils.toJsonString(extInfoMap));
             if (!userRepository.update(user)) {
-                log.warn("切换租户失败，租户上下文持久化被拒绝, userIdPresent={}, tenantPresent={}",
-                        userId != null, tenantId != null);
+                log.warn(
+                        "切换租户失败，租户上下文持久化被拒绝, userIdPresent={}, tenantPresent={}",
+                        userId != null,
+                        tenantId != null);
                 return false;
             }
-            log.info("切换租户成功, userIdPresent={}, tenantPresent={}", userId != null, tenantId != null);
+            log.info(
+                    "切换租户成功, userIdPresent={}, tenantPresent={}", userId != null, tenantId != null);
             SaTokenHelper.clearUserContextSession();
             menuService.evictRouteMenuCache(userId);
             return true;
         } catch (Exception e) {
-            log.error("切换租户异常, userIdPresent={}, tenantPresent={}, errorType={}, errorMessageLength={}",
-                    userId != null, tenantId != null,
-                    e.getClass().getSimpleName(), valueLength(e.getMessage()));
+            log.error(
+                    "切换租户异常, userIdPresent={}, tenantPresent={}, errorType={},"
+                            + " errorMessageLength={}",
+                    userId != null,
+                    tenantId != null,
+                    e.getClass().getSimpleName(),
+                    valueLength(e.getMessage()));
             return false;
         }
     }
@@ -241,14 +299,17 @@ public final class AuthIdentityUseCase {
             homeTenantId = actor.homeTenantId().value();
         }
         final Long resolvedHomeTenantId = homeTenantId;
-        boolean homeTenantSuperAdmin = resolvedHomeTenantId != null
-                && assignments != null
-                && assignments.stream()
-                .filter(item -> resolvedHomeTenantId.equals(item.getTenantId())
-                        && contextSupport.isActiveAssignment(item))
-                .map(UserScopeRoleBO::getRoleId)
-                .map(tenantRoleRepository::selectRoleById)
-                .anyMatch(contextSupport::isTenantSuperRole);
+        boolean homeTenantSuperAdmin =
+                resolvedHomeTenantId != null
+                        && assignments != null
+                        && assignments.stream()
+                                .filter(
+                                        item ->
+                                                resolvedHomeTenantId.equals(item.getTenantId())
+                                                        && contextSupport.isActiveAssignment(item))
+                                .map(UserScopeRoleBO::getRoleId)
+                                .map(tenantRoleRepository::selectRoleById)
+                                .anyMatch(contextSupport::isTenantSuperRole);
         if (homeTenantSuperAdmin
                 && resolvedHomeTenantId != null
                 && currentTenantId != null

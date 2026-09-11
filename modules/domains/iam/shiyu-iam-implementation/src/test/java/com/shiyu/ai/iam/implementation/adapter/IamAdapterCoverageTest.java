@@ -1,19 +1,21 @@
 package com.shiyu.ai.iam.implementation.adapter;
 
+import static org.junit.jupiter.api.Assertions.*;
+import static org.mockito.Mockito.*;
+
 import cn.dev33.satoken.session.SaSession;
 import cn.dev33.satoken.stp.StpUtil;
+
+import com.shiyu.ai.common.core.domain.UserContext;
 import com.shiyu.ai.iam.implementation.domain.model.UserScopeRoleBO;
 import com.shiyu.ai.iam.implementation.port.repository.UserScopeRoleRepository;
 import com.shiyu.ai.iam.implementation.utils.SaTokenHelper;
-import com.shiyu.ai.common.core.domain.UserContext;
 import com.shiyu.ai.kernel.context.TenantId;
+
 import org.junit.jupiter.api.Test;
 import org.mockito.MockedStatic;
 
 import java.util.List;
-
-import static org.junit.jupiter.api.Assertions.*;
-import static org.mockito.Mockito.*;
 
 class IamAdapterCoverageTest {
     @Test
@@ -60,16 +62,24 @@ class IamAdapterCoverageTest {
 
     @Test
     void flattensScopedRoleQueriesAndRejectsNullInputSafely() {
-        UserScopeRoleRepository repository = new UserScopeRoleRepository() {
-            @Override public List<UserScopeRoleBO> selectByUserId(Long userId) {
-                return List.of(new UserScopeRoleBO());
-            }
-            @Override public void insert(UserScopeRoleBO value) { }
-            @Override public void deleteByUserIdAndTenantId(Long userId, TenantId tenantId) { }
-            @Override public void deleteByUserIdRoleIdAndTenantId(Long userId, Long roleId, TenantId tenantId) { }
-        };
+        UserScopeRoleRepository repository =
+                new UserScopeRoleRepository() {
+                    @Override
+                    public List<UserScopeRoleBO> selectByUserId(Long userId) {
+                        return List.of(new UserScopeRoleBO());
+                    }
+
+                    @Override
+                    public void insert(UserScopeRoleBO value) {}
+
+                    @Override
+                    public void deleteByUserIdAndTenantId(Long userId, TenantId tenantId) {}
+
+                    @Override
+                    public void deleteByUserIdRoleIdAndTenantId(
+                            Long userId, Long roleId, TenantId tenantId) {}
+                };
         assertTrue(repository.selectByUserIds(null).isEmpty());
         assertEquals(2, repository.selectByUserIds(List.of(1L, 2L)).size());
     }
 }
-

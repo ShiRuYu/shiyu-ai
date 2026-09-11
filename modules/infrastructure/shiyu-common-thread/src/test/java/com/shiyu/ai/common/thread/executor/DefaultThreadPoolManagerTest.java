@@ -1,21 +1,22 @@
 package com.shiyu.ai.common.thread.executor;
 
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNull;
+import static org.junit.jupiter.api.Assertions.assertSame;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+
 import com.shiyu.ai.common.thread.api.PoolType;
 import com.shiyu.ai.common.thread.config.ThreadingProperties;
 import com.shiyu.ai.common.thread.context.ContextAwareRunnable;
 import com.shiyu.ai.common.thread.context.ContextTaskDecorator;
 import com.shiyu.ai.common.thread.context.TaskContext;
+
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Test;
 
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.ThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
-
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertNull;
-import static org.junit.jupiter.api.Assertions.assertSame;
-import static org.junit.jupiter.api.Assertions.assertTrue;
 
 class DefaultThreadPoolManagerTest {
 
@@ -49,16 +50,23 @@ class DefaultThreadPoolManagerTest {
         assertEquals(4, delegate.getQueue().remainingCapacity());
 
         TaskContext.current().setAttribute("tenantId", 7L);
-        assertEquals(7L, executor.submit(() -> TaskContext.current().getAttribute("tenantId"))
-                .get(5, TimeUnit.SECONDS));
-        assertTrue(delegate.getThreadFactory().newThread(() -> { }).getName().startsWith("shiyu-test-worker-io-thread-"));
+        assertEquals(
+                7L,
+                executor.submit(() -> TaskContext.current().getAttribute("tenantId"))
+                        .get(5, TimeUnit.SECONDS));
+        assertTrue(
+                delegate.getThreadFactory()
+                        .newThread(() -> {})
+                        .getName()
+                        .startsWith("shiyu-test-worker-io-thread-"));
     }
 
     @Test
     void restoresOriginalContextAfterDecoratedTaskFinishes() {
         TaskContext.current().setAttribute("tenantId", 7L);
-        ContextAwareRunnable task = new ContextAwareRunnable(
-                () -> TaskContext.current().setAttribute("workerOnly", true));
+        ContextAwareRunnable task =
+                new ContextAwareRunnable(
+                        () -> TaskContext.current().setAttribute("workerOnly", true));
 
         task.run();
 

@@ -1,24 +1,27 @@
 package com.shiyu.ai.web.agent;
 
-import com.shiyu.ai.agent.implementation.runtime.AgentRuntime;
-import com.shiyu.ai.agent.implementation.web.ExecutionController;
-import com.shiyu.ai.common.core.domain.UserContext;
-import com.shiyu.ai.common.core.domain.UserContextHolder;
-import cn.dev33.satoken.annotation.SaCheckPermission;
-import org.junit.jupiter.api.AfterEach;
-import org.junit.jupiter.api.Tag;
-import org.junit.jupiter.api.Test;
-import reactor.core.publisher.Flux;
-
-import java.util.Map;
-
+import static org.junit.jupiter.api.Assertions.assertArrayEquals;
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
-import static org.junit.jupiter.api.Assertions.assertArrayEquals;
-import static org.junit.jupiter.api.Assertions.assertNotNull;
+
+import cn.dev33.satoken.annotation.SaCheckPermission;
+
+import com.shiyu.ai.agent.implementation.runtime.AgentRuntime;
+import com.shiyu.ai.agent.implementation.web.ExecutionController;
+import com.shiyu.ai.common.core.domain.UserContext;
+import com.shiyu.ai.common.core.domain.UserContextHolder;
+
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.Tag;
+import org.junit.jupiter.api.Test;
+
+import reactor.core.publisher.Flux;
+
+import java.util.Map;
 
 @Tag("dev")
 class ExecutionControllerTest {
@@ -51,12 +54,13 @@ class ExecutionControllerTest {
 
     @Test
     void lifecycleMutationsRequireExecutionPermission() throws NoSuchMethodException {
-        for (String method : new String[]{"pause", "resume", "cancel"}) {
-            SaCheckPermission permission = ExecutionController.class
-                    .getMethod(method, String.class)
-                    .getAnnotation(SaCheckPermission.class);
+        for (String method : new String[] {"pause", "resume", "cancel"}) {
+            SaCheckPermission permission =
+                    ExecutionController.class
+                            .getMethod(method, String.class)
+                            .getAnnotation(SaCheckPermission.class);
             assertNotNull(permission, method);
-            assertArrayEquals(new String[]{"agent:execute"}, permission.value(), method);
+            assertArrayEquals(new String[] {"agent:execute"}, permission.value(), method);
         }
     }
 }

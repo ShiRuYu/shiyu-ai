@@ -1,16 +1,16 @@
 package com.shiyu.ai.knowledge.implementation.persistence.repository;
 
-import com.mybatisflex.core.query.QueryWrapper;
-import com.shiyu.ai.knowledge.implementation.persistence.mapper.KnowledgeDifficultyScaleLevelMapper;
-import com.shiyu.ai.knowledge.implementation.persistence.mapper.KnowledgeDifficultyScaleMapper;
-import com.shiyu.ai.kernel.context.TenantId;
-import org.junit.jupiter.api.Test;
-import org.mockito.ArgumentCaptor;
-
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
-import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.*;
+
+import com.mybatisflex.core.query.QueryWrapper;
+import com.shiyu.ai.kernel.context.TenantId;
+import com.shiyu.ai.knowledge.implementation.persistence.mapper.KnowledgeDifficultyScaleLevelMapper;
+import com.shiyu.ai.knowledge.implementation.persistence.mapper.KnowledgeDifficultyScaleMapper;
+
+import org.junit.jupiter.api.Test;
+import org.mockito.ArgumentCaptor;
 
 class KnowledgeDifficultyScaleRepositoryTenantTest {
     private static final TenantId TENANT = new TenantId(31);
@@ -18,7 +18,8 @@ class KnowledgeDifficultyScaleRepositoryTenantTest {
     @Test
     void addsTenantPredicateToScaleAndLevelQueries() {
         KnowledgeDifficultyScaleMapper scales = mock(KnowledgeDifficultyScaleMapper.class);
-        KnowledgeDifficultyScaleLevelMapper levels = mock(KnowledgeDifficultyScaleLevelMapper.class);
+        KnowledgeDifficultyScaleLevelMapper levels =
+                mock(KnowledgeDifficultyScaleLevelMapper.class);
         KnowledgeDifficultyScaleRepositoryImpl repository =
                 new KnowledgeDifficultyScaleRepositoryImpl(scales, levels);
 
@@ -36,7 +37,8 @@ class KnowledgeDifficultyScaleRepositoryTenantTest {
     @Test
     void rejectsMissingTenantBeforeQuerying() {
         KnowledgeDifficultyScaleMapper scales = mock(KnowledgeDifficultyScaleMapper.class);
-        KnowledgeDifficultyScaleLevelMapper levels = mock(KnowledgeDifficultyScaleLevelMapper.class);
+        KnowledgeDifficultyScaleLevelMapper levels =
+                mock(KnowledgeDifficultyScaleLevelMapper.class);
         KnowledgeDifficultyScaleRepositoryImpl repository =
                 new KnowledgeDifficultyScaleRepositoryImpl(scales, levels);
 

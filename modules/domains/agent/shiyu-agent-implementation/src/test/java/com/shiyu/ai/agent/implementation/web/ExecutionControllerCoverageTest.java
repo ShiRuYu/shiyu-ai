@@ -1,5 +1,9 @@
 package com.shiyu.ai.agent.implementation.web;
 
+import static org.junit.jupiter.api.Assertions.*;
+import static org.mockito.ArgumentMatchers.*;
+import static org.mockito.Mockito.*;
+
 import com.shiyu.ai.agent.implementation.execution.Execution;
 import com.shiyu.ai.agent.implementation.execution.ExecutionStatus;
 import com.shiyu.ai.agent.implementation.runtime.AgentRuntime;
@@ -7,15 +11,13 @@ import com.shiyu.ai.common.web.auth.ActorContextHttpAdapter;
 import com.shiyu.ai.kernel.context.ActorContext;
 import com.shiyu.ai.kernel.context.TenantId;
 import com.shiyu.ai.kernel.context.UserId;
+
 import org.junit.jupiter.api.Test;
+
 import reactor.core.publisher.Flux;
 
 import java.util.List;
 import java.util.Map;
-
-import static org.junit.jupiter.api.Assertions.*;
-import static org.mockito.ArgumentMatchers.*;
-import static org.mockito.Mockito.*;
 
 class ExecutionControllerCoverageTest {
     @Test
@@ -27,7 +29,8 @@ class ExecutionControllerCoverageTest {
         execution.start();
         execution.complete(Map.of("answer", "ok"));
         when(runtime.execute(eq(actor), eq("agent-1"), anyMap())).thenReturn(execution);
-        when(runtime.executeStream(eq(actor), eq("agent-1"), anyMap())).thenReturn(Flux.just(Map.of("executionId", "e1", "token", "ok")));
+        when(runtime.executeStream(eq(actor), eq("agent-1"), anyMap()))
+                .thenReturn(Flux.just(Map.of("executionId", "e1", "token", "ok")));
         when(runtime.resume(actor, "e1")).thenReturn(execution);
         when(runtime.getStatus(actor, "e1")).thenReturn(ExecutionStatus.COMPLETED);
         when(runtime.getExecution(actor, "e1")).thenReturn(execution);
@@ -36,7 +39,13 @@ class ExecutionControllerCoverageTest {
         try (var ignored = mockStatic(ActorContextHttpAdapter.class)) {
             ignored.when(ActorContextHttpAdapter::currentActor).thenReturn(actor);
             assertTrue(controller.execute("agent-1", Map.of("q", "x")).isSuccess());
-            assertTrue(controller.executeStream("agent-1", Map.of()).collectList().block().getFirst().isSuccess());
+            assertTrue(
+                    controller
+                            .executeStream("agent-1", Map.of())
+                            .collectList()
+                            .block()
+                            .getFirst()
+                            .isSuccess());
             assertTrue(controller.pause("e1").isSuccess());
             assertTrue(controller.resume("e1").isSuccess());
             assertTrue(controller.cancel("e1").isSuccess());
@@ -53,8 +62,10 @@ class ExecutionControllerCoverageTest {
         AgentRuntime runtime = mock(AgentRuntime.class);
         ExecutionController controller = new ExecutionController(runtime);
         ActorContext actor = new ActorContext(new TenantId(7L), new UserId(9L), false);
-        when(runtime.execute(eq(actor), anyString(), anyMap())).thenThrow(new IllegalStateException("boom"));
-        when(runtime.executeStream(eq(actor), anyString(), anyMap())).thenReturn(Flux.error(new IllegalStateException("stream")));
+        when(runtime.execute(eq(actor), anyString(), anyMap()))
+                .thenThrow(new IllegalStateException("boom"));
+        when(runtime.executeStream(eq(actor), anyString(), anyMap()))
+                .thenReturn(Flux.error(new IllegalStateException("stream")));
         when(runtime.getStatus(actor, "missing")).thenReturn(null);
         when(runtime.getExecution(actor, "missing")).thenReturn(null);
         when(runtime.resume(actor, "e")).thenThrow(new IllegalArgumentException("bad"));
@@ -66,7 +77,8 @@ class ExecutionControllerCoverageTest {
         try (var ignored = mockStatic(ActorContextHttpAdapter.class)) {
             ignored.when(ActorContextHttpAdapter::currentActor).thenReturn(actor);
             var executeFailure = controller.execute("a", null);
-            var streamFailure = controller.executeStream("a", null).collectList().block().getFirst();
+            var streamFailure =
+                    controller.executeStream("a", null).collectList().block().getFirst();
             assertFalse(executeFailure.isSuccess());
             assertFalse(streamFailure.isSuccess());
             assertEquals("执行失败，请稍后重试", executeFailure.getMessage());
@@ -77,7 +89,8 @@ class ExecutionControllerCoverageTest {
             assertFalse(controller.getExecution("missing").isSuccess());
             var failedDetail = controller.getExecution("failed");
             assertEquals("执行失败，请稍后重试", failedDetail.getData().get("errorMessage"));
-            assertFalse(String.valueOf(failedDetail.getData().get("errorMessage")).contains("secret"));
+            assertFalse(
+                    String.valueOf(failedDetail.getData().get("errorMessage")).contains("secret"));
             var failedHistory = controller.getHistory("agent-1", 1);
             assertEquals("执行失败，请稍后重试", failedHistory.getData().getFirst().get("errorMessage"));
             var resumeFailure = controller.resume("e");

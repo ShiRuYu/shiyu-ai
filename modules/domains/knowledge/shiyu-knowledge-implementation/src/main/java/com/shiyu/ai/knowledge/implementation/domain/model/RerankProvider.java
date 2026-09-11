@@ -4,6 +4,6 @@ import java.util.List;
 
 public interface RerankProvider {
     String profile();
+
     List<Integer> rerank(String query, List<String> candidates, int topK);
 }
-

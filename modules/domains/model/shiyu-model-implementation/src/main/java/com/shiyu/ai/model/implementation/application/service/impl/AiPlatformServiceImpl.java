@@ -1,61 +1,86 @@
 package com.shiyu.ai.model.implementation.application.service.impl;
 
-import com.shiyu.ai.model.implementation.infrastructure.config.PlatformProperties;
-import com.shiyu.ai.model.implementation.domain.port.repository.AiPlatformRepository;
-import com.shiyu.ai.model.implementation.application.service.AiPlatformService;
-import com.shiyu.ai.model.implementation.web.request.AiPlatformRequest;
-import com.shiyu.ai.model.implementation.web.response.AiPlatformResponse;
+import com.shiyu.ai.common.core.vo.IdNameOptionVO;
+import com.shiyu.ai.kernel.context.ActorContext;
 import com.shiyu.ai.model.implementation.application.assembler.AiPlatformAssembler;
+import com.shiyu.ai.model.implementation.application.service.AiPlatformService;
 import com.shiyu.ai.model.implementation.domain.model.AiPlatformBO;
 import com.shiyu.ai.model.implementation.domain.model.PlatformAdapterType;
-import com.shiyu.ai.common.core.vo.IdNameOptionVO;
+import com.shiyu.ai.model.implementation.domain.port.repository.AiPlatformRepository;
+import com.shiyu.ai.model.implementation.infrastructure.config.PlatformProperties;
+import com.shiyu.ai.model.implementation.web.request.AiPlatformRequest;
+import com.shiyu.ai.model.implementation.web.response.AiPlatformResponse;
+
 import jakarta.annotation.Resource;
+
 import lombok.extern.slf4j.Slf4j;
+
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.tuple.Pair;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
-import com.shiyu.ai.kernel.context.ActorContext;
 
-/**
- * AI 平台服务实现。
- */
+/** AI 平台服务实现。 */
 @Slf4j
 @Service
 public class AiPlatformServiceImpl implements AiPlatformService {
 
     @Override
-    public Pair<Long, List<AiPlatformResponse>> pageResponse(ActorContext actor, Number pageNo, Number pageSize, String name, String code) {
+    public Pair<Long, List<AiPlatformResponse>> pageResponse(
+            ActorContext actor, Number pageNo, Number pageSize, String name, String code) {
         Pair<Long, List<AiPlatformBO>> result = getPageBO(actor, pageNo, pageSize, name, code);
-        return Pair.of(result.getLeft(), result.getRight().stream().map(AiPlatformAssembler::toResponse).toList());
+        return Pair.of(
+                result.getLeft(),
+                result.getRight().stream().map(AiPlatformAssembler::toResponse).toList());
     }
+
     @Override
-    public List<AiPlatformResponse> enabledResponse(ActorContext actor) { return getAllEnabledBO(actor).stream().map(AiPlatformAssembler::toResponse).toList(); }
+    public List<AiPlatformResponse> enabledResponse(ActorContext actor) {
+        return getAllEnabledBO(actor).stream().map(AiPlatformAssembler::toResponse).toList();
+    }
+
     @Override
-    public AiPlatformResponse detailResponse(ActorContext actor, Long id) { return AiPlatformAssembler.toResponse(getByIdBO(actor, id)); }
+    public AiPlatformResponse detailResponse(ActorContext actor, Long id) {
+        return AiPlatformAssembler.toResponse(getByIdBO(actor, id));
+    }
+
     @Override
-    public AiPlatformResponse codeResponse(ActorContext actor, String code) { return AiPlatformAssembler.toResponse(getByCodeBO(actor, code)); }
+    public AiPlatformResponse codeResponse(ActorContext actor, String code) {
+        return AiPlatformAssembler.toResponse(getByCodeBO(actor, code));
+    }
+
     @Override
-    public AiPlatformResponse defaultResponse(ActorContext actor) { return AiPlatformAssembler.toResponse(getDefaultBO(actor)); }
+    public AiPlatformResponse defaultResponse(ActorContext actor) {
+        return AiPlatformAssembler.toResponse(getDefaultBO(actor));
+    }
+
     @Override
-    public AiPlatformResponse createResponse(ActorContext actor, AiPlatformRequest request) { return AiPlatformAssembler.toResponse(createBO(actor, AiPlatformAssembler.toBO(request))); }
+    public AiPlatformResponse createResponse(ActorContext actor, AiPlatformRequest request) {
+        return AiPlatformAssembler.toResponse(createBO(actor, AiPlatformAssembler.toBO(request)));
+    }
+
     @Override
-    public AiPlatformResponse updateResponse(ActorContext actor, Long id, AiPlatformRequest request) {
-        AiPlatformBO bo = AiPlatformAssembler.toBO(request); bo.setId(id);
+    public AiPlatformResponse updateResponse(
+            ActorContext actor, Long id, AiPlatformRequest request) {
+        AiPlatformBO bo = AiPlatformAssembler.toBO(request);
+        bo.setId(id);
         return AiPlatformAssembler.toResponse(updateBO(actor, bo));
     }
+
     @Override
-    public AiPlatformResponse setDefaultResponse(ActorContext actor, Long id) { return AiPlatformAssembler.toResponse(setDefaultBO(actor, id)); }
+    public AiPlatformResponse setDefaultResponse(ActorContext actor, Long id) {
+        return AiPlatformAssembler.toResponse(setDefaultBO(actor, id));
+    }
 
-    @Resource
-    private AiPlatformRepository aiPlatformRepository;
+    @Resource private AiPlatformRepository aiPlatformRepository;
 
-    @Resource
-    private PlatformProperties platformProperties;
+    @Resource private PlatformProperties platformProperties;
 
-    private Pair<Long, List<AiPlatformBO>> getPageBO(ActorContext actor, Number pageNo, Number pageSize, String name, String code) {
-        Pair<Long, List<AiPlatformBO>> result = aiPlatformRepository.selectPage(actor.tenantId(), pageNo, pageSize, name, code);
+    private Pair<Long, List<AiPlatformBO>> getPageBO(
+            ActorContext actor, Number pageNo, Number pageSize, String name, String code) {
+        Pair<Long, List<AiPlatformBO>> result =
+                aiPlatformRepository.selectPage(actor.tenantId(), pageNo, pageSize, name, code);
         result.getRight().forEach(this::fillApiKey);
         return result;
     }
@@ -143,14 +168,15 @@ public class AiPlatformServiceImpl implements AiPlatformService {
             return;
         }
         String code = bo.getCode().toUpperCase();
-        String externalApiKey = switch (code) {
-            case "OLLAMA" -> platformProperties.getOllama().getApiKey();
-            case "DEEPSEEK" -> platformProperties.getDeepseek().getApiKey();
-            case "OPENAI" -> platformProperties.getOpenai().getApiKey();
-            case "OPENROUTER" -> platformProperties.getOpenrouter().getApiKey();
-            case "SILICON_FLOW" -> platformProperties.getSiliconflow().getApiKey();
-            default -> null;
-        };
+        String externalApiKey =
+                switch (code) {
+                    case "OLLAMA" -> platformProperties.getOllama().getApiKey();
+                    case "DEEPSEEK" -> platformProperties.getDeepseek().getApiKey();
+                    case "OPENAI" -> platformProperties.getOpenai().getApiKey();
+                    case "OPENROUTER" -> platformProperties.getOpenrouter().getApiKey();
+                    case "SILICON_FLOW" -> platformProperties.getSiliconflow().getApiKey();
+                    default -> null;
+                };
         if (StringUtils.isNotBlank(externalApiKey)) {
             bo.setApiKey(externalApiKey);
         }

@@ -12,10 +12,16 @@ public final class LocalIdempotencyStore implements IdempotencyStore {
 
     @Override
     public boolean putIfAbsent(String key, Duration ttl) {
-        if (key == null || key.isBlank() || ttl == null || ttl.isNegative() || ttl.isZero()) return false;
+        if (key == null || key.isBlank() || ttl == null || ttl.isNegative() || ttl.isZero())
+            return false;
         long expiresAt = System.nanoTime() + ttl.toNanos();
-        return keys.compute(key, (ignored, current) -> current == null || current <= System.nanoTime()
-                ? expiresAt : current) == expiresAt;
+        return keys.compute(
+                        key,
+                        (ignored, current) ->
+                                current == null || current <= System.nanoTime()
+                                        ? expiresAt
+                                        : current)
+                == expiresAt;
     }
 
     @Override

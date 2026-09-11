@@ -1,18 +1,21 @@
 package com.shiyu.ai.education.implementation.web;
 
 import cn.dev33.satoken.annotation.SaCheckPermission;
+
 import com.shiyu.ai.common.core.api.Result;
+import com.shiyu.ai.common.web.auth.ActorContextHttpAdapter;
+import com.shiyu.ai.education.implementation.application.WrongQuestionService;
 import com.shiyu.ai.education.implementation.web.dto.WrongQuestionResponse;
 import com.shiyu.ai.education.implementation.web.request.WrongQuestionRequest;
-import com.shiyu.ai.education.implementation.application.WrongQuestionService;
-import com.shiyu.ai.common.web.auth.ActorContextHttpAdapter;
+
 import jakarta.validation.Valid;
+
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
-import com.shiyu.ai.education.implementation.web.dto.WrongQuestionResponse;
 
 @Slf4j
 @RestController
@@ -25,21 +28,26 @@ public class WrongQuestionController {
 
     @GetMapping("/detail")
     public Result<WrongQuestionResponse> getById(@RequestParam Long id) {
-        return Result.success(wrongQuestionService.getById(ActorContextHttpAdapter.currentActor(), id));
+        return Result.success(
+                wrongQuestionService.getById(ActorContextHttpAdapter.currentActor(), id));
     }
 
     @GetMapping("/student")
     public Result<List<WrongQuestionResponse>> listByStudentId(@RequestParam Long studentId) {
-        return Result.success(wrongQuestionService.listByStudentId(ActorContextHttpAdapter.currentActor(), studentId));
+        return Result.success(
+                wrongQuestionService.listByStudentId(
+                        ActorContextHttpAdapter.currentActor(), studentId));
     }
 
     @PostMapping("/create")
     public Result<WrongQuestionResponse> create(@Valid @RequestBody WrongQuestionRequest request) {
-        return Result.success(wrongQuestionService.create(ActorContextHttpAdapter.currentActor(), request));
+        return Result.success(
+                wrongQuestionService.create(ActorContextHttpAdapter.currentActor(), request));
     }
 
     @PostMapping("/update")
-    public Result<Void> update(@RequestParam Long id, @Valid @RequestBody WrongQuestionRequest request) {
+    public Result<Void> update(
+            @RequestParam Long id, @Valid @RequestBody WrongQuestionRequest request) {
         request.setId(id);
         wrongQuestionService.update(ActorContextHttpAdapter.currentActor(), request);
         return Result.success();
@@ -51,4 +59,3 @@ public class WrongQuestionController {
         return Result.success();
     }
 }
-

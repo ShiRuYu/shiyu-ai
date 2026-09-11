@@ -1,7 +1,7 @@
 package com.shiyu.ai.common.storage.config;
+
 import com.shiyu.ai.common.storage.api.*;
 import com.shiyu.ai.common.storage.backup.*;
-import com.shiyu.ai.common.storage.config.*;
 import com.shiyu.ai.common.storage.file.*;
 import com.shiyu.ai.common.storage.lease.*;
 import com.shiyu.ai.common.storage.metadata.*;
@@ -17,18 +17,23 @@ import java.util.UUID;
 
 public final class StorageKeys {
 
-    private StorageKeys() {
-    }
+    private StorageKeys() {}
 
     public static String create(String namespace, String originalName) {
         String safeName = normalizeName(originalName);
-        String encodedName = Base64.getUrlEncoder().withoutPadding()
-                .encodeToString(safeName.getBytes(StandardCharsets.UTF_8));
+        String encodedName =
+                Base64.getUrlEncoder()
+                        .withoutPadding()
+                        .encodeToString(safeName.getBytes(StandardCharsets.UTF_8));
         LocalDate date = LocalDate.now(ZoneOffset.UTC);
-        return "%s%d/%02d/%02d/%s~%s".formatted(
-                namespace,
-                date.getYear(), date.getMonthValue(), date.getDayOfMonth(),
-                UUID.randomUUID(), encodedName);
+        return "%s%d/%02d/%02d/%s~%s"
+                .formatted(
+                        namespace,
+                        date.getYear(),
+                        date.getMonthValue(),
+                        date.getDayOfMonth(),
+                        UUID.randomUUID(),
+                        encodedName);
     }
 
     public static String originalName(String key) {

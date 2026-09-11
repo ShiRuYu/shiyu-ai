@@ -1,21 +1,23 @@
 package com.shiyu.ai.agent.implementation.persistence.repository;
 
 import com.mybatisflex.core.query.QueryWrapper;
+import com.shiyu.ai.agent.implementation.domain.model.AgentExecutionBO;
 import com.shiyu.ai.agent.implementation.persistence.dataobject.AgentExecutionDO;
 import com.shiyu.ai.agent.implementation.persistence.mapper.AgentExecutionMapper;
-import com.shiyu.ai.agent.implementation.domain.model.AgentExecutionBO;
 import com.shiyu.ai.common.core.utils.MapstructUtils;
 import com.shiyu.ai.kernel.context.TenantId;
+
 import jakarta.annotation.Resource;
+
 import org.springframework.stereotype.Component;
 
 import java.util.List;
 
 @Component
-public class AgentExecutionRepositoryImpl implements com.shiyu.ai.agent.implementation.port.repository.AgentExecutionRepository {
+public class AgentExecutionRepositoryImpl
+        implements com.shiyu.ai.agent.implementation.port.repository.AgentExecutionRepository {
 
-    @Resource
-    private AgentExecutionMapper agentExecutionMapper;
+    @Resource private AgentExecutionMapper agentExecutionMapper;
 
     @Override
     public void insert(TenantId tenantId, AgentExecutionBO bo) {

@@ -11,8 +11,7 @@ public record AbilityValue(
         double analyze,
         double evaluate,
         double create,
-        LocalDateTime lastUpdated
-) {
+        LocalDateTime lastUpdated) {
 
     public double overallScore() {
         return remember * BloomTaxonomy.REMEMBER.getWeight()
@@ -27,4 +26,3 @@ public record AbilityValue(
         return new AbilityValue(studentId, knowledgeId, 0, 0, 0, 0, 0, 0, LocalDateTime.now());
     }
 }
-

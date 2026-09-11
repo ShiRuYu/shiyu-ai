@@ -1,19 +1,19 @@
 package com.shiyu.ai.agent.implementation.node.tool;
 
 import com.shiyu.ai.agent.contract.node.*;
-
 import com.shiyu.ai.agent.contract.node.BaseNode;
+import com.shiyu.ai.agent.contract.node.NodeFields.FieldKey;
 import com.shiyu.ai.agent.contract.node.NodeInput;
+import com.shiyu.ai.agent.contract.node.NodeInputParam;
 import com.shiyu.ai.agent.contract.node.NodeOutput;
 import com.shiyu.ai.agent.contract.node.NodeType;
-import com.shiyu.ai.agent.contract.node.NodeFields.FieldKey;
-import com.shiyu.ai.tooling.contract.api.ToolService;
 import com.shiyu.ai.agent.contract.runtime.AiRun;
 import com.shiyu.ai.agent.implementation.runtime.ToolExecutionPipeline;
+import com.shiyu.ai.tooling.contract.api.ToolService;
+
 import lombok.Getter;
 import lombok.Setter;
 import lombok.extern.slf4j.Slf4j;
-import com.shiyu.ai.agent.contract.node.NodeInputParam;
 
 /**
  * 用于调用外部工具或服务
@@ -27,19 +27,22 @@ import com.shiyu.ai.agent.contract.node.NodeInputParam;
 public class ToolCallNode extends BaseNode {
 
     private ToolCallConfig config;
-    
-    /**
-     * 工具调用服务（必须依赖）
-     */
+
+    /** 工具调用服务（必须依赖） */
     private final ToolService toolService;
+
     private final ToolExecutionPipeline executionPipeline;
 
     /**
      * 私有构造函数，强制使用 Builder 模式
+     *
      * @param config 节点配置
      * @param toolService 工具调用服务
      */
-    private ToolCallNode(ToolCallConfig config, ToolService toolService, ToolExecutionPipeline executionPipeline) {
+    private ToolCallNode(
+            ToolCallConfig config,
+            ToolService toolService,
+            ToolExecutionPipeline executionPipeline) {
         super(config != null ? config : new ToolCallConfig());
         this.config = config != null ? config : new ToolCallConfig();
         // 设置节点类型为 TOOL_CALL
@@ -50,15 +53,14 @@ public class ToolCallNode extends BaseNode {
 
     /**
      * 获取 Builder 实例
+     *
      * @return Builder 实例
      */
     public static Builder builder() {
         return new Builder();
     }
 
-    /**
-     * Builder 类，用于构建 ToolCallNode 实例
-     */
+    /** Builder 类，用于构建 ToolCallNode 实例 */
     public static class Builder {
         private ToolCallConfig config;
         private ToolService toolService;
@@ -66,6 +68,7 @@ public class ToolCallNode extends BaseNode {
 
         /**
          * 设置节点配置
+         *
          * @param config 节点配置
          * @return Builder 实例
          */
@@ -76,6 +79,7 @@ public class ToolCallNode extends BaseNode {
 
         /**
          * 设置工具调用服务
+         *
          * @param toolService 工具调用服务
          * @return Builder 实例
          */
@@ -90,8 +94,8 @@ public class ToolCallNode extends BaseNode {
         }
 
         /**
-         * 构建并返回 ToolCallNode 实例
-         * 在构建前会进行必要的校验
+         * 构建并返回 ToolCallNode 实例 在构建前会进行必要的校验
+         *
          * @return ToolCallNode 实例
          * @throws IllegalStateException 如果校验失败
          */
@@ -100,7 +104,7 @@ public class ToolCallNode extends BaseNode {
             if (toolService == null) {
                 throw new IllegalStateException("创建 ToolCallNode 失败：toolService 不能为空");
             }
-            
+
             // 所有校验通过，创建并返回实例
             return new ToolCallNode(config, toolService, executionPipeline);
         }
@@ -109,43 +113,59 @@ public class ToolCallNode extends BaseNode {
     @Override
     protected NodeOutput doExecute(NodeInput input) throws Exception {
         log.info("执行工具调用节点：{}", config.getNodeName());
-        log.debug("工具配置：toolName={}, toolType={}, timeout={}", 
-                config.getToolName(), config.getToolType(), config.getToolTimeout());
-        
+        log.debug(
+                "工具配置：toolName={}, toolType={}, timeout={}",
+                config.getToolName(),
+                config.getToolType(),
+                config.getToolTimeout());
+
         try {
             // 1. 获取工具名称和参数
             String toolName = getToolName(input);
-            
+
             if (toolName == null || toolName.trim().isEmpty()) {
                 NodeOutput output = new NodeOutput();
                 output.setSuccess(false);
                 output.setMsg("工具名称不能为空");
                 return output;
             }
-            
+
             // 2. 准备参数
             java.util.Map<String, Object> parameters = prepareToolParameters(input);
-            
+
             // 3. 调用工具服务
             ToolService.ToolExecutionResult result;
             Object runtimeRun = input.getParameter("_aiRun", null);
             Object runtimeRunId = input.getParameter("__aiRunId", null);
-            if (executionPipeline != null && (runtimeRun instanceof AiRun || runtimeRunId != null)) {
-                boolean highRisk = "HIGH".equalsIgnoreCase(config.getToolType())
-                        || "HIGH_RISK".equalsIgnoreCase(config.getToolType());
-                ToolExecutionPipeline.Request request = new ToolExecutionPipeline.Request(toolName, parameters,
-                        "{\"tool\":\"" + toolName.replace("\"", "") + "\"}", highRisk,
-                        input.getParameter("_toolApprovalId", null));
+            if (executionPipeline != null
+                    && (runtimeRun instanceof AiRun || runtimeRunId != null)) {
+                boolean highRisk =
+                        "HIGH".equalsIgnoreCase(config.getToolType())
+                                || "HIGH_RISK".equalsIgnoreCase(config.getToolType());
+                ToolExecutionPipeline.Request request =
+                        new ToolExecutionPipeline.Request(
+                                toolName,
+                                parameters,
+                                "{\"tool\":\"" + toolName.replace("\"", "") + "\"}",
+                                highRisk,
+                                input.getParameter("_toolApprovalId", null));
                 ToolExecutionPipeline.Result pipelineResult;
                 if (runtimeRun instanceof AiRun run) {
-                    pipelineResult = executionPipeline.execute(run, request, args -> executeTool(toolName, args));
+                    pipelineResult =
+                            executionPipeline.execute(
+                                    run, request, args -> executeTool(toolName, args));
                 } else {
-                    pipelineResult = executionPipeline.executeById(String.valueOf(runtimeRunId),
-                            new com.shiyu.ai.kernel.context.TenantId(number(input.getParameter("tenantId", null))),
-                            number(input.getParameter("userId", null)), request,
-                            args -> executeTool(toolName, args));
+                    pipelineResult =
+                            executionPipeline.executeById(
+                                    String.valueOf(runtimeRunId),
+                                    new com.shiyu.ai.kernel.context.TenantId(
+                                            number(input.getParameter("tenantId", null))),
+                                    number(input.getParameter("userId", null)),
+                                    request,
+                                    args -> executeTool(toolName, args));
                 }
-                if (pipelineResult.status() == ToolExecutionPipeline.Result.Status.APPROVAL_REQUIRED) {
+                if (pipelineResult.status()
+                        == ToolExecutionPipeline.Result.Status.APPROVAL_REQUIRED) {
                     NodeOutput pending = new NodeOutput();
                     pending.setSuccess(false);
                     pending.setMsg("工具等待用户审批: " + pipelineResult.approval().id());
@@ -157,24 +177,25 @@ public class ToolCallNode extends BaseNode {
             } else {
                 result = toolService.execute(toolName, parameters);
             }
-            
+
             // 4. 构建输出结果
             NodeOutput output = new NodeOutput();
             output.setSuccess(result.success());
             output.setMsg(result.success() ? "工具调用成功" : "工具调用失败，请稍后重试");
-            
+
             if (result.success()) {
                 output.addData(FieldKey.TOOL_NAME, toolName);
                 output.addData(FieldKey.TOOL_RESULT, result.result());
                 log.info("工具调用成功：{}", toolName);
             } else {
-                log.error("工具调用失败：errorMessageLength={}",
+                log.error(
+                        "工具调用失败：errorMessageLength={}",
                         result.errorMessage() == null ? 0 : result.errorMessage().length());
             }
-            
+
             log.info("工具调用节点执行完成");
             return output;
-            
+
         } catch (Exception e) {
             log.error("工具调用节点执行失败", e);
             NodeOutput output = new NodeOutput();
@@ -192,40 +213,47 @@ public class ToolCallNode extends BaseNode {
 
     private long number(Object value) {
         if (value instanceof Number number) return number.longValue();
-        try { return value == null ? 0 : Long.parseLong(String.valueOf(value)); }
-        catch (NumberFormatException ignored) { return 0; }
+        try {
+            return value == null ? 0 : Long.parseLong(String.valueOf(value));
+        } catch (NumberFormatException ignored) {
+            return 0;
+        }
     }
-    
+
     /**
      * 获取工具名称
-     * <p>
-     * 从配置中读取 toolName，每个 ToolCallNode 实例只对应一个工具。
+     *
+     * <p>从配置中读取 toolName，每个 ToolCallNode 实例只对应一个工具。
      */
     private String getToolName(NodeInput input) {
         return config.getToolName();
     }
-    
+
     /**
      * 准备工具参数
-     * <p>
-     * 从 input 中提取参数并处理：
+     *
+     * <p>从 input 中提取参数并处理：
+     *
      * <ol>
-     *   <li>提取原始参数，排除元数据字段</li>
-     *   <li>将 {@link FieldKey#SLOTS} 展平为独立字段</li>
-     *   <li>通过 {@link FieldKey#PARAMETER_MAPPING} 重命名 slot key</li>
-     *   <li>通过 {@link FieldKey#SLOT_DEFAULTS} 补充缺失的默认值</li>
-     *   <li>通过 {@link FieldKey#SLOT_DEFINITIONS} 校验部分 slot 缺失</li>
+     *   <li>提取原始参数，排除元数据字段
+     *   <li>将 {@link FieldKey#SLOTS} 展平为独立字段
+     *   <li>通过 {@link FieldKey#PARAMETER_MAPPING} 重命名 slot key
+     *   <li>通过 {@link FieldKey#SLOT_DEFAULTS} 补充缺失的默认值
+     *   <li>通过 {@link FieldKey#SLOT_DEFINITIONS} 校验部分 slot 缺失
      * </ol>
-     * <p>
-     * 参数映射/默认值/schema 均由上游 {@code IntentNode} 从 {@code IntentDefinition} 解析后
-     * 写入 state 传递至此，不再直接查询工厂。
+     *
+     * <p>参数映射/默认值/schema 均由上游 {@code IntentNode} 从 {@code IntentDefinition} 解析后 写入 state
+     * 传递至此，不再直接查询工厂。
      */
     @SuppressWarnings("unchecked")
     private java.util.Map<String, Object> prepareToolParameters(NodeInput input) {
         // 1. 从 state 读取上游 IntentNode 传递的配置
-        java.util.Map<String, String> parameterMapping = input.getParameter(FieldKey.PARAMETER_MAPPING, null);
-        java.util.Map<String, String> slotDefaults = input.getParameter(FieldKey.SLOT_DEFAULTS, null);
-        java.util.Map<String, String> slotDefinitions = input.getParameter(FieldKey.SLOT_DEFINITIONS, null);
+        java.util.Map<String, String> parameterMapping =
+                input.getParameter(FieldKey.PARAMETER_MAPPING, null);
+        java.util.Map<String, String> slotDefaults =
+                input.getParameter(FieldKey.SLOT_DEFAULTS, null);
+        java.util.Map<String, String> slotDefinitions =
+                input.getParameter(FieldKey.SLOT_DEFINITIONS, null);
 
         // 2. 收集原始参数，排除元数据
         java.util.Map<String, Object> raw = new java.util.HashMap<>();
@@ -271,9 +299,10 @@ public class ToolCallNode extends BaseNode {
         if (slotDefaults != null && !slotDefaults.isEmpty()) {
             for (java.util.Map.Entry<String, String> de : slotDefaults.entrySet()) {
                 String slotName = de.getKey();
-                String effectiveKey = parameterMapping != null
-                        ? parameterMapping.getOrDefault(slotName, slotName)
-                        : slotName;
+                String effectiveKey =
+                        parameterMapping != null
+                                ? parameterMapping.getOrDefault(slotName, slotName)
+                                : slotName;
                 if (!raw.containsKey(effectiveKey)) {
                     raw.put(effectiveKey, de.getValue());
                     log.debug("补充 slot 默认值: {}={}", effectiveKey, de.getValue());
@@ -284,10 +313,12 @@ public class ToolCallNode extends BaseNode {
         // 5. 校验部分 slot 缺失（仅 warn，不阻断）
         if (slotDefinitions != null && !slotDefinitions.isEmpty()) {
             for (String slotName : slotDefinitions.keySet()) {
-                String effectiveKey = parameterMapping != null
-                        ? parameterMapping.getOrDefault(slotName, slotName)
-                        : slotName;
-                if (!raw.containsKey(effectiveKey) || raw.get(effectiveKey) == null
+                String effectiveKey =
+                        parameterMapping != null
+                                ? parameterMapping.getOrDefault(slotName, slotName)
+                                : slotName;
+                if (!raw.containsKey(effectiveKey)
+                        || raw.get(effectiveKey) == null
                         || "".equals(raw.get(effectiveKey).toString().trim())) {
                     log.warn("部分 slot 缺失: {} (原始slot名={})", effectiveKey, slotName);
                 }
@@ -300,9 +331,8 @@ public class ToolCallNode extends BaseNode {
     @Override
     public java.util.List<NodeInputParam> getRequiredInputs() {
         return java.util.List.of(
-            NodeInputParam.config("toolName", "string", "工具名称"),
-            NodeInputParam.config("enableCache", "boolean", "是否启用缓存"),
-            NodeInputParam.previous("toolResult", "object", "前序工具结果（工具链场景）")
-        );
+                NodeInputParam.config("toolName", "string", "工具名称"),
+                NodeInputParam.config("enableCache", "boolean", "是否启用缓存"),
+                NodeInputParam.previous("toolResult", "object", "前序工具结果（工具链场景）"));
     }
 }

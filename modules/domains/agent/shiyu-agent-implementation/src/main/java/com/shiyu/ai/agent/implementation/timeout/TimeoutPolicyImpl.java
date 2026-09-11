@@ -4,20 +4,18 @@ import lombok.extern.slf4j.Slf4j;
 
 import java.util.concurrent.*;
 
-/**
- * 默认超时策略实现
- */
+/** 默认超时策略实现 */
 @Slf4j
 public class TimeoutPolicyImpl implements TimeoutPolicy {
 
-    private final ScheduledExecutorService scheduler = Executors.newScheduledThreadPool(
-        Runtime.getRuntime().availableProcessors(),
-        r -> {
-            Thread t = new Thread(r, "agent-timeout-");
-            t.setDaemon(true);
-            return t;
-        }
-    );
+    private final ScheduledExecutorService scheduler =
+            Executors.newScheduledThreadPool(
+                    Runtime.getRuntime().availableProcessors(),
+                    r -> {
+                        Thread t = new Thread(r, "agent-timeout-");
+                        t.setDaemon(true);
+                        return t;
+                    });
 
     @Override
     public <T> T executeWithTimeout(Callable<T> callable, TimeoutConfig config) throws Exception {

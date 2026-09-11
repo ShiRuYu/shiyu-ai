@@ -3,8 +3,7 @@ package com.shiyu.ai.agent.implementation.config;
 /**
  * 节点编辑器数据源 API 路径常量
  *
- * 前端通过 DataSourceConfig 获取这些路径来调用后端接口，
- * 填充 Agent 编辑器中节点的下拉选项（AI平台、模型、Agent等）。
+ * <p>前端通过 DataSourceConfig 获取这些路径来调用后端接口， 填充 Agent 编辑器中节点的下拉选项（AI平台、模型、Agent等）。
  */
 public final class DataSourceApiConstants {
 
@@ -18,5 +17,4 @@ public final class DataSourceApiConstants {
 
     /** Agent 列表（全部） */
     public static final String AGENT_LIST_ALL = "/api/agent/agents/options";
-
 }

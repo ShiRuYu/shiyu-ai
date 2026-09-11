@@ -7,6 +7,4 @@ public record GenerateExamRequest(
         Integer grade,
         List<Long> knowledgeIds,
         Integer durationMin,
-        String difficultyDistribution
-) {}
-
+        String difficultyDistribution) {}

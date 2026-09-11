@@ -46,17 +46,20 @@ public class RedisInfrastructureProperties {
     }
 
     public String normalizedProvider() {
-        return provider == null || provider.isBlank() ? "disabled" : provider.trim().toLowerCase(Locale.ROOT);
+        return provider == null || provider.isBlank()
+                ? "disabled"
+                : provider.trim().toLowerCase(Locale.ROOT);
     }
 
     public void validate() {
         String selected = normalizedProvider();
         if (!"disabled".equals(selected) && !"redis".equals(selected)) {
-            throw new IllegalStateException("Unsupported Redis provider: " + selected
-                    + "; expected disabled or redis");
+            throw new IllegalStateException(
+                    "Unsupported Redis provider: " + selected + "; expected disabled or redis");
         }
         if ("redis".equals(selected) && (url == null || url.isBlank())) {
-            throw new IllegalStateException("Redis provider requires shiyu.infrastructure.redis.url");
+            throw new IllegalStateException(
+                    "Redis provider requires shiyu.infrastructure.redis.url");
         }
     }
 

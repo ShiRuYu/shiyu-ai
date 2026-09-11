@@ -4,15 +4,13 @@ import com.shiyu.ai.tooling.implementation.plugin.spi.Plugin;
 import com.shiyu.ai.tooling.implementation.plugin.spi.PluginContext;
 import com.shiyu.ai.tooling.implementation.plugin.spi.PluginDescriptor;
 import com.shiyu.ai.tooling.implementation.plugin.spi.PluginDescriptor.PluginState;
+
 import lombok.extern.slf4j.Slf4j;
 
 import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
 
-/**
- * 插件管理器
- * 管理插件的完整生命周期：安装 → 启动 → 停止 → 卸载
- */
+/** 插件管理器 管理插件的完整生命周期：安装 → 启动 → 停止 → 卸载 */
 @Slf4j
 public class PluginManager {
 
@@ -24,9 +22,7 @@ public class PluginManager {
         this.pluginsDir = pluginsDir;
     }
 
-    /**
-     * 安装插件
-     */
+    /** 安装插件 */
     public void install(PluginDescriptor descriptor, Plugin plugin) {
         if (descriptors.containsKey(descriptor.getId())) {
             throw new IllegalStateException("插件已存在: " + descriptor.getId());
@@ -37,9 +33,7 @@ public class PluginManager {
         log.info("插件已安装: {} v{}", descriptor.getName(), descriptor.getVersion());
     }
 
-    /**
-     * 启动插件
-     */
+    /** 启动插件 */
     public void start(String pluginId) {
         if (pluginId == null || pluginId.isBlank()) {
             throw new IllegalArgumentException("插件 ID 不能为空");
@@ -52,22 +46,24 @@ public class PluginManager {
 
         try {
             desc.setState(PluginState.STARTING);
-            PluginContext context = new PluginContext(pluginId, pluginsDir + "/" + pluginId, desc.getConfig());
+            PluginContext context =
+                    new PluginContext(pluginId, pluginsDir + "/" + pluginId, desc.getConfig());
             plugin.init(context);
             plugin.start();
             desc.setState(PluginState.ACTIVE);
             log.info("插件已启动: {} v{}", desc.getName(), desc.getVersion());
         } catch (Exception e) {
             desc.setState(PluginState.FAILED);
-            log.error("插件启动失败: pluginIdLength={}, errorType={}, errorMessageLength={}",
-                    valueLength(pluginId), e.getClass().getSimpleName(), valueLength(e.getMessage()));
+            log.error(
+                    "插件启动失败: pluginIdLength={}, errorType={}, errorMessageLength={}",
+                    valueLength(pluginId),
+                    e.getClass().getSimpleName(),
+                    valueLength(e.getMessage()));
             throw new RuntimeException("插件启动失败: " + pluginId, e);
         }
     }
 
-    /**
-     * 停止插件
-     */
+    /** 停止插件 */
     public void stop(String pluginId) {
         PluginDescriptor desc = descriptors.get(pluginId);
         Plugin plugin = instances.get(pluginId);
@@ -79,14 +75,15 @@ public class PluginManager {
             desc.setState(PluginState.STOPPED);
             log.info("插件已停止: {}", pluginId);
         } catch (Exception e) {
-            log.error("插件停止失败: pluginIdLength={}, errorType={}, errorMessageLength={}",
-                    valueLength(pluginId), e.getClass().getSimpleName(), valueLength(e.getMessage()));
+            log.error(
+                    "插件停止失败: pluginIdLength={}, errorType={}, errorMessageLength={}",
+                    valueLength(pluginId),
+                    e.getClass().getSimpleName(),
+                    valueLength(e.getMessage()));
         }
     }
 
-    /**
-     * 卸载插件
-     */
+    /** 卸载插件 */
     public void uninstall(String pluginId) {
         stop(pluginId);
         descriptors.remove(pluginId);
@@ -94,34 +91,24 @@ public class PluginManager {
         log.info("插件已卸载: {}", pluginId);
     }
 
-    /**
-     * 获取插件描述
-     */
+    /** 获取插件描述 */
     public PluginDescriptor getDescriptor(String pluginId) {
         return descriptors.get(pluginId);
     }
 
-    /**
-     * 获取插件实例
-     */
+    /** 获取插件实例 */
     public Plugin getPlugin(String pluginId) {
         return instances.get(pluginId);
     }
 
-    /**
-     * 列出所有已安装插件
-     */
+    /** 列出所有已安装插件 */
     public List<PluginDescriptor> listPlugins() {
         return new ArrayList<>(descriptors.values());
     }
 
-    /**
-     * 列出指定状态的插件
-     */
+    /** 列出指定状态的插件 */
     public List<PluginDescriptor> listPluginsByState(PluginState state) {
-        return descriptors.values().stream()
-                .filter(d -> d.getState() == state)
-                .toList();
+        return descriptors.values().stream().filter(d -> d.getState() == state).toList();
     }
 
     private int valueLength(String value) {

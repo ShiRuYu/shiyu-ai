@@ -23,6 +23,7 @@ import com.shiyu.ai.iam.implementation.vo.TenantInfoVO;
 import com.shiyu.ai.kernel.context.ActorContext;
 import com.shiyu.ai.kernel.context.TenantId;
 import com.shiyu.ai.kernel.context.UserId;
+
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDateTime;
@@ -30,8 +31,8 @@ import java.util.List;
 import java.util.Map;
 
 /**
- * Stable IAM facade. Each public entry point delegates to one focused use-case
- * component while the facade preserves the existing service contract.
+ * Stable IAM facade. Each public entry point delegates to one focused use-case component while the
+ * facade preserves the existing service contract.
  */
 @Service
 public class AuthServiceImpl implements AuthService {
@@ -43,23 +44,34 @@ public class AuthServiceImpl implements AuthService {
     private final AuthTenantContextSupport contextSupport;
 
     /**
-     * Kept as the compatibility constructor used by existing Spring wiring and
-     * unit tests. The focused use cases receive their repositories explicitly.
+     * Kept as the compatibility constructor used by existing Spring wiring and unit tests. The
+     * focused use cases receive their repositories explicitly.
      */
-    public AuthServiceImpl(AuthRepository authRepository, UserRepository userRepository,
-                           UserScopeRoleRepository userScopeRoleRepository,
-                           TenantRoleRepository tenantRoleRepository,
-                           TenantRepository tenantRepository,
-                           MenuService menuService,
-                           CaptchaService captchaService) {
+    public AuthServiceImpl(
+            AuthRepository authRepository,
+            UserRepository userRepository,
+            UserScopeRoleRepository userScopeRoleRepository,
+            TenantRoleRepository tenantRoleRepository,
+            TenantRepository tenantRepository,
+            MenuService menuService,
+            CaptchaService captchaService) {
         this.contextSupport = new AuthTenantContextSupport(tenantRepository, tenantRoleRepository);
-        this.authentication = new AuthAuthenticationUseCase(
-                userRepository, userScopeRoleRepository, tenantRoleRepository,
-                captchaService, contextSupport);
+        this.authentication =
+                new AuthAuthenticationUseCase(
+                        userRepository,
+                        userScopeRoleRepository,
+                        tenantRoleRepository,
+                        captchaService,
+                        contextSupport);
         this.permissions = new AuthPermissionUseCase(authRepository);
-        this.identity = new AuthIdentityUseCase(
-                userRepository, userScopeRoleRepository, tenantRoleRepository,
-                tenantRepository, menuService, contextSupport);
+        this.identity =
+                new AuthIdentityUseCase(
+                        userRepository,
+                        userScopeRoleRepository,
+                        tenantRoleRepository,
+                        tenantRepository,
+                        menuService,
+                        contextSupport);
         this.sessions = new AuthSessionUseCase();
         this.recovery = new AuthRecoveryUseCase(userRepository, captchaService);
     }
@@ -125,7 +137,8 @@ public class AuthServiceImpl implements AuthService {
     }
 
     @Override
-    public boolean forgetPassword(String email, String newPassword, String code, String captchaKey) {
+    public boolean forgetPassword(
+            String email, String newPassword, String code, String captchaKey) {
         return recovery.forgetPassword(email, newPassword, code, captchaKey);
     }
 
@@ -142,9 +155,8 @@ public class AuthServiceImpl implements AuthService {
         return contextSupport.numberValue(value);
     }
 
-    private boolean isDelegatedTenantContext(Map<String, Object> extInfo,
-                                             List<UserScopeRoleBO> assignments,
-                                             Long targetTenantId) {
+    private boolean isDelegatedTenantContext(
+            Map<String, Object> extInfo, List<UserScopeRoleBO> assignments, Long targetTenantId) {
         return contextSupport.isDelegatedTenantContext(extInfo, assignments, targetTenantId);
     }
 
@@ -156,14 +168,17 @@ public class AuthServiceImpl implements AuthService {
         return contextSupport.isTenantSuperRole(role);
     }
 
-    private Map<String, Object> buildExtInfo(String oldExtInfo, RoleBO currentRole,
-                                             Long currentTenantId, LocalDateTime now,
-                                             String loginIp) {
+    private Map<String, Object> buildExtInfo(
+            String oldExtInfo,
+            RoleBO currentRole,
+            Long currentTenantId,
+            LocalDateTime now,
+            String loginIp) {
         return contextSupport.buildExtInfo(oldExtInfo, currentRole, currentTenantId, now, loginIp);
     }
 
-    private List<TenantContextVO> buildSubTenantList(List<UserScopeRoleBO> assignments,
-                                                      Long currentTenantId) {
+    private List<TenantContextVO> buildSubTenantList(
+            List<UserScopeRoleBO> assignments, Long currentTenantId) {
         return contextSupport.buildSubTenantList(assignments, currentTenantId);
     }
 
@@ -179,8 +194,8 @@ public class AuthServiceImpl implements AuthService {
         return contextSupport.buildTenantPath(tenantId);
     }
 
-    private RoleBO resolveCurrentRoleForTenant(Long roleId, List<RoleBO> roles,
-                                                List<UserScopeRoleBO> assignments, Long tenantId) {
+    private RoleBO resolveCurrentRoleForTenant(
+            Long roleId, List<RoleBO> roles, List<UserScopeRoleBO> assignments, Long tenantId) {
         return contextSupport.resolveCurrentRoleForTenant(roleId, roles, assignments, tenantId);
     }
 

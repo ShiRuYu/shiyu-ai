@@ -1,5 +1,6 @@
 package com.shiyu.ai.iam.implementation.service.impl;
 
+import com.shiyu.ai.common.core.api.PageData;
 import com.shiyu.ai.iam.implementation.api.request.AuthCodeRequest;
 import com.shiyu.ai.iam.implementation.api.response.AuthCodeResponse;
 import com.shiyu.ai.iam.implementation.application.assembler.AuthCodeAssembler;
@@ -12,9 +13,9 @@ import com.shiyu.ai.iam.implementation.port.repository.TenantRepository;
 import com.shiyu.ai.iam.implementation.request.AuthCodePageRequest;
 import com.shiyu.ai.iam.implementation.service.AuthCodeService;
 import com.shiyu.ai.iam.implementation.vo.AuthCodeOptionVO;
-import com.shiyu.ai.common.core.api.PageData;
 import com.shiyu.ai.kernel.context.ActorContext;
 import com.shiyu.ai.kernel.context.TenantId;
+
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -32,9 +33,10 @@ public class AuthCodeServiceImpl implements AuthCodeService {
     private final RoleRepository roleRepository;
     private final TenantRepository tenantRepository;
 
-    public AuthCodeServiceImpl(AuthCodeRepository authCodeRepository,
-                               RoleRepository roleRepository,
-                               TenantRepository tenantRepository) {
+    public AuthCodeServiceImpl(
+            AuthCodeRepository authCodeRepository,
+            RoleRepository roleRepository,
+            TenantRepository tenantRepository) {
         this.authCodeRepository = authCodeRepository;
         this.roleRepository = roleRepository;
         this.tenantRepository = tenantRepository;
@@ -43,8 +45,9 @@ public class AuthCodeServiceImpl implements AuthCodeService {
     @Override
     public List<AuthCodeOptionVO> list(ActorContext actor) {
         actor = requireActor(actor);
-        return authCodeRepository.selectByTenantId(actor.tenantId())
-                .stream().map(this::toOption).toList();
+        return authCodeRepository.selectByTenantId(actor.tenantId()).stream()
+                .map(this::toOption)
+                .toList();
     }
 
     @Override
@@ -53,8 +56,11 @@ public class AuthCodeServiceImpl implements AuthCodeService {
         if (!isValidScope(actor, roleId, tenantId)) {
             throw new IllegalArgumentException("角色不属于当前租户作用域");
         }
-        return authCodeRepository.selectByRoleIdAndTenantId(roleId, tenantId)
-                .stream().map(AuthCodeBO::getCode).filter(Objects::nonNull).distinct().toList();
+        return authCodeRepository.selectByRoleIdAndTenantId(roleId, tenantId).stream()
+                .map(AuthCodeBO::getCode)
+                .filter(Objects::nonNull)
+                .distinct()
+                .toList();
     }
 
     @Override
@@ -129,10 +135,12 @@ public class AuthCodeServiceImpl implements AuthCodeService {
 
     @Override
     @Transactional(rollbackFor = Exception.class)
-    public boolean grant(ActorContext actor, Long roleId, TenantId tenantId, List<Long> authCodeIds) {
+    public boolean grant(
+            ActorContext actor, Long roleId, TenantId tenantId, List<Long> authCodeIds) {
         actor = requireActor(actor);
         if (!isValidScope(actor, roleId, tenantId)
-                || authCodeIds == null || authCodeIds.isEmpty()) {
+                || authCodeIds == null
+                || authCodeIds.isEmpty()) {
             return false;
         }
         List<Long> distinctIds = authCodeIds.stream().filter(Objects::nonNull).distinct().toList();
@@ -140,52 +148,76 @@ public class AuthCodeServiceImpl implements AuthCodeService {
         if (valid.size() != distinctIds.size()) {
             return false;
         }
-        Set<Long> existing = new HashSet<>(authCodeRepository.selectByRoleIdAndTenantId(roleId, tenantId)
-                .stream().map(AuthCodeBO::getId).toList());
+        Set<Long> existing =
+                new HashSet<>(
+                        authCodeRepository.selectByRoleIdAndTenantId(roleId, tenantId).stream()
+                                .map(AuthCodeBO::getId)
+                                .toList());
         LocalDateTime now = LocalDateTime.now();
-        List<RoleScopeAuthCodeBO> records = distinctIds.stream().filter(id -> !existing.contains(id)).map(id -> {
-            RoleScopeAuthCodeBO item = new RoleScopeAuthCodeBO();
-            item.setRoleId(roleId);
-            item.setAuthCodeId(id);
-            item.setTenantId(tenantId.value());
-            item.setStatus(1);
-            item.setDelFlag(0);
-            item.setCreateTime(now);
-            item.setUpdateTime(now);
-            return item;
-        }).toList();
+        List<RoleScopeAuthCodeBO> records =
+                distinctIds.stream()
+                        .filter(id -> !existing.contains(id))
+                        .map(
+                                id -> {
+                                    RoleScopeAuthCodeBO item = new RoleScopeAuthCodeBO();
+                                    item.setRoleId(roleId);
+                                    item.setAuthCodeId(id);
+                                    item.setTenantId(tenantId.value());
+                                    item.setStatus(1);
+                                    item.setDelFlag(0);
+                                    item.setCreateTime(now);
+                                    item.setUpdateTime(now);
+                                    return item;
+                                })
+                        .toList();
         authCodeRepository.insertRoleAssignments(records);
         return true;
     }
 
     @Override
     @Transactional(rollbackFor = Exception.class)
-    public boolean replace(ActorContext actor, Long roleId, TenantId tenantId, List<String> authCodes) {
+    public boolean replace(
+            ActorContext actor, Long roleId, TenantId tenantId, List<String> authCodes) {
         actor = requireActor(actor);
         if (!isValidScope(actor, roleId, tenantId)) {
             return false;
         }
-        List<String> target = authCodes == null ? List.of() : authCodes.stream()
-                .filter(Objects::nonNull).map(String::trim).filter(s -> !s.isEmpty()).distinct().toList();
-        List<AuthCodeBO> valid = target.isEmpty() ? List.of() : authCodeRepository.selectByTenantId(tenantId).stream()
-                .filter(a -> target.contains(a.getCode())).toList();
+        List<String> target =
+                authCodes == null
+                        ? List.of()
+                        : authCodes.stream()
+                                .filter(Objects::nonNull)
+                                .map(String::trim)
+                                .filter(s -> !s.isEmpty())
+                                .distinct()
+                                .toList();
+        List<AuthCodeBO> valid =
+                target.isEmpty()
+                        ? List.of()
+                        : authCodeRepository.selectByTenantId(tenantId).stream()
+                                .filter(a -> target.contains(a.getCode()))
+                                .toList();
         if (valid.size() != target.size()) {
             return false;
         }
         authCodeRepository.deleteRoleAssignments(roleId, tenantId, null);
         if (!valid.isEmpty()) {
             LocalDateTime now = LocalDateTime.now();
-            authCodeRepository.insertRoleAssignments(valid.stream().map(a -> {
-                RoleScopeAuthCodeBO item = new RoleScopeAuthCodeBO();
-                item.setRoleId(roleId);
-                item.setAuthCodeId(a.getId());
-                item.setTenantId(tenantId.value());
-                item.setStatus(1);
-                item.setDelFlag(0);
-                item.setCreateTime(now);
-                item.setUpdateTime(now);
-                return item;
-            }).toList());
+            authCodeRepository.insertRoleAssignments(
+                    valid.stream()
+                            .map(
+                                    a -> {
+                                        RoleScopeAuthCodeBO item = new RoleScopeAuthCodeBO();
+                                        item.setRoleId(roleId);
+                                        item.setAuthCodeId(a.getId());
+                                        item.setTenantId(tenantId.value());
+                                        item.setStatus(1);
+                                        item.setDelFlag(0);
+                                        item.setCreateTime(now);
+                                        item.setUpdateTime(now);
+                                        return item;
+                                    })
+                            .toList());
         }
         return true;
     }
@@ -204,13 +236,25 @@ public class AuthCodeServiceImpl implements AuthCodeService {
     @Override
     public PageData<AuthCodeOptionVO> page(ActorContext actor, AuthCodePageRequest request) {
         actor = requireActor(actor);
-        List<AuthCodeOptionVO> items = authCodeRepository.selectByTenantId(actor.tenantId()).stream()
-                .filter(a -> request.getCode() == null || request.getCode().isBlank()
-                        || (a.getCode() != null && a.getCode().contains(request.getCode())))
-                .filter(a -> request.getName() == null || request.getName().isBlank()
-                        || (a.getName() != null && a.getName().contains(request.getName())))
-                .sorted(Comparator.comparing(AuthCodeBO::getId, Comparator.nullsLast(Long::compareTo)))
-                .map(this::toOption).toList();
+        List<AuthCodeOptionVO> items =
+                authCodeRepository.selectByTenantId(actor.tenantId()).stream()
+                        .filter(
+                                a ->
+                                        request.getCode() == null
+                                                || request.getCode().isBlank()
+                                                || (a.getCode() != null
+                                                        && a.getCode().contains(request.getCode())))
+                        .filter(
+                                a ->
+                                        request.getName() == null
+                                                || request.getName().isBlank()
+                                                || (a.getName() != null
+                                                        && a.getName().contains(request.getName())))
+                        .sorted(
+                                Comparator.comparing(
+                                        AuthCodeBO::getId, Comparator.nullsLast(Long::compareTo)))
+                        .map(this::toOption)
+                        .toList();
         int page = request.getPageNum() == null ? 1 : request.getPageNum();
         int size = request.getPageSize() == null ? 10 : request.getPageSize();
         int from = Math.min(Math.max(0, (page - 1) * size), items.size());
@@ -219,7 +263,9 @@ public class AuthCodeServiceImpl implements AuthCodeService {
     }
 
     private void validateCode(AuthCodeBO authCode) {
-        if (authCode == null || authCode.getCode() == null || authCode.getCode().isBlank()
+        if (authCode == null
+                || authCode.getCode() == null
+                || authCode.getCode().isBlank()
                 || authCode.getCode().length() > 64) {
             throw new IllegalArgumentException("权限编码不能为空且长度不能超过64");
         }
@@ -233,7 +279,10 @@ public class AuthCodeServiceImpl implements AuthCodeService {
         option.setCode(authCode.getCode());
         option.setModule(parts.length > 0 ? parts[0] : "");
         option.setAction(parts.length > 1 ? parts[parts.length - 1] : "");
-        option.setResource(parts.length > 2 ? String.join(":", java.util.Arrays.copyOfRange(parts, 1, parts.length - 1)) : "");
+        option.setResource(
+                parts.length > 2
+                        ? String.join(":", java.util.Arrays.copyOfRange(parts, 1, parts.length - 1))
+                        : "");
         option.setStatus(authCode.getStatus());
         option.setCreateTime(authCode.getCreateTime());
         return option;
@@ -247,13 +296,16 @@ public class AuthCodeServiceImpl implements AuthCodeService {
             return false;
         }
         var tenant = tenantRepository.selectById(requestedTenantId);
-        return tenant != null && tenant.getStatus() != null && tenant.getStatus() == 1
+        return tenant != null
+                && tenant.getStatus() != null
+                && tenant.getStatus() == 1
                 && (tenant.getDelFlag() == null || tenant.getDelFlag() == 0)
-                && tenantRepository.selectDescendantIds(new TenantId(currentTenantId)).contains(requestedTenantId);
+                && tenantRepository
+                        .selectDescendantIds(new TenantId(currentTenantId))
+                        .contains(requestedTenantId);
     }
 
     private static ActorContext requireActor(ActorContext actor) {
         return Objects.requireNonNull(actor, "actor context is required");
     }
 }
-

@@ -1,30 +1,42 @@
 package com.shiyu.ai.agent.implementation.policy;
 
+import static org.junit.jupiter.api.Assertions.*;
+
 import com.shiyu.ai.agent.implementation.execution.ExecutionStatus;
 import com.shiyu.ai.agent.implementation.lifecycle.AgentStateMachine;
 import com.shiyu.ai.agent.implementation.retry.RetryConfig;
 import com.shiyu.ai.agent.implementation.retry.RetryPolicyImpl;
 import com.shiyu.ai.agent.implementation.timeout.TimeoutConfig;
 import com.shiyu.ai.agent.implementation.timeout.TimeoutPolicyImpl;
+
 import org.junit.jupiter.api.Test;
 
 import java.util.concurrent.TimeoutException;
 import java.util.concurrent.atomic.AtomicInteger;
 
-import static org.junit.jupiter.api.Assertions.*;
-
 class AgentPolicyCoverageTest {
 
     @Test
     void validatesAllExecutionStateTransitionsAndTerminalHelpers() {
-        assertTrue(AgentStateMachine.canTransition(ExecutionStatus.PENDING, ExecutionStatus.RUNNING));
-        assertTrue(AgentStateMachine.canTransition(ExecutionStatus.RUNNING, ExecutionStatus.PAUSED));
-        assertTrue(AgentStateMachine.canTransition(ExecutionStatus.PAUSED, ExecutionStatus.CANCELLED));
-        assertFalse(AgentStateMachine.canTransition(ExecutionStatus.COMPLETED, ExecutionStatus.RUNNING));
+        assertTrue(
+                AgentStateMachine.canTransition(ExecutionStatus.PENDING, ExecutionStatus.RUNNING));
+        assertTrue(
+                AgentStateMachine.canTransition(ExecutionStatus.RUNNING, ExecutionStatus.PAUSED));
+        assertTrue(
+                AgentStateMachine.canTransition(ExecutionStatus.PAUSED, ExecutionStatus.CANCELLED));
+        assertFalse(
+                AgentStateMachine.canTransition(
+                        ExecutionStatus.COMPLETED, ExecutionStatus.RUNNING));
         assertFalse(AgentStateMachine.canTransition(null, ExecutionStatus.RUNNING));
-        assertDoesNotThrow(() -> AgentStateMachine.transition(ExecutionStatus.RUNNING, ExecutionStatus.COMPLETED));
-        assertThrows(IllegalStateException.class,
-                () -> AgentStateMachine.transition(ExecutionStatus.FAILED, ExecutionStatus.RUNNING));
+        assertDoesNotThrow(
+                () ->
+                        AgentStateMachine.transition(
+                                ExecutionStatus.RUNNING, ExecutionStatus.COMPLETED));
+        assertThrows(
+                IllegalStateException.class,
+                () ->
+                        AgentStateMachine.transition(
+                                ExecutionStatus.FAILED, ExecutionStatus.RUNNING));
 
         assertTrue(ExecutionStatus.COMPLETED.isTerminal());
         assertTrue(ExecutionStatus.RUNNING.canPause());
@@ -38,18 +50,27 @@ class AgentPolicyCoverageTest {
     void retriesTransientFailuresAndStopsAtTheConfiguredLimit() {
         RetryPolicyImpl retry = new RetryPolicyImpl();
         AtomicInteger attempts = new AtomicInteger();
-        String value = retry.executeWithRetry(() -> {
-            if (attempts.incrementAndGet() < 3) throw new IllegalStateException("transient");
-            return "ok";
-        }, new RetryConfig(3, 0, 2D));
+        String value =
+                retry.executeWithRetry(
+                        () -> {
+                            if (attempts.incrementAndGet() < 3)
+                                throw new IllegalStateException("transient");
+                            return "ok";
+                        },
+                        new RetryConfig(3, 0, 2D));
         assertEquals("ok", value);
         assertEquals(3, attempts.get());
 
         AtomicInteger exhausted = new AtomicInteger();
-        assertThrows(IllegalArgumentException.class, () -> retry.executeWithRetry(() -> {
-            exhausted.incrementAndGet();
-            throw new IllegalArgumentException("permanent");
-        }, new RetryConfig(1, 0, 2D)));
+        assertThrows(
+                IllegalArgumentException.class,
+                () ->
+                        retry.executeWithRetry(
+                                () -> {
+                                    exhausted.incrementAndGet();
+                                    throw new IllegalArgumentException("permanent");
+                                },
+                                new RetryConfig(1, 0, 2D)));
         assertEquals(2, exhausted.get());
     }
 
@@ -57,16 +78,33 @@ class AgentPolicyCoverageTest {
     void mapsTimeoutAndExecutionFailureOutcomes() throws Exception {
         TimeoutPolicyImpl timeout = new TimeoutPolicyImpl();
         try {
-            assertEquals("ok", timeout.executeWithTimeout(() -> "ok", new TimeoutConfig(1000, 1000)));
-            assertThrows(TimeoutException.class,
-                    () -> timeout.executeWithTimeout(() -> { Thread.sleep(100); return "late"; },
-                            new TimeoutConfig(1000, 1)));
-            assertThrows(IllegalStateException.class,
-                    () -> timeout.executeWithTimeout(() -> { throw new IllegalStateException("failed"); },
-                            new TimeoutConfig(1000, 1000)));
-            assertThrows(RuntimeException.class,
-                    () -> timeout.executeWithTimeout(() -> { throw new AssertionError("fatal"); },
-                            new TimeoutConfig(1000, 1000)));
+            assertEquals(
+                    "ok", timeout.executeWithTimeout(() -> "ok", new TimeoutConfig(1000, 1000)));
+            assertThrows(
+                    TimeoutException.class,
+                    () ->
+                            timeout.executeWithTimeout(
+                                    () -> {
+                                        Thread.sleep(100);
+                                        return "late";
+                                    },
+                                    new TimeoutConfig(1000, 1)));
+            assertThrows(
+                    IllegalStateException.class,
+                    () ->
+                            timeout.executeWithTimeout(
+                                    () -> {
+                                        throw new IllegalStateException("failed");
+                                    },
+                                    new TimeoutConfig(1000, 1000)));
+            assertThrows(
+                    RuntimeException.class,
+                    () ->
+                            timeout.executeWithTimeout(
+                                    () -> {
+                                        throw new AssertionError("fatal");
+                                    },
+                                    new TimeoutConfig(1000, 1000)));
         } finally {
             timeout.close();
         }

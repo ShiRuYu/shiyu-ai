@@ -3,9 +3,16 @@ package com.shiyu.ai.conversation.implementation.domain.chat;
 import java.util.List;
 import java.util.Map;
 
-public record CharacterCardV2(String spec, String name, String description, String scenario,
-                             String firstMessage, List<String> exampleDialogues, String systemPrompt,
-                             Map<String, Object> extensions, int version) {
+public record CharacterCardV2(
+        String spec,
+        String name,
+        String description,
+        String scenario,
+        String firstMessage,
+        List<String> exampleDialogues,
+        String systemPrompt,
+        Map<String, Object> extensions,
+        int version) {
     public CharacterCardV2 {
         spec = spec == null ? "chara_card_v2" : spec;
         version = version <= 0 ? 2 : version;

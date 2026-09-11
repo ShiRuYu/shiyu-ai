@@ -29,22 +29,16 @@ public final class TransactionHookExecutor {
         }
 
         TransactionSynchronizationManager.registerSynchronization(
-                new InternalSynchronization(hook)
-        );
+                new InternalSynchronization(hook));
     }
 
-    /**
-     * 默认：无事务不执行（严格模式）
-     */
+    /** 默认：无事务不执行（严格模式） */
     public static void register(TransactionHook hook) {
         register(hook, false);
     }
 
-    /**
-     * 内部同步器（隔离 Spring SPI）
-     */
-    private static final class InternalSynchronization
-            implements TransactionSynchronization {
+    /** 内部同步器（隔离 Spring SPI） */
+    private static final class InternalSynchronization implements TransactionSynchronization {
 
         private final TransactionHook hook;
 
@@ -71,4 +65,3 @@ public final class TransactionHookExecutor {
         }
     }
 }
-

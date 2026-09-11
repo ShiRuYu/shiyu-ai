@@ -26,4 +26,3 @@ public interface ChapterService {
 
     void replaceKnowledgeIds(ActorContext actor, Long chapterId, List<Long> knowledgeIds);
 }
-

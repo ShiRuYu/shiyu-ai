@@ -1,18 +1,18 @@
 package com.shiyu.ai.education.implementation.agent.graph;
 
-import com.shiyu.ai.education.implementation.domain.enums.ReviewTaskStatus;
-
 import com.fasterxml.jackson.annotation.JsonIgnore;
-import com.shiyu.ai.agent.contract.node.NodeInputParam;
 import com.shiyu.ai.agent.contract.node.BaseNode;
 import com.shiyu.ai.agent.contract.node.NodeInput;
+import com.shiyu.ai.agent.contract.node.NodeInputParam;
 import com.shiyu.ai.agent.contract.node.NodeOutput;
 import com.shiyu.ai.agent.contract.node.NodeType;
-import com.shiyu.ai.education.implementation.domain.model.ReviewTaskBO;
-import com.shiyu.ai.education.implementation.domain.port.repository.ReviewTaskRepository;
 import com.shiyu.ai.education.implementation.application.ReviewService;
 import com.shiyu.ai.education.implementation.domain.ReviewScheduler;
+import com.shiyu.ai.education.implementation.domain.enums.ReviewTaskStatus;
+import com.shiyu.ai.education.implementation.domain.model.ReviewTaskBO;
+import com.shiyu.ai.education.implementation.domain.port.repository.ReviewTaskRepository;
 import com.shiyu.ai.kernel.context.ActorContext;
+
 import lombok.Getter;
 import lombok.Setter;
 import lombok.extern.slf4j.Slf4j;
@@ -23,10 +23,9 @@ import java.util.List;
 /**
  * 复习安排节点
  *
- * LangGraph4j 节点，学习完成后安排艾宾浩斯遗忘曲线复习任务。
+ * <p>LangGraph4j 节点，学习完成后安排艾宾浩斯遗忘曲线复习任务。
  *
- * 输入字段：studentId, knowledgeId
- * 输出字段：reviewTasks, reviewDates, reviewScheduled
+ * <p>输入字段：studentId, knowledgeId 输出字段：reviewTasks, reviewDates, reviewScheduled
  */
 @Slf4j
 @Getter
@@ -34,13 +33,14 @@ import java.util.List;
 @SuppressWarnings("this-escape")
 public class ReviewScheduleNode extends BaseNode {
 
-    @JsonIgnore
-    private final ReviewScheduler reviewScheduler;
-    @JsonIgnore
-    private final ReviewService reviewService;
+    @JsonIgnore private final ReviewScheduler reviewScheduler;
+    @JsonIgnore private final ReviewService reviewService;
     private final ReviewTaskRepository reviewTaskRepository;
 
-    public ReviewScheduleNode(ReviewScheduler reviewScheduler, ReviewService reviewService, ReviewTaskRepository reviewTaskRepository) {
+    public ReviewScheduleNode(
+            ReviewScheduler reviewScheduler,
+            ReviewService reviewService,
+            ReviewTaskRepository reviewTaskRepository) {
         super();
         this.getConfig().setNodeType(NodeType.TRANSFORM);
         this.getConfig().setNodeName("reviewSchedule");
@@ -68,25 +68,27 @@ public class ReviewScheduleNode extends BaseNode {
         }
 
         // 使用 ReviewScheduler 生成艾宾浩斯复习计划
-        List<ReviewScheduler.ReviewTask> scheduledTasks = reviewScheduler.scheduleAfterLearning(
-                studentId, knowledgeId, Instant.now());
+        List<ReviewScheduler.ReviewTask> scheduledTasks =
+                reviewScheduler.scheduleAfterLearning(studentId, knowledgeId, Instant.now());
 
         // 持久化复习任务
-        List<ReviewTaskBO> savedTasks = scheduledTasks.stream()
-                .map(task -> {
-                    ReviewTaskBO rt = new ReviewTaskBO();
-                    rt.setStudentId(task.studentId());
-                    rt.setKnowledgeId(task.knowledgeId());
-                    rt.setReviewDate(task.reviewDate());
-                    rt.setReviewRound(task.reviewRound());
-                    rt.setStatus(ReviewTaskStatus.PENDING.getCode());
-                    reviewTaskRepository.insert(actor.tenantId(), rt); return rt;
-                })
-                .toList();
+        List<ReviewTaskBO> savedTasks =
+                scheduledTasks.stream()
+                        .map(
+                                task -> {
+                                    ReviewTaskBO rt = new ReviewTaskBO();
+                                    rt.setStudentId(task.studentId());
+                                    rt.setKnowledgeId(task.knowledgeId());
+                                    rt.setReviewDate(task.reviewDate());
+                                    rt.setReviewRound(task.reviewRound());
+                                    rt.setStatus(ReviewTaskStatus.PENDING.getCode());
+                                    reviewTaskRepository.insert(actor.tenantId(), rt);
+                                    return rt;
+                                })
+                        .toList();
 
-        List<java.time.LocalDate> reviewDates = scheduledTasks.stream()
-                .map(ReviewScheduler.ReviewTask::reviewDate)
-                .toList();
+        List<java.time.LocalDate> reviewDates =
+                scheduledTasks.stream().map(ReviewScheduler.ReviewTask::reviewDate).toList();
 
         NodeOutput output = new NodeOutput();
         output.setSuccess(true);
@@ -103,9 +105,7 @@ public class ReviewScheduleNode extends BaseNode {
     @Override
     public java.util.List<NodeInputParam> getRequiredInputs() {
         return java.util.List.of(
-            NodeInputParam.previous("studentId", "number", "学生 ID"),
-            NodeInputParam.previous("knowledgeId", "number", "知识点 ID")
-        );
+                NodeInputParam.previous("studentId", "number", "学生 ID"),
+                NodeInputParam.previous("knowledgeId", "number", "知识点 ID"));
     }
 }
-

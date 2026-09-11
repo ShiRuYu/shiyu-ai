@@ -4,8 +4,7 @@ import com.tngtech.archunit.core.importer.ImportOption;
 import com.tngtech.archunit.core.importer.Location;
 
 final class ArchitectureImportOptions {
-    private ArchitectureImportOptions() {
-    }
+    private ArchitectureImportOptions() {}
 
     /** Keeps stale bytecode from the retired platform tree out of scans. */
     static final class DoNotIncludeLegacyPlatformBuilds implements ImportOption {

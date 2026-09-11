@@ -13,4 +13,3 @@ public class AuthCodeResponse {
     private LocalDateTime createTime;
     private LocalDateTime updateTime;
 }
-

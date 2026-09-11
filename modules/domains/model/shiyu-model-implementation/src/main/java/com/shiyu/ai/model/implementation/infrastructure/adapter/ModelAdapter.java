@@ -1,6 +1,7 @@
 package com.shiyu.ai.model.implementation.infrastructure.adapter;
 
 import com.shiyu.ai.model.implementation.infrastructure.adapter.config.PlatformConfig;
+
 import dev.langchain4j.model.chat.ChatModel;
 import dev.langchain4j.model.chat.StreamingChatModel;
 

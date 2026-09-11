@@ -27,13 +27,10 @@ public class TransactionTemplateExecutor {
         }
     }
 
-    /**
-     * REQUIRES_NEW 语义
-     */
+    /** REQUIRES_NEW 语义 */
     public <T> T executeNew(Supplier<T> action) {
         DefaultTransactionDefinition def = new DefaultTransactionDefinition();
         def.setPropagationBehavior(TransactionDefinition.PROPAGATION_REQUIRES_NEW);
         return execute(def, action);
     }
 }
-

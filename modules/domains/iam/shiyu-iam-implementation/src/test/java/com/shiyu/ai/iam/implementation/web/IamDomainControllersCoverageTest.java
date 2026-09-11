@@ -1,25 +1,26 @@
 package com.shiyu.ai.iam.implementation.web;
 
+import static org.junit.jupiter.api.Assertions.*;
+import static org.mockito.ArgumentMatchers.*;
+import static org.mockito.Mockito.*;
+
+import com.shiyu.ai.common.core.domain.UserContext;
+import com.shiyu.ai.common.core.domain.UserContextHolder;
 import com.shiyu.ai.iam.implementation.request.*;
 import com.shiyu.ai.iam.implementation.service.*;
 import com.shiyu.ai.iam.implementation.vo.RoleVO;
 import com.shiyu.ai.iam.implementation.vo.TenantVO;
 import com.shiyu.ai.iam.implementation.vo.UserVO;
-import com.shiyu.ai.common.core.domain.UserContext;
-import com.shiyu.ai.common.core.domain.UserContextHolder;
-import com.shiyu.ai.knowledge.contract.KnowledgeTenantProvisioning;
-import com.shiyu.ai.kernel.context.TenantId;
 import com.shiyu.ai.kernel.context.ActorContext;
+import com.shiyu.ai.kernel.context.TenantId;
+import com.shiyu.ai.knowledge.contract.KnowledgeTenantProvisioning;
+
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
 import java.util.List;
 import java.util.Map;
-
-import static org.junit.jupiter.api.Assertions.*;
-import static org.mockito.ArgumentMatchers.*;
-import static org.mockito.Mockito.*;
 
 class IamDomainControllersCoverageTest {
     private final RoleService roles = mock(RoleService.class);
@@ -31,12 +32,16 @@ class IamDomainControllersCoverageTest {
     @BeforeEach
     void actor() {
         UserContext context = new UserContext();
-        context.setUserId(8L); context.setCurrentTenantId(7L); context.setHomeTenantId(7L);
+        context.setUserId(8L);
+        context.setCurrentTenantId(7L);
+        context.setHomeTenantId(7L);
         UserContextHolder.setContext(context);
     }
 
     @AfterEach
-    void clear() { UserContextHolder.clearContext(); }
+    void clear() {
+        UserContextHolder.clearContext();
+    }
 
     @Test
     void mapsRoleControllerSuccessAndFailureBranches() {
@@ -49,11 +54,13 @@ class IamDomainControllersCoverageTest {
         when(roles.detailView(any(), eq(1L), eq(new TenantId(7L)))).thenReturn(new RoleVO());
         when(roles.createRole(any(), same(request))).thenReturn(true);
         when(roles.updateRole(any(), eq(1L), same(request))).thenReturn(true);
-        when(roles.replaceRoleMenus(any(), eq(1L), eq(new TenantId(7L)), eq(List.of(2L)))).thenReturn(true);
+        when(roles.replaceRoleMenus(any(), eq(1L), eq(new TenantId(7L)), eq(List.of(2L))))
+                .thenReturn(true);
         when(roles.deleteRole(any(), eq(1L))).thenReturn(true);
         when(roles.removeUserRoles(any(), eq(1L), any(), any())).thenReturn(true);
         when(roles.assignUserRoles(any(), eq(1L), any(), any())).thenReturn(true);
-        assignments.setTenantId(7L); assignments.setUserIds(List.of(8L));
+        assignments.setTenantId(7L);
+        assignments.setUserIds(List.of(8L));
         assertTrue(controller.getRoleList(page).isSuccess());
         assertTrue(controller.getAllRoles(null, 7L).isSuccess());
         assertTrue(controller.getRoleDetail(1L, 7L).isSuccess());
@@ -71,7 +78,8 @@ class IamDomainControllersCoverageTest {
         when(roles.detailView(any(), eq(2L), eq(new TenantId(7L)))).thenReturn(null);
         when(roles.createRole(any(), any())).thenReturn(false);
         when(roles.updateRole(any(), anyLong(), any())).thenReturn(false);
-        when(roles.replaceRoleMenus(any(), anyLong(), any(TenantId.class), any())).thenReturn(false);
+        when(roles.replaceRoleMenus(any(), anyLong(), any(TenantId.class), any()))
+                .thenReturn(false);
         when(roles.deleteRole(any(), anyLong())).thenReturn(false);
         when(roles.removeUserRoles(any(), anyLong(), any(), any())).thenReturn(false);
         when(roles.assignUserRoles(any(), anyLong(), any(), any())).thenReturn(false);
@@ -130,8 +138,11 @@ class IamDomainControllersCoverageTest {
     void mapsTenantProvisioningAndFailureBranches() {
         TenantController controller = new TenantController(tenants, auth, knowledge);
         TenantPageRequest page = new TenantPageRequest();
-        TenantRequest request = new TenantRequest(); request.setCode("acme");
-        TenantVO tenant = new TenantVO(); tenant.setId(11L); tenant.setCode("acme");
+        TenantRequest request = new TenantRequest();
+        request.setCode("acme");
+        TenantVO tenant = new TenantVO();
+        tenant.setId(11L);
+        tenant.setCode("acme");
         when(tenants.allTenantsView(any())).thenReturn(List.of(tenant));
         when(tenants.getTenantPage(any(), any(), any(), any(), any(), any())).thenReturn(null);
         when(tenants.detailView(any(), eq(11L))).thenReturn(tenant);
@@ -167,9 +178,12 @@ class IamDomainControllersCoverageTest {
         TimezoneService timezone = mock(TimezoneService.class);
         TimezoneController controller = new TimezoneController(timezone);
         SetTimezoneRequest request = new SetTimezoneRequest();
-        ActorContext actor = new ActorContext(new TenantId(7L), new com.shiyu.ai.kernel.context.UserId(8L), false);
+        ActorContext actor =
+                new ActorContext(
+                        new TenantId(7L), new com.shiyu.ai.kernel.context.UserId(8L), false);
         try (var mocked = mockStatic(com.shiyu.ai.common.web.auth.ActorContextHttpAdapter.class)) {
-            mocked.when(com.shiyu.ai.common.web.auth.ActorContextHttpAdapter::currentActor).thenReturn(actor);
+            mocked.when(com.shiyu.ai.common.web.auth.ActorContextHttpAdapter::currentActor)
+                    .thenReturn(actor);
             when(timezone.getTimezoneOptions()).thenReturn(List.of());
             when(timezone.getTimezone(actor)).thenReturn("Asia/Shanghai");
             when(timezone.setTimezone(actor, request)).thenReturn(true, false);
@@ -180,4 +194,3 @@ class IamDomainControllersCoverageTest {
         }
     }
 }
-

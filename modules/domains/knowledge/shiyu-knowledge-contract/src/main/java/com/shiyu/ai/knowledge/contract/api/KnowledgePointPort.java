@@ -7,4 +7,3 @@ import com.shiyu.ai.knowledge.contract.model.KnowledgeResponse;
 public interface KnowledgePointPort {
     KnowledgeResponse getResponse(ActorContext actor, Long pointId);
 }
-

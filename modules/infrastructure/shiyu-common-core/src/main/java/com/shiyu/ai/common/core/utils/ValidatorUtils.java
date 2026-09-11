@@ -6,9 +6,7 @@ import jakarta.validation.Validator;
 
 import java.util.Set;
 
-/**
- * Validator 校验框架工具
- */
+/** Validator 校验框架工具 */
 public class ValidatorUtils {
 
     private static final Validator VALID = SpringUtils.getBean(Validator.class);
@@ -19,5 +17,4 @@ public class ValidatorUtils {
             throw new ConstraintViolationException("参数校验异常", validate);
         }
     }
-
 }

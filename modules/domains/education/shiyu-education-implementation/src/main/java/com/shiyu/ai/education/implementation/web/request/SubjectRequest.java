@@ -1,6 +1,7 @@
 package com.shiyu.ai.education.implementation.web.request;
 
 import jakarta.validation.constraints.NotBlank;
+
 import lombok.Data;
 
 import java.io.Serial;
@@ -9,8 +10,7 @@ import java.io.Serializable;
 @Data
 public class SubjectRequest implements Serializable {
 
-    @Serial
-    private static final long serialVersionUID = 1L;
+    @Serial private static final long serialVersionUID = 1L;
 
     private Long id;
 
@@ -26,4 +26,3 @@ public class SubjectRequest implements Serializable {
     private Integer sortOrder;
     private Integer status;
 }
-

@@ -2,7 +2,11 @@ package com.shiyu.ai.memory.contract.model;
 
 /** The relation view a query is primarily asking for. */
 public enum MemoryQueryIntent {
-    SEMANTIC, TEMPORAL, CAUSAL, ENTITY, HYBRID;
+    SEMANTIC,
+    TEMPORAL,
+    CAUSAL,
+    ENTITY,
+    HYBRID;
 
     public static MemoryQueryIntent infer(String text) {
         String value = text == null ? "" : text.toLowerCase(java.util.Locale.ROOT);
@@ -12,4 +16,3 @@ public enum MemoryQueryIntent {
         return SEMANTIC;
     }
 }
-

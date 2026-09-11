@@ -2,16 +2,17 @@ package com.shiyu.ai.education.implementation.application.impl;
 
 import com.shiyu.ai.common.core.api.PageData;
 import com.shiyu.ai.common.core.utils.MapstructUtils;
+import com.shiyu.ai.education.implementation.application.CourseService;
 import com.shiyu.ai.education.implementation.domain.model.CourseBO;
 import com.shiyu.ai.education.implementation.domain.port.repository.CourseRepository;
-import com.shiyu.ai.education.implementation.domain.port.repository.StudyRecordRepository;
 import com.shiyu.ai.education.implementation.web.dto.CourseProgressResponse;
 import com.shiyu.ai.education.implementation.web.dto.CourseResponse;
 import com.shiyu.ai.education.implementation.web.request.CourseRequest;
-import com.shiyu.ai.education.implementation.application.CourseService;
 import com.shiyu.ai.kernel.context.ActorContext;
+
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -32,20 +33,24 @@ public class CourseServiceImpl implements CourseService {
 
     @Override
     public List<CourseResponse> listBySubjectCode(ActorContext actor, String subjectCode) {
-        List<CourseBO> boList = courseRepository.selectBySubjectCode(requireActor(actor).tenantId(), subjectCode);
+        List<CourseBO> boList =
+                courseRepository.selectBySubjectCode(requireActor(actor).tenantId(), subjectCode);
         return MapstructUtils.convert(boList, CourseResponse.class);
     }
 
     @Override
     public List<CourseResponse> listByGrade(ActorContext actor, Integer grade) {
-        List<CourseBO> boList = courseRepository.selectByGrade(requireActor(actor).tenantId(), grade);
+        List<CourseBO> boList =
+                courseRepository.selectByGrade(requireActor(actor).tenantId(), grade);
         return MapstructUtils.convert(boList, CourseResponse.class);
     }
 
     @Override
     public PageData<CourseResponse> page(ActorContext actor, int pageNum, int pageSize) {
-        PageData<CourseBO> boPage = courseRepository.selectPage(requireActor(actor).tenantId(), pageNum, pageSize);
-        List<CourseResponse> items = MapstructUtils.convert(boPage.getItems(), CourseResponse.class);
+        PageData<CourseBO> boPage =
+                courseRepository.selectPage(requireActor(actor).tenantId(), pageNum, pageSize);
+        List<CourseResponse> items =
+                MapstructUtils.convert(boPage.getItems(), CourseResponse.class);
         return new PageData<>(items, boPage.getTotal());
     }
 
@@ -101,6 +106,4 @@ public class CourseServiceImpl implements CourseService {
     private static ActorContext requireActor(ActorContext actor) {
         return java.util.Objects.requireNonNull(actor, "actor is required");
     }
-
 }
-

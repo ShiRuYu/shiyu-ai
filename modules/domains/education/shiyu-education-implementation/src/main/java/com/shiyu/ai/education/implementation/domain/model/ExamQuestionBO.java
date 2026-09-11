@@ -1,7 +1,8 @@
 package com.shiyu.ai.education.implementation.domain.model;
-import lombok.Data;
 
 import com.shiyu.ai.common.core.domain.TenantModel;
+
+import lombok.Data;
 import lombok.EqualsAndHashCode;
 
 import java.io.Serial;
@@ -11,8 +12,7 @@ import java.math.BigDecimal;
 @EqualsAndHashCode(callSuper = true)
 public class ExamQuestionBO extends TenantModel {
 
-    @Serial
-    private static final long serialVersionUID = 1L;
+    @Serial private static final long serialVersionUID = 1L;
     private Long id;
 
     private Long examId;
@@ -21,4 +21,3 @@ public class ExamQuestionBO extends TenantModel {
     private Integer orderNo;
     private BigDecimal score;
 }
-

@@ -4,11 +4,10 @@ import java.util.Set;
 
 /**
  * 节点字段 Schema 接口
- * <p>
- * 每个节点类型对应一个枚举实现，定义该节点在 AgentState/NodeInput/NodeOutput
- * 中读写の所有字段键。集中管理避免了魔法字符串散落在各节点实现中。
- * <p>
- * 当新增节点或修改节点输入/输出时，必须同步更新此处对应的字段定义。
+ *
+ * <p>每个节点类型对应一个枚举实现，定义该节点在 AgentState/NodeInput/NodeOutput 中读写の所有字段键。集中管理避免了魔法字符串散落在各节点实现中。
+ *
+ * <p>当新增节点或修改节点输入/输出时，必须同步更新此处对应的字段定义。
  *
  * @see NodeType
  * @see NodeInput
@@ -16,21 +15,16 @@ import java.util.Set;
  */
 public interface NodeFields {
 
-    /**
-     * 该节点从 {@link NodeInput}（即 AgentState）中读取的输入字段
-     */
+    /** 该节点从 {@link NodeInput}（即 AgentState）中读取的输入字段 */
     Set<FieldKey> inputFields();
 
-    /**
-     * 该节点写入 {@link NodeOutput} 的输出字段
-     */
+    /** 该节点写入 {@link NodeOutput} 的输出字段 */
     Set<FieldKey> outputFields();
 
     // ========== 全局字段键枚举 ==========
 
     /**
-     * 全局统一字段键，集中管理所有节点在 Map 中使用的字段名。
-     * 每个枚举值包含一个 {@link #key()} 字符串，即实际在 Map 中使用的键。
+     * 全局统一字段键，集中管理所有节点在 Map 中使用的字段名。 每个枚举值包含一个 {@link #key()} 字符串，即实际在 Map 中使用的键。
      * 所有节点统一引用此枚举，避免拼写错误和字段名不一致。
      */
     enum FieldKey {
@@ -224,9 +218,7 @@ public interface NodeFields {
             return key;
         }
 
-        /**
-         * 根据字符串键查找对应的枚举值
-         */
+        /** 根据字符串键查找对应的枚举值 */
         public static FieldKey fromKey(String key) {
             for (FieldKey fk : values()) {
                 if (fk.key.equals(key)) {
@@ -239,9 +231,7 @@ public interface NodeFields {
 
     // ========== 各节点类型的字段定义 ==========
 
-    /**
-     * 默认节点 - 无特殊字段要求
-     */
+    /** 默认节点 - 无特殊字段要求 */
     enum DefaultFields implements NodeFields {
         INSTANCE;
 
@@ -258,9 +248,8 @@ public interface NodeFields {
 
     /**
      * 意图识别节点
-     * <p>
-     * 输入: query
-     * 输出: intentCode, intentName, confidence, slots, nextNode
+     *
+     * <p>输入: query 输出: intentCode, intentName, confidence, slots, nextNode
      */
     enum IntentFields implements NodeFields {
         INSTANCE;
@@ -280,28 +269,22 @@ public interface NodeFields {
                     FieldKey.PARAMETER_MAPPING,
                     FieldKey.SLOT_DEFAULTS,
                     FieldKey.SLOT_DEFINITIONS,
-                    FieldKey.NEXT_NODE
-            );
+                    FieldKey.NEXT_NODE);
         }
     }
 
     /**
      * LLM 调用节点
-     * <p>
-     * 输入: query, platform, model, chatType
-     * 输出: content, platform, model, messages, streamingChatGenerator, stream, chatType
+     *
+     * <p>输入: query, platform, model, chatType 输出: content, platform, model, messages,
+     * streamingChatGenerator, stream, chatType
      */
     enum LlmCallFields implements NodeFields {
         INSTANCE;
 
         @Override
         public Set<FieldKey> inputFields() {
-            return Set.of(
-                    FieldKey.QUERY,
-                    FieldKey.PLATFORM,
-                    FieldKey.MODEL,
-                    FieldKey.CHAT_TYPE
-            );
+            return Set.of(FieldKey.QUERY, FieldKey.PLATFORM, FieldKey.MODEL, FieldKey.CHAT_TYPE);
         }
 
         @Override
@@ -314,16 +297,14 @@ public interface NodeFields {
                     FieldKey.STREAMING_CHAT_GENERATOR,
                     FieldKey.STREAM,
                     FieldKey.CHAT_TYPE,
-                    FieldKey.STREAMING_GENERATOR
-            );
+                    FieldKey.STREAMING_GENERATOR);
         }
     }
 
     /**
      * 工具调用节点
-     * <p>
-     * 输入: toolName, toolResult（前序工具的结果，用于工具链）
-     * 输出: toolName, toolResult, text, cacheHit
+     *
+     * <p>输入: toolName, toolResult（前序工具的结果，用于工具链） 输出: toolName, toolResult, text, cacheHit
      */
     enum ToolCallFields implements NodeFields {
         INSTANCE;
@@ -336,29 +317,21 @@ public interface NodeFields {
         @Override
         public Set<FieldKey> outputFields() {
             return Set.of(
-                    FieldKey.TOOL_NAME,
-                    FieldKey.TOOL_RESULT,
-                    FieldKey.TEXT,
-                    FieldKey.CACHE_HIT
-            );
+                    FieldKey.TOOL_NAME, FieldKey.TOOL_RESULT, FieldKey.TEXT, FieldKey.CACHE_HIT);
         }
     }
 
     /**
      * RAG 检索节点
-     * <p>
-         * 输入: query, spaceIds
-         * 输出: retrievalHits, citations, context
+     *
+     * <p>输入: query, spaceIds 输出: retrievalHits, citations, context
      */
     enum RagRetrievalFields implements NodeFields {
         INSTANCE;
 
         @Override
         public Set<FieldKey> inputFields() {
-            return Set.of(
-                    FieldKey.QUERY,
-                    FieldKey.SPACE_IDS
-            );
+            return Set.of(FieldKey.QUERY, FieldKey.SPACE_IDS);
         }
 
         @Override
@@ -368,16 +341,15 @@ public interface NodeFields {
                     FieldKey.CITATIONS,
                     FieldKey.DOCUMENT_COUNT,
                     FieldKey.CONTEXT,
-                    FieldKey.RETRIEVAL_EMPTY
-            );
+                    FieldKey.RETRIEVAL_EMPTY);
         }
     }
 
     /**
      * RAG 增强节点
-     * <p>
-     * 输入: documents, context（来自上一个 RAG 检索节点）
-     * 输出: context, enhancedDocuments, enhancedCount, enhancementStrategy
+     *
+     * <p>输入: documents, context（来自上一个 RAG 检索节点） 输出: context, enhancedDocuments, enhancedCount,
+     * enhancementStrategy
      */
     enum RagEnhancementFields implements NodeFields {
         INSTANCE;
@@ -389,8 +361,7 @@ public interface NodeFields {
                     FieldKey.CONTEXT,
                     FieldKey.ADD_CONTEXT,
                     FieldKey.CONTEXT_WINDOW_SIZE,
-                    FieldKey.MAX_LENGTH
-            );
+                    FieldKey.MAX_LENGTH);
         }
 
         @Override
@@ -399,46 +370,35 @@ public interface NodeFields {
                     FieldKey.CONTEXT,
                     FieldKey.ENHANCED_DOCUMENTS,
                     FieldKey.ENHANCED_COUNT,
-                    FieldKey.ENHANCEMENT_STRATEGY
-            );
+                    FieldKey.ENHANCEMENT_STRATEGY);
         }
     }
 
     /**
      * 短期记忆节点
-     * <p>
-     * 存储和管理最近的对话历史
-     * 输入: sessionId, userId, agentId, query, response
-     * 输出: conversationHistory, messages
+     *
+     * <p>存储和管理最近的对话历史 输入: sessionId, userId, agentId, query, response 输出: conversationHistory,
+     * messages
      */
     enum ShortTermMemoryFields implements NodeFields {
         INSTANCE;
 
         @Override
         public Set<FieldKey> inputFields() {
-            return Set.of(
-                    FieldKey.SESSION_ID,
-                    FieldKey.AGENT_ID,
-                    FieldKey.QUERY,
-                    FieldKey.CONTENT
-            );
+            return Set.of(FieldKey.SESSION_ID, FieldKey.AGENT_ID, FieldKey.QUERY, FieldKey.CONTENT);
         }
 
         @Override
         public Set<FieldKey> outputFields() {
-            return Set.of(
-                    FieldKey.CONVERSATION_HISTORY,
-                    FieldKey.MESSAGES
-            );
+            return Set.of(FieldKey.CONVERSATION_HISTORY, FieldKey.MESSAGES);
         }
     }
 
     /**
      * 长期记忆节点
-     * <p>
-     * 存储和管理重要信息和知识点
-     * 输入: userId, agentId, sessionId, memoryKey, memoryContent, category, importance
-     * 输出: memoryKey, importance
+     *
+     * <p>存储和管理重要信息和知识点 输入: userId, agentId, sessionId, memoryKey, memoryContent, category,
+     * importance 输出: memoryKey, importance
      */
     enum LongTermMemoryFields implements NodeFields {
         INSTANCE;
@@ -452,24 +412,20 @@ public interface NodeFields {
                     FieldKey.MEMORY_KEY,
                     FieldKey.MEMORY_CONTENT,
                     FieldKey.CATEGORY,
-                    FieldKey.IMPORTANCE
-            );
+                    FieldKey.IMPORTANCE);
         }
 
         @Override
         public Set<FieldKey> outputFields() {
-            return Set.of(
-                    FieldKey.MEMORY_KEY,
-                    FieldKey.IMPORTANCE
-            );
+            return Set.of(FieldKey.MEMORY_KEY, FieldKey.IMPORTANCE);
         }
     }
 
     /**
      * 记忆检索节点
-     * <p>
-     * 输入: query, retrievalScope, topK, similarityThreshold
-     * 输出: memories, memoryCount, memoryContext
+     *
+     * <p>输入: query, retrievalScope, topK, similarityThreshold 输出: memories, memoryCount,
+     * memoryContext
      */
     enum MemoryRetrievalFields implements NodeFields {
         INSTANCE;
@@ -483,25 +439,20 @@ public interface NodeFields {
                     FieldKey.SIMILARITY_THRESHOLD,
                     FieldKey.SESSION_ID,
                     FieldKey.USER_ID,
-                    FieldKey.AGENT_ID
-            );
+                    FieldKey.AGENT_ID);
         }
 
         @Override
         public Set<FieldKey> outputFields() {
-            return Set.of(
-                    FieldKey.MEMORIES,
-                    FieldKey.MEMORY_COUNT,
-                    FieldKey.MEMORY_CONTEXT
-            );
+            return Set.of(FieldKey.MEMORIES, FieldKey.MEMORY_COUNT, FieldKey.MEMORY_CONTEXT);
         }
     }
 
     /**
      * 条件判断节点
-     * <p>
-     * 输入: 根据 conditionExpression 动态读取任意字段 + intentCode（INTENT 模式）
-     * 输出: conditionResult, nextNode, branch
+     *
+     * <p>输入: 根据 conditionExpression 动态读取任意字段 + intentCode（INTENT 模式） 输出: conditionResult, nextNode,
+     * branch
      */
     enum ConditionFields implements NodeFields {
         INSTANCE;
@@ -514,25 +465,19 @@ public interface NodeFields {
                     FieldKey.CONDITION_EXPRESSION,
                     FieldKey.CONDITION_TYPE,
                     FieldKey.TRUE_BRANCH,
-                    FieldKey.DEFAULT_BRANCH
-            );
+                    FieldKey.DEFAULT_BRANCH);
         }
 
         @Override
         public Set<FieldKey> outputFields() {
-            return Set.of(
-                    FieldKey.CONDITION_RESULT,
-                    FieldKey.NEXT_NODE,
-                    FieldKey.BRANCH
-            );
+            return Set.of(FieldKey.CONDITION_RESULT, FieldKey.NEXT_NODE, FieldKey.BRANCH);
         }
     }
 
     /**
      * 数据转换节点
-     * <p>
-     * 输入: input / data / content / text / query
-     * 输出: transformedData, messages
+     *
+     * <p>输入: input / data / content / text / query 输出: transformedData, messages
      */
     enum TransformFields implements NodeFields {
         INSTANCE;
@@ -545,24 +490,20 @@ public interface NodeFields {
                     FieldKey.CONTENT,
                     FieldKey.TEXT,
                     FieldKey.QUERY,
-                    FieldKey.TRANSFORM_TYPE
-            );
+                    FieldKey.TRANSFORM_TYPE);
         }
 
         @Override
         public Set<FieldKey> outputFields() {
-            return Set.of(
-                    FieldKey.TRANSFORMED_DATA,
-                    FieldKey.MESSAGES
-            );
+            return Set.of(FieldKey.TRANSFORMED_DATA, FieldKey.MESSAGES);
         }
     }
 
     /**
      * 输出格式化节点
-     * <p>
-     * 输入: content / response / result / output / answer / messages
-     * 输出: formattedContent, messages
+     *
+     * <p>输入: content / response / result / output / answer / messages 输出: formattedContent,
+     * messages
      */
     enum OutputFormatFields implements NodeFields {
         INSTANCE;
@@ -575,42 +516,31 @@ public interface NodeFields {
                     FieldKey.RESULT,
                     FieldKey.OUTPUT,
                     FieldKey.ANSWER,
-                    FieldKey.MESSAGES
-            );
+                    FieldKey.MESSAGES);
         }
 
         @Override
         public Set<FieldKey> outputFields() {
-            return Set.of(
-                    FieldKey.FORMATTED_CONTENT,
-                    FieldKey.MESSAGES
-            );
+            return Set.of(FieldKey.FORMATTED_CONTENT, FieldKey.MESSAGES);
         }
     }
 
     /**
      * Agent 调用节点
-     * <p>
-     * 输入: agentId, query
-     * 输出: result, content
+     *
+     * <p>输入: agentId, query 输出: result, content
      */
     enum AgentCallFields implements NodeFields {
         INSTANCE;
 
         @Override
         public Set<FieldKey> inputFields() {
-            return Set.of(
-                    FieldKey.AGENT_ID,
-                    FieldKey.QUERY
-            );
+            return Set.of(FieldKey.AGENT_ID, FieldKey.QUERY);
         }
 
         @Override
         public Set<FieldKey> outputFields() {
-            return Set.of(
-                    FieldKey.RESULT,
-                    FieldKey.CONTENT
-            );
+            return Set.of(FieldKey.RESULT, FieldKey.CONTENT);
         }
     }
 

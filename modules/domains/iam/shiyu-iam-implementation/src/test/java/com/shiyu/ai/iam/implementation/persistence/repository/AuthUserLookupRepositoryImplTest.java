@@ -1,5 +1,10 @@
 package com.shiyu.ai.iam.implementation.persistence.repository;
 
+import static org.junit.jupiter.api.Assertions.*;
+import static org.mockito.ArgumentMatchers.*;
+import static org.mockito.Mockito.*;
+
+import com.shiyu.ai.common.core.utils.MapstructUtils;
 import com.shiyu.ai.iam.implementation.domain.model.RoleBO;
 import com.shiyu.ai.iam.implementation.domain.model.TenantBO;
 import com.shiyu.ai.iam.implementation.domain.model.UserBO;
@@ -12,8 +17,8 @@ import com.shiyu.ai.iam.implementation.persistence.mapper.RoleMapper;
 import com.shiyu.ai.iam.implementation.persistence.mapper.TenantMapper;
 import com.shiyu.ai.iam.implementation.persistence.mapper.UserMapper;
 import com.shiyu.ai.iam.implementation.persistence.mapper.UserScopeRoleMapper;
-import com.shiyu.ai.common.core.utils.MapstructUtils;
 import com.shiyu.ai.kernel.context.TenantId;
+
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.mockito.MockedStatic;
@@ -21,10 +26,6 @@ import org.springframework.test.util.ReflectionTestUtils;
 
 import java.util.List;
 import java.util.Set;
-
-import static org.junit.jupiter.api.Assertions.*;
-import static org.mockito.ArgumentMatchers.*;
-import static org.mockito.Mockito.*;
 
 class AuthUserLookupRepositoryImplTest {
     private UserMapper users;
@@ -57,13 +58,22 @@ class AuthUserLookupRepositoryImplTest {
 
     @Test
     void mapsUserRoleAndTenantLookupsWithExplicitTenantBypass() {
-        UserDO userRow = new UserDO(); userRow.setId(7L); userRow.setUsername("alice");
-        RoleDO roleRow = new RoleDO(); roleRow.setId(3L); roleRow.setCode("editor");
-        TenantDO tenantRow = new TenantDO(); tenantRow.setId(9L); tenantRow.setName("Tenant");
+        UserDO userRow = new UserDO();
+        userRow.setId(7L);
+        userRow.setUsername("alice");
+        RoleDO roleRow = new RoleDO();
+        roleRow.setId(3L);
+        roleRow.setCode("editor");
+        TenantDO tenantRow = new TenantDO();
+        tenantRow.setId(9L);
+        tenantRow.setName("Tenant");
         UserScopeRoleDO scopeRow = new UserScopeRoleDO();
-        UserBO user = new UserBO(); user.setId(7L);
-        RoleBO role = new RoleBO(); role.setId(3L);
-        TenantBO tenant = new TenantBO(); tenant.setId(9L);
+        UserBO user = new UserBO();
+        user.setId(7L);
+        RoleBO role = new RoleBO();
+        role.setId(3L);
+        TenantBO tenant = new TenantBO();
+        tenant.setId(9L);
         UserScopeRoleBO scope = new UserScopeRoleBO();
         when(users.selectOneById(7L)).thenReturn(userRow);
         when(users.update(any(UserDO.class))).thenReturn(1);
@@ -77,8 +87,10 @@ class AuthUserLookupRepositoryImplTest {
             mapped.when(() -> MapstructUtils.convert(userRow, UserBO.class)).thenReturn(user);
             mapped.when(() -> MapstructUtils.convert(roleRow, RoleBO.class)).thenReturn(role);
             mapped.when(() -> MapstructUtils.convert(tenantRow, TenantBO.class)).thenReturn(tenant);
-            mapped.when(() -> MapstructUtils.convert(anyList(), eq(UserScopeRoleBO.class))).thenReturn(List.of(scope));
-            mapped.when(() -> MapstructUtils.convert(anyList(), eq(RoleBO.class))).thenReturn(List.of(role));
+            mapped.when(() -> MapstructUtils.convert(anyList(), eq(UserScopeRoleBO.class)))
+                    .thenReturn(List.of(scope));
+            mapped.when(() -> MapstructUtils.convert(anyList(), eq(RoleBO.class)))
+                    .thenReturn(List.of(role));
 
             assertSame(user, repository.selectUserById(7L));
             assertTrue(repository.updateUserExtInfo(7L, "{\"theme\":\"dark\"}"));
@@ -95,4 +107,3 @@ class AuthUserLookupRepositoryImplTest {
         verify(roles).selectOneByQuery(any());
     }
 }
-

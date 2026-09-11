@@ -1,15 +1,19 @@
 package com.shiyu.ai.education.implementation.web;
 
 import cn.dev33.satoken.annotation.SaCheckPermission;
+
 import com.shiyu.ai.common.core.api.PageData;
 import com.shiyu.ai.common.core.api.Result;
+import com.shiyu.ai.common.web.auth.ActorContextHttpAdapter;
+import com.shiyu.ai.education.implementation.application.CourseService;
 import com.shiyu.ai.education.implementation.web.dto.CourseResponse;
 import com.shiyu.ai.education.implementation.web.request.CourseRequest;
-import com.shiyu.ai.education.implementation.application.CourseService;
-import com.shiyu.ai.common.web.auth.ActorContextHttpAdapter;
+
 import jakarta.validation.Valid;
+
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -32,23 +36,28 @@ public class CourseController {
     public Result<PageData<CourseResponse>> list(
             @RequestParam(defaultValue = "1") Integer pageNum,
             @RequestParam(defaultValue = "10") Integer pageSize) {
-        return Result.success(courseService.page(ActorContextHttpAdapter.currentActor(), pageNum, pageSize));
+        return Result.success(
+                courseService.page(ActorContextHttpAdapter.currentActor(), pageNum, pageSize));
     }
 
     @GetMapping("/subject")
     public Result<List<CourseResponse>> listBySubjectCode(@RequestParam String subjectCode) {
-        return Result.success(courseService.listBySubjectCode(ActorContextHttpAdapter.currentActor(), subjectCode));
+        return Result.success(
+                courseService.listBySubjectCode(
+                        ActorContextHttpAdapter.currentActor(), subjectCode));
     }
 
     @GetMapping("/grade")
     public Result<List<CourseResponse>> listByGrade(@RequestParam Integer grade) {
-        return Result.success(courseService.listByGrade(ActorContextHttpAdapter.currentActor(), grade));
+        return Result.success(
+                courseService.listByGrade(ActorContextHttpAdapter.currentActor(), grade));
     }
 
     @PostMapping("/create")
     @SaCheckPermission("edu:course:create")
     public Result<CourseResponse> create(@Valid @RequestBody CourseRequest request) {
-        return Result.success(courseService.create(ActorContextHttpAdapter.currentActor(), request));
+        return Result.success(
+                courseService.create(ActorContextHttpAdapter.currentActor(), request));
     }
 
     @PostMapping("/update")
@@ -60,8 +69,10 @@ public class CourseController {
     }
 
     @PostMapping("/learn")
-    public Result<CourseResponse> startLearning(@RequestParam Long courseId, @RequestParam Long studentId) {
-        CourseResponse course = courseService.getById(ActorContextHttpAdapter.currentActor(), courseId);
+    public Result<CourseResponse> startLearning(
+            @RequestParam Long courseId, @RequestParam Long studentId) {
+        CourseResponse course =
+                courseService.getById(ActorContextHttpAdapter.currentActor(), courseId);
         return Result.success(course);
     }
 
@@ -72,4 +83,3 @@ public class CourseController {
         return Result.success();
     }
 }
-

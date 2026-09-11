@@ -4,11 +4,14 @@ import com.mybatisflex.annotation.Id;
 import com.mybatisflex.annotation.KeyType;
 import com.mybatisflex.annotation.Table;
 import com.shiyu.ai.common.core.domain.BaseEntity;
+import com.shiyu.ai.iam.implementation.domain.model.TenantBO;
+
+import io.github.linpeilie.annotations.AutoMapper;
+
 import lombok.Data;
 import lombok.EqualsAndHashCode;
+
 import java.io.Serial;
-import com.shiyu.ai.iam.implementation.domain.model.TenantBO;
-import io.github.linpeilie.annotations.AutoMapper;
 
 @Data
 @EqualsAndHashCode(callSuper = true)
@@ -16,8 +19,7 @@ import io.github.linpeilie.annotations.AutoMapper;
 @AutoMapper(target = TenantBO.class, reverseConvertGenerate = true)
 public class TenantDO extends BaseEntity {
 
-    @Serial
-    private static final long serialVersionUID = 1L;
+    @Serial private static final long serialVersionUID = 1L;
 
     @Id(keyType = KeyType.Auto)
     private Long id;
@@ -53,7 +55,4 @@ public class TenantDO extends BaseEntity {
 
     /** 备注 */
     private String remark;
-
 }
-
-

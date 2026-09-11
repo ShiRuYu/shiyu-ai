@@ -1,17 +1,19 @@
 package com.shiyu.ai.education.implementation.application.impl;
 
+import com.shiyu.ai.common.core.exception.ServiceException;
 import com.shiyu.ai.common.core.utils.MapstructUtils;
+import com.shiyu.ai.education.implementation.application.ChapterService;
 import com.shiyu.ai.education.implementation.domain.model.ChapterBO;
+import com.shiyu.ai.education.implementation.domain.model.KnowledgeTextbookBO;
 import com.shiyu.ai.education.implementation.domain.port.repository.ChapterRepository;
 import com.shiyu.ai.education.implementation.domain.port.repository.KnowledgeTextbookRepository;
-import com.shiyu.ai.education.implementation.domain.model.KnowledgeTextbookBO;
 import com.shiyu.ai.education.implementation.web.dto.ChapterResponse;
 import com.shiyu.ai.education.implementation.web.request.ChapterRequest;
-import com.shiyu.ai.education.implementation.application.ChapterService;
 import com.shiyu.ai.kernel.context.ActorContext;
-import com.shiyu.ai.common.core.exception.ServiceException;
+
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -35,19 +37,22 @@ public class ChapterServiceImpl implements ChapterService {
 
     @Override
     public List<ChapterResponse> listByTextbookId(ActorContext actor, Long textbookId) {
-        List<ChapterBO> boList = chapterRepository.selectByTextbookId(requireActor(actor).tenantId(), textbookId);
+        List<ChapterBO> boList =
+                chapterRepository.selectByTextbookId(requireActor(actor).tenantId(), textbookId);
         return MapstructUtils.convert(boList, ChapterResponse.class);
     }
 
     @Override
     public List<ChapterResponse> listRootChapters(ActorContext actor, Long textbookId) {
-        List<ChapterBO> boList = chapterRepository.selectRootChapters(requireActor(actor).tenantId(), textbookId);
+        List<ChapterBO> boList =
+                chapterRepository.selectRootChapters(requireActor(actor).tenantId(), textbookId);
         return MapstructUtils.convert(boList, ChapterResponse.class);
     }
 
     @Override
     public List<ChapterResponse> listByParentId(ActorContext actor, Long parentId) {
-        List<ChapterBO> boList = chapterRepository.selectByParentId(requireActor(actor).tenantId(), parentId);
+        List<ChapterBO> boList =
+                chapterRepository.selectByParentId(requireActor(actor).tenantId(), parentId);
         return MapstructUtils.convert(boList, ChapterResponse.class);
     }
 
@@ -86,7 +91,9 @@ public class ChapterServiceImpl implements ChapterService {
 
     @Override
     public List<Long> listKnowledgeIds(ActorContext actor, Long chapterId) {
-        return knowledgeTextbookRepository.selectByChapterId(requireActor(actor).tenantId(), chapterId).stream()
+        return knowledgeTextbookRepository
+                .selectByChapterId(requireActor(actor).tenantId(), chapterId)
+                .stream()
                 .map(KnowledgeTextbookBO::getKnowledgeId)
                 .filter(Objects::nonNull)
                 .distinct()
@@ -133,4 +140,3 @@ public class ChapterServiceImpl implements ChapterService {
         return Objects.requireNonNull(actor, "actor is required");
     }
 }
-

@@ -1,4 +1,3 @@
-
 package com.shiyu.ai.common.thread.otel;
 
 import io.opentelemetry.api.trace.Span;
@@ -9,10 +8,7 @@ import io.opentelemetry.context.Scope;
 import java.util.concurrent.Callable;
 import java.util.function.Supplier;
 
-/**
- * OpenTelemetry任务装饰器
- * 用于在异步任务中传递OpenTelemetry上下文
- */
+/** OpenTelemetry任务装饰器 用于在异步任务中传递OpenTelemetry上下文 */
 @SuppressWarnings("try")
 public class OtelTaskDecorator implements com.shiyu.ai.common.thread.api.TaskDecorator {
 
@@ -20,7 +16,7 @@ public class OtelTaskDecorator implements com.shiyu.ai.common.thread.api.TaskDec
 
     /**
      * 创建OpenTelemetry任务装饰器
-     * 
+     *
      * @param tracer OpenTelemetry追踪器
      */
     public OtelTaskDecorator(Tracer tracer) {
@@ -36,9 +32,7 @@ public class OtelTaskDecorator implements com.shiyu.ai.common.thread.api.TaskDec
             // 在新线程中恢复OpenTelemetry上下文
             try (Scope scope = otelContext.makeCurrent()) {
                 // 创建子Span
-                Span span = tracer.spanBuilder("async-task")
-                    .setParent(otelContext)
-                    .startSpan();
+                Span span = tracer.spanBuilder("async-task").setParent(otelContext).startSpan();
 
                 try (Scope spanScope = span.makeCurrent()) {
                     runnable.run();
@@ -58,9 +52,7 @@ public class OtelTaskDecorator implements com.shiyu.ai.common.thread.api.TaskDec
             // 在新线程中恢复OpenTelemetry上下文
             try (Scope scope = otelContext.makeCurrent()) {
                 // 创建子Span
-                Span span = tracer.spanBuilder("async-callable")
-                    .setParent(otelContext)
-                    .startSpan();
+                Span span = tracer.spanBuilder("async-callable").setParent(otelContext).startSpan();
 
                 try (Scope spanScope = span.makeCurrent()) {
                     return callable.call();
@@ -80,9 +72,7 @@ public class OtelTaskDecorator implements com.shiyu.ai.common.thread.api.TaskDec
             // 在新线程中恢复OpenTelemetry上下文
             try (Scope scope = otelContext.makeCurrent()) {
                 // 创建子Span
-                Span span = tracer.spanBuilder("async-supplier")
-                    .setParent(otelContext)
-                    .startSpan();
+                Span span = tracer.spanBuilder("async-supplier").setParent(otelContext).startSpan();
 
                 try (Scope spanScope = span.makeCurrent()) {
                     return supplier.get();

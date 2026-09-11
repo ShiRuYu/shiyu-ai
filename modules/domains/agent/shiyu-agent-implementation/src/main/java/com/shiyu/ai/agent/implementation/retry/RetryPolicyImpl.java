@@ -4,9 +4,7 @@ import lombok.extern.slf4j.Slf4j;
 
 import java.util.function.Supplier;
 
-/**
- * 默认重试策略实现（指数退避）
- */
+/** 默认重试策略实现（指数退避） */
 @Slf4j
 public class RetryPolicyImpl implements RetryPolicy {
 

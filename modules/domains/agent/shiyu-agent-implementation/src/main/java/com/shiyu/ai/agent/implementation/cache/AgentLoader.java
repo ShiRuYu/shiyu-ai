@@ -1,19 +1,15 @@
 package com.shiyu.ai.agent.implementation.cache;
 
-import com.shiyu.ai.common.core.utils.JSONUtils;
 import com.shiyu.ai.agent.AgentDefinition;
 import com.shiyu.ai.agent.AgentVersion;
-import com.shiyu.ai.agent.implementation.port.repository.AgentAdminRepository;
-import com.shiyu.ai.agent.implementation.domain.model.AgentDefBO;
-import com.shiyu.ai.agent.implementation.domain.model.AgentVersionBO;
-import com.shiyu.ai.kernel.context.ActorContext;
-import com.shiyu.ai.agent.implementation.request.GraphConfigRequest;
-import com.shiyu.ai.agent.implementation.graph.ConditionEdge;
-import com.shiyu.ai.agent.implementation.graph.Graph;
 import com.shiyu.ai.agent.contract.node.BaseNode;
 import com.shiyu.ai.agent.contract.node.NodeConfig;
-import com.shiyu.ai.agent.implementation.node.NodeFactory;
 import com.shiyu.ai.agent.contract.node.NodeType;
+import com.shiyu.ai.agent.implementation.domain.model.AgentDefBO;
+import com.shiyu.ai.agent.implementation.domain.model.AgentVersionBO;
+import com.shiyu.ai.agent.implementation.graph.ConditionEdge;
+import com.shiyu.ai.agent.implementation.graph.Graph;
+import com.shiyu.ai.agent.implementation.node.NodeFactory;
 import com.shiyu.ai.agent.implementation.node.agent.AgentCallConfig;
 import com.shiyu.ai.agent.implementation.node.condition.ConditionConfig;
 import com.shiyu.ai.agent.implementation.node.intent.IntentConfig;
@@ -26,7 +22,13 @@ import com.shiyu.ai.agent.implementation.node.rag.RagEnhancementConfig;
 import com.shiyu.ai.agent.implementation.node.rag.RagRetrievalConfig;
 import com.shiyu.ai.agent.implementation.node.tool.ToolCallConfig;
 import com.shiyu.ai.agent.implementation.node.transform.TransformConfig;
+import com.shiyu.ai.agent.implementation.port.repository.AgentAdminRepository;
+import com.shiyu.ai.agent.implementation.request.GraphConfigRequest;
+import com.shiyu.ai.common.core.utils.JSONUtils;
+import com.shiyu.ai.kernel.context.ActorContext;
+
 import lombok.extern.slf4j.Slf4j;
+
 import org.springframework.stereotype.Component;
 
 import java.time.ZoneId;
@@ -45,7 +47,10 @@ public class AgentLoader {
     }
 
     public AgentDefinition loadFromDb(ActorContext actor, String agentId) {
-        log.info("从数据库加载 Agent: tenantSelected={}, agentIdPresent={}", actor.tenantId() != null, agentId != null);
+        log.info(
+                "从数据库加载 Agent: tenantSelected={}, agentIdPresent={}",
+                actor.tenantId() != null,
+                agentId != null);
 
         AgentDefBO agentDef = agentAdminRepository.selectByAgentId(actor.tenantId(), agentId);
         if (agentDef == null || agentDef.getStatus() == null || agentDef.getStatus() != 1) {
@@ -59,40 +64,57 @@ public class AgentLoader {
             return null;
         }
 
-        AgentVersionBO versionBO = agentAdminRepository.selectVersionByAgentIdAndNumber(
-                actor.tenantId(), agentId, versionNumber);
+        AgentVersionBO versionBO =
+                agentAdminRepository.selectVersionByAgentIdAndNumber(
+                        actor.tenantId(), agentId, versionNumber);
         if (versionBO == null) {
-            log.warn("Agent 当前版本不存在: agentIdPresent={}, versionPresent={}", agentId != null, versionNumber != null);
+            log.warn(
+                    "Agent 当前版本不存在: agentIdPresent={}, versionPresent={}",
+                    agentId != null,
+                    versionNumber != null);
             return null;
         }
 
         if (versionBO.getGraphConfig() == null || versionBO.getGraphConfig().isEmpty()) {
-            log.warn("Agent 版本无 Graph 配置: agentIdPresent={}, versionPresent={}", agentId != null, versionNumber != null);
+            log.warn(
+                    "Agent 版本无 Graph 配置: agentIdPresent={}, versionPresent={}",
+                    agentId != null,
+                    versionNumber != null);
             return null;
         }
 
         try {
-            GraphConfigRequest graphConfig = JSONUtils.parseObject(versionBO.getGraphConfig(),
-                    new tools.jackson.core.type.TypeReference<GraphConfigRequest>() {});
+            GraphConfigRequest graphConfig =
+                    JSONUtils.parseObject(
+                            versionBO.getGraphConfig(),
+                            new tools.jackson.core.type.TypeReference<GraphConfigRequest>() {});
 
             Graph graph = buildGraph(agentId, graphConfig);
 
             // ===== 提取节点入参定义 → ext_info.requiredInputs =====
             try {
-                java.util.List<com.shiyu.ai.agent.contract.node.NodeInputParam> allInputs = new java.util.ArrayList<>();
-                for (Map.Entry<String, com.shiyu.ai.agent.contract.node.BaseNode> entry : graph.getNodes().entrySet()) {
+                java.util.List<com.shiyu.ai.agent.contract.node.NodeInputParam> allInputs =
+                        new java.util.ArrayList<>();
+                for (Map.Entry<String, com.shiyu.ai.agent.contract.node.BaseNode> entry :
+                        graph.getNodes().entrySet()) {
                     String nodeId = entry.getKey();
                     com.shiyu.ai.agent.contract.node.BaseNode node = entry.getValue();
-                    java.util.List<com.shiyu.ai.agent.contract.node.NodeInputParam> nodeInputs = node.getRequiredInputs();
+                    java.util.List<com.shiyu.ai.agent.contract.node.NodeInputParam> nodeInputs =
+                            node.getRequiredInputs();
                     for (com.shiyu.ai.agent.contract.node.NodeInputParam p : nodeInputs) {
-                        allInputs.add(new com.shiyu.ai.agent.contract.node.NodeInputParam(
-                                p.name(), p.type(), p.source(), p.required(),
-                                "[" + nodeId + "] " + p.description(), p.defaultValue()
-                        ));
+                        allInputs.add(
+                                new com.shiyu.ai.agent.contract.node.NodeInputParam(
+                                        p.name(),
+                                        p.type(),
+                                        p.source(),
+                                        p.required(),
+                                        "[" + nodeId + "] " + p.description(),
+                                        p.defaultValue()));
                     }
                 }
                 // 去重
-                java.util.LinkedHashMap<String, com.shiyu.ai.agent.contract.node.NodeInputParam> deduped = new java.util.LinkedHashMap<>();
+                java.util.LinkedHashMap<String, com.shiyu.ai.agent.contract.node.NodeInputParam>
+                        deduped = new java.util.LinkedHashMap<>();
                 for (com.shiyu.ai.agent.contract.node.NodeInputParam p : allInputs) {
                     String key = p.name() + "|" + p.source().name();
                     if (!deduped.containsKey(key)) {
@@ -101,12 +123,16 @@ public class AgentLoader {
                 }
                 java.util.Map<String, Object> extInfoMap = new java.util.HashMap<>();
                 extInfoMap.put("requiredInputs", deduped.values());
-                String extInfoJson = com.shiyu.ai.common.core.utils.JSONUtils.toJsonString(extInfoMap);
-                
+                String extInfoJson =
+                        com.shiyu.ai.common.core.utils.JSONUtils.toJsonString(extInfoMap);
+
                 if (!extInfoJson.equals(versionBO.getExtInfo())) {
                     versionBO.setExtInfo(extInfoJson);
                     agentAdminRepository.updateVersion(actor.tenantId(), versionBO);
-                    log.info("agent_version.ext_info 已更新: agentIdPresent={}, versionPresent={}", agentId != null, versionNumber != null);
+                    log.info(
+                            "agent_version.ext_info 已更新: agentIdPresent={}, versionPresent={}",
+                            agentId != null,
+                            versionNumber != null);
                 }
                 if (!extInfoJson.equals(agentDef.getExtInfo())) {
                     agentDef.setExtInfo(extInfoJson);
@@ -114,47 +140,76 @@ public class AgentLoader {
                     log.info("agent_def.ext_info 已同步: agentIdPresent={}", agentId != null);
                 }
             } catch (Exception e) {
-                log.warn("提取节点入参定义失败（不影响执行）: agentIdPresent={}, errorType={}, errorMessageLength={}",
-                        agentId != null, e.getClass().getSimpleName(), e.getMessage() == null ? 0 : e.getMessage().length());
+                log.warn(
+                        "提取节点入参定义失败（不影响执行）: agentIdPresent={}, errorType={}, errorMessageLength={}",
+                        agentId != null,
+                        e.getClass().getSimpleName(),
+                        e.getMessage() == null ? 0 : e.getMessage().length());
             }
             // ===== end ext_info =====
 
-            AgentVersion agentVersion = AgentVersion.builder()
-                    .versionNumber(versionNumber)
-                    .description(versionBO.getDescription())
-                    .graph(graph)
-                    .createdAt(versionBO.getCreateTime().atZone(ZoneId.systemDefault()).toInstant().toEpochMilli())
-                    .build();
+            AgentVersion agentVersion =
+                    AgentVersion.builder()
+                            .versionNumber(versionNumber)
+                            .description(versionBO.getDescription())
+                            .graph(graph)
+                            .createdAt(
+                                    versionBO
+                                            .getCreateTime()
+                                            .atZone(ZoneId.systemDefault())
+                                            .toInstant()
+                                            .toEpochMilli())
+                            .build();
 
             return AgentDefinition.builder()
                     .agentId(agentId)
                     .name(agentDef.getName())
                     .description(agentDef.getDescription())
-                    .extInfo(agentDef.getExtInfo() != null ? JSONUtils.parseObject(agentDef.getExtInfo(), new tools.jackson.core.type.TypeReference<java.util.Map<String, Object>>() {}) : null)
+                    .extInfo(
+                            agentDef.getExtInfo() != null
+                                    ? JSONUtils.parseObject(
+                                            agentDef.getExtInfo(),
+                                            new tools.jackson.core.type.TypeReference<
+                                                    java.util.Map<String, Object>>() {})
+                                    : null)
                     .versions(new HashMap<>(Map.of(agentVersion.getVersionNumber(), agentVersion)))
                     .currentVersion(versionNumber)
-                    .createdAt(agentDef.getCreateTime().atZone(ZoneId.systemDefault()).toInstant().toEpochMilli())
-                    .updatedAt(agentDef.getUpdateTime().atZone(ZoneId.systemDefault()).toInstant().toEpochMilli())
+                    .createdAt(
+                            agentDef.getCreateTime()
+                                    .atZone(ZoneId.systemDefault())
+                                    .toInstant()
+                                    .toEpochMilli())
+                    .updatedAt(
+                            agentDef.getUpdateTime()
+                                    .atZone(ZoneId.systemDefault())
+                                    .toInstant()
+                                    .toEpochMilli())
                     .build();
 
         } catch (Exception e) {
-            log.error("从数据库加载 Agent 失败: agentIdPresent={}, errorType={}, errorMessageLength={}",
-                    agentId != null, e.getClass().getSimpleName(), e.getMessage() == null ? 0 : e.getMessage().length());
+            log.error(
+                    "从数据库加载 Agent 失败: agentIdPresent={}, errorType={}, errorMessageLength={}",
+                    agentId != null,
+                    e.getClass().getSimpleName(),
+                    e.getMessage() == null ? 0 : e.getMessage().length());
             return null;
         }
     }
 
     public Graph buildGraph(String agentId, GraphConfigRequest graphConfig) {
-        String graphName = graphConfig.getName() != null ? graphConfig.getName() : agentId + "_graph";
+        String graphName =
+                graphConfig.getName() != null ? graphConfig.getName() : agentId + "_graph";
         Graph graph = new Graph();
         graph.setName(graphName);
-        graph.setDescription(graphConfig.getDescription() != null ? graphConfig.getDescription() : "");
+        graph.setDescription(
+                graphConfig.getDescription() != null ? graphConfig.getDescription() : "");
         graph.setStartNode(graphConfig.getStartNode() != null ? graphConfig.getStartNode() : "");
         graph.setEndNode(graphConfig.getEndNode() != null ? graphConfig.getEndNode() : "");
 
         Map<String, BaseNode> nodes = new HashMap<>();
         if (graphConfig.getNodes() != null) {
-            for (Map.Entry<String, GraphConfigRequest.NodeConfigDTO> entry : graphConfig.getNodes().entrySet()) {
+            for (Map.Entry<String, GraphConfigRequest.NodeConfigDTO> entry :
+                    graphConfig.getNodes().entrySet()) {
                 String nodeId = entry.getKey();
                 GraphConfigRequest.NodeConfigDTO dto = entry.getValue();
                 try {
@@ -162,8 +217,11 @@ public class AgentLoader {
                     BaseNode node = nodeFactory.createNode(config);
                     nodes.put(nodeId, node);
                 } catch (Exception e) {
-                    log.error("创建节点失败: nodeIdPresent={}, errorType={}, errorMessageLength={}",
-                            nodeId != null, e.getClass().getSimpleName(), e.getMessage() == null ? 0 : e.getMessage().length());
+                    log.error(
+                            "创建节点失败: nodeIdPresent={}, errorType={}, errorMessageLength={}",
+                            nodeId != null,
+                            e.getClass().getSimpleName(),
+                            e.getMessage() == null ? 0 : e.getMessage().length());
                     throw new RuntimeException("创建节点失败: " + nodeId, e);
                 }
             }
@@ -179,7 +237,8 @@ public class AgentLoader {
         }
 
         if (graphConfig.getConditionalEdges() != null) {
-            for (Map.Entry<String, GraphConfigRequest.ConditionalEdgeDTO> entry : graphConfig.getConditionalEdges().entrySet()) {
+            for (Map.Entry<String, GraphConfigRequest.ConditionalEdgeDTO> entry :
+                    graphConfig.getConditionalEdges().entrySet()) {
                 String sourceId = entry.getKey();
                 GraphConfigRequest.ConditionalEdgeDTO edgeDto = entry.getValue();
                 ConditionEdge conditionEdge = buildConditionEdge(sourceId, edgeDto);
@@ -204,10 +263,13 @@ public class AgentLoader {
         merged.put("enabled", dto.getEnabled() != null ? dto.getEnabled() : true);
         merged.put("timeout", dto.getTimeout() != null ? dto.getTimeout() : 30000L);
         merged.put("retryCount", dto.getRetryCount() != null ? dto.getRetryCount() : 0);
-        merged.put("retryInterval", dto.getRetryInterval() != null ? dto.getRetryInterval() : 1000L);
-        merged.put("errorStrategy", dto.getErrorStrategy() != null ? dto.getErrorStrategy() : "THROW");
+        merged.put(
+                "retryInterval", dto.getRetryInterval() != null ? dto.getRetryInterval() : 1000L);
+        merged.put(
+                "errorStrategy", dto.getErrorStrategy() != null ? dto.getErrorStrategy() : "THROW");
         merged.put("logLevel", dto.getLogLevel() != null ? dto.getLogLevel() : "INFO");
-        merged.put("properties", dto.getProperties() != null ? dto.getProperties() : new HashMap<>());
+        merged.put(
+                "properties", dto.getProperties() != null ? dto.getProperties() : new HashMap<>());
 
         if (dto.getConfig() != null) {
             merged.putAll(dto.getConfig());
@@ -216,8 +278,10 @@ public class AgentLoader {
         return JSONUtils.convertValue(merged, configClass);
     }
 
-    private ConditionEdge buildConditionEdge(String sourceId, GraphConfigRequest.ConditionalEdgeDTO dto) {
-        Map<String, String> mappings = dto.getNodeMappings() != null ? dto.getNodeMappings() : new HashMap<>();
+    private ConditionEdge buildConditionEdge(
+            String sourceId, GraphConfigRequest.ConditionalEdgeDTO dto) {
+        Map<String, String> mappings =
+                dto.getNodeMappings() != null ? dto.getNodeMappings() : new HashMap<>();
         String defaultTarget = dto.getDefaultTarget() != null ? dto.getDefaultTarget() : "";
         String conditionType = dto.getConditionType() != null ? dto.getConditionType() : "";
 
@@ -225,16 +289,17 @@ public class AgentLoader {
                 .from(sourceId)
                 .defaultTarget(defaultTarget)
                 .nodeMappings(mappings)
-                .functionCondition(state -> {
-                    if ("SCORE_ROUTING".equals(conditionType)) {
-                        // 教育图评分路由：reviewNeeded=true → retry, false → pass
-                        Boolean reviewNeeded = (Boolean) state.get("reviewNeeded");
-                        return Boolean.TRUE.equals(reviewNeeded) ? "retry" : "pass";
-                    }
-                    // 默认：意图路由
-                    String intentCode = (String) state.getOrDefault("intentCode", "");
-                    return intentCode.isEmpty() ? "UNKNOWN" : intentCode;
-                })
+                .functionCondition(
+                        state -> {
+                            if ("SCORE_ROUTING".equals(conditionType)) {
+                                // 教育图评分路由：reviewNeeded=true → retry, false → pass
+                                Boolean reviewNeeded = (Boolean) state.get("reviewNeeded");
+                                return Boolean.TRUE.equals(reviewNeeded) ? "retry" : "pass";
+                            }
+                            // 默认：意图路由
+                            String intentCode = (String) state.getOrDefault("intentCode", "");
+                            return intentCode.isEmpty() ? "UNKNOWN" : intentCode;
+                        })
                 .build();
     }
 

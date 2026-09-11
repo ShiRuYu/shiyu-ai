@@ -1,10 +1,11 @@
 package com.shiyu.ai.common.vector.implementation;
 
+import com.shiyu.ai.common.vector.api.VectorStore;
 import com.shiyu.ai.common.vector.config.VectorStoreProperties;
 import com.shiyu.ai.common.vector.model.VectorRecord;
 import com.shiyu.ai.common.vector.model.VectorSearchRequest;
 import com.shiyu.ai.common.vector.model.VectorSearchType;
-import com.shiyu.ai.common.vector.api.VectorStore;
+
 import io.github.jbellis.jvector.graph.GraphIndexBuilder;
 import io.github.jbellis.jvector.graph.GraphSearcher;
 import io.github.jbellis.jvector.graph.ListRandomAccessVectorValues;
@@ -15,7 +16,9 @@ import io.github.jbellis.jvector.vector.VectorSimilarityFunction;
 import io.github.jbellis.jvector.vector.VectorizationProvider;
 import io.github.jbellis.jvector.vector.types.VectorFloat;
 import io.github.jbellis.jvector.vector.types.VectorTypeSupport;
+
 import jakarta.annotation.PreDestroy;
+
 import lombok.extern.slf4j.Slf4j;
 
 import java.io.*;
@@ -29,9 +32,10 @@ import java.util.concurrent.atomic.AtomicInteger;
  * JVector HNSW 向量存储 — 支持磁盘持久化
  *
  * <h3>持久化策略</h3>
+ *
  * <ul>
- *   <li>向量数据 + ordinal 映射 → HNSW 索引文件</li>
- *   <li>metadata → 同目录 metadata.dat 文件</li>
+ *   <li>向量数据 + ordinal 映射 → HNSW 索引文件
+ *   <li>metadata → 同目录 metadata.dat 文件
  * </ul>
  */
 @Slf4j
@@ -52,15 +56,19 @@ public class JVectorStore implements VectorStore {
 
     /** id → ordinal */
     private final Map<String, Integer> ordinalMap = new ConcurrentHashMap<>();
+
     /** ordinal → id（反向索引，用于 O(1) 查找） */
     private final Map<Integer, String> ordinalToId = new ConcurrentHashMap<>();
+
     private final AtomicInteger idGen = new AtomicInteger(0);
     private final List<VectorFloat<?>> vectors = Collections.synchronizedList(new ArrayList<>());
     private final Map<String, Map<String, Object>> metadataCache = new ConcurrentHashMap<>();
     private volatile OnHeapGraphIndex graphIndex;
 
     @Override
-    public String type() { return "jvector"; }
+    public String type() {
+        return "jvector";
+    }
 
     public JVectorStore(VectorStoreProperties properties) {
         this.dimension = properties.getDimension();
@@ -68,8 +76,10 @@ public class JVectorStore implements VectorStore {
         try {
             Files.createDirectories(Path.of(resolvedDir));
         } catch (IOException e) {
-            log.warn("无法创建向量数据目录: errorType={}, errorMessageLength={}",
-                    e.getClass().getSimpleName(), e.getMessage() == null ? 0 : e.getMessage().length());
+            log.warn(
+                    "无法创建向量数据目录: errorType={}, errorMessageLength={}",
+                    e.getClass().getSimpleName(),
+                    e.getMessage() == null ? 0 : e.getMessage().length());
         }
         this.indexPath = Path.of(resolvedDir, "hnsw.index");
         this.metadataPath = Path.of(resolvedDir, "metadata.dat");
@@ -90,7 +100,9 @@ public class JVectorStore implements VectorStore {
             ordinalMap.put(record.id(), ordinal);
             ordinalToId.put(ordinal, record.id());
         }
-        metadataCache.put(record.id(), record.metadata() != null ? new HashMap<>(record.metadata()) : new HashMap<>());
+        metadataCache.put(
+                record.id(),
+                record.metadata() != null ? new HashMap<>(record.metadata()) : new HashMap<>());
         graphIndex = null;
     }
 
@@ -108,31 +120,49 @@ public class JVectorStore implements VectorStore {
     public List<VectorRecord> search(VectorSearchRequest request) {
         Objects.requireNonNull(request, "Vector search request must not be null");
         if (request.getSearchType() == VectorSearchType.EXACT) {
-            return exactSearch(request.getQueryVector(), request.getTopK(),
-                    request.getFilter(), request.getMinScore());
+            return exactSearch(
+                    request.getQueryVector(),
+                    request.getTopK(),
+                    request.getFilter(),
+                    request.getMinScore());
         }
-        return search(request.getQueryVector(), request.getTopK(),
-                request.getFilter(), request.getMinScore());
+        return search(
+                request.getQueryVector(),
+                request.getTopK(),
+                request.getFilter(),
+                request.getMinScore());
     }
 
-    private synchronized List<VectorRecord> exactSearch(float[] queryVector, int topK,
-                                                         Map<String, Object> filter, double minScore) {
+    private synchronized List<VectorRecord> exactSearch(
+            float[] queryVector, int topK, Map<String, Object> filter, double minScore) {
         if (size() == 0 || topK <= 0) return List.of();
         validateVector(queryVector);
         VectorFloat<?> query = TYPE_SUPPORT.createFloatVector(queryVector);
         return ordinalMap.entrySet().stream()
                 .filter(entry -> matchesFilter(metadataCache.get(entry.getKey()), filter))
-                .map(entry -> toScoredRecord(entry.getKey(), entry.getValue(),
-                        VectorSimilarityFunction.COSINE.compare(query, vectors.get(entry.getValue()))))
-                .filter(record -> ((Number) record.metadata().get("_score")).doubleValue() >= minScore)
-                .sorted(Comparator.comparingDouble((VectorRecord record) ->
-                        ((Number) record.metadata().get("_score")).doubleValue()).reversed())
+                .map(
+                        entry ->
+                                toScoredRecord(
+                                        entry.getKey(),
+                                        entry.getValue(),
+                                        VectorSimilarityFunction.COSINE.compare(
+                                                query, vectors.get(entry.getValue()))))
+                .filter(
+                        record ->
+                                ((Number) record.metadata().get("_score")).doubleValue()
+                                        >= minScore)
+                .sorted(
+                        Comparator.comparingDouble(
+                                        (VectorRecord record) ->
+                                                ((Number) record.metadata().get("_score"))
+                                                        .doubleValue())
+                                .reversed())
                 .limit(topK)
                 .toList();
     }
 
-    private synchronized List<VectorRecord> search(float[] queryVector, int topK,
-                                                    Map<String, Object> filter, double minScore) {
+    private synchronized List<VectorRecord> search(
+            float[] queryVector, int topK, Map<String, Object> filter, double minScore) {
         if (size() == 0 || topK <= 0) return List.of();
         validateVector(queryVector);
 
@@ -140,13 +170,22 @@ public class JVectorStore implements VectorStore {
         try {
             var rav = new ListRandomAccessVectorValues(vectors, dimension);
             VectorFloat<?> qv = TYPE_SUPPORT.createFloatVector(queryVector);
-            Bits acceptBits = filter == null || filter.isEmpty() ? Bits.ALL : node -> {
-                String id = ordinalToId.get(node);
-                return id != null && matchesFilter(metadataCache.get(id), filter);
-            };
+            Bits acceptBits =
+                    filter == null || filter.isEmpty()
+                            ? Bits.ALL
+                            : node -> {
+                                String id = ordinalToId.get(node);
+                                return id != null && matchesFilter(metadataCache.get(id), filter);
+                            };
             int searchK = Math.min(topK, size());
-            SearchResult result = GraphSearcher.search(qv, searchK, rav,
-                    VectorSimilarityFunction.COSINE, graphIndex, acceptBits);
+            SearchResult result =
+                    GraphSearcher.search(
+                            qv,
+                            searchK,
+                            rav,
+                            VectorSimilarityFunction.COSINE,
+                            graphIndex,
+                            acceptBits);
 
             List<VectorRecord> results = new ArrayList<>();
             int collected = 0;
@@ -166,8 +205,10 @@ public class JVectorStore implements VectorStore {
             }
             return results;
         } catch (Exception e) {
-            log.error("向量搜索失败: errorType={}, errorMessageLength={}",
-                    e.getClass().getSimpleName(), e.getMessage() == null ? 0 : e.getMessage().length());
+            log.error(
+                    "向量搜索失败: errorType={}, errorMessageLength={}",
+                    e.getClass().getSimpleName(),
+                    e.getMessage() == null ? 0 : e.getMessage().length());
             return List.of();
         }
     }
@@ -190,10 +231,11 @@ public class JVectorStore implements VectorStore {
         Set<String> removed = new HashSet<>(ids);
         if (removed.stream().noneMatch(ordinalMap::containsKey)) return;
 
-        List<Map.Entry<String, Integer>> retained = ordinalMap.entrySet().stream()
-                .filter(entry -> !removed.contains(entry.getKey()))
-                .sorted(Map.Entry.comparingByValue())
-                .toList();
+        List<Map.Entry<String, Integer>> retained =
+                ordinalMap.entrySet().stream()
+                        .filter(entry -> !removed.contains(entry.getKey()))
+                        .sorted(Map.Entry.comparingByValue())
+                        .toList();
         List<VectorFloat<?>> retainedVectors = new ArrayList<>(retained.size());
         for (Map.Entry<String, Integer> entry : retained) {
             retainedVectors.add(vectors.get(entry.getValue()));
@@ -238,8 +280,10 @@ public class JVectorStore implements VectorStore {
                 Files.deleteIfExists(indexPath);
                 Files.deleteIfExists(metadataPath);
             } catch (IOException exception) {
-                log.warn("清理空向量索引失败: errorType={}, errorMessageLength={}",
-                        exception.getClass().getSimpleName(), exception.getMessage() == null ? 0 : exception.getMessage().length());
+                log.warn(
+                        "清理空向量索引失败: errorType={}, errorMessageLength={}",
+                        exception.getClass().getSimpleName(),
+                        exception.getMessage() == null ? 0 : exception.getMessage().length());
             }
             return;
         }
@@ -251,7 +295,9 @@ public class JVectorStore implements VectorStore {
         }
 
         // 保存向量 + ordinal 映射
-        try (var dos = new DataOutputStream(new BufferedOutputStream(new FileOutputStream(indexPath.toFile())))) {
+        try (var dos =
+                new DataOutputStream(
+                        new BufferedOutputStream(new FileOutputStream(indexPath.toFile())))) {
             List<Map.Entry<String, Integer>> entries = new ArrayList<>(ordinalMap.entrySet());
             dos.writeInt(dimension);
             dos.writeInt(entries.size());
@@ -265,12 +311,16 @@ public class JVectorStore implements VectorStore {
             }
             log.info("JVector 索引已保存: {} 条记录", size());
         } catch (IOException e) {
-            log.error("保存 JVector 索引失败: errorType={}, errorMessageLength={}",
-                    e.getClass().getSimpleName(), e.getMessage() == null ? 0 : e.getMessage().length());
+            log.error(
+                    "保存 JVector 索引失败: errorType={}, errorMessageLength={}",
+                    e.getClass().getSimpleName(),
+                    e.getMessage() == null ? 0 : e.getMessage().length());
         }
 
         // 保存 metadata
-        try (var dos = new DataOutputStream(new BufferedOutputStream(new FileOutputStream(metadataPath.toFile())))) {
+        try (var dos =
+                new DataOutputStream(
+                        new BufferedOutputStream(new FileOutputStream(metadataPath.toFile())))) {
             dos.writeInt(metadataCache.size());
             for (var entry : metadataCache.entrySet()) {
                 dos.writeUTF(entry.getKey());
@@ -282,8 +332,10 @@ public class JVectorStore implements VectorStore {
             }
             log.info("JVector metadata 已保存: {} 条", metadataCache.size());
         } catch (IOException e) {
-            log.error("保存 JVector metadata 失败: errorType={}, errorMessageLength={}",
-                    e.getClass().getSimpleName(), e.getMessage() == null ? 0 : e.getMessage().length());
+            log.error(
+                    "保存 JVector metadata 失败: errorType={}, errorMessageLength={}",
+                    e.getClass().getSimpleName(),
+                    e.getMessage() == null ? 0 : e.getMessage().length());
         }
     }
 
@@ -296,10 +348,15 @@ public class JVectorStore implements VectorStore {
     private void loadFromDisk() {
         // 加载向量 + ordinal 映射
         if (!Files.exists(indexPath)) return;
-        try (var dis = new DataInputStream(new BufferedInputStream(new FileInputStream(indexPath.toFile())))) {
+        try (var dis =
+                new DataInputStream(
+                        new BufferedInputStream(new FileInputStream(indexPath.toFile())))) {
             int fileDim = dis.readInt();
             if (fileDim != dimension) {
-            log.warn("维度不匹配: expectedDimension={}, actualDimension={}, 跳过加载", dimension, fileDim);
+                log.warn(
+                        "维度不匹配: expectedDimension={}, actualDimension={}, 跳过加载",
+                        dimension,
+                        fileDim);
                 return;
             }
             int count = dis.readInt();
@@ -318,13 +375,17 @@ public class JVectorStore implements VectorStore {
             }
             log.info("JVector 索引已加载: {} 条记录", count);
         } catch (IOException e) {
-            log.warn("加载 JVector 索引失败: errorType={}, errorMessageLength={}",
-                    e.getClass().getSimpleName(), e.getMessage() == null ? 0 : e.getMessage().length());
+            log.warn(
+                    "加载 JVector 索引失败: errorType={}, errorMessageLength={}",
+                    e.getClass().getSimpleName(),
+                    e.getMessage() == null ? 0 : e.getMessage().length());
         }
 
         // 加载 metadata
         if (!Files.exists(metadataPath)) return;
-        try (var dis = new DataInputStream(new BufferedInputStream(new FileInputStream(metadataPath.toFile())))) {
+        try (var dis =
+                new DataInputStream(
+                        new BufferedInputStream(new FileInputStream(metadataPath.toFile())))) {
             int count = dis.readInt();
             for (int i = 0; i < count; i++) {
                 String id = dis.readUTF();
@@ -338,8 +399,10 @@ public class JVectorStore implements VectorStore {
             }
             log.info("JVector metadata 已加载: {} 条", count);
         } catch (IOException e) {
-            log.warn("加载 JVector metadata 失败: errorType={}, errorMessageLength={}",
-                    e.getClass().getSimpleName(), e.getMessage() == null ? 0 : e.getMessage().length());
+            log.warn(
+                    "加载 JVector metadata 失败: errorType={}, errorMessageLength={}",
+                    e.getClass().getSimpleName(),
+                    e.getMessage() == null ? 0 : e.getMessage().length());
         }
     }
 
@@ -397,9 +460,15 @@ public class JVectorStore implements VectorStore {
             try {
                 if (vectors.isEmpty()) return;
                 var rav = new ListRandomAccessVectorValues(vectors, dimension);
-                var builder = new GraphIndexBuilder(
-                        rav, VectorSimilarityFunction.COSINE,
-                        M, BEAM_WIDTH, NEIGHBOR_OVERFLOW, ALPHA, ADD_HIERARCHY);
+                var builder =
+                        new GraphIndexBuilder(
+                                rav,
+                                VectorSimilarityFunction.COSINE,
+                                M,
+                                BEAM_WIDTH,
+                                NEIGHBOR_OVERFLOW,
+                                ALPHA,
+                                ADD_HIERARCHY);
                 graphIndex = builder.build(rav);
                 log.debug("HNSW 图索引已重建: {} 节点", vectors.size());
             } catch (Exception e) {
@@ -421,8 +490,11 @@ public class JVectorStore implements VectorStore {
 
     private void validateVector(float[] vector) {
         if (vector == null || vector.length != dimension) {
-            throw new IllegalArgumentException("Vector dimension mismatch: expected " + dimension
-                    + ", actual " + (vector == null ? 0 : vector.length));
+            throw new IllegalArgumentException(
+                    "Vector dimension mismatch: expected "
+                            + dimension
+                            + ", actual "
+                            + (vector == null ? 0 : vector.length));
         }
     }
 
@@ -455,5 +527,3 @@ public class JVectorStore implements VectorStore {
         return new VectorRecord(id, vector, enrichedMeta);
     }
 }
-
-

@@ -1,6 +1,7 @@
 package com.shiyu.ai.common.core.api;
 
 import com.shiyu.ai.common.core.enums.BizResultCode;
+
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
@@ -9,32 +10,23 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor
 @AllArgsConstructor
 public class Result<T> {
-    /**
-     * 响应码
-     */
+    /** 响应码 */
     private Integer code;
 
-    /**
-     * 查询数据
-     */
+    /** 查询数据 */
     private T data;
 
-    /**
-     * 描述
-     */
+    /** 描述 */
     private String message;
 
-    /**
-     * 错误信息（与 message 内容一致时不再冗余存储）
-     */
+    /** 错误信息（与 message 内容一致时不再冗余存储） */
     private String error;
 
-    /**
-     * 是否成功
-     */
+    /** 是否成功 */
     private boolean success;
 
-    public static <T> Result<T> common(T data, Integer code, String message, String error, boolean success) {
+    public static <T> Result<T> common(
+            T data, Integer code, String message, String error, boolean success) {
         Result<T> result = new Result<>();
         result.setCode(code);
         result.setData(data);
@@ -83,7 +75,8 @@ public class Result<T> {
     public static <T> Result<T> fail(T data) {
         return fail(BizResultCode.ERROR, data);
     }
-    public static <T> Result<T> fail(String  message) {
+
+    public static <T> Result<T> fail(String message) {
         return fail(BizResultCode.ERR_10009, message);
     }
 }

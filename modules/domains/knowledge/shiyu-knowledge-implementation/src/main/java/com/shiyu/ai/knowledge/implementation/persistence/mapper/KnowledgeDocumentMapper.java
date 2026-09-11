@@ -1,13 +1,11 @@
 package com.shiyu.ai.knowledge.implementation.persistence.mapper;
 
+import com.mybatisflex.annotation.UseDataSource;
 import com.mybatisflex.core.BaseMapper;
 import com.shiyu.ai.knowledge.implementation.persistence.dataobject.KnowledgeDocumentDO;
-import org.apache.ibatis.annotations.Mapper;
-import com.mybatisflex.annotation.UseDataSource;
 
+import org.apache.ibatis.annotations.Mapper;
 
 @Mapper
 @UseDataSource("agent")
-public interface KnowledgeDocumentMapper extends BaseMapper<KnowledgeDocumentDO> {
-}
-
+public interface KnowledgeDocumentMapper extends BaseMapper<KnowledgeDocumentDO> {}

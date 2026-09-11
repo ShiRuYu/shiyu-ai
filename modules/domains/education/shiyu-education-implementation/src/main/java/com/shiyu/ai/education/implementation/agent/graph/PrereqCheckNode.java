@@ -1,14 +1,15 @@
 package com.shiyu.ai.education.implementation.agent.graph;
 
-import com.shiyu.ai.agent.contract.node.NodeInputParam;
 import com.shiyu.ai.agent.contract.node.BaseNode;
 import com.shiyu.ai.agent.contract.node.NodeInput;
+import com.shiyu.ai.agent.contract.node.NodeInputParam;
 import com.shiyu.ai.agent.contract.node.NodeOutput;
 import com.shiyu.ai.agent.contract.node.NodeType;
-import com.shiyu.ai.knowledge.contract.model.KnowledgeResponse;
+import com.shiyu.ai.kernel.context.ActorContext;
 import com.shiyu.ai.knowledge.contract.api.KnowledgePathPort;
 import com.shiyu.ai.knowledge.contract.api.KnowledgeRelationPort;
-import com.shiyu.ai.kernel.context.ActorContext;
+import com.shiyu.ai.knowledge.contract.model.KnowledgeResponse;
+
 import lombok.Getter;
 import lombok.Setter;
 import lombok.extern.slf4j.Slf4j;
@@ -20,10 +21,9 @@ import java.util.Set;
 /**
  * 前置知识检查节点
  *
- * LangGraph4j 节点，检测学生对目标知识点缺失的前置知识。
+ * <p>LangGraph4j 节点，检测学生对目标知识点缺失的前置知识。
  *
- * 输入字段：knowledgeId, studentId
- * 输出字段：missingPrerequisites, hasMissingPrereqs
+ * <p>输入字段：knowledgeId, studentId 输出字段：missingPrerequisites, hasMissingPrereqs
  */
 @Slf4j
 @Getter
@@ -34,8 +34,9 @@ public class PrereqCheckNode extends BaseNode {
     private final KnowledgeRelationPort knowledgeRelationService;
     private final KnowledgePathPort knowledgePathService;
 
-    public PrereqCheckNode(KnowledgeRelationPort knowledgeRelationService,
-                           KnowledgePathPort knowledgePathService) {
+    public PrereqCheckNode(
+            KnowledgeRelationPort knowledgeRelationService,
+            KnowledgePathPort knowledgePathService) {
         super();
         this.getConfig().setNodeType(NodeType.TRANSFORM);
         this.getConfig().setNodeName("prereqCheck");
@@ -86,18 +87,14 @@ public class PrereqCheckNode extends BaseNode {
         output.addData("missingPrerequisiteIds", missing);
         output.addData("hasMissingPrereqs", !missing.isEmpty());
 
-        log.info("PrereqCheckNode: 前置知识={}个, 缺失={}个",
-                prerequisites.size(), missing.size());
+        log.info("PrereqCheckNode: 前置知识={}个, 缺失={}个", prerequisites.size(), missing.size());
         return output;
     }
 
     @Override
     public java.util.List<NodeInputParam> getRequiredInputs() {
         return java.util.List.of(
-            NodeInputParam.apiRequired("knowledgeId", "number", "知识点 ID"),
-            NodeInputParam.apiOptional("studentId", "number", "学生 ID（可选，仅用于记录）", null)
-        );
+                NodeInputParam.apiRequired("knowledgeId", "number", "知识点 ID"),
+                NodeInputParam.apiOptional("studentId", "number", "学生 ID（可选，仅用于记录）", null));
     }
 }
-
-

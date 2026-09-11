@@ -3,14 +3,15 @@ package com.shiyu.ai.education.implementation.persistence.dataobject;
 import com.mybatisflex.annotation.Id;
 import com.mybatisflex.annotation.KeyType;
 import com.mybatisflex.annotation.Table;
-import lombok.Data;
-
 import com.shiyu.ai.common.mybatis.model.TenantEntity;
+import com.shiyu.ai.education.implementation.domain.model.KnowledgeTextbookBO;
+
+import io.github.linpeilie.annotations.AutoMapper;
+
+import lombok.Data;
 import lombok.EqualsAndHashCode;
 
 import java.io.Serial;
-import com.shiyu.ai.education.implementation.domain.model.KnowledgeTextbookBO;
-import io.github.linpeilie.annotations.AutoMapper;
 
 @Data
 @Table("edu_knowledge_textbook")
@@ -18,8 +19,7 @@ import io.github.linpeilie.annotations.AutoMapper;
 @AutoMapper(target = KnowledgeTextbookBO.class, reverseConvertGenerate = true)
 public class KnowledgeTextbookDO extends TenantEntity {
 
-    @Serial
-    private static final long serialVersionUID = 1L;
+    @Serial private static final long serialVersionUID = 1L;
 
     @Id(keyType = KeyType.Auto)
     private Long id;
@@ -28,5 +28,3 @@ public class KnowledgeTextbookDO extends TenantEntity {
     private Long textbookId;
     private Long chapterId;
 }
-
-

@@ -1,7 +1,8 @@
 package com.shiyu.ai.education.implementation.web.dto;
 
-import io.github.linpeilie.annotations.AutoMapper;
 import com.shiyu.ai.education.implementation.domain.model.StudentBO;
+
+import io.github.linpeilie.annotations.AutoMapper;
 
 @AutoMapper(target = StudentBO.class)
 public record StudentResponse(
@@ -13,6 +14,4 @@ public record StudentResponse(
         Integer grade,
         String gradeLevel,
         String school,
-        String className
-) {}
-
+        String className) {}

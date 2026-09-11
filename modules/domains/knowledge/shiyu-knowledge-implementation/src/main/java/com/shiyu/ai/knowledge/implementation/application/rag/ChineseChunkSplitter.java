@@ -1,6 +1,5 @@
 package com.shiyu.ai.knowledge.implementation.application.rag;
 
-import com.shiyu.ai.knowledge.implementation.application.rag.ChunkSplitter;
 import lombok.extern.slf4j.Slf4j;
 
 import java.util.ArrayList;
@@ -15,12 +14,12 @@ public class ChineseChunkSplitter implements ChunkSplitter {
     private static final int MIN_TOKENS = 300;
     private static final int OVERLAP_TOKENS = 50;
 
-    private static final Pattern HEADING_PATTERN = Pattern.compile(
-            "^(#{1,6}\\s+|第[一二三四五六七八九十百千]+[章节篇部]|\\d+\\.\\s+|[一二三四五六七八九十]+[、\\.])",
-            Pattern.MULTILINE);
+    private static final Pattern HEADING_PATTERN =
+            Pattern.compile(
+                    "^(#{1,6}\\s+|第[一二三四五六七八九十百千]+[章节篇部]|\\d+\\.\\s+|[一二三四五六七八九十]+[、\\.])",
+                    Pattern.MULTILINE);
 
-    private static final Pattern PARAGRAPH_PATTERN = Pattern.compile(
-            "\\n\\s*\\n|\\r\\n\\s*\\r\\n");
+    private static final Pattern PARAGRAPH_PATTERN = Pattern.compile("\\n\\s*\\n|\\r\\n\\s*\\r\\n");
 
     @Override
     public List<Chunk> split(String text) {
@@ -88,7 +87,8 @@ public class ChineseChunkSplitter implements ChunkSplitter {
         for (String para : paragraphs) {
             int paraTokens = estimateTokens(para);
 
-            if (current.length() > 0 && estimateTokens(current.toString()) + paraTokens > MAX_TOKENS) {
+            if (current.length() > 0
+                    && estimateTokens(current.toString()) + paraTokens > MAX_TOKENS) {
                 if (estimateTokens(current.toString()) >= MIN_TOKENS || chunks.isEmpty()) {
                     chunks.add(new Chunk(current.toString().trim(), index++, chunkStart, pos));
                     chunkStart = Math.max(0, pos - getOverlapChars(current.toString()));
@@ -158,4 +158,3 @@ public class ChineseChunkSplitter implements ChunkSplitter {
         return chineseChars + asciiWords;
     }
 }
-

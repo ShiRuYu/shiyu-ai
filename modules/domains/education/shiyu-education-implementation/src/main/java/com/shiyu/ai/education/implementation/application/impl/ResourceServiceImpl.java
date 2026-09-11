@@ -2,14 +2,16 @@ package com.shiyu.ai.education.implementation.application.impl;
 
 import com.shiyu.ai.common.core.api.PageData;
 import com.shiyu.ai.common.core.utils.MapstructUtils;
+import com.shiyu.ai.education.implementation.application.ResourceService;
 import com.shiyu.ai.education.implementation.domain.model.ResourceBO;
 import com.shiyu.ai.education.implementation.domain.port.repository.ResourceRepository;
 import com.shiyu.ai.education.implementation.web.dto.ResourceResponse;
 import com.shiyu.ai.education.implementation.web.request.ResourceRequest;
-import com.shiyu.ai.education.implementation.application.ResourceService;
 import com.shiyu.ai.kernel.context.ActorContext;
+
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -30,7 +32,8 @@ public class ResourceServiceImpl implements ResourceService {
 
     @Override
     public List<ResourceResponse> listBySubjectCode(ActorContext actor, String subjectCode) {
-        List<ResourceBO> boList = resourceRepository.selectBySubjectCode(actor.tenantId(), subjectCode);
+        List<ResourceBO> boList =
+                resourceRepository.selectBySubjectCode(actor.tenantId(), subjectCode);
         return MapstructUtils.convert(boList, ResourceResponse.class);
     }
 
@@ -42,8 +45,10 @@ public class ResourceServiceImpl implements ResourceService {
 
     @Override
     public PageData<ResourceResponse> page(ActorContext actor, int pageNum, int pageSize) {
-        PageData<ResourceBO> boPage = resourceRepository.selectPage(actor.tenantId(), pageNum, pageSize);
-        List<ResourceResponse> items = MapstructUtils.convert(boPage.getItems(), ResourceResponse.class);
+        PageData<ResourceBO> boPage =
+                resourceRepository.selectPage(actor.tenantId(), pageNum, pageSize);
+        List<ResourceResponse> items =
+                MapstructUtils.convert(boPage.getItems(), ResourceResponse.class);
         return new PageData<>(items, boPage.getTotal());
     }
 
@@ -93,4 +98,3 @@ public class ResourceServiceImpl implements ResourceService {
         resourceRepository.deleteById(actor.tenantId(), id);
     }
 }
-

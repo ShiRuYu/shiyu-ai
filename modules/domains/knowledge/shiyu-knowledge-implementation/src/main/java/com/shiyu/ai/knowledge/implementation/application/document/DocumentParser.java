@@ -2,10 +2,7 @@ package com.shiyu.ai.knowledge.implementation.application.document;
 
 import java.nio.charset.StandardCharsets;
 
-/**
- * 文档解析器 SPI
- * 支持多种文档格式解析
- */
+/** 文档解析器 SPI 支持多种文档格式解析 */
 public interface DocumentParser {
 
     String getSupportedFormat();
@@ -18,4 +15,3 @@ public interface DocumentParser {
 
     record ParseResult(String title, String text, String metadata) {}
 }
-

@@ -1,11 +1,16 @@
 package com.shiyu.ai.knowledge.implementation.persistence.repository;
 
+import static org.junit.jupiter.api.Assertions.*;
+import static org.mockito.ArgumentMatchers.*;
+import static org.mockito.Mockito.*;
+
 import com.mybatisflex.core.paginate.Page;
 import com.shiyu.ai.common.core.utils.MapstructUtils;
+import com.shiyu.ai.kernel.context.TenantId;
 import com.shiyu.ai.knowledge.implementation.domain.model.*;
 import com.shiyu.ai.knowledge.implementation.persistence.dataobject.*;
 import com.shiyu.ai.knowledge.implementation.persistence.mapper.*;
-import com.shiyu.ai.kernel.context.TenantId;
+
 import org.junit.jupiter.api.Test;
 import org.mockito.Answers;
 import org.mockito.MockedStatic;
@@ -15,37 +20,60 @@ import java.lang.reflect.Method;
 import java.util.ArrayList;
 import java.util.List;
 
-import static org.junit.jupiter.api.Assertions.*;
-import static org.mockito.ArgumentMatchers.*;
-import static org.mockito.Mockito.*;
-
 @SuppressWarnings({"rawtypes", "unchecked"})
 class KnowledgeEnterpriseRepositoryCoverageTest {
     private static final TenantId TENANT = new TenantId(31L);
 
     @Test
     void exercisesTenantScopedSpaceVersionJobAuditAndEvaluationPersistence() {
-        KnowledgeSpaceMapper spaces = mock(KnowledgeSpaceMapper.class, mapperAnswer(KnowledgeSpaceDO.class));
-        KnowledgeSpaceMemberMapper members = mock(KnowledgeSpaceMemberMapper.class, mapperAnswer(KnowledgeSpaceMemberDO.class));
-        KnowledgeDocumentVersionMapper versions = mock(KnowledgeDocumentVersionMapper.class, mapperAnswer(KnowledgeDocumentVersionDO.class));
-        KnowledgeReviewRecordMapper reviews = mock(KnowledgeReviewRecordMapper.class, mapperAnswer(KnowledgeReviewRecordDO.class));
-        KnowledgeIngestionJobMapper jobs = mock(KnowledgeIngestionJobMapper.class, mapperAnswer(KnowledgeIngestionJobDO.class));
-        KnowledgeAuditLogMapper audits = mock(KnowledgeAuditLogMapper.class, mapperAnswer(KnowledgeAuditLogDO.class));
-        KnowledgeEvaluationCaseMapper evaluations = mock(KnowledgeEvaluationCaseMapper.class, mapperAnswer(KnowledgeEvaluationCaseDO.class));
-        when(versions.selectOneByQuery(any())).thenAnswer(invocation -> {
-            KnowledgeDocumentVersionDO value = new KnowledgeDocumentVersionDO();
-            value.setId(1L);
-            value.setVersionNo(1);
-            return value;
-        });
-        KnowledgeEnterpriseRepositoryImpl repository = new KnowledgeEnterpriseRepositoryImpl(
-                spaces, members, versions, reviews, jobs, audits, evaluations);
+        KnowledgeSpaceMapper spaces =
+                mock(KnowledgeSpaceMapper.class, mapperAnswer(KnowledgeSpaceDO.class));
+        KnowledgeSpaceMemberMapper members =
+                mock(KnowledgeSpaceMemberMapper.class, mapperAnswer(KnowledgeSpaceMemberDO.class));
+        KnowledgeDocumentVersionMapper versions =
+                mock(
+                        KnowledgeDocumentVersionMapper.class,
+                        mapperAnswer(KnowledgeDocumentVersionDO.class));
+        KnowledgeReviewRecordMapper reviews =
+                mock(
+                        KnowledgeReviewRecordMapper.class,
+                        mapperAnswer(KnowledgeReviewRecordDO.class));
+        KnowledgeIngestionJobMapper jobs =
+                mock(
+                        KnowledgeIngestionJobMapper.class,
+                        mapperAnswer(KnowledgeIngestionJobDO.class));
+        KnowledgeAuditLogMapper audits =
+                mock(KnowledgeAuditLogMapper.class, mapperAnswer(KnowledgeAuditLogDO.class));
+        KnowledgeEvaluationCaseMapper evaluations =
+                mock(
+                        KnowledgeEvaluationCaseMapper.class,
+                        mapperAnswer(KnowledgeEvaluationCaseDO.class));
+        when(versions.selectOneByQuery(any()))
+                .thenAnswer(
+                        invocation -> {
+                            KnowledgeDocumentVersionDO value = new KnowledgeDocumentVersionDO();
+                            value.setId(1L);
+                            value.setVersionNo(1);
+                            return value;
+                        });
+        KnowledgeEnterpriseRepositoryImpl repository =
+                new KnowledgeEnterpriseRepositoryImpl(
+                        spaces, members, versions, reviews, jobs, audits, evaluations);
 
         try (MockedStatic<MapstructUtils> conversions = mockStatic(MapstructUtils.class)) {
-            conversions.when(() -> MapstructUtils.convert(any(List.class), any(Class.class)))
-                    .thenAnswer(invocation -> convertList((List<?>) invocation.getArgument(0), invocation.getArgument(1)));
-            conversions.when(() -> MapstructUtils.convert(any(Object.class), any(Class.class)))
-                    .thenAnswer(invocation -> convertValue(invocation.getArgument(0), invocation.getArgument(1)));
+            conversions
+                    .when(() -> MapstructUtils.convert(any(List.class), any(Class.class)))
+                    .thenAnswer(
+                            invocation ->
+                                    convertList(
+                                            (List<?>) invocation.getArgument(0),
+                                            invocation.getArgument(1)));
+            conversions
+                    .when(() -> MapstructUtils.convert(any(Object.class), any(Class.class)))
+                    .thenAnswer(
+                            invocation ->
+                                    convertValue(
+                                            invocation.getArgument(0), invocation.getArgument(1)));
 
             assertNotNull(repository.findSpace(TENANT, 1L));
             assertNull(repository.findSpaceByTenant(TENANT, null));
@@ -55,7 +83,8 @@ class KnowledgeEnterpriseRepositoryCoverageTest {
             assertNotNull(repository.findSpaceByTenantAndCode(TENANT, "space"));
             assertEquals(1, repository.pageSpaces(1, 10, null).getTotal());
             assertEquals(1, repository.pageSpaces(1, 10, "math", "school").getTotal());
-            assertEquals(1, repository.pageSpacesByTenant(TENANT, 1, 10, "math", "school").getTotal());
+            assertEquals(
+                    1, repository.pageSpacesByTenant(TENANT, 1, 10, "math", "school").getTotal());
 
             KnowledgeSpaceBO space = new KnowledgeSpaceBO();
             assertSame(space, repository.insertSpace(TENANT, space));
@@ -75,12 +104,16 @@ class KnowledgeEnterpriseRepositoryCoverageTest {
             KnowledgeDocumentVersionBO version = new KnowledgeDocumentVersionBO();
             assertSame(version, repository.insertVersion(TENANT, version));
             repository.updateVersion(TENANT, version);
-            assertThrows(IllegalArgumentException.class, () -> repository.insertVersion(null, version));
-            assertThrows(IllegalArgumentException.class, () -> repository.insertVersion(TENANT, null));
-            assertThrows(IllegalArgumentException.class, () -> repository.updateVersion(TENANT, null));
+            assertThrows(
+                    IllegalArgumentException.class, () -> repository.insertVersion(null, version));
+            assertThrows(
+                    IllegalArgumentException.class, () -> repository.insertVersion(TENANT, null));
+            assertThrows(
+                    IllegalArgumentException.class, () -> repository.updateVersion(TENANT, null));
 
             repository.insertReview(TENANT, new KnowledgeReviewRecordBO());
-            assertThrows(IllegalArgumentException.class, () -> repository.insertReview(TENANT, null));
+            assertThrows(
+                    IllegalArgumentException.class, () -> repository.insertReview(TENANT, null));
             assertNotNull(repository.findJob(TENANT, 1L));
             assertNotNull(repository.findJobByKey(TENANT, "job"));
             KnowledgeIngestionJobBO job = new KnowledgeIngestionJobBO();
@@ -94,7 +127,8 @@ class KnowledgeEnterpriseRepositoryCoverageTest {
             assertEquals(1, repository.findStaleJobs(java.time.LocalDateTime.now()).size());
 
             repository.insertAudit(TENANT, new KnowledgeAuditLogBO());
-            assertThrows(IllegalArgumentException.class, () -> repository.insertAudit(TENANT, null));
+            assertThrows(
+                    IllegalArgumentException.class, () -> repository.insertAudit(TENANT, null));
             assertEquals(1, repository.pageAudit(TENANT, 1, 10, null).getTotal());
             assertEquals(1, repository.pageAudit(TENANT, 1, 10, 2L).getTotal());
             KnowledgeEvaluationCaseBO evaluation = new KnowledgeEvaluationCaseBO();
@@ -116,14 +150,19 @@ class KnowledgeEnterpriseRepositoryCoverageTest {
         KnowledgeIngestionJobMapper jobs = mock(KnowledgeIngestionJobMapper.class);
         KnowledgeAuditLogMapper audits = mock(KnowledgeAuditLogMapper.class);
         KnowledgeEvaluationCaseMapper evaluations = mock(KnowledgeEvaluationCaseMapper.class);
-        KnowledgeEnterpriseRepositoryImpl repository = new KnowledgeEnterpriseRepositoryImpl(
-                spaces, members, versions, reviews, jobs, audits, evaluations);
+        KnowledgeEnterpriseRepositoryImpl repository =
+                new KnowledgeEnterpriseRepositoryImpl(
+                        spaces, members, versions, reviews, jobs, audits, evaluations);
 
         KnowledgeSpaceBO space = new KnowledgeSpaceBO();
         space.setId(404L);
         when(spaces.updateByQuery(any(), any())).thenReturn(0);
         try (MockedStatic<MapstructUtils> conversions = mockStatic(MapstructUtils.class)) {
-            conversions.when(() -> MapstructUtils.convert(any(Object.class), eq(KnowledgeSpaceDO.class)))
+            conversions
+                    .when(
+                            () ->
+                                    MapstructUtils.convert(
+                                            any(Object.class), eq(KnowledgeSpaceDO.class)))
                     .thenReturn(new KnowledgeSpaceDO());
             assertThrows(IllegalStateException.class, () -> repository.updateSpace(TENANT, space));
         }
@@ -143,7 +182,8 @@ class KnowledgeEnterpriseRepositoryCoverageTest {
                 page.setRecords(List.of(newValue(dataType)));
                 return page;
             }
-            if (name.startsWith("insert") || name.startsWith("update") || name.startsWith("delete")) return 1;
+            if (name.startsWith("insert") || name.startsWith("update") || name.startsWith("delete"))
+                return 1;
             return Answers.RETURNS_DEFAULTS.answer(invocation);
         };
     }
@@ -171,4 +211,3 @@ class KnowledgeEnterpriseRepositoryCoverageTest {
         return result;
     }
 }
-

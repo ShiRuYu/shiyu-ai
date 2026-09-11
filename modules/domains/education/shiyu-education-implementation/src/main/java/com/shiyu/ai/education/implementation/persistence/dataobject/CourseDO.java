@@ -4,12 +4,14 @@ import com.mybatisflex.annotation.Id;
 import com.mybatisflex.annotation.KeyType;
 import com.mybatisflex.annotation.Table;
 import com.shiyu.ai.common.mybatis.model.TenantEntity;
+import com.shiyu.ai.education.implementation.domain.model.CourseBO;
+
+import io.github.linpeilie.annotations.AutoMapper;
+
 import lombok.Data;
 import lombok.EqualsAndHashCode;
 
 import java.time.LocalDateTime;
-import com.shiyu.ai.education.implementation.domain.model.CourseBO;
-import io.github.linpeilie.annotations.AutoMapper;
 
 @Data
 @EqualsAndHashCode(callSuper = true)
@@ -33,5 +35,3 @@ public class CourseDO extends TenantEntity {
     private LocalDateTime createdAt;
     private LocalDateTime updatedAt;
 }
-
-

@@ -2,6 +2,7 @@ package com.shiyu.ai.common.core.domain;
 
 import com.shiyu.ai.common.core.enums.DeviceTypeEnum;
 import com.shiyu.ai.common.core.enums.UserTypeEnum;
+
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
@@ -9,16 +10,13 @@ import java.io.Serial;
 import java.io.Serializable;
 import java.util.HashMap;
 
-/**
- * 登录用户
- */
+/** 登录用户 */
 @Data
 @NoArgsConstructor
 @SuppressWarnings("serial")
 public class UserContext implements Serializable {
 
-    @Serial
-    private static final long serialVersionUID = 1L;
+    @Serial private static final long serialVersionUID = 1L;
 
     private Long userId;
     private String token;
@@ -42,11 +40,11 @@ public class UserContext implements Serializable {
 
     /** 当前租户下生效的角色。 */
     private Long currentRoleId;
+
     private String currentRoleCode;
 
     public boolean isSuperAdmin() {
-        return "tenant_super".equals(currentRoleCode)
-                || "super".equals(currentRoleCode);
+        return "tenant_super".equals(currentRoleCode) || "super".equals(currentRoleCode);
     }
 
     /** NORMAL 或 PARENT_SUPER_ADMIN。 */

@@ -1,7 +1,9 @@
 package com.shiyu.ai.iam.implementation.request;
 
-import jakarta.validation.constraints.NotBlank;
 import io.swagger.v3.oas.annotations.media.Schema;
+
+import jakarta.validation.constraints.NotBlank;
+
 import lombok.Data;
 
 import java.io.Serial;
@@ -11,8 +13,7 @@ import java.io.Serializable;
 @Schema(description = "登录/注册请求")
 public class LoginRequest implements Serializable {
 
-    @Serial
-    private static final long serialVersionUID = 1L;
+    @Serial private static final long serialVersionUID = 1L;
 
     @NotBlank(message = "用户名不能为空")
     @Schema(description = "用户名")
@@ -37,4 +38,3 @@ public class LoginRequest implements Serializable {
     @Schema(description = "手机号")
     private String phone;
 }
-

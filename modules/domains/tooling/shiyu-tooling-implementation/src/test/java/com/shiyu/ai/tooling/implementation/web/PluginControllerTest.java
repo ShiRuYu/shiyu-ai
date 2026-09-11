@@ -1,18 +1,19 @@
 package com.shiyu.ai.tooling.implementation.web;
 
+import static org.junit.jupiter.api.Assertions.*;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.Mockito.*;
+
 import com.shiyu.ai.tooling.implementation.plugin.market.PluginMarketEntry;
 import com.shiyu.ai.tooling.implementation.plugin.market.PluginMarketService;
 import com.shiyu.ai.tooling.implementation.plugin.registry.PluginRegistry;
 import com.shiyu.ai.tooling.implementation.plugin.spi.PluginDescriptor;
 import com.shiyu.ai.tooling.implementation.plugin.vo.PluginInfoVO;
+
 import org.junit.jupiter.api.Test;
 
 import java.time.Instant;
 import java.util.List;
-
-import static org.junit.jupiter.api.Assertions.*;
-import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.Mockito.*;
 
 class PluginControllerTest {
     private final PluginRegistry registry = mock(PluginRegistry.class);
@@ -21,7 +22,9 @@ class PluginControllerTest {
 
     @Test
     void listsAndDelegatesLifecycleOperations() {
-        PluginDescriptor descriptor = new PluginDescriptor("demo", "Demo", "1.0", "test", "author", "entry", java.util.Map.of());
+        PluginDescriptor descriptor =
+                new PluginDescriptor(
+                        "demo", "Demo", "1.0", "test", "author", "entry", java.util.Map.of());
         when(registry.listPlugins()).thenReturn(List.of(descriptor));
         List<PluginInfoVO> result = controller.listPlugins().getData();
         assertEquals("demo", result.get(0).getId());
@@ -56,8 +59,17 @@ class PluginControllerTest {
         assertEquals("启动失败，请稍后重试", startFailure.getMessage());
         assertFalse(startFailure.getMessage().contains("bad start"));
 
-        PluginMarketEntry entry = new PluginMarketEntry("demo", "1", "local", "manifest", null, null,
-                List.of(), Instant.now(), true);
+        PluginMarketEntry entry =
+                new PluginMarketEntry(
+                        "demo",
+                        "1",
+                        "local",
+                        "manifest",
+                        null,
+                        null,
+                        List.of(),
+                        Instant.now(),
+                        true);
         when(market.list()).thenReturn(List.of(entry));
         when(market.publish(any(), eq(true))).thenReturn(entry);
         assertEquals(List.of(entry), controller.market().getData());
@@ -66,4 +78,3 @@ class PluginControllerTest {
         verify(market).disable("demo");
     }
 }
-

@@ -1,29 +1,33 @@
 package com.shiyu.ai.web.interceptor;
 
-import com.shiyu.ai.iam.implementation.api.response.AuthTenantResponse;
-import com.shiyu.ai.iam.implementation.api.response.AuthUserResponse;
-import com.shiyu.ai.iam.implementation.api.response.AuthRoleResponse;
-import com.shiyu.ai.iam.implementation.api.response.AuthScopeRoleResponse;
-import com.shiyu.ai.iam.implementation.utils.SaTokenHelper;
-import com.shiyu.ai.iam.implementation.service.AuthContextService;
-import com.shiyu.ai.common.core.domain.UserContextHolder;
+import com.shiyu.ai.common.core.api.Result;
 import com.shiyu.ai.common.core.domain.UserContext;
+import com.shiyu.ai.common.core.domain.UserContextHolder;
+import com.shiyu.ai.common.core.enums.BizResultCode;
 import com.shiyu.ai.common.core.enums.DeviceTypeEnum;
 import com.shiyu.ai.common.core.enums.UserTypeEnum;
-import com.shiyu.ai.common.core.api.Result;
-import com.shiyu.ai.common.core.enums.BizResultCode;
 import com.shiyu.ai.common.core.utils.JSONUtils;
-import com.shiyu.ai.common.web.interceptor.WebInvokeInterceptor;
 import com.shiyu.ai.common.web.auth.ClientIpResolver;
+import com.shiyu.ai.common.web.interceptor.WebInvokeInterceptor;
+import com.shiyu.ai.iam.implementation.api.response.AuthRoleResponse;
+import com.shiyu.ai.iam.implementation.api.response.AuthScopeRoleResponse;
+import com.shiyu.ai.iam.implementation.api.response.AuthTenantResponse;
+import com.shiyu.ai.iam.implementation.api.response.AuthUserResponse;
+import com.shiyu.ai.iam.implementation.service.AuthContextService;
+import com.shiyu.ai.iam.implementation.utils.SaTokenHelper;
 import com.shiyu.ai.kernel.context.TenantId;
 import com.shiyu.ai.kernel.context.TenantScope;
+
 import jakarta.servlet.DispatcherType;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
+
 import lombok.extern.slf4j.Slf4j;
+
 import org.jspecify.annotations.NonNull;
 import org.springframework.stereotype.Component;
 import org.springframework.web.servlet.HandlerInterceptor;
+
 import tools.jackson.core.type.TypeReference;
 
 import java.util.List;
@@ -36,24 +40,31 @@ public class UserContextInterceptor implements HandlerInterceptor {
     private final AuthContextService authContextService;
     private final ClientIpResolver clientIpResolver;
 
-    public UserContextInterceptor(AuthContextService authContextService, ClientIpResolver clientIpResolver) {
+    public UserContextInterceptor(
+            AuthContextService authContextService, ClientIpResolver clientIpResolver) {
         this.authContextService = authContextService;
         this.clientIpResolver = clientIpResolver;
     }
 
     @Override
-    public boolean preHandle(HttpServletRequest request, @NonNull HttpServletResponse response, @NonNull Object handler) throws Exception {
+    public boolean preHandle(
+            HttpServletRequest request,
+            @NonNull HttpServletResponse response,
+            @NonNull Object handler)
+            throws Exception {
         if ("OPTIONS".equalsIgnoreCase(request.getMethod())) return true;
         if (request.getDispatcherType() != DispatcherType.REQUEST) return true;
 
         try {
             SaTokenHelper helper = SaTokenHelper.getInstance();
             if (!helper.isFrameworkLogin()) {
-                log.warn("用户未登录，拦截请求: requestPathLength={}",
-                        valueLength(request.getRequestURI()));
+                log.warn("用户未登录，拦截请求: requestPathLength={}", valueLength(request.getRequestURI()));
                 response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
                 response.setContentType("application/json;charset=utf-8");
-                response.getWriter().print(JSONUtils.toJsonString(Result.fail(BizResultCode.UNAUTHORIZED, "未登录或登录已失效")));
+                response.getWriter()
+                        .print(
+                                JSONUtils.toJsonString(
+                                        Result.fail(BizResultCode.UNAUTHORIZED, "未登录或登录已失效")));
                 return false;
             }
 
@@ -104,22 +115,33 @@ public class UserContextInterceptor implements HandlerInterceptor {
             bindRequestActor(request, userContext);
             try {
                 SaTokenHelper.saveUserContextToSession(userContext);
-            } catch (Exception ignored) {}
+            } catch (Exception ignored) {
+            }
 
-            log.debug("用户上下文加载完成: userIdPresent={}, homeTenantSelected={}, currentTenantSelected={}, roleSelected={}, switchModePresent={}",
-                    userId != null, userContext.getHomeTenantId() != null,
-                    userContext.getCurrentTenantId() != null, userContext.getCurrentRoleId() != null,
+            log.debug(
+                    "用户上下文加载完成: userIdPresent={}, homeTenantSelected={}, currentTenantSelected={},"
+                            + " roleSelected={}, switchModePresent={}",
+                    userId != null,
+                    userContext.getHomeTenantId() != null,
+                    userContext.getCurrentTenantId() != null,
+                    userContext.getCurrentRoleId() != null,
                     userContext.getSwitchMode() != null);
 
             return true;
         } catch (Exception e) {
-            log.error("加载用户上下文失败，拦截请求: requestPathLength={}, errorType={}, errorMessageLength={}",
-                    valueLength(request.getRequestURI()), e.getClass().getSimpleName(), valueLength(e.getMessage()));
+            log.error(
+                    "加载用户上下文失败，拦截请求: requestPathLength={}, errorType={}, errorMessageLength={}",
+                    valueLength(request.getRequestURI()),
+                    e.getClass().getSimpleName(),
+                    valueLength(e.getMessage()));
             UserContextHolder.clearContext();
             TenantScope.clear();
             response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
             response.setContentType("application/json;charset=utf-8");
-            response.getWriter().print(JSONUtils.toJsonString(Result.fail(BizResultCode.UNAUTHORIZED, "用户上下文加载失败")));
+            response.getWriter()
+                    .print(
+                            JSONUtils.toJsonString(
+                                    Result.fail(BizResultCode.UNAUTHORIZED, "用户上下文加载失败")));
             return false;
         }
     }
@@ -139,8 +161,9 @@ public class UserContextInterceptor implements HandlerInterceptor {
             Long currentTenantId = null;
             if (user.getExtInfo() != null && !user.getExtInfo().isEmpty()) {
                 try {
-                    Map<String, Object> extInfo = JSONUtils.parseObject(
-                            user.getExtInfo(), new TypeReference<Map<String, Object>>() {});
+                    Map<String, Object> extInfo =
+                            JSONUtils.parseObject(
+                                    user.getExtInfo(), new TypeReference<Map<String, Object>>() {});
                     if (extInfo != null) {
                         // 归属租户与当前租户。
                         Object homeTid = extInfo.get("homeTenantId");
@@ -166,30 +189,35 @@ public class UserContextInterceptor implements HandlerInterceptor {
                             Object roleId = roleMap.get("roleId");
                             if (roleId instanceof Number
                                     && roleKey instanceof String
-                                    && isCurrentRoleValid(userId, currentTenantId,
-                                    ((Number) roleId).longValue(), (String) roleKey)) {
+                                    && isCurrentRoleValid(
+                                            userId,
+                                            currentTenantId,
+                                            ((Number) roleId).longValue(),
+                                            (String) roleKey)) {
                                 userContext.setCurrentRoleCode((String) roleKey);
                                 userContext.setCurrentRoleId(((Number) roleId).longValue());
                             }
                         }
                     }
                 } catch (Exception e) {
-                    log.warn("extInfo 解析失败: errorType={}, errorMessageLength={}",
-                            e.getClass().getSimpleName(), valueLength(e.getMessage()));
+                    log.warn(
+                            "extInfo 解析失败: errorType={}, errorMessageLength={}",
+                            e.getClass().getSimpleName(),
+                            valueLength(e.getMessage()));
                 }
             }
 
             // 无持久化选择时，回退到第一个有效的租户作用域。
             if (currentTenantId == null) {
-                List<AuthScopeRoleResponse> assignments =
-                        authContextService.scopeRoles(userId);
+                List<AuthScopeRoleResponse> assignments = authContextService.scopeRoles(userId);
                 if (assignments != null) {
-                    currentTenantId = assignments.stream()
-                            .filter(this::isActive)
-                            .map(AuthScopeRoleResponse::getTenantId)
-                            .filter(java.util.Objects::nonNull)
-                            .findFirst()
-                            .orElse(null);
+                    currentTenantId =
+                            assignments.stream()
+                                    .filter(this::isActive)
+                                    .map(AuthScopeRoleResponse::getTenantId)
+                                    .filter(java.util.Objects::nonNull)
+                                    .findFirst()
+                                    .orElse(null);
                 }
             }
 
@@ -198,29 +226,38 @@ public class UserContextInterceptor implements HandlerInterceptor {
                 userContext.setHomeTenantId(currentTenantId);
             }
 
-            AuthTenantResponse currentTenant = currentTenantId == null
-                    ? null : authContextService.tenant(currentTenantId);
+            AuthTenantResponse currentTenant =
+                    currentTenantId == null ? null : authContextService.tenant(currentTenantId);
             if (currentTenantId == null || !isActive(currentTenant)) {
                 throw new IllegalStateException("当前租户不存在或已停用");
             }
 
-            List<AuthScopeRoleResponse> assignments =
-                    authContextService.scopeRoles(userId);
+            List<AuthScopeRoleResponse> assignments = authContextService.scopeRoles(userId);
             final Long contextTenantId = currentTenantId;
-            boolean assigned = assignments != null && assignments.stream().anyMatch(item ->
-                    contextTenantId.equals(item.getTenantId())
-                            && isActive(item)
-                            && item.getRoleId() != null
-                            && isActive(authContextService.role(item.getRoleId())));
-            boolean delegated = "PARENT_SUPER_ADMIN".equals(userContext.getSwitchMode())
-                    && isParentSuperAdmin(userId, userContext.getHomeTenantId(), assignments)
-                    && authContextService.descendantTenantIds(tenantId(userContext.getHomeTenantId()))
-                            .contains(currentTenantId);
+            boolean assigned =
+                    assignments != null
+                            && assignments.stream()
+                                    .anyMatch(
+                                            item ->
+                                                    contextTenantId.equals(item.getTenantId())
+                                                            && isActive(item)
+                                                            && item.getRoleId() != null
+                                                            && isActive(
+                                                                    authContextService.role(
+                                                                            item.getRoleId())));
+            boolean delegated =
+                    "PARENT_SUPER_ADMIN".equals(userContext.getSwitchMode())
+                            && isParentSuperAdmin(
+                                    userId, userContext.getHomeTenantId(), assignments)
+                            && authContextService
+                                    .descendantTenantIds(tenantId(userContext.getHomeTenantId()))
+                                    .contains(currentTenantId);
             if (!assigned && !delegated) {
                 throw new IllegalStateException("用户不再属于当前租户");
             }
             if (delegated && userContext.getCurrentRoleCode() == null) {
-                AuthRoleResponse role = authContextService.tenantSuperRole(tenantId(currentTenantId));
+                AuthRoleResponse role =
+                        authContextService.tenantSuperRole(tenantId(currentTenantId));
                 if (isActive(role)) {
                     userContext.setCurrentRoleId(role.getId());
                     userContext.setCurrentRoleCode(role.getCode());
@@ -228,8 +265,11 @@ public class UserContextInterceptor implements HandlerInterceptor {
             }
 
         } catch (Exception e) {
-            log.error("加载租户上下文失败: userIdPresent={}, errorType={}, errorMessageLength={}",
-                    userId != null, e.getClass().getSimpleName(), valueLength(e.getMessage()));
+            log.error(
+                    "加载租户上下文失败: userIdPresent={}, errorType={}, errorMessageLength={}",
+                    userId != null,
+                    e.getClass().getSimpleName(),
+                    valueLength(e.getMessage()));
             throw new IllegalStateException("加载用户租户作用域失败", e);
         }
     }
@@ -238,23 +278,26 @@ public class UserContextInterceptor implements HandlerInterceptor {
         return value == null ? 0 : value.length();
     }
 
-    /**
-     * 当前角色必须同时满足用户-租户-角色关联有效、角色本身有效。
-     * 即使 extInfo 中声明 super，也不能绕过用户的实际授权关系。
-     */
-    private boolean isCurrentRoleValid(Long userId, Long currentTenantId,
-                                       Long roleId, String roleCode) {
+    /** 当前角色必须同时满足用户-租户-角色关联有效、角色本身有效。 即使 extInfo 中声明 super，也不能绕过用户的实际授权关系。 */
+    private boolean isCurrentRoleValid(
+            Long userId, Long currentTenantId, Long roleId, String roleCode) {
         if (userId == null || currentTenantId == null || roleId == null || roleCode == null) {
             return false;
         }
-        List<AuthScopeRoleResponse> assignments =
-                authContextService.scopeRoles(userId);
-        boolean assigned = assignments != null && assignments.stream().anyMatch(item ->
-                item.getRoleId() != null
-                        && roleId.equals(item.getRoleId())
-                        && currentTenantId.equals(item.getTenantId())
-                        && (item.getStatus() == null || item.getStatus() == 1)
-                        && (item.getDelFlag() == null || item.getDelFlag() == 0));
+        List<AuthScopeRoleResponse> assignments = authContextService.scopeRoles(userId);
+        boolean assigned =
+                assignments != null
+                        && assignments.stream()
+                                .anyMatch(
+                                        item ->
+                                                item.getRoleId() != null
+                                                        && roleId.equals(item.getRoleId())
+                                                        && currentTenantId.equals(
+                                                                item.getTenantId())
+                                                        && (item.getStatus() == null
+                                                                || item.getStatus() == 1)
+                                                        && (item.getDelFlag() == null
+                                                                || item.getDelFlag() == 0));
         if (!assigned) {
             return false;
         }
@@ -284,29 +327,52 @@ public class UserContextInterceptor implements HandlerInterceptor {
         }
         List<AuthScopeRoleResponse> assignments =
                 authContextService.scopeRoles(userContext.getUserId());
-        boolean assigned = assignments != null && assignments.stream().anyMatch(item ->
-                userContext.getCurrentTenantId().equals(item.getTenantId())
-                        && isActive(item)
-                        && item.getRoleId() != null
-                        && isActive(authContextService.role(item.getRoleId())));
-        boolean delegated = "PARENT_SUPER_ADMIN".equals(userContext.getSwitchMode())
-                && isParentSuperAdmin(userContext.getUserId(), userContext.getHomeTenantId(), assignments)
-                && authContextService.descendantTenantIds(tenantId(userContext.getHomeTenantId()))
-                    .contains(userContext.getCurrentTenantId())
-                && authContextService.tenantSuperRole(tenantId(userContext.getCurrentTenantId())) != null;
+        boolean assigned =
+                assignments != null
+                        && assignments.stream()
+                                .anyMatch(
+                                        item ->
+                                                userContext
+                                                                .getCurrentTenantId()
+                                                                .equals(item.getTenantId())
+                                                        && isActive(item)
+                                                        && item.getRoleId() != null
+                                                        && isActive(
+                                                                authContextService.role(
+                                                                        item.getRoleId())));
+        boolean delegated =
+                "PARENT_SUPER_ADMIN".equals(userContext.getSwitchMode())
+                        && isParentSuperAdmin(
+                                userContext.getUserId(), userContext.getHomeTenantId(), assignments)
+                        && authContextService
+                                .descendantTenantIds(tenantId(userContext.getHomeTenantId()))
+                                .contains(userContext.getCurrentTenantId())
+                        && authContextService.tenantSuperRole(
+                                        tenantId(userContext.getCurrentTenantId()))
+                                != null;
         if (!assigned && !delegated) {
             return false;
         }
         if (userContext.getCurrentRoleCode() != null) {
-            boolean roleValid = delegated && isTenantSuperCode(userContext.getCurrentRoleCode())
-                    || assignments.stream().anyMatch(item -> {
-                if (!userContext.getCurrentTenantId().equals(item.getTenantId())
-                        || !isActive(item) || item.getRoleId() == null) {
-                    return false;
-                }
-                AuthRoleResponse role = authContextService.role(item.getRoleId());
-                return isActive(role) && userContext.getCurrentRoleCode().equals(role.getCode());
-            });
+            boolean roleValid =
+                    delegated && isTenantSuperCode(userContext.getCurrentRoleCode())
+                            || assignments.stream()
+                                    .anyMatch(
+                                            item -> {
+                                                if (!userContext
+                                                                .getCurrentTenantId()
+                                                                .equals(item.getTenantId())
+                                                        || !isActive(item)
+                                                        || item.getRoleId() == null) {
+                                                    return false;
+                                                }
+                                                AuthRoleResponse role =
+                                                        authContextService.role(item.getRoleId());
+                                                return isActive(role)
+                                                        && userContext
+                                                                .getCurrentRoleCode()
+                                                                .equals(role.getCode());
+                                            });
             if (!roleValid) {
                 return false;
             }
@@ -318,8 +384,8 @@ public class UserContextInterceptor implements HandlerInterceptor {
         return "tenant_super".equals(roleCode) || "super".equals(roleCode);
     }
 
-    private boolean isParentSuperAdmin(Long userId, Long homeTenantId,
-                                       List<AuthScopeRoleResponse> assignments) {
+    private boolean isParentSuperAdmin(
+            Long userId, Long homeTenantId, List<AuthScopeRoleResponse> assignments) {
         if (homeTenantId == null || assignments == null) {
             return false;
         }
@@ -327,32 +393,47 @@ public class UserContextInterceptor implements HandlerInterceptor {
                 .filter(item -> homeTenantId.equals(item.getTenantId()) && isActive(item))
                 .map(AuthScopeRoleResponse::getRoleId)
                 .map(authContextService::role)
-                .anyMatch(role -> role != null && isTenantSuperCode(role.getCode())
-                        && isActive(role));
+                .anyMatch(
+                        role ->
+                                role != null
+                                        && isTenantSuperCode(role.getCode())
+                                        && isActive(role));
     }
 
     private boolean isActive(AuthUserResponse item) {
-        return item != null && item.getStatus() != null && item.getStatus() == 1
+        return item != null
+                && item.getStatus() != null
+                && item.getStatus() == 1
                 && (item.getDelFlag() == null || item.getDelFlag() == 0);
     }
 
     private boolean isActive(AuthTenantResponse item) {
-        return item != null && item.getStatus() != null && item.getStatus() == 1
+        return item != null
+                && item.getStatus() != null
+                && item.getStatus() == 1
                 && (item.getDelFlag() == null || item.getDelFlag() == 0);
     }
 
     private boolean isActive(AuthRoleResponse item) {
-        return item != null && item.getStatus() != null && item.getStatus() == 1
+        return item != null
+                && item.getStatus() != null
+                && item.getStatus() == 1
                 && (item.getDelFlag() == null || item.getDelFlag() == 0);
     }
 
     private boolean isActive(AuthScopeRoleResponse item) {
-        return item != null && item.getStatus() != null && item.getStatus() == 1
+        return item != null
+                && item.getStatus() != null
+                && item.getStatus() == 1
                 && (item.getDelFlag() == null || item.getDelFlag() == 0);
     }
 
     @Override
-    public void afterCompletion(HttpServletRequest request, HttpServletResponse response, Object handler, Exception ex) {
+    public void afterCompletion(
+            HttpServletRequest request,
+            HttpServletResponse response,
+            Object handler,
+            Exception ex) {
         UserContextHolder.clearContext();
         TenantScope.clear();
     }
@@ -371,7 +452,8 @@ public class UserContextInterceptor implements HandlerInterceptor {
 
     private void bindRequestActor(HttpServletRequest request, UserContext userContext) {
         request.setAttribute(WebInvokeInterceptor.ACTOR_USER_ID, userContext.getUserId());
-        request.setAttribute(WebInvokeInterceptor.ACTOR_TENANT_ID, userContext.getCurrentTenantId());
+        request.setAttribute(
+                WebInvokeInterceptor.ACTOR_TENANT_ID, userContext.getCurrentTenantId());
     }
 
     private String parseBrowser(String ua) {
@@ -392,4 +474,3 @@ public class UserContextInterceptor implements HandlerInterceptor {
         return DeviceTypeEnum.UNKNOWN;
     }
 }
-

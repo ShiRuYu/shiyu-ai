@@ -1,20 +1,21 @@
 package com.shiyu.ai.iam.implementation.web;
 
+import static org.junit.jupiter.api.Assertions.*;
+import static org.mockito.ArgumentMatchers.*;
+import static org.mockito.Mockito.*;
+
+import com.shiyu.ai.common.core.domain.UserContext;
+import com.shiyu.ai.common.core.domain.UserContextHolder;
 import com.shiyu.ai.iam.implementation.request.DictPageRequest;
 import com.shiyu.ai.iam.implementation.request.DictRequest;
 import com.shiyu.ai.iam.implementation.service.DictService;
-import com.shiyu.ai.common.core.domain.UserContext;
-import com.shiyu.ai.common.core.domain.UserContextHolder;
+
 import org.apache.commons.lang3.tuple.Pair;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
 import java.util.List;
-
-import static org.junit.jupiter.api.Assertions.*;
-import static org.mockito.ArgumentMatchers.*;
-import static org.mockito.Mockito.*;
 
 class DictControllerCoverageTest {
     private final DictService service = mock(DictService.class);
@@ -23,12 +24,16 @@ class DictControllerCoverageTest {
     @BeforeEach
     void actor() {
         UserContext context = new UserContext();
-        context.setUserId(8L); context.setCurrentTenantId(7L); context.setHomeTenantId(7L);
+        context.setUserId(8L);
+        context.setCurrentTenantId(7L);
+        context.setHomeTenantId(7L);
         UserContextHolder.setContext(context);
     }
 
     @AfterEach
-    void clear() { UserContextHolder.clearContext(); }
+    void clear() {
+        UserContextHolder.clearContext();
+    }
 
     @Test
     void mapsDictionaryQueriesMutationsAndDeletes() {
@@ -45,4 +50,3 @@ class DictControllerCoverageTest {
         verify(service).deleteByIds(any(), eq(List.of(1L, 2L)));
     }
 }
-

@@ -1,6 +1,7 @@
 package com.shiyu.ai.common.storage.backup;
+
+import com.shiyu.ai.common.core.exception.ServiceException;
 import com.shiyu.ai.common.storage.api.*;
-import com.shiyu.ai.common.storage.backup.*;
 import com.shiyu.ai.common.storage.config.*;
 import com.shiyu.ai.common.storage.file.*;
 import com.shiyu.ai.common.storage.lease.*;
@@ -9,10 +10,9 @@ import com.shiyu.ai.common.storage.rate.*;
 import com.shiyu.ai.common.storage.security.*;
 import com.shiyu.ai.common.storage.vector.*;
 
-import com.shiyu.ai.common.core.exception.ServiceException;
+import org.springframework.beans.factory.ObjectProvider;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.jdbc.core.JdbcTemplate;
-import org.springframework.beans.factory.ObjectProvider;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
 
@@ -22,8 +22,8 @@ import java.io.IOException;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
-import java.time.OffsetDateTime;
 import java.time.LocalDate;
+import java.time.OffsetDateTime;
 import java.time.ZoneId;
 import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
@@ -67,7 +67,8 @@ public class EmbeddedBackupService {
         this.manifestContributors = manifestContributors.orderedStream().toList();
     }
 
-    @Scheduled(fixedDelayString = "${shiyu.storage.backup.interval-ms:3600000}",
+    @Scheduled(
+            fixedDelayString = "${shiyu.storage.backup.interval-ms:3600000}",
             initialDelayString = "${shiyu.storage.backup.initial-delay-ms:300000}")
     public void scheduledBackup() {
         if (!enabled) return;
@@ -82,29 +83,36 @@ public class EmbeddedBackupService {
     }
 
     public BackupResult backup() {
-        String timestamp = DateTimeFormatter.ofPattern("yyyyMMdd-HHmmss")
-                .format(OffsetDateTime.now());
+        String timestamp =
+                DateTimeFormatter.ofPattern("yyyyMMdd-HHmmss").format(OffsetDateTime.now());
         try {
             Files.createDirectories(backupRoot);
             Path h2Backup = backupRoot.resolve(".h2-" + timestamp + ".zip");
             Path snapshot = backupRoot.resolve("shiyu-backup-" + timestamp + ".zip");
             jdbcTemplate.execute("BACKUP TO '" + sqlPath(h2Backup) + "'");
-            try (ZipOutputStream output = new ZipOutputStream(
-                    new BufferedOutputStream(Files.newOutputStream(snapshot)))) {
+            try (ZipOutputStream output =
+                    new ZipOutputStream(
+                            new BufferedOutputStream(Files.newOutputStream(snapshot)))) {
                 addFile(output, h2Backup, "database/h2-backup.zip");
                 addTree(output, dataRoot.resolve("files"), "files");
                 addTree(output, dataRoot.resolve("models"), "models");
                 addTree(output, dataRoot.resolve("index"), "index");
-                addText(output, "manifest.properties",
-                        "createdAt=" + OffsetDateTime.now() + "\n"
+                addText(
+                        output,
+                        "manifest.properties",
+                        "createdAt="
+                                + OffsetDateTime.now()
+                                + "\n"
                                 + "formatVersion=1\n"
                                 + "database=H2-MVStore\n"
                                 + domainManifest());
             } finally {
                 Files.deleteIfExists(h2Backup);
             }
-            return new BackupResult(snapshot.getFileName().toString(),
-                    Files.size(snapshot), OffsetDateTime.now().toString());
+            return new BackupResult(
+                    snapshot.getFileName().toString(),
+                    Files.size(snapshot),
+                    OffsetDateTime.now().toString());
         } catch (Exception exception) {
             throw new ServiceException("创建嵌入式备份失败");
         }
@@ -159,11 +167,16 @@ public class EmbeddedBackupService {
             Files.createDirectories(backupRoot);
             List<Path> backups;
             try (var paths = Files.list(backupRoot)) {
-                backups = paths.filter(Files::isRegularFile)
-                        .filter(path -> path.getFileName().toString().startsWith("shiyu-backup-"))
-                        .filter(path -> path.getFileName().toString().endsWith(".zip"))
-                        .sorted(Comparator.comparing(this::lastModified).reversed())
-                        .toList();
+                backups =
+                        paths.filter(Files::isRegularFile)
+                                .filter(
+                                        path ->
+                                                path.getFileName()
+                                                        .toString()
+                                                        .startsWith("shiyu-backup-"))
+                                .filter(path -> path.getFileName().toString().endsWith(".zip"))
+                                .sorted(Comparator.comparing(this::lastModified).reversed())
+                                .toList();
             }
             Set<Path> keep = new HashSet<>();
             backups.stream().limit(hourlyRetention).forEach(keep::add);
@@ -178,11 +191,16 @@ public class EmbeddedBackupService {
             if (maxTotalBytes <= 0) return;
             List<Path> remaining;
             try (var paths = Files.list(backupRoot)) {
-                remaining = paths.filter(Files::isRegularFile)
-                        .filter(path -> path.getFileName().toString().startsWith("shiyu-backup-"))
-                        .filter(path -> path.getFileName().toString().endsWith(".zip"))
-                        .sorted(Comparator.comparing(this::lastModified))
-                        .toList();
+                remaining =
+                        paths.filter(Files::isRegularFile)
+                                .filter(
+                                        path ->
+                                                path.getFileName()
+                                                        .toString()
+                                                        .startsWith("shiyu-backup-"))
+                                .filter(path -> path.getFileName().toString().endsWith(".zip"))
+                                .sorted(Comparator.comparing(this::lastModified))
+                                .toList();
             }
             long total = remaining.stream().mapToLong(this::size).sum();
             for (Path backup : remaining) {
@@ -214,7 +232,10 @@ public class EmbeddedBackupService {
         if (!Files.isDirectory(root)) return;
         try (var paths = Files.walk(root)) {
             for (Path path : paths.filter(Files::isRegularFile).toList()) {
-                addFile(output, path, prefix + "/" + root.relativize(path).toString().replace('\\', '/'));
+                addFile(
+                        output,
+                        path,
+                        prefix + "/" + root.relativize(path).toString().replace('\\', '/'));
             }
         }
     }
@@ -235,7 +256,8 @@ public class EmbeddedBackupService {
 
     private Path resolve(String configured) {
         return Path.of(configured.replace("${app.home}", System.getProperty("app.home", ".")))
-                .toAbsolutePath().normalize();
+                .toAbsolutePath()
+                .normalize();
     }
 
     private String sqlPath(Path path) {
@@ -258,9 +280,7 @@ public class EmbeddedBackupService {
         }
     }
 
-    public record BackupResult(String fileName, long size, String createdAt) {
-    }
+    public record BackupResult(String fileName, long size, String createdAt) {}
 
-    public record RestoreCheckResult(boolean valid, long entries, List<String> errors) {
-    }
+    public record RestoreCheckResult(boolean valid, long entries, List<String> errors) {}
 }

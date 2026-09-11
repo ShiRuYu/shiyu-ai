@@ -1,9 +1,11 @@
 package com.shiyu.ai.common.web.filter;
 
 import com.shiyu.ai.common.core.CharConstants;
+
 import jakarta.servlet.*;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
+
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.http.HttpMethod;
 import org.springframework.util.AntPathMatcher;
@@ -12,9 +14,7 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 
-/**
- * 防止XSS攻击的过滤器
- */
+/** 防止XSS攻击的过滤器 */
 public class XssFilter implements Filter {
 
     private final AntPathMatcher pathMatcher = new AntPathMatcher();
@@ -34,14 +34,15 @@ public class XssFilter implements Filter {
 
     @Override
     public void doFilter(ServletRequest request, ServletResponse response, FilterChain chain)
-        throws IOException, ServletException {
+            throws IOException, ServletException {
         HttpServletRequest req = (HttpServletRequest) request;
         HttpServletResponse resp = (HttpServletResponse) response;
         if (handleExcludeURL(req, resp)) {
             chain.doFilter(request, response);
             return;
         }
-        XssHttpServletRequestWrapper xssRequest = new XssHttpServletRequestWrapper((HttpServletRequest) request);
+        XssHttpServletRequestWrapper xssRequest =
+                new XssHttpServletRequestWrapper((HttpServletRequest) request);
         chain.doFilter(xssRequest, response);
     }
 
@@ -55,7 +56,5 @@ public class XssFilter implements Filter {
     }
 
     @Override
-    public void destroy() {
-
-    }
+    public void destroy() {}
 }

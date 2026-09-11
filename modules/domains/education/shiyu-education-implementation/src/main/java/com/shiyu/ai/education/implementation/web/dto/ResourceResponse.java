@@ -1,7 +1,8 @@
 package com.shiyu.ai.education.implementation.web.dto;
 
-import io.github.linpeilie.annotations.AutoMapper;
 import com.shiyu.ai.education.implementation.domain.model.ResourceBO;
+
+import io.github.linpeilie.annotations.AutoMapper;
 
 @AutoMapper(target = ResourceBO.class)
 public record ResourceResponse(
@@ -14,6 +15,4 @@ public record ResourceResponse(
         Integer difficulty,
         String coverUrl,
         String description,
-        Long viewCount
-) {}
-
+        Long viewCount) {}

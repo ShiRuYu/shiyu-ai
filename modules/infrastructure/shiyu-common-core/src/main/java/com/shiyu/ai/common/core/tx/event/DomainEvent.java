@@ -10,6 +10,4 @@ public abstract class DomainEvent {
 
     private final String eventId = UUID.randomUUID().toString();
     private final Instant occurredAt = Instant.now();
-
 }
-

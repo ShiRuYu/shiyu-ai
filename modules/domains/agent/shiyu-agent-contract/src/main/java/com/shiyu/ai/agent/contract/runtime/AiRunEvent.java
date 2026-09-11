@@ -1,19 +1,57 @@
 package com.shiyu.ai.agent.contract.runtime;
 
 import com.shiyu.ai.kernel.context.TenantId;
+
 import java.time.Instant;
 import java.util.Objects;
 
-public record AiRunEvent(String runId, TenantId tenantId, long seq, AiRunEventType type,
-                         int schemaVersion, String turnId, String stepId, Long parentEventSeq,
-                         String conversationId, String generationId, String executionId,
-                         String appId, String appVersionId, String providerRequestId, String traceId,
-                         String payload, boolean redacted, Instant createdAt) {
+public record AiRunEvent(
+        String runId,
+        TenantId tenantId,
+        long seq,
+        AiRunEventType type,
+        int schemaVersion,
+        String turnId,
+        String stepId,
+        Long parentEventSeq,
+        String conversationId,
+        String generationId,
+        String executionId,
+        String appId,
+        String appVersionId,
+        String providerRequestId,
+        String traceId,
+        String payload,
+        boolean redacted,
+        Instant createdAt) {
     /** Backward-compatible constructor for callers that only provide the event envelope. */
-    public AiRunEvent(String runId, TenantId tenantId, long seq, AiRunEventType type, String payload,
-                      boolean redacted, Instant createdAt) {
-        this(runId, tenantId, seq, type, 1, null, null, seq > 1 ? seq - 1 : null,
-                null, null, null, null, null, null, null, payload, redacted, createdAt);
+    public AiRunEvent(
+            String runId,
+            TenantId tenantId,
+            long seq,
+            AiRunEventType type,
+            String payload,
+            boolean redacted,
+            Instant createdAt) {
+        this(
+                runId,
+                tenantId,
+                seq,
+                type,
+                1,
+                null,
+                null,
+                seq > 1 ? seq - 1 : null,
+                null,
+                null,
+                null,
+                null,
+                null,
+                null,
+                null,
+                payload,
+                redacted,
+                createdAt);
     }
 
     public AiRunEvent {

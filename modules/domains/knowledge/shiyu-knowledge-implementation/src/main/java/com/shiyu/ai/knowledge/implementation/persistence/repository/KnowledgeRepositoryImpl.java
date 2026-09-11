@@ -5,18 +5,19 @@ import com.shiyu.ai.common.core.api.PageData;
 import com.shiyu.ai.common.core.utils.MapstructUtils;
 import com.shiyu.ai.kernel.context.TenantId;
 import com.shiyu.ai.knowledge.implementation.domain.model.KnowledgeBO;
+import com.shiyu.ai.knowledge.implementation.domain.port.repository.KnowledgeRepository;
 import com.shiyu.ai.knowledge.implementation.persistence.dataobject.KnowledgeDO;
 import com.shiyu.ai.knowledge.implementation.persistence.mapper.KnowledgeMapper;
-import com.shiyu.ai.knowledge.implementation.domain.port.repository.KnowledgeRepository;
+
 import jakarta.annotation.Resource;
+
 import org.springframework.stereotype.Component;
 
 import java.util.List;
 
 @Component
 public class KnowledgeRepositoryImpl implements KnowledgeRepository {
-    @Resource
-    private KnowledgeMapper knowledgeMapper;
+    @Resource private KnowledgeMapper knowledgeMapper;
 
     @Override
     public KnowledgeBO findById(TenantId tenantId, Long id) {
@@ -25,19 +26,25 @@ public class KnowledgeRepositoryImpl implements KnowledgeRepository {
 
     @Override
     public KnowledgeBO findByCode(TenantId tenantId, String code) {
-        return convert(knowledgeMapper.selectOneByQuery(base(tenantId).eq(KnowledgeDO::getCode, code)));
+        return convert(
+                knowledgeMapper.selectOneByQuery(base(tenantId).eq(KnowledgeDO::getCode, code)));
     }
 
     @Override
     public List<KnowledgeBO> findAll(TenantId tenantId) {
-        return convertList(knowledgeMapper.selectListByQuery(base(tenantId).eq(KnowledgeDO::getStatus, 1)));
+        return convertList(
+                knowledgeMapper.selectListByQuery(base(tenantId).eq(KnowledgeDO::getStatus, 1)));
     }
 
     @Override
     public List<KnowledgeBO> searchByName(TenantId tenantId, String keyword, int topK) {
-        return convertList(knowledgeMapper.selectListByQuery(base(tenantId)
-                .eq(KnowledgeDO::getStatus, 1).like(KnowledgeDO::getName, keyword)
-                .orderBy(KnowledgeDO::getId, true).limit(0, topK)));
+        return convertList(
+                knowledgeMapper.selectListByQuery(
+                        base(tenantId)
+                                .eq(KnowledgeDO::getStatus, 1)
+                                .like(KnowledgeDO::getName, keyword)
+                                .orderBy(KnowledgeDO::getId, true)
+                                .limit(0, topK)));
     }
 
     @Override
@@ -46,12 +53,14 @@ public class KnowledgeRepositoryImpl implements KnowledgeRepository {
     }
 
     @Override
-    public List<KnowledgeBO> page(TenantId tenantId, int offset, int limit, String category, String keyword) {
+    public List<KnowledgeBO> page(
+            TenantId tenantId, int offset, int limit, String category, String keyword) {
         QueryWrapper query = base(tenantId).eq(KnowledgeDO::getStatus, 1);
         if (category != null && !category.isBlank()) query.eq(KnowledgeDO::getCategory, category);
         if (keyword != null && !keyword.isBlank()) query.like(KnowledgeDO::getName, keyword);
-        return convertList(knowledgeMapper.selectListByQuery(
-                query.orderBy(KnowledgeDO::getId, true).limit(offset, limit)));
+        return convertList(
+                knowledgeMapper.selectListByQuery(
+                        query.orderBy(KnowledgeDO::getId, true).limit(offset, limit)));
     }
 
     @Override
@@ -99,37 +108,50 @@ public class KnowledgeRepositoryImpl implements KnowledgeRepository {
 
     @Override
     public boolean existsBySpaceAndCode(TenantId tenantId, Long spaceId, String code) {
-        return knowledgeMapper.selectCountByQuery(base(tenantId)
-                .eq(KnowledgeDO::getSpaceId, spaceId).eq(KnowledgeDO::getCode, code)) > 0;
+        return knowledgeMapper.selectCountByQuery(
+                        base(tenantId)
+                                .eq(KnowledgeDO::getSpaceId, spaceId)
+                                .eq(KnowledgeDO::getCode, code))
+                > 0;
     }
 
     @Override
     public List<KnowledgeBO> findBySpace(TenantId tenantId, Long spaceId) {
-        return convertList(knowledgeMapper.selectListByQuery(base(tenantId)
-                .eq(KnowledgeDO::getSpaceId, spaceId).eq(KnowledgeDO::getStatus, 1)));
+        return convertList(
+                knowledgeMapper.selectListByQuery(
+                        base(tenantId)
+                                .eq(KnowledgeDO::getSpaceId, spaceId)
+                                .eq(KnowledgeDO::getStatus, 1)));
     }
 
     @Override
-    public PageData<KnowledgeBO> pageBySpace(TenantId tenantId, Long spaceId, int pageNum, int pageSize,
-                                              String keyword, String category) {
-        QueryWrapper query = base(tenantId).eq(KnowledgeDO::getSpaceId, spaceId)
-                .eq(KnowledgeDO::getStatus, 1);
+    public PageData<KnowledgeBO> pageBySpace(
+            TenantId tenantId,
+            Long spaceId,
+            int pageNum,
+            int pageSize,
+            String keyword,
+            String category) {
+        QueryWrapper query =
+                base(tenantId).eq(KnowledgeDO::getSpaceId, spaceId).eq(KnowledgeDO::getStatus, 1);
         if (keyword != null && !keyword.isBlank()) query.like(KnowledgeDO::getName, keyword);
         if (category != null && !category.isBlank()) query.eq(KnowledgeDO::getCategory, category);
-        var page = knowledgeMapper.paginate(pageNum, pageSize, query.orderBy(KnowledgeDO::getId, false));
+        var page =
+                knowledgeMapper.paginate(
+                        pageNum, pageSize, query.orderBy(KnowledgeDO::getId, false));
         return new PageData<>(convertList(page.getRecords()), page.getTotalRow());
     }
 
     @Override
     public int deleteByIdAndSpace(TenantId tenantId, Long id, Long spaceId) {
-        return knowledgeMapper.deleteByQuery(base(tenantId)
-                .eq(KnowledgeDO::getId, id).eq(KnowledgeDO::getSpaceId, spaceId));
+        return knowledgeMapper.deleteByQuery(
+                base(tenantId).eq(KnowledgeDO::getId, id).eq(KnowledgeDO::getSpaceId, spaceId));
     }
 
     @Override
     public void assignDefaultSpace(TenantId tenantId, Long spaceId) {
-        List<KnowledgeDO> records = knowledgeMapper.selectListByQuery(
-                base(tenantId).isNull(KnowledgeDO::getSpaceId));
+        List<KnowledgeDO> records =
+                knowledgeMapper.selectListByQuery(base(tenantId).isNull(KnowledgeDO::getSpaceId));
         for (KnowledgeDO record : records) {
             record.setSpaceId(spaceId);
             knowledgeMapper.update(record);
@@ -138,7 +160,8 @@ public class KnowledgeRepositoryImpl implements KnowledgeRepository {
 
     private QueryWrapper base(TenantId tenantId) {
         if (tenantId == null) throw new IllegalArgumentException("tenantId must not be null");
-        return QueryWrapper.create().eq(KnowledgeDO::getTenantId, tenantId.value())
+        return QueryWrapper.create()
+                .eq(KnowledgeDO::getTenantId, tenantId.value())
                 .eq(KnowledgeDO::getDelFlag, 0);
     }
 
@@ -156,5 +179,3 @@ public class KnowledgeRepositoryImpl implements KnowledgeRepository {
         return MapstructUtils.convert(data, KnowledgeBO.class);
     }
 }
-
-

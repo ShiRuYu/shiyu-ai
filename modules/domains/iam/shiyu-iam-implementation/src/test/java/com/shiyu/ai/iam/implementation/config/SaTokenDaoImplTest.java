@@ -1,14 +1,14 @@
 package com.shiyu.ai.iam.implementation.config;
 
+import static org.junit.jupiter.api.Assertions.*;
+import static org.mockito.Mockito.*;
+
 import com.shiyu.ai.iam.implementation.domain.model.UserBO;
 import com.shiyu.ai.iam.implementation.port.repository.SaTokenUserRepository;
+
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-
-import static org.junit.jupiter.api.Assertions.*;
-import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.Mockito.*;
 
 class SaTokenDaoImplTest {
     private SaTokenUserRepository users;
@@ -19,13 +19,17 @@ class SaTokenDaoImplTest {
     @BeforeEach
     void setUp() {
         users = mock(SaTokenUserRepository.class);
-        user = new UserBO(); user.setId(42L); user.setExtInfo("{}");
+        user = new UserBO();
+        user.setId(42L);
+        user.setExtInfo("{}");
         when(users.selectById(42L)).thenReturn(user);
         dao = new SaTokenDaoImpl(users);
     }
 
     @AfterEach
-    void tearDown() { dao.destroy(); }
+    void tearDown() {
+        dao.destroy();
+    }
 
     @Test
     void storesReadsUpdatesAndDeletesTokenWithTenantIndependentUserRepository() {
@@ -59,4 +63,3 @@ class SaTokenDaoImplTest {
         assertTrue(dao.searchData("", "", 0, 10, false).isEmpty());
     }
 }
-

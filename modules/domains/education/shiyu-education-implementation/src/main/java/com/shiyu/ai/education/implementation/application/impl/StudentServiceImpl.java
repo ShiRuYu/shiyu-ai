@@ -2,14 +2,16 @@ package com.shiyu.ai.education.implementation.application.impl;
 
 import com.shiyu.ai.common.core.api.PageData;
 import com.shiyu.ai.common.core.utils.MapstructUtils;
+import com.shiyu.ai.education.implementation.application.StudentService;
 import com.shiyu.ai.education.implementation.domain.model.StudentBO;
 import com.shiyu.ai.education.implementation.domain.port.repository.StudentRepository;
 import com.shiyu.ai.education.implementation.web.dto.StudentResponse;
 import com.shiyu.ai.education.implementation.web.request.StudentRequest;
-import com.shiyu.ai.education.implementation.application.StudentService;
 import com.shiyu.ai.kernel.context.ActorContext;
+
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -36,8 +38,10 @@ public class StudentServiceImpl implements StudentService {
 
     @Override
     public PageData<StudentResponse> page(ActorContext actor, int pageNum, int pageSize) {
-        PageData<StudentBO> boPage = studentRepository.selectPage(actor.tenantId(), pageNum, pageSize);
-        List<StudentResponse> items = MapstructUtils.convert(boPage.getItems(), StudentResponse.class);
+        PageData<StudentBO> boPage =
+                studentRepository.selectPage(actor.tenantId(), pageNum, pageSize);
+        List<StudentResponse> items =
+                MapstructUtils.convert(boPage.getItems(), StudentResponse.class);
         return new PageData<>(items, boPage.getTotal());
     }
 
@@ -81,4 +85,3 @@ public class StudentServiceImpl implements StudentService {
         studentRepository.deleteById(actor.tenantId(), id);
     }
 }
-

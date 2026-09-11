@@ -3,15 +3,15 @@ package com.shiyu.ai.agent.implementation.persistence.dataobject;
 import com.mybatisflex.annotation.Id;
 import com.mybatisflex.annotation.KeyType;
 import com.mybatisflex.annotation.Table;
-import com.shiyu.ai.common.mybatis.model.TenantEntity;
-import lombok.Data;
-import lombok.EqualsAndHashCode;
 import com.shiyu.ai.agent.implementation.domain.model.AgentVersionBO;
+import com.shiyu.ai.common.mybatis.model.TenantEntity;
+
 import io.github.linpeilie.annotations.AutoMapper;
 
-/**
- * Agent 版本
- */
+import lombok.Data;
+import lombok.EqualsAndHashCode;
+
+/** Agent 版本 */
 @Data
 @EqualsAndHashCode(callSuper = true)
 @SuppressWarnings("serial")

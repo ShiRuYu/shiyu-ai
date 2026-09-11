@@ -3,10 +3,8 @@ package com.shiyu.ai.education.implementation.domain;
 /**
  * 学习状态机
  *
- * NOT_STARTED → LEARNING → MASTERED → FORGOTTEN → REVIEWING → MASTERED
- *                                                  ↘  REVIEWING → FORGOTTEN
- *                              MASTERED → PROFICIENT
- *                              PROFICIENT → FORGOTTEN
+ * <p>NOT_STARTED → LEARNING → MASTERED → FORGOTTEN → REVIEWING → MASTERED ↘ REVIEWING → FORGOTTEN
+ * MASTERED → PROFICIENT PROFICIENT → FORGOTTEN
  */
 public enum LearningState {
     NOT_STARTED,
@@ -49,4 +47,3 @@ public enum LearningState {
         return this == LEARNING ? NOT_STARTED : this;
     }
 }
-

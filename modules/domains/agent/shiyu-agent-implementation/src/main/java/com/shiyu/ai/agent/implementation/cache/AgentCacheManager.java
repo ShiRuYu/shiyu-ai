@@ -3,10 +3,12 @@ package com.shiyu.ai.agent.implementation.cache;
 import com.github.benmanes.caffeine.cache.Cache;
 import com.github.benmanes.caffeine.cache.Caffeine;
 import com.shiyu.ai.agent.AgentDefinition;
-import com.shiyu.ai.agent.implementation.port.repository.AgentAdminRepository;
 import com.shiyu.ai.agent.implementation.domain.model.AgentDefBO;
+import com.shiyu.ai.agent.implementation.port.repository.AgentAdminRepository;
 import com.shiyu.ai.kernel.context.ActorContext;
+
 import lombok.extern.slf4j.Slf4j;
+
 import org.springframework.stereotype.Component;
 
 import java.util.List;
@@ -27,16 +29,22 @@ public class AgentCacheManager {
     public AgentCacheManager(AgentAdminRepository agentAdminRepository, AgentLoader agentLoader) {
         this.agentAdminRepository = agentAdminRepository;
         this.agentLoader = agentLoader;
-        this.cache = Caffeine.newBuilder()
-                .maximumSize(1000)
-                .expireAfterWrite(30, TimeUnit.MINUTES)
-                .recordStats()
-                .build();
+        this.cache =
+                Caffeine.newBuilder()
+                        .maximumSize(1000)
+                        .expireAfterWrite(30, TimeUnit.MINUTES)
+                        .recordStats()
+                        .build();
     }
 
     private String key(ActorContext actor, String agentId) {
         Objects.requireNonNull(actor, "actor must not be null");
-        return "tenant:" + actor.tenantId().value() + ":user:" + actor.userId().value() + ":" + agentId;
+        return "tenant:"
+                + actor.tenantId().value()
+                + ":user:"
+                + actor.userId().value()
+                + ":"
+                + agentId;
     }
 
     private String systemKey(String agentId) {
@@ -53,8 +61,11 @@ public class AgentCacheManager {
 
     public void put(ActorContext actor, String agentId, AgentDefinition agent) {
         cache.put(key(actor, agentId), agent);
-        log.debug("租户 Agent 缓存已写入: tenantSelected={}, userPresent={}, agentIdPresent={}",
-                actor.tenantId() != null, actor.userId() != null, agentId != null);
+        log.debug(
+                "租户 Agent 缓存已写入: tenantSelected={}, userPresent={}, agentIdPresent={}",
+                actor.tenantId() != null,
+                actor.userId() != null,
+                agentId != null);
     }
 
     public void putSystem(AgentDefinition agent) {
@@ -66,8 +77,11 @@ public class AgentCacheManager {
         String k = key(actor, agentId);
         AgentDefinition cached = cache.getIfPresent(k);
         if (cached != null) {
-            log.debug("缓存命中: tenantSelected={}, userPresent={}, agentIdPresent={}",
-                    actor.tenantId() != null, actor.userId() != null, agentId != null);
+            log.debug(
+                    "缓存命中: tenantSelected={}, userPresent={}, agentIdPresent={}",
+                    actor.tenantId() != null,
+                    actor.userId() != null,
+                    agentId != null);
             return cached;
         }
         AgentDefinition system = cache.getIfPresent(systemKey(agentId));
@@ -77,8 +91,11 @@ public class AgentCacheManager {
         AgentDefinition loaded = loader.loadFromDb(actor, agentId);
         if (loaded != null) {
             cache.put(k, loaded);
-            log.info("缓存加载: tenantSelected={}, userPresent={}, agentIdPresent={}",
-                    actor.tenantId() != null, actor.userId() != null, agentId != null);
+            log.info(
+                    "缓存加载: tenantSelected={}, userPresent={}, agentIdPresent={}",
+                    actor.tenantId() != null,
+                    actor.userId() != null,
+                    agentId != null);
         }
         return loaded;
     }
@@ -90,8 +107,11 @@ public class AgentCacheManager {
 
     public void evict(ActorContext actor, String agentId) {
         cache.invalidate(key(actor, agentId));
-        log.debug("缓存已清除: tenantSelected={}, userPresent={}, agentIdPresent={}",
-                actor.tenantId() != null, actor.userId() != null, agentId != null);
+        log.debug(
+                "缓存已清除: tenantSelected={}, userPresent={}, agentIdPresent={}",
+                actor.tenantId() != null,
+                actor.userId() != null,
+                agentId != null);
     }
 
     public void evictAll() {
@@ -106,12 +126,13 @@ public class AgentCacheManager {
     public List<AgentDefinition> listAll(ActorContext actor) {
         List<AgentDefBO> activeDefs = agentAdminRepository.selectAllActive(actor.tenantId());
         return activeDefs.stream()
-                .map(def -> {
-                    String agentId = def.getAgentId();
-                    AgentDefinition cached = get(actor, agentId);
-                    if (cached != null) return cached;
-                    return getOrLoad(actor, agentId, agentLoader);
-                })
+                .map(
+                        def -> {
+                            String agentId = def.getAgentId();
+                            AgentDefinition cached = get(actor, agentId);
+                            if (cached != null) return cached;
+                            return getOrLoad(actor, agentId, agentLoader);
+                        })
                 .filter(Objects::nonNull)
                 .collect(Collectors.toList());
     }

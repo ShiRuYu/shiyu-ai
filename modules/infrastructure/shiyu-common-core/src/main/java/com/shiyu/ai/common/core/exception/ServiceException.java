@@ -2,16 +2,12 @@ package com.shiyu.ai.common.core.exception;
 
 import java.io.Serial;
 
-/**
- * 业务异常
- */
+/** 业务异常 */
 public final class ServiceException extends BaseBizException {
 
-    @Serial
-    private static final long serialVersionUID = 1L;
+    @Serial private static final long serialVersionUID = 1L;
 
-    public ServiceException() {
-    }
+    public ServiceException() {}
 
     public ServiceException(String message) {
         super(message);

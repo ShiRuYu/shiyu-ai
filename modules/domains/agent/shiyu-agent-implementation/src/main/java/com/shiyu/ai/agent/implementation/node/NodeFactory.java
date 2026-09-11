@@ -4,7 +4,9 @@ import com.shiyu.ai.agent.contract.ExecutionHistoryService;
 import com.shiyu.ai.agent.contract.node.BaseNode;
 import com.shiyu.ai.agent.contract.node.NodeConfig;
 import com.shiyu.ai.agent.contract.node.NodeType;
+
 import lombok.extern.slf4j.Slf4j;
+
 import org.springframework.stereotype.Component;
 
 import java.util.ArrayList;
@@ -13,9 +15,8 @@ import java.util.List;
 import java.util.Map;
 
 /**
- * Node creation facade. Type registration, instance construction, and runtime
- * service injection are separate collaborators so this class only coordinates
- * the public factory API.
+ * Node creation facade. Type registration, instance construction, and runtime service injection are
+ * separate collaborators so this class only coordinates the public factory API.
  */
 @Slf4j
 @Component
@@ -25,15 +26,17 @@ public class NodeFactory {
     private final NodeInstanceFactory instanceFactory;
     private final RegisteredNodeStore nodeStore;
 
-    public NodeFactory(List<com.shiyu.ai.agent.contract.node.creator.NodeCreator> beanNodeCreators,
-                       ExecutionHistoryService executionHistoryService) {
+    public NodeFactory(
+            List<com.shiyu.ai.agent.contract.node.creator.NodeCreator> beanNodeCreators,
+            ExecutionHistoryService executionHistoryService) {
         this.registry = new NodeTypeRegistry();
-        this.instanceFactory = new NodeInstanceFactory(registry, beanNodeCreators, executionHistoryService);
+        this.instanceFactory =
+                new NodeInstanceFactory(registry, beanNodeCreators, executionHistoryService);
         this.nodeStore = new RegisteredNodeStore();
     }
 
-    public <T extends NodeConfig> void registerNodeType(NodeType nodeType, Class<T> configClass,
-                                                         NodeCreator<T> nodeCreator) {
+    public <T extends NodeConfig> void registerNodeType(
+            NodeType nodeType, Class<T> configClass, NodeCreator<T> nodeCreator) {
         registry.register(nodeType, configClass, nodeCreator);
     }
 
@@ -73,8 +76,10 @@ public class NodeFactory {
             try {
                 nodes.put(config.getNodeId(), createNode(config));
             } catch (Exception exception) {
-                log.error("创建节点失败：nodeIdPresent={}, errorType={}, errorMessageLength={}",
-                        config.getNodeId() != null, exception.getClass().getSimpleName(),
+                log.error(
+                        "创建节点失败：nodeIdPresent={}, errorType={}, errorMessageLength={}",
+                        config.getNodeId() != null,
+                        exception.getClass().getSimpleName(),
                         messageLength(exception));
                 errors.add(config.getNodeId() + ": " + exception.getMessage());
             }
@@ -86,8 +91,7 @@ public class NodeFactory {
     }
 
     public Map<String, BaseNode> createNodesWithServices(
-            Map<String, NodeConfig> configs,
-            Map<String, Map<String, Object>> serviceProviders) {
+            Map<String, NodeConfig> configs, Map<String, Map<String, Object>> serviceProviders) {
         Map<String, BaseNode> nodes = createNodes(configs);
         for (Map.Entry<String, Map<String, Object>> entry : serviceProviders.entrySet()) {
             for (Map.Entry<String, Object> service : entry.getValue().entrySet()) {
@@ -101,8 +105,11 @@ public class NodeFactory {
         return nodeStore.snapshot();
     }
 
-    public BaseNode createNode(NodeType nodeType, String nodeId, String nodeName,
-                               java.util.function.Consumer<NodeConfig> initializer) {
+    public BaseNode createNode(
+            NodeType nodeType,
+            String nodeId,
+            String nodeName,
+            java.util.function.Consumer<NodeConfig> initializer) {
         NodeTypeRegistry.CreatorInfo<?> creatorInfo = registry.get(nodeType);
         if (creatorInfo == null) {
             throw new IllegalArgumentException("不支持的节点类型：" + nodeType.getName());
@@ -117,9 +124,13 @@ public class NodeFactory {
             }
             return createNode(config);
         } catch (Exception exception) {
-            log.error("创建节点失败：nodeIdPresent={}, nodeTypePresent={}, errorType={}, errorMessageLength={}",
-                    nodeId != null, nodeType != null && nodeType.getName() != null,
-                    exception.getClass().getSimpleName(), messageLength(exception));
+            log.error(
+                    "创建节点失败：nodeIdPresent={}, nodeTypePresent={}, errorType={},"
+                            + " errorMessageLength={}",
+                    nodeId != null,
+                    nodeType != null && nodeType.getName() != null,
+                    exception.getClass().getSimpleName(),
+                    messageLength(exception));
             throw new RuntimeException("创建节点失败：" + nodeId, exception);
         }
     }

@@ -1,29 +1,27 @@
 package com.shiyu.ai.iam.implementation.persistence.repository;
 
 import com.mybatisflex.core.query.QueryWrapper;
+import com.shiyu.ai.common.core.utils.MapstructUtils;
+import com.shiyu.ai.iam.implementation.domain.model.DictBO;
 import com.shiyu.ai.iam.implementation.persistence.dataobject.DictDO;
 import com.shiyu.ai.iam.implementation.persistence.mapper.DictMapper;
-import com.shiyu.ai.iam.implementation.domain.model.DictBO;
-import com.shiyu.ai.common.core.utils.MapstructUtils;
 import com.shiyu.ai.kernel.context.TenantId;
+
 import jakarta.annotation.Resource;
+
 import org.apache.commons.lang3.tuple.Pair;
 import org.springframework.stereotype.Component;
 
 import java.util.List;
 
-/**
- * 字典数据仓储层
- */
+/** 字典数据仓储层 */
 @Component
-public class DictRepositoryImpl implements com.shiyu.ai.iam.implementation.port.repository.DictRepository {
+public class DictRepositoryImpl
+        implements com.shiyu.ai.iam.implementation.port.repository.DictRepository {
 
-    @Resource
-    private DictMapper dictMapper;
+    @Resource private DictMapper dictMapper;
 
-    /**
-     * 分页查询字典列表
-     */
+    /** 分页查询字典列表 */
     public Pair<Long, List<DictBO>> selectPage(TenantId tenantId, Number pageNo, Number pageSize) {
         QueryWrapper countWrapper = new QueryWrapper();
         countWrapper.eq(DictDO::getDelFlag, "0");
@@ -36,31 +34,28 @@ public class DictRepositoryImpl implements com.shiyu.ai.iam.implementation.port.
         queryWrapper.orderBy(DictDO::getDictType, true);
         queryWrapper.orderBy(DictDO::getDictSort, true);
         if (pageNo != null && pageSize != null) {
-            queryWrapper.limit((pageNo.longValue() - 1) * pageSize.longValue(), pageSize.longValue());
+            queryWrapper.limit(
+                    (pageNo.longValue() - 1) * pageSize.longValue(), pageSize.longValue());
         }
-        
+
         List<DictDO> dictList = dictMapper.selectListByQuery(queryWrapper);
-        
+
         return Pair.of(count, MapstructUtils.convert(dictList, DictBO.class));
     }
 
-    /**
-     * 查询所有字典列表
-     */
+    /** 查询所有字典列表 */
     public List<DictBO> selectAll(TenantId tenantId) {
         QueryWrapper queryWrapper = new QueryWrapper();
         queryWrapper.eq(DictDO::getDelFlag, "0");
         addTenantFilter(queryWrapper, tenantId);
         queryWrapper.orderBy(DictDO::getDictType, true);
         queryWrapper.orderBy(DictDO::getDictSort, true);
-        
+
         List<DictDO> dictList = dictMapper.selectListByQuery(queryWrapper);
         return MapstructUtils.convert(dictList, DictBO.class);
     }
 
-    /**
-     * 根据ID查询字典
-     */
+    /** 根据ID查询字典 */
     public DictBO selectById(TenantId tenantId, Long id) {
         QueryWrapper queryWrapper = new QueryWrapper();
         queryWrapper.eq(DictDO::getId, id);
@@ -69,36 +64,30 @@ public class DictRepositoryImpl implements com.shiyu.ai.iam.implementation.port.
         return MapstructUtils.convert(dictDO, DictBO.class);
     }
 
-    /**
-     * 根据字典类型查询字典列表
-     */
+    /** 根据字典类型查询字典列表 */
     public List<DictBO> selectByDictType(TenantId tenantId, String dictType) {
         QueryWrapper queryWrapper = new QueryWrapper();
         queryWrapper.eq(DictDO::getDictType, dictType);
         queryWrapper.eq(DictDO::getDelFlag, "0");
         addTenantFilter(queryWrapper, tenantId);
         queryWrapper.orderBy(DictDO::getDictSort, true);
-        
+
         List<DictDO> dictList = dictMapper.selectListByQuery(queryWrapper);
         return MapstructUtils.convert(dictList, DictBO.class);
     }
 
-    /**
-     * 创建字典
-     */
+    /** 创建字典 */
     public DictBO create(DictBO dictBO) {
         // tenant_id 必须由 DictService 显式设置。
         DictDO dictDO = MapstructUtils.convert(dictBO, DictDO.class);
-        
+
         // 使用 insertSelective 忽略 null 值，让数据库 DEFAULT 生效
         dictMapper.insertSelective(dictDO);
         dictBO.setId(dictDO.getId());
         return dictBO;
     }
 
-    /**
-     * 更新字典
-     */
+    /** 更新字典 */
     public DictBO update(DictBO dictBO) {
         if (dictBO == null || dictBO.getId() == null) {
             return null;
@@ -109,9 +98,7 @@ public class DictRepositoryImpl implements com.shiyu.ai.iam.implementation.port.
         return dictBO;
     }
 
-    /**
-     * 删除字典
-     */
+    /** 删除字典 */
     public void deleteById(TenantId tenantId, Long id) {
         QueryWrapper queryWrapper = new QueryWrapper();
         queryWrapper.eq(DictDO::getId, id);
@@ -119,9 +106,7 @@ public class DictRepositoryImpl implements com.shiyu.ai.iam.implementation.port.
         dictMapper.deleteByQuery(queryWrapper);
     }
 
-    /**
-     * 批量删除字典
-     */
+    /** 批量删除字典 */
     public void deleteByIds(TenantId tenantId, List<Long> ids) {
         for (Long id : ids) {
             deleteById(tenantId, id);
@@ -134,7 +119,4 @@ public class DictRepositoryImpl implements com.shiyu.ai.iam.implementation.port.
         }
         queryWrapper.eq(DictDO::getTenantId, tenantId.value());
     }
-
 }
-
-

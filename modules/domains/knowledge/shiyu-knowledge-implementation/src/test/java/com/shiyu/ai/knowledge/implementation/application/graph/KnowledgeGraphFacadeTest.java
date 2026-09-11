@@ -1,15 +1,16 @@
 package com.shiyu.ai.knowledge.implementation.application.graph;
 
+import static org.mockito.ArgumentMatchers.*;
+import static org.mockito.Mockito.*;
+
 import com.shiyu.ai.kernel.context.TenantId;
 import com.shiyu.ai.knowledge.implementation.domain.GraphEdge;
 import com.shiyu.ai.knowledge.implementation.domain.GraphNode;
+
 import org.junit.jupiter.api.Test;
 
 import java.util.List;
 import java.util.Set;
-
-import static org.mockito.ArgumentMatchers.*;
-import static org.mockito.Mockito.*;
 
 class KnowledgeGraphFacadeTest {
     @Test
@@ -32,13 +33,23 @@ class KnowledgeGraphFacadeTest {
         when(store.getChildNodes(tenant, 1L)).thenReturn(List.of(node));
         when(store.getRelatedNodes(tenant, 1L)).thenReturn(List.of(node));
 
-        graph.getNode(tenant, 1L); graph.parents(tenant, 1L); graph.children(tenant, 1L);
-        graph.related(tenant, 1L); graph.edges(tenant, 1L); graph.topologicalSort(tenant, 1L);
-        graph.dfs(tenant, 1L); graph.bfs(tenant, 1L); graph.findPath(tenant, 1L, 2L);
-        graph.findMissingPrerequisites(tenant, 1L, Set.of()); graph.addNode(tenant, node);
+        graph.getNode(tenant, 1L);
+        graph.parents(tenant, 1L);
+        graph.children(tenant, 1L);
+        graph.related(tenant, 1L);
+        graph.edges(tenant, 1L);
+        graph.topologicalSort(tenant, 1L);
+        graph.dfs(tenant, 1L);
+        graph.bfs(tenant, 1L);
+        graph.findPath(tenant, 1L, 2L);
+        graph.findMissingPrerequisites(tenant, 1L, Set.of());
+        graph.addNode(tenant, node);
         graph.addEdge(tenant, 1L, 2L, "PREREQUISITE", 1D);
-        graph.removeEdge(tenant, 1L, 2L, "PREREQUISITE"); graph.removeNode(tenant, 1L);
-        graph.getParentNodes(tenant, 1L); graph.getChildNodes(tenant, 1L); graph.getRelatedNodes(tenant, 1L);
+        graph.removeEdge(tenant, 1L, 2L, "PREREQUISITE");
+        graph.removeNode(tenant, 1L);
+        graph.getParentNodes(tenant, 1L);
+        graph.getChildNodes(tenant, 1L);
+        graph.getRelatedNodes(tenant, 1L);
         graph.reload();
 
         verify(store).getNode(tenant, 1L);
@@ -49,4 +60,3 @@ class KnowledgeGraphFacadeTest {
         verify(store).loadAll();
     }
 }
-

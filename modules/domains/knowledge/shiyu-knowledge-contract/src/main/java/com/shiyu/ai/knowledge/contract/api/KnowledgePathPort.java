@@ -9,7 +9,6 @@ import java.util.Set;
 public interface KnowledgePathPort {
     List<Long> generatePath(ActorContext actor, Long targetKnowledgeId);
 
-    List<Long> findMissingPrerequisites(ActorContext actor, Long targetKnowledgeId,
-                                        Set<Long> masteredIds);
+    List<Long> findMissingPrerequisites(
+            ActorContext actor, Long targetKnowledgeId, Set<Long> masteredIds);
 }
-

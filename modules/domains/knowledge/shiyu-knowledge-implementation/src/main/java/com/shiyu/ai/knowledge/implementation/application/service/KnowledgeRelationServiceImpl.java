@@ -1,19 +1,21 @@
 package com.shiyu.ai.knowledge.implementation.application.service;
 
 import com.shiyu.ai.common.core.exception.ServiceException;
+import com.shiyu.ai.kernel.context.ActorContext;
+import com.shiyu.ai.knowledge.contract.api.KnowledgeRelationPort;
+import com.shiyu.ai.knowledge.contract.model.KnowledgeResponse;
+import com.shiyu.ai.knowledge.implementation.application.KnowledgeRelationService;
+import com.shiyu.ai.knowledge.implementation.application.KnowledgeSpaceService;
+import com.shiyu.ai.knowledge.implementation.application.graph.KnowledgeGraph;
+import com.shiyu.ai.knowledge.implementation.domain.RelationType;
 import com.shiyu.ai.knowledge.implementation.domain.model.KnowledgeBO;
 import com.shiyu.ai.knowledge.implementation.domain.model.KnowledgeRelationBO;
-import com.shiyu.ai.knowledge.implementation.domain.RelationType;
-import com.shiyu.ai.knowledge.contract.model.KnowledgeResponse;
-import com.shiyu.ai.knowledge.implementation.application.graph.KnowledgeGraph;
 import com.shiyu.ai.knowledge.implementation.domain.port.repository.KnowledgeRelationRepository;
 import com.shiyu.ai.knowledge.implementation.domain.port.repository.KnowledgeRepository;
-import com.shiyu.ai.knowledge.implementation.application.KnowledgeRelationService;
-import com.shiyu.ai.knowledge.contract.api.KnowledgeRelationPort;
-import com.shiyu.ai.knowledge.implementation.application.KnowledgeSpaceService;
-import com.shiyu.ai.kernel.context.ActorContext;
+
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -24,7 +26,8 @@ import java.util.List;
 @Slf4j
 @Service
 @RequiredArgsConstructor
-public class KnowledgeRelationServiceImpl implements KnowledgeRelationService, KnowledgeRelationPort {
+public class KnowledgeRelationServiceImpl
+        implements KnowledgeRelationService, KnowledgeRelationPort {
 
     private final KnowledgeRelationRepository relationRepository;
     private final KnowledgeRepository knowledgeRepository;
@@ -34,35 +37,66 @@ public class KnowledgeRelationServiceImpl implements KnowledgeRelationService, K
     @Override
     public List<RelationView> list(ActorContext actor, Long knowledgeId) {
         KnowledgeBO source = requireKnowledge(actor, knowledgeId);
-        spaceService.requireAccess(source.getSpaceId(), KnowledgeSpaceService.SpaceRole.VIEWER, actor);
-        List<KnowledgeRelationBO> relations = new java.util.ArrayList<>(
-                relationRepository.findBySourceId(actor.tenantId(), source.getSpaceId(), knowledgeId));
-        relationRepository.findByTargetId(actor.tenantId(), source.getSpaceId(), knowledgeId).stream()
-                .filter(candidate -> relations.stream().noneMatch(existing ->
-                        existing.getSourceId().equals(candidate.getSourceId())
-                                && existing.getTargetId().equals(candidate.getTargetId())
-                                && existing.getRelationType().equals(candidate.getRelationType())))
+        spaceService.requireAccess(
+                source.getSpaceId(), KnowledgeSpaceService.SpaceRole.VIEWER, actor);
+        List<KnowledgeRelationBO> relations =
+                new java.util.ArrayList<>(
+                        relationRepository.findBySourceId(
+                                actor.tenantId(), source.getSpaceId(), knowledgeId));
+        relationRepository
+                .findByTargetId(actor.tenantId(), source.getSpaceId(), knowledgeId)
+                .stream()
+                .filter(
+                        candidate ->
+                                relations.stream()
+                                        .noneMatch(
+                                                existing ->
+                                                        existing.getSourceId()
+                                                                        .equals(
+                                                                                candidate
+                                                                                        .getSourceId())
+                                                                && existing.getTargetId()
+                                                                        .equals(
+                                                                                candidate
+                                                                                        .getTargetId())
+                                                                && existing.getRelationType()
+                                                                        .equals(
+                                                                                candidate
+                                                                                        .getRelationType())))
                 .forEach(relations::add);
         return relations.stream()
-                .map(relation -> {
-                    KnowledgeBO target = knowledgeRepository.findById(
-                            actor.tenantId(), relation.getTargetId());
-                    KnowledgeBO relationSource = knowledgeRepository.findById(
-                            actor.tenantId(), relation.getSourceId());
-                    return new RelationView(relation.getSourceId(), relation.getTargetId(),
-                            relation.getRelationType(), relation.getWeight(),
-                            relationSource == null ? null : toSimpleResponse(relationSource),
-                            target == null ? null : toSimpleResponse(target));
-                })
+                .map(
+                        relation -> {
+                            KnowledgeBO target =
+                                    knowledgeRepository.findById(
+                                            actor.tenantId(), relation.getTargetId());
+                            KnowledgeBO relationSource =
+                                    knowledgeRepository.findById(
+                                            actor.tenantId(), relation.getSourceId());
+                            return new RelationView(
+                                    relation.getSourceId(),
+                                    relation.getTargetId(),
+                                    relation.getRelationType(),
+                                    relation.getWeight(),
+                                    relationSource == null
+                                            ? null
+                                            : toSimpleResponse(relationSource),
+                                    target == null ? null : toSimpleResponse(target));
+                        })
                 .toList();
     }
 
     @Override
     public List<KnowledgeResponse> getPrerequisites(ActorContext actor, Long knowledgeId) {
         KnowledgeBO source = requireKnowledge(actor, knowledgeId);
-        spaceService.requireAccess(source.getSpaceId(), KnowledgeSpaceService.SpaceRole.VIEWER, actor);
-        List<KnowledgeRelationBO> relations = relationRepository.findBySourceIdAndType(
-                actor.tenantId(), source.getSpaceId(), knowledgeId, RelationType.PRE.name());
+        spaceService.requireAccess(
+                source.getSpaceId(), KnowledgeSpaceService.SpaceRole.VIEWER, actor);
+        List<KnowledgeRelationBO> relations =
+                relationRepository.findBySourceIdAndType(
+                        actor.tenantId(),
+                        source.getSpaceId(),
+                        knowledgeId,
+                        RelationType.PRE.name());
         return relations.stream()
                 .map(r -> knowledgeRepository.findById(actor.tenantId(), r.getTargetId()))
                 .filter(k -> k != null)
@@ -73,9 +107,14 @@ public class KnowledgeRelationServiceImpl implements KnowledgeRelationService, K
     @Override
     public List<KnowledgeResponse> getSubsequent(ActorContext actor, Long knowledgeId) {
         KnowledgeBO source = requireKnowledge(actor, knowledgeId);
-        spaceService.requireAccess(source.getSpaceId(), KnowledgeSpaceService.SpaceRole.VIEWER, actor);
-        List<KnowledgeRelationBO> relations = relationRepository.findByTargetIdAndType(
-                actor.tenantId(), source.getSpaceId(), knowledgeId, RelationType.PRE.name());
+        spaceService.requireAccess(
+                source.getSpaceId(), KnowledgeSpaceService.SpaceRole.VIEWER, actor);
+        List<KnowledgeRelationBO> relations =
+                relationRepository.findByTargetIdAndType(
+                        actor.tenantId(),
+                        source.getSpaceId(),
+                        knowledgeId,
+                        RelationType.PRE.name());
         return relations.stream()
                 .map(r -> knowledgeRepository.findById(actor.tenantId(), r.getSourceId()))
                 .filter(k -> k != null)
@@ -86,9 +125,14 @@ public class KnowledgeRelationServiceImpl implements KnowledgeRelationService, K
     @Override
     public List<KnowledgeResponse> getRelated(ActorContext actor, Long knowledgeId) {
         KnowledgeBO source = requireKnowledge(actor, knowledgeId);
-        spaceService.requireAccess(source.getSpaceId(), KnowledgeSpaceService.SpaceRole.VIEWER, actor);
-        List<KnowledgeRelationBO> relations = relationRepository.findBySourceIdAndType(
-                actor.tenantId(), source.getSpaceId(), knowledgeId, RelationType.RELATED.name());
+        spaceService.requireAccess(
+                source.getSpaceId(), KnowledgeSpaceService.SpaceRole.VIEWER, actor);
+        List<KnowledgeRelationBO> relations =
+                relationRepository.findBySourceIdAndType(
+                        actor.tenantId(),
+                        source.getSpaceId(),
+                        knowledgeId,
+                        RelationType.RELATED.name());
         return relations.stream()
                 .map(r -> knowledgeRepository.findById(actor.tenantId(), r.getTargetId()))
                 .filter(k -> k != null)
@@ -98,7 +142,8 @@ public class KnowledgeRelationServiceImpl implements KnowledgeRelationService, K
 
     @Override
     @Transactional(rollbackFor = Exception.class)
-    public void addRelation(ActorContext actor, Long sourceId, Long targetId, RelationType type, Double weight) {
+    public void addRelation(
+            ActorContext actor, Long sourceId, Long targetId, RelationType type, Double weight) {
         if (sourceId.equals(targetId)) {
             throw new ServiceException("知识关系不能指向自身");
         }
@@ -112,11 +157,14 @@ public class KnowledgeRelationServiceImpl implements KnowledgeRelationService, K
         if (!java.util.Objects.equals(source.getSpaceId(), target.getSpaceId())) {
             throw new ServiceException("不能创建跨知识空间关系");
         }
-        spaceService.requireAccess(source.getSpaceId(), KnowledgeSpaceService.SpaceRole.EDITOR, actor);
-        if (relationRepository.exists(actor.tenantId(), source.getSpaceId(), sourceId, targetId, type.name())) {
+        spaceService.requireAccess(
+                source.getSpaceId(), KnowledgeSpaceService.SpaceRole.EDITOR, actor);
+        if (relationRepository.exists(
+                actor.tenantId(), source.getSpaceId(), sourceId, targetId, type.name())) {
             throw new ServiceException("知识关系已存在");
         }
-        if (type == RelationType.PRE && !knowledgeGraph.findPath(actor.tenantId(), targetId, sourceId).isEmpty()) {
+        if (type == RelationType.PRE
+                && !knowledgeGraph.findPath(actor.tenantId(), targetId, sourceId).isEmpty()) {
             throw new ServiceException("前置关系会形成循环依赖");
         }
 
@@ -133,14 +181,17 @@ public class KnowledgeRelationServiceImpl implements KnowledgeRelationService, K
             throw new ServiceException("创建知识关系失败: 未写入当前租户数据");
         }
 
-        knowledgeGraph.addEdge(actor.tenantId(), sourceId, targetId, type.name(), relation.getWeight());
+        knowledgeGraph.addEdge(
+                actor.tenantId(), sourceId, targetId, type.name(), relation.getWeight());
     }
 
     @Override
     @Transactional(rollbackFor = Exception.class)
-    public void removeRelation(ActorContext actor, Long sourceId, Long targetId, RelationType type) {
+    public void removeRelation(
+            ActorContext actor, Long sourceId, Long targetId, RelationType type) {
         KnowledgeBO source = requireKnowledge(actor, sourceId);
-        spaceService.requireAccess(source.getSpaceId(), KnowledgeSpaceService.SpaceRole.EDITOR, actor);
+        spaceService.requireAccess(
+                source.getSpaceId(), KnowledgeSpaceService.SpaceRole.EDITOR, actor);
         relationRepository.deleteBySourceAndTargetAndType(
                 actor.tenantId(), source.getSpaceId(), sourceId, targetId, type.name());
         knowledgeGraph.removeEdge(actor.tenantId(), sourceId, targetId, type.name());
@@ -150,31 +201,48 @@ public class KnowledgeRelationServiceImpl implements KnowledgeRelationService, K
     @Transactional(rollbackFor = Exception.class)
     public void removeAllRelations(ActorContext actor, Long knowledgeId) {
         KnowledgeBO source = requireKnowledge(actor, knowledgeId);
-        spaceService.requireAccess(source.getSpaceId(), KnowledgeSpaceService.SpaceRole.EDITOR, actor);
+        spaceService.requireAccess(
+                source.getSpaceId(), KnowledgeSpaceService.SpaceRole.EDITOR, actor);
         // 1. 先查 DB，保留所有关联关系（先查后删，避免删完查不到）
-        var sourceRelations = relationRepository.findBySourceId(actor.tenantId(), source.getSpaceId(), knowledgeId);
-        var targetRelations = relationRepository.findByTargetId(actor.tenantId(), source.getSpaceId(), knowledgeId);
+        var sourceRelations =
+                relationRepository.findBySourceId(
+                        actor.tenantId(), source.getSpaceId(), knowledgeId);
+        var targetRelations =
+                relationRepository.findByTargetId(
+                        actor.tenantId(), source.getSpaceId(), knowledgeId);
 
         // 2. 再删 DB
-        relationRepository.deleteBySourceIdOrTargetId(actor.tenantId(), source.getSpaceId(), knowledgeId);
+        relationRepository.deleteBySourceIdOrTargetId(
+                actor.tenantId(), source.getSpaceId(), knowledgeId);
 
         // 3. 最后清理内存图的边
         for (var r : sourceRelations) {
-            knowledgeGraph.removeEdge(actor.tenantId(), knowledgeId, r.getTargetId(), r.getRelationType());
+            knowledgeGraph.removeEdge(
+                    actor.tenantId(), knowledgeId, r.getTargetId(), r.getRelationType());
         }
         for (var r : targetRelations) {
-            knowledgeGraph.removeEdge(actor.tenantId(), r.getSourceId(), knowledgeId, r.getRelationType());
+            knowledgeGraph.removeEdge(
+                    actor.tenantId(), r.getSourceId(), knowledgeId, r.getRelationType());
         }
-        log.info("已移除知识点 {} 的所有关联关系 (source={}, target={})",
-                knowledgeId, sourceRelations.size(), targetRelations.size());
+        log.info(
+                "已移除知识点 {} 的所有关联关系 (source={}, target={})",
+                knowledgeId,
+                sourceRelations.size(),
+                targetRelations.size());
     }
 
     private KnowledgeResponse toSimpleResponse(KnowledgeBO k) {
         return new KnowledgeResponse(
-                k.getId(), k.getCode(), k.getName(), k.getDescription(),
-                k.getDifficulty(), k.getCategory(), k.getTags(),
-                Collections.emptyList(), Collections.emptyList(), Collections.emptyList()
-        );
+                k.getId(),
+                k.getCode(),
+                k.getName(),
+                k.getDescription(),
+                k.getDifficulty(),
+                k.getCategory(),
+                k.getTags(),
+                Collections.emptyList(),
+                Collections.emptyList(),
+                Collections.emptyList());
     }
 
     private KnowledgeBO requireKnowledge(ActorContext actor, Long id) {
@@ -190,5 +258,3 @@ public class KnowledgeRelationServiceImpl implements KnowledgeRelationService, K
         if (actor == null) throw new ServiceException("actor context is required");
     }
 }
-
-

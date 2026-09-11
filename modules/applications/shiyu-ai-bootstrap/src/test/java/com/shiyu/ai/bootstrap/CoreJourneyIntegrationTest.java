@@ -1,24 +1,25 @@
 package com.shiyu.ai.bootstrap;
 
+import static org.assertj.core.api.Assertions.assertThat;
+
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
+
 import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.boot.test.web.server.LocalServerPort;
+import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.test.context.DynamicPropertyRegistry;
 import org.springframework.test.context.DynamicPropertySource;
 
-import java.nio.file.Path;
-import java.util.UUID;
-
-import static org.assertj.core.api.Assertions.assertThat;
 import java.net.URI;
 import java.net.http.HttpClient;
 import java.net.http.HttpRequest;
 import java.net.http.HttpResponse;
+import java.nio.file.Path;
+import java.util.UUID;
 
 @SpringBootTest(
         classes = ShiyuBootstrapApplication.class,
@@ -26,9 +27,10 @@ import java.net.http.HttpResponse;
 class CoreJourneyIntegrationTest {
 
     private static final String PREVIOUS_APP_HOME = System.getProperty("app.home");
-    private static final Path APP_HOME = Path.of(
-            System.getProperty("java.io.tmpdir"),
-            "shiyu-core-journey-" + UUID.randomUUID());
+    private static final Path APP_HOME =
+            Path.of(
+                    System.getProperty("java.io.tmpdir"),
+                    "shiyu-core-journey-" + UUID.randomUUID());
 
     static {
         System.setProperty("app.home", APP_HOME.toString());
@@ -49,21 +51,22 @@ class CoreJourneyIntegrationTest {
         registry.add("spring.profiles.active", () -> "dev");
     }
 
-    @Autowired
-    @LocalServerPort
-    private int port;
+    @Autowired @LocalServerPort private int port;
 
     private final HttpClient httpClient = HttpClient.newHttpClient();
 
     private final ObjectMapper objectMapper = new ObjectMapper();
 
-    @Autowired
-    private JdbcTemplate jdbcTemplate;
+    @Autowired private JdbcTemplate jdbcTemplate;
 
     @Test
     void completesAuthenticatedAgentConversationAndKnowledgeJourney() throws Exception {
-        HttpResponse<String> loginResponse = request("POST", "/api/iam/auth/login", null,
-                "{\"username\":\"admin\",\"password\":\"123456\"}");
+        HttpResponse<String> loginResponse =
+                request(
+                        "POST",
+                        "/api/iam/auth/login",
+                        null,
+                        "{\"username\":\"admin\",\"password\":\"123456\"}");
         assertThat(loginResponse.statusCode()).isEqualTo(200);
         JsonNode login = body(loginResponse.body());
         assertThat(login.path("success").asBoolean()).isTrue();
@@ -74,8 +77,12 @@ class CoreJourneyIntegrationTest {
         assertThat(tenantId).isPositive();
 
         String authorization = "Bearer " + token;
-        HttpResponse<String> appResponse = request("POST", "/api/agent/apps", authorization,
-                "{\"name\":\"core-journey\",\"description\":\"smoke\"}");
+        HttpResponse<String> appResponse =
+                request(
+                        "POST",
+                        "/api/agent/apps",
+                        authorization,
+                        "{\"name\":\"core-journey\",\"description\":\"smoke\"}");
         assertThat(appResponse.statusCode()).isEqualTo(200);
         JsonNode app = body(appResponse.body());
         assertSuccess(app);
@@ -89,30 +96,43 @@ class CoreJourneyIntegrationTest {
         assertSuccess(apps);
         assertThat(apps.path("data").toString()).contains(appId);
 
-        HttpResponse<String> conversationResponse = request("POST", "/api/conversation/conversations", authorization,
-                "{\"sceneType\":\"chat\",\"title\":\"core journey\",\"platform\":\"local\",\"model\":\"smoke\"}");
+        HttpResponse<String> conversationResponse =
+                request(
+                        "POST",
+                        "/api/conversation/conversations",
+                        authorization,
+                        "{\"sceneType\":\"chat\",\"title\":\"core"
+                                + " journey\",\"platform\":\"local\",\"model\":\"smoke\"}");
         assertThat(conversationResponse.statusCode()).isEqualTo(200);
         JsonNode conversation = body(conversationResponse.body());
         assertSuccess(conversation);
         assertThat(tenantValue(conversation.path("data"))).isEqualTo(tenantId);
 
-        HttpResponse<String> conversationsResponse = request("GET", "/api/conversation/conversations", authorization, null);
+        HttpResponse<String> conversationsResponse =
+                request("GET", "/api/conversation/conversations", authorization, null);
         assertThat(conversationsResponse.statusCode()).isEqualTo(200);
         JsonNode conversations = body(conversationsResponse.body());
         assertSuccess(conversations);
         assertThat(conversations.path("data").toString()).contains("core journey");
 
-        HttpResponse<String> spaceResponse = request("POST", "/api/knowledge/spaces/default", authorization, null);
+        HttpResponse<String> spaceResponse =
+                request("POST", "/api/knowledge/spaces/default", authorization, null);
         assertThat(spaceResponse.statusCode()).isEqualTo(200);
         JsonNode space = body(spaceResponse.body());
         assertSuccess(space);
         long spaceId = space.path("data").path("id").asLong();
         assertThat(spaceId).isPositive();
-        assertThat(jdbcTemplate.queryForObject(
-                "SELECT COUNT(*) FROM KNOWLEDGE_SPACE WHERE ID = ? AND TENANT_ID = ?",
-                Integer.class, spaceId, tenantId)).isEqualTo(1);
+        assertThat(
+                        jdbcTemplate.queryForObject(
+                                "SELECT COUNT(*) FROM KNOWLEDGE_SPACE WHERE ID = ? AND TENANT_ID ="
+                                        + " ?",
+                                Integer.class,
+                                spaceId,
+                                tenantId))
+                .isEqualTo(1);
 
-        HttpResponse<String> spacesResponse = request("GET", "/api/knowledge/spaces/options", authorization, null);
+        HttpResponse<String> spacesResponse =
+                request("GET", "/api/knowledge/spaces/options", authorization, null);
         assertThat(spacesResponse.statusCode()).isEqualTo(200);
         JsonNode spaces = body(spacesResponse.body());
         assertSuccess(spaces);
@@ -123,15 +143,17 @@ class CoreJourneyIntegrationTest {
         return objectMapper.readTree(value);
     }
 
-    private HttpResponse<String> request(String method, String path, String authorization, String body)
-            throws Exception {
-        HttpRequest.Builder builder = HttpRequest.newBuilder()
-                .uri(URI.create("http://localhost:" + port + path))
-                .header("Accept", "application/json");
+    private HttpResponse<String> request(
+            String method, String path, String authorization, String body) throws Exception {
+        HttpRequest.Builder builder =
+                HttpRequest.newBuilder()
+                        .uri(URI.create("http://localhost:" + port + path))
+                        .header("Accept", "application/json");
         if (authorization != null) builder.header("Authorization", authorization);
         if (body == null) builder.method(method, HttpRequest.BodyPublishers.noBody());
-        else builder.header("Content-Type", "application/json")
-                .method(method, HttpRequest.BodyPublishers.ofString(body));
+        else
+            builder.header("Content-Type", "application/json")
+                    .method(method, HttpRequest.BodyPublishers.ofString(body));
         return httpClient.send(builder.build(), HttpResponse.BodyHandlers.ofString());
     }
 

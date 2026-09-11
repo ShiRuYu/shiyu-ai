@@ -1,27 +1,28 @@
 package com.shiyu.ai.agent.implementation.node.llm;
 
 import com.shiyu.ai.agent.contract.node.*;
-
-import com.shiyu.ai.model.contract.model.ChatType;
+import com.shiyu.ai.agent.contract.node.BaseNode;
+import com.shiyu.ai.agent.contract.node.NodeFields.FieldKey;
+import com.shiyu.ai.agent.contract.node.NodeInput;
+import com.shiyu.ai.agent.contract.node.NodeInputParam;
+import com.shiyu.ai.agent.contract.node.NodeOutput;
+import com.shiyu.ai.agent.contract.node.NodeType;
 import com.shiyu.ai.model.contract.api.ChatEngine;
 import com.shiyu.ai.model.contract.model.ChatRequest;
 import com.shiyu.ai.model.contract.model.ChatResponse;
-import com.shiyu.ai.agent.contract.node.BaseNode;
-import com.shiyu.ai.agent.contract.node.NodeInput;
-import com.shiyu.ai.agent.contract.node.NodeOutput;
-import com.shiyu.ai.agent.contract.node.NodeType;
-import com.shiyu.ai.agent.contract.node.NodeFields.FieldKey;
+import com.shiyu.ai.model.contract.model.ChatType;
+
 import lombok.Getter;
 import lombok.Setter;
 import lombok.extern.slf4j.Slf4j;
+
 import org.bsc.langgraph4j.langchain4j.generators.StreamingChatGenerator;
 import org.bsc.langgraph4j.state.AgentState;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
-import java.util.ArrayList;
 import java.util.Objects;
-import com.shiyu.ai.agent.contract.node.NodeInputParam;
 
 @Setter
 @Getter
@@ -68,8 +69,11 @@ public class LlmCallNode extends BaseNode {
     @Override
     protected NodeOutput doExecute(NodeInput input) throws Exception {
         log.info("执行 LLM 调用节点：{}", config.getNodeName());
-        log.debug("LLM 配置：modelName={}, temperature={}, maxTokens={}, stream={}",
-                config.getModelName(), config.getTemperature(), config.getMaxTokens(),
+        log.debug(
+                "LLM 配置：modelName={}, temperature={}, maxTokens={}, stream={}",
+                config.getModelName(),
+                config.getTemperature(),
+                config.getMaxTokens(),
                 config.isStream());
 
         try {
@@ -78,14 +82,19 @@ public class LlmCallNode extends BaseNode {
             String modelName = getModelName(input, platform);
             ChatType chatType = getChatType(input);
 
-            ChatRequest request = ChatRequest.builder()
-                    .platform(platform)
-                    .model(modelName)
-                    .tenantId(requiredPositiveLong(input.getParameter("tenantId", null), "tenantId"))
-                    .userId(requiredPositiveLong(input.getParameter("userId", null), "userId"))
-                    .messages(buildMessages(input, prompt))
-                    .chatType(chatType)
-                    .build();
+            ChatRequest request =
+                    ChatRequest.builder()
+                            .platform(platform)
+                            .model(modelName)
+                            .tenantId(
+                                    requiredPositiveLong(
+                                            input.getParameter("tenantId", null), "tenantId"))
+                            .userId(
+                                    requiredPositiveLong(
+                                            input.getParameter("userId", null), "userId"))
+                            .messages(buildMessages(input, prompt))
+                            .chatType(chatType)
+                            .build();
 
             if (chatType == ChatType.STREAM) {
                 return executeStream(request);
@@ -103,7 +112,8 @@ public class LlmCallNode extends BaseNode {
     }
 
     private boolean isInputValidationFailure(Exception exception) {
-        if (!(exception instanceof IllegalStateException) || exception.getMessage() == null) return false;
+        if (!(exception instanceof IllegalStateException) || exception.getMessage() == null)
+            return false;
         String message = exception.getMessage();
         return message.endsWith(" is required")
                 || message.endsWith(" must be positive")
@@ -160,26 +170,48 @@ public class LlmCallNode extends BaseNode {
     }
 
     private NodeOutput executeStructuredStream(ChatRequest request) {
-        StreamingChatGenerator<AgentState> generator = StreamingChatGenerator.builder()
-                .mapResult(r -> {
-                    String content = r != null && r.aiMessage() != null ? r.aiMessage().text() : "";
-                    return Map.<String, Object>of(FieldKey.CONTENT.key(), content);
-                })
-                .build();
+        StreamingChatGenerator<AgentState> generator =
+                StreamingChatGenerator.builder()
+                        .mapResult(
+                                r -> {
+                                    String content =
+                                            r != null && r.aiMessage() != null
+                                                    ? r.aiMessage().text()
+                                                    : "";
+                                    return Map.<String, Object>of(FieldKey.CONTENT.key(), content);
+                                })
+                        .build();
         StringBuilder answer = new StringBuilder();
         StringBuilder reasoning = new StringBuilder();
-        chatEngine.stream(request).subscribe(event -> {
-            if ("DELTA".equals(event.getEventType()) && event.getContent() != null) {
-                answer.append(event.getContent());
-                generator.handler().onPartialResponse(event.getContent());
-            } else if ("REASONING_DELTA".equals(event.getEventType()) && event.getReasoningContent() != null) {
-                reasoning.append(event.getReasoningContent());
-            }
-        }, generator.handler()::onError, () -> generator.handler().onCompleteResponse(
-                dev.langchain4j.model.chat.response.ChatResponse.builder()
-                        .aiMessage(dev.langchain4j.data.message.AiMessage.builder()
-                                .text(answer.toString()).thinking(reasoning.toString()).build())
-                        .modelName(request.getModel()).build()));
+        chatEngine.stream(request)
+                .subscribe(
+                        event -> {
+                            if ("DELTA".equals(event.getEventType())
+                                    && event.getContent() != null) {
+                                answer.append(event.getContent());
+                                generator.handler().onPartialResponse(event.getContent());
+                            } else if ("REASONING_DELTA".equals(event.getEventType())
+                                    && event.getReasoningContent() != null) {
+                                reasoning.append(event.getReasoningContent());
+                            }
+                        },
+                        generator.handler()::onError,
+                        () ->
+                                generator
+                                        .handler()
+                                        .onCompleteResponse(
+                                                dev.langchain4j.model.chat.response.ChatResponse
+                                                        .builder()
+                                                        .aiMessage(
+                                                                dev.langchain4j.data.message
+                                                                        .AiMessage.builder()
+                                                                        .text(answer.toString())
+                                                                        .thinking(
+                                                                                reasoning
+                                                                                        .toString())
+                                                                        .build())
+                                                        .modelName(request.getModel())
+                                                        .build()));
         NodeOutput output = new NodeOutput();
         output.setSuccess(true);
         output.setMsg("LLM 结构化流式调用成功");
@@ -192,7 +224,8 @@ public class LlmCallNode extends BaseNode {
     }
 
     @SuppressWarnings("unchecked")
-    private List<com.shiyu.ai.model.contract.model.ChatMessage> buildMessages(NodeInput input, String prompt) {
+    private List<com.shiyu.ai.model.contract.model.ChatMessage> buildMessages(
+            NodeInput input, String prompt) {
         Object raw = input.toMap().get(FieldKey.MESSAGES.key());
         if (!(raw instanceof List<?> list) || list.isEmpty()) {
             return List.of(com.shiyu.ai.model.contract.model.ChatMessage.text("user", prompt));
@@ -204,10 +237,14 @@ public class LlmCallNode extends BaseNode {
             } else if (item instanceof Map<?, ?> map) {
                 String role = Objects.toString(map.get("role"), "user");
                 Object content = map.get("content");
-                messages.add(com.shiyu.ai.model.contract.model.ChatMessage.text(role, Objects.toString(content, "")));
+                messages.add(
+                        com.shiyu.ai.model.contract.model.ChatMessage.text(
+                                role, Objects.toString(content, "")));
             }
         }
-        return messages.isEmpty() ? List.of(com.shiyu.ai.model.contract.model.ChatMessage.text("user", prompt)) : List.copyOf(messages);
+        return messages.isEmpty()
+                ? List.of(com.shiyu.ai.model.contract.model.ChatMessage.text("user", prompt))
+                : List.copyOf(messages);
     }
 
     private String buildPrompt(NodeInput input) {
@@ -287,11 +324,11 @@ public class LlmCallNode extends BaseNode {
     @Override
     public java.util.List<NodeInputParam> getRequiredInputs() {
         return java.util.List.of(
-            NodeInputParam.apiOptional("query", "string", "用户提问/输入文本", ""),
-            NodeInputParam.config("platform", "string", "AI 平台编码（如 SILICON_FLOW）"),
-            NodeInputParam.config("modelName", "string", "模型名称"),
-            NodeInputParam.config("temperature", "number", "温度参数"),
-            NodeInputParam.defaultVal("defaultPrompt", "string", "默认 Prompt（无 query 时使用）", "你是一个智能助手")
-        );
+                NodeInputParam.apiOptional("query", "string", "用户提问/输入文本", ""),
+                NodeInputParam.config("platform", "string", "AI 平台编码（如 SILICON_FLOW）"),
+                NodeInputParam.config("modelName", "string", "模型名称"),
+                NodeInputParam.config("temperature", "number", "温度参数"),
+                NodeInputParam.defaultVal(
+                        "defaultPrompt", "string", "默认 Prompt（无 query 时使用）", "你是一个智能助手"));
     }
 }

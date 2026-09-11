@@ -1,20 +1,21 @@
 package com.shiyu.ai.knowledge.implementation.application.rag;
 
-import com.shiyu.ai.knowledge.implementation.application.document.DocumentParser;
-import com.shiyu.ai.model.contract.api.EmbeddingService;
-import com.shiyu.ai.knowledge.implementation.domain.model.KnowledgeChunkBO;
-import com.shiyu.ai.knowledge.implementation.application.rag.ChunkSplitter.Chunk;
-import com.shiyu.ai.knowledge.implementation.application.rag.ChineseChunkSplitter;
-import com.shiyu.ai.knowledge.implementation.domain.port.repository.KnowledgeChunkRepository;
 import com.shiyu.ai.common.core.utils.JSONUtils;
 import com.shiyu.ai.kernel.context.ActorContext;
 import com.shiyu.ai.kernel.context.TenantId;
+import com.shiyu.ai.knowledge.implementation.application.document.DocumentParser;
+import com.shiyu.ai.knowledge.implementation.application.rag.ChunkSplitter.Chunk;
+import com.shiyu.ai.knowledge.implementation.domain.model.KnowledgeChunkBO;
+import com.shiyu.ai.knowledge.implementation.domain.port.repository.KnowledgeChunkRepository;
+import com.shiyu.ai.model.contract.api.EmbeddingService;
+
 import lombok.extern.slf4j.Slf4j;
+
 import org.springframework.stereotype.Service;
 
-import java.util.*;
 import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
+import java.util.*;
 
 @Slf4j
 @Service
@@ -25,18 +26,17 @@ public class DocumentIngestionService {
     private final ChunkSplitter chunkSplitter;
     private final List<DocumentParser> documentParsers;
 
-    public DocumentIngestionService(EmbeddingService embeddingService,
-                                    KnowledgeChunkRepository chunkRepository,
-                                    List<DocumentParser> documentParsers) {
+    public DocumentIngestionService(
+            EmbeddingService embeddingService,
+            KnowledgeChunkRepository chunkRepository,
+            List<DocumentParser> documentParsers) {
         this.embeddingService = embeddingService;
         this.chunkRepository = chunkRepository;
         this.chunkSplitter = new ChineseChunkSplitter();
         this.documentParsers = documentParsers != null ? documentParsers : List.of();
     }
 
-    /**
-     * 根据文件格式获取对应的文档解析器
-     */
+    /** 根据文件格式获取对应的文档解析器 */
     public Optional<DocumentParser> findParser(String format) {
         return documentParsers.stream()
                 .filter(p -> p.getSupportedFormat().equalsIgnoreCase(format))
@@ -44,24 +44,33 @@ public class DocumentIngestionService {
     }
 
     /**
-     * 解析并注入文档；调用方必须提供已认证的 actor，以便所有分片和向量操作
-     * 绑定到同一租户。
+     * 解析并注入文档；调用方必须提供已认证的 actor，以便所有分片和向量操作 绑定到同一租户。
      *
      * @param actor 已认证的租户和用户上下文
-     * @param documentId   文档 ID
-     * @param content      文本内容（已解析）
+     * @param documentId 文档 ID
+     * @param content 文本内容（已解析）
      * @param knowledgeIds 关联知识点 ID
      */
-    public List<KnowledgeChunkBO> ingest(ActorContext actor, Long spaceId, Long documentId,
-                                         Long versionId, String content, List<Long> knowledgeIds) {
+    public List<KnowledgeChunkBO> ingest(
+            ActorContext actor,
+            Long spaceId,
+            Long documentId,
+            Long versionId,
+            String content,
+            List<Long> knowledgeIds) {
         if (actor == null) {
             throw new IllegalArgumentException("actor is required");
         }
         return ingestInternal(actor, spaceId, documentId, versionId, content, knowledgeIds);
     }
 
-    private List<KnowledgeChunkBO> ingestInternal(ActorContext actor, Long spaceId, Long documentId, Long versionId,
-                                         String content, List<Long> knowledgeIds) {
+    private List<KnowledgeChunkBO> ingestInternal(
+            ActorContext actor,
+            Long spaceId,
+            Long documentId,
+            Long versionId,
+            String content,
+            List<Long> knowledgeIds) {
         TenantId ownerTenant = actor.tenantId();
         chunkRepository.deleteByDocumentId(ownerTenant, documentId);
         List<Chunk> chunks = chunkSplitter.split(content);
@@ -83,7 +92,11 @@ public class DocumentIngestionService {
             meta.put("endPos", chunk.endPos());
             if (knowledgeIds != null && !knowledgeIds.isEmpty()) {
                 meta.put("knowledgeId", String.valueOf(knowledgeIds.get(0)));
-                meta.put("knowledgeIds", knowledgeIds.stream().map(String::valueOf).collect(java.util.stream.Collectors.joining(",")));
+                meta.put(
+                        "knowledgeIds",
+                        knowledgeIds.stream()
+                                .map(String::valueOf)
+                                .collect(java.util.stream.Collectors.joining(",")));
             }
             KnowledgeChunkBO chunkDO = new KnowledgeChunkBO();
             chunkDO.setDocumentId(documentId);
@@ -105,8 +118,10 @@ public class DocumentIngestionService {
             chunkDOs.add(chunkDO);
         }
 
-        log.info("文档 {} 注入完成: {} chunks → H2（发布时通过 VectorStoreProvider 构建版本索引）",
-                documentId, chunkDOs.size());
+        log.info(
+                "文档 {} 注入完成: {} chunks → H2（发布时通过 VectorStoreProvider 构建版本索引）",
+                documentId,
+                chunkDOs.size());
         return chunkDOs;
     }
 
@@ -115,8 +130,8 @@ public class DocumentIngestionService {
     }
 
     private byte[] toBytes(float[] vector) {
-        ByteBuffer buffer = ByteBuffer.allocate(vector.length * Float.BYTES)
-                .order(ByteOrder.LITTLE_ENDIAN);
+        ByteBuffer buffer =
+                ByteBuffer.allocate(vector.length * Float.BYTES).order(ByteOrder.LITTLE_ENDIAN);
         for (float value : vector) {
             buffer.putFloat(value);
         }

@@ -1,29 +1,30 @@
 package com.shiyu.ai.knowledge.implementation.infrastructure.point.impl;
 
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.eq;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.verifyNoInteractions;
+import static org.mockito.Mockito.when;
+
+import com.shiyu.ai.common.core.api.PageData;
 import com.shiyu.ai.common.core.exception.ServiceException;
 import com.shiyu.ai.kernel.context.ActorContext;
 import com.shiyu.ai.kernel.context.TenantId;
 import com.shiyu.ai.kernel.context.UserId;
-import com.shiyu.ai.knowledge.implementation.application.graph.KnowledgeGraph;
-import com.shiyu.ai.knowledge.implementation.domain.port.repository.KnowledgeRepository;
 import com.shiyu.ai.knowledge.implementation.application.KnowledgeDocumentRelationService;
 import com.shiyu.ai.knowledge.implementation.application.KnowledgeRelationService;
 import com.shiyu.ai.knowledge.implementation.application.KnowledgeSpaceService;
+import com.shiyu.ai.knowledge.implementation.application.graph.KnowledgeGraph;
 import com.shiyu.ai.knowledge.implementation.domain.model.KnowledgeBO;
+import com.shiyu.ai.knowledge.implementation.domain.port.repository.KnowledgeRepository;
 import com.shiyu.ai.knowledge.implementation.infrastructure.point.KnowledgePointService;
-import com.shiyu.ai.common.core.api.PageData;
-import java.util.List;
+
 import org.junit.jupiter.api.Test;
 
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertThrows;
-import static org.junit.jupiter.api.Assertions.assertTrue;
-import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.verifyNoInteractions;
-import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.ArgumentMatchers.eq;
-import static org.mockito.Mockito.when;
+import java.util.List;
 
 class KnowledgePointServiceImplTenantTest {
 
@@ -55,21 +56,45 @@ class KnowledgePointServiceImplTenantTest {
         KnowledgeGraph graph = mock(KnowledgeGraph.class);
         KnowledgeRelationService relations = mock(KnowledgeRelationService.class);
         KnowledgeDocumentRelationService documents = mock(KnowledgeDocumentRelationService.class);
-        KnowledgePointServiceImpl service = new KnowledgePointServiceImpl(repository, spaces, graph, relations, documents);
+        KnowledgePointServiceImpl service =
+                new KnowledgePointServiceImpl(repository, spaces, graph, relations, documents);
         ActorContext actor = new ActorContext(new TenantId(17L), new UserId(2L), false);
-        KnowledgeBO point = new KnowledgeBO(); point.setId(41L); point.setTenantId(17L); point.setSpaceId(5L); point.setCode("math"); point.setName("Math"); point.setDifficultyLevel(2);
+        KnowledgeBO point = new KnowledgeBO();
+        point.setId(41L);
+        point.setTenantId(17L);
+        point.setSpaceId(5L);
+        point.setCode("math");
+        point.setName("Math");
+        point.setDifficultyLevel(2);
         when(repository.existsBySpaceAndCode(actor.tenantId(), 5L, "math")).thenReturn(false);
         when(repository.insert(eq(actor.tenantId()), any(KnowledgeBO.class))).thenReturn(1);
         when(repository.update(actor.tenantId(), point)).thenReturn(1);
         when(repository.deleteByIdAndSpace(actor.tenantId(), 41L, 5L)).thenReturn(1);
         when(repository.findById(actor.tenantId(), 41L)).thenReturn(point);
-        when(repository.pageBySpace(actor.tenantId(), 5L, 1, 100, null, null)).thenReturn(new PageData<>(List.of(point), 1));
-        assertEquals("math", service.create(actor, 5L, new KnowledgePointService.CreatePointRequest("math", "Math", null, 2, "ALG", "tag")).code());
+        when(repository.pageBySpace(actor.tenantId(), 5L, 1, 100, null, null))
+                .thenReturn(new PageData<>(List.of(point), 1));
+        assertEquals(
+                "math",
+                service.create(
+                                actor,
+                                5L,
+                                new KnowledgePointService.CreatePointRequest(
+                                        "math", "Math", null, 2, "ALG", "tag"))
+                        .code());
         assertEquals(1, service.page(actor, 5L, 1, 200, null, null).getItems().size());
-        assertEquals("Updated", service.update(actor, 41L, new KnowledgePointService.UpdatePointRequest("Updated", null, 3, null, null)).name());
+        assertEquals(
+                "Updated",
+                service.update(
+                                actor,
+                                41L,
+                                new KnowledgePointService.UpdatePointRequest(
+                                        "Updated", null, 3, null, null))
+                        .name());
         service.delete(actor, 41L);
-        verify(graph).addNode(eq(actor.tenantId()), any()); verify(graph).removeNode(actor.tenantId(), 41L);
-        verify(relations).removeAllRelations(actor, 41L); verify(documents).replaceDocuments(actor, 41L, List.of());
+        verify(graph).addNode(eq(actor.tenantId()), any());
+        verify(graph).removeNode(actor.tenantId(), 41L);
+        verify(relations).removeAllRelations(actor, 41L);
+        verify(documents).replaceDocuments(actor, 41L, List.of());
     }
 
     @Test
@@ -84,13 +109,23 @@ class KnowledgePointServiceImplTenantTest {
         when(repository.findById(new TenantId(17L), 41L)).thenReturn(point);
         when(repository.update(eq(new TenantId(17L)), any(KnowledgeBO.class))).thenReturn(0);
 
-        KnowledgePointServiceImpl service = new KnowledgePointServiceImpl(
-                repository, spaces, mock(KnowledgeGraph.class),
-                mock(KnowledgeRelationService.class), mock(KnowledgeDocumentRelationService.class));
+        KnowledgePointServiceImpl service =
+                new KnowledgePointServiceImpl(
+                        repository,
+                        spaces,
+                        mock(KnowledgeGraph.class),
+                        mock(KnowledgeRelationService.class),
+                        mock(KnowledgeDocumentRelationService.class));
         ActorContext actor = new ActorContext(new TenantId(17L), new UserId(2L), false);
 
-        assertThrows(ServiceException.class, () -> service.update(actor, 41L,
-                new KnowledgePointService.UpdatePointRequest("Updated", null, null, null, null)));
+        assertThrows(
+                ServiceException.class,
+                () ->
+                        service.update(
+                                actor,
+                                41L,
+                                new KnowledgePointService.UpdatePointRequest(
+                                        "Updated", null, null, null, null)));
     }
 
     private KnowledgePointServiceImpl service(KnowledgeRepository repository) {
@@ -102,5 +137,3 @@ class KnowledgePointServiceImplTenantTest {
                 mock(KnowledgeDocumentRelationService.class));
     }
 }
-
-

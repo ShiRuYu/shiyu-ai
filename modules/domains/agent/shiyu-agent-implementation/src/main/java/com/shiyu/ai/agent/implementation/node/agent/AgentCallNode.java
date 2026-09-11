@@ -1,28 +1,26 @@
 package com.shiyu.ai.agent.implementation.node.agent;
 
 import com.shiyu.ai.agent.contract.node.*;
-
-import com.shiyu.ai.agent.implementation.runtime.AgentRuntime;
 import com.shiyu.ai.agent.contract.node.BaseNode;
+import com.shiyu.ai.agent.contract.node.NodeFields.FieldKey;
 import com.shiyu.ai.agent.contract.node.NodeInput;
+import com.shiyu.ai.agent.contract.node.NodeInputParam;
 import com.shiyu.ai.agent.contract.node.NodeOutput;
 import com.shiyu.ai.agent.contract.node.NodeType;
-import com.shiyu.ai.agent.contract.node.NodeFields.FieldKey;
+import com.shiyu.ai.agent.implementation.runtime.AgentRuntime;
 import com.shiyu.ai.kernel.context.ActorContext;
 import com.shiyu.ai.kernel.context.TenantId;
 import com.shiyu.ai.kernel.context.UserId;
+
 import lombok.Getter;
 import lombok.Setter;
 import lombok.extern.slf4j.Slf4j;
 
 import java.util.HashMap;
 import java.util.Map;
-import com.shiyu.ai.agent.contract.node.NodeInputParam;
 
 /**
- * Agent 调用节点
- * 用于在 Graph 中调用其他已注册的 Agent 执行子任务
- * 使用 AgentRuntime 进行调用（统一走 Execution 生命周期）
+ * Agent 调用节点 用于在 Graph 中调用其他已注册的 Agent 执行子任务 使用 AgentRuntime 进行调用（统一走 Execution 生命周期）
  *
  * @author shiyu-ai
  * @date 2026-06-06
@@ -34,14 +32,10 @@ public class AgentCallNode extends BaseNode {
 
     private AgentCallConfig config;
 
-    /**
-     * Agent 运行时（必须依赖）
-     */
+    /** Agent 运行时（必须依赖） */
     private final AgentRuntime agentRuntime;
 
-    /**
-     * 私有构造函数，强制使用 Builder 模式
-     */
+    /** 私有构造函数，强制使用 Builder 模式 */
     private AgentCallNode(AgentCallConfig config, AgentRuntime agentRuntime) {
         super(config != null ? config : new AgentCallConfig());
         this.config = config != null ? config : new AgentCallConfig();
@@ -49,16 +43,12 @@ public class AgentCallNode extends BaseNode {
         this.agentRuntime = agentRuntime;
     }
 
-    /**
-     * 获取 Builder 实例
-     */
+    /** 获取 Builder 实例 */
     public static Builder builder() {
         return new Builder();
     }
 
-    /**
-     * Builder 类，用于构建 AgentCallNode 实例
-     */
+    /** Builder 类，用于构建 AgentCallNode 实例 */
     public static class Builder {
         private AgentCallConfig config;
         private AgentRuntime agentRuntime;
@@ -84,8 +74,11 @@ public class AgentCallNode extends BaseNode {
     @Override
     protected NodeOutput doExecute(NodeInput input) throws Exception {
         log.info("执行 Agent 调用节点：nodeNamePresent={}", config.getNodeName() != null);
-        log.debug("Agent 调用配置：targetAgentIdPresent={}, targetVersionPresent={}, outputKeyPresent={}",
-                config.getTargetAgentId() != null, config.getTargetVersion() != null, config.getOutputKey() != null);
+        log.debug(
+                "Agent 调用配置：targetAgentIdPresent={}, targetVersionPresent={}, outputKeyPresent={}",
+                config.getTargetAgentId() != null,
+                config.getTargetVersion() != null,
+                config.getOutputKey() != null);
 
         try {
             // 1. 获取目标 Agent ID
@@ -104,12 +97,15 @@ public class AgentCallNode extends BaseNode {
             String targetVersion = getTargetVersion(input);
 
             // 4. 调用目标 Agent（统一走 AgentRuntime，获得 Execution 生命周期支持）
-            log.info("开始调用目标 Agent：agentIdPresent={}, versionPresent={}",
-                    targetAgentId != null, targetVersion != null);
+            log.info(
+                    "开始调用目标 Agent：agentIdPresent={}, versionPresent={}",
+                    targetAgentId != null,
+                    targetVersion != null);
             ActorContext actor = actor(input);
-            var execution = (targetVersion != null && !targetVersion.trim().isEmpty())
-                    ? agentRuntime.execute(actor, targetAgentId, targetVersion, agentInput)
-                    : agentRuntime.execute(actor, targetAgentId, agentInput);
+            var execution =
+                    (targetVersion != null && !targetVersion.trim().isEmpty())
+                            ? agentRuntime.execute(actor, targetAgentId, targetVersion, agentInput)
+                            : agentRuntime.execute(actor, targetAgentId, agentInput);
 
             Map<String, Object> result = execution.getOutput();
 
@@ -118,18 +114,23 @@ public class AgentCallNode extends BaseNode {
             output.setSuccess(true);
             output.setMsg("Agent 调用成功");
 
-            String outputKey = config.getOutputKey() != null ? config.getOutputKey() : "agentResult";
+            String outputKey =
+                    config.getOutputKey() != null ? config.getOutputKey() : "agentResult";
             output.addData(outputKey, result);
             output.addData(FieldKey.TARGET_AGENT_ID.key(), targetAgentId);
             output.addData(FieldKey.TARGET_VERSION.key(), targetVersion);
 
-            log.info("Agent 调用成功：targetAgentIdPresent={}, resultSize={}",
-                    targetAgentId != null, result != null ? result.size() : 0);
+            log.info(
+                    "Agent 调用成功：targetAgentIdPresent={}, resultSize={}",
+                    targetAgentId != null,
+                    result != null ? result.size() : 0);
             return output;
 
         } catch (Exception e) {
-            log.error("Agent 调用节点执行失败：errorType={}, errorMessageLength={}",
-                    e.getClass().getSimpleName(), e.getMessage() == null ? 0 : e.getMessage().length());
+            log.error(
+                    "Agent 调用节点执行失败：errorType={}, errorMessageLength={}",
+                    e.getClass().getSimpleName(),
+                    e.getMessage() == null ? 0 : e.getMessage().length());
             NodeOutput output = new NodeOutput();
             output.setSuccess(false);
             output.setMsg("Agent 调用节点执行失败，请稍后重试");
@@ -137,9 +138,7 @@ public class AgentCallNode extends BaseNode {
         }
     }
 
-    /**
-     * 获取目标 Agent ID
-     */
+    /** 获取目标 Agent ID */
     private String getTargetAgentId(NodeInput input) {
         String targetAgentId = input.getParameter(FieldKey.TARGET_AGENT_ID.key());
         if (targetAgentId != null && !targetAgentId.trim().isEmpty()) {
@@ -148,9 +147,7 @@ public class AgentCallNode extends BaseNode {
         return config.getTargetAgentId();
     }
 
-    /**
-     * 获取目标版本
-     */
+    /** 获取目标版本 */
     private String getTargetVersion(NodeInput input) {
         String targetVersion = input.getParameter(FieldKey.TARGET_VERSION.key());
         if (targetVersion != null && !targetVersion.trim().isEmpty()) {
@@ -159,9 +156,7 @@ public class AgentCallNode extends BaseNode {
         return config.getTargetVersion();
     }
 
-    /**
-     * 准备目标 Agent 的输入参数
-     */
+    /** 准备目标 Agent 的输入参数 */
     private Map<String, Object> prepareAgentInput(NodeInput input) {
         Map<String, Object> agentInput = new HashMap<>();
         Map<String, String> inputMapping = config.getInputMapping();
@@ -178,7 +173,8 @@ public class AgentCallNode extends BaseNode {
         } else {
             for (Map.Entry<String, Object> entry : input.toMap().entrySet()) {
                 String key = entry.getKey();
-                if (!FieldKey.TARGET_AGENT_ID.key().equals(key) && !FieldKey.TARGET_VERSION.key().equals(key)) {
+                if (!FieldKey.TARGET_AGENT_ID.key().equals(key)
+                        && !FieldKey.TARGET_VERSION.key().equals(key)) {
                     agentInput.put(key, entry.getValue());
                 }
             }
@@ -196,15 +192,15 @@ public class AgentCallNode extends BaseNode {
         if (!(userValue instanceof Number user) || user.longValue() <= 0) {
             throw new IllegalStateException("user context is required");
         }
-        return new ActorContext(new TenantId(tenant.longValue()), new UserId(user.longValue()), false);
+        return new ActorContext(
+                new TenantId(tenant.longValue()), new UserId(user.longValue()), false);
     }
 
     @Override
     public java.util.List<NodeInputParam> getRequiredInputs() {
         return java.util.List.of(
-            NodeInputParam.config("targetAgentId", "string", "目标 Agent ID"),
-            NodeInputParam.config("targetVersion", "string", "目标版本号"),
-            NodeInputParam.previous("query", "string", "用户输入（传递给子 Agent）")
-        );
+                NodeInputParam.config("targetAgentId", "string", "目标 Agent ID"),
+                NodeInputParam.config("targetVersion", "string", "目标版本号"),
+                NodeInputParam.previous("query", "string", "用户输入（传递给子 Agent）"));
     }
 }

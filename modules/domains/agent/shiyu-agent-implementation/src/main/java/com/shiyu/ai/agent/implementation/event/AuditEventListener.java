@@ -2,7 +2,9 @@ package com.shiyu.ai.agent.implementation.event;
 
 import com.shiyu.ai.agent.implementation.domain.model.AuditLogBO;
 import com.shiyu.ai.agent.implementation.port.repository.AuditLogRepository;
+
 import lombok.extern.slf4j.Slf4j;
+
 import org.springframework.context.event.EventListener;
 import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Component;
@@ -12,8 +14,8 @@ import java.util.Objects;
 
 /**
  * 审计事件监听器
- * <p>
- * 异步消费 {@link AuditEvent}，写入 {@code audit_log} 表。
+ *
+ * <p>异步消费 {@link AuditEvent}，写入 {@code audit_log} 表。
  */
 @Slf4j
 @Component
@@ -46,12 +48,18 @@ public class AuditEventListener {
             record.setDurationMs(event.getDurationMs());
             record.setCreateTime(LocalDateTime.now());
             auditLogRepository.insert(event.getTenantId(), record);
-            log.debug("审计日志已记录: actionPresent={}, userIdPresent={}",
-                    event.getAction() != null, event.getUserId() != null);
+            log.debug(
+                    "审计日志已记录: actionPresent={}, userIdPresent={}",
+                    event.getAction() != null,
+                    event.getUserId() != null);
         } catch (Exception e) {
-            log.warn("写入审计日志失败: actionPresent={}, userIdPresent={}, errorType={}, errorMessageLength={}",
-                    event.getAction() != null, event.getUserId() != null,
-                    e.getClass().getSimpleName(), e.getMessage() == null ? 0 : e.getMessage().length());
+            log.warn(
+                    "写入审计日志失败: actionPresent={}, userIdPresent={}, errorType={},"
+                            + " errorMessageLength={}",
+                    event.getAction() != null,
+                    event.getUserId() != null,
+                    e.getClass().getSimpleName(),
+                    e.getMessage() == null ? 0 : e.getMessage().length());
         }
     }
 }

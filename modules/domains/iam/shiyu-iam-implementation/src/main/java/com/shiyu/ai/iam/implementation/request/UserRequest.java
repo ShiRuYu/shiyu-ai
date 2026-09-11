@@ -1,23 +1,24 @@
 package com.shiyu.ai.iam.implementation.request;
 
 import com.shiyu.ai.iam.implementation.domain.model.UserBO;
+
 import io.github.linpeilie.annotations.AutoMapper;
+import io.swagger.v3.oas.annotations.media.Schema;
+
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
-import io.swagger.v3.oas.annotations.media.Schema;
+
 import lombok.Data;
 
 import java.io.Serial;
 import java.io.Serializable;
-import java.util.List;
 
 @Data
 @AutoMapper(target = UserBO.class, reverseConvertGenerate = false)
 @Schema(description = "用户创建/更新请求")
 public class UserRequest implements Serializable {
 
-    @Serial
-    private static final long serialVersionUID = 1L;
+    @Serial private static final long serialVersionUID = 1L;
 
     @NotBlank(message = "用户名不能为空")
     @Schema(description = "用户名")
@@ -60,4 +61,3 @@ public class UserRequest implements Serializable {
     @Schema(description = "岗位ID数组")
     private Long[] postIds;
 }
-

@@ -1,19 +1,21 @@
 package com.shiyu.ai.governance.implementation.web;
 
 import cn.dev33.satoken.annotation.SaCheckPermission;
+
 import com.shiyu.ai.common.core.api.Result;
 import com.shiyu.ai.governance.implementation.usage.service.UsageService;
+
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
+
 import lombok.extern.slf4j.Slf4j;
+
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
 import java.util.Map;
 
-/**
- * 用量统计 Controller
- */
+/** 用量统计 Controller */
 @Slf4j
 @Tag(name = "Usage", description = "Usage Stats")
 @RestController
@@ -140,4 +142,3 @@ public class UsageController {
         }
     }
 }
-

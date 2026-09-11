@@ -17,11 +17,12 @@ public record Conversation(
         String model,
         long version,
         Instant createdAt,
-        Instant updatedAt
-) {
+        Instant updatedAt) {
     public Conversation {
-        if (id == null || id.isBlank()) throw new IllegalArgumentException("conversation id is required");
-        if (sceneType == null || sceneType.isBlank()) throw new IllegalArgumentException("sceneType is required");
+        if (id == null || id.isBlank())
+            throw new IllegalArgumentException("conversation id is required");
+        if (sceneType == null || sceneType.isBlank())
+            throw new IllegalArgumentException("sceneType is required");
         if (status == null) throw new IllegalArgumentException("status is required");
     }
 }

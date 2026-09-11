@@ -1,19 +1,16 @@
 package com.shiyu.ai.education.implementation.domain.model;
+
 import lombok.Data;
 
 import java.io.Serial;
 import java.io.Serializable;
 import java.time.LocalDateTime;
-import java.time.LocalDateTime;
 
-/**
- * WrongQuestion 业务对象
- */
+/** WrongQuestion 业务对象 */
 @Data
 public class WrongQuestionBO implements Serializable {
 
-    @Serial
-    private static final long serialVersionUID = 1L;
+    @Serial private static final long serialVersionUID = 1L;
 
     private Long id;
 
@@ -30,11 +27,7 @@ public class WrongQuestionBO implements Serializable {
     private LocalDateTime createdAt;
 
     private LocalDateTime updatedAt;
-    /**
-     * 状态（依据业务灵活定义）
-     */
+
+    /** 状态（依据业务灵活定义） */
     private Integer status;
-
-
 }
-

@@ -1,6 +1,7 @@
 package com.shiyu.ai.education.implementation.web.request;
 
 import jakarta.validation.constraints.NotNull;
+
 import lombok.Data;
 
 import java.io.Serial;
@@ -9,8 +10,7 @@ import java.io.Serializable;
 @Data
 public class WrongQuestionRequest implements Serializable {
 
-    @Serial
-    private static final long serialVersionUID = 1L;
+    @Serial private static final long serialVersionUID = 1L;
 
     private Long id;
 
@@ -25,4 +25,3 @@ public class WrongQuestionRequest implements Serializable {
     private Integer correctTimes;
     private Integer status;
 }
-

@@ -6,14 +6,16 @@ import com.shiyu.ai.agent.implementation.cache.AgentCacheManager;
 import com.shiyu.ai.agent.implementation.cache.AgentLoader;
 import com.shiyu.ai.agent.implementation.checkpoint.CheckpointManager;
 import com.shiyu.ai.agent.implementation.checkpoint.DbCheckpointStore;
-import com.shiyu.ai.agent.implementation.port.repository.AgentCheckpointRepository;
-import com.shiyu.ai.agent.implementation.port.repository.AgentExecutionRepository;
+import com.shiyu.ai.agent.implementation.domain.model.AgentExecutionBO;
 import com.shiyu.ai.agent.implementation.event.EventPublisher;
 import com.shiyu.ai.agent.implementation.execution.Execution;
 import com.shiyu.ai.agent.implementation.execution.ExecutionStatus;
-import com.shiyu.ai.agent.implementation.domain.model.AgentExecutionBO;
+import com.shiyu.ai.agent.implementation.port.repository.AgentCheckpointRepository;
+import com.shiyu.ai.agent.implementation.port.repository.AgentExecutionRepository;
 import com.shiyu.ai.kernel.context.ActorContext;
+
 import jakarta.annotation.PreDestroy;
+
 import reactor.core.publisher.Flux;
 
 import java.util.List;
@@ -26,23 +28,43 @@ public class AgentRuntimeImpl implements AgentRuntime {
     private final AgentRuntimeEventBridge eventBridge;
     private final AgentExecutionLifecycle lifecycle;
 
-    public AgentRuntimeImpl(AgentCacheManager cacheManager, AgentLoader agentLoader,
-                            AgentExecutionRepository executionRepository,
-                            AgentCheckpointRepository checkpointRepository,
-                            EventPublisher eventPublisher) {
-        this(cacheManager, agentLoader, executionRepository, checkpointRepository, eventPublisher, null);
+    public AgentRuntimeImpl(
+            AgentCacheManager cacheManager,
+            AgentLoader agentLoader,
+            AgentExecutionRepository executionRepository,
+            AgentCheckpointRepository checkpointRepository,
+            EventPublisher eventPublisher) {
+        this(
+                cacheManager,
+                agentLoader,
+                executionRepository,
+                checkpointRepository,
+                eventPublisher,
+                null);
     }
 
-    public AgentRuntimeImpl(AgentCacheManager cacheManager, AgentLoader agentLoader,
-                            AgentExecutionRepository executionRepository,
-                            AgentCheckpointRepository checkpointRepository,
-                            EventPublisher eventPublisher, AiRuntimeService runtime) {
-        CheckpointManager checkpointManager = new CheckpointManager(new DbCheckpointStore(checkpointRepository));
+    public AgentRuntimeImpl(
+            AgentCacheManager cacheManager,
+            AgentLoader agentLoader,
+            AgentExecutionRepository executionRepository,
+            AgentCheckpointRepository checkpointRepository,
+            EventPublisher eventPublisher,
+            AiRuntimeService runtime) {
+        CheckpointManager checkpointManager =
+                new CheckpointManager(new DbCheckpointStore(checkpointRepository));
         this.agentExecutor = new AgentExecutor(checkpointManager);
         this.stateStore = new AgentRuntimeStateStore(executionRepository, checkpointManager);
         this.eventBridge = new AgentRuntimeEventBridge(runtime);
-        this.lifecycle = new AgentExecutionLifecycle(cacheManager, agentLoader, executionRepository,
-                agentExecutor, checkpointManager, eventPublisher, stateStore, eventBridge);
+        this.lifecycle =
+                new AgentExecutionLifecycle(
+                        cacheManager,
+                        agentLoader,
+                        executionRepository,
+                        agentExecutor,
+                        checkpointManager,
+                        eventPublisher,
+                        stateStore,
+                        eventBridge);
     }
 
     @PreDestroy
@@ -56,28 +78,57 @@ public class AgentRuntimeImpl implements AgentRuntime {
     }
 
     @Override
-    public Execution execute(ActorContext actor, String agentId, String version, Map<String, Object> input) {
+    public Execution execute(
+            ActorContext actor, String agentId, String version, Map<String, Object> input) {
         return lifecycle.execute(actor, agentId, version, input);
     }
 
     @Override
-    public Flux<Map<String, Object>> executeStream(ActorContext actor, String agentId, Map<String, Object> input) {
+    public Flux<Map<String, Object>> executeStream(
+            ActorContext actor, String agentId, Map<String, Object> input) {
         return executeStream(actor, agentId, null, input);
     }
 
     @Override
-    public Flux<Map<String, Object>> executeStream(ActorContext actor, String agentId, String version,
-                                                    Map<String, Object> input) {
+    public Flux<Map<String, Object>> executeStream(
+            ActorContext actor, String agentId, String version, Map<String, Object> input) {
         return lifecycle.executeStream(actor, agentId, version, input);
     }
 
-    @Override public void pause(ActorContext actor, String executionId) { lifecycle.pause(actor, executionId); }
-    @Override public Execution resume(ActorContext actor, String executionId) { return lifecycle.resume(actor, executionId); }
-    @Override public void cancel(ActorContext actor, String executionId) { lifecycle.cancel(actor, executionId); }
-    @Override public ExecutionStatus getStatus(ActorContext actor, String executionId) { return lifecycle.getStatus(actor, executionId); }
-    @Override public Execution getExecution(ActorContext actor, String executionId) { return lifecycle.getExecution(actor, executionId); }
-    @Override public List<Execution> getHistory(ActorContext actor, String agentId, int limit) { return lifecycle.getHistory(actor, agentId, limit); }
-    @Override public List<Execution> getUserHistory(ActorContext actor, Long userId, int limit) { return lifecycle.getUserHistory(actor, userId, limit); }
+    @Override
+    public void pause(ActorContext actor, String executionId) {
+        lifecycle.pause(actor, executionId);
+    }
+
+    @Override
+    public Execution resume(ActorContext actor, String executionId) {
+        return lifecycle.resume(actor, executionId);
+    }
+
+    @Override
+    public void cancel(ActorContext actor, String executionId) {
+        lifecycle.cancel(actor, executionId);
+    }
+
+    @Override
+    public ExecutionStatus getStatus(ActorContext actor, String executionId) {
+        return lifecycle.getStatus(actor, executionId);
+    }
+
+    @Override
+    public Execution getExecution(ActorContext actor, String executionId) {
+        return lifecycle.getExecution(actor, executionId);
+    }
+
+    @Override
+    public List<Execution> getHistory(ActorContext actor, String agentId, int limit) {
+        return lifecycle.getHistory(actor, agentId, limit);
+    }
+
+    @Override
+    public List<Execution> getUserHistory(ActorContext actor, Long userId, int limit) {
+        return lifecycle.getUserHistory(actor, userId, limit);
+    }
 
     // Compatibility bridges retain the package's existing reflection-level helper contract.
     private static Map<String, Object> withActor(ActorContext actor, Map<String, Object> input) {
@@ -92,12 +143,24 @@ public class AgentRuntimeImpl implements AgentRuntime {
         return AgentExecutionLifecycle.withRuntime(input, run);
     }
 
-    private long number(Object value) { return AgentRuntimeStateStore.number(value); }
-    private String string(Object value) { return AgentRuntimeEventBridge.string(value); }
-    private static ExecutionStatus resolveStatus(AgentExecutionBO bo) { return AgentRuntimeStateStore.resolveStatus(bo); }
-    private static Map<String, Object> parseData(String data) { return AgentRuntimeStateStore.parseData(data); }
+    private long number(Object value) {
+        return AgentRuntimeStateStore.number(value);
+    }
 
-    private Execution createExecution(ActorContext actor, String agentId, String version, Map<String, Object> input) {
+    private String string(Object value) {
+        return AgentRuntimeEventBridge.string(value);
+    }
+
+    private static ExecutionStatus resolveStatus(AgentExecutionBO bo) {
+        return AgentRuntimeStateStore.resolveStatus(bo);
+    }
+
+    private static Map<String, Object> parseData(String data) {
+        return AgentRuntimeStateStore.parseData(data);
+    }
+
+    private Execution createExecution(
+            ActorContext actor, String agentId, String version, Map<String, Object> input) {
         return lifecycle.createExecution(actor, agentId, version, input);
     }
 

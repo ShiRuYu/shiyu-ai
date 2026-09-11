@@ -1,10 +1,10 @@
-
 package com.shiyu.ai.common.thread.executor;
 
 import com.shiyu.ai.common.thread.api.TaskDecorator;
 import com.shiyu.ai.common.thread.context.ContextAwareCallable;
 import com.shiyu.ai.common.thread.context.ContextAwareRunnable;
 import com.shiyu.ai.common.thread.context.ContextTaskDecorator;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -12,10 +12,7 @@ import java.util.List;
 import java.util.concurrent.*;
 import java.util.concurrent.atomic.AtomicReference;
 
-/**
- * 安全执行器服务包装器
- * 提供上下文传递、异常处理和任务装饰等功能
- */
+/** 安全执行器服务包装器 提供上下文传递、异常处理和任务装饰等功能 */
 public class SafeExecutorService extends AbstractExecutorService {
 
     private static final Logger logger = LoggerFactory.getLogger(SafeExecutorService.class);
@@ -24,16 +21,16 @@ public class SafeExecutorService extends AbstractExecutorService {
     private final TaskDecorator taskDecorator;
     private final AtomicReference<State> state = new AtomicReference<>(State.RUNNING);
 
-    /**
-     * 执行器状态
-     */
+    /** 执行器状态 */
     private enum State {
-        RUNNING, SHUTDOWN, TERMINATED
+        RUNNING,
+        SHUTDOWN,
+        TERMINATED
     }
 
     /**
      * 获取委托的执行器服务
-     * 
+     *
      * @return 委托的执行器服务
      */
     public ExecutorService getDelegate() {
@@ -42,7 +39,7 @@ public class SafeExecutorService extends AbstractExecutorService {
 
     /**
      * 创建安全执行器服务
-     * 
+     *
      * @param delegate 委托的执行器服务
      */
     public SafeExecutorService(ExecutorService delegate) {
@@ -51,7 +48,7 @@ public class SafeExecutorService extends AbstractExecutorService {
 
     /**
      * 创建安全执行器服务
-     * 
+     *
      * @param delegate 委托的执行器服务
      * @param taskDecorator 任务装饰器
      */
@@ -141,9 +138,7 @@ public class SafeExecutorService extends AbstractExecutorService {
         return delegate.submit(decoratedTask);
     }
 
-    /**
-     * 安全的FutureTask实现
-     */
+    /** 安全的FutureTask实现 */
     private static class SafeFutureTask<T> extends FutureTask<T> {
 
         public SafeFutureTask(Runnable runnable, T result) {
@@ -166,5 +161,4 @@ public class SafeExecutorService extends AbstractExecutorService {
             }
         }
     }
-
 }

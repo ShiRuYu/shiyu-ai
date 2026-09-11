@@ -1,5 +1,7 @@
 package com.shiyu.ai.knowledge.implementation.domain.model;
+
 import com.shiyu.ai.common.core.domain.TenantModel;
+
 import lombok.Data;
 import lombok.EqualsAndHashCode;
 
@@ -14,4 +16,3 @@ public class KnowledgeAuditLogBO extends TenantModel {
     private String action;
     private String detailJson;
 }
-

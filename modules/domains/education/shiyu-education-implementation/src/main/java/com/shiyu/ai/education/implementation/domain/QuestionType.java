@@ -6,7 +6,6 @@ import lombok.Getter;
 @Getter
 @AllArgsConstructor
 public enum QuestionType {
-
     CHOICE("CHOICE", "选择题"),
     FILL("FILL", "填空题"),
     SOLVE("SOLVE", "解答题"),
@@ -17,4 +16,3 @@ public enum QuestionType {
     private final String code;
     private final String name;
 }
-

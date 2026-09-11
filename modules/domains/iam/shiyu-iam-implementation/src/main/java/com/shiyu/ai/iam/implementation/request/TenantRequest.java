@@ -1,9 +1,12 @@
 package com.shiyu.ai.iam.implementation.request;
 
 import com.shiyu.ai.iam.implementation.domain.model.TenantBO;
+
 import io.github.linpeilie.annotations.AutoMapper;
-import jakarta.validation.constraints.NotBlank;
 import io.swagger.v3.oas.annotations.media.Schema;
+
+import jakarta.validation.constraints.NotBlank;
+
 import lombok.Data;
 
 import java.io.Serial;
@@ -16,8 +19,7 @@ import java.util.List;
 @SuppressWarnings("serial")
 public class TenantRequest implements Serializable {
 
-    @Serial
-    private static final long serialVersionUID = 1L;
+    @Serial private static final long serialVersionUID = 1L;
 
     @Schema(description = "父租户ID（null=根租户）")
     private Long parentId;
@@ -73,4 +75,3 @@ public class TenantRequest implements Serializable {
     @Schema(description = "租户管理员初始密码")
     private String adminPassword;
 }
-

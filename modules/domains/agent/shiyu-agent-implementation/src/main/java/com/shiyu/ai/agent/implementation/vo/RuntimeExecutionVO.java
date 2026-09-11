@@ -11,8 +11,7 @@ import java.util.Map;
 @SuppressWarnings("serial")
 public class RuntimeExecutionVO implements Serializable {
 
-    @Serial
-    private static final long serialVersionUID = 1L;
+    @Serial private static final long serialVersionUID = 1L;
 
     private String executionId;
     private String agentId;

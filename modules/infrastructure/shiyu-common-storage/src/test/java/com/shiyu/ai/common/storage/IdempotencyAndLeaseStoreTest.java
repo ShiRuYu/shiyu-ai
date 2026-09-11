@@ -1,13 +1,14 @@
 package com.shiyu.ai.common.storage;
 
+import static org.assertj.core.api.Assertions.assertThat;
+
 import com.shiyu.ai.common.storage.api.DistributedLeaseStore;
 import com.shiyu.ai.common.storage.idempotency.LocalIdempotencyStore;
 import com.shiyu.ai.common.storage.lease.LocalLeaseStore;
+
 import org.junit.jupiter.api.Test;
 
 import java.time.Duration;
-
-import static org.assertj.core.api.Assertions.assertThat;
 
 class IdempotencyAndLeaseStoreTest {
 

@@ -1,7 +1,9 @@
 package com.shiyu.ai.common.web.filter;
 
 import cn.hutool.core.io.IoUtil;
+
 import com.shiyu.ai.common.core.CharConstants;
+
 import jakarta.servlet.ReadListener;
 import jakarta.servlet.ServletInputStream;
 import jakarta.servlet.ServletResponse;
@@ -13,13 +15,12 @@ import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.io.InputStreamReader;
 
-/**
- * 构建可重复读取inputStream的request
- */
+/** 构建可重复读取inputStream的request */
 public class RepeatedlyRequestWrapper extends HttpServletRequestWrapper {
     private final byte[] body;
 
-    public RepeatedlyRequestWrapper(HttpServletRequest request, ServletResponse response) throws IOException {
+    public RepeatedlyRequestWrapper(HttpServletRequest request, ServletResponse response)
+            throws IOException {
         super(request);
         request.setCharacterEncoding(CharConstants.UTF8);
         response.setCharacterEncoding(CharConstants.UTF8);
@@ -57,9 +58,7 @@ public class RepeatedlyRequestWrapper extends HttpServletRequestWrapper {
             }
 
             @Override
-            public void setReadListener(ReadListener readListener) {
-
-            }
+            public void setReadListener(ReadListener readListener) {}
         };
     }
 }

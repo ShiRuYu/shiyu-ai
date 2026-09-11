@@ -1,14 +1,15 @@
 package com.shiyu.ai.knowledge.implementation.domain.model;
 
-import com.shiyu.ai.model.contract.api.ChatEngine;
-import com.shiyu.ai.model.contract.model.ChatResponse;
-import org.junit.jupiter.api.Test;
-
-import java.util.List;
-
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.*;
+
+import com.shiyu.ai.model.contract.api.ChatEngine;
+import com.shiyu.ai.model.contract.model.ChatResponse;
+
+import org.junit.jupiter.api.Test;
+
+import java.util.List;
 
 class ExistingRerankProviderTest {
     private final ChatEngine engine = mock(ChatEngine.class);
@@ -23,22 +24,28 @@ class ExistingRerankProviderTest {
 
     @Test
     void parsesValidUniqueIndexesAndClampsTopK() {
-        when(engine.chat(any())).thenReturn(ChatResponse.builder().success(true).content("[2], 2, 9, bad, 0").build());
+        when(engine.chat(any()))
+                .thenReturn(
+                        ChatResponse.builder().success(true).content("[2], 2, 9, bad, 0").build());
         assertEquals(List.of(2, 0), provider.rerank("q", List.of("a", "b", "c"), 99));
         verify(engine).chat(any());
     }
 
     @Test
     void fallsBackForEmptyResponseFailureAndProviderException() {
-        when(engine.chat(any())).thenReturn(ChatResponse.builder().success(true).content("bad").build());
+        when(engine.chat(any()))
+                .thenReturn(ChatResponse.builder().success(true).content("bad").build());
         assertEquals(List.of(0), provider.rerank("q", List.of("a", "b"), 0));
-        when(engine.chat(any())).thenReturn(ChatResponse.builder().success(false).content("1").build());
+        when(engine.chat(any()))
+                .thenReturn(ChatResponse.builder().success(false).content("1").build());
         assertEquals(List.of(0, 1), provider.rerank("q", List.of("a", "b"), 2));
         when(engine.chat(any())).thenThrow(new IllegalStateException("down"));
         assertEquals(List.of(0), provider.rerank("q", List.of("a", "b"), 1));
         doReturn(null).when(engine).chat(any());
         assertEquals(List.of(0, 1), provider.rerank("q", List.of("a", "b"), 2));
-        doReturn(ChatResponse.builder().success(true).content(null).build()).when(engine).chat(any());
+        doReturn(ChatResponse.builder().success(true).content(null).build())
+                .when(engine)
+                .chat(any());
         assertEquals(List.of(0), provider.rerank("q", List.of("a", "b"), 1));
     }
 }

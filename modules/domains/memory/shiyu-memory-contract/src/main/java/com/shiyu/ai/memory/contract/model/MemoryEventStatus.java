@@ -6,4 +6,3 @@ public enum MemoryEventStatus {
     SUPERSEDED,
     REVOKED
 }
-

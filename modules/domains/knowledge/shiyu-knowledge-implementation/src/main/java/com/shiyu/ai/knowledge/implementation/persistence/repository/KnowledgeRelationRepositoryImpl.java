@@ -4,43 +4,60 @@ import com.mybatisflex.core.query.QueryWrapper;
 import com.shiyu.ai.common.core.utils.MapstructUtils;
 import com.shiyu.ai.kernel.context.TenantId;
 import com.shiyu.ai.knowledge.implementation.domain.model.KnowledgeRelationBO;
+import com.shiyu.ai.knowledge.implementation.domain.port.repository.KnowledgeRelationRepository;
 import com.shiyu.ai.knowledge.implementation.persistence.dataobject.KnowledgeRelationDO;
 import com.shiyu.ai.knowledge.implementation.persistence.mapper.KnowledgeRelationMapper;
-import com.shiyu.ai.knowledge.implementation.domain.port.repository.KnowledgeRelationRepository;
+
 import jakarta.annotation.Resource;
+
 import org.springframework.stereotype.Component;
 
 import java.util.List;
 
 @Component
 public class KnowledgeRelationRepositoryImpl implements KnowledgeRelationRepository {
-    @Resource
-    private KnowledgeRelationMapper relationMapper;
+    @Resource private KnowledgeRelationMapper relationMapper;
 
     @Override
-    public List<KnowledgeRelationBO> findBySourceId(TenantId tenantId, Long spaceId, Long sourceId) {
-        return convert(relationMapper.selectListByQuery(base(tenantId).eq(KnowledgeRelationDO::getSpaceId, spaceId)
-                .eq(KnowledgeRelationDO::getSourceId, sourceId)));
+    public List<KnowledgeRelationBO> findBySourceId(
+            TenantId tenantId, Long spaceId, Long sourceId) {
+        return convert(
+                relationMapper.selectListByQuery(
+                        base(tenantId)
+                                .eq(KnowledgeRelationDO::getSpaceId, spaceId)
+                                .eq(KnowledgeRelationDO::getSourceId, sourceId)));
     }
 
     @Override
-    public List<KnowledgeRelationBO> findByTargetId(TenantId tenantId, Long spaceId, Long targetId) {
-        return convert(relationMapper.selectListByQuery(base(tenantId).eq(KnowledgeRelationDO::getSpaceId, spaceId)
-                .eq(KnowledgeRelationDO::getTargetId, targetId)));
+    public List<KnowledgeRelationBO> findByTargetId(
+            TenantId tenantId, Long spaceId, Long targetId) {
+        return convert(
+                relationMapper.selectListByQuery(
+                        base(tenantId)
+                                .eq(KnowledgeRelationDO::getSpaceId, spaceId)
+                                .eq(KnowledgeRelationDO::getTargetId, targetId)));
     }
 
     @Override
-    public List<KnowledgeRelationBO> findBySourceIdAndType(TenantId tenantId, Long spaceId, Long sourceId, String type) {
-        return convert(relationMapper.selectListByQuery(base(tenantId).eq(KnowledgeRelationDO::getSpaceId, spaceId)
-                .eq(KnowledgeRelationDO::getSourceId, sourceId)
-                .eq(KnowledgeRelationDO::getRelationType, type)));
+    public List<KnowledgeRelationBO> findBySourceIdAndType(
+            TenantId tenantId, Long spaceId, Long sourceId, String type) {
+        return convert(
+                relationMapper.selectListByQuery(
+                        base(tenantId)
+                                .eq(KnowledgeRelationDO::getSpaceId, spaceId)
+                                .eq(KnowledgeRelationDO::getSourceId, sourceId)
+                                .eq(KnowledgeRelationDO::getRelationType, type)));
     }
 
     @Override
-    public List<KnowledgeRelationBO> findByTargetIdAndType(TenantId tenantId, Long spaceId, Long targetId, String type) {
-        return convert(relationMapper.selectListByQuery(base(tenantId).eq(KnowledgeRelationDO::getSpaceId, spaceId)
-                .eq(KnowledgeRelationDO::getTargetId, targetId)
-                .eq(KnowledgeRelationDO::getRelationType, type)));
+    public List<KnowledgeRelationBO> findByTargetIdAndType(
+            TenantId tenantId, Long spaceId, Long targetId, String type) {
+        return convert(
+                relationMapper.selectListByQuery(
+                        base(tenantId)
+                                .eq(KnowledgeRelationDO::getSpaceId, spaceId)
+                                .eq(KnowledgeRelationDO::getTargetId, targetId)
+                                .eq(KnowledgeRelationDO::getRelationType, type)));
     }
 
     @Override
@@ -52,39 +69,55 @@ public class KnowledgeRelationRepositoryImpl implements KnowledgeRelationReposit
     }
 
     @Override
-    public int deleteBySourceAndTargetAndType(TenantId tenantId, Long spaceId, Long sourceId, Long targetId, String type) {
-        return relationMapper.deleteByQuery(base(tenantId).eq(KnowledgeRelationDO::getSpaceId, spaceId)
-                .eq(KnowledgeRelationDO::getSourceId, sourceId)
-                .eq(KnowledgeRelationDO::getTargetId, targetId)
-                .eq(KnowledgeRelationDO::getRelationType, type));
+    public int deleteBySourceAndTargetAndType(
+            TenantId tenantId, Long spaceId, Long sourceId, Long targetId, String type) {
+        return relationMapper.deleteByQuery(
+                base(tenantId)
+                        .eq(KnowledgeRelationDO::getSpaceId, spaceId)
+                        .eq(KnowledgeRelationDO::getSourceId, sourceId)
+                        .eq(KnowledgeRelationDO::getTargetId, targetId)
+                        .eq(KnowledgeRelationDO::getRelationType, type));
     }
 
     @Override
     public int deleteBySourceIdOrTargetId(TenantId tenantId, Long spaceId, Long knowledgeId) {
-        int count = relationMapper.deleteByQuery(base(tenantId).eq(KnowledgeRelationDO::getSpaceId, spaceId)
-                .eq(KnowledgeRelationDO::getSourceId, knowledgeId));
-        count += relationMapper.deleteByQuery(base(tenantId).eq(KnowledgeRelationDO::getSpaceId, spaceId)
-                .eq(KnowledgeRelationDO::getTargetId, knowledgeId));
+        int count =
+                relationMapper.deleteByQuery(
+                        base(tenantId)
+                                .eq(KnowledgeRelationDO::getSpaceId, spaceId)
+                                .eq(KnowledgeRelationDO::getSourceId, knowledgeId));
+        count +=
+                relationMapper.deleteByQuery(
+                        base(tenantId)
+                                .eq(KnowledgeRelationDO::getSpaceId, spaceId)
+                                .eq(KnowledgeRelationDO::getTargetId, knowledgeId));
         return count;
     }
 
     @Override
     public List<KnowledgeRelationBO> findBySpace(TenantId tenantId, Long spaceId) {
-        return convert(relationMapper.selectListByQuery(base(tenantId).eq(KnowledgeRelationDO::getSpaceId, spaceId)));
+        return convert(
+                relationMapper.selectListByQuery(
+                        base(tenantId).eq(KnowledgeRelationDO::getSpaceId, spaceId)));
     }
 
     @Override
-    public boolean exists(TenantId tenantId, Long spaceId, Long sourceId, Long targetId, String type) {
-        return relationMapper.selectCountByQuery(base(tenantId).eq(KnowledgeRelationDO::getSpaceId, spaceId)
-                .eq(KnowledgeRelationDO::getSourceId, sourceId)
-                .eq(KnowledgeRelationDO::getTargetId, targetId)
-                .eq(KnowledgeRelationDO::getRelationType, type)) > 0;
+    public boolean exists(
+            TenantId tenantId, Long spaceId, Long sourceId, Long targetId, String type) {
+        return relationMapper.selectCountByQuery(
+                        base(tenantId)
+                                .eq(KnowledgeRelationDO::getSpaceId, spaceId)
+                                .eq(KnowledgeRelationDO::getSourceId, sourceId)
+                                .eq(KnowledgeRelationDO::getTargetId, targetId)
+                                .eq(KnowledgeRelationDO::getRelationType, type))
+                > 0;
     }
 
     @Override
     public void assignDefaultSpace(TenantId tenantId, Long spaceId) {
-        List<KnowledgeRelationDO> records = relationMapper.selectListByQuery(
-                base(tenantId).isNull(KnowledgeRelationDO::getSpaceId));
+        List<KnowledgeRelationDO> records =
+                relationMapper.selectListByQuery(
+                        base(tenantId).isNull(KnowledgeRelationDO::getSpaceId));
         for (KnowledgeRelationDO record : records) {
             record.setSpaceId(spaceId);
             relationMapper.update(record);
@@ -93,7 +126,8 @@ public class KnowledgeRelationRepositoryImpl implements KnowledgeRelationReposit
 
     private QueryWrapper base(TenantId tenantId) {
         if (tenantId == null) throw new IllegalArgumentException("tenantId must not be null");
-        return QueryWrapper.create().eq(KnowledgeRelationDO::getTenantId, tenantId.value())
+        return QueryWrapper.create()
+                .eq(KnowledgeRelationDO::getTenantId, tenantId.value())
                 .eq(KnowledgeRelationDO::getDelFlag, 0);
     }
 
@@ -101,5 +135,3 @@ public class KnowledgeRelationRepositoryImpl implements KnowledgeRelationReposit
         return MapstructUtils.convert(records, KnowledgeRelationBO.class);
     }
 }
-
-

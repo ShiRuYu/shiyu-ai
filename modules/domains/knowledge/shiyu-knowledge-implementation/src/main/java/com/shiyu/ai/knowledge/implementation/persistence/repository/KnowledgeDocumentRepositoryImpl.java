@@ -5,26 +5,28 @@ import com.shiyu.ai.common.core.api.PageData;
 import com.shiyu.ai.common.core.utils.MapstructUtils;
 import com.shiyu.ai.kernel.context.TenantId;
 import com.shiyu.ai.knowledge.implementation.domain.model.KnowledgeDocumentBO;
+import com.shiyu.ai.knowledge.implementation.domain.port.repository.KnowledgeDocumentRepository;
 import com.shiyu.ai.knowledge.implementation.persistence.dataobject.KnowledgeDocRelationDO;
 import com.shiyu.ai.knowledge.implementation.persistence.dataobject.KnowledgeDocumentDO;
 import com.shiyu.ai.knowledge.implementation.persistence.mapper.KnowledgeDocRelationMapper;
 import com.shiyu.ai.knowledge.implementation.persistence.mapper.KnowledgeDocumentMapper;
-import com.shiyu.ai.knowledge.implementation.domain.port.repository.KnowledgeDocumentRepository;
+
 import jakarta.annotation.Resource;
+
 import org.springframework.stereotype.Component;
 
 import java.util.List;
 
 @Component
 public class KnowledgeDocumentRepositoryImpl implements KnowledgeDocumentRepository {
-    @Resource
-    private KnowledgeDocumentMapper knowledgeDocumentMapper;
-    @Resource
-    private KnowledgeDocRelationMapper knowledgeDocRelationMapper;
+    @Resource private KnowledgeDocumentMapper knowledgeDocumentMapper;
+    @Resource private KnowledgeDocRelationMapper knowledgeDocRelationMapper;
 
     @Override
     public KnowledgeDocumentBO selectById(TenantId tenantId, Long id) {
-        return convert(knowledgeDocumentMapper.selectOneByQuery(base(tenantId).eq(KnowledgeDocumentDO::getId, id)));
+        return convert(
+                knowledgeDocumentMapper.selectOneByQuery(
+                        base(tenantId).eq(KnowledgeDocumentDO::getId, id)));
     }
 
     @Override
@@ -54,69 +56,105 @@ public class KnowledgeDocumentRepositoryImpl implements KnowledgeDocumentReposit
 
     @Override
     public int deleteById(TenantId tenantId, Long id) {
-        return knowledgeDocumentMapper.deleteByQuery(base(tenantId).eq(KnowledgeDocumentDO::getId, id));
+        return knowledgeDocumentMapper.deleteByQuery(
+                base(tenantId).eq(KnowledgeDocumentDO::getId, id));
     }
 
     @Override
     public List<KnowledgeDocumentBO> searchByKeyword(TenantId tenantId, String keyword, int topK) {
         return selectAll(tenantId).stream()
-                .filter(d -> (d.getTitle() != null && d.getTitle().contains(keyword))
-                        || (d.getContent() != null && d.getContent().contains(keyword)))
-                .limit(topK).toList();
+                .filter(
+                        d ->
+                                (d.getTitle() != null && d.getTitle().contains(keyword))
+                                        || (d.getContent() != null
+                                                && d.getContent().contains(keyword)))
+                .limit(topK)
+                .toList();
     }
 
     @Override
     public List<KnowledgeDocumentBO> selectByKnowledgeId(TenantId tenantId, Long knowledgeId) {
-        List<Long> docIds = knowledgeDocRelationMapper.selectListByQuery(relationBase(tenantId)
-                        .eq(KnowledgeDocRelationDO::getKnowledgeId, knowledgeId))
-                .stream().map(KnowledgeDocRelationDO::getDocId).toList();
+        List<Long> docIds =
+                knowledgeDocRelationMapper
+                        .selectListByQuery(
+                                relationBase(tenantId)
+                                        .eq(KnowledgeDocRelationDO::getKnowledgeId, knowledgeId))
+                        .stream()
+                        .map(KnowledgeDocRelationDO::getDocId)
+                        .toList();
         if (docIds.isEmpty()) return List.of();
-        return convertList(knowledgeDocumentMapper.selectListByQuery(base(tenantId)
-                .in(KnowledgeDocumentDO::getId, docIds)));
+        return convertList(
+                knowledgeDocumentMapper.selectListByQuery(
+                        base(tenantId).in(KnowledgeDocumentDO::getId, docIds)));
     }
 
     @Override
-    public List<KnowledgeDocumentBO> selectByKnowledgeId(TenantId tenantId, Long spaceId, Long knowledgeId) {
-        List<Long> docIds = knowledgeDocRelationMapper.selectListByQuery(relationBase(tenantId)
-                        .eq(KnowledgeDocRelationDO::getSpaceId, spaceId)
-                        .eq(KnowledgeDocRelationDO::getKnowledgeId, knowledgeId))
-                .stream().map(KnowledgeDocRelationDO::getDocId).toList();
+    public List<KnowledgeDocumentBO> selectByKnowledgeId(
+            TenantId tenantId, Long spaceId, Long knowledgeId) {
+        List<Long> docIds =
+                knowledgeDocRelationMapper
+                        .selectListByQuery(
+                                relationBase(tenantId)
+                                        .eq(KnowledgeDocRelationDO::getSpaceId, spaceId)
+                                        .eq(KnowledgeDocRelationDO::getKnowledgeId, knowledgeId))
+                        .stream()
+                        .map(KnowledgeDocRelationDO::getDocId)
+                        .toList();
         if (docIds.isEmpty()) return List.of();
-        return convertList(knowledgeDocumentMapper.selectListByQuery(base(tenantId)
-                .eq(KnowledgeDocumentDO::getSpaceId, spaceId)
-                .in(KnowledgeDocumentDO::getId, docIds)));
+        return convertList(
+                knowledgeDocumentMapper.selectListByQuery(
+                        base(tenantId)
+                                .eq(KnowledgeDocumentDO::getSpaceId, spaceId)
+                                .in(KnowledgeDocumentDO::getId, docIds)));
     }
 
     @Override
-    public PageData<KnowledgeDocumentBO> pageBySpace(TenantId tenantId, Long spaceId, int pageNum, int pageSize,
-                                                     String keyword, String lifecycleStatus, String parseStatus) {
+    public PageData<KnowledgeDocumentBO> pageBySpace(
+            TenantId tenantId,
+            Long spaceId,
+            int pageNum,
+            int pageSize,
+            String keyword,
+            String lifecycleStatus,
+            String parseStatus) {
         QueryWrapper query = base(tenantId).eq(KnowledgeDocumentDO::getSpaceId, spaceId);
-        if (keyword != null && !keyword.isBlank()) query.like(KnowledgeDocumentDO::getTitle, keyword);
-        if (lifecycleStatus != null && !lifecycleStatus.isBlank()) query.eq(KnowledgeDocumentDO::getLifecycleStatus, lifecycleStatus);
-        if (parseStatus != null && !parseStatus.isBlank()) query.eq(KnowledgeDocumentDO::getParseStatus, parseStatus);
-        var page = knowledgeDocumentMapper.paginate(pageNum, pageSize,
-                query.orderBy(KnowledgeDocumentDO::getId, false));
+        if (keyword != null && !keyword.isBlank())
+            query.like(KnowledgeDocumentDO::getTitle, keyword);
+        if (lifecycleStatus != null && !lifecycleStatus.isBlank())
+            query.eq(KnowledgeDocumentDO::getLifecycleStatus, lifecycleStatus);
+        if (parseStatus != null && !parseStatus.isBlank())
+            query.eq(KnowledgeDocumentDO::getParseStatus, parseStatus);
+        var page =
+                knowledgeDocumentMapper.paginate(
+                        pageNum, pageSize, query.orderBy(KnowledgeDocumentDO::getId, false));
         return new PageData<>(convertList(page.getRecords()), page.getTotalRow());
     }
 
     @Override
-    public KnowledgeDocumentBO findBySpaceAndChecksum(TenantId tenantId, Long spaceId, String checksum) {
-        return convert(knowledgeDocumentMapper.selectOneByQuery(base(tenantId)
-                .eq(KnowledgeDocumentDO::getSpaceId, spaceId)
-                .eq(KnowledgeDocumentDO::getChecksum, checksum).limit(1)));
+    public KnowledgeDocumentBO findBySpaceAndChecksum(
+            TenantId tenantId, Long spaceId, String checksum) {
+        return convert(
+                knowledgeDocumentMapper.selectOneByQuery(
+                        base(tenantId)
+                                .eq(KnowledgeDocumentDO::getSpaceId, spaceId)
+                                .eq(KnowledgeDocumentDO::getChecksum, checksum)
+                                .limit(1)));
     }
 
     @Override
     public List<KnowledgeDocumentBO> findBySpace(TenantId tenantId, Long spaceId) {
-        return convertList(knowledgeDocumentMapper.selectListByQuery(base(tenantId)
-                .eq(KnowledgeDocumentDO::getSpaceId, spaceId)
-                .orderBy(KnowledgeDocumentDO::getId, true)));
+        return convertList(
+                knowledgeDocumentMapper.selectListByQuery(
+                        base(tenantId)
+                                .eq(KnowledgeDocumentDO::getSpaceId, spaceId)
+                                .orderBy(KnowledgeDocumentDO::getId, true)));
     }
 
     @Override
     public void assignDefaultSpace(TenantId tenantId, Long spaceId) {
-        List<KnowledgeDocumentDO> records = knowledgeDocumentMapper.selectListByQuery(
-                base(tenantId).isNull(KnowledgeDocumentDO::getSpaceId));
+        List<KnowledgeDocumentDO> records =
+                knowledgeDocumentMapper.selectListByQuery(
+                        base(tenantId).isNull(KnowledgeDocumentDO::getSpaceId));
         for (KnowledgeDocumentDO record : records) {
             record.setSpaceId(spaceId);
             if (record.getLifecycleStatus() == null) record.setLifecycleStatus("PUBLISHED");
@@ -127,13 +165,15 @@ public class KnowledgeDocumentRepositoryImpl implements KnowledgeDocumentReposit
 
     private QueryWrapper base(TenantId tenantId) {
         if (tenantId == null) throw new IllegalArgumentException("tenantId must not be null");
-        return QueryWrapper.create().eq(KnowledgeDocumentDO::getTenantId, tenantId.value())
+        return QueryWrapper.create()
+                .eq(KnowledgeDocumentDO::getTenantId, tenantId.value())
                 .eq(KnowledgeDocumentDO::getDelFlag, 0);
     }
 
     private QueryWrapper relationBase(TenantId tenantId) {
         if (tenantId == null) throw new IllegalArgumentException("tenantId must not be null");
-        return QueryWrapper.create().eq(KnowledgeDocRelationDO::getTenantId, tenantId.value())
+        return QueryWrapper.create()
+                .eq(KnowledgeDocRelationDO::getTenantId, tenantId.value())
                 .eq(KnowledgeDocRelationDO::getDelFlag, 0);
     }
 
@@ -151,5 +191,3 @@ public class KnowledgeDocumentRepositoryImpl implements KnowledgeDocumentReposit
         return MapstructUtils.convert(data, KnowledgeDocumentBO.class);
     }
 }
-
-

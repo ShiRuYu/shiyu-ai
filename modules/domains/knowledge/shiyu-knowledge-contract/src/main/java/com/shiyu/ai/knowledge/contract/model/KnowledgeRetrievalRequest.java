@@ -14,13 +14,13 @@ public record KnowledgeRetrievalRequest(
         Integer candidateTopK,
         Integer topK,
         Double scoreThreshold,
-        Boolean enableRerank
-) {
+        Boolean enableRerank) {
     public KnowledgeRetrievalRequest {
         spaceIds = spaceIds == null ? List.of() : List.copyOf(spaceIds);
-        sourceTypes = sourceTypes == null || sourceTypes.isEmpty()
-                ? Set.of(KnowledgeSourceType.DOCUMENT, KnowledgeSourceType.KNOWLEDGE_ENTRY)
-                : Set.copyOf(sourceTypes);
+        sourceTypes =
+                sourceTypes == null || sourceTypes.isEmpty()
+                        ? Set.of(KnowledgeSourceType.DOCUMENT, KnowledgeSourceType.KNOWLEDGE_ENTRY)
+                        : Set.copyOf(sourceTypes);
         retrievalMode = retrievalMode == null ? RetrievalMode.HYBRID : retrievalMode;
         candidateTopK = candidateTopK == null ? 20 : candidateTopK;
         topK = topK == null ? 5 : topK;
@@ -28,4 +28,3 @@ public record KnowledgeRetrievalRequest(
         enableRerank = enableRerank == null || enableRerank;
     }
 }
-

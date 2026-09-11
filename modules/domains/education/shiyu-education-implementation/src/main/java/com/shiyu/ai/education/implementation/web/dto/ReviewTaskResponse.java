@@ -1,8 +1,10 @@
 package com.shiyu.ai.education.implementation.web.dto;
 
-import java.time.LocalDateTime;
-import io.github.linpeilie.annotations.AutoMapper;
 import com.shiyu.ai.education.implementation.domain.model.ReviewTaskBO;
+
+import io.github.linpeilie.annotations.AutoMapper;
+
+import java.time.LocalDateTime;
 
 @AutoMapper(target = ReviewTaskBO.class)
 public record ReviewTaskResponse(
@@ -15,6 +17,4 @@ public record ReviewTaskResponse(
         Integer status,
         String statusDesc,
         Double resultScore,
-        LocalDateTime completedAt
-) {}
-
+        LocalDateTime completedAt) {}

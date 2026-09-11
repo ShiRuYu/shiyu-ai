@@ -1,23 +1,5 @@
 package com.shiyu.ai.web.auth;
 
-import com.shiyu.ai.iam.implementation.handler.LoginRateLimiter;
-import com.shiyu.ai.iam.implementation.request.LoginRequest;
-import com.shiyu.ai.iam.implementation.request.RefreshTokenRequest;
-import com.shiyu.ai.iam.implementation.service.AuthService;
-import com.shiyu.ai.iam.implementation.service.UserService;
-import com.shiyu.ai.iam.implementation.vo.LoginResponseVO;
-import com.shiyu.ai.iam.implementation.web.AuthController;
-import com.shiyu.ai.common.core.api.Result;
-import com.shiyu.ai.common.core.domain.UserContext;
-import com.shiyu.ai.common.core.domain.UserContextHolder;
-import com.shiyu.ai.knowledge.contract.KnowledgeTenantProvisioning;
-import com.shiyu.ai.kernel.context.TenantId;
-import org.junit.jupiter.api.AfterEach;
-import org.junit.jupiter.api.Tag;
-import org.junit.jupiter.api.Test;
-
-import java.util.concurrent.atomic.AtomicReference;
-
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertSame;
@@ -25,6 +7,25 @@ import static org.mockito.Mockito.doAnswer;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
+
+import com.shiyu.ai.common.core.api.Result;
+import com.shiyu.ai.common.core.domain.UserContext;
+import com.shiyu.ai.common.core.domain.UserContextHolder;
+import com.shiyu.ai.iam.implementation.handler.LoginRateLimiter;
+import com.shiyu.ai.iam.implementation.request.LoginRequest;
+import com.shiyu.ai.iam.implementation.request.RefreshTokenRequest;
+import com.shiyu.ai.iam.implementation.service.AuthService;
+import com.shiyu.ai.iam.implementation.service.UserService;
+import com.shiyu.ai.iam.implementation.vo.LoginResponseVO;
+import com.shiyu.ai.iam.implementation.web.AuthController;
+import com.shiyu.ai.kernel.context.TenantId;
+import com.shiyu.ai.knowledge.contract.KnowledgeTenantProvisioning;
+
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.Tag;
+import org.junit.jupiter.api.Test;
+
+import java.util.concurrent.atomic.AtomicReference;
 
 @Tag("dev")
 class AuthControllerTest {
@@ -40,8 +41,8 @@ class AuthControllerTest {
         UserService userService = mock(UserService.class);
         LoginRateLimiter rateLimiter = mock(LoginRateLimiter.class);
         KnowledgeTenantProvisioning knowledgeSpaceService = mock(KnowledgeTenantProvisioning.class);
-        AuthController controller = new AuthController(
-                authService, userService, rateLimiter, knowledgeSpaceService);
+        AuthController controller =
+                new AuthController(authService, userService, rateLimiter, knowledgeSpaceService);
 
         LoginRequest request = new LoginRequest();
         request.setUsername("admin");
@@ -57,10 +58,13 @@ class AuthControllerTest {
         when(authService.login("admin", "123456", null, "127.0.0.1")).thenReturn(response);
 
         AtomicReference<UserContext> observedContext = new AtomicReference<>();
-        doAnswer(invocation -> {
-            observedContext.set(UserContextHolder.getContext());
-            return null;
-        }).when(knowledgeSpaceService).initializeTenantDefaults(new TenantId(1L));
+        doAnswer(
+                        invocation -> {
+                            observedContext.set(UserContextHolder.getContext());
+                            return null;
+                        })
+                .when(knowledgeSpaceService)
+                .initializeTenantDefaults(new TenantId(1L));
 
         Result<LoginResponseVO> result = controller.login(request);
 
@@ -79,8 +83,8 @@ class AuthControllerTest {
         UserService userService = mock(UserService.class);
         LoginRateLimiter rateLimiter = mock(LoginRateLimiter.class);
         KnowledgeTenantProvisioning knowledgeSpaceService = mock(KnowledgeTenantProvisioning.class);
-        AuthController controller = new AuthController(
-                authService, userService, rateLimiter, knowledgeSpaceService);
+        AuthController controller =
+                new AuthController(authService, userService, rateLimiter, knowledgeSpaceService);
         RefreshTokenRequest request = new RefreshTokenRequest();
         request.setAccessToken("old-access-token");
         when(authService.refreshToken("old-access-token")).thenReturn("new-access-token");
@@ -92,4 +96,3 @@ class AuthControllerTest {
         verify(authService).refreshToken("old-access-token");
     }
 }
-

@@ -1,11 +1,11 @@
 package com.shiyu.ai.knowledge.implementation.application.rag;
 
+import static org.junit.jupiter.api.Assertions.*;
+
 import org.junit.jupiter.api.Test;
 
 import java.lang.reflect.Method;
 import java.util.List;
-
-import static org.junit.jupiter.api.Assertions.*;
 
 class ChineseChunkSplitterTest {
     private final ChineseChunkSplitter splitter = new ChineseChunkSplitter();
@@ -54,21 +54,25 @@ class ChineseChunkSplitterTest {
 
     @Test
     void exercisesOverlapAndTokenUtilityBoundaries() throws Exception {
-        Method estimate = ChineseChunkSplitter.class.getDeclaredMethod("estimateTokens", String.class);
+        Method estimate =
+                ChineseChunkSplitter.class.getDeclaredMethod("estimateTokens", String.class);
         estimate.setAccessible(true);
-        assertEquals(0, estimate.invoke(splitter, new Object[]{null}));
+        assertEquals(0, estimate.invoke(splitter, new Object[] {null}));
         assertEquals(0, estimate.invoke(splitter, ""));
         assertEquals(3, estimate.invoke(splitter, "中 a  b"));
 
-        Method overlapChars = ChineseChunkSplitter.class.getDeclaredMethod("getOverlapChars", String.class);
+        Method overlapChars =
+                ChineseChunkSplitter.class.getDeclaredMethod("getOverlapChars", String.class);
         overlapChars.setAccessible(true);
         assertEquals(0, overlapChars.invoke(splitter, ""));
-        assertTrue((Integer) overlapChars.invoke(splitter, "这是一个足够长的中文段落" ) > 0);
+        assertTrue((Integer) overlapChars.invoke(splitter, "这是一个足够长的中文段落") > 0);
 
-        Method overlapText = ChineseChunkSplitter.class.getDeclaredMethod("getOverlapText", List.class, int.class);
+        Method overlapText =
+                ChineseChunkSplitter.class.getDeclaredMethod(
+                        "getOverlapText", List.class, int.class);
         overlapText.setAccessible(true);
         assertEquals("", overlapText.invoke(splitter, List.of("one", "two"), 99));
-        assertTrue(((String) overlapText.invoke(splitter, List.of("one", "two"), 1)).contains("one"));
+        assertTrue(
+                ((String) overlapText.invoke(splitter, List.of("one", "two"), 1)).contains("one"));
     }
 }
-

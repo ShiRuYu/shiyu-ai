@@ -1,8 +1,8 @@
 package com.shiyu.ai.common.storage.file;
+
 import com.shiyu.ai.common.storage.api.*;
 import com.shiyu.ai.common.storage.backup.*;
 import com.shiyu.ai.common.storage.config.*;
-import com.shiyu.ai.common.storage.file.*;
 import com.shiyu.ai.common.storage.lease.*;
 import com.shiyu.ai.common.storage.metadata.*;
 import com.shiyu.ai.common.storage.rate.*;
@@ -14,13 +14,13 @@ import org.springframework.util.StringUtils;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStream;
+import java.nio.file.Path;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
-import java.nio.file.Path;
+import java.util.HexFormat;
 import java.util.List;
 import java.util.Locale;
 import java.util.Set;
-import java.util.HexFormat;
 
 public class FileStorageManager implements AutoCloseable {
 
@@ -35,9 +35,11 @@ public class FileStorageManager implements AutoCloseable {
         this(properties, NoopStorageMetadataStore.INSTANCE);
     }
 
-    public FileStorageManager(StorageProperties properties, StorageMetadataStore metadataStore) throws IOException {
+    public FileStorageManager(StorageProperties properties, StorageMetadataStore metadataStore)
+            throws IOException {
         this.type = normalizeType(properties.getType());
-        this.metadataStore = metadataStore == null ? NoopStorageMetadataStore.INSTANCE : metadataStore;
+        this.metadataStore =
+                metadataStore == null ? NoopStorageMetadataStore.INSTANCE : metadataStore;
         if (!SUPPORTED_TYPES.contains(type)) {
             throw new IllegalStateException("不支持的文件存储方式: " + type);
         }
@@ -61,30 +63,55 @@ public class FileStorageManager implements AutoCloseable {
     }
 
     public StoredFile upload(
-            String namespace, String originalName, String contentType, long size, InputStream inputStream)
+            String namespace,
+            String originalName,
+            String contentType,
+            long size,
+            InputStream inputStream)
             throws IOException {
         String normalizedNamespace = normalizeNamespace(namespace);
-        java.security.DigestInputStream digestInput = new java.security.DigestInputStream(
-                inputStream, digest());
-        StoredFile stored = storage.upload(normalizedNamespace, originalName, contentType, size, digestInput);
+        java.security.DigestInputStream digestInput =
+                new java.security.DigestInputStream(inputStream, digest());
+        StoredFile stored =
+                storage.upload(normalizedNamespace, originalName, contentType, size, digestInput);
         if (!metadataStore.persistent()) return stored;
         long tenantId = tenantId(normalizedNamespace);
         Long spaceId = spaceId(normalizedNamespace);
         String checksum = HexFormat.of().formatHex(digestInput.getMessageDigest().digest());
-        long metadataId = metadataStore.createObject(new StorageMetadataStore.CreateObject(
-                tenantId, spaceId, normalizedNamespace, stored.name(), stored.key(), stored.storageType(),
-                stored.contentType(), stored.size(), checksum, "AVAILABLE"));
+        long metadataId =
+                metadataStore.createObject(
+                        new StorageMetadataStore.CreateObject(
+                                tenantId,
+                                spaceId,
+                                normalizedNamespace,
+                                stored.name(),
+                                stored.key(),
+                                stored.storageType(),
+                                stored.contentType(),
+                                stored.size(),
+                                checksum,
+                                "AVAILABLE"));
         if (metadataId <= 0) {
-            try { storage.delete(stored.key()); } catch (IOException ignored) { }
+            try {
+                storage.delete(stored.key());
+            } catch (IOException ignored) {
+            }
             throw new IOException("文件记录写入数据库失败");
         }
-        return new StoredFile(stored.key(), stored.name(), stored.size(), stored.contentType(),
-                stored.lastModified(), stored.url(), stored.storageType());
+        return new StoredFile(
+                stored.key(),
+                stored.name(),
+                stored.size(),
+                stored.contentType(),
+                stored.lastModified(),
+                stored.url(),
+                stored.storageType());
     }
 
     /** Writes an object with an existing key for an operator-controlled migration. */
-    public StoredFile uploadAtKey(String key, String originalName, String contentType,
-                                  long size, InputStream inputStream) throws IOException {
+    public StoredFile uploadAtKey(
+            String key, String originalName, String contentType, long size, InputStream inputStream)
+            throws IOException {
         if (!(storage instanceof KeyedFileStorage keyedStorage)) {
             throw new IOException("当前文件存储不支持保留对象 key 的迁移");
         }
@@ -97,16 +124,26 @@ public class FileStorageManager implements AutoCloseable {
         if (!metadataStore.persistent()) return storage.list(normalizedNamespace);
         long tenantId = tenantId(normalizedNamespace);
         return metadataStore.listObjects(tenantId, normalizedNamespace, 0, 1000).stream()
-                .map(record -> new StoredFile(record.objectKey(), record.originalName(), record.size(),
-                        record.contentType(), record.updateTime(), null, record.provider()))
+                .map(
+                        record ->
+                                new StoredFile(
+                                        record.objectKey(),
+                                        record.originalName(),
+                                        record.size(),
+                                        record.contentType(),
+                                        record.updateTime(),
+                                        null,
+                                        record.provider()))
                 .toList();
     }
 
     public StorageObject open(String key) throws IOException {
         if (metadataStore.persistent()) {
             long tenantId = tenantIdFromKey(key);
-            StorageMetadataStore.StorageObjectRecord record = metadataStore.findObjectByKey(tenantId, key)
-                    .orElseThrow(() -> new FileNotFoundException("文件记录不存在"));
+            StorageMetadataStore.StorageObjectRecord record =
+                    metadataStore
+                            .findObjectByKey(tenantId, key)
+                            .orElseThrow(() -> new FileNotFoundException("文件记录不存在"));
             if (!"AVAILABLE".equals(record.status())) {
                 throw new IOException("文件当前不可用: " + record.status());
             }
@@ -137,8 +174,11 @@ public class FileStorageManager implements AutoCloseable {
     }
 
     private String normalizeNamespace(String namespace) {
-        if (namespace == null || namespace.isBlank()
-                || namespace.contains("..") || namespace.startsWith("/") || namespace.startsWith("\\")) {
+        if (namespace == null
+                || namespace.isBlank()
+                || namespace.contains("..")
+                || namespace.startsWith("/")
+                || namespace.startsWith("\\")) {
             throw new IllegalArgumentException("非法文件命名空间");
         }
         return namespace.replace('\\', '/').replaceAll("/+$", "") + "/";
@@ -166,8 +206,12 @@ public class FileStorageManager implements AutoCloseable {
     }
 
     private void validateKey(String key) throws IOException {
-        if (key == null || key.isBlank() || key.startsWith("/") || key.startsWith("\\")
-                || key.contains("..") || key.contains("\\")) {
+        if (key == null
+                || key.isBlank()
+                || key.startsWith("/")
+                || key.startsWith("\\")
+                || key.contains("..")
+                || key.contains("\\")) {
             throw new IOException("非法文件标识");
         }
     }
@@ -186,7 +230,10 @@ public class FileStorageManager implements AutoCloseable {
     }
 
     private MessageDigest digest() {
-        try { return MessageDigest.getInstance("SHA-256"); }
-        catch (NoSuchAlgorithmException ex) { throw new IllegalStateException(ex); }
+        try {
+            return MessageDigest.getInstance("SHA-256");
+        } catch (NoSuchAlgorithmException ex) {
+            throw new IllegalStateException(ex);
+        }
     }
 }

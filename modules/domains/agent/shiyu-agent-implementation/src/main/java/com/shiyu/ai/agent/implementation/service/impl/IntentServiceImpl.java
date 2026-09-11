@@ -8,7 +8,9 @@ import com.shiyu.ai.model.contract.api.ChatEngine;
 import com.shiyu.ai.model.contract.model.ChatMessage;
 import com.shiyu.ai.model.contract.model.ChatRequest;
 import com.shiyu.ai.model.contract.model.ChatResponse;
+
 import lombok.extern.slf4j.Slf4j;
+
 import org.springframework.stereotype.Service;
 
 import java.util.HashMap;
@@ -26,35 +28,53 @@ public class IntentServiceImpl implements IntentService {
     }
 
     @Override
-    public IntentRecognitionResult recognize(String row, String column, String query, String platform, String modelName) {
+    public IntentRecognitionResult recognize(
+            String row, String column, String query, String platform, String modelName) {
         String effectiveRow = row != null ? row : "default";
         String effectiveColumn = column;
 
-        List<IntentDefinition> supportedIntents = IntentDefinitionFactory.getByCategory(effectiveRow, effectiveColumn);
-        log.info("Recognizing user intent: row={}, column={}, matched {} intents",
-                effectiveRow, effectiveColumn, supportedIntents != null ? supportedIntents.size() : 0);
+        List<IntentDefinition> supportedIntents =
+                IntentDefinitionFactory.getByCategory(effectiveRow, effectiveColumn);
+        log.info(
+                "Recognizing user intent: row={}, column={}, matched {} intents",
+                effectiveRow,
+                effectiveColumn,
+                supportedIntents != null ? supportedIntents.size() : 0);
 
         try {
             String prompt = buildIntentPrompt(query, supportedIntents);
 
-            String actualPlatform = platform != null && !platform.isBlank() ? platform : "SILICON_FLOW";
-            ChatResponse response = chatEngine.chat(ChatRequest.builder()
-                    .platform(actualPlatform)
-                    .model(modelName)
-                    .messages(List.of(ChatMessage.text("user", prompt)))
-                    .build());
+            String actualPlatform =
+                    platform != null && !platform.isBlank() ? platform : "SILICON_FLOW";
+            ChatResponse response =
+                    chatEngine.chat(
+                            ChatRequest.builder()
+                                    .platform(actualPlatform)
+                                    .model(modelName)
+                                    .messages(List.of(ChatMessage.text("user", prompt)))
+                                    .build());
             if (response == null || !response.isSuccess()) {
                 return new IntentRecognitionResult(
-                    false, null, null, 0.0, Map.of(),
-                    response == null ? "Unable to obtain model response" : response.getErrorMessage());
+                        false,
+                        null,
+                        null,
+                        0.0,
+                        Map.of(),
+                        response == null
+                                ? "Unable to obtain model response"
+                                : response.getErrorMessage());
             }
             return parseIntentResponse(response.getContent(), supportedIntents);
 
         } catch (Exception e) {
             log.error("Intent recognition failed", e);
             return new IntentRecognitionResult(
-                false, null, null, 0.0, Map.of(),
-                "Intent recognition error: " + e.getMessage());
+                    false,
+                    null,
+                    null,
+                    0.0,
+                    Map.of(),
+                    "Intent recognition error: " + e.getMessage());
         }
     }
 
@@ -71,30 +91,44 @@ public class IntentServiceImpl implements IntentService {
         if (supportedIntents != null && !supportedIntents.isEmpty()) {
             prompt.append("Supported intents:\n");
             for (IntentDefinition intent : supportedIntents) {
-                prompt.append("- Code: ").append(intent.getCode())
-                      .append(", Name: ").append(intent.getName())
-                      .append(", Description: ").append(intent.getDescription())
-                      .append(", Examples: ").append(intent.getExamples() != null
-                          ? String.join(",", intent.getExamples()) : "N/A")
-                      .append("\n");
+                prompt.append("- Code: ")
+                        .append(intent.getCode())
+                        .append(", Name: ")
+                        .append(intent.getName())
+                        .append(", Description: ")
+                        .append(intent.getDescription())
+                        .append(", Examples: ")
+                        .append(
+                                intent.getExamples() != null
+                                        ? String.join(",", intent.getExamples())
+                                        : "N/A")
+                        .append("\n");
             }
             prompt.append("\n");
         }
 
-        boolean needSlots = supportedIntents != null && supportedIntents.stream()
-                .anyMatch(IntentDefinition::getRequireSlotFilling);
+        boolean needSlots =
+                supportedIntents != null
+                        && supportedIntents.stream()
+                                .anyMatch(IntentDefinition::getRequireSlotFilling);
 
         if (needSlots) {
             prompt.append("Some intents require slot extraction from user input:\n");
             for (IntentDefinition intent : supportedIntents) {
-                if (intent.getRequireSlotFilling() && intent.getSlots() != null && !intent.getSlots().isEmpty()) {
-                    prompt.append("- ").append(intent.getCode())
-                          .append(" slots: ").append(intent.getSlots()).append("\n");
+                if (intent.getRequireSlotFilling()
+                        && intent.getSlots() != null
+                        && !intent.getSlots().isEmpty()) {
+                    prompt.append("- ")
+                            .append(intent.getCode())
+                            .append(" slots: ")
+                            .append(intent.getSlots())
+                            .append("\n");
                 }
             }
             prompt.append("\n");
 
-            prompt.append("""
+            prompt.append(
+                    """
                     Return result as JSON only:
                     {
                       "intentCode": "WEATHER_QUERY",
@@ -105,7 +139,8 @@ public class IntentServiceImpl implements IntentService {
                     Note: slots must be {} if selected intent does not need slots.
                     """);
         } else {
-            prompt.append("""
+            prompt.append(
+                    """
                     Return result as JSON only:
                     {
                       "intentCode": "CHITCHAT",
@@ -120,7 +155,8 @@ public class IntentServiceImpl implements IntentService {
     }
 
     @SuppressWarnings("unchecked")
-    private IntentRecognitionResult parseIntentResponse(String response, List<IntentDefinition> supportedIntents) {
+    private IntentRecognitionResult parseIntentResponse(
+            String response, List<IntentDefinition> supportedIntents) {
         log.debug("Intent recognition response: {}", response);
 
         try {
@@ -132,39 +168,48 @@ public class IntentServiceImpl implements IntentService {
             String intentName = (String) result.get("intentName");
             Double confidence = parseDouble(result.get("confidence"));
             Object slotsObj = result.get("slots");
-            Map<String, Object> slots = slotsObj instanceof Map
-                    ? (Map<String, Object>) slotsObj
-                    : new HashMap<>();
+            Map<String, Object> slots =
+                    slotsObj instanceof Map ? (Map<String, Object>) slotsObj : new HashMap<>();
 
             if (supportedIntents != null && !supportedIntents.isEmpty()) {
-                boolean isSupported = supportedIntents.stream()
-                        .anyMatch(i -> i.getCode().equals(intentCode));
+                boolean isSupported =
+                        supportedIntents.stream().anyMatch(i -> i.getCode().equals(intentCode));
                 if (!isSupported) {
                     log.warn("Recognized intent {} not in supported list", intentCode);
                     return new IntentRecognitionResult(
-                        false, intentCode, intentName, confidence, slots,
-                        "Unsupported intent type: " + intentCode);
+                            false,
+                            intentCode,
+                            intentName,
+                            confidence,
+                            slots,
+                            "Unsupported intent type: " + intentCode);
                 }
             }
 
             if (confidence < 0.5) {
                 log.warn("Low confidence: {}", confidence);
                 return new IntentRecognitionResult(
-                    false, intentCode, intentName, confidence, slots,
-                    "Low confidence: " + confidence);
+                        false,
+                        intentCode,
+                        intentName,
+                        confidence,
+                        slots,
+                        "Low confidence: " + confidence);
             }
 
-            log.info("Intent success: code={}, name={}, confidence={}",
-                    intentCode, intentName, confidence);
+            log.info(
+                    "Intent success: code={}, name={}, confidence={}",
+                    intentCode,
+                    intentName,
+                    confidence);
 
             return new IntentRecognitionResult(
-                true, intentCode, intentName, confidence, slots, null);
+                    true, intentCode, intentName, confidence, slots, null);
 
         } catch (Exception e) {
             log.error("Parse intent response failed", e);
             return new IntentRecognitionResult(
-                false, null, null, 0.0, Map.of(),
-                "Parse failed: " + e.getMessage());
+                    false, null, null, 0.0, Map.of(), "Parse failed: " + e.getMessage());
         }
     }
 
