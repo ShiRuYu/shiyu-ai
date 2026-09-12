@@ -28,14 +28,33 @@ import org.springframework.transaction.annotation.Transactional;
 import java.time.LocalDateTime;
 import java.util.*;
 
+/**
+ * {@code AgentVersionServiceImpl} 实现智能体模块的应用服务，负责编排用例流程并维护业务边界。
+ */
 @Slf4j
 @Service
 public class AgentVersionServiceImpl implements AgentVersionService {
 
+    /**
+     * agentAdminRepository 属性，保存当前对象中的业务数据或协作依赖。
+     */
     private final AgentAdminRepository agentAdminRepository;
+    /**
+     * agentService 属性，保存当前对象中的业务数据或协作依赖。
+     */
     private final AgentService agentService;
+    /**
+     * nodeFactory 属性，保存当前对象中的业务数据或协作依赖。
+     */
     private final NodeFactory nodeFactory;
 
+    /**
+     * {@code AgentVersionServiceImpl} 创建并初始化当前类型实例。
+     *
+     * @param agentAdminRepository 参数值，用于执行当前操作。
+     * @param agentService 参数值，用于执行当前操作。
+     * @param nodeFactory 参数值，用于执行当前操作。
+     */
     public AgentVersionServiceImpl(
             AgentAdminRepository agentAdminRepository,
             AgentService agentService,
@@ -47,6 +66,14 @@ public class AgentVersionServiceImpl implements AgentVersionService {
 
     // ======================== 版本基础 CRUD ========================
 
+    /**
+     * {@code getVersions} 查询并返回当前操作所需的数据。
+     *
+     * @param actor 参数值，用于执行当前操作。
+     * @param agentId 参数值，用于执行当前操作。
+     *
+     * @return 返回当前操作产生的结果。
+     */
     @Override
     public List<AgentVersionVO> getVersions(ActorContext actor, String agentId) {
         List<AgentVersionBO> versions =
@@ -56,6 +83,15 @@ public class AgentVersionServiceImpl implements AgentVersionService {
                 .collect(java.util.stream.Collectors.toList());
     }
 
+    /**
+     * {@code getVersionDetail} 查询并返回当前操作所需的数据。
+     *
+     * @param actor 参数值，用于执行当前操作。
+     * @param agentId 参数值，用于执行当前操作。
+     * @param versionId 参数值，用于执行当前操作。
+     *
+     * @return 返回当前操作产生的结果。
+     */
     @Override
     public AgentVersionDetailVO getVersionDetail(
             ActorContext actor, String agentId, Long versionId) {
@@ -64,6 +100,15 @@ public class AgentVersionServiceImpl implements AgentVersionService {
         return toVersionDetailVO(v);
     }
 
+    /**
+     * {@code createVersion} 写入或更新当前模块中的业务数据。
+     *
+     * @param actor 参数值，用于执行当前操作。
+     * @param agentId 参数值，用于执行当前操作。
+     * @param request 参数值，用于执行当前操作。
+     *
+     * @return 返回当前操作产生的结果。
+     */
     @Override
     @Transactional(rollbackFor = Exception.class)
     public AgentVersionVO createVersion(
@@ -98,6 +143,16 @@ public class AgentVersionServiceImpl implements AgentVersionService {
         return toVersionVO(version);
     }
 
+    /**
+     * {@code updateVersion} 写入或更新当前模块中的业务数据。
+     *
+     * @param actor 参数值，用于执行当前操作。
+     * @param agentId 参数值，用于执行当前操作。
+     * @param versionId 参数值，用于执行当前操作。
+     * @param request 参数值，用于执行当前操作。
+     *
+     * @return 返回当前操作产生的结果。
+     */
     @Override
     public AgentVersionVO updateVersion(
             ActorContext actor, String agentId, Long versionId, VersionRequest request) {
@@ -110,6 +165,13 @@ public class AgentVersionServiceImpl implements AgentVersionService {
         return toVersionVO(v);
     }
 
+    /**
+     * {@code deleteVersion} 释放或移除当前操作涉及的资源。
+     *
+     * @param actor 参数值，用于执行当前操作。
+     * @param agentId 参数值，用于执行当前操作。
+     * @param versionId 参数值，用于执行当前操作。
+     */
     @Override
     public void deleteVersion(ActorContext actor, String agentId, Long versionId) {
         AgentVersionBO v = agentAdminRepository.selectVersionById(actor.tenantId(), versionId);
@@ -120,6 +182,13 @@ public class AgentVersionServiceImpl implements AgentVersionService {
 
     // ======================== 版本生命周期 ========================
 
+    /**
+     * {@code publishVersion} 执行当前模块定义的业务流程。
+     *
+     * @param actor 参数值，用于执行当前操作。
+     * @param agentId 参数值，用于执行当前操作。
+     * @param versionId 参数值，用于执行当前操作。
+     */
     @Override
     @Transactional(rollbackFor = Exception.class)
     public void publishVersion(ActorContext actor, String agentId, Long versionId) {
@@ -132,6 +201,13 @@ public class AgentVersionServiceImpl implements AgentVersionService {
         evictAgentCache(agentId);
     }
 
+    /**
+     * {@code archiveVersion} 执行当前类型定义的业务操作。
+     *
+     * @param actor 参数值，用于执行当前操作。
+     * @param agentId 参数值，用于执行当前操作。
+     * @param versionId 参数值，用于执行当前操作。
+     */
     @Override
     public void archiveVersion(ActorContext actor, String agentId, Long versionId) {
         AgentVersionBO v = getVersionOrThrow(actor, agentId, versionId);
@@ -143,6 +219,13 @@ public class AgentVersionServiceImpl implements AgentVersionService {
         evictAgentCache(agentId);
     }
 
+    /**
+     * {@code activateVersion} 执行当前类型定义的业务操作。
+     *
+     * @param actor 参数值，用于执行当前操作。
+     * @param agentId 参数值，用于执行当前操作。
+     * @param versionId 参数值，用于执行当前操作。
+     */
     @Override
     @Transactional(rollbackFor = Exception.class)
     public void activateVersion(ActorContext actor, String agentId, Long versionId) {
@@ -158,6 +241,15 @@ public class AgentVersionServiceImpl implements AgentVersionService {
         evictAgentCache(agentId);
     }
 
+    /**
+     * {@code copyVersion} 执行当前类型定义的业务操作。
+     *
+     * @param actor 参数值，用于执行当前操作。
+     * @param agentId 参数值，用于执行当前操作。
+     * @param request 参数值，用于执行当前操作。
+     *
+     * @return 返回当前操作产生的结果。
+     */
     @Override
     public AgentVersionVO copyVersion(ActorContext actor, String agentId, VersionRequest request) {
         return createVersion(actor, agentId, request);
@@ -165,11 +257,30 @@ public class AgentVersionServiceImpl implements AgentVersionService {
 
     // ======================== Graph 配置 ========================
 
+    /**
+     * {@code getGraphConfig} 查询并返回当前操作所需的数据。
+     *
+     * @param actor 参数值，用于执行当前操作。
+     * @param agentId 参数值，用于执行当前操作。
+     * @param versionId 参数值，用于执行当前操作。
+     *
+     * @return 返回当前操作产生的结果。
+     */
     @Override
     public AgentVersionDetailVO getGraphConfig(ActorContext actor, String agentId, Long versionId) {
         return getVersionDetail(actor, agentId, versionId);
     }
 
+    /**
+     * {@code updateGraphConfig} 写入或更新当前模块中的业务数据。
+     *
+     * @param actor 参数值，用于执行当前操作。
+     * @param agentId 参数值，用于执行当前操作。
+     * @param versionId 参数值，用于执行当前操作。
+     * @param request 参数值，用于执行当前操作。
+     *
+     * @return 返回当前操作产生的结果。
+     */
     @Override
     @Transactional(rollbackFor = Exception.class)
     public AgentVersionDetailVO updateGraphConfig(
@@ -187,6 +298,13 @@ public class AgentVersionServiceImpl implements AgentVersionService {
         return toVersionDetailVO(v);
     }
 
+    /**
+     * {@code validateGraphConfig} 校验当前操作的输入或状态是否满足约束。
+     *
+     * @param request 参数值，用于执行当前操作。
+     *
+     * @return 返回当前操作产生的结果。
+     */
     @Override
     public GraphValidationVO validateGraphConfig(GraphConfigRequest request) {
         try {
@@ -253,6 +371,14 @@ public class AgentVersionServiceImpl implements AgentVersionService {
 
     // ======================== 节点管理 ========================
 
+    /**
+     * {@code addNode} 执行当前类型定义的业务操作。
+     *
+     * @param actor 参数值，用于执行当前操作。
+     * @param agentId 参数值，用于执行当前操作。
+     * @param versionId 参数值，用于执行当前操作。
+     * @param request 参数值，用于执行当前操作。
+     */
     @Override
     @Transactional(rollbackFor = Exception.class)
     public void addNode(
@@ -280,6 +406,15 @@ public class AgentVersionServiceImpl implements AgentVersionService {
         saveGraphConfig(actor, v, graphData);
     }
 
+    /**
+     * {@code updateNode} 写入或更新当前模块中的业务数据。
+     *
+     * @param actor 参数值，用于执行当前操作。
+     * @param agentId 参数值，用于执行当前操作。
+     * @param versionId 参数值，用于执行当前操作。
+     * @param nodeId 参数值，用于执行当前操作。
+     * @param request 参数值，用于执行当前操作。
+     */
     @Override
     @Transactional(rollbackFor = Exception.class)
     public void updateNode(
@@ -309,6 +444,14 @@ public class AgentVersionServiceImpl implements AgentVersionService {
         saveGraphConfig(actor, v, graphData);
     }
 
+    /**
+     * {@code deleteNode} 释放或移除当前操作涉及的资源。
+     *
+     * @param actor 参数值，用于执行当前操作。
+     * @param agentId 参数值，用于执行当前操作。
+     * @param versionId 参数值，用于执行当前操作。
+     * @param nodeId 参数值，用于执行当前操作。
+     */
     @Override
     @Transactional(rollbackFor = Exception.class)
     @SuppressWarnings("unchecked")
@@ -337,6 +480,14 @@ public class AgentVersionServiceImpl implements AgentVersionService {
 
     // ======================== 边管理 ========================
 
+    /**
+     * {@code addEdge} 执行当前类型定义的业务操作。
+     *
+     * @param actor 参数值，用于执行当前操作。
+     * @param agentId 参数值，用于执行当前操作。
+     * @param versionId 参数值，用于执行当前操作。
+     * @param request 参数值，用于执行当前操作。
+     */
     @Override
     @Transactional(rollbackFor = Exception.class)
     @SuppressWarnings("unchecked")
@@ -369,6 +520,15 @@ public class AgentVersionServiceImpl implements AgentVersionService {
         saveGraphConfig(actor, v, graphData);
     }
 
+    /**
+     * {@code deleteEdge} 释放或移除当前操作涉及的资源。
+     *
+     * @param actor 参数值，用于执行当前操作。
+     * @param agentId 参数值，用于执行当前操作。
+     * @param versionId 参数值，用于执行当前操作。
+     * @param sourceNodeId 参数值，用于执行当前操作。
+     * @param targetNodeId 参数值，用于执行当前操作。
+     */
     @Override
     @Transactional(rollbackFor = Exception.class)
     @SuppressWarnings("unchecked")
@@ -400,6 +560,15 @@ public class AgentVersionServiceImpl implements AgentVersionService {
 
     // ======================== 画布管理 ========================
 
+    /**
+     * {@code getCanvasConfig} 查询并返回当前操作所需的数据。
+     *
+     * @param actor 参数值，用于执行当前操作。
+     * @param agentId 参数值，用于执行当前操作。
+     * @param versionId 参数值，用于执行当前操作。
+     *
+     * @return 返回当前操作产生的结果。
+     */
     @Override
     public String getCanvasConfig(ActorContext actor, String agentId, Long versionId) {
         AgentVersionBO v = agentAdminRepository.selectVersionById(actor.tenantId(), versionId);
@@ -407,6 +576,14 @@ public class AgentVersionServiceImpl implements AgentVersionService {
         return v.getCanvasConfig();
     }
 
+    /**
+     * {@code updateCanvasConfig} 写入或更新当前模块中的业务数据。
+     *
+     * @param actor 参数值，用于执行当前操作。
+     * @param agentId 参数值，用于执行当前操作。
+     * @param versionId 参数值，用于执行当前操作。
+     * @param canvasConfig 参数值，用于执行当前操作。
+     */
     @Override
     @Transactional(rollbackFor = Exception.class)
     public void updateCanvasConfig(

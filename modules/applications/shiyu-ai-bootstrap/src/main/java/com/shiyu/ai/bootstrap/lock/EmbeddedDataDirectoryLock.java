@@ -10,17 +10,28 @@ import java.nio.file.StandardOpenOption;
 import java.util.regex.Pattern;
 
 /**
- * Prevents two application processes from opening the embedded database and indexes for writing at
- * the same time.
+ * 锁定嵌入式数据目录，避免多个进程同时写入数据库和索引。
  */
 public final class EmbeddedDataDirectoryLock implements AutoCloseable {
 
+    /**
+     * 环境变量，表示当前对象中的对应属性。
+     */
     private static final String APP_HOME_ENV = "APP_HOME";
+    /**
+     * 属性，表示当前对象中的对应属性。
+     */
     private static final String APP_HOME_PROPERTY = "app.home";
     private static final Pattern ROOT_POM_PACKAGING =
             Pattern.compile("<packaging>\\s*pom\\s*</packaging>");
 
+    /**
+     * 通道，表示当前对象中的对应属性。
+     */
     private final FileChannel channel;
+    /**
+     * 锁，表示当前对象中的对应属性。
+     */
     private final FileLock lock;
 
     private EmbeddedDataDirectoryLock(FileChannel channel, FileLock lock) {
@@ -28,15 +39,17 @@ public final class EmbeddedDataDirectoryLock implements AutoCloseable {
         this.lock = lock;
     }
 
+    /**
+     * {@code acquire} 执行当前类型定义的业务操作。
+     *
+     * @return 返回当前操作产生的结果。
+     */
     public static EmbeddedDataDirectoryLock acquire() {
         String appHome =
                 resolveAppHome(
                         System.getProperty(APP_HOME_PROPERTY),
                         System.getenv(APP_HOME_ENV),
                         resolveDefaultAppHome(System.getProperty("user.dir", ".")));
-        // The lock is acquired before Spring's EnvironmentPostProcessor runs.
-        // Keep the system property aligned so all later non-Spring path users
-        // resolve the same data directory.
         System.setProperty(APP_HOME_PROPERTY, appHome);
         Path dataRoot = Path.of(appHome, "data").toAbsolutePath().normalize();
         try {
@@ -98,17 +111,18 @@ public final class EmbeddedDataDirectoryLock implements AutoCloseable {
         }
     }
 
+    /**
+     * {@code close} 释放或移除当前操作涉及的资源。
+     */
     @Override
     public void close() {
         try {
             lock.release();
         } catch (IOException ignored) {
-            // Process shutdown will release the operating-system lock.
         }
         try {
             channel.close();
         } catch (IOException ignored) {
-            // Process shutdown will close the descriptor.
         }
     }
 }

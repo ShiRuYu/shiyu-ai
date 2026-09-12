@@ -1,4 +1,6 @@
 package com.shiyu.ai.conversation.implementation;
 
-/** Marker for code owned exclusively by the Conversation bounded context. */
+/**
+ * ConversationImplementationModule 模块接口，标识会话模块的边界。
+ */
 public interface ConversationImplementationModule {}

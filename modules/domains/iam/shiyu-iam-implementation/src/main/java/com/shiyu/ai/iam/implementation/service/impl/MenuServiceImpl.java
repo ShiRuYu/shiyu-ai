@@ -31,42 +31,102 @@ import java.util.concurrent.TimeUnit;
 @Service
 public class MenuServiceImpl implements MenuService {
 
+    /**
+     * {@code routeMenusView} 执行当前类型定义的业务操作。
+     *
+     * @param actor 参数值，用于执行当前操作。
+     *
+     * @return 返回当前操作产生的结果。
+     */
     @Override
     public List<RouteMenuVO> routeMenusView(ActorContext actor) {
         actor = requireActor(actor);
         return toRouteMenus(getRouteMenusByUserId(actor, actor.userId().value()));
     }
 
+    /**
+     * {@code allTreeView} 执行当前类型定义的业务操作。
+     *
+     * @param actor 参数值，用于执行当前操作。
+     *
+     * @return 返回当前操作产生的结果。
+     */
     @Override
     public List<MenuVO> allTreeView(ActorContext actor) {
         return MapstructUtils.convert(getAllTree(requireActor(actor)), MenuVO.class);
     }
 
+    /**
+     * {@code menuRootsView} 执行当前类型定义的业务操作。
+     *
+     * @param actor 参数值，用于执行当前操作。
+     *
+     * @return 返回当前操作产生的结果。
+     */
     @Override
     public List<RouteMenuVO> menuRootsView(ActorContext actor) {
         return toRouteMenus(getMenuRoots(requireActor(actor)));
     }
 
+    /**
+     * {@code childrenView} 执行当前类型定义的业务操作。
+     *
+     * @param actor 参数值，用于执行当前操作。
+     * @param parentId 参数值，用于执行当前操作。
+     *
+     * @return 返回当前操作产生的结果。
+     */
     @Override
     public List<RouteMenuVO> childrenView(ActorContext actor, Long parentId) {
         return toRouteMenus(getChildrenByParentId(requireActor(actor), parentId));
     }
 
+    /**
+     * {@code permissionsView} 执行当前类型定义的业务操作。
+     *
+     * @param actor 参数值，用于执行当前操作。
+     *
+     * @return 返回当前操作产生的结果。
+     */
     @Override
     public List<RouteMenuVO> permissionsView(ActorContext actor) {
         return toRouteMenus(getMenuPermissionsTree(requireActor(actor)));
     }
 
+    /**
+     * {@code treeView} 执行当前类型定义的业务操作。
+     *
+     * @param actor 参数值，用于执行当前操作。
+     *
+     * @return 返回当前操作产生的结果。
+     */
     @Override
     public List<RouteMenuVO> treeView(ActorContext actor) {
         return toRouteMenus(getAllTree(requireActor(actor)));
     }
 
+    /**
+     * {@code createMenu} 写入或更新当前模块中的业务数据。
+     *
+     * @param actor 参数值，用于执行当前操作。
+     * @param request 参数值，用于执行当前操作。
+     *
+     * @return 返回当前操作产生的结果。
+     */
     @Override
     public boolean createMenu(ActorContext actor, MenuRequest request) {
         return createMenu(requireActor(actor), MapstructUtils.convert(request, MenuBO.class));
     }
 
+    /**
+     * {@code updateMenu} 写入或更新当前模块中的业务数据。
+     *
+     * @param actor 参数值，用于执行当前操作。
+     * @param id 参数值，用于执行当前操作。
+     * @param request 参数值，用于执行当前操作。
+     *
+     * @return 返回当前操作产生的结果。
+     */
     @Override
     public boolean updateMenu(ActorContext actor, Long id, MenuRequest request) {
         return updateMenu(requireActor(actor), id, MapstructUtils.convert(request, MenuBO.class));
@@ -104,12 +164,24 @@ public class MenuServiceImpl implements MenuService {
     private static final Set<String> SUPPORTED_MENU_TYPES =
             Set.of("CATALOG", "MENU", "LINK", "EMBEDDED");
 
+    /**
+     * menuRepository 属性，保存当前对象中的业务数据或协作依赖。
+     */
     private final MenuRepository menuRepository;
+    /**
+     * 租户仓储，表示当前对象中的对应属性。
+     */
     private final TenantRepository tenantRepository;
 
     /** 路由菜单缓存：userId:currentTenantId:currentRoleId → 菜单树 菜单数据由管理员维护，变更频率极低，适合 5 分钟本地缓存 */
     private final Cache<String, List<MenuBO>> routeMenuCache;
 
+    /**
+     * {@code MenuServiceImpl} 创建并初始化当前类型实例。
+     *
+     * @param menuRepository 参数值，用于执行当前操作。
+     * @param tenantRepository 参数值，用于执行当前操作。
+     */
     public MenuServiceImpl(MenuRepository menuRepository, TenantRepository tenantRepository) {
         this.menuRepository = menuRepository;
         this.tenantRepository = tenantRepository;
@@ -174,6 +246,14 @@ public class MenuServiceImpl implements MenuService {
         }
     }
 
+    /**
+     * {@code deleteMenu} 释放或移除当前操作涉及的资源。
+     *
+     * @param actor 参数值，用于执行当前操作。
+     * @param id 参数值，用于执行当前操作。
+     *
+     * @return 返回当前操作产生的结果。
+     */
     @Override
     public boolean deleteMenu(ActorContext actor, Long id) {
         log.info("删除菜单，menuIdPresent: {}", id != null);
@@ -283,6 +363,15 @@ public class MenuServiceImpl implements MenuService {
         return buildMenuTree(filtered);
     }
 
+    /**
+     * {@code isMenuNameExists} 校验当前操作的输入或状态是否满足约束。
+     *
+     * @param actor 参数值，用于执行当前操作。
+     * @param name 参数值，用于执行当前操作。
+     * @param id 参数值，用于执行当前操作。
+     *
+     * @return 返回当前操作产生的结果。
+     */
     @Override
     public boolean isMenuNameExists(ActorContext actor, String name, Long id) {
         log.info("检查菜单名称是否存在，namePresent: {}, menuIdPresent: {}", name != null, id != null);
@@ -290,6 +379,15 @@ public class MenuServiceImpl implements MenuService {
         return menuRepository.existsByName(requireActor(actor).tenantId(), name, id);
     }
 
+    /**
+     * {@code isMenuPathExists} 校验当前操作的输入或状态是否满足约束。
+     *
+     * @param actor 参数值，用于执行当前操作。
+     * @param path 参数值，用于执行当前操作。
+     * @param id 参数值，用于执行当前操作。
+     *
+     * @return 返回当前操作产生的结果。
+     */
     @Override
     public boolean isMenuPathExists(ActorContext actor, String path, Long id) {
         log.info("检查菜单路径是否存在，pathPresent: {}, menuIdPresent: {}", path != null, id != null);
@@ -361,6 +459,19 @@ public class MenuServiceImpl implements MenuService {
         return SUPPORTED_MENU_TYPES.contains(menuBO.getType().trim().toUpperCase(Locale.ROOT));
     }
 
+    /**
+     * {@code getMenuPage} 查询并返回当前操作所需的数据。
+     *
+     * @param actor 参数值，用于执行当前操作。
+     * @param pageNo 参数值，用于执行当前操作。
+     * @param pageSize 参数值，用于执行当前操作。
+     * @param name 参数值，用于执行当前操作。
+     * @param code 参数值，用于执行当前操作。
+     * @param type 参数值，用于执行当前操作。
+     * @param status 参数值，用于执行当前操作。
+     *
+     * @return 返回当前操作产生的结果。
+     */
     @Override
     public PageData<MenuVO> getMenuPage(
             ActorContext actor,

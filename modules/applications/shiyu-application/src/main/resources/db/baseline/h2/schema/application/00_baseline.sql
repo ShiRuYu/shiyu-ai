@@ -1,4 +1,3 @@
--- Initializer metadata. This table is not part of the 76 application tables.
 
 CREATE TABLE "PUBLIC"."COMMON_SCHEMA_BASELINE" (
     "ID" INTEGER NOT NULL,

@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Enforce ownership and isolation rules for the v4 database baseline."""
+"""check schema ownership 脚本，执行项目架构与工程校验。"""
 
 from __future__ import annotations
 
@@ -16,7 +16,7 @@ OWNER_ROOTS = {
     "agent": "modules/domains/agent/shiyu-agent-implementation/src/main/resources/db/baseline/h2",
     "model": "modules/domains/model/shiyu-model-implementation/src/main/resources/db/baseline/h2",
     "conversation": "modules/domains/conversation/shiyu-conversation-implementation/src/main/resources/db/baseline/h2",
-    "education": "modules/domains/education/shiyu-education-implementation/src/main/resources/db/baseline/h2",
+    "education": "modules/business/education/shiyu-education-implementation/src/main/resources/db/baseline/h2",
     "governance": "modules/domains/governance/shiyu-governance-implementation/src/main/resources/db/baseline/h2",
     "knowledge": "modules/domains/knowledge/shiyu-knowledge-implementation/src/main/resources/db/baseline/h2",
     "memory": "modules/domains/memory/shiyu-memory-implementation/src/main/resources/db/baseline/h2",
@@ -36,6 +36,7 @@ INDEX_COLUMNS = re.compile(
     re.I | re.S,
 )
 INSERT_TABLE = re.compile(r'INSERT\s+INTO\s+"PUBLIC"\."([A-Z0-9_]+)"', re.I)
+SCHEMA_EXTENSION = re.compile(r"@schema-extension\s+([a-z0-9_-]+)", re.I)
 
 
 def strip_comments(text: str) -> str:
@@ -64,10 +65,12 @@ def main() -> int:
         failures.append("no owned baseline SQL files found")
 
     tables: dict[str, tuple[str, Path]] = {}
-    sql_by_file: list[tuple[str, Path, str]] = []
+    sql_by_file: list[tuple[str, Path, str, set[str]]] = []
     for owner, path in files:
-        sql = strip_comments(path.read_text(encoding="utf-8"))
-        sql_by_file.append((owner, path, sql))
+        raw_sql = path.read_text(encoding="utf-8")
+        sql = strip_comments(raw_sql)
+        extensions = {match.lower() for match in SCHEMA_EXTENSION.findall(raw_sql)}
+        sql_by_file.append((owner, path, sql, extensions))
         for table in CREATE_TABLE.findall(sql):
             normalized = table.upper()
             if normalized in tables:
@@ -96,7 +99,7 @@ def main() -> int:
                     f"tenant-leading index missing for {normalized}: {path.relative_to(repo)}"
                 )
 
-    for owner, path, sql in sql_by_file:
+    for owner, path, sql, extensions in sql_by_file:
         for inserted in INSERT_TABLE.findall(sql):
             normalized = inserted.upper()
             inserted_owner = tables.get(normalized, (None, None))[0]
@@ -104,7 +107,7 @@ def main() -> int:
                 failures.append(
                     f"seed targets unknown table {normalized}: {path.relative_to(repo)}"
                 )
-            elif inserted_owner != owner:
+            elif inserted_owner != owner and inserted_owner not in extensions:
                 failures.append(
                     f"cross-domain seed write {owner}->{inserted_owner} for {normalized}: "
                     f"{path.relative_to(repo)}"
@@ -112,7 +115,7 @@ def main() -> int:
         for referenced in TABLE_REF.findall(sql):
             normalized = referenced.upper()
             referenced_owner = tables.get(normalized, (None, None))[0]
-            if referenced_owner and referenced_owner != owner:
+            if referenced_owner and referenced_owner != owner and referenced_owner not in extensions:
                 failures.append(
                     f"cross-domain SQL reference {owner}->{referenced_owner} for {normalized}: {path.relative_to(repo)}"
                 )

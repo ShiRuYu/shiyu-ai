@@ -10,7 +10,13 @@ public class ContextAwareRunnable implements Runnable {
 
     private static final Logger logger = LoggerFactory.getLogger(ContextAwareRunnable.class);
 
+    /**
+     * delegate 属性，保存当前对象中的业务数据或协作依赖。
+     */
     private final Runnable delegate;
+    /**
+     * contextSnapshot 属性，保存当前对象中的业务数据或协作依赖。
+     */
     private final TaskContext contextSnapshot;
 
     /**
@@ -23,6 +29,9 @@ public class ContextAwareRunnable implements Runnable {
         this.contextSnapshot = TaskContext.current().snapshot();
     }
 
+    /**
+     * {@code run} 执行当前模块定义的业务流程。
+     */
     @Override
     public void run() {
         TaskContext originalContext = TaskContext.current().snapshot();

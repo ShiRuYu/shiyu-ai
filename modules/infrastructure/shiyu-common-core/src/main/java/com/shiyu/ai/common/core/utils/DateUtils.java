@@ -14,14 +14,29 @@ import java.util.concurrent.ConcurrentMap;
 @SuppressWarnings("deprecation")
 public class DateUtils extends org.apache.commons.lang3.time.DateUtils {
 
+    /**
+     * YYYY 属性，保存当前对象中的业务数据或协作依赖。
+     */
     public static final String YYYY = "yyyy";
 
+    /**
+     * YYYY_MM 属性，保存当前对象中的业务数据或协作依赖。
+     */
     public static final String YYYY_MM = "yyyy-MM";
 
+    /**
+     * YYYY_MM_DD 属性，保存当前对象中的业务数据或协作依赖。
+     */
     public static final String YYYY_MM_DD = "yyyy-MM-dd";
 
+    /**
+     * YYYYMMDDHHMMSS 属性，保存当前对象中的业务数据或协作依赖。
+     */
     public static final String YYYYMMDDHHMMSS = "yyyyMMddHHmmss";
 
+    /**
+     * YYYY_MM_DD_HH_MM_SS 属性，保存当前对象中的业务数据或协作依赖。
+     */
     public static final String YYYY_MM_DD_HH_MM_SS = "yyyy-MM-dd HH:mm:ss";
 
     private static final String[] PARSE_PATTERNS = {
@@ -55,27 +70,67 @@ public class DateUtils extends org.apache.commons.lang3.time.DateUtils {
         return dateTimeNow(YYYY_MM_DD);
     }
 
+    /**
+     * {@code getTime} 查询并返回当前操作所需的数据。
+     *
+     * @return 返回当前操作产生的结果。
+     */
     public static String getTime() {
         return dateTimeNow(YYYY_MM_DD_HH_MM_SS);
     }
 
+    /**
+     * {@code dateTimeNow} 执行当前类型定义的业务操作。
+     *
+     * @return 返回当前操作产生的结果。
+     */
     public static String dateTimeNow() {
         return dateTimeNow(YYYYMMDDHHMMSS);
     }
 
+    /**
+     * {@code dateTimeNow} 执行当前类型定义的业务操作。
+     *
+     * @param format 参数值，用于执行当前操作。
+     *
+     * @return 返回当前操作产生的结果。
+     */
     public static String dateTimeNow(final String format) {
         return parseDateToStr(format, new Date());
     }
 
+    /**
+     * {@code dateTime} 执行当前类型定义的业务操作。
+     *
+     * @param date 参数值，用于执行当前操作。
+     *
+     * @return 返回当前操作产生的结果。
+     */
     public static String dateTime(final Date date) {
         return parseDateToStr(YYYY_MM_DD, date);
     }
 
+    /**
+     * {@code parseDateToStr} 执行当前类型定义的业务操作。
+     *
+     * @param format 参数值，用于执行当前操作。
+     * @param date 参数值，用于执行当前操作。
+     *
+     * @return 返回当前操作产生的结果。
+     */
     public static String parseDateToStr(final String format, final Date date) {
         return getFormatter(format)
                 .format(date.toInstant().atZone(ZoneId.systemDefault()).toLocalDateTime());
     }
 
+    /**
+     * {@code dateTime} 执行当前类型定义的业务操作。
+     *
+     * @param format 参数值，用于执行当前操作。
+     * @param ts 参数值，用于执行当前操作。
+     *
+     * @return 返回当前操作产生的结果。
+     */
     public static Date dateTime(final String format, final String ts) {
         try {
             LocalDateTime localDateTime = LocalDateTime.parse(ts, getFormatter(format));

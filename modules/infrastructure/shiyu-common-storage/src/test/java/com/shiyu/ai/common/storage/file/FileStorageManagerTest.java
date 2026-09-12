@@ -1,4 +1,5 @@
 package com.shiyu.ai.common.storage.file;
+import com.shiyu.ai.common.storage.file.service.FileStorageManager;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;

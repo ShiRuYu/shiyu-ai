@@ -51,7 +51,27 @@ class DomainBoundaryTest(unittest.TestCase):
 
         self.assertTrue(any("shiyu-beta-implementation" in item for item in violations))
 
+    def test_rejects_cross_business_implementation_dependency(self):
+        self.add_module(
+            "modules/business/education/shiyu-education-implementation",
+            "shiyu-education-implementation",
+            dependencies=["shiyu-knowledge-implementation"],
+        )
+        self.add_module(
+            "modules/domains/knowledge/shiyu-knowledge-implementation",
+            "shiyu-knowledge-implementation",
+        )
+        self.add_required_web_module()
+
+        violations = analyze_repository(self.root)
+
+        self.assertTrue(any("shiyu-knowledge-implementation" in item for item in violations))
+
     def test_allows_an_implementation_to_reference_its_own_artifact(self):
+        self.add_module(
+            "modules/domains/alpha/shiyu-alpha-contract",
+            "shiyu-alpha-contract",
+        )
         self.add_module(
             "modules/domains/alpha/shiyu-alpha-implementation",
             "shiyu-alpha-implementation",
@@ -60,6 +80,35 @@ class DomainBoundaryTest(unittest.TestCase):
         self.add_required_web_module()
 
         self.assertEqual([], analyze_repository(self.root))
+
+    def test_rejects_framework_dependency_in_contract_pom(self):
+        self.add_module(
+            "modules/domains/alpha/shiyu-alpha-contract",
+            "shiyu-alpha-contract",
+        )
+        pom = self.root / "modules/domains/alpha/shiyu-alpha-contract/pom.xml"
+        pom.write_text(
+            POM.format(
+                artifact_id="shiyu-alpha-contract",
+                dependencies=(
+                    "<dependency><groupId>org.springframework</groupId>"
+                    "<artifactId>spring-context</artifactId><version>1</version></dependency>"
+                ),
+            ),
+            encoding="utf-8",
+        )
+        self.add_module(
+            "modules/domains/alpha/shiyu-alpha-implementation",
+            "shiyu-alpha-implementation",
+        )
+        self.add_required_web_module()
+
+        violations = analyze_repository(self.root)
+
+        self.assertTrue(any("spring-context" in item for item in violations))
+
+    def test_rejects_empty_domain_scan(self):
+        self.assertTrue(any("No implementation modules" in item for item in analyze_repository(self.root)))
 
     def test_missing_actual_web_pom_is_a_violation(self):
         self.add_module("modules/domains/alpha/shiyu-alpha-contract", "shiyu-alpha-contract")
@@ -77,6 +126,33 @@ class DomainBoundaryTest(unittest.TestCase):
                     "package com.example.alpha;\n"
                     "import com.example.beta.BetaInternal;\n"
                     "public class UseBeta {}\n"
+                )
+            },
+        )
+        self.add_module(
+            "modules/domains/beta/shiyu-beta-implementation",
+            "shiyu-beta-implementation",
+            sources={
+                "com/example/beta/BetaInternal.java": (
+                    "package com.example.beta;\npublic class BetaInternal {}\n"
+                )
+            },
+        )
+        self.add_required_web_module()
+
+        violations = analyze_repository(self.root)
+
+        self.assertTrue(any("com.example.beta.BetaInternal" in item for item in violations))
+
+    def test_rejects_contract_import_of_implementation_type(self):
+        self.add_module(
+            "modules/domains/alpha/shiyu-alpha-contract",
+            "shiyu-alpha-contract",
+            sources={
+                "com/example/alpha/AlphaApi.java": (
+                    "package com.example.alpha;\n"
+                    "import com.example.beta.BetaInternal;\n"
+                    "public interface AlphaApi {}\n"
                 )
             },
         )

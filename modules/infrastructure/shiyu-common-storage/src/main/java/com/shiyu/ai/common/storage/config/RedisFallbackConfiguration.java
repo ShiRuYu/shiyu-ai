@@ -7,7 +7,9 @@ import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 
-/** Exposes the disabled-provider implementations through the provider ports. */
+/**
+ * {@code RedisFallbackConfiguration} 提供平台基础设施模块的配置项，并集中声明其默认值和运行约束。
+ */
 @Configuration(proxyBeanMethods = false)
 @ConditionalOnProperty(
         prefix = "shiyu.infrastructure.redis",
@@ -16,6 +18,11 @@ import org.springframework.context.annotation.Configuration;
         matchIfMissing = true)
 public class RedisFallbackConfiguration {
 
+    /**
+     * {@code localIdempotencyStore} 执行当前类型定义的业务操作。
+     *
+     * @return 返回当前操作产生的结果。
+     */
     @Bean
     public IdempotencyStore localIdempotencyStore() {
         return new LocalIdempotencyStore();

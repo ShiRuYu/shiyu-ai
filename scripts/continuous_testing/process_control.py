@@ -1,4 +1,4 @@
-"""Conservative shutdown of the scheduler process recorded in its lease."""
+"""process control 脚本，执行项目架构与工程校验。"""
 from __future__ import annotations
 import json, os, signal
 from pathlib import Path

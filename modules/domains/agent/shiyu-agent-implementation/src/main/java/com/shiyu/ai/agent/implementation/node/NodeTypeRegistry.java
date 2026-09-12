@@ -33,7 +33,9 @@ import lombok.extern.slf4j.Slf4j;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 
-/** Registry of node type metadata and pure fallback creators. */
+/**
+ * 维护节点类型、配置类型和创建器之间的注册关系。
+ */
 @Slf4j
 final class NodeTypeRegistry {
     private final Map<NodeType, CreatorInfo<?>> creators = new ConcurrentHashMap<>();
@@ -113,12 +115,6 @@ final class NodeTypeRegistry {
                 AgentCallConfig.class,
                 config -> AgentCallNode.builder().config(config).build());
 
-        register(NodeType.ABILITY_QUERY, NodeConfig.class, config -> unsupportedBeanNode());
-        register(NodeType.EDUCATION_TEACH, NodeConfig.class, config -> unsupportedBeanNode());
-        register(NodeType.EDUCATION_PRACTICE, NodeConfig.class, config -> unsupportedBeanNode());
-        register(NodeType.SCORE_ANALYSIS, NodeConfig.class, config -> unsupportedBeanNode());
-        register(NodeType.REVIEW_SCHEDULE, NodeConfig.class, config -> unsupportedBeanNode());
-        register(NodeType.PREREQ_CHECK, NodeConfig.class, config -> unsupportedBeanNode());
     }
 
     private BaseNode unsupportedBeanNode() {
@@ -126,6 +122,9 @@ final class NodeTypeRegistry {
                 "节点通过 Bean NodeCreator 创建，请联系开发人员检查 Spring Bean 注入");
     }
 
+    /**
+     * {@code CreatorInfo} 封装智能体模块中不可变的结构化数据，并作为相关操作之间的值对象。
+     */
     record CreatorInfo<T extends NodeConfig>(
             Class<T> configClass, NodeFactory.NodeCreator<T> nodeCreator) {}
 }

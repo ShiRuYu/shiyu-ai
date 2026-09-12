@@ -1,6 +1,11 @@
 package com.shiyu.ai.governance.contract;
 
-/** Stable result for quota admission. */
+/**
+ * 表示配额检查结果、错误码和预留记录标识。
+ * @param allowed allowed 属性，表示该记录组件承载的数据。
+ * @param errorCode errorCode 属性，表示该记录组件承载的数据。
+ * @param reservationId reservationId 属性，表示该记录组件承载的数据。
+ */
 public record QuotaDecision(boolean allowed, String errorCode, long reservationId) {
     public QuotaDecision {
         if (allowed && reservationId <= 0) {

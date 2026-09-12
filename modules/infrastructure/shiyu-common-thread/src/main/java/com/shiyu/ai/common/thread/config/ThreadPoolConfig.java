@@ -18,6 +18,13 @@ import java.util.concurrent.ThreadPoolExecutor;
 @EnableConfigurationProperties(ThreadPoolProperties.class)
 public class ThreadPoolConfig {
 
+    /**
+     * {@code threadPoolTaskExecutor} 执行当前类型定义的业务操作。
+     *
+     * @param threadPoolProperties 参数值，用于执行当前操作。
+     *
+     * @return 返回当前操作产生的结果。
+     */
     @Bean(name = "threadPoolTaskExecutor")
     @ConditionalOnProperty(prefix = "thread-pool", name = "enabled", havingValue = "true")
     public ThreadPoolTaskExecutor threadPoolTaskExecutor(
@@ -51,6 +58,12 @@ public class ThreadPoolConfig {
         threadFactory.setDaemon(true);
         return new ScheduledThreadPoolExecutor(
                 scheduledCoreSize, threadFactory, new ThreadPoolExecutor.CallerRunsPolicy()) {
+            /**
+             * {@code afterExecute} 执行当前类型定义的业务操作。
+             *
+             * @param r 参数值，用于执行当前操作。
+             * @param t 参数值，用于执行当前操作。
+             */
             @Override
             protected void afterExecute(Runnable r, Throwable t) {
                 super.afterExecute(r, t);

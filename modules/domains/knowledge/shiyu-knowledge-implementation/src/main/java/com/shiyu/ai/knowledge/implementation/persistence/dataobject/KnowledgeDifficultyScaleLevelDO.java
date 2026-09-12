@@ -11,6 +11,9 @@ import io.github.linpeilie.annotations.AutoMapper;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
 
+/**
+ * {@code KnowledgeDifficultyScaleLevelDO} 是知识模块的持久化对象，承载数据库记录与映射字段。
+ */
 @Data
 @EqualsAndHashCode(callSuper = true)
 @SuppressWarnings("serial")
@@ -18,11 +21,26 @@ import lombok.EqualsAndHashCode;
 @AutoMapper(target = KnowledgeDifficultyScaleLevelBO.class, reverseConvertGenerate = true)
 public class KnowledgeDifficultyScaleLevelDO extends TenantEntity {
 
+    /**
+     * 标识，表示当前对象中的对应属性。
+     */
     @Id(keyType = KeyType.Auto)
     private Long id;
 
+    /**
+     * scaleId 属性，保存当前对象中的业务数据或协作依赖。
+     */
     private Long scaleId;
+    /**
+     * 级别，表示当前对象中的对应属性。
+     */
     private Integer level;
+    /**
+     * label 属性，保存当前对象中的业务数据或协作依赖。
+     */
     private String label;
+    /**
+     * 描述，表示当前对象中的对应属性。
+     */
     private String description;
 }

@@ -1,0 +1,137 @@
+package com.shiyu.ai.education.implementation.agent;
+
+import com.shiyu.ai.education.implementation.application.ReviewService;
+import com.shiyu.ai.education.implementation.domain.ReviewScheduler;
+import com.shiyu.ai.education.implementation.domain.enums.ReviewTaskStatus;
+import com.shiyu.ai.education.implementation.domain.model.ReviewTaskBO;
+import com.shiyu.ai.education.implementation.domain.port.repository.ReviewTaskRepository;
+import com.shiyu.ai.kernel.context.ActorContext;
+
+import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
+
+import org.springframework.stereotype.Component;
+
+import java.time.Instant;
+import java.time.LocalDate;
+import java.util.List;
+import java.util.stream.Collectors;
+
+/**
+ * ReviewAgent — 艾宾浩斯复习 Agent
+ *
+ * <p>职责：根据遗忘曲线安排复习任务，管理复习进度。
+ */
+@Slf4j
+@Component
+@RequiredArgsConstructor
+public class ReviewAgent {
+
+    /**
+     * reviewScheduler 属性，保存当前对象中的业务数据或协作依赖。
+     */
+    private final ReviewScheduler reviewScheduler;
+    /**
+     * reviewService 属性，保存当前对象中的业务数据或协作依赖。
+     */
+    private final ReviewService reviewService;
+    /**
+     * reviewTaskRepository 属性，保存当前对象中的业务数据或协作依赖。
+     */
+    private final ReviewTaskRepository reviewTaskRepository;
+
+    /**
+     * 学习完成后安排复习任务
+     *
+     * @param studentId 学生 ID
+     * @param knowledgeId 知识点 ID
+     * @return 安排的复习任务列表
+     */
+    public List<ReviewTaskBO> scheduleAfterLearning(
+            ActorContext actor, Long studentId, Long knowledgeId) {
+        log.info(
+                "ReviewAgent.scheduleAfterLearning: studentIdPresent={}, knowledgeIdPresent={}",
+                studentId != null,
+                knowledgeId != null);
+
+        // 1. 使用 ReviewScheduler 生成复习计划
+        List<ReviewScheduler.ReviewTask> tasks =
+                reviewScheduler.scheduleAfterLearning(studentId, knowledgeId, Instant.now());
+
+        // 2. 将复习计划持久化到数据库
+        List<ReviewTaskBO> savedTasks =
+                tasks.stream()
+                        .map(
+                                task -> {
+                                    ReviewTaskBO reviewTask = new ReviewTaskBO();
+                                    reviewTask.setStudentId(task.studentId());
+                                    reviewTask.setKnowledgeId(task.knowledgeId());
+                                    reviewTask.setReviewDate(task.reviewDate());
+                                    reviewTask.setReviewRound(task.reviewRound());
+                                    reviewTask.setStatus(ReviewTaskStatus.PENDING.getCode());
+                                    reviewTaskRepository.insert(actor.tenantId(), reviewTask);
+                                    return reviewTask;
+                                })
+                        .toList();
+
+        log.info("ReviewAgent.scheduleAfterLearning: 安排了 {} 轮复习任务", savedTasks.size());
+        return savedTasks;
+    }
+
+    /**
+     * 获取今日复习任务
+     *
+     * @param studentId 学生 ID
+     * @return 今日应完成的复习任务
+     */
+    public List<ReviewTaskBO> getTodayTasks(ActorContext actor, Long studentId) {
+        log.info("ReviewAgent.getTodayTasks: studentIdPresent={}", studentId != null);
+        return reviewTaskRepository.selectTodayTasks(actor.tenantId(), studentId);
+    }
+
+    /**
+     * 完成复习任务
+     *
+     * @param taskId 任务 ID
+     * @param score 得分
+     * @return 更新后的任务
+     */
+    public ReviewTaskBO completeReview(ActorContext actor, Long taskId, Double score) {
+        log.info(
+                "ReviewAgent.completeReview: taskIdPresent={}, scorePresent={}",
+                taskId != null,
+                score != null);
+
+        ReviewTaskBO task = reviewTaskRepository.selectById(actor.tenantId(), taskId);
+        if (task == null) {
+            throw new IllegalArgumentException("复习任务不存在: " + taskId);
+        }
+
+        task.setStatus(ReviewTaskStatus.COMPLETED.getCode());
+        task.setResultScore(score);
+        task.setCompletedAt(java.time.LocalDateTime.now());
+        reviewTaskRepository.update(actor.tenantId(), task);
+
+        log.info("ReviewAgent.completeReview: 完成, taskIdPresent={}", taskId != null);
+        return task;
+    }
+
+    /**
+     * 检查是否有过期未完成的复习任务
+     *
+     * @param studentId 学生 ID
+     * @return 过期任务列表
+     */
+    public List<ReviewTaskBO> getOverdueTasks(ActorContext actor, Long studentId) {
+        log.info("ReviewAgent.getOverdueTasks: studentIdPresent={}", studentId != null);
+        List<ReviewTaskBO> tasks =
+                reviewTaskRepository.selectByStudentAndStatus(
+                        actor.tenantId(), studentId, ReviewTaskStatus.PENDING.getCode());
+        return tasks.stream()
+                .filter(
+                        t ->
+                                t.getReviewDate() != null
+                                        && t.getReviewDate().isBefore(LocalDate.now()))
+                .collect(Collectors.toList());
+    }
+}

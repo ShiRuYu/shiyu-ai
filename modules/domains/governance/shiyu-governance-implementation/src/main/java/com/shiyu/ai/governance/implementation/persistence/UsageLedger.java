@@ -9,12 +9,33 @@ import java.math.BigDecimal;
 import java.time.Instant;
 import java.util.Objects;
 
-/** Governance-owned persistence port with an atomic idempotent insert. */
+/**
+ * UsageLedger 接口，定义治理模块的能力边界。
+ */
 @FunctionalInterface
 public interface UsageLedger {
 
+    /**
+     * 创建并保存业务对象。
+     *
+     * @param entry 方法参数。
+     *
+     * @return 条件是否满足。
+     */
     boolean insertIfAbsent(Entry entry);
 
+    /**
+     * {@code Entry} 封装治理模块中不可变的结构化数据，并作为相关操作之间的值对象。
+     * @param tenantId 租户标识，表示该记录组件承载的数据。
+     * @param userId 用户标识，表示该记录组件承载的数据。
+     * @param correlationId correlationId 属性，表示该记录组件承载的数据。
+     * @param sourceType sourceType 属性，表示该记录组件承载的数据。
+     * @param sourceId sourceId 属性，表示该记录组件承载的数据。
+     * @param inputTokens inputTokens 属性，表示该记录组件承载的数据。
+     * @param outputTokens outputTokens 属性，表示该记录组件承载的数据。
+     * @param cost cost 属性，表示该记录组件承载的数据。
+     * @param occurredAt occurredAt 属性，表示该记录组件承载的数据。
+     */
     record Entry(
             TenantId tenantId,
             UserId userId,

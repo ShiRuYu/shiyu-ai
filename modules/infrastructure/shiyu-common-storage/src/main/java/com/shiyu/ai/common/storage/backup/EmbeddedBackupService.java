@@ -36,18 +36,57 @@ import java.util.zip.ZipEntry;
 import java.util.zip.ZipFile;
 import java.util.zip.ZipOutputStream;
 
+/**
+ * {@code EmbeddedBackupService} 定义平台基础设施模块的应用服务能力，供上层用例调用。
+ */
 @Service
 public class EmbeddedBackupService {
 
+    /**
+     * JDBC模板，表示当前对象中的对应属性。
+     */
     private final JdbcTemplate jdbcTemplate;
+    /**
+     * 数据根目录，表示当前对象中的对应属性。
+     */
     private final Path dataRoot;
+    /**
+     * backupRoot 属性，保存当前对象中的业务数据或协作依赖。
+     */
     private final Path backupRoot;
+    /**
+     * 启用开关，表示当前对象中的对应属性。
+     */
     private final boolean enabled;
+    /**
+     * hourlyRetention 属性，保存当前对象中的业务数据或协作依赖。
+     */
     private final int hourlyRetention;
+    /**
+     * dailyRetention 属性，保存当前对象中的业务数据或协作依赖。
+     */
     private final int dailyRetention;
+    /**
+     * maxTotalBytes 属性，保存当前对象中的业务数据或协作依赖。
+     */
     private final long maxTotalBytes;
+    /**
+     * manifestContributors 属性，保存当前对象中的业务数据或协作依赖。
+     */
     private final List<BackupManifestContributor> manifestContributors;
 
+    /**
+     * {@code EmbeddedBackupService} 创建并初始化当前类型实例。
+     *
+     * @param jdbcTemplate 参数值，用于执行当前操作。
+     * @param dataDir 参数值，用于执行当前操作。
+     * @param backupDir 参数值，用于执行当前操作。
+     * @param enabled 参数值，用于执行当前操作。
+     * @param hourlyRetention 参数值，用于执行当前操作。
+     * @param dailyRetention 参数值，用于执行当前操作。
+     * @param maxTotalBytes 参数值，用于执行当前操作。
+     * @param manifestContributors 参数值，用于执行当前操作。
+     */
     public EmbeddedBackupService(
             JdbcTemplate jdbcTemplate,
             @Value("${shiyu.storage.data-dir:${app.home}/data}") String dataDir,
@@ -65,13 +104,16 @@ public class EmbeddedBackupService {
         this.dailyRetention = Math.max(0, dailyRetention);
         this.maxTotalBytes = Math.max(0, maxTotalBytes);
         this.manifestContributors = manifestContributors.orderedStream().toList();
-    }
+   }
 
-    @Scheduled(
-            fixedDelayString = "${shiyu.storage.backup.interval-ms:3600000}",
-            initialDelayString = "${shiyu.storage.backup.initial-delay-ms:300000}")
-    public void scheduledBackup() {
-        if (!enabled) return;
+    /**
+     * {@code scheduledBackup} 执行当前类型定义的业务操作。
+     */
+   @Scheduled(
+           fixedDelayString = "${shiyu.storage.backup.interval-ms:3600000}",
+           initialDelayString = "${shiyu.storage.backup.initial-delay-ms:300000}")
+   public void scheduledBackup() {
+       if (!enabled) return;
         try {
             backup();
             cleanupBackups();
@@ -82,6 +124,11 @@ public class EmbeddedBackupService {
         }
     }
 
+    /**
+     * {@code backup} 执行当前类型定义的业务操作。
+     *
+     * @return 返回当前操作产生的结果。
+     */
     public BackupResult backup() {
         String timestamp =
                 DateTimeFormatter.ofPattern("yyyyMMdd-HHmmss").format(OffsetDateTime.now());
@@ -118,6 +165,13 @@ public class EmbeddedBackupService {
         }
     }
 
+    /**
+     * {@code restoreCheck} 执行当前类型定义的业务操作。
+     *
+     * @param fileName 参数值，用于执行当前操作。
+     *
+     * @return 返回当前操作产生的结果。
+     */
     public RestoreCheckResult restoreCheck(String fileName) {
         if (fileName == null || !fileName.equals(Path.of(fileName).getFileName().toString())) {
             throw new ServiceException("备份文件名非法");
@@ -213,6 +267,11 @@ public class EmbeddedBackupService {
         }
     }
 
+    /**
+     * {@code status} 执行当前类型定义的业务操作。
+     *
+     * @return 返回当前操作产生的结果。
+     */
     public Map<String, Object> status() {
         try {
             Files.createDirectories(dataRoot);
@@ -280,7 +339,19 @@ public class EmbeddedBackupService {
         }
     }
 
+    /**
+     * {@code BackupResult} 封装平台基础设施模块中不可变的结构化数据，并作为相关操作之间的值对象。
+     * @param fileName 文件名，表示该记录组件承载的数据。
+     * @param size 大小，表示该记录组件承载的数据。
+     * @param createdAt 创建时间，表示该记录组件承载的数据。
+     */
     public record BackupResult(String fileName, long size, String createdAt) {}
 
+    /**
+     * {@code RestoreCheckResult} 封装平台基础设施模块中不可变的结构化数据，并作为相关操作之间的值对象。
+     * @param valid 是否有效，表示该记录组件承载的数据。
+     * @param entries entries 属性，表示该记录组件承载的数据。
+     * @param errors 错误列表，表示该记录组件承载的数据。
+     */
     public record RestoreCheckResult(boolean valid, long entries, List<String> errors) {}
 }

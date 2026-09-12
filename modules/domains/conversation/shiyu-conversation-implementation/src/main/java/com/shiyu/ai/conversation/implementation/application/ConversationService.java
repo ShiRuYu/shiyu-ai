@@ -24,17 +24,45 @@ import java.util.List;
 import java.util.Objects;
 import java.util.UUID;
 
+/**
+ * {@code ConversationService} 定义会话模块的应用服务能力，供上层用例调用。
+ */
 @Service
 public class ConversationService {
+    /**
+     * 仓储，表示当前对象中的对应属性。
+     */
     private final ConversationRepository repository;
+    /**
+     * 生成仓储，表示当前对象中的对应属性。
+     */
     private final GenerationRepository generationRepository;
 
+    /**
+     * {@code ConversationService} 创建并初始化当前类型实例。
+     *
+     * @param repository 参数值，用于执行当前操作。
+     * @param generationRepository 参数值，用于执行当前操作。
+     */
     public ConversationService(
             ConversationRepository repository, GenerationRepository generationRepository) {
         this.repository = repository;
         this.generationRepository = generationRepository;
     }
 
+    /**
+     * {@code create} 写入或更新当前模块中的业务数据。
+     *
+     * @param tenantId 参数值，用于执行当前操作。
+     * @param ownerUserId 参数值，用于执行当前操作。
+     * @param sceneType 参数值，用于执行当前操作。
+     * @param title 参数值，用于执行当前操作。
+     * @param platform 参数值，用于执行当前操作。
+     * @param model 参数值，用于执行当前操作。
+     * @param systemPrompt 参数值，用于执行当前操作。
+     *
+     * @return 返回当前操作产生的结果。
+     */
     public Conversation create(
             TenantId tenantId,
             long ownerUserId,
@@ -72,6 +100,14 @@ public class ConversationService {
         return conversation;
     }
 
+    /**
+     * {@code branch} 执行当前类型定义的业务操作。
+     *
+     * @param source 参数值，用于执行当前操作。
+     * @param messageId 参数值，用于执行当前操作。
+     *
+     * @return 返回当前操作产生的结果。
+     */
     public Conversation branch(Conversation source, String messageId) {
         Instant now = Instant.now();
         Conversation branch =
@@ -95,6 +131,14 @@ public class ConversationService {
         return branch;
     }
 
+    /**
+     * {@code appendUserMessage} 执行当前类型定义的业务操作。
+     *
+     * @param conversation 参数值，用于执行当前操作。
+     * @param content 参数值，用于执行当前操作。
+     *
+     * @return 返回当前操作产生的结果。
+     */
     public ConversationMessage appendUserMessage(Conversation conversation, String content) {
         return appendMessage(
                 conversation,
@@ -105,6 +149,18 @@ public class ConversationService {
                 null);
     }
 
+    /**
+     * {@code appendMessage} 执行当前类型定义的业务操作。
+     *
+     * @param conversation 参数值，用于执行当前操作。
+     * @param parentMessageId 参数值，用于执行当前操作。
+     * @param role 参数值，用于执行当前操作。
+     * @param content 参数值，用于执行当前操作。
+     * @param parts 参数值，用于执行当前操作。
+     * @param toolCall 参数值，用于执行当前操作。
+     *
+     * @return 返回当前操作产生的结果。
+     */
     public ConversationMessage appendMessage(
             Conversation conversation,
             String parentMessageId,
@@ -115,6 +171,19 @@ public class ConversationService {
         return appendMessage(conversation, parentMessageId, role, content, parts, toolCall, null);
     }
 
+    /**
+     * {@code appendMessage} 执行当前类型定义的业务操作。
+     *
+     * @param conversation 参数值，用于执行当前操作。
+     * @param parentMessageId 参数值，用于执行当前操作。
+     * @param role 参数值，用于执行当前操作。
+     * @param content 参数值，用于执行当前操作。
+     * @param parts 参数值，用于执行当前操作。
+     * @param toolCall 参数值，用于执行当前操作。
+     * @param sourceMessageId 参数值，用于执行当前操作。
+     *
+     * @return 返回当前操作产生的结果。
+     */
     public ConversationMessage appendMessage(
             Conversation conversation,
             String parentMessageId,
@@ -170,10 +239,6 @@ public class ConversationService {
                                 now),
                         conversation.version());
         if (updated != 1) {
-            // The message insert and conversation CAS are separate repository
-            // operations. Remove the newly-created node when another writer
-            // wins the conversation version, otherwise a failed append leaves
-            // an unreachable message in the source-of-truth table.
             repository.deleteMessage(
                     message.id(),
                     new TenantId(conversation.tenantId()),
@@ -184,6 +249,16 @@ public class ConversationService {
         return message;
     }
 
+    /**
+     * {@code createGeneration} 写入或更新当前模块中的业务数据。
+     *
+     * @param conversation 参数值，用于执行当前操作。
+     * @param userMessage 参数值，用于执行当前操作。
+     * @param platform 参数值，用于执行当前操作。
+     * @param model 参数值，用于执行当前操作。
+     *
+     * @return 返回当前操作产生的结果。
+     */
     public GenerationRun createGeneration(
             Conversation conversation,
             ConversationMessage userMessage,
@@ -192,6 +267,17 @@ public class ConversationService {
         return createGeneration(conversation, userMessage, platform, model, null);
     }
 
+    /**
+     * {@code createGeneration} 写入或更新当前模块中的业务数据。
+     *
+     * @param conversation 参数值，用于执行当前操作。
+     * @param userMessage 参数值，用于执行当前操作。
+     * @param platform 参数值，用于执行当前操作。
+     * @param model 参数值，用于执行当前操作。
+     * @param speakerId 参数值，用于执行当前操作。
+     *
+     * @return 返回当前操作产生的结果。
+     */
     public GenerationRun createGeneration(
             Conversation conversation,
             ConversationMessage userMessage,
@@ -236,8 +322,17 @@ public class ConversationService {
     }
 
     /**
-     * Persist a completed stateless-facade request when an API caller explicitly opts into
-     * store=true.
+     * 追加completed生成。
+     *
+     * @param conversation conversation 参数。
+     * @param input input 参数。
+     * @param answer answer 参数。
+     * @param platform platform 参数。
+     * @param model model 参数。
+     * @param promptTokens promptTokens 参数。
+     * @param completionTokens completionTokens 参数。
+     *
+     * @return 处理结果。
      */
     public GenerationRun recordCompletedGeneration(
             Conversation conversation,
@@ -260,10 +355,19 @@ public class ConversationService {
     }
 
     /**
-     * Persists an explicitly stored OpenAI-compatible response while projecting its generation
-     * facts into the already-created Runtime run. Runtime is the physical event source; the
-     * GenerationRepository remains the durable generation projection for deployments that
-     * intentionally omit Runtime.
+     * 追加completed生成。
+     *
+     * @param conversation conversation 参数。
+     * @param input input 参数。
+     * @param answer answer 参数。
+     * @param platform platform 参数。
+     * @param model model 参数。
+     * @param promptTokens promptTokens 参数。
+     * @param completionTokens completionTokens 参数。
+     * @param runtime runtime 参数。
+     * @param runtimeRun runtimeRun 参数。
+     *
+     * @return 处理结果。
      */
     public GenerationRun recordCompletedGeneration(
             Conversation conversation,

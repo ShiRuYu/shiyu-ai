@@ -1,4 +1,6 @@
 package com.shiyu.ai.tooling.contract;
 
-/** Marker for the public Tooling API; concrete ports and messages live beside it. */
+/**
+ * ToolingContractModule 模块接口，标识工具模块的边界。
+ */
 public interface ToolingContractModule {}

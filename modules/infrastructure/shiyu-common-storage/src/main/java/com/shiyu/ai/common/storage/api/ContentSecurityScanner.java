@@ -9,9 +9,17 @@ import com.shiyu.ai.common.storage.rate.*;
 import com.shiyu.ai.common.storage.security.*;
 import com.shiyu.ai.common.storage.vector.*;
 
-/** Validation SPI for rejecting unsafe file names, types and content before storage. */
+/**
+ * ContentSecurityScanner 接口，定义基础设施模块的能力边界。
+ */
 public interface ContentSecurityScanner {
 
-    /** Validates an upload and throws when its content violates storage policy. */
+    /**
+     * 校验内容securityscanner。
+     *
+     * @param fileName fileName 参数。
+     * @param contentType contentType 参数。
+     * @param content content 参数。
+     */
     void validate(String fileName, String contentType, byte[] content);
 }

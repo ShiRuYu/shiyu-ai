@@ -6,6 +6,9 @@ import org.springframework.context.i18n.LocaleContextHolder;
 /** 获取i18n资源文件 */
 public class MessageUtils {
 
+    /**
+     * 来源，表示当前对象中的对应属性。
+     */
     private static volatile MessageSource MESSAGE_SOURCE;
 
     private static MessageSource getMessageSource() {

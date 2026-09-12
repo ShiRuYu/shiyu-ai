@@ -19,7 +19,9 @@ import java.util.List;
 import java.util.Properties;
 import java.util.UUID;
 
-/** Verifies the optional Kafka provider against a real broker when Docker is available. */
+/**
+ * 验证 KafkaContainerSmoke 的功能、边界条件和集成行为。
+ */
 @Testcontainers(disabledWithoutDocker = true)
 class KafkaContainerSmokeTest {
 

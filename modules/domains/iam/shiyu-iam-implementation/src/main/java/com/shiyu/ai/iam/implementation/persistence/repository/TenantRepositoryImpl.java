@@ -18,28 +18,61 @@ import org.springframework.transaction.annotation.Transactional;
 import java.util.*;
 import java.util.stream.Collectors;
 
+/**
+ * {@code TenantRepositoryImpl} 实现平台模块的持久化端口，负责在领域对象与存储模型之间转换。
+ */
 @Component
 public class TenantRepositoryImpl
         implements com.shiyu.ai.iam.implementation.port.repository.TenantRepository {
 
+    /**
+     * 租户映射器，表示当前对象中的对应属性。
+     */
     @Resource private TenantMapper tenantMapper;
 
+    /**
+     * 用户映射器，表示当前对象中的对应属性。
+     */
     @Resource private UserMapper userMapper;
 
+    /**
+     * 角色映射器，表示当前对象中的对应属性。
+     */
     @Resource private RoleMapper roleMapper;
 
+    /**
+     * menuMapper 属性，保存当前对象中的业务数据或协作依赖。
+     */
     @Resource private MenuMapper menuMapper;
 
+    /**
+     * authCodeMapper 属性，保存当前对象中的业务数据或协作依赖。
+     */
     @Resource private AuthCodeMapper authCodeMapper;
 
+    /**
+     * userScopeRoleMapper 属性，保存当前对象中的业务数据或协作依赖。
+     */
     @Resource private UserScopeRoleMapper userScopeRoleMapper;
 
+    /**
+     * roleScopeMenuMapper 属性，保存当前对象中的业务数据或协作依赖。
+     */
     @Resource private RoleScopeMenuMapper roleScopeMenuMapper;
 
+    /**
+     * roleScopeAuthCodeMapper 属性，保存当前对象中的业务数据或协作依赖。
+     */
     @Resource private RoleScopeAuthCodeMapper roleScopeAuthCodeMapper;
 
+    /**
+     * tenantMenuMapper 属性，保存当前对象中的业务数据或协作依赖。
+     */
     @Resource private TenantMenuMapper tenantMenuMapper;
 
+    /**
+     * tenantAuthCodeMapper 属性，保存当前对象中的业务数据或协作依赖。
+     */
     @Resource private TenantAuthCodeMapper tenantAuthCodeMapper;
 
     public Pair<Long, List<TenantBO>> selectPage(

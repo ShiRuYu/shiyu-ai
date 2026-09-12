@@ -1,4 +1,3 @@
--- MAGMA-based platform memory. One event participates in multiple relation graphs.
 CREATE CACHED TABLE IF NOT EXISTS "PUBLIC"."MEMORY_EVENT" (
     "ID" CHARACTER VARYING(64) NOT NULL,
     "TENANT_ID" BIGINT NOT NULL,

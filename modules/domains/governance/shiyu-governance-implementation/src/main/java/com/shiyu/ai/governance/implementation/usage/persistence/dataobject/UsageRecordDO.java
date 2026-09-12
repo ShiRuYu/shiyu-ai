@@ -22,8 +22,14 @@ import java.time.LocalDateTime;
 @AutoMapper(target = UsageRecordBO.class, reverseConvertGenerate = true)
 public class UsageRecordDO implements Serializable {
 
+    /**
+     * serialVersionUID 属性，保存当前对象中的业务数据或协作依赖。
+     */
     @Serial private static final long serialVersionUID = 1L;
 
+    /**
+     * 标识，表示当前对象中的对应属性。
+     */
     @Id private String id;
 
     /** 用量类型：LLM / EMBEDDING */
@@ -38,12 +44,33 @@ public class UsageRecordDO implements Serializable {
     /** 租户 ID，用于隔离用量与配额统计 */
     private Long tenantId;
 
+    /**
+     * 来源类型，表示当前对象中的对应属性。
+     */
     private String sourceType;
+    /**
+     * 来源标识，表示当前对象中的对应属性。
+     */
     private String sourceId;
+    /**
+     * correlationId 属性，保存当前对象中的业务数据或协作依赖。
+     */
     private String correlationId;
+    /**
+     * inputTokens 属性，保存当前对象中的业务数据或协作依赖。
+     */
     private Long inputTokens;
+    /**
+     * outputTokens 属性，保存当前对象中的业务数据或协作依赖。
+     */
     private Long outputTokens;
+    /**
+     * 成本，表示当前对象中的对应属性。
+     */
     private java.math.BigDecimal cost;
+    /**
+     * occurredAt 属性，保存当前对象中的业务数据或协作依赖。
+     */
     private LocalDateTime occurredAt;
 
     /** 会话 ID */

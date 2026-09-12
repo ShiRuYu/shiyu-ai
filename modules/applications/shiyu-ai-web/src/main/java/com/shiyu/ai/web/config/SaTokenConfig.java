@@ -10,6 +10,7 @@ import cn.dev33.satoken.util.SaFoxUtil;
 import com.shiyu.ai.common.core.api.Result;
 import com.shiyu.ai.common.core.enums.BizResultCode;
 import com.shiyu.ai.common.core.utils.JSONUtils;
+import com.shiyu.ai.common.web.config.WebPublicPathContributor;
 
 import jakarta.annotation.PostConstruct;
 
@@ -18,9 +19,27 @@ import org.springframework.context.annotation.Configuration;
 
 import java.nio.charset.StandardCharsets;
 import java.util.Base64;
+import java.util.List;
 
+/**
+ * {@code SaTokenConfig} 提供Web模块的配置项，并集中声明其默认值和运行约束。
+ */
 @Configuration
 public class SaTokenConfig {
+
+    /**
+     * publicPathContributors 属性，保存当前对象中的业务数据或协作依赖。
+     */
+    private final List<WebPublicPathContributor> publicPathContributors;
+
+    /**
+     * {@code SaTokenConfig} 创建并初始化当前类型实例。
+     *
+     * @param publicPathContributors 参数值，用于执行当前操作。
+     */
+    public SaTokenConfig(List<WebPublicPathContributor> publicPathContributors) {
+        this.publicPathContributors = publicPathContributors;
+    }
 
     /**
      * 重写 Sa-Token 框架内部算法策略
@@ -48,7 +67,8 @@ public class SaTokenConfig {
      */
     @Bean
     public SaServletFilter saServletFilter() {
-        return new SaServletFilter()
+        SaServletFilter filter =
+                new SaServletFilter()
                 .addInclude("/**")
                 // 认证相关公开接口（无需登录即可访问）
                 .addExclude(
@@ -60,7 +80,13 @@ public class SaTokenConfig {
                         "/api/iam/auth/captcha/**")
                 // 文档和监控接口
                 .addExclude("/swagger-ui/**", "/v3/api-docs/**")
-                .addExclude("/webjars/**", "/h2/**", "/api/education/education-resources/**")
+                .addExclude("/webjars/**", "/h2/**");
+        publicPathContributors.stream()
+                .map(WebPublicPathContributor::publicPathPatterns)
+                .filter(java.util.Objects::nonNull)
+                .flatMap(java.util.Collection::stream)
+                .forEach(filter::addExclude);
+        return filter
                 .setAuth(
                         obj -> {
                             // 鉴权：检查是否登录

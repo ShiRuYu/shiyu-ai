@@ -34,6 +34,9 @@ public class ToolServiceImpl implements ToolService {
     private final Map<String, Function<Map<String, Object>, Object>> executorRegistry =
             new ConcurrentHashMap<>();
 
+    /**
+     * {@code init} 执行当前类型定义的业务操作。
+     */
     @PostConstruct
     public void init() {
         log.info("初始化内存 Tool 服务，注册内置工具");
@@ -43,13 +46,26 @@ public class ToolServiceImpl implements ToolService {
 
     // ======================== 兼容旧接口的工具定义包装 ========================
 
-    /** 兼容 {@link McpToolAutoConfiguration} 使用的旧 ToolDefinition 视图 */
+    /**
+     * 兼容 {@link McpToolAutoConfiguration} 使用的旧 ToolDefinition 视图
+     *
+     * @param name 名称，表示该记录组件承载的数据。
+     * @param description 描述，表示该记录组件承载的数据。
+     * @param parameters 参数映射，表示该记录组件承载的数据。
+     * @param builtin builtin 属性，表示该记录组件承载的数据。
+     */
     public record ToolDefinition(
             String name,
             String description,
             Map<String, ParameterDef> parameters,
             boolean builtin) {}
 
+    /**
+     * {@code ParameterDef} 封装工具模块中不可变的结构化数据，并作为相关操作之间的值对象。
+     * @param type 类型，表示该记录组件承载的数据。
+     * @param description 描述，表示该记录组件承载的数据。
+     * @param required 是否必填，表示该记录组件承载的数据。
+     */
     public record ParameterDef(String type, String description, boolean required) {}
 
     private ToolDefinition toToolDefinition(McpToolDescriptor desc) {
@@ -141,6 +157,14 @@ public class ToolServiceImpl implements ToolService {
 
     // ======================== 工具执行 ========================
 
+    /**
+     * {@code execute} 执行当前模块定义的业务流程。
+     *
+     * @param toolName 参数值，用于执行当前操作。
+     * @param parameters 参数值，用于执行当前操作。
+     *
+     * @return 返回当前操作产生的结果。
+     */
     @Override
     public ToolExecutionResult execute(String toolName, Map<String, Object> parameters) {
         log.info(
@@ -377,8 +401,14 @@ public class ToolServiceImpl implements ToolService {
         return new ExprParser(expr).parse();
     }
 
+    /**
+     * {@code ExprParser} 承载工具模块的领域状态或协作行为，负责维护本类型的职责边界。
+     */
     private static class ExprParser {
         private final String input;
+        /**
+         * pos 属性，保存当前对象中的业务数据或协作依赖。
+         */
         private int pos;
 
         ExprParser(String input) {

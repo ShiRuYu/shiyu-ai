@@ -11,22 +11,43 @@ import java.util.stream.Collectors;
 /** 内存向量存储 — 基于余弦相似度的暴力搜索 适用于测试和小规模场景 */
 public class InMemoryVectorStore implements VectorStore {
 
+    /**
+     * 维度，表示当前对象中的对应属性。
+     */
     private final int dimension;
     private final Map<String, InternalRecord> store = new ConcurrentHashMap<>();
 
+    /**
+     * {@code InMemoryVectorStore} 创建并初始化当前类型实例。
+     */
     public InMemoryVectorStore() {
         this(-1);
     }
 
+    /**
+     * {@code InMemoryVectorStore} 创建并初始化当前类型实例。
+     *
+     * @param dimension 参数值，用于执行当前操作。
+     */
     public InMemoryVectorStore(int dimension) {
         this.dimension = dimension;
     }
 
+    /**
+     * {@code type} 执行当前类型定义的业务操作。
+     *
+     * @return 返回当前操作产生的结果。
+     */
     @Override
     public String type() {
         return "inmemory";
     }
 
+    /**
+     * {@code upsert} 执行当前类型定义的业务操作。
+     *
+     * @param record 参数值，用于执行当前操作。
+     */
     @Override
     public void upsert(VectorRecord record) {
         Objects.requireNonNull(record, "Vector record must not be null");
@@ -36,6 +57,14 @@ public class InMemoryVectorStore implements VectorStore {
         store.put(record.id(), new InternalRecord(record.id(), record.vector(), metadata));
     }
 
+    /**
+     * {@code search} 查询并返回当前操作所需的数据。
+     *
+     * @param queryVector 参数值，用于执行当前操作。
+     * @param topK 参数值，用于执行当前操作。
+     *
+     * @return 返回当前操作产生的结果。
+     */
     @Override
     public List<VectorRecord> search(float[] queryVector, int topK) {
         if (topK <= 0 || store.isEmpty()) return List.of();
@@ -62,6 +91,13 @@ public class InMemoryVectorStore implements VectorStore {
                 .toList();
     }
 
+    /**
+     * {@code search} 查询并返回当前操作所需的数据。
+     *
+     * @param request 参数值，用于执行当前操作。
+     *
+     * @return 返回当前操作产生的结果。
+     */
     @Override
     public List<VectorRecord> search(VectorSearchRequest request) {
         Objects.requireNonNull(request, "Vector search request must not be null");
@@ -94,21 +130,39 @@ public class InMemoryVectorStore implements VectorStore {
                 .collect(Collectors.toList());
     }
 
+    /**
+     * {@code delete} 释放或移除当前操作涉及的资源。
+     *
+     * @param id 参数值，用于执行当前操作。
+     */
     @Override
     public void delete(String id) {
         store.remove(id);
     }
 
+    /**
+     * {@code deleteBatch} 释放或移除当前操作涉及的资源。
+     *
+     * @param ids 参数值，用于执行当前操作。
+     */
     @Override
     public void deleteBatch(List<String> ids) {
         ids.forEach(store::remove);
     }
 
+    /**
+     * {@code rebuild} 执行当前类型定义的业务操作。
+     */
     @Override
     public void rebuild() {
         store.clear();
     }
 
+    /**
+     * {@code size} 执行当前类型定义的业务操作。
+     *
+     * @return 返回当前操作产生的结果。
+     */
     @Override
     public int size() {
         return store.size();
@@ -150,5 +204,11 @@ public class InMemoryVectorStore implements VectorStore {
         }
     }
 
+    /**
+     * {@code InternalRecord} 封装平台基础设施模块中不可变的结构化数据，并作为相关操作之间的值对象。
+     * @param id 标识，表示该记录组件承载的数据。
+     * @param vector 向量，表示该记录组件承载的数据。
+     * @param metadata 元数据，表示该记录组件承载的数据。
+     */
     private record InternalRecord(String id, float[] vector, Map<String, Object> metadata) {}
 }

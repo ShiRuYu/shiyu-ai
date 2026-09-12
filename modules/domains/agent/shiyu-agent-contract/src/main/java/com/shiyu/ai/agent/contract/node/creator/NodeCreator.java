@@ -4,11 +4,23 @@ import com.shiyu.ai.agent.contract.node.BaseNode;
 import com.shiyu.ai.agent.contract.node.NodeConfig;
 import com.shiyu.ai.agent.contract.node.NodeType;
 
-/** Factory boundary that turns persisted node configuration into an executable node. */
+/**
+ * NodeCreator 接口，定义智能体模块的能力边界。
+ */
 public interface NodeCreator {
-    /** Returns the node type handled by this creator. */
+    /**
+     * 获取类型。
+     *
+     * @return 处理结果。
+     */
     NodeType getType();
 
-    /** Creates a node from validated configuration. */
+    /**
+     * 创建nodecreator。
+     *
+     * @param config config 参数。
+     *
+     * @return 处理结果。
+     */
     BaseNode create(NodeConfig config);
 }

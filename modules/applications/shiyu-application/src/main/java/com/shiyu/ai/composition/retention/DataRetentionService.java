@@ -14,15 +14,20 @@ import java.time.Instant;
 import java.time.temporal.ChronoUnit;
 
 /**
- * Keeps operational tables bounded without touching conversations or durable user knowledge. Child
- * execution records are deleted before their parent execution rows.
+ * DataRetentionService 服务接口，负责执行应用领域相关业务操作。
  */
 @Slf4j
 @Service
 @RequiredArgsConstructor
 public class DataRetentionService {
 
+    /**
+     * JDBC模板，表示当前对象中的对应属性。
+     */
     private final JdbcTemplate jdbcTemplate;
+    /**
+     * 配置属性，表示当前对象中的对应属性。
+     */
     private final DataRetentionProperties properties;
 
     @Scheduled(
@@ -64,7 +69,6 @@ public class DataRetentionService {
             int deleted = jdbcTemplate.update(sql, Timestamp.from(cutoff));
             if (deleted > 0) log.info("Retention cleanup deleted {} rows from {}", deleted, table);
         } catch (DataAccessException exception) {
-            // Optional modules may not have been migrated in a lightweight deployment.
             log.debug("Retention table {} is unavailable or cleanup failed", table, exception);
         }
     }

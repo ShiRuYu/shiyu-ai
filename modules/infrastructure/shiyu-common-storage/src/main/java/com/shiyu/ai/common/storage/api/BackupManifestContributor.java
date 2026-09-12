@@ -10,13 +10,15 @@ import com.shiyu.ai.common.storage.security.*;
 import com.shiyu.ai.common.storage.vector.*;
 
 /**
- * Optional domain contribution to an embedded backup manifest. Storage owns the backup archive;
- * domain modules only describe their versioned metadata without making Storage depend on a business
- * schema.
+ * BackupManifestContributor 接口，定义基础设施模块的能力边界。
  */
 @FunctionalInterface
 public interface BackupManifestContributor {
 
-    /** Returns newline-delimited manifest entries, or an empty string. */
+    /**
+     * 处理contribute。
+     *
+     * @return 处理结果。
+     */
     String contribute();
 }

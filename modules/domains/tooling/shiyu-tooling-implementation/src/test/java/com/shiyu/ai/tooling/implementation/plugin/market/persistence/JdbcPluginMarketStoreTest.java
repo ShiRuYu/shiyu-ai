@@ -4,7 +4,7 @@ import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.*;
 import static org.mockito.Mockito.*;
 
-import com.shiyu.ai.tooling.implementation.plugin.market.PluginMarketEntry;
+import com.shiyu.ai.tooling.implementation.plugin.market.model.PluginMarketEntry;
 
 import org.junit.jupiter.api.Test;
 import org.springframework.jdbc.core.JdbcTemplate;

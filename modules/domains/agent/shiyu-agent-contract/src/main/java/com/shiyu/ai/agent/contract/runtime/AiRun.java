@@ -6,6 +6,33 @@ import com.shiyu.ai.kernel.context.UserId;
 import java.time.Instant;
 import java.util.Objects;
 
+/**
+ * {@code AiRun} 封装智能体模块中不可变的结构化数据，并作为相关操作之间的值对象。
+ * @param id 标识，表示该记录组件承载的数据。
+ * @param tenantId 租户标识，表示该记录组件承载的数据。
+ * @param ownerUserId 所属用户标识，表示该记录组件承载的数据。
+ * @param appId appId 属性，表示该记录组件承载的数据。
+ * @param appVersionId appVersionId 属性，表示该记录组件承载的数据。
+ * @param sourceType sourceType 属性，表示该记录组件承载的数据。
+ * @param sourceId sourceId 属性，表示该记录组件承载的数据。
+ * @param parentRunId parentRunId 属性，表示该记录组件承载的数据。
+ * @param traceId traceId 属性，表示该记录组件承载的数据。
+ * @param conversationId conversationId 属性，表示该记录组件承载的数据。
+ * @param generationId generationId 属性，表示该记录组件承载的数据。
+ * @param executionId executionId 属性，表示该记录组件承载的数据。
+ * @param model 模型，表示该记录组件承载的数据。
+ * @param promptHash promptHash 属性，表示该记录组件承载的数据。
+ * @param status 状态，表示该记录组件承载的数据。
+ * @param promptTokens promptTokens 属性，表示该记录组件承载的数据。
+ * @param completionTokens completionTokens 属性，表示该记录组件承载的数据。
+ * @param estimatedUsage estimatedUsage 属性，表示该记录组件承载的数据。
+ * @param costSnapshot costSnapshot 属性，表示该记录组件承载的数据。
+ * @param createdAt 创建时间，表示该记录组件承载的数据。
+ * @param completedAt completedAt 属性，表示该记录组件承载的数据。
+ * @param errorCode errorCode 属性，表示该记录组件承载的数据。
+ * @param version version 属性，表示该记录组件承载的数据。
+ * @param lastEventSeq lastEventSeq 属性，表示该记录组件承载的数据。
+ */
 public record AiRun(
         String id,
         TenantId tenantId,

@@ -16,6 +16,9 @@ import java.util.UUID;
 /** 文件处理工具类 */
 public class FileUtils extends FileUtil {
 
+    /**
+     * FILE_EXTENTION_SPLIT 属性，保存当前对象中的业务数据或协作依赖。
+     */
     private static final String FILE_EXTENTION_SPLIT = ".";
 
     /**

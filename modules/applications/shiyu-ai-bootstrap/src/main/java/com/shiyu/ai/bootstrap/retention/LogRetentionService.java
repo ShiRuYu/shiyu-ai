@@ -13,27 +13,43 @@ import java.time.temporal.ChronoUnit;
 import java.util.Comparator;
 import java.util.List;
 
-/** Periodically enforces both age and aggregate-size limits on log history. */
+/**
+ * LogRetentionService 服务接口，负责执行应用领域相关业务操作。
+ */
 @Slf4j
 @Service
 public class LogRetentionService {
 
+    /**
+     * 配置属性，表示当前对象中的对应属性。
+     */
     private final LogRetentionProperties properties;
+    /**
+     * historyRoot 属性，保存当前对象中的业务数据或协作依赖。
+     */
     private final Path historyRoot;
 
+    /**
+     * {@code LogRetentionService} 创建并初始化当前类型实例。
+     *
+     * @param properties 参数值，用于执行当前操作。
+     */
     public LogRetentionService(LogRetentionProperties properties) {
         this.properties = properties;
         this.historyRoot =
                 Path.of(System.getProperty("app.home", "."), "data", "log", "history")
                         .toAbsolutePath()
                         .normalize();
-    }
+   }
 
-    @Scheduled(
-            fixedDelayString = "${shiyu.retention.logs.interval-ms:3600000}",
-            initialDelayString = "${shiyu.retention.logs.initial-delay-ms:120000}")
-    public void scheduledCleanup() {
-        if (properties.isEnabled()) {
+    /**
+     * {@code scheduledCleanup} 执行当前类型定义的业务操作。
+     */
+   @Scheduled(
+           fixedDelayString = "${shiyu.retention.logs.interval-ms:3600000}",
+           initialDelayString = "${shiyu.retention.logs.initial-delay-ms:120000}")
+   public void scheduledCleanup() {
+       if (properties.isEnabled()) {
             cleanup();
         }
     }

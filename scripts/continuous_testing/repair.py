@@ -1,4 +1,4 @@
-"""Constrained repair adapter; never mutates the main development worktree."""
+"""repair 脚本，执行项目架构与工程校验。"""
 from __future__ import annotations
 import subprocess
 from dataclasses import dataclass

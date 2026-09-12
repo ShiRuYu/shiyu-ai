@@ -15,14 +15,29 @@ public enum ExecutionStatus {
     /** 已取消 */
     CANCELLED;
 
+    /**
+     * {@code isTerminal} 校验当前操作的输入或状态是否满足约束。
+     *
+     * @return 返回当前操作产生的结果。
+     */
     public boolean isTerminal() {
         return this == COMPLETED || this == FAILED || this == CANCELLED;
     }
 
+    /**
+     * {@code canPause} 校验当前操作的输入或状态是否满足约束。
+     *
+     * @return 返回当前操作产生的结果。
+     */
     public boolean canPause() {
         return this == RUNNING;
     }
 
+    /**
+     * {@code canResume} 校验当前操作的输入或状态是否满足约束。
+     *
+     * @return 返回当前操作产生的结果。
+     */
     public boolean canResume() {
         return this == PAUSED;
     }

@@ -26,6 +26,8 @@ public final class SpringUtils extends SpringUtil {
     }
 
     /**
+     * 获取指定 Bean 名称对应的类型。
+     *
      * @return Class 注册对象的类型
      */
     public static Class<?> getType(String name) throws NoSuchBeanDefinitionException {
@@ -48,6 +50,11 @@ public final class SpringUtils extends SpringUtil {
         return getApplicationContext();
     }
 
+    /**
+     * {@code isVirtual} 校验当前操作的输入或状态是否满足约束。
+     *
+     * @return 返回当前操作产生的结果。
+     */
     public static boolean isVirtual() {
         return Threading.VIRTUAL.isActive(getBean(Environment.class));
     }

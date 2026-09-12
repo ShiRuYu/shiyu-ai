@@ -17,6 +17,14 @@ public class TreeBuildUtils extends TreeUtil {
     public static final TreeNodeConfig DEFAULT_CONFIG =
             TreeNodeConfig.DEFAULT_CONFIG.setNameKey("label");
 
+    /**
+     * {@code build} 执行当前类型定义的业务操作。
+     *
+     * @param list 参数值，用于执行当前操作。
+     * @param nodeParser 参数值，用于执行当前操作。
+     *
+     * @return 返回当前操作产生的结果。
+     */
     public static <T, K> List<Tree<K>> build(List<T> list, NodeParser<T, K> nodeParser) {
         if (CollUtil.isEmpty(list)) {
             return List.of();

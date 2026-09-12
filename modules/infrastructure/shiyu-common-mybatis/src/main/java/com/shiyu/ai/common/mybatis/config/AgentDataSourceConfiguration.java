@@ -9,24 +9,30 @@ import org.springframework.context.annotation.Configuration;
 import javax.sql.DataSource;
 
 /**
- * Registers the single local application data source used by the platform repositories.
- *
- * <p>The MyBatis-Flex datasource properties are intentionally kept as the public configuration
- * contract. Some Boot 4 starter combinations no longer expose the named datasource bean expected by
- * the JDBC repositories, so the platform owns this small binding explicitly. The conditional keeps
- * deployments that provide their own datasource implementation (for example the future P3 adapters)
- * in control.
+ * AgentDataSourceConfiguration 配置组件，负责注册和配置基础设施领域相关基础设施。
  */
 @Configuration(proxyBeanMethods = false)
 @ConditionalOnMissingBean(DataSource.class)
 public class AgentDataSourceConfiguration {
 
+    /**
+     * {@code agentDataSourceProperties} 执行当前类型定义的业务操作。
+     *
+     * @return 返回当前操作产生的结果。
+     */
     @Bean
     @ConfigurationProperties(prefix = "mybatis-flex.datasource.agent")
     public DataSourceProperties agentDataSourceProperties() {
         return new DataSourceProperties();
     }
 
+    /**
+     * {@code agentDataSource} 执行当前类型定义的业务操作。
+     *
+     * @param agentDataSourceProperties 参数值，用于执行当前操作。
+     *
+     * @return 返回当前操作产生的结果。
+     */
     @Bean(name = "agentDataSource")
     public DataSource agentDataSource(DataSourceProperties agentDataSourceProperties) {
         return agentDataSourceProperties.initializeDataSourceBuilder().build();

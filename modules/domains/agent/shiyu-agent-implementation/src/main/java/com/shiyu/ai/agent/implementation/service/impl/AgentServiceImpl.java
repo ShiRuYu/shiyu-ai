@@ -1,4 +1,5 @@
 package com.shiyu.ai.agent.implementation.service.impl;
+import com.shiyu.ai.agent.implementation.runtime.port.AgentRuntime;
 
 import com.shiyu.ai.agent.AgentDefinition;
 import com.shiyu.ai.agent.implementation.cache.AgentCacheManager;
@@ -19,10 +20,26 @@ import java.util.List;
 @Service
 public class AgentServiceImpl implements AgentService {
 
+    /**
+     * cacheManager 属性，保存当前对象中的业务数据或协作依赖。
+     */
     private final AgentCacheManager cacheManager;
+    /**
+     * agentLoader 属性，保存当前对象中的业务数据或协作依赖。
+     */
     private final AgentLoader agentLoader;
+    /**
+     * agentAdminRepository 属性，保存当前对象中的业务数据或协作依赖。
+     */
     private final AgentAdminRepository agentAdminRepository;
 
+    /**
+     * {@code AgentServiceImpl} 创建并初始化当前类型实例。
+     *
+     * @param cacheManager 参数值，用于执行当前操作。
+     * @param agentLoader 参数值，用于执行当前操作。
+     * @param agentAdminRepository 参数值，用于执行当前操作。
+     */
     public AgentServiceImpl(
             AgentCacheManager cacheManager,
             AgentLoader agentLoader,
@@ -32,6 +49,12 @@ public class AgentServiceImpl implements AgentService {
         this.agentAdminRepository = agentAdminRepository;
     }
 
+    /**
+     * {@code registerAgent} 写入或更新当前模块中的业务数据。
+     *
+     * @param actor 参数值，用于执行当前操作。
+     * @param agentDefinition 参数值，用于执行当前操作。
+     */
     @Override
     public void registerAgent(ActorContext actor, AgentDefinition agentDefinition) {
         if (agentDefinition == null) {
@@ -49,6 +72,11 @@ public class AgentServiceImpl implements AgentService {
         log.info("Agent 注册成功（缓存）：agentIdPresent={}", agentId != null);
     }
 
+    /**
+     * {@code registerSystemAgent} 写入或更新当前模块中的业务数据。
+     *
+     * @param agentDefinition 参数值，用于执行当前操作。
+     */
     @Override
     public void registerSystemAgent(AgentDefinition agentDefinition) {
         if (agentDefinition == null
@@ -59,6 +87,14 @@ public class AgentServiceImpl implements AgentService {
         cacheManager.putSystem(agentDefinition);
     }
 
+    /**
+     * {@code getAgent} 查询并返回当前操作所需的数据。
+     *
+     * @param actor 参数值，用于执行当前操作。
+     * @param agentId 参数值，用于执行当前操作。
+     *
+     * @return 返回当前操作产生的结果。
+     */
     @Override
     public AgentDefinition getAgent(ActorContext actor, String agentId) {
         if (agentId == null || agentId.trim().isEmpty()) {
@@ -71,6 +107,14 @@ public class AgentServiceImpl implements AgentService {
         return definition;
     }
 
+    /**
+     * {@code unregisterAgent} 执行当前类型定义的业务操作。
+     *
+     * @param actor 参数值，用于执行当前操作。
+     * @param agentId 参数值，用于执行当前操作。
+     *
+     * @return 返回当前操作产生的结果。
+     */
     @Override
     @Transactional(rollbackFor = Exception.class)
     public boolean unregisterAgent(ActorContext actor, String agentId) {
@@ -83,6 +127,15 @@ public class AgentServiceImpl implements AgentService {
         return true;
     }
 
+    /**
+     * {@code switchVersion} 执行当前类型定义的业务操作。
+     *
+     * @param actor 参数值，用于执行当前操作。
+     * @param agentId 参数值，用于执行当前操作。
+     * @param version 参数值，用于执行当前操作。
+     *
+     * @return 返回当前操作产生的结果。
+     */
     @Override
     public boolean switchVersion(ActorContext actor, String agentId, String version) {
         log.info(
@@ -106,6 +159,13 @@ public class AgentServiceImpl implements AgentService {
         return true;
     }
 
+    /**
+     * {@code listAgents} 查询并返回当前操作所需的数据。
+     *
+     * @param actor 参数值，用于执行当前操作。
+     *
+     * @return 返回当前操作产生的结果。
+     */
     @Override
     public List<AgentDefinition> listAgents(ActorContext actor) {
         List<AgentDefinition> agents = cacheManager.listAll(actor);
@@ -113,6 +173,11 @@ public class AgentServiceImpl implements AgentService {
         return agents;
     }
 
+    /**
+     * {@code evictRuntimeCache} 执行当前类型定义的业务操作。
+     *
+     * @param agentId 参数值，用于执行当前操作。
+     */
     @Override
     public void evictRuntimeCache(String agentId) {
         cacheManager.evict(agentId);

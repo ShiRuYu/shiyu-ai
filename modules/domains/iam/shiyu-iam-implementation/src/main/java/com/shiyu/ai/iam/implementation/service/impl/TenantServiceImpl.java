@@ -20,14 +20,32 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+/**
+ * {@code TenantServiceImpl} 实现平台模块的应用服务，负责编排用例流程并维护业务边界。
+ */
 @Slf4j
 @Service
 public class TenantServiceImpl implements TenantService {
+    /**
+     * {@code allTenantsView} 执行当前类型定义的业务操作。
+     *
+     * @param actor 参数值，用于执行当前操作。
+     *
+     * @return 返回当前操作产生的结果。
+     */
     @Override
     public List<TenantVO> allTenantsView(ActorContext actor) {
         return MapstructUtils.convert(getAllTenants(requireActor(actor)), TenantVO.class);
     }
 
+    /**
+     * {@code detailView} 执行当前类型定义的业务操作。
+     *
+     * @param actor 参数值，用于执行当前操作。
+     * @param id 参数值，用于执行当前操作。
+     *
+     * @return 返回当前操作产生的结果。
+     */
     @Override
     public TenantVO detailView(ActorContext actor, Long id) {
         ActorContext currentActor = requireActor(actor);
@@ -37,11 +55,28 @@ public class TenantServiceImpl implements TenantService {
                 TenantVO.class);
     }
 
+    /**
+     * {@code createTenant} 写入或更新当前模块中的业务数据。
+     *
+     * @param actor 参数值，用于执行当前操作。
+     * @param request 参数值，用于执行当前操作。
+     *
+     * @return 返回当前操作产生的结果。
+     */
     @Override
     public boolean createTenant(ActorContext actor, TenantRequest request) {
         return createTenant(requireActor(actor), MapstructUtils.convert(request, TenantBO.class));
     }
 
+    /**
+     * {@code updateTenant} 写入或更新当前模块中的业务数据。
+     *
+     * @param actor 参数值，用于执行当前操作。
+     * @param id 参数值，用于执行当前操作。
+     * @param request 参数值，用于执行当前操作。
+     *
+     * @return 返回当前操作产生的结果。
+     */
     @Override
     public boolean updateTenant(ActorContext actor, Long id, TenantRequest request) {
         ActorContext currentActor = requireActor(actor);
@@ -53,12 +88,32 @@ public class TenantServiceImpl implements TenantService {
                         MapstructUtils.convert(request, TenantBO.class));
     }
 
+    /**
+     * 租户仓储，表示当前对象中的对应属性。
+     */
     private final TenantRepository tenantRepository;
 
+    /**
+     * {@code TenantServiceImpl} 创建并初始化当前类型实例。
+     *
+     * @param tenantRepository 参数值，用于执行当前操作。
+     */
     public TenantServiceImpl(TenantRepository tenantRepository) {
         this.tenantRepository = tenantRepository;
     }
 
+    /**
+     * {@code getTenantPage} 查询并返回当前操作所需的数据。
+     *
+     * @param actor 参数值，用于执行当前操作。
+     * @param pageNo 参数值，用于执行当前操作。
+     * @param pageSize 参数值，用于执行当前操作。
+     * @param name 参数值，用于执行当前操作。
+     * @param code 参数值，用于执行当前操作。
+     * @param status 参数值，用于执行当前操作。
+     *
+     * @return 返回当前操作产生的结果。
+     */
     @Override
     public PageData<TenantVO> getTenantPage(
             ActorContext actor,
@@ -148,6 +203,14 @@ public class TenantServiceImpl implements TenantService {
         return tenantRepository.update(tenantBO);
     }
 
+    /**
+     * {@code deleteTenant} 释放或移除当前操作涉及的资源。
+     *
+     * @param actor 参数值，用于执行当前操作。
+     * @param id 参数值，用于执行当前操作。
+     *
+     * @return 返回当前操作产生的结果。
+     */
     @Override
     public boolean deleteTenant(ActorContext actor, Long id) {
         log.info("删除租户，tenantIdPresent: {}", id != null);

@@ -22,18 +22,38 @@ import java.time.Instant;
 import java.util.List;
 import java.util.Optional;
 
-/** H2/MVStore metadata implementation. */
+/**
+ * 通过 JDBC 持久化文件对象的元数据和校验信息。
+ */
 @Repository
 public class JdbcStorageMetadataStore implements StorageMetadataStore {
 
+    /**
+     * JDBC模板，表示当前对象中的对应属性。
+     */
     private final JdbcTemplate jdbcTemplate;
+    /**
+     * dialect 属性，保存当前对象中的业务数据或协作依赖。
+     */
     private final JdbcDialect dialect;
 
+    /**
+     * {@code JdbcStorageMetadataStore} 创建并初始化当前类型实例。
+     *
+     * @param jdbcTemplate 参数值，用于执行当前操作。
+     */
     public JdbcStorageMetadataStore(JdbcTemplate jdbcTemplate) {
         this.jdbcTemplate = jdbcTemplate;
         this.dialect = JdbcDialect.detect(jdbcTemplate);
     }
 
+    /**
+     * {@code createObject} 写入或更新当前模块中的业务数据。
+     *
+     * @param command 参数值，用于执行当前操作。
+     *
+     * @return 返回当前操作产生的结果。
+     */
     @Override
     public long createObject(CreateObject command) {
         KeyHolder keyHolder = new GeneratedKeyHolder();
@@ -72,6 +92,16 @@ public class JdbcStorageMetadataStore implements StorageMetadataStore {
         return key.longValue();
     }
 
+    /**
+     * {@code markObjectAvailable} 执行当前类型定义的业务操作。
+     *
+     * @param objectId 参数值，用于执行当前操作。
+     * @param objectKey 参数值，用于执行当前操作。
+     * @param provider 参数值，用于执行当前操作。
+     * @param size 参数值，用于执行当前操作。
+     * @param contentType 参数值，用于执行当前操作。
+     * @param checksum 参数值，用于执行当前操作。
+     */
     @Override
     public void markObjectAvailable(
             long objectId,
@@ -92,6 +122,12 @@ public class JdbcStorageMetadataStore implements StorageMetadataStore {
                 objectId);
     }
 
+    /**
+     * {@code markObjectFailed} 执行当前类型定义的业务操作。
+     *
+     * @param objectId 参数值，用于执行当前操作。
+     * @param message 参数值，用于执行当前操作。
+     */
     @Override
     public void markObjectFailed(long objectId, String message) {
         jdbcTemplate.update(
@@ -101,6 +137,12 @@ public class JdbcStorageMetadataStore implements StorageMetadataStore {
                 objectId);
     }
 
+    /**
+     * {@code markObjectDeleted} 执行当前类型定义的业务操作。
+     *
+     * @param tenantId 参数值，用于执行当前操作。
+     * @param objectKey 参数值，用于执行当前操作。
+     */
     @Override
     public void markObjectDeleted(long tenantId, String objectKey) {
         jdbcTemplate.update(
@@ -110,6 +152,13 @@ public class JdbcStorageMetadataStore implements StorageMetadataStore {
                 objectKey);
     }
 
+    /**
+     * {@code updateObjectProvider} 写入或更新当前模块中的业务数据。
+     *
+     * @param tenantId 参数值，用于执行当前操作。
+     * @param objectKey 参数值，用于执行当前操作。
+     * @param provider 参数值，用于执行当前操作。
+     */
     @Override
     public void updateObjectProvider(long tenantId, String objectKey, String provider) {
         jdbcTemplate.update(
@@ -120,6 +169,14 @@ public class JdbcStorageMetadataStore implements StorageMetadataStore {
                 objectKey);
     }
 
+    /**
+     * {@code findObjectByKey} 查询并返回当前操作所需的数据。
+     *
+     * @param tenantId 参数值，用于执行当前操作。
+     * @param objectKey 参数值，用于执行当前操作。
+     *
+     * @return 返回当前操作产生的结果。
+     */
     @Override
     public Optional<StorageObjectRecord> findObjectByKey(long tenantId, String objectKey) {
         List<StorageObjectRecord> rows =
@@ -134,6 +191,16 @@ public class JdbcStorageMetadataStore implements StorageMetadataStore {
         return rows.stream().findFirst();
     }
 
+    /**
+     * {@code listObjects} 查询并返回当前操作所需的数据。
+     *
+     * @param tenantId 参数值，用于执行当前操作。
+     * @param namespace 参数值，用于执行当前操作。
+     * @param offset 参数值，用于执行当前操作。
+     * @param limit 参数值，用于执行当前操作。
+     *
+     * @return 返回当前操作产生的结果。
+     */
     @Override
     public List<StorageObjectRecord> listObjects(
             long tenantId, String namespace, int offset, int limit) {
@@ -149,6 +216,13 @@ public class JdbcStorageMetadataStore implements StorageMetadataStore {
                 offset);
     }
 
+    /**
+     * {@code createUploadSession} 写入或更新当前模块中的业务数据。
+     *
+     * @param command 参数值，用于执行当前操作。
+     *
+     * @return 返回当前操作产生的结果。
+     */
     @Override
     public long createUploadSession(CreateUploadSession command) {
         jdbcTemplate.update(
@@ -170,6 +244,14 @@ public class JdbcStorageMetadataStore implements StorageMetadataStore {
         return 1L;
     }
 
+    /**
+     * {@code findUploadSession} 查询并返回当前操作所需的数据。
+     *
+     * @param tenantId 参数值，用于执行当前操作。
+     * @param sessionId 参数值，用于执行当前操作。
+     *
+     * @return 返回当前操作产生的结果。
+     */
     @Override
     public Optional<UploadSessionRecord> findUploadSession(long tenantId, String sessionId) {
         List<UploadSessionRecord> rows =
@@ -197,6 +279,13 @@ public class JdbcStorageMetadataStore implements StorageMetadataStore {
         return rows.stream().findFirst();
     }
 
+    /**
+     * {@code findExpiredUploadSessions} 查询并返回当前操作所需的数据。
+     *
+     * @param now 参数值，用于执行当前操作。
+     *
+     * @return 返回当前操作产生的结果。
+     */
     @Override
     public List<UploadSessionRecord> findExpiredUploadSessions(Instant now) {
         Timestamp cutoff = Timestamp.from(now == null ? Instant.now() : now);
@@ -223,6 +312,14 @@ public class JdbcStorageMetadataStore implements StorageMetadataStore {
                 cutoff);
     }
 
+    /**
+     * {@code markChunkUploaded} 执行当前类型定义的业务操作。
+     *
+     * @param sessionId 参数值，用于执行当前操作。
+     * @param chunkIndex 参数值，用于执行当前操作。
+     * @param size 参数值，用于执行当前操作。
+     * @param checksum 参数值，用于执行当前操作。
+     */
     @Override
     public void markChunkUploaded(String sessionId, int chunkIndex, long size, String checksum) {
         jdbcTemplate.update(
@@ -248,6 +345,13 @@ public class JdbcStorageMetadataStore implements StorageMetadataStore {
                 sessionId);
     }
 
+    /**
+     * {@code uploadedChunks} 执行当前类型定义的业务操作。
+     *
+     * @param sessionId 参数值，用于执行当前操作。
+     *
+     * @return 返回当前操作产生的结果。
+     */
     @Override
     public List<Integer> uploadedChunks(String sessionId) {
         return jdbcTemplate.query(
@@ -257,6 +361,13 @@ public class JdbcStorageMetadataStore implements StorageMetadataStore {
                 sessionId);
     }
 
+    /**
+     * {@code updateUploadSessionStatus} 写入或更新当前模块中的业务数据。
+     *
+     * @param sessionId 参数值，用于执行当前操作。
+     * @param status 参数值，用于执行当前操作。
+     * @param errorMessage 参数值，用于执行当前操作。
+     */
     @Override
     public void updateUploadSessionStatus(String sessionId, String status, String errorMessage) {
         jdbcTemplate.update(
@@ -267,6 +378,11 @@ public class JdbcStorageMetadataStore implements StorageMetadataStore {
                 sessionId);
     }
 
+    /**
+     * {@code deleteUploadSession} 释放或移除当前操作涉及的资源。
+     *
+     * @param sessionId 参数值，用于执行当前操作。
+     */
     @Override
     public void deleteUploadSession(String sessionId) {
         jdbcTemplate.update("DELETE FROM storage_upload_chunk WHERE session_id=?", sessionId);

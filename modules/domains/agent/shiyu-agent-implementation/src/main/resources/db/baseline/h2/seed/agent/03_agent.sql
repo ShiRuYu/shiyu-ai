@@ -1,4 +1,3 @@
--- Final system-ai seed baseline. Executed once on an empty H2 database.
 
 INSERT INTO "PUBLIC"."AGENT_DEF" VALUES(1, 'tutor-bot', '辅导助手', '通用学科辅导 Agent（使用硅基流动 Qwen3-8B 模型）', 1, NULL, 'v1.0.0', 1, NULL, 0, 'system', CURRENT_TIMESTAMP, 'system', CURRENT_TIMESTAMP);
 INSERT INTO "PUBLIC"."AGENT_DEF" VALUES(2, 'knowledge-tutor', '知识问答助手', '知识问答 Agent（使用硅基流动 Qwen3-8B 模型）', 1, NULL, 'v1.0.0', 1, NULL, 0, 'system', CURRENT_TIMESTAMP, 'system', CURRENT_TIMESTAMP);

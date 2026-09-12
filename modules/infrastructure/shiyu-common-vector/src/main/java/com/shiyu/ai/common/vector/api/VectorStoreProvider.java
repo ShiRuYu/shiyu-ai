@@ -3,21 +3,36 @@ package com.shiyu.ai.common.vector.api;
 import com.shiyu.ai.common.vector.model.VectorStoreOptions;
 
 /**
- * Public provider boundary for opening global or scoped vector stores. Business modules must depend
- * on this interface instead of concrete backends.
+ * VectorStoreProvider 边界接口，负责向外部组件提供基础设施领域相关能力。
  */
 public interface VectorStoreProvider extends AutoCloseable {
 
-    /** Active backend type, such as jvector or inmemory. */
+    /**
+     * 处理类型。
+     *
+     * @return 处理结果。
+     */
     String type();
 
-    /** Open a vector store isolated by the supplied namespace. */
+    /**
+     * 打开向量索引。
+     *
+     * @param options options 参数。
+     *
+     * @return 处理结果。
+     */
     VectorStore open(VectorStoreOptions options);
 
-    /** Drop provider-owned state for an obsolete namespace. */
+    /**
+     * 删除向量索引。
+     *
+     * @param options options 参数。
+     */
     default void drop(VectorStoreOptions options) {}
 
-    /** Release provider-level resources. */
+    /**
+     * 关闭vectorstore。
+     */
     @Override
     default void close() {}
 }

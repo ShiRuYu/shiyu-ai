@@ -4,14 +4,30 @@ import com.shiyu.ai.common.thread.api.TaskDecorator;
 
 import java.util.concurrent.Callable;
 
-/** Propagates the common task context to managed worker threads. */
+/**
+ * 在线程切换时传播租户、用户和追踪上下文。
+ */
 public class ContextTaskDecorator implements TaskDecorator {
 
+    /**
+     * {@code decorate} 执行当前类型定义的业务操作。
+     *
+     * @param runnable 参数值，用于执行当前操作。
+     *
+     * @return 返回当前操作产生的结果。
+     */
     @Override
     public Runnable decorate(Runnable runnable) {
         return new ContextAwareRunnable(runnable);
     }
 
+    /**
+     * {@code decorate} 执行当前类型定义的业务操作。
+     *
+     * @param callable 参数值，用于执行当前操作。
+     *
+     * @return 返回当前操作产生的结果。
+     */
     @Override
     public <V> Callable<V> decorate(Callable<V> callable) {
         TaskContext snapshot = TaskContext.current().snapshot();

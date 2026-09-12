@@ -1,5 +1,14 @@
 package com.shiyu.ai.knowledge.implementation.application.service;
 
+
+import com.shiyu.ai.knowledge.implementation.application.KnowledgeEvaluationService.CaseResult;
+import com.shiyu.ai.knowledge.implementation.application.KnowledgeEvaluationService.CaseView;
+import com.shiyu.ai.knowledge.implementation.application.KnowledgeEvaluationService.CreateCaseRequest;
+import com.shiyu.ai.knowledge.implementation.application.KnowledgeEvaluationService.RunRequest;
+import com.shiyu.ai.knowledge.implementation.application.KnowledgeEvaluationService.RunResult;
+import com.shiyu.ai.knowledge.implementation.application.KnowledgeSpaceService.SpaceRole;
+import com.shiyu.ai.knowledge.implementation.infrastructure.index.service.KnowledgeIndexService.HybridHit;
+
 import com.shiyu.ai.common.core.api.PageData;
 import com.shiyu.ai.common.core.exception.ServiceException;
 import com.shiyu.ai.kernel.context.ActorContext;
@@ -7,7 +16,7 @@ import com.shiyu.ai.knowledge.implementation.application.KnowledgeEvaluationServ
 import com.shiyu.ai.knowledge.implementation.application.KnowledgeSpaceService;
 import com.shiyu.ai.knowledge.implementation.domain.model.KnowledgeEvaluationCaseBO;
 import com.shiyu.ai.knowledge.implementation.domain.port.repository.KnowledgeEnterpriseRepository;
-import com.shiyu.ai.knowledge.implementation.infrastructure.index.KnowledgeIndexService;
+import com.shiyu.ai.knowledge.implementation.infrastructure.index.service.KnowledgeIndexService;
 
 import lombok.RequiredArgsConstructor;
 
@@ -19,14 +28,36 @@ import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Set;
 
+/**
+ * {@code KnowledgeEvaluationServiceImpl} 实现知识模块的应用服务，负责编排用例流程并维护业务边界。
+ */
 @Service
 @RequiredArgsConstructor
 public class KnowledgeEvaluationServiceImpl implements KnowledgeEvaluationService {
 
+    /**
+     * 仓储，表示当前对象中的对应属性。
+     */
     private final KnowledgeEnterpriseRepository repository;
+    /**
+     * spaceService 属性，保存当前对象中的业务数据或协作依赖。
+     */
     private final KnowledgeSpaceService spaceService;
+    /**
+     * 索引服务，表示当前对象中的对应属性。
+     */
     private final KnowledgeIndexService indexService;
 
+    /**
+     * {@code page} 执行当前类型定义的业务操作。
+     *
+     * @param actor 参数值，用于执行当前操作。
+     * @param pageNum 参数值，用于执行当前操作。
+     * @param pageSize 参数值，用于执行当前操作。
+     * @param spaceId 参数值，用于执行当前操作。
+     *
+     * @return 返回当前操作产生的结果。
+     */
     @Override
     public PageData<CaseView> page(ActorContext actor, int pageNum, int pageSize, Long spaceId) {
         requireActor(actor);
@@ -38,6 +69,14 @@ public class KnowledgeEvaluationServiceImpl implements KnowledgeEvaluationServic
         return new PageData<>(page.getItems().stream().map(this::toView).toList(), page.getTotal());
     }
 
+    /**
+     * {@code create} 写入或更新当前模块中的业务数据。
+     *
+     * @param actor 参数值，用于执行当前操作。
+     * @param request 参数值，用于执行当前操作。
+     *
+     * @return 返回当前操作产生的结果。
+     */
     @Override
     @Transactional(rollbackFor = Exception.class)
     public CaseView create(ActorContext actor, CreateCaseRequest request) {
@@ -57,6 +96,12 @@ public class KnowledgeEvaluationServiceImpl implements KnowledgeEvaluationServic
         return toView(evaluation);
     }
 
+    /**
+     * {@code delete} 释放或移除当前操作涉及的资源。
+     *
+     * @param actor 参数值，用于执行当前操作。
+     * @param id 参数值，用于执行当前操作。
+     */
     @Override
     @Transactional(rollbackFor = Exception.class)
     public void delete(ActorContext actor, Long id) {
@@ -68,6 +113,14 @@ public class KnowledgeEvaluationServiceImpl implements KnowledgeEvaluationServic
         repository.deleteEvaluation(actor.tenantId(), id);
     }
 
+    /**
+     * {@code run} 执行当前模块定义的业务流程。
+     *
+     * @param actor 参数值，用于执行当前操作。
+     * @param request 参数值，用于执行当前操作。
+     *
+     * @return 返回当前操作产生的结果。
+     */
     @Override
     public RunResult run(ActorContext actor, RunRequest request) {
         requireActor(actor);

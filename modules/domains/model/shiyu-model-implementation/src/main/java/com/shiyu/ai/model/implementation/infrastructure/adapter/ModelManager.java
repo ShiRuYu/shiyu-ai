@@ -28,20 +28,48 @@ import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.stream.Collectors;
 
+/**
+ * {@code ModelManager} 承载模型模块的领域状态或协作行为，负责维护本类型的职责边界。
+ */
 @Slf4j
 @Service
 public class ModelManager implements ApplicationRunner, ModelRoutingPort {
 
     private final Map<String, ModelAdapter> adapterMap = new ConcurrentHashMap<>();
 
+    /**
+     * dbLoaded 属性，保存当前对象中的业务数据或协作依赖。
+     */
     private volatile boolean dbLoaded = false;
+    /**
+     * initialized 属性，保存当前对象中的业务数据或协作依赖。
+     */
     private volatile boolean initialized = false;
 
+    /**
+     * platformRepository 属性，保存当前对象中的业务数据或协作依赖。
+     */
     private final AiPlatformRepository platformRepository;
+    /**
+     * modelRepository 属性，保存当前对象中的业务数据或协作依赖。
+     */
     private final AiModelRepository modelRepository;
+    /**
+     * platformProperties 属性，保存当前对象中的业务数据或协作依赖。
+     */
     private final PlatformProperties platformProperties;
+    /**
+     * deepSeekProvider 属性，保存当前对象中的业务数据或协作依赖。
+     */
     private volatile DeepSeekHttpProvider deepSeekProvider;
 
+    /**
+     * {@code ModelManager} 创建并初始化当前类型实例。
+     *
+     * @param platformRepository 参数值，用于执行当前操作。
+     * @param modelRepository 参数值，用于执行当前操作。
+     * @param platformProperties 参数值，用于执行当前操作。
+     */
     public ModelManager(
             AiPlatformRepository platformRepository,
             AiModelRepository modelRepository,
@@ -59,18 +87,25 @@ public class ModelManager implements ApplicationRunner, ModelRoutingPort {
         log.info("模型管理器已创建，等待启动后加载适配器");
     }
 
+    /**
+     * {@code run} 执行当前模块定义的业务流程。
+     *
+     * @param args 参数值，用于执行当前操作。
+     */
     @Override
     public void run(ApplicationArguments args) {
         reloadFromDb();
     }
 
+    /**
+     * {@code reloadFromDb} 执行当前类型定义的业务操作。
+     */
     public synchronized void reloadFromDb() {
         log.info("=== 开始加载平台适配器 ===");
         initialized = false;
 
         adapterMap.values().forEach(ModelAdapter::clearCache);
         adapterMap.clear();
-        // Do not retain credentials from a platform removed or disabled in the database.
         deepSeekProvider =
                 new DeepSeekHttpProvider(
                         platformProperties.getDeepseek().getBaseUrl(),
@@ -89,7 +124,6 @@ public class ModelManager implements ApplicationRunner, ModelRoutingPort {
                             log.info("从数据库注册适配器: {} ({})", platform.getCode(), platform.getName());
                         }
                     } catch (IllegalArgumentException e) {
-                        // A malformed platform must not discard every other tenant platform.
                         log.error(
                                 "跳过协议配置无效的平台: codePresent={}, namePresent={}, errorType={},"
                                         + " errorMessageLength={}",
@@ -233,12 +267,22 @@ public class ModelManager implements ApplicationRunner, ModelRoutingPort {
         log.info("已加载 {} 个硬编码默认平台适配器", adapterMap.size());
     }
 
+    /**
+     * {@code registerAdapter} 写入或更新当前模块中的业务数据。
+     *
+     * @param adapter 参数值，用于执行当前操作。
+     */
     public void registerAdapter(ModelAdapter adapter) {
         String platformType = adapter.getPlatformType();
         adapterMap.put(platformType, adapter);
         log.info("注册平台适配器：{}", platformType);
     }
 
+    /**
+     * {@code unregisterAdapter} 执行当前类型定义的业务操作。
+     *
+     * @param platformType 参数值，用于执行当前操作。
+     */
     public void unregisterAdapter(String platformType) {
         ModelAdapter removed = adapterMap.remove(platformType);
         if (removed != null) {
@@ -247,13 +291,22 @@ public class ModelManager implements ApplicationRunner, ModelRoutingPort {
         }
     }
 
+    /**
+     * {@code getChatModel} 查询并返回当前操作所需的数据。
+     *
+     * @param platformType 参数值，用于执行当前操作。
+     * @param modelName 参数值，用于执行当前操作。
+     *
+     * @return 返回当前操作产生的结果。
+     */
     public ChatModel getChatModel(String platformType, String modelName) {
         return getAdapter(platformType).getChatModel(modelName);
     }
 
     /**
-     * Dedicated structured DeepSeek transport; generic providers remain available for other
-     * platforms.
+     * 获取 DeepSeek 模型提供者。
+     *
+     * @return 处理结果。
      */
     public DeepSeekHttpProvider getDeepSeekProvider() {
         if (!initialized) {
@@ -264,6 +317,14 @@ public class ModelManager implements ApplicationRunner, ModelRoutingPort {
         return deepSeekProvider;
     }
 
+    /**
+     * {@code getChatModel} 查询并返回当前操作所需的数据。
+     *
+     * @param config 参数值，用于执行当前操作。
+     * @param modelName 参数值，用于执行当前操作。
+     *
+     * @return 返回当前操作产生的结果。
+     */
     public ChatModel getChatModel(PlatformConfig config, String modelName) {
         if (config == null) {
             throw new IllegalArgumentException("平台配置不能为空");
@@ -273,14 +334,37 @@ public class ModelManager implements ApplicationRunner, ModelRoutingPort {
                 config, modelName != null ? modelName : config.getModelName());
     }
 
+    /**
+     * {@code getChatModel} 查询并返回当前操作所需的数据。
+     *
+     * @param config 参数值，用于执行当前操作。
+     *
+     * @return 返回当前操作产生的结果。
+     */
     public ChatModel getChatModel(PlatformConfig config) {
         return getChatModel(config, null);
     }
 
+    /**
+     * {@code getStreamingChatModel} 查询并返回当前操作所需的数据。
+     *
+     * @param platformType 参数值，用于执行当前操作。
+     * @param modelName 参数值，用于执行当前操作。
+     *
+     * @return 返回当前操作产生的结果。
+     */
     public StreamingChatModel getStreamingChatModel(String platformType, String modelName) {
         return getAdapter(platformType).getStreamingChatModel(modelName);
     }
 
+    /**
+     * {@code getStreamingChatModel} 查询并返回当前操作所需的数据。
+     *
+     * @param config 参数值，用于执行当前操作。
+     * @param modelName 参数值，用于执行当前操作。
+     *
+     * @return 返回当前操作产生的结果。
+     */
     public StreamingChatModel getStreamingChatModel(PlatformConfig config, String modelName) {
         if (config == null) {
             throw new IllegalArgumentException("平台配置不能为空");
@@ -290,6 +374,13 @@ public class ModelManager implements ApplicationRunner, ModelRoutingPort {
                 config, modelName != null ? modelName : config.getModelName());
     }
 
+    /**
+     * {@code getStreamingChatModel} 查询并返回当前操作所需的数据。
+     *
+     * @param config 参数值，用于执行当前操作。
+     *
+     * @return 返回当前操作产生的结果。
+     */
     public StreamingChatModel getStreamingChatModel(PlatformConfig config) {
         return getStreamingChatModel(config, null);
     }
@@ -307,8 +398,6 @@ public class ModelManager implements ApplicationRunner, ModelRoutingPort {
         String platformType =
                 StringUtils.defaultIfBlank(config.getPlatformType(), "OPENAI_COMPATIBLE");
         ModelAdapter registered = adapterMap.get(platformType);
-        // An explicit OpenAI-compatible configuration must not accidentally
-        // reuse an Ollama adapter registered under the same platform code.
         if (registered != null && !(registered instanceof OllamaPlatformAdapter)) {
             return registered;
         }
@@ -320,14 +409,35 @@ public class ModelManager implements ApplicationRunner, ModelRoutingPort {
                 config.getMaxRetries() == null ? 3 : config.getMaxRetries());
     }
 
+    /**
+     * {@code getDefaultChatModel} 查询并返回当前操作所需的数据。
+     *
+     * @param platformType 参数值，用于执行当前操作。
+     *
+     * @return 返回当前操作产生的结果。
+     */
     public ChatModel getDefaultChatModel(String platformType) {
         return getAdapter(platformType).getChatModel(null);
     }
 
+    /**
+     * {@code getDefaultStreamingChatModel} 查询并返回当前操作所需的数据。
+     *
+     * @param platformType 参数值，用于执行当前操作。
+     *
+     * @return 返回当前操作产生的结果。
+     */
     public StreamingChatModel getDefaultStreamingChatModel(String platformType) {
         return getAdapter(platformType).getStreamingChatModel(null);
     }
 
+    /**
+     * {@code getAdapter} 查询并返回当前操作所需的数据。
+     *
+     * @param platformType 参数值，用于执行当前操作。
+     *
+     * @return 返回当前操作产生的结果。
+     */
     public ModelAdapter getAdapter(String platformType) {
         if (!initialized) {
             synchronized (this) {
@@ -343,11 +453,23 @@ public class ModelManager implements ApplicationRunner, ModelRoutingPort {
         return adapter;
     }
 
+    /**
+     * {@code isPlatformAvailable} 校验当前操作的输入或状态是否满足约束。
+     *
+     * @param platformType 参数值，用于执行当前操作。
+     *
+     * @return 返回当前操作产生的结果。
+     */
     public boolean isPlatformAvailable(String platformType) {
         ModelAdapter adapter = adapterMap.get(platformType);
         return adapter != null && adapter.isAvailable();
     }
 
+    /**
+     * {@code getAvailablePlatforms} 查询并返回当前操作所需的数据。
+     *
+     * @return 返回当前操作产生的结果。
+     */
     public List<String> getAvailablePlatforms() {
         return adapterMap.values().stream()
                 .filter(ModelAdapter::isAvailable)
@@ -355,6 +477,11 @@ public class ModelManager implements ApplicationRunner, ModelRoutingPort {
                 .collect(Collectors.toList());
     }
 
+    /**
+     * {@code availableModels} 执行当前类型定义的业务操作。
+     *
+     * @return 返回当前操作产生的结果。
+     */
     @Override
     public List<ModelDescriptor> availableModels() {
         return adapterMap.entrySet().stream()
@@ -368,6 +495,13 @@ public class ModelManager implements ApplicationRunner, ModelRoutingPort {
                 .toList();
     }
 
+    /**
+     * {@code resolvePlatform} 查询并返回当前操作所需的数据。
+     *
+     * @param model 参数值，用于执行当前操作。
+     *
+     * @return 返回当前操作产生的结果。
+     */
     @Override
     public String resolvePlatform(String model) {
         if (StringUtils.isNotBlank(model)) {
@@ -380,26 +514,51 @@ public class ModelManager implements ApplicationRunner, ModelRoutingPort {
         return getDefaultPlatform();
     }
 
+    /**
+     * {@code defaultPlatform} 执行当前类型定义的业务操作。
+     *
+     * @return 返回当前操作产生的结果。
+     */
     @Override
     public String defaultPlatform() {
         return getDefaultPlatform();
     }
 
+    /**
+     * {@code getAllAdapters} 查询并返回当前操作所需的数据。
+     *
+     * @return 返回当前操作产生的结果。
+     */
     public Map<String, ModelAdapter> getAllAdapters() {
         return new ConcurrentHashMap<>(adapterMap);
     }
 
+    /**
+     * {@code getDefaultModelName} 查询并返回当前操作所需的数据。
+     *
+     * @param platformType 参数值，用于执行当前操作。
+     *
+     * @return 返回当前操作产生的结果。
+     */
     public String getDefaultModelName(String platformType) {
         ModelAdapter adapter = adapterMap.get(platformType);
         return adapter != null ? adapter.getDefaultModelName() : null;
     }
 
+    /**
+     * {@code markDirty} 执行当前类型定义的业务操作。
+     */
     public void markDirty() {
         this.dbLoaded = false;
         this.initialized = false;
         log.info("平台适配器已标记为脏，将在下次访问时懒加载");
     }
 
+    /**
+     * {@code getDefaultPlatform} 查询并返回当前操作所需的数据。
+     *
+     * @return 返回当前操作产生的结果。
+     */
     public String getDefaultPlatform() {
         try {
             AiPlatformBO defaultPlatform = platformRepository.selectDefault(configuredTenant());
@@ -429,10 +588,20 @@ public class ModelManager implements ApplicationRunner, ModelRoutingPort {
         return new TenantId(value);
     }
 
+    /**
+     * {@code isDbLoaded} 校验当前操作的输入或状态是否满足约束。
+     *
+     * @return 返回当前操作产生的结果。
+     */
     public boolean isDbLoaded() {
         return dbLoaded;
     }
 
+    /**
+     * {@code refreshCache} 执行当前类型定义的业务操作。
+     *
+     * @param platformType 参数值，用于执行当前操作。
+     */
     public void refreshCache(String platformType) {
         ModelAdapter adapter = adapterMap.get(platformType);
         if (adapter != null) {
@@ -441,6 +610,9 @@ public class ModelManager implements ApplicationRunner, ModelRoutingPort {
         }
     }
 
+    /**
+     * {@code refreshAllCache} 执行当前类型定义的业务操作。
+     */
     public void refreshAllCache() {
         adapterMap.values().forEach(ModelAdapter::clearCache);
         log.info("已刷新所有平台缓存");

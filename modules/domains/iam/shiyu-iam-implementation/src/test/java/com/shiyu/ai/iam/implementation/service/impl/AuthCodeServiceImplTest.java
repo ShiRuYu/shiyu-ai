@@ -156,8 +156,6 @@ class AuthCodeServiceImplTest {
 
     @Test
     void coversEveryAuthorizationCodeTenantScopeGuard() {
-        // Role ownership and requested tenant are checked before touching the
-        // tenant repository.
         assertFalse(service.grant(ACTOR, 7L, null, List.of(1L)));
         when(roleRepository.isRoleOwnedByTenant(7L, new TenantId(5L))).thenReturn(true);
         when(tenantRepository.selectById(5L)).thenReturn(null);

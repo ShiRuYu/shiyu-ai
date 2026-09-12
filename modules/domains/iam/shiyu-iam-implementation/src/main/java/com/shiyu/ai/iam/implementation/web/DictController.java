@@ -32,12 +32,27 @@ import java.util.List;
 @RequestMapping("/api/iam/dicts")
 public class DictController {
 
+    /**
+     * dictService 属性，保存当前对象中的业务数据或协作依赖。
+     */
     private final DictService dictService;
 
+    /**
+     * {@code DictController} 创建并初始化当前类型实例。
+     *
+     * @param dictService 参数值，用于执行当前操作。
+     */
     public DictController(DictService dictService) {
         this.dictService = dictService;
     }
 
+    /**
+     * {@code getDictList} 查询并返回当前操作所需的数据。
+     *
+     * @param request 参数值，用于执行当前操作。
+     *
+     * @return 返回当前操作产生的结果。
+     */
     @Operation(summary = "Get Dict List")
     @SaCheckPermission("system:dict:list")
     @GetMapping("/list")
@@ -51,6 +66,13 @@ public class DictController {
         return Result.success(new PageData<>(result.getRight(), result.getLeft()));
     }
 
+    /**
+     * {@code getDictByType} 查询并返回当前操作所需的数据。
+     *
+     * @param dictType 参数值，用于执行当前操作。
+     *
+     * @return 返回当前操作产生的结果。
+     */
     @Operation(summary = "Get Dict By Type")
     @SaCheckPermission("system:dict:list")
     @GetMapping("/type")
@@ -60,6 +82,13 @@ public class DictController {
                 dictService.byTypeView(ActorContextHttpAdapter.currentActor(), dictType));
     }
 
+    /**
+     * {@code createDict} 写入或更新当前模块中的业务数据。
+     *
+     * @param dictBO 参数值，用于执行当前操作。
+     *
+     * @return 返回当前操作产生的结果。
+     */
     @Operation(summary = "Create Dict")
     @SaCheckPermission("system:dict:create")
     @PostMapping("/create")
@@ -68,6 +97,14 @@ public class DictController {
         return Result.success(dictService.create(ActorContextHttpAdapter.currentActor(), dictBO));
     }
 
+    /**
+     * {@code updateDict} 写入或更新当前模块中的业务数据。
+     *
+     * @param id 参数值，用于执行当前操作。
+     * @param dictBO 参数值，用于执行当前操作。
+     *
+     * @return 返回当前操作产生的结果。
+     */
     @Operation(summary = "Update Dict")
     @SaCheckPermission("system:dict:update")
     @PostMapping("/update")
@@ -78,6 +115,13 @@ public class DictController {
                 dictService.update(ActorContextHttpAdapter.currentActor(), id, dictBO));
     }
 
+    /**
+     * {@code deleteDict} 释放或移除当前操作涉及的资源。
+     *
+     * @param id 参数值，用于执行当前操作。
+     *
+     * @return 返回当前操作产生的结果。
+     */
     @Operation(summary = "Delete Dict")
     @SaCheckPermission("system:dict:delete")
     @PostMapping("/delete")
@@ -87,6 +131,13 @@ public class DictController {
         return Result.success();
     }
 
+    /**
+     * {@code deleteDicts} 释放或移除当前操作涉及的资源。
+     *
+     * @param ids 参数值，用于执行当前操作。
+     *
+     * @return 返回当前操作产生的结果。
+     */
     @Operation(summary = "Delete Dicts")
     @SaCheckPermission("system:dict:delete")
     @PostMapping("/batch-delete")

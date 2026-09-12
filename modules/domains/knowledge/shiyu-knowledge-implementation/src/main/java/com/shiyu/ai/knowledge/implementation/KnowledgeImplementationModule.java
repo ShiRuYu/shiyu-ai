@@ -1,4 +1,6 @@
 package com.shiyu.ai.knowledge.implementation;
 
-/** Marker for code owned exclusively by the Knowledge bounded context. */
+/**
+ * KnowledgeImplementationModule 模块接口，标识知识模块的边界。
+ */
 public interface KnowledgeImplementationModule {}

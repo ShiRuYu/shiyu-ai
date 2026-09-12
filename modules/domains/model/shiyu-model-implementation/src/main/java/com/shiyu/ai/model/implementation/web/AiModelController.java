@@ -35,14 +35,35 @@ import java.util.List;
 @RequestMapping("/api/model/models")
 public class AiModelController {
 
+    /**
+     * aiModelService 属性，保存当前对象中的业务数据或协作依赖。
+     */
     private final AiModelService aiModelService;
+    /**
+     * modelManager 属性，保存当前对象中的业务数据或协作依赖。
+     */
     private final ModelManager modelManager;
 
+    /**
+     * {@code AiModelController} 创建并初始化当前类型实例。
+     *
+     * @param aiModelService 参数值，用于执行当前操作。
+     * @param modelManager 参数值，用于执行当前操作。
+     */
     public AiModelController(AiModelService aiModelService, ModelManager modelManager) {
         this.aiModelService = aiModelService;
         this.modelManager = modelManager;
     }
 
+    /**
+     * {@code getPage} 查询并返回当前操作所需的数据。
+     *
+     * @param platformId 参数值，用于执行当前操作。
+     * @param pageNo 参数值，用于执行当前操作。
+     * @param pageSize 参数值，用于执行当前操作。
+     *
+     * @return 返回当前操作产生的结果。
+     */
     @Operation(summary = "Get Page")
     @GetMapping("/page")
     public Result<PageData<AiModelVO>> getPage(
@@ -58,6 +79,13 @@ public class AiModelController {
         return Result.success(new PageData<>(vos, result.getLeft()));
     }
 
+    /**
+     * {@code getByPlatformId} 查询并返回当前操作所需的数据。
+     *
+     * @param platformId 参数值，用于执行当前操作。
+     *
+     * @return 返回当前操作产生的结果。
+     */
     @Operation(summary = "Get by Platform Id")
     @GetMapping("/platform")
     public Result<List<AiModelVO>> getByPlatformId(@RequestParam Long platformId) {
@@ -68,6 +96,13 @@ public class AiModelController {
                 com.shiyu.ai.common.core.utils.MapstructUtils.convert(list, AiModelVO.class));
     }
 
+    /**
+     * {@code getByPlatformCode} 查询并返回当前操作所需的数据。
+     *
+     * @param platformCode 参数值，用于执行当前操作。
+     *
+     * @return 返回当前操作产生的结果。
+     */
     @Operation(summary = "Get by Platform Code")
     @GetMapping("/platform/by-code")
     public Result<List<AiModelResponse>> getByPlatformCode(@RequestParam String platformCode) {
@@ -77,6 +112,13 @@ public class AiModelController {
         return Result.success(list);
     }
 
+    /**
+     * {@code getOptions} 查询并返回当前操作所需的数据。
+     *
+     * @param platformId 参数值，用于执行当前操作。
+     *
+     * @return 返回当前操作产生的结果。
+     */
     @Operation(summary = "Get Options")
     @GetMapping("/options")
     public Result<List<IdNameOptionVO>> getOptions(
@@ -86,6 +128,13 @@ public class AiModelController {
         return Result.success(list);
     }
 
+    /**
+     * {@code getById} 查询并返回当前操作所需的数据。
+     *
+     * @param id 参数值，用于执行当前操作。
+     *
+     * @return 返回当前操作产生的结果。
+     */
     @Operation(summary = "Get by Id")
     @GetMapping("/detail")
     public Result<AiModelVO> getById(@RequestParam Long id) {
@@ -99,6 +148,13 @@ public class AiModelController {
         return Result.fail("模型不存在");
     }
 
+    /**
+     * {@code getDefaultByPlatformId} 查询并返回当前操作所需的数据。
+     *
+     * @param platformId 参数值，用于执行当前操作。
+     *
+     * @return 返回当前操作产生的结果。
+     */
     @Operation(summary = "Get Default By Platform Id")
     @GetMapping("/platform/default")
     public Result<AiModelVO> getDefaultByPlatformId(@RequestParam Long platformId) {
@@ -112,6 +168,13 @@ public class AiModelController {
         return Result.fail("未配置默认模型");
     }
 
+    /**
+     * {@code create} 写入或更新当前模块中的业务数据。
+     *
+     * @param request 参数值，用于执行当前操作。
+     *
+     * @return 返回当前操作产生的结果。
+     */
     @Operation(summary = "Create")
     @SaCheckPermission("agent:model:create")
     @PostMapping("/create")
@@ -129,6 +192,14 @@ public class AiModelController {
         }
     }
 
+    /**
+     * {@code update} 写入或更新当前模块中的业务数据。
+     *
+     * @param id 参数值，用于执行当前操作。
+     * @param request 参数值，用于执行当前操作。
+     *
+     * @return 返回当前操作产生的结果。
+     */
     @Operation(summary = "Update")
     @SaCheckPermission("agent:model:edit")
     @PostMapping("/update")
@@ -148,6 +219,13 @@ public class AiModelController {
         }
     }
 
+    /**
+     * {@code delete} 释放或移除当前操作涉及的资源。
+     *
+     * @param id 参数值，用于执行当前操作。
+     *
+     * @return 返回当前操作产生的结果。
+     */
     @Operation(summary = "Delete")
     @SaCheckPermission("agent:model:delete")
     @PostMapping("/delete")
@@ -162,6 +240,13 @@ public class AiModelController {
         }
     }
 
+    /**
+     * {@code deleteBatch} 释放或移除当前操作涉及的资源。
+     *
+     * @param ids 参数值，用于执行当前操作。
+     *
+     * @return 返回当前操作产生的结果。
+     */
     @Operation(summary = "Delete Batch")
     @SaCheckPermission("agent:model:delete")
     @PostMapping("/batch-delete")
@@ -176,6 +261,13 @@ public class AiModelController {
         }
     }
 
+    /**
+     * {@code setDefault} 写入或更新当前模块中的业务数据。
+     *
+     * @param id 参数值，用于执行当前操作。
+     *
+     * @return 返回当前操作产生的结果。
+     */
     @Operation(summary = "Set Default")
     @SaCheckPermission("agent:model:set-default")
     @PostMapping("/set-default")

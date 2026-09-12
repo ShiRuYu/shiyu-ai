@@ -1,4 +1,4 @@
-"""Durable state for the continuous testing controller."""
+"""store 脚本，执行项目架构与工程校验。"""
 from __future__ import annotations
 
 import json

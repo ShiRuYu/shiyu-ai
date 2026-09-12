@@ -4,11 +4,7 @@ import org.mybatis.spring.annotation.MapperScan;
 import org.springframework.context.annotation.Configuration;
 
 /**
- * MyBatis adapter assembly owned by the Agent bounded context.
- *
- * <p>The central DAL must not scan Agent tables. Keeping the scan beside the Agent persistence
- * adapters makes the ownership boundary explicit and keeps other bounded contexts from accidentally
- * registering these mappers.
+ * AgentPersistenceConfiguration 配置组件，负责注册和配置智能体领域相关基础设施。
  */
 @Configuration(proxyBeanMethods = false)
 @MapperScan("com.shiyu.ai.agent.implementation.persistence.mapper")

@@ -18,6 +18,9 @@ import java.io.Serial;
 @EqualsAndHashCode(callSuper = true)
 public class AiPlatformBO extends BaseEntity {
 
+    /**
+     * serialVersionUID 属性，保存当前对象中的业务数据或协作依赖。
+     */
     @Serial private static final long serialVersionUID = 1L;
 
     /** 平台 ID */
@@ -40,18 +43,18 @@ public class AiPlatformBO extends BaseEntity {
     @Size(max = 50, message = "平台编码长度不能超过{max}个字符")
     private String code;
 
-    /** Transport adapter type, defaulting to the OpenAI-compatible protocol. */
+    /** 访问平台时使用的协议适配器类型。 */
     private String adapterType = PlatformAdapterType.OPENAI_COMPATIBLE.name();
 
-    /** Base URL */
+    /** 模型平台 API 地址。 */
     @Size(max = 500, message = "Base URL 长度不能超过{max}个字符")
     private String baseUrl;
 
-    /** API Key */
+    /** 访问平台所需的 API 密钥。 */
     @Size(max = 500, message = "API Key 长度不能超过{max}个字符")
     private String apiKey;
 
-    /** 默认温度参数 */
+    /** 默认温度参数。 */
     private Double temperature;
 
     /** 默认最大 Token 数 */

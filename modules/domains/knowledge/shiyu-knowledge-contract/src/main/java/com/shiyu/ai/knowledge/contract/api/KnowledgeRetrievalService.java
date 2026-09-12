@@ -3,9 +3,17 @@ package com.shiyu.ai.knowledge.contract.api;
 import com.shiyu.ai.knowledge.contract.model.KnowledgeRetrievalRequest;
 import com.shiyu.ai.knowledge.contract.model.KnowledgeRetrievalResult;
 
-/** Cross-domain retrieval contract for ranked knowledge context. */
+/**
+ * KnowledgeRetrievalService 服务接口，负责执行知识领域相关业务操作。
+ */
 public interface KnowledgeRetrievalService {
 
-    /** Retrieves tenant-authorized knowledge for the supplied query. */
+    /**
+     * 获取知识retrieval。
+     *
+     * @param request 请求对象。
+     *
+     * @return 处理结果。
+     */
     KnowledgeRetrievalResult retrieve(KnowledgeRetrievalRequest request);
 }

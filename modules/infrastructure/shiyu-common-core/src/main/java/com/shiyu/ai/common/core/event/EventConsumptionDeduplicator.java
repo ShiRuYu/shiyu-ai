@@ -6,14 +6,20 @@ import org.springframework.jdbc.core.JdbcTemplate;
 import java.util.Objects;
 
 /**
- * Durable inbox guard for Kafka consumers. A consumer acknowledges a message only after {@link
- * #firstSeen(String)} returns {@code true} and its handler has completed. The primary key makes
- * concurrent deliveries idempotent.
+ * 记录已消费事件并阻止同一事件重复处理。
  */
 public final class EventConsumptionDeduplicator {
 
+    /**
+     * JDBC，表示当前对象中的对应属性。
+     */
     private final JdbcTemplate jdbc;
 
+    /**
+     * {@code EventConsumptionDeduplicator} 创建并初始化当前类型实例。
+     *
+     * @param jdbc 参数值，用于执行当前操作。
+     */
     public EventConsumptionDeduplicator(JdbcTemplate jdbc) {
         this.jdbc = Objects.requireNonNull(jdbc, "JdbcTemplate must not be null");
         jdbc.execute(
@@ -25,6 +31,13 @@ public final class EventConsumptionDeduplicator {
                 """);
     }
 
+    /**
+     * {@code firstSeen} 执行当前类型定义的业务操作。
+     *
+     * @param eventId 参数值，用于执行当前操作。
+     *
+     * @return 返回当前操作产生的结果。
+     */
     public boolean firstSeen(String eventId) {
         if (eventId == null || eventId.isBlank()) return false;
         try {

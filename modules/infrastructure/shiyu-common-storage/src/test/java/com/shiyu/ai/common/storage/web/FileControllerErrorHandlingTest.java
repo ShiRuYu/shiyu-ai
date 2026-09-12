@@ -1,4 +1,5 @@
 package com.shiyu.ai.common.storage.web;
+import com.shiyu.ai.common.storage.file.service.FileStorageManager;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.Mockito.*;

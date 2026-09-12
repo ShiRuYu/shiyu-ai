@@ -9,9 +9,25 @@ import org.springframework.stereotype.Service;
 import java.util.ArrayList;
 import java.util.List;
 
-/** Keeps product prompt ordering explicit and inspectable for Prompt Preview. */
+/**
+ * PromptAssemblyService 服务接口，负责执行会话领域相关业务操作。
+ */
 @Service
 public class PromptAssemblyService {
+    /**
+     * {@code assemble} 执行当前类型定义的业务操作。
+     *
+     * @param platformSafety 参数值，用于执行当前操作。
+     * @param conversationSystem 参数值，用于执行当前操作。
+     * @param character 参数值，用于执行当前操作。
+     * @param persona 参数值，用于执行当前操作。
+     * @param lorebook 参数值，用于执行当前操作。
+     * @param magma 参数值，用于执行当前操作。
+     * @param history 参数值，用于执行当前操作。
+     * @param current 参数值，用于执行当前操作。
+     *
+     * @return 返回当前操作产生的结果。
+     */
     public List<ConversationMessage> assemble(
             List<ConversationMessage> platformSafety,
             List<ConversationMessage> conversationSystem,
@@ -50,8 +66,20 @@ public class PromptAssemblyService {
     }
 
     /**
-     * Query-aware assembly used by Prompt Studio and runtime; caps Lorebook expansion
-     * deterministically.
+     * 构建promptassembly。
+     *
+     * @param platformSafety platformSafety 参数。
+     * @param conversationSystem conversationSystem 参数。
+     * @param character character 参数。
+     * @param persona persona 参数。
+     * @param lorebook lorebook 参数。
+     * @param magma magma 参数。
+     * @param history history 参数。
+     * @param current current 参数。
+     * @param query query 参数。
+     * @param lorebookTokenBudget lorebookTokenBudget 参数。
+     *
+     * @return 结果列表。
      */
     public List<ConversationMessage> assemble(
             List<ConversationMessage> platformSafety,

@@ -9,7 +9,9 @@ import org.springframework.data.redis.core.script.DefaultRedisScript;
 import java.time.Duration;
 import java.util.List;
 
-/** Redis-backed fixed-window rate limiter with an atomic increment/expiry script. */
+/**
+ * 使用 Redis 保存并发限流计数和窗口状态。
+ */
 public final class RedisRateLimitStore implements RateLimitStore {
 
     private static final DefaultRedisScript<Long> CONSUME =
@@ -24,15 +26,37 @@ public final class RedisRateLimitStore implements RateLimitStore {
                     """,
                     Long.class);
 
+    /**
+     * Redis，表示当前对象中的对应属性。
+     */
     private final StringRedisTemplate redis;
+    /**
+     * 配置属性，表示当前对象中的对应属性。
+     */
     private final RedisInfrastructureProperties properties;
 
+    /**
+     * {@code RedisRateLimitStore} 创建并初始化当前类型实例。
+     *
+     * @param redis 参数值，用于执行当前操作。
+     * @param properties 参数值，用于执行当前操作。
+     */
     public RedisRateLimitStore(
             StringRedisTemplate redis, RedisInfrastructureProperties properties) {
         this.redis = redis;
         this.properties = properties;
     }
 
+    /**
+     * {@code consume} 执行当前类型定义的业务操作。
+     *
+     * @param key 参数值，用于执行当前操作。
+     * @param permits 参数值，用于执行当前操作。
+     * @param limit 参数值，用于执行当前操作。
+     * @param window 参数值，用于执行当前操作。
+     *
+     * @return 返回当前操作产生的结果。
+     */
     @Override
     public boolean consume(String key, long permits, long limit, Duration window) {
         if (key == null

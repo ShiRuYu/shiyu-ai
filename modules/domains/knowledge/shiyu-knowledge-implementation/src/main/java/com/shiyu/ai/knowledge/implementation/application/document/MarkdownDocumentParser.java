@@ -9,11 +9,23 @@ import org.springframework.stereotype.Component;
 @Component
 public class MarkdownDocumentParser implements DocumentParser {
 
+    /**
+     * {@code getSupportedFormat} 查询并返回当前操作所需的数据。
+     *
+     * @return 返回当前操作产生的结果。
+     */
     @Override
     public String getSupportedFormat() {
         return "md";
     }
 
+    /**
+     * {@code parse} 执行当前类型定义的业务操作。
+     *
+     * @param content 参数值，用于执行当前操作。
+     *
+     * @return 返回当前操作产生的结果。
+     */
     @Override
     public ParseResult parse(String content) {
         if (content == null || content.isBlank()) {

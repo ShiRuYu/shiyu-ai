@@ -2,7 +2,27 @@ package com.shiyu.ai.conversation.contract.model;
 
 import java.time.Instant;
 
-/** Immutable lifecycle snapshot for one conversation generation attempt. */
+/**
+ * 表示一次会话生成运行及其生命周期状态。
+ * @param id 标识，表示该记录组件承载的数据。
+ * @param conversationId conversationId 属性，表示该记录组件承载的数据。
+ * @param inputMessageId inputMessageId 属性，表示该记录组件承载的数据。
+ * @param assistantMessageId assistantMessageId 属性，表示该记录组件承载的数据。
+ * @param speakerId speakerId 属性，表示该记录组件承载的数据。
+ * @param platform platform 属性，表示该记录组件承载的数据。
+ * @param model 模型，表示该记录组件承载的数据。
+ * @param status 状态，表示该记录组件承载的数据。
+ * @param promptTokens promptTokens 属性，表示该记录组件承载的数据。
+ * @param completionTokens completionTokens 属性，表示该记录组件承载的数据。
+ * @param latencyMs latencyMs 属性，表示该记录组件承载的数据。
+ * @param errorCode errorCode 属性，表示该记录组件承载的数据。
+ * @param lastEventSequence lastEventSequence 属性，表示该记录组件承载的数据。
+ * @param cancelRequested cancelRequested 属性，表示该记录组件承载的数据。
+ * @param version version 属性，表示该记录组件承载的数据。
+ * @param createdAt 创建时间，表示该记录组件承载的数据。
+ * @param updatedAt 更新时间，表示该记录组件承载的数据。
+ * @param runtimeRunId runtimeRunId 属性，表示该记录组件承载的数据。
+ */
 public record GenerationRun(
         String id,
         String conversationId,
@@ -22,7 +42,29 @@ public record GenerationRun(
         Instant createdAt,
         Instant updatedAt,
         String runtimeRunId) {
-    /** Source-compatible constructor for non-group generations. */
+    /**
+     * 处理生成运行。
+     *
+     * @param id 目标对象标识。
+     * @param conversationId conversationId 参数。
+     * @param inputMessageId inputMessageId 参数。
+     * @param assistantMessageId assistantMessageId 参数。
+     * @param speakerId speakerId 参数。
+     * @param platform platform 参数。
+     * @param model model 参数。
+     * @param status 状态。
+     * @param promptTokens promptTokens 参数。
+     * @param completionTokens completionTokens 参数。
+     * @param latencyMs latencyMs 参数。
+     * @param errorCode errorCode 参数。
+     * @param lastEventSequence lastEventSequence 参数。
+     * @param cancelRequested cancelRequested 参数。
+     * @param version version 参数。
+     * @param createdAt createdAt 参数。
+     * @param updatedAt updatedAt 参数。
+     *
+     * @return 处理结果。
+     */
     public GenerationRun(
             String id,
             String conversationId,
@@ -62,7 +104,28 @@ public record GenerationRun(
                 null);
     }
 
-    /** Source-compatible constructor for non-group generations. */
+    /**
+     * 处理生成运行。
+     *
+     * @param id 目标对象标识。
+     * @param conversationId conversationId 参数。
+     * @param inputMessageId inputMessageId 参数。
+     * @param assistantMessageId assistantMessageId 参数。
+     * @param platform platform 参数。
+     * @param model model 参数。
+     * @param status 状态。
+     * @param promptTokens promptTokens 参数。
+     * @param completionTokens completionTokens 参数。
+     * @param latencyMs latencyMs 参数。
+     * @param errorCode errorCode 参数。
+     * @param lastEventSequence lastEventSequence 参数。
+     * @param cancelRequested cancelRequested 参数。
+     * @param version version 参数。
+     * @param createdAt createdAt 参数。
+     * @param updatedAt updatedAt 参数。
+     *
+     * @return 处理结果。
+     */
     public GenerationRun(
             String id,
             String conversationId,

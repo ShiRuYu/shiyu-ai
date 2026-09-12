@@ -7,11 +7,19 @@ import java.util.List;
 import java.util.concurrent.TimeUnit;
 
 /**
- * Launches a plugin outside the application ClassLoader; callers communicate via controlled RPC.
+ * 按沙箱策略启动插件工作进程并管理其生命周期。
  */
 public final class PluginWorkerLauncher {
     private PluginWorkerLauncher() {}
 
+    /**
+     * {@code launch} 执行当前类型定义的业务操作。
+     *
+     * @param spec 参数值，用于执行当前操作。
+     * @param args 参数值，用于执行当前操作。
+     *
+     * @return 返回当前操作产生的结果。
+     */
     public static Process launch(PluginWorkerSpec spec, List<String> args) throws IOException {
         if (spec.executable() == null || spec.executable().isBlank())
             throw new SecurityException("worker executable is required");
@@ -29,6 +37,14 @@ public final class PluginWorkerLauncher {
         return builder.start();
     }
 
+    /**
+     * {@code await} 执行当前类型定义的业务操作。
+     *
+     * @param process 参数值，用于执行当前操作。
+     * @param spec 参数值，用于执行当前操作。
+     *
+     * @return 返回当前操作产生的结果。
+     */
     public static int await(Process process, PluginWorkerSpec spec)
             throws InterruptedException, java.util.concurrent.TimeoutException {
         if (!process.waitFor(Math.max(1, spec.timeout().toMillis()), TimeUnit.MILLISECONDS)) {

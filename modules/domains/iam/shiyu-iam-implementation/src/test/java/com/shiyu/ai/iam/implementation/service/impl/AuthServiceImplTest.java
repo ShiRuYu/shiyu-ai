@@ -726,8 +726,6 @@ class AuthServiceImplTest {
             verify(helper).logout(54L);
         }
 
-        // A tenant-super user can return home, use a preferred child role, or be rejected
-        // when the target tenant is inactive/outside the currently allowed subtree.
         UserBO admin = user(60L, "admin", "secret", 1);
         admin.setExtInfo(
                 "{\"homeTenantId\":10,\"currentTenantId\":11,\"currentRole\":{\"roleId\":71}}");
@@ -776,7 +774,6 @@ class AuthServiceImplTest {
             try {
                 return (T) method.invoke(service, args);
             } catch (IllegalArgumentException ignored) {
-                // Keep looking when a null argument made the erased signature ambiguous.
             }
         }
         throw new NoSuchMethodException(name);

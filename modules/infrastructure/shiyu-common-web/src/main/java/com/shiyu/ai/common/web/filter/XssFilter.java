@@ -21,6 +21,11 @@ public class XssFilter implements Filter {
 
     public List<String> excludes = new ArrayList<>();
 
+    /**
+     * {@code init} 执行当前类型定义的业务操作。
+     *
+     * @param filterConfig 参数值，用于执行当前操作。
+     */
     @Override
     public void init(FilterConfig filterConfig) throws ServletException {
         String tempExcludes = filterConfig.getInitParameter("excludes");
@@ -32,6 +37,13 @@ public class XssFilter implements Filter {
         }
     }
 
+    /**
+     * {@code doFilter} 执行当前类型定义的业务操作。
+     *
+     * @param request 参数值，用于执行当前操作。
+     * @param response 参数值，用于执行当前操作。
+     * @param chain 参数值，用于执行当前操作。
+     */
     @Override
     public void doFilter(ServletRequest request, ServletResponse response, FilterChain chain)
             throws IOException, ServletException {
@@ -55,6 +67,9 @@ public class XssFilter implements Filter {
         return excludes.stream().anyMatch(pattern -> pathMatcher.match(pattern, url));
     }
 
+    /**
+     * {@code destroy} 执行当前类型定义的业务操作。
+     */
     @Override
     public void destroy() {}
 }

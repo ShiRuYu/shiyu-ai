@@ -17,6 +17,14 @@ public class TimeoutPolicyImpl implements TimeoutPolicy {
                         return t;
                     });
 
+    /**
+     * {@code executeWithTimeout} 执行当前模块定义的业务流程。
+     *
+     * @param callable 参数值，用于执行当前操作。
+     * @param config 参数值，用于执行当前操作。
+     *
+     * @return 返回当前操作产生的结果。
+     */
     @Override
     public <T> T executeWithTimeout(Callable<T> callable, TimeoutConfig config) throws Exception {
         Future<T> future = null;
@@ -38,6 +46,9 @@ public class TimeoutPolicyImpl implements TimeoutPolicy {
         }
     }
 
+    /**
+     * {@code close} 释放或移除当前操作涉及的资源。
+     */
     @Override
     public void close() {
         scheduler.shutdownNow();

@@ -25,11 +25,23 @@ import java.util.regex.Pattern;
 /** web拦截器 */
 public class WebInvokeInterceptor implements HandlerInterceptor {
 
+    /**
+     * 标识，表示当前对象中的对应属性。
+     */
     public static final String ACTOR_USER_ID = "shiyu.actor.userId";
+    /**
+     * 标识，表示当前对象中的对应属性。
+     */
     public static final String ACTOR_TENANT_ID = "shiyu.actor.tenantId";
 
+    /**
+     * 标识，表示当前对象中的对应属性。
+     */
     private static final String TRACE_ID = "traceId";
     private static final String START_NANOS = WebInvokeInterceptor.class.getName() + ".startNanos";
+    /**
+     * MAX_LOG_VALUE_LENGTH 属性，保存当前对象中的业务数据或协作依赖。
+     */
     private static final int MAX_LOG_VALUE_LENGTH = 2048;
     private static final String[] SENSITIVE_FIELDS = {
         "token",
@@ -54,6 +66,15 @@ public class WebInvokeInterceptor implements HandlerInterceptor {
                             + ")[\\\"']?\\s*[:=]\\s*)"
                             + "(\\\"(?:\\\\.|[^\\\"\\\\])*\\\"|'(?:\\\\.|[^'\\\\])*'|[^,}&\\s]+)");
 
+    /**
+     * {@code preHandle} 执行当前类型定义的业务操作。
+     *
+     * @param request 参数值，用于执行当前操作。
+     * @param response 参数值，用于执行当前操作。
+     * @param handler 参数值，用于执行当前操作。
+     *
+     * @return 返回当前操作产生的结果。
+     */
     @Override
     public boolean preHandle(
             HttpServletRequest request, HttpServletResponse response, Object handler)
@@ -93,6 +114,14 @@ public class WebInvokeInterceptor implements HandlerInterceptor {
         return true;
     }
 
+    /**
+     * {@code postHandle} 执行当前类型定义的业务操作。
+     *
+     * @param request 参数值，用于执行当前操作。
+     * @param response 参数值，用于执行当前操作。
+     * @param handler 参数值，用于执行当前操作。
+     * @param modelAndView 参数值，用于执行当前操作。
+     */
     @Override
     public void postHandle(
             HttpServletRequest request,
@@ -102,6 +131,14 @@ public class WebInvokeInterceptor implements HandlerInterceptor {
         // 请求完成日志统一在 afterCompletion 输出。
     }
 
+    /**
+     * {@code afterCompletion} 执行当前类型定义的业务操作。
+     *
+     * @param request 参数值，用于执行当前操作。
+     * @param response 参数值，用于执行当前操作。
+     * @param handler 参数值，用于执行当前操作。
+     * @param ex 参数值，用于执行当前操作。
+     */
     @Override
     public void afterCompletion(
             HttpServletRequest request,

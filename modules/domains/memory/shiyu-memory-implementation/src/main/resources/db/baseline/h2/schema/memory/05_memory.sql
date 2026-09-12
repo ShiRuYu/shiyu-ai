@@ -1,1 +1,0 @@
--- Reserved schema slot. Platform memory tables are defined in 12_memory_magma.sql.

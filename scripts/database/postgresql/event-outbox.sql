@@ -1,4 +1,3 @@
--- Optional infrastructure objects for provider=postgres-outbox or kafka.
 CREATE TABLE IF NOT EXISTS shiyu_event_outbox (
     event_id VARCHAR(64) PRIMARY KEY,
     event_type VARCHAR(255) NOT NULL,

@@ -1,4 +1,6 @@
 package com.shiyu.ai.memory.implementation;
 
-/** Marker for code owned exclusively by the Memory bounded context. */
+/**
+ * MemoryImplementationModule 模块接口，标识记忆模块的边界。
+ */
 public interface MemoryImplementationModule {}

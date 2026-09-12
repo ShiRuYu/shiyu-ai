@@ -23,16 +23,46 @@ import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 
-/** Role and tenant identity switching use cases. */
+/**
+ * 编排 AuthIdentity 应用用例。
+ */
 @Slf4j
 public final class AuthIdentityUseCase {
+    /**
+     * 用户仓储，表示当前对象中的对应属性。
+     */
     private final UserRepository userRepository;
+    /**
+     * userScopeRoleRepository 属性，保存当前对象中的业务数据或协作依赖。
+     */
     private final UserScopeRoleRepository userScopeRoleRepository;
+    /**
+     * 租户角色仓储，表示当前对象中的对应属性。
+     */
     private final TenantRoleRepository tenantRoleRepository;
+    /**
+     * 租户仓储，表示当前对象中的对应属性。
+     */
     private final TenantRepository tenantRepository;
+    /**
+     * menuService 属性，保存当前对象中的业务数据或协作依赖。
+     */
     private final MenuService menuService;
+    /**
+     * contextSupport 属性，保存当前对象中的业务数据或协作依赖。
+     */
     private final AuthTenantContextSupport contextSupport;
 
+    /**
+     * {@code AuthIdentityUseCase} 创建并初始化当前类型实例。
+     *
+     * @param userRepository 参数值，用于执行当前操作。
+     * @param userScopeRoleRepository 参数值，用于执行当前操作。
+     * @param tenantRoleRepository 参数值，用于执行当前操作。
+     * @param tenantRepository 参数值，用于执行当前操作。
+     * @param menuService 参数值，用于执行当前操作。
+     * @param contextSupport 参数值，用于执行当前操作。
+     */
     public AuthIdentityUseCase(
             UserRepository userRepository,
             UserScopeRoleRepository userScopeRoleRepository,
@@ -48,6 +78,14 @@ public final class AuthIdentityUseCase {
         this.contextSupport = contextSupport;
     }
 
+    /**
+     * {@code switchCurrentRole} 执行当前类型定义的业务操作。
+     *
+     * @param userId 参数值，用于执行当前操作。
+     * @param roleId 参数值，用于执行当前操作。
+     *
+     * @return 返回当前操作产生的结果。
+     */
     public boolean switchCurrentRole(Long userId, Long roleId) {
         log.info("切换角色, userIdPresent={}, roleIdPresent={}", userId != null, roleId != null);
         try {
@@ -122,6 +160,14 @@ public final class AuthIdentityUseCase {
         }
     }
 
+    /**
+     * {@code switchCurrentTenant} 执行当前类型定义的业务操作。
+     *
+     * @param userId 参数值，用于执行当前操作。
+     * @param tenantId 参数值，用于执行当前操作。
+     *
+     * @return 返回当前操作产生的结果。
+     */
     public boolean switchCurrentTenant(Long userId, TenantId tenantId) {
         log.info("切换租户, userIdPresent={}, tenantPresent={}", userId != null, tenantId != null);
         try {
@@ -281,6 +327,14 @@ public final class AuthIdentityUseCase {
         }
     }
 
+    /**
+     * {@code getUserTenants} 查询并返回当前操作所需的数据。
+     *
+     * @param actor 参数值，用于执行当前操作。
+     * @param userId 参数值，用于执行当前操作。
+     *
+     * @return 返回当前操作产生的结果。
+     */
     public List<TenantInfoVO> getUserTenants(ActorContext actor, Long userId) {
         Objects.requireNonNull(actor, "actor must not be null");
         List<UserScopeRoleBO> assignments = userScopeRoleRepository.selectByUserId(userId);

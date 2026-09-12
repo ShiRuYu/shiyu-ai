@@ -10,8 +10,14 @@ import java.lang.reflect.Method;
 @SuppressWarnings("rawtypes")
 public class ReflectUtils extends ReflectUtil {
 
+    /**
+     * SETTER_PREFIX 属性，保存当前对象中的业务数据或协作依赖。
+     */
     private static final String SETTER_PREFIX = "set";
 
+    /**
+     * GETTER_PREFIX 属性，保存当前对象中的业务数据或协作依赖。
+     */
     private static final String GETTER_PREFIX = "get";
 
     /** 调用Getter方法. 支持多级，如：对象名.对象名.方法 */

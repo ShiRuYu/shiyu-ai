@@ -11,60 +11,77 @@ import org.apache.commons.lang3.tuple.Pair;
 
 import java.util.List;
 
-/** Agent Admin 接口 */
+/**
+ * AgentAdminService 服务接口，负责执行智能体领域相关业务操作。
+ */
 public interface AgentAdminService {
 
     /**
-     * Get Page
+     * 获取page。
      *
-     * @param Number Number
-     * @param Number Number
-     * @return 处理结果
+     * @param actor 调用方上下文。
+     * @param pageNo pageNo 参数。
+     * @param pageSize 每页条数。
+     * @param name 名称。
+     * @param status 状态。
+     *
+     * @return 结果列表。
      */
     Pair<Long, List<AgentVO>> getPage(
             ActorContext actor, Number pageNo, Number pageSize, String name, Integer status);
 
     /**
-     * Get By Id
+     * 根据标识获取目标记录。
      *
-     * @return 处理结果
+     * @param actor 调用方上下文。
+     * @param id 目标对象标识。
+     *
+     * @return 处理结果。
      */
     AgentDetailVO getById(ActorContext actor, Long id);
 
     /**
-     * Create
+     * 创建智能体管理数据。
      *
-     * @param AgentRequest AgentRequest
-     * @return 处理结果
+     * @param actor 调用方上下文。
+     * @param request 请求对象。
+     *
+     * @return 处理后的智能体管理数据。
      */
     AgentVO create(ActorContext actor, AgentRequest request);
 
     /**
-     * Update
+     * 更新智能体管理数据。
      *
-     * @param AgentRequest AgentRequest
-     * @return 处理结果
+     * @param actor 调用方上下文。
+     * @param id 目标对象标识。
+     * @param request 请求对象。
+     *
+     * @return 处理结果。
      */
     AgentVO update(ActorContext actor, Long id, AgentRequest request);
 
     /**
-     * Delete By Id
+     * 根据标识删除目标记录。
      *
-     * @return 处理结果
+     * @param actor 调用方上下文。
+     * @param id 目标对象标识。
      */
     void deleteById(ActorContext actor, Long id);
 
     /**
-     * Get Node Types
+     * 获取节点types。
      *
-     * @return 处理结果
+     * @return 结果列表。
      */
     List<NodeTypeMetaVO> getNodeTypes();
 
     /**
-     * List All Options
+     * 查询全部选项列表。
      *
-     * @return 处理结果
+     * @param actor 调用方上下文。
+     *
+     * @return 结果列表。
      */
     List<IdNameOptionVO> listAllOptions(ActorContext actor);
 }

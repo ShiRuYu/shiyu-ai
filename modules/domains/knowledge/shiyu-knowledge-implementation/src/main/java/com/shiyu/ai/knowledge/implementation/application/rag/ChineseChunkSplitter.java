@@ -7,11 +7,23 @@ import java.util.List;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
+/**
+ * {@code ChineseChunkSplitter} 承载知识模块的领域状态或协作行为，负责维护本类型的职责边界。
+ */
 @Slf4j
 public class ChineseChunkSplitter implements ChunkSplitter {
 
+    /**
+     * MAX_TOKENS 属性，保存当前对象中的业务数据或协作依赖。
+     */
     private static final int MAX_TOKENS = 800;
+    /**
+     * MIN_TOKENS 属性，保存当前对象中的业务数据或协作依赖。
+     */
     private static final int MIN_TOKENS = 300;
+    /**
+     * OVERLAP_TOKENS 属性，保存当前对象中的业务数据或协作依赖。
+     */
     private static final int OVERLAP_TOKENS = 50;
 
     private static final Pattern HEADING_PATTERN =
@@ -21,6 +33,13 @@ public class ChineseChunkSplitter implements ChunkSplitter {
 
     private static final Pattern PARAGRAPH_PATTERN = Pattern.compile("\\n\\s*\\n|\\r\\n\\s*\\r\\n");
 
+    /**
+     * {@code split} 执行当前类型定义的业务操作。
+     *
+     * @param text 参数值，用于执行当前操作。
+     *
+     * @return 返回当前操作产生的结果。
+     */
     @Override
     public List<Chunk> split(String text) {
         if (text == null || text.isBlank()) {

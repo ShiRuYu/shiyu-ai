@@ -21,6 +21,9 @@ import java.io.Serial;
 @AutoMapper(target = MenuBO.class, reverseConvertGenerate = true)
 public class MenuDO extends TenantEntity implements ServiceAssignedTenantEntity {
 
+    /**
+     * serialVersionUID 属性，保存当前对象中的业务数据或协作依赖。
+     */
     @Serial private static final long serialVersionUID = 1L;
 
     /** 菜单ID */

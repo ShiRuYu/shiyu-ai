@@ -5,7 +5,16 @@ import java.util.List;
 import java.util.Map;
 
 /**
- * Immutable Prompt Studio revision; publishing creates a new revision instead of mutating history.
+ * 表示提示词模板的版本元数据和发布状态。
+ * @param id 标识，表示该记录组件承载的数据。
+ * @param templateId templateId 属性，表示该记录组件承载的数据。
+ * @param version version 属性，表示该记录组件承载的数据。
+ * @param status 状态，表示该记录组件承载的数据。
+ * @param body body 属性，表示该记录组件承载的数据。
+ * @param variableSchema variableSchema 属性，表示该记录组件承载的数据。
+ * @param testCases testCases 属性，表示该记录组件承载的数据。
+ * @param createdAt 创建时间，表示该记录组件承载的数据。
+ * @param publishedAt publishedAt 属性，表示该记录组件承载的数据。
  */
 public record PromptTemplateVersion(
         String id,

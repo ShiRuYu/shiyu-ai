@@ -1,9 +1,12 @@
 package com.shiyu.ai.agent.implementation.web;
+import com.shiyu.ai.agent.implementation.runtime.model.AiApp;
+import com.shiyu.ai.agent.implementation.runtime.model.AiAppPreview;
+import com.shiyu.ai.agent.implementation.runtime.model.AiAppVersion;
+import com.shiyu.ai.agent.implementation.runtime.service.AiRuntimeService;
 
 import com.shiyu.ai.agent.contract.runtime.*;
 import com.shiyu.ai.agent.implementation.execution.Execution;
-import com.shiyu.ai.agent.implementation.runtime.*;
-import com.shiyu.ai.agent.implementation.runtime.AgentRuntime;
+import com.shiyu.ai.agent.implementation.runtime.port.AgentRuntime;
 import com.shiyu.ai.common.core.api.Result;
 import com.shiyu.ai.common.core.utils.JSONUtils;
 import com.shiyu.ai.common.web.auth.ActorContextHttpAdapter;
@@ -24,28 +27,65 @@ import java.util.List;
 import java.util.Map;
 import java.util.concurrent.atomic.AtomicLong;
 
+/**
+ * {@code AiRuntimeController} 是智能体模块的 Web 接口适配器，负责接收请求并转换为应用服务调用。
+ */
 @RestController
 @RequestMapping("/api/agent")
 public class AiRuntimeController {
+    /**
+     * runtime 属性，保存当前对象中的业务数据或协作依赖。
+     */
     private final AiRuntimeService runtime;
+    /**
+     * agents 属性，保存当前对象中的业务数据或协作依赖。
+     */
     private final AgentRuntime agents;
 
+    /**
+     * {@code AiRuntimeController} 创建并初始化当前类型实例。
+     *
+     * @param runtime 参数值，用于执行当前操作。
+     * @param agents 参数值，用于执行当前操作。
+     */
     public AiRuntimeController(AiRuntimeService runtime, AgentRuntime agents) {
         this.runtime = runtime;
         this.agents = agents;
     }
 
+    /**
+     * {@code createApp} 写入或更新当前模块中的业务数据。
+     *
+     * @param request 参数值，用于执行当前操作。
+     *
+     * @return 返回当前操作产生的结果。
+     */
     @PostMapping("/apps")
     public Result<AiApp> createApp(@Valid @RequestBody AppRequest request) {
         return Result.success(
                 runtime.createApp(tenant(), user(), request.name, request.description));
     }
 
+    /**
+     * {@code apps} 执行当前类型定义的业务操作。
+     *
+     * @param limit 参数值，用于执行当前操作。
+     *
+     * @return 返回当前操作产生的结果。
+     */
     @GetMapping("/apps")
     public Result<List<AiApp>> apps(@RequestParam(defaultValue = "50") int limit) {
         return Result.success(runtime.listApps(tenant(), user(), limit));
     }
 
+    /**
+     * {@code version} 执行当前类型定义的业务操作。
+     *
+     * @param id 参数值，用于执行当前操作。
+     * @param request 参数值，用于执行当前操作。
+     *
+     * @return 返回当前操作产生的结果。
+     */
     @PostMapping("/apps/{id}/versions")
     public Result<AiAppVersion> version(
             @PathVariable String id, @Valid @RequestBody VersionRequest request) {
@@ -53,21 +93,52 @@ public class AiRuntimeController {
                 runtime.createVersion(id, tenant(), user(), request.version, request.configJson));
     }
 
+    /**
+     * {@code versions} 执行当前类型定义的业务操作。
+     *
+     * @param id 参数值，用于执行当前操作。
+     *
+     * @return 返回当前操作产生的结果。
+     */
     @GetMapping("/apps/{id}/versions")
     public Result<List<AiAppVersion>> versions(@PathVariable String id) {
         return Result.success(runtime.versions(id, tenant(), user()));
     }
 
+    /**
+     * {@code publish} 执行当前模块定义的业务流程。
+     *
+     * @param id 参数值，用于执行当前操作。
+     * @param versionId 参数值，用于执行当前操作。
+     *
+     * @return 返回当前操作产生的结果。
+     */
     @PostMapping("/apps/{id}/versions/{versionId}/publish")
     public Result<AiAppVersion> publish(@PathVariable String id, @PathVariable String versionId) {
         return Result.success(runtime.publish(id, versionId, tenant(), user()));
     }
 
+    /**
+     * {@code archive} 执行当前类型定义的业务操作。
+     *
+     * @param id 参数值，用于执行当前操作。
+     * @param versionId 参数值，用于执行当前操作。
+     *
+     * @return 返回当前操作产生的结果。
+     */
     @PostMapping("/apps/{id}/versions/{versionId}/archive")
     public Result<AiAppVersion> archive(@PathVariable String id, @PathVariable String versionId) {
         return Result.success(runtime.archive(id, versionId, tenant(), user()));
     }
 
+    /**
+     * {@code preview} 执行当前类型定义的业务操作。
+     *
+     * @param id 参数值，用于执行当前操作。
+     * @param request 参数值，用于执行当前操作。
+     *
+     * @return 返回当前操作产生的结果。
+     */
     @PostMapping("/apps/{id}/preview")
     public Result<AiAppPreview> preview(
             @PathVariable String id, @Valid @RequestBody PreviewRequest request) {
@@ -75,6 +146,13 @@ public class AiRuntimeController {
                 runtime.preview(id, request.appVersionId, tenant(), user(), request.prompt));
     }
 
+    /**
+     * {@code startRun} 执行当前类型定义的业务操作。
+     *
+     * @param request 参数值，用于执行当前操作。
+     *
+     * @return 返回当前操作产生的结果。
+     */
     @PostMapping("/runs")
     public Result<AiRun> startRun(@Valid @RequestBody RunRequest request) {
         AiRunContext context =
@@ -97,6 +175,14 @@ public class AiRuntimeController {
                         request.prompt));
     }
 
+    /**
+     * {@code executeApp} 执行当前模块定义的业务流程。
+     *
+     * @param id 参数值，用于执行当前操作。
+     * @param request 参数值，用于执行当前操作。
+     *
+     * @return 返回当前操作产生的结果。
+     */
     @PostMapping("/apps/{id}/execute")
     public Result<Map<String, Object>> executeApp(
             @PathVariable String id, @Valid @RequestBody AppExecutionRequest request) {
@@ -135,30 +221,52 @@ public class AiRuntimeController {
         result.put("executionId", execution.getExecutionId());
         result.put("status", execution.getStatus().name());
         result.put("output", execution.getOutput());
-        // Published App executions are admitted through Runtime before the
-        // agent graph starts. Returning a successful execution without its
-        // root run would violate the single-run audit contract.
         result.put(
                 "runtimeRunId",
                 runtime.requireExecutionRun(execution.getExecutionId(), tenant(), user()).id());
         return Result.success(result);
     }
 
+    /**
+     * {@code run} 执行当前模块定义的业务流程。
+     *
+     * @param id 参数值，用于执行当前操作。
+     *
+     * @return 返回当前操作产生的结果。
+     */
     @GetMapping("/runs/{id}")
     public Result<AiRun> run(@PathVariable String id) {
         return Result.success(runtime.requireRun(id, tenant(), user()));
     }
 
+    /**
+     * {@code runs} 执行当前模块定义的业务流程。
+     *
+     * @param limit 参数值，用于执行当前操作。
+     *
+     * @return 返回当前操作产生的结果。
+     */
     @GetMapping("/runs")
     public Result<List<AiRun>> runs(@RequestParam(defaultValue = "50") int limit) {
         return Result.success(runtime.listRuns(tenant(), user(), limit));
-    }
+   }
 
+   /**
+    * {@code generationEvents} 执行当前类型定义的业务操作。
+     *
+     * @param generationId 参数值，用于执行当前操作。
+     * @param afterSeq 参数值，用于执行当前操作。
+     * @param follow 参数值，用于执行当前操作。
+     * @param waitMs 参数值，用于执行当前操作。
+     * @param lastEventId 参数值，用于执行当前操作。
+     *
+    * @return 返回当前操作产生的结果。
+    */
     @GetMapping(
             value = "/generations/{generationId}/runtime-events",
             produces = MediaType.TEXT_EVENT_STREAM_VALUE)
-    public Flux<org.springframework.http.codec.ServerSentEvent<AiRunEvent>> generationEvents(
-            @PathVariable String generationId,
+   public Flux<org.springframework.http.codec.ServerSentEvent<AiRunEvent>> generationEvents(
+           @PathVariable String generationId,
             @RequestParam(defaultValue = "0") long afterSeq,
             @RequestParam(defaultValue = "false") boolean follow,
             @RequestParam(defaultValue = "30000") int waitMs,
@@ -173,6 +281,18 @@ public class AiRuntimeController {
         return eventStream(run, cursor, follow, waitMs);
     }
 
+    /**
+     * {@code events} 执行当前类型定义的业务操作。
+     *
+     * @param id 参数值，用于执行当前操作。
+     * @param afterSeq 参数值，用于执行当前操作。
+     * @param limit 参数值，用于执行当前操作。
+     * @param follow 参数值，用于执行当前操作。
+     * @param waitMs 参数值，用于执行当前操作。
+     * @param lastEventId 参数值，用于执行当前操作。
+     *
+     * @return 返回当前操作产生的结果。
+     */
     @GetMapping(value = "/runs/{id}/events", produces = MediaType.TEXT_EVENT_STREAM_VALUE)
     public Flux<org.springframework.http.codec.ServerSentEvent<AiRunEvent>> events(
             @PathVariable String id,
@@ -191,6 +311,15 @@ public class AiRuntimeController {
         return eventStream(run, cursor, follow, waitMs, limit);
     }
 
+    /**
+     * {@code eventHistory} 执行当前类型定义的业务操作。
+     *
+     * @param id 参数值，用于执行当前操作。
+     * @param afterSeq 参数值，用于执行当前操作。
+     * @param limit 参数值，用于执行当前操作。
+     *
+     * @return 返回当前操作产生的结果。
+     */
     @GetMapping(value = "/runs/{id}/event-history", produces = MediaType.APPLICATION_JSON_VALUE)
     public Result<List<AiRunEvent>> eventHistory(
             @PathVariable String id,
@@ -199,11 +328,25 @@ public class AiRuntimeController {
         return Result.success(runtime.events(id, tenant(), user(), afterSeq, limit));
     }
 
+    /**
+     * {@code trajectory} 执行当前类型定义的业务操作。
+     *
+     * @param id 参数值，用于执行当前操作。
+     *
+     * @return 返回当前操作产生的结果。
+     */
     @GetMapping("/runs/{id}/trajectory")
     public Result<List<AiRunEvent>> trajectory(@PathVariable String id) {
         return Result.success(runtime.events(id, tenant(), user(), 0, 5000));
     }
 
+    /**
+     * {@code promptSnapshot} 执行当前类型定义的业务操作。
+     *
+     * @param id 参数值，用于执行当前操作。
+     *
+     * @return 返回当前操作产生的结果。
+     */
     @GetMapping("/runs/{id}/prompt-snapshot")
     public Result<Map<String, Object>> promptSnapshot(@PathVariable String id) {
         AiRun run = runtime.requireRun(id, tenant(), user());
@@ -221,6 +364,13 @@ public class AiRuntimeController {
                         run.model() == null ? "" : run.model()));
     }
 
+    /**
+     * {@code cancel} 校验当前操作的输入或状态是否满足约束。
+     *
+     * @param id 参数值，用于执行当前操作。
+     *
+     * @return 返回当前操作产生的结果。
+     */
     @PostMapping("/runs/{id}/cancel")
     public Result<AiRun> cancel(@PathVariable String id) {
         return Result.success(
@@ -316,43 +466,103 @@ public class AiRuntimeController {
         return ActorContextHttpAdapter.currentActor();
     }
 
+    /**
+     * {@code AppRequest} 表示智能体模块的请求参数，承载调用方提交的输入数据。
+     */
     @Data
     public static class AppRequest {
         private String name;
+        /**
+         * 描述，表示当前对象中的对应属性。
+         */
         private String description;
     }
 
+    /**
+     * {@code VersionRequest} 表示智能体模块的请求参数，承载调用方提交的输入数据。
+     */
     @Data
     public static class VersionRequest {
         private String version;
+        /**
+         * configJson 属性，保存当前对象中的业务数据或协作依赖。
+         */
         private String configJson = "{}";
     }
 
+    /**
+     * {@code PreviewRequest} 表示智能体模块的请求参数，承载调用方提交的输入数据。
+     */
     @Data
     public static class PreviewRequest {
         private String appVersionId;
+        /**
+         * 提示词，表示当前对象中的对应属性。
+         */
         private String prompt;
     }
 
+    /**
+     * {@code RunRequest} 表示智能体模块的请求参数，承载调用方提交的输入数据。
+     */
     @Data
     public static class RunRequest {
         private String appId;
+        /**
+         * appVersionId 属性，保存当前对象中的业务数据或协作依赖。
+         */
         private String appVersionId;
+        /**
+         * 来源类型，表示当前对象中的对应属性。
+         */
         private AiRunSource sourceType = AiRunSource.API;
+        /**
+         * 来源标识，表示当前对象中的对应属性。
+         */
         private String sourceId;
+        /**
+         * conversationId 属性，保存当前对象中的业务数据或协作依赖。
+         */
         private String conversationId;
+        /**
+         * 生成标识，表示当前对象中的对应属性。
+         */
         private String generationId;
+        /**
+         * 执行标识，表示当前对象中的对应属性。
+         */
         private String executionId;
+        /**
+         * traceId 属性，保存当前对象中的业务数据或协作依赖。
+         */
         private String traceId;
+        /**
+         * model 属性，保存当前对象中的业务数据或协作依赖。
+         */
         private String model;
+        /**
+         * 提示词，表示当前对象中的对应属性。
+         */
         private String prompt;
+        /**
+         * attributes 属性，保存当前对象中的业务数据或协作依赖。
+         */
         private Map<String, String> attributes;
     }
 
+    /**
+     * {@code AppExecutionRequest} 表示智能体模块的请求参数，承载调用方提交的输入数据。
+     */
     @Data
     public static class AppExecutionRequest {
         private String prompt;
+        /**
+         * appVersionId 属性，保存当前对象中的业务数据或协作依赖。
+         */
         private String appVersionId;
+        /**
+         * 输入，表示当前对象中的对应属性。
+         */
         private Map<String, Object> input;
     }
 }

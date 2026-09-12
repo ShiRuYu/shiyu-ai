@@ -1,7 +1,9 @@
 package com.shiyu.ai.agent.implementation.persistence.runtime;
+import com.shiyu.ai.agent.implementation.runtime.model.AiApp;
+import com.shiyu.ai.agent.implementation.runtime.model.AiAppVersion;
+import com.shiyu.ai.agent.implementation.runtime.port.AiAppRepository;
 
 import com.shiyu.ai.agent.contract.runtime.*;
-import com.shiyu.ai.agent.implementation.runtime.*;
 import com.shiyu.ai.kernel.context.TenantId;
 import com.shiyu.ai.kernel.context.UserId;
 
@@ -14,15 +16,31 @@ import java.sql.Timestamp;
 import java.util.List;
 import java.util.Optional;
 
+/**
+ * {@code JdbcAiAppRepository} 定义智能体模块的持久化端口，隔离领域逻辑与具体存储实现。
+ */
 @Repository
 @Primary
 public class JdbcAiAppRepository implements AiAppRepository {
+    /**
+     * JDBC，表示当前对象中的对应属性。
+     */
     private final JdbcTemplate jdbc;
 
+    /**
+     * {@code JdbcAiAppRepository} 创建并初始化当前类型实例。
+     *
+     * @param jdbc 参数值，用于执行当前操作。
+     */
     public JdbcAiAppRepository(JdbcTemplate jdbc) {
         this.jdbc = jdbc;
     }
 
+    /**
+     * {@code insert} 执行当前类型定义的业务操作。
+     *
+     * @param a 参数值，用于执行当前操作。
+     */
     @Override
     public void insert(AiApp a) {
         jdbc.update(
@@ -40,6 +58,15 @@ public class JdbcAiAppRepository implements AiAppRepository {
                 Timestamp.from(a.updatedAt()));
     }
 
+    /**
+     * {@code find} 查询并返回当前操作所需的数据。
+     *
+     * @param id 参数值，用于执行当前操作。
+     * @param tenant 参数值，用于执行当前操作。
+     * @param owner 参数值，用于执行当前操作。
+     *
+     * @return 返回当前操作产生的结果。
+     */
     @Override
     public Optional<AiApp> find(String id, TenantId tenant, long owner) {
         return jdbc.query(
@@ -50,6 +77,14 @@ public class JdbcAiAppRepository implements AiAppRepository {
                 owner);
     }
 
+    /**
+     * {@code findByTenant} 查询并返回当前操作所需的数据。
+     *
+     * @param id 参数值，用于执行当前操作。
+     * @param tenant 参数值，用于执行当前操作。
+     *
+     * @return 返回当前操作产生的结果。
+     */
     @Override
     public Optional<AiApp> findByTenant(String id, TenantId tenant) {
         return jdbc.query(
@@ -59,6 +94,15 @@ public class JdbcAiAppRepository implements AiAppRepository {
                 tenant(tenant));
     }
 
+    /**
+     * {@code list} 查询并返回当前操作所需的数据。
+     *
+     * @param tenant 参数值，用于执行当前操作。
+     * @param owner 参数值，用于执行当前操作。
+     * @param limit 参数值，用于执行当前操作。
+     *
+     * @return 返回当前操作产生的结果。
+     */
     @Override
     public List<AiApp> list(TenantId tenant, long owner, int limit) {
         return jdbc.query(
@@ -70,6 +114,11 @@ public class JdbcAiAppRepository implements AiAppRepository {
                 Math.max(1, Math.min(limit, 100)));
     }
 
+    /**
+     * {@code insertVersion} 执行当前类型定义的业务操作。
+     *
+     * @param v 参数值，用于执行当前操作。
+     */
     @Override
     public void insertVersion(AiAppVersion v) {
         jdbc.update(
@@ -86,6 +135,15 @@ public class JdbcAiAppRepository implements AiAppRepository {
                 v.publishedAt() == null ? null : Timestamp.from(v.publishedAt()));
     }
 
+    /**
+     * {@code findVersion} 查询并返回当前操作所需的数据。
+     *
+     * @param appId 参数值，用于执行当前操作。
+     * @param id 参数值，用于执行当前操作。
+     * @param tenant 参数值，用于执行当前操作。
+     *
+     * @return 返回当前操作产生的结果。
+     */
     @Override
     public Optional<AiAppVersion> findVersion(String appId, String id, TenantId tenant) {
         return jdbc.query(
@@ -96,6 +154,14 @@ public class JdbcAiAppRepository implements AiAppRepository {
                 tenant(tenant));
     }
 
+    /**
+     * {@code versions} 执行当前类型定义的业务操作。
+     *
+     * @param appId 参数值，用于执行当前操作。
+     * @param tenant 参数值，用于执行当前操作。
+     *
+     * @return 返回当前操作产生的结果。
+     */
     @Override
     public List<AiAppVersion> versions(String appId, TenantId tenant) {
         return jdbc.query(
@@ -106,6 +172,15 @@ public class JdbcAiAppRepository implements AiAppRepository {
                 tenant(tenant));
     }
 
+    /**
+     * {@code publishVersion} 执行当前模块定义的业务流程。
+     *
+     * @param appId 参数值，用于执行当前操作。
+     * @param id 参数值，用于执行当前操作。
+     * @param tenant 参数值，用于执行当前操作。
+     *
+     * @return 返回当前操作产生的结果。
+     */
     @Override
     @Transactional
     public int publishVersion(String appId, String id, TenantId tenant) {
@@ -135,6 +210,15 @@ public class JdbcAiAppRepository implements AiAppRepository {
         return n;
     }
 
+    /**
+     * {@code archiveVersion} 执行当前类型定义的业务操作。
+     *
+     * @param appId 参数值，用于执行当前操作。
+     * @param id 参数值，用于执行当前操作。
+     * @param tenant 参数值，用于执行当前操作。
+     *
+     * @return 返回当前操作产生的结果。
+     */
     @Override
     public int archiveVersion(String appId, String id, TenantId tenant) {
         return jdbc.update(

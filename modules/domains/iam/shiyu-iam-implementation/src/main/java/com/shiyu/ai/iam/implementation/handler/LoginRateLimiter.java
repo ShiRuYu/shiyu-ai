@@ -48,18 +48,31 @@ public class LoginRateLimiter {
 
     private final ClientIpResolver clientIpResolver;
 
-    /** Constructor used by the HTTP application context. */
+    /**
+     * 处理登录ratelimiter。
+     *
+     * @param clientIpResolver clientIpResolver 参数。
+     *
+     * @return 处理结果。
+     */
     @Autowired
     public LoginRateLimiter(ClientIpResolver clientIpResolver) {
         this.clientIpResolver =
                 Objects.requireNonNull(clientIpResolver, "clientIpResolver must not be null");
     }
 
-    /** Constructor retained for pure unit tests that do not have an HTTP adapter. */
+    /**
+     * 处理登录ratelimiter。
+     *
+     * @return 处理结果。
+     */
     public LoginRateLimiter() {
         this(() -> "unknown");
     }
 
+    /**
+     * {@code init} 执行当前类型定义的业务操作。
+     */
     @PostConstruct
     public void init() {
         cleanupScheduler.scheduleAtFixedRate(this::cleanupExpiredEntries, 5, 5, TimeUnit.MINUTES);
@@ -71,6 +84,9 @@ public class LoginRateLimiter {
                 JITTER_RANGE_SECONDS);
     }
 
+    /**
+     * {@code destroy} 执行当前类型定义的业务操作。
+     */
     @PreDestroy
     public void destroy() {
         cleanupScheduler.shutdownNow();
@@ -85,6 +101,13 @@ public class LoginRateLimiter {
         log.info("LoginRateLimiter 定时清理线程池已关闭");
     }
 
+    /**
+     * {@code isAllowed} 校验当前操作的输入或状态是否满足约束。
+     *
+     * @param ip 参数值，用于执行当前操作。
+     *
+     * @return 返回当前操作产生的结果。
+     */
     public boolean isAllowed(String ip) {
         long now = System.currentTimeMillis();
         RateLimitEntry entry = attempts.computeIfAbsent(ip, k -> new RateLimitEntry());
@@ -121,6 +144,11 @@ public class LoginRateLimiter {
         }
     }
 
+    /**
+     * {@code reset} 执行当前类型定义的业务操作。
+     *
+     * @param ip 参数值，用于执行当前操作。
+     */
     public void reset(String ip) {
         attempts.remove(ip);
     }
@@ -148,6 +176,11 @@ public class LoginRateLimiter {
         }
     }
 
+    /**
+     * {@code getClientIp} 查询并返回当前操作所需的数据。
+     *
+     * @return 返回当前操作产生的结果。
+     */
     public String getClientIp() {
         return clientIpResolver.currentClientIp();
     }

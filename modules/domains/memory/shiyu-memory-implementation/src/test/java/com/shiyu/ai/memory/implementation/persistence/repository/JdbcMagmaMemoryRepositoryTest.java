@@ -1,4 +1,6 @@
 package com.shiyu.ai.memory.implementation.persistence.repository;
+import com.shiyu.ai.memory.implementation.domain.magma.model.MemoryEntity;
+import com.shiyu.ai.memory.implementation.domain.magma.model.MemoryRetrievalTrace;
 
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyString;
@@ -6,7 +8,6 @@ import static org.mockito.Mockito.*;
 
 import com.shiyu.ai.kernel.context.TenantId;
 import com.shiyu.ai.memory.contract.model.*;
-import com.shiyu.ai.memory.implementation.domain.magma.*;
 
 import org.junit.jupiter.api.Test;
 import org.springframework.jdbc.core.JdbcTemplate;

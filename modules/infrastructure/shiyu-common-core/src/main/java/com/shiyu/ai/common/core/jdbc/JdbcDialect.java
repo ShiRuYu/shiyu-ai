@@ -12,22 +12,28 @@ import java.util.regex.Pattern;
 import javax.sql.DataSource;
 
 /**
- * Small SQL dialect adapter for the few write operations that cannot use one portable statement
- * across H2, MySQL, and PostgreSQL.
- *
- * <p>Read queries remain ANSI SQL. Callers provide validated table and column identifiers; values
- * stay parameterized in the returned statement.
+ * 提供数据库方言和 SQL 能力判断。
  */
 public final class JdbcDialect {
 
     private static final Pattern IDENTIFIER = Pattern.compile("[A-Za-z][A-Za-z0-9_]*");
 
+    /**
+     * kind 属性，保存当前对象中的业务数据或协作依赖。
+     */
     private final Kind kind;
 
     private JdbcDialect(Kind kind) {
         this.kind = kind;
     }
 
+    /**
+     * {@code detect} 执行当前类型定义的业务操作。
+     *
+     * @param jdbc 参数值，用于执行当前操作。
+     *
+     * @return 返回当前操作产生的结果。
+     */
     public static JdbcDialect detect(JdbcTemplate jdbc) {
         Objects.requireNonNull(jdbc, "JdbcTemplate must not be null");
         DataSource dataSource = jdbc.getDataSource();
@@ -36,12 +42,17 @@ public final class JdbcDialect {
             String product = connection.getMetaData().getDatabaseProductName();
             return fromProduct(product);
         } catch (SQLException | RuntimeException ignored) {
-            // Unit tests often use a disconnected mock DataSource. H2 is the
-            // safe compatibility fallback and preserves the existing statement.
             return new JdbcDialect(Kind.H2);
         }
     }
 
+    /**
+     * {@code fromProduct} 执行当前类型定义的业务操作。
+     *
+     * @param product 参数值，用于执行当前操作。
+     *
+     * @return 返回当前操作产生的结果。
+     */
     public static JdbcDialect fromProduct(String product) {
         String normalized = product == null ? "" : product.toLowerCase(Locale.ROOT);
         if (normalized.contains("postgres")) return new JdbcDialect(Kind.POSTGRESQL);
@@ -50,13 +61,25 @@ public final class JdbcDialect {
         return new JdbcDialect(Kind.UNKNOWN);
     }
 
+    /**
+     * {@code kind} 执行当前类型定义的业务操作。
+     *
+     * @return 返回当前操作产生的结果。
+     */
     public Kind kind() {
         return kind;
     }
 
     /**
-     * Builds an insert-or-update statement while preserving the existing H2 syntax. The returned
-     * SQL contains only identifier fragments and `?` placeholders supplied by the caller.
+     * 处理upsert。
+     *
+     * @param table table 参数。
+     * @param columns columns 参数。
+     * @param valuesSql valuesSql 参数。
+     * @param conflictColumns conflictColumns 参数。
+     * @param updateColumns updateColumns 参数。
+     *
+     * @return 结果列表。
      */
     public String upsert(
             String table,
@@ -125,7 +148,13 @@ public final class JdbcDialect {
                 + ")";
     }
 
-    /** Returns a retry timestamp expression using the supplied attempts column. */
+    /**
+     * 处理retrytimestampexpression。
+     *
+     * @param attemptsColumn attemptsColumn 参数。
+     *
+     * @return 处理结果。
+     */
     public String retryTimestampExpression(String attemptsColumn) {
         identifier(attemptsColumn);
         return switch (kind) {
@@ -149,6 +178,9 @@ public final class JdbcDialect {
         }
     }
 
+    /**
+     * {@code Kind} 表示平台基础设施模块中的一组受控业务状态或分类。
+     */
     public enum Kind {
         H2,
         MYSQL,

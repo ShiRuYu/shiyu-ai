@@ -6,11 +6,11 @@ import java.util.concurrent.ExecutorService;
 public interface ThreadPoolManager {
 
     /**
-     * Get a named executor using the matching {@code shiyu.thread.pools} configuration. Falls back
-     * to the default pool configuration when the name is not configured.
+     * 获取执行器。
      *
-     * @param name configured pool name
-     * @return managed executor
+     * @param name 名称。
+     *
+     * @return 处理结果。
      */
     ExecutorService getExecutor(String name);
 

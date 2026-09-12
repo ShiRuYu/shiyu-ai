@@ -1,4 +1,8 @@
 package com.shiyu.ai.agent.implementation.web;
+import com.shiyu.ai.agent.implementation.runtime.model.AiApp;
+import com.shiyu.ai.agent.implementation.runtime.model.AiAppPreview;
+import com.shiyu.ai.agent.implementation.runtime.model.AiAppVersion;
+import com.shiyu.ai.agent.implementation.runtime.service.AiRuntimeService;
 
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.*;
@@ -6,8 +10,7 @@ import static org.mockito.Mockito.*;
 
 import com.shiyu.ai.agent.contract.runtime.*;
 import com.shiyu.ai.agent.implementation.execution.Execution;
-import com.shiyu.ai.agent.implementation.runtime.*;
-import com.shiyu.ai.agent.implementation.runtime.AgentRuntime;
+import com.shiyu.ai.agent.implementation.runtime.port.AgentRuntime;
 import com.shiyu.ai.common.web.auth.ActorContextHttpAdapter;
 import com.shiyu.ai.kernel.context.ActorContext;
 import com.shiyu.ai.kernel.context.TenantId;

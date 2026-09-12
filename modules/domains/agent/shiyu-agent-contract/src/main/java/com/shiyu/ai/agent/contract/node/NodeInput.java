@@ -40,7 +40,6 @@ public class NodeInput {
         return this.parameters;
     }
 
-    // ==================== String-key overloads ====================
 
     /**
      * 获取参数
@@ -77,7 +76,6 @@ public class NodeInput {
         this.parameters.put(key, value);
     }
 
-    // ==================== FieldKey overloads ====================
 
     /**
      * 通过 {@link FieldKey} 获取参数

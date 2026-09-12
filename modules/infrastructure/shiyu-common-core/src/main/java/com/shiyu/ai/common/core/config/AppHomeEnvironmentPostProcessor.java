@@ -28,19 +28,38 @@ import java.util.regex.Pattern;
 @Order(Ordered.LOWEST_PRECEDENCE - 100)
 public class AppHomeEnvironmentPostProcessor implements EnvironmentPostProcessor {
 
+    /**
+     * 名称，表示当前对象中的对应属性。
+     */
     private static final String PROPERTY_SOURCE_NAME = "appHomeProperties";
+    /**
+     * 键，表示当前对象中的对应属性。
+     */
     private static final String APP_HOME_KEY = "app.home";
+    /**
+     * 属性，表示当前对象中的对应属性。
+     */
     private static final String APP_HOME_PROPERTY = "app.home";
+    /**
+     * 环境变量，表示当前对象中的对应属性。
+     */
     private static final String APP_HOME_ENV = "APP_HOME";
+    /**
+     * 键，表示当前对象中的对应属性。
+     */
     private static final String USER_DIR_KEY = "user.dir";
     private static final Pattern ROOT_POM_PACKAGING =
             Pattern.compile("<packaging>\\s*pom\\s*</packaging>");
 
+    /**
+     * {@code postProcessEnvironment} 执行当前类型定义的业务操作。
+     *
+     * @param environment 参数值，用于执行当前操作。
+     * @param application 参数值，用于执行当前操作。
+     */
     @Override
     public void postProcessEnvironment(
             ConfigurableEnvironment environment, SpringApplication application) {
-        // 0. The bootstrap lock sets this before Spring starts; preserve it so
-        // smoke tests and operators can isolate the embedded data directory.
         String appHomeProperty = System.getProperty(APP_HOME_PROPERTY);
         if (appHomeProperty != null && !appHomeProperty.isBlank()) {
             log.info("app.home 系统属性: {}", appHomeProperty);
@@ -111,9 +130,6 @@ public class AppHomeEnvironmentPostProcessor implements EnvironmentPostProcessor
         environment
                 .getPropertySources()
                 .addFirst(new MapPropertySource(PROPERTY_SOURCE_NAME, props));
-        // Some embedded-storage services intentionally resolve paths without a
-        // Spring dependency. Keep their system-property view consistent with
-        // the Environment value selected here.
         System.setProperty(APP_HOME_KEY, appHome);
         log.info("app.home = {}", appHome);
     }

@@ -1,4 +1,3 @@
--- Realistic memory event and graph seed for the default tenant.
 INSERT INTO "PUBLIC"."MEMORY_ENTITY"
     ("ID", "TENANT_ID", "ENTITY_TYPE", "EXTERNAL_REF", "DISPLAY_NAME", "NORMALIZED_NAME", "ATTRIBUTES", "ACTIVE")
 VALUES ('demo-memory-entity-math', 1, 'KNOWLEDGE', 'knowledge:1001', '一元一次方程', '一元一次方程', '{"subject":"MATH","grade":7}', TRUE);

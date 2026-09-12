@@ -1,13 +1,20 @@
 package com.shiyu.ai.model.contract.api;
 
 /**
- * Read-only model catalog facts needed by other bounded contexts. Implementations stay inside
- * Model; consumers must not query model tables.
+ * ModelCatalogPort 边界接口，负责向外部组件提供模型领域相关能力。
  */
 public interface ModelCatalogPort {
-    /** Counts enabled provider configurations visible to the current catalog. */
+    /**
+     * 处理countenabledplatforms。
+     *
+     * @return 受影响的记录数或生成的序号。
+     */
     long countEnabledPlatforms();
 
-    /** Counts enabled model entries across the catalog. */
+    /**
+     * 处理countenabledmodels。
+     *
+     * @return 受影响的记录数或生成的序号。
+     */
     long countEnabledModels();
 }

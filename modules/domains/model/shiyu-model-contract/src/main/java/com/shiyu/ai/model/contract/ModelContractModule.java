@@ -1,4 +1,6 @@
 package com.shiyu.ai.model.contract;
 
-/** Marker for the public Model API; concrete ports and messages live beside it. */
+/**
+ * ModelContractModule 模块接口，标识模型模块的边界。
+ */
 public interface ModelContractModule {}

@@ -7,7 +7,7 @@ import com.shiyu.ai.agent.contract.node.NodeInput;
 import com.shiyu.ai.agent.contract.node.NodeInputParam;
 import com.shiyu.ai.agent.contract.node.NodeOutput;
 import com.shiyu.ai.agent.contract.node.NodeType;
-import com.shiyu.ai.agent.implementation.runtime.AgentRuntime;
+import com.shiyu.ai.agent.implementation.runtime.port.AgentRuntime;
 import com.shiyu.ai.kernel.context.ActorContext;
 import com.shiyu.ai.kernel.context.TenantId;
 import com.shiyu.ai.kernel.context.UserId;
@@ -30,6 +30,9 @@ import java.util.Map;
 @Slf4j
 public class AgentCallNode extends BaseNode {
 
+    /**
+     * 配置，表示当前对象中的对应属性。
+     */
     private AgentCallConfig config;
 
     /** Agent 运行时（必须依赖） */
@@ -50,19 +53,44 @@ public class AgentCallNode extends BaseNode {
 
     /** Builder 类，用于构建 AgentCallNode 实例 */
     public static class Builder {
+        /**
+         * 配置，表示当前对象中的对应属性。
+         */
         private AgentCallConfig config;
+        /**
+         * agentRuntime 属性，保存当前对象中的业务数据或协作依赖。
+         */
         private AgentRuntime agentRuntime;
 
+        /**
+         * {@code config} 执行当前类型定义的业务操作。
+         *
+         * @param config 参数值，用于执行当前操作。
+         *
+         * @return 返回当前操作产生的结果。
+         */
         public Builder config(AgentCallConfig config) {
             this.config = config;
             return this;
         }
 
+        /**
+         * {@code agentRuntime} 执行当前类型定义的业务操作。
+         *
+         * @param agentRuntime 参数值，用于执行当前操作。
+         *
+         * @return 返回当前操作产生的结果。
+         */
         public Builder agentRuntime(AgentRuntime agentRuntime) {
             this.agentRuntime = agentRuntime;
             return this;
         }
 
+        /**
+         * {@code build} 执行当前类型定义的业务操作。
+         *
+         * @return 返回当前操作产生的结果。
+         */
         public AgentCallNode build() {
             if (agentRuntime == null) {
                 throw new IllegalStateException("创建 AgentCallNode 失败：agentRuntime 不能为空");
@@ -71,6 +99,13 @@ public class AgentCallNode extends BaseNode {
         }
     }
 
+    /**
+     * {@code doExecute} 执行当前类型定义的业务操作。
+     *
+     * @param input 参数值，用于执行当前操作。
+     *
+     * @return 返回当前操作产生的结果。
+     */
     @Override
     protected NodeOutput doExecute(NodeInput input) throws Exception {
         log.info("执行 Agent 调用节点：nodeNamePresent={}", config.getNodeName() != null);
@@ -196,6 +231,11 @@ public class AgentCallNode extends BaseNode {
                 new TenantId(tenant.longValue()), new UserId(user.longValue()), false);
     }
 
+    /**
+     * {@code getRequiredInputs} 查询并返回当前操作所需的数据。
+     *
+     * @return 返回当前操作产生的结果。
+     */
     @Override
     public java.util.List<NodeInputParam> getRequiredInputs() {
         return java.util.List.of(

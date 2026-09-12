@@ -10,8 +10,16 @@ import java.util.Map;
 @Slf4j
 public class CheckpointManager {
 
+    /**
+     * checkpointStore 属性，保存当前对象中的业务数据或协作依赖。
+     */
     private final CheckpointStore checkpointStore;
 
+    /**
+     * {@code CheckpointManager} 创建并初始化当前类型实例。
+     *
+     * @param checkpointStore 参数值，用于执行当前操作。
+     */
     public CheckpointManager(CheckpointStore checkpointStore) {
         this.checkpointStore = checkpointStore;
     }

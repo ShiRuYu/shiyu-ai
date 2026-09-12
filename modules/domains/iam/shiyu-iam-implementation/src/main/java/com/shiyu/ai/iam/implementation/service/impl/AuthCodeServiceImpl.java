@@ -26,13 +26,31 @@ import java.util.List;
 import java.util.Objects;
 import java.util.Set;
 
-/** Authorization-code application service. */
+/**
+ * 实现 AuthCode 应用服务用例。
+ */
 @Service
 public class AuthCodeServiceImpl implements AuthCodeService {
+    /**
+     * authCodeRepository 属性，保存当前对象中的业务数据或协作依赖。
+     */
     private final AuthCodeRepository authCodeRepository;
+    /**
+     * 角色仓储，表示当前对象中的对应属性。
+     */
     private final RoleRepository roleRepository;
+    /**
+     * 租户仓储，表示当前对象中的对应属性。
+     */
     private final TenantRepository tenantRepository;
 
+    /**
+     * {@code AuthCodeServiceImpl} 创建并初始化当前类型实例。
+     *
+     * @param authCodeRepository 参数值，用于执行当前操作。
+     * @param roleRepository 参数值，用于执行当前操作。
+     * @param tenantRepository 参数值，用于执行当前操作。
+     */
     public AuthCodeServiceImpl(
             AuthCodeRepository authCodeRepository,
             RoleRepository roleRepository,
@@ -42,6 +60,13 @@ public class AuthCodeServiceImpl implements AuthCodeService {
         this.tenantRepository = tenantRepository;
     }
 
+    /**
+     * {@code list} 查询并返回当前操作所需的数据。
+     *
+     * @param actor 参数值，用于执行当前操作。
+     *
+     * @return 返回当前操作产生的结果。
+     */
     @Override
     public List<AuthCodeOptionVO> list(ActorContext actor) {
         actor = requireActor(actor);
@@ -50,6 +75,15 @@ public class AuthCodeServiceImpl implements AuthCodeService {
                 .toList();
     }
 
+    /**
+     * {@code listRoleAuthCodes} 查询并返回当前操作所需的数据。
+     *
+     * @param actor 参数值，用于执行当前操作。
+     * @param roleId 参数值，用于执行当前操作。
+     * @param tenantId 参数值，用于执行当前操作。
+     *
+     * @return 返回当前操作产生的结果。
+     */
     @Override
     public List<String> listRoleAuthCodes(ActorContext actor, Long roleId, TenantId tenantId) {
         actor = requireActor(actor);
@@ -63,11 +97,26 @@ public class AuthCodeServiceImpl implements AuthCodeService {
                 .toList();
     }
 
+    /**
+     * {@code options} 执行当前类型定义的业务操作。
+     *
+     * @param actor 参数值，用于执行当前操作。
+     *
+     * @return 返回当前操作产生的结果。
+     */
     @Override
     public List<AuthCodeOptionVO> options(ActorContext actor) {
         return list(actor);
     }
 
+    /**
+     * {@code create} 写入或更新当前模块中的业务数据。
+     *
+     * @param actor 参数值，用于执行当前操作。
+     * @param request 参数值，用于执行当前操作。
+     *
+     * @return 返回当前操作产生的结果。
+     */
     @Override
     @Transactional(rollbackFor = Exception.class)
     public AuthCodeResponse create(ActorContext actor, AuthCodeRequest request) {
@@ -90,6 +139,15 @@ public class AuthCodeServiceImpl implements AuthCodeService {
         return AuthCodeAssembler.toResponse(saved);
     }
 
+    /**
+     * {@code update} 写入或更新当前模块中的业务数据。
+     *
+     * @param actor 参数值，用于执行当前操作。
+     * @param id 参数值，用于执行当前操作。
+     * @param request 参数值，用于执行当前操作。
+     *
+     * @return 返回当前操作产生的结果。
+     */
     @Override
     public boolean update(ActorContext actor, Long id, AuthCodeRequest request) {
         actor = requireActor(actor);
@@ -112,6 +170,14 @@ public class AuthCodeServiceImpl implements AuthCodeService {
         return true;
     }
 
+    /**
+     * {@code delete} 释放或移除当前操作涉及的资源。
+     *
+     * @param actor 参数值，用于执行当前操作。
+     * @param id 参数值，用于执行当前操作。
+     *
+     * @return 返回当前操作产生的结果。
+     */
     @Override
     @Transactional(rollbackFor = Exception.class)
     public boolean delete(ActorContext actor, Long id) {
@@ -133,6 +199,16 @@ public class AuthCodeServiceImpl implements AuthCodeService {
         return true;
     }
 
+    /**
+     * {@code grant} 执行当前类型定义的业务操作。
+     *
+     * @param actor 参数值，用于执行当前操作。
+     * @param roleId 参数值，用于执行当前操作。
+     * @param tenantId 参数值，用于执行当前操作。
+     * @param authCodeIds 参数值，用于执行当前操作。
+     *
+     * @return 返回当前操作产生的结果。
+     */
     @Override
     @Transactional(rollbackFor = Exception.class)
     public boolean grant(
@@ -174,6 +250,16 @@ public class AuthCodeServiceImpl implements AuthCodeService {
         return true;
     }
 
+    /**
+     * {@code replace} 执行当前类型定义的业务操作。
+     *
+     * @param actor 参数值，用于执行当前操作。
+     * @param roleId 参数值，用于执行当前操作。
+     * @param tenantId 参数值，用于执行当前操作。
+     * @param authCodes 参数值，用于执行当前操作。
+     *
+     * @return 返回当前操作产生的结果。
+     */
     @Override
     @Transactional(rollbackFor = Exception.class)
     public boolean replace(
@@ -222,6 +308,16 @@ public class AuthCodeServiceImpl implements AuthCodeService {
         return true;
     }
 
+    /**
+     * {@code revoke} 执行当前类型定义的业务操作。
+     *
+     * @param actor 参数值，用于执行当前操作。
+     * @param roleId 参数值，用于执行当前操作。
+     * @param tenantId 参数值，用于执行当前操作。
+     * @param authCodeId 参数值，用于执行当前操作。
+     *
+     * @return 返回当前操作产生的结果。
+     */
     @Override
     @Transactional(rollbackFor = Exception.class)
     public boolean revoke(ActorContext actor, Long roleId, TenantId tenantId, Long authCodeId) {
@@ -233,6 +329,14 @@ public class AuthCodeServiceImpl implements AuthCodeService {
         return true;
     }
 
+    /**
+     * {@code page} 执行当前类型定义的业务操作。
+     *
+     * @param actor 参数值，用于执行当前操作。
+     * @param request 参数值，用于执行当前操作。
+     *
+     * @return 返回当前操作产生的结果。
+     */
     @Override
     public PageData<AuthCodeOptionVO> page(ActorContext actor, AuthCodePageRequest request) {
         actor = requireActor(actor);

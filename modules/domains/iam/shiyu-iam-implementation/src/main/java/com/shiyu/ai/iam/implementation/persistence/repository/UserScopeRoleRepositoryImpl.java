@@ -13,10 +13,16 @@ import org.springframework.stereotype.Component;
 
 import java.util.List;
 
+/**
+ * {@code UserScopeRoleRepositoryImpl} 实现平台模块的持久化端口，负责在领域对象与存储模型之间转换。
+ */
 @Component
 public class UserScopeRoleRepositoryImpl
         implements com.shiyu.ai.iam.implementation.port.repository.UserScopeRoleRepository {
 
+    /**
+     * userScopeRoleMapper 属性，保存当前对象中的业务数据或协作依赖。
+     */
     @Resource private UserScopeRoleMapper userScopeRoleMapper;
 
     public List<UserScopeRoleBO> selectByUserId(Long userId) {

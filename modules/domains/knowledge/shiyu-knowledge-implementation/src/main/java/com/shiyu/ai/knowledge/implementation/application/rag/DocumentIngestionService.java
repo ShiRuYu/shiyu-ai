@@ -17,15 +17,37 @@ import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
 import java.util.*;
 
+/**
+ * {@code DocumentIngestionService} 定义知识模块的应用服务能力，供上层用例调用。
+ */
 @Slf4j
 @Service
 public class DocumentIngestionService {
 
+    /**
+     * 嵌入向量服务，表示当前对象中的对应属性。
+     */
     private final EmbeddingService embeddingService;
+    /**
+     * chunkRepository 属性，保存当前对象中的业务数据或协作依赖。
+     */
     private final KnowledgeChunkRepository chunkRepository;
+    /**
+     * chunkSplitter 属性，保存当前对象中的业务数据或协作依赖。
+     */
     private final ChunkSplitter chunkSplitter;
+    /**
+     * documentParsers 属性，保存当前对象中的业务数据或协作依赖。
+     */
     private final List<DocumentParser> documentParsers;
 
+    /**
+     * {@code DocumentIngestionService} 创建并初始化当前类型实例。
+     *
+     * @param embeddingService 参数值，用于执行当前操作。
+     * @param chunkRepository 参数值，用于执行当前操作。
+     * @param documentParsers 参数值，用于执行当前操作。
+     */
     public DocumentIngestionService(
             EmbeddingService embeddingService,
             KnowledgeChunkRepository chunkRepository,
@@ -125,6 +147,12 @@ public class DocumentIngestionService {
         return chunkDOs;
     }
 
+    /**
+     * {@code delete} 释放或移除当前操作涉及的资源。
+     *
+     * @param tenantId 参数值，用于执行当前操作。
+     * @param documentId 参数值，用于执行当前操作。
+     */
     public void delete(TenantId tenantId, Long documentId) {
         chunkRepository.deleteByDocumentId(tenantId, documentId);
     }

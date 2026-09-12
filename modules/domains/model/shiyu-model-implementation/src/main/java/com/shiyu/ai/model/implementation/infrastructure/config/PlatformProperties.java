@@ -13,6 +13,9 @@ import org.springframework.context.annotation.PropertySource;
 import java.util.HashMap;
 import java.util.Map;
 
+/**
+ * {@code PlatformProperties} 提供模型模块的配置项，并集中声明其默认值和运行约束。
+ */
 @Data
 @Configuration
 @ConfigurationProperties(prefix = "shiyu.ai")
@@ -28,10 +31,7 @@ public class PlatformProperties {
     /** ???? -> ??????? */
     private final Map<String, String> platformDefaultModels = new HashMap<>();
 
-    /**
-     * Tenant used only for optional startup-time database loading; HTTP commands pass ActorContext
-     * directly.
-     */
+    /** 租户标识。 */
     private Long tenantId;
 
     private OllamaConfig ollama = new OllamaConfig();
@@ -40,31 +40,70 @@ public class PlatformProperties {
     private OpenRouterConfig openrouter = new OpenRouterConfig();
     private SiliconFlowConfig siliconflow = new SiliconFlowConfig();
 
+    /**
+     * {@code OllamaConfig} 提供模型模块的配置项，并集中声明其默认值和运行约束。
+     */
     @Data
     public static class OllamaConfig {
+        /**
+         * baseUrl 属性，保存当前对象中的业务数据或协作依赖。
+         */
         private String baseUrl = "http://localhost:11434";
+        /**
+         * apiKey 属性，保存当前对象中的业务数据或协作依赖。
+         */
         private String apiKey = "";
+        /**
+         * model 属性，保存当前对象中的业务数据或协作依赖。
+         */
         private String model = "gemma3:4b";
     }
 
+    /**
+     * {@code DeepSeekConfig} 提供模型模块的配置项，并集中声明其默认值和运行约束。
+     */
     @Data
     public static class DeepSeekConfig {
         private String baseUrl = "https://api.deepseek.com";
+        /**
+         * apiKey 属性，保存当前对象中的业务数据或协作依赖。
+         */
         private String apiKey = "";
+        /**
+         * model 属性，保存当前对象中的业务数据或协作依赖。
+         */
         private String model = "deepseek-v4-flash";
     }
 
+    /**
+     * {@code OpenAIConfig} 提供模型模块的配置项，并集中声明其默认值和运行约束。
+     */
     @Data
     public static class OpenAIConfig {
         private String baseUrl = "https://api.openai.com/v1";
+        /**
+         * apiKey 属性，保存当前对象中的业务数据或协作依赖。
+         */
         private String apiKey = "";
+        /**
+         * model 属性，保存当前对象中的业务数据或协作依赖。
+         */
         private String model = "gpt-4o-mini";
     }
 
+    /**
+     * {@code OpenRouterConfig} 提供模型模块的配置项，并集中声明其默认值和运行约束。
+     */
     @Data
     public static class OpenRouterConfig {
         private String baseUrl = "https://openrouter.ai/api";
+        /**
+         * apiKey 属性，保存当前对象中的业务数据或协作依赖。
+         */
         private String apiKey = "";
+        /**
+         * model 属性，保存当前对象中的业务数据或协作依赖。
+         */
         private String model = "x-ai/grok-4.1-fast";
     }
 
@@ -84,7 +123,13 @@ public class PlatformProperties {
         platformDefaultModels.put("OLLAMA", ollama.getModel());
     }
 
-    /** ?????????? API Key ?? ModelManager ?? switch-case ??? */
+    /**
+     * 获取apikey。
+     *
+     * @param platformCode platformCode 参数。
+     *
+     * @return 处理结果。
+     */
     public String getApiKey(String platformCode) {
         if (platformCode == null) return null;
         return platformApiKeys.get(platformCode.toUpperCase());
@@ -96,10 +141,19 @@ public class PlatformProperties {
         return platformDefaultModels.get(platformCode.toUpperCase());
     }
 
+    /**
+     * {@code SiliconFlowConfig} 提供模型模块的配置项，并集中声明其默认值和运行约束。
+     */
     @Data
     public static class SiliconFlowConfig {
         private String baseUrl = "https://api.siliconflow.cn";
+        /**
+         * apiKey 属性，保存当前对象中的业务数据或协作依赖。
+         */
         private String apiKey = "";
+        /**
+         * model 属性，保存当前对象中的业务数据或协作依赖。
+         */
         private String model = "THUDM/GLM-Z1-9B-0414";
     }
 }

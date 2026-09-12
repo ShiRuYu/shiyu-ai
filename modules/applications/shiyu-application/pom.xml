@@ -53,12 +53,7 @@
             <artifactId>shiyu-governance-implementation</artifactId>
             <version>${revision}</version>
         </dependency>
-        <dependency>
-            <groupId>com.shiyu.ai</groupId>
-            <artifactId>shiyu-education-implementation</artifactId>
-            <version>${revision}</version>
-        </dependency>
-        <!-- Cross-domain event adapters belong to the application composition root. -->
+        <!-- 该配置用于当前模块的职责边界和运行约束。 -->
         <dependency>
             <groupId>org.springframework</groupId>
             <artifactId>spring-context</artifactId>
@@ -79,6 +74,12 @@
         <dependency>
             <groupId>com.h2database</groupId>
             <artifactId>h2</artifactId>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>com.shiyu.ai</groupId>
+            <artifactId>shiyu-education-implementation</artifactId>
+            <version>${revision}</version>
             <scope>test</scope>
         </dependency>
     </dependencies>

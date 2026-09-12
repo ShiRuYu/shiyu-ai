@@ -13,13 +13,31 @@ import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 
-/** PostgreSQL pgvector implementation of the common vector store SPI. */
+/**
+ * 使用 PostgreSQL/pgvector 保存、查询和删除向量。
+ */
 public final class PgVectorStore implements VectorStore {
 
+    /**
+     * JDBC，表示当前对象中的对应属性。
+     */
     private final JdbcTemplate jdbc;
+    /**
+     * namespace 属性，保存当前对象中的业务数据或协作依赖。
+     */
     private final String namespace;
+    /**
+     * 维度，表示当前对象中的对应属性。
+     */
     private final int dimension;
 
+    /**
+     * {@code PgVectorStore} 创建并初始化当前类型实例。
+     *
+     * @param jdbc 参数值，用于执行当前操作。
+     * @param namespace 参数值，用于执行当前操作。
+     * @param dimension 参数值，用于执行当前操作。
+     */
     public PgVectorStore(JdbcTemplate jdbc, String namespace, int dimension) {
         this.jdbc = Objects.requireNonNull(jdbc, "JdbcTemplate must not be null");
         if (namespace == null || namespace.isBlank()) {
@@ -33,11 +51,21 @@ public final class PgVectorStore implements VectorStore {
         initializeSchema();
     }
 
+    /**
+     * {@code type} 执行当前类型定义的业务操作。
+     *
+     * @return 返回当前操作产生的结果。
+     */
     @Override
     public String type() {
         return "pgvector";
     }
 
+    /**
+     * {@code upsert} 执行当前类型定义的业务操作。
+     *
+     * @param record 参数值，用于执行当前操作。
+     */
     @Override
     public void upsert(VectorRecord record) {
         Objects.requireNonNull(record, "Vector record must not be null");
@@ -63,11 +91,26 @@ public final class PgVectorStore implements VectorStore {
                 metadata);
     }
 
+    /**
+     * {@code search} 查询并返回当前操作所需的数据。
+     *
+     * @param queryVector 参数值，用于执行当前操作。
+     * @param topK 参数值，用于执行当前操作。
+     *
+     * @return 返回当前操作产生的结果。
+     */
     @Override
     public List<VectorRecord> search(float[] queryVector, int topK) {
         return search(VectorSearchRequest.builder().queryVector(queryVector).topK(topK).build());
     }
 
+    /**
+     * {@code search} 查询并返回当前操作所需的数据。
+     *
+     * @param request 参数值，用于执行当前操作。
+     *
+     * @return 返回当前操作产生的结果。
+     */
     @Override
     public List<VectorRecord> search(VectorSearchRequest request) {
         Objects.requireNonNull(request, "Vector search request must not be null");
@@ -125,6 +168,11 @@ public final class PgVectorStore implements VectorStore {
                 });
     }
 
+    /**
+     * {@code delete} 释放或移除当前操作涉及的资源。
+     *
+     * @param id 参数值，用于执行当前操作。
+     */
     @Override
     public void delete(String id) {
         jdbc.update(
@@ -133,11 +181,19 @@ public final class PgVectorStore implements VectorStore {
                 id);
     }
 
+    /**
+     * {@code rebuild} 执行当前类型定义的业务操作。
+     */
     @Override
     public void rebuild() {
         jdbc.update("DELETE FROM shiyu_vector_item WHERE vector_namespace = ?", namespace);
     }
 
+    /**
+     * {@code size} 执行当前类型定义的业务操作。
+     *
+     * @return 返回当前操作产生的结果。
+     */
     @Override
     public int size() {
         Integer count =
@@ -184,9 +240,6 @@ public final class PgVectorStore implements VectorStore {
                             + ": expected "
                             + dimension);
         }
-        // pgvector HNSW indexes require a fixed dimension. The table remains
-        // dimension-flexible so different tenants can migrate independently;
-        // each dimension gets a partial index covering only valid rows.
         String indexName = "shiyu_vector_item_embedding_d" + dimension;
         jdbc.execute(
                 "CREATE INDEX IF NOT EXISTS "

@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Verify the complete shiyu-ai/shiyu-ui documentation delivery."""
+"""verify documentation 脚本，执行项目架构与工程校验。"""
 
 from __future__ import annotations
 
@@ -91,7 +91,7 @@ def baseline_owner_roots(backend: Path) -> list[Path]:
         backend / "modules/domains/agent/shiyu-agent-implementation/src/main/resources/db/baseline/h2",
         backend / "modules/domains/model/shiyu-model-implementation/src/main/resources/db/baseline/h2",
         backend / "modules/domains/conversation/shiyu-conversation-implementation/src/main/resources/db/baseline/h2",
-        backend / "modules/domains/education/shiyu-education-implementation/src/main/resources/db/baseline/h2",
+        backend / "modules/business/education/shiyu-education-implementation/src/main/resources/db/baseline/h2",
         backend / "modules/domains/governance/shiyu-governance-implementation/src/main/resources/db/baseline/h2",
         backend / "modules/domains/knowledge/shiyu-knowledge-implementation/src/main/resources/db/baseline/h2",
         backend / "modules/domains/memory/shiyu-memory-implementation/src/main/resources/db/baseline/h2",
@@ -108,7 +108,7 @@ def verify_final_baseline(backend: Path, failures: list[str]) -> int:
         backend / "modules/domains/agent/shiyu-agent-implementation/src/main/resources/db/baseline/h2",
         backend / "modules/domains/model/shiyu-model-implementation/src/main/resources/db/baseline/h2",
         backend / "modules/domains/conversation/shiyu-conversation-implementation/src/main/resources/db/baseline/h2",
-        backend / "modules/domains/education/shiyu-education-implementation/src/main/resources/db/baseline/h2",
+        backend / "modules/business/education/shiyu-education-implementation/src/main/resources/db/baseline/h2",
         backend / "modules/domains/governance/shiyu-governance-implementation/src/main/resources/db/baseline/h2",
         backend / "modules/domains/knowledge/shiyu-knowledge-implementation/src/main/resources/db/baseline/h2",
         backend / "modules/domains/memory/shiyu-memory-implementation/src/main/resources/db/baseline/h2",
@@ -150,8 +150,14 @@ def verify_counts(backend: Path, frontend: Path, failures: list[str]) -> dict[st
     if documented_tables != tables:
         failures.append(f"table count mismatch: document={documented_tables}, schema={tables}")
 
-    seed = (backend / "modules/domains/iam/shiyu-iam-implementation/src/main/resources/db/baseline/h2/seed/iam/02_auth.sql").read_text(encoding="utf-8")
-    navigation = (backend / "modules/domains/iam/shiyu-iam-implementation/src/main/resources/db/baseline/h2/seed/iam/05_navigation.sql").read_text(encoding="utf-8")
+    seed_paths = [
+        backend / "modules/domains/iam/shiyu-iam-implementation/src/main/resources/db/baseline/h2/seed/iam/02_auth.sql",
+        backend / "modules/domains/iam/shiyu-iam-implementation/src/main/resources/db/baseline/h2/seed/iam/05_navigation.sql",
+        backend / "modules/business/education/shiyu-education-implementation/src/main/resources/db/baseline/h2/seed/education/01_auth.sql",
+        backend / "modules/business/education/shiyu-education-implementation/src/main/resources/db/baseline/h2/seed/education/02_navigation.sql",
+    ]
+    seed = "\n".join(path.read_text(encoding="utf-8") for path in seed_paths)
+    navigation = seed
     menus = len(re.findall(r'INSERT\s+INTO\s+"PUBLIC"\."AUTH_MENU"\s+VALUES', seed, re.I))
     menus += len(re.findall(r"^\(20\d{2},", navigation, re.M))
     auth_codes = len(re.findall(r'INSERT\s+INTO\s+"PUBLIC"\."AUTH_AUTH_CODE"\s+VALUES', seed, re.I))

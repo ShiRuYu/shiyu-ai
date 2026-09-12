@@ -1,6 +1,8 @@
 package com.shiyu.ai.memory.contract.model;
 
-/** The relation view a query is primarily asking for. */
+/**
+ * MemoryQueryIntent 枚举，定义记忆模块可用的业务取值。
+ */
 public enum MemoryQueryIntent {
     SEMANTIC,
     TEMPORAL,
@@ -8,6 +10,13 @@ public enum MemoryQueryIntent {
     ENTITY,
     HYBRID;
 
+    /**
+     * {@code infer} 执行当前类型定义的业务操作。
+     *
+     * @param text 参数值，用于执行当前操作。
+     *
+     * @return 返回当前操作产生的结果。
+     */
     public static MemoryQueryIntent infer(String text) {
         String value = text == null ? "" : text.toLowerCase(java.util.Locale.ROOT);
         if (value.matches(".*(why|because|cause|result|impact|导致|原因|影响|结果).*")) return CAUSAL;

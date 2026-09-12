@@ -1,4 +1,4 @@
-name: Backend quality gate
+name: 后端质量门禁
 
 on:
   pull_request:
@@ -17,43 +17,55 @@ concurrency:
 
 jobs:
   test:
-    name: Compile and test all modules
+    name: 编译并测试全部模块
     runs-on: ubuntu-latest
     timeout-minutes: 35
     steps:
-      - name: Checkout code
+      - name: 检出代码
         uses: actions/checkout@v4
 
-      - name: Setup Java 21
+      - name: 设置 Java 21
         uses: actions/setup-java@v4
         with:
           distribution: temurin
           java-version: '21'
           cache: maven
 
-      - name: Run Maven compile, architecture and test gates
+      - name: 预检依赖清单路径
+        run: |
+          mvn --batch-mode --no-transfer-progress -pl modules/domains/agent/shiyu-agent-implementation -am dependency:go-offline -DskipTests -Ddependency-check.skip=true
+          python scripts/architecture/check_dependency_manifests.py --allow-missing slf4j-api-2.0.17.jar "$HOME/.m2/repository/org/apache/opennlp/opennlp-tools/2.5.9/opennlp-tools-2.5.9.jar"
+
+      - name: 运行 Maven 编译、架构和测试门禁
         run: mvn --batch-mode --no-transfer-progress -Pstrict-warnings verify -Ddependency-check.skip=true
 
-      - name: Verify packaged application starts with a fresh APP_HOME
+      - name: 验证包归属清单和边界夹具
+        run: |
+          python -m unittest discover -s scripts/architecture/tests -p 'test_*.py'
+          python scripts/architecture/check_chinese_comments.py pom.xml modules tests scripts .github docs
+          python scripts/architecture/inventory_java_packages.py --output scripts/architecture/package-migration.csv
+          git diff --exit-code -- scripts/architecture/package-migration.csv
+
+      - name: 验证打包应用使用全新 APP_HOME 启动
         run: python scripts/verify_fresh_startup.py
 
-      - name: Enforce per-domain JaCoCo thresholds
+      - name: 执行领域 JaCoCo 阈值
         run: python scripts/architecture/check_domain_coverage.py
 
-      - name: Verify generated documentation and route inventory
+      - name: 验证生成文档和路由清单
         run: python scripts/docs/verify_documentation.py
 
-      - name: Reject legacy /v1 controller routes
+      - name: 拒绝旧版 /v1 控制器路由
         run: python scripts/architecture/check_legacy_routes.py
 
-      - name: Reject retired Workspace backend identifiers
+      - name: 拒绝已废弃的 Workspace 后端标识
         run: python scripts/architecture/check_backend_terminology.py
 
-      - name: Enforce contract-only domain dependencies
+      - name: 执行仅契约领域依赖规则
         run: python scripts/architecture/check_domain_module_dependencies.py
 
-      - name: Enforce domain schema ownership
+      - name: 执行领域数据库模式归属规则
         run: python scripts/architecture/check_schema_ownership.py
 
-      - name: Enforce backend module naming consistency
+      - name: 执行后端模块命名一致性规则
         run: python scripts/architecture/check_backend_module_names.py

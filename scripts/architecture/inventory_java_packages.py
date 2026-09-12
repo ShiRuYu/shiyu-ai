@@ -1,4 +1,4 @@
-"""Inventory Java source ownership before package-boundary migrations."""
+"""inventory java packages 脚本，执行项目架构与工程校验。"""
 
 from __future__ import annotations
 
@@ -69,7 +69,12 @@ def _role(artifact: str) -> str:
         return "shared"
     if artifact.startswith("shiyu-common-"):
         return "infrastructure"
-    if artifact in {"shiyu-ai-bootstrap", "shiyu-ai-web", "shiyu-application"}:
+    if artifact in {
+        "shiyu-ai-bootstrap",
+        "shiyu-platform-bootstrap",
+        "shiyu-ai-web",
+        "shiyu-application",
+    }:
         return "application"
     return "unclassified"
 
@@ -90,6 +95,10 @@ def _phase(module_path: Path, artifact: str) -> str:
             "agent": "5",
         }
         return order.get(domain, "manual-review")
+    if "business" in parts:
+        business = parts[parts.index("business") + 1]
+        if business == "education":
+            return "4F"
     non_domain = {
         "shiyu-shared-kernel": "6A",
         "shiyu-common-core": "6A",
@@ -101,6 +110,7 @@ def _phase(module_path: Path, artifact: str) -> str:
         "shiyu-common-vector": "6F",
         "shiyu-application": "6G",
         "shiyu-ai-bootstrap": "6H",
+        "shiyu-platform-bootstrap": "6H",
     }
     return non_domain.get(artifact, "manual-review")
 
@@ -152,6 +162,10 @@ def build_inventory(root: Path) -> Inventory:
                 role=_role(artifact),
                 phase=_phase(module_path.relative_to(root), artifact),
             )
+            if entry.role == "unclassified":
+                inventory.errors.append(f"Unclassified production module: {artifact} ({relative})")
+            if entry.phase == "manual-review":
+                inventory.errors.append(f"Unclassified migration phase: {artifact} ({relative})")
             inventory.entries.append(entry)
             packages[package_name].add(artifact)
             fqcns[fqcn].append(relative)

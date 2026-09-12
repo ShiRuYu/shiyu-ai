@@ -14,9 +14,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 /**
- * MapStruct mappers are application code in this module, not a reason to hide persistence
- * conversion from the per-domain coverage gate. Exercise both null-source and copy/update paths for
- * every generated mapper.
+ * 验证 GeneratedKnowledgeMapperCoverage 的功能、边界条件和集成行为。
  */
 class GeneratedKnowledgeMapperCoverageTest {
 

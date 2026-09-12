@@ -13,18 +13,33 @@ import java.util.Collections;
 import java.util.List;
 
 /**
- * HTTP-edge permission adapter. The authentication thread context is translated once into
- * ActorContext; IAM services and repositories remain thread-context free.
+ * SaPermissionProvider 边界接口，负责向外部组件提供应用领域相关能力。
  */
 @Component
 public class SaPermissionProvider implements StpInterface {
 
+    /**
+     * authRepository 属性，保存当前对象中的业务数据或协作依赖。
+     */
     private final AuthRepository authRepository;
 
+    /**
+     * {@code SaPermissionProvider} 创建并初始化当前类型实例。
+     *
+     * @param authRepository 参数值，用于执行当前操作。
+     */
     public SaPermissionProvider(AuthRepository authRepository) {
         this.authRepository = authRepository;
     }
 
+    /**
+     * {@code getPermissionList} 查询并返回当前操作所需的数据。
+     *
+     * @param loginId 参数值，用于执行当前操作。
+     * @param loginType 参数值，用于执行当前操作。
+     *
+     * @return 返回当前操作产生的结果。
+     */
     @Override
     public List<String> getPermissionList(Object loginId, String loginType) {
         if (loginId == null) return Collections.emptyList();
@@ -44,6 +59,14 @@ public class SaPermissionProvider implements StpInterface {
         }
     }
 
+    /**
+     * {@code getRoleList} 查询并返回当前操作所需的数据。
+     *
+     * @param loginId 参数值，用于执行当前操作。
+     * @param loginType 参数值，用于执行当前操作。
+     *
+     * @return 返回当前操作产生的结果。
+     */
     @Override
     public List<String> getRoleList(Object loginId, String loginType) {
         if (loginId == null) return Collections.emptyList();

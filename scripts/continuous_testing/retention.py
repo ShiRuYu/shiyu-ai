@@ -1,4 +1,4 @@
-"""Retention policy for runtime evidence; regression artifacts are immutable."""
+"""retention 脚本，执行项目架构与工程校验。"""
 from __future__ import annotations
 import time
 from pathlib import Path

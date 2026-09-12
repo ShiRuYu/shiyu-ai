@@ -57,8 +57,7 @@ import java.util.regex.Pattern;
 import java.util.stream.Stream;
 
 /**
- * Verifies the MapStruct Plus registry against every production call that uses {@code
- * MapstructUtils.convert(source, Target.class)}.
+ * 验证 DynamicConverterRegistry 的功能、边界条件和集成行为。
  */
 @TestInstance(TestInstance.Lifecycle.PER_CLASS)
 class DynamicConverterRegistryTest {
@@ -285,7 +284,6 @@ class DynamicConverterRegistryTest {
             try {
                 return Class.forName(candidate);
             } catch (ClassNotFoundException ignored) {
-                // Continue through explicit, local, and wildcard imports.
             }
         }
         throw new AssertionError(

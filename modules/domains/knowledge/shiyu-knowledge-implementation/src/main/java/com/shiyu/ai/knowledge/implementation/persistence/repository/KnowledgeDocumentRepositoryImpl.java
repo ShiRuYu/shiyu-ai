@@ -17,9 +17,19 @@ import org.springframework.stereotype.Component;
 
 import java.util.List;
 
+/**
+ * {@code KnowledgeDocumentRepositoryImpl} 实现知识模块的持久化端口，负责在领域对象与存储模型之间转换。
+ */
 @Component
 public class KnowledgeDocumentRepositoryImpl implements KnowledgeDocumentRepository {
+    /**
+     * knowledgeDocumentMapper 属性，保存当前对象中的业务数据或协作依赖。
+     */
     @Resource private KnowledgeDocumentMapper knowledgeDocumentMapper;
+
+    /**
+     * knowledgeDocRelationMapper 属性，保存当前对象中的业务数据或协作依赖。
+     */
     @Resource private KnowledgeDocRelationMapper knowledgeDocRelationMapper;
 
     @Override
@@ -29,11 +39,26 @@ public class KnowledgeDocumentRepositoryImpl implements KnowledgeDocumentReposit
                         base(tenantId).eq(KnowledgeDocumentDO::getId, id)));
     }
 
+    /**
+     * {@code selectAll} 执行当前类型定义的业务操作。
+     *
+     * @param tenantId 参数值，用于执行当前操作。
+     *
+     * @return 返回当前操作产生的结果。
+     */
     @Override
     public List<KnowledgeDocumentBO> selectAll(TenantId tenantId) {
         return convertList(knowledgeDocumentMapper.selectListByQuery(base(tenantId)));
     }
 
+    /**
+     * {@code insert} 执行当前类型定义的业务操作。
+     *
+     * @param tenantId 参数值，用于执行当前操作。
+     * @param bo 参数值，用于执行当前操作。
+     *
+     * @return 返回当前操作产生的结果。
+     */
     @Override
     public int insert(TenantId tenantId, KnowledgeDocumentBO bo) {
         bo.setTenantId(tenantId.value());
@@ -44,6 +69,14 @@ public class KnowledgeDocumentRepositoryImpl implements KnowledgeDocumentReposit
         return rows;
     }
 
+    /**
+     * {@code update} 写入或更新当前模块中的业务数据。
+     *
+     * @param tenantId 参数值，用于执行当前操作。
+     * @param bo 参数值，用于执行当前操作。
+     *
+     * @return 返回当前操作产生的结果。
+     */
     @Override
     public int update(TenantId tenantId, KnowledgeDocumentBO bo) {
         requireTenant(tenantId, bo.getTenantId());
@@ -54,12 +87,29 @@ public class KnowledgeDocumentRepositoryImpl implements KnowledgeDocumentReposit
         return knowledgeDocumentMapper.updateByQuery(data, scope);
     }
 
+    /**
+     * {@code deleteById} 释放或移除当前操作涉及的资源。
+     *
+     * @param tenantId 参数值，用于执行当前操作。
+     * @param id 参数值，用于执行当前操作。
+     *
+     * @return 返回当前操作产生的结果。
+     */
     @Override
     public int deleteById(TenantId tenantId, Long id) {
         return knowledgeDocumentMapper.deleteByQuery(
                 base(tenantId).eq(KnowledgeDocumentDO::getId, id));
     }
 
+    /**
+     * {@code searchByKeyword} 查询并返回当前操作所需的数据。
+     *
+     * @param tenantId 参数值，用于执行当前操作。
+     * @param keyword 参数值，用于执行当前操作。
+     * @param topK 参数值，用于执行当前操作。
+     *
+     * @return 返回当前操作产生的结果。
+     */
     @Override
     public List<KnowledgeDocumentBO> searchByKeyword(TenantId tenantId, String keyword, int topK) {
         return selectAll(tenantId).stream()
@@ -72,6 +122,14 @@ public class KnowledgeDocumentRepositoryImpl implements KnowledgeDocumentReposit
                 .toList();
     }
 
+    /**
+     * {@code selectByKnowledgeId} 执行当前类型定义的业务操作。
+     *
+     * @param tenantId 参数值，用于执行当前操作。
+     * @param knowledgeId 参数值，用于执行当前操作。
+     *
+     * @return 返回当前操作产生的结果。
+     */
     @Override
     public List<KnowledgeDocumentBO> selectByKnowledgeId(TenantId tenantId, Long knowledgeId) {
         List<Long> docIds =
@@ -88,6 +146,15 @@ public class KnowledgeDocumentRepositoryImpl implements KnowledgeDocumentReposit
                         base(tenantId).in(KnowledgeDocumentDO::getId, docIds)));
     }
 
+    /**
+     * {@code selectByKnowledgeId} 执行当前类型定义的业务操作。
+     *
+     * @param tenantId 参数值，用于执行当前操作。
+     * @param spaceId 参数值，用于执行当前操作。
+     * @param knowledgeId 参数值，用于执行当前操作。
+     *
+     * @return 返回当前操作产生的结果。
+     */
     @Override
     public List<KnowledgeDocumentBO> selectByKnowledgeId(
             TenantId tenantId, Long spaceId, Long knowledgeId) {
@@ -108,6 +175,19 @@ public class KnowledgeDocumentRepositoryImpl implements KnowledgeDocumentReposit
                                 .in(KnowledgeDocumentDO::getId, docIds)));
     }
 
+    /**
+     * {@code pageBySpace} 执行当前类型定义的业务操作。
+     *
+     * @param tenantId 参数值，用于执行当前操作。
+     * @param spaceId 参数值，用于执行当前操作。
+     * @param pageNum 参数值，用于执行当前操作。
+     * @param pageSize 参数值，用于执行当前操作。
+     * @param keyword 参数值，用于执行当前操作。
+     * @param lifecycleStatus 参数值，用于执行当前操作。
+     * @param parseStatus 参数值，用于执行当前操作。
+     *
+     * @return 返回当前操作产生的结果。
+     */
     @Override
     public PageData<KnowledgeDocumentBO> pageBySpace(
             TenantId tenantId,
@@ -130,6 +210,15 @@ public class KnowledgeDocumentRepositoryImpl implements KnowledgeDocumentReposit
         return new PageData<>(convertList(page.getRecords()), page.getTotalRow());
     }
 
+    /**
+     * {@code findBySpaceAndChecksum} 查询并返回当前操作所需的数据。
+     *
+     * @param tenantId 参数值，用于执行当前操作。
+     * @param spaceId 参数值，用于执行当前操作。
+     * @param checksum 参数值，用于执行当前操作。
+     *
+     * @return 返回当前操作产生的结果。
+     */
     @Override
     public KnowledgeDocumentBO findBySpaceAndChecksum(
             TenantId tenantId, Long spaceId, String checksum) {
@@ -141,6 +230,14 @@ public class KnowledgeDocumentRepositoryImpl implements KnowledgeDocumentReposit
                                 .limit(1)));
     }
 
+    /**
+     * {@code findBySpace} 查询并返回当前操作所需的数据。
+     *
+     * @param tenantId 参数值，用于执行当前操作。
+     * @param spaceId 参数值，用于执行当前操作。
+     *
+     * @return 返回当前操作产生的结果。
+     */
     @Override
     public List<KnowledgeDocumentBO> findBySpace(TenantId tenantId, Long spaceId) {
         return convertList(
@@ -150,6 +247,12 @@ public class KnowledgeDocumentRepositoryImpl implements KnowledgeDocumentReposit
                                 .orderBy(KnowledgeDocumentDO::getId, true)));
     }
 
+    /**
+     * {@code assignDefaultSpace} 执行当前类型定义的业务操作。
+     *
+     * @param tenantId 参数值，用于执行当前操作。
+     * @param spaceId 参数值，用于执行当前操作。
+     */
     @Override
     public void assignDefaultSpace(TenantId tenantId, Long spaceId) {
         List<KnowledgeDocumentDO> records =

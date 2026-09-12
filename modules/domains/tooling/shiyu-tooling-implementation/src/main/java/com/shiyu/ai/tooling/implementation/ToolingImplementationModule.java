@@ -1,4 +1,6 @@
 package com.shiyu.ai.tooling.implementation;
 
-/** Marker for code owned exclusively by the Tooling bounded context. */
+/**
+ * ToolingImplementationModule 模块接口，标识工具模块的边界。
+ */
 public interface ToolingImplementationModule {}

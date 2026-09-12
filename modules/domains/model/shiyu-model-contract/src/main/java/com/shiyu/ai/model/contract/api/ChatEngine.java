@@ -5,11 +5,25 @@ import com.shiyu.ai.model.contract.model.ChatResponse;
 
 import reactor.core.publisher.Flux;
 
-/** Model bounded-context entry point consumed by other domains. */
+/**
+ * ChatEngine 接口，定义模型模块的能力边界。
+ */
 public interface ChatEngine {
-    /** Executes one provider-neutral chat request and returns the completed result. */
+    /**
+     * 执行聊天生成。
+     *
+     * @param request 请求对象。
+     *
+     * @return 处理结果。
+     */
     ChatResponse chat(ChatRequest request);
 
-    /** Executes a chat request as a stream of text, reasoning, tool and terminal events. */
+    /**
+     * 执行流式聊天生成。
+     *
+     * @param request 请求对象。
+     *
+     * @return 处理结果。
+     */
     Flux<ChatResponse> stream(ChatRequest request);
 }

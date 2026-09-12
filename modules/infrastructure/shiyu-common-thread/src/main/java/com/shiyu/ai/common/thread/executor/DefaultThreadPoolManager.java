@@ -23,22 +23,52 @@ public class DefaultThreadPoolManager implements ThreadPoolManager {
     /** 线程池工厂 */
     private final ExecutorFactory executorFactory;
 
+    /**
+     * taskDecorator 属性，保存当前对象中的业务数据或协作依赖。
+     */
     private final TaskDecorator taskDecorator;
 
+    /**
+     * 配置属性，表示当前对象中的对应属性。
+     */
     private final ThreadingProperties properties;
 
+    /**
+     * {@code DefaultThreadPoolManager} 创建并初始化当前类型实例。
+     *
+     * @param taskDecorator 参数值，用于执行当前操作。
+     */
     public DefaultThreadPoolManager(TaskDecorator taskDecorator) {
         this(new ThreadingProperties(), taskDecorator);
     }
 
+    /**
+     * {@code DefaultThreadPoolManager} 创建并初始化当前类型实例。
+     *
+     * @param properties 参数值，用于执行当前操作。
+     * @param taskDecorator 参数值，用于执行当前操作。
+     */
     public DefaultThreadPoolManager(ThreadingProperties properties, TaskDecorator taskDecorator) {
         this(new DefaultExecutorFactory(properties), taskDecorator, properties);
     }
 
+    /**
+     * {@code DefaultThreadPoolManager} 创建并初始化当前类型实例。
+     *
+     * @param executorFactory 参数值，用于执行当前操作。
+     * @param taskDecorator 参数值，用于执行当前操作。
+     */
     public DefaultThreadPoolManager(ExecutorFactory executorFactory, TaskDecorator taskDecorator) {
         this(executorFactory, taskDecorator, new ThreadingProperties());
     }
 
+    /**
+     * {@code DefaultThreadPoolManager} 创建并初始化当前类型实例。
+     *
+     * @param executorFactory 参数值，用于执行当前操作。
+     * @param taskDecorator 参数值，用于执行当前操作。
+     * @param properties 参数值，用于执行当前操作。
+     */
     public DefaultThreadPoolManager(
             ExecutorFactory executorFactory,
             TaskDecorator taskDecorator,
@@ -48,6 +78,13 @@ public class DefaultThreadPoolManager implements ThreadPoolManager {
         this.properties = properties;
     }
 
+    /**
+     * {@code getExecutor} 查询并返回当前操作所需的数据。
+     *
+     * @param name 参数值，用于执行当前操作。
+     *
+     * @return 返回当前操作产生的结果。
+     */
     @Override
     public ExecutorService getExecutor(String name) {
         ThreadingProperties.PoolProperties pool = properties.getPools().get(name);
@@ -56,11 +93,26 @@ public class DefaultThreadPoolManager implements ThreadPoolManager {
         return getExecutor(poolType, name);
     }
 
+    /**
+     * {@code getExecutor} 查询并返回当前操作所需的数据。
+     *
+     * @param poolType 参数值，用于执行当前操作。
+     *
+     * @return 返回当前操作产生的结果。
+     */
     @Override
     public ExecutorService getExecutor(PoolType poolType) {
         return getExecutor(poolType, poolType.getCode());
     }
 
+    /**
+     * {@code getExecutor} 查询并返回当前操作所需的数据。
+     *
+     * @param poolType 参数值，用于执行当前操作。
+     * @param name 参数值，用于执行当前操作。
+     *
+     * @return 返回当前操作产生的结果。
+     */
     @Override
     public ExecutorService getExecutor(PoolType poolType, String name) {
         String key = poolType.getCode() + ":" + name;
@@ -73,6 +125,11 @@ public class DefaultThreadPoolManager implements ThreadPoolManager {
                 });
     }
 
+    /**
+     * {@code getDefaultExecutor} 查询并返回当前操作所需的数据。
+     *
+     * @return 返回当前操作产生的结果。
+     */
     @Override
     public ExecutorService getDefaultExecutor() {
         return getExecutor(PoolType.DEFAULT);

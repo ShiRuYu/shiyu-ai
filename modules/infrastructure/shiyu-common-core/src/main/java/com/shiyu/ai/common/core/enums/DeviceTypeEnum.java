@@ -35,5 +35,8 @@ public enum DeviceTypeEnum {
     /** 未知设备 */
     UNKNOWN("unknown");
 
+    /**
+     * device 属性，保存当前对象中的业务数据或协作依赖。
+     */
     private final String device;
 }

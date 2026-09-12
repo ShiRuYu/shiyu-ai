@@ -44,13 +44,32 @@ import java.util.List;
 import java.util.Objects;
 import java.util.concurrent.atomic.AtomicBoolean;
 
+/**
+ * {@code ChatEngineImpl} 承载模型模块的领域状态或协作行为，负责维护本类型的职责边界。
+ */
 @Slf4j
 @Service
 public class ChatEngineImpl implements ChatEngine {
+    /**
+     * modelManager 属性，保存当前对象中的业务数据或协作依赖。
+     */
     private final ModelManager modelManager;
+    /**
+     * eventPublisher 属性，保存当前对象中的业务数据或协作依赖。
+     */
     private final ApplicationEventPublisher eventPublisher;
+    /**
+     * modelRouter 属性，保存当前对象中的业务数据或协作依赖。
+     */
     private final ModelRouter modelRouter;
 
+    /**
+     * {@code ChatEngineImpl} 创建并初始化当前类型实例。
+     *
+     * @param modelManager 参数值，用于执行当前操作。
+     * @param eventPublisher 参数值，用于执行当前操作。
+     * @param modelRouter 参数值，用于执行当前操作。
+     */
     @Autowired
     public ChatEngineImpl(
             ModelManager modelManager,
@@ -61,11 +80,25 @@ public class ChatEngineImpl implements ChatEngine {
         this.modelRouter = modelRouter;
     }
 
-    /** Compatibility constructor for lightweight module tests. */
+    /**
+     * 处理聊天engineimpl。
+     *
+     * @param modelManager modelManager 参数。
+     * @param eventPublisher eventPublisher 参数。
+     *
+     * @return 处理结果。
+     */
     public ChatEngineImpl(ModelManager modelManager, ApplicationEventPublisher eventPublisher) {
         this(modelManager, eventPublisher, new ModelRouter());
     }
 
+    /**
+     * {@code chat} 执行当前类型定义的业务操作。
+     *
+     * @param request 参数值，用于执行当前操作。
+     *
+     * @return 返回当前操作产生的结果。
+     */
     @Override
     public ChatResponse chat(com.shiyu.ai.model.contract.model.ChatRequest request) {
         String error = validate(request);
@@ -209,6 +242,13 @@ public class ChatEngineImpl implements ChatEngine {
         return result;
     }
 
+    /**
+     * {@code stream} 执行当前类型定义的业务操作。
+     *
+     * @param request 参数值，用于执行当前操作。
+     *
+     * @return 返回当前操作产生的结果。
+     */
     @Override
     public Flux<ChatResponse> stream(ChatRequest request) {
         String error = validate(request);
@@ -252,6 +292,11 @@ public class ChatEngineImpl implements ChatEngine {
                         model.chat(
                                 nativeRequest(resolved),
                                 new StreamingChatResponseHandler() {
+                                    /**
+                                     * {@code onPartialResponse} 执行当前类型定义的业务操作。
+                                     *
+                                     * @param text 参数值，用于执行当前操作。
+                                     */
                                     @Override
                                     public void onPartialResponse(String text) {
                                         if (text == null || text.isEmpty()) return;
@@ -266,6 +311,11 @@ public class ChatEngineImpl implements ChatEngine {
                                                         .build());
                                     }
 
+                                    /**
+                                     * {@code onPartialThinking} 执行当前类型定义的业务操作。
+                                     *
+                                     * @param thinking 参数值，用于执行当前操作。
+                                     */
                                     @Override
                                     public void onPartialThinking(
                                             dev.langchain4j.model.chat.response.PartialThinking
@@ -283,6 +333,11 @@ public class ChatEngineImpl implements ChatEngine {
                                                         .build());
                                     }
 
+                                    /**
+                                     * {@code onPartialToolCall} 执行当前类型定义的业务操作。
+                                     *
+                                     * @param call 参数值，用于执行当前操作。
+                                     */
                                     @Override
                                     public void onPartialToolCall(PartialToolCall call) {
                                         sink.tryEmitNext(
@@ -297,6 +352,11 @@ public class ChatEngineImpl implements ChatEngine {
                                                         .build());
                                     }
 
+                                    /**
+                                     * {@code onCompleteResponse} 执行当前类型定义的业务操作。
+                                     *
+                                     * @param response 参数值，用于执行当前操作。
+                                     */
                                     @Override
                                     public void onCompleteResponse(
                                             dev.langchain4j.model.chat.response.ChatResponse
@@ -318,11 +378,8 @@ public class ChatEngineImpl implements ChatEngine {
                                                 response.aiMessage() == null
                                                         ? null
                                                         : response.aiMessage().thinking();
-                                        // Reasoning-first providers may not emit answer deltas
                                         // through
-                                        // onPartialResponse. Flush the final answer once so SSE
                                         // clients
-                                        // receive content even when the provider only streams
                                         // thinking.
                                         if (!emittedDelta.get() && !content.isBlank()) {
                                             emittedDelta.set(true);
@@ -393,6 +450,11 @@ public class ChatEngineImpl implements ChatEngine {
                                         sink.tryEmitComplete();
                                     }
 
+                                    /**
+                                     * {@code onError} 执行当前类型定义的业务操作。
+                                     *
+                                     * @param throwable 参数值，用于执行当前操作。
+                                     */
                                     @Override
                                     public void onError(Throwable throwable) {
                                         sink.tryEmitNext(
@@ -427,6 +489,13 @@ public class ChatEngineImpl implements ChatEngine {
                 new java.util.concurrent.atomic.AtomicBoolean();
         java.util.function.Function<Integer, Flux<ChatResponse>> attempt =
                 new java.util.function.Function<>() {
+                    /**
+                     * {@code apply} 执行当前类型定义的业务操作。
+                     *
+                     * @param index 参数值，用于执行当前操作。
+                     *
+                     * @return 返回当前操作产生的结果。
+                     */
                     @Override
                     public Flux<ChatResponse> apply(Integer index) {
                         ModelProviderCapabilities candidate = candidates.get(index);
@@ -476,9 +545,6 @@ public class ChatEngineImpl implements ChatEngine {
     }
 
     private ChatRequest resolveRequest(ChatRequest request, boolean streaming) {
-        // Routed requests are handled before this method by routedChat/routedStream.
-        // Keeping the non-routed path as a pure pass-through prevents a second,
-        // partially duplicated route-selection implementation from drifting.
         return request;
     }
 
@@ -521,8 +587,6 @@ public class ChatEngineImpl implements ChatEngine {
                 tool.parametersJson() == null || tool.parametersJson().isBlank()
                         ? "{}"
                         : tool.parametersJson();
-        // ToolSpecification.fromJson lets LangChain4j validate and preserve
-        // the provider-neutral JSON Schema without a vendor-specific mapper.
         String json =
                 com.shiyu.ai.common.core.utils.JSONUtils.toJsonString(
                         java.util.Map.of(

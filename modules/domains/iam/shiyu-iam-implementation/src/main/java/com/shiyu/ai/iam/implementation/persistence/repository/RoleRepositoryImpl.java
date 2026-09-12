@@ -33,14 +33,29 @@ import java.util.stream.Collectors;
 public class RoleRepositoryImpl
         implements com.shiyu.ai.iam.implementation.port.repository.RoleRepository {
 
+    /**
+     * 角色映射器，表示当前对象中的对应属性。
+     */
     @Resource private RoleMapper roleMapper;
 
+    /**
+     * roleScopeMenuMapper 属性，保存当前对象中的业务数据或协作依赖。
+     */
     @Resource private RoleScopeMenuMapper roleScopeMenuMapper;
 
+    /**
+     * menuMapper 属性，保存当前对象中的业务数据或协作依赖。
+     */
     @Resource private MenuMapper menuMapper;
 
+    /**
+     * userScopeRoleMapper 属性，保存当前对象中的业务数据或协作依赖。
+     */
     @Resource private UserScopeRoleMapper userScopeRoleMapper;
 
+    /**
+     * roleScopeAuthCodeMapper 属性，保存当前对象中的业务数据或协作依赖。
+     */
     @Resource private RoleScopeAuthCodeMapper roleScopeAuthCodeMapper;
 
     /** 分页查询角色列表 */

@@ -11,7 +11,9 @@ import com.tngtech.archunit.lang.ArchRule;
 import org.junit.jupiter.api.Tag;
 import org.junit.jupiter.api.Test;
 
-/** Executable guardrails for the BO/DO and Web boundaries. */
+/**
+ * 验证 LayerBoundaryArch 的功能、边界条件和集成行为。
+ */
 @AnalyzeClasses(packages = "com.shiyu.ai")
 @Tag("dev")
 class LayerBoundaryArchTest {

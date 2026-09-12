@@ -11,7 +11,19 @@ import com.shiyu.ai.common.storage.vector.*;
 
 import java.time.Duration;
 
-/** Distributed rate-limit boundary; single-node deployments can provide a local implementation. */
+/**
+ * RateLimitStore 接口，定义基础设施模块的能力边界。
+ */
 public interface RateLimitStore {
+    /**
+     * 执行 {@code consume} 定义的接口操作。
+     *
+     * @param key 方法参数。
+     * @param permits 方法参数。
+     * @param limit 方法参数。
+     * @param window 方法参数。
+     *
+     * @return 条件是否满足。
+     */
     boolean consume(String key, long permits, long limit, Duration window);
 }

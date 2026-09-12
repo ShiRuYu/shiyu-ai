@@ -19,13 +19,28 @@ import org.springframework.stereotype.Service;
 
 import java.util.List;
 
+/**
+ * {@code LangChain4jEmbeddingService} 定义模型模块的应用服务能力，供上层用例调用。
+ */
 @Slf4j
 @Service
 public class LangChain4jEmbeddingService implements EmbeddingService {
 
+    /**
+     * embeddingModel 属性，保存当前对象中的业务数据或协作依赖。
+     */
     private final EmbeddingModel embeddingModel;
+    /**
+     * eventPublisher 属性，保存当前对象中的业务数据或协作依赖。
+     */
     private final ApplicationEventPublisher eventPublisher;
 
+    /**
+     * {@code LangChain4jEmbeddingService} 创建并初始化当前类型实例。
+     *
+     * @param embeddingModels 参数值，用于执行当前操作。
+     * @param eventPublisher 参数值，用于执行当前操作。
+     */
     @Autowired
     public LangChain4jEmbeddingService(
             ObjectProvider<EmbeddingModel> embeddingModels,
@@ -38,16 +53,35 @@ public class LangChain4jEmbeddingService implements EmbeddingService {
     }
 
     // 保留无参构造用于手动测试场景
+    /**
+     * {@code LangChain4jEmbeddingService} 创建并初始化当前类型实例。
+     */
     public LangChain4jEmbeddingService() {
         this.embeddingModel = createOptionalLocalModel();
         this.eventPublisher = event -> {};
     }
 
+    /**
+     * {@code embed} 执行当前类型定义的业务操作。
+     *
+     * @param tenantId 参数值，用于执行当前操作。
+     * @param text 参数值，用于执行当前操作。
+     *
+     * @return 返回当前操作产生的结果。
+     */
     @Override
     public float[] embed(TenantId tenantId, String text) {
         return embedInternal(tenantId, null, text);
     }
 
+    /**
+     * {@code embed} 执行当前类型定义的业务操作。
+     *
+     * @param actor 参数值，用于执行当前操作。
+     * @param text 参数值，用于执行当前操作。
+     *
+     * @return 返回当前操作产生的结果。
+     */
     @Override
     public float[] embed(ActorContext actor, String text) {
         if (actor == null) {
@@ -84,6 +118,14 @@ public class LangChain4jEmbeddingService implements EmbeddingService {
         return embedding.vector();
     }
 
+    /**
+     * {@code embedBatch} 执行当前类型定义的业务操作。
+     *
+     * @param tenantId 参数值，用于执行当前操作。
+     * @param texts 参数值，用于执行当前操作。
+     *
+     * @return 返回当前操作产生的结果。
+     */
     @Override
     public List<float[]> embedBatch(TenantId tenantId, List<String> texts) {
         requireModel();
@@ -112,6 +154,11 @@ public class LangChain4jEmbeddingService implements EmbeddingService {
         return embeddings.stream().map(Embedding::vector).toList();
     }
 
+    /**
+     * {@code dimension} 执行当前类型定义的业务操作。
+     *
+     * @return 返回当前操作产生的结果。
+     */
     @Override
     public int dimension() {
         return modelDimension(embeddingModel);

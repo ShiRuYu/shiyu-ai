@@ -22,16 +22,31 @@ import org.springframework.stereotype.Component;
 import java.util.List;
 import java.util.Set;
 
+/**
+ * {@code AuthUserLookupRepositoryImpl} 实现平台模块的持久化端口，负责在领域对象与存储模型之间转换。
+ */
 @Component
 public class AuthUserLookupRepositoryImpl
         implements com.shiyu.ai.iam.implementation.port.repository.AuthUserLookupRepository {
 
+    /**
+     * 用户映射器，表示当前对象中的对应属性。
+     */
     @Resource private UserMapper userMapper;
 
+    /**
+     * userScopeRoleMapper 属性，保存当前对象中的业务数据或协作依赖。
+     */
     @Resource private UserScopeRoleMapper userScopeRoleMapper;
 
+    /**
+     * 角色映射器，表示当前对象中的对应属性。
+     */
     @Resource private RoleMapper roleMapper;
 
+    /**
+     * 租户映射器，表示当前对象中的对应属性。
+     */
     @Resource private TenantMapper tenantMapper;
 
     public UserBO selectUserById(Long userId) {

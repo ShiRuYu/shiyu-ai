@@ -194,7 +194,6 @@ class KnowledgeEnterpriseRepositoryCoverageTest {
             Method setter = type.getMethod("setId", Long.class);
             setter.invoke(value, 1L);
         } catch (NoSuchMethodException ignored) {
-            // Some persistence values intentionally have no generated id.
         }
         return value;
     }

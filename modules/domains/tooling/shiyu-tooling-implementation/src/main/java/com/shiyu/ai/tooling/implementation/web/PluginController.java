@@ -3,8 +3,8 @@ package com.shiyu.ai.tooling.implementation.web;
 import cn.dev33.satoken.annotation.SaCheckPermission;
 
 import com.shiyu.ai.common.core.api.Result;
-import com.shiyu.ai.tooling.implementation.plugin.market.PluginMarketEntry;
-import com.shiyu.ai.tooling.implementation.plugin.market.PluginMarketService;
+import com.shiyu.ai.tooling.implementation.plugin.market.model.PluginMarketEntry;
+import com.shiyu.ai.tooling.implementation.plugin.market.service.PluginMarketService;
 import com.shiyu.ai.tooling.implementation.plugin.registry.PluginRegistry;
 import com.shiyu.ai.tooling.implementation.plugin.vo.PluginInfoVO;
 
@@ -29,14 +29,31 @@ import java.util.stream.Collectors;
 @RequestMapping("/api/tooling/plugins")
 public class PluginController {
 
+    /**
+     * registry 属性，保存当前对象中的业务数据或协作依赖。
+     */
     private final PluginRegistry registry;
+    /**
+     * market 属性，保存当前对象中的业务数据或协作依赖。
+     */
     private final PluginMarketService market;
 
+    /**
+     * {@code PluginController} 创建并初始化当前类型实例。
+     *
+     * @param pluginRegistry 参数值，用于执行当前操作。
+     * @param market 参数值，用于执行当前操作。
+     */
     public PluginController(PluginRegistry pluginRegistry, PluginMarketService market) {
         this.registry = pluginRegistry;
         this.market = market;
     }
 
+    /**
+     * {@code listPlugins} 查询并返回当前操作所需的数据。
+     *
+     * @return 返回当前操作产生的结果。
+     */
     @Operation(summary = "列出所有插件")
     @SaCheckPermission("plugin:list")
     @GetMapping
@@ -58,6 +75,13 @@ public class PluginController {
         return Result.success(plugins);
     }
 
+    /**
+     * {@code startPlugin} 执行当前类型定义的业务操作。
+     *
+     * @param pluginId 参数值，用于执行当前操作。
+     *
+     * @return 返回当前操作产生的结果。
+     */
     @Operation(summary = "启动插件")
     @SaCheckPermission("plugin:start")
     @PostMapping("/start")
@@ -70,6 +94,13 @@ public class PluginController {
         }
     }
 
+    /**
+     * {@code stopPlugin} 执行当前类型定义的业务操作。
+     *
+     * @param pluginId 参数值，用于执行当前操作。
+     *
+     * @return 返回当前操作产生的结果。
+     */
     @Operation(summary = "停止插件")
     @SaCheckPermission("plugin:stop")
     @PostMapping("/stop")
@@ -82,6 +113,13 @@ public class PluginController {
         }
     }
 
+    /**
+     * {@code uninstallPlugin} 执行当前类型定义的业务操作。
+     *
+     * @param pluginId 参数值，用于执行当前操作。
+     *
+     * @return 返回当前操作产生的结果。
+     */
     @Operation(summary = "卸载插件")
     @SaCheckPermission("plugin:uninstall")
     @PostMapping("/uninstall")
@@ -94,6 +132,11 @@ public class PluginController {
         }
     }
 
+    /**
+     * {@code rescan} 执行当前类型定义的业务操作。
+     *
+     * @return 返回当前操作产生的结果。
+     */
     @Operation(summary = "重新扫描插件目录")
     @SaCheckPermission("plugin:scan")
     @PostMapping("/scan")
@@ -120,12 +163,25 @@ public class PluginController {
         return exception.getMessage() == null ? 0 : exception.getMessage().length();
     }
 
+    /**
+     * {@code market} 执行当前类型定义的业务操作。
+     *
+     * @return 返回当前操作产生的结果。
+     */
     @SaCheckPermission("plugin:market")
     @GetMapping("/market")
     public Result<List<PluginMarketEntry>> market() {
         return Result.success(market.list());
     }
 
+    /**
+     * {@code publish} 执行当前模块定义的业务流程。
+     *
+     * @param entry 参数值，用于执行当前操作。
+     * @param developmentMode 参数值，用于执行当前操作。
+     *
+     * @return 返回当前操作产生的结果。
+     */
     @SaCheckPermission("plugin:market")
     @PostMapping("/market/publish")
     public Result<PluginMarketEntry> publish(
@@ -134,6 +190,13 @@ public class PluginController {
         return Result.success(market.publish(entry, developmentMode));
     }
 
+    /**
+     * {@code disable} 执行当前类型定义的业务操作。
+     *
+     * @param pluginId 参数值，用于执行当前操作。
+     *
+     * @return 返回当前操作产生的结果。
+     */
     @SaCheckPermission("plugin:market")
     @PostMapping("/market/{pluginId}/disable")
     public Result<Void> disable(@PathVariable String pluginId) {

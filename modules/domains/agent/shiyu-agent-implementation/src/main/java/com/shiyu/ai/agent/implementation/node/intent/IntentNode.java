@@ -26,6 +26,9 @@ import java.util.List;
 @Slf4j
 public class IntentNode extends BaseNode {
 
+    /**
+     * 配置，表示当前对象中的对应属性。
+     */
     private IntentConfig config;
 
     /** 意图识别服务（必须依赖） */
@@ -56,7 +59,13 @@ public class IntentNode extends BaseNode {
 
     /** Builder 类，用于构建 IntentNode 实例 */
     public static class Builder {
+        /**
+         * 配置，表示当前对象中的对应属性。
+         */
         private IntentConfig config;
+        /**
+         * intentService 属性，保存当前对象中的业务数据或协作依赖。
+         */
         private IntentService intentService;
 
         /**
@@ -101,6 +110,13 @@ public class IntentNode extends BaseNode {
         }
     }
 
+    /**
+     * {@code doExecute} 执行当前类型定义的业务操作。
+     *
+     * @param input 参数值，用于执行当前操作。
+     *
+     * @return 返回当前操作产生的结果。
+     */
     @Override
     public NodeOutput doExecute(NodeInput input) {
         log.info(
@@ -181,6 +197,11 @@ public class IntentNode extends BaseNode {
         }
     }
 
+    /**
+     * {@code getRequiredInputs} 查询并返回当前操作所需的数据。
+     *
+     * @return 返回当前操作产生的结果。
+     */
     @Override
     public java.util.List<NodeInputParam> getRequiredInputs() {
         return java.util.List.of(

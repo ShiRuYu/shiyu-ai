@@ -1,14 +1,16 @@
 package com.shiyu.ai.agent.evaluation;
 
+import com.shiyu.ai.education.implementation.database.EducationDatabaseBaselineContributor;
+
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
-import com.shiyu.ai.agent.implementation.evaluation.EvalCase;
-import com.shiyu.ai.agent.implementation.evaluation.EvalDataset;
-import com.shiyu.ai.agent.implementation.evaluation.EvalMetric;
-import com.shiyu.ai.agent.implementation.evaluation.EvalResult;
-import com.shiyu.ai.agent.implementation.evaluation.EvalRun;
-import com.shiyu.ai.agent.implementation.evaluation.JdbcEvaluationRepository;
+import com.shiyu.ai.agent.implementation.evaluation.model.EvalCase;
+import com.shiyu.ai.agent.implementation.evaluation.model.EvalDataset;
+import com.shiyu.ai.agent.implementation.evaluation.model.EvalMetric;
+import com.shiyu.ai.agent.implementation.evaluation.model.EvalResult;
+import com.shiyu.ai.agent.implementation.evaluation.model.EvalRun;
+import com.shiyu.ai.agent.implementation.evaluation.persistence.JdbcEvaluationRepository;
 import com.shiyu.ai.composition.database.DatabaseInitializer;
 import com.shiyu.ai.kernel.context.TenantId;
 
@@ -31,7 +33,11 @@ class JdbcEvaluationRepositoryTest {
                         + ";MODE=MySQL;DB_CLOSE_DELAY=-1");
         dataSource.setUser("sa");
         dataSource.setPassword("");
-        new DatabaseInitializer(Map.of("agent", dataSource), new StaticApplicationContext())
+        new DatabaseInitializer(
+                        Map.of("agent", dataSource),
+                        new StaticApplicationContext(),
+                        new com.shiyu.ai.common.mybatis.config.DatabaseInfrastructureProperties(),
+                        java.util.List.of(new EducationDatabaseBaselineContributor()))
                 .initialize();
         JdbcEvaluationRepository repository = new JdbcEvaluationRepository(dataSource);
 

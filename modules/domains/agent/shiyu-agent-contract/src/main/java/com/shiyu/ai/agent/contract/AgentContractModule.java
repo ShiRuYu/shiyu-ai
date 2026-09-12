@@ -1,4 +1,6 @@
 package com.shiyu.ai.agent.contract;
 
-/** Marker for the public Agent API; concrete ports and messages live beside it. */
+/**
+ * AgentContractModule 模块接口，标识智能体模块的边界。
+ */
 public interface AgentContractModule {}

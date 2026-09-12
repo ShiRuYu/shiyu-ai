@@ -14,6 +14,9 @@ import java.util.Objects;
 @SuppressWarnings("serial")
 public class PageQuery implements Serializable {
 
+    /**
+     * serialVersionUID 属性，保存当前对象中的业务数据或协作依赖。
+     */
     @Serial private static final long serialVersionUID = 1L;
 
     /** 分页大小 */
@@ -40,6 +43,11 @@ public class PageQuery implements Serializable {
     /** 每页显示记录数 默认值 */
     public static final int DEFAULT_PAGE_SIZE = 10;
 
+    /**
+     * {@code getFirstNum} 查询并返回当前操作所需的数据。
+     *
+     * @return 返回当前操作产生的结果。
+     */
     @JsonIgnore
     public Integer getFirstNum() {
         int num = Objects.requireNonNullElse(pageNum, DEFAULT_PAGE_NUM);
@@ -47,10 +55,19 @@ public class PageQuery implements Serializable {
         return (num - 1) * size;
     }
 
+    /**
+     * {@code PageQuery} 创建并初始化当前类型实例。
+     */
     public PageQuery() {
         // 默认构造函数
     }
 
+    /**
+     * {@code PageQuery} 创建并初始化当前类型实例。
+     *
+     * @param pageSize 参数值，用于执行当前操作。
+     * @param pageNum 参数值，用于执行当前操作。
+     */
     public PageQuery(Integer pageSize, Integer pageNum) {
         this.pageSize = pageSize;
         this.pageNum = pageNum;

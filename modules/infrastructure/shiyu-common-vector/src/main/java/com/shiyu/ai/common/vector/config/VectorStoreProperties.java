@@ -18,6 +18,11 @@ public class VectorStoreProperties {
     /** JVector 持久化目录 */
     private String dataDir = "${app.home}/data/vector";
 
+    /**
+     * {@code getResolvedDataDir} 查询并返回当前操作所需的数据。
+     *
+     * @return 返回当前操作产生的结果。
+     */
     public String getResolvedDataDir() {
         String dir = dataDir;
         if (dir != null && dir.contains("${app.home}")) {

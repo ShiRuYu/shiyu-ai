@@ -171,7 +171,6 @@ class RoleServiceMutationCoverageTest {
 
     @Test
     void coversInactiveDeletedAndCrossTenantRoleScopeDecisions() {
-        // Tenant status and deletion flags are both hard authorization stops.
         try (MockedStatic<MapstructUtils> mapper = mockStatic(MapstructUtils.class)) {
             mapper.when(
                             () ->
@@ -199,12 +198,10 @@ class RoleServiceMutationCoverageTest {
             when(tenants.selectById(9L)).thenReturn(deleted);
             assertTrue(service.allRolesView(ACTOR, null, new TenantId(9L)).isEmpty());
 
-            // A normal user cannot target a sibling/descendant tenant.
             when(tenants.selectById(10L)).thenReturn(activeTenant(10L));
             when(tenants.selectDescendantIds(new TenantId(9L))).thenReturn(List.of(10L));
             assertTrue(service.allRolesView(ACTOR, null, new TenantId(10L)).isEmpty());
 
-            // Platform and parent-super-admin actors may target descendants.
             ActorContext parentAdmin =
                     new ActorContext(
                             new TenantId(9L),
@@ -219,8 +216,6 @@ class RoleServiceMutationCoverageTest {
             assertEquals(1, service.allRolesView(parentAdmin, null, new TenantId(10L)).size());
         }
 
-        // Replacement accepts null/empty menu lists after scope validation but
-        // must not manufacture an insert operation.
         when(tenants.selectById(9L)).thenReturn(activeTenant(9L));
         when(roles.isRoleOwnedByTenant(20L, new TenantId(9L))).thenReturn(true);
         when(roles.areMenusInTenantScope(List.of(), List.of(9L))).thenReturn(true);

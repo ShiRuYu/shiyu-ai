@@ -1,4 +1,3 @@
--- Realistic knowledge-base demo content for the default tenant.
 INSERT INTO "PUBLIC"."KNOWLEDGE_SPACE"
     ("ID", "CODE", "NAME", "DESCRIPTION", "ACCESS_MODE", "REVIEW_MODE", "EMBEDDING_PROFILE", "RERANK_PROFILE", "CHUNK_STRATEGY", "CHUNK_SIZE", "CHUNK_OVERLAP", "ACTIVE_INDEX_VERSION", "TENANT_ID", "STATUS", "DEL_FLAG", "CREATE_BY", "UPDATE_BY", "DIFFICULTY_SCALE_ID", "BINDING_MODE", "DOMAIN_CODE")
 VALUES (1, 'DEMO_EDU_MATH', '七年级数学知识库', '用于数学辅导问答的课程资料与例题知识库', 'PRIVATE', 'OPTIONAL', 'text-embedding-v3', 'default', 'HEADING', 800, 100, 1, 1, 1, 0, 'system', 'system', 1, 'OPTIONAL', 'EDUCATION');

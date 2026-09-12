@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Start the packaged application against a fresh APP_HOME and probe OpenAPI."""
+"""verify fresh startup 脚本，执行项目架构与工程校验。"""
 
 from __future__ import annotations
 

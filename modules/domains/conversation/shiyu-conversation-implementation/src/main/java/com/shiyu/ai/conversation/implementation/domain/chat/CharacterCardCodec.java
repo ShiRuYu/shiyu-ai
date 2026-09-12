@@ -17,19 +17,41 @@ import javax.imageio.stream.ImageInputStream;
 import javax.imageio.stream.ImageOutputStream;
 
 /**
- * Character Card v2 JSON and PNG tEXt metadata codec. No third-party card implementation is used.
+ * 负责角色卡数据的编码、解码和格式校验。
  */
 public final class CharacterCardCodec {
     private CharacterCardCodec() {}
 
+    /**
+     * {@code toJson} 将当前对象转换为目标表示形式。
+     *
+     * @param card 参数值，用于执行当前操作。
+     *
+     * @return 返回当前操作产生的结果。
+     */
     public static String toJson(CharacterCardV2 card) {
         return JSONUtils.toJsonString(card);
     }
 
+    /**
+     * {@code fromJson} 执行当前类型定义的业务操作。
+     *
+     * @param json 参数值，用于执行当前操作。
+     *
+     * @return 返回当前操作产生的结果。
+     */
     public static CharacterCardV2 fromJson(String json) {
         return JSONUtils.parseObject(json, CharacterCardV2.class);
     }
 
+    /**
+     * {@code toPng} 将当前对象转换为目标表示形式。
+     *
+     * @param card 参数值，用于执行当前操作。
+     * @param image 参数值，用于执行当前操作。
+     *
+     * @return 返回当前操作产生的结果。
+     */
     public static byte[] toPng(CharacterCardV2 card, BufferedImage image) throws IOException {
         BufferedImage source =
                 image == null ? new BufferedImage(1, 1, BufferedImage.TYPE_INT_ARGB) : image;
@@ -58,6 +80,13 @@ public final class CharacterCardCodec {
         }
     }
 
+    /**
+     * {@code fromPng} 执行当前类型定义的业务操作。
+     *
+     * @param png 参数值，用于执行当前操作。
+     *
+     * @return 返回当前操作产生的结果。
+     */
     public static CharacterCardV2 fromPng(byte[] png) throws IOException {
         try (ImageInputStream input =
                 ImageIO.createImageInputStream(new ByteArrayInputStream(png))) {
@@ -88,6 +117,9 @@ public final class CharacterCardCodec {
         }
     }
 
+    /**
+     * {@code ImageTypeSpecifierAdapter} 承载会话模块的领域状态或协作行为，负责维护本类型的职责边界。
+     */
     private static final class ImageTypeSpecifierAdapter {
         static javax.imageio.ImageTypeSpecifier specifier(BufferedImage image) {
             return javax.imageio.ImageTypeSpecifier.createFromRenderedImage(image);

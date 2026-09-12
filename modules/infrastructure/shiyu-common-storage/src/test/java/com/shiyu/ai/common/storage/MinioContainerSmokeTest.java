@@ -4,7 +4,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 
 import com.shiyu.ai.common.storage.api.StorageObject;
 import com.shiyu.ai.common.storage.config.StorageProperties;
-import com.shiyu.ai.common.storage.file.S3CompatibleFileStorage;
+import com.shiyu.ai.common.storage.file.adapter.S3CompatibleFileStorage;
 
 import org.junit.jupiter.api.Test;
 import org.testcontainers.containers.GenericContainer;
@@ -22,7 +22,9 @@ import java.io.ByteArrayInputStream;
 import java.net.URI;
 import java.nio.charset.StandardCharsets;
 
-/** Verifies the S3-compatible provider against MinIO when Docker is available. */
+/**
+ * 验证 MinioContainerSmoke 的功能、边界条件和集成行为。
+ */
 @Testcontainers(disabledWithoutDocker = true)
 class MinioContainerSmokeTest {
 

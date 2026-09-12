@@ -11,15 +11,33 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
 
-/** Permission lookup use cases scoped by the explicit actor context. */
+/**
+ * 编排 AuthPermission 应用用例。
+ */
 @Slf4j
 public final class AuthPermissionUseCase {
+    /**
+     * authRepository 属性，保存当前对象中的业务数据或协作依赖。
+     */
     private final AuthRepository authRepository;
 
+    /**
+     * {@code AuthPermissionUseCase} 创建并初始化当前类型实例。
+     *
+     * @param authRepository 参数值，用于执行当前操作。
+     */
     public AuthPermissionUseCase(AuthRepository authRepository) {
         this.authRepository = authRepository;
     }
 
+    /**
+     * {@code getAuthCodes} 查询并返回当前操作所需的数据。
+     *
+     * @param actor 参数值，用于执行当前操作。
+     * @param username 参数值，用于执行当前操作。
+     *
+     * @return 返回当前操作产生的结果。
+     */
     public List<String> getAuthCodes(ActorContext actor, String username) {
         log.info("获取权限编码, usernamePresent={}", username != null);
         try {
@@ -38,6 +56,14 @@ public final class AuthPermissionUseCase {
         }
     }
 
+    /**
+     * {@code getAuthCodesByUserId} 查询并返回当前操作所需的数据。
+     *
+     * @param actor 参数值，用于执行当前操作。
+     * @param userId 参数值，用于执行当前操作。
+     *
+     * @return 返回当前操作产生的结果。
+     */
     public List<String> getAuthCodesByUserId(ActorContext actor, UserId userId) {
         log.info("获取权限编码, userIdPresent={}", userId != null && userId.value() > 0);
         try {

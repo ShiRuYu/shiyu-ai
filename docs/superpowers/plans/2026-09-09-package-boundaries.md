@@ -53,11 +53,11 @@ com.shiyu.ai.<domain>
 
 文件：新增 scripts/architecture/inventory_java_packages.py、scripts/architecture/package-migration.csv、scripts/architecture/tests/test_package_inventory.py；读取所有 modules/**/pom.xml、生产源码和测试源码。
 
-- [ ] 用 POM artifactId 建立模块清单；为每个生产文件记录 source_path、module、old_fqcn、target_fqcn、role、phase。内部嵌套类不当作独立文件迁移。
-- [ ] 输出同名包、重复全限定类名、跨模块 import 和契约第三方依赖；通配/static import 不能默默忽略，无法归属者明确报错或进入人工核查列表。
-- [ ] 建立临时目录测试：两个模块同包不同类应报告 split-package；相同 FQCN 应失败；测试和 target 目录不计入生产归属。
-- [ ] 对实际仓库生成清单，人工逐项确认所有文件目标地址，检查目标 FQCN 唯一。清单在后续阶段同步更新，成为唯一迁移映射。
-- [ ] 执行本计划的完整基线门禁，保存日志到 gitignored .testing/package-refactor/。失败记录原因并修正，不能以旧日志替代。
+- [x] 用 POM artifactId 建立模块清单；为每个生产文件记录 source_path、module、old_fqcn、target_fqcn、role、phase。内部嵌套类不当作独立文件迁移。
+- [x] 输出同名包、重复全限定类名、跨模块 import 和契约第三方依赖；通配/static import 不能默默忽略，无法归属者明确报错或进入人工核查列表。
+- [x] 建立临时目录测试：两个模块同包不同类应报告 split-package；相同 FQCN 应失败；测试和 target 目录不计入生产归属。
+- [x] 对实际仓库生成清单，人工逐项确认所有文件目标地址，检查目标 FQCN 唯一。清单在后续阶段同步更新，成为唯一迁移映射。
+- [x] 执行本计划的完整基线门禁，保存日志到 gitignored .testing/package-refactor/。失败记录原因并修正，不能以旧日志替代。
 - [ ] 提交：test: inventory backend package ownership。
 
 完成标准：每个生产源文件恰有一个归属；记录准确的 SHA、JDK 版本、命令和退出码。
@@ -66,11 +66,11 @@ com.shiyu.ai.<domain>
 
 文件：修改 scripts/architecture/check_domain_module_dependencies.py、tests/shiyu-architecture-tests/src/test/java/com/shiyu/ai/architecture/ArchitectureRulesTest.java、.github/workflows/ci.yml；新增 scripts/architecture/tests/test_domain_boundaries.py。
 
-- [ ] 在临时仓库夹具加入 A 实现依赖 B 实现、A 旧包 import B 旧包、contract import 实现三个反例，确认检查非零退出。
-- [ ] 将旧叶子路径假设替换为根 POM 和 artifactId 识别；web POM 必须找到实际 shiyu-ai-web，缺失必须失败。
-- [ ] 以任务 1 模块归属为依据检查所有生产源码；ArchUnit 在新包迁入后持续检查编译后的层间依赖。明确对通配、全限定引用与注解的检查方式。
-- [ ] 为规则加入空匹配断言：契约和实现集合均非空，实际计数与清单一致。禁止 allowEmptyShould 掩盖迁移遗漏。
-- [ ] 现有违规先形成逐类、逐依赖的有限迁移清单；不得放行整个领域包。迁移一项删除一项，禁止新增豁免。
+- [x] 在临时仓库夹具加入 A 实现依赖 B 实现、A 旧包 import B 旧包、contract import 实现三个反例，确认检查非零退出。
+- [x] 将旧叶子路径假设替换为根 POM 和 artifactId 识别；web POM 必须找到实际 shiyu-ai-web，缺失必须失败。
+- [x] 以任务 1 模块归属为依据检查所有生产源码；ArchUnit 在新包迁入后持续检查编译后的层间依赖。明确对通配、全限定引用与注解的检查方式。
+- [x] 为规则加入空匹配断言：契约和实现集合均非空，实际计数与清单一致。禁止 allowEmptyShould 掩盖迁移遗漏。
+- [x] 现有违规先形成逐类、逐依赖的有限迁移清单；不得放行整个领域包。迁移一项删除一项，禁止新增豁免。
 - [ ] 执行反例测试和现有架构门禁，提交 test: enforce module ownership boundaries。
 
 完成标准：三个反例均被拒绝；旧包也被检查；不存在路径缺失时静默通过。
@@ -79,11 +79,11 @@ com.shiyu.ai.<domain>
 
 目录：modules/domains/conversation/shiyu-conversation-{contract,implementation}/src；涉及全仓消费者和测试。
 
-- [ ] 按清单把 conversation.contract 类型归入 contract.api/model，把根包、chat、port、domain、web 和持久化分别映射到目标层。
-- [ ] 用 git mv 移动文件，按完整 FQCN 更新 package/import；禁止对整个仓库做 conversation 字符串无差别替换。
-- [ ] 同步测试包、扫描配置、注入引用及文档；枚举迁移前后 Bean 名称，类名不变但跨模块重名时显式处理冲突。
-- [ ] 验证对话创建、消息保存、流式完成/失败/取消的现有测试，比较 HTTP/JSON 输出。
-- [ ] 执行全仓 Maven 门禁，确认所有消费者可编译；检查源目录与 package 一致，旧 FQCN 仅允许出现在迁移清单历史列。
+- [x] 按清单把 conversation.contract 类型归入 contract.api/model，把根包、chat、port、domain、web 和持久化分别映射到目标层。
+- [x] 用 git mv 移动文件，按完整 FQCN 更新 package/import；禁止对整个仓库做 conversation 字符串无差别替换。
+- [x] 同步测试包、扫描配置、注入引用及文档；枚举迁移前后 Bean 名称，类名不变但跨模块重名时显式处理冲突。
+- [x] 验证对话创建、消息保存、流式完成/失败/取消的现有测试，比较 HTTP/JSON 输出。
+- [x] 执行全仓 Maven 门禁，确认所有消费者可编译；检查源目录与 package 一致，旧 FQCN 仅允许出现在迁移清单历史列。
 - [ ] 提交 refactor: normalize conversation packages。
 
 完成标准：试点生产类全部归入目标结构、无重复类、无接口行为变化。
@@ -99,7 +99,7 @@ com.shiyu.ai.<domain>
 |4C|modules/domains/memory/shiyu-memory-*/src|拆开 magma 同名包；公开记忆接口与内部算法分开；验证写入、读取、租户隔离|
 |4D|modules/domains/model/shiyu-model-*/src|chat/embedding/port 公开接口与 SDK/gateway 适配分开；验证路由、流式错误、取消和超时，使用可控替身|
 |4E|modules/domains/tooling/shiyu-tooling-*/src|tool/plugin 收敛到 tooling；插件 SPI 若为外部扩展点先记录二进制兼容策略；验证插件加载、签名和 worker 生命周期|
-|4F|modules/domains/education/shiyu-education-*/src|request/vo -> web；业务输出和用例参数按消费者定位；验证教育业务 CRUD、租户与权限|
+|4F|modules/business/education/shiyu-education-*/src|request/vo -> web；业务输出和用例参数按消费者定位；验证教育业务 CRUD、租户与权限|
 |4G|modules/domains/governance/shiyu-governance-*/src|usage/quota/application/web 收敛分层；验证额度、使用量和生命周期|
 
 每批步骤：确认清单 -> 移动类型 -> 更新全仓消费者和资源字符串 -> 运行领域测试 -> 运行边界检查 -> 完整 Maven verify -> 提交。提交名为 refactor: normalize <领域> packages，其中领域取表中固定名称。
@@ -109,11 +109,11 @@ com.shiyu.ai.<domain>
 
 文件范围：modules/domains/agent/shiyu-agent-contract/pom.xml、两个 Agent 模块 src，以及所有 runtime/node 消费者。
 
-- [ ] 从清单列出所有 langgraph4j 类型在契约 public/protected 签名、泛型、继承和注解中的出现点。
-- [ ] 将仅实现使用的 NodeFields、node creator、执行图辅助类型移入 implementation；仅实际跨领域需要的类型保留 contract。
-- [ ] 对外确需的运行输入/结果定义项目自有不可变类型；在 implementation.infrastructure 的框架适配器中转换。保持状态、错误、取消和恢复语义。
-- [ ] 为 public API 加负向依赖测试：contract 引用 langgraph4j 时必须失败；contract POM 移除 langgraph4j 后仍能独立编译。
-- [ ] runtime 包分别迁入 agent.contract 与 agent.implementation，更新调用方；用已有节点/图执行、审批、暂停恢复测试验证适配行为。
+- [x] 从清单列出所有 langgraph4j 类型在契约 public/protected 签名、泛型、继承和注解中的出现点。
+- [x] 将仅实现使用的 NodeFields、node creator、执行图辅助类型移入 implementation；仅实际跨领域需要的类型保留 contract。
+- [x] 对外确需的运行输入/结果定义项目自有不可变类型；在 implementation.infrastructure 的框架适配器中转换。保持状态、错误、取消和恢复语义。
+- [x] 为 public API 加负向依赖测试：contract 引用 langgraph4j 时必须失败；contract POM 移除 langgraph4j 后仍能独立编译。
+- [x] runtime 包分别迁入 agent.contract 与 agent.implementation，更新调用方；用已有节点/图执行、审批、暂停恢复测试验证适配行为。
 - [ ] 完整门禁通过后提交 refactor: isolate agent execution contracts。
 
 完成标准：Agent 契约不再暴露或直接依赖具体图执行框架；全部八个历史 split-package 清零。
@@ -126,12 +126,12 @@ com.shiyu.ai.<domain>
 
 文件范围：modules/shared/shiyu-shared-kernel/src、modules/infrastructure/shiyu-common-core/src 及全仓消费者；更新各受影响 pom.xml。
 
-- [ ] kernel 保留 context、event、error、page；逐项确认 UserId/TenantId/RoleId、ActorContext 是稳定值对象。检查 TenantScope 是否携带线程状态：技术上下文与纯身份模型分离，迁移时同步入口、持久化和线程模块消费者。
-- [ ] 为 core 的每个类确定能力包：api、exception、validation、text、time、reflection、transaction、config；现有 utils 逐类按用途归位，禁止生成新的通用 helper 收容包。
-- [ ] HTTP 专属响应/异常适配/XSS 请求处理迁入 common-web；文件 I/O 工具根据实际复用归入 storage 或保留独立通用工具，不让 core 反向依赖 storage。
-- [ ] 比较 kernel.event.DomainEvent 与 core.tx.event.DomainEvent 的语义和消费者，明确前者业务事件、后者事务适配的关系；不因同名直接合并。
-- [ ] 新增边界测试：kernel 禁止 Spring/ORM/Servlet；core 禁止依赖领域实现和 applications；故意加入违规依赖时必须失败。
-- [ ] 验证身份值对象、分页、异常映射、事务事件提交/回滚行为；全量构建后提交 refactor: clarify kernel and core responsibilities。
+- [x] kernel 保留 context、event、error、page；逐项确认 UserId/TenantId/RoleId、ActorContext 是稳定值对象。检查 TenantScope 是否携带线程状态：技术上下文与纯身份模型分离，迁移时同步入口、持久化和线程模块消费者。
+- [x] 为 core 的每个类确定能力包：api、exception、validation、text、time、reflection、transaction、config；现有 utils 逐类按用途归位，禁止生成新的通用 helper 收容包。
+- [x] HTTP 专属响应/异常适配/XSS 请求处理迁入 common-web；文件 I/O 工具根据实际复用归入 storage 或保留独立通用工具，不让 core 反向依赖 storage。
+- [x] 比较 kernel.event.DomainEvent 与 core.tx.event.DomainEvent 的语义和消费者，明确前者业务事件、后者事务适配的关系；不因同名直接合并。
+- [x] 新增边界测试：kernel 禁止 Spring/ORM/Servlet；core 禁止依赖领域实现和 applications；故意加入违规依赖时必须失败。
+- [x] 验证身份值对象、分页、异常映射、事务事件提交/回滚行为；全量构建后提交 refactor: clarify kernel and core responsibilities。
 
 ### 6B：common-mybatis
 
@@ -139,47 +139,47 @@ com.shiyu.ai.<domain>
 
 目标能力包：config、datasource、mapper、model、handler；core.mapper 收敛为 mapper，技术层不命名为业务 domain。
 
-- [ ] 清点监听器、租户工厂、异常处理、数据源与基础模型；持久化模型不得成为跨领域公开业务契约。
-- [ ] 核查租户和乐观锁配置中的领域特定逻辑；通用机制保留本模块，领域规则/实体特判移回所属领域适配层。
-- [ ] 同步 MapperScan、XML namespace、typeAlias 和资源路径；验证数据源初始化、租户隔离、乐观锁冲突、异常转换。
-- [ ] 边界检查通过后提交 refactor: organize mybatis support packages。
+- [x] 清点监听器、租户工厂、异常处理、数据源与基础模型；持久化模型不得成为跨领域公开业务契约。
+- [x] 核查租户和乐观锁配置中的领域特定逻辑；通用机制保留本模块，领域规则/实体特判移回所属领域适配层。
+- [x] 同步 MapperScan、XML namespace、typeAlias 和资源路径；验证数据源初始化、租户隔离、乐观锁冲突、异常转换。
+- [x] 边界检查通过后提交 refactor: organize mybatis support packages。
 
 ### 6C：common-web 与 applications/shiyu-ai-web
 
 文件范围：两个模块 src；涉及 application 层消费者和 Spring 配置资源。
 
-- [ ] common-web 保留可复用 auth/filter/interceptor，新增 exception 或 validation 包承接实际迁入能力；禁止引用领域具体 ServiceImpl。
-- [ ] shiyu-ai-web 中 AuditInterceptor 归 interceptor；SaTokenExceptionHandler 和 ApiExceptionHandler 归 exception；XssProperties 按配置职责归 config.properties。
-- [ ] SaTokenConfig、SaInterceptorConfig、ResourcesConfig、FilterConfig、OpenApiConfig 保持 config；SaPermissionProvider 保持 auth。检查 AgentWebMvcConfig/EduWebMvcConfig 是否含领域规则，规则留领域、通用 MVC 装配留入口。
-- [ ] 为配置迁移验证 Bean 唯一性、过滤器顺序、鉴权拒绝、CORS、静态资源、异常 HTTP 状态与 OpenAPI 路由；禁止包移动导致重复注册。
-- [ ] 提交 refactor: separate web configuration and adapters。
+- [x] common-web 保留可复用 auth/filter/interceptor，新增 exception 或 validation 包承接实际迁入能力；禁止引用领域具体 ServiceImpl。
+- [x] shiyu-ai-web 中 AuditInterceptor 归 interceptor；SaTokenExceptionHandler 和 ApiExceptionHandler 归 exception；XssProperties 按配置职责归 config.properties。
+- [x] SaTokenConfig、SaInterceptorConfig、ResourcesConfig、FilterConfig、OpenApiConfig 保持 config；SaPermissionProvider 保持 auth。检查 AgentWebMvcConfig 与教育模块 Web 配置是否含领域规则，规则留领域、通用 MVC 装配留入口。
+- [x] 为配置迁移验证 Bean 唯一性、过滤器顺序、鉴权拒绝、CORS、静态资源、异常 HTTP 状态与 OpenAPI 路由；禁止包移动导致重复注册。
+- [x] 提交 refactor: separate web configuration and adapters。
 
 ### 6D：common-storage
 
 文件范围：modules/infrastructure/shiyu-common-storage/src。
 
-- [ ] 保留 api/file/metadata/backup/config/lease/rate/security/vector/web 的能力分类，逐类确认准入；JdbcStorageMetadataStore 与 NoopStorageMetadataStore 归 metadata。
-- [ ] 区分 ResumableUploadHandler 的传输职责与 ResumableUploadService 的上传协调：读取 Servlet/HTTP 对象者归 web，纯文件处理者留 file，并同步消费者。
-- [ ] 核查 FileController 的权限和业务协调，技术上传端点可留 storage.web；领域规则通过契约调用，不能直接依赖领域实现。
-- [ ] 明确 VectorIndexStore 与 common-vector 的边界：持久化索引文件与向量搜索分开；lease/rate 若是通用内存协调，记录实际消费者后归最合适现有模块，不强建单类模块。
-- [ ] 验证本地/S3 替身、分片重试/合并、路径穿越、内容扫描、元数据存取和备份恢复；提交 refactor: enforce storage capability boundaries。
+- [x] 保留 api/file/metadata/backup/config/lease/rate/security/vector/web 的能力分类，逐类确认准入；JdbcStorageMetadataStore 与 NoopStorageMetadataStore 归 metadata。
+- [x] 区分 ResumableUploadHandler 的传输职责与 ResumableUploadService 的上传协调：读取 Servlet/HTTP 对象者归 web，纯文件处理者留 file，并同步消费者。
+- [x] 核查 FileController 的权限和业务协调，技术上传端点可留 storage.web；领域规则通过契约调用，不能直接依赖领域实现。
+- [x] 明确 VectorIndexStore 与 common-vector 的边界：持久化索引文件与向量搜索分开；lease/rate 若是通用内存协调，记录实际消费者后归最合适现有模块，不强建单类模块。
+- [x] 验证本地/S3 替身、分片重试/合并、路径穿越、内容扫描、元数据存取和备份恢复；提交 refactor: enforce storage capability boundaries。
 
 ### 6E：common-thread
 
 文件范围：modules/infrastructure/shiyu-common-thread/src。
 
-- [ ] 保留 api/config/context/metrics；core 中 ExecutorFactory 接口与实现区分，公开扩展接口归 api，执行器实现归 executor，组合装饰器归 context。
-- [ ] otel 和 metrics 是可选观测适配，确认 api 不反向引用 OpenTelemetry/Micrometer；避免单纯为了统一而增加重复包装。
-- [ ] 核查 ThreadPoolConfig 与 ThreadingAutoConfiguration、两种 Properties 的绑定范围，只有功能重叠才合并，保持现有配置键兼容。
-- [ ] 验证线程上下文传播及清理、异常任务、拒绝任务、线程池关闭、虚拟线程与平台线程策略；提交 refactor: organize thread execution support。
+- [x] 保留 api/config/context/metrics；core 中 ExecutorFactory 接口与实现区分，公开扩展接口归 api，执行器实现归 executor，组合装饰器归 context。
+- [x] otel 和 metrics 是可选观测适配，确认 api 不反向引用 OpenTelemetry/Micrometer；避免单纯为了统一而增加重复包装。
+- [x] 核查 ThreadPoolConfig 与 ThreadingAutoConfiguration、两种 Properties 的绑定范围，只有功能重叠才合并，保持现有配置键兼容。
+- [x] 验证线程上下文传播及清理、异常任务、拒绝任务、线程池关闭、虚拟线程与平台线程策略；提交 refactor: organize thread execution support。
 
 ### 6F：common-vector
 
 文件范围：modules/infrastructure/shiyu-common-vector/src 及 storage/knowledge/memory 消费者。
 
-- [ ] 根包 com.shiyu.ai.vector 迁为 com.shiyu.ai.common.vector；接口归 api，VectorRecord/SearchRequest/Options/SearchType 归 model，具体存储归 implementation，工厂归 factory，自动装配归 config。
-- [ ] 更新 Spring AutoConfiguration.imports、工厂绑定、反射字符串和测试；不改变索引格式、距离度量和默认参数。
-- [ ] 验证内存与 JVector 后端的插入/检索/删除、关闭重开、维度错误和索引兼容；提交 refactor: normalize vector support packages。
+- [x] 根包 com.shiyu.ai.vector 迁为 com.shiyu.ai.common.vector；接口归 api，VectorRecord/SearchRequest/Options/SearchType 归 model，具体存储归 implementation，工厂归 factory，自动装配归 config。
+- [x] 更新 Spring AutoConfiguration.imports、工厂绑定、反射字符串和测试；不改变索引格式、距离度量和默认参数。
+- [x] 验证内存与 JVector 后端的插入/检索/删除、关闭重开、维度错误和索引兼容；提交 refactor: normalize vector support packages。
 
 ### 6G：applications/shiyu-application 组合根
 
@@ -187,29 +187,29 @@ com.shiyu.ai.<domain>
 
 目标包：com.shiyu.ai.composition 下 integration/governance、retention、database；Maven 坐标保持 shiyu-application，文档明确其为组合根。
 
-- [ ] UsageEventListener、QuotaGenerationAdmission、ConversationUsageSink 作为跨领域接线适配归 integration.governance；额度业务规则保留 governance 领域。
-- [ ] DataRetentionService/Properties 归 retention，DatabaseInitializer 归 database；初始化器只编排模块初始化，领域 schema 定义仍归领域。
-- [ ] 更新全仓 import、组件扫描和测试；验证事件只订阅一次、配额拒绝、保留策略、数据库首次初始化及重复启动。
-- [ ] 检查领域及公共基础设施不得反向依赖 composition，提交 refactor: clarify composition root packages。
+- [x] UsageEventListener、QuotaGenerationAdmission、ConversationUsageSink 作为跨领域接线适配归 integration.governance；额度业务规则保留 governance 领域。
+- [x] DataRetentionService/Properties 归 retention，DatabaseInitializer 归 database；初始化器只编排模块初始化，领域 schema 定义仍归领域。
+- [x] 更新全仓 import、组件扫描和测试；验证事件只订阅一次、配额拒绝、保留策略、数据库首次初始化及重复启动。
+- [x] 检查领域及公共基础设施不得反向依赖 composition，提交 refactor: clarify composition root packages。
 
 ### 6H：applications/shiyu-ai-bootstrap
 
 文件范围：modules/applications/shiyu-ai-bootstrap/src 和 pom.xml 打包配置。
 
-- [ ] ShiyuBootstrapApplication 保持 bootstrap 根包；LogRetentionService/Properties 移至 bootstrap.retention，EmbeddedDataDirectoryLock 移至 bootstrap.lock。
-- [ ] ApplicationStartupListener 归 bootstrap.lifecycle；config 仅放真正配置类，避免把监听器一律塞入 config。
-- [ ] 保持 main-class 配置、APP_HOME 解析、锁归属、关闭钩子和日志清理行为；验证同目录重复启动拒绝、锁释放、全新 APP_HOME 启动。
-- [ ] 提交 refactor: organize bootstrap lifecycle support。
+- [x] ShiyuBootstrapApplication 保持 bootstrap 根包；LogRetentionService/Properties 移至 bootstrap.retention，EmbeddedDataDirectoryLock 移至 bootstrap.lock。
+- [x] ApplicationStartupListener 归 bootstrap.lifecycle；config 仅放真正配置类，避免把监听器一律塞入 config。
+- [x] 保持 main-class 配置、APP_HOME 解析、锁归属、关闭钩子和日志清理行为；验证同目录重复启动拒绝、锁释放、全新 APP_HOME 启动。
+- [x] 提交 refactor: organize bootstrap lifecycle support。
 
 ### 6I：tests 与 scripts 的配套分类
 
 文件范围：tests/shiyu-architecture-tests/src/test、scripts/architecture、scripts/docs；scripts/continuous_testing 仅做职责清点，保持停用。
 
-- [ ] 架构测试按 module/package/layer/context 分类，拆分单一 ArchitectureRulesTest 的不同规则职责；保留测试发现和非空断言。
-- [ ] 单元测试随生产包迁移；跨模块集成测试留独立测试模块，避免倒灌生产模块依赖。
-- [ ] architecture 检查脚本区分清单生成与门禁执行，共享源码归属解析只有实际复用时抽取；文档脚本保留 docs 归属。
-- [ ] 对 continuous_testing 记录状态、调度、执行、报告各组件边界及未完成功能，不把 Python 模块套为 Java 包，不启动服务。
-- [ ] 运行规则反例、测试发现与文档检查，提交 test: organize architecture verification responsibilities。
+- [x] 架构测试按 module/package/layer/context 分类，拆分单一 ArchitectureRulesTest 的不同规则职责；保留测试发现和非空断言。
+- [x] 单元测试随生产包迁移；跨模块集成测试留独立测试模块，避免倒灌生产模块依赖。
+- [x] architecture 检查脚本区分清单生成与门禁执行，共享源码归属解析只有实际复用时抽取；文档脚本保留 docs 归属。
+- [x] 对 continuous_testing 记录状态、调度、执行、报告各组件边界及未完成功能，不把 Python 模块套为 Java 包，不启动服务。
+- [x] 运行规则反例、测试发现与文档检查，提交 test: organize architecture verification responsibilities。
 
 阶段完成标准：3 个 applications、6 个 infrastructure、1 个 shared 模块全部有类归属清单、目标包、实际验证和剩余问题记录；禁止只完成 domains 就宣布全项目完成。
 
@@ -240,12 +240,12 @@ com.shiyu.ai.<domain>
 
 文件：docs/模块结构与命名.md、docs/系统全景与模块调用.md、docs/开发规范与对话决策.md、迁移清单、CI。
 
-- [ ] 修正文档中“所有 Controller 放 applications”与实际领域模块规则的冲突，记录公共技术 Controller 的准入规则。
-- [ ] 生成最终清点，要求生产文件 100% 有模块与层归属、无重复 FQCN、无跨契约实现同名包、无剩余迁移豁免。
-- [ ] 用临时违规夹具再次验证 CI 能拒绝跨领域实现依赖、contract 框架依赖、domain 反向依赖、空扫描。
+- [x] 修正文档中“所有 Controller 放 applications”与实际领域模块规则的冲突，记录公共技术 Controller 的准入规则。
+- [x] 生成最终清点，要求生产文件 100% 有模块与层归属、无重复 FQCN、无跨契约实现同名包、无剩余迁移豁免。
+- [x] 用临时违规夹具再次验证 CI 能拒绝跨领域实现依赖、contract 框架依赖、domain 反向依赖、空扫描。
 - [ ] 对迁移前后 OpenAPI 路由、schema、字段、权限和错误码做差异比较；对旧数据副本执行启动、登录、对话、知识检索、上传和插件加载回归。
-- [ ] 清理构建产物后执行完整门禁，防止旧 .class 使包迁移假通过。
-- [ ] 记录未执行项与原因；所有要求通过后才提交最终报告并进行 squash 集成。
+- [x] 清理构建产物后执行完整门禁，防止旧 .class 使包迁移假通过。
+- [x] 记录未执行项与原因；所有要求通过后才提交最终报告并进行 squash 集成。
 
 ## 验证命令
 

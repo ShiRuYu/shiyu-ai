@@ -1,4 +1,7 @@
 package com.shiyu.ai.memory.implementation.web;
+import com.shiyu.ai.memory.implementation.domain.magma.model.MemoryRetrievalResult;
+import com.shiyu.ai.memory.implementation.domain.magma.port.MemorySemanticIndex;
+import com.shiyu.ai.memory.implementation.domain.magma.service.MagmaMemoryService;
 
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.*;
@@ -8,7 +11,6 @@ import com.shiyu.ai.common.core.domain.UserContext;
 import com.shiyu.ai.common.core.domain.UserContextHolder;
 import com.shiyu.ai.kernel.context.TenantId;
 import com.shiyu.ai.memory.contract.model.*;
-import com.shiyu.ai.memory.implementation.domain.magma.*;
 
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;

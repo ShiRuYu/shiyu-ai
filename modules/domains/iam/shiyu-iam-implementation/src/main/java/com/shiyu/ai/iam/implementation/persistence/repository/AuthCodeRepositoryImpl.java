@@ -19,13 +19,26 @@ import org.springframework.stereotype.Component;
 
 import java.util.List;
 
-/** Embedded H2 implementation of the authorization-code port. */
+/**
+ * 实现 AuthCode 数据的持久化访问。
+ */
 @Component
 public class AuthCodeRepositoryImpl
         implements com.shiyu.ai.iam.implementation.port.repository.AuthCodeRepository {
 
+    /**
+     * authCodeMapper 属性，保存当前对象中的业务数据或协作依赖。
+     */
     @Resource private AuthCodeMapper authCodeMapper;
+
+    /**
+     * roleScopeAuthCodeMapper 属性，保存当前对象中的业务数据或协作依赖。
+     */
     @Resource private RoleScopeAuthCodeMapper roleScopeAuthCodeMapper;
+
+    /**
+     * tenantAuthCodeMapper 属性，保存当前对象中的业务数据或协作依赖。
+     */
     @Resource private TenantAuthCodeMapper tenantAuthCodeMapper;
 
     @Override

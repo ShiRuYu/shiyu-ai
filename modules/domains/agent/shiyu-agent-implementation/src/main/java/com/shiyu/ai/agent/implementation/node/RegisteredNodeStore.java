@@ -9,7 +9,9 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 
-/** Runtime node instance registry and explicit service injection adapter. */
+/**
+ * 保存已注册节点实例并提供按标识查询。
+ */
 @Slf4j
 final class RegisteredNodeStore {
     private final Map<String, BaseNode> nodes = new ConcurrentHashMap<>();
@@ -65,7 +67,6 @@ final class RegisteredNodeStore {
                 return true;
             }
         } catch (NoSuchFieldException ignored) {
-            // Fall through to type matching.
         } catch (Exception exception) {
             log.warn(
                     "服务字段注入失败：errorType={}, errorMessageLength={}",

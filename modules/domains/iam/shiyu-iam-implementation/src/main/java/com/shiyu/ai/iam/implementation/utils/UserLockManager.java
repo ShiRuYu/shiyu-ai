@@ -45,8 +45,16 @@ public enum UserLockManager {
         lockMap.entrySet().removeIf(e -> !e.getValue().isLocked());
     }
 
+    /**
+     * LockSupplier 接口，定义身份与访问模块的能力边界。
+     */
     @FunctionalInterface
     public interface LockSupplier<T> {
+        /**
+         * 根据标识查询对应的数据。
+         *
+         * @return 操作结果。
+         */
         T get();
     }
 }

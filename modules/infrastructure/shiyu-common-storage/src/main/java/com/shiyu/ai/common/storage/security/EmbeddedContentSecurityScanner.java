@@ -21,6 +21,9 @@ import java.util.Set;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipInputStream;
 
+/**
+ * {@code EmbeddedContentSecurityScanner} 承载平台基础设施模块的领域状态或协作行为，负责维护本类型的职责边界。
+ */
 @Component
 public class EmbeddedContentSecurityScanner implements ContentSecurityScanner {
 
@@ -41,9 +44,19 @@ public class EmbeddedContentSecurityScanner implements ContentSecurityScanner {
                     "gif",
                     "webp");
 
+    /**
+     * maxFileSize 属性，保存当前对象中的业务数据或协作依赖。
+     */
     @Value("${shiyu.storage.security.max-file-size:200MB}")
     private DataSize maxFileSize;
 
+    /**
+     * {@code validate} 校验当前操作的输入或状态是否满足约束。
+     *
+     * @param fileName 参数值，用于执行当前操作。
+     * @param contentType 参数值，用于执行当前操作。
+     * @param content 参数值，用于执行当前操作。
+     */
     @Override
     public void validate(String fileName, String contentType, byte[] content) {
         String extension = extension(fileName);

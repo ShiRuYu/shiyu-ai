@@ -28,19 +28,45 @@ import java.time.LocalDateTime;
 import java.util.*;
 import java.util.stream.Collectors;
 
+/**
+ * {@code AgentAdminServiceImpl} 实现智能体模块的应用服务，负责编排用例流程并维护业务边界。
+ */
 @Slf4j
 @Service
 public class AgentAdminServiceImpl implements AgentAdminService {
 
+    /**
+     * agentAdminRepository 属性，保存当前对象中的业务数据或协作依赖。
+     */
     private final AgentAdminRepository agentAdminRepository;
+    /**
+     * agentService 属性，保存当前对象中的业务数据或协作依赖。
+     */
     private final AgentService agentService;
 
+    /**
+     * {@code AgentAdminServiceImpl} 创建并初始化当前类型实例。
+     *
+     * @param agentAdminRepository 参数值，用于执行当前操作。
+     * @param agentService 参数值，用于执行当前操作。
+     */
     public AgentAdminServiceImpl(
             AgentAdminRepository agentAdminRepository, AgentService agentService) {
         this.agentAdminRepository = agentAdminRepository;
         this.agentService = agentService;
     }
 
+    /**
+     * {@code getPage} 查询并返回当前操作所需的数据。
+     *
+     * @param actor 参数值，用于执行当前操作。
+     * @param pageNo 参数值，用于执行当前操作。
+     * @param pageSize 参数值，用于执行当前操作。
+     * @param name 参数值，用于执行当前操作。
+     * @param status 参数值，用于执行当前操作。
+     *
+     * @return 返回当前操作产生的结果。
+     */
     @Override
     public Pair<Long, List<AgentVO>> getPage(
             ActorContext actor, Number pageNo, Number pageSize, String name, Integer status) {
@@ -50,6 +76,14 @@ public class AgentAdminServiceImpl implements AgentAdminService {
         return Pair.of(result.getLeft(), vos);
     }
 
+    /**
+     * {@code getById} 查询并返回当前操作所需的数据。
+     *
+     * @param actor 参数值，用于执行当前操作。
+     * @param id 参数值，用于执行当前操作。
+     *
+     * @return 返回当前操作产生的结果。
+     */
     @Override
     public AgentDetailVO getById(ActorContext actor, Long id) {
         AgentDefBO def = agentAdminRepository.selectById(actor.tenantId(), id);
@@ -72,6 +106,14 @@ public class AgentAdminServiceImpl implements AgentAdminService {
                 .build();
     }
 
+    /**
+     * {@code create} 写入或更新当前模块中的业务数据。
+     *
+     * @param actor 参数值，用于执行当前操作。
+     * @param request 参数值，用于执行当前操作。
+     *
+     * @return 返回当前操作产生的结果。
+     */
     @Override
     @Transactional(rollbackFor = Exception.class)
     public AgentVO create(ActorContext actor, AgentRequest request) {
@@ -89,6 +131,15 @@ public class AgentAdminServiceImpl implements AgentAdminService {
         return toVO(def);
     }
 
+    /**
+     * {@code update} 写入或更新当前模块中的业务数据。
+     *
+     * @param actor 参数值，用于执行当前操作。
+     * @param id 参数值，用于执行当前操作。
+     * @param request 参数值，用于执行当前操作。
+     *
+     * @return 返回当前操作产生的结果。
+     */
     @Override
     @Transactional(rollbackFor = Exception.class)
     public AgentVO update(ActorContext actor, Long id, AgentRequest request) {
@@ -103,6 +154,12 @@ public class AgentAdminServiceImpl implements AgentAdminService {
         return toVO(def);
     }
 
+    /**
+     * {@code deleteById} 释放或移除当前操作涉及的资源。
+     *
+     * @param actor 参数值，用于执行当前操作。
+     * @param id 参数值，用于执行当前操作。
+     */
     @Override
     @Transactional(rollbackFor = Exception.class)
     public void deleteById(ActorContext actor, Long id) {
@@ -112,6 +169,11 @@ public class AgentAdminServiceImpl implements AgentAdminService {
         evictAgentCache(def.getAgentId());
     }
 
+    /**
+     * {@code getNodeTypes} 查询并返回当前操作所需的数据。
+     *
+     * @return 返回当前操作产生的结果。
+     */
     @Override
     public List<NodeTypeMetaVO> getNodeTypes() {
         List<NodeTypeMetaVO> metas = new ArrayList<>();
@@ -129,6 +191,13 @@ public class AgentAdminServiceImpl implements AgentAdminService {
         return metas;
     }
 
+    /**
+     * {@code listAllOptions} 查询并返回当前操作所需的数据。
+     *
+     * @param actor 参数值，用于执行当前操作。
+     *
+     * @return 返回当前操作产生的结果。
+     */
     @Override
     public List<IdNameOptionVO> listAllOptions(ActorContext actor) {
         List<AgentDefBO> list = agentAdminRepository.selectAllActive(actor.tenantId());
@@ -143,7 +212,6 @@ public class AgentAdminServiceImpl implements AgentAdminService {
                 .collect(Collectors.toList());
     }
 
-    // ========== Private helpers ==========
 
     private void evictAgentCache(String agentId) {
         agentService.evictRuntimeCache(agentId);
@@ -181,23 +249,23 @@ public class AgentAdminServiceImpl implements AgentAdminService {
     }
 
     private String getNodeColor(NodeType type) {
-        return switch (type) {
-            case INTENT -> "#FF9800";
-            case LLM_CALL -> "#4CAF50";
-            case RAG_RETRIEVAL, RAG_ENHANCEMENT -> "#2196F3";
-            case TOOL_CALL -> "#9C27B0";
-            case CONDITION -> "#FF5722";
-            case TRANSFORM -> "#607D8B";
-            case OUTPUT_FORMAT -> "#00BCD4";
-            case MEMORY_SHORT_TERM, MEMORY_LONG_TERM, MEMORY_RETRIEVAL -> "#795548";
-            case AGENT_CALL -> "#E91E63";
+        return switch (type.getCode()) {
+            case "INTENT" -> "#FF9800";
+            case "LLM_CALL" -> "#4CAF50";
+            case "RAG_RETRIEVAL", "RAG_ENHANCEMENT" -> "#2196F3";
+            case "TOOL_CALL" -> "#9C27B0";
+            case "CONDITION" -> "#FF5722";
+            case "TRANSFORM" -> "#607D8B";
+            case "OUTPUT_FORMAT" -> "#00BCD4";
+            case "MEMORY_SHORT_TERM", "MEMORY_LONG_TERM", "MEMORY_RETRIEVAL" -> "#795548";
+            case "AGENT_CALL" -> "#E91E63";
             default -> "#757575";
         };
     }
 
     private List<NodeTypeMetaVO.FieldMeta> buildFieldMetas(NodeType type) {
         List<NodeTypeMetaVO.FieldMeta> fields = new ArrayList<>();
-        if (type == NodeType.RAG_RETRIEVAL) {
+        if (NodeType.RAG_RETRIEVAL.equals(type)) {
             fields.add(
                     fieldWithSource(
                             field(
@@ -242,8 +310,8 @@ public class AgentAdminServiceImpl implements AgentAdminService {
             fields.add(field("enableRerank", "启用重排", "boolean", true, false, "是否使用重排模型"));
             return fields;
         }
-        switch (type) {
-            case INTENT:
+        switch (type.getCode()) {
+            case "INTENT":
                 fields.add(
                         fieldWithSource(
                                 field("category", "意图分类", "select", "", false, "意图分类"),
@@ -277,7 +345,7 @@ public class AgentAdminServiceImpl implements AgentAdminService {
                                         "modelName",
                                         "platform")));
                 break;
-            case LLM_CALL:
+            case "LLM_CALL":
                 fields.add(
                         fieldWithSource(
                                 field("platform", "AI平台", "select", "", false, "选择AI平台"),
@@ -313,7 +381,7 @@ public class AgentAdminServiceImpl implements AgentAdminService {
                                 "支持{context}{query}占位符"));
                 fields.add(field("stream", "流式输出", "boolean", false, false, "是否使用流式输出"));
                 break;
-            case RAG_ENHANCEMENT:
+            case "RAG_ENHANCEMENT":
                 fields.add(
                         field(
                                 "enhancementStrategy",
@@ -326,13 +394,13 @@ public class AgentAdminServiceImpl implements AgentAdminService {
                 fields.add(field("maxLength", "最大长度", "number", 2000, false, "输出最大长度"));
                 fields.add(field("addContext", "添加上下文", "boolean", true, false, "是否添加上下文"));
                 break;
-            case TOOL_CALL:
+            case "TOOL_CALL":
                 fields.add(field("toolName", "工具名称", "text", "", true, "调用的工具标识"));
                 fields.add(field("toolType", "工具类型", "text", "", false, "工具类型分类"));
                 fields.add(field("toolTimeout", "超时时间(ms)", "number", 10000L, false, "工具调用超时"));
                 fields.add(field("enableCache", "启用缓存", "boolean", false, false, "是否缓存工具结果"));
                 break;
-            case CONDITION:
+            case "CONDITION":
                 fields.add(field("conditionExpression", "条件表达式", "textarea", "", false, "条件判断表达式"));
                 fields.add(
                         field(
@@ -343,7 +411,7 @@ public class AgentAdminServiceImpl implements AgentAdminService {
                                 false,
                                 Map.of("options", List.of("EXPRESSION", "INTENT_ROUTING"))));
                 break;
-            case TRANSFORM:
+            case "TRANSFORM":
                 fields.add(
                         field(
                                 "transformType",
@@ -356,7 +424,7 @@ public class AgentAdminServiceImpl implements AgentAdminService {
                                         List.of("JSON_TO_XML", "XML_TO_JSON", "TEMPLATE"))));
                 fields.add(field("template", "转换模板", "textarea", "", false, "转换规则模板"));
                 break;
-            case OUTPUT_FORMAT:
+            case "OUTPUT_FORMAT":
                 fields.add(
                         field(
                                 "outputFormat",
@@ -368,7 +436,7 @@ public class AgentAdminServiceImpl implements AgentAdminService {
                 fields.add(field("template", "格式化模板", "textarea", "", false, "输出格式化模板"));
                 fields.add(field("prettyPrint", "美化输出", "boolean", true, false, "是否美化格式"));
                 break;
-            case MEMORY_SHORT_TERM:
+            case "MEMORY_SHORT_TERM":
                 fields.add(field("maxMessages", "最大消息数", "number", 10, false, "短时记忆窗口大小"));
                 fields.add(
                         field("enableSlidingWindow", "滑动窗口", "boolean", true, false, "是否启用滑动窗口"));
@@ -381,7 +449,7 @@ public class AgentAdminServiceImpl implements AgentAdminService {
                                 false,
                                 "消息过期时间"));
                 break;
-            case AGENT_CALL:
+            case "AGENT_CALL":
                 fields.add(
                         fieldWithSource(
                                 field(

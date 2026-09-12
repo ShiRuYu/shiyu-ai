@@ -11,9 +11,18 @@ import org.springframework.web.server.ResponseStatusException;
 
 import java.util.Locale;
 
-/** Keeps platform APIs on stable 404/409/403/422 semantics instead of leaking JVM exceptions. */
+/**
+ * 统一处理 Web 层异常并转换为稳定的 API 错误响应。
+ */
 @RestControllerAdvice
 public class ApiExceptionHandler {
+    /**
+     * {@code invalidArgument} 执行当前类型定义的业务操作。
+     *
+     * @param error 参数值，用于执行当前操作。
+     *
+     * @return 返回当前操作产生的结果。
+     */
     @ExceptionHandler(IllegalArgumentException.class)
     public ResponseEntity<Result<Void>> invalidArgument(IllegalArgumentException error) {
         String normalized = String.valueOf(error.getMessage()).toLowerCase(Locale.ROOT);
@@ -30,6 +39,13 @@ public class ApiExceptionHandler {
         return failure(status);
     }
 
+    /**
+     * {@code invalidState} 执行当前类型定义的业务操作。
+     *
+     * @param error 参数值，用于执行当前操作。
+     *
+     * @return 返回当前操作产生的结果。
+     */
     @ExceptionHandler(IllegalStateException.class)
     public ResponseEntity<Result<Void>> invalidState(IllegalStateException error) {
         HttpStatus status =
@@ -39,11 +55,25 @@ public class ApiExceptionHandler {
         return failure(status);
     }
 
+    /**
+     * {@code unexpected} 执行当前类型定义的业务操作。
+     *
+     * @param error 参数值，用于执行当前操作。
+     *
+     * @return 返回当前操作产生的结果。
+     */
     @ExceptionHandler(RuntimeException.class)
     public ResponseEntity<Result<Void>> unexpected(RuntimeException error) {
         return failure(HttpStatus.INTERNAL_SERVER_ERROR);
     }
 
+    /**
+     * {@code responseStatus} 执行当前类型定义的业务操作。
+     *
+     * @param error 参数值，用于执行当前操作。
+     *
+     * @return 返回当前操作产生的结果。
+     */
     @ExceptionHandler(ResponseStatusException.class)
     public ResponseEntity<Result<Void>> responseStatus(ResponseStatusException error) {
         HttpStatus status = HttpStatus.valueOf(error.getStatusCode().value());

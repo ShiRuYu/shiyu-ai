@@ -1,4 +1,4 @@
-"""Capture immutable repository identity for a test run."""
+"""snapshot 脚本，执行项目架构与工程校验。"""
 from __future__ import annotations
 import hashlib, subprocess
 from pathlib import Path

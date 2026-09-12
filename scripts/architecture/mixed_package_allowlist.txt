@@ -1,0 +1,28 @@
+# 内部 record/enum 与其唯一服务或配置紧密耦合，不构成跨边界职责混放。
+com.shiyu.ai.agent.implementation.config # Spring 配置与启动组件
+com.shiyu.ai.agent.implementation.runtime.service # 运行时服务的私有请求/结果 record
+com.shiyu.ai.agent.implementation.service # IntentService 的识别结果契约
+com.shiyu.ai.bootstrap.retention # retention 属性与服务同属启动支撑边界
+com.shiyu.ai.common.core.utils # 工具类与少量静态值类型的基础工具边界
+com.shiyu.ai.common.mybatis.config # 配置、属性和校验器同属数据库基础设施配置
+com.shiyu.ai.common.storage.backup # 备份服务的内部结果 record
+com.shiyu.ai.common.storage.config # 存储配置、属性和 provider 选择值
+com.shiyu.ai.common.storage.file.service # 上传服务的请求/会话 record
+com.shiyu.ai.common.vector.factory # vector provider 工厂及其内部句柄
+com.shiyu.ai.common.web.auth # Web 认证端口与 HTTP 适配器的紧密边界
+com.shiyu.ai.composition.integration.governance # 治理集成监听器及其事件值对象
+com.shiyu.ai.composition.retention # retention 属性与服务同属应用组合边界
+com.shiyu.ai.conversation.implementation.application # 应用服务及其内部结果值对象
+com.shiyu.ai.conversation.implementation.domain.chat # chat 领域服务与 provider 适配器
+com.shiyu.ai.iam.implementation.config # IAM 配置与启动组件
+com.shiyu.ai.iam.implementation.service # IAM 应用服务及其协作端口
+com.shiyu.ai.knowledge.implementation.application.document # parser 端口及解析结果契约
+com.shiyu.ai.knowledge.implementation.application.graph # graph 门面及内部图值对象
+com.shiyu.ai.knowledge.implementation.application.rag # RAG splitter 端口及 chunk 契约
+com.shiyu.ai.knowledge.implementation.application.service # 知识应用服务及内部上下文值对象
+com.shiyu.ai.knowledge.implementation.infrastructure.index.adapter # 索引适配器及内部索引键
+com.shiyu.ai.knowledge.implementation.infrastructure.retrieval # 检索服务及其适配器
+com.shiyu.ai.model.implementation.infrastructure.adapter # 模型适配器基础抽象及实现
+com.shiyu.ai.model.implementation.infrastructure.gateway # 模型路由服务及路由值对象
+com.shiyu.ai.model.implementation.infrastructure.media # 媒体 provider 端口及其结果契约
+com.shiyu.ai.tooling.implementation.tool # 工具服务及工具定义契约

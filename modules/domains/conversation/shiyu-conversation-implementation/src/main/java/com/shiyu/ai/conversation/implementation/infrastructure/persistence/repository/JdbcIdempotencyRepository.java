@@ -14,14 +14,35 @@ import java.util.Optional;
 
 import javax.sql.DataSource;
 
+/**
+ * {@code JdbcIdempotencyRepository} 定义会话模块的持久化端口，隔离领域逻辑与具体存储实现。
+ */
 @Component
 public class JdbcIdempotencyRepository implements IdempotencyRepository {
+    /**
+     * JDBC，表示当前对象中的对应属性。
+     */
     private final JdbcTemplate jdbc;
 
+    /**
+     * {@code JdbcIdempotencyRepository} 创建并初始化当前类型实例。
+     *
+     * @param dataSource 参数值，用于执行当前操作。
+     */
     public JdbcIdempotencyRepository(@Qualifier("agentDataSource") DataSource dataSource) {
         this.jdbc = new JdbcTemplate(dataSource);
     }
 
+    /**
+     * {@code find} 查询并返回当前操作所需的数据。
+     *
+     * @param tenantId 参数值，用于执行当前操作。
+     * @param ownerUserId 参数值，用于执行当前操作。
+     * @param operation 参数值，用于执行当前操作。
+     * @param key 参数值，用于执行当前操作。
+     *
+     * @return 返回当前操作产生的结果。
+     */
     @Override
     public Optional<String> find(
             TenantId tenantId, long ownerUserId, String operation, String key) {
@@ -38,6 +59,17 @@ public class JdbcIdempotencyRepository implements IdempotencyRepository {
                 .findFirst();
     }
 
+    /**
+     * {@code claim} 执行当前类型定义的业务操作。
+     *
+     * @param tenantId 参数值，用于执行当前操作。
+     * @param ownerUserId 参数值，用于执行当前操作。
+     * @param operation 参数值，用于执行当前操作。
+     * @param key 参数值，用于执行当前操作。
+     * @param resourceId 参数值，用于执行当前操作。
+     *
+     * @return 返回当前操作产生的结果。
+     */
     @Override
     public boolean claim(
             TenantId tenantId, long ownerUserId, String operation, String key, String resourceId) {

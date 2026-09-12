@@ -1,5 +1,5 @@
 # 内置配置
-# https://mybatis-flex.com/zh/base/configuration.html
+# 参考链接：https://mybatis-flex.com/zh/base/configuration.html
 mybatis-flex:
   mapper-locations: classpath*:/mapper/**/*.xml
   # 启动时是否检查 MyBatis XML 文件的存在，默认不检查

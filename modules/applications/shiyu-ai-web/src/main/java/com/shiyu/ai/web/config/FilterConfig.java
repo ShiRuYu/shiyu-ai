@@ -22,6 +22,13 @@ import java.util.Map;
 @EnableConfigurationProperties(XssProperties.class)
 public class FilterConfig {
 
+    /**
+     * {@code xssFilterRegistration} 执行当前类型定义的业务操作。
+     *
+     * @param xssProperties 参数值，用于执行当前操作。
+     *
+     * @return 返回当前操作产生的结果。
+     */
     @SuppressWarnings({"rawtypes", "unchecked"})
     @Bean
     @ConditionalOnProperty(value = "xss.enabled", havingValue = "true")
@@ -39,6 +46,11 @@ public class FilterConfig {
         return registration;
     }
 
+    /**
+     * {@code someFilterRegistration} 执行当前类型定义的业务操作。
+     *
+     * @return 返回当前操作产生的结果。
+     */
     @SuppressWarnings({"rawtypes", "unchecked"})
     @Bean
     public FilterRegistrationBean someFilterRegistration() {

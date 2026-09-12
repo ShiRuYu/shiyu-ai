@@ -9,8 +9,8 @@ import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
-import com.shiyu.ai.agent.implementation.runtime.AiApp;
-import com.shiyu.ai.agent.implementation.runtime.AiAppVersion;
+import com.shiyu.ai.agent.implementation.runtime.model.AiApp;
+import com.shiyu.ai.agent.implementation.runtime.model.AiAppVersion;
 import com.shiyu.ai.kernel.context.TenantId;
 import com.shiyu.ai.kernel.context.UserId;
 

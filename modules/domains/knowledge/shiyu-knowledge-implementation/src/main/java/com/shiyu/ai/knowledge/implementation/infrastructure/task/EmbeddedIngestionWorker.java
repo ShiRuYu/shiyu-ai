@@ -1,5 +1,7 @@
 package com.shiyu.ai.knowledge.implementation.infrastructure.task;
 
+import com.shiyu.ai.knowledge.implementation.application.document.DocumentParser.ParseResult;
+
 import com.shiyu.ai.common.storage.api.*;
 import com.shiyu.ai.common.storage.backup.*;
 import com.shiyu.ai.common.storage.config.*;
@@ -44,29 +46,80 @@ import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.ScheduledFuture;
 import java.util.concurrent.TimeUnit;
 
+/**
+ * {@code EmbeddedIngestionWorker} 承载知识模块的领域状态或协作行为，负责维护本类型的职责边界。
+ */
 @Slf4j
 @Component
 @DependsOn("databaseInitializer")
 public class EmbeddedIngestionWorker {
 
+    /**
+     * enterpriseRepository 属性，保存当前对象中的业务数据或协作依赖。
+     */
     private final KnowledgeEnterpriseRepository enterpriseRepository;
+    /**
+     * documentRepository 属性，保存当前对象中的业务数据或协作依赖。
+     */
     private final KnowledgeDocumentRepository documentRepository;
+    /**
+     * ingestionService 属性，保存当前对象中的业务数据或协作依赖。
+     */
     private final DocumentIngestionService ingestionService;
+    /**
+     * objectStorage 属性，保存当前对象中的业务数据或协作依赖。
+     */
     private final ObjectStorage objectStorage;
+    /**
+     * securityScanner 属性，保存当前对象中的业务数据或协作依赖。
+     */
     private final ContentSecurityScanner securityScanner;
+    /**
+     * parsers 属性，保存当前对象中的业务数据或协作依赖。
+     */
     private final List<DocumentParser> parsers;
+    /**
+     * 调度器，表示当前对象中的对应属性。
+     */
     private final ScheduledExecutorService scheduler;
+    /**
+     * threadPoolManager 属性，保存当前对象中的业务数据或协作依赖。
+     */
     private final ThreadPoolManager threadPoolManager;
     private final Set<Long> inFlight = ConcurrentHashMap.newKeySet();
+    /**
+     * 执行器，表示当前对象中的对应属性。
+     */
     private ExecutorService executor;
+    /**
+     * pollingTask 属性，保存当前对象中的业务数据或协作依赖。
+     */
     private ScheduledFuture<?> pollingTask;
 
+    /**
+     * concurrency 属性，保存当前对象中的业务数据或协作依赖。
+     */
     @Value("${shiyu.knowledge.task.parse-concurrency:2}")
     private int concurrency;
 
+    /**
+     * pollDelayMs 属性，保存当前对象中的业务数据或协作依赖。
+     */
     @Value("${shiyu.knowledge.task.poll-delay-ms:1000}")
     private long pollDelayMs;
 
+    /**
+     * {@code EmbeddedIngestionWorker} 创建并初始化当前类型实例。
+     *
+     * @param enterpriseRepository 参数值，用于执行当前操作。
+     * @param documentRepository 参数值，用于执行当前操作。
+     * @param ingestionService 参数值，用于执行当前操作。
+     * @param objectStorage 参数值，用于执行当前操作。
+     * @param securityScanner 参数值，用于执行当前操作。
+     * @param parsers 参数值，用于执行当前操作。
+     * @param scheduler 参数值，用于执行当前操作。
+     * @param threadPoolManager 参数值，用于执行当前操作。
+     */
     public EmbeddedIngestionWorker(
             KnowledgeEnterpriseRepository enterpriseRepository,
             KnowledgeDocumentRepository documentRepository,
@@ -87,6 +140,9 @@ public class EmbeddedIngestionWorker {
         log.info("Knowledge ingestion worker constructed");
     }
 
+    /**
+     * {@code initialize} 执行当前类型定义的业务操作。
+     */
     @PostConstruct
     @EventListener(ApplicationReadyEvent.class)
     public synchronized void initialize() {
@@ -140,8 +196,6 @@ public class EmbeddedIngestionWorker {
     }
 
     private void execute(TenantId tenantId, Long jobId) {
-        // The scheduled worker is an inbound adapter, just like the HTTP edge.
-        // Bind from the persisted job rather than an unrelated request thread.
         try {
             TenantScope.withTenant(
                     tenantId,

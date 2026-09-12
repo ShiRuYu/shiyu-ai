@@ -26,6 +26,17 @@ import java.util.List;
 @Service
 public class AiPlatformServiceImpl implements AiPlatformService {
 
+    /**
+     * {@code pageResponse} 执行当前类型定义的业务操作。
+     *
+     * @param actor 参数值，用于执行当前操作。
+     * @param pageNo 参数值，用于执行当前操作。
+     * @param pageSize 参数值，用于执行当前操作。
+     * @param name 参数值，用于执行当前操作。
+     * @param code 参数值，用于执行当前操作。
+     *
+     * @return 返回当前操作产生的结果。
+     */
     @Override
     public Pair<Long, List<AiPlatformResponse>> pageResponse(
             ActorContext actor, Number pageNo, Number pageSize, String name, String code) {
@@ -35,31 +46,78 @@ public class AiPlatformServiceImpl implements AiPlatformService {
                 result.getRight().stream().map(AiPlatformAssembler::toResponse).toList());
     }
 
+    /**
+     * {@code enabledResponse} 执行当前类型定义的业务操作。
+     *
+     * @param actor 参数值，用于执行当前操作。
+     *
+     * @return 返回当前操作产生的结果。
+     */
     @Override
     public List<AiPlatformResponse> enabledResponse(ActorContext actor) {
         return getAllEnabledBO(actor).stream().map(AiPlatformAssembler::toResponse).toList();
     }
 
+    /**
+     * {@code detailResponse} 执行当前类型定义的业务操作。
+     *
+     * @param actor 参数值，用于执行当前操作。
+     * @param id 参数值，用于执行当前操作。
+     *
+     * @return 返回当前操作产生的结果。
+     */
     @Override
     public AiPlatformResponse detailResponse(ActorContext actor, Long id) {
         return AiPlatformAssembler.toResponse(getByIdBO(actor, id));
     }
 
+    /**
+     * {@code codeResponse} 执行当前类型定义的业务操作。
+     *
+     * @param actor 参数值，用于执行当前操作。
+     * @param code 参数值，用于执行当前操作。
+     *
+     * @return 返回当前操作产生的结果。
+     */
     @Override
     public AiPlatformResponse codeResponse(ActorContext actor, String code) {
         return AiPlatformAssembler.toResponse(getByCodeBO(actor, code));
     }
 
+    /**
+     * {@code defaultResponse} 执行当前类型定义的业务操作。
+     *
+     * @param actor 参数值，用于执行当前操作。
+     *
+     * @return 返回当前操作产生的结果。
+     */
     @Override
     public AiPlatformResponse defaultResponse(ActorContext actor) {
         return AiPlatformAssembler.toResponse(getDefaultBO(actor));
     }
 
+    /**
+     * {@code createResponse} 写入或更新当前模块中的业务数据。
+     *
+     * @param actor 参数值，用于执行当前操作。
+     * @param request 参数值，用于执行当前操作。
+     *
+     * @return 返回当前操作产生的结果。
+     */
     @Override
     public AiPlatformResponse createResponse(ActorContext actor, AiPlatformRequest request) {
         return AiPlatformAssembler.toResponse(createBO(actor, AiPlatformAssembler.toBO(request)));
     }
 
+    /**
+     * {@code updateResponse} 写入或更新当前模块中的业务数据。
+     *
+     * @param actor 参数值，用于执行当前操作。
+     * @param id 参数值，用于执行当前操作。
+     * @param request 参数值，用于执行当前操作。
+     *
+     * @return 返回当前操作产生的结果。
+     */
     @Override
     public AiPlatformResponse updateResponse(
             ActorContext actor, Long id, AiPlatformRequest request) {
@@ -68,6 +126,14 @@ public class AiPlatformServiceImpl implements AiPlatformService {
         return AiPlatformAssembler.toResponse(updateBO(actor, bo));
     }
 
+    /**
+     * {@code setDefaultResponse} 写入或更新当前模块中的业务数据。
+     *
+     * @param actor 参数值，用于执行当前操作。
+     * @param id 参数值，用于执行当前操作。
+     *
+     * @return 返回当前操作产生的结果。
+     */
     @Override
     public AiPlatformResponse setDefaultResponse(ActorContext actor, Long id) {
         return AiPlatformAssembler.toResponse(setDefaultBO(actor, id));
@@ -75,6 +141,9 @@ public class AiPlatformServiceImpl implements AiPlatformService {
 
     @Resource private AiPlatformRepository aiPlatformRepository;
 
+    /**
+     * platformProperties 属性，保存当前对象中的业务数据或协作依赖。
+     */
     @Resource private PlatformProperties platformProperties;
 
     private Pair<Long, List<AiPlatformBO>> getPageBO(
@@ -125,8 +194,6 @@ public class AiPlatformServiceImpl implements AiPlatformService {
                 throw new IllegalArgumentException("平台不存在: " + bo.getId());
             }
         }
-        // The API intentionally omits apiKey from responses. Preserve the stored
-        // credential when an edit request does not provide a replacement.
         if (StringUtils.isBlank(bo.getApiKey())) {
             bo.setApiKey(existing.getApiKey());
         }
@@ -141,11 +208,24 @@ public class AiPlatformServiceImpl implements AiPlatformService {
         return aiPlatformRepository.update(actor.tenantId(), bo);
     }
 
+    /**
+     * {@code deleteById} 释放或移除当前操作涉及的资源。
+     *
+     * @param actor 参数值，用于执行当前操作。
+     * @param id 参数值，用于执行当前操作。
+     */
     @Override
     public void deleteById(ActorContext actor, Long id) {
         aiPlatformRepository.deleteById(actor.tenantId(), id);
     }
 
+    /**
+     * {@code getOptions} 查询并返回当前操作所需的数据。
+     *
+     * @param actor 参数值，用于执行当前操作。
+     *
+     * @return 返回当前操作产生的结果。
+     */
     @Override
     public List<IdNameOptionVO> getOptions(ActorContext actor) {
         return aiPlatformRepository.selectOptions(actor.tenantId());

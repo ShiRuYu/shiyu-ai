@@ -420,7 +420,6 @@ class KnowledgeSpaceServiceDeepCoverageTest {
                                         32))
                         .id());
 
-        // Cover the null request collection and the document-only deletion guard.
         assertThrows(ServiceException.class, () -> service.replaceMembers(actor, 50L, null));
         when(knowledge.findBySpace(new TenantId(7L), 50L)).thenReturn(List.of());
         when(documents.findBySpace(new TenantId(7L), 50L))

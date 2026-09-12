@@ -403,8 +403,6 @@ class UserServiceCoverageTest {
         assertTrue(service.getTenantAssignments(noHome, 90L).isEmpty());
         assertTrue(service.getTenantAssignments(delegated, null).isEmpty());
 
-        // Non-platform users cannot mutate a different tenant even when the
-        // requested assignment is otherwise well formed.
         UserTenantRoleRequest child = new UserTenantRoleRequest();
         child.setTenantId(8L);
         child.setRoleId(31L);
@@ -457,8 +455,6 @@ class UserServiceCoverageTest {
         }
         verify(assignments, never()).insert(any());
 
-        // A patch containing omitted fields must preserve every persisted
-        // value instead of overwriting it with null/blank data.
         UserBO completeExisting = user(41L, "existing-41");
         completeExisting.setPassword("encoded");
         completeExisting.setNickName("Nick");

@@ -1,5 +1,9 @@
 package com.shiyu.ai.knowledge.implementation.application.service;
 
+import com.shiyu.ai.knowledge.implementation.application.KnowledgeSpaceService.SpaceRole;
+import com.shiyu.ai.knowledge.implementation.application.EnterpriseDocumentService.StoredFileRequest;
+import com.shiyu.ai.knowledge.implementation.application.EnterpriseDocumentService.UploadResult;
+
 import com.shiyu.ai.common.core.exception.ServiceException;
 import com.shiyu.ai.common.storage.api.*;
 import com.shiyu.ai.common.storage.backup.*;
@@ -31,15 +35,33 @@ import java.security.NoSuchAlgorithmException;
 import java.time.Duration;
 import java.util.HexFormat;
 
+/**
+ * {@code KnowledgeDocumentUploadServiceImpl} 实现知识模块的应用服务，负责编排用例流程并维护业务边界。
+ */
 @Service
 @RequiredArgsConstructor
 public class KnowledgeDocumentUploadServiceImpl implements KnowledgeDocumentUploadService {
 
+    /**
+     * MAX_IMPORT_BYTES 属性，保存当前对象中的业务数据或协作依赖。
+     */
     private static final long MAX_IMPORT_BYTES = 200L * 1024 * 1024;
 
+    /**
+     * objectStorage 属性，保存当前对象中的业务数据或协作依赖。
+     */
     private final ObjectStorage objectStorage;
+    /**
+     * securityScanner 属性，保存当前对象中的业务数据或协作依赖。
+     */
     private final ContentSecurityScanner securityScanner;
+    /**
+     * documentService 属性，保存当前对象中的业务数据或协作依赖。
+     */
     private final EnterpriseDocumentService documentService;
+    /**
+     * spaceService 属性，保存当前对象中的业务数据或协作依赖。
+     */
     private final KnowledgeSpaceService spaceService;
 
     private final HttpClient httpClient =
@@ -48,6 +70,18 @@ public class KnowledgeDocumentUploadServiceImpl implements KnowledgeDocumentUplo
                     .followRedirects(HttpClient.Redirect.NEVER)
                     .build();
 
+    /**
+     * {@code upload} 执行当前类型定义的业务操作。
+     *
+     * @param actor 参数值，用于执行当前操作。
+     * @param spaceId 参数值，用于执行当前操作。
+     * @param title 参数值，用于执行当前操作。
+     * @param originalName 参数值，用于执行当前操作。
+     * @param contentType 参数值，用于执行当前操作。
+     * @param content 参数值，用于执行当前操作。
+     *
+     * @return 返回当前操作产生的结果。
+     */
     @Override
     public EnterpriseDocumentService.UploadResult upload(
             ActorContext actor,
@@ -93,6 +127,16 @@ public class KnowledgeDocumentUploadServiceImpl implements KnowledgeDocumentUplo
         }
     }
 
+    /**
+     * {@code importUrl} 执行当前类型定义的业务操作。
+     *
+     * @param actor 参数值，用于执行当前操作。
+     * @param spaceId 参数值，用于执行当前操作。
+     * @param title 参数值，用于执行当前操作。
+     * @param url 参数值，用于执行当前操作。
+     *
+     * @return 返回当前操作产生的结果。
+     */
     @Override
     public EnterpriseDocumentService.UploadResult importUrl(
             ActorContext actor, Long spaceId, String title, String url) {
@@ -151,7 +195,6 @@ public class KnowledgeDocumentUploadServiceImpl implements KnowledgeDocumentUplo
         try {
             objectStorage.delete(stored.objectKey());
         } catch (IOException ignored) {
-            // The registration error is more useful to the caller.
         }
     }
 

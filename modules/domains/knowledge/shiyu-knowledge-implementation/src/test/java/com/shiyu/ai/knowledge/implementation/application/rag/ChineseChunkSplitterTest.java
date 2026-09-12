@@ -37,15 +37,11 @@ class ChineseChunkSplitterTest {
 
     @Test
     void handlesHeadingBoundariesAndMixedTokenEstimation() {
-        // Heading-only prefixes are ignored, while numbered and Chinese headings
-        // retain their heading text in the following section.
         List<ChunkSplitter.Chunk> headings = splitter.split("前言\n1. 第一节\n正文\n\n第二章\n更多正文");
         assertFalse(headings.isEmpty());
         assertTrue(headings.stream().anyMatch(chunk -> chunk.content().contains("1. 第一节")));
         assertTrue(headings.stream().anyMatch(chunk -> chunk.content().contains("第二章")));
 
-        // Whitespace and ASCII words exercise the token estimator's word-state
-        // transitions; a large paragraph forces a chunk rollover and overlap.
         String ascii = ("alpha beta gamma ".repeat(450)) + "\n\n" + ("中文段落。 ".repeat(450));
         List<ChunkSplitter.Chunk> chunks = splitter.split(ascii);
         assertTrue(chunks.size() > 1);

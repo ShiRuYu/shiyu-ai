@@ -2,6 +2,9 @@ package com.shiyu.ai.common.core.tx;
 
 import org.springframework.transaction.support.TransactionSynchronizationManager;
 
+/**
+ * {@code TransactionContext} 承载平台基础设施模块的领域状态或协作行为，负责维护本类型的职责边界。
+ */
 public final class TransactionContext {
 
     private TransactionContext() {}

@@ -1,13 +1,13 @@
 package com.shiyu.ai.common.mybatis.datasource;
 
 /**
- * Names of application data sources used by MyBatis adapters.
- *
- * <p>The name is a shared technical contract so domain implementations can bind their own mappers
- * without importing the legacy central DAL module.
+ * DataSourceConfig 配置组件，负责注册和配置基础设施领域相关基础设施。
  */
 public final class DataSourceConfig {
 
+    /**
+     * AGENT 属性，保存当前对象中的业务数据或协作依赖。
+     */
     public static final String AGENT = "agent";
 
     private DataSourceConfig() {

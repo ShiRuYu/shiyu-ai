@@ -1,4 +1,5 @@
 package com.shiyu.ai.tooling.implementation.plugin;
+import com.shiyu.ai.tooling.implementation.plugin.market.service.PluginMarketService;
 
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.*;

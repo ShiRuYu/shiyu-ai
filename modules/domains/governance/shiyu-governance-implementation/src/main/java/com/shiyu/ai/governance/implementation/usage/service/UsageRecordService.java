@@ -31,11 +31,25 @@ import java.util.concurrent.ConcurrentHashMap;
 @Slf4j
 public class UsageRecordService implements UsageGovernance {
 
+    /**
+     * usageRecordRepository 属性，保存当前对象中的业务数据或协作依赖。
+     */
     private final UsageRecordRepository usageRecordRepository;
     private final Map<String, ModelPricing> pricingMap = new ConcurrentHashMap<>();
+    /**
+     * realtimePublisher 属性，保存当前对象中的业务数据或协作依赖。
+     */
     private UsageRealtimePublisher realtimePublisher;
+    /**
+     * billingPriceProvider 属性，保存当前对象中的业务数据或协作依赖。
+     */
     private BillingPriceProvider billingPriceProvider;
 
+    /**
+     * {@code UsageRecordService} 创建并初始化当前类型实例。
+     *
+     * @param usageRecordRepository 参数值，用于执行当前操作。
+     */
     public UsageRecordService(UsageRecordRepository usageRecordRepository) {
         this.usageRecordRepository = usageRecordRepository;
         ModelPricing defaultPricing = ModelPricing.defaultOpenAI();
@@ -43,14 +57,22 @@ public class UsageRecordService implements UsageGovernance {
                 defaultPricing.getPlatform() + ":" + defaultPricing.getModel(), defaultPricing);
     }
 
+    /**
+     * {@code setRealtimePublisher} 写入或更新当前模块中的业务数据。
+     *
+     * @param publisher 参数值，用于执行当前操作。
+     */
     public void setRealtimePublisher(UsageRealtimePublisher publisher) {
         this.realtimePublisher = publisher;
     }
 
     /**
-     * Contract entry point used by cross-domain application adapters. The repository owns the
-     * unique (tenant, source type, source id) constraint, so retries are reported as duplicates
-     * instead of charging twice.
+     * 追加用量记录。
+     *
+     * @param actor 调用方上下文。
+     * @param envelope envelope 参数。
+     *
+     * @return 处理结果。
      */
     @Override
     public UsageRecordResult record(
@@ -119,15 +141,37 @@ public class UsageRecordService implements UsageGovernance {
         return inserted ? UsageRecordResult.RECORDED : UsageRecordResult.DUPLICATE;
     }
 
+    /**
+     * {@code setBillingPriceProvider} 写入或更新当前模块中的业务数据。
+     *
+     * @param provider 参数值，用于执行当前操作。
+     */
     public void setBillingPriceProvider(BillingPriceProvider provider) {
         this.billingPriceProvider = provider;
     }
 
+    /**
+     * {@code registerPricing} 写入或更新当前模块中的业务数据。
+     *
+     * @param pricing 参数值，用于执行当前操作。
+     */
     public void registerPricing(ModelPricing pricing) {
         pricingMap.put(pricing.getPlatform() + ":" + pricing.getModel(), pricing);
     }
 
-    /** Records an LLM usage row with an explicit tenant boundary. */
+    /**
+     * 追加用量。
+     *
+     * @param platform platform 参数。
+     * @param model model 参数。
+     * @param promptTokens promptTokens 参数。
+     * @param completionTokens completionTokens 参数。
+     * @param latencyMs latencyMs 参数。
+     * @param tenantId 租户标识。
+     * @param userId 用户标识。
+     * @param sessionId sessionId 参数。
+     * @param generationRunId generationRunId 参数。
+     */
     public void recordUsage(
             String platform,
             String model,
@@ -327,6 +371,11 @@ public class UsageRecordService implements UsageGovernance {
         }
     }
 
+    /**
+     * {@code getPricingCount} 查询并返回当前操作所需的数据。
+     *
+     * @return 返回当前操作产生的结果。
+     */
     public int getPricingCount() {
         return pricingMap.size();
     }

@@ -2,7 +2,14 @@ package com.shiyu.ai.conversation.implementation.domain.model;
 
 import java.time.Instant;
 
-/** Durable SSE fact. The sequence is the reconnect cursor and is never reused. */
+/**
+ * GenerationEvent 领域事件，描述会话领域相关业务状态变化。
+ * @param generationRunId generationRunId 属性，表示该记录组件承载的数据。
+ * @param sequence sequence 属性，表示该记录组件承载的数据。
+ * @param type 类型，表示该记录组件承载的数据。
+ * @param payload payload 属性，表示该记录组件承载的数据。
+ * @param createdAt 创建时间，表示该记录组件承载的数据。
+ */
 public record GenerationEvent(
         String generationRunId,
         int sequence,

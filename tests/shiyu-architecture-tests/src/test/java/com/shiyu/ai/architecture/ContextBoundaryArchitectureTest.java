@@ -59,7 +59,6 @@ class ContextBoundaryArchitectureTest {
                             "com.shiyu.ai.web.chat..",
                             "com.shiyu.ai.web.common..",
                             "com.shiyu.ai.web.conversation..",
-                            "com.shiyu.ai.web.education..",
                             "com.shiyu.ai.web.evaluation..",
                             "com.shiyu.ai.web.knowledge..",
                             "com.shiyu.ai.web.memory..",

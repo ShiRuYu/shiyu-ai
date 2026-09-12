@@ -33,19 +33,43 @@ import tools.jackson.core.type.TypeReference;
 import java.util.List;
 import java.util.Map;
 
+/**
+ * {@code UserContextInterceptor} 承载Web模块的领域状态或协作行为，负责维护本类型的职责边界。
+ */
 @Slf4j
 @Component
 public class UserContextInterceptor implements HandlerInterceptor {
 
+    /**
+     * authContextService 属性，保存当前对象中的业务数据或协作依赖。
+     */
     private final AuthContextService authContextService;
+    /**
+     * clientIpResolver 属性，保存当前对象中的业务数据或协作依赖。
+     */
     private final ClientIpResolver clientIpResolver;
 
+    /**
+     * {@code UserContextInterceptor} 创建并初始化当前类型实例。
+     *
+     * @param authContextService 参数值，用于执行当前操作。
+     * @param clientIpResolver 参数值，用于执行当前操作。
+     */
     public UserContextInterceptor(
             AuthContextService authContextService, ClientIpResolver clientIpResolver) {
         this.authContextService = authContextService;
         this.clientIpResolver = clientIpResolver;
     }
 
+    /**
+     * {@code preHandle} 执行当前类型定义的业务操作。
+     *
+     * @param request 参数值，用于执行当前操作。
+     * @param response 参数值，用于执行当前操作。
+     * @param handler 参数值，用于执行当前操作。
+     *
+     * @return 返回当前操作产生的结果。
+     */
     @Override
     public boolean preHandle(
             HttpServletRequest request,
@@ -428,6 +452,14 @@ public class UserContextInterceptor implements HandlerInterceptor {
                 && (item.getDelFlag() == null || item.getDelFlag() == 0);
     }
 
+    /**
+     * {@code afterCompletion} 执行当前类型定义的业务操作。
+     *
+     * @param request 参数值，用于执行当前操作。
+     * @param response 参数值，用于执行当前操作。
+     * @param handler 参数值，用于执行当前操作。
+     * @param ex 参数值，用于执行当前操作。
+     */
     @Override
     public void afterCompletion(
             HttpServletRequest request,

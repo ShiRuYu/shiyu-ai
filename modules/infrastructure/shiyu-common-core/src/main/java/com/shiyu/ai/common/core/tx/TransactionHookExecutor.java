@@ -5,6 +5,9 @@ import org.springframework.transaction.support.TransactionSynchronizationManager
 
 import java.util.Objects;
 
+/**
+ * {@code TransactionHookExecutor} 承载平台基础设施模块的领域状态或协作行为，负责维护本类型的职责边界。
+ */
 public final class TransactionHookExecutor {
 
     private TransactionHookExecutor() {}
@@ -40,22 +43,38 @@ public final class TransactionHookExecutor {
     /** 内部同步器（隔离 Spring SPI） */
     private static final class InternalSynchronization implements TransactionSynchronization {
 
+        /**
+         * hook 属性，保存当前对象中的业务数据或协作依赖。
+         */
         private final TransactionHook hook;
 
         private InternalSynchronization(TransactionHook hook) {
             this.hook = hook;
         }
 
+        /**
+         * {@code beforeCommit} 执行当前类型定义的业务操作。
+         *
+         * @param readOnly 参数值，用于执行当前操作。
+         */
         @Override
         public void beforeCommit(boolean readOnly) {
             hook.beforeCommit();
         }
 
+        /**
+         * {@code afterCommit} 执行当前类型定义的业务操作。
+         */
         @Override
         public void afterCommit() {
             hook.afterCommit();
         }
 
+        /**
+         * {@code afterCompletion} 执行当前类型定义的业务操作。
+         *
+         * @param status 参数值，用于执行当前操作。
+         */
         @Override
         public void afterCompletion(int status) {
             if (status == STATUS_ROLLED_BACK) {

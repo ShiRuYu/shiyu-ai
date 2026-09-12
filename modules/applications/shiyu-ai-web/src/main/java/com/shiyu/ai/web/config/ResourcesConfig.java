@@ -27,12 +27,22 @@ public class ResourcesConfig implements WebMvcConfigurer {
             "${shiyu.web.cors.allowed-origin-patterns:http://localhost:5888,http://127.0.0.1:5888,http://localhost:5173,http://127.0.0.1:5173}")
     private String allowedOriginPatterns;
 
+    /**
+     * {@code addInterceptors} 执行当前类型定义的业务操作。
+     *
+     * @param registry 参数值，用于执行当前操作。
+     */
     @Override
     public void addInterceptors(InterceptorRegistry registry) {
         // 全局访问性能拦截
         registry.addInterceptor(new WebInvokeInterceptor());
     }
 
+    /**
+     * {@code addResourceHandlers} 执行当前类型定义的业务操作。
+     *
+     * @param registry 参数值，用于执行当前操作。
+     */
     @Override
     public void addResourceHandlers(ResourceHandlerRegistry registry) {
         // 处理 favicon.ico 请求

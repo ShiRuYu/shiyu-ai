@@ -7,23 +7,46 @@ import com.shiyu.ai.agent.contract.node.NodeType;
 import com.shiyu.ai.agent.contract.node.creator.NodeCreator;
 import com.shiyu.ai.agent.implementation.node.memory.ShortTermMemoryConfig;
 import com.shiyu.ai.agent.implementation.node.memory.ShortTermMemoryNode;
-import com.shiyu.ai.agent.implementation.runtime.AgentExecutionContext;
+import com.shiyu.ai.agent.implementation.runtime.model.AgentExecutionContext;
 
 import org.springframework.stereotype.Component;
 
+/**
+ * {@code ShortTermMemoryNodeCreator} 负责创建智能体模块中的运行时对象，并集中封装构造规则。
+ */
 @Component
 public class ShortTermMemoryNodeCreator implements NodeCreator {
+    /**
+     * memoryService 属性，保存当前对象中的业务数据或协作依赖。
+     */
     private final AgentExecutionContext memoryService;
 
+    /**
+     * {@code ShortTermMemoryNodeCreator} 创建并初始化当前类型实例。
+     *
+     * @param memoryService 参数值，用于执行当前操作。
+     */
     public ShortTermMemoryNodeCreator(AgentExecutionContext memoryService) {
         this.memoryService = memoryService;
     }
 
+    /**
+     * {@code getType} 查询并返回当前操作所需的数据。
+     *
+     * @return 返回当前操作产生的结果。
+     */
     @Override
     public NodeType getType() {
         return NodeType.MEMORY_SHORT_TERM;
     }
 
+    /**
+     * {@code create} 写入或更新当前模块中的业务数据。
+     *
+     * @param config 参数值，用于执行当前操作。
+     *
+     * @return 返回当前操作产生的结果。
+     */
     @Override
     public BaseNode create(NodeConfig config) {
         return ShortTermMemoryNode.builder()

@@ -1,4 +1,4 @@
-"""Process lease preventing duplicate schedulers."""
+"""lease 脚本，执行项目架构与工程校验。"""
 from __future__ import annotations
 import os, json
 from pathlib import Path

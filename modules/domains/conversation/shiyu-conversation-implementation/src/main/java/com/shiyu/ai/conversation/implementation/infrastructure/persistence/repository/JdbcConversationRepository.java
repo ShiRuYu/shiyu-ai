@@ -17,14 +17,30 @@ import java.util.Optional;
 
 import javax.sql.DataSource;
 
+/**
+ * {@code JdbcConversationRepository} 定义会话模块的持久化端口，隔离领域逻辑与具体存储实现。
+ */
 @Component
 public class JdbcConversationRepository implements ConversationRepository {
+    /**
+     * JDBC，表示当前对象中的对应属性。
+     */
     private final JdbcTemplate jdbc;
 
+    /**
+     * {@code JdbcConversationRepository} 创建并初始化当前类型实例。
+     *
+     * @param dataSource 参数值，用于执行当前操作。
+     */
     public JdbcConversationRepository(@Qualifier("agentDataSource") DataSource dataSource) {
         this.jdbc = new JdbcTemplate(dataSource);
     }
 
+    /**
+     * {@code insertConversation} 执行当前类型定义的业务操作。
+     *
+     * @param c 参数值，用于执行当前操作。
+     */
     @Override
     public void insertConversation(Conversation c) {
         jdbc.update(
@@ -48,6 +64,15 @@ public class JdbcConversationRepository implements ConversationRepository {
                 ts(c.updatedAt()));
     }
 
+    /**
+     * {@code findConversation} 查询并返回当前操作所需的数据。
+     *
+     * @param id 参数值，用于执行当前操作。
+     * @param tenantId 参数值，用于执行当前操作。
+     * @param ownerUserId 参数值，用于执行当前操作。
+     *
+     * @return 返回当前操作产生的结果。
+     */
     @Override
     public Optional<Conversation> findConversation(String id, TenantId tenantId, long ownerUserId) {
         return jdbc
@@ -62,6 +87,16 @@ public class JdbcConversationRepository implements ConversationRepository {
                 .findFirst();
     }
 
+    /**
+     * {@code listConversations} 查询并返回当前操作所需的数据。
+     *
+     * @param tenantId 参数值，用于执行当前操作。
+     * @param ownerUserId 参数值，用于执行当前操作。
+     * @param limit 参数值，用于执行当前操作。
+     * @param offset 参数值，用于执行当前操作。
+     *
+     * @return 返回当前操作产生的结果。
+     */
     @Override
     public List<Conversation> listConversations(
             TenantId tenantId, long ownerUserId, int limit, int offset) {
@@ -75,6 +110,15 @@ public class JdbcConversationRepository implements ConversationRepository {
                 Math.max(offset, 0));
     }
 
+    /**
+     * {@code listBranches} 查询并返回当前操作所需的数据。
+     *
+     * @param parentConversationId 参数值，用于执行当前操作。
+     * @param tenantId 参数值，用于执行当前操作。
+     * @param ownerUserId 参数值，用于执行当前操作。
+     *
+     * @return 返回当前操作产生的结果。
+     */
     @Override
     public List<Conversation> listBranches(
             String parentConversationId, TenantId tenantId, long ownerUserId) {
@@ -87,6 +131,14 @@ public class JdbcConversationRepository implements ConversationRepository {
                 ownerUserId);
     }
 
+    /**
+     * {@code updateConversation} 写入或更新当前模块中的业务数据。
+     *
+     * @param c 参数值，用于执行当前操作。
+     * @param expectedVersion 参数值，用于执行当前操作。
+     *
+     * @return 返回当前操作产生的结果。
+     */
     @Override
     public int updateConversation(Conversation c, long expectedVersion) {
         return jdbc.update(
@@ -105,6 +157,11 @@ public class JdbcConversationRepository implements ConversationRepository {
                 expectedVersion);
     }
 
+    /**
+     * {@code insertMessage} 执行当前类型定义的业务操作。
+     *
+     * @param m 参数值，用于执行当前操作。
+     */
     @Override
     public void insertMessage(ConversationMessage m) {
         Long tenant =
@@ -133,6 +190,15 @@ public class JdbcConversationRepository implements ConversationRepository {
                 ts(m.updatedAt()));
     }
 
+    /**
+     * {@code findMessage} 查询并返回当前操作所需的数据。
+     *
+     * @param id 参数值，用于执行当前操作。
+     * @param tenantId 参数值，用于执行当前操作。
+     * @param ownerUserId 参数值，用于执行当前操作。
+     *
+     * @return 返回当前操作产生的结果。
+     */
     @Override
     public Optional<ConversationMessage> findMessage(
             String id, TenantId tenantId, long ownerUserId) {
@@ -149,6 +215,16 @@ public class JdbcConversationRepository implements ConversationRepository {
                 .findFirst();
     }
 
+    /**
+     * {@code listMessages} 查询并返回当前操作所需的数据。
+     *
+     * @param conversationId 参数值，用于执行当前操作。
+     * @param tenantId 参数值，用于执行当前操作。
+     * @param ownerUserId 参数值，用于执行当前操作。
+     * @param limit 参数值，用于执行当前操作。
+     *
+     * @return 返回当前操作产生的结果。
+     */
     @Override
     public List<ConversationMessage> listMessages(
             String conversationId, TenantId tenantId, long ownerUserId, int limit) {
@@ -163,6 +239,15 @@ public class JdbcConversationRepository implements ConversationRepository {
                 Math.min(Math.max(limit, 1), 1000));
     }
 
+    /**
+     * {@code deleteConversation} 释放或移除当前操作涉及的资源。
+     *
+     * @param id 参数值，用于执行当前操作。
+     * @param tenantId 参数值，用于执行当前操作。
+     * @param ownerUserId 参数值，用于执行当前操作。
+     *
+     * @return 返回当前操作产生的结果。
+     */
     @Override
     public int deleteConversation(String id, TenantId tenantId, long ownerUserId) {
         return jdbc.update(
@@ -174,6 +259,15 @@ public class JdbcConversationRepository implements ConversationRepository {
                 ownerUserId);
     }
 
+    /**
+     * {@code deleteMessage} 释放或移除当前操作涉及的资源。
+     *
+     * @param id 参数值，用于执行当前操作。
+     * @param tenantId 参数值，用于执行当前操作。
+     * @param ownerUserId 参数值，用于执行当前操作。
+     *
+     * @return 返回当前操作产生的结果。
+     */
     @Override
     public int deleteMessage(String id, TenantId tenantId, long ownerUserId) {
         return jdbc.update(

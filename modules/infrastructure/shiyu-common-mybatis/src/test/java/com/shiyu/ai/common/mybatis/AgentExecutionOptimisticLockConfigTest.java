@@ -9,9 +9,7 @@ import java.io.InputStream;
 import java.nio.charset.StandardCharsets;
 
 /**
- * Guards the shipped MyBatis-Flex configuration against treating the {@code
- * agent_execution.version} business column (the Agent version number, e.g. {@code v2}) as an
- * optimistic-lock column.
+ * 验证 AgentExecutionOptimisticLockConfig 的功能、边界条件和集成行为。
  */
 class AgentExecutionOptimisticLockConfigTest {
 

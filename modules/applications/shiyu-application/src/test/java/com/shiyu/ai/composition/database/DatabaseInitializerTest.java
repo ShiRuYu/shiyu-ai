@@ -1,5 +1,7 @@
 package com.shiyu.ai.composition.database;
 
+import com.shiyu.ai.education.implementation.database.EducationDatabaseBaselineContributor;
+
 import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
@@ -22,6 +24,22 @@ import java.util.UUID;
 import javax.sql.DataSource;
 
 class DatabaseInitializerTest {
+
+    @Test
+    void platformCompositionDoesNotContainEducationBaseline() {
+        DatabaseInitializer platformInitializer =
+                new DatabaseInitializer(Map.of(), new StaticApplicationContext());
+
+        assertTrue(
+                platformInitializer.schemaResources().stream()
+                        .noneMatch(resource -> resource.contains("education")));
+        assertTrue(
+                platformInitializer.seedResources().stream()
+                        .noneMatch(resource -> resource.contains("education")));
+        assertTrue(
+                platformInitializer.expectedTables().stream()
+                        .noneMatch(table -> table.startsWith("EDU_")));
+    }
 
     private static final Set<String> SEEDED_TABLES =
             Set.of(
@@ -575,7 +593,11 @@ class DatabaseInitializerTest {
     }
 
     private DatabaseInitializer newInitializer(DataSource dataSource) {
-        return new DatabaseInitializer(Map.of("agent", dataSource), new StaticApplicationContext());
+        return new DatabaseInitializer(
+                Map.of("agent", dataSource),
+                new StaticApplicationContext(),
+                new com.shiyu.ai.common.mybatis.config.DatabaseInfrastructureProperties(),
+                List.of(new EducationDatabaseBaselineContributor()));
     }
 
     private DataSource newDataSource() {

@@ -1,4 +1,5 @@
 package com.shiyu.ai.common.storage.web;
+import com.shiyu.ai.common.storage.file.service.FileStorageManager;
 
 import static org.springframework.http.HttpStatus.FORBIDDEN;
 import static org.springframework.http.HttpStatus.NOT_FOUND;
@@ -44,6 +45,9 @@ import java.nio.charset.StandardCharsets;
 import java.util.List;
 import java.util.Map;
 
+/**
+ * {@code FileController} 是平台基础设施模块的 Web 接口适配器，负责接收请求并转换为应用服务调用。
+ */
 @Slf4j
 @Tag(name = "File", description = "文件管理")
 @RestController
@@ -51,8 +55,16 @@ import java.util.Map;
 @RequiredArgsConstructor
 public class FileController {
 
+    /**
+     * storageManager 属性，保存当前对象中的业务数据或协作依赖。
+     */
     private final FileStorageManager storageManager;
 
+    /**
+     * {@code config} 执行当前类型定义的业务操作。
+     *
+     * @return 返回当前操作产生的结果。
+     */
     @Operation(summary = "获取文件存储配置")
     @SaCheckPermission("file:list")
     @GetMapping("/config")
@@ -65,6 +77,11 @@ public class FileController {
                         FileStorageManager.SUPPORTED_TYPES));
     }
 
+    /**
+     * {@code list} 查询并返回当前操作所需的数据。
+     *
+     * @return 返回当前操作产生的结果。
+     */
     @Operation(summary = "获取文件列表")
     @SaCheckPermission("file:list")
     @GetMapping("/list")
@@ -81,6 +98,13 @@ public class FileController {
         }
     }
 
+    /**
+     * {@code upload} 执行当前类型定义的业务操作。
+     *
+     * @param file 参数值，用于执行当前操作。
+     *
+     * @return 返回当前操作产生的结果。
+     */
     @Operation(summary = "上传文件")
     @SaCheckPermission("file:upload")
     @PostMapping("/upload")
@@ -111,6 +135,13 @@ public class FileController {
         }
     }
 
+    /**
+     * {@code download} 执行当前类型定义的业务操作。
+     *
+     * @param key 参数值，用于执行当前操作。
+     *
+     * @return 返回当前操作产生的结果。
+     */
     @Operation(summary = "下载文件")
     @GetMapping("/download")
     public ResponseEntity<InputStreamResource> download(@RequestParam String key)
@@ -133,6 +164,13 @@ public class FileController {
                 .body(new InputStreamResource(object.inputStream()));
     }
 
+    /**
+     * {@code delete} 释放或移除当前操作涉及的资源。
+     *
+     * @param key 参数值，用于执行当前操作。
+     *
+     * @return 返回当前操作产生的结果。
+     */
     @Operation(summary = "删除文件")
     @SaCheckPermission("file:delete")
     @DeleteMapping
@@ -183,6 +221,16 @@ public class FileController {
                 file.storageType());
     }
 
+    /**
+     * {@code FileView} 封装平台基础设施模块中不可变的结构化数据，并作为相关操作之间的值对象。
+     * @param key key 属性，表示该记录组件承载的数据。
+     * @param name 名称，表示该记录组件承载的数据。
+     * @param size 大小，表示该记录组件承载的数据。
+     * @param contentType 内容类型，表示该记录组件承载的数据。
+     * @param lastModified lastModified 属性，表示该记录组件承载的数据。
+     * @param url url 属性，表示该记录组件承载的数据。
+     * @param storageType storageType 属性，表示该记录组件承载的数据。
+     */
     public record FileView(
             String key,
             String name,

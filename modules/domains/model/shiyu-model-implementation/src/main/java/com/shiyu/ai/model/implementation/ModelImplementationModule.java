@@ -1,4 +1,6 @@
 package com.shiyu.ai.model.implementation;
 
-/** Marker for code owned exclusively by the Model bounded context. */
+/**
+ * ModelImplementationModule 模块接口，标识模型模块的边界。
+ */
 public interface ModelImplementationModule {}

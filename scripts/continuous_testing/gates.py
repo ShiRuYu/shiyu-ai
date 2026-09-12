@@ -1,4 +1,4 @@
-"""Repository baseline gate definitions."""
+"""gates 脚本，执行项目架构与工程校验。"""
 from __future__ import annotations
 from pathlib import Path
 

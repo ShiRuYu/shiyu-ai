@@ -10,15 +10,18 @@ import java.time.LocalDateTime;
 @Data
 public class AgentExecutionBO implements Serializable {
 
+    /**
+     * serialVersionUID 属性，保存当前对象中的业务数据或协作依赖。
+     */
     @Serial private static final long serialVersionUID = 1L;
 
     /** ID */
     private Long id;
 
-    /** 执行 ID（唯一标识） */
+    /** 执行记录的唯一标识。 */
     private String executionId;
 
-    /** Agent ID */
+    /** 智能体标识。 */
     private String agentId;
 
     /** 版本号 */

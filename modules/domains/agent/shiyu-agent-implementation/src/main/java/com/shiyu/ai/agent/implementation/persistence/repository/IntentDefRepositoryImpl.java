@@ -18,10 +18,16 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 
+/**
+ * {@code IntentDefRepositoryImpl} 实现智能体模块的持久化端口，负责在领域对象与存储模型之间转换。
+ */
 @Component
 public class IntentDefRepositoryImpl
         implements com.shiyu.ai.agent.implementation.port.repository.IntentDefRepository {
 
+    /**
+     * intentDefMapper 属性，保存当前对象中的业务数据或协作依赖。
+     */
     @Resource private IntentDefMapper intentDefMapper;
 
     public Pair<Long, List<IntentDefBO>> selectPage(
@@ -67,7 +73,6 @@ public class IntentDefRepositoryImpl
 
     public List<IntentDefBO> selectByAgentId(TenantId tenantId, String agentId) {
         requireTenant(tenantId);
-        // WHERE del_flag='0' AND enabled='1' AND status='1' AND (agent_id=? OR agent_id='default')
         QueryWrapper qw = new QueryWrapper();
         qw.eq(IntentDefDO::getTenantId, tenantId.value())
                 .eq(IntentDefDO::getDelFlag, "0")
@@ -85,8 +90,6 @@ public class IntentDefRepositoryImpl
 
     public List<IntentDefBO> selectByCategory(TenantId tenantId, String agentId, String category) {
         requireTenant(tenantId);
-        // WHERE del_flag='0' AND enabled='1' AND status='1' AND category=? AND (agent_id=? OR
-        // agent_id='default')
         QueryWrapper qw = new QueryWrapper();
         qw.eq(IntentDefDO::getTenantId, tenantId.value())
                 .eq(IntentDefDO::getDelFlag, "0")
@@ -194,7 +197,6 @@ public class IntentDefRepositoryImpl
         bo.setCreateTime(d.getCreateTime());
         bo.setUpdateBy(d.getUpdateBy());
         bo.setUpdateTime(d.getUpdateTime());
-        // JSON fields
         if (d.getExamples() != null) {
             bo.setExamples(JSONUtil.toList(d.getExamples(), String.class));
         }

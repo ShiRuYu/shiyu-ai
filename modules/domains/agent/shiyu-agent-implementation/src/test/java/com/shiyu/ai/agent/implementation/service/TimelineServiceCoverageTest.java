@@ -5,8 +5,8 @@ import static org.mockito.ArgumentMatchers.*;
 import static org.mockito.Mockito.*;
 
 import com.shiyu.ai.agent.implementation.domain.model.ExecutionTimelineBO;
-import com.shiyu.ai.agent.implementation.event.NodeExecutionCompletedEvent;
-import com.shiyu.ai.agent.implementation.event.NodeExecutionStartedEvent;
+import com.shiyu.ai.agent.implementation.event.model.NodeExecutionCompletedEvent;
+import com.shiyu.ai.agent.implementation.event.model.NodeExecutionStartedEvent;
 import com.shiyu.ai.agent.implementation.port.repository.ExecutionTimelineRepository;
 import com.shiyu.ai.kernel.context.TenantId;
 

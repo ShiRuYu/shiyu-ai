@@ -1,5 +1,12 @@
 package com.shiyu.ai.knowledge.implementation.application.service;
 
+
+import com.shiyu.ai.knowledge.implementation.application.EnterpriseDocumentService.DocumentView;
+import com.shiyu.ai.knowledge.implementation.application.KnowledgeSpaceService.SpaceRole;
+import com.shiyu.ai.knowledge.implementation.application.EnterpriseDocumentService.StoredFileRequest;
+import com.shiyu.ai.knowledge.implementation.application.EnterpriseDocumentService.UploadResult;
+import com.shiyu.ai.knowledge.implementation.application.EnterpriseDocumentService.VersionView;
+
 import com.shiyu.ai.common.core.api.PageData;
 import com.shiyu.ai.common.core.exception.ServiceException;
 import com.shiyu.ai.common.core.tx.TransactionHookExecutor;
@@ -26,7 +33,7 @@ import com.shiyu.ai.knowledge.implementation.domain.model.KnowledgeReviewRecordB
 import com.shiyu.ai.knowledge.implementation.domain.model.KnowledgeSpaceBO;
 import com.shiyu.ai.knowledge.implementation.domain.port.repository.KnowledgeDocumentRepository;
 import com.shiyu.ai.knowledge.implementation.domain.port.repository.KnowledgeEnterpriseRepository;
-import com.shiyu.ai.knowledge.implementation.infrastructure.index.KnowledgeIndexService;
+import com.shiyu.ai.knowledge.implementation.infrastructure.index.service.KnowledgeIndexService;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -40,22 +47,68 @@ import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Locale;
 
+/**
+ * {@code EnterpriseDocumentServiceImpl} 实现知识模块的应用服务，负责编排用例流程并维护业务边界。
+ */
 @Service
 @RequiredArgsConstructor
 @Slf4j
 public class EnterpriseDocumentServiceImpl implements EnterpriseDocumentService {
 
+    /**
+     * documentRepository 属性，保存当前对象中的业务数据或协作依赖。
+     */
     private final KnowledgeDocumentRepository documentRepository;
+    /**
+     * enterpriseRepository 属性，保存当前对象中的业务数据或协作依赖。
+     */
     private final KnowledgeEnterpriseRepository enterpriseRepository;
+    /**
+     * spaceService 属性，保存当前对象中的业务数据或协作依赖。
+     */
     private final KnowledgeSpaceService spaceService;
+    /**
+     * 审计服务，表示当前对象中的对应属性。
+     */
     private final KnowledgeAuditService auditService;
+    /**
+     * documentRelationService 属性，保存当前对象中的业务数据或协作依赖。
+     */
     private final KnowledgeDocumentRelationService documentRelationService;
+    /**
+     * ingestionService 属性，保存当前对象中的业务数据或协作依赖。
+     */
     private final DocumentIngestionService ingestionService;
+    /**
+     * 索引服务，表示当前对象中的对应属性。
+     */
     private final KnowledgeIndexService indexService;
+    /**
+     * transactionTemplateExecutor 属性，保存当前对象中的业务数据或协作依赖。
+     */
     private final TransactionTemplateExecutor transactionTemplateExecutor;
+    /**
+     * storageMetadataStore 属性，保存当前对象中的业务数据或协作依赖。
+     */
     private final StorageMetadataStore storageMetadataStore;
+    /**
+     * objectStorage 属性，保存当前对象中的业务数据或协作依赖。
+     */
     private final ObjectStorage objectStorage;
 
+    /**
+     * {@code page} 执行当前类型定义的业务操作。
+     *
+     * @param actor 参数值，用于执行当前操作。
+     * @param spaceId 参数值，用于执行当前操作。
+     * @param pageNum 参数值，用于执行当前操作。
+     * @param pageSize 参数值，用于执行当前操作。
+     * @param keyword 参数值，用于执行当前操作。
+     * @param lifecycleStatus 参数值，用于执行当前操作。
+     * @param parseStatus 参数值，用于执行当前操作。
+     *
+     * @return 返回当前操作产生的结果。
+     */
     @Override
     public PageData<DocumentView> page(
             ActorContext actor,
@@ -80,6 +133,14 @@ public class EnterpriseDocumentServiceImpl implements EnterpriseDocumentService 
                 result.getItems().stream().map(this::toView).toList(), result.getTotal());
     }
 
+    /**
+     * {@code get} 查询并返回当前操作所需的数据。
+     *
+     * @param actor 参数值，用于执行当前操作。
+     * @param documentId 参数值，用于执行当前操作。
+     *
+     * @return 返回当前操作产生的结果。
+     */
     @Override
     public DocumentView get(ActorContext actor, Long documentId) {
         KnowledgeDocumentBO document = requireDocument(actor, documentId);
@@ -88,6 +149,14 @@ public class EnterpriseDocumentServiceImpl implements EnterpriseDocumentService 
         return toView(document);
     }
 
+    /**
+     * {@code registerStoredFile} 写入或更新当前模块中的业务数据。
+     *
+     * @param actor 参数值，用于执行当前操作。
+     * @param request 参数值，用于执行当前操作。
+     *
+     * @return 返回当前操作产生的结果。
+     */
     @Override
     @Transactional(rollbackFor = Exception.class)
     public UploadResult registerStoredFile(ActorContext actor, StoredFileRequest request) {
@@ -104,9 +173,6 @@ public class EnterpriseDocumentServiceImpl implements EnterpriseDocumentService 
         KnowledgeDocumentBO document = new KnowledgeDocumentBO();
         document.setSpaceId(request.spaceId());
         document.setTitle(request.title());
-        // The source text is populated by the ingestion worker. H2 keeps this
-        // legacy column non-null for backwards compatibility, so use an empty
-        // value until parsing completes instead of inserting SQL NULL.
         document.setContent("");
         document.setDocType(extension(request.originalName()));
         document.setSource("UPLOAD");
@@ -169,9 +235,6 @@ public class EnterpriseDocumentServiceImpl implements EnterpriseDocumentService 
             job.setDelFlag(0);
             enterpriseRepository.insertJob(actor.tenantId(), job);
         } else {
-            // A previous document with the same checksum may have been
-            // deleted. Rebind its idempotency record so a re-upload can be
-            // ingested again without violating the unique job key.
             KnowledgeDocumentBO previous =
                     job.getDocumentId() == null
                             ? null
@@ -197,6 +260,14 @@ public class EnterpriseDocumentServiceImpl implements EnterpriseDocumentService 
         return new UploadResult(toView(document), version.getId(), job.getId(), false);
     }
 
+    /**
+     * {@code versions} 执行当前类型定义的业务操作。
+     *
+     * @param actor 参数值，用于执行当前操作。
+     * @param documentId 参数值，用于执行当前操作。
+     *
+     * @return 返回当前操作产生的结果。
+     */
     @Override
     public List<VersionView> versions(ActorContext actor, Long documentId) {
         KnowledgeDocumentBO document = requireDocument(actor, documentId);
@@ -207,6 +278,15 @@ public class EnterpriseDocumentServiceImpl implements EnterpriseDocumentService 
                 .toList();
     }
 
+    /**
+     * {@code submit} 执行当前类型定义的业务操作。
+     *
+     * @param actor 参数值，用于执行当前操作。
+     * @param documentId 参数值，用于执行当前操作。
+     * @param comment 参数值，用于执行当前操作。
+     *
+     * @return 返回当前操作产生的结果。
+     */
     @Override
     @Transactional(rollbackFor = Exception.class)
     public DocumentView submit(ActorContext actor, Long documentId, String comment) {
@@ -220,6 +300,15 @@ public class EnterpriseDocumentServiceImpl implements EnterpriseDocumentService 
                 comment);
     }
 
+    /**
+     * {@code approve} 执行当前类型定义的业务操作。
+     *
+     * @param actor 参数值，用于执行当前操作。
+     * @param documentId 参数值，用于执行当前操作。
+     * @param comment 参数值，用于执行当前操作。
+     *
+     * @return 返回当前操作产生的结果。
+     */
     @Override
     @Transactional(rollbackFor = Exception.class)
     public DocumentView approve(ActorContext actor, Long documentId, String comment) {
@@ -233,6 +322,15 @@ public class EnterpriseDocumentServiceImpl implements EnterpriseDocumentService 
                 comment);
     }
 
+    /**
+     * {@code reject} 执行当前类型定义的业务操作。
+     *
+     * @param actor 参数值，用于执行当前操作。
+     * @param documentId 参数值，用于执行当前操作。
+     * @param comment 参数值，用于执行当前操作。
+     *
+     * @return 返回当前操作产生的结果。
+     */
     @Override
     @Transactional(rollbackFor = Exception.class)
     public DocumentView reject(ActorContext actor, Long documentId, String comment) {
@@ -246,6 +344,15 @@ public class EnterpriseDocumentServiceImpl implements EnterpriseDocumentService 
                 comment);
     }
 
+    /**
+     * {@code publish} 执行当前模块定义的业务流程。
+     *
+     * @param actor 参数值，用于执行当前操作。
+     * @param documentId 参数值，用于执行当前操作。
+     * @param comment 参数值，用于执行当前操作。
+     *
+     * @return 返回当前操作产生的结果。
+     */
     @Override
     @Transactional(rollbackFor = Exception.class)
     public DocumentView publish(ActorContext actor, Long documentId, String comment) {
@@ -264,6 +371,15 @@ public class EnterpriseDocumentServiceImpl implements EnterpriseDocumentService 
         return transition(actor, documentId, null, "PUBLISHED", "PUBLISH", required, comment);
     }
 
+    /**
+     * {@code archive} 执行当前类型定义的业务操作。
+     *
+     * @param actor 参数值，用于执行当前操作。
+     * @param documentId 参数值，用于执行当前操作。
+     * @param comment 参数值，用于执行当前操作。
+     *
+     * @return 返回当前操作产生的结果。
+     */
     @Override
     @Transactional(rollbackFor = Exception.class)
     public DocumentView archive(ActorContext actor, Long documentId, String comment) {
@@ -277,6 +393,15 @@ public class EnterpriseDocumentServiceImpl implements EnterpriseDocumentService 
                 comment);
     }
 
+    /**
+     * {@code rollback} 执行当前类型定义的业务操作。
+     *
+     * @param actor 参数值，用于执行当前操作。
+     * @param documentId 参数值，用于执行当前操作。
+     * @param versionId 参数值，用于执行当前操作。
+     *
+     * @return 返回当前操作产生的结果。
+     */
     @Override
     @Transactional(rollbackFor = Exception.class)
     public DocumentView rollback(ActorContext actor, Long documentId, Long versionId) {
@@ -309,6 +434,12 @@ public class EnterpriseDocumentServiceImpl implements EnterpriseDocumentService 
         return toView(document);
     }
 
+    /**
+     * {@code delete} 释放或移除当前操作涉及的资源。
+     *
+     * @param actor 参数值，用于执行当前操作。
+     * @param documentId 参数值，用于执行当前操作。
+     */
     @Override
     public void delete(ActorContext actor, Long documentId) {
         requireActor(actor);
@@ -354,9 +485,6 @@ public class EnterpriseDocumentServiceImpl implements EnterpriseDocumentService 
                 storageMetadataStore.markObjectDeleted(deletion.tenantId(), deletion.objectKey());
             }
         }
-        // The database transaction must commit before a new physical index is activated.
-        // Otherwise a later rollback could leave the active index pointing at a deleted
-        // document or leave a new index version active without the corresponding rows.
         if (deletion.tenantId() != null && deletion.spaceId() != null) {
             try {
                 indexService.rebuild(
@@ -375,8 +503,27 @@ public class EnterpriseDocumentServiceImpl implements EnterpriseDocumentService 
         }
     }
 
+    /**
+     * {@code DeletionContext} 封装知识模块中不可变的结构化数据，并作为相关操作之间的值对象。
+     * @param tenantId 租户标识，表示该记录组件承载的数据。
+     * @param spaceId spaceId 属性，表示该记录组件承载的数据。
+     * @param objectKey objectKey 属性，表示该记录组件承载的数据。
+     */
     private record DeletionContext(Long tenantId, Long spaceId, String objectKey) {}
 
+    /**
+     * {@code transition} 执行当前类型定义的业务操作。
+     *
+     * @param actor 参数值，用于执行当前操作。
+     * @param documentId 参数值，用于执行当前操作。
+     * @param expected 参数值，用于执行当前操作。
+     * @param target 参数值，用于执行当前操作。
+     * @param action 参数值，用于执行当前操作。
+     * @param role 参数值，用于执行当前操作。
+     * @param comment 参数值，用于执行当前操作。
+     *
+     * @return 返回当前操作产生的结果。
+     */
     protected DocumentView transition(
             ActorContext actor,
             Long documentId,
@@ -422,6 +569,9 @@ public class EnterpriseDocumentServiceImpl implements EnterpriseDocumentService 
     private void scheduleIndexRebuild(com.shiyu.ai.kernel.context.TenantId tenantId, Long spaceId) {
         TransactionHookExecutor.register(
                 new com.shiyu.ai.common.core.tx.TransactionHook() {
+                    /**
+                     * {@code afterCommit} 执行当前类型定义的业务操作。
+                     */
                     @Override
                     public void afterCommit() {
                         indexService.rebuild(tenantId, spaceId);

@@ -5,18 +5,31 @@ import com.shiyu.ai.kernel.context.TenantId;
 import com.shiyu.ai.kernel.context.UserId;
 
 /**
- * Outbound usage boundary. Conversation remains usable without the usage module; a deployment may
- * provide a sink to turn the durable run into a billing/usage ledger record.
+ * GenerationUsageSink 接口，定义会话模块的能力边界。
  */
 public interface GenerationUsageSink {
-    /** Records a completed generation for usage or billing projections. */
+    /**
+     * 处理completed。
+     *
+     * @param run 运行记录。
+     */
     default void completed(GenerationRun run) {}
 
-    /** Records completion with explicit tenant and owner attribution. */
+    /**
+     * 处理completed。
+     *
+     * @param run 运行记录。
+     * @param tenantId 租户标识。
+     * @param ownerUserId 所有者用户标识。
+     */
     default void completed(GenerationRun run, TenantId tenantId, UserId ownerUserId) {
         completed(run);
     }
 
-    /** Records a failed generation without making the conversation module depend on governance. */
+    /**
+     * 处理failed。
+     *
+     * @param run 运行记录。
+     */
     default void failed(GenerationRun run) {}
 }

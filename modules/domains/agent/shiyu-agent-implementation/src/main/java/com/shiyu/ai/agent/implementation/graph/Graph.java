@@ -95,25 +95,50 @@ public class Graph {
         invalidateCompiledGraph();
     }
 
+    /**
+     * {@code setEdges} 写入或更新当前模块中的业务数据。
+     *
+     * @param edges 参数值，用于执行当前操作。
+     */
     public void setEdges(Map<String, List<String>> edges) {
         this.edges = mutableEdgeCopy(edges);
         invalidateCompiledGraph();
     }
 
+    /**
+     * {@code setConditionalEdges} 写入或更新当前模块中的业务数据。
+     *
+     * @param conditionalEdges 参数值，用于执行当前操作。
+     */
     public void setConditionalEdges(Map<String, ConditionEdge> conditionalEdges) {
         this.conditionalEdges = mutableCopy(conditionalEdges);
         invalidateCompiledGraph();
     }
 
+    /**
+     * {@code setChannels} 写入或更新当前模块中的业务数据。
+     *
+     * @param channels 参数值，用于执行当前操作。
+     */
     public void setChannels(Map<String, Channel<?>> channels) {
         this.channels = mutableCopy(channels);
         invalidateCompiledGraph();
     }
 
+    /**
+     * {@code getNodes} 查询并返回当前操作所需的数据。
+     *
+     * @return 返回当前操作产生的结果。
+     */
     public Map<String, BaseNode> getNodes() {
         return Collections.unmodifiableMap(new HashMap<>(nodes));
     }
 
+    /**
+     * {@code getEdges} 查询并返回当前操作所需的数据。
+     *
+     * @return 返回当前操作产生的结果。
+     */
     public Map<String, List<String>> getEdges() {
         Map<String, List<String>> copy = new HashMap<>();
         edges.forEach(
@@ -126,10 +151,20 @@ public class Graph {
         return Collections.unmodifiableMap(copy);
     }
 
+    /**
+     * {@code getConditionalEdges} 查询并返回当前操作所需的数据。
+     *
+     * @return 返回当前操作产生的结果。
+     */
     public Map<String, ConditionEdge> getConditionalEdges() {
         return Collections.unmodifiableMap(new HashMap<>(conditionalEdges));
     }
 
+    /**
+     * {@code getChannels} 查询并返回当前操作所需的数据。
+     *
+     * @return 返回当前操作产生的结果。
+     */
     public Map<String, Channel<?>> getChannels() {
         return Collections.unmodifiableMap(new HashMap<>(channels));
     }
@@ -363,6 +398,11 @@ public class Graph {
         }
     }
 
+    /**
+     * {@code compile} 执行当前类型定义的业务操作。
+     *
+     * @return 返回当前操作产生的结果。
+     */
     public synchronized CompiledGraph<AgentState> compile() throws GraphStateException {
         log.info("开始编译 Graph: namePresent={}", this.name != null);
 

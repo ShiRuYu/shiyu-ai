@@ -17,16 +17,37 @@ import java.util.Optional;
 
 import javax.sql.DataSource;
 
+/**
+ * {@code JdbcChatProductRepository} 定义会话模块的持久化端口，隔离领域逻辑与具体存储实现。
+ */
 @Component
 public class JdbcChatProductRepository implements ChatProductRepository {
+    /**
+     * JDBC，表示当前对象中的对应属性。
+     */
     private final JdbcTemplate jdbc;
+    /**
+     * dialect 属性，保存当前对象中的业务数据或协作依赖。
+     */
     private final JdbcDialect dialect;
 
+    /**
+     * {@code JdbcChatProductRepository} 创建并初始化当前类型实例。
+     *
+     * @param dataSource 参数值，用于执行当前操作。
+     */
     public JdbcChatProductRepository(@Qualifier("agentDataSource") DataSource dataSource) {
         this.jdbc = new JdbcTemplate(dataSource);
         this.dialect = JdbcDialect.detect(jdbc);
     }
 
+    /**
+     * {@code saveCharacter} 写入或更新当前模块中的业务数据。
+     *
+     * @param asset 参数值，用于执行当前操作。
+     *
+     * @return 返回当前操作产生的结果。
+     */
     @Override
     public CharacterAsset saveCharacter(CharacterAsset asset) {
         jdbc.update(
@@ -62,6 +83,15 @@ public class JdbcChatProductRepository implements ChatProductRepository {
         return asset;
     }
 
+    /**
+     * {@code findCharacter} 查询并返回当前操作所需的数据。
+     *
+     * @param tenant 参数值，用于执行当前操作。
+     * @param owner 参数值，用于执行当前操作。
+     * @param id 参数值，用于执行当前操作。
+     *
+     * @return 返回当前操作产生的结果。
+     */
     @Override
     public Optional<CharacterAsset> findCharacter(TenantId tenant, long owner, String id) {
         long value = tenant(tenant);
@@ -77,6 +107,15 @@ public class JdbcChatProductRepository implements ChatProductRepository {
                 .findFirst();
     }
 
+    /**
+     * {@code findCharacterForAccess} 查询并返回当前操作所需的数据。
+     *
+     * @param tenant 参数值，用于执行当前操作。
+     * @param requester 参数值，用于执行当前操作。
+     * @param id 参数值，用于执行当前操作。
+     *
+     * @return 返回当前操作产生的结果。
+     */
     @Override
     public Optional<CharacterAsset> findCharacterForAccess(
             TenantId tenant, long requester, String id) {
@@ -93,6 +132,14 @@ public class JdbcChatProductRepository implements ChatProductRepository {
                 .findFirst();
     }
 
+    /**
+     * {@code listCharacters} 查询并返回当前操作所需的数据。
+     *
+     * @param tenant 参数值，用于执行当前操作。
+     * @param owner 参数值，用于执行当前操作。
+     *
+     * @return 返回当前操作产生的结果。
+     */
     @Override
     public List<CharacterAsset> listCharacters(TenantId tenant, long owner) {
         long value = tenant(tenant);
@@ -104,6 +151,13 @@ public class JdbcChatProductRepository implements ChatProductRepository {
                 owner);
     }
 
+    /**
+     * {@code deleteCharacter} 释放或移除当前操作涉及的资源。
+     *
+     * @param tenant 参数值，用于执行当前操作。
+     * @param owner 参数值，用于执行当前操作。
+     * @param id 参数值，用于执行当前操作。
+     */
     @Override
     public void deleteCharacter(TenantId tenant, long owner, String id) {
         jdbc.update(
@@ -113,6 +167,13 @@ public class JdbcChatProductRepository implements ChatProductRepository {
                 id);
     }
 
+    /**
+     * {@code savePersona} 写入或更新当前模块中的业务数据。
+     *
+     * @param asset 参数值，用于执行当前操作。
+     *
+     * @return 返回当前操作产生的结果。
+     */
     @Override
     public PersonaAsset savePersona(PersonaAsset asset) {
         jdbc.update(
@@ -142,6 +203,15 @@ public class JdbcChatProductRepository implements ChatProductRepository {
         return asset;
     }
 
+    /**
+     * {@code findPersona} 查询并返回当前操作所需的数据。
+     *
+     * @param tenant 参数值，用于执行当前操作。
+     * @param owner 参数值，用于执行当前操作。
+     * @param id 参数值，用于执行当前操作。
+     *
+     * @return 返回当前操作产生的结果。
+     */
     @Override
     public Optional<PersonaAsset> findPersona(TenantId tenant, long owner, String id) {
         long value = tenant(tenant);
@@ -165,6 +235,14 @@ public class JdbcChatProductRepository implements ChatProductRepository {
                 .findFirst();
     }
 
+    /**
+     * {@code listPersonas} 查询并返回当前操作所需的数据。
+     *
+     * @param tenant 参数值，用于执行当前操作。
+     * @param owner 参数值，用于执行当前操作。
+     *
+     * @return 返回当前操作产生的结果。
+     */
     @Override
     public List<PersonaAsset> listPersonas(TenantId tenant, long owner) {
         long value = tenant(tenant);
@@ -183,6 +261,13 @@ public class JdbcChatProductRepository implements ChatProductRepository {
                 owner);
     }
 
+    /**
+     * {@code deletePersona} 释放或移除当前操作涉及的资源。
+     *
+     * @param tenant 参数值，用于执行当前操作。
+     * @param owner 参数值，用于执行当前操作。
+     * @param id 参数值，用于执行当前操作。
+     */
     @Override
     public void deletePersona(TenantId tenant, long owner, String id) {
         jdbc.update(
@@ -192,6 +277,13 @@ public class JdbcChatProductRepository implements ChatProductRepository {
                 id);
     }
 
+    /**
+     * {@code saveLorebook} 写入或更新当前模块中的业务数据。
+     *
+     * @param asset 参数值，用于执行当前操作。
+     *
+     * @return 返回当前操作产生的结果。
+     */
     @Override
     public LorebookAsset saveLorebook(LorebookAsset asset) {
         jdbc.update(
@@ -221,6 +313,15 @@ public class JdbcChatProductRepository implements ChatProductRepository {
         return asset;
     }
 
+    /**
+     * {@code findLorebook} 查询并返回当前操作所需的数据。
+     *
+     * @param tenant 参数值，用于执行当前操作。
+     * @param owner 参数值，用于执行当前操作。
+     * @param id 参数值，用于执行当前操作。
+     *
+     * @return 返回当前操作产生的结果。
+     */
     @Override
     public Optional<LorebookAsset> findLorebook(TenantId tenant, long owner, String id) {
         long value = tenant(tenant);
@@ -244,6 +345,14 @@ public class JdbcChatProductRepository implements ChatProductRepository {
                 .findFirst();
     }
 
+    /**
+     * {@code listLorebooks} 查询并返回当前操作所需的数据。
+     *
+     * @param tenant 参数值，用于执行当前操作。
+     * @param owner 参数值，用于执行当前操作。
+     *
+     * @return 返回当前操作产生的结果。
+     */
     @Override
     public List<LorebookAsset> listLorebooks(TenantId tenant, long owner) {
         long value = tenant(tenant);
@@ -263,6 +372,13 @@ public class JdbcChatProductRepository implements ChatProductRepository {
                 owner);
     }
 
+    /**
+     * {@code deleteLorebook} 释放或移除当前操作涉及的资源。
+     *
+     * @param tenant 参数值，用于执行当前操作。
+     * @param owner 参数值，用于执行当前操作。
+     * @param id 参数值，用于执行当前操作。
+     */
     @Override
     public void deleteLorebook(TenantId tenant, long owner, String id) {
         jdbc.update(
@@ -272,6 +388,15 @@ public class JdbcChatProductRepository implements ChatProductRepository {
                 id);
     }
 
+    /**
+     * {@code savePrompt} 写入或更新当前模块中的业务数据。
+     *
+     * @param version 参数值，用于执行当前操作。
+     * @param tenant 参数值，用于执行当前操作。
+     * @param owner 参数值，用于执行当前操作。
+     *
+     * @return 返回当前操作产生的结果。
+     */
     @Override
     public PromptTemplateVersion savePrompt(
             PromptTemplateVersion version, TenantId tenant, long owner) {
@@ -294,6 +419,15 @@ public class JdbcChatProductRepository implements ChatProductRepository {
         return version;
     }
 
+    /**
+     * {@code listPrompts} 查询并返回当前操作所需的数据。
+     *
+     * @param tenant 参数值，用于执行当前操作。
+     * @param owner 参数值，用于执行当前操作。
+     * @param templateId 参数值，用于执行当前操作。
+     *
+     * @return 返回当前操作产生的结果。
+     */
     @Override
     public List<PromptTemplateVersion> listPrompts(TenantId tenant, long owner, String templateId) {
         long value = tenant(tenant);
@@ -323,6 +457,13 @@ public class JdbcChatProductRepository implements ChatProductRepository {
                 templateId);
     }
 
+    /**
+     * {@code saveGroup} 写入或更新当前模块中的业务数据。
+     *
+     * @param asset 参数值，用于执行当前操作。
+     *
+     * @return 返回当前操作产生的结果。
+     */
     @Override
     public GroupChatAsset saveGroup(GroupChatAsset asset) {
         jdbc.update(
@@ -364,6 +505,15 @@ public class JdbcChatProductRepository implements ChatProductRepository {
         return asset;
     }
 
+    /**
+     * {@code findGroup} 查询并返回当前操作所需的数据。
+     *
+     * @param tenant 参数值，用于执行当前操作。
+     * @param owner 参数值，用于执行当前操作。
+     * @param id 参数值，用于执行当前操作。
+     *
+     * @return 返回当前操作产生的结果。
+     */
     @Override
     public Optional<GroupChatAsset> findGroup(TenantId tenant, long owner, String id) {
         long value = tenant(tenant);
@@ -379,6 +529,14 @@ public class JdbcChatProductRepository implements ChatProductRepository {
                 .findFirst();
     }
 
+    /**
+     * {@code listGroups} 查询并返回当前操作所需的数据。
+     *
+     * @param tenant 参数值，用于执行当前操作。
+     * @param owner 参数值，用于执行当前操作。
+     *
+     * @return 返回当前操作产生的结果。
+     */
     @Override
     public List<GroupChatAsset> listGroups(TenantId tenant, long owner) {
         long value = tenant(tenant);
@@ -390,6 +548,13 @@ public class JdbcChatProductRepository implements ChatProductRepository {
                 owner);
     }
 
+    /**
+     * {@code deleteGroup} 释放或移除当前操作涉及的资源。
+     *
+     * @param tenant 参数值，用于执行当前操作。
+     * @param owner 参数值，用于执行当前操作。
+     * @param id 参数值，用于执行当前操作。
+     */
     @Override
     public void deleteGroup(TenantId tenant, long owner, String id) {
         jdbc.update(

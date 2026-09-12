@@ -13,10 +13,22 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.util.List;
 
-/** File-oriented storage SPI shared by local and remote storage providers. */
+/**
+ * FileStorage 接口，定义基础设施模块的能力边界。
+ */
 public interface FileStorage {
 
-    /** Stores a file under a namespace and returns its provider-neutral metadata. */
+    /**
+     * 上传文件。
+     *
+     * @param namespace namespace 参数。
+     * @param originalName originalName 参数。
+     * @param contentType contentType 参数。
+     * @param size size 参数。
+     * @param inputStream inputStream 参数。
+     *
+     * @return 处理结果。
+     */
     StoredFile upload(
             String namespace,
             String originalName,
@@ -25,12 +37,28 @@ public interface FileStorage {
             InputStream inputStream)
             throws IOException;
 
-    /** Lists files visible under a namespace. */
+    /**
+     * 查询文件storage列表。
+     *
+     * @param namespace namespace 参数。
+     *
+     * @return 结果列表。
+     */
     List<StoredFile> list(String namespace) throws IOException;
 
-    /** Opens a stored file for streaming reads. */
+    /**
+     * 打开向量索引。
+     *
+     * @param key key 参数。
+     *
+     * @return 处理结果。
+     */
     StorageObject open(String key) throws IOException;
 
-    /** Deletes a stored file by its provider-neutral key. */
+    /**
+     * 删除文件storage。
+     *
+     * @param key key 参数。
+     */
     void delete(String key) throws IOException;
 }

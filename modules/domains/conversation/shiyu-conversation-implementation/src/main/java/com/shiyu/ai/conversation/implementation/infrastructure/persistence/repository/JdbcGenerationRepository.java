@@ -28,17 +28,42 @@ import java.util.Optional;
 
 import javax.sql.DataSource;
 
+/**
+ * {@code JdbcGenerationRepository} 定义会话模块的持久化端口，隔离领域逻辑与具体存储实现。
+ */
 @Component
 public class JdbcGenerationRepository implements GenerationRepository {
+    /**
+     * JDBC，表示当前对象中的对应属性。
+     */
     private final JdbcTemplate jdbc;
+    /**
+     * runtimeRuns 属性，保存当前对象中的业务数据或协作依赖。
+     */
     private final AiRunRepository runtimeRuns;
+    /**
+     * recoveryTimeoutMs 属性，保存当前对象中的业务数据或协作依赖。
+     */
     private final long recoveryTimeoutMs;
 
+    /**
+     * {@code JdbcGenerationRepository} 创建并初始化当前类型实例。
+     *
+     * @param dataSource 参数值，用于执行当前操作。
+     * @param runtimeRuns 参数值，用于执行当前操作。
+     */
     public JdbcGenerationRepository(
             @Qualifier("agentDataSource") DataSource dataSource, AiRunRepository runtimeRuns) {
         this(dataSource, runtimeRuns, 300_000L);
     }
 
+    /**
+     * {@code JdbcGenerationRepository} 创建并初始化当前类型实例。
+     *
+     * @param dataSource 参数值，用于执行当前操作。
+     * @param runtimeRuns 参数值，用于执行当前操作。
+     * @param recoveryTimeoutMs 参数值，用于执行当前操作。
+     */
     @Autowired
     public JdbcGenerationRepository(
             @Qualifier("agentDataSource") DataSource dataSource,
@@ -49,6 +74,11 @@ public class JdbcGenerationRepository implements GenerationRepository {
         this.recoveryTimeoutMs = Math.max(1000L, recoveryTimeoutMs);
     }
 
+    /**
+     * {@code insert} 执行当前类型定义的业务操作。
+     *
+     * @param g 参数值，用于执行当前操作。
+     */
     @Override
     @Transactional
     public void insert(GenerationRun g) {
@@ -96,6 +126,15 @@ public class JdbcGenerationRepository implements GenerationRepository {
                 ts(g.updatedAt()));
     }
 
+    /**
+     * {@code find} 查询并返回当前操作所需的数据。
+     *
+     * @param id 参数值，用于执行当前操作。
+     * @param tenantId 参数值，用于执行当前操作。
+     * @param ownerUserId 参数值，用于执行当前操作。
+     *
+     * @return 返回当前操作产生的结果。
+     */
     @Override
     public Optional<GenerationRun> find(String id, TenantId tenantId, long ownerUserId) {
         return jdbc
@@ -111,6 +150,15 @@ public class JdbcGenerationRepository implements GenerationRepository {
                 .findFirst();
     }
 
+    /**
+     * {@code hasRunning} 校验当前操作的输入或状态是否满足约束。
+     *
+     * @param conversationId 参数值，用于执行当前操作。
+     * @param inputMessageId 参数值，用于执行当前操作。
+     * @param tenantId 参数值，用于执行当前操作。
+     *
+     * @return 返回当前操作产生的结果。
+     */
     @Override
     public boolean hasRunning(String conversationId, String inputMessageId, TenantId tenantId) {
         Integer count =
@@ -124,6 +172,14 @@ public class JdbcGenerationRepository implements GenerationRepository {
         return count != null && count > 0;
     }
 
+    /**
+     * {@code hasRunningConversation} 校验当前操作的输入或状态是否满足约束。
+     *
+     * @param conversationId 参数值，用于执行当前操作。
+     * @param tenantId 参数值，用于执行当前操作。
+     *
+     * @return 返回当前操作产生的结果。
+     */
     @Override
     public boolean hasRunningConversation(String conversationId, TenantId tenantId) {
         Integer count =
@@ -136,6 +192,15 @@ public class JdbcGenerationRepository implements GenerationRepository {
         return count != null && count > 0;
     }
 
+    /**
+     * {@code listConversation} 查询并返回当前操作所需的数据。
+     *
+     * @param conversationId 参数值，用于执行当前操作。
+     * @param tenantId 参数值，用于执行当前操作。
+     * @param limit 参数值，用于执行当前操作。
+     *
+     * @return 返回当前操作产生的结果。
+     */
     @Override
     public List<GenerationRun> listConversation(
             String conversationId, TenantId tenantId, int limit) {
@@ -149,9 +214,9 @@ public class JdbcGenerationRepository implements GenerationRepository {
     }
 
     /**
-     * Reclaims generation reservations left by a crashed process. A running provider is only
-     * considered abandoned after the configurable grace period, so an ordinary slow stream is never
-     * cancelled by this task.
+     * 回收过期的生成记录。
+     *
+     * @return 处理结果。
      */
     @Scheduled(fixedDelayString = "${shiyu.conversation.recovery-delay-ms:30000}")
     @Transactional
@@ -159,6 +224,13 @@ public class JdbcGenerationRepository implements GenerationRepository {
         recoverStaleGenerations(recoveryTimeoutMs);
     }
 
+    /**
+     * {@code recoverStaleGenerations} 执行当前类型定义的业务操作。
+     *
+     * @param timeoutMs 参数值，用于执行当前操作。
+     *
+     * @return 返回当前操作产生的结果。
+     */
     @Transactional
     public int recoverStaleGenerations(long timeoutMs) {
         long grace = Math.max(1000L, timeoutMs);
@@ -245,15 +317,20 @@ public class JdbcGenerationRepository implements GenerationRepository {
                                 true);
                     }
                 } catch (RuntimeException ignored) {
-                    // Generation state and its admission reservation are the
-                    // local recovery boundary; a missing runtime projection is
-                    // safe to repair on the next runtime reconciliation pass.
                 }
             }
         }
         return recovered;
     }
 
+    /**
+     * {@code update} 写入或更新当前模块中的业务数据。
+     *
+     * @param g 参数值，用于执行当前操作。
+     * @param expectedVersion 参数值，用于执行当前操作。
+     *
+     * @return 返回当前操作产生的结果。
+     */
     @Override
     @Transactional
     public int update(GenerationRun g, long expectedVersion) {
@@ -283,6 +360,12 @@ public class JdbcGenerationRepository implements GenerationRepository {
         return updated;
     }
 
+    /**
+     * {@code appendEvent} 执行当前类型定义的业务操作。
+     *
+     * @param e 参数值，用于执行当前操作。
+     * @param tenantId 参数值，用于执行当前操作。
+     */
     @Override
     public void appendEvent(GenerationEvent e, TenantId tenantId) {
         GenerationRuntimeLink link = runtimeLink(e.generationRunId(), tenantId);
@@ -296,6 +379,16 @@ public class JdbcGenerationRepository implements GenerationRepository {
                 e.createdAt());
     }
 
+    /**
+     * {@code listEvents} 查询并返回当前操作所需的数据。
+     *
+     * @param generationId 参数值，用于执行当前操作。
+     * @param tenantId 参数值，用于执行当前操作。
+     * @param afterSequence 参数值，用于执行当前操作。
+     * @param limit 参数值，用于执行当前操作。
+     *
+     * @return 返回当前操作产生的结果。
+     */
     @Override
     public List<GenerationEvent> listEvents(
             String generationId, TenantId tenantId, int afterSequence, int limit) {
@@ -317,6 +410,14 @@ public class JdbcGenerationRepository implements GenerationRepository {
                 Math.min(Math.max(limit, 1), 1000));
     }
 
+    /**
+     * {@code nextEventSequence} 执行当前类型定义的业务操作。
+     *
+     * @param generationId 参数值，用于执行当前操作。
+     * @param tenantId 参数值，用于执行当前操作。
+     *
+     * @return 返回当前操作产生的结果。
+     */
     public int nextEventSequence(String generationId, TenantId tenantId) {
         Integer max =
                 jdbc.queryForObject(
@@ -379,6 +480,11 @@ public class JdbcGenerationRepository implements GenerationRepository {
         };
     }
 
+    /**
+     * {@code GenerationRuntimeLink} 封装会话模块中不可变的结构化数据，并作为相关操作之间的值对象。
+     * @param runtimeRunId runtimeRunId 属性，表示该记录组件承载的数据。
+     * @param ownerUserId 所属用户标识，表示该记录组件承载的数据。
+     */
     private record GenerationRuntimeLink(String runtimeRunId, long ownerUserId) {
         private GenerationRuntimeLink {
             if (runtimeRunId == null || runtimeRunId.isBlank())
@@ -418,6 +524,11 @@ public class JdbcGenerationRepository implements GenerationRepository {
         return tenant;
     }
 
+    /**
+     * {@code StaleGeneration} 封装会话模块中不可变的结构化数据，并作为相关操作之间的值对象。
+     * @param run run 属性，表示该记录组件承载的数据。
+     * @param ownerUserId 所属用户标识，表示该记录组件承载的数据。
+     */
     private record StaleGeneration(GenerationRun run, long ownerUserId) {}
 
     private static Timestamp ts(Instant i) {

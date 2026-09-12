@@ -13,6 +13,14 @@ import java.io.IOException;
 /** yml 配置源工厂 */
 public class YmlPropertySourceFactory extends DefaultPropertySourceFactory {
 
+    /**
+     * {@code createPropertySource} 写入或更新当前模块中的业务数据。
+     *
+     * @param name 参数值，用于执行当前操作。
+     * @param resource 参数值，用于执行当前操作。
+     *
+     * @return 返回当前操作产生的结果。
+     */
     @Override
     public PropertySource<?> createPropertySource(String name, EncodedResource resource)
             throws IOException {

@@ -7,7 +7,9 @@ import com.shiyu.ai.kernel.context.UserId;
 import java.time.Instant;
 import java.util.Objects;
 
-/** Mandatory ownership and tracing metadata for in-process cross-domain events. */
+/**
+ * DomainEventEnvelope 领域事件，描述共享内核领域相关业务状态变化。
+ */
 public record DomainEventEnvelope<E extends DomainEvent>(
         TenantId tenantId,
         UserId userId,

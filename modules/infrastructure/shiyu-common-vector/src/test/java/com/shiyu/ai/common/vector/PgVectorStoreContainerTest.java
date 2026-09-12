@@ -15,7 +15,9 @@ import org.testcontainers.junit.jupiter.Testcontainers;
 
 import java.util.Map;
 
-/** Runs only when Docker is available; CI executes this against real pgvector. */
+/**
+ * 验证 PgVectorStoreContainer 的功能、边界条件和集成行为。
+ */
 @Testcontainers(disabledWithoutDocker = true)
 class PgVectorStoreContainerTest {
 

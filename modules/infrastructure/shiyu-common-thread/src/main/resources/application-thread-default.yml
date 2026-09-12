@@ -33,8 +33,6 @@ shiyu:
 
     # 命名线程池配置
     pools:
-      # Knowledge document parsing/embedding worker. Keep this bounded because
-      # each task can hold a complete source document and parsed text in memory.
       knowledge-ingestion:
         type: IO_INTENSIVE
         core-size: ${shiyu.knowledge.task.parse-concurrency:2}

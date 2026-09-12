@@ -8,10 +8,21 @@ import java.io.OutputStreamWriter;
 import java.nio.charset.StandardCharsets;
 import java.util.concurrent.*;
 
-/** Minimal newline-delimited local RPC. The worker never enters the host ClassLoader. */
+/**
+ * 通过受控 RPC 通道调用插件工作进程。
+ */
 public final class PluginWorkerRpcClient {
     private PluginWorkerRpcClient() {}
 
+    /**
+     * {@code call} 执行当前类型定义的业务操作。
+     *
+     * @param process 参数值，用于执行当前操作。
+     * @param request 参数值，用于执行当前操作。
+     * @param spec 参数值，用于执行当前操作。
+     *
+     * @return 返回当前操作产生的结果。
+     */
     public static String call(Process process, String request, PluginWorkerSpec spec)
             throws IOException, TimeoutException {
         if (process == null || !process.isAlive())

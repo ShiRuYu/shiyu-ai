@@ -17,17 +17,40 @@ import java.util.List;
 @Slf4j
 public class PluginRegistry {
 
+    /**
+     * pluginManager 属性，保存当前对象中的业务数据或协作依赖。
+     */
     private final PluginManager pluginManager;
+    /**
+     * pluginLoader 属性，保存当前对象中的业务数据或协作依赖。
+     */
     private final PluginLoader pluginLoader;
+    /**
+     * pluginsDir 属性，保存当前对象中的业务数据或协作依赖。
+     */
     private final String pluginsDir;
+    /**
+     * inProcessEnabled 属性，保存当前对象中的业务数据或协作依赖。
+     */
     private final boolean inProcessEnabled;
 
+    /**
+     * {@code PluginRegistry} 创建并初始化当前类型实例。
+     *
+     * @param pluginsDir 参数值，用于执行当前操作。
+     */
     public PluginRegistry(String pluginsDir) {
         this(
                 pluginsDir,
                 Boolean.parseBoolean(System.getProperty("shiyu.plugins.in-process", "false")));
     }
 
+    /**
+     * {@code PluginRegistry} 创建并初始化当前类型实例。
+     *
+     * @param pluginsDir 参数值，用于执行当前操作。
+     * @param inProcessEnabled 参数值，用于执行当前操作。
+     */
     public PluginRegistry(String pluginsDir, boolean inProcessEnabled) {
         this.pluginsDir = pluginsDir;
         this.inProcessEnabled = inProcessEnabled;
@@ -35,6 +58,9 @@ public class PluginRegistry {
         this.pluginLoader = new PluginLoader();
     }
 
+    /**
+     * {@code init} 执行当前类型定义的业务操作。
+     */
     @PostConstruct
     public void init() {
         log.info(
@@ -71,6 +97,9 @@ public class PluginRegistry {
         }
     }
 
+    /**
+     * {@code shutdown} 执行当前类型定义的业务操作。
+     */
     @PreDestroy
     public void shutdown() {
         if (!inProcessEnabled) return;
@@ -81,40 +110,85 @@ public class PluginRegistry {
         }
     }
 
+    /**
+     * {@code install} 执行当前类型定义的业务操作。
+     *
+     * @param descriptor 参数值，用于执行当前操作。
+     * @param plugin 参数值，用于执行当前操作。
+     */
     public void install(PluginDescriptor descriptor, Plugin plugin) {
         if (!inProcessEnabled)
             throw new SecurityException("in-process plugins are disabled; use a Worker RPC plugin");
         pluginManager.install(descriptor, plugin);
     }
 
+    /**
+     * {@code start} 执行当前类型定义的业务操作。
+     *
+     * @param pluginId 参数值，用于执行当前操作。
+     */
     public void start(String pluginId) {
         requireInProcess();
         pluginManager.start(pluginId);
     }
 
+    /**
+     * {@code stop} 执行当前类型定义的业务操作。
+     *
+     * @param pluginId 参数值，用于执行当前操作。
+     */
     public void stop(String pluginId) {
         requireInProcess();
         pluginManager.stop(pluginId);
     }
 
+    /**
+     * {@code uninstall} 执行当前类型定义的业务操作。
+     *
+     * @param pluginId 参数值，用于执行当前操作。
+     */
     public void uninstall(String pluginId) {
         requireInProcess();
         pluginManager.uninstall(pluginId);
     }
 
+    /**
+     * {@code getDescriptor} 查询并返回当前操作所需的数据。
+     *
+     * @param pluginId 参数值，用于执行当前操作。
+     *
+     * @return 返回当前操作产生的结果。
+     */
     public PluginDescriptor getDescriptor(String pluginId) {
         return pluginManager.getDescriptor(pluginId);
     }
 
+    /**
+     * {@code getPlugin} 查询并返回当前操作所需的数据。
+     *
+     * @param pluginId 参数值，用于执行当前操作。
+     *
+     * @return 返回当前操作产生的结果。
+     */
     public Plugin getPlugin(String pluginId) {
         requireInProcess();
         return pluginManager.getPlugin(pluginId);
     }
 
+    /**
+     * {@code listPlugins} 查询并返回当前操作所需的数据。
+     *
+     * @return 返回当前操作产生的结果。
+     */
     public List<PluginDescriptor> listPlugins() {
         return pluginManager.listPlugins();
     }
 
+    /**
+     * {@code getPluginManager} 查询并返回当前操作所需的数据。
+     *
+     * @return 返回当前操作产生的结果。
+     */
     public PluginManager getPluginManager() {
         return pluginManager;
     }

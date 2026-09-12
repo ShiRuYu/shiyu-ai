@@ -5,6 +5,18 @@ import com.shiyu.ai.kernel.context.ActorContext;
 import java.util.List;
 import java.util.Set;
 
+/**
+ * {@code KnowledgeRetrievalRequest} 封装知识模块中不可变的结构化数据，并作为相关操作之间的值对象。
+ * @param accessContext accessContext 属性，表示该记录组件承载的数据。
+ * @param spaceIds spaceIds 属性，表示该记录组件承载的数据。
+ * @param sourceTypes sourceTypes 属性，表示该记录组件承载的数据。
+ * @param retrievalMode retrievalMode 属性，表示该记录组件承载的数据。
+ * @param query query 属性，表示该记录组件承载的数据。
+ * @param candidateTopK candidateTopK 属性，表示该记录组件承载的数据。
+ * @param topK topK 属性，表示该记录组件承载的数据。
+ * @param scoreThreshold scoreThreshold 属性，表示该记录组件承载的数据。
+ * @param enableRerank enableRerank 属性，表示该记录组件承载的数据。
+ */
 public record KnowledgeRetrievalRequest(
         ActorContext accessContext,
         List<Long> spaceIds,

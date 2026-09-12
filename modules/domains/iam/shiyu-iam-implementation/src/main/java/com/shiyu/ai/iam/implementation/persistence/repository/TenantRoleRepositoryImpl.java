@@ -20,8 +20,14 @@ import org.springframework.stereotype.Component;
 public class TenantRoleRepositoryImpl
         implements com.shiyu.ai.iam.implementation.port.repository.TenantRoleRepository {
 
+    /**
+     * 租户映射器，表示当前对象中的对应属性。
+     */
     @Resource private TenantMapper tenantMapper;
 
+    /**
+     * 角色映射器，表示当前对象中的对应属性。
+     */
     @Resource private RoleMapper roleMapper;
 
     public TenantBO selectTenantById(TenantId tenantId) {

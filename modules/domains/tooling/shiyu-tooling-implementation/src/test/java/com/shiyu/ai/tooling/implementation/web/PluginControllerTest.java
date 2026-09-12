@@ -4,8 +4,8 @@ import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.*;
 
-import com.shiyu.ai.tooling.implementation.plugin.market.PluginMarketEntry;
-import com.shiyu.ai.tooling.implementation.plugin.market.PluginMarketService;
+import com.shiyu.ai.tooling.implementation.plugin.market.model.PluginMarketEntry;
+import com.shiyu.ai.tooling.implementation.plugin.market.service.PluginMarketService;
 import com.shiyu.ai.tooling.implementation.plugin.registry.PluginRegistry;
 import com.shiyu.ai.tooling.implementation.plugin.spi.PluginDescriptor;
 import com.shiyu.ai.tooling.implementation.plugin.vo.PluginInfoVO;

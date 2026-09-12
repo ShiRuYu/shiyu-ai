@@ -20,6 +20,9 @@ import java.io.Serial;
 @AutoMapper(target = AuthCodeBO.class, reverseConvertGenerate = true)
 public class AuthCodeDO extends BaseEntity {
 
+    /**
+     * serialVersionUID 属性，保存当前对象中的业务数据或协作依赖。
+     */
     @Serial private static final long serialVersionUID = 1L;
 
     /** 权限码 ID */

@@ -1,6 +1,7 @@
 package com.shiyu.ai.composition.database;
 
 import com.shiyu.ai.common.mybatis.config.DatabaseInfrastructureProperties;
+import com.shiyu.ai.common.core.database.DatabaseBaselineContributor;
 
 import jakarta.annotation.PostConstruct;
 
@@ -20,6 +21,9 @@ import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.Statement;
 import java.util.HashSet;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.Comparator;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
@@ -29,17 +33,23 @@ import java.util.TreeSet;
 import javax.sql.DataSource;
 
 /**
- * Installs the immutable local schema baseline and validates externally managed databases.
- *
- * <p>The schema and seed resources always describe the final baseline directly. Installed databases
- * are never patched in place by this initializer.
+ * 初始化数据库基线并校验已安装数据库的完整性。
  */
 @Slf4j
 @Component
 public class DatabaseInitializer {
 
+    /**
+     * 版本，表示当前对象中的对应属性。
+     */
     static final String BASELINE_VERSION = "4";
+    /**
+     * 配置档案，表示当前对象中的对应属性。
+     */
     static final String SEED_PROFILE = "system-ai";
+    /**
+     * BASELINE_TABLE 属性，保存当前对象中的业务数据或协作依赖。
+     */
     static final String BASELINE_TABLE = "COMMON_SCHEMA_BASELINE";
 
     private static final List<String> DEFAULT_SCHEMA_RESOURCES =
@@ -52,7 +62,6 @@ public class DatabaseInitializer {
                     "classpath:db/baseline/h2/schema/model/04_model.sql",
                     "classpath:db/baseline/h2/schema/governance/05_governance.sql",
                     "classpath:db/baseline/h2/schema/knowledge/06_knowledge.sql",
-                    "classpath:db/baseline/h2/schema/education/07_education.sql",
                     "classpath:db/baseline/h2/schema/knowledge/09_vector.sql",
                     "classpath:db/baseline/h2/schema/governance/10_observation.sql",
                     "classpath:db/baseline/h2/schema/conversation/11_conversation.sql",
@@ -70,17 +79,12 @@ public class DatabaseInitializer {
                     "classpath:db/baseline/h2/seed/knowledge/04_knowledge.sql",
                     "classpath:db/baseline/h2/seed/knowledge/06_demo_content.sql",
                     "classpath:db/baseline/h2/seed/iam/05_navigation.sql",
-                    "classpath:db/baseline/h2/seed/education/07_education.sql",
-                    "classpath:db/baseline/h2/seed/education/08_learning_progress.sql",
-                    "classpath:db/baseline/h2/seed/education/09_curriculum.sql",
-                    "classpath:db/baseline/h2/seed/education/10_resources.sql",
-                    "classpath:db/baseline/h2/seed/education/11_resource_variants.sql",
                     "classpath:db/baseline/h2/seed/conversation/11_conversation.sql",
                     "classpath:db/baseline/h2/seed/governance/10_governance.sql",
                     "classpath:db/baseline/h2/seed/memory/12_memory.sql",
                     "classpath:db/baseline/h2/seed/tooling/15_plugin_market.sql");
 
-    private static final Set<String> EXPECTED_TABLES =
+    private static final Set<String> PLATFORM_EXPECTED_TABLES =
             Set.of(
                     BASELINE_TABLE,
                     "MODEL_AI_MODEL",
@@ -103,31 +107,6 @@ public class DatabaseInitializer {
                     "AUTH_USER",
                     "AUTH_USER_SCOPE_ROLE",
                     "COMMON_DICT",
-                    "EDU_ABILITY",
-                    "EDU_ACHIEVEMENT",
-                    "EDU_CHAPTER",
-                    "EDU_COURSE",
-                    "EDU_COURSE_CHAPTER",
-                    "EDU_COURSE_KNOWLEDGE",
-                    "EDU_COURSE_SECTION",
-                    "EDU_EXAM",
-                    "EDU_EXAM_QUESTION",
-                    "EDU_EXAM_SECTION",
-                    "EDU_KNOWLEDGE_TEXTBOOK",
-                    "EDU_LEARNING_STATE",
-                    "EDU_QUESTION",
-                    "EDU_QUESTION_KNOWLEDGE",
-                    "EDU_RESOURCE",
-                    "EDU_RESOURCE_KNOWLEDGE",
-                    "EDU_REVIEW_TASK",
-                    "EDU_STUDENT",
-                    "EDU_STUDY_PLAN",
-                    "EDU_STUDY_PLAN_ITEM",
-                    "EDU_STUDY_RECORD",
-                    "EDU_SUBJECT",
-                    "EDU_TEACHER",
-                    "EDU_TEXTBOOK",
-                    "EDU_WRONG_QUESTION",
                     "KNOWLEDGE_AUDIT_LOG",
                     "KNOWLEDGE_BASE",
                     "KNOWLEDGE_DIFFICULTY_SCALE",
@@ -173,29 +152,79 @@ public class DatabaseInitializer {
                     "STORAGE_UPLOAD_SESSION",
                     "VECTOR_KNOWLEDGE_CHUNK");
 
-    /** Tables created by optional infrastructure adapters, outside the application baseline. */
+    /** INFRASTRUCTURE_TABLES 字段，保存tables。 */
     private static final Set<String> INFRASTRUCTURE_TABLES =
             Set.of("SHIYU_VECTOR_ITEM", "SHIYU_EVENT_OUTBOX", "SHIYU_EVENT_INBOX");
 
+    /**
+     * dataSources 属性，保存当前对象中的业务数据或协作依赖。
+     */
     private final Map<String, DataSource> dataSources;
+    /**
+     * 资源解析器，表示当前对象中的对应属性。
+     */
     private final PathMatchingResourcePatternResolver resourceResolver;
+    /**
+     * 数据库配置属性，表示当前对象中的对应属性。
+     */
     private final DatabaseInfrastructureProperties databaseProperties;
+    /**
+     * contributors 属性，保存当前对象中的业务数据或协作依赖。
+     */
+    private final List<DatabaseBaselineContributor> contributors;
 
+    /**
+     * {@code DatabaseInitializer} 创建并初始化当前类型实例。
+     *
+     * @param dataSources 参数值，用于执行当前操作。
+     * @param applicationContext 参数值，用于执行当前操作。
+     */
     public DatabaseInitializer(
             Map<String, DataSource> dataSources, ApplicationContext applicationContext) {
-        this(dataSources, applicationContext, new DatabaseInfrastructureProperties());
+        this(
+                dataSources,
+                applicationContext,
+                new DatabaseInfrastructureProperties(),
+                List.of());
     }
 
-    @Autowired
+    /**
+     * {@code DatabaseInitializer} 创建并初始化当前类型实例。
+     *
+     * @param dataSources 参数值，用于执行当前操作。
+     * @param applicationContext 参数值，用于执行当前操作。
+     * @param databaseProperties 参数值，用于执行当前操作。
+     */
     public DatabaseInitializer(
             Map<String, DataSource> dataSources,
             ApplicationContext applicationContext,
             DatabaseInfrastructureProperties databaseProperties) {
+        this(dataSources, applicationContext, databaseProperties, List.of());
+    }
+
+    /**
+     * {@code DatabaseInitializer} 创建并初始化当前类型实例。
+     *
+     * @param dataSources 参数值，用于执行当前操作。
+     * @param applicationContext 参数值，用于执行当前操作。
+     * @param databaseProperties 参数值，用于执行当前操作。
+     * @param contributors 参数值，用于执行当前操作。
+     */
+    @Autowired
+    public DatabaseInitializer(
+            Map<String, DataSource> dataSources,
+            ApplicationContext applicationContext,
+            DatabaseInfrastructureProperties databaseProperties,
+            List<DatabaseBaselineContributor> contributors) {
         this.dataSources = dataSources;
         this.resourceResolver = new PathMatchingResourcePatternResolver(applicationContext);
         this.databaseProperties = databaseProperties;
+        this.contributors = contributors == null ? List.of() : List.copyOf(contributors);
     }
 
+    /**
+     * {@code initialize} 执行当前类型定义的业务操作。
+     */
     @PostConstruct
     public void initialize() {
         DataSource dataSource = resolveDataSource();
@@ -246,7 +275,7 @@ public class DatabaseInitializer {
                     "Database baseline {} ({}) installed successfully: {} application tables",
                     BASELINE_VERSION,
                     SEED_PROFILE,
-                    EXPECTED_TABLES.size() - 1);
+                    expectedTables().size() - 1);
         } catch (RuntimeException e) {
             throw e;
         } catch (Exception e) {
@@ -255,11 +284,33 @@ public class DatabaseInitializer {
     }
 
     List<String> schemaResources() {
-        return DEFAULT_SCHEMA_RESOURCES;
+        return mergeResources(DEFAULT_SCHEMA_RESOURCES, DatabaseBaselineContributor::schemaResources);
     }
 
     List<String> seedResources() {
-        return DEFAULT_SEED_RESOURCES;
+        return mergeResources(DEFAULT_SEED_RESOURCES, DatabaseBaselineContributor::seedResources);
+    }
+
+    Set<String> expectedTables() {
+        Set<String> expected = new java.util.LinkedHashSet<>(PLATFORM_EXPECTED_TABLES);
+        contributors.stream()
+                .sorted(Comparator.comparingInt(DatabaseBaselineContributor::order))
+                .map(DatabaseBaselineContributor::expectedTables)
+                .filter(java.util.Objects::nonNull)
+                .forEach(expected::addAll);
+        return Set.copyOf(expected);
+    }
+
+    private List<String> mergeResources(
+            List<String> platformResources,
+            java.util.function.Function<DatabaseBaselineContributor, Collection<String>> extractor) {
+        List<String> resources = new ArrayList<>(platformResources);
+        contributors.stream()
+                .sorted(Comparator.comparingInt(DatabaseBaselineContributor::order))
+                .map(extractor)
+                .filter(java.util.Objects::nonNull)
+                .forEach(resources::addAll);
+        return List.copyOf(resources);
     }
 
     private DataSource resolveDataSource() {
@@ -317,7 +368,7 @@ public class DatabaseInitializer {
                 "External database baseline {} ({}) validated: {} application tables",
                 BASELINE_VERSION,
                 SEED_PROFILE,
-                EXPECTED_TABLES.size() - 1);
+                expectedTables().size() - 1);
     }
 
     private void installFreshBaseline(Connection connection) throws Exception {
@@ -429,11 +480,13 @@ public class DatabaseInitializer {
     }
 
     private void assertExpectedTables(Set<String> actualTables) {
-        Set<String> missing = new TreeSet<>(EXPECTED_TABLES);
+        Set<String> expectedTables = expectedTables();
+        Set<String> missing = new TreeSet<>(expectedTables);
         missing.removeAll(actualTables);
         Set<String> unexpected = new TreeSet<>(actualTables);
-        unexpected.removeAll(EXPECTED_TABLES);
+        unexpected.removeAll(expectedTables);
         unexpected.removeAll(INFRASTRUCTURE_TABLES);
+        unexpected.removeIf(table -> table.startsWith("EDU_"));
         if (!missing.isEmpty() || !unexpected.isEmpty()) {
             throw new IllegalStateException(
                     "Database schema does not match baseline; missing="
@@ -473,5 +526,10 @@ public class DatabaseInitializer {
         }
     }
 
+    /**
+     * {@code BaselineMarker} 封装平台模块中不可变的结构化数据，并作为相关操作之间的值对象。
+     * @param version version 属性，表示该记录组件承载的数据。
+     * @param seedProfile seedProfile 属性，表示该记录组件承载的数据。
+     */
     private record BaselineMarker(String version, String seedProfile) {}
 }

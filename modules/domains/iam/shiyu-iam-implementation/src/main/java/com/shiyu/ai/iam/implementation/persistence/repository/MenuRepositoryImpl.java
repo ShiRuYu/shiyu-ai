@@ -27,10 +27,19 @@ import java.util.List;
 public class MenuRepositoryImpl
         implements com.shiyu.ai.iam.implementation.port.repository.MenuRepository {
 
+    /**
+     * menuMapper 属性，保存当前对象中的业务数据或协作依赖。
+     */
     @Resource private MenuMapper menuMapper;
 
+    /**
+     * roleScopeMenuMapper 属性，保存当前对象中的业务数据或协作依赖。
+     */
     @Resource private RoleScopeMenuMapper roleScopeMenuMapper;
 
+    /**
+     * tenantMenuMapper 属性，保存当前对象中的业务数据或协作依赖。
+     */
     @Resource private TenantMenuMapper tenantMenuMapper;
 
     /** 查询所有菜单 */

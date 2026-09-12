@@ -1,4 +1,3 @@
--- Final system-ai seed baseline. Executed once on an empty H2 database.
 
 INSERT INTO "PUBLIC"."COMMON_DICT" VALUES(1, 'timezone', 'America/New_York (GMT-5)', 'America/New_York', 1, 1, NULL, NULL, 'N', 1, '美国纽约时区', 'system', CURRENT_TIMESTAMP, 'system', CURRENT_TIMESTAMP, 0);
 INSERT INTO "PUBLIC"."COMMON_DICT" VALUES(2, 'timezone', 'Europe/London (GMT0)', 'Europe/London', 1, 2, NULL, NULL, 'N', 1, '欧洲伦敦时区', 'system', CURRENT_TIMESTAMP, 'system', CURRENT_TIMESTAMP, 0);

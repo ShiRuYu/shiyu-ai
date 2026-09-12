@@ -16,16 +16,35 @@ import java.util.concurrent.atomic.AtomicInteger;
 /** 平台线程池工厂 创建基于平台线程的线程池 */
 public class PlatformExecutorFactory implements ExecutorFactory {
 
+    /**
+     * 配置属性，表示当前对象中的对应属性。
+     */
     private final ThreadingProperties properties;
 
+    /**
+     * {@code PlatformExecutorFactory} 创建并初始化当前类型实例。
+     */
     public PlatformExecutorFactory() {
         this(null);
     }
 
+    /**
+     * {@code PlatformExecutorFactory} 创建并初始化当前类型实例。
+     *
+     * @param properties 参数值，用于执行当前操作。
+     */
     public PlatformExecutorFactory(ThreadingProperties properties) {
         this.properties = properties;
     }
 
+    /**
+     * {@code createExecutor} 写入或更新当前模块中的业务数据。
+     *
+     * @param poolType 参数值，用于执行当前操作。
+     * @param name 参数值，用于执行当前操作。
+     *
+     * @return 返回当前操作产生的结果。
+     */
     @Override
     public ExecutorService createExecutor(PoolType poolType, String name) {
         switch (poolType) {
@@ -215,12 +234,22 @@ public class PlatformExecutorFactory implements ExecutorFactory {
     /** 命名线程工厂 */
     private static class NamedThreadFactory implements ThreadFactory {
         private final AtomicInteger threadNumber = new AtomicInteger(1);
+        /**
+         * namePrefix 属性，保存当前对象中的业务数据或协作依赖。
+         */
         private final String namePrefix;
 
         NamedThreadFactory(String namePrefix) {
             this.namePrefix = "shiyu-" + namePrefix + "-thread-";
         }
 
+        /**
+         * {@code newThread} 执行当前类型定义的业务操作。
+         *
+         * @param r 参数值，用于执行当前操作。
+         *
+         * @return 返回当前操作产生的结果。
+         */
         @Override
         public Thread newThread(Runnable r) {
             Thread t = new Thread(r, namePrefix + threadNumber.getAndIncrement());

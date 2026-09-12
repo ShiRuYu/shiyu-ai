@@ -1,4 +1,4 @@
-"""Validate that filesystem module directories match Maven coordinates."""
+"""check backend module names 脚本，执行项目架构与工程校验。"""
 
 from __future__ import annotations
 

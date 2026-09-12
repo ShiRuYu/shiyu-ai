@@ -1,5 +1,10 @@
 package com.shiyu.ai.knowledge.implementation.infrastructure.point.impl;
 
+import com.shiyu.ai.knowledge.implementation.application.KnowledgeSpaceService.SpaceRole;
+import com.shiyu.ai.knowledge.implementation.infrastructure.point.KnowledgePointService.CreatePointRequest;
+import com.shiyu.ai.knowledge.implementation.infrastructure.point.KnowledgePointService.PointView;
+import com.shiyu.ai.knowledge.implementation.infrastructure.point.KnowledgePointService.UpdatePointRequest;
+
 import com.shiyu.ai.common.core.api.PageData;
 import com.shiyu.ai.common.core.exception.ServiceException;
 import com.shiyu.ai.kernel.context.ActorContext;
@@ -20,16 +25,46 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+/**
+ * {@code KnowledgePointServiceImpl} 实现知识模块的应用服务，负责编排用例流程并维护业务边界。
+ */
 @Service
 @RequiredArgsConstructor
 public class KnowledgePointServiceImpl implements KnowledgePointService, KnowledgePointPort {
 
+    /**
+     * 仓储，表示当前对象中的对应属性。
+     */
     private final KnowledgeRepository repository;
+    /**
+     * spaceService 属性，保存当前对象中的业务数据或协作依赖。
+     */
     private final KnowledgeSpaceService spaceService;
+    /**
+     * knowledgeGraph 属性，保存当前对象中的业务数据或协作依赖。
+     */
     private final KnowledgeGraph knowledgeGraph;
+    /**
+     * relationService 属性，保存当前对象中的业务数据或协作依赖。
+     */
     private final KnowledgeRelationService relationService;
+    /**
+     * documentRelationService 属性，保存当前对象中的业务数据或协作依赖。
+     */
     private final KnowledgeDocumentRelationService documentRelationService;
 
+    /**
+     * {@code page} 执行当前类型定义的业务操作。
+     *
+     * @param actor 参数值，用于执行当前操作。
+     * @param spaceId 参数值，用于执行当前操作。
+     * @param pageNum 参数值，用于执行当前操作。
+     * @param pageSize 参数值，用于执行当前操作。
+     * @param keyword 参数值，用于执行当前操作。
+     * @param category 参数值，用于执行当前操作。
+     *
+     * @return 返回当前操作产生的结果。
+     */
     @Override
     public PageData<PointView> page(
             ActorContext actor,
@@ -51,6 +86,14 @@ public class KnowledgePointServiceImpl implements KnowledgePointService, Knowled
         return new PageData<>(page.getItems().stream().map(this::toView).toList(), page.getTotal());
     }
 
+    /**
+     * {@code get} 查询并返回当前操作所需的数据。
+     *
+     * @param actor 参数值，用于执行当前操作。
+     * @param pointId 参数值，用于执行当前操作。
+     *
+     * @return 返回当前操作产生的结果。
+     */
     @Override
     public PointView get(ActorContext actor, Long pointId) {
         KnowledgeBO point = requirePoint(actor, pointId);
@@ -59,12 +102,28 @@ public class KnowledgePointServiceImpl implements KnowledgePointService, Knowled
         return toView(point);
     }
 
+    /**
+     * {@code getResponse} 查询并返回当前操作所需的数据。
+     *
+     * @param actor 参数值，用于执行当前操作。
+     * @param pointId 参数值，用于执行当前操作。
+     *
+     * @return 返回当前操作产生的结果。
+     */
     @Override
     public KnowledgeResponse getResponse(ActorContext actor, Long pointId) {
         PointView point = get(actor, pointId);
         return toKnowledgeResponse(point);
     }
 
+    /**
+     * {@code graph} 执行当前类型定义的业务操作。
+     *
+     * @param actor 参数值，用于执行当前操作。
+     * @param pointId 参数值，用于执行当前操作。
+     *
+     * @return 返回当前操作产生的结果。
+     */
     @Override
     public KnowledgeGraphResponse graph(ActorContext actor, Long pointId) {
         PointView point = get(actor, pointId);
@@ -75,6 +134,15 @@ public class KnowledgePointServiceImpl implements KnowledgePointService, Knowled
                 relationService.getRelated(actor, pointId));
     }
 
+    /**
+     * {@code create} 写入或更新当前模块中的业务数据。
+     *
+     * @param actor 参数值，用于执行当前操作。
+     * @param spaceId 参数值，用于执行当前操作。
+     * @param request 参数值，用于执行当前操作。
+     *
+     * @return 返回当前操作产生的结果。
+     */
     @Override
     @Transactional(rollbackFor = Exception.class)
     public PointView create(ActorContext actor, Long spaceId, CreatePointRequest request) {
@@ -101,6 +169,15 @@ public class KnowledgePointServiceImpl implements KnowledgePointService, Knowled
         return toView(point);
     }
 
+    /**
+     * {@code update} 写入或更新当前模块中的业务数据。
+     *
+     * @param actor 参数值，用于执行当前操作。
+     * @param pointId 参数值，用于执行当前操作。
+     * @param request 参数值，用于执行当前操作。
+     *
+     * @return 返回当前操作产生的结果。
+     */
     @Override
     @Transactional(rollbackFor = Exception.class)
     public PointView update(ActorContext actor, Long pointId, UpdatePointRequest request) {
@@ -127,6 +204,12 @@ public class KnowledgePointServiceImpl implements KnowledgePointService, Knowled
         return toView(point);
     }
 
+    /**
+     * {@code delete} 释放或移除当前操作涉及的资源。
+     *
+     * @param actor 参数值，用于执行当前操作。
+     * @param pointId 参数值，用于执行当前操作。
+     */
     @Override
     @Transactional(rollbackFor = Exception.class)
     public void delete(ActorContext actor, Long pointId) {

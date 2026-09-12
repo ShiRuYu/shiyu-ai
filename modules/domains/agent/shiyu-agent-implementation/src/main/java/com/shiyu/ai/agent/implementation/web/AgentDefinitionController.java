@@ -43,9 +43,21 @@ import java.util.Map;
 @RequestMapping("/api/agent/agents")
 public class AgentDefinitionController {
 
+    /**
+     * agentAdminService 属性，保存当前对象中的业务数据或协作依赖。
+     */
     private final AgentAdminService agentAdminService;
+    /**
+     * agentService 属性，保存当前对象中的业务数据或协作依赖。
+     */
     private final AgentService agentService;
 
+    /**
+     * {@code AgentDefinitionController} 创建并初始化当前类型实例。
+     *
+     * @param agentAdminService 参数值，用于执行当前操作。
+     * @param agentService 参数值，用于执行当前操作。
+     */
     public AgentDefinitionController(
             AgentAdminService agentAdminService, AgentService agentService) {
         this.agentAdminService = agentAdminService;
@@ -54,6 +66,16 @@ public class AgentDefinitionController {
 
     // ======================== 来自 AgentAdminController ========================
 
+    /**
+     * {@code getPage} 查询并返回当前操作所需的数据。
+     *
+     * @param pageNo 参数值，用于执行当前操作。
+     * @param pageSize 参数值，用于执行当前操作。
+     * @param name 参数值，用于执行当前操作。
+     * @param status 参数值，用于执行当前操作。
+     *
+     * @return 返回当前操作产生的结果。
+     */
     @Operation(summary = "Get Page")
     @GetMapping("/page")
     public Result<PageData<AgentVO>> getPage(
@@ -66,6 +88,13 @@ public class AgentDefinitionController {
         return Result.success(new PageData<>(result.getRight(), result.getLeft()));
     }
 
+    /**
+     * {@code getById} 查询并返回当前操作所需的数据。
+     *
+     * @param id 参数值，用于执行当前操作。
+     *
+     * @return 返回当前操作产生的结果。
+     */
     @Operation(summary = "Get by Id")
     @GetMapping("/detail")
     public Result<AgentDetailVO> getById(@RequestParam Long id) {
@@ -74,6 +103,13 @@ public class AgentDefinitionController {
         return Result.success(vo);
     }
 
+    /**
+     * {@code create} 写入或更新当前模块中的业务数据。
+     *
+     * @param request 参数值，用于执行当前操作。
+     *
+     * @return 返回当前操作产生的结果。
+     */
     @Operation(summary = "Create")
     @SaCheckPermission("agent:admin:create")
     @PostMapping("/create")
@@ -90,6 +126,14 @@ public class AgentDefinitionController {
         }
     }
 
+    /**
+     * {@code update} 写入或更新当前模块中的业务数据。
+     *
+     * @param id 参数值，用于执行当前操作。
+     * @param request 参数值，用于执行当前操作。
+     *
+     * @return 返回当前操作产生的结果。
+     */
     @Operation(summary = "Update")
     @SaCheckPermission("agent:admin:edit")
     @PostMapping("/update")
@@ -106,6 +150,13 @@ public class AgentDefinitionController {
         }
     }
 
+    /**
+     * {@code delete} 释放或移除当前操作涉及的资源。
+     *
+     * @param id 参数值，用于执行当前操作。
+     *
+     * @return 返回当前操作产生的结果。
+     */
     @Operation(summary = "Delete")
     @SaCheckPermission("agent:admin:delete")
     @PostMapping("/delete")
@@ -122,6 +173,14 @@ public class AgentDefinitionController {
         }
     }
 
+    /**
+     * {@code updateStatus} 写入或更新当前模块中的业务数据。
+     *
+     * @param id 参数值，用于执行当前操作。
+     * @param status 参数值，用于执行当前操作。
+     *
+     * @return 返回当前操作产生的结果。
+     */
     @Operation(summary = "Update Status")
     @SaCheckPermission("agent:admin:edit")
     @PostMapping("/status")
@@ -140,6 +199,11 @@ public class AgentDefinitionController {
         }
     }
 
+    /**
+     * {@code listAllOptions} 查询并返回当前操作所需的数据。
+     *
+     * @return 返回当前操作产生的结果。
+     */
     @Operation(summary = "List All Options")
     @GetMapping("/options")
     public Result<List<IdNameOptionVO>> listAllOptions() {
@@ -148,6 +212,13 @@ public class AgentDefinitionController {
 
     // ======================== 来自 AgentController（非执行部分） ========================
 
+    /**
+     * {@code registerAgent} 写入或更新当前模块中的业务数据。
+     *
+     * @param request 参数值，用于执行当前操作。
+     *
+     * @return 返回当前操作产生的结果。
+     */
     @Operation(summary = "Register Agent")
     @SaCheckPermission("agent:admin:create")
     @PostMapping("/register")
@@ -193,6 +264,13 @@ public class AgentDefinitionController {
         }
     }
 
+    /**
+     * {@code getAgent} 查询并返回当前操作所需的数据。
+     *
+     * @param agentId 参数值，用于执行当前操作。
+     *
+     * @return 返回当前操作产生的结果。
+     */
     @Operation(summary = "Get Agent")
     @GetMapping("/detail/by-agent-id")
     public Result<AgentDefinition> getAgent(@RequestParam String agentId) {
@@ -204,6 +282,13 @@ public class AgentDefinitionController {
         return Result.success(definition);
     }
 
+    /**
+     * {@code deleteAgent} 释放或移除当前操作涉及的资源。
+     *
+     * @param agentId 参数值，用于执行当前操作。
+     *
+     * @return 返回当前操作产生的结果。
+     */
     @Operation(summary = "Delete Agent")
     @SaCheckPermission("agent:admin:delete")
     @PostMapping("/delete/by-agent-id")
@@ -217,6 +302,14 @@ public class AgentDefinitionController {
         }
     }
 
+    /**
+     * {@code switchVersion} 执行当前类型定义的业务操作。
+     *
+     * @param agentId 参数值，用于执行当前操作。
+     * @param version 参数值，用于执行当前操作。
+     *
+     * @return 返回当前操作产生的结果。
+     */
     @Operation(summary = "Switch Version")
     @SaCheckPermission("agent:admin:edit")
     @PostMapping("/version/switch")
@@ -233,6 +326,11 @@ public class AgentDefinitionController {
         }
     }
 
+    /**
+     * {@code listAgents} 查询并返回当前操作所需的数据。
+     *
+     * @return 返回当前操作产生的结果。
+     */
     @Operation(summary = "List Agents")
     @GetMapping("/list")
     public Result<List<AgentDefinition>> listAgents() {
@@ -242,12 +340,24 @@ public class AgentDefinitionController {
 
     // ======================== 来自 NodeTypeController ========================
 
+    /**
+     * {@code getNodeTypes} 查询并返回当前操作所需的数据。
+     *
+     * @return 返回当前操作产生的结果。
+     */
     @Operation(summary = "Get Node Types")
     @GetMapping("/node-types")
     public Result<List<NodeTypeMetaVO>> getNodeTypes() {
         return Result.success(agentAdminService.getNodeTypes());
     }
 
+    /**
+     * {@code getNodeType} 查询并返回当前操作所需的数据。
+     *
+     * @param nodeType 参数值，用于执行当前操作。
+     *
+     * @return 返回当前操作产生的结果。
+     */
     @Operation(summary = "Get Node Type")
     @GetMapping("/node-types/detail")
     public Result<NodeTypeMetaVO> getNodeType(@RequestParam String nodeType) {
@@ -265,13 +375,31 @@ public class AgentDefinitionController {
 
     // ======================== 内嵌请求模型 ========================
 
+    /**
+     * {@code RegisterAgentRequest} 表示智能体模块的请求参数，承载调用方提交的输入数据。
+     */
     @lombok.Data
     public static class RegisterAgentRequest {
         private String agentId;
+        /**
+         * 名称，表示当前对象中的对应属性。
+         */
         private String name;
+        /**
+         * 描述，表示当前对象中的对应属性。
+         */
         private String description;
+        /**
+         * versionNumber 属性，保存当前对象中的业务数据或协作依赖。
+         */
         private String versionNumber;
+        /**
+         * 版本描述，表示当前对象中的对应属性。
+         */
         private String versionDescription;
+        /**
+         * 图结构，表示当前对象中的对应属性。
+         */
         private com.shiyu.ai.agent.implementation.graph.Graph graph;
     }
 }

@@ -4,6 +4,21 @@ import java.time.Instant;
 import java.util.List;
 import java.util.Map;
 
+/**
+ * {@code ConversationMessage} 封装会话模块中不可变的结构化数据，并作为相关操作之间的值对象。
+ * @param id 标识，表示该记录组件承载的数据。
+ * @param conversationId conversationId 属性，表示该记录组件承载的数据。
+ * @param parentMessageId parentMessageId 属性，表示该记录组件承载的数据。
+ * @param sourceMessageId sourceMessageId 属性，表示该记录组件承载的数据。
+ * @param role 角色，表示该记录组件承载的数据。
+ * @param contentParts contentParts 属性，表示该记录组件承载的数据。
+ * @param toolCall toolCall 属性，表示该记录组件承载的数据。
+ * @param status 状态，表示该记录组件承载的数据。
+ * @param sequence sequence 属性，表示该记录组件承载的数据。
+ * @param generationId generationId 属性，表示该记录组件承载的数据。
+ * @param createdAt 创建时间，表示该记录组件承载的数据。
+ * @param updatedAt 更新时间，表示该记录组件承载的数据。
+ */
 public record ConversationMessage(
         String id,
         String conversationId,

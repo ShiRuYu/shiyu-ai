@@ -13,25 +13,71 @@ import java.util.UUID;
  */
 public class ModelCallEvent {
 
+    /**
+     * platform 属性，保存当前对象中的业务数据或协作依赖。
+     */
     private final String platform;
+    /**
+     * model 属性，保存当前对象中的业务数据或协作依赖。
+     */
     private final String model;
+    /**
+     * promptTokens 属性，保存当前对象中的业务数据或协作依赖。
+     */
     private final int promptTokens;
+    /**
+     * completionTokens 属性，保存当前对象中的业务数据或协作依赖。
+     */
     private final int completionTokens;
+    /**
+     * latencyMs 属性，保存当前对象中的业务数据或协作依赖。
+     */
     private final long latencyMs;
+    /**
+     * generationRunId 属性，保存当前对象中的业务数据或协作依赖。
+     */
     private final String generationRunId;
 
-    /** Stable id for this call, reused if the event is delivered more than once. */
+    /** 来源对象标识。 */
     private final String sourceId;
 
+    /**
+     * 租户标识，表示当前对象中的对应属性。
+     */
     private final TenantId tenantId;
+    /**
+     * 用户标识，表示当前对象中的对应属性。
+     */
     private final UserId userId;
+    /**
+     * correlationId 属性，保存当前对象中的业务数据或协作依赖。
+     */
     private final CorrelationId correlationId;
 
+    /**
+     * {@code ModelCallEvent} 创建并初始化当前类型实例。
+     *
+     * @param platform 参数值，用于执行当前操作。
+     * @param model 参数值，用于执行当前操作。
+     * @param promptTokens 参数值，用于执行当前操作。
+     * @param completionTokens 参数值，用于执行当前操作。
+     * @param latencyMs 参数值，用于执行当前操作。
+     */
     public ModelCallEvent(
             String platform, String model, int promptTokens, int completionTokens, long latencyMs) {
         this(platform, model, promptTokens, completionTokens, latencyMs, null);
     }
 
+    /**
+     * {@code ModelCallEvent} 创建并初始化当前类型实例。
+     *
+     * @param platform 参数值，用于执行当前操作。
+     * @param model 参数值，用于执行当前操作。
+     * @param promptTokens 参数值，用于执行当前操作。
+     * @param completionTokens 参数值，用于执行当前操作。
+     * @param latencyMs 参数值，用于执行当前操作。
+     * @param generationRunId 参数值，用于执行当前操作。
+     */
     public ModelCallEvent(
             String platform,
             String model,
@@ -42,6 +88,17 @@ public class ModelCallEvent {
         this(platform, model, promptTokens, completionTokens, latencyMs, generationRunId, null);
     }
 
+    /**
+     * {@code ModelCallEvent} 创建并初始化当前类型实例。
+     *
+     * @param platform 参数值，用于执行当前操作。
+     * @param model 参数值，用于执行当前操作。
+     * @param promptTokens 参数值，用于执行当前操作。
+     * @param completionTokens 参数值，用于执行当前操作。
+     * @param latencyMs 参数值，用于执行当前操作。
+     * @param generationRunId 参数值，用于执行当前操作。
+     * @param tenantId 参数值，用于执行当前操作。
+     */
     public ModelCallEvent(
             String platform,
             String model,
@@ -61,6 +118,18 @@ public class ModelCallEvent {
                 null);
     }
 
+    /**
+     * {@code ModelCallEvent} 创建并初始化当前类型实例。
+     *
+     * @param platform 参数值，用于执行当前操作。
+     * @param model 参数值，用于执行当前操作。
+     * @param promptTokens 参数值，用于执行当前操作。
+     * @param completionTokens 参数值，用于执行当前操作。
+     * @param latencyMs 参数值，用于执行当前操作。
+     * @param generationRunId 参数值，用于执行当前操作。
+     * @param tenantId 参数值，用于执行当前操作。
+     * @param userId 参数值，用于执行当前操作。
+     */
     public ModelCallEvent(
             String platform,
             String model,
@@ -82,6 +151,19 @@ public class ModelCallEvent {
                 userId);
     }
 
+    /**
+     * {@code ModelCallEvent} 创建并初始化当前类型实例。
+     *
+     * @param platform 参数值，用于执行当前操作。
+     * @param model 参数值，用于执行当前操作。
+     * @param promptTokens 参数值，用于执行当前操作。
+     * @param completionTokens 参数值，用于执行当前操作。
+     * @param latencyMs 参数值，用于执行当前操作。
+     * @param generationRunId 参数值，用于执行当前操作。
+     * @param sourceId 参数值，用于执行当前操作。
+     * @param tenantId 参数值，用于执行当前操作。
+     * @param userId 参数值，用于执行当前操作。
+     */
     public ModelCallEvent(
             String platform,
             String model,
@@ -105,6 +187,20 @@ public class ModelCallEvent {
                 CorrelationId.random());
     }
 
+    /**
+     * {@code ModelCallEvent} 创建并初始化当前类型实例。
+     *
+     * @param platform 参数值，用于执行当前操作。
+     * @param model 参数值，用于执行当前操作。
+     * @param promptTokens 参数值，用于执行当前操作。
+     * @param completionTokens 参数值，用于执行当前操作。
+     * @param latencyMs 参数值，用于执行当前操作。
+     * @param generationRunId 参数值，用于执行当前操作。
+     * @param sourceId 参数值，用于执行当前操作。
+     * @param tenantId 参数值，用于执行当前操作。
+     * @param userId 参数值，用于执行当前操作。
+     * @param correlationId 参数值，用于执行当前操作。
+     */
     public ModelCallEvent(
             String platform,
             String model,
@@ -129,46 +225,101 @@ public class ModelCallEvent {
         this.correlationId = correlationId == null ? CorrelationId.random() : correlationId;
     }
 
+    /**
+     * {@code getPlatform} 查询并返回当前操作所需的数据。
+     *
+     * @return 返回当前操作产生的结果。
+     */
     public String getPlatform() {
         return platform;
     }
 
+    /**
+     * {@code getModel} 查询并返回当前操作所需的数据。
+     *
+     * @return 返回当前操作产生的结果。
+     */
     public String getModel() {
         return model;
     }
 
+    /**
+     * {@code getPromptTokens} 查询并返回当前操作所需的数据。
+     *
+     * @return 返回当前操作产生的结果。
+     */
     public int getPromptTokens() {
         return promptTokens;
     }
 
+    /**
+     * {@code getCompletionTokens} 查询并返回当前操作所需的数据。
+     *
+     * @return 返回当前操作产生的结果。
+     */
     public int getCompletionTokens() {
         return completionTokens;
     }
 
+    /**
+     * {@code getTotalTokens} 查询并返回当前操作所需的数据。
+     *
+     * @return 返回当前操作产生的结果。
+     */
     public int getTotalTokens() {
         return promptTokens + completionTokens;
     }
 
+    /**
+     * {@code getLatencyMs} 查询并返回当前操作所需的数据。
+     *
+     * @return 返回当前操作产生的结果。
+     */
     public long getLatencyMs() {
         return latencyMs;
     }
 
+    /**
+     * {@code getGenerationRunId} 查询并返回当前操作所需的数据。
+     *
+     * @return 返回当前操作产生的结果。
+     */
     public String getGenerationRunId() {
         return generationRunId;
     }
 
+    /**
+     * {@code getSourceId} 查询并返回当前操作所需的数据。
+     *
+     * @return 返回当前操作产生的结果。
+     */
     public String getSourceId() {
         return sourceId;
     }
 
+    /**
+     * {@code getTenantId} 查询并返回当前操作所需的数据。
+     *
+     * @return 返回当前操作产生的结果。
+     */
     public TenantId getTenantId() {
         return tenantId;
     }
 
+    /**
+     * {@code getUserId} 查询并返回当前操作所需的数据。
+     *
+     * @return 返回当前操作产生的结果。
+     */
     public UserId getUserId() {
         return userId;
     }
 
+    /**
+     * {@code getCorrelationId} 查询并返回当前操作所需的数据。
+     *
+     * @return 返回当前操作产生的结果。
+     */
     public CorrelationId getCorrelationId() {
         return correlationId;
     }

@@ -1,5 +1,9 @@
 package com.shiyu.ai.knowledge.implementation.web.upload;
 
+import com.shiyu.ai.knowledge.implementation.application.KnowledgeSpaceService.SpaceRole;
+import com.shiyu.ai.knowledge.implementation.application.EnterpriseDocumentService.StoredFileRequest;
+import com.shiyu.ai.knowledge.implementation.application.EnterpriseDocumentService.UploadResult;
+
 import com.shiyu.ai.common.storage.api.*;
 import com.shiyu.ai.common.storage.backup.*;
 import com.shiyu.ai.common.storage.config.*;
@@ -19,25 +23,55 @@ import lombok.RequiredArgsConstructor;
 
 import org.springframework.stereotype.Component;
 
-/** Registers a completed storage upload as a knowledge document. */
+/**
+ * 处理知识文档的分片上传、合并和安全校验。
+ */
 @Component
 @RequiredArgsConstructor
 public class KnowledgeDocumentUploadHandler implements ResumableUploadHandler {
 
+    /**
+     * documentService 属性，保存当前对象中的业务数据或协作依赖。
+     */
     private final EnterpriseDocumentService documentService;
+    /**
+     * spaceService 属性，保存当前对象中的业务数据或协作依赖。
+     */
     private final KnowledgeSpaceService spaceService;
 
+    /**
+     * {@code authorize} 执行当前类型定义的业务操作。
+     *
+     * @param actor 参数值，用于执行当前操作。
+     * @param spaceId 参数值，用于执行当前操作。
+     */
     @Override
     public void authorize(UploadActor actor, Long spaceId) {
         spaceService.requireAccess(
                 spaceId, KnowledgeSpaceService.SpaceRole.EDITOR, toKnowledgeActor(actor));
     }
 
+    /**
+     * {@code namespace} 执行当前类型定义的业务操作。
+     *
+     * @param tenantId 参数值，用于执行当前操作。
+     * @param spaceId 参数值，用于执行当前操作。
+     *
+     * @return 返回当前操作产生的结果。
+     */
     @Override
     public String namespace(TenantId tenantId, Long spaceId) {
         return "knowledge/" + tenantId.value() + "/" + spaceId;
     }
 
+    /**
+     * {@code register} 写入或更新当前模块中的业务数据。
+     *
+     * @param actor 参数值，用于执行当前操作。
+     * @param request 参数值，用于执行当前操作。
+     *
+     * @return 返回当前操作产生的结果。
+     */
     @Override
     public RegistrationResult register(UploadActor actor, UploadRegistration request) {
         authorize(actor, request.spaceId());

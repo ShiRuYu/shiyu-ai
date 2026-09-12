@@ -20,6 +20,9 @@ import java.util.List;
 @Component
 public class IntentDefApplicationRunner implements ApplicationRunner {
 
+    /**
+     * intentDefRepository 属性，保存当前对象中的业务数据或协作依赖。
+     */
     @Resource private IntentDefRepository intentDefRepository;
 
     @Override

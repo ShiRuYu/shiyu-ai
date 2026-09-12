@@ -1,6 +1,10 @@
 package com.shiyu.ai.governance.contract;
 
-/** Admission inputs. Estimated tokens are used only for reservation. */
+/**
+ * 处理配额请求。
+ * @param estimatedPromptTokens estimatedPromptTokens 属性，表示该记录组件承载的数据。
+ * @param maxConcurrent maxConcurrent 属性，表示该记录组件承载的数据。
+ */
 public record QuotaRequest(int estimatedPromptTokens, int maxConcurrent) {
     public QuotaRequest {
         if (estimatedPromptTokens < 0) {

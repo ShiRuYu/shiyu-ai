@@ -17,16 +17,38 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+/**
+ * {@code IntentServiceImpl} 实现智能体模块的应用服务，负责编排用例流程并维护业务边界。
+ */
 @Slf4j
 @Service
 public class IntentServiceImpl implements IntentService {
 
+    /**
+     * chatEngine 属性，保存当前对象中的业务数据或协作依赖。
+     */
     private final ChatEngine chatEngine;
 
+    /**
+     * {@code IntentServiceImpl} 创建并初始化当前类型实例。
+     *
+     * @param chatEngine 参数值，用于执行当前操作。
+     */
     public IntentServiceImpl(ChatEngine chatEngine) {
         this.chatEngine = chatEngine;
     }
 
+    /**
+     * {@code recognize} 执行当前类型定义的业务操作。
+     *
+     * @param row 参数值，用于执行当前操作。
+     * @param column 参数值，用于执行当前操作。
+     * @param query 参数值，用于执行当前操作。
+     * @param platform 参数值，用于执行当前操作。
+     * @param modelName 参数值，用于执行当前操作。
+     *
+     * @return 返回当前操作产生的结果。
+     */
     @Override
     public IntentRecognitionResult recognize(
             String row, String column, String query, String platform, String modelName) {
@@ -78,6 +100,15 @@ public class IntentServiceImpl implements IntentService {
         }
     }
 
+    /**
+     * {@code recognize} 执行当前类型定义的业务操作。
+     *
+     * @param row 参数值，用于执行当前操作。
+     * @param column 参数值，用于执行当前操作。
+     * @param query 参数值，用于执行当前操作。
+     *
+     * @return 返回当前操作产生的结果。
+     */
     @Override
     public IntentRecognitionResult recognize(String row, String column, String query) {
         return recognize(row, column, query, null, null);

@@ -1,5 +1,8 @@
 package com.shiyu.ai.knowledge.implementation.application.service;
 
+import com.shiyu.ai.knowledge.implementation.application.KnowledgeJobService.JobView;
+import com.shiyu.ai.knowledge.implementation.application.KnowledgeSpaceService.SpaceRole;
+
 import com.shiyu.ai.common.core.api.PageData;
 import com.shiyu.ai.common.core.exception.ServiceException;
 import com.shiyu.ai.kernel.context.ActorContext;
@@ -13,13 +16,33 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+/**
+ * {@code KnowledgeJobServiceImpl} 实现知识模块的应用服务，负责编排用例流程并维护业务边界。
+ */
 @Service
 @RequiredArgsConstructor
 public class KnowledgeJobServiceImpl implements KnowledgeJobService {
 
+    /**
+     * 仓储，表示当前对象中的对应属性。
+     */
     private final KnowledgeEnterpriseRepository repository;
+    /**
+     * spaceService 属性，保存当前对象中的业务数据或协作依赖。
+     */
     private final KnowledgeSpaceService spaceService;
 
+    /**
+     * {@code page} 执行当前类型定义的业务操作。
+     *
+     * @param actor 参数值，用于执行当前操作。
+     * @param pageNum 参数值，用于执行当前操作。
+     * @param pageSize 参数值，用于执行当前操作。
+     * @param spaceId 参数值，用于执行当前操作。
+     * @param status 参数值，用于执行当前操作。
+     *
+     * @return 返回当前操作产生的结果。
+     */
     @Override
     public PageData<JobView> page(
             ActorContext actor, int pageNum, int pageSize, Long spaceId, String status) {
@@ -37,6 +60,14 @@ public class KnowledgeJobServiceImpl implements KnowledgeJobService {
                 page.getTotal());
     }
 
+    /**
+     * {@code get} 查询并返回当前操作所需的数据。
+     *
+     * @param actor 参数值，用于执行当前操作。
+     * @param id 参数值，用于执行当前操作。
+     *
+     * @return 返回当前操作产生的结果。
+     */
     @Override
     public JobView get(ActorContext actor, Long id) {
         KnowledgeIngestionJobBO job = requireJob(actor, id);
@@ -44,6 +75,12 @@ public class KnowledgeJobServiceImpl implements KnowledgeJobService {
         return toView(job);
     }
 
+    /**
+     * {@code cancel} 校验当前操作的输入或状态是否满足约束。
+     *
+     * @param actor 参数值，用于执行当前操作。
+     * @param id 参数值，用于执行当前操作。
+     */
     @Override
     @Transactional(rollbackFor = Exception.class)
     public void cancel(ActorContext actor, Long id) {
@@ -58,6 +95,12 @@ public class KnowledgeJobServiceImpl implements KnowledgeJobService {
         repository.updateJob(actor.tenantId(), job);
     }
 
+    /**
+     * {@code retry} 执行当前类型定义的业务操作。
+     *
+     * @param actor 参数值，用于执行当前操作。
+     * @param id 参数值，用于执行当前操作。
+     */
     @Override
     @Transactional(rollbackFor = Exception.class)
     public void retry(ActorContext actor, Long id) {

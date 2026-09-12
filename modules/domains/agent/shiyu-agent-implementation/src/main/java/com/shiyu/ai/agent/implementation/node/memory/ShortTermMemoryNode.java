@@ -7,20 +7,29 @@ import com.shiyu.ai.agent.contract.node.NodeInput;
 import com.shiyu.ai.agent.contract.node.NodeInputParam;
 import com.shiyu.ai.agent.contract.node.NodeOutput;
 import com.shiyu.ai.agent.contract.node.NodeType;
-import com.shiyu.ai.agent.implementation.runtime.AgentExecutionContext;
+import com.shiyu.ai.agent.implementation.runtime.model.AgentExecutionContext;
 import com.shiyu.ai.kernel.context.TenantId;
 
 import lombok.Getter;
 import lombok.Setter;
 import lombok.extern.slf4j.Slf4j;
 
+/**
+ * {@code ShortTermMemoryNode} 承载智能体模块中的智能流程节点，负责执行本节点的输入处理与结果产出。
+ */
 @Setter
 @Getter
 @Slf4j
 public class ShortTermMemoryNode extends BaseNode {
 
+    /**
+     * 配置，表示当前对象中的对应属性。
+     */
     private ShortTermMemoryConfig config;
 
+    /**
+     * memoryService 属性，保存当前对象中的业务数据或协作依赖。
+     */
     private final AgentExecutionContext memoryService;
 
     private ShortTermMemoryNode(ShortTermMemoryConfig config, AgentExecutionContext memoryService) {
@@ -30,24 +39,57 @@ public class ShortTermMemoryNode extends BaseNode {
         this.memoryService = memoryService;
     }
 
+    /**
+     * {@code builder} 执行当前类型定义的业务操作。
+     *
+     * @return 返回当前操作产生的结果。
+     */
     public static Builder builder() {
         return new Builder();
     }
 
+    /**
+     * {@code Builder} 承载智能体模块的领域状态或协作行为，负责维护本类型的职责边界。
+     */
     public static class Builder {
+        /**
+         * 配置，表示当前对象中的对应属性。
+         */
         private ShortTermMemoryConfig config;
+        /**
+         * memoryService 属性，保存当前对象中的业务数据或协作依赖。
+         */
         private AgentExecutionContext memoryService;
 
+        /**
+         * {@code config} 执行当前类型定义的业务操作。
+         *
+         * @param config 参数值，用于执行当前操作。
+         *
+         * @return 返回当前操作产生的结果。
+         */
         public Builder config(ShortTermMemoryConfig config) {
             this.config = config;
             return this;
         }
 
+        /**
+         * {@code memoryService} 执行当前类型定义的业务操作。
+         *
+         * @param memoryService 参数值，用于执行当前操作。
+         *
+         * @return 返回当前操作产生的结果。
+         */
         public Builder memoryService(AgentExecutionContext memoryService) {
             this.memoryService = memoryService;
             return this;
         }
 
+        /**
+         * {@code build} 执行当前类型定义的业务操作。
+         *
+         * @return 返回当前操作产生的结果。
+         */
         public ShortTermMemoryNode build() {
             if (memoryService == null) {
                 throw new IllegalStateException("创建 ShortTermMemoryNode 失败: memoryService 不能为空");
@@ -56,6 +98,13 @@ public class ShortTermMemoryNode extends BaseNode {
         }
     }
 
+    /**
+     * {@code doExecute} 执行当前类型定义的业务操作。
+     *
+     * @param input 参数值，用于执行当前操作。
+     *
+     * @return 返回当前操作产生的结果。
+     */
     @Override
     protected NodeOutput doExecute(NodeInput input) throws Exception {
         log.info("执行短期记忆节点: {}", config.getNodeName());
@@ -125,6 +174,11 @@ public class ShortTermMemoryNode extends BaseNode {
         }
     }
 
+    /**
+     * {@code getRequiredInputs} 查询并返回当前操作所需的数据。
+     *
+     * @return 返回当前操作产生的结果。
+     */
     @Override
     public java.util.List<NodeInputParam> getRequiredInputs() {
         return java.util.List.of(

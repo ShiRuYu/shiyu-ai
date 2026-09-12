@@ -1,8 +1,8 @@
 package com.shiyu.ai.agent.implementation.service;
 
 import com.shiyu.ai.agent.implementation.domain.model.ExecutionTimelineBO;
-import com.shiyu.ai.agent.implementation.event.NodeExecutionCompletedEvent;
-import com.shiyu.ai.agent.implementation.event.NodeExecutionStartedEvent;
+import com.shiyu.ai.agent.implementation.event.model.NodeExecutionCompletedEvent;
+import com.shiyu.ai.agent.implementation.event.model.NodeExecutionStartedEvent;
 import com.shiyu.ai.agent.implementation.port.repository.ExecutionTimelineRepository;
 import com.shiyu.ai.common.core.utils.JSONUtils;
 
@@ -24,8 +24,16 @@ import java.util.stream.Collectors;
 @Service
 public class TimelineService {
 
+    /**
+     * timelineRepository 属性，保存当前对象中的业务数据或协作依赖。
+     */
     private final ExecutionTimelineRepository timelineRepository;
 
+    /**
+     * {@code TimelineService} 创建并初始化当前类型实例。
+     *
+     * @param timelineRepository 参数值，用于执行当前操作。
+     */
     public TimelineService(ExecutionTimelineRepository timelineRepository) {
         this.timelineRepository = timelineRepository;
     }

@@ -396,7 +396,6 @@ class EmbeddedIngestionWorkerTest {
                         scheduler,
                         pools);
 
-        // A full in-flight set must short-circuit without polling; an empty result is a no-op.
         set(worker, "executor", executor);
         set(worker, "concurrency", 1);
         Field inFlight = EmbeddedIngestionWorker.class.getDeclaredField("inFlight");
@@ -411,15 +410,12 @@ class EmbeddedIngestionWorkerTest {
         worker.poll();
         verify(enterprise).pollPendingJobs(1);
 
-        // Cancellation after the claim is observed before reading any source object.
         KnowledgeIngestionJobBO claimed = job(110L, 7L, 8L, 9L, "PENDING", 0, 1);
         KnowledgeIngestionJobBO cancelled = job(110L, 7L, 8L, 9L, "CANCELLED", 0, 1);
         when(enterprise.findJob(new TenantId(10L), 110L)).thenReturn(claimed, claimed, cancelled);
         invokeExecute(worker, new TenantId(10L), 110L);
         verify(storage, never()).open(anyString());
 
-        // Missing source content is a hard failure, while an unknown type without a text
-        // parser also fails explicitly instead of silently succeeding.
         KnowledgeIngestionJobBO noContent = job(111L, 7L, 8L, 9L, "PENDING", 0, 1);
         KnowledgeDocumentBO document = document(8L, "UNKNOWN");
         KnowledgeDocumentVersionBO version = version(9L, "missing");
@@ -444,7 +440,6 @@ class EmbeddedIngestionWorkerTest {
         invokeExecute(worker, new TenantId(10L), 112L);
         assertEquals("FAILED", unknown.getJobStatus());
 
-        // An unattributed job is rejected after parsing and before embedding.
         DocumentParser parser = mock(DocumentParser.class);
         when(parser.getSupportedFormat()).thenReturn("txt");
         when(parser.parse(any(byte[].class)))
@@ -480,7 +475,6 @@ class EmbeddedIngestionWorkerTest {
                         anyString(),
                         anyList());
 
-        // Successful parsing populates a missing version title and shutdown is idempotent.
         KnowledgeIngestionJobBO titled = job(114L, 7L, 8L, 9L, "PENDING", 0, 1);
         KnowledgeDocumentVersionBO untitled = version(9L, "obj");
         when(enterprise.findJob(new TenantId(10L), 114L)).thenReturn(titled);

@@ -1,5 +1,10 @@
 package com.shiyu.ai.knowledge.implementation.infrastructure.retrieval;
 
+
+import com.shiyu.ai.knowledge.implementation.application.KnowledgeSpaceService.SpaceRole;
+import com.shiyu.ai.knowledge.implementation.application.KnowledgeSpaceService.SpaceView;
+import com.shiyu.ai.knowledge.implementation.infrastructure.index.service.KnowledgeIndexService.HybridHit;
+
 import com.shiyu.ai.common.core.exception.ServiceException;
 import com.shiyu.ai.kernel.context.ActorContext;
 import com.shiyu.ai.knowledge.contract.api.KnowledgeRetrievalService;
@@ -14,7 +19,7 @@ import com.shiyu.ai.knowledge.implementation.domain.model.KnowledgeChunkBO;
 import com.shiyu.ai.knowledge.implementation.domain.port.repository.KnowledgeChunkRepository;
 import com.shiyu.ai.knowledge.implementation.domain.port.repository.KnowledgeDocumentRepository;
 import com.shiyu.ai.knowledge.implementation.domain.port.repository.KnowledgeRepository;
-import com.shiyu.ai.knowledge.implementation.infrastructure.index.KnowledgeIndexService;
+import com.shiyu.ai.knowledge.implementation.infrastructure.index.service.KnowledgeIndexService;
 
 import lombok.RequiredArgsConstructor;
 
@@ -26,16 +31,41 @@ import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 
+/**
+ * {@code EmbeddedKnowledgeRetrievalService} 定义知识模块的应用服务能力，供上层用例调用。
+ */
 @Service
 @RequiredArgsConstructor
 public class EmbeddedKnowledgeRetrievalService implements KnowledgeRetrievalService {
 
+    /**
+     * spaceService 属性，保存当前对象中的业务数据或协作依赖。
+     */
     private final KnowledgeSpaceService spaceService;
+    /**
+     * 索引服务，表示当前对象中的对应属性。
+     */
     private final KnowledgeIndexService indexService;
+    /**
+     * knowledgeRepository 属性，保存当前对象中的业务数据或协作依赖。
+     */
     private final KnowledgeRepository knowledgeRepository;
+    /**
+     * chunkRepository 属性，保存当前对象中的业务数据或协作依赖。
+     */
     private final KnowledgeChunkRepository chunkRepository;
+    /**
+     * documentRepository 属性，保存当前对象中的业务数据或协作依赖。
+     */
     private final KnowledgeDocumentRepository documentRepository;
 
+    /**
+     * {@code retrieve} 执行当前类型定义的业务操作。
+     *
+     * @param request 参数值，用于执行当前操作。
+     *
+     * @return 返回当前操作产生的结果。
+     */
     @Override
     public KnowledgeRetrievalResult retrieve(KnowledgeRetrievalRequest request) {
         if (request == null || request.accessContext() == null) {

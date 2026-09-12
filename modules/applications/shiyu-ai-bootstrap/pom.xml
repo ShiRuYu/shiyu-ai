@@ -21,6 +21,11 @@
         </dependency>
         <dependency>
             <groupId>com.shiyu.ai</groupId>
+            <artifactId>shiyu-education-implementation</artifactId>
+            <version>${revision}</version>
+        </dependency>
+        <dependency>
+            <groupId>com.shiyu.ai</groupId>
             <artifactId>shiyu-governance-implementation</artifactId>
             <version>${revision}</version>
         </dependency>
@@ -45,8 +50,7 @@
             <groupId>org.springframework.boot</groupId>
             <artifactId>spring-boot-h2console</artifactId>
         </dependency>
-        <!-- Thread auto-configuration references these APIs. Exporters and
-             registry implementations remain opt-in in the observability profile. -->
+        <!-- 该配置用于当前模块的职责边界和运行约束。 -->
         <dependency>
             <groupId>io.micrometer</groupId>
             <artifactId>micrometer-core</artifactId>

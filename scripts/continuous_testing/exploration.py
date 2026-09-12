@@ -1,4 +1,4 @@
-"""Semantic exploration scenario identity and weighted dispatch."""
+"""exploration 脚本，执行项目架构与工程校验。"""
 from __future__ import annotations
 import hashlib, json, os
 from dataclasses import dataclass, asdict
@@ -45,12 +45,12 @@ class ScenarioLedger:
         return scenario.key() in self._seen
 
 def dispatch_plan(total: int = 20) -> list[str]:
-    """Return purpose slots with the required 12/5/3 ratio."""
+    """执行 dispatch_plan，处理输入并返回校验结果。"""
     high = round(total * 12 / 20); stale = round(total * 5 / 20)
     return ["risk-gap"] * high + ["stale-area"] * stale + ["historical-failure"] * (total - high - stale)
 
 def generate_batch(ledger: ScenarioLedger, total: int = 20, strategy: str = "adaptive-v1") -> list[Scenario]:
-    """Generate and record a deterministic semantic batch without seed-only duplicates."""
+    """执行 generate_batch，处理输入并返回校验结果。"""
     purposes = dispatch_plan(total)
     operations = ("upload", "search", "delete", "refresh", "stream")
     boundaries = ("empty", "unicode", "max-length", "pagination")

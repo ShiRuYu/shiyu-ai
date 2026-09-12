@@ -24,17 +24,38 @@ import java.util.Objects;
 import java.util.concurrent.atomic.AtomicReference;
 
 /**
- * DeepSeek's OpenAI-compatible transport, kept separate from the generic LangChain adapter so
- * reasoning, usage-only frames and tool-call deltas are not lost during provider translation.
+ * DeepSeekHttpProvider 边界接口，负责向外部组件提供模型领域相关能力。
  */
 @SuppressWarnings("unchecked")
 public final class DeepSeekHttpProvider {
+    /**
+     * 客户端，表示当前对象中的对应属性。
+     */
     private final HttpClient client;
+    /**
+     * endpoint 属性，保存当前对象中的业务数据或协作依赖。
+     */
     private final String endpoint;
+    /**
+     * apiKey 属性，保存当前对象中的业务数据或协作依赖。
+     */
     private final String apiKey;
+    /**
+     * defaultModel 属性，保存当前对象中的业务数据或协作依赖。
+     */
     private final String defaultModel;
+    /**
+     * requestTimeout 属性，保存当前对象中的业务数据或协作依赖。
+     */
     private final Duration requestTimeout;
 
+    /**
+     * {@code DeepSeekHttpProvider} 创建并初始化当前类型实例。
+     *
+     * @param baseUrl 参数值，用于执行当前操作。
+     * @param apiKey 参数值，用于执行当前操作。
+     * @param defaultModel 参数值，用于执行当前操作。
+     */
     public DeepSeekHttpProvider(String baseUrl, String apiKey, String defaultModel) {
         this(
                 baseUrl,
@@ -59,10 +80,22 @@ public final class DeepSeekHttpProvider {
         this.client = client;
     }
 
+    /**
+     * {@code isAvailable} 校验当前操作的输入或状态是否满足约束。
+     *
+     * @return 返回当前操作产生的结果。
+     */
     public boolean isAvailable() {
         return !apiKey.isBlank();
     }
 
+    /**
+     * {@code chat} 执行当前类型定义的业务操作。
+     *
+     * @param request 参数值，用于执行当前操作。
+     *
+     * @return 返回当前操作产生的结果。
+     */
     public ChatResponse chat(ChatRequest request) {
         HttpResponse<String> response = send(request, false);
         Map<String, Object> body = parseBody(response);
@@ -102,6 +135,13 @@ public final class DeepSeekHttpProvider {
                 .build();
     }
 
+    /**
+     * {@code stream} 执行当前类型定义的业务操作。
+     *
+     * @param request 参数值，用于执行当前操作。
+     *
+     * @return 返回当前操作产生的结果。
+     */
     public Flux<ChatResponse> stream(ChatRequest request) {
         return Flux.<ChatResponse>create(
                         sink -> {
@@ -162,10 +202,6 @@ public final class DeepSeekHttpProvider {
                                             output = number(usage.get("completion_tokens"));
                                             total = number(usage.get("total_tokens"));
                                             estimated = false;
-                                            // DeepSeek may send usage in a frame with no choices
-                                            // (especially when stream_options.include_usage is
-                                            // enabled).  Surface it immediately instead of
-                                            // waiting for a finish frame that may not repeat it.
                                             sink.next(
                                                     ChatResponse.builder()
                                                             .success(true)
@@ -247,10 +283,6 @@ public final class DeepSeekHttpProvider {
                                         }
                                         String finish = string(choice.get("finish_reason"));
                                         if (!finish.isBlank() && !"null".equals(finish)) {
-                                            // Keep the terminal envelope pending until all frames
-                                            // have been consumed. Providers may send the usage
-                                            // frame after the finish frame; emitting COMPLETED
-                                            // first would make usage arrive after the run ended.
                                             finishReason = finish;
                                         }
                                     }
@@ -421,8 +453,6 @@ public final class DeepSeekHttpProvider {
                 parts.add(Map.of("type", "image_url", "image_url", Map.of("url", part.uri())));
             } else if ("audio".equalsIgnoreCase(part.type())
                     || "file".equalsIgnoreCase(part.type())) {
-                // DeepSeek's current chat contract does not accept audio/file
-                // parts. Fail closed instead of silently dropping user input.
                 throw new IllegalArgumentException(
                         "DeepSeek does not support " + part.type() + " content parts");
             } else {
@@ -523,13 +553,27 @@ public final class DeepSeekHttpProvider {
                         + (retryAfter == null ? "" : " retry-after=" + retryAfter));
     }
 
+    /**
+     * {@code DeepSeekProviderException} 表示模型模块中的业务异常，用于向调用方传递失败原因。
+     */
     public static final class DeepSeekProviderException extends RuntimeException {
         @Serial private static final long serialVersionUID = 1L;
 
+        /**
+         * {@code DeepSeekProviderException} 创建并初始化当前类型实例。
+         *
+         * @param message 参数值，用于执行当前操作。
+         */
         public DeepSeekProviderException(String message) {
             super(message);
         }
 
+        /**
+         * {@code DeepSeekProviderException} 创建并初始化当前类型实例。
+         *
+         * @param message 参数值，用于执行当前操作。
+         * @param cause 参数值，用于执行当前操作。
+         */
         public DeepSeekProviderException(String message, Throwable cause) {
             super(message, cause);
         }

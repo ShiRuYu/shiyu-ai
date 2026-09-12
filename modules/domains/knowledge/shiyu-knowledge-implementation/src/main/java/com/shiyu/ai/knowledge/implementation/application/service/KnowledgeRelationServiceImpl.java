@@ -1,5 +1,8 @@
 package com.shiyu.ai.knowledge.implementation.application.service;
 
+import com.shiyu.ai.knowledge.implementation.application.KnowledgeRelationService.RelationView;
+import com.shiyu.ai.knowledge.implementation.application.KnowledgeSpaceService.SpaceRole;
+
 import com.shiyu.ai.common.core.exception.ServiceException;
 import com.shiyu.ai.kernel.context.ActorContext;
 import com.shiyu.ai.knowledge.contract.api.KnowledgeRelationPort;
@@ -23,15 +26,30 @@ import java.time.LocalDateTime;
 import java.util.Collections;
 import java.util.List;
 
+/**
+ * {@code KnowledgeRelationServiceImpl} 实现知识模块的应用服务，负责编排用例流程并维护业务边界。
+ */
 @Slf4j
 @Service
 @RequiredArgsConstructor
 public class KnowledgeRelationServiceImpl
         implements KnowledgeRelationService, KnowledgeRelationPort {
 
+    /**
+     * relationRepository 属性，保存当前对象中的业务数据或协作依赖。
+     */
     private final KnowledgeRelationRepository relationRepository;
+    /**
+     * knowledgeRepository 属性，保存当前对象中的业务数据或协作依赖。
+     */
     private final KnowledgeRepository knowledgeRepository;
+    /**
+     * knowledgeGraph 属性，保存当前对象中的业务数据或协作依赖。
+     */
     private final KnowledgeGraph knowledgeGraph;
+    /**
+     * spaceService 属性，保存当前对象中的业务数据或协作依赖。
+     */
     private final KnowledgeSpaceService spaceService;
 
     @Override

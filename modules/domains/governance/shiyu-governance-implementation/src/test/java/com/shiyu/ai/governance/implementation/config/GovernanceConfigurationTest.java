@@ -14,9 +14,9 @@ import com.shiyu.ai.governance.implementation.usage.port.BillingPriceProvider;
 import com.shiyu.ai.governance.implementation.usage.port.repository.UsageRecordRepository;
 import com.shiyu.ai.governance.implementation.usage.realtime.UsageRealtimePublisher;
 import com.shiyu.ai.governance.implementation.usage.service.UsageRecordService;
-import com.shiyu.ai.governance.implementation.web.UsageWebSocketConfig;
-import com.shiyu.ai.governance.implementation.web.UsageWebSocketHandler;
-import com.shiyu.ai.governance.implementation.web.UsageWebSocketService;
+import com.shiyu.ai.governance.implementation.web.config.UsageWebSocketConfig;
+import com.shiyu.ai.governance.implementation.web.websocket.UsageWebSocketHandler;
+import com.shiyu.ai.governance.implementation.web.websocket.UsageWebSocketService;
 
 import org.junit.jupiter.api.Test;
 import org.springframework.web.socket.config.annotation.WebSocketHandlerRegistration;

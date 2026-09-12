@@ -14,6 +14,12 @@ public enum CommonStatusEnum {
     /** 删除 */
     DELETED("2", "删除");
 
+    /**
+     * 编码，表示当前对象中的对应属性。
+     */
     private final String code;
+    /**
+     * info 属性，保存当前对象中的业务数据或协作依赖。
+     */
     private final String info;
 }

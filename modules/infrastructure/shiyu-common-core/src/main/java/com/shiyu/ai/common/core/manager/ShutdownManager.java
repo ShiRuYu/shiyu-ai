@@ -16,12 +16,23 @@ import java.util.concurrent.ExecutorService;
 @Component
 public class ShutdownManager {
 
+    /**
+     * executorServices 属性，保存当前对象中的业务数据或协作依赖。
+     */
     private final List<ExecutorService> executorServices;
 
+    /**
+     * {@code ShutdownManager} 创建并初始化当前类型实例。
+     *
+     * @param executorServices 参数值，用于执行当前操作。
+     */
     public ShutdownManager(List<ExecutorService> executorServices) {
         this.executorServices = executorServices;
     }
 
+    /**
+     * {@code destroy} 执行当前类型定义的业务操作。
+     */
     @PreDestroy
     public void destroy() {
         shutdownAsyncManager();

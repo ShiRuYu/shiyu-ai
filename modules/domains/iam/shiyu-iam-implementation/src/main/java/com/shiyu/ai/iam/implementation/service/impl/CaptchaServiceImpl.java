@@ -62,27 +62,57 @@ public class CaptchaServiceImpl implements CaptchaService {
 
     /** 内部类：验证码数据 */
     private static class CaptchaData {
+        /**
+         * 编码，表示当前对象中的对应属性。
+         */
         private final String code;
+        /**
+         * expireTime 属性，保存当前对象中的业务数据或协作依赖。
+         */
         private final long expireTime;
 
+        /**
+         * {@code CaptchaData} 创建并初始化当前类型实例。
+         *
+         * @param code 参数值，用于执行当前操作。
+         * @param expireTime 参数值，用于执行当前操作。
+         */
         public CaptchaData(String code, long expireTime) {
             this.code = code;
             this.expireTime = expireTime;
         }
 
+        /**
+         * {@code getCode} 查询并返回当前操作所需的数据。
+         *
+         * @return 返回当前操作产生的结果。
+         */
         public String getCode() {
             return code;
         }
 
+        /**
+         * {@code getExpireTime} 查询并返回当前操作所需的数据。
+         *
+         * @return 返回当前操作产生的结果。
+         */
         public long getExpireTime() {
             return expireTime;
         }
 
+        /**
+         * {@code isExpired} 校验当前操作的输入或状态是否满足约束。
+         *
+         * @return 返回当前操作产生的结果。
+         */
         public boolean isExpired() {
             return System.currentTimeMillis() > expireTime;
         }
     }
 
+    /**
+     * {@code init} 执行当前类型定义的业务操作。
+     */
     @PostConstruct
     public void init() {
         // 每 5 分钟清理过期验证码和尝试计数，防止内存泄漏
@@ -104,6 +134,9 @@ public class CaptchaServiceImpl implements CaptchaService {
                 TimeUnit.MINUTES);
     }
 
+    /**
+     * {@code destroy} 执行当前类型定义的业务操作。
+     */
     @PreDestroy
     public void destroy() {
         cleanupScheduler.shutdownNow();
@@ -119,6 +152,11 @@ public class CaptchaServiceImpl implements CaptchaService {
         attemptCount.clear();
     }
 
+    /**
+     * {@code generateCaptcha} 执行当前类型定义的业务操作。
+     *
+     * @return 返回当前操作产生的结果。
+     */
     @Override
     public CaptchaVO generateCaptcha() {
         // 生成随机验证码
@@ -140,6 +178,14 @@ public class CaptchaServiceImpl implements CaptchaService {
         return new CaptchaVO(key, svgImage, CAPTCHA_EXPIRE_TIME / 1000); // 转换为秒
     }
 
+    /**
+     * {@code validateCaptcha} 校验当前操作的输入或状态是否满足约束。
+     *
+     * @param key 参数值，用于执行当前操作。
+     * @param code 参数值，用于执行当前操作。
+     *
+     * @return 返回当前操作产生的结果。
+     */
     @Override
     public boolean validateCaptcha(String key, String code) {
         if (key == null || code == null) {
@@ -181,6 +227,11 @@ public class CaptchaServiceImpl implements CaptchaService {
         return valid;
     }
 
+    /**
+     * {@code destroyCaptcha} 执行当前类型定义的业务操作。
+     *
+     * @param key 参数值，用于执行当前操作。
+     */
     @Override
     public void destroyCaptcha(String key) {
         captchaStore.remove(key);

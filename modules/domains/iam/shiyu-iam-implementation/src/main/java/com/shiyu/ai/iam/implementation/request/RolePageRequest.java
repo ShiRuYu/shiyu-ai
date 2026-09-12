@@ -13,8 +13,14 @@ import lombok.EqualsAndHashCode;
 @Schema(description = "角色分页查询请求")
 public class RolePageRequest extends PageQuery {
 
+    /**
+     * serialVersionUID 属性，保存当前对象中的业务数据或协作依赖。
+     */
     private static final long serialVersionUID = 1L;
 
+    /**
+     * 名称，表示当前对象中的对应属性。
+     */
     @Schema(description = "角色名称（模糊查询）")
     private String name;
 }

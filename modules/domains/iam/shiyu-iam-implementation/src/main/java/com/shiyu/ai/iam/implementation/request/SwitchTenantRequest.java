@@ -14,8 +14,14 @@ import java.io.Serializable;
 @Schema(description = "切换租户请求")
 public class SwitchTenantRequest implements Serializable {
 
+    /**
+     * serialVersionUID 属性，保存当前对象中的业务数据或协作依赖。
+     */
     @Serial private static final long serialVersionUID = 1L;
 
+    /**
+     * 租户标识，表示当前对象中的对应属性。
+     */
     @NotNull(message = "租户ID不能为空")
     @Schema(description = "目标租户ID")
     private Long tenantId;

@@ -38,7 +38,11 @@ public interface NodeFields {
         MODEL("model"),
         /** 用户 ID */
         USER_ID("userId"),
-        /** Required tenant scope for cross-domain commands. */
+        /**
+         * 处理标识。
+         *
+         * @return 处理结果。
+         */
         TENANT_ID("tenantId"),
         /** 聊天类型（SYNC / STREAM） */
         CHAT_TYPE("chatType"),
@@ -46,7 +50,11 @@ public interface NodeFields {
         TOOL_NAME("toolName"),
         /** 工具类型 */
         TOOL_TYPE("toolType"),
-        /** Knowledge space IDs; empty means all accessible spaces. */
+        /**
+         * 处理ids。
+         *
+         * @return 处理结果。
+         */
         SPACE_IDS("spaceIds"),
         /** 记忆检索范围 */
         RETRIEVAL_SCOPE("retrievalScope"),
@@ -85,13 +93,29 @@ public interface NodeFields {
         DOCUMENTS("documents"),
         /** 文档数量 */
         DOCUMENT_COUNT("documentCount"),
-        /** Space-scoped retrieval hits. */
+        /**
+         * 处理hits。
+         *
+         * @return 处理结果。
+         */
         RETRIEVAL_HITS("retrievalHits"),
-        /** Structured retrieval citations. */
+        /**
+         * 处理citations。
+         *
+         * @return 处理结果。
+         */
         CITATIONS("citations"),
-        /** Retrieval diagnostics. */
+        /**
+         * 处理追踪。
+         *
+         * @return 处理结果。
+         */
         RETRIEVAL_TRACE("retrievalTrace"),
-        /** Whether retrieval returned no hits. */
+        /**
+         * 处理empty。
+         *
+         * @return 处理结果。
+         */
         RETRIEVAL_EMPTY("retrievalEmpty"),
         /** 上下文文本（RAG / 记忆的上下文拼接结果） */
         CONTEXT("context"),
@@ -205,6 +229,9 @@ public interface NodeFields {
         /** 最大长度 */
         MAX_LENGTH("maxLength");
 
+        /**
+         * 键，表示当前对象中的对应属性。
+         */
         private final String key;
 
         FieldKey(String key) {
@@ -212,6 +239,8 @@ public interface NodeFields {
         }
 
         /**
+         * 返回字段键在 AgentState Map 中使用的字符串。
+         *
          * @return 在 AgentState Map 中实际使用的字符串键
          */
         public String key() {
@@ -235,11 +264,21 @@ public interface NodeFields {
     enum DefaultFields implements NodeFields {
         INSTANCE;
 
+        /**
+         * {@code inputFields} 执行当前类型定义的业务操作。
+         *
+         * @return 返回当前操作产生的结果。
+         */
         @Override
         public Set<FieldKey> inputFields() {
             return Set.of();
         }
 
+        /**
+         * {@code outputFields} 执行当前类型定义的业务操作。
+         *
+         * @return 返回当前操作产生的结果。
+         */
         @Override
         public Set<FieldKey> outputFields() {
             return Set.of();
@@ -254,11 +293,21 @@ public interface NodeFields {
     enum IntentFields implements NodeFields {
         INSTANCE;
 
+        /**
+         * {@code inputFields} 执行当前类型定义的业务操作。
+         *
+         * @return 返回当前操作产生的结果。
+         */
         @Override
         public Set<FieldKey> inputFields() {
             return Set.of(FieldKey.QUERY, FieldKey.AGENT_ID);
         }
 
+        /**
+         * {@code outputFields} 执行当前类型定义的业务操作。
+         *
+         * @return 返回当前操作产生的结果。
+         */
         @Override
         public Set<FieldKey> outputFields() {
             return Set.of(
@@ -282,11 +331,21 @@ public interface NodeFields {
     enum LlmCallFields implements NodeFields {
         INSTANCE;
 
+        /**
+         * {@code inputFields} 执行当前类型定义的业务操作。
+         *
+         * @return 返回当前操作产生的结果。
+         */
         @Override
         public Set<FieldKey> inputFields() {
             return Set.of(FieldKey.QUERY, FieldKey.PLATFORM, FieldKey.MODEL, FieldKey.CHAT_TYPE);
         }
 
+        /**
+         * {@code outputFields} 执行当前类型定义的业务操作。
+         *
+         * @return 返回当前操作产生的结果。
+         */
         @Override
         public Set<FieldKey> outputFields() {
             return Set.of(
@@ -309,11 +368,21 @@ public interface NodeFields {
     enum ToolCallFields implements NodeFields {
         INSTANCE;
 
+        /**
+         * {@code inputFields} 执行当前类型定义的业务操作。
+         *
+         * @return 返回当前操作产生的结果。
+         */
         @Override
         public Set<FieldKey> inputFields() {
             return Set.of(FieldKey.TOOL_NAME, FieldKey.TOOL_RESULT);
         }
 
+        /**
+         * {@code outputFields} 执行当前类型定义的业务操作。
+         *
+         * @return 返回当前操作产生的结果。
+         */
         @Override
         public Set<FieldKey> outputFields() {
             return Set.of(
@@ -329,11 +398,21 @@ public interface NodeFields {
     enum RagRetrievalFields implements NodeFields {
         INSTANCE;
 
+        /**
+         * {@code inputFields} 执行当前类型定义的业务操作。
+         *
+         * @return 返回当前操作产生的结果。
+         */
         @Override
         public Set<FieldKey> inputFields() {
             return Set.of(FieldKey.QUERY, FieldKey.SPACE_IDS);
         }
 
+        /**
+         * {@code outputFields} 执行当前类型定义的业务操作。
+         *
+         * @return 返回当前操作产生的结果。
+         */
         @Override
         public Set<FieldKey> outputFields() {
             return Set.of(
@@ -354,6 +433,11 @@ public interface NodeFields {
     enum RagEnhancementFields implements NodeFields {
         INSTANCE;
 
+        /**
+         * {@code inputFields} 执行当前类型定义的业务操作。
+         *
+         * @return 返回当前操作产生的结果。
+         */
         @Override
         public Set<FieldKey> inputFields() {
             return Set.of(
@@ -364,6 +448,11 @@ public interface NodeFields {
                     FieldKey.MAX_LENGTH);
         }
 
+        /**
+         * {@code outputFields} 执行当前类型定义的业务操作。
+         *
+         * @return 返回当前操作产生的结果。
+         */
         @Override
         public Set<FieldKey> outputFields() {
             return Set.of(
@@ -383,11 +472,21 @@ public interface NodeFields {
     enum ShortTermMemoryFields implements NodeFields {
         INSTANCE;
 
+        /**
+         * {@code inputFields} 执行当前类型定义的业务操作。
+         *
+         * @return 返回当前操作产生的结果。
+         */
         @Override
         public Set<FieldKey> inputFields() {
             return Set.of(FieldKey.SESSION_ID, FieldKey.AGENT_ID, FieldKey.QUERY, FieldKey.CONTENT);
         }
 
+        /**
+         * {@code outputFields} 执行当前类型定义的业务操作。
+         *
+         * @return 返回当前操作产生的结果。
+         */
         @Override
         public Set<FieldKey> outputFields() {
             return Set.of(FieldKey.CONVERSATION_HISTORY, FieldKey.MESSAGES);
@@ -403,6 +502,11 @@ public interface NodeFields {
     enum LongTermMemoryFields implements NodeFields {
         INSTANCE;
 
+        /**
+         * {@code inputFields} 执行当前类型定义的业务操作。
+         *
+         * @return 返回当前操作产生的结果。
+         */
         @Override
         public Set<FieldKey> inputFields() {
             return Set.of(
@@ -415,6 +519,11 @@ public interface NodeFields {
                     FieldKey.IMPORTANCE);
         }
 
+        /**
+         * {@code outputFields} 执行当前类型定义的业务操作。
+         *
+         * @return 返回当前操作产生的结果。
+         */
         @Override
         public Set<FieldKey> outputFields() {
             return Set.of(FieldKey.MEMORY_KEY, FieldKey.IMPORTANCE);
@@ -430,6 +539,11 @@ public interface NodeFields {
     enum MemoryRetrievalFields implements NodeFields {
         INSTANCE;
 
+        /**
+         * {@code inputFields} 执行当前类型定义的业务操作。
+         *
+         * @return 返回当前操作产生的结果。
+         */
         @Override
         public Set<FieldKey> inputFields() {
             return Set.of(
@@ -442,6 +556,11 @@ public interface NodeFields {
                     FieldKey.AGENT_ID);
         }
 
+        /**
+         * {@code outputFields} 执行当前类型定义的业务操作。
+         *
+         * @return 返回当前操作产生的结果。
+         */
         @Override
         public Set<FieldKey> outputFields() {
             return Set.of(FieldKey.MEMORIES, FieldKey.MEMORY_COUNT, FieldKey.MEMORY_CONTEXT);
@@ -457,6 +576,11 @@ public interface NodeFields {
     enum ConditionFields implements NodeFields {
         INSTANCE;
 
+        /**
+         * {@code inputFields} 执行当前类型定义的业务操作。
+         *
+         * @return 返回当前操作产生的结果。
+         */
         @Override
         public Set<FieldKey> inputFields() {
             // 条件节点可读取任意输入字段，这里列出已知的静态依赖
@@ -468,6 +592,11 @@ public interface NodeFields {
                     FieldKey.DEFAULT_BRANCH);
         }
 
+        /**
+         * {@code outputFields} 执行当前类型定义的业务操作。
+         *
+         * @return 返回当前操作产生的结果。
+         */
         @Override
         public Set<FieldKey> outputFields() {
             return Set.of(FieldKey.CONDITION_RESULT, FieldKey.NEXT_NODE, FieldKey.BRANCH);
@@ -482,6 +611,11 @@ public interface NodeFields {
     enum TransformFields implements NodeFields {
         INSTANCE;
 
+        /**
+         * {@code inputFields} 执行当前类型定义的业务操作。
+         *
+         * @return 返回当前操作产生的结果。
+         */
         @Override
         public Set<FieldKey> inputFields() {
             return Set.of(
@@ -493,6 +627,11 @@ public interface NodeFields {
                     FieldKey.TRANSFORM_TYPE);
         }
 
+        /**
+         * {@code outputFields} 执行当前类型定义的业务操作。
+         *
+         * @return 返回当前操作产生的结果。
+         */
         @Override
         public Set<FieldKey> outputFields() {
             return Set.of(FieldKey.TRANSFORMED_DATA, FieldKey.MESSAGES);
@@ -508,6 +647,11 @@ public interface NodeFields {
     enum OutputFormatFields implements NodeFields {
         INSTANCE;
 
+        /**
+         * {@code inputFields} 执行当前类型定义的业务操作。
+         *
+         * @return 返回当前操作产生的结果。
+         */
         @Override
         public Set<FieldKey> inputFields() {
             return Set.of(
@@ -519,6 +663,11 @@ public interface NodeFields {
                     FieldKey.MESSAGES);
         }
 
+        /**
+         * {@code outputFields} 执行当前类型定义的业务操作。
+         *
+         * @return 返回当前操作产生的结果。
+         */
         @Override
         public Set<FieldKey> outputFields() {
             return Set.of(FieldKey.FORMATTED_CONTENT, FieldKey.MESSAGES);
@@ -533,11 +682,21 @@ public interface NodeFields {
     enum AgentCallFields implements NodeFields {
         INSTANCE;
 
+        /**
+         * {@code inputFields} 执行当前类型定义的业务操作。
+         *
+         * @return 返回当前操作产生的结果。
+         */
         @Override
         public Set<FieldKey> inputFields() {
             return Set.of(FieldKey.AGENT_ID, FieldKey.QUERY);
         }
 
+        /**
+         * {@code outputFields} 执行当前类型定义的业务操作。
+         *
+         * @return 返回当前操作产生的结果。
+         */
         @Override
         public Set<FieldKey> outputFields() {
             return Set.of(FieldKey.RESULT, FieldKey.CONTENT);
@@ -556,26 +715,21 @@ public interface NodeFields {
         if (nodeType == null) {
             return DefaultFields.INSTANCE;
         }
-        return switch (nodeType) {
-            case DEFAULT -> DefaultFields.INSTANCE;
-            case INTENT -> IntentFields.INSTANCE;
-            case RAG_RETRIEVAL -> RagRetrievalFields.INSTANCE;
-            case RAG_ENHANCEMENT -> RagEnhancementFields.INSTANCE;
-            case MEMORY_SHORT_TERM -> ShortTermMemoryFields.INSTANCE;
-            case MEMORY_LONG_TERM -> LongTermMemoryFields.INSTANCE;
-            case MEMORY_RETRIEVAL -> MemoryRetrievalFields.INSTANCE;
-            case LLM_CALL -> LlmCallFields.INSTANCE;
-            case TOOL_CALL -> ToolCallFields.INSTANCE;
-            case CONDITION -> ConditionFields.INSTANCE;
-            case TRANSFORM -> TransformFields.INSTANCE;
-            case OUTPUT_FORMAT -> OutputFormatFields.INSTANCE;
-            case AGENT_CALL -> AgentCallFields.INSTANCE;
-            case ABILITY_QUERY -> TransformFields.INSTANCE;
-            case EDUCATION_TEACH -> LlmCallFields.INSTANCE;
-            case EDUCATION_PRACTICE -> LlmCallFields.INSTANCE;
-            case SCORE_ANALYSIS -> TransformFields.INSTANCE;
-            case REVIEW_SCHEDULE -> TransformFields.INSTANCE;
-            case PREREQ_CHECK -> TransformFields.INSTANCE;
+        return switch (nodeType.getCode()) {
+            case "DEFAULT" -> DefaultFields.INSTANCE;
+            case "INTENT" -> IntentFields.INSTANCE;
+            case "RAG_RETRIEVAL" -> RagRetrievalFields.INSTANCE;
+            case "RAG_ENHANCEMENT" -> RagEnhancementFields.INSTANCE;
+            case "MEMORY_SHORT_TERM" -> ShortTermMemoryFields.INSTANCE;
+            case "MEMORY_LONG_TERM" -> LongTermMemoryFields.INSTANCE;
+            case "MEMORY_RETRIEVAL" -> MemoryRetrievalFields.INSTANCE;
+            case "LLM_CALL" -> LlmCallFields.INSTANCE;
+            case "TOOL_CALL" -> ToolCallFields.INSTANCE;
+            case "CONDITION" -> ConditionFields.INSTANCE;
+            case "TRANSFORM" -> TransformFields.INSTANCE;
+            case "OUTPUT_FORMAT" -> OutputFormatFields.INSTANCE;
+            case "AGENT_CALL" -> AgentCallFields.INSTANCE;
+            default -> DefaultFields.INSTANCE;
         };
     }
 }

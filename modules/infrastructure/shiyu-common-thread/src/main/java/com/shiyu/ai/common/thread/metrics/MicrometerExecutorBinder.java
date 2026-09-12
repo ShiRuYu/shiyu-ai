@@ -19,7 +19,13 @@ public class MicrometerExecutorBinder implements MeterBinder {
 
     private static final Logger logger = LoggerFactory.getLogger(MicrometerExecutorBinder.class);
 
+    /**
+     * 执行器，表示当前对象中的对应属性。
+     */
     private final ExecutorService executor;
+    /**
+     * 名称，表示当前对象中的对应属性。
+     */
     private final String name;
 
     /**
@@ -33,6 +39,11 @@ public class MicrometerExecutorBinder implements MeterBinder {
         this.name = name;
     }
 
+    /**
+     * {@code bindTo} 执行当前类型定义的业务操作。
+     *
+     * @param registry 参数值，用于执行当前操作。
+     */
     @Override
     public void bindTo(MeterRegistry registry) {
         ExecutorService targetExecutor = executor;
