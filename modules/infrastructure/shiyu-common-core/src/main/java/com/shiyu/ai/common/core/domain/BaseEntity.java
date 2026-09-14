@@ -10,6 +10,9 @@ import java.time.LocalDateTime;
 @Data
 public class BaseEntity implements Serializable {
 
+    /**
+     * serialVersionUID 属性，保存当前对象中的业务数据或协作依赖。
+     */
     @Serial private static final long serialVersionUID = 1L;
 
     /** 创建者 */

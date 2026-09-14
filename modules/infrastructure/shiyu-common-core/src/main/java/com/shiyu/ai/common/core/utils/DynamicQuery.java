@@ -15,7 +15,9 @@ import java.util.stream.Collectors;
 /** 高性能 DynamicQuery - MethodHandle 预编译缓存字段访问 - Predicate + Comparator 缓存 - 可选过滤 + 排序 */
 public class DynamicQuery {
 
-    // ----------------------- Filter / Sort Rule -----------------------
+    /**
+     * {@code Op} 表示平台基础设施模块中的一组受控业务状态或分类。
+     */
     public enum Op {
         EQ,
         NE,
@@ -27,9 +29,27 @@ public class DynamicQuery {
         IN
     }
 
+    /**
+     * {@code FilterRule} 封装平台基础设施模块中不可变的结构化数据，并作为相关操作之间的值对象。
+     * @param field field 属性，表示该记录组件承载的数据。
+     * @param op op 属性，表示该记录组件承载的数据。
+     * @param value 值，表示该记录组件承载的数据。
+     */
     public record FilterRule(String field, Op op, Object value) {}
 
+    /**
+     * {@code SortRule} 封装平台基础设施模块中不可变的结构化数据，并作为相关操作之间的值对象。
+     * @param field field 属性，表示该记录组件承载的数据。
+     * @param asc asc 属性，表示该记录组件承载的数据。
+     * @param nullFirst nullFirst 属性，表示该记录组件承载的数据。
+     */
     public record SortRule(String field, boolean asc, boolean nullFirst) {
+        /**
+         * {@code SortRule} 创建并初始化当前类型实例。
+         *
+         * @param field 参数值，用于执行当前操作。
+         * @param asc 参数值，用于执行当前操作。
+         */
         public SortRule(String field, boolean asc) {
             this(field, asc, false);
         }
@@ -147,6 +167,15 @@ public class DynamicQuery {
     }
 
     // ----------------------- 查询主方法 -----------------------
+    /**
+     * {@code query} 查询并返回当前操作所需的数据。
+     *
+     * @param list 参数值，用于执行当前操作。
+     * @param filters 参数值，用于执行当前操作。
+     * @param sorts 参数值，用于执行当前操作。
+     *
+     * @return 返回当前操作产生的结果。
+     */
     public static <T> List<T> query(List<T> list, List<FilterRule> filters, List<SortRule> sorts) {
         if (list == null || list.isEmpty()) return List.of();
 
@@ -165,30 +194,72 @@ public class DynamicQuery {
     }
 
     // ----------------------- 链式 Builder -----------------------
+    /**
+     * {@code Builder} 承载平台基础设施模块的领域状态或协作行为，负责维护本类型的职责边界。
+     */
     public static class Builder<T> {
+        /**
+         * 来源，表示当前对象中的对应属性。
+         */
         private final List<T> source;
         private final List<FilterRule> filters = new ArrayList<>();
         private final List<SortRule> sorts = new ArrayList<>();
 
+        /**
+         * {@code Builder} 创建并初始化当前类型实例。
+         *
+         * @param source 参数值，用于执行当前操作。
+         */
         public Builder(List<T> source) {
             this.source = source;
         }
 
+        /**
+         * {@code filter} 执行当前类型定义的业务操作。
+         *
+         * @param field 参数值，用于执行当前操作。
+         * @param op 参数值，用于执行当前操作。
+         * @param val 参数值，用于执行当前操作。
+         *
+         * @return 返回当前操作产生的结果。
+         */
         public Builder<T> filter(String field, Op op, Object val) {
             filters.add(new FilterRule(field, op, val));
             return this;
         }
 
+        /**
+         * {@code sort} 执行当前类型定义的业务操作。
+         *
+         * @param field 参数值，用于执行当前操作。
+         * @param asc 参数值，用于执行当前操作。
+         *
+         * @return 返回当前操作产生的结果。
+         */
         public Builder<T> sort(String field, boolean asc) {
             sorts.add(new SortRule(field, asc));
             return this;
         }
 
+        /**
+         * {@code sort} 执行当前类型定义的业务操作。
+         *
+         * @param field 参数值，用于执行当前操作。
+         * @param asc 参数值，用于执行当前操作。
+         * @param nullFirst 参数值，用于执行当前操作。
+         *
+         * @return 返回当前操作产生的结果。
+         */
         public Builder<T> sort(String field, boolean asc, boolean nullFirst) {
             sorts.add(new SortRule(field, asc, nullFirst));
             return this;
         }
 
+        /**
+         * {@code build} 执行当前类型定义的业务操作。
+         *
+         * @return 返回当前操作产生的结果。
+         */
         public List<T> build() {
             return DynamicQuery.query(source, filters, sorts);
         }

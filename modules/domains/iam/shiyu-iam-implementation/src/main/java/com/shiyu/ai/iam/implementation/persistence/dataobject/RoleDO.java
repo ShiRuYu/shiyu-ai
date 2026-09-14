@@ -3,7 +3,6 @@ package com.shiyu.ai.iam.implementation.persistence.dataobject;
 import com.mybatisflex.annotation.Id;
 import com.mybatisflex.annotation.KeyType;
 import com.mybatisflex.annotation.Table;
-import com.shiyu.ai.common.mybatis.model.ServiceAssignedTenantEntity;
 import com.shiyu.ai.common.mybatis.model.TenantEntity;
 import com.shiyu.ai.iam.implementation.domain.model.RoleBO;
 
@@ -19,8 +18,11 @@ import java.io.Serial;
 @EqualsAndHashCode(callSuper = true)
 @Table(value = "auth_role")
 @AutoMapper(target = RoleBO.class, reverseConvertGenerate = true)
-public class RoleDO extends TenantEntity implements ServiceAssignedTenantEntity {
+public class RoleDO extends TenantEntity {
 
+    /**
+     * serialVersionUID 属性，保存当前对象中的业务数据或协作依赖。
+     */
     @Serial private static final long serialVersionUID = 1L;
 
     /** 角色ID */

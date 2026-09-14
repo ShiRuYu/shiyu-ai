@@ -16,14 +16,30 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+/**
+ * {@code TimezoneServiceImpl} 实现平台模块的应用服务，负责编排用例流程并维护业务边界。
+ */
 @Service
 public class TimezoneServiceImpl implements TimezoneService {
+    /**
+     * 用户仓储，表示当前对象中的对应属性。
+     */
     private final UserRepository userRepository;
 
+    /**
+     * {@code TimezoneServiceImpl} 创建并初始化当前类型实例。
+     *
+     * @param userRepository 参数值，用于执行当前操作。
+     */
     public TimezoneServiceImpl(UserRepository userRepository) {
         this.userRepository = userRepository;
     }
 
+    /**
+     * {@code getTimezoneOptions} 查询并返回当前操作所需的数据。
+     *
+     * @return 返回当前操作产生的结果。
+     */
     @Override
     public List<TimezoneOptionVO> getTimezoneOptions() {
         return Arrays.stream(TimezoneEnum.values())
@@ -36,6 +52,13 @@ public class TimezoneServiceImpl implements TimezoneService {
                 .toList();
     }
 
+    /**
+     * {@code getTimezone} 查询并返回当前操作所需的数据。
+     *
+     * @param actor 参数值，用于执行当前操作。
+     *
+     * @return 返回当前操作产生的结果。
+     */
     @Override
     public String getTimezone(ActorContext actor) {
         if (actor == null) {
@@ -52,6 +75,14 @@ public class TimezoneServiceImpl implements TimezoneService {
         return configured == null ? current : String.valueOf(configured);
     }
 
+    /**
+     * {@code setTimezone} 写入或更新当前模块中的业务数据。
+     *
+     * @param actor 参数值，用于执行当前操作。
+     * @param request 参数值，用于执行当前操作。
+     *
+     * @return 返回当前操作产生的结果。
+     */
     @Override
     public boolean setTimezone(ActorContext actor, SetTimezoneRequest request) {
         if (request == null || !TimezoneEnum.isValid(request.getTimezone())) {

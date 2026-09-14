@@ -101,7 +101,10 @@ class NodeFactoryTest {
         configs.put("ok", NodeConfig.builder().nodeId("ok").nodeType(NodeType.DEFAULT).build());
         configs.put(
                 "education",
-                NodeConfig.builder().nodeId("education").nodeType(NodeType.ABILITY_QUERY).build());
+                NodeConfig.builder()
+                        .nodeId("education")
+                        .nodeType(NodeType.custom("ABILITY_QUERY", "能力值查询节点", "测试扩展节点"))
+                        .build());
         RuntimeException failure =
                 assertThrows(RuntimeException.class, () -> withBeans.createNodes(configs));
         assertTrue(failure.getMessage().contains("education"));
@@ -133,15 +136,15 @@ class NodeFactoryTest {
     }
 
     @Test
-    void rejectsEducationNodesWhenTheirBeanCreatorsAreNotInstalled() {
+    void rejectsOptionalBusinessNodesWhenTheirBeanCreatorsAreNotInstalled() {
         for (NodeType type :
                 List.of(
-                        NodeType.ABILITY_QUERY,
-                        NodeType.EDUCATION_TEACH,
-                        NodeType.EDUCATION_PRACTICE,
-                        NodeType.SCORE_ANALYSIS,
-                        NodeType.REVIEW_SCHEDULE,
-                        NodeType.PREREQ_CHECK)) {
+                        NodeType.custom("ABILITY_QUERY", "能力值查询节点", "测试扩展节点"),
+                        NodeType.custom("EDUCATION_TEACH", "教学讲解节点", "测试扩展节点"),
+                        NodeType.custom("EDUCATION_PRACTICE", "教育出题节点", "测试扩展节点"),
+                        NodeType.custom("SCORE_ANALYSIS", "评分分析节点", "测试扩展节点"),
+                        NodeType.custom("REVIEW_SCHEDULE", "复习安排节点", "测试扩展节点"),
+                        NodeType.custom("PREREQ_CHECK", "前置知识检查节点", "测试扩展节点"))) {
             RuntimeException failure =
                     assertThrows(
                             RuntimeException.class,

@@ -28,17 +28,47 @@ import java.util.Objects;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.atomic.AtomicReference;
 
-/** Runs a structured request while persisting every externally visible event. */
+/**
+ * 协调会话生成任务的执行、持久化和终态处理。
+ */
 @Service
 public class GenerationRunner {
+    /**
+     * chatEngine 属性，保存当前对象中的业务数据或协作依赖。
+     */
     private final ChatEngine chatEngine;
+    /**
+     * generations 属性，保存当前对象中的业务数据或协作依赖。
+     */
     private final GenerationRepository generations;
+    /**
+     * conversations 属性，保存当前对象中的业务数据或协作依赖。
+     */
     private final ConversationRepository conversations;
+    /**
+     * usageSink 属性，保存当前对象中的业务数据或协作依赖。
+     */
     private final GenerationUsageSink usageSink;
+    /**
+     * admission 属性，保存当前对象中的业务数据或协作依赖。
+     */
     private final GenerationAdmission admission;
+    /**
+     * runtime 属性，保存当前对象中的业务数据或协作依赖。
+     */
     private final AiRuntimePort runtime;
+    /**
+     * 提示词服务，表示当前对象中的对应属性。
+     */
     private final ConversationPromptService promptService;
 
+    /**
+     * {@code GenerationRunner} 创建并初始化当前类型实例。
+     *
+     * @param chatEngine 参数值，用于执行当前操作。
+     * @param generations 参数值，用于执行当前操作。
+     * @param conversations 参数值，用于执行当前操作。
+     */
     public GenerationRunner(
             ChatEngine chatEngine,
             GenerationRepository generations,
@@ -53,6 +83,15 @@ public class GenerationRunner {
                 null);
     }
 
+    /**
+     * {@code GenerationRunner} 创建并初始化当前类型实例。
+     *
+     * @param chatEngine 参数值，用于执行当前操作。
+     * @param generations 参数值，用于执行当前操作。
+     * @param conversations 参数值，用于执行当前操作。
+     * @param usageSink 参数值，用于执行当前操作。
+     * @param admission 参数值，用于执行当前操作。
+     */
     public GenerationRunner(
             ChatEngine chatEngine,
             GenerationRepository generations,
@@ -62,6 +101,16 @@ public class GenerationRunner {
         this(chatEngine, generations, conversations, usageSink, admission, null, null);
     }
 
+    /**
+     * {@code GenerationRunner} 创建并初始化当前类型实例。
+     *
+     * @param chatEngine 参数值，用于执行当前操作。
+     * @param generations 参数值，用于执行当前操作。
+     * @param conversations 参数值，用于执行当前操作。
+     * @param usageSink 参数值，用于执行当前操作。
+     * @param admission 参数值，用于执行当前操作。
+     * @param runtime 参数值，用于执行当前操作。
+     */
     public GenerationRunner(
             ChatEngine chatEngine,
             GenerationRepository generations,
@@ -72,6 +121,17 @@ public class GenerationRunner {
         this(chatEngine, generations, conversations, usageSink, admission, runtime, null);
     }
 
+    /**
+     * {@code GenerationRunner} 创建并初始化当前类型实例。
+     *
+     * @param chatEngine 参数值，用于执行当前操作。
+     * @param generations 参数值，用于执行当前操作。
+     * @param conversations 参数值，用于执行当前操作。
+     * @param usageSink 参数值，用于执行当前操作。
+     * @param admission 参数值，用于执行当前操作。
+     * @param runtime 参数值，用于执行当前操作。
+     * @param promptService 参数值，用于执行当前操作。
+     */
     @Autowired
     public GenerationRunner(
             ChatEngine chatEngine,
@@ -91,7 +151,16 @@ public class GenerationRunner {
                 promptService == null ? new ConversationPromptService(null) : promptService;
     }
 
-    /** Spring-friendly constructor retaining the optional outbound boundaries. */
+    /**
+     * 处理生成runner。
+     *
+     * @param chatEngine chatEngine 参数。
+     * @param generations generations 参数。
+     * @param conversations conversations 参数。
+     * @param usageSink usageSink 参数。
+     *
+     * @return 处理结果。
+     */
     public GenerationRunner(
             ChatEngine chatEngine,
             GenerationRepository generations,
@@ -100,6 +169,13 @@ public class GenerationRunner {
         this(chatEngine, generations, conversations, usageSink, new GenerationAdmission() {}, null);
     }
 
+    /**
+     * {@code start} 执行当前类型定义的业务操作。
+     *
+     * @param created 参数值，用于执行当前操作。
+     * @param tenantId 参数值，用于执行当前操作。
+     * @param ownerUserId 参数值，用于执行当前操作。
+     */
     public void start(GenerationRun created, TenantId tenantId, long ownerUserId) {
         Objects.requireNonNull(tenantId, "tenantId");
         long tenantValue = tenantId.value();
@@ -227,10 +303,6 @@ public class GenerationRunner {
                         stepId,
                         null);
             } catch (RuntimeException runtimeFailure) {
-                // AI_RUN_EVENT is the durable runtime fact source in the
-                // application. If it cannot be started or traced, do not call
-                // the provider and leave a generation with an unverifiable
-                // execution history.
                 finishFailure(
                         state,
                         runtimeState,
@@ -281,9 +353,6 @@ public class GenerationRunner {
                                     nextSequence,
                                     answer.toString()));
         } catch (Throwable error) {
-            // Provider implementations may fail before returning a Publisher (configuration,
-            // serialization, or synchronous admission errors). Persist the same terminal
-            // event as an asynchronous provider failure so a run never remains RUNNING.
             finishFailure(state, runtimeState, tenantValue, ownerUserId, nextSequence, error);
         }
     }
@@ -350,9 +419,6 @@ public class GenerationRunner {
                         case BLOCK_COMPLETED -> AiRunEventType.MODEL_BLOCK_COMPLETED;
                         default -> AiRunEventType.MODEL_DELTA;
                     };
-            // Runtime is the durable stream used for replay.  A failed append
-            // must terminate the generation rather than silently advancing the
-            // provider stream with an unverifiable gap.
             runtime.append(
                     runtimeState.get(),
                     runtimeType,
@@ -571,9 +637,6 @@ public class GenerationRunner {
                         null);
             }
         } else {
-            // Cancellation or another terminal transition won the run CAS after the
-            // conversation update. Restore the leaf only if nobody changed it again,
-            // then remove the uncommitted assistant candidate.
             Conversation restored =
                     new Conversation(
                             conversation.id(),
@@ -628,8 +691,6 @@ public class GenerationRunner {
                         failed.createdAt(),
                         Instant.now());
         if (generations.update(failed, persisted.version()) != 1) {
-            // A cancellation or another terminal callback won the CAS. Do not
-            // append a contradictory FAILED event or settle admission twice.
             return;
         }
         appendProjection(
@@ -656,8 +717,13 @@ public class GenerationRunner {
     }
 
     /**
-     * Runtime is the physical event source when installed. The generation event projection remains
-     * available for deployments that intentionally run without the Runtime adapter.
+     * 追加projection。
+     *
+     * @param run 运行记录。
+     * @param tenantId 租户标识。
+     * @param sequence sequence 参数。
+     * @param type 数据类型。
+     * @param payload 事件载荷。
      */
     private void appendProjection(
             GenerationRun run,
@@ -698,7 +764,13 @@ public class GenerationRunner {
                 Instant.now());
     }
 
-    /** Map.of rejects nulls, while providers are allowed to omit usage counts. */
+    /**
+     * 处理用量payload。
+     *
+     * @param value value 参数。
+     *
+     * @return 处理结果。
+     */
     private static java.util.Map<String, Object> usagePayload(ChatResponse value) {
         java.util.Map<String, Object> payload = new java.util.LinkedHashMap<>();
         payload.put("promptTokens", value.getPromptTokens());

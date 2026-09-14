@@ -31,11 +31,31 @@ import java.util.List;
 @RequestMapping("/api/iam/auth")
 public class AuthController {
 
+    /**
+     * authService 属性，保存当前对象中的业务数据或协作依赖。
+     */
     private final AuthService authService;
+    /**
+     * 用户服务，表示当前对象中的对应属性。
+     */
     private final UserService userService;
+    /**
+     * loginRateLimiter 属性，保存当前对象中的业务数据或协作依赖。
+     */
     private final LoginRateLimiter loginRateLimiter;
+    /**
+     * knowledgeSpaceService 属性，保存当前对象中的业务数据或协作依赖。
+     */
     private final KnowledgeTenantProvisioning knowledgeSpaceService;
 
+    /**
+     * {@code AuthController} 创建并初始化当前类型实例。
+     *
+     * @param authService 参数值，用于执行当前操作。
+     * @param userService 参数值，用于执行当前操作。
+     * @param loginRateLimiter 参数值，用于执行当前操作。
+     * @param knowledgeSpaceService 参数值，用于执行当前操作。
+     */
     public AuthController(
             AuthService authService,
             UserService userService,
@@ -91,9 +111,9 @@ public class AuthController {
     }
 
     /**
-     * The login endpoint is anonymous, so the request interceptor has not established a user
-     * context yet. Provide a scoped context while creating tenant defaults to populate audit fields
-     * with the authenticated user.
+     * 初始化租户defaultswithaudit上下文。
+     *
+     * @param response 响应对象。
      */
     private void initializeTenantDefaultsWithAuditContext(LoginResponseVO response) {
         UserContext loginContext = new UserContext();

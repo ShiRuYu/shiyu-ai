@@ -1,5 +1,7 @@
 package com.shiyu.ai.iam.implementation.persistence.repository;
 
+import com.shiyu.ai.iam.implementation.persistence.dataobject.AuthCodeDO;
+
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.*;
 import static org.mockito.Mockito.*;
@@ -28,6 +30,24 @@ import java.util.List;
 
 @SuppressWarnings({"rawtypes", "unchecked"})
 class TenantRepositorySecurityTest {
+    @Test
+    void excludesPlatformUsagePermissionFromChildTenantTemplates() throws Exception {
+        var repository = new TenantRepositoryImpl();
+        var tenantCodes = mock(TenantAuthCodeMapper.class);
+        var authCodes = mock(AuthCodeMapper.class);
+        inject(repository, "tenantAuthCodeMapper", tenantCodes);
+        inject(repository, "authCodeMapper", authCodes);
+        var link = new TenantAuthCodeDO();
+        link.setAuthCodeId(119L);
+        var permission = new AuthCodeDO();
+        permission.setCode("platform:usage:read");
+        permission.setStatus(1);
+        permission.setDelFlag(0);
+        when(tenantCodes.selectListByQuery(any(QueryWrapper.class))).thenReturn(List.of(link));
+        when(authCodes.selectOneById(119L)).thenReturn(permission);
+        assertEquals(List.of(), org.springframework.test.util.ReflectionTestUtils.invokeMethod(
+                repository, "resolveSourceAuthCodeIds", 1L, List.of(119L)));
+    }
     @Test
     void scopesTenantTreeQueriesAndRejectsMissingTenant() throws Exception {
         TenantMapper mapper = mock(TenantMapper.class);
@@ -114,6 +134,7 @@ class TenantRepositorySecurityTest {
                         invocation -> {
                             RoleDO role = invocation.getArgument(0);
                             role.setId(88L);
+                            assertEquals(new TenantId(12L), com.shiyu.ai.kernel.context.TenantScope.require());
                             return 1;
                         });
         TenantBO convertedValue = new TenantBO();
@@ -134,6 +155,10 @@ class TenantRepositorySecurityTest {
             input.setCode("child");
             input.setName("Child");
             assertEquals(12L, repository.insert(input, new TenantId(11L)).getId());
+            com.shiyu.ai.kernel.context.TenantScope.withTenant(new TenantId(12L), () -> {
+                repository.initializeTenantSecurity(input, new TenantId(11L));
+                return null;
+            });
             repository.cascadeDelete(new TenantId(11L));
             verify(roles).insertSelective(any(RoleDO.class));
             verify(users).insertSelective(any(UserDO.class));
@@ -252,6 +277,10 @@ class TenantRepositorySecurityTest {
                     .when(() -> MapstructUtils.convert(input, TenantDO.class))
                     .thenReturn(converted);
             TenantBO result = repository.insert(input, new TenantId(10L));
+            com.shiyu.ai.kernel.context.TenantScope.withTenant(new TenantId(20L), () -> {
+                repository.initializeTenantSecurity(result, new TenantId(10L));
+                return null;
+            });
             assertEquals(20L, result.getId());
             verify(tenantMenus).insertBatch(anyList());
             verify(roleMenus).insertBatch(anyList());

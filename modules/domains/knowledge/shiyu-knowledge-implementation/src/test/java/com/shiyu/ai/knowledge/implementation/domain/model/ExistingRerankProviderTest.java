@@ -1,5 +1,7 @@
 package com.shiyu.ai.knowledge.implementation.domain.model;
 
+import com.shiyu.ai.knowledge.implementation.infrastructure.provider.adapter.ExistingRerankProvider;
+
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.*;

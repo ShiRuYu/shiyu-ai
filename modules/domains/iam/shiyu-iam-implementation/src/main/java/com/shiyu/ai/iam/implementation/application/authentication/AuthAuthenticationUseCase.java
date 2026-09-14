@@ -1,6 +1,5 @@
 package com.shiyu.ai.iam.implementation.application.authentication;
 
-import com.mybatisflex.core.tenant.TenantManager;
 import com.shiyu.ai.common.core.utils.JSONUtils;
 import com.shiyu.ai.common.core.utils.PasswordUtils;
 import com.shiyu.ai.iam.implementation.application.identity.AuthTenantContextSupport;
@@ -29,15 +28,41 @@ import java.util.Set;
 import java.util.UUID;
 import java.util.stream.Collectors;
 
-/** Password, captcha and registration authentication use cases. */
+/**
+ * 编排 AuthAuthentication 应用用例。
+ */
 @Slf4j
 public final class AuthAuthenticationUseCase {
+    /**
+     * 用户仓储，表示当前对象中的对应属性。
+     */
     private final UserRepository userRepository;
+    /**
+     * userScopeRoleRepository 属性，保存当前对象中的业务数据或协作依赖。
+     */
     private final UserScopeRoleRepository userScopeRoleRepository;
+    /**
+     * 租户角色仓储，表示当前对象中的对应属性。
+     */
     private final TenantRoleRepository tenantRoleRepository;
+    /**
+     * captchaService 属性，保存当前对象中的业务数据或协作依赖。
+     */
     private final CaptchaService captchaService;
+    /**
+     * contextSupport 属性，保存当前对象中的业务数据或协作依赖。
+     */
     private final AuthTenantContextSupport contextSupport;
 
+    /**
+     * {@code AuthAuthenticationUseCase} 创建并初始化当前类型实例。
+     *
+     * @param userRepository 参数值，用于执行当前操作。
+     * @param userScopeRoleRepository 参数值，用于执行当前操作。
+     * @param tenantRoleRepository 参数值，用于执行当前操作。
+     * @param captchaService 参数值，用于执行当前操作。
+     * @param contextSupport 参数值，用于执行当前操作。
+     */
     public AuthAuthenticationUseCase(
             UserRepository userRepository,
             UserScopeRoleRepository userScopeRoleRepository,
@@ -51,6 +76,16 @@ public final class AuthAuthenticationUseCase {
         this.contextSupport = contextSupport;
     }
 
+    /**
+     * {@code login} 执行当前类型定义的业务操作。
+     *
+     * @param username 参数值，用于执行当前操作。
+     * @param password 参数值，用于执行当前操作。
+     * @param roleId 参数值，用于执行当前操作。
+     * @param loginIp 参数值，用于执行当前操作。
+     *
+     * @return 返回当前操作产生的结果。
+     */
     public LoginResponseVO login(String username, String password, Long roleId, String loginIp) {
         log.info("用户登录开始, usernamePresent={}", username != null);
         try {
@@ -78,14 +113,16 @@ public final class AuthAuthenticationUseCase {
         }
     }
 
-    /** Completes tenant/role context construction and token issuance after credentials pass. */
+    /**
+     * 处理completelogin。
+     *
+     * @param user user 参数。
+     * @param roleId roleId 参数。
+     * @param loginIp loginIp 参数。
+     *
+     * @return 处理结果。
+     */
     public LoginResponseVO completeLogin(UserBO user, Long roleId, String loginIp) {
-        return TenantManager.withoutTenantCondition(
-                () -> completeLoginWithoutTenantFilter(user, roleId, loginIp));
-    }
-
-    private LoginResponseVO completeLoginWithoutTenantFilter(
-            UserBO user, Long roleId, String loginIp) {
         try {
             if (user == null || user.getId() == null) {
                 return null;
@@ -205,6 +242,15 @@ public final class AuthAuthenticationUseCase {
         }
     }
 
+    /**
+     * {@code register} 写入或更新当前模块中的业务数据。
+     *
+     * @param username 参数值，用于执行当前操作。
+     * @param password 参数值，用于执行当前操作。
+     * @param email 参数值，用于执行当前操作。
+     *
+     * @return 返回当前操作产生的结果。
+     */
     public LoginResponseVO register(String username, String password, String email) {
         log.info("用户注册: usernamePresent={}, emailPresent={}", username != null, email != null);
         UserBO existing = userRepository.selectByUsername(username);
@@ -222,6 +268,15 @@ public final class AuthAuthenticationUseCase {
         return login(username, password, null, null);
     }
 
+    /**
+     * {@code codeLogin} 执行当前类型定义的业务操作。
+     *
+     * @param phone 参数值，用于执行当前操作。
+     * @param code 参数值，用于执行当前操作。
+     * @param captchaKey 参数值，用于执行当前操作。
+     *
+     * @return 返回当前操作产生的结果。
+     */
     public LoginResponseVO codeLogin(String phone, String code, String captchaKey) {
         log.info("验证码登录: phonePresent={}", phone != null);
         if (!captchaService.validateCaptcha(captchaKey, code)) {
@@ -239,7 +294,20 @@ public final class AuthAuthenticationUseCase {
         return completeLogin(user, null, null);
     }
 
+    /**
+     * 在默认租户内为新注册用户分配普通用户角色，并持久化其初始登录上下文。
+     *
+     * @param userId 已完成注册写入的新用户标识。
+     */
     public void assignDefaultTenantScopeRole(Long userId) {
+        com.shiyu.ai.kernel.context.TenantScope.withTenant(
+                new com.shiyu.ai.kernel.context.TenantId(1L), () -> {
+                    assignDefaultTenantScopeRoleInScope(userId);
+                    return null;
+                });
+    }
+
+    private void assignDefaultTenantScopeRoleInScope(Long userId) {
         try {
             UserBO user = userRepository.selectById(userId);
             if (user == null) {

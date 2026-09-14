@@ -18,6 +18,11 @@ import org.springframework.context.annotation.Configuration;
 @Configuration
 public class McpToolAutoConfiguration {
 
+    /**
+     * {@code mcpToolRegistry} 执行当前类型定义的业务操作。
+     *
+     * @return 返回当前操作产生的结果。
+     */
     @Bean
     @ConditionalOnMissingBean
     public McpToolRegistry mcpToolRegistry() {
@@ -36,6 +41,9 @@ public class McpToolAutoConfiguration {
     public static class McpToolSyncRegistrar {
 
         private final ToolService toolService;
+        /**
+         * registry 属性，保存当前对象中的业务数据或协作依赖。
+         */
         private final McpToolRegistry registry;
 
         McpToolSyncRegistrar(ToolService toolService, McpToolRegistry registry) {
@@ -43,6 +51,9 @@ public class McpToolAutoConfiguration {
             this.registry = registry;
         }
 
+        /**
+         * {@code sync} 执行当前类型定义的业务操作。
+         */
         @PostConstruct
         public void sync() {
             if (toolService instanceof ToolServiceImpl impl) {

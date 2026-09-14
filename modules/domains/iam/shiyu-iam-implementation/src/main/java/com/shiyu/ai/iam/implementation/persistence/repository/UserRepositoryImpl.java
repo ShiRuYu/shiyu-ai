@@ -3,6 +3,7 @@ package com.shiyu.ai.iam.implementation.persistence.repository;
 import static com.mybatisflex.core.query.QueryMethods.column;
 
 import com.mybatisflex.core.query.QueryWrapper;
+import com.shiyu.ai.common.mybatis.tenant.TenantQueryExecutor;
 import com.shiyu.ai.common.core.utils.MapstructUtils;
 import com.shiyu.ai.iam.implementation.domain.model.RoleBO;
 import com.shiyu.ai.iam.implementation.domain.model.UserBO;
@@ -27,10 +28,19 @@ import java.util.List;
 public class UserRepositoryImpl
         implements com.shiyu.ai.iam.implementation.port.repository.UserRepository {
 
+    /**
+     * 用户映射器，表示当前对象中的对应属性。
+     */
     @Resource private UserMapper userMapper;
 
+    /**
+     * userScopeRoleMapper 属性，保存当前对象中的业务数据或协作依赖。
+     */
     @Resource private UserScopeRoleMapper userScopeRoleMapper;
 
+    /**
+     * 角色映射器，表示当前对象中的对应属性。
+     */
     @Resource private RoleMapper roleMapper;
 
     /** 分页查询用户列表 */
@@ -121,6 +131,9 @@ public class UserRepositoryImpl
 
     /** 根据用户ID查询角色列表（从 user_scope_role 去重获取） */
     public List<RoleBO> selectRolesByUserId(Long userId) {
+        if (userId == null || userId <= 0) {
+            throw new IllegalArgumentException("userId is required for identity role lookup");
+        }
         QueryWrapper qw =
                 QueryWrapper.create()
                         .from(RoleDO.class)
@@ -133,7 +146,9 @@ public class UserRepositoryImpl
                         .and(RoleDO::getDelFlag)
                         .eq(0);
         qw.orderBy(RoleDO::getId);
-        List<RoleDO> roleDOs = roleMapper.selectListByQuery(qw);
+        // 身份查询仅读取指定用户的有效角色；过滤豁免不传播到登录持久化和 Session 操作。
+        List<RoleDO> roleDOs =
+                TenantQueryExecutor.readAcrossTenants(() -> roleMapper.selectListByQuery(qw));
         return MapstructUtils.convert(roleDOs, RoleBO.class);
     }
 

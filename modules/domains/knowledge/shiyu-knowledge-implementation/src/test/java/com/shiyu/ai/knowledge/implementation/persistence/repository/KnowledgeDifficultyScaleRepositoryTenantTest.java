@@ -6,14 +6,27 @@ import static org.mockito.Mockito.*;
 
 import com.mybatisflex.core.query.QueryWrapper;
 import com.shiyu.ai.kernel.context.TenantId;
+import com.shiyu.ai.kernel.context.TenantScope;
 import com.shiyu.ai.knowledge.implementation.persistence.mapper.KnowledgeDifficultyScaleLevelMapper;
 import com.shiyu.ai.knowledge.implementation.persistence.mapper.KnowledgeDifficultyScaleMapper;
 
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.mockito.ArgumentCaptor;
 
 class KnowledgeDifficultyScaleRepositoryTenantTest {
     private static final TenantId TENANT = new TenantId(31);
+
+    @BeforeEach
+    void bindTenantScope() {
+        TenantScope.set(TENANT);
+    }
+
+    @AfterEach
+    void clearTenantScope() {
+        TenantScope.clear();
+    }
 
     @Test
     void addsTenantPredicateToScaleAndLevelQueries() {

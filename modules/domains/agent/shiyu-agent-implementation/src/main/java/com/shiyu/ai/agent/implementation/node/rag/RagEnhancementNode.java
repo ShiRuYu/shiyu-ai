@@ -35,6 +35,9 @@ import java.util.stream.Collectors;
 @Slf4j
 public class RagEnhancementNode extends BaseNode {
 
+    /**
+     * 配置，表示当前对象中的对应属性。
+     */
     private RagEnhancementConfig config;
 
     private RagEnhancementNode(RagEnhancementConfig config) {
@@ -43,23 +46,53 @@ public class RagEnhancementNode extends BaseNode {
         this.config.setNodeType(NodeType.RAG_ENHANCEMENT);
     }
 
+    /**
+     * {@code builder} 执行当前类型定义的业务操作。
+     *
+     * @return 返回当前操作产生的结果。
+     */
     public static Builder builder() {
         return new Builder();
     }
 
+    /**
+     * {@code Builder} 承载智能体模块的领域状态或协作行为，负责维护本类型的职责边界。
+     */
     public static class Builder {
+        /**
+         * 配置，表示当前对象中的对应属性。
+         */
         private RagEnhancementConfig config;
 
+        /**
+         * {@code config} 执行当前类型定义的业务操作。
+         *
+         * @param config 参数值，用于执行当前操作。
+         *
+         * @return 返回当前操作产生的结果。
+         */
         public Builder config(RagEnhancementConfig config) {
             this.config = config;
             return this;
         }
 
+        /**
+         * {@code build} 执行当前类型定义的业务操作。
+         *
+         * @return 返回当前操作产生的结果。
+         */
         public RagEnhancementNode build() {
             return new RagEnhancementNode(config);
         }
     }
 
+    /**
+     * {@code doExecute} 执行当前类型定义的业务操作。
+     *
+     * @param input 参数值，用于执行当前操作。
+     *
+     * @return 返回当前操作产生的结果。
+     */
     @Override
     protected NodeOutput doExecute(NodeInput input) throws Exception {
         log.info("执行 RAG 增强节点: {}", config.getNodeName());
@@ -282,9 +315,19 @@ public class RagEnhancementNode extends BaseNode {
         return def;
     }
 
-    /** 增强结果 */
+    /**
+     * 增强结果
+     *
+     * @param documents documents 属性，表示该记录组件承载的数据。
+     * @param context 上下文，表示该记录组件承载的数据。
+     */
     private record EnhancedResult(List<Map<String, Object>> documents, String context) {}
 
+    /**
+     * {@code getRequiredInputs} 查询并返回当前操作所需的数据。
+     *
+     * @return 返回当前操作产生的结果。
+     */
     @Override
     public java.util.List<NodeInputParam> getRequiredInputs() {
         return java.util.List.of(

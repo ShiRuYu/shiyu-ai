@@ -12,5 +12,8 @@ import lombok.EqualsAndHashCode;
 @EqualsAndHashCode(callSuper = true)
 @Schema(description = "字典分页查询请求")
 public class DictPageRequest extends PageQuery {
+    /**
+     * serialVersionUID 属性，保存当前对象中的业务数据或协作依赖。
+     */
     private static final long serialVersionUID = 1L;
 }

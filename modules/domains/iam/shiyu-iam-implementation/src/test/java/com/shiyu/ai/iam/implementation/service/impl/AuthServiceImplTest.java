@@ -26,6 +26,21 @@ import java.util.List;
 import java.util.Map;
 
 class AuthServiceImplTest {
+    @Test
+    void loginDoesNotDisableTenantFilteringDuringSessionPersistence() {
+        UserBO account = user(20L, "scope-check", "secret", 1);
+        account.setExtInfo("{\"currentTenantId\":10}");
+        when(users.selectActiveUserByUsername("scope-check")).thenReturn(account);
+        when(users.selectRolesByUserId(20L)).thenReturn(List.of(role(3L, 10L, "editor", "Editor")));
+        when(assignments.selectByUserId(20L)).thenReturn(List.of(assignment(20L, 10L, 3L)));
+        when(users.update(account)).thenAnswer(invocation -> {
+            assertFalse(com.mybatisflex.core.tenant.TenantManager.isIgnoreTenantCondition());
+            return false;
+        });
+        assertNull(service.login("scope-check", "secret"));
+        verify(users).update(account);
+    }
+
     private final AuthRepository auth = mock(AuthRepository.class);
     private final UserRepository users = mock(UserRepository.class);
     private final UserScopeRoleRepository assignments = mock(UserScopeRoleRepository.class);
@@ -726,8 +741,6 @@ class AuthServiceImplTest {
             verify(helper).logout(54L);
         }
 
-        // A tenant-super user can return home, use a preferred child role, or be rejected
-        // when the target tenant is inactive/outside the currently allowed subtree.
         UserBO admin = user(60L, "admin", "secret", 1);
         admin.setExtInfo(
                 "{\"homeTenantId\":10,\"currentTenantId\":11,\"currentRole\":{\"roleId\":71}}");
@@ -776,7 +789,6 @@ class AuthServiceImplTest {
             try {
                 return (T) method.invoke(service, args);
             } catch (IllegalArgumentException ignored) {
-                // Keep looking when a null argument made the erased signature ambiguous.
             }
         }
         throw new NoSuchMethodException(name);

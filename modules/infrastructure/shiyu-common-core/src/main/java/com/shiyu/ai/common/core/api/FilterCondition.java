@@ -16,14 +16,31 @@ public class FilterCondition {
     /** 过滤值 */
     private Object value;
 
+    /**
+     * {@code FilterCondition} 创建并初始化当前类型实例。
+     */
     public FilterCondition() {}
 
+    /**
+     * {@code FilterCondition} 创建并初始化当前类型实例。
+     *
+     * @param field 参数值，用于执行当前操作。
+     * @param operator 参数值，用于执行当前操作。
+     * @param value 参数值，用于执行当前操作。
+     */
     public FilterCondition(String field, FilterOperatorEnum operator, Object value) {
         this.field = field;
         this.operator = operator;
         this.value = value;
     }
 
+    /**
+     * {@code FilterCondition} 创建并初始化当前类型实例。
+     *
+     * @param field 参数值，用于执行当前操作。
+     * @param operatorCode 参数值，用于执行当前操作。
+     * @param value 参数值，用于执行当前操作。
+     */
     public FilterCondition(String field, String operatorCode, Object value) {
         this.field = field;
         this.operator = FilterOperatorEnum.fromCode(operatorCode);

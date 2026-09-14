@@ -1,4 +1,3 @@
--- Final knowledge seed baseline. Executed once on an empty H2 database.
 
 INSERT INTO "PUBLIC"."KNOWLEDGE_DIFFICULTY_SCALE" VALUES(1, 'STANDARD_5', '标准五级难度', '适用于通用知识体系的五级难度量表', 5, 1, 1, 0, 'system', CURRENT_TIMESTAMP, 'system', CURRENT_TIMESTAMP);
 INSERT INTO "PUBLIC"."KNOWLEDGE_DIFFICULTY_SCALE_LEVEL" VALUES(1, 1, 1, '入门', '基础知识与概念理解', 1, 1, 0, 'system', CURRENT_TIMESTAMP, 'system', CURRENT_TIMESTAMP);

@@ -1,4 +1,4 @@
-"""Generate PostgreSQL baseline scripts from the ordered H2 baseline resources."""
+"""generate-postgresql-baseline 脚本，执行项目架构与工程校验。"""
 
 from pathlib import Path
 import re
@@ -15,7 +15,7 @@ SCHEMA = [
     "modules/domains/model/shiyu-model-implementation/src/main/resources/db/baseline/h2/schema/model/04_model.sql",
     "modules/domains/governance/shiyu-governance-implementation/src/main/resources/db/baseline/h2/schema/governance/05_governance.sql",
     "modules/domains/knowledge/shiyu-knowledge-implementation/src/main/resources/db/baseline/h2/schema/knowledge/06_knowledge.sql",
-    "modules/domains/education/shiyu-education-implementation/src/main/resources/db/baseline/h2/schema/education/07_education.sql",
+    "modules/business/education/shiyu-education-implementation/src/main/resources/db/baseline/h2/schema/education/07_education.sql",
     "modules/domains/knowledge/shiyu-knowledge-implementation/src/main/resources/db/baseline/h2/schema/knowledge/09_vector.sql",
     "modules/domains/governance/shiyu-governance-implementation/src/main/resources/db/baseline/h2/schema/governance/10_observation.sql",
     "modules/domains/conversation/shiyu-conversation-implementation/src/main/resources/db/baseline/h2/schema/conversation/11_conversation.sql",
@@ -32,11 +32,13 @@ SEED = [
     "modules/domains/knowledge/shiyu-knowledge-implementation/src/main/resources/db/baseline/h2/seed/knowledge/04_knowledge.sql",
     "modules/domains/knowledge/shiyu-knowledge-implementation/src/main/resources/db/baseline/h2/seed/knowledge/06_demo_content.sql",
     "modules/domains/iam/shiyu-iam-implementation/src/main/resources/db/baseline/h2/seed/iam/05_navigation.sql",
-    "modules/domains/education/shiyu-education-implementation/src/main/resources/db/baseline/h2/seed/education/07_education.sql",
-    "modules/domains/education/shiyu-education-implementation/src/main/resources/db/baseline/h2/seed/education/08_learning_progress.sql",
-    "modules/domains/education/shiyu-education-implementation/src/main/resources/db/baseline/h2/seed/education/09_curriculum.sql",
-    "modules/domains/education/shiyu-education-implementation/src/main/resources/db/baseline/h2/seed/education/10_resources.sql",
-    "modules/domains/education/shiyu-education-implementation/src/main/resources/db/baseline/h2/seed/education/11_resource_variants.sql",
+    "modules/business/education/shiyu-education-implementation/src/main/resources/db/baseline/h2/seed/education/01_auth.sql",
+    "modules/business/education/shiyu-education-implementation/src/main/resources/db/baseline/h2/seed/education/02_navigation.sql",
+    "modules/business/education/shiyu-education-implementation/src/main/resources/db/baseline/h2/seed/education/07_education.sql",
+    "modules/business/education/shiyu-education-implementation/src/main/resources/db/baseline/h2/seed/education/08_learning_progress.sql",
+    "modules/business/education/shiyu-education-implementation/src/main/resources/db/baseline/h2/seed/education/09_curriculum.sql",
+    "modules/business/education/shiyu-education-implementation/src/main/resources/db/baseline/h2/seed/education/10_resources.sql",
+    "modules/business/education/shiyu-education-implementation/src/main/resources/db/baseline/h2/seed/education/11_resource_variants.sql",
     "modules/domains/conversation/shiyu-conversation-implementation/src/main/resources/db/baseline/h2/seed/conversation/11_conversation.sql",
     "modules/domains/governance/shiyu-governance-implementation/src/main/resources/db/baseline/h2/seed/governance/10_governance.sql",
     "modules/domains/memory/shiyu-memory-implementation/src/main/resources/db/baseline/h2/seed/memory/12_memory.sql",

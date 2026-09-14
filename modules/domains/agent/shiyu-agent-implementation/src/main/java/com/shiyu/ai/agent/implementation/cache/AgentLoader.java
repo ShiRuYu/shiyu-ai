@@ -34,18 +34,41 @@ import org.springframework.stereotype.Component;
 import java.time.ZoneId;
 import java.util.*;
 
+/**
+ * {@code AgentLoader} 承载智能体模块的领域状态或协作行为，负责维护本类型的职责边界。
+ */
 @Slf4j
 @Component
 public class AgentLoader {
 
+    /**
+     * nodeFactory 属性，保存当前对象中的业务数据或协作依赖。
+     */
     private final NodeFactory nodeFactory;
+    /**
+     * agentAdminRepository 属性，保存当前对象中的业务数据或协作依赖。
+     */
     private final AgentAdminRepository agentAdminRepository;
 
+    /**
+     * {@code AgentLoader} 创建并初始化当前类型实例。
+     *
+     * @param nodeFactory 参数值，用于执行当前操作。
+     * @param agentAdminRepository 参数值，用于执行当前操作。
+     */
     public AgentLoader(NodeFactory nodeFactory, AgentAdminRepository agentAdminRepository) {
         this.nodeFactory = nodeFactory;
         this.agentAdminRepository = agentAdminRepository;
     }
 
+    /**
+     * {@code loadFromDb} 查询并返回当前操作所需的数据。
+     *
+     * @param actor 参数值，用于执行当前操作。
+     * @param agentId 参数值，用于执行当前操作。
+     *
+     * @return 返回当前操作产生的结果。
+     */
     public AgentDefinition loadFromDb(ActorContext actor, String agentId) {
         log.info(
                 "从数据库加载 Agent: tenantSelected={}, agentIdPresent={}",
@@ -146,7 +169,6 @@ public class AgentLoader {
                         e.getClass().getSimpleName(),
                         e.getMessage() == null ? 0 : e.getMessage().length());
             }
-            // ===== end ext_info =====
 
             AgentVersion agentVersion =
                     AgentVersion.builder()
@@ -196,6 +218,14 @@ public class AgentLoader {
         }
     }
 
+    /**
+     * {@code buildGraph} 执行当前类型定义的业务操作。
+     *
+     * @param agentId 参数值，用于执行当前操作。
+     * @param graphConfig 参数值，用于执行当前操作。
+     *
+     * @return 返回当前操作产生的结果。
+     */
     public Graph buildGraph(String agentId, GraphConfigRequest graphConfig) {
         String graphName =
                 graphConfig.getName() != null ? graphConfig.getName() : agentId + "_graph";
@@ -304,19 +334,19 @@ public class AgentLoader {
     }
 
     private Class<? extends NodeConfig> getConfigClass(NodeType nodeType) {
-        return switch (nodeType) {
-            case INTENT -> IntentConfig.class;
-            case LLM_CALL -> LlmCallConfig.class;
-            case RAG_RETRIEVAL -> RagRetrievalConfig.class;
-            case RAG_ENHANCEMENT -> RagEnhancementConfig.class;
-            case TOOL_CALL -> ToolCallConfig.class;
-            case CONDITION -> ConditionConfig.class;
-            case TRANSFORM -> TransformConfig.class;
-            case OUTPUT_FORMAT -> OutputFormatConfig.class;
-            case MEMORY_SHORT_TERM -> ShortTermMemoryConfig.class;
-            case MEMORY_LONG_TERM -> LongTermMemoryConfig.class;
-            case MEMORY_RETRIEVAL -> MemoryRetrievalConfig.class;
-            case AGENT_CALL -> AgentCallConfig.class;
+        return switch (nodeType.getCode()) {
+            case "INTENT" -> IntentConfig.class;
+            case "LLM_CALL" -> LlmCallConfig.class;
+            case "RAG_RETRIEVAL" -> RagRetrievalConfig.class;
+            case "RAG_ENHANCEMENT" -> RagEnhancementConfig.class;
+            case "TOOL_CALL" -> ToolCallConfig.class;
+            case "CONDITION" -> ConditionConfig.class;
+            case "TRANSFORM" -> TransformConfig.class;
+            case "OUTPUT_FORMAT" -> OutputFormatConfig.class;
+            case "MEMORY_SHORT_TERM" -> ShortTermMemoryConfig.class;
+            case "MEMORY_LONG_TERM" -> LongTermMemoryConfig.class;
+            case "MEMORY_RETRIEVAL" -> MemoryRetrievalConfig.class;
+            case "AGENT_CALL" -> AgentCallConfig.class;
             default -> NodeConfig.class;
         };
     }

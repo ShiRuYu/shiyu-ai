@@ -3,8 +3,16 @@ package com.shiyu.ai.memory.contract.api;
 import com.shiyu.ai.memory.contract.model.IngestMemoryCommand;
 import com.shiyu.ai.memory.contract.model.MemoryEvent;
 
-/** Inbound boundary for converting an explicit command into a durable memory event. */
+/**
+ * MemoryIngestionPort 边界接口，负责向外部组件提供记忆领域相关能力。
+ */
 public interface MemoryIngestionPort {
-    /** Ingests one event and returns the persisted canonical representation. */
+    /**
+     * 处理ingest。
+     *
+     * @param command command 参数。
+     *
+     * @return 处理结果。
+     */
     MemoryEvent ingest(IngestMemoryCommand command);
 }

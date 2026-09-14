@@ -2,7 +2,9 @@ package com.shiyu.ai.conversation.implementation.application;
 
 import java.util.regex.Pattern;
 
-/** Central redaction/estimation policy used by HTTP and generation logging. */
+/**
+ * 执行提示词内容安全校验和策略过滤。
+ */
 public final class PromptSafety {
     private static final Pattern SECRET =
             Pattern.compile(
@@ -12,10 +14,24 @@ public final class PromptSafety {
 
     private PromptSafety() {}
 
+    /**
+     * {@code redact} 执行当前类型定义的业务操作。
+     *
+     * @param value 参数值，用于执行当前操作。
+     *
+     * @return 返回当前操作产生的结果。
+     */
     public static String redact(String value) {
         return value == null ? null : SECRET.matcher(value).replaceAll("[REDACTED]");
     }
 
+    /**
+     * {@code estimateTokens} 执行当前类型定义的业务操作。
+     *
+     * @param value 参数值，用于执行当前操作。
+     *
+     * @return 返回当前操作产生的结果。
+     */
     public static long estimateTokens(String value) {
         return value == null || value.isBlank()
                 ? 0

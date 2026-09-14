@@ -6,7 +6,6 @@ import static org.mockito.ArgumentMatchers.*;
 import static org.mockito.Mockito.*;
 
 import com.shiyu.ai.memory.contract.model.*;
-import com.shiyu.ai.memory.implementation.domain.magma.*;
 
 import org.junit.jupiter.api.Test;
 import org.mockito.ArgumentCaptor;
@@ -212,6 +211,8 @@ class MagmaConsolidationWorkerTest {
     }
 
     private static MagmaConsolidationWorker newWorker(JdbcTemplate jdbc) throws Exception {
+        when(jdbc.queryForObject(anyString(), eq(Long.class), any(Object[].class)))
+                .thenReturn(7L);
         MagmaConsolidationWorker worker = new MagmaConsolidationWorker(mock(DataSource.class));
         Field field = MagmaConsolidationWorker.class.getDeclaredField("jdbc");
         field.setAccessible(true);

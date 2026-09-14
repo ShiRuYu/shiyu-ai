@@ -1,4 +1,6 @@
 package com.shiyu.ai.memory.contract;
 
-/** Marker for the public Memory API; concrete ports and messages live beside it. */
+/**
+ * MemoryContractModule 模块接口，标识记忆模块的边界。
+ */
 public interface MemoryContractModule {}

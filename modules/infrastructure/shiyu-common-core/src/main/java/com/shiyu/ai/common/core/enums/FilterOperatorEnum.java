@@ -21,9 +21,22 @@ public enum FilterOperatorEnum {
     IS_NULL("is_null", "IS NULL"), // 为空
     IS_NOT_NULL("is_not_null", "IS NOT NULL"); // 不为空
 
+    /**
+     * 编码，表示当前对象中的对应属性。
+     */
     private final String code;
+    /**
+     * sqlOperator 属性，保存当前对象中的业务数据或协作依赖。
+     */
     private final String sqlOperator;
 
+    /**
+     * {@code fromCode} 执行当前类型定义的业务操作。
+     *
+     * @param code 参数值，用于执行当前操作。
+     *
+     * @return 返回当前操作产生的结果。
+     */
     public static FilterOperatorEnum fromCode(String code) {
         return Arrays.stream(values())
                 .filter(operator -> operator.getCode().equalsIgnoreCase(code))

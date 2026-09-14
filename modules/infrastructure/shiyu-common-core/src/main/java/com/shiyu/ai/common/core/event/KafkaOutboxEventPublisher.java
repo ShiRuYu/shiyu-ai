@@ -11,11 +11,23 @@ import java.time.Instant;
 import java.util.List;
 import java.util.Map;
 
-/** Outbox-backed Kafka publisher with retry-safe duplicate delivery. */
+/**
+ * 将 outbox 事件发布到 Kafka 并保留失败重试能力。
+ */
 public final class KafkaOutboxEventPublisher extends JdbcOutboxEventPublisher {
 
+    /**
+     * kafka 属性，保存当前对象中的业务数据或协作依赖。
+     */
     private final KafkaTemplate<String, String> kafka;
 
+    /**
+     * {@code KafkaOutboxEventPublisher} 创建并初始化当前类型实例。
+     *
+     * @param jdbc 参数值，用于执行当前操作。
+     * @param properties 参数值，用于执行当前操作。
+     * @param kafka 参数值，用于执行当前操作。
+     */
     public KafkaOutboxEventPublisher(
             JdbcTemplate jdbc,
             EventInfrastructureProperties properties,
@@ -24,12 +36,20 @@ public final class KafkaOutboxEventPublisher extends JdbcOutboxEventPublisher {
         this.kafka = kafka;
     }
 
+    /**
+     * {@code publish} 执行当前模块定义的业务流程。
+     *
+     * @param event 参数值，用于执行当前操作。
+     */
     @Override
     public void publish(DomainEventEnvelope<?> event) {
         super.publish(event);
         relayPending();
     }
 
+    /**
+     * {@code relayPending} 执行当前类型定义的业务操作。
+     */
     @Scheduled(fixedDelayString = "${shiyu.infrastructure.event.relay-interval-ms:5000}")
     public void relayPending() {
         int batchSize = Math.max(1, properties.getRelayBatchSize());

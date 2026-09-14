@@ -17,21 +17,43 @@ import java.math.BigDecimal;
 import java.time.Instant;
 import java.util.Map;
 
-/** Converts the durable GenerationRun terminal state into the usage ledger. */
+/**
+ * 将会话生成用量转换为治理模块可结算的用量事件。
+ */
 @Component
 public class ConversationUsageSink implements GenerationUsageSink {
+    /**
+     * 用量，表示当前对象中的对应属性。
+     */
     private final UsageGovernance usage;
 
+    /**
+     * {@code ConversationUsageSink} 创建并初始化当前类型实例。
+     *
+     * @param usage 参数值，用于执行当前操作。
+     */
     public ConversationUsageSink(UsageGovernance usage) {
         this.usage = usage;
     }
 
+    /**
+     * {@code completed} 执行当前类型定义的业务操作。
+     *
+     * @param run 参数值，用于执行当前操作。
+     */
     @Override
     public void completed(GenerationRun run) {
         throw new IllegalArgumentException(
                 "Generation usage requires explicit tenant and owner user");
     }
 
+    /**
+     * {@code completed} 执行当前类型定义的业务操作。
+     *
+     * @param run 参数值，用于执行当前操作。
+     * @param tenantId 参数值，用于执行当前操作。
+     * @param ownerUserId 参数值，用于执行当前操作。
+     */
     @Override
     public void completed(GenerationRun run, TenantId tenantId, UserId ownerUserId) {
         ActorContext actor = new ActorContext(tenantId, ownerUserId, false);

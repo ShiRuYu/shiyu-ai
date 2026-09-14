@@ -17,9 +17,22 @@ public enum AgentExecutionStatus implements IntEnum {
     PAUSED(3, "已暂停"),
     CANCELLED(4, "已取消");
 
+    /**
+     * 编码，表示当前对象中的对应属性。
+     */
     private final Integer code;
+    /**
+     * desc 属性，保存当前对象中的业务数据或协作依赖。
+     */
     private final String desc;
 
+    /**
+     * {@code fromCode} 执行当前类型定义的业务操作。
+     *
+     * @param code 参数值，用于执行当前操作。
+     *
+     * @return 返回当前操作产生的结果。
+     */
     public static AgentExecutionStatus fromCode(Integer code) {
         return Arrays.stream(values())
                 .filter(e -> e.getCode().equals(code))

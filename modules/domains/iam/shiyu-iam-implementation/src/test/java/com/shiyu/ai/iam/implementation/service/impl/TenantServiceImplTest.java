@@ -21,6 +21,12 @@ import java.util.List;
 
 @SuppressWarnings("unchecked")
 class TenantServiceImplTest {
+    @Test
+    void tenantCreationExposesATransactionalProxyBoundary() throws Exception {
+        var method = TenantServiceImpl.class.getMethod("createTenant", ActorContext.class, TenantRequest.class);
+        var attributes = new org.springframework.transaction.annotation.AnnotationTransactionAttributeSource();
+        assertNotNull(attributes.getTransactionAttribute(method, TenantServiceImpl.class));
+    }
     private static final ActorContext ACTOR =
             new ActorContext(new TenantId(10), new UserId(4), false);
     private final TenantRepository repository = mock(TenantRepository.class);
@@ -53,14 +59,23 @@ class TenantServiceImplTest {
         request.setName("Child");
         TenantBO converted = new TenantBO();
         converted.setCode("child");
+        converted.setId(11L);
         converted.setName("Child");
         when(repository.existsByCode("child", null)).thenReturn(false);
         when(repository.selectDescendantIds(new TenantId(10L))).thenReturn(List.of(10L, 11L));
         when(repository.insert(any(TenantBO.class), eq(ACTOR.tenantId()))).thenReturn(converted);
+        doAnswer(invocation -> {
+            assertEquals(new TenantId(11L), com.shiyu.ai.kernel.context.TenantScope.require());
+            return null;
+        }).when(repository).initializeTenantSecurity(converted, ACTOR.tenantId());
         try (MockedStatic<MapstructUtils> mapper = mockStatic(MapstructUtils.class)) {
             mapper.when(() -> MapstructUtils.convert(request, TenantBO.class))
                     .thenReturn(converted);
-            assertTrue(service.createTenant(ACTOR, request));
+            com.shiyu.ai.kernel.context.TenantScope.withTenant(ACTOR.tenantId(), () -> {
+                assertTrue(service.createTenant(ACTOR, request));
+                assertEquals(ACTOR.tenantId(), com.shiyu.ai.kernel.context.TenantScope.require());
+                return null;
+            });
         }
         when(repository.selectById(11L)).thenReturn(converted);
         when(repository.update(any(TenantBO.class))).thenReturn(true);

@@ -2,20 +2,44 @@ package com.shiyu.ai.common.core.utils.file;
 
 /** 媒体类型工具类 */
 public class MimeTypeUtils {
+    /**
+     * IMAGE_PNG 属性，保存当前对象中的业务数据或协作依赖。
+     */
     public static final String IMAGE_PNG = "image/png";
 
+    /**
+     * IMAGE_JPG 属性，保存当前对象中的业务数据或协作依赖。
+     */
     public static final String IMAGE_JPG = "image/jpg";
 
+    /**
+     * IMAGE_JPEG 属性，保存当前对象中的业务数据或协作依赖。
+     */
     public static final String IMAGE_JPEG = "image/jpeg";
 
+    /**
+     * IMAGE_BMP 属性，保存当前对象中的业务数据或协作依赖。
+     */
     public static final String IMAGE_BMP = "image/bmp";
 
+    /**
+     * IMAGE_GIF 属性，保存当前对象中的业务数据或协作依赖。
+     */
     public static final String IMAGE_GIF = "image/gif";
 
+    /**
+     * IMAGE_EXTENSION 属性，保存当前对象中的业务数据或协作依赖。
+     */
     public static final String[] IMAGE_EXTENSION = {"bmp", "gif", "jpg", "jpeg", "png"};
 
+    /**
+     * FLASH_EXTENSION 属性，保存当前对象中的业务数据或协作依赖。
+     */
     public static final String[] FLASH_EXTENSION = {"swf", "flv"};
 
+    /**
+     * MEDIA_EXTENSION 属性，保存当前对象中的业务数据或协作依赖。
+     */
     public static final String[] MEDIA_EXTENSION = {
         "swf", "flv", "mp3", "wav", "wma", "wmv", "mid", "avi", "mpg", "asf", "rm", "rmvb"
     };
@@ -34,7 +58,6 @@ public class MimeTypeUtils {
         "jpg",
         "jpeg",
         "png",
-        // word excel powerpoint
         "doc",
         "docx",
         "xls",

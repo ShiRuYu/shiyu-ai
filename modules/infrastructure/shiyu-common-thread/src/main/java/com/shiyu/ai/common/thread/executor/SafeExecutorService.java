@@ -17,7 +17,13 @@ public class SafeExecutorService extends AbstractExecutorService {
 
     private static final Logger logger = LoggerFactory.getLogger(SafeExecutorService.class);
 
+    /**
+     * delegate 属性，保存当前对象中的业务数据或协作依赖。
+     */
     private final ExecutorService delegate;
+    /**
+     * taskDecorator 属性，保存当前对象中的业务数据或协作依赖。
+     */
     private final TaskDecorator taskDecorator;
     private final AtomicReference<State> state = new AtomicReference<>(State.RUNNING);
 
@@ -57,6 +63,11 @@ public class SafeExecutorService extends AbstractExecutorService {
         this.taskDecorator = taskDecorator;
     }
 
+    /**
+     * {@code execute} 执行当前模块定义的业务流程。
+     *
+     * @param command 参数值，用于执行当前操作。
+     */
     @Override
     public void execute(Runnable command) {
         if (state.get() != State.RUNNING) {
@@ -67,6 +78,9 @@ public class SafeExecutorService extends AbstractExecutorService {
         delegate.execute(decoratedCommand);
     }
 
+    /**
+     * {@code shutdown} 执行当前类型定义的业务操作。
+     */
     @Override
     public void shutdown() {
         if (state.compareAndSet(State.RUNNING, State.SHUTDOWN)) {
@@ -74,6 +88,11 @@ public class SafeExecutorService extends AbstractExecutorService {
         }
     }
 
+    /**
+     * {@code shutdownNow} 执行当前类型定义的业务操作。
+     *
+     * @return 返回当前操作产生的结果。
+     */
     @Override
     public List<Runnable> shutdownNow() {
         if (state.get() == State.TERMINATED) return List.of();
@@ -81,16 +100,34 @@ public class SafeExecutorService extends AbstractExecutorService {
         return delegate.shutdownNow();
     }
 
+    /**
+     * {@code isShutdown} 校验当前操作的输入或状态是否满足约束。
+     *
+     * @return 返回当前操作产生的结果。
+     */
     @Override
     public boolean isShutdown() {
         return state.get() != State.RUNNING || delegate.isShutdown();
     }
 
+    /**
+     * {@code isTerminated} 校验当前操作的输入或状态是否满足约束。
+     *
+     * @return 返回当前操作产生的结果。
+     */
     @Override
     public boolean isTerminated() {
         return state.get() == State.TERMINATED || delegate.isTerminated();
     }
 
+    /**
+     * {@code awaitTermination} 执行当前类型定义的业务操作。
+     *
+     * @param timeout 参数值，用于执行当前操作。
+     * @param unit 参数值，用于执行当前操作。
+     *
+     * @return 返回当前操作产生的结果。
+     */
     @Override
     public boolean awaitTermination(long timeout, TimeUnit unit) throws InterruptedException {
         boolean terminated = delegate.awaitTermination(timeout, unit);
@@ -98,16 +135,38 @@ public class SafeExecutorService extends AbstractExecutorService {
         return terminated;
     }
 
+    /**
+     * {@code newTaskFor} 执行当前类型定义的业务操作。
+     *
+     * @param runnable 参数值，用于执行当前操作。
+     * @param value 参数值，用于执行当前操作。
+     *
+     * @return 返回当前操作产生的结果。
+     */
     @Override
     protected <T> RunnableFuture<T> newTaskFor(Runnable runnable, T value) {
         return new SafeFutureTask<>(runnable, value);
     }
 
+    /**
+     * {@code newTaskFor} 执行当前类型定义的业务操作。
+     *
+     * @param callable 参数值，用于执行当前操作。
+     *
+     * @return 返回当前操作产生的结果。
+     */
     @Override
     protected <T> RunnableFuture<T> newTaskFor(Callable<T> callable) {
         return new SafeFutureTask<>(callable);
     }
 
+    /**
+     * {@code submit} 执行当前类型定义的业务操作。
+     *
+     * @param task 参数值，用于执行当前操作。
+     *
+     * @return 返回当前操作产生的结果。
+     */
     @Override
     public <T> Future<T> submit(Callable<T> task) {
         if (state.get() != State.RUNNING) {
@@ -118,6 +177,14 @@ public class SafeExecutorService extends AbstractExecutorService {
         return delegate.submit(decoratedTask);
     }
 
+    /**
+     * {@code submit} 执行当前类型定义的业务操作。
+     *
+     * @param task 参数值，用于执行当前操作。
+     * @param result 参数值，用于执行当前操作。
+     *
+     * @return 返回当前操作产生的结果。
+     */
     @Override
     public <T> Future<T> submit(Runnable task, T result) {
         if (state.get() != State.RUNNING) {
@@ -128,6 +195,13 @@ public class SafeExecutorService extends AbstractExecutorService {
         return delegate.submit(decoratedTask, result);
     }
 
+    /**
+     * {@code submit} 执行当前类型定义的业务操作。
+     *
+     * @param task 参数值，用于执行当前操作。
+     *
+     * @return 返回当前操作产生的结果。
+     */
     @Override
     public Future<?> submit(Runnable task) {
         if (state.get() != State.RUNNING) {
@@ -141,14 +215,28 @@ public class SafeExecutorService extends AbstractExecutorService {
     /** 安全的FutureTask实现 */
     private static class SafeFutureTask<T> extends FutureTask<T> {
 
+        /**
+         * {@code SafeFutureTask} 创建并初始化当前类型实例。
+         *
+         * @param runnable 参数值，用于执行当前操作。
+         * @param result 参数值，用于执行当前操作。
+         */
         public SafeFutureTask(Runnable runnable, T result) {
             super(new ContextAwareRunnable(runnable), result);
         }
 
+        /**
+         * {@code SafeFutureTask} 创建并初始化当前类型实例。
+         *
+         * @param callable 参数值，用于执行当前操作。
+         */
         public SafeFutureTask(Callable<T> callable) {
             super(new ContextAwareCallable<>(callable));
         }
 
+        /**
+         * {@code done} 执行当前类型定义的业务操作。
+         */
         @Override
         protected void done() {
             try {

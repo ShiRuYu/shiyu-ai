@@ -20,6 +20,9 @@ import java.io.Serial;
 @AutoMapper(target = AiPlatformBO.class, reverseConvertGenerate = true)
 public class AiPlatformDO extends TenantEntity {
 
+    /**
+     * serialVersionUID 属性，保存当前对象中的业务数据或协作依赖。
+     */
     @Serial private static final long serialVersionUID = 1L;
 
     /** 平台 ID */
@@ -32,16 +35,10 @@ public class AiPlatformDO extends TenantEntity {
     /** 平台编码（如：OPENAI, DEEPSEEK, OLLAMA, OPENROUTER, SILICON_FLOW） */
     private String code;
 
-    /** Transport adapter type persisted with the platform configuration. */
-    private String adapterType;
-
-    /** Base URL */
+    /** 模型平台 API 地址。 */
     private String baseUrl;
 
-    /** API Key */
-    private String apiKey;
-
-    /** 默认温度参数 */
+    /** 模型调用的默认温度参数。 */
     private Double temperature;
 
     /** 默认最大 Token 数 */

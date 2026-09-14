@@ -5,7 +5,16 @@ import com.shiyu.ai.kernel.error.DomainAccessDeniedException;
 import java.io.Serializable;
 import java.util.Objects;
 
-/** Explicit caller identity passed into application commands and queries. */
+/**
+ * 承载 Actor 执行上下文。
+ * @param tenantId 租户标识，表示该记录组件承载的数据。
+ * @param userId 用户标识，表示该记录组件承载的数据。
+ * @param activeRoleId activeRoleId 属性，表示该记录组件承载的数据。
+ * @param activeRoleCode activeRoleCode 属性，表示该记录组件承载的数据。
+ * @param homeTenantId homeTenantId 属性，表示该记录组件承载的数据。
+ * @param switchMode switchMode 属性，表示该记录组件承载的数据。
+ * @param platformAdmin platformAdmin 属性，表示该记录组件承载的数据。
+ */
 public record ActorContext(
         TenantId tenantId,
         UserId userId,
@@ -30,7 +39,11 @@ public record ActorContext(
         Objects.requireNonNull(userId, "userId must not be null");
     }
 
-    /** Whether the actor is operating as a parent-tenant delegated administrator. */
+    /**
+     * 处理parent超级管理员切换。
+     *
+     * @return 判断结果。
+     */
     public boolean parentSuperAdminSwitch() {
         return "PARENT_SUPER_ADMIN".equals(switchMode);
     }

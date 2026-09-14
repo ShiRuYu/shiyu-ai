@@ -17,11 +17,17 @@ import java.util.List;
 @SuppressWarnings("serial")
 public class RoleVO implements Serializable {
 
+    /**
+     * serialVersionUID 属性，保存当前对象中的业务数据或协作依赖。
+     */
     @Serial private static final long serialVersionUID = 1L;
 
     /** 角色 ID */
     private Long id;
 
+    /**
+     * 租户标识，表示当前对象中的对应属性。
+     */
     private Long tenantId;
 
     /** 角色编码 */

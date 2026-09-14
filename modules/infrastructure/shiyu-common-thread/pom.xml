@@ -19,8 +19,7 @@
             <groupId>com.shiyu.ai</groupId>
             <artifactId>shiyu-common-core</artifactId>
         </dependency>
-        <!-- Keep only instrumentation APIs here. Runtime exporters and logging
-             backends are supplied by the bootstrap observability profile. -->
+        <!-- 该配置用于当前模块的职责边界和运行约束。 -->
         <dependency>
             <groupId>io.micrometer</groupId>
             <artifactId>micrometer-core</artifactId>

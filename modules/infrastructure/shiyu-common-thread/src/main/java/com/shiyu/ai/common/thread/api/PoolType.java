@@ -24,7 +24,13 @@ public enum PoolType {
     /** 自定义线程池，由用户自定义配置 */
     CUSTOM("custom", "自定义线程池");
 
+    /**
+     * 编码，表示当前对象中的对应属性。
+     */
     private final String code;
+    /**
+     * 描述，表示当前对象中的对应属性。
+     */
     private final String description;
 
     PoolType(String code, String description) {
@@ -32,10 +38,20 @@ public enum PoolType {
         this.description = description;
     }
 
+    /**
+     * {@code getCode} 查询并返回当前操作所需的数据。
+     *
+     * @return 返回当前操作产生的结果。
+     */
     public String getCode() {
         return code;
     }
 
+    /**
+     * {@code getDescription} 查询并返回当前操作所需的数据。
+     *
+     * @return 返回当前操作产生的结果。
+     */
     public String getDescription() {
         return description;
     }

@@ -1,4 +1,6 @@
 package com.shiyu.ai.conversation.contract;
 
-/** Marker for the public Conversation API; concrete ports and messages live beside it. */
+/**
+ * ConversationContractModule 模块接口，标识会话模块的边界。
+ */
 public interface ConversationContractModule {}

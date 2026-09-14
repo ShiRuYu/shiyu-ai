@@ -1,4 +1,3 @@
--- Realistic usage seed for the default tenant and admin user.
 INSERT INTO "PUBLIC"."GOVERNANCE_USAGE_RECORD"
     ("ID", "TENANT_ID", "USER_ID", "CORRELATION_ID", "SOURCE_TYPE", "SOURCE_ID",
      "INPUT_TOKENS", "OUTPUT_TOKENS", "COST", "OCCURRED_AT", "USAGE_TYPE", "LATENCY_MS", "SESSION_ID", "EXT_INFO")

@@ -1,4 +1,3 @@
--- Final system-ai seed baseline. Executed once on an empty H2 database.
 
 INSERT INTO "PUBLIC"."MODEL_AI_PLATFORM" VALUES(1, 'OpenAI', 'OPENAI', 'OPENAI_COMPATIBLE', 1, 'https://api.openai.com/v1', '', 0.7, 4096, 3, '["gpt-4o","gpt-4o-mini","gpt-4-turbo","gpt-3.5-turbo"]', NULL, 'N', 1, 'OpenAI 官方 API', NULL, 'system', CURRENT_TIMESTAMP, 'system', CURRENT_TIMESTAMP, 0);
 INSERT INTO "PUBLIC"."MODEL_AI_PLATFORM" VALUES(2, 'DeepSeek', 'DEEPSEEK', 'OPENAI_COMPATIBLE', 1, 'https://api.deepseek.com', '', 0.7, 4096, 3, '["deepseek-v4-flash","deepseek-reasoner"]', NULL, 'Y', 1, 'DeepSeek 官方 API', NULL, 'system', CURRENT_TIMESTAMP, 'system', CURRENT_TIMESTAMP, 0);

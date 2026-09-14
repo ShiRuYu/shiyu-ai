@@ -17,10 +17,27 @@ import org.springframework.jdbc.core.JdbcTemplate;
 @Slf4j
 public class VectorStoreFactory {
 
+    /**
+     * {@code create} 写入或更新当前模块中的业务数据。
+     *
+     * @param type 参数值，用于执行当前操作。
+     * @param properties 参数值，用于执行当前操作。
+     *
+     * @return 返回当前操作产生的结果。
+     */
     public static VectorStore create(String type, VectorStoreProperties properties) {
         return create(type, properties, null);
     }
 
+    /**
+     * {@code create} 写入或更新当前模块中的业务数据。
+     *
+     * @param type 参数值，用于执行当前操作。
+     * @param properties 参数值，用于执行当前操作。
+     * @param jdbcTemplate 参数值，用于执行当前操作。
+     *
+     * @return 返回当前操作产生的结果。
+     */
     public static VectorStore create(
             String type, VectorStoreProperties properties, JdbcTemplate jdbcTemplate) {
         VectorStore store =

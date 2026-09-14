@@ -22,6 +22,15 @@ import java.sql.SQLException;
 @EnableConfigurationProperties({VectorStoreProperties.class, VectorInfrastructureProperties.class})
 public class VectorStoreAutoConfiguration {
 
+    /**
+     * {@code vectorStoreProvider} 执行当前类型定义的业务操作。
+     *
+     * @param properties 参数值，用于执行当前操作。
+     * @param infrastructureProperties 参数值，用于执行当前操作。
+     * @param jdbcTemplates 参数值，用于执行当前操作。
+     *
+     * @return 返回当前操作产生的结果。
+     */
     @Bean
     @ConditionalOnMissingBean(VectorStoreProvider.class)
     public VectorStoreProvider vectorStoreProvider(
@@ -35,6 +44,14 @@ public class VectorStoreAutoConfiguration {
         return new ConfiguredVectorStoreProvider(properties, jdbc);
     }
 
+    /**
+     * {@code vectorStore} 执行当前类型定义的业务操作。
+     *
+     * @param provider 参数值，用于执行当前操作。
+     * @param properties 参数值，用于执行当前操作。
+     *
+     * @return 返回当前操作产生的结果。
+     */
     @Bean(destroyMethod = "close")
     @ConditionalOnMissingBean(VectorStore.class)
     public VectorStore vectorStore(VectorStoreProvider provider, VectorStoreProperties properties) {

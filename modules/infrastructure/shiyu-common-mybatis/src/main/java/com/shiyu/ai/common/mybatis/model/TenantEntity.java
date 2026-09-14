@@ -13,6 +13,9 @@ import java.io.Serial;
 @EqualsAndHashCode(callSuper = true)
 public class TenantEntity extends BaseEntity {
 
+    /**
+     * serialVersionUID 属性，保存当前对象中的业务数据或协作依赖。
+     */
     @Serial private static final long serialVersionUID = 1L;
 
     /** 租户ID */

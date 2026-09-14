@@ -31,21 +31,47 @@ import java.util.List;
 import java.util.Map;
 
 /**
- * Stable IAM facade. Each public entry point delegates to one focused use-case component while the
- * facade preserves the existing service contract.
+ * 实现 Auth 应用服务用例。
  */
 @Service
 public class AuthServiceImpl implements AuthService {
+    /**
+     * authentication 属性，保存当前对象中的业务数据或协作依赖。
+     */
     private final AuthAuthenticationUseCase authentication;
+    /**
+     * permissions 属性，保存当前对象中的业务数据或协作依赖。
+     */
     private final AuthPermissionUseCase permissions;
+    /**
+     * identity 属性，保存当前对象中的业务数据或协作依赖。
+     */
     private final AuthIdentityUseCase identity;
+    /**
+     * sessions 属性，保存当前对象中的业务数据或协作依赖。
+     */
     private final AuthSessionUseCase sessions;
+    /**
+     * recovery 属性，保存当前对象中的业务数据或协作依赖。
+     */
     private final AuthRecoveryUseCase recovery;
+    /**
+     * contextSupport 属性，保存当前对象中的业务数据或协作依赖。
+     */
     private final AuthTenantContextSupport contextSupport;
 
     /**
-     * Kept as the compatibility constructor used by existing Spring wiring and unit tests. The
-     * focused use cases receive their repositories explicitly.
+     * 处理认证serviceimpl。
+     *
+     * @param authRepository authRepository 参数。
+     * @param userRepository userRepository 参数。
+     * @param userScopeRoleRepository userScopeRoleRepository 参数。
+     * @param tenantRoleRepository tenantRoleRepository 参数。
+     * @param tenantRepository tenantRepository 参数。
+     * @param menuService menuService 参数。
+     * @param captchaService captchaService 参数。
+     *
+     * @return 处理结果。
      */
     public AuthServiceImpl(
             AuthRepository authRepository,
@@ -76,73 +102,179 @@ public class AuthServiceImpl implements AuthService {
         this.recovery = new AuthRecoveryUseCase(userRepository, captchaService);
     }
 
+    /**
+     * {@code login} 执行当前类型定义的业务操作。
+     *
+     * @param username 参数值，用于执行当前操作。
+     * @param password 参数值，用于执行当前操作。
+     *
+     * @return 返回当前操作产生的结果。
+     */
     @Override
     public LoginResponseVO login(String username, String password) {
         return login(username, password, null, null);
     }
 
+    /**
+     * {@code login} 执行当前类型定义的业务操作。
+     *
+     * @param username 参数值，用于执行当前操作。
+     * @param password 参数值，用于执行当前操作。
+     * @param roleId 参数值，用于执行当前操作。
+     *
+     * @return 返回当前操作产生的结果。
+     */
     @Override
     public LoginResponseVO login(String username, String password, Long roleId) {
         return login(username, password, roleId, null);
     }
 
+    /**
+     * {@code login} 执行当前类型定义的业务操作。
+     *
+     * @param username 参数值，用于执行当前操作。
+     * @param password 参数值，用于执行当前操作。
+     * @param roleId 参数值，用于执行当前操作。
+     * @param loginIp 参数值，用于执行当前操作。
+     *
+     * @return 返回当前操作产生的结果。
+     */
     @Override
     public LoginResponseVO login(String username, String password, Long roleId, String loginIp) {
         return authentication.login(username, password, roleId, loginIp);
     }
 
+    /**
+     * {@code getAuthCodes} 查询并返回当前操作所需的数据。
+     *
+     * @param actor 参数值，用于执行当前操作。
+     * @param username 参数值，用于执行当前操作。
+     *
+     * @return 返回当前操作产生的结果。
+     */
     @Override
     public List<String> getAuthCodes(ActorContext actor, String username) {
         return permissions.getAuthCodes(actor, username);
     }
 
+    /**
+     * {@code getAuthCodesByUserId} 查询并返回当前操作所需的数据。
+     *
+     * @param actor 参数值，用于执行当前操作。
+     * @param userId 参数值，用于执行当前操作。
+     *
+     * @return 返回当前操作产生的结果。
+     */
     @Override
     public List<String> getAuthCodesByUserId(ActorContext actor, UserId userId) {
         return permissions.getAuthCodesByUserId(actor, userId);
     }
 
+    /**
+     * {@code refreshToken} 执行当前类型定义的业务操作。
+     *
+     * @param oldToken 参数值，用于执行当前操作。
+     *
+     * @return 返回当前操作产生的结果。
+     */
     @Override
     public String refreshToken(String oldToken) {
         return sessions.refreshToken(oldToken);
     }
 
+    /**
+     * {@code logout} 执行当前类型定义的业务操作。
+     *
+     * @param token 参数值，用于执行当前操作。
+     */
     @Override
     public void logout(String token) {
         sessions.logout(token);
     }
 
+    /**
+     * {@code switchCurrentRole} 执行当前类型定义的业务操作。
+     *
+     * @param userId 参数值，用于执行当前操作。
+     * @param roleId 参数值，用于执行当前操作。
+     *
+     * @return 返回当前操作产生的结果。
+     */
     @Override
     public boolean switchCurrentRole(Long userId, Long roleId) {
         return identity.switchCurrentRole(userId, roleId);
     }
 
+    /**
+     * {@code switchCurrentTenant} 执行当前类型定义的业务操作。
+     *
+     * @param userId 参数值，用于执行当前操作。
+     * @param tenantId 参数值，用于执行当前操作。
+     *
+     * @return 返回当前操作产生的结果。
+     */
     @Override
     public boolean switchCurrentTenant(Long userId, TenantId tenantId) {
         return identity.switchCurrentTenant(userId, tenantId);
     }
 
+    /**
+     * {@code getUserTenants} 查询并返回当前操作所需的数据。
+     *
+     * @param actor 参数值，用于执行当前操作。
+     * @param userId 参数值，用于执行当前操作。
+     *
+     * @return 返回当前操作产生的结果。
+     */
     @Override
     public List<TenantInfoVO> getUserTenants(ActorContext actor, Long userId) {
         return identity.getUserTenants(actor, userId);
     }
 
+    /**
+     * {@code register} 写入或更新当前模块中的业务数据。
+     *
+     * @param username 参数值，用于执行当前操作。
+     * @param password 参数值，用于执行当前操作。
+     * @param email 参数值，用于执行当前操作。
+     *
+     * @return 返回当前操作产生的结果。
+     */
     @Override
     public LoginResponseVO register(String username, String password, String email) {
         return authentication.register(username, password, email);
     }
 
+    /**
+     * {@code codeLogin} 执行当前类型定义的业务操作。
+     *
+     * @param phone 参数值，用于执行当前操作。
+     * @param code 参数值，用于执行当前操作。
+     * @param captchaKey 参数值，用于执行当前操作。
+     *
+     * @return 返回当前操作产生的结果。
+     */
     @Override
     public LoginResponseVO codeLogin(String phone, String code, String captchaKey) {
         return authentication.codeLogin(phone, code, captchaKey);
     }
 
+    /**
+     * {@code forgetPassword} 执行当前类型定义的业务操作。
+     *
+     * @param email 参数值，用于执行当前操作。
+     * @param newPassword 参数值，用于执行当前操作。
+     * @param code 参数值，用于执行当前操作。
+     * @param captchaKey 参数值，用于执行当前操作。
+     *
+     * @return 返回当前操作产生的结果。
+     */
     @Override
     public boolean forgetPassword(
             String email, String newPassword, String code, String captchaKey) {
         return recovery.forgetPassword(email, newPassword, code, captchaKey);
     }
 
-    // Compatibility bridges for behavior tests that exercise the old private helper names.
     private Long resolveCurrentTenantId(String extInfo, List<UserScopeRoleBO> assignments) {
         return contextSupport.resolveCurrentTenantId(extInfo, assignments);
     }

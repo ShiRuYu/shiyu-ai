@@ -9,6 +9,9 @@ public class PasswordUtils {
 
     private static final BCryptPasswordEncoder PASSWORD_ENCODER = new BCryptPasswordEncoder();
     private static final SecureRandom SECURE_RANDOM = new SecureRandom();
+    /**
+     * CHARS 属性，保存当前对象中的业务数据或协作依赖。
+     */
     private static final String CHARS =
             "ABCDEFGHJKLMNPQRSTUVWXYZabcdefghjkmnpqrstuvwxyz23456789!@#$%";
 

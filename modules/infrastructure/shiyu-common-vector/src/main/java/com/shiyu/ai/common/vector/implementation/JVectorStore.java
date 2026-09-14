@@ -44,17 +44,41 @@ public class JVectorStore implements VectorStore {
     private static final VectorTypeSupport TYPE_SUPPORT =
             VectorizationProvider.getInstance().getVectorTypeSupport();
 
+    /**
+     * M 属性，保存当前对象中的业务数据或协作依赖。
+     */
     private static final int M = 16;
+    /**
+     * BEAM_WIDTH 属性，保存当前对象中的业务数据或协作依赖。
+     */
     private static final int BEAM_WIDTH = 100;
+    /**
+     * NEIGHBOR_OVERFLOW 属性，保存当前对象中的业务数据或协作依赖。
+     */
     private static final float NEIGHBOR_OVERFLOW = 1.5f;
+    /**
+     * ALPHA 属性，保存当前对象中的业务数据或协作依赖。
+     */
     private static final float ALPHA = 1.0f;
+    /**
+     * ADD_HIERARCHY 属性，保存当前对象中的业务数据或协作依赖。
+     */
     private static final boolean ADD_HIERARCHY = true;
 
+    /**
+     * 维度，表示当前对象中的对应属性。
+     */
     private final int dimension;
+    /**
+     * 索引路径，表示当前对象中的对应属性。
+     */
     private final Path indexPath;
+    /**
+     * 元数据路径，表示当前对象中的对应属性。
+     */
     private final Path metadataPath;
 
-    /** id → ordinal */
+    /** 向量标识到序号的映射，用于快速定位向量。 */
     private final Map<String, Integer> ordinalMap = new ConcurrentHashMap<>();
 
     /** ordinal → id（反向索引，用于 O(1) 查找） */
@@ -63,13 +87,26 @@ public class JVectorStore implements VectorStore {
     private final AtomicInteger idGen = new AtomicInteger(0);
     private final List<VectorFloat<?>> vectors = Collections.synchronizedList(new ArrayList<>());
     private final Map<String, Map<String, Object>> metadataCache = new ConcurrentHashMap<>();
+    /**
+     * 图结构索引，表示当前对象中的对应属性。
+     */
     private volatile OnHeapGraphIndex graphIndex;
 
+    /**
+     * {@code type} 执行当前类型定义的业务操作。
+     *
+     * @return 返回当前操作产生的结果。
+     */
     @Override
     public String type() {
         return "jvector";
     }
 
+    /**
+     * {@code JVectorStore} 创建并初始化当前类型实例。
+     *
+     * @param properties 参数值，用于执行当前操作。
+     */
     public JVectorStore(VectorStoreProperties properties) {
         this.dimension = properties.getDimension();
         String resolvedDir = properties.getResolvedDataDir();
@@ -86,6 +123,11 @@ public class JVectorStore implements VectorStore {
         loadFromDisk();
     }
 
+    /**
+     * {@code upsert} 执行当前类型定义的业务操作。
+     *
+     * @param record 参数值，用于执行当前操作。
+     */
     @Override
     public synchronized void upsert(VectorRecord record) {
         validateVector(record.vector());
@@ -106,16 +148,36 @@ public class JVectorStore implements VectorStore {
         graphIndex = null;
     }
 
+    /**
+     * {@code upsertBatch} 执行当前类型定义的业务操作。
+     *
+     * @param records 参数值，用于执行当前操作。
+     */
     @Override
     public synchronized void upsertBatch(List<VectorRecord> records) {
         for (VectorRecord r : records) upsert(r);
     }
 
+    /**
+     * {@code search} 查询并返回当前操作所需的数据。
+     *
+     * @param queryVector 参数值，用于执行当前操作。
+     * @param topK 参数值，用于执行当前操作。
+     *
+     * @return 返回当前操作产生的结果。
+     */
     @Override
     public List<VectorRecord> search(float[] queryVector, int topK) {
         return search(queryVector, topK, null, 0.0);
     }
 
+    /**
+     * {@code search} 查询并返回当前操作所需的数据。
+     *
+     * @param request 参数值，用于执行当前操作。
+     *
+     * @return 返回当前操作产生的结果。
+     */
     @Override
     public List<VectorRecord> search(VectorSearchRequest request) {
         Objects.requireNonNull(request, "Vector search request must not be null");
@@ -213,6 +275,11 @@ public class JVectorStore implements VectorStore {
         }
     }
 
+    /**
+     * {@code delete} 释放或移除当前操作涉及的资源。
+     *
+     * @param id 参数值，用于执行当前操作。
+     */
     @Override
     public synchronized void delete(String id) {
         Integer ordinal = ordinalMap.remove(id);
@@ -225,6 +292,11 @@ public class JVectorStore implements VectorStore {
         }
     }
 
+    /**
+     * {@code deleteBatch} 释放或移除当前操作涉及的资源。
+     *
+     * @param ids 参数值，用于执行当前操作。
+     */
     @Override
     public synchronized void deleteBatch(List<String> ids) {
         if (ids == null || ids.isEmpty()) return;
@@ -254,6 +326,9 @@ public class JVectorStore implements VectorStore {
         graphIndex = null;
     }
 
+    /**
+     * {@code rebuild} 执行当前类型定义的业务操作。
+     */
     @Override
     public synchronized void rebuild() {
         ordinalMap.clear();
@@ -264,6 +339,11 @@ public class JVectorStore implements VectorStore {
         graphIndex = null;
     }
 
+    /**
+     * {@code size} 执行当前类型定义的业务操作。
+     *
+     * @return 返回当前操作产生的结果。
+     */
     @Override
     public int size() {
         return ordinalMap.size();
@@ -273,6 +353,9 @@ public class JVectorStore implements VectorStore {
     // 磁盘持久化
     // ========================
 
+    /**
+     * {@code flush} 执行当前类型定义的业务操作。
+     */
     @Override
     public synchronized void flush() {
         if (size() == 0) {
@@ -339,6 +422,9 @@ public class JVectorStore implements VectorStore {
         }
     }
 
+    /**
+     * {@code close} 释放或移除当前操作涉及的资源。
+     */
     @Override
     @PreDestroy
     public void close() {

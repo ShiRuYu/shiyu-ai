@@ -1,4 +1,3 @@
--- A publishable education application assembled from a module, platform and agent.
 INSERT INTO "PUBLIC"."AI_APP" ("ID", "TENANT_ID", "OWNER_USER_ID", "NAME", "DESCRIPTION", "STATUS", "PUBLISHED_VERSION_ID", "CREATED_AT", "UPDATED_AT")
 VALUES ('edu-tutor-app', 1, 1, '数学学习助手', '面向七年级一元一次方程学习的教育应用示例。', 'PUBLISHED', 'edu-tutor-v1', CURRENT_TIMESTAMP, CURRENT_TIMESTAMP);
 

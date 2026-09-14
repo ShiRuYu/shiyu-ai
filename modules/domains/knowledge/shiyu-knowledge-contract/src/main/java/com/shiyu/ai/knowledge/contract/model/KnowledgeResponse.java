@@ -2,7 +2,19 @@ package com.shiyu.ai.knowledge.contract.model;
 
 import java.util.List;
 
-/** Stable knowledge-point view shared with consuming bounded contexts. */
+/**
+ * 处理知识响应。
+ * @param id 标识，表示该记录组件承载的数据。
+ * @param code 编码，表示该记录组件承载的数据。
+ * @param name 名称，表示该记录组件承载的数据。
+ * @param description 描述，表示该记录组件承载的数据。
+ * @param difficulty difficulty 属性，表示该记录组件承载的数据。
+ * @param category category 属性，表示该记录组件承载的数据。
+ * @param tags tags 属性，表示该记录组件承载的数据。
+ * @param parentIds parentIds 属性，表示该记录组件承载的数据。
+ * @param childIds childIds 属性，表示该记录组件承载的数据。
+ * @param documents documents 属性，表示该记录组件承载的数据。
+ */
 public record KnowledgeResponse(
         Long id,
         String code,

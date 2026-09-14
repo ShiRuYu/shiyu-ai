@@ -9,10 +9,16 @@ import jakarta.annotation.Resource;
 
 import org.springframework.stereotype.Component;
 
+/**
+ * {@code SaTokenUserRepositoryImpl} 实现平台模块的持久化端口，负责在领域对象与存储模型之间转换。
+ */
 @Component
 public class SaTokenUserRepositoryImpl
         implements com.shiyu.ai.iam.implementation.port.repository.SaTokenUserRepository {
 
+    /**
+     * 用户映射器，表示当前对象中的对应属性。
+     */
     @Resource private UserMapper userMapper;
 
     public UserBO selectById(Long userId) {

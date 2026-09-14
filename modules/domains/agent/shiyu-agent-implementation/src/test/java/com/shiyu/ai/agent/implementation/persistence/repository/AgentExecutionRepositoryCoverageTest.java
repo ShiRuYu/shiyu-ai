@@ -16,14 +16,21 @@ import com.shiyu.ai.agent.implementation.persistence.mapper.AgentExecutionMapper
 import com.shiyu.ai.agent.implementation.persistence.mapper.NodeExecutionMapper;
 import com.shiyu.ai.common.core.utils.MapstructUtils;
 import com.shiyu.ai.kernel.context.TenantId;
+import com.shiyu.ai.kernel.context.TenantScope;
 
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.AfterEach;
 
 import java.lang.reflect.Field;
 import java.util.List;
 
 class AgentExecutionRepositoryCoverageTest {
     private static final TenantId TENANT = new TenantId(7);
+    @BeforeEach
+    void bindTenantScope() { TenantScope.set(TENANT); }
+    @AfterEach
+    void clearTenantScope() { TenantScope.clear(); }
 
     @Test
     void persistsAndQueriesAgentExecutionsAndNodesWithTenantScope() throws Exception {

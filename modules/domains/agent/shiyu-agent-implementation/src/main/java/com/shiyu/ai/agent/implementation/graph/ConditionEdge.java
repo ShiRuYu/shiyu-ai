@@ -70,6 +70,9 @@ public class ConditionEdge {
     @lombok.Value
     public static class PredicateCondition {
         Predicate<Map<String, Object>> predicate;
+        /**
+         * 目标，表示当前对象中的对应属性。
+         */
         String target;
     }
 

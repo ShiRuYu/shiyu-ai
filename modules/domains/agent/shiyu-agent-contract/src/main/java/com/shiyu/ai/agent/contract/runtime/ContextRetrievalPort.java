@@ -2,8 +2,16 @@ package com.shiyu.ai.agent.contract.runtime;
 
 import java.util.List;
 
-/** Provider-neutral retrieval port used by agent context assembly. */
+/**
+ * ContextRetrievalPort 边界接口，负责向外部组件提供智能体领域相关能力。
+ */
 public interface ContextRetrievalPort {
-    /** Retrieves ranked context items for one validated query. */
+    /**
+     * 获取上下文retrieval。
+     *
+     * @param query query 参数。
+     *
+     * @return 结果列表。
+     */
     List<ContextItem> retrieve(ContextQuery query);
 }

@@ -15,7 +15,14 @@ import java.time.LocalDateTime;
 @Data
 public class UsageRecordBO implements Serializable {
 
+    /**
+     * serialVersionUID 属性，保存当前对象中的业务数据或协作依赖。
+     */
     @Serial private static final long serialVersionUID = 1L;
+
+    /**
+     * 标识，表示当前对象中的对应属性。
+     */
     private String id;
 
     /** 用量类型：LLM / EMBEDDING */
@@ -30,17 +37,28 @@ public class UsageRecordBO implements Serializable {
     /** 租户 ID，用于隔离用量与配额统计 */
     private Long tenantId;
 
-    /** Idempotent business source identity owned by Governance. */
+    /** 产生用量的业务来源类型。 */
     private String sourceType;
 
+    /** 产生用量的业务来源标识。 */
     private String sourceId;
+
+    /** 用于幂等关联同一业务事件的关联标识。 */
     private String correlationId;
+
+    /** 本次调用消耗的输入 token 数量。 */
     private Long inputTokens;
+
+    /** 本次调用产生的输出 token 数量。 */
     private Long outputTokens;
+
+    /** 本次调用产生的费用。 */
     private BigDecimal cost;
+
+    /** 用量事件发生时间。 */
     private LocalDateTime occurredAt;
 
-    /** 会话 ID */
+    /** 会话标识。 */
     private String sessionId;
 
     /** 类型专属字段（JSON），如 LLM 的 platform/model/tokens/cost，EMBEDDING 的 textLength/vectorCount */

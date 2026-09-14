@@ -3,6 +3,9 @@ package com.shiyu.ai.common.core.utils;
 import java.util.HashMap;
 import java.util.Map;
 
+/**
+ * {@code FlattenUtil} 承载平台基础设施模块的领域状态或协作行为，负责维护本类型的职责边界。
+ */
 public class FlattenUtil {
 
     /** 将多层 JSON Map 扁平化为 key=value 例如 app.name -> MyApp */

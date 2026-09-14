@@ -3,19 +3,36 @@ package com.shiyu.ai.model.contract.api;
 import java.util.List;
 
 /**
- * Read-only model routing facts exposed to HTTP/application adapters. Provider adapters and their
- * credentials remain private to Model.
+ * ModelRoutingPort 边界接口，负责向外部组件提供模型领域相关能力。
  */
 public interface ModelRoutingPort {
-    /** Returns models currently exposed to API and application adapters. */
+    /**
+     * 处理availablemodels。
+     *
+     * @return 结果列表。
+     */
     List<ModelDescriptor> availableModels();
 
-    /** Resolves the provider code for a requested model id. */
+    /**
+     * 解析平台。
+     *
+     * @param model model 参数。
+     *
+     * @return 处理结果。
+     */
     String resolvePlatform(String model);
 
-    /** Returns the provider used when a request does not specify one. */
+    /**
+     * 处理默认平台。
+     *
+     * @return 处理结果。
+     */
     String defaultPlatform();
 
-    /** Public, credential-free description of a routable model. */
+    /**
+     * 描述可路由模型的标识和所属平台。
+     * @param id 标识，表示该记录组件承载的数据。
+     * @param platform platform 属性，表示该记录组件承载的数据。
+     */
     record ModelDescriptor(String id, String platform) {}
 }

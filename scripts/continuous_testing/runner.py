@@ -1,4 +1,4 @@
-"""Owned, bounded subprocess execution."""
+"""runner 脚本，执行项目架构与工程校验。"""
 from __future__ import annotations
 import os, shutil, subprocess, time
 from dataclasses import dataclass

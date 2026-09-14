@@ -9,13 +9,30 @@ import java.util.Locale;
 import java.util.Map;
 import java.util.stream.Collectors;
 
+/**
+ * {@code ConversationExchangeCodec} 承载会话模块的领域状态或协作行为，负责维护本类型的职责边界。
+ */
 public final class ConversationExchangeCodec {
     private ConversationExchangeCodec() {}
 
+    /**
+     * {@code toJsonl} 将当前对象转换为目标表示形式。
+     *
+     * @param messages 参数值，用于执行当前操作。
+     *
+     * @return 返回当前操作产生的结果。
+     */
     public static String toJsonl(List<ConversationMessage> messages) {
         return messages.stream().map(JSONUtils::toJsonString).collect(Collectors.joining("\n"));
     }
 
+    /**
+     * {@code toMarkdown} 将当前对象转换为目标表示形式。
+     *
+     * @param messages 参数值，用于执行当前操作。
+     *
+     * @return 返回当前操作产生的结果。
+     */
     public static String toMarkdown(List<ConversationMessage> messages) {
         return messages.stream()
                 .map(
@@ -28,7 +45,11 @@ public final class ConversationExchangeCodec {
                 .collect(Collectors.joining("\n"));
     }
 
-    /** Parses the portable JSONL export without trusting ids or conversation ownership. */
+    /**
+     * 处理jsonl。
+     *
+     * @return 结果列表。
+     */
     @SuppressWarnings("unchecked")
     public static List<ImportedMessage> fromJsonl(String jsonl) {
         if (jsonl == null || jsonl.isBlank()) return List.of();
@@ -52,6 +73,13 @@ public final class ConversationExchangeCodec {
         return List.copyOf(result);
     }
 
+    /**
+     * {@code fromMarkdown} 执行当前类型定义的业务操作。
+     *
+     * @param markdown 参数值，用于执行当前操作。
+     *
+     * @return 返回当前操作产生的结果。
+     */
     public static List<ImportedMessage> fromMarkdown(String markdown) {
         if (markdown == null || markdown.isBlank()) return List.of();
         List<ImportedMessage> result = new ArrayList<>();
@@ -68,5 +96,10 @@ public final class ConversationExchangeCodec {
         return List.copyOf(result);
     }
 
+    /**
+     * {@code ImportedMessage} 封装会话模块中不可变的结构化数据，并作为相关操作之间的值对象。
+     * @param role 角色，表示该记录组件承载的数据。
+     * @param content 内容，表示该记录组件承载的数据。
+     */
     public record ImportedMessage(String role, String content) {}
 }

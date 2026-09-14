@@ -25,6 +25,16 @@ import java.util.List;
 @Service
 public class AiModelServiceImpl implements AiModelService {
 
+    /**
+     * {@code pageResponse} 执行当前类型定义的业务操作。
+     *
+     * @param actor 参数值，用于执行当前操作。
+     * @param platformId 参数值，用于执行当前操作。
+     * @param pageNo 参数值，用于执行当前操作。
+     * @param pageSize 参数值，用于执行当前操作。
+     *
+     * @return 返回当前操作产生的结果。
+     */
     @Override
     public Pair<Long, List<AiModelResponse>> pageResponse(
             ActorContext actor, Long platformId, Number pageNo, Number pageSize) {
@@ -34,6 +44,14 @@ public class AiModelServiceImpl implements AiModelService {
                 result.getRight().stream().map(AiModelAssembler::toResponse).toList());
     }
 
+    /**
+     * {@code byPlatformResponse} 执行当前类型定义的业务操作。
+     *
+     * @param actor 参数值，用于执行当前操作。
+     * @param platformId 参数值，用于执行当前操作。
+     *
+     * @return 返回当前操作产生的结果。
+     */
     @Override
     public List<AiModelResponse> byPlatformResponse(ActorContext actor, Long platformId) {
         return getByPlatformIdBO(actor, platformId).stream()
@@ -41,6 +59,14 @@ public class AiModelServiceImpl implements AiModelService {
                 .toList();
     }
 
+    /**
+     * {@code byPlatformCodeResponse} 执行当前类型定义的业务操作。
+     *
+     * @param actor 参数值，用于执行当前操作。
+     * @param platformCode 参数值，用于执行当前操作。
+     *
+     * @return 返回当前操作产生的结果。
+     */
     @Override
     public List<AiModelResponse> byPlatformCodeResponse(ActorContext actor, String platformCode) {
         return getByPlatformCodeBO(actor, platformCode).stream()
@@ -48,21 +74,54 @@ public class AiModelServiceImpl implements AiModelService {
                 .toList();
     }
 
+    /**
+     * {@code detailResponse} 执行当前类型定义的业务操作。
+     *
+     * @param actor 参数值，用于执行当前操作。
+     * @param id 参数值，用于执行当前操作。
+     *
+     * @return 返回当前操作产生的结果。
+     */
     @Override
     public AiModelResponse detailResponse(ActorContext actor, Long id) {
         return AiModelAssembler.toResponse(getByIdBO(actor, id));
     }
 
+    /**
+     * {@code defaultResponse} 执行当前类型定义的业务操作。
+     *
+     * @param actor 参数值，用于执行当前操作。
+     * @param platformId 参数值，用于执行当前操作。
+     *
+     * @return 返回当前操作产生的结果。
+     */
     @Override
     public AiModelResponse defaultResponse(ActorContext actor, Long platformId) {
         return AiModelAssembler.toResponse(getDefaultByPlatformIdBO(actor, platformId));
     }
 
+    /**
+     * {@code createResponse} 写入或更新当前模块中的业务数据。
+     *
+     * @param actor 参数值，用于执行当前操作。
+     * @param request 参数值，用于执行当前操作。
+     *
+     * @return 返回当前操作产生的结果。
+     */
     @Override
     public AiModelResponse createResponse(ActorContext actor, AiModelRequest request) {
         return AiModelAssembler.toResponse(createBO(actor, AiModelAssembler.toBO(request)));
     }
 
+    /**
+     * {@code updateResponse} 写入或更新当前模块中的业务数据。
+     *
+     * @param actor 参数值，用于执行当前操作。
+     * @param id 参数值，用于执行当前操作。
+     * @param request 参数值，用于执行当前操作。
+     *
+     * @return 返回当前操作产生的结果。
+     */
     @Override
     public AiModelResponse updateResponse(ActorContext actor, Long id, AiModelRequest request) {
         AiModelBO bo = AiModelAssembler.toBO(request);
@@ -70,6 +129,14 @@ public class AiModelServiceImpl implements AiModelService {
         return AiModelAssembler.toResponse(updateBO(actor, bo));
     }
 
+    /**
+     * {@code setDefaultResponse} 写入或更新当前模块中的业务数据。
+     *
+     * @param actor 参数值，用于执行当前操作。
+     * @param id 参数值，用于执行当前操作。
+     *
+     * @return 返回当前操作产生的结果。
+     */
     @Override
     public AiModelResponse setDefaultResponse(ActorContext actor, Long id) {
         return AiModelAssembler.toResponse(setDefaultBO(actor, id));
@@ -77,6 +144,9 @@ public class AiModelServiceImpl implements AiModelService {
 
     @Resource private AiModelRepository aiModelRepository;
 
+    /**
+     * aiPlatformRepository 属性，保存当前对象中的业务数据或协作依赖。
+     */
     @Resource private AiPlatformRepository aiPlatformRepository;
 
     private Pair<Long, List<AiModelBO>> getPageBO(
@@ -135,16 +205,36 @@ public class AiModelServiceImpl implements AiModelService {
         return updated;
     }
 
+    /**
+     * {@code deleteById} 释放或移除当前操作涉及的资源。
+     *
+     * @param actor 参数值，用于执行当前操作。
+     * @param id 参数值，用于执行当前操作。
+     */
     @Override
     public void deleteById(ActorContext actor, Long id) {
         aiModelRepository.deleteById(actor.tenantId(), id);
     }
 
+    /**
+     * {@code deleteByIds} 释放或移除当前操作涉及的资源。
+     *
+     * @param actor 参数值，用于执行当前操作。
+     * @param ids 参数值，用于执行当前操作。
+     */
     @Override
     public void deleteByIds(ActorContext actor, List<Long> ids) {
         aiModelRepository.deleteByIds(actor.tenantId(), ids);
     }
 
+    /**
+     * {@code getOptions} 查询并返回当前操作所需的数据。
+     *
+     * @param actor 参数值，用于执行当前操作。
+     * @param platformId 参数值，用于执行当前操作。
+     *
+     * @return 返回当前操作产生的结果。
+     */
     @Override
     public List<IdNameOptionVO> getOptions(ActorContext actor, Long platformId) {
         return aiModelRepository.selectOptions(actor.tenantId(), platformId);

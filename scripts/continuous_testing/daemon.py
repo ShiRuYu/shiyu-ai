@@ -1,4 +1,4 @@
-"""Restart-safe polling daemon for the continuous testing controller."""
+"""daemon 脚本，执行项目架构与工程校验。"""
 from __future__ import annotations
 import json, os, signal, sys, subprocess, time
 from pathlib import Path
@@ -92,9 +92,6 @@ class Daemon:
             marker.parent.mkdir(parents=True, exist_ok=True)
             marker.write_text(json.dumps(current, indent=2), encoding="utf-8")
             pending = marker.with_name("pending-version.json")
-            # A queued snapshot has not started and may be replaced by the
-            # newest stable snapshot. Once execution claims it, the running
-            # snapshot is immutable so long-running work never changes version.
             running = marker.with_name("running-version.json")
             running_active = False
             if running.exists():
@@ -106,9 +103,6 @@ class Daemon:
                 temp = pending.with_suffix(".tmp")
                 temp.write_text(json.dumps({"status": "QUEUED", "version": current}, indent=2), encoding="utf-8")
                 os.replace(temp, pending)
-        # A change observed while another run was active is persisted in
-        # version.json but cannot be queued until that run reaches a terminal
-        # state. Reconcile it on every tick so the latest version is not lost.
         running = marker.with_name("running-version.json")
         running_active = False
         running_version = None

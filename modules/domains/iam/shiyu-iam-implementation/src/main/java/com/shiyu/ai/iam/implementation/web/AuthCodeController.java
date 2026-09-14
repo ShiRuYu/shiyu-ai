@@ -21,15 +21,25 @@ import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
 
-/** HTTP adapter for authorization-code use cases. */
+/**
+ * AuthCodeController 控制器，负责处理身份与访问领域相关 HTTP 请求并返回响应。
+ */
 @Tag(name = "Auth Code", description = "Auth Code")
 @RestController
 @RequestMapping("/api/iam/auth-codes")
 @RequiredArgsConstructor
 public class AuthCodeController {
 
+    /**
+     * 服务，表示当前对象中的对应属性。
+     */
     private final AuthCodeService service;
 
+    /**
+     * {@code list} 查询并返回当前操作所需的数据。
+     *
+     * @return 返回当前操作产生的结果。
+     */
     @Operation(summary = "List Auth Codes")
     @SaCheckPermission("system:auth-code:list")
     @GetMapping("/list")
@@ -37,6 +47,14 @@ public class AuthCodeController {
         return Result.success(service.list(ActorContextHttpAdapter.currentActor()));
     }
 
+    /**
+     * {@code listRoleAuthCodes} 查询并返回当前操作所需的数据。
+     *
+     * @param roleId 参数值，用于执行当前操作。
+     * @param tenantId 参数值，用于执行当前操作。
+     *
+     * @return 返回当前操作产生的结果。
+     */
     @Operation(summary = "List role auth codes")
     @SaCheckPermission("system:role:list")
     @GetMapping("/roles/list")
@@ -47,6 +65,11 @@ public class AuthCodeController {
                         ActorContextHttpAdapter.currentActor(), roleId, new TenantId(tenantId)));
     }
 
+    /**
+     * {@code options} 执行当前类型定义的业务操作。
+     *
+     * @return 返回当前操作产生的结果。
+     */
     @Operation(summary = "Auth code options")
     @SaCheckPermission("system:auth-code:list")
     @GetMapping("/options")
@@ -54,6 +77,13 @@ public class AuthCodeController {
         return Result.success(service.options(ActorContextHttpAdapter.currentActor()));
     }
 
+    /**
+     * {@code create} 写入或更新当前模块中的业务数据。
+     *
+     * @param authCode 参数值，用于执行当前操作。
+     *
+     * @return 返回当前操作产生的结果。
+     */
     @Operation(summary = "Create Auth Code")
     @SaCheckPermission("system:auth-code:create")
     @PostMapping("/create")
@@ -61,6 +91,14 @@ public class AuthCodeController {
         return Result.success(service.create(ActorContextHttpAdapter.currentActor(), authCode));
     }
 
+    /**
+     * {@code update} 写入或更新当前模块中的业务数据。
+     *
+     * @param id 参数值，用于执行当前操作。
+     * @param authCode 参数值，用于执行当前操作。
+     *
+     * @return 返回当前操作产生的结果。
+     */
     @Operation(summary = "Update Auth Code")
     @SaCheckPermission("system:auth-code:update")
     @PostMapping("/update")
@@ -70,6 +108,13 @@ public class AuthCodeController {
                 : Result.fail("权限码不存在");
     }
 
+    /**
+     * {@code delete} 释放或移除当前操作涉及的资源。
+     *
+     * @param id 参数值，用于执行当前操作。
+     *
+     * @return 返回当前操作产生的结果。
+     */
     @Operation(summary = "Delete Auth Code")
     @SaCheckPermission("system:auth-code:delete")
     @PostMapping("/delete")
@@ -79,6 +124,15 @@ public class AuthCodeController {
                 : Result.fail("权限码不存在");
     }
 
+    /**
+     * {@code grant} 执行当前类型定义的业务操作。
+     *
+     * @param roleId 参数值，用于执行当前操作。
+     * @param tenantId 参数值，用于执行当前操作。
+     * @param authCodeIds 参数值，用于执行当前操作。
+     *
+     * @return 返回当前操作产生的结果。
+     */
     @Operation(summary = "Grant role auth codes")
     @SaCheckPermission("system:role:assign")
     @PostMapping("/roles/grant")
@@ -95,6 +149,15 @@ public class AuthCodeController {
                 : Result.fail("角色、作用域或权限码参数无效");
     }
 
+    /**
+     * {@code replace} 执行当前类型定义的业务操作。
+     *
+     * @param roleId 参数值，用于执行当前操作。
+     * @param tenantId 参数值，用于执行当前操作。
+     * @param authCodes 参数值，用于执行当前操作。
+     *
+     * @return 返回当前操作产生的结果。
+     */
     @Operation(summary = "Replace role auth codes")
     @SaCheckPermission("system:role:assign")
     @PostMapping("/roles/replace")
@@ -111,6 +174,15 @@ public class AuthCodeController {
                 : Result.fail("角色不属于当前租户作用域");
     }
 
+    /**
+     * {@code revoke} 执行当前类型定义的业务操作。
+     *
+     * @param roleId 参数值，用于执行当前操作。
+     * @param tenantId 参数值，用于执行当前操作。
+     * @param authCodeId 参数值，用于执行当前操作。
+     *
+     * @return 返回当前操作产生的结果。
+     */
     @Operation(summary = "Revoke role auth code")
     @SaCheckPermission("system:role:assign")
     @PostMapping("/roles/revoke")
@@ -125,6 +197,13 @@ public class AuthCodeController {
                 : Result.fail("角色不属于当前租户作用域");
     }
 
+    /**
+     * {@code page} 执行当前类型定义的业务操作。
+     *
+     * @param request 参数值，用于执行当前操作。
+     *
+     * @return 返回当前操作产生的结果。
+     */
     @Operation(summary = "Page Auth Codes")
     @SaCheckPermission("system:auth-code:list")
     @GetMapping("/page")

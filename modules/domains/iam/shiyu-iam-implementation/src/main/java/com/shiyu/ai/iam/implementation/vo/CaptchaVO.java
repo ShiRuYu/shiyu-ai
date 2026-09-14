@@ -17,6 +17,13 @@ public class CaptchaVO {
     /** 过期时间（秒） */
     private Long expireTime;
 
+    /**
+     * {@code CaptchaVO} 创建并初始化当前类型实例。
+     *
+     * @param key 参数值，用于执行当前操作。
+     * @param image 参数值，用于执行当前操作。
+     * @param expireTime 参数值，用于执行当前操作。
+     */
     public CaptchaVO(String key, String image, Long expireTime) {
         this.key = key;
         this.image = image;

@@ -6,8 +6,8 @@ import static org.mockito.Mockito.doThrow;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
 
-import com.shiyu.ai.agent.implementation.event.AuditEvent;
-import com.shiyu.ai.agent.implementation.event.EventPublisher;
+import com.shiyu.ai.agent.implementation.event.model.AuditEvent;
+import com.shiyu.ai.agent.implementation.event.publisher.EventPublisher;
 import com.shiyu.ai.kernel.context.TenantId;
 
 import org.junit.jupiter.api.Test;

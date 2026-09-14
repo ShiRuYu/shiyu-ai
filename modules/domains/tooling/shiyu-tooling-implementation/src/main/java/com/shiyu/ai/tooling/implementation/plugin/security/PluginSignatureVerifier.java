@@ -8,10 +8,21 @@ import java.security.Signature;
 import java.security.spec.X509EncodedKeySpec;
 import java.util.Base64;
 
-/** Ed25519 verification for installable plugins. Unsigned plugins are development-only. */
+/**
+ * 校验插件包签名并阻止未信任的发布者。
+ */
 public final class PluginSignatureVerifier {
     private PluginSignatureVerifier() {}
 
+    /**
+     * {@code verify} 执行当前类型定义的业务操作。
+     *
+     * @param manifest 参数值，用于执行当前操作。
+     * @param signatureBase64 参数值，用于执行当前操作。
+     * @param publicKeyBase64 参数值，用于执行当前操作。
+     *
+     * @return 返回当前操作产生的结果。
+     */
     public static boolean verify(String manifest, String signatureBase64, String publicKeyBase64) {
         try {
             PublicKey key =
@@ -28,6 +39,13 @@ public final class PluginSignatureVerifier {
         }
     }
 
+    /**
+     * {@code sha256} 执行当前类型定义的业务操作。
+     *
+     * @param value 参数值，用于执行当前操作。
+     *
+     * @return 返回当前操作产生的结果。
+     */
     public static String sha256(String value) {
         try {
             byte[] digest =
@@ -41,7 +59,13 @@ public final class PluginSignatureVerifier {
         }
     }
 
-    /** Stable publisher identity used by the trusted-publisher allow-list. */
+    /**
+     * 计算插件指纹。
+     *
+     * @param publicKeyBase64 publicKeyBase64 参数。
+     *
+     * @return 处理结果。
+     */
     public static String fingerprint(String publicKeyBase64) {
         try {
             byte[] key = Base64.getDecoder().decode(publicKeyBase64);

@@ -10,9 +10,18 @@ import java.util.Set;
 @Slf4j
 public class PluginSandbox {
 
+    /**
+     * allowedPackages 属性，保存当前对象中的业务数据或协作依赖。
+     */
     private final Set<String> allowedPackages;
+    /**
+     * blockedPackages 属性，保存当前对象中的业务数据或协作依赖。
+     */
     private final Set<String> blockedPackages;
 
+    /**
+     * {@code PluginSandbox} 创建并初始化当前类型实例。
+     */
     public PluginSandbox() {
         this.allowedPackages =
                 new HashSet<>(
@@ -69,8 +78,16 @@ public class PluginSandbox {
         return value == null ? 0 : value.length();
     }
 
+    /**
+     * SandboxCallable 接口，定义工具模块的能力边界。
+     */
     @FunctionalInterface
     public interface SandboxCallable<T> {
+        /**
+         * 执行 {@code call} 定义的接口操作。
+         *
+         * @return 操作结果。
+         */
         T call() throws Exception;
     }
 }

@@ -6,6 +6,26 @@ import java.time.Instant;
 import java.util.Map;
 import java.util.Objects;
 
+/**
+ * {@code MemoryEvent} 封装模型模块中不可变的结构化数据，并作为相关操作之间的值对象。
+ * @param id 标识，表示该记录组件承载的数据。
+ * @param tenantId 租户标识，表示该记录组件承载的数据。
+ * @param namespace 命名空间，表示该记录组件承载的数据。
+ * @param subjectType subjectType 属性，表示该记录组件承载的数据。
+ * @param subjectId subjectId 属性，表示该记录组件承载的数据。
+ * @param eventType eventType 属性，表示该记录组件承载的数据。
+ * @param content 内容，表示该记录组件承载的数据。
+ * @param occurredAt occurredAt 属性，表示该记录组件承载的数据。
+ * @param sourceType sourceType 属性，表示该记录组件承载的数据。
+ * @param sourceId sourceId 属性，表示该记录组件承载的数据。
+ * @param attributes attributes 属性，表示该记录组件承载的数据。
+ * @param confidence confidence 属性，表示该记录组件承载的数据。
+ * @param importance importance 属性，表示该记录组件承载的数据。
+ * @param status 状态，表示该记录组件承载的数据。
+ * @param confirmationPolicy confirmationPolicy 属性，表示该记录组件承载的数据。
+ * @param createdAt 创建时间，表示该记录组件承载的数据。
+ * @param updatedAt 更新时间，表示该记录组件承载的数据。
+ */
 public record MemoryEvent(
         String id,
         TenantId tenantId,

@@ -5,8 +5,16 @@ import com.shiyu.ai.memory.contract.model.MemoryQuery;
 
 import java.util.List;
 
-/** Read boundary for explainable memory paths within a tenant scope. */
+/**
+ * MemoryQueryPort 边界接口，负责向外部组件提供记忆领域相关能力。
+ */
 public interface MemoryQueryPort {
-    /** Retrieves matching paths ordered by the implementation's relevance policy. */
+    /**
+     * 获取记忆query。
+     *
+     * @param query query 参数。
+     *
+     * @return 结果列表。
+     */
     List<MemoryPath> retrieve(MemoryQuery query);
 }

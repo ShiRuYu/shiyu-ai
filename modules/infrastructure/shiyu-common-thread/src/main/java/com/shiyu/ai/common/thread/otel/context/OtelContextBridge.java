@@ -11,9 +11,21 @@ import io.opentelemetry.context.Context;
 /** OpenTelemetry上下文桥接器 用于在TaskContext和OpenTelemetry Context之间进行转换和同步 */
 public class OtelContextBridge {
 
+    /**
+     * 键，表示当前对象中的对应属性。
+     */
     private static final String TRACE_ID_KEY = "otel.traceId";
+    /**
+     * 键，表示当前对象中的对应属性。
+     */
     private static final String SPAN_ID_KEY = "otel.spanId";
+    /**
+     * 键，表示当前对象中的对应属性。
+     */
     private static final String TRACE_FLAGS_KEY = "otel.traceFlags";
+    /**
+     * 键，表示当前对象中的对应属性。
+     */
     private static final String TRACE_STATE_KEY = "otel.traceState";
 
     /**

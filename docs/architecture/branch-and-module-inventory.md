@@ -6,7 +6,7 @@
 
 - 当前主分支：`master`，已跟踪 `origin/master`。
 - 当前工作树：以 `git status --short` 为准；本次文档更新提交前会再次确认。
-- Maven reactor：根 POM、29 个叶子模块，共 30 个项目。
+- Maven reactor：根 POM、30 个叶子模块，共 31 个项目。
 - 叶子模块文档：每个模块目录均有 `README.md`。
 
 ## 分支用途与删除建议
@@ -40,14 +40,15 @@
 | 分类 | 模块 | 说明文档 |
 |---|---|---|
 | 应用 | `shiyu-ai-bootstrap` | [`README.md`](../../modules/applications/shiyu-ai-bootstrap/README.md) |
+| 应用 | `shiyu-platform-bootstrap` | 平台能力发行组合；不包含教育实现 |
 | 应用 | `shiyu-ai-web` | [`README.md`](../../modules/applications/shiyu-ai-web/README.md) |
 | 应用 | `shiyu-application` | [`README.md`](../../modules/applications/shiyu-application/README.md) |
 | 领域契约 | `shiyu-agent-contract` | [`README.md`](../../modules/domains/agent/shiyu-agent-contract/README.md) |
 | 领域实现 | `shiyu-agent-implementation` | [`README.md`](../../modules/domains/agent/shiyu-agent-implementation/README.md) |
 | 领域契约 | `shiyu-conversation-contract` | [`README.md`](../../modules/domains/conversation/shiyu-conversation-contract/README.md) |
 | 领域实现 | `shiyu-conversation-implementation` | [`README.md`](../../modules/domains/conversation/shiyu-conversation-implementation/README.md) |
-| 领域契约 | `shiyu-education-contract` | [`README.md`](../../modules/domains/education/shiyu-education-contract/README.md) |
-| 领域实现 | `shiyu-education-implementation` | [`README.md`](../../modules/domains/education/shiyu-education-implementation/README.md) |
+| 业务契约 | `shiyu-education-contract` | [`README.md`](../../modules/business/education/shiyu-education-contract/README.md) |
+| 业务实现 | `shiyu-education-implementation` | [`README.md`](../../modules/business/education/shiyu-education-implementation/README.md) |
 | 领域契约 | `shiyu-governance-contract` | [`README.md`](../../modules/domains/governance/shiyu-governance-contract/README.md) |
 | 领域实现 | `shiyu-governance-implementation` | [`README.md`](../../modules/domains/governance/shiyu-governance-implementation/README.md) |
 | 领域契约 | `shiyu-iam-contract` | [`README.md`](../../modules/domains/iam/shiyu-iam-contract/README.md) |

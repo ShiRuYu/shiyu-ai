@@ -1,4 +1,3 @@
--- Governance-owned v4 schema. No cross-domain foreign keys or joins.
 
 CREATE CACHED TABLE "PUBLIC"."GOVERNANCE_USAGE_RECORD" (
     "ID" CHARACTER VARYING(64) NOT NULL,

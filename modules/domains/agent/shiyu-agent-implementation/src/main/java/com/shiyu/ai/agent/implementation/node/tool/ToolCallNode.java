@@ -8,7 +8,7 @@ import com.shiyu.ai.agent.contract.node.NodeInputParam;
 import com.shiyu.ai.agent.contract.node.NodeOutput;
 import com.shiyu.ai.agent.contract.node.NodeType;
 import com.shiyu.ai.agent.contract.runtime.AiRun;
-import com.shiyu.ai.agent.implementation.runtime.ToolExecutionPipeline;
+import com.shiyu.ai.agent.implementation.runtime.service.ToolExecutionPipeline;
 import com.shiyu.ai.tooling.contract.api.ToolService;
 
 import lombok.Getter;
@@ -26,11 +26,17 @@ import lombok.extern.slf4j.Slf4j;
 @Slf4j
 public class ToolCallNode extends BaseNode {
 
+    /**
+     * 配置，表示当前对象中的对应属性。
+     */
     private ToolCallConfig config;
 
     /** 工具调用服务（必须依赖） */
     private final ToolService toolService;
 
+    /**
+     * executionPipeline 属性，保存当前对象中的业务数据或协作依赖。
+     */
     private final ToolExecutionPipeline executionPipeline;
 
     /**
@@ -63,7 +69,13 @@ public class ToolCallNode extends BaseNode {
     /** Builder 类，用于构建 ToolCallNode 实例 */
     public static class Builder {
         private ToolCallConfig config;
+        /**
+         * toolService 属性，保存当前对象中的业务数据或协作依赖。
+         */
         private ToolService toolService;
+        /**
+         * executionPipeline 属性，保存当前对象中的业务数据或协作依赖。
+         */
         private ToolExecutionPipeline executionPipeline;
 
         /**
@@ -88,6 +100,13 @@ public class ToolCallNode extends BaseNode {
             return this;
         }
 
+        /**
+         * {@code executionPipeline} 执行当前类型定义的业务操作。
+         *
+         * @param executionPipeline 参数值，用于执行当前操作。
+         *
+         * @return 返回当前操作产生的结果。
+         */
         public Builder executionPipeline(ToolExecutionPipeline executionPipeline) {
             this.executionPipeline = executionPipeline;
             return this;
@@ -110,6 +129,13 @@ public class ToolCallNode extends BaseNode {
         }
     }
 
+    /**
+     * {@code doExecute} 执行当前类型定义的业务操作。
+     *
+     * @param input 参数值，用于执行当前操作。
+     *
+     * @return 返回当前操作产生的结果。
+     */
     @Override
     protected NodeOutput doExecute(NodeInput input) throws Exception {
         log.info("执行工具调用节点：{}", config.getNodeName());
@@ -328,6 +354,11 @@ public class ToolCallNode extends BaseNode {
         return raw;
     }
 
+    /**
+     * {@code getRequiredInputs} 查询并返回当前操作所需的数据。
+     *
+     * @return 返回当前操作产生的结果。
+     */
     @Override
     public java.util.List<NodeInputParam> getRequiredInputs() {
         return java.util.List.of(

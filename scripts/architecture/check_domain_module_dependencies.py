@@ -1,10 +1,4 @@
-"""Fail when a bounded-context module depends on another context's implementation.
-
-Domain implementations may consume other domains only through their contract
-artifacts.  This check operates on the Maven model rather than Java imports so
-the rule remains effective even when a transitive dependency happens to make
-the source compile.
-"""
+"""check domain module dependencies 脚本，执行项目架构与工程校验。"""
 
 from __future__ import annotations
 
@@ -27,7 +21,7 @@ def dependencies(pom: Path) -> list[str]:
 
 
 def own_implementation_artifact(pom: Path) -> str | None:
-    """Return the implementation coordinate owned by a domain module."""
+    """执行 own_implementation_artifact，处理输入并返回校验结果。"""
     artifact = ET.parse(pom).getroot().findtext(
         "m:artifactId", default="", namespaces=NS
     ).strip()
@@ -35,7 +29,7 @@ def own_implementation_artifact(pom: Path) -> str | None:
 
 
 def check_web_adapter_dependencies(root: Path) -> list[str]:
-    """Keep the technical Web adapter from becoming a central domain hub."""
+    """执行 check_web_adapter_dependencies，处理输入并返回校验结果。"""
     web_pom = root / "modules/applications/shiyu-ai-web/pom.xml"
     if not web_pom.exists():
         return ["Missing required modules/applications/shiyu-ai-web/pom.xml"]
@@ -60,22 +54,18 @@ THREAD_CONTEXT_REFERENCES = re.compile(
 
 
 def implementation_modules(root: Path) -> list[Path]:
-    domains = root / "modules/domains"
+    roots = [root / "modules/domains", root / "modules/business"]
     return sorted(
         pom.parent
-        for pom in domains.glob("*/*/pom.xml")
+        for source_root in roots
+        if source_root.exists()
+        for pom in source_root.glob("*/*/pom.xml")
         if own_implementation_artifact(pom)
     )
 
 
 def implementation_classes(root: Path) -> dict[str, Path]:
-    """Return the concrete classes published by each implementation module.
-
-    Package names overlap with contract modules (for example model.chat), so
-    package-prefix matching would incorrectly reject valid contract imports.
-    Exact declared type names let this check distinguish implementation types
-    from contract types while still catching nested/static imports.
-    """
+    """执行 implementation_classes，处理输入并返回校验结果。"""
     classes: dict[str, Path] = {}
     for module in implementation_modules(root):
         source_root = module / "src/main/java"
@@ -90,7 +80,7 @@ def implementation_classes(root: Path) -> dict[str, Path]:
 
 
 def check_java_imports(root: Path) -> list[str]:
-    """Reject direct imports of another bounded context's implementation type."""
+    """执行 check_java_imports，处理输入并返回校验结果。"""
     published = implementation_classes(root)
     violations: list[str] = []
     for source_module in implementation_modules(root):
@@ -115,8 +105,72 @@ def check_java_imports(root: Path) -> list[str]:
     return violations
 
 
+def contract_modules(root: Path) -> list[Path]:
+    """执行 contract_modules，处理输入并返回校验结果。"""
+    roots = [root / "modules/domains", root / "modules/business"]
+    return sorted(
+        pom.parent
+        for source_root in roots
+        if source_root.exists()
+        for pom in source_root.glob("*/*-contract/pom.xml")
+    )
+
+
+FORBIDDEN_CONTRACT_DEPENDENCY_PREFIXES = (
+    "org.springframework",
+    "org.mybatis",
+    "com.mybatis",
+    "org.bsc.langgraph4j",
+    "dev.langchain4j",
+    "cn.dev33",
+    "jakarta.servlet",
+    "jakarta.persistence",
+)
+
+
+def check_contract_framework_dependencies(root: Path) -> list[str]:
+    """执行 check_contract_framework_dependencies，处理输入并返回校验结果。"""
+    violations: list[str] = []
+    for module in contract_modules(root):
+        pom = module / "pom.xml"
+        tree = ET.parse(pom)
+        for dependency in tree.findall("m:dependencies/m:dependency", NS):
+            group = (dependency.findtext("m:groupId", default="", namespaces=NS) or "").strip()
+            artifact = (dependency.findtext("m:artifactId", default="", namespaces=NS) or "").strip()
+            coordinate = f"{group}:{artifact}"
+            if group.startswith(FORBIDDEN_CONTRACT_DEPENDENCY_PREFIXES):
+                violations.append(f"{pom.relative_to(root)} -> {coordinate}")
+    return violations
+
+
+def check_contract_imports(root: Path) -> list[str]:
+    """执行 check_contract_imports，处理输入并返回校验结果。"""
+    published = implementation_classes(root)
+    violations: list[str] = []
+    for module in contract_modules(root):
+        source_root = module / "src/main/java"
+        for source in source_root.rglob("*.java"):
+            text = source.read_text(encoding="utf-8", errors="ignore")
+            for imported in IMPORT_DECLARATION.findall(text):
+                owner = next(
+                    (
+                        implementation
+                        for qualified_name, implementation in published.items()
+                        if imported == qualified_name
+                        or imported.startswith(qualified_name + ".")
+                    ),
+                    None,
+                )
+                if owner is not None:
+                    violations.append(
+                        f"{source.relative_to(root)} -> {imported} "
+                        f"({owner.relative_to(root)})"
+                    )
+    return violations
+
+
 def check_thread_context_access(root: Path) -> list[str]:
-    """Keep domain/application code independent of request/thread context."""
+    """执行 check_thread_context_access，处理输入并返回校验结果。"""
     violations: list[str] = []
     scan_roots = tuple(
         path for path in (root / "modules/domains", root / "modules/applications")
@@ -127,8 +181,6 @@ def check_thread_context_access(root: Path) -> list[str]:
             normalized = source.as_posix()
             if "/target/" in normalized or "/src/test/" in normalized:
                 continue
-            # Controllers are HTTP adapters; the application and domain layers
-            # beneath them must receive ActorContext explicitly instead.
             if "/web/" in normalized:
                 continue
             text = source.read_text(encoding="utf-8", errors="ignore")
@@ -141,7 +193,7 @@ def check_thread_context_access(root: Path) -> list[str]:
 
 
 def check_migrated_package_ownership(root: Path) -> list[str]:
-    """Require completed pilot modules to use their declared package boundary."""
+    """执行 check_migrated_package_ownership，处理输入并返回校验结果。"""
     source_root = root / "modules/domains/conversation/shiyu-conversation-implementation/src/main/java"
     if not source_root.is_dir():
         return []
@@ -159,16 +211,26 @@ def check_migrated_package_ownership(root: Path) -> list[str]:
 
 def analyze_repository(root: Path) -> list[str]:
     root = root.resolve()
-    domains = root / "modules/domains"
     violations: list[str] = []
-    for pom in sorted(domains.rglob("pom.xml")):
-        own_implementation = own_implementation_artifact(pom)
-        for artifact in dependencies(pom):
-            if artifact.endswith("-implementation") and artifact != own_implementation:
-                violations.append(f"{pom.relative_to(root)} -> {artifact}")
+    implementations = implementation_modules(root)
+    contracts = contract_modules(root)
+    if not implementations:
+        violations.append("No implementation modules discovered")
+    if not contracts:
+        violations.append("No contract modules discovered")
+    for source_root in (root / "modules/domains", root / "modules/business"):
+        if not source_root.exists():
+            continue
+        for pom in sorted(source_root.rglob("pom.xml")):
+            own_implementation = own_implementation_artifact(pom)
+            for artifact in dependencies(pom):
+                if artifact.endswith("-implementation") and artifact != own_implementation:
+                    violations.append(f"{pom.relative_to(root)} -> {artifact}")
 
     violations.extend(check_web_adapter_dependencies(root))
     violations.extend(check_java_imports(root))
+    violations.extend(check_contract_framework_dependencies(root))
+    violations.extend(check_contract_imports(root))
     violations.extend(check_thread_context_access(root))
     violations.extend(check_migrated_package_ownership(root))
     return violations

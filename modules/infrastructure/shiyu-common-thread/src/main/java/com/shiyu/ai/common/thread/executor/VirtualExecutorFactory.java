@@ -26,6 +26,14 @@ public class VirtualExecutorFactory implements ExecutorFactory {
         }
     }
 
+    /**
+     * {@code createExecutor} 写入或更新当前模块中的业务数据。
+     *
+     * @param poolType 参数值，用于执行当前操作。
+     * @param name 参数值，用于执行当前操作。
+     *
+     * @return 返回当前操作产生的结果。
+     */
     @Override
     public ExecutorService createExecutor(PoolType poolType, String name) {
         if (!isSupported()) {

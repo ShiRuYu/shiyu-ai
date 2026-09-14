@@ -22,17 +22,35 @@ import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
 
+/**
+ * {@code SaTokenDaoImpl} 承载平台模块的领域状态或协作行为，负责维护本类型的职责边界。
+ */
 @Component
 public class SaTokenDaoImpl implements SaTokenDao {
 
     private static final org.slf4j.Logger log =
             org.slf4j.LoggerFactory.getLogger(SaTokenDaoImpl.class);
 
+    /**
+     * KEY_PREFIX 属性，保存当前对象中的业务数据或协作依赖。
+     */
     private static final String KEY_PREFIX = "Authorization:login:";
+    /**
+     * TOKEN_PREFIX 属性，保存当前对象中的业务数据或协作依赖。
+     */
     private static final String TOKEN_PREFIX = KEY_PREFIX + "token:";
+    /**
+     * SESSION_PREFIX 属性，保存当前对象中的业务数据或协作依赖。
+     */
     private static final String SESSION_PREFIX = KEY_PREFIX + "session:";
+    /**
+     * TOKEN_SESSION_PREFIX 属性，保存当前对象中的业务数据或协作依赖。
+     */
     private static final String TOKEN_SESSION_PREFIX = KEY_PREFIX + "token-session:";
 
+    /**
+     * saTokenUserRepository 属性，保存当前对象中的业务数据或协作依赖。
+     */
     private final SaTokenUserRepository saTokenUserRepository;
 
     /** 主缓存：存储 token → loginId 及 session 对象 过期时间设为 30 秒，get() 中已有 isExpired() 兜底检查，减少 DB 访问 */
@@ -47,10 +65,18 @@ public class SaTokenDaoImpl implements SaTokenDao {
     private final ScheduledExecutorService cleanupScheduler =
             Executors.newSingleThreadScheduledExecutor();
 
+    /**
+     * {@code SaTokenDaoImpl} 创建并初始化当前类型实例。
+     *
+     * @param saTokenUserRepository 参数值，用于执行当前操作。
+     */
     public SaTokenDaoImpl(SaTokenUserRepository saTokenUserRepository) {
         this.saTokenUserRepository = saTokenUserRepository;
     }
 
+    /**
+     * {@code init} 执行当前类型定义的业务操作。
+     */
     @PostConstruct
     public void init() {
         // 每 30 分钟清理一次过期 token，防止 extInfo 无限膨胀
@@ -71,6 +97,13 @@ public class SaTokenDaoImpl implements SaTokenDao {
 
     // ==================== String 存储 (Token→loginId) ====================
 
+    /**
+     * {@code get} 查询并返回当前操作所需的数据。
+     *
+     * @param key 参数值，用于执行当前操作。
+     *
+     * @return 返回当前操作产生的结果。
+     */
     @Override
     public String get(String key) {
         if (!key.startsWith(TOKEN_PREFIX)) return null;
@@ -103,6 +136,13 @@ public class SaTokenDaoImpl implements SaTokenDao {
         return loginId;
     }
 
+    /**
+     * {@code set} 写入或更新当前模块中的业务数据。
+     *
+     * @param key 参数值，用于执行当前操作。
+     * @param value 参数值，用于执行当前操作。
+     * @param timeout 参数值，用于执行当前操作。
+     */
     @Override
     public void set(String key, String value, long timeout) {
         if (!key.startsWith(TOKEN_PREFIX)) return;
@@ -149,6 +189,12 @@ public class SaTokenDaoImpl implements SaTokenDao {
                 });
     }
 
+    /**
+     * {@code update} 写入或更新当前模块中的业务数据。
+     *
+     * @param key 参数值，用于执行当前操作。
+     * @param value 参数值，用于执行当前操作。
+     */
     @Override
     public void update(String key, String value) {
         if (!key.startsWith(TOKEN_PREFIX)) return;
@@ -179,6 +225,11 @@ public class SaTokenDaoImpl implements SaTokenDao {
         localCache.put(key, value);
     }
 
+    /**
+     * {@code delete} 释放或移除当前操作涉及的资源。
+     *
+     * @param key 参数值，用于执行当前操作。
+     */
     @Override
     public void delete(String key) {
         if (!key.startsWith(TOKEN_PREFIX)) return;
@@ -210,6 +261,13 @@ public class SaTokenDaoImpl implements SaTokenDao {
                 });
     }
 
+    /**
+     * {@code getTimeout} 查询并返回当前操作所需的数据。
+     *
+     * @param key 参数值，用于执行当前操作。
+     *
+     * @return 返回当前操作产生的结果。
+     */
     @Override
     public long getTimeout(String key) {
         if (!key.startsWith(TOKEN_PREFIX)) return NOT_VALUE_EXPIRE;
@@ -229,6 +287,12 @@ public class SaTokenDaoImpl implements SaTokenDao {
         return getRemainingTimeout(entry);
     }
 
+    /**
+     * {@code updateTimeout} 写入或更新当前模块中的业务数据。
+     *
+     * @param key 参数值，用于执行当前操作。
+     * @param timeout 参数值，用于执行当前操作。
+     */
     @Override
     public void updateTimeout(String key, long timeout) {
         if (!key.startsWith(TOKEN_PREFIX)) return;
@@ -253,11 +317,26 @@ public class SaTokenDaoImpl implements SaTokenDao {
 
     // ==================== Object 存储（仅内存 Caffeine） ====================
 
+    /**
+     * {@code getObject} 查询并返回当前操作所需的数据。
+     *
+     * @param key 参数值，用于执行当前操作。
+     *
+     * @return 返回当前操作产生的结果。
+     */
     @Override
     public Object getObject(String key) {
         return localCache.getIfPresent(key);
     }
 
+    /**
+     * {@code getObject} 查询并返回当前操作所需的数据。
+     *
+     * @param key 参数值，用于执行当前操作。
+     * @param classType 参数值，用于执行当前操作。
+     *
+     * @return 返回当前操作产生的结果。
+     */
     @Override
     public <T> T getObject(String key, Class<T> classType) {
         Object val = localCache.getIfPresent(key);
@@ -267,31 +346,69 @@ public class SaTokenDaoImpl implements SaTokenDao {
         return null;
     }
 
+    /**
+     * {@code setObject} 写入或更新当前模块中的业务数据。
+     *
+     * @param key 参数值，用于执行当前操作。
+     * @param object 参数值，用于执行当前操作。
+     * @param timeout 参数值，用于执行当前操作。
+     */
     @Override
     public void setObject(String key, Object object, long timeout) {
         localCache.put(key, object);
     }
 
+    /**
+     * {@code updateObject} 写入或更新当前模块中的业务数据。
+     *
+     * @param key 参数值，用于执行当前操作。
+     * @param object 参数值，用于执行当前操作。
+     */
     @Override
     public void updateObject(String key, Object object) {
         localCache.put(key, object);
     }
 
+    /**
+     * {@code deleteObject} 释放或移除当前操作涉及的资源。
+     *
+     * @param key 参数值，用于执行当前操作。
+     */
     @Override
     public void deleteObject(String key) {
         localCache.invalidate(key);
     }
 
+    /**
+     * {@code getObjectTimeout} 查询并返回当前操作所需的数据。
+     *
+     * @param key 参数值，用于执行当前操作。
+     *
+     * @return 返回当前操作产生的结果。
+     */
     @Override
     public long getObjectTimeout(String key) {
         return NOT_VALUE_EXPIRE;
     }
 
+    /**
+     * {@code updateObjectTimeout} 写入或更新当前模块中的业务数据。
+     *
+     * @param key 参数值，用于执行当前操作。
+     * @param timeout 参数值，用于执行当前操作。
+     */
     @Override
     public void updateObjectTimeout(String key, long timeout) {}
 
     // ==================== Session 存储 ====================
 
+    /**
+     * {@code getSession} 查询并返回当前操作所需的数据。
+     *
+     * @param sessionId 参数值，用于执行当前操作。
+     *
+     * @return 返回当前操作产生的结果。
+     */
     @Override
     public SaSession getSession(String sessionId) {
         Object cached = localCache.getIfPresent(sessionId);
@@ -328,6 +445,12 @@ public class SaTokenDaoImpl implements SaTokenDao {
         return session;
     }
 
+    /**
+     * {@code setSession} 写入或更新当前模块中的业务数据。
+     *
+     * @param session 参数值，用于执行当前操作。
+     * @param timeout 参数值，用于执行当前操作。
+     */
     @Override
     public void setSession(SaSession session, long timeout) {
         String sessionId = session.getId();
@@ -362,6 +485,11 @@ public class SaTokenDaoImpl implements SaTokenDao {
                 });
     }
 
+    /**
+     * {@code updateSession} 写入或更新当前模块中的业务数据。
+     *
+     * @param session 参数值，用于执行当前操作。
+     */
     @Override
     public void updateSession(SaSession session) {
         String sessionId = session.getId();
@@ -385,6 +513,11 @@ public class SaTokenDaoImpl implements SaTokenDao {
         localCache.put(sessionId, session);
     }
 
+    /**
+     * {@code deleteSession} 释放或移除当前操作涉及的资源。
+     *
+     * @param sessionId 参数值，用于执行当前操作。
+     */
     @Override
     public void deleteSession(String sessionId) {
         Long userId = extractUserIdFromSessionKey(sessionId);
@@ -405,6 +538,13 @@ public class SaTokenDaoImpl implements SaTokenDao {
         localCache.invalidate(sessionId);
     }
 
+    /**
+     * {@code getSessionTimeout} 查询并返回当前操作所需的数据。
+     *
+     * @param sessionId 参数值，用于执行当前操作。
+     *
+     * @return 返回当前操作产生的结果。
+     */
     @Override
     public long getSessionTimeout(String sessionId) {
         Long userId = extractUserIdFromSessionKey(sessionId);
@@ -425,6 +565,12 @@ public class SaTokenDaoImpl implements SaTokenDao {
         return getRemainingTimeout(entry);
     }
 
+    /**
+     * {@code updateSessionTimeout} 写入或更新当前模块中的业务数据。
+     *
+     * @param sessionId 参数值，用于执行当前操作。
+     * @param timeout 参数值，用于执行当前操作。
+     */
     @Override
     public void updateSessionTimeout(String sessionId, long timeout) {
         Long userId = extractUserIdFromSessionKey(sessionId);
@@ -450,6 +596,17 @@ public class SaTokenDaoImpl implements SaTokenDao {
 
     // ==================== 搜索 ====================
 
+    /**
+     * {@code searchData} 查询并返回当前操作所需的数据。
+     *
+     * @param prefix 参数值，用于执行当前操作。
+     * @param keyword 参数值，用于执行当前操作。
+     * @param start 参数值，用于执行当前操作。
+     * @param size 参数值，用于执行当前操作。
+     * @param sortType 参数值，用于执行当前操作。
+     *
+     * @return 返回当前操作产生的结果。
+     */
     @Override
     public List<String> searchData(
             String prefix, String keyword, int start, int size, boolean sortType) {
@@ -610,6 +767,9 @@ public class SaTokenDaoImpl implements SaTokenDao {
         return JSONUtils.parseObject(data, SaSession.class);
     }
 
+    /**
+     * {@code destroy} 执行当前类型定义的业务操作。
+     */
     @PreDestroy
     public void destroy() {
         cleanupScheduler.shutdownNow();

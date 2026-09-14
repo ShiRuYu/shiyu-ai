@@ -21,6 +21,9 @@ public enum ComponentTypeEnum {
     /** InnerLink组件标识 内嵌外链 @/components/InnerLink.vue 打开外部或内嵌页面 */
     INNER_LINK("InnerLink");
 
+    /**
+     * 值，表示当前对象中的对应属性。
+     */
     private final String value;
 
     /** 根据值获取枚举 */
@@ -31,14 +34,29 @@ public enum ComponentTypeEnum {
                 .orElse(null);
     }
 
+    /**
+     * {@code isLayout} 校验当前操作的输入或状态是否满足约束。
+     *
+     * @return 返回当前操作产生的结果。
+     */
     public boolean isLayout() {
         return this == LAYOUT;
     }
 
+    /**
+     * {@code isParentView} 校验当前操作的输入或状态是否满足约束。
+     *
+     * @return 返回当前操作产生的结果。
+     */
     public boolean isParentView() {
         return this == PARENT_VIEW;
     }
 
+    /**
+     * {@code isInnerLink} 校验当前操作的输入或状态是否满足约束。
+     *
+     * @return 返回当前操作产生的结果。
+     */
     public boolean isInnerLink() {
         return this == INNER_LINK;
     }

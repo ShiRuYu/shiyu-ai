@@ -17,26 +17,46 @@ import java.util.concurrent.Future;
 import java.util.concurrent.TimeoutException;
 
 /**
- * Framework-neutral node execution template. The LangGraph adapter lives in the implementation
- * module and converts its AgentState to the map accepted by this contract type.
+ * 提供 Agent 节点执行的通用模板、上下文传递和执行历史记录。
  */
 @Setter
 @Getter
 @Slf4j
 public abstract class BaseNode {
 
+    /**
+     * 配置，表示当前对象中的对应属性。
+     */
     protected NodeConfig config;
 
+    /**
+     * executionHistoryService 属性，保存当前对象中的业务数据或协作依赖。
+     */
     protected ExecutionHistoryService executionHistoryService;
 
+    /**
+     * {@code BaseNode} 创建并初始化当前类型实例。
+     */
     public BaseNode() {
         this.config = NodeConfig.builder().build();
     }
 
+    /**
+     * {@code BaseNode} 创建并初始化当前类型实例。
+     *
+     * @param config 参数值，用于执行当前操作。
+     */
     public BaseNode(NodeConfig config) {
         this.config = config;
     }
 
+    /**
+     * {@code apply} 执行当前类型定义的业务操作。
+     *
+     * @param stateData 参数值，用于执行当前操作。
+     *
+     * @return 返回当前操作产生的结果。
+     */
     public Map<String, Object> apply(Map<String, Object> stateData) throws Exception {
         stateData = stateData == null ? Map.of() : stateData;
         long startTime = System.currentTimeMillis();
@@ -150,6 +170,11 @@ public abstract class BaseNode {
         }
     }
 
+    /**
+     * {@code beforeExecute} 执行当前类型定义的业务操作。
+     *
+     * @param stateData 参数值，用于执行当前操作。
+     */
     protected void beforeExecute(Map<String, Object> stateData) {
         log.info("开始执行节点: nodeNamePresent={}", config.getNodeName() != null);
         if ("DEBUG".equalsIgnoreCase(config.getLogLevel())) {
@@ -164,17 +189,45 @@ public abstract class BaseNode {
         }
     }
 
+    /**
+     * {@code processParameters} 执行当前模块定义的业务流程。
+     *
+     * @param stateData 参数值，用于执行当前操作。
+     *
+     * @return 返回当前操作产生的结果。
+     */
     protected NodeInput processParameters(Map<String, Object> stateData) {
         log.debug("处理节点参数: nodeNamePresent={}", config.getNodeName() != null);
         return NodeInput.fromMap(stateData);
     }
 
+    /**
+     * {@code doExecute} 执行当前类型定义的业务操作。
+     *
+     * @param input 参数值，用于执行当前操作。
+     *
+     * @return 返回当前操作产生的结果。
+     */
     protected abstract NodeOutput doExecute(NodeInput input) throws Exception;
 
+    /**
+     * {@code afterExecute} 执行当前类型定义的业务操作。
+     *
+     * @param stateData 参数值，用于执行当前操作。
+     * @param output 参数值，用于执行当前操作。
+     */
     protected void afterExecute(Map<String, Object> stateData, NodeOutput output) {
         log.info("节点执行完成: nodeNamePresent={}", config.getNodeName() != null);
     }
 
+    /**
+     * {@code handleException} 执行当前模块定义的业务流程。
+     *
+     * @param stateData 参数值，用于执行当前操作。
+     * @param e 参数值，用于执行当前操作。
+     *
+     * @return 返回当前操作产生的结果。
+     */
     protected Map<String, Object> handleException(Map<String, Object> stateData, Exception e) {
         String errorStrategy = config.getErrorStrategy();
 
@@ -203,6 +256,11 @@ public abstract class BaseNode {
         }
     }
 
+    /**
+     * {@code createDefaultResult} 写入或更新当前模块中的业务数据。
+     *
+     * @return 返回当前操作产生的结果。
+     */
     protected Map<String, Object> createDefaultResult() {
         return Map.of(NodeFields.FieldKey.ERROR.key(), "使用默认值处理", "status", "DEFAULT_APPLIED");
     }

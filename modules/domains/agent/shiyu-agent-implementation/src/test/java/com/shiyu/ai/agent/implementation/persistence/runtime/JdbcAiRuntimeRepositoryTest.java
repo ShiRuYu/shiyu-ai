@@ -5,10 +5,12 @@ import static org.mockito.ArgumentMatchers.*;
 import static org.mockito.Mockito.*;
 
 import com.shiyu.ai.agent.contract.runtime.*;
-import com.shiyu.ai.agent.implementation.runtime.*;
 import com.shiyu.ai.kernel.context.TenantId;
+import com.shiyu.ai.kernel.context.TenantScope;
 import com.shiyu.ai.kernel.context.UserId;
 
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.mockito.stubbing.Answer;
 import org.springframework.dao.DuplicateKeyException;
@@ -25,6 +27,16 @@ import java.util.Optional;
 
 @SuppressWarnings({"rawtypes", "unchecked"})
 class JdbcAiRuntimeRepositoryTest {
+    @BeforeEach
+    void bindTenantScope() {
+        TenantScope.set(new TenantId(7L));
+    }
+
+    @AfterEach
+    void clearTenantScope() {
+        TenantScope.clear();
+    }
+
     @Test
     void roundTripsRunThroughRealDatabaseWithTenantIsolation() {
         var database =
@@ -44,7 +56,9 @@ class JdbcAiRuntimeRepositoryTest {
                     realRepository
                             .findByGeneration("generation", new TenantId(7), 9)
                             .orElseThrow());
-            assertTrue(realRepository.findByGeneration("generation", new TenantId(8), 9).isEmpty());
+            assertThrows(
+                    IllegalArgumentException.class,
+                    () -> realRepository.findByGeneration("generation", new TenantId(8), 9));
             assertTrue(
                     realRepository.findByGeneration("generation", new TenantId(7), 10).isEmpty());
         } finally {
@@ -296,7 +310,6 @@ class JdbcAiRuntimeRepositoryTest {
         when(jdbc.update(anyString(), any(Object[].class))).thenReturn(1);
         assertEquals(1, repository.appendEvent(first));
 
-        // A null MAX result is accepted when the locked run has no events yet.
         doAnswer(
                         (Answer<Object>)
                                 invocation -> {
@@ -335,7 +348,6 @@ class JdbcAiRuntimeRepositoryTest {
                 IllegalStateException.class,
                 () -> repository.appendEvent(event(2, AiRunEventType.MODEL_DELTA, "gap", false)));
 
-        // Concurrent sequence allocation must fail closed if the guarded update loses the race.
         when(jdbc.queryForObject(contains("COALESCE(MAX"), eq(Long.class), any(Object[].class)))
                 .thenReturn(0L);
         when(jdbc.queryForObject(contains("COUNT(*)"), eq(Integer.class), any(Object[].class)))
@@ -399,7 +411,6 @@ class JdbcAiRuntimeRepositoryTest {
                         false,
                         now));
 
-        // A terminal event is idempotent only when the complete envelope matches.
         when(jdbc.query(contains("TYPE IN"), any(RowMapper.class), any(Object[].class)))
                 .thenReturn(List.of(event(2, AiRunEventType.RUN_FAILED, "failed", true)));
         assertThrows(

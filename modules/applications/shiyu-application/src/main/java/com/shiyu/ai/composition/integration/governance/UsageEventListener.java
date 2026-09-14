@@ -30,8 +30,16 @@ import java.util.Map;
 @Component
 public class UsageEventListener {
 
+    /**
+     * usageGovernance 属性，保存当前对象中的业务数据或协作依赖。
+     */
     private final UsageGovernance usageGovernance;
 
+    /**
+     * {@code UsageEventListener} 创建并初始化当前类型实例。
+     *
+     * @param usageGovernance 参数值，用于执行当前操作。
+     */
     public UsageEventListener(UsageGovernance usageGovernance) {
         this.usageGovernance = usageGovernance;
     }
@@ -40,8 +48,6 @@ public class UsageEventListener {
     @EventListener
     @Async
     public void onModelCall(ModelCallEvent event) {
-        // ConversationUsageSink records GenerationRun calls after the durable
-        // terminal transition; do not create a second billable ledger row here.
         if (event.getGenerationRunId() != null && !event.getGenerationRunId().isBlank()) return;
         if (!attributable(event.getTenantId(), event.getUserId())) {
             log.warn(

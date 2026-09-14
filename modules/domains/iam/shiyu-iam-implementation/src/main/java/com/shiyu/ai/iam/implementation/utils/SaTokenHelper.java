@@ -28,12 +28,26 @@ public class SaTokenHelper extends LoginHelper {
 
     // ==================== 实现抽象方法 ====================
 
+    /**
+     * {@code login} 执行当前类型定义的业务操作。
+     *
+     * @param userId 参数值，用于执行当前操作。
+     *
+     * @return 返回当前操作产生的结果。
+     */
     @Override
     public String login(Long userId) {
         StpUtil.login(userId);
         return StpUtil.getTokenValue();
     }
 
+    /**
+     * {@code loginWithKickout} 执行当前类型定义的业务操作。
+     *
+     * @param userId 参数值，用于执行当前操作。
+     *
+     * @return 返回当前操作产生的结果。
+     */
     @Override
     public String loginWithKickout(Long userId) {
         StpUtil.kickout(userId);
@@ -41,11 +55,23 @@ public class SaTokenHelper extends LoginHelper {
         return StpUtil.getTokenValue();
     }
 
+    /**
+     * {@code logout} 执行当前类型定义的业务操作。
+     *
+     * @param userId 参数值，用于执行当前操作。
+     */
     @Override
     public void logout(Long userId) {
         StpUtil.logout(userId);
     }
 
+    /**
+     * {@code getUserIdByToken} 查询并返回当前操作所需的数据。
+     *
+     * @param token 参数值，用于执行当前操作。
+     *
+     * @return 返回当前操作产生的结果。
+     */
     @Override
     public Long getUserIdByToken(String token) {
         try {
@@ -62,6 +88,13 @@ public class SaTokenHelper extends LoginHelper {
         return null;
     }
 
+    /**
+     * {@code refreshToken} 执行当前类型定义的业务操作。
+     *
+     * @param userId 参数值，用于执行当前操作。
+     *
+     * @return 返回当前操作产生的结果。
+     */
     @Override
     public String refreshToken(Long userId) {
         StpUtil.logout(userId);
@@ -69,11 +102,21 @@ public class SaTokenHelper extends LoginHelper {
         return StpUtil.getTokenValue();
     }
 
+    /**
+     * {@code getTokenTimeout} 查询并返回当前操作所需的数据。
+     *
+     * @return 返回当前操作产生的结果。
+     */
     @Override
     public long getTokenTimeout() {
         return StpUtil.getTokenTimeout();
     }
 
+    /**
+     * {@code isFrameworkLogin} 校验当前操作的输入或状态是否满足约束。
+     *
+     * @return 返回当前操作产生的结果。
+     */
     @Override
     public boolean isFrameworkLogin() {
         return StpUtil.isLogin();

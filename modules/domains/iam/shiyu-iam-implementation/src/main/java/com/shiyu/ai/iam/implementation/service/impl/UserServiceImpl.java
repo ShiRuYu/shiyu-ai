@@ -37,11 +37,29 @@ import java.util.stream.Collectors;
 @Slf4j
 @Service
 public class UserServiceImpl implements UserService {
+    /**
+     * {@code detailView} 执行当前类型定义的业务操作。
+     *
+     * @param actor 参数值，用于执行当前操作。
+     * @param userId 参数值，用于执行当前操作。
+     *
+     * @return 返回当前操作产生的结果。
+     */
     @Override
     public UserVO detailView(ActorContext actor, Long userId) {
         return MapstructUtils.convert(getUserDetail(requireActor(actor), userId), UserVO.class);
     }
 
+    /**
+     * {@code createUser} 写入或更新当前模块中的业务数据。
+     *
+     * @param actor 参数值，用于执行当前操作。
+     * @param request 参数值，用于执行当前操作。
+     * @param roleIds 参数值，用于执行当前操作。
+     * @param targetTenantId 参数值，用于执行当前操作。
+     *
+     * @return 返回当前操作产生的结果。
+     */
     @Override
     public Map<String, Object> createUser(
             ActorContext actor, UserRequest request, Long[] roleIds, Long targetTenantId) {
@@ -51,6 +69,17 @@ public class UserServiceImpl implements UserService {
                 actor, MapstructUtils.convert(request, UserBO.class), roleIds, targetTenantId);
     }
 
+    /**
+     * {@code updateUser} 写入或更新当前模块中的业务数据。
+     *
+     * @param actor 参数值，用于执行当前操作。
+     * @param userId 参数值，用于执行当前操作。
+     * @param request 参数值，用于执行当前操作。
+     * @param roleIds 参数值，用于执行当前操作。
+     * @param targetTenantId 参数值，用于执行当前操作。
+     *
+     * @return 返回当前操作产生的结果。
+     */
     @Override
     public boolean updateUser(
             ActorContext actor,
@@ -69,13 +98,38 @@ public class UserServiceImpl implements UserService {
     }
 
     private final UserRepository userRepository;
+    /**
+     * 角色仓储，表示当前对象中的对应属性。
+     */
     private final RoleRepository roleRepository;
+    /**
+     * userScopeRoleRepository 属性，保存当前对象中的业务数据或协作依赖。
+     */
     private final UserScopeRoleRepository userScopeRoleRepository;
+    /**
+     * 租户仓储，表示当前对象中的对应属性。
+     */
     private final com.shiyu.ai.iam.implementation.port.repository.TenantRepository tenantRepository;
+    /**
+     * 租户角色仓储，表示当前对象中的对应属性。
+     */
     private final com.shiyu.ai.iam.implementation.port.repository.TenantRoleRepository
             tenantRoleRepository;
+    /**
+     * menuService 属性，保存当前对象中的业务数据或协作依赖。
+     */
     private final MenuService menuService;
 
+    /**
+     * {@code UserServiceImpl} 创建并初始化当前类型实例。
+     *
+     * @param userRepository 参数值，用于执行当前操作。
+     * @param roleRepository 参数值，用于执行当前操作。
+     * @param userScopeRoleRepository 参数值，用于执行当前操作。
+     * @param tenantRepository 参数值，用于执行当前操作。
+     * @param tenantRoleRepository 参数值，用于执行当前操作。
+     * @param menuService 参数值，用于执行当前操作。
+     */
     public UserServiceImpl(
             UserRepository userRepository,
             RoleRepository roleRepository,
@@ -104,9 +158,6 @@ public class UserServiceImpl implements UserService {
             Map<String, Object> parsedExtInfo =
                     userBO.getExtInfo() == null ? null : JSONUtils.parseMap(userBO.getExtInfo());
             Map<String, Object> extInfoMap = parsedExtInfo == null ? Map.of() : parsedExtInfo;
-            // The authenticated actor, not persisted extInfo, is the tenant
-            // authority for this query. Persisted context may be stale or
-            // tampered with and must never widen the read scope.
             Long currentTenantId = actor.tenantId().value();
             List<UserScopeRoleBO> assignments = userScopeRoleRepository.selectByUserId(userId);
             boolean parentSuperAdminSwitch =
@@ -204,6 +255,16 @@ public class UserServiceImpl implements UserService {
         return userBO;
     }
 
+    /**
+     * {@code getUserList} 查询并返回当前操作所需的数据。
+     *
+     * @param actor 参数值，用于执行当前操作。
+     * @param username 参数值，用于执行当前操作。
+     * @param pageNum 参数值，用于执行当前操作。
+     * @param pageSize 参数值，用于执行当前操作。
+     *
+     * @return 返回当前操作产生的结果。
+     */
     @Override
     public PageData<UserVO> getUserList(
             ActorContext actor, String username, Number pageNum, Number pageSize) {
@@ -249,6 +310,14 @@ public class UserServiceImpl implements UserService {
         return new PageData<>(userVOs, result.getLeft());
     }
 
+    /**
+     * {@code deleteUser} 释放或移除当前操作涉及的资源。
+     *
+     * @param actor 参数值，用于执行当前操作。
+     * @param userId 参数值，用于执行当前操作。
+     *
+     * @return 返回当前操作产生的结果。
+     */
     @Override
     @Transactional(rollbackFor = Exception.class)
     public boolean deleteUser(ActorContext actor, Long userId) {
@@ -299,6 +368,15 @@ public class UserServiceImpl implements UserService {
         return updated;
     }
 
+    /**
+     * {@code resetUserPassword} 执行当前类型定义的业务操作。
+     *
+     * @param actor 参数值，用于执行当前操作。
+     * @param userId 参数值，用于执行当前操作。
+     * @param password 参数值，用于执行当前操作。
+     *
+     * @return 返回当前操作产生的结果。
+     */
     @Override
     @Transactional(rollbackFor = Exception.class)
     public String resetUserPassword(ActorContext actor, Long userId, String password) {
@@ -356,6 +434,14 @@ public class UserServiceImpl implements UserService {
         return result;
     }
 
+    /**
+     * {@code getTenantAssignments} 查询并返回当前操作所需的数据。
+     *
+     * @param actor 参数值，用于执行当前操作。
+     * @param userId 参数值，用于执行当前操作。
+     *
+     * @return 返回当前操作产生的结果。
+     */
     @Override
     public List<UserTenantAssignmentVO> getTenantAssignments(ActorContext actor, Long userId) {
         actor = requireActor(actor);
@@ -392,6 +478,15 @@ public class UserServiceImpl implements UserService {
         return result;
     }
 
+    /**
+     * {@code replaceTenantAssignments} 执行当前类型定义的业务操作。
+     *
+     * @param actor 参数值，用于执行当前操作。
+     * @param userId 参数值，用于执行当前操作。
+     * @param assignments 参数值，用于执行当前操作。
+     *
+     * @return 返回当前操作产生的结果。
+     */
     @Override
     @Transactional(rollbackFor = Exception.class)
     public boolean replaceTenantAssignments(
@@ -558,6 +653,16 @@ public class UserServiceImpl implements UserService {
                 targetRoleIds.size());
     }
 
+    /**
+     * {@code changePassword} 执行当前类型定义的业务操作。
+     *
+     * @param actor 参数值，用于执行当前操作。
+     * @param userId 参数值，用于执行当前操作。
+     * @param oldPassword 参数值，用于执行当前操作。
+     * @param newPassword 参数值，用于执行当前操作。
+     *
+     * @return 返回当前操作产生的结果。
+     */
     @Override
     @Transactional(rollbackFor = Exception.class)
     public boolean changePassword(

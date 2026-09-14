@@ -1,4 +1,4 @@
-"""Atomic frontend/backend test-version pointer."""
+"""version pair 脚本，执行项目架构与工程校验。"""
 from __future__ import annotations
 import json, os
 from pathlib import Path

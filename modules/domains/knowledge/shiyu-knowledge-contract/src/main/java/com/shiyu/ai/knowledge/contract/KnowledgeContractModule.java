@@ -1,4 +1,6 @@
 package com.shiyu.ai.knowledge.contract;
 
-/** Marker for the public Knowledge API; concrete ports and messages live beside it. */
+/**
+ * KnowledgeContractModule 模块接口，标识知识模块的边界。
+ */
 public interface KnowledgeContractModule {}

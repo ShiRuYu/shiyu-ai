@@ -10,9 +10,21 @@ import java.io.IOException;
 
 /** Repeatable 过滤器 */
 public class RepeatableFilter implements Filter {
+    /**
+     * {@code init} 执行当前类型定义的业务操作。
+     *
+     * @param filterConfig 参数值，用于执行当前操作。
+     */
     @Override
     public void init(FilterConfig filterConfig) throws ServletException {}
 
+    /**
+     * {@code doFilter} 执行当前类型定义的业务操作。
+     *
+     * @param request 参数值，用于执行当前操作。
+     * @param response 参数值，用于执行当前操作。
+     * @param chain 参数值，用于执行当前操作。
+     */
     @Override
     public void doFilter(ServletRequest request, ServletResponse response, FilterChain chain)
             throws IOException, ServletException {
@@ -36,6 +48,9 @@ public class RepeatableFilter implements Filter {
         }
     }
 
+    /**
+     * {@code destroy} 执行当前类型定义的业务操作。
+     */
     @Override
     public void destroy() {}
 

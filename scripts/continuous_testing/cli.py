@@ -1,4 +1,4 @@
-"""Command line lifecycle controller for continuous testing."""
+"""cli 脚本，执行项目架构与工程校验。"""
 from __future__ import annotations
 import argparse, json, os, platform, sys
 from datetime import datetime, timezone
@@ -65,10 +65,6 @@ def main(argv=None) -> int:
         ledger = ScenarioLedger(root / "explored-space.json")
         batch = None
         strategy = "adaptive-v1"
-        # Keep rotating through fresh strategy identities so the ledger can
-        # continue exploring after the initial nine curated strategies are
-        # exhausted.  The generator derives semantic combinations from the
-        # strategy name, so this remains deterministic and resumable.
         for index in range(1, 10001):
             strategy = f"adaptive-v{index}"
             try:

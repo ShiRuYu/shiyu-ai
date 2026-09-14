@@ -16,8 +16,16 @@ public class PluginManager {
 
     private final Map<String, PluginDescriptor> descriptors = new ConcurrentHashMap<>();
     private final Map<String, Plugin> instances = new ConcurrentHashMap<>();
+    /**
+     * pluginsDir 属性，保存当前对象中的业务数据或协作依赖。
+     */
     private final String pluginsDir;
 
+    /**
+     * {@code PluginManager} 创建并初始化当前类型实例。
+     *
+     * @param pluginsDir 参数值，用于执行当前操作。
+     */
     public PluginManager(String pluginsDir) {
         this.pluginsDir = pluginsDir;
     }

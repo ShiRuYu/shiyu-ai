@@ -8,25 +8,27 @@ import java.util.concurrent.*;
 import java.util.concurrent.atomic.AtomicInteger;
 
 /**
- * Unified Thread Pool Utils for JDK8 ~ JDK21
- *
- * <p>- JDK21+: Use Virtual Threads (Executors.newVirtualThreadPerTaskExecutor) - JDK8~20: Use
- * ThreadPoolExecutor - Support multiple named pools
+ * 提供统一的线程池创建、命名和关闭能力。
  */
 @Slf4j
 public class UnifiedThreadPoolUtils {
 
-    /** Default global executor */
+    /** DEFAULT_EXECUTOR 字段，保存默认线程池执行器。 */
     private static final ExecutorService DEFAULT_EXECUTOR;
 
-    /** Named thread pools cache */
+    /** 按名称缓存的线程池执行器。 */
     private static final Map<String, ExecutorService> NAMED_EXECUTORS = new ConcurrentHashMap<>();
 
-    /** Default ThreadPool config (for JDK8) */
+    /** 线程池核心线程数。 */
     private static final int CORE_POOL_SIZE = Runtime.getRuntime().availableProcessors();
 
+    /** 线程池最大线程数。 */
     private static final int MAX_POOL_SIZE = CORE_POOL_SIZE * 2;
+
+    /** 线程池任务队列容量。 */
     private static final int QUEUE_CAPACITY = 1000;
+
+    /** 线程空闲保活时间（秒）。 */
     private static final long KEEP_ALIVE_TIME = 60L;
 
     static {
@@ -42,6 +44,11 @@ public class UnifiedThreadPoolUtils {
 
     // ========================= API =========================
 
+    /**
+     * {@code execute} 执行当前模块定义的业务流程。
+     *
+     * @param task 参数值，用于执行当前操作。
+     */
     public static void execute(Runnable task) {
         try {
             DEFAULT_EXECUTOR.execute(wrapRunnable(task));
@@ -50,6 +57,13 @@ public class UnifiedThreadPoolUtils {
         }
     }
 
+    /**
+     * {@code submit} 执行当前类型定义的业务操作。
+     *
+     * @param task 参数值，用于执行当前操作。
+     *
+     * @return 返回当前操作产生的结果。
+     */
     public static <T> Future<T> submit(Callable<T> task) {
         try {
             return DEFAULT_EXECUTOR.submit(wrapCallable(task));
@@ -91,6 +105,9 @@ public class UnifiedThreadPoolUtils {
         }
     }
 
+    /**
+     * {@code shutdown} 执行当前类型定义的业务操作。
+     */
     public static void shutdown() {
         try {
             for (Map.Entry<String, ExecutorService> entry : NAMED_EXECUTORS.entrySet()) {
@@ -102,11 +119,22 @@ public class UnifiedThreadPoolUtils {
         }
     }
 
+    /**
+     * {@code getExecutor} 查询并返回当前操作所需的数据。
+     *
+     * @return 返回当前操作产生的结果。
+     */
     public static ExecutorService getExecutor() {
         return DEFAULT_EXECUTOR;
     }
 
-    /** Get or create a named thread pool JDK8 only */
+    /**
+     * 获取命名执行器。
+     *
+     * @param name 名称。
+     *
+     * @return 处理结果。
+     */
     public static ExecutorService getNamedExecutor(String name) {
         return NAMED_EXECUTORS.computeIfAbsent(
                 name, UnifiedThreadPoolUtils::createThreadPoolExecutor);
@@ -114,7 +142,13 @@ public class UnifiedThreadPoolUtils {
 
     // ========================= Internal =========================
 
-    /** Wrap runnable with exception handler */
+    /**
+     * 封装Runnable 任务。
+     *
+     * @param task 待执行任务。
+     *
+     * @return 处理结果。
+     */
     private static Runnable wrapRunnable(Runnable task) {
         return () -> {
             try {
@@ -125,7 +159,13 @@ public class UnifiedThreadPoolUtils {
         };
     }
 
-    /** Wrap callable with exception handler */
+    /**
+     * 封装Callable 任务。
+     *
+     * @param task 待执行任务。
+     *
+     * @return 处理结果。
+     */
     private static <T> Callable<T> wrapCallable(Callable<T> task) {
         return () -> {
             try {
@@ -137,7 +177,11 @@ public class UnifiedThreadPoolUtils {
         };
     }
 
-    /** Check whether Virtual Threads are supported (JDK21+) */
+    /**
+     * 判断virtual线程supported是否满足条件。
+     *
+     * @return 判断结果。
+     */
     private static boolean isVirtualThreadSupported() {
         try {
             Method m = Executors.class.getMethod("newVirtualThreadPerTaskExecutor");
@@ -147,7 +191,11 @@ public class UnifiedThreadPoolUtils {
         }
     }
 
-    /** Create Virtual Thread Executor (JDK21+) */
+    /**
+     * 创建virtual线程执行器。
+     *
+     * @return 处理结果。
+     */
     private static ExecutorService createVirtualThreadExecutor() {
         try {
             Method m = Executors.class.getMethod("newVirtualThreadPerTaskExecutor");
@@ -157,12 +205,25 @@ public class UnifiedThreadPoolUtils {
         }
     }
 
-    /** Create JDK8 ThreadPoolExecutor with name prefix, and put into NAMED_EXECUTORS */
+    /**
+     * 创建线程线程池执行器。
+     *
+     * @param poolName 线程池名称。
+     *
+     * @return 处理结果。
+     */
     private static ExecutorService createThreadPoolExecutor(String poolName) {
         ThreadFactory factory =
                 new ThreadFactory() {
                     private final AtomicInteger count = new AtomicInteger(1);
 
+                    /**
+                     * {@code newThread} 执行当前类型定义的业务操作。
+                     *
+                     * @param r 参数值，用于执行当前操作。
+                     *
+                     * @return 返回当前操作产生的结果。
+                     */
                     @Override
                     public Thread newThread(Runnable r) {
                         return new Thread(r, poolName + "-pool-" + count.getAndIncrement());

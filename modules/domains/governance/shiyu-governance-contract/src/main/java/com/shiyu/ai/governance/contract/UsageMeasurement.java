@@ -6,7 +6,16 @@ import java.math.BigDecimal;
 import java.util.Map;
 import java.util.Objects;
 
-/** Immutable metering event emitted once for a business operation. */
+/**
+ * 记录一次模型调用的 token、费用和来源信息。
+ * @param sourceType sourceType 属性，表示该记录组件承载的数据。
+ * @param sourceId sourceId 属性，表示该记录组件承载的数据。
+ * @param inputTokens inputTokens 属性，表示该记录组件承载的数据。
+ * @param outputTokens outputTokens 属性，表示该记录组件承载的数据。
+ * @param cost cost 属性，表示该记录组件承载的数据。
+ * @param latencyMs latencyMs 属性，表示该记录组件承载的数据。
+ * @param attributes attributes 属性，表示该记录组件承载的数据。
+ */
 public record UsageMeasurement(
         UsageSourceType sourceType,
         String sourceId,

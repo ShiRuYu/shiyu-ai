@@ -25,6 +25,9 @@ import java.util.List;
 import java.util.Map;
 import java.util.TimeZone;
 
+/**
+ * {@code JSONUtils} 承载平台基础设施模块的领域状态或协作行为，负责维护本类型的职责边界。
+ */
 public class JSONUtils {
 
     private static final ObjectMapper OBJECT_MAPPER =
@@ -38,9 +41,7 @@ public class JSONUtils {
                     // 设置默认时区为系统默认
                     .defaultTimeZone(TimeZone.getDefault())
                     // 设置默认的属性命名策略（如驼峰转下划线等，可选）
-                    // .setPropertyNamingStrategy(PropertyNamingStrategies.SNAKE_CASE)
                     // 设置可见性规则（如允许序列化 private 字段，可选）
-                    // .setVisibility(PropertyAccessor.ALL, JsonAutoDetect.Visibility.ANY)
                     // 注册 JavaTimeModule 并配置自定义序列化器
                     .addModule(
                             new SimpleModule()
@@ -60,10 +61,22 @@ public class JSONUtils {
                                                             "yyyy-MM-dd HH:mm:ss"))))
                     .build();
 
+    /**
+     * {@code getObjectMapper} 查询并返回当前操作所需的数据。
+     *
+     * @return 返回当前操作产生的结果。
+     */
     public static ObjectMapper getObjectMapper() {
         return OBJECT_MAPPER;
     }
 
+    /**
+     * {@code toJsonString} 将当前对象转换为目标表示形式。
+     *
+     * @param object 参数值，用于执行当前操作。
+     *
+     * @return 返回当前操作产生的结果。
+     */
     public static String toJsonString(Object object) {
         if (ObjectUtils.isNull(object)) {
             return null;
@@ -75,6 +88,13 @@ public class JSONUtils {
         }
     }
 
+    /**
+     * {@code toPrettyJsonString} 将当前对象转换为目标表示形式。
+     *
+     * @param object 参数值，用于执行当前操作。
+     *
+     * @return 返回当前操作产生的结果。
+     */
     public static String toPrettyJsonString(Object object) {
         if (ObjectUtils.isNull(object)) {
             return null;
@@ -86,6 +106,14 @@ public class JSONUtils {
         }
     }
 
+    /**
+     * {@code parseObject} 执行当前类型定义的业务操作。
+     *
+     * @param text 参数值，用于执行当前操作。
+     * @param clazz 参数值，用于执行当前操作。
+     *
+     * @return 返回当前操作产生的结果。
+     */
     public static <T> T parseObject(String text, Class<T> clazz) {
         if (text.isBlank()) {
             return null;
@@ -97,6 +125,14 @@ public class JSONUtils {
         }
     }
 
+    /**
+     * {@code parseObject} 执行当前类型定义的业务操作。
+     *
+     * @param bytes 参数值，用于执行当前操作。
+     * @param clazz 参数值，用于执行当前操作。
+     *
+     * @return 返回当前操作产生的结果。
+     */
     public static <T> T parseObject(byte[] bytes, Class<T> clazz) {
         if (bytes == null || bytes.length == 0) {
             return null;
@@ -108,6 +144,14 @@ public class JSONUtils {
         }
     }
 
+    /**
+     * {@code parseObject} 执行当前类型定义的业务操作。
+     *
+     * @param text 参数值，用于执行当前操作。
+     * @param typeReference 参数值，用于执行当前操作。
+     *
+     * @return 返回当前操作产生的结果。
+     */
     public static <T> T parseObject(String text, TypeReference<T> typeReference) {
         if (text.isBlank()) {
             return null;
@@ -120,14 +164,24 @@ public class JSONUtils {
     }
 
     /**
-     * Parse a JSON object into a typed string/object map without exposing a raw {@code Map.class}
-     * call at every caller. Keeping this helper here also makes the unchecked boundary explicit and
-     * consistent across domains.
+     * 解析map。
+     *
+     * @param text text 参数。
+     *
+     * @return 处理结果。
      */
     public static Map<String, Object> parseMap(String text) {
         return parseObject(text, new TypeReference<Map<String, Object>>() {});
     }
 
+    /**
+     * {@code convertValue} 执行当前类型定义的业务操作。
+     *
+     * @param fromValue 参数值，用于执行当前操作。
+     * @param toValueType 参数值，用于执行当前操作。
+     *
+     * @return 返回当前操作产生的结果。
+     */
     public static <T> T convertValue(Object fromValue, Class<T> toValueType) {
         if (fromValue == null) {
             return null;
@@ -139,6 +193,14 @@ public class JSONUtils {
         }
     }
 
+    /**
+     * {@code parseArray} 执行当前类型定义的业务操作。
+     *
+     * @param text 参数值，用于执行当前操作。
+     * @param clazz 参数值，用于执行当前操作。
+     *
+     * @return 返回当前操作产生的结果。
+     */
     public static <T> List<T> parseArray(String text, Class<T> clazz) {
         if (text.isBlank()) {
             return new ArrayList<>();
@@ -217,6 +279,13 @@ public class JSONUtils {
         throw new IllegalArgumentException("JSON 括号未闭合，depth=" + depth);
     }
 
+    /**
+     * {@code parseMap} 执行当前类型定义的业务操作。
+     *
+     * @param file 参数值，用于执行当前操作。
+     *
+     * @return 返回当前操作产生的结果。
+     */
     public static Map<String, Object> parseMap(File file) {
         try {
             return OBJECT_MAPPER.readValue(
@@ -247,15 +316,30 @@ public class JSONUtils {
         /** 根据 JS Number.MAX_SAFE_INTEGER 与 Number.MIN_SAFE_INTEGER 得来 */
         private static final long MAX_SAFE_INTEGER = 9007199254740991L;
 
+        /**
+         * MIN_SAFE_INTEGER 属性，保存当前对象中的业务数据或协作依赖。
+         */
         private static final long MIN_SAFE_INTEGER = -9007199254740991L;
 
         /** 提供实例 */
         public static final BigNumberSerializer INSTANCE = new BigNumberSerializer(Number.class);
 
+        /**
+         * {@code BigNumberSerializer} 创建并初始化当前类型实例。
+         *
+         * @param rawType 参数值，用于执行当前操作。
+         */
         public BigNumberSerializer(Class<? extends Number> rawType) {
             super(rawType);
         }
 
+        /**
+         * {@code serialize} 执行当前类型定义的业务操作。
+         *
+         * @param value 参数值，用于执行当前操作。
+         * @param gen 参数值，用于执行当前操作。
+         * @param provider 参数值，用于执行当前操作。
+         */
         @Override
         public void serialize(Number value, JsonGenerator gen, SerializationContext provider) {
             // 超出范围 序列化位字符串

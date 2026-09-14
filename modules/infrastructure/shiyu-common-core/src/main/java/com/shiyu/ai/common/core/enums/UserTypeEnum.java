@@ -16,6 +16,9 @@ public enum UserTypeEnum {
     /** app端 */
     APP_USER("app_user");
 
+    /**
+     * 类型，表示当前对象中的对应属性。
+     */
     private final String type;
 
     /** 根据类型获取枚举 */

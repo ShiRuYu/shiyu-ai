@@ -4,7 +4,7 @@ import cn.dev33.satoken.annotation.SaCheckPermission;
 
 import com.shiyu.ai.agent.implementation.execution.Execution;
 import com.shiyu.ai.agent.implementation.execution.ExecutionStatus;
-import com.shiyu.ai.agent.implementation.runtime.AgentRuntime;
+import com.shiyu.ai.agent.implementation.runtime.port.AgentRuntime;
 import com.shiyu.ai.common.core.api.Result;
 import com.shiyu.ai.common.core.enums.BizResultCode;
 import com.shiyu.ai.common.web.auth.ActorContextHttpAdapter;
@@ -39,12 +39,28 @@ import java.util.stream.Collectors;
 @RequestMapping("/api/agent/executions")
 public class ExecutionController {
 
+    /**
+     * agentRuntime 属性，保存当前对象中的业务数据或协作依赖。
+     */
     private final AgentRuntime agentRuntime;
 
+    /**
+     * {@code ExecutionController} 创建并初始化当前类型实例。
+     *
+     * @param agentRuntime 参数值，用于执行当前操作。
+     */
     public ExecutionController(AgentRuntime agentRuntime) {
         this.agentRuntime = agentRuntime;
     }
 
+    /**
+     * {@code execute} 执行当前模块定义的业务流程。
+     *
+     * @param agentId 参数值，用于执行当前操作。
+     * @param input 参数值，用于执行当前操作。
+     *
+     * @return 返回当前操作产生的结果。
+     */
     @Operation(summary = "Execute Agent")
     @SaCheckPermission("agent:execute")
     @PostMapping("/execute")
@@ -77,6 +93,14 @@ public class ExecutionController {
         }
     }
 
+    /**
+     * {@code executeStream} 执行当前模块定义的业务流程。
+     *
+     * @param agentId 参数值，用于执行当前操作。
+     * @param input 参数值，用于执行当前操作。
+     *
+     * @return 返回当前操作产生的结果。
+     */
     @Operation(summary = "Execute Agent Stream")
     @SaCheckPermission("agent:execute")
     @PostMapping(value = "/execute-stream", produces = MediaType.TEXT_EVENT_STREAM_VALUE)
@@ -110,6 +134,13 @@ public class ExecutionController {
                         });
     }
 
+    /**
+     * {@code pause} 执行当前类型定义的业务操作。
+     *
+     * @param executionId 参数值，用于执行当前操作。
+     *
+     * @return 返回当前操作产生的结果。
+     */
     @Operation(summary = "Pause Execution")
     @SaCheckPermission("agent:execute")
     @PostMapping("/pause")
@@ -122,6 +153,13 @@ public class ExecutionController {
         }
     }
 
+    /**
+     * {@code resume} 执行当前类型定义的业务操作。
+     *
+     * @param executionId 参数值，用于执行当前操作。
+     *
+     * @return 返回当前操作产生的结果。
+     */
     @Operation(summary = "Resume Execution")
     @SaCheckPermission("agent:execute")
     @PostMapping("/resume")
@@ -139,6 +177,13 @@ public class ExecutionController {
         }
     }
 
+    /**
+     * {@code cancel} 校验当前操作的输入或状态是否满足约束。
+     *
+     * @param executionId 参数值，用于执行当前操作。
+     *
+     * @return 返回当前操作产生的结果。
+     */
     @Operation(summary = "Cancel Execution")
     @SaCheckPermission("agent:execute")
     @PostMapping("/cancel")
@@ -151,6 +196,13 @@ public class ExecutionController {
         }
     }
 
+    /**
+     * {@code getStatus} 查询并返回当前操作所需的数据。
+     *
+     * @param executionId 参数值，用于执行当前操作。
+     *
+     * @return 返回当前操作产生的结果。
+     */
     @Operation(summary = "Get Execution Status")
     @GetMapping("/status")
     public Result<Map<String, Object>> getStatus(@RequestParam String executionId) {
@@ -161,6 +213,13 @@ public class ExecutionController {
         return Result.success(Map.of("executionId", executionId, "status", status.name()));
     }
 
+    /**
+     * {@code getExecution} 查询并返回当前操作所需的数据。
+     *
+     * @param executionId 参数值，用于执行当前操作。
+     *
+     * @return 返回当前操作产生的结果。
+     */
     @Operation(summary = "Get Execution Details")
     @GetMapping("/detail")
     public Result<Map<String, Object>> getExecution(@RequestParam String executionId) {
@@ -182,6 +241,14 @@ public class ExecutionController {
         return Result.success(result);
     }
 
+    /**
+     * {@code getHistory} 查询并返回当前操作所需的数据。
+     *
+     * @param agentId 参数值，用于执行当前操作。
+     * @param limit 参数值，用于执行当前操作。
+     *
+     * @return 返回当前操作产生的结果。
+     */
     @Operation(summary = "Get Execution History")
     @GetMapping("/history")
     public Result<List<Map<String, Object>>> getHistory(

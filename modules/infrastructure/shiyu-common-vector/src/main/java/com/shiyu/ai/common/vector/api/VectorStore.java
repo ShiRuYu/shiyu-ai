@@ -48,12 +48,13 @@ public interface VectorStore extends AutoCloseable {
     }
 
     /**
-     * Flush pending index changes to the configured backend. Embedded stores persist local state;
-     * remote stores may implement this as a no-op.
+     * 刷新向量索引。
      */
     default void flush() {}
 
-    /** Release resources owned by this store handle. */
+    /**
+     * 关闭vectorstore。
+     */
     @Override
     default void close() {
         flush();

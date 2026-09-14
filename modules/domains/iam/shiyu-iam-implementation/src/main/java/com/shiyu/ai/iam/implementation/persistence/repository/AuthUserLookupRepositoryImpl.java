@@ -1,7 +1,7 @@
 package com.shiyu.ai.iam.implementation.persistence.repository;
 
 import com.mybatisflex.core.query.QueryWrapper;
-import com.mybatisflex.core.tenant.TenantManager;
+import com.shiyu.ai.common.mybatis.tenant.TenantQueryExecutor;
 import com.shiyu.ai.common.core.utils.MapstructUtils;
 import com.shiyu.ai.iam.implementation.domain.model.RoleBO;
 import com.shiyu.ai.iam.implementation.domain.model.TenantBO;
@@ -14,6 +14,7 @@ import com.shiyu.ai.iam.implementation.persistence.mapper.TenantMapper;
 import com.shiyu.ai.iam.implementation.persistence.mapper.UserMapper;
 import com.shiyu.ai.iam.implementation.persistence.mapper.UserScopeRoleMapper;
 import com.shiyu.ai.kernel.context.TenantId;
+import com.shiyu.ai.kernel.context.TenantScope;
 
 import jakarta.annotation.Resource;
 
@@ -22,16 +23,31 @@ import org.springframework.stereotype.Component;
 import java.util.List;
 import java.util.Set;
 
+/**
+ * {@code AuthUserLookupRepositoryImpl} 实现平台模块的持久化端口，负责在领域对象与存储模型之间转换。
+ */
 @Component
 public class AuthUserLookupRepositoryImpl
         implements com.shiyu.ai.iam.implementation.port.repository.AuthUserLookupRepository {
 
+    /**
+     * 用户映射器，表示当前对象中的对应属性。
+     */
     @Resource private UserMapper userMapper;
 
+    /**
+     * userScopeRoleMapper 属性，保存当前对象中的业务数据或协作依赖。
+     */
     @Resource private UserScopeRoleMapper userScopeRoleMapper;
 
+    /**
+     * 角色映射器，表示当前对象中的对应属性。
+     */
     @Resource private RoleMapper roleMapper;
 
+    /**
+     * 租户映射器，表示当前对象中的对应属性。
+     */
     @Resource private TenantMapper tenantMapper;
 
     public UserBO selectUserById(Long userId) {
@@ -51,21 +67,21 @@ public class AuthUserLookupRepositoryImpl
     public List<UserScopeRoleBO> selectUserScopeRoles(Long userId) {
         // 登录上下文可能已经处于子租户，校验父租户超管身份时必须读取用户全部租户角色关系。
         return MapstructUtils.convert(
-                TenantManager.withoutTenantCondition(
+                TenantQueryExecutor.readAcrossTenants(
                         () -> userScopeRoleMapper.selectByUserId(userId)),
                 UserScopeRoleBO.class);
     }
 
     public RoleBO selectRoleById(Long roleId) {
         return MapstructUtils.convert(
-                TenantManager.withoutTenantCondition(() -> roleMapper.selectOneById(roleId)),
+                TenantQueryExecutor.readAcrossTenants(() -> roleMapper.selectOneById(roleId)),
                 RoleBO.class);
     }
 
     public RoleBO selectTenantSuperRole(TenantId tenantId) {
         long tenantValue = requireTenant(tenantId);
         return MapstructUtils.convert(
-                TenantManager.withoutTenantCondition(
+                TenantQueryExecutor.readAcrossTenants(
                         () ->
                                 roleMapper.selectOneByQuery(
                                         QueryWrapper.create()
@@ -100,6 +116,7 @@ public class AuthUserLookupRepositoryImpl
         if (tenantId == null) {
             throw new IllegalArgumentException("tenantId is required for auth lookup");
         }
+        TenantScope.requireMatchesIfBound(tenantId);
         return tenantId.value();
     }
 }

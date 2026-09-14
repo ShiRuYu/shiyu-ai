@@ -9,16 +9,17 @@ import com.shiyu.ai.kernel.context.TenantScope;
 import com.shiyu.ai.kernel.context.UserId;
 
 /**
- * Converts the authenticated HTTP thread context into the explicit application context.
- *
- * <p>This is the only bridge from the legacy request context to domain commands. It belongs to the
- * technical web support library so domain-owned HTTP adapters can use it without depending on the
- * application shell.
+ * 将 HTTP 认证上下文转换为领域 ActorContext。
  */
 public final class ActorContextHttpAdapter {
 
     private ActorContextHttpAdapter() {}
 
+    /**
+     * {@code currentActor} 执行当前类型定义的业务操作。
+     *
+     * @return 返回当前操作产生的结果。
+     */
     public static ActorContext currentActor() {
         Long tenantId = UserContextHolder.getCurrentTenantId();
         Long userId = UserContextHolder.getUserId();
@@ -42,7 +43,11 @@ public final class ActorContextHttpAdapter {
         return new TenantId(resolved);
     }
 
-    /** Returns the actor for optional cross-cutting telemetry, or null for anonymous requests. */
+    /**
+     * 处理currentactorornull。
+     *
+     * @return 处理结果。
+     */
     public static ActorContext currentActorOrNull() {
         try {
             return currentActor();
@@ -51,35 +56,57 @@ public final class ActorContextHttpAdapter {
         }
     }
 
-    /** Returns the current actor's tenant as a primitive only at the HTTP edge. */
+    /**
+     * 处理租户标识。
+     *
+     * @return 受影响的记录数或生成的序号。
+     */
     public static long tenantId() {
         return currentActor().tenantId().value();
     }
 
-    /** Returns the current actor's user id at the HTTP edge. */
+    /**
+     * 处理用户标识。
+     *
+     * @return 受影响的记录数或生成的序号。
+     */
     public static long userId() {
         return currentActor().userId().value();
     }
 
-    /** Returns whether the authenticated actor has platform-admin privileges. */
+    /**
+     * 处理平台管理员。
+     *
+     * @return 判断结果。
+     */
     public static boolean platformAdmin() {
         return currentActor().platformAdmin();
     }
 
-    /** Optional presentation metadata maintained by the HTTP authentication context. */
+    /**
+     * 处理home租户标识。
+     *
+     * @return 受影响的记录数或生成的序号。
+     */
     public static Long homeTenantId() {
         return UserContextHolder.getHomeTenantId();
     }
 
-    /** Optional tenant-switching mode maintained by the HTTP authentication context. */
+    /**
+     * 处理切换模式。
+     *
+     * @return 处理结果。
+     */
     public static String switchMode() {
         return UserContextHolder.getSwitchMode();
     }
 
     /**
-     * Runs an anonymous-login bootstrap operation with the authenticated actor temporarily
-     * installed at the HTTP boundary. Domain/application code still receives explicit parameters
-     * and never touches either thread context.
+     * 在指定上下文中执行任务。
+     *
+     * @param context context 参数。
+     * @param tenantId 租户标识。
+     * @param action action 参数。
      */
     public static void runWithContext(
             com.shiyu.ai.common.core.domain.UserContext context,

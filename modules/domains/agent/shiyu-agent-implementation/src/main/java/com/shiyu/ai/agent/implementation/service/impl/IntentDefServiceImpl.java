@@ -24,6 +24,19 @@ import java.util.List;
 @Slf4j
 @Service
 public class IntentDefServiceImpl implements IntentDefService {
+    /**
+     * {@code pageView} 执行当前类型定义的业务操作。
+     *
+     * @param actor 参数值，用于执行当前操作。
+     * @param n 参数值，用于执行当前操作。
+     * @param s 参数值，用于执行当前操作。
+     * @param a 参数值，用于执行当前操作。
+     * @param name 参数值，用于执行当前操作。
+     * @param code 参数值，用于执行当前操作。
+     * @param cat 参数值，用于执行当前操作。
+     *
+     * @return 返回当前操作产生的结果。
+     */
     @Override
     public Pair<Long, List<IntentDefVO>> pageView(
             ActorContext actor,
@@ -38,12 +51,28 @@ public class IntentDefServiceImpl implements IntentDefService {
         return Pair.of(p.getLeft(), MapstructUtils.convert(p.getRight(), IntentDefVO.class));
     }
 
+    /**
+     * {@code detailView} 执行当前类型定义的业务操作。
+     *
+     * @param actor 参数值，用于执行当前操作。
+     * @param id 参数值，用于执行当前操作。
+     *
+     * @return 返回当前操作产生的结果。
+     */
     @Override
     public IntentDefVO detailView(ActorContext actor, Long id) {
         requireActor(actor);
         return MapstructUtils.convert(getByIdBO(actor, id), IntentDefVO.class);
     }
 
+    /**
+     * {@code create} 写入或更新当前模块中的业务数据。
+     *
+     * @param actor 参数值，用于执行当前操作。
+     * @param r 参数值，用于执行当前操作。
+     *
+     * @return 返回当前操作产生的结果。
+     */
     @Override
     public IntentDefVO create(ActorContext actor, IntentDefRequest r) {
         requireActor(actor);
@@ -51,6 +80,15 @@ public class IntentDefServiceImpl implements IntentDefService {
                 createBO(actor, MapstructUtils.convert(r, IntentDefBO.class)), IntentDefVO.class);
     }
 
+    /**
+     * {@code update} 写入或更新当前模块中的业务数据。
+     *
+     * @param actor 参数值，用于执行当前操作。
+     * @param id 参数值，用于执行当前操作。
+     * @param r 参数值，用于执行当前操作。
+     *
+     * @return 返回当前操作产生的结果。
+     */
     @Override
     public IntentDefVO update(ActorContext actor, Long id, IntentDefRequest r) {
         requireActor(actor);
@@ -89,6 +127,12 @@ public class IntentDefServiceImpl implements IntentDefService {
         return result;
     }
 
+    /**
+     * {@code deleteById} 释放或移除当前操作涉及的资源。
+     *
+     * @param actor 参数值，用于执行当前操作。
+     * @param id 参数值，用于执行当前操作。
+     */
     @Override
     public void deleteById(ActorContext actor, Long id) {
         requireActor(actor);
@@ -99,6 +143,12 @@ public class IntentDefServiceImpl implements IntentDefService {
         }
     }
 
+    /**
+     * {@code deleteByIds} 释放或移除当前操作涉及的资源。
+     *
+     * @param actor 参数值，用于执行当前操作。
+     * @param ids 参数值，用于执行当前操作。
+     */
     @Override
     public void deleteByIds(ActorContext actor, List<Long> ids) {
         requireActor(actor);
@@ -108,6 +158,13 @@ public class IntentDefServiceImpl implements IntentDefService {
         refreshFactory(actor);
     }
 
+    /**
+     * {@code listAllOptions} 查询并返回当前操作所需的数据。
+     *
+     * @param actor 参数值，用于执行当前操作。
+     *
+     * @return 返回当前操作产生的结果。
+     */
     @Override
     public List<IdNameOptionVO> listAllOptions(ActorContext actor) {
         requireActor(actor);

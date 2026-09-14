@@ -1,4 +1,6 @@
 package com.shiyu.ai.agent.implementation;
 
-/** Marker for code owned exclusively by the Agent bounded context. */
+/**
+ * AgentImplementationModule 模块接口，标识智能体模块的边界。
+ */
 public interface AgentImplementationModule {}

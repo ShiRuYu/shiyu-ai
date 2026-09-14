@@ -1,7 +1,7 @@
 package com.shiyu.ai.agent.implementation.service;
 
-import com.shiyu.ai.agent.implementation.event.AuditEvent;
-import com.shiyu.ai.agent.implementation.event.EventPublisher;
+import com.shiyu.ai.agent.implementation.event.model.AuditEvent;
+import com.shiyu.ai.agent.implementation.event.publisher.EventPublisher;
 import com.shiyu.ai.common.core.utils.JSONUtils;
 import com.shiyu.ai.kernel.context.TenantId;
 
@@ -18,8 +18,16 @@ import org.springframework.stereotype.Service;
 @Service
 public class AuditService {
 
+    /**
+     * eventPublisher 属性，保存当前对象中的业务数据或协作依赖。
+     */
     private final EventPublisher eventPublisher;
 
+    /**
+     * {@code AuditService} 创建并初始化当前类型实例。
+     *
+     * @param eventPublisher 参数值，用于执行当前操作。
+     */
     public AuditService(EventPublisher eventPublisher) {
         this.eventPublisher = eventPublisher;
     }

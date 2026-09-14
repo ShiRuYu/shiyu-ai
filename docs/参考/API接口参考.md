@@ -10,6 +10,12 @@
 - 普通 JSON 接口通常返回 `Result<T>`；流式接口按 OpenAPI 标注返回 SSE 或二进制内容。
 - `requestBody` 与响应栏保留 OpenAPI schema 名称，具体字段见“组件模型”。
 
+## 租户统计边界
+
+- `/api/governance/usage/**` 只返回认证上下文当前租户的数据；服务端从 `TenantScope` 取得租户，不接受客户端扩大范围。
+- `/api/governance/platform/usage/**` 是默认租户平台只读汇总入口，使用与租户统计相同的参数和响应结构，但要求 `platform:usage:read`、归属租户和当前租户均为 ID 1、有效 `super` 角色且未处于委派状态。
+- 平台统计没有 `allTenants` 查询开关；越权请求返回权限错误。当前交付只包含后端接口和文档，不新增前端页面。
+
 ## 接口清单
 
 ### Agent Definition

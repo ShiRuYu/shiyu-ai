@@ -13,6 +13,9 @@ import java.util.Map;
  */
 public class MapstructUtils {
 
+    /**
+     * CONVERTER 属性，保存当前对象中的业务数据或协作依赖。
+     */
     private static volatile Converter CONVERTER;
 
     private static Converter getConverter() {

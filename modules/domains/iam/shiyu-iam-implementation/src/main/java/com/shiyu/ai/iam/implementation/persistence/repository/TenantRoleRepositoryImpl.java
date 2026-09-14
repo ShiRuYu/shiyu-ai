@@ -1,7 +1,7 @@
 package com.shiyu.ai.iam.implementation.persistence.repository;
 
 import com.mybatisflex.core.query.QueryWrapper;
-import com.mybatisflex.core.tenant.TenantManager;
+import com.shiyu.ai.common.mybatis.tenant.TenantQueryExecutor;
 import com.shiyu.ai.common.core.utils.MapstructUtils;
 import com.shiyu.ai.iam.implementation.domain.model.RoleBO;
 import com.shiyu.ai.iam.implementation.domain.model.TenantBO;
@@ -10,6 +10,7 @@ import com.shiyu.ai.iam.implementation.persistence.dataobject.TenantDO;
 import com.shiyu.ai.iam.implementation.persistence.mapper.RoleMapper;
 import com.shiyu.ai.iam.implementation.persistence.mapper.TenantMapper;
 import com.shiyu.ai.kernel.context.TenantId;
+import com.shiyu.ai.kernel.context.TenantScope;
 
 import jakarta.annotation.Resource;
 
@@ -20,8 +21,14 @@ import org.springframework.stereotype.Component;
 public class TenantRoleRepositoryImpl
         implements com.shiyu.ai.iam.implementation.port.repository.TenantRoleRepository {
 
+    /**
+     * 租户映射器，表示当前对象中的对应属性。
+     */
     @Resource private TenantMapper tenantMapper;
 
+    /**
+     * 角色映射器，表示当前对象中的对应属性。
+     */
     @Resource private RoleMapper roleMapper;
 
     public TenantBO selectTenantById(TenantId tenantId) {
@@ -31,7 +38,7 @@ public class TenantRoleRepositoryImpl
 
     public RoleBO selectRoleById(Long roleId) {
         return MapstructUtils.convert(
-                TenantManager.withoutTenantCondition(() -> roleMapper.selectOneById(roleId)),
+                TenantQueryExecutor.readAcrossTenants(() -> roleMapper.selectOneById(roleId)),
                 RoleBO.class);
     }
 
@@ -42,7 +49,7 @@ public class TenantRoleRepositoryImpl
             return null;
         }
         return MapstructUtils.convert(
-                TenantManager.withoutTenantCondition(
+                TenantQueryExecutor.readAcrossTenants(
                         () ->
                                 roleMapper.selectOneByQuery(
                                         QueryWrapper.create()
@@ -62,7 +69,7 @@ public class TenantRoleRepositoryImpl
     public RoleBO selectTenantSuperRole(TenantId tenantId) {
         long tenantValue = requireTenant(tenantId);
         return MapstructUtils.convert(
-                TenantManager.withoutTenantCondition(
+                TenantQueryExecutor.readAcrossTenants(
                         () ->
                                 roleMapper.selectOneByQuery(
                                         QueryWrapper.create()
@@ -87,6 +94,7 @@ public class TenantRoleRepositoryImpl
         if (tenantId == null) {
             throw new IllegalArgumentException("tenantId is required for tenant role query");
         }
+        TenantScope.requireMatchesIfBound(tenantId);
         return tenantId.value();
     }
 }

@@ -16,11 +16,17 @@ import org.springframework.stereotype.Component;
 import java.util.List;
 import java.util.stream.Collectors;
 
+/**
+ * {@code AiModelRepositoryImpl} 实现模型模块的持久化端口，负责在领域对象与存储模型之间转换。
+ */
 @SuppressWarnings("unchecked")
 @Component
 public class AiModelRepositoryImpl
         implements com.shiyu.ai.model.implementation.domain.port.repository.AiModelRepository {
 
+    /**
+     * aiModelMapper 属性，保存当前对象中的业务数据或协作依赖。
+     */
     @Resource private AiModelMapper aiModelMapper;
 
     public Pair<Long, List<AiModelBO>> selectPage(

@@ -7,6 +7,9 @@ import com.shiyu.ai.iam.implementation.persistence.dataobject.TenantAuthCodeDO;
 
 import org.apache.ibatis.annotations.Mapper;
 
+/**
+ * TenantAuthCodeMapper 数据映射接口，负责在身份与访问领域对象与持久化记录之间转换数据。
+ */
 @Mapper
 @UseDataSource(DataSourceConfig.AGENT)
 public interface TenantAuthCodeMapper extends BaseMapperFlex<TenantAuthCodeDO> {}

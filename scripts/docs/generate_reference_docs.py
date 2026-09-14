@@ -1,10 +1,5 @@
 #!/usr/bin/env python3
-"""Generate API, database, menu and permission reference documents.
-
-The script only uses Python's standard library. By default it reads the live
-SpringDoc document from http://127.0.0.1:9000/v3/api-docs. A checked-in JSON
-snapshot can be supplied with --openapi-file for offline generation.
-"""
+"""generate reference docs 脚本，执行项目架构与工程校验。"""
 
 from __future__ import annotations
 
@@ -315,7 +310,7 @@ def seed_rows(text: str, table: str) -> list[list[str]]:
 
 
 def canonical_menu_rows(text: str) -> list[list[str]]:
-    """Read v4 domain navigation rows from 05_navigation.sql."""
+    """执行 canonical_menu_rows，处理输入并返回校验结果。"""
     rows = []
     for line in text.splitlines():
         value = line.strip()
@@ -369,9 +364,18 @@ def parse_controller_permissions(repo: Path) -> list[dict[str, str]]:
     return rows
 
 
-def generate_permission_matrix(repo: Path, seed_file: Path, navigation_file: Path, output: Path) -> tuple[int, int]:
-    seed = seed_file.read_text(encoding="utf-8")
-    navigation = navigation_file.read_text(encoding="utf-8")
+def generate_permission_matrix(
+    repo: Path,
+    seed_file: Path,
+    navigation_file: Path,
+    output: Path,
+    extension_seed_files: list[Path] | None = None,
+    extension_navigation_files: list[Path] | None = None,
+) -> tuple[int, int]:
+    seed_paths = [seed_file, *(extension_seed_files or [])]
+    navigation_paths = [navigation_file, *(extension_navigation_files or [])]
+    seed = "\n".join(path.read_text(encoding="utf-8") for path in seed_paths)
+    navigation = "\n".join(path.read_text(encoding="utf-8") for path in navigation_paths)
     roles = {int(row[0]): {"code": row[1], "name": row[2]} for row in seed_rows(seed, "AUTH_ROLE")}
     menus = {}
     system_menu_ids = {1, 2, 3, 4, 5, 7, 11, 90}
@@ -403,7 +407,7 @@ def generate_permission_matrix(repo: Path, seed_file: Path, navigation_file: Pat
     lines = [
         "# 菜单、角色与权限矩阵",
         "",
-        "> 系统菜单与角色来自 `02_auth.sql`，平台菜单来自 `05_navigation.sql`，接口权限来自 Controller 的 `@SaCheckPermission`。运行期管理员可修改授权，因此本表描述“空库初始化基线”，不是某一运行库的实时快照。",
+        "> 系统菜单与角色来自 `02_auth.sql`，平台菜单来自 `05_navigation.sql`，业务模块可通过扩展 seed 注入自己的菜单和权限，接口权限来自 Controller 的 `@SaCheckPermission`。运行期管理员可修改授权，因此本表描述“空库初始化基线”，不是某一运行库的实时快照。",
         "",
         "## 权限判定链路",
         "",
@@ -494,7 +498,7 @@ def main() -> None:
         repo / "modules/domains/agent/shiyu-agent-implementation/src/main/resources/db/baseline/h2/schema",
         repo / "modules/domains/model/shiyu-model-implementation/src/main/resources/db/baseline/h2/schema",
         repo / "modules/domains/conversation/shiyu-conversation-implementation/src/main/resources/db/baseline/h2/schema",
-        repo / "modules/domains/education/shiyu-education-implementation/src/main/resources/db/baseline/h2/schema",
+        repo / "modules/business/education/shiyu-education-implementation/src/main/resources/db/baseline/h2/schema",
         repo / "modules/domains/governance/shiyu-governance-implementation/src/main/resources/db/baseline/h2/schema",
         repo / "modules/domains/knowledge/shiyu-knowledge-implementation/src/main/resources/db/baseline/h2/schema",
         repo / "modules/domains/memory/shiyu-memory-implementation/src/main/resources/db/baseline/h2/schema",
@@ -506,7 +510,16 @@ def main() -> None:
 
     seed_file = repo / "modules/domains/iam/shiyu-iam-implementation/src/main/resources/db/baseline/h2/seed/iam/02_auth.sql"
     navigation_file = repo / "modules/domains/iam/shiyu-iam-implementation/src/main/resources/db/baseline/h2/seed/iam/05_navigation.sql"
-    menus, auth_codes = generate_permission_matrix(repo, seed_file, navigation_file, repo / "docs/参考/菜单角色权限矩阵.md")
+    education_seed = repo / "modules/business/education/shiyu-education-implementation/src/main/resources/db/baseline/h2/seed/education/01_auth.sql"
+    education_navigation = repo / "modules/business/education/shiyu-education-implementation/src/main/resources/db/baseline/h2/seed/education/02_navigation.sql"
+    menus, auth_codes = generate_permission_matrix(
+        repo,
+        seed_file,
+        navigation_file,
+        repo / "docs/参考/菜单角色权限矩阵.md",
+        extension_seed_files=[education_seed],
+        extension_navigation_files=[education_navigation],
+    )
     print(
         f"generated: paths={paths}, operations={operations}, tables={len(tables)}, "
         f"menus={menus}, auth_codes={auth_codes}"

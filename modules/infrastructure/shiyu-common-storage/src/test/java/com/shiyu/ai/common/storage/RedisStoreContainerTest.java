@@ -17,7 +17,9 @@ import org.testcontainers.junit.jupiter.Testcontainers;
 
 import java.time.Duration;
 
-/** Runs only when Docker is available; CI executes this against real Redis. */
+/**
+ * 验证 RedisStoreContainer 的功能、边界条件和集成行为。
+ */
 @Testcontainers(disabledWithoutDocker = true)
 class RedisStoreContainerTest {
 

@@ -9,13 +9,20 @@ import com.shiyu.ai.agent.implementation.persistence.dataobject.AuditLogDO;
 import com.shiyu.ai.agent.implementation.persistence.mapper.AuditLogMapper;
 import com.shiyu.ai.common.core.utils.MapstructUtils;
 import com.shiyu.ai.kernel.context.TenantId;
+import com.shiyu.ai.kernel.context.TenantScope;
 
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.AfterEach;
 import org.mockito.MockedStatic;
 
 import java.lang.reflect.Field;
 
 class AuditLogRepositoryImplTest {
+    @BeforeEach
+    void bindTenantScope() { TenantScope.set(new TenantId(7L)); }
+    @AfterEach
+    void clearTenantScope() { TenantScope.clear(); }
     @Test
     void rejectsUnattributedAuditRecordsAndPersistsTenantScopedRecords() throws Exception {
         AuditLogMapper mapper = mock(AuditLogMapper.class);

@@ -27,6 +27,9 @@ import org.springframework.expression.spel.support.StandardEvaluationContext;
 @Slf4j
 public class ConditionNode extends BaseNode {
 
+    /**
+     * 配置，表示当前对象中的对应属性。
+     */
     private ConditionConfig config;
 
     /**
@@ -52,6 +55,9 @@ public class ConditionNode extends BaseNode {
 
     /** Builder 类，用于构建 ConditionNode 实例 */
     public static class Builder {
+        /**
+         * 配置，表示当前对象中的对应属性。
+         */
         private ConditionConfig config;
 
         /**
@@ -75,6 +81,13 @@ public class ConditionNode extends BaseNode {
         }
     }
 
+    /**
+     * {@code doExecute} 执行当前类型定义的业务操作。
+     *
+     * @param input 参数值，用于执行当前操作。
+     *
+     * @return 返回当前操作产生的结果。
+     */
     @Override
     protected NodeOutput doExecute(NodeInput input) throws Exception {
         log.info("执行条件判断节点：{}", config.getNodeName());
@@ -201,6 +214,11 @@ public class ConditionNode extends BaseNode {
         return expectedIntent.equals(currentIntent);
     }
 
+    /**
+     * {@code getRequiredInputs} 查询并返回当前操作所需的数据。
+     *
+     * @return 返回当前操作产生的结果。
+     */
     @Override
     public java.util.List<NodeInputParam> getRequiredInputs() {
         return java.util.List.of(

@@ -12,11 +12,22 @@ import lombok.extern.slf4j.Slf4j;
 
 import java.util.List;
 
-/** Creates node instances, including Spring creator adapters and config conversion. */
+/**
+ * 根据已注册的节点元数据构造节点实例。
+ */
 @Slf4j
 final class NodeInstanceFactory {
+    /**
+     * registry 属性，保存当前对象中的业务数据或协作依赖。
+     */
     private final NodeTypeRegistry registry;
+    /**
+     * beanNodeCreators 属性，保存当前对象中的业务数据或协作依赖。
+     */
     private final List<NodeCreator> beanNodeCreators;
+    /**
+     * executionHistoryService 属性，保存当前对象中的业务数据或协作依赖。
+     */
     private final ExecutionHistoryService executionHistoryService;
 
     NodeInstanceFactory(
@@ -78,7 +89,7 @@ final class NodeInstanceFactory {
             return null;
         }
         for (NodeCreator creator : beanNodeCreators) {
-            if (creator.getType() == nodeType) {
+            if (nodeType.equals(creator.getType())) {
                 try {
                     return creator.create(config);
                 } catch (Exception e) {

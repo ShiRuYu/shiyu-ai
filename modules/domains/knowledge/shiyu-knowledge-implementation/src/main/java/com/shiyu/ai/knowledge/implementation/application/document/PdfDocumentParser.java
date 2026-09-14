@@ -14,18 +14,29 @@ import java.io.IOException;
 @Component
 public class PdfDocumentParser implements DocumentParser {
 
+    /**
+     * {@code getSupportedFormat} 查询并返回当前操作所需的数据。
+     *
+     * @return 返回当前操作产生的结果。
+     */
     @Override
     public String getSupportedFormat() {
         return "pdf";
     }
 
+    /**
+     * {@code parse} 执行当前类型定义的业务操作。
+     *
+     * @param content 参数值，用于执行当前操作。
+     *
+     * @return 返回当前操作产生的结果。
+     */
     @Override
     public ParseResult parse(String content) {
         if (content == null || content.isBlank()) {
             return new ParseResult("", "", "");
         }
 
-        // For test scenarios, accept plain text as if pre-extracted
         if (!content.startsWith("%PDF")) {
             return new ParseResult("", content, "");
         }

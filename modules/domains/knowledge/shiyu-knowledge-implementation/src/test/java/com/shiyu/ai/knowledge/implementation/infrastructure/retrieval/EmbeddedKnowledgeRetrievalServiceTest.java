@@ -20,7 +20,7 @@ import com.shiyu.ai.knowledge.implementation.domain.model.KnowledgeDocumentBO;
 import com.shiyu.ai.knowledge.implementation.domain.port.repository.KnowledgeChunkRepository;
 import com.shiyu.ai.knowledge.implementation.domain.port.repository.KnowledgeDocumentRepository;
 import com.shiyu.ai.knowledge.implementation.domain.port.repository.KnowledgeRepository;
-import com.shiyu.ai.knowledge.implementation.infrastructure.index.KnowledgeIndexService;
+import com.shiyu.ai.knowledge.implementation.infrastructure.index.service.KnowledgeIndexService;
 
 import org.junit.jupiter.api.Test;
 

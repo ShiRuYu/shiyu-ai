@@ -20,13 +20,27 @@ import org.springframework.web.bind.annotation.*;
 import java.util.List;
 import java.util.Map;
 
+/**
+ * {@code UserController} 是Web模块的 Web 接口适配器，负责接收请求并转换为应用服务调用。
+ */
 @RestController
 @RequestMapping("/api/iam/users")
 @RequiredArgsConstructor
 public class UserController {
+    /**
+     * 用户服务，表示当前对象中的对应属性。
+     */
     private final UserService userService;
+    /**
+     * authService 属性，保存当前对象中的业务数据或协作依赖。
+     */
     private final AuthService authService;
 
+    /**
+     * {@code getUserInfo} 查询并返回当前操作所需的数据。
+     *
+     * @return 返回当前操作产生的结果。
+     */
     @GetMapping("/detail")
     public Result<UserVO> getUserInfo() {
         var actor = ActorContextHttpAdapter.currentActor();
@@ -42,6 +56,13 @@ public class UserController {
         return Result.success(v);
     }
 
+    /**
+     * {@code getUserList} 查询并返回当前操作所需的数据。
+     *
+     * @param r 参数值，用于执行当前操作。
+     *
+     * @return 返回当前操作产生的结果。
+     */
     @SaCheckPermission("system:user:list")
     @GetMapping("/list")
     public Result<PageData<UserVO>> getUserList(@Valid UserPageRequest r) {
@@ -53,6 +74,13 @@ public class UserController {
                         r.getPageSize()));
     }
 
+    /**
+     * {@code createUser} 写入或更新当前模块中的业务数据。
+     *
+     * @param r 参数值，用于执行当前操作。
+     *
+     * @return 返回当前操作产生的结果。
+     */
     @SaCheckPermission("system:user:create")
     @PostMapping("/create")
     public Result<Map<String, Object>> createUser(@Valid @RequestBody UserRequest r) {
@@ -64,6 +92,14 @@ public class UserController {
                         r.getTenantId()));
     }
 
+    /**
+     * {@code updateUser} 写入或更新当前模块中的业务数据。
+     *
+     * @param userId 参数值，用于执行当前操作。
+     * @param r 参数值，用于执行当前操作。
+     *
+     * @return 返回当前操作产生的结果。
+     */
     @SaCheckPermission("system:user:update")
     @PostMapping("/update")
     public Result<Void> updateUser(@RequestParam Long userId, @Valid @RequestBody UserRequest r) {
@@ -77,6 +113,13 @@ public class UserController {
                 : Result.fail("用户不存在");
     }
 
+    /**
+     * {@code getTenantAssignments} 查询并返回当前操作所需的数据。
+     *
+     * @param userId 参数值，用于执行当前操作。
+     *
+     * @return 返回当前操作产生的结果。
+     */
     @SaCheckPermission("system:user:list")
     @GetMapping("/tenant-assignments")
     public Result<List<UserTenantAssignmentVO>> getTenantAssignments(@RequestParam Long userId) {
@@ -84,6 +127,14 @@ public class UserController {
                 userService.getTenantAssignments(ActorContextHttpAdapter.currentActor(), userId));
     }
 
+    /**
+     * {@code replaceTenantAssignments} 执行当前类型定义的业务操作。
+     *
+     * @param userId 参数值，用于执行当前操作。
+     * @param a 参数值，用于执行当前操作。
+     *
+     * @return 返回当前操作产生的结果。
+     */
     @SaCheckPermission("system:user:update")
     @PostMapping("/tenant-assignments/replace")
     public Result<Void> replaceTenantAssignments(
@@ -94,6 +145,13 @@ public class UserController {
                 : Result.fail("租户分配失败");
     }
 
+    /**
+     * {@code deleteUser} 释放或移除当前操作涉及的资源。
+     *
+     * @param userId 参数值，用于执行当前操作。
+     *
+     * @return 返回当前操作产生的结果。
+     */
     @SaCheckPermission("system:user:delete")
     @PostMapping("/delete")
     public Result<Void> deleteUser(@RequestParam Long userId) {
@@ -102,6 +160,14 @@ public class UserController {
                 : Result.fail("用户不存在");
     }
 
+    /**
+     * {@code resetPassword} 执行当前类型定义的业务操作。
+     *
+     * @param userId 参数值，用于执行当前操作。
+     * @param r 参数值，用于执行当前操作。
+     *
+     * @return 返回当前操作产生的结果。
+     */
     @SaCheckPermission("system:user:password")
     @PostMapping("/password/reset")
     public Result<Void> resetPassword(
@@ -113,6 +179,14 @@ public class UserController {
                 : Result.success();
     }
 
+    /**
+     * {@code changePassword} 执行当前类型定义的业务操作。
+     *
+     * @param userId 参数值，用于执行当前操作。
+     * @param r 参数值，用于执行当前操作。
+     *
+     * @return 返回当前操作产生的结果。
+     */
     @PostMapping("/password/change")
     public Result<Void> changePassword(
             @RequestParam Long userId, @Valid @RequestBody ChangePasswordRequest r) {

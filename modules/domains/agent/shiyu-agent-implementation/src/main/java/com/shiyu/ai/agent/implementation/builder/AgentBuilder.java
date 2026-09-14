@@ -44,10 +44,10 @@ import java.util.stream.Collectors;
 @Slf4j
 public class AgentBuilder {
 
-    /** Agent ID */
+    /** Agent 的唯一标识。 */
     private String agentId;
 
-    /** Agent 名称 */
+    /** Agent 名称。 */
     private String name;
 
     /** Agent 描述 */
@@ -386,6 +386,9 @@ public class AgentBuilder {
     /** 边配置 */
     private static class EdgeConfig {
         String from;
+        /**
+         * to 属性，保存当前对象中的业务数据或协作依赖。
+         */
         String to;
 
         EdgeConfig(String from, String to) {
@@ -397,8 +400,17 @@ public class AgentBuilder {
     /** 条件边配置 */
     private static class ConditionalEdgeConfig {
         String from;
+        /**
+         * condition 属性，保存当前对象中的业务数据或协作依赖。
+         */
         Function<Map<String, Object>, String> condition;
+        /**
+         * mappings 属性，保存当前对象中的业务数据或协作依赖。
+         */
         Map<String, String> mappings;
+        /**
+         * conditionEdge 属性，保存当前对象中的业务数据或协作依赖。
+         */
         ConditionEdge conditionEdge;
 
         ConditionalEdgeConfig(

@@ -11,7 +11,10 @@ import com.shiyu.ai.conversation.implementation.domain.chat.*;
 import com.shiyu.ai.conversation.implementation.domain.model.*;
 import com.shiyu.ai.conversation.implementation.domain.port.*;
 import com.shiyu.ai.kernel.context.TenantId;
+import com.shiyu.ai.kernel.context.TenantScope;
 
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.core.RowMapper;
@@ -26,6 +29,16 @@ import java.util.Map;
 import javax.sql.DataSource;
 
 class JdbcConversationRepositoryTest {
+    @BeforeEach
+    void bindTenantScope() {
+        TenantScope.set(new TenantId(7L));
+    }
+
+    @AfterEach
+    void clearTenantScope() {
+        TenantScope.clear();
+    }
+
     @Test
     @SuppressWarnings({"unchecked", "rawtypes"})
     void ordersConversationPagesByIdWhenUpdatedAtTies() throws Exception {

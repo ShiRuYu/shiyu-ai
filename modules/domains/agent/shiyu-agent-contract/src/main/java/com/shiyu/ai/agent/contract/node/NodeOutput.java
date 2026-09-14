@@ -17,8 +17,14 @@ import java.util.Map;
 @AllArgsConstructor
 public class NodeOutput {
 
+    /**
+     * success 属性，保存当前对象中的业务数据或协作依赖。
+     */
     private boolean success;
 
+    /**
+     * msg 属性，保存当前对象中的业务数据或协作依赖。
+     */
     private String msg;
 
     /** 输出结果 Map */
@@ -43,7 +49,6 @@ public class NodeOutput {
         return this.data;
     }
 
-    // ==================== String-key overloads ====================
 
     /**
      * 获取数据
@@ -80,7 +85,6 @@ public class NodeOutput {
         this.data.put(key, value);
     }
 
-    // ==================== FieldKey overloads ====================
 
     /**
      * 通过 {@link FieldKey} 获取数据

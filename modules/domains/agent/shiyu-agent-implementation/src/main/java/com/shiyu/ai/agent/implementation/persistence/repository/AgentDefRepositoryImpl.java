@@ -8,10 +8,16 @@ import jakarta.annotation.Resource;
 
 import org.springframework.stereotype.Component;
 
+/**
+ * {@code AgentDefRepositoryImpl} 实现智能体模块的持久化端口，负责在领域对象与存储模型之间转换。
+ */
 @Component
 public class AgentDefRepositoryImpl
         implements com.shiyu.ai.agent.implementation.port.repository.AgentDefRepository {
 
+    /**
+     * agentDefMapper 属性，保存当前对象中的业务数据或协作依赖。
+     */
     @Resource private AgentDefMapper agentDefMapper;
 
     public long countByTenantId(TenantId tenantId) {

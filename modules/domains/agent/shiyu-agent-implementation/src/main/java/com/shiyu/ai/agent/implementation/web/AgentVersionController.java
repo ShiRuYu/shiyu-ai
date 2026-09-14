@@ -39,8 +39,16 @@ import java.util.List;
 @RequestMapping("/api/agent/versions")
 public class AgentVersionController {
 
+    /**
+     * agentVersionService 属性，保存当前对象中的业务数据或协作依赖。
+     */
     private final AgentVersionService agentVersionService;
 
+    /**
+     * {@code AgentVersionController} 创建并初始化当前类型实例。
+     *
+     * @param agentVersionService 参数值，用于执行当前操作。
+     */
     public AgentVersionController(AgentVersionService agentVersionService) {
         this.agentVersionService = agentVersionService;
     }
@@ -51,12 +59,27 @@ public class AgentVersionController {
 
     // ======================== 版本基础 CRUD ========================
 
+    /**
+     * {@code getVersions} 查询并返回当前操作所需的数据。
+     *
+     * @param agentId 参数值，用于执行当前操作。
+     *
+     * @return 返回当前操作产生的结果。
+     */
     @Operation(summary = "Get Versions")
     @GetMapping("/list")
     public Result<List<AgentVersionVO>> getVersions(@RequestParam String agentId) {
         return Result.success(agentVersionService.getVersions(actor(), agentId));
     }
 
+    /**
+     * {@code getVersionDetail} 查询并返回当前操作所需的数据。
+     *
+     * @param agentId 参数值，用于执行当前操作。
+     * @param versionId 参数值，用于执行当前操作。
+     *
+     * @return 返回当前操作产生的结果。
+     */
     @Operation(summary = "Get Version Detail")
     @GetMapping("/detail")
     public Result<AgentVersionDetailVO> getVersionDetail(
@@ -66,6 +89,14 @@ public class AgentVersionController {
         return Result.success(vo);
     }
 
+    /**
+     * {@code createVersion} 写入或更新当前模块中的业务数据。
+     *
+     * @param agentId 参数值，用于执行当前操作。
+     * @param request 参数值，用于执行当前操作。
+     *
+     * @return 返回当前操作产生的结果。
+     */
     @Operation(summary = "Create Version")
     @SaCheckPermission("agent:admin:create")
     @PostMapping("/create")
@@ -79,6 +110,15 @@ public class AgentVersionController {
         }
     }
 
+    /**
+     * {@code updateVersion} 写入或更新当前模块中的业务数据。
+     *
+     * @param agentId 参数值，用于执行当前操作。
+     * @param versionId 参数值，用于执行当前操作。
+     * @param request 参数值，用于执行当前操作。
+     *
+     * @return 返回当前操作产生的结果。
+     */
     @Operation(summary = "Update Version")
     @SaCheckPermission("agent:admin:edit")
     @PostMapping("/update")
@@ -95,6 +135,14 @@ public class AgentVersionController {
         }
     }
 
+    /**
+     * {@code deleteVersion} 释放或移除当前操作涉及的资源。
+     *
+     * @param agentId 参数值，用于执行当前操作。
+     * @param versionId 参数值，用于执行当前操作。
+     *
+     * @return 返回当前操作产生的结果。
+     */
     @Operation(summary = "Delete Version")
     @SaCheckPermission("agent:admin:delete")
     @PostMapping("/delete")
@@ -110,6 +158,14 @@ public class AgentVersionController {
 
     // ======================== 版本生命周期 ========================
 
+    /**
+     * {@code publish} 执行当前模块定义的业务流程。
+     *
+     * @param agentId 参数值，用于执行当前操作。
+     * @param versionId 参数值，用于执行当前操作。
+     *
+     * @return 返回当前操作产生的结果。
+     */
     @Operation(summary = "Publish")
     @SaCheckPermission("agent:admin:edit")
     @PostMapping("/publish")
@@ -123,6 +179,14 @@ public class AgentVersionController {
         }
     }
 
+    /**
+     * {@code archive} 执行当前类型定义的业务操作。
+     *
+     * @param agentId 参数值，用于执行当前操作。
+     * @param versionId 参数值，用于执行当前操作。
+     *
+     * @return 返回当前操作产生的结果。
+     */
     @Operation(summary = "Archive")
     @SaCheckPermission("agent:admin:edit")
     @PostMapping("/archive")
@@ -136,6 +200,14 @@ public class AgentVersionController {
         }
     }
 
+    /**
+     * {@code activate} 执行当前类型定义的业务操作。
+     *
+     * @param agentId 参数值，用于执行当前操作。
+     * @param versionId 参数值，用于执行当前操作。
+     *
+     * @return 返回当前操作产生的结果。
+     */
     @Operation(summary = "Activate")
     @SaCheckPermission("agent:admin:edit")
     @PostMapping("/activate")
@@ -149,6 +221,14 @@ public class AgentVersionController {
         }
     }
 
+    /**
+     * {@code copy} 执行当前类型定义的业务操作。
+     *
+     * @param agentId 参数值，用于执行当前操作。
+     * @param request 参数值，用于执行当前操作。
+     *
+     * @return 返回当前操作产生的结果。
+     */
     @Operation(summary = "Copy")
     @SaCheckPermission("agent:admin:create")
     @PostMapping("/copy")
@@ -164,6 +244,14 @@ public class AgentVersionController {
 
     // ======================== Graph 配置（来自 AgentGraphController） ========================
 
+    /**
+     * {@code getGraph} 查询并返回当前操作所需的数据。
+     *
+     * @param agentId 参数值，用于执行当前操作。
+     * @param versionId 参数值，用于执行当前操作。
+     *
+     * @return 返回当前操作产生的结果。
+     */
     @Operation(summary = "Get Graph")
     @GetMapping("/graph/detail")
     public Result<AgentVersionDetailVO> getGraph(
@@ -173,6 +261,15 @@ public class AgentVersionController {
         return Result.success(vo);
     }
 
+    /**
+     * {@code updateGraph} 写入或更新当前模块中的业务数据。
+     *
+     * @param agentId 参数值，用于执行当前操作。
+     * @param versionId 参数值，用于执行当前操作。
+     * @param request 参数值，用于执行当前操作。
+     *
+     * @return 返回当前操作产生的结果。
+     */
     @Operation(summary = "Update Graph")
     @SaCheckPermission("agent:admin:edit")
     @PostMapping("/graph/update")
@@ -189,6 +286,15 @@ public class AgentVersionController {
         }
     }
 
+    /**
+     * {@code validate} 校验当前操作的输入或状态是否满足约束。
+     *
+     * @param agentId 参数值，用于执行当前操作。
+     * @param versionId 参数值，用于执行当前操作。
+     * @param request 参数值，用于执行当前操作。
+     *
+     * @return 返回当前操作产生的结果。
+     */
     @Operation(summary = "Validate Graph")
     @PostMapping("/graph/validate")
     public Result<GraphValidationVO> validate(
@@ -198,6 +304,15 @@ public class AgentVersionController {
         return Result.success(agentVersionService.validateGraphConfig(request));
     }
 
+    /**
+     * {@code addNode} 执行当前类型定义的业务操作。
+     *
+     * @param agentId 参数值，用于执行当前操作。
+     * @param versionId 参数值，用于执行当前操作。
+     * @param request 参数值，用于执行当前操作。
+     *
+     * @return 返回当前操作产生的结果。
+     */
     @Operation(summary = "Add Node")
     @SaCheckPermission("agent:admin:edit")
     @PostMapping("/graph/node/create")
@@ -214,6 +329,16 @@ public class AgentVersionController {
         }
     }
 
+    /**
+     * {@code updateNode} 写入或更新当前模块中的业务数据。
+     *
+     * @param agentId 参数值，用于执行当前操作。
+     * @param versionId 参数值，用于执行当前操作。
+     * @param nodeId 参数值，用于执行当前操作。
+     * @param request 参数值，用于执行当前操作。
+     *
+     * @return 返回当前操作产生的结果。
+     */
     @Operation(summary = "Update Node")
     @SaCheckPermission("agent:admin:edit")
     @PostMapping("/graph/node/update")
@@ -231,6 +356,15 @@ public class AgentVersionController {
         }
     }
 
+    /**
+     * {@code deleteNode} 释放或移除当前操作涉及的资源。
+     *
+     * @param agentId 参数值，用于执行当前操作。
+     * @param versionId 参数值，用于执行当前操作。
+     * @param nodeId 参数值，用于执行当前操作。
+     *
+     * @return 返回当前操作产生的结果。
+     */
     @Operation(summary = "Delete Node")
     @SaCheckPermission("agent:admin:edit")
     @PostMapping("/graph/node/delete")
@@ -247,6 +381,15 @@ public class AgentVersionController {
         }
     }
 
+    /**
+     * {@code addEdge} 执行当前类型定义的业务操作。
+     *
+     * @param agentId 参数值，用于执行当前操作。
+     * @param versionId 参数值，用于执行当前操作。
+     * @param request 参数值，用于执行当前操作。
+     *
+     * @return 返回当前操作产生的结果。
+     */
     @Operation(summary = "Add Edge")
     @SaCheckPermission("agent:admin:edit")
     @PostMapping("/graph/edge/create")
@@ -263,6 +406,16 @@ public class AgentVersionController {
         }
     }
 
+    /**
+     * {@code deleteEdge} 释放或移除当前操作涉及的资源。
+     *
+     * @param agentId 参数值，用于执行当前操作。
+     * @param versionId 参数值，用于执行当前操作。
+     * @param sourceNodeId 参数值，用于执行当前操作。
+     * @param targetNodeId 参数值，用于执行当前操作。
+     *
+     * @return 返回当前操作产生的结果。
+     */
     @Operation(summary = "Delete Edge")
     @SaCheckPermission("agent:admin:edit")
     @PostMapping("/graph/edge/delete")
@@ -280,6 +433,14 @@ public class AgentVersionController {
         }
     }
 
+    /**
+     * {@code getCanvas} 查询并返回当前操作所需的数据。
+     *
+     * @param agentId 参数值，用于执行当前操作。
+     * @param versionId 参数值，用于执行当前操作。
+     *
+     * @return 返回当前操作产生的结果。
+     */
     @Operation(summary = "Get Canvas")
     @GetMapping("/graph/canvas")
     public Result<String> getCanvas(@RequestParam String agentId, @RequestParam Long versionId) {
@@ -287,6 +448,15 @@ public class AgentVersionController {
         return Result.success(canvas);
     }
 
+    /**
+     * {@code updateCanvas} 写入或更新当前模块中的业务数据。
+     *
+     * @param agentId 参数值，用于执行当前操作。
+     * @param versionId 参数值，用于执行当前操作。
+     * @param canvasConfig 参数值，用于执行当前操作。
+     *
+     * @return 返回当前操作产生的结果。
+     */
     @Operation(summary = "Update Canvas")
     @SaCheckPermission("agent:admin:edit")
     @PostMapping("/graph/canvas-update")

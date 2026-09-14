@@ -1,5 +1,7 @@
 package com.shiyu.ai.composition.database;
 
+import com.shiyu.ai.education.implementation.database.EducationDatabaseBaselineContributor;
+
 import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
@@ -22,6 +24,55 @@ import java.util.UUID;
 import javax.sql.DataSource;
 
 class DatabaseInitializerTest {
+
+    @Test
+    void upgradesExistingBaselineWithPlatformPermissionWithoutOverwritingDisabledGrants() throws Exception {
+        DataSource dataSource = newDataSource();
+        DatabaseInitializer initializer = newInitializer(dataSource);
+        initializer.initialize();
+        try (Connection connection = dataSource.getConnection(); Statement sql = connection.createStatement()) {
+            sql.executeUpdate("DELETE FROM AUTH_ROLE_SCOPE_AUTH_CODE WHERE AUTH_CODE_ID=119");
+            sql.executeUpdate("DELETE FROM AUTH_TENANT_AUTH_CODE WHERE AUTH_CODE_ID=119");
+            sql.executeUpdate("DELETE FROM AUTH_AUTH_CODE WHERE CODE='platform:usage:read'");
+        }
+        initializer.initialize();
+        assertEquals(1, scalar(dataSource,
+                "SELECT COUNT(*) FROM AUTH_AUTH_CODE WHERE CODE='platform:usage:read'"));
+        assertEquals(1, scalar(dataSource,
+                "SELECT COUNT(*) FROM AUTH_ROLE_SCOPE_AUTH_CODE G JOIN AUTH_AUTH_CODE C ON C.ID=G.AUTH_CODE_ID "
+                        + "JOIN AUTH_ROLE R ON R.ID=G.ROLE_ID WHERE C.CODE='platform:usage:read' "
+                        + "AND G.TENANT_ID=1 AND R.TENANT_ID=1 AND R.CODE='super'"));
+        assertEquals(0, scalar(dataSource,
+                "SELECT COUNT(*) FROM AUTH_ROLE_SCOPE_AUTH_CODE G JOIN AUTH_AUTH_CODE C ON C.ID=G.AUTH_CODE_ID "
+                        + "JOIN AUTH_ROLE R ON R.ID=G.ROLE_ID WHERE C.CODE='platform:usage:read' "
+                        + "AND (G.TENANT_ID<>1 OR R.CODE<>'super')"));
+        try (Connection connection = dataSource.getConnection(); Statement sql = connection.createStatement()) {
+            sql.executeUpdate("UPDATE AUTH_ROLE_SCOPE_AUTH_CODE SET STATUS=0 WHERE AUTH_CODE_ID IN "
+                    + "(SELECT ID FROM AUTH_AUTH_CODE WHERE CODE='platform:usage:read')");
+        }
+        initializer.initialize();
+        assertEquals(1, scalar(dataSource,
+                "SELECT COUNT(*) FROM AUTH_AUTH_CODE WHERE CODE='platform:usage:read'"));
+        assertEquals(1, scalar(dataSource,
+                "SELECT COUNT(*) FROM AUTH_ROLE_SCOPE_AUTH_CODE G JOIN AUTH_AUTH_CODE C ON C.ID=G.AUTH_CODE_ID "
+                        + "WHERE C.CODE='platform:usage:read' AND G.STATUS=0"));
+    }
+
+    @Test
+    void platformCompositionDoesNotContainEducationBaseline() {
+        DatabaseInitializer platformInitializer =
+                new DatabaseInitializer(Map.of(), new StaticApplicationContext());
+
+        assertTrue(
+                platformInitializer.schemaResources().stream()
+                        .noneMatch(resource -> resource.contains("education")));
+        assertTrue(
+                platformInitializer.seedResources().stream()
+                        .noneMatch(resource -> resource.contains("education")));
+        assertTrue(
+                platformInitializer.expectedTables().stream()
+                        .noneMatch(table -> table.startsWith("EDU_")));
+    }
 
     private static final Set<String> SEEDED_TABLES =
             Set.of(
@@ -118,11 +169,11 @@ class DatabaseInitializerTest {
                 1, scalar(dataSource, "SELECT COUNT(*) FROM AUTH_USER WHERE USERNAME='admin'"));
         assertEquals(3, scalar(dataSource, "SELECT COUNT(*) FROM AUTH_ROLE"));
         assertEquals(38, scalar(dataSource, "SELECT COUNT(*) FROM AUTH_MENU"));
-        assertEquals(111, scalar(dataSource, "SELECT COUNT(*) FROM AUTH_AUTH_CODE"));
+        assertEquals(112, scalar(dataSource, "SELECT COUNT(*) FROM AUTH_AUTH_CODE"));
         assertEquals(38, scalar(dataSource, "SELECT COUNT(*) FROM AUTH_TENANT_MENU"));
-        assertEquals(111, scalar(dataSource, "SELECT COUNT(*) FROM AUTH_TENANT_AUTH_CODE"));
+        assertEquals(112, scalar(dataSource, "SELECT COUNT(*) FROM AUTH_TENANT_AUTH_CODE"));
         assertTrue(scalar(dataSource, "SELECT COUNT(*) FROM AUTH_ROLE_SCOPE_MENU") >= 99);
-        assertEquals(222, scalar(dataSource, "SELECT COUNT(*) FROM AUTH_ROLE_SCOPE_AUTH_CODE"));
+        assertEquals(223, scalar(dataSource, "SELECT COUNT(*) FROM AUTH_ROLE_SCOPE_AUTH_CODE"));
         assertEquals(
                 1,
                 scalar(
@@ -575,7 +626,11 @@ class DatabaseInitializerTest {
     }
 
     private DatabaseInitializer newInitializer(DataSource dataSource) {
-        return new DatabaseInitializer(Map.of("agent", dataSource), new StaticApplicationContext());
+        return new DatabaseInitializer(
+                Map.of("agent", dataSource),
+                new StaticApplicationContext(),
+                new com.shiyu.ai.common.mybatis.config.DatabaseInfrastructureProperties(),
+                List.of(new EducationDatabaseBaselineContributor()));
     }
 
     private DataSource newDataSource() {

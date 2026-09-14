@@ -1,4 +1,5 @@
 package com.shiyu.ai.agent.implementation.node;
+import com.shiyu.ai.agent.implementation.runtime.model.ToolApproval;
 
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.any;
@@ -31,10 +32,10 @@ import com.shiyu.ai.agent.implementation.node.tool.ToolCallConfig;
 import com.shiyu.ai.agent.implementation.node.tool.ToolCallNode;
 import com.shiyu.ai.agent.implementation.node.transform.TransformConfig;
 import com.shiyu.ai.agent.implementation.node.transform.TransformNode;
-import com.shiyu.ai.agent.implementation.runtime.AgentExecutionContext;
-import com.shiyu.ai.agent.implementation.runtime.AgentRuntime;
-import com.shiyu.ai.agent.implementation.runtime.AiRuntimeService;
-import com.shiyu.ai.agent.implementation.runtime.ToolExecutionPipeline;
+import com.shiyu.ai.agent.implementation.runtime.model.AgentExecutionContext;
+import com.shiyu.ai.agent.implementation.runtime.port.AgentRuntime;
+import com.shiyu.ai.agent.implementation.runtime.service.AiRuntimeService;
+import com.shiyu.ai.agent.implementation.runtime.service.ToolExecutionPipeline;
 import com.shiyu.ai.agent.implementation.service.IntentService;
 import com.shiyu.ai.kernel.context.ActorContext;
 import com.shiyu.ai.kernel.context.TenantId;
@@ -264,9 +265,6 @@ class AgentNodeExecutionTest {
                                                 && "10".equals(m.get("limit"))
                                                 && "not-a-map".equals(m.get("slots"))));
 
-        // Exercise the no-mapping/defaults path and every metadata exclusion;
-        // null and blank values remain in the raw map so the warning-only
-        // slot-definition validation is observable without blocking a call.
         Map<String, Object> metadata = new LinkedHashMap<>();
         metadata.put("toolName", "ignored");
         metadata.put("toolType", "ignored");
@@ -831,8 +829,6 @@ class AgentNodeExecutionTest {
         passthroughInput.put("query", "hello");
         passthroughInput.put("tenantId", 1L);
         passthroughInput.put("userId", 2L);
-        // Configured mapping with an absent source omits that field instead of
-        // manufacturing a null value for the child Agent.
         AgentCallConfig sparseConfig = new AgentCallConfig();
         sparseConfig.setTargetAgentId("child");
         sparseConfig.setInputMapping(Map.of("missing", "childMissing", "query", "prompt"));
@@ -892,9 +888,6 @@ class AgentNodeExecutionTest {
         assertEquals("意图识别失败，请稍后重试", recognitionError.getMsg());
         assertFalse(recognitionError.getMsg().contains("recognizer down"));
 
-        // A definition may legitimately return no route code; this must remain
-        // a successful recognition without attempting a factory lookup. Also
-        // exercise a matching definition whose optional maps are empty.
         IntentService noCodeService = mock(IntentService.class);
         IntentNode defaultConfigIntent = IntentNode.builder().intentService(noCodeService).build();
         when(noCodeService.recognize(any(), any(), any(), any(), any()))
@@ -939,8 +932,8 @@ class AgentNodeExecutionTest {
                         "model",
                         "prompt");
         ToolExecutionPipeline pipeline = mock(ToolExecutionPipeline.class);
-        com.shiyu.ai.agent.implementation.runtime.ToolApproval approval =
-                mock(com.shiyu.ai.agent.implementation.runtime.ToolApproval.class);
+        com.shiyu.ai.agent.implementation.runtime.model.ToolApproval approval =
+                mock(com.shiyu.ai.agent.implementation.runtime.model.ToolApproval.class);
         when(approval.id()).thenReturn("approval-1");
         when(pipeline.execute(eq(run), any(), any()))
                 .thenReturn(

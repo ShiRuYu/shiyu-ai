@@ -1,10 +1,5 @@
 #!/usr/bin/env python3
-"""Enforce JaCoCo thresholds independently for every domain implementation.
-
-The aggregate reactor report is intentionally not used here: a highly tested
-domain must not hide an untested domain. Run after Maven's ``verify`` phase so
-that each implementation module has a fresh ``jacoco.xml`` report.
-"""
+"""check domain coverage 脚本，执行项目架构与工程校验。"""
 
 from __future__ import annotations
 
@@ -15,15 +10,7 @@ from pathlib import Path
 
 
 def coverage(report: Path, source_root: Path, counter_type: str) -> float:
-    """Calculate coverage from authoritative source files only.
-
-    JaCoCo's module counter includes class files that are generated during
-    annotation processing (for example MapStruct ``*MapperImpl`` classes).
-    Those classes do not have a corresponding file under ``src/main/java``
-    and are not part of the non-generated-code contract.  Summing the line
-    elements from source files that actually exist keeps the gate deterministic
-    and avoids stale generated classes from previous builds.
-    """
+    """执行 coverage，处理输入并返回校验结果。"""
 
     root = ET.parse(report).getroot()
     missed = covered = 0
@@ -37,17 +24,8 @@ def coverage(report: Path, source_root: Path, counter_type: str) -> float:
             source_files += 1
             for line in source_file.findall("line"):
                 if counter_type == "LINE":
-                    # JaCoCo's line element exposes instruction counters as
-                    # ``mi``/``ci``.  A line is covered when at least one
-                    # instruction on that source line ran; summing those
-                    # instruction counts would report instruction coverage
-                    # while labeling it as line coverage.
                     missed_instructions = int(line.get("mi", "0"))
                     covered_instructions = int(line.get("ci", "0"))
-                    # JaCoCo can emit source declarations with no executable
-                    # instructions (for example an empty interface).  They
-                    # are not coverage obligations and must not become a
-                    # synthetic missed line.
                     if missed_instructions + covered_instructions == 0:
                         continue
                     if covered_instructions > 0:

@@ -1,8 +1,8 @@
 package com.shiyu.ai.agent.implementation.persistence.runtime;
 
 import com.shiyu.ai.agent.contract.runtime.*;
-import com.shiyu.ai.agent.implementation.runtime.*;
 import com.shiyu.ai.kernel.context.TenantId;
+import com.shiyu.ai.kernel.context.TenantScope;
 import com.shiyu.ai.kernel.context.UserId;
 
 import org.springframework.context.annotation.Primary;
@@ -15,23 +15,40 @@ import java.time.Instant;
 import java.util.List;
 import java.util.Optional;
 
+/**
+ * {@code JdbcAiRuntimeRepository} 定义智能体模块的持久化端口，隔离领域逻辑与具体存储实现。
+ */
 @Repository
 @Primary
 public class JdbcAiRuntimeRepository implements AiRunRepository {
+    /**
+     * JDBC，表示当前对象中的对应属性。
+     */
     private final JdbcTemplate jdbc;
 
+    /**
+     * {@code JdbcAiRuntimeRepository} 创建并初始化当前类型实例。
+     *
+     * @param jdbc 参数值，用于执行当前操作。
+     */
     public JdbcAiRuntimeRepository(JdbcTemplate jdbc) {
         this.jdbc = jdbc;
     }
 
+    /**
+     * {@code insert} 执行当前类型定义的业务操作。
+     *
+     * @param r 参数值，用于执行当前操作。
+     */
     @Override
     public void insert(AiRun r) {
+        long tenantValue = tenant(r.tenantId());
         jdbc.update(
                 "INSERT INTO AI_RUN"
                     + " (ID,TENANT_ID,OWNER_USER_ID,APP_ID,APP_VERSION_ID,SOURCE_TYPE,SOURCE_ID,PARENT_RUN_ID,TRACE_ID,CONVERSATION_ID,GENERATION_ID,EXECUTION_ID,MODEL,PROMPT_HASH,STATUS,PROMPT_TOKENS,COMPLETION_TOKENS,ESTIMATED_USAGE,COST_SNAPSHOT,CREATED_AT,COMPLETED_AT,ERROR_CODE,LAST_EVENT_SEQ,VERSION)"
                     + " VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)",
                 r.id(),
-                r.tenantId().value(),
+                tenantValue,
                 r.ownerUserId().value(),
                 r.appId(),
                 r.appVersionId(),
@@ -56,6 +73,15 @@ public class JdbcAiRuntimeRepository implements AiRunRepository {
                 r.version());
     }
 
+    /**
+     * {@code find} 查询并返回当前操作所需的数据。
+     *
+     * @param id 参数值，用于执行当前操作。
+     * @param tenant 参数值，用于执行当前操作。
+     * @param owner 参数值，用于执行当前操作。
+     *
+     * @return 返回当前操作产生的结果。
+     */
     @Override
     public Optional<AiRun> find(String id, TenantId tenant, long owner) {
         return jdbc.query(
@@ -66,6 +92,15 @@ public class JdbcAiRuntimeRepository implements AiRunRepository {
                 owner);
     }
 
+    /**
+     * {@code list} 查询并返回当前操作所需的数据。
+     *
+     * @param tenant 参数值，用于执行当前操作。
+     * @param owner 参数值，用于执行当前操作。
+     * @param limit 参数值，用于执行当前操作。
+     *
+     * @return 返回当前操作产生的结果。
+     */
     @Override
     public List<AiRun> list(TenantId tenant, long owner, int limit) {
         return jdbc.query(
@@ -77,6 +112,15 @@ public class JdbcAiRuntimeRepository implements AiRunRepository {
                 Math.max(1, Math.min(limit, 500)));
     }
 
+    /**
+     * {@code findByGeneration} 查询并返回当前操作所需的数据。
+     *
+     * @param generationId 参数值，用于执行当前操作。
+     * @param tenant 参数值，用于执行当前操作。
+     * @param owner 参数值，用于执行当前操作。
+     *
+     * @return 返回当前操作产生的结果。
+     */
     @Override
     public Optional<AiRun> findByGeneration(String generationId, TenantId tenant, long owner) {
         return jdbc.query(
@@ -88,6 +132,16 @@ public class JdbcAiRuntimeRepository implements AiRunRepository {
                 owner);
     }
 
+    /**
+     * {@code linkGeneration} 执行当前类型定义的业务操作。
+     *
+     * @param runId 参数值，用于执行当前操作。
+     * @param tenant 参数值，用于执行当前操作。
+     * @param owner 参数值，用于执行当前操作。
+     * @param generationId 参数值，用于执行当前操作。
+     *
+     * @return 返回当前操作产生的结果。
+     */
     @Override
     public int linkGeneration(String runId, TenantId tenant, long owner, String generationId) {
         return jdbc.update(
@@ -99,6 +153,15 @@ public class JdbcAiRuntimeRepository implements AiRunRepository {
                 owner);
     }
 
+    /**
+     * {@code findByExecution} 查询并返回当前操作所需的数据。
+     *
+     * @param executionId 参数值，用于执行当前操作。
+     * @param tenant 参数值，用于执行当前操作。
+     * @param owner 参数值，用于执行当前操作。
+     *
+     * @return 返回当前操作产生的结果。
+     */
     @Override
     public Optional<AiRun> findByExecution(String executionId, TenantId tenant, long owner) {
         return jdbc.query(
@@ -110,8 +173,17 @@ public class JdbcAiRuntimeRepository implements AiRunRepository {
                 owner);
     }
 
+    /**
+     * {@code update} 写入或更新当前模块中的业务数据。
+     *
+     * @param r 参数值，用于执行当前操作。
+     * @param expected 参数值，用于执行当前操作。
+     *
+     * @return 返回当前操作产生的结果。
+     */
     @Override
     public int update(AiRun r, long expected) {
+        long tenantValue = tenant(r.tenantId());
         return jdbc.update(
                 "UPDATE AI_RUN SET"
                     + " STATUS=?,PROMPT_TOKENS=?,COMPLETION_TOKENS=?,ESTIMATED_USAGE=?,COST_SNAPSHOT=?,COMPLETED_AT=?,ERROR_CODE=?,VERSION=?"
@@ -125,11 +197,22 @@ public class JdbcAiRuntimeRepository implements AiRunRepository {
                 r.errorCode(),
                 r.version(),
                 r.id(),
-                r.tenantId().value(),
+                tenantValue,
                 r.ownerUserId().value(),
                 expected);
     }
 
+    /**
+     * {@code updateTerminalAndAppend} 写入或更新当前模块中的业务数据。
+     *
+     * @param run 参数值，用于执行当前操作。
+     * @param expectedVersion 参数值，用于执行当前操作。
+     * @param eventType 参数值，用于执行当前操作。
+     * @param payload 参数值，用于执行当前操作。
+     * @param redacted 参数值，用于执行当前操作。
+     *
+     * @return 返回当前操作产生的结果。
+     */
     @Override
     @Transactional
     public AiRun updateTerminalAndAppend(
@@ -151,6 +234,19 @@ public class JdbcAiRuntimeRepository implements AiRunRepository {
         return run.withLastEventSeq(seq);
     }
 
+    /**
+     * {@code appendNextEvent} 执行当前类型定义的业务操作。
+     *
+     * @param runId 参数值，用于执行当前操作。
+     * @param tenantId 参数值，用于执行当前操作。
+     * @param ownerUserId 参数值，用于执行当前操作。
+     * @param type 参数值，用于执行当前操作。
+     * @param payload 参数值，用于执行当前操作。
+     * @param redacted 参数值，用于执行当前操作。
+     * @param createdAt 参数值，用于执行当前操作。
+     *
+     * @return 返回当前操作产生的结果。
+     */
     @Override
     @Transactional
     public long appendNextEvent(
@@ -165,6 +261,22 @@ public class JdbcAiRuntimeRepository implements AiRunRepository {
                 runId, tenantId, ownerUserId, type, payload, redacted, createdAt, null, null, null);
     }
 
+    /**
+     * {@code appendNextEvent} 执行当前类型定义的业务操作。
+     *
+     * @param runId 参数值，用于执行当前操作。
+     * @param tenantId 参数值，用于执行当前操作。
+     * @param ownerUserId 参数值，用于执行当前操作。
+     * @param type 参数值，用于执行当前操作。
+     * @param payload 参数值，用于执行当前操作。
+     * @param redacted 参数值，用于执行当前操作。
+     * @param createdAt 参数值，用于执行当前操作。
+     * @param turnId 参数值，用于执行当前操作。
+     * @param stepId 参数值，用于执行当前操作。
+     * @param providerRequestId 参数值，用于执行当前操作。
+     *
+     * @return 返回当前操作产生的结果。
+     */
     @Override
     @Transactional
     public long appendNextEvent(
@@ -179,10 +291,6 @@ public class JdbcAiRuntimeRepository implements AiRunRepository {
             String stepId,
             String providerRequestId) {
         String normalizedPayload = payload == null ? "{}" : payload;
-        // Lock the run row before allocating a sequence.  Increment-then-read
-        // is racy under H2's default connection pool: another writer can
-        // advance LAST_EVENT_SEQ between the two statements and both writers
-        // would attempt to persist the same sequence.
         Long current =
                 jdbc.query(
                         "SELECT LAST_EVENT_SEQ FROM AI_RUN WHERE ID=? AND TENANT_ID=? AND"
@@ -264,19 +372,23 @@ public class JdbcAiRuntimeRepository implements AiRunRepository {
                 || type == AiRunEventType.RUN_CANCELLED;
     }
 
+    /**
+     * {@code appendEvent} 执行当前类型定义的业务操作。
+     *
+     * @param e 参数值，用于执行当前操作。
+     *
+     * @return 返回当前操作产生的结果。
+     */
     @Override
     @Transactional
     public long appendEvent(AiRunEvent e) {
-        // Explicit sequence writes are used by import/replay tooling and tests,
-        // but must still participate in the same row lock as live appends. A
-        // MAX(SEQ) check alone allows two concurrent importers to observe the
-        // same value and violate AI_RUN.LAST_EVENT_SEQ.
+        long tenantValue = tenant(e.tenantId());
         Long runLast =
                 jdbc.query(
                         "SELECT LAST_EVENT_SEQ FROM AI_RUN WHERE ID=? AND TENANT_ID=? FOR UPDATE",
                         rs -> rs.next() ? rs.getLong(1) : null,
                         e.runId(),
-                        e.tenantId().value());
+                        tenantValue);
         if (runLast == null) throw new IllegalArgumentException("run not found");
         Long max =
                 jdbc.queryForObject(
@@ -284,13 +396,13 @@ public class JdbcAiRuntimeRepository implements AiRunRepository {
                                 + " TENANT_ID=?",
                         Long.class,
                         e.runId(),
-                        e.tenantId().value());
+                        tenantValue);
         List<AiRunEvent> existing =
                 jdbc.query(
                         "SELECT * FROM AI_RUN_EVENT WHERE RUN_ID=? AND TENANT_ID=? AND SEQ=?",
                         this::mapEvent,
                         e.runId(),
-                        e.tenantId().value(),
+                        tenantValue,
                         e.seq());
         if (!existing.isEmpty()) {
             AiRunEvent old = existing.get(0);
@@ -312,7 +424,7 @@ public class JdbcAiRuntimeRepository implements AiRunRepository {
                                 + " IN ('RUN_COMPLETED','RUN_FAILED','RUN_CANCELLED')",
                         Integer.class,
                         e.runId(),
-                        e.tenantId().value());
+                        tenantValue);
         if (terminalCount != null && terminalCount > 0)
             throw new IllegalStateException("run is already terminal");
         jdbc.update(
@@ -320,7 +432,7 @@ public class JdbcAiRuntimeRepository implements AiRunRepository {
                     + " (RUN_ID,TENANT_ID,SEQ,TYPE,SCHEMA_VERSION,TURN_ID,STEP_ID,PARENT_EVENT_SEQ,CONVERSATION_ID,GENERATION_ID,EXECUTION_ID,APP_ID,APP_VERSION_ID,PROVIDER_REQUEST_ID,TRACE_ID,PAYLOAD,REDACTED,CREATED_AT)"
                     + " VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)",
                 e.runId(),
-                e.tenantId().value(),
+                tenantValue,
                 e.seq(),
                 e.type().name(),
                 e.schemaVersion(),
@@ -343,7 +455,7 @@ public class JdbcAiRuntimeRepository implements AiRunRepository {
                                     + " LAST_EVENT_SEQ=?",
                             e.seq(),
                             e.runId(),
-                            e.tenantId().value(),
+                            tenantValue,
                             runLast)
                     != 1) {
                 throw new IllegalStateException("run event sequence was modified");
@@ -352,6 +464,17 @@ public class JdbcAiRuntimeRepository implements AiRunRepository {
         return e.seq();
     }
 
+    /**
+     * {@code events} 执行当前类型定义的业务操作。
+     *
+     * @param id 参数值，用于执行当前操作。
+     * @param tenant 参数值，用于执行当前操作。
+     * @param owner 参数值，用于执行当前操作。
+     * @param after 参数值，用于执行当前操作。
+     * @param limit 参数值，用于执行当前操作。
+     *
+     * @return 返回当前操作产生的结果。
+     */
     @Override
     public List<AiRunEvent> events(String id, TenantId tenant, long owner, long after, int limit) {
         find(id, tenant, owner).orElseThrow(() -> new IllegalArgumentException("run not found"));
@@ -419,6 +542,7 @@ public class JdbcAiRuntimeRepository implements AiRunRepository {
 
     private static long tenant(TenantId tenantId) {
         if (tenantId == null) throw new IllegalArgumentException("tenantId is required");
+        TenantScope.requireMatches(tenantId);
         return tenantId.value();
     }
 }

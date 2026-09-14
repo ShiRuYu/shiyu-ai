@@ -1,4 +1,4 @@
-"""Resource admission checks for safe continuous scheduling."""
+"""resources 脚本，执行项目架构与工程校验。"""
 from __future__ import annotations
 import ctypes, shutil
 from dataclasses import dataclass

@@ -1,4 +1,5 @@
 package com.shiyu.ai.memory.implementation.persistence.repository;
+import com.shiyu.ai.memory.implementation.domain.magma.port.MemorySemanticIndex;
 
 import com.shiyu.ai.common.vector.api.VectorStore;
 import com.shiyu.ai.common.vector.config.VectorStoreProperties;
@@ -6,19 +7,37 @@ import com.shiyu.ai.common.vector.model.VectorRecord;
 import com.shiyu.ai.common.vector.model.VectorSearchRequest;
 import com.shiyu.ai.kernel.context.TenantId;
 import com.shiyu.ai.memory.contract.model.*;
-import com.shiyu.ai.memory.implementation.domain.magma.*;
 
 import org.springframework.stereotype.Component;
 
 import java.nio.charset.StandardCharsets;
 import java.util.*;
 
+/**
+ * {@code JVectorMemorySemanticIndex} 承载平台模块的领域状态或协作行为，负责维护本类型的职责边界。
+ */
 @Component
 public class JVectorMemorySemanticIndex implements MemorySemanticIndex {
+    /**
+     * 存储，表示当前对象中的对应属性。
+     */
     private final VectorStore store;
+    /**
+     * 配置属性，表示当前对象中的对应属性。
+     */
     private final VectorStoreProperties properties;
+    /**
+     * 仓储，表示当前对象中的对应属性。
+     */
     private final JdbcMagmaMemoryRepository repository;
 
+    /**
+     * {@code JVectorMemorySemanticIndex} 创建并初始化当前类型实例。
+     *
+     * @param store 参数值，用于执行当前操作。
+     * @param properties 参数值，用于执行当前操作。
+     * @param repository 参数值，用于执行当前操作。
+     */
     public JVectorMemorySemanticIndex(
             VectorStore store,
             VectorStoreProperties properties,
@@ -28,6 +47,11 @@ public class JVectorMemorySemanticIndex implements MemorySemanticIndex {
         this.repository = repository;
     }
 
+    /**
+     * {@code upsert} 执行当前类型定义的业务操作。
+     *
+     * @param event 参数值，用于执行当前操作。
+     */
     public void upsert(MemoryEvent event) {
         Map<String, Object> metadata = new HashMap<>();
         metadata.put("tenantId", event.tenantId());
@@ -39,6 +63,14 @@ public class JVectorMemorySemanticIndex implements MemorySemanticIndex {
         store.flush();
     }
 
+    /**
+     * {@code search} 查询并返回当前操作所需的数据。
+     *
+     * @param query 参数值，用于执行当前操作。
+     * @param limit 参数值，用于执行当前操作。
+     *
+     * @return 返回当前操作产生的结果。
+     */
     public List<MemoryPath> search(MemoryQuery query, int limit) {
         Map<String, Object> filter = new HashMap<>();
         filter.put("tenantId", query.tenantId().value());
@@ -74,14 +106,23 @@ public class JVectorMemorySemanticIndex implements MemorySemanticIndex {
         return out;
     }
 
+    /**
+     * {@code delete} 释放或移除当前操作涉及的资源。
+     *
+     * @param id 参数值，用于执行当前操作。
+     */
     public void delete(String id) {
         store.delete(id);
         store.flush();
     }
 
+    /**
+     * {@code rebuild} 执行当前类型定义的业务操作。
+     *
+     * @param tenantId 参数值，用于执行当前操作。
+     * @param namespace 参数值，用于执行当前操作。
+     */
     public void rebuild(TenantId tenantId, String namespace) {
-        // Namespace rebuild is additive and never clears unrelated tenants/namespaces.
-        // A full store rebuild remains available to the vector SPI for disaster recovery.
         repository.findByNamespace(tenantId, namespace, 100000).forEach(this::upsert);
     }
 

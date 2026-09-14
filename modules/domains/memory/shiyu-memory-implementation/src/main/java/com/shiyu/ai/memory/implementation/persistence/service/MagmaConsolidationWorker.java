@@ -3,7 +3,8 @@ package com.shiyu.ai.memory.implementation.persistence.service;
 import com.shiyu.ai.common.core.jdbc.JdbcDialect;
 import com.shiyu.ai.common.core.utils.JSONUtils;
 import com.shiyu.ai.memory.contract.model.*;
-import com.shiyu.ai.memory.implementation.domain.magma.*;
+import com.shiyu.ai.kernel.context.TenantId;
+import com.shiyu.ai.kernel.context.TenantScope;
 
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.jdbc.core.JdbcTemplate;
@@ -22,23 +23,39 @@ import java.util.UUID;
 
 import javax.sql.DataSource;
 
-/** Local H2 consolidation worker. It leases jobs so a restart can resume pending work. */
+/**
+ * 异步执行记忆巩固任务并更新长期记忆索引。
+ */
 @Component
 public class MagmaConsolidationWorker {
+    /**
+     * 消息，表示当前对象中的对应属性。
+     */
     private static final String CONSOLIDATION_FAILURE_MESSAGE = "记忆整理失败，请稍后重试";
+    /**
+     * JDBC，表示当前对象中的对应属性。
+     */
     private final JdbcTemplate jdbc;
+    /**
+     * dialect 属性，保存当前对象中的业务数据或协作依赖。
+     */
     private final JdbcDialect dialect;
 
+    /**
+     * {@code MagmaConsolidationWorker} 创建并初始化当前类型实例。
+     *
+     * @param dataSource 参数值，用于执行当前操作。
+     */
     public MagmaConsolidationWorker(@Qualifier("agentDataSource") DataSource dataSource) {
         this.jdbc = new JdbcTemplate(dataSource);
         this.dialect = JdbcDialect.detect(jdbc);
     }
 
+    /**
+     * {@code processBatch} 执行当前模块定义的业务流程。
+     */
     @Scheduled(fixedDelayString = "${shiyu.memory.consolidation-delay-ms:3000}")
     public void processBatch() {
-        // A process crash leaves a RUNNING lease behind.  Expired RUNNING
-        // jobs are eligible again so restart recovery does not require a
-        // manual status repair.
         List<Long> ids =
                 jdbc.query(
                         "SELECT ID FROM MEMORY_CONSOLIDATION_JOB WHERE STATUS IN"
@@ -57,7 +74,17 @@ public class MagmaConsolidationWorker {
                             id);
             if (claimed == 0) continue;
             try {
-                consolidate(id);
+                Long tenantId =
+                        jdbc.queryForObject(
+                                "SELECT TENANT_ID FROM MEMORY_CONSOLIDATION_JOB WHERE ID=?",
+                                Long.class,
+                                id);
+                TenantScope.withTenant(
+                        new TenantId(tenantId),
+                        () -> {
+                            consolidate(id);
+                            return null;
+                        });
                 jdbc.update(
                         "UPDATE MEMORY_CONSOLIDATION_JOB SET"
                             + " STATUS='COMPLETED',LEASED_UNTIL=NULL,UPDATED_AT=CURRENT_TIMESTAMP"
@@ -75,7 +102,11 @@ public class MagmaConsolidationWorker {
         }
     }
 
-    /** Builds deterministic structure without making the fast ingestion path wait for a model. */
+    /**
+     * 合并并固化记忆。
+     *
+     * @param jobId jobId 参数。
+     */
     private void consolidate(long jobId) {
         Map<String, Object> job =
                 jdbc.queryForMap(

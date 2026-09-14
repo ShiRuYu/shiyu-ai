@@ -4,9 +4,18 @@ import com.shiyu.ai.iam.implementation.utils.SaTokenHelper;
 
 import lombok.extern.slf4j.Slf4j;
 
-/** Session lifecycle use cases: refresh and logout. */
+/**
+ * 编排 AuthSession 应用用例。
+ */
 @Slf4j
 public final class AuthSessionUseCase {
+    /**
+     * {@code refreshToken} 执行当前类型定义的业务操作。
+     *
+     * @param oldToken 参数值，用于执行当前操作。
+     *
+     * @return 返回当前操作产生的结果。
+     */
     public String refreshToken(String oldToken) {
         log.info("刷新Token");
         try {
@@ -28,6 +37,11 @@ public final class AuthSessionUseCase {
         }
     }
 
+    /**
+     * {@code logout} 执行当前类型定义的业务操作。
+     *
+     * @param token 参数值，用于执行当前操作。
+     */
     public void logout(String token) {
         log.info("注销退出");
         try {

@@ -28,6 +28,14 @@ import org.springframework.web.servlet.resource.NoResourceFoundException;
 @Slf4j
 public class ShiYuDefaultExceptionHandler {
 
+    /**
+     * {@code exception} 执行当前类型定义的业务操作。
+     *
+     * @param e 参数值，用于执行当前操作。
+     * @param bindingResult 参数值，用于执行当前操作。
+     *
+     * @return 返回当前操作产生的结果。
+     */
     @ExceptionHandler(BindException.class)
     public Result<String> exception(BindException e, BindingResult bindingResult) {
         log.warn(
@@ -52,6 +60,13 @@ public class ShiYuDefaultExceptionHandler {
         return e.getMessage();
     }
 
+    /**
+     * {@code exception} 执行当前类型定义的业务操作。
+     *
+     * @param e 参数值，用于执行当前操作。
+     *
+     * @return 返回当前操作产生的结果。
+     */
     @ExceptionHandler(ConstraintViolationException.class)
     public Result<String> exception(ConstraintViolationException e) {
         log.warn(
@@ -61,6 +76,13 @@ public class ShiYuDefaultExceptionHandler {
         return Result.fail(BizResultCode.ERR_10007, "请求参数校验失败");
     }
 
+    /**
+     * {@code exception} 执行当前类型定义的业务操作。
+     *
+     * @param e 参数值，用于执行当前操作。
+     *
+     * @return 返回当前操作产生的结果。
+     */
     @ExceptionHandler(HttpMessageNotReadableException.class)
     public Result<String> exception(HttpMessageNotReadableException e) {
         log.warn(
@@ -68,37 +90,65 @@ public class ShiYuDefaultExceptionHandler {
                 e.getClass().getSimpleName(),
                 messageLength(e));
         return Result.fail(BizResultCode.BAD_REQUEST, "请求体格式不正确");
-    }
+   }
 
-    @ExceptionHandler({
-        MissingServletRequestParameterException.class,
-        MissingServletRequestPartException.class
-    })
-    public Result<String> missingRequestPart(Exception e) {
-        log.warn(
+    /**
+     * {@code missingRequestPart} 执行当前类型定义的业务操作。
+     *
+     * @param e 参数值，用于执行当前操作。
+     *
+     * @return 返回当前操作产生的结果。
+     */
+   @ExceptionHandler({
+       MissingServletRequestParameterException.class,
+       MissingServletRequestPartException.class
+   })
+   public Result<String> missingRequestPart(Exception e) {
+       log.warn(
                 "请求参数缺失: errorType={}, errorMessageLength={}",
                 e.getClass().getSimpleName(),
                 messageLength(e));
         return Result.fail(BizResultCode.BAD_REQUEST, "请求参数不完整");
-    }
+   }
 
-    @ExceptionHandler({
-        HttpMediaTypeNotSupportedException.class,
-        HttpMediaTypeNotAcceptableException.class
-    })
-    public Result<String> unsupportedMediaType(Exception e) {
-        log.warn(
+    /**
+     * {@code unsupportedMediaType} 执行当前类型定义的业务操作。
+     *
+     * @param e 参数值，用于执行当前操作。
+     *
+     * @return 返回当前操作产生的结果。
+     */
+   @ExceptionHandler({
+       HttpMediaTypeNotSupportedException.class,
+       HttpMediaTypeNotAcceptableException.class
+   })
+   public Result<String> unsupportedMediaType(Exception e) {
+       log.warn(
                 "请求内容类型不正确: errorType={}, errorMessageLength={}",
                 e.getClass().getSimpleName(),
                 messageLength(e));
         return Result.fail(BizResultCode.BAD_REQUEST, "请求内容类型不正确");
     }
 
+    /**
+     * {@code exception} 执行当前类型定义的业务操作。
+     *
+     * @param e 参数值，用于执行当前操作。
+     *
+     * @return 返回当前操作产生的结果。
+     */
     @ExceptionHandler(MethodArgumentTypeMismatchException.class)
     public Result<String> exception(MethodArgumentTypeMismatchException e) {
         return Result.fail(BizResultCode.BAD_REQUEST, "请求参数格式不正确: " + e.getName());
     }
 
+    /**
+     * {@code exception} 执行当前类型定义的业务操作。
+     *
+     * @param e 参数值，用于执行当前操作。
+     *
+     * @return 返回当前操作产生的结果。
+     */
     @ExceptionHandler(ResponseStatusException.class)
     public Result<String> exception(ResponseStatusException e) {
         String message =
@@ -108,11 +158,25 @@ public class ShiYuDefaultExceptionHandler {
         return Result.common(null, e.getStatusCode().value(), message, false);
     }
 
+    /**
+     * {@code exception} 执行当前类型定义的业务操作。
+     *
+     * @param e 参数值，用于执行当前操作。
+     *
+     * @return 返回当前操作产生的结果。
+     */
     @ExceptionHandler(NoResourceFoundException.class)
     public Result<String> exception(NoResourceFoundException e) {
         return Result.fail(BizResultCode.NOT_FOUND, "资源不存在");
     }
 
+    /**
+     * {@code exception} 执行当前类型定义的业务操作。
+     *
+     * @param e 参数值，用于执行当前操作。
+     *
+     * @return 返回当前操作产生的结果。
+     */
     @ExceptionHandler(SecurityException.class)
     public Result<String> exception(SecurityException e) {
         log.warn(
@@ -122,18 +186,37 @@ public class ShiYuDefaultExceptionHandler {
         return Result.fail(BizResultCode.FORBIDDEN, "无权限执行该操作");
     }
 
-    /** Domain validation failures are client errors, never opaque 500 responses. */
+    /**
+     * 处理invalidargument。
+     *
+     * @param class class 参数。
+     *
+     * @return 处理结果。
+     */
     @ExceptionHandler(IllegalArgumentException.class)
     public Result<String> invalidArgument(IllegalArgumentException e) {
         return Result.common(null, 422, e.getMessage(), false);
     }
 
-    /** Optimistic-lock and state-machine conflicts have a stable 409 contract. */
+    /**
+     * 处理invalid状态。
+     *
+     * @param class class 参数。
+     *
+     * @return 处理结果。
+     */
     @ExceptionHandler(IllegalStateException.class)
     public Result<String> invalidState(IllegalStateException e) {
         return Result.common(null, 409, e.getMessage(), false);
     }
 
+    /**
+     * {@code exception} 执行当前类型定义的业务操作。
+     *
+     * @param e 参数值，用于执行当前操作。
+     *
+     * @return 返回当前操作产生的结果。
+     */
     @ExceptionHandler(BaseBizException.class)
     public Result<String> exception(BaseBizException e) {
         log.warn(
@@ -146,6 +229,13 @@ public class ShiYuDefaultExceptionHandler {
         return Result.fail(BizResultCode.ERR_10009, e.getMessage());
     }
 
+    /**
+     * {@code exception} 执行当前类型定义的业务操作。
+     *
+     * @param e 参数值，用于执行当前操作。
+     *
+     * @return 返回当前操作产生的结果。
+     */
     @ExceptionHandler(BaseException.class)
     public Result<String> exception(BaseException e) {
         log.error(
@@ -155,6 +245,13 @@ public class ShiYuDefaultExceptionHandler {
         return Result.fail(e.getMessage());
     }
 
+    /**
+     * {@code exception} 执行当前类型定义的业务操作。
+     *
+     * @param e 参数值，用于执行当前操作。
+     *
+     * @return 返回当前操作产生的结果。
+     */
     @ExceptionHandler(Exception.class)
     public Result<String> exception(Exception e) {
         log.error(

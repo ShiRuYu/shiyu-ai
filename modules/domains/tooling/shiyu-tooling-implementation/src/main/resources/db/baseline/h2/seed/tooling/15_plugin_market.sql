@@ -1,4 +1,3 @@
--- Realistic, disabled-by-default plugin catalog entry.
 INSERT INTO "PUBLIC"."PLUGIN_MARKET_ENTRY"
     ("ID", "VERSION", "SOURCE", "MANIFEST", "SIGNATURE", "PUBLISHER_KEY", "PERMISSIONS_JSON", "CHECKSUM", "UPDATE_POLICY", "PUBLISHED_AT", "ENABLED")
 VALUES ('edu-calculator', '1.0.0', 'https://plugins.example.invalid/edu-calculator-1.0.0.jar',

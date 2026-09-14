@@ -27,18 +27,18 @@ class ContextBoundaryArchitectureTest {
                     .because("ActorContext must enter through an explicit application boundary");
 
     @ArchTest
-    static final ArchRule DOMAIN_AND_APPLICATION_LAYERS_DO_NOT_READ_TENANT_SCOPE =
+    static final ArchRule DOMAIN_AND_PORT_LAYERS_DO_NOT_READ_TENANT_SCOPE =
             noClasses()
                     .that()
                     .resideInAnyPackage(
-                            "com.shiyu.ai..implementation.application..",
-                            "com.shiyu.ai..implementation.domain..")
+                            "com.shiyu.ai..implementation.domain..",
+                            "com.shiyu.ai..implementation..port..")
                     .should()
                     .dependOnClassesThat()
                     .haveFullyQualifiedName("com.shiyu.ai.kernel.context.TenantScope")
                     .because(
-                            "TenantScope is a transport/persistence adapter concern; commands carry"
-                                    + " TenantId explicitly");
+                            "TenantScope is not a domain or port concern; authorized application"
+                                    + " orchestration and persistence adapters validate it");
 
     @ArchTest
     static final ArchRule LEGACY_KNOWLEDGE_DOMAIN_DOES_NOT_READ_THREAD_CONTEXT =
@@ -59,7 +59,6 @@ class ContextBoundaryArchitectureTest {
                             "com.shiyu.ai.web.chat..",
                             "com.shiyu.ai.web.common..",
                             "com.shiyu.ai.web.conversation..",
-                            "com.shiyu.ai.web.education..",
                             "com.shiyu.ai.web.evaluation..",
                             "com.shiyu.ai.web.knowledge..",
                             "com.shiyu.ai.web.memory..",

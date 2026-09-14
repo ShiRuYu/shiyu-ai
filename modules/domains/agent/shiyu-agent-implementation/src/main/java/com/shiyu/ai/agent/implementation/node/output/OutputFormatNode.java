@@ -26,6 +26,9 @@ import java.util.Map;
 @Slf4j
 public class OutputFormatNode extends BaseNode {
 
+    /**
+     * 配置，表示当前对象中的对应属性。
+     */
     private OutputFormatConfig config;
 
     /** 备选的输入字段键集合，按优先级从高到低排列 */
@@ -80,6 +83,13 @@ public class OutputFormatNode extends BaseNode {
         }
     }
 
+    /**
+     * {@code doExecute} 执行当前类型定义的业务操作。
+     *
+     * @param input 参数值，用于执行当前操作。
+     *
+     * @return 返回当前操作产生的结果。
+     */
     @Override
     protected NodeOutput doExecute(NodeInput input) throws Exception {
         log.info("执行输出格式化节点：{}", config.getNodeName());
@@ -205,6 +215,11 @@ public class OutputFormatNode extends BaseNode {
         return content.trim().replaceAll("\\s+", " ");
     }
 
+    /**
+     * {@code getRequiredInputs} 查询并返回当前操作所需的数据。
+     *
+     * @return 返回当前操作产生的结果。
+     */
     @Override
     public java.util.List<NodeInputParam> getRequiredInputs() {
         return java.util.List.of(

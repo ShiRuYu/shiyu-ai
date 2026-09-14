@@ -5,6 +5,22 @@ import com.shiyu.ai.kernel.context.TenantId;
 import java.time.Instant;
 import java.util.Objects;
 
+/**
+ * {@code MemoryEdge} 封装模型模块中不可变的结构化数据，并作为相关操作之间的值对象。
+ * @param id 标识，表示该记录组件承载的数据。
+ * @param tenantId 租户标识，表示该记录组件承载的数据。
+ * @param sourceNodeId sourceNodeId 属性，表示该记录组件承载的数据。
+ * @param targetNodeId targetNodeId 属性，表示该记录组件承载的数据。
+ * @param graphType graphType 属性，表示该记录组件承载的数据。
+ * @param relationType relationType 属性，表示该记录组件承载的数据。
+ * @param directed directed 属性，表示该记录组件承载的数据。
+ * @param weight weight 属性，表示该记录组件承载的数据。
+ * @param confidence confidence 属性，表示该记录组件承载的数据。
+ * @param origin origin 属性，表示该记录组件承载的数据。
+ * @param evidenceSource evidenceSource 属性，表示该记录组件承载的数据。
+ * @param active active 属性，表示该记录组件承载的数据。
+ * @param createdAt 创建时间，表示该记录组件承载的数据。
+ */
 public record MemoryEdge(
         String id,
         TenantId tenantId,

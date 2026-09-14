@@ -5,7 +5,15 @@ import com.shiyu.ai.kernel.context.UserId;
 
 import java.util.Map;
 
-/** Tenant- and user-scoped query used to assemble agent context. */
+/**
+ * 描述 Agent 上下文检索所需的租户、用户、空间和查询条件。
+ * @param tenantId 租户标识，表示该记录组件承载的数据。
+ * @param ownerUserId 所属用户标识，表示该记录组件承载的数据。
+ * @param namespace 命名空间，表示该记录组件承载的数据。
+ * @param text text 属性，表示该记录组件承载的数据。
+ * @param topK topK 属性，表示该记录组件承载的数据。
+ * @param filters filters 属性，表示该记录组件承载的数据。
+ */
 public record ContextQuery(
         TenantId tenantId,
         UserId ownerUserId,

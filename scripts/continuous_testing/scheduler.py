@@ -1,4 +1,4 @@
-"""Single scheduler tick; safe to invoke repeatedly after process restart."""
+"""scheduler 脚本，执行项目架构与工程校验。"""
 from __future__ import annotations
 from pathlib import Path
 from .gates import all_gates

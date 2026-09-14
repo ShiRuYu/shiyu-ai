@@ -1,11 +1,4 @@
-"""Reject the retired Workspace term from backend identifiers.
-
-The UI may still expose an AI workbench URL, but backend domain/application
-code must describe authorization relationships as scopes.  Java identifiers
-are scanned case-insensitively; structured seed identifiers such as navigation
-codes are scanned for the PascalCase ``Workspace`` token.  Lowercase transport
-URLs such as ``/workspace`` remain valid at the HTTP/UI boundary.
-"""
+"""check backend terminology 脚本，执行项目架构与工程校验。"""
 
 from __future__ import annotations
 
@@ -26,7 +19,7 @@ SQL_IDENTIFIER = re.compile(r"\b[A-Za-z_$][A-Za-z0-9_$]*Workspace[A-Za-z0-9_$]*\
 
 
 def _without_comments_and_strings(text: str) -> str:
-    """Keep identifier text while masking comments and string/char literals."""
+    """执行 _without_comments_and_strings，处理输入并返回校验结果。"""
     pattern = re.compile(
         r"//[^\n]*|/\*.*?\*/|\"(?:\\.|[^\"\\])*\"|'(?:\\.|[^'\\])*'",
         re.DOTALL,

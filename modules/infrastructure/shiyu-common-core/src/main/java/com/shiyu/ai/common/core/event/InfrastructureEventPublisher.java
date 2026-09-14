@@ -1,5 +1,7 @@
 package com.shiyu.ai.common.core.event;
 
-/** Replaceable transport boundary for durable cross-module events. */
+/**
+ * InfrastructureEventPublisher 接口，定义基础设施模块的能力边界。
+ */
 @FunctionalInterface
 public interface InfrastructureEventPublisher extends DomainEventPublisher {}

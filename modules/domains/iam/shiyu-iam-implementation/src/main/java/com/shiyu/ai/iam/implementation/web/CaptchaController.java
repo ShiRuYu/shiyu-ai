@@ -20,8 +20,16 @@ import org.springframework.web.bind.annotation.*;
 @RequestMapping("/api/iam/auth/captcha")
 public class CaptchaController {
 
+    /**
+     * captchaService 属性，保存当前对象中的业务数据或协作依赖。
+     */
     private final CaptchaService captchaService;
 
+    /**
+     * {@code CaptchaController} 创建并初始化当前类型实例。
+     *
+     * @param captchaService 参数值，用于执行当前操作。
+     */
     public CaptchaController(CaptchaService captchaService) {
         this.captchaService = captchaService;
     }

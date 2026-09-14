@@ -11,6 +11,7 @@ import com.shiyu.ai.iam.implementation.persistence.dataobject.UserScopeRoleDO;
 import com.shiyu.ai.iam.implementation.persistence.mapper.AuthCodeMapper;
 import com.shiyu.ai.iam.implementation.persistence.mapper.RoleMapper;
 import com.shiyu.ai.kernel.context.TenantId;
+import com.shiyu.ai.kernel.context.TenantScope;
 import com.shiyu.ai.kernel.context.UserId;
 
 import jakarta.annotation.Resource;
@@ -29,8 +30,14 @@ import java.util.stream.Collectors;
 public class AuthRepositoryImpl
         implements com.shiyu.ai.iam.implementation.port.repository.AuthRepository {
 
+    /**
+     * authCodeMapper 属性，保存当前对象中的业务数据或协作依赖。
+     */
     @Resource private AuthCodeMapper authCodeMapper;
 
+    /**
+     * 角色映射器，表示当前对象中的对应属性。
+     */
     @Resource private RoleMapper roleMapper;
 
     /**
@@ -166,7 +173,7 @@ public class AuthRepositoryImpl
     }
 
     /**
-     * 根据用户名查询按钮级权限码列表
+     * 解析编码by用户名。
      *
      * <p>JOIN: auth_user → auth_user_scope_role → auth_role_scope_auth_code → auth_auth_code
      */
@@ -214,7 +221,7 @@ public class AuthRepositoryImpl
     }
 
     /**
-     * 根据用户 ID 查询按钮级权限码列表
+     * 解析编码by用户标识。
      *
      * <p>JOIN: auth_user_scope_role → auth_role_scope_auth_code → auth_auth_code
      *
@@ -309,6 +316,7 @@ public class AuthRepositoryImpl
         if (value.value() <= 0) {
             throw new IllegalArgumentException("tenantId must be positive");
         }
+        TenantScope.requireMatchesIfBound(value);
         return value.value();
     }
 

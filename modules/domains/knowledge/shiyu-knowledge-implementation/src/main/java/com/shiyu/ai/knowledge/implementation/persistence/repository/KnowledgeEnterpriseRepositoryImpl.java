@@ -1,11 +1,14 @@
 package com.shiyu.ai.knowledge.implementation.persistence.repository;
 
+import com.shiyu.ai.knowledge.implementation.domain.port.repository.KnowledgeEnterpriseRepository;
+
 import com.mybatisflex.core.paginate.Page;
 import com.mybatisflex.core.query.QueryWrapper;
-import com.mybatisflex.core.tenant.TenantManager;
+import com.shiyu.ai.common.mybatis.tenant.TenantQueryExecutor;
 import com.shiyu.ai.common.core.api.PageData;
 import com.shiyu.ai.common.core.utils.MapstructUtils;
 import com.shiyu.ai.kernel.context.TenantId;
+import com.shiyu.ai.kernel.context.TenantScope;
 import com.shiyu.ai.knowledge.implementation.domain.model.KnowledgeAuditLogBO;
 import com.shiyu.ai.knowledge.implementation.domain.model.KnowledgeDocumentVersionBO;
 import com.shiyu.ai.knowledge.implementation.domain.model.KnowledgeEvaluationCaseBO;
@@ -35,18 +38,42 @@ import org.springframework.stereotype.Repository;
 import java.time.LocalDateTime;
 import java.util.List;
 
+/**
+ * {@code KnowledgeEnterpriseRepositoryImpl} 实现知识模块的持久化端口，负责在领域对象与存储模型之间转换。
+ */
 @Repository
 @RequiredArgsConstructor
 public class KnowledgeEnterpriseRepositoryImpl
         implements com.shiyu.ai.knowledge.implementation.domain.port.repository
                 .KnowledgeEnterpriseRepository {
 
+    /**
+     * spaceMapper 属性，保存当前对象中的业务数据或协作依赖。
+     */
     private final KnowledgeSpaceMapper spaceMapper;
+    /**
+     * memberMapper 属性，保存当前对象中的业务数据或协作依赖。
+     */
     private final KnowledgeSpaceMemberMapper memberMapper;
+    /**
+     * 版本映射器，表示当前对象中的对应属性。
+     */
     private final KnowledgeDocumentVersionMapper versionMapper;
+    /**
+     * reviewMapper 属性，保存当前对象中的业务数据或协作依赖。
+     */
     private final KnowledgeReviewRecordMapper reviewMapper;
+    /**
+     * jobMapper 属性，保存当前对象中的业务数据或协作依赖。
+     */
     private final KnowledgeIngestionJobMapper jobMapper;
+    /**
+     * 审计映射器，表示当前对象中的对应属性。
+     */
     private final KnowledgeAuditLogMapper auditMapper;
+    /**
+     * evaluationMapper 属性，保存当前对象中的业务数据或协作依赖。
+     */
     private final KnowledgeEvaluationCaseMapper evaluationMapper;
 
     public KnowledgeSpaceBO findSpace(TenantId tenantId, Long id) {
@@ -66,7 +93,7 @@ public class KnowledgeEnterpriseRepositoryImpl
             return null;
         }
         return MapstructUtils.convert(
-                TenantManager.withoutTenantCondition(
+                TenantQueryExecutor.readAcrossTenants(
                         () ->
                                 spaceMapper.selectOneByQuery(
                                         QueryWrapper.create()
@@ -79,7 +106,7 @@ public class KnowledgeEnterpriseRepositoryImpl
     public List<KnowledgeSpaceBO> findActiveSpacesByTenant(TenantId tenantId) {
         requireTenant(tenantId);
         return MapstructUtils.convert(
-                TenantManager.withoutTenantCondition(
+                TenantQueryExecutor.readAcrossTenants(
                         () ->
                                 spaceMapper.selectListByQuery(
                                         QueryWrapper.create()
@@ -90,10 +117,14 @@ public class KnowledgeEnterpriseRepositoryImpl
                 KnowledgeSpaceBO.class);
     }
 
-    /** Returns active spaces for backup manifests without inheriting the request tenant filter. */
+    /**
+     * 查询全部启用知识空间。
+     *
+     * @return 结果列表。
+     */
     public List<KnowledgeSpaceBO> findAllActiveSpaces() {
         return MapstructUtils.convert(
-                TenantManager.withoutTenantCondition(
+                TenantQueryExecutor.readAcrossTenants(
                         () ->
                                 spaceMapper.selectListByQuery(
                                         QueryWrapper.create()
@@ -104,11 +135,18 @@ public class KnowledgeEnterpriseRepositoryImpl
                 KnowledgeSpaceBO.class);
     }
 
-    /** Find a space by tenant while provisioning outside the current tenant context. */
+    /**
+     * 查询知识空间by租户编码。
+     *
+     * @param tenantId 租户标识。
+     * @param code code 参数。
+     *
+     * @return 处理结果。
+     */
     public KnowledgeSpaceBO findSpaceByTenantAndCode(TenantId tenantId, String code) {
         requireTenant(tenantId);
         return MapstructUtils.convert(
-                TenantManager.withoutTenantCondition(
+                TenantQueryExecutor.readAcrossTenants(
                         () ->
                                 spaceMapper.selectOneByQuery(
                                         QueryWrapper.create()
@@ -382,7 +420,7 @@ public class KnowledgeEnterpriseRepositoryImpl
 
     public List<KnowledgeIngestionJobBO> pollPendingJobs(int limit) {
         return MapstructUtils.convert(
-                TenantManager.withoutTenantCondition(
+                TenantQueryExecutor.readAcrossTenants(
                         () ->
                                 jobMapper.selectListByQuery(
                                         QueryWrapper.create()
@@ -399,7 +437,7 @@ public class KnowledgeEnterpriseRepositoryImpl
 
     public List<KnowledgeIngestionJobBO> findStaleJobs(LocalDateTime heartbeatBefore) {
         return MapstructUtils.convert(
-                TenantManager.withoutTenantCondition(
+                TenantQueryExecutor.readAcrossTenants(
                         () ->
                                 jobMapper.selectListByQuery(
                                         QueryWrapper.create()
@@ -442,6 +480,7 @@ public class KnowledgeEnterpriseRepositoryImpl
 
     private static void requireTenant(TenantId tenantId) {
         if (tenantId == null) throw new IllegalArgumentException("tenantId must not be null");
+        TenantScope.requireMatches(tenantId);
     }
 
     public KnowledgeEvaluationCaseBO insertEvaluation(

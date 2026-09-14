@@ -100,6 +100,11 @@ public class ServletUtils extends JakartaServletUtil {
         return getRequest().getSession();
     }
 
+    /**
+     * {@code getRequestAttributes} 查询并返回当前操作所需的数据。
+     *
+     * @return 返回当前操作产生的结果。
+     */
     public static ServletRequestAttributes getRequestAttributes() {
         RequestAttributes attributes = RequestContextHolder.getRequestAttributes();
         return (ServletRequestAttributes) attributes;
@@ -148,6 +153,11 @@ public class ServletUtils extends JakartaServletUtil {
         return StringUtils.equalsAnyIgnoreCase(ajax, "json", "xml");
     }
 
+    /**
+     * {@code getClientIP} 查询并返回当前操作所需的数据。
+     *
+     * @return 返回当前操作产生的结果。
+     */
     public static String getClientIP() {
         return getClientIP(getRequest());
     }

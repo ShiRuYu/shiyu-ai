@@ -14,8 +14,14 @@ import org.springframework.stereotype.Component;
 
 import java.util.List;
 
+/**
+ * {@code KnowledgeRelationRepositoryImpl} 实现知识模块的持久化端口，负责在领域对象与存储模型之间转换。
+ */
 @Component
 public class KnowledgeRelationRepositoryImpl implements KnowledgeRelationRepository {
+    /**
+     * relationMapper 属性，保存当前对象中的业务数据或协作依赖。
+     */
     @Resource private KnowledgeRelationMapper relationMapper;
 
     @Override
@@ -28,6 +34,15 @@ public class KnowledgeRelationRepositoryImpl implements KnowledgeRelationReposit
                                 .eq(KnowledgeRelationDO::getSourceId, sourceId)));
     }
 
+    /**
+     * {@code findByTargetId} 查询并返回当前操作所需的数据。
+     *
+     * @param tenantId 参数值，用于执行当前操作。
+     * @param spaceId 参数值，用于执行当前操作。
+     * @param targetId 参数值，用于执行当前操作。
+     *
+     * @return 返回当前操作产生的结果。
+     */
     @Override
     public List<KnowledgeRelationBO> findByTargetId(
             TenantId tenantId, Long spaceId, Long targetId) {
@@ -38,6 +53,16 @@ public class KnowledgeRelationRepositoryImpl implements KnowledgeRelationReposit
                                 .eq(KnowledgeRelationDO::getTargetId, targetId)));
     }
 
+    /**
+     * {@code findBySourceIdAndType} 查询并返回当前操作所需的数据。
+     *
+     * @param tenantId 参数值，用于执行当前操作。
+     * @param spaceId 参数值，用于执行当前操作。
+     * @param sourceId 参数值，用于执行当前操作。
+     * @param type 参数值，用于执行当前操作。
+     *
+     * @return 返回当前操作产生的结果。
+     */
     @Override
     public List<KnowledgeRelationBO> findBySourceIdAndType(
             TenantId tenantId, Long spaceId, Long sourceId, String type) {
@@ -49,6 +74,16 @@ public class KnowledgeRelationRepositoryImpl implements KnowledgeRelationReposit
                                 .eq(KnowledgeRelationDO::getRelationType, type)));
     }
 
+    /**
+     * {@code findByTargetIdAndType} 查询并返回当前操作所需的数据。
+     *
+     * @param tenantId 参数值，用于执行当前操作。
+     * @param spaceId 参数值，用于执行当前操作。
+     * @param targetId 参数值，用于执行当前操作。
+     * @param type 参数值，用于执行当前操作。
+     *
+     * @return 返回当前操作产生的结果。
+     */
     @Override
     public List<KnowledgeRelationBO> findByTargetIdAndType(
             TenantId tenantId, Long spaceId, Long targetId, String type) {
@@ -60,6 +95,14 @@ public class KnowledgeRelationRepositoryImpl implements KnowledgeRelationReposit
                                 .eq(KnowledgeRelationDO::getRelationType, type)));
     }
 
+    /**
+     * {@code insert} 执行当前类型定义的业务操作。
+     *
+     * @param tenantId 参数值，用于执行当前操作。
+     * @param bo 参数值，用于执行当前操作。
+     *
+     * @return 返回当前操作产生的结果。
+     */
     @Override
     public int insert(TenantId tenantId, KnowledgeRelationBO bo) {
         bo.setTenantId(tenantId.value());
@@ -68,6 +111,17 @@ public class KnowledgeRelationRepositoryImpl implements KnowledgeRelationReposit
         return relationMapper.insert(data);
     }
 
+    /**
+     * {@code deleteBySourceAndTargetAndType} 释放或移除当前操作涉及的资源。
+     *
+     * @param tenantId 参数值，用于执行当前操作。
+     * @param spaceId 参数值，用于执行当前操作。
+     * @param sourceId 参数值，用于执行当前操作。
+     * @param targetId 参数值，用于执行当前操作。
+     * @param type 参数值，用于执行当前操作。
+     *
+     * @return 返回当前操作产生的结果。
+     */
     @Override
     public int deleteBySourceAndTargetAndType(
             TenantId tenantId, Long spaceId, Long sourceId, Long targetId, String type) {
@@ -79,6 +133,15 @@ public class KnowledgeRelationRepositoryImpl implements KnowledgeRelationReposit
                         .eq(KnowledgeRelationDO::getRelationType, type));
     }
 
+    /**
+     * {@code deleteBySourceIdOrTargetId} 释放或移除当前操作涉及的资源。
+     *
+     * @param tenantId 参数值，用于执行当前操作。
+     * @param spaceId 参数值，用于执行当前操作。
+     * @param knowledgeId 参数值，用于执行当前操作。
+     *
+     * @return 返回当前操作产生的结果。
+     */
     @Override
     public int deleteBySourceIdOrTargetId(TenantId tenantId, Long spaceId, Long knowledgeId) {
         int count =
@@ -94,6 +157,14 @@ public class KnowledgeRelationRepositoryImpl implements KnowledgeRelationReposit
         return count;
     }
 
+    /**
+     * {@code findBySpace} 查询并返回当前操作所需的数据。
+     *
+     * @param tenantId 参数值，用于执行当前操作。
+     * @param spaceId 参数值，用于执行当前操作。
+     *
+     * @return 返回当前操作产生的结果。
+     */
     @Override
     public List<KnowledgeRelationBO> findBySpace(TenantId tenantId, Long spaceId) {
         return convert(
@@ -101,6 +172,17 @@ public class KnowledgeRelationRepositoryImpl implements KnowledgeRelationReposit
                         base(tenantId).eq(KnowledgeRelationDO::getSpaceId, spaceId)));
     }
 
+    /**
+     * {@code exists} 执行当前类型定义的业务操作。
+     *
+     * @param tenantId 参数值，用于执行当前操作。
+     * @param spaceId 参数值，用于执行当前操作。
+     * @param sourceId 参数值，用于执行当前操作。
+     * @param targetId 参数值，用于执行当前操作。
+     * @param type 参数值，用于执行当前操作。
+     *
+     * @return 返回当前操作产生的结果。
+     */
     @Override
     public boolean exists(
             TenantId tenantId, Long spaceId, Long sourceId, Long targetId, String type) {
@@ -113,6 +195,12 @@ public class KnowledgeRelationRepositoryImpl implements KnowledgeRelationReposit
                 > 0;
     }
 
+    /**
+     * {@code assignDefaultSpace} 执行当前类型定义的业务操作。
+     *
+     * @param tenantId 参数值，用于执行当前操作。
+     * @param spaceId 参数值，用于执行当前操作。
+     */
     @Override
     public void assignDefaultSpace(TenantId tenantId, Long spaceId) {
         List<KnowledgeRelationDO> records =

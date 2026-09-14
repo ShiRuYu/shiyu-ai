@@ -1,4 +1,6 @@
 package com.shiyu.ai.governance.implementation;
 
-/** Marker for code owned exclusively by the Governance bounded context. */
+/**
+ * GovernanceImplementationModule 模块接口，标识治理模块的边界。
+ */
 public interface GovernanceImplementationModule {}

@@ -26,6 +26,9 @@ import java.util.Map;
 @Slf4j
 public class TransformNode extends BaseNode {
 
+    /**
+     * 配置，表示当前对象中的对应属性。
+     */
     private TransformConfig config;
 
     /** 备选的输入字段键，按优先级从高到低排列 */
@@ -79,6 +82,13 @@ public class TransformNode extends BaseNode {
         }
     }
 
+    /**
+     * {@code doExecute} 执行当前类型定义的业务操作。
+     *
+     * @param input 参数值，用于执行当前操作。
+     *
+     * @return 返回当前操作产生的结果。
+     */
     @Override
     protected NodeOutput doExecute(NodeInput input) throws Exception {
         log.info("执行数据转换节点：{}", config.getNodeName());
@@ -196,6 +206,11 @@ public class TransformNode extends BaseNode {
         return template.replace("{input}", inputData);
     }
 
+    /**
+     * {@code getRequiredInputs} 查询并返回当前操作所需的数据。
+     *
+     * @return 返回当前操作产生的结果。
+     */
     @Override
     public java.util.List<NodeInputParam> getRequiredInputs() {
         return java.util.List.of(

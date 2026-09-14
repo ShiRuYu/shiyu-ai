@@ -1,4 +1,3 @@
--- Realistic conversation seed matching the usage record and default admin user.
 INSERT INTO "PUBLIC"."CHAT_CONVERSATION"
     ("ID", "TENANT_ID", "OWNER_USER_ID", "SCENE_TYPE", "TITLE", "STATUS", "PLATFORM", "MODEL", "VERSION", "CREATED_AT", "UPDATED_AT")
 VALUES ('demo-conversation-20260908', 1, 2, 'EDUCATION_TUTOR', '一元一次方程复习', 'ACTIVE',

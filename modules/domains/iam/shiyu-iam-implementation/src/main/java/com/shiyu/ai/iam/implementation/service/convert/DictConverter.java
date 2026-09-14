@@ -14,7 +14,21 @@ public interface DictConverter {
 
     DictConverter INSTANCE = Mappers.getMapper(DictConverter.class);
 
+    /**
+     * 执行 {@code toVO} 定义的接口操作。
+     *
+     * @param bo 方法参数。
+     *
+     * @return 操作结果。
+     */
     DictVO toVO(DictBO bo);
 
+    /**
+     * 执行 {@code toVOList} 定义的接口操作。
+     *
+     * @param boList 方法参数。
+     *
+     * @return 符合条件的结果集合。
+     */
     List<DictVO> toVOList(List<DictBO> boList);
 }

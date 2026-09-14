@@ -19,6 +19,9 @@ import java.util.List;
 public class DictRepositoryImpl
         implements com.shiyu.ai.iam.implementation.port.repository.DictRepository {
 
+    /**
+     * dictMapper 属性，保存当前对象中的业务数据或协作依赖。
+     */
     @Resource private DictMapper dictMapper;
 
     /** 分页查询字典列表 */

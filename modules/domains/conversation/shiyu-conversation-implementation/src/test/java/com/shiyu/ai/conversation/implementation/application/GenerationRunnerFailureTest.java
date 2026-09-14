@@ -24,7 +24,9 @@ import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 
-/** Regression for providers that fail before returning a reactive Publisher. */
+/**
+ * 验证 GenerationRunnerFailure 的功能、边界条件和集成行为。
+ */
 class GenerationRunnerFailureTest {
     @Test
     void synchronousProviderFailureLeavesAReplayedFailedRun() {

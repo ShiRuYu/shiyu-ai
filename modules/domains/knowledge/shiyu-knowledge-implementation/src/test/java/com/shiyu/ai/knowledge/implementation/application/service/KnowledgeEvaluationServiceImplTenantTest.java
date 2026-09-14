@@ -14,7 +14,7 @@ import com.shiyu.ai.kernel.context.UserId;
 import com.shiyu.ai.knowledge.implementation.application.KnowledgeSpaceService;
 import com.shiyu.ai.knowledge.implementation.domain.model.KnowledgeEvaluationCaseBO;
 import com.shiyu.ai.knowledge.implementation.domain.port.repository.KnowledgeEnterpriseRepository;
-import com.shiyu.ai.knowledge.implementation.infrastructure.index.KnowledgeIndexService;
+import com.shiyu.ai.knowledge.implementation.infrastructure.index.service.KnowledgeIndexService;
 
 import org.junit.jupiter.api.Test;
 

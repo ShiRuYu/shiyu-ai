@@ -17,18 +17,34 @@ import java.util.Locale;
 import java.util.Map;
 
 /**
- * The one prompt assembly path used by preview and model execution. Context is intentionally opt-in
- * via sceneType so ordinary conversations remain independent from the memory and knowledge
- * providers.
+ * ConversationPromptService 服务接口，负责执行会话领域相关业务操作。
  */
 @Component
 public final class ConversationPromptService {
+    /**
+     * contextAssembly 属性，保存当前对象中的业务数据或协作依赖。
+     */
     private final ContextAssemblyPort contextAssembly;
 
+    /**
+     * {@code ConversationPromptService} 创建并初始化当前类型实例。
+     *
+     * @param contextAssembly 参数值，用于执行当前操作。
+     */
     public ConversationPromptService(ContextAssemblyPort contextAssembly) {
         this.contextAssembly = contextAssembly;
     }
 
+    /**
+     * {@code assemble} 执行当前类型定义的业务操作。
+     *
+     * @param conversation 参数值，用于执行当前操作。
+     * @param allMessages 参数值，用于执行当前操作。
+     * @param tenantId 参数值，用于执行当前操作。
+     * @param ownerUserId 参数值，用于执行当前操作。
+     *
+     * @return 返回当前操作产生的结果。
+     */
     public PromptAssembly assemble(
             Conversation conversation,
             List<ConversationMessage> allMessages,
@@ -53,11 +69,6 @@ public final class ConversationPromptService {
                         .append(item.content())
                         .append('\n');
             }
-            // Ephemeral context is deliberately not written as a conversation message.
-            // Keep platform/system instructions first, then place retrieved context
-            // before the historical user/assistant turns.  This is also the order
-            // exposed by Prompt Preview, so preview and provider requests hash the
-            // same structured message sequence.
             int insertionPoint = 0;
             while (insertionPoint < modelMessages.size()
                     && "system".equalsIgnoreCase(modelMessages.get(insertionPoint).role())) {
@@ -102,15 +113,12 @@ public final class ConversationPromptService {
                                     Map.of(
                                             "conversationId",
                                             conversation.id(),
-                                            // Long-term memory is scoped to the current user;
-                                            // other domains must supply their own typed subject.
                                             "subjectType",
                                             "USER",
                                             "subjectId",
                                             String.valueOf(ownerUserId))))
                     .items();
         } catch (RuntimeException ignored) {
-            // Retrieval is an enrichment path; it must not block a chat request.
             return List.of();
         }
     }
@@ -143,6 +151,13 @@ public final class ConversationPromptService {
                         .toList());
     }
 
+    /**
+     * {@code PromptAssembly} 封装会话模块中不可变的结构化数据，并作为相关操作之间的值对象。
+     * @param conversationMessages conversationMessages 属性，表示该记录组件承载的数据。
+     * @param modelMessages modelMessages 属性，表示该记录组件承载的数据。
+     * @param contextItems contextItems 属性，表示该记录组件承载的数据。
+     * @param contextTrace contextTrace 属性，表示该记录组件承载的数据。
+     */
     public record PromptAssembly(
             List<ConversationMessage> conversationMessages,
             List<ChatMessage> modelMessages,

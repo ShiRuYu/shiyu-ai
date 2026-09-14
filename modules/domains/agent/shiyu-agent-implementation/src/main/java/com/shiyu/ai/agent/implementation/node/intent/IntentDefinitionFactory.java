@@ -25,7 +25,7 @@ import java.util.function.Predicate;
  */
 public class IntentDefinitionFactory {
 
-    /** intentTable: row = agentId, column = category, value = List&lt;IntentDefinition&gt; */
+    /** 意图定义注册表，按分类保存可用的意图定义。 */
     private static Table<String, String, List<IntentDefinition>> intentTable =
             HashBasedTable.create();
 
@@ -125,9 +125,6 @@ public class IntentDefinitionFactory {
     public static List<IntentDefinition> getAll(String row) {
         Map<String, List<IntentDefinition>> rowMap = intentTable.row(row);
         if (rowMap == null || rowMap.isEmpty()) {
-            // A missing custom row may fall back to the default row, but a
-            // missing default row must terminate with an empty result rather
-            // than recursively asking for the same row forever.
             if (!"default".equals(row)) {
                 Map<String, List<IntentDefinition>> defaultRow = intentTable.row("default");
                 if (defaultRow != null && !defaultRow.isEmpty()) {

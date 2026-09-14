@@ -63,9 +63,6 @@ class MenuRepositorySecurityTest {
             when(menus.selectCountByQuery(any(QueryWrapper.class))).thenReturn(1L, 0L, 1L, 0L);
             assertTrue(repository.existsByName(TENANT, "Home", null));
             assertFalse(repository.existsByPath(TENANT, "/home", 9L));
-            // Exercise every optional management filter and explicit pagination
-            // branch; the security predicate must still be added to both count
-            // and page queries.
             when(menus.selectCountByQuery(any(QueryWrapper.class))).thenReturn(1L, 0L);
             when(menus.selectListByQuery(any(QueryWrapper.class))).thenReturn(List.of(root));
             assertEquals(

@@ -8,10 +8,12 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 import com.shiyu.ai.governance.contract.UsageSourceType;
 import com.shiyu.ai.kernel.context.CorrelationId;
 import com.shiyu.ai.kernel.context.TenantId;
+import com.shiyu.ai.kernel.context.TenantScope;
 import com.shiyu.ai.kernel.context.UserId;
 
 import org.h2.jdbcx.JdbcDataSource;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.AfterEach;
 import org.springframework.core.io.ClassPathResource;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.datasource.init.ResourceDatabasePopulator;
@@ -23,6 +25,11 @@ import java.util.concurrent.atomic.AtomicInteger;
 
 class JdbcUsageLedgerTest {
 
+    @AfterEach
+    void clearScope() {
+        TenantScope.clear();
+    }
+
     @Test
     void atomicallyDeduplicatesWithinTenant() {
         JdbcTemplate jdbc = initializedDatabase();
@@ -30,6 +37,7 @@ class JdbcUsageLedgerTest {
         JdbcUsageLedger ledger =
                 new JdbcUsageLedger(jdbc, () -> "usage-" + sequence.incrementAndGet());
         UsageLedger.Entry entry = entry(new TenantId(5));
+        TenantScope.set(new TenantId(5));
 
         assertTrue(ledger.insertIfAbsent(entry));
         assertFalse(ledger.insertIfAbsent(entry));
@@ -43,8 +51,11 @@ class JdbcUsageLedgerTest {
         JdbcTemplate jdbc = initializedDatabase();
         JdbcUsageLedger ledger = new JdbcUsageLedger(jdbc, UUID::randomUUID);
 
+        TenantScope.set(new TenantId(5));
         assertTrue(ledger.insertIfAbsent(entry(new TenantId(5))));
-        assertTrue(ledger.insertIfAbsent(entry(new TenantId(6))));
+        assertTrue(
+                TenantScope.withTenant(
+                        new TenantId(6), () -> ledger.insertIfAbsent(entry(new TenantId(6)))));
     }
 
     @Test
@@ -52,7 +63,19 @@ class JdbcUsageLedgerTest {
         JdbcUsageLedger ledger =
                 new JdbcUsageLedger(new JdbcTemplate(newDataSource()), UUID::randomUUID);
 
+        TenantScope.set(new TenantId(5));
         assertThrows(RuntimeException.class, () -> ledger.insertIfAbsent(entry(new TenantId(5))));
+    }
+
+    @Test
+    void rejectsAnEntryOutsideTheCurrentScopeBeforeWriting() {
+        JdbcUsageLedger ledger =
+                new JdbcUsageLedger(new JdbcTemplate(newDataSource()), UUID::randomUUID);
+        TenantScope.set(new TenantId(5));
+
+        assertThrows(
+                IllegalArgumentException.class,
+                () -> ledger.insertIfAbsent(entry(new TenantId(6))));
     }
 
     private static JdbcTemplate initializedDatabase() {

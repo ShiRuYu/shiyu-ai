@@ -147,6 +147,20 @@ class PackageInventoryTest(unittest.TestCase):
         self.assertEqual(1, len(inventory.path_mismatches))
         self.assertIn("com/example/expected/Alpha.java", inventory.path_mismatches[0])
 
+    def test_classifies_business_education_as_the_education_migration_phase(self):
+        self.add_module(
+            "business/education/shiyu-education-contract",
+            {
+                "src/main/java/com/example/education/api/EducationApi.java": (
+                    "package com.example.education.api; public interface EducationApi {}"
+                )
+            },
+        )
+
+        inventory = build_inventory(self.root)
+
+        self.assertEqual("4F", inventory.entries[0].phase)
+
 
 if __name__ == "__main__":
     unittest.main()

@@ -1,8 +1,11 @@
 package com.shiyu.ai.knowledge.implementation.persistence.repository;
 
+import com.shiyu.ai.knowledge.implementation.domain.port.repository.KnowledgeDocumentRelationRepository;
+
 import com.mybatisflex.core.query.QueryWrapper;
 import com.shiyu.ai.common.core.utils.MapstructUtils;
 import com.shiyu.ai.kernel.context.TenantId;
+import com.shiyu.ai.kernel.context.TenantScope;
 import com.shiyu.ai.knowledge.implementation.domain.model.KnowledgeDocumentRelationBO;
 import com.shiyu.ai.knowledge.implementation.persistence.dataobject.KnowledgeDocumentRelationDO;
 import com.shiyu.ai.knowledge.implementation.persistence.mapper.KnowledgeDocumentRelationMapper;
@@ -13,10 +16,16 @@ import org.springframework.stereotype.Component;
 
 import java.util.List;
 
+/**
+ * {@code KnowledgeDocumentRelationRepositoryImpl} 实现知识模块的持久化端口，负责在领域对象与存储模型之间转换。
+ */
 @Component
 public class KnowledgeDocumentRelationRepositoryImpl
         implements com.shiyu.ai.knowledge.implementation.domain.port.repository
                 .KnowledgeDocumentRelationRepository {
+    /**
+     * 映射器，表示当前对象中的对应属性。
+     */
     @Resource private KnowledgeDocumentRelationMapper mapper;
 
     public List<KnowledgeDocumentRelationBO> selectBySource(
@@ -80,5 +89,6 @@ public class KnowledgeDocumentRelationRepositoryImpl
         if (tenantId == null || tenantId.value() <= 0) {
             throw new IllegalArgumentException("tenantId is required");
         }
+        TenantScope.requireMatches(tenantId);
     }
 }

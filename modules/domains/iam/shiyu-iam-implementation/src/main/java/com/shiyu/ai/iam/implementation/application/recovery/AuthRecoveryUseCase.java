@@ -8,17 +8,41 @@ import com.shiyu.ai.iam.implementation.utils.SaTokenHelper;
 
 import lombok.extern.slf4j.Slf4j;
 
-/** Password recovery flow. Credential mutation happens only after captcha validation. */
+/**
+ * 编排 AuthRecovery 应用用例。
+ */
 @Slf4j
 public final class AuthRecoveryUseCase {
+    /**
+     * 用户仓储，表示当前对象中的对应属性。
+     */
     private final UserRepository userRepository;
+    /**
+     * captchaService 属性，保存当前对象中的业务数据或协作依赖。
+     */
     private final CaptchaService captchaService;
 
+    /**
+     * {@code AuthRecoveryUseCase} 创建并初始化当前类型实例。
+     *
+     * @param userRepository 参数值，用于执行当前操作。
+     * @param captchaService 参数值，用于执行当前操作。
+     */
     public AuthRecoveryUseCase(UserRepository userRepository, CaptchaService captchaService) {
         this.userRepository = userRepository;
         this.captchaService = captchaService;
     }
 
+    /**
+     * {@code forgetPassword} 执行当前类型定义的业务操作。
+     *
+     * @param email 参数值，用于执行当前操作。
+     * @param newPassword 参数值，用于执行当前操作。
+     * @param code 参数值，用于执行当前操作。
+     * @param captchaKey 参数值，用于执行当前操作。
+     *
+     * @return 返回当前操作产生的结果。
+     */
     public boolean forgetPassword(
             String email, String newPassword, String code, String captchaKey) {
         log.info("忘记密码: emailPresent={}", email != null);

@@ -19,18 +19,17 @@
         <java.version>21</java.version>
 
         <revision>1.0.0</revision>
-        <!-- Defaults remain available when a non-environment profile such as
-             strict-warnings disables the activeByDefault dev profile. -->
+        <!-- 该配置用于当前模块的依赖、构建或运行边界。 -->
         <profiles.active>dev</profiles.active>
         <logging.level>info</logging.level>
         <spring-boot.version>4.1.0</spring-boot.version>
-        <!-- Keep the embedded servlet container on the current patched 11.0.x line. -->
+        <!-- 该配置用于当前模块的依赖、构建或运行边界。 -->
         <tomcat.version>11.0.25</tomcat.version>
         <spring-ai.version>2.0.0</spring-ai.version>
         <netty.version>4.2.17.Final</netty.version>
 
-        <langchain4j.version>1.16.3</langchain4j.version> <!-- Check for the actual latest version -->
-        <langgraph4j.version>1.8.19</langgraph4j.version> <!-- Check for the actual latest version -->
+        <langchain4j.version>1.16.3</langchain4j.version> <!-- 该配置用于当前模块的依赖、构建或运行边界。 -->
+        <langgraph4j.version>1.8.19</langgraph4j.version> <!-- 该配置用于当前模块的依赖、构建或运行边界。 -->
 
         <sa-token.version>1.45.0</sa-token.version>
 
@@ -101,12 +100,7 @@
                 <logging.level>warn</logging.level>
             </properties>
         </profile>
-        <!--
-            Strict compilation is intentionally opt-in while the one-time
-            domain migration is still clearing legacy warnings. Once the
-            warning inventory is empty, CI can activate this profile with
-            -Pstrict-warnings without changing ordinary developer builds.
-        -->
+        <!-- 该配置用于当前模块的依赖、构建或运行边界。 -->
         <profile>
             <id>strict-warnings</id>
             <build>
@@ -129,12 +123,13 @@
         <module>modules/applications/shiyu-ai-bootstrap</module>
         <module>modules/applications/shiyu-ai-web</module>
         <module>modules/applications/shiyu-application</module>
+        <module>modules/applications/shiyu-platform-bootstrap</module>
         <module>modules/domains/agent/shiyu-agent-contract</module>
         <module>modules/domains/agent/shiyu-agent-implementation</module>
         <module>modules/domains/conversation/shiyu-conversation-contract</module>
         <module>modules/domains/conversation/shiyu-conversation-implementation</module>
-        <module>modules/domains/education/shiyu-education-contract</module>
-        <module>modules/domains/education/shiyu-education-implementation</module>
+        <module>modules/business/education/shiyu-education-contract</module>
+        <module>modules/business/education/shiyu-education-implementation</module>
         <module>modules/domains/governance/shiyu-governance-contract</module>
         <module>modules/domains/governance/shiyu-governance-implementation</module>
         <module>modules/domains/iam/shiyu-iam-contract</module>
@@ -170,7 +165,7 @@
                 <scope>import</scope>
             </dependency>
 
-            <!-- Override Boot's embedded Tomcat patch level for dependency security gates. -->
+            <!--  -->
             <dependency>
                 <groupId>org.apache.tomcat.embed</groupId>
                 <artifactId>tomcat-embed-core</artifactId>
@@ -187,7 +182,7 @@
                 <version>${tomcat.version}</version>
             </dependency>
 
-            <!-- Keep AWS SDK's Netty transport on the patched 4.2.x line. -->
+            <!-- 该配置用于当前模块的依赖、构建或运行边界。 -->
             <dependency>
                 <groupId>io.netty</groupId>
                 <artifactId>netty-bom</artifactId>
@@ -302,7 +297,7 @@
                 <artifactId>sensitive-word</artifactId>
                 <version>${sensitive-word.version}</version>
             </dependency>
-            <!-- https://mvnrepository.com/artifact/com.github.ben-manes.caffeine/caffeine -->
+            <!-- 参考链接：https://mvnrepository.com/artifact/com.github.ben-manes.caffeine/caffeine -->
             <dependency>
                 <groupId>com.github.ben-manes.caffeine</groupId>
                 <artifactId>caffeine</artifactId>
@@ -339,13 +334,13 @@
                 <artifactId>jsoup</artifactId>
                 <version>${jsoup.version}</version>
             </dependency>
-            <!-- https://mvnrepository.com/artifact/org.apache.commons/commons-lang3 -->
+            <!-- 参考链接：https://mvnrepository.com/artifact/org.apache.commons/commons-lang3 -->
             <dependency>
                 <groupId>org.apache.commons</groupId>
                 <artifactId>commons-lang3</artifactId>
                 <version>${commons-lang3.version}</version>
             </dependency>
-            <!-- https://mvnrepository.com/artifact/com.google.guava/guava -->
+            <!-- 参考链接：https://mvnrepository.com/artifact/com.google.guava/guava -->
             <dependency>
                 <groupId>com.google.guava</groupId>
                 <artifactId>guava</artifactId>
@@ -436,7 +431,7 @@
                 <version>${s3.version}</version>
             </dependency>
 
-            <!-- xxl-job-core -->
+            <!--  -->
             <dependency>
                 <groupId>com.xuxueli</groupId>
                 <artifactId>xxl-job-core</artifactId>
@@ -520,7 +515,7 @@
                 <version>${revision}</version>
             </dependency>
 
-            <!-- New modules -->
+            <!--  -->
             <dependency>
                 <groupId>com.shiyu.ai</groupId>
                 <artifactId>shiyu-model-implementation</artifactId>
@@ -564,7 +559,7 @@
 </dependencies>
     </dependencyManagement>
 
-    <!-- Lombok is a compile-time annotation processor shared by every module. -->
+    <!--  -->
     <dependencies>
         <dependency>
             <groupId>org.projectlombok</groupId>
@@ -599,14 +594,14 @@
                 <configuration>
                     <release>${java.version}</release>
                     <encoding>${project.build.sourceEncoding}</encoding>
-                    <!-- Keep javac isolated from annotation processors. In-process
-                         compilation on the current JDK can mutate the compiler's
-                         source path and fail with ConcurrentModificationException. -->
+                    <!-- 该配置用于当前模块的依赖、构建或运行边界。 -->
                     <fork>true</fork>
                     <compilerArgs>
                         <arg>-parameters</arg>
                         <!-- 启用编译警告 -->
                         <arg>-Xlint:all</arg>
+                        <!-- 该配置用于当前模块的依赖、构建或运行边界。 -->
+                        <arg>-Xlint:-path</arg>
                         <arg>-Xlint:-processing</arg> <!-- 忽略注解处理警告 -->
                         <arg>-implicit:none</arg>
                     </compilerArgs>
@@ -689,7 +684,7 @@
                 <configuration>
                     <failBuildOnCVSS>7</failBuildOnCVSS>
                     <ossindexAnalyzerEnabled>false</ossindexAnalyzerEnabled>
-                    <!-- Backend modules do not package JavaScript; avoid an unrelated GitHub RetireJS download. -->
+                    <!--  -->
                     <retireJsAnalyzerEnabled>false</retireJsAnalyzerEnabled>
                     <formats><format>HTML</format><format>JSON</format></formats>
                     <suppressionFiles>
@@ -710,8 +705,7 @@
                 <version>${maven-resources-plugin.version}</version>
                 <configuration>
                     <encoding>${project.build.sourceEncoding}</encoding>
-                    <!-- Keep the @property@ placeholders used by the
-                         profile-specific Spring descriptors explicit. -->
+                    <!-- 该配置用于当前模块的依赖、构建或运行边界。 -->
                     <delimiters>
                         <delimiter>@</delimiter>
                     </delimiters>
@@ -748,10 +742,7 @@
         <resources>
             <resource>
                 <directory>src/main/resources</directory>
-                <!-- Filtered application/bootstrap descriptors are declared
-                     by the following resource entry. Excluding them here
-                     prevents the unfiltered copy from overwriting the
-                     profile-resolved output. -->
+                <!-- 该配置用于当前模块的依赖、构建或运行边界。 -->
                 <excludes>
                     <exclude>**/application*.yml</exclude>
                     <exclude>**/application*.properties</exclude>

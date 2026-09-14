@@ -6,7 +6,9 @@ import com.tngtech.archunit.core.importer.Location;
 final class ArchitectureImportOptions {
     private ArchitectureImportOptions() {}
 
-    /** Keeps stale bytecode from the retired platform tree out of scans. */
+    /**
+     * 为架构测试排除旧平台构建目录，避免扫描已迁移模块。
+     */
     static final class DoNotIncludeLegacyPlatformBuilds implements ImportOption {
         @Override
         public boolean includes(Location location) {

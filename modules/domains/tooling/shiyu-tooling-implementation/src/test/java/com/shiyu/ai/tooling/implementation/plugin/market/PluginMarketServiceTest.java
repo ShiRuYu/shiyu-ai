@@ -1,4 +1,8 @@
 package com.shiyu.ai.tooling.implementation.plugin.market;
+import com.shiyu.ai.tooling.implementation.plugin.market.adapter.InMemoryPluginMarketStore;
+import com.shiyu.ai.tooling.implementation.plugin.market.model.PluginMarketEntry;
+import com.shiyu.ai.tooling.implementation.plugin.market.port.PluginMarketStore;
+import com.shiyu.ai.tooling.implementation.plugin.market.service.PluginMarketService;
 
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.*;

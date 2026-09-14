@@ -18,9 +18,21 @@ import org.springframework.stereotype.Service;
 import java.util.List;
 import java.util.concurrent.TimeUnit;
 
+/**
+ * {@code DictServiceImpl} 实现平台模块的应用服务，负责编排用例流程并维护业务边界。
+ */
 @Slf4j
 @Service
 public class DictServiceImpl implements DictService {
+    /**
+     * {@code pageView} 执行当前类型定义的业务操作。
+     *
+     * @param actor 参数值，用于执行当前操作。
+     * @param n 参数值，用于执行当前操作。
+     * @param s 参数值，用于执行当前操作。
+     *
+     * @return 返回当前操作产生的结果。
+     */
     @Override
     public Pair<Long, List<DictVO>> pageView(ActorContext actor, Number n, Number s) {
         actor = requireActor(actor);
@@ -28,17 +40,42 @@ public class DictServiceImpl implements DictService {
         return Pair.of(p.getLeft(), DictConverter.INSTANCE.toVOList(p.getRight()));
     }
 
+    /**
+     * {@code byTypeView} 执行当前类型定义的业务操作。
+     *
+     * @param actor 参数值，用于执行当前操作。
+     * @param type 参数值，用于执行当前操作。
+     *
+     * @return 返回当前操作产生的结果。
+     */
     @Override
     public List<DictVO> byTypeView(ActorContext actor, String type) {
         actor = requireActor(actor);
         return DictConverter.INSTANCE.toVOList(getByDictType(actor, type));
     }
 
+    /**
+     * {@code create} 写入或更新当前模块中的业务数据。
+     *
+     * @param actor 参数值，用于执行当前操作。
+     * @param r 参数值，用于执行当前操作。
+     *
+     * @return 返回当前操作产生的结果。
+     */
     @Override
     public DictVO create(ActorContext actor, DictRequest r) {
         return DictConverter.INSTANCE.toVO(create(requireActor(actor), toBO(r)));
     }
 
+    /**
+     * {@code update} 写入或更新当前模块中的业务数据。
+     *
+     * @param actor 参数值，用于执行当前操作。
+     * @param id 参数值，用于执行当前操作。
+     * @param r 参数值，用于执行当前操作。
+     *
+     * @return 返回当前操作产生的结果。
+     */
     @Override
     public DictVO update(ActorContext actor, Long id, DictRequest r) {
         DictBO b = toBO(r);
@@ -60,10 +97,21 @@ public class DictServiceImpl implements DictService {
         return b;
     }
 
+    /**
+     * dictRepository 属性，保存当前对象中的业务数据或协作依赖。
+     */
     private final DictRepository dictRepository;
 
+    /**
+     * dictTypeCache 属性，保存当前对象中的业务数据或协作依赖。
+     */
     private final Cache<String, List<DictBO>> dictTypeCache;
 
+    /**
+     * {@code DictServiceImpl} 创建并初始化当前类型实例。
+     *
+     * @param dictRepository 参数值，用于执行当前操作。
+     */
     public DictServiceImpl(DictRepository dictRepository) {
         this.dictRepository = dictRepository;
         this.dictTypeCache =
@@ -125,6 +173,12 @@ public class DictServiceImpl implements DictService {
         return updated;
     }
 
+    /**
+     * {@code deleteById} 释放或移除当前操作涉及的资源。
+     *
+     * @param actor 参数值，用于执行当前操作。
+     * @param id 参数值，用于执行当前操作。
+     */
     @Override
     public void deleteById(ActorContext actor, Long id) {
         actor = requireActor(actor);
@@ -135,6 +189,12 @@ public class DictServiceImpl implements DictService {
         }
     }
 
+    /**
+     * {@code deleteByIds} 释放或移除当前操作涉及的资源。
+     *
+     * @param actor 参数值，用于执行当前操作。
+     * @param ids 参数值，用于执行当前操作。
+     */
     @Override
     public void deleteByIds(ActorContext actor, List<Long> ids) {
         actor = requireActor(actor);

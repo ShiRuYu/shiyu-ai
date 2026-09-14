@@ -8,12 +8,14 @@ import com.shiyu.ai.governance.implementation.usage.persistence.dataobject.Usage
 import com.shiyu.ai.governance.implementation.usage.persistence.mapper.UsageRecordMapper;
 import com.shiyu.ai.governance.implementation.usage.port.repository.UsageRecordRepository;
 import com.shiyu.ai.kernel.context.TenantId;
+import com.shiyu.ai.kernel.context.TenantScope;
 import com.shiyu.ai.model.contract.api.ModelCatalogPort;
 
 import lombok.extern.slf4j.Slf4j;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
+import org.springframework.context.annotation.Primary;
 import org.springframework.dao.DuplicateKeyException;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.stereotype.Component;
@@ -35,48 +37,93 @@ import java.util.function.Function;
 
 import javax.sql.DataSource;
 
-/** Unified usage-record data access and H2-compatible usage aggregation. */
+/**
+ * 实现治理用量记录的租户隔离查询和持久化。
+ */
 @Slf4j
 @Component
+@Primary
 public class UsageRecordRepositoryImpl implements UsageRecordRepository {
 
+    /**
+     * ISO_WEEK 属性，保存当前对象中的业务数据或协作依赖。
+     */
     private static final WeekFields ISO_WEEK = WeekFields.ISO;
 
+    /**
+     * usageRecordMapper 属性，保存当前对象中的业务数据或协作依赖。
+     */
     private final UsageRecordMapper usageRecordMapper;
+    /**
+     * modelCatalog 属性，保存当前对象中的业务数据或协作依赖。
+     */
     private final ModelCatalogPort modelCatalog;
+    /**
+     * dialect 属性，保存当前对象中的业务数据或协作依赖。
+     */
     private final JdbcDialect dialect;
+    private final boolean allTenants;
 
-    /** Constructor retained for unit tests that use a mocked mapper. */
+    /**
+     * 处理用量记录repositoryimpl。
+     *
+     * @param usageRecordMapper usageRecordMapper 参数。
+     * @param modelCatalog modelCatalog 参数。
+     *
+     * @return 处理结果。
+     */
     public UsageRecordRepositoryImpl(
             UsageRecordMapper usageRecordMapper, ModelCatalogPort modelCatalog) {
-        this(usageRecordMapper, modelCatalog, JdbcDialect.fromProduct("H2"));
+        this(usageRecordMapper, modelCatalog, JdbcDialect.fromProduct("H2"), false);
     }
 
+    /**
+     * {@code UsageRecordRepositoryImpl} 创建并初始化当前类型实例。
+     *
+     * @param usageRecordMapper 参数值，用于执行当前操作。
+     * @param modelCatalog 参数值，用于执行当前操作。
+     * @param dataSource 参数值，用于执行当前操作。
+     */
     @Autowired
     public UsageRecordRepositoryImpl(
             UsageRecordMapper usageRecordMapper,
             ModelCatalogPort modelCatalog,
             @Qualifier("agentDataSource") DataSource dataSource) {
-        this(usageRecordMapper, modelCatalog, JdbcDialect.detect(new JdbcTemplate(dataSource)));
+        this(usageRecordMapper, modelCatalog, JdbcDialect.detect(new JdbcTemplate(dataSource)), false);
     }
 
-    private UsageRecordRepositoryImpl(
+    protected UsageRecordRepositoryImpl(
             UsageRecordMapper usageRecordMapper,
             ModelCatalogPort modelCatalog,
-            JdbcDialect dialect) {
+            JdbcDialect dialect,
+            boolean allTenants) {
         this.usageRecordMapper = usageRecordMapper;
         this.modelCatalog = modelCatalog;
         this.dialect = dialect;
+        this.allTenants = allTenants;
     }
 
+    /**
+     * {@code insert} 执行当前类型定义的业务操作。
+     *
+     * @param record 参数值，用于执行当前操作。
+     */
     @Override
     public void insert(UsageRecordBO record) {
         validateTenantScopedRecord(record);
+        TenantScope.requireMatches(new TenantId(record.getTenantId()));
         UsageRecordDO data = MapstructUtils.convert(record, UsageRecordDO.class);
         usageRecordMapper.insertSelective(data);
         record.setId(data.getId());
     }
 
+    /**
+     * {@code insertIfAbsent} 执行当前类型定义的业务操作。
+     *
+     * @param record 参数值，用于执行当前操作。
+     *
+     * @return 返回当前操作产生的结果。
+     */
     @Override
     public boolean insertIfAbsent(UsageRecordBO record) {
         try {
@@ -87,49 +134,89 @@ public class UsageRecordRepositoryImpl implements UsageRecordRepository {
         }
     }
 
+    /**
+     * {@code aggregateByDay} 执行当前类型定义的业务操作。
+     *
+     * @param days 参数值，用于执行当前操作。
+     *
+     * @return 返回当前操作产生的结果。
+     */
     @Override
     public List<Map<String, Object>> aggregateByDay(int days) {
+        if (!allTenants) TenantScope.require();
         if (days <= 0) return List.of();
-        List<UsageRecordDO> portable = usageRecordMapper.selectRecordsSince(daysBefore(days));
+        List<UsageRecordDO> portable = selectRecordsSince(daysBefore(days));
         if (usesPortableAggregation() && portable != null) {
             return aggregateRecords(portable, "usage_date", time -> time.toLocalDate().toString());
         }
-        return safeRows(usageRecordMapper.aggregateByDay(days));
+        return safeRows(
+                allTenants
+                        ? usageRecordMapper.aggregateByDayAllTenants(days)
+                        : usageRecordMapper.aggregateByDay(days, currentTenantValue()));
     }
 
+    /**
+     * {@code aggregateByWeek} 执行当前类型定义的业务操作。
+     *
+     * @param weeks 参数值，用于执行当前操作。
+     *
+     * @return 返回当前操作产生的结果。
+     */
     @Override
     public List<Map<String, Object>> aggregateByWeek(int weeks) {
+        if (!allTenants) TenantScope.require();
         if (weeks <= 0) return List.of();
-        List<UsageRecordDO> portable = usageRecordMapper.selectRecordsSince(weeksBefore(weeks));
+        List<UsageRecordDO> portable = selectRecordsSince(weeksBefore(weeks));
         if (usesPortableAggregation() && portable != null) {
             return aggregateRecords(portable, "usage_week", this::weekKey);
         }
-        return safeRows(usageRecordMapper.aggregateByWeek(weeks));
+        return safeRows(
+                allTenants
+                        ? usageRecordMapper.aggregateByWeekAllTenants(weeks)
+                        : usageRecordMapper.aggregateByWeek(weeks, currentTenantValue()));
     }
 
+    /**
+     * {@code aggregateByMonth} 执行当前类型定义的业务操作。
+     *
+     * @param months 参数值，用于执行当前操作。
+     *
+     * @return 返回当前操作产生的结果。
+     */
     @Override
     public List<Map<String, Object>> aggregateByMonth(int months) {
+        if (!allTenants) TenantScope.require();
         if (months <= 0) return List.of();
-        List<UsageRecordDO> portable = usageRecordMapper.selectRecordsSince(monthsBefore(months));
+        List<UsageRecordDO> portable = selectRecordsSince(monthsBefore(months));
         if (usesPortableAggregation() && portable != null) {
             return aggregateRecords(
                     portable, "usage_month", time -> YearMonth.from(time).toString());
         }
-        return safeRows(usageRecordMapper.aggregateByMonth(months));
+        return safeRows(
+                allTenants
+                        ? usageRecordMapper.aggregateByMonthAllTenants(months)
+                        : usageRecordMapper.aggregateByMonth(months, currentTenantValue()));
     }
 
+    /**
+     * {@code getOverview} 查询并返回当前操作所需的数据。
+     *
+     * @return 返回当前操作产生的结果。
+     */
     @Override
     public Map<String, Object> getOverview() {
-        Map<String, Object> databaseOverview = usageRecordMapper.getOverview();
+        if (!allTenants) TenantScope.require();
+        Map<String, Object> databaseOverview =
+                allTenants
+                        ? usageRecordMapper.getOverviewAllTenants()
+                        : usageRecordMapper.getOverview(currentTenantValue());
         Map<String, Object> raw = databaseOverview == null ? Map.of() : databaseOverview;
         UsageMetrics llmMetrics = new UsageMetrics();
-        for (UsageRecordDO record : safeRecords(usageRecordMapper.selectLlmRecords())) {
+        for (UsageRecordDO record : safeRecords(selectLlmRecords())) {
             llmMetrics.addLlm(record, parseExtInfo(record));
         }
         Map<String, Object> llmOverview = llmMetrics.toLlmRow();
 
-        // H2 uppercases unquoted aliases while other databases usually retain
-        // snake case. Return one stable API contract regardless of dialect.
         Map<String, Object> result = new LinkedHashMap<>();
         result.put("total_calls", longValue(valueIgnoreCase(raw, "total_calls")));
         result.put("total_tokens", llmOverview.get("total_tokens"));
@@ -140,10 +227,16 @@ public class UsageRecordRepositoryImpl implements UsageRecordRepository {
         return result;
     }
 
+    /**
+     * {@code aggregateByModel} 执行当前类型定义的业务操作。
+     *
+     * @return 返回当前操作产生的结果。
+     */
     @Override
     public List<Map<String, Object>> aggregateByModel() {
+        if (!allTenants) TenantScope.require();
         Map<String, ModelMetrics> groups = new TreeMap<>();
-        for (UsageRecordDO record : safeRecords(usageRecordMapper.selectLlmRecords())) {
+        for (UsageRecordDO record : safeRecords(selectLlmRecords())) {
             Map<String, Object> extInfo = parseExtInfo(record);
             String platform = textValue(extInfo.get("platform"), "UNKNOWN");
             String model = textValue(extInfo.get("model"), "UNKNOWN");
@@ -170,27 +263,57 @@ public class UsageRecordRepositoryImpl implements UsageRecordRepository {
                 .toList();
     }
 
+    /**
+     * {@code aggregateLlmByDay} 执行当前类型定义的业务操作。
+     *
+     * @param days 参数值，用于执行当前操作。
+     *
+     * @return 返回当前操作产生的结果。
+     */
     @Override
     public List<Map<String, Object>> aggregateLlmByDay(int days) {
+        if (!allTenants) TenantScope.require();
         return aggregateLlmByPeriod(
                 daysBefore(days), "usage_date", time -> time.toLocalDate().toString());
     }
 
+    /**
+     * {@code aggregateLlmByWeek} 执行当前类型定义的业务操作。
+     *
+     * @param weeks 参数值，用于执行当前操作。
+     *
+     * @return 返回当前操作产生的结果。
+     */
     @Override
     public List<Map<String, Object>> aggregateLlmByWeek(int weeks) {
+        if (!allTenants) TenantScope.require();
         return aggregateLlmByPeriod(weeksBefore(weeks), "usage_week", this::weekKey);
     }
 
+    /**
+     * {@code aggregateLlmByMonth} 执行当前类型定义的业务操作。
+     *
+     * @param months 参数值，用于执行当前操作。
+     *
+     * @return 返回当前操作产生的结果。
+     */
     @Override
     public List<Map<String, Object>> aggregateLlmByMonth(int months) {
+        if (!allTenants) TenantScope.require();
         return aggregateLlmByPeriod(
                 monthsBefore(months), "usage_month", time -> YearMonth.from(time).toString());
     }
 
+    /**
+     * {@code getEmbeddingOverview} 查询并返回当前操作所需的数据。
+     *
+     * @return 返回当前操作产生的结果。
+     */
     @Override
     public Map<String, Object> getEmbeddingOverview() {
+        if (!allTenants) TenantScope.require();
         UsageMetrics metrics = new UsageMetrics();
-        for (UsageRecordDO record : safeRecords(usageRecordMapper.selectEmbeddingRecords())) {
+        for (UsageRecordDO record : safeRecords(selectEmbeddingRecords())) {
             metrics.addEmbedding(record, parseExtInfo(record));
         }
         Map<String, Object> result = new LinkedHashMap<>();
@@ -201,9 +324,17 @@ public class UsageRecordRepositoryImpl implements UsageRecordRepository {
         return result;
     }
 
+    /**
+     * {@code sumLlmTodayTokensByTenantId} 执行当前类型定义的业务操作。
+     *
+     * @param tenantId 参数值，用于执行当前操作。
+     *
+     * @return 返回当前操作产生的结果。
+     */
     @Override
     public Long sumLlmTodayTokensByTenantId(TenantId tenantId) {
         Objects.requireNonNull(tenantId, "tenantId must not be null");
+        if (!allTenants) TenantScope.requireMatches(tenantId);
         return safeRecords(
                         usageRecordMapper.selectLlmTodayByTenantId(
                                 tenantId.value(), LocalDate.now().atStartOfDay()))
@@ -214,8 +345,9 @@ public class UsageRecordRepositoryImpl implements UsageRecordRepository {
     }
 
     /**
-     * Usage is a tenant-owned ledger. Keep the invariant at the repository boundary as well as in
-     * the application service so an adapter cannot accidentally create an unattributed row.
+     * 校验租户scoped记录。
+     *
+     * @param record record 参数。
      */
     private static void validateTenantScopedRecord(UsageRecordBO record) {
         if (record == null) {
@@ -235,10 +367,38 @@ public class UsageRecordRepositoryImpl implements UsageRecordRepository {
         }
     }
 
+    private List<UsageRecordDO> selectRecordsSince(LocalDateTime start) {
+        return allTenants
+                ? usageRecordMapper.selectAllRecordsSince(start)
+                : usageRecordMapper.selectRecordsSince(start, currentTenantValue());
+    }
+
+    private List<UsageRecordDO> selectLlmRecords() {
+        return allTenants
+                ? usageRecordMapper.selectAllLlmRecords()
+                : usageRecordMapper.selectLlmRecords(currentTenantValue());
+    }
+
+    private List<UsageRecordDO> selectLlmRecordsSince(LocalDateTime start) {
+        return allTenants
+                ? usageRecordMapper.selectAllLlmRecordsSince(start)
+                : usageRecordMapper.selectLlmRecordsSince(start, currentTenantValue());
+    }
+
+    private List<UsageRecordDO> selectEmbeddingRecords() {
+        return allTenants
+                ? usageRecordMapper.selectAllEmbeddingRecords()
+                : usageRecordMapper.selectEmbeddingRecords(currentTenantValue());
+    }
+
+    private long currentTenantValue() {
+        return TenantScope.require().value();
+    }
+
     private List<Map<String, Object>> aggregateLlmByPeriod(
             LocalDateTime start, String keyName, Function<LocalDateTime, String> keyFunction) {
         Map<String, UsageMetrics> groups = new TreeMap<>(Comparator.reverseOrder());
-        for (UsageRecordDO record : safeRecords(usageRecordMapper.selectLlmRecordsSince(start))) {
+        for (UsageRecordDO record : safeRecords(selectLlmRecordsSince(start))) {
             if (record.getCreateTime() == null) {
                 continue;
             }
@@ -292,11 +452,26 @@ public class UsageRecordRepositoryImpl implements UsageRecordRepository {
         return result;
     }
 
+    /**
+     * {@code AggregateRow} 承载治理模块的领域状态或协作行为，负责维护本类型的职责边界。
+     */
     private static final class AggregateRow {
         private final String periodKey;
+        /**
+         * 用量类型，表示当前对象中的对应属性。
+         */
         private final String usageType;
+        /**
+         * calls 属性，保存当前对象中的业务数据或协作依赖。
+         */
         private long calls;
+        /**
+         * latencyTotal 属性，保存当前对象中的业务数据或协作依赖。
+         */
         private long latencyTotal;
+        /**
+         * latencySamples 属性，保存当前对象中的业务数据或协作依赖。
+         */
         private long latencySamples;
 
         private AggregateRow(String periodKey, String usageType) {
@@ -398,13 +573,34 @@ public class UsageRecordRepositoryImpl implements UsageRecordRepository {
         }
     }
 
+    /**
+     * {@code UsageMetrics} 承载治理模块的领域状态或协作行为，负责维护本类型的职责边界。
+     */
     private static class UsageMetrics {
         private long calls;
+        /**
+         * latencySamples 属性，保存当前对象中的业务数据或协作依赖。
+         */
         private long latencySamples;
+        /**
+         * totalLatency 属性，保存当前对象中的业务数据或协作依赖。
+         */
         private long totalLatency;
+        /**
+         * totalTokens 属性，保存当前对象中的业务数据或协作依赖。
+         */
         private long totalTokens;
+        /**
+         * totalEstimatedTokens 属性，保存当前对象中的业务数据或协作依赖。
+         */
         private long totalEstimatedTokens;
+        /**
+         * totalVectors 属性，保存当前对象中的业务数据或协作依赖。
+         */
         private long totalVectors;
+        /**
+         * totalCost 属性，保存当前对象中的业务数据或协作依赖。
+         */
         private BigDecimal totalCost = BigDecimal.ZERO;
 
         void addLlm(UsageRecordDO record, Map<String, Object> extInfo) {
@@ -445,8 +641,14 @@ public class UsageRecordRepositoryImpl implements UsageRecordRepository {
         }
     }
 
+    /**
+     * {@code ModelMetrics} 承载治理模块的领域状态或协作行为，负责维护本类型的职责边界。
+     */
     private static final class ModelMetrics extends UsageMetrics {
         private final String platform;
+        /**
+         * model 属性，保存当前对象中的业务数据或协作依赖。
+         */
         private final String model;
 
         private ModelMetrics(String platform, String model) {

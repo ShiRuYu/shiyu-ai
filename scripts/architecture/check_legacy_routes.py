@@ -1,9 +1,4 @@
-"""Fail when a backend controller exposes a legacy /v1 route.
-
-External provider URLs (for example OpenAI's /v1 endpoint) are intentionally
-out of scope.  The check is limited to Spring mapping annotations under the
-web adapter so those provider URLs cannot create false positives.
-"""
+"""check legacy routes 脚本，执行项目架构与工程校验。"""
 
 from __future__ import annotations
 

@@ -1,5 +1,14 @@
 package com.shiyu.ai.knowledge.implementation.application.service;
 
+import com.shiyu.ai.knowledge.implementation.application.KnowledgeSpaceService.CreateSpaceRequest;
+import com.shiyu.ai.knowledge.implementation.application.KnowledgeSpaceService.DifficultyLevelView;
+import com.shiyu.ai.knowledge.implementation.application.KnowledgeSpaceService.DifficultyScaleView;
+import com.shiyu.ai.knowledge.implementation.application.KnowledgeSpaceService.MemberRequest;
+import com.shiyu.ai.knowledge.implementation.application.KnowledgeSpaceService.MemberView;
+import com.shiyu.ai.knowledge.implementation.application.KnowledgeSpaceService.SpaceRole;
+import com.shiyu.ai.knowledge.implementation.application.KnowledgeSpaceService.SpaceView;
+import com.shiyu.ai.knowledge.implementation.application.KnowledgeSpaceService.UpdateSpaceRequest;
+
 import com.shiyu.ai.common.core.api.PageData;
 import com.shiyu.ai.common.core.exception.ServiceException;
 import com.shiyu.ai.kernel.context.ActorContext;
@@ -27,6 +36,9 @@ import java.util.List;
 import java.util.Locale;
 import java.util.Set;
 
+/**
+ * {@code KnowledgeSpaceServiceImpl} 实现知识模块的应用服务，负责编排用例流程并维护业务边界。
+ */
 @Service
 @RequiredArgsConstructor
 public class KnowledgeSpaceServiceImpl implements KnowledgeSpaceService {
@@ -35,20 +47,57 @@ public class KnowledgeSpaceServiceImpl implements KnowledgeSpaceService {
     private static final Set<String> REVIEW_MODES = Set.of("DIRECT", "OPTIONAL", "REQUIRED");
     private static final Set<String> BINDING_MODES = Set.of("OPTIONAL", "REQUIRED");
     private static final Set<String> PRINCIPAL_TYPES = Set.of("USER", "ROLE");
+    /**
+     * GENERAL_DOMAIN 属性，保存当前对象中的业务数据或协作依赖。
+     */
     private static final String GENERAL_DOMAIN = "GENERAL";
 
+    /**
+     * 仓储，表示当前对象中的对应属性。
+     */
     private final KnowledgeEnterpriseRepository repository;
+    /**
+     * knowledgeRepository 属性，保存当前对象中的业务数据或协作依赖。
+     */
     private final KnowledgeRepository knowledgeRepository;
+    /**
+     * relationRepository 属性，保存当前对象中的业务数据或协作依赖。
+     */
     private final KnowledgeRelationRepository relationRepository;
+    /**
+     * documentRepository 属性，保存当前对象中的业务数据或协作依赖。
+     */
     private final KnowledgeDocumentRepository documentRepository;
+    /**
+     * difficultyScaleRepository 属性，保存当前对象中的业务数据或协作依赖。
+     */
     private final KnowledgeDifficultyScaleRepository difficultyScaleRepository;
+    /**
+     * docRelationRepository 属性，保存当前对象中的业务数据或协作依赖。
+     */
     private final KnowledgeDocRelationRepository docRelationRepository;
+    /**
+     * chunkRepository 属性，保存当前对象中的业务数据或协作依赖。
+     */
     private final KnowledgeChunkRepository chunkRepository;
+    /**
+     * 审计服务，表示当前对象中的对应属性。
+     */
     private final KnowledgeAuditService auditService;
 
+    /**
+     * defaultSpaceCode 属性，保存当前对象中的业务数据或协作依赖。
+     */
     @Value("${shiyu.knowledge.default-space-code:default}")
     private String defaultSpaceCode = "default";
 
+    /**
+     * {@code ensureDefaultSpace} 执行当前类型定义的业务操作。
+     *
+     * @param actor 参数值，用于执行当前操作。
+     *
+     * @return 返回当前操作产生的结果。
+     */
     @Override
     @Transactional(rollbackFor = Exception.class)
     public SpaceView ensureDefaultSpace(ActorContext actor) {
@@ -80,6 +129,11 @@ public class KnowledgeSpaceServiceImpl implements KnowledgeSpaceService {
         return toView(space);
     }
 
+    /**
+     * {@code initializeTenantDefaults} 执行当前类型定义的业务操作。
+     *
+     * @param tenantId 参数值，用于执行当前操作。
+     */
     @Override
     @Transactional(rollbackFor = Exception.class)
     public void initializeTenantDefaults(TenantId tenantId) {
@@ -101,6 +155,14 @@ public class KnowledgeSpaceServiceImpl implements KnowledgeSpaceService {
         repository.insertSpace(tenantId, space);
     }
 
+    /**
+     * {@code get} 查询并返回当前操作所需的数据。
+     *
+     * @param actor 参数值，用于执行当前操作。
+     * @param id 参数值，用于执行当前操作。
+     *
+     * @return 返回当前操作产生的结果。
+     */
     @Override
     public SpaceView get(ActorContext actor, Long id) {
         requireAccess(id, SpaceRole.VIEWER, actor);
@@ -108,6 +170,14 @@ public class KnowledgeSpaceServiceImpl implements KnowledgeSpaceService {
         return toView(space);
     }
 
+    /**
+     * {@code difficultyScale} 执行当前类型定义的业务操作。
+     *
+     * @param actor 参数值，用于执行当前操作。
+     * @param spaceId 参数值，用于执行当前操作。
+     *
+     * @return 返回当前操作产生的结果。
+     */
     @Override
     public DifficultyScaleView difficultyScale(ActorContext actor, Long spaceId) {
         requireAccess(spaceId, SpaceRole.VIEWER, actor);
@@ -135,11 +205,32 @@ public class KnowledgeSpaceServiceImpl implements KnowledgeSpaceService {
                 levels);
     }
 
+    /**
+     * {@code page} 执行当前类型定义的业务操作。
+     *
+     * @param actor 参数值，用于执行当前操作。
+     * @param pageNum 参数值，用于执行当前操作。
+     * @param pageSize 参数值，用于执行当前操作。
+     * @param keyword 参数值，用于执行当前操作。
+     *
+     * @return 返回当前操作产生的结果。
+     */
     @Override
     public PageData<SpaceView> page(ActorContext actor, int pageNum, int pageSize, String keyword) {
         return page(actor, pageNum, pageSize, keyword, null);
     }
 
+    /**
+     * {@code page} 执行当前类型定义的业务操作。
+     *
+     * @param actor 参数值，用于执行当前操作。
+     * @param pageNum 参数值，用于执行当前操作。
+     * @param pageSize 参数值，用于执行当前操作。
+     * @param keyword 参数值，用于执行当前操作。
+     * @param domainCode 参数值，用于执行当前操作。
+     *
+     * @return 返回当前操作产生的结果。
+     */
     @Override
     public PageData<SpaceView> page(
             ActorContext actor, int pageNum, int pageSize, String keyword, String domainCode) {
@@ -156,6 +247,14 @@ public class KnowledgeSpaceServiceImpl implements KnowledgeSpaceService {
         return new PageData<>(visible, page.getTotal());
     }
 
+    /**
+     * {@code create} 写入或更新当前模块中的业务数据。
+     *
+     * @param actor 参数值，用于执行当前操作。
+     * @param request 参数值，用于执行当前操作。
+     *
+     * @return 返回当前操作产生的结果。
+     */
     @Override
     @Transactional(rollbackFor = Exception.class)
     public SpaceView create(ActorContext actor, CreateSpaceRequest request) {
@@ -200,6 +299,15 @@ public class KnowledgeSpaceServiceImpl implements KnowledgeSpaceService {
         return toView(space);
     }
 
+    /**
+     * {@code update} 写入或更新当前模块中的业务数据。
+     *
+     * @param actor 参数值，用于执行当前操作。
+     * @param id 参数值，用于执行当前操作。
+     * @param request 参数值，用于执行当前操作。
+     *
+     * @return 返回当前操作产生的结果。
+     */
     @Override
     @Transactional(rollbackFor = Exception.class)
     public SpaceView update(ActorContext actor, Long id, UpdateSpaceRequest request) {
@@ -250,6 +358,12 @@ public class KnowledgeSpaceServiceImpl implements KnowledgeSpaceService {
         return toView(space);
     }
 
+    /**
+     * {@code delete} 释放或移除当前操作涉及的资源。
+     *
+     * @param actor 参数值，用于执行当前操作。
+     * @param id 参数值，用于执行当前操作。
+     */
     @Override
     @Transactional(rollbackFor = Exception.class)
     public void delete(ActorContext actor, Long id) {
@@ -267,6 +381,14 @@ public class KnowledgeSpaceServiceImpl implements KnowledgeSpaceService {
         auditService.record(actor, id, "SPACE", id, "DELETE", null);
     }
 
+    /**
+     * {@code members} 执行当前类型定义的业务操作。
+     *
+     * @param actor 参数值，用于执行当前操作。
+     * @param spaceId 参数值，用于执行当前操作。
+     *
+     * @return 返回当前操作产生的结果。
+     */
     @Override
     public List<MemberView> members(ActorContext actor, Long spaceId) {
         requireAccess(spaceId, SpaceRole.ADMIN, actor);
@@ -282,6 +404,13 @@ public class KnowledgeSpaceServiceImpl implements KnowledgeSpaceService {
                 .toList();
     }
 
+    /**
+     * {@code replaceMembers} 执行当前类型定义的业务操作。
+     *
+     * @param actor 参数值，用于执行当前操作。
+     * @param spaceId 参数值，用于执行当前操作。
+     * @param requests 参数值，用于执行当前操作。
+     */
     @Override
     @Transactional(rollbackFor = Exception.class)
     public void replaceMembers(ActorContext actor, Long spaceId, List<MemberRequest> requests) {
@@ -315,6 +444,13 @@ public class KnowledgeSpaceServiceImpl implements KnowledgeSpaceService {
         auditService.record(actor, spaceId, "SPACE", spaceId, "REPLACE_MEMBERS", requests);
     }
 
+    /**
+     * {@code requireAccess} 执行当前类型定义的业务操作。
+     *
+     * @param spaceId 参数值，用于执行当前操作。
+     * @param minimumRole 参数值，用于执行当前操作。
+     * @param context 参数值，用于执行当前操作。
+     */
     @Override
     public void requireAccess(Long spaceId, SpaceRole minimumRole, ActorContext context) {
         if (context == null) {
@@ -344,6 +480,13 @@ public class KnowledgeSpaceServiceImpl implements KnowledgeSpaceService {
         throw new ServiceException("无权访问该知识空间");
     }
 
+    /**
+     * {@code accessibleSpaces} 执行当前类型定义的业务操作。
+     *
+     * @param context 参数值，用于执行当前操作。
+     *
+     * @return 返回当前操作产生的结果。
+     */
     @Override
     public List<SpaceView> accessibleSpaces(ActorContext context) {
         requireActor(context);
