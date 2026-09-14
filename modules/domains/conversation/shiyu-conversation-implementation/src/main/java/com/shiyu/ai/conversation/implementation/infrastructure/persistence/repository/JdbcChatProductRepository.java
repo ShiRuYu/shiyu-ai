@@ -5,6 +5,7 @@ import com.shiyu.ai.common.core.utils.JSONUtils;
 import com.shiyu.ai.conversation.implementation.domain.chat.*;
 import com.shiyu.ai.conversation.implementation.domain.port.ChatProductRepository;
 import com.shiyu.ai.kernel.context.TenantId;
+import com.shiyu.ai.kernel.context.TenantScope;
 
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.jdbc.core.JdbcTemplate;
@@ -50,6 +51,7 @@ public class JdbcChatProductRepository implements ChatProductRepository {
      */
     @Override
     public CharacterAsset saveCharacter(CharacterAsset asset) {
+        tenant(new TenantId(asset.tenantId()));
         jdbc.update(
                 dialect.upsert(
                         "CHAT_CHARACTER_ASSET",
@@ -176,6 +178,7 @@ public class JdbcChatProductRepository implements ChatProductRepository {
      */
     @Override
     public PersonaAsset savePersona(PersonaAsset asset) {
+        tenant(new TenantId(asset.tenantId()));
         jdbc.update(
                 dialect.upsert(
                         "CHAT_PERSONA_ASSET",
@@ -286,6 +289,7 @@ public class JdbcChatProductRepository implements ChatProductRepository {
      */
     @Override
     public LorebookAsset saveLorebook(LorebookAsset asset) {
+        tenant(new TenantId(asset.tenantId()));
         jdbc.update(
                 dialect.upsert(
                         "CHAT_LOREBOOK_ASSET",
@@ -466,6 +470,7 @@ public class JdbcChatProductRepository implements ChatProductRepository {
      */
     @Override
     public GroupChatAsset saveGroup(GroupChatAsset asset) {
+        tenant(new TenantId(asset.tenantId()));
         jdbc.update(
                 dialect.upsert(
                         "CHAT_GROUP_CHAT",
@@ -602,7 +607,9 @@ public class JdbcChatProductRepository implements ChatProductRepository {
     }
 
     private static long tenant(TenantId tenant) {
-        return java.util.Objects.requireNonNull(tenant, "tenantId must not be null").value();
+        TenantId value = java.util.Objects.requireNonNull(tenant, "tenantId must not be null");
+        TenantScope.requireMatches(value);
+        return value.value();
     }
 
     private static CharacterAsset character(java.sql.ResultSet r, long tenant, long owner)

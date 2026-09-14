@@ -57,14 +57,23 @@ public interface TenantRepository {
     Long selectRootTenantId(TenantId tenantId);
 
     /**
-     * 创建并保存业务对象。
+     * 保存租户基础记录并返回生成的标识；安全数据由初始化入口另行创建。
      *
-     * @param tenantBO 方法参数。
-     * @param sourceTenantId 方法参数。
+     * @param tenantBO 新租户的基础信息。
+     * @param sourceTenantId 当前经授权创建租户的来源租户。
      *
-     * @return 操作结果。
+     * @return 包含持久化标识的租户信息。
      */
     TenantBO insert(TenantBO tenantBO, TenantId sourceTenantId);
+
+    /**
+     * 为新租户创建管理员角色、管理员账号及从授权来源复制的菜单和权限。
+     * 调用方必须已经绑定新租户作用域，并验证来源租户的管理权限。
+     *
+     * @param tenantBO 已持久化的新租户及初始化配置。
+     * @param sourceTenantId 经授权提供菜单和权限模板的来源租户。
+     */
+    void initializeTenantSecurity(TenantBO tenantBO, TenantId sourceTenantId);
 
     /**
      * 更新业务对象及其关联数据。

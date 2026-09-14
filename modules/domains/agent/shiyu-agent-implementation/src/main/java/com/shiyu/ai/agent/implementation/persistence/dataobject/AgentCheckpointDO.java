@@ -1,5 +1,6 @@
 package com.shiyu.ai.agent.implementation.persistence.dataobject;
 
+import com.mybatisflex.annotation.Column;
 import com.mybatisflex.annotation.Id;
 import com.mybatisflex.annotation.KeyType;
 import com.mybatisflex.annotation.Table;
@@ -35,6 +36,7 @@ public class AgentCheckpointDO implements Serializable {
     /**
      * 租户标识，表示当前对象中的对应属性。
      */
+    @Column(tenantId = true)
     private Long tenantId;
 
     /**

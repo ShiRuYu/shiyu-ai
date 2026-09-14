@@ -4,6 +4,7 @@ import com.mybatisflex.core.query.QueryWrapper;
 import com.shiyu.ai.common.core.api.PageData;
 import com.shiyu.ai.common.core.utils.MapstructUtils;
 import com.shiyu.ai.kernel.context.TenantId;
+import com.shiyu.ai.kernel.context.TenantScope;
 import com.shiyu.ai.knowledge.implementation.domain.model.KnowledgeDocumentBO;
 import com.shiyu.ai.knowledge.implementation.domain.port.repository.KnowledgeDocumentRepository;
 import com.shiyu.ai.knowledge.implementation.persistence.dataobject.KnowledgeDocRelationDO;
@@ -281,6 +282,7 @@ public class KnowledgeDocumentRepositoryImpl implements KnowledgeDocumentReposit
     }
 
     private void requireTenant(TenantId tenantId, Long resourceTenantId) {
+        TenantScope.requireMatches(tenantId);
         if (resourceTenantId == null || tenantId.value() != resourceTenantId) {
             throw new IllegalArgumentException("document tenant does not match actor tenant");
         }

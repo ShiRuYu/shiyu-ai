@@ -1,6 +1,5 @@
 package com.shiyu.ai.iam.implementation.application.authentication;
 
-import com.mybatisflex.core.tenant.TenantManager;
 import com.shiyu.ai.common.core.utils.JSONUtils;
 import com.shiyu.ai.common.core.utils.PasswordUtils;
 import com.shiyu.ai.iam.implementation.application.identity.AuthTenantContextSupport;
@@ -124,12 +123,6 @@ public final class AuthAuthenticationUseCase {
      * @return 处理结果。
      */
     public LoginResponseVO completeLogin(UserBO user, Long roleId, String loginIp) {
-        return TenantManager.withoutTenantCondition(
-                () -> completeLoginWithoutTenantFilter(user, roleId, loginIp));
-    }
-
-    private LoginResponseVO completeLoginWithoutTenantFilter(
-            UserBO user, Long roleId, String loginIp) {
         try {
             if (user == null || user.getId() == null) {
                 return null;
@@ -302,11 +295,19 @@ public final class AuthAuthenticationUseCase {
     }
 
     /**
-     * {@code assignDefaultTenantScopeRole} 执行当前类型定义的业务操作。
+     * 在默认租户内为新注册用户分配普通用户角色，并持久化其初始登录上下文。
      *
-     * @param userId 参数值，用于执行当前操作。
+     * @param userId 已完成注册写入的新用户标识。
      */
     public void assignDefaultTenantScopeRole(Long userId) {
+        com.shiyu.ai.kernel.context.TenantScope.withTenant(
+                new com.shiyu.ai.kernel.context.TenantId(1L), () -> {
+                    assignDefaultTenantScopeRoleInScope(userId);
+                    return null;
+                });
+    }
+
+    private void assignDefaultTenantScopeRoleInScope(Long userId) {
         try {
             UserBO user = userRepository.selectById(userId);
             if (user == null) {

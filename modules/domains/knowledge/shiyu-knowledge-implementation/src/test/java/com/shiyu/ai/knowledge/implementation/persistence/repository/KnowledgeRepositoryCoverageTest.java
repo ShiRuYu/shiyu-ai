@@ -7,10 +7,13 @@ import static org.mockito.Mockito.*;
 import com.mybatisflex.core.paginate.Page;
 import com.shiyu.ai.common.core.utils.MapstructUtils;
 import com.shiyu.ai.kernel.context.TenantId;
+import com.shiyu.ai.kernel.context.TenantScope;
 import com.shiyu.ai.knowledge.implementation.domain.model.KnowledgeBO;
 import com.shiyu.ai.knowledge.implementation.persistence.dataobject.KnowledgeDO;
 import com.shiyu.ai.knowledge.implementation.persistence.mapper.KnowledgeMapper;
 
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.mockito.MockedStatic;
 
@@ -20,6 +23,16 @@ import java.util.List;
 @SuppressWarnings({"rawtypes", "unchecked"})
 class KnowledgeRepositoryCoverageTest {
     private static final TenantId TENANT = new TenantId(31L);
+
+    @BeforeEach
+    void bindTenantScope() {
+        TenantScope.set(TENANT);
+    }
+
+    @AfterEach
+    void clearTenantScope() {
+        TenantScope.clear();
+    }
 
     @Test
     void exercisesTenantScopedQueriesPagingAndMutations() throws Exception {

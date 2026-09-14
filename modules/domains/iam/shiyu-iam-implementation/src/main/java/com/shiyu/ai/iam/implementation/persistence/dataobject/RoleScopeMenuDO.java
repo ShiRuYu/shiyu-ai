@@ -2,7 +2,6 @@ package com.shiyu.ai.iam.implementation.persistence.dataobject;
 
 import com.mybatisflex.annotation.Table;
 import com.shiyu.ai.common.mybatis.model.ScopeTenantEntity;
-import com.shiyu.ai.common.mybatis.model.ServiceAssignedTenantEntity;
 import com.shiyu.ai.iam.implementation.domain.model.RoleScopeMenuBO;
 
 import io.github.linpeilie.annotations.AutoMapper;
@@ -19,7 +18,7 @@ import java.io.Serial;
 @EqualsAndHashCode(callSuper = true)
 @Table("auth_role_scope_menu")
 @AutoMapper(target = RoleScopeMenuBO.class, reverseConvertGenerate = true)
-public class RoleScopeMenuDO extends ScopeTenantEntity implements ServiceAssignedTenantEntity {
+public class RoleScopeMenuDO extends ScopeTenantEntity {
 
     /**
      * serialVersionUID 属性，保存当前对象中的业务数据或协作依赖。

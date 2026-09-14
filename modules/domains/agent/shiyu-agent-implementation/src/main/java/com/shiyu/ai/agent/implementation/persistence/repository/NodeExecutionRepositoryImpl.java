@@ -6,6 +6,7 @@ import com.shiyu.ai.agent.implementation.persistence.dataobject.NodeExecutionDO;
 import com.shiyu.ai.agent.implementation.persistence.mapper.NodeExecutionMapper;
 import com.shiyu.ai.common.core.utils.MapstructUtils;
 import com.shiyu.ai.kernel.context.TenantId;
+import com.shiyu.ai.kernel.context.TenantScope;
 
 import jakarta.annotation.Resource;
 
@@ -56,8 +57,6 @@ public class NodeExecutionRepositoryImpl
     }
 
     private static void requireTenant(TenantId tenantId) {
-        if (tenantId == null || tenantId.value() <= 0) {
-            throw new IllegalArgumentException("tenantId is required");
-        }
+        TenantScope.requireMatches(tenantId);
     }
 }

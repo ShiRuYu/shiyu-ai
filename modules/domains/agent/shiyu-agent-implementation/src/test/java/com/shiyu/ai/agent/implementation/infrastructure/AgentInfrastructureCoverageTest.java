@@ -15,8 +15,11 @@ import com.shiyu.ai.agent.implementation.port.repository.IntentDefRepository;
 import com.shiyu.ai.agent.implementation.runtime.model.ToolApproval;
 import com.shiyu.ai.agent.implementation.runtime.model.ToolApprovalStatus;
 import com.shiyu.ai.kernel.context.TenantId;
+import com.shiyu.ai.kernel.context.TenantScope;
 
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.AfterEach;
 import org.springframework.boot.ApplicationArguments;
 import org.springframework.jdbc.core.JdbcTemplate;
 
@@ -30,6 +33,11 @@ import java.util.List;
 
 @SuppressWarnings({"rawtypes", "unchecked"})
 class AgentInfrastructureCoverageTest {
+    @BeforeEach
+    void bindTenantScope() { TenantScope.set(new TenantId(7L)); }
+
+    @AfterEach
+    void clearTenantScope() { TenantScope.clear(); }
     @Test
     void mapsJdbcApprovalRowsWithOptionalDecisionAndExpiry() throws Exception {
         JdbcToolApprovalRepository repository =

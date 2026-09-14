@@ -6,6 +6,7 @@ import com.shiyu.ai.memory.implementation.domain.magma.port.MagmaMemoryRepositor
 import com.shiyu.ai.common.core.jdbc.JdbcDialect;
 import com.shiyu.ai.common.core.utils.JSONUtils;
 import com.shiyu.ai.kernel.context.TenantId;
+import com.shiyu.ai.kernel.context.TenantScope;
 import com.shiyu.ai.memory.contract.model.*;
 
 import org.springframework.beans.factory.annotation.Qualifier;
@@ -53,6 +54,7 @@ public class JdbcMagmaMemoryRepository implements MagmaMemoryRepository {
      * @param e 参数值，用于执行当前操作。
      */
     public void insertEvent(MemoryEvent e) {
+        requireTenant(e.tenantId());
         jdbc.update(
                 "INSERT INTO MEMORY_EVENT"
                     + " (ID,TENANT_ID,NAMESPACE,SUBJECT_TYPE,SUBJECT_ID,EVENT_TYPE,CONTENT,OCCURRED_AT,SOURCE_TYPE,SOURCE_ID,ATTRIBUTES,CONFIDENCE,IMPORTANCE,STATUS,CONFIRMATION_POLICY,CREATED_AT,UPDATED_AT)"
@@ -85,6 +87,7 @@ public class JdbcMagmaMemoryRepository implements MagmaMemoryRepository {
      * @return 返回当前操作产生的结果。
      */
     public Optional<MemoryEvent> findEvent(TenantId tenantId, String id) {
+        requireTenant(tenantId);
         return jdbc
                 .query(
                         "SELECT * FROM MEMORY_EVENT WHERE TENANT_ID=? AND ID=?",
@@ -107,6 +110,7 @@ public class JdbcMagmaMemoryRepository implements MagmaMemoryRepository {
      */
     public Optional<MemoryEvent> findLatestEvent(
             TenantId tenantId, String ns, String st, String sid) {
+        requireTenant(tenantId);
         return jdbc
                 .query(
                         "SELECT * FROM MEMORY_EVENT WHERE TENANT_ID=? AND NAMESPACE=? AND"
@@ -136,6 +140,7 @@ public class JdbcMagmaMemoryRepository implements MagmaMemoryRepository {
     @Override
     public Optional<MemoryEvent> findPreviousEvent(
             TenantId tenantId, String ns, String st, String sid, Instant occurredAt) {
+        requireTenant(tenantId);
         return jdbc
                 .query(
                         "SELECT * FROM MEMORY_EVENT WHERE TENANT_ID=? AND NAMESPACE=? AND"
@@ -166,6 +171,7 @@ public class JdbcMagmaMemoryRepository implements MagmaMemoryRepository {
     @Override
     public Optional<MemoryEvent> findNextEvent(
             TenantId tenantId, String ns, String st, String sid, Instant occurredAt) {
+        requireTenant(tenantId);
         return jdbc
                 .query(
                         "SELECT * FROM MEMORY_EVENT WHERE TENANT_ID=? AND NAMESPACE=? AND"
@@ -195,6 +201,7 @@ public class JdbcMagmaMemoryRepository implements MagmaMemoryRepository {
      */
     public List<MemoryEvent> findCandidates(
             TenantId tenantId, String ns, String st, String sid, int limit) {
+        requireTenant(tenantId);
         return jdbc.query(
                 "SELECT * FROM MEMORY_EVENT WHERE TENANT_ID=? AND NAMESPACE=? AND SUBJECT_TYPE=?"
                     + " AND SUBJECT_ID=? AND STATUS IN ('ACTIVE','CANDIDATE') ORDER BY OCCURRED_AT"
@@ -218,6 +225,7 @@ public class JdbcMagmaMemoryRepository implements MagmaMemoryRepository {
      */
     @Override
     public List<MemoryEvent> findByNamespace(TenantId tenantId, String ns, int limit) {
+        requireTenant(tenantId);
         return jdbc.query(
                 "SELECT * FROM MEMORY_EVENT WHERE TENANT_ID=? AND NAMESPACE=? AND STATUS<>'REVOKED'"
                         + " ORDER BY OCCURRED_AT, ID ASC LIMIT ?",
@@ -235,6 +243,7 @@ public class JdbcMagmaMemoryRepository implements MagmaMemoryRepository {
      * @param status 参数值，用于执行当前操作。
      */
     public void updateEventStatus(TenantId tenantId, String id, MemoryEventStatus status) {
+        requireTenant(tenantId);
         jdbc.update(
                 "UPDATE MEMORY_EVENT SET STATUS=?,UPDATED_AT=CURRENT_TIMESTAMP WHERE TENANT_ID=?"
                         + " AND ID=?",
@@ -251,6 +260,7 @@ public class JdbcMagmaMemoryRepository implements MagmaMemoryRepository {
      */
     @Override
     public void deactivateEdgesForNode(TenantId tenantId, String nodeId) {
+        requireTenant(tenantId);
         jdbc.update(
                 "UPDATE MEMORY_EDGE SET ACTIVE=FALSE WHERE TENANT_ID=? AND (SOURCE_NODE_ID=? OR"
                         + " TARGET_NODE_ID=?)",
@@ -265,6 +275,7 @@ public class JdbcMagmaMemoryRepository implements MagmaMemoryRepository {
      * @param e 参数值，用于执行当前操作。
      */
     public void upsertEntity(MemoryEntity e) {
+        requireTenant(e.tenantId());
         jdbc.update(
                 dialect.upsert(
                         "MEMORY_ENTITY",
@@ -296,6 +307,7 @@ public class JdbcMagmaMemoryRepository implements MagmaMemoryRepository {
      * @param e 参数值，用于执行当前操作。
      */
     public void insertEdge(MemoryEdge e) {
+        requireTenant(e.tenantId());
         jdbc.update(
                 "INSERT INTO MEMORY_EDGE"
                     + " (ID,TENANT_ID,SOURCE_NODE_ID,TARGET_NODE_ID,GRAPH_TYPE,RELATION_TYPE,DIRECTED,WEIGHT,CONFIDENCE,ORIGIN,EVIDENCE_SOURCE,ACTIVE,CREATED_AT)"
@@ -327,6 +339,7 @@ public class JdbcMagmaMemoryRepository implements MagmaMemoryRepository {
      */
     public List<MemoryEdge> findEdges(
             TenantId tenantId, String nodeId, GraphType graphType, int limit) {
+        requireTenant(tenantId);
         return jdbc.query(
                 "SELECT * FROM MEMORY_EDGE WHERE TENANT_ID=? AND (SOURCE_NODE_ID=? OR"
                         + " TARGET_NODE_ID=?) AND GRAPH_TYPE=? AND ACTIVE=TRUE ORDER BY CONFIDENCE"
@@ -346,6 +359,7 @@ public class JdbcMagmaMemoryRepository implements MagmaMemoryRepository {
      * @param eventId 参数值，用于执行当前操作。
      */
     public void enqueueConsolidation(TenantId tenantId, String eventId) {
+        requireTenant(tenantId);
         Instant now = Instant.now();
         jdbc.update(
                 "INSERT INTO MEMORY_CONSOLIDATION_JOB"
@@ -365,6 +379,7 @@ public class JdbcMagmaMemoryRepository implements MagmaMemoryRepository {
      */
     @Override
     public void recordRetrievalTrace(MemoryRetrievalTrace trace) {
+        requireTenant(trace.tenantId());
         Map<String, Double> weights =
                 trace.graphWeights().entrySet().stream()
                         .collect(
@@ -396,6 +411,7 @@ public class JdbcMagmaMemoryRepository implements MagmaMemoryRepository {
      */
     @Override
     public Optional<MemoryRetrievalTrace> findRetrievalTrace(TenantId tenantId, String id) {
+        requireTenant(tenantId);
         return jdbc
                 .query(
                         "SELECT * FROM MEMORY_RETRIEVAL_TRACE WHERE TENANT_ID=? AND ID=?",
@@ -490,5 +506,9 @@ public class JdbcMagmaMemoryRepository implements MagmaMemoryRepository {
 
     private static Timestamp ts(Instant i) {
         return Timestamp.from(i == null ? Instant.now() : i);
+    }
+
+    private static void requireTenant(TenantId tenantId) {
+        TenantScope.requireMatches(tenantId);
     }
 }

@@ -1,6 +1,7 @@
 package com.shiyu.ai.governance.implementation.usage.persistence.dataobject;
 
 import com.mybatisflex.annotation.Id;
+import com.mybatisflex.annotation.Column;
 import com.mybatisflex.annotation.Table;
 import com.shiyu.ai.governance.implementation.usage.domain.model.UsageRecordBO;
 
@@ -42,6 +43,7 @@ public class UsageRecordDO implements Serializable {
     private Long userId;
 
     /** 租户 ID，用于隔离用量与配额统计 */
+    @Column(tenantId = true)
     private Long tenantId;
 
     /**

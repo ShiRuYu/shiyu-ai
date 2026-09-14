@@ -5,6 +5,7 @@ import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.anyLong;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.mockStatic;
@@ -17,9 +18,11 @@ import com.shiyu.ai.governance.implementation.usage.persistence.dataobject.Usage
 import com.shiyu.ai.governance.implementation.usage.persistence.mapper.UsageRecordMapper;
 import com.shiyu.ai.governance.implementation.usage.persistence.repository.UsageRecordRepositoryImpl;
 import com.shiyu.ai.kernel.context.TenantId;
+import com.shiyu.ai.kernel.context.TenantScope;
 import com.shiyu.ai.model.contract.api.ModelCatalogPort;
 
 import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Test;
 import org.mockito.MockedStatic;
 import org.springframework.dao.DuplicateKeyException;
@@ -37,6 +40,7 @@ class UsageRecordRepositoryImplTest {
 
     @BeforeEach
     void setUp() {
+        TenantScope.set(new TenantId(9L));
         mapper = mock(UsageRecordMapper.class);
         modelCatalog = mock(ModelCatalogPort.class);
         when(modelCatalog.countEnabledPlatforms()).thenReturn(4L);
@@ -44,9 +48,14 @@ class UsageRecordRepositoryImplTest {
         repository = new UsageRecordRepositoryImpl(mapper, modelCatalog);
     }
 
+    @AfterEach
+    void clearScope() {
+        TenantScope.clear();
+    }
+
     @Test
     void aggregatesLlmRecordsWithoutDatabaseJsonFunctions() {
-        when(mapper.selectLlmRecords())
+        when(mapper.selectLlmRecords(anyLong()))
                 .thenReturn(
                         List.of(
                                 record(
@@ -77,8 +86,8 @@ class UsageRecordRepositoryImplTest {
 
     @Test
     void normalizesOverviewAliasesAndIncludesConfiguredCatalogCounts() {
-        when(mapper.getOverview()).thenReturn(Map.of("TOTAL_CALLS", 3L, "AVG_LATENCY_MS", 12.5));
-        when(mapper.selectLlmRecords())
+        when(mapper.getOverview(anyLong())).thenReturn(Map.of("TOTAL_CALLS", 3L, "AVG_LATENCY_MS", 12.5));
+        when(mapper.selectLlmRecords(anyLong()))
                 .thenReturn(
                         List.of(
                                 record("LLM", "{\"totalTokens\":20,\"cost\":0.25}", 10),
@@ -96,12 +105,12 @@ class UsageRecordRepositoryImplTest {
     @Test
     void aggregatesPeriodsAndEmbeddingUsageInJava() {
         LocalDateTime now = LocalDateTime.now();
-        when(mapper.selectLlmRecordsSince(any()))
+        when(mapper.selectLlmRecordsSince(any(), anyLong()))
                 .thenReturn(
                         List.of(
                                 record("LLM", "{\"totalTokens\":7,\"cost\":0.2}", 14, now),
                                 record("LLM", "{\"totalTokens\":3,\"cost\":0.1}", 6, now)));
-        when(mapper.selectEmbeddingRecords())
+        when(mapper.selectEmbeddingRecords(anyLong()))
                 .thenReturn(
                         List.of(
                                 record(
@@ -136,7 +145,11 @@ class UsageRecordRepositoryImplTest {
                                 record("LLM", "{\"totalTokens\":4}", 1),
                                 record("LLM", "{\"totalTokens\":6}", 1)));
 
-        assertEquals(10L, repository.sumLlmTodayTokensByTenantId(new TenantId(1L)));
+        assertEquals(
+                10L,
+                TenantScope.withTenant(
+                        new TenantId(1L),
+                        () -> repository.sumLlmTodayTokensByTenantId(new TenantId(1L))));
         assertThrows(
                 NullPointerException.class, () -> repository.sumLlmTodayTokensByTenantId(null));
     }
@@ -192,9 +205,9 @@ class UsageRecordRepositoryImplTest {
 
     @Test
     void normalizesNullMapperRowsAndInvalidPeriodArguments() {
-        when(mapper.aggregateByDay(any(Integer.class))).thenReturn(null);
-        when(mapper.aggregateByWeek(any(Integer.class))).thenReturn(null);
-        when(mapper.aggregateByMonth(any(Integer.class))).thenReturn(null);
+        when(mapper.aggregateByDay(any(Integer.class), anyLong())).thenReturn(null);
+        when(mapper.aggregateByWeek(any(Integer.class), anyLong())).thenReturn(null);
+        when(mapper.aggregateByMonth(any(Integer.class), anyLong())).thenReturn(null);
 
         assertTrue(repository.aggregateByDay(0).isEmpty());
         assertTrue(repository.aggregateByWeek(-1).isEmpty());
@@ -208,15 +221,15 @@ class UsageRecordRepositoryImplTest {
         UsageRecordDO blank = record("LLM", "", 0);
         malformed.setCreateTime(null);
         blank.setCreateTime(null);
-        when(mapper.selectLlmRecords()).thenReturn(List.of(malformed, blank));
-        when(mapper.getOverview()).thenReturn(null);
+        when(mapper.selectLlmRecords(anyLong())).thenReturn(List.of(malformed, blank));
+        when(mapper.getOverview(anyLong())).thenReturn(null);
 
         Map<String, Object> overview = repository.getOverview();
         assertEquals(0L, overview.get("total_calls"));
         assertEquals(0L, overview.get("total_tokens"));
         assertEquals(4L, overview.get("platform_count"));
 
-        when(mapper.selectLlmRecordsSince(any())).thenReturn(List.of(malformed, blank));
+        when(mapper.selectLlmRecordsSince(any(), anyLong())).thenReturn(List.of(malformed, blank));
         assertTrue(repository.aggregateLlmByMonth(1).isEmpty());
     }
 
@@ -224,7 +237,7 @@ class UsageRecordRepositoryImplTest {
     void groupsPeriodsInReverseChronologicalOrderAndUsesUnknownModelLabels() {
         LocalDateTime older = LocalDateTime.of(2026, 1, 2, 3, 4);
         LocalDateTime newer = LocalDateTime.of(2026, 2, 3, 4, 5);
-        when(mapper.selectLlmRecordsSince(any()))
+        when(mapper.selectLlmRecordsSince(any(), anyLong()))
                 .thenReturn(
                         List.of(
                                 record("LLM", "{\"totalTokens\":2,\"cost\":\"0.1\"}", 1, older),
@@ -234,7 +247,7 @@ class UsageRecordRepositoryImplTest {
         assertEquals("2026-02", rows.getFirst().get("usage_month"));
         assertEquals(4L, rows.getFirst().get("total_tokens"));
 
-        when(mapper.selectLlmRecords())
+        when(mapper.selectLlmRecords(anyLong()))
                 .thenReturn(List.of(record("LLM", "{\"totalTokens\":1,\"cost\":\"0.1\"}", 1)));
         Map<String, Object> fallback = repository.aggregateByModel().getFirst();
         assertEquals("UNKNOWN", fallback.get("platform"));
@@ -244,15 +257,15 @@ class UsageRecordRepositoryImplTest {
     @Test
     void normalizesDialectValuesAndNullCollectionsAcrossAllAggregationAdapters() {
         List<Map<String, Object>> rows = List.of(Map.of("usage_type", "LLM"));
-        when(mapper.aggregateByDay(1)).thenReturn(rows);
-        when(mapper.aggregateByWeek(1)).thenReturn(rows);
-        when(mapper.aggregateByMonth(1)).thenReturn(rows);
+        when(mapper.aggregateByDay(eq(1), anyLong())).thenReturn(rows);
+        when(mapper.aggregateByWeek(eq(1), anyLong())).thenReturn(rows);
+        when(mapper.aggregateByMonth(eq(1), anyLong())).thenReturn(rows);
         assertEquals(rows, repository.aggregateByDay(1));
         assertEquals(rows, repository.aggregateByWeek(1));
         assertEquals(rows, repository.aggregateByMonth(1));
 
-        when(mapper.getOverview()).thenReturn(Map.of("total_calls", "5"));
-        when(mapper.selectLlmRecords())
+        when(mapper.getOverview(anyLong())).thenReturn(Map.of("total_calls", "5"));
+        when(mapper.selectLlmRecords(anyLong()))
                 .thenReturn(
                         List.of(
                                 record(
@@ -268,7 +281,7 @@ class UsageRecordRepositoryImplTest {
 
         when(mapper.selectLlmTodayByTenantId(eq(9L), any())).thenReturn(null);
         assertEquals(0L, repository.sumLlmTodayTokensByTenantId(new TenantId(9L)));
-        when(mapper.selectEmbeddingRecords()).thenReturn(null);
+        when(mapper.selectEmbeddingRecords(anyLong())).thenReturn(null);
         assertEquals(0L, repository.getEmbeddingOverview().get("total_calls"));
     }
 

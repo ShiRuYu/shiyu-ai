@@ -12,8 +12,11 @@ import com.shiyu.ai.conversation.implementation.domain.chat.*;
 import com.shiyu.ai.conversation.implementation.domain.model.*;
 import com.shiyu.ai.conversation.implementation.domain.port.*;
 import com.shiyu.ai.kernel.context.TenantId;
+import com.shiyu.ai.kernel.context.TenantScope;
 import com.shiyu.ai.kernel.context.UserId;
 
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.dao.DuplicateKeyException;
 import org.springframework.jdbc.core.JdbcTemplate;
@@ -31,6 +34,16 @@ import javax.sql.DataSource;
 
 @SuppressWarnings({"unchecked", "rawtypes"})
 class JdbcGenerationRepositoryTest {
+    @BeforeEach
+    void bindTenantScope() {
+        TenantScope.set(new TenantId(7L));
+    }
+
+    @AfterEach
+    void clearTenantScope() {
+        TenantScope.clear();
+    }
+
     @Test
     void terminalGenerationUpdateRunsWithinOneTransaction() throws Exception {
         assertTrue(
@@ -122,7 +135,8 @@ class JdbcGenerationRepositoryTest {
         when(jdbc.update(startsWith("UPDATE CHAT_GENERATION_RUN"), any(Object[].class)))
                 .thenReturn(1);
         assertEquals(1, repository.update(completed, 1));
-        verify(jdbc).update(startsWith("DELETE FROM CHAT_GENERATION_ACTIVE"), eq("g1"));
+        verify(jdbc).update(
+                startsWith("DELETE FROM CHAT_GENERATION_ACTIVE"), eq("g1"), eq(7L));
 
         when(jdbc.queryForObject(
                         contains("COALESCE(MAX"), eq(Integer.class), eq("g1"), eq(7L), eq(7L)))

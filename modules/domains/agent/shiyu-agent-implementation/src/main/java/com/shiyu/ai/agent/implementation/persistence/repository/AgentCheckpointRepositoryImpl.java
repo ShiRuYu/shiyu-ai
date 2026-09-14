@@ -6,6 +6,7 @@ import com.shiyu.ai.agent.implementation.persistence.dataobject.AgentCheckpointD
 import com.shiyu.ai.agent.implementation.persistence.mapper.AgentCheckpointMapper;
 import com.shiyu.ai.common.core.utils.MapstructUtils;
 import com.shiyu.ai.kernel.context.TenantId;
+import com.shiyu.ai.kernel.context.TenantScope;
 
 import jakarta.annotation.Resource;
 
@@ -72,6 +73,6 @@ public class AgentCheckpointRepositoryImpl
     }
 
     private void requireTenant(TenantId tenantId) {
-        if (tenantId == null) throw new IllegalArgumentException("tenantId must not be null");
+        TenantScope.requireMatches(tenantId);
     }
 }

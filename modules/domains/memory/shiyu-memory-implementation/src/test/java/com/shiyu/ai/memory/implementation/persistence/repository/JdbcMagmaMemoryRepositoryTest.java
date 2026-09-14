@@ -7,8 +7,11 @@ import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.Mockito.*;
 
 import com.shiyu.ai.kernel.context.TenantId;
+import com.shiyu.ai.kernel.context.TenantScope;
 import com.shiyu.ai.memory.contract.model.*;
 
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.core.RowMapper;
@@ -25,6 +28,16 @@ import javax.sql.DataSource;
 
 class JdbcMagmaMemoryRepositoryTest {
     private static final TenantId TENANT = new TenantId(7L);
+
+    @BeforeEach
+    void bindTenantScope() {
+        TenantScope.set(TENANT);
+    }
+
+    @AfterEach
+    void clearTenantScope() {
+        TenantScope.clear();
+    }
 
     @Test
     void delegatesTenantScopedEventEntityEdgeAndTraceOperations() throws Exception {

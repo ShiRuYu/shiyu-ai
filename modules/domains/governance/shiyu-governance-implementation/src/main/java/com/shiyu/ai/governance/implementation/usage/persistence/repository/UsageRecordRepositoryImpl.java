@@ -8,12 +8,14 @@ import com.shiyu.ai.governance.implementation.usage.persistence.dataobject.Usage
 import com.shiyu.ai.governance.implementation.usage.persistence.mapper.UsageRecordMapper;
 import com.shiyu.ai.governance.implementation.usage.port.repository.UsageRecordRepository;
 import com.shiyu.ai.kernel.context.TenantId;
+import com.shiyu.ai.kernel.context.TenantScope;
 import com.shiyu.ai.model.contract.api.ModelCatalogPort;
 
 import lombok.extern.slf4j.Slf4j;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
+import org.springframework.context.annotation.Primary;
 import org.springframework.dao.DuplicateKeyException;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.stereotype.Component;
@@ -40,6 +42,7 @@ import javax.sql.DataSource;
  */
 @Slf4j
 @Component
+@Primary
 public class UsageRecordRepositoryImpl implements UsageRecordRepository {
 
     /**
@@ -59,6 +62,7 @@ public class UsageRecordRepositoryImpl implements UsageRecordRepository {
      * dialect 属性，保存当前对象中的业务数据或协作依赖。
      */
     private final JdbcDialect dialect;
+    private final boolean allTenants;
 
     /**
      * 处理用量记录repositoryimpl。
@@ -70,7 +74,7 @@ public class UsageRecordRepositoryImpl implements UsageRecordRepository {
      */
     public UsageRecordRepositoryImpl(
             UsageRecordMapper usageRecordMapper, ModelCatalogPort modelCatalog) {
-        this(usageRecordMapper, modelCatalog, JdbcDialect.fromProduct("H2"));
+        this(usageRecordMapper, modelCatalog, JdbcDialect.fromProduct("H2"), false);
     }
 
     /**
@@ -85,16 +89,18 @@ public class UsageRecordRepositoryImpl implements UsageRecordRepository {
             UsageRecordMapper usageRecordMapper,
             ModelCatalogPort modelCatalog,
             @Qualifier("agentDataSource") DataSource dataSource) {
-        this(usageRecordMapper, modelCatalog, JdbcDialect.detect(new JdbcTemplate(dataSource)));
+        this(usageRecordMapper, modelCatalog, JdbcDialect.detect(new JdbcTemplate(dataSource)), false);
     }
 
-    private UsageRecordRepositoryImpl(
+    protected UsageRecordRepositoryImpl(
             UsageRecordMapper usageRecordMapper,
             ModelCatalogPort modelCatalog,
-            JdbcDialect dialect) {
+            JdbcDialect dialect,
+            boolean allTenants) {
         this.usageRecordMapper = usageRecordMapper;
         this.modelCatalog = modelCatalog;
         this.dialect = dialect;
+        this.allTenants = allTenants;
     }
 
     /**
@@ -105,6 +111,7 @@ public class UsageRecordRepositoryImpl implements UsageRecordRepository {
     @Override
     public void insert(UsageRecordBO record) {
         validateTenantScopedRecord(record);
+        TenantScope.requireMatches(new TenantId(record.getTenantId()));
         UsageRecordDO data = MapstructUtils.convert(record, UsageRecordDO.class);
         usageRecordMapper.insertSelective(data);
         record.setId(data.getId());
@@ -136,12 +143,16 @@ public class UsageRecordRepositoryImpl implements UsageRecordRepository {
      */
     @Override
     public List<Map<String, Object>> aggregateByDay(int days) {
+        if (!allTenants) TenantScope.require();
         if (days <= 0) return List.of();
-        List<UsageRecordDO> portable = usageRecordMapper.selectRecordsSince(daysBefore(days));
+        List<UsageRecordDO> portable = selectRecordsSince(daysBefore(days));
         if (usesPortableAggregation() && portable != null) {
             return aggregateRecords(portable, "usage_date", time -> time.toLocalDate().toString());
         }
-        return safeRows(usageRecordMapper.aggregateByDay(days));
+        return safeRows(
+                allTenants
+                        ? usageRecordMapper.aggregateByDayAllTenants(days)
+                        : usageRecordMapper.aggregateByDay(days, currentTenantValue()));
     }
 
     /**
@@ -153,12 +164,16 @@ public class UsageRecordRepositoryImpl implements UsageRecordRepository {
      */
     @Override
     public List<Map<String, Object>> aggregateByWeek(int weeks) {
+        if (!allTenants) TenantScope.require();
         if (weeks <= 0) return List.of();
-        List<UsageRecordDO> portable = usageRecordMapper.selectRecordsSince(weeksBefore(weeks));
+        List<UsageRecordDO> portable = selectRecordsSince(weeksBefore(weeks));
         if (usesPortableAggregation() && portable != null) {
             return aggregateRecords(portable, "usage_week", this::weekKey);
         }
-        return safeRows(usageRecordMapper.aggregateByWeek(weeks));
+        return safeRows(
+                allTenants
+                        ? usageRecordMapper.aggregateByWeekAllTenants(weeks)
+                        : usageRecordMapper.aggregateByWeek(weeks, currentTenantValue()));
     }
 
     /**
@@ -170,13 +185,17 @@ public class UsageRecordRepositoryImpl implements UsageRecordRepository {
      */
     @Override
     public List<Map<String, Object>> aggregateByMonth(int months) {
+        if (!allTenants) TenantScope.require();
         if (months <= 0) return List.of();
-        List<UsageRecordDO> portable = usageRecordMapper.selectRecordsSince(monthsBefore(months));
+        List<UsageRecordDO> portable = selectRecordsSince(monthsBefore(months));
         if (usesPortableAggregation() && portable != null) {
             return aggregateRecords(
                     portable, "usage_month", time -> YearMonth.from(time).toString());
         }
-        return safeRows(usageRecordMapper.aggregateByMonth(months));
+        return safeRows(
+                allTenants
+                        ? usageRecordMapper.aggregateByMonthAllTenants(months)
+                        : usageRecordMapper.aggregateByMonth(months, currentTenantValue()));
     }
 
     /**
@@ -186,10 +205,14 @@ public class UsageRecordRepositoryImpl implements UsageRecordRepository {
      */
     @Override
     public Map<String, Object> getOverview() {
-        Map<String, Object> databaseOverview = usageRecordMapper.getOverview();
+        if (!allTenants) TenantScope.require();
+        Map<String, Object> databaseOverview =
+                allTenants
+                        ? usageRecordMapper.getOverviewAllTenants()
+                        : usageRecordMapper.getOverview(currentTenantValue());
         Map<String, Object> raw = databaseOverview == null ? Map.of() : databaseOverview;
         UsageMetrics llmMetrics = new UsageMetrics();
-        for (UsageRecordDO record : safeRecords(usageRecordMapper.selectLlmRecords())) {
+        for (UsageRecordDO record : safeRecords(selectLlmRecords())) {
             llmMetrics.addLlm(record, parseExtInfo(record));
         }
         Map<String, Object> llmOverview = llmMetrics.toLlmRow();
@@ -211,8 +234,9 @@ public class UsageRecordRepositoryImpl implements UsageRecordRepository {
      */
     @Override
     public List<Map<String, Object>> aggregateByModel() {
+        if (!allTenants) TenantScope.require();
         Map<String, ModelMetrics> groups = new TreeMap<>();
-        for (UsageRecordDO record : safeRecords(usageRecordMapper.selectLlmRecords())) {
+        for (UsageRecordDO record : safeRecords(selectLlmRecords())) {
             Map<String, Object> extInfo = parseExtInfo(record);
             String platform = textValue(extInfo.get("platform"), "UNKNOWN");
             String model = textValue(extInfo.get("model"), "UNKNOWN");
@@ -248,6 +272,7 @@ public class UsageRecordRepositoryImpl implements UsageRecordRepository {
      */
     @Override
     public List<Map<String, Object>> aggregateLlmByDay(int days) {
+        if (!allTenants) TenantScope.require();
         return aggregateLlmByPeriod(
                 daysBefore(days), "usage_date", time -> time.toLocalDate().toString());
     }
@@ -261,6 +286,7 @@ public class UsageRecordRepositoryImpl implements UsageRecordRepository {
      */
     @Override
     public List<Map<String, Object>> aggregateLlmByWeek(int weeks) {
+        if (!allTenants) TenantScope.require();
         return aggregateLlmByPeriod(weeksBefore(weeks), "usage_week", this::weekKey);
     }
 
@@ -273,6 +299,7 @@ public class UsageRecordRepositoryImpl implements UsageRecordRepository {
      */
     @Override
     public List<Map<String, Object>> aggregateLlmByMonth(int months) {
+        if (!allTenants) TenantScope.require();
         return aggregateLlmByPeriod(
                 monthsBefore(months), "usage_month", time -> YearMonth.from(time).toString());
     }
@@ -284,8 +311,9 @@ public class UsageRecordRepositoryImpl implements UsageRecordRepository {
      */
     @Override
     public Map<String, Object> getEmbeddingOverview() {
+        if (!allTenants) TenantScope.require();
         UsageMetrics metrics = new UsageMetrics();
-        for (UsageRecordDO record : safeRecords(usageRecordMapper.selectEmbeddingRecords())) {
+        for (UsageRecordDO record : safeRecords(selectEmbeddingRecords())) {
             metrics.addEmbedding(record, parseExtInfo(record));
         }
         Map<String, Object> result = new LinkedHashMap<>();
@@ -306,6 +334,7 @@ public class UsageRecordRepositoryImpl implements UsageRecordRepository {
     @Override
     public Long sumLlmTodayTokensByTenantId(TenantId tenantId) {
         Objects.requireNonNull(tenantId, "tenantId must not be null");
+        if (!allTenants) TenantScope.requireMatches(tenantId);
         return safeRecords(
                         usageRecordMapper.selectLlmTodayByTenantId(
                                 tenantId.value(), LocalDate.now().atStartOfDay()))
@@ -338,10 +367,38 @@ public class UsageRecordRepositoryImpl implements UsageRecordRepository {
         }
     }
 
+    private List<UsageRecordDO> selectRecordsSince(LocalDateTime start) {
+        return allTenants
+                ? usageRecordMapper.selectAllRecordsSince(start)
+                : usageRecordMapper.selectRecordsSince(start, currentTenantValue());
+    }
+
+    private List<UsageRecordDO> selectLlmRecords() {
+        return allTenants
+                ? usageRecordMapper.selectAllLlmRecords()
+                : usageRecordMapper.selectLlmRecords(currentTenantValue());
+    }
+
+    private List<UsageRecordDO> selectLlmRecordsSince(LocalDateTime start) {
+        return allTenants
+                ? usageRecordMapper.selectAllLlmRecordsSince(start)
+                : usageRecordMapper.selectLlmRecordsSince(start, currentTenantValue());
+    }
+
+    private List<UsageRecordDO> selectEmbeddingRecords() {
+        return allTenants
+                ? usageRecordMapper.selectAllEmbeddingRecords()
+                : usageRecordMapper.selectEmbeddingRecords(currentTenantValue());
+    }
+
+    private long currentTenantValue() {
+        return TenantScope.require().value();
+    }
+
     private List<Map<String, Object>> aggregateLlmByPeriod(
             LocalDateTime start, String keyName, Function<LocalDateTime, String> keyFunction) {
         Map<String, UsageMetrics> groups = new TreeMap<>(Comparator.reverseOrder());
-        for (UsageRecordDO record : safeRecords(usageRecordMapper.selectLlmRecordsSince(start))) {
+        for (UsageRecordDO record : safeRecords(selectLlmRecordsSince(start))) {
             if (record.getCreateTime() == null) {
                 continue;
             }

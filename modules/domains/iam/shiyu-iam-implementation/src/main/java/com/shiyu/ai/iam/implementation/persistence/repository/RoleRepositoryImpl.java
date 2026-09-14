@@ -3,7 +3,7 @@ package com.shiyu.ai.iam.implementation.persistence.repository;
 import static com.mybatisflex.core.query.QueryMethods.column;
 
 import com.mybatisflex.core.query.QueryWrapper;
-import com.mybatisflex.core.tenant.TenantManager;
+import com.shiyu.ai.common.mybatis.tenant.TenantQueryExecutor;
 import com.shiyu.ai.common.core.utils.MapstructUtils;
 import com.shiyu.ai.iam.implementation.domain.model.RoleBO;
 import com.shiyu.ai.iam.implementation.persistence.dataobject.MenuDO;
@@ -18,6 +18,7 @@ import com.shiyu.ai.iam.implementation.persistence.mapper.RoleScopeAuthCodeMappe
 import com.shiyu.ai.iam.implementation.persistence.mapper.RoleScopeMenuMapper;
 import com.shiyu.ai.iam.implementation.persistence.mapper.UserScopeRoleMapper;
 import com.shiyu.ai.kernel.context.TenantId;
+import com.shiyu.ai.kernel.context.TenantScope;
 
 import jakarta.annotation.Resource;
 
@@ -105,7 +106,7 @@ public class RoleRepositoryImpl
             queryWrapper.eq(RoleDO::getStatus, status);
         }
         List<RoleDO> roleDOs =
-                TenantManager.withoutTenantCondition(
+                TenantQueryExecutor.readAcrossTenants(
                         () -> roleMapper.selectListByQuery(queryWrapper));
         return MapstructUtils.convert(roleDOs, RoleBO.class);
     }
@@ -123,7 +124,7 @@ public class RoleRepositoryImpl
                         .and(RoleDO::getTenantId)
                         .eq(tenantValue);
         RoleDO roleDO =
-                TenantManager.withoutTenantCondition(() -> roleMapper.selectOneByQuery(query));
+                TenantQueryExecutor.readAcrossTenants(() -> roleMapper.selectOneByQuery(query));
         return MapstructUtils.convert(roleDO, RoleBO.class);
     }
 
@@ -154,7 +155,7 @@ public class RoleRepositoryImpl
             return false;
         }
         RoleDO roleDO = MapstructUtils.convert(roleBO, RoleDO.class);
-        return TenantManager.withoutTenantCondition(
+        return TenantQueryExecutor.readAcrossTenants(
                         () ->
                                 roleMapper.updateByQuery(
                                         roleDO,
@@ -192,7 +193,7 @@ public class RoleRepositoryImpl
                         .eq(roleId)
                         .and(RoleScopeAuthCodeDO::getTenantId)
                         .eq(tenantValue));
-        return TenantManager.withoutTenantCondition(
+        return TenantQueryExecutor.readAcrossTenants(
                         () ->
                                 roleMapper.deleteByQuery(
                                         QueryWrapper.create()
@@ -238,7 +239,7 @@ public class RoleRepositoryImpl
                         .eq(1)
                         .and(RoleDO::getDelFlag)
                         .eq(0);
-        return TenantManager.withoutTenantCondition(() -> roleMapper.selectCountByQuery(qw) > 0);
+        return TenantQueryExecutor.readAcrossTenants(() -> roleMapper.selectCountByQuery(qw) > 0);
     }
 
     /** 校验菜单均存在、有效且属于允许的租户范围。 */
@@ -270,7 +271,7 @@ public class RoleRepositoryImpl
                         .and(MenuDO::getDelFlag)
                         .eq(0);
         long count =
-                TenantManager.withoutTenantCondition(() -> menuMapper.selectCountByQuery(query));
+                TenantQueryExecutor.readAcrossTenants(() -> menuMapper.selectCountByQuery(query));
         return count == distinctMenuIds.size();
     }
 
@@ -297,7 +298,7 @@ public class RoleRepositoryImpl
         qw.and(RoleScopeMenuDO::getTenantId).eq(tenantId.value());
         qw.orderBy(column(MenuDO::getOrder).asc(), column(MenuDO::getId).asc());
         List<RoleScopeMenuDO> list =
-                TenantManager.withoutTenantCondition(
+                TenantQueryExecutor.readAcrossTenants(
                         () -> roleScopeMenuMapper.selectListByQuery(qw));
         return list.stream()
                 .collect(
@@ -328,7 +329,7 @@ public class RoleRepositoryImpl
                         .and(MenuDO::getDelFlag)
                         .eq(0)
                         .orderBy(column(MenuDO::getOrder).asc(), column(MenuDO::getId).asc());
-        return TenantManager.withoutTenantCondition(() -> roleScopeMenuMapper.selectListByQuery(qw))
+        return TenantQueryExecutor.readAcrossTenants(() -> roleScopeMenuMapper.selectListByQuery(qw))
                 .stream()
                 .map(RoleScopeMenuDO::getMenuId)
                 .toList();
@@ -374,6 +375,7 @@ public class RoleRepositoryImpl
         if (tenantId == null || tenantId.value() <= 0) {
             throw new IllegalArgumentException("tenantId is required for role repository query");
         }
+        TenantScope.requireMatchesIfBound(tenantId);
         return tenantId.value();
     }
 }

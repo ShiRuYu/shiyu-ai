@@ -2,6 +2,7 @@ package com.shiyu.ai.governance.implementation.application;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import com.shiyu.ai.governance.contract.UsageMeasurement;
 import com.shiyu.ai.governance.contract.UsageRecordResult;
@@ -10,6 +11,7 @@ import com.shiyu.ai.governance.implementation.persistence.UsageLedger;
 import com.shiyu.ai.kernel.context.ActorContext;
 import com.shiyu.ai.kernel.context.CorrelationId;
 import com.shiyu.ai.kernel.context.TenantId;
+import com.shiyu.ai.kernel.context.TenantScope;
 import com.shiyu.ai.kernel.context.UserId;
 import com.shiyu.ai.kernel.event.DomainEventEnvelope;
 
@@ -57,6 +59,20 @@ class UsageRecorderTest {
         assertThrows(
                 IllegalStateException.class,
                 () -> recorder.record(ACTOR, usageFor(new TenantId(12))));
+    }
+
+    @Test
+    void restoresTenantScopeAfterRecordingAnAsyncUsageEvent() {
+        UsageRecorder recorder =
+                new UsageRecorder(
+                        entry -> {
+                            assertEquals(12L, TenantScope.require().value());
+                            return true;
+                        });
+
+        assertTrue(TenantScope.current().isEmpty());
+        recorder.record(ACTOR, usageFor(new TenantId(12)));
+        assertTrue(TenantScope.current().isEmpty());
     }
 
     @Test

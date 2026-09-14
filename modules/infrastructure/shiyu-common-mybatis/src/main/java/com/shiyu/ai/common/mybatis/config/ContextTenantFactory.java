@@ -30,7 +30,7 @@ public class ContextTenantFactory implements TenantFactory {
     @Override
     public Object[] getTenantIds(String tableName) {
         // 所有带租户归属的数据访问都必须拥有有效上下文。
-        // 需要跨租户执行的认证管理查询必须显式使用 TenantManager.withoutTenantCondition，
+        // 需要跨租户执行的认证管理查询必须显式使用 TenantQueryExecutor，
         // 不能通过返回 null 绕过租户过滤器。
         return getTenantIds();
     }

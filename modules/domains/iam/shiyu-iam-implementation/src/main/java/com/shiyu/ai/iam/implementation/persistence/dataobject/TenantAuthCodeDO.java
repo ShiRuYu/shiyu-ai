@@ -1,5 +1,6 @@
 package com.shiyu.ai.iam.implementation.persistence.dataobject;
 
+import com.mybatisflex.annotation.Column;
 import com.mybatisflex.annotation.Table;
 import com.shiyu.ai.iam.implementation.domain.model.TenantAuthCodeBO;
 
@@ -17,6 +18,7 @@ public class TenantAuthCodeDO {
     /**
      * 租户标识，表示当前对象中的对应属性。
      */
+    @Column(tenantId = true)
     private Long tenantId;
     /**
      * authCodeId 属性，保存当前对象中的业务数据或协作依赖。

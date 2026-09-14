@@ -24,7 +24,7 @@ class LayerBoundaryArchTest {
         businessMustNotDependOnPersistenceTypes.check(classes);
         repositoryPortsMustNotExposePersistenceTypes.check(classes);
         domainApplicationMustNotReadUserContextHolder.check(classes);
-        domainApplicationMustNotReadTenantScope.check(classes);
+        domainModelMustNotMutateTenantScope.check(classes);
     }
 
     @ArchTest
@@ -93,25 +93,14 @@ class LayerBoundaryArchTest {
                                     + " context is an HTTP adapter concern");
 
     @ArchTest
-    static final ArchRule domainApplicationMustNotReadTenantScope =
+    static final ArchRule domainModelMustNotMutateTenantScope =
             noClasses()
                     .that()
-                    .resideInAnyPackage(
-                            "com.shiyu.ai.agent..",
-                            "com.shiyu.ai.iam.implementation..",
-                            "com.shiyu.ai.conversation..",
-                            "com.shiyu.ai.education..",
-                            "com.shiyu.ai.knowledge..",
-                            "com.shiyu.ai.memory..",
-                            "com.shiyu.ai.model..",
-                            "com.shiyu.ai.governance..",
-                            "com.shiyu.ai.tooling..")
-                    .and()
-                    .resideOutsideOfPackages("..web..")
+                    .resideInAnyPackage("com.shiyu.ai..domain..", "com.shiyu.ai..port..")
                     .should()
                     .dependOnClassesThat()
                     .haveFullyQualifiedName("com.shiyu.ai.kernel.context.TenantScope")
                     .because(
-                            "Domain/application code must receive ActorContext explicitly; thread"
-                                    + " context is an HTTP adapter concern");
+                            "Domain models and ports must not bind or read the thread tenant scope;"
+                                    + " authorized orchestration and persistence adapters validate it");
 }

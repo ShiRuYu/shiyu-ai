@@ -4,10 +4,11 @@ import com.shiyu.ai.knowledge.implementation.domain.port.repository.KnowledgeEnt
 
 import com.mybatisflex.core.paginate.Page;
 import com.mybatisflex.core.query.QueryWrapper;
-import com.mybatisflex.core.tenant.TenantManager;
+import com.shiyu.ai.common.mybatis.tenant.TenantQueryExecutor;
 import com.shiyu.ai.common.core.api.PageData;
 import com.shiyu.ai.common.core.utils.MapstructUtils;
 import com.shiyu.ai.kernel.context.TenantId;
+import com.shiyu.ai.kernel.context.TenantScope;
 import com.shiyu.ai.knowledge.implementation.domain.model.KnowledgeAuditLogBO;
 import com.shiyu.ai.knowledge.implementation.domain.model.KnowledgeDocumentVersionBO;
 import com.shiyu.ai.knowledge.implementation.domain.model.KnowledgeEvaluationCaseBO;
@@ -92,7 +93,7 @@ public class KnowledgeEnterpriseRepositoryImpl
             return null;
         }
         return MapstructUtils.convert(
-                TenantManager.withoutTenantCondition(
+                TenantQueryExecutor.readAcrossTenants(
                         () ->
                                 spaceMapper.selectOneByQuery(
                                         QueryWrapper.create()
@@ -105,7 +106,7 @@ public class KnowledgeEnterpriseRepositoryImpl
     public List<KnowledgeSpaceBO> findActiveSpacesByTenant(TenantId tenantId) {
         requireTenant(tenantId);
         return MapstructUtils.convert(
-                TenantManager.withoutTenantCondition(
+                TenantQueryExecutor.readAcrossTenants(
                         () ->
                                 spaceMapper.selectListByQuery(
                                         QueryWrapper.create()
@@ -123,7 +124,7 @@ public class KnowledgeEnterpriseRepositoryImpl
      */
     public List<KnowledgeSpaceBO> findAllActiveSpaces() {
         return MapstructUtils.convert(
-                TenantManager.withoutTenantCondition(
+                TenantQueryExecutor.readAcrossTenants(
                         () ->
                                 spaceMapper.selectListByQuery(
                                         QueryWrapper.create()
@@ -145,7 +146,7 @@ public class KnowledgeEnterpriseRepositoryImpl
     public KnowledgeSpaceBO findSpaceByTenantAndCode(TenantId tenantId, String code) {
         requireTenant(tenantId);
         return MapstructUtils.convert(
-                TenantManager.withoutTenantCondition(
+                TenantQueryExecutor.readAcrossTenants(
                         () ->
                                 spaceMapper.selectOneByQuery(
                                         QueryWrapper.create()
@@ -419,7 +420,7 @@ public class KnowledgeEnterpriseRepositoryImpl
 
     public List<KnowledgeIngestionJobBO> pollPendingJobs(int limit) {
         return MapstructUtils.convert(
-                TenantManager.withoutTenantCondition(
+                TenantQueryExecutor.readAcrossTenants(
                         () ->
                                 jobMapper.selectListByQuery(
                                         QueryWrapper.create()
@@ -436,7 +437,7 @@ public class KnowledgeEnterpriseRepositoryImpl
 
     public List<KnowledgeIngestionJobBO> findStaleJobs(LocalDateTime heartbeatBefore) {
         return MapstructUtils.convert(
-                TenantManager.withoutTenantCondition(
+                TenantQueryExecutor.readAcrossTenants(
                         () ->
                                 jobMapper.selectListByQuery(
                                         QueryWrapper.create()
@@ -479,6 +480,7 @@ public class KnowledgeEnterpriseRepositoryImpl
 
     private static void requireTenant(TenantId tenantId) {
         if (tenantId == null) throw new IllegalArgumentException("tenantId must not be null");
+        TenantScope.requireMatches(tenantId);
     }
 
     public KnowledgeEvaluationCaseBO insertEvaluation(

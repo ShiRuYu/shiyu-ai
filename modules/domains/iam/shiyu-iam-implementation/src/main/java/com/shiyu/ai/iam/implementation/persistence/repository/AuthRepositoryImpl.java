@@ -11,6 +11,7 @@ import com.shiyu.ai.iam.implementation.persistence.dataobject.UserScopeRoleDO;
 import com.shiyu.ai.iam.implementation.persistence.mapper.AuthCodeMapper;
 import com.shiyu.ai.iam.implementation.persistence.mapper.RoleMapper;
 import com.shiyu.ai.kernel.context.TenantId;
+import com.shiyu.ai.kernel.context.TenantScope;
 import com.shiyu.ai.kernel.context.UserId;
 
 import jakarta.annotation.Resource;
@@ -315,6 +316,7 @@ public class AuthRepositoryImpl
         if (value.value() <= 0) {
             throw new IllegalArgumentException("tenantId must be positive");
         }
+        TenantScope.requireMatchesIfBound(value);
         return value.value();
     }
 

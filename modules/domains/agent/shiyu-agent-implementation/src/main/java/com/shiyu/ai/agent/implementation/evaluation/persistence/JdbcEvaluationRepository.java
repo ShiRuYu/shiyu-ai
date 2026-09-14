@@ -8,6 +8,7 @@ import com.shiyu.ai.agent.implementation.evaluation.port.EvaluationRepository;
 
 import com.shiyu.ai.common.core.utils.JSONUtils;
 import com.shiyu.ai.kernel.context.TenantId;
+import com.shiyu.ai.kernel.context.TenantScope;
 
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.jdbc.core.JdbcTemplate;
@@ -48,6 +49,7 @@ public class JdbcEvaluationRepository implements EvaluationRepository {
      */
     @Override
     public void insertDataset(EvalDataset d) {
+        requireTenant(d.tenantId());
         jdbc.update(
                 "INSERT INTO AGENT_EVAL_DATASET"
                         + " (ID,TENANT_ID,OWNER_USER_ID,NAME,DESCRIPTION,CREATED_AT) VALUES"
@@ -71,6 +73,7 @@ public class JdbcEvaluationRepository implements EvaluationRepository {
      */
     @Override
     public Optional<EvalDataset> findDataset(String id, TenantId tenantId, long ownerUserId) {
+        TenantScope.requireMatches(tenantId);
         return jdbc
                 .query(
                         "SELECT * FROM AGENT_EVAL_DATASET WHERE ID=? AND TENANT_ID=? AND"
@@ -97,6 +100,7 @@ public class JdbcEvaluationRepository implements EvaluationRepository {
      */
     @Override
     public void insertCase(EvalCase c) {
+        requireTenant(c.tenantId());
         jdbc.update(
                 "INSERT INTO AGENT_EVAL_CASE"
                     + " (ID,DATASET_ID,TENANT_ID,INPUT_TEXT,EXPECTED_TEXT,METADATA_JSON,CREATED_AT)"
@@ -120,6 +124,7 @@ public class JdbcEvaluationRepository implements EvaluationRepository {
      */
     @Override
     public List<EvalCase> listCases(String datasetId, TenantId tenantId) {
+        TenantScope.requireMatches(tenantId);
         return jdbc.query(
                 "SELECT * FROM AGENT_EVAL_CASE WHERE DATASET_ID=? AND TENANT_ID=? ORDER BY"
                         + " CREATED_AT,ID",
@@ -143,6 +148,7 @@ public class JdbcEvaluationRepository implements EvaluationRepository {
      */
     @Override
     public void insertRun(EvalRun r) {
+        requireTenant(r.tenantId());
         jdbc.update(
                 "INSERT INTO AGENT_EVAL_RUN"
                     + " (ID,DATASET_ID,TENANT_ID,OWNER_USER_ID,APP_VERSION_ID,METRIC,STATUS,PASS_RATE,RESULTS_JSON,CREATED_AT,COMPLETED_AT)"
@@ -171,6 +177,7 @@ public class JdbcEvaluationRepository implements EvaluationRepository {
      */
     @Override
     public Optional<EvalRun> findRun(String id, TenantId tenantId, long ownerUserId) {
+        TenantScope.requireMatches(tenantId);
         return jdbc
                 .query(
                         "SELECT * FROM AGENT_EVAL_RUN WHERE ID=? AND TENANT_ID=? AND"
@@ -231,5 +238,9 @@ public class JdbcEvaluationRepository implements EvaluationRepository {
 
     private static Timestamp ts(java.time.Instant value) {
         return Timestamp.from(value == null ? java.time.Instant.now() : value);
+    }
+
+    private static void requireTenant(long tenantId) {
+        TenantScope.requireMatches(new TenantId(tenantId));
     }
 }

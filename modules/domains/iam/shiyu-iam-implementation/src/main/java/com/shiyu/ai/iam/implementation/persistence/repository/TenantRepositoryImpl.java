@@ -1,13 +1,14 @@
 package com.shiyu.ai.iam.implementation.persistence.repository;
 
 import com.mybatisflex.core.query.QueryWrapper;
-import com.mybatisflex.core.tenant.TenantManager;
+import com.shiyu.ai.common.mybatis.tenant.TenantQueryExecutor;
 import com.shiyu.ai.common.core.utils.MapstructUtils;
 import com.shiyu.ai.common.core.utils.PasswordUtils;
 import com.shiyu.ai.iam.implementation.domain.model.TenantBO;
 import com.shiyu.ai.iam.implementation.persistence.dataobject.*;
 import com.shiyu.ai.iam.implementation.persistence.mapper.*;
 import com.shiyu.ai.kernel.context.TenantId;
+import com.shiyu.ai.kernel.context.TenantScope;
 
 import jakarta.annotation.Resource;
 
@@ -109,13 +110,13 @@ public class TenantRepositoryImpl
     }
 
     public List<TenantBO> selectAll() {
-        List<TenantDO> tenantDOs = TenantManager.withoutTenantCondition(tenantMapper::selectAll);
+        List<TenantDO> tenantDOs = TenantQueryExecutor.readAcrossTenants(tenantMapper::selectAll);
         return MapstructUtils.convert(tenantDOs, TenantBO.class);
     }
 
     public TenantBO selectById(Long id) {
         TenantDO tenantDO =
-                TenantManager.withoutTenantCondition(() -> tenantMapper.selectOneById(id));
+                TenantQueryExecutor.readAcrossTenants(() -> tenantMapper.selectOneById(id));
         return MapstructUtils.convert(tenantDO, TenantBO.class);
     }
 
@@ -141,15 +142,18 @@ public class TenantRepositoryImpl
         TenantDO tenantDO = MapstructUtils.convert(tenantBO, TenantDO.class);
         tenantMapper.insertSelective(tenantDO);
         tenantBO.setId(tenantDO.getId());
-        initializeTenantSecurity(tenantBO, sourceTenantId.value());
         return tenantBO;
     }
 
-    private void initializeTenantSecurity(TenantBO tenantBO, Long sourceTenantId) {
+    @Override
+    public void initializeTenantSecurity(TenantBO tenantBO, TenantId source) {
+        Objects.requireNonNull(source, "source tenant is required");
         Long tenantId = tenantBO.getId();
         if (tenantId == null) {
-            return;
+            throw new IllegalArgumentException("persisted tenant is required for initialization");
         }
+        TenantScope.requireMatches(new TenantId(tenantId));
+        Long sourceTenantId = source.value();
         RoleDO superRole = new RoleDO();
         superRole.setCode("tenant_super");
         superRole.setName(
@@ -246,7 +250,7 @@ public class TenantRepositoryImpl
 
     private List<Long> resolveSourceMenuIds(Long sourceTenantId, List<Long> requestedMenuIds) {
         List<Long> availableIds =
-                TenantManager.withoutTenantCondition(
+                TenantQueryExecutor.readAcrossTenants(
                                 () ->
                                         menuMapper.selectListByQuery(
                                                 QueryWrapper.create()
@@ -288,6 +292,7 @@ public class TenantRepositoryImpl
                                 id -> {
                                     AuthCodeDO authCode = authCodeMapper.selectOneById(id);
                                     return authCode != null
+                                            && !"platform:usage:read".equals(authCode.getCode())
                                             && authCode.getStatus() != null
                                             && authCode.getStatus() == 1
                                             && (authCode.getDelFlag() == null
@@ -324,7 +329,7 @@ public class TenantRepositoryImpl
                         .and(MenuDO::getDelFlag)
                         .eq(0);
         List<MenuDO> sourceMenus =
-                TenantManager.withoutTenantCondition(
+                TenantQueryExecutor.readAcrossTenants(
                         () -> menuMapper.selectListByQuery(sourceQuery));
         if (sourceMenus.isEmpty()) {
             return List.of();
@@ -418,7 +423,7 @@ public class TenantRepositoryImpl
         Set<Long> allIds = new LinkedHashSet<>(selectDescendantIds(tenantId));
         allIds.add(tenantValue);
         Set<Long> candidateUserIds =
-                TenantManager.withoutTenantCondition(
+                TenantQueryExecutor.readAcrossTenants(
                         () ->
                                 userScopeRoleMapper
                                         .selectListByQuery(
@@ -430,7 +435,7 @@ public class TenantRepositoryImpl
                                         .filter(Objects::nonNull)
                                         .collect(Collectors.toSet()));
         Set<Long> candidateAuthCodeIds =
-                TenantManager.withoutTenantCondition(
+                TenantQueryExecutor.readAcrossTenants(
                         () ->
                                 tenantAuthCodeMapper
                                         .selectListByQuery(
@@ -442,7 +447,7 @@ public class TenantRepositoryImpl
                                         .filter(Objects::nonNull)
                                         .collect(Collectors.toSet()));
 
-        TenantManager.withoutTenantCondition(
+        TenantQueryExecutor.readAcrossTenants(
                 () -> {
                     for (Long id : allIds) {
                         roleScopeMenuMapper.deleteByQuery(
@@ -464,7 +469,7 @@ public class TenantRepositoryImpl
                 });
         for (Long userId : candidateUserIds) {
             long remainingAssignments =
-                    TenantManager.withoutTenantCondition(
+                    TenantQueryExecutor.readAcrossTenants(
                             () ->
                                     userScopeRoleMapper.selectCountByQuery(
                                             QueryWrapper.create()
@@ -480,7 +485,7 @@ public class TenantRepositoryImpl
         }
         for (Long authCodeId : candidateAuthCodeIds) {
             long remainingTenantRelations =
-                    TenantManager.withoutTenantCondition(
+                    TenantQueryExecutor.readAcrossTenants(
                             () ->
                                     tenantAuthCodeMapper.selectCountByQuery(
                                             QueryWrapper.create()
@@ -496,7 +501,7 @@ public class TenantRepositoryImpl
     public List<Long> selectDescendantIds(TenantId rootId) {
         long rootValue = requireTenant(rootId);
         // 租户树查询用于校验父子关系，不能被当前业务租户的自动过滤截断。
-        List<TenantDO> all = TenantManager.withoutTenantCondition(tenantMapper::selectAll);
+        List<TenantDO> all = TenantQueryExecutor.readAcrossTenants(tenantMapper::selectAll);
         // parentId → childrenId 映射
         Map<Long, List<Long>> childrenMap = new HashMap<>();
         for (TenantDO t : all) {
@@ -521,6 +526,7 @@ public class TenantRepositoryImpl
         if (tenantId == null || tenantId.value() <= 0) {
             throw new IllegalArgumentException("tenantId is required for tenant repository query");
         }
+        TenantScope.requireMatchesIfBound(tenantId);
         return tenantId.value();
     }
 }

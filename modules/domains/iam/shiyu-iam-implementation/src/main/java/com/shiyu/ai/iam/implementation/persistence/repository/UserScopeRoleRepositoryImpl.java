@@ -1,11 +1,13 @@
 package com.shiyu.ai.iam.implementation.persistence.repository;
 
 import com.mybatisflex.core.query.QueryWrapper;
+import com.shiyu.ai.common.mybatis.tenant.TenantQueryExecutor;
 import com.shiyu.ai.common.core.utils.MapstructUtils;
 import com.shiyu.ai.iam.implementation.domain.model.UserScopeRoleBO;
 import com.shiyu.ai.iam.implementation.persistence.dataobject.UserScopeRoleDO;
 import com.shiyu.ai.iam.implementation.persistence.mapper.UserScopeRoleMapper;
 import com.shiyu.ai.kernel.context.TenantId;
+import com.shiyu.ai.kernel.context.TenantScope;
 
 import jakarta.annotation.Resource;
 
@@ -26,8 +28,12 @@ public class UserScopeRoleRepositoryImpl
     @Resource private UserScopeRoleMapper userScopeRoleMapper;
 
     public List<UserScopeRoleBO> selectByUserId(Long userId) {
+        if (userId == null || userId <= 0) {
+            throw new IllegalArgumentException("userId is required for identity assignment lookup");
+        }
         return MapstructUtils.convert(
-                userScopeRoleMapper.selectByUserId(userId), UserScopeRoleBO.class);
+                TenantQueryExecutor.readAcrossTenants(() -> userScopeRoleMapper.selectByUserId(userId)),
+                UserScopeRoleBO.class);
     }
 
     @Override
@@ -61,6 +67,7 @@ public class UserScopeRoleRepositoryImpl
         if (tenantId == null || tenantId.value() <= 0) {
             throw new IllegalArgumentException("tenantId is required for user scope mutation");
         }
+        TenantScope.requireMatchesIfBound(tenantId);
         return tenantId.value();
     }
 }

@@ -13,8 +13,11 @@ import com.shiyu.ai.agent.implementation.evaluation.model.EvalRun;
 import com.shiyu.ai.agent.implementation.evaluation.persistence.JdbcEvaluationRepository;
 import com.shiyu.ai.composition.database.DatabaseInitializer;
 import com.shiyu.ai.kernel.context.TenantId;
+import com.shiyu.ai.kernel.context.TenantScope;
 
 import org.h2.jdbcx.JdbcDataSource;
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.context.support.StaticApplicationContext;
 
@@ -24,6 +27,16 @@ import java.util.Map;
 import java.util.UUID;
 
 class JdbcEvaluationRepositoryTest {
+    @BeforeEach
+    void bindTenantScope() {
+        TenantScope.set(new TenantId(1L));
+    }
+
+    @AfterEach
+    void clearTenantScope() {
+        TenantScope.clear();
+    }
+
     @Test
     void persistsDatasetCasesAndRunResultsInH2() {
         JdbcDataSource dataSource = new JdbcDataSource();

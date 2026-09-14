@@ -4,6 +4,7 @@ import com.shiyu.ai.common.core.utils.JSONUtils;
 import com.shiyu.ai.conversation.implementation.domain.model.*;
 import com.shiyu.ai.conversation.implementation.domain.port.ConversationRepository;
 import com.shiyu.ai.kernel.context.TenantId;
+import com.shiyu.ai.kernel.context.TenantScope;
 
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.jdbc.core.JdbcTemplate;
@@ -43,6 +44,7 @@ public class JdbcConversationRepository implements ConversationRepository {
      */
     @Override
     public void insertConversation(Conversation c) {
+        requireTenant(c.tenantId());
         jdbc.update(
                 "INSERT INTO CHAT_CONVERSATION"
                     + " (ID,TENANT_ID,OWNER_USER_ID,SCENE_TYPE,TITLE,STATUS,PARENT_CONVERSATION_ID,BRANCH_FROM_MESSAGE_ID,ACTIVE_LEAF_MESSAGE_ID,ROLLING_SUMMARY,PLATFORM,MODEL,VERSION,CREATED_AT,UPDATED_AT)"
@@ -75,6 +77,7 @@ public class JdbcConversationRepository implements ConversationRepository {
      */
     @Override
     public Optional<Conversation> findConversation(String id, TenantId tenantId, long ownerUserId) {
+        TenantScope.requireMatches(tenantId);
         return jdbc
                 .query(
                         "SELECT * FROM CHAT_CONVERSATION WHERE ID=? AND TENANT_ID=? AND"
@@ -100,6 +103,7 @@ public class JdbcConversationRepository implements ConversationRepository {
     @Override
     public List<Conversation> listConversations(
             TenantId tenantId, long ownerUserId, int limit, int offset) {
+        TenantScope.requireMatches(tenantId);
         return jdbc.query(
                 "SELECT * FROM CHAT_CONVERSATION WHERE TENANT_ID=? AND OWNER_USER_ID=? AND"
                         + " STATUS<>'DELETED' ORDER BY UPDATED_AT DESC,ID ASC LIMIT ? OFFSET ?",
@@ -122,6 +126,7 @@ public class JdbcConversationRepository implements ConversationRepository {
     @Override
     public List<Conversation> listBranches(
             String parentConversationId, TenantId tenantId, long ownerUserId) {
+        TenantScope.requireMatches(tenantId);
         return jdbc.query(
                 "SELECT * FROM CHAT_CONVERSATION WHERE PARENT_CONVERSATION_ID=? AND TENANT_ID=? AND"
                         + " OWNER_USER_ID=? AND STATUS<>'DELETED' ORDER BY UPDATED_AT DESC,ID ASC",
@@ -141,6 +146,7 @@ public class JdbcConversationRepository implements ConversationRepository {
      */
     @Override
     public int updateConversation(Conversation c, long expectedVersion) {
+        requireTenant(c.tenantId());
         return jdbc.update(
                 "UPDATE CHAT_CONVERSATION SET"
                     + " TITLE=?,STATUS=?,ACTIVE_LEAF_MESSAGE_ID=?,ROLLING_SUMMARY=?,VERSION=?,UPDATED_AT=?"
@@ -170,6 +176,7 @@ public class JdbcConversationRepository implements ConversationRepository {
                         Long.class,
                         m.conversationId());
         if (tenant == null) throw new IllegalArgumentException("conversation not found");
+        requireTenant(tenant);
         jdbc.update(
                 "INSERT INTO CHAT_MESSAGE"
                     + " (ID,TENANT_ID,CONVERSATION_ID,PARENT_MESSAGE_ID,SOURCE_MESSAGE_ID,ROLE,CONTENT,CONTENT_PARTS,TOOL_CALL,STATUS,SEQUENCE,GENERATION_ID,CREATED_AT,UPDATED_AT)"
@@ -202,6 +209,7 @@ public class JdbcConversationRepository implements ConversationRepository {
     @Override
     public Optional<ConversationMessage> findMessage(
             String id, TenantId tenantId, long ownerUserId) {
+        TenantScope.requireMatches(tenantId);
         return jdbc
                 .query(
                         "SELECT m.* FROM CHAT_MESSAGE m JOIN CHAT_CONVERSATION c ON"
@@ -228,6 +236,7 @@ public class JdbcConversationRepository implements ConversationRepository {
     @Override
     public List<ConversationMessage> listMessages(
             String conversationId, TenantId tenantId, long ownerUserId, int limit) {
+        TenantScope.requireMatches(tenantId);
         return jdbc.query(
                 "SELECT m.* FROM CHAT_MESSAGE m JOIN CHAT_CONVERSATION c ON c.ID=m.CONVERSATION_ID"
                     + " WHERE m.CONVERSATION_ID=? AND m.TENANT_ID=? AND c.OWNER_USER_ID=? ORDER BY"
@@ -250,6 +259,7 @@ public class JdbcConversationRepository implements ConversationRepository {
      */
     @Override
     public int deleteConversation(String id, TenantId tenantId, long ownerUserId) {
+        TenantScope.requireMatches(tenantId);
         return jdbc.update(
                 "UPDATE CHAT_CONVERSATION SET"
                     + " STATUS='DELETED',VERSION=VERSION+1,UPDATED_AT=CURRENT_TIMESTAMP WHERE ID=?"
@@ -270,6 +280,7 @@ public class JdbcConversationRepository implements ConversationRepository {
      */
     @Override
     public int deleteMessage(String id, TenantId tenantId, long ownerUserId) {
+        TenantScope.requireMatches(tenantId);
         return jdbc.update(
                 "DELETE FROM CHAT_MESSAGE WHERE ID=? AND TENANT_ID=? AND CONVERSATION_ID IN (SELECT"
                         + " ID FROM CHAT_CONVERSATION WHERE TENANT_ID=? AND OWNER_USER_ID=?)",
@@ -328,5 +339,9 @@ public class JdbcConversationRepository implements ConversationRepository {
 
     private static Instant instant(Timestamp t) {
         return t == null ? null : t.toInstant();
+    }
+
+    private static void requireTenant(long tenantId) {
+        TenantScope.requireMatches(new TenantId(tenantId));
     }
 }

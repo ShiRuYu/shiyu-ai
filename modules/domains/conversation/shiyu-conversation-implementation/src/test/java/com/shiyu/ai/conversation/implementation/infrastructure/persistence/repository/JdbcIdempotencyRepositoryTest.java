@@ -11,6 +11,7 @@ import com.shiyu.ai.conversation.implementation.domain.chat.*;
 import com.shiyu.ai.conversation.implementation.domain.model.*;
 import com.shiyu.ai.conversation.implementation.domain.port.*;
 import com.shiyu.ai.kernel.context.TenantId;
+import com.shiyu.ai.kernel.context.TenantScope;
 
 import org.junit.jupiter.api.Test;
 import org.springframework.dao.DuplicateKeyException;
@@ -24,6 +25,33 @@ import java.util.List;
 import javax.sql.DataSource;
 
 class JdbcIdempotencyRepositoryTest {
+    @org.junit.jupiter.api.BeforeEach
+    void bindTenant() {
+        TenantScope.set(new TenantId(7));
+    }
+
+    @org.junit.jupiter.api.AfterEach
+    void clearTenant() {
+        TenantScope.clear();
+    }
+
+    @Test
+    void rejectsMissingAndMismatchedScopesBeforeJdbcAccess() {
+        DataSource dataSource = mock(DataSource.class);
+        var repository = new JdbcIdempotencyRepository(dataSource);
+        TenantScope.clear();
+        assertThrows(IllegalStateException.class,
+                () -> repository.find(new TenantId(7), 8, "op", "key"));
+        assertThrows(IllegalStateException.class,
+                () -> repository.claim(new TenantId(7), 8, "op", "key", "resource"));
+        TenantScope.set(new TenantId(9));
+        assertThrows(IllegalArgumentException.class,
+                () -> repository.find(new TenantId(7), 8, "op", "key"));
+        assertThrows(IllegalArgumentException.class,
+                () -> repository.claim(new TenantId(7), 8, "op", "key", "resource"));
+        verifyNoInteractions(dataSource);
+    }
+
     @Test
     @SuppressWarnings({"unchecked", "rawtypes"})
     void findsAndClaimsTenantScopedKeysIdempotently() throws Exception {

@@ -6,8 +6,11 @@ import static org.mockito.Mockito.*;
 
 import com.shiyu.ai.agent.contract.runtime.*;
 import com.shiyu.ai.kernel.context.TenantId;
+import com.shiyu.ai.kernel.context.TenantScope;
 import com.shiyu.ai.kernel.context.UserId;
 
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.mockito.stubbing.Answer;
 import org.springframework.dao.DuplicateKeyException;
@@ -24,6 +27,16 @@ import java.util.Optional;
 
 @SuppressWarnings({"rawtypes", "unchecked"})
 class JdbcAiRuntimeRepositoryTest {
+    @BeforeEach
+    void bindTenantScope() {
+        TenantScope.set(new TenantId(7L));
+    }
+
+    @AfterEach
+    void clearTenantScope() {
+        TenantScope.clear();
+    }
+
     @Test
     void roundTripsRunThroughRealDatabaseWithTenantIsolation() {
         var database =
@@ -43,7 +56,9 @@ class JdbcAiRuntimeRepositoryTest {
                     realRepository
                             .findByGeneration("generation", new TenantId(7), 9)
                             .orElseThrow());
-            assertTrue(realRepository.findByGeneration("generation", new TenantId(8), 9).isEmpty());
+            assertThrows(
+                    IllegalArgumentException.class,
+                    () -> realRepository.findByGeneration("generation", new TenantId(8), 9));
             assertTrue(
                     realRepository.findByGeneration("generation", new TenantId(7), 10).isEmpty());
         } finally {

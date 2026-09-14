@@ -5,6 +5,7 @@ import com.shiyu.ai.agent.implementation.runtime.port.AiAppRepository;
 
 import com.shiyu.ai.agent.contract.runtime.*;
 import com.shiyu.ai.kernel.context.TenantId;
+import com.shiyu.ai.kernel.context.TenantScope;
 import com.shiyu.ai.kernel.context.UserId;
 
 import org.springframework.context.annotation.Primary;
@@ -43,12 +44,13 @@ public class JdbcAiAppRepository implements AiAppRepository {
      */
     @Override
     public void insert(AiApp a) {
+        long tenantValue = tenant(a.tenantId());
         jdbc.update(
                 "INSERT INTO AI_APP"
                     + " (ID,TENANT_ID,OWNER_USER_ID,NAME,DESCRIPTION,STATUS,PUBLISHED_VERSION_ID,CREATED_AT,UPDATED_AT)"
                     + " VALUES (?,?,?,?,?,?,?,?,?)",
                 a.id(),
-                a.tenantId().value(),
+                tenantValue,
                 a.ownerUserId().value(),
                 a.name(),
                 a.description(),
@@ -121,13 +123,14 @@ public class JdbcAiAppRepository implements AiAppRepository {
      */
     @Override
     public void insertVersion(AiAppVersion v) {
+        long tenantValue = tenant(v.tenantId());
         jdbc.update(
                 "INSERT INTO AI_APP_VERSION"
                     + " (ID,APP_ID,TENANT_ID,VERSION,CONFIG_JSON,STATUS,CREATED_AT,PUBLISHED_AT)"
                     + " VALUES (?,?,?,?,?,?,?,?)",
                 v.id(),
                 v.appId(),
-                v.tenantId().value(),
+                tenantValue,
                 v.version(),
                 v.configJson(),
                 v.status(),
@@ -258,6 +261,7 @@ public class JdbcAiAppRepository implements AiAppRepository {
 
     private static long tenant(TenantId tenantId) {
         if (tenantId == null) throw new IllegalArgumentException("tenantId is required");
+        TenantScope.requireMatches(tenantId);
         return tenantId.value();
     }
 }

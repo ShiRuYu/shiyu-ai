@@ -3,6 +3,8 @@ package com.shiyu.ai.governance.implementation.persistence;
 import org.springframework.dao.DuplicateKeyException;
 import org.springframework.jdbc.core.JdbcTemplate;
 
+import com.shiyu.ai.kernel.context.TenantScope;
+
 import java.sql.Timestamp;
 import java.util.Objects;
 import java.util.UUID;
@@ -57,6 +59,7 @@ public final class JdbcUsageLedger implements UsageLedger {
     @Override
     public boolean insertIfAbsent(Entry entry) {
         Objects.requireNonNull(entry, "entry must not be null");
+        TenantScope.requireMatches(entry.tenantId());
         try {
             jdbc.update(
                     INSERT_SQL,

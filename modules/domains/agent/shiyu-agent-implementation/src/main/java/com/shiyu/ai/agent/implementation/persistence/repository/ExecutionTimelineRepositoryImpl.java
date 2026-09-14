@@ -6,6 +6,7 @@ import com.shiyu.ai.agent.implementation.persistence.dataobject.ExecutionTimelin
 import com.shiyu.ai.agent.implementation.persistence.mapper.ExecutionTimelineMapper;
 import com.shiyu.ai.common.core.utils.MapstructUtils;
 import com.shiyu.ai.kernel.context.TenantId;
+import com.shiyu.ai.kernel.context.TenantScope;
 
 import jakarta.annotation.Resource;
 
@@ -43,8 +44,6 @@ public class ExecutionTimelineRepositoryImpl
     }
 
     private static void requireTenant(TenantId tenantId) {
-        if (tenantId == null || tenantId.value() <= 0) {
-            throw new IllegalArgumentException("tenantId is required");
-        }
+        TenantScope.requireMatches(tenantId);
     }
 }

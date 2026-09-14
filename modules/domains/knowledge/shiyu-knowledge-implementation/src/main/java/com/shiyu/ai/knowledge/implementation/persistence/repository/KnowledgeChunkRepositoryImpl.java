@@ -5,6 +5,7 @@ import com.shiyu.ai.knowledge.implementation.domain.port.repository.KnowledgeChu
 import com.mybatisflex.core.query.QueryWrapper;
 import com.shiyu.ai.common.core.utils.MapstructUtils;
 import com.shiyu.ai.kernel.context.TenantId;
+import com.shiyu.ai.kernel.context.TenantScope;
 import com.shiyu.ai.knowledge.implementation.domain.model.KnowledgeChunkBO;
 import com.shiyu.ai.knowledge.implementation.persistence.dataobject.KnowledgeChunkDO;
 import com.shiyu.ai.knowledge.implementation.persistence.mapper.KnowledgeChunkMapper;
@@ -93,5 +94,6 @@ public class KnowledgeChunkRepositoryImpl
         if (tenantId == null || tenantId.value() <= 0) {
             throw new IllegalArgumentException("tenantId is required");
         }
+        TenantScope.requireMatches(tenantId);
     }
 }

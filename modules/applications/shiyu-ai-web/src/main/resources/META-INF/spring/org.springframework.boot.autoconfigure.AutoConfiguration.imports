@@ -3,4 +3,4 @@ com.shiyu.ai.web.config.ResourcesConfig
 com.shiyu.ai.web.config.OpenApiConfig
 com.shiyu.ai.web.config.AgentWebMvcConfig
 com.shiyu.ai.web.config.SaInterceptorConfig
-com.shiyu.ai.governance.implementation.web.UsageWebSocketConfig
+com.shiyu.ai.governance.implementation.web.config.UsageWebSocketConfig

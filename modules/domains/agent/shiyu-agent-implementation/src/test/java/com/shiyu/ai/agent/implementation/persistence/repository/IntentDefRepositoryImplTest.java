@@ -9,14 +9,21 @@ import com.shiyu.ai.agent.implementation.domain.model.IntentDefBO;
 import com.shiyu.ai.agent.implementation.persistence.dataobject.IntentDefDO;
 import com.shiyu.ai.agent.implementation.persistence.mapper.IntentDefMapper;
 import com.shiyu.ai.kernel.context.TenantId;
+import com.shiyu.ai.kernel.context.TenantScope;
 
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.AfterEach;
 
 import java.util.List;
 import java.util.Map;
 
 class IntentDefRepositoryImplTest {
     private static final TenantId TENANT = new TenantId(7L);
+    @BeforeEach
+    void bindTenantScope() { TenantScope.set(TENANT); }
+    @AfterEach
+    void clearTenantScope() { TenantScope.clear(); }
 
     @Test
     void queriesConvertJsonFieldsAndApplyPagingFilters() {

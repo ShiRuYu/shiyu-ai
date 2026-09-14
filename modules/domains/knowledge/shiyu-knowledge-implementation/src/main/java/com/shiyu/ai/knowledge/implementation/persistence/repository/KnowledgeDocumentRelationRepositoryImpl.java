@@ -5,6 +5,7 @@ import com.shiyu.ai.knowledge.implementation.domain.port.repository.KnowledgeDoc
 import com.mybatisflex.core.query.QueryWrapper;
 import com.shiyu.ai.common.core.utils.MapstructUtils;
 import com.shiyu.ai.kernel.context.TenantId;
+import com.shiyu.ai.kernel.context.TenantScope;
 import com.shiyu.ai.knowledge.implementation.domain.model.KnowledgeDocumentRelationBO;
 import com.shiyu.ai.knowledge.implementation.persistence.dataobject.KnowledgeDocumentRelationDO;
 import com.shiyu.ai.knowledge.implementation.persistence.mapper.KnowledgeDocumentRelationMapper;
@@ -88,5 +89,6 @@ public class KnowledgeDocumentRelationRepositoryImpl
         if (tenantId == null || tenantId.value() <= 0) {
             throw new IllegalArgumentException("tenantId is required");
         }
+        TenantScope.requireMatches(tenantId);
     }
 }

@@ -7,6 +7,7 @@ import com.shiyu.ai.governance.implementation.persistence.UsageLedger;
 import com.shiyu.ai.kernel.context.ActorContext;
 import com.shiyu.ai.kernel.error.DomainAccessDeniedException;
 import com.shiyu.ai.kernel.event.DomainEventEnvelope;
+import com.shiyu.ai.kernel.context.TenantScope;
 
 import java.util.Objects;
 
@@ -61,8 +62,10 @@ public final class UsageRecorder implements UsageGovernance {
                         measurement.cost(),
                         usage.occurredAt());
 
-        return ledger.insertIfAbsent(entry)
-                ? UsageRecordResult.RECORDED
-                : UsageRecordResult.DUPLICATE;
+        return TenantScope.withTenant(
+                                actor.tenantId(),
+                                () -> ledger.insertIfAbsent(entry))
+                        ? UsageRecordResult.RECORDED
+                        : UsageRecordResult.DUPLICATE;
     }
 }

@@ -48,6 +48,42 @@ public final class TenantScope {
     }
 
     /**
+     * 校验命令声明的租户与当前执行作用域一致。
+     *
+     * @param tenantId 命令声明的目标租户。
+     * @return 当前作用域中的租户。
+     */
+    public static TenantId requireMatches(TenantId tenantId) {
+        if (tenantId == null) {
+            throw new IllegalArgumentException("tenantId is required");
+        }
+        TenantId current = require();
+        if (!current.equals(tenantId)) {
+            throw new IllegalArgumentException(
+                    "tenantId does not match the current tenant scope");
+        }
+        return current;
+    }
+
+    /**
+     * 当调用线程已经绑定租户时校验命令租户；未绑定时不创建新的作用域，
+     * 由具体持久化入口按用途决定是否拒绝。
+     *
+     * @param tenantId 命令声明的目标租户。
+     */
+    public static void requireMatchesIfBound(TenantId tenantId) {
+        if (tenantId == null) {
+            throw new IllegalArgumentException("tenantId is required");
+        }
+        current().ifPresent(current -> {
+            if (!current.equals(tenantId)) {
+                throw new IllegalArgumentException(
+                        "tenantId does not match the current tenant scope");
+            }
+        });
+    }
+
+    /**
      * {@code clear} 执行当前类型定义的业务操作。
      */
     public static void clear() {

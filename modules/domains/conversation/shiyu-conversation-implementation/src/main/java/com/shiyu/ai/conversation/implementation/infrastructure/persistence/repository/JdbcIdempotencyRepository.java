@@ -2,6 +2,7 @@ package com.shiyu.ai.conversation.implementation.infrastructure.persistence.repo
 
 import com.shiyu.ai.conversation.implementation.domain.port.IdempotencyRepository;
 import com.shiyu.ai.kernel.context.TenantId;
+import com.shiyu.ai.kernel.context.TenantScope;
 
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.dao.DuplicateKeyException;
@@ -46,6 +47,7 @@ public class JdbcIdempotencyRepository implements IdempotencyRepository {
     @Override
     public Optional<String> find(
             TenantId tenantId, long ownerUserId, String operation, String key) {
+        TenantScope.requireMatches(tenantId);
         return jdbc
                 .query(
                         "SELECT RESOURCE_ID FROM CHAT_IDEMPOTENCY_KEY WHERE TENANT_ID=? AND"
@@ -73,6 +75,7 @@ public class JdbcIdempotencyRepository implements IdempotencyRepository {
     @Override
     public boolean claim(
             TenantId tenantId, long ownerUserId, String operation, String key, String resourceId) {
+        TenantScope.requireMatches(tenantId);
         try {
             jdbc.update(
                     "INSERT INTO CHAT_IDEMPOTENCY_KEY"

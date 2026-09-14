@@ -41,10 +41,23 @@ class UserRepositoryImplTest {
 
     @Test
     void rejectsMissingTenantForPaginationAndMissingScopeArguments() {
+        assertThrows(IllegalArgumentException.class, () -> repository.selectRolesByUserId(null));
+        assertThrows(IllegalArgumentException.class, () -> repository.selectRolesByUserId(0L));
         assertThrows(
                 IllegalArgumentException.class, () -> repository.selectPage(null, 1, 10, null));
         assertFalse(repository.isUserInScope(null, new TenantId(1L)));
         assertFalse(repository.isUserInScope(1L, null));
+    }
+
+    @Test
+    void identityRoleLookupRestoresFilteringAfterDatabaseFailure() {
+        assertFalse(com.mybatisflex.core.tenant.TenantManager.isIgnoreTenantCondition());
+        when(roles.selectListByQuery(any())).thenAnswer(invocation -> {
+            assertTrue(com.mybatisflex.core.tenant.TenantManager.isIgnoreTenantCondition());
+            throw new IllegalStateException("database unavailable");
+        });
+        assertThrows(IllegalStateException.class, () -> repository.selectRolesByUserId(7L));
+        assertFalse(com.mybatisflex.core.tenant.TenantManager.isIgnoreTenantCondition());
     }
 
     @Test

@@ -296,9 +296,7 @@ class ToolingLifecycleAndWebTest {
         PluginController plugins =
                 new PluginController(
                         registry,
-                        mock(
-                                com.shiyu.ai.tooling.implementation.plugin.market
-                                        .PluginMarketService.class));
+                        mock(PluginMarketService.class));
         when(registry.listPlugins()).thenReturn(List.of(descriptor("demo")));
         assertNotNull(plugins.listPlugins());
         assertNotNull(plugins.startPlugin("demo"));

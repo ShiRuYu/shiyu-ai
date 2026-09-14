@@ -1,7 +1,7 @@
 package com.shiyu.ai.governance.implementation.usage.service.impl;
 
 import com.shiyu.ai.governance.implementation.usage.port.repository.UsageRecordRepository;
-import com.shiyu.ai.governance.implementation.usage.service.UsageService;
+import com.shiyu.ai.governance.implementation.usage.port.UsageService;
 
 import lombok.RequiredArgsConstructor;
 

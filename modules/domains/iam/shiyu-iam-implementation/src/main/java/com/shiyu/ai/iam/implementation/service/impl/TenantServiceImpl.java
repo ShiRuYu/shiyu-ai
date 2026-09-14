@@ -9,6 +9,7 @@ import com.shiyu.ai.iam.implementation.service.TenantService;
 import com.shiyu.ai.iam.implementation.vo.TenantVO;
 import com.shiyu.ai.kernel.context.ActorContext;
 import com.shiyu.ai.kernel.context.TenantId;
+import com.shiyu.ai.kernel.context.TenantScope;
 
 import lombok.extern.slf4j.Slf4j;
 
@@ -64,6 +65,7 @@ public class TenantServiceImpl implements TenantService {
      * @return 返回当前操作产生的结果。
      */
     @Override
+    @Transactional(rollbackFor = Exception.class)
     public boolean createTenant(ActorContext actor, TenantRequest request) {
         return createTenant(requireActor(actor), MapstructUtils.convert(request, TenantBO.class));
     }
@@ -148,7 +150,6 @@ public class TenantServiceImpl implements TenantService {
         return tenantRepository.selectById(id.value());
     }
 
-    @Transactional(rollbackFor = Exception.class)
     private boolean createTenant(ActorContext actor, TenantBO tenantBO) {
         log.info(
                 "新增租户，codePresent: {}, namePresent: {}",
@@ -172,7 +173,14 @@ public class TenantServiceImpl implements TenantService {
             return false;
         }
 
-        tenantRepository.insert(tenantBO, actor.tenantId());
+        TenantBO created = tenantRepository.insert(tenantBO, actor.tenantId());
+        if (created == null || created.getId() == null) {
+            throw new IllegalStateException("tenant insert did not return a persisted tenant");
+        }
+        TenantScope.withTenant(new TenantId(created.getId()), () -> {
+            tenantRepository.initializeTenantSecurity(created, actor.tenantId());
+            return null;
+        });
         return true;
     }
 

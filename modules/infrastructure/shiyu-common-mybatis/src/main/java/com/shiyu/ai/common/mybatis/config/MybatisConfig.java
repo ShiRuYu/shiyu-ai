@@ -4,6 +4,7 @@ import com.mybatisflex.spring.boot.MyBatisFlexCustomizer;
 import com.shiyu.ai.common.core.factory.YmlPropertySourceFactory;
 import com.shiyu.ai.common.mybatis.handler.AuditFieldListener;
 import com.shiyu.ai.common.mybatis.handler.MybatisExceptionHandler;
+import com.shiyu.ai.common.mybatis.handler.TenantConsistencyListener;
 
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -27,8 +28,11 @@ public class MybatisConfig {
     public MyBatisFlexCustomizer mybatisFlexCustomizer() {
         return config -> {
             AuditFieldListener auditListener = new AuditFieldListener();
+            TenantConsistencyListener tenantListener = new TenantConsistencyListener();
             config.registerInsertListener(auditListener, Object.class);
             config.registerUpdateListener(auditListener, Object.class);
+            config.registerInsertListener(tenantListener, Object.class);
+            config.registerUpdateListener(tenantListener, Object.class);
         };
     }
 

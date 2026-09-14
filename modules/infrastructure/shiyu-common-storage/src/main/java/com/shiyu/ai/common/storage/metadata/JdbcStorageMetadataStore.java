@@ -4,11 +4,12 @@ import com.shiyu.ai.common.core.jdbc.JdbcDialect;
 import com.shiyu.ai.common.storage.api.*;
 import com.shiyu.ai.common.storage.backup.*;
 import com.shiyu.ai.common.storage.config.*;
-import com.shiyu.ai.common.storage.file.*;
 import com.shiyu.ai.common.storage.lease.*;
 import com.shiyu.ai.common.storage.rate.*;
 import com.shiyu.ai.common.storage.security.*;
 import com.shiyu.ai.common.storage.vector.*;
+import com.shiyu.ai.kernel.context.TenantId;
+import com.shiyu.ai.kernel.context.TenantScope;
 
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.support.GeneratedKeyHolder;
@@ -56,6 +57,7 @@ public class JdbcStorageMetadataStore implements StorageMetadataStore {
      */
     @Override
     public long createObject(CreateObject command) {
+        requireTenant(command.tenantId());
         KeyHolder keyHolder = new GeneratedKeyHolder();
         jdbcTemplate.update(
                 connection -> {
@@ -110,16 +112,18 @@ public class JdbcStorageMetadataStore implements StorageMetadataStore {
             long size,
             String contentType,
             String checksum) {
+        long tenantId = requireObjectTenant(objectId);
         jdbcTemplate.update(
                 "UPDATE storage_object SET object_key=?, storage_provider=?, file_size=?,"
                         + " content_type=?, checksum=?, status='AVAILABLE',"
-                        + " update_time=CURRENT_TIMESTAMP WHERE id=?",
+                        + " update_time=CURRENT_TIMESTAMP WHERE id=? AND tenant_id=?",
                 objectKey,
                 provider,
                 size,
                 contentType,
                 checksum,
-                objectId);
+                objectId,
+                tenantId);
     }
 
     /**
@@ -130,11 +134,13 @@ public class JdbcStorageMetadataStore implements StorageMetadataStore {
      */
     @Override
     public void markObjectFailed(long objectId, String message) {
+        long tenantId = requireObjectTenant(objectId);
         jdbcTemplate.update(
                 "UPDATE storage_object SET status='FAILED', metadata_json=?,"
-                        + " update_time=CURRENT_TIMESTAMP WHERE id=?",
+                        + " update_time=CURRENT_TIMESTAMP WHERE id=? AND tenant_id=?",
                 message,
-                objectId);
+                objectId,
+                tenantId);
     }
 
     /**
@@ -145,6 +151,7 @@ public class JdbcStorageMetadataStore implements StorageMetadataStore {
      */
     @Override
     public void markObjectDeleted(long tenantId, String objectKey) {
+        requireTenant(tenantId);
         jdbcTemplate.update(
                 "UPDATE storage_object SET status='DELETED', update_time=CURRENT_TIMESTAMP "
                         + "WHERE tenant_id=? AND object_key=? AND status <> 'DELETED'",
@@ -161,6 +168,7 @@ public class JdbcStorageMetadataStore implements StorageMetadataStore {
      */
     @Override
     public void updateObjectProvider(long tenantId, String objectKey, String provider) {
+        requireTenant(tenantId);
         jdbcTemplate.update(
                 "UPDATE storage_object SET storage_provider=?, update_time=CURRENT_TIMESTAMP "
                         + "WHERE tenant_id=? AND object_key=? AND status='AVAILABLE'",
@@ -179,6 +187,7 @@ public class JdbcStorageMetadataStore implements StorageMetadataStore {
      */
     @Override
     public Optional<StorageObjectRecord> findObjectByKey(long tenantId, String objectKey) {
+        requireTenant(tenantId);
         List<StorageObjectRecord> rows =
                 jdbcTemplate.query(
                         "SELECT id, tenant_id, space_id, namespace, object_key, storage_provider,"
@@ -204,6 +213,7 @@ public class JdbcStorageMetadataStore implements StorageMetadataStore {
     @Override
     public List<StorageObjectRecord> listObjects(
             long tenantId, String namespace, int offset, int limit) {
+        requireTenant(tenantId);
         return jdbcTemplate.query(
                 "SELECT id, tenant_id, space_id, namespace, object_key, storage_provider,"
                         + " original_name, content_type, file_size, checksum, status, create_time,"
@@ -225,6 +235,7 @@ public class JdbcStorageMetadataStore implements StorageMetadataStore {
      */
     @Override
     public long createUploadSession(CreateUploadSession command) {
+        requireTenant(command.tenantId());
         jdbcTemplate.update(
                 "INSERT INTO storage_upload_session (session_id, tenant_id, space_id, namespace,"
                     + " file_name, content_type, expected_size, expected_checksum, total_chunks,"
@@ -254,6 +265,7 @@ public class JdbcStorageMetadataStore implements StorageMetadataStore {
      */
     @Override
     public Optional<UploadSessionRecord> findUploadSession(long tenantId, String sessionId) {
+        requireTenant(tenantId);
         List<UploadSessionRecord> rows =
                 jdbcTemplate.query(
                         "SELECT session_id, tenant_id, space_id, namespace, file_name,"
@@ -322,6 +334,7 @@ public class JdbcStorageMetadataStore implements StorageMetadataStore {
      */
     @Override
     public void markChunkUploaded(String sessionId, int chunkIndex, long size, String checksum) {
+        long tenantId = requireSessionTenant(sessionId);
         jdbcTemplate.update(
                 dialect.upsert(
                         "storage_upload_chunk",
@@ -341,8 +354,9 @@ public class JdbcStorageMetadataStore implements StorageMetadataStore {
                 checksum);
         jdbcTemplate.update(
                 "UPDATE storage_upload_session SET update_time=CURRENT_TIMESTAMP WHERE"
-                        + " session_id=?",
-                sessionId);
+                        + " session_id=? AND tenant_id=?",
+                sessionId,
+                tenantId);
     }
 
     /**
@@ -354,6 +368,7 @@ public class JdbcStorageMetadataStore implements StorageMetadataStore {
      */
     @Override
     public List<Integer> uploadedChunks(String sessionId) {
+        long tenantId = requireSessionTenant(sessionId);
         return jdbcTemplate.query(
                 "SELECT chunk_index FROM storage_upload_chunk WHERE session_id=? AND"
                         + " status='UPLOADED' ORDER BY chunk_index",
@@ -370,12 +385,14 @@ public class JdbcStorageMetadataStore implements StorageMetadataStore {
      */
     @Override
     public void updateUploadSessionStatus(String sessionId, String status, String errorMessage) {
+        long tenantId = requireSessionTenant(sessionId);
         jdbcTemplate.update(
                 "UPDATE storage_upload_session SET status=?, error_message=?,"
-                        + " update_time=CURRENT_TIMESTAMP WHERE session_id=?",
+                        + " update_time=CURRENT_TIMESTAMP WHERE session_id=? AND tenant_id=?",
                 status,
                 errorMessage,
-                sessionId);
+                sessionId,
+                tenantId);
     }
 
     /**
@@ -385,8 +402,12 @@ public class JdbcStorageMetadataStore implements StorageMetadataStore {
      */
     @Override
     public void deleteUploadSession(String sessionId) {
+        long tenantId = requireSessionTenant(sessionId);
         jdbcTemplate.update("DELETE FROM storage_upload_chunk WHERE session_id=?", sessionId);
-        jdbcTemplate.update("DELETE FROM storage_upload_session WHERE session_id=?", sessionId);
+        jdbcTemplate.update(
+                "DELETE FROM storage_upload_session WHERE session_id=? AND tenant_id=?",
+                sessionId,
+                tenantId);
     }
 
     private StorageObjectRecord mapObject(java.sql.ResultSet rs, int rowNum)
@@ -409,5 +430,33 @@ public class JdbcStorageMetadataStore implements StorageMetadataStore {
 
     private Instant toInstant(Timestamp value) {
         return value == null ? null : value.toInstant();
+    }
+
+    private static void requireTenant(long tenantId) {
+        TenantScope.requireMatches(new TenantId(tenantId));
+    }
+
+    private long requireObjectTenant(long objectId) {
+        TenantScope.require();
+        Long tenantId =
+                jdbcTemplate.query(
+                        "SELECT tenant_id FROM storage_object WHERE id=?",
+                        rs -> rs.next() ? rs.getLong(1) : null,
+                        objectId);
+        if (tenantId == null) throw new IllegalArgumentException("storage object not found");
+        requireTenant(tenantId);
+        return tenantId;
+    }
+
+    private long requireSessionTenant(String sessionId) {
+        TenantScope.require();
+        Long tenantId =
+                jdbcTemplate.query(
+                        "SELECT tenant_id FROM storage_upload_session WHERE session_id=?",
+                        rs -> rs.next() ? rs.getLong(1) : null,
+                        sessionId);
+        if (tenantId == null) throw new IllegalArgumentException("upload session not found");
+        requireTenant(tenantId);
+        return tenantId;
     }
 }

@@ -95,7 +95,11 @@ public class FileStorageMigrationRunner implements ApplicationRunner {
 
     private void updateMetadataProvider(String key, String provider) throws IOException {
         long tenantId = tenantId(key);
-        metadataStore.updateObjectProvider(tenantId, key, provider);
+        com.shiyu.ai.kernel.context.TenantScope.withTenant(
+                new com.shiyu.ai.kernel.context.TenantId(tenantId), () -> {
+                    metadataStore.updateObjectProvider(tenantId, key, provider);
+                    return null;
+                });
     }
 
     private long tenantId(String key) throws IOException {

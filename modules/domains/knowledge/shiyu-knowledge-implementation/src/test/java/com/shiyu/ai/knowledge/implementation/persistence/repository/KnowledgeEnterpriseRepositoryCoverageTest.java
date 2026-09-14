@@ -7,10 +7,13 @@ import static org.mockito.Mockito.*;
 import com.mybatisflex.core.paginate.Page;
 import com.shiyu.ai.common.core.utils.MapstructUtils;
 import com.shiyu.ai.kernel.context.TenantId;
+import com.shiyu.ai.kernel.context.TenantScope;
 import com.shiyu.ai.knowledge.implementation.domain.model.*;
 import com.shiyu.ai.knowledge.implementation.persistence.dataobject.*;
 import com.shiyu.ai.knowledge.implementation.persistence.mapper.*;
 
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.mockito.Answers;
 import org.mockito.MockedStatic;
@@ -23,6 +26,16 @@ import java.util.List;
 @SuppressWarnings({"rawtypes", "unchecked"})
 class KnowledgeEnterpriseRepositoryCoverageTest {
     private static final TenantId TENANT = new TenantId(31L);
+
+    @BeforeEach
+    void bindTenantScope() {
+        TenantScope.set(TENANT);
+    }
+
+    @AfterEach
+    void clearTenantScope() {
+        TenantScope.clear();
+    }
 
     @Test
     void exercisesTenantScopedSpaceVersionJobAuditAndEvaluationPersistence() {

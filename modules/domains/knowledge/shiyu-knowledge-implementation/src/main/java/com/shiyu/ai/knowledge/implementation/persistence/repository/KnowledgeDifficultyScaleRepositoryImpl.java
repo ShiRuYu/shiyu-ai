@@ -5,6 +5,7 @@ import com.shiyu.ai.knowledge.implementation.domain.port.repository.KnowledgeDif
 import com.mybatisflex.core.query.QueryWrapper;
 import com.shiyu.ai.common.core.utils.MapstructUtils;
 import com.shiyu.ai.kernel.context.TenantId;
+import com.shiyu.ai.kernel.context.TenantScope;
 import com.shiyu.ai.knowledge.implementation.domain.model.KnowledgeDifficultyScaleBO;
 import com.shiyu.ai.knowledge.implementation.domain.model.KnowledgeDifficultyScaleLevelBO;
 import com.shiyu.ai.knowledge.implementation.persistence.dataobject.KnowledgeDifficultyScaleDO;
@@ -65,5 +66,6 @@ public class KnowledgeDifficultyScaleRepositoryImpl
         if (tenantId == null) {
             throw new IllegalArgumentException("tenantId must not be null");
         }
+        TenantScope.requireMatches(tenantId);
     }
 }

@@ -10,6 +10,7 @@ import com.shiyu.ai.conversation.implementation.domain.model.GenerationEvent;
 import com.shiyu.ai.conversation.implementation.domain.model.GenerationEventType;
 import com.shiyu.ai.conversation.implementation.domain.port.GenerationRepository;
 import com.shiyu.ai.kernel.context.TenantId;
+import com.shiyu.ai.kernel.context.TenantScope;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
@@ -88,6 +89,7 @@ public class JdbcGenerationRepository implements GenerationRepository {
                         Long.class,
                         g.conversationId());
         if (tenant == null) throw new IllegalArgumentException("conversation not found");
+        TenantScope.requireMatches(new TenantId(tenant));
         try {
             jdbc.update(
                     "INSERT INTO CHAT_GENERATION_ACTIVE"
@@ -137,6 +139,7 @@ public class JdbcGenerationRepository implements GenerationRepository {
      */
     @Override
     public Optional<GenerationRun> find(String id, TenantId tenantId, long ownerUserId) {
+        TenantScope.requireMatches(tenantId);
         return jdbc
                 .query(
                         "SELECT g.* FROM CHAT_GENERATION_RUN g JOIN CHAT_CONVERSATION c ON"
@@ -161,6 +164,7 @@ public class JdbcGenerationRepository implements GenerationRepository {
      */
     @Override
     public boolean hasRunning(String conversationId, String inputMessageId, TenantId tenantId) {
+        TenantScope.requireMatches(tenantId);
         Integer count =
                 jdbc.queryForObject(
                         "SELECT COUNT(*) FROM CHAT_GENERATION_ACTIVE WHERE CONVERSATION_ID=? AND"
@@ -182,6 +186,7 @@ public class JdbcGenerationRepository implements GenerationRepository {
      */
     @Override
     public boolean hasRunningConversation(String conversationId, TenantId tenantId) {
+        TenantScope.requireMatches(tenantId);
         Integer count =
                 jdbc.queryForObject(
                         "SELECT COUNT(*) FROM CHAT_GENERATION_ACTIVE WHERE CONVERSATION_ID=? AND"
@@ -204,6 +209,7 @@ public class JdbcGenerationRepository implements GenerationRepository {
     @Override
     public List<GenerationRun> listConversation(
             String conversationId, TenantId tenantId, int limit) {
+        TenantScope.requireMatches(tenantId);
         return jdbc.query(
                 "SELECT g.* FROM CHAT_GENERATION_RUN g WHERE g.CONVERSATION_ID=? AND g.TENANT_ID=?"
                         + " ORDER BY g.CREATED_AT,g.ID LIMIT ?",
@@ -241,86 +247,100 @@ public class JdbcGenerationRepository implements GenerationRepository {
                             + " CHAT_CONVERSATION c ON c.ID=g.CONVERSATION_ID WHERE g.STATUS IN"
                             + " ('CREATED','RUNNING') AND g.UPDATED_AT<? ORDER BY g.UPDATED_AT,g.ID"
                             + " LIMIT 100",
-                        (rs, rowNum) ->
-                                new StaleGeneration(map(rs, rowNum), rs.getLong("OWNER_USER_ID")),
+                        (rs, rowNum) -> {
+                            GenerationRun run = map(rs, rowNum);
+                            long tenantId = rs.getLong("TENANT_ID");
+                            if (tenantId <= 0) tenantId = tenantForGeneration(run.id());
+                            return new StaleGeneration(
+                                    run, rs.getLong("OWNER_USER_ID"), tenantId);
+                        },
                         cutoff);
         int recovered = 0;
         for (StaleGeneration abandoned : stale) {
-            GenerationRun current = abandoned.run();
-            GenerationRun failed = current.transition(GenerationStatus.FAILED);
-            failed =
-                    new GenerationRun(
-                            failed.id(),
-                            failed.conversationId(),
-                            failed.inputMessageId(),
-                            failed.assistantMessageId(),
-                            failed.speakerId(),
-                            failed.platform(),
-                            failed.model(),
-                            failed.status(),
-                            failed.promptTokens(),
-                            failed.completionTokens(),
-                            Duration.between(current.createdAt(), Instant.now()).toMillis(),
-                            "SERVICE_RESTART",
-                            failed.lastEventSequence(),
-                            false,
-                            failed.version(),
-                            failed.createdAt(),
-                            Instant.now(),
-                            failed.runtimeRunId());
-            if (update(failed, current.version()) != 1) continue;
-            recovered++;
-            if (failed.runtimeRunId() != null && !failed.runtimeRunId().isBlank()) {
-                try {
-                    AiRun run =
-                            runtimeRuns
-                                    .find(
-                                            failed.runtimeRunId(),
-                                            new TenantId(currentTenant(current)),
-                                            abandoned.ownerUserId())
-                                    .orElse(null);
-                    if (run != null
-                            && run.status() != AiRunStatus.COMPLETED
-                            && run.status() != AiRunStatus.FAILED
-                            && run.status() != AiRunStatus.CANCELLED) {
-                        AiRun failedRun =
-                                new AiRun(
-                                        run.id(),
-                                        run.tenantId(),
-                                        run.ownerUserId(),
-                                        run.appId(),
-                                        run.appVersionId(),
-                                        run.sourceType(),
-                                        run.sourceId(),
-                                        run.parentRunId(),
-                                        run.traceId(),
-                                        run.conversationId(),
-                                        run.generationId(),
-                                        run.executionId(),
-                                        run.model(),
-                                        run.promptHash(),
-                                        AiRunStatus.FAILED,
-                                        run.promptTokens(),
-                                        run.completionTokens(),
-                                        run.estimatedUsage(),
-                                        run.costSnapshot(),
-                                        run.createdAt(),
-                                        Instant.now(),
-                                        "SERVICE_RESTART",
-                                        run.version() + 1,
-                                        run.lastEventSeq());
-                        runtimeRuns.updateTerminalAndAppend(
-                                failedRun,
-                                run.version(),
-                                AiRunEventType.RUN_FAILED,
-                                "{\"errorCode\":\"SERVICE_RESTART\"}",
-                                true);
-                    }
-                } catch (RuntimeException ignored) {
-                }
+            if (TenantScope.withTenant(
+                            new TenantId(abandoned.tenantId()),
+                            () -> recoverOneStaleGeneration(abandoned))
+                    .booleanValue()) {
+                recovered++;
             }
         }
         return recovered;
+    }
+
+    private boolean recoverOneStaleGeneration(StaleGeneration abandoned) {
+        GenerationRun current = abandoned.run();
+        GenerationRun failed = current.transition(GenerationStatus.FAILED);
+        failed =
+                new GenerationRun(
+                        failed.id(),
+                        failed.conversationId(),
+                        failed.inputMessageId(),
+                        failed.assistantMessageId(),
+                        failed.speakerId(),
+                        failed.platform(),
+                        failed.model(),
+                        failed.status(),
+                        failed.promptTokens(),
+                        failed.completionTokens(),
+                        Duration.between(current.createdAt(), Instant.now()).toMillis(),
+                        "SERVICE_RESTART",
+                        failed.lastEventSequence(),
+                        false,
+                        failed.version(),
+                        failed.createdAt(),
+                        Instant.now(),
+                        failed.runtimeRunId());
+        if (update(failed, current.version()) != 1) return false;
+        if (failed.runtimeRunId() != null && !failed.runtimeRunId().isBlank()) {
+            try {
+                AiRun run =
+                        runtimeRuns
+                                .find(
+                                        failed.runtimeRunId(),
+                                        new TenantId(abandoned.tenantId()),
+                                        abandoned.ownerUserId())
+                                .orElse(null);
+                if (run != null
+                        && run.status() != AiRunStatus.COMPLETED
+                        && run.status() != AiRunStatus.FAILED
+                        && run.status() != AiRunStatus.CANCELLED) {
+                    AiRun failedRun =
+                            new AiRun(
+                                    run.id(),
+                                    run.tenantId(),
+                                    run.ownerUserId(),
+                                    run.appId(),
+                                    run.appVersionId(),
+                                    run.sourceType(),
+                                    run.sourceId(),
+                                    run.parentRunId(),
+                                    run.traceId(),
+                                    run.conversationId(),
+                                    run.generationId(),
+                                    run.executionId(),
+                                    run.model(),
+                                    run.promptHash(),
+                                    AiRunStatus.FAILED,
+                                    run.promptTokens(),
+                                    run.completionTokens(),
+                                    run.estimatedUsage(),
+                                    run.costSnapshot(),
+                                    run.createdAt(),
+                                    Instant.now(),
+                                    "SERVICE_RESTART",
+                                    run.version() + 1,
+                                    run.lastEventSeq());
+                    runtimeRuns.updateTerminalAndAppend(
+                            failedRun,
+                            run.version(),
+                            AiRunEventType.RUN_FAILED,
+                            "{\"errorCode\":\"SERVICE_RESTART\"}",
+                            true);
+                }
+            } catch (RuntimeException ignored) {
+            }
+        }
+        return true;
     }
 
     /**
@@ -334,6 +354,37 @@ public class JdbcGenerationRepository implements GenerationRepository {
     @Override
     @Transactional
     public int update(GenerationRun g, long expectedVersion) {
+        TenantId currentTenant = TenantScope.current().orElse(null);
+        if (currentTenant != null) {
+            int updated =
+                    jdbc.update(
+                            "UPDATE CHAT_GENERATION_RUN SET"
+                                    + " STATUS=?,PROMPT_TOKENS=?,COMPLETION_TOKENS=?,LATENCY_MS=?,ERROR_CODE=?,LAST_EVENT_SEQUENCE=?,CANCEL_REQUESTED=?,VERSION=?,UPDATED_AT=?,RUNTIME_RUN_ID=COALESCE(?,RUNTIME_RUN_ID)"
+                                    + " WHERE ID=? AND TENANT_ID=? AND VERSION=?",
+                            g.status().name(),
+                            g.promptTokens(),
+                            g.completionTokens(),
+                            g.latencyMs(),
+                            g.errorCode(),
+                            g.lastEventSequence(),
+                            g.cancelRequested(),
+                            g.version(),
+                            ts(g.updatedAt()),
+                            g.runtimeRunId(),
+                            g.id(),
+                            currentTenant.value(),
+                            expectedVersion);
+            if (updated == 1
+                    && (g.status() == GenerationStatus.COMPLETED
+                            || g.status() == GenerationStatus.FAILED
+                            || g.status() == GenerationStatus.CANCELLED)) {
+                jdbc.update(
+                        "DELETE FROM CHAT_GENERATION_ACTIVE WHERE GENERATION_ID=? AND TENANT_ID=?",
+                        g.id(),
+                        currentTenant.value());
+            }
+            return updated;
+        }
         int updated =
                 jdbc.update(
                         "UPDATE CHAT_GENERATION_RUN SET"
@@ -368,6 +419,7 @@ public class JdbcGenerationRepository implements GenerationRepository {
      */
     @Override
     public void appendEvent(GenerationEvent e, TenantId tenantId) {
+        TenantScope.requireMatches(tenantId);
         GenerationRuntimeLink link = runtimeLink(e.generationRunId(), tenantId);
         runtimeRuns.appendNextEvent(
                 link.runtimeRunId(),
@@ -392,6 +444,7 @@ public class JdbcGenerationRepository implements GenerationRepository {
     @Override
     public List<GenerationEvent> listEvents(
             String generationId, TenantId tenantId, int afterSequence, int limit) {
+        TenantScope.requireMatches(tenantId);
         return jdbc.query(
                 "SELECT e.SEQ,e.TYPE,e.PAYLOAD,e.CREATED_AT FROM AI_RUN_EVENT e JOIN"
                     + " CHAT_GENERATION_RUN g ON g.RUNTIME_RUN_ID=e.RUN_ID WHERE e.GENERATION_ID=?"
@@ -419,6 +472,7 @@ public class JdbcGenerationRepository implements GenerationRepository {
      * @return 返回当前操作产生的结果。
      */
     public int nextEventSequence(String generationId, TenantId tenantId) {
+        TenantScope.requireMatches(tenantId);
         Integer max =
                 jdbc.queryForObject(
                         "SELECT COALESCE(MAX(e.SEQ),-1)+1 FROM AI_RUN_EVENT e JOIN"
@@ -447,6 +501,18 @@ public class JdbcGenerationRepository implements GenerationRepository {
                         tenantId.value());
         if (link == null) throw new IllegalArgumentException("generation not found");
         return link;
+    }
+
+    private long tenantForGeneration(String generationId) {
+        Long tenantId =
+                jdbc.queryForObject(
+                        "SELECT TENANT_ID FROM CHAT_GENERATION_RUN WHERE ID=?",
+                        Long.class,
+                        generationId);
+        if (tenantId == null || tenantId <= 0) {
+            throw new IllegalStateException("generation tenant not found");
+        }
+        return tenantId;
     }
 
     private AiRunEventType runtimeType(GenerationEventType type) {
@@ -514,22 +580,13 @@ public class JdbcGenerationRepository implements GenerationRepository {
                 r.getString("RUNTIME_RUN_ID"));
     }
 
-    private long currentTenant(GenerationRun run) {
-        Long tenant =
-                jdbc.queryForObject(
-                        "SELECT TENANT_ID FROM CHAT_GENERATION_RUN WHERE ID=?",
-                        Long.class,
-                        run.id());
-        if (tenant == null) throw new IllegalStateException("generation tenant not found");
-        return tenant;
-    }
-
     /**
      * {@code StaleGeneration} 封装会话模块中不可变的结构化数据，并作为相关操作之间的值对象。
      * @param run run 属性，表示该记录组件承载的数据。
      * @param ownerUserId 所属用户标识，表示该记录组件承载的数据。
+     * @param tenantId 所属租户标识，表示该记录组件承载的数据。
      */
-    private record StaleGeneration(GenerationRun run, long ownerUserId) {}
+    private record StaleGeneration(GenerationRun run, long ownerUserId, long tenantId) {}
 
     private static Timestamp ts(Instant i) {
         return Timestamp.from(i == null ? Instant.now() : i);

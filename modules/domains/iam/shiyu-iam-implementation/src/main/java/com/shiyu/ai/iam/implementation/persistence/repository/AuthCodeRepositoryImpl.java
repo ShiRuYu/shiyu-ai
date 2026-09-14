@@ -12,6 +12,7 @@ import com.shiyu.ai.iam.implementation.persistence.mapper.AuthCodeMapper;
 import com.shiyu.ai.iam.implementation.persistence.mapper.RoleScopeAuthCodeMapper;
 import com.shiyu.ai.iam.implementation.persistence.mapper.TenantAuthCodeMapper;
 import com.shiyu.ai.kernel.context.TenantId;
+import com.shiyu.ai.kernel.context.TenantScope;
 
 import jakarta.annotation.Resource;
 
@@ -197,6 +198,8 @@ public class AuthCodeRepositoryImpl
     }
 
     private static long requireTenant(TenantId tenantId) {
-        return java.util.Objects.requireNonNull(tenantId, "tenantId must not be null").value();
+        TenantId value = java.util.Objects.requireNonNull(tenantId, "tenantId must not be null");
+        TenantScope.requireMatchesIfBound(value);
+        return value.value();
     }
 }

@@ -12,8 +12,11 @@ import static org.mockito.Mockito.when;
 import com.shiyu.ai.agent.implementation.runtime.model.AiApp;
 import com.shiyu.ai.agent.implementation.runtime.model.AiAppVersion;
 import com.shiyu.ai.kernel.context.TenantId;
+import com.shiyu.ai.kernel.context.TenantScope;
 import com.shiyu.ai.kernel.context.UserId;
 
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.core.ResultSetExtractor;
@@ -32,6 +35,16 @@ class JdbcAiAppRepositoryTest {
     private final JdbcTemplate jdbc = mock(JdbcTemplate.class);
     private final JdbcAiAppRepository repository = new JdbcAiAppRepository(jdbc);
     private final Instant now = Instant.parse("2025-01-01T00:00:00Z");
+
+    @BeforeEach
+    void bindTenantScope() {
+        TenantScope.set(new TenantId(1L));
+    }
+
+    @AfterEach
+    void clearTenantScope() {
+        TenantScope.clear();
+    }
 
     @Test
     void persistsAndQueriesTenantScopedAppsAndVersions() {

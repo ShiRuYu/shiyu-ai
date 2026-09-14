@@ -253,9 +253,10 @@ public class DatabaseInitializer {
                 if (BASELINE_VERSION.equals(marker.version())) {
                     assertExpectedTables(loadPublicTables(connection));
                     assertExpectedColumns(connection);
+                    installPermissionUpdates(connection);
                     log.info(
                             "Database baseline {} ({}) is already installed; initialization"
-                                    + " skipped",
+                                    + " skipped; permission updates checked",
                             BASELINE_VERSION,
                             SEED_PROFILE);
                     return;
@@ -385,6 +386,32 @@ public class DatabaseInitializer {
         } catch (Exception initializationFailure) {
             rollbackQuietly(connection, initializationFailure);
             throw initializationFailure;
+        } finally {
+            if (!connection.isClosed()) {
+                connection.setAutoCommit(originalAutoCommit);
+            }
+        }
+    }
+
+    private void installPermissionUpdates(Connection connection) throws Exception {
+        boolean originalAutoCommit = connection.getAutoCommit();
+        try {
+            connection.setAutoCommit(false);
+            // 多实例启动时串行执行增补，避免分配相同的权限 ID。
+            try (Statement statement = connection.createStatement();
+                    ResultSet marker = statement.executeQuery(
+                            "SELECT ID FROM COMMON_SCHEMA_BASELINE WHERE ID=1 FOR UPDATE")) {
+                if (!marker.next()) {
+                    throw new IllegalStateException("Database baseline marker is missing");
+                }
+            }
+            executeResources(connection,
+                    List.of("classpath:db/updates/iam/20260914_platform_usage.sql"),
+                    "permission update");
+            connection.commit();
+        } catch (Exception failure) {
+            rollbackQuietly(connection, failure);
+            throw failure;
         } finally {
             if (!connection.isClosed()) {
                 connection.setAutoCommit(originalAutoCommit);

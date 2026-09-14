@@ -4,6 +4,7 @@ import com.mybatisflex.core.query.QueryWrapper;
 import com.shiyu.ai.common.core.api.PageData;
 import com.shiyu.ai.common.core.utils.MapstructUtils;
 import com.shiyu.ai.kernel.context.TenantId;
+import com.shiyu.ai.kernel.context.TenantScope;
 import com.shiyu.ai.knowledge.implementation.domain.model.KnowledgeBO;
 import com.shiyu.ai.knowledge.implementation.domain.port.repository.KnowledgeRepository;
 import com.shiyu.ai.knowledge.implementation.persistence.dataobject.KnowledgeDO;
@@ -302,12 +303,14 @@ public class KnowledgeRepositoryImpl implements KnowledgeRepository {
 
     private QueryWrapper base(TenantId tenantId) {
         if (tenantId == null) throw new IllegalArgumentException("tenantId must not be null");
+        TenantScope.requireMatches(tenantId);
         return QueryWrapper.create()
                 .eq(KnowledgeDO::getTenantId, tenantId.value())
                 .eq(KnowledgeDO::getDelFlag, 0);
     }
 
     private void requireTenant(TenantId tenantId, Long resourceTenantId) {
+        TenantScope.requireMatches(tenantId);
         if (resourceTenantId == null || tenantId.value() != resourceTenantId) {
             throw new IllegalArgumentException("knowledge tenant does not match actor tenant");
         }

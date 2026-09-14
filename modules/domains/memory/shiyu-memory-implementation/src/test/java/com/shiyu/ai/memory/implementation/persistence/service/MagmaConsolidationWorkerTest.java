@@ -211,6 +211,8 @@ class MagmaConsolidationWorkerTest {
     }
 
     private static MagmaConsolidationWorker newWorker(JdbcTemplate jdbc) throws Exception {
+        when(jdbc.queryForObject(anyString(), eq(Long.class), any(Object[].class)))
+                .thenReturn(7L);
         MagmaConsolidationWorker worker = new MagmaConsolidationWorker(mock(DataSource.class));
         Field field = MagmaConsolidationWorker.class.getDeclaredField("jdbc");
         field.setAccessible(true);

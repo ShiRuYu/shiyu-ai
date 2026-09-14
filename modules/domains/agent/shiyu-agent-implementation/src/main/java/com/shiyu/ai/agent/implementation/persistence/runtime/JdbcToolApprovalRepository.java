@@ -4,6 +4,7 @@ import com.shiyu.ai.agent.implementation.runtime.model.ToolApproval;
 import com.shiyu.ai.agent.implementation.runtime.port.ToolApprovalRepository;
 import com.shiyu.ai.agent.implementation.runtime.model.ToolApprovalStatus;
 import com.shiyu.ai.kernel.context.TenantId;
+import com.shiyu.ai.kernel.context.TenantScope;
 
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.stereotype.Repository;
@@ -38,6 +39,7 @@ public class JdbcToolApprovalRepository implements ToolApprovalRepository {
      */
     @Override
     public void insert(ToolApproval approval) {
+        TenantScope.requireMatches(new TenantId(approval.tenantId()));
         jdbc.update(
                 "INSERT INTO AI_TOOL_APPROVAL"
                     + " (ID,RUN_ID,TENANT_ID,OWNER_USER_ID,TOOL_NAME,ARGUMENTS_REDACTED,STATUS,CREATED_AT,DECIDED_AT,EXPIRES_AT)"
@@ -65,6 +67,7 @@ public class JdbcToolApprovalRepository implements ToolApprovalRepository {
      */
     @Override
     public List<ToolApproval> list(String runId, TenantId tenantId, long ownerUserId) {
+        TenantScope.requireMatches(tenantId);
         return jdbc.query(
                 "SELECT * FROM AI_TOOL_APPROVAL WHERE RUN_ID=? AND TENANT_ID=? AND OWNER_USER_ID=?"
                         + " ORDER BY CREATED_AT,ID",
@@ -84,6 +87,7 @@ public class JdbcToolApprovalRepository implements ToolApprovalRepository {
      */
     @Override
     public List<ToolApproval> listAll(TenantId tenantId, long ownerUserId) {
+        TenantScope.requireMatches(tenantId);
         return jdbc.query(
                 "SELECT * FROM AI_TOOL_APPROVAL WHERE TENANT_ID=? AND OWNER_USER_ID=? ORDER BY"
                         + " CREATED_AT DESC,ID",
@@ -103,6 +107,7 @@ public class JdbcToolApprovalRepository implements ToolApprovalRepository {
      */
     @Override
     public Optional<ToolApproval> find(String id, TenantId tenantId, long ownerUserId) {
+        TenantScope.requireMatches(tenantId);
         return jdbc
                 .query(
                         "SELECT * FROM AI_TOOL_APPROVAL WHERE ID=? AND TENANT_ID=? AND"
@@ -125,6 +130,7 @@ public class JdbcToolApprovalRepository implements ToolApprovalRepository {
      */
     @Override
     public int update(ToolApproval approval, ToolApprovalStatus expectedStatus) {
+        TenantScope.requireMatches(new TenantId(approval.tenantId()));
         return jdbc.update(
                 "UPDATE AI_TOOL_APPROVAL SET STATUS=?,DECIDED_AT=? WHERE ID=? AND TENANT_ID=? AND"
                         + " OWNER_USER_ID=? AND STATUS=?",
@@ -146,6 +152,7 @@ public class JdbcToolApprovalRepository implements ToolApprovalRepository {
      */
     @Override
     public int expirePending(TenantId tenantId, long ownerUserId) {
+        TenantScope.requireMatches(tenantId);
         return jdbc.update(
                 "UPDATE AI_TOOL_APPROVAL SET STATUS='EXPIRED',DECIDED_AT=CURRENT_TIMESTAMP WHERE"
                         + " TENANT_ID=? AND OWNER_USER_ID=? AND STATUS='PENDING' AND"

@@ -3,6 +3,8 @@ package com.shiyu.ai.memory.implementation.persistence.service;
 import com.shiyu.ai.common.core.jdbc.JdbcDialect;
 import com.shiyu.ai.common.core.utils.JSONUtils;
 import com.shiyu.ai.memory.contract.model.*;
+import com.shiyu.ai.kernel.context.TenantId;
+import com.shiyu.ai.kernel.context.TenantScope;
 
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.jdbc.core.JdbcTemplate;
@@ -72,7 +74,17 @@ public class MagmaConsolidationWorker {
                             id);
             if (claimed == 0) continue;
             try {
-                consolidate(id);
+                Long tenantId =
+                        jdbc.queryForObject(
+                                "SELECT TENANT_ID FROM MEMORY_CONSOLIDATION_JOB WHERE ID=?",
+                                Long.class,
+                                id);
+                TenantScope.withTenant(
+                        new TenantId(tenantId),
+                        () -> {
+                            consolidate(id);
+                            return null;
+                        });
                 jdbc.update(
                         "UPDATE MEMORY_CONSOLIDATION_JOB SET"
                             + " STATUS='COMPLETED',LEASED_UNTIL=NULL,UPDATED_AT=CURRENT_TIMESTAMP"

@@ -19,6 +19,7 @@ import com.shiyu.ai.iam.implementation.service.CaptchaService;
 import com.shiyu.ai.iam.implementation.service.MenuService;
 import com.shiyu.ai.iam.implementation.service.impl.AuthServiceImpl;
 import com.shiyu.ai.kernel.context.TenantId;
+import com.shiyu.ai.kernel.context.TenantScope;
 
 import org.junit.jupiter.api.Test;
 import org.mockito.ArgumentCaptor;
@@ -55,8 +56,16 @@ class AuthServiceDefaultRoleTest {
         when(tenantRoleRepository.selectEnabledRoleByCode(new TenantId(1L), "user"))
                 .thenReturn(userRole);
         when(userRepository.update(user)).thenReturn(true);
+        org.mockito.Mockito.doAnswer(invocation -> {
+            assertEquals(new TenantId(1L), TenantScope.require());
+            return null;
+        }).when(userScopeRoleRepository).insert(org.mockito.ArgumentMatchers.any());
 
-        ReflectionTestUtils.invokeMethod(service, "assignDefaultTenantScopeRole", 42L);
+        TenantScope.withTenant(new TenantId(7L), () -> {
+            ReflectionTestUtils.invokeMethod(service, "assignDefaultTenantScopeRole", 42L);
+            assertEquals(new TenantId(7L), TenantScope.require());
+            return null;
+        });
 
         verify(userRepository, never()).selectRolesByUserId(1L);
         verify(tenantRoleRepository).selectEnabledRoleByCode(new TenantId(1L), "user");

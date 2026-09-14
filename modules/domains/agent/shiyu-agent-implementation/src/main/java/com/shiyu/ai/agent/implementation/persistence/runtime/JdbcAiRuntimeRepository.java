@@ -2,6 +2,7 @@ package com.shiyu.ai.agent.implementation.persistence.runtime;
 
 import com.shiyu.ai.agent.contract.runtime.*;
 import com.shiyu.ai.kernel.context.TenantId;
+import com.shiyu.ai.kernel.context.TenantScope;
 import com.shiyu.ai.kernel.context.UserId;
 
 import org.springframework.context.annotation.Primary;
@@ -41,12 +42,13 @@ public class JdbcAiRuntimeRepository implements AiRunRepository {
      */
     @Override
     public void insert(AiRun r) {
+        long tenantValue = tenant(r.tenantId());
         jdbc.update(
                 "INSERT INTO AI_RUN"
                     + " (ID,TENANT_ID,OWNER_USER_ID,APP_ID,APP_VERSION_ID,SOURCE_TYPE,SOURCE_ID,PARENT_RUN_ID,TRACE_ID,CONVERSATION_ID,GENERATION_ID,EXECUTION_ID,MODEL,PROMPT_HASH,STATUS,PROMPT_TOKENS,COMPLETION_TOKENS,ESTIMATED_USAGE,COST_SNAPSHOT,CREATED_AT,COMPLETED_AT,ERROR_CODE,LAST_EVENT_SEQ,VERSION)"
                     + " VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)",
                 r.id(),
-                r.tenantId().value(),
+                tenantValue,
                 r.ownerUserId().value(),
                 r.appId(),
                 r.appVersionId(),
@@ -181,6 +183,7 @@ public class JdbcAiRuntimeRepository implements AiRunRepository {
      */
     @Override
     public int update(AiRun r, long expected) {
+        long tenantValue = tenant(r.tenantId());
         return jdbc.update(
                 "UPDATE AI_RUN SET"
                     + " STATUS=?,PROMPT_TOKENS=?,COMPLETION_TOKENS=?,ESTIMATED_USAGE=?,COST_SNAPSHOT=?,COMPLETED_AT=?,ERROR_CODE=?,VERSION=?"
@@ -194,7 +197,7 @@ public class JdbcAiRuntimeRepository implements AiRunRepository {
                 r.errorCode(),
                 r.version(),
                 r.id(),
-                r.tenantId().value(),
+                tenantValue,
                 r.ownerUserId().value(),
                 expected);
     }
@@ -379,12 +382,13 @@ public class JdbcAiRuntimeRepository implements AiRunRepository {
     @Override
     @Transactional
     public long appendEvent(AiRunEvent e) {
+        long tenantValue = tenant(e.tenantId());
         Long runLast =
                 jdbc.query(
                         "SELECT LAST_EVENT_SEQ FROM AI_RUN WHERE ID=? AND TENANT_ID=? FOR UPDATE",
                         rs -> rs.next() ? rs.getLong(1) : null,
                         e.runId(),
-                        e.tenantId().value());
+                        tenantValue);
         if (runLast == null) throw new IllegalArgumentException("run not found");
         Long max =
                 jdbc.queryForObject(
@@ -392,13 +396,13 @@ public class JdbcAiRuntimeRepository implements AiRunRepository {
                                 + " TENANT_ID=?",
                         Long.class,
                         e.runId(),
-                        e.tenantId().value());
+                        tenantValue);
         List<AiRunEvent> existing =
                 jdbc.query(
                         "SELECT * FROM AI_RUN_EVENT WHERE RUN_ID=? AND TENANT_ID=? AND SEQ=?",
                         this::mapEvent,
                         e.runId(),
-                        e.tenantId().value(),
+                        tenantValue,
                         e.seq());
         if (!existing.isEmpty()) {
             AiRunEvent old = existing.get(0);
@@ -420,7 +424,7 @@ public class JdbcAiRuntimeRepository implements AiRunRepository {
                                 + " IN ('RUN_COMPLETED','RUN_FAILED','RUN_CANCELLED')",
                         Integer.class,
                         e.runId(),
-                        e.tenantId().value());
+                        tenantValue);
         if (terminalCount != null && terminalCount > 0)
             throw new IllegalStateException("run is already terminal");
         jdbc.update(
@@ -428,7 +432,7 @@ public class JdbcAiRuntimeRepository implements AiRunRepository {
                     + " (RUN_ID,TENANT_ID,SEQ,TYPE,SCHEMA_VERSION,TURN_ID,STEP_ID,PARENT_EVENT_SEQ,CONVERSATION_ID,GENERATION_ID,EXECUTION_ID,APP_ID,APP_VERSION_ID,PROVIDER_REQUEST_ID,TRACE_ID,PAYLOAD,REDACTED,CREATED_AT)"
                     + " VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)",
                 e.runId(),
-                e.tenantId().value(),
+                tenantValue,
                 e.seq(),
                 e.type().name(),
                 e.schemaVersion(),
@@ -451,7 +455,7 @@ public class JdbcAiRuntimeRepository implements AiRunRepository {
                                     + " LAST_EVENT_SEQ=?",
                             e.seq(),
                             e.runId(),
-                            e.tenantId().value(),
+                            tenantValue,
                             runLast)
                     != 1) {
                 throw new IllegalStateException("run event sequence was modified");
@@ -538,6 +542,7 @@ public class JdbcAiRuntimeRepository implements AiRunRepository {
 
     private static long tenant(TenantId tenantId) {
         if (tenantId == null) throw new IllegalArgumentException("tenantId is required");
+        TenantScope.requireMatches(tenantId);
         return tenantId.value();
     }
 }

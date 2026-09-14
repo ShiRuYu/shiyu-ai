@@ -1,6 +1,7 @@
 package com.shiyu.ai.common.core.event;
 
 import com.shiyu.ai.common.core.utils.JSONUtils;
+import com.shiyu.ai.kernel.context.TenantScope;
 import com.shiyu.ai.kernel.event.DomainEventEnvelope;
 
 import org.springframework.jdbc.core.JdbcTemplate;
@@ -42,6 +43,10 @@ public class JdbcOutboxEventPublisher implements InfrastructureEventPublisher {
      */
     @Override
     public void publish(DomainEventEnvelope<?> event) {
+        if (event == null || event.tenantId() == null) {
+            throw new IllegalArgumentException("event tenantId is required");
+        }
+        TenantScope.requireMatches(event.tenantId());
         String eventId = UUID.randomUUID().toString();
         jdbc.update(
                 """

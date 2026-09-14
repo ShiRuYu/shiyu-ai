@@ -5,6 +5,7 @@ import com.shiyu.ai.agent.implementation.persistence.dataobject.AuditLogDO;
 import com.shiyu.ai.agent.implementation.persistence.mapper.AuditLogMapper;
 import com.shiyu.ai.common.core.utils.MapstructUtils;
 import com.shiyu.ai.kernel.context.TenantId;
+import com.shiyu.ai.kernel.context.TenantScope;
 
 import jakarta.annotation.Resource;
 
@@ -23,7 +24,8 @@ public class AuditLogRepositoryImpl
     @Resource private AuditLogMapper auditLogMapper;
 
     public void insert(TenantId tenantId, AuditLogBO auditLog) {
-        if (tenantId == null || tenantId.value() <= 0 || auditLog == null) {
+        TenantScope.requireMatches(tenantId);
+        if (auditLog == null) {
             throw new IllegalArgumentException("audit tenantId and record are required");
         }
         if (auditLog.getUserId() == null || auditLog.getUserId() <= 0) {

@@ -335,8 +335,13 @@ public class ResumableUploadService {
        Instant now = Instant.now();
         for (StorageMetadataStore.UploadSessionRecord record :
                 metadataStore.findExpiredUploadSessions(now)) {
-            deleteWithinChunkRoot(record.tempPath());
-            metadataStore.deleteUploadSession(record.sessionId());
+            com.shiyu.ai.kernel.context.TenantScope.withTenant(
+                    new com.shiyu.ai.kernel.context.TenantId(record.tenantId()),
+                    () -> {
+                        deleteWithinChunkRoot(record.tempPath());
+                        metadataStore.deleteUploadSession(record.sessionId());
+                        return null;
+                    });
         }
         if (!"local".equalsIgnoreCase(storageProperties.getType())) return;
         try {
