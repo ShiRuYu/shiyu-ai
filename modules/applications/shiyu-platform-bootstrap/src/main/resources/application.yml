@@ -1,0 +1,53 @@
+# 平台发行包的可直接运行默认配置。
+# 生产环境应通过环境变量或外部配置覆盖数据库、文件和向量 provider。
+
+server:
+  port: ${SERVER_PORT:9000}
+
+spring:
+  application:
+    name: ${SHIYU_APPLICATION_NAME:shiyu-ai}
+  profiles:
+    active: ${SPRING_PROFILES_ACTIVE:dev}
+  main:
+    allow-circular-references: true
+  messages:
+    basename: i18n/messages
+  h2:
+    console:
+      enabled: true
+      path: /h2
+      settings:
+        web-allow-others: false
+
+shiyu:
+  name: ${SHIYU_APPLICATION_NAME:shiyu-ai}
+  tx:
+    enabled: true
+  infrastructure:
+    database:
+      provider: ${SHIYU_INFRA_DATABASE_PROVIDER:h2}
+    file:
+      provider: ${SHIYU_INFRA_FILE_PROVIDER:}
+    vector:
+      provider: ${SHIYU_INFRA_VECTOR_PROVIDER:}
+    redis:
+      provider: ${SHIYU_INFRA_REDIS_PROVIDER:disabled}
+  storage:
+    type: ${SHIYU_STORAGE_TYPE:local}
+    local:
+      path: ${SHIYU_STORAGE_LOCAL_PATH:${app.home}/data/files}
+  vector-store:
+    type: ${SHIYU_VECTOR_STORE_TYPE:inmemory}
+    dimension: ${SHIYU_VECTOR_DIMENSION:512}
+    data-dir: ${SHIYU_VECTOR_DATA_DIR:${app.home}/data/vector}
+
+mybatis-flex:
+  datasource:
+    agent:
+      type: com.zaxxer.hikari.HikariDataSource
+      driver-class-name: ${SHIYU_DB_DRIVER:org.h2.Driver}
+      url: ${SHIYU_DB_URL:jdbc:h2:file:${app.home}/data/db/shiyudb;MODE=MySQL;DB_CLOSE_DELAY=-1;AUTO_SERVER=FALSE}
+      username: ${SHIYU_DB_USERNAME:sa}
+      password: ${SHIYU_DB_PASSWORD:}
+      validation-query: SELECT 1

@@ -30,6 +30,7 @@ import java.sql.ResultSet;
 import java.sql.Timestamp;
 import java.time.Instant;
 import java.util.List;
+import java.util.concurrent.atomic.AtomicReference;
 
 @SuppressWarnings({"rawtypes", "unchecked"})
 class AgentInfrastructureCoverageTest {
@@ -86,8 +87,15 @@ class AgentInfrastructureCoverageTest {
         field.setAccessible(true);
         field.set(runner, repository);
         ApplicationArguments args = mock(ApplicationArguments.class);
+        AtomicReference<TenantId> requestedTenant = new AtomicReference<>();
 
-        when(repository.selectByAgentId(any(TenantId.class), eq("default"))).thenReturn(null);
+        when(repository.selectByAgentId(any(TenantId.class), eq("default")))
+                .thenAnswer(
+                        invocation -> {
+                            assertEquals(new TenantId(1L), TenantScope.require());
+                            requestedTenant.set(invocation.getArgument(0));
+                            return null;
+                        });
         runner.run(args);
         when(repository.selectByAgentId(any(TenantId.class), eq("default"))).thenReturn(List.of());
         runner.run(args);
@@ -99,6 +107,8 @@ class AgentInfrastructureCoverageTest {
                 .thenThrow(new IllegalStateException("db"));
         runner.run(args);
         verify(repository, times(4)).selectByAgentId(any(TenantId.class), eq("default"));
+        assertEquals(new TenantId(1L), requestedTenant.get());
+        assertEquals(new TenantId(7L), TenantScope.require());
     }
 
     @Test
