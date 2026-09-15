@@ -156,6 +156,9 @@ public class DatabaseInitializer {
     private static final Set<String> INFRASTRUCTURE_TABLES =
             Set.of("SHIYU_VECTOR_ITEM", "SHIYU_EVENT_OUTBOX", "SHIYU_EVENT_INBOX");
 
+    /** 由幂等增补脚本创建、但不属于破坏式 baseline 的表。 */
+    private static final Set<String> UPDATE_TABLES = Set.of("AUTH_TENANT_MODULE");
+
     /**
      * dataSources 属性，保存当前对象中的业务数据或协作依赖。
      */
@@ -406,7 +409,9 @@ public class DatabaseInitializer {
                 }
             }
             executeResources(connection,
-                    List.of("classpath:db/updates/iam/20260914_platform_usage.sql"),
+                    List.of(
+                            "classpath:db/updates/iam/20260914_platform_usage.sql",
+                            "classpath:db/updates/iam/20260916_tenant_module_access.sql"),
                     "permission update");
             connection.commit();
         } catch (Exception failure) {
@@ -513,6 +518,7 @@ public class DatabaseInitializer {
         Set<String> unexpected = new TreeSet<>(actualTables);
         unexpected.removeAll(expectedTables);
         unexpected.removeAll(INFRASTRUCTURE_TABLES);
+        unexpected.removeAll(UPDATE_TABLES);
         unexpected.removeIf(table -> table.startsWith("EDU_"));
         if (!missing.isEmpty() || !unexpected.isEmpty()) {
             throw new IllegalStateException(

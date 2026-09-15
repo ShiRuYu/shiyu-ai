@@ -9,9 +9,8 @@ tables, education permissions/navigation and education-specific web routes.
 
 - `shiyu-application` contains only the platform baseline. Optional business modules contribute
   schema, seed data and expected tables through `DatabaseBaselineContributor`.
-- `shiyu-platform-bootstrap` packages the platform without the education implementation.
-- `shiyu-ai-bootstrap` is the education-enabled composition and explicitly depends on
-  `shiyu-education-implementation`.
+- `shiyu-ai-bootstrap` is the only executable application. Education is conditionally composed by
+  `EducationModuleAutoConfiguration` when `shiyu.modules.education.enabled` is enabled.
 - Platform agent node types are extensible descriptors. Education registers its six node types from
   the education contract rather than adding business values to the platform contract.
 - Education web routing and public paths are contributed by education beans. The shared web layer
@@ -25,8 +24,8 @@ tables, education permissions/navigation and education-specific web routes.
 1. Platform `NodeType.values()` contains no `EDUCATION_*` values.
 2. A platform-only database baseline has no `EDU_*` tables or education seed resources.
 3. An education-enabled baseline still installs the complete education schema and seed data.
-4. The platform bootstrap builds without a production dependency on
-   `shiyu-education-implementation`.
+4. The single bootstrap builds with education enabled or disabled without changing the HTTP
+   contract of the platform modules.
 
 ## Explicitly not exercised
 

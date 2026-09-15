@@ -17,11 +17,20 @@
     <dependencies>
         <dependency>
             <groupId>com.shiyu.ai</groupId>
+            <artifactId>shiyu-common-core</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>com.shiyu.ai</groupId>
             <artifactId>shiyu-shared-kernel</artifactId>
         </dependency>
         <dependency>
             <groupId>com.shiyu.ai</groupId>
             <artifactId>shiyu-common-web</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>com.shiyu.ai</groupId>
+            <artifactId>shiyu-iam-contract</artifactId>
+            <version>${revision}</version>
         </dependency>
         <dependency>
             <groupId>com.shiyu.ai</groupId>

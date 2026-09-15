@@ -3,6 +3,7 @@ package com.shiyu.ai.web.config;
 import cn.dev33.satoken.interceptor.SaInterceptor;
 
 import com.shiyu.ai.common.web.config.WebPublicPathContributor;
+import com.shiyu.ai.web.interceptor.BusinessModuleAccessInterceptor;
 import com.shiyu.ai.web.interceptor.UserContextInterceptor;
 
 import jakarta.servlet.DispatcherType;
@@ -34,6 +35,8 @@ public class SaInterceptorConfig implements WebMvcConfigurer {
      * publicPathContributors 属性，保存当前对象中的业务数据或协作依赖。
      */
     private final List<WebPublicPathContributor> publicPathContributors;
+    /** 租户级业务模块授权拦截器。 */
+    private final BusinessModuleAccessInterceptor businessModuleAccessInterceptor;
 
     /**
      * {@code SaInterceptorConfig} 创建并初始化当前类型实例。
@@ -43,9 +46,11 @@ public class SaInterceptorConfig implements WebMvcConfigurer {
      */
     public SaInterceptorConfig(
             UserContextInterceptor userContextInterceptor,
-            List<WebPublicPathContributor> publicPathContributors) {
+            List<WebPublicPathContributor> publicPathContributors,
+            BusinessModuleAccessInterceptor businessModuleAccessInterceptor) {
         this.userContextInterceptor = userContextInterceptor;
         this.publicPathContributors = publicPathContributors;
+        this.businessModuleAccessInterceptor = businessModuleAccessInterceptor;
     }
 
     /**
@@ -77,6 +82,8 @@ public class SaInterceptorConfig implements WebMvcConfigurer {
                 .filter(java.util.Objects::nonNull)
                 .flatMap(java.util.Collection::stream)
                 .forEach(userContextRegistration::excludePathPatterns);
+        // 用户上下文已经绑定 TenantScope 后，先检查租户是否启用业务模块，再执行细粒度权限注解。
+        registry.addInterceptor(businessModuleAccessInterceptor).addPathPatterns("/api/**");
         // Sa-Token 拦截器，开启注解式鉴权功能
         // 默认构造函数 isAnnotation = true，自动扫描 @SaCheckPermission 等注解
         registry.addInterceptor(

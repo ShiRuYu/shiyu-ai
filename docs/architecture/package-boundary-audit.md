@@ -15,8 +15,7 @@
 | `shiyu-common-vector` | `api`、`config`、`factory`、`implementation`、`model` | 搜索契约、模型、后端实现、工厂和自动装配分开；不与 storage 文件索引混合。 |
 | `shiyu-application` | `composition.database`、`composition.integration.governance`、`composition.retention` | 只编排初始化、跨领域接线和保留策略，不承载领域规则。 |
 | `shiyu-ai-web` | `config`、`auth`、`interceptor`、`exception` | 入口层只做通用装配；Agent/Education 的领域 Web 配置由各自实现模块通过 SPI 注入。 |
-| `shiyu-ai-bootstrap` | `bootstrap`、`bootstrap.lifecycle`、`bootstrap.lock`、`bootstrap.retention` | 负责可执行应用生命周期、APP_HOME 锁和日志清理。 |
-| `shiyu-platform-bootstrap` | `platform.bootstrap` | 只装配平台能力，并通过依赖排除保证不携带 Education business implementation。 |
+| `shiyu-ai-bootstrap` | `bootstrap`、`bootstrap.lifecycle`、`bootstrap.lock`、`bootstrap.retention` | 唯一可执行应用；平台能力始终装配，业务实现通过模块自动配置和开关条件加入。 |
 | `shiyu-architecture-tests` | `architecture` | Module、Context、Persistence 三类 ArchUnit 规则独立维护。 |
 
 ## 检查职责

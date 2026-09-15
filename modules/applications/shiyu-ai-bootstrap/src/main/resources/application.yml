@@ -17,6 +17,9 @@ shiyu:
       model: ${AI_DEEPSEEK_MODEL:deepseek-v4-flash}
   tx:
     enabled: true
+  modules:
+    education:
+      enabled: ${SHIYU_MODULE_EDUCATION_ENABLED:true}
   infrastructure:
     database:
       provider: ${SHIYU_INFRA_DATABASE_PROVIDER:h2}

@@ -2,6 +2,7 @@ package com.shiyu.ai.iam.implementation.service.impl;
 
 import com.shiyu.ai.common.core.api.PageData;
 import com.shiyu.ai.common.core.utils.MapstructUtils;
+import com.shiyu.ai.iam.contract.module.TenantModuleAccessProvisioning;
 import com.shiyu.ai.iam.implementation.domain.model.TenantBO;
 import com.shiyu.ai.iam.implementation.port.repository.TenantRepository;
 import com.shiyu.ai.iam.implementation.request.TenantRequest;
@@ -13,6 +14,7 @@ import com.shiyu.ai.kernel.context.TenantScope;
 
 import lombok.extern.slf4j.Slf4j;
 
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -94,6 +96,7 @@ public class TenantServiceImpl implements TenantService {
      * 租户仓储，表示当前对象中的对应属性。
      */
     private final TenantRepository tenantRepository;
+    private final TenantModuleAccessProvisioning tenantModuleAccessProvisioning;
 
     /**
      * {@code TenantServiceImpl} 创建并初始化当前类型实例。
@@ -101,7 +104,21 @@ public class TenantServiceImpl implements TenantService {
      * @param tenantRepository 参数值，用于执行当前操作。
      */
     public TenantServiceImpl(TenantRepository tenantRepository) {
+        this(tenantRepository, tenantId -> {});
+    }
+
+    /**
+     * 创建租户应用服务。
+     *
+     * @param tenantRepository 租户数据仓储
+     * @param tenantModuleAccessProvisioning 模块默认状态初始化端口
+     */
+    @Autowired
+    public TenantServiceImpl(
+            TenantRepository tenantRepository,
+            TenantModuleAccessProvisioning tenantModuleAccessProvisioning) {
         this.tenantRepository = tenantRepository;
+        this.tenantModuleAccessProvisioning = tenantModuleAccessProvisioning;
     }
 
     /**
@@ -179,6 +196,7 @@ public class TenantServiceImpl implements TenantService {
         }
         TenantScope.withTenant(new TenantId(created.getId()), () -> {
             tenantRepository.initializeTenantSecurity(created, actor.tenantId());
+            tenantModuleAccessProvisioning.initializeTenantDefaults(new TenantId(created.getId()));
             return null;
         });
         return true;

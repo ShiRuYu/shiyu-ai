@@ -8,7 +8,8 @@ import org.springframework.boot.autoconfigure.SpringBootApplication;
 /**
  * 应用启动类，负责创建 Spring Boot 运行上下文并释放启动期间的目录锁。
  */
-@SpringBootApplication(scanBasePackages = "com.shiyu.ai")
+@SpringBootApplication(
+        scanBasePackages = {"com.shiyu.ai.bootstrap", "com.shiyu.ai.composition"})
 public class ShiyuBootstrapApplication {
 
     /**

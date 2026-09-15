@@ -123,7 +123,6 @@
         <module>modules/applications/shiyu-ai-bootstrap</module>
         <module>modules/applications/shiyu-ai-web</module>
         <module>modules/applications/shiyu-application</module>
-        <module>modules/applications/shiyu-platform-bootstrap</module>
         <module>modules/domains/agent/shiyu-agent-contract</module>
         <module>modules/domains/agent/shiyu-agent-implementation</module>
         <module>modules/domains/conversation/shiyu-conversation-contract</module>

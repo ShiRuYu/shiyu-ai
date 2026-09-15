@@ -37,6 +37,7 @@ INDEX_COLUMNS = re.compile(
 )
 INSERT_TABLE = re.compile(r'INSERT\s+INTO\s+"PUBLIC"\."([A-Z0-9_]+)"', re.I)
 SCHEMA_EXTENSION = re.compile(r"@schema-extension\s+([a-z0-9_-]+)", re.I)
+LEGACY_SCHEMA_EXTENSION = re.compile(r"扩展模式\s*[:：]\s*([a-z0-9_-]+)", re.I)
 
 
 def strip_comments(text: str) -> str:
@@ -69,7 +70,11 @@ def main() -> int:
     for owner, path in files:
         raw_sql = path.read_text(encoding="utf-8")
         sql = strip_comments(raw_sql)
-        extensions = {match.lower() for match in SCHEMA_EXTENSION.findall(raw_sql)}
+        extensions = {
+            match.lower()
+            for pattern in (SCHEMA_EXTENSION, LEGACY_SCHEMA_EXTENSION)
+            for match in pattern.findall(raw_sql)
+        }
         sql_by_file.append((owner, path, sql, extensions))
         for table in CREATE_TABLE.findall(sql):
             normalized = table.upper()
