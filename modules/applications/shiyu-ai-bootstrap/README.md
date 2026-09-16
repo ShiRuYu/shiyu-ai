@@ -26,7 +26,7 @@
 
 ## 内部模块依赖
 
-`shiyu-application`、`shiyu-governance-implementation`、`shiyu-ai-web`
+`shiyu-platform-composition`、`shiyu-governance-implementation`、`shiyu-ai-web`
 
 ## 验证
 

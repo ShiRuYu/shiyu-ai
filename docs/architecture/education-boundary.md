@@ -7,7 +7,7 @@ tables, education permissions/navigation and education-specific web routes.
 
 ## Composition rules
 
-- `shiyu-application` contains only the platform baseline. Optional business modules contribute
+- `shiyu-platform-composition` contains only the platform baseline. Optional business modules contribute
   schema, seed data and expected tables through `DatabaseBaselineContributor`.
 - `shiyu-ai-bootstrap` is the only executable application. Education is conditionally composed by
   `EducationModuleAutoConfiguration` when `shiyu.modules.education.enabled` is enabled.

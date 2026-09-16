@@ -69,10 +69,11 @@ def _role(artifact: str) -> str:
         return "shared"
     if artifact.startswith("shiyu-common-"):
         return "infrastructure"
+    if artifact == "shiyu-platform-composition":
+        return "composition"
     if artifact in {
         "shiyu-ai-bootstrap",
         "shiyu-ai-web",
-        "shiyu-application",
     }:
         return "application"
     return "unclassified"
@@ -107,7 +108,7 @@ def _phase(module_path: Path, artifact: str) -> str:
         "shiyu-common-storage": "6D",
         "shiyu-common-thread": "6E",
         "shiyu-common-vector": "6F",
-        "shiyu-application": "6G",
+        "shiyu-platform-composition": "6G",
         "shiyu-ai-bootstrap": "6H",
     }
     return non_domain.get(artifact, "manual-review")

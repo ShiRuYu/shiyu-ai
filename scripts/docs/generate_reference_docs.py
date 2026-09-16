@@ -491,7 +491,7 @@ def main() -> None:
     paths, operations = generate_api_reference(spec, repo / "docs/参考/API接口参考.md", source)
 
     schema_roots = [
-        repo / "modules/applications/shiyu-application/src/main/resources/db/baseline/h2/schema",
+        repo / "modules/applications/shiyu-platform-composition/src/main/resources/db/baseline/h2/schema",
         repo / "modules/infrastructure/shiyu-common-core/src/main/resources/db/baseline/h2/schema",
         repo / "modules/infrastructure/shiyu-common-storage/src/main/resources/db/baseline/h2/schema",
         repo / "modules/domains/iam/shiyu-iam-implementation/src/main/resources/db/baseline/h2/schema",

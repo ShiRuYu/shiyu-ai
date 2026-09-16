@@ -9,9 +9,9 @@
         <version>${revision}</version>
         <relativePath>../../../pom.xml</relativePath>
     </parent>
-    <artifactId>shiyu-application</artifactId>
-    <name>shiyu-application</name>
-    <description>Composition root for authentication, errors and bounded contexts</description>
+    <artifactId>shiyu-platform-composition</artifactId>
+    <name>shiyu-platform-composition</name>
+    <description>Platform composition and runtime infrastructure library</description>
     <dependencies>
         <dependency>
             <groupId>com.shiyu.ai</groupId>

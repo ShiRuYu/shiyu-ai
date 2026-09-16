@@ -9,7 +9,7 @@ from pathlib import Path
 
 
 OWNER_ROOTS = {
-    "application": "modules/applications/shiyu-application/src/main/resources/db/baseline/h2",
+    "application": "modules/applications/shiyu-platform-composition/src/main/resources/db/baseline/h2",
     "common-core": "modules/infrastructure/shiyu-common-core/src/main/resources/db/baseline/h2",
     "common-storage": "modules/infrastructure/shiyu-common-storage/src/main/resources/db/baseline/h2",
     "iam": "modules/domains/iam/shiyu-iam-implementation/src/main/resources/db/baseline/h2",

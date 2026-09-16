@@ -7,7 +7,7 @@ ROOT = Path(__file__).resolve().parents[2]
 OUT = ROOT / "scripts" / "database" / "postgresql"
 
 SCHEMA = [
-    "modules/applications/shiyu-application/src/main/resources/db/baseline/h2/schema/application/00_baseline.sql",
+    "modules/applications/shiyu-platform-composition/src/main/resources/db/baseline/h2/schema/application/00_baseline.sql",
     "modules/infrastructure/shiyu-common-storage/src/main/resources/db/baseline/h2/schema/storage/01_storage.sql",
     "modules/infrastructure/shiyu-common-core/src/main/resources/db/baseline/h2/schema/common/02_common.sql",
     "modules/domains/iam/shiyu-iam-implementation/src/main/resources/db/baseline/h2/schema/iam/03_auth.sql",

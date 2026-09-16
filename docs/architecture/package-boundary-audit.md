@@ -13,7 +13,7 @@
 | `shiyu-common-storage` | `api`、`backup`、`config`、`file`、`idempotency`、`lease`、`metadata`、`rate`、`security`、`vector`、`web` | 文件、备份、元数据、租约、限流和上传适配按技术能力隔离；领域规则通过 contract 进入。 |
 | `shiyu-common-thread` | `api`、`config`、`context`、`executor`、`metrics`、`otel` | 扩展接口、执行器、上下文传播和可选观测分层。 |
 | `shiyu-common-vector` | `api`、`config`、`factory`、`implementation`、`model` | 搜索契约、模型、后端实现、工厂和自动装配分开；不与 storage 文件索引混合。 |
-| `shiyu-application` | `composition.database`、`composition.integration.governance`、`composition.retention` | 只编排初始化、跨领域接线和保留策略，不承载领域规则。 |
+| `shiyu-platform-composition` | `composition.database`、`composition.integration.governance`、`composition.retention` | 平台组合库，只编排初始化、跨领域接线和保留策略，不承载领域规则，也不独立启动。 |
 | `shiyu-ai-web` | `config`、`auth`、`interceptor`、`exception` | 入口层只做通用装配；Agent/Education 的领域 Web 配置由各自实现模块通过 SPI 注入。 |
 | `shiyu-ai-bootstrap` | `bootstrap`、`bootstrap.lifecycle`、`bootstrap.lock`、`bootstrap.retention` | 唯一可执行应用；平台能力始终装配，业务实现通过模块自动配置和开关条件加入。 |
 | `shiyu-architecture-tests` | `architecture` | Module、Context、Persistence 三类 ArchUnit 规则独立维护。 |

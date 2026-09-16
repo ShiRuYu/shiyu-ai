@@ -41,7 +41,7 @@
 |---|---|---|
 | 应用 | `shiyu-ai-bootstrap` | [`README.md`](../../modules/applications/shiyu-ai-bootstrap/README.md) |
 | 应用 | `shiyu-ai-web` | [`README.md`](../../modules/applications/shiyu-ai-web/README.md) |
-| 应用 | `shiyu-application` | [`README.md`](../../modules/applications/shiyu-application/README.md) |
+| 平台组合库 | `shiyu-platform-composition` | [`README.md`](../../modules/applications/shiyu-platform-composition/README.md) |
 | 领域契约 | `shiyu-agent-contract` | [`README.md`](../../modules/domains/agent/shiyu-agent-contract/README.md) |
 | 领域实现 | `shiyu-agent-implementation` | [`README.md`](../../modules/domains/agent/shiyu-agent-implementation/README.md) |
 | 领域契约 | `shiyu-conversation-contract` | [`README.md`](../../modules/domains/conversation/shiyu-conversation-contract/README.md) |

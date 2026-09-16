@@ -84,7 +84,7 @@ def count_openapi_operations(spec: dict) -> int:
 
 def baseline_owner_roots(backend: Path) -> list[Path]:
     return [
-        backend / "modules/applications/shiyu-application/src/main/resources/db/baseline/h2",
+        backend / "modules/applications/shiyu-platform-composition/src/main/resources/db/baseline/h2",
         backend / "modules/infrastructure/shiyu-common-core/src/main/resources/db/baseline/h2",
         backend / "modules/infrastructure/shiyu-common-storage/src/main/resources/db/baseline/h2",
         backend / "modules/domains/iam/shiyu-iam-implementation/src/main/resources/db/baseline/h2",
@@ -101,7 +101,7 @@ def baseline_owner_roots(backend: Path) -> list[Path]:
 
 def verify_final_baseline(backend: Path, failures: list[str]) -> int:
     owner_roots = [
-        backend / "modules/applications/shiyu-application/src/main/resources/db/baseline/h2",
+        backend / "modules/applications/shiyu-platform-composition/src/main/resources/db/baseline/h2",
         backend / "modules/infrastructure/shiyu-common-core/src/main/resources/db/baseline/h2",
         backend / "modules/infrastructure/shiyu-common-storage/src/main/resources/db/baseline/h2",
         backend / "modules/domains/iam/shiyu-iam-implementation/src/main/resources/db/baseline/h2",

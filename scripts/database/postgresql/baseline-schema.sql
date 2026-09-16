@@ -1,5 +1,5 @@
 
--- 来源：modules/applications/shiyu-application/src/main/resources/db/baseline/h2/schema/application/00_baseline.sql
+-- 来源：modules/applications/shiyu-platform-composition/src/main/resources/db/baseline/h2/schema/application/00_baseline.sql
 
 CREATE TABLE common_schema_baseline (
     id INTEGER NOT NULL,

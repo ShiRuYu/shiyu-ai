@@ -1,7 +1,7 @@
 # 业务模块自动配置与开关约定
 
 后端长期只维护一个可执行应用：`modules/applications/shiyu-ai-bootstrap`。平台能力由
-`shiyu-application` 统一组合，业务能力以独立的 `contract` / `implementation` 模块接入，
+`shiyu-platform-composition` 统一组合，业务能力以独立的 `contract` / `implementation` 模块接入，
 不为每个业务复制 application、端口、默认配置或根包扫描。
 
 ## 模块实现形态

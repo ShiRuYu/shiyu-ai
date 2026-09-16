@@ -75,7 +75,7 @@
         </dependency>
         <dependency>
             <groupId>com.shiyu.ai</groupId>
-            <artifactId>shiyu-application</artifactId>
+            <artifactId>shiyu-platform-composition</artifactId>
             <version>${revision}</version>
         </dependency>
         <dependency>

@@ -62,7 +62,7 @@ class BusinessModuleConventionTest {
         String bootstrap = Files.readString(root.resolve(
                 "modules/applications/shiyu-ai-bootstrap/src/main/java/com/shiyu/ai/bootstrap/ShiyuBootstrapApplication.java"));
         String platform = Files.readString(root.resolve(
-                "modules/applications/shiyu-application/src/main/java/com/shiyu/ai/composition/config/PlatformCompositionAutoConfiguration.java"));
+                "modules/applications/shiyu-platform-composition/src/main/java/com/shiyu/ai/composition/config/PlatformCompositionAutoConfiguration.java"));
         assertFalse(bootstrap.contains("com.shiyu.ai.education.implementation"));
         assertFalse(platform.contains("com.shiyu.ai.education.implementation"));
     }
