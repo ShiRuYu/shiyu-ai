@@ -1,0 +1,1 @@
+# One type name per line. Every exception must be justified in the architecture audit.

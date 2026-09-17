@@ -28,7 +28,6 @@
 - Create: `modules/infrastructure/shiyu-common-core/src/main/java/com/shiyu/ai/common/core/module/BusinessModuleDescriptor.java`
 - Create: `modules/infrastructure/shiyu-common-core/src/main/java/com/shiyu/ai/common/core/module/ConditionalOnBusinessModule.java`
 - Create: `modules/infrastructure/shiyu-common-core/src/main/java/com/shiyu/ai/common/core/module/BusinessModuleCondition.java`
-- Create: `modules/infrastructure/shiyu-common-core/src/main/java/com/shiyu/ai/common/core/module/BusinessModuleProperties.java`
 - Test: `modules/infrastructure/shiyu-common-core/src/test/java/com/shiyu/ai/common/core/module/BusinessModuleConditionTest.java`
 
 **Interfaces:**
@@ -48,7 +47,7 @@ Expected: FAIL because the annotation, condition and descriptor do not exist.
 
 - [ ] **Step 3: Write minimal implementation**
 
-条件实现只负责进程级 Bean 装配；不要在条件类中访问数据库、读取租户或调用 IAM。`BusinessModuleProperties` 仅用于生成配置元数据和校验模块 ID，不承担运行时权限。
+条件实现只负责进程级 Bean 装配；不要在条件类中访问数据库、读取租户或调用 IAM。模块条件直接读取 `shiyu.modules.<module-id>.enabled` 及其环境变量映射；不再引入无消费者的 `BusinessModuleProperties` 绑定类。教育模块的 IDE 提示由 `additional-spring-configuration-metadata.json` 提供。
 
 - [ ] **Step 4: Run test to verify it passes**
 

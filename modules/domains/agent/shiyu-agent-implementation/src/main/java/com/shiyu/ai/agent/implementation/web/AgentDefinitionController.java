@@ -378,7 +378,8 @@ public class AgentDefinitionController {
     /**
      * {@code RegisterAgentRequest} 表示智能体模块的请求参数，承载调用方提交的输入数据。
      */
-    @lombok.Data
+    @lombok.Getter
+    @lombok.Setter
     public static class RegisterAgentRequest {
         private String agentId;
         /**

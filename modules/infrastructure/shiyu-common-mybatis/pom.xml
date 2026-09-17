@@ -41,6 +41,15 @@
                 </exclusion>
             </exclusions>
         </dependency>
+        <!-- 异常处理器是 HTTP 适配，不再依赖 common-core 间接提供 Web MVC。 -->
+        <dependency>
+            <groupId>org.springframework</groupId>
+            <artifactId>spring-webmvc</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>jakarta.servlet</groupId>
+            <artifactId>jakarta.servlet-api</artifactId>
+        </dependency>
         <dependency>
             <groupId>com.mybatis-flex</groupId>
             <artifactId>mybatis-flex-spring-boot4-starter</artifactId>

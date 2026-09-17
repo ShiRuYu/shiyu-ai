@@ -1,12 +1,10 @@
 package com.shiyu.ai.composition.config;
 
-import com.shiyu.ai.common.core.module.BusinessModuleProperties;
 import com.shiyu.ai.common.mybatis.config.AgentDataSourceConfiguration;
 import com.shiyu.ai.common.mybatis.config.ContextTenantFactory;
 import com.shiyu.ai.common.mybatis.config.DatabaseInfrastructureConfiguration;
 import com.shiyu.ai.common.mybatis.config.TenantFlexConfig;
 import org.springframework.boot.autoconfigure.AutoConfiguration;
-import org.springframework.boot.context.properties.EnableConfigurationProperties;
 import org.springframework.context.annotation.ComponentScan;
 import org.springframework.context.annotation.Import;
 
@@ -14,7 +12,6 @@ import org.springframework.context.annotation.Import;
  * 显式装配平台实现，避免启动类通过根包扫描意外加载可选业务模块。
  */
 @AutoConfiguration
-@EnableConfigurationProperties(BusinessModuleProperties.class)
 @Import({
     AgentDataSourceConfiguration.class,
     ContextTenantFactory.class,

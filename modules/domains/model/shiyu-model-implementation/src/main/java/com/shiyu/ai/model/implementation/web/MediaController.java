@@ -99,6 +99,8 @@ public class MediaController {
     /**
      * {@code TtsRequest} 表示模型模块的请求参数，承载调用方提交的输入数据。
      */
+    @lombok.Getter
+    @lombok.Setter
     public static class TtsRequest {
         /**
          * 提供者，表示当前对象中的对应属性。
@@ -121,6 +123,8 @@ public class MediaController {
     /**
      * {@code TranslateRequest} 表示模型模块的请求参数，承载调用方提交的输入数据。
      */
+    @lombok.Getter
+    @lombok.Setter
     public static class TranslateRequest {
         public String provider;
         /**
@@ -140,6 +144,8 @@ public class MediaController {
     /**
      * {@code ImageRequest} 表示模型模块的请求参数，承载调用方提交的输入数据。
      */
+    @lombok.Getter
+    @lombok.Setter
     public static class ImageRequest {
         public String provider;
         /**
@@ -159,6 +165,8 @@ public class MediaController {
     /**
      * {@code GenerateRequest} 表示模型模块的请求参数，承载调用方提交的输入数据。
      */
+    @lombok.Getter
+    @lombok.Setter
     public static class GenerateRequest {
         public String provider;
         /**

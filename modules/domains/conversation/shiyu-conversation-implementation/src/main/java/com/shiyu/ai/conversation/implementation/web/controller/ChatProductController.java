@@ -758,6 +758,8 @@ public class ChatProductController {
     /**
      * {@code CharacterRequest} 表示会话模块的请求参数，承载调用方提交的输入数据。
      */
+    @lombok.Getter
+    @lombok.Setter
     public static class CharacterRequest {
         public CharacterCardV2 card;
         /**
@@ -769,6 +771,8 @@ public class ChatProductController {
     /**
      * {@code PromptRequest} 表示会话模块的请求参数，承载调用方提交的输入数据。
      */
+    @lombok.Getter
+    @lombok.Setter
     public static class PromptRequest {
         public String templateId;
         /**
@@ -796,6 +800,8 @@ public class ChatProductController {
     /**
      * {@code PublishRequest} 表示会话模块的请求参数，承载调用方提交的输入数据。
      */
+    @lombok.Getter
+    @lombok.Setter
     public static class PublishRequest {
         public int version;
     }
@@ -803,6 +809,8 @@ public class ChatProductController {
     /**
      * {@code DiffRequest} 表示会话模块的请求参数，承载调用方提交的输入数据。
      */
+    @lombok.Getter
+    @lombok.Setter
     public static class DiffRequest {
         public int fromVersion;
         /**
@@ -814,6 +822,8 @@ public class ChatProductController {
     /**
      * {@code GroupRequest} 表示会话模块的请求参数，承载调用方提交的输入数据。
      */
+    @lombok.Getter
+    @lombok.Setter
     public static class GroupRequest {
         public String name;
         /**
@@ -837,6 +847,8 @@ public class ChatProductController {
     /**
      * {@code TurnRequest} 表示会话模块的请求参数，承载调用方提交的输入数据。
      */
+    @lombok.Getter
+    @lombok.Setter
     public static class TurnRequest {
         public List<String> completedSpeakerIds = List.of();
         /**
@@ -852,6 +864,8 @@ public class ChatProductController {
     /**
      * {@code TurnRunRequest} 表示会话模块的请求参数，承载调用方提交的输入数据。
      */
+    @lombok.Getter
+    @lombok.Setter
     public static class TurnRunRequest {
         public String conversationId;
         /**
@@ -889,6 +903,8 @@ public class ChatProductController {
     /**
      * {@code PromptPreviewRequest} 表示会话模块的请求参数，承载调用方提交的输入数据。
      */
+    @lombok.Getter
+    @lombok.Setter
     public static class PromptPreviewRequest {
         public String body;
         /**
@@ -900,6 +916,8 @@ public class ChatProductController {
     /**
      * {@code PromptTestRequest} 表示会话模块的请求参数，承载调用方提交的输入数据。
      */
+    @lombok.Getter
+    @lombok.Setter
     public static class PromptTestRequest {
         public int version;
         /**

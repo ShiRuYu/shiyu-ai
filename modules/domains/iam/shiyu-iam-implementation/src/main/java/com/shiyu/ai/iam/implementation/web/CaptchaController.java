@@ -89,7 +89,8 @@ public class CaptchaController {
     }
 
     /** 验证请求参数 */
-    @lombok.Data
+    @lombok.Getter
+    @lombok.Setter
     @lombok.AllArgsConstructor
     public static class ValidateCaptchaRequest {
         /** 验证码 key */
@@ -100,7 +101,8 @@ public class CaptchaController {
     }
 
     /** 验证响应 */
-    @lombok.Data
+    @lombok.Getter
+    @lombok.Setter
     @lombok.AllArgsConstructor
     public static class ValidateCaptchaResponse {
         /** 是否成功 */

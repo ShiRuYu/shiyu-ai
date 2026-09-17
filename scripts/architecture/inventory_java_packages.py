@@ -102,6 +102,7 @@ def _phase(module_path: Path, artifact: str) -> str:
     non_domain = {
         "shiyu-shared-kernel": "6A",
         "shiyu-common-core": "6A",
+        "shiyu-common-event": "6A2",
         "shiyu-common-mybatis": "6B",
         "shiyu-common-web": "6C",
         "shiyu-ai-web": "6C",

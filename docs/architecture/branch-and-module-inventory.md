@@ -6,7 +6,7 @@
 
 - 当前主分支：`master`，已跟踪 `origin/master`。
 - 当前工作树：以 `git status --short` 为准；本次文档更新提交前会再次确认。
-- Maven reactor：根 POM、29 个叶子模块，共 30 个项目；业务能力通过同一应用的模块开关装配。
+- Maven reactor：根 POM、30 个叶子模块，共 31 个项目；业务能力通过同一应用的模块开关装配，事件 provider 通过可选基础设施模块显式引入。
 - 叶子模块文档：每个模块目录均有 `README.md`。
 
 ## 分支用途与删除建议
@@ -61,6 +61,7 @@
 | 领域契约 | `shiyu-tooling-contract` | [`README.md`](../../modules/domains/tooling/shiyu-tooling-contract/README.md) |
 | 领域实现 | `shiyu-tooling-implementation` | [`README.md`](../../modules/domains/tooling/shiyu-tooling-implementation/README.md) |
 | 基础设施 | `shiyu-common-core` | [`README.md`](../../modules/infrastructure/shiyu-common-core/README.md) |
+| 基础设施 | `shiyu-common-event` | [`README.md`](../../modules/infrastructure/shiyu-common-event/README.md) |
 | 基础设施 | `shiyu-common-mybatis` | [`README.md`](../../modules/infrastructure/shiyu-common-mybatis/README.md) |
 | 基础设施 | `shiyu-common-storage` | [`README.md`](../../modules/infrastructure/shiyu-common-storage/README.md) |
 | 基础设施 | `shiyu-common-thread` | [`README.md`](../../modules/infrastructure/shiyu-common-thread/README.md) |

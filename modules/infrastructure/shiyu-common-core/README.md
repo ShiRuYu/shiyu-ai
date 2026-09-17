@@ -2,16 +2,17 @@
 
 - **模块坐标**：`com.shiyu.ai:shiyu-common-core`
 - **分类**：基础设施模块
-- **源码规模**：生产 Java 75 个，测试 Java 5 个
+- **源码规模**：生产 Java 71 个，测试 Java 2 个
 
 ## 作用
 
-提供异常、分页、响应对象、校验、工具、JDBC 方言、事件总线和基础配置等公共能力。
+提供异常、分页、响应对象、校验、工具、JDBC 方言、模块开关和基础配置等稳定公共能力。
 
 ## 职责
 
-- 提供异常、分页、响应对象、校验、工具、JDBC 方言、事件总线和基础配置等公共能力。
-- 事件 provider 支持进程内、PostgreSQL outbox 和可选 Kafka；Kafka relay 提供重试、死信主题和 inbox 去重。
+- 提供异常、分页、响应对象、校验、工具、JDBC 方言、模块开关和基础配置等公共能力。
+- 事件 provider（进程内、PostgreSQL outbox、Kafka relay、去重）位于可选的 `shiyu-common-event` 模块，不再由 common-core 携带。
+- 日志 API 可随 Spring 基础依赖传递，但日志实现不由 common-core 选择；当前运行应用由 `shiyu-ai-bootstrap` 显式装配 Log4j2。
 - 保持与业务领域解耦，通过稳定接口为多个领域提供横切能力。
 - 避免把具体业务用例、领域实体或领域数据库表放入公共基础设施。
 
@@ -21,7 +22,7 @@
 
 ## 主要包
 
-`com.shiyu.ai.common.core`、`com.shiyu.ai.common.core.api`、`com.shiyu.ai.common.core.config`、`com.shiyu.ai.common.core.domain`、`com.shiyu.ai.common.core.enums`、`com.shiyu.ai.common.core.exception`、`com.shiyu.ai.common.core.factory`、`com.shiyu.ai.common.core.manager` 等（共 13 个包根）
+`com.shiyu.ai.common.core`、`api`、`config`、`database`、`domain`、`exception`、`jdbc`、`module`、`tx`、`utils`、`validate`、`vo` 等（共 22 个 Java 包声明）
 
 ## 内部模块依赖
 
@@ -33,4 +34,4 @@
 
 `mvn --batch-mode --no-transfer-progress -pl modules/infrastructure/shiyu-common-core -am test -Ddependency-check.skip=true`
 
-根目录执行完整构建时，本模块由根 `pom.xml` 纳入 30 个项目的 Maven reactor。
+根目录执行完整构建时，本模块由根 `pom.xml` 纳入 Maven reactor；事件能力需显式依赖 `shiyu-common-event` 才会装配。
