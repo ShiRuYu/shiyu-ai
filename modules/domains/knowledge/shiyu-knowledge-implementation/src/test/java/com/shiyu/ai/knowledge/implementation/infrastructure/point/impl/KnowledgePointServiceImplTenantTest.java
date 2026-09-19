@@ -17,7 +17,7 @@ import com.shiyu.ai.kernel.context.UserId;
 import com.shiyu.ai.knowledge.implementation.application.KnowledgeDocumentRelationService;
 import com.shiyu.ai.knowledge.implementation.application.KnowledgeRelationService;
 import com.shiyu.ai.knowledge.implementation.application.KnowledgeSpaceService;
-import com.shiyu.ai.knowledge.implementation.application.graph.KnowledgeGraph;
+import com.shiyu.ai.knowledge.implementation.application.service.graph.KnowledgeGraph;
 import com.shiyu.ai.knowledge.implementation.domain.model.KnowledgeBO;
 import com.shiyu.ai.knowledge.implementation.domain.port.repository.KnowledgeRepository;
 import com.shiyu.ai.knowledge.implementation.infrastructure.point.KnowledgePointService;

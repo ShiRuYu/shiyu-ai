@@ -9,8 +9,8 @@ import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 import com.shiyu.ai.common.core.api.Result;
-import com.shiyu.ai.common.core.domain.UserContext;
-import com.shiyu.ai.common.core.domain.UserContextHolder;
+import com.shiyu.ai.common.core.context.model.UserContext;
+import com.shiyu.ai.common.core.context.UserContextHolder;
 import com.shiyu.ai.iam.implementation.handler.LoginRateLimiter;
 import com.shiyu.ai.iam.implementation.request.LoginRequest;
 import com.shiyu.ai.iam.implementation.request.RefreshTokenRequest;

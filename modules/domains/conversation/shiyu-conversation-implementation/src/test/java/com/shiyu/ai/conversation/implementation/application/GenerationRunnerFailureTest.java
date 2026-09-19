@@ -8,7 +8,6 @@ import com.shiyu.ai.agent.contract.runtime.AiRuntimePort;
 import com.shiyu.ai.conversation.contract.api.*;
 import com.shiyu.ai.conversation.contract.api.GenerationAdmission;
 import com.shiyu.ai.conversation.contract.model.*;
-import com.shiyu.ai.conversation.implementation.domain.chat.*;
 import com.shiyu.ai.conversation.implementation.domain.model.*;
 import com.shiyu.ai.conversation.implementation.domain.port.*;
 import com.shiyu.ai.conversation.implementation.domain.port.ConversationRepository;

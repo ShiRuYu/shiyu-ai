@@ -1,5 +1,9 @@
 package com.shiyu.ai.knowledge.implementation.application.graph;
 
+import com.shiyu.ai.knowledge.implementation.application.service.graph.KnowledgeGraph;
+
+import com.shiyu.ai.knowledge.implementation.application.port.graph.GraphStore;
+
 import static org.mockito.ArgumentMatchers.*;
 import static org.mockito.Mockito.*;
 

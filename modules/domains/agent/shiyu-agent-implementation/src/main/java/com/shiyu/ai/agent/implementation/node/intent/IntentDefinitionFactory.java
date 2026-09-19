@@ -1,5 +1,7 @@
 package com.shiyu.ai.agent.implementation.node.intent;
 
+import com.shiyu.ai.agent.implementation.startup.IntentDefApplicationRunner;
+
 import com.google.common.collect.HashBasedTable;
 import com.google.common.collect.Table;
 import com.shiyu.ai.agent.contract.node.*;

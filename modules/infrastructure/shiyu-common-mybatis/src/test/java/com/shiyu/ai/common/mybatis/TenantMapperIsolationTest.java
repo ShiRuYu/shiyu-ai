@@ -8,7 +8,7 @@ import com.mybatisflex.core.FlexGlobalConfig;
 import com.mybatisflex.core.mybatis.FlexConfiguration;
 import com.mybatisflex.core.mybatis.FlexSqlSessionFactoryBuilder;
 import com.mybatisflex.core.tenant.TenantManager;
-import com.shiyu.ai.common.mybatis.config.ContextTenantFactory;
+import com.shiyu.ai.common.mybatis.tenant.ContextTenantFactory;
 import com.shiyu.ai.common.mybatis.config.MybatisConfig;
 import com.shiyu.ai.kernel.context.TenantId;
 import com.shiyu.ai.kernel.context.TenantScope;

@@ -1,5 +1,7 @@
 package com.shiyu.ai.knowledge.implementation.application.graph;
 
+import com.shiyu.ai.knowledge.implementation.infrastructure.graph.MemoryGraphStore;
+
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.*;
 import static org.mockito.Mockito.*;

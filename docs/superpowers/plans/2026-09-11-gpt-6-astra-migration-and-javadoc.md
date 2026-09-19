@@ -64,7 +64,7 @@
 ### Task 4: 接入路由、模型目录和数据库基线
 
 **Files:**
-- Modify: `modules/domains/model/shiyu-model-implementation/src/main/java/com/shiyu/ai/model/implementation/infrastructure/gateway/ModelRouter.java`
+- Modify: `modules/domains/model/shiyu-model-implementation/src/main/java/com/shiyu/ai/model/implementation/infrastructure/gateway/service/ModelRouter.java`
 - Modify: `modules/domains/model/shiyu-model-implementation/src/main/resources/db/baseline/h2/seed/model/03_model.sql`
 - Modify: `modules/domains/model/shiyu-model-implementation/src/main/resources/db/baseline/h2/schema/model/04_model.sql` only if a schema field is proven necessary
 - Modify: model management DTO/controller and `shiyu-ui/apps/web-naive/src/features/model/pages/platform/modules/form.vue` only for new explicit transport/reasoning fields

@@ -5,11 +5,11 @@ import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.*;
 
 import com.shiyu.ai.model.contract.model.*;
-import com.shiyu.ai.model.implementation.infrastructure.adapter.ModelManager;
+import com.shiyu.ai.model.implementation.infrastructure.service.ModelManager;
 import com.shiyu.ai.model.implementation.infrastructure.adapter.impl.DeepSeekHttpProvider;
 import com.shiyu.ai.model.implementation.infrastructure.chat.impl.ChatEngineImpl;
-import com.shiyu.ai.model.implementation.infrastructure.gateway.ModelRoutePolicy;
-import com.shiyu.ai.model.implementation.infrastructure.gateway.ModelRouter;
+import com.shiyu.ai.model.implementation.infrastructure.gateway.model.ModelRoutePolicy;
+import com.shiyu.ai.model.implementation.infrastructure.gateway.service.ModelRouter;
 
 import dev.langchain4j.data.message.AiMessage;
 import dev.langchain4j.model.chat.ChatModel;

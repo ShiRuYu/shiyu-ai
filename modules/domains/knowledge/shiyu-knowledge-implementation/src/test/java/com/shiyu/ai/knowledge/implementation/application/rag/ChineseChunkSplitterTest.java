@@ -1,5 +1,9 @@
 package com.shiyu.ai.knowledge.implementation.application.rag;
 
+import com.shiyu.ai.knowledge.implementation.application.port.rag.ChunkSplitter;
+
+import com.shiyu.ai.knowledge.implementation.infrastructure.rag.ChineseChunkSplitter;
+
 import static org.junit.jupiter.api.Assertions.*;
 
 import org.junit.jupiter.api.Test;

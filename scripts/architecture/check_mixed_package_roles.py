@@ -66,6 +66,21 @@ class PackageReport:
     files: tuple[Path, ...]
 
     @property
+    def misplaced_types(self) -> tuple[str, ...]:
+        """配置包不能借助包白名单容纳存储实现或启动任务。"""
+        if self.package.rsplit(".", 1)[-1] != "config":
+            return ()
+        misplaced = []
+        for path in self.files:
+            if "/src/test/" in path.as_posix():
+                continue
+            code = strip_comments(path.read_text(encoding="utf-8"))
+            if (path.stem.endswith(("DaoImpl", "RepositoryImpl")) or
+                    re.search(r"\bimplements\s+[^\{]*(?:ApplicationRunner|CommandLineRunner|TenantFactory)\b", code)):
+                misplaced.append(path.name)
+        return tuple(misplaced)
+
+    @property
     def conflicts(self) -> tuple[tuple[str, str], ...]:
         pairs: list[tuple[str, str]] = []
         ordered = [role for role in ROLE_ORDER if role in self.roles]
@@ -79,6 +94,8 @@ class PackageReport:
     def mixed_level(self) -> str:
         """返回适合迁移排序的混合等级。"""
 
+        if self.misplaced_types:
+            return "P1"
         if not self.conflicts:
             return "clean" if len(self.roles) <= 1 else "intentional-aggregation"
         conflict_sets = {frozenset(pair) for pair in self.conflicts}
@@ -88,6 +105,8 @@ class PackageReport:
     def migration_suggestion(self) -> str:
         """给出职责拆分或保留聚合的下一步建议。"""
 
+        if self.misplaced_types:
+            return "将存储实现或启动任务移出配置包"
         if not self.roles:
             return "未识别生产职责，人工审计"
         if not self.conflicts:
@@ -128,6 +147,15 @@ def classify_source(text: str, filename: str = "") -> set[str]:
         roles.add("handler/listener")
     if re.search(r"@Service\b", code):
         roles.add("service")
+    # 没有 Spring 注解的具体服务/仓储仍有实现职责；接口继续归为端口。
+    concrete_names = re.findall(r"\bclass\s+([A-Za-z_$][\w$]*)", code)
+    if (any(name.endswith(("Service", "ServiceImpl")) for name in concrete_names)
+            and not re.search(r"\bextends\s+AbstractExecutorService\b", code)):
+        roles.add("service")
+    if any(name.endswith(("RepositoryImpl", "DaoImpl")) or
+           (name.startswith("InMemory") and name.endswith("Repository"))
+           for name in concrete_names):
+        roles.add("persistence")
     if re.search(r"\binterface\s+[A-Za-z_$][\w$]*", code):
         roles.add("port/interface")
     if re.search(r"\brecord\s+[A-Za-z_$][\w$]*", code) or re.search(
@@ -139,7 +167,7 @@ def classify_source(text: str, filename: str = "") -> set[str]:
     # Provider 接口属于端口；只有具体 Provider 实现才是 adapter。
     # 这样不会把 VectorStoreProvider、ChatProvider 等契约接口误报为适配器。
     has_interface = bool(re.search(r"\binterface\s+[A-Za-z_$][\w$]*", code))
-    if any(name.endswith("Adapter") for name in names) or (
+    if any(name.endswith("Adapter") for name in concrete_names) or (
         any(name.endswith("Provider") for name in names) and not has_interface
     ):
         roles.add("adapter")
@@ -199,7 +227,8 @@ def find_violations(paths: list[Path], allowlist: set[str] | None = None) -> lis
     """返回存在明确职责冲突且不在 allowlist 中的包。"""
 
     allowed = allowlist or set()
-    return [report for report in scan_paths(paths) if report.package not in allowed and report.conflicts]
+    return [report for report in scan_paths(paths)
+            if report.misplaced_types or (report.package not in allowed and report.conflicts)]
 
 
 def read_allowlist(path: Path) -> set[str]:
@@ -229,6 +258,7 @@ def render_report(
         lines.append(
             f"{report.package} | roles={roles or 'unknown'} | level={report.mixed_level}"
             f" | conflicts={conflicts or 'none'} | status={status}"
+            f" | misplaced={','.join(report.misplaced_types) or 'none'}"
             f" | suggestion={report.migration_suggestion} | files={len(report.files)}"
         )
         if include_files:
@@ -251,7 +281,8 @@ def main() -> int:
     if args.allowlist_file:
         allowlist.update(read_allowlist(args.allowlist_file))
     all_reports = scan_paths([Path(path) for path in args.paths])
-    reports = [report for report in all_reports if report.package not in allowlist and report.conflicts]
+    reports = [report for report in all_reports
+               if report.misplaced_types or (report.package not in allowlist and report.conflicts)]
     if args.report:
         print(render_report(all_reports, allowlist))
     elif reports:

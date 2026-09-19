@@ -1,6 +1,6 @@
 package com.shiyu.ai.knowledge.implementation.infrastructure.task;
 
-import com.shiyu.ai.knowledge.implementation.application.document.DocumentParser.ParseResult;
+import com.shiyu.ai.knowledge.implementation.application.port.document.DocumentParser.ParseResult;
 
 import com.shiyu.ai.common.storage.api.*;
 import com.shiyu.ai.common.storage.backup.*;
@@ -15,8 +15,8 @@ import com.shiyu.ai.kernel.context.ActorContext;
 import com.shiyu.ai.kernel.context.TenantId;
 import com.shiyu.ai.kernel.context.TenantScope;
 import com.shiyu.ai.kernel.context.UserId;
-import com.shiyu.ai.knowledge.implementation.application.document.DocumentParser;
-import com.shiyu.ai.knowledge.implementation.application.rag.DocumentIngestionService;
+import com.shiyu.ai.knowledge.implementation.application.port.document.DocumentParser;
+import com.shiyu.ai.knowledge.implementation.application.service.rag.DocumentIngestionService;
 import com.shiyu.ai.knowledge.implementation.domain.model.KnowledgeDocumentBO;
 import com.shiyu.ai.knowledge.implementation.domain.model.KnowledgeDocumentVersionBO;
 import com.shiyu.ai.knowledge.implementation.domain.model.KnowledgeIngestionJobBO;

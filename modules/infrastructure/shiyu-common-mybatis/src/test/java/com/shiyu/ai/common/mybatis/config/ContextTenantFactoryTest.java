@@ -1,5 +1,7 @@
 package com.shiyu.ai.common.mybatis.config;
 
+import com.shiyu.ai.common.mybatis.tenant.ContextTenantFactory;
+
 import static org.junit.jupiter.api.Assertions.assertArrayEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 

@@ -1,7 +1,7 @@
 package com.shiyu.ai.composition.config;
 
 import com.shiyu.ai.common.mybatis.config.AgentDataSourceConfiguration;
-import com.shiyu.ai.common.mybatis.config.ContextTenantFactory;
+import com.shiyu.ai.common.mybatis.tenant.ContextTenantFactory;
 import com.shiyu.ai.common.mybatis.config.DatabaseInfrastructureConfiguration;
 import com.shiyu.ai.common.mybatis.config.TenantFlexConfig;
 import org.springframework.boot.autoconfigure.AutoConfiguration;

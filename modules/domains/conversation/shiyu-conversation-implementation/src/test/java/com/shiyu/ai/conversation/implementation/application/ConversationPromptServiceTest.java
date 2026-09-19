@@ -5,7 +5,6 @@ import static org.junit.jupiter.api.Assertions.*;
 import com.shiyu.ai.agent.contract.runtime.*;
 import com.shiyu.ai.conversation.contract.api.*;
 import com.shiyu.ai.conversation.contract.model.*;
-import com.shiyu.ai.conversation.implementation.domain.chat.*;
 import com.shiyu.ai.conversation.implementation.domain.model.*;
 import com.shiyu.ai.conversation.implementation.domain.port.*;
 import com.shiyu.ai.kernel.context.TenantId;

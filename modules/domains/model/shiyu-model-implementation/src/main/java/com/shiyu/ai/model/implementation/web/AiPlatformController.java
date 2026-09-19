@@ -8,7 +8,7 @@ import com.shiyu.ai.common.core.enums.BizResultCode;
 import com.shiyu.ai.common.core.vo.IdNameOptionVO;
 import com.shiyu.ai.common.web.auth.ActorContextHttpAdapter;
 import com.shiyu.ai.model.implementation.application.service.AiPlatformService;
-import com.shiyu.ai.model.implementation.infrastructure.adapter.ModelManager;
+import com.shiyu.ai.model.implementation.infrastructure.service.ModelManager;
 import com.shiyu.ai.model.implementation.web.request.AiPlatformRequest;
 import com.shiyu.ai.model.implementation.web.response.AiPlatformResponse;
 import com.shiyu.ai.model.implementation.web.response.AiPlatformVO;

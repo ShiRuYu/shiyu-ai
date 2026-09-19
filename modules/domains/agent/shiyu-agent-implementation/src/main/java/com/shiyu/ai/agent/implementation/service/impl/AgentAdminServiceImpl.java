@@ -1,7 +1,7 @@
 package com.shiyu.ai.agent.implementation.service.impl;
 
 import com.shiyu.ai.agent.contract.node.NodeType;
-import com.shiyu.ai.agent.implementation.config.DataSourceApiConstants;
+import com.shiyu.ai.agent.implementation.web.api.DataSourceApiConstants;
 import com.shiyu.ai.agent.implementation.domain.model.AgentDefBO;
 import com.shiyu.ai.agent.implementation.domain.model.AgentVersionBO;
 import com.shiyu.ai.agent.implementation.port.repository.AgentAdminRepository;

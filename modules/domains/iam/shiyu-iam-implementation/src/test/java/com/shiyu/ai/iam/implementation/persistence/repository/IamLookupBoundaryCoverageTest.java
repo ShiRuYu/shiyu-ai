@@ -9,7 +9,7 @@ import com.shiyu.ai.iam.implementation.persistence.mapper.UserMapper;
 import com.shiyu.ai.iam.implementation.persistence.mapper.UserScopeRoleMapper;
 import com.shiyu.ai.iam.implementation.port.repository.AuthUserLookupRepository;
 import com.shiyu.ai.iam.implementation.port.repository.TenantRepository;
-import com.shiyu.ai.iam.implementation.service.AuthContextService;
+import com.shiyu.ai.iam.implementation.application.service.AuthContextService;
 import com.shiyu.ai.kernel.context.TenantId;
 
 import org.junit.jupiter.api.Test;

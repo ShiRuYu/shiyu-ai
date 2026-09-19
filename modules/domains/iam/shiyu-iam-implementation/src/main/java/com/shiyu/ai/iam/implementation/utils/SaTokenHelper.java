@@ -2,8 +2,8 @@ package com.shiyu.ai.iam.implementation.utils;
 
 import cn.dev33.satoken.stp.StpUtil;
 
-import com.shiyu.ai.common.core.domain.LoginHelper;
-import com.shiyu.ai.common.core.domain.UserContext;
+import com.shiyu.ai.common.core.auth.LoginHelper;
+import com.shiyu.ai.common.core.context.model.UserContext;
 
 import lombok.extern.slf4j.Slf4j;
 

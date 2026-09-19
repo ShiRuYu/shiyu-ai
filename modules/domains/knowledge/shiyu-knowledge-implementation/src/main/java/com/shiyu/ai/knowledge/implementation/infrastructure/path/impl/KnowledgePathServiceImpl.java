@@ -7,7 +7,7 @@ import com.shiyu.ai.common.core.exception.ServiceException;
 import com.shiyu.ai.kernel.context.ActorContext;
 import com.shiyu.ai.knowledge.contract.api.KnowledgePathPort;
 import com.shiyu.ai.knowledge.implementation.application.KnowledgeSpaceService;
-import com.shiyu.ai.knowledge.implementation.application.graph.KnowledgeGraph;
+import com.shiyu.ai.knowledge.implementation.application.service.graph.KnowledgeGraph;
 import com.shiyu.ai.knowledge.implementation.domain.port.repository.KnowledgeRepository;
 import com.shiyu.ai.knowledge.implementation.infrastructure.path.KnowledgePathService;
 

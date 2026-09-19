@@ -1,7 +1,7 @@
 package com.shiyu.ai.iam.implementation.web;
 
 import com.shiyu.ai.common.core.api.Result;
-import com.shiyu.ai.common.core.domain.UserContext;
+import com.shiyu.ai.common.core.context.model.UserContext;
 import com.shiyu.ai.common.core.enums.BizResultCode;
 import com.shiyu.ai.common.web.auth.ActorContextHttpAdapter;
 import com.shiyu.ai.iam.implementation.handler.LoginRateLimiter;

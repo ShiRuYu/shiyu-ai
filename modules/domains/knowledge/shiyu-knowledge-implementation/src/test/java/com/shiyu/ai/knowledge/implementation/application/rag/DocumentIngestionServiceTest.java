@@ -1,5 +1,7 @@
 package com.shiyu.ai.knowledge.implementation.application.rag;
 
+import com.shiyu.ai.knowledge.implementation.application.service.rag.DocumentIngestionService;
+
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.Mockito.*;
 

@@ -1,5 +1,9 @@
 package com.shiyu.ai.model.implementation.infrastructure.media;
 
+import com.shiyu.ai.model.implementation.infrastructure.media.port.MediaProvider;
+
+import com.shiyu.ai.model.implementation.infrastructure.media.service.MediaProviderRegistry;
+
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 

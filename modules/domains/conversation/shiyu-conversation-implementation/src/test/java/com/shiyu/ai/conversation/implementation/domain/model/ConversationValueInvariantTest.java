@@ -6,7 +6,6 @@ import com.shiyu.ai.conversation.contract.api.*;
 import com.shiyu.ai.conversation.contract.model.*;
 import com.shiyu.ai.conversation.implementation.application.*;
 import com.shiyu.ai.conversation.implementation.application.PromptSafety;
-import com.shiyu.ai.conversation.implementation.domain.chat.*;
 import com.shiyu.ai.conversation.implementation.domain.port.*;
 
 import org.junit.jupiter.api.Test;

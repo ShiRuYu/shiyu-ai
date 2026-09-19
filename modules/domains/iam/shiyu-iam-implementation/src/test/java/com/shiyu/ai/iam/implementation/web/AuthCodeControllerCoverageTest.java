@@ -4,8 +4,8 @@ import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.*;
 import static org.mockito.Mockito.*;
 
-import com.shiyu.ai.common.core.domain.UserContext;
-import com.shiyu.ai.common.core.domain.UserContextHolder;
+import com.shiyu.ai.common.core.context.model.UserContext;
+import com.shiyu.ai.common.core.context.UserContextHolder;
 import com.shiyu.ai.iam.implementation.api.request.AuthCodeRequest;
 import com.shiyu.ai.iam.implementation.request.AuthCodePageRequest;
 import com.shiyu.ai.iam.implementation.service.AuthCodeService;

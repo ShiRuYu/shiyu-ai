@@ -123,7 +123,7 @@ def scan(paths: list[Path], bypass_allowlist: set[str] | None = None) -> tuple[l
         )
         if defines_factory or registers_factory:
             permitted = (
-                (not defines_factory or normalized_path.endswith(infrastructure + "config/ContextTenantFactory.java"))
+                (not defines_factory or normalized_path.endswith(infrastructure + "tenant/ContextTenantFactory.java"))
                 and (not registers_factory or normalized_path.endswith(infrastructure + "config/TenantFlexConfig.java"))
             )
             if not permitted:

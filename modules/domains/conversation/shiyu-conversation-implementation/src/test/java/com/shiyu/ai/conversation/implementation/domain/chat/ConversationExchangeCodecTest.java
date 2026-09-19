@@ -1,5 +1,11 @@
 package com.shiyu.ai.conversation.implementation.domain.chat;
 
+import com.shiyu.ai.conversation.implementation.domain.chat.model.CharacterCardV2;
+
+import com.shiyu.ai.conversation.implementation.domain.chat.codec.CharacterCardCodec;
+
+import com.shiyu.ai.conversation.implementation.domain.chat.codec.ConversationExchangeCodec;
+
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 

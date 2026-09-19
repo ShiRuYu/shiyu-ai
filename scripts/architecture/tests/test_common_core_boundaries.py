@@ -48,7 +48,7 @@ class CommonCoreBoundaryTest(unittest.TestCase):
     def test_state_properties_use_lombok_accessors(self):
         paths = [
             EVENT_MODULE
-            / "src/main/java/com/shiyu/ai/common/core/event/EventInfrastructureProperties.java",
+            / "src/main/java/com/shiyu/ai/common/event/config/EventInfrastructureProperties.java",
             ROOT
             / "modules/infrastructure/shiyu-common-storage/src/main/java/com/shiyu/ai/common/storage/config/StorageMigrationProperties.java",
             ROOT
@@ -88,20 +88,26 @@ class CommonCoreBoundaryTest(unittest.TestCase):
     def test_event_module_contains_event_sources_and_is_reactor_module(self):
         root_pom = (ROOT / "pom.xml").read_text(encoding="utf-8")
         event_pom = EVENT_MODULE / "pom.xml"
-        event_source = EVENT_MODULE / "src/main/java/com/shiyu/ai/common/core/event"
+        event_source = EVENT_MODULE / "src/main/java/com/shiyu/ai/common/event"
 
         self.assertIn(
             "<module>modules/infrastructure/shiyu-common-event</module>", root_pom
         )
         self.assertTrue(event_pom.is_file())
         self.assertTrue(event_source.is_dir())
-        self.assertGreaterEqual(len(list(event_source.glob("*.java"))), 8)
+        self.assertGreaterEqual(len(list(event_source.rglob("*.java"))), 8)
 
         event_imports = "\n".join(
             path.read_text(encoding="utf-8")
-            for path in event_source.glob("*.java")
+            for path in event_source.rglob("*.java")
         )
         self.assertNotIn("BusinessModuleProperties", event_imports)
+
+        imports = EVENT_MODULE / "src/main/resources/META-INF/spring/org.springframework.boot.autoconfigure.AutoConfiguration.imports"
+        for name in imports.read_text(encoding="utf-8").splitlines():
+            if name.strip() and not name.startswith("#"):
+                source = EVENT_MODULE / "src/main/java" / (name.replace(".", "/") + ".java")
+                self.assertTrue(source.is_file(), f"Auto configuration source missing: {name}")
 
     def test_education_module_metadata_describes_toggle(self):
         metadata = (

@@ -23,7 +23,7 @@ class ContextBoundaryArchitectureTest {
                             "com.shiyu.ai..implementation.domain..")
                     .should()
                     .dependOnClassesThat()
-                    .haveFullyQualifiedName("com.shiyu.ai.common.core.domain.UserContextHolder")
+                    .haveFullyQualifiedName("com.shiyu.ai.common.core.context.UserContextHolder")
                     .because("ActorContext must enter through an explicit application boundary");
 
     @ArchTest
@@ -47,7 +47,7 @@ class ContextBoundaryArchitectureTest {
                     .resideInAPackage("com.shiyu.ai.knowledge..")
                     .should()
                     .dependOnClassesThat()
-                    .haveFullyQualifiedName("com.shiyu.ai.common.core.domain.UserContextHolder")
+                    .haveFullyQualifiedName("com.shiyu.ai.common.core.context.UserContextHolder")
                     .because("knowledge application services must receive ActorContext explicitly");
 
     @ArchTest
@@ -70,7 +70,7 @@ class ContextBoundaryArchitectureTest {
                             "com.shiyu.ai..implementation.web..")
                     .should()
                     .dependOnClassesThat()
-                    .haveFullyQualifiedName("com.shiyu.ai.common.core.domain.UserContextHolder")
+                    .haveFullyQualifiedName("com.shiyu.ai.common.core.context.UserContextHolder")
                     .because(
                             "only the HTTP authentication adapter may translate thread context into"
                                     + " ActorContext");

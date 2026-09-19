@@ -1,8 +1,27 @@
 package com.shiyu.ai.conversation.implementation.infrastructure.persistence.repository;
 
+import com.shiyu.ai.conversation.implementation.domain.chat.model.LorebookEntry;
+
+import com.shiyu.ai.conversation.implementation.domain.chat.model.PromptTemplateVersion;
+
+import com.shiyu.ai.conversation.implementation.domain.chat.model.CharacterCardV2;
+
+import com.shiyu.ai.conversation.implementation.domain.chat.model.Persona;
+
+import com.shiyu.ai.conversation.implementation.domain.chat.model.GroupChatAsset;
+
+import com.shiyu.ai.conversation.implementation.domain.chat.model.GroupChat;
+
+import com.shiyu.ai.conversation.implementation.domain.chat.model.LorebookAsset;
+
+import com.shiyu.ai.conversation.implementation.domain.chat.model.SpeakerPolicy;
+
+import com.shiyu.ai.conversation.implementation.domain.chat.model.CharacterAsset;
+
+import com.shiyu.ai.conversation.implementation.domain.chat.model.PersonaAsset;
+
 import com.shiyu.ai.common.core.jdbc.JdbcDialect;
 import com.shiyu.ai.common.core.utils.JSONUtils;
-import com.shiyu.ai.conversation.implementation.domain.chat.*;
 import com.shiyu.ai.conversation.implementation.domain.port.ChatProductRepository;
 import com.shiyu.ai.kernel.context.TenantId;
 import com.shiyu.ai.kernel.context.TenantScope;

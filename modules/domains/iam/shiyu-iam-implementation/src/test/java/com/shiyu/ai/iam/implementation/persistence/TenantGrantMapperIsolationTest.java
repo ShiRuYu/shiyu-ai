@@ -9,7 +9,7 @@ import com.mybatisflex.core.mybatis.FlexConfiguration;
 import com.mybatisflex.core.mybatis.FlexSqlSessionFactoryBuilder;
 import com.mybatisflex.core.query.QueryWrapper;
 import com.mybatisflex.core.tenant.TenantManager;
-import com.shiyu.ai.common.mybatis.config.ContextTenantFactory;
+import com.shiyu.ai.common.mybatis.tenant.ContextTenantFactory;
 import com.shiyu.ai.common.mybatis.config.MybatisConfig;
 import com.shiyu.ai.iam.implementation.persistence.dataobject.TenantMenuDO;
 import com.shiyu.ai.iam.implementation.persistence.dataobject.TenantAuthCodeDO;

@@ -7,10 +7,10 @@ import com.shiyu.ai.model.contract.model.ChatMessage;
 import com.shiyu.ai.model.contract.model.ChatRequest;
 import com.shiyu.ai.model.contract.model.ChatResponse;
 import com.shiyu.ai.model.implementation.domain.event.ModelCallEvent;
-import com.shiyu.ai.model.implementation.infrastructure.adapter.ModelManager;
-import com.shiyu.ai.model.implementation.infrastructure.gateway.ModelProviderCapabilities;
-import com.shiyu.ai.model.implementation.infrastructure.gateway.ModelRoutePolicy;
-import com.shiyu.ai.model.implementation.infrastructure.gateway.ModelRouter;
+import com.shiyu.ai.model.implementation.infrastructure.service.ModelManager;
+import com.shiyu.ai.model.implementation.infrastructure.gateway.model.ModelProviderCapabilities;
+import com.shiyu.ai.model.implementation.infrastructure.gateway.model.ModelRoutePolicy;
+import com.shiyu.ai.model.implementation.infrastructure.gateway.service.ModelRouter;
 
 import dev.langchain4j.agent.tool.ToolExecutionRequest;
 import dev.langchain4j.agent.tool.ToolSpecification;

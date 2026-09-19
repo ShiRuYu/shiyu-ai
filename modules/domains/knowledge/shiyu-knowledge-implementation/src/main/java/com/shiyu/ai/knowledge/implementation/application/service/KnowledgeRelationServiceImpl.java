@@ -9,7 +9,7 @@ import com.shiyu.ai.knowledge.contract.api.KnowledgeRelationPort;
 import com.shiyu.ai.knowledge.contract.model.KnowledgeResponse;
 import com.shiyu.ai.knowledge.implementation.application.KnowledgeRelationService;
 import com.shiyu.ai.knowledge.implementation.application.KnowledgeSpaceService;
-import com.shiyu.ai.knowledge.implementation.application.graph.KnowledgeGraph;
+import com.shiyu.ai.knowledge.implementation.application.service.graph.KnowledgeGraph;
 import com.shiyu.ai.knowledge.implementation.domain.RelationType;
 import com.shiyu.ai.knowledge.implementation.domain.model.KnowledgeBO;
 import com.shiyu.ai.knowledge.implementation.domain.model.KnowledgeRelationBO;

@@ -5,8 +5,7 @@ import static org.junit.jupiter.api.Assertions.*;
 import com.shiyu.ai.conversation.contract.api.*;
 import com.shiyu.ai.conversation.contract.model.*;
 import com.shiyu.ai.conversation.implementation.application.*;
-import com.shiyu.ai.conversation.implementation.domain.chat.*;
-import com.shiyu.ai.conversation.implementation.domain.chat.PromptTemplateVersion;
+import com.shiyu.ai.conversation.implementation.domain.chat.model.PromptTemplateVersion;
 import com.shiyu.ai.conversation.implementation.domain.port.*;
 
 import org.junit.jupiter.api.Test;

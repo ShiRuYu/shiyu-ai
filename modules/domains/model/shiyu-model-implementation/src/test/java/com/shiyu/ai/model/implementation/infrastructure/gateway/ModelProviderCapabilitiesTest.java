@@ -1,5 +1,7 @@
 package com.shiyu.ai.model.implementation.infrastructure.gateway;
 
+import com.shiyu.ai.model.implementation.infrastructure.gateway.model.ModelProviderCapabilities;
+
 import static org.junit.jupiter.api.Assertions.*;
 
 import org.junit.jupiter.api.Test;

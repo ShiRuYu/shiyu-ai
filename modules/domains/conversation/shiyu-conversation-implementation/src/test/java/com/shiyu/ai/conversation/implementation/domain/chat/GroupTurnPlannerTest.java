@@ -1,5 +1,11 @@
 package com.shiyu.ai.conversation.implementation.domain.chat;
 
+import com.shiyu.ai.conversation.implementation.domain.chat.model.GroupChat;
+
+import com.shiyu.ai.conversation.implementation.domain.chat.model.SpeakerPolicy;
+
+import com.shiyu.ai.conversation.implementation.domain.chat.service.GroupTurnPlanner;
+
 import static org.junit.jupiter.api.Assertions.*;
 
 import com.shiyu.ai.conversation.contract.api.*;

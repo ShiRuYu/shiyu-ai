@@ -1,6 +1,6 @@
 package com.shiyu.ai.conversation.implementation.web.support.imports;
 
-import com.shiyu.ai.conversation.implementation.domain.chat.ConversationExchangeCodec;
+import com.shiyu.ai.conversation.implementation.domain.chat.codec.ConversationExchangeCodec;
 import com.shiyu.ai.kernel.context.TenantId;
 
 import org.springframework.stereotype.Component;

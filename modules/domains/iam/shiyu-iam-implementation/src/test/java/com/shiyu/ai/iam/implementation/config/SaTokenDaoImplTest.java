@@ -1,5 +1,7 @@
 package com.shiyu.ai.iam.implementation.config;
 
+import com.shiyu.ai.iam.implementation.infrastructure.auth.SaTokenDaoImpl;
+
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.*;
 

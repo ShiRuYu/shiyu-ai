@@ -1,5 +1,7 @@
 package com.shiyu.ai.conversation.implementation.web.controller;
 
+import com.shiyu.ai.conversation.implementation.domain.chat.codec.ConversationExchangeCodec;
+
 import com.shiyu.ai.agent.contract.runtime.ContextItem;
 import com.shiyu.ai.common.core.api.Result;
 import com.shiyu.ai.common.core.utils.JSONUtils;
@@ -555,13 +557,13 @@ public class ConversationController {
             return org.springframework.http.ResponseEntity.ok()
                     .contentType(MediaType.TEXT_PLAIN)
                     .body(
-                            com.shiyu.ai.conversation.implementation.domain.chat
+                            com.shiyu.ai.conversation.implementation.domain.chat.codec
                                     .ConversationExchangeCodec.toJsonl(messages));
         if ("markdown".equalsIgnoreCase(format) || "md".equalsIgnoreCase(format))
             return org.springframework.http.ResponseEntity.ok()
                     .contentType(MediaType.TEXT_MARKDOWN)
                     .body(
-                            com.shiyu.ai.conversation.implementation.domain.chat
+                            com.shiyu.ai.conversation.implementation.domain.chat.codec
                                     .ConversationExchangeCodec.toMarkdown(messages));
         return Result.success(messages);
     }
@@ -580,7 +582,7 @@ public class ConversationController {
    public Result<Conversation> importConversation(@RequestBody ImportRequest request) {
        validateImportPayload(request);
         List<
-                        com.shiyu.ai.conversation.implementation.domain.chat
+                        com.shiyu.ai.conversation.implementation.domain.chat.codec
                                 .ConversationExchangeCodec.ImportedMessage>
                 imported =
                         importPreviews.consume(
@@ -634,13 +636,13 @@ public class ConversationController {
                         ? "jsonl"
                         : request.format.toLowerCase(java.util.Locale.ROOT);
         List<
-                        com.shiyu.ai.conversation.implementation.domain.chat
+                        com.shiyu.ai.conversation.implementation.domain.chat.codec
                                 .ConversationExchangeCodec.ImportedMessage>
                 imported =
                         "markdown".equals(format) || "md".equals(format)
-                                ? com.shiyu.ai.conversation.implementation.domain.chat
+                                ? com.shiyu.ai.conversation.implementation.domain.chat.codec
                                         .ConversationExchangeCodec.fromMarkdown(request.content)
-                                : com.shiyu.ai.conversation.implementation.domain.chat
+                                : com.shiyu.ai.conversation.implementation.domain.chat.codec
                                         .ConversationExchangeCodec.fromJsonl(request.content);
         if (imported.size() > 10_000)
             throw new IllegalArgumentException("import contains too many messages");

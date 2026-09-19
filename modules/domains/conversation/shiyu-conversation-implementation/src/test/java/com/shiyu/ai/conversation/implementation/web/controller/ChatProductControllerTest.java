@@ -1,17 +1,38 @@
 package com.shiyu.ai.conversation.implementation.web.controller;
 
+import com.shiyu.ai.conversation.implementation.domain.chat.model.LorebookEntry;
+
+import com.shiyu.ai.conversation.implementation.domain.chat.model.PromptTemplateVersion;
+
+import com.shiyu.ai.conversation.implementation.domain.chat.model.CharacterCardV2;
+
+import com.shiyu.ai.conversation.implementation.domain.chat.model.Persona;
+
+import com.shiyu.ai.conversation.implementation.domain.chat.model.GroupChatAsset;
+
+import com.shiyu.ai.conversation.implementation.domain.chat.model.GroupChat;
+
+import com.shiyu.ai.conversation.implementation.domain.chat.codec.CharacterCardCodec;
+
+import com.shiyu.ai.conversation.implementation.domain.chat.model.LorebookAsset;
+
+import com.shiyu.ai.conversation.implementation.domain.chat.model.SpeakerPolicy;
+
+import com.shiyu.ai.conversation.implementation.domain.chat.model.CharacterAsset;
+
+import com.shiyu.ai.conversation.implementation.domain.chat.model.PersonaAsset;
+
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.*;
 import static org.mockito.Mockito.*;
 
-import com.shiyu.ai.common.core.domain.UserContext;
-import com.shiyu.ai.common.core.domain.UserContextHolder;
+import com.shiyu.ai.common.core.context.model.UserContext;
+import com.shiyu.ai.common.core.context.UserContextHolder;
 import com.shiyu.ai.conversation.contract.api.*;
 import com.shiyu.ai.conversation.contract.model.*;
 import com.shiyu.ai.conversation.implementation.application.*;
 import com.shiyu.ai.conversation.implementation.application.ConversationService;
 import com.shiyu.ai.conversation.implementation.application.GenerationRunner;
-import com.shiyu.ai.conversation.implementation.domain.chat.*;
 import com.shiyu.ai.conversation.implementation.domain.model.*;
 import com.shiyu.ai.conversation.implementation.domain.port.*;
 import com.shiyu.ai.conversation.implementation.domain.port.ConversationRepository;

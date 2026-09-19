@@ -1,5 +1,9 @@
 package com.shiyu.ai.model.implementation.infrastructure.adapter;
 
+import com.shiyu.ai.model.implementation.infrastructure.port.ModelAdapter;
+
+import com.shiyu.ai.model.implementation.infrastructure.service.ModelManager;
+
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.*;
 import static org.mockito.Mockito.*;

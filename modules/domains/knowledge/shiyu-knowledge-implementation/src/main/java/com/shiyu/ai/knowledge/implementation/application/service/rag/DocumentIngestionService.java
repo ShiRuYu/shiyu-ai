@@ -1,0 +1,172 @@
+package com.shiyu.ai.knowledge.implementation.application.service.rag;
+
+import com.shiyu.ai.knowledge.implementation.application.port.rag.ChunkSplitter;
+
+import com.shiyu.ai.knowledge.implementation.infrastructure.rag.ChineseChunkSplitter;
+
+import com.shiyu.ai.common.core.utils.JSONUtils;
+import com.shiyu.ai.kernel.context.ActorContext;
+import com.shiyu.ai.kernel.context.TenantId;
+import com.shiyu.ai.knowledge.implementation.application.port.document.DocumentParser;
+import com.shiyu.ai.knowledge.implementation.application.port.rag.ChunkSplitter.Chunk;
+import com.shiyu.ai.knowledge.implementation.domain.model.KnowledgeChunkBO;
+import com.shiyu.ai.knowledge.implementation.domain.port.repository.KnowledgeChunkRepository;
+import com.shiyu.ai.model.contract.api.EmbeddingService;
+
+import lombok.extern.slf4j.Slf4j;
+
+import org.springframework.stereotype.Service;
+
+import java.nio.ByteBuffer;
+import java.nio.ByteOrder;
+import java.util.*;
+
+/**
+ * {@code DocumentIngestionService} 定义知识模块的应用服务能力，供上层用例调用。
+ */
+@Slf4j
+@Service
+public class DocumentIngestionService {
+
+    /**
+     * 嵌入向量服务，表示当前对象中的对应属性。
+     */
+    private final EmbeddingService embeddingService;
+    /**
+     * chunkRepository 属性，保存当前对象中的业务数据或协作依赖。
+     */
+    private final KnowledgeChunkRepository chunkRepository;
+    /**
+     * chunkSplitter 属性，保存当前对象中的业务数据或协作依赖。
+     */
+    private final ChunkSplitter chunkSplitter;
+    /**
+     * documentParsers 属性，保存当前对象中的业务数据或协作依赖。
+     */
+    private final List<DocumentParser> documentParsers;
+
+    /**
+     * {@code DocumentIngestionService} 创建并初始化当前类型实例。
+     *
+     * @param embeddingService 参数值，用于执行当前操作。
+     * @param chunkRepository 参数值，用于执行当前操作。
+     * @param documentParsers 参数值，用于执行当前操作。
+     */
+    public DocumentIngestionService(
+            EmbeddingService embeddingService,
+            KnowledgeChunkRepository chunkRepository,
+            List<DocumentParser> documentParsers) {
+        this.embeddingService = embeddingService;
+        this.chunkRepository = chunkRepository;
+        this.chunkSplitter = new ChineseChunkSplitter();
+        this.documentParsers = documentParsers != null ? documentParsers : List.of();
+    }
+
+    /** 根据文件格式获取对应的文档解析器 */
+    public Optional<DocumentParser> findParser(String format) {
+        return documentParsers.stream()
+                .filter(p -> p.getSupportedFormat().equalsIgnoreCase(format))
+                .findFirst();
+    }
+
+    /**
+     * 解析并注入文档；调用方必须提供已认证的 actor，以便所有分片和向量操作 绑定到同一租户。
+     *
+     * @param actor 已认证的租户和用户上下文
+     * @param documentId 文档 ID
+     * @param content 文本内容（已解析）
+     * @param knowledgeIds 关联知识点 ID
+     */
+    public List<KnowledgeChunkBO> ingest(
+            ActorContext actor,
+            Long spaceId,
+            Long documentId,
+            Long versionId,
+            String content,
+            List<Long> knowledgeIds) {
+        if (actor == null) {
+            throw new IllegalArgumentException("actor is required");
+        }
+        return ingestInternal(actor, spaceId, documentId, versionId, content, knowledgeIds);
+    }
+
+    private List<KnowledgeChunkBO> ingestInternal(
+            ActorContext actor,
+            Long spaceId,
+            Long documentId,
+            Long versionId,
+            String content,
+            List<Long> knowledgeIds) {
+        TenantId ownerTenant = actor.tenantId();
+        chunkRepository.deleteByDocumentId(ownerTenant, documentId);
+        List<Chunk> chunks = chunkSplitter.split(content);
+        log.info("文档 {} 切分为 {} 个 Chunk", documentId, chunks.size());
+
+        List<KnowledgeChunkBO> chunkDOs = new ArrayList<>();
+
+        for (Chunk chunk : chunks) {
+            float[] vector = embeddingService.embed(actor, chunk.content());
+
+            Map<String, Object> meta = new LinkedHashMap<>();
+            meta.put("documentId", documentId);
+            meta.put("tenantId", ownerTenant.value());
+            if (spaceId != null) {
+                meta.put("spaceId", spaceId);
+            }
+            meta.put("chunkIndex", chunk.index());
+            meta.put("startPos", chunk.startPos());
+            meta.put("endPos", chunk.endPos());
+            if (knowledgeIds != null && !knowledgeIds.isEmpty()) {
+                meta.put("knowledgeId", String.valueOf(knowledgeIds.get(0)));
+                meta.put(
+                        "knowledgeIds",
+                        knowledgeIds.stream()
+                                .map(String::valueOf)
+                                .collect(java.util.stream.Collectors.joining(",")));
+            }
+            KnowledgeChunkBO chunkDO = new KnowledgeChunkBO();
+            chunkDO.setDocumentId(documentId);
+            chunkDO.setTenantId(ownerTenant.value());
+            chunkDO.setSpaceId(spaceId);
+            chunkDO.setVersionId(versionId);
+            chunkDO.setContent(chunk.content());
+            chunkDO.setEmbeddingBinary(toBytes(vector));
+            chunkDO.setEmbeddingModel("default");
+            chunkDO.setEmbeddingDimension(vector.length);
+            chunkDO.setMetadata(JSONUtils.toJsonString(meta));
+            chunkDO.setChunkIndex(chunk.index());
+            chunkDO.setStartOffset(chunk.startPos());
+            chunkDO.setEndOffset(chunk.endPos());
+            chunkDO.setTokenCount(Math.max(1, chunk.content().length() / 2));
+            chunkDO.setStatus(1);
+            chunkDO.setDelFlag(0);
+            chunkRepository.insert(ownerTenant, chunkDO);
+            chunkDOs.add(chunkDO);
+        }
+
+        log.info(
+                "文档 {} 注入完成: {} chunks → H2（发布时通过 VectorStoreProvider 构建版本索引）",
+                documentId,
+                chunkDOs.size());
+        return chunkDOs;
+    }
+
+    /**
+     * {@code delete} 释放或移除当前操作涉及的资源。
+     *
+     * @param tenantId 参数值，用于执行当前操作。
+     * @param documentId 参数值，用于执行当前操作。
+     */
+    public void delete(TenantId tenantId, Long documentId) {
+        chunkRepository.deleteByDocumentId(tenantId, documentId);
+    }
+
+    private byte[] toBytes(float[] vector) {
+        ByteBuffer buffer =
+                ByteBuffer.allocate(vector.length * Float.BYTES).order(ByteOrder.LITTLE_ENDIAN);
+        for (float value : vector) {
+            buffer.putFloat(value);
+        }
+        return buffer.array();
+    }
+}

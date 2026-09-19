@@ -1,5 +1,9 @@
 package com.shiyu.ai.conversation.implementation.domain.chat;
 
+import com.shiyu.ai.conversation.implementation.domain.chat.model.CharacterCardV2;
+
+import com.shiyu.ai.conversation.implementation.domain.chat.model.CharacterAsset;
+
 import static org.junit.jupiter.api.Assertions.*;
 
 import com.shiyu.ai.conversation.contract.api.*;

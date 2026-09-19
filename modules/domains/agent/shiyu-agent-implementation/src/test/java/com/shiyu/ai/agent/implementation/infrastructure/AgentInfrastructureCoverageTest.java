@@ -4,7 +4,7 @@ import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.*;
 import static org.mockito.Mockito.*;
 
-import com.shiyu.ai.agent.implementation.config.IntentDefApplicationRunner;
+import com.shiyu.ai.agent.implementation.startup.IntentDefApplicationRunner;
 import com.shiyu.ai.agent.implementation.domain.model.IntentDefBO;
 import com.shiyu.ai.agent.implementation.event.model.AuditEvent;
 import com.shiyu.ai.agent.implementation.event.listener.AuditEventListener;

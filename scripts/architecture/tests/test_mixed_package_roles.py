@@ -13,6 +13,65 @@ SPEC.loader.exec_module(MODULE)
 
 
 class MixedPackageRolesTest(unittest.TestCase):
+    def test_configuration_allowlist_does_not_hide_runtime_tenant_factory(self):
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory)
+            package = "com.example.config"
+            self.add_source(root, package, "ContextTenantFactory.java",
+                            "@Component class ContextTenantFactory implements TenantFactory {}")
+            self.assertEqual(1, len(MODULE.find_violations([root], {package})))
+
+    def test_reviewed_types_live_in_responsibility_packages(self):
+        root = Path(__file__).resolve().parents[3]
+        expected = {
+            "ModelRouter": "infrastructure.gateway.service",
+            "ModelRoutePolicy": "infrastructure.gateway.model",
+            "ModelCostSnapshot": "infrastructure.gateway.model",
+            "ModelProviderCapabilities": "infrastructure.gateway.model",
+            "ProviderHealth": "infrastructure.gateway.model",
+            "MediaProvider": "infrastructure.media.port",
+            "MediaProviderRegistry": "infrastructure.media.service",
+            "ContextTenantFactory": "mybatis.tenant",
+            "StorageKeys": "storage.file.key",
+            "AuthContextService": "implementation.application.service",
+        }
+        for name, suffix in expected.items():
+            with self.subTest(type=name):
+                files = [p for p in (root / "modules").rglob(name + ".java")
+                         if "/src/main/java/" in p.as_posix()]
+                self.assertEqual(1, len(files))
+                self.assertIn(suffix + ";", files[0].read_text(encoding="utf-8"))
+
+    def test_configuration_allowlist_does_not_hide_storage_or_runner(self):
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory)
+            package = "com.example.config"
+            self.add_source(root, package, "SessionDaoImpl.java", "class SessionDaoImpl {}")
+            self.add_source(root, package, "Warmup.java", "class Warmup implements ApplicationRunner {}")
+            violations = MODULE.find_violations([root], {package})
+            self.assertEqual(1, len(violations))
+            self.assertEqual({"SessionDaoImpl.java", "Warmup.java"}, set(violations[0].misplaced_types))
+
+    def test_plain_service_is_not_hidden_without_spring_annotation(self):
+        roles = MODULE.classify_source("class PricingService {}")
+        self.assertIn("service", roles)
+
+    def test_service_interface_remains_a_port(self):
+        roles = MODULE.classify_source("interface PricingService {}")
+        self.assertEqual({"port/interface"}, roles)
+
+    def test_adapter_interface_remains_a_port(self):
+        self.assertEqual({"port/interface"}, MODULE.classify_source("interface ModelAdapter {}"))
+
+    def test_jdk_executor_wrapper_is_not_a_business_service(self):
+        roles = MODULE.classify_source("class SafeExecutorService extends AbstractExecutorService {}")
+        self.assertNotIn("service", roles)
+
+    def test_plain_repository_implementations_are_persistence(self):
+        for name in ("OrderRepositoryImpl", "SessionDaoImpl", "InMemoryOrderRepository"):
+            with self.subTest(name=name):
+                self.assertIn("persistence", MODULE.classify_source(f"class {name} {{}}"))
+
     def add_source(self, root: Path, package: str, name: str, content: str) -> None:
         source = root / "modules/sample/src/main/java" / Path(package.replace(".", "/")) / name
         source.parent.mkdir(parents=True, exist_ok=True)

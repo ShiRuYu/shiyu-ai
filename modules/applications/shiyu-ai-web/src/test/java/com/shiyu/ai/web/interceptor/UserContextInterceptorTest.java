@@ -7,13 +7,13 @@ import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.verifyNoInteractions;
 import static org.mockito.Mockito.when;
 
-import com.shiyu.ai.common.core.domain.UserContext;
+import com.shiyu.ai.common.core.context.model.UserContext;
 import com.shiyu.ai.common.web.auth.ClientIpResolver;
 import com.shiyu.ai.iam.implementation.api.response.AuthRoleResponse;
 import com.shiyu.ai.iam.implementation.api.response.AuthScopeRoleResponse;
 import com.shiyu.ai.iam.implementation.api.response.AuthTenantResponse;
 import com.shiyu.ai.iam.implementation.api.response.AuthUserResponse;
-import com.shiyu.ai.iam.implementation.service.AuthContextService;
+import com.shiyu.ai.iam.implementation.application.service.AuthContextService;
 import com.shiyu.ai.iam.implementation.utils.SaTokenHelper;
 import com.shiyu.ai.kernel.context.TenantId;
 import com.shiyu.ai.kernel.context.TenantScope;

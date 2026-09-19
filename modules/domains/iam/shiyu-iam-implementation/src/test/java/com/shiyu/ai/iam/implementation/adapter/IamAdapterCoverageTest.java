@@ -6,7 +6,7 @@ import static org.mockito.Mockito.*;
 import cn.dev33.satoken.session.SaSession;
 import cn.dev33.satoken.stp.StpUtil;
 
-import com.shiyu.ai.common.core.domain.UserContext;
+import com.shiyu.ai.common.core.context.model.UserContext;
 import com.shiyu.ai.iam.implementation.domain.model.UserScopeRoleBO;
 import com.shiyu.ai.iam.implementation.port.repository.UserScopeRoleRepository;
 import com.shiyu.ai.iam.implementation.utils.SaTokenHelper;

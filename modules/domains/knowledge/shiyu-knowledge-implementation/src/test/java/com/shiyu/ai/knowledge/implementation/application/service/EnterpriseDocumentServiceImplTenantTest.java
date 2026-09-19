@@ -35,7 +35,7 @@ import com.shiyu.ai.knowledge.implementation.application.EnterpriseDocumentServi
 import com.shiyu.ai.knowledge.implementation.application.KnowledgeAuditService;
 import com.shiyu.ai.knowledge.implementation.application.KnowledgeDocumentRelationService;
 import com.shiyu.ai.knowledge.implementation.application.KnowledgeSpaceService;
-import com.shiyu.ai.knowledge.implementation.application.rag.DocumentIngestionService;
+import com.shiyu.ai.knowledge.implementation.application.service.rag.DocumentIngestionService;
 import com.shiyu.ai.knowledge.implementation.domain.model.KnowledgeDocumentBO;
 import com.shiyu.ai.knowledge.implementation.domain.model.KnowledgeDocumentVersionBO;
 import com.shiyu.ai.knowledge.implementation.domain.model.KnowledgeIngestionJobBO;

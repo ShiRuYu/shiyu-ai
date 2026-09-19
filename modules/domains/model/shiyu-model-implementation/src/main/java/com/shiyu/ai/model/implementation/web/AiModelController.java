@@ -7,7 +7,7 @@ import com.shiyu.ai.common.core.api.Result;
 import com.shiyu.ai.common.core.vo.IdNameOptionVO;
 import com.shiyu.ai.common.web.auth.ActorContextHttpAdapter;
 import com.shiyu.ai.model.implementation.application.service.AiModelService;
-import com.shiyu.ai.model.implementation.infrastructure.adapter.ModelManager;
+import com.shiyu.ai.model.implementation.infrastructure.service.ModelManager;
 import com.shiyu.ai.model.implementation.web.request.AiModelRequest;
 import com.shiyu.ai.model.implementation.web.response.AiModelResponse;
 import com.shiyu.ai.model.implementation.web.response.AiModelVO;

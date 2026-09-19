@@ -1,5 +1,17 @@
 package com.shiyu.ai.knowledge.implementation.application.document;
 
+import com.shiyu.ai.knowledge.implementation.application.port.document.DocumentParser;
+
+import com.shiyu.ai.knowledge.implementation.infrastructure.document.HtmlDocumentParser;
+
+import com.shiyu.ai.knowledge.implementation.infrastructure.document.PdfDocumentParser;
+
+import com.shiyu.ai.knowledge.implementation.infrastructure.document.WordDocumentParser;
+
+import com.shiyu.ai.knowledge.implementation.infrastructure.document.TextDocumentParser;
+
+import com.shiyu.ai.knowledge.implementation.infrastructure.document.MarkdownDocumentParser;
+
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;

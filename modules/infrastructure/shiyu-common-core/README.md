@@ -22,11 +22,11 @@
 
 ## 主要包
 
-`com.shiyu.ai.common.core`、`api`、`config`、`database`、`domain`、`exception`、`jdbc`、`module`、`tx`、`utils`、`validate`、`vo` 等（共 22 个 Java 包声明）
+`api`、`auth`、`context`、`context.model`、`config`、`database`、`domain`、`exception`、`jdbc`、`module`、`tx`、`utils`、`validate`、`vo` 等。认证接口位于 `auth`，身份上下文访问位于 `context`，上下文模型位于 `context.model`；`domain` 仅保留公共实体基类。
 
 ## 内部模块依赖
 
-无内部 Maven 模块依赖
+依赖 `shiyu-shared-kernel`。
 
 ## 验证
 

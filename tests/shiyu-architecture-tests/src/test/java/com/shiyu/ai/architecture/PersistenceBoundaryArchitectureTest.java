@@ -40,7 +40,7 @@ class PersistenceBoundaryArchitectureTest {
                             "com.shiyu.ai.iam.implementation.service.impl.AuthServiceImpl")
                     .should()
                     .dependOnClassesThat()
-                    .haveFullyQualifiedName("com.shiyu.ai.common.core.domain.UserContextHolder")
+                    .haveFullyQualifiedName("com.shiyu.ai.common.core.context.UserContextHolder")
                     .because(
                             "migrated IAM application services must receive ActorContext"
                                     + " explicitly");
@@ -52,7 +52,7 @@ class PersistenceBoundaryArchitectureTest {
                     .resideInAPackage("com.shiyu.ai.iam.implementation.persistence.repository..")
                     .should()
                     .dependOnClassesThat()
-                    .haveFullyQualifiedName("com.shiyu.ai.common.core.domain.UserContextHolder")
+                    .haveFullyQualifiedName("com.shiyu.ai.common.core.context.UserContextHolder")
                     .because(
                             "IAM repositories must receive tenant scope explicitly; thread context"
                                     + " is an HTTP-edge concern");
@@ -64,7 +64,7 @@ class PersistenceBoundaryArchitectureTest {
                     .resideInAPackage("com.shiyu.ai.common.mybatis..")
                     .should()
                     .dependOnClassesThat()
-                    .haveFullyQualifiedName("com.shiyu.ai.common.core.domain.UserContextHolder")
+                    .haveFullyQualifiedName("com.shiyu.ai.common.core.context.UserContextHolder")
                     .because(
                             "persistence listeners must not infer tenant or actor identity from an"
                                     + " HTTP thread");
@@ -79,7 +79,7 @@ class PersistenceBoundaryArchitectureTest {
                             "com.shiyu.ai.common.web.auth.ActorContextHttpAdapter")
                     .should()
                     .dependOnClassesThat()
-                    .haveFullyQualifiedName("com.shiyu.ai.common.core.domain.UserContextHolder")
+                    .haveFullyQualifiedName("com.shiyu.ai.common.core.context.UserContextHolder")
                     .because(
                             "shared web logging and filters must use request attributes, not"
                                     + " authentication thread state");
@@ -91,7 +91,7 @@ class PersistenceBoundaryArchitectureTest {
                     .resideInAnyPackage("com.shiyu.ai.iam.implementation..")
                     .should()
                     .dependOnClassesThat()
-                    .haveFullyQualifiedName("com.shiyu.ai.common.core.domain.UserContextHolder")
+                    .haveFullyQualifiedName("com.shiyu.ai.common.core.context.UserContextHolder")
                     .because(
                             "IAM implementations must remain independent of the HTTP authentication"
                                     + " thread context");
@@ -103,7 +103,7 @@ class PersistenceBoundaryArchitectureTest {
                     .resideInAnyPackage("com.shiyu.ai.common.mybatis..")
                     .should()
                     .dependOnClassesThat()
-                    .haveFullyQualifiedName("com.shiyu.ai.common.core.domain.UserContextHolder")
+                    .haveFullyQualifiedName("com.shiyu.ai.common.core.context.UserContextHolder")
                     .because(
                             "persistence adapters must receive tenant scope through an explicit"
                                     + " technical boundary");

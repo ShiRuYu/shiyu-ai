@@ -1,5 +1,7 @@
 package com.shiyu.ai.common.mybatis.config;
 
+import com.shiyu.ai.common.mybatis.tenant.ContextTenantFactory;
+
 import com.mybatisflex.core.tenant.TenantManager;
 
 import jakarta.annotation.PostConstruct;

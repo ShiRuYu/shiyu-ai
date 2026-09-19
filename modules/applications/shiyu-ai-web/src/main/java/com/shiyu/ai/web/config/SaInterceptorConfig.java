@@ -1,5 +1,9 @@
 package com.shiyu.ai.web.config;
 
+import com.shiyu.ai.common.core.context.UserContextHolder;
+
+import com.shiyu.ai.common.core.context.UserGlobalContext;
+
 import cn.dev33.satoken.interceptor.SaInterceptor;
 
 import com.shiyu.ai.common.web.config.WebPublicPathContributor;

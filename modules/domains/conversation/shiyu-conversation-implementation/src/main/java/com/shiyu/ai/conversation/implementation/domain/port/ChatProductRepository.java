@@ -1,10 +1,10 @@
 package com.shiyu.ai.conversation.implementation.domain.port;
 
-import com.shiyu.ai.conversation.implementation.domain.chat.CharacterAsset;
-import com.shiyu.ai.conversation.implementation.domain.chat.GroupChatAsset;
-import com.shiyu.ai.conversation.implementation.domain.chat.LorebookAsset;
-import com.shiyu.ai.conversation.implementation.domain.chat.PersonaAsset;
-import com.shiyu.ai.conversation.implementation.domain.chat.PromptTemplateVersion;
+import com.shiyu.ai.conversation.implementation.domain.chat.model.CharacterAsset;
+import com.shiyu.ai.conversation.implementation.domain.chat.model.GroupChatAsset;
+import com.shiyu.ai.conversation.implementation.domain.chat.model.LorebookAsset;
+import com.shiyu.ai.conversation.implementation.domain.chat.model.PersonaAsset;
+import com.shiyu.ai.conversation.implementation.domain.chat.model.PromptTemplateVersion;
 import com.shiyu.ai.kernel.context.TenantId;
 
 import java.util.List;

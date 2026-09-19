@@ -1,5 +1,13 @@
 package com.shiyu.ai.conversation.implementation.domain.chat;
 
+import com.shiyu.ai.conversation.implementation.domain.chat.model.LorebookEntry;
+
+import com.shiyu.ai.conversation.implementation.domain.chat.model.CharacterCardV2;
+
+import com.shiyu.ai.conversation.implementation.domain.chat.service.PromptAssemblyService;
+
+import com.shiyu.ai.conversation.implementation.domain.chat.model.Persona;
+
 import static org.junit.jupiter.api.Assertions.*;
 
 import com.shiyu.ai.conversation.contract.api.*;

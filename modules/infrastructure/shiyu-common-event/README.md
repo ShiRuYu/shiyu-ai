@@ -6,7 +6,15 @@
 
 ## 作用
 
-承载进程内事件、JDBC outbox、Kafka outbox/relay 和消费去重实现。事件实现保留原有 `com.shiyu.ai.common.core.event` Java 全限定类名，减少源码兼容影响。
+承载进程内事件、JDBC outbox、Kafka outbox/relay 和消费去重实现。
+
+包职责按实现边界划分：
+
+- `com.shiyu.ai.common.event.api`：事件发布契约。
+- `com.shiyu.ai.common.event.config`：Spring 自动配置和事件运行参数。
+- `com.shiyu.ai.common.event.publisher`：进程内事件发布实现。
+- `com.shiyu.ai.common.event.outbox`：JDBC outbox 和 Kafka relay 实现。
+- `com.shiyu.ai.common.event.support`：事件消费去重等支撑能力。
 
 ## 边界
 

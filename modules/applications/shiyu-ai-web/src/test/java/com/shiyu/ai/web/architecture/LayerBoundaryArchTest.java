@@ -1,5 +1,7 @@
 package com.shiyu.ai.web.architecture;
 
+import com.shiyu.ai.common.core.context.UserContextHolder;
+
 import static com.tngtech.archunit.lang.syntax.ArchRuleDefinition.noClasses;
 
 import com.tngtech.archunit.core.domain.JavaClasses;
@@ -87,7 +89,7 @@ class LayerBoundaryArchTest {
                     .resideOutsideOfPackages("..web..")
                     .should()
                     .dependOnClassesThat()
-                    .haveFullyQualifiedName("com.shiyu.ai.common.core.domain.UserContextHolder")
+                    .haveFullyQualifiedName("com.shiyu.ai.common.core.context.UserContextHolder")
                     .because(
                             "Domain/application code must receive ActorContext explicitly; thread"
                                     + " context is an HTTP adapter concern");
