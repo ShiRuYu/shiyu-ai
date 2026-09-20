@@ -20,6 +20,9 @@ import java.util.Map;
 
 import javax.sql.DataSource;
 
+/**
+ * 验证 Magma Consolidation Worker 相关功能、边界条件、异常路径和协作行为。
+ */
 class MagmaConsolidationWorkerTest {
     @Test
     void leasesAndCompletesPendingJobs() throws Exception {

@@ -11,7 +11,9 @@ import io.github.linpeilie.annotations.AutoMapper;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
 
-/** Agent 版本 */
+/**
+ * 表示 智能体 Version 对应的持久化数据对象及其数据库字段。
+ */
 @Data
 @EqualsAndHashCode(callSuper = true)
 @SuppressWarnings("serial")

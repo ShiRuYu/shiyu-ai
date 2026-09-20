@@ -9,7 +9,7 @@ import java.io.Serializable;
 import java.util.Map;
 
 /**
- * {@code McpToolExecuteRequest} 表示工具模块的请求参数，承载调用方提交的输入数据。
+ * 封装 Mcp 工具 Execute 操作所需的请求条件和输入数据。
  */
 @Data
 @SuppressWarnings("serial")

@@ -21,7 +21,7 @@ import org.springframework.stereotype.Component;
 import java.util.List;
 
 /**
- * 实现 AuthCode 数据的持久化访问。
+ * 负责 认证 Code 的持久化查询、保存和删除，并维护数据访问边界。
  */
 @Component
 public class AuthCodeRepositoryImpl

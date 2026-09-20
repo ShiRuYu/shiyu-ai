@@ -19,7 +19,7 @@ import org.springframework.transaction.annotation.Transactional;
 import java.util.List;
 
 /**
- * {@code CourseServiceImpl} 实现教育模块的应用服务，负责编排用例流程并维护业务边界。
+ * 提供 课程 的查询、创建、更新及调用服务，协调业务变更和领域协作。
  */
 @Slf4j
 @Service
@@ -32,12 +32,11 @@ public class CourseServiceImpl implements CourseService {
     private final CourseRepository courseRepository;
 
     /**
-     * {@code getById} 查询并返回当前操作所需的数据。
+     * 查询 课程 相关业务数据，并返回处理结果。
      *
-     * @param actor 参数值，用于执行当前操作。
-     * @param id 参数值，用于执行当前操作。
-     *
-     * @return 返回当前操作产生的结果。
+     * @param actor 当前操作主体上下文，用于确定租户、用户和访问权限。
+     * @param id 用于定位目标业务对象的标识。
+     * @return 返回 课程 相关操作生成的结果数据。
      */
     @Override
     public CourseResponse getById(ActorContext actor, Long id) {
@@ -46,12 +45,11 @@ public class CourseServiceImpl implements CourseService {
     }
 
     /**
-     * {@code listBySubjectCode} 查询并返回当前操作所需的数据。
+     * 查询 课程 相关业务数据，并返回处理结果。
      *
-     * @param actor 参数值，用于执行当前操作。
-     * @param subjectCode 参数值，用于执行当前操作。
-     *
-     * @return 返回当前操作产生的结果。
+     * @param actor 当前操作主体上下文，用于确定租户、用户和访问权限。
+     * @param subjectCode 用于完成本次业务处理的 subjectCode 参数。
+     * @return 返回符合条件的数据集合；没有匹配项时返回空集合。
      */
     @Override
     public List<CourseResponse> listBySubjectCode(ActorContext actor, String subjectCode) {
@@ -61,12 +59,11 @@ public class CourseServiceImpl implements CourseService {
     }
 
     /**
-     * {@code listByGrade} 查询并返回当前操作所需的数据。
+     * 查询 课程 相关业务数据，并返回处理结果。
      *
-     * @param actor 参数值，用于执行当前操作。
-     * @param grade 参数值，用于执行当前操作。
-     *
-     * @return 返回当前操作产生的结果。
+     * @param actor 当前操作主体上下文，用于确定租户、用户和访问权限。
+     * @param grade 用于完成本次业务处理的 grade 参数。
+     * @return 返回符合条件的数据集合；没有匹配项时返回空集合。
      */
     @Override
     public List<CourseResponse> listByGrade(ActorContext actor, Integer grade) {
@@ -76,13 +73,12 @@ public class CourseServiceImpl implements CourseService {
     }
 
     /**
-     * {@code page} 执行当前类型定义的业务操作。
+     * 查询 课程 相关业务数据，并返回处理结果。
      *
-     * @param actor 参数值，用于执行当前操作。
-     * @param pageNum 参数值，用于执行当前操作。
-     * @param pageSize 参数值，用于执行当前操作。
-     *
-     * @return 返回当前操作产生的结果。
+     * @param actor 当前操作主体上下文，用于确定租户、用户和访问权限。
+     * @param pageNum 用于完成本次业务处理的 pageNum 参数。
+     * @param pageSize 每页返回的数据数量。
+     * @return 返回 课程 相关操作生成的结果数据。
      */
     @Override
     public PageData<CourseResponse> page(ActorContext actor, int pageNum, int pageSize) {
@@ -94,13 +90,12 @@ public class CourseServiceImpl implements CourseService {
     }
 
     /**
-     * {@code getProgress} 查询并返回当前操作所需的数据。
+     * 查询 课程 相关业务数据，并返回处理结果。
      *
-     * @param actor 参数值，用于执行当前操作。
-     * @param courseId 参数值，用于执行当前操作。
-     * @param studentId 参数值，用于执行当前操作。
-     *
-     * @return 返回当前操作产生的结果。
+     * @param actor 当前操作主体上下文，用于确定租户、用户和访问权限。
+     * @param courseId 用于定位course的标识。
+     * @param studentId 用于定位student的标识。
+     * @return 返回 课程 相关操作生成的结果数据。
      */
     @Override
     public CourseProgressResponse getProgress(ActorContext actor, Long courseId, Long studentId) {
@@ -109,12 +104,9 @@ public class CourseServiceImpl implements CourseService {
     }
 
     /**
-     * {@code create} 写入或更新当前模块中的业务数据。
+     * 执行 课程 相关业务操作，并维护必要的状态和协作关系。
      *
-     * @param actor 参数值，用于执行当前操作。
-     * @param request 参数值，用于执行当前操作。
-     *
-     * @return 返回当前操作产生的结果。
+     * @param class 用于完成本次业务处理的 class 参数。
      */
     @Override
     @Transactional(rollbackFor = Exception.class)
@@ -135,10 +127,9 @@ public class CourseServiceImpl implements CourseService {
     }
 
     /**
-     * {@code update} 写入或更新当前模块中的业务数据。
+     * 执行 课程 相关业务操作，并维护必要的状态和协作关系。
      *
-     * @param actor 参数值，用于执行当前操作。
-     * @param request 参数值，用于执行当前操作。
+     * @param class 用于完成本次业务处理的 class 参数。
      */
     @Override
     @Transactional(rollbackFor = Exception.class)
@@ -160,10 +151,9 @@ public class CourseServiceImpl implements CourseService {
     }
 
     /**
-     * {@code deleteById} 释放或移除当前操作涉及的资源。
+     * 执行 课程 相关业务操作，并维护必要的状态和协作关系。
      *
-     * @param actor 参数值，用于执行当前操作。
-     * @param id 参数值，用于执行当前操作。
+     * @param class 用于完成本次业务处理的 class 参数。
      */
     @Override
     @Transactional(rollbackFor = Exception.class)

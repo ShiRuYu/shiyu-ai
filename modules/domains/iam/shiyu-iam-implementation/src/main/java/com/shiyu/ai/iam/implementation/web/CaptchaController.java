@@ -13,7 +13,9 @@ import lombok.extern.slf4j.Slf4j;
 
 import org.springframework.web.bind.annotation.*;
 
-/** 验证码 Controller 提供验证码生成和验证功能 */
+/**
+ * 处理 Captcha 相关的 Web 请求，并将请求转换为应用服务调用。
+ */
 @Slf4j
 @Tag(name = "Captcha", description = "Captcha")
 @RestController
@@ -26,9 +28,9 @@ public class CaptchaController {
     private final CaptchaService captchaService;
 
     /**
-     * {@code CaptchaController} 创建并初始化当前类型实例。
+     * 执行 Captcha 相关业务操作，并维护必要的状态和协作关系。
      *
-     * @param captchaService 参数值，用于执行当前操作。
+     * @param captchaService 用于完成本次业务处理的 captchaService 参数。
      */
     public CaptchaController(CaptchaService captchaService) {
         this.captchaService = captchaService;
@@ -88,7 +90,9 @@ public class CaptchaController {
         }
     }
 
-    /** 验证请求参数 */
+    /**
+     * 封装 Validate Captcha 操作所需的请求条件和输入数据。
+     */
     @lombok.Getter
     @lombok.Setter
     @lombok.AllArgsConstructor
@@ -100,7 +104,9 @@ public class CaptchaController {
         private String code;
     }
 
-    /** 验证响应 */
+    /**
+     * 封装 Validate Captcha 操作向调用方返回的传输数据。
+     */
     @lombok.Getter
     @lombok.Setter
     @lombok.AllArgsConstructor

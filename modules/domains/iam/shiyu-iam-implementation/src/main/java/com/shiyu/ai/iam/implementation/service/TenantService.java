@@ -6,25 +6,23 @@ import com.shiyu.ai.iam.implementation.vo.TenantVO;
 import com.shiyu.ai.kernel.context.ActorContext;
 
 /**
- * TenantService 服务接口，负责执行身份与访问领域相关业务操作。
+ * 提供 租户 的查询、创建、更新及调用服务，协调业务变更和领域协作。
  */
 public interface TenantService {
     /**
-     * 执行 {@code allTenantsView} 定义的接口操作。
+     * 执行 租户 相关业务数据，并返回处理结果。
      *
-     * @param actor 当前操作主体上下文。
-     *
-     * @return 符合条件的结果集合。
+     * @param actor 当前操作主体上下文，用于确定租户、用户和访问权限。
+     * @return 返回符合条件的数据集合；没有匹配项时返回空集合。
      */
     java.util.List<TenantVO> allTenantsView(ActorContext actor);
 
     /**
-     * 执行 {@code detailView} 定义的接口操作。
+     * 查询 租户 相关业务数据，并返回处理结果。
      *
-     * @param actor 当前操作主体上下文。
-     * @param id 目标对象标识。
-     *
-     * @return 操作结果。
+     * @param actor 当前操作主体上下文，用于确定租户、用户和访问权限。
+     * @param id 用于定位目标业务对象的标识。
+     * @return 返回 租户 相关操作生成的结果数据。
      */
     TenantVO detailView(ActorContext actor, Long id);
 
@@ -50,16 +48,15 @@ public interface TenantService {
     boolean updateTenant(ActorContext actor, Long id, TenantRequest request);
 
     /**
-     * 根据条件查询并返回所需数据。
+     * 查询 租户 相关业务数据，并返回处理结果。
      *
-     * @param actor 当前操作主体上下文。
-     * @param pageNo 方法参数。
-     * @param pageSize 分页大小。
-     * @param name 对象名称。
-     * @param code 方法参数。
-     * @param status 对象状态。
-     *
-     * @return 操作结果。
+     * @param actor 当前操作主体上下文，用于确定租户、用户和访问权限。
+     * @param pageNo 分页页码，从 1 开始。
+     * @param pageSize 每页返回的数据数量。
+     * @param name 用于定位或筛选目标业务对象的业务值。
+     * @param code 用于定位或筛选目标业务对象的业务值。
+     * @param status 用于完成本次业务处理的 status 参数。
+     * @return 返回 租户 相关操作生成的结果数据。
      */
     PageData<TenantVO> getTenantPage(
             ActorContext actor,

@@ -1,7 +1,7 @@
 package com.shiyu.ai.governance.contract;
 
 /**
- * UsageSourceType 枚举，定义治理模块可用的业务取值。
+ * 定义 用量 Source Type 可用的枚举值及其业务语义。
  */
 public enum UsageSourceType {
     AGENT_EXECUTION,

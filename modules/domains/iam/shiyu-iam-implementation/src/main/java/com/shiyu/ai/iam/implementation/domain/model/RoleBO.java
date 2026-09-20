@@ -7,7 +7,9 @@ import java.io.Serializable;
 import java.util.Date;
 import java.util.List;
 
-/** 角色业务对象 */
+/**
+ * 表示 角色 领域对象的业务状态和属性。
+ */
 @Data
 @SuppressWarnings("serial")
 public class RoleBO implements Serializable {

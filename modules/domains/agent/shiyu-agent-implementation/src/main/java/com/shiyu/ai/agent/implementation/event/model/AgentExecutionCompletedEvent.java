@@ -3,7 +3,7 @@ package com.shiyu.ai.agent.implementation.event.model;
 import java.util.Map;
 
 /**
- * {@code AgentExecutionCompletedEvent} 承载智能体模块的领域状态或协作行为，负责维护本类型的职责边界。
+ * 表示 智能体 Execution Completed 相关的领域事件或异常信息。
  */
 public class AgentExecutionCompletedEvent extends DomainEvent {
 
@@ -25,12 +25,12 @@ public class AgentExecutionCompletedEvent extends DomainEvent {
     private final long durationMs;
 
     /**
-     * {@code AgentExecutionCompletedEvent} 创建并初始化当前类型实例。
+     * 执行 智能体 Execution Completed 相关业务操作，并维护必要的状态和协作关系。
      *
-     * @param executionId 参数值，用于执行当前操作。
-     * @param agentId 参数值，用于执行当前操作。
-     * @param output 参数值，用于执行当前操作。
-     * @param durationMs 参数值，用于执行当前操作。
+     * @param executionId 用于定位execution的标识。
+     * @param agentId 用于定位agent的标识。
+     * @param output 用于完成本次业务处理的 output 参数。
+     * @param durationMs 用于完成本次业务处理的 durationMs 参数。
      */
     public AgentExecutionCompletedEvent(
             String executionId, String agentId, Map<String, Object> output, long durationMs) {
@@ -42,36 +42,36 @@ public class AgentExecutionCompletedEvent extends DomainEvent {
     }
 
     /**
-     * {@code getExecutionId} 查询并返回当前操作所需的数据。
+     * 查询 智能体 Execution Completed 相关业务数据，并返回处理结果。
      *
-     * @return 返回当前操作产生的结果。
+     * @return 返回 智能体 Execution Completed 相关操作生成的结果数据。
      */
     public String getExecutionId() {
         return executionId;
     }
 
     /**
-     * {@code getAgentId} 查询并返回当前操作所需的数据。
+     * 查询 智能体 Execution Completed 相关业务数据，并返回处理结果。
      *
-     * @return 返回当前操作产生的结果。
+     * @return 返回 智能体 Execution Completed 相关操作生成的结果数据。
      */
     public String getAgentId() {
         return agentId;
     }
 
     /**
-     * {@code getOutput} 查询并返回当前操作所需的数据。
+     * 查询 智能体 Execution Completed 相关业务数据，并返回处理结果。
      *
-     * @return 返回当前操作产生的结果。
+     * @return 返回 智能体 Execution Completed 相关操作生成的结果数据。
      */
     public Map<String, Object> getOutput() {
         return output;
     }
 
     /**
-     * {@code getDurationMs} 查询并返回当前操作所需的数据。
+     * 查询 智能体 Execution Completed 相关业务数据，并返回处理结果。
      *
-     * @return 返回当前操作产生的结果。
+     * @return 返回 智能体 Execution Completed 相关操作生成的结果数据。
      */
     public long getDurationMs() {
         return durationMs;

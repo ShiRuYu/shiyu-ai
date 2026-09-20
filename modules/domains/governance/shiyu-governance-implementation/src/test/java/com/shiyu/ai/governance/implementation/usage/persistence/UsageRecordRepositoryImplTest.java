@@ -32,6 +32,9 @@ import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Map;
 
+/**
+ * 验证 用量 Record Repository Impl 相关功能、边界条件、异常路径和协作行为。
+ */
 class UsageRecordRepositoryImplTest {
 
     private UsageRecordMapper mapper;

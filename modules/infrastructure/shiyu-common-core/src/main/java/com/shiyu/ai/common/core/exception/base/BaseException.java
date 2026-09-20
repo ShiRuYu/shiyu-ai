@@ -9,7 +9,9 @@ import lombok.NoArgsConstructor;
 
 import java.io.Serial;
 
-/** 基础异常 */
+/**
+ * 表示 Base 相关的领域事件或异常信息。
+ */
 @Data
 @EqualsAndHashCode(callSuper = true)
 @NoArgsConstructor
@@ -34,12 +36,12 @@ public class BaseException extends RuntimeException {
     private String defaultMessage;
 
     /**
-     * {@code BaseException} 创建并初始化当前类型实例。
+     * 执行 Base 相关业务操作，并维护必要的状态和协作关系。
      *
-     * @param module 参数值，用于执行当前操作。
-     * @param code 参数值，用于执行当前操作。
-     * @param args 参数值，用于执行当前操作。
-     * @param defaultMessage 参数值，用于执行当前操作。
+     * @param module 用于完成本次业务处理的 module 参数。
+     * @param code 用于定位或筛选目标业务对象的业务值。
+     * @param args 用于完成本次业务处理的 args 参数。
+     * @param defaultMessage 用于完成本次业务处理的 defaultMessage 参数。
      */
     public BaseException(String module, String code, Object[] args, String defaultMessage) {
         this.module = module;
@@ -49,49 +51,49 @@ public class BaseException extends RuntimeException {
     }
 
     /**
-     * {@code BaseException} 创建并初始化当前类型实例。
+     * 执行 Base 相关业务操作，并维护必要的状态和协作关系。
      *
-     * @param module 参数值，用于执行当前操作。
-     * @param code 参数值，用于执行当前操作。
-     * @param args 参数值，用于执行当前操作。
+     * @param module 用于完成本次业务处理的 module 参数。
+     * @param code 用于定位或筛选目标业务对象的业务值。
+     * @param args 用于完成本次业务处理的 args 参数。
      */
     public BaseException(String module, String code, Object[] args) {
         this(module, code, args, null);
     }
 
     /**
-     * {@code BaseException} 创建并初始化当前类型实例。
+     * 执行 Base 相关业务操作，并维护必要的状态和协作关系。
      *
-     * @param module 参数值，用于执行当前操作。
-     * @param defaultMessage 参数值，用于执行当前操作。
+     * @param module 用于完成本次业务处理的 module 参数。
+     * @param defaultMessage 用于完成本次业务处理的 defaultMessage 参数。
      */
     public BaseException(String module, String defaultMessage) {
         this(module, null, null, defaultMessage);
     }
 
     /**
-     * {@code BaseException} 创建并初始化当前类型实例。
+     * 执行 Base 相关业务操作，并维护必要的状态和协作关系。
      *
-     * @param code 参数值，用于执行当前操作。
-     * @param args 参数值，用于执行当前操作。
+     * @param code 用于定位或筛选目标业务对象的业务值。
+     * @param args 用于完成本次业务处理的 args 参数。
      */
     public BaseException(String code, Object[] args) {
         this(null, code, args, null);
     }
 
     /**
-     * {@code BaseException} 创建并初始化当前类型实例。
+     * 执行 Base 相关业务操作，并维护必要的状态和协作关系。
      *
-     * @param defaultMessage 参数值，用于执行当前操作。
+     * @param defaultMessage 用于完成本次业务处理的 defaultMessage 参数。
      */
     public BaseException(String defaultMessage) {
         this(null, null, null, defaultMessage);
     }
 
     /**
-     * {@code getMessage} 查询并返回当前操作所需的数据。
+     * 查询 Base 相关业务数据，并返回处理结果。
      *
-     * @return 返回当前操作产生的结果。
+     * @return 返回 Base 相关操作生成的结果数据。
      */
     @Override
     public String getMessage() {

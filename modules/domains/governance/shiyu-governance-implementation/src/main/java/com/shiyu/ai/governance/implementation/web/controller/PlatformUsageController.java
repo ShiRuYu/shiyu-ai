@@ -20,7 +20,7 @@ import java.util.List;
 import java.util.Map;
 
 /**
- * 默认租户超级管理员使用的平台全租户用量统计入口。
+ * 处理 平台 用量 相关的 Web 请求，并将请求转换为应用服务调用。
  */
 @Tag(name = "Platform Usage", description = "Platform-wide usage statistics")
 @RestController

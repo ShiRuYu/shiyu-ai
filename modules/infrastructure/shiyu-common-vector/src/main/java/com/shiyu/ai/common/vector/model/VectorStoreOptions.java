@@ -1,10 +1,7 @@
 package com.shiyu.ai.common.vector.model;
 
 /**
- * 承载向量存储的命名空间、维度和数据目录配置。
- * @param namespace 命名空间，表示该记录组件承载的数据。
- * @param dimension 向量维度，表示该记录组件承载的数据。
- * @param dataDir 数据目录，表示该记录组件承载的数据。
+ * 封装 向量 Store Options 相关的不可变数据及其字段约束。
  */
 public record VectorStoreOptions(String namespace, int dimension, String dataDir) {
 
@@ -18,13 +15,12 @@ public record VectorStoreOptions(String namespace, int dimension, String dataDir
     }
 
     /**
-     * {@code of} 执行当前类型定义的业务操作。
+     * 执行 向量 Store Options 相关业务数据，并返回处理结果。
      *
-     * @param namespace 参数值，用于执行当前操作。
-     * @param dimension 参数值，用于执行当前操作。
-     * @param dataDir 参数值，用于执行当前操作。
-     *
-     * @return 返回当前操作产生的结果。
+     * @param namespace 用于完成本次业务处理的 namespace 参数。
+     * @param dimension 用于完成本次业务处理的 dimension 参数。
+     * @param dataDir 用于完成本次业务处理的 dataDir 参数。
+     * @return 返回 向量 Store Options 相关操作生成的结果数据。
      */
     public static VectorStoreOptions of(String namespace, int dimension, String dataDir) {
         return new VectorStoreOptions(namespace, dimension, dataDir);

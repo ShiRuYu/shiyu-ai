@@ -4,7 +4,7 @@ import java.util.HashMap;
 import java.util.Map;
 
 /**
- * {@code FlattenUtil} 承载平台基础设施模块的领域状态或协作行为，负责维护本类型的职责边界。
+ * 提供 Flatten 相关的通用辅助操作，供业务和基础设施复用。
  */
 public class FlattenUtil {
 

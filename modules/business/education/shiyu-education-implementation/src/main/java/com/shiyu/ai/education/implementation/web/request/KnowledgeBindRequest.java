@@ -8,7 +8,7 @@ import java.io.Serial;
 import java.io.Serializable;
 
 /**
- * {@code KnowledgeBindRequest} 表示教育模块的请求参数，承载调用方提交的输入数据。
+ * 封装 知识 Bind 操作所需的请求条件和输入数据。
  */
 @Data
 public class KnowledgeBindRequest implements Serializable {

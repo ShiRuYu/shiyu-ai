@@ -6,6 +6,9 @@ import com.shiyu.ai.agent.contract.node.*;
 
 import org.junit.jupiter.api.Test;
 
+/**
+ * 验证 Default Node Coverage 相关功能、边界条件、异常路径和协作行为。
+ */
 class DefaultNodeCoverageTest {
     @Test
     void buildsWithAndWithoutConfigAndExecutes() {

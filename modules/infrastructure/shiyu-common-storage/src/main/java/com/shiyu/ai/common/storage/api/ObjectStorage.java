@@ -12,20 +12,19 @@ import java.io.IOException;
 import java.io.InputStream;
 
 /**
- * ObjectStorage 接口，定义基础设施模块的能力边界。
+ * 负责 Object 相关数据的存储或后台处理。
  */
 public interface ObjectStorage {
 
     /**
-     * 执行 {@code put} 定义的接口操作。
+     * 执行 Object 相关业务数据，并返回处理结果。
      *
-     * @param namespace 方法参数。
-     * @param originalName 方法参数。
-     * @param contentType 方法参数。
-     * @param size 方法参数。
-     * @param inputStream 方法参数。
-     *
-     * @return 操作结果。
+     * @param namespace 用于完成本次业务处理的 namespace 参数。
+     * @param originalName 用于完成本次业务处理的 originalName 参数。
+     * @param contentType 用于完成本次业务处理的 contentType 参数。
+     * @param size 每页返回的数据数量。
+     * @param inputStream 用于完成本次业务处理的 inputStream 参数。
+     * @return 返回 Object 相关操作生成的结果数据。
      */
     StoredObject put(
             String namespace,
@@ -36,28 +35,22 @@ public interface ObjectStorage {
             throws IOException;
 
     /**
-     * 执行 {@code open} 定义的接口操作。
+     * 创建或保存 Object 相关业务数据，并返回处理结果。
      *
-     * @param objectKey 方法参数。
-     *
-     * @return 操作结果。
+     * @param objectKey 用于完成本次业务处理的 objectKey 参数。
+     * @return 返回 Object 相关操作生成的结果数据。
      */
     ReadableObject open(String objectKey) throws IOException;
 
     /**
-     * 删除指定业务对象或关联数据。
+     * 删除或移除 Object 相关业务操作，并维护必要的状态和协作关系。
      *
-     * @param objectKey 方法参数。
+     * @param objectKey 用于完成本次业务处理的 objectKey 参数。
      */
     void delete(String objectKey) throws IOException;
 
     /**
-     * {@code StoredObject} 封装平台基础设施模块中不可变的结构化数据，并作为相关操作之间的值对象。
-     * @param objectKey objectKey 属性，表示该记录组件承载的数据。
-     * @param originalName originalName 属性，表示该记录组件承载的数据。
-     * @param contentType 内容类型，表示该记录组件承载的数据。
-     * @param size 大小，表示该记录组件承载的数据。
-     * @param provider 提供方，表示该记录组件承载的数据。
+     * 封装 Stored Object 相关的不可变数据及其字段约束。
      */
     record StoredObject(
             String objectKey,
@@ -67,11 +60,7 @@ public interface ObjectStorage {
             String provider) {}
 
     /**
-     * {@code ReadableObject} 封装平台基础设施模块中不可变的结构化数据，并作为相关操作之间的值对象。
-     * @param inputStream inputStream 属性，表示该记录组件承载的数据。
-     * @param originalName originalName 属性，表示该记录组件承载的数据。
-     * @param contentType 内容类型，表示该记录组件承载的数据。
-     * @param size 大小，表示该记录组件承载的数据。
+     * 封装 Readable Object 相关的不可变数据及其字段约束。
      */
     record ReadableObject(
             InputStream inputStream, String originalName, String contentType, long size)

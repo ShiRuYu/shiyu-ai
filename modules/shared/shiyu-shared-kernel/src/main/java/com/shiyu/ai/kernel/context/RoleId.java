@@ -3,8 +3,7 @@ package com.shiyu.ai.kernel.context;
 import java.io.Serializable;
 
 /**
- * 表示访问控制中的角色唯一标识。
- * @param value 值，表示该记录组件承载的数据。
+ * 封装 角色 Id 相关的不可变数据及其字段约束。
  */
 public record RoleId(long value) implements Serializable {
 

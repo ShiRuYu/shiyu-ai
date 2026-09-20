@@ -28,7 +28,7 @@ import java.util.*;
 import java.util.concurrent.atomic.AtomicInteger;
 
 /**
- * OpenAiCompatibleController 控制器，负责处理会话领域相关 HTTP 请求并返回响应。
+ * 处理 Open AI Compatible 相关的 Web 请求，并将请求转换为应用服务调用。
  */
 @RestController
 @RequestMapping("/api")
@@ -59,13 +59,13 @@ public class OpenAiCompatibleController {
     private final AiRuntimePort runtime;
 
     /**
-     * {@code OpenAiCompatibleController} 创建并初始化当前类型实例。
+     * 创建或保存 Open AI Compatible 相关业务操作，并维护必要的状态和协作关系。
      *
-     * @param chatEngine 参数值，用于执行当前操作。
-     * @param modelManager 参数值，用于执行当前操作。
-     * @param conversationService 参数值，用于执行当前操作。
-     * @param conversationRepository 参数值，用于执行当前操作。
-     * @param runtime 参数值，用于执行当前操作。
+     * @param chatEngine 用于完成本次业务处理的 chatEngine 参数。
+     * @param modelManager 用于完成本次业务处理的 modelManager 参数。
+     * @param conversationService 用于完成本次业务处理的 conversationService 参数。
+     * @param conversationRepository 用于完成本次业务处理的 conversationRepository 参数。
+     * @param runtime 用于完成本次业务处理的 runtime 参数。
      */
     public OpenAiCompatibleController(
             ChatEngine chatEngine,
@@ -81,9 +81,9 @@ public class OpenAiCompatibleController {
     }
 
     /**
-     * {@code models} 执行当前类型定义的业务操作。
+     * 查询 Open AI Compatible 相关业务操作，并维护必要的状态和协作关系。
      *
-     * @return 返回当前操作产生的结果。
+     * @param models 用于完成本次业务处理的 models 参数。
      */
     @GetMapping("/model/models")
     public Map<String, Object> models() {
@@ -102,13 +102,13 @@ public class OpenAiCompatibleController {
         return Map.of("object", "list", "data", data);
    }
 
-   /**
-    * {@code chatCompletions} 执行当前类型定义的业务操作。
+    /**
+     * 执行 Open AI Compatible 相关业务操作，并维护必要的状态和协作关系。
      *
-     * @param request 参数值，用于执行当前操作。
-     *
-    * @return 返回当前操作产生的结果。
-    */
+     * @param completions 用于完成本次业务处理的 completions 参数。
+     * @param APPLICATION_JSON_VALUE 用于完成本次业务处理的 APPLICATION_JSON_VALUE 参数。
+     * @param TEXT_EVENT_STREAM_VALUE 用于完成本次业务处理的 TEXT_EVENT_STREAM_VALUE 参数。
+     */
     @PostMapping(
             value = "/conversation/chat/completions",
             produces = {MediaType.APPLICATION_JSON_VALUE, MediaType.TEXT_EVENT_STREAM_VALUE})
@@ -160,13 +160,13 @@ public class OpenAiCompatibleController {
         return completion(request.model(), response);
    }
 
-   /**
-    * {@code responses} 执行当前类型定义的业务操作。
+    /**
+     * 执行 Open AI Compatible 相关业务操作，并维护必要的状态和协作关系。
      *
-     * @param request 参数值，用于执行当前操作。
-     *
-    * @return 返回当前操作产生的结果。
-    */
+     * @param responses 用于完成本次业务处理的 responses 参数。
+     * @param APPLICATION_JSON_VALUE 用于完成本次业务处理的 APPLICATION_JSON_VALUE 参数。
+     * @param TEXT_EVENT_STREAM_VALUE 用于完成本次业务处理的 TEXT_EVENT_STREAM_VALUE 参数。
+     */
     @PostMapping(
             value = "/conversation/responses",
             produces = {MediaType.APPLICATION_JSON_VALUE, MediaType.TEXT_EVENT_STREAM_VALUE})
@@ -934,17 +934,7 @@ public class OpenAiCompatibleController {
     }
 
     /**
-     * {@code ChatCompletionRequest} 封装会话模块中不可变的结构化数据，并作为相关操作之间的值对象。
-     * @param model 模型，表示该记录组件承载的数据。
-     * @param platform platform 属性，表示该记录组件承载的数据。
-     * @param messages 消息列表，表示该记录组件承载的数据。
-     * @param stream stream 属性，表示该记录组件承载的数据。
-     * @param store store 属性，表示该记录组件承载的数据。
-     * @param temperature 采样温度，表示该记录组件承载的数据。
-     * @param maxOutputTokens maxOutputTokens 属性，表示该记录组件承载的数据。
-     * @param tools tools 属性，表示该记录组件承载的数据。
-     * @param conversationId conversationId 属性，表示该记录组件承载的数据。
-     * @param reasoningEffort reasoningEffort 属性，表示该记录组件承载的数据。
+     * 封装 对话 Completion 相关的不可变数据及其字段约束。
      */
     public record ChatCompletionRequest(
             String model,
@@ -959,17 +949,7 @@ public class OpenAiCompatibleController {
             @JsonAlias({"reasoning_effort"}) String reasoningEffort) {}
 
     /**
-     * {@code ResponsesRequest} 封装会话模块中不可变的结构化数据，并作为相关操作之间的值对象。
-     * @param model 模型，表示该记录组件承载的数据。
-     * @param platform platform 属性，表示该记录组件承载的数据。
-     * @param input 输入，表示该记录组件承载的数据。
-     * @param stream stream 属性，表示该记录组件承载的数据。
-     * @param store store 属性，表示该记录组件承载的数据。
-     * @param temperature 采样温度，表示该记录组件承载的数据。
-     * @param maxOutputTokens maxOutputTokens 属性，表示该记录组件承载的数据。
-     * @param tools tools 属性，表示该记录组件承载的数据。
-     * @param conversationId conversationId 属性，表示该记录组件承载的数据。
-     * @param reasoningEffort reasoningEffort 属性，表示该记录组件承载的数据。
+     * 封装 Responses 接口所需的模型输入、工具选项和会话标识。
      */
     public record ResponsesRequest(
             String model,

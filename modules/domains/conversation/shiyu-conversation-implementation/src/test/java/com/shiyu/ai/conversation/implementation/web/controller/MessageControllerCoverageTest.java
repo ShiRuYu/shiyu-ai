@@ -22,6 +22,9 @@ import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 
+/**
+ * 验证 消息 Controller Coverage 相关功能、边界条件、异常路径和协作行为。
+ */
 class MessageControllerCoverageTest {
     private static final Instant NOW = Instant.now();
     private static final Conversation CONVERSATION =

@@ -7,17 +7,7 @@ import io.github.linpeilie.annotations.AutoMapper;
 import java.time.LocalDateTime;
 
 /**
- * {@code ReviewTaskResponse} 封装教育模块中不可变的结构化数据，并作为相关操作之间的值对象。
- * @param id 标识，表示该记录组件承载的数据。
- * @param studentId 学生标识，表示该记录组件承载的数据。
- * @param knowledgeId knowledgeId 属性，表示该记录组件承载的数据。
- * @param knowledgeName knowledgeName 属性，表示该记录组件承载的数据。
- * @param reviewRound reviewRound 属性，表示该记录组件承载的数据。
- * @param reviewDate reviewDate 属性，表示该记录组件承载的数据。
- * @param status 状态，表示该记录组件承载的数据。
- * @param statusDesc statusDesc 属性，表示该记录组件承载的数据。
- * @param resultScore resultScore 属性，表示该记录组件承载的数据。
- * @param completedAt completedAt 属性，表示该记录组件承载的数据。
+ * 封装 复习 Task 相关的不可变数据及其字段约束。
  */
 @AutoMapper(target = ReviewTaskBO.class)
 public record ReviewTaskResponse(

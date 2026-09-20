@@ -10,7 +10,9 @@ import lombok.extern.slf4j.Slf4j;
 import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
 
-/** 插件管理器 管理插件的完整生命周期：安装 → 启动 → 停止 → 卸载 */
+/**
+ * 管理 插件 相关的运行时状态、注册信息或临时数据。
+ */
 @Slf4j
 public class PluginManager {
 
@@ -22,9 +24,9 @@ public class PluginManager {
     private final String pluginsDir;
 
     /**
-     * {@code PluginManager} 创建并初始化当前类型实例。
+     * 执行 插件 相关业务操作，并维护必要的状态和协作关系。
      *
-     * @param pluginsDir 参数值，用于执行当前操作。
+     * @param pluginsDir 用于完成本次业务处理的 pluginsDir 参数。
      */
     public PluginManager(String pluginsDir) {
         this.pluginsDir = pluginsDir;

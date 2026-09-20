@@ -7,7 +7,9 @@ import java.io.Serializable;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 
-/** Student 业务对象 */
+/**
+ * 表示 学生 领域对象的业务状态和属性。
+ */
 @Data
 public class StudentBO implements Serializable {
 

@@ -8,7 +8,7 @@ import lombok.EqualsAndHashCode;
 import java.io.Serial;
 
 /**
- * {@code RoleScopeMenuBO} 是模型模块的业务对象，承载用例处理所需的领域数据。
+ * 表示 角色 Scope Menu 领域对象的业务状态和属性。
  */
 @Data
 @EqualsAndHashCode(callSuper = true)

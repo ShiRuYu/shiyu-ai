@@ -2,7 +2,9 @@ package com.shiyu.ai.iam.contract.module;
 
 import com.shiyu.ai.kernel.context.TenantId;
 
-/** 为新租户初始化当前进程已装配的业务模块默认状态。 */
+/**
+ * 定义 租户 Module Access Provisioning 相关的协作契约和调用边界。
+ */
 public interface TenantModuleAccessProvisioning {
 
     /**

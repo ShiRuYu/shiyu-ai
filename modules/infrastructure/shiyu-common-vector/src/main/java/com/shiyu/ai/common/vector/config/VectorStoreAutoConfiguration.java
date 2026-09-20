@@ -16,20 +16,18 @@ import org.springframework.jdbc.core.JdbcTemplate;
 
 import java.sql.SQLException;
 
-/** VectorStore 自动配置 */
+/**
+ * 定义 向量 Store Auto 基础设施或应用能力的配置项及装配规则。
+ */
 @Slf4j
 @Configuration
 @EnableConfigurationProperties({VectorStoreProperties.class, VectorInfrastructureProperties.class})
 public class VectorStoreAutoConfiguration {
 
     /**
-     * {@code vectorStoreProvider} 执行当前类型定义的业务操作。
+     * 执行 向量 Store Auto 相关业务操作，并维护必要的状态和协作关系。
      *
-     * @param properties 参数值，用于执行当前操作。
-     * @param infrastructureProperties 参数值，用于执行当前操作。
-     * @param jdbcTemplates 参数值，用于执行当前操作。
-     *
-     * @return 返回当前操作产生的结果。
+     * @param class 用于完成本次业务处理的 class 参数。
      */
     @Bean
     @ConditionalOnMissingBean(VectorStoreProvider.class)
@@ -45,12 +43,9 @@ public class VectorStoreAutoConfiguration {
     }
 
     /**
-     * {@code vectorStore} 执行当前类型定义的业务操作。
+     * 执行 向量 Store Auto 相关业务操作，并维护必要的状态和协作关系。
      *
-     * @param provider 参数值，用于执行当前操作。
-     * @param properties 参数值，用于执行当前操作。
-     *
-     * @return 返回当前操作产生的结果。
+     * @param close 用于完成本次业务处理的 close 参数。
      */
     @Bean(destroyMethod = "close")
     @ConditionalOnMissingBean(VectorStore.class)

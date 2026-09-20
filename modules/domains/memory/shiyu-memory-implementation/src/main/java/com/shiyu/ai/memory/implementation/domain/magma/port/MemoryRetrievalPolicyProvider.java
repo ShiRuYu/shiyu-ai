@@ -5,15 +5,14 @@ import com.shiyu.ai.memory.contract.model.*;
 import java.util.Map;
 
 /**
- * MemoryRetrievalPolicyProvider 边界接口，负责向外部组件提供记忆领域相关能力。
+ * 创建或提供 记忆 Retrieval Policy 相关的业务组件和运行时能力。
  */
 public interface MemoryRetrievalPolicyProvider {
     /**
-     * 执行 {@code weights} 定义的接口操作。
+     * 执行 记忆 Retrieval Policy 相关业务数据，并返回处理结果。
      *
-     * @param query 方法参数。
-     *
-     * @return 操作结果。
+     * @param query 用于筛选目标数据的查询条件。
+     * @return 返回 记忆 Retrieval Policy 相关操作生成的结果数据。
      */
     Map<GraphType, Double> weights(MemoryQuery query);
 }

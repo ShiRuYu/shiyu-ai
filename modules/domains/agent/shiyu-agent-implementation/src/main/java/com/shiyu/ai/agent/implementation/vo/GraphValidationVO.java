@@ -8,7 +8,7 @@ import lombok.NoArgsConstructor;
 import java.util.List;
 
 /**
- * {@code GraphValidationVO} 承载智能体模块的领域状态或协作行为，负责维护本类型的职责边界。
+ * 封装 Graph Validation 操作向调用方返回的传输数据。
  */
 @Data
 @Builder
@@ -32,20 +32,19 @@ public class GraphValidationVO {
     private List<String> warnings;
 
     /**
-     * {@code success} 执行当前类型定义的业务操作。
+     * 执行 Graph Validation 相关业务数据，并返回处理结果。
      *
-     * @return 返回当前操作产生的结果。
+     * @return 返回 Graph Validation 相关操作生成的结果数据。
      */
     public static GraphValidationVO success() {
         return GraphValidationVO.builder().valid(true).build();
     }
 
     /**
-     * {@code success} 执行当前类型定义的业务操作。
+     * 执行 Graph Validation 相关业务数据，并返回处理结果。
      *
-     * @param warnings 参数值，用于执行当前操作。
-     *
-     * @return 返回当前操作产生的结果。
+     * @param warnings 用于完成本次业务处理的 warnings 参数。
+     * @return 返回 Graph Validation 相关操作生成的结果数据。
      */
     public static GraphValidationVO success(List<String> warnings) {
         return GraphValidationVO.builder()
@@ -56,12 +55,11 @@ public class GraphValidationVO {
     }
 
     /**
-     * {@code fail} 执行当前类型定义的业务操作。
+     * 执行 Graph Validation 相关业务数据，并返回处理结果。
      *
-     * @param errors 参数值，用于执行当前操作。
-     * @param warnings 参数值，用于执行当前操作。
-     *
-     * @return 返回当前操作产生的结果。
+     * @param errors 用于完成本次业务处理的 errors 参数。
+     * @param warnings 用于完成本次业务处理的 warnings 参数。
+     * @return 返回 Graph Validation 相关操作生成的结果数据。
      */
     public static GraphValidationVO fail(List<String> errors, List<String> warnings) {
         return GraphValidationVO.builder().valid(false).errors(errors).warnings(warnings).build();

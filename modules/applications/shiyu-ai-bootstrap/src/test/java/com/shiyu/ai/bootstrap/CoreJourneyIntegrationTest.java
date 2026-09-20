@@ -21,6 +21,9 @@ import java.net.http.HttpResponse;
 import java.nio.file.Path;
 import java.util.UUID;
 
+/**
+ * 验证 Core Journey Integration 相关功能、边界条件、异常路径和协作行为。
+ */
 @SpringBootTest(
         classes = ShiyuBootstrapApplication.class,
         webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)

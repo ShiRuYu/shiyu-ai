@@ -11,18 +11,17 @@ import com.shiyu.ai.common.storage.vector.*;
 import java.time.Duration;
 
 /**
- * RateLimitStore 接口，定义基础设施模块的能力边界。
+ * 管理 Rate Limit 相关的运行时状态、注册信息或临时数据。
  */
 public interface RateLimitStore {
     /**
-     * 执行 {@code consume} 定义的接口操作。
+     * 处理 Rate Limit 相关业务数据，并返回处理结果。
      *
-     * @param key 方法参数。
-     * @param permits 方法参数。
-     * @param limit 方法参数。
-     * @param window 方法参数。
-     *
-     * @return 条件是否满足。
+     * @param key 用于定位或筛选目标业务对象的业务值。
+     * @param permits 用于完成本次业务处理的 permits 参数。
+     * @param limit 每页返回的数据数量。
+     * @param window 用于完成本次业务处理的 window 参数。
+     * @return 返回本次条件判断是否成立。
      */
     boolean consume(String key, long permits, long limit, Duration window);
 }

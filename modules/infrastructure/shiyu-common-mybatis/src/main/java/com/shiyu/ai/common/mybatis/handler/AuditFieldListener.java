@@ -7,9 +7,7 @@ import lombok.extern.slf4j.Slf4j;
 import java.time.LocalDateTime;
 
 /**
- * MyBatis-Flex 审计字段自动填充监听器 在插入和更新操作时自动填充创建人、创建时间、更新人、更新时间。
- *
- * <p>tenantId 属于业务归属和授权作用域字段，必须由业务 Service 根据目标租户显式赋值，不能根据当前登录上下文猜测。
+ * 处理 Audit Field 相关事件或请求，并推进后续业务流程。
  */
 @Slf4j
 public class AuditFieldListener

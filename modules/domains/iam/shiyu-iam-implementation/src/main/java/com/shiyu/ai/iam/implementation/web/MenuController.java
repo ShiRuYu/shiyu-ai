@@ -23,7 +23,7 @@ import org.springframework.web.bind.annotation.*;
 import java.util.List;
 
 /**
- * MenuController 控制器，负责处理身份与访问领域相关 HTTP 请求并返回响应。
+ * 处理 Menu 相关的 Web 请求，并将请求转换为应用服务调用。
  */
 @Slf4j
 @Tag(name = "Menu", description = "Menu")
@@ -37,18 +37,18 @@ public class MenuController {
     private final MenuService menuService;
 
     /**
-     * {@code MenuController} 创建并初始化当前类型实例。
+     * 执行 Menu 相关业务操作，并维护必要的状态和协作关系。
      *
-     * @param menuService 参数值，用于执行当前操作。
+     * @param menuService 用于完成本次业务处理的 menuService 参数。
      */
     public MenuController(MenuService menuService) {
         this.menuService = menuService;
     }
 
     /**
-     * {@code getAllMenus} 查询并返回当前操作所需的数据。
+     * 执行 Menu 相关业务操作，并维护必要的状态和协作关系。
      *
-     * @return 返回当前操作产生的结果。
+     * @param Menus 用于完成本次业务处理的 Menus 参数。
      */
     @Operation(summary = "Get All Menus")
     @GetMapping("/all")
@@ -64,9 +64,9 @@ public class MenuController {
     }
 
     /**
-     * {@code getSystemMenuList} 查询并返回当前操作所需的数据。
+     * 执行 Menu 相关业务操作，并维护必要的状态和协作关系。
      *
-     * @return 返回当前操作产生的结果。
+     * @param List 用于完成本次业务处理的 List 参数。
      */
     @Operation(summary = "Get System Menu List")
     @SaCheckPermission("system:menu:list")
@@ -76,11 +76,9 @@ public class MenuController {
     }
 
     /**
-     * {@code getMenuPage} 查询并返回当前操作所需的数据。
+     * 执行 Menu 相关业务操作，并维护必要的状态和协作关系。
      *
-     * @param request 参数值，用于执行当前操作。
-     *
-     * @return 返回当前操作产生的结果。
+     * @param Page 分页页码，从 1 开始。
      */
     @Operation(summary = "Get System Menu Page")
     @SaCheckPermission("system:menu:list")
@@ -98,9 +96,9 @@ public class MenuController {
     }
 
     /**
-     * {@code getMenuRoots} 查询并返回当前操作所需的数据。
+     * 执行 Menu 相关业务操作，并维护必要的状态和协作关系。
      *
-     * @return 返回当前操作产生的结果。
+     * @param Roots 用于完成本次业务处理的 Roots 参数。
      */
     @Operation(summary = "Get Menu Roots")
     @SaCheckPermission("system:menu:list")
@@ -110,11 +108,9 @@ public class MenuController {
     }
 
     /**
-     * {@code getMenuChildren} 查询并返回当前操作所需的数据。
+     * 执行 Menu 相关业务操作，并维护必要的状态和协作关系。
      *
-     * @param parentId 参数值，用于执行当前操作。
-     *
-     * @return 返回当前操作产生的结果。
+     * @param Children 用于完成本次业务处理的 Children 参数。
      */
     @Operation(summary = "Get Menu Children")
     @SaCheckPermission("system:menu:list")
@@ -125,9 +121,9 @@ public class MenuController {
     }
 
     /**
-     * {@code getMenuPermissionsTree} 查询并返回当前操作所需的数据。
+     * 执行 Menu 相关业务操作，并维护必要的状态和协作关系。
      *
-     * @return 返回当前操作产生的结果。
+     * @param Tree 用于完成本次业务处理的 Tree 参数。
      */
     @Operation(summary = "Get Menu Permissions Tree")
     @SaCheckPermission("system:menu:list")
@@ -137,9 +133,9 @@ public class MenuController {
     }
 
     /**
-     * {@code getAllTree} 查询并返回当前操作所需的数据。
+     * 执行 Menu 相关业务操作，并维护必要的状态和协作关系。
      *
-     * @return 返回当前操作产生的结果。
+     * @param Tree 用于完成本次业务处理的 Tree 参数。
      */
     @Operation(summary = "Get All Tree")
     @SaCheckPermission("system:menu:list")
@@ -149,11 +145,9 @@ public class MenuController {
     }
 
     /**
-     * {@code deleteMenu} 释放或移除当前操作涉及的资源。
+     * 执行 Menu 相关业务操作，并维护必要的状态和协作关系。
      *
-     * @param id 参数值，用于执行当前操作。
-     *
-     * @return 返回当前操作产生的结果。
+     * @param Menu 用于完成本次业务处理的 Menu 参数。
      */
     @Operation(summary = "Delete Menu")
     @SaCheckPermission("system:menu:delete")
@@ -165,11 +159,9 @@ public class MenuController {
     }
 
     /**
-     * {@code createMenu} 写入或更新当前模块中的业务数据。
+     * 执行 Menu 相关业务操作，并维护必要的状态和协作关系。
      *
-     * @param request 参数值，用于执行当前操作。
-     *
-     * @return 返回当前操作产生的结果。
+     * @param Menu 用于完成本次业务处理的 Menu 参数。
      */
     @Operation(summary = "Create Menu")
     @SaCheckPermission("system:menu:create")
@@ -181,12 +173,9 @@ public class MenuController {
     }
 
     /**
-     * {@code updateMenu} 写入或更新当前模块中的业务数据。
+     * 执行 Menu 相关业务操作，并维护必要的状态和协作关系。
      *
-     * @param id 参数值，用于执行当前操作。
-     * @param request 参数值，用于执行当前操作。
-     *
-     * @return 返回当前操作产生的结果。
+     * @param Menu 用于完成本次业务处理的 Menu 参数。
      */
     @Operation(summary = "Update Menu")
     @SaCheckPermission("system:menu:update")

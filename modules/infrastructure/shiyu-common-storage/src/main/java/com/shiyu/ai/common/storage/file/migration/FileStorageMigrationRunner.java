@@ -21,7 +21,7 @@ import java.util.List;
 import java.util.Locale;
 
 /**
- * 在应用启动时迁移和校验文件存储目录结构。
+ * 实现 文件 Storage Migration 相关的业务处理、协作逻辑或基础设施能力。
  */
 @Component
 @Slf4j
@@ -41,11 +41,11 @@ public class FileStorageMigrationRunner implements ApplicationRunner {
     private final StorageMetadataStore metadataStore;
 
     /**
-     * {@code FileStorageMigrationRunner} 创建并初始化当前类型实例。
+     * 执行 文件 Storage Migration 相关业务操作，并维护必要的状态和协作关系。
      *
-     * @param migration 参数值，用于执行当前操作。
-     * @param storageProperties 参数值，用于执行当前操作。
-     * @param metadataStores 参数值，用于执行当前操作。
+     * @param migration 用于完成本次业务处理的 migration 参数。
+     * @param storageProperties 用于完成本次业务处理的 storageProperties 参数。
+     * @param metadataStores 用于完成本次业务处理的 metadataStores 参数。
      */
     public FileStorageMigrationRunner(
             StorageMigrationProperties migration,
@@ -57,9 +57,9 @@ public class FileStorageMigrationRunner implements ApplicationRunner {
     }
 
     /**
-     * {@code run} 执行当前模块定义的业务流程。
+     * 执行 文件 Storage Migration 相关业务操作，并维护必要的状态和协作关系。
      *
-     * @param args 参数值，用于执行当前操作。
+     * @param args 用于完成本次业务处理的 args 参数。
      */
     @Override
     public void run(ApplicationArguments args) throws Exception {

@@ -16,7 +16,9 @@ import org.springframework.stereotype.Component;
 
 import java.util.List;
 
-/** 应用启动时从 DB 加载意图定义到 IntentDefinitionFactory */
+/**
+ * 实现 Intent Def Application 相关的业务处理、协作逻辑或基础设施能力。
+ */
 @Slf4j
 @Component
 public class IntentDefApplicationRunner implements ApplicationRunner {

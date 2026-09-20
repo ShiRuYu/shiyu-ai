@@ -11,160 +11,154 @@ import com.shiyu.ai.kernel.context.ActorContext;
 
 import java.util.List;
 
-/** Agent Version 接口 合并了版本管理和 Graph 配置管理（节点、边、画布）。 */
+/**
+ * 提供 智能体 Version 的查询、创建、更新及调用服务，协调业务变更和领域协作。
+ */
 public interface AgentVersionService {
 
     // ========== 版本基础 CRUD ==========
 
     /**
-     * 根据条件查询并返回所需数据。
+     * 查询 智能体 Version 相关业务数据，并返回处理结果。
      *
-     * @param actor 当前操作主体上下文。
-     * @param agentId 方法参数。
-     *
-     * @return 符合条件的结果集合。
+     * @param actor 当前操作主体上下文，用于确定租户、用户和访问权限。
+     * @param agentId 用于定位agent的标识。
+     * @return 返回符合条件的数据集合；没有匹配项时返回空集合。
      */
     List<AgentVersionVO> getVersions(ActorContext actor, String agentId);
 
     /**
-     * 根据条件查询并返回所需数据。
+     * 查询 智能体 Version 相关业务数据，并返回处理结果。
      *
-     * @param actor 当前操作主体上下文。
-     * @param agentId 方法参数。
-     * @param versionId 方法参数。
-     *
-     * @return 操作结果。
+     * @param actor 当前操作主体上下文，用于确定租户、用户和访问权限。
+     * @param agentId 用于定位agent的标识。
+     * @param versionId 用于定位version的标识。
+     * @return 返回 智能体 Version 相关操作生成的结果数据。
      */
     AgentVersionDetailVO getVersionDetail(ActorContext actor, String agentId, Long versionId);
 
     /**
-     * 创建并保存业务对象。
+     * 创建或保存 智能体 Version 相关业务数据，并返回处理结果。
      *
-     * @param actor 当前操作主体上下文。
-     * @param agentId 方法参数。
-     * @param request 请求参数。
-     *
-     * @return 操作结果。
+     * @param actor 当前操作主体上下文，用于确定租户、用户和访问权限。
+     * @param agentId 用于定位agent的标识。
+     * @param request 封装本次操作所需业务字段的请求对象。
+     * @return 返回 智能体 Version 相关操作生成的结果数据。
      */
     AgentVersionVO createVersion(ActorContext actor, String agentId, VersionRequest request);
 
     /**
-     * 更新业务对象及其关联数据。
+     * 更新或设置 智能体 Version 相关业务数据，并返回处理结果。
      *
-     * @param actor 当前操作主体上下文。
-     * @param agentId 方法参数。
-     * @param versionId 方法参数。
-     * @param request 请求参数。
-     *
-     * @return 操作结果。
+     * @param actor 当前操作主体上下文，用于确定租户、用户和访问权限。
+     * @param agentId 用于定位agent的标识。
+     * @param versionId 用于定位version的标识。
+     * @param request 封装本次操作所需业务字段的请求对象。
+     * @return 返回 智能体 Version 相关操作生成的结果数据。
      */
     AgentVersionVO updateVersion(
             ActorContext actor, String agentId, Long versionId, VersionRequest request);
 
     /**
-     * 删除指定业务对象或关联数据。
+     * 删除或移除 智能体 Version 相关业务操作，并维护必要的状态和协作关系。
      *
-     * @param actor 当前操作主体上下文。
-     * @param agentId 方法参数。
-     * @param versionId 方法参数。
+     * @param actor 当前操作主体上下文，用于确定租户、用户和访问权限。
+     * @param agentId 用于定位agent的标识。
+     * @param versionId 用于定位version的标识。
      */
     void deleteVersion(ActorContext actor, String agentId, Long versionId);
 
     // ========== 版本生命周期 ==========
 
     /**
-     * 发布或发送业务事件。
+     * 发布或发送 智能体 Version 相关业务操作，并维护必要的状态和协作关系。
      *
-     * @param actor 当前操作主体上下文。
-     * @param agentId 方法参数。
-     * @param versionId 方法参数。
+     * @param actor 当前操作主体上下文，用于确定租户、用户和访问权限。
+     * @param agentId 用于定位agent的标识。
+     * @param versionId 用于定位version的标识。
      */
     void publishVersion(ActorContext actor, String agentId, Long versionId);
 
     /**
-     * 执行 {@code archiveVersion} 定义的接口操作。
+     * 执行 智能体 Version 相关业务操作，并维护必要的状态和协作关系。
      *
-     * @param actor 当前操作主体上下文。
-     * @param agentId 方法参数。
-     * @param versionId 方法参数。
+     * @param actor 当前操作主体上下文，用于确定租户、用户和访问权限。
+     * @param agentId 用于定位agent的标识。
+     * @param versionId 用于定位version的标识。
      */
     void archiveVersion(ActorContext actor, String agentId, Long versionId);
 
     /**
-     * 执行 {@code activateVersion} 定义的接口操作。
+     * 执行 智能体 Version 相关业务操作，并维护必要的状态和协作关系。
      *
-     * @param actor 当前操作主体上下文。
-     * @param agentId 方法参数。
-     * @param versionId 方法参数。
+     * @param actor 当前操作主体上下文，用于确定租户、用户和访问权限。
+     * @param agentId 用于定位agent的标识。
+     * @param versionId 用于定位version的标识。
      */
     void activateVersion(ActorContext actor, String agentId, Long versionId);
 
     /**
-     * 执行 {@code copyVersion} 定义的接口操作。
+     * 执行 智能体 Version 相关业务数据，并返回处理结果。
      *
-     * @param actor 当前操作主体上下文。
-     * @param agentId 方法参数。
-     * @param request 请求参数。
-     *
-     * @return 操作结果。
+     * @param actor 当前操作主体上下文，用于确定租户、用户和访问权限。
+     * @param agentId 用于定位agent的标识。
+     * @param request 封装本次操作所需业务字段的请求对象。
+     * @return 返回 智能体 Version 相关操作生成的结果数据。
      */
     AgentVersionVO copyVersion(ActorContext actor, String agentId, VersionRequest request);
 
     // ========== Graph 配置 ==========
 
     /**
-     * 根据条件查询并返回所需数据。
+     * 查询 智能体 Version 相关业务数据，并返回处理结果。
      *
-     * @param actor 当前操作主体上下文。
-     * @param agentId 方法参数。
-     * @param versionId 方法参数。
-     *
-     * @return 操作结果。
+     * @param actor 当前操作主体上下文，用于确定租户、用户和访问权限。
+     * @param agentId 用于定位agent的标识。
+     * @param versionId 用于定位version的标识。
+     * @return 返回 智能体 Version 相关操作生成的结果数据。
      */
     AgentVersionDetailVO getGraphConfig(ActorContext actor, String agentId, Long versionId);
 
     /**
-     * 更新业务对象及其关联数据。
+     * 更新或设置 智能体 Version 相关业务数据，并返回处理结果。
      *
-     * @param actor 当前操作主体上下文。
-     * @param agentId 方法参数。
-     * @param versionId 方法参数。
-     * @param request 请求参数。
-     *
-     * @return 操作结果。
+     * @param actor 当前操作主体上下文，用于确定租户、用户和访问权限。
+     * @param agentId 用于定位agent的标识。
+     * @param versionId 用于定位version的标识。
+     * @param request 封装本次操作所需业务字段的请求对象。
+     * @return 返回 智能体 Version 相关操作生成的结果数据。
      */
     AgentVersionDetailVO updateGraphConfig(
             ActorContext actor, String agentId, Long versionId, GraphConfigRequest request);
 
     /**
-     * 校验输入参数或当前业务状态。
+     * 校验或判断 智能体 Version 相关业务数据，并返回处理结果。
      *
-     * @param request 请求参数。
-     *
-     * @return 操作结果。
+     * @param request 封装本次操作所需业务字段的请求对象。
+     * @return 返回 智能体 Version 相关操作生成的结果数据。
      */
     GraphValidationVO validateGraphConfig(GraphConfigRequest request);
 
     // ========== 节点管理 ==========
 
     /**
-     * 创建并保存业务对象。
+     * 创建或保存 智能体 Version 相关业务操作，并维护必要的状态和协作关系。
      *
-     * @param actor 当前操作主体上下文。
-     * @param agentId 方法参数。
-     * @param versionId 方法参数。
-     * @param request 请求参数。
+     * @param actor 当前操作主体上下文，用于确定租户、用户和访问权限。
+     * @param agentId 用于定位agent的标识。
+     * @param versionId 用于定位version的标识。
+     * @param request 封装本次操作所需业务字段的请求对象。
      */
     void addNode(ActorContext actor, String agentId, Long versionId, NodeConfigRequest request);
 
     /**
-     * 更新业务对象及其关联数据。
+     * 更新或设置 智能体 Version 相关业务操作，并维护必要的状态和协作关系。
      *
-     * @param actor 当前操作主体上下文。
-     * @param agentId 方法参数。
-     * @param versionId 方法参数。
-     * @param nodeId 方法参数。
-     * @param request 请求参数。
+     * @param actor 当前操作主体上下文，用于确定租户、用户和访问权限。
+     * @param agentId 用于定位agent的标识。
+     * @param versionId 用于定位version的标识。
+     * @param nodeId 用于定位node的标识。
+     * @param request 封装本次操作所需业务字段的请求对象。
      */
     void updateNode(
             ActorContext actor,
@@ -174,35 +168,35 @@ public interface AgentVersionService {
             NodeConfigRequest request);
 
     /**
-     * 删除指定业务对象或关联数据。
+     * 删除或移除 智能体 Version 相关业务操作，并维护必要的状态和协作关系。
      *
-     * @param actor 当前操作主体上下文。
-     * @param agentId 方法参数。
-     * @param versionId 方法参数。
-     * @param nodeId 方法参数。
+     * @param actor 当前操作主体上下文，用于确定租户、用户和访问权限。
+     * @param agentId 用于定位agent的标识。
+     * @param versionId 用于定位version的标识。
+     * @param nodeId 用于定位node的标识。
      */
     void deleteNode(ActorContext actor, String agentId, Long versionId, String nodeId);
 
     // ========== 边管理 ==========
 
     /**
-     * 创建并保存业务对象。
+     * 创建或保存 智能体 Version 相关业务操作，并维护必要的状态和协作关系。
      *
-     * @param actor 当前操作主体上下文。
-     * @param agentId 方法参数。
-     * @param versionId 方法参数。
-     * @param request 请求参数。
+     * @param actor 当前操作主体上下文，用于确定租户、用户和访问权限。
+     * @param agentId 用于定位agent的标识。
+     * @param versionId 用于定位version的标识。
+     * @param request 封装本次操作所需业务字段的请求对象。
      */
     void addEdge(ActorContext actor, String agentId, Long versionId, EdgeRequest request);
 
     /**
-     * 删除指定业务对象或关联数据。
+     * 删除或移除 智能体 Version 相关业务操作，并维护必要的状态和协作关系。
      *
-     * @param actor 当前操作主体上下文。
-     * @param agentId 方法参数。
-     * @param versionId 方法参数。
-     * @param sourceNodeId 方法参数。
-     * @param targetNodeId 方法参数。
+     * @param actor 当前操作主体上下文，用于确定租户、用户和访问权限。
+     * @param agentId 用于定位agent的标识。
+     * @param versionId 用于定位version的标识。
+     * @param sourceNodeId 用于定位source的标识。
+     * @param targetNodeId 用于定位target的标识。
      */
     void deleteEdge(
             ActorContext actor,
@@ -214,23 +208,22 @@ public interface AgentVersionService {
     // ========== 画布管理 ==========
 
     /**
-     * 根据条件查询并返回所需数据。
+     * 查询 智能体 Version 相关业务数据，并返回处理结果。
      *
-     * @param actor 当前操作主体上下文。
-     * @param agentId 方法参数。
-     * @param versionId 方法参数。
-     *
-     * @return 操作结果。
+     * @param actor 当前操作主体上下文，用于确定租户、用户和访问权限。
+     * @param agentId 用于定位agent的标识。
+     * @param versionId 用于定位version的标识。
+     * @return 返回 智能体 Version 相关操作生成的结果数据。
      */
     String getCanvasConfig(ActorContext actor, String agentId, Long versionId);
 
     /**
-     * 更新业务对象及其关联数据。
+     * 更新或设置 智能体 Version 相关业务操作，并维护必要的状态和协作关系。
      *
-     * @param actor 当前操作主体上下文。
-     * @param agentId 方法参数。
-     * @param versionId 方法参数。
-     * @param canvasConfig 方法参数。
+     * @param actor 当前操作主体上下文，用于确定租户、用户和访问权限。
+     * @param agentId 用于定位agent的标识。
+     * @param versionId 用于定位version的标识。
+     * @param canvasConfig 用于完成本次业务处理的 canvasConfig 参数。
      */
     void updateCanvasConfig(
             ActorContext actor, String agentId, Long versionId, String canvasConfig);

@@ -1,15 +1,15 @@
 package com.shiyu.ai.kernel.event;
 
 /**
- * DomainEvent 领域事件，描述共享内核领域相关业务状态变化。
+ * 表示 Domain 相关的领域事件或异常信息。
  */
 @FunctionalInterface
 public interface DomainEvent {
 
     /**
-     * 执行 {@code eventType} 定义的接口操作。
+     * 执行 Domain 相关业务数据，并返回处理结果。
      *
-     * @return 操作结果。
+     * @return 返回 Domain 相关操作生成的结果数据。
      */
     String eventType();
 }

@@ -12,7 +12,7 @@ import com.shiyu.ai.kernel.context.TenantScope;
 import java.util.Objects;
 
 /**
- * {@code UsageRecorder} 承载治理模块的领域状态或协作行为，负责维护本类型的职责边界。
+ * 编排 用量 Recorder 所属应用流程的输入、协作和业务结果。
  */
 public final class UsageRecorder implements UsageGovernance {
 
@@ -22,21 +22,20 @@ public final class UsageRecorder implements UsageGovernance {
     private final UsageLedger ledger;
 
     /**
-     * {@code UsageRecorder} 创建并初始化当前类型实例。
+     * 执行 用量 Recorder 相关业务操作，并维护必要的状态和协作关系。
      *
-     * @param ledger 参数值，用于执行当前操作。
+     * @param ledger 用于完成本次业务处理的 ledger 参数。
      */
     public UsageRecorder(UsageLedger ledger) {
         this.ledger = Objects.requireNonNull(ledger, "ledger must not be null");
     }
 
     /**
-     * {@code record} 写入或更新当前模块中的业务数据。
+     * 执行 用量 Recorder 相关业务数据，并返回处理结果。
      *
-     * @param actor 参数值，用于执行当前操作。
-     * @param usage 参数值，用于执行当前操作。
-     *
-     * @return 返回当前操作产生的结果。
+     * @param actor 当前操作主体上下文，用于确定租户、用户和访问权限。
+     * @param usage 用于完成本次业务处理的 usage 参数。
+     * @return 返回 用量 Recorder 相关操作生成的结果数据。
      */
     @Override
     public UsageRecordResult record(

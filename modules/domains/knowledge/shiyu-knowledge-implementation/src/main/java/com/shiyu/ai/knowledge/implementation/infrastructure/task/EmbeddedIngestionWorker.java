@@ -46,7 +46,7 @@ import java.util.concurrent.ScheduledFuture;
 import java.util.concurrent.TimeUnit;
 
 /**
- * {@code EmbeddedIngestionWorker} 承载知识模块的领域状态或协作行为，负责维护本类型的职责边界。
+ * 负责 Embedded Ingestion 相关数据的存储或后台处理。
  */
 @Slf4j
 @Component
@@ -108,16 +108,16 @@ public class EmbeddedIngestionWorker {
     private long pollDelayMs;
 
     /**
-     * {@code EmbeddedIngestionWorker} 创建并初始化当前类型实例。
+     * 执行 Embedded Ingestion 相关业务操作，并维护必要的状态和协作关系。
      *
-     * @param enterpriseRepository 参数值，用于执行当前操作。
-     * @param documentRepository 参数值，用于执行当前操作。
-     * @param ingestionService 参数值，用于执行当前操作。
-     * @param objectStorage 参数值，用于执行当前操作。
-     * @param securityScanner 参数值，用于执行当前操作。
-     * @param parsers 参数值，用于执行当前操作。
-     * @param scheduler 参数值，用于执行当前操作。
-     * @param threadPoolManager 参数值，用于执行当前操作。
+     * @param enterpriseRepository 用于完成本次业务处理的 enterpriseRepository 参数。
+     * @param documentRepository 用于完成本次业务处理的 documentRepository 参数。
+     * @param ingestionService 用于完成本次业务处理的 ingestionService 参数。
+     * @param objectStorage 用于完成本次业务处理的 objectStorage 参数。
+     * @param securityScanner 用于完成本次业务处理的 securityScanner 参数。
+     * @param parsers 用于完成本次业务处理的 parsers 参数。
+     * @param scheduler 用于完成本次业务处理的 scheduler 参数。
+     * @param threadPoolManager 用于完成本次业务处理的 threadPoolManager 参数。
      */
     public EmbeddedIngestionWorker(
             KnowledgeEnterpriseRepository enterpriseRepository,

@@ -16,7 +16,7 @@ import java.util.LinkedHashMap;
 import java.util.Map;
 
 /**
- * {@code StorageProperties} 提供平台基础设施模块的配置项，并集中声明其默认值和运行约束。
+ * 定义 Storage 基础设施或应用能力的配置项及装配规则。
  */
 @Data
 @ConfigurationProperties(prefix = "shiyu.storage")
@@ -32,7 +32,7 @@ public class StorageProperties {
     private Map<String, S3Provider> providers = new LinkedHashMap<>();
 
     /**
-     * {@code Local} 承载平台基础设施模块的领域状态或协作行为，负责维护本类型的职责边界。
+     * 实现 Local 相关的业务处理、协作逻辑或基础设施能力。
      */
     @Data
     public static class Local {
@@ -43,7 +43,7 @@ public class StorageProperties {
     }
 
     /**
-     * {@code S3Provider} 承载平台基础设施模块的领域状态或协作行为，负责维护本类型的职责边界。
+     * 创建或提供 S 3 相关的业务组件和运行时能力。
      */
     @Data
     public static class S3Provider {

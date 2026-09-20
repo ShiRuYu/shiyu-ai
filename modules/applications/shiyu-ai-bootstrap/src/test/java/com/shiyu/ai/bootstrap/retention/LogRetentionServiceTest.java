@@ -13,6 +13,9 @@ import java.nio.file.attribute.FileTime;
 import java.time.Instant;
 import java.time.temporal.ChronoUnit;
 
+/**
+ * 验证 Log Retention Service 相关功能、边界条件、异常路径和协作行为。
+ */
 class LogRetentionServiceTest {
 
     @TempDir Path tempDirectory;

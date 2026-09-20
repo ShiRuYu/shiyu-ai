@@ -14,7 +14,9 @@ import org.springframework.stereotype.Component;
 
 import java.util.List;
 
-/** 字典数据仓储层 */
+/**
+ * 负责 Dict 的持久化查询、保存和删除，并维护数据访问边界。
+ */
 @Component
 public class DictRepositoryImpl
         implements com.shiyu.ai.iam.implementation.port.repository.DictRepository {

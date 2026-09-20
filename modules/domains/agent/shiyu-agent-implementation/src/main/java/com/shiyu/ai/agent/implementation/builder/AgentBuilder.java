@@ -18,28 +18,7 @@ import java.util.function.Predicate;
 import java.util.stream.Collectors;
 
 /**
- * Agent Builder 用于便捷构建和注册 Agent 的工具类
- *
- * <p>使用示例:
- *
- * <pre>{@code
- * AgentBuilder builder = new AgentBuilder();
- * AgentDefinition agent = builder
- *     .agentId("customer-service-agent")
- *     .name("客服助手")
- *     .description("智能客服问答助手")
- *     .version("v1.0.0")
- *     .addNode("start", new InputNode())
- *     .addNode("intent", IntentNode.builder().config(intentConfig).intentService(intentService).build())
- *     .addNode("llm", LlmCallNode.builder().config(llmConfig).intentService(llmService).build())
- *     .addNode("end", new OutputNode())
- *     .setStartNode("start")
- *     .setEndNode("end")
- *     .addEdge("start", "intent")
- *     .addEdge("intent", "llm")
- *     .addEdge("llm", "end")
- *     .buildAndRegister(agentService);
- * }</pre>
+ * 构建 智能体 相关的对象、流程或运行时配置。
  */
 @Slf4j
 public class AgentBuilder {
@@ -383,7 +362,9 @@ public class AgentBuilder {
                 .build();
     }
 
-    /** 边配置 */
+    /**
+     * 定义 Edge 基础设施或应用能力的配置项及装配规则。
+     */
     private static class EdgeConfig {
         String from;
         /**
@@ -397,7 +378,9 @@ public class AgentBuilder {
         }
     }
 
-    /** 条件边配置 */
+    /**
+     * 定义 Conditional Edge 基础设施或应用能力的配置项及装配规则。
+     */
     private static class ConditionalEdgeConfig {
         String from;
         /**

@@ -15,14 +15,14 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 
 /**
- * {@code RuntimeAutoConfiguration} 提供智能体模块的配置项，并集中声明其默认值和运行约束。
+ * 定义 Runtime Auto 基础设施或应用能力的配置项及装配规则。
  */
 @Configuration
 public class RuntimeAutoConfiguration {
     /**
-     * {@code inMemoryAiRunRepository} 执行当前类型定义的业务操作。
+     * 执行 Runtime Auto 相关业务操作，并维护必要的状态和协作关系。
      *
-     * @return 返回当前操作产生的结果。
+     * @param class 用于完成本次业务处理的 class 参数。
      */
     @Bean
     @ConditionalOnMissingBean(AiRunRepository.class)
@@ -31,9 +31,9 @@ public class RuntimeAutoConfiguration {
     }
 
     /**
-     * {@code inMemoryAiAppRepository} 执行当前类型定义的业务操作。
+     * 执行 Runtime Auto 相关业务操作，并维护必要的状态和协作关系。
      *
-     * @return 返回当前操作产生的结果。
+     * @param class 用于完成本次业务处理的 class 参数。
      */
     @Bean
     @ConditionalOnMissingBean(AiAppRepository.class)
@@ -42,9 +42,9 @@ public class RuntimeAutoConfiguration {
     }
 
     /**
-     * {@code inMemoryToolApprovalRepository} 执行当前类型定义的业务操作。
+     * 执行 Runtime Auto 相关业务操作，并维护必要的状态和协作关系。
      *
-     * @return 返回当前操作产生的结果。
+     * @param class 用于完成本次业务处理的 class 参数。
      */
     @Bean
     @ConditionalOnMissingBean(ToolApprovalRepository.class)
@@ -53,12 +53,9 @@ public class RuntimeAutoConfiguration {
     }
 
     /**
-     * {@code toolExecutionPipeline} 将当前对象转换为目标表示形式。
+     * 执行 Runtime Auto 相关业务操作，并维护必要的状态和协作关系。
      *
-     * @param runtime 参数值，用于执行当前操作。
-     * @param approvals 参数值，用于执行当前操作。
-     *
-     * @return 返回当前操作产生的结果。
+     * @param class 用于完成本次业务处理的 class 参数。
      */
     @Bean
     @ConditionalOnMissingBean(ToolExecutionPipeline.class)

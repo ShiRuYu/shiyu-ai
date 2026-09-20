@@ -2,7 +2,9 @@ package com.shiyu.ai.agent.implementation.service;
 
 import java.util.Map;
 
-/** 意图识别服务接口 用于识别用户输入的真实意图 */
+/**
+ * 提供 Intent 的查询、创建、更新及调用服务，协调业务变更和领域协作。
+ */
 public interface IntentService {
 
     /**
@@ -29,14 +31,7 @@ public interface IntentService {
     IntentRecognitionResult recognize(String row, String column, String query);
 
     /**
-     * 意图识别结果
-     *
-     * @param success success 属性，表示该记录组件承载的数据。
-     * @param intentCode intentCode 属性，表示该记录组件承载的数据。
-     * @param intentName intentName 属性，表示该记录组件承载的数据。
-     * @param confidence confidence 属性，表示该记录组件承载的数据。
-     * @param slots slots 属性，表示该记录组件承载的数据。
-     * @param errorMessage errorMessage 属性，表示该记录组件承载的数据。
+     * 封装 Intent Recognition 相关的不可变数据及其字段约束。
      */
     record IntentRecognitionResult(
             boolean success,

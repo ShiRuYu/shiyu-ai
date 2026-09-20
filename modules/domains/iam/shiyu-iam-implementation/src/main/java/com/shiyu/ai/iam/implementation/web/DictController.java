@@ -22,9 +22,7 @@ import org.springframework.web.bind.annotation.*;
 import java.util.List;
 
 /**
- * 字典管理 Controller
- *
- * <p>注意：所有参数均通过 @RequestParam 或 @RequestBody 传入，不使用 @PathVariable。
+ * 处理 Dict 相关的 Web 请求，并将请求转换为应用服务调用。
  */
 @Slf4j
 @Tag(name = "Dict", description = "Dict")
@@ -38,20 +36,18 @@ public class DictController {
     private final DictService dictService;
 
     /**
-     * {@code DictController} 创建并初始化当前类型实例。
+     * 执行 Dict 相关业务操作，并维护必要的状态和协作关系。
      *
-     * @param dictService 参数值，用于执行当前操作。
+     * @param dictService 用于完成本次业务处理的 dictService 参数。
      */
     public DictController(DictService dictService) {
         this.dictService = dictService;
     }
 
     /**
-     * {@code getDictList} 查询并返回当前操作所需的数据。
+     * 执行 Dict 相关业务操作，并维护必要的状态和协作关系。
      *
-     * @param request 参数值，用于执行当前操作。
-     *
-     * @return 返回当前操作产生的结果。
+     * @param List 用于完成本次业务处理的 List 参数。
      */
     @Operation(summary = "Get Dict List")
     @SaCheckPermission("system:dict:list")
@@ -67,11 +63,9 @@ public class DictController {
     }
 
     /**
-     * {@code getDictByType} 查询并返回当前操作所需的数据。
+     * 执行 Dict 相关业务操作，并维护必要的状态和协作关系。
      *
-     * @param dictType 参数值，用于执行当前操作。
-     *
-     * @return 返回当前操作产生的结果。
+     * @param Type 用于完成本次业务处理的 Type 参数。
      */
     @Operation(summary = "Get Dict By Type")
     @SaCheckPermission("system:dict:list")
@@ -83,11 +77,9 @@ public class DictController {
     }
 
     /**
-     * {@code createDict} 写入或更新当前模块中的业务数据。
+     * 执行 Dict 相关业务操作，并维护必要的状态和协作关系。
      *
-     * @param dictBO 参数值，用于执行当前操作。
-     *
-     * @return 返回当前操作产生的结果。
+     * @param Dict 用于完成本次业务处理的 Dict 参数。
      */
     @Operation(summary = "Create Dict")
     @SaCheckPermission("system:dict:create")
@@ -98,12 +90,9 @@ public class DictController {
     }
 
     /**
-     * {@code updateDict} 写入或更新当前模块中的业务数据。
+     * 执行 Dict 相关业务操作，并维护必要的状态和协作关系。
      *
-     * @param id 参数值，用于执行当前操作。
-     * @param dictBO 参数值，用于执行当前操作。
-     *
-     * @return 返回当前操作产生的结果。
+     * @param Dict 用于完成本次业务处理的 Dict 参数。
      */
     @Operation(summary = "Update Dict")
     @SaCheckPermission("system:dict:update")
@@ -116,11 +105,9 @@ public class DictController {
     }
 
     /**
-     * {@code deleteDict} 释放或移除当前操作涉及的资源。
+     * 执行 Dict 相关业务操作，并维护必要的状态和协作关系。
      *
-     * @param id 参数值，用于执行当前操作。
-     *
-     * @return 返回当前操作产生的结果。
+     * @param Dict 用于完成本次业务处理的 Dict 参数。
      */
     @Operation(summary = "Delete Dict")
     @SaCheckPermission("system:dict:delete")
@@ -132,11 +119,9 @@ public class DictController {
     }
 
     /**
-     * {@code deleteDicts} 释放或移除当前操作涉及的资源。
+     * 执行 Dict 相关业务操作，并维护必要的状态和协作关系。
      *
-     * @param ids 参数值，用于执行当前操作。
-     *
-     * @return 返回当前操作产生的结果。
+     * @param Dicts 用于完成本次业务处理的 Dicts 参数。
      */
     @Operation(summary = "Delete Dicts")
     @SaCheckPermission("system:dict:delete")

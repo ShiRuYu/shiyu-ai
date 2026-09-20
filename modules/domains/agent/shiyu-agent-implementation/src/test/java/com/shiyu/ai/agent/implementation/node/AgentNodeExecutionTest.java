@@ -65,6 +65,9 @@ import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 
+/**
+ * 验证 智能体 Node Execution 相关功能、边界条件、异常路径和协作行为。
+ */
 class AgentNodeExecutionTest {
 
     @Test

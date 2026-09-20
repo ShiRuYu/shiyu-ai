@@ -57,7 +57,7 @@ import java.util.regex.Pattern;
 import java.util.stream.Stream;
 
 /**
- * 验证 DynamicConverterRegistry 的功能、边界条件和集成行为。
+ * 验证 Dynamic Converter Registry 相关功能、边界条件、异常路径和协作行为。
  */
 @TestInstance(TestInstance.Lifecycle.PER_CLASS)
 class DynamicConverterRegistryTest {

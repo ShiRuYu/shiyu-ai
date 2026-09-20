@@ -16,7 +16,7 @@ import java.util.Optional;
 import javax.sql.DataSource;
 
 /**
- * {@code JdbcIdempotencyRepository} 定义会话模块的持久化端口，隔离领域逻辑与具体存储实现。
+ * 负责 Jdbc Idempotency 的持久化查询、保存和删除，并维护数据访问边界。
  */
 @Component
 public class JdbcIdempotencyRepository implements IdempotencyRepository {
@@ -26,23 +26,22 @@ public class JdbcIdempotencyRepository implements IdempotencyRepository {
     private final JdbcTemplate jdbc;
 
     /**
-     * {@code JdbcIdempotencyRepository} 创建并初始化当前类型实例。
+     * 执行 Jdbc Idempotency 相关业务操作，并维护必要的状态和协作关系。
      *
-     * @param dataSource 参数值，用于执行当前操作。
+     * @param dataSource 用于完成本次业务处理的 dataSource 参数。
      */
     public JdbcIdempotencyRepository(@Qualifier("agentDataSource") DataSource dataSource) {
         this.jdbc = new JdbcTemplate(dataSource);
     }
 
     /**
-     * {@code find} 查询并返回当前操作所需的数据。
+     * 查询 Jdbc Idempotency 相关业务数据，并返回处理结果。
      *
-     * @param tenantId 参数值，用于执行当前操作。
-     * @param ownerUserId 参数值，用于执行当前操作。
-     * @param operation 参数值，用于执行当前操作。
-     * @param key 参数值，用于执行当前操作。
-     *
-     * @return 返回当前操作产生的结果。
+     * @param tenantId 当前操作涉及的租户标识。
+     * @param ownerUserId 当前操作涉及的用户标识。
+     * @param operation 用于完成本次业务处理的 operation 参数。
+     * @param key 用于定位或筛选目标业务对象的业务值。
+     * @return 返回可能存在的业务对象；不存在时返回空值容器。
      */
     @Override
     public Optional<String> find(
@@ -62,15 +61,14 @@ public class JdbcIdempotencyRepository implements IdempotencyRepository {
     }
 
     /**
-     * {@code claim} 执行当前类型定义的业务操作。
+     * 执行 Jdbc Idempotency 相关业务数据，并返回处理结果。
      *
-     * @param tenantId 参数值，用于执行当前操作。
-     * @param ownerUserId 参数值，用于执行当前操作。
-     * @param operation 参数值，用于执行当前操作。
-     * @param key 参数值，用于执行当前操作。
-     * @param resourceId 参数值，用于执行当前操作。
-     *
-     * @return 返回当前操作产生的结果。
+     * @param tenantId 当前操作涉及的租户标识。
+     * @param ownerUserId 当前操作涉及的用户标识。
+     * @param operation 用于完成本次业务处理的 operation 参数。
+     * @param key 用于定位或筛选目标业务对象的业务值。
+     * @param resourceId 用于定位resource的标识。
+     * @return 返回本次条件判断是否成立。
      */
     @Override
     public boolean claim(

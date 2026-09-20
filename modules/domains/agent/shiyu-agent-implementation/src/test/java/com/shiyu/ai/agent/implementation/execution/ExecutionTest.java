@@ -14,6 +14,9 @@ import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
 import java.util.concurrent.TimeUnit;
 
+/**
+ * 验证 Execution 相关功能、边界条件、异常路径和协作行为。
+ */
 class ExecutionTest {
 
     @Test

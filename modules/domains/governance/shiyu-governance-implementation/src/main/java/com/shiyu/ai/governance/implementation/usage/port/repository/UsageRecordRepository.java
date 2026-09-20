@@ -7,13 +7,13 @@ import java.util.List;
 import java.util.Map;
 
 /**
- * UsageRecordRepository 仓储接口，负责访问和持久化治理领域聚合数据。
+ * 负责 用量 Record 的持久化查询、保存和删除，并维护数据访问边界。
  */
 public interface UsageRecordRepository {
     /**
-     * 创建并保存业务对象。
+     * 创建或保存 用量 Record 相关业务操作，并维护必要的状态和协作关系。
      *
-     * @param record 方法参数。
+     * @param record 用于完成本次业务处理的 record 参数。
      */
     void insert(UsageRecordBO record);
 
@@ -30,77 +30,71 @@ public interface UsageRecordRepository {
     }
 
     /**
-     * 统计符合条件的数据。
+     * 执行 用量 Record 相关业务数据，并返回处理结果。
      *
-     * @param days 方法参数。
-     *
-     * @return 操作结果。
+     * @param days 用于完成本次业务处理的 days 参数。
+     * @return 返回符合条件的数据集合；没有匹配项时返回空集合。
      */
     List<Map<String, Object>> aggregateByDay(int days);
 
     /**
-     * 统计符合条件的数据。
+     * 执行 用量 Record 相关业务数据，并返回处理结果。
      *
-     * @param weeks 方法参数。
-     *
-     * @return 操作结果。
+     * @param weeks 用于完成本次业务处理的 weeks 参数。
+     * @return 返回符合条件的数据集合；没有匹配项时返回空集合。
      */
     List<Map<String, Object>> aggregateByWeek(int weeks);
 
     /**
-     * 统计符合条件的数据。
+     * 执行 用量 Record 相关业务数据，并返回处理结果。
      *
-     * @param months 方法参数。
-     *
-     * @return 操作结果。
+     * @param months 用于完成本次业务处理的 months 参数。
+     * @return 返回符合条件的数据集合；没有匹配项时返回空集合。
      */
     List<Map<String, Object>> aggregateByMonth(int months);
 
     /**
-     * 根据条件查询并返回所需数据。
+     * 查询 用量 Record 相关业务数据，并返回处理结果。
      *
-     * @return 操作结果。
+     * @return 返回 用量 Record 相关操作生成的结果数据。
      */
     Map<String, Object> getOverview();
 
     /**
-     * 统计符合条件的数据。
+     * 执行 用量 Record 相关业务数据，并返回处理结果。
      *
-     * @return 操作结果。
+     * @return 返回符合条件的数据集合；没有匹配项时返回空集合。
      */
     List<Map<String, Object>> aggregateByModel();
 
     /**
-     * 统计符合条件的数据。
+     * 执行 用量 Record 相关业务数据，并返回处理结果。
      *
-     * @param days 方法参数。
-     *
-     * @return 操作结果。
+     * @param days 用于完成本次业务处理的 days 参数。
+     * @return 返回符合条件的数据集合；没有匹配项时返回空集合。
      */
     List<Map<String, Object>> aggregateLlmByDay(int days);
 
     /**
-     * 统计符合条件的数据。
+     * 执行 用量 Record 相关业务数据，并返回处理结果。
      *
-     * @param weeks 方法参数。
-     *
-     * @return 操作结果。
+     * @param weeks 用于完成本次业务处理的 weeks 参数。
+     * @return 返回符合条件的数据集合；没有匹配项时返回空集合。
      */
     List<Map<String, Object>> aggregateLlmByWeek(int weeks);
 
     /**
-     * 统计符合条件的数据。
+     * 执行 用量 Record 相关业务数据，并返回处理结果。
      *
-     * @param months 方法参数。
-     *
-     * @return 操作结果。
+     * @param months 用于完成本次业务处理的 months 参数。
+     * @return 返回符合条件的数据集合；没有匹配项时返回空集合。
      */
     List<Map<String, Object>> aggregateLlmByMonth(int months);
 
     /**
-     * 根据条件查询并返回所需数据。
+     * 查询 用量 Record 相关业务数据，并返回处理结果。
      *
-     * @return 操作结果。
+     * @return 返回 用量 Record 相关操作生成的结果数据。
      */
     Map<String, Object> getEmbeddingOverview();
 

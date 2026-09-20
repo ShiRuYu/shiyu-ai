@@ -12,7 +12,7 @@ import java.util.List;
 import java.util.Objects;
 
 /**
- * 编排 AuthPermission 应用用例。
+ * 定义 认证 Permission 相关用例的输入、授权和业务结果。
  */
 @Slf4j
 public final class AuthPermissionUseCase {
@@ -22,21 +22,20 @@ public final class AuthPermissionUseCase {
     private final AuthRepository authRepository;
 
     /**
-     * {@code AuthPermissionUseCase} 创建并初始化当前类型实例。
+     * 执行 认证 Permission 相关业务操作，并维护必要的状态和协作关系。
      *
-     * @param authRepository 参数值，用于执行当前操作。
+     * @param authRepository 用于完成本次业务处理的 authRepository 参数。
      */
     public AuthPermissionUseCase(AuthRepository authRepository) {
         this.authRepository = authRepository;
     }
 
     /**
-     * {@code getAuthCodes} 查询并返回当前操作所需的数据。
+     * 查询 认证 Permission 相关业务数据，并返回处理结果。
      *
-     * @param actor 参数值，用于执行当前操作。
-     * @param username 参数值，用于执行当前操作。
-     *
-     * @return 返回当前操作产生的结果。
+     * @param actor 当前操作主体上下文，用于确定租户、用户和访问权限。
+     * @param username 用于完成本次业务处理的 username 参数。
+     * @return 返回符合条件的数据集合；没有匹配项时返回空集合。
      */
     public List<String> getAuthCodes(ActorContext actor, String username) {
         log.info("获取权限编码, usernamePresent={}", username != null);
@@ -57,12 +56,11 @@ public final class AuthPermissionUseCase {
     }
 
     /**
-     * {@code getAuthCodesByUserId} 查询并返回当前操作所需的数据。
+     * 查询 认证 Permission 相关业务数据，并返回处理结果。
      *
-     * @param actor 参数值，用于执行当前操作。
-     * @param userId 参数值，用于执行当前操作。
-     *
-     * @return 返回当前操作产生的结果。
+     * @param actor 当前操作主体上下文，用于确定租户、用户和访问权限。
+     * @param userId 当前操作涉及的用户标识。
+     * @return 返回符合条件的数据集合；没有匹配项时返回空集合。
      */
     public List<String> getAuthCodesByUserId(ActorContext actor, UserId userId) {
         log.info("获取权限编码, userIdPresent={}", userId != null && userId.value() > 0);

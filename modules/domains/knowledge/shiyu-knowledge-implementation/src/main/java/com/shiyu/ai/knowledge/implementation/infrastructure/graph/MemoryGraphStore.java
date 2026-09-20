@@ -17,7 +17,7 @@ import java.time.Duration;
 import java.util.*;
 
 /**
- * 管理知识图谱节点和边的保存、查询与删除。
+ * 管理 记忆 Graph 相关的运行时状态、注册信息或临时数据。
  */
 @Component
 public class MemoryGraphStore implements GraphStore {
@@ -36,10 +36,10 @@ public class MemoryGraphStore implements GraphStore {
                     .build();
 
     /**
-     * {@code MemoryGraphStore} 创建并初始化当前类型实例。
+     * 执行 记忆 Graph 相关业务操作，并维护必要的状态和协作关系。
      *
-     * @param knowledgeRepository 参数值，用于执行当前操作。
-     * @param relationRepository 参数值，用于执行当前操作。
+     * @param knowledgeRepository 用于完成本次业务处理的 knowledgeRepository 参数。
+     * @param relationRepository 用于完成本次业务处理的 relationRepository 参数。
      */
     public MemoryGraphStore(
             KnowledgeRepository knowledgeRepository,
@@ -49,12 +49,11 @@ public class MemoryGraphStore implements GraphStore {
     }
 
     /**
-     * {@code getNode} 查询并返回当前操作所需的数据。
+     * 查询 记忆 Graph 相关业务数据，并返回处理结果。
      *
-     * @param tenantId 参数值，用于执行当前操作。
-     * @param id 参数值，用于执行当前操作。
-     *
-     * @return 返回当前操作产生的结果。
+     * @param tenantId 当前操作涉及的租户标识。
+     * @param id 用于定位目标业务对象的标识。
+     * @return 返回 记忆 Graph 相关操作生成的结果数据。
      */
     @Override
     public GraphNode getNode(TenantId tenantId, Long id) {
@@ -62,12 +61,11 @@ public class MemoryGraphStore implements GraphStore {
     }
 
     /**
-     * {@code parents} 执行当前类型定义的业务操作。
+     * 执行 记忆 Graph 相关业务数据，并返回处理结果。
      *
-     * @param tenantId 参数值，用于执行当前操作。
-     * @param id 参数值，用于执行当前操作。
-     *
-     * @return 返回当前操作产生的结果。
+     * @param tenantId 当前操作涉及的租户标识。
+     * @param id 用于定位目标业务对象的标识。
+     * @return 返回符合条件的数据集合；没有匹配项时返回空集合。
      */
     @Override
     public List<Long> parents(TenantId tenantId, Long id) {
@@ -75,12 +73,11 @@ public class MemoryGraphStore implements GraphStore {
     }
 
     /**
-     * {@code children} 执行当前类型定义的业务操作。
+     * 执行 记忆 Graph 相关业务数据，并返回处理结果。
      *
-     * @param tenantId 参数值，用于执行当前操作。
-     * @param id 参数值，用于执行当前操作。
-     *
-     * @return 返回当前操作产生的结果。
+     * @param tenantId 当前操作涉及的租户标识。
+     * @param id 用于定位目标业务对象的标识。
+     * @return 返回符合条件的数据集合；没有匹配项时返回空集合。
      */
     @Override
     public List<Long> children(TenantId tenantId, Long id) {
@@ -88,12 +85,11 @@ public class MemoryGraphStore implements GraphStore {
     }
 
     /**
-     * {@code related} 执行当前类型定义的业务操作。
+     * 执行 记忆 Graph 相关业务数据，并返回处理结果。
      *
-     * @param tenantId 参数值，用于执行当前操作。
-     * @param id 参数值，用于执行当前操作。
-     *
-     * @return 返回当前操作产生的结果。
+     * @param tenantId 当前操作涉及的租户标识。
+     * @param id 用于定位目标业务对象的标识。
+     * @return 返回符合条件的数据集合；没有匹配项时返回空集合。
      */
     @Override
     public List<Long> related(TenantId tenantId, Long id) {
@@ -101,12 +97,11 @@ public class MemoryGraphStore implements GraphStore {
     }
 
     /**
-     * {@code edges} 执行当前类型定义的业务操作。
+     * 执行 记忆 Graph 相关业务数据，并返回处理结果。
      *
-     * @param tenantId 参数值，用于执行当前操作。
-     * @param id 参数值，用于执行当前操作。
-     *
-     * @return 返回当前操作产生的结果。
+     * @param tenantId 当前操作涉及的租户标识。
+     * @param id 用于定位目标业务对象的标识。
+     * @return 返回符合条件的数据集合；没有匹配项时返回空集合。
      */
     @Override
     public List<GraphEdge> edges(TenantId tenantId, Long id) {
@@ -115,10 +110,10 @@ public class MemoryGraphStore implements GraphStore {
     }
 
     /**
-     * {@code addNode} 执行当前类型定义的业务操作。
+     * 创建或保存 记忆 Graph 相关业务操作，并维护必要的状态和协作关系。
      *
-     * @param tenantId 参数值，用于执行当前操作。
-     * @param node 参数值，用于执行当前操作。
+     * @param tenantId 当前操作涉及的租户标识。
+     * @param node 用于完成本次业务处理的 node 参数。
      */
     @Override
     public void addNode(TenantId tenantId, GraphNode node) {
@@ -126,13 +121,13 @@ public class MemoryGraphStore implements GraphStore {
     }
 
     /**
-     * {@code addEdge} 执行当前类型定义的业务操作。
+     * 创建或保存 记忆 Graph 相关业务操作，并维护必要的状态和协作关系。
      *
-     * @param tenantId 参数值，用于执行当前操作。
-     * @param sourceId 参数值，用于执行当前操作。
-     * @param targetId 参数值，用于执行当前操作。
-     * @param type 参数值，用于执行当前操作。
-     * @param weight 参数值，用于执行当前操作。
+     * @param tenantId 当前操作涉及的租户标识。
+     * @param sourceId 用于定位source的标识。
+     * @param targetId 用于定位target的标识。
+     * @param type 用于完成本次业务处理的 type 参数。
+     * @param weight 用于完成本次业务处理的 weight 参数。
      */
     @Override
     public void addEdge(
@@ -141,12 +136,12 @@ public class MemoryGraphStore implements GraphStore {
     }
 
     /**
-     * {@code removeEdge} 释放或移除当前操作涉及的资源。
+     * 删除或移除 记忆 Graph 相关业务操作，并维护必要的状态和协作关系。
      *
-     * @param tenantId 参数值，用于执行当前操作。
-     * @param sourceId 参数值，用于执行当前操作。
-     * @param targetId 参数值，用于执行当前操作。
-     * @param type 参数值，用于执行当前操作。
+     * @param tenantId 当前操作涉及的租户标识。
+     * @param sourceId 用于定位source的标识。
+     * @param targetId 用于定位target的标识。
+     * @param type 用于完成本次业务处理的 type 参数。
      */
     @Override
     public void removeEdge(TenantId tenantId, Long sourceId, Long targetId, String type) {
@@ -154,10 +149,10 @@ public class MemoryGraphStore implements GraphStore {
     }
 
     /**
-     * {@code removeNode} 释放或移除当前操作涉及的资源。
+     * 删除或移除 记忆 Graph 相关业务操作，并维护必要的状态和协作关系。
      *
-     * @param tenantId 参数值，用于执行当前操作。
-     * @param id 参数值，用于执行当前操作。
+     * @param tenantId 当前操作涉及的租户标识。
+     * @param id 用于定位目标业务对象的标识。
      */
     @Override
     public void removeNode(TenantId tenantId, Long id) {
@@ -165,12 +160,11 @@ public class MemoryGraphStore implements GraphStore {
     }
 
     /**
-     * {@code getParentNodes} 查询并返回当前操作所需的数据。
+     * 查询 记忆 Graph 相关业务数据，并返回处理结果。
      *
-     * @param tenantId 参数值，用于执行当前操作。
-     * @param id 参数值，用于执行当前操作。
-     *
-     * @return 返回当前操作产生的结果。
+     * @param tenantId 当前操作涉及的租户标识。
+     * @param id 用于定位目标业务对象的标识。
+     * @return 返回符合条件的数据集合；没有匹配项时返回空集合。
      */
     @Override
     public List<GraphNode> getParentNodes(TenantId tenantId, Long id) {
@@ -178,12 +172,11 @@ public class MemoryGraphStore implements GraphStore {
     }
 
     /**
-     * {@code getChildNodes} 查询并返回当前操作所需的数据。
+     * 查询 记忆 Graph 相关业务数据，并返回处理结果。
      *
-     * @param tenantId 参数值，用于执行当前操作。
-     * @param id 参数值，用于执行当前操作。
-     *
-     * @return 返回当前操作产生的结果。
+     * @param tenantId 当前操作涉及的租户标识。
+     * @param id 用于定位目标业务对象的标识。
+     * @return 返回符合条件的数据集合；没有匹配项时返回空集合。
      */
     @Override
     public List<GraphNode> getChildNodes(TenantId tenantId, Long id) {
@@ -191,12 +184,11 @@ public class MemoryGraphStore implements GraphStore {
     }
 
     /**
-     * {@code getRelatedNodes} 查询并返回当前操作所需的数据。
+     * 查询 记忆 Graph 相关业务数据，并返回处理结果。
      *
-     * @param tenantId 参数值，用于执行当前操作。
-     * @param id 参数值，用于执行当前操作。
-     *
-     * @return 返回当前操作产生的结果。
+     * @param tenantId 当前操作涉及的租户标识。
+     * @param id 用于定位目标业务对象的标识。
+     * @return 返回符合条件的数据集合；没有匹配项时返回空集合。
      */
     @Override
     public List<GraphNode> getRelatedNodes(TenantId tenantId, Long id) {
@@ -204,12 +196,11 @@ public class MemoryGraphStore implements GraphStore {
     }
 
     /**
-     * {@code topologicalSort} 将当前对象转换为目标表示形式。
+     * 构建或转换 记忆 Graph 相关业务数据，并返回处理结果。
      *
-     * @param tenantId 参数值，用于执行当前操作。
-     * @param rootId 参数值，用于执行当前操作。
-     *
-     * @return 返回当前操作产生的结果。
+     * @param tenantId 当前操作涉及的租户标识。
+     * @param rootId 用于定位root的标识。
+     * @return 返回符合条件的数据集合；没有匹配项时返回空集合。
      */
     @Override
     public List<Long> topologicalSort(TenantId tenantId, Long rootId) {
@@ -220,12 +211,11 @@ public class MemoryGraphStore implements GraphStore {
     }
 
     /**
-     * {@code dfs} 执行当前类型定义的业务操作。
+     * 执行 记忆 Graph 相关业务数据，并返回处理结果。
      *
-     * @param tenantId 参数值，用于执行当前操作。
-     * @param startId 参数值，用于执行当前操作。
-     *
-     * @return 返回当前操作产生的结果。
+     * @param tenantId 当前操作涉及的租户标识。
+     * @param startId 用于定位start的标识。
+     * @return 返回符合条件的数据集合；没有匹配项时返回空集合。
      */
     @Override
     public List<Long> dfs(TenantId tenantId, Long startId) {
@@ -235,12 +225,11 @@ public class MemoryGraphStore implements GraphStore {
     }
 
     /**
-     * {@code bfs} 执行当前类型定义的业务操作。
+     * 执行 记忆 Graph 相关业务数据，并返回处理结果。
      *
-     * @param tenantId 参数值，用于执行当前操作。
-     * @param startId 参数值，用于执行当前操作。
-     *
-     * @return 返回当前操作产生的结果。
+     * @param tenantId 当前操作涉及的租户标识。
+     * @param startId 用于定位start的标识。
+     * @return 返回符合条件的数据集合；没有匹配项时返回空集合。
      */
     @Override
     public List<Long> bfs(TenantId tenantId, Long startId) {
@@ -259,13 +248,12 @@ public class MemoryGraphStore implements GraphStore {
     }
 
     /**
-     * {@code findPath} 查询并返回当前操作所需的数据。
+     * 查询 记忆 Graph 相关业务数据，并返回处理结果。
      *
-     * @param tenantId 参数值，用于执行当前操作。
-     * @param from 参数值，用于执行当前操作。
-     * @param to 参数值，用于执行当前操作。
-     *
-     * @return 返回当前操作产生的结果。
+     * @param tenantId 当前操作涉及的租户标识。
+     * @param from 用于完成本次业务处理的 from 参数。
+     * @param to 用于完成本次业务处理的 to 参数。
+     * @return 返回符合条件的数据集合；没有匹配项时返回空集合。
      */
     @Override
     public List<Long> findPath(TenantId tenantId, Long from, Long to) {
@@ -293,13 +281,12 @@ public class MemoryGraphStore implements GraphStore {
     }
 
     /**
-     * {@code findMissingPrerequisites} 查询并返回当前操作所需的数据。
+     * 查询 记忆 Graph 相关业务数据，并返回处理结果。
      *
-     * @param tenantId 参数值，用于执行当前操作。
-     * @param targetId 参数值，用于执行当前操作。
-     * @param masteredIds 参数值，用于执行当前操作。
-     *
-     * @return 返回当前操作产生的结果。
+     * @param tenantId 当前操作涉及的租户标识。
+     * @param targetId 用于定位target的标识。
+     * @param masteredIds 待处理的业务对象标识集合。
+     * @return 返回符合条件的数据集合；没有匹配项时返回空集合。
      */
     @Override
     public List<Long> findMissingPrerequisites(
@@ -389,7 +376,7 @@ public class MemoryGraphStore implements GraphStore {
     }
 
     /**
-     * {@code NodeList} 表示知识模块中的一组受控业务状态或分类。
+     * 定义 Node List 可用的枚举值及其业务语义。
      */
     private enum NodeList {
         PARENTS,
@@ -398,9 +385,7 @@ public class MemoryGraphStore implements GraphStore {
     }
 
     /**
-     * {@code GraphKey} 封装知识模块中不可变的结构化数据，并作为相关操作之间的值对象。
-     * @param tenantId 租户标识，表示该记录组件承载的数据。
-     * @param spaceId spaceId 属性，表示该记录组件承载的数据。
+     * 封装 Graph Key 相关的不可变数据及其字段约束。
      */
     private record GraphKey(Long tenantId, Long spaceId) {}
 }

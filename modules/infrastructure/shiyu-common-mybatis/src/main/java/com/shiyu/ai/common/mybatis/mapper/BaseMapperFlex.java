@@ -3,7 +3,7 @@ package com.shiyu.ai.common.mybatis.mapper;
 import com.mybatisflex.core.BaseMapper;
 
 /**
- * 自定义 Mapper 接口, 实现 自定义扩展
+ * 定义 Base Mapper Flex 相关的协作契约和调用边界。
  *
  * @param <T> table 泛型
  */

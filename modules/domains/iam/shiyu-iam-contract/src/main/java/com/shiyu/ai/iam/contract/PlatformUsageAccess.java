@@ -3,7 +3,7 @@ package com.shiyu.ai.iam.contract;
 import com.shiyu.ai.kernel.context.ActorContext;
 
 /**
- * IAM 提供的平台用量访问授权契约。
+ * 定义 平台 用量 Access 相关的协作契约和调用边界。
  */
 public interface PlatformUsageAccess {
 

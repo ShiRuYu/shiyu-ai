@@ -11,7 +11,7 @@ import com.shiyu.ai.kernel.context.TenantId;
 import java.util.List;
 
 /**
- * AuthCodeService 服务接口，负责执行身份与访问领域相关业务操作。
+ * 提供 认证 Code 的查询、创建、更新及调用服务，协调业务变更和领域协作。
  */
 public interface AuthCodeService {
     /**
@@ -24,32 +24,29 @@ public interface AuthCodeService {
     List<AuthCodeOptionVO> list(ActorContext actor);
 
     /**
-     * 根据条件查询并返回所需数据。
+     * 查询 认证 Code 相关业务数据，并返回处理结果。
      *
-     * @param actor 当前操作主体上下文。
-     * @param roleId 方法参数。
-     * @param tenantId 租户标识。
-     *
-     * @return 符合条件的结果集合。
+     * @param actor 当前操作主体上下文，用于确定租户、用户和访问权限。
+     * @param roleId 用于定位role的标识。
+     * @param tenantId 当前操作涉及的租户标识。
+     * @return 返回符合条件的数据集合；没有匹配项时返回空集合。
      */
     List<String> listRoleAuthCodes(ActorContext actor, Long roleId, TenantId tenantId);
 
     /**
-     * 执行 {@code options} 定义的接口操作。
+     * 查询 认证 Code 相关业务数据，并返回处理结果。
      *
-     * @param actor 当前操作主体上下文。
-     *
-     * @return 符合条件的结果集合。
+     * @param actor 当前操作主体上下文，用于确定租户、用户和访问权限。
+     * @return 返回符合条件的数据集合；没有匹配项时返回空集合。
      */
     List<AuthCodeOptionVO> options(ActorContext actor);
 
     /**
-     * 创建并保存业务对象。
+     * 创建或保存 认证 Code 相关业务数据，并返回处理结果。
      *
-     * @param actor 当前操作主体上下文。
-     * @param request 请求参数。
-     *
-     * @return 操作结果。
+     * @param actor 当前操作主体上下文，用于确定租户、用户和访问权限。
+     * @param request 封装本次操作所需业务字段的请求对象。
+     * @return 返回 认证 Code 相关操作生成的结果数据。
      */
     AuthCodeResponse create(ActorContext actor, AuthCodeRequest request);
 
@@ -75,48 +72,44 @@ public interface AuthCodeService {
     boolean delete(ActorContext actor, Long id);
 
     /**
-     * 执行 {@code grant} 定义的接口操作。
+     * 执行 认证 Code 相关业务数据，并返回处理结果。
      *
-     * @param actor 当前操作主体上下文。
-     * @param roleId 方法参数。
-     * @param tenantId 租户标识。
-     * @param authCodeIds 方法参数。
-     *
-     * @return 条件是否满足。
+     * @param actor 当前操作主体上下文，用于确定租户、用户和访问权限。
+     * @param roleId 用于定位role的标识。
+     * @param tenantId 当前操作涉及的租户标识。
+     * @param authCodeIds 待处理的业务对象标识集合。
+     * @return 返回本次条件判断是否成立。
      */
     boolean grant(ActorContext actor, Long roleId, TenantId tenantId, List<Long> authCodeIds);
 
     /**
-     * 更新业务对象及其关联数据。
+     * 执行 认证 Code 相关业务数据，并返回处理结果。
      *
-     * @param actor 当前操作主体上下文。
-     * @param roleId 方法参数。
-     * @param tenantId 租户标识。
-     * @param authCodes 方法参数。
-     *
-     * @return 条件是否满足。
+     * @param actor 当前操作主体上下文，用于确定租户、用户和访问权限。
+     * @param roleId 用于定位role的标识。
+     * @param tenantId 当前操作涉及的租户标识。
+     * @param authCodes 用于完成本次业务处理的 authCodes 参数。
+     * @return 返回本次条件判断是否成立。
      */
     boolean replace(ActorContext actor, Long roleId, TenantId tenantId, List<String> authCodes);
 
     /**
-     * 执行 {@code revoke} 定义的接口操作。
+     * 执行 认证 Code 相关业务数据，并返回处理结果。
      *
-     * @param actor 当前操作主体上下文。
-     * @param roleId 方法参数。
-     * @param tenantId 租户标识。
-     * @param authCodeId 方法参数。
-     *
-     * @return 条件是否满足。
+     * @param actor 当前操作主体上下文，用于确定租户、用户和访问权限。
+     * @param roleId 用于定位role的标识。
+     * @param tenantId 当前操作涉及的租户标识。
+     * @param authCodeId 用于定位auth Code的标识。
+     * @return 返回本次条件判断是否成立。
      */
     boolean revoke(ActorContext actor, Long roleId, TenantId tenantId, Long authCodeId);
 
     /**
-     * 执行 {@code page} 定义的接口操作。
+     * 查询 认证 Code 相关业务数据，并返回处理结果。
      *
-     * @param actor 当前操作主体上下文。
-     * @param request 请求参数。
-     *
-     * @return 操作结果。
+     * @param actor 当前操作主体上下文，用于确定租户、用户和访问权限。
+     * @param request 封装本次操作所需业务字段的请求对象。
+     * @return 返回 认证 Code 相关操作生成的结果数据。
      */
     PageData<AuthCodeOptionVO> page(ActorContext actor, AuthCodePageRequest request);
 }

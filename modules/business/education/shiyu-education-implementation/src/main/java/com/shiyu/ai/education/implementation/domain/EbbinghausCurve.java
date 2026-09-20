@@ -7,7 +7,7 @@ import java.util.Arrays;
 import java.util.List;
 
 /**
- * {@code EbbinghausCurve} 承载教育模块的领域状态或协作行为，负责维护本类型的职责边界。
+ * 实现 Ebbinghaus Curve 所属领域的业务规则和状态变化。
  */
 public final class EbbinghausCurve {
 
@@ -24,12 +24,11 @@ public final class EbbinghausCurve {
     private EbbinghausCurve() {}
 
     /**
-     * {@code mastery} 执行当前类型定义的业务操作。
+     * 执行 Ebbinghaus Curve 相关业务数据，并返回处理结果。
      *
-     * @param lastStudyAt 参数值，用于执行当前操作。
-     * @param reviewRound 参数值，用于执行当前操作。
-     *
-     * @return 返回当前操作产生的结果。
+     * @param lastStudyAt 用于完成本次业务处理的 lastStudyAt 参数。
+     * @param reviewRound 用于完成本次业务处理的 reviewRound 参数。
+     * @return 返回 Ebbinghaus Curve 相关操作生成的结果数据。
      */
     public static double mastery(Instant lastStudyAt, int reviewRound) {
         double lambda = LAMBDAS[Math.min(reviewRound, LAMBDAS.length - 1)];
@@ -38,22 +37,20 @@ public final class EbbinghausCurve {
     }
 
     /**
-     * {@code scheduleReviewDates} 执行当前类型定义的业务操作。
+     * 执行 Ebbinghaus Curve 相关业务数据，并返回处理结果。
      *
-     * @param learnedAt 参数值，用于执行当前操作。
-     *
-     * @return 返回当前操作产生的结果。
+     * @param learnedAt 用于完成本次业务处理的 learnedAt 参数。
+     * @return 返回符合条件的数据集合；没有匹配项时返回空集合。
      */
     public static List<LocalDate> scheduleReviewDates(LocalDate learnedAt) {
         return Arrays.stream(INTERVALS_DAYS).mapToObj(learnedAt::plusDays).toList();
     }
 
     /**
-     * {@code currentRound} 执行当前类型定义的业务操作。
+     * 执行 Ebbinghaus Curve 相关业务数据，并返回处理结果。
      *
-     * @param lastStudyAt 参数值，用于执行当前操作。
-     *
-     * @return 返回当前操作产生的结果。
+     * @param lastStudyAt 用于完成本次业务处理的 lastStudyAt 参数。
+     * @return 返回 Ebbinghaus Curve 相关操作生成的结果数据。
      */
     public static int currentRound(Instant lastStudyAt) {
         long days = Duration.between(lastStudyAt, Instant.now()).toDays();

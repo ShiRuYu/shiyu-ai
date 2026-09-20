@@ -17,7 +17,7 @@ import java.util.Locale;
 import java.util.Map;
 
 /**
- * ConversationPromptService 服务接口，负责执行会话领域相关业务操作。
+ * 提供 会话 提示词 的查询、创建、更新及调用服务，协调业务变更和领域协作。
  */
 @Component
 public final class ConversationPromptService {
@@ -27,23 +27,22 @@ public final class ConversationPromptService {
     private final ContextAssemblyPort contextAssembly;
 
     /**
-     * {@code ConversationPromptService} 创建并初始化当前类型实例。
+     * 执行 会话 提示词 相关业务操作，并维护必要的状态和协作关系。
      *
-     * @param contextAssembly 参数值，用于执行当前操作。
+     * @param contextAssembly 用于完成本次业务处理的 contextAssembly 参数。
      */
     public ConversationPromptService(ContextAssemblyPort contextAssembly) {
         this.contextAssembly = contextAssembly;
     }
 
     /**
-     * {@code assemble} 执行当前类型定义的业务操作。
+     * 构建或转换 会话 提示词 相关业务数据，并返回处理结果。
      *
-     * @param conversation 参数值，用于执行当前操作。
-     * @param allMessages 参数值，用于执行当前操作。
-     * @param tenantId 参数值，用于执行当前操作。
-     * @param ownerUserId 参数值，用于执行当前操作。
-     *
-     * @return 返回当前操作产生的结果。
+     * @param conversation 用于完成本次业务处理的 conversation 参数。
+     * @param allMessages 用于完成本次业务处理的 allMessages 参数。
+     * @param tenantId 当前操作涉及的租户标识。
+     * @param ownerUserId 当前操作涉及的用户标识。
+     * @return 返回 会话 提示词 相关操作生成的结果数据。
      */
     public PromptAssembly assemble(
             Conversation conversation,
@@ -152,11 +151,7 @@ public final class ConversationPromptService {
     }
 
     /**
-     * {@code PromptAssembly} 封装会话模块中不可变的结构化数据，并作为相关操作之间的值对象。
-     * @param conversationMessages conversationMessages 属性，表示该记录组件承载的数据。
-     * @param modelMessages modelMessages 属性，表示该记录组件承载的数据。
-     * @param contextItems contextItems 属性，表示该记录组件承载的数据。
-     * @param contextTrace contextTrace 属性，表示该记录组件承载的数据。
+     * 封装 提示词 Assembly 相关的不可变数据及其字段约束。
      */
     public record PromptAssembly(
             List<ConversationMessage> conversationMessages,

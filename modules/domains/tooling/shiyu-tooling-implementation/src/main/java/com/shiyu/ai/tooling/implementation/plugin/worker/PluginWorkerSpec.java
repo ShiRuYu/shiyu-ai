@@ -4,12 +4,7 @@ import java.time.Duration;
 import java.util.Set;
 
 /**
- * {@code PluginWorkerSpec} 封装工具模块中不可变的结构化数据，并作为相关操作之间的值对象。
- * @param executable executable 属性，表示该记录组件承载的数据。
- * @param allowedDirectories allowedDirectories 属性，表示该记录组件承载的数据。
- * @param allowedHosts allowedHosts 属性，表示该记录组件承载的数据。
- * @param environmentKeys environmentKeys 属性，表示该记录组件承载的数据。
- * @param timeout timeout 属性，表示该记录组件承载的数据。
+ * 封装 插件 Worker Spec 相关的不可变数据及其字段约束。
  */
 public record PluginWorkerSpec(
         String executable,

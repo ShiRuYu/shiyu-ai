@@ -16,7 +16,9 @@ import jakarta.annotation.Resource;
 
 import org.springframework.stereotype.Component;
 
-/** 租户/角色查询仓储 提供租户和角色信息的查询（原 TenantRoleRepositoryImpl 精简版） */
+/**
+ * 负责 租户 角色 的持久化查询、保存和删除，并维护数据访问边界。
+ */
 @Component
 public class TenantRoleRepositoryImpl
         implements com.shiyu.ai.iam.implementation.port.repository.TenantRoleRepository {

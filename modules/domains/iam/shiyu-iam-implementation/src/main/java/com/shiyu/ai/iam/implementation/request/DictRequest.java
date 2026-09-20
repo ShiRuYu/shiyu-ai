@@ -3,7 +3,7 @@ package com.shiyu.ai.iam.implementation.request;
 import lombok.Data;
 
 /**
- * {@code DictRequest} 表示平台模块的请求参数，承载调用方提交的输入数据。
+ * 封装 Dict 操作所需的请求条件和输入数据。
  */
 @Data
 public class DictRequest {

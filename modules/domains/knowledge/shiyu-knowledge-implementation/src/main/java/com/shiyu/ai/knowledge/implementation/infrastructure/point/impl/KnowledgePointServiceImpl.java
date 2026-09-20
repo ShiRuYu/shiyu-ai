@@ -26,7 +26,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 /**
- * {@code KnowledgePointServiceImpl} 实现知识模块的应用服务，负责编排用例流程并维护业务边界。
+ * 提供 知识 Point 的查询、创建、更新及调用服务，协调业务变更和领域协作。
  */
 @Service
 @RequiredArgsConstructor
@@ -54,16 +54,15 @@ public class KnowledgePointServiceImpl implements KnowledgePointService, Knowled
     private final KnowledgeDocumentRelationService documentRelationService;
 
     /**
-     * {@code page} 执行当前类型定义的业务操作。
+     * 查询 知识 Point 相关业务数据，并返回处理结果。
      *
-     * @param actor 参数值，用于执行当前操作。
-     * @param spaceId 参数值，用于执行当前操作。
-     * @param pageNum 参数值，用于执行当前操作。
-     * @param pageSize 参数值，用于执行当前操作。
-     * @param keyword 参数值，用于执行当前操作。
-     * @param category 参数值，用于执行当前操作。
-     *
-     * @return 返回当前操作产生的结果。
+     * @param actor 当前操作主体上下文，用于确定租户、用户和访问权限。
+     * @param spaceId 用于定位space的标识。
+     * @param pageNum 用于完成本次业务处理的 pageNum 参数。
+     * @param pageSize 每页返回的数据数量。
+     * @param keyword 用于完成本次业务处理的 keyword 参数。
+     * @param category 用于完成本次业务处理的 category 参数。
+     * @return 返回 知识 Point 相关操作生成的结果数据。
      */
     @Override
     public PageData<PointView> page(
@@ -87,12 +86,11 @@ public class KnowledgePointServiceImpl implements KnowledgePointService, Knowled
     }
 
     /**
-     * {@code get} 查询并返回当前操作所需的数据。
+     * 查询 知识 Point 相关业务数据，并返回处理结果。
      *
-     * @param actor 参数值，用于执行当前操作。
-     * @param pointId 参数值，用于执行当前操作。
-     *
-     * @return 返回当前操作产生的结果。
+     * @param actor 当前操作主体上下文，用于确定租户、用户和访问权限。
+     * @param pointId 用于定位point的标识。
+     * @return 返回 知识 Point 相关操作生成的结果数据。
      */
     @Override
     public PointView get(ActorContext actor, Long pointId) {
@@ -103,12 +101,11 @@ public class KnowledgePointServiceImpl implements KnowledgePointService, Knowled
     }
 
     /**
-     * {@code getResponse} 查询并返回当前操作所需的数据。
+     * 查询 知识 Point 相关业务数据，并返回处理结果。
      *
-     * @param actor 参数值，用于执行当前操作。
-     * @param pointId 参数值，用于执行当前操作。
-     *
-     * @return 返回当前操作产生的结果。
+     * @param actor 当前操作主体上下文，用于确定租户、用户和访问权限。
+     * @param pointId 用于定位point的标识。
+     * @return 返回 知识 Point 相关操作生成的结果数据。
      */
     @Override
     public KnowledgeResponse getResponse(ActorContext actor, Long pointId) {
@@ -117,12 +114,11 @@ public class KnowledgePointServiceImpl implements KnowledgePointService, Knowled
     }
 
     /**
-     * {@code graph} 执行当前类型定义的业务操作。
+     * 执行 知识 Point 相关业务数据，并返回处理结果。
      *
-     * @param actor 参数值，用于执行当前操作。
-     * @param pointId 参数值，用于执行当前操作。
-     *
-     * @return 返回当前操作产生的结果。
+     * @param actor 当前操作主体上下文，用于确定租户、用户和访问权限。
+     * @param pointId 用于定位point的标识。
+     * @return 返回 知识 Point 相关操作生成的结果数据。
      */
     @Override
     public KnowledgeGraphResponse graph(ActorContext actor, Long pointId) {
@@ -135,13 +131,9 @@ public class KnowledgePointServiceImpl implements KnowledgePointService, Knowled
     }
 
     /**
-     * {@code create} 写入或更新当前模块中的业务数据。
+     * 执行 知识 Point 相关业务操作，并维护必要的状态和协作关系。
      *
-     * @param actor 参数值，用于执行当前操作。
-     * @param spaceId 参数值，用于执行当前操作。
-     * @param request 参数值，用于执行当前操作。
-     *
-     * @return 返回当前操作产生的结果。
+     * @param class 用于完成本次业务处理的 class 参数。
      */
     @Override
     @Transactional(rollbackFor = Exception.class)
@@ -170,13 +162,9 @@ public class KnowledgePointServiceImpl implements KnowledgePointService, Knowled
     }
 
     /**
-     * {@code update} 写入或更新当前模块中的业务数据。
+     * 执行 知识 Point 相关业务操作，并维护必要的状态和协作关系。
      *
-     * @param actor 参数值，用于执行当前操作。
-     * @param pointId 参数值，用于执行当前操作。
-     * @param request 参数值，用于执行当前操作。
-     *
-     * @return 返回当前操作产生的结果。
+     * @param class 用于完成本次业务处理的 class 参数。
      */
     @Override
     @Transactional(rollbackFor = Exception.class)
@@ -205,10 +193,9 @@ public class KnowledgePointServiceImpl implements KnowledgePointService, Knowled
     }
 
     /**
-     * {@code delete} 释放或移除当前操作涉及的资源。
+     * 执行 知识 Point 相关业务操作，并维护必要的状态和协作关系。
      *
-     * @param actor 参数值，用于执行当前操作。
-     * @param pointId 参数值，用于执行当前操作。
+     * @param class 用于完成本次业务处理的 class 参数。
      */
     @Override
     @Transactional(rollbackFor = Exception.class)

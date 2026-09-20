@@ -16,19 +16,7 @@ import java.util.*;
 import java.util.stream.Collectors;
 
 /**
- * RAG 增强节点
- *
- * <p>对检索到的文档执行增强处理，支持三种策略：
- *
- * <ul>
- *   <li><b>SUMMARIZATION</b> — 对文档进行摘要合并，控制输出长度
- *   <li><b>RE_RANK</b> — 根据分数重新排序，并结合 contextWindowSize 截取
- *   <li><b>FILTER</b> — 按相似度阈值过滤低分文档
- * </ul>
- *
- * 处理后的上下文内容写入 FieldKey#CONTEXT 供后续 LLM 使用。
- *
- * <p>所有配置参数优先从 input (AgentState) 读取，未提供时回退到 config 默认值。
+ * 执行 Rag Enhancement 相关流程节点的输入处理和状态转移。
  */
 @Setter
 @Getter
@@ -47,16 +35,16 @@ public class RagEnhancementNode extends BaseNode {
     }
 
     /**
-     * {@code builder} 执行当前类型定义的业务操作。
+     * 构建或转换 Rag Enhancement 相关业务数据，并返回处理结果。
      *
-     * @return 返回当前操作产生的结果。
+     * @return 返回 Rag Enhancement 相关操作生成的结果数据。
      */
     public static Builder builder() {
         return new Builder();
     }
 
     /**
-     * {@code Builder} 承载智能体模块的领域状态或协作行为，负责维护本类型的职责边界。
+     * 构建 Builder 相关的对象、流程或运行时配置。
      */
     public static class Builder {
         /**
@@ -65,11 +53,10 @@ public class RagEnhancementNode extends BaseNode {
         private RagEnhancementConfig config;
 
         /**
-         * {@code config} 执行当前类型定义的业务操作。
+         * 执行 Builder 相关业务数据，并返回处理结果。
          *
-         * @param config 参数值，用于执行当前操作。
-         *
-         * @return 返回当前操作产生的结果。
+         * @param config 用于完成本次业务处理的 config 参数。
+         * @return 返回 Builder 相关操作生成的结果数据。
          */
         public Builder config(RagEnhancementConfig config) {
             this.config = config;
@@ -77,9 +64,9 @@ public class RagEnhancementNode extends BaseNode {
         }
 
         /**
-         * {@code build} 执行当前类型定义的业务操作。
+         * 构建或转换 Builder 相关业务数据，并返回处理结果。
          *
-         * @return 返回当前操作产生的结果。
+         * @return 返回 Builder 相关操作生成的结果数据。
          */
         public RagEnhancementNode build() {
             return new RagEnhancementNode(config);
@@ -87,11 +74,10 @@ public class RagEnhancementNode extends BaseNode {
     }
 
     /**
-     * {@code doExecute} 执行当前类型定义的业务操作。
+     * 执行 Rag Enhancement 相关业务数据，并返回处理结果。
      *
-     * @param input 参数值，用于执行当前操作。
-     *
-     * @return 返回当前操作产生的结果。
+     * @param input 用于完成本次业务处理的 input 参数。
+     * @return 返回 Rag Enhancement 相关操作生成的结果数据。
      */
     @Override
     protected NodeOutput doExecute(NodeInput input) throws Exception {
@@ -316,17 +302,14 @@ public class RagEnhancementNode extends BaseNode {
     }
 
     /**
-     * 增强结果
-     *
-     * @param documents documents 属性，表示该记录组件承载的数据。
-     * @param context 上下文，表示该记录组件承载的数据。
+     * 封装 Enhanced 相关的不可变数据及其字段约束。
      */
     private record EnhancedResult(List<Map<String, Object>> documents, String context) {}
 
     /**
-     * {@code getRequiredInputs} 查询并返回当前操作所需的数据。
+     * 查询 Rag Enhancement 相关业务数据，并返回处理结果。
      *
-     * @return 返回当前操作产生的结果。
+     * @return 返回符合条件的数据集合；没有匹配项时返回空集合。
      */
     @Override
     public java.util.List<NodeInputParam> getRequiredInputs() {

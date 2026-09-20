@@ -14,6 +14,9 @@ import org.springframework.web.socket.WebSocketSession;
 
 import java.io.IOException;
 
+/**
+ * 验证 用量 Web Socket Handler 相关功能、边界条件、异常路径和协作行为。
+ */
 class UsageWebSocketHandlerTest {
 
     @Test

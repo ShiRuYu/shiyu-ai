@@ -23,6 +23,9 @@ import reactor.core.publisher.Flux;
 
 import java.util.Map;
 
+/**
+ * 验证 Execution Controller 相关功能、边界条件、异常路径和协作行为。
+ */
 @Tag("dev")
 class ExecutionControllerTest {
 

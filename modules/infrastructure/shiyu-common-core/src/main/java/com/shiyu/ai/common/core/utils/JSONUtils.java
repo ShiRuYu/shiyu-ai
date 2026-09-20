@@ -26,7 +26,7 @@ import java.util.Map;
 import java.util.TimeZone;
 
 /**
- * {@code JSONUtils} 承载平台基础设施模块的领域状态或协作行为，负责维护本类型的职责边界。
+ * 提供 JSON 相关的通用辅助操作，供业务和基础设施复用。
  */
 public class JSONUtils {
 
@@ -62,20 +62,19 @@ public class JSONUtils {
                     .build();
 
     /**
-     * {@code getObjectMapper} 查询并返回当前操作所需的数据。
+     * 查询 JSON 相关业务数据，并返回处理结果。
      *
-     * @return 返回当前操作产生的结果。
+     * @return 返回 JSON 相关操作生成的结果数据。
      */
     public static ObjectMapper getObjectMapper() {
         return OBJECT_MAPPER;
     }
 
     /**
-     * {@code toJsonString} 将当前对象转换为目标表示形式。
+     * 构建或转换 JSON 相关业务数据，并返回处理结果。
      *
-     * @param object 参数值，用于执行当前操作。
-     *
-     * @return 返回当前操作产生的结果。
+     * @param object 用于完成本次业务处理的 object 参数。
+     * @return 返回 JSON 相关操作生成的结果数据。
      */
     public static String toJsonString(Object object) {
         if (ObjectUtils.isNull(object)) {
@@ -89,11 +88,10 @@ public class JSONUtils {
     }
 
     /**
-     * {@code toPrettyJsonString} 将当前对象转换为目标表示形式。
+     * 构建或转换 JSON 相关业务数据，并返回处理结果。
      *
-     * @param object 参数值，用于执行当前操作。
-     *
-     * @return 返回当前操作产生的结果。
+     * @param object 用于完成本次业务处理的 object 参数。
+     * @return 返回 JSON 相关操作生成的结果数据。
      */
     public static String toPrettyJsonString(Object object) {
         if (ObjectUtils.isNull(object)) {
@@ -107,12 +105,11 @@ public class JSONUtils {
     }
 
     /**
-     * {@code parseObject} 执行当前类型定义的业务操作。
+     * 执行 JSON 相关业务数据，并返回处理结果。
      *
-     * @param text 参数值，用于执行当前操作。
-     * @param clazz 参数值，用于执行当前操作。
-     *
-     * @return 返回当前操作产生的结果。
+     * @param text 用于完成本次业务处理的 text 参数。
+     * @param clazz 用于完成本次业务处理的 clazz 参数。
+     * @return 返回 JSON 相关操作生成的结果数据。
      */
     public static <T> T parseObject(String text, Class<T> clazz) {
         if (text.isBlank()) {
@@ -126,12 +123,11 @@ public class JSONUtils {
     }
 
     /**
-     * {@code parseObject} 执行当前类型定义的业务操作。
+     * 执行 JSON 相关业务数据，并返回处理结果。
      *
-     * @param bytes 参数值，用于执行当前操作。
-     * @param clazz 参数值，用于执行当前操作。
-     *
-     * @return 返回当前操作产生的结果。
+     * @param bytes 用于完成本次业务处理的 bytes 参数。
+     * @param clazz 用于完成本次业务处理的 clazz 参数。
+     * @return 返回 JSON 相关操作生成的结果数据。
      */
     public static <T> T parseObject(byte[] bytes, Class<T> clazz) {
         if (bytes == null || bytes.length == 0) {
@@ -145,12 +141,11 @@ public class JSONUtils {
     }
 
     /**
-     * {@code parseObject} 执行当前类型定义的业务操作。
+     * 执行 JSON 相关业务数据，并返回处理结果。
      *
-     * @param text 参数值，用于执行当前操作。
-     * @param typeReference 参数值，用于执行当前操作。
-     *
-     * @return 返回当前操作产生的结果。
+     * @param text 用于完成本次业务处理的 text 参数。
+     * @param typeReference 用于完成本次业务处理的 typeReference 参数。
+     * @return 返回 JSON 相关操作生成的结果数据。
      */
     public static <T> T parseObject(String text, TypeReference<T> typeReference) {
         if (text.isBlank()) {
@@ -175,12 +170,11 @@ public class JSONUtils {
     }
 
     /**
-     * {@code convertValue} 执行当前类型定义的业务操作。
+     * 构建或转换 JSON 相关业务数据，并返回处理结果。
      *
-     * @param fromValue 参数值，用于执行当前操作。
-     * @param toValueType 参数值，用于执行当前操作。
-     *
-     * @return 返回当前操作产生的结果。
+     * @param fromValue 用于完成本次业务处理的 fromValue 参数。
+     * @param toValueType 用于完成本次业务处理的 toValueType 参数。
+     * @return 返回 JSON 相关操作生成的结果数据。
      */
     public static <T> T convertValue(Object fromValue, Class<T> toValueType) {
         if (fromValue == null) {
@@ -194,12 +188,11 @@ public class JSONUtils {
     }
 
     /**
-     * {@code parseArray} 执行当前类型定义的业务操作。
+     * 执行 JSON 相关业务数据，并返回处理结果。
      *
-     * @param text 参数值，用于执行当前操作。
-     * @param clazz 参数值，用于执行当前操作。
-     *
-     * @return 返回当前操作产生的结果。
+     * @param text 用于完成本次业务处理的 text 参数。
+     * @param clazz 用于完成本次业务处理的 clazz 参数。
+     * @return 返回符合条件的数据集合；没有匹配项时返回空集合。
      */
     public static <T> List<T> parseArray(String text, Class<T> clazz) {
         if (text.isBlank()) {
@@ -280,11 +273,10 @@ public class JSONUtils {
     }
 
     /**
-     * {@code parseMap} 执行当前类型定义的业务操作。
+     * 执行 JSON 相关业务数据，并返回处理结果。
      *
-     * @param file 参数值，用于执行当前操作。
-     *
-     * @return 返回当前操作产生的结果。
+     * @param file 用于完成本次业务处理的 file 参数。
+     * @return 返回 JSON 相关操作生成的结果数据。
      */
     public static Map<String, Object> parseMap(File file) {
         try {
@@ -309,7 +301,9 @@ public class JSONUtils {
         }
     }
 
-    /** 超出 JS 最大最小值 处理 */
+    /**
+     * 实现 Big Number Serializer 相关的业务处理、协作逻辑或基础设施能力。
+     */
     @JacksonStdImpl
     public static class BigNumberSerializer extends NumberSerializer {
 
@@ -325,20 +319,20 @@ public class JSONUtils {
         public static final BigNumberSerializer INSTANCE = new BigNumberSerializer(Number.class);
 
         /**
-         * {@code BigNumberSerializer} 创建并初始化当前类型实例。
+         * 执行 Big Number Serializer 相关业务操作，并维护必要的状态和协作关系。
          *
-         * @param rawType 参数值，用于执行当前操作。
+         * @param rawType 用于完成本次业务处理的 rawType 参数。
          */
         public BigNumberSerializer(Class<? extends Number> rawType) {
             super(rawType);
         }
 
         /**
-         * {@code serialize} 执行当前类型定义的业务操作。
+         * 执行 Big Number Serializer 相关业务操作，并维护必要的状态和协作关系。
          *
-         * @param value 参数值，用于执行当前操作。
-         * @param gen 参数值，用于执行当前操作。
-         * @param provider 参数值，用于执行当前操作。
+         * @param value 用于完成本次业务处理的 value 参数。
+         * @param gen 用于完成本次业务处理的 gen 参数。
+         * @param provider 用于完成本次业务处理的 provider 参数。
          */
         @Override
         public void serialize(Number value, JsonGenerator gen, SerializationContext provider) {

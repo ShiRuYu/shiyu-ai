@@ -10,7 +10,9 @@ import org.springframework.validation.beanvalidation.LocalValidatorFactoryBean;
 
 import java.util.Properties;
 
-/** 校验框架配置类 */
+/**
+ * 定义 Validator 基础设施或应用能力的配置项及装配规则。
+ */
 @AutoConfiguration
 public class ValidatorConfig {
 

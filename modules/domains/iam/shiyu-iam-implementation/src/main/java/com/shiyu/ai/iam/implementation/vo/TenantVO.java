@@ -12,7 +12,7 @@ import java.time.LocalDateTime;
 import java.util.List;
 
 /**
- * {@code TenantVO} 承载平台模块的领域状态或协作行为，负责维护本类型的职责边界。
+ * 封装 租户 操作向调用方返回的传输数据。
  */
 @Data
 @SuppressWarnings("serial")

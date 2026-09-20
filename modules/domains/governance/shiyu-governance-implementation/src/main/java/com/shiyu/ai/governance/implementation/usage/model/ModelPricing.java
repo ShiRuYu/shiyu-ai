@@ -1,6 +1,8 @@
 package com.shiyu.ai.governance.implementation.usage.model;
 
-/** 模型定价配置 */
+/**
+ * 实现 模型 Pricing 相关的业务处理、协作逻辑或基础设施能力。
+ */
 public class ModelPricing {
 
     /**
@@ -21,12 +23,12 @@ public class ModelPricing {
     private final double outputPricePer1K; // 输出价格 (每1k tokens)
 
     /**
-     * {@code ModelPricing} 创建并初始化当前类型实例。
+     * 执行 模型 Pricing 相关业务操作，并维护必要的状态和协作关系。
      *
-     * @param platform 参数值，用于执行当前操作。
-     * @param model 参数值，用于执行当前操作。
-     * @param inputPricePer1K 参数值，用于执行当前操作。
-     * @param outputPricePer1K 参数值，用于执行当前操作。
+     * @param platform 用于完成本次业务处理的 platform 参数。
+     * @param model 用于完成本次业务处理的 model 参数。
+     * @param inputPricePer1K 用于完成本次业务处理的 inputPricePer1K 参数。
+     * @param outputPricePer1K 用于完成本次业务处理的 outputPricePer1K 参数。
      */
     public ModelPricing(
             String platform, String model, double inputPricePer1K, double outputPricePer1K) {
@@ -37,36 +39,36 @@ public class ModelPricing {
     }
 
     /**
-     * {@code getPlatform} 查询并返回当前操作所需的数据。
+     * 查询 模型 Pricing 相关业务数据，并返回处理结果。
      *
-     * @return 返回当前操作产生的结果。
+     * @return 返回 模型 Pricing 相关操作生成的结果数据。
      */
     public String getPlatform() {
         return platform;
     }
 
     /**
-     * {@code getModel} 查询并返回当前操作所需的数据。
+     * 查询 模型 Pricing 相关业务数据，并返回处理结果。
      *
-     * @return 返回当前操作产生的结果。
+     * @return 返回 模型 Pricing 相关操作生成的结果数据。
      */
     public String getModel() {
         return model;
     }
 
     /**
-     * {@code getInputPricePer1K} 查询并返回当前操作所需的数据。
+     * 查询 模型 Pricing 相关业务数据，并返回处理结果。
      *
-     * @return 返回当前操作产生的结果。
+     * @return 返回 模型 Pricing 相关操作生成的结果数据。
      */
     public double getInputPricePer1K() {
         return inputPricePer1K;
     }
 
     /**
-     * {@code getOutputPricePer1K} 查询并返回当前操作所需的数据。
+     * 查询 模型 Pricing 相关业务数据，并返回处理结果。
      *
-     * @return 返回当前操作产生的结果。
+     * @return 返回 模型 Pricing 相关操作生成的结果数据。
      */
     public double getOutputPricePer1K() {
         return outputPricePer1K;

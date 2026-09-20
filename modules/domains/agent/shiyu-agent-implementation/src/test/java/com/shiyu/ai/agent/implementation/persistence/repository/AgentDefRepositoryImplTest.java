@@ -11,6 +11,9 @@ import com.shiyu.ai.kernel.context.TenantId;
 
 import org.junit.jupiter.api.Test;
 
+/**
+ * 验证 智能体 Def Repository Impl 相关功能、边界条件、异常路径和协作行为。
+ */
 class AgentDefRepositoryImplTest {
     @Test
     void countByTenantRequiresTenantAndAppliesMapperResult() {

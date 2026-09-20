@@ -22,10 +22,7 @@ import org.springframework.web.servlet.config.annotation.WebMvcConfigurer;
 import java.util.List;
 
 /**
- * 拦截器配置
- *
- * <p>1. UserContextInterceptor — 填充 UserContextHolder 登录上下文（@Order(1) 优先执行） 2. SaInterceptor —
- * Sa-Token 注解鉴权（@SaCheckPermission 等）
+ * 定义 Sa Interceptor 基础设施或应用能力的配置项及装配规则。
  */
 @Configuration
 @Order(1)
@@ -43,10 +40,11 @@ public class SaInterceptorConfig implements WebMvcConfigurer {
     private final BusinessModuleAccessInterceptor businessModuleAccessInterceptor;
 
     /**
-     * {@code SaInterceptorConfig} 创建并初始化当前类型实例。
+     * 执行 Sa Interceptor 相关业务操作，并维护必要的状态和协作关系。
      *
-     * @param userContextInterceptor 参数值，用于执行当前操作。
-     * @param publicPathContributors 参数值，用于执行当前操作。
+     * @param userContextInterceptor 用于完成本次业务处理的 userContextInterceptor 参数。
+     * @param publicPathContributors 用于完成本次业务处理的 publicPathContributors 参数。
+     * @param businessModuleAccessInterceptor 用于完成本次业务处理的 businessModuleAccessInterceptor 参数。
      */
     public SaInterceptorConfig(
             UserContextInterceptor userContextInterceptor,
@@ -58,9 +56,9 @@ public class SaInterceptorConfig implements WebMvcConfigurer {
     }
 
     /**
-     * {@code addInterceptors} 执行当前类型定义的业务操作。
+     * 创建或保存 Sa Interceptor 相关业务操作，并维护必要的状态和协作关系。
      *
-     * @param registry 参数值，用于执行当前操作。
+     * @param registry 用于完成本次业务处理的 registry 参数。
      */
     @Override
     public void addInterceptors(InterceptorRegistry registry) {

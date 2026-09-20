@@ -25,7 +25,7 @@ import java.util.List;
 import java.util.concurrent.atomic.AtomicLong;
 
 /**
- * {@code GenerationController} 是会话模块的 Web 接口适配器，负责接收请求并转换为应用服务调用。
+ * 处理 生成 相关的 Web 请求，并将请求转换为应用服务调用。
  */
 @RestController
 @RequestMapping("/api/conversation/generations")
@@ -44,21 +44,21 @@ public class GenerationController {
     private final AiRuntimePort runtime;
 
     /**
-     * {@code GenerationController} 创建并初始化当前类型实例。
+     * 执行 生成 相关业务操作，并维护必要的状态和协作关系。
      *
-     * @param generations 参数值，用于执行当前操作。
-     * @param admission 参数值，用于执行当前操作。
+     * @param generations 用于完成本次业务处理的 generations 参数。
+     * @param admission 用于完成本次业务处理的 admission 参数。
      */
     public GenerationController(GenerationRepository generations, GenerationAdmission admission) {
         this(generations, admission, null);
     }
 
     /**
-     * {@code GenerationController} 创建并初始化当前类型实例。
+     * 执行 生成 相关业务操作，并维护必要的状态和协作关系。
      *
-     * @param generations 参数值，用于执行当前操作。
-     * @param admission 参数值，用于执行当前操作。
-     * @param runtime 参数值，用于执行当前操作。
+     * @param generations 用于完成本次业务处理的 generations 参数。
+     * @param admission 用于完成本次业务处理的 admission 参数。
+     * @param runtime 用于完成本次业务处理的 runtime 参数。
      */
     @Autowired
     public GenerationController(
@@ -169,11 +169,9 @@ public class GenerationController {
     }
 
     /**
-     * {@code cancel} 校验当前操作的输入或状态是否满足约束。
+     * 执行 生成 相关业务操作，并维护必要的状态和协作关系。
      *
-     * @param id 参数值，用于执行当前操作。
-     *
-     * @return 返回当前操作产生的结果。
+     * @param cancel 用于完成本次业务处理的 cancel 参数。
      */
     @PostMapping("/{id}/cancel")
     public Result<Void> cancel(@PathVariable String id) {

@@ -1,9 +1,7 @@
 package com.shiyu.ai.agent.implementation.web.api;
 
 /**
- * 节点编辑器数据源 API 路径常量
- *
- * <p>前端通过 DataSourceConfig 获取这些路径来调用后端接口， 填充 Agent 编辑器中节点的下拉选项（AI平台、模型、Agent等）。
+ * 承载 Data Source API Constants 所属 Web 能力的请求适配和边界处理。
  */
 public final class DataSourceApiConstants {
 

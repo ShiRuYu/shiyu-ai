@@ -2,7 +2,9 @@ package com.shiyu.ai.common.thread.api;
 
 import java.util.concurrent.ExecutorService;
 
-/** 线程池管理器接口 提供统一的线程池管理能力，支持获取不同类型的线程池执行器 */
+/**
+ * 管理 Thread Pool 相关的运行时状态、注册信息或临时数据。
+ */
 public interface ThreadPoolManager {
 
     /**

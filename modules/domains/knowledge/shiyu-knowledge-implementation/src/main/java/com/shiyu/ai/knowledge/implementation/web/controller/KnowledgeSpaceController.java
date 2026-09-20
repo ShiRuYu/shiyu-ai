@@ -36,7 +36,7 @@ import org.springframework.web.bind.annotation.RestController;
 import java.util.List;
 
 /**
- * {@code KnowledgeSpaceController} 是知识模块的 Web 接口适配器，负责接收请求并转换为应用服务调用。
+ * 处理 知识 空间 相关的 Web 请求，并将请求转换为应用服务调用。
  */
 @RestController
 @RequestMapping("/api/knowledge/spaces")
@@ -51,15 +51,14 @@ public class KnowledgeSpaceController {
     private final KnowledgeSpaceService service;
 
     /**
-     * {@code page} 执行当前类型定义的业务操作。
+     * 查询 知识 空间 相关业务数据，并返回处理结果。
      *
-     * @param pageNum 参数值，用于执行当前操作。
-     * @param pageSize 参数值，用于执行当前操作。
-     * @param keyword 参数值，用于执行当前操作。
-     * @param domainCode 参数值，用于执行当前操作。
-     * @param version 参数值，用于执行当前操作。
-     *
-     * @return 返回当前操作产生的结果。
+     * @param pageNum 用于完成本次业务处理的 pageNum 参数。
+     * @param pageSize 每页返回的数据数量。
+     * @param keyword 用于完成本次业务处理的 keyword 参数。
+     * @param domainCode 用于完成本次业务处理的 domainCode 参数。
+     * @param version 用于完成本次业务处理的 version 参数。
+     * @return 返回 知识 空间 相关操作生成的结果数据。
      */
     @GetMapping
     public Result<PageData<KnowledgeSpaceService.SpaceView>> page(
@@ -78,9 +77,9 @@ public class KnowledgeSpaceController {
     }
 
     /**
-     * {@code options} 执行当前类型定义的业务操作。
+     * 查询 知识 空间 相关业务操作，并维护必要的状态和协作关系。
      *
-     * @return 返回当前操作产生的结果。
+     * @param options 用于完成本次业务处理的 options 参数。
      */
     @GetMapping("/options")
     public Result<List<KnowledgeSpaceService.SpaceView>> options() {
@@ -88,12 +87,10 @@ public class KnowledgeSpaceController {
     }
 
     /**
-     * {@code get} 查询并返回当前操作所需的数据。
+     * 查询 知识 空间 相关业务数据，并返回处理结果。
      *
-     * @param id 参数值，用于执行当前操作。
-     * @param version 参数值，用于执行当前操作。
-     *
-     * @return 返回当前操作产生的结果。
+     * @param id 用于定位目标业务对象的标识。
+     * @return 返回 知识 空间 相关操作生成的结果数据。
      */
     @GetMapping("/{id}")
     public Result<KnowledgeSpaceService.SpaceView> get(
@@ -107,12 +104,10 @@ public class KnowledgeSpaceController {
     }
 
     /**
-     * {@code difficultyScale} 执行当前类型定义的业务操作。
+     * 执行 知识 空间 相关业务数据，并返回处理结果。
      *
-     * @param id 参数值，用于执行当前操作。
-     * @param version 参数值，用于执行当前操作。
-     *
-     * @return 返回当前操作产生的结果。
+     * @param scale 用于完成本次业务处理的 scale 参数。
+     * @return 返回 知识 空间 相关操作生成的结果数据。
      */
     @GetMapping("/{id}/difficulty-scale")
     public Result<KnowledgeSpaceService.DifficultyScaleView> difficultyScale(
@@ -126,12 +121,10 @@ public class KnowledgeSpaceController {
     }
 
     /**
-     * {@code create} 写入或更新当前模块中的业务数据。
+     * 创建或保存 知识 空间 相关业务数据，并返回处理结果。
      *
-     * @param request 参数值，用于执行当前操作。
-     * @param version 参数值，用于执行当前操作。
-     *
-     * @return 返回当前操作产生的结果。
+     * @param create 用于完成本次业务处理的 create 参数。
+     * @return 返回 知识 空间 相关操作生成的结果数据。
      */
     @PostMapping
     @SaCheckPermission("knowledge:create")
@@ -146,13 +139,10 @@ public class KnowledgeSpaceController {
     }
 
     /**
-     * {@code update} 写入或更新当前模块中的业务数据。
+     * 更新或设置 知识 空间 相关业务数据，并返回处理结果。
      *
-     * @param id 参数值，用于执行当前操作。
-     * @param request 参数值，用于执行当前操作。
-     * @param version 参数值，用于执行当前操作。
-     *
-     * @return 返回当前操作产生的结果。
+     * @param id 用于定位目标业务对象的标识。
+     * @return 返回 知识 空间 相关操作生成的结果数据。
      */
     @PutMapping("/{id}")
     @SaCheckPermission("knowledge:edit")
@@ -168,12 +158,10 @@ public class KnowledgeSpaceController {
     }
 
     /**
-     * {@code delete} 释放或移除当前操作涉及的资源。
+     * 删除或移除 知识 空间 相关业务数据，并返回处理结果。
      *
-     * @param id 参数值，用于执行当前操作。
-     * @param version 参数值，用于执行当前操作。
-     *
-     * @return 返回当前操作产生的结果。
+     * @param id 用于定位目标业务对象的标识。
+     * @return 返回 知识 空间 相关操作生成的结果数据。
      */
     @DeleteMapping("/{id}")
     @SaCheckPermission("knowledge:delete")
@@ -189,12 +177,10 @@ public class KnowledgeSpaceController {
     }
 
     /**
-     * {@code members} 执行当前类型定义的业务操作。
+     * 执行 知识 空间 相关业务数据，并返回处理结果。
      *
-     * @param id 参数值，用于执行当前操作。
-     * @param version 参数值，用于执行当前操作。
-     *
-     * @return 返回当前操作产生的结果。
+     * @param members 用于完成本次业务处理的 members 参数。
+     * @return 返回符合条件的数据集合；没有匹配项时返回空集合。
      */
     @GetMapping("/{id}/members")
     public Result<List<KnowledgeSpaceService.MemberView>> members(
@@ -208,13 +194,10 @@ public class KnowledgeSpaceController {
     }
 
     /**
-     * {@code replaceMembers} 执行当前类型定义的业务操作。
+     * 执行 知识 空间 相关业务数据，并返回处理结果。
      *
-     * @param id 参数值，用于执行当前操作。
-     * @param members 参数值，用于执行当前操作。
-     * @param version 参数值，用于执行当前操作。
-     *
-     * @return 返回当前操作产生的结果。
+     * @param members 用于完成本次业务处理的 members 参数。
+     * @return 返回 知识 空间 相关操作生成的结果数据。
      */
     @PutMapping("/{id}/members")
     @SaCheckPermission("knowledge:edit")
@@ -231,11 +214,10 @@ public class KnowledgeSpaceController {
     }
 
     /**
-     * {@code ensureDefault} 执行当前类型定义的业务操作。
+     * 执行 知识 空间 相关业务数据，并返回处理结果。
      *
-     * @param version 参数值，用于执行当前操作。
-     *
-     * @return 返回当前操作产生的结果。
+     * @param default 用于完成本次业务处理的 default 参数。
+     * @return 返回 知识 空间 相关操作生成的结果数据。
      */
     @PostMapping("/default")
     public Result<KnowledgeSpaceService.SpaceView> ensureDefault(

@@ -26,6 +26,9 @@ import reactor.core.publisher.Flux;
 import java.lang.reflect.Method;
 import java.util.List;
 
+/**
+ * 验证 对话 Engine Impl 相关功能、边界条件、异常路径和协作行为。
+ */
 class ChatEngineImplTest {
     @Test
     void chatHandlesNullAiMessageAndPreservesProviderUsageMetadata() {

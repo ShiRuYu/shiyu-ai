@@ -18,7 +18,7 @@ import java.util.List;
 import java.util.Optional;
 
 /**
- * {@code JdbcAiAppRepository} 定义智能体模块的持久化端口，隔离领域逻辑与具体存储实现。
+ * 负责 Jdbc AI 应用 的持久化查询、保存和删除，并维护数据访问边界。
  */
 @Repository
 @Primary
@@ -29,18 +29,18 @@ public class JdbcAiAppRepository implements AiAppRepository {
     private final JdbcTemplate jdbc;
 
     /**
-     * {@code JdbcAiAppRepository} 创建并初始化当前类型实例。
+     * 执行 Jdbc AI 应用 相关业务操作，并维护必要的状态和协作关系。
      *
-     * @param jdbc 参数值，用于执行当前操作。
+     * @param jdbc 用于完成本次业务处理的 jdbc 参数。
      */
     public JdbcAiAppRepository(JdbcTemplate jdbc) {
         this.jdbc = jdbc;
     }
 
     /**
-     * {@code insert} 执行当前类型定义的业务操作。
+     * 创建或保存 Jdbc AI 应用 相关业务操作，并维护必要的状态和协作关系。
      *
-     * @param a 参数值，用于执行当前操作。
+     * @param a 用于完成本次业务处理的 a 参数。
      */
     @Override
     public void insert(AiApp a) {
@@ -61,13 +61,12 @@ public class JdbcAiAppRepository implements AiAppRepository {
     }
 
     /**
-     * {@code find} 查询并返回当前操作所需的数据。
+     * 查询 Jdbc AI 应用 相关业务数据，并返回处理结果。
      *
-     * @param id 参数值，用于执行当前操作。
-     * @param tenant 参数值，用于执行当前操作。
-     * @param owner 参数值，用于执行当前操作。
-     *
-     * @return 返回当前操作产生的结果。
+     * @param id 用于定位目标业务对象的标识。
+     * @param tenant 当前操作涉及的租户标识。
+     * @param owner 用于完成本次业务处理的 owner 参数。
+     * @return 返回可能存在的业务对象；不存在时返回空值容器。
      */
     @Override
     public Optional<AiApp> find(String id, TenantId tenant, long owner) {
@@ -80,12 +79,11 @@ public class JdbcAiAppRepository implements AiAppRepository {
     }
 
     /**
-     * {@code findByTenant} 查询并返回当前操作所需的数据。
+     * 查询 Jdbc AI 应用 相关业务数据，并返回处理结果。
      *
-     * @param id 参数值，用于执行当前操作。
-     * @param tenant 参数值，用于执行当前操作。
-     *
-     * @return 返回当前操作产生的结果。
+     * @param id 用于定位目标业务对象的标识。
+     * @param tenant 当前操作涉及的租户标识。
+     * @return 返回可能存在的业务对象；不存在时返回空值容器。
      */
     @Override
     public Optional<AiApp> findByTenant(String id, TenantId tenant) {
@@ -97,13 +95,12 @@ public class JdbcAiAppRepository implements AiAppRepository {
     }
 
     /**
-     * {@code list} 查询并返回当前操作所需的数据。
+     * 查询 Jdbc AI 应用 相关业务数据，并返回处理结果。
      *
-     * @param tenant 参数值，用于执行当前操作。
-     * @param owner 参数值，用于执行当前操作。
-     * @param limit 参数值，用于执行当前操作。
-     *
-     * @return 返回当前操作产生的结果。
+     * @param tenant 当前操作涉及的租户标识。
+     * @param owner 用于完成本次业务处理的 owner 参数。
+     * @param limit 每页返回的数据数量。
+     * @return 返回符合条件的数据集合；没有匹配项时返回空集合。
      */
     @Override
     public List<AiApp> list(TenantId tenant, long owner, int limit) {
@@ -117,9 +114,9 @@ public class JdbcAiAppRepository implements AiAppRepository {
     }
 
     /**
-     * {@code insertVersion} 执行当前类型定义的业务操作。
+     * 创建或保存 Jdbc AI 应用 相关业务操作，并维护必要的状态和协作关系。
      *
-     * @param v 参数值，用于执行当前操作。
+     * @param v 用于完成本次业务处理的 v 参数。
      */
     @Override
     public void insertVersion(AiAppVersion v) {
@@ -139,13 +136,12 @@ public class JdbcAiAppRepository implements AiAppRepository {
     }
 
     /**
-     * {@code findVersion} 查询并返回当前操作所需的数据。
+     * 查询 Jdbc AI 应用 相关业务数据，并返回处理结果。
      *
-     * @param appId 参数值，用于执行当前操作。
-     * @param id 参数值，用于执行当前操作。
-     * @param tenant 参数值，用于执行当前操作。
-     *
-     * @return 返回当前操作产生的结果。
+     * @param appId 用于定位app的标识。
+     * @param id 用于定位目标业务对象的标识。
+     * @param tenant 当前操作涉及的租户标识。
+     * @return 返回可能存在的业务对象；不存在时返回空值容器。
      */
     @Override
     public Optional<AiAppVersion> findVersion(String appId, String id, TenantId tenant) {
@@ -158,12 +154,11 @@ public class JdbcAiAppRepository implements AiAppRepository {
     }
 
     /**
-     * {@code versions} 执行当前类型定义的业务操作。
+     * 执行 Jdbc AI 应用 相关业务数据，并返回处理结果。
      *
-     * @param appId 参数值，用于执行当前操作。
-     * @param tenant 参数值，用于执行当前操作。
-     *
-     * @return 返回当前操作产生的结果。
+     * @param appId 用于定位app的标识。
+     * @param tenant 当前操作涉及的租户标识。
+     * @return 返回符合条件的数据集合；没有匹配项时返回空集合。
      */
     @Override
     public List<AiAppVersion> versions(String appId, TenantId tenant) {
@@ -176,13 +171,12 @@ public class JdbcAiAppRepository implements AiAppRepository {
     }
 
     /**
-     * {@code publishVersion} 执行当前模块定义的业务流程。
+     * 发布或发送 Jdbc AI 应用 相关业务数据，并返回处理结果。
      *
-     * @param appId 参数值，用于执行当前操作。
-     * @param id 参数值，用于执行当前操作。
-     * @param tenant 参数值，用于执行当前操作。
-     *
-     * @return 返回当前操作产生的结果。
+     * @param appId 用于定位app的标识。
+     * @param id 用于定位目标业务对象的标识。
+     * @param tenant 当前操作涉及的租户标识。
+     * @return 返回 Jdbc AI 应用 相关操作生成的结果数据。
      */
     @Override
     @Transactional
@@ -214,13 +208,12 @@ public class JdbcAiAppRepository implements AiAppRepository {
     }
 
     /**
-     * {@code archiveVersion} 执行当前类型定义的业务操作。
+     * 执行 Jdbc AI 应用 相关业务数据，并返回处理结果。
      *
-     * @param appId 参数值，用于执行当前操作。
-     * @param id 参数值，用于执行当前操作。
-     * @param tenant 参数值，用于执行当前操作。
-     *
-     * @return 返回当前操作产生的结果。
+     * @param appId 用于定位app的标识。
+     * @param id 用于定位目标业务对象的标识。
+     * @param tenant 当前操作涉及的租户标识。
+     * @return 返回 Jdbc AI 应用 相关操作生成的结果数据。
      */
     @Override
     public int archiveVersion(String appId, String id, TenantId tenant) {

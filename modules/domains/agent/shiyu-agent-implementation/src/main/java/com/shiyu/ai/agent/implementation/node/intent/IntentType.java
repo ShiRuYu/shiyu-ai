@@ -6,10 +6,9 @@ import lombok.AllArgsConstructor;
 import lombok.Getter;
 
 /**
- * 意图类型枚举 定义系统中支持的各种意图类型
+ * 定义 Intent Type 可用的枚举值及其业务语义。
  *
  * @author shiyu-ai
- * @date 2026-03-28
  */
 @Getter
 @AllArgsConstructor

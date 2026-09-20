@@ -4,7 +4,7 @@ import com.shiyu.ai.memory.contract.model.IngestMemoryCommand;
 import com.shiyu.ai.memory.contract.model.MemoryEvent;
 
 /**
- * MemoryIngestionPort 边界接口，负责向外部组件提供记忆领域相关能力。
+ * 定义 记忆 Ingestion 领域与外部能力交互的端口契约。
  */
 public interface MemoryIngestionPort {
     /**

@@ -18,6 +18,9 @@ import org.junit.jupiter.api.Test;
 
 import java.util.List;
 
+/**
+ * 验证 智能体 Cache Manager 相关功能、边界条件、异常路径和协作行为。
+ */
 class AgentCacheManagerTest {
 
     @Test

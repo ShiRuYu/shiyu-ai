@@ -5,7 +5,9 @@ import lombok.Data;
 
 import java.io.Serializable;
 
-/** 租户上下文 VO */
+/**
+ * 封装 租户 Context 操作向调用方返回的传输数据。
+ */
 @Data
 @Builder
 public class TenantContextVO implements Serializable {

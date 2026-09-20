@@ -19,7 +19,7 @@ import java.util.*;
 import java.util.stream.Collectors;
 
 /**
- * {@code RecommendationServiceImpl} 实现教育模块的应用服务，负责编排用例流程并维护业务边界。
+ * 提供 推荐 的查询、创建、更新及调用服务，协调业务变更和领域协作。
  */
 @Slf4j
 @Service
@@ -40,13 +40,12 @@ public class RecommendationServiceImpl implements RecommendationService {
     private final ReviewService reviewService;
 
     /**
-     * {@code recommendKnowledge} 执行当前类型定义的业务操作。
+     * 执行 推荐 相关业务数据，并返回处理结果。
      *
-     * @param actor 参数值，用于执行当前操作。
-     * @param studentId 参数值，用于执行当前操作。
-     * @param topK 参数值，用于执行当前操作。
-     *
-     * @return 返回当前操作产生的结果。
+     * @param actor 当前操作主体上下文，用于确定租户、用户和访问权限。
+     * @param studentId 用于定位student的标识。
+     * @param topK 用于完成本次业务处理的 topK 参数。
+     * @return 返回符合条件的数据集合；没有匹配项时返回空集合。
      */
     @Override
     public List<KnowledgeRecommendResponse> recommendKnowledge(
@@ -69,13 +68,12 @@ public class RecommendationServiceImpl implements RecommendationService {
     }
 
     /**
-     * {@code recommendQuestions} 执行当前类型定义的业务操作。
+     * 执行 推荐 相关业务数据，并返回处理结果。
      *
-     * @param actor 参数值，用于执行当前操作。
-     * @param studentId 参数值，用于执行当前操作。
-     * @param count 参数值，用于执行当前操作。
-     *
-     * @return 返回当前操作产生的结果。
+     * @param actor 当前操作主体上下文，用于确定租户、用户和访问权限。
+     * @param studentId 用于定位student的标识。
+     * @param count 用于完成本次业务处理的 count 参数。
+     * @return 返回符合条件的数据集合；没有匹配项时返回空集合。
      */
     @Override
     public List<QuestionRecommendResponse> recommendQuestions(
@@ -110,13 +108,12 @@ public class RecommendationServiceImpl implements RecommendationService {
     }
 
     /**
-     * {@code recommendResources} 执行当前类型定义的业务操作。
+     * 执行 推荐 相关业务数据，并返回处理结果。
      *
-     * @param actor 参数值，用于执行当前操作。
-     * @param studentId 参数值，用于执行当前操作。
-     * @param topK 参数值，用于执行当前操作。
-     *
-     * @return 返回当前操作产生的结果。
+     * @param actor 当前操作主体上下文，用于确定租户、用户和访问权限。
+     * @param studentId 用于定位student的标识。
+     * @param topK 用于完成本次业务处理的 topK 参数。
+     * @return 返回符合条件的数据集合；没有匹配项时返回空集合。
      */
     @Override
     public List<ResourceRecommendResponse> recommendResources(
@@ -125,13 +122,12 @@ public class RecommendationServiceImpl implements RecommendationService {
     }
 
     /**
-     * {@code recommendReviewTasks} 执行当前类型定义的业务操作。
+     * 执行 推荐 相关业务数据，并返回处理结果。
      *
-     * @param actor 参数值，用于执行当前操作。
-     * @param studentId 参数值，用于执行当前操作。
-     * @param count 参数值，用于执行当前操作。
-     *
-     * @return 返回当前操作产生的结果。
+     * @param actor 当前操作主体上下文，用于确定租户、用户和访问权限。
+     * @param studentId 用于定位student的标识。
+     * @param count 用于完成本次业务处理的 count 参数。
+     * @return 返回符合条件的数据集合；没有匹配项时返回空集合。
      */
     @Override
     public List<QuestionRecommendResponse> recommendReviewTasks(
@@ -155,13 +151,12 @@ public class RecommendationServiceImpl implements RecommendationService {
     }
 
     /**
-     * {@code hybridRecommend} 执行当前类型定义的业务操作。
+     * 执行 推荐 相关业务数据，并返回处理结果。
      *
-     * @param actor 参数值，用于执行当前操作。
-     * @param studentId 参数值，用于执行当前操作。
-     * @param overallAdvice 参数值，用于执行当前操作。
-     *
-     * @return 返回当前操作产生的结果。
+     * @param actor 当前操作主体上下文，用于确定租户、用户和访问权限。
+     * @param studentId 用于定位student的标识。
+     * @param overallAdvice 用于完成本次业务处理的 overallAdvice 参数。
+     * @return 返回 推荐 相关操作生成的结果数据。
      */
     @Override
     public HybridRecommendResponse hybridRecommend(
@@ -182,12 +177,11 @@ public class RecommendationServiceImpl implements RecommendationService {
     }
 
     /**
-     * {@code getWeakKnowledgeIds} 查询并返回当前操作所需的数据。
+     * 查询 推荐 相关业务数据，并返回处理结果。
      *
-     * @param actor 参数值，用于执行当前操作。
-     * @param studentId 参数值，用于执行当前操作。
-     *
-     * @return 返回当前操作产生的结果。
+     * @param actor 当前操作主体上下文，用于确定租户、用户和访问权限。
+     * @param studentId 用于定位student的标识。
+     * @return 返回符合条件的数据集合；没有匹配项时返回空集合。
      */
     @Override
     public List<Long> getWeakKnowledgeIds(ActorContext actor, Long studentId) {

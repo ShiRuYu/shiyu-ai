@@ -11,10 +11,9 @@ import lombok.NoArgsConstructor;
 import lombok.experimental.SuperBuilder;
 
 /**
- * 条件判断节点配置类 用于根据条件决定执行路径
+ * 定义 Condition 基础设施或应用能力的配置项及装配规则。
  *
  * @author shiyu-ai
- * @date 2026-03-28
  */
 @Data
 @SuperBuilder

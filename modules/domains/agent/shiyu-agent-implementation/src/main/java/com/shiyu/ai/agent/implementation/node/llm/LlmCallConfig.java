@@ -11,10 +11,9 @@ import lombok.NoArgsConstructor;
 import lombok.experimental.SuperBuilder;
 
 /**
- * LLM 调用节点配置类 用于调用大语言模型生成回复
+ * 定义 Llm Call 基础设施或应用能力的配置项及装配规则。
  *
  * @author shiyu-ai
- * @date 2026-03-28
  */
 @Data
 @SuperBuilder

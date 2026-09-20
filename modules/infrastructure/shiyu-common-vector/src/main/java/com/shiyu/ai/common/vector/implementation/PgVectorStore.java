@@ -14,7 +14,7 @@ import java.util.Map;
 import java.util.Objects;
 
 /**
- * 使用 PostgreSQL/pgvector 保存、查询和删除向量。
+ * 管理 Pg 向量 相关的运行时状态、注册信息或临时数据。
  */
 public final class PgVectorStore implements VectorStore {
 
@@ -32,11 +32,11 @@ public final class PgVectorStore implements VectorStore {
     private final int dimension;
 
     /**
-     * {@code PgVectorStore} 创建并初始化当前类型实例。
+     * 执行 Pg 向量 相关业务操作，并维护必要的状态和协作关系。
      *
-     * @param jdbc 参数值，用于执行当前操作。
-     * @param namespace 参数值，用于执行当前操作。
-     * @param dimension 参数值，用于执行当前操作。
+     * @param jdbc 用于完成本次业务处理的 jdbc 参数。
+     * @param namespace 用于完成本次业务处理的 namespace 参数。
+     * @param dimension 用于完成本次业务处理的 dimension 参数。
      */
     public PgVectorStore(JdbcTemplate jdbc, String namespace, int dimension) {
         this.jdbc = Objects.requireNonNull(jdbc, "JdbcTemplate must not be null");
@@ -52,9 +52,9 @@ public final class PgVectorStore implements VectorStore {
     }
 
     /**
-     * {@code type} 执行当前类型定义的业务操作。
+     * 执行 Pg 向量 相关业务数据，并返回处理结果。
      *
-     * @return 返回当前操作产生的结果。
+     * @return 返回 Pg 向量 相关操作生成的结果数据。
      */
     @Override
     public String type() {
@@ -62,9 +62,9 @@ public final class PgVectorStore implements VectorStore {
     }
 
     /**
-     * {@code upsert} 执行当前类型定义的业务操作。
+     * 执行 Pg 向量 相关业务操作，并维护必要的状态和协作关系。
      *
-     * @param record 参数值，用于执行当前操作。
+     * @param record 用于完成本次业务处理的 record 参数。
      */
     @Override
     public void upsert(VectorRecord record) {
@@ -92,12 +92,11 @@ public final class PgVectorStore implements VectorStore {
     }
 
     /**
-     * {@code search} 查询并返回当前操作所需的数据。
+     * 查询 Pg 向量 相关业务数据，并返回处理结果。
      *
-     * @param queryVector 参数值，用于执行当前操作。
-     * @param topK 参数值，用于执行当前操作。
-     *
-     * @return 返回当前操作产生的结果。
+     * @param queryVector 用于完成本次业务处理的 queryVector 参数。
+     * @param topK 用于完成本次业务处理的 topK 参数。
+     * @return 返回符合条件的数据集合；没有匹配项时返回空集合。
      */
     @Override
     public List<VectorRecord> search(float[] queryVector, int topK) {
@@ -105,11 +104,10 @@ public final class PgVectorStore implements VectorStore {
     }
 
     /**
-     * {@code search} 查询并返回当前操作所需的数据。
+     * 查询 Pg 向量 相关业务数据，并返回处理结果。
      *
-     * @param request 参数值，用于执行当前操作。
-     *
-     * @return 返回当前操作产生的结果。
+     * @param request 封装本次操作所需业务字段的请求对象。
+     * @return 返回符合条件的数据集合；没有匹配项时返回空集合。
      */
     @Override
     public List<VectorRecord> search(VectorSearchRequest request) {
@@ -169,9 +167,9 @@ public final class PgVectorStore implements VectorStore {
     }
 
     /**
-     * {@code delete} 释放或移除当前操作涉及的资源。
+     * 删除或移除 Pg 向量 相关业务操作，并维护必要的状态和协作关系。
      *
-     * @param id 参数值，用于执行当前操作。
+     * @param id 用于定位目标业务对象的标识。
      */
     @Override
     public void delete(String id) {
@@ -182,7 +180,7 @@ public final class PgVectorStore implements VectorStore {
     }
 
     /**
-     * {@code rebuild} 执行当前类型定义的业务操作。
+     * 执行 Pg 向量 相关业务操作，并维护必要的状态和协作关系。
      */
     @Override
     public void rebuild() {
@@ -190,9 +188,9 @@ public final class PgVectorStore implements VectorStore {
     }
 
     /**
-     * {@code size} 执行当前类型定义的业务操作。
+     * 执行 Pg 向量 相关业务数据，并返回处理结果。
      *
-     * @return 返回当前操作产生的结果。
+     * @return 返回 Pg 向量 相关操作生成的结果数据。
      */
     @Override
     public int size() {

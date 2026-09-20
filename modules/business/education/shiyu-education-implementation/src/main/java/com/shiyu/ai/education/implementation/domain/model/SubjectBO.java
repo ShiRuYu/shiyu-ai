@@ -5,7 +5,9 @@ import lombok.Data;
 import java.io.Serial;
 import java.io.Serializable;
 
-/** Subject 业务对象 */
+/**
+ * 表示 学科 领域对象的业务状态和属性。
+ */
 @Data
 public class SubjectBO implements Serializable {
 

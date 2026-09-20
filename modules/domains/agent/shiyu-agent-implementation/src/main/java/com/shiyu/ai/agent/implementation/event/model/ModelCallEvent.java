@@ -1,7 +1,7 @@
 package com.shiyu.ai.agent.implementation.event.model;
 
 /**
- * {@code ModelCallEvent} 承载智能体模块的领域状态或协作行为，负责维护本类型的职责边界。
+ * 表示 模型 Call 相关的领域事件或异常信息。
  */
 public class ModelCallEvent extends DomainEvent {
 
@@ -27,13 +27,13 @@ public class ModelCallEvent extends DomainEvent {
     private final long latencyMs;
 
     /**
-     * {@code ModelCallEvent} 创建并初始化当前类型实例。
+     * 执行 模型 Call 相关业务操作，并维护必要的状态和协作关系。
      *
-     * @param platform 参数值，用于执行当前操作。
-     * @param model 参数值，用于执行当前操作。
-     * @param promptTokens 参数值，用于执行当前操作。
-     * @param completionTokens 参数值，用于执行当前操作。
-     * @param latencyMs 参数值，用于执行当前操作。
+     * @param platform 用于完成本次业务处理的 platform 参数。
+     * @param model 用于完成本次业务处理的 model 参数。
+     * @param promptTokens 用于完成本次业务处理的 promptTokens 参数。
+     * @param completionTokens 用于完成本次业务处理的 completionTokens 参数。
+     * @param latencyMs 用于完成本次业务处理的 latencyMs 参数。
      */
     public ModelCallEvent(
             String platform, String model, int promptTokens, int completionTokens, long latencyMs) {
@@ -46,45 +46,45 @@ public class ModelCallEvent extends DomainEvent {
     }
 
     /**
-     * {@code getPlatform} 查询并返回当前操作所需的数据。
+     * 查询 模型 Call 相关业务数据，并返回处理结果。
      *
-     * @return 返回当前操作产生的结果。
+     * @return 返回 模型 Call 相关操作生成的结果数据。
      */
     public String getPlatform() {
         return platform;
     }
 
     /**
-     * {@code getModel} 查询并返回当前操作所需的数据。
+     * 查询 模型 Call 相关业务数据，并返回处理结果。
      *
-     * @return 返回当前操作产生的结果。
+     * @return 返回 模型 Call 相关操作生成的结果数据。
      */
     public String getModel() {
         return model;
     }
 
     /**
-     * {@code getPromptTokens} 查询并返回当前操作所需的数据。
+     * 查询 模型 Call 相关业务数据，并返回处理结果。
      *
-     * @return 返回当前操作产生的结果。
+     * @return 返回 模型 Call 相关操作生成的结果数据。
      */
     public int getPromptTokens() {
         return promptTokens;
     }
 
     /**
-     * {@code getCompletionTokens} 查询并返回当前操作所需的数据。
+     * 查询 模型 Call 相关业务数据，并返回处理结果。
      *
-     * @return 返回当前操作产生的结果。
+     * @return 返回 模型 Call 相关操作生成的结果数据。
      */
     public int getCompletionTokens() {
         return completionTokens;
     }
 
     /**
-     * {@code getLatencyMs} 查询并返回当前操作所需的数据。
+     * 查询 模型 Call 相关业务数据，并返回处理结果。
      *
-     * @return 返回当前操作产生的结果。
+     * @return 返回 模型 Call 相关操作生成的结果数据。
      */
     public long getLatencyMs() {
         return latencyMs;

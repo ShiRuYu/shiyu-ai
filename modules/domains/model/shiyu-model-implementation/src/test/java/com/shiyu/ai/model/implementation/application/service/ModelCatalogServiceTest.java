@@ -28,6 +28,9 @@ import org.mockito.MockedStatic;
 import java.lang.reflect.Field;
 import java.util.List;
 
+/**
+ * 验证 模型 Catalog Service 相关功能、边界条件、异常路径和协作行为。
+ */
 class ModelCatalogServiceTest {
     private static final ActorContext ACTOR =
             new ActorContext(new TenantId(81), new UserId(82), false);

@@ -6,7 +6,7 @@ import java.util.List;
 import java.util.Map;
 
 /**
- * {@code GraphConfigRequest} 表示智能体模块的请求参数，承载调用方提交的输入数据。
+ * 封装 Graph Config 操作所需的请求条件和输入数据。
  */
 @Data
 public class GraphConfigRequest {
@@ -47,7 +47,7 @@ public class GraphConfigRequest {
     private Map<String, ConditionalEdgeDTO> conditionalEdges;
 
     /**
-     * {@code NodeConfigDTO} 是智能体模块的数据传输对象，用于边界之间传递结构化数据。
+     * 封装 Node Config 操作向调用方返回的传输数据。
      */
     @Data
     public static class NodeConfigDTO {
@@ -98,7 +98,7 @@ public class GraphConfigRequest {
     }
 
     /**
-     * {@code ConditionalEdgeDTO} 是智能体模块的数据传输对象，用于边界之间传递结构化数据。
+     * 封装 Conditional Edge 操作向调用方返回的传输数据。
      */
     @Data
     public static class ConditionalEdgeDTO {

@@ -4,8 +4,7 @@ import java.util.Objects;
 import java.util.UUID;
 
 /**
- * 表示跨请求和异步任务传播的关联标识。
- * @param value 值，表示该记录组件承载的数据。
+ * 封装 Correlation Id 相关的不可变数据及其字段约束。
  */
 public record CorrelationId(String value) {
 
@@ -17,9 +16,9 @@ public record CorrelationId(String value) {
     }
 
     /**
-     * {@code random} 执行当前类型定义的业务操作。
+     * 执行 Correlation Id 相关业务数据，并返回处理结果。
      *
-     * @return 返回当前操作产生的结果。
+     * @return 返回 Correlation Id 相关操作生成的结果数据。
      */
     public static CorrelationId random() {
         return new CorrelationId(UUID.randomUUID().toString());

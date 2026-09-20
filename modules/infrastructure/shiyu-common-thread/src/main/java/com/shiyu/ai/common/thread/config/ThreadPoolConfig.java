@@ -13,7 +13,9 @@ import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.ScheduledThreadPoolExecutor;
 import java.util.concurrent.ThreadPoolExecutor;
 
-/** 线程池配置 */
+/**
+ * 定义 Thread Pool 基础设施或应用能力的配置项及装配规则。
+ */
 @Configuration
 @EnableConfigurationProperties(ThreadPoolProperties.class)
 public class ThreadPoolConfig {

@@ -19,7 +19,7 @@ import org.springframework.web.bind.annotation.*;
 import java.util.List;
 
 /**
- * {@code AnalyticsController} 是教育模块的 Web 接口适配器，负责接收请求并转换为应用服务调用。
+ * 处理 分析 相关的 Web 请求，并将请求转换为应用服务调用。
  */
 @Slf4j
 @RestController
@@ -34,11 +34,9 @@ public class AnalyticsController {
     private final AnalyticsService analyticsService;
 
     /**
-     * {@code listRecordsByStudent} 查询并返回当前操作所需的数据。
+     * 查询 分析 相关业务操作，并维护必要的状态和协作关系。
      *
-     * @param studentId 参数值，用于执行当前操作。
-     *
-     * @return 返回当前操作产生的结果。
+     * @param records 用于完成本次业务处理的 records 参数。
      */
     @GetMapping("/records")
     public Result<List<StudyRecordResponse>> listRecordsByStudent(@RequestParam Long studentId) {
@@ -48,12 +46,9 @@ public class AnalyticsController {
     }
 
     /**
-     * {@code listRecordsByStudentAndKnowledge} 查询并返回当前操作所需的数据。
+     * 查询 分析 相关业务操作，并维护必要的状态和协作关系。
      *
-     * @param studentId 参数值，用于执行当前操作。
-     * @param knowledgeId 参数值，用于执行当前操作。
-     *
-     * @return 返回当前操作产生的结果。
+     * @param knowledge 用于完成本次业务处理的 knowledge 参数。
      */
     @GetMapping("/records/knowledge")
     public Result<List<StudyRecordResponse>> listRecordsByStudentAndKnowledge(
@@ -64,11 +59,9 @@ public class AnalyticsController {
     }
 
     /**
-     * {@code createRecord} 写入或更新当前模块中的业务数据。
+     * 执行 分析 相关业务操作，并维护必要的状态和协作关系。
      *
-     * @param record 参数值，用于执行当前操作。
-     *
-     * @return 返回当前操作产生的结果。
+     * @param create 用于完成本次业务处理的 create 参数。
      */
     @PostMapping("/record-create")
     public Result<StudyRecordResponse> createRecord(@Valid @RequestBody StudyRecordRequest record) {
@@ -77,12 +70,9 @@ public class AnalyticsController {
     }
 
     /**
-     * {@code getAbilityRadar} 查询并返回当前操作所需的数据。
+     * 查询 分析 相关业务操作，并维护必要的状态和协作关系。
      *
-     * @param studentId 参数值，用于执行当前操作。
-     * @param knowledgeId 参数值，用于执行当前操作。
-     *
-     * @return 返回当前操作产生的结果。
+     * @param radar 用于完成本次业务处理的 radar 参数。
      */
     @GetMapping("/ability-radar")
     public Result<AbilityRadarResponse> getAbilityRadar(
@@ -93,11 +83,9 @@ public class AnalyticsController {
     }
 
     /**
-     * {@code getOverview} 查询并返回当前操作所需的数据。
+     * 查询 分析 相关业务操作，并维护必要的状态和协作关系。
      *
-     * @param studentId 参数值，用于执行当前操作。
-     *
-     * @return 返回当前操作产生的结果。
+     * @param overview 用于完成本次业务处理的 overview 参数。
      */
     @GetMapping("/overview")
     public Result<OverviewResponse> getOverview(@RequestParam Long studentId) {
@@ -106,11 +94,9 @@ public class AnalyticsController {
     }
 
     /**
-     * {@code getWeakPoints} 查询并返回当前操作所需的数据。
+     * 查询 分析 相关业务操作，并维护必要的状态和协作关系。
      *
-     * @param studentId 参数值，用于执行当前操作。
-     *
-     * @return 返回当前操作产生的结果。
+     * @param points 用于完成本次业务处理的 points 参数。
      */
     @GetMapping("/weak-points")
     public Result<List<WeakPointResponse>> getWeakPoints(@RequestParam Long studentId) {
@@ -119,11 +105,9 @@ public class AnalyticsController {
     }
 
     /**
-     * {@code getTrend} 查询并返回当前操作所需的数据。
+     * 查询 分析 相关业务操作，并维护必要的状态和协作关系。
      *
-     * @param studentId 参数值，用于执行当前操作。
-     *
-     * @return 返回当前操作产生的结果。
+     * @param trend 用于完成本次业务处理的 trend 参数。
      */
     @GetMapping("/trend")
     public Result<TrendResponse> getTrend(@RequestParam Long studentId) {

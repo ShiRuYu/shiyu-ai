@@ -15,7 +15,9 @@ import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.io.InputStreamReader;
 
-/** 构建可重复读取inputStream的request */
+/**
+ * 承载 Repeatedly Request Wrapper 所属 Web 能力的请求适配和边界处理。
+ */
 public class RepeatedlyRequestWrapper extends HttpServletRequestWrapper {
     /**
      * body 属性，保存当前对象中的业务数据或协作依赖。
@@ -23,10 +25,10 @@ public class RepeatedlyRequestWrapper extends HttpServletRequestWrapper {
     private final byte[] body;
 
     /**
-     * {@code RepeatedlyRequestWrapper} 创建并初始化当前类型实例。
+     * 执行 Repeatedly Request Wrapper 相关业务操作，并维护必要的状态和协作关系。
      *
-     * @param request 参数值，用于执行当前操作。
-     * @param response 参数值，用于执行当前操作。
+     * @param request 封装本次操作所需业务字段的请求对象。
+     * @param response 用于完成本次业务处理的 response 参数。
      */
     public RepeatedlyRequestWrapper(HttpServletRequest request, ServletResponse response)
             throws IOException {
@@ -38,9 +40,9 @@ public class RepeatedlyRequestWrapper extends HttpServletRequestWrapper {
     }
 
     /**
-     * {@code getReader} 查询并返回当前操作所需的数据。
+     * 查询 Repeatedly Request Wrapper 相关业务数据，并返回处理结果。
      *
-     * @return 返回当前操作产生的结果。
+     * @return 返回 Repeatedly Request Wrapper 相关操作生成的结果数据。
      */
     @Override
     public BufferedReader getReader() throws IOException {
@@ -48,9 +50,9 @@ public class RepeatedlyRequestWrapper extends HttpServletRequestWrapper {
     }
 
     /**
-     * {@code getInputStream} 查询并返回当前操作所需的数据。
+     * 查询 Repeatedly Request Wrapper 相关业务数据，并返回处理结果。
      *
-     * @return 返回当前操作产生的结果。
+     * @return 返回 Repeatedly Request Wrapper 相关操作生成的结果数据。
      */
     @Override
     public ServletInputStream getInputStream() throws IOException {

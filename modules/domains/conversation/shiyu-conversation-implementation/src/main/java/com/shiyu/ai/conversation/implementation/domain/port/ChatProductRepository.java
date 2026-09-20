@@ -11,37 +11,34 @@ import java.util.List;
 import java.util.Optional;
 
 /**
- * ChatProductRepository 仓储接口，负责访问和持久化会话领域聚合数据。
+ * 负责 对话 Product 的持久化查询、保存和删除，并维护数据访问边界。
  */
 public interface ChatProductRepository {
     /**
-     * 保存或更新业务对象。
+     * 创建或保存 对话 Product 相关业务数据，并返回处理结果。
      *
-     * @param asset 方法参数。
-     *
-     * @return 符合条件的结果集合。
+     * @param asset 用于完成本次业务处理的 asset 参数。
+     * @return 返回 对话 Product 相关操作生成的结果数据。
      */
     CharacterAsset saveCharacter(CharacterAsset asset);
 
     /**
-     * 根据条件查询并返回所需数据。
+     * 查询 对话 Product 相关业务数据，并返回处理结果。
      *
-     * @param tenantId 租户标识。
-     * @param ownerUserId 方法参数。
-     * @param id 目标对象标识。
-     *
-     * @return 符合条件的结果集合。
+     * @param tenantId 当前操作涉及的租户标识。
+     * @param ownerUserId 当前操作涉及的用户标识。
+     * @param id 用于定位目标业务对象的标识。
+     * @return 返回可能存在的业务对象；不存在时返回空值容器。
      */
     Optional<CharacterAsset> findCharacter(TenantId tenantId, long ownerUserId, String id);
 
     /**
-     * 根据条件查询并返回所需数据。
+     * 查询 对话 Product 相关业务数据，并返回处理结果。
      *
-     * @param tenantId 租户标识。
-     * @param requesterUserId 方法参数。
-     * @param id 目标对象标识。
-     *
-     * @return 符合条件的结果集合。
+     * @param tenantId 当前操作涉及的租户标识。
+     * @param requesterUserId 当前操作涉及的用户标识。
+     * @param id 用于定位目标业务对象的标识。
+     * @return 返回可能存在的业务对象；不存在时返回空值容器。
      */
     default Optional<CharacterAsset> findCharacterForAccess(
             TenantId tenantId, long requesterUserId, String id) {
@@ -49,161 +46,149 @@ public interface ChatProductRepository {
     }
 
     /**
-     * 根据条件查询并返回所需数据。
+     * 查询 对话 Product 相关业务数据，并返回处理结果。
      *
-     * @param tenantId 租户标识。
-     * @param ownerUserId 方法参数。
-     *
-     * @return 符合条件的结果集合。
+     * @param tenantId 当前操作涉及的租户标识。
+     * @param ownerUserId 当前操作涉及的用户标识。
+     * @return 返回符合条件的数据集合；没有匹配项时返回空集合。
      */
     List<CharacterAsset> listCharacters(TenantId tenantId, long ownerUserId);
 
     /**
-     * 删除指定业务对象或关联数据。
+     * 删除或移除 对话 Product 相关业务操作，并维护必要的状态和协作关系。
      *
-     * @param tenantId 租户标识。
-     * @param ownerUserId 方法参数。
-     * @param id 目标对象标识。
+     * @param tenantId 当前操作涉及的租户标识。
+     * @param ownerUserId 当前操作涉及的用户标识。
+     * @param id 用于定位目标业务对象的标识。
      */
     void deleteCharacter(TenantId tenantId, long ownerUserId, String id);
 
     /**
-     * 保存或更新业务对象。
+     * 创建或保存 对话 Product 相关业务数据，并返回处理结果。
      *
-     * @param asset 方法参数。
-     *
-     * @return 符合条件的结果集合。
+     * @param asset 用于完成本次业务处理的 asset 参数。
+     * @return 返回 对话 Product 相关操作生成的结果数据。
      */
     PersonaAsset savePersona(PersonaAsset asset);
 
     /**
-     * 根据条件查询并返回所需数据。
+     * 查询 对话 Product 相关业务数据，并返回处理结果。
      *
-     * @param tenantId 租户标识。
-     * @param ownerUserId 方法参数。
-     * @param id 目标对象标识。
-     *
-     * @return 符合条件的结果集合。
+     * @param tenantId 当前操作涉及的租户标识。
+     * @param ownerUserId 当前操作涉及的用户标识。
+     * @param id 用于定位目标业务对象的标识。
+     * @return 返回可能存在的业务对象；不存在时返回空值容器。
      */
     Optional<PersonaAsset> findPersona(TenantId tenantId, long ownerUserId, String id);
 
     /**
-     * 根据条件查询并返回所需数据。
+     * 查询 对话 Product 相关业务数据，并返回处理结果。
      *
-     * @param tenantId 租户标识。
-     * @param ownerUserId 方法参数。
-     *
-     * @return 符合条件的结果集合。
+     * @param tenantId 当前操作涉及的租户标识。
+     * @param ownerUserId 当前操作涉及的用户标识。
+     * @return 返回符合条件的数据集合；没有匹配项时返回空集合。
      */
     List<PersonaAsset> listPersonas(TenantId tenantId, long ownerUserId);
 
     /**
-     * 删除指定业务对象或关联数据。
+     * 删除或移除 对话 Product 相关业务操作，并维护必要的状态和协作关系。
      *
-     * @param tenantId 租户标识。
-     * @param ownerUserId 方法参数。
-     * @param id 目标对象标识。
+     * @param tenantId 当前操作涉及的租户标识。
+     * @param ownerUserId 当前操作涉及的用户标识。
+     * @param id 用于定位目标业务对象的标识。
      */
     void deletePersona(TenantId tenantId, long ownerUserId, String id);
 
     /**
-     * 保存或更新业务对象。
+     * 创建或保存 对话 Product 相关业务数据，并返回处理结果。
      *
-     * @param asset 方法参数。
-     *
-     * @return 符合条件的结果集合。
+     * @param asset 用于完成本次业务处理的 asset 参数。
+     * @return 返回 对话 Product 相关操作生成的结果数据。
      */
     LorebookAsset saveLorebook(LorebookAsset asset);
 
     /**
-     * 根据条件查询并返回所需数据。
+     * 查询 对话 Product 相关业务数据，并返回处理结果。
      *
-     * @param tenantId 租户标识。
-     * @param ownerUserId 方法参数。
-     * @param id 目标对象标识。
-     *
-     * @return 符合条件的结果集合。
+     * @param tenantId 当前操作涉及的租户标识。
+     * @param ownerUserId 当前操作涉及的用户标识。
+     * @param id 用于定位目标业务对象的标识。
+     * @return 返回可能存在的业务对象；不存在时返回空值容器。
      */
     Optional<LorebookAsset> findLorebook(TenantId tenantId, long ownerUserId, String id);
 
     /**
-     * 根据条件查询并返回所需数据。
+     * 查询 对话 Product 相关业务数据，并返回处理结果。
      *
-     * @param tenantId 租户标识。
-     * @param ownerUserId 方法参数。
-     *
-     * @return 符合条件的结果集合。
+     * @param tenantId 当前操作涉及的租户标识。
+     * @param ownerUserId 当前操作涉及的用户标识。
+     * @return 返回符合条件的数据集合；没有匹配项时返回空集合。
      */
     List<LorebookAsset> listLorebooks(TenantId tenantId, long ownerUserId);
 
     /**
-     * 删除指定业务对象或关联数据。
+     * 删除或移除 对话 Product 相关业务操作，并维护必要的状态和协作关系。
      *
-     * @param tenantId 租户标识。
-     * @param ownerUserId 方法参数。
-     * @param id 目标对象标识。
+     * @param tenantId 当前操作涉及的租户标识。
+     * @param ownerUserId 当前操作涉及的用户标识。
+     * @param id 用于定位目标业务对象的标识。
      */
     void deleteLorebook(TenantId tenantId, long ownerUserId, String id);
 
     /**
-     * 保存或更新业务对象。
+     * 创建或保存 对话 Product 相关业务数据，并返回处理结果。
      *
-     * @param version 方法参数。
-     * @param tenantId 租户标识。
-     * @param ownerUserId 方法参数。
-     *
-     * @return 操作结果。
+     * @param version 用于完成本次业务处理的 version 参数。
+     * @param tenantId 当前操作涉及的租户标识。
+     * @param ownerUserId 当前操作涉及的用户标识。
+     * @return 返回 对话 Product 相关操作生成的结果数据。
      */
     PromptTemplateVersion savePrompt(
             PromptTemplateVersion version, TenantId tenantId, long ownerUserId);
 
     /**
-     * 根据条件查询并返回所需数据。
+     * 查询 对话 Product 相关业务数据，并返回处理结果。
      *
-     * @param tenantId 租户标识。
-     * @param ownerUserId 方法参数。
-     * @param templateId 方法参数。
-     *
-     * @return 符合条件的结果集合。
+     * @param tenantId 当前操作涉及的租户标识。
+     * @param ownerUserId 当前操作涉及的用户标识。
+     * @param templateId 用于定位template的标识。
+     * @return 返回符合条件的数据集合；没有匹配项时返回空集合。
      */
     List<PromptTemplateVersion> listPrompts(TenantId tenantId, long ownerUserId, String templateId);
 
     /**
-     * 保存或更新业务对象。
+     * 创建或保存 对话 Product 相关业务数据，并返回处理结果。
      *
-     * @param asset 方法参数。
-     *
-     * @return 符合条件的结果集合。
+     * @param asset 用于完成本次业务处理的 asset 参数。
+     * @return 返回 对话 Product 相关操作生成的结果数据。
      */
     GroupChatAsset saveGroup(GroupChatAsset asset);
 
     /**
-     * 根据条件查询并返回所需数据。
+     * 查询 对话 Product 相关业务数据，并返回处理结果。
      *
-     * @param tenantId 租户标识。
-     * @param ownerUserId 方法参数。
-     * @param id 目标对象标识。
-     *
-     * @return 符合条件的结果集合。
+     * @param tenantId 当前操作涉及的租户标识。
+     * @param ownerUserId 当前操作涉及的用户标识。
+     * @param id 用于定位目标业务对象的标识。
+     * @return 返回可能存在的业务对象；不存在时返回空值容器。
      */
     Optional<GroupChatAsset> findGroup(TenantId tenantId, long ownerUserId, String id);
 
     /**
-     * 根据条件查询并返回所需数据。
+     * 查询 对话 Product 相关业务数据，并返回处理结果。
      *
-     * @param tenantId 租户标识。
-     * @param ownerUserId 方法参数。
-     *
-     * @return 符合条件的结果集合。
+     * @param tenantId 当前操作涉及的租户标识。
+     * @param ownerUserId 当前操作涉及的用户标识。
+     * @return 返回符合条件的数据集合；没有匹配项时返回空集合。
      */
     List<GroupChatAsset> listGroups(TenantId tenantId, long ownerUserId);
 
     /**
-     * 删除指定业务对象或关联数据。
+     * 删除或移除 对话 Product 相关业务操作，并维护必要的状态和协作关系。
      *
-     * @param tenantId 租户标识。
-     * @param ownerUserId 方法参数。
-     * @param id 目标对象标识。
+     * @param tenantId 当前操作涉及的租户标识。
+     * @param ownerUserId 当前操作涉及的用户标识。
+     * @param id 用于定位目标业务对象的标识。
      */
     void deleteGroup(TenantId tenantId, long ownerUserId, String id);
 }

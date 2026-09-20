@@ -3,11 +3,7 @@ package com.shiyu.ai.common.core.auth;
 import com.shiyu.ai.common.core.context.UserContextHolder;
 
 /**
- * 登录鉴权助手（抽象基类）
- *
- * <p>提供认证操作接口（登录、登出、Token 管理等） 具体认证框架（如 Sa-Token、Spring Security 等）需要继承此类并实现认证相关方法
- *
- * <p>上下文存取操作请使用 {@link UserContextHolder}
+ * 提供 Login 相关的通用辅助操作，供业务和基础设施复用。
  */
 public abstract class LoginHelper {
 

@@ -4,7 +4,9 @@ import lombok.Data;
 
 import org.springframework.boot.context.properties.ConfigurationProperties;
 
-/** 向量存储配置 */
+/**
+ * 定义 向量 Store 基础设施或应用能力的配置项及装配规则。
+ */
 @Data
 @ConfigurationProperties(prefix = "shiyu.vector-store")
 public class VectorStoreProperties {
@@ -19,9 +21,9 @@ public class VectorStoreProperties {
     private String dataDir = "${app.home}/data/vector";
 
     /**
-     * {@code getResolvedDataDir} 查询并返回当前操作所需的数据。
+     * 查询 向量 Store 相关业务数据，并返回处理结果。
      *
-     * @return 返回当前操作产生的结果。
+     * @return 返回 向量 Store 相关操作生成的结果数据。
      */
     public String getResolvedDataDir() {
         String dir = dataDir;

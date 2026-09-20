@@ -14,20 +14,19 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 
 /**
- * {@code UsageAutoConfiguration} 提供治理模块的配置项，并集中声明其默认值和运行约束。
+ * 定义 用量 Auto 基础设施或应用能力的配置项及装配规则。
  */
 @Slf4j
 @Configuration
 public class UsageAutoConfiguration {
 
     /**
-     * {@code usageRecordService} 执行当前类型定义的业务操作。
+     * 执行 用量 Auto 相关业务数据，并返回处理结果。
      *
-     * @param usageRecordRepository 参数值，用于执行当前操作。
-     * @param publisher 参数值，用于执行当前操作。
-     * @param billingPriceProvider 参数值，用于执行当前操作。
-     *
-     * @return 返回当前操作产生的结果。
+     * @param usageRecordRepository 用于完成本次业务处理的 usageRecordRepository 参数。
+     * @param publisher 用于完成本次业务处理的 publisher 参数。
+     * @param billingPriceProvider 用于完成本次业务处理的 billingPriceProvider 参数。
+     * @return 返回 用量 Auto 相关操作生成的结果数据。
      */
     @Bean
     @ConditionalOnMissingBean
@@ -46,11 +45,9 @@ public class UsageAutoConfiguration {
     }
 
     /**
-     * {@code usageGovernance} 执行当前类型定义的业务操作。
+     * 执行 用量 Auto 相关业务操作，并维护必要的状态和协作关系。
      *
-     * @param usageRecordService 参数值，用于执行当前操作。
-     *
-     * @return 返回当前操作产生的结果。
+     * @param class 用于完成本次业务处理的 class 参数。
      */
     @Bean
     @ConditionalOnMissingBean(UsageGovernance.class)

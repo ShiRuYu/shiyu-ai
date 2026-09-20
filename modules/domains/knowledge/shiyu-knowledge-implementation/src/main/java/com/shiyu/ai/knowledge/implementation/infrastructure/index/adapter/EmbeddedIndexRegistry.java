@@ -44,7 +44,7 @@ import java.util.function.Function;
 import java.util.stream.Collectors;
 
 /**
- * 管理知识索引实例的注册、加载、切换和关闭。
+ * 管理 Embedded 索引 相关的运行时状态、注册信息或临时数据。
  */
 @Slf4j
 @Service
@@ -80,18 +80,18 @@ public class EmbeddedIndexRegistry implements KnowledgeIndexService {
     private final int rrfK;
 
     /**
-     * {@code EmbeddedIndexRegistry} 创建并初始化当前类型实例。
+     * 执行 Embedded 索引 相关业务操作，并维护必要的状态和协作关系。
      *
-     * @param enterpriseRepository 参数值，用于执行当前操作。
-     * @param documentRepository 参数值，用于执行当前操作。
-     * @param chunkRepository 参数值，用于执行当前操作。
-     * @param embeddingProvider 参数值，用于执行当前操作。
-     * @param rerankProvider 参数值，用于执行当前操作。
-     * @param vectorStoreProvider 参数值，用于执行当前操作。
-     * @param dataDir 参数值，用于执行当前操作。
-     * @param idleMinutes 参数值，用于执行当前操作。
-     * @param rrfK 参数值，用于执行当前操作。
-     * @param rollbackVersions 参数值，用于执行当前操作。
+     * @param enterpriseRepository 用于完成本次业务处理的 enterpriseRepository 参数。
+     * @param documentRepository 用于完成本次业务处理的 documentRepository 参数。
+     * @param chunkRepository 用于完成本次业务处理的 chunkRepository 参数。
+     * @param embeddingProvider 用于完成本次业务处理的 embeddingProvider 参数。
+     * @param rerankProvider 用于完成本次业务处理的 rerankProvider 参数。
+     * @param vectorStoreProvider 用于完成本次业务处理的 vectorStoreProvider 参数。
+     * @param dataDir 用于完成本次业务处理的 dataDir 参数。
+     * @param idleMinutes 用于完成本次业务处理的 idleMinutes 参数。
+     * @param rrfK 用于完成本次业务处理的 rrfK 参数。
+     * @param rollbackVersions 用于完成本次业务处理的 rollbackVersions 参数。
      */
     public EmbeddedIndexRegistry(
             KnowledgeEnterpriseRepository enterpriseRepository,
@@ -116,12 +116,11 @@ public class EmbeddedIndexRegistry implements KnowledgeIndexService {
     }
 
     /**
-     * {@code rebuild} 执行当前类型定义的业务操作。
+     * 执行 Embedded 索引 相关业务数据，并返回处理结果。
      *
-     * @param tenant 参数值，用于执行当前操作。
-     * @param spaceId 参数值，用于执行当前操作。
-     *
-     * @return 返回当前操作产生的结果。
+     * @param tenant 当前操作涉及的租户标识。
+     * @param spaceId 用于定位space的标识。
+     * @return 返回 Embedded 索引 相关操作生成的结果数据。
      */
     @Override
     public synchronized long rebuild(TenantId tenant, Long spaceId) {
@@ -178,15 +177,14 @@ public class EmbeddedIndexRegistry implements KnowledgeIndexService {
     }
 
     /**
-     * {@code search} 查询并返回当前操作所需的数据。
+     * 查询 Embedded 索引 相关业务数据，并返回处理结果。
      *
-     * @param tenantId 参数值，用于执行当前操作。
-     * @param spaceId 参数值，用于执行当前操作。
-     * @param version 参数值，用于执行当前操作。
-     * @param queryText 参数值，用于执行当前操作。
-     * @param topK 参数值，用于执行当前操作。
-     *
-     * @return 返回当前操作产生的结果。
+     * @param tenantId 当前操作涉及的租户标识。
+     * @param spaceId 用于定位space的标识。
+     * @param version 用于完成本次业务处理的 version 参数。
+     * @param queryText 用于完成本次业务处理的 queryText 参数。
+     * @param topK 用于完成本次业务处理的 topK 参数。
+     * @return 返回符合条件的数据集合；没有匹配项时返回空集合。
      */
     @Override
     public List<FullTextHit> search(
@@ -227,15 +225,14 @@ public class EmbeddedIndexRegistry implements KnowledgeIndexService {
     }
 
     /**
-     * {@code search} 查询并返回当前操作所需的数据。
+     * 查询 Embedded 索引 相关业务数据，并返回处理结果。
      *
-     * @param tenantId 参数值，用于执行当前操作。
-     * @param spaceId 参数值，用于执行当前操作。
-     * @param version 参数值，用于执行当前操作。
-     * @param queryVector 参数值，用于执行当前操作。
-     * @param topK 参数值，用于执行当前操作。
-     *
-     * @return 返回当前操作产生的结果。
+     * @param tenantId 当前操作涉及的租户标识。
+     * @param spaceId 用于定位space的标识。
+     * @param version 用于完成本次业务处理的 version 参数。
+     * @param queryVector 用于完成本次业务处理的 queryVector 参数。
+     * @param topK 用于完成本次业务处理的 topK 参数。
+     * @return 返回符合条件的数据集合；没有匹配项时返回空集合。
      */
     @Override
     public List<VectorHit> search(
@@ -255,17 +252,16 @@ public class EmbeddedIndexRegistry implements KnowledgeIndexService {
     }
 
     /**
-     * {@code hybridSearch} 执行当前类型定义的业务操作。
+     * 执行 Embedded 索引 相关业务数据，并返回处理结果。
      *
-     * @param tenantId 参数值，用于执行当前操作。
-     * @param spaceId 参数值，用于执行当前操作。
-     * @param query 参数值，用于执行当前操作。
-     * @param mode 参数值，用于执行当前操作。
-     * @param topK 参数值，用于执行当前操作。
-     * @param threshold 参数值，用于执行当前操作。
-     * @param rerank 参数值，用于执行当前操作。
-     *
-     * @return 返回当前操作产生的结果。
+     * @param tenantId 当前操作涉及的租户标识。
+     * @param spaceId 用于定位space的标识。
+     * @param query 用于筛选目标数据的查询条件。
+     * @param mode 用于完成本次业务处理的 mode 参数。
+     * @param topK 用于完成本次业务处理的 topK 参数。
+     * @param threshold 用于完成本次业务处理的 threshold 参数。
+     * @param rerank 用于完成本次业务处理的 rerank 参数。
+     * @return 返回符合条件的数据集合；没有匹配项时返回空集合。
      */
     @Override
     public List<HybridHit> hybridSearch(
@@ -281,17 +277,16 @@ public class EmbeddedIndexRegistry implements KnowledgeIndexService {
     }
 
     /**
-     * {@code hybridSearch} 执行当前类型定义的业务操作。
+     * 执行 Embedded 索引 相关业务数据，并返回处理结果。
      *
-     * @param actor 参数值，用于执行当前操作。
-     * @param spaceId 参数值，用于执行当前操作。
-     * @param query 参数值，用于执行当前操作。
-     * @param mode 参数值，用于执行当前操作。
-     * @param topK 参数值，用于执行当前操作。
-     * @param threshold 参数值，用于执行当前操作。
-     * @param rerank 参数值，用于执行当前操作。
-     *
-     * @return 返回当前操作产生的结果。
+     * @param actor 当前操作主体上下文，用于确定租户、用户和访问权限。
+     * @param spaceId 用于定位space的标识。
+     * @param query 用于筛选目标数据的查询条件。
+     * @param mode 用于完成本次业务处理的 mode 参数。
+     * @param topK 用于完成本次业务处理的 topK 参数。
+     * @param threshold 用于完成本次业务处理的 threshold 参数。
+     * @param rerank 用于完成本次业务处理的 rerank 参数。
+     * @return 返回符合条件的数据集合；没有匹配项时返回空集合。
      */
     @Override
     public List<HybridHit> hybridSearch(
@@ -524,15 +519,12 @@ public class EmbeddedIndexRegistry implements KnowledgeIndexService {
     }
 
     /**
-     * {@code IndexKey} 封装知识模块中不可变的结构化数据，并作为相关操作之间的值对象。
-     * @param tenantId 租户标识，表示该记录组件承载的数据。
-     * @param spaceId spaceId 属性，表示该记录组件承载的数据。
-     * @param version version 属性，表示该记录组件承载的数据。
+     * 封装 索引 Key 相关的不可变数据及其字段约束。
      */
     record IndexKey(Long tenantId, Long spaceId, Long version) {}
 
     /**
-     * {@code MutableHit} 承载知识模块的领域状态或协作行为，负责维护本类型的职责边界。
+     * 提供 Mutable Hit 所属基础设施的适配、存储或运行支持。
      */
     private static final class MutableHit {
         private final Long chunkId;

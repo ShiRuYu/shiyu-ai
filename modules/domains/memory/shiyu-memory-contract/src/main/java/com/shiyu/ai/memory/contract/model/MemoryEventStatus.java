@@ -1,7 +1,7 @@
 package com.shiyu.ai.memory.contract.model;
 
 /**
- * {@code MemoryEventStatus} 表示模型模块中的一组受控业务状态或分类。
+ * 定义 记忆 事件 可用的枚举值及其业务语义。
  */
 public enum MemoryEventStatus {
     CANDIDATE,

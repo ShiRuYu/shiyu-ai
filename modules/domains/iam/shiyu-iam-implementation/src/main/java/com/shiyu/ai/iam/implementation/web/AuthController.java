@@ -24,7 +24,9 @@ import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
 
-/** 认证 Controller 提供用户登录、登出等认证功能 */
+/**
+ * 处理 认证 相关的 Web 请求，并将请求转换为应用服务调用。
+ */
 @Slf4j
 @Tag(name = "Auth", description = "Auth")
 @RestController
@@ -49,12 +51,12 @@ public class AuthController {
     private final KnowledgeTenantProvisioning knowledgeSpaceService;
 
     /**
-     * {@code AuthController} 创建并初始化当前类型实例。
+     * 执行 认证 相关业务操作，并维护必要的状态和协作关系。
      *
-     * @param authService 参数值，用于执行当前操作。
-     * @param userService 参数值，用于执行当前操作。
-     * @param loginRateLimiter 参数值，用于执行当前操作。
-     * @param knowledgeSpaceService 参数值，用于执行当前操作。
+     * @param authService 用于完成本次业务处理的 authService 参数。
+     * @param userService 用于完成本次业务处理的 userService 参数。
+     * @param loginRateLimiter 用于完成本次业务处理的 loginRateLimiter 参数。
+     * @param knowledgeSpaceService 用于完成本次业务处理的 knowledgeSpaceService 参数。
      */
     public AuthController(
             AuthService authService,

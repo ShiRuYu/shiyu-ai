@@ -8,101 +8,94 @@ import java.util.List;
 import java.util.Optional;
 
 /**
- * ConversationRepository 仓储接口，负责访问和持久化会话领域聚合数据。
+ * 负责 会话 的持久化查询、保存和删除，并维护数据访问边界。
  */
 public interface ConversationRepository {
     /**
-     * 创建并保存业务对象。
+     * 创建或保存 会话 相关业务操作，并维护必要的状态和协作关系。
      *
-     * @param conversation 方法参数。
+     * @param conversation 用于完成本次业务处理的 conversation 参数。
      */
     void insertConversation(Conversation conversation);
 
     /**
-     * 根据条件查询并返回所需数据。
+     * 查询 会话 相关业务数据，并返回处理结果。
      *
-     * @param id 目标对象标识。
-     * @param tenantId 租户标识。
-     * @param ownerUserId 方法参数。
-     *
-     * @return 查询到的结果；未找到时为空。
+     * @param id 用于定位目标业务对象的标识。
+     * @param tenantId 当前操作涉及的租户标识。
+     * @param ownerUserId 当前操作涉及的用户标识。
+     * @return 返回可能存在的业务对象；不存在时返回空值容器。
      */
     Optional<Conversation> findConversation(String id, TenantId tenantId, long ownerUserId);
 
     /**
-     * 根据条件查询并返回所需数据。
+     * 查询 会话 相关业务数据，并返回处理结果。
      *
-     * @param tenantId 租户标识。
-     * @param ownerUserId 方法参数。
-     * @param limit 方法参数。
-     * @param offset 方法参数。
-     *
-     * @return 符合条件的结果集合。
+     * @param tenantId 当前操作涉及的租户标识。
+     * @param ownerUserId 当前操作涉及的用户标识。
+     * @param limit 每页返回的数据数量。
+     * @param offset 用于完成本次业务处理的 offset 参数。
+     * @return 返回符合条件的数据集合；没有匹配项时返回空集合。
      */
     List<Conversation> listConversations(
             TenantId tenantId, long ownerUserId, int limit, int offset);
 
     /**
-     * 根据条件查询并返回所需数据。
+     * 查询 会话 相关业务数据，并返回处理结果。
      *
-     * @param parentConversationId 方法参数。
-     * @param tenantId 租户标识。
-     * @param ownerUserId 方法参数。
-     *
-     * @return 符合条件的结果集合。
+     * @param parentConversationId 用于定位parent 会话的标识。
+     * @param tenantId 当前操作涉及的租户标识。
+     * @param ownerUserId 当前操作涉及的用户标识。
+     * @return 返回符合条件的数据集合；没有匹配项时返回空集合。
      */
     List<Conversation> listBranches(
             String parentConversationId, TenantId tenantId, long ownerUserId);
 
     /**
-     * 更新业务对象及其关联数据。
+     * 更新或设置 会话 相关业务数据，并返回处理结果。
      *
-     * @param conversation 方法参数。
-     * @param expectedVersion 方法参数。
-     *
-     * @return 操作影响的记录数或状态码。
+     * @param conversation 用于完成本次业务处理的 conversation 参数。
+     * @param expectedVersion 用于完成本次业务处理的 expectedVersion 参数。
+     * @return 返回 会话 相关操作生成的结果数据。
      */
     int updateConversation(Conversation conversation, long expectedVersion);
 
     /**
-     * 创建并保存业务对象。
+     * 创建或保存 会话 相关业务操作，并维护必要的状态和协作关系。
      *
-     * @param message 方法参数。
+     * @param message 本次流程携带的事件或业务数据。
      */
     void insertMessage(ConversationMessage message);
 
     /**
-     * 根据条件查询并返回所需数据。
+     * 查询 会话 相关业务数据，并返回处理结果。
      *
-     * @param id 目标对象标识。
-     * @param tenantId 租户标识。
-     * @param ownerUserId 方法参数。
-     *
-     * @return 查询到的结果；未找到时为空。
+     * @param id 用于定位目标业务对象的标识。
+     * @param tenantId 当前操作涉及的租户标识。
+     * @param ownerUserId 当前操作涉及的用户标识。
+     * @return 返回可能存在的业务对象；不存在时返回空值容器。
      */
     Optional<ConversationMessage> findMessage(String id, TenantId tenantId, long ownerUserId);
 
     /**
-     * 根据条件查询并返回所需数据。
+     * 查询 会话 相关业务数据，并返回处理结果。
      *
-     * @param conversationId 方法参数。
-     * @param tenantId 租户标识。
-     * @param ownerUserId 方法参数。
-     * @param limit 方法参数。
-     *
-     * @return 符合条件的结果集合。
+     * @param conversationId 用于定位conversation的标识。
+     * @param tenantId 当前操作涉及的租户标识。
+     * @param ownerUserId 当前操作涉及的用户标识。
+     * @param limit 每页返回的数据数量。
+     * @return 返回符合条件的数据集合；没有匹配项时返回空集合。
      */
     List<ConversationMessage> listMessages(
             String conversationId, TenantId tenantId, long ownerUserId, int limit);
 
     /**
-     * 删除指定业务对象或关联数据。
+     * 删除或移除 会话 相关业务数据，并返回处理结果。
      *
-     * @param id 目标对象标识。
-     * @param tenantId 租户标识。
-     * @param ownerUserId 方法参数。
-     *
-     * @return 操作影响的记录数或状态码。
+     * @param id 用于定位目标业务对象的标识。
+     * @param tenantId 当前操作涉及的租户标识。
+     * @param ownerUserId 当前操作涉及的用户标识。
+     * @return 返回 会话 相关操作生成的结果数据。
      */
     int deleteConversation(String id, TenantId tenantId, long ownerUserId);
 

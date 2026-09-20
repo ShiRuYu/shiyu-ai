@@ -10,6 +10,9 @@ import com.shiyu.ai.kernel.context.TenantScope;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Test;
 
+/**
+ * 验证 租户 Consistency Listener 相关功能、边界条件、异常路径和协作行为。
+ */
 class TenantConsistencyListenerTest {
 
     private final TenantConsistencyListener listener = new TenantConsistencyListener();

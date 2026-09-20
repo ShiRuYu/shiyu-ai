@@ -1,6 +1,8 @@
 package com.shiyu.ai.common.thread.api;
 
-/** 线程池类型枚举 定义不同类型的线程池，适用于不同的业务场景 */
+/**
+ * 定义 Pool Type 可用的枚举值及其业务语义。
+ */
 public enum PoolType {
 
     /** 默认线程池，适用于一般业务场景 */
@@ -39,18 +41,18 @@ public enum PoolType {
     }
 
     /**
-     * {@code getCode} 查询并返回当前操作所需的数据。
+     * 查询 Pool Type 相关业务数据，并返回处理结果。
      *
-     * @return 返回当前操作产生的结果。
+     * @return 返回 Pool Type 相关操作生成的结果数据。
      */
     public String getCode() {
         return code;
     }
 
     /**
-     * {@code getDescription} 查询并返回当前操作所需的数据。
+     * 查询 Pool Type 相关业务数据，并返回处理结果。
      *
-     * @return 返回当前操作产生的结果。
+     * @return 返回 Pool Type 相关操作生成的结果数据。
      */
     public String getDescription() {
         return description;

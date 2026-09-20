@@ -22,6 +22,9 @@ import org.junit.jupiter.api.Test;
 import java.util.List;
 import java.util.Map;
 
+/**
+ * 验证 Iam Domain Controllers Coverage 相关功能、边界条件、异常路径和协作行为。
+ */
 class IamDomainControllersCoverageTest {
     private final RoleService roles = mock(RoleService.class);
     private final UserService users = mock(UserService.class);

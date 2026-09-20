@@ -3,7 +3,9 @@ package com.shiyu.ai.common.core.enums;
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 
-/** 业务响应码 */
+/**
+ * 定义 Biz Result Code 可用的枚举值及其业务语义。
+ */
 @Getter
 @RequiredArgsConstructor
 public enum BizResultCode {

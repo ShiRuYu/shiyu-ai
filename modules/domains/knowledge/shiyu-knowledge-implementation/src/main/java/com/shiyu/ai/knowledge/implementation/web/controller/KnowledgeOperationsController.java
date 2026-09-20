@@ -28,7 +28,7 @@ import org.springframework.web.bind.annotation.RestController;
 import java.util.Map;
 
 /**
- * {@code KnowledgeOperationsController} 是知识模块的 Web 接口适配器，负责接收请求并转换为应用服务调用。
+ * 处理 知识 Operations 相关的 Web 请求，并将请求转换为应用服务调用。
  */
 @RestController
 @RequestMapping("/api/knowledge/system")
@@ -43,11 +43,10 @@ public class KnowledgeOperationsController {
     private final EmbeddedBackupService backupService;
 
     /**
-     * {@code status} 执行当前类型定义的业务操作。
+     * 执行 知识 Operations 相关业务数据，并返回处理结果。
      *
-     * @param version 参数值，用于执行当前操作。
-     *
-     * @return 返回当前操作产生的结果。
+     * @param status 用于完成本次业务处理的 status 参数。
+     * @return 返回 知识 Operations 相关操作生成的结果数据。
      */
     @GetMapping("/status")
     public Result<Map<String, Object>> status(
@@ -60,11 +59,10 @@ public class KnowledgeOperationsController {
     }
 
     /**
-     * {@code backup} 执行当前类型定义的业务操作。
+     * 执行 知识 Operations 相关业务数据，并返回处理结果。
      *
-     * @param version 参数值，用于执行当前操作。
-     *
-     * @return 返回当前操作产生的结果。
+     * @param backup 用于完成本次业务处理的 backup 参数。
+     * @return 返回 知识 Operations 相关操作生成的结果数据。
      */
     @PostMapping("/backup")
     public Result<EmbeddedBackupService.BackupResult> backup(
@@ -77,12 +75,10 @@ public class KnowledgeOperationsController {
     }
 
     /**
-     * {@code restoreCheck} 执行当前类型定义的业务操作。
+     * 执行 知识 Operations 相关业务数据，并返回处理结果。
      *
-     * @param fileName 参数值，用于执行当前操作。
-     * @param version 参数值，用于执行当前操作。
-     *
-     * @return 返回当前操作产生的结果。
+     * @param check 用于完成本次业务处理的 check 参数。
+     * @return 返回 知识 Operations 相关操作生成的结果数据。
      */
     @PostMapping("/restore-check")
     public Result<EmbeddedBackupService.RestoreCheckResult> restoreCheck(

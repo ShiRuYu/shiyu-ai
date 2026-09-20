@@ -8,7 +8,7 @@ import org.slf4j.LoggerFactory;
 import org.slf4j.helpers.MessageFormatter;
 
 /**
- * {@code LoggerUtil} 表示平台基础设施模块中的一组受控业务状态或分类。
+ * 定义 Logger 可用的枚举值及其业务语义。
  */
 @Getter
 @AllArgsConstructor
@@ -35,67 +35,67 @@ public enum LoggerUtil {
     private final Logger normalLogger;
 
     /**
-     * {@code info} 执行当前类型定义的业务操作。
+     * 执行 Logger 相关业务操作，并维护必要的状态和协作关系。
      *
-     * @param message 参数值，用于执行当前操作。
+     * @param message 本次流程携带的事件或业务数据。
      */
     public void info(String message) {
         normalLogger.info(message);
     }
 
     /**
-     * {@code info} 执行当前类型定义的业务操作。
+     * 执行 Logger 相关业务操作，并维护必要的状态和协作关系。
      *
-     * @param message 参数值，用于执行当前操作。
-     * @param objects 参数值，用于执行当前操作。
+     * @param message 本次流程携带的事件或业务数据。
+     * @param objects 用于完成本次业务处理的 objects 参数。
      */
     public void info(String message, Object... objects) {
         normalLogger.info(msgHandle(message, objects));
     }
 
     /**
-     * {@code warn} 执行当前类型定义的业务操作。
+     * 执行 Logger 相关业务操作，并维护必要的状态和协作关系。
      *
-     * @param message 参数值，用于执行当前操作。
+     * @param message 本次流程携带的事件或业务数据。
      */
     public void warn(String message) {
         normalLogger.warn(message);
     }
 
     /**
-     * {@code warn} 执行当前类型定义的业务操作。
+     * 执行 Logger 相关业务操作，并维护必要的状态和协作关系。
      *
-     * @param message 参数值，用于执行当前操作。
-     * @param objects 参数值，用于执行当前操作。
+     * @param message 本次流程携带的事件或业务数据。
+     * @param objects 用于完成本次业务处理的 objects 参数。
      */
     public void warn(String message, Object... objects) {
         normalLogger.warn(msgHandle(message, objects));
     }
 
     /**
-     * {@code debug} 执行当前类型定义的业务操作。
+     * 执行 Logger 相关业务操作，并维护必要的状态和协作关系。
      *
-     * @param message 参数值，用于执行当前操作。
-     * @param objects 参数值，用于执行当前操作。
+     * @param message 本次流程携带的事件或业务数据。
+     * @param objects 用于完成本次业务处理的 objects 参数。
      */
     public void debug(String message, Object... objects) {
         normalLogger.debug(msgHandle(message, objects));
     }
 
     /**
-     * {@code error} 执行当前类型定义的业务操作。
+     * 执行 Logger 相关业务操作，并维护必要的状态和协作关系。
      *
-     * @param message 参数值，用于执行当前操作。
+     * @param message 本次流程携带的事件或业务数据。
      */
     public void error(String message) {
         normalLogger.error(message);
     }
 
     /**
-     * {@code error} 执行当前类型定义的业务操作。
+     * 执行 Logger 相关业务操作，并维护必要的状态和协作关系。
      *
-     * @param message 参数值，用于执行当前操作。
-     * @param objects 参数值，用于执行当前操作。
+     * @param message 本次流程携带的事件或业务数据。
+     * @param objects 用于完成本次业务处理的 objects 参数。
      */
     public void error(String message, Object... objects) {
         Throwable throwable = getThrowable(objects);
@@ -103,11 +103,11 @@ public enum LoggerUtil {
     }
 
     /**
-     * {@code error} 执行当前类型定义的业务操作。
+     * 执行 Logger 相关业务操作，并维护必要的状态和协作关系。
      *
-     * @param throwable 参数值，用于执行当前操作。
-     * @param message 参数值，用于执行当前操作。
-     * @param objects 参数值，用于执行当前操作。
+     * @param throwable 用于完成本次业务处理的 throwable 参数。
+     * @param message 本次流程携带的事件或业务数据。
+     * @param objects 用于完成本次业务处理的 objects 参数。
      */
     public void error(Throwable throwable, String message, Object... objects) {
         normalLogger.error(msgHandle(message, objects), throwable);

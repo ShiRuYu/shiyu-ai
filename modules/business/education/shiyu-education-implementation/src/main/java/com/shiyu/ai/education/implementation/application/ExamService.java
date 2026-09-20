@@ -8,7 +8,7 @@ import com.shiyu.ai.kernel.context.ActorContext;
 import java.util.List;
 
 /**
- * ExamService 服务接口，负责执行教育领域相关业务操作。
+ * 提供 考试 的查询、创建、更新及调用服务，协调业务变更和领域协作。
  */
 public interface ExamService {
 
@@ -34,22 +34,20 @@ public interface ExamService {
     ExamResponse getById(ActorContext actor, Long id);
 
     /**
-     * 根据学科编码查询考试列表。
+     * 查询 考试 相关业务数据，并返回处理结果。
      *
-     * @param actor 调用方上下文。
-     * @param subjectCode 学科编码。
-     *
-     * @return 结果列表。
+     * @param actor 当前操作主体上下文，用于确定租户、用户和访问权限。
+     * @param subjectCode 用于完成本次业务处理的 subjectCode 参数。
+     * @return 返回符合条件的数据集合；没有匹配项时返回空集合。
      */
     List<ExamResponse> listBySubjectCode(ActorContext actor, String subjectCode);
 
     /**
-     * 根据教师标识查询考试列表。
+     * 查询 考试 相关业务数据，并返回处理结果。
      *
-     * @param actor 调用方上下文。
-     * @param teacherId teacherId 参数。
-     *
-     * @return 结果列表。
+     * @param actor 当前操作主体上下文，用于确定租户、用户和访问权限。
+     * @param teacherId 用于定位teacher的标识。
+     * @return 返回符合条件的数据集合；没有匹配项时返回空集合。
      */
     List<ExamResponse> listByTeacherId(ActorContext actor, Long teacherId);
 

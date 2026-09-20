@@ -23,6 +23,9 @@ import java.time.Instant;
 import java.util.UUID;
 import java.util.concurrent.atomic.AtomicInteger;
 
+/**
+ * 验证 Jdbc 用量 Ledger 相关功能、边界条件、异常路径和协作行为。
+ */
 class JdbcUsageLedgerTest {
 
     @AfterEach

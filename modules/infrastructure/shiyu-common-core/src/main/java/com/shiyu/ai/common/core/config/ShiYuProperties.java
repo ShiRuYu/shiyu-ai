@@ -8,7 +8,9 @@ import org.springframework.boot.context.properties.ConfigurationProperties;
 import org.springframework.context.annotation.PropertySource;
 import org.springframework.stereotype.Component;
 
-/** 读取项目相关配置 */
+/**
+ * 定义 Shi Yu 基础设施或应用能力的配置项及装配规则。
+ */
 @Data
 @Component
 @ConfigurationProperties(prefix = "shiyu")

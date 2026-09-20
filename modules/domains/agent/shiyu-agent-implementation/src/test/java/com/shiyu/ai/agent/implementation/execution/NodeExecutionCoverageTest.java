@@ -4,6 +4,9 @@ import static org.junit.jupiter.api.Assertions.*;
 
 import org.junit.jupiter.api.Test;
 
+/**
+ * 验证 Node Execution Coverage 相关功能、边界条件、异常路径和协作行为。
+ */
 class NodeExecutionCoverageTest {
     @Test
     void tracksSuccessfulExecutionAndRetries() {

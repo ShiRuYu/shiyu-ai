@@ -19,7 +19,7 @@ import org.springframework.web.bind.annotation.*;
 import java.util.List;
 
 /**
- * {@code ReviewController} 是教育模块的 Web 接口适配器，负责接收请求并转换为应用服务调用。
+ * 处理 复习 相关的 Web 请求，并将请求转换为应用服务调用。
  */
 @Slf4j
 @RestController
@@ -34,11 +34,9 @@ public class ReviewController {
     private final ReviewService reviewService;
 
     /**
-     * {@code getById} 查询并返回当前操作所需的数据。
+     * 查询 复习 相关业务操作，并维护必要的状态和协作关系。
      *
-     * @param id 参数值，用于执行当前操作。
-     *
-     * @return 返回当前操作产生的结果。
+     * @param detail 用于完成本次业务处理的 detail 参数。
      */
     @GetMapping("/detail")
     public Result<ReviewTaskResponse> getById(@RequestParam Long id) {
@@ -46,11 +44,9 @@ public class ReviewController {
     }
 
     /**
-     * {@code listTodayTasks} 查询并返回当前操作所需的数据。
+     * 查询 复习 相关业务操作，并维护必要的状态和协作关系。
      *
-     * @param studentId 参数值，用于执行当前操作。
-     *
-     * @return 返回当前操作产生的结果。
+     * @param today 用于完成本次业务处理的 today 参数。
      */
     @GetMapping("/today")
     public Result<List<ReviewTaskResponse>> listTodayTasks(@RequestParam Long studentId) {
@@ -59,12 +55,9 @@ public class ReviewController {
     }
 
     /**
-     * {@code list} 查询并返回当前操作所需的数据。
+     * 查询 复习 相关业务操作，并维护必要的状态和协作关系。
      *
-     * @param studentId 参数值，用于执行当前操作。
-     * @param status 参数值，用于执行当前操作。
-     *
-     * @return 返回当前操作产生的结果。
+     * @param list 用于完成本次业务处理的 list 参数。
      */
     @GetMapping("/list")
     public Result<List<ReviewTaskResponse>> list(
@@ -75,11 +68,9 @@ public class ReviewController {
     }
 
     /**
-     * {@code create} 写入或更新当前模块中的业务数据。
+     * 执行 复习 相关业务操作，并维护必要的状态和协作关系。
      *
-     * @param request 参数值，用于执行当前操作。
-     *
-     * @return 返回当前操作产生的结果。
+     * @param create 用于完成本次业务处理的 create 参数。
      */
     @PostMapping("/create")
     @SaCheckPermission("edu:review:list")
@@ -89,12 +80,9 @@ public class ReviewController {
     }
 
     /**
-     * {@code update} 写入或更新当前模块中的业务数据。
+     * 执行 复习 相关业务操作，并维护必要的状态和协作关系。
      *
-     * @param id 参数值，用于执行当前操作。
-     * @param request 参数值，用于执行当前操作。
-     *
-     * @return 返回当前操作产生的结果。
+     * @param update 用于完成本次业务处理的 update 参数。
      */
     @PostMapping("/update")
     public Result<Void> update(@RequestParam Long id, @Valid @RequestBody ReviewRequest request) {
@@ -104,12 +92,9 @@ public class ReviewController {
     }
 
     /**
-     * {@code complete} 执行当前类型定义的业务操作。
+     * 执行 复习 相关业务操作，并维护必要的状态和协作关系。
      *
-     * @param id 参数值，用于执行当前操作。
-     * @param request 参数值，用于执行当前操作。
-     *
-     * @return 返回当前操作产生的结果。
+     * @param complete 用于完成本次业务处理的 complete 参数。
      */
     @PostMapping("/complete")
     @SaCheckPermission("edu:review:list")
@@ -120,11 +105,9 @@ public class ReviewController {
     }
 
     /**
-     * {@code delete} 释放或移除当前操作涉及的资源。
+     * 执行 复习 相关业务操作，并维护必要的状态和协作关系。
      *
-     * @param id 参数值，用于执行当前操作。
-     *
-     * @return 返回当前操作产生的结果。
+     * @param delete 用于完成本次业务处理的 delete 参数。
      */
     @PostMapping("/delete")
     public Result<Void> delete(@RequestParam Long id) {

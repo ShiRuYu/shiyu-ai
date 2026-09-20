@@ -9,6 +9,9 @@ import org.junit.jupiter.api.Test;
 import org.springframework.boot.autoconfigure.AutoConfigurations;
 import org.springframework.boot.test.context.runner.ApplicationContextRunner;
 
+/**
+ * 验证 Threading Auto Configuration 相关功能、边界条件、异常路径和协作行为。
+ */
 class ThreadingAutoConfigurationTest {
 
     private final ApplicationContextRunner contextRunner =

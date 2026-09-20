@@ -23,9 +23,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 /**
- * PlannerAgent — 学习计划 Agent
- *
- * <p>职责：根据学习目标和时间范围，自动生成学习计划。
+ * 编排 Planner 相关的智能体任务和模型协作。
  */
 @Slf4j
 @Component

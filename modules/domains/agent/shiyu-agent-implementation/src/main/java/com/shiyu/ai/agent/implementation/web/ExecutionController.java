@@ -27,10 +27,7 @@ import java.util.UUID;
 import java.util.stream.Collectors;
 
 /**
- * Agent 执行生命周期管理 Controller
- *
- * <p>职责：Agent 执行的唯一入口，提供执行、流式执行、暂停/恢复/取消、状态查询、历史记录。 注意：所有参数均通过 @RequestParam 或 @RequestBody
- * 传入，不使用 @PathVariable。
+ * 处理 Execution 相关的 Web 请求，并将请求转换为应用服务调用。
  */
 @Slf4j
 @Tag(name = "Execution", description = "Agent Execution")
@@ -45,9 +42,9 @@ public class ExecutionController {
     private final AgentRuntime agentRuntime;
 
     /**
-     * {@code ExecutionController} 创建并初始化当前类型实例。
+     * 执行 Execution 相关业务操作，并维护必要的状态和协作关系。
      *
-     * @param agentRuntime 参数值，用于执行当前操作。
+     * @param agentRuntime 用于完成本次业务处理的 agentRuntime 参数。
      */
     public ExecutionController(AgentRuntime agentRuntime) {
         this.agentRuntime = agentRuntime;
@@ -135,11 +132,9 @@ public class ExecutionController {
     }
 
     /**
-     * {@code pause} 执行当前类型定义的业务操作。
+     * 执行 Execution 相关业务操作，并维护必要的状态和协作关系。
      *
-     * @param executionId 参数值，用于执行当前操作。
-     *
-     * @return 返回当前操作产生的结果。
+     * @param Execution 用于完成本次业务处理的 Execution 参数。
      */
     @Operation(summary = "Pause Execution")
     @SaCheckPermission("agent:execute")
@@ -154,11 +149,9 @@ public class ExecutionController {
     }
 
     /**
-     * {@code resume} 执行当前类型定义的业务操作。
+     * 执行 Execution 相关业务操作，并维护必要的状态和协作关系。
      *
-     * @param executionId 参数值，用于执行当前操作。
-     *
-     * @return 返回当前操作产生的结果。
+     * @param Execution 用于完成本次业务处理的 Execution 参数。
      */
     @Operation(summary = "Resume Execution")
     @SaCheckPermission("agent:execute")
@@ -178,11 +171,9 @@ public class ExecutionController {
     }
 
     /**
-     * {@code cancel} 校验当前操作的输入或状态是否满足约束。
+     * 执行 Execution 相关业务操作，并维护必要的状态和协作关系。
      *
-     * @param executionId 参数值，用于执行当前操作。
-     *
-     * @return 返回当前操作产生的结果。
+     * @param Execution 用于完成本次业务处理的 Execution 参数。
      */
     @Operation(summary = "Cancel Execution")
     @SaCheckPermission("agent:execute")
@@ -197,11 +188,9 @@ public class ExecutionController {
     }
 
     /**
-     * {@code getStatus} 查询并返回当前操作所需的数据。
+     * 执行 Execution 相关业务操作，并维护必要的状态和协作关系。
      *
-     * @param executionId 参数值，用于执行当前操作。
-     *
-     * @return 返回当前操作产生的结果。
+     * @param Status 用于完成本次业务处理的 Status 参数。
      */
     @Operation(summary = "Get Execution Status")
     @GetMapping("/status")
@@ -214,11 +203,9 @@ public class ExecutionController {
     }
 
     /**
-     * {@code getExecution} 查询并返回当前操作所需的数据。
+     * 执行 Execution 相关业务操作，并维护必要的状态和协作关系。
      *
-     * @param executionId 参数值，用于执行当前操作。
-     *
-     * @return 返回当前操作产生的结果。
+     * @param Details 用于完成本次业务处理的 Details 参数。
      */
     @Operation(summary = "Get Execution Details")
     @GetMapping("/detail")

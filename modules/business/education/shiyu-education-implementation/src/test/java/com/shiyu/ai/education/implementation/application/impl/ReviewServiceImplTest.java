@@ -23,6 +23,9 @@ import org.mockito.MockedStatic;
 import java.time.LocalDate;
 import java.util.List;
 
+/**
+ * 验证 复习 Service Impl 相关功能、边界条件、异常路径和协作行为。
+ */
 @SuppressWarnings("unchecked")
 class ReviewServiceImplTest {
 

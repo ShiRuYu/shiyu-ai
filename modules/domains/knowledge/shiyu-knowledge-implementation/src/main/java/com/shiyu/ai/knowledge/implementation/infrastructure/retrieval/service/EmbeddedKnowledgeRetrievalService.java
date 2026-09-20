@@ -32,7 +32,7 @@ import java.util.List;
 import java.util.Map;
 
 /**
- * {@code EmbeddedKnowledgeRetrievalService} 定义知识模块的应用服务能力，供上层用例调用。
+ * 提供 Embedded 知识 Retrieval 的查询、创建、更新及调用服务，协调业务变更和领域协作。
  */
 @Service
 @RequiredArgsConstructor
@@ -60,11 +60,10 @@ public class EmbeddedKnowledgeRetrievalService implements KnowledgeRetrievalServ
     private final KnowledgeDocumentRepository documentRepository;
 
     /**
-     * {@code retrieve} 执行当前类型定义的业务操作。
+     * 执行 Embedded 知识 Retrieval 相关业务数据，并返回处理结果。
      *
-     * @param request 参数值，用于执行当前操作。
-     *
-     * @return 返回当前操作产生的结果。
+     * @param request 封装本次操作所需业务字段的请求对象。
+     * @return 返回 Embedded 知识 Retrieval 相关操作生成的结果数据。
      */
     @Override
     public KnowledgeRetrievalResult retrieve(KnowledgeRetrievalRequest request) {

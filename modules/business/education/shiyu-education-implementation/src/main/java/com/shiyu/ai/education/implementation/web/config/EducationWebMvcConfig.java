@@ -5,15 +5,15 @@ import org.springframework.web.servlet.config.annotation.PathMatchConfigurer;
 import org.springframework.web.servlet.config.annotation.WebMvcConfigurer;
 
 /**
- * EducationWebMvcConfig 配置组件，负责注册和配置教育领域相关基础设施。
+ * 定义 教育 Web Mvc 基础设施或应用能力的配置项及装配规则。
  */
 @Configuration
 public class EducationWebMvcConfig implements WebMvcConfigurer {
 
     /**
-     * {@code configurePathMatch} 执行当前类型定义的业务操作。
+     * 执行 教育 Web Mvc 相关业务操作，并维护必要的状态和协作关系。
      *
-     * @param configurer 参数值，用于执行当前操作。
+     * @param configurer 用于完成本次业务处理的 configurer 参数。
      */
     @Override
     public void configurePathMatch(PathMatchConfigurer configurer) {

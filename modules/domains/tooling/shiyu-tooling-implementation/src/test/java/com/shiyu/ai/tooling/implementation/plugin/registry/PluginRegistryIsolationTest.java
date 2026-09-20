@@ -10,6 +10,9 @@ import org.junit.jupiter.api.Test;
 import java.nio.file.Files;
 import java.nio.file.Path;
 
+/**
+ * 验证 插件 Registry Isolation 相关功能、边界条件、异常路径和协作行为。
+ */
 class PluginRegistryIsolationTest {
     @Test
     void productionRegistryRejectsInProcessInstall() throws Exception {

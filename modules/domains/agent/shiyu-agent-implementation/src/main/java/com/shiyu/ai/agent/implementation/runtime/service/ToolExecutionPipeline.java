@@ -10,7 +10,7 @@ import java.util.Objects;
 import java.util.function.Function;
 
 /**
- * 编排工具调用的授权校验、执行、超时和结果记录。
+ * 实现 工具 Execution Pipeline 相关的业务处理、协作逻辑或基础设施能力。
  */
 public final class ToolExecutionPipeline {
     /**
@@ -23,10 +23,10 @@ public final class ToolExecutionPipeline {
     private final ToolApprovalService approvals;
 
     /**
-     * {@code ToolExecutionPipeline} 创建并初始化当前类型实例。
+     * 构建或转换 工具 Execution Pipeline 相关业务操作，并维护必要的状态和协作关系。
      *
-     * @param runtime 参数值，用于执行当前操作。
-     * @param approvals 参数值，用于执行当前操作。
+     * @param runtime 用于完成本次业务处理的 runtime 参数。
+     * @param approvals 用于完成本次业务处理的 approvals 参数。
      */
     public ToolExecutionPipeline(AiRuntimeService runtime, ToolApprovalService approvals) {
         this.runtime = Objects.requireNonNull(runtime, "runtime");
@@ -34,13 +34,12 @@ public final class ToolExecutionPipeline {
     }
 
     /**
-     * {@code execute} 执行当前模块定义的业务流程。
+     * 调用 工具 Execution Pipeline 相关业务数据，并返回处理结果。
      *
-     * @param run 参数值，用于执行当前操作。
-     * @param request 参数值，用于执行当前操作。
-     * @param executor 参数值，用于执行当前操作。
-     *
-     * @return 返回当前操作产生的结果。
+     * @param run 用于完成本次业务处理的 run 参数。
+     * @param request 封装本次操作所需业务字段的请求对象。
+     * @param executor 用于完成本次业务处理的 executor 参数。
+     * @return 返回 工具 Execution Pipeline 相关操作生成的结果数据。
      */
     public Result execute(
             AiRun run, Request request, Function<Map<String, Object>, Object> executor) {
@@ -121,12 +120,7 @@ public final class ToolExecutionPipeline {
     }
 
     /**
-     * {@code Request} 封装智能体模块中不可变的结构化数据，并作为相关操作之间的值对象。
-     * @param toolName toolName 属性，表示该记录组件承载的数据。
-     * @param arguments arguments 属性，表示该记录组件承载的数据。
-     * @param argumentsRedacted argumentsRedacted 属性，表示该记录组件承载的数据。
-     * @param highRisk highRisk 属性，表示该记录组件承载的数据。
-     * @param approvalId approvalId 属性，表示该记录组件承载的数据。
+     * 封装 Request 相关的不可变数据及其字段约束。
      */
     public record Request(
             String toolName,
@@ -142,10 +136,7 @@ public final class ToolExecutionPipeline {
     }
 
     /**
-     * {@code Result} 封装智能体模块中不可变的结构化数据，并作为相关操作之间的值对象。
-     * @param status 状态，表示该记录组件承载的数据。
-     * @param value 值，表示该记录组件承载的数据。
-     * @param approval approval 属性，表示该记录组件承载的数据。
+     * 封装 Result 相关的不可变数据及其字段约束。
      */
     public record Result(Status status, Object value, ToolApproval approval) {
         static Result approvalRequired(ToolApproval approval) {
@@ -157,7 +148,7 @@ public final class ToolExecutionPipeline {
         }
 
         /**
-         * {@code Status} 表示智能体模块中的一组受控业务状态或分类。
+         * 定义 Status 可用的枚举值及其业务语义。
          */
         public enum Status {
             APPROVAL_REQUIRED,

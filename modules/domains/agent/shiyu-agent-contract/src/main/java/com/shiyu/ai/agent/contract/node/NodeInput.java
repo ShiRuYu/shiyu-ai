@@ -9,7 +9,9 @@ import lombok.NoArgsConstructor;
 
 import java.util.Map;
 
-/** 节点输入类 用于封装节点的输入参数 */
+/**
+ * 定义 Node Input 所属领域对外协作所需的稳定契约。
+ */
 @Data
 @Builder
 @NoArgsConstructor

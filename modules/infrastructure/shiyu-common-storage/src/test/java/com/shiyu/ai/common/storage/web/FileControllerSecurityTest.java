@@ -17,6 +17,9 @@ import org.junit.jupiter.api.Tag;
 import org.junit.jupiter.api.Test;
 import org.springframework.web.multipart.MultipartFile;
 
+/**
+ * 验证 文件 Controller 安全 相关功能、边界条件、异常路径和协作行为。
+ */
 @Tag("dev")
 class FileControllerSecurityTest {
 

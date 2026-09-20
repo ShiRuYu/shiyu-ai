@@ -4,7 +4,7 @@ import org.mybatis.spring.annotation.MapperScan;
 import org.springframework.context.annotation.Configuration;
 
 /**
- * IamPersistenceConfiguration 配置组件，负责注册和配置身份与访问领域相关基础设施。
+ * 定义 Iam Persistence 基础设施或应用能力的配置项及装配规则。
  */
 @Configuration(proxyBeanMethods = false)
 @MapperScan("com.shiyu.ai.iam.implementation.persistence.mapper")

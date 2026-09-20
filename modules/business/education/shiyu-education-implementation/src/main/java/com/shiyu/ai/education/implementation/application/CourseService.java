@@ -9,9 +9,7 @@ import com.shiyu.ai.kernel.context.ActorContext;
 import java.util.List;
 
 /**
- * 课程应用服务接口。
- *
- * <p>负责课程查询、创建、更新、删除及学习进度查询。</p>
+ * 提供 课程 的查询、创建、更新及调用服务，协调业务变更和领域协作。
  */
 public interface CourseService {
 

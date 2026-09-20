@@ -3,7 +3,7 @@ package com.shiyu.ai.knowledge.implementation.domain;
 import lombok.Getter;
 
 /**
- * {@code RelationType} 表示知识模块中的一组受控业务状态或分类。
+ * 定义 关系 Type 可用的枚举值及其业务语义。
  */
 @Getter
 public enum RelationType {

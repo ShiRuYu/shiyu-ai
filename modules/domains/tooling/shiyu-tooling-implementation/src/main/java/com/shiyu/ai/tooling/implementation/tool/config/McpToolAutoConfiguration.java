@@ -13,15 +13,17 @@ import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 
-/** MCP 工具市场自动配置 将 ToolServiceImpl 中已有的工具注册到 McpToolRegistry */
+/**
+ * 定义 Mcp 工具 Auto 基础设施或应用能力的配置项及装配规则。
+ */
 @Slf4j
 @Configuration
 public class McpToolAutoConfiguration {
 
     /**
-     * {@code mcpToolRegistry} 执行当前类型定义的业务操作。
+     * 执行 Mcp 工具 Auto 相关业务数据，并返回处理结果。
      *
-     * @return 返回当前操作产生的结果。
+     * @return 返回 Mcp 工具 Auto 相关操作生成的结果数据。
      */
     @Bean
     @ConditionalOnMissingBean
@@ -36,7 +38,9 @@ public class McpToolAutoConfiguration {
         return new McpToolSyncRegistrar(toolService, registry);
     }
 
-    /** 同步注册器 */
+    /**
+     * 实现 Mcp 工具 Sync Registrar 相关的业务处理、协作逻辑或基础设施能力。
+     */
     @Slf4j
     public static class McpToolSyncRegistrar {
 
@@ -52,7 +56,7 @@ public class McpToolAutoConfiguration {
         }
 
         /**
-         * {@code sync} 执行当前类型定义的业务操作。
+         * 执行 Mcp 工具 Sync Registrar 相关业务操作，并维护必要的状态和协作关系。
          */
         @PostConstruct
         public void sync() {

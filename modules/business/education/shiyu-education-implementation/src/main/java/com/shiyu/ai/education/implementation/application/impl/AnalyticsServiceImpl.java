@@ -21,7 +21,7 @@ import java.util.*;
 import java.util.stream.Collectors;
 
 /**
- * {@code AnalyticsServiceImpl} 实现教育模块的应用服务，负责编排用例流程并维护业务边界。
+ * 提供 分析 的查询、创建、更新及调用服务，协调业务变更和领域协作。
  */
 @Slf4j
 @Service
@@ -38,12 +38,11 @@ public class AnalyticsServiceImpl implements AnalyticsService {
     private final AbilityRepository abilityRepository;
 
     /**
-     * {@code listRecordsByStudent} 查询并返回当前操作所需的数据。
+     * 查询 分析 相关业务数据，并返回处理结果。
      *
-     * @param actor 参数值，用于执行当前操作。
-     * @param studentId 参数值，用于执行当前操作。
-     *
-     * @return 返回当前操作产生的结果。
+     * @param actor 当前操作主体上下文，用于确定租户、用户和访问权限。
+     * @param studentId 用于定位student的标识。
+     * @return 返回符合条件的数据集合；没有匹配项时返回空集合。
      */
     @Override
     public List<StudyRecordResponse> listRecordsByStudent(ActorContext actor, Long studentId) {
@@ -53,13 +52,12 @@ public class AnalyticsServiceImpl implements AnalyticsService {
     }
 
     /**
-     * {@code listRecordsByStudentAndKnowledge} 查询并返回当前操作所需的数据。
+     * 查询 分析 相关业务数据，并返回处理结果。
      *
-     * @param actor 参数值，用于执行当前操作。
-     * @param studentId 参数值，用于执行当前操作。
-     * @param knowledgeId 参数值，用于执行当前操作。
-     *
-     * @return 返回当前操作产生的结果。
+     * @param actor 当前操作主体上下文，用于确定租户、用户和访问权限。
+     * @param studentId 用于定位student的标识。
+     * @param knowledgeId 用于定位knowledge的标识。
+     * @return 返回符合条件的数据集合；没有匹配项时返回空集合。
      */
     @Override
     public List<StudyRecordResponse> listRecordsByStudentAndKnowledge(
@@ -71,12 +69,9 @@ public class AnalyticsServiceImpl implements AnalyticsService {
     }
 
     /**
-     * {@code createRecord} 写入或更新当前模块中的业务数据。
+     * 执行 分析 相关业务操作，并维护必要的状态和协作关系。
      *
-     * @param actor 参数值，用于执行当前操作。
-     * @param request 参数值，用于执行当前操作。
-     *
-     * @return 返回当前操作产生的结果。
+     * @param class 用于完成本次业务处理的 class 参数。
      */
     @Override
     @Transactional(rollbackFor = Exception.class)
@@ -94,13 +89,12 @@ public class AnalyticsServiceImpl implements AnalyticsService {
     }
 
     /**
-     * {@code getAbilityRadar} 查询并返回当前操作所需的数据。
+     * 查询 分析 相关业务数据，并返回处理结果。
      *
-     * @param actor 参数值，用于执行当前操作。
-     * @param studentId 参数值，用于执行当前操作。
-     * @param knowledgeId 参数值，用于执行当前操作。
-     *
-     * @return 返回当前操作产生的结果。
+     * @param actor 当前操作主体上下文，用于确定租户、用户和访问权限。
+     * @param studentId 用于定位student的标识。
+     * @param knowledgeId 用于定位knowledge的标识。
+     * @return 返回 分析 相关操作生成的结果数据。
      */
     @Override
     public AbilityRadarResponse getAbilityRadar(
@@ -123,12 +117,11 @@ public class AnalyticsServiceImpl implements AnalyticsService {
     }
 
     /**
-     * {@code getOverview} 查询并返回当前操作所需的数据。
+     * 查询 分析 相关业务数据，并返回处理结果。
      *
-     * @param actor 参数值，用于执行当前操作。
-     * @param studentId 参数值，用于执行当前操作。
-     *
-     * @return 返回当前操作产生的结果。
+     * @param actor 当前操作主体上下文，用于确定租户、用户和访问权限。
+     * @param studentId 用于定位student的标识。
+     * @return 返回 分析 相关操作生成的结果数据。
      */
     @Override
     public OverviewResponse getOverview(ActorContext actor, Long studentId) {
@@ -171,12 +164,11 @@ public class AnalyticsServiceImpl implements AnalyticsService {
     }
 
     /**
-     * {@code getWeakPoints} 查询并返回当前操作所需的数据。
+     * 查询 分析 相关业务数据，并返回处理结果。
      *
-     * @param actor 参数值，用于执行当前操作。
-     * @param studentId 参数值，用于执行当前操作。
-     *
-     * @return 返回当前操作产生的结果。
+     * @param actor 当前操作主体上下文，用于确定租户、用户和访问权限。
+     * @param studentId 用于定位student的标识。
+     * @return 返回符合条件的数据集合；没有匹配项时返回空集合。
      */
     @Override
     public List<WeakPointResponse> getWeakPoints(ActorContext actor, Long studentId) {
@@ -189,12 +181,11 @@ public class AnalyticsServiceImpl implements AnalyticsService {
     }
 
     /**
-     * {@code getTrend} 查询并返回当前操作所需的数据。
+     * 查询 分析 相关业务数据，并返回处理结果。
      *
-     * @param actor 参数值，用于执行当前操作。
-     * @param studentId 参数值，用于执行当前操作。
-     *
-     * @return 返回当前操作产生的结果。
+     * @param actor 当前操作主体上下文，用于确定租户、用户和访问权限。
+     * @param studentId 用于定位student的标识。
+     * @return 返回 分析 相关操作生成的结果数据。
      */
     @Override
     public TrendResponse getTrend(ActorContext actor, Long studentId) {

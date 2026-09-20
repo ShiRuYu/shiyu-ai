@@ -5,17 +5,16 @@ import com.shiyu.ai.iam.implementation.api.response.AuthCodeResponse;
 import com.shiyu.ai.iam.implementation.domain.model.AuthCodeBO;
 
 /**
- * {@code AuthCodeAssembler} 承载平台模块的领域状态或协作行为，负责维护本类型的职责边界。
+ * 将 认证 Code 在不同层之间进行适配、转换或组装。
  */
 public final class AuthCodeAssembler {
     private AuthCodeAssembler() {}
 
     /**
-     * {@code toBO} 将当前对象转换为目标表示形式。
+     * 构建或转换 认证 Code 相关业务数据，并返回处理结果。
      *
-     * @param request 参数值，用于执行当前操作。
-     *
-     * @return 返回当前操作产生的结果。
+     * @param request 封装本次操作所需业务字段的请求对象。
+     * @return 返回 认证 Code 相关操作生成的结果数据。
      */
     public static AuthCodeBO toBO(AuthCodeRequest request) {
         if (request == null) return null;
@@ -26,11 +25,10 @@ public final class AuthCodeAssembler {
     }
 
     /**
-     * {@code toResponse} 将当前对象转换为目标表示形式。
+     * 构建或转换 认证 Code 相关业务数据，并返回处理结果。
      *
-     * @param bo 参数值，用于执行当前操作。
-     *
-     * @return 返回当前操作产生的结果。
+     * @param bo 用于完成本次业务处理的 bo 参数。
+     * @return 返回 认证 Code 相关操作生成的结果数据。
      */
     public static AuthCodeResponse toResponse(AuthCodeBO bo) {
         if (bo == null) return null;

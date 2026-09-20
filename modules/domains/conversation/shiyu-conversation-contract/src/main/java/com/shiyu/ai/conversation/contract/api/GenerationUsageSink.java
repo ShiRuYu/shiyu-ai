@@ -5,7 +5,7 @@ import com.shiyu.ai.kernel.context.TenantId;
 import com.shiyu.ai.kernel.context.UserId;
 
 /**
- * GenerationUsageSink 接口，定义会话模块的能力边界。
+ * 接收并处理 生成 用量 相关的业务事件或统计数据。
  */
 public interface GenerationUsageSink {
     /**

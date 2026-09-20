@@ -12,6 +12,9 @@ import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
+/**
+ * 验证 Sa Token Dao Impl 相关功能、边界条件、异常路径和协作行为。
+ */
 class SaTokenDaoImplTest {
     private SaTokenUserRepository users;
     private SaTokenDaoImpl dao;

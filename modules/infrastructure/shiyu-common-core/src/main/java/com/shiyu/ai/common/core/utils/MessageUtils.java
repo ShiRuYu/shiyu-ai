@@ -3,7 +3,9 @@ package com.shiyu.ai.common.core.utils;
 import org.springframework.context.MessageSource;
 import org.springframework.context.i18n.LocaleContextHolder;
 
-/** 获取i18n资源文件 */
+/**
+ * 提供 消息 相关的通用辅助操作，供业务和基础设施复用。
+ */
 public class MessageUtils {
 
     /**
@@ -23,11 +25,11 @@ public class MessageUtils {
     }
 
     /**
-     * 根据消息键和参数 获取消息 委托给spring messageSource
+     * 执行 消息 相关业务数据，并返回处理结果。
      *
-     * @param code 消息键
-     * @param args 参数
-     * @return 获取国际化翻译值
+     * @param code 用于定位或筛选目标业务对象的业务值。
+     * @param args 用于完成本次业务处理的 args 参数。
+     * @return 返回 消息 相关操作生成的结果数据。
      */
     public static String message(String code, Object... args) {
         return getMessageSource().getMessage(code, args, LocaleContextHolder.getLocale());

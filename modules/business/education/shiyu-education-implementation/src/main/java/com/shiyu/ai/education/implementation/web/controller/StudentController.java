@@ -18,7 +18,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.web.bind.annotation.*;
 
 /**
- * {@code StudentController} 是教育模块的 Web 接口适配器，负责接收请求并转换为应用服务调用。
+ * 处理 学生 相关的 Web 请求，并将请求转换为应用服务调用。
  */
 @Slf4j
 @RestController
@@ -33,12 +33,10 @@ public class StudentController {
     private final StudentService studentService;
 
     /**
-     * {@code list} 查询并返回当前操作所需的数据。
+     * 查询 学生 相关业务数据，并返回处理结果。
      *
-     * @param pageNum 参数值，用于执行当前操作。
-     * @param pageSize 参数值，用于执行当前操作。
-     *
-     * @return 返回当前操作产生的结果。
+     * @param list 用于完成本次业务处理的 list 参数。
+     * @return 返回 学生 相关操作生成的结果数据。
      */
     @GetMapping("/list")
     public Result<PageData<StudentResponse>> list(
@@ -48,11 +46,9 @@ public class StudentController {
     }
 
     /**
-     * {@code getById} 查询并返回当前操作所需的数据。
+     * 查询 学生 相关业务操作，并维护必要的状态和协作关系。
      *
-     * @param id 参数值，用于执行当前操作。
-     *
-     * @return 返回当前操作产生的结果。
+     * @param detail 用于完成本次业务处理的 detail 参数。
      */
     @GetMapping("/detail")
     public Result<StudentResponse> getById(@RequestParam Long id) {
@@ -60,11 +56,9 @@ public class StudentController {
     }
 
     /**
-     * {@code getByUserId} 查询并返回当前操作所需的数据。
+     * 查询 学生 相关业务操作，并维护必要的状态和协作关系。
      *
-     * @param userId 参数值，用于执行当前操作。
-     *
-     * @return 返回当前操作产生的结果。
+     * @param user 当前操作涉及的用户标识。
      */
     @GetMapping("/user")
     public Result<StudentResponse> getByUserId(@RequestParam Long userId) {
@@ -72,11 +66,9 @@ public class StudentController {
     }
 
     /**
-     * {@code create} 写入或更新当前模块中的业务数据。
+     * 执行 学生 相关业务操作，并维护必要的状态和协作关系。
      *
-     * @param request 参数值，用于执行当前操作。
-     *
-     * @return 返回当前操作产生的结果。
+     * @param create 用于完成本次业务处理的 create 参数。
      */
     @PostMapping("/create")
     @SaCheckPermission("system:user:create")
@@ -85,12 +77,9 @@ public class StudentController {
     }
 
     /**
-     * {@code update} 写入或更新当前模块中的业务数据。
+     * 执行 学生 相关业务操作，并维护必要的状态和协作关系。
      *
-     * @param id 参数值，用于执行当前操作。
-     * @param request 参数值，用于执行当前操作。
-     *
-     * @return 返回当前操作产生的结果。
+     * @param update 用于完成本次业务处理的 update 参数。
      */
     @PostMapping("/update")
     @SaCheckPermission("system:user:update")
@@ -101,11 +90,9 @@ public class StudentController {
     }
 
     /**
-     * {@code delete} 释放或移除当前操作涉及的资源。
+     * 执行 学生 相关业务操作，并维护必要的状态和协作关系。
      *
-     * @param id 参数值，用于执行当前操作。
-     *
-     * @return 返回当前操作产生的结果。
+     * @param delete 用于完成本次业务处理的 delete 参数。
      */
     @PostMapping("/delete")
     @SaCheckPermission("system:user:delete")

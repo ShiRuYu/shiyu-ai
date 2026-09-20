@@ -12,7 +12,7 @@ import java.util.regex.Pattern;
 import javax.sql.DataSource;
 
 /**
- * 提供数据库方言和 SQL 能力判断。
+ * 实现 Jdbc Dialect 相关的业务处理、协作逻辑或基础设施能力。
  */
 public final class JdbcDialect {
 
@@ -28,11 +28,10 @@ public final class JdbcDialect {
     }
 
     /**
-     * {@code detect} 执行当前类型定义的业务操作。
+     * 执行 Jdbc Dialect 相关业务数据，并返回处理结果。
      *
-     * @param jdbc 参数值，用于执行当前操作。
-     *
-     * @return 返回当前操作产生的结果。
+     * @param jdbc 用于完成本次业务处理的 jdbc 参数。
+     * @return 返回 Jdbc Dialect 相关操作生成的结果数据。
      */
     public static JdbcDialect detect(JdbcTemplate jdbc) {
         Objects.requireNonNull(jdbc, "JdbcTemplate must not be null");
@@ -47,11 +46,10 @@ public final class JdbcDialect {
     }
 
     /**
-     * {@code fromProduct} 执行当前类型定义的业务操作。
+     * 执行 Jdbc Dialect 相关业务数据，并返回处理结果。
      *
-     * @param product 参数值，用于执行当前操作。
-     *
-     * @return 返回当前操作产生的结果。
+     * @param product 用于完成本次业务处理的 product 参数。
+     * @return 返回 Jdbc Dialect 相关操作生成的结果数据。
      */
     public static JdbcDialect fromProduct(String product) {
         String normalized = product == null ? "" : product.toLowerCase(Locale.ROOT);
@@ -62,24 +60,23 @@ public final class JdbcDialect {
     }
 
     /**
-     * {@code kind} 执行当前类型定义的业务操作。
+     * 执行 Jdbc Dialect 相关业务数据，并返回处理结果。
      *
-     * @return 返回当前操作产生的结果。
+     * @return 返回 Jdbc Dialect 相关操作生成的结果数据。
      */
     public Kind kind() {
         return kind;
     }
 
     /**
-     * 处理upsert。
+     * 执行 Jdbc Dialect 相关业务数据，并返回处理结果。
      *
-     * @param table table 参数。
-     * @param columns columns 参数。
-     * @param valuesSql valuesSql 参数。
-     * @param conflictColumns conflictColumns 参数。
-     * @param updateColumns updateColumns 参数。
-     *
-     * @return 结果列表。
+     * @param table 用于完成本次业务处理的 table 参数。
+     * @param columns 用于完成本次业务处理的 columns 参数。
+     * @param valuesSql 用于完成本次业务处理的 valuesSql 参数。
+     * @param conflictColumns 用于完成本次业务处理的 conflictColumns 参数。
+     * @param updateColumns 用于完成本次业务处理的 updateColumns 参数。
+     * @return 返回 Jdbc Dialect 相关操作生成的结果数据。
      */
     public String upsert(
             String table,
@@ -179,7 +176,7 @@ public final class JdbcDialect {
     }
 
     /**
-     * {@code Kind} 表示平台基础设施模块中的一组受控业务状态或分类。
+     * 定义 Kind 可用的枚举值及其业务语义。
      */
     public enum Kind {
         H2,

@@ -11,7 +11,9 @@ import java.io.Serializable;
 import java.util.Date;
 import java.util.List;
 
-/** 用户信息视图对象 */
+/**
+ * 封装 用户 操作向调用方返回的传输数据。
+ */
 @Data
 @AutoMapper(target = UserBO.class)
 @SuppressWarnings("serial")

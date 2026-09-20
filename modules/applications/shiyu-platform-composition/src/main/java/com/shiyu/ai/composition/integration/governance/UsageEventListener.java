@@ -22,9 +22,7 @@ import java.time.Instant;
 import java.util.Map;
 
 /**
- * 用量事件监听器
- *
- * <p>监听 LLM 调用事件（{@link ModelCallEvent}）和 Embedding 调用事件（{@link EmbeddingCallEvent}）， 自动记录全平台用量。
+ * 处理 用量 事件 相关事件或请求，并推进后续业务流程。
  */
 @Slf4j
 @Component
@@ -36,9 +34,9 @@ public class UsageEventListener {
     private final UsageGovernance usageGovernance;
 
     /**
-     * {@code UsageEventListener} 创建并初始化当前类型实例。
+     * 执行 用量 事件 相关业务操作，并维护必要的状态和协作关系。
      *
-     * @param usageGovernance 参数值，用于执行当前操作。
+     * @param usageGovernance 用于完成本次业务处理的 usageGovernance 参数。
      */
     public UsageEventListener(UsageGovernance usageGovernance) {
         this.usageGovernance = usageGovernance;

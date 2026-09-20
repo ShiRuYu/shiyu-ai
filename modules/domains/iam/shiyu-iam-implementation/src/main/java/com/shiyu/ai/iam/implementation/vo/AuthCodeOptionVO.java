@@ -6,7 +6,9 @@ import java.io.Serial;
 import java.io.Serializable;
 import java.time.LocalDateTime;
 
-/** 权限码下拉及授权选项。 */
+/**
+ * 封装 认证 Code Option 操作向调用方返回的传输数据。
+ */
 @Data
 public class AuthCodeOptionVO implements Serializable {
 

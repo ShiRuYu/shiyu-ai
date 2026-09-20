@@ -1,7 +1,7 @@
 package com.shiyu.ai.agent.contract.runtime;
 
 /**
- * ContextAssemblyPort 边界接口，负责向外部组件提供智能体领域相关能力。
+ * 定义 Context Assembly 领域与外部能力交互的端口契约。
  */
 public interface ContextAssemblyPort {
     /**
@@ -14,9 +14,7 @@ public interface ContextAssemblyPort {
     ContextResult retrieve(ContextQuery query);
 
     /**
-     * 封装 Context 处理结果及追踪信息。
-     * @param items items 属性，表示该记录组件承载的数据。
-     * @param trace trace 属性，表示该记录组件承载的数据。
+     * 封装 Context 相关的不可变数据及其字段约束。
      */
     record ContextResult(java.util.List<ContextItem> items, ContextTrace trace) {
         public ContextResult {

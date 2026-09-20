@@ -18,9 +18,7 @@ import java.util.List;
 import java.util.stream.Collectors;
 
 /**
- * ReviewAgent — 艾宾浩斯复习 Agent
- *
- * <p>职责：根据遗忘曲线安排复习任务，管理复习进度。
+ * 编排 复习 相关的智能体任务和模型协作。
  */
 @Slf4j
 @Component

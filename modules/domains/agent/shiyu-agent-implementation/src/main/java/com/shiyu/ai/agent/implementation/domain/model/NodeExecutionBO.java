@@ -6,7 +6,9 @@ import java.io.Serial;
 import java.io.Serializable;
 import java.time.LocalDateTime;
 
-/** 节点执行记录业务对象 */
+/**
+ * 表示 Node Execution 领域对象的业务状态和属性。
+ */
 @Data
 public class NodeExecutionBO implements Serializable {
 

@@ -1,6 +1,8 @@
 package com.shiyu.ai.agent.implementation.lifecycle;
 
-/** Agent 生命周期状态 */
+/**
+ * 定义 智能体 可用的枚举值及其业务语义。
+ */
 public enum AgentState {
     /** 已创建 */
     CREATED,

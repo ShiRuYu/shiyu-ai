@@ -5,7 +5,9 @@ import org.slf4j.LoggerFactory;
 
 import java.util.concurrent.CompletableFuture;
 
-/** 上下文感知的Runnable实现 能够在任务执行时保持线程上下文的一致性 */
+/**
+ * 实现 Context Aware Runnable 相关的业务处理、协作逻辑或基础设施能力。
+ */
 public class ContextAwareRunnable implements Runnable {
 
     private static final Logger logger = LoggerFactory.getLogger(ContextAwareRunnable.class);

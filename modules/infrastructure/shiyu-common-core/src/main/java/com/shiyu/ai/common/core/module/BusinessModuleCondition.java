@@ -8,7 +8,7 @@ import org.springframework.context.annotation.ConditionContext;
 import org.springframework.core.type.AnnotatedTypeMetadata;
 
 /**
- * 根据应用环境中的模块开关决定是否装配业务模块。
+ * 实现 Business Module Condition 相关的业务处理、协作逻辑或基础设施能力。
  */
 public final class BusinessModuleCondition extends SpringBootCondition {
 

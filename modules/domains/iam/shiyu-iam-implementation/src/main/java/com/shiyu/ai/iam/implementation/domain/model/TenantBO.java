@@ -8,7 +8,7 @@ import java.time.LocalDateTime;
 import java.util.List;
 
 /**
- * {@code TenantBO} 是模型模块的业务对象，承载用例处理所需的领域数据。
+ * 表示 租户 领域对象的业务状态和属性。
  */
 @Data
 @SuppressWarnings("serial")

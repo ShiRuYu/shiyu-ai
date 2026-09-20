@@ -30,6 +30,9 @@ import java.math.BigDecimal;
 import java.time.Instant;
 import java.util.Map;
 
+/**
+ * 验证 用量 Record Service 相关功能、边界条件、异常路径和协作行为。
+ */
 class UsageRecordServiceTest {
 
     private final UsageRecordRepository repository = mock(UsageRecordRepository.class);

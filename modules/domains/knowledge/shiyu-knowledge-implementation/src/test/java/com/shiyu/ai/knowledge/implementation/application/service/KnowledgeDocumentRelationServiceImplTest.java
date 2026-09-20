@@ -24,6 +24,9 @@ import org.junit.jupiter.api.Test;
 import java.util.Arrays;
 import java.util.List;
 
+/**
+ * 验证 知识 文档 关系 Service Impl 相关功能、边界条件、异常路径和协作行为。
+ */
 class KnowledgeDocumentRelationServiceImplTest {
     private static final ActorContext ACTOR =
             new ActorContext(new TenantId(10), new UserId(20), false);

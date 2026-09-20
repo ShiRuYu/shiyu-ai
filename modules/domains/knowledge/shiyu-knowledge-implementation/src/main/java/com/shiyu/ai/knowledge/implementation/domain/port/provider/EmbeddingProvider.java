@@ -4,23 +4,22 @@ import com.shiyu.ai.kernel.context.ActorContext;
 import com.shiyu.ai.kernel.context.TenantId;
 
 /**
- * EmbeddingProvider 边界接口，负责向外部组件提供知识领域相关能力。
+ * 创建或提供 嵌入 相关的业务组件和运行时能力。
  */
 public interface EmbeddingProvider {
     /**
-     * 执行 {@code profile} 定义的接口操作。
+     * 执行 嵌入 相关业务数据，并返回处理结果。
      *
-     * @return 操作结果。
+     * @return 返回 嵌入 相关操作生成的结果数据。
      */
     String profile();
 
     /**
-     * 执行 {@code embed} 定义的接口操作。
+     * 执行 嵌入 相关业务数据，并返回处理结果。
      *
-     * @param tenantId 租户标识。
-     * @param text 方法参数。
-     *
-     * @return 符合条件的结果集合。
+     * @param tenantId 当前操作涉及的租户标识。
+     * @param text 用于完成本次业务处理的 text 参数。
+     * @return 返回 嵌入 相关操作生成的结果数据。
      */
     float[] embed(TenantId tenantId, String text);
 

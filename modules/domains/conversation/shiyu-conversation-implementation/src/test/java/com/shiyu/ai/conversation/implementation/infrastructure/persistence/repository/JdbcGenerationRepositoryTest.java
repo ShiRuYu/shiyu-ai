@@ -31,6 +31,9 @@ import java.util.Optional;
 
 import javax.sql.DataSource;
 
+/**
+ * 验证 Jdbc 生成 Repository 相关功能、边界条件、异常路径和协作行为。
+ */
 @SuppressWarnings({"unchecked", "rawtypes"})
 class JdbcGenerationRepositoryTest {
     @BeforeEach

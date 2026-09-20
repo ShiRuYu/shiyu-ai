@@ -29,7 +29,7 @@ import java.util.*;
 import java.util.stream.Collectors;
 
 /**
- * {@code AgentAdminServiceImpl} 实现智能体模块的应用服务，负责编排用例流程并维护业务边界。
+ * 提供 智能体 Admin 的查询、创建、更新及调用服务，协调业务变更和领域协作。
  */
 @Slf4j
 @Service
@@ -45,10 +45,10 @@ public class AgentAdminServiceImpl implements AgentAdminService {
     private final AgentService agentService;
 
     /**
-     * {@code AgentAdminServiceImpl} 创建并初始化当前类型实例。
+     * 执行 智能体 Admin 相关业务操作，并维护必要的状态和协作关系。
      *
-     * @param agentAdminRepository 参数值，用于执行当前操作。
-     * @param agentService 参数值，用于执行当前操作。
+     * @param agentAdminRepository 用于完成本次业务处理的 agentAdminRepository 参数。
+     * @param agentService 用于完成本次业务处理的 agentService 参数。
      */
     public AgentAdminServiceImpl(
             AgentAdminRepository agentAdminRepository, AgentService agentService) {
@@ -57,15 +57,14 @@ public class AgentAdminServiceImpl implements AgentAdminService {
     }
 
     /**
-     * {@code getPage} 查询并返回当前操作所需的数据。
+     * 查询 智能体 Admin 相关业务数据，并返回处理结果。
      *
-     * @param actor 参数值，用于执行当前操作。
-     * @param pageNo 参数值，用于执行当前操作。
-     * @param pageSize 参数值，用于执行当前操作。
-     * @param name 参数值，用于执行当前操作。
-     * @param status 参数值，用于执行当前操作。
-     *
-     * @return 返回当前操作产生的结果。
+     * @param actor 当前操作主体上下文，用于确定租户、用户和访问权限。
+     * @param pageNo 分页页码，从 1 开始。
+     * @param pageSize 每页返回的数据数量。
+     * @param name 用于定位或筛选目标业务对象的业务值。
+     * @param status 用于完成本次业务处理的 status 参数。
+     * @return 返回总数及当前页数据，左值为总数，右值为数据列表。
      */
     @Override
     public Pair<Long, List<AgentVO>> getPage(
@@ -77,12 +76,11 @@ public class AgentAdminServiceImpl implements AgentAdminService {
     }
 
     /**
-     * {@code getById} 查询并返回当前操作所需的数据。
+     * 查询 智能体 Admin 相关业务数据，并返回处理结果。
      *
-     * @param actor 参数值，用于执行当前操作。
-     * @param id 参数值，用于执行当前操作。
-     *
-     * @return 返回当前操作产生的结果。
+     * @param actor 当前操作主体上下文，用于确定租户、用户和访问权限。
+     * @param id 用于定位目标业务对象的标识。
+     * @return 返回 智能体 Admin 相关操作生成的结果数据。
      */
     @Override
     public AgentDetailVO getById(ActorContext actor, Long id) {
@@ -107,12 +105,9 @@ public class AgentAdminServiceImpl implements AgentAdminService {
     }
 
     /**
-     * {@code create} 写入或更新当前模块中的业务数据。
+     * 执行 智能体 Admin 相关业务操作，并维护必要的状态和协作关系。
      *
-     * @param actor 参数值，用于执行当前操作。
-     * @param request 参数值，用于执行当前操作。
-     *
-     * @return 返回当前操作产生的结果。
+     * @param class 用于完成本次业务处理的 class 参数。
      */
     @Override
     @Transactional(rollbackFor = Exception.class)
@@ -132,13 +127,9 @@ public class AgentAdminServiceImpl implements AgentAdminService {
     }
 
     /**
-     * {@code update} 写入或更新当前模块中的业务数据。
+     * 执行 智能体 Admin 相关业务操作，并维护必要的状态和协作关系。
      *
-     * @param actor 参数值，用于执行当前操作。
-     * @param id 参数值，用于执行当前操作。
-     * @param request 参数值，用于执行当前操作。
-     *
-     * @return 返回当前操作产生的结果。
+     * @param class 用于完成本次业务处理的 class 参数。
      */
     @Override
     @Transactional(rollbackFor = Exception.class)
@@ -155,10 +146,9 @@ public class AgentAdminServiceImpl implements AgentAdminService {
     }
 
     /**
-     * {@code deleteById} 释放或移除当前操作涉及的资源。
+     * 执行 智能体 Admin 相关业务操作，并维护必要的状态和协作关系。
      *
-     * @param actor 参数值，用于执行当前操作。
-     * @param id 参数值，用于执行当前操作。
+     * @param class 用于完成本次业务处理的 class 参数。
      */
     @Override
     @Transactional(rollbackFor = Exception.class)
@@ -170,9 +160,9 @@ public class AgentAdminServiceImpl implements AgentAdminService {
     }
 
     /**
-     * {@code getNodeTypes} 查询并返回当前操作所需的数据。
+     * 查询 智能体 Admin 相关业务数据，并返回处理结果。
      *
-     * @return 返回当前操作产生的结果。
+     * @return 返回符合条件的数据集合；没有匹配项时返回空集合。
      */
     @Override
     public List<NodeTypeMetaVO> getNodeTypes() {
@@ -192,11 +182,10 @@ public class AgentAdminServiceImpl implements AgentAdminService {
     }
 
     /**
-     * {@code listAllOptions} 查询并返回当前操作所需的数据。
+     * 查询 智能体 Admin 相关业务数据，并返回处理结果。
      *
-     * @param actor 参数值，用于执行当前操作。
-     *
-     * @return 返回当前操作产生的结果。
+     * @param actor 当前操作主体上下文，用于确定租户、用户和访问权限。
+     * @return 返回符合条件的数据集合；没有匹配项时返回空集合。
      */
     @Override
     public List<IdNameOptionVO> listAllOptions(ActorContext actor) {

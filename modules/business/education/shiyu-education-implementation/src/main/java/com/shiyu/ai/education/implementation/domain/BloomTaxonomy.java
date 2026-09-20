@@ -3,7 +3,7 @@ package com.shiyu.ai.education.implementation.domain;
 import lombok.Getter;
 
 /**
- * {@code BloomTaxonomy} 表示教育模块中的一组受控业务状态或分类。
+ * 定义 Bloom Taxonomy 可用的枚举值及其业务语义。
  */
 @Getter
 public enum BloomTaxonomy {

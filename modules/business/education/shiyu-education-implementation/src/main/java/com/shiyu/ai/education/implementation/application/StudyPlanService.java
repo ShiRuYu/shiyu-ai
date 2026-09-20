@@ -7,7 +7,7 @@ import com.shiyu.ai.kernel.context.ActorContext;
 import java.util.List;
 
 /**
- * StudyPlanService 服务接口，负责执行教育领域相关业务操作。
+ * 提供 Study Plan 的查询、创建、更新及调用服务，协调业务变更和领域协作。
  */
 public interface StudyPlanService {
 
@@ -22,22 +22,20 @@ public interface StudyPlanService {
     StudyPlanResponse getById(ActorContext actor, Long id);
 
     /**
-     * 根据学生标识查询学习计划列表。
+     * 查询 Study Plan 相关业务数据，并返回处理结果。
      *
-     * @param actor 调用方上下文。
-     * @param studentId 学生标识。
-     *
-     * @return 结果列表。
+     * @param actor 当前操作主体上下文，用于确定租户、用户和访问权限。
+     * @param studentId 用于定位student的标识。
+     * @return 返回符合条件的数据集合；没有匹配项时返回空集合。
      */
     List<StudyPlanResponse> listByStudentId(ActorContext actor, Long studentId);
 
     /**
-     * 查询启用按学生列表。
+     * 查询 Study Plan 相关业务数据，并返回处理结果。
      *
-     * @param actor 调用方上下文。
-     * @param studentId 学生标识。
-     *
-     * @return 结果列表。
+     * @param actor 当前操作主体上下文，用于确定租户、用户和访问权限。
+     * @param studentId 用于定位student的标识。
+     * @return 返回符合条件的数据集合；没有匹配项时返回空集合。
      */
     List<StudyPlanResponse> listActiveByStudent(ActorContext actor, Long studentId);
 
@@ -68,12 +66,11 @@ public interface StudyPlanService {
     void deleteById(ActorContext actor, Long id);
 
     /**
-     * 获取今日tasks。
+     * 查询 Study Plan 相关业务数据，并返回处理结果。
      *
-     * @param actor 调用方上下文。
-     * @param studentId 学生标识。
-     *
-     * @return 结果列表。
+     * @param actor 当前操作主体上下文，用于确定租户、用户和访问权限。
+     * @param studentId 用于定位student的标识。
+     * @return 返回符合条件的数据集合；没有匹配项时返回空集合。
      */
     List<com.shiyu.ai.education.implementation.web.dto.DailyTaskResponse> getTodayTasks(
             ActorContext actor, Long studentId);

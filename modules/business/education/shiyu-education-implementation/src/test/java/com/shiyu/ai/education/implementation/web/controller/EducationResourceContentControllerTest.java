@@ -25,7 +25,7 @@ import java.time.Instant;
 import java.util.List;
 
 /**
- * 验证 EducationResourceContentController 的功能、边界条件和集成行为。
+ * 验证 教育 资源 Content Controller 相关功能、边界条件、异常路径和协作行为。
  */
 class EducationResourceContentControllerTest {
     @Test

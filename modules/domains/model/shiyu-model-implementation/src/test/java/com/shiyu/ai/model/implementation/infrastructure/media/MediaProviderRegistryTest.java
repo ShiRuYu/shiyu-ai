@@ -11,6 +11,9 @@ import org.junit.jupiter.api.Test;
 
 import java.util.List;
 
+/**
+ * 验证 Media Provider Registry 相关功能、边界条件、异常路径和协作行为。
+ */
 class MediaProviderRegistryTest {
 
     @Test
@@ -26,6 +29,9 @@ class MediaProviderRegistryTest {
                 IllegalStateException.class, () -> new MediaProviderRegistry(List.of()).require());
     }
 
+    /**
+     * 验证 Stub 相关功能、边界条件、异常路径和协作行为。
+     */
     private record StubProvider(String id) implements MediaProvider {
         @Override
         public byte[] textToSpeech(String text, String voice, String format) {

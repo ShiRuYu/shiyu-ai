@@ -3,7 +3,9 @@ package com.shiyu.ai.iam.implementation.domain.enums;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 
-/** 时区枚举 */
+/**
+ * 定义 Timezone Enum 可用的枚举值及其业务语义。
+ */
 @Getter
 @AllArgsConstructor
 public enum TimezoneEnum {

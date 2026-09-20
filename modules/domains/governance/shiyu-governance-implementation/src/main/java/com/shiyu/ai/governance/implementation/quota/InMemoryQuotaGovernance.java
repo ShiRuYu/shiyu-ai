@@ -20,7 +20,7 @@ import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.atomic.AtomicLong;
 
 /**
- * 在内存中实现配额检查、预留和结算能力。
+ * 实现 In 记忆 Quota 治理 相关的业务处理、协作逻辑或基础设施能力。
  */
 @Component
 public final class InMemoryQuotaGovernance implements QuotaGovernance {
@@ -45,11 +45,11 @@ public final class InMemoryQuotaGovernance implements QuotaGovernance {
     private final Map<Long, Reservation> reservations = new ConcurrentHashMap<>();
 
     /**
-     * {@code InMemoryQuotaGovernance} 创建并初始化当前类型实例。
+     * 执行 In 记忆 Quota 治理 相关业务操作，并维护必要的状态和协作关系。
      *
-     * @param dailyTokenLimit 参数值，用于执行当前操作。
-     * @param defaultConcurrentLimit 参数值，用于执行当前操作。
-     * @param requestsPerMinute 参数值，用于执行当前操作。
+     * @param dailyTokenLimit 用于完成本次业务处理的 dailyTokenLimit 参数。
+     * @param defaultConcurrentLimit 用于完成本次业务处理的 defaultConcurrentLimit 参数。
+     * @param requestsPerMinute 用于完成本次业务处理的 requestsPerMinute 参数。
      */
     @Autowired
     public InMemoryQuotaGovernance(
@@ -60,12 +60,12 @@ public final class InMemoryQuotaGovernance implements QuotaGovernance {
     }
 
     /**
-     * {@code InMemoryQuotaGovernance} 创建并初始化当前类型实例。
+     * 执行 In 记忆 Quota 治理 相关业务操作，并维护必要的状态和协作关系。
      *
-     * @param dailyTokenLimit 参数值，用于执行当前操作。
-     * @param defaultConcurrentLimit 参数值，用于执行当前操作。
-     * @param requestsPerMinute 参数值，用于执行当前操作。
-     * @param clock 参数值，用于执行当前操作。
+     * @param dailyTokenLimit 用于完成本次业务处理的 dailyTokenLimit 参数。
+     * @param defaultConcurrentLimit 用于完成本次业务处理的 defaultConcurrentLimit 参数。
+     * @param requestsPerMinute 用于完成本次业务处理的 requestsPerMinute 参数。
+     * @param clock 用于完成本次业务处理的 clock 参数。
      */
     public InMemoryQuotaGovernance(
             long dailyTokenLimit, int defaultConcurrentLimit, long requestsPerMinute, Clock clock) {
@@ -76,12 +76,11 @@ public final class InMemoryQuotaGovernance implements QuotaGovernance {
     }
 
     /**
-     * {@code reserve} 执行当前类型定义的业务操作。
+     * 执行 In 记忆 Quota 治理 相关业务数据，并返回处理结果。
      *
-     * @param actor 参数值，用于执行当前操作。
-     * @param request 参数值，用于执行当前操作。
-     *
-     * @return 返回当前操作产生的结果。
+     * @param actor 当前操作主体上下文，用于确定租户、用户和访问权限。
+     * @param request 封装本次操作所需业务字段的请求对象。
+     * @return 返回 In 记忆 Quota 治理 相关操作生成的结果数据。
      */
     @Override
     public QuotaDecision reserve(ActorContext actor, QuotaRequest request) {
@@ -117,11 +116,11 @@ public final class InMemoryQuotaGovernance implements QuotaGovernance {
     }
 
     /**
-     * {@code settle} 写入或更新当前模块中的业务数据。
+     * 更新或设置 In 记忆 Quota 治理 相关业务操作，并维护必要的状态和协作关系。
      *
-     * @param actor 参数值，用于执行当前操作。
-     * @param reservationId 参数值，用于执行当前操作。
-     * @param usage 参数值，用于执行当前操作。
+     * @param actor 当前操作主体上下文，用于确定租户、用户和访问权限。
+     * @param reservationId 用于定位reservation的标识。
+     * @param usage 用于完成本次业务处理的 usage 参数。
      */
     @Override
     public void settle(ActorContext actor, long reservationId, QuotaUsage usage) {
@@ -141,10 +140,10 @@ public final class InMemoryQuotaGovernance implements QuotaGovernance {
     }
 
     /**
-     * {@code release} 释放或移除当前操作涉及的资源。
+     * 执行 In 记忆 Quota 治理 相关业务操作，并维护必要的状态和协作关系。
      *
-     * @param actor 参数值，用于执行当前操作。
-     * @param reservationId 参数值，用于执行当前操作。
+     * @param actor 当前操作主体上下文，用于确定租户、用户和访问权限。
+     * @param reservationId 用于定位reservation的标识。
      */
     @Override
     public void release(ActorContext actor, long reservationId) {
@@ -181,7 +180,7 @@ public final class InMemoryQuotaGovernance implements QuotaGovernance {
     }
 
     /**
-     * {@code Bucket} 承载治理模块的领域状态或协作行为，负责维护本类型的职责边界。
+     * 实现 Bucket 相关的业务处理、协作逻辑或基础设施能力。
      */
     private static final class Bucket {
         private LocalDate day = LocalDate.MIN;
@@ -208,9 +207,7 @@ public final class InMemoryQuotaGovernance implements QuotaGovernance {
     }
 
     /**
-     * {@code Reservation} 封装治理模块中不可变的结构化数据，并作为相关操作之间的值对象。
-     * @param tenantId 租户标识，表示该记录组件承载的数据。
-     * @param promptTokens promptTokens 属性，表示该记录组件承载的数据。
+     * 封装 Reservation 相关的不可变数据及其字段约束。
      */
     private record Reservation(TenantId tenantId, int promptTokens) {}
 }

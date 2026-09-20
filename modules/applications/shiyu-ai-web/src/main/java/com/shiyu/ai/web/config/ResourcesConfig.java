@@ -14,7 +14,9 @@ import org.springframework.web.servlet.config.annotation.InterceptorRegistry;
 import org.springframework.web.servlet.config.annotation.ResourceHandlerRegistry;
 import org.springframework.web.servlet.config.annotation.WebMvcConfigurer;
 
-/** 通用配置 */
+/**
+ * 定义 Resources 基础设施或应用能力的配置项及装配规则。
+ */
 @AutoConfiguration
 @PropertySource(value = "classpath:shiyu-web.yml", factory = YmlPropertySourceFactory.class)
 public class ResourcesConfig implements WebMvcConfigurer {
@@ -28,9 +30,9 @@ public class ResourcesConfig implements WebMvcConfigurer {
     private String allowedOriginPatterns;
 
     /**
-     * {@code addInterceptors} 执行当前类型定义的业务操作。
+     * 创建或保存 Resources 相关业务操作，并维护必要的状态和协作关系。
      *
-     * @param registry 参数值，用于执行当前操作。
+     * @param registry 用于完成本次业务处理的 registry 参数。
      */
     @Override
     public void addInterceptors(InterceptorRegistry registry) {
@@ -39,9 +41,9 @@ public class ResourcesConfig implements WebMvcConfigurer {
     }
 
     /**
-     * {@code addResourceHandlers} 执行当前类型定义的业务操作。
+     * 创建或保存 Resources 相关业务操作，并维护必要的状态和协作关系。
      *
-     * @param registry 参数值，用于执行当前操作。
+     * @param registry 用于完成本次业务处理的 registry 参数。
      */
     @Override
     public void addResourceHandlers(ResourceHandlerRegistry registry) {

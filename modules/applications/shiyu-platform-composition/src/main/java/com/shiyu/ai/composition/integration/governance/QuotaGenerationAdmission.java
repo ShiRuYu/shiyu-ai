@@ -15,7 +15,7 @@ import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 
 /**
- * 在会话生成开始前执行配额检查和用量预留。
+ * 校验并控制 Quota 生成 相关请求是否允许进入处理流程。
  */
 @Component
 public class QuotaGenerationAdmission implements GenerationAdmission {
@@ -26,20 +26,20 @@ public class QuotaGenerationAdmission implements GenerationAdmission {
     private final Map<String, Reservation> reservations = new ConcurrentHashMap<>();
 
     /**
-     * {@code QuotaGenerationAdmission} 创建并初始化当前类型实例。
+     * 执行 Quota 生成 相关业务操作，并维护必要的状态和协作关系。
      *
-     * @param quota 参数值，用于执行当前操作。
+     * @param quota 用于完成本次业务处理的 quota 参数。
      */
     public QuotaGenerationAdmission(QuotaGovernance quota) {
         this.quota = quota;
     }
 
     /**
-     * {@code reserve} 执行当前类型定义的业务操作。
+     * 执行 Quota 生成 相关业务操作，并维护必要的状态和协作关系。
      *
-     * @param actor 参数值，用于执行当前操作。
-     * @param run 参数值，用于执行当前操作。
-     * @param estimatedPromptTokens 参数值，用于执行当前操作。
+     * @param actor 当前操作主体上下文，用于确定租户、用户和访问权限。
+     * @param run 用于完成本次业务处理的 run 参数。
+     * @param estimatedPromptTokens 用于完成本次业务处理的 estimatedPromptTokens 参数。
      */
     @Override
     public void reserve(ActorContext actor, GenerationRun run, int estimatedPromptTokens) {
@@ -52,10 +52,10 @@ public class QuotaGenerationAdmission implements GenerationAdmission {
     }
 
     /**
-     * {@code settle} 写入或更新当前模块中的业务数据。
+     * 更新或设置 Quota 生成 相关业务操作，并维护必要的状态和协作关系。
      *
-     * @param actor 参数值，用于执行当前操作。
-     * @param run 参数值，用于执行当前操作。
+     * @param actor 当前操作主体上下文，用于确定租户、用户和访问权限。
+     * @param run 用于完成本次业务处理的 run 参数。
      */
     @Override
     public void settle(ActorContext actor, GenerationRun run) {
@@ -72,10 +72,10 @@ public class QuotaGenerationAdmission implements GenerationAdmission {
     }
 
     /**
-     * {@code release} 释放或移除当前操作涉及的资源。
+     * 执行 Quota 生成 相关业务操作，并维护必要的状态和协作关系。
      *
-     * @param actor 参数值，用于执行当前操作。
-     * @param run 参数值，用于执行当前操作。
+     * @param actor 当前操作主体上下文，用于确定租户、用户和访问权限。
+     * @param run 用于完成本次业务处理的 run 参数。
      */
     @Override
     public void release(ActorContext actor, GenerationRun run) {
@@ -88,9 +88,7 @@ public class QuotaGenerationAdmission implements GenerationAdmission {
     }
 
     /**
-     * {@code Reservation} 封装治理模块中不可变的结构化数据，并作为相关操作之间的值对象。
-     * @param id 标识，表示该记录组件承载的数据。
-     * @param estimatedPromptTokens estimatedPromptTokens 属性，表示该记录组件承载的数据。
+     * 封装 Reservation 相关的不可变数据及其字段约束。
      */
     private record Reservation(long id, int estimatedPromptTokens) {}
 }

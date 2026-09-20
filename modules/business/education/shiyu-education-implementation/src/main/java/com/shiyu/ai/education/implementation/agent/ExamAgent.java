@@ -21,9 +21,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 /**
- * ExamAgent — AI 智能组卷 Agent
- *
- * <p>职责：根据学科、年级、知识点范围，自动生成试卷并进行评分分析。
+ * 编排 考试 相关的智能体任务和模型协作。
  */
 @Slf4j
 @Component

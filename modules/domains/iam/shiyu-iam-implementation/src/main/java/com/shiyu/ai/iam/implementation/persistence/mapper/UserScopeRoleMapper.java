@@ -11,7 +11,7 @@ import org.apache.ibatis.annotations.Mapper;
 import java.util.List;
 
 /**
- * UserScopeRoleMapper 数据映射接口，负责在身份与访问领域对象与持久化记录之间转换数据。
+ * 负责 用户 Scope 角色 的持久化查询、保存和删除，并维护数据访问边界。
  */
 @Mapper
 @UseDataSource(DataSourceConfig.AGENT)
@@ -30,11 +30,10 @@ public interface UserScopeRoleMapper extends BaseMapperFlex<UserScopeRoleDO> {
     }
 
     /**
-     * 根据条件查询并返回所需数据。
+     * 查询 用户 Scope 角色 相关业务数据，并返回处理结果。
      *
-     * @param userIds 方法参数。
-     *
-     * @return 符合条件的结果集合。
+     * @param userIds 待处理的业务对象标识集合。
+     * @return 返回符合条件的数据集合；没有匹配项时返回空集合。
      */
     default List<UserScopeRoleDO> selectByUserIds(List<Long> userIds) {
         if (userIds == null || userIds.isEmpty()) return List.of();

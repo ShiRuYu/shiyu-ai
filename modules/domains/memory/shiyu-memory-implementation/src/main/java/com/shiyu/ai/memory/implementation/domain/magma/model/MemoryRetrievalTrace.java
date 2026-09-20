@@ -9,17 +9,7 @@ import java.util.Map;
 import java.util.Objects;
 
 /**
- * {@code MemoryRetrievalTrace} 封装平台模块中不可变的结构化数据，并作为相关操作之间的值对象。
- * @param id 标识，表示该记录组件承载的数据。
- * @param tenantId 租户标识，表示该记录组件承载的数据。
- * @param namespace 命名空间，表示该记录组件承载的数据。
- * @param queryText queryText 属性，表示该记录组件承载的数据。
- * @param anchorEventIds anchorEventIds 属性，表示该记录组件承载的数据。
- * @param graphWeights graphWeights 属性，表示该记录组件承载的数据。
- * @param relationPaths relationPaths 属性，表示该记录组件承载的数据。
- * @param filteredEventIds filteredEventIds 属性，表示该记录组件承载的数据。
- * @param resultEventIds resultEventIds 属性，表示该记录组件承载的数据。
- * @param createdAt 创建时间，表示该记录组件承载的数据。
+ * 封装 记忆 Retrieval Trace 相关的不可变数据及其字段约束。
  */
 public record MemoryRetrievalTrace(
         String id,

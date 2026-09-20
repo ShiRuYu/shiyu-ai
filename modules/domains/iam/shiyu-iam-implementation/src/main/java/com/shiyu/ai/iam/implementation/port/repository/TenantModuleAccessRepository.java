@@ -4,7 +4,9 @@ import com.shiyu.ai.kernel.context.TenantId;
 
 import java.util.Collection;
 
-/** 租户业务模块状态仓储，封装 AUTH_TENANT_MODULE 的持久化访问。 */
+/**
+ * 负责 租户 Module Access 的持久化查询、保存和删除，并维护数据访问边界。
+ */
 public interface TenantModuleAccessRepository {
 
     /**

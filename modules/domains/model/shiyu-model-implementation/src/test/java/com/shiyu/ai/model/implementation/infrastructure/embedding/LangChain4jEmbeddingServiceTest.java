@@ -25,6 +25,9 @@ import org.springframework.context.ApplicationEventPublisher;
 
 import java.util.List;
 
+/**
+ * 验证 Lang Chain 4 j 嵌入 Service 相关功能、边界条件、异常路径和协作行为。
+ */
 class LangChain4jEmbeddingServiceTest {
 
     @Test

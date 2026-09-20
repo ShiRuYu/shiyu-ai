@@ -11,10 +11,9 @@ import lombok.NoArgsConstructor;
 import lombok.experimental.SuperBuilder;
 
 /**
- * 短期记忆节点配置类 用于存储和管理最近的对话历史
+ * 定义 Short Term 记忆 基础设施或应用能力的配置项及装配规则。
  *
  * @author shiyu-ai
- * @date 2026-03-28
  */
 @Data
 @SuperBuilder

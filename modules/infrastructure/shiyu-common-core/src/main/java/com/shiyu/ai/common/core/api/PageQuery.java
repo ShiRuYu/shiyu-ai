@@ -9,7 +9,9 @@ import java.io.Serializable;
 import java.util.List;
 import java.util.Objects;
 
-/** 分页查询实体类 */
+/**
+ * 封装 Page 操作所需的请求条件和输入数据。
+ */
 @Data
 @SuppressWarnings("serial")
 public class PageQuery implements Serializable {
@@ -44,9 +46,9 @@ public class PageQuery implements Serializable {
     public static final int DEFAULT_PAGE_SIZE = 10;
 
     /**
-     * {@code getFirstNum} 查询并返回当前操作所需的数据。
+     * 查询 Page 相关业务数据，并返回处理结果。
      *
-     * @return 返回当前操作产生的结果。
+     * @return 返回 Page 相关操作生成的结果数据。
      */
     @JsonIgnore
     public Integer getFirstNum() {
@@ -63,10 +65,10 @@ public class PageQuery implements Serializable {
     }
 
     /**
-     * {@code PageQuery} 创建并初始化当前类型实例。
+     * 查询 Page 相关业务操作，并维护必要的状态和协作关系。
      *
-     * @param pageSize 参数值，用于执行当前操作。
-     * @param pageNum 参数值，用于执行当前操作。
+     * @param pageSize 每页返回的数据数量。
+     * @param pageNum 用于完成本次业务处理的 pageNum 参数。
      */
     public PageQuery(Integer pageSize, Integer pageNum) {
         this.pageSize = pageSize;

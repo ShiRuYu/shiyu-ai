@@ -12,6 +12,9 @@ import dev.langchain4j.model.chat.StreamingChatModel;
 
 import org.junit.jupiter.api.Test;
 
+/**
+ * 验证 Ollama 平台 Adapter 相关功能、边界条件、异常路径和协作行为。
+ */
 class OllamaPlatformAdapterTest {
     @Test
     void createsCachedModelsAndHonorsDefaultsAndDynamicConfiguration() {

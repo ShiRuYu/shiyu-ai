@@ -21,6 +21,9 @@ import org.junit.jupiter.api.Test;
 import java.util.Arrays;
 import java.util.List;
 
+/**
+ * 验证 认证 Code Service Impl 相关功能、边界条件、异常路径和协作行为。
+ */
 class AuthCodeServiceImplTest {
     private static final ActorContext ACTOR =
             new ActorContext(new TenantId(5), new UserId(9), false);

@@ -22,6 +22,9 @@ import java.time.Instant;
 import java.util.HashSet;
 import java.util.Set;
 
+/**
+ * 验证 用量 Recorder 相关功能、边界条件、异常路径和协作行为。
+ */
 class UsageRecorderTest {
 
     private static final ActorContext ACTOR =
@@ -106,6 +109,9 @@ class UsageRecorderTest {
                         new BigDecimal("0.0042")));
     }
 
+    /**
+     * 验证 In 记忆 用量 Ledger 相关功能、边界条件、异常路径和协作行为。
+     */
     private static final class InMemoryUsageLedger implements UsageLedger {
 
         private final Set<String> keys = new HashSet<>();

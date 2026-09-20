@@ -3,34 +3,33 @@ package com.shiyu.ai.governance.contract;
 import com.shiyu.ai.kernel.context.ActorContext;
 
 /**
- * QuotaGovernance 接口，定义治理模块的能力边界。
+ * 定义 Quota 治理 相关的协作契约和调用边界。
  */
 public interface QuotaGovernance {
 
     /**
-     * 变更当前业务对象的处理状态。
+     * 执行 Quota 治理 相关业务数据，并返回处理结果。
      *
-     * @param actor 当前操作主体上下文。
-     * @param request 请求参数。
-     *
-     * @return 操作结果。
+     * @param actor 当前操作主体上下文，用于确定租户、用户和访问权限。
+     * @param request 封装本次操作所需业务字段的请求对象。
+     * @return 返回 Quota 治理 相关操作生成的结果数据。
      */
     QuotaDecision reserve(ActorContext actor, QuotaRequest request);
 
     /**
-     * 变更当前业务对象的处理状态。
+     * 更新或设置 Quota 治理 相关业务操作，并维护必要的状态和协作关系。
      *
-     * @param actor 当前操作主体上下文。
-     * @param reservationId 方法参数。
-     * @param usage 方法参数。
+     * @param actor 当前操作主体上下文，用于确定租户、用户和访问权限。
+     * @param reservationId 用于定位reservation的标识。
+     * @param usage 用于完成本次业务处理的 usage 参数。
      */
     void settle(ActorContext actor, long reservationId, QuotaUsage usage);
 
     /**
-     * 变更当前业务对象的处理状态。
+     * 执行 Quota 治理 相关业务操作，并维护必要的状态和协作关系。
      *
-     * @param actor 当前操作主体上下文。
-     * @param reservationId 方法参数。
+     * @param actor 当前操作主体上下文，用于确定租户、用户和访问权限。
+     * @param reservationId 用于定位reservation的标识。
      */
     void release(ActorContext actor, long reservationId);
 }

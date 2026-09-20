@@ -16,7 +16,7 @@ import org.testcontainers.junit.jupiter.Testcontainers;
 import java.util.Map;
 
 /**
- * 验证 PgVectorStoreContainer 的功能、边界条件和集成行为。
+ * 验证 Pg 向量 Store Container 相关功能、边界条件、异常路径和协作行为。
  */
 @Testcontainers(disabledWithoutDocker = true)
 class PgVectorStoreContainerTest {

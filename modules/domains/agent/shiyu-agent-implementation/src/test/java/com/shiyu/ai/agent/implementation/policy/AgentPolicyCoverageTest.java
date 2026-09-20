@@ -14,6 +14,9 @@ import org.junit.jupiter.api.Test;
 import java.util.concurrent.TimeoutException;
 import java.util.concurrent.atomic.AtomicInteger;
 
+/**
+ * 验证 智能体 Policy Coverage 相关功能、边界条件、异常路径和协作行为。
+ */
 class AgentPolicyCoverageTest {
 
     @Test

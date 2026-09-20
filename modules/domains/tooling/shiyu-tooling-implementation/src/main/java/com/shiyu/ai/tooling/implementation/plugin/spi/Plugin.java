@@ -2,7 +2,9 @@ package com.shiyu.ai.tooling.implementation.plugin.spi;
 
 import java.util.Map;
 
-/** Plugin SPI — 所有插件必须实现此接口 */
+/**
+ * 定义 插件 相关的协作契约和调用边界。
+ */
 public interface Plugin {
 
     /** 插件唯一标识 */

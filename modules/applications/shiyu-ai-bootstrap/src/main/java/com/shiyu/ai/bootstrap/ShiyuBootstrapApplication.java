@@ -6,7 +6,7 @@ import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 
 /**
- * 应用启动类，负责创建 Spring Boot 运行上下文并释放启动期间的目录锁。
+ * 启动 Shiyu Bootstrap 应用并装配项目所需的运行基础设施。
  */
 @SpringBootApplication(
         scanBasePackages = {"com.shiyu.ai.bootstrap", "com.shiyu.ai.composition"})
@@ -18,9 +18,9 @@ public class ShiyuBootstrapApplication {
     private static EmbeddedDataDirectoryLock dataDirectoryLock;
 
     /**
-     * {@code main} 执行当前类型定义的业务操作。
+     * 执行 Shiyu Bootstrap 相关业务操作，并维护必要的状态和协作关系。
      *
-     * @param args 参数值，用于执行当前操作。
+     * @param args 用于完成本次业务处理的 args 参数。
      */
     public static void main(String[] args) {
         dataDirectoryLock = EmbeddedDataDirectoryLock.acquire();

@@ -39,7 +39,7 @@ import java.util.Properties;
 import java.util.UUID;
 
 /**
- * {@code ResumableUploadService} 定义平台基础设施模块的应用服务能力，供上层用例调用。
+ * 提供 Resumable Upload 的查询、创建、更新及调用服务，协调业务变更和领域协作。
  */
 @Service
 @RequiredArgsConstructor
@@ -80,13 +80,12 @@ public class ResumableUploadService {
     private final StorageMetadataStore metadataStore;
 
     /**
-     * {@code begin} 执行当前类型定义的业务操作。
+     * 执行 Resumable Upload 相关业务数据，并返回处理结果。
      *
-     * @param actor 参数值，用于执行当前操作。
-     * @param spaceId 参数值，用于执行当前操作。
-     * @param request 参数值，用于执行当前操作。
-     *
-     * @return 返回当前操作产生的结果。
+     * @param actor 当前操作主体上下文，用于确定租户、用户和访问权限。
+     * @param spaceId 用于定位space的标识。
+     * @param request 封装本次操作所需业务字段的请求对象。
+     * @return 返回 Resumable Upload 相关操作生成的结果数据。
      */
     public UploadSession begin(
             ResumableUploadHandler.UploadActor actor, Long spaceId, BeginRequest request) {
@@ -146,12 +145,11 @@ public class ResumableUploadService {
     }
 
     /**
-     * {@code status} 执行当前类型定义的业务操作。
+     * 执行 Resumable Upload 相关业务数据，并返回处理结果。
      *
-     * @param actor 参数值，用于执行当前操作。
-     * @param id 参数值，用于执行当前操作。
-     *
-     * @return 返回当前操作产生的结果。
+     * @param actor 当前操作主体上下文，用于确定租户、用户和访问权限。
+     * @param id 用于定位目标业务对象的标识。
+     * @return 返回 Resumable Upload 相关操作生成的结果数据。
      */
     public UploadSession status(ResumableUploadHandler.UploadActor actor, String id) {
         requireActor(actor);
@@ -168,15 +166,14 @@ public class ResumableUploadService {
     }
 
     /**
-     * {@code writeChunk} 执行当前类型定义的业务操作。
+     * 执行 Resumable Upload 相关业务数据，并返回处理结果。
      *
-     * @param actor 参数值，用于执行当前操作。
-     * @param id 参数值，用于执行当前操作。
-     * @param index 参数值，用于执行当前操作。
-     * @param totalChunks 参数值，用于执行当前操作。
-     * @param bytes 参数值，用于执行当前操作。
-     *
-     * @return 返回当前操作产生的结果。
+     * @param actor 当前操作主体上下文，用于确定租户、用户和访问权限。
+     * @param id 用于定位目标业务对象的标识。
+     * @param index 用于完成本次业务处理的 index 参数。
+     * @param totalChunks 用于完成本次业务处理的 totalChunks 参数。
+     * @param bytes 用于完成本次业务处理的 bytes 参数。
+     * @return 返回 Resumable Upload 相关操作生成的结果数据。
      */
     public UploadSession writeChunk(
             ResumableUploadHandler.UploadActor actor,
@@ -208,12 +205,11 @@ public class ResumableUploadService {
     }
 
     /**
-     * {@code complete} 执行当前类型定义的业务操作。
+     * 执行 Resumable Upload 相关业务数据，并返回处理结果。
      *
-     * @param actor 参数值，用于执行当前操作。
-     * @param id 参数值，用于执行当前操作。
-     *
-     * @return 返回当前操作产生的结果。
+     * @param actor 当前操作主体上下文，用于确定租户、用户和访问权限。
+     * @param id 用于定位目标业务对象的标识。
+     * @return 返回 Resumable Upload 相关操作生成的结果数据。
      */
     public ResumableUploadHandler.RegistrationResult complete(
             ResumableUploadHandler.UploadActor actor, String id) {
@@ -300,10 +296,10 @@ public class ResumableUploadService {
     }
 
     /**
-     * {@code cancel} 校验当前操作的输入或状态是否满足约束。
+     * 校验或判断 Resumable Upload 相关业务操作，并维护必要的状态和协作关系。
      *
-     * @param actor 参数值，用于执行当前操作。
-     * @param id 参数值，用于执行当前操作。
+     * @param actor 当前操作主体上下文，用于确定租户、用户和访问权限。
+     * @param id 用于定位目标业务对象的标识。
      */
     public void cancel(ResumableUploadHandler.UploadActor actor, String id) {
         requireActor(actor);
@@ -560,12 +556,7 @@ public class ResumableUploadService {
     }
 
     /**
-     * {@code BeginRequest} 封装平台基础设施模块中不可变的结构化数据，并作为相关操作之间的值对象。
-     * @param fileName 文件名，表示该记录组件承载的数据。
-     * @param contentType 内容类型，表示该记录组件承载的数据。
-     * @param size 大小，表示该记录组件承载的数据。
-     * @param checksum checksum 属性，表示该记录组件承载的数据。
-     * @param title 标题，表示该记录组件承载的数据。
+     * 封装 Begin 相关的不可变数据及其字段约束。
      */
     public record BeginRequest(
             @NotBlank(message = "文件名不能为空") String fileName,
@@ -577,14 +568,7 @@ public class ResumableUploadService {
             String title) {}
 
     /**
-     * {@code UploadSession} 封装平台基础设施模块中不可变的结构化数据，并作为相关操作之间的值对象。
-     * @param sessionId sessionId 属性，表示该记录组件承载的数据。
-     * @param spaceId spaceId 属性，表示该记录组件承载的数据。
-     * @param fileName 文件名，表示该记录组件承载的数据。
-     * @param size 大小，表示该记录组件承载的数据。
-     * @param totalChunks totalChunks 属性，表示该记录组件承载的数据。
-     * @param uploadedChunks uploadedChunks 属性，表示该记录组件承载的数据。
-     * @param chunkSize chunkSize 属性，表示该记录组件承载的数据。
+     * 封装 Upload Session 相关的不可变数据及其字段约束。
      */
     public record UploadSession(
             String sessionId,

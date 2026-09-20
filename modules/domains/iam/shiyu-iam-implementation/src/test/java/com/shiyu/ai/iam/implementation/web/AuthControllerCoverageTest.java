@@ -21,6 +21,9 @@ import org.junit.jupiter.api.Test;
 
 import java.util.List;
 
+/**
+ * 验证 认证 Controller Coverage 相关功能、边界条件、异常路径和协作行为。
+ */
 class AuthControllerCoverageTest {
     private final AuthService auth = mock(AuthService.class);
     private final UserService users = mock(UserService.class);

@@ -17,7 +17,7 @@ import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 
 /**
- * 管理 Agent 执行状态的持久化、恢复和租户校验。
+ * 管理 智能体 Runtime State 相关的运行时状态、注册信息或临时数据。
  */
 @Slf4j
 public final class AgentRuntimeStateStore {

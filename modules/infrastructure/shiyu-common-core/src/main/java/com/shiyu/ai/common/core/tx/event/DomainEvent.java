@@ -6,7 +6,7 @@ import java.time.Instant;
 import java.util.UUID;
 
 /**
- * {@code DomainEvent} 承载平台基础设施模块的领域状态或协作行为，负责维护本类型的职责边界。
+ * 表示 Domain 相关的领域事件或异常信息。
  */
 @Getter
 public abstract class DomainEvent {

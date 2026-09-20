@@ -6,7 +6,9 @@ import java.io.Serial;
 import java.io.Serializable;
 import java.util.List;
 
-/** 权限码视图对象 */
+/**
+ * 封装 认证 Code 操作向调用方返回的传输数据。
+ */
 @Data
 @SuppressWarnings("serial")
 public class AuthCodeVO implements Serializable {

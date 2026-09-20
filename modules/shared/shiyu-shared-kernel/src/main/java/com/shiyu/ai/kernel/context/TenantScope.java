@@ -4,7 +4,7 @@ import java.util.Optional;
 import java.util.function.Supplier;
 
 /**
- * 提供租户范围校验和租户上下文切换的通用操作。
+ * 实现 租户 Scope 相关的业务处理、协作逻辑或基础设施能力。
  */
 public final class TenantScope {
 
@@ -13,9 +13,9 @@ public final class TenantScope {
     private TenantScope() {}
 
     /**
-     * {@code set} 写入或更新当前模块中的业务数据。
+     * 更新或设置 租户 Scope 相关业务操作，并维护必要的状态和协作关系。
      *
-     * @param tenantId 参数值，用于执行当前操作。
+     * @param tenantId 当前操作涉及的租户标识。
      */
     public static void set(TenantId tenantId) {
         if (tenantId == null) {
@@ -25,18 +25,18 @@ public final class TenantScope {
     }
 
     /**
-     * {@code current} 执行当前类型定义的业务操作。
+     * 获取当前 租户 Scope 相关业务数据，并返回处理结果。
      *
-     * @return 返回当前操作产生的结果。
+     * @return 返回可能存在的业务对象；不存在时返回空值容器。
      */
     public static Optional<TenantId> current() {
         return Optional.ofNullable(CURRENT.get());
     }
 
     /**
-     * {@code require} 执行当前类型定义的业务操作。
+     * 获取并校验 租户 Scope 相关业务数据，并返回处理结果。
      *
-     * @return 返回当前操作产生的结果。
+     * @return 返回 租户 Scope 相关操作生成的结果数据。
      */
     public static TenantId require() {
         TenantId tenantId = CURRENT.get();
@@ -84,19 +84,18 @@ public final class TenantScope {
     }
 
     /**
-     * {@code clear} 执行当前类型定义的业务操作。
+     * 删除或移除 租户 Scope 相关业务操作，并维护必要的状态和协作关系。
      */
     public static void clear() {
         CURRENT.remove();
     }
 
     /**
-     * {@code withTenant} 执行当前类型定义的业务操作。
+     * 执行 租户 Scope 相关业务数据，并返回处理结果。
      *
-     * @param tenantId 参数值，用于执行当前操作。
-     * @param action 参数值，用于执行当前操作。
-     *
-     * @return 返回当前操作产生的结果。
+     * @param tenantId 当前操作涉及的租户标识。
+     * @param action 用于完成本次业务处理的 action 参数。
+     * @return 返回 租户 Scope 相关操作生成的结果数据。
      */
     public static <T> T withTenant(TenantId tenantId, Supplier<T> action) {
         if (action == null) {

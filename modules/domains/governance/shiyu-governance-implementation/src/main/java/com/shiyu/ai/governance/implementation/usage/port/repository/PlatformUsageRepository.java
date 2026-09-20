@@ -1,7 +1,7 @@
 package com.shiyu.ai.governance.implementation.usage.port.repository;
 
 /**
- * 平台用量统计仓储，只允许平台统计服务使用，不接受客户端租户范围参数。
+ * 负责 平台 用量 的持久化查询、保存和删除，并维护数据访问边界。
  */
 public interface PlatformUsageRepository {
     /** 查询全平台用量概览。 */

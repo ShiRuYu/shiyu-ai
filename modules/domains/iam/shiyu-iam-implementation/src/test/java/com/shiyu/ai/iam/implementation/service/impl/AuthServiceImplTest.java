@@ -25,6 +25,9 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
 
+/**
+ * 验证 认证 Service Impl 相关功能、边界条件、异常路径和协作行为。
+ */
 class AuthServiceImplTest {
     @Test
     void loginDoesNotDisableTenantFilteringDuringSessionPersistence() {

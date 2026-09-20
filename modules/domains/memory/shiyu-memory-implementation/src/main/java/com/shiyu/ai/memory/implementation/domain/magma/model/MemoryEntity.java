@@ -7,15 +7,7 @@ import java.util.Map;
 import java.util.Objects;
 
 /**
- * {@code MemoryEntity} 封装平台模块中不可变的结构化数据，并作为相关操作之间的值对象。
- * @param id 标识，表示该记录组件承载的数据。
- * @param tenantId 租户标识，表示该记录组件承载的数据。
- * @param entityType entityType 属性，表示该记录组件承载的数据。
- * @param externalRef externalRef 属性，表示该记录组件承载的数据。
- * @param displayName displayName 属性，表示该记录组件承载的数据。
- * @param normalizedName normalizedName 属性，表示该记录组件承载的数据。
- * @param attributes attributes 属性，表示该记录组件承载的数据。
- * @param active active 属性，表示该记录组件承载的数据。
+ * 封装 记忆 相关的不可变数据及其字段约束。
  */
 public record MemoryEntity(
         String id,

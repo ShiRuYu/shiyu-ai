@@ -9,6 +9,9 @@ import com.shiyu.ai.iam.implementation.vo.CaptchaVO;
 
 import org.junit.jupiter.api.Test;
 
+/**
+ * 验证 Captcha Controller Coverage 相关功能、边界条件、异常路径和协作行为。
+ */
 class CaptchaControllerCoverageTest {
     private final CaptchaService service = mock(CaptchaService.class);
     private final CaptchaController controller = new CaptchaController(service);

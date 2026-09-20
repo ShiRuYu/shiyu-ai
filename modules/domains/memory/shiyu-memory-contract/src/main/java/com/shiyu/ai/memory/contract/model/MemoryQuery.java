@@ -6,19 +6,7 @@ import java.time.Instant;
 import java.util.Set;
 
 /**
- * {@code MemoryQuery} 封装模型模块中不可变的结构化数据，并作为相关操作之间的值对象。
- * @param tenantId 租户标识，表示该记录组件承载的数据。
- * @param namespace 命名空间，表示该记录组件承载的数据。
- * @param subjectType subjectType 属性，表示该记录组件承载的数据。
- * @param subjectId subjectId 属性，表示该记录组件承载的数据。
- * @param text text 属性，表示该记录组件承载的数据。
- * @param graphTypes graphTypes 属性，表示该记录组件承载的数据。
- * @param from from 属性，表示该记录组件承载的数据。
- * @param to to 属性，表示该记录组件承载的数据。
- * @param maxDepth maxDepth 属性，表示该记录组件承载的数据。
- * @param maxNodes maxNodes 属性，表示该记录组件承载的数据。
- * @param maxTokens 最大令牌数，表示该记录组件承载的数据。
- * @param intent intent 属性，表示该记录组件承载的数据。
+ * 封装 记忆 相关的不可变数据及其字段约束。
  */
 public record MemoryQuery(
         TenantId tenantId,
@@ -34,21 +22,19 @@ public record MemoryQuery(
         int maxTokens,
         MemoryQueryIntent intent) {
     /**
-     * 处理memoryquery。
+     * 执行 记忆 相关业务操作，并维护必要的状态和协作关系。
      *
-     * @param tenantId 租户标识。
-     * @param namespace namespace 参数。
-     * @param subjectType subjectType 参数。
-     * @param subjectId subjectId 参数。
-     * @param text text 参数。
-     * @param graphTypes graphTypes 参数。
-     * @param from from 参数。
-     * @param to to 参数。
-     * @param maxDepth maxDepth 参数。
-     * @param maxNodes maxNodes 参数。
-     * @param maxTokens maxTokens 参数。
-     *
-     * @return 结果列表。
+     * @param tenantId 当前操作涉及的租户标识。
+     * @param namespace 用于完成本次业务处理的 namespace 参数。
+     * @param subjectType 用于完成本次业务处理的 subjectType 参数。
+     * @param subjectId 用于定位subject的标识。
+     * @param text 用于完成本次业务处理的 text 参数。
+     * @param graphTypes 用于完成本次业务处理的 graphTypes 参数。
+     * @param from 用于完成本次业务处理的 from 参数。
+     * @param to 用于完成本次业务处理的 to 参数。
+     * @param maxDepth 用于完成本次业务处理的 maxDepth 参数。
+     * @param maxNodes 用于完成本次业务处理的 maxNodes 参数。
+     * @param maxTokens 用于完成本次业务处理的 maxTokens 参数。
      */
     public MemoryQuery(
             TenantId tenantId,

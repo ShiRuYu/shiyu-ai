@@ -19,7 +19,7 @@ import org.springframework.stereotype.Component;
 import java.util.List;
 
 /**
- * {@code KnowledgeDocumentRepositoryImpl} 实现知识模块的持久化端口，负责在领域对象与存储模型之间转换。
+ * 负责 知识 文档 的持久化查询、保存和删除，并维护数据访问边界。
  */
 @Component
 public class KnowledgeDocumentRepositoryImpl implements KnowledgeDocumentRepository {
@@ -41,11 +41,10 @@ public class KnowledgeDocumentRepositoryImpl implements KnowledgeDocumentReposit
     }
 
     /**
-     * {@code selectAll} 执行当前类型定义的业务操作。
+     * 查询 知识 文档 相关业务数据，并返回处理结果。
      *
-     * @param tenantId 参数值，用于执行当前操作。
-     *
-     * @return 返回当前操作产生的结果。
+     * @param tenantId 当前操作涉及的租户标识。
+     * @return 返回符合条件的数据集合；没有匹配项时返回空集合。
      */
     @Override
     public List<KnowledgeDocumentBO> selectAll(TenantId tenantId) {
@@ -53,12 +52,11 @@ public class KnowledgeDocumentRepositoryImpl implements KnowledgeDocumentReposit
     }
 
     /**
-     * {@code insert} 执行当前类型定义的业务操作。
+     * 创建或保存 知识 文档 相关业务数据，并返回处理结果。
      *
-     * @param tenantId 参数值，用于执行当前操作。
-     * @param bo 参数值，用于执行当前操作。
-     *
-     * @return 返回当前操作产生的结果。
+     * @param tenantId 当前操作涉及的租户标识。
+     * @param bo 用于完成本次业务处理的 bo 参数。
+     * @return 返回 知识 文档 相关操作生成的结果数据。
      */
     @Override
     public int insert(TenantId tenantId, KnowledgeDocumentBO bo) {
@@ -71,12 +69,11 @@ public class KnowledgeDocumentRepositoryImpl implements KnowledgeDocumentReposit
     }
 
     /**
-     * {@code update} 写入或更新当前模块中的业务数据。
+     * 更新或设置 知识 文档 相关业务数据，并返回处理结果。
      *
-     * @param tenantId 参数值，用于执行当前操作。
-     * @param bo 参数值，用于执行当前操作。
-     *
-     * @return 返回当前操作产生的结果。
+     * @param tenantId 当前操作涉及的租户标识。
+     * @param bo 用于完成本次业务处理的 bo 参数。
+     * @return 返回 知识 文档 相关操作生成的结果数据。
      */
     @Override
     public int update(TenantId tenantId, KnowledgeDocumentBO bo) {
@@ -89,12 +86,11 @@ public class KnowledgeDocumentRepositoryImpl implements KnowledgeDocumentReposit
     }
 
     /**
-     * {@code deleteById} 释放或移除当前操作涉及的资源。
+     * 删除或移除 知识 文档 相关业务数据，并返回处理结果。
      *
-     * @param tenantId 参数值，用于执行当前操作。
-     * @param id 参数值，用于执行当前操作。
-     *
-     * @return 返回当前操作产生的结果。
+     * @param tenantId 当前操作涉及的租户标识。
+     * @param id 用于定位目标业务对象的标识。
+     * @return 返回 知识 文档 相关操作生成的结果数据。
      */
     @Override
     public int deleteById(TenantId tenantId, Long id) {
@@ -103,13 +99,12 @@ public class KnowledgeDocumentRepositoryImpl implements KnowledgeDocumentReposit
     }
 
     /**
-     * {@code searchByKeyword} 查询并返回当前操作所需的数据。
+     * 查询 知识 文档 相关业务数据，并返回处理结果。
      *
-     * @param tenantId 参数值，用于执行当前操作。
-     * @param keyword 参数值，用于执行当前操作。
-     * @param topK 参数值，用于执行当前操作。
-     *
-     * @return 返回当前操作产生的结果。
+     * @param tenantId 当前操作涉及的租户标识。
+     * @param keyword 用于完成本次业务处理的 keyword 参数。
+     * @param topK 用于完成本次业务处理的 topK 参数。
+     * @return 返回符合条件的数据集合；没有匹配项时返回空集合。
      */
     @Override
     public List<KnowledgeDocumentBO> searchByKeyword(TenantId tenantId, String keyword, int topK) {
@@ -124,12 +119,11 @@ public class KnowledgeDocumentRepositoryImpl implements KnowledgeDocumentReposit
     }
 
     /**
-     * {@code selectByKnowledgeId} 执行当前类型定义的业务操作。
+     * 查询 知识 文档 相关业务数据，并返回处理结果。
      *
-     * @param tenantId 参数值，用于执行当前操作。
-     * @param knowledgeId 参数值，用于执行当前操作。
-     *
-     * @return 返回当前操作产生的结果。
+     * @param tenantId 当前操作涉及的租户标识。
+     * @param knowledgeId 用于定位knowledge的标识。
+     * @return 返回符合条件的数据集合；没有匹配项时返回空集合。
      */
     @Override
     public List<KnowledgeDocumentBO> selectByKnowledgeId(TenantId tenantId, Long knowledgeId) {
@@ -148,13 +142,12 @@ public class KnowledgeDocumentRepositoryImpl implements KnowledgeDocumentReposit
     }
 
     /**
-     * {@code selectByKnowledgeId} 执行当前类型定义的业务操作。
+     * 查询 知识 文档 相关业务数据，并返回处理结果。
      *
-     * @param tenantId 参数值，用于执行当前操作。
-     * @param spaceId 参数值，用于执行当前操作。
-     * @param knowledgeId 参数值，用于执行当前操作。
-     *
-     * @return 返回当前操作产生的结果。
+     * @param tenantId 当前操作涉及的租户标识。
+     * @param spaceId 用于定位space的标识。
+     * @param knowledgeId 用于定位knowledge的标识。
+     * @return 返回符合条件的数据集合；没有匹配项时返回空集合。
      */
     @Override
     public List<KnowledgeDocumentBO> selectByKnowledgeId(
@@ -177,17 +170,16 @@ public class KnowledgeDocumentRepositoryImpl implements KnowledgeDocumentReposit
     }
 
     /**
-     * {@code pageBySpace} 执行当前类型定义的业务操作。
+     * 查询 知识 文档 相关业务数据，并返回处理结果。
      *
-     * @param tenantId 参数值，用于执行当前操作。
-     * @param spaceId 参数值，用于执行当前操作。
-     * @param pageNum 参数值，用于执行当前操作。
-     * @param pageSize 参数值，用于执行当前操作。
-     * @param keyword 参数值，用于执行当前操作。
-     * @param lifecycleStatus 参数值，用于执行当前操作。
-     * @param parseStatus 参数值，用于执行当前操作。
-     *
-     * @return 返回当前操作产生的结果。
+     * @param tenantId 当前操作涉及的租户标识。
+     * @param spaceId 用于定位space的标识。
+     * @param pageNum 用于完成本次业务处理的 pageNum 参数。
+     * @param pageSize 每页返回的数据数量。
+     * @param keyword 用于完成本次业务处理的 keyword 参数。
+     * @param lifecycleStatus 用于完成本次业务处理的 lifecycleStatus 参数。
+     * @param parseStatus 用于完成本次业务处理的 parseStatus 参数。
+     * @return 返回 知识 文档 相关操作生成的结果数据。
      */
     @Override
     public PageData<KnowledgeDocumentBO> pageBySpace(
@@ -212,13 +204,12 @@ public class KnowledgeDocumentRepositoryImpl implements KnowledgeDocumentReposit
     }
 
     /**
-     * {@code findBySpaceAndChecksum} 查询并返回当前操作所需的数据。
+     * 查询 知识 文档 相关业务数据，并返回处理结果。
      *
-     * @param tenantId 参数值，用于执行当前操作。
-     * @param spaceId 参数值，用于执行当前操作。
-     * @param checksum 参数值，用于执行当前操作。
-     *
-     * @return 返回当前操作产生的结果。
+     * @param tenantId 当前操作涉及的租户标识。
+     * @param spaceId 用于定位space的标识。
+     * @param checksum 用于完成本次业务处理的 checksum 参数。
+     * @return 返回 知识 文档 相关操作生成的结果数据。
      */
     @Override
     public KnowledgeDocumentBO findBySpaceAndChecksum(
@@ -232,12 +223,11 @@ public class KnowledgeDocumentRepositoryImpl implements KnowledgeDocumentReposit
     }
 
     /**
-     * {@code findBySpace} 查询并返回当前操作所需的数据。
+     * 查询 知识 文档 相关业务数据，并返回处理结果。
      *
-     * @param tenantId 参数值，用于执行当前操作。
-     * @param spaceId 参数值，用于执行当前操作。
-     *
-     * @return 返回当前操作产生的结果。
+     * @param tenantId 当前操作涉及的租户标识。
+     * @param spaceId 用于定位space的标识。
+     * @return 返回符合条件的数据集合；没有匹配项时返回空集合。
      */
     @Override
     public List<KnowledgeDocumentBO> findBySpace(TenantId tenantId, Long spaceId) {
@@ -249,10 +239,10 @@ public class KnowledgeDocumentRepositoryImpl implements KnowledgeDocumentReposit
     }
 
     /**
-     * {@code assignDefaultSpace} 执行当前类型定义的业务操作。
+     * 更新或设置 知识 文档 相关业务操作，并维护必要的状态和协作关系。
      *
-     * @param tenantId 参数值，用于执行当前操作。
-     * @param spaceId 参数值，用于执行当前操作。
+     * @param tenantId 当前操作涉及的租户标识。
+     * @param spaceId 用于定位space的标识。
      */
     @Override
     public void assignDefaultSpace(TenantId tenantId, Long spaceId) {

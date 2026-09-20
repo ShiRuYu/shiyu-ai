@@ -8,7 +8,7 @@ import lombok.NoArgsConstructor;
 import java.util.List;
 
 /**
- * ChatResponse 数据对象，承载模型领域相关业务数据。
+ * 封装 对话 操作向调用方返回的传输数据。
  */
 @Data
 @Builder
@@ -101,10 +101,7 @@ public class ChatResponse {
     private List<ToolCall> toolCalls;
 
     /**
-     * 表示模型生成的一次工具调用及其参数。
-     * @param id 标识，表示该记录组件承载的数据。
-     * @param name 名称，表示该记录组件承载的数据。
-     * @param arguments arguments 属性，表示该记录组件承载的数据。
+     * 封装 工具 Call 相关的不可变数据及其字段约束。
      */
     public record ToolCall(String id, String name, String arguments) {}
 }

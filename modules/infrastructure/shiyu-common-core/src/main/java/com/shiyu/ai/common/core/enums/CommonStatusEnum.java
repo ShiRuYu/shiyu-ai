@@ -3,7 +3,9 @@ package com.shiyu.ai.common.core.enums;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 
-/** 通用状态 */
+/**
+ * 定义 Common Status Enum 可用的枚举值及其业务语义。
+ */
 @Getter
 @AllArgsConstructor
 public enum CommonStatusEnum {

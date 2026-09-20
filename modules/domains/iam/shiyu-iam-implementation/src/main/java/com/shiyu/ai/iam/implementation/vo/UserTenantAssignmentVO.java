@@ -5,7 +5,9 @@ import lombok.Data;
 import java.io.Serial;
 import java.io.Serializable;
 
-/** 用户租户分配信息。 */
+/**
+ * 封装 用户 租户 Assignment 操作向调用方返回的传输数据。
+ */
 @Data
 public class UserTenantAssignmentVO implements Serializable {
 

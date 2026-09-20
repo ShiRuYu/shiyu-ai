@@ -26,6 +26,9 @@ import org.mockito.MockedStatic;
 
 import java.util.List;
 
+/**
+ * 验证 角色 Service 租户 Scope 相关功能、边界条件、异常路径和协作行为。
+ */
 @SuppressWarnings({"unchecked", "rawtypes"})
 class RoleServiceTenantScopeTest {
 

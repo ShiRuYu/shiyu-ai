@@ -13,7 +13,7 @@ import java.io.Serializable;
 import java.time.LocalDateTime;
 
 /**
- * {@code AiPlatformVO} 承载模型模块的领域状态或协作行为，负责维护本类型的职责边界。
+ * 封装 AI 平台 操作向调用方返回的传输数据。
  */
 @Data
 @AutoMappers({

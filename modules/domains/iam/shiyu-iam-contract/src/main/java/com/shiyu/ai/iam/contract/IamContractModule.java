@@ -1,6 +1,6 @@
 package com.shiyu.ai.iam.contract;
 
 /**
- * IamContractModule 模块接口，标识身份与访问模块的边界。
+ * 定义 Iam Contract Module 相关的协作契约和调用边界。
  */
 public interface IamContractModule {}

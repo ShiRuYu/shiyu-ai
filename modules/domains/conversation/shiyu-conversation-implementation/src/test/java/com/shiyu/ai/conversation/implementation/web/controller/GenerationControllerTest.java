@@ -24,6 +24,9 @@ import java.time.Instant;
 import java.util.List;
 import java.util.Optional;
 
+/**
+ * 验证 生成 Controller 相关功能、边界条件、异常路径和协作行为。
+ */
 class GenerationControllerTest {
     private final GenerationRepository generations = mock(GenerationRepository.class);
     private final GenerationAdmission admission = mock(GenerationAdmission.class);

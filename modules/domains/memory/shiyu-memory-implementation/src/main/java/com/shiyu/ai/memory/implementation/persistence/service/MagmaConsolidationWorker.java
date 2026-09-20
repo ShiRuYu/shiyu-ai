@@ -24,7 +24,7 @@ import java.util.UUID;
 import javax.sql.DataSource;
 
 /**
- * 异步执行记忆巩固任务并更新长期记忆索引。
+ * 负责 Magma Consolidation 相关数据的存储或后台处理。
  */
 @Component
 public class MagmaConsolidationWorker {
@@ -42,9 +42,9 @@ public class MagmaConsolidationWorker {
     private final JdbcDialect dialect;
 
     /**
-     * {@code MagmaConsolidationWorker} 创建并初始化当前类型实例。
+     * 执行 Magma Consolidation 相关业务操作，并维护必要的状态和协作关系。
      *
-     * @param dataSource 参数值，用于执行当前操作。
+     * @param dataSource 用于完成本次业务处理的 dataSource 参数。
      */
     public MagmaConsolidationWorker(@Qualifier("agentDataSource") DataSource dataSource) {
         this.jdbc = new JdbcTemplate(dataSource);

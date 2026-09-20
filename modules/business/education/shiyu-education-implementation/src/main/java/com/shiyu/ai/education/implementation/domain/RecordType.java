@@ -4,7 +4,7 @@ import lombok.AllArgsConstructor;
 import lombok.Getter;
 
 /**
- * {@code RecordType} 表示教育模块中的一组受控业务状态或分类。
+ * 定义 Record Type 可用的枚举值及其业务语义。
  */
 @Getter
 @AllArgsConstructor

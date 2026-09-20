@@ -14,16 +14,16 @@ import java.util.Optional;
 import java.util.concurrent.ConcurrentHashMap;
 
 /**
- * {@code InMemoryAiAppRepository} 定义智能体模块的持久化端口，隔离领域逻辑与具体存储实现。
+ * 负责 In 记忆 AI 应用 的持久化查询、保存和删除，并维护数据访问边界。
  */
 public class InMemoryAiAppRepository implements AiAppRepository {
     private final Map<String, AiApp> apps = new ConcurrentHashMap<>();
     private final Map<String, AiAppVersion> versions = new ConcurrentHashMap<>();
 
     /**
-     * {@code insert} 执行当前类型定义的业务操作。
+     * 创建或保存 In 记忆 AI 应用 相关业务操作，并维护必要的状态和协作关系。
      *
-     * @param app 参数值，用于执行当前操作。
+     * @param app 用于完成本次业务处理的 app 参数。
      */
     @Override
     public void insert(AiApp app) {
@@ -32,13 +32,12 @@ public class InMemoryAiAppRepository implements AiAppRepository {
     }
 
     /**
-     * {@code find} 查询并返回当前操作所需的数据。
+     * 查询 In 记忆 AI 应用 相关业务数据，并返回处理结果。
      *
-     * @param id 参数值，用于执行当前操作。
-     * @param tenantId 参数值，用于执行当前操作。
-     * @param ownerUserId 参数值，用于执行当前操作。
-     *
-     * @return 返回当前操作产生的结果。
+     * @param id 用于定位目标业务对象的标识。
+     * @param tenantId 当前操作涉及的租户标识。
+     * @param ownerUserId 当前操作涉及的用户标识。
+     * @return 返回可能存在的业务对象；不存在时返回空值容器。
      */
     @Override
     public Optional<AiApp> find(String id, TenantId tenantId, long ownerUserId) {
@@ -50,12 +49,11 @@ public class InMemoryAiAppRepository implements AiAppRepository {
     }
 
     /**
-     * {@code findByTenant} 查询并返回当前操作所需的数据。
+     * 查询 In 记忆 AI 应用 相关业务数据，并返回处理结果。
      *
-     * @param id 参数值，用于执行当前操作。
-     * @param tenantId 参数值，用于执行当前操作。
-     *
-     * @return 返回当前操作产生的结果。
+     * @param id 用于定位目标业务对象的标识。
+     * @param tenantId 当前操作涉及的租户标识。
+     * @return 返回可能存在的业务对象；不存在时返回空值容器。
      */
     @Override
     public Optional<AiApp> findByTenant(String id, TenantId tenantId) {
@@ -64,13 +62,12 @@ public class InMemoryAiAppRepository implements AiAppRepository {
     }
 
     /**
-     * {@code list} 查询并返回当前操作所需的数据。
+     * 查询 In 记忆 AI 应用 相关业务数据，并返回处理结果。
      *
-     * @param tenantId 参数值，用于执行当前操作。
-     * @param ownerUserId 参数值，用于执行当前操作。
-     * @param limit 参数值，用于执行当前操作。
-     *
-     * @return 返回当前操作产生的结果。
+     * @param tenantId 当前操作涉及的租户标识。
+     * @param ownerUserId 当前操作涉及的用户标识。
+     * @param limit 每页返回的数据数量。
+     * @return 返回符合条件的数据集合；没有匹配项时返回空集合。
      */
     @Override
     public List<AiApp> list(TenantId tenantId, long ownerUserId, int limit) {
@@ -85,9 +82,9 @@ public class InMemoryAiAppRepository implements AiAppRepository {
     }
 
     /**
-     * {@code insertVersion} 执行当前类型定义的业务操作。
+     * 创建或保存 In 记忆 AI 应用 相关业务操作，并维护必要的状态和协作关系。
      *
-     * @param version 参数值，用于执行当前操作。
+     * @param version 用于完成本次业务处理的 version 参数。
      */
     @Override
     public void insertVersion(AiAppVersion version) {
@@ -96,13 +93,12 @@ public class InMemoryAiAppRepository implements AiAppRepository {
     }
 
     /**
-     * {@code findVersion} 查询并返回当前操作所需的数据。
+     * 查询 In 记忆 AI 应用 相关业务数据，并返回处理结果。
      *
-     * @param appId 参数值，用于执行当前操作。
-     * @param versionId 参数值，用于执行当前操作。
-     * @param tenantId 参数值，用于执行当前操作。
-     *
-     * @return 返回当前操作产生的结果。
+     * @param appId 用于定位app的标识。
+     * @param versionId 用于定位version的标识。
+     * @param tenantId 当前操作涉及的租户标识。
+     * @return 返回可能存在的业务对象；不存在时返回空值容器。
      */
     @Override
     public Optional<AiAppVersion> findVersion(String appId, String versionId, TenantId tenantId) {
@@ -114,12 +110,11 @@ public class InMemoryAiAppRepository implements AiAppRepository {
     }
 
     /**
-     * {@code versions} 执行当前类型定义的业务操作。
+     * 执行 In 记忆 AI 应用 相关业务数据，并返回处理结果。
      *
-     * @param appId 参数值，用于执行当前操作。
-     * @param tenantId 参数值，用于执行当前操作。
-     *
-     * @return 返回当前操作产生的结果。
+     * @param appId 用于定位app的标识。
+     * @param tenantId 当前操作涉及的租户标识。
+     * @return 返回符合条件的数据集合；没有匹配项时返回空集合。
      */
     @Override
     public List<AiAppVersion> versions(String appId, TenantId tenantId) {
@@ -136,13 +131,12 @@ public class InMemoryAiAppRepository implements AiAppRepository {
     }
 
     /**
-     * {@code publishVersion} 执行当前模块定义的业务流程。
+     * 发布或发送 In 记忆 AI 应用 相关业务数据，并返回处理结果。
      *
-     * @param appId 参数值，用于执行当前操作。
-     * @param versionId 参数值，用于执行当前操作。
-     * @param tenantId 参数值，用于执行当前操作。
-     *
-     * @return 返回当前操作产生的结果。
+     * @param appId 用于定位app的标识。
+     * @param versionId 用于定位version的标识。
+     * @param tenantId 当前操作涉及的租户标识。
+     * @return 返回 In 记忆 AI 应用 相关操作生成的结果数据。
      */
     @Override
     public synchronized int publishVersion(String appId, String versionId, TenantId tenantId) {
@@ -196,13 +190,12 @@ public class InMemoryAiAppRepository implements AiAppRepository {
     }
 
     /**
-     * {@code archiveVersion} 执行当前类型定义的业务操作。
+     * 执行 In 记忆 AI 应用 相关业务数据，并返回处理结果。
      *
-     * @param appId 参数值，用于执行当前操作。
-     * @param versionId 参数值，用于执行当前操作。
-     * @param tenantId 参数值，用于执行当前操作。
-     *
-     * @return 返回当前操作产生的结果。
+     * @param appId 用于定位app的标识。
+     * @param versionId 用于定位version的标识。
+     * @param tenantId 当前操作涉及的租户标识。
+     * @return 返回 In 记忆 AI 应用 相关操作生成的结果数据。
      */
     @Override
     public synchronized int archiveVersion(String appId, String versionId, TenantId tenantId) {

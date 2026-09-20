@@ -8,7 +8,9 @@ import java.io.Serial;
 import java.io.Serializable;
 import java.util.List;
 
-/** 前端路由菜单视图对象 - 符合 API 文档规范 */
+/**
+ * 封装 Route Menu 操作向调用方返回的传输数据。
+ */
 @Data
 @JsonInclude(JsonInclude.Include.NON_NULL)
 @SuppressWarnings("serial")
@@ -52,7 +54,9 @@ public class RouteMenuVO implements Serializable {
     /** 子菜单列表 */
     private List<RouteMenuVO> children;
 
-    /** 元数据内部类 */
+    /**
+     * 封装 Meta 操作向调用方返回的传输数据。
+     */
     @Data
     @JsonInclude(JsonInclude.Include.NON_NULL)
     public static class MetaVO implements Serializable {

@@ -7,7 +7,9 @@ import lombok.Getter;
 
 import java.util.Arrays;
 
-/** 节点执行状态枚举（对应 DB node_execution.status） */
+/**
+ * 定义 Node Execution 可用的枚举值及其业务语义。
+ */
 @Getter
 @AllArgsConstructor
 public enum NodeExecutionStatus implements IntEnum {
@@ -26,11 +28,10 @@ public enum NodeExecutionStatus implements IntEnum {
     private final String desc;
 
     /**
-     * {@code fromCode} 执行当前类型定义的业务操作。
+     * 执行 Node Execution 相关业务数据，并返回处理结果。
      *
-     * @param code 参数值，用于执行当前操作。
-     *
-     * @return 返回当前操作产生的结果。
+     * @param code 用于定位或筛选目标业务对象的业务值。
+     * @return 返回 Node Execution 相关操作生成的结果数据。
      */
     public static NodeExecutionStatus fromCode(Integer code) {
         return Arrays.stream(values())

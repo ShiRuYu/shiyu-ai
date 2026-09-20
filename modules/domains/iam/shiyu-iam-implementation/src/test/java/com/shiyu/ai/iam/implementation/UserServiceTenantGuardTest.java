@@ -10,6 +10,9 @@ import com.shiyu.ai.kernel.context.UserId;
 
 import org.junit.jupiter.api.Test;
 
+/**
+ * 验证 用户 Service 租户 Guard 相关功能、边界条件、异常路径和协作行为。
+ */
 class UserServiceTenantGuardTest {
 
     private static final ActorContext ACTOR =

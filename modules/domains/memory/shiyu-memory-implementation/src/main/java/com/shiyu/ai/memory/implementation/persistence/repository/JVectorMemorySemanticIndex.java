@@ -14,7 +14,7 @@ import java.nio.charset.StandardCharsets;
 import java.util.*;
 
 /**
- * {@code JVectorMemorySemanticIndex} 承载平台模块的领域状态或协作行为，负责维护本类型的职责边界。
+ * 实现 J 向量 记忆 Semantic 索引 相关的业务处理、协作逻辑或基础设施能力。
  */
 @Component
 public class JVectorMemorySemanticIndex implements MemorySemanticIndex {
@@ -32,11 +32,11 @@ public class JVectorMemorySemanticIndex implements MemorySemanticIndex {
     private final JdbcMagmaMemoryRepository repository;
 
     /**
-     * {@code JVectorMemorySemanticIndex} 创建并初始化当前类型实例。
+     * 执行 J 向量 记忆 Semantic 索引 相关业务操作，并维护必要的状态和协作关系。
      *
-     * @param store 参数值，用于执行当前操作。
-     * @param properties 参数值，用于执行当前操作。
-     * @param repository 参数值，用于执行当前操作。
+     * @param store 用于完成本次业务处理的 store 参数。
+     * @param properties 用于完成本次业务处理的 properties 参数。
+     * @param repository 用于完成本次业务处理的 repository 参数。
      */
     public JVectorMemorySemanticIndex(
             VectorStore store,
@@ -48,9 +48,9 @@ public class JVectorMemorySemanticIndex implements MemorySemanticIndex {
     }
 
     /**
-     * {@code upsert} 执行当前类型定义的业务操作。
+     * 执行 J 向量 记忆 Semantic 索引 相关业务操作，并维护必要的状态和协作关系。
      *
-     * @param event 参数值，用于执行当前操作。
+     * @param event 本次流程携带的事件或业务数据。
      */
     public void upsert(MemoryEvent event) {
         Map<String, Object> metadata = new HashMap<>();
@@ -64,12 +64,11 @@ public class JVectorMemorySemanticIndex implements MemorySemanticIndex {
     }
 
     /**
-     * {@code search} 查询并返回当前操作所需的数据。
+     * 查询 J 向量 记忆 Semantic 索引 相关业务数据，并返回处理结果。
      *
-     * @param query 参数值，用于执行当前操作。
-     * @param limit 参数值，用于执行当前操作。
-     *
-     * @return 返回当前操作产生的结果。
+     * @param query 用于筛选目标数据的查询条件。
+     * @param limit 每页返回的数据数量。
+     * @return 返回符合条件的数据集合；没有匹配项时返回空集合。
      */
     public List<MemoryPath> search(MemoryQuery query, int limit) {
         Map<String, Object> filter = new HashMap<>();
@@ -107,9 +106,9 @@ public class JVectorMemorySemanticIndex implements MemorySemanticIndex {
     }
 
     /**
-     * {@code delete} 释放或移除当前操作涉及的资源。
+     * 删除或移除 J 向量 记忆 Semantic 索引 相关业务操作，并维护必要的状态和协作关系。
      *
-     * @param id 参数值，用于执行当前操作。
+     * @param id 用于定位目标业务对象的标识。
      */
     public void delete(String id) {
         store.delete(id);
@@ -117,10 +116,10 @@ public class JVectorMemorySemanticIndex implements MemorySemanticIndex {
     }
 
     /**
-     * {@code rebuild} 执行当前类型定义的业务操作。
+     * 执行 J 向量 记忆 Semantic 索引 相关业务操作，并维护必要的状态和协作关系。
      *
-     * @param tenantId 参数值，用于执行当前操作。
-     * @param namespace 参数值，用于执行当前操作。
+     * @param tenantId 当前操作涉及的租户标识。
+     * @param namespace 用于完成本次业务处理的 namespace 参数。
      */
     public void rebuild(TenantId tenantId, String namespace) {
         repository.findByNamespace(tenantId, namespace, 100000).forEach(this::upsert);

@@ -10,7 +10,9 @@ import java.io.Serial;
 import java.io.Serializable;
 import java.util.HashMap;
 
-/** 登录用户 */
+/**
+ * 实现 用户 相关的业务处理、协作逻辑或基础设施能力。
+ */
 @Data
 @NoArgsConstructor
 @SuppressWarnings("serial")
@@ -86,9 +88,9 @@ public class UserContext implements Serializable {
     private String currentRoleCode;
 
     /**
-     * {@code isSuperAdmin} 校验当前操作的输入或状态是否满足约束。
+     * 校验或判断 用户 相关业务数据，并返回处理结果。
      *
-     * @return 返回当前操作产生的结果。
+     * @return 返回本次条件判断是否成立。
      */
     public boolean isSuperAdmin() {
         return "tenant_super".equals(currentRoleCode) || "super".equals(currentRoleCode);
@@ -101,9 +103,9 @@ public class UserContext implements Serializable {
     private Long switchFromTenantId;
 
     /**
-     * {@code isParentSuperAdminSwitch} 校验当前操作的输入或状态是否满足约束。
+     * 校验或判断 用户 相关业务数据，并返回处理结果。
      *
-     * @return 返回当前操作产生的结果。
+     * @return 返回本次条件判断是否成立。
      */
     public boolean isParentSuperAdminSwitch() {
         return "PARENT_SUPER_ADMIN".equals(switchMode);

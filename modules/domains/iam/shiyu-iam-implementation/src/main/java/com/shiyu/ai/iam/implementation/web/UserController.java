@@ -21,7 +21,7 @@ import java.util.List;
 import java.util.Map;
 
 /**
- * {@code UserController} 是Web模块的 Web 接口适配器，负责接收请求并转换为应用服务调用。
+ * 处理 用户 相关的 Web 请求，并将请求转换为应用服务调用。
  */
 @RestController
 @RequestMapping("/api/iam/users")
@@ -37,9 +37,9 @@ public class UserController {
     private final AuthService authService;
 
     /**
-     * {@code getUserInfo} 查询并返回当前操作所需的数据。
+     * 查询 用户 相关业务操作，并维护必要的状态和协作关系。
      *
-     * @return 返回当前操作产生的结果。
+     * @param detail 用于完成本次业务处理的 detail 参数。
      */
     @GetMapping("/detail")
     public Result<UserVO> getUserInfo() {
@@ -57,11 +57,9 @@ public class UserController {
     }
 
     /**
-     * {@code getUserList} 查询并返回当前操作所需的数据。
+     * 执行 用户 相关业务操作，并维护必要的状态和协作关系。
      *
-     * @param r 参数值，用于执行当前操作。
-     *
-     * @return 返回当前操作产生的结果。
+     * @param list 用于完成本次业务处理的 list 参数。
      */
     @SaCheckPermission("system:user:list")
     @GetMapping("/list")
@@ -75,11 +73,9 @@ public class UserController {
     }
 
     /**
-     * {@code createUser} 写入或更新当前模块中的业务数据。
+     * 执行 用户 相关业务操作，并维护必要的状态和协作关系。
      *
-     * @param r 参数值，用于执行当前操作。
-     *
-     * @return 返回当前操作产生的结果。
+     * @param create 用于完成本次业务处理的 create 参数。
      */
     @SaCheckPermission("system:user:create")
     @PostMapping("/create")
@@ -93,12 +89,9 @@ public class UserController {
     }
 
     /**
-     * {@code updateUser} 写入或更新当前模块中的业务数据。
+     * 执行 用户 相关业务操作，并维护必要的状态和协作关系。
      *
-     * @param userId 参数值，用于执行当前操作。
-     * @param r 参数值，用于执行当前操作。
-     *
-     * @return 返回当前操作产生的结果。
+     * @param update 用于完成本次业务处理的 update 参数。
      */
     @SaCheckPermission("system:user:update")
     @PostMapping("/update")
@@ -114,11 +107,9 @@ public class UserController {
     }
 
     /**
-     * {@code getTenantAssignments} 查询并返回当前操作所需的数据。
+     * 执行 用户 相关业务操作，并维护必要的状态和协作关系。
      *
-     * @param userId 参数值，用于执行当前操作。
-     *
-     * @return 返回当前操作产生的结果。
+     * @param list 用于完成本次业务处理的 list 参数。
      */
     @SaCheckPermission("system:user:list")
     @GetMapping("/tenant-assignments")
@@ -128,12 +119,9 @@ public class UserController {
     }
 
     /**
-     * {@code replaceTenantAssignments} 执行当前类型定义的业务操作。
+     * 执行 用户 相关业务操作，并维护必要的状态和协作关系。
      *
-     * @param userId 参数值，用于执行当前操作。
-     * @param a 参数值，用于执行当前操作。
-     *
-     * @return 返回当前操作产生的结果。
+     * @param update 用于完成本次业务处理的 update 参数。
      */
     @SaCheckPermission("system:user:update")
     @PostMapping("/tenant-assignments/replace")
@@ -146,11 +134,9 @@ public class UserController {
     }
 
     /**
-     * {@code deleteUser} 释放或移除当前操作涉及的资源。
+     * 执行 用户 相关业务操作，并维护必要的状态和协作关系。
      *
-     * @param userId 参数值，用于执行当前操作。
-     *
-     * @return 返回当前操作产生的结果。
+     * @param delete 用于完成本次业务处理的 delete 参数。
      */
     @SaCheckPermission("system:user:delete")
     @PostMapping("/delete")
@@ -161,12 +147,9 @@ public class UserController {
     }
 
     /**
-     * {@code resetPassword} 执行当前类型定义的业务操作。
+     * 执行 用户 相关业务操作，并维护必要的状态和协作关系。
      *
-     * @param userId 参数值，用于执行当前操作。
-     * @param r 参数值，用于执行当前操作。
-     *
-     * @return 返回当前操作产生的结果。
+     * @param password 用于完成本次业务处理的 password 参数。
      */
     @SaCheckPermission("system:user:password")
     @PostMapping("/password/reset")
@@ -180,12 +163,9 @@ public class UserController {
     }
 
     /**
-     * {@code changePassword} 执行当前类型定义的业务操作。
+     * 执行 用户 相关业务操作，并维护必要的状态和协作关系。
      *
-     * @param userId 参数值，用于执行当前操作。
-     * @param r 参数值，用于执行当前操作。
-     *
-     * @return 返回当前操作产生的结果。
+     * @param change 用于完成本次业务处理的 change 参数。
      */
     @PostMapping("/password/change")
     public Result<Void> changePassword(

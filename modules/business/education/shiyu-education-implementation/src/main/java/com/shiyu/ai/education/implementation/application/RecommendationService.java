@@ -6,17 +6,7 @@ import com.shiyu.ai.kernel.context.ActorContext;
 import java.util.List;
 
 /**
- * 智能推荐服务接口
- *
- * <p>提供四类推荐 + 混合推荐聚合：
- *
- * <ul>
- *   <li>知识点推荐 — 基于能力差距 + 图谱依赖
- *   <li>题目推荐 — 基于薄弱点 + 难度 + 能力维度
- *   <li>资源推荐 — 基于学习进度 + 知识点关联
- *   <li>复习推荐 — 基于遗忘曲线的到期/即将到期复习任务
- *   <li>混合推荐 — 上述四类聚合 + 综合建议
- * </ul>
+ * 提供 推荐 的查询、创建、更新及调用服务，协调业务变更和领域协作。
  */
 public interface RecommendationService {
 

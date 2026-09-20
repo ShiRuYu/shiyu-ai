@@ -6,7 +6,7 @@ import com.shiyu.ai.education.implementation.web.request.StudentRequest;
 import com.shiyu.ai.kernel.context.ActorContext;
 
 /**
- * StudentService 服务接口，负责执行教育领域相关业务操作。
+ * 提供 学生 的查询、创建、更新及调用服务，协调业务变更和领域协作。
  */
 public interface StudentService {
 

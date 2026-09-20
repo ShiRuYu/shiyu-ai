@@ -15,6 +15,9 @@ import java.util.Map;
 
 import javax.sql.DataSource;
 
+/**
+ * 验证 Jdbc Evaluation Repository Coverage 相关功能、边界条件、异常路径和协作行为。
+ */
 class JdbcEvaluationRepositoryCoverageTest {
     @Test
     void mapsRunsWithResultsAndNullableCompletionTimes() throws Exception {

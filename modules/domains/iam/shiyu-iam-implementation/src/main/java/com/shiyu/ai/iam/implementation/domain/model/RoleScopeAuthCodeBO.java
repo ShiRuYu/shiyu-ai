@@ -7,7 +7,9 @@ import lombok.EqualsAndHashCode;
 
 import java.io.Serial;
 
-/** 角色作用域权限授权数据对象。 */
+/**
+ * 表示 角色 Scope 认证 Code 领域对象的业务状态和属性。
+ */
 @Data
 @EqualsAndHashCode(callSuper = true)
 public class RoleScopeAuthCodeBO extends TenantModel {

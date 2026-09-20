@@ -5,7 +5,7 @@ import jakarta.servlet.http.HttpServletRequest;
 import org.springframework.stereotype.Component;
 
 /**
- * 从 HTTP 请求头和连接信息解析客户端 IP。
+ * 根据请求上下文解析或路由 Http Client Ip 相关的处理能力。
  */
 @Component
 public class HttpClientIpResolver implements ClientIpResolver {
@@ -16,18 +16,18 @@ public class HttpClientIpResolver implements ClientIpResolver {
     private final HttpServletRequest request;
 
     /**
-     * {@code HttpClientIpResolver} 创建并初始化当前类型实例。
+     * 执行 Http Client Ip 相关业务操作，并维护必要的状态和协作关系。
      *
-     * @param request 参数值，用于执行当前操作。
+     * @param request 封装本次操作所需业务字段的请求对象。
      */
     public HttpClientIpResolver(HttpServletRequest request) {
         this.request = request;
     }
 
     /**
-     * {@code currentClientIp} 执行当前类型定义的业务操作。
+     * 执行 Http Client Ip 相关业务数据，并返回处理结果。
      *
-     * @return 返回当前操作产生的结果。
+     * @return 返回 Http Client Ip 相关操作生成的结果数据。
      */
     @Override
     public String currentClientIp() {

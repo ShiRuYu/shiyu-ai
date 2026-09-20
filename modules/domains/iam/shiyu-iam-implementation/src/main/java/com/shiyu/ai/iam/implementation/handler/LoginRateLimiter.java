@@ -18,7 +18,9 @@ import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
 
-/** 登录速率限制器 滑动窗口算法 + 随机抖动封禁时间 + 定期清理过期条目 */
+/**
+ * 实现 Login Rate Limiter 相关的业务处理、协作逻辑或基础设施能力。
+ */
 @Slf4j
 @Component
 public class LoginRateLimiter {
@@ -71,7 +73,7 @@ public class LoginRateLimiter {
     }
 
     /**
-     * {@code init} 执行当前类型定义的业务操作。
+     * 执行 Login Rate Limiter 相关业务操作，并维护必要的状态和协作关系。
      */
     @PostConstruct
     public void init() {
@@ -85,7 +87,7 @@ public class LoginRateLimiter {
     }
 
     /**
-     * {@code destroy} 执行当前类型定义的业务操作。
+     * 执行 Login Rate Limiter 相关业务操作，并维护必要的状态和协作关系。
      */
     @PreDestroy
     public void destroy() {
@@ -102,11 +104,10 @@ public class LoginRateLimiter {
     }
 
     /**
-     * {@code isAllowed} 校验当前操作的输入或状态是否满足约束。
+     * 校验或判断 Login Rate Limiter 相关业务数据，并返回处理结果。
      *
-     * @param ip 参数值，用于执行当前操作。
-     *
-     * @return 返回当前操作产生的结果。
+     * @param ip 用于完成本次业务处理的 ip 参数。
+     * @return 返回本次条件判断是否成立。
      */
     public boolean isAllowed(String ip) {
         long now = System.currentTimeMillis();
@@ -145,9 +146,9 @@ public class LoginRateLimiter {
     }
 
     /**
-     * {@code reset} 执行当前类型定义的业务操作。
+     * 执行 Login Rate Limiter 相关业务操作，并维护必要的状态和协作关系。
      *
-     * @param ip 参数值，用于执行当前操作。
+     * @param ip 用于完成本次业务处理的 ip 参数。
      */
     public void reset(String ip) {
         attempts.remove(ip);
@@ -177,15 +178,17 @@ public class LoginRateLimiter {
     }
 
     /**
-     * {@code getClientIp} 查询并返回当前操作所需的数据。
+     * 查询 Login Rate Limiter 相关业务数据，并返回处理结果。
      *
-     * @return 返回当前操作产生的结果。
+     * @return 返回 Login Rate Limiter 相关操作生成的结果数据。
      */
     public String getClientIp() {
         return clientIpResolver.currentClientIp();
     }
 
-    /** 限流条目：使用 EvictingQueue 记录每次尝试时间实现真正的滑动窗口 自动淘汰最旧记录，无需手动 removeIf */
+    /**
+     * 表示 Rate Limit 相关流程中的状态、关系或执行数据。
+     */
     private static class RateLimitEntry {
         /** 尝试时间戳 EvictingQueue（自动淘汰最旧记录，容量=maxAttempts+1） */
         final java.util.Queue<Long> attempts = new java.util.concurrent.ConcurrentLinkedDeque<>();

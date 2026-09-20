@@ -1,9 +1,7 @@
 package com.shiyu.ai.kernel.page;
 
 /**
- * 分页查询page请求。
- * @param pageNumber 页码，表示该记录组件承载的数据。
- * @param pageSize 页大小，表示该记录组件承载的数据。
+ * 封装 Page 相关的不可变数据及其字段约束。
  */
 public record PageRequest(int pageNumber, int pageSize) {
 
@@ -22,9 +20,9 @@ public record PageRequest(int pageNumber, int pageSize) {
     }
 
     /**
-     * {@code offset} 执行当前类型定义的业务操作。
+     * 执行 Page 相关业务数据，并返回处理结果。
      *
-     * @return 返回当前操作产生的结果。
+     * @return 返回 Page 相关操作生成的结果数据。
      */
     public long offset() {
         return Math.multiplyExact((long) pageNumber - 1, pageSize);

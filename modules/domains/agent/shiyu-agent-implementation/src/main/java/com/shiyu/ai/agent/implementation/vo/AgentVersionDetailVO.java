@@ -9,7 +9,7 @@ import java.time.LocalDateTime;
 import java.util.Map;
 
 /**
- * {@code AgentVersionDetailVO} 承载智能体模块的领域状态或协作行为，负责维护本类型的职责边界。
+ * 封装 智能体 Version Detail 操作向调用方返回的传输数据。
  */
 @Data
 @Builder
@@ -68,7 +68,7 @@ public class AgentVersionDetailVO {
     private LocalDateTime updateTime;
 
     /**
-     * {@code GraphConfigVO} 承载智能体模块的领域状态或协作行为，负责维护本类型的职责边界。
+     * 封装 Graph Config 操作向调用方返回的传输数据。
      */
     @Data
     @Builder

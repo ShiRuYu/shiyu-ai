@@ -7,7 +7,7 @@ import java.util.List;
 import java.util.Optional;
 
 /**
- * AiRunRepository 仓储接口，负责访问和持久化智能体领域聚合数据。
+ * 负责 AI 运行 的持久化查询、保存和删除，并维护数据访问边界。
  */
 public interface AiRunRepository {
     /**
@@ -29,13 +29,12 @@ public interface AiRunRepository {
     Optional<AiRun> find(String id, TenantId tenantId, long ownerUserId);
 
     /**
-     * 查询指定租户和所有者的 AI 运行记录列表。
+     * 查询 AI 运行 相关业务数据，并返回处理结果。
      *
-     * @param tenantId 租户标识。
-     * @param ownerUserId 所有者用户标识。
-     * @param limit 最大返回条数。
-     *
-     * @return 结果列表。
+     * @param tenantId 当前操作涉及的租户标识。
+     * @param ownerUserId 当前操作涉及的用户标识。
+     * @param limit 每页返回的数据数量。
+     * @return 返回符合条件的数据集合；没有匹配项时返回空集合。
      */
     List<AiRun> list(TenantId tenantId, long ownerUserId, int limit);
 
@@ -139,20 +138,19 @@ public interface AiRunRepository {
     }
 
     /**
-     * 执行 {@code appendNextEvent} 定义的接口操作。
+     * 执行 AI 运行 相关业务数据，并返回处理结果。
      *
-     * @param runId 方法参数。
-     * @param tenantId 租户标识。
-     * @param ownerUserId 方法参数。
-     * @param type 对象类型。
-     * @param payload 方法参数。
-     * @param redacted 方法参数。
-     * @param createdAt 方法参数。
-     * @param turnId 方法参数。
-     * @param stepId 方法参数。
-     * @param providerRequestId 方法参数。
-     *
-     * @return 操作影响的记录数或状态码。
+     * @param runId 用于定位run的标识。
+     * @param tenantId 当前操作涉及的租户标识。
+     * @param ownerUserId 当前操作涉及的用户标识。
+     * @param type 用于完成本次业务处理的 type 参数。
+     * @param payload 本次流程携带的事件或业务数据。
+     * @param redacted 用于完成本次业务处理的 redacted 参数。
+     * @param createdAt 用于完成本次业务处理的 createdAt 参数。
+     * @param turnId 用于定位turn的标识。
+     * @param stepId 用于定位step的标识。
+     * @param providerRequestId 用于定位provider的标识。
+     * @return 返回 AI 运行 相关操作生成的结果数据。
      */
     default long appendNextEvent(
             String runId,
@@ -178,15 +176,14 @@ public interface AiRunRepository {
     long appendEvent(AiRunEvent event);
 
     /**
-     * 查询运行记录在指定序号之后的事件。
+     * 执行 AI 运行 相关业务数据，并返回处理结果。
      *
-     * @param runId 运行记录标识。
-     * @param tenantId 租户标识。
-     * @param ownerUserId 所有者用户标识。
-     * @param afterSeq afterSeq 参数。
-     * @param limit 最大返回条数。
-     *
-     * @return 结果列表。
+     * @param runId 用于定位run的标识。
+     * @param tenantId 当前操作涉及的租户标识。
+     * @param ownerUserId 当前操作涉及的用户标识。
+     * @param afterSeq 用于完成本次业务处理的 afterSeq 参数。
+     * @param limit 每页返回的数据数量。
+     * @return 返回符合条件的数据集合；没有匹配项时返回空集合。
      */
     List<AiRunEvent> events(
             String runId, TenantId tenantId, long ownerUserId, long afterSeq, int limit);

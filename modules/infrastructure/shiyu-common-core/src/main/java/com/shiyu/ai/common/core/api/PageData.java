@@ -8,7 +8,9 @@ import java.io.Serial;
 import java.io.Serializable;
 import java.util.List;
 
-/** 分页数据对象 */
+/**
+ * 实现 Page Data 相关的业务处理、协作逻辑或基础设施能力。
+ */
 @Data
 @NoArgsConstructor
 @AllArgsConstructor

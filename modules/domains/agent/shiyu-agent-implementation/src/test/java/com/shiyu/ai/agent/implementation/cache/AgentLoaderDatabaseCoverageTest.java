@@ -29,6 +29,9 @@ import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Map;
 
+/**
+ * 验证 智能体 Loader 数据库 Coverage 相关功能、边界条件、异常路径和协作行为。
+ */
 class AgentLoaderDatabaseCoverageTest {
     private static final ActorContext ACTOR =
             new ActorContext(new TenantId(7L), new UserId(9L), false);
@@ -107,6 +110,9 @@ class AgentLoaderDatabaseCoverageTest {
         verify(repository, times(1)).update(ACTOR.tenantId(), definition);
     }
 
+    /**
+     * 验证 Required 相关功能、边界条件、异常路径和协作行为。
+     */
     private static final class RequiredNode extends BaseNode {
         private RequiredNode() {
             super(NodeConfig.builder().nodeId("n").nodeName("n").build());

@@ -13,28 +13,27 @@ import java.util.List;
 import java.util.Optional;
 
 /**
- * StorageMetadataStore 接口，定义基础设施模块的能力边界。
+ * 管理 Storage Metadata 相关的运行时状态、注册信息或临时数据。
  */
 public interface StorageMetadataStore {
 
     /**
-     * 创建并保存业务对象。
+     * 创建或保存 Storage Metadata 相关业务数据，并返回处理结果。
      *
-     * @param command 方法参数。
-     *
-     * @return 操作影响的记录数或状态码。
+     * @param command 本次流程携带的事件或业务数据。
+     * @return 返回 Storage Metadata 相关操作生成的结果数据。
      */
     long createObject(CreateObject command);
 
     /**
-     * 执行 {@code markObjectAvailable} 定义的接口操作。
+     * 执行 Storage Metadata 相关业务操作，并维护必要的状态和协作关系。
      *
-     * @param objectId 方法参数。
-     * @param objectKey 方法参数。
-     * @param provider 方法参数。
-     * @param size 方法参数。
-     * @param contentType 方法参数。
-     * @param checksum 方法参数。
+     * @param objectId 用于定位object的标识。
+     * @param objectKey 用于完成本次业务处理的 objectKey 参数。
+     * @param provider 用于完成本次业务处理的 provider 参数。
+     * @param size 每页返回的数据数量。
+     * @param contentType 用于完成本次业务处理的 contentType 参数。
+     * @param checksum 用于完成本次业务处理的 checksum 参数。
      */
     void markObjectAvailable(
             long objectId,
@@ -45,18 +44,18 @@ public interface StorageMetadataStore {
             String checksum);
 
     /**
-     * 执行 {@code markObjectFailed} 定义的接口操作。
+     * 执行 Storage Metadata 相关业务操作，并维护必要的状态和协作关系。
      *
-     * @param objectId 方法参数。
-     * @param message 方法参数。
+     * @param objectId 用于定位object的标识。
+     * @param message 本次流程携带的事件或业务数据。
      */
     void markObjectFailed(long objectId, String message);
 
     /**
-     * 执行 {@code markObjectDeleted} 定义的接口操作。
+     * 执行 Storage Metadata 相关业务操作，并维护必要的状态和协作关系。
      *
-     * @param tenantId 租户标识。
-     * @param objectKey 方法参数。
+     * @param tenantId 当前操作涉及的租户标识。
+     * @param objectKey 用于完成本次业务处理的 objectKey 参数。
      */
     void markObjectDeleted(long tenantId, String objectKey);
 
@@ -70,113 +69,97 @@ public interface StorageMetadataStore {
     default void updateObjectProvider(long tenantId, String objectKey, String provider) {}
 
     /**
-     * 根据条件查询并返回所需数据。
+     * 查询 Storage Metadata 相关业务数据，并返回处理结果。
      *
-     * @param tenantId 租户标识。
-     * @param objectKey 方法参数。
-     *
-     * @return 查询到的结果；未找到时为空。
+     * @param tenantId 当前操作涉及的租户标识。
+     * @param objectKey 用于完成本次业务处理的 objectKey 参数。
+     * @return 返回可能存在的业务对象；不存在时返回空值容器。
      */
     Optional<StorageObjectRecord> findObjectByKey(long tenantId, String objectKey);
 
     /**
-     * 根据条件查询并返回所需数据。
+     * 查询 Storage Metadata 相关业务数据，并返回处理结果。
      *
-     * @param tenantId 租户标识。
-     * @param namespace 方法参数。
-     * @param offset 方法参数。
-     * @param limit 方法参数。
-     *
-     * @return 符合条件的结果集合。
+     * @param tenantId 当前操作涉及的租户标识。
+     * @param namespace 用于完成本次业务处理的 namespace 参数。
+     * @param offset 用于完成本次业务处理的 offset 参数。
+     * @param limit 每页返回的数据数量。
+     * @return 返回符合条件的数据集合；没有匹配项时返回空集合。
      */
     List<StorageObjectRecord> listObjects(long tenantId, String namespace, int offset, int limit);
 
     /**
-     * 创建并保存业务对象。
+     * 创建或保存 Storage Metadata 相关业务数据，并返回处理结果。
      *
-     * @param command 方法参数。
-     *
-     * @return 操作影响的记录数或状态码。
+     * @param command 本次流程携带的事件或业务数据。
+     * @return 返回 Storage Metadata 相关操作生成的结果数据。
      */
     long createUploadSession(CreateUploadSession command);
 
     /**
-     * 根据条件查询并返回所需数据。
+     * 查询 Storage Metadata 相关业务数据，并返回处理结果。
      *
-     * @param tenantId 租户标识。
-     * @param sessionId 方法参数。
-     *
-     * @return 查询到的结果；未找到时为空。
+     * @param tenantId 当前操作涉及的租户标识。
+     * @param sessionId 用于定位session的标识。
+     * @return 返回可能存在的业务对象；不存在时返回空值容器。
      */
     Optional<UploadSessionRecord> findUploadSession(long tenantId, String sessionId);
 
     /**
-     * 查询expireduploadsessions。
+     * 查询 Storage Metadata 相关业务数据，并返回处理结果。
      *
-     * @param now now 参数。
-     *
-     * @return 结果列表。
+     * @param now 用于完成本次业务处理的 now 参数。
+     * @return 返回符合条件的数据集合；没有匹配项时返回空集合。
      */
     default List<UploadSessionRecord> findExpiredUploadSessions(Instant now) {
         return List.of();
     }
 
     /**
-     * 执行 {@code markChunkUploaded} 定义的接口操作。
+     * 执行 Storage Metadata 相关业务操作，并维护必要的状态和协作关系。
      *
-     * @param sessionId 方法参数。
-     * @param chunkIndex 方法参数。
-     * @param size 方法参数。
-     * @param checksum 方法参数。
+     * @param sessionId 用于定位session的标识。
+     * @param chunkIndex 用于完成本次业务处理的 chunkIndex 参数。
+     * @param size 每页返回的数据数量。
+     * @param checksum 用于完成本次业务处理的 checksum 参数。
      */
     void markChunkUploaded(String sessionId, int chunkIndex, long size, String checksum);
 
     /**
-     * 执行 {@code uploadedChunks} 定义的接口操作。
+     * 执行 Storage Metadata 相关业务数据，并返回处理结果。
      *
-     * @param sessionId 方法参数。
-     *
-     * @return 符合条件的结果集合。
+     * @param sessionId 用于定位session的标识。
+     * @return 返回符合条件的数据集合；没有匹配项时返回空集合。
      */
     List<Integer> uploadedChunks(String sessionId);
 
     /**
-     * 更新业务对象及其关联数据。
+     * 更新或设置 Storage Metadata 相关业务操作，并维护必要的状态和协作关系。
      *
-     * @param sessionId 方法参数。
-     * @param status 对象状态。
-     * @param errorMessage 方法参数。
+     * @param sessionId 用于定位session的标识。
+     * @param status 用于完成本次业务处理的 status 参数。
+     * @param errorMessage 用于完成本次业务处理的 errorMessage 参数。
      */
     void updateUploadSessionStatus(String sessionId, String status, String errorMessage);
 
     /**
-     * 删除指定业务对象或关联数据。
+     * 删除或移除 Storage Metadata 相关业务操作，并维护必要的状态和协作关系。
      *
-     * @param sessionId 方法参数。
+     * @param sessionId 用于定位session的标识。
      */
     void deleteUploadSession(String sessionId);
 
     /**
-     * 执行 {@code persistent} 定义的接口操作。
+     * 执行 Storage Metadata 相关业务数据，并返回处理结果。
      *
-     * @return 条件是否满足。
+     * @return 返回本次条件判断是否成立。
      */
     default boolean persistent() {
         return true;
     }
 
     /**
-     * {@code CreateObject} 封装平台基础设施模块中不可变的结构化数据，并作为相关操作之间的值对象。
-     * @param tenantId 租户标识，表示该记录组件承载的数据。
-     * @param spaceId spaceId 属性，表示该记录组件承载的数据。
-     * @param namespace 命名空间，表示该记录组件承载的数据。
-     * @param originalName originalName 属性，表示该记录组件承载的数据。
-     * @param objectKey objectKey 属性，表示该记录组件承载的数据。
-     * @param provider 提供方，表示该记录组件承载的数据。
-     * @param contentType 内容类型，表示该记录组件承载的数据。
-     * @param size 大小，表示该记录组件承载的数据。
-     * @param checksum checksum 属性，表示该记录组件承载的数据。
-     * @param status 状态，表示该记录组件承载的数据。
+     * 封装 Create Object 相关的不可变数据及其字段约束。
      */
     record CreateObject(
             long tenantId,
@@ -191,18 +174,7 @@ public interface StorageMetadataStore {
             String status) {}
 
     /**
-     * {@code CreateUploadSession} 封装平台基础设施模块中不可变的结构化数据，并作为相关操作之间的值对象。
-     * @param sessionId sessionId 属性，表示该记录组件承载的数据。
-     * @param tenantId 租户标识，表示该记录组件承载的数据。
-     * @param spaceId spaceId 属性，表示该记录组件承载的数据。
-     * @param namespace 命名空间，表示该记录组件承载的数据。
-     * @param fileName 文件名，表示该记录组件承载的数据。
-     * @param contentType 内容类型，表示该记录组件承载的数据。
-     * @param expectedSize expectedSize 属性，表示该记录组件承载的数据。
-     * @param expectedChecksum expectedChecksum 属性，表示该记录组件承载的数据。
-     * @param totalChunks totalChunks 属性，表示该记录组件承载的数据。
-     * @param tempPath tempPath 属性，表示该记录组件承载的数据。
-     * @param expiresAt 过期时间，表示该记录组件承载的数据。
+     * 封装 Create Upload Session 相关的不可变数据及其字段约束。
      */
     record CreateUploadSession(
             String sessionId,
@@ -218,20 +190,7 @@ public interface StorageMetadataStore {
             Instant expiresAt) {}
 
     /**
-     * {@code StorageObjectRecord} 封装平台基础设施模块中不可变的结构化数据，并作为相关操作之间的值对象。
-     * @param id 标识，表示该记录组件承载的数据。
-     * @param tenantId 租户标识，表示该记录组件承载的数据。
-     * @param spaceId spaceId 属性，表示该记录组件承载的数据。
-     * @param namespace 命名空间，表示该记录组件承载的数据。
-     * @param objectKey objectKey 属性，表示该记录组件承载的数据。
-     * @param provider 提供方，表示该记录组件承载的数据。
-     * @param originalName originalName 属性，表示该记录组件承载的数据。
-     * @param contentType 内容类型，表示该记录组件承载的数据。
-     * @param size 大小，表示该记录组件承载的数据。
-     * @param checksum checksum 属性，表示该记录组件承载的数据。
-     * @param status 状态，表示该记录组件承载的数据。
-     * @param createTime createTime 属性，表示该记录组件承载的数据。
-     * @param updateTime updateTime 属性，表示该记录组件承载的数据。
+     * 封装 Storage Object 相关的不可变数据及其字段约束。
      */
     record StorageObjectRecord(
             long id,
@@ -249,19 +208,7 @@ public interface StorageMetadataStore {
             Instant updateTime) {}
 
     /**
-     * {@code UploadSessionRecord} 封装平台基础设施模块中不可变的结构化数据，并作为相关操作之间的值对象。
-     * @param sessionId sessionId 属性，表示该记录组件承载的数据。
-     * @param tenantId 租户标识，表示该记录组件承载的数据。
-     * @param spaceId spaceId 属性，表示该记录组件承载的数据。
-     * @param namespace 命名空间，表示该记录组件承载的数据。
-     * @param fileName 文件名，表示该记录组件承载的数据。
-     * @param contentType 内容类型，表示该记录组件承载的数据。
-     * @param expectedSize expectedSize 属性，表示该记录组件承载的数据。
-     * @param expectedChecksum expectedChecksum 属性，表示该记录组件承载的数据。
-     * @param totalChunks totalChunks 属性，表示该记录组件承载的数据。
-     * @param status 状态，表示该记录组件承载的数据。
-     * @param tempPath tempPath 属性，表示该记录组件承载的数据。
-     * @param expiresAt 过期时间，表示该记录组件承载的数据。
+     * 封装 Upload Session 相关的不可变数据及其字段约束。
      */
     record UploadSessionRecord(
             String sessionId,

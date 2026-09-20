@@ -4,14 +4,7 @@ import java.time.Instant;
 import java.util.Map;
 
 /**
- * {@code EvalCase} 封装智能体模块中不可变的结构化数据，并作为相关操作之间的值对象。
- * @param id 标识，表示该记录组件承载的数据。
- * @param datasetId datasetId 属性，表示该记录组件承载的数据。
- * @param tenantId 租户标识，表示该记录组件承载的数据。
- * @param input 输入，表示该记录组件承载的数据。
- * @param expected expected 属性，表示该记录组件承载的数据。
- * @param metadata 元数据，表示该记录组件承载的数据。
- * @param createdAt 创建时间，表示该记录组件承载的数据。
+ * 封装 Eval Case 相关的不可变数据及其字段约束。
  */
 public record EvalCase(
         String id,

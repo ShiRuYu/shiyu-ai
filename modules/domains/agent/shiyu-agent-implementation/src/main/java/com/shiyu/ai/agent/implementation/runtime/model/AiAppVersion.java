@@ -7,15 +7,7 @@ import java.time.Instant;
 import java.util.Objects;
 
 /**
- * {@code AiAppVersion} 封装智能体模块中不可变的结构化数据，并作为相关操作之间的值对象。
- * @param id 标识，表示该记录组件承载的数据。
- * @param appId appId 属性，表示该记录组件承载的数据。
- * @param tenantId 租户标识，表示该记录组件承载的数据。
- * @param version version 属性，表示该记录组件承载的数据。
- * @param configJson configJson 属性，表示该记录组件承载的数据。
- * @param status 状态，表示该记录组件承载的数据。
- * @param createdAt 创建时间，表示该记录组件承载的数据。
- * @param publishedAt publishedAt 属性，表示该记录组件承载的数据。
+ * 封装 AI 应用 Version 相关的不可变数据及其字段约束。
  */
 public record AiAppVersion(
         String id,

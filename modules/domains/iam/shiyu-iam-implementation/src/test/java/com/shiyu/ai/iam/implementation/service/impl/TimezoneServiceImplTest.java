@@ -13,6 +13,9 @@ import com.shiyu.ai.kernel.context.UserId;
 
 import org.junit.jupiter.api.Test;
 
+/**
+ * 验证 Timezone Service Impl 相关功能、边界条件、异常路径和协作行为。
+ */
 class TimezoneServiceImplTest {
     private static final ActorContext ACTOR =
             new ActorContext(new TenantId(2), new UserId(7), false);

@@ -8,6 +8,9 @@ import com.shiyu.ai.tooling.implementation.tool.mcp.McpToolRegistry;
 
 import org.junit.jupiter.api.Test;
 
+/**
+ * 验证 Mcp 工具 Auto Configuration 相关功能、边界条件、异常路径和协作行为。
+ */
 class McpToolAutoConfigurationTest {
     @Test
     void createsRegistryAndSynchronizesBuiltinToolsOnlyForImplementation() {

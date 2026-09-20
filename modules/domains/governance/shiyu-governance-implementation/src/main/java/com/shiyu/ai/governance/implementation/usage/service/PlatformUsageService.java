@@ -8,7 +8,7 @@ import java.util.List;
 import java.util.Map;
 
 /**
- * 提供受平台授权保护的全租户用量统计。
+ * 提供 平台 用量 的查询、创建、更新及调用服务，协调业务变更和领域协作。
  */
 @Service
 public final class PlatformUsageService {

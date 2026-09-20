@@ -26,6 +26,9 @@ import java.util.Map;
 
 import javax.sql.DataSource;
 
+/**
+ * 验证 Jdbc Magma 记忆 Repository 相关功能、边界条件、异常路径和协作行为。
+ */
 class JdbcMagmaMemoryRepositoryTest {
     private static final TenantId TENANT = new TenantId(7L);
 

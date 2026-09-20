@@ -23,7 +23,7 @@ import java.util.List;
 import java.util.Set;
 
 /**
- * {@code MemoryController} 是Web模块的 Web 接口适配器，负责接收请求并转换为应用服务调用。
+ * 处理 记忆 相关的 Web 请求，并将请求转换为应用服务调用。
  */
 @Tag(name = "MAGMA Memory Platform")
 @RestController
@@ -39,10 +39,10 @@ public class MemoryController {
     private final MemorySemanticIndex index;
 
     /**
-     * {@code MemoryController} 创建并初始化当前类型实例。
+     * 执行 记忆 相关业务操作，并维护必要的状态和协作关系。
      *
-     * @param memory 参数值，用于执行当前操作。
-     * @param index 参数值，用于执行当前操作。
+     * @param memory 用于完成本次业务处理的 memory 参数。
+     * @param index 用于完成本次业务处理的 index 参数。
      */
     public MemoryController(MagmaMemoryService memory, MemorySemanticIndex index) {
         this.memory = memory;
@@ -50,11 +50,9 @@ public class MemoryController {
     }
 
     /**
-     * {@code ingest} 执行当前类型定义的业务操作。
+     * 执行 记忆 相关业务操作，并维护必要的状态和协作关系。
      *
-     * @param request 参数值，用于执行当前操作。
-     *
-     * @return 返回当前操作产生的结果。
+     * @param events 用于完成本次业务处理的 events 参数。
      */
     @PostMapping("/events")
     public Result<MemoryEvent> ingest(@Valid @RequestBody EventRequest request) {
@@ -78,11 +76,9 @@ public class MemoryController {
     }
 
     /**
-     * {@code query} 查询并返回当前操作所需的数据。
+     * 执行 记忆 相关业务操作，并维护必要的状态和协作关系。
      *
-     * @param request 参数值，用于执行当前操作。
-     *
-     * @return 返回当前操作产生的结果。
+     * @param query 用于筛选目标数据的查询条件。
      */
     @PostMapping("/query")
     public Result<MemoryRetrievalResult> query(@Valid @RequestBody QueryRequest request) {
@@ -113,11 +109,9 @@ public class MemoryController {
     }
 
     /**
-     * {@code confirm} 执行当前类型定义的业务操作。
+     * 执行 记忆 相关业务操作，并维护必要的状态和协作关系。
      *
-     * @param id 参数值，用于执行当前操作。
-     *
-     * @return 返回当前操作产生的结果。
+     * @param confirm 用于完成本次业务处理的 confirm 参数。
      */
     @PostMapping("/events/{id}/confirm")
     public Result<Void> confirm(@PathVariable String id) {
@@ -127,11 +121,9 @@ public class MemoryController {
     }
 
     /**
-     * {@code revoke} 执行当前类型定义的业务操作。
+     * 执行 记忆 相关业务操作，并维护必要的状态和协作关系。
      *
-     * @param id 参数值，用于执行当前操作。
-     *
-     * @return 返回当前操作产生的结果。
+     * @param revoke 用于完成本次业务处理的 revoke 参数。
      */
     @PostMapping("/events/{id}/revoke")
     public Result<Void> revoke(@PathVariable String id) {
@@ -141,12 +133,9 @@ public class MemoryController {
     }
 
     /**
-     * {@code supersede} 执行当前类型定义的业务操作。
+     * 执行 记忆 相关业务操作，并维护必要的状态和协作关系。
      *
-     * @param id 参数值，用于执行当前操作。
-     * @param request 参数值，用于执行当前操作。
-     *
-     * @return 返回当前操作产生的结果。
+     * @param supersede 用于完成本次业务处理的 supersede 参数。
      */
     @PostMapping("/events/{id}/supersede")
     public Result<MemoryEvent> supersede(
@@ -174,13 +163,10 @@ public class MemoryController {
     }
 
     /**
-     * {@code relations} 执行当前类型定义的业务操作。
+     * 执行 记忆 相关业务数据，并返回处理结果。
      *
-     * @param id 参数值，用于执行当前操作。
-     * @param graphType 参数值，用于执行当前操作。
-     * @param limit 参数值，用于执行当前操作。
-     *
-     * @return 返回当前操作产生的结果。
+     * @param relations 用于完成本次业务处理的 relations 参数。
+     * @return 返回符合条件的数据集合；没有匹配项时返回空集合。
      */
     @GetMapping("/events/{id}/relations")
     public Result<List<MemoryEdge>> relations(
@@ -192,11 +178,9 @@ public class MemoryController {
     }
 
     /**
-     * {@code trace} 执行当前类型定义的业务操作。
+     * 查询 记忆 相关业务操作，并维护必要的状态和协作关系。
      *
-     * @param traceId 参数值，用于执行当前操作。
-     *
-     * @return 返回当前操作产生的结果。
+     * @param traceId 用于定位trace的标识。
      */
     @GetMapping("/retrieval-traces/{traceId}")
     public Result<MemoryRetrievalTrace> trace(@PathVariable String traceId) {
@@ -207,11 +191,9 @@ public class MemoryController {
     }
 
     /**
-     * {@code rebuild} 执行当前类型定义的业务操作。
+     * 执行 记忆 相关业务操作，并维护必要的状态和协作关系。
      *
-     * @param namespace 参数值，用于执行当前操作。
-     *
-     * @return 返回当前操作产生的结果。
+     * @param admin 用于完成本次业务处理的 admin 参数。
      */
     @SaCheckPermission("memory:admin")
     @PostMapping("/admin/indexes/rebuild")
@@ -240,7 +222,7 @@ public class MemoryController {
     }
 
     /**
-     * {@code EventRequest} 表示Web模块的请求参数，承载调用方提交的输入数据。
+     * 封装 事件 操作所需的请求条件和输入数据。
      */
     @Data
     public static class EventRequest {
@@ -292,7 +274,7 @@ public class MemoryController {
     }
 
     /**
-     * {@code QueryRequest} 表示Web模块的请求参数，承载调用方提交的输入数据。
+     * 封装 Query 操作所需的请求条件和输入数据。
      */
     @Data
     public static class QueryRequest {

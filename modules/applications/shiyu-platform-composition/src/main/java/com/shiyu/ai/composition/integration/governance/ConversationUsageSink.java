@@ -18,7 +18,7 @@ import java.time.Instant;
 import java.util.Map;
 
 /**
- * 将会话生成用量转换为治理模块可结算的用量事件。
+ * 接收并处理 会话 用量 相关的业务事件或统计数据。
  */
 @Component
 public class ConversationUsageSink implements GenerationUsageSink {
@@ -28,18 +28,18 @@ public class ConversationUsageSink implements GenerationUsageSink {
     private final UsageGovernance usage;
 
     /**
-     * {@code ConversationUsageSink} 创建并初始化当前类型实例。
+     * 执行 会话 用量 相关业务操作，并维护必要的状态和协作关系。
      *
-     * @param usage 参数值，用于执行当前操作。
+     * @param usage 用于完成本次业务处理的 usage 参数。
      */
     public ConversationUsageSink(UsageGovernance usage) {
         this.usage = usage;
     }
 
     /**
-     * {@code completed} 执行当前类型定义的业务操作。
+     * 执行 会话 用量 相关业务操作，并维护必要的状态和协作关系。
      *
-     * @param run 参数值，用于执行当前操作。
+     * @param run 用于完成本次业务处理的 run 参数。
      */
     @Override
     public void completed(GenerationRun run) {
@@ -48,11 +48,11 @@ public class ConversationUsageSink implements GenerationUsageSink {
     }
 
     /**
-     * {@code completed} 执行当前类型定义的业务操作。
+     * 执行 会话 用量 相关业务操作，并维护必要的状态和协作关系。
      *
-     * @param run 参数值，用于执行当前操作。
-     * @param tenantId 参数值，用于执行当前操作。
-     * @param ownerUserId 参数值，用于执行当前操作。
+     * @param run 用于完成本次业务处理的 run 参数。
+     * @param tenantId 当前操作涉及的租户标识。
+     * @param ownerUserId 当前操作涉及的用户标识。
      */
     @Override
     public void completed(GenerationRun run, TenantId tenantId, UserId ownerUserId) {

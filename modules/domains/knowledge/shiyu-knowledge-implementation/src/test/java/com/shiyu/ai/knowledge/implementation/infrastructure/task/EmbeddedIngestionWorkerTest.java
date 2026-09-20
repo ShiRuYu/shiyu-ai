@@ -33,6 +33,9 @@ import java.util.Set;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.ScheduledExecutorService;
 
+/**
+ * 验证 Embedded Ingestion Worker 相关功能、边界条件、异常路径和协作行为。
+ */
 class EmbeddedIngestionWorkerTest {
     @Test
     void bindsJobTenantAndReleasesCapacityWhenInitialLookupFails() throws Exception {

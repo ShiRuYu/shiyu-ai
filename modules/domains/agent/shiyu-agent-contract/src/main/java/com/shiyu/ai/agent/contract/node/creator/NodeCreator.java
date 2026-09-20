@@ -5,7 +5,7 @@ import com.shiyu.ai.agent.contract.node.NodeConfig;
 import com.shiyu.ai.agent.contract.node.NodeType;
 
 /**
- * NodeCreator 接口，定义智能体模块的能力边界。
+ * 根据输入配置创建 Node 相关的流程节点或业务组件。
  */
 public interface NodeCreator {
     /**

@@ -6,7 +6,9 @@ import java.security.*;
 import java.util.HashSet;
 import java.util.Set;
 
-/** 插件沙箱 通过 SecurityManager 限制插件的权限 */
+/**
+ * 实现 插件 Sandbox 相关的业务处理、协作逻辑或基础设施能力。
+ */
 @Slf4j
 public class PluginSandbox {
 
@@ -79,14 +81,14 @@ public class PluginSandbox {
     }
 
     /**
-     * SandboxCallable 接口，定义工具模块的能力边界。
+     * 定义 Sandbox Callable 相关的协作契约和调用边界。
      */
     @FunctionalInterface
     public interface SandboxCallable<T> {
         /**
-         * 执行 {@code call} 定义的接口操作。
+         * 调用 Sandbox Callable 相关业务数据，并返回处理结果。
          *
-         * @return 操作结果。
+         * @return 返回 Sandbox Callable 相关操作生成的结果数据。
          */
         T call() throws Exception;
     }

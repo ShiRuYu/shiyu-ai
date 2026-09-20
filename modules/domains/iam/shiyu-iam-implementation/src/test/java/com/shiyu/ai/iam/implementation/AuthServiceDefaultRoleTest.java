@@ -25,6 +25,9 @@ import org.junit.jupiter.api.Test;
 import org.mockito.ArgumentCaptor;
 import org.springframework.test.util.ReflectionTestUtils;
 
+/**
+ * 验证 认证 Service Default 角色 相关功能、边界条件、异常路径和协作行为。
+ */
 class AuthServiceDefaultRoleTest {
 
     @Test

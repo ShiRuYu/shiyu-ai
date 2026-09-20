@@ -8,27 +8,27 @@ import com.shiyu.ai.kernel.context.UserId;
 
 import java.util.List;
 
-/** 认证服务 提供用户登录、登出等认证功能 */
+/**
+ * 提供 认证 的查询、创建、更新及调用服务，协调业务变更和领域协作。
+ */
 public interface AuthService {
 
     /**
-     * 执行 {@code login} 定义的接口操作。
+     * 执行 认证 相关业务数据，并返回处理结果。
      *
-     * @param username 方法参数。
-     * @param password 方法参数。
-     *
-     * @return 操作结果。
+     * @param username 用于完成本次业务处理的 username 参数。
+     * @param password 用于完成本次业务处理的 password 参数。
+     * @return 返回 认证 相关操作生成的结果数据。
      */
     LoginResponseVO login(String username, String password);
 
     /**
-     * 执行 {@code login} 定义的接口操作。
+     * 执行 认证 相关业务数据，并返回处理结果。
      *
-     * @param username 方法参数。
-     * @param password 方法参数。
-     * @param roleId 方法参数。
-     *
-     * @return 操作结果。
+     * @param username 用于完成本次业务处理的 username 参数。
+     * @param password 用于完成本次业务处理的 password 参数。
+     * @param roleId 用于定位role的标识。
+     * @return 返回 认证 相关操作生成的结果数据。
      */
     LoginResponseVO login(String username, String password, Long roleId);
 
@@ -45,12 +45,11 @@ public interface AuthService {
     LoginResponseVO login(String username, String password, Long roleId, String loginIp);
 
     /**
-     * 根据条件查询并返回所需数据。
+     * 查询 认证 相关业务数据，并返回处理结果。
      *
-     * @param actor 当前操作主体上下文。
-     * @param username 方法参数。
-     *
-     * @return 符合条件的结果集合。
+     * @param actor 当前操作主体上下文，用于确定租户、用户和访问权限。
+     * @param username 用于完成本次业务处理的 username 参数。
+     * @return 返回符合条件的数据集合；没有匹配项时返回空集合。
      */
     List<String> getAuthCodes(ActorContext actor, String username);
 
@@ -65,38 +64,35 @@ public interface AuthService {
     List<String> getAuthCodesByUserId(ActorContext actor, UserId userId);
 
     /**
-     * 执行 {@code refreshToken} 定义的接口操作。
+     * 执行 认证 相关业务数据，并返回处理结果。
      *
-     * @param refreshToken 方法参数。
-     *
-     * @return 操作结果。
+     * @param refreshToken 用于完成本次业务处理的 refreshToken 参数。
+     * @return 返回 认证 相关操作生成的结果数据。
      */
     String refreshToken(String refreshToken);
 
     /**
-     * 执行 {@code logout} 定义的接口操作。
+     * 执行 认证 相关业务操作，并维护必要的状态和协作关系。
      *
-     * @param refreshToken 方法参数。
+     * @param refreshToken 用于完成本次业务处理的 refreshToken 参数。
      */
     void logout(String refreshToken);
 
     /**
-     * 执行 {@code switchCurrentRole} 定义的接口操作。
+     * 执行 认证 相关业务数据，并返回处理结果。
      *
-     * @param userId 用户标识。
-     * @param roleId 方法参数。
-     *
-     * @return 条件是否满足。
+     * @param userId 当前操作涉及的用户标识。
+     * @param roleId 用于定位role的标识。
+     * @return 返回本次条件判断是否成立。
      */
     boolean switchCurrentRole(Long userId, Long roleId);
 
     /**
-     * 执行 {@code switchCurrentTenant} 定义的接口操作。
+     * 执行 认证 相关业务数据，并返回处理结果。
      *
-     * @param userId 用户标识。
-     * @param tenantId 租户标识。
-     *
-     * @return 条件是否满足。
+     * @param userId 当前操作涉及的用户标识。
+     * @param tenantId 当前操作涉及的租户标识。
+     * @return 返回本次条件判断是否成立。
      */
     boolean switchCurrentTenant(Long userId, TenantId tenantId);
 
@@ -111,36 +107,33 @@ public interface AuthService {
     List<TenantInfoVO> getUserTenants(ActorContext actor, Long userId);
 
     /**
-     * 创建并保存业务对象。
+     * 创建或保存 认证 相关业务数据，并返回处理结果。
      *
-     * @param username 方法参数。
-     * @param password 方法参数。
-     * @param email 方法参数。
-     *
-     * @return 操作结果。
+     * @param username 用于完成本次业务处理的 username 参数。
+     * @param password 用于完成本次业务处理的 password 参数。
+     * @param email 用于完成本次业务处理的 email 参数。
+     * @return 返回 认证 相关操作生成的结果数据。
      */
     LoginResponseVO register(String username, String password, String email);
 
     /**
-     * 执行 {@code codeLogin} 定义的接口操作。
+     * 执行 认证 相关业务数据，并返回处理结果。
      *
-     * @param phone 方法参数。
-     * @param code 方法参数。
-     * @param captchaKey 方法参数。
-     *
-     * @return 操作结果。
+     * @param phone 用于完成本次业务处理的 phone 参数。
+     * @param code 用于定位或筛选目标业务对象的业务值。
+     * @param captchaKey 用于完成本次业务处理的 captchaKey 参数。
+     * @return 返回 认证 相关操作生成的结果数据。
      */
     LoginResponseVO codeLogin(String phone, String code, String captchaKey);
 
     /**
-     * 执行 {@code forgetPassword} 定义的接口操作。
+     * 执行 认证 相关业务数据，并返回处理结果。
      *
-     * @param email 方法参数。
-     * @param newPassword 方法参数。
-     * @param code 方法参数。
-     * @param captchaKey 方法参数。
-     *
-     * @return 条件是否满足。
+     * @param email 用于完成本次业务处理的 email 参数。
+     * @param newPassword 用于完成本次业务处理的 newPassword 参数。
+     * @param code 用于定位或筛选目标业务对象的业务值。
+     * @param captchaKey 用于完成本次业务处理的 captchaKey 参数。
+     * @return 返回本次条件判断是否成立。
      */
     boolean forgetPassword(String email, String newPassword, String code, String captchaKey);
 }

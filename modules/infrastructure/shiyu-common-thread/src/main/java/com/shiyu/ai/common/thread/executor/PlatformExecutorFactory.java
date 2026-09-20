@@ -13,7 +13,9 @@ import java.util.concurrent.ThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicInteger;
 
-/** 平台线程池工厂 创建基于平台线程的线程池 */
+/**
+ * 创建或提供 平台 Executor 相关的业务组件和运行时能力。
+ */
 public class PlatformExecutorFactory implements ExecutorFactory {
 
     /**
@@ -29,21 +31,20 @@ public class PlatformExecutorFactory implements ExecutorFactory {
     }
 
     /**
-     * {@code PlatformExecutorFactory} 创建并初始化当前类型实例。
+     * 执行 平台 Executor 相关业务操作，并维护必要的状态和协作关系。
      *
-     * @param properties 参数值，用于执行当前操作。
+     * @param properties 用于完成本次业务处理的 properties 参数。
      */
     public PlatformExecutorFactory(ThreadingProperties properties) {
         this.properties = properties;
     }
 
     /**
-     * {@code createExecutor} 写入或更新当前模块中的业务数据。
+     * 创建或保存 平台 Executor 相关业务数据，并返回处理结果。
      *
-     * @param poolType 参数值，用于执行当前操作。
-     * @param name 参数值，用于执行当前操作。
-     *
-     * @return 返回当前操作产生的结果。
+     * @param poolType 用于完成本次业务处理的 poolType 参数。
+     * @param name 用于定位或筛选目标业务对象的业务值。
+     * @return 返回 平台 Executor 相关操作生成的结果数据。
      */
     @Override
     public ExecutorService createExecutor(PoolType poolType, String name) {
@@ -231,7 +232,9 @@ public class PlatformExecutorFactory implements ExecutorFactory {
         };
     }
 
-    /** 命名线程工厂 */
+    /**
+     * 创建或提供 Named Thread 相关的业务组件和运行时能力。
+     */
     private static class NamedThreadFactory implements ThreadFactory {
         private final AtomicInteger threadNumber = new AtomicInteger(1);
         /**
@@ -244,11 +247,10 @@ public class PlatformExecutorFactory implements ExecutorFactory {
         }
 
         /**
-         * {@code newThread} 执行当前类型定义的业务操作。
+         * 执行 Named Thread 相关业务数据，并返回处理结果。
          *
-         * @param r 参数值，用于执行当前操作。
-         *
-         * @return 返回当前操作产生的结果。
+         * @param r 用于完成本次业务处理的 r 参数。
+         * @return 返回 Named Thread 相关操作生成的结果数据。
          */
         @Override
         public Thread newThread(Runnable r) {

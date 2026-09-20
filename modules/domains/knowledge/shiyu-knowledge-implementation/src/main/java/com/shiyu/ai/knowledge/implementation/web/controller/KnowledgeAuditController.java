@@ -21,7 +21,7 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 /**
- * {@code KnowledgeAuditController} 是知识模块的 Web 接口适配器，负责接收请求并转换为应用服务调用。
+ * 处理 知识 Audit 相关的 Web 请求，并将请求转换为应用服务调用。
  */
 @RestController
 @RequestMapping("/api/knowledge/audits")
@@ -36,14 +36,13 @@ public class KnowledgeAuditController {
     private final KnowledgeAuditService auditService;
 
     /**
-     * {@code page} 执行当前类型定义的业务操作。
+     * 查询 知识 Audit 相关业务数据，并返回处理结果。
      *
-     * @param pageNum 参数值，用于执行当前操作。
-     * @param pageSize 参数值，用于执行当前操作。
-     * @param spaceId 参数值，用于执行当前操作。
-     * @param version 参数值，用于执行当前操作。
-     *
-     * @return 返回当前操作产生的结果。
+     * @param pageNum 用于完成本次业务处理的 pageNum 参数。
+     * @param pageSize 每页返回的数据数量。
+     * @param spaceId 用于定位space的标识。
+     * @param version 用于完成本次业务处理的 version 参数。
+     * @return 返回 知识 Audit 相关操作生成的结果数据。
      */
     @GetMapping
     public Result<PageData<KnowledgeAuditResponse>> page(

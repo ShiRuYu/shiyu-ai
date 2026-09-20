@@ -13,7 +13,7 @@ import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 
 /**
- * ConfiguredVectorStoreProvider 边界接口，负责向外部组件提供基础设施领域相关能力。
+ * 创建或提供 Configured 向量 Store 相关的业务组件和运行时能力。
  */
 public final class ConfiguredVectorStoreProvider implements VectorStoreProvider {
 
@@ -28,19 +28,19 @@ public final class ConfiguredVectorStoreProvider implements VectorStoreProvider 
     private final Map<String, InMemoryHandle> inMemoryStores = new ConcurrentHashMap<>();
 
     /**
-     * {@code ConfiguredVectorStoreProvider} 创建并初始化当前类型实例。
+     * 执行 Configured 向量 Store 相关业务操作，并维护必要的状态和协作关系。
      *
-     * @param defaults 参数值，用于执行当前操作。
+     * @param defaults 用于完成本次业务处理的 defaults 参数。
      */
     public ConfiguredVectorStoreProvider(VectorStoreProperties defaults) {
         this(defaults, null);
     }
 
     /**
-     * {@code ConfiguredVectorStoreProvider} 创建并初始化当前类型实例。
+     * 执行 Configured 向量 Store 相关业务操作，并维护必要的状态和协作关系。
      *
-     * @param defaults 参数值，用于执行当前操作。
-     * @param jdbcTemplate 参数值，用于执行当前操作。
+     * @param defaults 用于完成本次业务处理的 defaults 参数。
+     * @param jdbcTemplate 用于完成本次业务处理的 jdbcTemplate 参数。
      */
     public ConfiguredVectorStoreProvider(
             VectorStoreProperties defaults, JdbcTemplate jdbcTemplate) {
@@ -49,9 +49,9 @@ public final class ConfiguredVectorStoreProvider implements VectorStoreProvider 
     }
 
     /**
-     * {@code type} 执行当前类型定义的业务操作。
+     * 执行 Configured 向量 Store 相关业务数据，并返回处理结果。
      *
-     * @return 返回当前操作产生的结果。
+     * @return 返回 Configured 向量 Store 相关操作生成的结果数据。
      */
     @Override
     public String type() {
@@ -59,11 +59,10 @@ public final class ConfiguredVectorStoreProvider implements VectorStoreProvider 
     }
 
     /**
-     * {@code open} 执行当前类型定义的业务操作。
+     * 创建或保存 Configured 向量 Store 相关业务数据，并返回处理结果。
      *
-     * @param options 参数值，用于执行当前操作。
-     *
-     * @return 返回当前操作产生的结果。
+     * @param options 用于完成本次业务处理的 options 参数。
+     * @return 返回 Configured 向量 Store 相关操作生成的结果数据。
      */
     @Override
     public VectorStore open(VectorStoreOptions options) {
@@ -92,9 +91,9 @@ public final class ConfiguredVectorStoreProvider implements VectorStoreProvider 
     }
 
     /**
-     * {@code drop} 执行当前类型定义的业务操作。
+     * 执行 Configured 向量 Store 相关业务操作，并维护必要的状态和协作关系。
      *
-     * @param options 参数值，用于执行当前操作。
+     * @param options 用于完成本次业务处理的 options 参数。
      */
     @Override
     public void drop(VectorStoreOptions options) {
@@ -141,9 +140,7 @@ public final class ConfiguredVectorStoreProvider implements VectorStoreProvider 
     }
 
     /**
-     * {@code InMemoryHandle} 封装平台基础设施模块中不可变的结构化数据，并作为相关操作之间的值对象。
-     * @param dimension 向量维度，表示该记录组件承载的数据。
-     * @param store store 属性，表示该记录组件承载的数据。
+     * 封装 In 记忆 Handle 相关的不可变数据及其字段约束。
      */
     private record InMemoryHandle(int dimension, VectorStore store) {}
 }

@@ -14,6 +14,9 @@ import static org.junit.jupiter.api.Assertions.assertArrayEquals;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
+/**
+ * 验证 教育 Module Auto Configuration 相关功能、边界条件、异常路径和协作行为。
+ */
 class EducationModuleAutoConfigurationTest {
 
     @Test

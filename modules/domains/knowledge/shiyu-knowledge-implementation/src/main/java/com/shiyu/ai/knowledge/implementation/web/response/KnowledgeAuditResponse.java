@@ -9,7 +9,7 @@ import lombok.Data;
 import java.time.LocalDateTime;
 
 /**
- * KnowledgeAuditResponse 数据对象，承载知识领域相关业务数据。
+ * 封装 知识 Audit 操作向调用方返回的传输数据。
  */
 @Data
 @AutoMapper(target = KnowledgeAuditLogBO.class)

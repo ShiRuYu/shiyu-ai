@@ -12,7 +12,9 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
 
-/** Sa-Token 全局异常处理器 统一处理认证和授权相关的异常 */
+/**
+ * 处理 Sa Token Exception 相关事件或请求，并推进后续业务流程。
+ */
 @Slf4j
 @RestControllerAdvice
 public class SaTokenExceptionHandler {

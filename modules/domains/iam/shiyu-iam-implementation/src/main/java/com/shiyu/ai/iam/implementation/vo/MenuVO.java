@@ -13,7 +13,9 @@ import java.io.Serializable;
 import java.util.Date;
 import java.util.List;
 
-/** 菜单视图对象 */
+/**
+ * 封装 Menu 操作向调用方返回的传输数据。
+ */
 @Data
 @AutoMapper(target = MenuBO.class)
 @JsonInclude(JsonInclude.Include.NON_NULL)

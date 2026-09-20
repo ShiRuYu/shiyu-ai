@@ -6,7 +6,7 @@ import jakarta.validation.constraints.Pattern;
 import lombok.Data;
 
 /**
- * {@code AgentRequest} 表示智能体模块的请求参数，承载调用方提交的输入数据。
+ * 封装 智能体 操作所需的请求条件和输入数据。
  */
 @Data
 public class AgentRequest {

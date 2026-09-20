@@ -33,17 +33,18 @@ import java.util.Map;
 import java.util.Objects;
 import java.util.stream.Collectors;
 
-/** 用户服务实现类 */
+/**
+ * 提供 用户 的查询、创建、更新及调用服务，协调业务变更和领域协作。
+ */
 @Slf4j
 @Service
 public class UserServiceImpl implements UserService {
     /**
-     * {@code detailView} 执行当前类型定义的业务操作。
+     * 查询 用户 相关业务数据，并返回处理结果。
      *
-     * @param actor 参数值，用于执行当前操作。
-     * @param userId 参数值，用于执行当前操作。
-     *
-     * @return 返回当前操作产生的结果。
+     * @param actor 当前操作主体上下文，用于确定租户、用户和访问权限。
+     * @param userId 当前操作涉及的用户标识。
+     * @return 返回 用户 相关操作生成的结果数据。
      */
     @Override
     public UserVO detailView(ActorContext actor, Long userId) {
@@ -51,14 +52,13 @@ public class UserServiceImpl implements UserService {
     }
 
     /**
-     * {@code createUser} 写入或更新当前模块中的业务数据。
+     * 创建或保存 用户 相关业务数据，并返回处理结果。
      *
-     * @param actor 参数值，用于执行当前操作。
-     * @param request 参数值，用于执行当前操作。
-     * @param roleIds 参数值，用于执行当前操作。
-     * @param targetTenantId 参数值，用于执行当前操作。
-     *
-     * @return 返回当前操作产生的结果。
+     * @param actor 当前操作主体上下文，用于确定租户、用户和访问权限。
+     * @param request 封装本次操作所需业务字段的请求对象。
+     * @param roleIds 待处理的业务对象标识集合。
+     * @param targetTenantId 当前操作涉及的租户标识。
+     * @return 返回 用户 相关操作生成的结果数据。
      */
     @Override
     public Map<String, Object> createUser(
@@ -70,15 +70,14 @@ public class UserServiceImpl implements UserService {
     }
 
     /**
-     * {@code updateUser} 写入或更新当前模块中的业务数据。
+     * 更新或设置 用户 相关业务数据，并返回处理结果。
      *
-     * @param actor 参数值，用于执行当前操作。
-     * @param userId 参数值，用于执行当前操作。
-     * @param request 参数值，用于执行当前操作。
-     * @param roleIds 参数值，用于执行当前操作。
-     * @param targetTenantId 参数值，用于执行当前操作。
-     *
-     * @return 返回当前操作产生的结果。
+     * @param actor 当前操作主体上下文，用于确定租户、用户和访问权限。
+     * @param userId 当前操作涉及的用户标识。
+     * @param request 封装本次操作所需业务字段的请求对象。
+     * @param roleIds 待处理的业务对象标识集合。
+     * @param targetTenantId 当前操作涉及的租户标识。
+     * @return 返回本次条件判断是否成立。
      */
     @Override
     public boolean updateUser(
@@ -121,14 +120,14 @@ public class UserServiceImpl implements UserService {
     private final MenuService menuService;
 
     /**
-     * {@code UserServiceImpl} 创建并初始化当前类型实例。
+     * 执行 用户 相关业务操作，并维护必要的状态和协作关系。
      *
-     * @param userRepository 参数值，用于执行当前操作。
-     * @param roleRepository 参数值，用于执行当前操作。
-     * @param userScopeRoleRepository 参数值，用于执行当前操作。
-     * @param tenantRepository 参数值，用于执行当前操作。
-     * @param tenantRoleRepository 参数值，用于执行当前操作。
-     * @param menuService 参数值，用于执行当前操作。
+     * @param userRepository 用于完成本次业务处理的 userRepository 参数。
+     * @param roleRepository 用于完成本次业务处理的 roleRepository 参数。
+     * @param userScopeRoleRepository 用于完成本次业务处理的 userScopeRoleRepository 参数。
+     * @param tenantRepository 用于完成本次业务处理的 tenantRepository 参数。
+     * @param tenantRoleRepository 用于完成本次业务处理的 tenantRoleRepository 参数。
+     * @param menuService 用于完成本次业务处理的 menuService 参数。
      */
     public UserServiceImpl(
             UserRepository userRepository,
@@ -256,14 +255,13 @@ public class UserServiceImpl implements UserService {
     }
 
     /**
-     * {@code getUserList} 查询并返回当前操作所需的数据。
+     * 查询 用户 相关业务数据，并返回处理结果。
      *
-     * @param actor 参数值，用于执行当前操作。
-     * @param username 参数值，用于执行当前操作。
-     * @param pageNum 参数值，用于执行当前操作。
-     * @param pageSize 参数值，用于执行当前操作。
-     *
-     * @return 返回当前操作产生的结果。
+     * @param actor 当前操作主体上下文，用于确定租户、用户和访问权限。
+     * @param username 用于完成本次业务处理的 username 参数。
+     * @param pageNum 用于完成本次业务处理的 pageNum 参数。
+     * @param pageSize 每页返回的数据数量。
+     * @return 返回 用户 相关操作生成的结果数据。
      */
     @Override
     public PageData<UserVO> getUserList(
@@ -311,12 +309,9 @@ public class UserServiceImpl implements UserService {
     }
 
     /**
-     * {@code deleteUser} 释放或移除当前操作涉及的资源。
+     * 执行 用户 相关业务操作，并维护必要的状态和协作关系。
      *
-     * @param actor 参数值，用于执行当前操作。
-     * @param userId 参数值，用于执行当前操作。
-     *
-     * @return 返回当前操作产生的结果。
+     * @param class 用于完成本次业务处理的 class 参数。
      */
     @Override
     @Transactional(rollbackFor = Exception.class)
@@ -369,13 +364,9 @@ public class UserServiceImpl implements UserService {
     }
 
     /**
-     * {@code resetUserPassword} 执行当前类型定义的业务操作。
+     * 执行 用户 相关业务操作，并维护必要的状态和协作关系。
      *
-     * @param actor 参数值，用于执行当前操作。
-     * @param userId 参数值，用于执行当前操作。
-     * @param password 参数值，用于执行当前操作。
-     *
-     * @return 返回当前操作产生的结果。
+     * @param class 用于完成本次业务处理的 class 参数。
      */
     @Override
     @Transactional(rollbackFor = Exception.class)
@@ -435,12 +426,11 @@ public class UserServiceImpl implements UserService {
     }
 
     /**
-     * {@code getTenantAssignments} 查询并返回当前操作所需的数据。
+     * 查询 用户 相关业务数据，并返回处理结果。
      *
-     * @param actor 参数值，用于执行当前操作。
-     * @param userId 参数值，用于执行当前操作。
-     *
-     * @return 返回当前操作产生的结果。
+     * @param actor 当前操作主体上下文，用于确定租户、用户和访问权限。
+     * @param userId 当前操作涉及的用户标识。
+     * @return 返回符合条件的数据集合；没有匹配项时返回空集合。
      */
     @Override
     public List<UserTenantAssignmentVO> getTenantAssignments(ActorContext actor, Long userId) {
@@ -479,13 +469,9 @@ public class UserServiceImpl implements UserService {
     }
 
     /**
-     * {@code replaceTenantAssignments} 执行当前类型定义的业务操作。
+     * 执行 用户 相关业务操作，并维护必要的状态和协作关系。
      *
-     * @param actor 参数值，用于执行当前操作。
-     * @param userId 参数值，用于执行当前操作。
-     * @param assignments 参数值，用于执行当前操作。
-     *
-     * @return 返回当前操作产生的结果。
+     * @param class 用于完成本次业务处理的 class 参数。
      */
     @Override
     @Transactional(rollbackFor = Exception.class)
@@ -654,14 +640,9 @@ public class UserServiceImpl implements UserService {
     }
 
     /**
-     * {@code changePassword} 执行当前类型定义的业务操作。
+     * 执行 用户 相关业务操作，并维护必要的状态和协作关系。
      *
-     * @param actor 参数值，用于执行当前操作。
-     * @param userId 参数值，用于执行当前操作。
-     * @param oldPassword 参数值，用于执行当前操作。
-     * @param newPassword 参数值，用于执行当前操作。
-     *
-     * @return 返回当前操作产生的结果。
+     * @param class 用于完成本次业务处理的 class 参数。
      */
     @Override
     @Transactional(rollbackFor = Exception.class)

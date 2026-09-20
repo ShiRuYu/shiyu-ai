@@ -9,7 +9,7 @@ import com.shiyu.ai.common.storage.security.*;
 import com.shiyu.ai.common.storage.vector.*;
 
 /**
- * BackupManifestContributor 接口，定义基础设施模块的能力边界。
+ * 向 Backup Manifest 所属的应用或基础设施注册必要的扩展能力。
  */
 @FunctionalInterface
 public interface BackupManifestContributor {

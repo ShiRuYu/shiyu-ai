@@ -5,52 +5,47 @@ import com.shiyu.ai.iam.implementation.domain.model.TenantBO;
 import com.shiyu.ai.kernel.context.TenantId;
 
 /**
- * TenantRoleRepository 仓储接口，负责访问和持久化身份与访问领域聚合数据。
+ * 负责 租户 角色 的持久化查询、保存和删除，并维护数据访问边界。
  */
 public interface TenantRoleRepository {
     /**
-     * 根据标识查询对应的数据。
+     * 查询 租户 角色 相关业务数据，并返回处理结果。
      *
-     * @param tenantId 租户标识。
-     *
-     * @return 操作结果。
+     * @param tenantId 当前操作涉及的租户标识。
+     * @return 返回 租户 角色 相关操作生成的结果数据。
      */
     TenantBO selectTenantById(TenantId tenantId);
 
     /**
-     * 根据标识查询对应的数据。
+     * 查询 租户 角色 相关业务数据，并返回处理结果。
      *
-     * @param roleId 方法参数。
-     *
-     * @return 操作结果。
+     * @param roleId 用于定位role的标识。
+     * @return 返回 租户 角色 相关操作生成的结果数据。
      */
     RoleBO selectRoleById(Long roleId);
 
     /**
-     * 根据条件查询并返回所需数据。
+     * 查询 租户 角色 相关业务数据，并返回处理结果。
      *
-     * @param tenantId 租户标识。
-     * @param roleCode 方法参数。
-     *
-     * @return 操作结果。
+     * @param tenantId 当前操作涉及的租户标识。
+     * @param roleCode 用于完成本次业务处理的 roleCode 参数。
+     * @return 返回 租户 角色 相关操作生成的结果数据。
      */
     RoleBO selectEnabledRoleByCode(TenantId tenantId, String roleCode);
 
     /**
-     * 根据条件查询并返回所需数据。
+     * 查询 租户 角色 相关业务数据，并返回处理结果。
      *
-     * @param tenantId 租户标识。
-     *
-     * @return 操作结果。
+     * @param tenantId 当前操作涉及的租户标识。
+     * @return 返回 租户 角色 相关操作生成的结果数据。
      */
     RoleBO selectTenantSuperRole(TenantId tenantId);
 
     /**
-     * 根据标识查询对应的数据。
+     * 查询 租户 角色 相关业务数据，并返回处理结果。
      *
-     * @param tenantId 租户标识。
-     *
-     * @return 操作结果。
+     * @param tenantId 当前操作涉及的租户标识。
+     * @return 返回 租户 角色 相关操作生成的结果数据。
      */
     String selectTenantNameById(TenantId tenantId);
 }

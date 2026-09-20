@@ -14,7 +14,9 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 
-/** 防止XSS攻击的过滤器 */
+/**
+ * 承载 Xss Filter 所属 Web 能力的请求适配和边界处理。
+ */
 public class XssFilter implements Filter {
 
     private final AntPathMatcher pathMatcher = new AntPathMatcher();
@@ -22,9 +24,9 @@ public class XssFilter implements Filter {
     public List<String> excludes = new ArrayList<>();
 
     /**
-     * {@code init} 执行当前类型定义的业务操作。
+     * 执行 Xss Filter 相关业务操作，并维护必要的状态和协作关系。
      *
-     * @param filterConfig 参数值，用于执行当前操作。
+     * @param filterConfig 用于完成本次业务处理的 filterConfig 参数。
      */
     @Override
     public void init(FilterConfig filterConfig) throws ServletException {
@@ -38,11 +40,11 @@ public class XssFilter implements Filter {
     }
 
     /**
-     * {@code doFilter} 执行当前类型定义的业务操作。
+     * 执行 Xss Filter 相关业务操作，并维护必要的状态和协作关系。
      *
-     * @param request 参数值，用于执行当前操作。
-     * @param response 参数值，用于执行当前操作。
-     * @param chain 参数值，用于执行当前操作。
+     * @param request 封装本次操作所需业务字段的请求对象。
+     * @param response 用于完成本次业务处理的 response 参数。
+     * @param chain 用于完成本次业务处理的 chain 参数。
      */
     @Override
     public void doFilter(ServletRequest request, ServletResponse response, FilterChain chain)
@@ -68,7 +70,7 @@ public class XssFilter implements Filter {
     }
 
     /**
-     * {@code destroy} 执行当前类型定义的业务操作。
+     * 执行 Xss Filter 相关业务操作，并维护必要的状态和协作关系。
      */
     @Override
     public void destroy() {}

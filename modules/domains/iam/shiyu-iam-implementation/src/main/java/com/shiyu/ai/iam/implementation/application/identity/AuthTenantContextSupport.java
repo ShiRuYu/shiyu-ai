@@ -23,7 +23,7 @@ import java.util.Set;
 import java.util.stream.Collectors;
 
 /**
- * 解析认证请求中的租户上下文并校验租户切换权限。
+ * 编排 认证 租户 Context Support 所属应用流程的输入、协作和业务结果。
  */
 public final class AuthTenantContextSupport {
     /**
@@ -36,10 +36,10 @@ public final class AuthTenantContextSupport {
     private final TenantRoleRepository tenantRoleRepository;
 
     /**
-     * {@code AuthTenantContextSupport} 创建并初始化当前类型实例。
+     * 执行 认证 租户 Context Support 相关业务操作，并维护必要的状态和协作关系。
      *
-     * @param tenantRepository 参数值，用于执行当前操作。
-     * @param tenantRoleRepository 参数值，用于执行当前操作。
+     * @param tenantRepository 用于完成本次业务处理的 tenantRepository 参数。
+     * @param tenantRoleRepository 用于完成本次业务处理的 tenantRoleRepository 参数。
      */
     public AuthTenantContextSupport(
             TenantRepository tenantRepository, TenantRoleRepository tenantRoleRepository) {
@@ -49,11 +49,10 @@ public final class AuthTenantContextSupport {
     }
 
     /**
-     * {@code parseExtInfo} 执行当前类型定义的业务操作。
+     * 执行 认证 租户 Context Support 相关业务数据，并返回处理结果。
      *
-     * @param extInfo 参数值，用于执行当前操作。
-     *
-     * @return 返回当前操作产生的结果。
+     * @param extInfo 用于完成本次业务处理的 extInfo 参数。
+     * @return 返回 认证 租户 Context Support 相关操作生成的结果数据。
      */
     public Map<String, Object> parseExtInfo(String extInfo) {
         if (extInfo != null && !extInfo.isEmpty()) {
@@ -66,22 +65,20 @@ public final class AuthTenantContextSupport {
     }
 
     /**
-     * {@code numberValue} 执行当前类型定义的业务操作。
+     * 执行 认证 租户 Context Support 相关业务数据，并返回处理结果。
      *
-     * @param value 参数值，用于执行当前操作。
-     *
-     * @return 返回当前操作产生的结果。
+     * @param value 用于完成本次业务处理的 value 参数。
+     * @return 返回 认证 租户 Context Support 相关操作生成的结果数据。
      */
     public Long numberValue(Object value) {
         return value instanceof Number number ? number.longValue() : null;
     }
 
     /**
-     * {@code isActiveAssignment} 校验当前操作的输入或状态是否满足约束。
+     * 校验或判断 认证 租户 Context Support 相关业务数据，并返回处理结果。
      *
-     * @param item 参数值，用于执行当前操作。
-     *
-     * @return 返回当前操作产生的结果。
+     * @param item 用于完成本次业务处理的 item 参数。
+     * @return 返回本次条件判断是否成立。
      */
     public boolean isActiveAssignment(UserScopeRoleBO item) {
         return item != null
@@ -93,11 +90,10 @@ public final class AuthTenantContextSupport {
     }
 
     /**
-     * {@code isActiveTenant} 校验当前操作的输入或状态是否满足约束。
+     * 校验或判断 认证 租户 Context Support 相关业务数据，并返回处理结果。
      *
-     * @param item 参数值，用于执行当前操作。
-     *
-     * @return 返回当前操作产生的结果。
+     * @param item 用于完成本次业务处理的 item 参数。
+     * @return 返回本次条件判断是否成立。
      */
     public boolean isActiveTenant(TenantBO item) {
         return item != null
@@ -107,11 +103,10 @@ public final class AuthTenantContextSupport {
     }
 
     /**
-     * {@code isTenantSuperRole} 校验当前操作的输入或状态是否满足约束。
+     * 校验或判断 认证 租户 Context Support 相关业务数据，并返回处理结果。
      *
-     * @param role 参数值，用于执行当前操作。
-     *
-     * @return 返回当前操作产生的结果。
+     * @param role 用于完成本次业务处理的 role 参数。
+     * @return 返回本次条件判断是否成立。
      */
     public boolean isTenantSuperRole(RoleBO role) {
         return role != null
@@ -122,12 +117,11 @@ public final class AuthTenantContextSupport {
     }
 
     /**
-     * {@code hasTenantAssignment} 校验当前操作的输入或状态是否满足约束。
+     * 校验或判断 认证 租户 Context Support 相关业务数据，并返回处理结果。
      *
-     * @param assignments 参数值，用于执行当前操作。
-     * @param tenantId 参数值，用于执行当前操作。
-     *
-     * @return 返回当前操作产生的结果。
+     * @param assignments 用于完成本次业务处理的 assignments 参数。
+     * @param tenantId 当前操作涉及的租户标识。
+     * @return 返回本次条件判断是否成立。
      */
     public boolean hasTenantAssignment(List<UserScopeRoleBO> assignments, Long tenantId) {
         return tenantId != null
@@ -140,13 +134,12 @@ public final class AuthTenantContextSupport {
     }
 
     /**
-     * {@code isDelegatedTenantContext} 校验当前操作的输入或状态是否满足约束。
+     * 校验或判断 认证 租户 Context Support 相关业务数据，并返回处理结果。
      *
-     * @param extInfo 参数值，用于执行当前操作。
-     * @param assignments 参数值，用于执行当前操作。
-     * @param targetTenantId 参数值，用于执行当前操作。
-     *
-     * @return 返回当前操作产生的结果。
+     * @param extInfo 用于完成本次业务处理的 extInfo 参数。
+     * @param assignments 用于完成本次业务处理的 assignments 参数。
+     * @param targetTenantId 当前操作涉及的租户标识。
+     * @return 返回本次条件判断是否成立。
      */
     public boolean isDelegatedTenantContext(
             Map<String, Object> extInfo, List<UserScopeRoleBO> assignments, Long targetTenantId) {
@@ -171,12 +164,11 @@ public final class AuthTenantContextSupport {
     }
 
     /**
-     * {@code resolveCurrentTenantId} 查询并返回当前操作所需的数据。
+     * 解析或路由 认证 租户 Context Support 相关业务数据，并返回处理结果。
      *
-     * @param extInfo 参数值，用于执行当前操作。
-     * @param assignments 参数值，用于执行当前操作。
-     *
-     * @return 返回当前操作产生的结果。
+     * @param extInfo 用于完成本次业务处理的 extInfo 参数。
+     * @param assignments 用于完成本次业务处理的 assignments 参数。
+     * @return 返回 认证 租户 Context Support 相关操作生成的结果数据。
      */
     public Long resolveCurrentTenantId(String extInfo, List<UserScopeRoleBO> assignments) {
         if (extInfo != null && !extInfo.isEmpty()) {
@@ -204,11 +196,10 @@ public final class AuthTenantContextSupport {
     }
 
     /**
-     * {@code findTenantSuperRole} 查询并返回当前操作所需的数据。
+     * 查询 认证 租户 Context Support 相关业务数据，并返回处理结果。
      *
-     * @param tenantId 参数值，用于执行当前操作。
-     *
-     * @return 返回当前操作产生的结果。
+     * @param tenantId 当前操作涉及的租户标识。
+     * @return 返回 认证 租户 Context Support 相关操作生成的结果数据。
      */
     public RoleBO findTenantSuperRole(Long tenantId) {
         return tenantId == null
@@ -217,15 +208,14 @@ public final class AuthTenantContextSupport {
     }
 
     /**
-     * {@code buildExtInfo} 执行当前类型定义的业务操作。
+     * 构建或转换 认证 租户 Context Support 相关业务数据，并返回处理结果。
      *
-     * @param oldExtInfo 参数值，用于执行当前操作。
-     * @param currentRole 参数值，用于执行当前操作。
-     * @param currentTenantId 参数值，用于执行当前操作。
-     * @param now 参数值，用于执行当前操作。
-     * @param loginIp 参数值，用于执行当前操作。
-     *
-     * @return 返回当前操作产生的结果。
+     * @param oldExtInfo 用于完成本次业务处理的 oldExtInfo 参数。
+     * @param currentRole 用于完成本次业务处理的 currentRole 参数。
+     * @param currentTenantId 当前操作涉及的租户标识。
+     * @param now 用于完成本次业务处理的 now 参数。
+     * @param loginIp 用于完成本次业务处理的 loginIp 参数。
+     * @return 返回 认证 租户 Context Support 相关操作生成的结果数据。
      */
     public Map<String, Object> buildExtInfo(
             String oldExtInfo,
@@ -250,12 +240,11 @@ public final class AuthTenantContextSupport {
     }
 
     /**
-     * {@code buildSubTenantList} 执行当前类型定义的业务操作。
+     * 构建或转换 认证 租户 Context Support 相关业务数据，并返回处理结果。
      *
-     * @param assignments 参数值，用于执行当前操作。
-     * @param currentTenantId 参数值，用于执行当前操作。
-     *
-     * @return 返回当前操作产生的结果。
+     * @param assignments 用于完成本次业务处理的 assignments 参数。
+     * @param currentTenantId 当前操作涉及的租户标识。
+     * @return 返回符合条件的数据集合；没有匹配项时返回空集合。
      */
     public List<TenantContextVO> buildSubTenantList(
             List<UserScopeRoleBO> assignments, Long currentTenantId) {
@@ -293,11 +282,10 @@ public final class AuthTenantContextSupport {
     }
 
     /**
-     * {@code buildTenantList} 执行当前类型定义的业务操作。
+     * 构建或转换 认证 租户 Context Support 相关业务数据，并返回处理结果。
      *
-     * @param assignments 参数值，用于执行当前操作。
-     *
-     * @return 返回当前操作产生的结果。
+     * @param assignments 用于完成本次业务处理的 assignments 参数。
+     * @return 返回符合条件的数据集合；没有匹配项时返回空集合。
      */
     public List<TenantInfoVO> buildTenantList(List<UserScopeRoleBO> assignments) {
         if (assignments == null || assignments.isEmpty()) {
@@ -325,12 +313,11 @@ public final class AuthTenantContextSupport {
     }
 
     /**
-     * {@code buildScopedTenantList} 执行当前类型定义的业务操作。
+     * 构建或转换 认证 租户 Context Support 相关业务数据，并返回处理结果。
      *
-     * @param scopeRootTenantId 参数值，用于执行当前操作。
-     * @param returnTenantId 参数值，用于执行当前操作。
-     *
-     * @return 返回当前操作产生的结果。
+     * @param scopeRootTenantId 当前操作涉及的租户标识。
+     * @param returnTenantId 当前操作涉及的租户标识。
+     * @return 返回符合条件的数据集合；没有匹配项时返回空集合。
      */
     public List<TenantInfoVO> buildScopedTenantList(Long scopeRootTenantId, Long returnTenantId) {
         Map<Long, TenantInfoVO> result = new LinkedHashMap<>();
@@ -355,11 +342,10 @@ public final class AuthTenantContextSupport {
     }
 
     /**
-     * {@code buildTenantPath} 执行当前类型定义的业务操作。
+     * 构建或转换 认证 租户 Context Support 相关业务数据，并返回处理结果。
      *
-     * @param tenantId 参数值，用于执行当前操作。
-     *
-     * @return 返回当前操作产生的结果。
+     * @param tenantId 当前操作涉及的租户标识。
+     * @return 返回 认证 租户 Context Support 相关操作生成的结果数据。
      */
     public String buildTenantPath(Long tenantId) {
         List<TenantBO> all = tenantRepository.selectAll();
@@ -380,14 +366,13 @@ public final class AuthTenantContextSupport {
     }
 
     /**
-     * {@code resolveCurrentRoleForTenant} 查询并返回当前操作所需的数据。
+     * 解析或路由 认证 租户 Context Support 相关业务数据，并返回处理结果。
      *
-     * @param roleId 参数值，用于执行当前操作。
-     * @param roles 参数值，用于执行当前操作。
-     * @param assignments 参数值，用于执行当前操作。
-     * @param tenantId 参数值，用于执行当前操作。
-     *
-     * @return 返回当前操作产生的结果。
+     * @param roleId 用于定位role的标识。
+     * @param roles 用于完成本次业务处理的 roles 参数。
+     * @param assignments 用于完成本次业务处理的 assignments 参数。
+     * @param tenantId 当前操作涉及的租户标识。
+     * @return 返回 认证 租户 Context Support 相关操作生成的结果数据。
      */
     public RoleBO resolveCurrentRoleForTenant(
             Long roleId, List<RoleBO> roles, List<UserScopeRoleBO> assignments, Long tenantId) {

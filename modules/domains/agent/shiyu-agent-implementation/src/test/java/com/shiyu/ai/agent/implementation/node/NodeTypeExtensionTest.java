@@ -7,6 +7,9 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 
+/**
+ * 验证 Node Type Extension 相关功能、边界条件、异常路径和协作行为。
+ */
 class NodeTypeExtensionTest {
 
     @Test

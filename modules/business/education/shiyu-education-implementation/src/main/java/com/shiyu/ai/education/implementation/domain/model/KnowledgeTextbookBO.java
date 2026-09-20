@@ -5,7 +5,9 @@ import lombok.Data;
 import java.io.Serial;
 import java.io.Serializable;
 
-/** KnowledgeTextbook 业务对象 */
+/**
+ * 表示 知识 教材 领域对象的业务状态和属性。
+ */
 @Data
 public class KnowledgeTextbookBO implements Serializable {
 

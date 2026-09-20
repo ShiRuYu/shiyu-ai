@@ -20,6 +20,9 @@ import org.junit.jupiter.api.Test;
 import org.springframework.mock.web.MockHttpServletRequest;
 import org.springframework.mock.web.MockHttpServletResponse;
 
+/**
+ * 验证 Audit Interceptor 相关功能、边界条件、异常路径和协作行为。
+ */
 @Tag("dev")
 class AuditInterceptorTest {
 

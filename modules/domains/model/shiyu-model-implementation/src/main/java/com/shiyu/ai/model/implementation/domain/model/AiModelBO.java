@@ -13,7 +13,9 @@ import lombok.EqualsAndHashCode;
 
 import java.io.Serial;
 
-/** AI 模型业务对象 */
+/**
+ * 表示 AI 模型 领域对象的业务状态和属性。
+ */
 @Data
 @EqualsAndHashCode(callSuper = true)
 public class AiModelBO extends BaseEntity {

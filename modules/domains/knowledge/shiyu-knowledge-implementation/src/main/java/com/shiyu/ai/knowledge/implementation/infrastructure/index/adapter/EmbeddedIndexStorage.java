@@ -41,7 +41,7 @@ import java.util.Objects;
 import java.util.Properties;
 
 /**
- * 负责本地知识索引文件的存储、加载和删除。
+ * 负责 Embedded 索引 相关数据的存储或后台处理。
  */
 @Slf4j
 final class EmbeddedIndexStorage {
@@ -365,19 +365,12 @@ final class EmbeddedIndexStorage {
     }
 
     /**
-     * {@code VectorManifest} 封装知识模块中不可变的结构化数据，并作为相关操作之间的值对象。
-     * @param provider 提供方，表示该记录组件承载的数据。
-     * @param dimension 向量维度，表示该记录组件承载的数据。
+     * 封装 向量 Manifest 相关的不可变数据及其字段约束。
      */
     record VectorManifest(String provider, int dimension) {}
 
     /**
-     * {@code IndexHandle} 封装知识模块中不可变的结构化数据，并作为相关操作之间的值对象。
-     * @param directory directory 属性，表示该记录组件承载的数据。
-     * @param reader reader 属性，表示该记录组件承载的数据。
-     * @param searcher searcher 属性，表示该记录组件承载的数据。
-     * @param analyzer analyzer 属性，表示该记录组件承载的数据。
-     * @param vectorStore vectorStore 属性，表示该记录组件承载的数据。
+     * 封装 索引 Handle 相关的不可变数据及其字段约束。
      */
     record IndexHandle(
             Directory directory,

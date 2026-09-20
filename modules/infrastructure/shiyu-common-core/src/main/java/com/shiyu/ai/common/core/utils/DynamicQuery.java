@@ -12,11 +12,13 @@ import java.util.concurrent.TimeUnit;
 import java.util.function.Predicate;
 import java.util.stream.Collectors;
 
-/** 高性能 DynamicQuery - MethodHandle 预编译缓存字段访问 - Predicate + Comparator 缓存 - 可选过滤 + 排序 */
+/**
+ * 封装 Dynamic 操作所需的请求条件和输入数据。
+ */
 public class DynamicQuery {
 
     /**
-     * {@code Op} 表示平台基础设施模块中的一组受控业务状态或分类。
+     * 定义 Op 可用的枚举值及其业务语义。
      */
     public enum Op {
         EQ,
@@ -30,25 +32,19 @@ public class DynamicQuery {
     }
 
     /**
-     * {@code FilterRule} 封装平台基础设施模块中不可变的结构化数据，并作为相关操作之间的值对象。
-     * @param field field 属性，表示该记录组件承载的数据。
-     * @param op op 属性，表示该记录组件承载的数据。
-     * @param value 值，表示该记录组件承载的数据。
+     * 封装 Filter Rule 相关的不可变数据及其字段约束。
      */
     public record FilterRule(String field, Op op, Object value) {}
 
     /**
-     * {@code SortRule} 封装平台基础设施模块中不可变的结构化数据，并作为相关操作之间的值对象。
-     * @param field field 属性，表示该记录组件承载的数据。
-     * @param asc asc 属性，表示该记录组件承载的数据。
-     * @param nullFirst nullFirst 属性，表示该记录组件承载的数据。
+     * 封装 Sort Rule 相关的不可变数据及其字段约束。
      */
     public record SortRule(String field, boolean asc, boolean nullFirst) {
         /**
-         * {@code SortRule} 创建并初始化当前类型实例。
+         * 执行 Sort Rule 相关业务操作，并维护必要的状态和协作关系。
          *
-         * @param field 参数值，用于执行当前操作。
-         * @param asc 参数值，用于执行当前操作。
+         * @param field 用于完成本次业务处理的 field 参数。
+         * @param asc 用于完成本次业务处理的 asc 参数。
          */
         public SortRule(String field, boolean asc) {
             this(field, asc, false);
@@ -168,13 +164,12 @@ public class DynamicQuery {
 
     // ----------------------- 查询主方法 -----------------------
     /**
-     * {@code query} 查询并返回当前操作所需的数据。
+     * 查询 Dynamic 相关业务数据，并返回处理结果。
      *
-     * @param list 参数值，用于执行当前操作。
-     * @param filters 参数值，用于执行当前操作。
-     * @param sorts 参数值，用于执行当前操作。
-     *
-     * @return 返回当前操作产生的结果。
+     * @param list 用于完成本次业务处理的 list 参数。
+     * @param filters 用于完成本次业务处理的 filters 参数。
+     * @param sorts 用于完成本次业务处理的 sorts 参数。
+     * @return 返回符合条件的数据集合；没有匹配项时返回空集合。
      */
     public static <T> List<T> query(List<T> list, List<FilterRule> filters, List<SortRule> sorts) {
         if (list == null || list.isEmpty()) return List.of();
@@ -195,7 +190,7 @@ public class DynamicQuery {
 
     // ----------------------- 链式 Builder -----------------------
     /**
-     * {@code Builder} 承载平台基础设施模块的领域状态或协作行为，负责维护本类型的职责边界。
+     * 构建 Builder 相关的对象、流程或运行时配置。
      */
     public static class Builder<T> {
         /**
@@ -206,22 +201,21 @@ public class DynamicQuery {
         private final List<SortRule> sorts = new ArrayList<>();
 
         /**
-         * {@code Builder} 创建并初始化当前类型实例。
+         * 构建或转换 Builder 相关业务操作，并维护必要的状态和协作关系。
          *
-         * @param source 参数值，用于执行当前操作。
+         * @param source 用于完成本次业务处理的 source 参数。
          */
         public Builder(List<T> source) {
             this.source = source;
         }
 
         /**
-         * {@code filter} 执行当前类型定义的业务操作。
+         * 执行 Builder 相关业务数据，并返回处理结果。
          *
-         * @param field 参数值，用于执行当前操作。
-         * @param op 参数值，用于执行当前操作。
-         * @param val 参数值，用于执行当前操作。
-         *
-         * @return 返回当前操作产生的结果。
+         * @param field 用于完成本次业务处理的 field 参数。
+         * @param op 用于完成本次业务处理的 op 参数。
+         * @param val 用于完成本次业务处理的 val 参数。
+         * @return 返回 Builder 相关操作生成的结果数据。
          */
         public Builder<T> filter(String field, Op op, Object val) {
             filters.add(new FilterRule(field, op, val));
@@ -229,12 +223,11 @@ public class DynamicQuery {
         }
 
         /**
-         * {@code sort} 执行当前类型定义的业务操作。
+         * 执行 Builder 相关业务数据，并返回处理结果。
          *
-         * @param field 参数值，用于执行当前操作。
-         * @param asc 参数值，用于执行当前操作。
-         *
-         * @return 返回当前操作产生的结果。
+         * @param field 用于完成本次业务处理的 field 参数。
+         * @param asc 用于完成本次业务处理的 asc 参数。
+         * @return 返回 Builder 相关操作生成的结果数据。
          */
         public Builder<T> sort(String field, boolean asc) {
             sorts.add(new SortRule(field, asc));
@@ -242,13 +235,12 @@ public class DynamicQuery {
         }
 
         /**
-         * {@code sort} 执行当前类型定义的业务操作。
+         * 执行 Builder 相关业务数据，并返回处理结果。
          *
-         * @param field 参数值，用于执行当前操作。
-         * @param asc 参数值，用于执行当前操作。
-         * @param nullFirst 参数值，用于执行当前操作。
-         *
-         * @return 返回当前操作产生的结果。
+         * @param field 用于完成本次业务处理的 field 参数。
+         * @param asc 用于完成本次业务处理的 asc 参数。
+         * @param nullFirst 用于完成本次业务处理的 nullFirst 参数。
+         * @return 返回 Builder 相关操作生成的结果数据。
          */
         public Builder<T> sort(String field, boolean asc, boolean nullFirst) {
             sorts.add(new SortRule(field, asc, nullFirst));
@@ -256,9 +248,9 @@ public class DynamicQuery {
         }
 
         /**
-         * {@code build} 执行当前类型定义的业务操作。
+         * 构建或转换 Builder 相关业务数据，并返回处理结果。
          *
-         * @return 返回当前操作产生的结果。
+         * @return 返回符合条件的数据集合；没有匹配项时返回空集合。
          */
         public List<T> build() {
             return DynamicQuery.query(source, filters, sorts);

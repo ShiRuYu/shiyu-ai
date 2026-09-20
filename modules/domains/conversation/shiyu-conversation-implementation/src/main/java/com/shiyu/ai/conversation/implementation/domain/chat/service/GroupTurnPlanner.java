@@ -9,20 +9,19 @@ import java.util.List;
 import java.util.Map;
 
 /**
- * 规划群聊参与者的轮次和发言顺序。
+ * 实现 Group Turn Planner 所属领域的业务规则和状态变化。
  */
 public final class GroupTurnPlanner {
     private GroupTurnPlanner() {}
 
     /**
-     * {@code next} 执行当前类型定义的业务操作。
+     * 执行 Group Turn Planner 相关业务数据，并返回处理结果。
      *
-     * @param group 参数值，用于执行当前操作。
-     * @param completedSpeakerIds 参数值，用于执行当前操作。
-     * @param requestedSpeakerId 参数值，用于执行当前操作。
-     * @param consumedTokens 参数值，用于执行当前操作。
-     *
-     * @return 返回当前操作产生的结果。
+     * @param group 用于完成本次业务处理的 group 参数。
+     * @param completedSpeakerIds 待处理的业务对象标识集合。
+     * @param requestedSpeakerId 用于定位requested Speaker的标识。
+     * @param consumedTokens 用于完成本次业务处理的 consumedTokens 参数。
+     * @return 返回 Group Turn Planner 相关操作生成的结果数据。
      */
     public static TurnDecision next(
             GroupChat group,
@@ -70,12 +69,7 @@ public final class GroupTurnPlanner {
     }
 
     /**
-     * {@code TurnDecision} 封装会话模块中不可变的结构化数据，并作为相关操作之间的值对象。
-     * @param exhausted exhausted 属性，表示该记录组件承载的数据。
-     * @param reason reason 属性，表示该记录组件承载的数据。
-     * @param participant participant 属性，表示该记录组件承载的数据。
-     * @param remainingTurns remainingTurns 属性，表示该记录组件承载的数据。
-     * @param remainingTokens remainingTokens 属性，表示该记录组件承载的数据。
+     * 封装 Turn Decision 相关的不可变数据及其字段约束。
      */
     public record TurnDecision(
             boolean exhausted,

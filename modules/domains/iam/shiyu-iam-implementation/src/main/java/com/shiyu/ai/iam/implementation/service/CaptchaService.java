@@ -2,7 +2,9 @@ package com.shiyu.ai.iam.implementation.service;
 
 import com.shiyu.ai.iam.implementation.vo.CaptchaVO;
 
-/** 验证码服务 提供验证码生成、验证和销毁功能 */
+/**
+ * 提供 Captcha 的查询、创建、更新及调用服务，协调业务变更和领域协作。
+ */
 public interface CaptchaService {
 
     /**

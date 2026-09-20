@@ -6,7 +6,7 @@ import lombok.Getter;
 import lombok.Setter;
 
 /**
- * VectorInfrastructureProperties 配置属性，集中管理基础设施领域相关运行参数。
+ * 定义 向量 Infrastructure 基础设施或应用能力的配置项及装配规则。
  */
 @ConfigurationProperties(prefix = "shiyu.infrastructure.vector")
 @Getter
@@ -19,11 +19,10 @@ public class VectorInfrastructureProperties {
     private String provider;
 
     /**
-     * {@code resolveProvider} 查询并返回当前操作所需的数据。
+     * 解析或路由 向量 Infrastructure 相关业务数据，并返回处理结果。
      *
-     * @param legacyType 参数值，用于执行当前操作。
-     *
-     * @return 返回当前操作产生的结果。
+     * @param legacyType 用于完成本次业务处理的 legacyType 参数。
+     * @return 返回 向量 Infrastructure 相关操作生成的结果数据。
      */
     public String resolveProvider(String legacyType) {
         return provider == null || provider.isBlank() ? legacyType : provider.trim();

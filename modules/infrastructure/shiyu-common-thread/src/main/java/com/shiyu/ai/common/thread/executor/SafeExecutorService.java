@@ -12,7 +12,9 @@ import java.util.List;
 import java.util.concurrent.*;
 import java.util.concurrent.atomic.AtomicReference;
 
-/** 安全执行器服务包装器 提供上下文传递、异常处理和任务装饰等功能 */
+/**
+ * 提供 Safe Executor 的查询、创建、更新及调用服务，协调业务变更和领域协作。
+ */
 public class SafeExecutorService extends AbstractExecutorService {
 
     private static final Logger logger = LoggerFactory.getLogger(SafeExecutorService.class);
@@ -27,7 +29,9 @@ public class SafeExecutorService extends AbstractExecutorService {
     private final TaskDecorator taskDecorator;
     private final AtomicReference<State> state = new AtomicReference<>(State.RUNNING);
 
-    /** 执行器状态 */
+    /**
+     * 定义 State 可用的枚举值及其业务语义。
+     */
     private enum State {
         RUNNING,
         SHUTDOWN,
@@ -64,9 +68,9 @@ public class SafeExecutorService extends AbstractExecutorService {
     }
 
     /**
-     * {@code execute} 执行当前模块定义的业务流程。
+     * 调用 Safe Executor 相关业务操作，并维护必要的状态和协作关系。
      *
-     * @param command 参数值，用于执行当前操作。
+     * @param command 本次流程携带的事件或业务数据。
      */
     @Override
     public void execute(Runnable command) {
@@ -79,7 +83,7 @@ public class SafeExecutorService extends AbstractExecutorService {
     }
 
     /**
-     * {@code shutdown} 执行当前类型定义的业务操作。
+     * 执行 Safe Executor 相关业务操作，并维护必要的状态和协作关系。
      */
     @Override
     public void shutdown() {
@@ -89,9 +93,9 @@ public class SafeExecutorService extends AbstractExecutorService {
     }
 
     /**
-     * {@code shutdownNow} 执行当前类型定义的业务操作。
+     * 执行 Safe Executor 相关业务数据，并返回处理结果。
      *
-     * @return 返回当前操作产生的结果。
+     * @return 返回符合条件的数据集合；没有匹配项时返回空集合。
      */
     @Override
     public List<Runnable> shutdownNow() {
@@ -101,9 +105,9 @@ public class SafeExecutorService extends AbstractExecutorService {
     }
 
     /**
-     * {@code isShutdown} 校验当前操作的输入或状态是否满足约束。
+     * 校验或判断 Safe Executor 相关业务数据，并返回处理结果。
      *
-     * @return 返回当前操作产生的结果。
+     * @return 返回本次条件判断是否成立。
      */
     @Override
     public boolean isShutdown() {
@@ -111,9 +115,9 @@ public class SafeExecutorService extends AbstractExecutorService {
     }
 
     /**
-     * {@code isTerminated} 校验当前操作的输入或状态是否满足约束。
+     * 校验或判断 Safe Executor 相关业务数据，并返回处理结果。
      *
-     * @return 返回当前操作产生的结果。
+     * @return 返回本次条件判断是否成立。
      */
     @Override
     public boolean isTerminated() {
@@ -121,12 +125,11 @@ public class SafeExecutorService extends AbstractExecutorService {
     }
 
     /**
-     * {@code awaitTermination} 执行当前类型定义的业务操作。
+     * 执行 Safe Executor 相关业务数据，并返回处理结果。
      *
-     * @param timeout 参数值，用于执行当前操作。
-     * @param unit 参数值，用于执行当前操作。
-     *
-     * @return 返回当前操作产生的结果。
+     * @param timeout 用于完成本次业务处理的 timeout 参数。
+     * @param unit 用于完成本次业务处理的 unit 参数。
+     * @return 返回本次条件判断是否成立。
      */
     @Override
     public boolean awaitTermination(long timeout, TimeUnit unit) throws InterruptedException {
@@ -136,12 +139,11 @@ public class SafeExecutorService extends AbstractExecutorService {
     }
 
     /**
-     * {@code newTaskFor} 执行当前类型定义的业务操作。
+     * 执行 Safe Executor 相关业务数据，并返回处理结果。
      *
-     * @param runnable 参数值，用于执行当前操作。
-     * @param value 参数值，用于执行当前操作。
-     *
-     * @return 返回当前操作产生的结果。
+     * @param runnable 用于完成本次业务处理的 runnable 参数。
+     * @param value 用于完成本次业务处理的 value 参数。
+     * @return 返回 Safe Executor 相关操作生成的结果数据。
      */
     @Override
     protected <T> RunnableFuture<T> newTaskFor(Runnable runnable, T value) {
@@ -149,11 +151,10 @@ public class SafeExecutorService extends AbstractExecutorService {
     }
 
     /**
-     * {@code newTaskFor} 执行当前类型定义的业务操作。
+     * 执行 Safe Executor 相关业务数据，并返回处理结果。
      *
-     * @param callable 参数值，用于执行当前操作。
-     *
-     * @return 返回当前操作产生的结果。
+     * @param callable 用于完成本次业务处理的 callable 参数。
+     * @return 返回 Safe Executor 相关操作生成的结果数据。
      */
     @Override
     protected <T> RunnableFuture<T> newTaskFor(Callable<T> callable) {
@@ -161,11 +162,10 @@ public class SafeExecutorService extends AbstractExecutorService {
     }
 
     /**
-     * {@code submit} 执行当前类型定义的业务操作。
+     * 执行 Safe Executor 相关业务数据，并返回处理结果。
      *
-     * @param task 参数值，用于执行当前操作。
-     *
-     * @return 返回当前操作产生的结果。
+     * @param task 用于完成本次业务处理的 task 参数。
+     * @return 返回 Safe Executor 相关操作生成的结果数据。
      */
     @Override
     public <T> Future<T> submit(Callable<T> task) {
@@ -178,12 +178,11 @@ public class SafeExecutorService extends AbstractExecutorService {
     }
 
     /**
-     * {@code submit} 执行当前类型定义的业务操作。
+     * 执行 Safe Executor 相关业务数据，并返回处理结果。
      *
-     * @param task 参数值，用于执行当前操作。
-     * @param result 参数值，用于执行当前操作。
-     *
-     * @return 返回当前操作产生的结果。
+     * @param task 用于完成本次业务处理的 task 参数。
+     * @param result 用于完成本次业务处理的 result 参数。
+     * @return 返回 Safe Executor 相关操作生成的结果数据。
      */
     @Override
     public <T> Future<T> submit(Runnable task, T result) {
@@ -196,11 +195,10 @@ public class SafeExecutorService extends AbstractExecutorService {
     }
 
     /**
-     * {@code submit} 执行当前类型定义的业务操作。
+     * 执行 Safe Executor 相关业务数据，并返回处理结果。
      *
-     * @param task 参数值，用于执行当前操作。
-     *
-     * @return 返回当前操作产生的结果。
+     * @param task 用于完成本次业务处理的 task 参数。
+     * @return 返回 Safe Executor 相关操作生成的结果数据。
      */
     @Override
     public Future<?> submit(Runnable task) {
@@ -212,30 +210,32 @@ public class SafeExecutorService extends AbstractExecutorService {
         return delegate.submit(decoratedTask);
     }
 
-    /** 安全的FutureTask实现 */
+    /**
+     * 实现 Safe Future 相关的业务处理、协作逻辑或基础设施能力。
+     */
     private static class SafeFutureTask<T> extends FutureTask<T> {
 
         /**
-         * {@code SafeFutureTask} 创建并初始化当前类型实例。
+         * 执行 Safe Future 相关业务操作，并维护必要的状态和协作关系。
          *
-         * @param runnable 参数值，用于执行当前操作。
-         * @param result 参数值，用于执行当前操作。
+         * @param runnable 用于完成本次业务处理的 runnable 参数。
+         * @param result 用于完成本次业务处理的 result 参数。
          */
         public SafeFutureTask(Runnable runnable, T result) {
             super(new ContextAwareRunnable(runnable), result);
         }
 
         /**
-         * {@code SafeFutureTask} 创建并初始化当前类型实例。
+         * 执行 Safe Future 相关业务操作，并维护必要的状态和协作关系。
          *
-         * @param callable 参数值，用于执行当前操作。
+         * @param callable 用于完成本次业务处理的 callable 参数。
          */
         public SafeFutureTask(Callable<T> callable) {
             super(new ContextAwareCallable<>(callable));
         }
 
         /**
-         * {@code done} 执行当前类型定义的业务操作。
+         * 执行 Safe Future 相关业务操作，并维护必要的状态和协作关系。
          */
         @Override
         protected void done() {

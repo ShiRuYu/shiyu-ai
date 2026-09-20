@@ -3,7 +3,9 @@ package com.shiyu.ai.iam.implementation.vo;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
-/** 验证码响应 VO */
+/**
+ * 封装 Captcha 操作向调用方返回的传输数据。
+ */
 @Data
 @NoArgsConstructor
 public class CaptchaVO {
@@ -18,11 +20,11 @@ public class CaptchaVO {
     private Long expireTime;
 
     /**
-     * {@code CaptchaVO} 创建并初始化当前类型实例。
+     * 执行 Captcha 相关业务操作，并维护必要的状态和协作关系。
      *
-     * @param key 参数值，用于执行当前操作。
-     * @param image 参数值，用于执行当前操作。
-     * @param expireTime 参数值，用于执行当前操作。
+     * @param key 用于定位或筛选目标业务对象的业务值。
+     * @param image 用于完成本次业务处理的 image 参数。
+     * @param expireTime 用于完成本次业务处理的 expireTime 参数。
      */
     public CaptchaVO(String key, String image, Long expireTime) {
         this.key = key;

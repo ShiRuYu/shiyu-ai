@@ -8,7 +8,7 @@ import com.shiyu.ai.kernel.context.ActorContext;
 import java.util.List;
 
 /**
- * TextbookService 服务接口，负责执行教育领域相关业务操作。
+ * 提供 教材 的查询、创建、更新及调用服务，协调业务变更和领域协作。
  */
 public interface TextbookService {
 
@@ -23,13 +23,12 @@ public interface TextbookService {
     TextbookResponse getById(ActorContext actor, Long id);
 
     /**
-     * 根据学科年级查询教材列表。
+     * 查询 教材 相关业务数据，并返回处理结果。
      *
-     * @param actor 调用方上下文。
-     * @param subjectCode 学科编码。
-     * @param grade 年级。
-     *
-     * @return 结果列表。
+     * @param actor 当前操作主体上下文，用于确定租户、用户和访问权限。
+     * @param subjectCode 用于完成本次业务处理的 subjectCode 参数。
+     * @param grade 用于完成本次业务处理的 grade 参数。
+     * @return 返回符合条件的数据集合；没有匹配项时返回空集合。
      */
     List<TextbookResponse> listBySubjectAndGrade(
             ActorContext actor, String subjectCode, Integer grade);

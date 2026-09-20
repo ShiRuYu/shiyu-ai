@@ -9,7 +9,9 @@ import java.io.Serial;
 import java.util.List;
 import java.util.Map;
 
-/** 意图定义业务对象 */
+/**
+ * 表示 Intent Def 领域对象的业务状态和属性。
+ */
 @Data
 @EqualsAndHashCode(callSuper = true)
 @SuppressWarnings("serial")

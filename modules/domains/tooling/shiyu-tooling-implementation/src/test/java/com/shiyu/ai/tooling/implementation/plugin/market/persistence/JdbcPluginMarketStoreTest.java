@@ -18,6 +18,9 @@ import java.util.List;
 
 import javax.sql.DataSource;
 
+/**
+ * 验证 Jdbc 插件 Market Store 相关功能、边界条件、异常路径和协作行为。
+ */
 class JdbcPluginMarketStoreTest {
     @Test
     @SuppressWarnings({"unchecked", "rawtypes"})

@@ -5,7 +5,9 @@ import lombok.Data;
 import java.io.Serial;
 import java.io.Serializable;
 
-/** 用户上下文视图对象 */
+/**
+ * 封装 用户 Context 操作向调用方返回的传输数据。
+ */
 @Data
 public class UserContextVO implements Serializable {
 

@@ -3,7 +3,7 @@ package com.shiyu.ai.common.vector.api;
 import com.shiyu.ai.common.vector.model.VectorStoreOptions;
 
 /**
- * VectorStoreProvider 边界接口，负责向外部组件提供基础设施领域相关能力。
+ * 创建或提供 向量 Store 相关的业务组件和运行时能力。
  */
 public interface VectorStoreProvider extends AutoCloseable {
 

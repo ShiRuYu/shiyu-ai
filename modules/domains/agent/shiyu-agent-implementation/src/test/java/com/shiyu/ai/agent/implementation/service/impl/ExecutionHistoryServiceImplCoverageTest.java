@@ -12,6 +12,9 @@ import com.shiyu.ai.kernel.context.UserId;
 
 import org.junit.jupiter.api.Test;
 
+/**
+ * 验证 Execution History Service Impl Coverage 相关功能、边界条件、异常路径和协作行为。
+ */
 class ExecutionHistoryServiceImplCoverageTest {
     private static final ActorContext ACTOR =
             new ActorContext(new TenantId(5), new UserId(8), false);

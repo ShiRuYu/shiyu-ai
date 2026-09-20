@@ -7,6 +7,9 @@ import org.junit.jupiter.api.Test;
 
 import java.util.concurrent.atomic.AtomicBoolean;
 
+/**
+ * 验证 用户 Lock Manager 相关功能、边界条件、异常路径和协作行为。
+ */
 class UserLockManagerTest {
     @Test
     void executesValueAndRunnableUnderUserLock() {

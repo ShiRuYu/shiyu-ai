@@ -7,7 +7,9 @@ import lombok.Data;
 import java.io.Serial;
 import java.io.Serializable;
 
-/** 用户租户角色分配项。 */
+/**
+ * 封装 用户 租户 角色 操作所需的请求条件和输入数据。
+ */
 @Data
 @Schema(description = "用户租户角色分配项")
 public class UserTenantRoleRequest implements Serializable {

@@ -11,10 +11,9 @@ import lombok.NoArgsConstructor;
 import lombok.experimental.SuperBuilder;
 
 /**
- * 数据转换节点配置类 用于数据格式转换或处理
+ * 定义 Transform 基础设施或应用能力的配置项及装配规则。
  *
  * @author shiyu-ai
- * @date 2026-03-28
  */
 @Data
 @SuperBuilder

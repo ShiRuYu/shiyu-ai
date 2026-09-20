@@ -6,16 +6,17 @@ import jakarta.validation.ConstraintValidatorContext;
 import org.jsoup.Jsoup;
 import org.jsoup.safety.Safelist;
 
-/** 自定义 XSS 校验注解实现 使用 Jsoup 白名单方式净化并比对，比正则更全面 */
+/**
+ * 校验或约束 Xss 相关的请求、状态和访问规则。
+ */
 public class XssValidator implements ConstraintValidator<Xss, String> {
 
     /**
-     * {@code isValid} 校验当前操作的输入或状态是否满足约束。
+     * 校验或判断 Xss 相关业务数据，并返回处理结果。
      *
-     * @param value 参数值，用于执行当前操作。
-     * @param constraintValidatorContext 参数值，用于执行当前操作。
-     *
-     * @return 返回当前操作产生的结果。
+     * @param value 用于完成本次业务处理的 value 参数。
+     * @param constraintValidatorContext 用于完成本次业务处理的 constraintValidatorContext 参数。
+     * @return 返回本次条件判断是否成立。
      */
     @Override
     public boolean isValid(String value, ConstraintValidatorContext constraintValidatorContext) {

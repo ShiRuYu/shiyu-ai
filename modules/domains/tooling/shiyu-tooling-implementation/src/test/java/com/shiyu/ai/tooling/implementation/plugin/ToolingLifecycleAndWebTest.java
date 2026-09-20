@@ -33,6 +33,9 @@ import java.util.Set;
 import java.util.jar.JarEntry;
 import java.util.jar.JarOutputStream;
 
+/**
+ * 验证 Tooling Lifecycle And Web 相关功能、边界条件、异常路径和协作行为。
+ */
 class ToolingLifecycleAndWebTest {
     @Test
     void managesPluginLifecycleAndRecordsFailures() {
@@ -311,6 +314,9 @@ class ToolingLifecycleAndWebTest {
         return new PluginDescriptor(id, id, "1.0.0", "", "test", null, Map.of());
     }
 
+    /**
+     * 验证 Recording 插件 相关功能、边界条件、异常路径和协作行为。
+     */
     private static class RecordingPlugin implements Plugin {
         private final String id;
         private boolean started;
@@ -340,6 +346,9 @@ class ToolingLifecycleAndWebTest {
         }
     }
 
+    /**
+     * 验证 Rpc Echo Main 相关功能、边界条件、异常路径和协作行为。
+     */
     public static final class RpcEchoMain {
         public static void main(String[] args) throws Exception {
             java.io.BufferedReader reader =
@@ -351,6 +360,9 @@ class ToolingLifecycleAndWebTest {
         }
     }
 
+    /**
+     * 验证 Jar 插件 相关功能、边界条件、异常路径和协作行为。
+     */
     public static final class JarPlugin implements Plugin {
         public JarPlugin() {}
 

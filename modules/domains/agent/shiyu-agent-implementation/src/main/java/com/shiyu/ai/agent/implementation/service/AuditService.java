@@ -10,9 +10,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 
 /**
- * 审计日志服务
- *
- * <p>提供统一的审计记录入口，支持手动记录和通过 AuditEvent 异步消费。
+ * 提供 Audit 的查询、创建、更新及调用服务，协调业务变更和领域协作。
  */
 @Slf4j
 @Service
@@ -24,9 +22,9 @@ public class AuditService {
     private final EventPublisher eventPublisher;
 
     /**
-     * {@code AuditService} 创建并初始化当前类型实例。
+     * 执行 Audit 相关业务操作，并维护必要的状态和协作关系。
      *
-     * @param eventPublisher 参数值，用于执行当前操作。
+     * @param eventPublisher 用于完成本次业务处理的 eventPublisher 参数。
      */
     public AuditService(EventPublisher eventPublisher) {
         this.eventPublisher = eventPublisher;

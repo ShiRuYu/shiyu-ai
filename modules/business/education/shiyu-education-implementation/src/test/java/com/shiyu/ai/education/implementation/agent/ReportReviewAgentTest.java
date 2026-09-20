@@ -25,6 +25,9 @@ import java.time.Instant;
 import java.time.LocalDate;
 import java.util.List;
 
+/**
+ * 验证 Report 复习 智能体 相关功能、边界条件、异常路径和协作行为。
+ */
 class ReportReviewAgentTest {
     private static final ActorContext ACTOR =
             new ActorContext(new TenantId(7), new UserId(11), false);

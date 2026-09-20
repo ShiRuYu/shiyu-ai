@@ -9,7 +9,7 @@ import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
 
 /**
- * {@code Xss} 是 Web 输入校验注解，用于标记需要进行跨站脚本过滤的参数。
+ * 定义 Xss 相关的协作契约和调用边界。
  */
 @Retention(RetentionPolicy.RUNTIME)
 @Target(
@@ -23,23 +23,23 @@ import java.lang.annotation.Target;
 public @interface Xss {
 
     /**
-     * 执行 {@code message} 定义的接口操作。
+     * 执行 Xss 相关业务数据，并返回处理结果。
      *
-     * @return 操作结果。
+     * @return 返回 Xss 相关操作生成的结果数据。
      */
     String message() default "不允许任何脚本运行";
 
     /**
-     * 执行 {@code groups} 定义的接口操作。
+     * 执行 Xss 相关业务数据，并返回处理结果。
      *
-     * @return 符合条件的结果集合。
+     * @return 返回 Xss 相关操作生成的结果数据。
      */
     Class<?>[] groups() default {};
 
     /**
-     * 执行 {@code payload} 定义的接口操作。
+     * 执行 Xss 相关业务数据，并返回处理结果。
      *
-     * @return 符合条件的结果集合。
+     * @return 返回 Xss 相关操作生成的结果数据。
      */
     Class<? extends Payload>[] payload() default {};
 }

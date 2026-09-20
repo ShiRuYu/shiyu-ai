@@ -23,6 +23,9 @@ import java.util.List;
 
 import javax.sql.DataSource;
 
+/**
+ * 验证 Jdbc Idempotency Repository 相关功能、边界条件、异常路径和协作行为。
+ */
 class JdbcIdempotencyRepositoryTest {
     @org.junit.jupiter.api.BeforeEach
     void bindTenant() {

@@ -30,6 +30,9 @@ import java.lang.reflect.Method;
 import java.util.List;
 import java.util.Set;
 
+/**
+ * 验证 Embedded 知识 Retrieval Service 相关功能、边界条件、异常路径和协作行为。
+ */
 class EmbeddedKnowledgeRetrievalServiceTest {
     private static final ActorContext ACTOR =
             new ActorContext(new TenantId(7L), new UserId(9L), false);

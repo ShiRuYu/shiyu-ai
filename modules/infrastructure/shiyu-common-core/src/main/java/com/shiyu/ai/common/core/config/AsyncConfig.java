@@ -10,7 +10,9 @@ import org.springframework.scheduling.annotation.EnableAsync;
 import org.springframework.scheduling.annotation.EnableScheduling;
 import org.springframework.scheduling.concurrent.ThreadPoolTaskExecutor;
 
-/** 异步配置 使用 @Bean 方式提供 AsyncTaskExecutor，避免 AsyncConfigurer 接口冲突 */
+/**
+ * 定义 Async 基础设施或应用能力的配置项及装配规则。
+ */
 @Slf4j
 @EnableAsync(proxyTargetClass = true)
 @EnableScheduling

@@ -30,7 +30,7 @@ import org.mockito.MockedStatic;
 import java.util.List;
 
 /**
- * 验证 EducationCoreControllerCoverage 的功能、边界条件和集成行为。
+ * 验证 教育 Core Controller Coverage 相关功能、边界条件、异常路径和协作行为。
  */
 class EducationCoreControllerCoverageTest {
 

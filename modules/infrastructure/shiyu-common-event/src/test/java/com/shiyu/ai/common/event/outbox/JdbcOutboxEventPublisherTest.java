@@ -18,6 +18,9 @@ import org.springframework.jdbc.core.JdbcTemplate;
 
 import java.time.Instant;
 
+/**
+ * 验证 Jdbc Outbox 事件 Publisher 相关功能、边界条件、异常路径和协作行为。
+ */
 class JdbcOutboxEventPublisherTest {
 
     @org.junit.jupiter.api.AfterEach
@@ -73,5 +76,8 @@ class JdbcOutboxEventPublisherTest {
                 .isInstanceOf(IllegalArgumentException.class);
     }
 
+    /**
+     * 验证 Test 相关功能、边界条件、异常路径和协作行为。
+     */
     private record TestEvent(String eventType) implements DomainEvent {}
 }

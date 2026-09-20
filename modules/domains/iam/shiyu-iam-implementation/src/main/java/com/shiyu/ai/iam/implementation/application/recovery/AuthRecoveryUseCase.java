@@ -9,7 +9,7 @@ import com.shiyu.ai.iam.implementation.utils.SaTokenHelper;
 import lombok.extern.slf4j.Slf4j;
 
 /**
- * 编排 AuthRecovery 应用用例。
+ * 定义 认证 Recovery 相关用例的输入、授权和业务结果。
  */
 @Slf4j
 public final class AuthRecoveryUseCase {
@@ -23,10 +23,10 @@ public final class AuthRecoveryUseCase {
     private final CaptchaService captchaService;
 
     /**
-     * {@code AuthRecoveryUseCase} 创建并初始化当前类型实例。
+     * 执行 认证 Recovery 相关业务操作，并维护必要的状态和协作关系。
      *
-     * @param userRepository 参数值，用于执行当前操作。
-     * @param captchaService 参数值，用于执行当前操作。
+     * @param userRepository 用于完成本次业务处理的 userRepository 参数。
+     * @param captchaService 用于完成本次业务处理的 captchaService 参数。
      */
     public AuthRecoveryUseCase(UserRepository userRepository, CaptchaService captchaService) {
         this.userRepository = userRepository;
@@ -34,14 +34,13 @@ public final class AuthRecoveryUseCase {
     }
 
     /**
-     * {@code forgetPassword} 执行当前类型定义的业务操作。
+     * 执行 认证 Recovery 相关业务数据，并返回处理结果。
      *
-     * @param email 参数值，用于执行当前操作。
-     * @param newPassword 参数值，用于执行当前操作。
-     * @param code 参数值，用于执行当前操作。
-     * @param captchaKey 参数值，用于执行当前操作。
-     *
-     * @return 返回当前操作产生的结果。
+     * @param email 用于完成本次业务处理的 email 参数。
+     * @param newPassword 用于完成本次业务处理的 newPassword 参数。
+     * @param code 用于定位或筛选目标业务对象的业务值。
+     * @param captchaKey 用于完成本次业务处理的 captchaKey 参数。
+     * @return 返回本次条件判断是否成立。
      */
     public boolean forgetPassword(
             String email, String newPassword, String code, String captchaKey) {

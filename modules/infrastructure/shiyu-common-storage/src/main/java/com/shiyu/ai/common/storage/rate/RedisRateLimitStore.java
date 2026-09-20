@@ -10,7 +10,7 @@ import java.time.Duration;
 import java.util.List;
 
 /**
- * 使用 Redis 保存并发限流计数和窗口状态。
+ * 管理 Redis Rate Limit 相关的运行时状态、注册信息或临时数据。
  */
 public final class RedisRateLimitStore implements RateLimitStore {
 
@@ -36,10 +36,10 @@ public final class RedisRateLimitStore implements RateLimitStore {
     private final RedisInfrastructureProperties properties;
 
     /**
-     * {@code RedisRateLimitStore} 创建并初始化当前类型实例。
+     * 执行 Redis Rate Limit 相关业务操作，并维护必要的状态和协作关系。
      *
-     * @param redis 参数值，用于执行当前操作。
-     * @param properties 参数值，用于执行当前操作。
+     * @param redis 用于完成本次业务处理的 redis 参数。
+     * @param properties 用于完成本次业务处理的 properties 参数。
      */
     public RedisRateLimitStore(
             StringRedisTemplate redis, RedisInfrastructureProperties properties) {
@@ -48,14 +48,13 @@ public final class RedisRateLimitStore implements RateLimitStore {
     }
 
     /**
-     * {@code consume} 执行当前类型定义的业务操作。
+     * 处理 Redis Rate Limit 相关业务数据，并返回处理结果。
      *
-     * @param key 参数值，用于执行当前操作。
-     * @param permits 参数值，用于执行当前操作。
-     * @param limit 参数值，用于执行当前操作。
-     * @param window 参数值，用于执行当前操作。
-     *
-     * @return 返回当前操作产生的结果。
+     * @param key 用于定位或筛选目标业务对象的业务值。
+     * @param permits 用于完成本次业务处理的 permits 参数。
+     * @param limit 每页返回的数据数量。
+     * @param window 用于完成本次业务处理的 window 参数。
+     * @return 返回本次条件判断是否成立。
      */
     @Override
     public boolean consume(String key, long permits, long limit, Duration window) {

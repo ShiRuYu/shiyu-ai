@@ -5,9 +5,7 @@ import com.mybatisflex.core.tenant.TenantManager;
 import java.util.function.Supplier;
 
 /**
- * 受控执行跨租户查询，统一保存和恢复 MyBatis-Flex 的忽略标志。
- *
- * <p>调用方仍必须在进入此执行器前完成业务授权，并在查询中显式写出目标范围。
+ * 实现 租户 Query Executor 相关的业务处理、协作逻辑或基础设施能力。
  */
 public final class TenantQueryExecutor {
 

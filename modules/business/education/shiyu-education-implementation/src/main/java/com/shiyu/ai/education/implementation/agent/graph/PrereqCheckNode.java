@@ -19,11 +19,7 @@ import java.util.List;
 import java.util.Set;
 
 /**
- * 前置知识检查节点
- *
- * <p>LangGraph4j 节点，检测学生对目标知识点缺失的前置知识。
- *
- * <p>输入字段：knowledgeId, studentId 输出字段：missingPrerequisites, hasMissingPrereqs
+ * 执行 Prereq Check 相关流程节点的输入处理和状态转移。
  */
 @Slf4j
 @Getter
@@ -41,10 +37,10 @@ public class PrereqCheckNode extends BaseNode {
     private final KnowledgePathPort knowledgePathService;
 
     /**
-     * {@code PrereqCheckNode} 创建并初始化当前类型实例。
+     * 执行 Prereq Check 相关业务操作，并维护必要的状态和协作关系。
      *
-     * @param knowledgeRelationService 参数值，用于执行当前操作。
-     * @param knowledgePathService 参数值，用于执行当前操作。
+     * @param knowledgeRelationService 用于完成本次业务处理的 knowledgeRelationService 参数。
+     * @param knowledgePathService 用于完成本次业务处理的 knowledgePathService 参数。
      */
     public PrereqCheckNode(
             KnowledgeRelationPort knowledgeRelationService,
@@ -57,11 +53,10 @@ public class PrereqCheckNode extends BaseNode {
     }
 
     /**
-     * {@code doExecute} 执行当前类型定义的业务操作。
+     * 执行 Prereq Check 相关业务数据，并返回处理结果。
      *
-     * @param input 参数值，用于执行当前操作。
-     *
-     * @return 返回当前操作产生的结果。
+     * @param input 用于完成本次业务处理的 input 参数。
+     * @return 返回 Prereq Check 相关操作生成的结果数据。
      */
     @Override
     protected NodeOutput doExecute(NodeInput input) throws Exception {
@@ -111,9 +106,9 @@ public class PrereqCheckNode extends BaseNode {
     }
 
     /**
-     * {@code getRequiredInputs} 查询并返回当前操作所需的数据。
+     * 查询 Prereq Check 相关业务数据，并返回处理结果。
      *
-     * @return 返回当前操作产生的结果。
+     * @return 返回符合条件的数据集合；没有匹配项时返回空集合。
      */
     @Override
     public java.util.List<NodeInputParam> getRequiredInputs() {

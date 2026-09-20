@@ -10,7 +10,7 @@ import lombok.Data;
 import java.time.LocalDateTime;
 
 /**
- * {@code AiPlatformResponse} 表示模型模块的响应数据，承载返回给调用方的结果。
+ * 封装 AI 平台 操作向调用方返回的传输数据。
  */
 @Data
 @AutoMapper(target = AiPlatformBO.class)

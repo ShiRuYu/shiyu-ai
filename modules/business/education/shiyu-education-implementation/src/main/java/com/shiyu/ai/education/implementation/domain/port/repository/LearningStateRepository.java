@@ -4,28 +4,26 @@ import com.shiyu.ai.education.implementation.domain.model.LearningStateBO;
 import com.shiyu.ai.kernel.context.TenantId;
 
 /**
- * LearningStateRepository 仓储接口，负责访问和持久化教育领域聚合数据。
+ * 负责 Learning State 的持久化查询、保存和删除，并维护数据访问边界。
  */
 public interface LearningStateRepository {
     /**
-     * 根据条件查询并返回所需数据。
+     * 查询 Learning State 相关业务数据，并返回处理结果。
      *
-     * @param tenantId 租户标识。
-     * @param studentId 学生标识。
-     * @param knowledgeId 知识点标识。
-     *
-     * @return 操作结果。
+     * @param tenantId 当前操作涉及的租户标识。
+     * @param studentId 用于定位student的标识。
+     * @param knowledgeId 用于定位knowledge的标识。
+     * @return 返回 Learning State 相关操作生成的结果数据。
      */
     LearningStateBO selectByStudentAndKnowledge(
             TenantId tenantId, Long studentId, Long knowledgeId);
 
     /**
-     * 保存或更新业务对象。
+     * 执行 Learning State 相关业务数据，并返回处理结果。
      *
-     * @param tenantId 租户标识。
-     * @param state 方法参数。
-     *
-     * @return 操作影响的记录数或状态码。
+     * @param tenantId 当前操作涉及的租户标识。
+     * @param state 用于完成本次业务处理的 state 参数。
+     * @return 返回 Learning State 相关操作生成的结果数据。
      */
     int upsert(TenantId tenantId, LearningStateBO state);
 }

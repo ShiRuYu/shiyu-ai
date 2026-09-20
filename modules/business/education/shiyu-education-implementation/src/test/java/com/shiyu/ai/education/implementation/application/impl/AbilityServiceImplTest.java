@@ -18,6 +18,9 @@ import com.shiyu.ai.kernel.context.UserId;
 
 import org.junit.jupiter.api.Test;
 
+/**
+ * 验证 Ability Service Impl 相关功能、边界条件、异常路径和协作行为。
+ */
 class AbilityServiceImplTest {
 
     private static final ActorContext ACTOR =

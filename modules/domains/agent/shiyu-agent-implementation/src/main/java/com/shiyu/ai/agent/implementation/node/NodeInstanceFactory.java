@@ -13,7 +13,7 @@ import lombok.extern.slf4j.Slf4j;
 import java.util.List;
 
 /**
- * 根据已注册的节点元数据构造节点实例。
+ * 创建或提供 Node Instance 相关的业务组件和运行时能力。
  */
 @Slf4j
 final class NodeInstanceFactory {

@@ -7,26 +7,24 @@ import com.shiyu.ai.knowledge.implementation.domain.model.KnowledgeDifficultySca
 import java.util.List;
 
 /**
- * KnowledgeDifficultyScaleRepository 仓储接口，负责访问和持久化知识领域聚合数据。
+ * 负责 知识 Difficulty Scale 的持久化查询、保存和删除，并维护数据访问边界。
  */
 public interface KnowledgeDifficultyScaleRepository {
     /**
-     * 根据条件查询并返回所需数据。
+     * 查询 知识 Difficulty Scale 相关业务数据，并返回处理结果。
      *
-     * @param tenantId 租户标识。
-     * @param scaleId 方法参数。
-     *
-     * @return 操作结果。
+     * @param tenantId 当前操作涉及的租户标识。
+     * @param scaleId 用于定位scale的标识。
+     * @return 返回 知识 Difficulty Scale 相关操作生成的结果数据。
      */
     KnowledgeDifficultyScaleBO findScale(TenantId tenantId, Long scaleId);
 
     /**
-     * 根据条件查询并返回所需数据。
+     * 查询 知识 Difficulty Scale 相关业务数据，并返回处理结果。
      *
-     * @param tenantId 租户标识。
-     * @param scaleId 方法参数。
-     *
-     * @return 符合条件的结果集合。
+     * @param tenantId 当前操作涉及的租户标识。
+     * @param scaleId 用于定位scale的标识。
+     * @return 返回符合条件的数据集合；没有匹配项时返回空集合。
      */
     List<KnowledgeDifficultyScaleLevelBO> findLevels(TenantId tenantId, Long scaleId);
 }

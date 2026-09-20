@@ -6,7 +6,7 @@ import com.shiyu.ai.kernel.context.TenantId;
 import java.util.List;
 
 /**
- * EmbeddingService 服务接口，负责执行模型领域相关业务操作。
+ * 提供 嵌入 的查询、创建、更新及调用服务，协调业务变更和领域协作。
  */
 public interface EmbeddingService {
     /**
@@ -20,12 +20,11 @@ public interface EmbeddingService {
     float[] embed(TenantId tenantId, String text);
 
     /**
-     * 执行 {@code embed} 定义的接口操作。
+     * 执行 嵌入 相关业务数据，并返回处理结果。
      *
-     * @param actor 当前操作主体上下文。
-     * @param text 方法参数。
-     *
-     * @return 符合条件的结果集合。
+     * @param actor 当前操作主体上下文，用于确定租户、用户和访问权限。
+     * @param text 用于完成本次业务处理的 text 参数。
+     * @return 返回 嵌入 相关操作生成的结果数据。
      */
     default float[] embed(ActorContext actor, String text) {
         if (actor == null) {
@@ -35,12 +34,11 @@ public interface EmbeddingService {
     }
 
     /**
-     * 批量生成文本嵌入向量。
+     * 执行 嵌入 相关业务数据，并返回处理结果。
      *
-     * @param tenantId 租户标识。
-     * @param texts texts 参数。
-     *
-     * @return 结果列表。
+     * @param tenantId 当前操作涉及的租户标识。
+     * @param texts 用于完成本次业务处理的 texts 参数。
+     * @return 返回符合条件的数据集合；没有匹配项时返回空集合。
      */
     List<float[]> embedBatch(TenantId tenantId, List<String> texts);
 

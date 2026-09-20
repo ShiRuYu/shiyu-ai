@@ -10,21 +10,20 @@ import jakarta.validation.constraints.Min;
 import jakarta.validation.constraints.NotBlank;
 
 /**
- * KnowledgePointService 服务接口，负责执行知识领域相关业务操作。
+ * 提供 知识 Point 的查询、创建、更新及调用服务，协调业务变更和领域协作。
  */
 public interface KnowledgePointService {
 
     /**
-     * 执行 {@code page} 定义的接口操作。
+     * 查询 知识 Point 相关业务数据，并返回处理结果。
      *
-     * @param actor 当前操作主体上下文。
-     * @param spaceId 方法参数。
-     * @param pageNum 页码。
-     * @param pageSize 分页大小。
-     * @param keyword 方法参数。
-     * @param category 方法参数。
-     *
-     * @return 操作结果。
+     * @param actor 当前操作主体上下文，用于确定租户、用户和访问权限。
+     * @param spaceId 用于定位space的标识。
+     * @param pageNum 用于完成本次业务处理的 pageNum 参数。
+     * @param pageSize 每页返回的数据数量。
+     * @param keyword 用于完成本次业务处理的 keyword 参数。
+     * @param category 用于完成本次业务处理的 category 参数。
+     * @return 返回 知识 Point 相关操作生成的结果数据。
      */
     PageData<PointView> page(
             ActorContext actor,
@@ -35,75 +34,62 @@ public interface KnowledgePointService {
             String category);
 
     /**
-     * 根据标识查询对应的数据。
+     * 查询 知识 Point 相关业务数据，并返回处理结果。
      *
-     * @param actor 当前操作主体上下文。
-     * @param pointId 方法参数。
-     *
-     * @return 操作结果。
+     * @param actor 当前操作主体上下文，用于确定租户、用户和访问权限。
+     * @param pointId 用于定位point的标识。
+     * @return 返回 知识 Point 相关操作生成的结果数据。
      */
     PointView get(ActorContext actor, Long pointId);
 
     /**
-     * 根据条件查询并返回所需数据。
+     * 查询 知识 Point 相关业务数据，并返回处理结果。
      *
-     * @param actor 当前操作主体上下文。
-     * @param pointId 方法参数。
-     *
-     * @return 操作结果。
+     * @param actor 当前操作主体上下文，用于确定租户、用户和访问权限。
+     * @param pointId 用于定位point的标识。
+     * @return 返回 知识 Point 相关操作生成的结果数据。
      */
     KnowledgeResponse getResponse(ActorContext actor, Long pointId);
 
     /**
-     * 执行 {@code graph} 定义的接口操作。
+     * 执行 知识 Point 相关业务数据，并返回处理结果。
      *
-     * @param actor 当前操作主体上下文。
-     * @param pointId 方法参数。
-     *
-     * @return 操作结果。
+     * @param actor 当前操作主体上下文，用于确定租户、用户和访问权限。
+     * @param pointId 用于定位point的标识。
+     * @return 返回 知识 Point 相关操作生成的结果数据。
      */
     KnowledgeGraphResponse graph(ActorContext actor, Long pointId);
 
     /**
-     * 创建并保存业务对象。
+     * 创建或保存 知识 Point 相关业务数据，并返回处理结果。
      *
-     * @param actor 当前操作主体上下文。
-     * @param spaceId 方法参数。
-     * @param request 请求参数。
-     *
-     * @return 操作结果。
+     * @param actor 当前操作主体上下文，用于确定租户、用户和访问权限。
+     * @param spaceId 用于定位space的标识。
+     * @param request 封装本次操作所需业务字段的请求对象。
+     * @return 返回 知识 Point 相关操作生成的结果数据。
      */
     PointView create(ActorContext actor, Long spaceId, CreatePointRequest request);
 
     /**
-     * 更新业务对象及其关联数据。
+     * 更新或设置 知识 Point 相关业务数据，并返回处理结果。
      *
-     * @param actor 当前操作主体上下文。
-     * @param pointId 方法参数。
-     * @param request 请求参数。
-     *
-     * @return 操作结果。
+     * @param actor 当前操作主体上下文，用于确定租户、用户和访问权限。
+     * @param pointId 用于定位point的标识。
+     * @param request 封装本次操作所需业务字段的请求对象。
+     * @return 返回 知识 Point 相关操作生成的结果数据。
      */
     PointView update(ActorContext actor, Long pointId, UpdatePointRequest request);
 
     /**
-     * 删除指定业务对象或关联数据。
+     * 删除或移除 知识 Point 相关业务操作，并维护必要的状态和协作关系。
      *
-     * @param actor 当前操作主体上下文。
-     * @param pointId 方法参数。
+     * @param actor 当前操作主体上下文，用于确定租户、用户和访问权限。
+     * @param pointId 用于定位point的标识。
      */
     void delete(ActorContext actor, Long pointId);
 
     /**
-     * {@code PointView} 封装知识模块中不可变的结构化数据，并作为相关操作之间的值对象。
-     * @param id 标识，表示该记录组件承载的数据。
-     * @param spaceId spaceId 属性，表示该记录组件承载的数据。
-     * @param code 编码，表示该记录组件承载的数据。
-     * @param name 名称，表示该记录组件承载的数据。
-     * @param description 描述，表示该记录组件承载的数据。
-     * @param difficultyLevel difficultyLevel 属性，表示该记录组件承载的数据。
-     * @param category category 属性，表示该记录组件承载的数据。
-     * @param tags tags 属性，表示该记录组件承载的数据。
+     * 封装 Point View 相关的不可变数据及其字段约束。
      */
     record PointView(
             Long id,
@@ -116,13 +102,7 @@ public interface KnowledgePointService {
             String tags) {}
 
     /**
-     * {@code CreatePointRequest} 封装知识模块中不可变的结构化数据，并作为相关操作之间的值对象。
-     * @param code 编码，表示该记录组件承载的数据。
-     * @param name 名称，表示该记录组件承载的数据。
-     * @param description 描述，表示该记录组件承载的数据。
-     * @param difficultyLevel difficultyLevel 属性，表示该记录组件承载的数据。
-     * @param category category 属性，表示该记录组件承载的数据。
-     * @param tags tags 属性，表示该记录组件承载的数据。
+     * 封装 Create Point 相关的不可变数据及其字段约束。
      */
     record CreatePointRequest(
             @NotBlank String code,
@@ -133,12 +113,7 @@ public interface KnowledgePointService {
             String tags) {}
 
     /**
-     * {@code UpdatePointRequest} 封装知识模块中不可变的结构化数据，并作为相关操作之间的值对象。
-     * @param name 名称，表示该记录组件承载的数据。
-     * @param description 描述，表示该记录组件承载的数据。
-     * @param difficultyLevel difficultyLevel 属性，表示该记录组件承载的数据。
-     * @param category category 属性，表示该记录组件承载的数据。
-     * @param tags tags 属性，表示该记录组件承载的数据。
+     * 封装 Update Point 相关的不可变数据及其字段约束。
      */
     record UpdatePointRequest(
             String name,

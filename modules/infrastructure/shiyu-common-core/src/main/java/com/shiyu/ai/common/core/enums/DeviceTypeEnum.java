@@ -3,7 +3,9 @@ package com.shiyu.ai.common.core.enums;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 
-/** 设备类型 针对一套 用户体系 */
+/**
+ * 定义 Device Type Enum 可用的枚举值及其业务语义。
+ */
 @Getter
 @AllArgsConstructor
 public enum DeviceTypeEnum {

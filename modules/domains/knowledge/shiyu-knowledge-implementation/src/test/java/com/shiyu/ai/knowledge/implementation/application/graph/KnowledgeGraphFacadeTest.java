@@ -16,6 +16,9 @@ import org.junit.jupiter.api.Test;
 import java.util.List;
 import java.util.Set;
 
+/**
+ * 验证 知识 Graph Facade 相关功能、边界条件、异常路径和协作行为。
+ */
 class KnowledgeGraphFacadeTest {
     @Test
     void delegatesEveryTenantScopedGraphOperation() {

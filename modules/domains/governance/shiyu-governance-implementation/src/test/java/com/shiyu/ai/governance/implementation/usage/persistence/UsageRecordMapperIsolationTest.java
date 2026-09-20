@@ -18,6 +18,9 @@ import org.apache.ibatis.transaction.jdbc.JdbcTransactionFactory;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Test;
 
+/**
+ * 验证 用量 Record Mapper Isolation 相关功能、边界条件、异常路径和协作行为。
+ */
 class UsageRecordMapperIsolationTest {
 
     @AfterEach

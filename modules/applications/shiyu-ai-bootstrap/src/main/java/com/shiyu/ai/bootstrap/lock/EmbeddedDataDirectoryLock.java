@@ -10,7 +10,7 @@ import java.nio.file.StandardOpenOption;
 import java.util.regex.Pattern;
 
 /**
- * 锁定嵌入式数据目录，避免多个进程同时写入数据库和索引。
+ * 协调 Embedded Data Directory 相关共享资源的互斥访问和释放。
  */
 public final class EmbeddedDataDirectoryLock implements AutoCloseable {
 
@@ -40,9 +40,9 @@ public final class EmbeddedDataDirectoryLock implements AutoCloseable {
     }
 
     /**
-     * {@code acquire} 执行当前类型定义的业务操作。
+     * 执行 Embedded Data Directory 相关业务数据，并返回处理结果。
      *
-     * @return 返回当前操作产生的结果。
+     * @return 返回 Embedded Data Directory 相关操作生成的结果数据。
      */
     public static EmbeddedDataDirectoryLock acquire() {
         String appHome =

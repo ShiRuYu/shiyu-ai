@@ -24,7 +24,7 @@ import java.util.Optional;
 import javax.sql.DataSource;
 
 /**
- * {@code JdbcEvaluationRepository} 定义智能体模块的持久化端口，隔离领域逻辑与具体存储实现。
+ * 负责 Jdbc Evaluation 的持久化查询、保存和删除，并维护数据访问边界。
  */
 @Repository
 public class JdbcEvaluationRepository implements EvaluationRepository {
@@ -34,18 +34,18 @@ public class JdbcEvaluationRepository implements EvaluationRepository {
     private final JdbcTemplate jdbc;
 
     /**
-     * {@code JdbcEvaluationRepository} 创建并初始化当前类型实例。
+     * 执行 Jdbc Evaluation 相关业务操作，并维护必要的状态和协作关系。
      *
-     * @param dataSource 参数值，用于执行当前操作。
+     * @param dataSource 用于完成本次业务处理的 dataSource 参数。
      */
     public JdbcEvaluationRepository(@Qualifier("agentDataSource") DataSource dataSource) {
         this.jdbc = new JdbcTemplate(dataSource);
     }
 
     /**
-     * {@code insertDataset} 执行当前类型定义的业务操作。
+     * 创建或保存 Jdbc Evaluation 相关业务操作，并维护必要的状态和协作关系。
      *
-     * @param d 参数值，用于执行当前操作。
+     * @param d 用于完成本次业务处理的 d 参数。
      */
     @Override
     public void insertDataset(EvalDataset d) {
@@ -63,13 +63,12 @@ public class JdbcEvaluationRepository implements EvaluationRepository {
     }
 
     /**
-     * {@code findDataset} 查询并返回当前操作所需的数据。
+     * 查询 Jdbc Evaluation 相关业务数据，并返回处理结果。
      *
-     * @param id 参数值，用于执行当前操作。
-     * @param tenantId 参数值，用于执行当前操作。
-     * @param ownerUserId 参数值，用于执行当前操作。
-     *
-     * @return 返回当前操作产生的结果。
+     * @param id 用于定位目标业务对象的标识。
+     * @param tenantId 当前操作涉及的租户标识。
+     * @param ownerUserId 当前操作涉及的用户标识。
+     * @return 返回可能存在的业务对象；不存在时返回空值容器。
      */
     @Override
     public Optional<EvalDataset> findDataset(String id, TenantId tenantId, long ownerUserId) {
@@ -94,9 +93,9 @@ public class JdbcEvaluationRepository implements EvaluationRepository {
     }
 
     /**
-     * {@code insertCase} 执行当前类型定义的业务操作。
+     * 创建或保存 Jdbc Evaluation 相关业务操作，并维护必要的状态和协作关系。
      *
-     * @param c 参数值，用于执行当前操作。
+     * @param c 用于完成本次业务处理的 c 参数。
      */
     @Override
     public void insertCase(EvalCase c) {
@@ -115,12 +114,11 @@ public class JdbcEvaluationRepository implements EvaluationRepository {
     }
 
     /**
-     * {@code listCases} 查询并返回当前操作所需的数据。
+     * 查询 Jdbc Evaluation 相关业务数据，并返回处理结果。
      *
-     * @param datasetId 参数值，用于执行当前操作。
-     * @param tenantId 参数值，用于执行当前操作。
-     *
-     * @return 返回当前操作产生的结果。
+     * @param datasetId 用于定位dataset的标识。
+     * @param tenantId 当前操作涉及的租户标识。
+     * @return 返回符合条件的数据集合；没有匹配项时返回空集合。
      */
     @Override
     public List<EvalCase> listCases(String datasetId, TenantId tenantId) {
@@ -142,9 +140,9 @@ public class JdbcEvaluationRepository implements EvaluationRepository {
     }
 
     /**
-     * {@code insertRun} 执行当前类型定义的业务操作。
+     * 创建或保存 Jdbc Evaluation 相关业务操作，并维护必要的状态和协作关系。
      *
-     * @param r 参数值，用于执行当前操作。
+     * @param r 用于完成本次业务处理的 r 参数。
      */
     @Override
     public void insertRun(EvalRun r) {
@@ -167,13 +165,12 @@ public class JdbcEvaluationRepository implements EvaluationRepository {
     }
 
     /**
-     * {@code findRun} 查询并返回当前操作所需的数据。
+     * 查询 Jdbc Evaluation 相关业务数据，并返回处理结果。
      *
-     * @param id 参数值，用于执行当前操作。
-     * @param tenantId 参数值，用于执行当前操作。
-     * @param ownerUserId 参数值，用于执行当前操作。
-     *
-     * @return 返回当前操作产生的结果。
+     * @param id 用于定位目标业务对象的标识。
+     * @param tenantId 当前操作涉及的租户标识。
+     * @param ownerUserId 当前操作涉及的用户标识。
+     * @return 返回可能存在的业务对象；不存在时返回空值容器。
      */
     @Override
     public Optional<EvalRun> findRun(String id, TenantId tenantId, long ownerUserId) {

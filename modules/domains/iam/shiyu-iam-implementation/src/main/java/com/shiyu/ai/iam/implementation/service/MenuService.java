@@ -9,61 +9,55 @@ import com.shiyu.ai.kernel.context.ActorContext;
 import java.util.List;
 
 /**
- * MenuService 服务接口，负责执行身份与访问领域相关业务操作。
+ * 提供 Menu 的查询、创建、更新及调用服务，协调业务变更和领域协作。
  */
 public interface MenuService {
     /**
-     * 执行 {@code routeMenusView} 定义的接口操作。
+     * 解析或路由 Menu 相关业务数据，并返回处理结果。
      *
-     * @param actor 当前操作主体上下文。
-     *
-     * @return 符合条件的结果集合。
+     * @param actor 当前操作主体上下文，用于确定租户、用户和访问权限。
+     * @return 返回符合条件的数据集合；没有匹配项时返回空集合。
      */
     List<RouteMenuVO> routeMenusView(ActorContext actor);
 
     /**
-     * 执行 {@code allTreeView} 定义的接口操作。
+     * 执行 Menu 相关业务数据，并返回处理结果。
      *
-     * @param actor 当前操作主体上下文。
-     *
-     * @return 符合条件的结果集合。
+     * @param actor 当前操作主体上下文，用于确定租户、用户和访问权限。
+     * @return 返回符合条件的数据集合；没有匹配项时返回空集合。
      */
     List<MenuVO> allTreeView(ActorContext actor);
 
     /**
-     * 执行 {@code menuRootsView} 定义的接口操作。
+     * 执行 Menu 相关业务数据，并返回处理结果。
      *
-     * @param actor 当前操作主体上下文。
-     *
-     * @return 符合条件的结果集合。
+     * @param actor 当前操作主体上下文，用于确定租户、用户和访问权限。
+     * @return 返回符合条件的数据集合；没有匹配项时返回空集合。
      */
     List<RouteMenuVO> menuRootsView(ActorContext actor);
 
     /**
-     * 执行 {@code childrenView} 定义的接口操作。
+     * 执行 Menu 相关业务数据，并返回处理结果。
      *
-     * @param actor 当前操作主体上下文。
-     * @param parentId 方法参数。
-     *
-     * @return 符合条件的结果集合。
+     * @param actor 当前操作主体上下文，用于确定租户、用户和访问权限。
+     * @param parentId 用于定位parent的标识。
+     * @return 返回符合条件的数据集合；没有匹配项时返回空集合。
      */
     List<RouteMenuVO> childrenView(ActorContext actor, Long parentId);
 
     /**
-     * 执行 {@code permissionsView} 定义的接口操作。
+     * 执行 Menu 相关业务数据，并返回处理结果。
      *
-     * @param actor 当前操作主体上下文。
-     *
-     * @return 符合条件的结果集合。
+     * @param actor 当前操作主体上下文，用于确定租户、用户和访问权限。
+     * @return 返回符合条件的数据集合；没有匹配项时返回空集合。
      */
     List<RouteMenuVO> permissionsView(ActorContext actor);
 
     /**
-     * 执行 {@code treeView} 定义的接口操作。
+     * 执行 Menu 相关业务数据，并返回处理结果。
      *
-     * @param actor 当前操作主体上下文。
-     *
-     * @return 符合条件的结果集合。
+     * @param actor 当前操作主体上下文，用于确定租户、用户和访问权限。
+     * @return 返回符合条件的数据集合；没有匹配项时返回空集合。
      */
     List<RouteMenuVO> treeView(ActorContext actor);
 
@@ -89,17 +83,16 @@ public interface MenuService {
     boolean updateMenu(ActorContext actor, Long id, MenuRequest request);
 
     /**
-     * 根据条件查询并返回所需数据。
+     * 查询 Menu 相关业务数据，并返回处理结果。
      *
-     * @param actor 当前操作主体上下文。
-     * @param pageNo 方法参数。
-     * @param pageSize 分页大小。
-     * @param name 对象名称。
-     * @param code 方法参数。
-     * @param type 对象类型。
-     * @param status 对象状态。
-     *
-     * @return 操作结果。
+     * @param actor 当前操作主体上下文，用于确定租户、用户和访问权限。
+     * @param pageNo 分页页码，从 1 开始。
+     * @param pageSize 每页返回的数据数量。
+     * @param name 用于定位或筛选目标业务对象的业务值。
+     * @param code 用于定位或筛选目标业务对象的业务值。
+     * @param type 用于完成本次业务处理的 type 参数。
+     * @param status 用于完成本次业务处理的 status 参数。
+     * @return 返回 Menu 相关操作生成的结果数据。
      */
     PageData<MenuVO> getMenuPage(
             ActorContext actor,
@@ -132,25 +125,24 @@ public interface MenuService {
     boolean isMenuNameExists(ActorContext actor, String name, Long id);
 
     /**
-     * 判断当前条件是否满足。
+     * 校验或判断 Menu 相关业务数据，并返回处理结果。
      *
-     * @param actor 当前操作主体上下文。
-     * @param path 方法参数。
-     * @param id 目标对象标识。
-     *
-     * @return 条件是否满足。
+     * @param actor 当前操作主体上下文，用于确定租户、用户和访问权限。
+     * @param path 用于完成本次业务处理的 path 参数。
+     * @param id 用于定位目标业务对象的标识。
+     * @return 返回本次条件判断是否成立。
      */
     boolean isMenuPathExists(ActorContext actor, String path, Long id);
 
     /**
-     * 执行 {@code evictRouteMenuCache} 定义的接口操作。
+     * 执行 Menu 相关业务操作，并维护必要的状态和协作关系。
      *
-     * @param userId 用户标识。
+     * @param userId 当前操作涉及的用户标识。
      */
     void evictRouteMenuCache(Long userId);
 
     /**
-     * 执行 {@code evictAllRouteMenuCache} 定义的接口操作。
+     * 执行 Menu 相关业务操作，并维护必要的状态和协作关系。
      */
     void evictAllRouteMenuCache();
 }

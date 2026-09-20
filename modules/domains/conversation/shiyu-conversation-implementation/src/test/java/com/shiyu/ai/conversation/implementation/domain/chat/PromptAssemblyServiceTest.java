@@ -26,6 +26,9 @@ import java.time.Instant;
 import java.util.List;
 import java.util.Map;
 
+/**
+ * 验证 提示词 Assembly Service 相关功能、边界条件、异常路径和协作行为。
+ */
 class PromptAssemblyServiceTest {
     private final PromptAssemblyService service = new PromptAssemblyService();
 

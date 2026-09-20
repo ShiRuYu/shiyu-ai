@@ -8,7 +8,7 @@ import org.springframework.transaction.support.DefaultTransactionDefinition;
 import java.util.function.Supplier;
 
 /**
- * {@code TransactionTemplateExecutor} 承载平台基础设施模块的领域状态或协作行为，负责维护本类型的职责边界。
+ * 实现 Transaction Template Executor 相关的业务处理、协作逻辑或基础设施能力。
  */
 public class TransactionTemplateExecutor {
 
@@ -18,21 +18,20 @@ public class TransactionTemplateExecutor {
     private final PlatformTransactionManager transactionManager;
 
     /**
-     * {@code TransactionTemplateExecutor} 创建并初始化当前类型实例。
+     * 执行 Transaction Template Executor 相关业务操作，并维护必要的状态和协作关系。
      *
-     * @param transactionManager 参数值，用于执行当前操作。
+     * @param transactionManager 用于完成本次业务处理的 transactionManager 参数。
      */
     public TransactionTemplateExecutor(PlatformTransactionManager transactionManager) {
         this.transactionManager = transactionManager;
     }
 
     /**
-     * {@code execute} 执行当前模块定义的业务流程。
+     * 调用 Transaction Template Executor 相关业务数据，并返回处理结果。
      *
-     * @param definition 参数值，用于执行当前操作。
-     * @param action 参数值，用于执行当前操作。
-     *
-     * @return 返回当前操作产生的结果。
+     * @param definition 用于完成本次业务处理的 definition 参数。
+     * @param action 用于完成本次业务处理的 action 参数。
+     * @return 返回 Transaction Template Executor 相关操作生成的结果数据。
      */
     public <T> T execute(TransactionDefinition definition, Supplier<T> action) {
         TransactionStatus status = transactionManager.getTransaction(definition);

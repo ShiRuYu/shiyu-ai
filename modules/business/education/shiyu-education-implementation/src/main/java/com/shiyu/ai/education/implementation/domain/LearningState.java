@@ -1,10 +1,7 @@
 package com.shiyu.ai.education.implementation.domain;
 
 /**
- * 学习状态机
- *
- * <p>NOT_STARTED → LEARNING → MASTERED → FORGOTTEN → REVIEWING → MASTERED ↘ REVIEWING → FORGOTTEN
- * MASTERED → PROFICIENT PROFICIENT → FORGOTTEN
+ * 定义 Learning 可用的枚举值及其业务语义。
  */
 public enum LearningState {
     NOT_STARTED,
@@ -15,9 +12,9 @@ public enum LearningState {
     REVIEWING;
 
     /**
-     * {@code startLearning} 执行当前类型定义的业务操作。
+     * 执行 Learning 相关业务数据，并返回处理结果。
      *
-     * @return 返回当前操作产生的结果。
+     * @return 返回 Learning 相关操作生成的结果数据。
      */
     public LearningState startLearning() {
         return switch (this) {
@@ -27,9 +24,9 @@ public enum LearningState {
     }
 
     /**
-     * {@code passAssessment} 执行当前类型定义的业务操作。
+     * 执行 Learning 相关业务数据，并返回处理结果。
      *
-     * @return 返回当前操作产生的结果。
+     * @return 返回 Learning 相关操作生成的结果数据。
      */
     public LearningState passAssessment() {
         return switch (this) {
@@ -39,18 +36,18 @@ public enum LearningState {
     }
 
     /**
-     * {@code deepPractice} 执行当前类型定义的业务操作。
+     * 执行 Learning 相关业务数据，并返回处理结果。
      *
-     * @return 返回当前操作产生的结果。
+     * @return 返回 Learning 相关操作生成的结果数据。
      */
     public LearningState deepPractice() {
         return this == MASTERED ? PROFICIENT : this;
     }
 
     /**
-     * {@code forget} 执行当前类型定义的业务操作。
+     * 执行 Learning 相关业务数据，并返回处理结果。
      *
-     * @return 返回当前操作产生的结果。
+     * @return 返回 Learning 相关操作生成的结果数据。
      */
     public LearningState forget() {
         return switch (this) {
@@ -60,18 +57,18 @@ public enum LearningState {
     }
 
     /**
-     * {@code scheduleReview} 执行当前类型定义的业务操作。
+     * 执行 Learning 相关业务数据，并返回处理结果。
      *
-     * @return 返回当前操作产生的结果。
+     * @return 返回 Learning 相关操作生成的结果数据。
      */
     public LearningState scheduleReview() {
         return this == FORGOTTEN ? REVIEWING : this;
     }
 
     /**
-     * {@code giveUp} 执行当前类型定义的业务操作。
+     * 执行 Learning 相关业务数据，并返回处理结果。
      *
-     * @return 返回当前操作产生的结果。
+     * @return 返回 Learning 相关操作生成的结果数据。
      */
     public LearningState giveUp() {
         return this == LEARNING ? NOT_STARTED : this;

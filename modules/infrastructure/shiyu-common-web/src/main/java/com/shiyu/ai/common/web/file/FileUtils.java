@@ -13,7 +13,9 @@ import java.nio.charset.StandardCharsets;
 import java.util.Arrays;
 import java.util.UUID;
 
-/** 文件处理工具类 */
+/**
+ * 提供 文件 相关的通用辅助操作，供业务和基础设施复用。
+ */
 public class FileUtils extends FileUtil {
 
     /**
@@ -51,10 +53,11 @@ public class FileUtils extends FileUtil {
     }
 
     /**
-     * 检查文件扩展名是否符合要求
+     * 校验或判断 文件 相关业务数据，并返回处理结果。
      *
-     * @param file
-     * @return
+     * @param file 用于完成本次业务处理的 file 参数。
+     * @param ALLOWED_EXTENSIONS 用于完成本次业务处理的 ALLOWED_EXTENSIONS 参数。
+     * @return 返回本次条件判断是否成立。
      */
     public static boolean isValidFileExtention(MultipartFile file, String[] ALLOWED_EXTENSIONS) {
         if (file == null || file.isEmpty()) {

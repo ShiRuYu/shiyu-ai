@@ -37,6 +37,9 @@ import java.lang.reflect.Method;
 import java.util.List;
 import java.util.Set;
 
+/**
+ * 验证 知识 空间 Service Deep Coverage 相关功能、边界条件、异常路径和协作行为。
+ */
 class KnowledgeSpaceServiceDeepCoverageTest {
     @Test
     void coversDefaultSpaceCreationAndExistingInitializationBranches() {

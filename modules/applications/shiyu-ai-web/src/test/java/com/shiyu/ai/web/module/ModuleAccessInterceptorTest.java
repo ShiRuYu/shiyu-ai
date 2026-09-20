@@ -19,6 +19,9 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
+/**
+ * 验证 Module Access Interceptor 相关功能、边界条件、异常路径和协作行为。
+ */
 @Tag("dev")
 class ModuleAccessInterceptorTest {
 

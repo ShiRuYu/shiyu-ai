@@ -27,6 +27,9 @@ import org.springframework.test.util.ReflectionTestUtils;
 import java.util.List;
 import java.util.Set;
 
+/**
+ * 验证 认证 用户 Lookup Repository Impl 相关功能、边界条件、异常路径和协作行为。
+ */
 class AuthUserLookupRepositoryImplTest {
     private UserMapper users;
     private UserScopeRoleMapper assignments;

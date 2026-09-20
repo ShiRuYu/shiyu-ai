@@ -16,7 +16,7 @@ import org.springframework.stereotype.Service;
 import java.util.List;
 
 /**
- * 汇集认证所需的用户、租户及角色信息，为身份上下文组装提供查询服务。
+ * 提供 认证 Context 的查询、创建、更新及调用服务，协调业务变更和领域协作。
  */
 @Service
 @RequiredArgsConstructor
@@ -31,22 +31,20 @@ public class AuthContextService {
     private final TenantRepository tenantRepository;
 
     /**
-     * {@code user} 执行当前类型定义的业务操作。
+     * 执行 认证 Context 相关业务数据，并返回处理结果。
      *
-     * @param id 参数值，用于执行当前操作。
-     *
-     * @return 返回当前操作产生的结果。
+     * @param id 用于定位目标业务对象的标识。
+     * @return 返回 认证 Context 相关操作生成的结果数据。
      */
     public AuthUserResponse user(Long id) {
         return MapstructUtils.convert(userLookup.selectUserById(id), AuthUserResponse.class);
     }
 
     /**
-     * {@code tenant} 执行当前类型定义的业务操作。
+     * 执行 认证 Context 相关业务数据，并返回处理结果。
      *
-     * @param id 参数值，用于执行当前操作。
-     *
-     * @return 返回当前操作产生的结果。
+     * @param id 用于定位目标业务对象的标识。
+     * @return 返回 认证 Context 相关操作生成的结果数据。
      */
     public AuthTenantResponse tenant(Long id) {
         return id == null
@@ -56,22 +54,20 @@ public class AuthContextService {
     }
 
     /**
-     * {@code role} 执行当前类型定义的业务操作。
+     * 执行 认证 Context 相关业务数据，并返回处理结果。
      *
-     * @param id 参数值，用于执行当前操作。
-     *
-     * @return 返回当前操作产生的结果。
+     * @param id 用于定位目标业务对象的标识。
+     * @return 返回 认证 Context 相关操作生成的结果数据。
      */
     public AuthRoleResponse role(Long id) {
         return MapstructUtils.convert(userLookup.selectRoleById(id), AuthRoleResponse.class);
     }
 
     /**
-     * {@code tenantSuperRole} 执行当前类型定义的业务操作。
+     * 执行 认证 Context 相关业务数据，并返回处理结果。
      *
-     * @param tenantId 参数值，用于执行当前操作。
-     *
-     * @return 返回当前操作产生的结果。
+     * @param tenantId 当前操作涉及的租户标识。
+     * @return 返回 认证 Context 相关操作生成的结果数据。
      */
     public AuthRoleResponse tenantSuperRole(TenantId tenantId) {
         if (tenantId == null) {
@@ -82,11 +78,10 @@ public class AuthContextService {
     }
 
     /**
-     * {@code scopeRoles} 执行当前类型定义的业务操作。
+     * 执行 认证 Context 相关业务数据，并返回处理结果。
      *
-     * @param userId 参数值，用于执行当前操作。
-     *
-     * @return 返回当前操作产生的结果。
+     * @param userId 当前操作涉及的用户标识。
+     * @return 返回符合条件的数据集合；没有匹配项时返回空集合。
      */
     public List<AuthScopeRoleResponse> scopeRoles(Long userId) {
         return MapstructUtils.convert(
@@ -94,11 +89,10 @@ public class AuthContextService {
     }
 
     /**
-     * {@code descendantTenantIds} 执行当前类型定义的业务操作。
+     * 执行 认证 Context 相关业务数据，并返回处理结果。
      *
-     * @param tenantId 参数值，用于执行当前操作。
-     *
-     * @return 返回当前操作产生的结果。
+     * @param tenantId 当前操作涉及的租户标识。
+     * @return 返回符合条件的数据集合；没有匹配项时返回空集合。
      */
     public List<Long> descendantTenantIds(TenantId tenantId) {
         if (tenantId == null) {

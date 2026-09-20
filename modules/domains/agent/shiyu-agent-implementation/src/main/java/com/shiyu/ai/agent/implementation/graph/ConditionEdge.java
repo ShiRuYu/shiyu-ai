@@ -10,7 +10,9 @@ import java.util.*;
 import java.util.function.Function;
 import java.util.function.Predicate;
 
-/** 条件边 用于定义节点之间的条件连接关系 */
+/**
+ * 表示 Condition 相关流程中的状态、关系或执行数据。
+ */
 @Slf4j
 @Data
 @Builder
@@ -66,7 +68,9 @@ public class ConditionEdge {
         return this;
     }
 
-    /** 谓语条件记录 */
+    /**
+     * 实现 Predicate Condition 相关的业务处理、协作逻辑或基础设施能力。
+     */
     @lombok.Value
     public static class PredicateCondition {
         Predicate<Map<String, Object>> predicate;

@@ -6,6 +6,9 @@ import org.junit.jupiter.api.Test;
 
 import java.util.concurrent.atomic.AtomicBoolean;
 
+/**
+ * 验证 用户 Lock Manager Coverage 相关功能、边界条件、异常路径和协作行为。
+ */
 class UserLockManagerCoverageTest {
     @Test
     void reusesLocksExecutesSuppliersAndCleansUnlockedEntries() {

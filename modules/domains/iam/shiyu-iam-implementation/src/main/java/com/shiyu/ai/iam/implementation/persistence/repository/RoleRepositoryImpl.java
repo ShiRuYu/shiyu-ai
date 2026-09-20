@@ -29,7 +29,9 @@ import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
 
-/** 角色数据仓储层 */
+/**
+ * 负责 角色 的持久化查询、保存和删除，并维护数据访问边界。
+ */
 @Component
 public class RoleRepositoryImpl
         implements com.shiyu.ai.iam.implementation.port.repository.RoleRepository {

@@ -19,6 +19,9 @@ import org.mockito.stubbing.Answer;
 import java.lang.reflect.Field;
 import java.util.List;
 
+/**
+ * 验证 模型 Repository Coverage 相关功能、边界条件、异常路径和协作行为。
+ */
 @SuppressWarnings({"rawtypes", "unchecked"})
 class ModelRepositoryCoverageTest {
     private static final TenantId TENANT = new TenantId(7L);

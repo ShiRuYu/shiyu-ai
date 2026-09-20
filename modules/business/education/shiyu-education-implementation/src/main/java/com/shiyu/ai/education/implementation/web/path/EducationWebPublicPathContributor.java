@@ -8,15 +8,15 @@ import java.util.Collection;
 import java.util.List;
 
 /**
- * 向 Web 安全配置贡献教育模块的公开访问路径。
+ * 向 教育 Web Public Path 所属的应用或基础设施注册必要的扩展能力。
  */
 @Component
 public class EducationWebPublicPathContributor implements WebPublicPathContributor {
 
     /**
-     * {@code publicPathPatterns} 执行当前类型定义的业务操作。
+     * 执行 教育 Web Public Path 相关业务数据，并返回处理结果。
      *
-     * @return 返回当前操作产生的结果。
+     * @return 返回符合条件的数据集合；没有匹配项时返回空集合。
      */
     @Override
     public Collection<String> publicPathPatterns() {

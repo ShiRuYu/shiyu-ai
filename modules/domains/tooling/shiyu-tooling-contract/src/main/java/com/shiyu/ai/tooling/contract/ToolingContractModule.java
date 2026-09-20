@@ -1,6 +1,6 @@
 package com.shiyu.ai.tooling.contract;
 
 /**
- * ToolingContractModule 模块接口，标识工具模块的边界。
+ * 定义 Tooling Contract Module 相关的协作契约和调用边界。
  */
 public interface ToolingContractModule {}

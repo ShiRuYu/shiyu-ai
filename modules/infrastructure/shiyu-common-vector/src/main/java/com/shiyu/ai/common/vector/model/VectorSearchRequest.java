@@ -3,7 +3,9 @@ package com.shiyu.ai.common.vector.model;
 import java.util.Map;
 import java.util.Objects;
 
-/** 向量搜索请求 — Builder 模式 */
+/**
+ * 封装 向量 Search 操作所需的请求条件和输入数据。
+ */
 public class VectorSearchRequest {
 
     /**
@@ -41,61 +43,61 @@ public class VectorSearchRequest {
     }
 
     /**
-     * {@code builder} 执行当前类型定义的业务操作。
+     * 构建或转换 向量 Search 相关业务数据，并返回处理结果。
      *
-     * @return 返回当前操作产生的结果。
+     * @return 返回 向量 Search 相关操作生成的结果数据。
      */
     public static Builder builder() {
         return new Builder();
     }
 
     /**
-     * {@code getQueryVector} 查询并返回当前操作所需的数据。
+     * 查询 向量 Search 相关业务数据，并返回处理结果。
      *
-     * @return 返回当前操作产生的结果。
+     * @return 返回 向量 Search 相关操作生成的结果数据。
      */
     public float[] getQueryVector() {
         return queryVector;
     }
 
     /**
-     * {@code getTopK} 查询并返回当前操作所需的数据。
+     * 查询 向量 Search 相关业务数据，并返回处理结果。
      *
-     * @return 返回当前操作产生的结果。
+     * @return 返回 向量 Search 相关操作生成的结果数据。
      */
     public int getTopK() {
         return topK;
     }
 
     /**
-     * {@code getMinScore} 查询并返回当前操作所需的数据。
+     * 查询 向量 Search 相关业务数据，并返回处理结果。
      *
-     * @return 返回当前操作产生的结果。
+     * @return 返回 向量 Search 相关操作生成的结果数据。
      */
     public double getMinScore() {
         return minScore;
     }
 
     /**
-     * {@code getFilter} 查询并返回当前操作所需的数据。
+     * 查询 向量 Search 相关业务数据，并返回处理结果。
      *
-     * @return 返回当前操作产生的结果。
+     * @return 返回 向量 Search 相关操作生成的结果数据。
      */
     public Map<String, Object> getFilter() {
         return filter;
     }
 
     /**
-     * {@code getSearchType} 查询并返回当前操作所需的数据。
+     * 查询 向量 Search 相关业务数据，并返回处理结果。
      *
-     * @return 返回当前操作产生的结果。
+     * @return 返回 向量 Search 相关操作生成的结果数据。
      */
     public VectorSearchType getSearchType() {
         return searchType;
     }
 
     /**
-     * {@code Builder} 承载平台基础设施模块的领域状态或协作行为，负责维护本类型的职责边界。
+     * 构建 Builder 相关的对象、流程或运行时配置。
      */
     public static class Builder {
         /**
@@ -120,11 +122,10 @@ public class VectorSearchRequest {
         private VectorSearchType searchType = VectorSearchType.ANN;
 
         /**
-         * {@code queryVector} 查询并返回当前操作所需的数据。
+         * 查询 Builder 相关业务数据，并返回处理结果。
          *
-         * @param queryVector 参数值，用于执行当前操作。
-         *
-         * @return 返回当前操作产生的结果。
+         * @param queryVector 用于完成本次业务处理的 queryVector 参数。
+         * @return 返回 Builder 相关操作生成的结果数据。
          */
         public Builder queryVector(float[] queryVector) {
             this.queryVector = queryVector;
@@ -132,11 +133,10 @@ public class VectorSearchRequest {
         }
 
         /**
-         * {@code topK} 将当前对象转换为目标表示形式。
+         * 构建或转换 Builder 相关业务数据，并返回处理结果。
          *
-         * @param topK 参数值，用于执行当前操作。
-         *
-         * @return 返回当前操作产生的结果。
+         * @param topK 用于完成本次业务处理的 topK 参数。
+         * @return 返回 Builder 相关操作生成的结果数据。
          */
         public Builder topK(int topK) {
             this.topK = topK;
@@ -144,11 +144,10 @@ public class VectorSearchRequest {
         }
 
         /**
-         * {@code minScore} 执行当前类型定义的业务操作。
+         * 执行 Builder 相关业务数据，并返回处理结果。
          *
-         * @param minScore 参数值，用于执行当前操作。
-         *
-         * @return 返回当前操作产生的结果。
+         * @param minScore 用于完成本次业务处理的 minScore 参数。
+         * @return 返回 Builder 相关操作生成的结果数据。
          */
         public Builder minScore(double minScore) {
             this.minScore = minScore;
@@ -156,11 +155,10 @@ public class VectorSearchRequest {
         }
 
         /**
-         * {@code filter} 执行当前类型定义的业务操作。
+         * 执行 Builder 相关业务数据，并返回处理结果。
          *
-         * @param filter 参数值，用于执行当前操作。
-         *
-         * @return 返回当前操作产生的结果。
+         * @param filter 用于筛选目标数据的查询条件。
+         * @return 返回 Builder 相关操作生成的结果数据。
          */
         public Builder filter(Map<String, Object> filter) {
             this.filter = filter;
@@ -168,11 +166,10 @@ public class VectorSearchRequest {
         }
 
         /**
-         * {@code searchType} 查询并返回当前操作所需的数据。
+         * 查询 Builder 相关业务数据，并返回处理结果。
          *
-         * @param searchType 参数值，用于执行当前操作。
-         *
-         * @return 返回当前操作产生的结果。
+         * @param searchType 用于完成本次业务处理的 searchType 参数。
+         * @return 返回 Builder 相关操作生成的结果数据。
          */
         public Builder searchType(VectorSearchType searchType) {
             this.searchType = searchType;
@@ -180,9 +177,9 @@ public class VectorSearchRequest {
         }
 
         /**
-         * {@code build} 执行当前类型定义的业务操作。
+         * 构建或转换 Builder 相关业务数据，并返回处理结果。
          *
-         * @return 返回当前操作产生的结果。
+         * @return 返回 Builder 相关操作生成的结果数据。
          */
         public VectorSearchRequest build() {
             return new VectorSearchRequest(this);

@@ -21,11 +21,7 @@ import java.time.Instant;
 import java.util.List;
 
 /**
- * 复习安排节点
- *
- * <p>LangGraph4j 节点，学习完成后安排艾宾浩斯遗忘曲线复习任务。
- *
- * <p>输入字段：studentId, knowledgeId 输出字段：reviewTasks, reviewDates, reviewScheduled
+ * 执行 复习 Schedule 相关流程节点的输入处理和状态转移。
  */
 @Slf4j
 @Getter
@@ -49,11 +45,11 @@ public class ReviewScheduleNode extends BaseNode {
     private final ReviewTaskRepository reviewTaskRepository;
 
     /**
-     * {@code ReviewScheduleNode} 创建并初始化当前类型实例。
+     * 执行 复习 Schedule 相关业务操作，并维护必要的状态和协作关系。
      *
-     * @param reviewScheduler 参数值，用于执行当前操作。
-     * @param reviewService 参数值，用于执行当前操作。
-     * @param reviewTaskRepository 参数值，用于执行当前操作。
+     * @param reviewScheduler 用于完成本次业务处理的 reviewScheduler 参数。
+     * @param reviewService 用于完成本次业务处理的 reviewService 参数。
+     * @param reviewTaskRepository 用于完成本次业务处理的 reviewTaskRepository 参数。
      */
     public ReviewScheduleNode(
             ReviewScheduler reviewScheduler,
@@ -68,11 +64,10 @@ public class ReviewScheduleNode extends BaseNode {
     }
 
     /**
-     * {@code doExecute} 执行当前类型定义的业务操作。
+     * 执行 复习 Schedule 相关业务数据，并返回处理结果。
      *
-     * @param input 参数值，用于执行当前操作。
-     *
-     * @return 返回当前操作产生的结果。
+     * @param input 用于完成本次业务处理的 input 参数。
+     * @return 返回 复习 Schedule 相关操作生成的结果数据。
      */
     @Override
     protected NodeOutput doExecute(NodeInput input) throws Exception {
@@ -128,9 +123,9 @@ public class ReviewScheduleNode extends BaseNode {
     }
 
     /**
-     * {@code getRequiredInputs} 查询并返回当前操作所需的数据。
+     * 查询 复习 Schedule 相关业务数据，并返回处理结果。
      *
-     * @return 返回当前操作产生的结果。
+     * @return 返回符合条件的数据集合；没有匹配项时返回空集合。
      */
     @Override
     public java.util.List<NodeInputParam> getRequiredInputs() {

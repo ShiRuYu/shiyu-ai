@@ -6,14 +6,14 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 
 /**
- * {@code AgentMemoryConfiguration} 提供智能体模块的配置项，并集中声明其默认值和运行约束。
+ * 定义 智能体 记忆 基础设施或应用能力的配置项及装配规则。
  */
 @Configuration
 public class AgentMemoryConfiguration {
     /**
-     * {@code agentExecutionContext} 执行当前类型定义的业务操作。
+     * 执行 智能体 记忆 相关业务数据，并返回处理结果。
      *
-     * @return 返回当前操作产生的结果。
+     * @return 返回 智能体 记忆 相关操作生成的结果数据。
      */
     @Bean
     public AgentExecutionContext agentExecutionContext() {

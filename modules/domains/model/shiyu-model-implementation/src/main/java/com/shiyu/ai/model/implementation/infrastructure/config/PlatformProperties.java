@@ -14,7 +14,7 @@ import java.util.HashMap;
 import java.util.Map;
 
 /**
- * {@code PlatformProperties} 提供模型模块的配置项，并集中声明其默认值和运行约束。
+ * 定义 平台 基础设施或应用能力的配置项及装配规则。
  */
 @Data
 @Configuration
@@ -41,7 +41,7 @@ public class PlatformProperties {
     private SiliconFlowConfig siliconflow = new SiliconFlowConfig();
 
     /**
-     * {@code OllamaConfig} 提供模型模块的配置项，并集中声明其默认值和运行约束。
+     * 定义 Ollama 基础设施或应用能力的配置项及装配规则。
      */
     @Data
     public static class OllamaConfig {
@@ -60,7 +60,7 @@ public class PlatformProperties {
     }
 
     /**
-     * {@code DeepSeekConfig} 提供模型模块的配置项，并集中声明其默认值和运行约束。
+     * 定义 Deep Seek 基础设施或应用能力的配置项及装配规则。
      */
     @Data
     public static class DeepSeekConfig {
@@ -76,7 +76,7 @@ public class PlatformProperties {
     }
 
     /**
-     * {@code OpenAIConfig} 提供模型模块的配置项，并集中声明其默认值和运行约束。
+     * 定义 Open AI 基础设施或应用能力的配置项及装配规则。
      */
     @Data
     public static class OpenAIConfig {
@@ -92,7 +92,7 @@ public class PlatformProperties {
     }
 
     /**
-     * {@code OpenRouterConfig} 提供模型模块的配置项，并集中声明其默认值和运行约束。
+     * 定义 Open Router 基础设施或应用能力的配置项及装配规则。
      */
     @Data
     public static class OpenRouterConfig {
@@ -142,7 +142,7 @@ public class PlatformProperties {
     }
 
     /**
-     * {@code SiliconFlowConfig} 提供模型模块的配置项，并集中声明其默认值和运行约束。
+     * 定义 Silicon Flow 基础设施或应用能力的配置项及装配规则。
      */
     @Data
     public static class SiliconFlowConfig {

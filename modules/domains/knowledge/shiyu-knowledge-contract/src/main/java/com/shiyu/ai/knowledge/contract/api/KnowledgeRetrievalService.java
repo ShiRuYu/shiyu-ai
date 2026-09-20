@@ -4,7 +4,7 @@ import com.shiyu.ai.knowledge.contract.model.KnowledgeRetrievalRequest;
 import com.shiyu.ai.knowledge.contract.model.KnowledgeRetrievalResult;
 
 /**
- * KnowledgeRetrievalService 服务接口，负责执行知识领域相关业务操作。
+ * 提供 知识 Retrieval 的查询、创建、更新及调用服务，协调业务变更和领域协作。
  */
 public interface KnowledgeRetrievalService {
 

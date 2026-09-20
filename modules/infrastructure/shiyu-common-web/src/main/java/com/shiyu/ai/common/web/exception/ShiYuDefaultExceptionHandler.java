@@ -23,18 +23,17 @@ import org.springframework.web.multipart.support.MissingServletRequestPartExcept
 import org.springframework.web.server.ResponseStatusException;
 import org.springframework.web.servlet.resource.NoResourceFoundException;
 
-/** 异常处理 */
+/**
+ * 处理 Shi Yu Default Exception 相关事件或请求，并推进后续业务流程。
+ */
 @RestControllerAdvice
 @Slf4j
 public class ShiYuDefaultExceptionHandler {
 
     /**
-     * {@code exception} 执行当前类型定义的业务操作。
+     * 执行 Shi Yu Default Exception 相关业务操作，并维护必要的状态和协作关系。
      *
-     * @param e 参数值，用于执行当前操作。
-     * @param bindingResult 参数值，用于执行当前操作。
-     *
-     * @return 返回当前操作产生的结果。
+     * @param class 用于完成本次业务处理的 class 参数。
      */
     @ExceptionHandler(BindException.class)
     public Result<String> exception(BindException e, BindingResult bindingResult) {
@@ -61,11 +60,9 @@ public class ShiYuDefaultExceptionHandler {
     }
 
     /**
-     * {@code exception} 执行当前类型定义的业务操作。
+     * 执行 Shi Yu Default Exception 相关业务操作，并维护必要的状态和协作关系。
      *
-     * @param e 参数值，用于执行当前操作。
-     *
-     * @return 返回当前操作产生的结果。
+     * @param class 用于完成本次业务处理的 class 参数。
      */
     @ExceptionHandler(ConstraintViolationException.class)
     public Result<String> exception(ConstraintViolationException e) {
@@ -77,11 +74,9 @@ public class ShiYuDefaultExceptionHandler {
     }
 
     /**
-     * {@code exception} 执行当前类型定义的业务操作。
+     * 执行 Shi Yu Default Exception 相关业务操作，并维护必要的状态和协作关系。
      *
-     * @param e 参数值，用于执行当前操作。
-     *
-     * @return 返回当前操作产生的结果。
+     * @param class 用于完成本次业务处理的 class 参数。
      */
     @ExceptionHandler(HttpMessageNotReadableException.class)
     public Result<String> exception(HttpMessageNotReadableException e) {
@@ -92,13 +87,12 @@ public class ShiYuDefaultExceptionHandler {
         return Result.fail(BizResultCode.BAD_REQUEST, "请求体格式不正确");
    }
 
-    /**
-     * {@code missingRequestPart} 执行当前类型定义的业务操作。
-     *
-     * @param e 参数值，用于执行当前操作。
-     *
-     * @return 返回当前操作产生的结果。
-     */
+   /**
+    * 执行 Shi Yu Default Exception 相关业务操作，并维护必要的状态和协作关系。
+    *
+    * @param class 用于完成本次业务处理的 class 参数。
+    * @param class 用于完成本次业务处理的 class 参数。
+    */
    @ExceptionHandler({
        MissingServletRequestParameterException.class,
        MissingServletRequestPartException.class
@@ -111,13 +105,12 @@ public class ShiYuDefaultExceptionHandler {
         return Result.fail(BizResultCode.BAD_REQUEST, "请求参数不完整");
    }
 
-    /**
-     * {@code unsupportedMediaType} 执行当前类型定义的业务操作。
-     *
-     * @param e 参数值，用于执行当前操作。
-     *
-     * @return 返回当前操作产生的结果。
-     */
+   /**
+    * 执行 Shi Yu Default Exception 相关业务操作，并维护必要的状态和协作关系。
+    *
+    * @param class 用于完成本次业务处理的 class 参数。
+    * @param class 用于完成本次业务处理的 class 参数。
+    */
    @ExceptionHandler({
        HttpMediaTypeNotSupportedException.class,
        HttpMediaTypeNotAcceptableException.class
@@ -131,11 +124,9 @@ public class ShiYuDefaultExceptionHandler {
     }
 
     /**
-     * {@code exception} 执行当前类型定义的业务操作。
+     * 执行 Shi Yu Default Exception 相关业务操作，并维护必要的状态和协作关系。
      *
-     * @param e 参数值，用于执行当前操作。
-     *
-     * @return 返回当前操作产生的结果。
+     * @param class 用于完成本次业务处理的 class 参数。
      */
     @ExceptionHandler(MethodArgumentTypeMismatchException.class)
     public Result<String> exception(MethodArgumentTypeMismatchException e) {
@@ -143,11 +134,9 @@ public class ShiYuDefaultExceptionHandler {
     }
 
     /**
-     * {@code exception} 执行当前类型定义的业务操作。
+     * 执行 Shi Yu Default Exception 相关业务操作，并维护必要的状态和协作关系。
      *
-     * @param e 参数值，用于执行当前操作。
-     *
-     * @return 返回当前操作产生的结果。
+     * @param class 用于完成本次业务处理的 class 参数。
      */
     @ExceptionHandler(ResponseStatusException.class)
     public Result<String> exception(ResponseStatusException e) {
@@ -159,11 +148,9 @@ public class ShiYuDefaultExceptionHandler {
     }
 
     /**
-     * {@code exception} 执行当前类型定义的业务操作。
+     * 执行 Shi Yu Default Exception 相关业务操作，并维护必要的状态和协作关系。
      *
-     * @param e 参数值，用于执行当前操作。
-     *
-     * @return 返回当前操作产生的结果。
+     * @param class 用于完成本次业务处理的 class 参数。
      */
     @ExceptionHandler(NoResourceFoundException.class)
     public Result<String> exception(NoResourceFoundException e) {
@@ -171,11 +158,9 @@ public class ShiYuDefaultExceptionHandler {
     }
 
     /**
-     * {@code exception} 执行当前类型定义的业务操作。
+     * 执行 Shi Yu Default Exception 相关业务操作，并维护必要的状态和协作关系。
      *
-     * @param e 参数值，用于执行当前操作。
-     *
-     * @return 返回当前操作产生的结果。
+     * @param class 用于完成本次业务处理的 class 参数。
      */
     @ExceptionHandler(SecurityException.class)
     public Result<String> exception(SecurityException e) {
@@ -211,11 +196,9 @@ public class ShiYuDefaultExceptionHandler {
     }
 
     /**
-     * {@code exception} 执行当前类型定义的业务操作。
+     * 执行 Shi Yu Default Exception 相关业务操作，并维护必要的状态和协作关系。
      *
-     * @param e 参数值，用于执行当前操作。
-     *
-     * @return 返回当前操作产生的结果。
+     * @param class 用于完成本次业务处理的 class 参数。
      */
     @ExceptionHandler(BaseBizException.class)
     public Result<String> exception(BaseBizException e) {
@@ -230,11 +213,9 @@ public class ShiYuDefaultExceptionHandler {
     }
 
     /**
-     * {@code exception} 执行当前类型定义的业务操作。
+     * 执行 Shi Yu Default Exception 相关业务操作，并维护必要的状态和协作关系。
      *
-     * @param e 参数值，用于执行当前操作。
-     *
-     * @return 返回当前操作产生的结果。
+     * @param class 用于完成本次业务处理的 class 参数。
      */
     @ExceptionHandler(BaseException.class)
     public Result<String> exception(BaseException e) {
@@ -246,11 +227,9 @@ public class ShiYuDefaultExceptionHandler {
     }
 
     /**
-     * {@code exception} 执行当前类型定义的业务操作。
+     * 执行 Shi Yu Default Exception 相关业务操作，并维护必要的状态和协作关系。
      *
-     * @param e 参数值，用于执行当前操作。
-     *
-     * @return 返回当前操作产生的结果。
+     * @param class 用于完成本次业务处理的 class 参数。
      */
     @ExceptionHandler(Exception.class)
     public Result<String> exception(Exception e) {

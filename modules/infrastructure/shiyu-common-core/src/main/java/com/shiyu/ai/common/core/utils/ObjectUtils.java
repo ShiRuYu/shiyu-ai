@@ -4,14 +4,15 @@ import cn.hutool.core.util.ObjectUtil;
 
 import java.util.function.Function;
 
-/** 对象工具类 */
+/**
+ * 提供 Object 相关的通用辅助操作，供业务和基础设施复用。
+ */
 public class ObjectUtils extends ObjectUtil {
     /**
-     * 对象为null则报错
+     * 获取并校验 Object 相关业务数据，并返回处理结果。
      *
-     * @param obj
-     * @return
-     * @param <T>
+     * @param obj 用于完成本次业务处理的 obj 参数。
+     * @return 返回 Object 相关操作生成的结果数据。
      */
     public static <T> T requireNonNull(T obj) {
         if (obj == null) throw new NullPointerException();

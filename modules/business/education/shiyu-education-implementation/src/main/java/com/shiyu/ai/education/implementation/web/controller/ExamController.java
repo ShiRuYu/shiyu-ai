@@ -19,7 +19,7 @@ import org.springframework.web.bind.annotation.*;
 import java.util.List;
 
 /**
- * {@code ExamController} 是教育模块的 Web 接口适配器，负责接收请求并转换为应用服务调用。
+ * 处理 考试 相关的 Web 请求，并将请求转换为应用服务调用。
  */
 @Slf4j
 @RestController
@@ -34,11 +34,9 @@ public class ExamController {
     private final ExamService examService;
 
     /**
-     * {@code getById} 查询并返回当前操作所需的数据。
+     * 查询 考试 相关业务操作，并维护必要的状态和协作关系。
      *
-     * @param id 参数值，用于执行当前操作。
-     *
-     * @return 返回当前操作产生的结果。
+     * @param detail 用于完成本次业务处理的 detail 参数。
      */
     @GetMapping("/detail")
     public Result<ExamResponse> getById(@RequestParam Long id) {
@@ -46,12 +44,10 @@ public class ExamController {
     }
 
     /**
-     * {@code list} 查询并返回当前操作所需的数据。
+     * 查询 考试 相关业务数据，并返回处理结果。
      *
-     * @param pageNum 参数值，用于执行当前操作。
-     * @param pageSize 参数值，用于执行当前操作。
-     *
-     * @return 返回当前操作产生的结果。
+     * @param list 用于完成本次业务处理的 list 参数。
+     * @return 返回 考试 相关操作生成的结果数据。
      */
     @GetMapping("/list")
     public Result<PageData<ExamResponse>> list(
@@ -62,11 +58,9 @@ public class ExamController {
     }
 
     /**
-     * {@code listBySubjectCode} 查询并返回当前操作所需的数据。
+     * 查询 考试 相关业务操作，并维护必要的状态和协作关系。
      *
-     * @param subjectCode 参数值，用于执行当前操作。
-     *
-     * @return 返回当前操作产生的结果。
+     * @param subject 用于完成本次业务处理的 subject 参数。
      */
     @GetMapping("/subject")
     public Result<List<ExamResponse>> listBySubjectCode(@RequestParam String subjectCode) {
@@ -75,11 +69,9 @@ public class ExamController {
     }
 
     /**
-     * {@code listByTeacherId} 查询并返回当前操作所需的数据。
+     * 查询 考试 相关业务操作，并维护必要的状态和协作关系。
      *
-     * @param teacherId 参数值，用于执行当前操作。
-     *
-     * @return 返回当前操作产生的结果。
+     * @param teacher 用于完成本次业务处理的 teacher 参数。
      */
     @GetMapping("/teacher")
     public Result<List<ExamResponse>> listByTeacherId(@RequestParam Long teacherId) {
@@ -88,11 +80,9 @@ public class ExamController {
     }
 
     /**
-     * {@code create} 写入或更新当前模块中的业务数据。
+     * 执行 考试 相关业务操作，并维护必要的状态和协作关系。
      *
-     * @param request 参数值，用于执行当前操作。
-     *
-     * @return 返回当前操作产生的结果。
+     * @param create 用于完成本次业务处理的 create 参数。
      */
     @PostMapping("/create")
     @SaCheckPermission("edu:exam:create")
@@ -101,12 +91,9 @@ public class ExamController {
     }
 
     /**
-     * {@code update} 写入或更新当前模块中的业务数据。
+     * 执行 考试 相关业务操作，并维护必要的状态和协作关系。
      *
-     * @param id 参数值，用于执行当前操作。
-     * @param request 参数值，用于执行当前操作。
-     *
-     * @return 返回当前操作产生的结果。
+     * @param update 用于完成本次业务处理的 update 参数。
      */
     @PostMapping("/update")
     @SaCheckPermission("edu:exam:edit")
@@ -117,11 +104,9 @@ public class ExamController {
     }
 
     /**
-     * {@code delete} 释放或移除当前操作涉及的资源。
+     * 执行 考试 相关业务操作，并维护必要的状态和协作关系。
      *
-     * @param id 参数值，用于执行当前操作。
-     *
-     * @return 返回当前操作产生的结果。
+     * @param delete 用于完成本次业务处理的 delete 参数。
      */
     @PostMapping("/delete")
     @SaCheckPermission("edu:exam:delete")

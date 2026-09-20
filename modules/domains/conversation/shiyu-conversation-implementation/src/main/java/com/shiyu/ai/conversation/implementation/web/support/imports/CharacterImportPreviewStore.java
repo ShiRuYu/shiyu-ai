@@ -14,7 +14,7 @@ import java.util.UUID;
 import java.util.concurrent.ConcurrentHashMap;
 
 /**
- * 保存角色卡导入预览结果并按预览标识读取。
+ * 管理 Character Import Preview 相关的运行时状态、注册信息或临时数据。
  */
 @Component
 public final class CharacterImportPreviewStore {
@@ -22,15 +22,14 @@ public final class CharacterImportPreviewStore {
     private final Map<String, Entry> entries = new ConcurrentHashMap<>();
 
     /**
-     * {@code issue} 校验当前操作的输入或状态是否满足约束。
+     * 校验或判断 Character Import Preview 相关业务数据，并返回处理结果。
      *
-     * @param tenantId 参数值，用于执行当前操作。
-     * @param userId 参数值，用于执行当前操作。
-     * @param payload 参数值，用于执行当前操作。
-     * @param filename 参数值，用于执行当前操作。
-     * @param card 参数值，用于执行当前操作。
-     *
-     * @return 返回当前操作产生的结果。
+     * @param tenantId 当前操作涉及的租户标识。
+     * @param userId 当前操作涉及的用户标识。
+     * @param payload 本次流程携带的事件或业务数据。
+     * @param filename 用于完成本次业务处理的 filename 参数。
+     * @param card 用于完成本次业务处理的 card 参数。
+     * @return 返回 Character Import Preview 相关操作生成的结果数据。
      */
     public Preview issue(
             TenantId tenantId, long userId, byte[] payload, String filename, CharacterCardV2 card) {
@@ -42,15 +41,14 @@ public final class CharacterImportPreviewStore {
     }
 
     /**
-     * {@code consume} 执行当前类型定义的业务操作。
+     * 处理 Character Import Preview 相关业务数据，并返回处理结果。
      *
-     * @param tenantId 参数值，用于执行当前操作。
-     * @param userId 参数值，用于执行当前操作。
-     * @param token 参数值，用于执行当前操作。
-     * @param payload 参数值，用于执行当前操作。
-     * @param filename 参数值，用于执行当前操作。
-     *
-     * @return 返回当前操作产生的结果。
+     * @param tenantId 当前操作涉及的租户标识。
+     * @param userId 当前操作涉及的用户标识。
+     * @param token 用于完成本次业务处理的 token 参数。
+     * @param payload 本次流程携带的事件或业务数据。
+     * @param filename 用于完成本次业务处理的 filename 参数。
+     * @return 返回 Character Import Preview 相关操作生成的结果数据。
      */
     public CharacterCardV2 consume(
             TenantId tenantId, long userId, String token, byte[] payload, String filename) {
@@ -81,13 +79,7 @@ public final class CharacterImportPreviewStore {
     }
 
     /**
-     * {@code Entry} 封装会话模块中不可变的结构化数据，并作为相关操作之间的值对象。
-     * @param tenantId 租户标识，表示该记录组件承载的数据。
-     * @param userId 用户标识，表示该记录组件承载的数据。
-     * @param digest digest 属性，表示该记录组件承载的数据。
-     * @param filename 文件名，表示该记录组件承载的数据。
-     * @param card card 属性，表示该记录组件承载的数据。
-     * @param expires expires 属性，表示该记录组件承载的数据。
+     * 封装 Entry 相关的不可变数据及其字段约束。
      */
     private record Entry(
             TenantId tenantId,
@@ -98,11 +90,7 @@ public final class CharacterImportPreviewStore {
             Instant expires) {}
 
     /**
-     * {@code Preview} 封装会话模块中不可变的结构化数据，并作为相关操作之间的值对象。
-     * @param token 令牌，表示该记录组件承载的数据。
-     * @param expiresAt 过期时间，表示该记录组件承载的数据。
-     * @param filename 文件名，表示该记录组件承载的数据。
-     * @param card card 属性，表示该记录组件承载的数据。
+     * 封装 Preview 相关的不可变数据及其字段约束。
      */
     public record Preview(String token, Instant expiresAt, String filename, CharacterCardV2 card) {}
 }

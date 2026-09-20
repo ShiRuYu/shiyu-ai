@@ -5,7 +5,9 @@ import lombok.Getter;
 
 import java.util.Arrays;
 
-/** 设备类型 针对多套 用户体系 */
+/**
+ * 定义 用户 Type Enum 可用的枚举值及其业务语义。
+ */
 @Getter
 @AllArgsConstructor
 public enum UserTypeEnum {

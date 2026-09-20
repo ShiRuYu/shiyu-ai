@@ -9,7 +9,9 @@ import lombok.Data;
 import java.io.Serial;
 import java.io.Serializable;
 
-/** 验证码登录请求 */
+/**
+ * 封装 Code Login 操作所需的请求条件和输入数据。
+ */
 @Data
 @Schema(description = "验证码登录请求")
 public class CodeLoginRequest implements Serializable {

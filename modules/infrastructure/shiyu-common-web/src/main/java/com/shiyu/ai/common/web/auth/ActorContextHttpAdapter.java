@@ -11,16 +11,16 @@ import com.shiyu.ai.kernel.context.TenantScope;
 import com.shiyu.ai.kernel.context.UserId;
 
 /**
- * 将 HTTP 认证上下文转换为领域 ActorContext。
+ * 将 Actor Context Http 在不同层之间进行适配、转换或组装。
  */
 public final class ActorContextHttpAdapter {
 
     private ActorContextHttpAdapter() {}
 
     /**
-     * {@code currentActor} 执行当前类型定义的业务操作。
+     * 执行 Actor Context Http 相关业务数据，并返回处理结果。
      *
-     * @return 返回当前操作产生的结果。
+     * @return 返回 Actor Context Http 相关操作生成的结果数据。
      */
     public static ActorContext currentActor() {
         Long tenantId = UserContextHolder.getCurrentTenantId();

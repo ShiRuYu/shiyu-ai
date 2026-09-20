@@ -14,7 +14,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
 /**
- * {@code ToolCallNodeCreator} 负责创建智能体模块中的运行时对象，并集中封装构造规则。
+ * 根据输入配置创建 工具 Call Node 相关的流程节点或业务组件。
  */
 @Component
 public class ToolCallNodeCreator implements NodeCreator {
@@ -39,10 +39,10 @@ public class ToolCallNodeCreator implements NodeCreator {
     }
 
     /**
-     * {@code ToolCallNodeCreator} 创建并初始化当前类型实例。
+     * 构建或转换 工具 Call Node 相关业务操作，并维护必要的状态和协作关系。
      *
-     * @param toolService 参数值，用于执行当前操作。
-     * @param executionPipeline 参数值，用于执行当前操作。
+     * @param toolService 用于完成本次业务处理的 toolService 参数。
+     * @param executionPipeline 用于完成本次业务处理的 executionPipeline 参数。
      */
     @Autowired
     public ToolCallNodeCreator(ToolService toolService, ToolExecutionPipeline executionPipeline) {
@@ -51,9 +51,9 @@ public class ToolCallNodeCreator implements NodeCreator {
     }
 
     /**
-     * {@code getType} 查询并返回当前操作所需的数据。
+     * 查询 工具 Call Node 相关业务数据，并返回处理结果。
      *
-     * @return 返回当前操作产生的结果。
+     * @return 返回 工具 Call Node 相关操作生成的结果数据。
      */
     @Override
     public NodeType getType() {
@@ -61,11 +61,10 @@ public class ToolCallNodeCreator implements NodeCreator {
     }
 
     /**
-     * {@code create} 写入或更新当前模块中的业务数据。
+     * 创建或保存 工具 Call Node 相关业务数据，并返回处理结果。
      *
-     * @param config 参数值，用于执行当前操作。
-     *
-     * @return 返回当前操作产生的结果。
+     * @param config 用于完成本次业务处理的 config 参数。
+     * @return 返回 工具 Call Node 相关操作生成的结果数据。
      */
     @Override
     public BaseNode create(NodeConfig config) {

@@ -1,7 +1,7 @@
 package com.shiyu.ai.common.mybatis.datasource;
 
 /**
- * DataSourceConfig 配置组件，负责注册和配置基础设施领域相关基础设施。
+ * 定义 Data Source 基础设施或应用能力的配置项及装配规则。
  */
 public final class DataSourceConfig {
 

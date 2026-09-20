@@ -10,21 +10,20 @@ import org.apache.commons.lang3.tuple.Pair;
 import java.util.List;
 
 /**
- * IntentDefService 服务接口，负责执行智能体领域相关业务操作。
+ * 提供 Intent Def 的查询、创建、更新及调用服务，协调业务变更和领域协作。
  */
 public interface IntentDefService {
     /**
-     * 执行 {@code pageView} 定义的接口操作。
+     * 查询 Intent Def 相关业务数据，并返回处理结果。
      *
-     * @param actor 当前操作主体上下文。
-     * @param pageNo 方法参数。
-     * @param pageSize 分页大小。
-     * @param agentId 方法参数。
-     * @param name 对象名称。
-     * @param code 方法参数。
-     * @param category 方法参数。
-     *
-     * @return 符合条件的结果集合。
+     * @param actor 当前操作主体上下文，用于确定租户、用户和访问权限。
+     * @param pageNo 分页页码，从 1 开始。
+     * @param pageSize 每页返回的数据数量。
+     * @param agentId 用于定位agent的标识。
+     * @param name 用于定位或筛选目标业务对象的业务值。
+     * @param code 用于定位或筛选目标业务对象的业务值。
+     * @param category 用于完成本次业务处理的 category 参数。
+     * @return 返回总数及当前页数据，左值为总数，右值为数据列表。
      */
     Pair<Long, List<IntentDefVO>> pageView(
             ActorContext actor,
@@ -36,33 +35,30 @@ public interface IntentDefService {
             String category);
 
     /**
-     * 执行 {@code detailView} 定义的接口操作。
+     * 查询 Intent Def 相关业务数据，并返回处理结果。
      *
-     * @param actor 当前操作主体上下文。
-     * @param id 目标对象标识。
-     *
-     * @return 操作结果。
+     * @param actor 当前操作主体上下文，用于确定租户、用户和访问权限。
+     * @param id 用于定位目标业务对象的标识。
+     * @return 返回 Intent Def 相关操作生成的结果数据。
      */
     IntentDefVO detailView(ActorContext actor, Long id);
 
     /**
-     * 创建并保存业务对象。
+     * 创建或保存 Intent Def 相关业务数据，并返回处理结果。
      *
-     * @param actor 当前操作主体上下文。
-     * @param request 请求参数。
-     *
-     * @return 操作结果。
+     * @param actor 当前操作主体上下文，用于确定租户、用户和访问权限。
+     * @param request 封装本次操作所需业务字段的请求对象。
+     * @return 返回 Intent Def 相关操作生成的结果数据。
      */
     IntentDefVO create(ActorContext actor, IntentDefRequest request);
 
     /**
-     * 更新业务对象及其关联数据。
+     * 更新或设置 Intent Def 相关业务数据，并返回处理结果。
      *
-     * @param actor 当前操作主体上下文。
-     * @param id 目标对象标识。
-     * @param request 请求参数。
-     *
-     * @return 操作结果。
+     * @param actor 当前操作主体上下文，用于确定租户、用户和访问权限。
+     * @param id 用于定位目标业务对象的标识。
+     * @param request 封装本次操作所需业务字段的请求对象。
+     * @return 返回 Intent Def 相关操作生成的结果数据。
      */
     IntentDefVO update(ActorContext actor, Long id, IntentDefRequest request);
 

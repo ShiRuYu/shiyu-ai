@@ -11,15 +11,17 @@ import org.springframework.stereotype.Component;
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
 
-/** Word 文档解析器 — 基于 Apache POI 5.x 支持提取 .docx 纯文本内容（含标题、段落、表格） */
+/**
+ * 解析或编解码 Word 文档 相关的外部内容和领域数据。
+ */
 @Slf4j
 @Component
 public class WordDocumentParser implements DocumentParser {
 
     /**
-     * {@code getSupportedFormat} 查询并返回当前操作所需的数据。
+     * 查询 Word 文档 相关业务数据，并返回处理结果。
      *
-     * @return 返回当前操作产生的结果。
+     * @return 返回 Word 文档 相关操作生成的结果数据。
      */
     @Override
     public String getSupportedFormat() {
@@ -27,11 +29,10 @@ public class WordDocumentParser implements DocumentParser {
     }
 
     /**
-     * {@code parse} 执行当前类型定义的业务操作。
+     * 执行 Word 文档 相关业务数据，并返回处理结果。
      *
-     * @param content 参数值，用于执行当前操作。
-     *
-     * @return 返回当前操作产生的结果。
+     * @param content 用于完成本次业务处理的 content 参数。
+     * @return 返回 Word 文档 相关操作生成的结果数据。
      */
     @Override
     public ParseResult parse(String content) {

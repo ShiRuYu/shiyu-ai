@@ -17,6 +17,9 @@ import org.junit.jupiter.api.Test;
 
 import java.util.List;
 
+/**
+ * 验证 Dict Controller Coverage 相关功能、边界条件、异常路径和协作行为。
+ */
 class DictControllerCoverageTest {
     private final DictService service = mock(DictService.class);
     private final DictController controller = new DictController(service);

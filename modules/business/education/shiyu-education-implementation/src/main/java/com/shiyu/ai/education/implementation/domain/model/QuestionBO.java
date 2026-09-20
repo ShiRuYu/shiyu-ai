@@ -5,7 +5,9 @@ import lombok.Data;
 import java.io.Serial;
 import java.io.Serializable;
 
-/** Question 业务对象 */
+/**
+ * 表示 题目 领域对象的业务状态和属性。
+ */
 @Data
 public class QuestionBO implements Serializable {
 

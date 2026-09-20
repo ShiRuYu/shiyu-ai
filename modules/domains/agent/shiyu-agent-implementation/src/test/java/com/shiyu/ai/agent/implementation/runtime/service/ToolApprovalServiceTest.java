@@ -20,6 +20,9 @@ import org.junit.jupiter.api.Test;
 import java.time.Instant;
 import java.util.List;
 
+/**
+ * 验证 工具 Approval Service 相关功能、边界条件、异常路径和协作行为。
+ */
 class ToolApprovalServiceTest {
     @Test
     void repositoryRequiresTypedTenantIdentity() {

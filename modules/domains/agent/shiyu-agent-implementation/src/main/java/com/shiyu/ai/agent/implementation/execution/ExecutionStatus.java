@@ -1,6 +1,8 @@
 package com.shiyu.ai.agent.implementation.execution;
 
-/** 执行实例状态枚举 */
+/**
+ * 定义 Execution 可用的枚举值及其业务语义。
+ */
 public enum ExecutionStatus {
     /** 等待执行 */
     PENDING,
@@ -16,27 +18,27 @@ public enum ExecutionStatus {
     CANCELLED;
 
     /**
-     * {@code isTerminal} 校验当前操作的输入或状态是否满足约束。
+     * 校验或判断 Execution 相关业务数据，并返回处理结果。
      *
-     * @return 返回当前操作产生的结果。
+     * @return 返回本次条件判断是否成立。
      */
     public boolean isTerminal() {
         return this == COMPLETED || this == FAILED || this == CANCELLED;
     }
 
     /**
-     * {@code canPause} 校验当前操作的输入或状态是否满足约束。
+     * 校验或判断 Execution 相关业务数据，并返回处理结果。
      *
-     * @return 返回当前操作产生的结果。
+     * @return 返回本次条件判断是否成立。
      */
     public boolean canPause() {
         return this == RUNNING;
     }
 
     /**
-     * {@code canResume} 校验当前操作的输入或状态是否满足约束。
+     * 校验或判断 Execution 相关业务数据，并返回处理结果。
      *
-     * @return 返回当前操作产生的结果。
+     * @return 返回本次条件判断是否成立。
      */
     public boolean canResume() {
         return this == PAUSED;

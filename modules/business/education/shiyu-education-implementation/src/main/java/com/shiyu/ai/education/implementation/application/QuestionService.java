@@ -8,7 +8,7 @@ import com.shiyu.ai.kernel.context.ActorContext;
 import java.util.List;
 
 /**
- * QuestionService 服务接口，负责执行教育领域相关业务操作。
+ * 提供 题目 的查询、创建、更新及调用服务，协调业务变更和领域协作。
  */
 public interface QuestionService {
 
@@ -44,34 +44,31 @@ public interface QuestionService {
     PageData<QuestionResponse> page(ActorContext actor, int pageNum, int pageSize);
 
     /**
-     * 根据条件查询并返回所需数据。
+     * 查询 题目 相关业务数据，并返回处理结果。
      *
-     * @param actor 当前操作主体上下文。
-     * @param subjectCode 方法参数。
-     * @param grade 方法参数。
-     *
-     * @return 符合条件的结果集合。
+     * @param actor 当前操作主体上下文，用于确定租户、用户和访问权限。
+     * @param subjectCode 用于完成本次业务处理的 subjectCode 参数。
+     * @param grade 用于完成本次业务处理的 grade 参数。
+     * @return 返回符合条件的数据集合；没有匹配项时返回空集合。
      */
     List<QuestionResponse> listBySubjectAndGrade(
             ActorContext actor, String subjectCode, Integer grade);
 
     /**
-     * 根据难度查询题目列表。
+     * 查询 题目 相关业务数据，并返回处理结果。
      *
-     * @param actor 调用方上下文。
-     * @param difficulty difficulty 参数。
-     *
-     * @return 结果列表。
+     * @param actor 当前操作主体上下文，用于确定租户、用户和访问权限。
+     * @param difficulty 用于完成本次业务处理的 difficulty 参数。
+     * @return 返回符合条件的数据集合；没有匹配项时返回空集合。
      */
     List<QuestionResponse> listByDifficulty(ActorContext actor, Integer difficulty);
 
     /**
-     * 根据类型查询题目列表。
+     * 查询 题目 相关业务数据，并返回处理结果。
      *
-     * @param actor 调用方上下文。
-     * @param type 数据类型。
-     *
-     * @return 结果列表。
+     * @param actor 当前操作主体上下文，用于确定租户、用户和访问权限。
+     * @param type 用于完成本次业务处理的 type 参数。
+     * @return 返回符合条件的数据集合；没有匹配项时返回空集合。
      */
     List<QuestionResponse> listByType(ActorContext actor, String type);
 

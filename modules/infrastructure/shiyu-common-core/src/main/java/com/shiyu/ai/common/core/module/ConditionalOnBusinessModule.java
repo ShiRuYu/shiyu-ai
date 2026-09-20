@@ -8,7 +8,7 @@ import java.lang.annotation.Target;
 import org.springframework.context.annotation.Conditional;
 
 /**
- * 仅在指定业务模块被进程配置启用时注册配置类或 Bean。
+ * 定义 Conditional On Business Module 相关的协作契约和调用边界。
  */
 @Target({ElementType.TYPE, ElementType.METHOD})
 @Retention(RetentionPolicy.RUNTIME)

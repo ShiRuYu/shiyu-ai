@@ -14,7 +14,7 @@ import java.time.Instant;
 import java.time.temporal.ChronoUnit;
 
 /**
- * DataRetentionService 服务接口，负责执行应用领域相关业务操作。
+ * 提供 Data Retention 的查询、创建、更新及调用服务，协调业务变更和领域协作。
  */
 @Slf4j
 @Service

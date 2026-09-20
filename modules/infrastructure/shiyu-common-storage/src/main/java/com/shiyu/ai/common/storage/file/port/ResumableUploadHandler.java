@@ -13,44 +13,38 @@ import com.shiyu.ai.kernel.context.TenantId;
 import com.shiyu.ai.kernel.context.UserId;
 
 /**
- * ResumableUploadHandler 接口，定义基础设施模块的能力边界。
+ * 处理 Resumable Upload 相关事件或请求，并推进后续业务流程。
  */
 public interface ResumableUploadHandler {
 
     /**
-     * 执行 {@code authorize} 定义的接口操作。
+     * 执行 Resumable Upload 相关业务操作，并维护必要的状态和协作关系。
      *
-     * @param actor 当前操作主体上下文。
-     * @param spaceId 方法参数。
+     * @param actor 当前操作主体上下文，用于确定租户、用户和访问权限。
+     * @param spaceId 用于定位space的标识。
      */
     void authorize(UploadActor actor, Long spaceId);
 
     /**
-     * 执行 {@code namespace} 定义的接口操作。
+     * 执行 Resumable Upload 相关业务数据，并返回处理结果。
      *
-     * @param tenantId 租户标识。
-     * @param spaceId 方法参数。
-     *
-     * @return 操作结果。
+     * @param tenantId 当前操作涉及的租户标识。
+     * @param spaceId 用于定位space的标识。
+     * @return 返回 Resumable Upload 相关操作生成的结果数据。
      */
     String namespace(TenantId tenantId, Long spaceId);
 
     /**
-     * 创建并保存业务对象。
+     * 创建或保存 Resumable Upload 相关业务数据，并返回处理结果。
      *
-     * @param actor 当前操作主体上下文。
-     * @param request 请求参数。
-     *
-     * @return 操作结果。
+     * @param actor 当前操作主体上下文，用于确定租户、用户和访问权限。
+     * @param request 封装本次操作所需业务字段的请求对象。
+     * @return 返回 Resumable Upload 相关操作生成的结果数据。
      */
     RegistrationResult register(UploadActor actor, UploadRegistration request);
 
     /**
-     * {@code UploadActor} 封装平台基础设施模块中不可变的结构化数据，并作为相关操作之间的值对象。
-     * @param tenantId 租户标识，表示该记录组件承载的数据。
-     * @param userId 用户标识，表示该记录组件承载的数据。
-     * @param roleId roleId 属性，表示该记录组件承载的数据。
-     * @param platformAdmin platformAdmin 属性，表示该记录组件承载的数据。
+     * 封装 Upload Actor 相关的不可变数据及其字段约束。
      */
     record UploadActor(TenantId tenantId, UserId userId, RoleId roleId, boolean platformAdmin) {
         public UploadActor {
@@ -61,16 +55,7 @@ public interface ResumableUploadHandler {
     }
 
     /**
-     * {@code UploadRegistration} 封装平台基础设施模块中不可变的结构化数据，并作为相关操作之间的值对象。
-     * @param tenantId 租户标识，表示该记录组件承载的数据。
-     * @param spaceId spaceId 属性，表示该记录组件承载的数据。
-     * @param title 标题，表示该记录组件承载的数据。
-     * @param originalName originalName 属性，表示该记录组件承载的数据。
-     * @param objectKey objectKey 属性，表示该记录组件承载的数据。
-     * @param storageProvider storageProvider 属性，表示该记录组件承载的数据。
-     * @param contentType 内容类型，表示该记录组件承载的数据。
-     * @param size 大小，表示该记录组件承载的数据。
-     * @param checksum checksum 属性，表示该记录组件承载的数据。
+     * 封装 Upload Registration 相关的不可变数据及其字段约束。
      */
     record UploadRegistration(
             TenantId tenantId,
@@ -84,9 +69,7 @@ public interface ResumableUploadHandler {
             String checksum) {}
 
     /**
-     * {@code RegistrationResult} 封装平台基础设施模块中不可变的结构化数据，并作为相关操作之间的值对象。
-     * @param value 值，表示该记录组件承载的数据。
-     * @param duplicate duplicate 属性，表示该记录组件承载的数据。
+     * 封装 Registration 相关的不可变数据及其字段约束。
      */
     record RegistrationResult(Object value, boolean duplicate) {}
 }

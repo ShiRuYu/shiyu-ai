@@ -3,26 +3,20 @@ package com.shiyu.ai.governance.implementation.usage.port;
 import java.math.BigDecimal;
 
 /**
- * BillingPriceProvider 边界接口，负责向外部组件提供治理领域相关能力。
+ * 创建或提供 Billing Price 相关的业务组件和运行时能力。
  */
 public interface BillingPriceProvider {
     /**
-     * 执行 {@code price} 定义的接口操作。
+     * 执行 Billing Price 相关业务数据，并返回处理结果。
      *
-     * @param platform 方法参数。
-     * @param model 方法参数。
-     *
-     * @return 操作结果。
+     * @param platform 用于完成本次业务处理的 platform 参数。
+     * @param model 用于完成本次业务处理的 model 参数。
+     * @return 返回 Billing Price 相关操作生成的结果数据。
      */
     PriceSnapshot price(String platform, String model);
 
     /**
-     * {@code PriceSnapshot} 封装治理模块中不可变的结构化数据，并作为相关操作之间的值对象。
-     * @param platform platform 属性，表示该记录组件承载的数据。
-     * @param model 模型，表示该记录组件承载的数据。
-     * @param promptPerToken promptPerToken 属性，表示该记录组件承载的数据。
-     * @param completionPerToken completionPerToken 属性，表示该记录组件承载的数据。
-     * @param version version 属性，表示该记录组件承载的数据。
+     * 封装 Price Snapshot 相关的不可变数据及其字段约束。
      */
     record PriceSnapshot(
             String platform,

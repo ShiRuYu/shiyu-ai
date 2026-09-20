@@ -11,6 +11,9 @@ import org.junit.jupiter.api.Test;
 
 import java.time.Instant;
 
+/**
+ * 验证 Domain 事件 Envelope 相关功能、边界条件、异常路径和协作行为。
+ */
 class DomainEventEnvelopeTest {
 
     private static final DomainEvent EVENT = () -> "agent.execution.completed";

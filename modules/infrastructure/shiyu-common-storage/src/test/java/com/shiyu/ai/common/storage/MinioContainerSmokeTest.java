@@ -23,7 +23,7 @@ import java.net.URI;
 import java.nio.charset.StandardCharsets;
 
 /**
- * 验证 MinioContainerSmoke 的功能、边界条件和集成行为。
+ * 验证 Minio Container Smoke 相关功能、边界条件、异常路径和协作行为。
  */
 @Testcontainers(disabledWithoutDocker = true)
 class MinioContainerSmokeTest {

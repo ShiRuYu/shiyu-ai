@@ -3,16 +3,15 @@ import com.shiyu.ai.agent.implementation.evaluation.model.EvalCase;
 import com.shiyu.ai.agent.implementation.evaluation.model.EvalResult;
 
 /**
- * Evaluator 接口，定义智能体模块的能力边界。
+ * 定义 Evaluator 相关的协作契约和调用边界。
  */
 public interface Evaluator {
     /**
-     * 执行 {@code evaluate} 定义的接口操作。
+     * 执行 Evaluator 相关业务数据，并返回处理结果。
      *
-     * @param testCase 方法参数。
-     * @param actual 方法参数。
-     *
-     * @return 操作结果。
+     * @param testCase 用于完成本次业务处理的 testCase 参数。
+     * @param actual 用于完成本次业务处理的 actual 参数。
+     * @return 返回 Evaluator 相关操作生成的结果数据。
      */
     EvalResult evaluate(EvalCase testCase, String actual);
 }

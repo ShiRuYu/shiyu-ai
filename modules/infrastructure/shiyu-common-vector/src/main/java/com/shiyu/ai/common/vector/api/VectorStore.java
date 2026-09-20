@@ -5,7 +5,9 @@ import com.shiyu.ai.common.vector.model.VectorSearchRequest;
 
 import java.util.List;
 
-/** 向量存储 SPI — 统一接口 支持 JVector / PGVector / InMemory 等多种实现 */
+/**
+ * 管理 向量 相关的运行时状态、注册信息或临时数据。
+ */
 public interface VectorStore extends AutoCloseable {
 
     /** 返回向量存储类型标识（如 "inmemory", "jvector", "pgvector"） */

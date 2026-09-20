@@ -3,7 +3,7 @@ package com.shiyu.ai.conversation.implementation.application;
 import java.util.regex.Pattern;
 
 /**
- * 执行提示词内容安全校验和策略过滤。
+ * 编排 提示词 Safety 所属应用流程的输入、协作和业务结果。
  */
 public final class PromptSafety {
     private static final Pattern SECRET =
@@ -15,22 +15,20 @@ public final class PromptSafety {
     private PromptSafety() {}
 
     /**
-     * {@code redact} 执行当前类型定义的业务操作。
+     * 执行 提示词 Safety 相关业务数据，并返回处理结果。
      *
-     * @param value 参数值，用于执行当前操作。
-     *
-     * @return 返回当前操作产生的结果。
+     * @param value 用于完成本次业务处理的 value 参数。
+     * @return 返回 提示词 Safety 相关操作生成的结果数据。
      */
     public static String redact(String value) {
         return value == null ? null : SECRET.matcher(value).replaceAll("[REDACTED]");
     }
 
     /**
-     * {@code estimateTokens} 执行当前类型定义的业务操作。
+     * 执行 提示词 Safety 相关业务数据，并返回处理结果。
      *
-     * @param value 参数值，用于执行当前操作。
-     *
-     * @return 返回当前操作产生的结果。
+     * @param value 用于完成本次业务处理的 value 参数。
+     * @return 返回 提示词 Safety 相关操作生成的结果数据。
      */
     public static long estimateTokens(String value) {
         return value == null || value.isBlank()

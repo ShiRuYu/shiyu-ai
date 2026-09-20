@@ -4,7 +4,9 @@ import lombok.Data;
 
 import org.springframework.boot.context.properties.ConfigurationProperties;
 
-/** 线程池 配置属性 */
+/**
+ * 定义 Thread Pool 基础设施或应用能力的配置项及装配规则。
+ */
 @Data
 @ConfigurationProperties(prefix = "thread-pool")
 public class ThreadPoolProperties {

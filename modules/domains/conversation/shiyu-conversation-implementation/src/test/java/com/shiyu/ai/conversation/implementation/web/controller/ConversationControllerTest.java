@@ -28,6 +28,9 @@ import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 
+/**
+ * 验证 会话 Controller 相关功能、边界条件、异常路径和协作行为。
+ */
 class ConversationControllerTest {
     private final ConversationService service = mock(ConversationService.class);
     private final ConversationRepository conversations = mock(ConversationRepository.class);

@@ -22,7 +22,9 @@ import org.springframework.stereotype.Component;
 
 import java.util.List;
 
-/** 菜单数据仓储层 */
+/**
+ * 负责 Menu 的持久化查询、保存和删除，并维护数据访问边界。
+ */
 @Component
 public class MenuRepositoryImpl
         implements com.shiyu.ai.iam.implementation.port.repository.MenuRepository {

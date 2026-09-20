@@ -24,7 +24,7 @@ import java.util.Map;
 import java.util.Objects;
 
 /**
- * 编排 AuthIdentity 应用用例。
+ * 定义 认证 Identity 相关用例的输入、授权和业务结果。
  */
 @Slf4j
 public final class AuthIdentityUseCase {
@@ -54,14 +54,14 @@ public final class AuthIdentityUseCase {
     private final AuthTenantContextSupport contextSupport;
 
     /**
-     * {@code AuthIdentityUseCase} 创建并初始化当前类型实例。
+     * 执行 认证 Identity 相关业务操作，并维护必要的状态和协作关系。
      *
-     * @param userRepository 参数值，用于执行当前操作。
-     * @param userScopeRoleRepository 参数值，用于执行当前操作。
-     * @param tenantRoleRepository 参数值，用于执行当前操作。
-     * @param tenantRepository 参数值，用于执行当前操作。
-     * @param menuService 参数值，用于执行当前操作。
-     * @param contextSupport 参数值，用于执行当前操作。
+     * @param userRepository 用于完成本次业务处理的 userRepository 参数。
+     * @param userScopeRoleRepository 用于完成本次业务处理的 userScopeRoleRepository 参数。
+     * @param tenantRoleRepository 用于完成本次业务处理的 tenantRoleRepository 参数。
+     * @param tenantRepository 用于完成本次业务处理的 tenantRepository 参数。
+     * @param menuService 用于完成本次业务处理的 menuService 参数。
+     * @param contextSupport 用于完成本次业务处理的 contextSupport 参数。
      */
     public AuthIdentityUseCase(
             UserRepository userRepository,
@@ -79,12 +79,11 @@ public final class AuthIdentityUseCase {
     }
 
     /**
-     * {@code switchCurrentRole} 执行当前类型定义的业务操作。
+     * 执行 认证 Identity 相关业务数据，并返回处理结果。
      *
-     * @param userId 参数值，用于执行当前操作。
-     * @param roleId 参数值，用于执行当前操作。
-     *
-     * @return 返回当前操作产生的结果。
+     * @param userId 当前操作涉及的用户标识。
+     * @param roleId 用于定位role的标识。
+     * @return 返回本次条件判断是否成立。
      */
     public boolean switchCurrentRole(Long userId, Long roleId) {
         log.info("切换角色, userIdPresent={}, roleIdPresent={}", userId != null, roleId != null);
@@ -161,12 +160,11 @@ public final class AuthIdentityUseCase {
     }
 
     /**
-     * {@code switchCurrentTenant} 执行当前类型定义的业务操作。
+     * 执行 认证 Identity 相关业务数据，并返回处理结果。
      *
-     * @param userId 参数值，用于执行当前操作。
-     * @param tenantId 参数值，用于执行当前操作。
-     *
-     * @return 返回当前操作产生的结果。
+     * @param userId 当前操作涉及的用户标识。
+     * @param tenantId 当前操作涉及的租户标识。
+     * @return 返回本次条件判断是否成立。
      */
     public boolean switchCurrentTenant(Long userId, TenantId tenantId) {
         log.info("切换租户, userIdPresent={}, tenantPresent={}", userId != null, tenantId != null);
@@ -328,12 +326,11 @@ public final class AuthIdentityUseCase {
     }
 
     /**
-     * {@code getUserTenants} 查询并返回当前操作所需的数据。
+     * 查询 认证 Identity 相关业务数据，并返回处理结果。
      *
-     * @param actor 参数值，用于执行当前操作。
-     * @param userId 参数值，用于执行当前操作。
-     *
-     * @return 返回当前操作产生的结果。
+     * @param actor 当前操作主体上下文，用于确定租户、用户和访问权限。
+     * @param userId 当前操作涉及的用户标识。
+     * @return 返回符合条件的数据集合；没有匹配项时返回空集合。
      */
     public List<TenantInfoVO> getUserTenants(ActorContext actor, Long userId) {
         Objects.requireNonNull(actor, "actor must not be null");

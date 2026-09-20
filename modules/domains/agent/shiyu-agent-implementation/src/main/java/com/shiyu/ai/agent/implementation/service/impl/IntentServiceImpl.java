@@ -18,7 +18,7 @@ import java.util.List;
 import java.util.Map;
 
 /**
- * {@code IntentServiceImpl} 实现智能体模块的应用服务，负责编排用例流程并维护业务边界。
+ * 提供 Intent 的查询、创建、更新及调用服务，协调业务变更和领域协作。
  */
 @Slf4j
 @Service
@@ -30,24 +30,23 @@ public class IntentServiceImpl implements IntentService {
     private final ChatEngine chatEngine;
 
     /**
-     * {@code IntentServiceImpl} 创建并初始化当前类型实例。
+     * 执行 Intent 相关业务操作，并维护必要的状态和协作关系。
      *
-     * @param chatEngine 参数值，用于执行当前操作。
+     * @param chatEngine 用于完成本次业务处理的 chatEngine 参数。
      */
     public IntentServiceImpl(ChatEngine chatEngine) {
         this.chatEngine = chatEngine;
     }
 
     /**
-     * {@code recognize} 执行当前类型定义的业务操作。
+     * 执行 Intent 相关业务数据，并返回处理结果。
      *
-     * @param row 参数值，用于执行当前操作。
-     * @param column 参数值，用于执行当前操作。
-     * @param query 参数值，用于执行当前操作。
-     * @param platform 参数值，用于执行当前操作。
-     * @param modelName 参数值，用于执行当前操作。
-     *
-     * @return 返回当前操作产生的结果。
+     * @param row 用于完成本次业务处理的 row 参数。
+     * @param column 用于完成本次业务处理的 column 参数。
+     * @param query 用于筛选目标数据的查询条件。
+     * @param platform 用于完成本次业务处理的 platform 参数。
+     * @param modelName 用于完成本次业务处理的 modelName 参数。
+     * @return 返回 Intent 相关操作生成的结果数据。
      */
     @Override
     public IntentRecognitionResult recognize(
@@ -101,13 +100,12 @@ public class IntentServiceImpl implements IntentService {
     }
 
     /**
-     * {@code recognize} 执行当前类型定义的业务操作。
+     * 执行 Intent 相关业务数据，并返回处理结果。
      *
-     * @param row 参数值，用于执行当前操作。
-     * @param column 参数值，用于执行当前操作。
-     * @param query 参数值，用于执行当前操作。
-     *
-     * @return 返回当前操作产生的结果。
+     * @param row 用于完成本次业务处理的 row 参数。
+     * @param column 用于完成本次业务处理的 column 参数。
+     * @param query 用于筛选目标数据的查询条件。
+     * @return 返回 Intent 相关操作生成的结果数据。
      */
     @Override
     public IntentRecognitionResult recognize(String row, String column, String query) {

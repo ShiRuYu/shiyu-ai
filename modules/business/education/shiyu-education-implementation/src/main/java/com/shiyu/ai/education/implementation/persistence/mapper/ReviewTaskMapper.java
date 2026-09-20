@@ -7,7 +7,7 @@ import com.shiyu.ai.education.implementation.persistence.dataobject.ReviewTaskDO
 import org.apache.ibatis.annotations.Mapper;
 
 /**
- * ReviewTaskMapper 数据映射接口，负责在教育领域对象与持久化记录之间转换数据。
+ * 负责 复习 Task 的持久化查询、保存和删除，并维护数据访问边界。
  */
 @Mapper
 @UseDataSource("agent")

@@ -13,7 +13,7 @@ import java.util.List;
 import java.util.Map;
 
 /**
- * 将 outbox 事件发布到 Kafka 并保留失败重试能力。
+ * 发布 Kafka Outbox 事件 相关的领域事件或基础设施消息。
  */
 public final class KafkaOutboxEventPublisher extends JdbcOutboxEventPublisher {
 
@@ -23,11 +23,11 @@ public final class KafkaOutboxEventPublisher extends JdbcOutboxEventPublisher {
     private final KafkaTemplate<String, String> kafka;
 
     /**
-     * {@code KafkaOutboxEventPublisher} 创建并初始化当前类型实例。
+     * 执行 Kafka Outbox 事件 相关业务操作，并维护必要的状态和协作关系。
      *
-     * @param jdbc 参数值，用于执行当前操作。
-     * @param properties 参数值，用于执行当前操作。
-     * @param kafka 参数值，用于执行当前操作。
+     * @param jdbc 用于完成本次业务处理的 jdbc 参数。
+     * @param properties 用于完成本次业务处理的 properties 参数。
+     * @param kafka 用于完成本次业务处理的 kafka 参数。
      */
     public KafkaOutboxEventPublisher(
             JdbcTemplate jdbc,
@@ -38,9 +38,9 @@ public final class KafkaOutboxEventPublisher extends JdbcOutboxEventPublisher {
     }
 
     /**
-     * {@code publish} 执行当前模块定义的业务流程。
+     * 发布或发送 Kafka Outbox 事件 相关业务操作，并维护必要的状态和协作关系。
      *
-     * @param event 参数值，用于执行当前操作。
+     * @param event 本次流程携带的事件或业务数据。
      */
     @Override
     public void publish(DomainEventEnvelope<?> event) {

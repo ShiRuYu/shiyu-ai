@@ -13,6 +13,9 @@ import org.junit.jupiter.api.Test;
 
 import java.util.List;
 
+/**
+ * 验证 Existing Rerank Provider 相关功能、边界条件、异常路径和协作行为。
+ */
 class ExistingRerankProviderTest {
     private final ChatEngine engine = mock(ChatEngine.class);
     private final ExistingRerankProvider provider = new ExistingRerankProvider(engine);

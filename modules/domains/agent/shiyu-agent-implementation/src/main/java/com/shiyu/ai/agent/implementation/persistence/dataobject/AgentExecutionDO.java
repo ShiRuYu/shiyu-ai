@@ -13,7 +13,9 @@ import lombok.EqualsAndHashCode;
 
 import java.time.LocalDateTime;
 
-/** Agent 执行记录 */
+/**
+ * 表示 智能体 Execution 对应的持久化数据对象及其数据库字段。
+ */
 @Data
 @EqualsAndHashCode(callSuper = true)
 @SuppressWarnings("serial")

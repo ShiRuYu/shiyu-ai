@@ -1,7 +1,7 @@
 package com.shiyu.ai.knowledge.contract.model;
 
 /**
- * {@code KnowledgeSourceType} 表示知识模块中的一组受控业务状态或分类。
+ * 定义 知识 Source Type 可用的枚举值及其业务语义。
  */
 public enum KnowledgeSourceType {
     DOCUMENT,

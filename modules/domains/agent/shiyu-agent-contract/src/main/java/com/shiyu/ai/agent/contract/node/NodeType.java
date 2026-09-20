@@ -5,7 +5,7 @@ import java.util.Map;
 import java.util.Objects;
 
 /**
- * 定义 Agent 节点类型及其配置和输出字段映射。
+ * 定义 Node Type 所属领域对外协作所需的稳定契约。
  */
 public final class NodeType {
 
@@ -94,36 +94,36 @@ public final class NodeType {
     }
 
     /**
-     * {@code getCode} 查询并返回当前操作所需的数据。
+     * 查询 Node Type 相关业务数据，并返回处理结果。
      *
-     * @return 返回当前操作产生的结果。
+     * @return 返回 Node Type 相关操作生成的结果数据。
      */
     public String getCode() {
         return code;
     }
 
     /**
-     * {@code getName} 查询并返回当前操作所需的数据。
+     * 查询 Node Type 相关业务数据，并返回处理结果。
      *
-     * @return 返回当前操作产生的结果。
+     * @return 返回 Node Type 相关操作生成的结果数据。
      */
     public String getName() {
         return name;
     }
 
     /**
-     * {@code getDescription} 查询并返回当前操作所需的数据。
+     * 查询 Node Type 相关业务数据，并返回处理结果。
      *
-     * @return 返回当前操作产生的结果。
+     * @return 返回 Node Type 相关操作生成的结果数据。
      */
     public String getDescription() {
         return description;
     }
 
     /**
-     * {@code isBuiltIn} 校验当前操作的输入或状态是否满足约束。
+     * 校验或判断 Node Type 相关业务数据，并返回处理结果。
      *
-     * @return 返回当前操作产生的结果。
+     * @return 返回本次条件判断是否成立。
      */
     public boolean isBuiltIn() {
         return builtIn;
@@ -190,11 +190,10 @@ public final class NodeType {
     }
 
     /**
-     * {@code equals} 执行当前类型定义的业务操作。
+     * 执行 Node Type 相关业务数据，并返回处理结果。
      *
-     * @param other 参数值，用于执行当前操作。
-     *
-     * @return 返回当前操作产生的结果。
+     * @param other 用于完成本次业务处理的 other 参数。
+     * @return 返回本次条件判断是否成立。
      */
     @Override
     public boolean equals(Object other) {
@@ -202,9 +201,9 @@ public final class NodeType {
     }
 
     /**
-     * {@code hashCode} 校验当前操作的输入或状态是否满足约束。
+     * 校验或判断 Node Type 相关业务数据，并返回处理结果。
      *
-     * @return 返回当前操作产生的结果。
+     * @return 返回 Node Type 相关操作生成的结果数据。
      */
     @Override
     public int hashCode() {
@@ -212,9 +211,9 @@ public final class NodeType {
     }
 
     /**
-     * {@code toString} 将当前对象转换为目标表示形式。
+     * 构建或转换 Node Type 相关业务数据，并返回处理结果。
      *
-     * @return 返回当前操作产生的结果。
+     * @return 返回 Node Type 相关操作生成的结果数据。
      */
     @Override
     public String toString() {

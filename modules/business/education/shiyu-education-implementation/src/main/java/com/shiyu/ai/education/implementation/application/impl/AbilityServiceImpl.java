@@ -14,7 +14,7 @@ import org.springframework.stereotype.Service;
 import java.time.LocalDateTime;
 
 /**
- * {@code AbilityServiceImpl} 实现教育模块的应用服务，负责编排用例流程并维护业务边界。
+ * 提供 Ability 的查询、创建、更新及调用服务，协调业务变更和领域协作。
  */
 @Slf4j
 @Service
@@ -26,22 +26,21 @@ public class AbilityServiceImpl implements AbilityService {
     private final AbilityRepository abilityRepository;
 
     /**
-     * {@code AbilityServiceImpl} 创建并初始化当前类型实例。
+     * 执行 Ability 相关业务操作，并维护必要的状态和协作关系。
      *
-     * @param abilityRepository 参数值，用于执行当前操作。
+     * @param abilityRepository 用于完成本次业务处理的 abilityRepository 参数。
      */
     public AbilityServiceImpl(AbilityRepository abilityRepository) {
         this.abilityRepository = abilityRepository;
     }
 
     /**
-     * {@code get} 查询并返回当前操作所需的数据。
+     * 查询 Ability 相关业务数据，并返回处理结果。
      *
-     * @param actor 参数值，用于执行当前操作。
-     * @param studentId 参数值，用于执行当前操作。
-     * @param knowledgeId 参数值，用于执行当前操作。
-     *
-     * @return 返回当前操作产生的结果。
+     * @param actor 当前操作主体上下文，用于确定租户、用户和访问权限。
+     * @param studentId 用于定位student的标识。
+     * @param knowledgeId 用于定位knowledge的标识。
+     * @return 返回 Ability 相关操作生成的结果数据。
      */
     @Override
     public AbilityValue get(ActorContext actor, Long studentId, Long knowledgeId) {
@@ -53,13 +52,13 @@ public class AbilityServiceImpl implements AbilityService {
     }
 
     /**
-     * {@code update} 写入或更新当前模块中的业务数据。
+     * 更新或设置 Ability 相关业务操作，并维护必要的状态和协作关系。
      *
-     * @param actor 参数值，用于执行当前操作。
-     * @param studentId 参数值，用于执行当前操作。
-     * @param knowledgeId 参数值，用于执行当前操作。
-     * @param dimension 参数值，用于执行当前操作。
-     * @param accuracy 参数值，用于执行当前操作。
+     * @param actor 当前操作主体上下文，用于确定租户、用户和访问权限。
+     * @param studentId 用于定位student的标识。
+     * @param knowledgeId 用于定位knowledge的标识。
+     * @param dimension 用于完成本次业务处理的 dimension 参数。
+     * @param accuracy 用于完成本次业务处理的 accuracy 参数。
      */
     @Override
     public void update(

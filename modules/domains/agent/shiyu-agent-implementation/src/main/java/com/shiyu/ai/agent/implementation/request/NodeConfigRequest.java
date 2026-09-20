@@ -7,7 +7,7 @@ import lombok.Data;
 import java.util.Map;
 
 /**
- * {@code NodeConfigRequest} 表示智能体模块的请求参数，承载调用方提交的输入数据。
+ * 封装 Node Config 操作所需的请求条件和输入数据。
  */
 @Data
 public class NodeConfigRequest {

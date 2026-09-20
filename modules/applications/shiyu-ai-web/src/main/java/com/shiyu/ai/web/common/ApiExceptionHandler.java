@@ -12,16 +12,14 @@ import org.springframework.web.server.ResponseStatusException;
 import java.util.Locale;
 
 /**
- * 统一处理 Web 层异常并转换为稳定的 API 错误响应。
+ * 处理 API Exception 相关事件或请求，并推进后续业务流程。
  */
 @RestControllerAdvice
 public class ApiExceptionHandler {
     /**
-     * {@code invalidArgument} 执行当前类型定义的业务操作。
+     * 执行 API Exception 相关业务操作，并维护必要的状态和协作关系。
      *
-     * @param error 参数值，用于执行当前操作。
-     *
-     * @return 返回当前操作产生的结果。
+     * @param class 用于完成本次业务处理的 class 参数。
      */
     @ExceptionHandler(IllegalArgumentException.class)
     public ResponseEntity<Result<Void>> invalidArgument(IllegalArgumentException error) {
@@ -40,11 +38,9 @@ public class ApiExceptionHandler {
     }
 
     /**
-     * {@code invalidState} 执行当前类型定义的业务操作。
+     * 执行 API Exception 相关业务操作，并维护必要的状态和协作关系。
      *
-     * @param error 参数值，用于执行当前操作。
-     *
-     * @return 返回当前操作产生的结果。
+     * @param class 用于完成本次业务处理的 class 参数。
      */
     @ExceptionHandler(IllegalStateException.class)
     public ResponseEntity<Result<Void>> invalidState(IllegalStateException error) {
@@ -56,11 +52,9 @@ public class ApiExceptionHandler {
     }
 
     /**
-     * {@code unexpected} 执行当前类型定义的业务操作。
+     * 执行 API Exception 相关业务操作，并维护必要的状态和协作关系。
      *
-     * @param error 参数值，用于执行当前操作。
-     *
-     * @return 返回当前操作产生的结果。
+     * @param class 用于完成本次业务处理的 class 参数。
      */
     @ExceptionHandler(RuntimeException.class)
     public ResponseEntity<Result<Void>> unexpected(RuntimeException error) {
@@ -68,11 +62,9 @@ public class ApiExceptionHandler {
     }
 
     /**
-     * {@code responseStatus} 执行当前类型定义的业务操作。
+     * 执行 API Exception 相关业务操作，并维护必要的状态和协作关系。
      *
-     * @param error 参数值，用于执行当前操作。
-     *
-     * @return 返回当前操作产生的结果。
+     * @param class 用于完成本次业务处理的 class 参数。
      */
     @ExceptionHandler(ResponseStatusException.class)
     public ResponseEntity<Result<Void>> responseStatus(ResponseStatusException error) {

@@ -29,7 +29,7 @@ import java.util.UUID;
 import java.util.stream.Collectors;
 
 /**
- * 编排 AuthAuthentication 应用用例。
+ * 定义 认证 Authentication 相关用例的输入、授权和业务结果。
  */
 @Slf4j
 public final class AuthAuthenticationUseCase {
@@ -55,13 +55,13 @@ public final class AuthAuthenticationUseCase {
     private final AuthTenantContextSupport contextSupport;
 
     /**
-     * {@code AuthAuthenticationUseCase} 创建并初始化当前类型实例。
+     * 执行 认证 Authentication 相关业务操作，并维护必要的状态和协作关系。
      *
-     * @param userRepository 参数值，用于执行当前操作。
-     * @param userScopeRoleRepository 参数值，用于执行当前操作。
-     * @param tenantRoleRepository 参数值，用于执行当前操作。
-     * @param captchaService 参数值，用于执行当前操作。
-     * @param contextSupport 参数值，用于执行当前操作。
+     * @param userRepository 用于完成本次业务处理的 userRepository 参数。
+     * @param userScopeRoleRepository 用于完成本次业务处理的 userScopeRoleRepository 参数。
+     * @param tenantRoleRepository 用于完成本次业务处理的 tenantRoleRepository 参数。
+     * @param captchaService 用于完成本次业务处理的 captchaService 参数。
+     * @param contextSupport 用于完成本次业务处理的 contextSupport 参数。
      */
     public AuthAuthenticationUseCase(
             UserRepository userRepository,
@@ -77,14 +77,13 @@ public final class AuthAuthenticationUseCase {
     }
 
     /**
-     * {@code login} 执行当前类型定义的业务操作。
+     * 执行 认证 Authentication 相关业务数据，并返回处理结果。
      *
-     * @param username 参数值，用于执行当前操作。
-     * @param password 参数值，用于执行当前操作。
-     * @param roleId 参数值，用于执行当前操作。
-     * @param loginIp 参数值，用于执行当前操作。
-     *
-     * @return 返回当前操作产生的结果。
+     * @param username 用于完成本次业务处理的 username 参数。
+     * @param password 用于完成本次业务处理的 password 参数。
+     * @param roleId 用于定位role的标识。
+     * @param loginIp 用于完成本次业务处理的 loginIp 参数。
+     * @return 返回 认证 Authentication 相关操作生成的结果数据。
      */
     public LoginResponseVO login(String username, String password, Long roleId, String loginIp) {
         log.info("用户登录开始, usernamePresent={}", username != null);
@@ -243,13 +242,12 @@ public final class AuthAuthenticationUseCase {
     }
 
     /**
-     * {@code register} 写入或更新当前模块中的业务数据。
+     * 创建或保存 认证 Authentication 相关业务数据，并返回处理结果。
      *
-     * @param username 参数值，用于执行当前操作。
-     * @param password 参数值，用于执行当前操作。
-     * @param email 参数值，用于执行当前操作。
-     *
-     * @return 返回当前操作产生的结果。
+     * @param username 用于完成本次业务处理的 username 参数。
+     * @param password 用于完成本次业务处理的 password 参数。
+     * @param email 用于完成本次业务处理的 email 参数。
+     * @return 返回 认证 Authentication 相关操作生成的结果数据。
      */
     public LoginResponseVO register(String username, String password, String email) {
         log.info("用户注册: usernamePresent={}, emailPresent={}", username != null, email != null);
@@ -269,13 +267,12 @@ public final class AuthAuthenticationUseCase {
     }
 
     /**
-     * {@code codeLogin} 执行当前类型定义的业务操作。
+     * 执行 认证 Authentication 相关业务数据，并返回处理结果。
      *
-     * @param phone 参数值，用于执行当前操作。
-     * @param code 参数值，用于执行当前操作。
-     * @param captchaKey 参数值，用于执行当前操作。
-     *
-     * @return 返回当前操作产生的结果。
+     * @param phone 用于完成本次业务处理的 phone 参数。
+     * @param code 用于定位或筛选目标业务对象的业务值。
+     * @param captchaKey 用于完成本次业务处理的 captchaKey 参数。
+     * @return 返回 认证 Authentication 相关操作生成的结果数据。
      */
     public LoginResponseVO codeLogin(String phone, String code, String captchaKey) {
         log.info("验证码登录: phonePresent={}", phone != null);

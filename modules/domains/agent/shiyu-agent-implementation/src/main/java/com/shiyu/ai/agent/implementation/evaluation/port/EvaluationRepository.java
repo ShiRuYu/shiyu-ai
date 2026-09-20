@@ -9,59 +9,56 @@ import java.util.List;
 import java.util.Optional;
 
 /**
- * EvaluationRepository 仓储接口，负责访问和持久化智能体领域聚合数据。
+ * 负责 Evaluation 的持久化查询、保存和删除，并维护数据访问边界。
  */
 public interface EvaluationRepository {
     /**
-     * 创建并保存业务对象。
+     * 创建或保存 Evaluation 相关业务操作，并维护必要的状态和协作关系。
      *
-     * @param dataset 方法参数。
+     * @param dataset 用于完成本次业务处理的 dataset 参数。
      */
     void insertDataset(EvalDataset dataset);
 
     /**
-     * 根据条件查询并返回所需数据。
+     * 查询 Evaluation 相关业务数据，并返回处理结果。
      *
-     * @param id 目标对象标识。
-     * @param tenantId 租户标识。
-     * @param ownerUserId 方法参数。
-     *
-     * @return 符合条件的结果集合。
+     * @param id 用于定位目标业务对象的标识。
+     * @param tenantId 当前操作涉及的租户标识。
+     * @param ownerUserId 当前操作涉及的用户标识。
+     * @return 返回可能存在的业务对象；不存在时返回空值容器。
      */
     Optional<EvalDataset> findDataset(String id, TenantId tenantId, long ownerUserId);
 
     /**
-     * 创建并保存业务对象。
+     * 创建或保存 Evaluation 相关业务操作，并维护必要的状态和协作关系。
      *
-     * @param evalCase 方法参数。
+     * @param evalCase 用于完成本次业务处理的 evalCase 参数。
      */
     void insertCase(EvalCase evalCase);
 
     /**
-     * 根据条件查询并返回所需数据。
+     * 查询 Evaluation 相关业务数据，并返回处理结果。
      *
-     * @param datasetId 方法参数。
-     * @param tenantId 租户标识。
-     *
-     * @return 符合条件的结果集合。
+     * @param datasetId 用于定位dataset的标识。
+     * @param tenantId 当前操作涉及的租户标识。
+     * @return 返回符合条件的数据集合；没有匹配项时返回空集合。
      */
     List<EvalCase> listCases(String datasetId, TenantId tenantId);
 
     /**
-     * 创建并保存业务对象。
+     * 创建或保存 Evaluation 相关业务操作，并维护必要的状态和协作关系。
      *
-     * @param run 方法参数。
+     * @param run 用于完成本次业务处理的 run 参数。
      */
     void insertRun(EvalRun run);
 
     /**
-     * 根据条件查询并返回所需数据。
+     * 查询 Evaluation 相关业务数据，并返回处理结果。
      *
-     * @param id 目标对象标识。
-     * @param tenantId 租户标识。
-     * @param ownerUserId 方法参数。
-     *
-     * @return 查询到的结果；未找到时为空。
+     * @param id 用于定位目标业务对象的标识。
+     * @param tenantId 当前操作涉及的租户标识。
+     * @param ownerUserId 当前操作涉及的用户标识。
+     * @return 返回可能存在的业务对象；不存在时返回空值容器。
      */
     Optional<EvalRun> findRun(String id, TenantId tenantId, long ownerUserId);
 }

@@ -1,6 +1,6 @@
 package com.shiyu.ai.model.implementation;
 
 /**
- * ModelImplementationModule 模块接口，标识模型模块的边界。
+ * 定义 模型 Implementation Module 相关的协作契约和调用边界。
  */
 public interface ModelImplementationModule {}

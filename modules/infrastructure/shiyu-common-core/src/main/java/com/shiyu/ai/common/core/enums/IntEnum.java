@@ -1,9 +1,7 @@
 package com.shiyu.ai.common.core.enums;
 
 /**
- * 通用整数枚举接口
- *
- * <p>用于统一整型枚举的 code + desc 模式， 配合 @AutoEnumMapper 实现枚举 ↔ 业务描述的自动映射。
+ * 定义 Int Enum 相关的协作契约和调用边界。
  */
 public interface IntEnum {
 

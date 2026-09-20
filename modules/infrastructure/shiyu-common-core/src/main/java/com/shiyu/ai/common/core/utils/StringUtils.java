@@ -11,7 +11,9 @@ import java.util.*;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 
-/** 字符串工具类 */
+/**
+ * 提供 String 相关的通用辅助操作，供业务和基础设施复用。
+ */
 @SuppressWarnings("deprecation")
 public class StringUtils extends org.apache.commons.lang3.StringUtils {
 
@@ -304,12 +306,11 @@ public class StringUtils extends org.apache.commons.lang3.StringUtils {
     }
 
     /**
-     * {@code equalsAnyIgnoreCase} 执行当前类型定义的业务操作。
+     * 执行 String 相关业务数据，并返回处理结果。
      *
-     * @param value 参数值，用于执行当前操作。
-     * @param candidates 参数值，用于执行当前操作。
-     *
-     * @return 返回当前操作产生的结果。
+     * @param value 用于完成本次业务处理的 value 参数。
+     * @param candidates 用于完成本次业务处理的 candidates 参数。
+     * @return 返回本次条件判断是否成立。
      */
     public static boolean equalsAnyIgnoreCase(String value, String... candidates) {
         if (value == null || candidates == null) return false;

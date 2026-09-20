@@ -11,9 +11,7 @@ import java.time.LocalDate;
 import java.util.Map;
 
 /**
- * WebSocket 推送服务
- *
- * <p>封装用量数据的实时推送逻辑，供 {@code UsageEventListener} 或定时任务调用。
+ * 提供 用量 Web Socket 的查询、创建、更新及调用服务，协调业务变更和领域协作。
  */
 @Slf4j
 @Service
@@ -25,9 +23,9 @@ public class UsageWebSocketService implements UsageRealtimePublisher {
     private final UsageWebSocketHandler handler;
 
     /**
-     * {@code UsageWebSocketService} 创建并初始化当前类型实例。
+     * 执行 用量 Web Socket 相关业务操作，并维护必要的状态和协作关系。
      *
-     * @param handler 参数值，用于执行当前操作。
+     * @param handler 用于完成本次业务处理的 handler 参数。
      */
     public UsageWebSocketService(UsageWebSocketHandler handler) {
         this.handler = handler;

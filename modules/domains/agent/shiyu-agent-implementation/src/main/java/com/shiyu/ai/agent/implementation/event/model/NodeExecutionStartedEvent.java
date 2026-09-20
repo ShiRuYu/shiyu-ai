@@ -4,7 +4,9 @@ import com.shiyu.ai.kernel.context.TenantId;
 
 import java.util.Map;
 
-/** 节点执行开始事件 */
+/**
+ * 表示 Node Execution Started 相关的领域事件或异常信息。
+ */
 public class NodeExecutionStartedEvent extends DomainEvent {
 
     /**
@@ -33,14 +35,14 @@ public class NodeExecutionStartedEvent extends DomainEvent {
     private final Map<String, Object> input;
 
     /**
-     * {@code NodeExecutionStartedEvent} 创建并初始化当前类型实例。
+     * 执行 Node Execution Started 相关业务操作，并维护必要的状态和协作关系。
      *
-     * @param tenantId 参数值，用于执行当前操作。
-     * @param executionId 参数值，用于执行当前操作。
-     * @param agentId 参数值，用于执行当前操作。
-     * @param nodeId 参数值，用于执行当前操作。
-     * @param nodeType 参数值，用于执行当前操作。
-     * @param input 参数值，用于执行当前操作。
+     * @param tenantId 当前操作涉及的租户标识。
+     * @param executionId 用于定位execution的标识。
+     * @param agentId 用于定位agent的标识。
+     * @param nodeId 用于定位node的标识。
+     * @param nodeType 用于完成本次业务处理的 nodeType 参数。
+     * @param input 用于完成本次业务处理的 input 参数。
      */
     public NodeExecutionStartedEvent(
             TenantId tenantId,
@@ -62,54 +64,54 @@ public class NodeExecutionStartedEvent extends DomainEvent {
     }
 
     /**
-     * {@code getExecutionId} 查询并返回当前操作所需的数据。
+     * 查询 Node Execution Started 相关业务数据，并返回处理结果。
      *
-     * @return 返回当前操作产生的结果。
+     * @return 返回 Node Execution Started 相关操作生成的结果数据。
      */
     public String getExecutionId() {
         return executionId;
     }
 
     /**
-     * {@code getAgentId} 查询并返回当前操作所需的数据。
+     * 查询 Node Execution Started 相关业务数据，并返回处理结果。
      *
-     * @return 返回当前操作产生的结果。
+     * @return 返回 Node Execution Started 相关操作生成的结果数据。
      */
     public String getAgentId() {
         return agentId;
     }
 
     /**
-     * {@code getNodeId} 查询并返回当前操作所需的数据。
+     * 查询 Node Execution Started 相关业务数据，并返回处理结果。
      *
-     * @return 返回当前操作产生的结果。
+     * @return 返回 Node Execution Started 相关操作生成的结果数据。
      */
     public String getNodeId() {
         return nodeId;
     }
 
     /**
-     * {@code getNodeType} 查询并返回当前操作所需的数据。
+     * 查询 Node Execution Started 相关业务数据，并返回处理结果。
      *
-     * @return 返回当前操作产生的结果。
+     * @return 返回 Node Execution Started 相关操作生成的结果数据。
      */
     public String getNodeType() {
         return nodeType;
     }
 
     /**
-     * {@code getTenantId} 查询并返回当前操作所需的数据。
+     * 查询 Node Execution Started 相关业务数据，并返回处理结果。
      *
-     * @return 返回当前操作产生的结果。
+     * @return 返回 Node Execution Started 相关操作生成的结果数据。
      */
     public TenantId getTenantId() {
         return tenantId;
     }
 
     /**
-     * {@code getInput} 查询并返回当前操作所需的数据。
+     * 查询 Node Execution Started 相关业务数据，并返回处理结果。
      *
-     * @return 返回当前操作产生的结果。
+     * @return 返回 Node Execution Started 相关操作生成的结果数据。
      */
     public Map<String, Object> getInput() {
         return input;

@@ -4,37 +4,37 @@ import java.util.Collection;
 import java.util.Set;
 
 /**
- * DatabaseBaselineContributor 接口，定义基础设施模块的能力边界。
+ * 向 数据库 Baseline 所属的应用或基础设施注册必要的扩展能力。
  */
 public interface DatabaseBaselineContributor {
 
     /**
-     * 执行 {@code order} 定义的接口操作。
+     * 执行 数据库 Baseline 相关业务数据，并返回处理结果。
      *
-     * @return 操作影响的记录数或状态码。
+     * @return 返回 数据库 Baseline 相关操作生成的结果数据。
      */
     default int order() {
         return 0;
     }
 
     /**
-     * 执行 {@code schemaResources} 定义的接口操作。
+     * 执行 数据库 Baseline 相关业务数据，并返回处理结果。
      *
-     * @return 符合条件的结果集合。
+     * @return 返回符合条件的数据集合；没有匹配项时返回空集合。
      */
     Collection<String> schemaResources();
 
     /**
-     * 执行 {@code seedResources} 定义的接口操作。
+     * 执行 数据库 Baseline 相关业务数据，并返回处理结果。
      *
-     * @return 符合条件的结果集合。
+     * @return 返回符合条件的数据集合；没有匹配项时返回空集合。
      */
     Collection<String> seedResources();
 
     /**
-     * 执行 {@code expectedTables} 定义的接口操作。
+     * 执行 数据库 Baseline 相关业务数据，并返回处理结果。
      *
-     * @return 符合条件的结果集合。
+     * @return 返回符合条件的数据集合；没有匹配项时返回空集合。
      */
     Set<String> expectedTables();
 }

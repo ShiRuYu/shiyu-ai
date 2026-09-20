@@ -5,18 +5,17 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 
 /**
- * DatabaseInfrastructureConfiguration 配置组件，负责注册和配置基础设施领域相关基础设施。
+ * 定义 数据库 Infrastructure 基础设施或应用能力的配置项及装配规则。
  */
 @Configuration(proxyBeanMethods = false)
 @EnableConfigurationProperties(DatabaseInfrastructureProperties.class)
 public class DatabaseInfrastructureConfiguration {
 
     /**
-     * {@code databaseProviderValidator} 执行当前类型定义的业务操作。
+     * 执行 数据库 Infrastructure 相关业务数据，并返回处理结果。
      *
-     * @param properties 参数值，用于执行当前操作。
-     *
-     * @return 返回当前操作产生的结果。
+     * @param properties 用于完成本次业务处理的 properties 参数。
+     * @return 返回 数据库 Infrastructure 相关操作生成的结果数据。
      */
     @Bean
     public DatabaseProviderValidator databaseProviderValidator(
@@ -26,8 +25,7 @@ public class DatabaseInfrastructureConfiguration {
     }
 
     /**
-     * {@code DatabaseProviderValidator} 封装平台基础设施模块中不可变的结构化数据，并作为相关操作之间的值对象。
-     * @param provider 提供方，表示该记录组件承载的数据。
+     * 封装 数据库 Provider 相关的不可变数据及其字段约束。
      */
     public record DatabaseProviderValidator(String provider) {}
 }

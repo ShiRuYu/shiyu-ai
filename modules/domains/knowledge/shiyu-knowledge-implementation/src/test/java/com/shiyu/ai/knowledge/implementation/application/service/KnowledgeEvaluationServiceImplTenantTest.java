@@ -18,6 +18,9 @@ import com.shiyu.ai.knowledge.implementation.infrastructure.index.service.Knowle
 
 import org.junit.jupiter.api.Test;
 
+/**
+ * 验证 知识 Evaluation Service Impl 租户 相关功能、边界条件、异常路径和协作行为。
+ */
 class KnowledgeEvaluationServiceImplTenantTest {
 
     @Test

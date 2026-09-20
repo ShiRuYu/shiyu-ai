@@ -7,7 +7,9 @@ import com.shiyu.ai.iam.implementation.persistence.dataobject.AuthCodeDO;
 
 import org.apache.ibatis.annotations.Mapper;
 
-/** 认证码表 数据层 */
+/**
+ * 负责 认证 Code 的持久化查询、保存和删除，并维护数据访问边界。
+ */
 @Mapper
 @UseDataSource(DataSourceConfig.AGENT)
 public interface AuthCodeMapper extends BaseMapperFlex<AuthCodeDO> {}

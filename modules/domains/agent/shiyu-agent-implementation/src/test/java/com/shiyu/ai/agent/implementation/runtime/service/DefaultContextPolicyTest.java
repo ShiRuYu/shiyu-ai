@@ -10,6 +10,9 @@ import org.junit.jupiter.api.Test;
 import java.time.Instant;
 import java.util.List;
 
+/**
+ * 验证 Default Context Policy 相关功能、边界条件、异常路径和协作行为。
+ */
 class DefaultContextPolicyTest {
     private final DefaultContextPolicy policy = new DefaultContextPolicy();
     private final ContextQuery query =

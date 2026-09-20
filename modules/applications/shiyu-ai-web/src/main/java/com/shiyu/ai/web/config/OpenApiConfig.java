@@ -12,7 +12,7 @@ import org.springframework.boot.autoconfigure.AutoConfigureBefore;
 import org.springframework.context.annotation.Bean;
 
 /**
- * {@code OpenApiConfig} 提供Web模块的配置项，并集中声明其默认值和运行约束。
+ * 定义 Open API 基础设施或应用能力的配置项及装配规则。
  */
 @AutoConfigureBefore(SpringDocConfiguration.class)
 @AutoConfiguration
@@ -24,9 +24,9 @@ public class OpenApiConfig {
     private static final String TOKEN_HEADER = "Authorization";
 
     /**
-     * {@code openApi} 执行当前类型定义的业务操作。
+     * 创建或保存 Open API 相关业务数据，并返回处理结果。
      *
-     * @return 返回当前操作产生的结果。
+     * @return 返回 Open API 相关操作生成的结果数据。
      */
     @Bean
     public OpenAPI openApi() {

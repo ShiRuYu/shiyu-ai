@@ -10,7 +10,9 @@ import lombok.NoArgsConstructor;
 import java.util.HashMap;
 import java.util.Map;
 
-/** 节点输出类 用于封装节点的执行结果 */
+/**
+ * 定义 Node Output 所属领域对外协作所需的稳定契约。
+ */
 @Data
 @Builder
 @NoArgsConstructor

@@ -7,7 +7,9 @@ import lombok.EqualsAndHashCode;
 
 import java.io.Serial;
 
-/** Agent 定义业务对象 */
+/**
+ * 表示 智能体 Def 领域对象的业务状态和属性。
+ */
 @Data
 @EqualsAndHashCode(callSuper = true)
 public class AgentDefBO extends BaseEntity {

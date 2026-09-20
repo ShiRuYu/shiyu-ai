@@ -14,7 +14,9 @@ import lombok.EqualsAndHashCode;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 
-/** 学习计划项 */
+/**
+ * 表示 Study Plan Item 对应的持久化数据对象及其数据库字段。
+ */
 @Data
 @EqualsAndHashCode(callSuper = true)
 @Table("edu_study_plan_item")

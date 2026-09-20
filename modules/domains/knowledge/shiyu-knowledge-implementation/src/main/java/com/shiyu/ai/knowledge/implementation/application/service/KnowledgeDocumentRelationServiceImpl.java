@@ -28,7 +28,7 @@ import java.util.List;
 import java.util.Objects;
 
 /**
- * {@code KnowledgeDocumentRelationServiceImpl} 实现知识模块的应用服务，负责编排用例流程并维护业务边界。
+ * 提供 知识 文档 关系 的查询、创建、更新及调用服务，协调业务变更和领域协作。
  */
 @Service
 @RequiredArgsConstructor
@@ -56,12 +56,11 @@ public class KnowledgeDocumentRelationServiceImpl implements KnowledgeDocumentRe
     private final KnowledgeSpaceService spaceService;
 
     /**
-     * {@code listDocuments} 查询并返回当前操作所需的数据。
+     * 查询 知识 文档 关系 相关业务数据，并返回处理结果。
      *
-     * @param actor 参数值，用于执行当前操作。
-     * @param pointId 参数值，用于执行当前操作。
-     *
-     * @return 返回当前操作产生的结果。
+     * @param actor 当前操作主体上下文，用于确定租户、用户和访问权限。
+     * @param pointId 用于定位point的标识。
+     * @return 返回符合条件的数据集合；没有匹配项时返回空集合。
      */
     @Override
     public List<DocumentSummary> listDocuments(ActorContext actor, Long pointId) {
@@ -82,12 +81,9 @@ public class KnowledgeDocumentRelationServiceImpl implements KnowledgeDocumentRe
     }
 
     /**
-     * {@code replaceDocuments} 执行当前类型定义的业务操作。
+     * 执行 知识 文档 关系 相关业务操作，并维护必要的状态和协作关系。
      *
-     * @param actor 参数值，用于执行当前操作。
-     * @param pointId 参数值，用于执行当前操作。
-     * @param documentIds 参数值，用于执行当前操作。
-     * @param relationType 参数值，用于执行当前操作。
+     * @param class 用于完成本次业务处理的 class 参数。
      */
     @Override
     @Transactional(rollbackFor = Exception.class)
@@ -128,12 +124,11 @@ public class KnowledgeDocumentRelationServiceImpl implements KnowledgeDocumentRe
     }
 
     /**
-     * {@code listPointIds} 查询并返回当前操作所需的数据。
+     * 查询 知识 文档 关系 相关业务数据，并返回处理结果。
      *
-     * @param actor 参数值，用于执行当前操作。
-     * @param documentId 参数值，用于执行当前操作。
-     *
-     * @return 返回当前操作产生的结果。
+     * @param actor 当前操作主体上下文，用于确定租户、用户和访问权限。
+     * @param documentId 用于定位document的标识。
+     * @return 返回符合条件的数据集合；没有匹配项时返回空集合。
      */
     @Override
     public List<Long> listPointIds(ActorContext actor, Long documentId) {
@@ -151,12 +146,9 @@ public class KnowledgeDocumentRelationServiceImpl implements KnowledgeDocumentRe
     }
 
     /**
-     * {@code replacePoints} 执行当前类型定义的业务操作。
+     * 执行 知识 文档 关系 相关业务操作，并维护必要的状态和协作关系。
      *
-     * @param actor 参数值，用于执行当前操作。
-     * @param documentId 参数值，用于执行当前操作。
-     * @param pointIds 参数值，用于执行当前操作。
-     * @param relationType 参数值，用于执行当前操作。
+     * @param class 用于完成本次业务处理的 class 参数。
      */
     @Override
     @Transactional(rollbackFor = Exception.class)
@@ -199,10 +191,10 @@ public class KnowledgeDocumentRelationServiceImpl implements KnowledgeDocumentRe
     }
 
     /**
-     * {@code removeDocumentRelations} 释放或移除当前操作涉及的资源。
+     * 删除或移除 知识 文档 关系 相关业务操作，并维护必要的状态和协作关系。
      *
-     * @param actor 参数值，用于执行当前操作。
-     * @param documentId 参数值，用于执行当前操作。
+     * @param actor 当前操作主体上下文，用于确定租户、用户和访问权限。
+     * @param documentId 用于定位document的标识。
      */
     @Override
     public void removeDocumentRelations(ActorContext actor, Long documentId) {
@@ -218,12 +210,11 @@ public class KnowledgeDocumentRelationServiceImpl implements KnowledgeDocumentRe
     }
 
     /**
-     * {@code listDocumentRelations} 查询并返回当前操作所需的数据。
+     * 查询 知识 文档 关系 相关业务数据，并返回处理结果。
      *
-     * @param actor 参数值，用于执行当前操作。
-     * @param documentId 参数值，用于执行当前操作。
-     *
-     * @return 返回当前操作产生的结果。
+     * @param actor 当前操作主体上下文，用于确定租户、用户和访问权限。
+     * @param documentId 用于定位document的标识。
+     * @return 返回符合条件的数据集合；没有匹配项时返回空集合。
      */
     @Override
     public List<DocumentRelationView> listDocumentRelations(ActorContext actor, Long documentId) {
@@ -241,11 +232,9 @@ public class KnowledgeDocumentRelationServiceImpl implements KnowledgeDocumentRe
     }
 
     /**
-     * {@code replaceDocumentRelations} 执行当前类型定义的业务操作。
+     * 执行 知识 文档 关系 相关业务操作，并维护必要的状态和协作关系。
      *
-     * @param actor 参数值，用于执行当前操作。
-     * @param documentId 参数值，用于执行当前操作。
-     * @param relations 参数值，用于执行当前操作。
+     * @param class 用于完成本次业务处理的 class 参数。
      */
     @Override
     @Transactional(rollbackFor = Exception.class)

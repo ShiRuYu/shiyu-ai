@@ -26,7 +26,9 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
 
-/** 客户端工具类 */
+/**
+ * 提供 Servlet 相关的通用辅助操作，供业务和基础设施复用。
+ */
 @Slf4j
 public class ServletUtils extends JakartaServletUtil {
 
@@ -101,9 +103,9 @@ public class ServletUtils extends JakartaServletUtil {
     }
 
     /**
-     * {@code getRequestAttributes} 查询并返回当前操作所需的数据。
+     * 查询 Servlet 相关业务数据，并返回处理结果。
      *
-     * @return 返回当前操作产生的结果。
+     * @return 返回 Servlet 相关操作生成的结果数据。
      */
     public static ServletRequestAttributes getRequestAttributes() {
         RequestAttributes attributes = RequestContextHolder.getRequestAttributes();
@@ -128,9 +130,10 @@ public class ServletUtils extends JakartaServletUtil {
     }
 
     /**
-     * 是否是Ajax异步请求
+     * 校验或判断 Servlet 相关业务数据，并返回处理结果。
      *
-     * @param request
+     * @param request 封装本次操作所需业务字段的请求对象。
+     * @return 返回本次条件判断是否成立。
      */
     public static boolean isAjaxRequest(HttpServletRequest request) {
 
@@ -154,9 +157,9 @@ public class ServletUtils extends JakartaServletUtil {
     }
 
     /**
-     * {@code getClientIP} 查询并返回当前操作所需的数据。
+     * 查询 Servlet 相关业务数据，并返回处理结果。
      *
-     * @return 返回当前操作产生的结果。
+     * @return 返回 Servlet 相关操作生成的结果数据。
      */
     public static String getClientIP() {
         return getClientIP(getRequest());

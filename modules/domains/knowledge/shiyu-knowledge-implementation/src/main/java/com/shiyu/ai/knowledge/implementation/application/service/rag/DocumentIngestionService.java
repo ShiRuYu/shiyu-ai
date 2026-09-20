@@ -22,7 +22,7 @@ import java.nio.ByteOrder;
 import java.util.*;
 
 /**
- * {@code DocumentIngestionService} 定义知识模块的应用服务能力，供上层用例调用。
+ * 提供 文档 Ingestion 的查询、创建、更新及调用服务，协调业务变更和领域协作。
  */
 @Slf4j
 @Service
@@ -46,11 +46,11 @@ public class DocumentIngestionService {
     private final List<DocumentParser> documentParsers;
 
     /**
-     * {@code DocumentIngestionService} 创建并初始化当前类型实例。
+     * 执行 文档 Ingestion 相关业务操作，并维护必要的状态和协作关系。
      *
-     * @param embeddingService 参数值，用于执行当前操作。
-     * @param chunkRepository 参数值，用于执行当前操作。
-     * @param documentParsers 参数值，用于执行当前操作。
+     * @param embeddingService 用于完成本次业务处理的 embeddingService 参数。
+     * @param chunkRepository 用于完成本次业务处理的 chunkRepository 参数。
+     * @param documentParsers 用于完成本次业务处理的 documentParsers 参数。
      */
     public DocumentIngestionService(
             EmbeddingService embeddingService,
@@ -152,10 +152,10 @@ public class DocumentIngestionService {
     }
 
     /**
-     * {@code delete} 释放或移除当前操作涉及的资源。
+     * 删除或移除 文档 Ingestion 相关业务操作，并维护必要的状态和协作关系。
      *
-     * @param tenantId 参数值，用于执行当前操作。
-     * @param documentId 参数值，用于执行当前操作。
+     * @param tenantId 当前操作涉及的租户标识。
+     * @param documentId 用于定位document的标识。
      */
     public void delete(TenantId tenantId, Long documentId) {
         chunkRepository.deleteByDocumentId(tenantId, documentId);

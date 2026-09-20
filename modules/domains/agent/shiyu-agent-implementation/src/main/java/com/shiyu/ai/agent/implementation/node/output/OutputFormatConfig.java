@@ -11,10 +11,9 @@ import lombok.NoArgsConstructor;
 import lombok.experimental.SuperBuilder;
 
 /**
- * 输出格式化节点配置类 用于格式化最终输出结果
+ * 定义 Output Format 基础设施或应用能力的配置项及装配规则。
  *
  * @author shiyu-ai
- * @date 2026-03-28
  */
 @Data
 @SuperBuilder

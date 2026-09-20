@@ -4,16 +4,7 @@ import java.util.List;
 import java.util.Map;
 
 /**
- * {@code CharacterCardV2} 封装会话模块中不可变的结构化数据，并作为相关操作之间的值对象。
- * @param spec spec 属性，表示该记录组件承载的数据。
- * @param name 名称，表示该记录组件承载的数据。
- * @param description 描述，表示该记录组件承载的数据。
- * @param scenario scenario 属性，表示该记录组件承载的数据。
- * @param firstMessage firstMessage 属性，表示该记录组件承载的数据。
- * @param exampleDialogues exampleDialogues 属性，表示该记录组件承载的数据。
- * @param systemPrompt systemPrompt 属性，表示该记录组件承载的数据。
- * @param extensions extensions 属性，表示该记录组件承载的数据。
- * @param version version 属性，表示该记录组件承载的数据。
+ * 封装 Character Card V 2 相关的不可变数据及其字段约束。
  */
 public record CharacterCardV2(
         String spec,

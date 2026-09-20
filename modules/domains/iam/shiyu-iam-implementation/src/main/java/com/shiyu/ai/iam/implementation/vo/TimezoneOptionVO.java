@@ -5,7 +5,9 @@ import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
-/** 时区选项 VO */
+/**
+ * 封装 Timezone Option 操作向调用方返回的传输数据。
+ */
 @Data
 @Builder
 @NoArgsConstructor

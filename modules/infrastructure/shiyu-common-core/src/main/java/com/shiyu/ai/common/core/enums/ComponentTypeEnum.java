@@ -8,7 +8,9 @@ import lombok.Getter;
 
 import java.util.Arrays;
 
-/** todo */
+/**
+ * 定义 Component Type Enum 可用的枚举值及其业务语义。
+ */
 @Getter
 @AllArgsConstructor
 public enum ComponentTypeEnum {
@@ -35,27 +37,27 @@ public enum ComponentTypeEnum {
     }
 
     /**
-     * {@code isLayout} 校验当前操作的输入或状态是否满足约束。
+     * 校验或判断 Component Type Enum 相关业务数据，并返回处理结果。
      *
-     * @return 返回当前操作产生的结果。
+     * @return 返回本次条件判断是否成立。
      */
     public boolean isLayout() {
         return this == LAYOUT;
     }
 
     /**
-     * {@code isParentView} 校验当前操作的输入或状态是否满足约束。
+     * 校验或判断 Component Type Enum 相关业务数据，并返回处理结果。
      *
-     * @return 返回当前操作产生的结果。
+     * @return 返回本次条件判断是否成立。
      */
     public boolean isParentView() {
         return this == PARENT_VIEW;
     }
 
     /**
-     * {@code isInnerLink} 校验当前操作的输入或状态是否满足约束。
+     * 校验或判断 Component Type Enum 相关业务数据，并返回处理结果。
      *
-     * @return 返回当前操作产生的结果。
+     * @return 返回本次条件判断是否成立。
      */
     public boolean isInnerLink() {
         return this == INNER_LINK;

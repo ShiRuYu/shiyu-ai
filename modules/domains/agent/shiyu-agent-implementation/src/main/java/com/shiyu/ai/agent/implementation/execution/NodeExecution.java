@@ -2,7 +2,9 @@ package com.shiyu.ai.agent.implementation.execution;
 
 import java.time.LocalDateTime;
 
-/** 节点执行记录 */
+/**
+ * 表示 Node 相关流程中的状态、关系或执行数据。
+ */
 public class NodeExecution {
 
     /**
@@ -47,10 +49,10 @@ public class NodeExecution {
     private int retryCount;
 
     /**
-     * {@code NodeExecution} 创建并初始化当前类型实例。
+     * 执行 Node 相关业务操作，并维护必要的状态和协作关系。
      *
-     * @param nodeId 参数值，用于执行当前操作。
-     * @param nodeType 参数值，用于执行当前操作。
+     * @param nodeId 用于定位node的标识。
+     * @param nodeType 用于完成本次业务处理的 nodeType 参数。
      */
     public NodeExecution(String nodeId, String nodeType) {
         this.nodeId = nodeId;
@@ -60,7 +62,7 @@ public class NodeExecution {
     }
 
     /**
-     * {@code start} 执行当前类型定义的业务操作。
+     * 执行 Node 相关业务操作，并维护必要的状态和协作关系。
      */
     public void start() {
         this.status = ExecutionStatus.RUNNING;
@@ -68,9 +70,9 @@ public class NodeExecution {
     }
 
     /**
-     * {@code complete} 执行当前类型定义的业务操作。
+     * 执行 Node 相关业务操作，并维护必要的状态和协作关系。
      *
-     * @param output 参数值，用于执行当前操作。
+     * @param output 用于完成本次业务处理的 output 参数。
      */
     public void complete(Object output) {
         this.status = ExecutionStatus.COMPLETED;
@@ -82,9 +84,9 @@ public class NodeExecution {
     }
 
     /**
-     * {@code fail} 执行当前类型定义的业务操作。
+     * 执行 Node 相关业务操作，并维护必要的状态和协作关系。
      *
-     * @param errorMessage 参数值，用于执行当前操作。
+     * @param errorMessage 用于完成本次业务处理的 errorMessage 参数。
      */
     public void fail(String errorMessage) {
         this.status = ExecutionStatus.FAILED;
@@ -96,7 +98,7 @@ public class NodeExecution {
     }
 
     /**
-     * {@code incrementRetry} 执行当前类型定义的业务操作。
+     * 执行 Node 相关业务操作，并维护必要的状态和协作关系。
      */
     public void incrementRetry() {
         this.retryCount++;
@@ -104,99 +106,99 @@ public class NodeExecution {
 
     // Getters
     /**
-     * {@code getNodeId} 查询并返回当前操作所需的数据。
+     * 查询 Node 相关业务数据，并返回处理结果。
      *
-     * @return 返回当前操作产生的结果。
+     * @return 返回 Node 相关操作生成的结果数据。
      */
     public String getNodeId() {
         return nodeId;
     }
 
     /**
-     * {@code getNodeType} 查询并返回当前操作所需的数据。
+     * 查询 Node 相关业务数据，并返回处理结果。
      *
-     * @return 返回当前操作产生的结果。
+     * @return 返回 Node 相关操作生成的结果数据。
      */
     public String getNodeType() {
         return nodeType;
     }
 
     /**
-     * {@code getStatus} 查询并返回当前操作所需的数据。
+     * 查询 Node 相关业务数据，并返回处理结果。
      *
-     * @return 返回当前操作产生的结果。
+     * @return 返回 Node 相关操作生成的结果数据。
      */
     public ExecutionStatus getStatus() {
         return status;
     }
 
     /**
-     * {@code getInput} 查询并返回当前操作所需的数据。
+     * 查询 Node 相关业务数据，并返回处理结果。
      *
-     * @return 返回当前操作产生的结果。
+     * @return 返回 Node 相关操作生成的结果数据。
      */
     public Object getInput() {
         return input;
     }
 
     /**
-     * {@code getOutput} 查询并返回当前操作所需的数据。
+     * 查询 Node 相关业务数据，并返回处理结果。
      *
-     * @return 返回当前操作产生的结果。
+     * @return 返回 Node 相关操作生成的结果数据。
      */
     public Object getOutput() {
         return output;
     }
 
     /**
-     * {@code getErrorMessage} 查询并返回当前操作所需的数据。
+     * 查询 Node 相关业务数据，并返回处理结果。
      *
-     * @return 返回当前操作产生的结果。
+     * @return 返回 Node 相关操作生成的结果数据。
      */
     public String getErrorMessage() {
         return errorMessage;
     }
 
     /**
-     * {@code getStartTime} 查询并返回当前操作所需的数据。
+     * 查询 Node 相关业务数据，并返回处理结果。
      *
-     * @return 返回当前操作产生的结果。
+     * @return 返回 Node 相关操作生成的结果数据。
      */
     public LocalDateTime getStartTime() {
         return startTime;
     }
 
     /**
-     * {@code getEndTime} 查询并返回当前操作所需的数据。
+     * 查询 Node 相关业务数据，并返回处理结果。
      *
-     * @return 返回当前操作产生的结果。
+     * @return 返回 Node 相关操作生成的结果数据。
      */
     public LocalDateTime getEndTime() {
         return endTime;
     }
 
     /**
-     * {@code getDurationMs} 查询并返回当前操作所需的数据。
+     * 查询 Node 相关业务数据，并返回处理结果。
      *
-     * @return 返回当前操作产生的结果。
+     * @return 返回 Node 相关操作生成的结果数据。
      */
     public Long getDurationMs() {
         return durationMs;
     }
 
     /**
-     * {@code getRetryCount} 查询并返回当前操作所需的数据。
+     * 查询 Node 相关业务数据，并返回处理结果。
      *
-     * @return 返回当前操作产生的结果。
+     * @return 返回 Node 相关操作生成的结果数据。
      */
     public int getRetryCount() {
         return retryCount;
     }
 
     /**
-     * {@code setInput} 写入或更新当前模块中的业务数据。
+     * 更新或设置 Node 相关业务操作，并维护必要的状态和协作关系。
      *
-     * @param input 参数值，用于执行当前操作。
+     * @param input 用于完成本次业务处理的 input 参数。
      */
     public void setInput(Object input) {
         this.input = input;

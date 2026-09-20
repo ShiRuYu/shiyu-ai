@@ -20,6 +20,9 @@ import java.lang.reflect.Method;
 import java.util.List;
 import java.util.Map;
 
+/**
+ * 验证 Intent Service Impl 相关功能、边界条件、异常路径和协作行为。
+ */
 class IntentServiceImplTest {
     private final ChatEngine chat = mock(ChatEngine.class);
     private final IntentServiceImpl service = new IntentServiceImpl(chat);

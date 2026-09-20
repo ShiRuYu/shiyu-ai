@@ -7,7 +7,7 @@ import lombok.Data;
 import java.util.List;
 
 /**
- * ChatRequest 数据对象，承载模型领域相关业务数据。
+ * 封装 对话 操作所需的请求条件和输入数据。
  */
 @Data
 @Builder
@@ -89,10 +89,7 @@ public class ChatRequest {
     }
 
     /**
-     * 描述模型可调用工具的名称、说明和参数 schema。
-     * @param name 名称，表示该记录组件承载的数据。
-     * @param description 描述，表示该记录组件承载的数据。
-     * @param parametersJson parametersJson 属性，表示该记录组件承载的数据。
+     * 封装 工具 相关的不可变数据及其字段约束。
      */
     public record ToolDefinition(String name, String description, String parametersJson) {}
 }

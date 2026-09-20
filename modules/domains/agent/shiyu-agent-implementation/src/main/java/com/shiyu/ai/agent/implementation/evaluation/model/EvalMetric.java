@@ -1,7 +1,7 @@
 package com.shiyu.ai.agent.implementation.evaluation.model;
 
 /**
- * {@code EvalMetric} 表示智能体模块中的一组受控业务状态或分类。
+ * 定义 Eval Metric 可用的枚举值及其业务语义。
  */
 public enum EvalMetric {
     EXACT_MATCH,

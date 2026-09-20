@@ -1,6 +1,6 @@
 package com.shiyu.ai.governance.implementation;
 
 /**
- * GovernanceImplementationModule 模块接口，标识治理模块的边界。
+ * 定义 治理 Implementation Module 相关的协作契约和调用边界。
  */
 public interface GovernanceImplementationModule {}

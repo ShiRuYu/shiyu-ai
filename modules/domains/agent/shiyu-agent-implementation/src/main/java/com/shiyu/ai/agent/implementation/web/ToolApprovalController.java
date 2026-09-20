@@ -18,7 +18,7 @@ import org.springframework.web.bind.annotation.*;
 import java.util.List;
 
 /**
- * {@code ToolApprovalController} 是智能体模块的 Web 接口适配器，负责接收请求并转换为应用服务调用。
+ * 处理 工具 Approval 相关的 Web 请求，并将请求转换为应用服务调用。
  */
 @RestController
 @RequestMapping("/api/agent")
@@ -33,10 +33,10 @@ public class ToolApprovalController {
     private final AiRuntimeService runtime;
 
     /**
-     * {@code ToolApprovalController} 创建并初始化当前类型实例。
+     * 构建或转换 工具 Approval 相关业务操作，并维护必要的状态和协作关系。
      *
-     * @param approvals 参数值，用于执行当前操作。
-     * @param runtime 参数值，用于执行当前操作。
+     * @param approvals 用于完成本次业务处理的 approvals 参数。
+     * @param runtime 用于完成本次业务处理的 runtime 参数。
      */
     public ToolApprovalController(ToolApprovalService approvals, AiRuntimeService runtime) {
         this.approvals = approvals;
@@ -44,11 +44,9 @@ public class ToolApprovalController {
     }
 
     /**
-     * {@code list} 查询并返回当前操作所需的数据。
+     * 查询 工具 Approval 相关业务操作，并维护必要的状态和协作关系。
      *
-     * @param runId 参数值，用于执行当前操作。
-     *
-     * @return 返回当前操作产生的结果。
+     * @param approvals 用于完成本次业务处理的 approvals 参数。
      */
     @GetMapping("/runs/{runId}/approvals")
     public Result<List<ToolApproval>> list(@PathVariable String runId) {
@@ -57,9 +55,9 @@ public class ToolApprovalController {
     }
 
     /**
-     * {@code listAll} 查询并返回当前操作所需的数据。
+     * 查询 工具 Approval 相关业务操作，并维护必要的状态和协作关系。
      *
-     * @return 返回当前操作产生的结果。
+     * @param approvals 用于完成本次业务处理的 approvals 参数。
      */
     @GetMapping("/approvals")
     public Result<List<ToolApproval>> listAll() {
@@ -67,12 +65,9 @@ public class ToolApprovalController {
     }
 
     /**
-     * {@code request} 执行当前类型定义的业务操作。
+     * 执行 工具 Approval 相关业务操作，并维护必要的状态和协作关系。
      *
-     * @param runId 参数值，用于执行当前操作。
-     * @param request 参数值，用于执行当前操作。
-     *
-     * @return 返回当前操作产生的结果。
+     * @param approvals 用于完成本次业务处理的 approvals 参数。
      */
     @PostMapping("/runs/{runId}/approvals")
     public Result<ToolApproval> request(
@@ -90,11 +85,9 @@ public class ToolApprovalController {
     }
 
     /**
-     * {@code approve} 执行当前类型定义的业务操作。
+     * 执行 工具 Approval 相关业务操作，并维护必要的状态和协作关系。
      *
-     * @param id 参数值，用于执行当前操作。
-     *
-     * @return 返回当前操作产生的结果。
+     * @param approve 用于完成本次业务处理的 approve 参数。
      */
     @PostMapping("/approvals/{id}/approve")
     public Result<ToolApproval> approve(@PathVariable String id) {
@@ -102,11 +95,9 @@ public class ToolApprovalController {
     }
 
     /**
-     * {@code reject} 执行当前类型定义的业务操作。
+     * 执行 工具 Approval 相关业务操作，并维护必要的状态和协作关系。
      *
-     * @param id 参数值，用于执行当前操作。
-     *
-     * @return 返回当前操作产生的结果。
+     * @param reject 用于完成本次业务处理的 reject 参数。
      */
     @PostMapping("/approvals/{id}/reject")
     public Result<ToolApproval> reject(@PathVariable String id) {
@@ -141,7 +132,7 @@ public class ToolApprovalController {
     }
 
     /**
-     * {@code Request} 表示智能体模块的请求参数，承载调用方提交的输入数据。
+     * 封装 Request 操作所需的请求条件和输入数据。
      */
     @Data
     public static class Request {

@@ -6,18 +6,19 @@ import jakarta.validation.Validator;
 
 import java.util.Set;
 
-/** Validator 校验框架工具 */
+/**
+ * 提供 Validator 相关的通用辅助操作，供业务和基础设施复用。
+ */
 public class ValidatorUtils {
 
     private static final Validator VALID = SpringUtils.getBean(Validator.class);
 
     /**
-     * {@code validate} 校验当前操作的输入或状态是否满足约束。
+     * 校验或判断 Validator 相关业务操作，并维护必要的状态和协作关系。
      *
-     * @param object 参数值，用于执行当前操作。
-     * @param groups 参数值，用于执行当前操作。
-     *
-     * @return 返回当前操作产生的结果。
+     * @param object 用于完成本次业务处理的 object 参数。
+     * @param groups 用于完成本次业务处理的 groups 参数。
+     * @return 返回 Validator 相关操作生成的结果数据。
      */
     public static <T> void validate(T object, Class<?>... groups) {
         Set<ConstraintViolation<T>> validate = VALID.validate(object, groups);

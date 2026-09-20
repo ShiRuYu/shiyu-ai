@@ -7,6 +7,9 @@ import org.junit.jupiter.api.Test;
 import org.mybatis.spring.MyBatisSystemException;
 import org.springframework.mock.web.MockHttpServletRequest;
 
+/**
+ * 验证 Mybatis Exception Handler 相关功能、边界条件、异常路径和协作行为。
+ */
 class MybatisExceptionHandlerTest {
 
     private final MybatisExceptionHandler handler = new MybatisExceptionHandler();

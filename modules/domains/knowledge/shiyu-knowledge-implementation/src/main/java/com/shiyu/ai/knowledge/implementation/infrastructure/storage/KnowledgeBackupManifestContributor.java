@@ -16,7 +16,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
 
 /**
- * 为知识模块生成备份清单中的索引和文档条目。
+ * 向 知识 Backup Manifest 所属的应用或基础设施注册必要的扩展能力。
  */
 @Component
 @RequiredArgsConstructor
@@ -28,9 +28,9 @@ public class KnowledgeBackupManifestContributor implements BackupManifestContrib
     private final KnowledgeEnterpriseRepository repository;
 
     /**
-     * {@code contribute} 执行当前类型定义的业务操作。
+     * 执行 知识 Backup Manifest 相关业务数据，并返回处理结果。
      *
-     * @return 返回当前操作产生的结果。
+     * @return 返回 知识 Backup Manifest 相关操作生成的结果数据。
      */
     @Override
     public String contribute() {

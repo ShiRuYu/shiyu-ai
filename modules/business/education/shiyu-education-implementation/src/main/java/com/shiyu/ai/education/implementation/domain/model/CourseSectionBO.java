@@ -6,7 +6,9 @@ import java.io.Serial;
 import java.io.Serializable;
 import java.time.LocalDateTime;
 
-/** CourseSection 业务对象 */
+/**
+ * 表示 课程 Section 领域对象的业务状态和属性。
+ */
 @Data
 public class CourseSectionBO implements Serializable {
 

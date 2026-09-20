@@ -48,7 +48,7 @@ import java.util.List;
 import java.util.UUID;
 
 /**
- * {@code ChatProductController} 是会话模块的 Web 接口适配器，负责接收请求并转换为应用服务调用。
+ * 处理 对话 Product 相关的 Web 请求，并将请求转换为应用服务调用。
  */
 @Tag(name = "Chat Product Assets")
 @RestController
@@ -80,14 +80,14 @@ public class ChatProductController {
     private final CharacterImportPreviewStore characterImportPreviews;
 
     /**
-     * {@code ChatProductController} 创建并初始化当前类型实例。
+     * 执行 对话 Product 相关业务操作，并维护必要的状态和协作关系。
      *
-     * @param repository 参数值，用于执行当前操作。
-     * @param conversations 参数值，用于执行当前操作。
-     * @param conversationService 参数值，用于执行当前操作。
-     * @param generationRunner 参数值，用于执行当前操作。
-     * @param generationRepository 参数值，用于执行当前操作。
-     * @param characterImportPreviews 参数值，用于执行当前操作。
+     * @param repository 用于完成本次业务处理的 repository 参数。
+     * @param conversations 用于完成本次业务处理的 conversations 参数。
+     * @param conversationService 用于完成本次业务处理的 conversationService 参数。
+     * @param generationRunner 用于完成本次业务处理的 generationRunner 参数。
+     * @param generationRepository 用于完成本次业务处理的 generationRepository 参数。
+     * @param characterImportPreviews 用于完成本次业务处理的 characterImportPreviews 参数。
      */
     public ChatProductController(
             ChatProductRepository repository,
@@ -105,11 +105,9 @@ public class ChatProductController {
     }
 
     /**
-     * {@code createCharacter} 写入或更新当前模块中的业务数据。
+     * 执行 对话 Product 相关业务操作，并维护必要的状态和协作关系。
      *
-     * @param request 参数值，用于执行当前操作。
-     *
-     * @return 返回当前操作产生的结果。
+     * @param characters 用于完成本次业务处理的 characters 参数。
      */
     @PostMapping("/characters")
     public Result<CharacterAsset> createCharacter(@RequestBody CharacterRequest request) {
@@ -132,9 +130,9 @@ public class ChatProductController {
     }
 
     /**
-     * {@code characters} 执行当前类型定义的业务操作。
+     * 查询 对话 Product 相关业务操作，并维护必要的状态和协作关系。
      *
-     * @return 返回当前操作产生的结果。
+     * @param characters 用于完成本次业务处理的 characters 参数。
      */
     @GetMapping("/characters")
     public Result<List<CharacterAsset>> characters() {
@@ -142,11 +140,9 @@ public class ChatProductController {
     }
 
     /**
-     * {@code character} 执行当前类型定义的业务操作。
+     * 查询 对话 Product 相关业务操作，并维护必要的状态和协作关系。
      *
-     * @param id 参数值，用于执行当前操作。
-     *
-     * @return 返回当前操作产生的结果。
+     * @param id 用于定位目标业务对象的标识。
      */
     @GetMapping("/characters/{id}")
     public Result<CharacterAsset> character(@PathVariable String id) {
@@ -157,11 +153,9 @@ public class ChatProductController {
     }
 
     /**
-     * {@code deleteCharacter} 释放或移除当前操作涉及的资源。
+     * 删除或移除 对话 Product 相关业务操作，并维护必要的状态和协作关系。
      *
-     * @param id 参数值，用于执行当前操作。
-     *
-     * @return 返回当前操作产生的结果。
+     * @param id 用于定位目标业务对象的标识。
      */
     @DeleteMapping("/characters/{id}")
     public Result<Void> deleteCharacter(@PathVariable String id) {
@@ -169,13 +163,12 @@ public class ChatProductController {
         return Result.success();
    }
 
-    /**
-     * {@code previewCharacterImport} 执行当前类型定义的业务操作。
-     *
-     * @param file 参数值，用于执行当前操作。
-     *
-     * @return 返回当前操作产生的结果。
-     */
+   /**
+    * 执行 对话 Product 相关业务操作，并维护必要的状态和协作关系。
+    *
+    * @param preview 用于完成本次业务处理的 preview 参数。
+    * @param MULTIPART_FORM_DATA_VALUE 用于完成本次业务处理的 MULTIPART_FORM_DATA_VALUE 参数。
+    */
    @PostMapping(
            value = "/characters/import/preview",
            consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
@@ -198,12 +191,10 @@ public class ChatProductController {
     }
 
     /**
-     * {@code importCharacter} 执行当前类型定义的业务操作。
+     * 执行 对话 Product 相关业务操作，并维护必要的状态和协作关系。
      *
-     * @param file 参数值，用于执行当前操作。
-     * @param previewToken 参数值，用于执行当前操作。
-     *
-     * @return 返回当前操作产生的结果。
+     * @param import 用于完成本次业务处理的 import 参数。
+     * @param MULTIPART_FORM_DATA_VALUE 用于完成本次业务处理的 MULTIPART_FORM_DATA_VALUE 参数。
      */
     @PostMapping(value = "/characters/import", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
     public Result<CharacterAsset> importCharacter(
@@ -237,11 +228,10 @@ public class ChatProductController {
     }
 
     /**
-     * {@code exportCharacter} 执行当前类型定义的业务操作。
+     * 查询 对话 Product 相关业务操作，并维护必要的状态和协作关系。
      *
-     * @param id 参数值，用于执行当前操作。
-     *
-     * @return 返回当前操作产生的结果。
+     * @param png 用于完成本次业务处理的 png 参数。
+     * @param IMAGE_PNG_VALUE 用于完成本次业务处理的 IMAGE_PNG_VALUE 参数。
      */
     @GetMapping(value = "/characters/{id}/png", produces = MediaType.IMAGE_PNG_VALUE)
     public ResponseEntity<byte[]> exportCharacter(@PathVariable String id) throws Exception {
@@ -260,11 +250,9 @@ public class ChatProductController {
     }
 
     /**
-     * {@code createPersona} 写入或更新当前模块中的业务数据。
+     * 执行 对话 Product 相关业务操作，并维护必要的状态和协作关系。
      *
-     * @param persona 参数值，用于执行当前操作。
-     *
-     * @return 返回当前操作产生的结果。
+     * @param personas 用于完成本次业务处理的 personas 参数。
      */
     @PostMapping("/personas")
     public Result<PersonaAsset> createPersona(@RequestBody Persona persona) {
@@ -275,9 +263,9 @@ public class ChatProductController {
     }
 
     /**
-     * {@code personas} 执行当前类型定义的业务操作。
+     * 查询 对话 Product 相关业务操作，并维护必要的状态和协作关系。
      *
-     * @return 返回当前操作产生的结果。
+     * @param personas 用于完成本次业务处理的 personas 参数。
      */
     @GetMapping("/personas")
     public Result<List<PersonaAsset>> personas() {
@@ -285,11 +273,9 @@ public class ChatProductController {
     }
 
     /**
-     * {@code persona} 执行当前类型定义的业务操作。
+     * 查询 对话 Product 相关业务操作，并维护必要的状态和协作关系。
      *
-     * @param id 参数值，用于执行当前操作。
-     *
-     * @return 返回当前操作产生的结果。
+     * @param id 用于定位目标业务对象的标识。
      */
     @GetMapping("/personas/{id}")
     public Result<PersonaAsset> persona(@PathVariable String id) {
@@ -300,11 +286,9 @@ public class ChatProductController {
     }
 
     /**
-     * {@code deletePersona} 释放或移除当前操作涉及的资源。
+     * 删除或移除 对话 Product 相关业务操作，并维护必要的状态和协作关系。
      *
-     * @param id 参数值，用于执行当前操作。
-     *
-     * @return 返回当前操作产生的结果。
+     * @param id 用于定位目标业务对象的标识。
      */
     @DeleteMapping("/personas/{id}")
     public Result<Void> deletePersona(@PathVariable String id) {
@@ -313,11 +297,9 @@ public class ChatProductController {
     }
 
     /**
-     * {@code createLorebook} 写入或更新当前模块中的业务数据。
+     * 执行 对话 Product 相关业务操作，并维护必要的状态和协作关系。
      *
-     * @param entry 参数值，用于执行当前操作。
-     *
-     * @return 返回当前操作产生的结果。
+     * @param lorebooks 用于完成本次业务处理的 lorebooks 参数。
      */
     @PostMapping("/lorebooks")
     public Result<LorebookAsset> createLorebook(@RequestBody LorebookEntry entry) {
@@ -328,9 +310,9 @@ public class ChatProductController {
     }
 
     /**
-     * {@code lorebooks} 执行当前类型定义的业务操作。
+     * 查询 对话 Product 相关业务操作，并维护必要的状态和协作关系。
      *
-     * @return 返回当前操作产生的结果。
+     * @param lorebooks 用于完成本次业务处理的 lorebooks 参数。
      */
     @GetMapping("/lorebooks")
     public Result<List<LorebookAsset>> lorebooks() {
@@ -338,11 +320,9 @@ public class ChatProductController {
     }
 
     /**
-     * {@code lorebook} 执行当前类型定义的业务操作。
+     * 查询 对话 Product 相关业务操作，并维护必要的状态和协作关系。
      *
-     * @param id 参数值，用于执行当前操作。
-     *
-     * @return 返回当前操作产生的结果。
+     * @param id 用于定位目标业务对象的标识。
      */
     @GetMapping("/lorebooks/{id}")
     public Result<LorebookAsset> lorebook(@PathVariable String id) {
@@ -354,11 +334,9 @@ public class ChatProductController {
     }
 
     /**
-     * {@code deleteLorebook} 释放或移除当前操作涉及的资源。
+     * 删除或移除 对话 Product 相关业务操作，并维护必要的状态和协作关系。
      *
-     * @param id 参数值，用于执行当前操作。
-     *
-     * @return 返回当前操作产生的结果。
+     * @param id 用于定位目标业务对象的标识。
      */
     @DeleteMapping("/lorebooks/{id}")
     public Result<Void> deleteLorebook(@PathVariable String id) {
@@ -367,11 +345,9 @@ public class ChatProductController {
     }
 
     /**
-     * {@code createPrompt} 写入或更新当前模块中的业务数据。
+     * 执行 对话 Product 相关业务操作，并维护必要的状态和协作关系。
      *
-     * @param request 参数值，用于执行当前操作。
-     *
-     * @return 返回当前操作产生的结果。
+     * @param templates 用于完成本次业务处理的 templates 参数。
      */
     @PostMapping("/prompt-studio/templates")
     public Result<PromptTemplateVersion> createPrompt(@RequestBody PromptRequest request) {
@@ -401,11 +377,10 @@ public class ChatProductController {
     }
 
     /**
-     * {@code prompts} 执行当前类型定义的业务操作。
+     * 执行 对话 Product 相关业务数据，并返回处理结果。
      *
-     * @param templateId 参数值，用于执行当前操作。
-     *
-     * @return 返回当前操作产生的结果。
+     * @param templates 用于完成本次业务处理的 templates 参数。
+     * @return 返回符合条件的数据集合；没有匹配项时返回空集合。
      */
     @GetMapping("/prompt-studio/templates")
     public Result<List<PromptTemplateVersion>> prompts(
@@ -414,12 +389,9 @@ public class ChatProductController {
     }
 
     /**
-     * {@code publishPrompt} 执行当前模块定义的业务流程。
+     * 执行 对话 Product 相关业务操作，并维护必要的状态和协作关系。
      *
-     * @param templateId 参数值，用于执行当前操作。
-     * @param request 参数值，用于执行当前操作。
-     *
-     * @return 返回当前操作产生的结果。
+     * @param publish 用于完成本次业务处理的 publish 参数。
      */
     @PostMapping("/prompt-studio/templates/{templateId}/publish")
     public Result<PromptTemplateVersion> publishPrompt(
@@ -457,12 +429,9 @@ public class ChatProductController {
     }
 
     /**
-     * {@code diffPrompt} 执行当前类型定义的业务操作。
+     * 执行 对话 Product 相关业务操作，并维护必要的状态和协作关系。
      *
-     * @param templateId 参数值，用于执行当前操作。
-     * @param request 参数值，用于执行当前操作。
-     *
-     * @return 返回当前操作产生的结果。
+     * @param diff 用于完成本次业务处理的 diff 参数。
      */
     @PostMapping("/prompt-studio/templates/{templateId}/diff")
     public Result<PromptDiff> diffPrompt(
@@ -505,11 +474,9 @@ public class ChatProductController {
     }
 
     /**
-     * {@code preview} 执行当前类型定义的业务操作。
+     * 执行 对话 Product 相关业务操作，并维护必要的状态和协作关系。
      *
-     * @param request 参数值，用于执行当前操作。
-     *
-     * @return 返回当前操作产生的结果。
+     * @param preview 用于完成本次业务处理的 preview 参数。
      */
     @PostMapping("/prompt-studio/preview")
     public Result<PromptPreview> preview(@RequestBody PromptPreviewRequest request) {
@@ -559,11 +526,9 @@ public class ChatProductController {
     }
 
     /**
-     * {@code createGroup} 写入或更新当前模块中的业务数据。
+     * 执行 对话 Product 相关业务操作，并维护必要的状态和协作关系。
      *
-     * @param request 参数值，用于执行当前操作。
-     *
-     * @return 返回当前操作产生的结果。
+     * @param groups 用于完成本次业务处理的 groups 参数。
      */
     @PostMapping("/groups")
     public Result<GroupChatAsset> createGroup(@RequestBody GroupRequest request) {
@@ -582,9 +547,9 @@ public class ChatProductController {
     }
 
     /**
-     * {@code groups} 执行当前类型定义的业务操作。
+     * 查询 对话 Product 相关业务操作，并维护必要的状态和协作关系。
      *
-     * @return 返回当前操作产生的结果。
+     * @param groups 用于完成本次业务处理的 groups 参数。
      */
     @GetMapping("/groups")
     public Result<List<GroupChatAsset>> groups() {
@@ -592,11 +557,9 @@ public class ChatProductController {
     }
 
     /**
-     * {@code group} 执行当前类型定义的业务操作。
+     * 查询 对话 Product 相关业务操作，并维护必要的状态和协作关系。
      *
-     * @param id 参数值，用于执行当前操作。
-     *
-     * @return 返回当前操作产生的结果。
+     * @param id 用于定位目标业务对象的标识。
      */
     @GetMapping("/groups/{id}")
     public Result<GroupChatAsset> group(@PathVariable String id) {
@@ -607,11 +570,9 @@ public class ChatProductController {
     }
 
     /**
-     * {@code deleteGroup} 释放或移除当前操作涉及的资源。
+     * 删除或移除 对话 Product 相关业务操作，并维护必要的状态和协作关系。
      *
-     * @param id 参数值，用于执行当前操作。
-     *
-     * @return 返回当前操作产生的结果。
+     * @param id 用于定位目标业务对象的标识。
      */
     @DeleteMapping("/groups/{id}")
     public Result<Void> deleteGroup(@PathVariable String id) {
@@ -620,12 +581,10 @@ public class ChatProductController {
     }
 
     /**
-     * {@code nextSpeaker} 执行当前类型定义的业务操作。
+     * 执行 对话 Product 相关业务数据，并返回处理结果。
      *
-     * @param id 参数值，用于执行当前操作。
-     * @param request 参数值，用于执行当前操作。
-     *
-     * @return 返回当前操作产生的结果。
+     * @param speaker 用于完成本次业务处理的 speaker 参数。
+     * @return 返回 对话 Product 相关操作生成的结果数据。
      */
     @PostMapping("/groups/{id}/next-speaker")
     public Result<GroupTurnPlanner.TurnDecision> nextSpeaker(
@@ -779,7 +738,7 @@ public class ChatProductController {
     }
 
     /**
-     * {@code CharacterRequest} 表示会话模块的请求参数，承载调用方提交的输入数据。
+     * 封装 Character 操作所需的请求条件和输入数据。
      */
     @lombok.Getter
     @lombok.Setter
@@ -792,7 +751,7 @@ public class ChatProductController {
     }
 
     /**
-     * {@code PromptRequest} 表示会话模块的请求参数，承载调用方提交的输入数据。
+     * 封装 提示词 操作所需的请求条件和输入数据。
      */
     @lombok.Getter
     @lombok.Setter
@@ -821,7 +780,7 @@ public class ChatProductController {
     }
 
     /**
-     * {@code PublishRequest} 表示会话模块的请求参数，承载调用方提交的输入数据。
+     * 封装 Publish 操作所需的请求条件和输入数据。
      */
     @lombok.Getter
     @lombok.Setter
@@ -830,7 +789,7 @@ public class ChatProductController {
     }
 
     /**
-     * {@code DiffRequest} 表示会话模块的请求参数，承载调用方提交的输入数据。
+     * 封装 Diff 操作所需的请求条件和输入数据。
      */
     @lombok.Getter
     @lombok.Setter
@@ -843,7 +802,7 @@ public class ChatProductController {
     }
 
     /**
-     * {@code GroupRequest} 表示会话模块的请求参数，承载调用方提交的输入数据。
+     * 封装 Group 操作所需的请求条件和输入数据。
      */
     @lombok.Getter
     @lombok.Setter
@@ -868,7 +827,7 @@ public class ChatProductController {
     }
 
     /**
-     * {@code TurnRequest} 表示会话模块的请求参数，承载调用方提交的输入数据。
+     * 封装 Turn 操作所需的请求条件和输入数据。
      */
     @lombok.Getter
     @lombok.Setter
@@ -885,7 +844,7 @@ public class ChatProductController {
     }
 
     /**
-     * {@code TurnRunRequest} 表示会话模块的请求参数，承载调用方提交的输入数据。
+     * 封装 Turn 运行 操作所需的请求条件和输入数据。
      */
     @lombok.Getter
     @lombok.Setter
@@ -915,16 +874,13 @@ public class ChatProductController {
     }
 
     /**
-     * {@code GroupTurnRun} 封装会话模块中不可变的结构化数据，并作为相关操作之间的值对象。
-     * @param decision decision 属性，表示该记录组件承载的数据。
-     * @param generationId generationId 属性，表示该记录组件承载的数据。
-     * @param speakerId speakerId 属性，表示该记录组件承载的数据。
+     * 封装 Group Turn 运行 相关的不可变数据及其字段约束。
      */
     public record GroupTurnRun(
             GroupTurnPlanner.TurnDecision decision, String generationId, String speakerId) {}
 
     /**
-     * {@code PromptPreviewRequest} 表示会话模块的请求参数，承载调用方提交的输入数据。
+     * 封装 提示词 Preview 操作所需的请求条件和输入数据。
      */
     @lombok.Getter
     @lombok.Setter
@@ -937,7 +893,7 @@ public class ChatProductController {
     }
 
     /**
-     * {@code PromptTestRequest} 表示会话模块的请求参数，承载调用方提交的输入数据。
+     * 封装 提示词 Test 操作所需的请求条件和输入数据。
      */
     @lombok.Getter
     @lombok.Setter
@@ -950,29 +906,18 @@ public class ChatProductController {
     }
 
     /**
-     * {@code PromptPreview} 封装会话模块中不可变的结构化数据，并作为相关操作之间的值对象。
-     * @param rendered rendered 属性，表示该记录组件承载的数据。
-     * @param variables 变量集合，表示该记录组件承载的数据。
-     * @param estimatedTokens 预计令牌数，表示该记录组件承载的数据。
+     * 封装 提示词 Preview 相关的不可变数据及其字段约束。
      */
     public record PromptPreview(String rendered, List<String> variables, int estimatedTokens) {}
 
     /**
-     * {@code PromptTestRun} 封装会话模块中不可变的结构化数据，并作为相关操作之间的值对象。
-     * @param templateId templateId 属性，表示该记录组件承载的数据。
-     * @param version version 属性，表示该记录组件承载的数据。
-     * @param renderedCases renderedCases 属性，表示该记录组件承载的数据。
-     * @param estimatedTokens 预计令牌数，表示该记录组件承载的数据。
+     * 封装 提示词 Test 运行 相关的不可变数据及其字段约束。
      */
     public record PromptTestRun(
             String templateId, int version, List<String> renderedCases, int estimatedTokens) {}
 
     /**
-     * {@code PromptDiff} 封装会话模块中不可变的结构化数据，并作为相关操作之间的值对象。
-     * @param templateId templateId 属性，表示该记录组件承载的数据。
-     * @param fromVersion fromVersion 属性，表示该记录组件承载的数据。
-     * @param toVersion toVersion 属性，表示该记录组件承载的数据。
-     * @param changes changes 属性，表示该记录组件承载的数据。
+     * 封装 提示词 Diff 相关的不可变数据及其字段约束。
      */
     public record PromptDiff(
             String templateId, int fromVersion, int toVersion, List<String> changes) {}

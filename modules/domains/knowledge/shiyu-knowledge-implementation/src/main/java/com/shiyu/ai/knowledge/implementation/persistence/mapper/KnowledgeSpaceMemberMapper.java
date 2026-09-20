@@ -9,7 +9,7 @@ import com.shiyu.ai.knowledge.implementation.persistence.dataobject.KnowledgeSpa
 
 
 /**
- * KnowledgeSpaceMemberMapper 数据映射接口，负责在知识领域对象与持久化记录之间转换数据。
+ * 负责 知识 空间 Member 的持久化查询、保存和删除，并维护数据访问边界。
  */
 @Mapper
 @UseDataSource("agent")

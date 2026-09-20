@@ -6,7 +6,9 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.CommandLineRunner;
 import org.springframework.stereotype.Component;
 
-/** 应用启动监听器 在应用启动完成后打印相关访问地址 */
+/**
+ * 处理 Application Startup 相关事件或请求，并推进后续业务流程。
+ */
 @Slf4j
 @Component
 public class ApplicationStartupListener implements CommandLineRunner {
@@ -18,9 +20,9 @@ public class ApplicationStartupListener implements CommandLineRunner {
     private Integer serverPort;
 
     /**
-     * {@code run} 执行当前模块定义的业务流程。
+     * 执行 Application Startup 相关业务操作，并维护必要的状态和协作关系。
      *
-     * @param args 参数值，用于执行当前操作。
+     * @param args 用于完成本次业务处理的 args 参数。
      */
     @Override
     public void run(String... args) {

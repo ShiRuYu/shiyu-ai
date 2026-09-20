@@ -29,7 +29,7 @@ import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.atomic.AtomicReference;
 
 /**
- * 协调会话生成任务的执行、持久化和终态处理。
+ * 编排 生成 所属应用流程的输入、协作和业务结果。
  */
 @Service
 public class GenerationRunner {
@@ -63,11 +63,11 @@ public class GenerationRunner {
     private final ConversationPromptService promptService;
 
     /**
-     * {@code GenerationRunner} 创建并初始化当前类型实例。
+     * 执行 生成 相关业务操作，并维护必要的状态和协作关系。
      *
-     * @param chatEngine 参数值，用于执行当前操作。
-     * @param generations 参数值，用于执行当前操作。
-     * @param conversations 参数值，用于执行当前操作。
+     * @param chatEngine 用于完成本次业务处理的 chatEngine 参数。
+     * @param generations 用于完成本次业务处理的 generations 参数。
+     * @param conversations 用于完成本次业务处理的 conversations 参数。
      */
     public GenerationRunner(
             ChatEngine chatEngine,
@@ -84,13 +84,13 @@ public class GenerationRunner {
     }
 
     /**
-     * {@code GenerationRunner} 创建并初始化当前类型实例。
+     * 执行 生成 相关业务操作，并维护必要的状态和协作关系。
      *
-     * @param chatEngine 参数值，用于执行当前操作。
-     * @param generations 参数值，用于执行当前操作。
-     * @param conversations 参数值，用于执行当前操作。
-     * @param usageSink 参数值，用于执行当前操作。
-     * @param admission 参数值，用于执行当前操作。
+     * @param chatEngine 用于完成本次业务处理的 chatEngine 参数。
+     * @param generations 用于完成本次业务处理的 generations 参数。
+     * @param conversations 用于完成本次业务处理的 conversations 参数。
+     * @param usageSink 用于完成本次业务处理的 usageSink 参数。
+     * @param admission 用于完成本次业务处理的 admission 参数。
      */
     public GenerationRunner(
             ChatEngine chatEngine,
@@ -102,14 +102,14 @@ public class GenerationRunner {
     }
 
     /**
-     * {@code GenerationRunner} 创建并初始化当前类型实例。
+     * 执行 生成 相关业务操作，并维护必要的状态和协作关系。
      *
-     * @param chatEngine 参数值，用于执行当前操作。
-     * @param generations 参数值，用于执行当前操作。
-     * @param conversations 参数值，用于执行当前操作。
-     * @param usageSink 参数值，用于执行当前操作。
-     * @param admission 参数值，用于执行当前操作。
-     * @param runtime 参数值，用于执行当前操作。
+     * @param chatEngine 用于完成本次业务处理的 chatEngine 参数。
+     * @param generations 用于完成本次业务处理的 generations 参数。
+     * @param conversations 用于完成本次业务处理的 conversations 参数。
+     * @param usageSink 用于完成本次业务处理的 usageSink 参数。
+     * @param admission 用于完成本次业务处理的 admission 参数。
+     * @param runtime 用于完成本次业务处理的 runtime 参数。
      */
     public GenerationRunner(
             ChatEngine chatEngine,
@@ -122,15 +122,15 @@ public class GenerationRunner {
     }
 
     /**
-     * {@code GenerationRunner} 创建并初始化当前类型实例。
+     * 执行 生成 相关业务操作，并维护必要的状态和协作关系。
      *
-     * @param chatEngine 参数值，用于执行当前操作。
-     * @param generations 参数值，用于执行当前操作。
-     * @param conversations 参数值，用于执行当前操作。
-     * @param usageSink 参数值，用于执行当前操作。
-     * @param admission 参数值，用于执行当前操作。
-     * @param runtime 参数值，用于执行当前操作。
-     * @param promptService 参数值，用于执行当前操作。
+     * @param chatEngine 用于完成本次业务处理的 chatEngine 参数。
+     * @param generations 用于完成本次业务处理的 generations 参数。
+     * @param conversations 用于完成本次业务处理的 conversations 参数。
+     * @param usageSink 用于完成本次业务处理的 usageSink 参数。
+     * @param admission 用于完成本次业务处理的 admission 参数。
+     * @param runtime 用于完成本次业务处理的 runtime 参数。
+     * @param promptService 用于完成本次业务处理的 promptService 参数。
      */
     @Autowired
     public GenerationRunner(
@@ -170,11 +170,11 @@ public class GenerationRunner {
     }
 
     /**
-     * {@code start} 执行当前类型定义的业务操作。
+     * 执行 生成 相关业务操作，并维护必要的状态和协作关系。
      *
-     * @param created 参数值，用于执行当前操作。
-     * @param tenantId 参数值，用于执行当前操作。
-     * @param ownerUserId 参数值，用于执行当前操作。
+     * @param created 用于完成本次业务处理的 created 参数。
+     * @param tenantId 当前操作涉及的租户标识。
+     * @param ownerUserId 当前操作涉及的用户标识。
      */
     public void start(GenerationRun created, TenantId tenantId, long ownerUserId) {
         Objects.requireNonNull(tenantId, "tenantId");

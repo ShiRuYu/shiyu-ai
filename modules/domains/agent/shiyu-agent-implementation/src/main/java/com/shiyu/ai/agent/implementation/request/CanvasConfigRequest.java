@@ -5,7 +5,7 @@ import lombok.Data;
 import java.util.Map;
 
 /**
- * {@code CanvasConfigRequest} 表示智能体模块的请求参数，承载调用方提交的输入数据。
+ * 封装 Canvas Config 操作所需的请求条件和输入数据。
  */
 @Data
 public class CanvasConfigRequest {
@@ -31,7 +31,7 @@ public class CanvasConfigRequest {
     private Map<String, NodePosition> nodePositions;
 
     /**
-     * {@code NodePosition} 承载智能体模块的领域状态或协作行为，负责维护本类型的职责边界。
+     * 实现 Node Position 相关的业务处理、协作逻辑或基础设施能力。
      */
     @Data
     public static class NodePosition {

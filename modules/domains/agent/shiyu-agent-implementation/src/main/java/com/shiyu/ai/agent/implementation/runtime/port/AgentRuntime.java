@@ -10,7 +10,9 @@ import reactor.core.publisher.Flux;
 import java.util.List;
 import java.util.Map;
 
-/** Agent 运行时接口 提供执行生命周期管理：暂停/恢复/取消/检查点 */
+/**
+ * 定义 智能体 Runtime 相关的协作契约和调用边界。
+ */
 public interface AgentRuntime {
 
     /** 同步执行 Agent */

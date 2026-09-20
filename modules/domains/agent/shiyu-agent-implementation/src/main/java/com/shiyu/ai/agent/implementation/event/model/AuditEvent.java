@@ -3,9 +3,7 @@ package com.shiyu.ai.agent.implementation.event.model;
 import com.shiyu.ai.kernel.context.TenantId;
 
 /**
- * 审计事件
- *
- * <p>当关键操作发生时发布（登录、Agent 执行、模型调用、知识检索、CRUD 等）， 由 {@code AuditService} 异步消费后写入 {@code audit_log} 表。
+ * 表示 Audit 相关的领域事件或异常信息。
  */
 public class AuditEvent extends DomainEvent {
 
@@ -51,18 +49,18 @@ public class AuditEvent extends DomainEvent {
     private final long durationMs;
 
     /**
-     * {@code AuditEvent} 创建并初始化当前类型实例。
+     * 执行 Audit 相关业务操作，并维护必要的状态和协作关系。
      *
-     * @param tenantId 参数值，用于执行当前操作。
-     * @param userId 参数值，用于执行当前操作。
-     * @param action 参数值，用于执行当前操作。
-     * @param targetType 参数值，用于执行当前操作。
-     * @param targetId 参数值，用于执行当前操作。
-     * @param detail 参数值，用于执行当前操作。
-     * @param ip 参数值，用于执行当前操作。
-     * @param result 参数值，用于执行当前操作。
-     * @param errorMsg 参数值，用于执行当前操作。
-     * @param durationMs 参数值，用于执行当前操作。
+     * @param tenantId 当前操作涉及的租户标识。
+     * @param userId 当前操作涉及的用户标识。
+     * @param action 用于完成本次业务处理的 action 参数。
+     * @param targetType 用于完成本次业务处理的 targetType 参数。
+     * @param targetId 用于定位target的标识。
+     * @param detail 用于完成本次业务处理的 detail 参数。
+     * @param ip 用于完成本次业务处理的 ip 参数。
+     * @param result 用于完成本次业务处理的 result 参数。
+     * @param errorMsg 用于完成本次业务处理的 errorMsg 参数。
+     * @param durationMs 用于完成本次业务处理的 durationMs 参数。
      */
     public AuditEvent(
             TenantId tenantId,
@@ -89,90 +87,90 @@ public class AuditEvent extends DomainEvent {
     }
 
     /**
-     * {@code getTenantId} 查询并返回当前操作所需的数据。
+     * 查询 Audit 相关业务数据，并返回处理结果。
      *
-     * @return 返回当前操作产生的结果。
+     * @return 返回 Audit 相关操作生成的结果数据。
      */
     public TenantId getTenantId() {
         return tenantId;
     }
 
     /**
-     * {@code getUserId} 查询并返回当前操作所需的数据。
+     * 查询 Audit 相关业务数据，并返回处理结果。
      *
-     * @return 返回当前操作产生的结果。
+     * @return 返回 Audit 相关操作生成的结果数据。
      */
     public Long getUserId() {
         return userId;
     }
 
     /**
-     * {@code getAction} 查询并返回当前操作所需的数据。
+     * 查询 Audit 相关业务数据，并返回处理结果。
      *
-     * @return 返回当前操作产生的结果。
+     * @return 返回 Audit 相关操作生成的结果数据。
      */
     public String getAction() {
         return action;
     }
 
     /**
-     * {@code getTargetType} 查询并返回当前操作所需的数据。
+     * 查询 Audit 相关业务数据，并返回处理结果。
      *
-     * @return 返回当前操作产生的结果。
+     * @return 返回 Audit 相关操作生成的结果数据。
      */
     public String getTargetType() {
         return targetType;
     }
 
     /**
-     * {@code getTargetId} 查询并返回当前操作所需的数据。
+     * 查询 Audit 相关业务数据，并返回处理结果。
      *
-     * @return 返回当前操作产生的结果。
+     * @return 返回 Audit 相关操作生成的结果数据。
      */
     public String getTargetId() {
         return targetId;
     }
 
     /**
-     * {@code getDetail} 查询并返回当前操作所需的数据。
+     * 查询 Audit 相关业务数据，并返回处理结果。
      *
-     * @return 返回当前操作产生的结果。
+     * @return 返回 Audit 相关操作生成的结果数据。
      */
     public String getDetail() {
         return detail;
     }
 
     /**
-     * {@code getIp} 查询并返回当前操作所需的数据。
+     * 查询 Audit 相关业务数据，并返回处理结果。
      *
-     * @return 返回当前操作产生的结果。
+     * @return 返回 Audit 相关操作生成的结果数据。
      */
     public String getIp() {
         return ip;
     }
 
     /**
-     * {@code getResult} 查询并返回当前操作所需的数据。
+     * 查询 Audit 相关业务数据，并返回处理结果。
      *
-     * @return 返回当前操作产生的结果。
+     * @return 返回 Audit 相关操作生成的结果数据。
      */
     public String getResult() {
         return result;
     }
 
     /**
-     * {@code getErrorMsg} 查询并返回当前操作所需的数据。
+     * 查询 Audit 相关业务数据，并返回处理结果。
      *
-     * @return 返回当前操作产生的结果。
+     * @return 返回 Audit 相关操作生成的结果数据。
      */
     public String getErrorMsg() {
         return errorMsg;
     }
 
     /**
-     * {@code getDurationMs} 查询并返回当前操作所需的数据。
+     * 查询 Audit 相关业务数据，并返回处理结果。
      *
-     * @return 返回当前操作产生的结果。
+     * @return 返回 Audit 相关操作生成的结果数据。
      */
     public long getDurationMs() {
         return durationMs;

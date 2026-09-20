@@ -5,7 +5,9 @@ import lombok.Data;
 import java.io.Serial;
 import java.io.Serializable;
 
-/** 登录响应 VO */
+/**
+ * 封装 Login 操作向调用方返回的传输数据。
+ */
 @Data
 public class LoginVO implements Serializable {
 
@@ -26,7 +28,9 @@ public class LoginVO implements Serializable {
     /** 原始 URL（用于登录后跳转） */
     private String originUrl;
 
-    /** 登录数据 VO */
+    /**
+     * 封装 Login Data 操作向调用方返回的传输数据。
+     */
     @lombok.Data
     public static class LoginDataVO implements Serializable {
         @Serial private static final long serialVersionUID = 1L;

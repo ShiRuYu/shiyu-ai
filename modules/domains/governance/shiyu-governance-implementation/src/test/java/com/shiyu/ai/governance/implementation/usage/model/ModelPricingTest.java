@@ -4,6 +4,9 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 
 import org.junit.jupiter.api.Test;
 
+/**
+ * 验证 模型 Pricing 相关功能、边界条件、异常路径和协作行为。
+ */
 class ModelPricingTest {
     @Test
     void calculatesTokenCostAndProvidesDefaultOpenAiPricing() {

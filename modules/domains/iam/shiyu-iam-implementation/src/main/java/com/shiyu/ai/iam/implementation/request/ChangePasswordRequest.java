@@ -9,7 +9,9 @@ import lombok.Data;
 import java.io.Serial;
 import java.io.Serializable;
 
-/** 修改密码请求 */
+/**
+ * 封装 Change Password 操作所需的请求条件和输入数据。
+ */
 @Data
 @Schema(description = "修改密码请求")
 public class ChangePasswordRequest implements Serializable {

@@ -6,7 +6,7 @@ import lombok.Getter;
 import lombok.Setter;
 
 /**
- * StorageMigrationProperties 配置属性，集中管理基础设施领域相关运行参数。
+ * 定义 Storage Migration 基础设施或应用能力的配置项及装配规则。
  */
 @ConfigurationProperties(prefix = "shiyu.storage.migration")
 @Getter

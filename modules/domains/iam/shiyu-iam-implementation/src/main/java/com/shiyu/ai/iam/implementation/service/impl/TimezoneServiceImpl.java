@@ -17,7 +17,7 @@ import java.util.List;
 import java.util.Map;
 
 /**
- * {@code TimezoneServiceImpl} 实现平台模块的应用服务，负责编排用例流程并维护业务边界。
+ * 提供 Timezone 的查询、创建、更新及调用服务，协调业务变更和领域协作。
  */
 @Service
 public class TimezoneServiceImpl implements TimezoneService {
@@ -27,18 +27,18 @@ public class TimezoneServiceImpl implements TimezoneService {
     private final UserRepository userRepository;
 
     /**
-     * {@code TimezoneServiceImpl} 创建并初始化当前类型实例。
+     * 执行 Timezone 相关业务操作，并维护必要的状态和协作关系。
      *
-     * @param userRepository 参数值，用于执行当前操作。
+     * @param userRepository 用于完成本次业务处理的 userRepository 参数。
      */
     public TimezoneServiceImpl(UserRepository userRepository) {
         this.userRepository = userRepository;
     }
 
     /**
-     * {@code getTimezoneOptions} 查询并返回当前操作所需的数据。
+     * 查询 Timezone 相关业务数据，并返回处理结果。
      *
-     * @return 返回当前操作产生的结果。
+     * @return 返回符合条件的数据集合；没有匹配项时返回空集合。
      */
     @Override
     public List<TimezoneOptionVO> getTimezoneOptions() {
@@ -53,11 +53,10 @@ public class TimezoneServiceImpl implements TimezoneService {
     }
 
     /**
-     * {@code getTimezone} 查询并返回当前操作所需的数据。
+     * 查询 Timezone 相关业务数据，并返回处理结果。
      *
-     * @param actor 参数值，用于执行当前操作。
-     *
-     * @return 返回当前操作产生的结果。
+     * @param actor 当前操作主体上下文，用于确定租户、用户和访问权限。
+     * @return 返回 Timezone 相关操作生成的结果数据。
      */
     @Override
     public String getTimezone(ActorContext actor) {
@@ -76,12 +75,11 @@ public class TimezoneServiceImpl implements TimezoneService {
     }
 
     /**
-     * {@code setTimezone} 写入或更新当前模块中的业务数据。
+     * 更新或设置 Timezone 相关业务数据，并返回处理结果。
      *
-     * @param actor 参数值，用于执行当前操作。
-     * @param request 参数值，用于执行当前操作。
-     *
-     * @return 返回当前操作产生的结果。
+     * @param actor 当前操作主体上下文，用于确定租户、用户和访问权限。
+     * @param request 封装本次操作所需业务字段的请求对象。
+     * @return 返回本次条件判断是否成立。
      */
     @Override
     public boolean setTimezone(ActorContext actor, SetTimezoneRequest request) {

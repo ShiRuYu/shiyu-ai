@@ -3,9 +3,7 @@ package com.shiyu.ai.iam.contract.module;
 import com.shiyu.ai.kernel.context.TenantId;
 
 /**
- * IAM 提供的租户级业务模块访问契约。
- *
- * <p>调用方只能查询当前租户是否启用模块，不能通过此契约切换进程级模块开关或绕过领域权限。
+ * 定义 租户 Module Access 领域与外部能力交互的端口契约。
  */
 public interface TenantModuleAccessPort {
 

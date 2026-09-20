@@ -12,19 +12,18 @@ import org.springframework.context.annotation.Configuration;
 import org.springframework.scheduling.annotation.EnableScheduling;
 
 /**
- * {@code MagmaMemoryConfiguration} 提供平台模块的配置项，并集中声明其默认值和运行约束。
+ * 定义 Magma 记忆 基础设施或应用能力的配置项及装配规则。
  */
 @Configuration
 @EnableScheduling
 public class MagmaMemoryConfiguration {
     /**
-     * {@code magmaMemoryService} 执行当前类型定义的业务操作。
+     * 执行 Magma 记忆 相关业务数据，并返回处理结果。
      *
-     * @param repository 参数值，用于执行当前操作。
-     * @param index 参数值，用于执行当前操作。
-     * @param accessPolicies 参数值，用于执行当前操作。
-     *
-     * @return 返回当前操作产生的结果。
+     * @param repository 用于完成本次业务处理的 repository 参数。
+     * @param index 用于完成本次业务处理的 index 参数。
+     * @param accessPolicies 用于完成本次业务处理的 accessPolicies 参数。
+     * @return 返回 Magma 记忆 相关操作生成的结果数据。
      */
     @Bean
     public MagmaMemoryService magmaMemoryService(

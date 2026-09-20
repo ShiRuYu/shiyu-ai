@@ -52,6 +52,9 @@ import java.util.Map;
 import java.util.Optional;
 import java.util.concurrent.atomic.AtomicInteger;
 
+/**
+ * 验证 对话 Product Controller 相关功能、边界条件、异常路径和协作行为。
+ */
 class ChatProductControllerTest {
     private final ChatProductRepository repository = mock(ChatProductRepository.class);
     private final ConversationRepository conversations = mock(ConversationRepository.class);

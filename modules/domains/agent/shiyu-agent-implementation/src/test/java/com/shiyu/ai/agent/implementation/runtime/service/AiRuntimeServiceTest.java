@@ -16,6 +16,9 @@ import java.util.Map;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.Executors;
 
+/**
+ * 验证 AI Runtime Service 相关功能、边界条件、异常路径和协作行为。
+ */
 class AiRuntimeServiceTest {
     @Test
     void runtimeCommandsRequireTypedTenantIdentity() {

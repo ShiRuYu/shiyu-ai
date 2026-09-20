@@ -24,7 +24,7 @@ import java.util.List;
 import java.util.Set;
 
 /**
- * {@code KnowledgePathController} 是知识模块的 Web 接口适配器，负责接收请求并转换为应用服务调用。
+ * 处理 知识 Path 相关的 Web 请求，并将请求转换为应用服务调用。
  */
 @RestController
 @RequestMapping("/api/knowledge")
@@ -39,12 +39,10 @@ public class KnowledgePathController {
     private final KnowledgePathService service;
 
     /**
-     * {@code path} 执行当前类型定义的业务操作。
+     * 执行 知识 Path 相关业务数据，并返回处理结果。
      *
-     * @param pointId 参数值，用于执行当前操作。
-     * @param version 参数值，用于执行当前操作。
-     *
-     * @return 返回当前操作产生的结果。
+     * @param path 用于完成本次业务处理的 path 参数。
+     * @return 返回符合条件的数据集合；没有匹配项时返回空集合。
      */
     @GetMapping("/points/{pointId}/path")
     public Result<List<Long>> path(
@@ -58,13 +56,10 @@ public class KnowledgePathController {
     }
 
     /**
-     * {@code prerequisites} 执行当前类型定义的业务操作。
+     * 执行 知识 Path 相关业务数据，并返回处理结果。
      *
-     * @param pointId 参数值，用于执行当前操作。
-     * @param masteredIds 参数值，用于执行当前操作。
-     * @param version 参数值，用于执行当前操作。
-     *
-     * @return 返回当前操作产生的结果。
+     * @param prerequisites 用于完成本次业务处理的 prerequisites 参数。
+     * @return 返回符合条件的数据集合；没有匹配项时返回空集合。
      */
     @GetMapping("/points/{pointId}/prerequisites")
     public Result<List<Long>> prerequisites(
@@ -80,13 +75,10 @@ public class KnowledgePathController {
     }
 
     /**
-     * {@code findPath} 查询并返回当前操作所需的数据。
+     * 查询 知识 Path 相关业务数据，并返回处理结果。
      *
-     * @param fromId 参数值，用于执行当前操作。
-     * @param toId 参数值，用于执行当前操作。
-     * @param version 参数值，用于执行当前操作。
-     *
-     * @return 返回当前操作产生的结果。
+     * @param path 用于完成本次业务处理的 path 参数。
+     * @return 返回符合条件的数据集合；没有匹配项时返回空集合。
      */
     @GetMapping("/points/path")
     public Result<List<Long>> findPath(

@@ -11,7 +11,9 @@ import java.io.Serializable;
 import java.util.Date;
 import java.util.List;
 
-/** 角色视图对象 */
+/**
+ * 封装 角色 操作向调用方返回的传输数据。
+ */
 @Data
 @AutoMapper(target = RoleBO.class)
 @SuppressWarnings("serial")

@@ -8,7 +8,9 @@ import org.springframework.context.annotation.Bean;
 
 import java.util.List;
 
-/** 注册租户级业务模块路由授权拦截器。 */
+/**
+ * 定义 Business Module Access Web 基础设施或应用能力的配置项及装配规则。
+ */
 @AutoConfiguration
 public class BusinessModuleAccessWebConfig {
 

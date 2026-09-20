@@ -18,7 +18,7 @@ import java.util.concurrent.ConcurrentHashMap;
 import java.util.function.Function;
 
 /**
- * {@code ModelRouter} 承载模型模块的领域状态或协作行为，负责维护本类型的职责边界。
+ * 根据请求上下文解析或路由 模型 相关的处理能力。
  */
 @SuppressWarnings("this-escape")
 @Service
@@ -88,9 +88,9 @@ public class ModelRouter {
     }
 
     /**
-     * {@code register} 写入或更新当前模块中的业务数据。
+     * 创建或保存 模型 相关业务操作，并维护必要的状态和协作关系。
      *
-     * @param value 参数值，用于执行当前操作。
+     * @param value 用于完成本次业务处理的 value 参数。
      */
     public void register(ModelProviderCapabilities value) {
         capabilities.put(key(value.provider(), value.model()), value);
@@ -101,18 +101,18 @@ public class ModelRouter {
     }
 
     /**
-     * {@code models} 执行当前类型定义的业务操作。
+     * 执行 模型 相关业务数据，并返回处理结果。
      *
-     * @return 返回当前操作产生的结果。
+     * @return 返回符合条件的数据集合；没有匹配项时返回空集合。
      */
     public List<ModelProviderCapabilities> models() {
         return capabilities.values().stream().toList();
     }
 
     /**
-     * {@code savePolicy} 写入或更新当前模块中的业务数据。
+     * 创建或保存 模型 相关业务操作，并维护必要的状态和协作关系。
      *
-     * @param policy 参数值，用于执行当前操作。
+     * @param policy 用于完成本次业务处理的 policy 参数。
      */
     public void savePolicy(ModelRoutePolicy policy) {
         if (policy == null) throw new IllegalArgumentException("route is required");
@@ -125,11 +125,10 @@ public class ModelRouter {
     }
 
     /**
-     * {@code policies} 执行当前类型定义的业务操作。
+     * 执行 模型 相关业务数据，并返回处理结果。
      *
-     * @param tenantId 参数值，用于执行当前操作。
-     *
-     * @return 返回当前操作产生的结果。
+     * @param tenantId 当前操作涉及的租户标识。
+     * @return 返回符合条件的数据集合；没有匹配项时返回空集合。
      */
     public List<ModelRoutePolicy> policies(TenantId tenantId) {
         return policies.values().stream()
@@ -138,12 +137,11 @@ public class ModelRouter {
     }
 
     /**
-     * {@code requirePolicy} 执行当前类型定义的业务操作。
+     * 获取并校验 模型 相关业务数据，并返回处理结果。
      *
-     * @param id 参数值，用于执行当前操作。
-     * @param tenantId 参数值，用于执行当前操作。
-     *
-     * @return 返回当前操作产生的结果。
+     * @param id 用于定位目标业务对象的标识。
+     * @param tenantId 当前操作涉及的租户标识。
+     * @return 返回 模型 相关操作生成的结果数据。
      */
     public ModelRoutePolicy requirePolicy(String id, TenantId tenantId) {
         return Optional.ofNullable(policies.get(id))
@@ -152,13 +150,12 @@ public class ModelRouter {
     }
 
     /**
-     * {@code choose} 执行当前类型定义的业务操作。
+     * 解析或路由 模型 相关业务数据，并返回处理结果。
      *
-     * @param policyId 参数值，用于执行当前操作。
-     * @param tenantId 参数值，用于执行当前操作。
-     * @param requiredFeatures 参数值，用于执行当前操作。
-     *
-     * @return 返回当前操作产生的结果。
+     * @param policyId 用于定位policy的标识。
+     * @param tenantId 当前操作涉及的租户标识。
+     * @param requiredFeatures 用于完成本次业务处理的 requiredFeatures 参数。
+     * @return 返回 模型 相关操作生成的结果数据。
      */
     public ModelProviderCapabilities choose(
             String policyId, TenantId tenantId, java.util.Set<String> requiredFeatures) {
@@ -171,13 +168,12 @@ public class ModelRouter {
     }
 
     /**
-     * 判断模型router是否满足条件。
+     * 校验或判断 模型 相关业务数据，并返回处理结果。
      *
-     * @param policyId policyId 参数。
-     * @param tenantId 租户标识。
-     * @param requiredFeatures requiredFeatures 参数。
-     *
-     * @return 结果列表。
+     * @param policyId 用于定位policy的标识。
+     * @param tenantId 当前操作涉及的租户标识。
+     * @param requiredFeatures 用于完成本次业务处理的 requiredFeatures 参数。
+     * @return 返回符合条件的数据集合；没有匹配项时返回空集合。
      */
     public List<ModelProviderCapabilities> candidates(
             String policyId, TenantId tenantId, java.util.Set<String> requiredFeatures) {
@@ -192,14 +188,13 @@ public class ModelRouter {
     }
 
     /**
-     * 执行使用备用。
+     * 调用 模型 相关业务数据，并返回处理结果。
      *
-     * @param policyId policyId 参数。
-     * @param tenantId 租户标识。
-     * @param requiredFeatures requiredFeatures 参数。
-     * @param call call 参数。
-     *
-     * @return 结果列表。
+     * @param policyId 用于定位policy的标识。
+     * @param tenantId 当前操作涉及的租户标识。
+     * @param requiredFeatures 用于完成本次业务处理的 requiredFeatures 参数。
+     * @param call 用于完成本次业务处理的 call 参数。
+     * @return 返回 模型 相关操作生成的结果数据。
      */
     public <T> T executeWithFallback(
             String policyId,
@@ -225,12 +220,11 @@ public class ModelRouter {
     }
 
     /**
-     * {@code health} 执行当前类型定义的业务操作。
+     * 执行 模型 相关业务数据，并返回处理结果。
      *
-     * @param provider 参数值，用于执行当前操作。
-     * @param model 参数值，用于执行当前操作。
-     *
-     * @return 返回当前操作产生的结果。
+     * @param provider 用于完成本次业务处理的 provider 参数。
+     * @param model 用于完成本次业务处理的 model 参数。
+     * @return 返回 模型 相关操作生成的结果数据。
      */
     public ProviderHealth health(String provider, String model) {
         return health.getOrDefault(
@@ -239,11 +233,11 @@ public class ModelRouter {
     }
 
     /**
-     * {@code markFailure} 执行当前类型定义的业务操作。
+     * 执行 模型 相关业务操作，并维护必要的状态和协作关系。
      *
-     * @param provider 参数值，用于执行当前操作。
-     * @param model 参数值，用于执行当前操作。
-     * @param message 参数值，用于执行当前操作。
+     * @param provider 用于完成本次业务处理的 provider 参数。
+     * @param model 用于完成本次业务处理的 model 参数。
+     * @param message 本次流程携带的事件或业务数据。
      */
     public void markFailure(String provider, String model, String message) {
         String modelKey = key(provider, model);

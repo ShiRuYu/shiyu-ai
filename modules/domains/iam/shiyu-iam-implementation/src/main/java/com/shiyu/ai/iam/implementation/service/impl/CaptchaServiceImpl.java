@@ -18,7 +18,9 @@ import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
 
-/** 验证码服务实现类 */
+/**
+ * 提供 Captcha 的查询、创建、更新及调用服务，协调业务变更和领域协作。
+ */
 @Slf4j
 @Service
 public class CaptchaServiceImpl implements CaptchaService {
@@ -60,7 +62,9 @@ public class CaptchaServiceImpl implements CaptchaService {
     /** 随机数生成器 */
     private final Random random = new Random();
 
-    /** 内部类：验证码数据 */
+    /**
+     * 实现 Captcha Data 相关的业务处理、协作逻辑或基础设施能力。
+     */
     private static class CaptchaData {
         /**
          * 编码，表示当前对象中的对应属性。
@@ -72,10 +76,10 @@ public class CaptchaServiceImpl implements CaptchaService {
         private final long expireTime;
 
         /**
-         * {@code CaptchaData} 创建并初始化当前类型实例。
+         * 执行 Captcha Data 相关业务操作，并维护必要的状态和协作关系。
          *
-         * @param code 参数值，用于执行当前操作。
-         * @param expireTime 参数值，用于执行当前操作。
+         * @param code 用于定位或筛选目标业务对象的业务值。
+         * @param expireTime 用于完成本次业务处理的 expireTime 参数。
          */
         public CaptchaData(String code, long expireTime) {
             this.code = code;
@@ -83,27 +87,27 @@ public class CaptchaServiceImpl implements CaptchaService {
         }
 
         /**
-         * {@code getCode} 查询并返回当前操作所需的数据。
+         * 查询 Captcha Data 相关业务数据，并返回处理结果。
          *
-         * @return 返回当前操作产生的结果。
+         * @return 返回 Captcha Data 相关操作生成的结果数据。
          */
         public String getCode() {
             return code;
         }
 
         /**
-         * {@code getExpireTime} 查询并返回当前操作所需的数据。
+         * 查询 Captcha Data 相关业务数据，并返回处理结果。
          *
-         * @return 返回当前操作产生的结果。
+         * @return 返回 Captcha Data 相关操作生成的结果数据。
          */
         public long getExpireTime() {
             return expireTime;
         }
 
         /**
-         * {@code isExpired} 校验当前操作的输入或状态是否满足约束。
+         * 校验或判断 Captcha Data 相关业务数据，并返回处理结果。
          *
-         * @return 返回当前操作产生的结果。
+         * @return 返回本次条件判断是否成立。
          */
         public boolean isExpired() {
             return System.currentTimeMillis() > expireTime;
@@ -111,7 +115,7 @@ public class CaptchaServiceImpl implements CaptchaService {
     }
 
     /**
-     * {@code init} 执行当前类型定义的业务操作。
+     * 执行 Captcha 相关业务操作，并维护必要的状态和协作关系。
      */
     @PostConstruct
     public void init() {
@@ -135,7 +139,7 @@ public class CaptchaServiceImpl implements CaptchaService {
     }
 
     /**
-     * {@code destroy} 执行当前类型定义的业务操作。
+     * 执行 Captcha 相关业务操作，并维护必要的状态和协作关系。
      */
     @PreDestroy
     public void destroy() {
@@ -153,9 +157,9 @@ public class CaptchaServiceImpl implements CaptchaService {
     }
 
     /**
-     * {@code generateCaptcha} 执行当前类型定义的业务操作。
+     * 执行 Captcha 相关业务数据，并返回处理结果。
      *
-     * @return 返回当前操作产生的结果。
+     * @return 返回 Captcha 相关操作生成的结果数据。
      */
     @Override
     public CaptchaVO generateCaptcha() {
@@ -179,12 +183,11 @@ public class CaptchaServiceImpl implements CaptchaService {
     }
 
     /**
-     * {@code validateCaptcha} 校验当前操作的输入或状态是否满足约束。
+     * 校验或判断 Captcha 相关业务数据，并返回处理结果。
      *
-     * @param key 参数值，用于执行当前操作。
-     * @param code 参数值，用于执行当前操作。
-     *
-     * @return 返回当前操作产生的结果。
+     * @param key 用于定位或筛选目标业务对象的业务值。
+     * @param code 用于定位或筛选目标业务对象的业务值。
+     * @return 返回本次条件判断是否成立。
      */
     @Override
     public boolean validateCaptcha(String key, String code) {
@@ -228,9 +231,9 @@ public class CaptchaServiceImpl implements CaptchaService {
     }
 
     /**
-     * {@code destroyCaptcha} 执行当前类型定义的业务操作。
+     * 执行 Captcha 相关业务操作，并维护必要的状态和协作关系。
      *
-     * @param key 参数值，用于执行当前操作。
+     * @param key 用于定位或筛选目标业务对象的业务值。
      */
     @Override
     public void destroyCaptcha(String key) {

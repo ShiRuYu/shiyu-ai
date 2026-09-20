@@ -68,6 +68,9 @@ import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicReference;
 
+/**
+ * 验证 智能体 Runtime Impl Control 相关功能、边界条件、异常路径和协作行为。
+ */
 class AgentRuntimeImplControlTest {
 
     private static final ActorContext ACTOR =
@@ -786,6 +789,9 @@ class AgentRuntimeImplControlTest {
                 cacheManager, loader, repository, checkpointRepository, publisher, runtime);
     }
 
+    /**
+     * 验证 Execution Recorder 相关功能、边界条件、异常路径和协作行为。
+     */
     private static final class ExecutionRecorder {
 
         private final List<AgentExecutionBO> stored = new CopyOnWriteArrayList<>();
@@ -818,6 +824,9 @@ class AgentRuntimeImplControlTest {
         }
     }
 
+    /**
+     * 验证 Blocking 相关功能、边界条件、异常路径和协作行为。
+     */
     private static final class BlockingNode extends BaseNode {
 
         private final CountDownLatch entered = new CountDownLatch(1);
@@ -849,6 +858,9 @@ class AgentRuntimeImplControlTest {
         }
     }
 
+    /**
+     * 验证 Releasing 相关功能、边界条件、异常路径和协作行为。
+     */
     private static final class ReleasingNode extends BaseNode {
         private ReleasingNode() {
             super(
@@ -874,6 +886,9 @@ class AgentRuntimeImplControlTest {
         }
     }
 
+    /**
+     * 验证 Failing 相关功能、边界条件、异常路径和协作行为。
+     */
     private static final class FailingNode extends BaseNode {
         private FailingNode() {
             super(

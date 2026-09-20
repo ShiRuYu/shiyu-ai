@@ -26,6 +26,9 @@ import org.junit.jupiter.api.Test;
 
 import java.io.ByteArrayOutputStream;
 
+/**
+ * 验证 文档 Parser 相关功能、边界条件、异常路径和协作行为。
+ */
 class DocumentParserTest {
 
     @Test

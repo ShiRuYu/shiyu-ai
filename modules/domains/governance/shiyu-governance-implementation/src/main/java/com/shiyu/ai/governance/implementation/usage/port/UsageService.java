@@ -4,9 +4,7 @@ import java.util.List;
 import java.util.Map;
 
 /**
- * 当前租户用量查询端口。
- *
- * <p>该端口只描述治理 Web 层需要的当前租户统计用例，不承载服务实现或平台统计逻辑。
+ * 提供 用量 的查询、创建、更新及调用服务，协调业务变更和领域协作。
  */
 public interface UsageService {
     /**

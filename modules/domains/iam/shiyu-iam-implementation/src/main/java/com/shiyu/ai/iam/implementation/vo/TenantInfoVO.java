@@ -5,7 +5,9 @@ import lombok.Data;
 import java.io.Serial;
 import java.io.Serializable;
 
-/** 租户信息视图对象（替代 Map<String, Object>） */
+/**
+ * 封装 租户 Info 操作向调用方返回的传输数据。
+ */
 @Data
 public class TenantInfoVO implements Serializable {
 

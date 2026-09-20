@@ -4,17 +4,16 @@ import java.net.URI;
 import java.nio.file.Path;
 
 /**
- * 定义插件工作进程的资源、权限和隔离策略。
+ * 校验或约束 插件 Worker 相关的请求、状态和访问规则。
  */
 public final class PluginWorkerPolicy {
     private PluginWorkerPolicy() {}
 
     /**
-     * {@code validateExecutable} 校验当前操作的输入或状态是否满足约束。
+     * 校验或判断 插件 Worker 相关业务数据，并返回处理结果。
      *
-     * @param spec 参数值，用于执行当前操作。
-     *
-     * @return 返回当前操作产生的结果。
+     * @param spec 用于完成本次业务处理的 spec 参数。
+     * @return 返回 插件 Worker 相关操作生成的结果数据。
      */
     public static Path validateExecutable(PluginWorkerSpec spec) {
         if (spec.allowedDirectories().isEmpty())
@@ -29,10 +28,10 @@ public final class PluginWorkerPolicy {
     }
 
     /**
-     * {@code validateNetworkTarget} 校验当前操作的输入或状态是否满足约束。
+     * 校验或判断 插件 Worker 相关业务操作，并维护必要的状态和协作关系。
      *
-     * @param spec 参数值，用于执行当前操作。
-     * @param target 参数值，用于执行当前操作。
+     * @param spec 用于完成本次业务处理的 spec 参数。
+     * @param target 用于完成本次业务处理的 target 参数。
      */
     public static void validateNetworkTarget(PluginWorkerSpec spec, URI target) {
         if (target == null

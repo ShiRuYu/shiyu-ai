@@ -16,6 +16,9 @@ import java.nio.charset.StandardCharsets;
 import java.util.List;
 import java.util.concurrent.atomic.AtomicReference;
 
+/**
+ * 验证 Deep Seek Http Provider 相关功能、边界条件、异常路径和协作行为。
+ */
 class DeepSeekHttpProviderTest {
     private HttpServer server;
 

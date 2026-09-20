@@ -6,7 +6,7 @@ import lombok.EqualsAndHashCode;
 import java.io.Serial;
 
 /**
- * 承载租户基础信息及其持久化字段。
+ * 实现 租户 模型 所属领域的业务规则和状态变化。
  */
 @Data
 @EqualsAndHashCode(callSuper = true)

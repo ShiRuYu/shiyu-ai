@@ -3,11 +3,7 @@ package com.shiyu.ai.agent.contract.node;
 import java.util.Set;
 
 /**
- * 节点字段 Schema 接口
- *
- * <p>每个节点类型对应一个枚举实现，定义该节点在 AgentState/NodeInput/NodeOutput 中读写の所有字段键。集中管理避免了魔法字符串散落在各节点实现中。
- *
- * <p>当新增节点或修改节点输入/输出时，必须同步更新此处对应的字段定义。
+ * 定义 Node Fields 相关的协作契约和调用边界。
  *
  * @see NodeType
  * @see NodeInput
@@ -24,8 +20,7 @@ public interface NodeFields {
     // ========== 全局字段键枚举 ==========
 
     /**
-     * 全局统一字段键，集中管理所有节点在 Map 中使用的字段名。 每个枚举值包含一个 {@link #key()} 字符串，即实际在 Map 中使用的键。
-     * 所有节点统一引用此枚举，避免拼写错误和字段名不一致。
+     * 定义 Field Key 可用的枚举值及其业务语义。
      */
     enum FieldKey {
         // ==================== 输入字段 ====================
@@ -260,14 +255,16 @@ public interface NodeFields {
 
     // ========== 各节点类型的字段定义 ==========
 
-    /** 默认节点 - 无特殊字段要求 */
+    /**
+     * 定义 Default Fields 可用的枚举值及其业务语义。
+     */
     enum DefaultFields implements NodeFields {
         INSTANCE;
 
         /**
-         * {@code inputFields} 执行当前类型定义的业务操作。
+         * 执行 Default Fields 相关业务数据，并返回处理结果。
          *
-         * @return 返回当前操作产生的结果。
+         * @return 返回符合条件的数据集合；没有匹配项时返回空集合。
          */
         @Override
         public Set<FieldKey> inputFields() {
@@ -275,9 +272,9 @@ public interface NodeFields {
         }
 
         /**
-         * {@code outputFields} 执行当前类型定义的业务操作。
+         * 执行 Default Fields 相关业务数据，并返回处理结果。
          *
-         * @return 返回当前操作产生的结果。
+         * @return 返回符合条件的数据集合；没有匹配项时返回空集合。
          */
         @Override
         public Set<FieldKey> outputFields() {
@@ -286,17 +283,15 @@ public interface NodeFields {
     }
 
     /**
-     * 意图识别节点
-     *
-     * <p>输入: query 输出: intentCode, intentName, confidence, slots, nextNode
+     * 定义 Intent Fields 可用的枚举值及其业务语义。
      */
     enum IntentFields implements NodeFields {
         INSTANCE;
 
         /**
-         * {@code inputFields} 执行当前类型定义的业务操作。
+         * 执行 Intent Fields 相关业务数据，并返回处理结果。
          *
-         * @return 返回当前操作产生的结果。
+         * @return 返回符合条件的数据集合；没有匹配项时返回空集合。
          */
         @Override
         public Set<FieldKey> inputFields() {
@@ -304,9 +299,9 @@ public interface NodeFields {
         }
 
         /**
-         * {@code outputFields} 执行当前类型定义的业务操作。
+         * 执行 Intent Fields 相关业务数据，并返回处理结果。
          *
-         * @return 返回当前操作产生的结果。
+         * @return 返回符合条件的数据集合；没有匹配项时返回空集合。
          */
         @Override
         public Set<FieldKey> outputFields() {
@@ -323,18 +318,15 @@ public interface NodeFields {
     }
 
     /**
-     * LLM 调用节点
-     *
-     * <p>输入: query, platform, model, chatType 输出: content, platform, model, messages,
-     * streamingChatGenerator, stream, chatType
+     * 定义 Llm Call Fields 可用的枚举值及其业务语义。
      */
     enum LlmCallFields implements NodeFields {
         INSTANCE;
 
         /**
-         * {@code inputFields} 执行当前类型定义的业务操作。
+         * 执行 Llm Call Fields 相关业务数据，并返回处理结果。
          *
-         * @return 返回当前操作产生的结果。
+         * @return 返回符合条件的数据集合；没有匹配项时返回空集合。
          */
         @Override
         public Set<FieldKey> inputFields() {
@@ -342,9 +334,9 @@ public interface NodeFields {
         }
 
         /**
-         * {@code outputFields} 执行当前类型定义的业务操作。
+         * 执行 Llm Call Fields 相关业务数据，并返回处理结果。
          *
-         * @return 返回当前操作产生的结果。
+         * @return 返回符合条件的数据集合；没有匹配项时返回空集合。
          */
         @Override
         public Set<FieldKey> outputFields() {
@@ -361,17 +353,15 @@ public interface NodeFields {
     }
 
     /**
-     * 工具调用节点
-     *
-     * <p>输入: toolName, toolResult（前序工具的结果，用于工具链） 输出: toolName, toolResult, text, cacheHit
+     * 定义 工具 Call Fields 可用的枚举值及其业务语义。
      */
     enum ToolCallFields implements NodeFields {
         INSTANCE;
 
         /**
-         * {@code inputFields} 执行当前类型定义的业务操作。
+         * 执行 工具 Call Fields 相关业务数据，并返回处理结果。
          *
-         * @return 返回当前操作产生的结果。
+         * @return 返回符合条件的数据集合；没有匹配项时返回空集合。
          */
         @Override
         public Set<FieldKey> inputFields() {
@@ -379,9 +369,9 @@ public interface NodeFields {
         }
 
         /**
-         * {@code outputFields} 执行当前类型定义的业务操作。
+         * 执行 工具 Call Fields 相关业务数据，并返回处理结果。
          *
-         * @return 返回当前操作产生的结果。
+         * @return 返回符合条件的数据集合；没有匹配项时返回空集合。
          */
         @Override
         public Set<FieldKey> outputFields() {
@@ -391,17 +381,15 @@ public interface NodeFields {
     }
 
     /**
-     * RAG 检索节点
-     *
-     * <p>输入: query, spaceIds 输出: retrievalHits, citations, context
+     * 定义 Rag Retrieval Fields 可用的枚举值及其业务语义。
      */
     enum RagRetrievalFields implements NodeFields {
         INSTANCE;
 
         /**
-         * {@code inputFields} 执行当前类型定义的业务操作。
+         * 执行 Rag Retrieval Fields 相关业务数据，并返回处理结果。
          *
-         * @return 返回当前操作产生的结果。
+         * @return 返回符合条件的数据集合；没有匹配项时返回空集合。
          */
         @Override
         public Set<FieldKey> inputFields() {
@@ -409,9 +397,9 @@ public interface NodeFields {
         }
 
         /**
-         * {@code outputFields} 执行当前类型定义的业务操作。
+         * 执行 Rag Retrieval Fields 相关业务数据，并返回处理结果。
          *
-         * @return 返回当前操作产生的结果。
+         * @return 返回符合条件的数据集合；没有匹配项时返回空集合。
          */
         @Override
         public Set<FieldKey> outputFields() {
@@ -425,18 +413,15 @@ public interface NodeFields {
     }
 
     /**
-     * RAG 增强节点
-     *
-     * <p>输入: documents, context（来自上一个 RAG 检索节点） 输出: context, enhancedDocuments, enhancedCount,
-     * enhancementStrategy
+     * 定义 Rag Enhancement Fields 可用的枚举值及其业务语义。
      */
     enum RagEnhancementFields implements NodeFields {
         INSTANCE;
 
         /**
-         * {@code inputFields} 执行当前类型定义的业务操作。
+         * 执行 Rag Enhancement Fields 相关业务数据，并返回处理结果。
          *
-         * @return 返回当前操作产生的结果。
+         * @return 返回符合条件的数据集合；没有匹配项时返回空集合。
          */
         @Override
         public Set<FieldKey> inputFields() {
@@ -449,9 +434,9 @@ public interface NodeFields {
         }
 
         /**
-         * {@code outputFields} 执行当前类型定义的业务操作。
+         * 执行 Rag Enhancement Fields 相关业务数据，并返回处理结果。
          *
-         * @return 返回当前操作产生的结果。
+         * @return 返回符合条件的数据集合；没有匹配项时返回空集合。
          */
         @Override
         public Set<FieldKey> outputFields() {
@@ -464,18 +449,15 @@ public interface NodeFields {
     }
 
     /**
-     * 短期记忆节点
-     *
-     * <p>存储和管理最近的对话历史 输入: sessionId, userId, agentId, query, response 输出: conversationHistory,
-     * messages
+     * 定义 Short Term 记忆 Fields 可用的枚举值及其业务语义。
      */
     enum ShortTermMemoryFields implements NodeFields {
         INSTANCE;
 
         /**
-         * {@code inputFields} 执行当前类型定义的业务操作。
+         * 执行 Short Term 记忆 Fields 相关业务数据，并返回处理结果。
          *
-         * @return 返回当前操作产生的结果。
+         * @return 返回符合条件的数据集合；没有匹配项时返回空集合。
          */
         @Override
         public Set<FieldKey> inputFields() {
@@ -483,9 +465,9 @@ public interface NodeFields {
         }
 
         /**
-         * {@code outputFields} 执行当前类型定义的业务操作。
+         * 执行 Short Term 记忆 Fields 相关业务数据，并返回处理结果。
          *
-         * @return 返回当前操作产生的结果。
+         * @return 返回符合条件的数据集合；没有匹配项时返回空集合。
          */
         @Override
         public Set<FieldKey> outputFields() {
@@ -494,18 +476,15 @@ public interface NodeFields {
     }
 
     /**
-     * 长期记忆节点
-     *
-     * <p>存储和管理重要信息和知识点 输入: userId, agentId, sessionId, memoryKey, memoryContent, category,
-     * importance 输出: memoryKey, importance
+     * 定义 Long Term 记忆 Fields 可用的枚举值及其业务语义。
      */
     enum LongTermMemoryFields implements NodeFields {
         INSTANCE;
 
         /**
-         * {@code inputFields} 执行当前类型定义的业务操作。
+         * 执行 Long Term 记忆 Fields 相关业务数据，并返回处理结果。
          *
-         * @return 返回当前操作产生的结果。
+         * @return 返回符合条件的数据集合；没有匹配项时返回空集合。
          */
         @Override
         public Set<FieldKey> inputFields() {
@@ -520,9 +499,9 @@ public interface NodeFields {
         }
 
         /**
-         * {@code outputFields} 执行当前类型定义的业务操作。
+         * 执行 Long Term 记忆 Fields 相关业务数据，并返回处理结果。
          *
-         * @return 返回当前操作产生的结果。
+         * @return 返回符合条件的数据集合；没有匹配项时返回空集合。
          */
         @Override
         public Set<FieldKey> outputFields() {
@@ -531,18 +510,15 @@ public interface NodeFields {
     }
 
     /**
-     * 记忆检索节点
-     *
-     * <p>输入: query, retrievalScope, topK, similarityThreshold 输出: memories, memoryCount,
-     * memoryContext
+     * 定义 记忆 Retrieval Fields 可用的枚举值及其业务语义。
      */
     enum MemoryRetrievalFields implements NodeFields {
         INSTANCE;
 
         /**
-         * {@code inputFields} 执行当前类型定义的业务操作。
+         * 执行 记忆 Retrieval Fields 相关业务数据，并返回处理结果。
          *
-         * @return 返回当前操作产生的结果。
+         * @return 返回符合条件的数据集合；没有匹配项时返回空集合。
          */
         @Override
         public Set<FieldKey> inputFields() {
@@ -557,9 +533,9 @@ public interface NodeFields {
         }
 
         /**
-         * {@code outputFields} 执行当前类型定义的业务操作。
+         * 执行 记忆 Retrieval Fields 相关业务数据，并返回处理结果。
          *
-         * @return 返回当前操作产生的结果。
+         * @return 返回符合条件的数据集合；没有匹配项时返回空集合。
          */
         @Override
         public Set<FieldKey> outputFields() {
@@ -568,18 +544,15 @@ public interface NodeFields {
     }
 
     /**
-     * 条件判断节点
-     *
-     * <p>输入: 根据 conditionExpression 动态读取任意字段 + intentCode（INTENT 模式） 输出: conditionResult, nextNode,
-     * branch
+     * 定义 Condition Fields 可用的枚举值及其业务语义。
      */
     enum ConditionFields implements NodeFields {
         INSTANCE;
 
         /**
-         * {@code inputFields} 执行当前类型定义的业务操作。
+         * 执行 Condition Fields 相关业务数据，并返回处理结果。
          *
-         * @return 返回当前操作产生的结果。
+         * @return 返回符合条件的数据集合；没有匹配项时返回空集合。
          */
         @Override
         public Set<FieldKey> inputFields() {
@@ -593,9 +566,9 @@ public interface NodeFields {
         }
 
         /**
-         * {@code outputFields} 执行当前类型定义的业务操作。
+         * 执行 Condition Fields 相关业务数据，并返回处理结果。
          *
-         * @return 返回当前操作产生的结果。
+         * @return 返回符合条件的数据集合；没有匹配项时返回空集合。
          */
         @Override
         public Set<FieldKey> outputFields() {
@@ -604,17 +577,15 @@ public interface NodeFields {
     }
 
     /**
-     * 数据转换节点
-     *
-     * <p>输入: input / data / content / text / query 输出: transformedData, messages
+     * 定义 Transform Fields 可用的枚举值及其业务语义。
      */
     enum TransformFields implements NodeFields {
         INSTANCE;
 
         /**
-         * {@code inputFields} 执行当前类型定义的业务操作。
+         * 执行 Transform Fields 相关业务数据，并返回处理结果。
          *
-         * @return 返回当前操作产生的结果。
+         * @return 返回符合条件的数据集合；没有匹配项时返回空集合。
          */
         @Override
         public Set<FieldKey> inputFields() {
@@ -628,9 +599,9 @@ public interface NodeFields {
         }
 
         /**
-         * {@code outputFields} 执行当前类型定义的业务操作。
+         * 执行 Transform Fields 相关业务数据，并返回处理结果。
          *
-         * @return 返回当前操作产生的结果。
+         * @return 返回符合条件的数据集合；没有匹配项时返回空集合。
          */
         @Override
         public Set<FieldKey> outputFields() {
@@ -639,18 +610,15 @@ public interface NodeFields {
     }
 
     /**
-     * 输出格式化节点
-     *
-     * <p>输入: content / response / result / output / answer / messages 输出: formattedContent,
-     * messages
+     * 定义 Output Format Fields 可用的枚举值及其业务语义。
      */
     enum OutputFormatFields implements NodeFields {
         INSTANCE;
 
         /**
-         * {@code inputFields} 执行当前类型定义的业务操作。
+         * 执行 Output Format Fields 相关业务数据，并返回处理结果。
          *
-         * @return 返回当前操作产生的结果。
+         * @return 返回符合条件的数据集合；没有匹配项时返回空集合。
          */
         @Override
         public Set<FieldKey> inputFields() {
@@ -664,9 +632,9 @@ public interface NodeFields {
         }
 
         /**
-         * {@code outputFields} 执行当前类型定义的业务操作。
+         * 执行 Output Format Fields 相关业务数据，并返回处理结果。
          *
-         * @return 返回当前操作产生的结果。
+         * @return 返回符合条件的数据集合；没有匹配项时返回空集合。
          */
         @Override
         public Set<FieldKey> outputFields() {
@@ -675,17 +643,15 @@ public interface NodeFields {
     }
 
     /**
-     * Agent 调用节点
-     *
-     * <p>输入: agentId, query 输出: result, content
+     * 定义 智能体 Call Fields 可用的枚举值及其业务语义。
      */
     enum AgentCallFields implements NodeFields {
         INSTANCE;
 
         /**
-         * {@code inputFields} 执行当前类型定义的业务操作。
+         * 执行 智能体 Call Fields 相关业务数据，并返回处理结果。
          *
-         * @return 返回当前操作产生的结果。
+         * @return 返回符合条件的数据集合；没有匹配项时返回空集合。
          */
         @Override
         public Set<FieldKey> inputFields() {
@@ -693,9 +659,9 @@ public interface NodeFields {
         }
 
         /**
-         * {@code outputFields} 执行当前类型定义的业务操作。
+         * 执行 智能体 Call Fields 相关业务数据，并返回处理结果。
          *
-         * @return 返回当前操作产生的结果。
+         * @return 返回符合条件的数据集合；没有匹配项时返回空集合。
          */
         @Override
         public Set<FieldKey> outputFields() {

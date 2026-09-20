@@ -21,9 +21,7 @@ import org.springframework.web.bind.annotation.*;
 import java.util.List;
 
 /**
- * 智能推荐控制器 — Phase 6
- *
- * <p>注意：所有参数均通过 @RequestParam 或 @RequestBody 传入，不使用 @PathVariable。
+ * 处理 推荐 相关的 Web 请求，并将请求转换为应用服务调用。
  */
 @Slf4j
 @Tag(name = "智能推荐")
@@ -115,11 +113,9 @@ public class RecommendationController {
     }
 
     /**
-     * {@code hybridRecommend} 执行当前类型定义的业务操作。
+     * 执行 推荐 相关业务操作，并维护必要的状态和协作关系。
      *
-     * @param studentId 参数值，用于执行当前操作。
-     *
-     * @return 返回当前操作产生的结果。
+     * @param hybrid 用于定位hybr的标识。
      */
     @GetMapping("/hybrid")
     @Operation(summary = "混合推荐 — 聚合知识点/题目/资源/复习 + AI 综合学习建议")

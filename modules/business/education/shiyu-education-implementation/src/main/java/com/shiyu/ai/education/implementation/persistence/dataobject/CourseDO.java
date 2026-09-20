@@ -14,7 +14,7 @@ import lombok.EqualsAndHashCode;
 import java.time.LocalDateTime;
 
 /**
- * {@code CourseDO} 是教育模块的持久化对象，承载数据库记录与映射字段。
+ * 表示 课程 对应的持久化数据对象及其数据库字段。
  */
 @Data
 @EqualsAndHashCode(callSuper = true)

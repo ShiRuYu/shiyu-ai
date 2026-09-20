@@ -14,7 +14,9 @@ import java.util.Map;
 import java.util.ServiceLoader;
 import java.util.concurrent.ConcurrentHashMap;
 
-/** 插件加载器 从 JAR 文件热加载插件，管理 ClassLoader 生命周期 */
+/**
+ * 实现 插件 Loader 相关的业务处理、协作逻辑或基础设施能力。
+ */
 @Slf4j
 public class PluginLoader {
 

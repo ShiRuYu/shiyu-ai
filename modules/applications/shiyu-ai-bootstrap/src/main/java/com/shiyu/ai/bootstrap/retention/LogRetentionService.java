@@ -14,7 +14,7 @@ import java.util.Comparator;
 import java.util.List;
 
 /**
- * LogRetentionService 服务接口，负责执行应用领域相关业务操作。
+ * 提供 Log Retention 的查询、创建、更新及调用服务，协调业务变更和领域协作。
  */
 @Slf4j
 @Service
@@ -30,9 +30,9 @@ public class LogRetentionService {
     private final Path historyRoot;
 
     /**
-     * {@code LogRetentionService} 创建并初始化当前类型实例。
+     * 执行 Log Retention 相关业务操作，并维护必要的状态和协作关系。
      *
-     * @param properties 参数值，用于执行当前操作。
+     * @param properties 用于完成本次业务处理的 properties 参数。
      */
     public LogRetentionService(LogRetentionProperties properties) {
         this.properties = properties;

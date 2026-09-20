@@ -6,14 +6,7 @@ import java.io.Serializable;
 import java.util.Objects;
 
 /**
- * 承载 Actor 执行上下文。
- * @param tenantId 租户标识，表示该记录组件承载的数据。
- * @param userId 用户标识，表示该记录组件承载的数据。
- * @param activeRoleId activeRoleId 属性，表示该记录组件承载的数据。
- * @param activeRoleCode activeRoleCode 属性，表示该记录组件承载的数据。
- * @param homeTenantId homeTenantId 属性，表示该记录组件承载的数据。
- * @param switchMode switchMode 属性，表示该记录组件承载的数据。
- * @param platformAdmin platformAdmin 属性，表示该记录组件承载的数据。
+ * 封装 Actor 相关的不可变数据及其字段约束。
  */
 public record ActorContext(
         TenantId tenantId,

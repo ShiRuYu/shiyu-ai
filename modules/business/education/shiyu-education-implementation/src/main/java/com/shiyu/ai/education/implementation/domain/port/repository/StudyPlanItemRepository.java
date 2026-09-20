@@ -6,36 +6,33 @@ import com.shiyu.ai.kernel.context.TenantId;
 import java.util.List;
 
 /**
- * StudyPlanItemRepository 仓储接口，负责访问和持久化教育领域聚合数据。
+ * 负责 Study Plan Item 的持久化查询、保存和删除，并维护数据访问边界。
  */
 public interface StudyPlanItemRepository {
     /**
-     * 根据条件查询并返回所需数据。
+     * 查询 Study Plan Item 相关业务数据，并返回处理结果。
      *
-     * @param tenantId 租户标识。
-     * @param planId 方法参数。
-     *
-     * @return 符合条件的结果集合。
+     * @param tenantId 当前操作涉及的租户标识。
+     * @param planId 用于定位plan的标识。
+     * @return 返回符合条件的数据集合；没有匹配项时返回空集合。
      */
     List<StudyPlanItemBO> selectByPlanId(TenantId tenantId, Long planId);
 
     /**
-     * 根据条件查询并返回所需数据。
+     * 查询 Study Plan Item 相关业务数据，并返回处理结果。
      *
-     * @param tenantId 租户标识。
-     * @param planIds 方法参数。
-     *
-     * @return 符合条件的结果集合。
+     * @param tenantId 当前操作涉及的租户标识。
+     * @param planIds 待处理的业务对象标识集合。
+     * @return 返回符合条件的数据集合；没有匹配项时返回空集合。
      */
     List<StudyPlanItemBO> selectTodayItems(TenantId tenantId, List<Long> planIds);
 
     /**
-     * 创建并保存业务对象。
+     * 创建或保存 Study Plan Item 相关业务数据，并返回处理结果。
      *
-     * @param tenantId 租户标识。
-     * @param items 方法参数。
-     *
-     * @return 操作影响的记录数或状态码。
+     * @param tenantId 当前操作涉及的租户标识。
+     * @param items 用于完成本次业务处理的 items 参数。
+     * @return 返回 Study Plan Item 相关操作生成的结果数据。
      */
     int insertBatch(TenantId tenantId, List<StudyPlanItemBO> items);
 }

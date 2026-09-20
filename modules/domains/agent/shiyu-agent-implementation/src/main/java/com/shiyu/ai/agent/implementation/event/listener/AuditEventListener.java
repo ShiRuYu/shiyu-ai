@@ -14,9 +14,7 @@ import java.time.LocalDateTime;
 import java.util.Objects;
 
 /**
- * 审计事件监听器
- *
- * <p>异步消费 {@link AuditEvent}，写入 {@code audit_log} 表。
+ * 处理 Audit 事件 相关事件或请求，并推进后续业务流程。
  */
 @Slf4j
 @Component
@@ -28,18 +26,18 @@ public class AuditEventListener {
     private final AuditLogRepository auditLogRepository;
 
     /**
-     * {@code AuditEventListener} 创建并初始化当前类型实例。
+     * 执行 Audit 事件 相关业务操作，并维护必要的状态和协作关系。
      *
-     * @param auditLogRepository 参数值，用于执行当前操作。
+     * @param auditLogRepository 用于完成本次业务处理的 auditLogRepository 参数。
      */
     public AuditEventListener(AuditLogRepository auditLogRepository) {
         this.auditLogRepository = auditLogRepository;
     }
 
     /**
-     * {@code onAuditEvent} 执行当前类型定义的业务操作。
+     * 处理 Audit 事件 相关业务操作，并维护必要的状态和协作关系。
      *
-     * @param event 参数值，用于执行当前操作。
+     * @param event 本次流程携带的事件或业务数据。
      */
     @Async
     @EventListener

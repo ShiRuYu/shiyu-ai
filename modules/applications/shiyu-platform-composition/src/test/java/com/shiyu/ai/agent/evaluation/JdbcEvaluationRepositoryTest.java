@@ -26,6 +26,9 @@ import java.util.List;
 import java.util.Map;
 import java.util.UUID;
 
+/**
+ * 验证 Jdbc Evaluation Repository 相关功能、边界条件、异常路径和协作行为。
+ */
 class JdbcEvaluationRepositoryTest {
     @BeforeEach
     void bindTenantScope() {

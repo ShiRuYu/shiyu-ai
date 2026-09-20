@@ -12,7 +12,9 @@ import org.slf4j.LoggerFactory;
 import java.util.Map;
 import java.util.concurrent.*;
 
-/** 默认线程池管理器实现 提供线程池的创建、获取和管理功能 */
+/**
+ * 管理 Default Thread Pool 相关的运行时状态、注册信息或临时数据。
+ */
 public class DefaultThreadPoolManager implements ThreadPoolManager {
 
     private static final Logger logger = LoggerFactory.getLogger(DefaultThreadPoolManager.class);
@@ -34,40 +36,40 @@ public class DefaultThreadPoolManager implements ThreadPoolManager {
     private final ThreadingProperties properties;
 
     /**
-     * {@code DefaultThreadPoolManager} 创建并初始化当前类型实例。
+     * 执行 Default Thread Pool 相关业务操作，并维护必要的状态和协作关系。
      *
-     * @param taskDecorator 参数值，用于执行当前操作。
+     * @param taskDecorator 用于完成本次业务处理的 taskDecorator 参数。
      */
     public DefaultThreadPoolManager(TaskDecorator taskDecorator) {
         this(new ThreadingProperties(), taskDecorator);
     }
 
     /**
-     * {@code DefaultThreadPoolManager} 创建并初始化当前类型实例。
+     * 执行 Default Thread Pool 相关业务操作，并维护必要的状态和协作关系。
      *
-     * @param properties 参数值，用于执行当前操作。
-     * @param taskDecorator 参数值，用于执行当前操作。
+     * @param properties 用于完成本次业务处理的 properties 参数。
+     * @param taskDecorator 用于完成本次业务处理的 taskDecorator 参数。
      */
     public DefaultThreadPoolManager(ThreadingProperties properties, TaskDecorator taskDecorator) {
         this(new DefaultExecutorFactory(properties), taskDecorator, properties);
     }
 
     /**
-     * {@code DefaultThreadPoolManager} 创建并初始化当前类型实例。
+     * 执行 Default Thread Pool 相关业务操作，并维护必要的状态和协作关系。
      *
-     * @param executorFactory 参数值，用于执行当前操作。
-     * @param taskDecorator 参数值，用于执行当前操作。
+     * @param executorFactory 用于完成本次业务处理的 executorFactory 参数。
+     * @param taskDecorator 用于完成本次业务处理的 taskDecorator 参数。
      */
     public DefaultThreadPoolManager(ExecutorFactory executorFactory, TaskDecorator taskDecorator) {
         this(executorFactory, taskDecorator, new ThreadingProperties());
     }
 
     /**
-     * {@code DefaultThreadPoolManager} 创建并初始化当前类型实例。
+     * 执行 Default Thread Pool 相关业务操作，并维护必要的状态和协作关系。
      *
-     * @param executorFactory 参数值，用于执行当前操作。
-     * @param taskDecorator 参数值，用于执行当前操作。
-     * @param properties 参数值，用于执行当前操作。
+     * @param executorFactory 用于完成本次业务处理的 executorFactory 参数。
+     * @param taskDecorator 用于完成本次业务处理的 taskDecorator 参数。
+     * @param properties 用于完成本次业务处理的 properties 参数。
      */
     public DefaultThreadPoolManager(
             ExecutorFactory executorFactory,
@@ -79,11 +81,10 @@ public class DefaultThreadPoolManager implements ThreadPoolManager {
     }
 
     /**
-     * {@code getExecutor} 查询并返回当前操作所需的数据。
+     * 查询 Default Thread Pool 相关业务数据，并返回处理结果。
      *
-     * @param name 参数值，用于执行当前操作。
-     *
-     * @return 返回当前操作产生的结果。
+     * @param name 用于定位或筛选目标业务对象的业务值。
+     * @return 返回 Default Thread Pool 相关操作生成的结果数据。
      */
     @Override
     public ExecutorService getExecutor(String name) {
@@ -94,11 +95,10 @@ public class DefaultThreadPoolManager implements ThreadPoolManager {
     }
 
     /**
-     * {@code getExecutor} 查询并返回当前操作所需的数据。
+     * 查询 Default Thread Pool 相关业务数据，并返回处理结果。
      *
-     * @param poolType 参数值，用于执行当前操作。
-     *
-     * @return 返回当前操作产生的结果。
+     * @param poolType 用于完成本次业务处理的 poolType 参数。
+     * @return 返回 Default Thread Pool 相关操作生成的结果数据。
      */
     @Override
     public ExecutorService getExecutor(PoolType poolType) {
@@ -106,12 +106,11 @@ public class DefaultThreadPoolManager implements ThreadPoolManager {
     }
 
     /**
-     * {@code getExecutor} 查询并返回当前操作所需的数据。
+     * 查询 Default Thread Pool 相关业务数据，并返回处理结果。
      *
-     * @param poolType 参数值，用于执行当前操作。
-     * @param name 参数值，用于执行当前操作。
-     *
-     * @return 返回当前操作产生的结果。
+     * @param poolType 用于完成本次业务处理的 poolType 参数。
+     * @param name 用于定位或筛选目标业务对象的业务值。
+     * @return 返回 Default Thread Pool 相关操作生成的结果数据。
      */
     @Override
     public ExecutorService getExecutor(PoolType poolType, String name) {
@@ -126,9 +125,9 @@ public class DefaultThreadPoolManager implements ThreadPoolManager {
     }
 
     /**
-     * {@code getDefaultExecutor} 查询并返回当前操作所需的数据。
+     * 查询 Default Thread Pool 相关业务数据，并返回处理结果。
      *
-     * @return 返回当前操作产生的结果。
+     * @return 返回 Default Thread Pool 相关操作生成的结果数据。
      */
     @Override
     public ExecutorService getDefaultExecutor() {

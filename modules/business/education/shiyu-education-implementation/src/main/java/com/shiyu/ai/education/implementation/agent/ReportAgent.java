@@ -18,9 +18,7 @@ import org.springframework.stereotype.Component;
 import java.util.List;
 
 /**
- * ReportAgent — 学习报告 Agent
- *
- * <p>职责：根据学习记录和能力数据，生成个性化的学习报告和建议。
+ * 编排 Report 相关的智能体任务和模型协作。
  */
 @Slf4j
 @Component

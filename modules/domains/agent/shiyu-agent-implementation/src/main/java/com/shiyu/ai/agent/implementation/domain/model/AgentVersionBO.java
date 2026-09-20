@@ -6,7 +6,9 @@ import java.io.Serial;
 import java.io.Serializable;
 import java.time.LocalDateTime;
 
-/** Agent 版本业务对象 */
+/**
+ * 表示 智能体 Version 领域对象的业务状态和属性。
+ */
 @Data
 public class AgentVersionBO implements Serializable {
 

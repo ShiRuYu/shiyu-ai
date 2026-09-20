@@ -10,49 +10,46 @@ import java.util.List;
 import java.util.Optional;
 
 /**
- * MagmaMemoryRepository 仓储接口，负责访问和持久化记忆领域聚合数据。
+ * 负责 Magma 记忆 的持久化查询、保存和删除，并维护数据访问边界。
  */
 public interface MagmaMemoryRepository {
     /**
-     * 创建并保存业务对象。
+     * 创建或保存 Magma 记忆 相关业务操作，并维护必要的状态和协作关系。
      *
-     * @param event 方法参数。
+     * @param event 本次流程携带的事件或业务数据。
      */
     void insertEvent(MemoryEvent event);
 
     /**
-     * 根据条件查询并返回所需数据。
+     * 查询 Magma 记忆 相关业务数据，并返回处理结果。
      *
-     * @param tenantId 租户标识。
-     * @param eventId 方法参数。
-     *
-     * @return 查询到的结果；未找到时为空。
+     * @param tenantId 当前操作涉及的租户标识。
+     * @param eventId 用于定位event的标识。
+     * @return 返回可能存在的业务对象；不存在时返回空值容器。
      */
     Optional<MemoryEvent> findEvent(TenantId tenantId, String eventId);
 
     /**
-     * 根据条件查询并返回所需数据。
+     * 查询 Magma 记忆 相关业务数据，并返回处理结果。
      *
-     * @param tenantId 租户标识。
-     * @param namespace 方法参数。
-     * @param subjectType 方法参数。
-     * @param subjectId 方法参数。
-     *
-     * @return 查询到的结果；未找到时为空。
+     * @param tenantId 当前操作涉及的租户标识。
+     * @param namespace 用于完成本次业务处理的 namespace 参数。
+     * @param subjectType 用于完成本次业务处理的 subjectType 参数。
+     * @param subjectId 用于定位subject的标识。
+     * @return 返回可能存在的业务对象；不存在时返回空值容器。
      */
     Optional<MemoryEvent> findLatestEvent(
             TenantId tenantId, String namespace, String subjectType, String subjectId);
 
     /**
-     * 根据条件查询并返回所需数据。
+     * 查询 Magma 记忆 相关业务数据，并返回处理结果。
      *
-     * @param tenantId 租户标识。
-     * @param namespace 方法参数。
-     * @param subjectType 方法参数。
-     * @param subjectId 方法参数。
-     * @param occurredAt 方法参数。
-     *
-     * @return 查询到的结果；未找到时为空。
+     * @param tenantId 当前操作涉及的租户标识。
+     * @param namespace 用于完成本次业务处理的 namespace 参数。
+     * @param subjectType 用于完成本次业务处理的 subjectType 参数。
+     * @param subjectId 用于定位subject的标识。
+     * @param occurredAt 用于完成本次业务处理的 occurredAt 参数。
+     * @return 返回可能存在的业务对象；不存在时返回空值容器。
      */
     Optional<MemoryEvent> findPreviousEvent(
             TenantId tenantId,
@@ -62,15 +59,14 @@ public interface MagmaMemoryRepository {
             Instant occurredAt);
 
     /**
-     * 根据条件查询并返回所需数据。
+     * 查询 Magma 记忆 相关业务数据，并返回处理结果。
      *
-     * @param tenantId 租户标识。
-     * @param namespace 方法参数。
-     * @param subjectType 方法参数。
-     * @param subjectId 方法参数。
-     * @param occurredAt 方法参数。
-     *
-     * @return 查询到的结果；未找到时为空。
+     * @param tenantId 当前操作涉及的租户标识。
+     * @param namespace 用于完成本次业务处理的 namespace 参数。
+     * @param subjectType 用于完成本次业务处理的 subjectType 参数。
+     * @param subjectId 用于定位subject的标识。
+     * @param occurredAt 用于完成本次业务处理的 occurredAt 参数。
+     * @return 返回可能存在的业务对象；不存在时返回空值容器。
      */
     Optional<MemoryEvent> findNextEvent(
             TenantId tenantId,
@@ -80,95 +76,91 @@ public interface MagmaMemoryRepository {
             Instant occurredAt);
 
     /**
-     * 根据条件查询并返回所需数据。
+     * 查询 Magma 记忆 相关业务数据，并返回处理结果。
      *
-     * @param tenantId 租户标识。
-     * @param namespace 方法参数。
-     * @param subjectType 方法参数。
-     * @param subjectId 方法参数。
-     * @param limit 方法参数。
-     *
-     * @return 符合条件的结果集合。
+     * @param tenantId 当前操作涉及的租户标识。
+     * @param namespace 用于完成本次业务处理的 namespace 参数。
+     * @param subjectType 用于完成本次业务处理的 subjectType 参数。
+     * @param subjectId 用于定位subject的标识。
+     * @param limit 每页返回的数据数量。
+     * @return 返回符合条件的数据集合；没有匹配项时返回空集合。
      */
     List<MemoryEvent> findCandidates(
             TenantId tenantId, String namespace, String subjectType, String subjectId, int limit);
 
     /**
-     * 根据条件查询并返回所需数据。
+     * 查询 Magma 记忆 相关业务数据，并返回处理结果。
      *
-     * @param tenantId 租户标识。
-     * @param namespace 方法参数。
-     * @param limit 方法参数。
-     *
-     * @return 符合条件的结果集合。
+     * @param tenantId 当前操作涉及的租户标识。
+     * @param namespace 用于完成本次业务处理的 namespace 参数。
+     * @param limit 每页返回的数据数量。
+     * @return 返回符合条件的数据集合；没有匹配项时返回空集合。
      */
     List<MemoryEvent> findByNamespace(TenantId tenantId, String namespace, int limit);
 
     /**
-     * 更新业务对象及其关联数据。
+     * 更新或设置 Magma 记忆 相关业务操作，并维护必要的状态和协作关系。
      *
-     * @param tenantId 租户标识。
-     * @param eventId 方法参数。
-     * @param status 对象状态。
+     * @param tenantId 当前操作涉及的租户标识。
+     * @param eventId 用于定位event的标识。
+     * @param status 用于完成本次业务处理的 status 参数。
      */
     void updateEventStatus(TenantId tenantId, String eventId, MemoryEventStatus status);
 
     /**
-     * 执行 {@code deactivateEdgesForNode} 定义的接口操作。
+     * 执行 Magma 记忆 相关业务操作，并维护必要的状态和协作关系。
      *
-     * @param tenantId 租户标识。
-     * @param nodeId 方法参数。
+     * @param tenantId 当前操作涉及的租户标识。
+     * @param nodeId 用于定位node的标识。
      */
     void deactivateEdgesForNode(TenantId tenantId, String nodeId);
 
     /**
-     * 保存或更新业务对象。
+     * 执行 Magma 记忆 相关业务操作，并维护必要的状态和协作关系。
      *
-     * @param entity 方法参数。
+     * @param entity 用于完成本次业务处理的 entity 参数。
      */
     void upsertEntity(MemoryEntity entity);
 
     /**
-     * 创建并保存业务对象。
+     * 创建或保存 Magma 记忆 相关业务操作，并维护必要的状态和协作关系。
      *
-     * @param edge 方法参数。
+     * @param edge 用于完成本次业务处理的 edge 参数。
      */
     void insertEdge(MemoryEdge edge);
 
     /**
-     * 根据条件查询并返回所需数据。
+     * 查询 Magma 记忆 相关业务数据，并返回处理结果。
      *
-     * @param tenantId 租户标识。
-     * @param nodeId 方法参数。
-     * @param graphType 方法参数。
-     * @param limit 方法参数。
-     *
-     * @return 符合条件的结果集合。
+     * @param tenantId 当前操作涉及的租户标识。
+     * @param nodeId 用于定位node的标识。
+     * @param graphType 用于完成本次业务处理的 graphType 参数。
+     * @param limit 每页返回的数据数量。
+     * @return 返回符合条件的数据集合；没有匹配项时返回空集合。
      */
     List<MemoryEdge> findEdges(TenantId tenantId, String nodeId, GraphType graphType, int limit);
 
     /**
-     * 执行 {@code enqueueConsolidation} 定义的接口操作。
+     * 执行 Magma 记忆 相关业务操作，并维护必要的状态和协作关系。
      *
-     * @param tenantId 租户标识。
-     * @param eventId 方法参数。
+     * @param tenantId 当前操作涉及的租户标识。
+     * @param eventId 用于定位event的标识。
      */
     void enqueueConsolidation(TenantId tenantId, String eventId);
 
     /**
-     * 执行 {@code recordRetrievalTrace} 定义的接口操作。
+     * 执行 Magma 记忆 相关业务操作，并维护必要的状态和协作关系。
      *
-     * @param trace 方法参数。
+     * @param trace 用于完成本次业务处理的 trace 参数。
      */
     void recordRetrievalTrace(MemoryRetrievalTrace trace);
 
     /**
-     * 根据条件查询并返回所需数据。
+     * 查询 Magma 记忆 相关业务数据，并返回处理结果。
      *
-     * @param tenantId 租户标识。
-     * @param traceId 方法参数。
-     *
-     * @return 查询到的结果；未找到时为空。
+     * @param tenantId 当前操作涉及的租户标识。
+     * @param traceId 用于定位trace的标识。
+     * @return 返回可能存在的业务对象；不存在时返回空值容器。
      */
     Optional<MemoryRetrievalTrace> findRetrievalTrace(TenantId tenantId, String traceId);
 }

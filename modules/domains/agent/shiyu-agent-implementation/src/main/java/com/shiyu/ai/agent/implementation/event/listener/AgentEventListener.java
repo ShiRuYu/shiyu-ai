@@ -10,15 +10,17 @@ import org.springframework.context.event.EventListener;
 import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Component;
 
-/** Agent 事件监听器 记录执行事件到日志 */
+/**
+ * 处理 智能体 事件 相关事件或请求，并推进后续业务流程。
+ */
 @Slf4j
 @Component
 public class AgentEventListener {
 
     /**
-     * {@code onExecutionStarted} 执行当前类型定义的业务操作。
+     * 处理 智能体 事件 相关业务操作，并维护必要的状态和协作关系。
      *
-     * @param event 参数值，用于执行当前操作。
+     * @param event 本次流程携带的事件或业务数据。
      */
     @EventListener
     @Async
@@ -30,9 +32,9 @@ public class AgentEventListener {
     }
 
     /**
-     * {@code onExecutionCompleted} 执行当前类型定义的业务操作。
+     * 处理 智能体 事件 相关业务操作，并维护必要的状态和协作关系。
      *
-     * @param event 参数值，用于执行当前操作。
+     * @param event 本次流程携带的事件或业务数据。
      */
     @EventListener
     @Async
@@ -45,9 +47,9 @@ public class AgentEventListener {
     }
 
     /**
-     * {@code onExecutionFailed} 执行当前类型定义的业务操作。
+     * 处理 智能体 事件 相关业务操作，并维护必要的状态和协作关系。
      *
-     * @param event 参数值，用于执行当前操作。
+     * @param event 本次流程携带的事件或业务数据。
      */
     @EventListener
     @Async
@@ -60,9 +62,9 @@ public class AgentEventListener {
     }
 
     /**
-     * {@code onModelCall} 执行当前类型定义的业务操作。
+     * 处理 智能体 事件 相关业务操作，并维护必要的状态和协作关系。
      *
-     * @param event 参数值，用于执行当前操作。
+     * @param event 本次流程携带的事件或业务数据。
      */
     @EventListener
     @Async

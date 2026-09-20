@@ -6,7 +6,7 @@ import lombok.Data;
 import lombok.EqualsAndHashCode;
 
 /**
- * {@code KnowledgeSpaceMemberBO} 是知识模块的业务对象，承载用例处理所需的领域数据。
+ * 表示 知识 空间 Member 领域对象的业务状态和属性。
  */
 @Data
 @EqualsAndHashCode(callSuper = true)

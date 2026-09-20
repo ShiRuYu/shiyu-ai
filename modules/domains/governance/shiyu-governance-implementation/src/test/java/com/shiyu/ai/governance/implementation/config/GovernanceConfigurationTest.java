@@ -22,6 +22,9 @@ import org.junit.jupiter.api.Test;
 import org.springframework.web.socket.config.annotation.WebSocketHandlerRegistration;
 import org.springframework.web.socket.config.annotation.WebSocketHandlerRegistry;
 
+/**
+ * 验证 治理 Configuration 相关功能、边界条件、异常路径和协作行为。
+ */
 class GovernanceConfigurationTest {
 
     @Test

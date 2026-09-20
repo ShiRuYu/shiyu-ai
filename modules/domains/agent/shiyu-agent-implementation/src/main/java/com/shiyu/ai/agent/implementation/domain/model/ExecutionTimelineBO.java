@@ -7,7 +7,7 @@ import java.io.Serializable;
 import java.time.LocalDateTime;
 
 /**
- * {@code ExecutionTimelineBO} 是智能体模块的业务对象，承载用例处理所需的领域数据。
+ * 表示 Execution 时间线 领域对象的业务状态和属性。
  */
 @Data
 public class ExecutionTimelineBO implements Serializable {

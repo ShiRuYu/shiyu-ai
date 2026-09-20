@@ -16,6 +16,9 @@ import org.junit.jupiter.api.Test;
 
 import java.util.Map;
 
+/**
+ * 验证 工具 Execution Pipeline 相关功能、边界条件、异常路径和协作行为。
+ */
 class ToolExecutionPipelineTest {
     @Test
     void highRiskToolMustBeApprovedBeforeExecutionAndEmitsAuditEvents() {

@@ -2,7 +2,9 @@ package com.shiyu.ai.tooling.implementation.plugin.spi;
 
 import java.util.Map;
 
-/** 插件描述符 */
+/**
+ * 实现 插件 Descriptor 相关的业务处理、协作逻辑或基础设施能力。
+ */
 public class PluginDescriptor {
 
     /**
@@ -43,7 +45,7 @@ public class PluginDescriptor {
     private volatile PluginState state;
 
     /**
-     * {@code PluginState} 表示工具模块中的一组受控业务状态或分类。
+     * 定义 插件 可用的枚举值及其业务语义。
      */
     public enum PluginState {
         INSTALLED,
@@ -56,15 +58,15 @@ public class PluginDescriptor {
     }
 
     /**
-     * {@code PluginDescriptor} 创建并初始化当前类型实例。
+     * 执行 插件 Descriptor 相关业务操作，并维护必要的状态和协作关系。
      *
-     * @param id 参数值，用于执行当前操作。
-     * @param name 参数值，用于执行当前操作。
-     * @param version 参数值，用于执行当前操作。
-     * @param description 参数值，用于执行当前操作。
-     * @param author 参数值，用于执行当前操作。
-     * @param entryClass 参数值，用于执行当前操作。
-     * @param config 参数值，用于执行当前操作。
+     * @param id 用于定位目标业务对象的标识。
+     * @param name 用于定位或筛选目标业务对象的业务值。
+     * @param version 用于完成本次业务处理的 version 参数。
+     * @param description 用于完成本次业务处理的 description 参数。
+     * @param author 用于完成本次业务处理的 author 参数。
+     * @param entryClass 用于完成本次业务处理的 entryClass 参数。
+     * @param config 用于完成本次业务处理的 config 参数。
      */
     public PluginDescriptor(
             String id,
@@ -87,90 +89,90 @@ public class PluginDescriptor {
 
     // Getters
     /**
-     * {@code getId} 查询并返回当前操作所需的数据。
+     * 查询 插件 Descriptor 相关业务数据，并返回处理结果。
      *
-     * @return 返回当前操作产生的结果。
+     * @return 返回 插件 Descriptor 相关操作生成的结果数据。
      */
     public String getId() {
         return id;
     }
 
     /**
-     * {@code getName} 查询并返回当前操作所需的数据。
+     * 查询 插件 Descriptor 相关业务数据，并返回处理结果。
      *
-     * @return 返回当前操作产生的结果。
+     * @return 返回 插件 Descriptor 相关操作生成的结果数据。
      */
     public String getName() {
         return name;
     }
 
     /**
-     * {@code getVersion} 查询并返回当前操作所需的数据。
+     * 查询 插件 Descriptor 相关业务数据，并返回处理结果。
      *
-     * @return 返回当前操作产生的结果。
+     * @return 返回 插件 Descriptor 相关操作生成的结果数据。
      */
     public String getVersion() {
         return version;
     }
 
     /**
-     * {@code getDescription} 查询并返回当前操作所需的数据。
+     * 查询 插件 Descriptor 相关业务数据，并返回处理结果。
      *
-     * @return 返回当前操作产生的结果。
+     * @return 返回 插件 Descriptor 相关操作生成的结果数据。
      */
     public String getDescription() {
         return description;
     }
 
     /**
-     * {@code getAuthor} 查询并返回当前操作所需的数据。
+     * 查询 插件 Descriptor 相关业务数据，并返回处理结果。
      *
-     * @return 返回当前操作产生的结果。
+     * @return 返回 插件 Descriptor 相关操作生成的结果数据。
      */
     public String getAuthor() {
         return author;
     }
 
     /**
-     * {@code getEntryClass} 查询并返回当前操作所需的数据。
+     * 查询 插件 Descriptor 相关业务数据，并返回处理结果。
      *
-     * @return 返回当前操作产生的结果。
+     * @return 返回 插件 Descriptor 相关操作生成的结果数据。
      */
     public String getEntryClass() {
         return entryClass;
     }
 
     /**
-     * {@code getConfig} 查询并返回当前操作所需的数据。
+     * 查询 插件 Descriptor 相关业务数据，并返回处理结果。
      *
-     * @return 返回当前操作产生的结果。
+     * @return 返回 插件 Descriptor 相关操作生成的结果数据。
      */
     public Map<String, Object> getConfig() {
         return config;
     }
 
     /**
-     * {@code getLoadedAt} 查询并返回当前操作所需的数据。
+     * 查询 插件 Descriptor 相关业务数据，并返回处理结果。
      *
-     * @return 返回当前操作产生的结果。
+     * @return 返回 插件 Descriptor 相关操作生成的结果数据。
      */
     public long getLoadedAt() {
         return loadedAt;
     }
 
     /**
-     * {@code getState} 查询并返回当前操作所需的数据。
+     * 查询 插件 Descriptor 相关业务数据，并返回处理结果。
      *
-     * @return 返回当前操作产生的结果。
+     * @return 返回 插件 Descriptor 相关操作生成的结果数据。
      */
     public PluginState getState() {
         return state;
     }
 
     /**
-     * {@code setState} 写入或更新当前模块中的业务数据。
+     * 更新或设置 插件 Descriptor 相关业务操作，并维护必要的状态和协作关系。
      *
-     * @param state 参数值，用于执行当前操作。
+     * @param state 用于完成本次业务处理的 state 参数。
      */
     public void setState(PluginState state) {
         this.state = state;

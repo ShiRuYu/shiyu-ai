@@ -17,7 +17,7 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 /**
- * PromptService 服务接口，负责执行智能体领域相关业务操作。
+ * 提供 提示词 的查询、创建、更新及调用服务，协调业务变更和领域协作。
  */
 @Service
 public class PromptService {
@@ -26,12 +26,11 @@ public class PromptService {
     private final Map<String, PromptTemplate> templates = new LinkedHashMap<>();
 
     /**
-     * {@code list} 查询并返回当前操作所需的数据。
+     * 查询 提示词 相关业务数据，并返回处理结果。
      *
-     * @param tenantId 参数值，用于执行当前操作。
-     * @param ownerUserId 参数值，用于执行当前操作。
-     *
-     * @return 返回当前操作产生的结果。
+     * @param tenantId 当前操作涉及的租户标识。
+     * @param ownerUserId 当前操作涉及的用户标识。
+     * @return 返回符合条件的数据集合；没有匹配项时返回空集合。
      */
     public synchronized List<PromptTemplate> list(TenantId tenantId, long ownerUserId) {
         long value = requireTenant(tenantId);
@@ -41,15 +40,14 @@ public class PromptService {
     }
 
     /**
-     * {@code create} 写入或更新当前模块中的业务数据。
+     * 创建或保存 提示词 相关业务数据，并返回处理结果。
      *
-     * @param tenantId 参数值，用于执行当前操作。
-     * @param ownerUserId 参数值，用于执行当前操作。
-     * @param name 参数值，用于执行当前操作。
-     * @param template 参数值，用于执行当前操作。
-     * @param variables 参数值，用于执行当前操作。
-     *
-     * @return 返回当前操作产生的结果。
+     * @param tenantId 当前操作涉及的租户标识。
+     * @param ownerUserId 当前操作涉及的用户标识。
+     * @param name 用于定位或筛选目标业务对象的业务值。
+     * @param template 用于完成本次业务处理的 template 参数。
+     * @param variables 用于完成本次业务处理的 variables 参数。
+     * @return 返回 提示词 相关操作生成的结果数据。
      */
     public synchronized PromptTemplate create(
             TenantId tenantId,
@@ -79,13 +77,12 @@ public class PromptService {
     }
 
     /**
-     * {@code publish} 执行当前模块定义的业务流程。
+     * 发布或发送 提示词 相关业务数据，并返回处理结果。
      *
-     * @param id 参数值，用于执行当前操作。
-     * @param tenantId 参数值，用于执行当前操作。
-     * @param ownerUserId 参数值，用于执行当前操作。
-     *
-     * @return 返回当前操作产生的结果。
+     * @param id 用于定位目标业务对象的标识。
+     * @param tenantId 当前操作涉及的租户标识。
+     * @param ownerUserId 当前操作涉及的用户标识。
+     * @return 返回 提示词 相关操作生成的结果数据。
      */
     public synchronized PromptTemplate publish(String id, TenantId tenantId, long ownerUserId) {
         PromptTemplate current = require(id, tenantId, ownerUserId);
@@ -105,12 +102,11 @@ public class PromptService {
     }
 
     /**
-     * {@code preview} 执行当前类型定义的业务操作。
+     * 执行 提示词 相关业务数据，并返回处理结果。
      *
-     * @param template 参数值，用于执行当前操作。
-     * @param variables 参数值，用于执行当前操作。
-     *
-     * @return 返回当前操作产生的结果。
+     * @param template 用于完成本次业务处理的 template 参数。
+     * @param variables 用于完成本次业务处理的 variables 参数。
+     * @return 返回 提示词 相关操作生成的结果数据。
      */
     public PromptPreview preview(String template, Map<String, Object> variables) {
         String rendered = template == null ? "" : template;
@@ -158,10 +154,7 @@ public class PromptService {
     }
 
     /**
-     * {@code PromptPreview} 封装智能体模块中不可变的结构化数据，并作为相关操作之间的值对象。
-     * @param content 内容，表示该记录组件承载的数据。
-     * @param estimatedTokens 预计令牌数，表示该记录组件承载的数据。
-     * @param variables 变量集合，表示该记录组件承载的数据。
+     * 封装 提示词 Preview 相关的不可变数据及其字段约束。
      */
     public record PromptPreview(String content, long estimatedTokens, List<String> variables) {}
 }

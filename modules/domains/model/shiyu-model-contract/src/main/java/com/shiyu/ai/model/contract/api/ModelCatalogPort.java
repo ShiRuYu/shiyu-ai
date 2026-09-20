@@ -1,7 +1,7 @@
 package com.shiyu.ai.model.contract.api;
 
 /**
- * ModelCatalogPort 边界接口，负责向外部组件提供模型领域相关能力。
+ * 定义 模型 Catalog 领域与外部能力交互的端口契约。
  */
 public interface ModelCatalogPort {
     /**

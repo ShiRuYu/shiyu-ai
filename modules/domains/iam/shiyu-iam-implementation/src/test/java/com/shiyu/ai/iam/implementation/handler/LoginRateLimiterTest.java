@@ -12,6 +12,9 @@ import java.lang.reflect.Method;
 import java.util.Map;
 import java.util.Queue;
 
+/**
+ * 验证 Login Rate Limiter 相关功能、边界条件、异常路径和协作行为。
+ */
 class LoginRateLimiterTest {
     @Test
     void allowsFiveAttemptsThenLocksAndResetOpensWindow() {

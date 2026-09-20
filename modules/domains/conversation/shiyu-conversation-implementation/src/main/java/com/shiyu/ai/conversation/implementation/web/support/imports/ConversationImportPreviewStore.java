@@ -15,7 +15,7 @@ import java.util.UUID;
 import java.util.concurrent.ConcurrentHashMap;
 
 /**
- * 保存会话导入预览结果并按预览标识读取。
+ * 管理 会话 Import Preview 相关的运行时状态、注册信息或临时数据。
  */
 @Component
 public class ConversationImportPreviewStore {
@@ -23,15 +23,14 @@ public class ConversationImportPreviewStore {
     private final Map<String, Pending> pending = new ConcurrentHashMap<>();
 
     /**
-     * {@code issue} 校验当前操作的输入或状态是否满足约束。
+     * 校验或判断 会话 Import Preview 相关业务数据，并返回处理结果。
      *
-     * @param tenantId 参数值，用于执行当前操作。
-     * @param ownerUserId 参数值，用于执行当前操作。
-     * @param format 参数值，用于执行当前操作。
-     * @param content 参数值，用于执行当前操作。
-     * @param messages 参数值，用于执行当前操作。
-     *
-     * @return 返回当前操作产生的结果。
+     * @param tenantId 当前操作涉及的租户标识。
+     * @param ownerUserId 当前操作涉及的用户标识。
+     * @param format 用于完成本次业务处理的 format 参数。
+     * @param content 用于完成本次业务处理的 content 参数。
+     * @param messages 用于完成本次业务处理的 messages 参数。
+     * @return 返回 会话 Import Preview 相关操作生成的结果数据。
      */
     public Preview issue(
             TenantId tenantId,
@@ -56,15 +55,14 @@ public class ConversationImportPreviewStore {
     }
 
     /**
-     * {@code consume} 执行当前类型定义的业务操作。
+     * 处理 会话 Import Preview 相关业务数据，并返回处理结果。
      *
-     * @param tenantId 参数值，用于执行当前操作。
-     * @param ownerUserId 参数值，用于执行当前操作。
-     * @param token 参数值，用于执行当前操作。
-     * @param format 参数值，用于执行当前操作。
-     * @param content 参数值，用于执行当前操作。
-     *
-     * @return 返回当前操作产生的结果。
+     * @param tenantId 当前操作涉及的租户标识。
+     * @param ownerUserId 当前操作涉及的用户标识。
+     * @param token 用于完成本次业务处理的 token 参数。
+     * @param format 用于完成本次业务处理的 format 参数。
+     * @param content 用于完成本次业务处理的 content 参数。
+     * @return 返回符合条件的数据集合；没有匹配项时返回空集合。
      */
     public List<ConversationExchangeCodec.ImportedMessage> consume(
             TenantId tenantId, long ownerUserId, String token, String format, String content) {
@@ -108,13 +106,7 @@ public class ConversationImportPreviewStore {
     }
 
     /**
-     * {@code Pending} 封装会话模块中不可变的结构化数据，并作为相关操作之间的值对象。
-     * @param tenantId 租户标识，表示该记录组件承载的数据。
-     * @param ownerUserId 所属用户标识，表示该记录组件承载的数据。
-     * @param format format 属性，表示该记录组件承载的数据。
-     * @param digest digest 属性，表示该记录组件承载的数据。
-     * @param expiresAt 过期时间，表示该记录组件承载的数据。
-     * @param messages 消息列表，表示该记录组件承载的数据。
+     * 封装 Pending 相关的不可变数据及其字段约束。
      */
     private record Pending(
             TenantId tenantId,
@@ -125,10 +117,7 @@ public class ConversationImportPreviewStore {
             List<ConversationExchangeCodec.ImportedMessage> messages) {}
 
     /**
-     * {@code Preview} 封装会话模块中不可变的结构化数据，并作为相关操作之间的值对象。
-     * @param token 令牌，表示该记录组件承载的数据。
-     * @param expiresAt 过期时间，表示该记录组件承载的数据。
-     * @param messages 消息列表，表示该记录组件承载的数据。
+     * 封装 Preview 相关的不可变数据及其字段约束。
      */
     public record Preview(
             String token,

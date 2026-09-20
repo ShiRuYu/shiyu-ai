@@ -4,9 +4,7 @@ import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.locks.ReentrantLock;
 
 /**
- * 用户级锁管理器
- *
- * <p>保护 extInfo 的并发读写操作，避免不同线程同时读取-修改-写入导致的覆盖问题。 使用 Stripe Lock 模式，每个 userId 分配一个可重入锁，自动清理空闲锁。
+ * 定义 用户 Lock 可用的枚举值及其业务语义。
  */
 public enum UserLockManager {
     INSTANCE;
@@ -46,14 +44,14 @@ public enum UserLockManager {
     }
 
     /**
-     * LockSupplier 接口，定义身份与访问模块的能力边界。
+     * 定义 Lock Supplier 相关的协作契约和调用边界。
      */
     @FunctionalInterface
     public interface LockSupplier<T> {
         /**
-         * 根据标识查询对应的数据。
+         * 查询 Lock Supplier 相关业务数据，并返回处理结果。
          *
-         * @return 操作结果。
+         * @return 返回 Lock Supplier 相关操作生成的结果数据。
          */
         T get();
     }

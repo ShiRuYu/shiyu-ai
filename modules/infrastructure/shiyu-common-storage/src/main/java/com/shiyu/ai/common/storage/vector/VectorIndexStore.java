@@ -11,41 +11,38 @@ import com.shiyu.ai.common.storage.security.*;
 import java.util.List;
 
 /**
- * VectorIndexStore 接口，定义基础设施模块的能力边界。
+ * 管理 向量 索引 相关的运行时状态、注册信息或临时数据。
  */
 public interface VectorIndexStore {
     /**
-     * 保存或更新业务对象。
+     * 执行 向量 索引 相关业务操作，并维护必要的状态和协作关系。
      *
-     * @param namespace 方法参数。
-     * @param id 目标对象标识。
-     * @param vector 方法参数。
+     * @param namespace 用于完成本次业务处理的 namespace 参数。
+     * @param id 用于定位目标业务对象的标识。
+     * @param vector 用于完成本次业务处理的 vector 参数。
      */
     void upsert(String namespace, String id, float[] vector);
 
     /**
-     * 根据条件查询并返回所需数据。
+     * 查询 向量 索引 相关业务数据，并返回处理结果。
      *
-     * @param namespace 方法参数。
-     * @param vector 方法参数。
-     * @param limit 方法参数。
-     *
-     * @return 符合条件的结果集合。
+     * @param namespace 用于完成本次业务处理的 namespace 参数。
+     * @param vector 用于完成本次业务处理的 vector 参数。
+     * @param limit 每页返回的数据数量。
+     * @return 返回符合条件的数据集合；没有匹配项时返回空集合。
      */
     List<Match> search(String namespace, float[] vector, int limit);
 
     /**
-     * 删除指定业务对象或关联数据。
+     * 删除或移除 向量 索引 相关业务操作，并维护必要的状态和协作关系。
      *
-     * @param namespace 方法参数。
-     * @param id 目标对象标识。
+     * @param namespace 用于完成本次业务处理的 namespace 参数。
+     * @param id 用于定位目标业务对象的标识。
      */
     void delete(String namespace, String id);
 
     /**
-     * {@code Match} 封装平台基础设施模块中不可变的结构化数据，并作为相关操作之间的值对象。
-     * @param id 标识，表示该记录组件承载的数据。
-     * @param score 分数，表示该记录组件承载的数据。
+     * 封装 Match 相关的不可变数据及其字段约束。
      */
     record Match(String id, float score) {}
 }

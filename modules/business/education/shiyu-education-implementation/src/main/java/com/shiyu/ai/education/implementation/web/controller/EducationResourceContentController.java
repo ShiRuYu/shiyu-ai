@@ -32,7 +32,7 @@ import java.io.IOException;
 import java.nio.charset.StandardCharsets;
 
 /**
- * EducationResourceContentController 控制器，负责处理教育领域相关 HTTP 请求并返回响应。
+ * 处理 教育 资源 Content 相关的 Web 请求，并将请求转换为应用服务调用。
  */
 @RestController
 @RequestMapping("/education-resources")
@@ -46,11 +46,9 @@ public class EducationResourceContentController {
     private final FileStorageManager storageManager;
 
     /**
-     * {@code open} 执行当前类型定义的业务操作。
+     * 查询 教育 资源 Content 相关业务操作，并维护必要的状态和协作关系。
      *
-     * @param fileName 参数值，用于执行当前操作。
-     *
-     * @return 返回当前操作产生的结果。
+     * @param fileName 用于完成本次业务处理的 fileName 参数。
      */
     @GetMapping("/{fileName:.+}")
     public ResponseEntity<InputStreamResource> open(@PathVariable String fileName)

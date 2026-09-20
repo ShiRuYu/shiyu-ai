@@ -25,7 +25,7 @@ import java.util.Optional;
 import javax.sql.DataSource;
 
 /**
- * {@code JdbcMagmaMemoryRepository} 定义平台模块的持久化端口，隔离领域逻辑与具体存储实现。
+ * 负责 Jdbc Magma 记忆 的持久化查询、保存和删除，并维护数据访问边界。
  */
 @Component
 public class JdbcMagmaMemoryRepository implements MagmaMemoryRepository {
@@ -39,9 +39,9 @@ public class JdbcMagmaMemoryRepository implements MagmaMemoryRepository {
     private final JdbcDialect dialect;
 
     /**
-     * {@code JdbcMagmaMemoryRepository} 创建并初始化当前类型实例。
+     * 执行 Jdbc Magma 记忆 相关业务操作，并维护必要的状态和协作关系。
      *
-     * @param dataSource 参数值，用于执行当前操作。
+     * @param dataSource 用于完成本次业务处理的 dataSource 参数。
      */
     public JdbcMagmaMemoryRepository(@Qualifier("agentDataSource") DataSource dataSource) {
         this.jdbc = new JdbcTemplate(dataSource);
@@ -49,9 +49,9 @@ public class JdbcMagmaMemoryRepository implements MagmaMemoryRepository {
     }
 
     /**
-     * {@code insertEvent} 执行当前类型定义的业务操作。
+     * 创建或保存 Jdbc Magma 记忆 相关业务操作，并维护必要的状态和协作关系。
      *
-     * @param e 参数值，用于执行当前操作。
+     * @param e 用于完成本次业务处理的 e 参数。
      */
     public void insertEvent(MemoryEvent e) {
         requireTenant(e.tenantId());
@@ -79,12 +79,11 @@ public class JdbcMagmaMemoryRepository implements MagmaMemoryRepository {
     }
 
     /**
-     * {@code findEvent} 查询并返回当前操作所需的数据。
+     * 查询 Jdbc Magma 记忆 相关业务数据，并返回处理结果。
      *
-     * @param tenantId 参数值，用于执行当前操作。
-     * @param id 参数值，用于执行当前操作。
-     *
-     * @return 返回当前操作产生的结果。
+     * @param tenantId 当前操作涉及的租户标识。
+     * @param id 用于定位目标业务对象的标识。
+     * @return 返回可能存在的业务对象；不存在时返回空值容器。
      */
     public Optional<MemoryEvent> findEvent(TenantId tenantId, String id) {
         requireTenant(tenantId);
@@ -99,14 +98,13 @@ public class JdbcMagmaMemoryRepository implements MagmaMemoryRepository {
     }
 
     /**
-     * {@code findLatestEvent} 查询并返回当前操作所需的数据。
+     * 查询 Jdbc Magma 记忆 相关业务数据，并返回处理结果。
      *
-     * @param tenantId 参数值，用于执行当前操作。
-     * @param ns 参数值，用于执行当前操作。
-     * @param st 参数值，用于执行当前操作。
-     * @param sid 参数值，用于执行当前操作。
-     *
-     * @return 返回当前操作产生的结果。
+     * @param tenantId 当前操作涉及的租户标识。
+     * @param ns 用于完成本次业务处理的 ns 参数。
+     * @param st 用于完成本次业务处理的 st 参数。
+     * @param sid 用于定位s的标识。
+     * @return 返回可能存在的业务对象；不存在时返回空值容器。
      */
     public Optional<MemoryEvent> findLatestEvent(
             TenantId tenantId, String ns, String st, String sid) {
@@ -127,15 +125,14 @@ public class JdbcMagmaMemoryRepository implements MagmaMemoryRepository {
     }
 
     /**
-     * {@code findPreviousEvent} 查询并返回当前操作所需的数据。
+     * 查询 Jdbc Magma 记忆 相关业务数据，并返回处理结果。
      *
-     * @param tenantId 参数值，用于执行当前操作。
-     * @param ns 参数值，用于执行当前操作。
-     * @param st 参数值，用于执行当前操作。
-     * @param sid 参数值，用于执行当前操作。
-     * @param occurredAt 参数值，用于执行当前操作。
-     *
-     * @return 返回当前操作产生的结果。
+     * @param tenantId 当前操作涉及的租户标识。
+     * @param ns 用于完成本次业务处理的 ns 参数。
+     * @param st 用于完成本次业务处理的 st 参数。
+     * @param sid 用于定位s的标识。
+     * @param occurredAt 用于完成本次业务处理的 occurredAt 参数。
+     * @return 返回可能存在的业务对象；不存在时返回空值容器。
      */
     @Override
     public Optional<MemoryEvent> findPreviousEvent(
@@ -158,15 +155,14 @@ public class JdbcMagmaMemoryRepository implements MagmaMemoryRepository {
     }
 
     /**
-     * {@code findNextEvent} 查询并返回当前操作所需的数据。
+     * 查询 Jdbc Magma 记忆 相关业务数据，并返回处理结果。
      *
-     * @param tenantId 参数值，用于执行当前操作。
-     * @param ns 参数值，用于执行当前操作。
-     * @param st 参数值，用于执行当前操作。
-     * @param sid 参数值，用于执行当前操作。
-     * @param occurredAt 参数值，用于执行当前操作。
-     *
-     * @return 返回当前操作产生的结果。
+     * @param tenantId 当前操作涉及的租户标识。
+     * @param ns 用于完成本次业务处理的 ns 参数。
+     * @param st 用于完成本次业务处理的 st 参数。
+     * @param sid 用于定位s的标识。
+     * @param occurredAt 用于完成本次业务处理的 occurredAt 参数。
+     * @return 返回可能存在的业务对象；不存在时返回空值容器。
      */
     @Override
     public Optional<MemoryEvent> findNextEvent(
@@ -189,15 +185,14 @@ public class JdbcMagmaMemoryRepository implements MagmaMemoryRepository {
     }
 
     /**
-     * {@code findCandidates} 查询并返回当前操作所需的数据。
+     * 查询 Jdbc Magma 记忆 相关业务数据，并返回处理结果。
      *
-     * @param tenantId 参数值，用于执行当前操作。
-     * @param ns 参数值，用于执行当前操作。
-     * @param st 参数值，用于执行当前操作。
-     * @param sid 参数值，用于执行当前操作。
-     * @param limit 参数值，用于执行当前操作。
-     *
-     * @return 返回当前操作产生的结果。
+     * @param tenantId 当前操作涉及的租户标识。
+     * @param ns 用于完成本次业务处理的 ns 参数。
+     * @param st 用于完成本次业务处理的 st 参数。
+     * @param sid 用于定位s的标识。
+     * @param limit 每页返回的数据数量。
+     * @return 返回符合条件的数据集合；没有匹配项时返回空集合。
      */
     public List<MemoryEvent> findCandidates(
             TenantId tenantId, String ns, String st, String sid, int limit) {
@@ -215,13 +210,12 @@ public class JdbcMagmaMemoryRepository implements MagmaMemoryRepository {
     }
 
     /**
-     * {@code findByNamespace} 查询并返回当前操作所需的数据。
+     * 查询 Jdbc Magma 记忆 相关业务数据，并返回处理结果。
      *
-     * @param tenantId 参数值，用于执行当前操作。
-     * @param ns 参数值，用于执行当前操作。
-     * @param limit 参数值，用于执行当前操作。
-     *
-     * @return 返回当前操作产生的结果。
+     * @param tenantId 当前操作涉及的租户标识。
+     * @param ns 用于完成本次业务处理的 ns 参数。
+     * @param limit 每页返回的数据数量。
+     * @return 返回符合条件的数据集合；没有匹配项时返回空集合。
      */
     @Override
     public List<MemoryEvent> findByNamespace(TenantId tenantId, String ns, int limit) {
@@ -236,11 +230,11 @@ public class JdbcMagmaMemoryRepository implements MagmaMemoryRepository {
     }
 
     /**
-     * {@code updateEventStatus} 写入或更新当前模块中的业务数据。
+     * 更新或设置 Jdbc Magma 记忆 相关业务操作，并维护必要的状态和协作关系。
      *
-     * @param tenantId 参数值，用于执行当前操作。
-     * @param id 参数值，用于执行当前操作。
-     * @param status 参数值，用于执行当前操作。
+     * @param tenantId 当前操作涉及的租户标识。
+     * @param id 用于定位目标业务对象的标识。
+     * @param status 用于完成本次业务处理的 status 参数。
      */
     public void updateEventStatus(TenantId tenantId, String id, MemoryEventStatus status) {
         requireTenant(tenantId);
@@ -253,10 +247,10 @@ public class JdbcMagmaMemoryRepository implements MagmaMemoryRepository {
     }
 
     /**
-     * {@code deactivateEdgesForNode} 执行当前类型定义的业务操作。
+     * 执行 Jdbc Magma 记忆 相关业务操作，并维护必要的状态和协作关系。
      *
-     * @param tenantId 参数值，用于执行当前操作。
-     * @param nodeId 参数值，用于执行当前操作。
+     * @param tenantId 当前操作涉及的租户标识。
+     * @param nodeId 用于定位node的标识。
      */
     @Override
     public void deactivateEdgesForNode(TenantId tenantId, String nodeId) {
@@ -270,9 +264,9 @@ public class JdbcMagmaMemoryRepository implements MagmaMemoryRepository {
     }
 
     /**
-     * {@code upsertEntity} 执行当前类型定义的业务操作。
+     * 执行 Jdbc Magma 记忆 相关业务操作，并维护必要的状态和协作关系。
      *
-     * @param e 参数值，用于执行当前操作。
+     * @param e 用于完成本次业务处理的 e 参数。
      */
     public void upsertEntity(MemoryEntity e) {
         requireTenant(e.tenantId());
@@ -302,9 +296,9 @@ public class JdbcMagmaMemoryRepository implements MagmaMemoryRepository {
     }
 
     /**
-     * {@code insertEdge} 执行当前类型定义的业务操作。
+     * 创建或保存 Jdbc Magma 记忆 相关业务操作，并维护必要的状态和协作关系。
      *
-     * @param e 参数值，用于执行当前操作。
+     * @param e 用于完成本次业务处理的 e 参数。
      */
     public void insertEdge(MemoryEdge e) {
         requireTenant(e.tenantId());
@@ -328,14 +322,13 @@ public class JdbcMagmaMemoryRepository implements MagmaMemoryRepository {
     }
 
     /**
-     * {@code findEdges} 查询并返回当前操作所需的数据。
+     * 查询 Jdbc Magma 记忆 相关业务数据，并返回处理结果。
      *
-     * @param tenantId 参数值，用于执行当前操作。
-     * @param nodeId 参数值，用于执行当前操作。
-     * @param graphType 参数值，用于执行当前操作。
-     * @param limit 参数值，用于执行当前操作。
-     *
-     * @return 返回当前操作产生的结果。
+     * @param tenantId 当前操作涉及的租户标识。
+     * @param nodeId 用于定位node的标识。
+     * @param graphType 用于完成本次业务处理的 graphType 参数。
+     * @param limit 每页返回的数据数量。
+     * @return 返回符合条件的数据集合；没有匹配项时返回空集合。
      */
     public List<MemoryEdge> findEdges(
             TenantId tenantId, String nodeId, GraphType graphType, int limit) {
@@ -353,10 +346,10 @@ public class JdbcMagmaMemoryRepository implements MagmaMemoryRepository {
     }
 
     /**
-     * {@code enqueueConsolidation} 执行当前类型定义的业务操作。
+     * 执行 Jdbc Magma 记忆 相关业务操作，并维护必要的状态和协作关系。
      *
-     * @param tenantId 参数值，用于执行当前操作。
-     * @param eventId 参数值，用于执行当前操作。
+     * @param tenantId 当前操作涉及的租户标识。
+     * @param eventId 用于定位event的标识。
      */
     public void enqueueConsolidation(TenantId tenantId, String eventId) {
         requireTenant(tenantId);
@@ -373,9 +366,9 @@ public class JdbcMagmaMemoryRepository implements MagmaMemoryRepository {
     }
 
     /**
-     * {@code recordRetrievalTrace} 写入或更新当前模块中的业务数据。
+     * 执行 Jdbc Magma 记忆 相关业务操作，并维护必要的状态和协作关系。
      *
-     * @param trace 参数值，用于执行当前操作。
+     * @param trace 用于完成本次业务处理的 trace 参数。
      */
     @Override
     public void recordRetrievalTrace(MemoryRetrievalTrace trace) {
@@ -402,12 +395,11 @@ public class JdbcMagmaMemoryRepository implements MagmaMemoryRepository {
     }
 
     /**
-     * {@code findRetrievalTrace} 查询并返回当前操作所需的数据。
+     * 查询 Jdbc Magma 记忆 相关业务数据，并返回处理结果。
      *
-     * @param tenantId 参数值，用于执行当前操作。
-     * @param id 参数值，用于执行当前操作。
-     *
-     * @return 返回当前操作产生的结果。
+     * @param tenantId 当前操作涉及的租户标识。
+     * @param id 用于定位目标业务对象的标识。
+     * @return 返回可能存在的业务对象；不存在时返回空值容器。
      */
     @Override
     public Optional<MemoryRetrievalTrace> findRetrievalTrace(TenantId tenantId, String id) {

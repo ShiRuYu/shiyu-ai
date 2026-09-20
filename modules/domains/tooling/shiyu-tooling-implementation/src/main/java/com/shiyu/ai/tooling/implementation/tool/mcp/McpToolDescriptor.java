@@ -3,7 +3,9 @@ package com.shiyu.ai.tooling.implementation.tool.mcp;
 import java.util.List;
 import java.util.Map;
 
-/** MCP 工具描述符 描述一个可注册和发现的工具 */
+/**
+ * 实现 Mcp 工具 Descriptor 相关的业务处理、协作逻辑或基础设施能力。
+ */
 public class McpToolDescriptor {
 
     /**
@@ -40,12 +42,12 @@ public class McpToolDescriptor {
     private final long registeredAt;
 
     /**
-     * {@code McpToolDescriptor} 创建并初始化当前类型实例。
+     * 执行 Mcp 工具 Descriptor 相关业务操作，并维护必要的状态和协作关系。
      *
-     * @param name 参数值，用于执行当前操作。
-     * @param description 参数值，用于执行当前操作。
-     * @param serverId 参数值，用于执行当前操作。
-     * @param parameters 参数值，用于执行当前操作。
+     * @param name 用于定位或筛选目标业务对象的业务值。
+     * @param description 用于完成本次业务处理的 description 参数。
+     * @param serverId 用于定位server的标识。
+     * @param parameters 用于完成本次业务处理的 parameters 参数。
      */
     public McpToolDescriptor(
             String name,
@@ -56,15 +58,15 @@ public class McpToolDescriptor {
     }
 
     /**
-     * {@code McpToolDescriptor} 创建并初始化当前类型实例。
+     * 执行 Mcp 工具 Descriptor 相关业务操作，并维护必要的状态和协作关系。
      *
-     * @param name 参数值，用于执行当前操作。
-     * @param description 参数值，用于执行当前操作。
-     * @param serverId 参数值，用于执行当前操作。
-     * @param parameters 参数值，用于执行当前操作。
-     * @param tags 参数值，用于执行当前操作。
-     * @param category 参数值，用于执行当前操作。
-     * @param builtin 参数值，用于执行当前操作。
+     * @param name 用于定位或筛选目标业务对象的业务值。
+     * @param description 用于完成本次业务处理的 description 参数。
+     * @param serverId 用于定位server的标识。
+     * @param parameters 用于完成本次业务处理的 parameters 参数。
+     * @param tags 用于完成本次业务处理的 tags 参数。
+     * @param category 用于完成本次业务处理的 category 参数。
+     * @param builtin 用于完成本次业务处理的 builtin 参数。
      */
     public McpToolDescriptor(
             String name,
@@ -85,93 +87,88 @@ public class McpToolDescriptor {
     }
 
     /**
-     * {@code getName} 查询并返回当前操作所需的数据。
+     * 查询 Mcp 工具 Descriptor 相关业务数据，并返回处理结果。
      *
-     * @return 返回当前操作产生的结果。
+     * @return 返回 Mcp 工具 Descriptor 相关操作生成的结果数据。
      */
     public String getName() {
         return name;
     }
 
     /**
-     * {@code getDescription} 查询并返回当前操作所需的数据。
+     * 查询 Mcp 工具 Descriptor 相关业务数据，并返回处理结果。
      *
-     * @return 返回当前操作产生的结果。
+     * @return 返回 Mcp 工具 Descriptor 相关操作生成的结果数据。
      */
     public String getDescription() {
         return description;
     }
 
     /**
-     * {@code getServerId} 查询并返回当前操作所需的数据。
+     * 查询 Mcp 工具 Descriptor 相关业务数据，并返回处理结果。
      *
-     * @return 返回当前操作产生的结果。
+     * @return 返回 Mcp 工具 Descriptor 相关操作生成的结果数据。
      */
     public String getServerId() {
         return serverId;
     }
 
     /**
-     * {@code getParameters} 查询并返回当前操作所需的数据。
+     * 查询 Mcp 工具 Descriptor 相关业务数据，并返回处理结果。
      *
-     * @return 返回当前操作产生的结果。
+     * @return 返回 Mcp 工具 Descriptor 相关操作生成的结果数据。
      */
     public Map<String, ParameterInfo> getParameters() {
         return parameters;
     }
 
     /**
-     * {@code getTags} 查询并返回当前操作所需的数据。
+     * 查询 Mcp 工具 Descriptor 相关业务数据，并返回处理结果。
      *
-     * @return 返回当前操作产生的结果。
+     * @return 返回符合条件的数据集合；没有匹配项时返回空集合。
      */
     public List<String> getTags() {
         return tags;
     }
 
     /**
-     * {@code getCategory} 查询并返回当前操作所需的数据。
+     * 查询 Mcp 工具 Descriptor 相关业务数据，并返回处理结果。
      *
-     * @return 返回当前操作产生的结果。
+     * @return 返回 Mcp 工具 Descriptor 相关操作生成的结果数据。
      */
     public String getCategory() {
         return category;
     }
 
     /**
-     * {@code isBuiltin} 校验当前操作的输入或状态是否满足约束。
+     * 校验或判断 Mcp 工具 Descriptor 相关业务数据，并返回处理结果。
      *
-     * @return 返回当前操作产生的结果。
+     * @return 返回本次条件判断是否成立。
      */
     public boolean isBuiltin() {
         return builtin;
     }
 
     /**
-     * {@code getRegisteredAt} 查询并返回当前操作所需的数据。
+     * 查询 Mcp 工具 Descriptor 相关业务数据，并返回处理结果。
      *
-     * @return 返回当前操作产生的结果。
+     * @return 返回 Mcp 工具 Descriptor 相关操作生成的结果数据。
      */
     public long getRegisteredAt() {
         return registeredAt;
     }
 
     /**
-     * 参数信息
-     *
-     * @param type 类型，表示该记录组件承载的数据。
-     * @param description 描述，表示该记录组件承载的数据。
-     * @param required 是否必填，表示该记录组件承载的数据。
-     * @param defaultValue defaultValue 属性，表示该记录组件承载的数据。
+     * 封装 Parameter Info 相关的不可变数据及其字段约束。
      */
     public record ParameterInfo(
             String type, String description, boolean required, Object defaultValue) {
         /**
-         * {@code ParameterInfo} 创建并初始化当前类型实例。
+         * 执行 Parameter Info 相关业务操作，并维护必要的状态和协作关系。
          *
-         * @param type 参数值，用于执行当前操作。
-         * @param description 参数值，用于执行当前操作。
-         * @param required 参数值，用于执行当前操作。
+         * @param type 用于完成本次业务处理的 type 参数。
+         * @param description 用于完成本次业务处理的 description 参数。
+         * @param required 用于完成本次业务处理的 required 参数。
          */
         public ParameterInfo(String type, String description, boolean required) {
             this(type, description, required, null);

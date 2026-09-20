@@ -21,7 +21,7 @@ import java.util.zip.ZipEntry;
 import java.util.zip.ZipInputStream;
 
 /**
- * {@code EmbeddedContentSecurityScanner} 承载平台基础设施模块的领域状态或协作行为，负责维护本类型的职责边界。
+ * 实现 Embedded Content 安全 Scanner 相关的业务处理、协作逻辑或基础设施能力。
  */
 @Component
 public class EmbeddedContentSecurityScanner implements ContentSecurityScanner {
@@ -50,11 +50,11 @@ public class EmbeddedContentSecurityScanner implements ContentSecurityScanner {
     private DataSize maxFileSize;
 
     /**
-     * {@code validate} 校验当前操作的输入或状态是否满足约束。
+     * 校验或判断 Embedded Content 安全 Scanner 相关业务操作，并维护必要的状态和协作关系。
      *
-     * @param fileName 参数值，用于执行当前操作。
-     * @param contentType 参数值，用于执行当前操作。
-     * @param content 参数值，用于执行当前操作。
+     * @param fileName 用于完成本次业务处理的 fileName 参数。
+     * @param contentType 用于完成本次业务处理的 contentType 参数。
+     * @param content 用于完成本次业务处理的 content 参数。
      */
     @Override
     public void validate(String fileName, String contentType, byte[] content) {

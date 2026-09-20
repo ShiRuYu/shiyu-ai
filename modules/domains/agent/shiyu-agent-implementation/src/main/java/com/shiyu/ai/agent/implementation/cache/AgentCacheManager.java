@@ -17,7 +17,7 @@ import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
 
 /**
- * {@code AgentCacheManager} 承载智能体模块的领域状态或协作行为，负责维护本类型的职责边界。
+ * 管理 智能体 Cache 相关的运行时状态、注册信息或临时数据。
  */
 @Slf4j
 @Component
@@ -39,10 +39,10 @@ public class AgentCacheManager {
     private final AgentLoader agentLoader;
 
     /**
-     * {@code AgentCacheManager} 创建并初始化当前类型实例。
+     * 执行 智能体 Cache 相关业务操作，并维护必要的状态和协作关系。
      *
-     * @param agentAdminRepository 参数值，用于执行当前操作。
-     * @param agentLoader 参数值，用于执行当前操作。
+     * @param agentAdminRepository 用于完成本次业务处理的 agentAdminRepository 参数。
+     * @param agentLoader 用于完成本次业务处理的 agentLoader 参数。
      */
     public AgentCacheManager(AgentAdminRepository agentAdminRepository, AgentLoader agentLoader) {
         this.agentAdminRepository = agentAdminRepository;
@@ -70,12 +70,11 @@ public class AgentCacheManager {
     }
 
     /**
-     * {@code get} 查询并返回当前操作所需的数据。
+     * 查询 智能体 Cache 相关业务数据，并返回处理结果。
      *
-     * @param actor 参数值，用于执行当前操作。
-     * @param agentId 参数值，用于执行当前操作。
-     *
-     * @return 返回当前操作产生的结果。
+     * @param actor 当前操作主体上下文，用于确定租户、用户和访问权限。
+     * @param agentId 用于定位agent的标识。
+     * @return 返回 智能体 Cache 相关操作生成的结果数据。
      */
     public AgentDefinition get(ActorContext actor, String agentId) {
         AgentDefinition scoped = cache.getIfPresent(key(actor, agentId));
@@ -86,11 +85,11 @@ public class AgentCacheManager {
     }
 
     /**
-     * {@code put} 执行当前类型定义的业务操作。
+     * 执行 智能体 Cache 相关业务操作，并维护必要的状态和协作关系。
      *
-     * @param actor 参数值，用于执行当前操作。
-     * @param agentId 参数值，用于执行当前操作。
-     * @param agent 参数值，用于执行当前操作。
+     * @param actor 当前操作主体上下文，用于确定租户、用户和访问权限。
+     * @param agentId 用于定位agent的标识。
+     * @param agent 用于完成本次业务处理的 agent 参数。
      */
     public void put(ActorContext actor, String agentId, AgentDefinition agent) {
         cache.put(key(actor, agentId), agent);
@@ -102,9 +101,9 @@ public class AgentCacheManager {
     }
 
     /**
-     * {@code putSystem} 执行当前类型定义的业务操作。
+     * 执行 智能体 Cache 相关业务操作，并维护必要的状态和协作关系。
      *
-     * @param agent 参数值，用于执行当前操作。
+     * @param agent 用于完成本次业务处理的 agent 参数。
      */
     public void putSystem(AgentDefinition agent) {
         cache.put(systemKey(agent.getAgentId()), agent);
@@ -112,13 +111,12 @@ public class AgentCacheManager {
     }
 
     /**
-     * {@code getOrLoad} 查询并返回当前操作所需的数据。
+     * 查询 智能体 Cache 相关业务数据，并返回处理结果。
      *
-     * @param actor 参数值，用于执行当前操作。
-     * @param agentId 参数值，用于执行当前操作。
-     * @param loader 参数值，用于执行当前操作。
-     *
-     * @return 返回当前操作产生的结果。
+     * @param actor 当前操作主体上下文，用于确定租户、用户和访问权限。
+     * @param agentId 用于定位agent的标识。
+     * @param loader 用于完成本次业务处理的 loader 参数。
+     * @return 返回 智能体 Cache 相关操作生成的结果数据。
      */
     public AgentDefinition getOrLoad(ActorContext actor, String agentId, AgentLoader loader) {
         String k = key(actor, agentId);
@@ -148,9 +146,9 @@ public class AgentCacheManager {
     }
 
     /**
-     * {@code evict} 执行当前类型定义的业务操作。
+     * 执行 智能体 Cache 相关业务操作，并维护必要的状态和协作关系。
      *
-     * @param agentId 参数值，用于执行当前操作。
+     * @param agentId 用于定位agent的标识。
      */
     public void evict(String agentId) {
         cache.asMap().keySet().removeIf(k -> k.endsWith(":" + agentId));
@@ -158,10 +156,10 @@ public class AgentCacheManager {
     }
 
     /**
-     * {@code evict} 执行当前类型定义的业务操作。
+     * 执行 智能体 Cache 相关业务操作，并维护必要的状态和协作关系。
      *
-     * @param actor 参数值，用于执行当前操作。
-     * @param agentId 参数值，用于执行当前操作。
+     * @param actor 当前操作主体上下文，用于确定租户、用户和访问权限。
+     * @param agentId 用于定位agent的标识。
      */
     public void evict(ActorContext actor, String agentId) {
         cache.invalidate(key(actor, agentId));
@@ -173,7 +171,7 @@ public class AgentCacheManager {
     }
 
     /**
-     * {@code evictAll} 执行当前类型定义的业务操作。
+     * 执行 智能体 Cache 相关业务操作，并维护必要的状态和协作关系。
      */
     public void evictAll() {
         cache.invalidateAll();
@@ -181,23 +179,21 @@ public class AgentCacheManager {
     }
 
     /**
-     * {@code containsKey} 执行当前类型定义的业务操作。
+     * 执行 智能体 Cache 相关业务数据，并返回处理结果。
      *
-     * @param actor 参数值，用于执行当前操作。
-     * @param agentId 参数值，用于执行当前操作。
-     *
-     * @return 返回当前操作产生的结果。
+     * @param actor 当前操作主体上下文，用于确定租户、用户和访问权限。
+     * @param agentId 用于定位agent的标识。
+     * @return 返回本次条件判断是否成立。
      */
     public boolean containsKey(ActorContext actor, String agentId) {
         return cache.getIfPresent(key(actor, agentId)) != null;
     }
 
     /**
-     * {@code listAll} 查询并返回当前操作所需的数据。
+     * 查询 智能体 Cache 相关业务数据，并返回处理结果。
      *
-     * @param actor 参数值，用于执行当前操作。
-     *
-     * @return 返回当前操作产生的结果。
+     * @param actor 当前操作主体上下文，用于确定租户、用户和访问权限。
+     * @return 返回符合条件的数据集合；没有匹配项时返回空集合。
      */
     public List<AgentDefinition> listAll(ActorContext actor) {
         List<AgentDefBO> activeDefs = agentAdminRepository.selectAllActive(actor.tenantId());
@@ -214,9 +210,9 @@ public class AgentCacheManager {
     }
 
     /**
-     * {@code estimatedSize} 执行当前类型定义的业务操作。
+     * 执行 智能体 Cache 相关业务数据，并返回处理结果。
      *
-     * @return 返回当前操作产生的结果。
+     * @return 返回 智能体 Cache 相关操作生成的结果数据。
      */
     public long estimatedSize() {
         cache.cleanUp();

@@ -1,4 +1,6 @@
 package com.shiyu.ai.common.core.validate;
 
-/** 校验分组 add */
+/**
+ * 定义 Add Group 相关的协作契约和调用边界。
+ */
 public interface AddGroup {}

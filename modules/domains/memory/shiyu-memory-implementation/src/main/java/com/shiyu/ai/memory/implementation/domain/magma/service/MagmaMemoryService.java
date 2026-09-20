@@ -23,7 +23,7 @@ import java.util.Map;
 import java.util.UUID;
 
 /**
- * {@code MagmaMemoryService} 定义平台模块的应用服务能力，供上层用例调用。
+ * 提供 Magma 记忆 的查询、创建、更新及调用服务，协调业务变更和领域协作。
  */
 public class MagmaMemoryService
         implements MemoryIngestionPort, MemoryQueryPort, MemoryGovernancePort {
@@ -474,7 +474,7 @@ public class MagmaMemoryService
     }
 
     /**
-     * {@code MemoryAccessDeniedException} 表示平台模块中的业务异常，用于向调用方传递失败原因。
+     * 表示 记忆 Access Denied 相关的领域事件或异常信息。
      */
     private static final class MemoryAccessDeniedException extends IllegalArgumentException {
         /**

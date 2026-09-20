@@ -23,7 +23,7 @@ import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
 
 /**
- * {@code SaTokenDaoImpl} 承载平台模块的领域状态或协作行为，负责维护本类型的职责边界。
+ * 提供 Sa Token Dao Impl 所属基础设施的适配、存储或运行支持。
  */
 @Component
 public class SaTokenDaoImpl implements SaTokenDao {
@@ -66,16 +66,16 @@ public class SaTokenDaoImpl implements SaTokenDao {
             Executors.newSingleThreadScheduledExecutor();
 
     /**
-     * {@code SaTokenDaoImpl} 创建并初始化当前类型实例。
+     * 执行 Sa Token Dao Impl 相关业务操作，并维护必要的状态和协作关系。
      *
-     * @param saTokenUserRepository 参数值，用于执行当前操作。
+     * @param saTokenUserRepository 用于完成本次业务处理的 saTokenUserRepository 参数。
      */
     public SaTokenDaoImpl(SaTokenUserRepository saTokenUserRepository) {
         this.saTokenUserRepository = saTokenUserRepository;
     }
 
     /**
-     * {@code init} 执行当前类型定义的业务操作。
+     * 执行 Sa Token Dao Impl 相关业务操作，并维护必要的状态和协作关系。
      */
     @PostConstruct
     public void init() {
@@ -98,11 +98,10 @@ public class SaTokenDaoImpl implements SaTokenDao {
     // ==================== String 存储 (Token→loginId) ====================
 
     /**
-     * {@code get} 查询并返回当前操作所需的数据。
+     * 查询 Sa Token Dao Impl 相关业务数据，并返回处理结果。
      *
-     * @param key 参数值，用于执行当前操作。
-     *
-     * @return 返回当前操作产生的结果。
+     * @param key 用于定位或筛选目标业务对象的业务值。
+     * @return 返回 Sa Token Dao Impl 相关操作生成的结果数据。
      */
     @Override
     public String get(String key) {
@@ -137,11 +136,11 @@ public class SaTokenDaoImpl implements SaTokenDao {
     }
 
     /**
-     * {@code set} 写入或更新当前模块中的业务数据。
+     * 更新或设置 Sa Token Dao Impl 相关业务操作，并维护必要的状态和协作关系。
      *
-     * @param key 参数值，用于执行当前操作。
-     * @param value 参数值，用于执行当前操作。
-     * @param timeout 参数值，用于执行当前操作。
+     * @param key 用于定位或筛选目标业务对象的业务值。
+     * @param value 用于完成本次业务处理的 value 参数。
+     * @param timeout 用于完成本次业务处理的 timeout 参数。
      */
     @Override
     public void set(String key, String value, long timeout) {
@@ -190,10 +189,10 @@ public class SaTokenDaoImpl implements SaTokenDao {
     }
 
     /**
-     * {@code update} 写入或更新当前模块中的业务数据。
+     * 更新或设置 Sa Token Dao Impl 相关业务操作，并维护必要的状态和协作关系。
      *
-     * @param key 参数值，用于执行当前操作。
-     * @param value 参数值，用于执行当前操作。
+     * @param key 用于定位或筛选目标业务对象的业务值。
+     * @param value 用于完成本次业务处理的 value 参数。
      */
     @Override
     public void update(String key, String value) {
@@ -226,9 +225,9 @@ public class SaTokenDaoImpl implements SaTokenDao {
     }
 
     /**
-     * {@code delete} 释放或移除当前操作涉及的资源。
+     * 删除或移除 Sa Token Dao Impl 相关业务操作，并维护必要的状态和协作关系。
      *
-     * @param key 参数值，用于执行当前操作。
+     * @param key 用于定位或筛选目标业务对象的业务值。
      */
     @Override
     public void delete(String key) {
@@ -262,11 +261,10 @@ public class SaTokenDaoImpl implements SaTokenDao {
     }
 
     /**
-     * {@code getTimeout} 查询并返回当前操作所需的数据。
+     * 查询 Sa Token Dao Impl 相关业务数据，并返回处理结果。
      *
-     * @param key 参数值，用于执行当前操作。
-     *
-     * @return 返回当前操作产生的结果。
+     * @param key 用于定位或筛选目标业务对象的业务值。
+     * @return 返回 Sa Token Dao Impl 相关操作生成的结果数据。
      */
     @Override
     public long getTimeout(String key) {
@@ -288,10 +286,10 @@ public class SaTokenDaoImpl implements SaTokenDao {
     }
 
     /**
-     * {@code updateTimeout} 写入或更新当前模块中的业务数据。
+     * 更新或设置 Sa Token Dao Impl 相关业务操作，并维护必要的状态和协作关系。
      *
-     * @param key 参数值，用于执行当前操作。
-     * @param timeout 参数值，用于执行当前操作。
+     * @param key 用于定位或筛选目标业务对象的业务值。
+     * @param timeout 用于完成本次业务处理的 timeout 参数。
      */
     @Override
     public void updateTimeout(String key, long timeout) {
@@ -318,11 +316,10 @@ public class SaTokenDaoImpl implements SaTokenDao {
     // ==================== Object 存储（仅内存 Caffeine） ====================
 
     /**
-     * {@code getObject} 查询并返回当前操作所需的数据。
+     * 查询 Sa Token Dao Impl 相关业务数据，并返回处理结果。
      *
-     * @param key 参数值，用于执行当前操作。
-     *
-     * @return 返回当前操作产生的结果。
+     * @param key 用于定位或筛选目标业务对象的业务值。
+     * @return 返回 Sa Token Dao Impl 相关操作生成的结果数据。
      */
     @Override
     public Object getObject(String key) {
@@ -330,12 +327,11 @@ public class SaTokenDaoImpl implements SaTokenDao {
     }
 
     /**
-     * {@code getObject} 查询并返回当前操作所需的数据。
+     * 查询 Sa Token Dao Impl 相关业务数据，并返回处理结果。
      *
-     * @param key 参数值，用于执行当前操作。
-     * @param classType 参数值，用于执行当前操作。
-     *
-     * @return 返回当前操作产生的结果。
+     * @param key 用于定位或筛选目标业务对象的业务值。
+     * @param classType 用于完成本次业务处理的 classType 参数。
+     * @return 返回 Sa Token Dao Impl 相关操作生成的结果数据。
      */
     @Override
     public <T> T getObject(String key, Class<T> classType) {
@@ -347,11 +343,11 @@ public class SaTokenDaoImpl implements SaTokenDao {
     }
 
     /**
-     * {@code setObject} 写入或更新当前模块中的业务数据。
+     * 更新或设置 Sa Token Dao Impl 相关业务操作，并维护必要的状态和协作关系。
      *
-     * @param key 参数值，用于执行当前操作。
-     * @param object 参数值，用于执行当前操作。
-     * @param timeout 参数值，用于执行当前操作。
+     * @param key 用于定位或筛选目标业务对象的业务值。
+     * @param object 用于完成本次业务处理的 object 参数。
+     * @param timeout 用于完成本次业务处理的 timeout 参数。
      */
     @Override
     public void setObject(String key, Object object, long timeout) {
@@ -359,10 +355,10 @@ public class SaTokenDaoImpl implements SaTokenDao {
     }
 
     /**
-     * {@code updateObject} 写入或更新当前模块中的业务数据。
+     * 更新或设置 Sa Token Dao Impl 相关业务操作，并维护必要的状态和协作关系。
      *
-     * @param key 参数值，用于执行当前操作。
-     * @param object 参数值，用于执行当前操作。
+     * @param key 用于定位或筛选目标业务对象的业务值。
+     * @param object 用于完成本次业务处理的 object 参数。
      */
     @Override
     public void updateObject(String key, Object object) {
@@ -370,9 +366,9 @@ public class SaTokenDaoImpl implements SaTokenDao {
     }
 
     /**
-     * {@code deleteObject} 释放或移除当前操作涉及的资源。
+     * 删除或移除 Sa Token Dao Impl 相关业务操作，并维护必要的状态和协作关系。
      *
-     * @param key 参数值，用于执行当前操作。
+     * @param key 用于定位或筛选目标业务对象的业务值。
      */
     @Override
     public void deleteObject(String key) {
@@ -380,11 +376,10 @@ public class SaTokenDaoImpl implements SaTokenDao {
     }
 
     /**
-     * {@code getObjectTimeout} 查询并返回当前操作所需的数据。
+     * 查询 Sa Token Dao Impl 相关业务数据，并返回处理结果。
      *
-     * @param key 参数值，用于执行当前操作。
-     *
-     * @return 返回当前操作产生的结果。
+     * @param key 用于定位或筛选目标业务对象的业务值。
+     * @return 返回 Sa Token Dao Impl 相关操作生成的结果数据。
      */
     @Override
     public long getObjectTimeout(String key) {
@@ -392,10 +387,10 @@ public class SaTokenDaoImpl implements SaTokenDao {
     }
 
     /**
-     * {@code updateObjectTimeout} 写入或更新当前模块中的业务数据。
+     * 更新或设置 Sa Token Dao Impl 相关业务操作，并维护必要的状态和协作关系。
      *
-     * @param key 参数值，用于执行当前操作。
-     * @param timeout 参数值，用于执行当前操作。
+     * @param key 用于定位或筛选目标业务对象的业务值。
+     * @param timeout 用于完成本次业务处理的 timeout 参数。
      */
     @Override
     public void updateObjectTimeout(String key, long timeout) {}
@@ -403,11 +398,10 @@ public class SaTokenDaoImpl implements SaTokenDao {
     // ==================== Session 存储 ====================
 
     /**
-     * {@code getSession} 查询并返回当前操作所需的数据。
+     * 查询 Sa Token Dao Impl 相关业务数据，并返回处理结果。
      *
-     * @param sessionId 参数值，用于执行当前操作。
-     *
-     * @return 返回当前操作产生的结果。
+     * @param sessionId 用于定位session的标识。
+     * @return 返回 Sa Token Dao Impl 相关操作生成的结果数据。
      */
     @Override
     public SaSession getSession(String sessionId) {
@@ -446,10 +440,10 @@ public class SaTokenDaoImpl implements SaTokenDao {
     }
 
     /**
-     * {@code setSession} 写入或更新当前模块中的业务数据。
+     * 更新或设置 Sa Token Dao Impl 相关业务操作，并维护必要的状态和协作关系。
      *
-     * @param session 参数值，用于执行当前操作。
-     * @param timeout 参数值，用于执行当前操作。
+     * @param session 用于完成本次业务处理的 session 参数。
+     * @param timeout 用于完成本次业务处理的 timeout 参数。
      */
     @Override
     public void setSession(SaSession session, long timeout) {
@@ -486,9 +480,9 @@ public class SaTokenDaoImpl implements SaTokenDao {
     }
 
     /**
-     * {@code updateSession} 写入或更新当前模块中的业务数据。
+     * 更新或设置 Sa Token Dao Impl 相关业务操作，并维护必要的状态和协作关系。
      *
-     * @param session 参数值，用于执行当前操作。
+     * @param session 用于完成本次业务处理的 session 参数。
      */
     @Override
     public void updateSession(SaSession session) {
@@ -514,9 +508,9 @@ public class SaTokenDaoImpl implements SaTokenDao {
     }
 
     /**
-     * {@code deleteSession} 释放或移除当前操作涉及的资源。
+     * 删除或移除 Sa Token Dao Impl 相关业务操作，并维护必要的状态和协作关系。
      *
-     * @param sessionId 参数值，用于执行当前操作。
+     * @param sessionId 用于定位session的标识。
      */
     @Override
     public void deleteSession(String sessionId) {
@@ -539,11 +533,10 @@ public class SaTokenDaoImpl implements SaTokenDao {
     }
 
     /**
-     * {@code getSessionTimeout} 查询并返回当前操作所需的数据。
+     * 查询 Sa Token Dao Impl 相关业务数据，并返回处理结果。
      *
-     * @param sessionId 参数值，用于执行当前操作。
-     *
-     * @return 返回当前操作产生的结果。
+     * @param sessionId 用于定位session的标识。
+     * @return 返回 Sa Token Dao Impl 相关操作生成的结果数据。
      */
     @Override
     public long getSessionTimeout(String sessionId) {
@@ -566,10 +559,10 @@ public class SaTokenDaoImpl implements SaTokenDao {
     }
 
     /**
-     * {@code updateSessionTimeout} 写入或更新当前模块中的业务数据。
+     * 更新或设置 Sa Token Dao Impl 相关业务操作，并维护必要的状态和协作关系。
      *
-     * @param sessionId 参数值，用于执行当前操作。
-     * @param timeout 参数值，用于执行当前操作。
+     * @param sessionId 用于定位session的标识。
+     * @param timeout 用于完成本次业务处理的 timeout 参数。
      */
     @Override
     public void updateSessionTimeout(String sessionId, long timeout) {
@@ -597,15 +590,14 @@ public class SaTokenDaoImpl implements SaTokenDao {
     // ==================== 搜索 ====================
 
     /**
-     * {@code searchData} 查询并返回当前操作所需的数据。
+     * 查询 Sa Token Dao Impl 相关业务数据，并返回处理结果。
      *
-     * @param prefix 参数值，用于执行当前操作。
-     * @param keyword 参数值，用于执行当前操作。
-     * @param start 参数值，用于执行当前操作。
-     * @param size 参数值，用于执行当前操作。
-     * @param sortType 参数值，用于执行当前操作。
-     *
-     * @return 返回当前操作产生的结果。
+     * @param prefix 用于完成本次业务处理的 prefix 参数。
+     * @param keyword 用于完成本次业务处理的 keyword 参数。
+     * @param start 用于完成本次业务处理的 start 参数。
+     * @param size 每页返回的数据数量。
+     * @param sortType 用于完成本次业务处理的 sortType 参数。
+     * @return 返回符合条件的数据集合；没有匹配项时返回空集合。
      */
     @Override
     public List<String> searchData(
@@ -768,7 +760,7 @@ public class SaTokenDaoImpl implements SaTokenDao {
     }
 
     /**
-     * {@code destroy} 执行当前类型定义的业务操作。
+     * 执行 Sa Token Dao Impl 相关业务操作，并维护必要的状态和协作关系。
      */
     @PreDestroy
     public void destroy() {

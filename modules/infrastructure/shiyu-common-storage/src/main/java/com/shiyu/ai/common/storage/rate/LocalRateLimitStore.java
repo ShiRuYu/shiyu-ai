@@ -15,7 +15,7 @@ import java.time.Duration;
 import java.util.concurrent.ConcurrentHashMap;
 
 /**
- * {@code LocalRateLimitStore} 承载平台基础设施模块的领域状态或协作行为，负责维护本类型的职责边界。
+ * 管理 Local Rate Limit 相关的运行时状态、注册信息或临时数据。
  */
 @Component
 @ConditionalOnProperty(
@@ -27,14 +27,13 @@ public class LocalRateLimitStore implements RateLimitStore {
     private final ConcurrentHashMap<String, Window> windows = new ConcurrentHashMap<>();
 
     /**
-     * {@code consume} 执行当前类型定义的业务操作。
+     * 处理 Local Rate Limit 相关业务数据，并返回处理结果。
      *
-     * @param key 参数值，用于执行当前操作。
-     * @param permits 参数值，用于执行当前操作。
-     * @param limit 参数值，用于执行当前操作。
-     * @param window 参数值，用于执行当前操作。
-     *
-     * @return 返回当前操作产生的结果。
+     * @param key 用于定位或筛选目标业务对象的业务值。
+     * @param permits 用于完成本次业务处理的 permits 参数。
+     * @param limit 每页返回的数据数量。
+     * @param window 用于完成本次业务处理的 window 参数。
+     * @return 返回本次条件判断是否成立。
      */
     public boolean consume(String key, long permits, long limit, Duration window) {
         long now = System.nanoTime();
@@ -49,9 +48,7 @@ public class LocalRateLimitStore implements RateLimitStore {
     }
 
     /**
-     * {@code Window} 封装平台基础设施模块中不可变的结构化数据，并作为相关操作之间的值对象。
-     * @param expiresAt 过期时间，表示该记录组件承载的数据。
-     * @param used used 属性，表示该记录组件承载的数据。
+     * 封装 Window 相关的不可变数据及其字段约束。
      */
     private record Window(long expiresAt, long used) {}
 }

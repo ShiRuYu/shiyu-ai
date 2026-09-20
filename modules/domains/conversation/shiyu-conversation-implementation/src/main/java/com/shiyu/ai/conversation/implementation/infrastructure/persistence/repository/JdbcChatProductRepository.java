@@ -38,7 +38,7 @@ import java.util.Optional;
 import javax.sql.DataSource;
 
 /**
- * {@code JdbcChatProductRepository} 定义会话模块的持久化端口，隔离领域逻辑与具体存储实现。
+ * 负责 Jdbc 对话 Product 的持久化查询、保存和删除，并维护数据访问边界。
  */
 @Component
 public class JdbcChatProductRepository implements ChatProductRepository {
@@ -52,9 +52,9 @@ public class JdbcChatProductRepository implements ChatProductRepository {
     private final JdbcDialect dialect;
 
     /**
-     * {@code JdbcChatProductRepository} 创建并初始化当前类型实例。
+     * 执行 Jdbc 对话 Product 相关业务操作，并维护必要的状态和协作关系。
      *
-     * @param dataSource 参数值，用于执行当前操作。
+     * @param dataSource 用于完成本次业务处理的 dataSource 参数。
      */
     public JdbcChatProductRepository(@Qualifier("agentDataSource") DataSource dataSource) {
         this.jdbc = new JdbcTemplate(dataSource);
@@ -62,11 +62,10 @@ public class JdbcChatProductRepository implements ChatProductRepository {
     }
 
     /**
-     * {@code saveCharacter} 写入或更新当前模块中的业务数据。
+     * 创建或保存 Jdbc 对话 Product 相关业务数据，并返回处理结果。
      *
-     * @param asset 参数值，用于执行当前操作。
-     *
-     * @return 返回当前操作产生的结果。
+     * @param asset 用于完成本次业务处理的 asset 参数。
+     * @return 返回 Jdbc 对话 Product 相关操作生成的结果数据。
      */
     @Override
     public CharacterAsset saveCharacter(CharacterAsset asset) {
@@ -105,13 +104,12 @@ public class JdbcChatProductRepository implements ChatProductRepository {
     }
 
     /**
-     * {@code findCharacter} 查询并返回当前操作所需的数据。
+     * 查询 Jdbc 对话 Product 相关业务数据，并返回处理结果。
      *
-     * @param tenant 参数值，用于执行当前操作。
-     * @param owner 参数值，用于执行当前操作。
-     * @param id 参数值，用于执行当前操作。
-     *
-     * @return 返回当前操作产生的结果。
+     * @param tenant 当前操作涉及的租户标识。
+     * @param owner 用于完成本次业务处理的 owner 参数。
+     * @param id 用于定位目标业务对象的标识。
+     * @return 返回可能存在的业务对象；不存在时返回空值容器。
      */
     @Override
     public Optional<CharacterAsset> findCharacter(TenantId tenant, long owner, String id) {
@@ -129,13 +127,12 @@ public class JdbcChatProductRepository implements ChatProductRepository {
     }
 
     /**
-     * {@code findCharacterForAccess} 查询并返回当前操作所需的数据。
+     * 查询 Jdbc 对话 Product 相关业务数据，并返回处理结果。
      *
-     * @param tenant 参数值，用于执行当前操作。
-     * @param requester 参数值，用于执行当前操作。
-     * @param id 参数值，用于执行当前操作。
-     *
-     * @return 返回当前操作产生的结果。
+     * @param tenant 当前操作涉及的租户标识。
+     * @param requester 用于完成本次业务处理的 requester 参数。
+     * @param id 用于定位目标业务对象的标识。
+     * @return 返回可能存在的业务对象；不存在时返回空值容器。
      */
     @Override
     public Optional<CharacterAsset> findCharacterForAccess(
@@ -154,12 +151,11 @@ public class JdbcChatProductRepository implements ChatProductRepository {
     }
 
     /**
-     * {@code listCharacters} 查询并返回当前操作所需的数据。
+     * 查询 Jdbc 对话 Product 相关业务数据，并返回处理结果。
      *
-     * @param tenant 参数值，用于执行当前操作。
-     * @param owner 参数值，用于执行当前操作。
-     *
-     * @return 返回当前操作产生的结果。
+     * @param tenant 当前操作涉及的租户标识。
+     * @param owner 用于完成本次业务处理的 owner 参数。
+     * @return 返回符合条件的数据集合；没有匹配项时返回空集合。
      */
     @Override
     public List<CharacterAsset> listCharacters(TenantId tenant, long owner) {
@@ -173,11 +169,11 @@ public class JdbcChatProductRepository implements ChatProductRepository {
     }
 
     /**
-     * {@code deleteCharacter} 释放或移除当前操作涉及的资源。
+     * 删除或移除 Jdbc 对话 Product 相关业务操作，并维护必要的状态和协作关系。
      *
-     * @param tenant 参数值，用于执行当前操作。
-     * @param owner 参数值，用于执行当前操作。
-     * @param id 参数值，用于执行当前操作。
+     * @param tenant 当前操作涉及的租户标识。
+     * @param owner 用于完成本次业务处理的 owner 参数。
+     * @param id 用于定位目标业务对象的标识。
      */
     @Override
     public void deleteCharacter(TenantId tenant, long owner, String id) {
@@ -189,11 +185,10 @@ public class JdbcChatProductRepository implements ChatProductRepository {
     }
 
     /**
-     * {@code savePersona} 写入或更新当前模块中的业务数据。
+     * 创建或保存 Jdbc 对话 Product 相关业务数据，并返回处理结果。
      *
-     * @param asset 参数值，用于执行当前操作。
-     *
-     * @return 返回当前操作产生的结果。
+     * @param asset 用于完成本次业务处理的 asset 参数。
+     * @return 返回 Jdbc 对话 Product 相关操作生成的结果数据。
      */
     @Override
     public PersonaAsset savePersona(PersonaAsset asset) {
@@ -226,13 +221,12 @@ public class JdbcChatProductRepository implements ChatProductRepository {
     }
 
     /**
-     * {@code findPersona} 查询并返回当前操作所需的数据。
+     * 查询 Jdbc 对话 Product 相关业务数据，并返回处理结果。
      *
-     * @param tenant 参数值，用于执行当前操作。
-     * @param owner 参数值，用于执行当前操作。
-     * @param id 参数值，用于执行当前操作。
-     *
-     * @return 返回当前操作产生的结果。
+     * @param tenant 当前操作涉及的租户标识。
+     * @param owner 用于完成本次业务处理的 owner 参数。
+     * @param id 用于定位目标业务对象的标识。
+     * @return 返回可能存在的业务对象；不存在时返回空值容器。
      */
     @Override
     public Optional<PersonaAsset> findPersona(TenantId tenant, long owner, String id) {
@@ -258,12 +252,11 @@ public class JdbcChatProductRepository implements ChatProductRepository {
     }
 
     /**
-     * {@code listPersonas} 查询并返回当前操作所需的数据。
+     * 查询 Jdbc 对话 Product 相关业务数据，并返回处理结果。
      *
-     * @param tenant 参数值，用于执行当前操作。
-     * @param owner 参数值，用于执行当前操作。
-     *
-     * @return 返回当前操作产生的结果。
+     * @param tenant 当前操作涉及的租户标识。
+     * @param owner 用于完成本次业务处理的 owner 参数。
+     * @return 返回符合条件的数据集合；没有匹配项时返回空集合。
      */
     @Override
     public List<PersonaAsset> listPersonas(TenantId tenant, long owner) {
@@ -284,11 +277,11 @@ public class JdbcChatProductRepository implements ChatProductRepository {
     }
 
     /**
-     * {@code deletePersona} 释放或移除当前操作涉及的资源。
+     * 删除或移除 Jdbc 对话 Product 相关业务操作，并维护必要的状态和协作关系。
      *
-     * @param tenant 参数值，用于执行当前操作。
-     * @param owner 参数值，用于执行当前操作。
-     * @param id 参数值，用于执行当前操作。
+     * @param tenant 当前操作涉及的租户标识。
+     * @param owner 用于完成本次业务处理的 owner 参数。
+     * @param id 用于定位目标业务对象的标识。
      */
     @Override
     public void deletePersona(TenantId tenant, long owner, String id) {
@@ -300,11 +293,10 @@ public class JdbcChatProductRepository implements ChatProductRepository {
     }
 
     /**
-     * {@code saveLorebook} 写入或更新当前模块中的业务数据。
+     * 创建或保存 Jdbc 对话 Product 相关业务数据，并返回处理结果。
      *
-     * @param asset 参数值，用于执行当前操作。
-     *
-     * @return 返回当前操作产生的结果。
+     * @param asset 用于完成本次业务处理的 asset 参数。
+     * @return 返回 Jdbc 对话 Product 相关操作生成的结果数据。
      */
     @Override
     public LorebookAsset saveLorebook(LorebookAsset asset) {
@@ -337,13 +329,12 @@ public class JdbcChatProductRepository implements ChatProductRepository {
     }
 
     /**
-     * {@code findLorebook} 查询并返回当前操作所需的数据。
+     * 查询 Jdbc 对话 Product 相关业务数据，并返回处理结果。
      *
-     * @param tenant 参数值，用于执行当前操作。
-     * @param owner 参数值，用于执行当前操作。
-     * @param id 参数值，用于执行当前操作。
-     *
-     * @return 返回当前操作产生的结果。
+     * @param tenant 当前操作涉及的租户标识。
+     * @param owner 用于完成本次业务处理的 owner 参数。
+     * @param id 用于定位目标业务对象的标识。
+     * @return 返回可能存在的业务对象；不存在时返回空值容器。
      */
     @Override
     public Optional<LorebookAsset> findLorebook(TenantId tenant, long owner, String id) {
@@ -369,12 +360,11 @@ public class JdbcChatProductRepository implements ChatProductRepository {
     }
 
     /**
-     * {@code listLorebooks} 查询并返回当前操作所需的数据。
+     * 查询 Jdbc 对话 Product 相关业务数据，并返回处理结果。
      *
-     * @param tenant 参数值，用于执行当前操作。
-     * @param owner 参数值，用于执行当前操作。
-     *
-     * @return 返回当前操作产生的结果。
+     * @param tenant 当前操作涉及的租户标识。
+     * @param owner 用于完成本次业务处理的 owner 参数。
+     * @return 返回符合条件的数据集合；没有匹配项时返回空集合。
      */
     @Override
     public List<LorebookAsset> listLorebooks(TenantId tenant, long owner) {
@@ -396,11 +386,11 @@ public class JdbcChatProductRepository implements ChatProductRepository {
     }
 
     /**
-     * {@code deleteLorebook} 释放或移除当前操作涉及的资源。
+     * 删除或移除 Jdbc 对话 Product 相关业务操作，并维护必要的状态和协作关系。
      *
-     * @param tenant 参数值，用于执行当前操作。
-     * @param owner 参数值，用于执行当前操作。
-     * @param id 参数值，用于执行当前操作。
+     * @param tenant 当前操作涉及的租户标识。
+     * @param owner 用于完成本次业务处理的 owner 参数。
+     * @param id 用于定位目标业务对象的标识。
      */
     @Override
     public void deleteLorebook(TenantId tenant, long owner, String id) {
@@ -412,13 +402,12 @@ public class JdbcChatProductRepository implements ChatProductRepository {
     }
 
     /**
-     * {@code savePrompt} 写入或更新当前模块中的业务数据。
+     * 创建或保存 Jdbc 对话 Product 相关业务数据，并返回处理结果。
      *
-     * @param version 参数值，用于执行当前操作。
-     * @param tenant 参数值，用于执行当前操作。
-     * @param owner 参数值，用于执行当前操作。
-     *
-     * @return 返回当前操作产生的结果。
+     * @param version 用于完成本次业务处理的 version 参数。
+     * @param tenant 当前操作涉及的租户标识。
+     * @param owner 用于完成本次业务处理的 owner 参数。
+     * @return 返回 Jdbc 对话 Product 相关操作生成的结果数据。
      */
     @Override
     public PromptTemplateVersion savePrompt(
@@ -443,13 +432,12 @@ public class JdbcChatProductRepository implements ChatProductRepository {
     }
 
     /**
-     * {@code listPrompts} 查询并返回当前操作所需的数据。
+     * 查询 Jdbc 对话 Product 相关业务数据，并返回处理结果。
      *
-     * @param tenant 参数值，用于执行当前操作。
-     * @param owner 参数值，用于执行当前操作。
-     * @param templateId 参数值，用于执行当前操作。
-     *
-     * @return 返回当前操作产生的结果。
+     * @param tenant 当前操作涉及的租户标识。
+     * @param owner 用于完成本次业务处理的 owner 参数。
+     * @param templateId 用于定位template的标识。
+     * @return 返回符合条件的数据集合；没有匹配项时返回空集合。
      */
     @Override
     public List<PromptTemplateVersion> listPrompts(TenantId tenant, long owner, String templateId) {
@@ -481,11 +469,10 @@ public class JdbcChatProductRepository implements ChatProductRepository {
     }
 
     /**
-     * {@code saveGroup} 写入或更新当前模块中的业务数据。
+     * 创建或保存 Jdbc 对话 Product 相关业务数据，并返回处理结果。
      *
-     * @param asset 参数值，用于执行当前操作。
-     *
-     * @return 返回当前操作产生的结果。
+     * @param asset 用于完成本次业务处理的 asset 参数。
+     * @return 返回 Jdbc 对话 Product 相关操作生成的结果数据。
      */
     @Override
     public GroupChatAsset saveGroup(GroupChatAsset asset) {
@@ -530,13 +517,12 @@ public class JdbcChatProductRepository implements ChatProductRepository {
     }
 
     /**
-     * {@code findGroup} 查询并返回当前操作所需的数据。
+     * 查询 Jdbc 对话 Product 相关业务数据，并返回处理结果。
      *
-     * @param tenant 参数值，用于执行当前操作。
-     * @param owner 参数值，用于执行当前操作。
-     * @param id 参数值，用于执行当前操作。
-     *
-     * @return 返回当前操作产生的结果。
+     * @param tenant 当前操作涉及的租户标识。
+     * @param owner 用于完成本次业务处理的 owner 参数。
+     * @param id 用于定位目标业务对象的标识。
+     * @return 返回可能存在的业务对象；不存在时返回空值容器。
      */
     @Override
     public Optional<GroupChatAsset> findGroup(TenantId tenant, long owner, String id) {
@@ -554,12 +540,11 @@ public class JdbcChatProductRepository implements ChatProductRepository {
     }
 
     /**
-     * {@code listGroups} 查询并返回当前操作所需的数据。
+     * 查询 Jdbc 对话 Product 相关业务数据，并返回处理结果。
      *
-     * @param tenant 参数值，用于执行当前操作。
-     * @param owner 参数值，用于执行当前操作。
-     *
-     * @return 返回当前操作产生的结果。
+     * @param tenant 当前操作涉及的租户标识。
+     * @param owner 用于完成本次业务处理的 owner 参数。
+     * @return 返回符合条件的数据集合；没有匹配项时返回空集合。
      */
     @Override
     public List<GroupChatAsset> listGroups(TenantId tenant, long owner) {
@@ -573,11 +558,11 @@ public class JdbcChatProductRepository implements ChatProductRepository {
     }
 
     /**
-     * {@code deleteGroup} 释放或移除当前操作涉及的资源。
+     * 删除或移除 Jdbc 对话 Product 相关业务操作，并维护必要的状态和协作关系。
      *
-     * @param tenant 参数值，用于执行当前操作。
-     * @param owner 参数值，用于执行当前操作。
-     * @param id 参数值，用于执行当前操作。
+     * @param tenant 当前操作涉及的租户标识。
+     * @param owner 用于完成本次业务处理的 owner 参数。
+     * @param id 用于定位目标业务对象的标识。
      */
     @Override
     public void deleteGroup(TenantId tenant, long owner, String id) {

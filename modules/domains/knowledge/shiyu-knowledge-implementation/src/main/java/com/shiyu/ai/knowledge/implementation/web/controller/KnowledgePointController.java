@@ -32,7 +32,7 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 /**
- * {@code KnowledgePointController} 是知识模块的 Web 接口适配器，负责接收请求并转换为应用服务调用。
+ * 处理 知识 Point 相关的 Web 请求，并将请求转换为应用服务调用。
  */
 @RestController
 @RequestMapping("/api/knowledge")
@@ -47,16 +47,10 @@ public class KnowledgePointController {
     private final KnowledgePointService service;
 
     /**
-     * {@code page} 执行当前类型定义的业务操作。
+     * 查询 知识 Point 相关业务数据，并返回处理结果。
      *
-     * @param spaceId 参数值，用于执行当前操作。
-     * @param pageNum 参数值，用于执行当前操作。
-     * @param pageSize 参数值，用于执行当前操作。
-     * @param keyword 参数值，用于执行当前操作。
-     * @param category 参数值，用于执行当前操作。
-     * @param version 参数值，用于执行当前操作。
-     *
-     * @return 返回当前操作产生的结果。
+     * @param points 用于完成本次业务处理的 points 参数。
+     * @return 返回 知识 Point 相关操作生成的结果数据。
      */
     @GetMapping("/spaces/{spaceId}/points")
     public Result<PageData<KnowledgePointService.PointView>> page(
@@ -75,12 +69,10 @@ public class KnowledgePointController {
     }
 
     /**
-     * {@code get} 查询并返回当前操作所需的数据。
+     * 查询 知识 Point 相关业务数据，并返回处理结果。
      *
-     * @param id 参数值，用于执行当前操作。
-     * @param version 参数值，用于执行当前操作。
-     *
-     * @return 返回当前操作产生的结果。
+     * @param id 用于定位目标业务对象的标识。
+     * @return 返回 知识 Point 相关操作生成的结果数据。
      */
     @GetMapping("/points/{id}")
     public Result<KnowledgePointService.PointView> get(
@@ -94,12 +86,10 @@ public class KnowledgePointController {
     }
 
     /**
-     * {@code graph} 执行当前类型定义的业务操作。
+     * 执行 知识 Point 相关业务数据，并返回处理结果。
      *
-     * @param id 参数值，用于执行当前操作。
-     * @param version 参数值，用于执行当前操作。
-     *
-     * @return 返回当前操作产生的结果。
+     * @param graph 用于完成本次业务处理的 graph 参数。
+     * @return 返回 知识 Point 相关操作生成的结果数据。
      */
     @GetMapping("/points/{id}/graph")
     public Result<com.shiyu.ai.knowledge.implementation.web.response.KnowledgeGraphResponse> graph(
@@ -113,13 +103,10 @@ public class KnowledgePointController {
     }
 
     /**
-     * {@code create} 写入或更新当前模块中的业务数据。
+     * 创建或保存 知识 Point 相关业务数据，并返回处理结果。
      *
-     * @param spaceId 参数值，用于执行当前操作。
-     * @param request 参数值，用于执行当前操作。
-     * @param version 参数值，用于执行当前操作。
-     *
-     * @return 返回当前操作产生的结果。
+     * @param points 用于完成本次业务处理的 points 参数。
+     * @return 返回 知识 Point 相关操作生成的结果数据。
      */
     @PostMapping("/spaces/{spaceId}/points")
     @SaCheckPermission("knowledge:create")
@@ -135,13 +122,10 @@ public class KnowledgePointController {
     }
 
     /**
-     * {@code update} 写入或更新当前模块中的业务数据。
+     * 更新或设置 知识 Point 相关业务数据，并返回处理结果。
      *
-     * @param id 参数值，用于执行当前操作。
-     * @param request 参数值，用于执行当前操作。
-     * @param version 参数值，用于执行当前操作。
-     *
-     * @return 返回当前操作产生的结果。
+     * @param id 用于定位目标业务对象的标识。
+     * @return 返回 知识 Point 相关操作生成的结果数据。
      */
     @PutMapping("/points/{id}")
     @SaCheckPermission("knowledge:edit")
@@ -157,12 +141,10 @@ public class KnowledgePointController {
     }
 
     /**
-     * {@code delete} 释放或移除当前操作涉及的资源。
+     * 删除或移除 知识 Point 相关业务数据，并返回处理结果。
      *
-     * @param id 参数值，用于执行当前操作。
-     * @param version 参数值，用于执行当前操作。
-     *
-     * @return 返回当前操作产生的结果。
+     * @param id 用于定位目标业务对象的标识。
+     * @return 返回 知识 Point 相关操作生成的结果数据。
      */
     @DeleteMapping("/points/{id}")
     @SaCheckPermission("knowledge:delete")

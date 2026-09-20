@@ -10,7 +10,9 @@ import org.springframework.stereotype.Component;
 
 import java.util.List;
 
-/** IAM 租户模块授权应用服务，统一校验模块标识后委托租户隔离仓储。 */
+/**
+ * 提供 租户 Module Access 的查询、创建、更新及调用服务，协调业务变更和领域协作。
+ */
 @Component
 public final class TenantModuleAccessService
         implements TenantModuleAccessPort, TenantModuleAccessProvisioning {

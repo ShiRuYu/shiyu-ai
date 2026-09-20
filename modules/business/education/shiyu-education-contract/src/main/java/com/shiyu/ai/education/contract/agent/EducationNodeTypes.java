@@ -3,7 +3,7 @@ package com.shiyu.ai.education.contract.agent;
 import com.shiyu.ai.agent.contract.node.NodeType;
 
 /**
- * 集中定义教育模块支持的 Agent 节点类型。
+ * 定义 教育 Node Types 所属领域对外协作所需的稳定契约。
  */
 public final class EducationNodeTypes {
 

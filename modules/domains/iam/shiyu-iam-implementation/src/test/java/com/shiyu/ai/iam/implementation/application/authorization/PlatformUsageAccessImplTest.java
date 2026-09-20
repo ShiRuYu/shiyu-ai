@@ -18,6 +18,9 @@ import com.shiyu.ai.iam.implementation.domain.model.UserScopeRoleBO;
 import com.shiyu.ai.kernel.context.TenantScope;
 import java.util.List;
 
+/**
+ * 验证 平台 用量 Access Impl 相关功能、边界条件、异常路径和协作行为。
+ */
 class PlatformUsageAccessImplTest {
 
     private final TenantRoleRepository roles = mock(TenantRoleRepository.class);

@@ -26,7 +26,9 @@ import java.util.Map;
 import java.util.Set;
 import java.util.function.Function;
 
-/** Graph 类 存储要构建 StateGraph 的所有属性和配置 */
+/**
+ * 表示 Graph 相关流程的节点、边和执行关系。
+ */
 @Slf4j
 @Data
 @Builder
@@ -96,9 +98,9 @@ public class Graph {
     }
 
     /**
-     * {@code setEdges} 写入或更新当前模块中的业务数据。
+     * 更新或设置 Graph 相关业务操作，并维护必要的状态和协作关系。
      *
-     * @param edges 参数值，用于执行当前操作。
+     * @param edges 用于完成本次业务处理的 edges 参数。
      */
     public void setEdges(Map<String, List<String>> edges) {
         this.edges = mutableEdgeCopy(edges);
@@ -106,9 +108,9 @@ public class Graph {
     }
 
     /**
-     * {@code setConditionalEdges} 写入或更新当前模块中的业务数据。
+     * 更新或设置 Graph 相关业务操作，并维护必要的状态和协作关系。
      *
-     * @param conditionalEdges 参数值，用于执行当前操作。
+     * @param conditionalEdges 用于完成本次业务处理的 conditionalEdges 参数。
      */
     public void setConditionalEdges(Map<String, ConditionEdge> conditionalEdges) {
         this.conditionalEdges = mutableCopy(conditionalEdges);
@@ -116,9 +118,9 @@ public class Graph {
     }
 
     /**
-     * {@code setChannels} 写入或更新当前模块中的业务数据。
+     * 更新或设置 Graph 相关业务操作，并维护必要的状态和协作关系。
      *
-     * @param channels 参数值，用于执行当前操作。
+     * @param channels 用于完成本次业务处理的 channels 参数。
      */
     public void setChannels(Map<String, Channel<?>> channels) {
         this.channels = mutableCopy(channels);
@@ -126,18 +128,18 @@ public class Graph {
     }
 
     /**
-     * {@code getNodes} 查询并返回当前操作所需的数据。
+     * 查询 Graph 相关业务数据，并返回处理结果。
      *
-     * @return 返回当前操作产生的结果。
+     * @return 返回 Graph 相关操作生成的结果数据。
      */
     public Map<String, BaseNode> getNodes() {
         return Collections.unmodifiableMap(new HashMap<>(nodes));
     }
 
     /**
-     * {@code getEdges} 查询并返回当前操作所需的数据。
+     * 查询 Graph 相关业务数据，并返回处理结果。
      *
-     * @return 返回当前操作产生的结果。
+     * @return 返回符合条件的数据集合；没有匹配项时返回空集合。
      */
     public Map<String, List<String>> getEdges() {
         Map<String, List<String>> copy = new HashMap<>();
@@ -152,18 +154,18 @@ public class Graph {
     }
 
     /**
-     * {@code getConditionalEdges} 查询并返回当前操作所需的数据。
+     * 查询 Graph 相关业务数据，并返回处理结果。
      *
-     * @return 返回当前操作产生的结果。
+     * @return 返回 Graph 相关操作生成的结果数据。
      */
     public Map<String, ConditionEdge> getConditionalEdges() {
         return Collections.unmodifiableMap(new HashMap<>(conditionalEdges));
     }
 
     /**
-     * {@code getChannels} 查询并返回当前操作所需的数据。
+     * 查询 Graph 相关业务数据，并返回处理结果。
      *
-     * @return 返回当前操作产生的结果。
+     * @return 返回 Graph 相关操作生成的结果数据。
      */
     public Map<String, Channel<?>> getChannels() {
         return Collections.unmodifiableMap(new HashMap<>(channels));
@@ -399,9 +401,9 @@ public class Graph {
     }
 
     /**
-     * {@code compile} 执行当前类型定义的业务操作。
+     * 执行 Graph 相关业务数据，并返回处理结果。
      *
-     * @return 返回当前操作产生的结果。
+     * @return 返回 Graph 相关操作生成的结果数据。
      */
     public synchronized CompiledGraph<AgentState> compile() throws GraphStateException {
         log.info("开始编译 Graph: namePresent={}", this.name != null);

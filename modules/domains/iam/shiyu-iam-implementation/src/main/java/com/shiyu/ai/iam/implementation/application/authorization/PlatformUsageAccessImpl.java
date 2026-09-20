@@ -13,7 +13,7 @@ import java.util.Objects;
 import org.springframework.stereotype.Component;
 
 /**
- * 校验默认租户超级管理员的平台统计身份边界。
+ * 编排 平台 用量 Access Impl 所属应用流程的输入、协作和业务结果。
  */
 @Component
 public final class PlatformUsageAccessImpl implements PlatformUsageAccess {

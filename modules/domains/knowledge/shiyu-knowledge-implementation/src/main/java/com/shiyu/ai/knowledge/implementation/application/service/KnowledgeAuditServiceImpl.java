@@ -15,7 +15,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
 /**
- * {@code KnowledgeAuditServiceImpl} 实现知识模块的应用服务，负责编排用例流程并维护业务边界。
+ * 提供 知识 Audit 的查询、创建、更新及调用服务，协调业务变更和领域协作。
  */
 @Service
 @RequiredArgsConstructor
@@ -27,14 +27,14 @@ public class KnowledgeAuditServiceImpl implements KnowledgeAuditService {
     private final KnowledgeEnterpriseRepository repository;
 
     /**
-     * {@code record} 写入或更新当前模块中的业务数据。
+     * 执行 知识 Audit 相关业务操作，并维护必要的状态和协作关系。
      *
-     * @param actor 参数值，用于执行当前操作。
-     * @param spaceId 参数值，用于执行当前操作。
-     * @param resourceType 参数值，用于执行当前操作。
-     * @param resourceId 参数值，用于执行当前操作。
-     * @param action 参数值，用于执行当前操作。
-     * @param detail 参数值，用于执行当前操作。
+     * @param actor 当前操作主体上下文，用于确定租户、用户和访问权限。
+     * @param spaceId 用于定位space的标识。
+     * @param resourceType 用于完成本次业务处理的 resourceType 参数。
+     * @param resourceId 用于定位resource的标识。
+     * @param action 用于完成本次业务处理的 action 参数。
+     * @param detail 用于完成本次业务处理的 detail 参数。
      */
     @Override
     public void record(
@@ -58,14 +58,13 @@ public class KnowledgeAuditServiceImpl implements KnowledgeAuditService {
     }
 
     /**
-     * {@code page} 执行当前类型定义的业务操作。
+     * 查询 知识 Audit 相关业务数据，并返回处理结果。
      *
-     * @param actor 参数值，用于执行当前操作。
-     * @param pageNum 参数值，用于执行当前操作。
-     * @param pageSize 参数值，用于执行当前操作。
-     * @param spaceId 参数值，用于执行当前操作。
-     *
-     * @return 返回当前操作产生的结果。
+     * @param actor 当前操作主体上下文，用于确定租户、用户和访问权限。
+     * @param pageNum 用于完成本次业务处理的 pageNum 参数。
+     * @param pageSize 每页返回的数据数量。
+     * @param spaceId 用于定位space的标识。
+     * @return 返回 知识 Audit 相关操作生成的结果数据。
      */
     @Override
     public PageData<KnowledgeAuditResponse> page(

@@ -10,25 +10,23 @@ import java.util.List;
 import java.util.Set;
 
 /**
- * AuthUserLookupRepository 仓储接口，负责访问和持久化身份与访问领域聚合数据。
+ * 负责 认证 用户 Lookup 的持久化查询、保存和删除，并维护数据访问边界。
  */
 public interface AuthUserLookupRepository {
     /**
-     * 根据标识查询对应的数据。
+     * 查询 认证 用户 Lookup 相关业务数据，并返回处理结果。
      *
-     * @param userId 用户标识。
-     *
-     * @return 操作结果。
+     * @param userId 当前操作涉及的用户标识。
+     * @return 返回 认证 用户 Lookup 相关操作生成的结果数据。
      */
     UserBO selectUserById(Long userId);
 
     /**
-     * 更新业务对象及其关联数据。
+     * 更新或设置 认证 用户 Lookup 相关业务数据，并返回处理结果。
      *
-     * @param userId 用户标识。
-     * @param extInfo 方法参数。
-     *
-     * @return 条件是否满足。
+     * @param userId 当前操作涉及的用户标识。
+     * @param extInfo 用于完成本次业务处理的 extInfo 参数。
+     * @return 返回本次条件判断是否成立。
      */
     boolean updateUserExtInfo(Long userId, String extInfo);
 
@@ -42,38 +40,34 @@ public interface AuthUserLookupRepository {
     List<UserScopeRoleBO> selectUserScopeRoles(Long userId);
 
     /**
-     * 根据标识查询对应的数据。
+     * 查询 认证 用户 Lookup 相关业务数据，并返回处理结果。
      *
-     * @param roleId 方法参数。
-     *
-     * @return 操作结果。
+     * @param roleId 用于定位role的标识。
+     * @return 返回 认证 用户 Lookup 相关操作生成的结果数据。
      */
     RoleBO selectRoleById(Long roleId);
 
     /**
-     * 根据条件查询并返回所需数据。
+     * 查询 认证 用户 Lookup 相关业务数据，并返回处理结果。
      *
-     * @param tenantId 租户标识。
-     *
-     * @return 操作结果。
+     * @param tenantId 当前操作涉及的租户标识。
+     * @return 返回 认证 用户 Lookup 相关操作生成的结果数据。
      */
     RoleBO selectTenantSuperRole(TenantId tenantId);
 
     /**
-     * 根据条件查询并返回所需数据。
+     * 查询 认证 用户 Lookup 相关业务数据，并返回处理结果。
      *
-     * @param roleIds 方法参数。
-     *
-     * @return 符合条件的结果集合。
+     * @param roleIds 待处理的业务对象标识集合。
+     * @return 返回符合条件的数据集合；没有匹配项时返回空集合。
      */
     List<RoleBO> selectRolesByIds(Set<Long> roleIds);
 
     /**
-     * 根据标识查询对应的数据。
+     * 查询 认证 用户 Lookup 相关业务数据，并返回处理结果。
      *
-     * @param tenantId 租户标识。
-     *
-     * @return 操作结果。
+     * @param tenantId 当前操作涉及的租户标识。
+     * @return 返回 认证 用户 Lookup 相关操作生成的结果数据。
      */
     TenantBO selectTenantById(TenantId tenantId);
 }

@@ -10,6 +10,9 @@ import java.lang.reflect.Constructor;
 import java.lang.reflect.Field;
 import java.util.Map;
 
+/**
+ * 验证 Captcha Service Impl 相关功能、边界条件、异常路径和协作行为。
+ */
 class CaptchaServiceImplTest {
     @Test
     void generatedCaptchaIsSvgAndSingleUseCaseInsensitive() {

@@ -8,7 +8,7 @@ import java.util.concurrent.*;
 import java.util.concurrent.atomic.AtomicInteger;
 
 /**
- * 提供统一的线程池创建、命名和关闭能力。
+ * 提供 Unified Thread Pool 相关的通用辅助操作，供业务和基础设施复用。
  */
 @Slf4j
 public class UnifiedThreadPoolUtils {
@@ -45,9 +45,9 @@ public class UnifiedThreadPoolUtils {
     // ========================= API =========================
 
     /**
-     * {@code execute} 执行当前模块定义的业务流程。
+     * 调用 Unified Thread Pool 相关业务操作，并维护必要的状态和协作关系。
      *
-     * @param task 参数值，用于执行当前操作。
+     * @param task 用于完成本次业务处理的 task 参数。
      */
     public static void execute(Runnable task) {
         try {
@@ -58,11 +58,10 @@ public class UnifiedThreadPoolUtils {
     }
 
     /**
-     * {@code submit} 执行当前类型定义的业务操作。
+     * 执行 Unified Thread Pool 相关业务数据，并返回处理结果。
      *
-     * @param task 参数值，用于执行当前操作。
-     *
-     * @return 返回当前操作产生的结果。
+     * @param task 用于完成本次业务处理的 task 参数。
+     * @return 返回 Unified Thread Pool 相关操作生成的结果数据。
      */
     public static <T> Future<T> submit(Callable<T> task) {
         try {
@@ -106,7 +105,7 @@ public class UnifiedThreadPoolUtils {
     }
 
     /**
-     * {@code shutdown} 执行当前类型定义的业务操作。
+     * 执行 Unified Thread Pool 相关业务操作，并维护必要的状态和协作关系。
      */
     public static void shutdown() {
         try {
@@ -120,9 +119,9 @@ public class UnifiedThreadPoolUtils {
     }
 
     /**
-     * {@code getExecutor} 查询并返回当前操作所需的数据。
+     * 查询 Unified Thread Pool 相关业务数据，并返回处理结果。
      *
-     * @return 返回当前操作产生的结果。
+     * @return 返回 Unified Thread Pool 相关操作生成的结果数据。
      */
     public static ExecutorService getExecutor() {
         return DEFAULT_EXECUTOR;

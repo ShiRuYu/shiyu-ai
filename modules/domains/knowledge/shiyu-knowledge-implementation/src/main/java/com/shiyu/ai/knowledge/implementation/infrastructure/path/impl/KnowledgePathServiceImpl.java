@@ -19,7 +19,7 @@ import java.util.List;
 import java.util.Set;
 
 /**
- * {@code KnowledgePathServiceImpl} 实现知识模块的应用服务，负责编排用例流程并维护业务边界。
+ * 提供 知识 Path 的查询、创建、更新及调用服务，协调业务变更和领域协作。
  */
 @Service("knowledgePathServiceImpl")
 @RequiredArgsConstructor
@@ -39,12 +39,11 @@ public class KnowledgePathServiceImpl implements KnowledgePathService, Knowledge
     private final KnowledgeSpaceService spaceService;
 
     /**
-     * {@code generatePath} 执行当前类型定义的业务操作。
+     * 执行 知识 Path 相关业务数据，并返回处理结果。
      *
-     * @param actor 参数值，用于执行当前操作。
-     * @param targetKnowledgeId 参数值，用于执行当前操作。
-     *
-     * @return 返回当前操作产生的结果。
+     * @param actor 当前操作主体上下文，用于确定租户、用户和访问权限。
+     * @param targetKnowledgeId 用于定位target 知识的标识。
+     * @return 返回符合条件的数据集合；没有匹配项时返回空集合。
      */
     @Override
     public List<Long> generatePath(ActorContext actor, Long targetKnowledgeId) {
@@ -53,13 +52,12 @@ public class KnowledgePathServiceImpl implements KnowledgePathService, Knowledge
     }
 
     /**
-     * {@code findPath} 查询并返回当前操作所需的数据。
+     * 查询 知识 Path 相关业务数据，并返回处理结果。
      *
-     * @param actor 参数值，用于执行当前操作。
-     * @param fromKnowledgeId 参数值，用于执行当前操作。
-     * @param toKnowledgeId 参数值，用于执行当前操作。
-     *
-     * @return 返回当前操作产生的结果。
+     * @param actor 当前操作主体上下文，用于确定租户、用户和访问权限。
+     * @param fromKnowledgeId 用于定位from 知识的标识。
+     * @param toKnowledgeId 用于定位to 知识的标识。
+     * @return 返回符合条件的数据集合；没有匹配项时返回空集合。
      */
     @Override
     public List<Long> findPath(ActorContext actor, Long fromKnowledgeId, Long toKnowledgeId) {
@@ -72,13 +70,12 @@ public class KnowledgePathServiceImpl implements KnowledgePathService, Knowledge
     }
 
     /**
-     * {@code findMissingPrerequisites} 查询并返回当前操作所需的数据。
+     * 查询 知识 Path 相关业务数据，并返回处理结果。
      *
-     * @param actor 参数值，用于执行当前操作。
-     * @param targetKnowledgeId 参数值，用于执行当前操作。
-     * @param masteredIds 参数值，用于执行当前操作。
-     *
-     * @return 返回当前操作产生的结果。
+     * @param actor 当前操作主体上下文，用于确定租户、用户和访问权限。
+     * @param targetKnowledgeId 用于定位target 知识的标识。
+     * @param masteredIds 待处理的业务对象标识集合。
+     * @return 返回符合条件的数据集合；没有匹配项时返回空集合。
      */
     @Override
     public List<Long> findMissingPrerequisites(

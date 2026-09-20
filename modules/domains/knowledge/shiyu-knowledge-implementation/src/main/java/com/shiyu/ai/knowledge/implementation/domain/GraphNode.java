@@ -11,7 +11,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 /**
- * {@code GraphNode} 承载知识模块中的智能流程节点，负责执行本节点的输入处理与结果产出。
+ * 执行 Graph 相关流程节点的输入处理和状态转移。
  */
 @Data
 @Builder
@@ -61,13 +61,12 @@ public class GraphNode implements Serializable {
     private List<GraphEdge> edges;
 
     /**
-     * {@code of} 执行当前类型定义的业务操作。
+     * 执行 Graph 相关业务数据，并返回处理结果。
      *
-     * @param id 参数值，用于执行当前操作。
-     * @param name 参数值，用于执行当前操作。
-     * @param code 参数值，用于执行当前操作。
-     *
-     * @return 返回当前操作产生的结果。
+     * @param id 用于定位目标业务对象的标识。
+     * @param name 用于定位或筛选目标业务对象的业务值。
+     * @param code 用于定位或筛选目标业务对象的业务值。
+     * @return 返回 Graph 相关操作生成的结果数据。
      */
     public static GraphNode of(Long id, String name, String code) {
         return GraphNode.builder()

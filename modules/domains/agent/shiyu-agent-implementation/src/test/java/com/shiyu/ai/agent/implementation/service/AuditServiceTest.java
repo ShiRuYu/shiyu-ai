@@ -12,6 +12,9 @@ import com.shiyu.ai.kernel.context.TenantId;
 
 import org.junit.jupiter.api.Test;
 
+/**
+ * 验证 Audit Service 相关功能、边界条件、异常路径和协作行为。
+ */
 class AuditServiceTest {
     @Test
     void recordsSuccessAndFailureAsAuditEvents() {

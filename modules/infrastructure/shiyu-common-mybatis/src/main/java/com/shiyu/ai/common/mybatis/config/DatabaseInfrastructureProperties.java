@@ -9,7 +9,7 @@ import java.util.Locale;
 import java.util.Set;
 
 /**
- * DatabaseInfrastructureProperties 配置属性，集中管理基础设施领域相关运行参数。
+ * 定义 数据库 Infrastructure 基础设施或应用能力的配置项及装配规则。
  */
 @ConfigurationProperties(prefix = "shiyu.infrastructure.database")
 @Getter
@@ -24,9 +24,9 @@ public class DatabaseInfrastructureProperties {
     private String provider = "h2";
 
     /**
-     * {@code normalizedProvider} 执行当前类型定义的业务操作。
+     * 执行 数据库 Infrastructure 相关业务数据，并返回处理结果。
      *
-     * @return 返回当前操作产生的结果。
+     * @return 返回 数据库 Infrastructure 相关操作生成的结果数据。
      */
     public String normalizedProvider() {
         return provider == null || provider.isBlank()

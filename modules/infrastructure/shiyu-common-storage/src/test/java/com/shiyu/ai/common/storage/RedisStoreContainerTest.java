@@ -18,7 +18,7 @@ import org.testcontainers.junit.jupiter.Testcontainers;
 import java.time.Duration;
 
 /**
- * 验证 RedisStoreContainer 的功能、边界条件和集成行为。
+ * 验证 Redis Store Container 相关功能、边界条件、异常路径和协作行为。
  */
 @Testcontainers(disabledWithoutDocker = true)
 class RedisStoreContainerTest {

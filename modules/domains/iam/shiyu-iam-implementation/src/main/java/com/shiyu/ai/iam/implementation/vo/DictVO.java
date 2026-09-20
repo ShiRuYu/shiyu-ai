@@ -6,7 +6,9 @@ import java.io.Serial;
 import java.io.Serializable;
 import java.time.LocalDateTime;
 
-/** 字典视图对象 */
+/**
+ * 封装 Dict 操作向调用方返回的传输数据。
+ */
 @Data
 public class DictVO implements Serializable {
 

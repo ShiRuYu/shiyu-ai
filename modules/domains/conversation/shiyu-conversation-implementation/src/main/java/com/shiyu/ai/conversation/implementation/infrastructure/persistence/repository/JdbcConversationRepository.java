@@ -19,7 +19,7 @@ import java.util.Optional;
 import javax.sql.DataSource;
 
 /**
- * {@code JdbcConversationRepository} 定义会话模块的持久化端口，隔离领域逻辑与具体存储实现。
+ * 负责 Jdbc 会话 的持久化查询、保存和删除，并维护数据访问边界。
  */
 @Component
 public class JdbcConversationRepository implements ConversationRepository {
@@ -29,18 +29,18 @@ public class JdbcConversationRepository implements ConversationRepository {
     private final JdbcTemplate jdbc;
 
     /**
-     * {@code JdbcConversationRepository} 创建并初始化当前类型实例。
+     * 执行 Jdbc 会话 相关业务操作，并维护必要的状态和协作关系。
      *
-     * @param dataSource 参数值，用于执行当前操作。
+     * @param dataSource 用于完成本次业务处理的 dataSource 参数。
      */
     public JdbcConversationRepository(@Qualifier("agentDataSource") DataSource dataSource) {
         this.jdbc = new JdbcTemplate(dataSource);
     }
 
     /**
-     * {@code insertConversation} 执行当前类型定义的业务操作。
+     * 创建或保存 Jdbc 会话 相关业务操作，并维护必要的状态和协作关系。
      *
-     * @param c 参数值，用于执行当前操作。
+     * @param c 用于完成本次业务处理的 c 参数。
      */
     @Override
     public void insertConversation(Conversation c) {
@@ -67,13 +67,12 @@ public class JdbcConversationRepository implements ConversationRepository {
     }
 
     /**
-     * {@code findConversation} 查询并返回当前操作所需的数据。
+     * 查询 Jdbc 会话 相关业务数据，并返回处理结果。
      *
-     * @param id 参数值，用于执行当前操作。
-     * @param tenantId 参数值，用于执行当前操作。
-     * @param ownerUserId 参数值，用于执行当前操作。
-     *
-     * @return 返回当前操作产生的结果。
+     * @param id 用于定位目标业务对象的标识。
+     * @param tenantId 当前操作涉及的租户标识。
+     * @param ownerUserId 当前操作涉及的用户标识。
+     * @return 返回可能存在的业务对象；不存在时返回空值容器。
      */
     @Override
     public Optional<Conversation> findConversation(String id, TenantId tenantId, long ownerUserId) {
@@ -91,14 +90,13 @@ public class JdbcConversationRepository implements ConversationRepository {
     }
 
     /**
-     * {@code listConversations} 查询并返回当前操作所需的数据。
+     * 查询 Jdbc 会话 相关业务数据，并返回处理结果。
      *
-     * @param tenantId 参数值，用于执行当前操作。
-     * @param ownerUserId 参数值，用于执行当前操作。
-     * @param limit 参数值，用于执行当前操作。
-     * @param offset 参数值，用于执行当前操作。
-     *
-     * @return 返回当前操作产生的结果。
+     * @param tenantId 当前操作涉及的租户标识。
+     * @param ownerUserId 当前操作涉及的用户标识。
+     * @param limit 每页返回的数据数量。
+     * @param offset 用于完成本次业务处理的 offset 参数。
+     * @return 返回符合条件的数据集合；没有匹配项时返回空集合。
      */
     @Override
     public List<Conversation> listConversations(
@@ -115,13 +113,12 @@ public class JdbcConversationRepository implements ConversationRepository {
     }
 
     /**
-     * {@code listBranches} 查询并返回当前操作所需的数据。
+     * 查询 Jdbc 会话 相关业务数据，并返回处理结果。
      *
-     * @param parentConversationId 参数值，用于执行当前操作。
-     * @param tenantId 参数值，用于执行当前操作。
-     * @param ownerUserId 参数值，用于执行当前操作。
-     *
-     * @return 返回当前操作产生的结果。
+     * @param parentConversationId 用于定位parent 会话的标识。
+     * @param tenantId 当前操作涉及的租户标识。
+     * @param ownerUserId 当前操作涉及的用户标识。
+     * @return 返回符合条件的数据集合；没有匹配项时返回空集合。
      */
     @Override
     public List<Conversation> listBranches(
@@ -137,12 +134,11 @@ public class JdbcConversationRepository implements ConversationRepository {
     }
 
     /**
-     * {@code updateConversation} 写入或更新当前模块中的业务数据。
+     * 更新或设置 Jdbc 会话 相关业务数据，并返回处理结果。
      *
-     * @param c 参数值，用于执行当前操作。
-     * @param expectedVersion 参数值，用于执行当前操作。
-     *
-     * @return 返回当前操作产生的结果。
+     * @param c 用于完成本次业务处理的 c 参数。
+     * @param expectedVersion 用于完成本次业务处理的 expectedVersion 参数。
+     * @return 返回 Jdbc 会话 相关操作生成的结果数据。
      */
     @Override
     public int updateConversation(Conversation c, long expectedVersion) {
@@ -164,9 +160,9 @@ public class JdbcConversationRepository implements ConversationRepository {
     }
 
     /**
-     * {@code insertMessage} 执行当前类型定义的业务操作。
+     * 创建或保存 Jdbc 会话 相关业务操作，并维护必要的状态和协作关系。
      *
-     * @param m 参数值，用于执行当前操作。
+     * @param m 用于完成本次业务处理的 m 参数。
      */
     @Override
     public void insertMessage(ConversationMessage m) {
@@ -198,13 +194,12 @@ public class JdbcConversationRepository implements ConversationRepository {
     }
 
     /**
-     * {@code findMessage} 查询并返回当前操作所需的数据。
+     * 查询 Jdbc 会话 相关业务数据，并返回处理结果。
      *
-     * @param id 参数值，用于执行当前操作。
-     * @param tenantId 参数值，用于执行当前操作。
-     * @param ownerUserId 参数值，用于执行当前操作。
-     *
-     * @return 返回当前操作产生的结果。
+     * @param id 用于定位目标业务对象的标识。
+     * @param tenantId 当前操作涉及的租户标识。
+     * @param ownerUserId 当前操作涉及的用户标识。
+     * @return 返回可能存在的业务对象；不存在时返回空值容器。
      */
     @Override
     public Optional<ConversationMessage> findMessage(
@@ -224,14 +219,13 @@ public class JdbcConversationRepository implements ConversationRepository {
     }
 
     /**
-     * {@code listMessages} 查询并返回当前操作所需的数据。
+     * 查询 Jdbc 会话 相关业务数据，并返回处理结果。
      *
-     * @param conversationId 参数值，用于执行当前操作。
-     * @param tenantId 参数值，用于执行当前操作。
-     * @param ownerUserId 参数值，用于执行当前操作。
-     * @param limit 参数值，用于执行当前操作。
-     *
-     * @return 返回当前操作产生的结果。
+     * @param conversationId 用于定位conversation的标识。
+     * @param tenantId 当前操作涉及的租户标识。
+     * @param ownerUserId 当前操作涉及的用户标识。
+     * @param limit 每页返回的数据数量。
+     * @return 返回符合条件的数据集合；没有匹配项时返回空集合。
      */
     @Override
     public List<ConversationMessage> listMessages(
@@ -249,13 +243,12 @@ public class JdbcConversationRepository implements ConversationRepository {
     }
 
     /**
-     * {@code deleteConversation} 释放或移除当前操作涉及的资源。
+     * 删除或移除 Jdbc 会话 相关业务数据，并返回处理结果。
      *
-     * @param id 参数值，用于执行当前操作。
-     * @param tenantId 参数值，用于执行当前操作。
-     * @param ownerUserId 参数值，用于执行当前操作。
-     *
-     * @return 返回当前操作产生的结果。
+     * @param id 用于定位目标业务对象的标识。
+     * @param tenantId 当前操作涉及的租户标识。
+     * @param ownerUserId 当前操作涉及的用户标识。
+     * @return 返回 Jdbc 会话 相关操作生成的结果数据。
      */
     @Override
     public int deleteConversation(String id, TenantId tenantId, long ownerUserId) {
@@ -270,13 +263,12 @@ public class JdbcConversationRepository implements ConversationRepository {
     }
 
     /**
-     * {@code deleteMessage} 释放或移除当前操作涉及的资源。
+     * 删除或移除 Jdbc 会话 相关业务数据，并返回处理结果。
      *
-     * @param id 参数值，用于执行当前操作。
-     * @param tenantId 参数值，用于执行当前操作。
-     * @param ownerUserId 参数值，用于执行当前操作。
-     *
-     * @return 返回当前操作产生的结果。
+     * @param id 用于定位目标业务对象的标识。
+     * @param tenantId 当前操作涉及的租户标识。
+     * @param ownerUserId 当前操作涉及的用户标识。
+     * @return 返回 Jdbc 会话 相关操作生成的结果数据。
      */
     @Override
     public int deleteMessage(String id, TenantId tenantId, long ownerUserId) {

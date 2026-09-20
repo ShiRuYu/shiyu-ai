@@ -25,6 +25,9 @@ import java.util.List;
 import java.util.Map;
 import java.util.concurrent.atomic.AtomicReference;
 
+/**
+ * 验证 智能体 Loader 相关功能、边界条件、异常路径和协作行为。
+ */
 class AgentLoaderTest {
     private static final ActorContext ACTOR =
             new ActorContext(new TenantId(7L), new UserId(9L), false);

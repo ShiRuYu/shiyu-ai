@@ -5,7 +5,9 @@ import lombok.Getter;
 
 import java.util.Arrays;
 
-/** 排序方向枚举 */
+/**
+ * 定义 Sort Direction Enum 可用的枚举值及其业务语义。
+ */
 @Getter
 @AllArgsConstructor
 public enum SortDirectionEnum {
@@ -22,11 +24,10 @@ public enum SortDirectionEnum {
     private final String sqlKeyword;
 
     /**
-     * {@code fromCode} 执行当前类型定义的业务操作。
+     * 执行 Sort Direction Enum 相关业务数据，并返回处理结果。
      *
-     * @param code 参数值，用于执行当前操作。
-     *
-     * @return 返回当前操作产生的结果。
+     * @param code 用于定位或筛选目标业务对象的业务值。
+     * @return 返回 Sort Direction Enum 相关操作生成的结果数据。
      */
     public static SortDirectionEnum fromCode(String code) {
         return Arrays.stream(values())

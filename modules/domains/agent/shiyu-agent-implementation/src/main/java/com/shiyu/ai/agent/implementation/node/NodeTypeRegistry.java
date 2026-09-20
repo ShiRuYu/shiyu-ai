@@ -34,7 +34,7 @@ import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 
 /**
- * 维护节点类型、配置类型和创建器之间的注册关系。
+ * 管理 Node Type 相关的运行时状态、注册信息或临时数据。
  */
 @Slf4j
 final class NodeTypeRegistry {
@@ -123,7 +123,7 @@ final class NodeTypeRegistry {
     }
 
     /**
-     * {@code CreatorInfo} 封装智能体模块中不可变的结构化数据，并作为相关操作之间的值对象。
+     * 封装 Creator Info 相关的不可变数据及其字段约束。
      */
     record CreatorInfo<T extends NodeConfig>(
             Class<T> configClass, NodeFactory.NodeCreator<T> nodeCreator) {}

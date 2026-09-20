@@ -4,14 +4,14 @@ import com.shiyu.ai.agent.implementation.domain.model.AuditLogBO;
 import com.shiyu.ai.kernel.context.TenantId;
 
 /**
- * AuditLogRepository 仓储接口，负责访问和持久化智能体领域聚合数据。
+ * 负责 Audit Log 的持久化查询、保存和删除，并维护数据访问边界。
  */
 public interface AuditLogRepository {
     /**
-     * 创建并保存业务对象。
+     * 创建或保存 Audit Log 相关业务操作，并维护必要的状态和协作关系。
      *
-     * @param tenantId 租户标识。
-     * @param auditLog 方法参数。
+     * @param tenantId 当前操作涉及的租户标识。
+     * @param auditLog 用于完成本次业务处理的 auditLog 参数。
      */
     void insert(TenantId tenantId, AuditLogBO auditLog);
 }

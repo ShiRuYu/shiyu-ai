@@ -7,7 +7,7 @@ import com.shiyu.ai.knowledge.implementation.domain.RelationType;
 import java.util.List;
 
 /**
- * KnowledgeRelationService 服务接口，负责执行知识领域相关业务操作。
+ * 提供 知识 关系 的查询、创建、更新及调用服务，协调业务变更和领域协作。
  */
 public interface KnowledgeRelationService {
 
@@ -22,32 +22,29 @@ public interface KnowledgeRelationService {
     List<RelationView> list(ActorContext actor, Long knowledgeId);
 
     /**
-     * 获取prerequisites。
+     * 查询 知识 关系 相关业务数据，并返回处理结果。
      *
-     * @param actor 调用方上下文。
-     * @param knowledgeId knowledgeId 参数。
-     *
-     * @return 结果列表。
+     * @param actor 当前操作主体上下文，用于确定租户、用户和访问权限。
+     * @param knowledgeId 用于定位knowledge的标识。
+     * @return 返回符合条件的数据集合；没有匹配项时返回空集合。
      */
     List<KnowledgeResponse> getPrerequisites(ActorContext actor, Long knowledgeId);
 
     /**
-     * 获取subsequent。
+     * 查询 知识 关系 相关业务数据，并返回处理结果。
      *
-     * @param actor 调用方上下文。
-     * @param knowledgeId knowledgeId 参数。
-     *
-     * @return 结果列表。
+     * @param actor 当前操作主体上下文，用于确定租户、用户和访问权限。
+     * @param knowledgeId 用于定位knowledge的标识。
+     * @return 返回符合条件的数据集合；没有匹配项时返回空集合。
      */
     List<KnowledgeResponse> getSubsequent(ActorContext actor, Long knowledgeId);
 
     /**
-     * 获取related。
+     * 查询 知识 关系 相关业务数据，并返回处理结果。
      *
-     * @param actor 调用方上下文。
-     * @param knowledgeId knowledgeId 参数。
-     *
-     * @return 结果列表。
+     * @param actor 当前操作主体上下文，用于确定租户、用户和访问权限。
+     * @param knowledgeId 用于定位knowledge的标识。
+     * @return 返回符合条件的数据集合；没有匹配项时返回空集合。
      */
     List<KnowledgeResponse> getRelated(ActorContext actor, Long knowledgeId);
 
@@ -77,13 +74,7 @@ public interface KnowledgeRelationService {
     void removeAllRelations(ActorContext actor, Long knowledgeId);
 
     /**
-     * {@code RelationView} 封装知识模块中不可变的结构化数据，并作为相关操作之间的值对象。
-     * @param sourceId sourceId 属性，表示该记录组件承载的数据。
-     * @param targetId targetId 属性，表示该记录组件承载的数据。
-     * @param relationType relationType 属性，表示该记录组件承载的数据。
-     * @param weight weight 属性，表示该记录组件承载的数据。
-     * @param source 来源，表示该记录组件承载的数据。
-     * @param target 目标，表示该记录组件承载的数据。
+     * 封装 关系 View 相关的不可变数据及其字段约束。
      */
     record RelationView(
             Long sourceId,

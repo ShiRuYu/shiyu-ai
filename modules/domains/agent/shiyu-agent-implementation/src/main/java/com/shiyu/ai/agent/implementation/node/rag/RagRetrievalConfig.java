@@ -16,7 +16,7 @@ import java.util.List;
 import java.util.Set;
 
 /**
- * RagRetrievalConfig 配置组件，负责注册和配置智能体领域相关基础设施。
+ * 定义 Rag Retrieval 基础设施或应用能力的配置项及装配规则。
  */
 @Data
 @SuperBuilder

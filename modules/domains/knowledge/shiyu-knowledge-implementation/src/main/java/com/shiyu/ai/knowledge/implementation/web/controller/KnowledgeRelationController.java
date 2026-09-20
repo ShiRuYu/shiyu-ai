@@ -30,7 +30,7 @@ import org.springframework.web.bind.annotation.RestController;
 import java.util.List;
 
 /**
- * {@code KnowledgeRelationController} 是知识模块的 Web 接口适配器，负责接收请求并转换为应用服务调用。
+ * 处理 知识 关系 相关的 Web 请求，并将请求转换为应用服务调用。
  */
 @RestController
 @RequestMapping("/api/knowledge")
@@ -45,12 +45,10 @@ public class KnowledgeRelationController {
     private final KnowledgeRelationService service;
 
     /**
-     * {@code list} 查询并返回当前操作所需的数据。
+     * 查询 知识 关系 相关业务数据，并返回处理结果。
      *
-     * @param pointId 参数值，用于执行当前操作。
-     * @param version 参数值，用于执行当前操作。
-     *
-     * @return 返回当前操作产生的结果。
+     * @param relations 用于完成本次业务处理的 relations 参数。
+     * @return 返回符合条件的数据集合；没有匹配项时返回空集合。
      */
     @GetMapping("/points/{pointId}/relations")
     public Result<List<KnowledgeRelationService.RelationView>> list(
@@ -64,13 +62,10 @@ public class KnowledgeRelationController {
     }
 
     /**
-     * {@code create} 写入或更新当前模块中的业务数据。
+     * 创建或保存 知识 关系 相关业务数据，并返回处理结果。
      *
-     * @param pointId 参数值，用于执行当前操作。
-     * @param request 参数值，用于执行当前操作。
-     * @param version 参数值，用于执行当前操作。
-     *
-     * @return 返回当前操作产生的结果。
+     * @param relations 用于完成本次业务处理的 relations 参数。
+     * @return 返回 知识 关系 相关操作生成的结果数据。
      */
     @PostMapping("/points/{pointId}/relations")
     @SaCheckPermission("knowledge:relation")
@@ -95,14 +90,10 @@ public class KnowledgeRelationController {
     }
 
     /**
-     * {@code delete} 释放或移除当前操作涉及的资源。
+     * 删除或移除 知识 关系 相关业务数据，并返回处理结果。
      *
-     * @param pointId 参数值，用于执行当前操作。
-     * @param targetId 参数值，用于执行当前操作。
-     * @param type 参数值，用于执行当前操作。
-     * @param version 参数值，用于执行当前操作。
-     *
-     * @return 返回当前操作产生的结果。
+     * @param targetId 用于定位target的标识。
+     * @return 返回 知识 关系 相关操作生成的结果数据。
      */
     @DeleteMapping("/points/{pointId}/relations/{targetId}")
     @SaCheckPermission("knowledge:relation")
@@ -120,11 +111,7 @@ public class KnowledgeRelationController {
     }
 
     /**
-     * {@code RelationRequest} 封装知识模块中不可变的结构化数据，并作为相关操作之间的值对象。
-     * @param sourceId sourceId 属性，表示该记录组件承载的数据。
-     * @param targetId targetId 属性，表示该记录组件承载的数据。
-     * @param type 类型，表示该记录组件承载的数据。
-     * @param weight weight 属性，表示该记录组件承载的数据。
+     * 封装 关系 相关的不可变数据及其字段约束。
      */
     public record RelationRequest(
             @NotNull Long sourceId,

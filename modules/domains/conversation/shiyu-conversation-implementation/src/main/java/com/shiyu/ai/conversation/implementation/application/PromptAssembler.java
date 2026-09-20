@@ -8,18 +8,17 @@ import java.util.List;
 import java.util.Map;
 
 /**
- * 根据会话上下文、角色卡和消息组装模型提示词。
+ * 将 提示词 在不同层之间进行适配、转换或组装。
  */
 public final class PromptAssembler {
     private PromptAssembler() {}
 
     /**
-     * {@code assemble} 执行当前类型定义的业务操作。
+     * 构建或转换 提示词 相关业务数据，并返回处理结果。
      *
-     * @param messages 参数值，用于执行当前操作。
-     * @param maxMessages 参数值，用于执行当前操作。
-     *
-     * @return 返回当前操作产生的结果。
+     * @param messages 用于完成本次业务处理的 messages 参数。
+     * @param maxMessages 用于完成本次业务处理的 maxMessages 参数。
+     * @return 返回符合条件的数据集合；没有匹配项时返回空集合。
      */
     public static List<ConversationMessage> assemble(
             List<ConversationMessage> messages, int maxMessages) {
@@ -31,13 +30,12 @@ public final class PromptAssembler {
     }
 
     /**
-     * 处理启用路径。
+     * 执行 提示词 相关业务数据，并返回处理结果。
      *
-     * @param messages messages 参数。
-     * @param activeLeafMessageId activeLeafMessageId 参数。
-     * @param maxMessages maxMessages 参数。
-     *
-     * @return 结果列表。
+     * @param messages 用于完成本次业务处理的 messages 参数。
+     * @param activeLeafMessageId 用于定位active Leaf 消息的标识。
+     * @param maxMessages 用于完成本次业务处理的 maxMessages 参数。
+     * @return 返回符合条件的数据集合；没有匹配项时返回空集合。
      */
     public static List<ConversationMessage> activePath(
             List<ConversationMessage> messages, String activeLeafMessageId, int maxMessages) {

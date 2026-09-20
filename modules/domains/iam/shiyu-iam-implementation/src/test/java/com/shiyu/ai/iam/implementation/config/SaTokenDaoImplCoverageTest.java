@@ -20,6 +20,9 @@ import java.util.Base64;
 import java.util.LinkedHashMap;
 import java.util.Map;
 
+/**
+ * 验证 Sa Token Dao Impl Coverage 相关功能、边界条件、异常路径和协作行为。
+ */
 class SaTokenDaoImplCoverageTest {
     @Test
     void persistsTokensSessionsAndObjectsAcrossCacheMisses() {

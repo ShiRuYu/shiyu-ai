@@ -16,9 +16,7 @@ import java.util.Map;
 import java.util.stream.Collectors;
 
 /**
- * 执行时间线服务
- *
- * <p>记录 Agent 执行过程中每个节点的开始/结束事件， 提供按 executionId 查询完整时间线的能力。
+ * 提供 时间线 的查询、创建、更新及调用服务，协调业务变更和领域协作。
  */
 @Slf4j
 @Service
@@ -30,9 +28,9 @@ public class TimelineService {
     private final ExecutionTimelineRepository timelineRepository;
 
     /**
-     * {@code TimelineService} 创建并初始化当前类型实例。
+     * 执行 时间线 相关业务操作，并维护必要的状态和协作关系。
      *
-     * @param timelineRepository 参数值，用于执行当前操作。
+     * @param timelineRepository 用于完成本次业务处理的 timelineRepository 参数。
      */
     public TimelineService(ExecutionTimelineRepository timelineRepository) {
         this.timelineRepository = timelineRepository;

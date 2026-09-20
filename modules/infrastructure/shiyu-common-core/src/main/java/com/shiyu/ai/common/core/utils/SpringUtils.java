@@ -8,7 +8,9 @@ import org.springframework.context.ApplicationContext;
 import org.springframework.core.env.Environment;
 import org.springframework.stereotype.Component;
 
-/** spring工具类 */
+/**
+ * 提供 Spring 相关的通用辅助操作，供业务和基础设施复用。
+ */
 @Component
 public final class SpringUtils extends SpringUtil {
 
@@ -51,9 +53,9 @@ public final class SpringUtils extends SpringUtil {
     }
 
     /**
-     * {@code isVirtual} 校验当前操作的输入或状态是否满足约束。
+     * 校验或判断 Spring 相关业务数据，并返回处理结果。
      *
-     * @return 返回当前操作产生的结果。
+     * @return 返回本次条件判断是否成立。
      */
     public static boolean isVirtual() {
         return Threading.VIRTUAL.isActive(getBean(Environment.class));

@@ -2,7 +2,9 @@ package com.shiyu.ai.common.core.exception.file;
 
 import java.io.Serial;
 
-/** 文件名称超长限制异常类 */
+/**
+ * 表示 文件 Name Length Limit Exceeded 相关的领域事件或异常信息。
+ */
 public class FileNameLengthLimitExceededException extends FileException {
 
     /**

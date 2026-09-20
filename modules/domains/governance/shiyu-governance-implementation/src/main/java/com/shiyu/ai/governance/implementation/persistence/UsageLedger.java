@@ -10,31 +10,21 @@ import java.time.Instant;
 import java.util.Objects;
 
 /**
- * UsageLedger 接口，定义治理模块的能力边界。
+ * 定义 用量 Ledger 相关的协作契约和调用边界。
  */
 @FunctionalInterface
 public interface UsageLedger {
 
     /**
-     * 创建并保存业务对象。
+     * 创建或保存 用量 Ledger 相关业务数据，并返回处理结果。
      *
-     * @param entry 方法参数。
-     *
-     * @return 条件是否满足。
+     * @param entry 用于完成本次业务处理的 entry 参数。
+     * @return 返回本次条件判断是否成立。
      */
     boolean insertIfAbsent(Entry entry);
 
     /**
-     * {@code Entry} 封装治理模块中不可变的结构化数据，并作为相关操作之间的值对象。
-     * @param tenantId 租户标识，表示该记录组件承载的数据。
-     * @param userId 用户标识，表示该记录组件承载的数据。
-     * @param correlationId correlationId 属性，表示该记录组件承载的数据。
-     * @param sourceType sourceType 属性，表示该记录组件承载的数据。
-     * @param sourceId sourceId 属性，表示该记录组件承载的数据。
-     * @param inputTokens inputTokens 属性，表示该记录组件承载的数据。
-     * @param outputTokens outputTokens 属性，表示该记录组件承载的数据。
-     * @param cost cost 属性，表示该记录组件承载的数据。
-     * @param occurredAt occurredAt 属性，表示该记录组件承载的数据。
+     * 封装 Entry 相关的不可变数据及其字段约束。
      */
     record Entry(
             TenantId tenantId,

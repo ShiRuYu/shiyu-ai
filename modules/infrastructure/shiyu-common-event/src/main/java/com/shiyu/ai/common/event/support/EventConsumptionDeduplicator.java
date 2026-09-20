@@ -6,7 +6,7 @@ import org.springframework.jdbc.core.JdbcTemplate;
 import java.util.Objects;
 
 /**
- * 记录已消费事件并阻止同一事件重复处理。
+ * 实现 事件 Consumption Deduplicator 相关的业务处理、协作逻辑或基础设施能力。
  */
 public final class EventConsumptionDeduplicator {
 
@@ -16,9 +16,9 @@ public final class EventConsumptionDeduplicator {
     private final JdbcTemplate jdbc;
 
     /**
-     * {@code EventConsumptionDeduplicator} 创建并初始化当前类型实例。
+     * 执行 事件 Consumption Deduplicator 相关业务操作，并维护必要的状态和协作关系。
      *
-     * @param jdbc 参数值，用于执行当前操作。
+     * @param jdbc 用于完成本次业务处理的 jdbc 参数。
      */
     public EventConsumptionDeduplicator(JdbcTemplate jdbc) {
         this.jdbc = Objects.requireNonNull(jdbc, "JdbcTemplate must not be null");
@@ -32,11 +32,10 @@ public final class EventConsumptionDeduplicator {
     }
 
     /**
-     * {@code firstSeen} 执行当前类型定义的业务操作。
+     * 执行 事件 Consumption Deduplicator 相关业务数据，并返回处理结果。
      *
-     * @param eventId 参数值，用于执行当前操作。
-     *
-     * @return 返回当前操作产生的结果。
+     * @param eventId 用于定位event的标识。
+     * @return 返回本次条件判断是否成立。
      */
     public boolean firstSeen(String eventId) {
         if (eventId == null || eventId.isBlank()) return false;

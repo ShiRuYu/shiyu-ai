@@ -6,39 +6,37 @@ import dev.langchain4j.model.chat.ChatModel;
 import dev.langchain4j.model.chat.StreamingChatModel;
 
 /**
- * ModelAdapter 接口，定义模型模块的能力边界。
+ * 将 模型 在不同层之间进行适配、转换或组装。
  */
 public interface ModelAdapter {
 
     /**
-     * 根据条件查询并返回所需数据。
+     * 查询 模型 相关业务数据，并返回处理结果。
      *
-     * @return 操作结果。
+     * @return 返回 模型 相关操作生成的结果数据。
      */
     String getPlatformType();
 
     /**
-     * 根据条件查询并返回所需数据。
+     * 查询 模型 相关业务数据，并返回处理结果。
      *
-     * @param modelName 方法参数。
-     *
-     * @return 操作结果。
+     * @param modelName 用于完成本次业务处理的 modelName 参数。
+     * @return 返回 模型 相关操作生成的结果数据。
      */
     ChatModel getChatModel(String modelName);
 
     /**
-     * 根据条件查询并返回所需数据。
+     * 查询 模型 相关业务数据，并返回处理结果。
      *
-     * @param modelName 方法参数。
-     *
-     * @return 操作结果。
+     * @param modelName 用于完成本次业务处理的 modelName 参数。
+     * @return 返回 模型 相关操作生成的结果数据。
      */
     StreamingChatModel getStreamingChatModel(String modelName);
 
     /**
-     * 根据条件查询并返回所需数据。
+     * 查询 模型 相关业务数据，并返回处理结果。
      *
-     * @return 操作结果。
+     * @return 返回 模型 相关操作生成的结果数据。
      */
     String getDefaultModelName();
 
@@ -55,22 +53,20 @@ public interface ModelAdapter {
     void clearCache();
 
     /**
-     * 创建并保存业务对象。
+     * 创建或保存 模型 相关业务数据，并返回处理结果。
      *
-     * @param config 配置参数。
-     * @param modelName 方法参数。
-     *
-     * @return 操作结果。
+     * @param config 用于完成本次业务处理的 config 参数。
+     * @param modelName 用于完成本次业务处理的 modelName 参数。
+     * @return 返回 模型 相关操作生成的结果数据。
      */
     ChatModel createChatModel(PlatformConfig config, String modelName);
 
     /**
-     * 创建并保存业务对象。
+     * 创建或保存 模型 相关业务数据，并返回处理结果。
      *
-     * @param config 配置参数。
-     * @param modelName 方法参数。
-     *
-     * @return 操作结果。
+     * @param config 用于完成本次业务处理的 config 参数。
+     * @param modelName 用于完成本次业务处理的 modelName 参数。
+     * @return 返回 模型 相关操作生成的结果数据。
      */
     StreamingChatModel createStreamingChatModel(PlatformConfig config, String modelName);
 }

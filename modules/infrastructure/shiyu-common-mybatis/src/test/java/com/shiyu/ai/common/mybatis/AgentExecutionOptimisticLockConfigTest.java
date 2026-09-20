@@ -9,7 +9,7 @@ import java.io.InputStream;
 import java.nio.charset.StandardCharsets;
 
 /**
- * 验证 AgentExecutionOptimisticLockConfig 的功能、边界条件和集成行为。
+ * 验证 智能体 Execution Optimistic Lock Config 相关功能、边界条件、异常路径和协作行为。
  */
 class AgentExecutionOptimisticLockConfigTest {
 

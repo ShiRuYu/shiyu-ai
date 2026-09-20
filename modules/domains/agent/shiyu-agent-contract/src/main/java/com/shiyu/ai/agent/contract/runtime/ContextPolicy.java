@@ -1,7 +1,7 @@
 package com.shiyu.ai.agent.contract.runtime;
 
 /**
- * ContextPolicy 接口，定义智能体模块的能力边界。
+ * 校验或约束 Context 相关的请求、状态和访问规则。
  */
 public interface ContextPolicy {
     /**

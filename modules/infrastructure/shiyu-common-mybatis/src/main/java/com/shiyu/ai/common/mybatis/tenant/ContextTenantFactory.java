@@ -5,15 +5,17 @@ import com.shiyu.ai.kernel.context.TenantScope;
 
 import org.springframework.stereotype.Component;
 
-/** 基于当前操作租户的严格单租户过滤工厂。 */
+/**
+ * 创建或提供 Context 租户 相关的业务组件和运行时能力。
+ */
 @Component
 @SuppressWarnings("deprecation")
 public class ContextTenantFactory implements TenantFactory {
 
     /**
-     * {@code getTenantIds} 查询并返回当前操作所需的数据。
+     * 查询 Context 租户 相关业务数据，并返回处理结果。
      *
-     * @return 返回当前操作产生的结果。
+     * @return 返回 Context 租户 相关操作生成的结果数据。
      */
     @Override
     public Object[] getTenantIds() {
@@ -21,11 +23,10 @@ public class ContextTenantFactory implements TenantFactory {
     }
 
     /**
-     * {@code getTenantIds} 查询并返回当前操作所需的数据。
+     * 查询 Context 租户 相关业务数据，并返回处理结果。
      *
-     * @param tableName 参数值，用于执行当前操作。
-     *
-     * @return 返回当前操作产生的结果。
+     * @param tableName 用于完成本次业务处理的 tableName 参数。
+     * @return 返回 Context 租户 相关操作生成的结果数据。
      */
     @Override
     public Object[] getTenantIds(String tableName) {

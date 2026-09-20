@@ -21,6 +21,9 @@ import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
 import java.util.concurrent.TimeUnit;
 
+/**
+ * 验证 模型 Router 相关功能、边界条件、异常路径和协作行为。
+ */
 class ModelRouterTest {
     @Test
     void acceptsDefaultModelAliasAndMatchesCapabilities() {

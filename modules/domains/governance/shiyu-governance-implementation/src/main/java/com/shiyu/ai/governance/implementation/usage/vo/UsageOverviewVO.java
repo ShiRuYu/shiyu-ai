@@ -6,7 +6,7 @@ import java.io.Serial;
 import java.io.Serializable;
 
 /**
- * {@code UsageOverviewVO} 承载治理模块的领域状态或协作行为，负责维护本类型的职责边界。
+ * 封装 用量 Overview 操作向调用方返回的传输数据。
  */
 @Data
 public class UsageOverviewVO implements Serializable {

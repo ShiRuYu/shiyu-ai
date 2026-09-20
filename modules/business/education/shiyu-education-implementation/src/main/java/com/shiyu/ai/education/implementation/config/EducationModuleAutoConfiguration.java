@@ -7,10 +7,7 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.ComponentScan;
 
 /**
- * 教育业务模块的可选装配入口。
- *
- * <p>平台只负责发现自动配置；教育模块自身负责装配自己的控制器、应用服务、持久化和数据库贡献者。
- * 这样新增业务模块时只需要增加同形态的模块入口，不需要扩大平台的根包扫描范围。
+ * 定义 教育 Module Auto 基础设施或应用能力的配置项及装配规则。
  */
 @AutoConfiguration
 @ConditionalOnBusinessModule(value = "education", matchIfMissing = true)

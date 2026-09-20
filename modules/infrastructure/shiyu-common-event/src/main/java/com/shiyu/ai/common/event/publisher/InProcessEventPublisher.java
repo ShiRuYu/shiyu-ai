@@ -6,7 +6,7 @@ import com.shiyu.ai.kernel.event.DomainEventEnvelope;
 import org.springframework.context.ApplicationEventPublisher;
 
 /**
- * 在当前进程内发布基础设施事件。
+ * 发布 In Process 事件 相关的领域事件或基础设施消息。
  */
 public final class InProcessEventPublisher implements InfrastructureEventPublisher {
 
@@ -16,18 +16,18 @@ public final class InProcessEventPublisher implements InfrastructureEventPublish
     private final ApplicationEventPublisher publisher;
 
     /**
-     * {@code InProcessEventPublisher} 创建并初始化当前类型实例。
+     * 执行 In Process 事件 相关业务操作，并维护必要的状态和协作关系。
      *
-     * @param publisher 参数值，用于执行当前操作。
+     * @param publisher 用于完成本次业务处理的 publisher 参数。
      */
     public InProcessEventPublisher(ApplicationEventPublisher publisher) {
         this.publisher = publisher;
     }
 
     /**
-     * {@code publish} 执行当前模块定义的业务流程。
+     * 发布或发送 In Process 事件 相关业务操作，并维护必要的状态和协作关系。
      *
-     * @param event 参数值，用于执行当前操作。
+     * @param event 本次流程携带的事件或业务数据。
      */
     @Override
     public void publish(DomainEventEnvelope<?> event) {

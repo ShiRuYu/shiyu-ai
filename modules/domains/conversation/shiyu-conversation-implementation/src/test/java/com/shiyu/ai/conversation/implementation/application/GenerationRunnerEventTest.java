@@ -27,6 +27,9 @@ import java.util.Optional;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.atomic.AtomicReference;
 
+/**
+ * 验证 生成 Runner 事件 相关功能、边界条件、异常路径和协作行为。
+ */
 class GenerationRunnerEventTest {
     @Test
     void projectsEveryProviderEventAndUpdatesUsage() throws Exception {

@@ -12,7 +12,7 @@ import org.springframework.context.annotation.Primary;
 import org.springframework.stereotype.Component;
 
 /**
- * {@code ExistingEmbeddingProvider} 承载知识模块的领域状态或协作行为，负责维护本类型的职责边界。
+ * 创建或提供 Existing 嵌入 相关的业务组件和运行时能力。
  */
 @Primary
 @Component
@@ -25,9 +25,9 @@ public class ExistingEmbeddingProvider implements EmbeddingProvider {
     private final EmbeddingService embeddingService;
 
     /**
-     * {@code profile} 执行当前类型定义的业务操作。
+     * 执行 Existing 嵌入 相关业务数据，并返回处理结果。
      *
-     * @return 返回当前操作产生的结果。
+     * @return 返回 Existing 嵌入 相关操作生成的结果数据。
      */
     @Override
     public String profile() {
@@ -35,12 +35,11 @@ public class ExistingEmbeddingProvider implements EmbeddingProvider {
     }
 
     /**
-     * {@code embed} 执行当前类型定义的业务操作。
+     * 执行 Existing 嵌入 相关业务数据，并返回处理结果。
      *
-     * @param tenantId 参数值，用于执行当前操作。
-     * @param text 参数值，用于执行当前操作。
-     *
-     * @return 返回当前操作产生的结果。
+     * @param tenantId 当前操作涉及的租户标识。
+     * @param text 用于完成本次业务处理的 text 参数。
+     * @return 返回 Existing 嵌入 相关操作生成的结果数据。
      */
     @Override
     public float[] embed(TenantId tenantId, String text) {
@@ -48,12 +47,11 @@ public class ExistingEmbeddingProvider implements EmbeddingProvider {
     }
 
     /**
-     * {@code embed} 执行当前类型定义的业务操作。
+     * 执行 Existing 嵌入 相关业务数据，并返回处理结果。
      *
-     * @param actor 参数值，用于执行当前操作。
-     * @param text 参数值，用于执行当前操作。
-     *
-     * @return 返回当前操作产生的结果。
+     * @param actor 当前操作主体上下文，用于确定租户、用户和访问权限。
+     * @param text 用于完成本次业务处理的 text 参数。
+     * @return 返回 Existing 嵌入 相关操作生成的结果数据。
      */
     @Override
     public float[] embed(ActorContext actor, String text) {

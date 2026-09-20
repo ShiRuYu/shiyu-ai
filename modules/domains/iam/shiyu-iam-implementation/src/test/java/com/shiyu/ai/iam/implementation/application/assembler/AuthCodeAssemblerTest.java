@@ -8,6 +8,9 @@ import com.shiyu.ai.iam.implementation.domain.model.AuthCodeBO;
 
 import org.junit.jupiter.api.Test;
 
+/**
+ * 验证 认证 Code Assembler 相关功能、边界条件、异常路径和协作行为。
+ */
 class AuthCodeAssemblerTest {
     @Test
     void handlesNullAndCopiesFields() {

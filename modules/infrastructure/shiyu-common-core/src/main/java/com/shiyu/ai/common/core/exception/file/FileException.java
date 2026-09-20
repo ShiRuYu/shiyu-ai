@@ -4,7 +4,9 @@ import com.shiyu.ai.common.core.exception.base.BaseException;
 
 import java.io.Serial;
 
-/** 文件信息异常类 */
+/**
+ * 表示 文件 相关的领域事件或异常信息。
+ */
 public class FileException extends BaseException {
 
     /**

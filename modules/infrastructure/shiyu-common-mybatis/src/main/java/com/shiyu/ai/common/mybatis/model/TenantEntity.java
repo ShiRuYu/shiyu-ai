@@ -8,7 +8,9 @@ import lombok.EqualsAndHashCode;
 
 import java.io.Serial;
 
-/** 租户基类 */
+/**
+ * 表示 租户 领域对象的业务状态和属性。
+ */
 @Data
 @EqualsAndHashCode(callSuper = true)
 public class TenantEntity extends BaseEntity {

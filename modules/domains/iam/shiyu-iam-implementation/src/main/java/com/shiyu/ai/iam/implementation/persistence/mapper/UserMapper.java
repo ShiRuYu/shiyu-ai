@@ -7,7 +7,9 @@ import com.shiyu.ai.iam.implementation.persistence.dataobject.UserDO;
 
 import org.apache.ibatis.annotations.Mapper;
 
-/** 用户表 数据层 */
+/**
+ * 负责 用户 的持久化查询、保存和删除，并维护数据访问边界。
+ */
 @Mapper
 @UseDataSource(DataSourceConfig.AGENT)
 public interface UserMapper extends BaseMapperFlex<UserDO> {}

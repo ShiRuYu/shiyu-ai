@@ -30,6 +30,9 @@ import java.time.Instant;
 import java.util.List;
 import java.util.Optional;
 
+/**
+ * 验证 Jdbc AI 应用 Repository 相关功能、边界条件、异常路径和协作行为。
+ */
 @SuppressWarnings({"rawtypes", "unchecked"})
 class JdbcAiAppRepositoryTest {
     private final JdbcTemplate jdbc = mock(JdbcTemplate.class);

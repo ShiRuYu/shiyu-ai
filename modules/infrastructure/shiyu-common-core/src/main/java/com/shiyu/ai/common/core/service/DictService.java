@@ -1,6 +1,8 @@
 package com.shiyu.ai.common.core.service;
 
-/** 通用 字典服务 */
+/**
+ * 提供 Dict 的查询、创建、更新及调用服务，协调业务变更和领域协作。
+ */
 public interface DictService {
 
     /** 分隔符 */

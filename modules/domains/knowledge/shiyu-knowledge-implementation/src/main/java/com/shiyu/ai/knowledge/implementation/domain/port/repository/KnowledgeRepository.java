@@ -7,26 +7,24 @@ import com.shiyu.ai.knowledge.implementation.domain.model.KnowledgeBO;
 import java.util.List;
 
 /**
- * KnowledgeRepository 仓储接口，负责访问和持久化知识领域聚合数据。
+ * 负责 知识 的持久化查询、保存和删除，并维护数据访问边界。
  */
 public interface KnowledgeRepository {
     /**
-     * 根据标识查询对应的数据。
+     * 查询 知识 相关业务数据，并返回处理结果。
      *
-     * @param tenantId 租户标识。
-     * @param id 目标对象标识。
-     *
-     * @return 操作结果。
+     * @param tenantId 当前操作涉及的租户标识。
+     * @param id 用于定位目标业务对象的标识。
+     * @return 返回 知识 相关操作生成的结果数据。
      */
     KnowledgeBO findById(TenantId tenantId, Long id);
 
     /**
-     * 根据条件查询并返回所需数据。
+     * 查询 知识 相关业务数据，并返回处理结果。
      *
-     * @param tenantId 租户标识。
-     * @param code 方法参数。
-     *
-     * @return 操作结果。
+     * @param tenantId 当前操作涉及的租户标识。
+     * @param code 用于定位或筛选目标业务对象的业务值。
+     * @return 返回 知识 相关操作生成的结果数据。
      */
     KnowledgeBO findByCode(TenantId tenantId, String code);
 
@@ -40,37 +38,34 @@ public interface KnowledgeRepository {
     List<KnowledgeBO> findAll(TenantId tenantId);
 
     /**
-     * 根据条件查询并返回所需数据。
+     * 查询 知识 相关业务数据，并返回处理结果。
      *
-     * @param tenantId 租户标识。
-     * @param keyword 方法参数。
-     * @param topK 方法参数。
-     *
-     * @return 符合条件的结果集合。
+     * @param tenantId 当前操作涉及的租户标识。
+     * @param keyword 用于完成本次业务处理的 keyword 参数。
+     * @param topK 用于完成本次业务处理的 topK 参数。
+     * @return 返回符合条件的数据集合；没有匹配项时返回空集合。
      */
     List<KnowledgeBO> searchByName(TenantId tenantId, String keyword, int topK);
 
     /**
-     * 执行 {@code page} 定义的接口操作。
+     * 查询 知识 相关业务数据，并返回处理结果。
      *
-     * @param tenantId 租户标识。
-     * @param offset 方法参数。
-     * @param limit 方法参数。
-     *
-     * @return 符合条件的结果集合。
+     * @param tenantId 当前操作涉及的租户标识。
+     * @param offset 用于完成本次业务处理的 offset 参数。
+     * @param limit 每页返回的数据数量。
+     * @return 返回符合条件的数据集合；没有匹配项时返回空集合。
      */
     List<KnowledgeBO> page(TenantId tenantId, int offset, int limit);
 
     /**
-     * 执行 {@code page} 定义的接口操作。
+     * 查询 知识 相关业务数据，并返回处理结果。
      *
-     * @param tenantId 租户标识。
-     * @param offset 方法参数。
-     * @param limit 方法参数。
-     * @param category 方法参数。
-     * @param keyword 方法参数。
-     *
-     * @return 符合条件的结果集合。
+     * @param tenantId 当前操作涉及的租户标识。
+     * @param offset 用于完成本次业务处理的 offset 参数。
+     * @param limit 每页返回的数据数量。
+     * @param category 用于完成本次业务处理的 category 参数。
+     * @param keyword 用于完成本次业务处理的 keyword 参数。
+     * @return 返回符合条件的数据集合；没有匹配项时返回空集合。
      */
     List<KnowledgeBO> page(
             TenantId tenantId, int offset, int limit, String category, String keyword);
@@ -85,33 +80,30 @@ public interface KnowledgeRepository {
     long count(TenantId tenantId);
 
     /**
-     * 统计符合条件的数据。
+     * 执行 知识 相关业务数据，并返回处理结果。
      *
-     * @param tenantId 租户标识。
-     * @param category 方法参数。
-     * @param keyword 方法参数。
-     *
-     * @return 操作影响的记录数或状态码。
+     * @param tenantId 当前操作涉及的租户标识。
+     * @param category 用于完成本次业务处理的 category 参数。
+     * @param keyword 用于完成本次业务处理的 keyword 参数。
+     * @return 返回 知识 相关操作生成的结果数据。
      */
     long count(TenantId tenantId, String category, String keyword);
 
     /**
-     * 创建并保存业务对象。
+     * 创建或保存 知识 相关业务数据，并返回处理结果。
      *
-     * @param tenantId 租户标识。
-     * @param bo 方法参数。
-     *
-     * @return 操作影响的记录数或状态码。
+     * @param tenantId 当前操作涉及的租户标识。
+     * @param bo 用于完成本次业务处理的 bo 参数。
+     * @return 返回 知识 相关操作生成的结果数据。
      */
     int insert(TenantId tenantId, KnowledgeBO bo);
 
     /**
-     * 更新业务对象及其关联数据。
+     * 更新或设置 知识 相关业务数据，并返回处理结果。
      *
-     * @param tenantId 租户标识。
-     * @param bo 方法参数。
-     *
-     * @return 操作影响的记录数或状态码。
+     * @param tenantId 当前操作涉及的租户标识。
+     * @param bo 用于完成本次业务处理的 bo 参数。
+     * @return 返回 知识 相关操作生成的结果数据。
      */
     int update(TenantId tenantId, KnowledgeBO bo);
 
@@ -126,47 +118,43 @@ public interface KnowledgeRepository {
     int deleteById(TenantId tenantId, Long id);
 
     /**
-     * 判断当前条件是否满足。
+     * 执行 知识 相关业务数据，并返回处理结果。
      *
-     * @param tenantId 租户标识。
-     * @param code 方法参数。
-     *
-     * @return 条件是否满足。
+     * @param tenantId 当前操作涉及的租户标识。
+     * @param code 用于定位或筛选目标业务对象的业务值。
+     * @return 返回本次条件判断是否成立。
      */
     boolean existsByCode(TenantId tenantId, String code);
 
     /**
-     * 判断当前条件是否满足。
+     * 执行 知识 相关业务数据，并返回处理结果。
      *
-     * @param tenantId 租户标识。
-     * @param spaceId 方法参数。
-     * @param code 方法参数。
-     *
-     * @return 条件是否满足。
+     * @param tenantId 当前操作涉及的租户标识。
+     * @param spaceId 用于定位space的标识。
+     * @param code 用于定位或筛选目标业务对象的业务值。
+     * @return 返回本次条件判断是否成立。
      */
     boolean existsBySpaceAndCode(TenantId tenantId, Long spaceId, String code);
 
     /**
-     * 根据条件查询并返回所需数据。
+     * 查询 知识 相关业务数据，并返回处理结果。
      *
-     * @param tenantId 租户标识。
-     * @param spaceId 方法参数。
-     *
-     * @return 符合条件的结果集合。
+     * @param tenantId 当前操作涉及的租户标识。
+     * @param spaceId 用于定位space的标识。
+     * @return 返回符合条件的数据集合；没有匹配项时返回空集合。
      */
     List<KnowledgeBO> findBySpace(TenantId tenantId, Long spaceId);
 
     /**
-     * 执行 {@code pageBySpace} 定义的接口操作。
+     * 查询 知识 相关业务数据，并返回处理结果。
      *
-     * @param tenantId 租户标识。
-     * @param spaceId 方法参数。
-     * @param pageNum 页码。
-     * @param pageSize 分页大小。
-     * @param keyword 方法参数。
-     * @param category 方法参数。
-     *
-     * @return 操作结果。
+     * @param tenantId 当前操作涉及的租户标识。
+     * @param spaceId 用于定位space的标识。
+     * @param pageNum 用于完成本次业务处理的 pageNum 参数。
+     * @param pageSize 每页返回的数据数量。
+     * @param keyword 用于完成本次业务处理的 keyword 参数。
+     * @param category 用于完成本次业务处理的 category 参数。
+     * @return 返回 知识 相关操作生成的结果数据。
      */
     PageData<KnowledgeBO> pageBySpace(
             TenantId tenantId,
@@ -177,21 +165,20 @@ public interface KnowledgeRepository {
             String category);
 
     /**
-     * 删除指定业务对象或关联数据。
+     * 删除或移除 知识 相关业务数据，并返回处理结果。
      *
-     * @param tenantId 租户标识。
-     * @param id 目标对象标识。
-     * @param spaceId 方法参数。
-     *
-     * @return 操作影响的记录数或状态码。
+     * @param tenantId 当前操作涉及的租户标识。
+     * @param id 用于定位目标业务对象的标识。
+     * @param spaceId 用于定位space的标识。
+     * @return 返回 知识 相关操作生成的结果数据。
      */
     int deleteByIdAndSpace(TenantId tenantId, Long id, Long spaceId);
 
     /**
-     * 执行 {@code assignDefaultSpace} 定义的接口操作。
+     * 更新或设置 知识 相关业务操作，并维护必要的状态和协作关系。
      *
-     * @param tenantId 租户标识。
-     * @param spaceId 方法参数。
+     * @param tenantId 当前操作涉及的租户标识。
+     * @param spaceId 用于定位space的标识。
      */
     void assignDefaultSpace(TenantId tenantId, Long spaceId);
 }

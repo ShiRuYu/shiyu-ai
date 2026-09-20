@@ -1,9 +1,7 @@
 package com.shiyu.ai.governance.contract;
 
 /**
- * 表示一次调用消耗的输入和输出 token 数量。
- * @param inputTokens inputTokens 属性，表示该记录组件承载的数据。
- * @param outputTokens outputTokens 属性，表示该记录组件承载的数据。
+ * 封装 Quota 用量 相关的不可变数据及其字段约束。
  */
 public record QuotaUsage(int inputTokens, int outputTokens) {
     public QuotaUsage {

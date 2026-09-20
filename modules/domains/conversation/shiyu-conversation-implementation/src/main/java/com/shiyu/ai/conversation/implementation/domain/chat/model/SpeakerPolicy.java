@@ -1,7 +1,7 @@
 package com.shiyu.ai.conversation.implementation.domain.chat.model;
 
 /**
- * {@code SpeakerPolicy} 表示会话模块中的一组受控业务状态或分类。
+ * 定义 Speaker 可用的枚举值及其业务语义。
  */
 public enum SpeakerPolicy {
     MANUAL,

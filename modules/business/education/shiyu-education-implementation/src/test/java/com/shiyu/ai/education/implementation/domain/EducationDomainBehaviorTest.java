@@ -16,6 +16,9 @@ import java.time.LocalDate;
 import java.time.ZoneId;
 import java.util.List;
 
+/**
+ * 验证 教育 Domain Behavior 相关功能、边界条件、异常路径和协作行为。
+ */
 class EducationDomainBehaviorTest {
 
     @Test

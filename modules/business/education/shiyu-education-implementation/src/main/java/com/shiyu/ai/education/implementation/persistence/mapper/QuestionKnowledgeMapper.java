@@ -7,7 +7,7 @@ import com.shiyu.ai.education.implementation.persistence.dataobject.QuestionKnow
 import org.apache.ibatis.annotations.Mapper;
 
 /**
- * QuestionKnowledgeMapper 数据映射接口，负责在教育领域对象与持久化记录之间转换数据。
+ * 负责 题目 知识 的持久化查询、保存和删除，并维护数据访问边界。
  */
 @Mapper
 @UseDataSource("agent")

@@ -8,27 +8,27 @@ import org.mapstruct.factory.Mappers;
 
 import java.util.List;
 
-/** DictBO → DictVO 转换器 */
+/**
+ * 将 Dict 在不同层之间进行适配、转换或组装。
+ */
 @Mapper
 public interface DictConverter {
 
     DictConverter INSTANCE = Mappers.getMapper(DictConverter.class);
 
     /**
-     * 执行 {@code toVO} 定义的接口操作。
+     * 构建或转换 Dict 相关业务数据，并返回处理结果。
      *
-     * @param bo 方法参数。
-     *
-     * @return 操作结果。
+     * @param bo 用于完成本次业务处理的 bo 参数。
+     * @return 返回 Dict 相关操作生成的结果数据。
      */
     DictVO toVO(DictBO bo);
 
     /**
-     * 执行 {@code toVOList} 定义的接口操作。
+     * 构建或转换 Dict 相关业务数据，并返回处理结果。
      *
-     * @param boList 方法参数。
-     *
-     * @return 符合条件的结果集合。
+     * @param boList 用于完成本次业务处理的 boList 参数。
+     * @return 返回符合条件的数据集合；没有匹配项时返回空集合。
      */
     List<DictVO> toVOList(List<DictBO> boList);
 }

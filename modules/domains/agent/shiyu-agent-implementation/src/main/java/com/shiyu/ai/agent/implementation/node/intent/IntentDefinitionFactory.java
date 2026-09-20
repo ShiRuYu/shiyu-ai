@@ -17,13 +17,9 @@ import java.util.Set;
 import java.util.function.Predicate;
 
 /**
- * 意图定义工厂
- *
- * <p>使用 Guava {@link HashBasedTable} 管理意图定义，rowKey = row，columnKey = column。 每个 (row, column) 单元格持有
- * {@link List}&lt;{@link IntentDefinition}&gt;， 支持同一分类下注册多个意图定义。
+ * 创建或提供 Intent Definition 相关的业务组件和运行时能力。
  *
  * @author shiyu-ai
- * @date 2026-03-28
  */
 public class IntentDefinitionFactory {
 

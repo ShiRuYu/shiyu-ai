@@ -15,6 +15,9 @@ import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Tag;
 import org.junit.jupiter.api.Test;
 
+/**
+ * 验证 Actor Context Http Adapter 相关功能、边界条件、异常路径和协作行为。
+ */
 @Tag("dev")
 class ActorContextHttpAdapterTest {
 

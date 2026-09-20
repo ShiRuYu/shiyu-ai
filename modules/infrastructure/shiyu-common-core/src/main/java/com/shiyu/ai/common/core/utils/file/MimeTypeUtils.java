@@ -1,6 +1,8 @@
 package com.shiyu.ai.common.core.utils.file;
 
-/** 媒体类型工具类 */
+/**
+ * 提供 Mime Type 相关的通用辅助操作，供业务和基础设施复用。
+ */
 public class MimeTypeUtils {
     /**
      * IMAGE_PNG 属性，保存当前对象中的业务数据或协作依赖。

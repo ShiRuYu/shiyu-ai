@@ -14,7 +14,7 @@ import lombok.extern.slf4j.Slf4j;
 import java.util.concurrent.TimeUnit;
 
 /**
- * {@code AbstractModelAdapter} 承载模型模块的领域状态或协作行为，负责维护本类型的职责边界。
+ * 将 Abstract 模型 在不同层之间进行适配、转换或组装。
  */
 @Slf4j
 public abstract class AbstractModelAdapter implements ModelAdapter {
@@ -26,33 +26,30 @@ public abstract class AbstractModelAdapter implements ModelAdapter {
             Caffeine.newBuilder().maximumSize(50).expireAfterWrite(30, TimeUnit.MINUTES).build();
 
     /**
-     * {@code isApiKeyConfigured} 校验当前操作的输入或状态是否满足约束。
+     * 校验或判断 Abstract 模型 相关业务数据，并返回处理结果。
      *
-     * @param apiKey 参数值，用于执行当前操作。
-     *
-     * @return 返回当前操作产生的结果。
+     * @param apiKey 用于完成本次业务处理的 apiKey 参数。
+     * @return 返回本次条件判断是否成立。
      */
     protected boolean isApiKeyConfigured(String apiKey) {
         return apiKey != null && !apiKey.trim().isEmpty();
     }
 
     /**
-     * {@code isBaseUrlConfigured} 校验当前操作的输入或状态是否满足约束。
+     * 校验或判断 Abstract 模型 相关业务数据，并返回处理结果。
      *
-     * @param baseUrl 参数值，用于执行当前操作。
-     *
-     * @return 返回当前操作产生的结果。
+     * @param baseUrl 用于完成本次业务处理的 baseUrl 参数。
+     * @return 返回本次条件判断是否成立。
      */
     protected boolean isBaseUrlConfigured(String baseUrl) {
         return baseUrl != null && !baseUrl.trim().isEmpty();
     }
 
     /**
-     * {@code getChatModel} 查询并返回当前操作所需的数据。
+     * 查询 Abstract 模型 相关业务数据，并返回处理结果。
      *
-     * @param modelName 参数值，用于执行当前操作。
-     *
-     * @return 返回当前操作产生的结果。
+     * @param modelName 用于完成本次业务处理的 modelName 参数。
+     * @return 返回 Abstract 模型 相关操作生成的结果数据。
      */
     @Override
     public ChatModel getChatModel(String modelName) {
@@ -73,12 +70,11 @@ public abstract class AbstractModelAdapter implements ModelAdapter {
     }
 
     /**
-     * {@code createChatModel} 写入或更新当前模块中的业务数据。
+     * 创建或保存 Abstract 模型 相关业务数据，并返回处理结果。
      *
-     * @param config 参数值，用于执行当前操作。
-     * @param modelName 参数值，用于执行当前操作。
-     *
-     * @return 返回当前操作产生的结果。
+     * @param config 用于完成本次业务处理的 config 参数。
+     * @param modelName 用于完成本次业务处理的 modelName 参数。
+     * @return 返回 Abstract 模型 相关操作生成的结果数据。
      */
     public ChatModel createChatModel(PlatformConfig config, String modelName) {
         if (config == null) {
@@ -95,11 +91,10 @@ public abstract class AbstractModelAdapter implements ModelAdapter {
     }
 
     /**
-     * {@code getStreamingChatModel} 查询并返回当前操作所需的数据。
+     * 查询 Abstract 模型 相关业务数据，并返回处理结果。
      *
-     * @param modelName 参数值，用于执行当前操作。
-     *
-     * @return 返回当前操作产生的结果。
+     * @param modelName 用于完成本次业务处理的 modelName 参数。
+     * @return 返回 Abstract 模型 相关操作生成的结果数据。
      */
     @Override
     public StreamingChatModel getStreamingChatModel(String modelName) {
@@ -120,12 +115,11 @@ public abstract class AbstractModelAdapter implements ModelAdapter {
     }
 
     /**
-     * {@code createStreamingChatModel} 写入或更新当前模块中的业务数据。
+     * 创建或保存 Abstract 模型 相关业务数据，并返回处理结果。
      *
-     * @param config 参数值，用于执行当前操作。
-     * @param modelName 参数值，用于执行当前操作。
-     *
-     * @return 返回当前操作产生的结果。
+     * @param config 用于完成本次业务处理的 config 参数。
+     * @param modelName 用于完成本次业务处理的 modelName 参数。
+     * @return 返回 Abstract 模型 相关操作生成的结果数据。
      */
     public StreamingChatModel createStreamingChatModel(PlatformConfig config, String modelName) {
         if (config == null) {
@@ -142,50 +136,45 @@ public abstract class AbstractModelAdapter implements ModelAdapter {
     }
 
     /**
-     * {@code createChatModel} 写入或更新当前模块中的业务数据。
+     * 创建或保存 Abstract 模型 相关业务数据，并返回处理结果。
      *
-     * @param modelName 参数值，用于执行当前操作。
-     *
-     * @return 返回当前操作产生的结果。
+     * @param modelName 用于完成本次业务处理的 modelName 参数。
+     * @return 返回 Abstract 模型 相关操作生成的结果数据。
      */
     protected abstract ChatModel createChatModel(String modelName);
 
     /**
-     * {@code createStreamingChatModel} 写入或更新当前模块中的业务数据。
+     * 创建或保存 Abstract 模型 相关业务数据，并返回处理结果。
      *
-     * @param modelName 参数值，用于执行当前操作。
-     *
-     * @return 返回当前操作产生的结果。
+     * @param modelName 用于完成本次业务处理的 modelName 参数。
+     * @return 返回 Abstract 模型 相关操作生成的结果数据。
      */
     protected abstract StreamingChatModel createStreamingChatModel(String modelName);
 
     /**
-     * {@code createChatModelWithConfig} 写入或更新当前模块中的业务数据。
+     * 创建或保存 Abstract 模型 相关业务数据，并返回处理结果。
      *
-     * @param config 参数值，用于执行当前操作。
-     * @param modelName 参数值，用于执行当前操作。
-     *
-     * @return 返回当前操作产生的结果。
+     * @param config 用于完成本次业务处理的 config 参数。
+     * @param modelName 用于完成本次业务处理的 modelName 参数。
+     * @return 返回 Abstract 模型 相关操作生成的结果数据。
      */
     protected abstract ChatModel createChatModelWithConfig(PlatformConfig config, String modelName);
 
     /**
-     * {@code createStreamingChatModelWithConfig} 写入或更新当前模块中的业务数据。
+     * 创建或保存 Abstract 模型 相关业务数据，并返回处理结果。
      *
-     * @param config 参数值，用于执行当前操作。
-     * @param modelName 参数值，用于执行当前操作。
-     *
-     * @return 返回当前操作产生的结果。
+     * @param config 用于完成本次业务处理的 config 参数。
+     * @param modelName 用于完成本次业务处理的 modelName 参数。
+     * @return 返回 Abstract 模型 相关操作生成的结果数据。
      */
     protected abstract StreamingChatModel createStreamingChatModelWithConfig(
             PlatformConfig config, String modelName);
 
     /**
-     * {@code validateConfig} 校验当前操作的输入或状态是否满足约束。
+     * 校验或判断 Abstract 模型 相关业务数据，并返回处理结果。
      *
-     * @param config 参数值，用于执行当前操作。
-     *
-     * @return 返回当前操作产生的结果。
+     * @param config 用于完成本次业务处理的 config 参数。
+     * @return 返回本次条件判断是否成立。
      */
     protected boolean validateConfig(PlatformConfig config) {
         if (!getPlatformType().equals(config.getPlatformType())) {
@@ -196,7 +185,7 @@ public abstract class AbstractModelAdapter implements ModelAdapter {
     }
 
     /**
-     * {@code clearCache} 执行当前类型定义的业务操作。
+     * 删除或移除 Abstract 模型 相关业务操作，并维护必要的状态和协作关系。
      */
     public void clearCache() {
         log.info("清空模型缓存：{}", getPlatformType());

@@ -10,7 +10,7 @@ import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 
 /**
- * 保存已注册节点实例并提供按标识查询。
+ * 管理 Registered Node 相关的运行时状态、注册信息或临时数据。
  */
 @Slf4j
 final class RegisteredNodeStore {

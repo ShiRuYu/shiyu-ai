@@ -21,7 +21,7 @@ import org.springframework.web.bind.annotation.*;
 import java.util.List;
 
 /**
- * {@code RoleController} 是Web模块的 Web 接口适配器，负责接收请求并转换为应用服务调用。
+ * 处理 角色 相关的 Web 请求，并将请求转换为应用服务调用。
  */
 @RestController
 @RequestMapping("/api/iam/roles")
@@ -33,11 +33,9 @@ public class RoleController {
     private final RoleService roleService;
 
     /**
-     * {@code getRoleList} 查询并返回当前操作所需的数据。
+     * 执行 角色 相关业务操作，并维护必要的状态和协作关系。
      *
-     * @param r 参数值，用于执行当前操作。
-     *
-     * @return 返回当前操作产生的结果。
+     * @param list 用于完成本次业务处理的 list 参数。
      */
     @SaCheckPermission("system:role:list")
     @GetMapping("/list")
@@ -51,12 +49,10 @@ public class RoleController {
     }
 
     /**
-     * {@code getAllRoles} 查询并返回当前操作所需的数据。
+     * 查询 角色 相关业务数据，并返回处理结果。
      *
-     * @param status 参数值，用于执行当前操作。
-     * @param tenantId 参数值，用于执行当前操作。
-     *
-     * @return 返回当前操作产生的结果。
+     * @param list 用于完成本次业务处理的 list 参数。
+     * @return 返回符合条件的数据集合；没有匹配项时返回空集合。
      */
     @SaCheckPermission("system:role:list")
     @GetMapping("/all")
@@ -68,12 +64,9 @@ public class RoleController {
     }
 
     /**
-     * {@code getRoleDetail} 查询并返回当前操作所需的数据。
+     * 执行 角色 相关业务操作，并维护必要的状态和协作关系。
      *
-     * @param id 参数值，用于执行当前操作。
-     * @param tenantId 参数值，用于执行当前操作。
-     *
-     * @return 返回当前操作产生的结果。
+     * @param list 用于完成本次业务处理的 list 参数。
      */
     @SaCheckPermission("system:role:list")
     @GetMapping("/detail")
@@ -85,11 +78,9 @@ public class RoleController {
     }
 
     /**
-     * {@code createRole} 写入或更新当前模块中的业务数据。
+     * 执行 角色 相关业务操作，并维护必要的状态和协作关系。
      *
-     * @param r 参数值，用于执行当前操作。
-     *
-     * @return 返回当前操作产生的结果。
+     * @param create 用于完成本次业务处理的 create 参数。
      */
     @SaCheckPermission("system:role:create")
     @PostMapping("/create")
@@ -100,12 +91,9 @@ public class RoleController {
     }
 
     /**
-     * {@code updateRole} 写入或更新当前模块中的业务数据。
+     * 执行 角色 相关业务操作，并维护必要的状态和协作关系。
      *
-     * @param id 参数值，用于执行当前操作。
-     * @param r 参数值，用于执行当前操作。
-     *
-     * @return 返回当前操作产生的结果。
+     * @param update 用于完成本次业务处理的 update 参数。
      */
     @SaCheckPermission("system:role:update")
     @PostMapping("/update")
@@ -116,13 +104,9 @@ public class RoleController {
     }
 
     /**
-     * {@code replaceRoleMenus} 执行当前类型定义的业务操作。
+     * 执行 角色 相关业务操作，并维护必要的状态和协作关系。
      *
-     * @param id 参数值，用于执行当前操作。
-     * @param tenantId 参数值，用于执行当前操作。
-     * @param menuIds 参数值，用于执行当前操作。
-     *
-     * @return 返回当前操作产生的结果。
+     * @param assign 用于完成本次业务处理的 assign 参数。
      */
     @SaCheckPermission("system:role:assign")
     @PostMapping("/menus/replace")
@@ -135,11 +119,9 @@ public class RoleController {
     }
 
     /**
-     * {@code deleteRole} 释放或移除当前操作涉及的资源。
+     * 执行 角色 相关业务操作，并维护必要的状态和协作关系。
      *
-     * @param id 参数值，用于执行当前操作。
-     *
-     * @return 返回当前操作产生的结果。
+     * @param delete 用于完成本次业务处理的 delete 参数。
      */
     @SaCheckPermission("system:role:delete")
     @PostMapping("/delete")
@@ -150,12 +132,9 @@ public class RoleController {
     }
 
     /**
-     * {@code removeUserRoles} 释放或移除当前操作涉及的资源。
+     * 执行 角色 相关业务操作，并维护必要的状态和协作关系。
      *
-     * @param id 参数值，用于执行当前操作。
-     * @param r 参数值，用于执行当前操作。
-     *
-     * @return 返回当前操作产生的结果。
+     * @param assign 用于完成本次业务处理的 assign 参数。
      */
     @SaCheckPermission("system:role:assign")
     @PostMapping("/users/remove")
@@ -171,12 +150,9 @@ public class RoleController {
     }
 
     /**
-     * {@code assignUserRoles} 执行当前类型定义的业务操作。
+     * 执行 角色 相关业务操作，并维护必要的状态和协作关系。
      *
-     * @param id 参数值，用于执行当前操作。
-     * @param r 参数值，用于执行当前操作。
-     *
-     * @return 返回当前操作产生的结果。
+     * @param assign 用于完成本次业务处理的 assign 参数。
      */
     @SaCheckPermission("system:role:assign")
     @PostMapping("/users/add")

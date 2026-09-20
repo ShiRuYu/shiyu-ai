@@ -27,7 +27,7 @@ import java.util.Collections;
 import java.util.List;
 
 /**
- * {@code KnowledgeRelationServiceImpl} 实现知识模块的应用服务，负责编排用例流程并维护业务边界。
+ * 提供 知识 关系 的查询、创建、更新及调用服务，协调业务变更和领域协作。
  */
 @Slf4j
 @Service

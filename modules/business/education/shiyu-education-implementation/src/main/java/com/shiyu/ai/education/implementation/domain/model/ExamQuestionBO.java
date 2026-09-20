@@ -9,7 +9,7 @@ import java.io.Serial;
 import java.math.BigDecimal;
 
 /**
- * {@code ExamQuestionBO} 是教育模块的业务对象，承载用例处理所需的领域数据。
+ * 表示 考试 题目 领域对象的业务状态和属性。
  */
 @Data
 @EqualsAndHashCode(callSuper = true)

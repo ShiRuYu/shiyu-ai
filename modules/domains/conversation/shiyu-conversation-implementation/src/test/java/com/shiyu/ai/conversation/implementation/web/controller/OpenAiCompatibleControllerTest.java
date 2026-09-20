@@ -38,6 +38,9 @@ import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 
+/**
+ * 验证 Open AI Compatible Controller 相关功能、边界条件、异常路径和协作行为。
+ */
 class OpenAiCompatibleControllerTest {
     private final ChatEngine engine = mock(ChatEngine.class);
     private final ModelRoutingPort models = mock(ModelRoutingPort.class);

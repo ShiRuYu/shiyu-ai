@@ -42,7 +42,11 @@ jobs:
       - name: 验证包归属清单和边界夹具
         run: |
           python -m unittest discover -s scripts/architecture/tests -p 'test_*.py'
+          python scripts/architecture/check_functional_javadocs.py modules --include-tests --baseline scripts/architecture/functional-javadoc-baseline.json --report docs/工程功能注释整改清单.md
+          git diff --exit-code -- docs/工程功能注释整改清单.md
+          python scripts/architecture/check_type_javadocs.py modules --include-tests
           python scripts/architecture/check_chinese_comments.py pom.xml modules tests scripts .github docs
+          python scripts/architecture/check_interface_javadocs.py modules
           python scripts/architecture/inventory_java_packages.py --output scripts/architecture/package-migration.csv
           git diff --exit-code -- scripts/architecture/package-migration.csv
 

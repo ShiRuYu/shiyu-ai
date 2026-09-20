@@ -13,91 +13,84 @@ import java.time.LocalDateTime;
 import java.util.List;
 
 /**
- * KnowledgeSpaceService 服务接口，负责执行知识领域相关业务操作。
+ * 提供 知识 空间 的查询、创建、更新及调用服务，协调业务变更和领域协作。
  */
 public interface KnowledgeSpaceService extends KnowledgeTenantProvisioning {
 
     /**
-     * 执行 {@code ensureDefaultSpace} 定义的接口操作。
+     * 执行 知识 空间 相关业务数据，并返回处理结果。
      *
-     * @param actor 当前操作主体上下文。
-     *
-     * @return 操作结果。
+     * @param actor 当前操作主体上下文，用于确定租户、用户和访问权限。
+     * @return 返回 知识 空间 相关操作生成的结果数据。
      */
     SpaceView ensureDefaultSpace(ActorContext actor);
 
     /**
-     * 执行 {@code initializeTenantDefaults} 定义的接口操作。
+     * 执行 知识 空间 相关业务操作，并维护必要的状态和协作关系。
      *
-     * @param tenantId 租户标识。
+     * @param tenantId 当前操作涉及的租户标识。
      */
     @Override
     void initializeTenantDefaults(com.shiyu.ai.kernel.context.TenantId tenantId);
 
     /**
-     * 根据标识查询对应的数据。
+     * 查询 知识 空间 相关业务数据，并返回处理结果。
      *
-     * @param actor 当前操作主体上下文。
-     * @param id 目标对象标识。
-     *
-     * @return 操作结果。
+     * @param actor 当前操作主体上下文，用于确定租户、用户和访问权限。
+     * @param id 用于定位目标业务对象的标识。
+     * @return 返回 知识 空间 相关操作生成的结果数据。
      */
     SpaceView get(ActorContext actor, Long id);
 
     /**
-     * 执行 {@code difficultyScale} 定义的接口操作。
+     * 执行 知识 空间 相关业务数据，并返回处理结果。
      *
-     * @param actor 当前操作主体上下文。
-     * @param spaceId 方法参数。
-     *
-     * @return 操作结果。
+     * @param actor 当前操作主体上下文，用于确定租户、用户和访问权限。
+     * @param spaceId 用于定位space的标识。
+     * @return 返回 知识 空间 相关操作生成的结果数据。
      */
     DifficultyScaleView difficultyScale(ActorContext actor, Long spaceId);
 
     /**
-     * 执行 {@code page} 定义的接口操作。
+     * 查询 知识 空间 相关业务数据，并返回处理结果。
      *
-     * @param actor 当前操作主体上下文。
-     * @param pageNum 页码。
-     * @param pageSize 分页大小。
-     * @param keyword 方法参数。
-     *
-     * @return 操作结果。
+     * @param actor 当前操作主体上下文，用于确定租户、用户和访问权限。
+     * @param pageNum 用于完成本次业务处理的 pageNum 参数。
+     * @param pageSize 每页返回的数据数量。
+     * @param keyword 用于完成本次业务处理的 keyword 参数。
+     * @return 返回 知识 空间 相关操作生成的结果数据。
      */
     PageData<SpaceView> page(ActorContext actor, int pageNum, int pageSize, String keyword);
 
     /**
-     * 执行 {@code page} 定义的接口操作。
+     * 查询 知识 空间 相关业务数据，并返回处理结果。
      *
-     * @param actor 当前操作主体上下文。
-     * @param pageNum 页码。
-     * @param pageSize 分页大小。
-     * @param keyword 方法参数。
-     * @param domainCode 方法参数。
-     *
-     * @return 操作结果。
+     * @param actor 当前操作主体上下文，用于确定租户、用户和访问权限。
+     * @param pageNum 用于完成本次业务处理的 pageNum 参数。
+     * @param pageSize 每页返回的数据数量。
+     * @param keyword 用于完成本次业务处理的 keyword 参数。
+     * @param domainCode 用于完成本次业务处理的 domainCode 参数。
+     * @return 返回 知识 空间 相关操作生成的结果数据。
      */
     PageData<SpaceView> page(
             ActorContext actor, int pageNum, int pageSize, String keyword, String domainCode);
 
     /**
-     * 创建并保存业务对象。
+     * 创建或保存 知识 空间 相关业务数据，并返回处理结果。
      *
-     * @param actor 当前操作主体上下文。
-     * @param request 请求参数。
-     *
-     * @return 操作结果。
+     * @param actor 当前操作主体上下文，用于确定租户、用户和访问权限。
+     * @param request 封装本次操作所需业务字段的请求对象。
+     * @return 返回 知识 空间 相关操作生成的结果数据。
      */
     SpaceView create(ActorContext actor, CreateSpaceRequest request);
 
     /**
-     * 更新业务对象及其关联数据。
+     * 更新或设置 知识 空间 相关业务数据，并返回处理结果。
      *
-     * @param actor 当前操作主体上下文。
-     * @param id 目标对象标识。
-     * @param request 请求参数。
-     *
-     * @return 操作结果。
+     * @param actor 当前操作主体上下文，用于确定租户、用户和访问权限。
+     * @param id 用于定位目标业务对象的标识。
+     * @param request 封装本次操作所需业务字段的请求对象。
+     * @return 返回 知识 空间 相关操作生成的结果数据。
      */
     SpaceView update(ActorContext actor, Long id, UpdateSpaceRequest request);
 
@@ -110,44 +103,42 @@ public interface KnowledgeSpaceService extends KnowledgeTenantProvisioning {
     void delete(ActorContext actor, Long id);
 
     /**
-     * 执行 {@code members} 定义的接口操作。
+     * 执行 知识 空间 相关业务数据，并返回处理结果。
      *
-     * @param actor 当前操作主体上下文。
-     * @param spaceId 方法参数。
-     *
-     * @return 符合条件的结果集合。
+     * @param actor 当前操作主体上下文，用于确定租户、用户和访问权限。
+     * @param spaceId 用于定位space的标识。
+     * @return 返回符合条件的数据集合；没有匹配项时返回空集合。
      */
     List<MemberView> members(ActorContext actor, Long spaceId);
 
     /**
-     * 更新业务对象及其关联数据。
+     * 执行 知识 空间 相关业务操作，并维护必要的状态和协作关系。
      *
-     * @param actor 当前操作主体上下文。
-     * @param spaceId 方法参数。
-     * @param members 方法参数。
+     * @param actor 当前操作主体上下文，用于确定租户、用户和访问权限。
+     * @param spaceId 用于定位space的标识。
+     * @param members 用于完成本次业务处理的 members 参数。
      */
     void replaceMembers(ActorContext actor, Long spaceId, List<MemberRequest> members);
 
     /**
-     * 执行 {@code requireAccess} 定义的接口操作。
+     * 获取并校验 知识 空间 相关业务操作，并维护必要的状态和协作关系。
      *
-     * @param spaceId 方法参数。
-     * @param minimumRole 方法参数。
-     * @param context 方法参数。
+     * @param spaceId 用于定位space的标识。
+     * @param minimumRole 用于完成本次业务处理的 minimumRole 参数。
+     * @param context 当前操作主体上下文，用于确定租户、用户和访问权限。
      */
     void requireAccess(Long spaceId, SpaceRole minimumRole, ActorContext context);
 
     /**
-     * 执行 {@code accessibleSpaces} 定义的接口操作。
+     * 执行 知识 空间 相关业务数据，并返回处理结果。
      *
-     * @param context 方法参数。
-     *
-     * @return 符合条件的结果集合。
+     * @param context 当前操作主体上下文，用于确定租户、用户和访问权限。
+     * @return 返回符合条件的数据集合；没有匹配项时返回空集合。
      */
     List<SpaceView> accessibleSpaces(ActorContext context);
 
     /**
-     * {@code SpaceRole} 表示知识模块中的一组受控业务状态或分类。
+     * 定义 空间 角色 可用的枚举值及其业务语义。
      */
     enum SpaceRole {
         VIEWER(1),
@@ -165,11 +156,10 @@ public interface KnowledgeSpaceService extends KnowledgeTenantProvisioning {
         }
 
         /**
-         * {@code includes} 执行当前类型定义的业务操作。
+         * 执行 空间 角色 相关业务数据，并返回处理结果。
          *
-         * @param required 参数值，用于执行当前操作。
-         *
-         * @return 返回当前操作产生的结果。
+         * @param required 用于完成本次业务处理的 required 参数。
+         * @return 返回本次条件判断是否成立。
          */
         public boolean includes(SpaceRole required) {
             return rank >= required.rank;
@@ -177,25 +167,7 @@ public interface KnowledgeSpaceService extends KnowledgeTenantProvisioning {
     }
 
     /**
-     * {@code SpaceView} 封装知识模块中不可变的结构化数据，并作为相关操作之间的值对象。
-     * @param id 标识，表示该记录组件承载的数据。
-     * @param code 编码，表示该记录组件承载的数据。
-     * @param domainCode domainCode 属性，表示该记录组件承载的数据。
-     * @param name 名称，表示该记录组件承载的数据。
-     * @param description 描述，表示该记录组件承载的数据。
-     * @param accessMode accessMode 属性，表示该记录组件承载的数据。
-     * @param reviewMode reviewMode 属性，表示该记录组件承载的数据。
-     * @param bindingMode bindingMode 属性，表示该记录组件承载的数据。
-     * @param difficultyScaleId difficultyScaleId 属性，表示该记录组件承载的数据。
-     * @param embeddingProfile embeddingProfile 属性，表示该记录组件承载的数据。
-     * @param rerankProfile rerankProfile 属性，表示该记录组件承载的数据。
-     * @param chunkStrategy chunkStrategy 属性，表示该记录组件承载的数据。
-     * @param chunkSize chunkSize 属性，表示该记录组件承载的数据。
-     * @param chunkOverlap chunkOverlap 属性，表示该记录组件承载的数据。
-     * @param activeIndexVersion activeIndexVersion 属性，表示该记录组件承载的数据。
-     * @param status 状态，表示该记录组件承载的数据。
-     * @param createTime createTime 属性，表示该记录组件承载的数据。
-     * @param updateTime updateTime 属性，表示该记录组件承载的数据。
+     * 封装 空间 View 相关的不可变数据及其字段约束。
      */
     record SpaceView(
             Long id,
@@ -218,24 +190,13 @@ public interface KnowledgeSpaceService extends KnowledgeTenantProvisioning {
             LocalDateTime updateTime) {}
 
     /**
-     * {@code MemberView} 封装知识模块中不可变的结构化数据，并作为相关操作之间的值对象。
-     * @param id 标识，表示该记录组件承载的数据。
-     * @param spaceId spaceId 属性，表示该记录组件承载的数据。
-     * @param principalType principalType 属性，表示该记录组件承载的数据。
-     * @param principalId principalId 属性，表示该记录组件承载的数据。
-     * @param spaceRole spaceRole 属性，表示该记录组件承载的数据。
+     * 封装 Member View 相关的不可变数据及其字段约束。
      */
     record MemberView(
             Long id, Long spaceId, String principalType, Long principalId, String spaceRole) {}
 
     /**
-     * {@code DifficultyScaleView} 封装知识模块中不可变的结构化数据，并作为相关操作之间的值对象。
-     * @param id 标识，表示该记录组件承载的数据。
-     * @param code 编码，表示该记录组件承载的数据。
-     * @param name 名称，表示该记录组件承载的数据。
-     * @param description 描述，表示该记录组件承载的数据。
-     * @param levelCount levelCount 属性，表示该记录组件承载的数据。
-     * @param levels levels 属性，表示该记录组件承载的数据。
+     * 封装 Difficulty Scale View 相关的不可变数据及其字段约束。
      */
     record DifficultyScaleView(
             Long id,
@@ -246,28 +207,12 @@ public interface KnowledgeSpaceService extends KnowledgeTenantProvisioning {
             List<DifficultyLevelView> levels) {}
 
     /**
-     * {@code DifficultyLevelView} 封装知识模块中不可变的结构化数据，并作为相关操作之间的值对象。
-     * @param level level 属性，表示该记录组件承载的数据。
-     * @param label label 属性，表示该记录组件承载的数据。
-     * @param description 描述，表示该记录组件承载的数据。
+     * 封装 Difficulty Level View 相关的不可变数据及其字段约束。
      */
     record DifficultyLevelView(Integer level, String label, String description) {}
 
     /**
-     * {@code CreateSpaceRequest} 封装知识模块中不可变的结构化数据，并作为相关操作之间的值对象。
-     * @param code 编码，表示该记录组件承载的数据。
-     * @param name 名称，表示该记录组件承载的数据。
-     * @param domainCode domainCode 属性，表示该记录组件承载的数据。
-     * @param description 描述，表示该记录组件承载的数据。
-     * @param accessMode accessMode 属性，表示该记录组件承载的数据。
-     * @param reviewMode reviewMode 属性，表示该记录组件承载的数据。
-     * @param bindingMode bindingMode 属性，表示该记录组件承载的数据。
-     * @param difficultyScaleId difficultyScaleId 属性，表示该记录组件承载的数据。
-     * @param embeddingProfile embeddingProfile 属性，表示该记录组件承载的数据。
-     * @param rerankProfile rerankProfile 属性，表示该记录组件承载的数据。
-     * @param chunkStrategy chunkStrategy 属性，表示该记录组件承载的数据。
-     * @param chunkSize chunkSize 属性，表示该记录组件承载的数据。
-     * @param chunkOverlap chunkOverlap 属性，表示该记录组件承载的数据。
+     * 封装 Create 空间 相关的不可变数据及其字段约束。
      */
     record CreateSpaceRequest(
             @NotBlank String code,
@@ -284,21 +229,9 @@ public interface KnowledgeSpaceService extends KnowledgeTenantProvisioning {
             @Min(100) @Max(4000) Integer chunkSize,
             @Min(0) @Max(1000) Integer chunkOverlap) {}
 
+
     /**
-     * {@code UpdateSpaceRequest} 封装知识模块中不可变的结构化数据，并作为相关操作之间的值对象。
-     * @param name 名称，表示该记录组件承载的数据。
-     * @param description 描述，表示该记录组件承载的数据。
-     * @param domainCode domainCode 属性，表示该记录组件承载的数据。
-     * @param accessMode accessMode 属性，表示该记录组件承载的数据。
-     * @param reviewMode reviewMode 属性，表示该记录组件承载的数据。
-     * @param bindingMode bindingMode 属性，表示该记录组件承载的数据。
-     * @param difficultyScaleId difficultyScaleId 属性，表示该记录组件承载的数据。
-     * @param embeddingProfile embeddingProfile 属性，表示该记录组件承载的数据。
-     * @param rerankProfile rerankProfile 属性，表示该记录组件承载的数据。
-     * @param chunkStrategy chunkStrategy 属性，表示该记录组件承载的数据。
-     * @param chunkSize chunkSize 属性，表示该记录组件承载的数据。
-     * @param chunkOverlap chunkOverlap 属性，表示该记录组件承载的数据。
-     * @param status 状态，表示该记录组件承载的数据。
+     * 封装知识空间更新所需的名称、访问策略、索引策略和状态。
      */
     record UpdateSpaceRequest(
             String name,
@@ -316,10 +249,7 @@ public interface KnowledgeSpaceService extends KnowledgeTenantProvisioning {
             Integer status) {}
 
     /**
-     * {@code MemberRequest} 封装知识模块中不可变的结构化数据，并作为相关操作之间的值对象。
-     * @param principalType principalType 属性，表示该记录组件承载的数据。
-     * @param principalId principalId 属性，表示该记录组件承载的数据。
-     * @param spaceRole spaceRole 属性，表示该记录组件承载的数据。
+     * 封装 Member 相关的不可变数据及其字段约束。
      */
     record MemberRequest(
             @NotBlank String principalType,

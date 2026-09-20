@@ -7,7 +7,9 @@ import java.io.Serializable;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 
-/** StudyPlanItem 业务对象 */
+/**
+ * 表示 Study Plan Item 领域对象的业务状态和属性。
+ */
 @Data
 public class StudyPlanItemBO implements Serializable {
 

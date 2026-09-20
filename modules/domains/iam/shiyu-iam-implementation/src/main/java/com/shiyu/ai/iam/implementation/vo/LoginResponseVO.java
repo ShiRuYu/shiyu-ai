@@ -8,7 +8,9 @@ import java.io.Serial;
 import java.io.Serializable;
 import java.util.List;
 
-/** 登录响应数据 - 符合 API 文档规范 */
+/**
+ * 封装 Login Response 操作向调用方返回的传输数据。
+ */
 @Data
 @SuppressWarnings("serial")
 public class LoginResponseVO implements Serializable {

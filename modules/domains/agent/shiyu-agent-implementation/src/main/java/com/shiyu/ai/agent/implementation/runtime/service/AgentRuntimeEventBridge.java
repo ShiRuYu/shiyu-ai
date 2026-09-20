@@ -11,7 +11,7 @@ import lombok.extern.slf4j.Slf4j;
 import java.util.Map;
 
 /**
- * 将 Agent 生命周期事件转换为运行时持久化事件。
+ * 实现 智能体 Runtime 事件 Bridge 相关的业务处理、协作逻辑或基础设施能力。
  */
 @Slf4j
 final class AgentRuntimeEventBridge {

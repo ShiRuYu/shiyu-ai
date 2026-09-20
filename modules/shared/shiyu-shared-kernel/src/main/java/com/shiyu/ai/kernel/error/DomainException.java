@@ -3,7 +3,7 @@ package com.shiyu.ai.kernel.error;
 import java.util.Objects;
 
 /**
- * DomainException 异常类型，表示共享内核领域相关业务或访问错误。
+ * 表示 Domain 相关的领域事件或异常信息。
  */
 public class DomainException extends RuntimeException {
 
@@ -18,10 +18,10 @@ public class DomainException extends RuntimeException {
     private final String code;
 
     /**
-     * {@code DomainException} 创建并初始化当前类型实例。
+     * 执行 Domain 相关业务操作，并维护必要的状态和协作关系。
      *
-     * @param code 参数值，用于执行当前操作。
-     * @param message 参数值，用于执行当前操作。
+     * @param code 用于定位或筛选目标业务对象的业务值。
+     * @param message 本次流程携带的事件或业务数据。
      */
     public DomainException(String code, String message) {
         super(message);
@@ -29,11 +29,11 @@ public class DomainException extends RuntimeException {
     }
 
     /**
-     * {@code DomainException} 创建并初始化当前类型实例。
+     * 执行 Domain 相关业务操作，并维护必要的状态和协作关系。
      *
-     * @param code 参数值，用于执行当前操作。
-     * @param message 参数值，用于执行当前操作。
-     * @param cause 参数值，用于执行当前操作。
+     * @param code 用于定位或筛选目标业务对象的业务值。
+     * @param message 本次流程携带的事件或业务数据。
+     * @param cause 用于完成本次业务处理的 cause 参数。
      */
     public DomainException(String code, String message, Throwable cause) {
         super(message, cause);
@@ -41,9 +41,9 @@ public class DomainException extends RuntimeException {
     }
 
     /**
-     * {@code code} 执行当前类型定义的业务操作。
+     * 执行 Domain 相关业务数据，并返回处理结果。
      *
-     * @return 返回当前操作产生的结果。
+     * @return 返回 Domain 相关操作生成的结果数据。
      */
     public final String code() {
         return code;

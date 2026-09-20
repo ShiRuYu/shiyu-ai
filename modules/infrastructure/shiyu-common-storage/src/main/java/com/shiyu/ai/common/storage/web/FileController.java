@@ -45,7 +45,7 @@ import java.util.List;
 import java.util.Map;
 
 /**
- * {@code FileController} 是平台基础设施模块的 Web 接口适配器，负责接收请求并转换为应用服务调用。
+ * 处理 文件 相关的 Web 请求，并将请求转换为应用服务调用。
  */
 @Slf4j
 @Tag(name = "File", description = "文件管理")
@@ -60,9 +60,9 @@ public class FileController {
     private final FileStorageManager storageManager;
 
     /**
-     * {@code config} 执行当前类型定义的业务操作。
+     * 执行 文件 相关业务操作，并维护必要的状态和协作关系。
      *
-     * @return 返回当前操作产生的结果。
+     * @param summary 用于完成本次业务处理的 summary 参数。
      */
     @Operation(summary = "获取文件存储配置")
     @SaCheckPermission("file:list")
@@ -77,9 +77,9 @@ public class FileController {
     }
 
     /**
-     * {@code list} 查询并返回当前操作所需的数据。
+     * 执行 文件 相关业务操作，并维护必要的状态和协作关系。
      *
-     * @return 返回当前操作产生的结果。
+     * @param summary 用于完成本次业务处理的 summary 参数。
      */
     @Operation(summary = "获取文件列表")
     @SaCheckPermission("file:list")
@@ -98,11 +98,9 @@ public class FileController {
     }
 
     /**
-     * {@code upload} 执行当前类型定义的业务操作。
+     * 执行 文件 相关业务操作，并维护必要的状态和协作关系。
      *
-     * @param file 参数值，用于执行当前操作。
-     *
-     * @return 返回当前操作产生的结果。
+     * @param summary 用于完成本次业务处理的 summary 参数。
      */
     @Operation(summary = "上传文件")
     @SaCheckPermission("file:upload")
@@ -135,11 +133,9 @@ public class FileController {
     }
 
     /**
-     * {@code download} 执行当前类型定义的业务操作。
+     * 执行 文件 相关业务操作，并维护必要的状态和协作关系。
      *
-     * @param key 参数值，用于执行当前操作。
-     *
-     * @return 返回当前操作产生的结果。
+     * @param summary 用于完成本次业务处理的 summary 参数。
      */
     @Operation(summary = "下载文件")
     @GetMapping("/download")
@@ -164,11 +160,9 @@ public class FileController {
     }
 
     /**
-     * {@code delete} 释放或移除当前操作涉及的资源。
+     * 执行 文件 相关业务操作，并维护必要的状态和协作关系。
      *
-     * @param key 参数值，用于执行当前操作。
-     *
-     * @return 返回当前操作产生的结果。
+     * @param summary 用于完成本次业务处理的 summary 参数。
      */
     @Operation(summary = "删除文件")
     @SaCheckPermission("file:delete")
@@ -221,14 +215,7 @@ public class FileController {
     }
 
     /**
-     * {@code FileView} 封装平台基础设施模块中不可变的结构化数据，并作为相关操作之间的值对象。
-     * @param key key 属性，表示该记录组件承载的数据。
-     * @param name 名称，表示该记录组件承载的数据。
-     * @param size 大小，表示该记录组件承载的数据。
-     * @param contentType 内容类型，表示该记录组件承载的数据。
-     * @param lastModified lastModified 属性，表示该记录组件承载的数据。
-     * @param url url 属性，表示该记录组件承载的数据。
-     * @param storageType storageType 属性，表示该记录组件承载的数据。
+     * 封装 文件 View 相关的不可变数据及其字段约束。
      */
     public record FileView(
             String key,

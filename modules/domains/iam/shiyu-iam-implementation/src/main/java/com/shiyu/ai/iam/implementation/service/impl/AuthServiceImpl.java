@@ -31,7 +31,7 @@ import java.util.List;
 import java.util.Map;
 
 /**
- * 实现 Auth 应用服务用例。
+ * 提供 认证 的查询、创建、更新及调用服务，协调业务变更和领域协作。
  */
 @Service
 public class AuthServiceImpl implements AuthService {
@@ -103,12 +103,11 @@ public class AuthServiceImpl implements AuthService {
     }
 
     /**
-     * {@code login} 执行当前类型定义的业务操作。
+     * 执行 认证 相关业务数据，并返回处理结果。
      *
-     * @param username 参数值，用于执行当前操作。
-     * @param password 参数值，用于执行当前操作。
-     *
-     * @return 返回当前操作产生的结果。
+     * @param username 用于完成本次业务处理的 username 参数。
+     * @param password 用于完成本次业务处理的 password 参数。
+     * @return 返回 认证 相关操作生成的结果数据。
      */
     @Override
     public LoginResponseVO login(String username, String password) {
@@ -116,13 +115,12 @@ public class AuthServiceImpl implements AuthService {
     }
 
     /**
-     * {@code login} 执行当前类型定义的业务操作。
+     * 执行 认证 相关业务数据，并返回处理结果。
      *
-     * @param username 参数值，用于执行当前操作。
-     * @param password 参数值，用于执行当前操作。
-     * @param roleId 参数值，用于执行当前操作。
-     *
-     * @return 返回当前操作产生的结果。
+     * @param username 用于完成本次业务处理的 username 参数。
+     * @param password 用于完成本次业务处理的 password 参数。
+     * @param roleId 用于定位role的标识。
+     * @return 返回 认证 相关操作生成的结果数据。
      */
     @Override
     public LoginResponseVO login(String username, String password, Long roleId) {
@@ -130,14 +128,13 @@ public class AuthServiceImpl implements AuthService {
     }
 
     /**
-     * {@code login} 执行当前类型定义的业务操作。
+     * 执行 认证 相关业务数据，并返回处理结果。
      *
-     * @param username 参数值，用于执行当前操作。
-     * @param password 参数值，用于执行当前操作。
-     * @param roleId 参数值，用于执行当前操作。
-     * @param loginIp 参数值，用于执行当前操作。
-     *
-     * @return 返回当前操作产生的结果。
+     * @param username 用于完成本次业务处理的 username 参数。
+     * @param password 用于完成本次业务处理的 password 参数。
+     * @param roleId 用于定位role的标识。
+     * @param loginIp 用于完成本次业务处理的 loginIp 参数。
+     * @return 返回 认证 相关操作生成的结果数据。
      */
     @Override
     public LoginResponseVO login(String username, String password, Long roleId, String loginIp) {
@@ -145,12 +142,11 @@ public class AuthServiceImpl implements AuthService {
     }
 
     /**
-     * {@code getAuthCodes} 查询并返回当前操作所需的数据。
+     * 查询 认证 相关业务数据，并返回处理结果。
      *
-     * @param actor 参数值，用于执行当前操作。
-     * @param username 参数值，用于执行当前操作。
-     *
-     * @return 返回当前操作产生的结果。
+     * @param actor 当前操作主体上下文，用于确定租户、用户和访问权限。
+     * @param username 用于完成本次业务处理的 username 参数。
+     * @return 返回符合条件的数据集合；没有匹配项时返回空集合。
      */
     @Override
     public List<String> getAuthCodes(ActorContext actor, String username) {
@@ -158,12 +154,11 @@ public class AuthServiceImpl implements AuthService {
     }
 
     /**
-     * {@code getAuthCodesByUserId} 查询并返回当前操作所需的数据。
+     * 查询 认证 相关业务数据，并返回处理结果。
      *
-     * @param actor 参数值，用于执行当前操作。
-     * @param userId 参数值，用于执行当前操作。
-     *
-     * @return 返回当前操作产生的结果。
+     * @param actor 当前操作主体上下文，用于确定租户、用户和访问权限。
+     * @param userId 当前操作涉及的用户标识。
+     * @return 返回符合条件的数据集合；没有匹配项时返回空集合。
      */
     @Override
     public List<String> getAuthCodesByUserId(ActorContext actor, UserId userId) {
@@ -171,11 +166,10 @@ public class AuthServiceImpl implements AuthService {
     }
 
     /**
-     * {@code refreshToken} 执行当前类型定义的业务操作。
+     * 执行 认证 相关业务数据，并返回处理结果。
      *
-     * @param oldToken 参数值，用于执行当前操作。
-     *
-     * @return 返回当前操作产生的结果。
+     * @param oldToken 用于完成本次业务处理的 oldToken 参数。
+     * @return 返回 认证 相关操作生成的结果数据。
      */
     @Override
     public String refreshToken(String oldToken) {
@@ -183,9 +177,9 @@ public class AuthServiceImpl implements AuthService {
     }
 
     /**
-     * {@code logout} 执行当前类型定义的业务操作。
+     * 执行 认证 相关业务操作，并维护必要的状态和协作关系。
      *
-     * @param token 参数值，用于执行当前操作。
+     * @param token 用于完成本次业务处理的 token 参数。
      */
     @Override
     public void logout(String token) {
@@ -193,12 +187,11 @@ public class AuthServiceImpl implements AuthService {
     }
 
     /**
-     * {@code switchCurrentRole} 执行当前类型定义的业务操作。
+     * 执行 认证 相关业务数据，并返回处理结果。
      *
-     * @param userId 参数值，用于执行当前操作。
-     * @param roleId 参数值，用于执行当前操作。
-     *
-     * @return 返回当前操作产生的结果。
+     * @param userId 当前操作涉及的用户标识。
+     * @param roleId 用于定位role的标识。
+     * @return 返回本次条件判断是否成立。
      */
     @Override
     public boolean switchCurrentRole(Long userId, Long roleId) {
@@ -206,12 +199,11 @@ public class AuthServiceImpl implements AuthService {
     }
 
     /**
-     * {@code switchCurrentTenant} 执行当前类型定义的业务操作。
+     * 执行 认证 相关业务数据，并返回处理结果。
      *
-     * @param userId 参数值，用于执行当前操作。
-     * @param tenantId 参数值，用于执行当前操作。
-     *
-     * @return 返回当前操作产生的结果。
+     * @param userId 当前操作涉及的用户标识。
+     * @param tenantId 当前操作涉及的租户标识。
+     * @return 返回本次条件判断是否成立。
      */
     @Override
     public boolean switchCurrentTenant(Long userId, TenantId tenantId) {
@@ -219,12 +211,11 @@ public class AuthServiceImpl implements AuthService {
     }
 
     /**
-     * {@code getUserTenants} 查询并返回当前操作所需的数据。
+     * 查询 认证 相关业务数据，并返回处理结果。
      *
-     * @param actor 参数值，用于执行当前操作。
-     * @param userId 参数值，用于执行当前操作。
-     *
-     * @return 返回当前操作产生的结果。
+     * @param actor 当前操作主体上下文，用于确定租户、用户和访问权限。
+     * @param userId 当前操作涉及的用户标识。
+     * @return 返回符合条件的数据集合；没有匹配项时返回空集合。
      */
     @Override
     public List<TenantInfoVO> getUserTenants(ActorContext actor, Long userId) {
@@ -232,13 +223,12 @@ public class AuthServiceImpl implements AuthService {
     }
 
     /**
-     * {@code register} 写入或更新当前模块中的业务数据。
+     * 创建或保存 认证 相关业务数据，并返回处理结果。
      *
-     * @param username 参数值，用于执行当前操作。
-     * @param password 参数值，用于执行当前操作。
-     * @param email 参数值，用于执行当前操作。
-     *
-     * @return 返回当前操作产生的结果。
+     * @param username 用于完成本次业务处理的 username 参数。
+     * @param password 用于完成本次业务处理的 password 参数。
+     * @param email 用于完成本次业务处理的 email 参数。
+     * @return 返回 认证 相关操作生成的结果数据。
      */
     @Override
     public LoginResponseVO register(String username, String password, String email) {
@@ -246,13 +236,12 @@ public class AuthServiceImpl implements AuthService {
     }
 
     /**
-     * {@code codeLogin} 执行当前类型定义的业务操作。
+     * 执行 认证 相关业务数据，并返回处理结果。
      *
-     * @param phone 参数值，用于执行当前操作。
-     * @param code 参数值，用于执行当前操作。
-     * @param captchaKey 参数值，用于执行当前操作。
-     *
-     * @return 返回当前操作产生的结果。
+     * @param phone 用于完成本次业务处理的 phone 参数。
+     * @param code 用于定位或筛选目标业务对象的业务值。
+     * @param captchaKey 用于完成本次业务处理的 captchaKey 参数。
+     * @return 返回 认证 相关操作生成的结果数据。
      */
     @Override
     public LoginResponseVO codeLogin(String phone, String code, String captchaKey) {
@@ -260,14 +249,13 @@ public class AuthServiceImpl implements AuthService {
     }
 
     /**
-     * {@code forgetPassword} 执行当前类型定义的业务操作。
+     * 执行 认证 相关业务数据，并返回处理结果。
      *
-     * @param email 参数值，用于执行当前操作。
-     * @param newPassword 参数值，用于执行当前操作。
-     * @param code 参数值，用于执行当前操作。
-     * @param captchaKey 参数值，用于执行当前操作。
-     *
-     * @return 返回当前操作产生的结果。
+     * @param email 用于完成本次业务处理的 email 参数。
+     * @param newPassword 用于完成本次业务处理的 newPassword 参数。
+     * @param code 用于定位或筛选目标业务对象的业务值。
+     * @param captchaKey 用于完成本次业务处理的 captchaKey 参数。
+     * @return 返回本次条件判断是否成立。
      */
     @Override
     public boolean forgetPassword(

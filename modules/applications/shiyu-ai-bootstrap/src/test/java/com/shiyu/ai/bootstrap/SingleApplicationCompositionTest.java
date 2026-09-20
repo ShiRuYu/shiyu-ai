@@ -6,6 +6,9 @@ import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import org.junit.jupiter.api.Test;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 
+/**
+ * 验证 Single Application Composition 相关功能、边界条件、异常路径和协作行为。
+ */
 class SingleApplicationCompositionTest {
 
     @Test

@@ -10,22 +10,21 @@ import java.time.LocalDateTime;
 import java.util.List;
 
 /**
- * EnterpriseDocumentService 服务接口，负责执行知识领域相关业务操作。
+ * 提供 Enterprise 文档 的查询、创建、更新及调用服务，协调业务变更和领域协作。
  */
 public interface EnterpriseDocumentService {
 
     /**
-     * 执行 {@code page} 定义的接口操作。
+     * 查询 Enterprise 文档 相关业务数据，并返回处理结果。
      *
-     * @param actor 当前操作主体上下文。
-     * @param spaceId 方法参数。
-     * @param pageNum 页码。
-     * @param pageSize 分页大小。
-     * @param keyword 方法参数。
-     * @param lifecycleStatus 方法参数。
-     * @param parseStatus 方法参数。
-     *
-     * @return 操作结果。
+     * @param actor 当前操作主体上下文，用于确定租户、用户和访问权限。
+     * @param spaceId 用于定位space的标识。
+     * @param pageNum 用于完成本次业务处理的 pageNum 参数。
+     * @param pageSize 每页返回的数据数量。
+     * @param keyword 用于完成本次业务处理的 keyword 参数。
+     * @param lifecycleStatus 用于完成本次业务处理的 lifecycleStatus 参数。
+     * @param parseStatus 用于完成本次业务处理的 parseStatus 参数。
+     * @return 返回 Enterprise 文档 相关操作生成的结果数据。
      */
     PageData<DocumentView> page(
             ActorContext actor,
@@ -37,119 +36,102 @@ public interface EnterpriseDocumentService {
             String parseStatus);
 
     /**
-     * 根据标识查询对应的数据。
+     * 查询 Enterprise 文档 相关业务数据，并返回处理结果。
      *
-     * @param actor 当前操作主体上下文。
-     * @param documentId 方法参数。
-     *
-     * @return 操作结果。
+     * @param actor 当前操作主体上下文，用于确定租户、用户和访问权限。
+     * @param documentId 用于定位document的标识。
+     * @return 返回 Enterprise 文档 相关操作生成的结果数据。
      */
     DocumentView get(ActorContext actor, Long documentId);
 
     /**
-     * 创建并保存业务对象。
+     * 创建或保存 Enterprise 文档 相关业务数据，并返回处理结果。
      *
-     * @param actor 当前操作主体上下文。
-     * @param request 请求参数。
-     *
-     * @return 操作结果。
+     * @param actor 当前操作主体上下文，用于确定租户、用户和访问权限。
+     * @param request 封装本次操作所需业务字段的请求对象。
+     * @return 返回 Enterprise 文档 相关操作生成的结果数据。
      */
     UploadResult registerStoredFile(ActorContext actor, StoredFileRequest request);
 
     /**
-     * 执行 {@code versions} 定义的接口操作。
+     * 执行 Enterprise 文档 相关业务数据，并返回处理结果。
      *
-     * @param actor 当前操作主体上下文。
-     * @param documentId 方法参数。
-     *
-     * @return 符合条件的结果集合。
+     * @param actor 当前操作主体上下文，用于确定租户、用户和访问权限。
+     * @param documentId 用于定位document的标识。
+     * @return 返回符合条件的数据集合；没有匹配项时返回空集合。
      */
     List<VersionView> versions(ActorContext actor, Long documentId);
 
     /**
-     * 执行 {@code submit} 定义的接口操作。
+     * 执行 Enterprise 文档 相关业务数据，并返回处理结果。
      *
-     * @param actor 当前操作主体上下文。
-     * @param documentId 方法参数。
-     * @param comment 方法参数。
-     *
-     * @return 操作结果。
+     * @param actor 当前操作主体上下文，用于确定租户、用户和访问权限。
+     * @param documentId 用于定位document的标识。
+     * @param comment 用于完成本次业务处理的 comment 参数。
+     * @return 返回 Enterprise 文档 相关操作生成的结果数据。
      */
     DocumentView submit(ActorContext actor, Long documentId, String comment);
 
     /**
-     * 执行 {@code approve} 定义的接口操作。
+     * 执行 Enterprise 文档 相关业务数据，并返回处理结果。
      *
-     * @param actor 当前操作主体上下文。
-     * @param documentId 方法参数。
-     * @param comment 方法参数。
-     *
-     * @return 操作结果。
+     * @param actor 当前操作主体上下文，用于确定租户、用户和访问权限。
+     * @param documentId 用于定位document的标识。
+     * @param comment 用于完成本次业务处理的 comment 参数。
+     * @return 返回 Enterprise 文档 相关操作生成的结果数据。
      */
     DocumentView approve(ActorContext actor, Long documentId, String comment);
 
     /**
-     * 执行 {@code reject} 定义的接口操作。
+     * 执行 Enterprise 文档 相关业务数据，并返回处理结果。
      *
-     * @param actor 当前操作主体上下文。
-     * @param documentId 方法参数。
-     * @param comment 方法参数。
-     *
-     * @return 操作结果。
+     * @param actor 当前操作主体上下文，用于确定租户、用户和访问权限。
+     * @param documentId 用于定位document的标识。
+     * @param comment 用于完成本次业务处理的 comment 参数。
+     * @return 返回 Enterprise 文档 相关操作生成的结果数据。
      */
     DocumentView reject(ActorContext actor, Long documentId, String comment);
 
     /**
-     * 发布或发送业务事件。
+     * 发布或发送 Enterprise 文档 相关业务数据，并返回处理结果。
      *
-     * @param actor 当前操作主体上下文。
-     * @param documentId 方法参数。
-     * @param comment 方法参数。
-     *
-     * @return 操作结果。
+     * @param actor 当前操作主体上下文，用于确定租户、用户和访问权限。
+     * @param documentId 用于定位document的标识。
+     * @param comment 用于完成本次业务处理的 comment 参数。
+     * @return 返回 Enterprise 文档 相关操作生成的结果数据。
      */
     DocumentView publish(ActorContext actor, Long documentId, String comment);
 
     /**
-     * 执行 {@code archive} 定义的接口操作。
+     * 执行 Enterprise 文档 相关业务数据，并返回处理结果。
      *
-     * @param actor 当前操作主体上下文。
-     * @param documentId 方法参数。
-     * @param comment 方法参数。
-     *
-     * @return 操作结果。
+     * @param actor 当前操作主体上下文，用于确定租户、用户和访问权限。
+     * @param documentId 用于定位document的标识。
+     * @param comment 用于完成本次业务处理的 comment 参数。
+     * @return 返回 Enterprise 文档 相关操作生成的结果数据。
      */
     DocumentView archive(ActorContext actor, Long documentId, String comment);
 
     /**
-     * 执行 {@code rollback} 定义的接口操作。
+     * 执行 Enterprise 文档 相关业务数据，并返回处理结果。
      *
-     * @param actor 当前操作主体上下文。
-     * @param documentId 方法参数。
-     * @param versionId 方法参数。
-     *
-     * @return 操作结果。
+     * @param actor 当前操作主体上下文，用于确定租户、用户和访问权限。
+     * @param documentId 用于定位document的标识。
+     * @param versionId 用于定位version的标识。
+     * @return 返回 Enterprise 文档 相关操作生成的结果数据。
      */
     DocumentView rollback(ActorContext actor, Long documentId, Long versionId);
 
     /**
-     * 删除指定业务对象或关联数据。
+     * 删除或移除 Enterprise 文档 相关业务操作，并维护必要的状态和协作关系。
      *
-     * @param actor 当前操作主体上下文。
-     * @param documentId 方法参数。
+     * @param actor 当前操作主体上下文，用于确定租户、用户和访问权限。
+     * @param documentId 用于定位document的标识。
      */
     void delete(ActorContext actor, Long documentId);
 
     /**
-     * {@code StoredFileRequest} 封装知识模块中不可变的结构化数据，并作为相关操作之间的值对象。
-     * @param spaceId spaceId 属性，表示该记录组件承载的数据。
-     * @param title 标题，表示该记录组件承载的数据。
-     * @param originalName originalName 属性，表示该记录组件承载的数据。
-     * @param objectKey objectKey 属性，表示该记录组件承载的数据。
-     * @param storageProvider storageProvider 属性，表示该记录组件承载的数据。
-     * @param mimeType mimeType 属性，表示该记录组件承载的数据。
-     * @param fileSize fileSize 属性，表示该记录组件承载的数据。
-     * @param checksum checksum 属性，表示该记录组件承载的数据。
+     * 封装 Stored 文件 相关的不可变数据及其字段约束。
      */
     record StoredFileRequest(
             @NotNull Long spaceId,
@@ -161,31 +143,14 @@ public interface EnterpriseDocumentService {
             long fileSize,
             @NotBlank String checksum) {}
 
+
     /**
-     * {@code UploadResult} 封装知识模块中不可变的结构化数据，并作为相关操作之间的值对象。
-     * @param document document 属性，表示该记录组件承载的数据。
-     * @param versionId versionId 属性，表示该记录组件承载的数据。
-     * @param jobId jobId 属性，表示该记录组件承载的数据。
-     * @param duplicate duplicate 属性，表示该记录组件承载的数据。
+     * 返回文档上传后的文档、版本、摄取任务及重复上传标志。
      */
     record UploadResult(DocumentView document, Long versionId, Long jobId, boolean duplicate) {}
 
     /**
-     * {@code DocumentView} 封装知识模块中不可变的结构化数据，并作为相关操作之间的值对象。
-     * @param id 标识，表示该记录组件承载的数据。
-     * @param spaceId spaceId 属性，表示该记录组件承载的数据。
-     * @param currentVersionId currentVersionId 属性，表示该记录组件承载的数据。
-     * @param title 标题，表示该记录组件承载的数据。
-     * @param docType docType 属性，表示该记录组件承载的数据。
-     * @param source 来源，表示该记录组件承载的数据。
-     * @param lifecycleStatus lifecycleStatus 属性，表示该记录组件承载的数据。
-     * @param parseStatus parseStatus 属性，表示该记录组件承载的数据。
-     * @param objectKey objectKey 属性，表示该记录组件承载的数据。
-     * @param mimeType mimeType 属性，表示该记录组件承载的数据。
-     * @param fileSize fileSize 属性，表示该记录组件承载的数据。
-     * @param checksum checksum 属性，表示该记录组件承载的数据。
-     * @param createTime createTime 属性，表示该记录组件承载的数据。
-     * @param updateTime updateTime 属性，表示该记录组件承载的数据。
+     * 封装 文档 View 相关的不可变数据及其字段约束。
      */
     record DocumentView(
             Long id,
@@ -204,21 +169,7 @@ public interface EnterpriseDocumentService {
             LocalDateTime updateTime) {}
 
     /**
-     * {@code VersionView} 封装知识模块中不可变的结构化数据，并作为相关操作之间的值对象。
-     * @param id 标识，表示该记录组件承载的数据。
-     * @param documentId documentId 属性，表示该记录组件承载的数据。
-     * @param spaceId spaceId 属性，表示该记录组件承载的数据。
-     * @param versionNo versionNo 属性，表示该记录组件承载的数据。
-     * @param title 标题，表示该记录组件承载的数据。
-     * @param lifecycleStatus lifecycleStatus 属性，表示该记录组件承载的数据。
-     * @param parseStatus parseStatus 属性，表示该记录组件承载的数据。
-     * @param objectKey objectKey 属性，表示该记录组件承载的数据。
-     * @param mimeType mimeType 属性，表示该记录组件承载的数据。
-     * @param fileSize fileSize 属性，表示该记录组件承载的数据。
-     * @param checksum checksum 属性，表示该记录组件承载的数据。
-     * @param modelProfile modelProfile 属性，表示该记录组件承载的数据。
-     * @param publishedAt publishedAt 属性，表示该记录组件承载的数据。
-     * @param createTime createTime 属性，表示该记录组件承载的数据。
+     * 封装 Version View 相关的不可变数据及其字段约束。
      */
     record VersionView(
             Long id,

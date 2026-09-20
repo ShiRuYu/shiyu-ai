@@ -45,7 +45,7 @@ import java.util.Objects;
 import java.util.concurrent.atomic.AtomicBoolean;
 
 /**
- * {@code ChatEngineImpl} 承载模型模块的领域状态或协作行为，负责维护本类型的职责边界。
+ * 提供 对话 Engine Impl 所属基础设施的适配、存储或运行支持。
  */
 @Slf4j
 @Service
@@ -64,11 +64,11 @@ public class ChatEngineImpl implements ChatEngine {
     private final ModelRouter modelRouter;
 
     /**
-     * {@code ChatEngineImpl} 创建并初始化当前类型实例。
+     * 执行 对话 Engine Impl 相关业务操作，并维护必要的状态和协作关系。
      *
-     * @param modelManager 参数值，用于执行当前操作。
-     * @param eventPublisher 参数值，用于执行当前操作。
-     * @param modelRouter 参数值，用于执行当前操作。
+     * @param modelManager 用于完成本次业务处理的 modelManager 参数。
+     * @param eventPublisher 用于完成本次业务处理的 eventPublisher 参数。
+     * @param modelRouter 用于完成本次业务处理的 modelRouter 参数。
      */
     @Autowired
     public ChatEngineImpl(
@@ -93,11 +93,10 @@ public class ChatEngineImpl implements ChatEngine {
     }
 
     /**
-     * {@code chat} 执行当前类型定义的业务操作。
+     * 执行 对话 Engine Impl 相关业务数据，并返回处理结果。
      *
-     * @param request 参数值，用于执行当前操作。
-     *
-     * @return 返回当前操作产生的结果。
+     * @param request 封装本次操作所需业务字段的请求对象。
+     * @return 返回 对话 Engine Impl 相关操作生成的结果数据。
      */
     @Override
     public ChatResponse chat(com.shiyu.ai.model.contract.model.ChatRequest request) {
@@ -243,11 +242,10 @@ public class ChatEngineImpl implements ChatEngine {
     }
 
     /**
-     * {@code stream} 执行当前类型定义的业务操作。
+     * 执行 对话 Engine Impl 相关业务数据，并返回处理结果。
      *
-     * @param request 参数值，用于执行当前操作。
-     *
-     * @return 返回当前操作产生的结果。
+     * @param request 封装本次操作所需业务字段的请求对象。
+     * @return 返回 对话 Engine Impl 相关操作生成的结果数据。
      */
     @Override
     public Flux<ChatResponse> stream(ChatRequest request) {

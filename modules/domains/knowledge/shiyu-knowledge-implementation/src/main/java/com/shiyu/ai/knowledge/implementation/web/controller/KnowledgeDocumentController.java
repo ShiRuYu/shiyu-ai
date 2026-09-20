@@ -53,7 +53,7 @@ import java.nio.charset.StandardCharsets;
 import java.util.List;
 
 /**
- * {@code KnowledgeDocumentController} 是知识模块的 Web 接口适配器，负责接收请求并转换为应用服务调用。
+ * 处理 知识 文档 相关的 Web 请求，并将请求转换为应用服务调用。
  */
 @RestController
 @RequestMapping("/api/knowledge")
@@ -80,17 +80,10 @@ public class KnowledgeDocumentController {
     private final ResumableUploadService resumableUploadService;
 
     /**
-     * {@code page} 执行当前类型定义的业务操作。
+     * 查询 知识 文档 相关业务数据，并返回处理结果。
      *
-     * @param spaceId 参数值，用于执行当前操作。
-     * @param pageNum 参数值，用于执行当前操作。
-     * @param pageSize 参数值，用于执行当前操作。
-     * @param keyword 参数值，用于执行当前操作。
-     * @param lifecycleStatus 参数值，用于执行当前操作。
-     * @param parseStatus 参数值，用于执行当前操作。
-     * @param version 参数值，用于执行当前操作。
-     *
-     * @return 返回当前操作产生的结果。
+     * @param documents 用于完成本次业务处理的 documents 参数。
+     * @return 返回 知识 文档 相关操作生成的结果数据。
      */
     @GetMapping("/spaces/{spaceId}/documents")
     public Result<PageData<EnterpriseDocumentService.DocumentView>> page(
@@ -161,13 +154,10 @@ public class KnowledgeDocumentController {
     }
 
     /**
-     * {@code importUrl} 执行当前类型定义的业务操作。
+     * 执行 知识 文档 相关业务数据，并返回处理结果。
      *
-     * @param spaceId 参数值，用于执行当前操作。
-     * @param request 参数值，用于执行当前操作。
-     * @param version 参数值，用于执行当前操作。
-     *
-     * @return 返回当前操作产生的结果。
+     * @param url 用于完成本次业务处理的 url 参数。
+     * @return 返回 知识 文档 相关操作生成的结果数据。
      */
     @PostMapping("/spaces/{spaceId}/documents/import-url")
     @SaCheckPermission("knowledge:document:upload")
@@ -184,13 +174,10 @@ public class KnowledgeDocumentController {
     }
 
     /**
-     * {@code beginUpload} 执行当前类型定义的业务操作。
+     * 执行 知识 文档 相关业务数据，并返回处理结果。
      *
-     * @param spaceId 参数值，用于执行当前操作。
-     * @param request 参数值，用于执行当前操作。
-     * @param version 参数值，用于执行当前操作。
-     *
-     * @return 返回当前操作产生的结果。
+     * @param sessions 用于完成本次业务处理的 sessions 参数。
+     * @return 返回 知识 文档 相关操作生成的结果数据。
      */
     @PostMapping("/spaces/{spaceId}/documents/upload-sessions")
     @SaCheckPermission("knowledge:document:upload")
@@ -206,12 +193,10 @@ public class KnowledgeDocumentController {
     }
 
     /**
-     * {@code uploadStatus} 执行当前类型定义的业务操作。
+     * 执行 知识 文档 相关业务数据，并返回处理结果。
      *
-     * @param sessionId 参数值，用于执行当前操作。
-     * @param version 参数值，用于执行当前操作。
-     *
-     * @return 返回当前操作产生的结果。
+     * @param sessionId 用于定位session的标识。
+     * @return 返回 知识 文档 相关操作生成的结果数据。
      */
     @GetMapping("/documents/upload-sessions/{sessionId}")
     @SaCheckPermission("knowledge:document:upload")
@@ -260,12 +245,10 @@ public class KnowledgeDocumentController {
     }
 
     /**
-     * {@code completeUpload} 执行当前类型定义的业务操作。
+     * 执行 知识 文档 相关业务数据，并返回处理结果。
      *
-     * @param sessionId 参数值，用于执行当前操作。
-     * @param version 参数值，用于执行当前操作。
-     *
-     * @return 返回当前操作产生的结果。
+     * @param complete 用于完成本次业务处理的 complete 参数。
+     * @return 返回 知识 文档 相关操作生成的结果数据。
      */
     @PostMapping("/documents/upload-sessions/{sessionId}/complete")
     @SaCheckPermission("knowledge:document:upload")
@@ -285,12 +268,10 @@ public class KnowledgeDocumentController {
     }
 
     /**
-     * {@code cancelUpload} 校验当前操作的输入或状态是否满足约束。
+     * 校验或判断 知识 文档 相关业务数据，并返回处理结果。
      *
-     * @param sessionId 参数值，用于执行当前操作。
-     * @param version 参数值，用于执行当前操作。
-     *
-     * @return 返回当前操作产生的结果。
+     * @param sessionId 用于定位session的标识。
+     * @return 返回 知识 文档 相关操作生成的结果数据。
      */
     @DeleteMapping("/documents/upload-sessions/{sessionId}")
     @SaCheckPermission("knowledge:document:upload")
@@ -306,12 +287,10 @@ public class KnowledgeDocumentController {
     }
 
     /**
-     * {@code get} 查询并返回当前操作所需的数据。
+     * 查询 知识 文档 相关业务数据，并返回处理结果。
      *
-     * @param id 参数值，用于执行当前操作。
-     * @param version 参数值，用于执行当前操作。
-     *
-     * @return 返回当前操作产生的结果。
+     * @param id 用于定位目标业务对象的标识。
+     * @return 返回 知识 文档 相关操作生成的结果数据。
      */
     @GetMapping("/documents/{id}")
     public Result<EnterpriseDocumentService.DocumentView> get(
@@ -325,12 +304,10 @@ public class KnowledgeDocumentController {
     }
 
     /**
-     * {@code versions} 执行当前类型定义的业务操作。
+     * 执行 知识 文档 相关业务数据，并返回处理结果。
      *
-     * @param id 参数值，用于执行当前操作。
-     * @param version 参数值，用于执行当前操作。
-     *
-     * @return 返回当前操作产生的结果。
+     * @param versions 用于完成本次业务处理的 versions 参数。
+     * @return 返回符合条件的数据集合；没有匹配项时返回空集合。
      */
     @GetMapping("/documents/{id}/versions")
     public Result<List<EnterpriseDocumentService.VersionView>> versions(
@@ -344,13 +321,10 @@ public class KnowledgeDocumentController {
     }
 
     /**
-     * {@code submit} 执行当前类型定义的业务操作。
+     * 执行 知识 文档 相关业务数据，并返回处理结果。
      *
-     * @param id 参数值，用于执行当前操作。
-     * @param comment 参数值，用于执行当前操作。
-     * @param version 参数值，用于执行当前操作。
-     *
-     * @return 返回当前操作产生的结果。
+     * @param submit 用于完成本次业务处理的 submit 参数。
+     * @return 返回 知识 文档 相关操作生成的结果数据。
      */
     @PostMapping("/documents/{id}/submit")
     @SaCheckPermission("knowledge:document:upload")
@@ -366,13 +340,10 @@ public class KnowledgeDocumentController {
     }
 
     /**
-     * {@code approve} 执行当前类型定义的业务操作。
+     * 执行 知识 文档 相关业务数据，并返回处理结果。
      *
-     * @param id 参数值，用于执行当前操作。
-     * @param comment 参数值，用于执行当前操作。
-     * @param version 参数值，用于执行当前操作。
-     *
-     * @return 返回当前操作产生的结果。
+     * @param approve 用于完成本次业务处理的 approve 参数。
+     * @return 返回 知识 文档 相关操作生成的结果数据。
      */
     @PostMapping("/documents/{id}/approve")
     @SaCheckPermission("knowledge:edit")
@@ -388,13 +359,10 @@ public class KnowledgeDocumentController {
     }
 
     /**
-     * {@code reject} 执行当前类型定义的业务操作。
+     * 执行 知识 文档 相关业务数据，并返回处理结果。
      *
-     * @param id 参数值，用于执行当前操作。
-     * @param comment 参数值，用于执行当前操作。
-     * @param version 参数值，用于执行当前操作。
-     *
-     * @return 返回当前操作产生的结果。
+     * @param reject 用于完成本次业务处理的 reject 参数。
+     * @return 返回 知识 文档 相关操作生成的结果数据。
      */
     @PostMapping("/documents/{id}/reject")
     @SaCheckPermission("knowledge:edit")
@@ -410,13 +378,10 @@ public class KnowledgeDocumentController {
     }
 
     /**
-     * {@code publish} 执行当前模块定义的业务流程。
+     * 发布或发送 知识 文档 相关业务数据，并返回处理结果。
      *
-     * @param id 参数值，用于执行当前操作。
-     * @param comment 参数值，用于执行当前操作。
-     * @param version 参数值，用于执行当前操作。
-     *
-     * @return 返回当前操作产生的结果。
+     * @param publish 用于完成本次业务处理的 publish 参数。
+     * @return 返回 知识 文档 相关操作生成的结果数据。
      */
     @PostMapping("/documents/{id}/publish")
     @SaCheckPermission("knowledge:edit")
@@ -432,13 +397,10 @@ public class KnowledgeDocumentController {
     }
 
     /**
-     * {@code archive} 执行当前类型定义的业务操作。
+     * 执行 知识 文档 相关业务数据，并返回处理结果。
      *
-     * @param id 参数值，用于执行当前操作。
-     * @param comment 参数值，用于执行当前操作。
-     * @param version 参数值，用于执行当前操作。
-     *
-     * @return 返回当前操作产生的结果。
+     * @param archive 用于完成本次业务处理的 archive 参数。
+     * @return 返回 知识 文档 相关操作生成的结果数据。
      */
     @PostMapping("/documents/{id}/archive")
     @SaCheckPermission("knowledge:edit")
@@ -454,13 +416,10 @@ public class KnowledgeDocumentController {
     }
 
     /**
-     * {@code rollback} 执行当前类型定义的业务操作。
+     * 执行 知识 文档 相关业务数据，并返回处理结果。
      *
-     * @param id 参数值，用于执行当前操作。
-     * @param versionId 参数值，用于执行当前操作。
-     * @param version 参数值，用于执行当前操作。
-     *
-     * @return 返回当前操作产生的结果。
+     * @param rollback 用于完成本次业务处理的 rollback 参数。
+     * @return 返回 知识 文档 相关操作生成的结果数据。
      */
     @PostMapping("/documents/{id}/versions/{versionId}/rollback")
     @SaCheckPermission("knowledge:edit")
@@ -476,12 +435,10 @@ public class KnowledgeDocumentController {
     }
 
     /**
-     * {@code delete} 释放或移除当前操作涉及的资源。
+     * 删除或移除 知识 文档 相关业务数据，并返回处理结果。
      *
-     * @param id 参数值，用于执行当前操作。
-     * @param version 参数值，用于执行当前操作。
-     *
-     * @return 返回当前操作产生的结果。
+     * @param id 用于定位目标业务对象的标识。
+     * @return 返回 知识 文档 相关操作生成的结果数据。
      */
     @DeleteMapping("/documents/{id}")
     @SaCheckPermission("knowledge:document:delete")
@@ -497,12 +454,10 @@ public class KnowledgeDocumentController {
     }
 
     /**
-     * {@code preview} 执行当前类型定义的业务操作。
+     * 执行 知识 文档 相关业务数据，并返回处理结果。
      *
-     * @param id 参数值，用于执行当前操作。
-     * @param version 参数值，用于执行当前操作。
-     *
-     * @return 返回当前操作产生的结果。
+     * @param preview 用于完成本次业务处理的 preview 参数。
+     * @return 返回 知识 文档 相关操作生成的结果数据。
      */
     @GetMapping("/documents/{id}/preview")
     public ResponseEntity<byte[]> preview(
@@ -533,9 +488,7 @@ public class KnowledgeDocumentController {
     }
 
     /**
-     * {@code ImportUrlRequest} 封装知识模块中不可变的结构化数据，并作为相关操作之间的值对象。
-     * @param url url 属性，表示该记录组件承载的数据。
-     * @param title 标题，表示该记录组件承载的数据。
+     * 封装 Import Url 相关的不可变数据及其字段约束。
      */
     public record ImportUrlRequest(@NotBlank String url, String title) {}
 

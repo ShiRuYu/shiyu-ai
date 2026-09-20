@@ -6,120 +6,111 @@ import com.shiyu.ai.knowledge.implementation.domain.model.KnowledgeRelationBO;
 import java.util.List;
 
 /**
- * KnowledgeRelationRepository 仓储接口，负责访问和持久化知识领域聚合数据。
+ * 负责 知识 关系 的持久化查询、保存和删除，并维护数据访问边界。
  */
 public interface KnowledgeRelationRepository {
     /**
-     * 根据条件查询并返回所需数据。
+     * 查询 知识 关系 相关业务数据，并返回处理结果。
      *
-     * @param tenantId 租户标识。
-     * @param spaceId 方法参数。
-     * @param sourceId 方法参数。
-     *
-     * @return 符合条件的结果集合。
+     * @param tenantId 当前操作涉及的租户标识。
+     * @param spaceId 用于定位space的标识。
+     * @param sourceId 用于定位source的标识。
+     * @return 返回符合条件的数据集合；没有匹配项时返回空集合。
      */
     List<KnowledgeRelationBO> findBySourceId(TenantId tenantId, Long spaceId, Long sourceId);
 
     /**
-     * 根据条件查询并返回所需数据。
+     * 查询 知识 关系 相关业务数据，并返回处理结果。
      *
-     * @param tenantId 租户标识。
-     * @param spaceId 方法参数。
-     * @param targetId 方法参数。
-     *
-     * @return 符合条件的结果集合。
+     * @param tenantId 当前操作涉及的租户标识。
+     * @param spaceId 用于定位space的标识。
+     * @param targetId 用于定位target的标识。
+     * @return 返回符合条件的数据集合；没有匹配项时返回空集合。
      */
     List<KnowledgeRelationBO> findByTargetId(TenantId tenantId, Long spaceId, Long targetId);
 
     /**
-     * 根据条件查询并返回所需数据。
+     * 查询 知识 关系 相关业务数据，并返回处理结果。
      *
-     * @param tenantId 租户标识。
-     * @param spaceId 方法参数。
-     * @param sourceId 方法参数。
-     * @param type 对象类型。
-     *
-     * @return 符合条件的结果集合。
+     * @param tenantId 当前操作涉及的租户标识。
+     * @param spaceId 用于定位space的标识。
+     * @param sourceId 用于定位source的标识。
+     * @param type 用于完成本次业务处理的 type 参数。
+     * @return 返回符合条件的数据集合；没有匹配项时返回空集合。
      */
     List<KnowledgeRelationBO> findBySourceIdAndType(
             TenantId tenantId, Long spaceId, Long sourceId, String type);
 
     /**
-     * 根据条件查询并返回所需数据。
+     * 查询 知识 关系 相关业务数据，并返回处理结果。
      *
-     * @param tenantId 租户标识。
-     * @param spaceId 方法参数。
-     * @param targetId 方法参数。
-     * @param type 对象类型。
-     *
-     * @return 符合条件的结果集合。
+     * @param tenantId 当前操作涉及的租户标识。
+     * @param spaceId 用于定位space的标识。
+     * @param targetId 用于定位target的标识。
+     * @param type 用于完成本次业务处理的 type 参数。
+     * @return 返回符合条件的数据集合；没有匹配项时返回空集合。
      */
     List<KnowledgeRelationBO> findByTargetIdAndType(
             TenantId tenantId, Long spaceId, Long targetId, String type);
 
     /**
-     * 创建并保存业务对象。
+     * 创建或保存 知识 关系 相关业务数据，并返回处理结果。
      *
-     * @param tenantId 租户标识。
-     * @param bo 方法参数。
-     *
-     * @return 操作影响的记录数或状态码。
+     * @param tenantId 当前操作涉及的租户标识。
+     * @param bo 用于完成本次业务处理的 bo 参数。
+     * @return 返回 知识 关系 相关操作生成的结果数据。
      */
     int insert(TenantId tenantId, KnowledgeRelationBO bo);
 
     /**
-     * 删除指定业务对象或关联数据。
+     * 删除或移除 知识 关系 相关业务数据，并返回处理结果。
      *
-     * @param tenantId 租户标识。
-     * @param spaceId 方法参数。
-     * @param sourceId 方法参数。
-     * @param targetId 方法参数。
-     * @param type 对象类型。
-     *
-     * @return 操作影响的记录数或状态码。
+     * @param tenantId 当前操作涉及的租户标识。
+     * @param spaceId 用于定位space的标识。
+     * @param sourceId 用于定位source的标识。
+     * @param targetId 用于定位target的标识。
+     * @param type 用于完成本次业务处理的 type 参数。
+     * @return 返回 知识 关系 相关操作生成的结果数据。
      */
     int deleteBySourceAndTargetAndType(
             TenantId tenantId, Long spaceId, Long sourceId, Long targetId, String type);
 
     /**
-     * 删除指定业务对象或关联数据。
+     * 删除或移除 知识 关系 相关业务数据，并返回处理结果。
      *
-     * @param tenantId 租户标识。
-     * @param spaceId 方法参数。
-     * @param knowledgeId 知识点标识。
-     *
-     * @return 操作影响的记录数或状态码。
+     * @param tenantId 当前操作涉及的租户标识。
+     * @param spaceId 用于定位space的标识。
+     * @param knowledgeId 用于定位knowledge的标识。
+     * @return 返回 知识 关系 相关操作生成的结果数据。
      */
     int deleteBySourceIdOrTargetId(TenantId tenantId, Long spaceId, Long knowledgeId);
 
     /**
-     * 根据条件查询并返回所需数据。
+     * 查询 知识 关系 相关业务数据，并返回处理结果。
      *
-     * @param tenantId 租户标识。
-     * @param spaceId 方法参数。
-     *
-     * @return 符合条件的结果集合。
+     * @param tenantId 当前操作涉及的租户标识。
+     * @param spaceId 用于定位space的标识。
+     * @return 返回符合条件的数据集合；没有匹配项时返回空集合。
      */
     List<KnowledgeRelationBO> findBySpace(TenantId tenantId, Long spaceId);
 
     /**
-     * 判断当前条件是否满足。
+     * 执行 知识 关系 相关业务数据，并返回处理结果。
      *
-     * @param tenantId 租户标识。
-     * @param spaceId 方法参数。
-     * @param sourceId 方法参数。
-     * @param targetId 方法参数。
-     * @param type 对象类型。
-     *
-     * @return 条件是否满足。
+     * @param tenantId 当前操作涉及的租户标识。
+     * @param spaceId 用于定位space的标识。
+     * @param sourceId 用于定位source的标识。
+     * @param targetId 用于定位target的标识。
+     * @param type 用于完成本次业务处理的 type 参数。
+     * @return 返回本次条件判断是否成立。
      */
     boolean exists(TenantId tenantId, Long spaceId, Long sourceId, Long targetId, String type);
 
     /**
-     * 执行 {@code assignDefaultSpace} 定义的接口操作。
+     * 更新或设置 知识 关系 相关业务操作，并维护必要的状态和协作关系。
      *
-     * @param tenantId 租户标识。
-     * @param spaceId 方法参数。
+     * @param tenantId 当前操作涉及的租户标识。
+     * @param spaceId 用于定位space的标识。
      */
     void assignDefaultSpace(TenantId tenantId, Long spaceId);
 }

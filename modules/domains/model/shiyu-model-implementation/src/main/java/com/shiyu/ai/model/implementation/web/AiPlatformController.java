@@ -25,9 +25,7 @@ import org.springframework.web.bind.annotation.*;
 import java.util.List;
 
 /**
- * AI 平台管理 Controller
- *
- * <p>注意：所有参数均通过 @RequestParam 或 @RequestBody 传入，不使用 @PathVariable。
+ * 处理 AI 平台 相关的 Web 请求，并将请求转换为应用服务调用。
  */
 @Slf4j
 @Tag(name = "Ai Platform", description = "Ai Platform")
@@ -46,10 +44,10 @@ public class AiPlatformController {
     private final ModelManager modelManager;
 
     /**
-     * {@code AiPlatformController} 创建并初始化当前类型实例。
+     * 执行 AI 平台 相关业务操作，并维护必要的状态和协作关系。
      *
-     * @param aiPlatformService 参数值，用于执行当前操作。
-     * @param modelManager 参数值，用于执行当前操作。
+     * @param aiPlatformService 用于完成本次业务处理的 aiPlatformService 参数。
+     * @param modelManager 用于完成本次业务处理的 modelManager 参数。
      */
     public AiPlatformController(AiPlatformService aiPlatformService, ModelManager modelManager) {
         this.aiPlatformService = aiPlatformService;
@@ -83,9 +81,9 @@ public class AiPlatformController {
     }
 
     /**
-     * {@code getAllEnabled} 查询并返回当前操作所需的数据。
+     * 执行 AI 平台 相关业务操作，并维护必要的状态和协作关系。
      *
-     * @return 返回当前操作产生的结果。
+     * @param Enabled 用于完成本次业务处理的 Enabled 参数。
      */
     @Operation(summary = "Get All Enabled")
     @GetMapping("/enabled")
@@ -96,9 +94,9 @@ public class AiPlatformController {
     }
 
     /**
-     * {@code getOptions} 查询并返回当前操作所需的数据。
+     * 执行 AI 平台 相关业务操作，并维护必要的状态和协作关系。
      *
-     * @return 返回当前操作产生的结果。
+     * @param Options 用于完成本次业务处理的 Options 参数。
      */
     @Operation(summary = "Get Options")
     @GetMapping("/options")
@@ -107,11 +105,9 @@ public class AiPlatformController {
     }
 
     /**
-     * {@code getById} 查询并返回当前操作所需的数据。
+     * 执行 AI 平台 相关业务操作，并维护必要的状态和协作关系。
      *
-     * @param id 参数值，用于执行当前操作。
-     *
-     * @return 返回当前操作产生的结果。
+     * @param Id 用于定位目标业务对象的标识。
      */
     @Operation(summary = "Get by Id")
     @GetMapping("/detail")
@@ -125,11 +121,9 @@ public class AiPlatformController {
     }
 
     /**
-     * {@code getByCode} 查询并返回当前操作所需的数据。
+     * 执行 AI 平台 相关业务操作，并维护必要的状态和协作关系。
      *
-     * @param code 参数值，用于执行当前操作。
-     *
-     * @return 返回当前操作产生的结果。
+     * @param Code 用于定位或筛选目标业务对象的业务值。
      */
     @Operation(summary = "Get by Code")
     @GetMapping("/code")
@@ -143,9 +137,9 @@ public class AiPlatformController {
     }
 
     /**
-     * {@code getDefault} 查询并返回当前操作所需的数据。
+     * 执行 AI 平台 相关业务操作，并维护必要的状态和协作关系。
      *
-     * @return 返回当前操作产生的结果。
+     * @param Default 用于完成本次业务处理的 Default 参数。
      */
     @Operation(summary = "Get Default")
     @GetMapping("/default")
@@ -159,11 +153,9 @@ public class AiPlatformController {
     }
 
     /**
-     * {@code create} 写入或更新当前模块中的业务数据。
+     * 执行 AI 平台 相关业务操作，并维护必要的状态和协作关系。
      *
-     * @param request 参数值，用于执行当前操作。
-     *
-     * @return 返回当前操作产生的结果。
+     * @param Create 用于完成本次业务处理的 Create 参数。
      */
     @Operation(summary = "Create")
     @SaCheckPermission("agent:platform:create")
@@ -184,12 +176,9 @@ public class AiPlatformController {
     }
 
     /**
-     * {@code update} 写入或更新当前模块中的业务数据。
+     * 执行 AI 平台 相关业务操作，并维护必要的状态和协作关系。
      *
-     * @param id 参数值，用于执行当前操作。
-     * @param request 参数值，用于执行当前操作。
-     *
-     * @return 返回当前操作产生的结果。
+     * @param Update 用于完成本次业务处理的 Update 参数。
      */
     @Operation(summary = "Update")
     @SaCheckPermission("agent:platform:edit")
@@ -211,11 +200,9 @@ public class AiPlatformController {
     }
 
     /**
-     * {@code delete} 释放或移除当前操作涉及的资源。
+     * 执行 AI 平台 相关业务操作，并维护必要的状态和协作关系。
      *
-     * @param id 参数值，用于执行当前操作。
-     *
-     * @return 返回当前操作产生的结果。
+     * @param Delete 用于完成本次业务处理的 Delete 参数。
      */
     @Operation(summary = "Delete")
     @SaCheckPermission("agent:platform:delete")
@@ -232,11 +219,9 @@ public class AiPlatformController {
     }
 
     /**
-     * {@code setDefault} 写入或更新当前模块中的业务数据。
+     * 执行 AI 平台 相关业务操作，并维护必要的状态和协作关系。
      *
-     * @param id 参数值，用于执行当前操作。
-     *
-     * @return 返回当前操作产生的结果。
+     * @param Default 用于完成本次业务处理的 Default 参数。
      */
     @Operation(summary = "Set Default")
     @SaCheckPermission("agent:platform:set-default")
@@ -257,9 +242,9 @@ public class AiPlatformController {
     }
 
     /**
-     * {@code reload} 执行当前类型定义的业务操作。
+     * 执行 AI 平台 相关业务操作，并维护必要的状态和协作关系。
      *
-     * @return 返回当前操作产生的结果。
+     * @param Reload 用于完成本次业务处理的 Reload 参数。
      */
     @Operation(summary = "Reload")
     @SaCheckPermission("agent:platform:edit")

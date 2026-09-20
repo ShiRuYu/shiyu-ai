@@ -22,6 +22,9 @@ import org.mockito.MockedStatic;
 
 import java.util.List;
 
+/**
+ * 验证 Menu Service Impl 相关功能、边界条件、异常路径和协作行为。
+ */
 class MenuServiceImplTest {
     private final MenuRepository menus = mock(MenuRepository.class);
     private final TenantRepository tenants = mock(TenantRepository.class);

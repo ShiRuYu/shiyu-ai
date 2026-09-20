@@ -19,40 +19,37 @@ import javax.imageio.stream.ImageInputStream;
 import javax.imageio.stream.ImageOutputStream;
 
 /**
- * 负责角色卡数据的编码、解码和格式校验。
+ * 解析或编解码 Character Card 相关的外部内容和领域数据。
  */
 public final class CharacterCardCodec {
     private CharacterCardCodec() {}
 
     /**
-     * {@code toJson} 将当前对象转换为目标表示形式。
+     * 构建或转换 Character Card 相关业务数据，并返回处理结果。
      *
-     * @param card 参数值，用于执行当前操作。
-     *
-     * @return 返回当前操作产生的结果。
+     * @param card 用于完成本次业务处理的 card 参数。
+     * @return 返回 Character Card 相关操作生成的结果数据。
      */
     public static String toJson(CharacterCardV2 card) {
         return JSONUtils.toJsonString(card);
     }
 
     /**
-     * {@code fromJson} 执行当前类型定义的业务操作。
+     * 执行 Character Card 相关业务数据，并返回处理结果。
      *
-     * @param json 参数值，用于执行当前操作。
-     *
-     * @return 返回当前操作产生的结果。
+     * @param json 用于完成本次业务处理的 json 参数。
+     * @return 返回 Character Card 相关操作生成的结果数据。
      */
     public static CharacterCardV2 fromJson(String json) {
         return JSONUtils.parseObject(json, CharacterCardV2.class);
     }
 
     /**
-     * {@code toPng} 将当前对象转换为目标表示形式。
+     * 构建或转换 Character Card 相关业务数据，并返回处理结果。
      *
-     * @param card 参数值，用于执行当前操作。
-     * @param image 参数值，用于执行当前操作。
-     *
-     * @return 返回当前操作产生的结果。
+     * @param card 用于完成本次业务处理的 card 参数。
+     * @param image 用于完成本次业务处理的 image 参数。
+     * @return 返回 Character Card 相关操作生成的结果数据。
      */
     public static byte[] toPng(CharacterCardV2 card, BufferedImage image) throws IOException {
         BufferedImage source =
@@ -83,11 +80,10 @@ public final class CharacterCardCodec {
     }
 
     /**
-     * {@code fromPng} 执行当前类型定义的业务操作。
+     * 执行 Character Card 相关业务数据，并返回处理结果。
      *
-     * @param png 参数值，用于执行当前操作。
-     *
-     * @return 返回当前操作产生的结果。
+     * @param png 用于完成本次业务处理的 png 参数。
+     * @return 返回 Character Card 相关操作生成的结果数据。
      */
     public static CharacterCardV2 fromPng(byte[] png) throws IOException {
         try (ImageInputStream input =
@@ -120,7 +116,7 @@ public final class CharacterCardCodec {
     }
 
     /**
-     * {@code ImageTypeSpecifierAdapter} 承载会话模块的领域状态或协作行为，负责维护本类型的职责边界。
+     * 将 Image Type Specifier 在不同层之间进行适配、转换或组装。
      */
     private static final class ImageTypeSpecifierAdapter {
         static javax.imageio.ImageTypeSpecifier specifier(BufferedImage image) {

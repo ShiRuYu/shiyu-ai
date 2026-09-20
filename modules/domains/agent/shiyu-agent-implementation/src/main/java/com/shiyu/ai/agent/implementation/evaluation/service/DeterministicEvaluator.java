@@ -9,7 +9,7 @@ import com.shiyu.ai.common.core.utils.JSONUtils;
 import java.util.Locale;
 
 /**
- * {@code DeterministicEvaluator} 承载智能体模块的领域状态或协作行为，负责维护本类型的职责边界。
+ * 实现 Deterministic Evaluator 相关的业务处理、协作逻辑或基础设施能力。
  */
 public class DeterministicEvaluator implements Evaluator {
     /**
@@ -18,21 +18,20 @@ public class DeterministicEvaluator implements Evaluator {
     private final EvalMetric metric;
 
     /**
-     * {@code DeterministicEvaluator} 创建并初始化当前类型实例。
+     * 执行 Deterministic Evaluator 相关业务操作，并维护必要的状态和协作关系。
      *
-     * @param metric 参数值，用于执行当前操作。
+     * @param metric 用于完成本次业务处理的 metric 参数。
      */
     public DeterministicEvaluator(EvalMetric metric) {
         this.metric = metric == null ? EvalMetric.EXACT_MATCH : metric;
     }
 
     /**
-     * {@code evaluate} 执行当前类型定义的业务操作。
+     * 执行 Deterministic Evaluator 相关业务数据，并返回处理结果。
      *
-     * @param testCase 参数值，用于执行当前操作。
-     * @param actual 参数值，用于执行当前操作。
-     *
-     * @return 返回当前操作产生的结果。
+     * @param testCase 用于完成本次业务处理的 testCase 参数。
+     * @param actual 用于完成本次业务处理的 actual 参数。
+     * @return 返回 Deterministic Evaluator 相关操作生成的结果数据。
      */
     @Override
     public EvalResult evaluate(EvalCase testCase, String actual) {

@@ -2,7 +2,9 @@ package com.shiyu.ai.common.thread.api;
 
 import java.util.concurrent.ExecutorService;
 
-/** 执行器工厂接口 定义创建不同类型线程池执行器的规范 */
+/**
+ * 创建或提供 Executor 相关的业务组件和运行时能力。
+ */
 public interface ExecutorFactory {
 
     /**

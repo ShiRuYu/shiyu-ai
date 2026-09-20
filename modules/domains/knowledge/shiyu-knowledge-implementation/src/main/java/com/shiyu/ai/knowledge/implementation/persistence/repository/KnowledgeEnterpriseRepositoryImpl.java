@@ -39,7 +39,7 @@ import java.time.LocalDateTime;
 import java.util.List;
 
 /**
- * {@code KnowledgeEnterpriseRepositoryImpl} 实现知识模块的持久化端口，负责在领域对象与存储模型之间转换。
+ * 负责 知识 Enterprise 的持久化查询、保存和删除，并维护数据访问边界。
  */
 @Repository
 @RequiredArgsConstructor
@@ -118,9 +118,9 @@ public class KnowledgeEnterpriseRepositoryImpl
     }
 
     /**
-     * 查询全部启用知识空间。
+     * 查询 知识 Enterprise 相关业务数据，并返回处理结果。
      *
-     * @return 结果列表。
+     * @return 返回符合条件的数据集合；没有匹配项时返回空集合。
      */
     public List<KnowledgeSpaceBO> findAllActiveSpaces() {
         return MapstructUtils.convert(

@@ -12,7 +12,9 @@ import org.springframework.stereotype.Component;
 import java.util.Objects;
 import java.util.Collection;
 
-/** 租户模块授权仓储实现，始终在当前 TenantScope 内读取模块状态。 */
+/**
+ * 负责 租户 Module Access 的持久化查询、保存和删除，并维护数据访问边界。
+ */
 @Component
 public final class TenantModuleAccessRepositoryImpl implements TenantModuleAccessRepository {
 

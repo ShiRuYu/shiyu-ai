@@ -14,7 +14,9 @@ import java.util.concurrent.Executor;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.ThreadPoolExecutor;
 
-/** Micrometer执行器绑定器 用于收集线程池的指标数据 */
+/**
+ * 实现 Micrometer Executor Binder 相关的业务处理、协作逻辑或基础设施能力。
+ */
 public class MicrometerExecutorBinder implements MeterBinder {
 
     private static final Logger logger = LoggerFactory.getLogger(MicrometerExecutorBinder.class);
@@ -40,9 +42,9 @@ public class MicrometerExecutorBinder implements MeterBinder {
     }
 
     /**
-     * {@code bindTo} 执行当前类型定义的业务操作。
+     * 执行 Micrometer Executor Binder 相关业务操作，并维护必要的状态和协作关系。
      *
-     * @param registry 参数值，用于执行当前操作。
+     * @param registry 用于完成本次业务处理的 registry 参数。
      */
     @Override
     public void bindTo(MeterRegistry registry) {

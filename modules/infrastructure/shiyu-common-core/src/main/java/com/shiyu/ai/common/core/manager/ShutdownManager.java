@@ -11,7 +11,9 @@ import org.springframework.stereotype.Component;
 import java.util.List;
 import java.util.concurrent.ExecutorService;
 
-/** 确保应用退出时能关闭后台线程 */
+/**
+ * 管理 Shutdown 相关的运行时状态、注册信息或临时数据。
+ */
 @Slf4j
 @Component
 public class ShutdownManager {
@@ -22,16 +24,16 @@ public class ShutdownManager {
     private final List<ExecutorService> executorServices;
 
     /**
-     * {@code ShutdownManager} 创建并初始化当前类型实例。
+     * 执行 Shutdown 相关业务操作，并维护必要的状态和协作关系。
      *
-     * @param executorServices 参数值，用于执行当前操作。
+     * @param executorServices 用于完成本次业务处理的 executorServices 参数。
      */
     public ShutdownManager(List<ExecutorService> executorServices) {
         this.executorServices = executorServices;
     }
 
     /**
-     * {@code destroy} 执行当前类型定义的业务操作。
+     * 执行 Shutdown 相关业务操作，并维护必要的状态和协作关系。
      */
     @PreDestroy
     public void destroy() {

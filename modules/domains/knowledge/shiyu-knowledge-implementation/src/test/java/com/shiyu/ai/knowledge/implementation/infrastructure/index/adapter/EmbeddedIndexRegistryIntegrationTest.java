@@ -36,6 +36,9 @@ import java.util.List;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicReference;
 
+/**
+ * 验证 Embedded 索引 Registry Integration 相关功能、边界条件、异常路径和协作行为。
+ */
 class EmbeddedIndexRegistryIntegrationTest {
 
     @TempDir Path tempDir;

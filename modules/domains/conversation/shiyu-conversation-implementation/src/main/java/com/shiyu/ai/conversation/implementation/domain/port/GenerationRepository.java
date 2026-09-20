@@ -8,97 +8,90 @@ import java.util.List;
 import java.util.Optional;
 
 /**
- * GenerationRepository 仓储接口，负责访问和持久化会话领域聚合数据。
+ * 负责 生成 的持久化查询、保存和删除，并维护数据访问边界。
  */
 public interface GenerationRepository {
     /**
-     * 创建并保存业务对象。
+     * 创建或保存 生成 相关业务操作，并维护必要的状态和协作关系。
      *
-     * @param generation 方法参数。
+     * @param generation 用于完成本次业务处理的 generation 参数。
      */
     void insert(GenerationRun generation);
 
     /**
-     * 根据标识查询对应的数据。
+     * 查询 生成 相关业务数据，并返回处理结果。
      *
-     * @param id 目标对象标识。
-     * @param tenantId 租户标识。
-     * @param ownerUserId 方法参数。
-     *
-     * @return 查询到的结果；未找到时为空。
+     * @param id 用于定位目标业务对象的标识。
+     * @param tenantId 当前操作涉及的租户标识。
+     * @param ownerUserId 当前操作涉及的用户标识。
+     * @return 返回可能存在的业务对象；不存在时返回空值容器。
      */
     Optional<GenerationRun> find(String id, TenantId tenantId, long ownerUserId);
 
     /**
-     * 判断当前条件是否满足。
+     * 校验或判断 生成 相关业务数据，并返回处理结果。
      *
-     * @param conversationId 方法参数。
-     * @param inputMessageId 方法参数。
-     * @param tenantId 租户标识。
-     *
-     * @return 条件是否满足。
+     * @param conversationId 用于定位conversation的标识。
+     * @param inputMessageId 用于定位input 消息的标识。
+     * @param tenantId 当前操作涉及的租户标识。
+     * @return 返回本次条件判断是否成立。
      */
     boolean hasRunning(String conversationId, String inputMessageId, TenantId tenantId);
 
     /**
-     * 判断当前条件是否满足。
+     * 校验或判断 生成 相关业务数据，并返回处理结果。
      *
-     * @param conversationId 方法参数。
-     * @param tenantId 租户标识。
-     *
-     * @return 条件是否满足。
+     * @param conversationId 用于定位conversation的标识。
+     * @param tenantId 当前操作涉及的租户标识。
+     * @return 返回本次条件判断是否成立。
      */
     boolean hasRunningConversation(String conversationId, TenantId tenantId);
 
     /**
-     * 根据条件查询并返回所需数据。
+     * 查询 生成 相关业务数据，并返回处理结果。
      *
-     * @param conversationId 方法参数。
-     * @param tenantId 租户标识。
-     * @param limit 方法参数。
-     *
-     * @return 符合条件的结果集合。
+     * @param conversationId 用于定位conversation的标识。
+     * @param tenantId 当前操作涉及的租户标识。
+     * @param limit 每页返回的数据数量。
+     * @return 返回符合条件的数据集合；没有匹配项时返回空集合。
      */
     List<GenerationRun> listConversation(String conversationId, TenantId tenantId, int limit);
 
     /**
-     * 更新业务对象及其关联数据。
+     * 更新或设置 生成 相关业务数据，并返回处理结果。
      *
-     * @param generation 方法参数。
-     * @param expectedVersion 方法参数。
-     *
-     * @return 操作影响的记录数或状态码。
+     * @param generation 用于完成本次业务处理的 generation 参数。
+     * @param expectedVersion 用于完成本次业务处理的 expectedVersion 参数。
+     * @return 返回 生成 相关操作生成的结果数据。
      */
     int update(GenerationRun generation, long expectedVersion);
 
     /**
-     * 执行 {@code appendEvent} 定义的接口操作。
+     * 执行 生成 相关业务操作，并维护必要的状态和协作关系。
      *
-     * @param event 方法参数。
-     * @param tenantId 租户标识。
+     * @param event 本次流程携带的事件或业务数据。
+     * @param tenantId 当前操作涉及的租户标识。
      */
     void appendEvent(GenerationEvent event, TenantId tenantId);
 
     /**
-     * 根据条件查询并返回所需数据。
+     * 查询 生成 相关业务数据，并返回处理结果。
      *
-     * @param generationId 方法参数。
-     * @param tenantId 租户标识。
-     * @param afterSequence 方法参数。
-     * @param limit 方法参数。
-     *
-     * @return 符合条件的结果集合。
+     * @param generationId 用于定位generation的标识。
+     * @param tenantId 当前操作涉及的租户标识。
+     * @param afterSequence 用于完成本次业务处理的 afterSequence 参数。
+     * @param limit 每页返回的数据数量。
+     * @return 返回符合条件的数据集合；没有匹配项时返回空集合。
      */
     List<GenerationEvent> listEvents(
             String generationId, TenantId tenantId, int afterSequence, int limit);
 
     /**
-     * 执行 {@code nextEventSequence} 定义的接口操作。
+     * 执行 生成 相关业务数据，并返回处理结果。
      *
-     * @param generationId 方法参数。
-     * @param tenantId 租户标识。
-     *
-     * @return 操作影响的记录数或状态码。
+     * @param generationId 用于定位generation的标识。
+     * @param tenantId 当前操作涉及的租户标识。
+     * @return 返回 生成 相关操作生成的结果数据。
      */
     int nextEventSequence(String generationId, TenantId tenantId);
 }

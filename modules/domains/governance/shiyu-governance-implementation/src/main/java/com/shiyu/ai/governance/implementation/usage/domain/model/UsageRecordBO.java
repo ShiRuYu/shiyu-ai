@@ -8,9 +8,7 @@ import java.math.BigDecimal;
 import java.time.LocalDateTime;
 
 /**
- * 统一用量记录
- *
- * <p>通用字段由表内列承载，类型专属字段以 JSON 存放于 ext_info。 usage_type 目前支持: LLM / EMBEDDING
+ * 表示 用量 Record 领域对象的业务状态和属性。
  */
 @Data
 public class UsageRecordBO implements Serializable {

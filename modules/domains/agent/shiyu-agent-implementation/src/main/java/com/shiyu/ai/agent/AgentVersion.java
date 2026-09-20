@@ -9,7 +9,7 @@ import lombok.Data;
 import lombok.NoArgsConstructor;
 
 /**
- * {@code AgentVersion} 承载智能体模块的领域状态或协作行为，负责维护本类型的职责边界。
+ * 实现 智能体 Version 相关的业务处理、协作逻辑或基础设施能力。
  */
 @Data
 @Builder

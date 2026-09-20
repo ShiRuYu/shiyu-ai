@@ -11,6 +11,9 @@ import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
+/**
+ * 验证 租户 Module Access Service 相关功能、边界条件、异常路径和协作行为。
+ */
 class TenantModuleAccessServiceTest {
 
     private final TenantModuleAccessRepository repository = mock(TenantModuleAccessRepository.class);

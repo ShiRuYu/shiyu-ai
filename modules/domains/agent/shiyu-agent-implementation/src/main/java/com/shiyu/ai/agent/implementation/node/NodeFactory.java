@@ -15,7 +15,7 @@ import java.util.List;
 import java.util.Map;
 
 /**
- * 根据节点类型创建可执行节点并注入运行时依赖。
+ * 创建或提供 Node 相关的业务组件和运行时能力。
  */
 @Slf4j
 @Component
@@ -35,10 +35,10 @@ public class NodeFactory {
     private final RegisteredNodeStore nodeStore;
 
     /**
-     * {@code NodeFactory} 创建并初始化当前类型实例。
+     * 执行 Node 相关业务操作，并维护必要的状态和协作关系。
      *
-     * @param beanNodeCreators 参数值，用于执行当前操作。
-     * @param executionHistoryService 参数值，用于执行当前操作。
+     * @param beanNodeCreators 用于完成本次业务处理的 beanNodeCreators 参数。
+     * @param executionHistoryService 用于完成本次业务处理的 executionHistoryService 参数。
      */
     public NodeFactory(
             List<com.shiyu.ai.agent.contract.node.creator.NodeCreator> beanNodeCreators,
@@ -50,13 +50,12 @@ public class NodeFactory {
     }
 
     /**
-     * {@code registerNodeType} 写入或更新当前模块中的业务数据。
+     * 创建或保存 Node 相关业务操作，并维护必要的状态和协作关系。
      *
-     * @param nodeType 参数值，用于执行当前操作。
-     * @param configClass 参数值，用于执行当前操作。
-     * @param nodeCreator 参数值，用于执行当前操作。
-     *
-     * @return 返回当前操作产生的结果。
+     * @param nodeType 用于完成本次业务处理的 nodeType 参数。
+     * @param configClass 用于完成本次业务处理的 configClass 参数。
+     * @param nodeCreator 用于完成本次业务处理的 nodeCreator 参数。
+     * @return 返回 Node 相关操作生成的结果数据。
      */
     public <T extends NodeConfig> void registerNodeType(
             NodeType nodeType, Class<T> configClass, NodeCreator<T> nodeCreator) {
@@ -64,11 +63,10 @@ public class NodeFactory {
     }
 
     /**
-     * {@code createNode} 写入或更新当前模块中的业务数据。
+     * 创建或保存 Node 相关业务数据，并返回处理结果。
      *
-     * @param config 参数值，用于执行当前操作。
-     *
-     * @return 返回当前操作产生的结果。
+     * @param config 用于完成本次业务处理的 config 参数。
+     * @return 返回 Node 相关操作生成的结果数据。
      */
     public BaseNode createNode(NodeConfig config) {
         BaseNode node = instanceFactory.create(config);
@@ -79,22 +77,20 @@ public class NodeFactory {
     }
 
     /**
-     * {@code getNode} 查询并返回当前操作所需的数据。
+     * 查询 Node 相关业务数据，并返回处理结果。
      *
-     * @param nodeId 参数值，用于执行当前操作。
-     *
-     * @return 返回当前操作产生的结果。
+     * @param nodeId 用于定位node的标识。
+     * @return 返回 Node 相关操作生成的结果数据。
      */
     public BaseNode getNode(String nodeId) {
         return nodeStore.get(nodeId);
     }
 
     /**
-     * {@code removeNode} 释放或移除当前操作涉及的资源。
+     * 删除或移除 Node 相关业务数据，并返回处理结果。
      *
-     * @param nodeId 参数值，用于执行当前操作。
-     *
-     * @return 返回当前操作产生的结果。
+     * @param nodeId 用于定位node的标识。
+     * @return 返回本次条件判断是否成立。
      */
     public boolean removeNode(String nodeId) {
         boolean removed = nodeStore.remove(nodeId);
@@ -105,7 +101,7 @@ public class NodeFactory {
     }
 
     /**
-     * {@code clearNodes} 执行当前类型定义的业务操作。
+     * 删除或移除 Node 相关业务操作，并维护必要的状态和协作关系。
      */
     public void clearNodes() {
         nodeStore.clear();
@@ -113,22 +109,21 @@ public class NodeFactory {
     }
 
     /**
-     * {@code registerServiceToNode} 写入或更新当前模块中的业务数据。
+     * 创建或保存 Node 相关业务操作，并维护必要的状态和协作关系。
      *
-     * @param nodeId 参数值，用于执行当前操作。
-     * @param serviceName 参数值，用于执行当前操作。
-     * @param service 参数值，用于执行当前操作。
+     * @param nodeId 用于定位node的标识。
+     * @param serviceName 用于完成本次业务处理的 serviceName 参数。
+     * @param service 用于完成本次业务处理的 service 参数。
      */
     public void registerServiceToNode(String nodeId, String serviceName, Object service) {
         nodeStore.inject(nodeId, serviceName, service);
     }
 
     /**
-     * {@code createNodes} 写入或更新当前模块中的业务数据。
+     * 创建或保存 Node 相关业务数据，并返回处理结果。
      *
-     * @param configs 参数值，用于执行当前操作。
-     *
-     * @return 返回当前操作产生的结果。
+     * @param configs 用于完成本次业务处理的 configs 参数。
+     * @return 返回 Node 相关操作生成的结果数据。
      */
     public Map<String, BaseNode> createNodes(Map<String, NodeConfig> configs) {
         Map<String, BaseNode> nodes = new HashMap<>();
@@ -152,12 +147,11 @@ public class NodeFactory {
     }
 
     /**
-     * {@code createNodesWithServices} 写入或更新当前模块中的业务数据。
+     * 创建或保存 Node 相关业务数据，并返回处理结果。
      *
-     * @param configs 参数值，用于执行当前操作。
-     * @param serviceProviders 参数值，用于执行当前操作。
-     *
-     * @return 返回当前操作产生的结果。
+     * @param configs 用于完成本次业务处理的 configs 参数。
+     * @param serviceProviders 用于完成本次业务处理的 serviceProviders 参数。
+     * @return 返回 Node 相关操作生成的结果数据。
      */
     public Map<String, BaseNode> createNodesWithServices(
             Map<String, NodeConfig> configs, Map<String, Map<String, Object>> serviceProviders) {
@@ -171,23 +165,22 @@ public class NodeFactory {
     }
 
     /**
-     * {@code getAllRegisteredNodes} 查询并返回当前操作所需的数据。
+     * 查询 Node 相关业务数据，并返回处理结果。
      *
-     * @return 返回当前操作产生的结果。
+     * @return 返回 Node 相关操作生成的结果数据。
      */
     public Map<String, BaseNode> getAllRegisteredNodes() {
         return nodeStore.snapshot();
     }
 
     /**
-     * {@code createNode} 写入或更新当前模块中的业务数据。
+     * 创建或保存 Node 相关业务数据，并返回处理结果。
      *
-     * @param nodeType 参数值，用于执行当前操作。
-     * @param nodeId 参数值，用于执行当前操作。
-     * @param nodeName 参数值，用于执行当前操作。
-     * @param initializer 参数值，用于执行当前操作。
-     *
-     * @return 返回当前操作产生的结果。
+     * @param nodeType 用于完成本次业务处理的 nodeType 参数。
+     * @param nodeId 用于定位node的标识。
+     * @param nodeName 用于完成本次业务处理的 nodeName 参数。
+     * @param initializer 用于完成本次业务处理的 initializer 参数。
+     * @return 返回 Node 相关操作生成的结果数据。
      */
     public BaseNode createNode(
             NodeType nodeType,
@@ -220,13 +213,12 @@ public class NodeFactory {
     }
 
     /**
-     * {@code createNode} 写入或更新当前模块中的业务数据。
+     * 创建或保存 Node 相关业务数据，并返回处理结果。
      *
-     * @param nodeType 参数值，用于执行当前操作。
-     * @param nodeId 参数值，用于执行当前操作。
-     * @param nodeName 参数值，用于执行当前操作。
-     *
-     * @return 返回当前操作产生的结果。
+     * @param nodeType 用于完成本次业务处理的 nodeType 参数。
+     * @param nodeId 用于定位node的标识。
+     * @param nodeName 用于完成本次业务处理的 nodeName 参数。
+     * @return 返回 Node 相关操作生成的结果数据。
      */
     public BaseNode createNode(NodeType nodeType, String nodeId, String nodeName) {
         return createNode(nodeType, nodeId, nodeName, null);
@@ -237,16 +229,15 @@ public class NodeFactory {
     }
 
     /**
-     * NodeCreator 接口，定义智能体模块的能力边界。
+     * 根据输入配置创建 Node 相关的流程节点或业务组件。
      */
     @FunctionalInterface
     public interface NodeCreator<T extends NodeConfig> {
         /**
-         * 创建并保存业务对象。
+         * 创建或保存 Node 相关业务数据，并返回处理结果。
          *
-         * @param config 配置参数。
-         *
-         * @return 操作结果。
+         * @param config 用于完成本次业务处理的 config 参数。
+         * @return 返回 Node 相关操作生成的结果数据。
          */
         BaseNode create(T config);
     }

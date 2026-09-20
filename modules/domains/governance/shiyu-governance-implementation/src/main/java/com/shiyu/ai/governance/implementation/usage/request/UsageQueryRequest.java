@@ -6,7 +6,7 @@ import java.io.Serial;
 import java.io.Serializable;
 
 /**
- * {@code UsageQueryRequest} 表示治理模块的请求参数，承载调用方提交的输入数据。
+ * 封装 用量 Query 操作所需的请求条件和输入数据。
  */
 @Data
 public class UsageQueryRequest implements Serializable {

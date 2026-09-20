@@ -24,7 +24,7 @@ import java.util.Objects;
 import java.util.UUID;
 
 /**
- * {@code AiRuntimeService} 定义智能体模块的应用服务能力，供上层用例调用。
+ * 提供 AI Runtime 的查询、创建、更新及调用服务，协调业务变更和领域协作。
  */
 @Service
 public class AiRuntimeService implements AiRuntimePort {
@@ -45,10 +45,10 @@ public class AiRuntimeService implements AiRuntimePort {
     }
 
     /**
-     * {@code AiRuntimeService} 创建并初始化当前类型实例。
+     * 执行 AI Runtime 相关业务操作，并维护必要的状态和协作关系。
      *
-     * @param runs 参数值，用于执行当前操作。
-     * @param apps 参数值，用于执行当前操作。
+     * @param runs 用于完成本次业务处理的 runs 参数。
+     * @param apps 用于完成本次业务处理的 apps 参数。
      */
     @Autowired
     public AiRuntimeService(AiRunRepository runs, AiAppRepository apps) {
@@ -57,14 +57,13 @@ public class AiRuntimeService implements AiRuntimePort {
     }
 
     /**
-     * {@code createApp} 写入或更新当前模块中的业务数据。
+     * 创建或保存 AI Runtime 相关业务数据，并返回处理结果。
      *
-     * @param tenantId 参数值，用于执行当前操作。
-     * @param ownerUserId 参数值，用于执行当前操作。
-     * @param name 参数值，用于执行当前操作。
-     * @param description 参数值，用于执行当前操作。
-     *
-     * @return 返回当前操作产生的结果。
+     * @param tenantId 当前操作涉及的租户标识。
+     * @param ownerUserId 当前操作涉及的用户标识。
+     * @param name 用于定位或筛选目标业务对象的业务值。
+     * @param description 用于完成本次业务处理的 description 参数。
+     * @return 返回 AI Runtime 相关操作生成的结果数据。
      */
     public AiApp createApp(TenantId tenantId, long ownerUserId, String name, String description) {
         AiApp app =
@@ -83,13 +82,12 @@ public class AiRuntimeService implements AiRuntimePort {
     }
 
     /**
-     * {@code requireApp} 执行当前类型定义的业务操作。
+     * 获取并校验 AI Runtime 相关业务数据，并返回处理结果。
      *
-     * @param id 参数值，用于执行当前操作。
-     * @param tenantId 参数值，用于执行当前操作。
-     * @param ownerUserId 参数值，用于执行当前操作。
-     *
-     * @return 返回当前操作产生的结果。
+     * @param id 用于定位目标业务对象的标识。
+     * @param tenantId 当前操作涉及的租户标识。
+     * @param ownerUserId 当前操作涉及的用户标识。
+     * @return 返回 AI Runtime 相关操作生成的结果数据。
      */
     public AiApp requireApp(String id, TenantId tenantId, long ownerUserId) {
         return apps.find(id, tenant(tenantId), ownerUserId)
@@ -97,28 +95,26 @@ public class AiRuntimeService implements AiRuntimePort {
     }
 
     /**
-     * {@code listApps} 查询并返回当前操作所需的数据。
+     * 查询 AI Runtime 相关业务数据，并返回处理结果。
      *
-     * @param tenantId 参数值，用于执行当前操作。
-     * @param ownerUserId 参数值，用于执行当前操作。
-     * @param limit 参数值，用于执行当前操作。
-     *
-     * @return 返回当前操作产生的结果。
+     * @param tenantId 当前操作涉及的租户标识。
+     * @param ownerUserId 当前操作涉及的用户标识。
+     * @param limit 每页返回的数据数量。
+     * @return 返回符合条件的数据集合；没有匹配项时返回空集合。
      */
     public List<AiApp> listApps(TenantId tenantId, long ownerUserId, int limit) {
         return apps.list(tenant(tenantId), ownerUserId, limit);
     }
 
     /**
-     * {@code createVersion} 写入或更新当前模块中的业务数据。
+     * 创建或保存 AI Runtime 相关业务数据，并返回处理结果。
      *
-     * @param appId 参数值，用于执行当前操作。
-     * @param tenantId 参数值，用于执行当前操作。
-     * @param ownerUserId 参数值，用于执行当前操作。
-     * @param version 参数值，用于执行当前操作。
-     * @param configJson 参数值，用于执行当前操作。
-     *
-     * @return 返回当前操作产生的结果。
+     * @param appId 用于定位app的标识。
+     * @param tenantId 当前操作涉及的租户标识。
+     * @param ownerUserId 当前操作涉及的用户标识。
+     * @param version 用于完成本次业务处理的 version 参数。
+     * @param configJson 用于完成本次业务处理的 configJson 参数。
+     * @return 返回 AI Runtime 相关操作生成的结果数据。
      */
     public AiAppVersion createVersion(
             String appId, TenantId tenantId, long ownerUserId, String version, String configJson) {
@@ -138,13 +134,12 @@ public class AiRuntimeService implements AiRuntimePort {
     }
 
     /**
-     * {@code versions} 执行当前类型定义的业务操作。
+     * 执行 AI Runtime 相关业务数据，并返回处理结果。
      *
-     * @param appId 参数值，用于执行当前操作。
-     * @param tenantId 参数值，用于执行当前操作。
-     * @param ownerUserId 参数值，用于执行当前操作。
-     *
-     * @return 返回当前操作产生的结果。
+     * @param appId 用于定位app的标识。
+     * @param tenantId 当前操作涉及的租户标识。
+     * @param ownerUserId 当前操作涉及的用户标识。
+     * @return 返回符合条件的数据集合；没有匹配项时返回空集合。
      */
     public List<AiAppVersion> versions(String appId, TenantId tenantId, long ownerUserId) {
         requireApp(appId, tenantId, ownerUserId);
@@ -152,14 +147,13 @@ public class AiRuntimeService implements AiRuntimePort {
     }
 
     /**
-     * {@code publish} 执行当前模块定义的业务流程。
+     * 发布或发送 AI Runtime 相关业务数据，并返回处理结果。
      *
-     * @param appId 参数值，用于执行当前操作。
-     * @param versionId 参数值，用于执行当前操作。
-     * @param tenantId 参数值，用于执行当前操作。
-     * @param ownerUserId 参数值，用于执行当前操作。
-     *
-     * @return 返回当前操作产生的结果。
+     * @param appId 用于定位app的标识。
+     * @param versionId 用于定位version的标识。
+     * @param tenantId 当前操作涉及的租户标识。
+     * @param ownerUserId 当前操作涉及的用户标识。
+     * @return 返回 AI Runtime 相关操作生成的结果数据。
      */
     public AiAppVersion publish(
             String appId, String versionId, TenantId tenantId, long ownerUserId) {
@@ -179,14 +173,13 @@ public class AiRuntimeService implements AiRuntimePort {
     }
 
     /**
-     * {@code archive} 执行当前类型定义的业务操作。
+     * 执行 AI Runtime 相关业务数据，并返回处理结果。
      *
-     * @param appId 参数值，用于执行当前操作。
-     * @param versionId 参数值，用于执行当前操作。
-     * @param tenantId 参数值，用于执行当前操作。
-     * @param ownerUserId 参数值，用于执行当前操作。
-     *
-     * @return 返回当前操作产生的结果。
+     * @param appId 用于定位app的标识。
+     * @param versionId 用于定位version的标识。
+     * @param tenantId 当前操作涉及的租户标识。
+     * @param ownerUserId 当前操作涉及的用户标识。
+     * @return 返回 AI Runtime 相关操作生成的结果数据。
      */
     public AiAppVersion archive(
             String appId, String versionId, TenantId tenantId, long ownerUserId) {
@@ -199,15 +192,14 @@ public class AiRuntimeService implements AiRuntimePort {
     }
 
     /**
-     * {@code preview} 执行当前类型定义的业务操作。
+     * 执行 AI Runtime 相关业务数据，并返回处理结果。
      *
-     * @param appId 参数值，用于执行当前操作。
-     * @param versionId 参数值，用于执行当前操作。
-     * @param tenantId 参数值，用于执行当前操作。
-     * @param ownerUserId 参数值，用于执行当前操作。
-     * @param prompt 参数值，用于执行当前操作。
-     *
-     * @return 返回当前操作产生的结果。
+     * @param appId 用于定位app的标识。
+     * @param versionId 用于定位version的标识。
+     * @param tenantId 当前操作涉及的租户标识。
+     * @param ownerUserId 当前操作涉及的用户标识。
+     * @param prompt 用于完成本次业务处理的 prompt 参数。
+     * @return 返回 AI Runtime 相关操作生成的结果数据。
      */
     public AiAppPreview preview(
             String appId, String versionId, TenantId tenantId, long ownerUserId, String prompt) {
@@ -239,13 +231,12 @@ public class AiRuntimeService implements AiRuntimePort {
     }
 
     /**
-     * {@code requirePublishedVersion} 执行当前类型定义的业务操作。
+     * 获取并校验 AI Runtime 相关业务数据，并返回处理结果。
      *
-     * @param appId 参数值，用于执行当前操作。
-     * @param tenantId 参数值，用于执行当前操作。
-     * @param ownerUserId 参数值，用于执行当前操作。
-     *
-     * @return 返回当前操作产生的结果。
+     * @param appId 用于定位app的标识。
+     * @param tenantId 当前操作涉及的租户标识。
+     * @param ownerUserId 当前操作涉及的用户标识。
+     * @return 返回 AI Runtime 相关操作生成的结果数据。
      */
     public AiAppVersion requirePublishedVersion(String appId, TenantId tenantId, long ownerUserId) {
         AiApp app = requireApp(appId, tenantId, ownerUserId);
@@ -262,15 +253,14 @@ public class AiRuntimeService implements AiRuntimePort {
     }
 
     /**
-     * {@code startRun} 执行当前类型定义的业务操作。
+     * 执行 AI Runtime 相关业务数据，并返回处理结果。
      *
-     * @param context 参数值，用于执行当前操作。
-     * @param source 参数值，用于执行当前操作。
-     * @param sourceId 参数值，用于执行当前操作。
-     * @param model 参数值，用于执行当前操作。
-     * @param prompt 参数值，用于执行当前操作。
-     *
-     * @return 返回当前操作产生的结果。
+     * @param context 当前操作主体上下文，用于确定租户、用户和访问权限。
+     * @param source 用于完成本次业务处理的 source 参数。
+     * @param sourceId 用于定位source的标识。
+     * @param model 用于完成本次业务处理的 model 参数。
+     * @param prompt 用于完成本次业务处理的 prompt 参数。
+     * @return 返回 AI Runtime 相关操作生成的结果数据。
      */
     public AiRun startRun(
             AiRunContext context,
@@ -346,15 +336,14 @@ public class AiRuntimeService implements AiRuntimePort {
     }
 
     /**
-     * {@code finish} 执行当前类型定义的业务操作。
+     * 执行 AI Runtime 相关业务数据，并返回处理结果。
      *
-     * @param id 参数值，用于执行当前操作。
-     * @param tenantId 参数值，用于执行当前操作。
-     * @param ownerUserId 参数值，用于执行当前操作。
-     * @param terminal 参数值，用于执行当前操作。
-     * @param errorCode 参数值，用于执行当前操作。
-     *
-     * @return 返回当前操作产生的结果。
+     * @param id 用于定位目标业务对象的标识。
+     * @param tenantId 当前操作涉及的租户标识。
+     * @param ownerUserId 当前操作涉及的用户标识。
+     * @param terminal 用于完成本次业务处理的 terminal 参数。
+     * @param errorCode 用于完成本次业务处理的 errorCode 参数。
+     * @return 返回 AI Runtime 相关操作生成的结果数据。
      */
     public AiRun finish(
             String id,
@@ -417,15 +406,14 @@ public class AiRuntimeService implements AiRuntimePort {
     }
 
     /**
-     * {@code events} 执行当前类型定义的业务操作。
+     * 执行 AI Runtime 相关业务数据，并返回处理结果。
      *
-     * @param id 参数值，用于执行当前操作。
-     * @param tenantId 参数值，用于执行当前操作。
-     * @param ownerUserId 参数值，用于执行当前操作。
-     * @param afterSeq 参数值，用于执行当前操作。
-     * @param limit 参数值，用于执行当前操作。
-     *
-     * @return 返回当前操作产生的结果。
+     * @param id 用于定位目标业务对象的标识。
+     * @param tenantId 当前操作涉及的租户标识。
+     * @param ownerUserId 当前操作涉及的用户标识。
+     * @param afterSeq 用于完成本次业务处理的 afterSeq 参数。
+     * @param limit 每页返回的数据数量。
+     * @return 返回符合条件的数据集合；没有匹配项时返回空集合。
      */
     public List<AiRunEvent> events(
             String id, TenantId tenantId, long ownerUserId, long afterSeq, int limit) {
@@ -434,26 +422,24 @@ public class AiRuntimeService implements AiRuntimePort {
     }
 
     /**
-     * {@code listRuns} 查询并返回当前操作所需的数据。
+     * 查询 AI Runtime 相关业务数据，并返回处理结果。
      *
-     * @param tenantId 参数值，用于执行当前操作。
-     * @param ownerUserId 参数值，用于执行当前操作。
-     * @param limit 参数值，用于执行当前操作。
-     *
-     * @return 返回当前操作产生的结果。
+     * @param tenantId 当前操作涉及的租户标识。
+     * @param ownerUserId 当前操作涉及的用户标识。
+     * @param limit 每页返回的数据数量。
+     * @return 返回符合条件的数据集合；没有匹配项时返回空集合。
      */
     public List<AiRun> listRuns(TenantId tenantId, long ownerUserId, int limit) {
         return runs.list(tenant(tenantId), ownerUserId, limit);
     }
 
     /**
-     * {@code requireRun} 执行当前类型定义的业务操作。
+     * 获取并校验 AI Runtime 相关业务数据，并返回处理结果。
      *
-     * @param id 参数值，用于执行当前操作。
-     * @param tenantId 参数值，用于执行当前操作。
-     * @param ownerUserId 参数值，用于执行当前操作。
-     *
-     * @return 返回当前操作产生的结果。
+     * @param id 用于定位目标业务对象的标识。
+     * @param tenantId 当前操作涉及的租户标识。
+     * @param ownerUserId 当前操作涉及的用户标识。
+     * @return 返回 AI Runtime 相关操作生成的结果数据。
      */
     public AiRun requireRun(String id, TenantId tenantId, long ownerUserId) {
         return runs.find(id, tenant(tenantId), ownerUserId)
@@ -461,13 +447,12 @@ public class AiRuntimeService implements AiRuntimePort {
     }
 
     /**
-     * {@code requireGenerationRun} 执行当前类型定义的业务操作。
+     * 获取并校验 AI Runtime 相关业务数据，并返回处理结果。
      *
-     * @param generationId 参数值，用于执行当前操作。
-     * @param tenantId 参数值，用于执行当前操作。
-     * @param ownerUserId 参数值，用于执行当前操作。
-     *
-     * @return 返回当前操作产生的结果。
+     * @param generationId 用于定位generation的标识。
+     * @param tenantId 当前操作涉及的租户标识。
+     * @param ownerUserId 当前操作涉及的用户标识。
+     * @return 返回 AI Runtime 相关操作生成的结果数据。
      */
     public AiRun requireGenerationRun(String generationId, TenantId tenantId, long ownerUserId) {
         return runs.findByGeneration(generationId, tenant(tenantId), ownerUserId)
@@ -475,12 +460,11 @@ public class AiRuntimeService implements AiRuntimePort {
     }
 
     /**
-     * {@code linkGeneration} 执行当前类型定义的业务操作。
+     * 执行 AI Runtime 相关业务数据，并返回处理结果。
      *
-     * @param run 参数值，用于执行当前操作。
-     * @param generationId 参数值，用于执行当前操作。
-     *
-     * @return 返回当前操作产生的结果。
+     * @param run 用于完成本次业务处理的 run 参数。
+     * @param generationId 用于定位generation的标识。
+     * @return 返回 AI Runtime 相关操作生成的结果数据。
      */
     public AiRun linkGeneration(AiRun run, String generationId) {
         if (run == null || generationId == null || generationId.isBlank())
@@ -497,13 +481,12 @@ public class AiRuntimeService implements AiRuntimePort {
     }
 
     /**
-     * {@code requireExecutionRun} 执行当前类型定义的业务操作。
+     * 获取并校验 AI Runtime 相关业务数据，并返回处理结果。
      *
-     * @param executionId 参数值，用于执行当前操作。
-     * @param tenantId 参数值，用于执行当前操作。
-     * @param ownerUserId 参数值，用于执行当前操作。
-     *
-     * @return 返回当前操作产生的结果。
+     * @param executionId 用于定位execution的标识。
+     * @param tenantId 当前操作涉及的租户标识。
+     * @param ownerUserId 当前操作涉及的用户标识。
+     * @return 返回 AI Runtime 相关操作生成的结果数据。
      */
     public AiRun requireExecutionRun(String executionId, TenantId tenantId, long ownerUserId) {
         return runs.findByExecution(executionId, tenant(tenantId), ownerUserId)
@@ -511,17 +494,16 @@ public class AiRuntimeService implements AiRuntimePort {
     }
 
     /**
-     * {@code recordUsage} 写入或更新当前模块中的业务数据。
+     * 执行 AI Runtime 相关业务数据，并返回处理结果。
      *
-     * @param id 参数值，用于执行当前操作。
-     * @param tenantId 参数值，用于执行当前操作。
-     * @param ownerUserId 参数值，用于执行当前操作。
-     * @param promptTokens 参数值，用于执行当前操作。
-     * @param completionTokens 参数值，用于执行当前操作。
-     * @param estimated 参数值，用于执行当前操作。
-     * @param costSnapshot 参数值，用于执行当前操作。
-     *
-     * @return 返回当前操作产生的结果。
+     * @param id 用于定位目标业务对象的标识。
+     * @param tenantId 当前操作涉及的租户标识。
+     * @param ownerUserId 当前操作涉及的用户标识。
+     * @param promptTokens 用于完成本次业务处理的 promptTokens 参数。
+     * @param completionTokens 用于完成本次业务处理的 completionTokens 参数。
+     * @param estimated 用于完成本次业务处理的 estimated 参数。
+     * @param costSnapshot 用于完成本次业务处理的 costSnapshot 参数。
+     * @return 返回 AI Runtime 相关操作生成的结果数据。
      */
     public AiRun recordUsage(
             String id,
@@ -569,14 +551,13 @@ public class AiRuntimeService implements AiRuntimePort {
     }
 
     /**
-     * {@code append} 执行当前类型定义的业务操作。
+     * 执行 AI Runtime 相关业务数据，并返回处理结果。
      *
-     * @param run 参数值，用于执行当前操作。
-     * @param type 参数值，用于执行当前操作。
-     * @param payload 参数值，用于执行当前操作。
-     * @param redacted 参数值，用于执行当前操作。
-     *
-     * @return 返回当前操作产生的结果。
+     * @param run 用于完成本次业务处理的 run 参数。
+     * @param type 用于完成本次业务处理的 type 参数。
+     * @param payload 本次流程携带的事件或业务数据。
+     * @param redacted 用于完成本次业务处理的 redacted 参数。
+     * @return 返回 AI Runtime 相关操作生成的结果数据。
      */
     public long append(AiRun run, AiRunEventType type, String payload, boolean redacted) {
         long seq =
@@ -592,17 +573,16 @@ public class AiRuntimeService implements AiRuntimePort {
     }
 
     /**
-     * {@code append} 执行当前类型定义的业务操作。
+     * 执行 AI Runtime 相关业务数据，并返回处理结果。
      *
-     * @param run 参数值，用于执行当前操作。
-     * @param type 参数值，用于执行当前操作。
-     * @param payload 参数值，用于执行当前操作。
-     * @param redacted 参数值，用于执行当前操作。
-     * @param turnId 参数值，用于执行当前操作。
-     * @param stepId 参数值，用于执行当前操作。
-     * @param providerRequestId 参数值，用于执行当前操作。
-     *
-     * @return 返回当前操作产生的结果。
+     * @param run 用于完成本次业务处理的 run 参数。
+     * @param type 用于完成本次业务处理的 type 参数。
+     * @param payload 本次流程携带的事件或业务数据。
+     * @param redacted 用于完成本次业务处理的 redacted 参数。
+     * @param turnId 用于定位turn的标识。
+     * @param stepId 用于定位step的标识。
+     * @param providerRequestId 用于定位provider的标识。
+     * @return 返回 AI Runtime 相关操作生成的结果数据。
      */
     public long append(
             AiRun run,

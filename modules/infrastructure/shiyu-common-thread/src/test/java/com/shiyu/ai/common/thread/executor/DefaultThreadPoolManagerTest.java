@@ -18,6 +18,9 @@ import java.util.concurrent.ExecutorService;
 import java.util.concurrent.ThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
 
+/**
+ * 验证 Default Thread Pool Manager 相关功能、边界条件、异常路径和协作行为。
+ */
 class DefaultThreadPoolManagerTest {
 
     private DefaultThreadPoolManager manager;

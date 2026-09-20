@@ -30,7 +30,7 @@ import java.util.Optional;
 import javax.sql.DataSource;
 
 /**
- * {@code JdbcGenerationRepository} 定义会话模块的持久化端口，隔离领域逻辑与具体存储实现。
+ * 负责 Jdbc 生成 的持久化查询、保存和删除，并维护数据访问边界。
  */
 @Component
 public class JdbcGenerationRepository implements GenerationRepository {
@@ -48,10 +48,10 @@ public class JdbcGenerationRepository implements GenerationRepository {
     private final long recoveryTimeoutMs;
 
     /**
-     * {@code JdbcGenerationRepository} 创建并初始化当前类型实例。
+     * 执行 Jdbc 生成 相关业务操作，并维护必要的状态和协作关系。
      *
-     * @param dataSource 参数值，用于执行当前操作。
-     * @param runtimeRuns 参数值，用于执行当前操作。
+     * @param dataSource 用于完成本次业务处理的 dataSource 参数。
+     * @param runtimeRuns 用于完成本次业务处理的 runtimeRuns 参数。
      */
     public JdbcGenerationRepository(
             @Qualifier("agentDataSource") DataSource dataSource, AiRunRepository runtimeRuns) {
@@ -59,11 +59,11 @@ public class JdbcGenerationRepository implements GenerationRepository {
     }
 
     /**
-     * {@code JdbcGenerationRepository} 创建并初始化当前类型实例。
+     * 执行 Jdbc 生成 相关业务操作，并维护必要的状态和协作关系。
      *
-     * @param dataSource 参数值，用于执行当前操作。
-     * @param runtimeRuns 参数值，用于执行当前操作。
-     * @param recoveryTimeoutMs 参数值，用于执行当前操作。
+     * @param dataSource 用于完成本次业务处理的 dataSource 参数。
+     * @param runtimeRuns 用于完成本次业务处理的 runtimeRuns 参数。
+     * @param recoveryTimeoutMs 用于完成本次业务处理的 recoveryTimeoutMs 参数。
      */
     @Autowired
     public JdbcGenerationRepository(
@@ -76,9 +76,9 @@ public class JdbcGenerationRepository implements GenerationRepository {
     }
 
     /**
-     * {@code insert} 执行当前类型定义的业务操作。
+     * 创建或保存 Jdbc 生成 相关业务操作，并维护必要的状态和协作关系。
      *
-     * @param g 参数值，用于执行当前操作。
+     * @param g 用于完成本次业务处理的 g 参数。
      */
     @Override
     @Transactional
@@ -129,13 +129,12 @@ public class JdbcGenerationRepository implements GenerationRepository {
     }
 
     /**
-     * {@code find} 查询并返回当前操作所需的数据。
+     * 查询 Jdbc 生成 相关业务数据，并返回处理结果。
      *
-     * @param id 参数值，用于执行当前操作。
-     * @param tenantId 参数值，用于执行当前操作。
-     * @param ownerUserId 参数值，用于执行当前操作。
-     *
-     * @return 返回当前操作产生的结果。
+     * @param id 用于定位目标业务对象的标识。
+     * @param tenantId 当前操作涉及的租户标识。
+     * @param ownerUserId 当前操作涉及的用户标识。
+     * @return 返回可能存在的业务对象；不存在时返回空值容器。
      */
     @Override
     public Optional<GenerationRun> find(String id, TenantId tenantId, long ownerUserId) {
@@ -154,13 +153,12 @@ public class JdbcGenerationRepository implements GenerationRepository {
     }
 
     /**
-     * {@code hasRunning} 校验当前操作的输入或状态是否满足约束。
+     * 校验或判断 Jdbc 生成 相关业务数据，并返回处理结果。
      *
-     * @param conversationId 参数值，用于执行当前操作。
-     * @param inputMessageId 参数值，用于执行当前操作。
-     * @param tenantId 参数值，用于执行当前操作。
-     *
-     * @return 返回当前操作产生的结果。
+     * @param conversationId 用于定位conversation的标识。
+     * @param inputMessageId 用于定位input 消息的标识。
+     * @param tenantId 当前操作涉及的租户标识。
+     * @return 返回本次条件判断是否成立。
      */
     @Override
     public boolean hasRunning(String conversationId, String inputMessageId, TenantId tenantId) {
@@ -177,12 +175,11 @@ public class JdbcGenerationRepository implements GenerationRepository {
     }
 
     /**
-     * {@code hasRunningConversation} 校验当前操作的输入或状态是否满足约束。
+     * 校验或判断 Jdbc 生成 相关业务数据，并返回处理结果。
      *
-     * @param conversationId 参数值，用于执行当前操作。
-     * @param tenantId 参数值，用于执行当前操作。
-     *
-     * @return 返回当前操作产生的结果。
+     * @param conversationId 用于定位conversation的标识。
+     * @param tenantId 当前操作涉及的租户标识。
+     * @return 返回本次条件判断是否成立。
      */
     @Override
     public boolean hasRunningConversation(String conversationId, TenantId tenantId) {
@@ -198,13 +195,12 @@ public class JdbcGenerationRepository implements GenerationRepository {
     }
 
     /**
-     * {@code listConversation} 查询并返回当前操作所需的数据。
+     * 查询 Jdbc 生成 相关业务数据，并返回处理结果。
      *
-     * @param conversationId 参数值，用于执行当前操作。
-     * @param tenantId 参数值，用于执行当前操作。
-     * @param limit 参数值，用于执行当前操作。
-     *
-     * @return 返回当前操作产生的结果。
+     * @param conversationId 用于定位conversation的标识。
+     * @param tenantId 当前操作涉及的租户标识。
+     * @param limit 每页返回的数据数量。
+     * @return 返回符合条件的数据集合；没有匹配项时返回空集合。
      */
     @Override
     public List<GenerationRun> listConversation(
@@ -231,11 +227,10 @@ public class JdbcGenerationRepository implements GenerationRepository {
     }
 
     /**
-     * {@code recoverStaleGenerations} 执行当前类型定义的业务操作。
+     * 执行 Jdbc 生成 相关业务数据，并返回处理结果。
      *
-     * @param timeoutMs 参数值，用于执行当前操作。
-     *
-     * @return 返回当前操作产生的结果。
+     * @param timeoutMs 用于完成本次业务处理的 timeoutMs 参数。
+     * @return 返回 Jdbc 生成 相关操作生成的结果数据。
      */
     @Transactional
     public int recoverStaleGenerations(long timeoutMs) {
@@ -344,12 +339,11 @@ public class JdbcGenerationRepository implements GenerationRepository {
     }
 
     /**
-     * {@code update} 写入或更新当前模块中的业务数据。
+     * 更新或设置 Jdbc 生成 相关业务数据，并返回处理结果。
      *
-     * @param g 参数值，用于执行当前操作。
-     * @param expectedVersion 参数值，用于执行当前操作。
-     *
-     * @return 返回当前操作产生的结果。
+     * @param g 用于完成本次业务处理的 g 参数。
+     * @param expectedVersion 用于完成本次业务处理的 expectedVersion 参数。
+     * @return 返回 Jdbc 生成 相关操作生成的结果数据。
      */
     @Override
     @Transactional
@@ -412,10 +406,10 @@ public class JdbcGenerationRepository implements GenerationRepository {
     }
 
     /**
-     * {@code appendEvent} 执行当前类型定义的业务操作。
+     * 执行 Jdbc 生成 相关业务操作，并维护必要的状态和协作关系。
      *
-     * @param e 参数值，用于执行当前操作。
-     * @param tenantId 参数值，用于执行当前操作。
+     * @param e 用于完成本次业务处理的 e 参数。
+     * @param tenantId 当前操作涉及的租户标识。
      */
     @Override
     public void appendEvent(GenerationEvent e, TenantId tenantId) {
@@ -432,14 +426,13 @@ public class JdbcGenerationRepository implements GenerationRepository {
     }
 
     /**
-     * {@code listEvents} 查询并返回当前操作所需的数据。
+     * 查询 Jdbc 生成 相关业务数据，并返回处理结果。
      *
-     * @param generationId 参数值，用于执行当前操作。
-     * @param tenantId 参数值，用于执行当前操作。
-     * @param afterSequence 参数值，用于执行当前操作。
-     * @param limit 参数值，用于执行当前操作。
-     *
-     * @return 返回当前操作产生的结果。
+     * @param generationId 用于定位generation的标识。
+     * @param tenantId 当前操作涉及的租户标识。
+     * @param afterSequence 用于完成本次业务处理的 afterSequence 参数。
+     * @param limit 每页返回的数据数量。
+     * @return 返回符合条件的数据集合；没有匹配项时返回空集合。
      */
     @Override
     public List<GenerationEvent> listEvents(
@@ -464,12 +457,11 @@ public class JdbcGenerationRepository implements GenerationRepository {
     }
 
     /**
-     * {@code nextEventSequence} 执行当前类型定义的业务操作。
+     * 执行 Jdbc 生成 相关业务数据，并返回处理结果。
      *
-     * @param generationId 参数值，用于执行当前操作。
-     * @param tenantId 参数值，用于执行当前操作。
-     *
-     * @return 返回当前操作产生的结果。
+     * @param generationId 用于定位generation的标识。
+     * @param tenantId 当前操作涉及的租户标识。
+     * @return 返回 Jdbc 生成 相关操作生成的结果数据。
      */
     public int nextEventSequence(String generationId, TenantId tenantId) {
         TenantScope.requireMatches(tenantId);
@@ -547,9 +539,7 @@ public class JdbcGenerationRepository implements GenerationRepository {
     }
 
     /**
-     * {@code GenerationRuntimeLink} 封装会话模块中不可变的结构化数据，并作为相关操作之间的值对象。
-     * @param runtimeRunId runtimeRunId 属性，表示该记录组件承载的数据。
-     * @param ownerUserId 所属用户标识，表示该记录组件承载的数据。
+     * 封装 生成 Runtime Link 相关的不可变数据及其字段约束。
      */
     private record GenerationRuntimeLink(String runtimeRunId, long ownerUserId) {
         private GenerationRuntimeLink {
@@ -581,10 +571,7 @@ public class JdbcGenerationRepository implements GenerationRepository {
     }
 
     /**
-     * {@code StaleGeneration} 封装会话模块中不可变的结构化数据，并作为相关操作之间的值对象。
-     * @param run run 属性，表示该记录组件承载的数据。
-     * @param ownerUserId 所属用户标识，表示该记录组件承载的数据。
-     * @param tenantId 所属租户标识，表示该记录组件承载的数据。
+     * 封装 Stale 生成 相关的不可变数据及其字段约束。
      */
     private record StaleGeneration(GenerationRun run, long ownerUserId, long tenantId) {}
 

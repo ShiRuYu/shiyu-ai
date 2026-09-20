@@ -6,7 +6,9 @@ import java.io.Serial;
 import java.io.Serializable;
 import java.util.List;
 
-/** 用户信息视图对象 - 符合 API 文档规范 */
+/**
+ * 封装 用户 Info 操作向调用方返回的传输数据。
+ */
 @Data
 @SuppressWarnings("serial")
 public class UserInfoVO implements Serializable {

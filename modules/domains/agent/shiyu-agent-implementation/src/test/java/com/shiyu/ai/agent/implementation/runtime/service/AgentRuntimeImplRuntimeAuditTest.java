@@ -40,6 +40,9 @@ import org.junit.jupiter.api.Test;
 import java.time.Instant;
 import java.util.Map;
 
+/**
+ * 验证 智能体 Runtime Impl Runtime Audit 相关功能、边界条件、异常路径和协作行为。
+ */
 class AgentRuntimeImplRuntimeAuditTest {
     private static final ActorContext ACTOR =
             new ActorContext(new TenantId(9L), new UserId(7L), false);

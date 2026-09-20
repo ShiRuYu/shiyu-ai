@@ -6,7 +6,7 @@ import com.shiyu.ai.model.contract.model.ChatResponse;
 import reactor.core.publisher.Flux;
 
 /**
- * ChatEngine 接口，定义模型模块的能力边界。
+ * 定义 对话 相关的协作契约和调用边界。
  */
 public interface ChatEngine {
     /**

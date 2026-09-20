@@ -13,7 +13,9 @@ import lombok.EqualsAndHashCode;
 
 import java.io.Serial;
 
-/** 权限码数据对象 */
+/**
+ * 表示 认证 Code 对应的持久化数据对象及其数据库字段。
+ */
 @Data
 @EqualsAndHashCode(callSuper = true)
 @Table(value = "auth_auth_code")

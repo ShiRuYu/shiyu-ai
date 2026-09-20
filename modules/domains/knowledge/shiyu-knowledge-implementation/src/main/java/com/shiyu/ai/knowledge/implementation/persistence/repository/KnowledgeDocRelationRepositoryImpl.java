@@ -15,7 +15,7 @@ import org.springframework.stereotype.Component;
 import java.util.List;
 
 /**
- * {@code KnowledgeDocRelationRepositoryImpl} 实现知识模块的持久化端口，负责在领域对象与存储模型之间转换。
+ * 负责 知识 Doc 关系 的持久化查询、保存和删除，并维护数据访问边界。
  */
 @Component
 public class KnowledgeDocRelationRepositoryImpl implements KnowledgeDocRelationRepository {
@@ -31,11 +31,11 @@ public class KnowledgeDocRelationRepositoryImpl implements KnowledgeDocRelationR
     }
 
     /**
-     * {@code deleteByKnowledgeId} 释放或移除当前操作涉及的资源。
+     * 删除或移除 知识 Doc 关系 相关业务操作，并维护必要的状态和协作关系。
      *
-     * @param tenantId 参数值，用于执行当前操作。
-     * @param spaceId 参数值，用于执行当前操作。
-     * @param id 参数值，用于执行当前操作。
+     * @param tenantId 当前操作涉及的租户标识。
+     * @param spaceId 用于定位space的标识。
+     * @param id 用于定位目标业务对象的标识。
      */
     @Override
     public void deleteByKnowledgeId(TenantId tenantId, Long spaceId, Long id) {
@@ -46,13 +46,12 @@ public class KnowledgeDocRelationRepositoryImpl implements KnowledgeDocRelationR
     }
 
     /**
-     * {@code selectByDocId} 执行当前类型定义的业务操作。
+     * 查询 知识 Doc 关系 相关业务数据，并返回处理结果。
      *
-     * @param tenantId 参数值，用于执行当前操作。
-     * @param spaceId 参数值，用于执行当前操作。
-     * @param id 参数值，用于执行当前操作。
-     *
-     * @return 返回当前操作产生的结果。
+     * @param tenantId 当前操作涉及的租户标识。
+     * @param spaceId 用于定位space的标识。
+     * @param id 用于定位目标业务对象的标识。
+     * @return 返回符合条件的数据集合；没有匹配项时返回空集合。
      */
     @Override
     public List<KnowledgeDocRelationBO> selectByDocId(TenantId tenantId, Long spaceId, Long id) {
@@ -64,13 +63,12 @@ public class KnowledgeDocRelationRepositoryImpl implements KnowledgeDocRelationR
     }
 
     /**
-     * {@code selectByKnowledgeId} 执行当前类型定义的业务操作。
+     * 查询 知识 Doc 关系 相关业务数据，并返回处理结果。
      *
-     * @param tenantId 参数值，用于执行当前操作。
-     * @param spaceId 参数值，用于执行当前操作。
-     * @param id 参数值，用于执行当前操作。
-     *
-     * @return 返回当前操作产生的结果。
+     * @param tenantId 当前操作涉及的租户标识。
+     * @param spaceId 用于定位space的标识。
+     * @param id 用于定位目标业务对象的标识。
+     * @return 返回符合条件的数据集合；没有匹配项时返回空集合。
      */
     @Override
     public List<KnowledgeDocRelationBO> selectByKnowledgeId(
@@ -83,11 +81,11 @@ public class KnowledgeDocRelationRepositoryImpl implements KnowledgeDocRelationR
     }
 
     /**
-     * {@code deleteByDocId} 释放或移除当前操作涉及的资源。
+     * 删除或移除 知识 Doc 关系 相关业务操作，并维护必要的状态和协作关系。
      *
-     * @param tenantId 参数值，用于执行当前操作。
-     * @param spaceId 参数值，用于执行当前操作。
-     * @param id 参数值，用于执行当前操作。
+     * @param tenantId 当前操作涉及的租户标识。
+     * @param spaceId 用于定位space的标识。
+     * @param id 用于定位目标业务对象的标识。
      */
     @Override
     public void deleteByDocId(TenantId tenantId, Long spaceId, Long id) {
@@ -98,10 +96,10 @@ public class KnowledgeDocRelationRepositoryImpl implements KnowledgeDocRelationR
     }
 
     /**
-     * {@code assignDefaultSpace} 执行当前类型定义的业务操作。
+     * 更新或设置 知识 Doc 关系 相关业务操作，并维护必要的状态和协作关系。
      *
-     * @param tenantId 参数值，用于执行当前操作。
-     * @param spaceId 参数值，用于执行当前操作。
+     * @param tenantId 当前操作涉及的租户标识。
+     * @param spaceId 用于定位space的标识。
      */
     @Override
     public void assignDefaultSpace(TenantId tenantId, Long spaceId) {

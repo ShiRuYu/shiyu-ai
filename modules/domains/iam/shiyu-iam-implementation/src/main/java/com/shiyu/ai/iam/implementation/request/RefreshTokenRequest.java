@@ -9,7 +9,9 @@ import lombok.Data;
 import java.io.Serial;
 import java.io.Serializable;
 
-/** 刷新令牌请求 */
+/**
+ * 封装 Refresh Token 操作所需的请求条件和输入数据。
+ */
 @Data
 @Schema(description = "刷新令牌请求")
 public class RefreshTokenRequest implements Serializable {

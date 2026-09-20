@@ -14,6 +14,9 @@ import org.junit.jupiter.api.Test;
 
 import java.util.Map;
 
+/**
+ * 验证 智能体 Builder 相关功能、边界条件、异常路径和协作行为。
+ */
 class AgentBuilderTest {
     @Test
     void buildsGraphWithEdgesAndRegistersDefinition() {

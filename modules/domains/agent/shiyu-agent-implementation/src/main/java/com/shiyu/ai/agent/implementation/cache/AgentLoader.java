@@ -35,7 +35,7 @@ import java.time.ZoneId;
 import java.util.*;
 
 /**
- * {@code AgentLoader} 承载智能体模块的领域状态或协作行为，负责维护本类型的职责边界。
+ * 实现 智能体 Loader 相关的业务处理、协作逻辑或基础设施能力。
  */
 @Slf4j
 @Component
@@ -51,10 +51,10 @@ public class AgentLoader {
     private final AgentAdminRepository agentAdminRepository;
 
     /**
-     * {@code AgentLoader} 创建并初始化当前类型实例。
+     * 执行 智能体 Loader 相关业务操作，并维护必要的状态和协作关系。
      *
-     * @param nodeFactory 参数值，用于执行当前操作。
-     * @param agentAdminRepository 参数值，用于执行当前操作。
+     * @param nodeFactory 用于完成本次业务处理的 nodeFactory 参数。
+     * @param agentAdminRepository 用于完成本次业务处理的 agentAdminRepository 参数。
      */
     public AgentLoader(NodeFactory nodeFactory, AgentAdminRepository agentAdminRepository) {
         this.nodeFactory = nodeFactory;
@@ -62,12 +62,11 @@ public class AgentLoader {
     }
 
     /**
-     * {@code loadFromDb} 查询并返回当前操作所需的数据。
+     * 执行 智能体 Loader 相关业务数据，并返回处理结果。
      *
-     * @param actor 参数值，用于执行当前操作。
-     * @param agentId 参数值，用于执行当前操作。
-     *
-     * @return 返回当前操作产生的结果。
+     * @param actor 当前操作主体上下文，用于确定租户、用户和访问权限。
+     * @param agentId 用于定位agent的标识。
+     * @return 返回 智能体 Loader 相关操作生成的结果数据。
      */
     public AgentDefinition loadFromDb(ActorContext actor, String agentId) {
         log.info(
@@ -219,12 +218,11 @@ public class AgentLoader {
     }
 
     /**
-     * {@code buildGraph} 执行当前类型定义的业务操作。
+     * 构建或转换 智能体 Loader 相关业务数据，并返回处理结果。
      *
-     * @param agentId 参数值，用于执行当前操作。
-     * @param graphConfig 参数值，用于执行当前操作。
-     *
-     * @return 返回当前操作产生的结果。
+     * @param agentId 用于定位agent的标识。
+     * @param graphConfig 用于完成本次业务处理的 graphConfig 参数。
+     * @return 返回 智能体 Loader 相关操作生成的结果数据。
      */
     public Graph buildGraph(String agentId, GraphConfigRequest graphConfig) {
         String graphName =

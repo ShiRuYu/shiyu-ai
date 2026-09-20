@@ -4,7 +4,7 @@ import org.mybatis.spring.annotation.MapperScan;
 import org.springframework.context.annotation.Configuration;
 
 /**
- * ModelPersistenceConfiguration 配置组件，负责注册和配置模型领域相关基础设施。
+ * 定义 模型 Persistence 基础设施或应用能力的配置项及装配规则。
  */
 @Configuration
 @MapperScan("com.shiyu.ai.model.implementation.persistence.mapper")

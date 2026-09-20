@@ -13,6 +13,9 @@ import org.junit.jupiter.api.Test;
 import java.time.Instant;
 import java.util.Map;
 
+/**
+ * 验证 会话 Value Invariant 相关功能、边界条件、异常路径和协作行为。
+ */
 class ConversationValueInvariantTest {
     @Test
     void validatesConversationAndMessageRequiredFieldsAndNormalizesCollections() {

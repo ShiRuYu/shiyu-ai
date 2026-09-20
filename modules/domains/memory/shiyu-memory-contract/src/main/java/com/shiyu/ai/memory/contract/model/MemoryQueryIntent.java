@@ -1,7 +1,7 @@
 package com.shiyu.ai.memory.contract.model;
 
 /**
- * MemoryQueryIntent 枚举，定义记忆模块可用的业务取值。
+ * 定义 记忆 Query Intent 可用的枚举值及其业务语义。
  */
 public enum MemoryQueryIntent {
     SEMANTIC,
@@ -11,11 +11,10 @@ public enum MemoryQueryIntent {
     HYBRID;
 
     /**
-     * {@code infer} 执行当前类型定义的业务操作。
+     * 执行 记忆 Query Intent 相关业务数据，并返回处理结果。
      *
-     * @param text 参数值，用于执行当前操作。
-     *
-     * @return 返回当前操作产生的结果。
+     * @param text 用于完成本次业务处理的 text 参数。
+     * @return 返回 记忆 Query Intent 相关操作生成的结果数据。
      */
     public static MemoryQueryIntent infer(String text) {
         String value = text == null ? "" : text.toLowerCase(java.util.Locale.ROOT);

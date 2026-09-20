@@ -10,6 +10,9 @@ import org.springframework.context.annotation.AnnotationConfigApplicationContext
 import static org.junit.jupiter.api.Assertions.assertInstanceOf;
 import static org.mockito.Mockito.mock;
 
+/**
+ * 验证 平台 用量 Wiring 相关功能、边界条件、异常路径和协作行为。
+ */
 class PlatformUsageWiringTest {
     @Test
     void tenantServiceRemainsUnambiguousWhenPlatformServiceIsRegistered() {

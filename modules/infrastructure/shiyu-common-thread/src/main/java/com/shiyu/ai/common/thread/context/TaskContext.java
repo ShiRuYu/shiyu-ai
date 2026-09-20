@@ -4,7 +4,9 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.Optional;
 
-/** 任务上下文 用于在线程间传递上下文信息 */
+/**
+ * 实现 Task 相关的业务处理、协作逻辑或基础设施能力。
+ */
 public class TaskContext {
 
     private static final ThreadLocal<TaskContext> CONTEXT_HOLDER =

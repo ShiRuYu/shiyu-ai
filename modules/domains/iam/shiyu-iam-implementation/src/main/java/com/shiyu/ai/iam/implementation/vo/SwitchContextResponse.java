@@ -9,7 +9,9 @@ import java.io.Serial;
 import java.io.Serializable;
 import java.util.List;
 
-/** 切换操作响应（角色/租户切换后返回完整上下文，消除 N+1 请求） */
+/**
+ * 封装 Switch Context 操作向调用方返回的传输数据。
+ */
 @Data
 @Builder
 @NoArgsConstructor

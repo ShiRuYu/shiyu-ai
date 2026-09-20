@@ -3,13 +3,13 @@ package com.shiyu.ai.model.contract.api;
 import java.util.List;
 
 /**
- * ModelRoutingPort 边界接口，负责向外部组件提供模型领域相关能力。
+ * 定义 模型 Routing 领域与外部能力交互的端口契约。
  */
 public interface ModelRoutingPort {
     /**
-     * 处理availablemodels。
+     * 执行 模型 Routing 相关业务数据，并返回处理结果。
      *
-     * @return 结果列表。
+     * @return 返回符合条件的数据集合；没有匹配项时返回空集合。
      */
     List<ModelDescriptor> availableModels();
 
@@ -30,9 +30,7 @@ public interface ModelRoutingPort {
     String defaultPlatform();
 
     /**
-     * 描述可路由模型的标识和所属平台。
-     * @param id 标识，表示该记录组件承载的数据。
-     * @param platform platform 属性，表示该记录组件承载的数据。
+     * 封装 模型 Descriptor 相关的不可变数据及其字段约束。
      */
     record ModelDescriptor(String id, String platform) {}
 }

@@ -7,7 +7,9 @@ import java.io.Serializable;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 
-/** ReviewTask 业务对象 */
+/**
+ * 表示 复习 Task 领域对象的业务状态和属性。
+ */
 @Data
 public class ReviewTaskBO implements Serializable {
 

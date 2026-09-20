@@ -6,8 +6,7 @@ import com.shiyu.ai.knowledge.contract.model.KnowledgeResponse;
 import java.util.List;
 
 /**
- * 知识关系端口。
- * 为外部业务提供知识点前置关系查询能力。
+ * 定义 知识 关系 领域与外部能力交互的端口契约。
  */
 public interface KnowledgeRelationPort {
 

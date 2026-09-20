@@ -23,7 +23,7 @@ import java.lang.reflect.Type;
 import java.util.List;
 
 /**
- * 验证 EducationRepositoryCoverage 的功能、边界条件和集成行为。
+ * 验证 教育 Repository Coverage 相关功能、边界条件、异常路径和协作行为。
  */
 @SuppressWarnings({"rawtypes", "unchecked"})
 class EducationRepositoryCoverageTest {

@@ -24,9 +24,7 @@ import org.springframework.web.bind.annotation.*;
 import java.util.List;
 
 /**
- * AI 模型管理 Controller
- *
- * <p>注意：所有参数均通过 @RequestParam 或 @RequestBody 传入，不使用 @PathVariable。
+ * 处理 AI 模型 相关的 Web 请求，并将请求转换为应用服务调用。
  */
 @Slf4j
 @Tag(name = "Ai Model", description = "Ai Model")
@@ -45,10 +43,10 @@ public class AiModelController {
     private final ModelManager modelManager;
 
     /**
-     * {@code AiModelController} 创建并初始化当前类型实例。
+     * 执行 AI 模型 相关业务操作，并维护必要的状态和协作关系。
      *
-     * @param aiModelService 参数值，用于执行当前操作。
-     * @param modelManager 参数值，用于执行当前操作。
+     * @param aiModelService 用于完成本次业务处理的 aiModelService 参数。
+     * @param modelManager 用于完成本次业务处理的 modelManager 参数。
      */
     public AiModelController(AiModelService aiModelService, ModelManager modelManager) {
         this.aiModelService = aiModelService;
@@ -80,11 +78,9 @@ public class AiModelController {
     }
 
     /**
-     * {@code getByPlatformId} 查询并返回当前操作所需的数据。
+     * 执行 AI 模型 相关业务操作，并维护必要的状态和协作关系。
      *
-     * @param platformId 参数值，用于执行当前操作。
-     *
-     * @return 返回当前操作产生的结果。
+     * @param Id 用于定位目标业务对象的标识。
      */
     @Operation(summary = "Get by Platform Id")
     @GetMapping("/platform")
@@ -97,11 +93,9 @@ public class AiModelController {
     }
 
     /**
-     * {@code getByPlatformCode} 查询并返回当前操作所需的数据。
+     * 执行 AI 模型 相关业务操作，并维护必要的状态和协作关系。
      *
-     * @param platformCode 参数值，用于执行当前操作。
-     *
-     * @return 返回当前操作产生的结果。
+     * @param Code 用于定位或筛选目标业务对象的业务值。
      */
     @Operation(summary = "Get by Platform Code")
     @GetMapping("/platform/by-code")
@@ -129,11 +123,9 @@ public class AiModelController {
     }
 
     /**
-     * {@code getById} 查询并返回当前操作所需的数据。
+     * 执行 AI 模型 相关业务操作，并维护必要的状态和协作关系。
      *
-     * @param id 参数值，用于执行当前操作。
-     *
-     * @return 返回当前操作产生的结果。
+     * @param Id 用于定位目标业务对象的标识。
      */
     @Operation(summary = "Get by Id")
     @GetMapping("/detail")
@@ -149,11 +141,9 @@ public class AiModelController {
     }
 
     /**
-     * {@code getDefaultByPlatformId} 查询并返回当前操作所需的数据。
+     * 执行 AI 模型 相关业务操作，并维护必要的状态和协作关系。
      *
-     * @param platformId 参数值，用于执行当前操作。
-     *
-     * @return 返回当前操作产生的结果。
+     * @param Id 用于定位目标业务对象的标识。
      */
     @Operation(summary = "Get Default By Platform Id")
     @GetMapping("/platform/default")
@@ -169,11 +159,9 @@ public class AiModelController {
     }
 
     /**
-     * {@code create} 写入或更新当前模块中的业务数据。
+     * 执行 AI 模型 相关业务操作，并维护必要的状态和协作关系。
      *
-     * @param request 参数值，用于执行当前操作。
-     *
-     * @return 返回当前操作产生的结果。
+     * @param Create 用于完成本次业务处理的 Create 参数。
      */
     @Operation(summary = "Create")
     @SaCheckPermission("agent:model:create")
@@ -193,12 +181,9 @@ public class AiModelController {
     }
 
     /**
-     * {@code update} 写入或更新当前模块中的业务数据。
+     * 执行 AI 模型 相关业务操作，并维护必要的状态和协作关系。
      *
-     * @param id 参数值，用于执行当前操作。
-     * @param request 参数值，用于执行当前操作。
-     *
-     * @return 返回当前操作产生的结果。
+     * @param Update 用于完成本次业务处理的 Update 参数。
      */
     @Operation(summary = "Update")
     @SaCheckPermission("agent:model:edit")
@@ -220,11 +205,9 @@ public class AiModelController {
     }
 
     /**
-     * {@code delete} 释放或移除当前操作涉及的资源。
+     * 执行 AI 模型 相关业务操作，并维护必要的状态和协作关系。
      *
-     * @param id 参数值，用于执行当前操作。
-     *
-     * @return 返回当前操作产生的结果。
+     * @param Delete 用于完成本次业务处理的 Delete 参数。
      */
     @Operation(summary = "Delete")
     @SaCheckPermission("agent:model:delete")
@@ -241,11 +224,9 @@ public class AiModelController {
     }
 
     /**
-     * {@code deleteBatch} 释放或移除当前操作涉及的资源。
+     * 执行 AI 模型 相关业务操作，并维护必要的状态和协作关系。
      *
-     * @param ids 参数值，用于执行当前操作。
-     *
-     * @return 返回当前操作产生的结果。
+     * @param Batch 用于完成本次业务处理的 Batch 参数。
      */
     @Operation(summary = "Delete Batch")
     @SaCheckPermission("agent:model:delete")
@@ -262,11 +243,9 @@ public class AiModelController {
     }
 
     /**
-     * {@code setDefault} 写入或更新当前模块中的业务数据。
+     * 执行 AI 模型 相关业务操作，并维护必要的状态和协作关系。
      *
-     * @param id 参数值，用于执行当前操作。
-     *
-     * @return 返回当前操作产生的结果。
+     * @param Default 用于完成本次业务处理的 Default 参数。
      */
     @Operation(summary = "Set Default")
     @SaCheckPermission("agent:model:set-default")

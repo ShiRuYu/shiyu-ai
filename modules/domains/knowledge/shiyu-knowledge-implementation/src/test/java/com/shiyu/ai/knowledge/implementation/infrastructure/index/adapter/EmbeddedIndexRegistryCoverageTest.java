@@ -40,6 +40,9 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.Map;
 
+/**
+ * 验证 Embedded 索引 Registry Coverage 相关功能、边界条件、异常路径和协作行为。
+ */
 class EmbeddedIndexRegistryCoverageTest {
 
     @TempDir Path tempDir;

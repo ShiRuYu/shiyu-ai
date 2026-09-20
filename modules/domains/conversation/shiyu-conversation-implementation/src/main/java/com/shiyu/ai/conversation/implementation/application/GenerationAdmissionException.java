@@ -1,7 +1,7 @@
 package com.shiyu.ai.conversation.implementation.application;
 
 /**
- * GenerationAdmissionException 异常类型，表示会话领域相关业务或访问错误。
+ * 表示 生成 Admission 相关的领域事件或异常信息。
  */
 public class GenerationAdmissionException extends IllegalStateException {
     /**
@@ -14,9 +14,9 @@ public class GenerationAdmissionException extends IllegalStateException {
     private final String errorCode;
 
     /**
-     * {@code GenerationAdmissionException} 创建并初始化当前类型实例。
+     * 执行 生成 Admission 相关业务操作，并维护必要的状态和协作关系。
      *
-     * @param errorCode 参数值，用于执行当前操作。
+     * @param errorCode 用于完成本次业务处理的 errorCode 参数。
      */
     public GenerationAdmissionException(String errorCode) {
         super(errorCode == null || errorCode.isBlank() ? "generation admission denied" : errorCode);
@@ -24,9 +24,9 @@ public class GenerationAdmissionException extends IllegalStateException {
     }
 
     /**
-     * {@code errorCode} 执行当前类型定义的业务操作。
+     * 执行 生成 Admission 相关业务数据，并返回处理结果。
      *
-     * @return 返回当前操作产生的结果。
+     * @return 返回 生成 Admission 相关操作生成的结果数据。
      */
     public String errorCode() {
         return errorCode;

@@ -5,12 +5,7 @@ import java.util.Objects;
 import java.util.regex.Pattern;
 
 /**
- * 描述一个可由应用组合的业务模块及其外部边界。
- *
- * @param id 稳定的模块标识，用于配置键和租户授权。
- * @param displayName 面向运维和诊断信息的模块名称。
- * @param routePrefixes 模块占用的 HTTP 路径前缀。
- * @param permissionPrefix 模块权限码使用的前缀。
+ * 封装 Business Module Descriptor 相关的不可变数据及其字段约束。
  */
 public record BusinessModuleDescriptor(
         String id, String displayName, List<String> routePrefixes, String permissionPrefix) {

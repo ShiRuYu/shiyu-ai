@@ -12,7 +12,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 
 /**
- * {@code LearningStateMachineImpl} 承载教育模块的领域状态或协作行为，负责维护本类型的职责边界。
+ * 编排 Learning State Machine Impl 所属应用流程的输入、协作和业务结果。
  */
 @Slf4j
 @Service
@@ -25,13 +25,12 @@ public class LearningStateMachineImpl implements LearningStateMachine {
     private final LearningStateRepository learningStateRepository;
 
     /**
-     * {@code getState} 查询并返回当前操作所需的数据。
+     * 查询 Learning State Machine Impl 相关业务数据，并返回处理结果。
      *
-     * @param actor 参数值，用于执行当前操作。
-     * @param studentId 参数值，用于执行当前操作。
-     * @param knowledgeId 参数值，用于执行当前操作。
-     *
-     * @return 返回当前操作产生的结果。
+     * @param actor 当前操作主体上下文，用于确定租户、用户和访问权限。
+     * @param studentId 用于定位student的标识。
+     * @param knowledgeId 用于定位knowledge的标识。
+     * @return 返回 Learning State Machine Impl 相关操作生成的结果数据。
      */
     @Override
     public LearningState getState(ActorContext actor, Long studentId, Long knowledgeId) {
@@ -49,11 +48,11 @@ public class LearningStateMachineImpl implements LearningStateMachine {
     }
 
     /**
-     * {@code startLearning} 执行当前类型定义的业务操作。
+     * 执行 Learning State Machine Impl 相关业务操作，并维护必要的状态和协作关系。
      *
-     * @param actor 参数值，用于执行当前操作。
-     * @param studentId 参数值，用于执行当前操作。
-     * @param knowledgeId 参数值，用于执行当前操作。
+     * @param actor 当前操作主体上下文，用于确定租户、用户和访问权限。
+     * @param studentId 用于定位student的标识。
+     * @param knowledgeId 用于定位knowledge的标识。
      */
     @Override
     public void startLearning(ActorContext actor, Long studentId, Long knowledgeId) {
@@ -65,11 +64,11 @@ public class LearningStateMachineImpl implements LearningStateMachine {
     }
 
     /**
-     * {@code passAssessment} 执行当前类型定义的业务操作。
+     * 执行 Learning State Machine Impl 相关业务操作，并维护必要的状态和协作关系。
      *
-     * @param actor 参数值，用于执行当前操作。
-     * @param studentId 参数值，用于执行当前操作。
-     * @param knowledgeId 参数值，用于执行当前操作。
+     * @param actor 当前操作主体上下文，用于确定租户、用户和访问权限。
+     * @param studentId 用于定位student的标识。
+     * @param knowledgeId 用于定位knowledge的标识。
      */
     @Override
     public void passAssessment(ActorContext actor, Long studentId, Long knowledgeId) {
@@ -81,11 +80,11 @@ public class LearningStateMachineImpl implements LearningStateMachine {
     }
 
     /**
-     * {@code deepPractice} 执行当前类型定义的业务操作。
+     * 执行 Learning State Machine Impl 相关业务操作，并维护必要的状态和协作关系。
      *
-     * @param actor 参数值，用于执行当前操作。
-     * @param studentId 参数值，用于执行当前操作。
-     * @param knowledgeId 参数值，用于执行当前操作。
+     * @param actor 当前操作主体上下文，用于确定租户、用户和访问权限。
+     * @param studentId 用于定位student的标识。
+     * @param knowledgeId 用于定位knowledge的标识。
      */
     @Override
     public void deepPractice(ActorContext actor, Long studentId, Long knowledgeId) {
@@ -97,11 +96,11 @@ public class LearningStateMachineImpl implements LearningStateMachine {
     }
 
     /**
-     * {@code forget} 执行当前类型定义的业务操作。
+     * 执行 Learning State Machine Impl 相关业务操作，并维护必要的状态和协作关系。
      *
-     * @param actor 参数值，用于执行当前操作。
-     * @param studentId 参数值，用于执行当前操作。
-     * @param knowledgeId 参数值，用于执行当前操作。
+     * @param actor 当前操作主体上下文，用于确定租户、用户和访问权限。
+     * @param studentId 用于定位student的标识。
+     * @param knowledgeId 用于定位knowledge的标识。
      */
     @Override
     public void forget(ActorContext actor, Long studentId, Long knowledgeId) {
@@ -110,11 +109,11 @@ public class LearningStateMachineImpl implements LearningStateMachine {
     }
 
     /**
-     * {@code scheduleReview} 执行当前类型定义的业务操作。
+     * 执行 Learning State Machine Impl 相关业务操作，并维护必要的状态和协作关系。
      *
-     * @param actor 参数值，用于执行当前操作。
-     * @param studentId 参数值，用于执行当前操作。
-     * @param knowledgeId 参数值，用于执行当前操作。
+     * @param actor 当前操作主体上下文，用于确定租户、用户和访问权限。
+     * @param studentId 用于定位student的标识。
+     * @param knowledgeId 用于定位knowledge的标识。
      */
     @Override
     public void scheduleReview(ActorContext actor, Long studentId, Long knowledgeId) {
@@ -126,11 +125,11 @@ public class LearningStateMachineImpl implements LearningStateMachine {
     }
 
     /**
-     * {@code giveUp} 执行当前类型定义的业务操作。
+     * 执行 Learning State Machine Impl 相关业务操作，并维护必要的状态和协作关系。
      *
-     * @param actor 参数值，用于执行当前操作。
-     * @param studentId 参数值，用于执行当前操作。
-     * @param knowledgeId 参数值，用于执行当前操作。
+     * @param actor 当前操作主体上下文，用于确定租户、用户和访问权限。
+     * @param studentId 用于定位student的标识。
+     * @param knowledgeId 用于定位knowledge的标识。
      */
     @Override
     public void giveUp(ActorContext actor, Long studentId, Long knowledgeId) {

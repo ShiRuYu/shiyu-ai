@@ -3,7 +3,7 @@ package com.shiyu.ai.agent.implementation.port.repository;
 import com.shiyu.ai.kernel.context.TenantId;
 
 /**
- * AgentDefRepository 仓储接口，负责访问和持久化智能体领域聚合数据。
+ * 负责 智能体 Def 的持久化查询、保存和删除，并维护数据访问边界。
  */
 public interface AgentDefRepository {
     /**

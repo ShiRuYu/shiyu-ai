@@ -20,10 +20,9 @@ import java.util.HashMap;
 import java.util.Map;
 
 /**
- * Agent 调用节点 用于在 Graph 中调用其他已注册的 Agent 执行子任务 使用 AgentRuntime 进行调用（统一走 Execution 生命周期）
+ * 执行 智能体 Call 相关流程节点的输入处理和状态转移。
  *
  * @author shiyu-ai
- * @date 2026-06-06
  */
 @Setter
 @Getter
@@ -51,7 +50,9 @@ public class AgentCallNode extends BaseNode {
         return new Builder();
     }
 
-    /** Builder 类，用于构建 AgentCallNode 实例 */
+    /**
+     * 构建 Builder 相关的对象、流程或运行时配置。
+     */
     public static class Builder {
         /**
          * 配置，表示当前对象中的对应属性。
@@ -63,11 +64,10 @@ public class AgentCallNode extends BaseNode {
         private AgentRuntime agentRuntime;
 
         /**
-         * {@code config} 执行当前类型定义的业务操作。
+         * 执行 Builder 相关业务数据，并返回处理结果。
          *
-         * @param config 参数值，用于执行当前操作。
-         *
-         * @return 返回当前操作产生的结果。
+         * @param config 用于完成本次业务处理的 config 参数。
+         * @return 返回 Builder 相关操作生成的结果数据。
          */
         public Builder config(AgentCallConfig config) {
             this.config = config;
@@ -75,11 +75,10 @@ public class AgentCallNode extends BaseNode {
         }
 
         /**
-         * {@code agentRuntime} 执行当前类型定义的业务操作。
+         * 执行 Builder 相关业务数据，并返回处理结果。
          *
-         * @param agentRuntime 参数值，用于执行当前操作。
-         *
-         * @return 返回当前操作产生的结果。
+         * @param agentRuntime 用于完成本次业务处理的 agentRuntime 参数。
+         * @return 返回 Builder 相关操作生成的结果数据。
          */
         public Builder agentRuntime(AgentRuntime agentRuntime) {
             this.agentRuntime = agentRuntime;
@@ -87,9 +86,9 @@ public class AgentCallNode extends BaseNode {
         }
 
         /**
-         * {@code build} 执行当前类型定义的业务操作。
+         * 构建或转换 Builder 相关业务数据，并返回处理结果。
          *
-         * @return 返回当前操作产生的结果。
+         * @return 返回 Builder 相关操作生成的结果数据。
          */
         public AgentCallNode build() {
             if (agentRuntime == null) {
@@ -100,11 +99,10 @@ public class AgentCallNode extends BaseNode {
     }
 
     /**
-     * {@code doExecute} 执行当前类型定义的业务操作。
+     * 执行 智能体 Call 相关业务数据，并返回处理结果。
      *
-     * @param input 参数值，用于执行当前操作。
-     *
-     * @return 返回当前操作产生的结果。
+     * @param input 用于完成本次业务处理的 input 参数。
+     * @return 返回 智能体 Call 相关操作生成的结果数据。
      */
     @Override
     protected NodeOutput doExecute(NodeInput input) throws Exception {
@@ -232,9 +230,9 @@ public class AgentCallNode extends BaseNode {
     }
 
     /**
-     * {@code getRequiredInputs} 查询并返回当前操作所需的数据。
+     * 查询 智能体 Call 相关业务数据，并返回处理结果。
      *
-     * @return 返回当前操作产生的结果。
+     * @return 返回符合条件的数据集合；没有匹配项时返回空集合。
      */
     @Override
     public java.util.List<NodeInputParam> getRequiredInputs() {

@@ -22,7 +22,7 @@ import org.springframework.web.bind.annotation.*;
 import java.util.List;
 
 /**
- * {@code TenantController} 是Web模块的 Web 接口适配器，负责接收请求并转换为应用服务调用。
+ * 处理 租户 相关的 Web 请求，并将请求转换为应用服务调用。
  */
 @RestController
 @RequestMapping("/api/iam/tenants")
@@ -42,9 +42,9 @@ public class TenantController {
     private final KnowledgeTenantProvisioning knowledgeSpaceService;
 
     /**
-     * {@code getAllTenants} 查询并返回当前操作所需的数据。
+     * 执行 租户 相关业务操作，并维护必要的状态和协作关系。
      *
-     * @return 返回当前操作产生的结果。
+     * @param list 用于完成本次业务处理的 list 参数。
      */
     @SaCheckPermission("system:tenant:list")
     @GetMapping("/list")
@@ -53,11 +53,9 @@ public class TenantController {
     }
 
     /**
-     * {@code getTenantPage} 查询并返回当前操作所需的数据。
+     * 执行 租户 相关业务操作，并维护必要的状态和协作关系。
      *
-     * @param r 参数值，用于执行当前操作。
-     *
-     * @return 返回当前操作产生的结果。
+     * @param list 用于完成本次业务处理的 list 参数。
      */
     @SaCheckPermission("system:tenant:list")
     @GetMapping("/page")
@@ -73,11 +71,9 @@ public class TenantController {
     }
 
     /**
-     * {@code getTenantById} 查询并返回当前操作所需的数据。
+     * 执行 租户 相关业务操作，并维护必要的状态和协作关系。
      *
-     * @param id 参数值，用于执行当前操作。
-     *
-     * @return 返回当前操作产生的结果。
+     * @param list 用于完成本次业务处理的 list 参数。
      */
     @SaCheckPermission("system:tenant:list")
     @GetMapping("/detail")
@@ -87,11 +83,9 @@ public class TenantController {
     }
 
     /**
-     * {@code createTenant} 写入或更新当前模块中的业务数据。
+     * 执行 租户 相关业务操作，并维护必要的状态和协作关系。
      *
-     * @param r 参数值，用于执行当前操作。
-     *
-     * @return 返回当前操作产生的结果。
+     * @param create 用于完成本次业务处理的 create 参数。
      */
     @SaCheckPermission("system:tenant:create")
     @PostMapping("/create")
@@ -113,12 +107,9 @@ public class TenantController {
     }
 
     /**
-     * {@code updateTenant} 写入或更新当前模块中的业务数据。
+     * 执行 租户 相关业务操作，并维护必要的状态和协作关系。
      *
-     * @param id 参数值，用于执行当前操作。
-     * @param r 参数值，用于执行当前操作。
-     *
-     * @return 返回当前操作产生的结果。
+     * @param update 用于完成本次业务处理的 update 参数。
      */
     @SaCheckPermission("system:tenant:update")
     @PostMapping("/update")
@@ -129,11 +120,9 @@ public class TenantController {
     }
 
     /**
-     * {@code deleteTenant} 释放或移除当前操作涉及的资源。
+     * 执行 租户 相关业务操作，并维护必要的状态和协作关系。
      *
-     * @param id 参数值，用于执行当前操作。
-     *
-     * @return 返回当前操作产生的结果。
+     * @param delete 用于完成本次业务处理的 delete 参数。
      */
     @SaCheckPermission("system:tenant:delete")
     @PostMapping("/delete")

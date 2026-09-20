@@ -17,6 +17,9 @@ import com.shiyu.ai.model.implementation.domain.event.ModelCallEvent;
 import org.junit.jupiter.api.Test;
 import org.mockito.ArgumentCaptor;
 
+/**
+ * 验证 用量 事件 Listener 相关功能、边界条件、异常路径和协作行为。
+ */
 class UsageEventListenerTest {
 
     private final UsageGovernance usage = mock(UsageGovernance.class);

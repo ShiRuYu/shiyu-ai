@@ -6,25 +6,7 @@ import java.time.Instant;
 import java.util.Objects;
 
 /**
- * {@code AiRunEvent} 封装智能体模块中不可变的结构化数据，并作为相关操作之间的值对象。
- * @param runId 运行标识，表示该记录组件承载的数据。
- * @param tenantId 租户标识，表示该记录组件承载的数据。
- * @param seq seq 属性，表示该记录组件承载的数据。
- * @param type 类型，表示该记录组件承载的数据。
- * @param schemaVersion schemaVersion 属性，表示该记录组件承载的数据。
- * @param turnId turnId 属性，表示该记录组件承载的数据。
- * @param stepId stepId 属性，表示该记录组件承载的数据。
- * @param parentEventSeq parentEventSeq 属性，表示该记录组件承载的数据。
- * @param conversationId conversationId 属性，表示该记录组件承载的数据。
- * @param generationId generationId 属性，表示该记录组件承载的数据。
- * @param executionId executionId 属性，表示该记录组件承载的数据。
- * @param appId appId 属性，表示该记录组件承载的数据。
- * @param appVersionId appVersionId 属性，表示该记录组件承载的数据。
- * @param providerRequestId providerRequestId 属性，表示该记录组件承载的数据。
- * @param traceId traceId 属性，表示该记录组件承载的数据。
- * @param payload payload 属性，表示该记录组件承载的数据。
- * @param redacted redacted 属性，表示该记录组件承载的数据。
- * @param createdAt 创建时间，表示该记录组件承载的数据。
+ * 封装 AI 运行 相关的不可变数据及其字段约束。
  */
 public record AiRunEvent(
         String runId,

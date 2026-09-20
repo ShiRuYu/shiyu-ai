@@ -6,12 +6,7 @@ import java.util.List;
 
 
 /**
- * 知识图谱邻域响应
- *
- * @param node node 属性，表示该记录组件承载的数据。
- * @param parentNodes parentNodes 属性，表示该记录组件承载的数据。
- * @param childNodes childNodes 属性，表示该记录组件承载的数据。
- * @param relatedNodes relatedNodes 属性，表示该记录组件承载的数据。
+ * 封装 知识 Graph 相关的不可变数据及其字段约束。
  */
 public record KnowledgeGraphResponse(
         KnowledgeResponse node,

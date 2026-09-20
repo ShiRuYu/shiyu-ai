@@ -18,7 +18,7 @@ import org.springframework.web.bind.annotation.*;
 import java.util.List;
 
 /**
- * {@code WrongQuestionController} 是教育模块的 Web 接口适配器，负责接收请求并转换为应用服务调用。
+ * 处理 Wrong 题目 相关的 Web 请求，并将请求转换为应用服务调用。
  */
 @Slf4j
 @RestController
@@ -33,11 +33,9 @@ public class WrongQuestionController {
     private final WrongQuestionService wrongQuestionService;
 
     /**
-     * {@code getById} 查询并返回当前操作所需的数据。
+     * 查询 Wrong 题目 相关业务操作，并维护必要的状态和协作关系。
      *
-     * @param id 参数值，用于执行当前操作。
-     *
-     * @return 返回当前操作产生的结果。
+     * @param detail 用于完成本次业务处理的 detail 参数。
      */
     @GetMapping("/detail")
     public Result<WrongQuestionResponse> getById(@RequestParam Long id) {
@@ -46,11 +44,9 @@ public class WrongQuestionController {
     }
 
     /**
-     * {@code listByStudentId} 查询并返回当前操作所需的数据。
+     * 查询 Wrong 题目 相关业务操作，并维护必要的状态和协作关系。
      *
-     * @param studentId 参数值，用于执行当前操作。
-     *
-     * @return 返回当前操作产生的结果。
+     * @param student 用于完成本次业务处理的 student 参数。
      */
     @GetMapping("/student")
     public Result<List<WrongQuestionResponse>> listByStudentId(@RequestParam Long studentId) {
@@ -60,11 +56,9 @@ public class WrongQuestionController {
     }
 
     /**
-     * {@code create} 写入或更新当前模块中的业务数据。
+     * 执行 Wrong 题目 相关业务操作，并维护必要的状态和协作关系。
      *
-     * @param request 参数值，用于执行当前操作。
-     *
-     * @return 返回当前操作产生的结果。
+     * @param create 用于完成本次业务处理的 create 参数。
      */
     @PostMapping("/create")
     public Result<WrongQuestionResponse> create(@Valid @RequestBody WrongQuestionRequest request) {
@@ -73,12 +67,9 @@ public class WrongQuestionController {
     }
 
     /**
-     * {@code update} 写入或更新当前模块中的业务数据。
+     * 执行 Wrong 题目 相关业务操作，并维护必要的状态和协作关系。
      *
-     * @param id 参数值，用于执行当前操作。
-     * @param request 参数值，用于执行当前操作。
-     *
-     * @return 返回当前操作产生的结果。
+     * @param update 用于完成本次业务处理的 update 参数。
      */
     @PostMapping("/update")
     public Result<Void> update(
@@ -89,11 +80,9 @@ public class WrongQuestionController {
     }
 
     /**
-     * {@code delete} 释放或移除当前操作涉及的资源。
+     * 执行 Wrong 题目 相关业务操作，并维护必要的状态和协作关系。
      *
-     * @param id 参数值，用于执行当前操作。
-     *
-     * @return 返回当前操作产生的结果。
+     * @param delete 用于完成本次业务处理的 delete 参数。
      */
     @PostMapping("/delete")
     public Result<Void> delete(@RequestParam Long id) {

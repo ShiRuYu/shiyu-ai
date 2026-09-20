@@ -2,7 +2,9 @@ package com.shiyu.ai.knowledge.implementation.web.api;
 
 import com.shiyu.ai.common.core.exception.ServiceException;
 
-/** 知识库接口版本通过请求头控制，不通过 URL 暴露版本号。 */
+/**
+ * 承载 知识 API Version 所属 Web 能力的请求适配和边界处理。
+ */
 public final class KnowledgeApiVersion {
 
     /**
@@ -17,9 +19,9 @@ public final class KnowledgeApiVersion {
     private KnowledgeApiVersion() {}
 
     /**
-     * {@code requireCurrent} 执行当前类型定义的业务操作。
+     * 获取并校验 知识 API Version 相关业务操作，并维护必要的状态和协作关系。
      *
-     * @param version 参数值，用于执行当前操作。
+     * @param version 用于完成本次业务处理的 version 参数。
      */
     public static void requireCurrent(String version) {
         if (version == null || version.isBlank()) {

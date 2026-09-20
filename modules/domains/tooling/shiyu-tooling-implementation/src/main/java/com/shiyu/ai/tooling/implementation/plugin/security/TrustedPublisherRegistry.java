@@ -5,7 +5,7 @@ import java.util.Set;
 import java.util.stream.Collectors;
 
 /**
- * 维护受信任插件发布者及其签名密钥。
+ * 管理 Trusted Publisher 相关的运行时状态、注册信息或临时数据。
  */
 public class TrustedPublisherRegistry {
     /**
@@ -30,11 +30,10 @@ public class TrustedPublisherRegistry {
     }
 
     /**
-     * {@code isTrusted} 校验当前操作的输入或状态是否满足约束。
+     * 校验或判断 Trusted Publisher 相关业务数据，并返回处理结果。
      *
-     * @param publisherKeyBase64 参数值，用于执行当前操作。
-     *
-     * @return 返回当前操作产生的结果。
+     * @param publisherKeyBase64 用于完成本次业务处理的 publisherKeyBase64 参数。
+     * @return 返回本次条件判断是否成立。
      */
     public boolean isTrusted(String publisherKeyBase64) {
         if (publisherKeyBase64 == null || publisherKeyBase64.isBlank()) return false;
@@ -44,9 +43,9 @@ public class TrustedPublisherRegistry {
     }
 
     /**
-     * {@code isConfigured} 校验当前操作的输入或状态是否满足约束。
+     * 校验或判断 Trusted Publisher 相关业务数据，并返回处理结果。
      *
-     * @return 返回当前操作产生的结果。
+     * @return 返回本次条件判断是否成立。
      */
     public boolean isConfigured() {
         return !trusted.isEmpty();

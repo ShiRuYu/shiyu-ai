@@ -19,6 +19,9 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 
+/**
+ * 验证 Graph Execution Coverage 相关功能、边界条件、异常路径和协作行为。
+ */
 class GraphExecutionCoverageTest {
 
     @Test

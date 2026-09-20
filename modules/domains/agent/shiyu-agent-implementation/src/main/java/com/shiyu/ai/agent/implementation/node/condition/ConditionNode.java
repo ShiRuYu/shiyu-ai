@@ -17,10 +17,9 @@ import org.springframework.expression.spel.standard.SpelExpressionParser;
 import org.springframework.expression.spel.support.StandardEvaluationContext;
 
 /**
- * 条件判断节点 用于根据条件决定执行路径
+ * 执行 Condition 相关流程节点的输入处理和状态转移。
  *
  * @author shiyu-ai
- * @date 2026-03-28
  */
 @Setter
 @Getter
@@ -53,7 +52,9 @@ public class ConditionNode extends BaseNode {
         return new Builder();
     }
 
-    /** Builder 类，用于构建 ConditionNode 实例 */
+    /**
+     * 构建 Builder 相关的对象、流程或运行时配置。
+     */
     public static class Builder {
         /**
          * 配置，表示当前对象中的对应属性。
@@ -82,11 +83,10 @@ public class ConditionNode extends BaseNode {
     }
 
     /**
-     * {@code doExecute} 执行当前类型定义的业务操作。
+     * 执行 Condition 相关业务数据，并返回处理结果。
      *
-     * @param input 参数值，用于执行当前操作。
-     *
-     * @return 返回当前操作产生的结果。
+     * @param input 用于完成本次业务处理的 input 参数。
+     * @return 返回 Condition 相关操作生成的结果数据。
      */
     @Override
     protected NodeOutput doExecute(NodeInput input) throws Exception {
@@ -215,9 +215,9 @@ public class ConditionNode extends BaseNode {
     }
 
     /**
-     * {@code getRequiredInputs} 查询并返回当前操作所需的数据。
+     * 查询 Condition 相关业务数据，并返回处理结果。
      *
-     * @return 返回当前操作产生的结果。
+     * @return 返回符合条件的数据集合；没有匹配项时返回空集合。
      */
     @Override
     public java.util.List<NodeInputParam> getRequiredInputs() {

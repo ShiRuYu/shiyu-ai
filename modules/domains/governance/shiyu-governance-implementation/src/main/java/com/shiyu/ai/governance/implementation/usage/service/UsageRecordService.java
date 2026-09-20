@@ -24,9 +24,7 @@ import java.util.UUID;
 import java.util.concurrent.ConcurrentHashMap;
 
 /**
- * 用量记录服务
- *
- * <p>接收模型调用事件和 Embedding 事件，统一写入 usage_record 表。 通用字段直接落列，类型专属字段以 JSON 存放于 ext_info。
+ * 提供 用量 Record 的查询、创建、更新及调用服务，协调业务变更和领域协作。
  */
 @Slf4j
 public class UsageRecordService implements UsageGovernance {
@@ -46,9 +44,9 @@ public class UsageRecordService implements UsageGovernance {
     private BillingPriceProvider billingPriceProvider;
 
     /**
-     * {@code UsageRecordService} 创建并初始化当前类型实例。
+     * 执行 用量 Record 相关业务操作，并维护必要的状态和协作关系。
      *
-     * @param usageRecordRepository 参数值，用于执行当前操作。
+     * @param usageRecordRepository 用于完成本次业务处理的 usageRecordRepository 参数。
      */
     public UsageRecordService(UsageRecordRepository usageRecordRepository) {
         this.usageRecordRepository = usageRecordRepository;
@@ -58,9 +56,9 @@ public class UsageRecordService implements UsageGovernance {
     }
 
     /**
-     * {@code setRealtimePublisher} 写入或更新当前模块中的业务数据。
+     * 更新或设置 用量 Record 相关业务操作，并维护必要的状态和协作关系。
      *
-     * @param publisher 参数值，用于执行当前操作。
+     * @param publisher 用于完成本次业务处理的 publisher 参数。
      */
     public void setRealtimePublisher(UsageRealtimePublisher publisher) {
         this.realtimePublisher = publisher;
@@ -142,18 +140,18 @@ public class UsageRecordService implements UsageGovernance {
     }
 
     /**
-     * {@code setBillingPriceProvider} 写入或更新当前模块中的业务数据。
+     * 更新或设置 用量 Record 相关业务操作，并维护必要的状态和协作关系。
      *
-     * @param provider 参数值，用于执行当前操作。
+     * @param provider 用于完成本次业务处理的 provider 参数。
      */
     public void setBillingPriceProvider(BillingPriceProvider provider) {
         this.billingPriceProvider = provider;
     }
 
     /**
-     * {@code registerPricing} 写入或更新当前模块中的业务数据。
+     * 创建或保存 用量 Record 相关业务操作，并维护必要的状态和协作关系。
      *
-     * @param pricing 参数值，用于执行当前操作。
+     * @param pricing 用于完成本次业务处理的 pricing 参数。
      */
     public void registerPricing(ModelPricing pricing) {
         pricingMap.put(pricing.getPlatform() + ":" + pricing.getModel(), pricing);
@@ -372,9 +370,9 @@ public class UsageRecordService implements UsageGovernance {
     }
 
     /**
-     * {@code getPricingCount} 查询并返回当前操作所需的数据。
+     * 查询 用量 Record 相关业务数据，并返回处理结果。
      *
-     * @return 返回当前操作产生的结果。
+     * @return 返回 用量 Record 相关操作生成的结果数据。
      */
     public int getPricingCount() {
         return pricingMap.size();

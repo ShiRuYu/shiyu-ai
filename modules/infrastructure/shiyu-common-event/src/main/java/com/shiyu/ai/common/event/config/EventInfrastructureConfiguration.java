@@ -23,18 +23,17 @@ import java.util.HashMap;
 import java.util.Map;
 
 /**
- * EventInfrastructureConfiguration 配置组件，负责注册和配置基础设施领域相关基础设施。
+ * 定义 事件 Infrastructure 基础设施或应用能力的配置项及装配规则。
  */
 @Configuration(proxyBeanMethods = false)
 @EnableConfigurationProperties(EventInfrastructureProperties.class)
 public class EventInfrastructureConfiguration {
 
     /**
-     * {@code eventProviderValidator} 执行当前类型定义的业务操作。
+     * 执行 事件 Infrastructure 相关业务数据，并返回处理结果。
      *
-     * @param properties 参数值，用于执行当前操作。
-     *
-     * @return 返回当前操作产生的结果。
+     * @param properties 用于完成本次业务处理的 properties 参数。
+     * @return 返回 事件 Infrastructure 相关操作生成的结果数据。
      */
     @Bean
     public EventProviderValidator eventProviderValidator(EventInfrastructureProperties properties) {
@@ -42,13 +41,14 @@ public class EventInfrastructureConfiguration {
         return new EventProviderValidator(properties.normalizedProvider());
    }
 
-    /**
-     * {@code inProcessEventPublisher} 执行当前类型定义的业务操作。
-     *
-     * @param publisher 参数值，用于执行当前操作。
-     *
-     * @return 返回当前操作产生的结果。
-     */
+   /**
+    * 执行 事件 Infrastructure 相关业务操作，并维护必要的状态和协作关系。
+    *
+    * @param event 本次流程携带的事件或业务数据。
+    * @param provider 用于完成本次业务处理的 provider 参数。
+    * @param process 用于完成本次业务处理的 process 参数。
+    * @param true 用于完成本次业务处理的 true 参数。
+    */
    @Bean
    @Primary
     @ConditionalOnProperty(
@@ -61,14 +61,13 @@ public class EventInfrastructureConfiguration {
         return new InProcessEventPublisher(publisher);
    }
 
-   /**
-    * {@code jdbcOutboxEventPublisher} 执行当前类型定义的业务操作。
+    /**
+     * 执行 事件 Infrastructure 相关业务操作，并维护必要的状态和协作关系。
      *
-     * @param jdbc 参数值，用于执行当前操作。
-     * @param properties 参数值，用于执行当前操作。
-     *
-    * @return 返回当前操作产生的结果。
-    */
+     * @param event 本次流程携带的事件或业务数据。
+     * @param provider 用于完成本次业务处理的 provider 参数。
+     * @param outbox 用于完成本次业务处理的 outbox 参数。
+     */
     @Bean
     @Primary
     @ConditionalOnProperty(
@@ -80,13 +79,13 @@ public class EventInfrastructureConfiguration {
         return new JdbcOutboxEventPublisher(jdbc, properties);
    }
 
-   /**
-    * {@code eventProducerFactory} 执行当前类型定义的业务操作。
+    /**
+     * 执行 事件 Infrastructure 相关业务操作，并维护必要的状态和协作关系。
      *
-     * @param properties 参数值，用于执行当前操作。
-     *
-    * @return 返回当前操作产生的结果。
-    */
+     * @param event 本次流程携带的事件或业务数据。
+     * @param provider 用于完成本次业务处理的 provider 参数。
+     * @param kafka 用于完成本次业务处理的 kafka 参数。
+     */
     @Bean
     @ConditionalOnProperty(
             prefix = "shiyu.infrastructure.event",
@@ -105,13 +104,13 @@ public class EventInfrastructureConfiguration {
         return new DefaultKafkaProducerFactory<>(config);
    }
 
-   /**
-    * {@code eventKafkaTemplate} 执行当前类型定义的业务操作。
+    /**
+     * 执行 事件 Infrastructure 相关业务操作，并维护必要的状态和协作关系。
      *
-     * @param factory 参数值，用于执行当前操作。
-     *
-    * @return 返回当前操作产生的结果。
-    */
+     * @param event 本次流程携带的事件或业务数据。
+     * @param provider 用于完成本次业务处理的 provider 参数。
+     * @param kafka 用于完成本次业务处理的 kafka 参数。
+     */
     @Bean
     @ConditionalOnProperty(
             prefix = "shiyu.infrastructure.event",
@@ -122,15 +121,13 @@ public class EventInfrastructureConfiguration {
         return new KafkaTemplate<>(factory);
    }
 
-   /**
-    * {@code kafkaEventPublisher} 执行当前类型定义的业务操作。
+    /**
+     * 执行 事件 Infrastructure 相关业务操作，并维护必要的状态和协作关系。
      *
-     * @param jdbc 参数值，用于执行当前操作。
-     * @param properties 参数值，用于执行当前操作。
-     * @param kafka 参数值，用于执行当前操作。
-     *
-    * @return 返回当前操作产生的结果。
-    */
+     * @param event 本次流程携带的事件或业务数据。
+     * @param provider 用于完成本次业务处理的 provider 参数。
+     * @param kafka 用于完成本次业务处理的 kafka 参数。
+     */
     @Bean
     @Primary
     @ConditionalOnProperty(
@@ -144,13 +141,13 @@ public class EventInfrastructureConfiguration {
         return new KafkaOutboxEventPublisher(jdbc, properties, kafka);
    }
 
-   /**
-    * {@code eventConsumptionDeduplicator} 执行当前类型定义的业务操作。
+    /**
+     * 执行 事件 Infrastructure 相关业务操作，并维护必要的状态和协作关系。
      *
-     * @param jdbc 参数值，用于执行当前操作。
-     *
-    * @return 返回当前操作产生的结果。
-    */
+     * @param event 本次流程携带的事件或业务数据。
+     * @param provider 用于完成本次业务处理的 provider 参数。
+     * @param kafka 用于完成本次业务处理的 kafka 参数。
+     */
     @Bean
     @ConditionalOnProperty(
             prefix = "shiyu.infrastructure.event",
@@ -161,8 +158,7 @@ public class EventInfrastructureConfiguration {
     }
 
     /**
-     * {@code EventProviderValidator} 封装平台基础设施模块中不可变的结构化数据，并作为相关操作之间的值对象。
-     * @param provider 提供方，表示该记录组件承载的数据。
+     * 封装 事件 Provider 相关的不可变数据及其字段约束。
      */
     public record EventProviderValidator(String provider) {}
 }

@@ -8,6 +8,9 @@ import org.junit.jupiter.api.Test;
 import java.util.List;
 import java.util.Map;
 
+/**
+ * 验证 Mcp 工具 Registry 相关功能、边界条件、异常路径和协作行为。
+ */
 class McpToolRegistryTest {
 
     @Test

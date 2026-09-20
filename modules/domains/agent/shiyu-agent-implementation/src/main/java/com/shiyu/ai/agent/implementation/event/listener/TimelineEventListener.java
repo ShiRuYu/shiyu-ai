@@ -11,9 +11,7 @@ import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Component;
 
 /**
- * 时间线事件监听器
- *
- * <p>异步消费节点执行事件，写入 {@code execution_timeline} 表。
+ * 处理 时间线 事件 相关事件或请求，并推进后续业务流程。
  */
 @Slf4j
 @Component
@@ -25,18 +23,18 @@ public class TimelineEventListener {
     private final TimelineService timelineService;
 
     /**
-     * {@code TimelineEventListener} 创建并初始化当前类型实例。
+     * 执行 时间线 事件 相关业务操作，并维护必要的状态和协作关系。
      *
-     * @param timelineService 参数值，用于执行当前操作。
+     * @param timelineService 用于完成本次业务处理的 timelineService 参数。
      */
     public TimelineEventListener(TimelineService timelineService) {
         this.timelineService = timelineService;
     }
 
     /**
-     * {@code onNodeStarted} 执行当前类型定义的业务操作。
+     * 处理 时间线 事件 相关业务操作，并维护必要的状态和协作关系。
      *
-     * @param event 参数值，用于执行当前操作。
+     * @param event 本次流程携带的事件或业务数据。
      */
     @Async
     @EventListener
@@ -45,9 +43,9 @@ public class TimelineEventListener {
     }
 
     /**
-     * {@code onNodeCompleted} 执行当前类型定义的业务操作。
+     * 处理 时间线 事件 相关业务操作，并维护必要的状态和协作关系。
      *
-     * @param event 参数值，用于执行当前操作。
+     * @param event 本次流程携带的事件或业务数据。
      */
     @Async
     @EventListener

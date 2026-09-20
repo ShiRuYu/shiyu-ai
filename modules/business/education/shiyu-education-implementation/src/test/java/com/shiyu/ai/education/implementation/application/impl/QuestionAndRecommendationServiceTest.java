@@ -25,6 +25,9 @@ import org.mockito.MockedStatic;
 import java.time.LocalDateTime;
 import java.util.List;
 
+/**
+ * 验证 题目 And 推荐 Service 相关功能、边界条件、异常路径和协作行为。
+ */
 @SuppressWarnings({"rawtypes", "unchecked"})
 class QuestionAndRecommendationServiceTest {
     private static final ActorContext ACTOR =

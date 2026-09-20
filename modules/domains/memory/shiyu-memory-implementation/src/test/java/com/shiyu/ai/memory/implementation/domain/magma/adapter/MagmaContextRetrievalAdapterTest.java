@@ -15,6 +15,9 @@ import org.junit.jupiter.api.Test;
 
 import java.util.Map;
 
+/**
+ * 验证 Magma Context Retrieval Adapter 相关功能、边界条件、异常路径和协作行为。
+ */
 class MagmaContextRetrievalAdapterTest {
     @Test
     void missingSubjectFailsClosed() {

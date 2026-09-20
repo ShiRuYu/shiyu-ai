@@ -5,16 +5,15 @@ import com.shiyu.ai.iam.implementation.utils.SaTokenHelper;
 import lombok.extern.slf4j.Slf4j;
 
 /**
- * 编排 AuthSession 应用用例。
+ * 定义 认证 Session 相关用例的输入、授权和业务结果。
  */
 @Slf4j
 public final class AuthSessionUseCase {
     /**
-     * {@code refreshToken} 执行当前类型定义的业务操作。
+     * 执行 认证 Session 相关业务数据，并返回处理结果。
      *
-     * @param oldToken 参数值，用于执行当前操作。
-     *
-     * @return 返回当前操作产生的结果。
+     * @param oldToken 用于完成本次业务处理的 oldToken 参数。
+     * @return 返回 认证 Session 相关操作生成的结果数据。
      */
     public String refreshToken(String oldToken) {
         log.info("刷新Token");
@@ -38,9 +37,9 @@ public final class AuthSessionUseCase {
     }
 
     /**
-     * {@code logout} 执行当前类型定义的业务操作。
+     * 执行 认证 Session 相关业务操作，并维护必要的状态和协作关系。
      *
-     * @param token 参数值，用于执行当前操作。
+     * @param token 用于完成本次业务处理的 token 参数。
      */
     public void logout(String token) {
         log.info("注销退出");

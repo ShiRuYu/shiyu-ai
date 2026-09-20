@@ -18,7 +18,9 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-/** StateGraph 构建器 用于将 Graph 对象转换为 langgraph4j 的 StateGraph */
+/**
+ * 构建 State Graph 相关的对象、流程或运行时配置。
+ */
 @Slf4j
 @Builder
 public class StateGraphBuilder {

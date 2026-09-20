@@ -33,7 +33,7 @@ import java.util.concurrent.atomic.AtomicReference;
 import java.util.stream.Collectors;
 
 /**
- * 管理 Agent 执行的启动、暂停、恢复、取消和终态转换。
+ * 实现 智能体 Execution Lifecycle 相关的业务处理、协作逻辑或基础设施能力。
  */
 @Slf4j
 final class AgentExecutionLifecycle {
@@ -429,7 +429,7 @@ final class AgentExecutionLifecycle {
     }
 
     /**
-     * {@code ExecutionCancelledException} 表示智能体模块中的业务异常，用于向调用方传递失败原因。
+     * 表示 Execution Cancelled 相关的领域事件或异常信息。
      */
     static final class ExecutionCancelledException extends RuntimeException {
         @java.io.Serial private static final long serialVersionUID = 1L;

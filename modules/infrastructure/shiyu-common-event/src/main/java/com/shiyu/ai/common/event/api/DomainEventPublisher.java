@@ -3,7 +3,7 @@ package com.shiyu.ai.common.event.api;
 import com.shiyu.ai.kernel.event.DomainEventEnvelope;
 
 /**
- * DomainEventPublisher 接口，定义基础设施模块的能力边界。
+ * 发布 Domain 事件 相关的领域事件或基础设施消息。
  */
 @FunctionalInterface
 public interface DomainEventPublisher {

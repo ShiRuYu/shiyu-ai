@@ -8,7 +8,7 @@ import java.time.Instant;
 import java.util.Objects;
 
 /**
- * DomainEventEnvelope 领域事件，描述共享内核领域相关业务状态变化。
+ * 封装 Domain 事件 Envelope 相关的不可变数据及其字段约束。
  */
 public record DomainEventEnvelope<E extends DomainEvent>(
         TenantId tenantId,

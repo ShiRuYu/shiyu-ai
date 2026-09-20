@@ -7,7 +7,9 @@ import lombok.EqualsAndHashCode;
 
 import java.io.Serial;
 
-/** 权限码数据对象 */
+/**
+ * 表示 认证 Code 领域对象的业务状态和属性。
+ */
 @Data
 @EqualsAndHashCode(callSuper = true)
 public class AuthCodeBO extends BaseEntity {

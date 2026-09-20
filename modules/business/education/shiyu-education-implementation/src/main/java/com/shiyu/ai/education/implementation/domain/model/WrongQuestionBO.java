@@ -6,7 +6,9 @@ import java.io.Serial;
 import java.io.Serializable;
 import java.time.LocalDateTime;
 
-/** WrongQuestion 业务对象 */
+/**
+ * 表示 Wrong 题目 领域对象的业务状态和属性。
+ */
 @Data
 public class WrongQuestionBO implements Serializable {
 

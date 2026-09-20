@@ -27,6 +27,9 @@ import java.time.Instant;
 import java.util.List;
 import java.util.Optional;
 
+/**
+ * 验证 生成 Controller Runtime 相关功能、边界条件、异常路径和协作行为。
+ */
 @SuppressWarnings({"unchecked", "varargs"})
 class GenerationControllerRuntimeTest {
     private final GenerationRepository generations = mock(GenerationRepository.class);

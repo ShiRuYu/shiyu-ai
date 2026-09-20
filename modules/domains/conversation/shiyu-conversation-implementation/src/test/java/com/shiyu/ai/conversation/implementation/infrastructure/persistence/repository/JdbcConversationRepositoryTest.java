@@ -27,6 +27,9 @@ import java.util.Map;
 
 import javax.sql.DataSource;
 
+/**
+ * 验证 Jdbc 会话 Repository 相关功能、边界条件、异常路径和协作行为。
+ */
 class JdbcConversationRepositoryTest {
     @BeforeEach
     void bindTenantScope() {

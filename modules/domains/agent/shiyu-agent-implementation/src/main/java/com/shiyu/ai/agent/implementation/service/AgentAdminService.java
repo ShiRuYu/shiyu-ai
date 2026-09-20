@@ -12,20 +12,19 @@ import org.apache.commons.lang3.tuple.Pair;
 import java.util.List;
 
 /**
- * AgentAdminService 服务接口，负责执行智能体领域相关业务操作。
+ * 提供 智能体 Admin 的查询、创建、更新及调用服务，协调业务变更和领域协作。
  */
 public interface AgentAdminService {
 
     /**
-     * 获取page。
+     * 查询 智能体 Admin 相关业务数据，并返回处理结果。
      *
-     * @param actor 调用方上下文。
-     * @param pageNo pageNo 参数。
-     * @param pageSize 每页条数。
-     * @param name 名称。
-     * @param status 状态。
-     *
-     * @return 结果列表。
+     * @param actor 当前操作主体上下文，用于确定租户、用户和访问权限。
+     * @param pageNo 分页页码，从 1 开始。
+     * @param pageSize 每页返回的数据数量。
+     * @param name 用于定位或筛选目标业务对象的业务值。
+     * @param status 用于完成本次业务处理的 status 参数。
+     * @return 返回总数及当前页数据，左值为总数，右值为数据列表。
      */
     Pair<Long, List<AgentVO>> getPage(
             ActorContext actor, Number pageNo, Number pageSize, String name, Integer status);
@@ -70,18 +69,17 @@ public interface AgentAdminService {
     void deleteById(ActorContext actor, Long id);
 
     /**
-     * 获取节点types。
+     * 查询 智能体 Admin 相关业务数据，并返回处理结果。
      *
-     * @return 结果列表。
+     * @return 返回符合条件的数据集合；没有匹配项时返回空集合。
      */
     List<NodeTypeMetaVO> getNodeTypes();
 
     /**
-     * 查询全部选项列表。
+     * 查询 智能体 Admin 相关业务数据，并返回处理结果。
      *
-     * @param actor 调用方上下文。
-     *
-     * @return 结果列表。
+     * @param actor 当前操作主体上下文，用于确定租户、用户和访问权限。
+     * @return 返回符合条件的数据集合；没有匹配项时返回空集合。
      */
     List<IdNameOptionVO> listAllOptions(ActorContext actor);
 }

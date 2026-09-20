@@ -4,7 +4,7 @@ import org.mybatis.spring.annotation.MapperScan;
 import org.springframework.context.annotation.Configuration;
 
 /**
- * AgentPersistenceConfiguration 配置组件，负责注册和配置智能体领域相关基础设施。
+ * 定义 智能体 Persistence 基础设施或应用能力的配置项及装配规则。
  */
 @Configuration(proxyBeanMethods = false)
 @MapperScan("com.shiyu.ai.agent.implementation.persistence.mapper")

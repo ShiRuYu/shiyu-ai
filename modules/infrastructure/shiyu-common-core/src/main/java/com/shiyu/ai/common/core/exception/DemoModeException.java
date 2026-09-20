@@ -2,7 +2,9 @@ package com.shiyu.ai.common.core.exception;
 
 import java.io.Serial;
 
-/** 演示模式异常 */
+/**
+ * 表示 Demo Mode 相关的领域事件或异常信息。
+ */
 public class DemoModeException extends RuntimeException {
 
     /**

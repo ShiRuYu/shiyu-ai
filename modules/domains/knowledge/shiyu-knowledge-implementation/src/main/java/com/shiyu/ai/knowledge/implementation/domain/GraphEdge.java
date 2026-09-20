@@ -8,7 +8,7 @@ import java.io.Serial;
 import java.io.Serializable;
 
 /**
- * {@code GraphEdge} 承载知识模块的领域状态或协作行为，负责维护本类型的职责边界。
+ * 表示 Graph 相关流程中的状态、关系或执行数据。
  */
 @Data
 @NoArgsConstructor

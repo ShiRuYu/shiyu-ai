@@ -4,49 +4,51 @@ import com.shiyu.ai.common.core.context.model.UserContext;
 
 import com.shiyu.ai.common.core.enums.UserTypeEnum;
 
-/** 登录上下文持有者 */
+/**
+ * 管理 用户 Context 相关的运行时状态、注册信息或临时数据。
+ */
 public final class UserContextHolder {
 
     private UserContextHolder() {}
 
     /**
-     * {@code setContext} 写入或更新当前模块中的业务数据。
+     * 更新或设置 用户 Context 相关业务操作，并维护必要的状态和协作关系。
      *
-     * @param userContext 参数值，用于执行当前操作。
+     * @param userContext 用于完成本次业务处理的 userContext 参数。
      */
     public static void setContext(UserContext userContext) {
         UserGlobalContext.set(userContext);
     }
 
     /**
-     * {@code getContext} 查询并返回当前操作所需的数据。
+     * 查询 用户 Context 相关业务数据，并返回处理结果。
      *
-     * @return 返回当前操作产生的结果。
+     * @return 返回 用户 Context 相关操作生成的结果数据。
      */
     public static UserContext getContext() {
         return UserGlobalContext.get();
     }
 
     /**
-     * {@code clearContext} 执行当前类型定义的业务操作。
+     * 删除或移除 用户 Context 相关业务操作，并维护必要的状态和协作关系。
      */
     public static void clearContext() {
         UserGlobalContext.clear();
     }
 
     /**
-     * {@code getUserContext} 查询并返回当前操作所需的数据。
+     * 查询 用户 Context 相关业务数据，并返回处理结果。
      *
-     * @return 返回当前操作产生的结果。
+     * @return 返回 用户 Context 相关操作生成的结果数据。
      */
     public static UserContext getUserContext() {
         return getContext();
     }
 
     /**
-     * {@code getUserId} 查询并返回当前操作所需的数据。
+     * 查询 用户 Context 相关业务数据，并返回处理结果。
      *
-     * @return 返回当前操作产生的结果。
+     * @return 返回 用户 Context 相关操作生成的结果数据。
      */
     public static Long getUserId() {
         UserContext user = getUserContext();
@@ -54,9 +56,9 @@ public final class UserContextHolder {
     }
 
     /**
-     * {@code getUsername} 查询并返回当前操作所需的数据。
+     * 查询 用户 Context 相关业务数据，并返回处理结果。
      *
-     * @return 返回当前操作产生的结果。
+     * @return 返回 用户 Context 相关操作生成的结果数据。
      */
     public static String getUsername() {
         UserContext user = getUserContext();
@@ -64,9 +66,9 @@ public final class UserContextHolder {
     }
 
     /**
-     * {@code getUserType} 查询并返回当前操作所需的数据。
+     * 查询 用户 Context 相关业务数据，并返回处理结果。
      *
-     * @return 返回当前操作产生的结果。
+     * @return 返回 用户 Context 相关操作生成的结果数据。
      */
     public static UserTypeEnum getUserType() {
         UserContext user = getUserContext();
@@ -74,9 +76,9 @@ public final class UserContextHolder {
     }
 
     /**
-     * {@code isLogin} 校验当前操作的输入或状态是否满足约束。
+     * 校验或判断 用户 Context 相关业务数据，并返回处理结果。
      *
-     * @return 返回当前操作产生的结果。
+     * @return 返回本次条件判断是否成立。
      */
     public static boolean isLogin() {
         return getUserContext() != null;
@@ -101,9 +103,9 @@ public final class UserContextHolder {
     }
 
     /**
-     * {@code getCurrentRoleId} 查询并返回当前操作所需的数据。
+     * 查询 用户 Context 相关业务数据，并返回处理结果。
      *
-     * @return 返回当前操作产生的结果。
+     * @return 返回 用户 Context 相关操作生成的结果数据。
      */
     public static Long getCurrentRoleId() {
         UserContext user = getUserContext();
@@ -111,9 +113,9 @@ public final class UserContextHolder {
     }
 
     /**
-     * {@code getSwitchMode} 查询并返回当前操作所需的数据。
+     * 查询 用户 Context 相关业务数据，并返回处理结果。
      *
-     * @return 返回当前操作产生的结果。
+     * @return 返回 用户 Context 相关操作生成的结果数据。
      */
     public static String getSwitchMode() {
         UserContext user = getUserContext();
@@ -121,9 +123,9 @@ public final class UserContextHolder {
     }
 
     /**
-     * {@code isParentSuperAdminSwitch} 校验当前操作的输入或状态是否满足约束。
+     * 校验或判断 用户 Context 相关业务数据，并返回处理结果。
      *
-     * @return 返回当前操作产生的结果。
+     * @return 返回本次条件判断是否成立。
      */
     public static boolean isParentSuperAdminSwitch() {
         UserContext user = getUserContext();
@@ -131,9 +133,9 @@ public final class UserContextHolder {
     }
 
     /**
-     * {@code isSuperAdmin} 校验当前操作的输入或状态是否满足约束。
+     * 校验或判断 用户 Context 相关业务数据，并返回处理结果。
      *
-     * @return 返回当前操作产生的结果。
+     * @return 返回本次条件判断是否成立。
      */
     public static boolean isSuperAdmin() {
         UserContext user = getUserContext();

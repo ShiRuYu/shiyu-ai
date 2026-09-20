@@ -4,7 +4,7 @@ import com.shiyu.ai.conversation.contract.model.GenerationRun;
 import com.shiyu.ai.kernel.context.ActorContext;
 
 /**
- * GenerationAdmission 接口，定义会话模块的能力边界。
+ * 校验并控制 生成 相关请求是否允许进入处理流程。
  */
 public interface GenerationAdmission {
     /**

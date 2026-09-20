@@ -18,7 +18,7 @@ import org.springframework.web.bind.annotation.*;
 import java.util.List;
 
 /**
- * {@code ChapterController} 是教育模块的 Web 接口适配器，负责接收请求并转换为应用服务调用。
+ * 处理 章节 相关的 Web 请求，并将请求转换为应用服务调用。
  */
 @Slf4j
 @RestController
@@ -33,11 +33,9 @@ public class ChapterController {
     private final ChapterService chapterService;
 
     /**
-     * {@code getById} 查询并返回当前操作所需的数据。
+     * 查询 章节 相关业务操作，并维护必要的状态和协作关系。
      *
-     * @param id 参数值，用于执行当前操作。
-     *
-     * @return 返回当前操作产生的结果。
+     * @param detail 用于完成本次业务处理的 detail 参数。
      */
     @GetMapping("/detail")
     public Result<ChapterResponse> getById(@RequestParam Long id) {
@@ -45,11 +43,9 @@ public class ChapterController {
     }
 
     /**
-     * {@code listByTextbookId} 查询并返回当前操作所需的数据。
+     * 查询 章节 相关业务操作，并维护必要的状态和协作关系。
      *
-     * @param textbookId 参数值，用于执行当前操作。
-     *
-     * @return 返回当前操作产生的结果。
+     * @param textbook 用于完成本次业务处理的 textbook 参数。
      */
     @GetMapping("/textbook")
     public Result<List<ChapterResponse>> listByTextbookId(@RequestParam Long textbookId) {
@@ -59,11 +55,9 @@ public class ChapterController {
     }
 
     /**
-     * {@code getChapterTree} 查询并返回当前操作所需的数据。
+     * 查询 章节 相关业务操作，并维护必要的状态和协作关系。
      *
-     * @param textbookId 参数值，用于执行当前操作。
-     *
-     * @return 返回当前操作产生的结果。
+     * @param tree 用于完成本次业务处理的 tree 参数。
      */
     @GetMapping("/tree")
     public Result<List<ChapterResponse>> getChapterTree(@RequestParam Long textbookId) {
@@ -73,11 +67,9 @@ public class ChapterController {
     }
 
     /**
-     * {@code listByParentId} 查询并返回当前操作所需的数据。
+     * 查询 章节 相关业务操作，并维护必要的状态和协作关系。
      *
-     * @param parentId 参数值，用于执行当前操作。
-     *
-     * @return 返回当前操作产生的结果。
+     * @param children 用于完成本次业务处理的 children 参数。
      */
     @GetMapping("/children")
     public Result<List<ChapterResponse>> listByParentId(@RequestParam Long parentId) {
@@ -86,11 +78,9 @@ public class ChapterController {
     }
 
     /**
-     * {@code create} 写入或更新当前模块中的业务数据。
+     * 执行 章节 相关业务操作，并维护必要的状态和协作关系。
      *
-     * @param request 参数值，用于执行当前操作。
-     *
-     * @return 返回当前操作产生的结果。
+     * @param create 用于完成本次业务处理的 create 参数。
      */
     @PostMapping("/create")
     @SaCheckPermission("edu:chapter:create")
@@ -100,12 +90,9 @@ public class ChapterController {
     }
 
     /**
-     * {@code update} 写入或更新当前模块中的业务数据。
+     * 执行 章节 相关业务操作，并维护必要的状态和协作关系。
      *
-     * @param id 参数值，用于执行当前操作。
-     * @param request 参数值，用于执行当前操作。
-     *
-     * @return 返回当前操作产生的结果。
+     * @param update 用于完成本次业务处理的 update 参数。
      */
     @PostMapping("/update")
     @SaCheckPermission("edu:chapter:edit")
@@ -115,11 +102,9 @@ public class ChapterController {
     }
 
     /**
-     * {@code delete} 释放或移除当前操作涉及的资源。
+     * 执行 章节 相关业务操作，并维护必要的状态和协作关系。
      *
-     * @param id 参数值，用于执行当前操作。
-     *
-     * @return 返回当前操作产生的结果。
+     * @param delete 用于完成本次业务处理的 delete 参数。
      */
     @PostMapping("/delete")
     @SaCheckPermission("edu:chapter:delete")
@@ -129,11 +114,9 @@ public class ChapterController {
     }
 
     /**
-     * {@code listKnowledgeIds} 查询并返回当前操作所需的数据。
+     * 查询 章节 相关业务操作，并维护必要的状态和协作关系。
      *
-     * @param chapterId 参数值，用于执行当前操作。
-     *
-     * @return 返回当前操作产生的结果。
+     * @param list 用于完成本次业务处理的 list 参数。
      */
     @GetMapping("/knowledge/list")
     public Result<List<Long>> listKnowledgeIds(@RequestParam Long chapterId) {
@@ -142,12 +125,9 @@ public class ChapterController {
     }
 
     /**
-     * {@code replaceKnowledgeIds} 执行当前类型定义的业务操作。
+     * 执行 章节 相关业务操作，并维护必要的状态和协作关系。
      *
-     * @param chapterId 参数值，用于执行当前操作。
-     * @param knowledgeIds 参数值，用于执行当前操作。
-     *
-     * @return 返回当前操作产生的结果。
+     * @param bind 用于完成本次业务处理的 bind 参数。
      */
     @PostMapping("/knowledge/bind")
     @SaCheckPermission("edu:chapter:edit")

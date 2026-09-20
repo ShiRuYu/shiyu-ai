@@ -6,7 +6,9 @@ import java.io.Serial;
 import java.io.Serializable;
 import java.time.LocalDateTime;
 
-/** Ability 业务对象 */
+/**
+ * 表示 Ability 领域对象的业务状态和属性。
+ */
 @Data
 public class AbilityBO implements Serializable {
 

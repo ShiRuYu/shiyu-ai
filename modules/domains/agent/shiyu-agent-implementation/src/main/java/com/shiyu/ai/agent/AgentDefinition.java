@@ -9,7 +9,7 @@ import java.util.HashMap;
 import java.util.Map;
 
 /**
- * {@code AgentDefinition} 承载智能体模块的领域状态或协作行为，负责维护本类型的职责边界。
+ * 表示 智能体 相关流程中的状态、关系或执行数据。
  */
 @Data
 @Builder
@@ -49,13 +49,14 @@ public class AgentDefinition {
      */
     private String startNodeId;
 
+    /**
+     * 创建或保存 智能体 相关业务操作，并维护必要的状态和协作关系。
+     *
+     * @param version 用于完成本次业务处理的 version 参数。
+     */
     @Builder.Default private Map<String, AgentVersion> versions = new HashMap<>();
 
-    /**
-     * {@code addVersion} 执行当前类型定义的业务操作。
-     *
-     * @param version 参数值，用于执行当前操作。
-     */
+
     public void addVersion(AgentVersion version) {
         if (versions == null) {
             versions = new HashMap<>();
@@ -64,11 +65,10 @@ public class AgentDefinition {
     }
 
     /**
-     * {@code getVersion} 查询并返回当前操作所需的数据。
+     * 查询 智能体 相关业务数据，并返回处理结果。
      *
-     * @param versionNumber 参数值，用于执行当前操作。
-     *
-     * @return 返回当前操作产生的结果。
+     * @param versionNumber 用于完成本次业务处理的 versionNumber 参数。
+     * @return 返回 智能体 相关操作生成的结果数据。
      */
     public AgentVersion getVersion(String versionNumber) {
         if (versions == null) return null;

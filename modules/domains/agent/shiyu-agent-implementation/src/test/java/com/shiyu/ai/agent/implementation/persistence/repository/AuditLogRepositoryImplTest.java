@@ -18,6 +18,9 @@ import org.mockito.MockedStatic;
 
 import java.lang.reflect.Field;
 
+/**
+ * 验证 Audit Log Repository Impl 相关功能、边界条件、异常路径和协作行为。
+ */
 class AuditLogRepositoryImplTest {
     @BeforeEach
     void bindTenantScope() { TenantScope.set(new TenantId(7L)); }

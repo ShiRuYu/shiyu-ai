@@ -4,7 +4,9 @@ import com.shiyu.ai.common.core.enums.SortDirectionEnum;
 
 import lombok.Data;
 
-/** 排序字段实体类 */
+/**
+ * 实现 Order Field 相关的业务处理、协作逻辑或基础设施能力。
+ */
 @Data
 public class OrderField {
     /** 排序字段名 */
@@ -19,10 +21,10 @@ public class OrderField {
     public OrderField() {}
 
     /**
-     * {@code OrderField} 创建并初始化当前类型实例。
+     * 执行 Order Field 相关业务操作，并维护必要的状态和协作关系。
      *
-     * @param column 参数值，用于执行当前操作。
-     * @param direction 参数值，用于执行当前操作。
+     * @param column 用于完成本次业务处理的 column 参数。
+     * @param direction 用于完成本次业务处理的 direction 参数。
      */
     public OrderField(String column, SortDirectionEnum direction) {
         this.column = column;
@@ -30,10 +32,10 @@ public class OrderField {
     }
 
     /**
-     * {@code OrderField} 创建并初始化当前类型实例。
+     * 执行 Order Field 相关业务操作，并维护必要的状态和协作关系。
      *
-     * @param column 参数值，用于执行当前操作。
-     * @param directionCode 参数值，用于执行当前操作。
+     * @param column 用于完成本次业务处理的 column 参数。
+     * @param directionCode 用于完成本次业务处理的 directionCode 参数。
      */
     public OrderField(String column, String directionCode) {
         this.column = column;

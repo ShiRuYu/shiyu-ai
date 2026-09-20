@@ -9,30 +9,28 @@ import com.shiyu.ai.kernel.context.TenantId;
 import java.util.List;
 
 /**
- * KnowledgeIndexService 服务接口，负责执行知识领域相关业务操作。
+ * 提供 知识 索引 的查询、创建、更新及调用服务，协调业务变更和领域协作。
  */
 public interface KnowledgeIndexService extends FullTextIndex, VectorIndex {
 
     /**
-     * 执行 {@code rebuild} 定义的接口操作。
+     * 执行 知识 索引 相关业务数据，并返回处理结果。
      *
-     * @param tenantId 租户标识。
-     * @param spaceId 方法参数。
-     *
-     * @return 操作影响的记录数或状态码。
+     * @param tenantId 当前操作涉及的租户标识。
+     * @param spaceId 用于定位space的标识。
+     * @return 返回 知识 索引 相关操作生成的结果数据。
      */
     long rebuild(TenantId tenantId, Long spaceId);
 
     /**
-     * 执行 {@code hybridSearch} 定义的接口操作。
+     * 执行 知识 索引 相关业务数据，并返回处理结果。
      *
-     * @param tenantId 租户标识。
-     * @param spaceId 方法参数。
-     * @param query 方法参数。
-     * @param topK 方法参数。
-     * @param rerank 方法参数。
-     *
-     * @return 符合条件的结果集合。
+     * @param tenantId 当前操作涉及的租户标识。
+     * @param spaceId 用于定位space的标识。
+     * @param query 用于筛选目标数据的查询条件。
+     * @param topK 用于完成本次业务处理的 topK 参数。
+     * @param rerank 用于完成本次业务处理的 rerank 参数。
+     * @return 返回符合条件的数据集合；没有匹配项时返回空集合。
      */
     default List<HybridHit> hybridSearch(
             TenantId tenantId, Long spaceId, String query, int topK, boolean rerank) {
@@ -40,17 +38,16 @@ public interface KnowledgeIndexService extends FullTextIndex, VectorIndex {
     }
 
     /**
-     * 执行 {@code hybridSearch} 定义的接口操作。
+     * 执行 知识 索引 相关业务数据，并返回处理结果。
      *
-     * @param tenantId 租户标识。
-     * @param spaceId 方法参数。
-     * @param query 方法参数。
-     * @param mode 方法参数。
-     * @param topK 方法参数。
-     * @param threshold 方法参数。
-     * @param rerank 方法参数。
-     *
-     * @return 符合条件的结果集合。
+     * @param tenantId 当前操作涉及的租户标识。
+     * @param spaceId 用于定位space的标识。
+     * @param query 用于筛选目标数据的查询条件。
+     * @param mode 用于完成本次业务处理的 mode 参数。
+     * @param topK 用于完成本次业务处理的 topK 参数。
+     * @param threshold 用于完成本次业务处理的 threshold 参数。
+     * @param rerank 用于完成本次业务处理的 rerank 参数。
+     * @return 返回符合条件的数据集合；没有匹配项时返回空集合。
      */
     List<HybridHit> hybridSearch(
             TenantId tenantId,
@@ -62,17 +59,16 @@ public interface KnowledgeIndexService extends FullTextIndex, VectorIndex {
             boolean rerank);
 
     /**
-     * 执行混合检索。
+     * 执行 知识 索引 相关业务数据，并返回处理结果。
      *
-     * @param actor 调用方上下文。
-     * @param spaceId spaceId 参数。
-     * @param query query 参数。
-     * @param mode mode 参数。
-     * @param topK topK 参数。
-     * @param threshold threshold 参数。
-     * @param rerank rerank 参数。
-     *
-     * @return 结果列表。
+     * @param actor 当前操作主体上下文，用于确定租户、用户和访问权限。
+     * @param spaceId 用于定位space的标识。
+     * @param query 用于筛选目标数据的查询条件。
+     * @param mode 用于完成本次业务处理的 mode 参数。
+     * @param topK 用于完成本次业务处理的 topK 参数。
+     * @param threshold 用于完成本次业务处理的 threshold 参数。
+     * @param rerank 用于完成本次业务处理的 rerank 参数。
+     * @return 返回符合条件的数据集合；没有匹配项时返回空集合。
      */
     default List<HybridHit> hybridSearch(
             ActorContext actor,
@@ -89,15 +85,7 @@ public interface KnowledgeIndexService extends FullTextIndex, VectorIndex {
     }
 
     /**
-     * {@code HybridHit} 封装知识模块中不可变的结构化数据，并作为相关操作之间的值对象。
-     * @param chunkId chunkId 属性，表示该记录组件承载的数据。
-     * @param documentId documentId 属性，表示该记录组件承载的数据。
-     * @param content 内容，表示该记录组件承载的数据。
-     * @param highlight highlight 属性，表示该记录组件承载的数据。
-     * @param bm25Score bm25Score 属性，表示该记录组件承载的数据。
-     * @param vectorScore vectorScore 属性，表示该记录组件承载的数据。
-     * @param rrfScore rrfScore 属性，表示该记录组件承载的数据。
-     * @param rerankScore rerankScore 属性，表示该记录组件承载的数据。
+     * 封装 Hybrid Hit 相关的不可变数据及其字段约束。
      */
     record HybridHit(
             Long chunkId,

@@ -13,7 +13,7 @@ import java.util.Collections;
 import java.util.List;
 
 /**
- * SaPermissionProvider 边界接口，负责向外部组件提供应用领域相关能力。
+ * 创建或提供 Sa Permission 相关的业务组件和运行时能力。
  */
 @Component
 public class SaPermissionProvider implements StpInterface {
@@ -24,21 +24,20 @@ public class SaPermissionProvider implements StpInterface {
     private final AuthRepository authRepository;
 
     /**
-     * {@code SaPermissionProvider} 创建并初始化当前类型实例。
+     * 执行 Sa Permission 相关业务操作，并维护必要的状态和协作关系。
      *
-     * @param authRepository 参数值，用于执行当前操作。
+     * @param authRepository 用于完成本次业务处理的 authRepository 参数。
      */
     public SaPermissionProvider(AuthRepository authRepository) {
         this.authRepository = authRepository;
     }
 
     /**
-     * {@code getPermissionList} 查询并返回当前操作所需的数据。
+     * 查询 Sa Permission 相关业务数据，并返回处理结果。
      *
-     * @param loginId 参数值，用于执行当前操作。
-     * @param loginType 参数值，用于执行当前操作。
-     *
-     * @return 返回当前操作产生的结果。
+     * @param loginId 用于定位login的标识。
+     * @param loginType 用于完成本次业务处理的 loginType 参数。
+     * @return 返回符合条件的数据集合；没有匹配项时返回空集合。
      */
     @Override
     public List<String> getPermissionList(Object loginId, String loginType) {
@@ -60,12 +59,11 @@ public class SaPermissionProvider implements StpInterface {
     }
 
     /**
-     * {@code getRoleList} 查询并返回当前操作所需的数据。
+     * 查询 Sa Permission 相关业务数据，并返回处理结果。
      *
-     * @param loginId 参数值，用于执行当前操作。
-     * @param loginType 参数值，用于执行当前操作。
-     *
-     * @return 返回当前操作产生的结果。
+     * @param loginId 用于定位login的标识。
+     * @param loginType 用于完成本次业务处理的 loginType 参数。
+     * @return 返回符合条件的数据集合；没有匹配项时返回空集合。
      */
     @Override
     public List<String> getRoleList(Object loginId, String loginType) {

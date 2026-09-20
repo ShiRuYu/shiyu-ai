@@ -8,6 +8,9 @@ import java.nio.charset.StandardCharsets;
 import java.security.KeyPairGenerator;
 import java.util.Base64;
 
+/**
+ * 验证 插件 Signature Verifier 相关功能、边界条件、异常路径和协作行为。
+ */
 class PluginSignatureVerifierTest {
     @Test
     void verifiesEd25519AndDetectsTampering() throws Exception {

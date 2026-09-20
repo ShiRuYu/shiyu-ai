@@ -6,7 +6,9 @@ import java.util.EnumMap;
 import java.util.Map;
 import java.util.Set;
 
-/** Agent 状态机 管理 Execution 状态的合法转换 */
+/**
+ * 实现 智能体 State Machine 相关的业务处理、协作逻辑或基础设施能力。
+ */
 public class AgentStateMachine {
 
     private static final Map<ExecutionStatus, Set<ExecutionStatus>> TRANSITIONS =

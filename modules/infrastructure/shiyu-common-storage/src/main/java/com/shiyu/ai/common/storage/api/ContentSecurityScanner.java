@@ -9,7 +9,7 @@ import com.shiyu.ai.common.storage.security.*;
 import com.shiyu.ai.common.storage.vector.*;
 
 /**
- * ContentSecurityScanner 接口，定义基础设施模块的能力边界。
+ * 定义 Content 安全 Scanner 相关的协作契约和调用边界。
  */
 public interface ContentSecurityScanner {
 

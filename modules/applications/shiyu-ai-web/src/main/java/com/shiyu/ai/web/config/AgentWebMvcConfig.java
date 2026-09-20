@@ -9,9 +9,7 @@ import org.springframework.web.servlet.config.annotation.InterceptorRegistry;
 import org.springframework.web.servlet.config.annotation.WebMvcConfigurer;
 
 /**
- * Agent 模块 Web MVC 配置
- *
- * <p>注册 Agent 模块特有的拦截器（审计日志等）。
+ * 定义 智能体 Web Mvc 基础设施或应用能力的配置项及装配规则。
  */
 @AutoConfiguration
 public class AgentWebMvcConfig implements WebMvcConfigurer {
@@ -26,10 +24,10 @@ public class AgentWebMvcConfig implements WebMvcConfigurer {
     private final ClientIpResolver clientIpResolver;
 
     /**
-     * {@code AgentWebMvcConfig} 创建并初始化当前类型实例。
+     * 执行 智能体 Web Mvc 相关业务操作，并维护必要的状态和协作关系。
      *
-     * @param auditService 参数值，用于执行当前操作。
-     * @param clientIpResolver 参数值，用于执行当前操作。
+     * @param auditService 用于完成本次业务处理的 auditService 参数。
+     * @param clientIpResolver 用于完成本次业务处理的 clientIpResolver 参数。
      */
     public AgentWebMvcConfig(AuditService auditService, ClientIpResolver clientIpResolver) {
         this.auditService = auditService;
@@ -37,9 +35,9 @@ public class AgentWebMvcConfig implements WebMvcConfigurer {
     }
 
     /**
-     * {@code addInterceptors} 执行当前类型定义的业务操作。
+     * 创建或保存 智能体 Web Mvc 相关业务操作，并维护必要的状态和协作关系。
      *
-     * @param registry 参数值，用于执行当前操作。
+     * @param registry 用于完成本次业务处理的 registry 参数。
      */
     @Override
     public void addInterceptors(InterceptorRegistry registry) {

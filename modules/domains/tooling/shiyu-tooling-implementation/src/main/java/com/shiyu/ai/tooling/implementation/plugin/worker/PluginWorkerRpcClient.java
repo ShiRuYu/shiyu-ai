@@ -9,19 +9,18 @@ import java.nio.charset.StandardCharsets;
 import java.util.concurrent.*;
 
 /**
- * 通过受控 RPC 通道调用插件工作进程。
+ * 实现 插件 Worker Rpc 相关的业务处理、协作逻辑或基础设施能力。
  */
 public final class PluginWorkerRpcClient {
     private PluginWorkerRpcClient() {}
 
     /**
-     * {@code call} 执行当前类型定义的业务操作。
+     * 调用 插件 Worker Rpc 相关业务数据，并返回处理结果。
      *
-     * @param process 参数值，用于执行当前操作。
-     * @param request 参数值，用于执行当前操作。
-     * @param spec 参数值，用于执行当前操作。
-     *
-     * @return 返回当前操作产生的结果。
+     * @param process 用于完成本次业务处理的 process 参数。
+     * @param request 封装本次操作所需业务字段的请求对象。
+     * @param spec 用于完成本次业务处理的 spec 参数。
+     * @return 返回 插件 Worker Rpc 相关操作生成的结果数据。
      */
     public static String call(Process process, String request, PluginWorkerSpec spec)
             throws IOException, TimeoutException {

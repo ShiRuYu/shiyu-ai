@@ -9,7 +9,9 @@ import org.springframework.boot.context.properties.ConfigurationProperties;
 import java.util.HashMap;
 import java.util.Map;
 
-/** 线程模块配置属性 用于配置线程池相关参数 */
+/**
+ * 定义 Threading 基础设施或应用能力的配置项及装配规则。
+ */
 @Data
 @ConfigurationProperties(prefix = "shiyu.thread")
 public class ThreadingProperties {
@@ -26,7 +28,9 @@ public class ThreadingProperties {
     /** 命名线程池配置 */
     private Map<String, PoolProperties> pools = new HashMap<>();
 
-    /** 线程池配置属性 */
+    /**
+     * 定义 Pool 基础设施或应用能力的配置项及装配规则。
+     */
     @Data
     public static class PoolProperties {
 
@@ -55,7 +59,9 @@ public class ThreadingProperties {
         private String threadNamePrefix;
     }
 
-    /** 拒绝策略枚举 */
+    /**
+     * 定义 Rejection 可用的枚举值及其业务语义。
+     */
     public enum RejectionPolicy {
         /** 由调用线程执行该任务 */
         CALLER_RUNS,

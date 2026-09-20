@@ -3,14 +3,7 @@ package com.shiyu.ai.model.implementation.infrastructure.gateway.model;
 import java.util.List;
 
 /**
- * {@code ModelRoutePolicy} 封装模型模块中不可变的结构化数据，并作为相关操作之间的值对象。
- * @param id 标识，表示该记录组件承载的数据。
- * @param tenantId 租户标识，表示该记录组件承载的数据。
- * @param name 名称，表示该记录组件承载的数据。
- * @param orderedModels orderedModels 属性，表示该记录组件承载的数据。
- * @param timeoutMs timeoutMs 属性，表示该记录组件承载的数据。
- * @param fallbackOnError fallbackOnError 属性，表示该记录组件承载的数据。
- * @param maxTokens 最大令牌数，表示该记录组件承载的数据。
+ * 封装 模型 Route 相关的不可变数据及其字段约束。
  */
 public record ModelRoutePolicy(
         String id,

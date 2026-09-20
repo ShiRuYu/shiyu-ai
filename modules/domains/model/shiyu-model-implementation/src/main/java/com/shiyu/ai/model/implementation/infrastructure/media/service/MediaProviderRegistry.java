@@ -7,7 +7,7 @@ import org.springframework.stereotype.Service;
 import java.util.List;
 
 /**
- * {@code MediaProviderRegistry} 承载模型模块的领域状态或协作行为，负责维护本类型的职责边界。
+ * 管理 Media Provider 相关的运行时状态、注册信息或临时数据。
  */
 @Service
 public class MediaProviderRegistry {
@@ -17,27 +17,27 @@ public class MediaProviderRegistry {
     private final List<MediaProvider> providers;
 
     /**
-     * {@code MediaProviderRegistry} 创建并初始化当前类型实例。
+     * 执行 Media Provider 相关业务操作，并维护必要的状态和协作关系。
      *
-     * @param providers 参数值，用于执行当前操作。
+     * @param providers 用于完成本次业务处理的 providers 参数。
      */
     public MediaProviderRegistry(List<MediaProvider> providers) {
         this.providers = providers == null ? List.of() : List.copyOf(providers);
     }
 
     /**
-     * {@code providers} 执行当前类型定义的业务操作。
+     * 执行 Media Provider 相关业务数据，并返回处理结果。
      *
-     * @return 返回当前操作产生的结果。
+     * @return 返回符合条件的数据集合；没有匹配项时返回空集合。
      */
     public List<MediaProvider> providers() {
         return providers;
     }
 
     /**
-     * {@code require} 执行当前类型定义的业务操作。
+     * 获取并校验 Media Provider 相关业务数据，并返回处理结果。
      *
-     * @return 返回当前操作产生的结果。
+     * @return 返回 Media Provider 相关操作生成的结果数据。
      */
     public MediaProvider require() {
         return providers.stream()
@@ -46,11 +46,10 @@ public class MediaProviderRegistry {
     }
 
     /**
-     * {@code require} 执行当前类型定义的业务操作。
+     * 获取并校验 Media Provider 相关业务数据，并返回处理结果。
      *
-     * @param id 参数值，用于执行当前操作。
-     *
-     * @return 返回当前操作产生的结果。
+     * @param id 用于定位目标业务对象的标识。
+     * @return 返回 Media Provider 相关操作生成的结果数据。
      */
     public MediaProvider require(String id) {
         if (id == null || id.isBlank()) return require();

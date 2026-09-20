@@ -50,6 +50,9 @@ import org.springframework.transaction.support.TransactionSynchronizationManager
 import java.io.IOException;
 import java.util.List;
 
+/**
+ * 验证 Enterprise 文档 Service Impl 租户 相关功能、边界条件、异常路径和协作行为。
+ */
 class EnterpriseDocumentServiceImplTenantTest {
 
     @Test

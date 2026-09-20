@@ -13,6 +13,9 @@ import org.junit.jupiter.api.Test;
 
 import java.time.Instant;
 
+/**
+ * 验证 In 记忆 AI 应用 Repository 相关功能、边界条件、异常路径和协作行为。
+ */
 class InMemoryAiAppRepositoryTest {
     private static final TenantId TENANT = new TenantId(1);
     private static final Instant NOW = Instant.parse("2025-01-01T00:00:00Z");

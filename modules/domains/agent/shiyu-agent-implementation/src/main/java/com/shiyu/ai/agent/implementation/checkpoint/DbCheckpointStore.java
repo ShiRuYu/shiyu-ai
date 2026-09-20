@@ -11,7 +11,9 @@ import java.time.LocalDateTime;
 import java.util.List;
 import java.util.stream.Collectors;
 
-/** 基于数据库的检查点存储 */
+/**
+ * 管理 Db Checkpoint 相关的运行时状态、注册信息或临时数据。
+ */
 @Slf4j
 public class DbCheckpointStore implements CheckpointStore {
 
@@ -21,19 +23,19 @@ public class DbCheckpointStore implements CheckpointStore {
     private final AgentCheckpointRepository checkpointRepository;
 
     /**
-     * {@code DbCheckpointStore} 创建并初始化当前类型实例。
+     * 执行 Db Checkpoint 相关业务操作，并维护必要的状态和协作关系。
      *
-     * @param checkpointRepository 参数值，用于执行当前操作。
+     * @param checkpointRepository 用于完成本次业务处理的 checkpointRepository 参数。
      */
     public DbCheckpointStore(AgentCheckpointRepository checkpointRepository) {
         this.checkpointRepository = checkpointRepository;
     }
 
     /**
-     * {@code save} 写入或更新当前模块中的业务数据。
+     * 创建或保存 Db Checkpoint 相关业务操作，并维护必要的状态和协作关系。
      *
-     * @param tenantId 参数值，用于执行当前操作。
-     * @param checkpoint 参数值，用于执行当前操作。
+     * @param tenantId 当前操作涉及的租户标识。
+     * @param checkpoint 用于完成本次业务处理的 checkpoint 参数。
      */
     @Override
     public void save(TenantId tenantId, Checkpoint checkpoint) {
@@ -50,12 +52,11 @@ public class DbCheckpointStore implements CheckpointStore {
     }
 
     /**
-     * {@code load} 查询并返回当前操作所需的数据。
+     * 执行 Db Checkpoint 相关业务数据，并返回处理结果。
      *
-     * @param tenantId 参数值，用于执行当前操作。
-     * @param checkpointId 参数值，用于执行当前操作。
-     *
-     * @return 返回当前操作产生的结果。
+     * @param tenantId 当前操作涉及的租户标识。
+     * @param checkpointId 用于定位checkpoint的标识。
+     * @return 返回 Db Checkpoint 相关操作生成的结果数据。
      */
     @Override
     public Checkpoint load(TenantId tenantId, String checkpointId) {
@@ -64,12 +65,11 @@ public class DbCheckpointStore implements CheckpointStore {
     }
 
     /**
-     * {@code loadByExecutionId} 查询并返回当前操作所需的数据。
+     * 执行 Db Checkpoint 相关业务数据，并返回处理结果。
      *
-     * @param tenantId 参数值，用于执行当前操作。
-     * @param executionId 参数值，用于执行当前操作。
-     *
-     * @return 返回当前操作产生的结果。
+     * @param tenantId 当前操作涉及的租户标识。
+     * @param executionId 用于定位execution的标识。
+     * @return 返回 Db Checkpoint 相关操作生成的结果数据。
      */
     @Override
     public Checkpoint loadByExecutionId(TenantId tenantId, String executionId) {
@@ -79,10 +79,10 @@ public class DbCheckpointStore implements CheckpointStore {
     }
 
     /**
-     * {@code delete} 释放或移除当前操作涉及的资源。
+     * 删除或移除 Db Checkpoint 相关业务操作，并维护必要的状态和协作关系。
      *
-     * @param tenantId 参数值，用于执行当前操作。
-     * @param checkpointId 参数值，用于执行当前操作。
+     * @param tenantId 当前操作涉及的租户标识。
+     * @param checkpointId 用于定位checkpoint的标识。
      */
     @Override
     public void delete(TenantId tenantId, String checkpointId) {
@@ -90,10 +90,10 @@ public class DbCheckpointStore implements CheckpointStore {
     }
 
     /**
-     * {@code deleteByExecutionId} 释放或移除当前操作涉及的资源。
+     * 删除或移除 Db Checkpoint 相关业务操作，并维护必要的状态和协作关系。
      *
-     * @param tenantId 参数值，用于执行当前操作。
-     * @param executionId 参数值，用于执行当前操作。
+     * @param tenantId 当前操作涉及的租户标识。
+     * @param executionId 用于定位execution的标识。
      */
     @Override
     public void deleteByExecutionId(TenantId tenantId, String executionId) {
@@ -101,12 +101,11 @@ public class DbCheckpointStore implements CheckpointStore {
     }
 
     /**
-     * {@code listByExecutionId} 查询并返回当前操作所需的数据。
+     * 查询 Db Checkpoint 相关业务数据，并返回处理结果。
      *
-     * @param tenantId 参数值，用于执行当前操作。
-     * @param executionId 参数值，用于执行当前操作。
-     *
-     * @return 返回当前操作产生的结果。
+     * @param tenantId 当前操作涉及的租户标识。
+     * @param executionId 用于定位execution的标识。
+     * @return 返回符合条件的数据集合；没有匹配项时返回空集合。
      */
     @Override
     public List<Checkpoint> listByExecutionId(TenantId tenantId, String executionId) {

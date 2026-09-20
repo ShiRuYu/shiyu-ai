@@ -13,7 +13,9 @@ import lombok.EqualsAndHashCode;
 
 import java.io.Serial;
 
-/** AI 模型数据对象 */
+/**
+ * 表示 AI 模型 对应的持久化数据对象及其数据库字段。
+ */
 @Data
 @EqualsAndHashCode(callSuper = true)
 @Table(value = "model_ai_model")

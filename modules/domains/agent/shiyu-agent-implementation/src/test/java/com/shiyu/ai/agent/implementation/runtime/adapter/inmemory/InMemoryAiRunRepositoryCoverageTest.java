@@ -17,6 +17,9 @@ import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
 
+/**
+ * 验证 In 记忆 AI 运行 Repository Coverage 相关功能、边界条件、异常路径和协作行为。
+ */
 class InMemoryAiRunRepositoryCoverageTest {
     private static final Instant CREATED_AT = Instant.parse("2025-01-01T00:00:00Z");
 

@@ -11,7 +11,9 @@ import lombok.EqualsAndHashCode;
 
 import java.io.Serial;
 
-/** 角色作用域权限授权数据对象。 */
+/**
+ * 表示 角色 Scope 认证 Code 对应的持久化数据对象及其数据库字段。
+ */
 @Data
 @EqualsAndHashCode(callSuper = true)
 @Table("auth_role_scope_auth_code")

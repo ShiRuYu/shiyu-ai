@@ -1,6 +1,6 @@
 package com.shiyu.ai.memory.implementation;
 
 /**
- * MemoryImplementationModule 模块接口，标识记忆模块的边界。
+ * 定义 记忆 Implementation Module 相关的协作契约和调用边界。
  */
 public interface MemoryImplementationModule {}

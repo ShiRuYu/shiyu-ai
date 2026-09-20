@@ -18,6 +18,9 @@ import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
 
+/**
+ * 验证 J 向量 记忆 Semantic 索引 相关功能、边界条件、异常路径和协作行为。
+ */
 class JVectorMemorySemanticIndexTest {
     private static final TenantId TENANT = new TenantId(7L);
 

@@ -4,17 +4,18 @@ import lombok.extern.slf4j.Slf4j;
 
 import java.util.function.Supplier;
 
-/** 默认重试策略实现（指数退避） */
+/**
+ * 实现 Retry Policy Impl 相关的业务处理、协作逻辑或基础设施能力。
+ */
 @Slf4j
 public class RetryPolicyImpl implements RetryPolicy {
 
     /**
-     * {@code executeWithRetry} 执行当前模块定义的业务流程。
+     * 调用 Retry Policy Impl 相关业务数据，并返回处理结果。
      *
-     * @param supplier 参数值，用于执行当前操作。
-     * @param config 参数值，用于执行当前操作。
-     *
-     * @return 返回当前操作产生的结果。
+     * @param supplier 用于完成本次业务处理的 supplier 参数。
+     * @param config 用于完成本次业务处理的 config 参数。
+     * @return 返回 Retry Policy Impl 相关操作生成的结果数据。
      */
     @Override
     public <T> T executeWithRetry(Supplier<T> supplier, RetryConfig config) {

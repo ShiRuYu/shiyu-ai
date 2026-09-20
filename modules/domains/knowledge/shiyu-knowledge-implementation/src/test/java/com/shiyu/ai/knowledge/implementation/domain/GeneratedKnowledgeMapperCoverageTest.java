@@ -14,7 +14,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 /**
- * 验证 GeneratedKnowledgeMapperCoverage 的功能、边界条件和集成行为。
+ * 验证 Generated 知识 Mapper Coverage 相关功能、边界条件、异常路径和协作行为。
  */
 class GeneratedKnowledgeMapperCoverageTest {
 

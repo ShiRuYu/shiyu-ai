@@ -9,7 +9,9 @@ import lombok.experimental.SuperBuilder;
 import java.util.HashMap;
 import java.util.Map;
 
-/** 节点配置类 用于配置节点的执行参数和行为 */
+/**
+ * 定义 Node 基础设施或应用能力的配置项及装配规则。
+ */
 @Data
 @SuperBuilder
 @NoArgsConstructor

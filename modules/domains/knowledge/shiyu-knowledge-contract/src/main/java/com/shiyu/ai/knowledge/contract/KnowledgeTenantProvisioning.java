@@ -3,7 +3,7 @@ package com.shiyu.ai.knowledge.contract;
 import com.shiyu.ai.kernel.context.TenantId;
 
 /**
- * 知识租户配置接口，负责初始化知识模块的租户默认配置。
+ * 定义 知识 租户 Provisioning 相关的协作契约和调用边界。
  */
 public interface KnowledgeTenantProvisioning {
 

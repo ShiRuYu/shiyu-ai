@@ -6,7 +6,9 @@ import java.io.Serial;
 import java.io.Serializable;
 import java.time.LocalDateTime;
 
-/** Achievement 业务对象 */
+/**
+ * 表示 Achievement 领域对象的业务状态和属性。
+ */
 @Data
 public class AchievementBO implements Serializable {
 

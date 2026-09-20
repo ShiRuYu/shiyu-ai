@@ -3,7 +3,7 @@ package com.shiyu.ai.model.implementation.infrastructure.adapter.config;
 import lombok.Data;
 
 /**
- * {@code PlatformConfig} 提供模型模块的配置项，并集中声明其默认值和运行约束。
+ * 定义 平台 基础设施或应用能力的配置项及装配规则。
  */
 @Data
 public class PlatformConfig {
@@ -47,15 +47,15 @@ public class PlatformConfig {
     public PlatformConfig() {}
 
     /**
-     * {@code PlatformConfig} 创建并初始化当前类型实例。
+     * 执行 平台 相关业务操作，并维护必要的状态和协作关系。
      *
-     * @param platformType 参数值，用于执行当前操作。
-     * @param baseUrl 参数值，用于执行当前操作。
-     * @param apiKey 参数值，用于执行当前操作。
-     * @param modelName 参数值，用于执行当前操作。
-     * @param temperature 参数值，用于执行当前操作。
-     * @param maxTokens 参数值，用于执行当前操作。
-     * @param maxRetries 参数值，用于执行当前操作。
+     * @param platformType 用于完成本次业务处理的 platformType 参数。
+     * @param baseUrl 用于完成本次业务处理的 baseUrl 参数。
+     * @param apiKey 用于完成本次业务处理的 apiKey 参数。
+     * @param modelName 用于完成本次业务处理的 modelName 参数。
+     * @param temperature 用于完成本次业务处理的 temperature 参数。
+     * @param maxTokens 用于完成本次业务处理的 maxTokens 参数。
+     * @param maxRetries 用于完成本次业务处理的 maxRetries 参数。
      */
     public PlatformConfig(
             String platformType,
@@ -77,16 +77,16 @@ public class PlatformConfig {
     }
 
     /**
-     * {@code PlatformConfig} 创建并初始化当前类型实例。
+     * 执行 平台 相关业务操作，并维护必要的状态和协作关系。
      *
-     * @param platformType 参数值，用于执行当前操作。
-     * @param adapterType 参数值，用于执行当前操作。
-     * @param baseUrl 参数值，用于执行当前操作。
-     * @param apiKey 参数值，用于执行当前操作。
-     * @param modelName 参数值，用于执行当前操作。
-     * @param temperature 参数值，用于执行当前操作。
-     * @param maxTokens 参数值，用于执行当前操作。
-     * @param maxRetries 参数值，用于执行当前操作。
+     * @param platformType 用于完成本次业务处理的 platformType 参数。
+     * @param adapterType 用于完成本次业务处理的 adapterType 参数。
+     * @param baseUrl 用于完成本次业务处理的 baseUrl 参数。
+     * @param apiKey 用于完成本次业务处理的 apiKey 参数。
+     * @param modelName 用于完成本次业务处理的 modelName 参数。
+     * @param temperature 用于完成本次业务处理的 temperature 参数。
+     * @param maxTokens 用于完成本次业务处理的 maxTokens 参数。
+     * @param maxRetries 用于完成本次业务处理的 maxRetries 参数。
      */
     public PlatformConfig(
             String platformType,
@@ -108,18 +108,18 @@ public class PlatformConfig {
     }
 
     /**
-     * {@code isApiKeyConfigured} 校验当前操作的输入或状态是否满足约束。
+     * 校验或判断 平台 相关业务数据，并返回处理结果。
      *
-     * @return 返回当前操作产生的结果。
+     * @return 返回本次条件判断是否成立。
      */
     public boolean isApiKeyConfigured() {
         return apiKey != null && !apiKey.trim().isEmpty();
     }
 
     /**
-     * {@code isBaseUrlConfigured} 校验当前操作的输入或状态是否满足约束。
+     * 校验或判断 平台 相关业务数据，并返回处理结果。
      *
-     * @return 返回当前操作产生的结果。
+     * @return 返回本次条件判断是否成立。
      */
     public boolean isBaseUrlConfigured() {
         return baseUrl != null && !baseUrl.trim().isEmpty();

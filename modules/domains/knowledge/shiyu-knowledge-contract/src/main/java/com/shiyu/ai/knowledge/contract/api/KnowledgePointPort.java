@@ -4,8 +4,7 @@ import com.shiyu.ai.kernel.context.ActorContext;
 import com.shiyu.ai.knowledge.contract.model.KnowledgeResponse;
 
 /**
- * 知识点端口。
- * 为外部业务提供知识点详情查询能力。
+ * 定义 知识 Point 领域与外部能力交互的端口契约。
  */
 public interface KnowledgePointPort {
 

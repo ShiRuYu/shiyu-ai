@@ -11,6 +11,9 @@ import java.lang.reflect.Field;
 import java.util.HashMap;
 import java.util.Map;
 
+/**
+ * 验证 工具 Service Impl 相关功能、边界条件、异常路径和协作行为。
+ */
 class ToolServiceImplTest {
     private ToolServiceImpl service;
 

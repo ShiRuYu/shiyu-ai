@@ -8,7 +8,7 @@ import lombok.EqualsAndHashCode;
 import java.time.LocalDateTime;
 
 /**
- * {@code KnowledgeIngestionJobBO} 是知识模块的业务对象，承载用例处理所需的领域数据。
+ * 表示 知识 Ingestion Job 领域对象的业务状态和属性。
  */
 @Data
 @EqualsAndHashCode(callSuper = true)

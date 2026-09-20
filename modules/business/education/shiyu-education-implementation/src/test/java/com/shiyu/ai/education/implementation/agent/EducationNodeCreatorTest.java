@@ -25,6 +25,9 @@ import com.shiyu.ai.model.contract.api.ChatEngine;
 
 import org.junit.jupiter.api.Test;
 
+/**
+ * 验证 教育 Node Creator 相关功能、边界条件、异常路径和协作行为。
+ */
 class EducationNodeCreatorTest {
     private static final NodeConfig CONFIG = NodeConfig.builder().nodeId("education-node").build();
 

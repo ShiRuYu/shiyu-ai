@@ -11,7 +11,7 @@ import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.PropertySource;
 
 /**
- * {@code MybatisConfig} 提供平台基础设施模块的配置项，并集中声明其默认值和运行约束。
+ * 定义 Mybatis 基础设施或应用能力的配置项及装配规则。
  */
 @Configuration
 @PropertySource(
@@ -20,9 +20,9 @@ import org.springframework.context.annotation.PropertySource;
 public class MybatisConfig {
 
     /**
-     * {@code mybatisFlexCustomizer} 执行当前类型定义的业务操作。
+     * 执行 Mybatis 相关业务数据，并返回处理结果。
      *
-     * @return 返回当前操作产生的结果。
+     * @return 返回 Mybatis 相关操作生成的结果数据。
      */
     @Bean
     public MyBatisFlexCustomizer mybatisFlexCustomizer() {
@@ -37,9 +37,9 @@ public class MybatisConfig {
     }
 
     /**
-     * {@code mybatisExceptionHandler} 执行当前类型定义的业务操作。
+     * 执行 Mybatis 相关业务数据，并返回处理结果。
      *
-     * @return 返回当前操作产生的结果。
+     * @return 返回 Mybatis 相关操作生成的结果数据。
      */
     @Bean
     public MybatisExceptionHandler mybatisExceptionHandler() {

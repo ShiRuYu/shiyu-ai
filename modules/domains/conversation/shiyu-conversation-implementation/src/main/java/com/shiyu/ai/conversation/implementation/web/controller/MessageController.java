@@ -21,7 +21,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.*;
 
 /**
- * MessageController 控制器，负责处理会话领域相关 HTTP 请求并返回响应。
+ * 处理 消息 相关的 Web 请求，并将请求转换为应用服务调用。
  */
 @RestController
 @RequestMapping("/api/conversation/messages")
@@ -48,13 +48,13 @@ public class MessageController {
     private final IdempotencyRepository idempotency;
 
     /**
-     * {@code MessageController} 创建并初始化当前类型实例。
+     * 执行 消息 相关业务操作，并维护必要的状态和协作关系。
      *
-     * @param conversations 参数值，用于执行当前操作。
-     * @param repository 参数值，用于执行当前操作。
-     * @param generations 参数值，用于执行当前操作。
-     * @param runner 参数值，用于执行当前操作。
-     * @param idempotency 参数值，用于执行当前操作。
+     * @param conversations 用于完成本次业务处理的 conversations 参数。
+     * @param repository 用于完成本次业务处理的 repository 参数。
+     * @param generations 用于完成本次业务处理的 generations 参数。
+     * @param runner 用于完成本次业务处理的 runner 参数。
+     * @param idempotency 用于完成本次业务处理的 idempotency 参数。
      */
     public MessageController(
             ConversationService conversations,
@@ -70,13 +70,10 @@ public class MessageController {
     }
 
     /**
-     * {@code edit} 执行当前类型定义的业务操作。
+     * 执行 消息 相关业务数据，并返回处理结果。
      *
-     * @param messageId 参数值，用于执行当前操作。
-     * @param idempotencyKey 参数值，用于执行当前操作。
-     * @param request 参数值，用于执行当前操作。
-     *
-     * @return 返回当前操作产生的结果。
+     * @param edits 用于完成本次业务处理的 edits 参数。
+     * @return 返回 消息 相关操作生成的结果数据。
      */
     @PostMapping("/{messageId}/edits")
     public Result<ConversationMessage> edit(
@@ -133,13 +130,10 @@ public class MessageController {
     }
 
     /**
-     * {@code retry} 执行当前类型定义的业务操作。
+     * 执行 消息 相关业务数据，并返回处理结果。
      *
-     * @param messageId 参数值，用于执行当前操作。
-     * @param idempotencyKey 参数值，用于执行当前操作。
-     * @param request 参数值，用于执行当前操作。
-     *
-     * @return 返回当前操作产生的结果。
+     * @param generations 用于完成本次业务处理的 generations 参数。
+     * @return 返回 消息 相关操作生成的结果数据。
      */
     @PostMapping("/{messageId}/generations")
     public Result<GenerationRun> retry(
@@ -238,7 +232,7 @@ public class MessageController {
     }
 
     /**
-     * {@code EditRequest} 表示会话模块的请求参数，承载调用方提交的输入数据。
+     * 封装 Edit 操作所需的请求条件和输入数据。
      */
     @Data
     public static class EditRequest {
@@ -246,7 +240,7 @@ public class MessageController {
     }
 
     /**
-     * {@code RetryRequest} 表示会话模块的请求参数，承载调用方提交的输入数据。
+     * 封装 Retry 操作所需的请求条件和输入数据。
      */
     @Data
     public static class RetryRequest {

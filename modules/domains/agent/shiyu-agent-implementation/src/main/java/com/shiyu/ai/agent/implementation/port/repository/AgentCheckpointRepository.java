@@ -6,60 +6,57 @@ import com.shiyu.ai.kernel.context.TenantId;
 import java.util.List;
 
 /**
- * AgentCheckpointRepository 仓储接口，负责访问和持久化智能体领域聚合数据。
+ * 负责 智能体 Checkpoint 的持久化查询、保存和删除，并维护数据访问边界。
  */
 public interface AgentCheckpointRepository {
     /**
-     * 创建并保存业务对象。
+     * 创建或保存 智能体 Checkpoint 相关业务操作，并维护必要的状态和协作关系。
      *
-     * @param tenantId 租户标识。
-     * @param checkpoint 方法参数。
+     * @param tenantId 当前操作涉及的租户标识。
+     * @param checkpoint 用于完成本次业务处理的 checkpoint 参数。
      */
     void insert(TenantId tenantId, AgentCheckpointBO checkpoint);
 
     /**
-     * 根据条件查询并返回所需数据。
+     * 查询 智能体 Checkpoint 相关业务数据，并返回处理结果。
      *
-     * @param tenantId 租户标识。
-     * @param checkpointId 方法参数。
-     *
-     * @return 操作结果。
+     * @param tenantId 当前操作涉及的租户标识。
+     * @param checkpointId 用于定位checkpoint的标识。
+     * @return 返回 智能体 Checkpoint 相关操作生成的结果数据。
      */
     AgentCheckpointBO selectByCheckpointId(TenantId tenantId, String checkpointId);
 
     /**
-     * 根据条件查询并返回所需数据。
+     * 查询 智能体 Checkpoint 相关业务数据，并返回处理结果。
      *
-     * @param tenantId 租户标识。
-     * @param executionId 方法参数。
-     *
-     * @return 操作结果。
+     * @param tenantId 当前操作涉及的租户标识。
+     * @param executionId 用于定位execution的标识。
+     * @return 返回 智能体 Checkpoint 相关操作生成的结果数据。
      */
     AgentCheckpointBO selectLatestByExecutionId(TenantId tenantId, String executionId);
 
     /**
-     * 删除指定业务对象或关联数据。
+     * 删除或移除 智能体 Checkpoint 相关业务操作，并维护必要的状态和协作关系。
      *
-     * @param tenantId 租户标识。
-     * @param checkpointId 方法参数。
+     * @param tenantId 当前操作涉及的租户标识。
+     * @param checkpointId 用于定位checkpoint的标识。
      */
     void deleteByCheckpointId(TenantId tenantId, String checkpointId);
 
     /**
-     * 删除指定业务对象或关联数据。
+     * 删除或移除 智能体 Checkpoint 相关业务操作，并维护必要的状态和协作关系。
      *
-     * @param tenantId 租户标识。
-     * @param executionId 方法参数。
+     * @param tenantId 当前操作涉及的租户标识。
+     * @param executionId 用于定位execution的标识。
      */
     void deleteByExecutionId(TenantId tenantId, String executionId);
 
     /**
-     * 根据条件查询并返回所需数据。
+     * 查询 智能体 Checkpoint 相关业务数据，并返回处理结果。
      *
-     * @param tenantId 租户标识。
-     * @param executionId 方法参数。
-     *
-     * @return 符合条件的结果集合。
+     * @param tenantId 当前操作涉及的租户标识。
+     * @param executionId 用于定位execution的标识。
+     * @return 返回符合条件的数据集合；没有匹配项时返回空集合。
      */
     List<AgentCheckpointBO> listByExecutionId(TenantId tenantId, String executionId);
 }

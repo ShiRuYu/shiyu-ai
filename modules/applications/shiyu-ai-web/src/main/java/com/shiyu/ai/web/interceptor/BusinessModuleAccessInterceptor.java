@@ -15,9 +15,7 @@ import org.springframework.web.servlet.HandlerInterceptor;
 import java.util.List;
 
 /**
- * 在已有认证和 Sa-Token 权限校验前，执行业务模块的租户级启用检查。
- *
- * <p>进程级开关决定模块 Bean 是否存在；本拦截器只处理当前租户授权，不承担公开路径认证或领域对象权限。
+ * 校验或约束 Business Module Access 相关的请求、状态和访问规则。
  */
 public final class BusinessModuleAccessInterceptor implements HandlerInterceptor {
 

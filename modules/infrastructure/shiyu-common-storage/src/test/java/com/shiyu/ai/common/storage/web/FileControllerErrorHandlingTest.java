@@ -22,6 +22,9 @@ import org.springframework.mock.web.MockMultipartFile;
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
 
+/**
+ * 验证 文件 Controller Error Handling 相关功能、边界条件、异常路径和协作行为。
+ */
 class FileControllerErrorHandlingTest {
 
     @Test

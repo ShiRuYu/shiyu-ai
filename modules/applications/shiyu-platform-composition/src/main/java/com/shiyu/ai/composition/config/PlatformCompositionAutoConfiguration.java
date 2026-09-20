@@ -9,7 +9,7 @@ import org.springframework.context.annotation.ComponentScan;
 import org.springframework.context.annotation.Import;
 
 /**
- * 显式装配平台实现，避免启动类通过根包扫描意外加载可选业务模块。
+ * 定义 平台 Composition Auto 基础设施或应用能力的配置项及装配规则。
  */
 @AutoConfiguration
 @Import({

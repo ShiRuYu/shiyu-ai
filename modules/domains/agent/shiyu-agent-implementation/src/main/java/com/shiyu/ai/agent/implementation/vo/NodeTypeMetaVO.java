@@ -9,7 +9,7 @@ import java.util.List;
 import java.util.Map;
 
 /**
- * {@code NodeTypeMetaVO} 承载智能体模块的领域状态或协作行为，负责维护本类型的职责边界。
+ * 封装 Node Type Meta 操作向调用方返回的传输数据。
  */
 @Data
 @Builder
@@ -48,7 +48,7 @@ public class NodeTypeMetaVO {
     private List<FieldMeta> fields;
 
     /**
-     * {@code FieldMeta} 承载智能体模块的领域状态或协作行为，负责维护本类型的职责边界。
+     * 实现 Field Meta 相关的业务处理、协作逻辑或基础设施能力。
      */
     @Data
     @Builder
@@ -90,7 +90,7 @@ public class NodeTypeMetaVO {
     }
 
     /**
-     * {@code DataSourceConfig} 提供智能体模块的配置项，并集中声明其默认值和运行约束。
+     * 定义 Data Source 基础设施或应用能力的配置项及装配规则。
      */
     @Data
     @Builder

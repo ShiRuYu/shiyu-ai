@@ -19,7 +19,7 @@ import org.junit.jupiter.api.Test;
 import java.time.Instant;
 
 /**
- * 验证 AgentValueValidationCoverage 的功能、边界条件和集成行为。
+ * 验证 智能体 Value Validation Coverage 相关功能、边界条件、异常路径和协作行为。
  */
 class AgentValueValidationCoverageTest {
     @Test

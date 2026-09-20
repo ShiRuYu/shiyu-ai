@@ -10,106 +10,106 @@ import org.apache.commons.lang3.tuple.Pair;
 import java.util.List;
 
 /**
- * AiPlatformService 服务接口，负责执行模型领域相关业务操作。
+ * 提供 AI 平台 的查询、创建、更新及调用服务，协调业务变更和领域协作。
  */
 public interface AiPlatformService {
     /**
-     * 执行 {@code pageResponse} 定义的接口操作。
+     * 按名称和编码条件分页查询当前租户的 AI 平台。
      *
-     * @param actor 当前操作主体上下文。
-     * @param pageNo 方法参数。
-     * @param pageSize 分页大小。
-     * @param name 对象名称。
-     * @param code 方法参数。
+     * @param actor 当前操作主体上下文，用于确定租户和访问权限。
+     * @param pageNo 页码，从 1 开始。
+     * @param pageSize 每页返回的平台数量。
+     * @param name 可选的平台名称关键字。
+     * @param code 可选的平台唯一编码。
      *
-     * @return 符合条件的结果集合。
+     * @return 左值为平台总数，右值为当前页的平台响应列表。
      */
     Pair<Long, List<AiPlatformResponse>> pageResponse(
             ActorContext actor, Number pageNo, Number pageSize, String name, String code);
 
     /**
-     * 执行 {@code enabledResponse} 定义的接口操作。
+     * 查询当前租户下已启用的全部 AI 平台。
      *
-     * @param actor 当前操作主体上下文。
+     * @param actor 当前操作主体上下文，用于确定租户和访问权限。
      *
-     * @return 符合条件的结果集合。
+     * @return 已启用的平台响应列表。
      */
     List<AiPlatformResponse> enabledResponse(ActorContext actor);
 
     /**
-     * 执行 {@code detailResponse} 定义的接口操作。
+     * 查询指定 AI 平台的详细信息。
      *
-     * @param actor 当前操作主体上下文。
-     * @param id 目标对象标识。
+     * @param actor 当前操作主体上下文，用于确定租户和访问权限。
+     * @param id 平台 ID。
      *
-     * @return 操作结果。
+     * @return 指定平台的响应数据。
      */
     AiPlatformResponse detailResponse(ActorContext actor, Long id);
 
     /**
-     * 执行 {@code codeResponse} 定义的接口操作。
+     * 根据平台编码查询 AI 平台详情。
      *
-     * @param actor 当前操作主体上下文。
-     * @param code 方法参数。
+     * @param actor 当前操作主体上下文，用于确定租户和访问权限。
+     * @param code 平台唯一编码。
      *
-     * @return 操作结果。
+     * @return 对应平台的响应数据。
      */
     AiPlatformResponse codeResponse(ActorContext actor, String code);
 
     /**
-     * 执行 {@code defaultResponse} 定义的接口操作。
+     * 查询当前租户配置的默认 AI 平台。
      *
-     * @param actor 当前操作主体上下文。
+     * @param actor 当前操作主体上下文，用于确定租户和访问权限。
      *
-     * @return 操作结果。
+     * @return 默认平台的响应数据。
      */
     AiPlatformResponse defaultResponse(ActorContext actor);
 
     /**
-     * 创建并保存业务对象。
+     * 根据请求参数创建 AI 平台，并维护租户默认平台状态。
      *
-     * @param actor 当前操作主体上下文。
-     * @param request 请求参数。
+     * @param actor 当前操作主体上下文，用于确定租户和访问权限。
+     * @param request 平台创建请求，包含平台名称、编码、适配器和默认标志等信息。
      *
-     * @return 操作结果。
+     * @return 创建后的平台响应数据。
      */
     AiPlatformResponse createResponse(ActorContext actor, AiPlatformRequest request);
 
     /**
-     * 更新业务对象及其关联数据。
+     * 更新指定 AI 平台，并维护租户默认平台状态。
      *
-     * @param actor 当前操作主体上下文。
-     * @param id 目标对象标识。
-     * @param request 请求参数。
+     * @param actor 当前操作主体上下文，用于确定租户和访问权限。
+     * @param id 待更新的平台 ID。
+     * @param request 平台更新请求，包含需要变更的平台属性。
      *
-     * @return 操作结果。
+     * @return 更新后的平台响应数据。
      */
     AiPlatformResponse updateResponse(ActorContext actor, Long id, AiPlatformRequest request);
 
     /**
-     * 删除指定业务对象或关联数据。
+     * 删除指定 AI 平台及其关联配置。
      *
-     * @param actor 当前操作主体上下文。
-     * @param id 目标对象标识。
+     * @param actor 当前操作主体上下文，用于确定租户和访问权限。
+     * @param id 待删除的平台 ID。
      */
     void deleteById(ActorContext actor, Long id);
 
     /**
-     * 根据条件查询并返回所需数据。
+     * 查询当前租户下用于选择平台的 ID 和名称选项。
      *
-     * @param actor 当前操作主体上下文。
+     * @param actor 当前操作主体上下文，用于确定租户和访问权限。
      *
-     * @return 符合条件的结果集合。
+     * @return 平台 ID 与名称选项列表。
      */
     List<IdNameOptionVO> getOptions(ActorContext actor);
 
     /**
-     * 执行 {@code setDefaultResponse} 定义的接口操作。
+     * 将指定 AI 平台设置为当前租户的默认平台。
      *
-     * @param actor 当前操作主体上下文。
-     * @param id 目标对象标识。
+     * @param actor 当前操作主体上下文，用于确定租户和访问权限。
+     * @param id 待设为默认平台的平台 ID。
      *
-     * @return 操作结果。
+     * @return 更新后的默认平台响应数据。
      */
     AiPlatformResponse setDefaultResponse(ActorContext actor, Long id);
 }

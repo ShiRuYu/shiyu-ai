@@ -13,7 +13,7 @@ import java.time.Instant;
 import java.util.UUID;
 
 /**
- * 将领域事件写入 JDBC outbox 并负责可靠投递。
+ * 发布 Jdbc Outbox 事件 相关的领域事件或基础设施消息。
  */
 public class JdbcOutboxEventPublisher implements InfrastructureEventPublisher {
 
@@ -27,10 +27,10 @@ public class JdbcOutboxEventPublisher implements InfrastructureEventPublisher {
     protected final EventInfrastructureProperties properties;
 
     /**
-     * {@code JdbcOutboxEventPublisher} 创建并初始化当前类型实例。
+     * 执行 Jdbc Outbox 事件 相关业务操作，并维护必要的状态和协作关系。
      *
-     * @param jdbc 参数值，用于执行当前操作。
-     * @param properties 参数值，用于执行当前操作。
+     * @param jdbc 用于完成本次业务处理的 jdbc 参数。
+     * @param properties 用于完成本次业务处理的 properties 参数。
      */
     public JdbcOutboxEventPublisher(JdbcTemplate jdbc, EventInfrastructureProperties properties) {
         this.jdbc = jdbc;
@@ -39,9 +39,9 @@ public class JdbcOutboxEventPublisher implements InfrastructureEventPublisher {
     }
 
     /**
-     * {@code publish} 执行当前模块定义的业务流程。
+     * 发布或发送 Jdbc Outbox 事件 相关业务操作，并维护必要的状态和协作关系。
      *
-     * @param event 参数值，用于执行当前操作。
+     * @param event 本次流程携带的事件或业务数据。
      */
     @Override
     public void publish(DomainEventEnvelope<?> event) {

@@ -7,7 +7,7 @@ import com.shiyu.ai.kernel.context.ActorContext;
 import java.util.List;
 
 /**
- * ReviewService 服务接口，负责执行教育领域相关业务操作。
+ * 提供 复习 的查询、创建、更新及调用服务，协调业务变更和领域协作。
  */
 public interface ReviewService {
 
@@ -22,35 +22,32 @@ public interface ReviewService {
     ReviewTaskResponse getById(ActorContext actor, Long id);
 
     /**
-     * 查询今日tasks列表。
+     * 查询 复习 相关业务数据，并返回处理结果。
      *
-     * @param actor 调用方上下文。
-     * @param studentId 学生标识。
-     *
-     * @return 结果列表。
+     * @param actor 当前操作主体上下文，用于确定租户、用户和访问权限。
+     * @param studentId 用于定位student的标识。
+     * @return 返回符合条件的数据集合；没有匹配项时返回空集合。
      */
     List<ReviewTaskResponse> listTodayTasks(ActorContext actor, Long studentId);
 
     /**
-     * 根据学生状态查询复习任务列表。
+     * 查询 复习 相关业务数据，并返回处理结果。
      *
-     * @param actor 调用方上下文。
-     * @param studentId 学生标识。
-     * @param status 状态。
-     *
-     * @return 结果列表。
+     * @param actor 当前操作主体上下文，用于确定租户、用户和访问权限。
+     * @param studentId 用于定位student的标识。
+     * @param status 用于完成本次业务处理的 status 参数。
+     * @return 返回符合条件的数据集合；没有匹配项时返回空集合。
      */
     List<ReviewTaskResponse> listByStudentAndStatus(
             ActorContext actor, Long studentId, Integer status);
 
     /**
-     * 根据学生知识查询复习任务列表。
+     * 查询 复习 相关业务数据，并返回处理结果。
      *
-     * @param actor 调用方上下文。
-     * @param studentId 学生标识。
-     * @param knowledgeId knowledgeId 参数。
-     *
-     * @return 结果列表。
+     * @param actor 当前操作主体上下文，用于确定租户、用户和访问权限。
+     * @param studentId 用于定位student的标识。
+     * @param knowledgeId 用于定位knowledge的标识。
+     * @return 返回符合条件的数据集合；没有匹配项时返回空集合。
      */
     List<ReviewTaskResponse> listByStudentAndKnowledge(
             ActorContext actor, Long studentId, Long knowledgeId);
@@ -74,11 +71,11 @@ public interface ReviewService {
     void update(ActorContext actor, ReviewRequest request);
 
     /**
-     * 执行 {@code complete} 定义的接口操作。
+     * 执行 复习 相关业务操作，并维护必要的状态和协作关系。
      *
-     * @param actor 当前操作主体上下文。
-     * @param id 目标对象标识。
-     * @param resultScore 方法参数。
+     * @param actor 当前操作主体上下文，用于确定租户、用户和访问权限。
+     * @param id 用于定位目标业务对象的标识。
+     * @param resultScore 用于完成本次业务处理的 resultScore 参数。
      */
     void complete(ActorContext actor, Long id, Double resultScore);
 

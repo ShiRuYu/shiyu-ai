@@ -3,13 +3,7 @@ package com.shiyu.ai.conversation.implementation.domain.chat.model;
 import java.util.List;
 
 /**
- * {@code GroupChat} 封装会话模块中不可变的结构化数据，并作为相关操作之间的值对象。
- * @param id 标识，表示该记录组件承载的数据。
- * @param name 名称，表示该记录组件承载的数据。
- * @param participants participants 属性，表示该记录组件承载的数据。
- * @param speakerPolicy speakerPolicy 属性，表示该记录组件承载的数据。
- * @param maxTurns maxTurns 属性，表示该记录组件承载的数据。
- * @param tokenBudget tokenBudget 属性，表示该记录组件承载的数据。
+ * 封装 Group 对话 相关的不可变数据及其字段约束。
  */
 public record GroupChat(
         String id,
@@ -34,10 +28,7 @@ public record GroupChat(
     }
 
     /**
-     * {@code Participant} 封装会话模块中不可变的结构化数据，并作为相关操作之间的值对象。
-     * @param id 标识，表示该记录组件承载的数据。
-     * @param displayName displayName 属性，表示该记录组件承载的数据。
-     * @param characterId characterId 属性，表示该记录组件承载的数据。
+     * 封装 Participant 相关的不可变数据及其字段约束。
      */
     public record Participant(String id, String displayName, String characterId) {}
 }

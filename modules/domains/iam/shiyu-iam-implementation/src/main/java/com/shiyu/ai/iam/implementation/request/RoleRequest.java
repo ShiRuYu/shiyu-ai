@@ -15,7 +15,7 @@ import java.io.Serializable;
 import java.util.List;
 
 /**
- * {@code RoleRequest} 表示平台模块的请求参数，承载调用方提交的输入数据。
+ * 封装 角色 操作所需的请求条件和输入数据。
  */
 @Data
 @AutoMapper(target = RoleBO.class, reverseConvertGenerate = false)

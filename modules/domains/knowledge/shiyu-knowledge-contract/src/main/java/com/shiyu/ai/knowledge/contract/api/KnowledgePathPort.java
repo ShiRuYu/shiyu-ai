@@ -6,8 +6,7 @@ import java.util.List;
 import java.util.Set;
 
 /**
- * 知识路径端口。
- * 为外部业务提供知识学习路径生成和前置知识检查能力。
+ * 定义 知识 Path 领域与外部能力交互的端口契约。
  */
 public interface KnowledgePathPort {
 

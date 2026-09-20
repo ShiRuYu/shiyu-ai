@@ -14,6 +14,9 @@ import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 
+/**
+ * 验证 Node Factory 相关功能、边界条件、异常路径和协作行为。
+ */
 class NodeFactoryTest {
     private final NodeFactory factory = new NodeFactory(List.of(), null);
 
@@ -158,6 +161,9 @@ class NodeFactoryTest {
         }
     }
 
+    /**
+     * 验证 Service 相关功能、边界条件、异常路径和协作行为。
+     */
     private static final class ServiceNode extends BaseNode {
         private String service;
 

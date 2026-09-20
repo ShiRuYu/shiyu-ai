@@ -9,6 +9,9 @@ import com.mybatisflex.core.tenant.TenantManager;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Test;
 
+/**
+ * 验证 租户 Query Executor 相关功能、边界条件、异常路径和协作行为。
+ */
 class TenantQueryExecutorTest {
 
     @AfterEach

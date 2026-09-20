@@ -10,7 +10,9 @@ import java.util.Date;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
 
-/** 时间工具类 */
+/**
+ * 提供 Date 相关的通用辅助操作，供业务和基础设施复用。
+ */
 @SuppressWarnings("deprecation")
 public class DateUtils extends org.apache.commons.lang3.time.DateUtils {
 
@@ -71,52 +73,49 @@ public class DateUtils extends org.apache.commons.lang3.time.DateUtils {
     }
 
     /**
-     * {@code getTime} 查询并返回当前操作所需的数据。
+     * 查询 Date 相关业务数据，并返回处理结果。
      *
-     * @return 返回当前操作产生的结果。
+     * @return 返回 Date 相关操作生成的结果数据。
      */
     public static String getTime() {
         return dateTimeNow(YYYY_MM_DD_HH_MM_SS);
     }
 
     /**
-     * {@code dateTimeNow} 执行当前类型定义的业务操作。
+     * 执行 Date 相关业务数据，并返回处理结果。
      *
-     * @return 返回当前操作产生的结果。
+     * @return 返回 Date 相关操作生成的结果数据。
      */
     public static String dateTimeNow() {
         return dateTimeNow(YYYYMMDDHHMMSS);
     }
 
     /**
-     * {@code dateTimeNow} 执行当前类型定义的业务操作。
+     * 执行 Date 相关业务数据，并返回处理结果。
      *
-     * @param format 参数值，用于执行当前操作。
-     *
-     * @return 返回当前操作产生的结果。
+     * @param format 用于完成本次业务处理的 format 参数。
+     * @return 返回 Date 相关操作生成的结果数据。
      */
     public static String dateTimeNow(final String format) {
         return parseDateToStr(format, new Date());
     }
 
     /**
-     * {@code dateTime} 执行当前类型定义的业务操作。
+     * 执行 Date 相关业务数据，并返回处理结果。
      *
-     * @param date 参数值，用于执行当前操作。
-     *
-     * @return 返回当前操作产生的结果。
+     * @param date 用于完成本次业务处理的 date 参数。
+     * @return 返回 Date 相关操作生成的结果数据。
      */
     public static String dateTime(final Date date) {
         return parseDateToStr(YYYY_MM_DD, date);
     }
 
     /**
-     * {@code parseDateToStr} 执行当前类型定义的业务操作。
+     * 执行 Date 相关业务数据，并返回处理结果。
      *
-     * @param format 参数值，用于执行当前操作。
-     * @param date 参数值，用于执行当前操作。
-     *
-     * @return 返回当前操作产生的结果。
+     * @param format 用于完成本次业务处理的 format 参数。
+     * @param date 用于完成本次业务处理的 date 参数。
+     * @return 返回 Date 相关操作生成的结果数据。
      */
     public static String parseDateToStr(final String format, final Date date) {
         return getFormatter(format)
@@ -124,12 +123,11 @@ public class DateUtils extends org.apache.commons.lang3.time.DateUtils {
     }
 
     /**
-     * {@code dateTime} 执行当前类型定义的业务操作。
+     * 执行 Date 相关业务数据，并返回处理结果。
      *
-     * @param format 参数值，用于执行当前操作。
-     * @param ts 参数值，用于执行当前操作。
-     *
-     * @return 返回当前操作产生的结果。
+     * @param format 用于完成本次业务处理的 format 参数。
+     * @param ts 用于完成本次业务处理的 ts 参数。
+     * @return 返回 Date 相关操作生成的结果数据。
      */
     public static Date dateTime(final String format, final String ts) {
         try {

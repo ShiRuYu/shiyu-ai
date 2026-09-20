@@ -6,7 +6,9 @@ import com.shiyu.ai.model.implementation.persistence.dataobject.AiModelDO;
 
 import org.apache.ibatis.annotations.Mapper;
 
-/** AI 模型 数据层 */
+/**
+ * 负责 AI 模型 的持久化查询、保存和删除，并维护数据访问边界。
+ */
 @Mapper
 @UseDataSource("agent")
 public interface AiModelMapper extends BaseMapperFlex<AiModelDO> {}

@@ -20,7 +20,7 @@ import java.util.List;
 import java.util.Map;
 
 /**
- * {@code EvaluationController} 是智能体模块的 Web 接口适配器，负责接收请求并转换为应用服务调用。
+ * 处理 Evaluation 相关的 Web 请求，并将请求转换为应用服务调用。
  */
 @RestController
 @RequestMapping("/api/agent/evaluations")
@@ -32,20 +32,18 @@ public class EvaluationController {
     private final EvaluationService evaluations;
 
     /**
-     * {@code EvaluationController} 创建并初始化当前类型实例。
+     * 执行 Evaluation 相关业务操作，并维护必要的状态和协作关系。
      *
-     * @param evaluations 参数值，用于执行当前操作。
+     * @param evaluations 用于完成本次业务处理的 evaluations 参数。
      */
     public EvaluationController(EvaluationService evaluations) {
         this.evaluations = evaluations;
     }
 
     /**
-     * {@code create} 写入或更新当前模块中的业务数据。
+     * 执行 Evaluation 相关业务操作，并维护必要的状态和协作关系。
      *
-     * @param request 参数值，用于执行当前操作。
-     *
-     * @return 返回当前操作产生的结果。
+     * @param datasets 用于完成本次业务处理的 datasets 参数。
      */
     @PostMapping("/datasets")
     public Result<EvalDataset> create(@Valid @RequestBody DatasetRequest request) {
@@ -54,12 +52,9 @@ public class EvaluationController {
     }
 
     /**
-     * {@code addCase} 执行当前类型定义的业务操作。
+     * 执行 Evaluation 相关业务操作，并维护必要的状态和协作关系。
      *
-     * @param id 参数值，用于执行当前操作。
-     * @param request 参数值，用于执行当前操作。
-     *
-     * @return 返回当前操作产生的结果。
+     * @param cases 用于完成本次业务处理的 cases 参数。
      */
     @PostMapping("/datasets/{id}/cases")
     public Result<EvalCase> addCase(
@@ -70,11 +65,9 @@ public class EvaluationController {
     }
 
     /**
-     * {@code cases} 执行当前类型定义的业务操作。
+     * 查询 Evaluation 相关业务操作，并维护必要的状态和协作关系。
      *
-     * @param id 参数值，用于执行当前操作。
-     *
-     * @return 返回当前操作产生的结果。
+     * @param cases 用于完成本次业务处理的 cases 参数。
      */
     @GetMapping("/datasets/{id}/cases")
     public Result<List<EvalCase>> cases(@PathVariable String id) {
@@ -82,11 +75,9 @@ public class EvaluationController {
     }
 
     /**
-     * {@code run} 执行当前模块定义的业务流程。
+     * 执行 Evaluation 相关业务操作，并维护必要的状态和协作关系。
      *
-     * @param request 参数值，用于执行当前操作。
-     *
-     * @return 返回当前操作产生的结果。
+     * @param runs 用于完成本次业务处理的 runs 参数。
      */
     @PostMapping("/runs")
     public Result<EvalRun> run(@Valid @RequestBody RunRequest request) {
@@ -104,11 +95,9 @@ public class EvaluationController {
     }
 
     /**
-     * {@code detail} 执行当前类型定义的业务操作。
+     * 查询 Evaluation 相关业务操作，并维护必要的状态和协作关系。
      *
-     * @param id 参数值，用于执行当前操作。
-     *
-     * @return 返回当前操作产生的结果。
+     * @param id 用于定位目标业务对象的标识。
      */
     @GetMapping("/runs/{id}")
     public Result<EvalRun> detail(@PathVariable String id) {
@@ -116,11 +105,9 @@ public class EvaluationController {
     }
 
     /**
-     * {@code results} 执行当前类型定义的业务操作。
+     * 查询 Evaluation 相关业务操作，并维护必要的状态和协作关系。
      *
-     * @param id 参数值，用于执行当前操作。
-     *
-     * @return 返回当前操作产生的结果。
+     * @param results 用于完成本次业务处理的 results 参数。
      */
     @GetMapping("/runs/{id}/results")
     public Result<List<EvalResult>> results(@PathVariable String id) {
@@ -136,7 +123,7 @@ public class EvaluationController {
     }
 
     /**
-     * {@code DatasetRequest} 表示智能体模块的请求参数，承载调用方提交的输入数据。
+     * 封装 Dataset 操作所需的请求条件和输入数据。
      */
     @Data
     public static class DatasetRequest {
@@ -148,7 +135,7 @@ public class EvaluationController {
     }
 
     /**
-     * {@code CaseRequest} 表示智能体模块的请求参数，承载调用方提交的输入数据。
+     * 封装 Case 操作所需的请求条件和输入数据。
      */
     @Data
     public static class CaseRequest {
@@ -164,7 +151,7 @@ public class EvaluationController {
     }
 
     /**
-     * {@code RunRequest} 表示智能体模块的请求参数，承载调用方提交的输入数据。
+     * 封装 运行 操作所需的请求条件和输入数据。
      */
     @Data
     public static class RunRequest {

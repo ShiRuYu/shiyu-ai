@@ -30,7 +30,7 @@ import org.springframework.web.bind.annotation.RestController;
 import java.util.List;
 
 /**
- * {@code KnowledgeDocumentRelationController} 是知识模块的 Web 接口适配器，负责接收请求并转换为应用服务调用。
+ * 处理 知识 文档 关系 相关的 Web 请求，并将请求转换为应用服务调用。
  */
 @RestController
 @RequestMapping("/api/knowledge")
@@ -45,12 +45,10 @@ public class KnowledgeDocumentRelationController {
     private final KnowledgeDocumentRelationService service;
 
     /**
-     * {@code list} 查询并返回当前操作所需的数据。
+     * 查询 知识 文档 关系 相关业务数据，并返回处理结果。
      *
-     * @param pointId 参数值，用于执行当前操作。
-     * @param version 参数值，用于执行当前操作。
-     *
-     * @return 返回当前操作产生的结果。
+     * @param documents 用于完成本次业务处理的 documents 参数。
+     * @return 返回符合条件的数据集合；没有匹配项时返回空集合。
      */
     @GetMapping("/points/{pointId}/documents")
     public Result<List<KnowledgeDocumentRelationService.DocumentSummary>> list(
@@ -64,13 +62,10 @@ public class KnowledgeDocumentRelationController {
     }
 
     /**
-     * {@code replace} 执行当前类型定义的业务操作。
+     * 执行 知识 文档 关系 相关业务数据，并返回处理结果。
      *
-     * @param pointId 参数值，用于执行当前操作。
-     * @param request 参数值，用于执行当前操作。
-     * @param version 参数值，用于执行当前操作。
-     *
-     * @return 返回当前操作产生的结果。
+     * @param documents 用于完成本次业务处理的 documents 参数。
+     * @return 返回 知识 文档 关系 相关操作生成的结果数据。
      */
     @PutMapping("/points/{pointId}/documents")
     @SaCheckPermission("knowledge:edit")
@@ -88,12 +83,10 @@ public class KnowledgeDocumentRelationController {
     }
 
     /**
-     * {@code listPoints} 查询并返回当前操作所需的数据。
+     * 查询 知识 文档 关系 相关业务数据，并返回处理结果。
      *
-     * @param documentId 参数值，用于执行当前操作。
-     * @param version 参数值，用于执行当前操作。
-     *
-     * @return 返回当前操作产生的结果。
+     * @param points 用于完成本次业务处理的 points 参数。
+     * @return 返回符合条件的数据集合；没有匹配项时返回空集合。
      */
     @GetMapping("/documents/{documentId}/points")
     public Result<List<Long>> listPoints(
@@ -107,13 +100,10 @@ public class KnowledgeDocumentRelationController {
     }
 
     /**
-     * {@code replacePoints} 执行当前类型定义的业务操作。
+     * 执行 知识 文档 关系 相关业务数据，并返回处理结果。
      *
-     * @param documentId 参数值，用于执行当前操作。
-     * @param request 参数值，用于执行当前操作。
-     * @param version 参数值，用于执行当前操作。
-     *
-     * @return 返回当前操作产生的结果。
+     * @param points 用于完成本次业务处理的 points 参数。
+     * @return 返回 知识 文档 关系 相关操作生成的结果数据。
      */
     @PutMapping("/documents/{documentId}/points")
     @SaCheckPermission("knowledge:edit")
@@ -143,13 +133,10 @@ public class KnowledgeDocumentRelationController {
     }
 
     /**
-     * {@code replaceDocumentRelations} 执行当前类型定义的业务操作。
+     * 执行 知识 文档 关系 相关业务数据，并返回处理结果。
      *
-     * @param documentId 参数值，用于执行当前操作。
-     * @param request 参数值，用于执行当前操作。
-     * @param version 参数值，用于执行当前操作。
-     *
-     * @return 返回当前操作产生的结果。
+     * @param relations 用于完成本次业务处理的 relations 参数。
+     * @return 返回 知识 文档 关系 相关操作生成的结果数据。
      */
     @PutMapping("/documents/{documentId}/relations")
     @SaCheckPermission("knowledge:edit")
@@ -166,22 +153,17 @@ public class KnowledgeDocumentRelationController {
     }
 
     /**
-     * {@code ReplaceRequest} 封装知识模块中不可变的结构化数据，并作为相关操作之间的值对象。
-     * @param documentIds documentIds 属性，表示该记录组件承载的数据。
-     * @param relationType relationType 属性，表示该记录组件承载的数据。
+     * 封装 Replace 相关的不可变数据及其字段约束。
      */
     public record ReplaceRequest(@NotNull List<Long> documentIds, String relationType) {}
 
     /**
-     * {@code ReplacePointsRequest} 封装知识模块中不可变的结构化数据，并作为相关操作之间的值对象。
-     * @param pointIds pointIds 属性，表示该记录组件承载的数据。
-     * @param relationType relationType 属性，表示该记录组件承载的数据。
+     * 封装 Replace Points 相关的不可变数据及其字段约束。
      */
     public record ReplacePointsRequest(@NotNull List<Long> pointIds, String relationType) {}
 
     /**
-     * {@code ReplaceDocumentRelationsRequest} 封装知识模块中不可变的结构化数据，并作为相关操作之间的值对象。
-     * @param relations relations 属性，表示该记录组件承载的数据。
+     * 封装 Replace 文档 Relations 相关的不可变数据及其字段约束。
      */
     public record ReplaceDocumentRelationsRequest(
             @NotNull List<KnowledgeDocumentRelationService.DocumentRelationRequest> relations) {}

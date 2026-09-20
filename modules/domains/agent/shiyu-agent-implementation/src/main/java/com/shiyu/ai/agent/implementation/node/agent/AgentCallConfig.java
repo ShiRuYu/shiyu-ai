@@ -7,10 +7,9 @@ import lombok.Data;
 import lombok.EqualsAndHashCode;
 
 /**
- * Agent 调用节点配置类 用于调用其他已注册的 Agent 执行子任务
+ * 定义 智能体 Call 基础设施或应用能力的配置项及装配规则。
  *
  * @author shiyu-ai
- * @date 2026-06-06
  */
 @Data
 @EqualsAndHashCode(callSuper = true)

@@ -17,12 +17,7 @@ import java.util.Map;
 import java.util.regex.Pattern;
 
 /**
- * 自动探测应用根目录（app.home），优先级：app.home 系统属性 > APP_HOME 环境变量 > runtime/dev > 项目根目录探测 > user.dir
- *
- * <p>项目根目录探测逻辑：从 user.dir 开始向上遍历父目录， 找到第一个包含 pom.xml 的目录，即为项目根目录。 这解决了 IDEA 中 user.dir 指向
- * compile-server 缓存目录导致的路径错误问题。
- *
- * <p>所有模块统一通过 {@code ${app.home}} 引用该路径。
+ * 实现 应用 Home Environment Post Processor 相关的业务处理、协作逻辑或基础设施能力。
  */
 @Slf4j
 @Order(Ordered.LOWEST_PRECEDENCE - 100)
@@ -52,10 +47,10 @@ public class AppHomeEnvironmentPostProcessor implements EnvironmentPostProcessor
             Pattern.compile("<packaging>\\s*pom\\s*</packaging>");
 
     /**
-     * {@code postProcessEnvironment} 执行当前类型定义的业务操作。
+     * 执行 应用 Home Environment Post Processor 相关业务操作，并维护必要的状态和协作关系。
      *
-     * @param environment 参数值，用于执行当前操作。
-     * @param application 参数值，用于执行当前操作。
+     * @param environment 用于完成本次业务处理的 environment 参数。
+     * @param application 用于完成本次业务处理的 application 参数。
      */
     @Override
     public void postProcessEnvironment(

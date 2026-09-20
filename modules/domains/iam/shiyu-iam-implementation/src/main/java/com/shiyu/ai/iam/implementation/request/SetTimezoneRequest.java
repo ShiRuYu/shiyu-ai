@@ -6,7 +6,9 @@ import jakarta.validation.constraints.NotBlank;
 
 import lombok.Data;
 
-/** 设置时区请求 */
+/**
+ * 封装 Set Timezone 操作所需的请求条件和输入数据。
+ */
 @Data
 @Schema(description = "设置时区请求")
 public class SetTimezoneRequest {

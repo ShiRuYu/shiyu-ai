@@ -9,24 +9,23 @@ import java.util.List;
 import java.util.Optional;
 
 /**
- * AiAppRepository 仓储接口，负责访问和持久化智能体领域聚合数据。
+ * 负责 AI 应用 的持久化查询、保存和删除，并维护数据访问边界。
  */
 public interface AiAppRepository {
     /**
-     * 创建并保存业务对象。
+     * 创建或保存 AI 应用 相关业务操作，并维护必要的状态和协作关系。
      *
-     * @param app 方法参数。
+     * @param app 用于完成本次业务处理的 app 参数。
      */
     void insert(AiApp app);
 
     /**
-     * 根据标识查询对应的数据。
+     * 查询 AI 应用 相关业务数据，并返回处理结果。
      *
-     * @param id 目标对象标识。
-     * @param tenantId 租户标识。
-     * @param ownerUserId 方法参数。
-     *
-     * @return 查询到的结果；未找到时为空。
+     * @param id 用于定位目标业务对象的标识。
+     * @param tenantId 当前操作涉及的租户标识。
+     * @param ownerUserId 当前操作涉及的用户标识。
+     * @return 返回可能存在的业务对象；不存在时返回空值容器。
      */
     Optional<AiApp> find(String id, TenantId tenantId, long ownerUserId);
 
@@ -41,63 +40,58 @@ public interface AiAppRepository {
     Optional<AiApp> findByTenant(String id, TenantId tenantId);
 
     /**
-     * 根据条件查询并返回所需数据。
+     * 查询 AI 应用 相关业务数据，并返回处理结果。
      *
-     * @param tenantId 租户标识。
-     * @param ownerUserId 方法参数。
-     * @param limit 方法参数。
-     *
-     * @return 符合条件的结果集合。
+     * @param tenantId 当前操作涉及的租户标识。
+     * @param ownerUserId 当前操作涉及的用户标识。
+     * @param limit 每页返回的数据数量。
+     * @return 返回符合条件的数据集合；没有匹配项时返回空集合。
      */
     List<AiApp> list(TenantId tenantId, long ownerUserId, int limit);
 
     /**
-     * 创建并保存业务对象。
+     * 创建或保存 AI 应用 相关业务操作，并维护必要的状态和协作关系。
      *
-     * @param version 方法参数。
+     * @param version 用于完成本次业务处理的 version 参数。
      */
     void insertVersion(AiAppVersion version);
 
     /**
-     * 根据条件查询并返回所需数据。
+     * 查询 AI 应用 相关业务数据，并返回处理结果。
      *
-     * @param appId 方法参数。
-     * @param versionId 方法参数。
-     * @param tenantId 租户标识。
-     *
-     * @return 查询到的结果；未找到时为空。
+     * @param appId 用于定位app的标识。
+     * @param versionId 用于定位version的标识。
+     * @param tenantId 当前操作涉及的租户标识。
+     * @return 返回可能存在的业务对象；不存在时返回空值容器。
      */
     Optional<AiAppVersion> findVersion(String appId, String versionId, TenantId tenantId);
 
     /**
-     * 执行 {@code versions} 定义的接口操作。
+     * 执行 AI 应用 相关业务数据，并返回处理结果。
      *
-     * @param appId 方法参数。
-     * @param tenantId 租户标识。
-     *
-     * @return 符合条件的结果集合。
+     * @param appId 用于定位app的标识。
+     * @param tenantId 当前操作涉及的租户标识。
+     * @return 返回符合条件的数据集合；没有匹配项时返回空集合。
      */
     List<AiAppVersion> versions(String appId, TenantId tenantId);
 
     /**
-     * 发布或发送业务事件。
+     * 发布或发送 AI 应用 相关业务数据，并返回处理结果。
      *
-     * @param appId 方法参数。
-     * @param versionId 方法参数。
-     * @param tenantId 租户标识。
-     *
-     * @return 操作影响的记录数或状态码。
+     * @param appId 用于定位app的标识。
+     * @param versionId 用于定位version的标识。
+     * @param tenantId 当前操作涉及的租户标识。
+     * @return 返回 AI 应用 相关操作生成的结果数据。
      */
     int publishVersion(String appId, String versionId, TenantId tenantId);
 
     /**
-     * 执行 {@code archiveVersion} 定义的接口操作。
+     * 执行 AI 应用 相关业务数据，并返回处理结果。
      *
-     * @param appId 方法参数。
-     * @param versionId 方法参数。
-     * @param tenantId 租户标识。
-     *
-     * @return 操作影响的记录数或状态码。
+     * @param appId 用于定位app的标识。
+     * @param versionId 用于定位version的标识。
+     * @param tenantId 当前操作涉及的租户标识。
+     * @return 返回 AI 应用 相关操作生成的结果数据。
      */
     int archiveVersion(String appId, String versionId, TenantId tenantId);
 }

@@ -6,7 +6,9 @@ import lombok.extern.slf4j.Slf4j;
 
 import java.util.Map;
 
-/** 检查点管理器 */
+/**
+ * 管理 Checkpoint 相关的运行时状态、注册信息或临时数据。
+ */
 @Slf4j
 public class CheckpointManager {
 
@@ -16,9 +18,9 @@ public class CheckpointManager {
     private final CheckpointStore checkpointStore;
 
     /**
-     * {@code CheckpointManager} 创建并初始化当前类型实例。
+     * 校验或判断 Checkpoint 相关业务操作，并维护必要的状态和协作关系。
      *
-     * @param checkpointStore 参数值，用于执行当前操作。
+     * @param checkpointStore 用于完成本次业务处理的 checkpointStore 参数。
      */
     public CheckpointManager(CheckpointStore checkpointStore) {
         this.checkpointStore = checkpointStore;

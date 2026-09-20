@@ -19,7 +19,7 @@ import org.springframework.web.bind.annotation.*;
 import java.util.List;
 
 /**
- * {@code StudyPlanController} 是教育模块的 Web 接口适配器，负责接收请求并转换为应用服务调用。
+ * 处理 Study Plan 相关的 Web 请求，并将请求转换为应用服务调用。
  */
 @Slf4j
 @RestController
@@ -34,11 +34,9 @@ public class StudyPlanController {
     private final StudyPlanService studyPlanService;
 
     /**
-     * {@code getById} 查询并返回当前操作所需的数据。
+     * 查询 Study Plan 相关业务操作，并维护必要的状态和协作关系。
      *
-     * @param id 参数值，用于执行当前操作。
-     *
-     * @return 返回当前操作产生的结果。
+     * @param detail 用于完成本次业务处理的 detail 参数。
      */
     @GetMapping("/detail")
     public Result<StudyPlanResponse> getById(@RequestParam Long id) {
@@ -46,11 +44,9 @@ public class StudyPlanController {
     }
 
     /**
-     * {@code listByStudentId} 查询并返回当前操作所需的数据。
+     * 查询 Study Plan 相关业务操作，并维护必要的状态和协作关系。
      *
-     * @param studentId 参数值，用于执行当前操作。
-     *
-     * @return 返回当前操作产生的结果。
+     * @param student 用于完成本次业务处理的 student 参数。
      */
     @GetMapping("/student")
     public Result<List<StudyPlanResponse>> listByStudentId(@RequestParam Long studentId) {
@@ -60,11 +56,9 @@ public class StudyPlanController {
     }
 
     /**
-     * {@code listActiveByStudent} 查询并返回当前操作所需的数据。
+     * 查询 Study Plan 相关业务操作，并维护必要的状态和协作关系。
      *
-     * @param studentId 参数值，用于执行当前操作。
-     *
-     * @return 返回当前操作产生的结果。
+     * @param active 用于完成本次业务处理的 active 参数。
      */
     @GetMapping("/active")
     public Result<List<StudyPlanResponse>> listActiveByStudent(@RequestParam Long studentId) {
@@ -74,11 +68,9 @@ public class StudyPlanController {
     }
 
     /**
-     * {@code getTodayTasks} 查询并返回当前操作所需的数据。
+     * 查询 Study Plan 相关业务操作，并维护必要的状态和协作关系。
      *
-     * @param studentId 参数值，用于执行当前操作。
-     *
-     * @return 返回当前操作产生的结果。
+     * @param tasks 用于完成本次业务处理的 tasks 参数。
      */
     @GetMapping("/today-tasks")
     public Result<List<DailyTaskResponse>> getTodayTasks(@RequestParam Long studentId) {
@@ -87,11 +79,9 @@ public class StudyPlanController {
     }
 
     /**
-     * {@code create} 写入或更新当前模块中的业务数据。
+     * 执行 Study Plan 相关业务操作，并维护必要的状态和协作关系。
      *
-     * @param request 参数值，用于执行当前操作。
-     *
-     * @return 返回当前操作产生的结果。
+     * @param create 用于完成本次业务处理的 create 参数。
      */
     @PostMapping("/create")
     @SaCheckPermission("edu:plan:list")
@@ -101,12 +91,9 @@ public class StudyPlanController {
     }
 
     /**
-     * {@code update} 写入或更新当前模块中的业务数据。
+     * 执行 Study Plan 相关业务操作，并维护必要的状态和协作关系。
      *
-     * @param id 参数值，用于执行当前操作。
-     * @param request 参数值，用于执行当前操作。
-     *
-     * @return 返回当前操作产生的结果。
+     * @param update 用于完成本次业务处理的 update 参数。
      */
     @PostMapping("/update")
     @SaCheckPermission("edu:plan:list")
@@ -118,11 +105,9 @@ public class StudyPlanController {
     }
 
     /**
-     * {@code delete} 释放或移除当前操作涉及的资源。
+     * 执行 Study Plan 相关业务操作，并维护必要的状态和协作关系。
      *
-     * @param id 参数值，用于执行当前操作。
-     *
-     * @return 返回当前操作产生的结果。
+     * @param delete 用于完成本次业务处理的 delete 参数。
      */
     @PostMapping("/delete")
     @SaCheckPermission("edu:plan:list")

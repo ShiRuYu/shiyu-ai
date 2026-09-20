@@ -9,7 +9,7 @@ import java.io.Serial;
 import java.io.Serializable;
 
 /**
- * {@code ExamRequest} 表示教育模块的请求参数，承载调用方提交的输入数据。
+ * 封装 考试 操作所需的请求条件和输入数据。
  */
 @Data
 public class ExamRequest implements Serializable {

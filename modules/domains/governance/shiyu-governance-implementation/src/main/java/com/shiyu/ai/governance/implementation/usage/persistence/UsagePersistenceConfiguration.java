@@ -4,7 +4,7 @@ import org.mybatis.spring.annotation.MapperScan;
 import org.springframework.context.annotation.Configuration;
 
 /**
- * UsagePersistenceConfiguration 配置组件，负责注册和配置治理领域相关基础设施。
+ * 定义 用量 Persistence 基础设施或应用能力的配置项及装配规则。
  */
 @Configuration
 @MapperScan("com.shiyu.ai.governance.implementation.usage.persistence.mapper")

@@ -1,6 +1,6 @@
 package com.shiyu.ai.knowledge.contract;
 
 /**
- * KnowledgeContractModule 模块接口，标识知识模块的边界。
+ * 定义 知识 Contract Module 相关的协作契约和调用边界。
  */
 public interface KnowledgeContractModule {}

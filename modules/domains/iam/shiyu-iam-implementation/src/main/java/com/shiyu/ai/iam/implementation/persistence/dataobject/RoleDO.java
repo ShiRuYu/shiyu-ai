@@ -13,7 +13,9 @@ import lombok.EqualsAndHashCode;
 
 import java.io.Serial;
 
-/** 角色数据对象 */
+/**
+ * 表示 角色 对应的持久化数据对象及其数据库字段。
+ */
 @Data
 @EqualsAndHashCode(callSuper = true)
 @Table(value = "auth_role")

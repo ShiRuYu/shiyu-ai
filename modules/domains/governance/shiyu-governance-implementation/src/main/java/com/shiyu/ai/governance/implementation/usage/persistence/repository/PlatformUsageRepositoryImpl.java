@@ -16,7 +16,7 @@ import java.util.List;
 import java.util.Map;
 
 /**
- * 使用不带租户条件的专用 SQL 实现平台统计。
+ * 负责 平台 用量 的持久化查询、保存和删除，并维护数据访问边界。
  */
 @Component
 public final class PlatformUsageRepositoryImpl

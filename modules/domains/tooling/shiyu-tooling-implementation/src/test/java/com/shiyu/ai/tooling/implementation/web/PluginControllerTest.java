@@ -15,6 +15,9 @@ import org.junit.jupiter.api.Test;
 import java.time.Instant;
 import java.util.List;
 
+/**
+ * 验证 插件 Controller 相关功能、边界条件、异常路径和协作行为。
+ */
 class PluginControllerTest {
     private final PluginRegistry registry = mock(PluginRegistry.class);
     private final PluginMarketService market = mock(PluginMarketService.class);

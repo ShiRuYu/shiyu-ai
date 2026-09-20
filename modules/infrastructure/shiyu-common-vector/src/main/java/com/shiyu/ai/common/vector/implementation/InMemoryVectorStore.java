@@ -8,7 +8,9 @@ import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.stream.Collectors;
 
-/** 内存向量存储 — 基于余弦相似度的暴力搜索 适用于测试和小规模场景 */
+/**
+ * 管理 In 记忆 向量 相关的运行时状态、注册信息或临时数据。
+ */
 public class InMemoryVectorStore implements VectorStore {
 
     /**
@@ -25,18 +27,18 @@ public class InMemoryVectorStore implements VectorStore {
     }
 
     /**
-     * {@code InMemoryVectorStore} 创建并初始化当前类型实例。
+     * 执行 In 记忆 向量 相关业务操作，并维护必要的状态和协作关系。
      *
-     * @param dimension 参数值，用于执行当前操作。
+     * @param dimension 用于完成本次业务处理的 dimension 参数。
      */
     public InMemoryVectorStore(int dimension) {
         this.dimension = dimension;
     }
 
     /**
-     * {@code type} 执行当前类型定义的业务操作。
+     * 执行 In 记忆 向量 相关业务数据，并返回处理结果。
      *
-     * @return 返回当前操作产生的结果。
+     * @return 返回 In 记忆 向量 相关操作生成的结果数据。
      */
     @Override
     public String type() {
@@ -44,9 +46,9 @@ public class InMemoryVectorStore implements VectorStore {
     }
 
     /**
-     * {@code upsert} 执行当前类型定义的业务操作。
+     * 执行 In 记忆 向量 相关业务操作，并维护必要的状态和协作关系。
      *
-     * @param record 参数值，用于执行当前操作。
+     * @param record 用于完成本次业务处理的 record 参数。
      */
     @Override
     public void upsert(VectorRecord record) {
@@ -58,12 +60,11 @@ public class InMemoryVectorStore implements VectorStore {
     }
 
     /**
-     * {@code search} 查询并返回当前操作所需的数据。
+     * 查询 In 记忆 向量 相关业务数据，并返回处理结果。
      *
-     * @param queryVector 参数值，用于执行当前操作。
-     * @param topK 参数值，用于执行当前操作。
-     *
-     * @return 返回当前操作产生的结果。
+     * @param queryVector 用于完成本次业务处理的 queryVector 参数。
+     * @param topK 用于完成本次业务处理的 topK 参数。
+     * @return 返回符合条件的数据集合；没有匹配项时返回空集合。
      */
     @Override
     public List<VectorRecord> search(float[] queryVector, int topK) {
@@ -92,11 +93,10 @@ public class InMemoryVectorStore implements VectorStore {
     }
 
     /**
-     * {@code search} 查询并返回当前操作所需的数据。
+     * 查询 In 记忆 向量 相关业务数据，并返回处理结果。
      *
-     * @param request 参数值，用于执行当前操作。
-     *
-     * @return 返回当前操作产生的结果。
+     * @param request 封装本次操作所需业务字段的请求对象。
+     * @return 返回符合条件的数据集合；没有匹配项时返回空集合。
      */
     @Override
     public List<VectorRecord> search(VectorSearchRequest request) {
@@ -131,9 +131,9 @@ public class InMemoryVectorStore implements VectorStore {
     }
 
     /**
-     * {@code delete} 释放或移除当前操作涉及的资源。
+     * 删除或移除 In 记忆 向量 相关业务操作，并维护必要的状态和协作关系。
      *
-     * @param id 参数值，用于执行当前操作。
+     * @param id 用于定位目标业务对象的标识。
      */
     @Override
     public void delete(String id) {
@@ -141,9 +141,9 @@ public class InMemoryVectorStore implements VectorStore {
     }
 
     /**
-     * {@code deleteBatch} 释放或移除当前操作涉及的资源。
+     * 删除或移除 In 记忆 向量 相关业务操作，并维护必要的状态和协作关系。
      *
-     * @param ids 参数值，用于执行当前操作。
+     * @param ids 待处理的业务对象标识集合。
      */
     @Override
     public void deleteBatch(List<String> ids) {
@@ -151,7 +151,7 @@ public class InMemoryVectorStore implements VectorStore {
     }
 
     /**
-     * {@code rebuild} 执行当前类型定义的业务操作。
+     * 执行 In 记忆 向量 相关业务操作，并维护必要的状态和协作关系。
      */
     @Override
     public void rebuild() {
@@ -159,9 +159,9 @@ public class InMemoryVectorStore implements VectorStore {
     }
 
     /**
-     * {@code size} 执行当前类型定义的业务操作。
+     * 执行 In 记忆 向量 相关业务数据，并返回处理结果。
      *
-     * @return 返回当前操作产生的结果。
+     * @return 返回 In 记忆 向量 相关操作生成的结果数据。
      */
     @Override
     public int size() {
@@ -205,10 +205,7 @@ public class InMemoryVectorStore implements VectorStore {
     }
 
     /**
-     * {@code InternalRecord} 封装平台基础设施模块中不可变的结构化数据，并作为相关操作之间的值对象。
-     * @param id 标识，表示该记录组件承载的数据。
-     * @param vector 向量，表示该记录组件承载的数据。
-     * @param metadata 元数据，表示该记录组件承载的数据。
+     * 封装 Internal 相关的不可变数据及其字段约束。
      */
     private record InternalRecord(String id, float[] vector, Map<String, Object> metadata) {}
 }

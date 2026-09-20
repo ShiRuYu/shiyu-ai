@@ -21,7 +21,9 @@ import lombok.extern.slf4j.Slf4j;
 import java.util.Map;
 import java.util.concurrent.Callable;
 
-/** Agent 执行器 基于 LangGraph4j CompiledGraph，包装检查点、重试、超时等能力 */
+/**
+ * 实现 智能体 Executor 相关的业务处理、协作逻辑或基础设施能力。
+ */
 @Slf4j
 public class AgentExecutor implements AutoCloseable {
 
@@ -47,9 +49,9 @@ public class AgentExecutor implements AutoCloseable {
     private final TimeoutConfig timeoutConfig;
 
     /**
-     * {@code AgentExecutor} 创建并初始化当前类型实例。
+     * 执行 智能体 Executor 相关业务操作，并维护必要的状态和协作关系。
      *
-     * @param checkpointManager 参数值，用于执行当前操作。
+     * @param checkpointManager 用于完成本次业务处理的 checkpointManager 参数。
      */
     public AgentExecutor(CheckpointManager checkpointManager) {
         this.checkpointManager = checkpointManager;

@@ -10,7 +10,9 @@ import java.io.Serial;
 import java.io.Serializable;
 import java.util.List;
 
-/** 批量分配用户角色请求 */
+/**
+ * 封装 Assign 用户 Roles 操作所需的请求条件和输入数据。
+ */
 @Data
 @Schema(description = "分配/移除用户角色请求")
 @SuppressWarnings("serial")

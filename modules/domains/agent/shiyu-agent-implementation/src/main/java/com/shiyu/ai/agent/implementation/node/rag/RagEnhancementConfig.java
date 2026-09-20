@@ -11,15 +11,7 @@ import lombok.NoArgsConstructor;
 import lombok.experimental.SuperBuilder;
 
 /**
- * RAG 增强节点配置
- *
- * <p>配置增强策略、上下文窗口、过滤阈值等参数。 支持策略:
- *
- * <ul>
- *   <li>SUMMARIZATION — 摘要合并（默认）
- *   <li>RE_RANK — 按分数重排序
- *   <li>FILTER — 按相似度阈值过滤
- * </ul>
+ * 定义 Rag Enhancement 基础设施或应用能力的配置项及装配规则。
  */
 @Data
 @SuperBuilder

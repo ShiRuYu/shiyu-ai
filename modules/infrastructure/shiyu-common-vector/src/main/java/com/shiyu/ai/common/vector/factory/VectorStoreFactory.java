@@ -10,33 +10,29 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.jdbc.core.JdbcTemplate;
 
 /**
- * VectorStore 工厂
- *
- * <p>根据配置类型创建对应的 VectorStore 实例。 新增实现时只需在此 switch 中添加分支，无需额外接口或注册文件。
+ * 创建或提供 向量 Store 相关的业务组件和运行时能力。
  */
 @Slf4j
 public class VectorStoreFactory {
 
     /**
-     * {@code create} 写入或更新当前模块中的业务数据。
+     * 创建或保存 向量 Store 相关业务数据，并返回处理结果。
      *
-     * @param type 参数值，用于执行当前操作。
-     * @param properties 参数值，用于执行当前操作。
-     *
-     * @return 返回当前操作产生的结果。
+     * @param type 用于完成本次业务处理的 type 参数。
+     * @param properties 用于完成本次业务处理的 properties 参数。
+     * @return 返回 向量 Store 相关操作生成的结果数据。
      */
     public static VectorStore create(String type, VectorStoreProperties properties) {
         return create(type, properties, null);
     }
 
     /**
-     * {@code create} 写入或更新当前模块中的业务数据。
+     * 创建或保存 向量 Store 相关业务数据，并返回处理结果。
      *
-     * @param type 参数值，用于执行当前操作。
-     * @param properties 参数值，用于执行当前操作。
-     * @param jdbcTemplate 参数值，用于执行当前操作。
-     *
-     * @return 返回当前操作产生的结果。
+     * @param type 用于完成本次业务处理的 type 参数。
+     * @param properties 用于完成本次业务处理的 properties 参数。
+     * @param jdbcTemplate 用于完成本次业务处理的 jdbcTemplate 参数。
+     * @return 返回 向量 Store 相关操作生成的结果数据。
      */
     public static VectorStore create(
             String type, VectorStoreProperties properties, JdbcTemplate jdbcTemplate) {

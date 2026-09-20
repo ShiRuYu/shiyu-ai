@@ -4,7 +4,7 @@ import com.shiyu.ai.kernel.context.ActorContext;
 import com.shiyu.ai.kernel.event.DomainEventEnvelope;
 
 /**
- * UsageGovernance 接口，定义治理模块的能力边界。
+ * 定义 用量 治理 相关的协作契约和调用边界。
  */
 public interface UsageGovernance {
 

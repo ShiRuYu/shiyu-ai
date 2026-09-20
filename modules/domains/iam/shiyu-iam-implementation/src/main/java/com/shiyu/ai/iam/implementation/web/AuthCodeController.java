@@ -22,7 +22,7 @@ import org.springframework.web.bind.annotation.*;
 import java.util.List;
 
 /**
- * AuthCodeController 控制器，负责处理身份与访问领域相关 HTTP 请求并返回响应。
+ * 处理 认证 Code 相关的 Web 请求，并将请求转换为应用服务调用。
  */
 @Tag(name = "Auth Code", description = "Auth Code")
 @RestController
@@ -36,9 +36,9 @@ public class AuthCodeController {
     private final AuthCodeService service;
 
     /**
-     * {@code list} 查询并返回当前操作所需的数据。
+     * 执行 认证 Code 相关业务操作，并维护必要的状态和协作关系。
      *
-     * @return 返回当前操作产生的结果。
+     * @param Codes 用于完成本次业务处理的 Codes 参数。
      */
     @Operation(summary = "List Auth Codes")
     @SaCheckPermission("system:auth-code:list")
@@ -48,12 +48,9 @@ public class AuthCodeController {
     }
 
     /**
-     * {@code listRoleAuthCodes} 查询并返回当前操作所需的数据。
+     * 执行 认证 Code 相关业务操作，并维护必要的状态和协作关系。
      *
-     * @param roleId 参数值，用于执行当前操作。
-     * @param tenantId 参数值，用于执行当前操作。
-     *
-     * @return 返回当前操作产生的结果。
+     * @param codes 用于完成本次业务处理的 codes 参数。
      */
     @Operation(summary = "List role auth codes")
     @SaCheckPermission("system:role:list")
@@ -66,9 +63,9 @@ public class AuthCodeController {
     }
 
     /**
-     * {@code options} 执行当前类型定义的业务操作。
+     * 执行 认证 Code 相关业务操作，并维护必要的状态和协作关系。
      *
-     * @return 返回当前操作产生的结果。
+     * @param options 用于完成本次业务处理的 options 参数。
      */
     @Operation(summary = "Auth code options")
     @SaCheckPermission("system:auth-code:list")
@@ -78,11 +75,9 @@ public class AuthCodeController {
     }
 
     /**
-     * {@code create} 写入或更新当前模块中的业务数据。
+     * 执行 认证 Code 相关业务操作，并维护必要的状态和协作关系。
      *
-     * @param authCode 参数值，用于执行当前操作。
-     *
-     * @return 返回当前操作产生的结果。
+     * @param Code 用于定位或筛选目标业务对象的业务值。
      */
     @Operation(summary = "Create Auth Code")
     @SaCheckPermission("system:auth-code:create")
@@ -92,12 +87,9 @@ public class AuthCodeController {
     }
 
     /**
-     * {@code update} 写入或更新当前模块中的业务数据。
+     * 执行 认证 Code 相关业务操作，并维护必要的状态和协作关系。
      *
-     * @param id 参数值，用于执行当前操作。
-     * @param authCode 参数值，用于执行当前操作。
-     *
-     * @return 返回当前操作产生的结果。
+     * @param Code 用于定位或筛选目标业务对象的业务值。
      */
     @Operation(summary = "Update Auth Code")
     @SaCheckPermission("system:auth-code:update")
@@ -109,11 +101,9 @@ public class AuthCodeController {
     }
 
     /**
-     * {@code delete} 释放或移除当前操作涉及的资源。
+     * 执行 认证 Code 相关业务操作，并维护必要的状态和协作关系。
      *
-     * @param id 参数值，用于执行当前操作。
-     *
-     * @return 返回当前操作产生的结果。
+     * @param Code 用于定位或筛选目标业务对象的业务值。
      */
     @Operation(summary = "Delete Auth Code")
     @SaCheckPermission("system:auth-code:delete")
@@ -125,13 +115,9 @@ public class AuthCodeController {
     }
 
     /**
-     * {@code grant} 执行当前类型定义的业务操作。
+     * 执行 认证 Code 相关业务操作，并维护必要的状态和协作关系。
      *
-     * @param roleId 参数值，用于执行当前操作。
-     * @param tenantId 参数值，用于执行当前操作。
-     * @param authCodeIds 参数值，用于执行当前操作。
-     *
-     * @return 返回当前操作产生的结果。
+     * @param codes 用于完成本次业务处理的 codes 参数。
      */
     @Operation(summary = "Grant role auth codes")
     @SaCheckPermission("system:role:assign")
@@ -150,13 +136,9 @@ public class AuthCodeController {
     }
 
     /**
-     * {@code replace} 执行当前类型定义的业务操作。
+     * 执行 认证 Code 相关业务操作，并维护必要的状态和协作关系。
      *
-     * @param roleId 参数值，用于执行当前操作。
-     * @param tenantId 参数值，用于执行当前操作。
-     * @param authCodes 参数值，用于执行当前操作。
-     *
-     * @return 返回当前操作产生的结果。
+     * @param codes 用于完成本次业务处理的 codes 参数。
      */
     @Operation(summary = "Replace role auth codes")
     @SaCheckPermission("system:role:assign")
@@ -175,13 +157,9 @@ public class AuthCodeController {
     }
 
     /**
-     * {@code revoke} 执行当前类型定义的业务操作。
+     * 执行 认证 Code 相关业务操作，并维护必要的状态和协作关系。
      *
-     * @param roleId 参数值，用于执行当前操作。
-     * @param tenantId 参数值，用于执行当前操作。
-     * @param authCodeId 参数值，用于执行当前操作。
-     *
-     * @return 返回当前操作产生的结果。
+     * @param code 用于定位或筛选目标业务对象的业务值。
      */
     @Operation(summary = "Revoke role auth code")
     @SaCheckPermission("system:role:assign")
@@ -198,11 +176,9 @@ public class AuthCodeController {
     }
 
     /**
-     * {@code page} 执行当前类型定义的业务操作。
+     * 执行 认证 Code 相关业务操作，并维护必要的状态和协作关系。
      *
-     * @param request 参数值，用于执行当前操作。
-     *
-     * @return 返回当前操作产生的结果。
+     * @param Codes 用于完成本次业务处理的 Codes 参数。
      */
     @Operation(summary = "Page Auth Codes")
     @SaCheckPermission("system:auth-code:list")

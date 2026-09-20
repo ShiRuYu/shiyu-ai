@@ -9,65 +9,60 @@ import java.util.List;
 import java.util.Optional;
 
 /**
- * ToolApprovalRepository 仓储接口，负责访问和持久化智能体领域聚合数据。
+ * 负责 工具 Approval 的持久化查询、保存和删除，并维护数据访问边界。
  */
 public interface ToolApprovalRepository {
     /**
-     * 创建并保存业务对象。
+     * 创建或保存 工具 Approval 相关业务操作，并维护必要的状态和协作关系。
      *
-     * @param approval 方法参数。
+     * @param approval 用于完成本次业务处理的 approval 参数。
      */
     void insert(ToolApproval approval);
 
     /**
-     * 根据条件查询并返回所需数据。
+     * 查询 工具 Approval 相关业务数据，并返回处理结果。
      *
-     * @param runId 方法参数。
-     * @param tenantId 租户标识。
-     * @param ownerUserId 方法参数。
-     *
-     * @return 符合条件的结果集合。
+     * @param runId 用于定位run的标识。
+     * @param tenantId 当前操作涉及的租户标识。
+     * @param ownerUserId 当前操作涉及的用户标识。
+     * @return 返回符合条件的数据集合；没有匹配项时返回空集合。
      */
     List<ToolApproval> list(String runId, TenantId tenantId, long ownerUserId);
 
     /**
-     * 根据条件查询并返回所需数据。
+     * 查询 工具 Approval 相关业务数据，并返回处理结果。
      *
-     * @param tenantId 租户标识。
-     * @param ownerUserId 方法参数。
-     *
-     * @return 符合条件的结果集合。
+     * @param tenantId 当前操作涉及的租户标识。
+     * @param ownerUserId 当前操作涉及的用户标识。
+     * @return 返回符合条件的数据集合；没有匹配项时返回空集合。
      */
     List<ToolApproval> listAll(TenantId tenantId, long ownerUserId);
 
     /**
-     * 根据标识查询对应的数据。
+     * 查询 工具 Approval 相关业务数据，并返回处理结果。
      *
-     * @param id 目标对象标识。
-     * @param tenantId 租户标识。
-     * @param ownerUserId 方法参数。
-     *
-     * @return 查询到的结果；未找到时为空。
+     * @param id 用于定位目标业务对象的标识。
+     * @param tenantId 当前操作涉及的租户标识。
+     * @param ownerUserId 当前操作涉及的用户标识。
+     * @return 返回可能存在的业务对象；不存在时返回空值容器。
      */
     Optional<ToolApproval> find(String id, TenantId tenantId, long ownerUserId);
 
     /**
-     * 更新业务对象及其关联数据。
+     * 更新或设置 工具 Approval 相关业务数据，并返回处理结果。
      *
-     * @param approval 方法参数。
-     * @param expectedStatus 方法参数。
-     *
-     * @return 操作影响的记录数或状态码。
+     * @param approval 用于完成本次业务处理的 approval 参数。
+     * @param expectedStatus 用于完成本次业务处理的 expectedStatus 参数。
+     * @return 返回 工具 Approval 相关操作生成的结果数据。
      */
     int update(ToolApproval approval, ToolApprovalStatus expectedStatus);
 
     /**
-     * 执行 {@code expirePending} 定义的接口操作。
+     * 执行 工具 Approval 相关业务数据，并返回处理结果。
      *
-     * @param tenantId 租户标识。
-     * @param ownerUserId 方法参数。
-     *
-     * @return 操作影响的记录数或状态码。
+     * @param tenantId 当前操作涉及的租户标识。
+     * @param ownerUserId 当前操作涉及的用户标识。
+     * @return 返回 工具 Approval 相关操作生成的结果数据。
      */
     int expirePending(TenantId tenantId, long ownerUserId);
 }

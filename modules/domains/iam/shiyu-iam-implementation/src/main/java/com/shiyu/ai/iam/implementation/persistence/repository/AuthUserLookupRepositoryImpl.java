@@ -24,7 +24,7 @@ import java.util.List;
 import java.util.Set;
 
 /**
- * {@code AuthUserLookupRepositoryImpl} 实现平台模块的持久化端口，负责在领域对象与存储模型之间转换。
+ * 负责 认证 用户 Lookup 的持久化查询、保存和删除，并维护数据访问边界。
  */
 @Component
 public class AuthUserLookupRepositoryImpl

@@ -7,7 +7,9 @@ import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
 
-/** 角色分页查询请求 */
+/**
+ * 封装 角色 Page 操作所需的请求条件和输入数据。
+ */
 @Data
 @EqualsAndHashCode(callSuper = true)
 @Schema(description = "角色分页查询请求")

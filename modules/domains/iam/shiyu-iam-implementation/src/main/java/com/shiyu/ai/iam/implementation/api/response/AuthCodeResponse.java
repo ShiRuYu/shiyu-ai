@@ -5,7 +5,7 @@ import lombok.Data;
 import java.time.LocalDateTime;
 
 /**
- * {@code AuthCodeResponse} 表示平台模块的响应数据，承载返回给调用方的结果。
+ * 封装 认证 Code 操作向调用方返回的传输数据。
  */
 @Data
 public class AuthCodeResponse {

@@ -11,7 +11,7 @@ import java.util.List;
 import java.util.Map;
 
 /**
- * {@code UsageServiceImpl} 实现治理模块的应用服务，负责编排用例流程并维护业务边界。
+ * 提供 用量 的查询、创建、更新及调用服务，协调业务变更和领域协作。
  */
 @Service
 @RequiredArgsConstructor
@@ -22,93 +22,87 @@ public class UsageServiceImpl implements UsageService {
     private final UsageRecordRepository repository;
 
     /**
-     * {@code overview} 执行当前类型定义的业务操作。
+     * 执行 用量 相关业务数据，并返回处理结果。
      *
-     * @return 返回当前操作产生的结果。
+     * @return 返回 用量 相关操作生成的结果数据。
      */
     public Map<String, Object> overview() {
         return repository.getOverview();
     }
 
     /**
-     * {@code byDay} 执行当前类型定义的业务操作。
+     * 查询 用量 相关业务数据，并返回处理结果。
      *
-     * @param days 参数值，用于执行当前操作。
-     *
-     * @return 返回当前操作产生的结果。
+     * @param days 用于完成本次业务处理的 days 参数。
+     * @return 返回符合条件的数据集合；没有匹配项时返回空集合。
      */
     public List<Map<String, Object>> byDay(int days) {
         return repository.aggregateByDay(days);
     }
 
     /**
-     * {@code byWeek} 执行当前类型定义的业务操作。
+     * 查询 用量 相关业务数据，并返回处理结果。
      *
-     * @param weeks 参数值，用于执行当前操作。
-     *
-     * @return 返回当前操作产生的结果。
+     * @param weeks 用于完成本次业务处理的 weeks 参数。
+     * @return 返回符合条件的数据集合；没有匹配项时返回空集合。
      */
     public List<Map<String, Object>> byWeek(int weeks) {
         return repository.aggregateByWeek(weeks);
     }
 
     /**
-     * {@code byMonth} 执行当前类型定义的业务操作。
+     * 查询 用量 相关业务数据，并返回处理结果。
      *
-     * @param months 参数值，用于执行当前操作。
-     *
-     * @return 返回当前操作产生的结果。
+     * @param months 用于完成本次业务处理的 months 参数。
+     * @return 返回符合条件的数据集合；没有匹配项时返回空集合。
      */
     public List<Map<String, Object>> byMonth(int months) {
         return repository.aggregateByMonth(months);
     }
 
     /**
-     * {@code byModel} 执行当前类型定义的业务操作。
+     * 查询 用量 相关业务数据，并返回处理结果。
      *
-     * @return 返回当前操作产生的结果。
+     * @return 返回符合条件的数据集合；没有匹配项时返回空集合。
      */
     public List<Map<String, Object>> byModel() {
         return repository.aggregateByModel();
     }
 
     /**
-     * {@code llmByDay} 执行当前类型定义的业务操作。
+     * 执行 用量 相关业务数据，并返回处理结果。
      *
-     * @param days 参数值，用于执行当前操作。
-     *
-     * @return 返回当前操作产生的结果。
+     * @param days 用于完成本次业务处理的 days 参数。
+     * @return 返回符合条件的数据集合；没有匹配项时返回空集合。
      */
     public List<Map<String, Object>> llmByDay(int days) {
         return repository.aggregateLlmByDay(days);
     }
 
     /**
-     * {@code llmByWeek} 执行当前类型定义的业务操作。
+     * 执行 用量 相关业务数据，并返回处理结果。
      *
-     * @param weeks 参数值，用于执行当前操作。
-     *
-     * @return 返回当前操作产生的结果。
+     * @param weeks 用于完成本次业务处理的 weeks 参数。
+     * @return 返回符合条件的数据集合；没有匹配项时返回空集合。
      */
     public List<Map<String, Object>> llmByWeek(int weeks) {
         return repository.aggregateLlmByWeek(weeks);
     }
 
     /**
-     * {@code llmByMonth} 执行当前类型定义的业务操作。
+     * 执行 用量 相关业务数据，并返回处理结果。
      *
-     * @param months 参数值，用于执行当前操作。
-     *
-     * @return 返回当前操作产生的结果。
+     * @param months 用于完成本次业务处理的 months 参数。
+     * @return 返回符合条件的数据集合；没有匹配项时返回空集合。
      */
     public List<Map<String, Object>> llmByMonth(int months) {
         return repository.aggregateLlmByMonth(months);
     }
 
     /**
-     * {@code embeddingOverview} 执行当前类型定义的业务操作。
+     * 执行 用量 相关业务数据，并返回处理结果。
      *
-     * @return 返回当前操作产生的结果。
+     * @return 返回 用量 相关操作生成的结果数据。
      */
     public Map<String, Object> embeddingOverview() {
         return repository.getEmbeddingOverview();

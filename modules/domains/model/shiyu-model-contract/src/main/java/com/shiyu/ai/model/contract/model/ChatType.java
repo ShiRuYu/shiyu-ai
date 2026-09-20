@@ -1,7 +1,7 @@
 package com.shiyu.ai.model.contract.model;
 
 /**
- * ChatType 枚举，定义模型模块可用的业务取值。
+ * 定义 对话 Type 可用的枚举值及其业务语义。
  */
 public enum ChatType {
     SYNC,

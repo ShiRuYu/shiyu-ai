@@ -5,15 +5,14 @@ import com.shiyu.ai.memory.contract.model.*;
 import java.util.List;
 
 /**
- * MemoryRelationContributor 接口，定义记忆模块的能力边界。
+ * 向 记忆 关系 所属的应用或基础设施注册必要的扩展能力。
  */
 public interface MemoryRelationContributor<T> {
     /**
-     * 执行 {@code contribute} 定义的接口操作。
+     * 执行 记忆 关系 相关业务数据，并返回处理结果。
      *
-     * @param source 方法参数。
-     *
-     * @return 符合条件的结果集合。
+     * @param source 用于完成本次业务处理的 source 参数。
+     * @return 返回符合条件的数据集合；没有匹配项时返回空集合。
      */
     List<MemoryEdge> contribute(T source);
 }

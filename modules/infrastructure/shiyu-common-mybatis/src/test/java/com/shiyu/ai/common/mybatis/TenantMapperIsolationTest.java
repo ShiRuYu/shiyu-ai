@@ -19,8 +19,15 @@ import org.junit.jupiter.api.Test;
 import org.springframework.jdbc.core.JdbcTemplate;
 import static org.junit.jupiter.api.Assertions.*;
 
+/**
+ * 验证 租户 Mapper Isolation 相关功能、边界条件、异常路径和协作行为。
+ */
 class TenantMapperIsolationTest {
+    /**
+     * 验证 Probe 相关功能、边界条件、异常路径和协作行为。
+     */
     @Table("tenant_isolation_probe")
+
     public static class Probe {
         @Id private Long id;
         @Column(tenantId = true) private Long tenantId;
@@ -33,7 +40,9 @@ class TenantMapperIsolationTest {
         public void setLabel(String label) { this.label = label; }
     }
 
-    /** 为隔离测试实体执行真实 Flex 数据库操作。 */
+    /**
+     * 验证 Probe 相关功能、边界条件、异常路径和协作行为。
+     */
     public interface ProbeMapper extends BaseMapper<Probe> {}
 
     @Test

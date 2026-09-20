@@ -24,7 +24,7 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 /**
- * {@code KnowledgeJobController} 是知识模块的 Web 接口适配器，负责接收请求并转换为应用服务调用。
+ * 处理 知识 Job 相关的 Web 请求，并将请求转换为应用服务调用。
  */
 @RestController
 @RequestMapping("/api/knowledge/ingestion-jobs")
@@ -39,15 +39,14 @@ public class KnowledgeJobController {
     private final KnowledgeJobService service;
 
     /**
-     * {@code page} 执行当前类型定义的业务操作。
+     * 查询 知识 Job 相关业务数据，并返回处理结果。
      *
-     * @param pageNum 参数值，用于执行当前操作。
-     * @param pageSize 参数值，用于执行当前操作。
-     * @param spaceId 参数值，用于执行当前操作。
-     * @param status 参数值，用于执行当前操作。
-     * @param version 参数值，用于执行当前操作。
-     *
-     * @return 返回当前操作产生的结果。
+     * @param pageNum 用于完成本次业务处理的 pageNum 参数。
+     * @param pageSize 每页返回的数据数量。
+     * @param spaceId 用于定位space的标识。
+     * @param status 用于完成本次业务处理的 status 参数。
+     * @param version 用于完成本次业务处理的 version 参数。
+     * @return 返回 知识 Job 相关操作生成的结果数据。
      */
     @GetMapping
     public Result<PageData<KnowledgeJobService.JobView>> page(
@@ -65,12 +64,10 @@ public class KnowledgeJobController {
     }
 
     /**
-     * {@code get} 查询并返回当前操作所需的数据。
+     * 查询 知识 Job 相关业务数据，并返回处理结果。
      *
-     * @param id 参数值，用于执行当前操作。
-     * @param version 参数值，用于执行当前操作。
-     *
-     * @return 返回当前操作产生的结果。
+     * @param id 用于定位目标业务对象的标识。
+     * @return 返回 知识 Job 相关操作生成的结果数据。
      */
     @GetMapping("/{id}")
     public Result<KnowledgeJobService.JobView> get(
@@ -84,12 +81,10 @@ public class KnowledgeJobController {
     }
 
     /**
-     * {@code cancel} 校验当前操作的输入或状态是否满足约束。
+     * 校验或判断 知识 Job 相关业务数据，并返回处理结果。
      *
-     * @param id 参数值，用于执行当前操作。
-     * @param version 参数值，用于执行当前操作。
-     *
-     * @return 返回当前操作产生的结果。
+     * @param cancel 用于完成本次业务处理的 cancel 参数。
+     * @return 返回 知识 Job 相关操作生成的结果数据。
      */
     @PostMapping("/{id}/cancel")
     @SaCheckPermission("knowledge:edit")
@@ -105,12 +100,10 @@ public class KnowledgeJobController {
     }
 
     /**
-     * {@code retry} 执行当前类型定义的业务操作。
+     * 执行 知识 Job 相关业务数据，并返回处理结果。
      *
-     * @param id 参数值，用于执行当前操作。
-     * @param version 参数值，用于执行当前操作。
-     *
-     * @return 返回当前操作产生的结果。
+     * @param retry 用于完成本次业务处理的 retry 参数。
+     * @return 返回 知识 Job 相关操作生成的结果数据。
      */
     @PostMapping("/{id}/retry")
     @SaCheckPermission("knowledge:edit")

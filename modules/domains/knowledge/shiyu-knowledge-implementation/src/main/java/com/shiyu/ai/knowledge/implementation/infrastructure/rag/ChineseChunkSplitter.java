@@ -10,7 +10,7 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 /**
- * {@code ChineseChunkSplitter} 承载知识模块的领域状态或协作行为，负责维护本类型的职责边界。
+ * 提供 Chinese Chunk Splitter 所属基础设施的适配、存储或运行支持。
  */
 @Slf4j
 public class ChineseChunkSplitter implements ChunkSplitter {
@@ -36,11 +36,10 @@ public class ChineseChunkSplitter implements ChunkSplitter {
     private static final Pattern PARAGRAPH_PATTERN = Pattern.compile("\\n\\s*\\n|\\r\\n\\s*\\r\\n");
 
     /**
-     * {@code split} 执行当前类型定义的业务操作。
+     * 执行 Chinese Chunk Splitter 相关业务数据，并返回处理结果。
      *
-     * @param text 参数值，用于执行当前操作。
-     *
-     * @return 返回当前操作产生的结果。
+     * @param text 用于完成本次业务处理的 text 参数。
+     * @return 返回符合条件的数据集合；没有匹配项时返回空集合。
      */
     @Override
     public List<Chunk> split(String text) {

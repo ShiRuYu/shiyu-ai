@@ -6,7 +6,9 @@ import java.util.List;
 import java.util.Map;
 import java.util.UUID;
 
-/** Agent 执行实例 */
+/**
+ * 表示 Execution 相关流程中的状态、关系或执行数据。
+ */
 public class Execution {
 
     /**
@@ -67,11 +69,11 @@ public class Execution {
     private String lastCheckpointId;
 
     /**
-     * {@code Execution} 创建并初始化当前类型实例。
+     * 执行 Execution 相关业务操作，并维护必要的状态和协作关系。
      *
-     * @param agentId 参数值，用于执行当前操作。
-     * @param version 参数值，用于执行当前操作。
-     * @param input 参数值，用于执行当前操作。
+     * @param agentId 用于定位agent的标识。
+     * @param version 用于完成本次业务处理的 version 参数。
+     * @param input 用于完成本次业务处理的 input 参数。
      */
     public Execution(String agentId, String version, Map<String, Object> input) {
         this(
@@ -145,7 +147,7 @@ public class Execution {
     }
 
     /**
-     * {@code start} 执行当前类型定义的业务操作。
+     * 执行 Execution 相关业务操作，并维护必要的状态和协作关系。
      */
     public synchronized void start() {
         this.status = ExecutionStatus.RUNNING;
@@ -153,9 +155,9 @@ public class Execution {
     }
 
     /**
-     * {@code complete} 执行当前类型定义的业务操作。
+     * 执行 Execution 相关业务操作，并维护必要的状态和协作关系。
      *
-     * @param output 参数值，用于执行当前操作。
+     * @param output 用于完成本次业务处理的 output 参数。
      */
     public synchronized void complete(Map<String, Object> output) {
         this.status = ExecutionStatus.COMPLETED;
@@ -166,9 +168,9 @@ public class Execution {
     }
 
     /**
-     * {@code fail} 执行当前类型定义的业务操作。
+     * 执行 Execution 相关业务操作，并维护必要的状态和协作关系。
      *
-     * @param errorMessage 参数值，用于执行当前操作。
+     * @param errorMessage 用于完成本次业务处理的 errorMessage 参数。
      */
     public synchronized void fail(String errorMessage) {
         this.status = ExecutionStatus.FAILED;
@@ -181,14 +183,14 @@ public class Execution {
     }
 
     /**
-     * {@code pause} 执行当前类型定义的业务操作。
+     * 执行 Execution 相关业务操作，并维护必要的状态和协作关系。
      */
     public synchronized void pause() {
         this.status = ExecutionStatus.PAUSED;
     }
 
     /**
-     * {@code resume} 执行当前类型定义的业务操作。
+     * 执行 Execution 相关业务操作，并维护必要的状态和协作关系。
      */
     public synchronized void resume() {
         this.status = ExecutionStatus.RUNNING;
@@ -226,9 +228,9 @@ public class Execution {
     }
 
     /**
-     * {@code addNodeExecution} 执行当前类型定义的业务操作。
+     * 创建或保存 Execution 相关业务操作，并维护必要的状态和协作关系。
      *
-     * @param nodeExecution 参数值，用于执行当前操作。
+     * @param nodeExecution 用于完成本次业务处理的 nodeExecution 参数。
      */
     public void addNodeExecution(NodeExecution nodeExecution) {
         this.nodeExecutions.add(nodeExecution);
@@ -236,153 +238,153 @@ public class Execution {
 
     // Getters
     /**
-     * {@code getExecutionId} 查询并返回当前操作所需的数据。
+     * 查询 Execution 相关业务数据，并返回处理结果。
      *
-     * @return 返回当前操作产生的结果。
+     * @return 返回 Execution 相关操作生成的结果数据。
      */
     public String getExecutionId() {
         return executionId;
     }
 
     /**
-     * {@code getAgentId} 查询并返回当前操作所需的数据。
+     * 查询 Execution 相关业务数据，并返回处理结果。
      *
-     * @return 返回当前操作产生的结果。
+     * @return 返回 Execution 相关操作生成的结果数据。
      */
     public String getAgentId() {
         return agentId;
     }
 
     /**
-     * {@code getVersion} 查询并返回当前操作所需的数据。
+     * 查询 Execution 相关业务数据，并返回处理结果。
      *
-     * @return 返回当前操作产生的结果。
+     * @return 返回 Execution 相关操作生成的结果数据。
      */
     public String getVersion() {
         return version;
     }
 
     /**
-     * {@code getStatus} 查询并返回当前操作所需的数据。
+     * 查询 Execution 相关业务数据，并返回处理结果。
      *
-     * @return 返回当前操作产生的结果。
+     * @return 返回 Execution 相关操作生成的结果数据。
      */
     public ExecutionStatus getStatus() {
         return status;
     }
 
     /**
-     * {@code getInput} 查询并返回当前操作所需的数据。
+     * 查询 Execution 相关业务数据，并返回处理结果。
      *
-     * @return 返回当前操作产生的结果。
+     * @return 返回 Execution 相关操作生成的结果数据。
      */
     public Map<String, Object> getInput() {
         return input;
     }
 
     /**
-     * {@code getOutput} 查询并返回当前操作所需的数据。
+     * 查询 Execution 相关业务数据，并返回处理结果。
      *
-     * @return 返回当前操作产生的结果。
+     * @return 返回 Execution 相关操作生成的结果数据。
      */
     public Map<String, Object> getOutput() {
         return output;
     }
 
     /**
-     * {@code getErrorMessage} 查询并返回当前操作所需的数据。
+     * 查询 Execution 相关业务数据，并返回处理结果。
      *
-     * @return 返回当前操作产生的结果。
+     * @return 返回 Execution 相关操作生成的结果数据。
      */
     public String getErrorMessage() {
         return errorMessage;
     }
 
     /**
-     * {@code getUserId} 查询并返回当前操作所需的数据。
+     * 查询 Execution 相关业务数据，并返回处理结果。
      *
-     * @return 返回当前操作产生的结果。
+     * @return 返回 Execution 相关操作生成的结果数据。
      */
     public Long getUserId() {
         return userId;
     }
 
     /**
-     * {@code getSessionId} 查询并返回当前操作所需的数据。
+     * 查询 Execution 相关业务数据，并返回处理结果。
      *
-     * @return 返回当前操作产生的结果。
+     * @return 返回 Execution 相关操作生成的结果数据。
      */
     public String getSessionId() {
         return sessionId;
     }
 
     /**
-     * {@code getStartTime} 查询并返回当前操作所需的数据。
+     * 查询 Execution 相关业务数据，并返回处理结果。
      *
-     * @return 返回当前操作产生的结果。
+     * @return 返回 Execution 相关操作生成的结果数据。
      */
     public LocalDateTime getStartTime() {
         return startTime;
     }
 
     /**
-     * {@code getEndTime} 查询并返回当前操作所需的数据。
+     * 查询 Execution 相关业务数据，并返回处理结果。
      *
-     * @return 返回当前操作产生的结果。
+     * @return 返回 Execution 相关操作生成的结果数据。
      */
     public LocalDateTime getEndTime() {
         return endTime;
     }
 
     /**
-     * {@code getDurationMs} 查询并返回当前操作所需的数据。
+     * 查询 Execution 相关业务数据，并返回处理结果。
      *
-     * @return 返回当前操作产生的结果。
+     * @return 返回 Execution 相关操作生成的结果数据。
      */
     public Long getDurationMs() {
         return durationMs;
     }
 
     /**
-     * {@code getNodeExecutions} 查询并返回当前操作所需的数据。
+     * 查询 Execution 相关业务数据，并返回处理结果。
      *
-     * @return 返回当前操作产生的结果。
+     * @return 返回符合条件的数据集合；没有匹配项时返回空集合。
      */
     public List<NodeExecution> getNodeExecutions() {
         return nodeExecutions;
     }
 
     /**
-     * {@code getLastCheckpointId} 查询并返回当前操作所需的数据。
+     * 查询 Execution 相关业务数据，并返回处理结果。
      *
-     * @return 返回当前操作产生的结果。
+     * @return 返回 Execution 相关操作生成的结果数据。
      */
     public String getLastCheckpointId() {
         return lastCheckpointId;
     }
 
     /**
-     * {@code setUserId} 写入或更新当前模块中的业务数据。
+     * 更新或设置 Execution 相关业务操作，并维护必要的状态和协作关系。
      *
-     * @param userId 参数值，用于执行当前操作。
+     * @param userId 当前操作涉及的用户标识。
      */
     public void setUserId(Long userId) {
         this.userId = userId;
     }
 
     /**
-     * {@code setSessionId} 写入或更新当前模块中的业务数据。
+     * 更新或设置 Execution 相关业务操作，并维护必要的状态和协作关系。
      *
-     * @param sessionId 参数值，用于执行当前操作。
+     * @param sessionId 用于定位session的标识。
      */
     public void setSessionId(String sessionId) {
         this.sessionId = sessionId;
     }
 
     /**
-     * {@code setLastCheckpointId} 写入或更新当前模块中的业务数据。
+     * 更新或设置 Execution 相关业务操作，并维护必要的状态和协作关系。
      *
-     * @param lastCheckpointId 参数值，用于执行当前操作。
+     * @param lastCheckpointId 用于定位last Checkpoint的标识。
      */
     public void setLastCheckpointId(String lastCheckpointId) {
         this.lastCheckpointId = lastCheckpointId;

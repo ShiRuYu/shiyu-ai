@@ -5,16 +5,15 @@ import com.shiyu.ai.common.thread.api.TaskDecorator;
 import java.util.concurrent.Callable;
 
 /**
- * 在线程切换时传播租户、用户和追踪上下文。
+ * 实现 Context Task Decorator 相关的业务处理、协作逻辑或基础设施能力。
  */
 public class ContextTaskDecorator implements TaskDecorator {
 
     /**
-     * {@code decorate} 执行当前类型定义的业务操作。
+     * 执行 Context Task Decorator 相关业务数据，并返回处理结果。
      *
-     * @param runnable 参数值，用于执行当前操作。
-     *
-     * @return 返回当前操作产生的结果。
+     * @param runnable 用于完成本次业务处理的 runnable 参数。
+     * @return 返回 Context Task Decorator 相关操作生成的结果数据。
      */
     @Override
     public Runnable decorate(Runnable runnable) {
@@ -22,11 +21,10 @@ public class ContextTaskDecorator implements TaskDecorator {
     }
 
     /**
-     * {@code decorate} 执行当前类型定义的业务操作。
+     * 执行 Context Task Decorator 相关业务数据，并返回处理结果。
      *
-     * @param callable 参数值，用于执行当前操作。
-     *
-     * @return 返回当前操作产生的结果。
+     * @param callable 用于完成本次业务处理的 callable 参数。
+     * @return 返回 Context Task Decorator 相关操作生成的结果数据。
      */
     @Override
     public <V> Callable<V> decorate(Callable<V> callable) {

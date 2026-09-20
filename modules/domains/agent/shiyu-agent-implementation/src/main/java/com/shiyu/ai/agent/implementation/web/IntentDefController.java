@@ -19,7 +19,7 @@ import org.springframework.web.bind.annotation.*;
 import java.util.List;
 
 /**
- * {@code IntentDefController} 是智能体模块的 Web 接口适配器，负责接收请求并转换为应用服务调用。
+ * 处理 Intent Def 相关的 Web 请求，并将请求转换为应用服务调用。
  */
 @RestController
 @RequestMapping("/api/agent/intents")
@@ -31,16 +31,10 @@ public class IntentDefController {
     private final IntentDefService service;
 
     /**
-     * {@code page} 执行当前类型定义的业务操作。
+     * 查询 Intent Def 相关业务数据，并返回处理结果。
      *
-     * @param agentId 参数值，用于执行当前操作。
-     * @param name 参数值，用于执行当前操作。
-     * @param code 参数值，用于执行当前操作。
-     * @param category 参数值，用于执行当前操作。
-     * @param pageNo 参数值，用于执行当前操作。
-     * @param pageSize 参数值，用于执行当前操作。
-     *
-     * @return 返回当前操作产生的结果。
+     * @param list 用于完成本次业务处理的 list 参数。
+     * @return 返回 Intent Def 相关操作生成的结果数据。
      */
     @SaCheckPermission("agent:intent:list")
     @GetMapping("/page")
@@ -64,11 +58,9 @@ public class IntentDefController {
     }
 
     /**
-     * {@code detail} 执行当前类型定义的业务操作。
+     * 执行 Intent Def 相关业务操作，并维护必要的状态和协作关系。
      *
-     * @param id 参数值，用于执行当前操作。
-     *
-     * @return 返回当前操作产生的结果。
+     * @param list 用于完成本次业务处理的 list 参数。
      */
     @SaCheckPermission("agent:intent:list")
     @GetMapping("/detail")
@@ -78,11 +70,9 @@ public class IntentDefController {
     }
 
     /**
-     * {@code create} 写入或更新当前模块中的业务数据。
+     * 执行 Intent Def 相关业务操作，并维护必要的状态和协作关系。
      *
-     * @param r 参数值，用于执行当前操作。
-     *
-     * @return 返回当前操作产生的结果。
+     * @param create 用于完成本次业务处理的 create 参数。
      */
     @SaCheckPermission("agent:intent:create")
     @PostMapping("/create")
@@ -91,12 +81,9 @@ public class IntentDefController {
     }
 
     /**
-     * {@code update} 写入或更新当前模块中的业务数据。
+     * 执行 Intent Def 相关业务操作，并维护必要的状态和协作关系。
      *
-     * @param id 参数值，用于执行当前操作。
-     * @param r 参数值，用于执行当前操作。
-     *
-     * @return 返回当前操作产生的结果。
+     * @param create 用于完成本次业务处理的 create 参数。
      */
     @SaCheckPermission("agent:intent:create")
     @PostMapping("/update")
@@ -106,11 +93,9 @@ public class IntentDefController {
     }
 
     /**
-     * {@code delete} 释放或移除当前操作涉及的资源。
+     * 执行 Intent Def 相关业务操作，并维护必要的状态和协作关系。
      *
-     * @param id 参数值，用于执行当前操作。
-     *
-     * @return 返回当前操作产生的结果。
+     * @param delete 用于完成本次业务处理的 delete 参数。
      */
     @SaCheckPermission("agent:intent:delete")
     @PostMapping("/delete")
@@ -120,11 +105,9 @@ public class IntentDefController {
     }
 
     /**
-     * {@code deleteBatch} 释放或移除当前操作涉及的资源。
+     * 执行 Intent Def 相关业务操作，并维护必要的状态和协作关系。
      *
-     * @param ids 参数值，用于执行当前操作。
-     *
-     * @return 返回当前操作产生的结果。
+     * @param delete 用于完成本次业务处理的 delete 参数。
      */
     @SaCheckPermission("agent:intent:delete")
     @PostMapping("/batch-delete")
@@ -134,9 +117,9 @@ public class IntentDefController {
     }
 
     /**
-     * {@code options} 执行当前类型定义的业务操作。
+     * 查询 Intent Def 相关业务操作，并维护必要的状态和协作关系。
      *
-     * @return 返回当前操作产生的结果。
+     * @param options 用于完成本次业务处理的 options 参数。
      */
     @GetMapping("/options")
     public Result<List<IdNameOptionVO>> options() {

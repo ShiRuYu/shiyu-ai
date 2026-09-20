@@ -1,7 +1,7 @@
 package com.shiyu.ai.agent.contract.node;
 
 /**
- * {@code InputSource} 表示智能体模块中的一组受控业务状态或分类。
+ * 定义 Input Source 可用的枚举值及其业务语义。
  */
 public enum InputSource {
     API_REQUEST("api", "接口入参", "由 HTTP 请求调用者提供"),
@@ -28,27 +28,27 @@ public enum InputSource {
     }
 
     /**
-     * {@code getCode} 查询并返回当前操作所需的数据。
+     * 查询 Input Source 相关业务数据，并返回处理结果。
      *
-     * @return 返回当前操作产生的结果。
+     * @return 返回 Input Source 相关操作生成的结果数据。
      */
     public String getCode() {
         return code;
     }
 
     /**
-     * {@code getLabel} 查询并返回当前操作所需的数据。
+     * 查询 Input Source 相关业务数据，并返回处理结果。
      *
-     * @return 返回当前操作产生的结果。
+     * @return 返回 Input Source 相关操作生成的结果数据。
      */
     public String getLabel() {
         return label;
     }
 
     /**
-     * {@code getDescription} 查询并返回当前操作所需的数据。
+     * 查询 Input Source 相关业务数据，并返回处理结果。
      *
-     * @return 返回当前操作产生的结果。
+     * @return 返回 Input Source 相关操作生成的结果数据。
      */
     public String getDescription() {
         return description;

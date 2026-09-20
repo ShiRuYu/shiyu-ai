@@ -18,10 +18,7 @@ import java.util.function.Function;
 import java.util.stream.Collectors;
 
 /**
- * 内存模拟工具调用服务实现
- *
- * <p>内部使用 {@link McpToolDescriptor} 统一工具描述模型， 维护工具定义注册表和执行器映射，支持动态注册/注销工具。 内置 5
- * 个示例工具（天气查询、计算器、时间日期、随机数、文本统计）， 模拟 MCP/API 调用的行为模式。
+ * 提供 工具 的查询、创建、更新及调用服务，协调业务变更和领域协作。
  */
 @Slf4j
 @Service
@@ -35,7 +32,7 @@ public class ToolServiceImpl implements ToolService {
             new ConcurrentHashMap<>();
 
     /**
-     * {@code init} 执行当前类型定义的业务操作。
+     * 执行 工具 相关业务操作，并维护必要的状态和协作关系。
      */
     @PostConstruct
     public void init() {
@@ -47,12 +44,7 @@ public class ToolServiceImpl implements ToolService {
     // ======================== 兼容旧接口的工具定义包装 ========================
 
     /**
-     * 兼容 {@link McpToolAutoConfiguration} 使用的旧 ToolDefinition 视图
-     *
-     * @param name 名称，表示该记录组件承载的数据。
-     * @param description 描述，表示该记录组件承载的数据。
-     * @param parameters 参数映射，表示该记录组件承载的数据。
-     * @param builtin builtin 属性，表示该记录组件承载的数据。
+     * 封装 工具 相关的不可变数据及其字段约束。
      */
     public record ToolDefinition(
             String name,
@@ -61,10 +53,7 @@ public class ToolServiceImpl implements ToolService {
             boolean builtin) {}
 
     /**
-     * {@code ParameterDef} 封装工具模块中不可变的结构化数据，并作为相关操作之间的值对象。
-     * @param type 类型，表示该记录组件承载的数据。
-     * @param description 描述，表示该记录组件承载的数据。
-     * @param required 是否必填，表示该记录组件承载的数据。
+     * 封装 Parameter Def 相关的不可变数据及其字段约束。
      */
     public record ParameterDef(String type, String description, boolean required) {}
 
@@ -158,12 +147,11 @@ public class ToolServiceImpl implements ToolService {
     // ======================== 工具执行 ========================
 
     /**
-     * {@code execute} 执行当前模块定义的业务流程。
+     * 调用 工具 相关业务数据，并返回处理结果。
      *
-     * @param toolName 参数值，用于执行当前操作。
-     * @param parameters 参数值，用于执行当前操作。
-     *
-     * @return 返回当前操作产生的结果。
+     * @param toolName 用于完成本次业务处理的 toolName 参数。
+     * @param parameters 用于完成本次业务处理的 parameters 参数。
+     * @return 返回 工具 相关操作生成的结果数据。
      */
     @Override
     public ToolExecutionResult execute(String toolName, Map<String, Object> parameters) {
@@ -402,7 +390,7 @@ public class ToolServiceImpl implements ToolService {
     }
 
     /**
-     * {@code ExprParser} 承载工具模块的领域状态或协作行为，负责维护本类型的职责边界。
+     * 解析或编解码 Expr 相关的外部内容和领域数据。
      */
     private static class ExprParser {
         private final String input;

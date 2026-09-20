@@ -14,9 +14,7 @@ import java.io.Serializable;
 import java.time.LocalDateTime;
 
 /**
- * 统一用量记录
- *
- * <p>通用字段由表内列承载，类型专属字段以 JSON 存放于 ext_info。 usage_type 目前支持: LLM / EMBEDDING
+ * 表示 用量 Record 对应的持久化数据对象及其数据库字段。
  */
 @Data
 @Table("governance_usage_record")

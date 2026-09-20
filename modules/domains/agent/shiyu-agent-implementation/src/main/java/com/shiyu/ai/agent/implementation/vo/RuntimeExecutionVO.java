@@ -8,7 +8,7 @@ import java.util.List;
 import java.util.Map;
 
 /**
- * {@code RuntimeExecutionVO} 承载智能体模块的领域状态或协作行为，负责维护本类型的职责边界。
+ * 封装 Runtime Execution 操作向调用方返回的传输数据。
  */
 @Data
 @SuppressWarnings("serial")

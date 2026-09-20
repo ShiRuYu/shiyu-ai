@@ -11,6 +11,9 @@ import com.shiyu.ai.kernel.context.TenantScope;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Test;
 
+/**
+ * 验证 Context 租户 Factory 相关功能、边界条件、异常路径和协作行为。
+ */
 class ContextTenantFactoryTest {
 
     private final ContextTenantFactory factory = new ContextTenantFactory();

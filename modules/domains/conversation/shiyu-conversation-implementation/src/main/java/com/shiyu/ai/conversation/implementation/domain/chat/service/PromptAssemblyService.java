@@ -16,23 +16,22 @@ import java.util.ArrayList;
 import java.util.List;
 
 /**
- * PromptAssemblyService 服务接口，负责执行会话领域相关业务操作。
+ * 提供 提示词 Assembly 的查询、创建、更新及调用服务，协调业务变更和领域协作。
  */
 @Service
 public class PromptAssemblyService {
     /**
-     * {@code assemble} 执行当前类型定义的业务操作。
+     * 构建或转换 提示词 Assembly 相关业务数据，并返回处理结果。
      *
-     * @param platformSafety 参数值，用于执行当前操作。
-     * @param conversationSystem 参数值，用于执行当前操作。
-     * @param character 参数值，用于执行当前操作。
-     * @param persona 参数值，用于执行当前操作。
-     * @param lorebook 参数值，用于执行当前操作。
-     * @param magma 参数值，用于执行当前操作。
-     * @param history 参数值，用于执行当前操作。
-     * @param current 参数值，用于执行当前操作。
-     *
-     * @return 返回当前操作产生的结果。
+     * @param platformSafety 用于完成本次业务处理的 platformSafety 参数。
+     * @param conversationSystem 用于完成本次业务处理的 conversationSystem 参数。
+     * @param character 用于完成本次业务处理的 character 参数。
+     * @param persona 用于完成本次业务处理的 persona 参数。
+     * @param lorebook 用于完成本次业务处理的 lorebook 参数。
+     * @param magma 用于完成本次业务处理的 magma 参数。
+     * @param history 用于完成本次业务处理的 history 参数。
+     * @param current 用于完成本次业务处理的 current 参数。
+     * @return 返回符合条件的数据集合；没有匹配项时返回空集合。
      */
     public List<ConversationMessage> assemble(
             List<ConversationMessage> platformSafety,
@@ -72,20 +71,19 @@ public class PromptAssemblyService {
     }
 
     /**
-     * 构建promptassembly。
+     * 构建或转换 提示词 Assembly 相关业务数据，并返回处理结果。
      *
-     * @param platformSafety platformSafety 参数。
-     * @param conversationSystem conversationSystem 参数。
-     * @param character character 参数。
-     * @param persona persona 参数。
-     * @param lorebook lorebook 参数。
-     * @param magma magma 参数。
-     * @param history history 参数。
-     * @param current current 参数。
-     * @param query query 参数。
-     * @param lorebookTokenBudget lorebookTokenBudget 参数。
-     *
-     * @return 结果列表。
+     * @param platformSafety 用于完成本次业务处理的 platformSafety 参数。
+     * @param conversationSystem 用于完成本次业务处理的 conversationSystem 参数。
+     * @param character 用于完成本次业务处理的 character 参数。
+     * @param persona 用于完成本次业务处理的 persona 参数。
+     * @param lorebook 用于完成本次业务处理的 lorebook 参数。
+     * @param magma 用于完成本次业务处理的 magma 参数。
+     * @param history 用于完成本次业务处理的 history 参数。
+     * @param current 用于完成本次业务处理的 current 参数。
+     * @param query 用于筛选目标数据的查询条件。
+     * @param lorebookTokenBudget 用于完成本次业务处理的 lorebookTokenBudget 参数。
+     * @return 返回符合条件的数据集合；没有匹配项时返回空集合。
      */
     public List<ConversationMessage> assemble(
             List<ConversationMessage> platformSafety,

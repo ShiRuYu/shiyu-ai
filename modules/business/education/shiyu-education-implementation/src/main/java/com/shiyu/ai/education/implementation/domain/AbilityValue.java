@@ -3,16 +3,7 @@ package com.shiyu.ai.education.implementation.domain;
 import java.time.LocalDateTime;
 
 /**
- * {@code AbilityValue} 封装教育模块中不可变的结构化数据，并作为相关操作之间的值对象。
- * @param studentId 学生标识，表示该记录组件承载的数据。
- * @param knowledgeId knowledgeId 属性，表示该记录组件承载的数据。
- * @param remember remember 属性，表示该记录组件承载的数据。
- * @param understand understand 属性，表示该记录组件承载的数据。
- * @param apply apply 属性，表示该记录组件承载的数据。
- * @param analyze analyze 属性，表示该记录组件承载的数据。
- * @param evaluate evaluate 属性，表示该记录组件承载的数据。
- * @param create create 属性，表示该记录组件承载的数据。
- * @param lastUpdated lastUpdated 属性，表示该记录组件承载的数据。
+ * 封装 Ability Value 相关的不可变数据及其字段约束。
  */
 public record AbilityValue(
         Long studentId,

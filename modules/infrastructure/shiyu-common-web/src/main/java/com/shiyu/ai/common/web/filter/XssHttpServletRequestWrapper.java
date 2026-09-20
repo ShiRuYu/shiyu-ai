@@ -17,7 +17,9 @@ import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
 
-/** XSS过滤处理 */
+/**
+ * 承载 Xss Http Servlet Request Wrapper 所属 Web 能力的请求适配和边界处理。
+ */
 public class XssHttpServletRequestWrapper extends HttpServletRequestWrapper {
     /**
      * 处理xsshttpservlet请求wrapper。
@@ -31,11 +33,10 @@ public class XssHttpServletRequestWrapper extends HttpServletRequestWrapper {
     }
 
     /**
-     * {@code getParameterValues} 查询并返回当前操作所需的数据。
+     * 查询 Xss Http Servlet Request Wrapper 相关业务数据，并返回处理结果。
      *
-     * @param name 参数值，用于执行当前操作。
-     *
-     * @return 返回当前操作产生的结果。
+     * @param name 用于定位或筛选目标业务对象的业务值。
+     * @return 返回 Xss Http Servlet Request Wrapper 相关操作生成的结果数据。
      */
     @Override
     public String[] getParameterValues(String name) {
@@ -53,9 +54,9 @@ public class XssHttpServletRequestWrapper extends HttpServletRequestWrapper {
     }
 
     /**
-     * {@code getInputStream} 查询并返回当前操作所需的数据。
+     * 查询 Xss Http Servlet Request Wrapper 相关业务数据，并返回处理结果。
      *
-     * @return 返回当前操作产生的结果。
+     * @return 返回 Xss Http Servlet Request Wrapper 相关操作生成的结果数据。
      */
     @Override
     public ServletInputStream getInputStream() throws IOException {

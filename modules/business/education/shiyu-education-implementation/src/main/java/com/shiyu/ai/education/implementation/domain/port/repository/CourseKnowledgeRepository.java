@@ -6,7 +6,7 @@ import com.shiyu.ai.kernel.context.TenantId;
 import java.util.List;
 
 /**
- * CourseKnowledgeRepository 仓储接口，负责访问和持久化教育领域聚合数据。
+ * 负责 课程 知识 的持久化查询、保存和删除，并维护数据访问边界。
  */
 public interface CourseKnowledgeRepository {
     /**

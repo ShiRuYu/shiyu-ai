@@ -7,6 +7,9 @@ import org.junit.jupiter.api.Test;
 import org.springframework.boot.test.context.runner.ApplicationContextRunner;
 import org.springframework.context.annotation.Configuration;
 
+/**
+ * 验证 Business Module Condition 相关功能、边界条件、异常路径和协作行为。
+ */
 class BusinessModuleConditionTest {
 
     private final ApplicationContextRunner contextRunner =
@@ -53,11 +56,19 @@ class BusinessModuleConditionTest {
                 .isInstanceOf(IllegalArgumentException.class);
     }
 
+    /**
+     * 验证 Enabled Module 相关功能、边界条件、异常路径和协作行为。
+     */
     @Configuration(proxyBeanMethods = false)
     @ConditionalOnBusinessModule(value = "enabled", matchIfMissing = true)
+
     static class EnabledModule {}
 
+    /**
+     * 验证 Disabled By Default Module 相关功能、边界条件、异常路径和协作行为。
+     */
     @Configuration(proxyBeanMethods = false)
     @ConditionalOnBusinessModule(value = "disabled-by-default", matchIfMissing = false)
+
     static class DisabledByDefaultModule {}
 }

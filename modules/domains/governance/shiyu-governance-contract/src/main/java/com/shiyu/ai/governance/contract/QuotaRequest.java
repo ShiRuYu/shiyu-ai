@@ -1,9 +1,7 @@
 package com.shiyu.ai.governance.contract;
 
 /**
- * 处理配额请求。
- * @param estimatedPromptTokens estimatedPromptTokens 属性，表示该记录组件承载的数据。
- * @param maxConcurrent maxConcurrent 属性，表示该记录组件承载的数据。
+ * 封装 Quota 相关的不可变数据及其字段约束。
  */
 public record QuotaRequest(int estimatedPromptTokens, int maxConcurrent) {
     public QuotaRequest {

@@ -5,7 +5,9 @@ import lombok.Data;
 import java.io.Serial;
 import java.io.Serializable;
 
-/** LearningState 业务对象 */
+/**
+ * 表示 Learning State 领域对象的业务状态和属性。
+ */
 @Data
 public class LearningStateBO implements Serializable {
 

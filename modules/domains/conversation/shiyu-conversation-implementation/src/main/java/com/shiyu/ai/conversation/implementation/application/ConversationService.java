@@ -25,7 +25,7 @@ import java.util.Objects;
 import java.util.UUID;
 
 /**
- * {@code ConversationService} 定义会话模块的应用服务能力，供上层用例调用。
+ * 提供 会话 的查询、创建、更新及调用服务，协调业务变更和领域协作。
  */
 @Service
 public class ConversationService {
@@ -39,10 +39,10 @@ public class ConversationService {
     private final GenerationRepository generationRepository;
 
     /**
-     * {@code ConversationService} 创建并初始化当前类型实例。
+     * 执行 会话 相关业务操作，并维护必要的状态和协作关系。
      *
-     * @param repository 参数值，用于执行当前操作。
-     * @param generationRepository 参数值，用于执行当前操作。
+     * @param repository 用于完成本次业务处理的 repository 参数。
+     * @param generationRepository 用于完成本次业务处理的 generationRepository 参数。
      */
     public ConversationService(
             ConversationRepository repository, GenerationRepository generationRepository) {
@@ -51,17 +51,16 @@ public class ConversationService {
     }
 
     /**
-     * {@code create} 写入或更新当前模块中的业务数据。
+     * 创建或保存 会话 相关业务数据，并返回处理结果。
      *
-     * @param tenantId 参数值，用于执行当前操作。
-     * @param ownerUserId 参数值，用于执行当前操作。
-     * @param sceneType 参数值，用于执行当前操作。
-     * @param title 参数值，用于执行当前操作。
-     * @param platform 参数值，用于执行当前操作。
-     * @param model 参数值，用于执行当前操作。
-     * @param systemPrompt 参数值，用于执行当前操作。
-     *
-     * @return 返回当前操作产生的结果。
+     * @param tenantId 当前操作涉及的租户标识。
+     * @param ownerUserId 当前操作涉及的用户标识。
+     * @param sceneType 用于完成本次业务处理的 sceneType 参数。
+     * @param title 用于完成本次业务处理的 title 参数。
+     * @param platform 用于完成本次业务处理的 platform 参数。
+     * @param model 用于完成本次业务处理的 model 参数。
+     * @param systemPrompt 用于完成本次业务处理的 systemPrompt 参数。
+     * @return 返回 会话 相关操作生成的结果数据。
      */
     public Conversation create(
             TenantId tenantId,
@@ -101,12 +100,11 @@ public class ConversationService {
     }
 
     /**
-     * {@code branch} 执行当前类型定义的业务操作。
+     * 执行 会话 相关业务数据，并返回处理结果。
      *
-     * @param source 参数值，用于执行当前操作。
-     * @param messageId 参数值，用于执行当前操作。
-     *
-     * @return 返回当前操作产生的结果。
+     * @param source 用于完成本次业务处理的 source 参数。
+     * @param messageId 用于定位message的标识。
+     * @return 返回 会话 相关操作生成的结果数据。
      */
     public Conversation branch(Conversation source, String messageId) {
         Instant now = Instant.now();
@@ -132,12 +130,11 @@ public class ConversationService {
     }
 
     /**
-     * {@code appendUserMessage} 执行当前类型定义的业务操作。
+     * 执行 会话 相关业务数据，并返回处理结果。
      *
-     * @param conversation 参数值，用于执行当前操作。
-     * @param content 参数值，用于执行当前操作。
-     *
-     * @return 返回当前操作产生的结果。
+     * @param conversation 用于完成本次业务处理的 conversation 参数。
+     * @param content 用于完成本次业务处理的 content 参数。
+     * @return 返回 会话 相关操作生成的结果数据。
      */
     public ConversationMessage appendUserMessage(Conversation conversation, String content) {
         return appendMessage(
@@ -150,16 +147,15 @@ public class ConversationService {
     }
 
     /**
-     * {@code appendMessage} 执行当前类型定义的业务操作。
+     * 执行 会话 相关业务数据，并返回处理结果。
      *
-     * @param conversation 参数值，用于执行当前操作。
-     * @param parentMessageId 参数值，用于执行当前操作。
-     * @param role 参数值，用于执行当前操作。
-     * @param content 参数值，用于执行当前操作。
-     * @param parts 参数值，用于执行当前操作。
-     * @param toolCall 参数值，用于执行当前操作。
-     *
-     * @return 返回当前操作产生的结果。
+     * @param conversation 用于完成本次业务处理的 conversation 参数。
+     * @param parentMessageId 用于定位parent 消息的标识。
+     * @param role 用于完成本次业务处理的 role 参数。
+     * @param content 用于完成本次业务处理的 content 参数。
+     * @param parts 用于完成本次业务处理的 parts 参数。
+     * @param toolCall 用于完成本次业务处理的 toolCall 参数。
+     * @return 返回 会话 相关操作生成的结果数据。
      */
     public ConversationMessage appendMessage(
             Conversation conversation,
@@ -172,17 +168,16 @@ public class ConversationService {
     }
 
     /**
-     * {@code appendMessage} 执行当前类型定义的业务操作。
+     * 执行 会话 相关业务数据，并返回处理结果。
      *
-     * @param conversation 参数值，用于执行当前操作。
-     * @param parentMessageId 参数值，用于执行当前操作。
-     * @param role 参数值，用于执行当前操作。
-     * @param content 参数值，用于执行当前操作。
-     * @param parts 参数值，用于执行当前操作。
-     * @param toolCall 参数值，用于执行当前操作。
-     * @param sourceMessageId 参数值，用于执行当前操作。
-     *
-     * @return 返回当前操作产生的结果。
+     * @param conversation 用于完成本次业务处理的 conversation 参数。
+     * @param parentMessageId 用于定位parent 消息的标识。
+     * @param role 用于完成本次业务处理的 role 参数。
+     * @param content 用于完成本次业务处理的 content 参数。
+     * @param parts 用于完成本次业务处理的 parts 参数。
+     * @param toolCall 用于完成本次业务处理的 toolCall 参数。
+     * @param sourceMessageId 用于定位source 消息的标识。
+     * @return 返回 会话 相关操作生成的结果数据。
      */
     public ConversationMessage appendMessage(
             Conversation conversation,
@@ -250,14 +245,13 @@ public class ConversationService {
     }
 
     /**
-     * {@code createGeneration} 写入或更新当前模块中的业务数据。
+     * 创建或保存 会话 相关业务数据，并返回处理结果。
      *
-     * @param conversation 参数值，用于执行当前操作。
-     * @param userMessage 参数值，用于执行当前操作。
-     * @param platform 参数值，用于执行当前操作。
-     * @param model 参数值，用于执行当前操作。
-     *
-     * @return 返回当前操作产生的结果。
+     * @param conversation 用于完成本次业务处理的 conversation 参数。
+     * @param userMessage 用于完成本次业务处理的 userMessage 参数。
+     * @param platform 用于完成本次业务处理的 platform 参数。
+     * @param model 用于完成本次业务处理的 model 参数。
+     * @return 返回 会话 相关操作生成的结果数据。
      */
     public GenerationRun createGeneration(
             Conversation conversation,
@@ -268,15 +262,14 @@ public class ConversationService {
     }
 
     /**
-     * {@code createGeneration} 写入或更新当前模块中的业务数据。
+     * 创建或保存 会话 相关业务数据，并返回处理结果。
      *
-     * @param conversation 参数值，用于执行当前操作。
-     * @param userMessage 参数值，用于执行当前操作。
-     * @param platform 参数值，用于执行当前操作。
-     * @param model 参数值，用于执行当前操作。
-     * @param speakerId 参数值，用于执行当前操作。
-     *
-     * @return 返回当前操作产生的结果。
+     * @param conversation 用于完成本次业务处理的 conversation 参数。
+     * @param userMessage 用于完成本次业务处理的 userMessage 参数。
+     * @param platform 用于完成本次业务处理的 platform 参数。
+     * @param model 用于完成本次业务处理的 model 参数。
+     * @param speakerId 用于定位speaker的标识。
+     * @return 返回 会话 相关操作生成的结果数据。
      */
     public GenerationRun createGeneration(
             Conversation conversation,

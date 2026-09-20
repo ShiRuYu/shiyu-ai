@@ -6,7 +6,9 @@ import java.io.Serial;
 import java.io.Serializable;
 import java.time.LocalDateTime;
 
-/** Entity基类 */
+/**
+ * 表示 Base 领域对象的业务状态和属性。
+ */
 @Data
 public class BaseEntity implements Serializable {
 

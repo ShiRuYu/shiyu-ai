@@ -7,7 +7,9 @@ import com.shiyu.ai.iam.implementation.persistence.dataobject.MenuDO;
 
 import org.apache.ibatis.annotations.Mapper;
 
-/** 菜单表 数据层 */
+/**
+ * 负责 Menu 的持久化查询、保存和删除，并维护数据访问边界。
+ */
 @Mapper
 @UseDataSource(DataSourceConfig.AGENT)
 public interface MenuMapper extends BaseMapperFlex<MenuDO> {}

@@ -15,7 +15,7 @@ import java.util.List;
 import java.util.UUID;
 
 /**
- * {@code ToolApprovalService} 定义智能体模块的应用服务能力，供上层用例调用。
+ * 提供 工具 Approval 的查询、创建、更新及调用服务，协调业务变更和领域协作。
  */
 @Service
 public class ToolApprovalService {
@@ -32,9 +32,9 @@ public class ToolApprovalService {
     }
 
     /**
-     * {@code ToolApprovalService} 创建并初始化当前类型实例。
+     * 构建或转换 工具 Approval 相关业务操作，并维护必要的状态和协作关系。
      *
-     * @param approvals 参数值，用于执行当前操作。
+     * @param approvals 用于完成本次业务处理的 approvals 参数。
      */
     @Autowired
     public ToolApprovalService(ToolApprovalRepository approvals) {
@@ -42,15 +42,14 @@ public class ToolApprovalService {
     }
 
     /**
-     * {@code request} 执行当前类型定义的业务操作。
+     * 执行 工具 Approval 相关业务数据，并返回处理结果。
      *
-     * @param runId 参数值，用于执行当前操作。
-     * @param tenantId 参数值，用于执行当前操作。
-     * @param ownerUserId 参数值，用于执行当前操作。
-     * @param toolName 参数值，用于执行当前操作。
-     * @param argumentsRedacted 参数值，用于执行当前操作。
-     *
-     * @return 返回当前操作产生的结果。
+     * @param runId 用于定位run的标识。
+     * @param tenantId 当前操作涉及的租户标识。
+     * @param ownerUserId 当前操作涉及的用户标识。
+     * @param toolName 用于完成本次业务处理的 toolName 参数。
+     * @param argumentsRedacted 用于完成本次业务处理的 argumentsRedacted 参数。
+     * @return 返回 工具 Approval 相关操作生成的结果数据。
      */
     public ToolApproval request(
             String runId,
@@ -77,13 +76,12 @@ public class ToolApprovalService {
     }
 
     /**
-     * {@code list} 查询并返回当前操作所需的数据。
+     * 查询 工具 Approval 相关业务数据，并返回处理结果。
      *
-     * @param runId 参数值，用于执行当前操作。
-     * @param tenantId 参数值，用于执行当前操作。
-     * @param ownerUserId 参数值，用于执行当前操作。
-     *
-     * @return 返回当前操作产生的结果。
+     * @param runId 用于定位run的标识。
+     * @param tenantId 当前操作涉及的租户标识。
+     * @param ownerUserId 当前操作涉及的用户标识。
+     * @return 返回符合条件的数据集合；没有匹配项时返回空集合。
      */
     public List<ToolApproval> list(String runId, TenantId tenantId, long ownerUserId) {
         TenantId tenant = requireTenant(tenantId);
@@ -92,12 +90,11 @@ public class ToolApprovalService {
     }
 
     /**
-     * {@code listAll} 查询并返回当前操作所需的数据。
+     * 查询 工具 Approval 相关业务数据，并返回处理结果。
      *
-     * @param tenantId 参数值，用于执行当前操作。
-     * @param ownerUserId 参数值，用于执行当前操作。
-     *
-     * @return 返回当前操作产生的结果。
+     * @param tenantId 当前操作涉及的租户标识。
+     * @param ownerUserId 当前操作涉及的用户标识。
+     * @return 返回符合条件的数据集合；没有匹配项时返回空集合。
      */
     public List<ToolApproval> listAll(TenantId tenantId, long ownerUserId) {
         TenantId tenant = requireTenant(tenantId);
@@ -106,13 +103,12 @@ public class ToolApprovalService {
     }
 
     /**
-     * {@code require} 执行当前类型定义的业务操作。
+     * 获取并校验 工具 Approval 相关业务数据，并返回处理结果。
      *
-     * @param id 参数值，用于执行当前操作。
-     * @param tenantId 参数值，用于执行当前操作。
-     * @param ownerUserId 参数值，用于执行当前操作。
-     *
-     * @return 返回当前操作产生的结果。
+     * @param id 用于定位目标业务对象的标识。
+     * @param tenantId 当前操作涉及的租户标识。
+     * @param ownerUserId 当前操作涉及的用户标识。
+     * @return 返回 工具 Approval 相关操作生成的结果数据。
      */
     public ToolApproval require(String id, TenantId tenantId, long ownerUserId) {
         TenantId tenant = requireTenant(tenantId);
@@ -123,14 +119,13 @@ public class ToolApprovalService {
     }
 
     /**
-     * {@code decide} 执行当前类型定义的业务操作。
+     * 执行 工具 Approval 相关业务数据，并返回处理结果。
      *
-     * @param id 参数值，用于执行当前操作。
-     * @param tenantId 参数值，用于执行当前操作。
-     * @param ownerUserId 参数值，用于执行当前操作。
-     * @param status 参数值，用于执行当前操作。
-     *
-     * @return 返回当前操作产生的结果。
+     * @param id 用于定位目标业务对象的标识。
+     * @param tenantId 当前操作涉及的租户标识。
+     * @param ownerUserId 当前操作涉及的用户标识。
+     * @param status 用于完成本次业务处理的 status 参数。
+     * @return 返回 工具 Approval 相关操作生成的结果数据。
      */
     public ToolApproval decide(
             String id, TenantId tenantId, long ownerUserId, ToolApprovalStatus status) {

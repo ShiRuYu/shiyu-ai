@@ -21,18 +21,17 @@ import org.springframework.data.redis.core.StringRedisTemplate;
 import java.net.URI;
 
 /**
- * RedisInfrastructureConfiguration 配置组件，负责注册和配置基础设施领域相关基础设施。
+ * 定义 Redis Infrastructure 基础设施或应用能力的配置项及装配规则。
  */
 @Configuration(proxyBeanMethods = false)
 @EnableConfigurationProperties(RedisInfrastructureProperties.class)
 public class RedisInfrastructureConfiguration {
 
     /**
-     * {@code redisProviderValidator} 执行当前类型定义的业务操作。
+     * 执行 Redis Infrastructure 相关业务数据，并返回处理结果。
      *
-     * @param properties 参数值，用于执行当前操作。
-     *
-     * @return 返回当前操作产生的结果。
+     * @param properties 用于完成本次业务处理的 properties 参数。
+     * @return 返回 Redis Infrastructure 相关操作生成的结果数据。
      */
     @Bean
     public RedisProviderValidator redisProviderValidator(RedisInfrastructureProperties properties) {
@@ -72,11 +71,11 @@ public class RedisInfrastructureConfiguration {
    }
 
    /**
-    * {@code stringRedisTemplate} 执行当前类型定义的业务操作。
-     *
-     * @param connectionFactory 参数值，用于执行当前操作。
-     *
-    * @return 返回当前操作产生的结果。
+    * 执行 Redis Infrastructure 相关业务操作，并维护必要的状态和协作关系。
+    *
+    * @param redis 用于完成本次业务处理的 redis 参数。
+    * @param provider 用于完成本次业务处理的 provider 参数。
+    * @param redis 用于完成本次业务处理的 redis 参数。
     */
    @Bean
    @ConditionalOnProperty(
@@ -87,14 +86,13 @@ public class RedisInfrastructureConfiguration {
         return new StringRedisTemplate(connectionFactory);
     }
 
-   /**
-    * {@code redisLeaseStore} 执行当前类型定义的业务操作。
+    /**
+     * 执行 Redis Infrastructure 相关业务操作，并维护必要的状态和协作关系。
      *
-     * @param redis 参数值，用于执行当前操作。
-     * @param properties 参数值，用于执行当前操作。
-     *
-    * @return 返回当前操作产生的结果。
-    */
+     * @param redis 用于完成本次业务处理的 redis 参数。
+     * @param provider 用于完成本次业务处理的 provider 参数。
+     * @param redis 用于完成本次业务处理的 redis 参数。
+     */
     @Bean
     @ConditionalOnProperty(
             prefix = "shiyu.infrastructure.redis",
@@ -105,14 +103,13 @@ public class RedisInfrastructureConfiguration {
         return new RedisLeaseStore(redis, properties);
    }
 
-   /**
-    * {@code redisRateLimitStore} 执行当前类型定义的业务操作。
+    /**
+     * 执行 Redis Infrastructure 相关业务操作，并维护必要的状态和协作关系。
      *
-     * @param redis 参数值，用于执行当前操作。
-     * @param properties 参数值，用于执行当前操作。
-     *
-    * @return 返回当前操作产生的结果。
-    */
+     * @param redis 用于完成本次业务处理的 redis 参数。
+     * @param provider 用于完成本次业务处理的 provider 参数。
+     * @param redis 用于完成本次业务处理的 redis 参数。
+     */
     @Bean
     @ConditionalOnProperty(
             prefix = "shiyu.infrastructure.redis",
@@ -123,14 +120,13 @@ public class RedisInfrastructureConfiguration {
         return new RedisRateLimitStore(redis, properties);
    }
 
-   /**
-    * {@code redisIdempotencyStore} 执行当前类型定义的业务操作。
+    /**
+     * 执行 Redis Infrastructure 相关业务操作，并维护必要的状态和协作关系。
      *
-     * @param redis 参数值，用于执行当前操作。
-     * @param properties 参数值，用于执行当前操作。
-     *
-    * @return 返回当前操作产生的结果。
-    */
+     * @param redis 用于完成本次业务处理的 redis 参数。
+     * @param provider 用于完成本次业务处理的 provider 参数。
+     * @param redis 用于完成本次业务处理的 redis 参数。
+     */
     @Bean
     @ConditionalOnProperty(
             prefix = "shiyu.infrastructure.redis",
@@ -142,7 +138,7 @@ public class RedisInfrastructureConfiguration {
     }
 
     /**
-     * {@code RedisProviderValidator} 封装平台基础设施模块中不可变的结构化数据，并作为相关操作之间的值对象。
+     * 封装 Redis Provider 相关的不可变数据及其字段约束。
      */
     public record RedisProviderValidator() {}
 }

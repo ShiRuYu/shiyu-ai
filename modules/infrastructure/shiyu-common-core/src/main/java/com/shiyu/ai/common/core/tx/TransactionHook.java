@@ -1,27 +1,27 @@
 package com.shiyu.ai.common.core.tx;
 
 /**
- * TransactionHook 接口，定义基础设施模块的能力边界。
+ * 定义 Transaction Hook 相关的协作契约和调用边界。
  */
 public interface TransactionHook {
 
     /**
-     * 执行 {@code beforeCommit} 定义的接口操作。
+     * 执行 Transaction Hook 相关业务操作，并维护必要的状态和协作关系。
      */
     default void beforeCommit() {}
 
     /**
-     * 执行 {@code afterCommit} 定义的接口操作。
+     * 执行 Transaction Hook 相关业务操作，并维护必要的状态和协作关系。
      */
     default void afterCommit() {}
 
     /**
-     * 执行 {@code afterRollback} 定义的接口操作。
+     * 执行 Transaction Hook 相关业务操作，并维护必要的状态和协作关系。
      */
     default void afterRollback() {}
 
     /**
-     * 执行 {@code afterCompletion} 定义的接口操作。
+     * 执行 Transaction Hook 相关业务操作，并维护必要的状态和协作关系。
      */
     default void afterCompletion() {}
 }

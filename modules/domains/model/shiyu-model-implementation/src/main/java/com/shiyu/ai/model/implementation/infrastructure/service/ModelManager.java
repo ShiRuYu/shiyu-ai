@@ -31,7 +31,7 @@ import java.util.concurrent.ConcurrentHashMap;
 import java.util.stream.Collectors;
 
 /**
- * {@code ModelManager} 承载模型模块的领域状态或协作行为，负责维护本类型的职责边界。
+ * 管理 模型 相关的运行时状态、注册信息或临时数据。
  */
 @Slf4j
 @Service
@@ -66,11 +66,11 @@ public class ModelManager implements ApplicationRunner, ModelRoutingPort {
     private volatile DeepSeekHttpProvider deepSeekProvider;
 
     /**
-     * {@code ModelManager} 创建并初始化当前类型实例。
+     * 执行 模型 相关业务操作，并维护必要的状态和协作关系。
      *
-     * @param platformRepository 参数值，用于执行当前操作。
-     * @param modelRepository 参数值，用于执行当前操作。
-     * @param platformProperties 参数值，用于执行当前操作。
+     * @param platformRepository 用于完成本次业务处理的 platformRepository 参数。
+     * @param modelRepository 用于完成本次业务处理的 modelRepository 参数。
+     * @param platformProperties 用于完成本次业务处理的 platformProperties 参数。
      */
     public ModelManager(
             AiPlatformRepository platformRepository,
@@ -90,9 +90,9 @@ public class ModelManager implements ApplicationRunner, ModelRoutingPort {
     }
 
     /**
-     * {@code run} 执行当前模块定义的业务流程。
+     * 执行 模型 相关业务操作，并维护必要的状态和协作关系。
      *
-     * @param args 参数值，用于执行当前操作。
+     * @param args 用于完成本次业务处理的 args 参数。
      */
     @Override
     public void run(ApplicationArguments args) {
@@ -100,7 +100,7 @@ public class ModelManager implements ApplicationRunner, ModelRoutingPort {
     }
 
     /**
-     * {@code reloadFromDb} 执行当前类型定义的业务操作。
+     * 执行 模型 相关业务操作，并维护必要的状态和协作关系。
      */
     public synchronized void reloadFromDb() {
         log.info("=== 开始加载平台适配器 ===");
@@ -270,9 +270,9 @@ public class ModelManager implements ApplicationRunner, ModelRoutingPort {
     }
 
     /**
-     * {@code registerAdapter} 写入或更新当前模块中的业务数据。
+     * 创建或保存 模型 相关业务操作，并维护必要的状态和协作关系。
      *
-     * @param adapter 参数值，用于执行当前操作。
+     * @param adapter 用于完成本次业务处理的 adapter 参数。
      */
     public void registerAdapter(ModelAdapter adapter) {
         String platformType = adapter.getPlatformType();
@@ -281,9 +281,9 @@ public class ModelManager implements ApplicationRunner, ModelRoutingPort {
     }
 
     /**
-     * {@code unregisterAdapter} 执行当前类型定义的业务操作。
+     * 执行 模型 相关业务操作，并维护必要的状态和协作关系。
      *
-     * @param platformType 参数值，用于执行当前操作。
+     * @param platformType 用于完成本次业务处理的 platformType 参数。
      */
     public void unregisterAdapter(String platformType) {
         ModelAdapter removed = adapterMap.remove(platformType);
@@ -294,12 +294,11 @@ public class ModelManager implements ApplicationRunner, ModelRoutingPort {
     }
 
     /**
-     * {@code getChatModel} 查询并返回当前操作所需的数据。
+     * 查询 模型 相关业务数据，并返回处理结果。
      *
-     * @param platformType 参数值，用于执行当前操作。
-     * @param modelName 参数值，用于执行当前操作。
-     *
-     * @return 返回当前操作产生的结果。
+     * @param platformType 用于完成本次业务处理的 platformType 参数。
+     * @param modelName 用于完成本次业务处理的 modelName 参数。
+     * @return 返回 模型 相关操作生成的结果数据。
      */
     public ChatModel getChatModel(String platformType, String modelName) {
         return getAdapter(platformType).getChatModel(modelName);
@@ -320,12 +319,11 @@ public class ModelManager implements ApplicationRunner, ModelRoutingPort {
     }
 
     /**
-     * {@code getChatModel} 查询并返回当前操作所需的数据。
+     * 查询 模型 相关业务数据，并返回处理结果。
      *
-     * @param config 参数值，用于执行当前操作。
-     * @param modelName 参数值，用于执行当前操作。
-     *
-     * @return 返回当前操作产生的结果。
+     * @param config 用于完成本次业务处理的 config 参数。
+     * @param modelName 用于完成本次业务处理的 modelName 参数。
+     * @return 返回 模型 相关操作生成的结果数据。
      */
     public ChatModel getChatModel(PlatformConfig config, String modelName) {
         if (config == null) {
@@ -337,35 +335,32 @@ public class ModelManager implements ApplicationRunner, ModelRoutingPort {
     }
 
     /**
-     * {@code getChatModel} 查询并返回当前操作所需的数据。
+     * 查询 模型 相关业务数据，并返回处理结果。
      *
-     * @param config 参数值，用于执行当前操作。
-     *
-     * @return 返回当前操作产生的结果。
+     * @param config 用于完成本次业务处理的 config 参数。
+     * @return 返回 模型 相关操作生成的结果数据。
      */
     public ChatModel getChatModel(PlatformConfig config) {
         return getChatModel(config, null);
     }
 
     /**
-     * {@code getStreamingChatModel} 查询并返回当前操作所需的数据。
+     * 查询 模型 相关业务数据，并返回处理结果。
      *
-     * @param platformType 参数值，用于执行当前操作。
-     * @param modelName 参数值，用于执行当前操作。
-     *
-     * @return 返回当前操作产生的结果。
+     * @param platformType 用于完成本次业务处理的 platformType 参数。
+     * @param modelName 用于完成本次业务处理的 modelName 参数。
+     * @return 返回 模型 相关操作生成的结果数据。
      */
     public StreamingChatModel getStreamingChatModel(String platformType, String modelName) {
         return getAdapter(platformType).getStreamingChatModel(modelName);
     }
 
     /**
-     * {@code getStreamingChatModel} 查询并返回当前操作所需的数据。
+     * 查询 模型 相关业务数据，并返回处理结果。
      *
-     * @param config 参数值，用于执行当前操作。
-     * @param modelName 参数值，用于执行当前操作。
-     *
-     * @return 返回当前操作产生的结果。
+     * @param config 用于完成本次业务处理的 config 参数。
+     * @param modelName 用于完成本次业务处理的 modelName 参数。
+     * @return 返回 模型 相关操作生成的结果数据。
      */
     public StreamingChatModel getStreamingChatModel(PlatformConfig config, String modelName) {
         if (config == null) {
@@ -377,11 +372,10 @@ public class ModelManager implements ApplicationRunner, ModelRoutingPort {
     }
 
     /**
-     * {@code getStreamingChatModel} 查询并返回当前操作所需的数据。
+     * 查询 模型 相关业务数据，并返回处理结果。
      *
-     * @param config 参数值，用于执行当前操作。
-     *
-     * @return 返回当前操作产生的结果。
+     * @param config 用于完成本次业务处理的 config 参数。
+     * @return 返回 模型 相关操作生成的结果数据。
      */
     public StreamingChatModel getStreamingChatModel(PlatformConfig config) {
         return getStreamingChatModel(config, null);
@@ -412,33 +406,30 @@ public class ModelManager implements ApplicationRunner, ModelRoutingPort {
     }
 
     /**
-     * {@code getDefaultChatModel} 查询并返回当前操作所需的数据。
+     * 查询 模型 相关业务数据，并返回处理结果。
      *
-     * @param platformType 参数值，用于执行当前操作。
-     *
-     * @return 返回当前操作产生的结果。
+     * @param platformType 用于完成本次业务处理的 platformType 参数。
+     * @return 返回 模型 相关操作生成的结果数据。
      */
     public ChatModel getDefaultChatModel(String platformType) {
         return getAdapter(platformType).getChatModel(null);
     }
 
     /**
-     * {@code getDefaultStreamingChatModel} 查询并返回当前操作所需的数据。
+     * 查询 模型 相关业务数据，并返回处理结果。
      *
-     * @param platformType 参数值，用于执行当前操作。
-     *
-     * @return 返回当前操作产生的结果。
+     * @param platformType 用于完成本次业务处理的 platformType 参数。
+     * @return 返回 模型 相关操作生成的结果数据。
      */
     public StreamingChatModel getDefaultStreamingChatModel(String platformType) {
         return getAdapter(platformType).getStreamingChatModel(null);
     }
 
     /**
-     * {@code getAdapter} 查询并返回当前操作所需的数据。
+     * 查询 模型 相关业务数据，并返回处理结果。
      *
-     * @param platformType 参数值，用于执行当前操作。
-     *
-     * @return 返回当前操作产生的结果。
+     * @param platformType 用于完成本次业务处理的 platformType 参数。
+     * @return 返回 模型 相关操作生成的结果数据。
      */
     public ModelAdapter getAdapter(String platformType) {
         if (!initialized) {
@@ -456,11 +447,10 @@ public class ModelManager implements ApplicationRunner, ModelRoutingPort {
     }
 
     /**
-     * {@code isPlatformAvailable} 校验当前操作的输入或状态是否满足约束。
+     * 校验或判断 模型 相关业务数据，并返回处理结果。
      *
-     * @param platformType 参数值，用于执行当前操作。
-     *
-     * @return 返回当前操作产生的结果。
+     * @param platformType 用于完成本次业务处理的 platformType 参数。
+     * @return 返回本次条件判断是否成立。
      */
     public boolean isPlatformAvailable(String platformType) {
         ModelAdapter adapter = adapterMap.get(platformType);
@@ -468,9 +458,9 @@ public class ModelManager implements ApplicationRunner, ModelRoutingPort {
     }
 
     /**
-     * {@code getAvailablePlatforms} 查询并返回当前操作所需的数据。
+     * 查询 模型 相关业务数据，并返回处理结果。
      *
-     * @return 返回当前操作产生的结果。
+     * @return 返回符合条件的数据集合；没有匹配项时返回空集合。
      */
     public List<String> getAvailablePlatforms() {
         return adapterMap.values().stream()
@@ -480,9 +470,9 @@ public class ModelManager implements ApplicationRunner, ModelRoutingPort {
     }
 
     /**
-     * {@code availableModels} 执行当前类型定义的业务操作。
+     * 执行 模型 相关业务数据，并返回处理结果。
      *
-     * @return 返回当前操作产生的结果。
+     * @return 返回符合条件的数据集合；没有匹配项时返回空集合。
      */
     @Override
     public List<ModelDescriptor> availableModels() {
@@ -498,11 +488,10 @@ public class ModelManager implements ApplicationRunner, ModelRoutingPort {
     }
 
     /**
-     * {@code resolvePlatform} 查询并返回当前操作所需的数据。
+     * 解析或路由 模型 相关业务数据，并返回处理结果。
      *
-     * @param model 参数值，用于执行当前操作。
-     *
-     * @return 返回当前操作产生的结果。
+     * @param model 用于完成本次业务处理的 model 参数。
+     * @return 返回 模型 相关操作生成的结果数据。
      */
     @Override
     public String resolvePlatform(String model) {
@@ -517,9 +506,9 @@ public class ModelManager implements ApplicationRunner, ModelRoutingPort {
     }
 
     /**
-     * {@code defaultPlatform} 执行当前类型定义的业务操作。
+     * 执行 模型 相关业务数据，并返回处理结果。
      *
-     * @return 返回当前操作产生的结果。
+     * @return 返回 模型 相关操作生成的结果数据。
      */
     @Override
     public String defaultPlatform() {
@@ -527,20 +516,19 @@ public class ModelManager implements ApplicationRunner, ModelRoutingPort {
     }
 
     /**
-     * {@code getAllAdapters} 查询并返回当前操作所需的数据。
+     * 查询 模型 相关业务数据，并返回处理结果。
      *
-     * @return 返回当前操作产生的结果。
+     * @return 返回 模型 相关操作生成的结果数据。
      */
     public Map<String, ModelAdapter> getAllAdapters() {
         return new ConcurrentHashMap<>(adapterMap);
     }
 
     /**
-     * {@code getDefaultModelName} 查询并返回当前操作所需的数据。
+     * 查询 模型 相关业务数据，并返回处理结果。
      *
-     * @param platformType 参数值，用于执行当前操作。
-     *
-     * @return 返回当前操作产生的结果。
+     * @param platformType 用于完成本次业务处理的 platformType 参数。
+     * @return 返回 模型 相关操作生成的结果数据。
      */
     public String getDefaultModelName(String platformType) {
         ModelAdapter adapter = adapterMap.get(platformType);
@@ -548,7 +536,7 @@ public class ModelManager implements ApplicationRunner, ModelRoutingPort {
     }
 
     /**
-     * {@code markDirty} 执行当前类型定义的业务操作。
+     * 执行 模型 相关业务操作，并维护必要的状态和协作关系。
      */
     public void markDirty() {
         this.dbLoaded = false;
@@ -557,9 +545,9 @@ public class ModelManager implements ApplicationRunner, ModelRoutingPort {
     }
 
     /**
-     * {@code getDefaultPlatform} 查询并返回当前操作所需的数据。
+     * 查询 模型 相关业务数据，并返回处理结果。
      *
-     * @return 返回当前操作产生的结果。
+     * @return 返回 模型 相关操作生成的结果数据。
      */
     public String getDefaultPlatform() {
         try {
@@ -591,18 +579,18 @@ public class ModelManager implements ApplicationRunner, ModelRoutingPort {
     }
 
     /**
-     * {@code isDbLoaded} 校验当前操作的输入或状态是否满足约束。
+     * 校验或判断 模型 相关业务数据，并返回处理结果。
      *
-     * @return 返回当前操作产生的结果。
+     * @return 返回本次条件判断是否成立。
      */
     public boolean isDbLoaded() {
         return dbLoaded;
     }
 
     /**
-     * {@code refreshCache} 执行当前类型定义的业务操作。
+     * 执行 模型 相关业务操作，并维护必要的状态和协作关系。
      *
-     * @param platformType 参数值，用于执行当前操作。
+     * @param platformType 用于完成本次业务处理的 platformType 参数。
      */
     public void refreshCache(String platformType) {
         ModelAdapter adapter = adapterMap.get(platformType);
@@ -613,7 +601,7 @@ public class ModelManager implements ApplicationRunner, ModelRoutingPort {
     }
 
     /**
-     * {@code refreshAllCache} 执行当前类型定义的业务操作。
+     * 执行 模型 相关业务操作，并维护必要的状态和协作关系。
      */
     public void refreshAllCache() {
         adapterMap.values().forEach(ModelAdapter::clearCache);

@@ -18,6 +18,9 @@ import org.junit.jupiter.api.Test;
 import java.util.List;
 import java.util.Set;
 
+/**
+ * 验证 知识 Path Service Impl 相关功能、边界条件、异常路径和协作行为。
+ */
 class KnowledgePathServiceImplTest {
     private static final ActorContext ACTOR =
             new ActorContext(new TenantId(8), new UserId(4), false);

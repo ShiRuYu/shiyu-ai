@@ -18,6 +18,9 @@ import java.time.Instant;
 import java.time.temporal.ChronoUnit;
 import java.util.UUID;
 
+/**
+ * 验证 Data Retention Service 相关功能、边界条件、异常路径和协作行为。
+ */
 class DataRetentionServiceTest {
 
     @Test

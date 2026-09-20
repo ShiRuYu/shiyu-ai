@@ -4,7 +4,9 @@ import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 
 import java.security.SecureRandom;
 
-/** 密码加密工具类（BCrypt） 提供密码加密和验证功能 */
+/**
+ * 提供 Password 相关的通用辅助操作，供业务和基础设施复用。
+ */
 public class PasswordUtils {
 
     private static final BCryptPasswordEncoder PASSWORD_ENCODER = new BCryptPasswordEncoder();

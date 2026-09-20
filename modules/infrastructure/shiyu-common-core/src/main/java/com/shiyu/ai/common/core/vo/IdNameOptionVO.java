@@ -6,7 +6,7 @@ import lombok.Data;
 import lombok.NoArgsConstructor;
 
 /**
- * {@code IdNameOptionVO} 承载平台基础设施模块的领域状态或协作行为，负责维护本类型的职责边界。
+ * 封装 Id Name Option 操作向调用方返回的传输数据。
  */
 @Data
 @Builder

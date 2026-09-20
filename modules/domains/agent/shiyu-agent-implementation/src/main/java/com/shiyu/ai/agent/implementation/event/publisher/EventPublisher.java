@@ -6,7 +6,9 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.stereotype.Component;
 
-/** 事件发布器 包装 Spring ApplicationEventPublisher，统一事件发布入口 */
+/**
+ * 发布 事件 相关的领域事件或基础设施消息。
+ */
 @Slf4j
 @Component
 public class EventPublisher {
@@ -17,9 +19,9 @@ public class EventPublisher {
     private final ApplicationEventPublisher springEventPublisher;
 
     /**
-     * {@code EventPublisher} 创建并初始化当前类型实例。
+     * 执行 事件 相关业务操作，并维护必要的状态和协作关系。
      *
-     * @param springEventPublisher 参数值，用于执行当前操作。
+     * @param springEventPublisher 用于完成本次业务处理的 springEventPublisher 参数。
      */
     public EventPublisher(ApplicationEventPublisher springEventPublisher) {
         this.springEventPublisher = springEventPublisher;

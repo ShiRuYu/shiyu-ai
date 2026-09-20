@@ -20,22 +20,23 @@ import org.springframework.stereotype.Service;
 
 import java.util.List;
 
-/** 意图定义服务实现层 */
+/**
+ * 提供 Intent Def 的查询、创建、更新及调用服务，协调业务变更和领域协作。
+ */
 @Slf4j
 @Service
 public class IntentDefServiceImpl implements IntentDefService {
     /**
-     * {@code pageView} 执行当前类型定义的业务操作。
+     * 查询 Intent Def 相关业务数据，并返回处理结果。
      *
-     * @param actor 参数值，用于执行当前操作。
-     * @param n 参数值，用于执行当前操作。
-     * @param s 参数值，用于执行当前操作。
-     * @param a 参数值，用于执行当前操作。
-     * @param name 参数值，用于执行当前操作。
-     * @param code 参数值，用于执行当前操作。
-     * @param cat 参数值，用于执行当前操作。
-     *
-     * @return 返回当前操作产生的结果。
+     * @param actor 当前操作主体上下文，用于确定租户、用户和访问权限。
+     * @param n 用于完成本次业务处理的 n 参数。
+     * @param s 用于完成本次业务处理的 s 参数。
+     * @param a 用于完成本次业务处理的 a 参数。
+     * @param name 用于定位或筛选目标业务对象的业务值。
+     * @param code 用于定位或筛选目标业务对象的业务值。
+     * @param cat 用于完成本次业务处理的 cat 参数。
+     * @return 返回总数及当前页数据，左值为总数，右值为数据列表。
      */
     @Override
     public Pair<Long, List<IntentDefVO>> pageView(
@@ -52,12 +53,11 @@ public class IntentDefServiceImpl implements IntentDefService {
     }
 
     /**
-     * {@code detailView} 执行当前类型定义的业务操作。
+     * 查询 Intent Def 相关业务数据，并返回处理结果。
      *
-     * @param actor 参数值，用于执行当前操作。
-     * @param id 参数值，用于执行当前操作。
-     *
-     * @return 返回当前操作产生的结果。
+     * @param actor 当前操作主体上下文，用于确定租户、用户和访问权限。
+     * @param id 用于定位目标业务对象的标识。
+     * @return 返回 Intent Def 相关操作生成的结果数据。
      */
     @Override
     public IntentDefVO detailView(ActorContext actor, Long id) {
@@ -66,12 +66,11 @@ public class IntentDefServiceImpl implements IntentDefService {
     }
 
     /**
-     * {@code create} 写入或更新当前模块中的业务数据。
+     * 创建或保存 Intent Def 相关业务数据，并返回处理结果。
      *
-     * @param actor 参数值，用于执行当前操作。
-     * @param r 参数值，用于执行当前操作。
-     *
-     * @return 返回当前操作产生的结果。
+     * @param actor 当前操作主体上下文，用于确定租户、用户和访问权限。
+     * @param r 用于完成本次业务处理的 r 参数。
+     * @return 返回 Intent Def 相关操作生成的结果数据。
      */
     @Override
     public IntentDefVO create(ActorContext actor, IntentDefRequest r) {
@@ -81,13 +80,12 @@ public class IntentDefServiceImpl implements IntentDefService {
     }
 
     /**
-     * {@code update} 写入或更新当前模块中的业务数据。
+     * 更新或设置 Intent Def 相关业务数据，并返回处理结果。
      *
-     * @param actor 参数值，用于执行当前操作。
-     * @param id 参数值，用于执行当前操作。
-     * @param r 参数值，用于执行当前操作。
-     *
-     * @return 返回当前操作产生的结果。
+     * @param actor 当前操作主体上下文，用于确定租户、用户和访问权限。
+     * @param id 用于定位目标业务对象的标识。
+     * @param r 用于完成本次业务处理的 r 参数。
+     * @return 返回 Intent Def 相关操作生成的结果数据。
      */
     @Override
     public IntentDefVO update(ActorContext actor, Long id, IntentDefRequest r) {
@@ -128,10 +126,10 @@ public class IntentDefServiceImpl implements IntentDefService {
     }
 
     /**
-     * {@code deleteById} 释放或移除当前操作涉及的资源。
+     * 删除或移除 Intent Def 相关业务操作，并维护必要的状态和协作关系。
      *
-     * @param actor 参数值，用于执行当前操作。
-     * @param id 参数值，用于执行当前操作。
+     * @param actor 当前操作主体上下文，用于确定租户、用户和访问权限。
+     * @param id 用于定位目标业务对象的标识。
      */
     @Override
     public void deleteById(ActorContext actor, Long id) {
@@ -144,10 +142,10 @@ public class IntentDefServiceImpl implements IntentDefService {
     }
 
     /**
-     * {@code deleteByIds} 释放或移除当前操作涉及的资源。
+     * 删除或移除 Intent Def 相关业务操作，并维护必要的状态和协作关系。
      *
-     * @param actor 参数值，用于执行当前操作。
-     * @param ids 参数值，用于执行当前操作。
+     * @param actor 当前操作主体上下文，用于确定租户、用户和访问权限。
+     * @param ids 待处理的业务对象标识集合。
      */
     @Override
     public void deleteByIds(ActorContext actor, List<Long> ids) {
@@ -159,11 +157,10 @@ public class IntentDefServiceImpl implements IntentDefService {
     }
 
     /**
-     * {@code listAllOptions} 查询并返回当前操作所需的数据。
+     * 查询 Intent Def 相关业务数据，并返回处理结果。
      *
-     * @param actor 参数值，用于执行当前操作。
-     *
-     * @return 返回当前操作产生的结果。
+     * @param actor 当前操作主体上下文，用于确定租户、用户和访问权限。
+     * @return 返回符合条件的数据集合；没有匹配项时返回空集合。
      */
     @Override
     public List<IdNameOptionVO> listAllOptions(ActorContext actor) {

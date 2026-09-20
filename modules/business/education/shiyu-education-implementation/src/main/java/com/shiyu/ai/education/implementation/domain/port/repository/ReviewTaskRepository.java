@@ -6,16 +6,15 @@ import com.shiyu.ai.kernel.context.TenantId;
 import java.util.List;
 
 /**
- * ReviewTaskRepository 仓储接口，负责访问和持久化教育领域聚合数据。
+ * 负责 复习 Task 的持久化查询、保存和删除，并维护数据访问边界。
  */
 public interface ReviewTaskRepository {
     /**
-     * 根据标识查询对应的数据。
+     * 查询 复习 Task 相关业务数据，并返回处理结果。
      *
-     * @param tenantId 租户标识。
-     * @param id 目标对象标识。
-     *
-     * @return 操作结果。
+     * @param tenantId 当前操作涉及的租户标识。
+     * @param id 用于定位目标业务对象的标识。
+     * @return 返回 复习 Task 相关操作生成的结果数据。
      */
     ReviewTaskBO selectById(TenantId tenantId, Long id);
 
@@ -53,22 +52,20 @@ public interface ReviewTaskRepository {
             TenantId tenantId, Long studentId, Long knowledgeId);
 
     /**
-     * 创建并保存业务对象。
+     * 创建或保存 复习 Task 相关业务数据，并返回处理结果。
      *
-     * @param tenantId 租户标识。
-     * @param entity 方法参数。
-     *
-     * @return 操作影响的记录数或状态码。
+     * @param tenantId 当前操作涉及的租户标识。
+     * @param entity 用于完成本次业务处理的 entity 参数。
+     * @return 返回 复习 Task 相关操作生成的结果数据。
      */
     int insert(TenantId tenantId, ReviewTaskBO entity);
 
     /**
-     * 更新业务对象及其关联数据。
+     * 更新或设置 复习 Task 相关业务数据，并返回处理结果。
      *
-     * @param tenantId 租户标识。
-     * @param entity 方法参数。
-     *
-     * @return 操作影响的记录数或状态码。
+     * @param tenantId 当前操作涉及的租户标识。
+     * @param entity 用于完成本次业务处理的 entity 参数。
+     * @return 返回 复习 Task 相关操作生成的结果数据。
      */
     int update(TenantId tenantId, ReviewTaskBO entity);
 

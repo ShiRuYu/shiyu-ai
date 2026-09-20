@@ -2,7 +2,9 @@ package com.shiyu.ai.common.core.exception;
 
 import java.io.Serial;
 
-/** 全局异常 */
+/**
+ * 表示 Global 相关的领域事件或异常信息。
+ */
 public class GlobalException extends BaseBizException {
 
     /**
@@ -13,9 +15,9 @@ public class GlobalException extends BaseBizException {
     public GlobalException() {}
 
     /**
-     * {@code GlobalException} 创建并初始化当前类型实例。
+     * 执行 Global 相关业务操作，并维护必要的状态和协作关系。
      *
-     * @param message 参数值，用于执行当前操作。
+     * @param message 本次流程携带的事件或业务数据。
      */
     public GlobalException(String message) {
         super(message);

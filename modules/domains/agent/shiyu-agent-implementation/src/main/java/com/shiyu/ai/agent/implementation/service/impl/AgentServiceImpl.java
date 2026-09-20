@@ -15,7 +15,9 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
 
-/** AgentService 实现 — 仅提供定义管理，执行统一走 AgentRuntime。 */
+/**
+ * 提供 智能体 的查询、创建、更新及调用服务，协调业务变更和领域协作。
+ */
 @Slf4j
 @Service
 public class AgentServiceImpl implements AgentService {
@@ -34,11 +36,11 @@ public class AgentServiceImpl implements AgentService {
     private final AgentAdminRepository agentAdminRepository;
 
     /**
-     * {@code AgentServiceImpl} 创建并初始化当前类型实例。
+     * 执行 智能体 相关业务操作，并维护必要的状态和协作关系。
      *
-     * @param cacheManager 参数值，用于执行当前操作。
-     * @param agentLoader 参数值，用于执行当前操作。
-     * @param agentAdminRepository 参数值，用于执行当前操作。
+     * @param cacheManager 用于完成本次业务处理的 cacheManager 参数。
+     * @param agentLoader 用于完成本次业务处理的 agentLoader 参数。
+     * @param agentAdminRepository 用于完成本次业务处理的 agentAdminRepository 参数。
      */
     public AgentServiceImpl(
             AgentCacheManager cacheManager,
@@ -50,10 +52,10 @@ public class AgentServiceImpl implements AgentService {
     }
 
     /**
-     * {@code registerAgent} 写入或更新当前模块中的业务数据。
+     * 创建或保存 智能体 相关业务操作，并维护必要的状态和协作关系。
      *
-     * @param actor 参数值，用于执行当前操作。
-     * @param agentDefinition 参数值，用于执行当前操作。
+     * @param actor 当前操作主体上下文，用于确定租户、用户和访问权限。
+     * @param agentDefinition 用于完成本次业务处理的 agentDefinition 参数。
      */
     @Override
     public void registerAgent(ActorContext actor, AgentDefinition agentDefinition) {
@@ -73,9 +75,9 @@ public class AgentServiceImpl implements AgentService {
     }
 
     /**
-     * {@code registerSystemAgent} 写入或更新当前模块中的业务数据。
+     * 创建或保存 智能体 相关业务操作，并维护必要的状态和协作关系。
      *
-     * @param agentDefinition 参数值，用于执行当前操作。
+     * @param agentDefinition 用于完成本次业务处理的 agentDefinition 参数。
      */
     @Override
     public void registerSystemAgent(AgentDefinition agentDefinition) {
@@ -88,12 +90,11 @@ public class AgentServiceImpl implements AgentService {
     }
 
     /**
-     * {@code getAgent} 查询并返回当前操作所需的数据。
+     * 查询 智能体 相关业务数据，并返回处理结果。
      *
-     * @param actor 参数值，用于执行当前操作。
-     * @param agentId 参数值，用于执行当前操作。
-     *
-     * @return 返回当前操作产生的结果。
+     * @param actor 当前操作主体上下文，用于确定租户、用户和访问权限。
+     * @param agentId 用于定位agent的标识。
+     * @return 返回 智能体 相关操作生成的结果数据。
      */
     @Override
     public AgentDefinition getAgent(ActorContext actor, String agentId) {
@@ -108,12 +109,9 @@ public class AgentServiceImpl implements AgentService {
     }
 
     /**
-     * {@code unregisterAgent} 执行当前类型定义的业务操作。
+     * 执行 智能体 相关业务操作，并维护必要的状态和协作关系。
      *
-     * @param actor 参数值，用于执行当前操作。
-     * @param agentId 参数值，用于执行当前操作。
-     *
-     * @return 返回当前操作产生的结果。
+     * @param class 用于完成本次业务处理的 class 参数。
      */
     @Override
     @Transactional(rollbackFor = Exception.class)
@@ -128,13 +126,12 @@ public class AgentServiceImpl implements AgentService {
     }
 
     /**
-     * {@code switchVersion} 执行当前类型定义的业务操作。
+     * 执行 智能体 相关业务数据，并返回处理结果。
      *
-     * @param actor 参数值，用于执行当前操作。
-     * @param agentId 参数值，用于执行当前操作。
-     * @param version 参数值，用于执行当前操作。
-     *
-     * @return 返回当前操作产生的结果。
+     * @param actor 当前操作主体上下文，用于确定租户、用户和访问权限。
+     * @param agentId 用于定位agent的标识。
+     * @param version 用于完成本次业务处理的 version 参数。
+     * @return 返回本次条件判断是否成立。
      */
     @Override
     public boolean switchVersion(ActorContext actor, String agentId, String version) {
@@ -160,11 +157,10 @@ public class AgentServiceImpl implements AgentService {
     }
 
     /**
-     * {@code listAgents} 查询并返回当前操作所需的数据。
+     * 查询 智能体 相关业务数据，并返回处理结果。
      *
-     * @param actor 参数值，用于执行当前操作。
-     *
-     * @return 返回当前操作产生的结果。
+     * @param actor 当前操作主体上下文，用于确定租户、用户和访问权限。
+     * @return 返回符合条件的数据集合；没有匹配项时返回空集合。
      */
     @Override
     public List<AgentDefinition> listAgents(ActorContext actor) {
@@ -174,9 +170,9 @@ public class AgentServiceImpl implements AgentService {
     }
 
     /**
-     * {@code evictRuntimeCache} 执行当前类型定义的业务操作。
+     * 执行 智能体 相关业务操作，并维护必要的状态和协作关系。
      *
-     * @param agentId 参数值，用于执行当前操作。
+     * @param agentId 用于定位agent的标识。
      */
     @Override
     public void evictRuntimeCache(String agentId) {

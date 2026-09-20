@@ -6,9 +6,7 @@ import lombok.EqualsAndHashCode;
 import java.io.Serial;
 
 /**
- * 授权关系实体基类。
- *
- * <p>严格单租户上下文下，授权关系只归属于一个 tenantId， 不再额外维护 tenantId。
+ * 表示 Scope 租户 领域对象的业务状态和属性。
  */
 @Data
 @EqualsAndHashCode(callSuper = true)

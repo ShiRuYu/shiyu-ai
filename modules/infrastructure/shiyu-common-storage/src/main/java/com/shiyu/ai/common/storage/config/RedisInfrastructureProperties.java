@@ -8,7 +8,7 @@ import lombok.Setter;
 import java.util.Locale;
 
 /**
- * RedisInfrastructureProperties 配置属性，集中管理基础设施领域相关运行参数。
+ * 定义 Redis Infrastructure 基础设施或应用能力的配置项及装配规则。
  */
 @ConfigurationProperties(prefix = "shiyu.infrastructure.redis")
 @Getter
@@ -33,9 +33,9 @@ public class RedisInfrastructureProperties {
     private String keyPrefix = "shiyu";
 
     /**
-     * {@code normalizedProvider} 执行当前类型定义的业务操作。
+     * 执行 Redis Infrastructure 相关业务数据，并返回处理结果。
      *
-     * @return 返回当前操作产生的结果。
+     * @return 返回 Redis Infrastructure 相关操作生成的结果数据。
      */
     public String normalizedProvider() {
         return provider == null || provider.isBlank()
@@ -59,11 +59,10 @@ public class RedisInfrastructureProperties {
     }
 
     /**
-     * {@code key} 执行当前类型定义的业务操作。
+     * 执行 Redis Infrastructure 相关业务数据，并返回处理结果。
      *
-     * @param parts 参数值，用于执行当前操作。
-     *
-     * @return 返回当前操作产生的结果。
+     * @param parts 用于完成本次业务处理的 parts 参数。
+     * @return 返回 Redis Infrastructure 相关操作生成的结果数据。
      */
     public String key(String... parts) {
         String prefix = keyPrefix == null || keyPrefix.isBlank() ? "shiyu" : keyPrefix.trim();

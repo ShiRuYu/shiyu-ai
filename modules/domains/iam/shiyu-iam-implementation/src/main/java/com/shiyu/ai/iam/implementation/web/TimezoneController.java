@@ -15,7 +15,7 @@ import org.springframework.web.bind.annotation.*;
 import java.util.List;
 
 /**
- * TimezoneController 控制器，负责处理身份与访问领域相关 HTTP 请求并返回响应。
+ * 处理 Timezone 相关的 Web 请求，并将请求转换为应用服务调用。
  */
 @RestController
 @RequestMapping("/api/iam/timezone")
@@ -28,9 +28,9 @@ public class TimezoneController {
     private final TimezoneService service;
 
     /**
-     * {@code getTimezoneOptions} 查询并返回当前操作所需的数据。
+     * 查询 Timezone 相关业务操作，并维护必要的状态和协作关系。
      *
-     * @return 返回当前操作产生的结果。
+     * @param options 用于完成本次业务处理的 options 参数。
      */
     @GetMapping("/options")
     public Result<List<TimezoneOptionVO>> getTimezoneOptions() {
@@ -38,9 +38,9 @@ public class TimezoneController {
     }
 
     /**
-     * {@code getTimezone} 查询并返回当前操作所需的数据。
+     * 查询 Timezone 相关业务操作，并维护必要的状态和协作关系。
      *
-     * @return 返回当前操作产生的结果。
+     * @param current 用于完成本次业务处理的 current 参数。
      */
     @GetMapping("/current")
     public Result<String> getTimezone() {
@@ -48,11 +48,9 @@ public class TimezoneController {
     }
 
     /**
-     * {@code setTimezone} 写入或更新当前模块中的业务数据。
+     * 执行 Timezone 相关业务操作，并维护必要的状态和协作关系。
      *
-     * @param request 参数值，用于执行当前操作。
-     *
-     * @return 返回当前操作产生的结果。
+     * @param set 用于完成本次业务处理的 set 参数。
      */
     @PostMapping("/set")
     public Result<Void> setTimezone(@Valid @RequestBody SetTimezoneRequest request) {

@@ -9,6 +9,9 @@ import com.shiyu.ai.model.implementation.infrastructure.adapter.config.PlatformC
 
 import org.junit.jupiter.api.Test;
 
+/**
+ * 验证 Generic 平台 Adapter 相关功能、边界条件、异常路径和协作行为。
+ */
 class GenericPlatformAdapterTest {
     @Test
     void buildsOpenAiAndDeepSeekClientsAndAppliesDynamicRetryBounds() {

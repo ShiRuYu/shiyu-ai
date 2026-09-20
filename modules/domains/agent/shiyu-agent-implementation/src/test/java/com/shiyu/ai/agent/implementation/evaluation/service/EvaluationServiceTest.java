@@ -20,6 +20,9 @@ import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
 
+/**
+ * 验证 Evaluation Service 相关功能、边界条件、异常路径和协作行为。
+ */
 class EvaluationServiceTest {
     @Test
     void evaluatesAllMetricsAndEnforcesTenantOwnership() {

@@ -13,6 +13,9 @@ import com.shiyu.ai.kernel.context.TenantId;
 import org.junit.jupiter.api.Test;
 import org.springframework.context.ApplicationEventPublisher;
 
+/**
+ * 验证 事件 Publisher Coverage 相关功能、边界条件、异常路径和协作行为。
+ */
 class EventPublisherCoverageTest {
     @Test
     void delegatesDomainEventsToSpringPublisher() {

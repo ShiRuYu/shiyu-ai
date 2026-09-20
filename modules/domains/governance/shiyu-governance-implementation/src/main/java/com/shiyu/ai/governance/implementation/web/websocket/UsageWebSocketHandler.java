@@ -12,9 +12,7 @@ import java.util.Set;
 import java.util.concurrent.CopyOnWriteArraySet;
 
 /**
- * 用量 WebSocket 处理器
- *
- * <p>维护与前端页面的 WebSocket 连接，当用量数据更新时推送实时数据。
+ * 处理 用量 Web Socket 相关事件或请求，并推进后续业务流程。
  */
 @Slf4j
 public class UsageWebSocketHandler extends TextWebSocketHandler {
@@ -23,9 +21,9 @@ public class UsageWebSocketHandler extends TextWebSocketHandler {
     private final Set<WebSocketSession> sessions = new CopyOnWriteArraySet<>();
 
     /**
-     * {@code afterConnectionEstablished} 执行当前类型定义的业务操作。
+     * 执行 用量 Web Socket 相关业务操作，并维护必要的状态和协作关系。
      *
-     * @param session 参数值，用于执行当前操作。
+     * @param session 用于完成本次业务处理的 session 参数。
      */
     @Override
     public void afterConnectionEstablished(WebSocketSession session) {
@@ -37,10 +35,10 @@ public class UsageWebSocketHandler extends TextWebSocketHandler {
     }
 
     /**
-     * {@code afterConnectionClosed} 执行当前类型定义的业务操作。
+     * 执行 用量 Web Socket 相关业务操作，并维护必要的状态和协作关系。
      *
-     * @param session 参数值，用于执行当前操作。
-     * @param status 参数值，用于执行当前操作。
+     * @param session 用于完成本次业务处理的 session 参数。
+     * @param status 用于完成本次业务处理的 status 参数。
      */
     @Override
     public void afterConnectionClosed(WebSocketSession session, CloseStatus status) {
@@ -53,10 +51,10 @@ public class UsageWebSocketHandler extends TextWebSocketHandler {
     }
 
     /**
-     * {@code handleTextMessage} 执行当前模块定义的业务流程。
+     * 处理 用量 Web Socket 相关业务操作，并维护必要的状态和协作关系。
      *
-     * @param session 参数值，用于执行当前操作。
-     * @param message 参数值，用于执行当前操作。
+     * @param session 用于完成本次业务处理的 session 参数。
+     * @param message 本次流程携带的事件或业务数据。
      */
     @Override
     protected void handleTextMessage(WebSocketSession session, TextMessage message) {
@@ -68,10 +66,10 @@ public class UsageWebSocketHandler extends TextWebSocketHandler {
     }
 
     /**
-     * {@code handleTransportError} 执行当前模块定义的业务流程。
+     * 处理 用量 Web Socket 相关业务操作，并维护必要的状态和协作关系。
      *
-     * @param session 参数值，用于执行当前操作。
-     * @param exception 参数值，用于执行当前操作。
+     * @param session 用于完成本次业务处理的 session 参数。
+     * @param exception 用于完成本次业务处理的 exception 参数。
      */
     @Override
     public void handleTransportError(WebSocketSession session, Throwable exception) {

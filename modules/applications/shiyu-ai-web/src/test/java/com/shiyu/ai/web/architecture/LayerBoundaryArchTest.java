@@ -14,7 +14,7 @@ import org.junit.jupiter.api.Tag;
 import org.junit.jupiter.api.Test;
 
 /**
- * 验证 LayerBoundaryArch 的功能、边界条件和集成行为。
+ * 验证 Layer Boundary Arch 相关功能、边界条件、异常路径和协作行为。
  */
 @AnalyzeClasses(packages = "com.shiyu.ai")
 @Tag("dev")

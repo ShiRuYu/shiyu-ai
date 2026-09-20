@@ -6,38 +6,37 @@ import com.shiyu.ai.memory.contract.model.*;
 import java.util.List;
 
 /**
- * MemorySemanticIndex 接口，定义记忆模块的能力边界。
+ * 定义 记忆 Semantic 索引 相关的协作契约和调用边界。
  */
 public interface MemorySemanticIndex {
     /**
-     * 保存或更新业务对象。
+     * 执行 记忆 Semantic 索引 相关业务操作，并维护必要的状态和协作关系。
      *
-     * @param event 方法参数。
+     * @param event 本次流程携带的事件或业务数据。
      */
     void upsert(MemoryEvent event);
 
     /**
-     * 根据条件查询并返回所需数据。
+     * 查询 记忆 Semantic 索引 相关业务数据，并返回处理结果。
      *
-     * @param query 方法参数。
-     * @param limit 方法参数。
-     *
-     * @return 符合条件的结果集合。
+     * @param query 用于筛选目标数据的查询条件。
+     * @param limit 每页返回的数据数量。
+     * @return 返回符合条件的数据集合；没有匹配项时返回空集合。
      */
     List<MemoryPath> search(MemoryQuery query, int limit);
 
     /**
-     * 删除指定业务对象或关联数据。
+     * 删除或移除 记忆 Semantic 索引 相关业务操作，并维护必要的状态和协作关系。
      *
-     * @param eventId 方法参数。
+     * @param eventId 用于定位event的标识。
      */
     void delete(String eventId);
 
     /**
-     * 执行 {@code rebuild} 定义的接口操作。
+     * 执行 记忆 Semantic 索引 相关业务操作，并维护必要的状态和协作关系。
      *
-     * @param tenantId 租户标识。
-     * @param namespace 方法参数。
+     * @param tenantId 当前操作涉及的租户标识。
+     * @param namespace 用于完成本次业务处理的 namespace 参数。
      */
     void rebuild(TenantId tenantId, String namespace);
 }

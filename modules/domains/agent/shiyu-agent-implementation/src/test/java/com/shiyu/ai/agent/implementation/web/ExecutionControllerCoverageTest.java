@@ -19,6 +19,9 @@ import reactor.core.publisher.Flux;
 import java.util.List;
 import java.util.Map;
 
+/**
+ * 验证 Execution Controller Coverage 相关功能、边界条件、异常路径和协作行为。
+ */
 class ExecutionControllerCoverageTest {
     @Test
     void executesStreamsAndMapsLifecycleResults() {

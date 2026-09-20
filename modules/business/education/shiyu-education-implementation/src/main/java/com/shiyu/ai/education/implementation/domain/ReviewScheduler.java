@@ -9,30 +9,25 @@ import java.time.LocalDate;
 import java.util.List;
 
 /**
- * {@code ReviewScheduler} 承载教育模块的领域状态或协作行为，负责维护本类型的职责边界。
+ * 实现 复习 Scheduler 所属领域的业务规则和状态变化。
  */
 @Slf4j
 @Component
 public class ReviewScheduler {
 
     /**
-     * {@code ReviewTask} 封装教育模块中不可变的结构化数据，并作为相关操作之间的值对象。
-     * @param studentId 学生标识，表示该记录组件承载的数据。
-     * @param knowledgeId knowledgeId 属性，表示该记录组件承载的数据。
-     * @param reviewDate reviewDate 属性，表示该记录组件承载的数据。
-     * @param reviewRound reviewRound 属性，表示该记录组件承载的数据。
+     * 封装 复习 相关的不可变数据及其字段约束。
      */
     public record ReviewTask(
             Long studentId, Long knowledgeId, LocalDate reviewDate, int reviewRound) {}
 
     /**
-     * {@code scheduleAfterLearning} 执行当前类型定义的业务操作。
+     * 执行 复习 Scheduler 相关业务数据，并返回处理结果。
      *
-     * @param studentId 参数值，用于执行当前操作。
-     * @param knowledgeId 参数值，用于执行当前操作。
-     * @param learnedAt 参数值，用于执行当前操作。
-     *
-     * @return 返回当前操作产生的结果。
+     * @param studentId 用于定位student的标识。
+     * @param knowledgeId 用于定位knowledge的标识。
+     * @param learnedAt 用于完成本次业务处理的 learnedAt 参数。
+     * @return 返回符合条件的数据集合；没有匹配项时返回空集合。
      */
     public List<ReviewTask> scheduleAfterLearning(
             Long studentId, Long knowledgeId, Instant learnedAt) {
@@ -45,13 +40,12 @@ public class ReviewScheduler {
     }
 
     /**
-     * {@code nextReview} 执行当前类型定义的业务操作。
+     * 执行 复习 Scheduler 相关业务数据，并返回处理结果。
      *
-     * @param studentId 参数值，用于执行当前操作。
-     * @param knowledgeId 参数值，用于执行当前操作。
-     * @param lastStudyAt 参数值，用于执行当前操作。
-     *
-     * @return 返回当前操作产生的结果。
+     * @param studentId 用于定位student的标识。
+     * @param knowledgeId 用于定位knowledge的标识。
+     * @param lastStudyAt 用于完成本次业务处理的 lastStudyAt 参数。
+     * @return 返回 复习 Scheduler 相关操作生成的结果数据。
      */
     public ReviewTask nextReview(Long studentId, Long knowledgeId, Instant lastStudyAt) {
         int round = EbbinghausCurve.currentRound(lastStudyAt);

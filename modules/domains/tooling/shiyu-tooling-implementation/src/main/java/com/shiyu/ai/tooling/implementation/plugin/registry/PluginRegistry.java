@@ -13,7 +13,9 @@ import lombok.extern.slf4j.Slf4j;
 import java.nio.file.Path;
 import java.util.List;
 
-/** 插件注册表（高层封装） 自动扫描插件目录、生命周期管理 */
+/**
+ * 管理 插件 相关的运行时状态、注册信息或临时数据。
+ */
 @Slf4j
 public class PluginRegistry {
 
@@ -35,9 +37,9 @@ public class PluginRegistry {
     private final boolean inProcessEnabled;
 
     /**
-     * {@code PluginRegistry} 创建并初始化当前类型实例。
+     * 执行 插件 相关业务操作，并维护必要的状态和协作关系。
      *
-     * @param pluginsDir 参数值，用于执行当前操作。
+     * @param pluginsDir 用于完成本次业务处理的 pluginsDir 参数。
      */
     public PluginRegistry(String pluginsDir) {
         this(
@@ -46,10 +48,10 @@ public class PluginRegistry {
     }
 
     /**
-     * {@code PluginRegistry} 创建并初始化当前类型实例。
+     * 执行 插件 相关业务操作，并维护必要的状态和协作关系。
      *
-     * @param pluginsDir 参数值，用于执行当前操作。
-     * @param inProcessEnabled 参数值，用于执行当前操作。
+     * @param pluginsDir 用于完成本次业务处理的 pluginsDir 参数。
+     * @param inProcessEnabled 用于完成本次业务处理的 inProcessEnabled 参数。
      */
     public PluginRegistry(String pluginsDir, boolean inProcessEnabled) {
         this.pluginsDir = pluginsDir;
@@ -59,7 +61,7 @@ public class PluginRegistry {
     }
 
     /**
-     * {@code init} 执行当前类型定义的业务操作。
+     * 执行 插件 相关业务操作，并维护必要的状态和协作关系。
      */
     @PostConstruct
     public void init() {
@@ -98,7 +100,7 @@ public class PluginRegistry {
     }
 
     /**
-     * {@code shutdown} 执行当前类型定义的业务操作。
+     * 执行 插件 相关业务操作，并维护必要的状态和协作关系。
      */
     @PreDestroy
     public void shutdown() {
@@ -111,10 +113,10 @@ public class PluginRegistry {
     }
 
     /**
-     * {@code install} 执行当前类型定义的业务操作。
+     * 执行 插件 相关业务操作，并维护必要的状态和协作关系。
      *
-     * @param descriptor 参数值，用于执行当前操作。
-     * @param plugin 参数值，用于执行当前操作。
+     * @param descriptor 用于完成本次业务处理的 descriptor 参数。
+     * @param plugin 用于完成本次业务处理的 plugin 参数。
      */
     public void install(PluginDescriptor descriptor, Plugin plugin) {
         if (!inProcessEnabled)
@@ -123,9 +125,9 @@ public class PluginRegistry {
     }
 
     /**
-     * {@code start} 执行当前类型定义的业务操作。
+     * 执行 插件 相关业务操作，并维护必要的状态和协作关系。
      *
-     * @param pluginId 参数值，用于执行当前操作。
+     * @param pluginId 用于定位plugin的标识。
      */
     public void start(String pluginId) {
         requireInProcess();
@@ -133,9 +135,9 @@ public class PluginRegistry {
     }
 
     /**
-     * {@code stop} 执行当前类型定义的业务操作。
+     * 执行 插件 相关业务操作，并维护必要的状态和协作关系。
      *
-     * @param pluginId 参数值，用于执行当前操作。
+     * @param pluginId 用于定位plugin的标识。
      */
     public void stop(String pluginId) {
         requireInProcess();
@@ -143,9 +145,9 @@ public class PluginRegistry {
     }
 
     /**
-     * {@code uninstall} 执行当前类型定义的业务操作。
+     * 执行 插件 相关业务操作，并维护必要的状态和协作关系。
      *
-     * @param pluginId 参数值，用于执行当前操作。
+     * @param pluginId 用于定位plugin的标识。
      */
     public void uninstall(String pluginId) {
         requireInProcess();
@@ -153,22 +155,20 @@ public class PluginRegistry {
     }
 
     /**
-     * {@code getDescriptor} 查询并返回当前操作所需的数据。
+     * 查询 插件 相关业务数据，并返回处理结果。
      *
-     * @param pluginId 参数值，用于执行当前操作。
-     *
-     * @return 返回当前操作产生的结果。
+     * @param pluginId 用于定位plugin的标识。
+     * @return 返回 插件 相关操作生成的结果数据。
      */
     public PluginDescriptor getDescriptor(String pluginId) {
         return pluginManager.getDescriptor(pluginId);
     }
 
     /**
-     * {@code getPlugin} 查询并返回当前操作所需的数据。
+     * 查询 插件 相关业务数据，并返回处理结果。
      *
-     * @param pluginId 参数值，用于执行当前操作。
-     *
-     * @return 返回当前操作产生的结果。
+     * @param pluginId 用于定位plugin的标识。
+     * @return 返回 插件 相关操作生成的结果数据。
      */
     public Plugin getPlugin(String pluginId) {
         requireInProcess();
@@ -176,18 +176,18 @@ public class PluginRegistry {
     }
 
     /**
-     * {@code listPlugins} 查询并返回当前操作所需的数据。
+     * 查询 插件 相关业务数据，并返回处理结果。
      *
-     * @return 返回当前操作产生的结果。
+     * @return 返回符合条件的数据集合；没有匹配项时返回空集合。
      */
     public List<PluginDescriptor> listPlugins() {
         return pluginManager.listPlugins();
     }
 
     /**
-     * {@code getPluginManager} 查询并返回当前操作所需的数据。
+     * 查询 插件 相关业务数据，并返回处理结果。
      *
-     * @return 返回当前操作产生的结果。
+     * @return 返回 插件 相关操作生成的结果数据。
      */
     public PluginManager getPluginManager() {
         return pluginManager;

@@ -31,6 +31,9 @@ import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
 
+/**
+ * 验证 Magma 记忆 Service 相关功能、边界条件、异常路径和协作行为。
+ */
 class MagmaMemoryServiceTest {
 
     private static final TenantId TENANT = new TenantId(7L);

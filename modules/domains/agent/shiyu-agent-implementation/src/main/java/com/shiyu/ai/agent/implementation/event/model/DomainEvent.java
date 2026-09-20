@@ -3,7 +3,9 @@ package com.shiyu.ai.agent.implementation.event.model;
 import java.time.Instant;
 import java.util.UUID;
 
-/** 领域事件基类 */
+/**
+ * 表示 Domain 相关的领域事件或异常信息。
+ */
 public abstract class DomainEvent {
 
     /**
@@ -20,9 +22,9 @@ public abstract class DomainEvent {
     private final String eventType;
 
     /**
-     * {@code DomainEvent} 创建并初始化当前类型实例。
+     * 执行 Domain 相关业务操作，并维护必要的状态和协作关系。
      *
-     * @param eventType 参数值，用于执行当前操作。
+     * @param eventType 用于完成本次业务处理的 eventType 参数。
      */
     protected DomainEvent(String eventType) {
         this.eventId = UUID.randomUUID().toString().replace("-", "");
@@ -31,27 +33,27 @@ public abstract class DomainEvent {
     }
 
     /**
-     * {@code getEventId} 查询并返回当前操作所需的数据。
+     * 查询 Domain 相关业务数据，并返回处理结果。
      *
-     * @return 返回当前操作产生的结果。
+     * @return 返回 Domain 相关操作生成的结果数据。
      */
     public String getEventId() {
         return eventId;
     }
 
     /**
-     * {@code getOccurredAt} 查询并返回当前操作所需的数据。
+     * 查询 Domain 相关业务数据，并返回处理结果。
      *
-     * @return 返回当前操作产生的结果。
+     * @return 返回 Domain 相关操作生成的结果数据。
      */
     public Instant getOccurredAt() {
         return occurredAt;
     }
 
     /**
-     * {@code getEventType} 查询并返回当前操作所需的数据。
+     * 查询 Domain 相关业务数据，并返回处理结果。
      *
-     * @return 返回当前操作产生的结果。
+     * @return 返回 Domain 相关操作生成的结果数据。
      */
     public String getEventType() {
         return eventType;

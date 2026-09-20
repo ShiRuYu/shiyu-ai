@@ -8,7 +8,9 @@ import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ThreadFactory;
 
-/** 虚拟线程池工厂 创建基于Java 21+虚拟线程的线程池 */
+/**
+ * 创建或提供 Virtual Executor 相关的业务组件和运行时能力。
+ */
 public class VirtualExecutorFactory implements ExecutorFactory {
 
     /**
@@ -27,12 +29,11 @@ public class VirtualExecutorFactory implements ExecutorFactory {
     }
 
     /**
-     * {@code createExecutor} 写入或更新当前模块中的业务数据。
+     * 创建或保存 Virtual Executor 相关业务数据，并返回处理结果。
      *
-     * @param poolType 参数值，用于执行当前操作。
-     * @param name 参数值，用于执行当前操作。
-     *
-     * @return 返回当前操作产生的结果。
+     * @param poolType 用于完成本次业务处理的 poolType 参数。
+     * @param name 用于定位或筛选目标业务对象的业务值。
+     * @return 返回 Virtual Executor 相关操作生成的结果数据。
      */
     @Override
     public ExecutorService createExecutor(PoolType poolType, String name) {

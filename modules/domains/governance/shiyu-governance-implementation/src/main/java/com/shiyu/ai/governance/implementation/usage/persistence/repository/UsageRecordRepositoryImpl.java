@@ -38,7 +38,7 @@ import java.util.function.Function;
 import javax.sql.DataSource;
 
 /**
- * 实现治理用量记录的租户隔离查询和持久化。
+ * 负责 用量 Record 的持久化查询、保存和删除，并维护数据访问边界。
  */
 @Slf4j
 @Component
@@ -78,11 +78,11 @@ public class UsageRecordRepositoryImpl implements UsageRecordRepository {
     }
 
     /**
-     * {@code UsageRecordRepositoryImpl} 创建并初始化当前类型实例。
+     * 执行 用量 Record 相关业务操作，并维护必要的状态和协作关系。
      *
-     * @param usageRecordMapper 参数值，用于执行当前操作。
-     * @param modelCatalog 参数值，用于执行当前操作。
-     * @param dataSource 参数值，用于执行当前操作。
+     * @param usageRecordMapper 用于完成本次业务处理的 usageRecordMapper 参数。
+     * @param modelCatalog 用于完成本次业务处理的 modelCatalog 参数。
+     * @param dataSource 用于完成本次业务处理的 dataSource 参数。
      */
     @Autowired
     public UsageRecordRepositoryImpl(
@@ -104,9 +104,9 @@ public class UsageRecordRepositoryImpl implements UsageRecordRepository {
     }
 
     /**
-     * {@code insert} 执行当前类型定义的业务操作。
+     * 创建或保存 用量 Record 相关业务操作，并维护必要的状态和协作关系。
      *
-     * @param record 参数值，用于执行当前操作。
+     * @param record 用于完成本次业务处理的 record 参数。
      */
     @Override
     public void insert(UsageRecordBO record) {
@@ -118,11 +118,10 @@ public class UsageRecordRepositoryImpl implements UsageRecordRepository {
     }
 
     /**
-     * {@code insertIfAbsent} 执行当前类型定义的业务操作。
+     * 创建或保存 用量 Record 相关业务数据，并返回处理结果。
      *
-     * @param record 参数值，用于执行当前操作。
-     *
-     * @return 返回当前操作产生的结果。
+     * @param record 用于完成本次业务处理的 record 参数。
+     * @return 返回本次条件判断是否成立。
      */
     @Override
     public boolean insertIfAbsent(UsageRecordBO record) {
@@ -135,11 +134,10 @@ public class UsageRecordRepositoryImpl implements UsageRecordRepository {
     }
 
     /**
-     * {@code aggregateByDay} 执行当前类型定义的业务操作。
+     * 执行 用量 Record 相关业务数据，并返回处理结果。
      *
-     * @param days 参数值，用于执行当前操作。
-     *
-     * @return 返回当前操作产生的结果。
+     * @param days 用于完成本次业务处理的 days 参数。
+     * @return 返回符合条件的数据集合；没有匹配项时返回空集合。
      */
     @Override
     public List<Map<String, Object>> aggregateByDay(int days) {
@@ -156,11 +154,10 @@ public class UsageRecordRepositoryImpl implements UsageRecordRepository {
     }
 
     /**
-     * {@code aggregateByWeek} 执行当前类型定义的业务操作。
+     * 执行 用量 Record 相关业务数据，并返回处理结果。
      *
-     * @param weeks 参数值，用于执行当前操作。
-     *
-     * @return 返回当前操作产生的结果。
+     * @param weeks 用于完成本次业务处理的 weeks 参数。
+     * @return 返回符合条件的数据集合；没有匹配项时返回空集合。
      */
     @Override
     public List<Map<String, Object>> aggregateByWeek(int weeks) {
@@ -177,11 +174,10 @@ public class UsageRecordRepositoryImpl implements UsageRecordRepository {
     }
 
     /**
-     * {@code aggregateByMonth} 执行当前类型定义的业务操作。
+     * 执行 用量 Record 相关业务数据，并返回处理结果。
      *
-     * @param months 参数值，用于执行当前操作。
-     *
-     * @return 返回当前操作产生的结果。
+     * @param months 用于完成本次业务处理的 months 参数。
+     * @return 返回符合条件的数据集合；没有匹配项时返回空集合。
      */
     @Override
     public List<Map<String, Object>> aggregateByMonth(int months) {
@@ -199,9 +195,9 @@ public class UsageRecordRepositoryImpl implements UsageRecordRepository {
     }
 
     /**
-     * {@code getOverview} 查询并返回当前操作所需的数据。
+     * 查询 用量 Record 相关业务数据，并返回处理结果。
      *
-     * @return 返回当前操作产生的结果。
+     * @return 返回 用量 Record 相关操作生成的结果数据。
      */
     @Override
     public Map<String, Object> getOverview() {
@@ -228,9 +224,9 @@ public class UsageRecordRepositoryImpl implements UsageRecordRepository {
     }
 
     /**
-     * {@code aggregateByModel} 执行当前类型定义的业务操作。
+     * 执行 用量 Record 相关业务数据，并返回处理结果。
      *
-     * @return 返回当前操作产生的结果。
+     * @return 返回符合条件的数据集合；没有匹配项时返回空集合。
      */
     @Override
     public List<Map<String, Object>> aggregateByModel() {
@@ -264,11 +260,10 @@ public class UsageRecordRepositoryImpl implements UsageRecordRepository {
     }
 
     /**
-     * {@code aggregateLlmByDay} 执行当前类型定义的业务操作。
+     * 执行 用量 Record 相关业务数据，并返回处理结果。
      *
-     * @param days 参数值，用于执行当前操作。
-     *
-     * @return 返回当前操作产生的结果。
+     * @param days 用于完成本次业务处理的 days 参数。
+     * @return 返回符合条件的数据集合；没有匹配项时返回空集合。
      */
     @Override
     public List<Map<String, Object>> aggregateLlmByDay(int days) {
@@ -278,11 +273,10 @@ public class UsageRecordRepositoryImpl implements UsageRecordRepository {
     }
 
     /**
-     * {@code aggregateLlmByWeek} 执行当前类型定义的业务操作。
+     * 执行 用量 Record 相关业务数据，并返回处理结果。
      *
-     * @param weeks 参数值，用于执行当前操作。
-     *
-     * @return 返回当前操作产生的结果。
+     * @param weeks 用于完成本次业务处理的 weeks 参数。
+     * @return 返回符合条件的数据集合；没有匹配项时返回空集合。
      */
     @Override
     public List<Map<String, Object>> aggregateLlmByWeek(int weeks) {
@@ -291,11 +285,10 @@ public class UsageRecordRepositoryImpl implements UsageRecordRepository {
     }
 
     /**
-     * {@code aggregateLlmByMonth} 执行当前类型定义的业务操作。
+     * 执行 用量 Record 相关业务数据，并返回处理结果。
      *
-     * @param months 参数值，用于执行当前操作。
-     *
-     * @return 返回当前操作产生的结果。
+     * @param months 用于完成本次业务处理的 months 参数。
+     * @return 返回符合条件的数据集合；没有匹配项时返回空集合。
      */
     @Override
     public List<Map<String, Object>> aggregateLlmByMonth(int months) {
@@ -305,9 +298,9 @@ public class UsageRecordRepositoryImpl implements UsageRecordRepository {
     }
 
     /**
-     * {@code getEmbeddingOverview} 查询并返回当前操作所需的数据。
+     * 查询 用量 Record 相关业务数据，并返回处理结果。
      *
-     * @return 返回当前操作产生的结果。
+     * @return 返回 用量 Record 相关操作生成的结果数据。
      */
     @Override
     public Map<String, Object> getEmbeddingOverview() {
@@ -325,11 +318,10 @@ public class UsageRecordRepositoryImpl implements UsageRecordRepository {
     }
 
     /**
-     * {@code sumLlmTodayTokensByTenantId} 执行当前类型定义的业务操作。
+     * 执行 用量 Record 相关业务数据，并返回处理结果。
      *
-     * @param tenantId 参数值，用于执行当前操作。
-     *
-     * @return 返回当前操作产生的结果。
+     * @param tenantId 当前操作涉及的租户标识。
+     * @return 返回 用量 Record 相关操作生成的结果数据。
      */
     @Override
     public Long sumLlmTodayTokensByTenantId(TenantId tenantId) {
@@ -453,7 +445,7 @@ public class UsageRecordRepositoryImpl implements UsageRecordRepository {
     }
 
     /**
-     * {@code AggregateRow} 承载治理模块的领域状态或协作行为，负责维护本类型的职责边界。
+     * 实现 Aggregate Row 相关的业务处理、协作逻辑或基础设施能力。
      */
     private static final class AggregateRow {
         private final String periodKey;
@@ -574,7 +566,7 @@ public class UsageRecordRepositoryImpl implements UsageRecordRepository {
     }
 
     /**
-     * {@code UsageMetrics} 承载治理模块的领域状态或协作行为，负责维护本类型的职责边界。
+     * 实现 用量 Metrics 相关的业务处理、协作逻辑或基础设施能力。
      */
     private static class UsageMetrics {
         private long calls;
@@ -642,7 +634,7 @@ public class UsageRecordRepositoryImpl implements UsageRecordRepository {
     }
 
     /**
-     * {@code ModelMetrics} 承载治理模块的领域状态或协作行为，负责维护本类型的职责边界。
+     * 实现 模型 Metrics 相关的业务处理、协作逻辑或基础设施能力。
      */
     private static final class ModelMetrics extends UsageMetrics {
         private final String platform;

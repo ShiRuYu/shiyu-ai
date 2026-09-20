@@ -18,7 +18,7 @@ import java.io.IOException;
 import java.io.InputStream;
 
 /**
- * {@code FileStorageObjectStorage} 承载平台基础设施模块的领域状态或协作行为，负责维护本类型的职责边界。
+ * 负责 文件 Storage Object 相关数据的存储或后台处理。
  */
 @Component
 @RequiredArgsConstructor
@@ -30,15 +30,14 @@ public class FileStorageObjectStorage implements ObjectStorage {
     private final FileStorageManager storageManager;
 
     /**
-     * {@code put} 执行当前类型定义的业务操作。
+     * 执行 文件 Storage Object 相关业务数据，并返回处理结果。
      *
-     * @param namespace 参数值，用于执行当前操作。
-     * @param originalName 参数值，用于执行当前操作。
-     * @param contentType 参数值，用于执行当前操作。
-     * @param size 参数值，用于执行当前操作。
-     * @param inputStream 参数值，用于执行当前操作。
-     *
-     * @return 返回当前操作产生的结果。
+     * @param namespace 用于完成本次业务处理的 namespace 参数。
+     * @param originalName 用于完成本次业务处理的 originalName 参数。
+     * @param contentType 用于完成本次业务处理的 contentType 参数。
+     * @param size 每页返回的数据数量。
+     * @param inputStream 用于完成本次业务处理的 inputStream 参数。
+     * @return 返回 文件 Storage Object 相关操作生成的结果数据。
      */
     @Override
     public StoredObject put(
@@ -55,11 +54,10 @@ public class FileStorageObjectStorage implements ObjectStorage {
     }
 
     /**
-     * {@code open} 执行当前类型定义的业务操作。
+     * 创建或保存 文件 Storage Object 相关业务数据，并返回处理结果。
      *
-     * @param objectKey 参数值，用于执行当前操作。
-     *
-     * @return 返回当前操作产生的结果。
+     * @param objectKey 用于完成本次业务处理的 objectKey 参数。
+     * @return 返回 文件 Storage Object 相关操作生成的结果数据。
      */
     @Override
     public ReadableObject open(String objectKey) throws IOException {
@@ -69,9 +67,9 @@ public class FileStorageObjectStorage implements ObjectStorage {
     }
 
     /**
-     * {@code delete} 释放或移除当前操作涉及的资源。
+     * 删除或移除 文件 Storage Object 相关业务操作，并维护必要的状态和协作关系。
      *
-     * @param objectKey 参数值，用于执行当前操作。
+     * @param objectKey 用于完成本次业务处理的 objectKey 参数。
      */
     @Override
     public void delete(String objectKey) throws IOException {

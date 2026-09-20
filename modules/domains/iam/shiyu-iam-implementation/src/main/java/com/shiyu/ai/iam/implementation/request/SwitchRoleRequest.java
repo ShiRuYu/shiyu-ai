@@ -9,7 +9,9 @@ import lombok.Data;
 import java.io.Serial;
 import java.io.Serializable;
 
-/** 切换角色请求 */
+/**
+ * 封装 Switch 角色 操作所需的请求条件和输入数据。
+ */
 @Data
 @Schema(description = "切换角色请求")
 public class SwitchRoleRequest implements Serializable {

@@ -6,7 +6,9 @@ import java.time.LocalDateTime;
 import java.util.Map;
 import java.util.UUID;
 
-/** 检查点数据 */
+/**
+ * 实现 Checkpoint 相关的业务处理、协作逻辑或基础设施能力。
+ */
 public class Checkpoint {
 
     /**
@@ -39,12 +41,12 @@ public class Checkpoint {
     private final LocalDateTime createdAt;
 
     /**
-     * {@code Checkpoint} 创建并初始化当前类型实例。
+     * 校验或判断 Checkpoint 相关业务操作，并维护必要的状态和协作关系。
      *
-     * @param tenantId 参数值，用于执行当前操作。
-     * @param executionId 参数值，用于执行当前操作。
-     * @param nodeId 参数值，用于执行当前操作。
-     * @param state 参数值，用于执行当前操作。
+     * @param tenantId 当前操作涉及的租户标识。
+     * @param executionId 用于定位execution的标识。
+     * @param nodeId 用于定位node的标识。
+     * @param state 用于完成本次业务处理的 state 参数。
      */
     public Checkpoint(
             TenantId tenantId, String executionId, String nodeId, Map<String, Object> state) {
@@ -58,72 +60,72 @@ public class Checkpoint {
     }
 
     /**
-     * {@code getCheckpointId} 查询并返回当前操作所需的数据。
+     * 查询 Checkpoint 相关业务数据，并返回处理结果。
      *
-     * @return 返回当前操作产生的结果。
+     * @return 返回 Checkpoint 相关操作生成的结果数据。
      */
     public String getCheckpointId() {
         return checkpointId;
     }
 
     /**
-     * {@code getTenantId} 查询并返回当前操作所需的数据。
+     * 查询 Checkpoint 相关业务数据，并返回处理结果。
      *
-     * @return 返回当前操作产生的结果。
+     * @return 返回 Checkpoint 相关操作生成的结果数据。
      */
     public TenantId getTenantId() {
         return tenantId;
     }
 
     /**
-     * {@code getExecutionId} 查询并返回当前操作所需的数据。
+     * 查询 Checkpoint 相关业务数据，并返回处理结果。
      *
-     * @return 返回当前操作产生的结果。
+     * @return 返回 Checkpoint 相关操作生成的结果数据。
      */
     public String getExecutionId() {
         return executionId;
     }
 
     /**
-     * {@code getNodeId} 查询并返回当前操作所需的数据。
+     * 查询 Checkpoint 相关业务数据，并返回处理结果。
      *
-     * @return 返回当前操作产生的结果。
+     * @return 返回 Checkpoint 相关操作生成的结果数据。
      */
     public String getNodeId() {
         return nodeId;
     }
 
     /**
-     * {@code getState} 查询并返回当前操作所需的数据。
+     * 查询 Checkpoint 相关业务数据，并返回处理结果。
      *
-     * @return 返回当前操作产生的结果。
+     * @return 返回 Checkpoint 相关操作生成的结果数据。
      */
     public Map<String, Object> getState() {
         return state;
     }
 
     /**
-     * {@code getSerializedState} 查询并返回当前操作所需的数据。
+     * 查询 Checkpoint 相关业务数据，并返回处理结果。
      *
-     * @return 返回当前操作产生的结果。
+     * @return 返回 Checkpoint 相关操作生成的结果数据。
      */
     public byte[] getSerializedState() {
         return serializedState;
     }
 
     /**
-     * {@code getCreatedAt} 查询并返回当前操作所需的数据。
+     * 查询 Checkpoint 相关业务数据，并返回处理结果。
      *
-     * @return 返回当前操作产生的结果。
+     * @return 返回 Checkpoint 相关操作生成的结果数据。
      */
     public LocalDateTime getCreatedAt() {
         return createdAt;
     }
 
     /**
-     * {@code setSerializedState} 写入或更新当前模块中的业务数据。
+     * 更新或设置 Checkpoint 相关业务操作，并维护必要的状态和协作关系。
      *
-     * @param serializedState 参数值，用于执行当前操作。
+     * @param serializedState 用于完成本次业务处理的 serializedState 参数。
      */
     public void setSerializedState(byte[] serializedState) {
         this.serializedState = serializedState;

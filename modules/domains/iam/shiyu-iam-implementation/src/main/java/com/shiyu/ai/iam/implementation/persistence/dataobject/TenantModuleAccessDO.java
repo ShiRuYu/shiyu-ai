@@ -6,7 +6,9 @@ import lombok.Data;
 
 import java.time.LocalDateTime;
 
-/** AUTH_TENANT_MODULE 租户模块授权记录。 */
+/**
+ * 表示 租户 Module Access 对应的持久化数据对象及其数据库字段。
+ */
 @Data
 @Table("auth_tenant_module")
 public class TenantModuleAccessDO {

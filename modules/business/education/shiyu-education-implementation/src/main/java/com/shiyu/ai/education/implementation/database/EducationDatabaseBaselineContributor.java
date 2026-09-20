@@ -8,7 +8,7 @@ import java.util.List;
 import java.util.Set;
 
 /**
- * 向数据库初始化流程贡献教育模块的 schema 和种子资源。
+ * 向 教育 数据库 Baseline 所属的应用或基础设施注册必要的扩展能力。
  */
 @Component
 public final class EducationDatabaseBaselineContributor

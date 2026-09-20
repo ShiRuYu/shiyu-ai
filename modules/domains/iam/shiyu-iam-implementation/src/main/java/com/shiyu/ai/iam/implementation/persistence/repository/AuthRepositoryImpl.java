@@ -22,9 +22,7 @@ import java.util.List;
 import java.util.stream.Collectors;
 
 /**
- * 认证数据仓储层
- *
- * <p>权限码统一存储在 auth_auth_code 表中，通过角色和租户作用域进行分配。 auth_menu 表只负责菜单、路由和展示。
+ * 负责 认证 的持久化查询、保存和删除，并维护数据访问边界。
  */
 @Component
 public class AuthRepositoryImpl

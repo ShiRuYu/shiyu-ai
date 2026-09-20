@@ -31,7 +31,7 @@ import org.springframework.web.bind.annotation.*;
 import java.util.List;
 
 /**
- * {@code ConversationController} 是会话模块的 Web 接口适配器，负责接收请求并转换为应用服务调用。
+ * 处理 会话 相关的 Web 请求，并将请求转换为应用服务调用。
  */
 @Tag(name = "Conversation Platform")
 @RestController
@@ -67,15 +67,15 @@ public class ConversationController {
     private final ConversationPromptService promptService;
 
     /**
-     * {@code ConversationController} 创建并初始化当前类型实例。
+     * 执行 会话 相关业务操作，并维护必要的状态和协作关系。
      *
-     * @param conversations 参数值，用于执行当前操作。
-     * @param conversationRepository 参数值，用于执行当前操作。
-     * @param generationRunner 参数值，用于执行当前操作。
-     * @param idempotency 参数值，用于执行当前操作。
-     * @param generationRepository 参数值，用于执行当前操作。
-     * @param importPreviews 参数值，用于执行当前操作。
-     * @param promptService 参数值，用于执行当前操作。
+     * @param conversations 用于完成本次业务处理的 conversations 参数。
+     * @param conversationRepository 用于完成本次业务处理的 conversationRepository 参数。
+     * @param generationRunner 用于完成本次业务处理的 generationRunner 参数。
+     * @param idempotency 用于完成本次业务处理的 idempotency 参数。
+     * @param generationRepository 用于完成本次业务处理的 generationRepository 参数。
+     * @param importPreviews 用于完成本次业务处理的 importPreviews 参数。
+     * @param promptService 用于完成本次业务处理的 promptService 参数。
      */
     public ConversationController(
             ConversationService conversations,
@@ -95,12 +95,11 @@ public class ConversationController {
     }
 
     /**
-     * {@code create} 写入或更新当前模块中的业务数据。
+     * 创建或保存 会话 相关业务数据，并返回处理结果。
      *
-     * @param idempotencyKey 参数值，用于执行当前操作。
-     * @param request 参数值，用于执行当前操作。
-     *
-     * @return 返回当前操作产生的结果。
+     * @param idempotencyKey 用于完成本次业务处理的 idempotencyKey 参数。
+     * @param request 封装本次操作所需业务字段的请求对象。
+     * @return 返回 会话 相关操作生成的结果数据。
      */
     @PostMapping
     public Result<Conversation> create(
@@ -147,12 +146,11 @@ public class ConversationController {
     }
 
     /**
-     * {@code list} 查询并返回当前操作所需的数据。
+     * 查询 会话 相关业务数据，并返回处理结果。
      *
-     * @param limit 参数值，用于执行当前操作。
-     * @param offset 参数值，用于执行当前操作。
-     *
-     * @return 返回当前操作产生的结果。
+     * @param limit 每页返回的数据数量。
+     * @param offset 用于完成本次业务处理的 offset 参数。
+     * @return 返回符合条件的数据集合；没有匹配项时返回空集合。
      */
     @GetMapping
     public Result<List<Conversation>> list(
@@ -164,11 +162,9 @@ public class ConversationController {
     }
 
     /**
-     * {@code detail} 执行当前类型定义的业务操作。
+     * 查询 会话 相关业务操作，并维护必要的状态和协作关系。
      *
-     * @param id 参数值，用于执行当前操作。
-     *
-     * @return 返回当前操作产生的结果。
+     * @param id 用于定位目标业务对象的标识。
      */
     @GetMapping("/{id}")
     public Result<Conversation> detail(@PathVariable String id) {
@@ -179,12 +175,10 @@ public class ConversationController {
     }
 
     /**
-     * {@code messages} 执行当前类型定义的业务操作。
+     * 执行 会话 相关业务数据，并返回处理结果。
      *
-     * @param id 参数值，用于执行当前操作。
-     * @param limit 参数值，用于执行当前操作。
-     *
-     * @return 返回当前操作产生的结果。
+     * @param messages 用于完成本次业务处理的 messages 参数。
+     * @return 返回符合条件的数据集合；没有匹配项时返回空集合。
      */
     @GetMapping("/{id}/messages")
     public Result<List<ConversationMessage>> messages(
@@ -199,12 +193,9 @@ public class ConversationController {
     }
 
     /**
-     * {@code update} 写入或更新当前模块中的业务数据。
+     * 执行 会话 相关业务操作，并维护必要的状态和协作关系。
      *
-     * @param id 参数值，用于执行当前操作。
-     * @param request 参数值，用于执行当前操作。
-     *
-     * @return 返回当前操作产生的结果。
+     * @param id 用于定位目标业务对象的标识。
      */
     @PatchMapping("/{id}")
     public Result<Conversation> update(
@@ -241,11 +232,9 @@ public class ConversationController {
     }
 
     /**
-     * {@code delete} 释放或移除当前操作涉及的资源。
+     * 删除或移除 会话 相关业务操作，并维护必要的状态和协作关系。
      *
-     * @param id 参数值，用于执行当前操作。
-     *
-     * @return 返回当前操作产生的结果。
+     * @param id 用于定位目标业务对象的标识。
      */
     @DeleteMapping("/{id}")
     public Result<Void> delete(@PathVariable String id) {
@@ -255,13 +244,10 @@ public class ConversationController {
     }
 
     /**
-     * {@code message} 执行当前类型定义的业务操作。
+     * 执行 会话 相关业务数据，并返回处理结果。
      *
-     * @param id 参数值，用于执行当前操作。
-     * @param idempotencyKey 参数值，用于执行当前操作。
-     * @param request 参数值，用于执行当前操作。
-     *
-     * @return 返回当前操作产生的结果。
+     * @param messages 用于完成本次业务处理的 messages 参数。
+     * @return 返回 会话 相关操作生成的结果数据。
      */
     @PostMapping("/{id}/messages")
     public Result<GenerationRun> message(
@@ -354,13 +340,10 @@ public class ConversationController {
     }
 
     /**
-     * {@code generation} 执行当前类型定义的业务操作。
+     * 执行 会话 相关业务数据，并返回处理结果。
      *
-     * @param id 参数值，用于执行当前操作。
-     * @param idempotencyKey 参数值，用于执行当前操作。
-     * @param request 参数值，用于执行当前操作。
-     *
-     * @return 返回当前操作产生的结果。
+     * @param generations 用于完成本次业务处理的 generations 参数。
+     * @return 返回 会话 相关操作生成的结果数据。
      */
     @PostMapping("/{id}/generations")
     public Result<GenerationRun> generation(
@@ -375,13 +358,10 @@ public class ConversationController {
     }
 
     /**
-     * {@code activeLeaf} 执行当前类型定义的业务操作。
+     * 执行 会话 相关业务数据，并返回处理结果。
      *
-     * @param id 参数值，用于执行当前操作。
-     * @param messageId 参数值，用于执行当前操作。
-     * @param body 参数值，用于执行当前操作。
-     *
-     * @return 返回当前操作产生的结果。
+     * @param leaf 用于完成本次业务处理的 leaf 参数。
+     * @return 返回 会话 相关操作生成的结果数据。
      */
     @PostMapping("/{id}/active-leaf")
     public Result<Void> activeLeaf(
@@ -425,11 +405,9 @@ public class ConversationController {
     }
 
     /**
-     * {@code promptPreview} 执行当前类型定义的业务操作。
+     * 查询 会话 相关业务操作，并维护必要的状态和协作关系。
      *
-     * @param id 参数值，用于执行当前操作。
-     *
-     * @return 返回当前操作产生的结果。
+     * @param preview 用于完成本次业务处理的 preview 参数。
      */
     @GetMapping("/{id}/prompt-preview")
     public Result<PromptPreview> promptPreview(@PathVariable String id) {
@@ -496,12 +474,9 @@ public class ConversationController {
     }
 
     /**
-     * {@code branch} 执行当前类型定义的业务操作。
+     * 执行 会话 相关业务操作，并维护必要的状态和协作关系。
      *
-     * @param id 参数值，用于执行当前操作。
-     * @param messageId 参数值，用于执行当前操作。
-     *
-     * @return 返回当前操作产生的结果。
+     * @param branches 用于完成本次业务处理的 branches 参数。
      */
     @PostMapping("/{id}/branches")
     public Result<Conversation> branch(@PathVariable String id, @RequestParam String messageId) {
@@ -521,11 +496,9 @@ public class ConversationController {
     }
 
     /**
-     * {@code branches} 执行当前类型定义的业务操作。
+     * 查询 会话 相关业务操作，并维护必要的状态和协作关系。
      *
-     * @param id 参数值，用于执行当前操作。
-     *
-     * @return 返回当前操作产生的结果。
+     * @param branches 用于完成本次业务处理的 branches 参数。
      */
     @GetMapping("/{id}/branches")
     public Result<List<Conversation>> branches(@PathVariable String id) {
@@ -568,14 +541,13 @@ public class ConversationController {
         return Result.success(messages);
     }
 
-    /**
-     * {@code importConversation} 执行当前类型定义的业务操作。
-     * 导入会话字段并返回创建后的会话。
-     *
-     * @param request 参数值，用于执行当前操作。
-     *
-     * @return 返回当前操作产生的结果。
-     */
+   /**
+    * 执行 会话 相关业务操作，并维护必要的状态和协作关系。
+    *
+    * @param import 用于完成本次业务处理的 import 参数。
+    * @param APPLICATION_JSON_VALUE 用于完成本次业务处理的 APPLICATION_JSON_VALUE 参数。
+    * @param TEXT_PLAIN_VALUE 用于完成本次业务处理的 TEXT_PLAIN_VALUE 参数。
+    */
    @PostMapping(
            value = "/import",
            consumes = {MediaType.APPLICATION_JSON_VALUE, MediaType.TEXT_PLAIN_VALUE})
@@ -621,11 +593,9 @@ public class ConversationController {
     }
 
     /**
-     * {@code importPreview} 执行当前类型定义的业务操作。
+     * 执行 会话 相关业务操作，并维护必要的状态和协作关系。
      *
-     * @param request 参数值，用于执行当前操作。
-     *
-     * @return 返回当前操作产生的结果。
+     * @param preview 用于完成本次业务处理的 preview 参数。
      */
     @PostMapping("/import/preview")
     public Result<ConversationImportPreviewStore.Preview> importPreview(
@@ -674,7 +644,7 @@ public class ConversationController {
     }
 
     /**
-     * {@code CreateConversationRequest} 表示会话模块的请求参数，承载调用方提交的输入数据。
+     * 封装 Create 会话 操作所需的请求条件和输入数据。
      */
     @Data
     public static class CreateConversationRequest {
@@ -698,7 +668,7 @@ public class ConversationController {
     }
 
     /**
-     * {@code MessageRequest} 表示会话模块的请求参数，承载调用方提交的输入数据。
+     * 封装 消息 操作所需的请求条件和输入数据。
      */
     @Data
     public static class MessageRequest {
@@ -714,7 +684,7 @@ public class ConversationController {
     }
 
     /**
-     * {@code ActiveLeafRequest} 表示会话模块的请求参数，承载调用方提交的输入数据。
+     * 封装 Active Leaf 操作所需的请求条件和输入数据。
      */
     @Data
     public static class ActiveLeafRequest {
@@ -722,7 +692,7 @@ public class ConversationController {
     }
 
     /**
-     * {@code UpdateConversationRequest} 表示会话模块的请求参数，承载调用方提交的输入数据。
+     * 封装 Update 会话 操作所需的请求条件和输入数据。
      */
     @Data
     public static class UpdateConversationRequest {
@@ -734,7 +704,7 @@ public class ConversationController {
     }
 
     /**
-     * {@code ImportRequest} 表示会话模块的请求参数，承载调用方提交的输入数据。
+     * 封装 Import 操作所需的请求条件和输入数据。
      */
     @Data
     public static class ImportRequest {
@@ -770,25 +740,12 @@ public class ConversationController {
     }
 
     /**
-     * {@code PromptSegment} 封装会话模块中不可变的结构化数据，并作为相关操作之间的值对象。
-     * @param source 来源，表示该记录组件承载的数据。
-     * @param content 内容，表示该记录组件承载的数据。
-     * @param estimatedTokens 预计令牌数，表示该记录组件承载的数据。
+     * 封装 提示词 Segment 相关的不可变数据及其字段约束。
      */
     public record PromptSegment(String source, String content, long estimatedTokens) {}
 
     /**
-     * {@code PromptPreview} 封装会话模块中不可变的结构化数据，并作为相关操作之间的值对象。
-     * @param messages 消息列表，表示该记录组件承载的数据。
-     * @param sources sources 属性，表示该记录组件承载的数据。
-     * @param estimatedTokens 预计令牌数，表示该记录组件承载的数据。
-     * @param truncated truncated 属性，表示该记录组件承载的数据。
-     * @param estimated estimated 属性，表示该记录组件承载的数据。
-     * @param estimator estimator 属性，表示该记录组件承载的数据。
-     * @param modelParameters modelParameters 属性，表示该记录组件承载的数据。
-     * @param promptHash promptHash 属性，表示该记录组件承载的数据。
-     * @param contextItems contextItems 属性，表示该记录组件承载的数据。
-     * @param contextTrace contextTrace 属性，表示该记录组件承载的数据。
+     * 封装 提示词 Preview 相关的不可变数据及其字段约束。
      */
     public record PromptPreview(
             List<ConversationMessage> messages,

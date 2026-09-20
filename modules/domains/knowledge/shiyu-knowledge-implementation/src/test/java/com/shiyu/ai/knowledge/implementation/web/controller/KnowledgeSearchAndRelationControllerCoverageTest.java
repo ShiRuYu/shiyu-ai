@@ -18,6 +18,9 @@ import org.junit.jupiter.api.Test;
 
 import java.util.List;
 
+/**
+ * 验证 知识 Search And 关系 Controller Coverage 相关功能、边界条件、异常路径和协作行为。
+ */
 class KnowledgeSearchAndRelationControllerCoverageTest {
     private final KnowledgeIndexService index = mock(KnowledgeIndexService.class);
     private final KnowledgeSpaceService spaces = mock(KnowledgeSpaceService.class);

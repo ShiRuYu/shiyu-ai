@@ -9,48 +9,44 @@ import org.apache.commons.lang3.tuple.Pair;
 import java.util.List;
 
 /**
- * DictService 服务接口，负责执行身份与访问领域相关业务操作。
+ * 提供 Dict 的查询、创建、更新及调用服务，协调业务变更和领域协作。
  */
 public interface DictService {
     /**
-     * 执行 {@code pageView} 定义的接口操作。
+     * 查询 Dict 相关业务数据，并返回处理结果。
      *
-     * @param actor 当前操作主体上下文。
-     * @param pageNo 方法参数。
-     * @param pageSize 分页大小。
-     *
-     * @return 符合条件的结果集合。
+     * @param actor 当前操作主体上下文，用于确定租户、用户和访问权限。
+     * @param pageNo 分页页码，从 1 开始。
+     * @param pageSize 每页返回的数据数量。
+     * @return 返回总数及当前页数据，左值为总数，右值为数据列表。
      */
     Pair<Long, List<DictVO>> pageView(ActorContext actor, Number pageNo, Number pageSize);
 
     /**
-     * 执行 {@code byTypeView} 定义的接口操作。
+     * 查询 Dict 相关业务数据，并返回处理结果。
      *
-     * @param actor 当前操作主体上下文。
-     * @param dictType 方法参数。
-     *
-     * @return 符合条件的结果集合。
+     * @param actor 当前操作主体上下文，用于确定租户、用户和访问权限。
+     * @param dictType 用于完成本次业务处理的 dictType 参数。
+     * @return 返回符合条件的数据集合；没有匹配项时返回空集合。
      */
     List<DictVO> byTypeView(ActorContext actor, String dictType);
 
     /**
-     * 创建并保存业务对象。
+     * 创建或保存 Dict 相关业务数据，并返回处理结果。
      *
-     * @param actor 当前操作主体上下文。
-     * @param request 请求参数。
-     *
-     * @return 操作结果。
+     * @param actor 当前操作主体上下文，用于确定租户、用户和访问权限。
+     * @param request 封装本次操作所需业务字段的请求对象。
+     * @return 返回 Dict 相关操作生成的结果数据。
      */
     DictVO create(ActorContext actor, DictRequest request);
 
     /**
-     * 更新业务对象及其关联数据。
+     * 更新或设置 Dict 相关业务数据，并返回处理结果。
      *
-     * @param actor 当前操作主体上下文。
-     * @param id 目标对象标识。
-     * @param request 请求参数。
-     *
-     * @return 操作结果。
+     * @param actor 当前操作主体上下文，用于确定租户、用户和访问权限。
+     * @param id 用于定位目标业务对象的标识。
+     * @param request 封装本次操作所需业务字段的请求对象。
+     * @return 返回 Dict 相关操作生成的结果数据。
      */
     DictVO update(ActorContext actor, Long id, DictRequest request);
 

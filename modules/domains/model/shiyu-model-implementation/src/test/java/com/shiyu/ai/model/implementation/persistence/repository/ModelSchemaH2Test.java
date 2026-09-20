@@ -13,6 +13,9 @@ import java.sql.Statement;
 
 import javax.sql.DataSource;
 
+/**
+ * 验证 模型 Schema H 2 相关功能、边界条件、异常路径和协作行为。
+ */
 class ModelSchemaH2Test {
 
     @Test

@@ -6,7 +6,7 @@ import lombok.Data;
 import lombok.EqualsAndHashCode;
 
 /**
- * {@code TenantPageRequest} 表示平台模块的请求参数，承载调用方提交的输入数据。
+ * 封装 租户 Page 操作所需的请求条件和输入数据。
  */
 @Data
 @EqualsAndHashCode(callSuper = true)

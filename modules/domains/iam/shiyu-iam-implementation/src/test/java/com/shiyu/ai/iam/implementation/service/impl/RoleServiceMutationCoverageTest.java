@@ -22,6 +22,9 @@ import org.mockito.MockedStatic;
 
 import java.util.List;
 
+/**
+ * 验证 角色 Service Mutation Coverage 相关功能、边界条件、异常路径和协作行为。
+ */
 class RoleServiceMutationCoverageTest {
     private static final ActorContext ACTOR =
             new ActorContext(new TenantId(9L), new UserId(7L), false);

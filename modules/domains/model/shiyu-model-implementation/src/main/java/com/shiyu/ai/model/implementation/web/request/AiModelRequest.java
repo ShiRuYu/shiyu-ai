@@ -9,7 +9,7 @@ import jakarta.validation.constraints.NotBlank;
 import lombok.Data;
 
 /**
- * {@code AiModelRequest} 表示模型模块的请求参数，承载调用方提交的输入数据。
+ * 封装 AI 模型 操作所需的请求条件和输入数据。
  */
 @Data
 @AutoMapper(target = AiModelBO.class, reverseConvertGenerate = false)

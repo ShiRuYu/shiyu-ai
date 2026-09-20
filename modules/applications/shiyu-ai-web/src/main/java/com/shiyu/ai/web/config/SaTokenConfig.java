@@ -22,7 +22,7 @@ import java.util.Base64;
 import java.util.List;
 
 /**
- * {@code SaTokenConfig} 提供Web模块的配置项，并集中声明其默认值和运行约束。
+ * 定义 Sa Token 基础设施或应用能力的配置项及装配规则。
  */
 @Configuration
 public class SaTokenConfig {
@@ -33,9 +33,9 @@ public class SaTokenConfig {
     private final List<WebPublicPathContributor> publicPathContributors;
 
     /**
-     * {@code SaTokenConfig} 创建并初始化当前类型实例。
+     * 执行 Sa Token 相关业务操作，并维护必要的状态和协作关系。
      *
-     * @param publicPathContributors 参数值，用于执行当前操作。
+     * @param publicPathContributors 用于完成本次业务处理的 publicPathContributors 参数。
      */
     public SaTokenConfig(List<WebPublicPathContributor> publicPathContributors) {
         this.publicPathContributors = publicPathContributors;

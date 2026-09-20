@@ -9,7 +9,9 @@ import lombok.Data;
 import java.io.Serial;
 import java.io.Serializable;
 
-/** 切换租户请求 */
+/**
+ * 封装 Switch 租户 操作所需的请求条件和输入数据。
+ */
 @Data
 @Schema(description = "切换租户请求")
 public class SwitchTenantRequest implements Serializable {

@@ -8,7 +8,9 @@ import io.opentelemetry.api.trace.TraceFlags;
 import io.opentelemetry.api.trace.TraceState;
 import io.opentelemetry.context.Context;
 
-/** OpenTelemetry上下文桥接器 用于在TaskContext和OpenTelemetry Context之间进行转换和同步 */
+/**
+ * 实现 Otel Context Bridge 相关的业务处理、协作逻辑或基础设施能力。
+ */
 public class OtelContextBridge {
 
     /**

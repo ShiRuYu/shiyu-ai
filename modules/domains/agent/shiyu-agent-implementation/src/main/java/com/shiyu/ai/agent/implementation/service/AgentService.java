@@ -7,8 +7,7 @@ import com.shiyu.ai.kernel.context.ActorContext;
 import java.util.List;
 
 /**
- * Agent Service 接口 提供 Agent 定义管理、版本控制能力。 注意：Agent 执行统一走 {@link
- * com.shiyu.ai.agent.implementation.runtime.port.AgentRuntime}，不再通过此接口。
+ * 提供 智能体 的查询、创建、更新及调用服务，协调业务变更和领域协作。
  */
 public interface AgentService {
 

@@ -7,7 +7,9 @@ import lombok.Data;
 import java.io.Serial;
 import java.io.Serializable;
 
-/** 重置密码请求 */
+/**
+ * 封装 Reset Password 操作所需的请求条件和输入数据。
+ */
 @Data
 @Schema(description = "重置密码请求")
 public class ResetPasswordRequest implements Serializable {

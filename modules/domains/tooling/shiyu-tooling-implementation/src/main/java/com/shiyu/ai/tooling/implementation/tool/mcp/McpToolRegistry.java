@@ -10,7 +10,9 @@ import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
 
-/** MCP 工具注册表 支持工具的注册、注销、发现、缓存 */
+/**
+ * 管理 Mcp 工具 相关的运行时状态、注册信息或临时数据。
+ */
 @Slf4j
 public class McpToolRegistry {
 

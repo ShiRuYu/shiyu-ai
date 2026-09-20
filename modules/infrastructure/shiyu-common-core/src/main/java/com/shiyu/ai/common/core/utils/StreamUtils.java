@@ -9,7 +9,9 @@ import java.util.function.Function;
 import java.util.function.Predicate;
 import java.util.stream.Collectors;
 
-/** stream 流工具类 */
+/**
+ * 提供 Stream 相关的通用辅助操作，供业务和基础设施复用。
+ */
 public class StreamUtils {
 
     /**

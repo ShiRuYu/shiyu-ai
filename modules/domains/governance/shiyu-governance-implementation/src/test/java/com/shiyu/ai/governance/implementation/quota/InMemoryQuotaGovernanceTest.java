@@ -14,6 +14,9 @@ import java.time.Clock;
 import java.time.Instant;
 import java.time.ZoneOffset;
 
+/**
+ * 验证 In 记忆 Quota 治理 相关功能、边界条件、异常路径和协作行为。
+ */
 class InMemoryQuotaGovernanceTest {
     private static final ActorContext ACTOR =
             new ActorContext(new TenantId(7), new UserId(11), false);
@@ -88,6 +91,9 @@ class InMemoryQuotaGovernanceTest {
         assertTrue(quota.reserve(ACTOR, new QuotaRequest(1, 0)).allowed());
     }
 
+    /**
+     * 验证 Mutable Clock 相关功能、边界条件、异常路径和协作行为。
+     */
     private static final class MutableClock extends java.time.Clock {
         private Instant instant;
 

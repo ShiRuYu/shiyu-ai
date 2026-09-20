@@ -20,6 +20,9 @@ import org.junit.jupiter.api.io.TempDir;
 
 import java.nio.file.Path;
 
+/**
+ * 验证 文件 Storage Manager 相关功能、边界条件、异常路径和协作行为。
+ */
 @Tag("dev")
 @Tag("prod")
 class FileStorageManagerTest {

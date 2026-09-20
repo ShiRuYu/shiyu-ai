@@ -15,6 +15,9 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
 
+/**
+ * 验证 记忆 Value Invariant 相关功能、边界条件、异常路径和协作行为。
+ */
 class MemoryValueInvariantTest {
     @Test
     void normalizesOptionalCollectionsAndRejectsInvalidEntities() {

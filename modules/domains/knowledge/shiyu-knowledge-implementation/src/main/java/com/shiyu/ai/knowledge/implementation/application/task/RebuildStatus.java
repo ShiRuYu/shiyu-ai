@@ -6,7 +6,9 @@ import lombok.NoArgsConstructor;
 
 import java.time.LocalDateTime;
 
-/** 索引重建任务状态 */
+/**
+ * 表示 Rebuild 相关流程中的状态、关系或执行数据。
+ */
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
@@ -49,10 +51,10 @@ public class RebuildStatus {
     private int retryCount;
 
     /**
-     * {@code RebuildStatus} 创建并初始化当前类型实例。
+     * 执行 Rebuild 相关业务操作，并维护必要的状态和协作关系。
      *
-     * @param taskId 参数值，用于执行当前操作。
-     * @param status 参数值，用于执行当前操作。
+     * @param taskId 用于定位task的标识。
+     * @param status 用于完成本次业务处理的 status 参数。
      */
     public RebuildStatus(String taskId, String status) {
         this.taskId = taskId;

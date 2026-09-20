@@ -31,7 +31,7 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 /**
- * {@code KnowledgeEvaluationController} 是知识模块的 Web 接口适配器，负责接收请求并转换为应用服务调用。
+ * 处理 知识 Evaluation 相关的 Web 请求，并将请求转换为应用服务调用。
  */
 @RestController
 @RequestMapping("/api/knowledge/evaluations")
@@ -46,14 +46,13 @@ public class KnowledgeEvaluationController {
     private final KnowledgeEvaluationService service;
 
     /**
-     * {@code page} 执行当前类型定义的业务操作。
+     * 查询 知识 Evaluation 相关业务数据，并返回处理结果。
      *
-     * @param spaceId 参数值，用于执行当前操作。
-     * @param pageNum 参数值，用于执行当前操作。
-     * @param pageSize 参数值，用于执行当前操作。
-     * @param version 参数值，用于执行当前操作。
-     *
-     * @return 返回当前操作产生的结果。
+     * @param spaceId 用于定位space的标识。
+     * @param pageNum 用于完成本次业务处理的 pageNum 参数。
+     * @param pageSize 每页返回的数据数量。
+     * @param version 用于完成本次业务处理的 version 参数。
+     * @return 返回 知识 Evaluation 相关操作生成的结果数据。
      */
     @GetMapping
     public Result<PageData<KnowledgeEvaluationService.CaseView>> page(
@@ -69,12 +68,10 @@ public class KnowledgeEvaluationController {
     }
 
     /**
-     * {@code create} 写入或更新当前模块中的业务数据。
+     * 创建或保存 知识 Evaluation 相关业务数据，并返回处理结果。
      *
-     * @param request 参数值，用于执行当前操作。
-     * @param version 参数值，用于执行当前操作。
-     *
-     * @return 返回当前操作产生的结果。
+     * @param edit 用于完成本次业务处理的 edit 参数。
+     * @return 返回 知识 Evaluation 相关操作生成的结果数据。
      */
     @PostMapping
     @SaCheckPermission("knowledge:edit")
@@ -89,12 +86,10 @@ public class KnowledgeEvaluationController {
     }
 
     /**
-     * {@code run} 执行当前模块定义的业务流程。
+     * 执行 知识 Evaluation 相关业务数据，并返回处理结果。
      *
-     * @param request 参数值，用于执行当前操作。
-     * @param version 参数值，用于执行当前操作。
-     *
-     * @return 返回当前操作产生的结果。
+     * @param run 用于完成本次业务处理的 run 参数。
+     * @return 返回 知识 Evaluation 相关操作生成的结果数据。
      */
     @PostMapping("/run")
     @SaCheckPermission("knowledge:list")
@@ -109,12 +104,10 @@ public class KnowledgeEvaluationController {
     }
 
     /**
-     * {@code delete} 释放或移除当前操作涉及的资源。
+     * 删除或移除 知识 Evaluation 相关业务数据，并返回处理结果。
      *
-     * @param id 参数值，用于执行当前操作。
-     * @param version 参数值，用于执行当前操作。
-     *
-     * @return 返回当前操作产生的结果。
+     * @param id 用于定位目标业务对象的标识。
+     * @return 返回 知识 Evaluation 相关操作生成的结果数据。
      */
     @DeleteMapping("/{id}")
     @SaCheckPermission("knowledge:edit")

@@ -5,15 +5,14 @@ import java.util.List;
 import java.util.Optional;
 
 /**
- * PluginMarketStore 接口，定义工具模块的能力边界。
+ * 管理 插件 Market 相关的运行时状态、注册信息或临时数据。
  */
 public interface PluginMarketStore {
     /**
-     * 保存或更新业务对象。
+     * 创建或保存 插件 Market 相关业务数据，并返回处理结果。
      *
-     * @param entry 方法参数。
-     *
-     * @return 操作结果。
+     * @param entry 用于完成本次业务处理的 entry 参数。
+     * @return 返回 插件 Market 相关操作生成的结果数据。
      */
     PluginMarketEntry save(PluginMarketEntry entry);
 
@@ -34,9 +33,9 @@ public interface PluginMarketStore {
     Optional<PluginMarketEntry> find(String id);
 
     /**
-     * 执行 {@code disable} 定义的接口操作。
+     * 更新或设置 插件 Market 相关业务操作，并维护必要的状态和协作关系。
      *
-     * @param id 目标对象标识。
+     * @param id 用于定位目标业务对象的标识。
      */
     void disable(String id);
 }

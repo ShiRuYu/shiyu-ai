@@ -6,7 +6,7 @@ import org.springframework.boot.context.properties.ConfigurationProperties;
 import org.springframework.stereotype.Component;
 
 /**
- * LogRetentionProperties 配置属性，集中管理应用领域相关运行参数。
+ * 定义 Log Retention 基础设施或应用能力的配置项及装配规则。
  */
 @Data
 @Component

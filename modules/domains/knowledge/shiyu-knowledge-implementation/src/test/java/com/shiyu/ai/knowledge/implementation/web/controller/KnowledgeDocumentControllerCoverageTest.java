@@ -29,6 +29,9 @@ import java.io.ByteArrayInputStream;
 import java.time.LocalDateTime;
 import java.util.List;
 
+/**
+ * 验证 知识 文档 Controller Coverage 相关功能、边界条件、异常路径和协作行为。
+ */
 class KnowledgeDocumentControllerCoverageTest {
     private final EnterpriseDocumentService documents = mock(EnterpriseDocumentService.class);
     private final KnowledgeDocumentUploadService uploads =

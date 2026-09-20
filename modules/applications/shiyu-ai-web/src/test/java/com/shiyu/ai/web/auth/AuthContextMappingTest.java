@@ -19,6 +19,9 @@ import com.shiyu.ai.iam.implementation.domain.model.UserScopeRoleBOToAuthScopeRo
 import org.junit.jupiter.api.Tag;
 import org.junit.jupiter.api.Test;
 
+/**
+ * 验证 认证 Context Mapping 相关功能、边界条件、异常路径和协作行为。
+ */
 @Tag("dev")
 class AuthContextMappingTest {
 

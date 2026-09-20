@@ -8,17 +8,16 @@ import org.apache.commons.lang3.tuple.Pair;
 import java.util.List;
 
 /**
- * DictRepository 仓储接口，负责访问和持久化身份与访问领域聚合数据。
+ * 负责 Dict 的持久化查询、保存和删除，并维护数据访问边界。
  */
 public interface DictRepository {
     /**
-     * 根据条件查询并返回所需数据。
+     * 查询 Dict 相关业务数据，并返回处理结果。
      *
-     * @param tenantId 租户标识。
-     * @param pageNo 方法参数。
-     * @param pageSize 分页大小。
-     *
-     * @return 符合条件的结果集合。
+     * @param tenantId 当前操作涉及的租户标识。
+     * @param pageNo 分页页码，从 1 开始。
+     * @param pageSize 每页返回的数据数量。
+     * @return 返回总数及当前页数据，左值为总数，右值为数据列表。
      */
     Pair<Long, List<DictBO>> selectPage(TenantId tenantId, Number pageNo, Number pageSize);
 
@@ -32,40 +31,36 @@ public interface DictRepository {
     List<DictBO> selectAll(TenantId tenantId);
 
     /**
-     * 根据标识查询对应的数据。
+     * 查询 Dict 相关业务数据，并返回处理结果。
      *
-     * @param tenantId 租户标识。
-     * @param id 目标对象标识。
-     *
-     * @return 操作结果。
+     * @param tenantId 当前操作涉及的租户标识。
+     * @param id 用于定位目标业务对象的标识。
+     * @return 返回 Dict 相关操作生成的结果数据。
      */
     DictBO selectById(TenantId tenantId, Long id);
 
     /**
-     * 根据条件查询并返回所需数据。
+     * 查询 Dict 相关业务数据，并返回处理结果。
      *
-     * @param tenantId 租户标识。
-     * @param dictType 方法参数。
-     *
-     * @return 符合条件的结果集合。
+     * @param tenantId 当前操作涉及的租户标识。
+     * @param dictType 用于完成本次业务处理的 dictType 参数。
+     * @return 返回符合条件的数据集合；没有匹配项时返回空集合。
      */
     List<DictBO> selectByDictType(TenantId tenantId, String dictType);
 
     /**
-     * 创建并保存业务对象。
+     * 创建或保存 Dict 相关业务数据，并返回处理结果。
      *
-     * @param dictBO 方法参数。
-     *
-     * @return 操作结果。
+     * @param dictBO 用于完成本次业务处理的 dictBO 参数。
+     * @return 返回 Dict 相关操作生成的结果数据。
      */
     DictBO create(DictBO dictBO);
 
     /**
-     * 更新业务对象及其关联数据。
+     * 更新或设置 Dict 相关业务数据，并返回处理结果。
      *
-     * @param dictBO 方法参数。
-     *
-     * @return 操作结果。
+     * @param dictBO 用于完成本次业务处理的 dictBO 参数。
+     * @return 返回 Dict 相关操作生成的结果数据。
      */
     DictBO update(DictBO dictBO);
 

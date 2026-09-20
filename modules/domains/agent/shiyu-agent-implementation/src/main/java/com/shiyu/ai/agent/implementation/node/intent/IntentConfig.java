@@ -11,10 +11,9 @@ import lombok.NoArgsConstructor;
 import lombok.experimental.SuperBuilder;
 
 /**
- * 意图节点配置类 用于配置意图识别节点的各项参数
+ * 定义 Intent 基础设施或应用能力的配置项及装配规则。
  *
  * @author shiyu-ai
- * @date 2026-03-26
  */
 @Data
 @SuperBuilder

@@ -12,10 +12,9 @@ import java.util.HashMap;
 import java.util.Map;
 
 /**
- * 意图定义类 用于定义和描述一个具体的意图类型及其属性
+ * 表示 Intent 相关流程中的状态、关系或执行数据。
  *
  * @author shiyu-ai
- * @date 2026-03-28
  */
 @Data
 @Builder

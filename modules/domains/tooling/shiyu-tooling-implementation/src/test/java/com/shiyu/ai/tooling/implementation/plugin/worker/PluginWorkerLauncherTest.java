@@ -10,6 +10,9 @@ import java.util.List;
 import java.util.Set;
 import java.util.concurrent.TimeoutException;
 
+/**
+ * 验证 插件 Worker Launcher 相关功能、边界条件、异常路径和协作行为。
+ */
 class PluginWorkerLauncherTest {
     @Test
     void rejectsMissingExecutableAndUnsafeArguments() {
@@ -61,6 +64,9 @@ class PluginWorkerLauncherTest {
                 timeout);
     }
 
+    /**
+     * 验证 Sleeper 相关功能、边界条件、异常路径和协作行为。
+     */
     public static final class Sleeper {
         public static void main(String[] args) throws InterruptedException {
             Thread.sleep(Duration.ofSeconds(5).toMillis());

@@ -13,7 +13,7 @@ import lombok.extern.slf4j.Slf4j;
 import java.time.Duration;
 
 /**
- * {@code GenericPlatformAdapter} 承载模型模块的领域状态或协作行为，负责维护本类型的职责边界。
+ * 将 Generic 平台 在不同层之间进行适配、转换或组装。
  */
 @Slf4j
 public class GenericPlatformAdapter extends AbstractModelAdapter {
@@ -40,12 +40,12 @@ public class GenericPlatformAdapter extends AbstractModelAdapter {
     private final int maxRetries;
 
     /**
-     * {@code GenericPlatformAdapter} 创建并初始化当前类型实例。
+     * 执行 Generic 平台 相关业务操作，并维护必要的状态和协作关系。
      *
-     * @param platformType 参数值，用于执行当前操作。
-     * @param baseUrl 参数值，用于执行当前操作。
-     * @param apiKey 参数值，用于执行当前操作。
-     * @param defaultModel 参数值，用于执行当前操作。
+     * @param platformType 用于完成本次业务处理的 platformType 参数。
+     * @param baseUrl 用于完成本次业务处理的 baseUrl 参数。
+     * @param apiKey 用于完成本次业务处理的 apiKey 参数。
+     * @param defaultModel 用于完成本次业务处理的 defaultModel 参数。
      */
     public GenericPlatformAdapter(
             String platformType, String baseUrl, String apiKey, String defaultModel) {
@@ -53,13 +53,13 @@ public class GenericPlatformAdapter extends AbstractModelAdapter {
     }
 
     /**
-     * {@code GenericPlatformAdapter} 创建并初始化当前类型实例。
+     * 执行 Generic 平台 相关业务操作，并维护必要的状态和协作关系。
      *
-     * @param platformType 参数值，用于执行当前操作。
-     * @param baseUrl 参数值，用于执行当前操作。
-     * @param apiKey 参数值，用于执行当前操作。
-     * @param defaultModel 参数值，用于执行当前操作。
-     * @param maxRetries 参数值，用于执行当前操作。
+     * @param platformType 用于完成本次业务处理的 platformType 参数。
+     * @param baseUrl 用于完成本次业务处理的 baseUrl 参数。
+     * @param apiKey 用于完成本次业务处理的 apiKey 参数。
+     * @param defaultModel 用于完成本次业务处理的 defaultModel 参数。
+     * @param maxRetries 用于完成本次业务处理的 maxRetries 参数。
      */
     public GenericPlatformAdapter(
             String platformType,
@@ -76,9 +76,9 @@ public class GenericPlatformAdapter extends AbstractModelAdapter {
     }
 
     /**
-     * {@code getPlatformType} 查询并返回当前操作所需的数据。
+     * 查询 Generic 平台 相关业务数据，并返回处理结果。
      *
-     * @return 返回当前操作产生的结果。
+     * @return 返回 Generic 平台 相关操作生成的结果数据。
      */
     @Override
     public String getPlatformType() {
@@ -86,11 +86,10 @@ public class GenericPlatformAdapter extends AbstractModelAdapter {
     }
 
     /**
-     * {@code createChatModel} 写入或更新当前模块中的业务数据。
+     * 创建或保存 Generic 平台 相关业务数据，并返回处理结果。
      *
-     * @param modelName 参数值，用于执行当前操作。
-     *
-     * @return 返回当前操作产生的结果。
+     * @param modelName 用于完成本次业务处理的 modelName 参数。
+     * @return 返回 Generic 平台 相关操作生成的结果数据。
      */
     @Override
     protected ChatModel createChatModel(String modelName) {
@@ -114,11 +113,10 @@ public class GenericPlatformAdapter extends AbstractModelAdapter {
     }
 
     /**
-     * {@code createStreamingChatModel} 写入或更新当前模块中的业务数据。
+     * 创建或保存 Generic 平台 相关业务数据，并返回处理结果。
      *
-     * @param modelName 参数值，用于执行当前操作。
-     *
-     * @return 返回当前操作产生的结果。
+     * @param modelName 用于完成本次业务处理的 modelName 参数。
+     * @return 返回 Generic 平台 相关操作生成的结果数据。
      */
     @Override
     protected StreamingChatModel createStreamingChatModel(String modelName) {
@@ -142,9 +140,9 @@ public class GenericPlatformAdapter extends AbstractModelAdapter {
     }
 
     /**
-     * {@code getDefaultModelName} 查询并返回当前操作所需的数据。
+     * 查询 Generic 平台 相关业务数据，并返回处理结果。
      *
-     * @return 返回当前操作产生的结果。
+     * @return 返回 Generic 平台 相关操作生成的结果数据。
      */
     @Override
     public String getDefaultModelName() {
@@ -152,9 +150,9 @@ public class GenericPlatformAdapter extends AbstractModelAdapter {
     }
 
     /**
-     * {@code isAvailable} 校验当前操作的输入或状态是否满足约束。
+     * 校验或判断 Generic 平台 相关业务数据，并返回处理结果。
      *
-     * @return 返回当前操作产生的结果。
+     * @return 返回本次条件判断是否成立。
      */
     @Override
     public boolean isAvailable() {
@@ -162,12 +160,11 @@ public class GenericPlatformAdapter extends AbstractModelAdapter {
     }
 
     /**
-     * {@code createChatModelWithConfig} 写入或更新当前模块中的业务数据。
+     * 创建或保存 Generic 平台 相关业务数据，并返回处理结果。
      *
-     * @param config 参数值，用于执行当前操作。
-     * @param modelName 参数值，用于执行当前操作。
-     *
-     * @return 返回当前操作产生的结果。
+     * @param config 用于完成本次业务处理的 config 参数。
+     * @param modelName 用于完成本次业务处理的 modelName 参数。
+     * @return 返回 Generic 平台 相关操作生成的结果数据。
      */
     @Override
     protected ChatModel createChatModelWithConfig(PlatformConfig config, String modelName) {
@@ -194,12 +191,11 @@ public class GenericPlatformAdapter extends AbstractModelAdapter {
     }
 
     /**
-     * {@code createStreamingChatModelWithConfig} 写入或更新当前模块中的业务数据。
+     * 创建或保存 Generic 平台 相关业务数据，并返回处理结果。
      *
-     * @param config 参数值，用于执行当前操作。
-     * @param modelName 参数值，用于执行当前操作。
-     *
-     * @return 返回当前操作产生的结果。
+     * @param config 用于完成本次业务处理的 config 参数。
+     * @param modelName 用于完成本次业务处理的 modelName 参数。
+     * @return 返回 Generic 平台 相关操作生成的结果数据。
      */
     @Override
     protected StreamingChatModel createStreamingChatModelWithConfig(

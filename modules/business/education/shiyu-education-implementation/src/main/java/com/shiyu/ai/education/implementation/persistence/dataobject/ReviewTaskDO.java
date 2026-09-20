@@ -15,7 +15,9 @@ import lombok.EqualsAndHashCode;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 
-/** 复习任务 */
+/**
+ * 表示 复习 Task 对应的持久化数据对象及其数据库字段。
+ */
 @Data
 @EqualsAndHashCode(callSuper = true)
 @Table("edu_review_task")

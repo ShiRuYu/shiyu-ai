@@ -10,6 +10,9 @@ import org.junit.jupiter.api.Test;
 
 import java.time.Duration;
 
+/**
+ * 验证 Idempotency And Lease Store 相关功能、边界条件、异常路径和协作行为。
+ */
 class IdempotencyAndLeaseStoreTest {
 
     @Test

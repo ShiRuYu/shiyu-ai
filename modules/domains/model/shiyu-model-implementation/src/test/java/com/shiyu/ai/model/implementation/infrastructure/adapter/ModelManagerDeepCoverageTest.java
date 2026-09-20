@@ -26,6 +26,9 @@ import org.junit.jupiter.api.Test;
 
 import java.util.List;
 
+/**
+ * 验证 模型 Manager Deep Coverage 相关功能、边界条件、异常路径和协作行为。
+ */
 class ModelManagerDeepCoverageTest {
     @Test
     void loadsGenericAndOllamaDatabaseAdaptersWithFallbackFields() {

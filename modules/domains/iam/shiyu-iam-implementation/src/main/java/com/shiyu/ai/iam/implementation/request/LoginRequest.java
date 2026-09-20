@@ -10,7 +10,7 @@ import java.io.Serial;
 import java.io.Serializable;
 
 /**
- * {@code LoginRequest} 表示平台模块的请求参数，承载调用方提交的输入数据。
+ * 封装 Login 操作所需的请求条件和输入数据。
  */
 @Data
 @Schema(description = "登录/注册请求")

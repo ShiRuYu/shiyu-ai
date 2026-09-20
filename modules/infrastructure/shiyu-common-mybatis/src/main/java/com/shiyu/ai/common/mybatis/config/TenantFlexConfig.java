@@ -8,7 +8,9 @@ import jakarta.annotation.PostConstruct;
 
 import org.springframework.context.annotation.Configuration;
 
-/** MyBatis-Flex 多租户配置 注册基于登录上下文的 TenantFactory */
+/**
+ * 定义 租户 Flex 基础设施或应用能力的配置项及装配规则。
+ */
 @Configuration
 public class TenantFlexConfig {
 
@@ -18,16 +20,16 @@ public class TenantFlexConfig {
     private final ContextTenantFactory tenantFactory;
 
     /**
-     * {@code TenantFlexConfig} 创建并初始化当前类型实例。
+     * 执行 租户 Flex 相关业务操作，并维护必要的状态和协作关系。
      *
-     * @param tenantFactory 参数值，用于执行当前操作。
+     * @param tenantFactory 用于完成本次业务处理的 tenantFactory 参数。
      */
     public TenantFlexConfig(ContextTenantFactory tenantFactory) {
         this.tenantFactory = tenantFactory;
     }
 
     /**
-     * {@code init} 执行当前类型定义的业务操作。
+     * 执行 租户 Flex 相关业务操作，并维护必要的状态和协作关系。
      */
     @PostConstruct
     public void init() {

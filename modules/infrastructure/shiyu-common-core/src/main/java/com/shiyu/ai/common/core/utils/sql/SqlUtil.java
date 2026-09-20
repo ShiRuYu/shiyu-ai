@@ -3,7 +3,9 @@ package com.shiyu.ai.common.core.utils.sql;
 import com.shiyu.ai.common.core.exception.UtilException;
 import com.shiyu.ai.common.core.utils.StringUtils;
 
-/** sql操作工具类 */
+/**
+ * 提供 Sql 相关的通用辅助操作，供业务和基础设施复用。
+ */
 public class SqlUtil {
 
     /** 仅支持字母、数字、下划线、空格、逗号、小数点（支持多个字段排序） */

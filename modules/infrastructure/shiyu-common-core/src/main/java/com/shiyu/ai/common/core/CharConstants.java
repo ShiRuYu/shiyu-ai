@@ -1,6 +1,8 @@
 package com.shiyu.ai.common.core;
 
-/** 常用字符/字符串常量工具类 */
+/**
+ * 实现 Char Constants 相关的业务处理、协作逻辑或基础设施能力。
+ */
 public class CharConstants {
 
     private CharConstants() {

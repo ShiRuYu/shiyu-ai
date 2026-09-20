@@ -10,7 +10,7 @@ import java.math.BigDecimal;
 import java.time.LocalDateTime;
 
 /**
- * {@code ExamSectionBO} 是教育模块的业务对象，承载用例处理所需的领域数据。
+ * 表示 考试 Section 领域对象的业务状态和属性。
  */
 @Data
 @EqualsAndHashCode(callSuper = true)

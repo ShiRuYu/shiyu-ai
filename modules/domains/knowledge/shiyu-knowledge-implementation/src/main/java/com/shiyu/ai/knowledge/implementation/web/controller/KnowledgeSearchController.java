@@ -33,7 +33,7 @@ import org.springframework.web.bind.annotation.RestController;
 import java.util.List;
 
 /**
- * {@code KnowledgeSearchController} 是知识模块的 Web 接口适配器，负责接收请求并转换为应用服务调用。
+ * 处理 知识 Search 相关的 Web 请求，并将请求转换为应用服务调用。
  */
 @RestController
 @RequestMapping("/api/knowledge")
@@ -52,12 +52,10 @@ public class KnowledgeSearchController {
     private final KnowledgeSpaceService spaceService;
 
     /**
-     * {@code search} 查询并返回当前操作所需的数据。
+     * 查询 知识 Search 相关业务数据，并返回处理结果。
      *
-     * @param request 参数值，用于执行当前操作。
-     * @param version 参数值，用于执行当前操作。
-     *
-     * @return 返回当前操作产生的结果。
+     * @param search 用于完成本次业务处理的 search 参数。
+     * @return 返回 知识 Search 相关操作生成的结果数据。
      */
     @PostMapping("/search")
     public Result<SearchResponse> search(
@@ -88,12 +86,10 @@ public class KnowledgeSearchController {
     }
 
     /**
-     * {@code rebuild} 执行当前类型定义的业务操作。
+     * 执行 知识 Search 相关业务数据，并返回处理结果。
      *
-     * @param request 参数值，用于执行当前操作。
-     * @param version 参数值，用于执行当前操作。
-     *
-     * @return 返回当前操作产生的结果。
+     * @param rebuild 用于完成本次业务处理的 rebuild 参数。
+     * @return 返回 知识 Search 相关操作生成的结果数据。
      */
     @PostMapping("/index-jobs/rebuild")
     @SaCheckPermission("knowledge:index:rebuild")
@@ -114,13 +110,7 @@ public class KnowledgeSearchController {
     }
 
     /**
-     * {@code SearchRequest} 封装知识模块中不可变的结构化数据，并作为相关操作之间的值对象。
-     * @param spaceId spaceId 属性，表示该记录组件承载的数据。
-     * @param query query 属性，表示该记录组件承载的数据。
-     * @param mode mode 属性，表示该记录组件承载的数据。
-     * @param topK topK 属性，表示该记录组件承载的数据。
-     * @param threshold threshold 属性，表示该记录组件承载的数据。
-     * @param rerank rerank 属性，表示该记录组件承载的数据。
+     * 封装 Search 相关的不可变数据及其字段约束。
      */
     public record SearchRequest(
             @NotNull Long spaceId,
@@ -133,17 +123,13 @@ public class KnowledgeSearchController {
             Boolean rerank) {}
 
     /**
-     * {@code SearchResponse} 封装知识模块中不可变的结构化数据，并作为相关操作之间的值对象。
-     * @param spaceId spaceId 属性，表示该记录组件承载的数据。
-     * @param mode mode 属性，表示该记录组件承载的数据。
-     * @param hits hits 属性，表示该记录组件承载的数据。
+     * 封装 Search 相关的不可变数据及其字段约束。
      */
     public record SearchResponse(
             Long spaceId, String mode, List<KnowledgeIndexService.HybridHit> hits) {}
 
     /**
-     * {@code RebuildRequest} 封装知识模块中不可变的结构化数据，并作为相关操作之间的值对象。
-     * @param spaceId spaceId 属性，表示该记录组件承载的数据。
+     * 封装 Rebuild 相关的不可变数据及其字段约束。
      */
     public record RebuildRequest(@NotNull Long spaceId) {}
 }

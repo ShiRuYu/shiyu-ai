@@ -1,6 +1,8 @@
 package com.shiyu.ai.agent.implementation.retry;
 
-/** 重试配置 */
+/**
+ * 定义 Retry 基础设施或应用能力的配置项及装配规则。
+ */
 public class RetryConfig {
 
     /**
@@ -17,11 +19,11 @@ public class RetryConfig {
     private final double backoffMultiplier;
 
     /**
-     * {@code RetryConfig} 创建并初始化当前类型实例。
+     * 执行 Retry 相关业务操作，并维护必要的状态和协作关系。
      *
-     * @param maxRetries 参数值，用于执行当前操作。
-     * @param initialDelayMs 参数值，用于执行当前操作。
-     * @param backoffMultiplier 参数值，用于执行当前操作。
+     * @param maxRetries 用于完成本次业务处理的 maxRetries 参数。
+     * @param initialDelayMs 用于完成本次业务处理的 initialDelayMs 参数。
+     * @param backoffMultiplier 用于完成本次业务处理的 backoffMultiplier 参数。
      */
     public RetryConfig(int maxRetries, long initialDelayMs, double backoffMultiplier) {
         this.maxRetries = maxRetries;
@@ -30,36 +32,36 @@ public class RetryConfig {
     }
 
     /**
-     * {@code defaultConfig} 执行当前类型定义的业务操作。
+     * 执行 Retry 相关业务数据，并返回处理结果。
      *
-     * @return 返回当前操作产生的结果。
+     * @return 返回 Retry 相关操作生成的结果数据。
      */
     public static RetryConfig defaultConfig() {
         return new RetryConfig(3, 1000, 2.0);
     }
 
     /**
-     * {@code getMaxRetries} 查询并返回当前操作所需的数据。
+     * 查询 Retry 相关业务数据，并返回处理结果。
      *
-     * @return 返回当前操作产生的结果。
+     * @return 返回 Retry 相关操作生成的结果数据。
      */
     public int getMaxRetries() {
         return maxRetries;
     }
 
     /**
-     * {@code getInitialDelayMs} 查询并返回当前操作所需的数据。
+     * 查询 Retry 相关业务数据，并返回处理结果。
      *
-     * @return 返回当前操作产生的结果。
+     * @return 返回 Retry 相关操作生成的结果数据。
      */
     public long getInitialDelayMs() {
         return initialDelayMs;
     }
 
     /**
-     * {@code getBackoffMultiplier} 查询并返回当前操作所需的数据。
+     * 查询 Retry 相关业务数据，并返回处理结果。
      *
-     * @return 返回当前操作产生的结果。
+     * @return 返回 Retry 相关操作生成的结果数据。
      */
     public double getBackoffMultiplier() {
         return backoffMultiplier;

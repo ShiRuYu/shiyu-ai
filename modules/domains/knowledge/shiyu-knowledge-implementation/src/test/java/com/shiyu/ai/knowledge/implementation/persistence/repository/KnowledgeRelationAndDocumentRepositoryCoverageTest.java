@@ -23,6 +23,9 @@ import java.lang.reflect.Field;
 import java.util.ArrayList;
 import java.util.List;
 
+/**
+ * 验证 知识 关系 And 文档 Repository Coverage 相关功能、边界条件、异常路径和协作行为。
+ */
 @SuppressWarnings({"rawtypes", "unchecked", "try"})
 class KnowledgeRelationAndDocumentRepositoryCoverageTest {
     private static final TenantId TENANT = new TenantId(31L);

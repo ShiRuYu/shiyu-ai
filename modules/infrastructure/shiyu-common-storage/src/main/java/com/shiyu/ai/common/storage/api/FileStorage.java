@@ -13,7 +13,7 @@ import java.io.InputStream;
 import java.util.List;
 
 /**
- * FileStorage 接口，定义基础设施模块的能力边界。
+ * 负责 文件 相关数据的存储或后台处理。
  */
 public interface FileStorage {
 
@@ -37,11 +37,10 @@ public interface FileStorage {
             throws IOException;
 
     /**
-     * 查询文件storage列表。
+     * 查询 文件 相关业务数据，并返回处理结果。
      *
-     * @param namespace namespace 参数。
-     *
-     * @return 结果列表。
+     * @param namespace 用于完成本次业务处理的 namespace 参数。
+     * @return 返回符合条件的数据集合；没有匹配项时返回空集合。
      */
     List<StoredFile> list(String namespace) throws IOException;
 

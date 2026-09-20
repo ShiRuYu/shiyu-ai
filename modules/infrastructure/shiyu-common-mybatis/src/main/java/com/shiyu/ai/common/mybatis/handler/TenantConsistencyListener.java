@@ -10,10 +10,7 @@ import com.mybatisflex.annotation.Column;
 import java.lang.reflect.Field;
 
 /**
- * 校验 MyBatis-Flex 租户实体的归属与当前执行作用域一致。
- *
- * <p>租户 ID 的默认填充仍由 MyBatis-Flex 完成；本监听器只负责阻止空作用域和跨租户实体
- * 进入标准 Mapper 写入路径。原生 SQL 和 JDBC 必须由调用方显式带上租户条件。
+ * 处理 租户 Consistency 相关事件或请求，并推进后续业务流程。
  */
 public final class TenantConsistencyListener implements InsertListener, UpdateListener {
 

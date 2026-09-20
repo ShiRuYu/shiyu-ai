@@ -3,25 +3,7 @@ package com.shiyu.ai.conversation.contract.model;
 import java.time.Instant;
 
 /**
- * 表示一次会话生成运行及其生命周期状态。
- * @param id 标识，表示该记录组件承载的数据。
- * @param conversationId conversationId 属性，表示该记录组件承载的数据。
- * @param inputMessageId inputMessageId 属性，表示该记录组件承载的数据。
- * @param assistantMessageId assistantMessageId 属性，表示该记录组件承载的数据。
- * @param speakerId speakerId 属性，表示该记录组件承载的数据。
- * @param platform platform 属性，表示该记录组件承载的数据。
- * @param model 模型，表示该记录组件承载的数据。
- * @param status 状态，表示该记录组件承载的数据。
- * @param promptTokens promptTokens 属性，表示该记录组件承载的数据。
- * @param completionTokens completionTokens 属性，表示该记录组件承载的数据。
- * @param latencyMs latencyMs 属性，表示该记录组件承载的数据。
- * @param errorCode errorCode 属性，表示该记录组件承载的数据。
- * @param lastEventSequence lastEventSequence 属性，表示该记录组件承载的数据。
- * @param cancelRequested cancelRequested 属性，表示该记录组件承载的数据。
- * @param version version 属性，表示该记录组件承载的数据。
- * @param createdAt 创建时间，表示该记录组件承载的数据。
- * @param updatedAt 更新时间，表示该记录组件承载的数据。
- * @param runtimeRunId runtimeRunId 属性，表示该记录组件承载的数据。
+ * 封装 生成 运行 相关的不可变数据及其字段约束。
  */
 public record GenerationRun(
         String id,

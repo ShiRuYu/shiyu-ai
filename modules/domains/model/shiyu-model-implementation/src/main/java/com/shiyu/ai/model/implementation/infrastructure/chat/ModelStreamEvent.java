@@ -5,23 +5,7 @@ import com.shiyu.ai.model.contract.model.ChatResponse;
 import java.util.List;
 
 /**
- * ModelStreamEvent 领域事件，描述模型领域相关业务状态变化。
- * @param type 类型，表示该记录组件承载的数据。
- * @param blockIndex blockIndex 属性，表示该记录组件承载的数据。
- * @param text text 属性，表示该记录组件承载的数据。
- * @param reasoning reasoning 属性，表示该记录组件承载的数据。
- * @param toolCallId toolCallId 属性，表示该记录组件承载的数据。
- * @param toolName toolName 属性，表示该记录组件承载的数据。
- * @param toolArguments toolArguments 属性，表示该记录组件承载的数据。
- * @param promptTokens promptTokens 属性，表示该记录组件承载的数据。
- * @param completionTokens completionTokens 属性，表示该记录组件承载的数据。
- * @param totalTokens totalTokens 属性，表示该记录组件承载的数据。
- * @param cacheReadTokens cacheReadTokens 属性，表示该记录组件承载的数据。
- * @param cacheWriteTokens cacheWriteTokens 属性，表示该记录组件承载的数据。
- * @param reasoningTokens reasoningTokens 属性，表示该记录组件承载的数据。
- * @param finishReason finishReason 属性，表示该记录组件承载的数据。
- * @param providerRequestId providerRequestId 属性，表示该记录组件承载的数据。
- * @param toolCalls toolCalls 属性，表示该记录组件承载的数据。
+ * 封装 模型 Stream 相关的不可变数据及其字段约束。
  */
 public record ModelStreamEvent(
         Type type,
@@ -41,7 +25,7 @@ public record ModelStreamEvent(
         String providerRequestId,
         List<ChatResponse.ToolCall> toolCalls) {
     /**
-     * {@code Type} 表示模型模块中的一组受控业务状态或分类。
+     * 定义 Type 可用的枚举值及其业务语义。
      */
     public enum Type {
         BLOCK_STARTED,

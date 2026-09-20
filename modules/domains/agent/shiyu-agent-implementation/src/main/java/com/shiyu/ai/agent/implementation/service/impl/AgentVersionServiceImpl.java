@@ -29,7 +29,7 @@ import java.time.LocalDateTime;
 import java.util.*;
 
 /**
- * {@code AgentVersionServiceImpl} 实现智能体模块的应用服务，负责编排用例流程并维护业务边界。
+ * 提供 智能体 Version 的查询、创建、更新及调用服务，协调业务变更和领域协作。
  */
 @Slf4j
 @Service
@@ -49,11 +49,11 @@ public class AgentVersionServiceImpl implements AgentVersionService {
     private final NodeFactory nodeFactory;
 
     /**
-     * {@code AgentVersionServiceImpl} 创建并初始化当前类型实例。
+     * 执行 智能体 Version 相关业务操作，并维护必要的状态和协作关系。
      *
-     * @param agentAdminRepository 参数值，用于执行当前操作。
-     * @param agentService 参数值，用于执行当前操作。
-     * @param nodeFactory 参数值，用于执行当前操作。
+     * @param agentAdminRepository 用于完成本次业务处理的 agentAdminRepository 参数。
+     * @param agentService 用于完成本次业务处理的 agentService 参数。
+     * @param nodeFactory 用于完成本次业务处理的 nodeFactory 参数。
      */
     public AgentVersionServiceImpl(
             AgentAdminRepository agentAdminRepository,
@@ -67,12 +67,11 @@ public class AgentVersionServiceImpl implements AgentVersionService {
     // ======================== 版本基础 CRUD ========================
 
     /**
-     * {@code getVersions} 查询并返回当前操作所需的数据。
+     * 查询 智能体 Version 相关业务数据，并返回处理结果。
      *
-     * @param actor 参数值，用于执行当前操作。
-     * @param agentId 参数值，用于执行当前操作。
-     *
-     * @return 返回当前操作产生的结果。
+     * @param actor 当前操作主体上下文，用于确定租户、用户和访问权限。
+     * @param agentId 用于定位agent的标识。
+     * @return 返回符合条件的数据集合；没有匹配项时返回空集合。
      */
     @Override
     public List<AgentVersionVO> getVersions(ActorContext actor, String agentId) {
@@ -84,13 +83,12 @@ public class AgentVersionServiceImpl implements AgentVersionService {
     }
 
     /**
-     * {@code getVersionDetail} 查询并返回当前操作所需的数据。
+     * 查询 智能体 Version 相关业务数据，并返回处理结果。
      *
-     * @param actor 参数值，用于执行当前操作。
-     * @param agentId 参数值，用于执行当前操作。
-     * @param versionId 参数值，用于执行当前操作。
-     *
-     * @return 返回当前操作产生的结果。
+     * @param actor 当前操作主体上下文，用于确定租户、用户和访问权限。
+     * @param agentId 用于定位agent的标识。
+     * @param versionId 用于定位version的标识。
+     * @return 返回 智能体 Version 相关操作生成的结果数据。
      */
     @Override
     public AgentVersionDetailVO getVersionDetail(
@@ -101,13 +99,9 @@ public class AgentVersionServiceImpl implements AgentVersionService {
     }
 
     /**
-     * {@code createVersion} 写入或更新当前模块中的业务数据。
+     * 执行 智能体 Version 相关业务操作，并维护必要的状态和协作关系。
      *
-     * @param actor 参数值，用于执行当前操作。
-     * @param agentId 参数值，用于执行当前操作。
-     * @param request 参数值，用于执行当前操作。
-     *
-     * @return 返回当前操作产生的结果。
+     * @param class 用于完成本次业务处理的 class 参数。
      */
     @Override
     @Transactional(rollbackFor = Exception.class)
@@ -144,14 +138,13 @@ public class AgentVersionServiceImpl implements AgentVersionService {
     }
 
     /**
-     * {@code updateVersion} 写入或更新当前模块中的业务数据。
+     * 更新或设置 智能体 Version 相关业务数据，并返回处理结果。
      *
-     * @param actor 参数值，用于执行当前操作。
-     * @param agentId 参数值，用于执行当前操作。
-     * @param versionId 参数值，用于执行当前操作。
-     * @param request 参数值，用于执行当前操作。
-     *
-     * @return 返回当前操作产生的结果。
+     * @param actor 当前操作主体上下文，用于确定租户、用户和访问权限。
+     * @param agentId 用于定位agent的标识。
+     * @param versionId 用于定位version的标识。
+     * @param request 封装本次操作所需业务字段的请求对象。
+     * @return 返回 智能体 Version 相关操作生成的结果数据。
      */
     @Override
     public AgentVersionVO updateVersion(
@@ -166,11 +159,11 @@ public class AgentVersionServiceImpl implements AgentVersionService {
     }
 
     /**
-     * {@code deleteVersion} 释放或移除当前操作涉及的资源。
+     * 删除或移除 智能体 Version 相关业务操作，并维护必要的状态和协作关系。
      *
-     * @param actor 参数值，用于执行当前操作。
-     * @param agentId 参数值，用于执行当前操作。
-     * @param versionId 参数值，用于执行当前操作。
+     * @param actor 当前操作主体上下文，用于确定租户、用户和访问权限。
+     * @param agentId 用于定位agent的标识。
+     * @param versionId 用于定位version的标识。
      */
     @Override
     public void deleteVersion(ActorContext actor, String agentId, Long versionId) {
@@ -183,11 +176,9 @@ public class AgentVersionServiceImpl implements AgentVersionService {
     // ======================== 版本生命周期 ========================
 
     /**
-     * {@code publishVersion} 执行当前模块定义的业务流程。
+     * 执行 智能体 Version 相关业务操作，并维护必要的状态和协作关系。
      *
-     * @param actor 参数值，用于执行当前操作。
-     * @param agentId 参数值，用于执行当前操作。
-     * @param versionId 参数值，用于执行当前操作。
+     * @param class 用于完成本次业务处理的 class 参数。
      */
     @Override
     @Transactional(rollbackFor = Exception.class)
@@ -202,11 +193,11 @@ public class AgentVersionServiceImpl implements AgentVersionService {
     }
 
     /**
-     * {@code archiveVersion} 执行当前类型定义的业务操作。
+     * 执行 智能体 Version 相关业务操作，并维护必要的状态和协作关系。
      *
-     * @param actor 参数值，用于执行当前操作。
-     * @param agentId 参数值，用于执行当前操作。
-     * @param versionId 参数值，用于执行当前操作。
+     * @param actor 当前操作主体上下文，用于确定租户、用户和访问权限。
+     * @param agentId 用于定位agent的标识。
+     * @param versionId 用于定位version的标识。
      */
     @Override
     public void archiveVersion(ActorContext actor, String agentId, Long versionId) {
@@ -220,11 +211,9 @@ public class AgentVersionServiceImpl implements AgentVersionService {
     }
 
     /**
-     * {@code activateVersion} 执行当前类型定义的业务操作。
+     * 执行 智能体 Version 相关业务操作，并维护必要的状态和协作关系。
      *
-     * @param actor 参数值，用于执行当前操作。
-     * @param agentId 参数值，用于执行当前操作。
-     * @param versionId 参数值，用于执行当前操作。
+     * @param class 用于完成本次业务处理的 class 参数。
      */
     @Override
     @Transactional(rollbackFor = Exception.class)
@@ -242,13 +231,12 @@ public class AgentVersionServiceImpl implements AgentVersionService {
     }
 
     /**
-     * {@code copyVersion} 执行当前类型定义的业务操作。
+     * 执行 智能体 Version 相关业务数据，并返回处理结果。
      *
-     * @param actor 参数值，用于执行当前操作。
-     * @param agentId 参数值，用于执行当前操作。
-     * @param request 参数值，用于执行当前操作。
-     *
-     * @return 返回当前操作产生的结果。
+     * @param actor 当前操作主体上下文，用于确定租户、用户和访问权限。
+     * @param agentId 用于定位agent的标识。
+     * @param request 封装本次操作所需业务字段的请求对象。
+     * @return 返回 智能体 Version 相关操作生成的结果数据。
      */
     @Override
     public AgentVersionVO copyVersion(ActorContext actor, String agentId, VersionRequest request) {
@@ -258,13 +246,12 @@ public class AgentVersionServiceImpl implements AgentVersionService {
     // ======================== Graph 配置 ========================
 
     /**
-     * {@code getGraphConfig} 查询并返回当前操作所需的数据。
+     * 查询 智能体 Version 相关业务数据，并返回处理结果。
      *
-     * @param actor 参数值，用于执行当前操作。
-     * @param agentId 参数值，用于执行当前操作。
-     * @param versionId 参数值，用于执行当前操作。
-     *
-     * @return 返回当前操作产生的结果。
+     * @param actor 当前操作主体上下文，用于确定租户、用户和访问权限。
+     * @param agentId 用于定位agent的标识。
+     * @param versionId 用于定位version的标识。
+     * @return 返回 智能体 Version 相关操作生成的结果数据。
      */
     @Override
     public AgentVersionDetailVO getGraphConfig(ActorContext actor, String agentId, Long versionId) {
@@ -272,14 +259,9 @@ public class AgentVersionServiceImpl implements AgentVersionService {
     }
 
     /**
-     * {@code updateGraphConfig} 写入或更新当前模块中的业务数据。
+     * 执行 智能体 Version 相关业务操作，并维护必要的状态和协作关系。
      *
-     * @param actor 参数值，用于执行当前操作。
-     * @param agentId 参数值，用于执行当前操作。
-     * @param versionId 参数值，用于执行当前操作。
-     * @param request 参数值，用于执行当前操作。
-     *
-     * @return 返回当前操作产生的结果。
+     * @param class 用于完成本次业务处理的 class 参数。
      */
     @Override
     @Transactional(rollbackFor = Exception.class)
@@ -299,11 +281,10 @@ public class AgentVersionServiceImpl implements AgentVersionService {
     }
 
     /**
-     * {@code validateGraphConfig} 校验当前操作的输入或状态是否满足约束。
+     * 校验或判断 智能体 Version 相关业务数据，并返回处理结果。
      *
-     * @param request 参数值，用于执行当前操作。
-     *
-     * @return 返回当前操作产生的结果。
+     * @param request 封装本次操作所需业务字段的请求对象。
+     * @return 返回 智能体 Version 相关操作生成的结果数据。
      */
     @Override
     public GraphValidationVO validateGraphConfig(GraphConfigRequest request) {
@@ -372,12 +353,9 @@ public class AgentVersionServiceImpl implements AgentVersionService {
     // ======================== 节点管理 ========================
 
     /**
-     * {@code addNode} 执行当前类型定义的业务操作。
+     * 执行 智能体 Version 相关业务操作，并维护必要的状态和协作关系。
      *
-     * @param actor 参数值，用于执行当前操作。
-     * @param agentId 参数值，用于执行当前操作。
-     * @param versionId 参数值，用于执行当前操作。
-     * @param request 参数值，用于执行当前操作。
+     * @param class 用于完成本次业务处理的 class 参数。
      */
     @Override
     @Transactional(rollbackFor = Exception.class)
@@ -407,13 +385,9 @@ public class AgentVersionServiceImpl implements AgentVersionService {
     }
 
     /**
-     * {@code updateNode} 写入或更新当前模块中的业务数据。
+     * 执行 智能体 Version 相关业务操作，并维护必要的状态和协作关系。
      *
-     * @param actor 参数值，用于执行当前操作。
-     * @param agentId 参数值，用于执行当前操作。
-     * @param versionId 参数值，用于执行当前操作。
-     * @param nodeId 参数值，用于执行当前操作。
-     * @param request 参数值，用于执行当前操作。
+     * @param class 用于完成本次业务处理的 class 参数。
      */
     @Override
     @Transactional(rollbackFor = Exception.class)
@@ -445,12 +419,9 @@ public class AgentVersionServiceImpl implements AgentVersionService {
     }
 
     /**
-     * {@code deleteNode} 释放或移除当前操作涉及的资源。
+     * 执行 智能体 Version 相关业务操作，并维护必要的状态和协作关系。
      *
-     * @param actor 参数值，用于执行当前操作。
-     * @param agentId 参数值，用于执行当前操作。
-     * @param versionId 参数值，用于执行当前操作。
-     * @param nodeId 参数值，用于执行当前操作。
+     * @param class 用于完成本次业务处理的 class 参数。
      */
     @Override
     @Transactional(rollbackFor = Exception.class)
@@ -481,12 +452,9 @@ public class AgentVersionServiceImpl implements AgentVersionService {
     // ======================== 边管理 ========================
 
     /**
-     * {@code addEdge} 执行当前类型定义的业务操作。
+     * 执行 智能体 Version 相关业务操作，并维护必要的状态和协作关系。
      *
-     * @param actor 参数值，用于执行当前操作。
-     * @param agentId 参数值，用于执行当前操作。
-     * @param versionId 参数值，用于执行当前操作。
-     * @param request 参数值，用于执行当前操作。
+     * @param class 用于完成本次业务处理的 class 参数。
      */
     @Override
     @Transactional(rollbackFor = Exception.class)
@@ -521,13 +489,9 @@ public class AgentVersionServiceImpl implements AgentVersionService {
     }
 
     /**
-     * {@code deleteEdge} 释放或移除当前操作涉及的资源。
+     * 执行 智能体 Version 相关业务操作，并维护必要的状态和协作关系。
      *
-     * @param actor 参数值，用于执行当前操作。
-     * @param agentId 参数值，用于执行当前操作。
-     * @param versionId 参数值，用于执行当前操作。
-     * @param sourceNodeId 参数值，用于执行当前操作。
-     * @param targetNodeId 参数值，用于执行当前操作。
+     * @param class 用于完成本次业务处理的 class 参数。
      */
     @Override
     @Transactional(rollbackFor = Exception.class)
@@ -561,13 +525,12 @@ public class AgentVersionServiceImpl implements AgentVersionService {
     // ======================== 画布管理 ========================
 
     /**
-     * {@code getCanvasConfig} 查询并返回当前操作所需的数据。
+     * 查询 智能体 Version 相关业务数据，并返回处理结果。
      *
-     * @param actor 参数值，用于执行当前操作。
-     * @param agentId 参数值，用于执行当前操作。
-     * @param versionId 参数值，用于执行当前操作。
-     *
-     * @return 返回当前操作产生的结果。
+     * @param actor 当前操作主体上下文，用于确定租户、用户和访问权限。
+     * @param agentId 用于定位agent的标识。
+     * @param versionId 用于定位version的标识。
+     * @return 返回 智能体 Version 相关操作生成的结果数据。
      */
     @Override
     public String getCanvasConfig(ActorContext actor, String agentId, Long versionId) {
@@ -577,12 +540,9 @@ public class AgentVersionServiceImpl implements AgentVersionService {
     }
 
     /**
-     * {@code updateCanvasConfig} 写入或更新当前模块中的业务数据。
+     * 执行 智能体 Version 相关业务操作，并维护必要的状态和协作关系。
      *
-     * @param actor 参数值，用于执行当前操作。
-     * @param agentId 参数值，用于执行当前操作。
-     * @param versionId 参数值，用于执行当前操作。
-     * @param canvasConfig 参数值，用于执行当前操作。
+     * @param class 用于完成本次业务处理的 class 参数。
      */
     @Override
     @Transactional(rollbackFor = Exception.class)

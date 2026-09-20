@@ -4,7 +4,7 @@ import lombok.AllArgsConstructor;
 import lombok.Getter;
 
 /**
- * {@code DifficultyLevel} 表示教育模块中的一组受控业务状态或分类。
+ * 定义 Difficulty Level 可用的枚举值及其业务语义。
  */
 @Getter
 @AllArgsConstructor
@@ -28,11 +28,10 @@ public enum DifficultyLevel {
     private final double ratio;
 
     /**
-     * {@code fromLevel} 执行当前类型定义的业务操作。
+     * 执行 Difficulty Level 相关业务数据，并返回处理结果。
      *
-     * @param level 参数值，用于执行当前操作。
-     *
-     * @return 返回当前操作产生的结果。
+     * @param level 用于完成本次业务处理的 level 参数。
+     * @return 返回 Difficulty Level 相关操作生成的结果数据。
      */
     public static DifficultyLevel fromLevel(int level) {
         for (DifficultyLevel d : values()) {

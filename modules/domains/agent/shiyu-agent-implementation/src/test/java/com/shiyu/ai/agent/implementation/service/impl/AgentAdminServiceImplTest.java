@@ -18,6 +18,9 @@ import org.junit.jupiter.api.Test;
 
 import java.util.List;
 
+/**
+ * 验证 智能体 Admin Service Impl 相关功能、边界条件、异常路径和协作行为。
+ */
 class AgentAdminServiceImplTest {
     private static final ActorContext ACTOR =
             new ActorContext(new TenantId(12), new UserId(6), false);

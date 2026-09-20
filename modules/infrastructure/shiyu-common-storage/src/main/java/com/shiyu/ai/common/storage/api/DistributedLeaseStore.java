@@ -3,49 +3,46 @@ package com.shiyu.ai.common.storage.api;
 import java.time.Duration;
 
 /**
- * DistributedLeaseStore 接口，定义基础设施模块的能力边界。
+ * 管理 Distributed Lease 相关的运行时状态、注册信息或临时数据。
  */
 public interface DistributedLeaseStore extends LeaseStore {
 
     /**
-     * 执行 {@code acquire} 定义的接口操作。
+     * 执行 Distributed Lease 相关业务数据，并返回处理结果。
      *
-     * @param key 方法参数。
-     * @param ttl 方法参数。
-     *
-     * @return 条件是否满足。
+     * @param key 用于定位或筛选目标业务对象的业务值。
+     * @param ttl 用于完成本次业务处理的 ttl 参数。
+     * @return 返回本次条件判断是否成立。
      */
     default boolean acquire(String key, Duration ttl) {
         return tryAcquire(key, owner(key), ttl);
     }
 
     /**
-     * 执行 {@code renew} 定义的接口操作。
+     * 执行 Distributed Lease 相关业务数据，并返回处理结果。
      *
-     * @param key 方法参数。
-     * @param ttl 方法参数。
-     *
-     * @return 条件是否满足。
+     * @param key 用于定位或筛选目标业务对象的业务值。
+     * @param ttl 用于完成本次业务处理的 ttl 参数。
+     * @return 返回本次条件判断是否成立。
      */
     default boolean renew(String key, Duration ttl) {
         return renew(key, owner(key), ttl);
     }
 
     /**
-     * 变更当前业务对象的处理状态。
+     * 执行 Distributed Lease 相关业务操作，并维护必要的状态和协作关系。
      *
-     * @param key 方法参数。
+     * @param key 用于定位或筛选目标业务对象的业务值。
      */
     default void release(String key) {
         release(key, owner(key));
     }
 
     /**
-     * 执行 {@code owner} 定义的接口操作。
+     * 执行 Distributed Lease 相关业务数据，并返回处理结果。
      *
-     * @param key 方法参数。
-     *
-     * @return 操作结果。
+     * @param key 用于定位或筛选目标业务对象的业务值。
+     * @return 返回 Distributed Lease 相关操作生成的结果数据。
      */
     private String owner(String key) {
         return getClass().getName()

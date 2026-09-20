@@ -8,6 +8,9 @@ import jakarta.validation.constraints.NotNull;
 
 import org.junit.jupiter.api.Test;
 
+/**
+ * 验证 角色 Request Validation 相关功能、边界条件、异常路径和协作行为。
+ */
 class RoleRequestValidationTest {
 
     @Test

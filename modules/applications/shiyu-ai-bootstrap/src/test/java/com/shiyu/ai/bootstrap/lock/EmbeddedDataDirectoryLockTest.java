@@ -7,6 +7,9 @@ import org.junit.jupiter.api.Test;
 import java.nio.file.Files;
 import java.nio.file.Path;
 
+/**
+ * 验证 Embedded Data Directory Lock 相关功能、边界条件、异常路径和协作行为。
+ */
 class EmbeddedDataDirectoryLockTest {
 
     @Test

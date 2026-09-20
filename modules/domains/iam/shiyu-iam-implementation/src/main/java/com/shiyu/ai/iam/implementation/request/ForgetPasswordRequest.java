@@ -10,7 +10,9 @@ import lombok.Data;
 import java.io.Serial;
 import java.io.Serializable;
 
-/** 忘记密码请求 */
+/**
+ * 封装 Forget Password 操作所需的请求条件和输入数据。
+ */
 @Data
 @Schema(description = "忘记密码请求")
 public class ForgetPasswordRequest implements Serializable {

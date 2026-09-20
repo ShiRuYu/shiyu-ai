@@ -5,17 +5,7 @@ import com.shiyu.ai.agent.contract.runtime.*;
 import java.time.Instant;
 
 /**
- * {@code ToolApproval} 封装智能体模块中不可变的结构化数据，并作为相关操作之间的值对象。
- * @param id 标识，表示该记录组件承载的数据。
- * @param runId 运行标识，表示该记录组件承载的数据。
- * @param tenantId 租户标识，表示该记录组件承载的数据。
- * @param ownerUserId 所属用户标识，表示该记录组件承载的数据。
- * @param toolName toolName 属性，表示该记录组件承载的数据。
- * @param argumentsRedacted argumentsRedacted 属性，表示该记录组件承载的数据。
- * @param status 状态，表示该记录组件承载的数据。
- * @param createdAt 创建时间，表示该记录组件承载的数据。
- * @param decidedAt decidedAt 属性，表示该记录组件承载的数据。
- * @param expiresAt 过期时间，表示该记录组件承载的数据。
+ * 封装 工具 Approval 相关的不可变数据及其字段约束。
  */
 public record ToolApproval(
         String id,

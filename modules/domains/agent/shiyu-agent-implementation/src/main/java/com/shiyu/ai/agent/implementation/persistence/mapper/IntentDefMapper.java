@@ -8,7 +8,7 @@ import com.shiyu.ai.common.mybatis.mapper.BaseMapperFlex;
 import org.apache.ibatis.annotations.Mapper;
 
 /**
- * IntentDefMapper 数据映射接口，负责在智能体领域对象与持久化记录之间转换数据。
+ * 负责 Intent Def 的持久化查询、保存和删除，并维护数据访问边界。
  */
 @Mapper
 @UseDataSource(DataSourceConfig.AGENT)

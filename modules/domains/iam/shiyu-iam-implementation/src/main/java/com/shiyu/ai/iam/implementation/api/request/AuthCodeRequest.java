@@ -6,7 +6,7 @@ import jakarta.validation.constraints.Size;
 import lombok.Data;
 
 /**
- * {@code AuthCodeRequest} 表示平台模块的请求参数，承载调用方提交的输入数据。
+ * 封装 认证 Code 操作所需的请求条件和输入数据。
  */
 @Data
 public class AuthCodeRequest {

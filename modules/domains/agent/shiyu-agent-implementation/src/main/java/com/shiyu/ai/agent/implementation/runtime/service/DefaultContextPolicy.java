@@ -5,17 +5,16 @@ import com.shiyu.ai.agent.contract.runtime.*;
 import org.springframework.stereotype.Component;
 
 /**
- * {@code DefaultContextPolicy} 承载智能体模块的领域状态或协作行为，负责维护本类型的职责边界。
+ * 校验或约束 Default Context 相关的请求、状态和访问规则。
  */
 @Component
 public class DefaultContextPolicy implements ContextPolicy {
     /**
-     * {@code canRead} 校验当前操作的输入或状态是否满足约束。
+     * 校验或判断 Default Context 相关业务数据，并返回处理结果。
      *
-     * @param item 参数值，用于执行当前操作。
-     * @param query 参数值，用于执行当前操作。
-     *
-     * @return 返回当前操作产生的结果。
+     * @param item 用于完成本次业务处理的 item 参数。
+     * @param query 用于筛选目标数据的查询条件。
+     * @return 返回本次条件判断是否成立。
      */
     @Override
     public boolean canRead(ContextItem item, ContextQuery query) {

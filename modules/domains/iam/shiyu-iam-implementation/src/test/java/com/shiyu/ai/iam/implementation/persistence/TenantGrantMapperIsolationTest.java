@@ -23,6 +23,9 @@ import org.h2.jdbcx.JdbcDataSource;
 import org.junit.jupiter.api.Test;
 import org.springframework.jdbc.core.JdbcTemplate;
 
+/**
+ * 验证 租户 Grant Mapper Isolation 相关功能、边界条件、异常路径和协作行为。
+ */
 class TenantGrantMapperIsolationTest {
     @Test
     void realGrantMappersFilterQueriesAndRejectCrossTenantWrites() {

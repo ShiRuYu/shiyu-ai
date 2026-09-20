@@ -27,6 +27,9 @@ import org.junit.jupiter.api.Test;
 
 import java.util.concurrent.atomic.AtomicReference;
 
+/**
+ * 验证 认证 Controller 相关功能、边界条件、异常路径和协作行为。
+ */
 @Tag("dev")
 class AuthControllerTest {
 

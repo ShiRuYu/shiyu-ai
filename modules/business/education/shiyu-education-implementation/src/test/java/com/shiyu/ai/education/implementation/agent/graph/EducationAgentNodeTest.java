@@ -28,6 +28,9 @@ import org.junit.jupiter.api.Test;
 import java.util.List;
 import java.util.Map;
 
+/**
+ * 验证 教育 智能体 Node 相关功能、边界条件、异常路径和协作行为。
+ */
 @SuppressWarnings("cast")
 class EducationAgentNodeTest {
 
@@ -402,6 +405,9 @@ class EducationAgentNodeTest {
                 () -> node.execute(NodeInput.fromMap(Map.of("studentId", 2L, "knowledgeId", 10L))));
     }
 
+    /**
+     * 验证 Test Practice 相关功能、边界条件、异常路径和协作行为。
+     */
     private static final class TestPracticeNode extends PracticeNode {
         private TestPracticeNode(ChatEngine engine, int count) {
             super(engine, count);
@@ -412,6 +418,9 @@ class EducationAgentNodeTest {
         }
     }
 
+    /**
+     * 验证 Test Teach 相关功能、边界条件、异常路径和协作行为。
+     */
     private static final class TestTeachNode extends TeachNode {
         private TestTeachNode(ChatEngine engine) {
             super(engine);
@@ -422,6 +431,9 @@ class EducationAgentNodeTest {
         }
     }
 
+    /**
+     * 验证 Test Prereq Check 相关功能、边界条件、异常路径和协作行为。
+     */
     private static final class TestPrereqCheckNode extends PrereqCheckNode {
         private TestPrereqCheckNode(KnowledgeRelationPort relation, KnowledgePathPort path) {
             super(relation, path);
@@ -432,6 +444,9 @@ class EducationAgentNodeTest {
         }
     }
 
+    /**
+     * 验证 Test Score Analysis 相关功能、边界条件、异常路径和协作行为。
+     */
     private static final class TestScoreAnalysisNode extends ScoreAnalysisNode {
         private TestScoreAnalysisNode(AbilityService service) {
             super(service);
@@ -442,6 +457,9 @@ class EducationAgentNodeTest {
         }
     }
 
+    /**
+     * 验证 Test 复习 Schedule 相关功能、边界条件、异常路径和协作行为。
+     */
     private static final class TestReviewScheduleNode extends ReviewScheduleNode {
         private TestReviewScheduleNode(
                 ReviewScheduler scheduler, ReviewService service, ReviewTaskRepository repository) {
@@ -453,6 +471,9 @@ class EducationAgentNodeTest {
         }
     }
 
+    /**
+     * 验证 Test Ability Query 相关功能、边界条件、异常路径和协作行为。
+     */
     private static final class TestAbilityQueryNode extends AbilityQueryNode {
         private TestAbilityQueryNode(
                 KnowledgePointPort points,

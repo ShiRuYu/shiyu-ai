@@ -19,9 +19,7 @@ import java.util.Map;
 import java.util.Set;
 
 /**
- * MCP 工具市场 Controller
- *
- * <p>注意：所有参数均通过 @RequestParam 或 @RequestBody 传入，不使用 @PathVariable。
+ * 处理 Mcp 工具 相关的 Web 请求，并将请求转换为应用服务调用。
  */
 @Slf4j
 @Tag(name = "MCP 工具市场", description = "MCP Tool Marketplace")
@@ -39,10 +37,10 @@ public class McpToolController {
     private final ToolService toolService;
 
     /**
-     * {@code McpToolController} 创建并初始化当前类型实例。
+     * 执行 Mcp 工具 相关业务操作，并维护必要的状态和协作关系。
      *
-     * @param registry 参数值，用于执行当前操作。
-     * @param toolService 参数值，用于执行当前操作。
+     * @param registry 用于完成本次业务处理的 registry 参数。
+     * @param toolService 用于完成本次业务处理的 toolService 参数。
      */
     public McpToolController(McpToolRegistry registry, ToolService toolService) {
         this.registry = registry;
@@ -79,11 +77,9 @@ public class McpToolController {
     }
 
     /**
-     * {@code getTool} 查询并返回当前操作所需的数据。
+     * 执行 Mcp 工具 相关业务操作，并维护必要的状态和协作关系。
      *
-     * @param name 参数值，用于执行当前操作。
-     *
-     * @return 返回当前操作产生的结果。
+     * @param summary 用于完成本次业务处理的 summary 参数。
      */
     @Operation(summary = "获取工具详情")
     @SaCheckPermission("tool:mcp:detail")
@@ -125,9 +121,9 @@ public class McpToolController {
     }
 
     /**
-     * {@code getCategories} 查询并返回当前操作所需的数据。
+     * 执行 Mcp 工具 相关业务操作，并维护必要的状态和协作关系。
      *
-     * @return 返回当前操作产生的结果。
+     * @param summary 用于完成本次业务处理的 summary 参数。
      */
     @Operation(summary = "获取工具分类")
     @SaCheckPermission("tool:mcp:categories")
@@ -137,9 +133,9 @@ public class McpToolController {
     }
 
     /**
-     * {@code getStats} 查询并返回当前操作所需的数据。
+     * 执行 Mcp 工具 相关业务操作，并维护必要的状态和协作关系。
      *
-     * @return 返回当前操作产生的结果。
+     * @param summary 用于完成本次业务处理的 summary 参数。
      */
     @Operation(summary = "获取工具统计")
     @SaCheckPermission("tool:mcp:stats")

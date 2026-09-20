@@ -3,25 +3,21 @@ package com.shiyu.ai.tooling.contract.api;
 import java.util.Map;
 
 /**
- * ToolService 服务接口，负责执行工具领域相关业务操作。
+ * 提供 工具 的查询、创建、更新及调用服务，协调业务变更和领域协作。
  */
 public interface ToolService {
 
     /**
-     * 执行当前接口定义的业务流程。
+     * 调用 工具 相关业务数据，并返回处理结果。
      *
-     * @param toolName 方法参数。
-     * @param parameters 方法参数。
-     *
-     * @return 操作结果。
+     * @param toolName 用于完成本次业务处理的 toolName 参数。
+     * @param parameters 用于完成本次业务处理的 parameters 参数。
+     * @return 返回 工具 相关操作生成的结果数据。
      */
     ToolExecutionResult execute(String toolName, Map<String, Object> parameters);
 
     /**
-     * {@code ToolExecutionResult} 封装工具模块中不可变的结构化数据，并作为相关操作之间的值对象。
-     * @param success success 属性，表示该记录组件承载的数据。
-     * @param result 结果，表示该记录组件承载的数据。
-     * @param errorMessage errorMessage 属性，表示该记录组件承载的数据。
+     * 封装 工具 Execution 相关的不可变数据及其字段约束。
      */
     record ToolExecutionResult(boolean success, Object result, String errorMessage) {}
 }

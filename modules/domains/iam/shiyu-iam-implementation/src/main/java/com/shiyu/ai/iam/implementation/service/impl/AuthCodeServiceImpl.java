@@ -27,7 +27,7 @@ import java.util.Objects;
 import java.util.Set;
 
 /**
- * 实现 AuthCode 应用服务用例。
+ * 提供 认证 Code 的查询、创建、更新及调用服务，协调业务变更和领域协作。
  */
 @Service
 public class AuthCodeServiceImpl implements AuthCodeService {
@@ -45,11 +45,11 @@ public class AuthCodeServiceImpl implements AuthCodeService {
     private final TenantRepository tenantRepository;
 
     /**
-     * {@code AuthCodeServiceImpl} 创建并初始化当前类型实例。
+     * 执行 认证 Code 相关业务操作，并维护必要的状态和协作关系。
      *
-     * @param authCodeRepository 参数值，用于执行当前操作。
-     * @param roleRepository 参数值，用于执行当前操作。
-     * @param tenantRepository 参数值，用于执行当前操作。
+     * @param authCodeRepository 用于完成本次业务处理的 authCodeRepository 参数。
+     * @param roleRepository 用于完成本次业务处理的 roleRepository 参数。
+     * @param tenantRepository 用于完成本次业务处理的 tenantRepository 参数。
      */
     public AuthCodeServiceImpl(
             AuthCodeRepository authCodeRepository,
@@ -61,11 +61,10 @@ public class AuthCodeServiceImpl implements AuthCodeService {
     }
 
     /**
-     * {@code list} 查询并返回当前操作所需的数据。
+     * 查询 认证 Code 相关业务数据，并返回处理结果。
      *
-     * @param actor 参数值，用于执行当前操作。
-     *
-     * @return 返回当前操作产生的结果。
+     * @param actor 当前操作主体上下文，用于确定租户、用户和访问权限。
+     * @return 返回符合条件的数据集合；没有匹配项时返回空集合。
      */
     @Override
     public List<AuthCodeOptionVO> list(ActorContext actor) {
@@ -76,13 +75,12 @@ public class AuthCodeServiceImpl implements AuthCodeService {
     }
 
     /**
-     * {@code listRoleAuthCodes} 查询并返回当前操作所需的数据。
+     * 查询 认证 Code 相关业务数据，并返回处理结果。
      *
-     * @param actor 参数值，用于执行当前操作。
-     * @param roleId 参数值，用于执行当前操作。
-     * @param tenantId 参数值，用于执行当前操作。
-     *
-     * @return 返回当前操作产生的结果。
+     * @param actor 当前操作主体上下文，用于确定租户、用户和访问权限。
+     * @param roleId 用于定位role的标识。
+     * @param tenantId 当前操作涉及的租户标识。
+     * @return 返回符合条件的数据集合；没有匹配项时返回空集合。
      */
     @Override
     public List<String> listRoleAuthCodes(ActorContext actor, Long roleId, TenantId tenantId) {
@@ -98,11 +96,10 @@ public class AuthCodeServiceImpl implements AuthCodeService {
     }
 
     /**
-     * {@code options} 执行当前类型定义的业务操作。
+     * 查询 认证 Code 相关业务数据，并返回处理结果。
      *
-     * @param actor 参数值，用于执行当前操作。
-     *
-     * @return 返回当前操作产生的结果。
+     * @param actor 当前操作主体上下文，用于确定租户、用户和访问权限。
+     * @return 返回符合条件的数据集合；没有匹配项时返回空集合。
      */
     @Override
     public List<AuthCodeOptionVO> options(ActorContext actor) {
@@ -110,12 +107,9 @@ public class AuthCodeServiceImpl implements AuthCodeService {
     }
 
     /**
-     * {@code create} 写入或更新当前模块中的业务数据。
+     * 执行 认证 Code 相关业务操作，并维护必要的状态和协作关系。
      *
-     * @param actor 参数值，用于执行当前操作。
-     * @param request 参数值，用于执行当前操作。
-     *
-     * @return 返回当前操作产生的结果。
+     * @param class 用于完成本次业务处理的 class 参数。
      */
     @Override
     @Transactional(rollbackFor = Exception.class)
@@ -140,13 +134,12 @@ public class AuthCodeServiceImpl implements AuthCodeService {
     }
 
     /**
-     * {@code update} 写入或更新当前模块中的业务数据。
+     * 更新或设置 认证 Code 相关业务数据，并返回处理结果。
      *
-     * @param actor 参数值，用于执行当前操作。
-     * @param id 参数值，用于执行当前操作。
-     * @param request 参数值，用于执行当前操作。
-     *
-     * @return 返回当前操作产生的结果。
+     * @param actor 当前操作主体上下文，用于确定租户、用户和访问权限。
+     * @param id 用于定位目标业务对象的标识。
+     * @param request 封装本次操作所需业务字段的请求对象。
+     * @return 返回本次条件判断是否成立。
      */
     @Override
     public boolean update(ActorContext actor, Long id, AuthCodeRequest request) {
@@ -171,12 +164,9 @@ public class AuthCodeServiceImpl implements AuthCodeService {
     }
 
     /**
-     * {@code delete} 释放或移除当前操作涉及的资源。
+     * 执行 认证 Code 相关业务操作，并维护必要的状态和协作关系。
      *
-     * @param actor 参数值，用于执行当前操作。
-     * @param id 参数值，用于执行当前操作。
-     *
-     * @return 返回当前操作产生的结果。
+     * @param class 用于完成本次业务处理的 class 参数。
      */
     @Override
     @Transactional(rollbackFor = Exception.class)
@@ -200,14 +190,9 @@ public class AuthCodeServiceImpl implements AuthCodeService {
     }
 
     /**
-     * {@code grant} 执行当前类型定义的业务操作。
+     * 执行 认证 Code 相关业务操作，并维护必要的状态和协作关系。
      *
-     * @param actor 参数值，用于执行当前操作。
-     * @param roleId 参数值，用于执行当前操作。
-     * @param tenantId 参数值，用于执行当前操作。
-     * @param authCodeIds 参数值，用于执行当前操作。
-     *
-     * @return 返回当前操作产生的结果。
+     * @param class 用于完成本次业务处理的 class 参数。
      */
     @Override
     @Transactional(rollbackFor = Exception.class)
@@ -251,14 +236,9 @@ public class AuthCodeServiceImpl implements AuthCodeService {
     }
 
     /**
-     * {@code replace} 执行当前类型定义的业务操作。
+     * 执行 认证 Code 相关业务操作，并维护必要的状态和协作关系。
      *
-     * @param actor 参数值，用于执行当前操作。
-     * @param roleId 参数值，用于执行当前操作。
-     * @param tenantId 参数值，用于执行当前操作。
-     * @param authCodes 参数值，用于执行当前操作。
-     *
-     * @return 返回当前操作产生的结果。
+     * @param class 用于完成本次业务处理的 class 参数。
      */
     @Override
     @Transactional(rollbackFor = Exception.class)
@@ -309,14 +289,9 @@ public class AuthCodeServiceImpl implements AuthCodeService {
     }
 
     /**
-     * {@code revoke} 执行当前类型定义的业务操作。
+     * 执行 认证 Code 相关业务操作，并维护必要的状态和协作关系。
      *
-     * @param actor 参数值，用于执行当前操作。
-     * @param roleId 参数值，用于执行当前操作。
-     * @param tenantId 参数值，用于执行当前操作。
-     * @param authCodeId 参数值，用于执行当前操作。
-     *
-     * @return 返回当前操作产生的结果。
+     * @param class 用于完成本次业务处理的 class 参数。
      */
     @Override
     @Transactional(rollbackFor = Exception.class)
@@ -330,12 +305,11 @@ public class AuthCodeServiceImpl implements AuthCodeService {
     }
 
     /**
-     * {@code page} 执行当前类型定义的业务操作。
+     * 查询 认证 Code 相关业务数据，并返回处理结果。
      *
-     * @param actor 参数值，用于执行当前操作。
-     * @param request 参数值，用于执行当前操作。
-     *
-     * @return 返回当前操作产生的结果。
+     * @param actor 当前操作主体上下文，用于确定租户、用户和访问权限。
+     * @param request 封装本次操作所需业务字段的请求对象。
+     * @return 返回 认证 Code 相关操作生成的结果数据。
      */
     @Override
     public PageData<AuthCodeOptionVO> page(ActorContext actor, AuthCodePageRequest request) {

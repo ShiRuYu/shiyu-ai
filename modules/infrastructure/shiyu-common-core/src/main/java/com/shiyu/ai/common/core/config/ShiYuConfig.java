@@ -9,17 +9,17 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.transaction.PlatformTransactionManager;
 
 /**
- * {@code ShiYuConfig} 提供平台基础设施模块的配置项，并集中声明其默认值和运行约束。
+ * 定义 Shi Yu 基础设施或应用能力的配置项及装配规则。
  */
 @AutoConfiguration
 @EnableConfigurationProperties(ShiYuProperties.class)
 public class ShiYuConfig {
     /**
-     * {@code transactionTemplateExecutor} 执行当前类型定义的业务操作。
+     * 执行 Shi Yu 相关业务操作，并维护必要的状态和协作关系。
      *
-     * @param transactionManager 参数值，用于执行当前操作。
-     *
-     * @return 返回当前操作产生的结果。
+     * @param tx 用于完成本次业务处理的 tx 参数。
+     * @param enabled 用于完成本次业务处理的 enabled 参数。
+     * @param true 用于完成本次业务处理的 true 参数。
      */
     @Bean
     @ConditionalOnBooleanProperty(prefix = "shiyu.tx", name = "enabled", havingValue = true)

@@ -18,6 +18,9 @@ import org.junit.jupiter.api.AfterEach;
 import java.util.List;
 import java.util.Map;
 
+/**
+ * 验证 Intent Def Repository Impl 相关功能、边界条件、异常路径和协作行为。
+ */
 class IntentDefRepositoryImplTest {
     private static final TenantId TENANT = new TenantId(7L);
     @BeforeEach

@@ -1,6 +1,6 @@
 package com.shiyu.ai.agent.implementation;
 
 /**
- * AgentImplementationModule 模块接口，标识智能体模块的边界。
+ * 定义 智能体 Implementation Module 相关的协作契约和调用边界。
  */
 public interface AgentImplementationModule {}

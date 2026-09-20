@@ -7,7 +7,7 @@ import lombok.Data;
 import lombok.NoArgsConstructor;
 
 /**
- * {@code Result} 承载平台基础设施模块的领域状态或协作行为，负责维护本类型的职责边界。
+ * 表示 Result 相关流程中的状态、关系或执行数据。
  */
 @Data
 @NoArgsConstructor
@@ -29,15 +29,14 @@ public class Result<T> {
     private boolean success;
 
     /**
-     * {@code common} 执行当前类型定义的业务操作。
+     * 执行 Result 相关业务数据，并返回处理结果。
      *
-     * @param data 参数值，用于执行当前操作。
-     * @param code 参数值，用于执行当前操作。
-     * @param message 参数值，用于执行当前操作。
-     * @param error 参数值，用于执行当前操作。
-     * @param success 参数值，用于执行当前操作。
-     *
-     * @return 返回当前操作产生的结果。
+     * @param data 用于完成本次业务处理的 data 参数。
+     * @param code 用于定位或筛选目标业务对象的业务值。
+     * @param message 本次流程携带的事件或业务数据。
+     * @param error 用于完成本次业务处理的 error 参数。
+     * @param success 用于完成本次业务处理的 success 参数。
+     * @return 返回 Result 相关操作生成的结果数据。
      */
     public static <T> Result<T> common(
             T data, Integer code, String message, String error, boolean success) {
@@ -51,123 +50,114 @@ public class Result<T> {
     }
 
     /**
-     * {@code common} 执行当前类型定义的业务操作。
+     * 执行 Result 相关业务数据，并返回处理结果。
      *
-     * @param data 参数值，用于执行当前操作。
-     * @param code 参数值，用于执行当前操作。
-     * @param message 参数值，用于执行当前操作。
-     * @param success 参数值，用于执行当前操作。
-     *
-     * @return 返回当前操作产生的结果。
+     * @param data 用于完成本次业务处理的 data 参数。
+     * @param code 用于定位或筛选目标业务对象的业务值。
+     * @param message 本次流程携带的事件或业务数据。
+     * @param success 用于完成本次业务处理的 success 参数。
+     * @return 返回 Result 相关操作生成的结果数据。
      */
     public static <T> Result<T> common(T data, Integer code, String message, boolean success) {
         return common(data, code, message, null, success);
     }
 
     /**
-     * {@code success} 执行当前类型定义的业务操作。
+     * 执行 Result 相关业务数据，并返回处理结果。
      *
-     * @param resultCode 参数值，用于执行当前操作。
-     *
-     * @return 返回当前操作产生的结果。
+     * @param resultCode 用于完成本次业务处理的 resultCode 参数。
+     * @return 返回 Result 相关操作生成的结果数据。
      */
     public static <T> Result<T> success(BizResultCode resultCode) {
         return common(null, resultCode.getCode(), resultCode.getMsg(), true);
     }
 
     /**
-     * {@code success} 执行当前类型定义的业务操作。
+     * 执行 Result 相关业务数据，并返回处理结果。
      *
-     * @param resultCode 参数值，用于执行当前操作。
-     * @param data 参数值，用于执行当前操作。
-     *
-     * @return 返回当前操作产生的结果。
+     * @param resultCode 用于完成本次业务处理的 resultCode 参数。
+     * @param data 用于完成本次业务处理的 data 参数。
+     * @return 返回 Result 相关操作生成的结果数据。
      */
     public static <T> Result<T> success(BizResultCode resultCode, T data) {
         return common(data, resultCode.getCode(), resultCode.getMsg(), true);
     }
 
     /**
-     * {@code fail} 执行当前类型定义的业务操作。
+     * 执行 Result 相关业务数据，并返回处理结果。
      *
-     * @param resultCode 参数值，用于执行当前操作。
-     *
-     * @return 返回当前操作产生的结果。
+     * @param resultCode 用于完成本次业务处理的 resultCode 参数。
+     * @return 返回 Result 相关操作生成的结果数据。
      */
     public static <T> Result<T> fail(BizResultCode resultCode) {
         return common(null, resultCode.getCode(), resultCode.getMsg(), false);
     }
 
     /**
-     * {@code fail} 执行当前类型定义的业务操作。
+     * 执行 Result 相关业务数据，并返回处理结果。
      *
-     * @param resultCode 参数值，用于执行当前操作。
-     * @param data 参数值，用于执行当前操作。
-     *
-     * @return 返回当前操作产生的结果。
+     * @param resultCode 用于完成本次业务处理的 resultCode 参数。
+     * @param data 用于完成本次业务处理的 data 参数。
+     * @return 返回 Result 相关操作生成的结果数据。
      */
     public static <T> Result<T> fail(BizResultCode resultCode, T data) {
         return common(data, resultCode.getCode(), resultCode.getMsg(), false);
     }
 
     /**
-     * {@code fail} 执行当前类型定义的业务操作。
+     * 执行 Result 相关业务数据，并返回处理结果。
      *
-     * @param resultCode 参数值，用于执行当前操作。
-     * @param message 参数值，用于执行当前操作。
-     *
-     * @return 返回当前操作产生的结果。
+     * @param resultCode 用于完成本次业务处理的 resultCode 参数。
+     * @param message 本次流程携带的事件或业务数据。
+     * @return 返回 Result 相关操作生成的结果数据。
      */
     public static <T> Result<T> fail(BizResultCode resultCode, String message) {
         return common(null, resultCode.getCode(), message, null, false);
     }
 
     /**
-     * {@code success} 执行当前类型定义的业务操作。
+     * 执行 Result 相关业务数据，并返回处理结果。
      *
-     * @return 返回当前操作产生的结果。
+     * @return 返回 Result 相关操作生成的结果数据。
      */
     public static <T> Result<T> success() {
         return success(BizResultCode.SUC);
     }
 
     /**
-     * {@code success} 执行当前类型定义的业务操作。
+     * 执行 Result 相关业务数据，并返回处理结果。
      *
-     * @param data 参数值，用于执行当前操作。
-     *
-     * @return 返回当前操作产生的结果。
+     * @param data 用于完成本次业务处理的 data 参数。
+     * @return 返回 Result 相关操作生成的结果数据。
      */
     public static <T> Result<T> success(T data) {
         return success(BizResultCode.SUC, data);
     }
 
     /**
-     * {@code fail} 执行当前类型定义的业务操作。
+     * 执行 Result 相关业务数据，并返回处理结果。
      *
-     * @return 返回当前操作产生的结果。
+     * @return 返回 Result 相关操作生成的结果数据。
      */
     public static <T> Result<T> fail() {
         return fail(BizResultCode.ERROR);
     }
 
     /**
-     * {@code fail} 执行当前类型定义的业务操作。
+     * 执行 Result 相关业务数据，并返回处理结果。
      *
-     * @param data 参数值，用于执行当前操作。
-     *
-     * @return 返回当前操作产生的结果。
+     * @param data 用于完成本次业务处理的 data 参数。
+     * @return 返回 Result 相关操作生成的结果数据。
      */
     public static <T> Result<T> fail(T data) {
         return fail(BizResultCode.ERROR, data);
     }
 
     /**
-     * {@code fail} 执行当前类型定义的业务操作。
+     * 执行 Result 相关业务数据，并返回处理结果。
      *
-     * @param message 参数值，用于执行当前操作。
-     *
-     * @return 返回当前操作产生的结果。
+     * @param message 本次流程携带的事件或业务数据。
+     * @return 返回 Result 相关操作生成的结果数据。
      */
     public static <T> Result<T> fail(String message) {
         return fail(BizResultCode.ERR_10009, message);

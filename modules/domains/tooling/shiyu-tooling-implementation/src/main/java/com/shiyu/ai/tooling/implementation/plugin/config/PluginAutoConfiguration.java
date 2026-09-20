@@ -11,7 +11,7 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 
 /**
- * {@code PluginAutoConfiguration} 提供工具模块的配置项，并集中声明其默认值和运行约束。
+ * 定义 插件 Auto 基础设施或应用能力的配置项及装配规则。
  */
 @Slf4j
 @Configuration
@@ -19,9 +19,9 @@ import org.springframework.context.annotation.Configuration;
 public class PluginAutoConfiguration {
 
     /**
-     * {@code pluginSandbox} 执行当前类型定义的业务操作。
+     * 执行 插件 Auto 相关业务数据，并返回处理结果。
      *
-     * @return 返回当前操作产生的结果。
+     * @return 返回 插件 Auto 相关操作生成的结果数据。
      */
     @Bean
     @ConditionalOnMissingBean
@@ -30,9 +30,9 @@ public class PluginAutoConfiguration {
     }
 
     /**
-     * {@code pluginRegistry} 执行当前类型定义的业务操作。
+     * 执行 插件 Auto 相关业务数据，并返回处理结果。
      *
-     * @return 返回当前操作产生的结果。
+     * @return 返回 插件 Auto 相关操作生成的结果数据。
      */
     @Bean
     @ConditionalOnMissingBean

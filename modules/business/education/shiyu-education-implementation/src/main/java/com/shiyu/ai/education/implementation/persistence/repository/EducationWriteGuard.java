@@ -1,7 +1,7 @@
 package com.shiyu.ai.education.implementation.persistence.repository;
 
 /**
- * 校验教育模块写操作的租户范围和数据权限。
+ * 实现 教育 Write Guard 相关的业务处理、协作逻辑或基础设施能力。
  */
 final class EducationWriteGuard {
     private EducationWriteGuard() {}

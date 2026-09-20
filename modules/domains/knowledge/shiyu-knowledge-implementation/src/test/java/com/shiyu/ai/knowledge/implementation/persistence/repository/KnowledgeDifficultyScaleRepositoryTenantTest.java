@@ -15,6 +15,9 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.mockito.ArgumentCaptor;
 
+/**
+ * 验证 知识 Difficulty Scale Repository 租户 相关功能、边界条件、异常路径和协作行为。
+ */
 class KnowledgeDifficultyScaleRepositoryTenantTest {
     private static final TenantId TENANT = new TenantId(31);
 

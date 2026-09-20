@@ -11,6 +11,9 @@ import java.net.URI;
 import java.time.Duration;
 import java.util.Set;
 
+/**
+ * 验证 插件 Worker Policy 相关功能、边界条件、异常路径和协作行为。
+ */
 class PluginWorkerPolicyTest {
     @Test
     void executableMustStayInsideExplicitAllowList() {

@@ -24,6 +24,9 @@ import java.io.FileNotFoundException;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Path;
 
+/**
+ * 验证 Local 文件 Storage 相关功能、边界条件、异常路径和协作行为。
+ */
 @Tag("dev")
 @Tag("prod")
 class LocalFileStorageTest {

@@ -1,6 +1,6 @@
 package com.shiyu.ai.education.implementation;
 
 /**
- * EducationImplementationModule 模块接口，标识教育模块的边界。
+ * 定义 教育 Implementation Module 相关的协作契约和调用边界。
  */
 public interface EducationImplementationModule {}

@@ -9,6 +9,9 @@ import com.shiyu.ai.agent.implementation.execution.ExecutionStatus;
 
 import org.junit.jupiter.api.Test;
 
+/**
+ * 验证 智能体 Runtime Impl Status 相关功能、边界条件、异常路径和协作行为。
+ */
 class AgentRuntimeImplStatusTest {
 
     @Test

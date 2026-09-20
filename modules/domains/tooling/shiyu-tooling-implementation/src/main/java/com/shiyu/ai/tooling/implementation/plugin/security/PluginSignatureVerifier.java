@@ -9,19 +9,18 @@ import java.security.spec.X509EncodedKeySpec;
 import java.util.Base64;
 
 /**
- * 校验插件包签名并阻止未信任的发布者。
+ * 实现 插件 Signature Verifier 相关的业务处理、协作逻辑或基础设施能力。
  */
 public final class PluginSignatureVerifier {
     private PluginSignatureVerifier() {}
 
     /**
-     * {@code verify} 执行当前类型定义的业务操作。
+     * 执行 插件 Signature Verifier 相关业务数据，并返回处理结果。
      *
-     * @param manifest 参数值，用于执行当前操作。
-     * @param signatureBase64 参数值，用于执行当前操作。
-     * @param publicKeyBase64 参数值，用于执行当前操作。
-     *
-     * @return 返回当前操作产生的结果。
+     * @param manifest 用于完成本次业务处理的 manifest 参数。
+     * @param signatureBase64 用于完成本次业务处理的 signatureBase64 参数。
+     * @param publicKeyBase64 用于完成本次业务处理的 publicKeyBase64 参数。
+     * @return 返回本次条件判断是否成立。
      */
     public static boolean verify(String manifest, String signatureBase64, String publicKeyBase64) {
         try {
@@ -40,11 +39,10 @@ public final class PluginSignatureVerifier {
     }
 
     /**
-     * {@code sha256} 执行当前类型定义的业务操作。
+     * 执行 插件 Signature Verifier 相关业务数据，并返回处理结果。
      *
-     * @param value 参数值，用于执行当前操作。
-     *
-     * @return 返回当前操作产生的结果。
+     * @param value 用于完成本次业务处理的 value 参数。
+     * @return 返回 插件 Signature Verifier 相关操作生成的结果数据。
      */
     public static String sha256(String value) {
         try {

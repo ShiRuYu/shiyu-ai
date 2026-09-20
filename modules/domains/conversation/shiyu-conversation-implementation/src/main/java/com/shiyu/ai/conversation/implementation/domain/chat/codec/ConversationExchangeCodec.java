@@ -10,28 +10,26 @@ import java.util.Map;
 import java.util.stream.Collectors;
 
 /**
- * {@code ConversationExchangeCodec} 承载会话模块的领域状态或协作行为，负责维护本类型的职责边界。
+ * 解析或编解码 会话 Exchange 相关的外部内容和领域数据。
  */
 public final class ConversationExchangeCodec {
     private ConversationExchangeCodec() {}
 
     /**
-     * {@code toJsonl} 将当前对象转换为目标表示形式。
+     * 构建或转换 会话 Exchange 相关业务数据，并返回处理结果。
      *
-     * @param messages 参数值，用于执行当前操作。
-     *
-     * @return 返回当前操作产生的结果。
+     * @param messages 用于完成本次业务处理的 messages 参数。
+     * @return 返回 会话 Exchange 相关操作生成的结果数据。
      */
     public static String toJsonl(List<ConversationMessage> messages) {
         return messages.stream().map(JSONUtils::toJsonString).collect(Collectors.joining("\n"));
     }
 
     /**
-     * {@code toMarkdown} 将当前对象转换为目标表示形式。
+     * 构建或转换 会话 Exchange 相关业务数据，并返回处理结果。
      *
-     * @param messages 参数值，用于执行当前操作。
-     *
-     * @return 返回当前操作产生的结果。
+     * @param messages 用于完成本次业务处理的 messages 参数。
+     * @return 返回 会话 Exchange 相关操作生成的结果数据。
      */
     public static String toMarkdown(List<ConversationMessage> messages) {
         return messages.stream()
@@ -46,9 +44,9 @@ public final class ConversationExchangeCodec {
     }
 
     /**
-     * 处理jsonl。
+     * 执行 会话 Exchange 相关业务操作，并维护必要的状态和协作关系。
      *
-     * @return 结果列表。
+     * @param unchecked 用于完成本次业务处理的 unchecked 参数。
      */
     @SuppressWarnings("unchecked")
     public static List<ImportedMessage> fromJsonl(String jsonl) {
@@ -74,11 +72,10 @@ public final class ConversationExchangeCodec {
     }
 
     /**
-     * {@code fromMarkdown} 执行当前类型定义的业务操作。
+     * 执行 会话 Exchange 相关业务数据，并返回处理结果。
      *
-     * @param markdown 参数值，用于执行当前操作。
-     *
-     * @return 返回当前操作产生的结果。
+     * @param markdown 用于完成本次业务处理的 markdown 参数。
+     * @return 返回符合条件的数据集合；没有匹配项时返回空集合。
      */
     public static List<ImportedMessage> fromMarkdown(String markdown) {
         if (markdown == null || markdown.isBlank()) return List.of();
@@ -97,9 +94,7 @@ public final class ConversationExchangeCodec {
     }
 
     /**
-     * {@code ImportedMessage} 封装会话模块中不可变的结构化数据，并作为相关操作之间的值对象。
-     * @param role 角色，表示该记录组件承载的数据。
-     * @param content 内容，表示该记录组件承载的数据。
+     * 封装 Imported 消息 相关的不可变数据及其字段约束。
      */
     public record ImportedMessage(String role, String content) {}
 }

@@ -7,14 +7,14 @@ import org.jsoup.nodes.Document;
 import org.springframework.stereotype.Component;
 
 /**
- * {@code HtmlDocumentParser} 承载知识模块的领域状态或协作行为，负责维护本类型的职责边界。
+ * 解析或编解码 Html 文档 相关的外部内容和领域数据。
  */
 @Component
 public class HtmlDocumentParser implements DocumentParser {
     /**
-     * {@code getSupportedFormat} 查询并返回当前操作所需的数据。
+     * 查询 Html 文档 相关业务数据，并返回处理结果。
      *
-     * @return 返回当前操作产生的结果。
+     * @return 返回 Html 文档 相关操作生成的结果数据。
      */
     @Override
     public String getSupportedFormat() {
@@ -22,11 +22,10 @@ public class HtmlDocumentParser implements DocumentParser {
     }
 
     /**
-     * {@code parse} 执行当前类型定义的业务操作。
+     * 执行 Html 文档 相关业务数据，并返回处理结果。
      *
-     * @param content 参数值，用于执行当前操作。
-     *
-     * @return 返回当前操作产生的结果。
+     * @param content 用于完成本次业务处理的 content 参数。
+     * @return 返回 Html 文档 相关操作生成的结果数据。
      */
     @Override
     public ParseResult parse(String content) {

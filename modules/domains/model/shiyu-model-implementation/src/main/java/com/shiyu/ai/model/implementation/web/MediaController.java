@@ -10,7 +10,7 @@ import java.util.Base64;
 import java.util.Map;
 
 /**
- * {@code MediaController} 是模型模块的 Web 接口适配器，负责接收请求并转换为应用服务调用。
+ * 处理 Media 相关的 Web 请求，并将请求转换为应用服务调用。
  */
 @RestController("modelMediaController")
 @RequestMapping("/api/model/media")
@@ -21,20 +21,18 @@ public class MediaController {
     private final MediaProviderRegistry registry;
 
     /**
-     * {@code MediaController} 创建并初始化当前类型实例。
+     * 执行 Media 相关业务操作，并维护必要的状态和协作关系。
      *
-     * @param registry 参数值，用于执行当前操作。
+     * @param registry 用于完成本次业务处理的 registry 参数。
      */
     public MediaController(MediaProviderRegistry registry) {
         this.registry = registry;
     }
 
     /**
-     * {@code tts} 执行当前类型定义的业务操作。
+     * 执行 Media 相关业务操作，并维护必要的状态和协作关系。
      *
-     * @param request 参数值，用于执行当前操作。
-     *
-     * @return 返回当前操作产生的结果。
+     * @param tts 用于完成本次业务处理的 tts 参数。
      */
     @PostMapping("/tts")
     public Result<Map<String, String>> tts(@RequestBody TtsRequest request) {
@@ -53,11 +51,9 @@ public class MediaController {
     }
 
     /**
-     * {@code translate} 执行当前类型定义的业务操作。
+     * 执行 Media 相关业务操作，并维护必要的状态和协作关系。
      *
-     * @param request 参数值，用于执行当前操作。
-     *
-     * @return 返回当前操作产生的结果。
+     * @param translate 用于完成本次业务处理的 translate 参数。
      */
     @PostMapping("/translate")
     public Result<String> translate(@RequestBody TranslateRequest request) {
@@ -67,11 +63,9 @@ public class MediaController {
     }
 
     /**
-     * {@code understand} 执行当前类型定义的业务操作。
+     * 执行 Media 相关业务操作，并维护必要的状态和协作关系。
      *
-     * @param request 参数值，用于执行当前操作。
-     *
-     * @return 返回当前操作产生的结果。
+     * @param understand 用于完成本次业务处理的 understand 参数。
      */
     @PostMapping("/image/understand")
     public Result<MediaProvider.VisionResult> understand(@RequestBody ImageRequest request) {
@@ -84,11 +78,9 @@ public class MediaController {
     }
 
     /**
-     * {@code generate} 执行当前类型定义的业务操作。
+     * 执行 Media 相关业务操作，并维护必要的状态和协作关系。
      *
-     * @param request 参数值，用于执行当前操作。
-     *
-     * @return 返回当前操作产生的结果。
+     * @param generate 用于完成本次业务处理的 generate 参数。
      */
     @PostMapping("/image/generate")
     public Result<MediaProvider.ImageResult> generate(@RequestBody GenerateRequest request) {
@@ -97,7 +89,7 @@ public class MediaController {
     }
 
     /**
-     * {@code TtsRequest} 表示模型模块的请求参数，承载调用方提交的输入数据。
+     * 封装 Tts 操作所需的请求条件和输入数据。
      */
     @lombok.Getter
     @lombok.Setter
@@ -121,7 +113,7 @@ public class MediaController {
     }
 
     /**
-     * {@code TranslateRequest} 表示模型模块的请求参数，承载调用方提交的输入数据。
+     * 封装 Translate 操作所需的请求条件和输入数据。
      */
     @lombok.Getter
     @lombok.Setter
@@ -142,7 +134,7 @@ public class MediaController {
     }
 
     /**
-     * {@code ImageRequest} 表示模型模块的请求参数，承载调用方提交的输入数据。
+     * 封装 Image 操作所需的请求条件和输入数据。
      */
     @lombok.Getter
     @lombok.Setter
@@ -163,7 +155,7 @@ public class MediaController {
     }
 
     /**
-     * {@code GenerateRequest} 表示模型模块的请求参数，承载调用方提交的输入数据。
+     * 封装 Generate 操作所需的请求条件和输入数据。
      */
     @lombok.Getter
     @lombok.Setter

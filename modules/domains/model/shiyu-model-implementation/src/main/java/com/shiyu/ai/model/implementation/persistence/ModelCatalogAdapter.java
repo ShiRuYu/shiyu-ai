@@ -10,7 +10,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
 
 /**
- * 将模型目录查询适配到模型目录端口。
+ * 将 模型 Catalog 在不同层之间进行适配、转换或组装。
  */
 @Component
 @RequiredArgsConstructor
@@ -25,9 +25,9 @@ public class ModelCatalogAdapter implements ModelCatalogPort {
     private final AiModelMapper modelMapper;
 
     /**
-     * {@code countEnabledPlatforms} 执行当前类型定义的业务操作。
+     * 执行 模型 Catalog 相关业务数据，并返回处理结果。
      *
-     * @return 返回当前操作产生的结果。
+     * @return 返回 模型 Catalog 相关操作生成的结果数据。
      */
     @Override
     public long countEnabledPlatforms() {
@@ -36,9 +36,9 @@ public class ModelCatalogAdapter implements ModelCatalogPort {
     }
 
     /**
-     * {@code countEnabledModels} 执行当前类型定义的业务操作。
+     * 执行 模型 Catalog 相关业务数据，并返回处理结果。
      *
-     * @return 返回当前操作产生的结果。
+     * @return 返回 模型 Catalog 相关操作生成的结果数据。
      */
     @Override
     public long countEnabledModels() {

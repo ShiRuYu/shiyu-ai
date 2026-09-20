@@ -11,7 +11,9 @@ import org.springframework.dao.DuplicateKeyException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
 
-/** Mybatis异常处理器 */
+/**
+ * 处理 Mybatis Exception 相关事件或请求，并推进后续业务流程。
+ */
 @Slf4j
 @RestControllerAdvice
 public class MybatisExceptionHandler {

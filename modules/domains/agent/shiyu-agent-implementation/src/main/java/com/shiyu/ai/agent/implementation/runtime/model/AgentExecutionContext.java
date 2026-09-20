@@ -12,7 +12,7 @@ import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 
 /**
- * 承载 Agent 执行过程中的租户、会话和运行时上下文。
+ * 实现 智能体 Execution 相关的业务处理、协作逻辑或基础设施能力。
  */
 public class AgentExecutionContext {
     private final Cache<String, State> states =
@@ -22,12 +22,12 @@ public class AgentExecutionContext {
                     .build();
 
     /**
-     * {@code append} 执行当前类型定义的业务操作。
+     * 执行 智能体 Execution 相关业务操作，并维护必要的状态和协作关系。
      *
-     * @param tenantId 参数值，用于执行当前操作。
-     * @param executionId 参数值，用于执行当前操作。
-     * @param role 参数值，用于执行当前操作。
-     * @param content 参数值，用于执行当前操作。
+     * @param tenantId 当前操作涉及的租户标识。
+     * @param executionId 用于定位execution的标识。
+     * @param role 用于完成本次业务处理的 role 参数。
+     * @param content 用于完成本次业务处理的 content 参数。
      */
     public void append(TenantId tenantId, String executionId, String role, String content) {
         if (content == null || content.isBlank()) return;
@@ -37,13 +37,12 @@ public class AgentExecutionContext {
     }
 
     /**
-     * {@code messages} 执行当前类型定义的业务操作。
+     * 执行 智能体 Execution 相关业务数据，并返回处理结果。
      *
-     * @param tenantId 参数值，用于执行当前操作。
-     * @param executionId 参数值，用于执行当前操作。
-     * @param limit 参数值，用于执行当前操作。
-     *
-     * @return 返回当前操作产生的结果。
+     * @param tenantId 当前操作涉及的租户标识。
+     * @param executionId 用于定位execution的标识。
+     * @param limit 每页返回的数据数量。
+     * @return 返回符合条件的数据集合；没有匹配项时返回空集合。
      */
     public List<String> messages(TenantId tenantId, String executionId, int limit) {
         State state = states.getIfPresent(key(tenantId, executionId));
@@ -55,22 +54,21 @@ public class AgentExecutionContext {
     }
 
     /**
-     * {@code variables} 执行当前类型定义的业务操作。
+     * 执行 智能体 Execution 相关业务数据，并返回处理结果。
      *
-     * @param tenantId 参数值，用于执行当前操作。
-     * @param executionId 参数值，用于执行当前操作。
-     *
-     * @return 返回当前操作产生的结果。
+     * @param tenantId 当前操作涉及的租户标识。
+     * @param executionId 用于定位execution的标识。
+     * @return 返回 智能体 Execution 相关操作生成的结果数据。
      */
     public Map<String, Object> variables(TenantId tenantId, String executionId) {
         return states.get(key(tenantId, executionId), k -> new State()).variables;
     }
 
     /**
-     * {@code clear} 执行当前类型定义的业务操作。
+     * 删除或移除 智能体 Execution 相关业务操作，并维护必要的状态和协作关系。
      *
-     * @param tenantId 参数值，用于执行当前操作。
-     * @param executionId 参数值，用于执行当前操作。
+     * @param tenantId 当前操作涉及的租户标识。
+     * @param executionId 用于定位execution的标识。
      */
     public void clear(TenantId tenantId, String executionId) {
         states.invalidate(key(tenantId, executionId));
@@ -83,7 +81,7 @@ public class AgentExecutionContext {
     }
 
     /**
-     * {@code State} 承载智能体模块的领域状态或协作行为，负责维护本类型的职责边界。
+     * 表示 State 相关流程中的状态、关系或执行数据。
      */
     private static final class State {
         private final List<String> messages = new ArrayList<>();

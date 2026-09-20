@@ -2,7 +2,9 @@ package com.shiyu.ai.tooling.implementation.plugin.spi;
 
 import java.util.Map;
 
-/** 插件运行上下文 */
+/**
+ * 实现 插件 相关的业务处理、协作逻辑或基础设施能力。
+ */
 public class PluginContext {
 
     /**
@@ -19,11 +21,11 @@ public class PluginContext {
     private final Map<String, Object> config;
 
     /**
-     * {@code PluginContext} 创建并初始化当前类型实例。
+     * 执行 插件 相关业务操作，并维护必要的状态和协作关系。
      *
-     * @param pluginId 参数值，用于执行当前操作。
-     * @param pluginDir 参数值，用于执行当前操作。
-     * @param config 参数值，用于执行当前操作。
+     * @param pluginId 用于定位plugin的标识。
+     * @param pluginDir 用于完成本次业务处理的 pluginDir 参数。
+     * @param config 用于完成本次业务处理的 config 参数。
      */
     public PluginContext(String pluginId, String pluginDir, Map<String, Object> config) {
         this.pluginId = pluginId;
@@ -32,27 +34,27 @@ public class PluginContext {
     }
 
     /**
-     * {@code getPluginId} 查询并返回当前操作所需的数据。
+     * 查询 插件 相关业务数据，并返回处理结果。
      *
-     * @return 返回当前操作产生的结果。
+     * @return 返回 插件 相关操作生成的结果数据。
      */
     public String getPluginId() {
         return pluginId;
     }
 
     /**
-     * {@code getPluginDir} 查询并返回当前操作所需的数据。
+     * 查询 插件 相关业务数据，并返回处理结果。
      *
-     * @return 返回当前操作产生的结果。
+     * @return 返回 插件 相关操作生成的结果数据。
      */
     public String getPluginDir() {
         return pluginDir;
     }
 
     /**
-     * {@code getConfig} 查询并返回当前操作所需的数据。
+     * 查询 插件 相关业务数据，并返回处理结果。
      *
-     * @return 返回当前操作产生的结果。
+     * @return 返回 插件 相关操作生成的结果数据。
      */
     public Map<String, Object> getConfig() {
         return config;

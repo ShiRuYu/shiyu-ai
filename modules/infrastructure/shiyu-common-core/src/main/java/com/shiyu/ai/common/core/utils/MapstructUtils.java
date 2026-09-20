@@ -7,9 +7,7 @@ import java.util.List;
 import java.util.Map;
 
 /**
- * Mapstruct 工具类
- *
- * <p>参考文档：<a href="https://mapstruct.plus/guide/quick-start">mapstruct-plus</a>
+ * 提供 Mapstruct 相关的通用辅助操作，供业务和基础设施复用。
  */
 public class MapstructUtils {
 

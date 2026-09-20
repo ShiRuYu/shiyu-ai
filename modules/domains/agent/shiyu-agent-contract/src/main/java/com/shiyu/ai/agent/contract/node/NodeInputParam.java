@@ -1,13 +1,7 @@
 package com.shiyu.ai.agent.contract.node;
 
 /**
- * {@code NodeInputParam} 封装智能体模块中不可变的结构化数据，并作为相关操作之间的值对象。
- * @param name 名称，表示该记录组件承载的数据。
- * @param type 类型，表示该记录组件承载的数据。
- * @param source 来源，表示该记录组件承载的数据。
- * @param required 是否必填，表示该记录组件承载的数据。
- * @param description 描述，表示该记录组件承载的数据。
- * @param defaultValue defaultValue 属性，表示该记录组件承载的数据。
+ * 封装 Node Input Param 相关的不可变数据及其字段约束。
  */
 public record NodeInputParam(
         String name,

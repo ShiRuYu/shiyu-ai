@@ -17,17 +17,18 @@ import org.springframework.context.annotation.Bean;
 import java.util.HashMap;
 import java.util.Map;
 
-/** Filter配置 */
+/**
+ * 定义 Filter 基础设施或应用能力的配置项及装配规则。
+ */
 @AutoConfiguration
 @EnableConfigurationProperties(XssProperties.class)
 public class FilterConfig {
 
     /**
-     * {@code xssFilterRegistration} 执行当前类型定义的业务操作。
+     * 执行 Filter 相关业务操作，并维护必要的状态和协作关系。
      *
-     * @param xssProperties 参数值，用于执行当前操作。
-     *
-     * @return 返回当前操作产生的结果。
+     * @param rawtypes 用于完成本次业务处理的 rawtypes 参数。
+     * @param unchecked 用于完成本次业务处理的 unchecked 参数。
      */
     @SuppressWarnings({"rawtypes", "unchecked"})
     @Bean
@@ -47,9 +48,10 @@ public class FilterConfig {
     }
 
     /**
-     * {@code someFilterRegistration} 执行当前类型定义的业务操作。
+     * 执行 Filter 相关业务操作，并维护必要的状态和协作关系。
      *
-     * @return 返回当前操作产生的结果。
+     * @param rawtypes 用于完成本次业务处理的 rawtypes 参数。
+     * @param unchecked 用于完成本次业务处理的 unchecked 参数。
      */
     @SuppressWarnings({"rawtypes", "unchecked"})
     @Bean

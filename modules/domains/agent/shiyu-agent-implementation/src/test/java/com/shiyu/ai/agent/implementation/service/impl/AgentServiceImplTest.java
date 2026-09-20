@@ -18,6 +18,9 @@ import org.junit.jupiter.api.Test;
 import java.util.List;
 import java.util.Map;
 
+/**
+ * 验证 智能体 Service Impl 相关功能、边界条件、异常路径和协作行为。
+ */
 class AgentServiceImplTest {
     private static final ActorContext ACTOR =
             new ActorContext(new TenantId(4), new UserId(8), false);

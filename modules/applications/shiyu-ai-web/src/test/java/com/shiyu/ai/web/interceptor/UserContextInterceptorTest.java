@@ -26,6 +26,9 @@ import org.junit.jupiter.api.Tag;
 import org.junit.jupiter.api.Test;
 import org.springframework.mock.web.MockHttpServletResponse;
 
+/**
+ * 验证 用户 Context Interceptor 相关功能、边界条件、异常路径和协作行为。
+ */
 @Tag("dev")
 class UserContextInterceptorTest {
 
