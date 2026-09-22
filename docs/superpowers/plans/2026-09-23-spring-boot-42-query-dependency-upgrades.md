@@ -59,5 +59,12 @@
 
 - [x] 运行架构脚本、文档检查、模块测试、Bootstrap 测试、严格编译和差异格式检查。
 - [x] 检查工作区临时文件、构建产物和 dependency reports，不将其提交。
-- [ ] 检查远端主分支状态；如有分叉先同步并验证，不强制推送。
-- [ ] 创建普通提交，推送到远端主分支，并核对本地 HEAD 与远端提交号一致。
+- [x] 检查远端主分支状态；`origin/HEAD` 指向 `origin/master`，远端无分叉，未使用强制推送。
+- [x] 创建普通提交并推送到 `origin/master`，本次升级提交为 `d21681595909aa79536d2e4b1467f9dfce698607`，推送后已核对本地与远端提交号一致。
+
+## 执行结果
+
+- Spring Boot 已升级到 `4.2.0-M1`，实际解析 Spring Framework `7.1.0-M1`。
+- 本地依赖字节码核验表明该 Spring Web 版本没有 `RequestMethod.QUERY` 或 `HttpMethod.QUERY`，因此没有把现有接口改成不可编译的 QUERY 路由。
+- 已完成受影响模块测试、Bootstrap 集成测试、严格编译、架构脚本、中文/接口/功能注释扫描、文档检查和差异检查。
+- 当前远端主分支为 `origin/master`；`origin/main` 不存在，因此没有创建第二个主分支。
