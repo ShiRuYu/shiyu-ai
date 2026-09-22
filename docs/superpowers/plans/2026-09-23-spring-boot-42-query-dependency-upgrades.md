@@ -27,7 +27,7 @@
 
 - [x] 将 `spring-boot.version` 改为 `4.2.0-M1`。
 - [x] 运行 Maven 依赖树，确认 Spring Framework 统一解析为 `7.1.0-M1`。
-- [x] 检查 `RequestMethod`、`HttpMethod` 和 MVC 映射 API；实际解析的 7.1.0-M1 不包含 `QUERY` 常量，因此不迁移路由。
+- [x] 检查 `RequestMethod`、`HttpMethod` 和 MVC 映射 API；实际解析的 7.1.0-M1 的 `RequestMethod` 不包含 `QUERY`，虽然 `HttpMethod.valueOf("QUERY")` 能表示自定义令牌，但注解路由无法声明该方法，因此不迁移路由。
 - [x] 运行受影响模块编译并修复升级兼容性问题（包括 JVector 4.0.1 API 调整）。
 
 ### Task 2: 以测试先行验证 QUERY 路由能力
@@ -36,7 +36,7 @@
 - Modify: `modules/applications/shiyu-ai-web/src/test/...` 或 Bootstrap 路由测试
 - Modify: 需要迁移的 Controller（仅在 Task 1 通过后）
 
-- [x] 通过本地 Spring Web 7.1.0-M1 字节码和 Spring MVC 集成依赖核验 QUERY 能力；当前版本不存在该 API，未添加不可编译的测试或映射。
+- [x] 通过本地 Spring Web 7.1.0-M1 字节码和 Spring MVC 映射实现核验 QUERY 能力；当前构件缺少 `RequestMethod.QUERY`，未添加不可编译的测试或映射。
 - [x] 根据核验结果保持所有现有 GET/POST 路由；未发现必须迁移为 QUERY 的复杂查询体接口。
 - [x] 确认 OpenAPI、路由完整性测试、前端客户端和权限测试无需因 QUERY 迁移变更。
 - [x] 运行受影响模块测试和 Bootstrap 集成测试。
@@ -65,6 +65,6 @@
 ## 执行结果
 
 - Spring Boot 已升级到 `4.2.0-M1`，实际解析 Spring Framework `7.1.0-M1`。
-- 本地依赖字节码核验表明该 Spring Web 版本没有 `RequestMethod.QUERY` 或 `HttpMethod.QUERY`，因此没有把现有接口改成不可编译的 QUERY 路由。
+- 本地依赖核验表明该 Spring Web 版本没有 `RequestMethod.QUERY`；`HttpMethod.valueOf("QUERY")` 仅支持自定义方法令牌，不能让 Spring MVC 注解路由声明 QUERY，因此没有修改现有接口。
 - 已完成受影响模块测试、Bootstrap 集成测试、严格编译、架构脚本、中文/接口/功能注释扫描、文档检查和差异检查。
 - 当前远端主分支为 `origin/master`；`origin/main` 不存在，因此没有创建第二个主分支。
