@@ -16,9 +16,9 @@ import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.verifyNoInteractions;
 import static org.mockito.Mockito.when;
 
-import com.shiyu.ai.common.core.api.PageData;
-import com.shiyu.ai.common.core.exception.ServiceException;
-import com.shiyu.ai.common.core.tx.TransactionTemplateExecutor;
+import com.shiyu.ai.common.foundation.api.PageData;
+import com.shiyu.ai.common.foundation.exception.ServiceException;
+import com.shiyu.ai.common.foundation.tx.TransactionTemplateExecutor;
 import com.shiyu.ai.common.storage.api.*;
 import com.shiyu.ai.common.storage.backup.*;
 import com.shiyu.ai.common.storage.config.*;

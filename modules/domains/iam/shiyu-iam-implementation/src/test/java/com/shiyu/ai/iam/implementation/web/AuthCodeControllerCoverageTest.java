@@ -4,8 +4,8 @@ import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.*;
 import static org.mockito.Mockito.*;
 
-import com.shiyu.ai.common.core.context.model.UserContext;
-import com.shiyu.ai.common.core.context.UserContextHolder;
+import com.shiyu.ai.common.foundation.context.model.UserContext;
+import com.shiyu.ai.common.foundation.context.UserContextHolder;
 import com.shiyu.ai.iam.implementation.api.request.AuthCodeRequest;
 import com.shiyu.ai.iam.implementation.request.AuthCodePageRequest;
 import com.shiyu.ai.iam.implementation.service.AuthCodeService;
@@ -14,6 +14,7 @@ import com.shiyu.ai.kernel.context.TenantId;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.springframework.web.bind.annotation.GetMapping;
 
 import java.util.List;
 
@@ -42,7 +43,6 @@ class AuthCodeControllerCoverageTest {
     void mapsAllAuthCodeOperationsAndSuccessBranches() {
         AuthCodeRequest request = new AuthCodeRequest();
         AuthCodePageRequest page = new AuthCodePageRequest();
-        when(service.list(any())).thenReturn(List.of());
         when(service.listRoleAuthCodes(any(), eq(3L), eq(new TenantId(7L))))
                 .thenReturn(List.of("read"));
         when(service.options(any())).thenReturn(List.of());
@@ -52,7 +52,6 @@ class AuthCodeControllerCoverageTest {
         when(service.replace(any(), eq(3L), eq(new TenantId(7L)), eq(List.of("read"))))
                 .thenReturn(true);
         when(service.revoke(any(), eq(3L), eq(new TenantId(7L)), eq(5L))).thenReturn(true);
-        assertTrue(controller.list().isSuccess());
         assertEquals(List.of("read"), controller.listRoleAuthCodes(3L, 7L).getData());
         assertTrue(controller.options().isSuccess());
         assertTrue(controller.create(request).isSuccess());
@@ -77,5 +76,14 @@ class AuthCodeControllerCoverageTest {
         assertFalse(controller.grant(1L, 7L, List.of()).isSuccess());
         assertFalse(controller.replace(1L, 7L, List.of()).isSuccess());
         assertFalse(controller.revoke(1L, 7L, 1L).isSuccess());
+    }
+
+    @Test
+    void keepsOptionsAsTheSingleUnpagedCollectionEndpoint() throws NoSuchMethodException {
+        GetMapping optionsMapping =
+                AuthCodeController.class.getMethod("options").getAnnotation(GetMapping.class);
+
+        assertNotNull(optionsMapping);
+        assertArrayEquals(new String[] {"/options"}, optionsMapping.value());
     }
 }

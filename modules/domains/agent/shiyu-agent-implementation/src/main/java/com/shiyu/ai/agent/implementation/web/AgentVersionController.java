@@ -10,8 +10,8 @@ import com.shiyu.ai.agent.implementation.service.AgentVersionService;
 import com.shiyu.ai.agent.implementation.vo.AgentVersionDetailVO;
 import com.shiyu.ai.agent.implementation.vo.AgentVersionVO;
 import com.shiyu.ai.agent.implementation.vo.GraphValidationVO;
-import com.shiyu.ai.common.core.api.Result;
-import com.shiyu.ai.common.core.enums.BizResultCode;
+import com.shiyu.ai.common.foundation.api.Result;
+import com.shiyu.ai.common.foundation.enums.BizResultCode;
 import com.shiyu.ai.common.web.auth.ActorContextHttpAdapter;
 import com.shiyu.ai.kernel.context.ActorContext;
 
@@ -24,14 +24,11 @@ import lombok.extern.slf4j.Slf4j;
 
 import org.springframework.web.bind.annotation.*;
 
-import java.util.List;
-
 /**
  * 处理 智能体 Version 相关的 Web 请求，并将请求转换为应用服务调用。
  */
 @Slf4j
 @Tag(name = "Agent Version", description = "Agent Version & Graph")
-@SaCheckPermission("agent:admin:list")
 @RestController
 @RequestMapping("/api/agent/versions")
 public class AgentVersionController {
@@ -52,90 +49,6 @@ public class AgentVersionController {
 
     private ActorContext actor() {
         return ActorContextHttpAdapter.currentActor();
-    }
-
-    // ======================== 版本基础 CRUD ========================
-
-    /**
-     * 执行 智能体 Version 相关业务操作，并维护必要的状态和协作关系。
-     *
-     * @param Versions 用于完成本次业务处理的 Versions 参数。
-     */
-    @Operation(summary = "Get Versions")
-    @GetMapping("/list")
-    public Result<List<AgentVersionVO>> getVersions(@RequestParam String agentId) {
-        return Result.success(agentVersionService.getVersions(actor(), agentId));
-    }
-
-    /**
-     * 执行 智能体 Version 相关业务操作，并维护必要的状态和协作关系。
-     *
-     * @param Detail 用于完成本次业务处理的 Detail 参数。
-     */
-    @Operation(summary = "Get Version Detail")
-    @GetMapping("/detail")
-    public Result<AgentVersionDetailVO> getVersionDetail(
-            @RequestParam String agentId, @RequestParam Long versionId) {
-        AgentVersionDetailVO vo = agentVersionService.getVersionDetail(actor(), agentId, versionId);
-        if (vo == null) return Result.fail(BizResultCode.NOT_FOUND, "版本不存在");
-        return Result.success(vo);
-    }
-
-    /**
-     * 执行 智能体 Version 相关业务操作，并维护必要的状态和协作关系。
-     *
-     * @param Version 用于完成本次业务处理的 Version 参数。
-     */
-    @Operation(summary = "Create Version")
-    @SaCheckPermission("agent:admin:create")
-    @PostMapping("/create")
-    public Result<AgentVersionVO> createVersion(
-            @RequestParam String agentId, @Valid @RequestBody VersionRequest request) {
-        try {
-            return Result.success(agentVersionService.createVersion(actor(), agentId, request));
-        } catch (Exception e) {
-            log.error("新增版本失败", e);
-            return Result.fail("新增失败");
-        }
-    }
-
-    /**
-     * 执行 智能体 Version 相关业务操作，并维护必要的状态和协作关系。
-     *
-     * @param Version 用于完成本次业务处理的 Version 参数。
-     */
-    @Operation(summary = "Update Version")
-    @SaCheckPermission("agent:admin:edit")
-    @PostMapping("/update")
-    public Result<AgentVersionVO> updateVersion(
-            @RequestParam String agentId,
-            @RequestParam Long versionId,
-            @Valid @RequestBody VersionRequest request) {
-        try {
-            return Result.success(
-                    agentVersionService.updateVersion(actor(), agentId, versionId, request));
-        } catch (Exception e) {
-            log.error("修改版本失败", e);
-            return Result.fail("修改失败");
-        }
-    }
-
-    /**
-     * 执行 智能体 Version 相关业务操作，并维护必要的状态和协作关系。
-     *
-     * @param Version 用于完成本次业务处理的 Version 参数。
-     */
-    @Operation(summary = "Delete Version")
-    @SaCheckPermission("agent:admin:delete")
-    @PostMapping("/delete")
-    public Result<Void> deleteVersion(@RequestParam String agentId, @RequestParam Long versionId) {
-        try {
-            agentVersionService.deleteVersion(actor(), agentId, versionId);
-            return Result.success();
-        } catch (Exception e) {
-            log.error("删除版本失败", e);
-            return Result.fail("删除失败");
-        }
     }
 
     // ======================== 版本生命周期 ========================
@@ -220,6 +133,7 @@ public class AgentVersionController {
      * @param Graph 用于完成本次业务处理的 Graph 参数。
      */
     @Operation(summary = "Get Graph")
+    @SaCheckPermission("agent:admin:list")
     @GetMapping("/graph/detail")
     public Result<AgentVersionDetailVO> getGraph(
             @RequestParam String agentId, @RequestParam Long versionId) {
@@ -255,6 +169,7 @@ public class AgentVersionController {
      * @param Graph 用于完成本次业务处理的 Graph 参数。
      */
     @Operation(summary = "Validate Graph")
+    @SaCheckPermission("agent:admin:list")
     @PostMapping("/graph/validate")
     public Result<GraphValidationVO> validate(
             @RequestParam String agentId,
@@ -376,6 +291,7 @@ public class AgentVersionController {
      * @param Canvas 用于完成本次业务处理的 Canvas 参数。
      */
     @Operation(summary = "Get Canvas")
+    @SaCheckPermission("agent:admin:list")
     @GetMapping("/graph/canvas")
     public Result<String> getCanvas(@RequestParam String agentId, @RequestParam Long versionId) {
         String canvas = agentVersionService.getCanvasConfig(actor(), agentId, versionId);

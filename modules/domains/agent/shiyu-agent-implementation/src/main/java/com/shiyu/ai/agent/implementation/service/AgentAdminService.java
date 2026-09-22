@@ -4,7 +4,7 @@ import com.shiyu.ai.agent.implementation.request.AgentRequest;
 import com.shiyu.ai.agent.implementation.vo.AgentDetailVO;
 import com.shiyu.ai.agent.implementation.vo.AgentVO;
 import com.shiyu.ai.agent.implementation.vo.NodeTypeMetaVO;
-import com.shiyu.ai.common.core.vo.IdNameOptionVO;
+import com.shiyu.ai.common.foundation.vo.IdNameOptionVO;
 import com.shiyu.ai.kernel.context.ActorContext;
 
 import org.apache.commons.lang3.tuple.Pair;

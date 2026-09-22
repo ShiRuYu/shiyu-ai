@@ -10,7 +10,7 @@ import com.shiyu.ai.model.implementation.infrastructure.gateway.model.ModelProvi
 
 import cn.dev33.satoken.annotation.SaCheckPermission;
 
-import com.shiyu.ai.common.core.api.Result;
+import com.shiyu.ai.common.foundation.api.Result;
 import com.shiyu.ai.common.web.auth.ActorContextHttpAdapter;
 import com.shiyu.ai.kernel.context.TenantId;
 

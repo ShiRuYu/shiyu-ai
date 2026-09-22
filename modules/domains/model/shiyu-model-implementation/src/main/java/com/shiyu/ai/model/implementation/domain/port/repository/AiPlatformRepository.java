@@ -1,6 +1,6 @@
 package com.shiyu.ai.model.implementation.domain.port.repository;
 
-import com.shiyu.ai.common.core.vo.IdNameOptionVO;
+import com.shiyu.ai.common.foundation.vo.IdNameOptionVO;
 import com.shiyu.ai.kernel.context.TenantId;
 import com.shiyu.ai.model.implementation.domain.model.AiPlatformBO;
 

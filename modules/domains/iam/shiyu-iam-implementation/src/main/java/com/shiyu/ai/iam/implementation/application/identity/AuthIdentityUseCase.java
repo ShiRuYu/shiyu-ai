@@ -1,6 +1,6 @@
 package com.shiyu.ai.iam.implementation.application.identity;
 
-import com.shiyu.ai.common.core.utils.JSONUtils;
+import com.shiyu.ai.common.foundation.utils.JSONUtils;
 import com.shiyu.ai.iam.implementation.domain.model.RoleBO;
 import com.shiyu.ai.iam.implementation.domain.model.TenantBO;
 import com.shiyu.ai.iam.implementation.domain.model.UserBO;

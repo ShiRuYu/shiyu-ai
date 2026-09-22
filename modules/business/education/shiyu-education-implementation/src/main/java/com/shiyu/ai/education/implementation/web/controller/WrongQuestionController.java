@@ -2,7 +2,7 @@ package com.shiyu.ai.education.implementation.web.controller;
 
 import cn.dev33.satoken.annotation.SaCheckPermission;
 
-import com.shiyu.ai.common.core.api.Result;
+import com.shiyu.ai.common.foundation.api.Result;
 import com.shiyu.ai.common.web.auth.ActorContextHttpAdapter;
 import com.shiyu.ai.education.implementation.application.WrongQuestionService;
 import com.shiyu.ai.education.implementation.web.dto.WrongQuestionResponse;
@@ -37,8 +37,8 @@ public class WrongQuestionController {
      *
      * @param detail 用于完成本次业务处理的 detail 参数。
      */
-    @GetMapping("/detail")
-    public Result<WrongQuestionResponse> getById(@RequestParam Long id) {
+    @GetMapping("/{id}")
+    public Result<WrongQuestionResponse> getById(@PathVariable Long id) {
         return Result.success(
                 wrongQuestionService.getById(ActorContextHttpAdapter.currentActor(), id));
     }
@@ -60,7 +60,7 @@ public class WrongQuestionController {
      *
      * @param create 用于完成本次业务处理的 create 参数。
      */
-    @PostMapping("/create")
+    @PostMapping
     public Result<WrongQuestionResponse> create(@Valid @RequestBody WrongQuestionRequest request) {
         return Result.success(
                 wrongQuestionService.create(ActorContextHttpAdapter.currentActor(), request));
@@ -71,9 +71,9 @@ public class WrongQuestionController {
      *
      * @param update 用于完成本次业务处理的 update 参数。
      */
-    @PostMapping("/update")
+    @PutMapping("/{id}")
     public Result<Void> update(
-            @RequestParam Long id, @Valid @RequestBody WrongQuestionRequest request) {
+            @PathVariable Long id, @Valid @RequestBody WrongQuestionRequest request) {
         request.setId(id);
         wrongQuestionService.update(ActorContextHttpAdapter.currentActor(), request);
         return Result.success();
@@ -84,8 +84,8 @@ public class WrongQuestionController {
      *
      * @param delete 用于完成本次业务处理的 delete 参数。
      */
-    @PostMapping("/delete")
-    public Result<Void> delete(@RequestParam Long id) {
+    @DeleteMapping("/{id}")
+    public Result<Void> delete(@PathVariable Long id) {
         wrongQuestionService.deleteById(ActorContextHttpAdapter.currentActor(), id);
         return Result.success();
     }

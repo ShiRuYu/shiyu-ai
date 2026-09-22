@@ -2,7 +2,7 @@ package com.shiyu.ai.common.web.file;
 
 import cn.hutool.core.io.FileUtil;
 
-import com.shiyu.ai.common.core.utils.StringUtils;
+import com.shiyu.ai.common.foundation.utils.StringUtils;
 
 import jakarta.servlet.http.HttpServletResponse;
 

@@ -2,8 +2,8 @@ package com.shiyu.ai.iam.implementation.persistence.repository;
 
 import com.mybatisflex.core.query.QueryWrapper;
 import com.shiyu.ai.common.mybatis.tenant.TenantQueryExecutor;
-import com.shiyu.ai.common.core.utils.MapstructUtils;
-import com.shiyu.ai.common.core.utils.PasswordUtils;
+import com.shiyu.ai.common.foundation.utils.MapstructUtils;
+import com.shiyu.ai.common.foundation.utils.PasswordUtils;
 import com.shiyu.ai.iam.implementation.domain.model.TenantBO;
 import com.shiyu.ai.iam.implementation.persistence.dataobject.*;
 import com.shiyu.ai.iam.implementation.persistence.mapper.*;

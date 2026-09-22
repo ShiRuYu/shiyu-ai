@@ -9,7 +9,7 @@ OUT = ROOT / "scripts" / "database" / "postgresql"
 SCHEMA = [
     "modules/applications/shiyu-platform-composition/src/main/resources/db/baseline/h2/schema/application/00_baseline.sql",
     "modules/infrastructure/shiyu-common-storage/src/main/resources/db/baseline/h2/schema/storage/01_storage.sql",
-    "modules/infrastructure/shiyu-common-core/src/main/resources/db/baseline/h2/schema/common/02_common.sql",
+    "modules/infrastructure/shiyu-common-foundation/src/main/resources/db/baseline/h2/schema/common/02_common.sql",
     "modules/domains/iam/shiyu-iam-implementation/src/main/resources/db/baseline/h2/schema/iam/03_auth.sql",
     "modules/domains/agent/shiyu-agent-implementation/src/main/resources/db/baseline/h2/schema/agent/04_agent.sql",
     "modules/domains/model/shiyu-model-implementation/src/main/resources/db/baseline/h2/schema/model/04_model.sql",
@@ -24,7 +24,7 @@ SCHEMA = [
     "modules/domains/agent/shiyu-agent-implementation/src/main/resources/db/baseline/h2/schema/agent/16_ai_runtime.sql",
 ]
 SEED = [
-    "modules/infrastructure/shiyu-common-core/src/main/resources/db/baseline/h2/seed/common/01_common.sql",
+    "modules/infrastructure/shiyu-common-foundation/src/main/resources/db/baseline/h2/seed/common/01_common.sql",
     "modules/domains/iam/shiyu-iam-implementation/src/main/resources/db/baseline/h2/seed/iam/02_auth.sql",
     "modules/domains/agent/shiyu-agent-implementation/src/main/resources/db/baseline/h2/seed/agent/03_agent.sql",
     "modules/domains/agent/shiyu-agent-implementation/src/main/resources/db/baseline/h2/seed/agent/04_app_runtime.sql",
@@ -62,15 +62,15 @@ def convert(text: str) -> str:
 
 def write(name: str, paths: list[str], marker: bool = False) -> None:
     chunks = [
-        "-- PostgreSQL baseline generated from the validated H2 resources.",
-        "-- Do not edit generated sections; update the source baseline and regenerate.",
+        "-- PostgreSQL 基线由经过验证的 H2 资源生成。",
+        "-- 不要直接编辑生成区，请修改源基线后重新生成。",
         "",
     ]
     for path in paths:
-        chunks += [f"-- Source: {path}", convert((ROOT / path).read_text(encoding="utf-8")).rstrip(), ""]
+        chunks += [f"-- 来源：{path}", convert((ROOT / path).read_text(encoding="utf-8")).rstrip(), ""]
     if marker:
         chunks += [
-            "-- The validator requires this marker after all schema and seed statements.",
+            "-- 校验器要求在全部 schema 和 seed 语句之后存在此标记。",
             "INSERT INTO common_schema_baseline (id, baseline_version, seed_profile) VALUES (1, '4', 'system-ai');",
             "",
         ]

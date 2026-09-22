@@ -17,7 +17,7 @@ import com.shiyu.ai.agent.implementation.service.AgentVersionService;
 import com.shiyu.ai.agent.implementation.vo.AgentVersionDetailVO;
 import com.shiyu.ai.agent.implementation.vo.AgentVersionVO;
 import com.shiyu.ai.agent.implementation.vo.GraphValidationVO;
-import com.shiyu.ai.common.core.utils.JSONUtils;
+import com.shiyu.ai.common.foundation.utils.JSONUtils;
 import com.shiyu.ai.kernel.context.ActorContext;
 
 import lombok.extern.slf4j.Slf4j;

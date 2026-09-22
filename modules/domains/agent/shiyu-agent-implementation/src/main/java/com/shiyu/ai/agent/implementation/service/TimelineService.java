@@ -4,7 +4,7 @@ import com.shiyu.ai.agent.implementation.domain.model.ExecutionTimelineBO;
 import com.shiyu.ai.agent.implementation.event.model.NodeExecutionCompletedEvent;
 import com.shiyu.ai.agent.implementation.event.model.NodeExecutionStartedEvent;
 import com.shiyu.ai.agent.implementation.port.repository.ExecutionTimelineRepository;
-import com.shiyu.ai.common.core.utils.JSONUtils;
+import com.shiyu.ai.common.foundation.utils.JSONUtils;
 
 import lombok.extern.slf4j.Slf4j;
 

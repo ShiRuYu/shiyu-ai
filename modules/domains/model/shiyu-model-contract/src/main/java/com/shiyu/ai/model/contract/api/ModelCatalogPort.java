@@ -1,20 +1,20 @@
 package com.shiyu.ai.model.contract.api;
 
 /**
- * 定义 模型 Catalog 领域与外部能力交互的端口契约。
+ * 提供模型目录统计端口，查询当前目录中已启用的平台数量和模型数量。
  */
 public interface ModelCatalogPort {
     /**
-     * 处理countenabledplatforms。
+     * 统计已启用的模型平台数量。
      *
-     * @return 受影响的记录数或生成的序号。
+     * @return 已启用的平台记录数。
      */
     long countEnabledPlatforms();
 
     /**
-     * 处理countenabledmodels。
+     * 统计已启用的模型数量。
      *
-     * @return 受影响的记录数或生成的序号。
+     * @return 已启用的模型记录数。
      */
     long countEnabledModels();
 }

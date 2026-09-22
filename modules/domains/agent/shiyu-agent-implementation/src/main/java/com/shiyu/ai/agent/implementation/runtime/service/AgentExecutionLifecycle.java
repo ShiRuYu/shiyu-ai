@@ -17,7 +17,7 @@ import com.shiyu.ai.agent.implementation.execution.Execution;
 import com.shiyu.ai.agent.implementation.execution.ExecutionStatus;
 import com.shiyu.ai.agent.implementation.lifecycle.AgentStateMachine;
 import com.shiyu.ai.agent.implementation.port.repository.AgentExecutionRepository;
-import com.shiyu.ai.common.core.utils.JSONUtils;
+import com.shiyu.ai.common.foundation.utils.JSONUtils;
 import com.shiyu.ai.kernel.context.ActorContext;
 
 import lombok.extern.slf4j.Slf4j;

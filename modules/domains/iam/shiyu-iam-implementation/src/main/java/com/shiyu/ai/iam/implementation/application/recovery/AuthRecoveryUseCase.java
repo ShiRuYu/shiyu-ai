@@ -1,6 +1,6 @@
 package com.shiyu.ai.iam.implementation.application.recovery;
 
-import com.shiyu.ai.common.core.utils.PasswordUtils;
+import com.shiyu.ai.common.foundation.utils.PasswordUtils;
 import com.shiyu.ai.iam.implementation.domain.model.UserBO;
 import com.shiyu.ai.iam.implementation.port.repository.UserRepository;
 import com.shiyu.ai.iam.implementation.service.CaptchaService;

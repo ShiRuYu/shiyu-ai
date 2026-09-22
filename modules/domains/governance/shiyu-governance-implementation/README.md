@@ -24,7 +24,7 @@ Governance 治理实现模块，承载该领域的应用服务、领域模型和
 
 ## 内部模块依赖
 
-`shiyu-governance-contract`、`shiyu-common-core`、`shiyu-common-web`、`shiyu-common-mybatis`、`shiyu-model-contract`
+`shiyu-governance-contract`、`shiyu-common-foundation`、`shiyu-common-web`、`shiyu-common-mybatis`、`shiyu-model-contract`
 
 ## 验证
 

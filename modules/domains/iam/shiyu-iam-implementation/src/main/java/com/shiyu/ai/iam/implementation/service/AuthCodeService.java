@@ -1,6 +1,6 @@
 package com.shiyu.ai.iam.implementation.service;
 
-import com.shiyu.ai.common.core.api.PageData;
+import com.shiyu.ai.common.foundation.api.PageData;
 import com.shiyu.ai.iam.implementation.api.request.AuthCodeRequest;
 import com.shiyu.ai.iam.implementation.api.response.AuthCodeResponse;
 import com.shiyu.ai.iam.implementation.request.AuthCodePageRequest;

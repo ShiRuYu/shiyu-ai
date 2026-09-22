@@ -9,8 +9,8 @@ import static org.mockito.Mockito.mockStatic;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
-import com.shiyu.ai.common.core.exception.ServiceException;
-import com.shiyu.ai.common.core.utils.MapstructUtils;
+import com.shiyu.ai.common.foundation.exception.ServiceException;
+import com.shiyu.ai.common.foundation.utils.MapstructUtils;
 import com.shiyu.ai.education.implementation.domain.model.ChapterBO;
 import com.shiyu.ai.education.implementation.domain.model.KnowledgeTextbookBO;
 import com.shiyu.ai.education.implementation.domain.port.repository.ChapterRepository;

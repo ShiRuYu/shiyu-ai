@@ -5,8 +5,8 @@ import com.shiyu.ai.knowledge.implementation.domain.port.repository.KnowledgeEnt
 import com.mybatisflex.core.paginate.Page;
 import com.mybatisflex.core.query.QueryWrapper;
 import com.shiyu.ai.common.mybatis.tenant.TenantQueryExecutor;
-import com.shiyu.ai.common.core.api.PageData;
-import com.shiyu.ai.common.core.utils.MapstructUtils;
+import com.shiyu.ai.common.foundation.api.PageData;
+import com.shiyu.ai.common.foundation.utils.MapstructUtils;
 import com.shiyu.ai.kernel.context.TenantId;
 import com.shiyu.ai.kernel.context.TenantScope;
 import com.shiyu.ai.knowledge.implementation.domain.model.KnowledgeAuditLogBO;

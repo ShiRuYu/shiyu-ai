@@ -1,6 +1,6 @@
 package com.shiyu.ai.iam.implementation.persistence.repository;
 
-import com.shiyu.ai.common.core.utils.MapstructUtils;
+import com.shiyu.ai.common.foundation.utils.MapstructUtils;
 import com.shiyu.ai.iam.implementation.domain.model.UserBO;
 import com.shiyu.ai.iam.implementation.persistence.dataobject.UserDO;
 import com.shiyu.ai.iam.implementation.persistence.mapper.UserMapper;

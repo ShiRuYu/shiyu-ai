@@ -9,8 +9,8 @@ import static org.mockito.Mockito.mockStatic;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
-import com.shiyu.ai.common.core.api.PageData;
-import com.shiyu.ai.common.core.utils.MapstructUtils;
+import com.shiyu.ai.common.foundation.api.PageData;
+import com.shiyu.ai.common.foundation.utils.MapstructUtils;
 import com.shiyu.ai.education.implementation.domain.model.CourseBO;
 import com.shiyu.ai.education.implementation.domain.port.repository.CourseRepository;
 import com.shiyu.ai.education.implementation.web.dto.CourseResponse;

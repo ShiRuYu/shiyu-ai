@@ -3,7 +3,7 @@ package com.shiyu.ai.iam.implementation.persistence.dataobject;
 import com.mybatisflex.annotation.Id;
 import com.mybatisflex.annotation.KeyType;
 import com.mybatisflex.annotation.Table;
-import com.shiyu.ai.common.core.domain.BaseEntity;
+import com.shiyu.ai.common.foundation.domain.BaseEntity;
 import com.shiyu.ai.iam.implementation.domain.model.AuthCodeBO;
 
 import io.github.linpeilie.annotations.AutoMapper;

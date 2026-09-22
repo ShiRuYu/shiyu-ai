@@ -9,9 +9,9 @@ import com.shiyu.ai.agent.implementation.service.AgentService;
 import com.shiyu.ai.agent.implementation.vo.AgentDetailVO;
 import com.shiyu.ai.agent.implementation.vo.AgentVO;
 import com.shiyu.ai.agent.implementation.vo.NodeTypeMetaVO;
-import com.shiyu.ai.common.core.api.PageData;
-import com.shiyu.ai.common.core.api.Result;
-import com.shiyu.ai.common.core.vo.IdNameOptionVO;
+import com.shiyu.ai.common.foundation.api.PageData;
+import com.shiyu.ai.common.foundation.api.Result;
+import com.shiyu.ai.common.foundation.vo.IdNameOptionVO;
 import com.shiyu.ai.common.web.auth.ActorContextHttpAdapter;
 import com.shiyu.ai.kernel.context.ActorContext;
 
@@ -33,7 +33,6 @@ import java.util.Map;
  */
 @Slf4j
 @Tag(name = "Agent Definition", description = "Agent Definition")
-@SaCheckPermission("agent:admin:list")
 @RestController
 @RequestMapping("/api/agent/agents")
 public class AgentDefinitionController {
@@ -72,7 +71,8 @@ public class AgentDefinitionController {
      * @return 返回当前操作产生的结果。
      */
     @Operation(summary = "Get Page")
-    @GetMapping("/page")
+    @SaCheckPermission("agent:admin:list")
+    @GetMapping
     public Result<PageData<AgentVO>> getPage(
             @RequestParam(required = false, defaultValue = "1") Integer pageNo,
             @RequestParam(required = false, defaultValue = "10") Integer pageSize,
@@ -89,8 +89,9 @@ public class AgentDefinitionController {
      * @param Id 用于定位目标业务对象的标识。
      */
     @Operation(summary = "Get by Id")
-    @GetMapping("/detail")
-    public Result<AgentDetailVO> getById(@RequestParam Long id) {
+    @SaCheckPermission("agent:admin:list")
+    @GetMapping("/{id}")
+    public Result<AgentDetailVO> getById(@PathVariable Long id) {
         AgentDetailVO vo = agentAdminService.getById(actor(), id);
         if (vo == null) return Result.fail("Agent不存在");
         return Result.success(vo);
@@ -103,7 +104,7 @@ public class AgentDefinitionController {
      */
     @Operation(summary = "Create")
     @SaCheckPermission("agent:admin:create")
-    @PostMapping("/create")
+    @PostMapping
     public Result<AgentVO> create(@Valid @RequestBody AgentRequest request) {
         try {
             AgentVO vo = agentAdminService.create(actor(), request);
@@ -124,8 +125,8 @@ public class AgentDefinitionController {
      */
     @Operation(summary = "Update")
     @SaCheckPermission("agent:admin:edit")
-    @PostMapping("/update")
-    public Result<AgentVO> update(@RequestParam Long id, @Valid @RequestBody AgentRequest request) {
+    @PutMapping("/{id}")
+    public Result<AgentVO> update(@PathVariable Long id, @Valid @RequestBody AgentRequest request) {
         try {
             AgentVO vo = agentAdminService.update(actor(), id, request);
             return Result.success(vo);
@@ -145,8 +146,8 @@ public class AgentDefinitionController {
      */
     @Operation(summary = "Delete")
     @SaCheckPermission("agent:admin:delete")
-    @PostMapping("/delete")
-    public Result<Void> delete(@RequestParam Long id) {
+    @DeleteMapping("/{id}")
+    public Result<Void> delete(@PathVariable Long id) {
         try {
             agentAdminService.deleteById(actor(), id);
             return Result.success();
@@ -188,6 +189,7 @@ public class AgentDefinitionController {
      * @param Options 用于完成本次业务处理的 Options 参数。
      */
     @Operation(summary = "List All Options")
+    @SaCheckPermission("agent:admin:list")
     @GetMapping("/options")
     public Result<List<IdNameOptionVO>> listAllOptions() {
         return Result.success(agentAdminService.listAllOptions(actor()));
@@ -251,8 +253,9 @@ public class AgentDefinitionController {
      * @param Agent 用于完成本次业务处理的 Agent 参数。
      */
     @Operation(summary = "Get Agent")
-    @GetMapping("/detail/by-agent-id")
-    public Result<AgentDefinition> getAgent(@RequestParam String agentId) {
+    @SaCheckPermission("agent:execute")
+    @GetMapping("/definitions/{agentId}")
+    public Result<AgentDefinition> getAgent(@PathVariable String agentId) {
         log.info("收到 Agent 查询请求：agentIdPresent={}", agentId != null);
         AgentDefinition definition = agentService.getAgent(actor(), agentId);
         if (definition == null) {
@@ -268,8 +271,8 @@ public class AgentDefinitionController {
      */
     @Operation(summary = "Delete Agent")
     @SaCheckPermission("agent:admin:delete")
-    @PostMapping("/delete/by-agent-id")
-    public Result<Void> deleteAgent(@RequestParam String agentId) {
+    @DeleteMapping("/definitions/{agentId}")
+    public Result<Void> deleteAgent(@PathVariable String agentId) {
         log.info("收到 Agent 删除请求：agentIdPresent={}", agentId != null);
         boolean success = agentService.unregisterAgent(actor(), agentId);
         if (success) {
@@ -306,7 +309,8 @@ public class AgentDefinitionController {
      * @param Agents 用于完成本次业务处理的 Agents 参数。
      */
     @Operation(summary = "List Agents")
-    @GetMapping("/list")
+    @SaCheckPermission("agent:execute")
+    @GetMapping("/definitions")
     public Result<List<AgentDefinition>> listAgents() {
         log.info("收到 Agent 列表查询请求");
         return Result.success(agentService.listAgents(actor()));
@@ -320,6 +324,7 @@ public class AgentDefinitionController {
      * @param Types 用于完成本次业务处理的 Types 参数。
      */
     @Operation(summary = "Get Node Types")
+    @SaCheckPermission("agent:admin:list")
     @GetMapping("/node-types")
     public Result<List<NodeTypeMetaVO>> getNodeTypes() {
         return Result.success(agentAdminService.getNodeTypes());
@@ -331,6 +336,7 @@ public class AgentDefinitionController {
      * @param Type 用于完成本次业务处理的 Type 参数。
      */
     @Operation(summary = "Get Node Type")
+    @SaCheckPermission("agent:admin:list")
     @GetMapping("/node-types/detail")
     public Result<NodeTypeMetaVO> getNodeType(@RequestParam String nodeType) {
         List<NodeTypeMetaVO> types = agentAdminService.getNodeTypes();

@@ -10,8 +10,8 @@ import com.shiyu.ai.knowledge.implementation.web.api.KnowledgeApiVersion;
 
 import cn.dev33.satoken.annotation.SaCheckPermission;
 
-import com.shiyu.ai.common.core.api.PageData;
-import com.shiyu.ai.common.core.api.Result;
+import com.shiyu.ai.common.foundation.api.PageData;
+import com.shiyu.ai.common.foundation.api.Result;
 import com.shiyu.ai.common.web.auth.ActorContextHttpAdapter;
 import com.shiyu.ai.kernel.context.ActorContext;
 import com.shiyu.ai.knowledge.implementation.application.KnowledgeSpaceService;
@@ -42,7 +42,6 @@ import java.util.List;
 @RequestMapping("/api/knowledge/spaces")
 @RequiredArgsConstructor
 @Tag(name = "知识空间")
-@SaCheckPermission("knowledge:list")
 public class KnowledgeSpaceController {
 
     /**
@@ -60,6 +59,7 @@ public class KnowledgeSpaceController {
      * @param version 用于完成本次业务处理的 version 参数。
      * @return 返回 知识 空间 相关操作生成的结果数据。
      */
+    @SaCheckPermission("knowledge:list")
     @GetMapping
     public Result<PageData<KnowledgeSpaceService.SpaceView>> page(
             @RequestParam(defaultValue = "1") int pageNum,
@@ -81,6 +81,7 @@ public class KnowledgeSpaceController {
      *
      * @param options 用于完成本次业务处理的 options 参数。
      */
+    @SaCheckPermission("knowledge:list")
     @GetMapping("/options")
     public Result<List<KnowledgeSpaceService.SpaceView>> options() {
         return Result.success(service.accessibleSpaces(currentActor()));
@@ -92,6 +93,7 @@ public class KnowledgeSpaceController {
      * @param id 用于定位目标业务对象的标识。
      * @return 返回 知识 空间 相关操作生成的结果数据。
      */
+    @SaCheckPermission("knowledge:list")
     @GetMapping("/{id}")
     public Result<KnowledgeSpaceService.SpaceView> get(
             @PathVariable Long id,
@@ -109,6 +111,7 @@ public class KnowledgeSpaceController {
      * @param scale 用于完成本次业务处理的 scale 参数。
      * @return 返回 知识 空间 相关操作生成的结果数据。
      */
+    @SaCheckPermission("knowledge:list")
     @GetMapping("/{id}/difficulty-scale")
     public Result<KnowledgeSpaceService.DifficultyScaleView> difficultyScale(
             @PathVariable Long id,
@@ -182,6 +185,7 @@ public class KnowledgeSpaceController {
      * @param members 用于完成本次业务处理的 members 参数。
      * @return 返回符合条件的数据集合；没有匹配项时返回空集合。
      */
+    @SaCheckPermission("knowledge:list")
     @GetMapping("/{id}/members")
     public Result<List<KnowledgeSpaceService.MemberView>> members(
             @PathVariable Long id,
@@ -219,6 +223,7 @@ public class KnowledgeSpaceController {
      * @param default 用于完成本次业务处理的 default 参数。
      * @return 返回 知识 空间 相关操作生成的结果数据。
      */
+    @SaCheckPermission("knowledge:create")
     @PostMapping("/default")
     public Result<KnowledgeSpaceService.SpaceView> ensureDefault(
             @RequestHeader(

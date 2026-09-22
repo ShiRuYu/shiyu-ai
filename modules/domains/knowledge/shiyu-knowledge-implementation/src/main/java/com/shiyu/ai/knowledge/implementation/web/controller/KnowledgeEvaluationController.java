@@ -8,8 +8,8 @@ import com.shiyu.ai.knowledge.implementation.web.api.KnowledgeApiVersion;
 
 import cn.dev33.satoken.annotation.SaCheckPermission;
 
-import com.shiyu.ai.common.core.api.PageData;
-import com.shiyu.ai.common.core.api.Result;
+import com.shiyu.ai.common.foundation.api.PageData;
+import com.shiyu.ai.common.foundation.api.Result;
 import com.shiyu.ai.common.web.auth.ActorContextHttpAdapter;
 import com.shiyu.ai.kernel.context.ActorContext;
 import com.shiyu.ai.knowledge.implementation.application.KnowledgeEvaluationService;
@@ -37,7 +37,6 @@ import org.springframework.web.bind.annotation.RestController;
 @RequestMapping("/api/knowledge/evaluations")
 @RequiredArgsConstructor
 @Tag(name = "知识评测")
-@SaCheckPermission("knowledge:list")
 public class KnowledgeEvaluationController {
 
     /**
@@ -54,6 +53,7 @@ public class KnowledgeEvaluationController {
      * @param version 用于完成本次业务处理的 version 参数。
      * @return 返回 知识 Evaluation 相关操作生成的结果数据。
      */
+    @SaCheckPermission("knowledge:list")
     @GetMapping
     public Result<PageData<KnowledgeEvaluationService.CaseView>> page(
             @RequestParam Long spaceId,
@@ -92,7 +92,7 @@ public class KnowledgeEvaluationController {
      * @return 返回 知识 Evaluation 相关操作生成的结果数据。
      */
     @PostMapping("/run")
-    @SaCheckPermission("knowledge:list")
+    @SaCheckPermission("knowledge:edit")
     public Result<KnowledgeEvaluationService.RunResult> run(
             @RequestBody @Valid KnowledgeEvaluationService.RunRequest request,
             @RequestHeader(

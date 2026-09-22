@@ -8,8 +8,8 @@ import com.shiyu.ai.knowledge.implementation.web.response.KnowledgeGraphResponse
 
 import cn.dev33.satoken.annotation.SaCheckPermission;
 
-import com.shiyu.ai.common.core.api.PageData;
-import com.shiyu.ai.common.core.api.Result;
+import com.shiyu.ai.common.foundation.api.PageData;
+import com.shiyu.ai.common.foundation.api.Result;
 import com.shiyu.ai.common.web.auth.ActorContextHttpAdapter;
 import com.shiyu.ai.kernel.context.ActorContext;
 import com.shiyu.ai.knowledge.implementation.infrastructure.point.KnowledgePointService;
@@ -38,7 +38,6 @@ import org.springframework.web.bind.annotation.RestController;
 @RequestMapping("/api/knowledge")
 @RequiredArgsConstructor
 @Tag(name = "知识点")
-@SaCheckPermission("knowledge:list")
 public class KnowledgePointController {
 
     /**
@@ -52,6 +51,7 @@ public class KnowledgePointController {
      * @param points 用于完成本次业务处理的 points 参数。
      * @return 返回 知识 Point 相关操作生成的结果数据。
      */
+    @SaCheckPermission("knowledge:list")
     @GetMapping("/spaces/{spaceId}/points")
     public Result<PageData<KnowledgePointService.PointView>> page(
             @PathVariable Long spaceId,
@@ -74,6 +74,7 @@ public class KnowledgePointController {
      * @param id 用于定位目标业务对象的标识。
      * @return 返回 知识 Point 相关操作生成的结果数据。
      */
+    @SaCheckPermission("knowledge:list")
     @GetMapping("/points/{id}")
     public Result<KnowledgePointService.PointView> get(
             @PathVariable Long id,
@@ -91,6 +92,7 @@ public class KnowledgePointController {
      * @param graph 用于完成本次业务处理的 graph 参数。
      * @return 返回 知识 Point 相关操作生成的结果数据。
      */
+    @SaCheckPermission("knowledge:list")
     @GetMapping("/points/{id}/graph")
     public Result<com.shiyu.ai.knowledge.implementation.web.response.KnowledgeGraphResponse> graph(
             @PathVariable Long id,

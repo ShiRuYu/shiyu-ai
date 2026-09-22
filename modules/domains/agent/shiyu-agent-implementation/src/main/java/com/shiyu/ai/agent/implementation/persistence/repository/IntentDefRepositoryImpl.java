@@ -6,7 +6,7 @@ import com.mybatisflex.core.query.QueryWrapper;
 import com.shiyu.ai.agent.implementation.domain.model.IntentDefBO;
 import com.shiyu.ai.agent.implementation.persistence.dataobject.IntentDefDO;
 import com.shiyu.ai.agent.implementation.persistence.mapper.IntentDefMapper;
-import com.shiyu.ai.common.core.vo.IdNameOptionVO;
+import com.shiyu.ai.common.foundation.vo.IdNameOptionVO;
 import com.shiyu.ai.kernel.context.TenantId;
 import com.shiyu.ai.kernel.context.TenantScope;
 

@@ -2,8 +2,8 @@ package com.shiyu.ai.education.implementation.web.controller;
 
 import cn.dev33.satoken.annotation.SaCheckPermission;
 
-import com.shiyu.ai.common.core.api.PageData;
-import com.shiyu.ai.common.core.api.Result;
+import com.shiyu.ai.common.foundation.api.PageData;
+import com.shiyu.ai.common.foundation.api.Result;
 import com.shiyu.ai.common.web.auth.ActorContextHttpAdapter;
 import com.shiyu.ai.education.implementation.application.TextbookService;
 import com.shiyu.ai.education.implementation.web.dto.TextbookResponse;
@@ -25,7 +25,6 @@ import java.util.List;
 @RestController
 @RequestMapping("/textbook")
 @RequiredArgsConstructor
-@SaCheckPermission("edu:textbook:list")
 public class TextbookController {
 
     /**
@@ -38,8 +37,9 @@ public class TextbookController {
      *
      * @param detail 用于完成本次业务处理的 detail 参数。
      */
-    @GetMapping("/detail")
-    public Result<TextbookResponse> getById(@RequestParam Long id) {
+    @SaCheckPermission("edu:textbook:list")
+    @GetMapping("/{id}")
+    public Result<TextbookResponse> getById(@PathVariable Long id) {
         return Result.success(textbookService.getById(ActorContextHttpAdapter.currentActor(), id));
     }
 
@@ -49,7 +49,8 @@ public class TextbookController {
      * @param list 用于完成本次业务处理的 list 参数。
      * @return 返回 教材 相关操作生成的结果数据。
      */
-    @GetMapping("/list")
+    @SaCheckPermission("edu:textbook:list")
+    @GetMapping
     public Result<PageData<TextbookResponse>> list(
             @RequestParam(defaultValue = "1") Integer pageNum,
             @RequestParam(defaultValue = "10") Integer pageSize) {
@@ -62,6 +63,7 @@ public class TextbookController {
      *
      * @param grade 用于完成本次业务处理的 grade 参数。
      */
+    @SaCheckPermission("edu:textbook:list")
     @GetMapping("/subject-grade")
     public Result<List<TextbookResponse>> listBySubjectAndGrade(
             @RequestParam String subjectCode, @RequestParam Integer grade) {
@@ -75,7 +77,7 @@ public class TextbookController {
      *
      * @param create 用于完成本次业务处理的 create 参数。
      */
-    @PostMapping("/create")
+    @PostMapping
     @SaCheckPermission("edu:textbook:create")
     public Result<TextbookResponse> create(@Valid @RequestBody TextbookRequest request) {
         return Result.success(
@@ -87,9 +89,9 @@ public class TextbookController {
      *
      * @param update 用于完成本次业务处理的 update 参数。
      */
-    @PostMapping("/update")
+    @PutMapping("/{id}")
     @SaCheckPermission("edu:textbook:edit")
-    public Result<Void> update(@RequestParam Long id, @Valid @RequestBody TextbookRequest request) {
+    public Result<Void> update(@PathVariable Long id, @Valid @RequestBody TextbookRequest request) {
         request.setId(id);
         textbookService.update(ActorContextHttpAdapter.currentActor(), request);
         return Result.success();
@@ -100,9 +102,9 @@ public class TextbookController {
      *
      * @param delete 用于完成本次业务处理的 delete 参数。
      */
-    @PostMapping("/delete")
+    @DeleteMapping("/{id}")
     @SaCheckPermission("edu:textbook:delete")
-    public Result<Void> delete(@RequestParam Long id) {
+    public Result<Void> delete(@PathVariable Long id) {
         textbookService.deleteById(ActorContextHttpAdapter.currentActor(), id);
         return Result.success();
     }

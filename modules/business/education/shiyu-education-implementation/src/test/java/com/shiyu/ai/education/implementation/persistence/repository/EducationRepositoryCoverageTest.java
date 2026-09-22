@@ -6,7 +6,7 @@ import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.*;
 
 import com.mybatisflex.core.paginate.Page;
-import com.shiyu.ai.common.core.utils.MapstructUtils;
+import com.shiyu.ai.common.foundation.utils.MapstructUtils;
 import com.shiyu.ai.kernel.context.TenantId;
 
 import org.junit.jupiter.api.Test;

@@ -2,7 +2,7 @@
 com.shiyu.ai.agent.implementation.runtime.service # 运行时服务的私有请求/结果 record
 com.shiyu.ai.agent.implementation.service # IntentService 的识别结果契约
 com.shiyu.ai.bootstrap.retention # retention 属性与服务同属启动支撑边界
-com.shiyu.ai.common.core.utils # 工具类与少量静态值类型的基础工具边界
+com.shiyu.ai.common.foundation.utils # 工具类与少量静态值类型的基础工具边界
 com.shiyu.ai.common.mybatis.config # 配置、属性和校验器同属数据库基础设施配置
 com.shiyu.ai.common.storage.backup # 备份服务的内部结果 record
 com.shiyu.ai.common.storage.config # 存储配置、属性和 provider 选择值

@@ -107,6 +107,12 @@ def generate_api_reference(spec: dict[str, Any], output: Path, source: str) -> t
         "- 普通 JSON 接口通常返回 `Result<T>`；流式接口按 OpenAPI 标注返回 SSE 或二进制内容。",
         "- `requestBody` 与响应栏保留 OpenAPI schema 名称，具体字段见“组件模型”。",
         "",
+        "## 租户统计边界",
+        "",
+        "- `/api/governance/usage/**` 只返回当前租户数据。",
+        "- `/api/governance/platform/usage/**` 要求 `platform:usage:read`，并由 IAM 校验归属租户和当前租户均为默认租户 ID 1、有效 super 角色、非委派状态。",
+        "- 平台统计无客户端 allTenants 开关；拒绝访问返回权限错误。",
+        "",
         "## 接口清单",
         "",
     ]
@@ -262,6 +268,11 @@ def generate_data_dictionary(tables: list[dict[str, Any]], output: Path) -> None
         "- 表间关系主要由应用服务与 `*_ID` 字段维护；基线中并非所有逻辑关系都声明数据库外键。",
         "- 知识、教育学习记录、Agent 分别独立建模，通过租户、空间、用户和知识点标识关联。",
         "",
+        "外部数据库 provider 使用同一业务模型：PostgreSQL 基线和种子脚本位于",
+        "`scripts/database/postgresql/`，pgvector、outbox 和 inbox 对象按需追加；切换 provider",
+        "前必须完成离线迁移和版本校验。文件对象、Redis 短期状态和事件投递数据不写入本数据字典，",
+        "分别参见[外部基础设施切换](../外部基础设施切换.md)。",
+        "",
         "## 表级总览",
         "",
         "| 领域 | 表 | 说明 | 字段数 | 基线文件 |",
@@ -329,7 +340,7 @@ def parse_controller_permissions(repo: Path) -> list[dict[str, str]]:
     rows = []
     mapping_pattern = re.compile(r"@(Get|Post|Put|Delete|Patch)Mapping(?:\s*\((.*?)\))?", re.S)
     for file in repo.rglob("*Controller.java"):
-        if "target" in file.parts:
+        if "target" in file.parts or "src/main/java" not in file.as_posix():
             continue
         text = file.read_text(encoding="utf-8")
         class_pos = re.search(r"\bclass\s+\w+Controller\b", text)
@@ -338,8 +349,9 @@ def parse_controller_permissions(repo: Path) -> list[dict[str, str]]:
         class_annotations = text[: class_pos.start()]
         class_paths = re.findall(r'@RequestMapping\s*\([^)]*?"([^"]*)"', class_annotations, re.S)
         class_path = class_paths[-1] if class_paths else ""
+        if re.search(r"\bpackage\s+com\.shiyu\.ai\.education\.implementation\.web\.controller(?:\.[\w.]+)?\s*;", text):
+            class_path = "/api/education" + class_path
         class_permissions = re.findall(r'@SaCheckPermission\s*\(\s*"([^"]+)"', class_annotations)
-        class_permission = class_permissions[-1] if class_permissions else "-"
         for match in mapping_pattern.finditer(text[class_pos.end() :]):
             method = match.group(1).upper()
             args = match.group(2) or ""
@@ -349,9 +361,13 @@ def parse_controller_permissions(repo: Path) -> list[dict[str, str]]:
             method_decl = re.search(r"\b(?:public|protected|private)\s+[^;{]+\(", after)
             if not method_decl:
                 continue
-            between_previous = text[max(class_pos.end(), class_pos.end() + match.start() - 500) : class_pos.end() + match.start()]
-            method_permissions = re.findall(r'@SaCheckPermission\s*\(\s*"([^"]+)"', between_previous)
-            permission = method_permissions[-1] if method_permissions else class_permission
+            before = text[class_pos.end() : class_pos.end() + match.start()]
+            before = re.sub(r"/\*.*?\*/|//[^\n]*", "", before, flags=re.S)
+            before = before[before.rfind("}") + 1 :]
+            annotations = before + after[:method_decl.start()]
+            method_permissions = re.findall(r'@SaCheckPermission\s*\(\s*"([^"]+)"', annotations)
+            effective_permissions = list(dict.fromkeys([*class_permissions, *method_permissions]))
+            permission = " AND ".join(effective_permissions) if effective_permissions else "-"
             full_path = "/" + "/".join(part.strip("/") for part in [class_path, local_path] if part.strip("/"))
             rows.append(
                 {
@@ -398,6 +414,15 @@ def generate_permission_matrix(
     code_roles: dict[int, set[int]] = defaultdict(set)
     for row in seed_rows(seed, "AUTH_ROLE_SCOPE_AUTH_CODE"):
         code_roles[int(row[1])].add(int(row[0]))
+    for statement in navigation.split(";"):
+        if not re.search(r'INSERT\s+INTO\s+"PUBLIC"\."AUTH_ROLE_SCOPE_AUTH_CODE"', statement, re.I):
+            continue
+        role_ids = re.search(r'R\."ID"\s+IN\s*\(([\d,\s]+)\)', statement, re.I)
+        code_ids = re.search(r'C\."ID"\s+IN\s*\(([\d,\s]+)\)', statement, re.I)
+        if not role_ids or not code_ids:
+            raise ValueError("Unsupported role permission seed query; update documentation parser explicitly")
+        for code_id in map(int, code_ids.group(1).split(",")):
+            code_roles[code_id].update(map(int, role_ids.group(1).split(",")))
     permission_to_roles = {
         value["code"]: [roles[role_id]["code"] for role_id in sorted(code_roles.get(code_id, set())) if role_id in roles]
         for code_id, value in auth_codes.items()
@@ -412,6 +437,8 @@ def generate_permission_matrix(
         "## 权限判定链路",
         "",
         "`用户 → 租户作用域角色 → 角色菜单/权限码 → 前端可见性 + 后端注解鉴权`。菜单只控制导航可达性，真正的安全边界必须由后端权限注解和租户过滤共同保证。",
+        "",
+        "平台用量统计还由 IAM 校验归属租户和当前租户均为 ID 1、有效 super 角色且非委派；同名权限不能代替该身份校验。",
         "",
         "## 初始角色",
         "",
@@ -458,7 +485,15 @@ def generate_permission_matrix(
     )
     for endpoint in sorted(endpoints, key=lambda item: (item["path"], item["method"])):
         permission = endpoint["permission"]
-        assigned = ", ".join(permission_to_roles.get(permission, [])) if permission != "-" else "仅登录态/服务内校验"
+        if permission == "-":
+            assigned = "仅登录态/服务内校验"
+        else:
+            required_permissions = [code.strip() for code in permission.split(" AND ")]
+            assigned_roles = permission_to_roles.get(required_permissions[0], [])
+            for required_permission in required_permissions[1:]:
+                permitted_roles = set(permission_to_roles.get(required_permission, []))
+                assigned_roles = [role for role in assigned_roles if role in permitted_roles]
+            assigned = ", ".join(assigned_roles)
         lines.append(
             f"| {endpoint['method']} | `{md(endpoint['path'])}` | `{md(permission)}` | {md(assigned or '-')} | `{endpoint['source']}` |"
         )
@@ -492,7 +527,7 @@ def main() -> None:
 
     schema_roots = [
         repo / "modules/applications/shiyu-platform-composition/src/main/resources/db/baseline/h2/schema",
-        repo / "modules/infrastructure/shiyu-common-core/src/main/resources/db/baseline/h2/schema",
+        repo / "modules/infrastructure/shiyu-common-foundation/src/main/resources/db/baseline/h2/schema",
         repo / "modules/infrastructure/shiyu-common-storage/src/main/resources/db/baseline/h2/schema",
         repo / "modules/domains/iam/shiyu-iam-implementation/src/main/resources/db/baseline/h2/schema",
         repo / "modules/domains/agent/shiyu-agent-implementation/src/main/resources/db/baseline/h2/schema",

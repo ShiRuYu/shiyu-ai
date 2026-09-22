@@ -3,8 +3,8 @@ package com.shiyu.ai.web.common;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 
-import com.shiyu.ai.common.core.api.Result;
-import com.shiyu.ai.common.core.enums.BizResultCode;
+import com.shiyu.ai.common.foundation.api.Result;
+import com.shiyu.ai.common.foundation.enums.BizResultCode;
 
 import org.junit.jupiter.api.Test;
 import org.springframework.http.HttpStatus;

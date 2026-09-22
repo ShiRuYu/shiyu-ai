@@ -1,6 +1,6 @@
 package com.shiyu.ai.model.implementation.application.service.impl;
 
-import com.shiyu.ai.common.core.vo.IdNameOptionVO;
+import com.shiyu.ai.common.foundation.vo.IdNameOptionVO;
 import com.shiyu.ai.kernel.context.ActorContext;
 import com.shiyu.ai.model.implementation.application.assembler.AiModelAssembler;
 import com.shiyu.ai.model.implementation.application.service.AiModelService;

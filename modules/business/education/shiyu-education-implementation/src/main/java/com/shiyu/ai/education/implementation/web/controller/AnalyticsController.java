@@ -2,7 +2,7 @@ package com.shiyu.ai.education.implementation.web.controller;
 
 import cn.dev33.satoken.annotation.SaCheckPermission;
 
-import com.shiyu.ai.common.core.api.Result;
+import com.shiyu.ai.common.foundation.api.Result;
 import com.shiyu.ai.common.web.auth.ActorContextHttpAdapter;
 import com.shiyu.ai.education.implementation.application.AnalyticsService;
 import com.shiyu.ai.education.implementation.web.dto.*;

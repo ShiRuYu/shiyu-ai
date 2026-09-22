@@ -6,7 +6,7 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
-import com.shiyu.ai.common.core.api.Result;
+import com.shiyu.ai.common.foundation.api.Result;
 import com.shiyu.ai.governance.implementation.usage.port.UsageService;
 
 import org.junit.jupiter.api.Test;

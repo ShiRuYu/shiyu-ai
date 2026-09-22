@@ -7,9 +7,9 @@ import com.shiyu.ai.knowledge.implementation.web.api.KnowledgeApiVersion;
 
 import cn.dev33.satoken.annotation.SaCheckPermission;
 
-import com.shiyu.ai.common.core.api.PageData;
-import com.shiyu.ai.common.core.api.Result;
-import com.shiyu.ai.common.core.exception.ServiceException;
+import com.shiyu.ai.common.foundation.api.PageData;
+import com.shiyu.ai.common.foundation.api.Result;
+import com.shiyu.ai.common.foundation.exception.ServiceException;
 import com.shiyu.ai.common.storage.api.*;
 import com.shiyu.ai.common.storage.backup.*;
 import com.shiyu.ai.common.storage.config.*;
@@ -59,7 +59,6 @@ import java.util.List;
 @RequestMapping("/api/knowledge")
 @RequiredArgsConstructor
 @Tag(name = "知识文档")
-@SaCheckPermission("knowledge:document:list")
 public class KnowledgeDocumentController {
 
     /**
@@ -85,6 +84,7 @@ public class KnowledgeDocumentController {
      * @param documents 用于完成本次业务处理的 documents 参数。
      * @return 返回 知识 文档 相关操作生成的结果数据。
      */
+    @SaCheckPermission("knowledge:document:list")
     @GetMapping("/spaces/{spaceId}/documents")
     public Result<PageData<EnterpriseDocumentService.DocumentView>> page(
             @PathVariable Long spaceId,
@@ -292,6 +292,7 @@ public class KnowledgeDocumentController {
      * @param id 用于定位目标业务对象的标识。
      * @return 返回 知识 文档 相关操作生成的结果数据。
      */
+    @SaCheckPermission("knowledge:document:list")
     @GetMapping("/documents/{id}")
     public Result<EnterpriseDocumentService.DocumentView> get(
             @PathVariable Long id,
@@ -309,6 +310,7 @@ public class KnowledgeDocumentController {
      * @param versions 用于完成本次业务处理的 versions 参数。
      * @return 返回符合条件的数据集合；没有匹配项时返回空集合。
      */
+    @SaCheckPermission("knowledge:document:list")
     @GetMapping("/documents/{id}/versions")
     public Result<List<EnterpriseDocumentService.VersionView>> versions(
             @PathVariable Long id,
@@ -459,6 +461,7 @@ public class KnowledgeDocumentController {
      * @param preview 用于完成本次业务处理的 preview 参数。
      * @return 返回 知识 文档 相关操作生成的结果数据。
      */
+    @SaCheckPermission("knowledge:document:list")
     @GetMapping("/documents/{id}/preview")
     public ResponseEntity<byte[]> preview(
             @PathVariable Long id,

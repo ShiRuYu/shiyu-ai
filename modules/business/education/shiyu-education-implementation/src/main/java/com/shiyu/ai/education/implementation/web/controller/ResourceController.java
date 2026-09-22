@@ -2,8 +2,8 @@ package com.shiyu.ai.education.implementation.web.controller;
 
 import cn.dev33.satoken.annotation.SaCheckPermission;
 
-import com.shiyu.ai.common.core.api.PageData;
-import com.shiyu.ai.common.core.api.Result;
+import com.shiyu.ai.common.foundation.api.PageData;
+import com.shiyu.ai.common.foundation.api.Result;
 import com.shiyu.ai.common.web.auth.ActorContextHttpAdapter;
 import com.shiyu.ai.education.implementation.application.ResourceService;
 import com.shiyu.ai.education.implementation.web.dto.ResourceResponse;
@@ -25,7 +25,6 @@ import java.util.List;
 @RestController
 @RequestMapping("/resource")
 @RequiredArgsConstructor
-@SaCheckPermission("edu:resource:list")
 public class ResourceController {
 
     /**
@@ -38,8 +37,9 @@ public class ResourceController {
      *
      * @param detail 用于完成本次业务处理的 detail 参数。
      */
-    @GetMapping("/detail")
-    public Result<ResourceResponse> getById(@RequestParam Long id) {
+    @SaCheckPermission("edu:resource:list")
+    @GetMapping("/{id}")
+    public Result<ResourceResponse> getById(@PathVariable Long id) {
         return Result.success(resourceService.getById(ActorContextHttpAdapter.currentActor(), id));
     }
 
@@ -49,7 +49,8 @@ public class ResourceController {
      * @param list 用于完成本次业务处理的 list 参数。
      * @return 返回 资源 相关操作生成的结果数据。
      */
-    @GetMapping("/list")
+    @SaCheckPermission("edu:resource:list")
+    @GetMapping
     public Result<PageData<ResourceResponse>> list(
             @RequestParam(defaultValue = "1") Integer pageNum,
             @RequestParam(defaultValue = "10") Integer pageSize) {
@@ -62,6 +63,7 @@ public class ResourceController {
      *
      * @param subject 用于完成本次业务处理的 subject 参数。
      */
+    @SaCheckPermission("edu:resource:list")
     @GetMapping("/subject")
     public Result<List<ResourceResponse>> listBySubjectCode(@RequestParam String subjectCode) {
         return Result.success(
@@ -74,6 +76,7 @@ public class ResourceController {
      *
      * @param type 用于完成本次业务处理的 type 参数。
      */
+    @SaCheckPermission("edu:resource:list")
     @GetMapping("/type")
     public Result<List<ResourceResponse>> listByType(@RequestParam String type) {
         return Result.success(
@@ -85,7 +88,7 @@ public class ResourceController {
      *
      * @param create 用于完成本次业务处理的 create 参数。
      */
-    @PostMapping("/create")
+    @PostMapping
     @SaCheckPermission("edu:resource:upload")
     public Result<ResourceResponse> create(@Valid @RequestBody ResourceRequest request) {
         return Result.success(
@@ -97,9 +100,9 @@ public class ResourceController {
      *
      * @param update 用于完成本次业务处理的 update 参数。
      */
-    @PostMapping("/update")
+    @PutMapping("/{id}")
     @SaCheckPermission("edu:resource:upload")
-    public Result<Void> update(@RequestParam Long id, @Valid @RequestBody ResourceRequest request) {
+    public Result<Void> update(@PathVariable Long id, @Valid @RequestBody ResourceRequest request) {
         request.setId(id);
         resourceService.update(ActorContextHttpAdapter.currentActor(), request);
         return Result.success();
@@ -110,9 +113,9 @@ public class ResourceController {
      *
      * @param delete 用于完成本次业务处理的 delete 参数。
      */
-    @PostMapping("/delete")
+    @DeleteMapping("/{id}")
     @SaCheckPermission("edu:resource:delete")
-    public Result<Void> delete(@RequestParam Long id) {
+    public Result<Void> delete(@PathVariable Long id) {
         resourceService.deleteById(ActorContextHttpAdapter.currentActor(), id);
         return Result.success();
     }

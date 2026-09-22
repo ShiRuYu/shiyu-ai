@@ -2,8 +2,8 @@ package com.shiyu.ai.iam.implementation.web;
 
 import cn.dev33.satoken.annotation.SaCheckPermission;
 
-import com.shiyu.ai.common.core.api.PageData;
-import com.shiyu.ai.common.core.api.Result;
+import com.shiyu.ai.common.foundation.api.PageData;
+import com.shiyu.ai.common.foundation.api.Result;
 import com.shiyu.ai.common.web.auth.ActorContextHttpAdapter;
 import com.shiyu.ai.iam.implementation.request.*;
 import com.shiyu.ai.iam.implementation.service.AuthService;
@@ -62,7 +62,7 @@ public class UserController {
      * @param list 用于完成本次业务处理的 list 参数。
      */
     @SaCheckPermission("system:user:list")
-    @GetMapping("/list")
+    @GetMapping
     public Result<PageData<UserVO>> getUserList(@Valid UserPageRequest r) {
         return Result.success(
                 userService.getUserList(
@@ -78,7 +78,7 @@ public class UserController {
      * @param create 用于完成本次业务处理的 create 参数。
      */
     @SaCheckPermission("system:user:create")
-    @PostMapping("/create")
+    @PostMapping
     public Result<Map<String, Object>> createUser(@Valid @RequestBody UserRequest r) {
         return Result.success(
                 userService.createUser(
@@ -94,8 +94,9 @@ public class UserController {
      * @param update 用于完成本次业务处理的 update 参数。
      */
     @SaCheckPermission("system:user:update")
-    @PostMapping("/update")
-    public Result<Void> updateUser(@RequestParam Long userId, @Valid @RequestBody UserRequest r) {
+    @PutMapping("/{id}")
+    public Result<Void> updateUser(
+            @PathVariable("id") Long userId, @Valid @RequestBody UserRequest r) {
         return userService.updateUser(
                         ActorContextHttpAdapter.currentActor(),
                         userId,
@@ -139,8 +140,8 @@ public class UserController {
      * @param delete 用于完成本次业务处理的 delete 参数。
      */
     @SaCheckPermission("system:user:delete")
-    @PostMapping("/delete")
-    public Result<Void> deleteUser(@RequestParam Long userId) {
+    @DeleteMapping("/{id}")
+    public Result<Void> deleteUser(@PathVariable("id") Long userId) {
         return userService.deleteUser(ActorContextHttpAdapter.currentActor(), userId)
                 ? Result.success()
                 : Result.fail("用户不存在");

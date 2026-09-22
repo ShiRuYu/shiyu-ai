@@ -1,6 +1,6 @@
 package com.shiyu.ai.knowledge.implementation.web.api;
 
-import com.shiyu.ai.common.core.exception.ServiceException;
+import com.shiyu.ai.common.foundation.exception.ServiceException;
 
 /**
  * 承载 知识 API Version 所属 Web 能力的请求适配和边界处理。

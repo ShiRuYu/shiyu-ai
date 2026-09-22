@@ -1,6 +1,6 @@
 package com.shiyu.ai.governance.implementation.web.websocket;
 
-import com.shiyu.ai.common.core.utils.JSONUtils;
+import com.shiyu.ai.common.foundation.utils.JSONUtils;
 import com.shiyu.ai.governance.implementation.usage.realtime.UsageRealtimePublisher;
 
 import lombok.extern.slf4j.Slf4j;

@@ -6,7 +6,7 @@ import static org.springframework.http.HttpStatus.NOT_FOUND;
 
 import cn.dev33.satoken.annotation.SaCheckPermission;
 
-import com.shiyu.ai.common.core.api.Result;
+import com.shiyu.ai.common.foundation.api.Result;
 import com.shiyu.ai.common.storage.api.*;
 import com.shiyu.ai.common.storage.backup.*;
 import com.shiyu.ai.common.storage.config.*;
@@ -83,7 +83,7 @@ public class FileController {
      */
     @Operation(summary = "获取文件列表")
     @SaCheckPermission("file:list")
-    @GetMapping("/list")
+    @GetMapping
     public Result<List<FileView>> list() {
         try {
             return Result.success(

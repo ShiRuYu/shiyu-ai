@@ -2,8 +2,8 @@ package com.shiyu.ai.education.implementation.web.controller;
 
 import cn.dev33.satoken.annotation.SaCheckPermission;
 
-import com.shiyu.ai.common.core.api.PageData;
-import com.shiyu.ai.common.core.api.Result;
+import com.shiyu.ai.common.foundation.api.PageData;
+import com.shiyu.ai.common.foundation.api.Result;
 import com.shiyu.ai.common.web.auth.ActorContextHttpAdapter;
 import com.shiyu.ai.education.implementation.application.QuestionService;
 import com.shiyu.ai.education.implementation.web.dto.QuestionResponse;
@@ -25,7 +25,6 @@ import java.util.List;
 @RestController
 @RequestMapping("/question")
 @RequiredArgsConstructor
-@SaCheckPermission("edu:question:list")
 public class QuestionController {
 
     /**
@@ -39,7 +38,8 @@ public class QuestionController {
      * @param list 用于完成本次业务处理的 list 参数。
      * @return 返回 题目 相关操作生成的结果数据。
      */
-    @GetMapping("/list")
+    @SaCheckPermission("edu:question:list")
+    @GetMapping
     public Result<PageData<QuestionResponse>> list(
             @RequestParam(defaultValue = "1") Integer pageNum,
             @RequestParam(defaultValue = "10") Integer pageSize) {
@@ -52,8 +52,9 @@ public class QuestionController {
      *
      * @param detail 用于完成本次业务处理的 detail 参数。
      */
-    @GetMapping("/detail")
-    public Result<QuestionResponse> getById(@RequestParam Long id) {
+    @SaCheckPermission("edu:question:list")
+    @GetMapping("/{id}")
+    public Result<QuestionResponse> getById(@PathVariable Long id) {
         return Result.success(questionService.getById(ActorContextHttpAdapter.currentActor(), id));
     }
 
@@ -62,6 +63,7 @@ public class QuestionController {
      *
      * @param grade 用于完成本次业务处理的 grade 参数。
      */
+    @SaCheckPermission("edu:question:list")
     @GetMapping("/subject-grade")
     public Result<List<QuestionResponse>> listBySubjectAndGrade(
             @RequestParam String subjectCode, @RequestParam Integer grade) {
@@ -75,6 +77,7 @@ public class QuestionController {
      *
      * @param difficulty 用于完成本次业务处理的 difficulty 参数。
      */
+    @SaCheckPermission("edu:question:list")
     @GetMapping("/difficulty")
     public Result<List<QuestionResponse>> listByDifficulty(@RequestParam Integer difficulty) {
         return Result.success(
@@ -87,6 +90,7 @@ public class QuestionController {
      *
      * @param type 用于完成本次业务处理的 type 参数。
      */
+    @SaCheckPermission("edu:question:list")
     @GetMapping("/type")
     public Result<List<QuestionResponse>> listByType(@RequestParam String type) {
         return Result.success(
@@ -98,7 +102,7 @@ public class QuestionController {
      *
      * @param create 用于完成本次业务处理的 create 参数。
      */
-    @PostMapping("/create")
+    @PostMapping
     @SaCheckPermission("edu:question:create")
     public Result<QuestionResponse> create(@Valid @RequestBody QuestionRequest request) {
         return Result.success(
@@ -110,9 +114,9 @@ public class QuestionController {
      *
      * @param update 用于完成本次业务处理的 update 参数。
      */
-    @PostMapping("/update")
+    @PutMapping("/{id}")
     @SaCheckPermission("edu:question:edit")
-    public Result<Void> update(@RequestParam Long id, @Valid @RequestBody QuestionRequest request) {
+    public Result<Void> update(@PathVariable Long id, @Valid @RequestBody QuestionRequest request) {
         request.setId(id);
         questionService.update(ActorContextHttpAdapter.currentActor(), request);
         return Result.success();
@@ -123,9 +127,9 @@ public class QuestionController {
      *
      * @param delete 用于完成本次业务处理的 delete 参数。
      */
-    @PostMapping("/delete")
+    @DeleteMapping("/{id}")
     @SaCheckPermission("edu:question:delete")
-    public Result<Void> delete(@RequestParam Long id) {
+    public Result<Void> delete(@PathVariable Long id) {
         questionService.deleteById(ActorContextHttpAdapter.currentActor(), id);
         return Result.success();
     }

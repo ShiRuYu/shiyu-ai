@@ -2,8 +2,8 @@ package com.shiyu.ai.education.implementation.web.controller;
 
 import cn.dev33.satoken.annotation.SaCheckPermission;
 
-import com.shiyu.ai.common.core.api.PageData;
-import com.shiyu.ai.common.core.api.Result;
+import com.shiyu.ai.common.foundation.api.PageData;
+import com.shiyu.ai.common.foundation.api.Result;
 import com.shiyu.ai.common.web.auth.ActorContextHttpAdapter;
 import com.shiyu.ai.education.implementation.application.SubjectService;
 import com.shiyu.ai.education.implementation.web.dto.SubjectResponse;
@@ -25,7 +25,6 @@ import java.util.List;
 @RestController
 @RequestMapping("/subject")
 @RequiredArgsConstructor
-@SaCheckPermission("edu:subject:list")
 public class SubjectController {
 
     /**
@@ -38,8 +37,9 @@ public class SubjectController {
      *
      * @param detail 用于完成本次业务处理的 detail 参数。
      */
-    @GetMapping("/detail")
-    public Result<SubjectResponse> getById(@RequestParam Long id) {
+    @SaCheckPermission("edu:subject:list")
+    @GetMapping("/{id}")
+    public Result<SubjectResponse> getById(@PathVariable Long id) {
         return Result.success(subjectService.getById(ActorContextHttpAdapter.currentActor(), id));
     }
 
@@ -48,6 +48,7 @@ public class SubjectController {
      *
      * @param code 用于定位或筛选目标业务对象的业务值。
      */
+    @SaCheckPermission("edu:subject:list")
     @GetMapping("/code")
     public Result<SubjectResponse> getByCode(@RequestParam String code) {
         return Result.success(
@@ -60,7 +61,8 @@ public class SubjectController {
      * @param list 用于完成本次业务处理的 list 参数。
      * @return 返回 学科 相关操作生成的结果数据。
      */
-    @GetMapping("/list")
+    @SaCheckPermission("edu:subject:list")
+    @GetMapping
     public Result<PageData<SubjectResponse>> list(
             @RequestParam(defaultValue = "1") Integer pageNum,
             @RequestParam(defaultValue = "10") Integer pageSize) {
@@ -73,6 +75,7 @@ public class SubjectController {
      *
      * @param level 用于完成本次业务处理的 level 参数。
      */
+    @SaCheckPermission("edu:subject:list")
     @GetMapping("/grade-level")
     public Result<List<SubjectResponse>> listByGradeLevel(@RequestParam String gradeLevel) {
         return Result.success(
@@ -85,7 +88,7 @@ public class SubjectController {
      *
      * @param create 用于完成本次业务处理的 create 参数。
      */
-    @PostMapping("/create")
+    @PostMapping
     @SaCheckPermission("edu:subject:create")
     public Result<SubjectResponse> create(@Valid @RequestBody SubjectRequest request) {
         return Result.success(
@@ -97,9 +100,9 @@ public class SubjectController {
      *
      * @param update 用于完成本次业务处理的 update 参数。
      */
-    @PostMapping("/update")
+    @PutMapping("/{id}")
     @SaCheckPermission("edu:subject:edit")
-    public Result<Void> update(@RequestParam Long id, @Valid @RequestBody SubjectRequest request) {
+    public Result<Void> update(@PathVariable Long id, @Valid @RequestBody SubjectRequest request) {
         request.setId(id);
         subjectService.update(ActorContextHttpAdapter.currentActor(), request);
         return Result.success();
@@ -110,9 +113,9 @@ public class SubjectController {
      *
      * @param delete 用于完成本次业务处理的 delete 参数。
      */
-    @PostMapping("/delete")
+    @DeleteMapping("/{id}")
     @SaCheckPermission("edu:subject:delete")
-    public Result<Void> delete(@RequestParam Long id) {
+    public Result<Void> delete(@PathVariable Long id) {
         subjectService.deleteById(ActorContextHttpAdapter.currentActor(), id);
         return Result.success();
     }

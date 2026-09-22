@@ -27,6 +27,10 @@ EXCLUDED_PARTS = {
     "backups",
 }
 TYPE_RE = re.compile(r"\b(class|interface|enum|record)\s+([A-Za-z_$][\w$]*)")
+ANONYMOUS_CLASS_RE = re.compile(
+    r"\bnew\s+[A-Za-z_$][\w$]*(?:\s*\.\s*[A-Za-z_$][\w$]*)*"
+    r"(?:\s*<[^;{}]+>)?\s*\([^;{}]*\)\s*\{"
+)
 DOC_RE = re.compile(r"/\*\*.*?\*/", re.DOTALL)
 CONTROL_NAMES = {"if", "for", "while", "switch", "catch", "synchronized"}
 MODIFIER_WORDS = {
@@ -50,6 +54,46 @@ TEMPLATE_PATTERNS = {
         re.compile(r"^(?:[A-Za-z_$][\w$]*\s+)?(?:.+模块的(?:Web接口)?适配器)，负责接收请求并转换为应用服务调用。?$"),
         re.compile(r"^(?:[A-Za-z_$][\w$]*\s+)?[^，。]{1,80}(?:服务接口|服务实现)，负责执行[^，。]{1,80}(?:领域)?相关业务操作。?$"),
         re.compile(r"^执行当前类型定义的业务操作。?$"),
+        # 识别 rewrite_javadocs.py 生成的已知职责描述。
+        re.compile(r"^处理.+相关的 Web 请求，并将请求转换为应用服务调用。?$"),
+        re.compile(r"^提供.+的查询、创建、更新及调用服务，协调业务变更和领域协作。?$"),
+        re.compile(r"^负责.+的持久化查询、保存和删除，并维护数据访问边界。?$"),
+        re.compile(r"^封装.+操作所需的请求条件和输入数据。?$"),
+        re.compile(r"^封装.+操作向调用方返回的传输数据。?$"),
+        re.compile(r"^表示.+领域对象的业务状态和属性。?$"),
+        re.compile(r"^定义.+基础设施或应用能力的配置项及装配规则。?$"),
+        re.compile(r"^处理.+相关事件或请求，并推进后续业务流程。?$"),
+        re.compile(r"^向.+所属的应用或基础设施注册必要的扩展能力。?$"),
+        re.compile(r"^发布.+相关的领域事件或基础设施消息。?$"),
+        re.compile(r"^将.+在不同层之间进行适配、转换或组装。?$"),
+        re.compile(r"^创建或提供.+相关的业务组件和运行时能力。?$"),
+        re.compile(r"^管理.+相关的运行时状态、注册信息或临时数据。?$"),
+        re.compile(r"^定义.+相关用例的输入、授权和业务结果。?$"),
+        re.compile(r"^解析或编解码.+相关的外部内容和领域数据。?$"),
+        re.compile(r"^负责.+相关数据的存储或后台处理。?$"),
+        re.compile(r"^根据输入配置创建.+相关的流程节点或业务组件。?$"),
+        re.compile(r"^构建.+相关的对象、流程或运行时配置。?$"),
+        re.compile(r"^执行.+相关流程节点的输入处理和状态转移。?$"),
+        re.compile(r"^编排.+相关的智能体任务和模型协作。?$"),
+        re.compile(r"^表示.+相关流程的节点、边和执行关系。?$"),
+        re.compile(r"^提供.+相关的通用辅助操作，供业务和基础设施复用。?$"),
+        re.compile(r"^协调.+相关共享资源的互斥访问和释放。?$"),
+        re.compile(r"^接收并处理.+相关的业务事件或统计数据。?$"),
+        re.compile(r"^校验并控制.+相关请求是否允许进入处理流程。?$"),
+        re.compile(r"^表示.+相关流程中的状态、关系或执行数据。?$"),
+        re.compile(r"^表示.+对应的持久化数据对象及其数据库字段。?$"),
+        re.compile(r"^定义.+所属领域对外协作所需的稳定契约。?$"),
+        re.compile(r"^编排.+所属应用流程的输入、协作和业务结果。?$"),
+        re.compile(r"^实现.+所属领域的业务规则和状态变化。?$"),
+        re.compile(r"^提供.+所属基础设施的适配、存储或运行支持。?$"),
+        re.compile(r"^承载.+所属 Web 能力的请求适配和边界处理。?$"),
+        re.compile(r"^启动.+应用并装配项目所需的运行基础设施。?$"),
+        re.compile(r"^校验或约束.+相关的请求、状态和访问规则。?$"),
+        re.compile(r"^根据请求上下文解析或路由.+相关的处理能力。?$"),
+        re.compile(r"^表示.+相关的领域事件或异常信息。?$"),
+        re.compile(r"^定义.+领域与外部能力交互的端口契约。?$"),
+        re.compile(r"^定义.+相关的协作契约和调用边界。?$"),
+        re.compile(r"^实现.+相关的业务处理、协作逻辑或基础设施能力。?$"),
     ),
     "template-method": (
         re.compile(r"^执行当前类型定义的业务操作。?$"),
@@ -57,19 +101,39 @@ TEMPLATE_PATTERNS = {
         re.compile(r"^写入或更新当前模块中的业务数据。?$"),
         re.compile(r"^判断当前类型定义的业务条件是否满足。?$"),
         re.compile(r"^执行使用备用。?$"),
+        re.compile(
+            r"^(?:获取当前|获取并校验|查询|创建或保存|更新或设置|删除或移除|校验或判断|"
+            r"发布或发送|调用|构建或转换|处理|解析或路由|执行).+相关业务"
+            r"(?:数据，并返回处理结果|操作，并维护必要的状态和协作关系)。?$"
+        ),
     ),
     "template-param": (
         re.compile(r"^参数值，用于执行当前操作。?$"),
         re.compile(r"^参数。?$"),
         re.compile(r"^方法参数。?$"),
+        re.compile(r"^用于完成本次业务处理的\s+[A-Za-z_$][\w$]*\s+参数。?$"),
+        re.compile(r"^用于定位或筛选目标业务对象的业务值。?$"),
+        re.compile(r"^待处理的业务对象标识集合。?$"),
+        re.compile(r"^用于筛选目标数据的查询条件。?$"),
+        re.compile(r"^用于定位目标业务对象的标识。?$"),
+        re.compile(r"^用于定位[a-z]+的标识。?$"),
+        re.compile(r"^封装本次操作所需业务字段的请求对象。?$"),
+        re.compile(r"^本次流程携带的事件或业务数据。?$"),
     ),
     "template-return": (
         re.compile(r"^返回当前操作产生的结果。?$"),
         re.compile(r"^结果列表。?$"),
         re.compile(r"^操作结果。?$"),
+        re.compile(r"^返回\s+.+\s+相关操作生成的结果数据。?$"),
+        re.compile(r"^返回总数及当前页数据，左值为总数，右值为数据列表。?$"),
+        re.compile(r"^返回符合条件的数据集合；没有匹配项时返回空集合。?$"),
+        re.compile(r"^返回可能存在的业务对象；不存在时返回空值容器。?$"),
+        re.compile(r"^返回本次条件判断是否成立。?$"),
     ),
 }
-TEST_GENERIC = re.compile(r"^验证\s+.+的功能、边界条件和集成行为。?$")
+TEST_GENERIC = re.compile(
+    r"^验证\s+.+(?:的功能、边界条件和集成行为|相关功能、边界条件、异常路径和协作行为)。?$"
+)
 TAG_RE = re.compile(r"(?<!\{)(?:^|\s)@(param|return|throws)\b")
 CODE_TAG_RE = re.compile(r"\{@(?:code|link)\s+([^}]+)\}")
 WHITESPACE_RE = re.compile(r"\s+")
@@ -376,6 +440,41 @@ def discover_types(source: str, masked: str) -> list[TypeInfo]:
     return result
 
 
+def discover_anonymous_types(
+    source: str, masked: str, containing_types: list[TypeInfo]
+) -> list[TypeInfo]:
+    """发现匿名类，以便扫描其显式覆盖方法上的 Javadoc。"""
+
+    discovered: list[TypeInfo] = []
+    for match in ANONYMOUS_CLASS_RE.finditer(masked):
+        body_open = match.end() - 1
+        body_close = matching(masked, body_open, "{", "}")
+        if body_close is None:
+            continue
+        containing = [
+            item
+            for item in (*containing_types, *discovered)
+            if item.body_open < body_open < item.body_close
+        ]
+        if not containing:
+            continue
+        parent = min(containing, key=lambda item: item.body_close - item.body_open)
+        line = line_number(source, body_open)
+        name = f"<anonymous@{line}>"
+        discovered.append(
+            TypeInfo(
+                kind="anonymous",
+                name=name,
+                owner=f"{parent.owner}.{name}",
+                declaration_offset=match.start(),
+                body_open=body_open,
+                body_close=body_close,
+                line=line,
+            )
+        )
+    return discovered
+
+
 def annotation_lines_only(text: str) -> bool:
     depth = 0
     for raw in text.splitlines():
@@ -565,6 +664,7 @@ def scan_file(path: Path, include_tests: bool = False) -> list[Issue]:
     source = path.read_text(encoding="utf-8")
     masked = mask_java(source)
     types = discover_types(source, masked)
+    method_types = [*types, *discover_anonymous_types(source, masked, types)]
     issues: list[Issue] = []
     module = module_name(path)
     for type_info in types:
@@ -587,6 +687,7 @@ def scan_file(path: Path, include_tests: bool = False) -> list[Issue]:
                         doc.summary,
                     )
                 )
+    for type_info in method_types:
         for method in discover_methods(source, masked, type_info):
             doc_location = find_javadoc(source, method.declaration_offset)
             if not doc_location:
@@ -703,7 +804,7 @@ def render_report(issues: list[Issue], test_issues: list[Issue] | None = None, b
         "- 规则覆盖类型、方法、构造方法以及 `@param`、`@return`、`@throws`；同一段 Javadoc 的多个命中聚合为一条记录。",
         "- 基线中的历史问题允许保留，新增问题阻断生产门禁；静态通过不等于注释已经与实现完全一致。",
         (
-            "- 当前问题主要集中在 Agent、Education、IAM、Knowledge 和 Model 模块。"
+            "- 问题覆盖业务领域和公共基础设施模块；请按上方模块统计与明细分批整改。"
             if production
             else "- 当前未发现已知模板问题；后续新增问题仍由基线门禁阻断。"
         ),

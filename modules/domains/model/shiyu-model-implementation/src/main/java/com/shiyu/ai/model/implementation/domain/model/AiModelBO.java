@@ -1,8 +1,8 @@
 package com.shiyu.ai.model.implementation.domain.model;
 
-import com.shiyu.ai.common.core.domain.BaseEntity;
-import com.shiyu.ai.common.core.validate.AddGroup;
-import com.shiyu.ai.common.core.validate.EditGroup;
+import com.shiyu.ai.common.foundation.domain.BaseEntity;
+import com.shiyu.ai.common.foundation.validate.AddGroup;
+import com.shiyu.ai.common.foundation.validate.EditGroup;
 
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;

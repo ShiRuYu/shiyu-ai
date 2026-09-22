@@ -1,6 +1,6 @@
 package com.shiyu.ai.common.event.outbox;
 
-import com.shiyu.ai.common.core.utils.JSONUtils;
+import com.shiyu.ai.common.foundation.utils.JSONUtils;
 import com.shiyu.ai.common.event.api.InfrastructureEventPublisher;
 import com.shiyu.ai.common.event.config.EventInfrastructureProperties;
 import com.shiyu.ai.kernel.context.TenantScope;

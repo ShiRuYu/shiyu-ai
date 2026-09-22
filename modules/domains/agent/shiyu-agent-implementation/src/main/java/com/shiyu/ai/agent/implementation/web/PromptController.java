@@ -2,7 +2,7 @@ package com.shiyu.ai.agent.implementation.web;
 
 import com.shiyu.ai.agent.implementation.runtime.service.PromptService;
 import com.shiyu.ai.agent.implementation.runtime.model.PromptTemplate;
-import com.shiyu.ai.common.core.api.Result;
+import com.shiyu.ai.common.foundation.api.Result;
 import com.shiyu.ai.common.web.auth.ActorContextHttpAdapter;
 import com.shiyu.ai.kernel.context.TenantId;
 

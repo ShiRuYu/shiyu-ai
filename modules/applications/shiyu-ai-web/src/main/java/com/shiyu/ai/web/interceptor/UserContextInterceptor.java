@@ -1,12 +1,12 @@
 package com.shiyu.ai.web.interceptor;
 
-import com.shiyu.ai.common.core.api.Result;
-import com.shiyu.ai.common.core.context.model.UserContext;
-import com.shiyu.ai.common.core.context.UserContextHolder;
-import com.shiyu.ai.common.core.enums.BizResultCode;
-import com.shiyu.ai.common.core.enums.DeviceTypeEnum;
-import com.shiyu.ai.common.core.enums.UserTypeEnum;
-import com.shiyu.ai.common.core.utils.JSONUtils;
+import com.shiyu.ai.common.foundation.api.Result;
+import com.shiyu.ai.common.foundation.context.model.UserContext;
+import com.shiyu.ai.common.foundation.context.UserContextHolder;
+import com.shiyu.ai.common.foundation.enums.BizResultCode;
+import com.shiyu.ai.common.foundation.enums.DeviceTypeEnum;
+import com.shiyu.ai.common.foundation.enums.UserTypeEnum;
+import com.shiyu.ai.common.foundation.utils.JSONUtils;
 import com.shiyu.ai.common.web.auth.ClientIpResolver;
 import com.shiyu.ai.common.web.interceptor.WebInvokeInterceptor;
 import com.shiyu.ai.iam.implementation.api.response.AuthRoleResponse;

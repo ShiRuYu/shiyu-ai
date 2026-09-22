@@ -1,6 +1,6 @@
 package com.shiyu.ai.conversation.implementation.infrastructure.persistence.repository;
 
-import com.shiyu.ai.common.core.utils.JSONUtils;
+import com.shiyu.ai.common.foundation.utils.JSONUtils;
 import com.shiyu.ai.conversation.implementation.domain.model.*;
 import com.shiyu.ai.conversation.implementation.domain.port.ConversationRepository;
 import com.shiyu.ai.kernel.context.TenantId;

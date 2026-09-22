@@ -8,7 +8,7 @@ import static org.mockito.Mockito.*;
 
 import cn.dev33.satoken.session.SaSession;
 
-import com.shiyu.ai.common.core.utils.JSONUtils;
+import com.shiyu.ai.common.foundation.utils.JSONUtils;
 import com.shiyu.ai.iam.implementation.domain.model.UserBO;
 import com.shiyu.ai.iam.implementation.port.repository.SaTokenUserRepository;
 

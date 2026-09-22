@@ -2,8 +2,8 @@ package com.shiyu.ai.education.implementation.web.controller;
 
 import cn.dev33.satoken.annotation.SaCheckPermission;
 
-import com.shiyu.ai.common.core.api.PageData;
-import com.shiyu.ai.common.core.api.Result;
+import com.shiyu.ai.common.foundation.api.PageData;
+import com.shiyu.ai.common.foundation.api.Result;
 import com.shiyu.ai.common.web.auth.ActorContextHttpAdapter;
 import com.shiyu.ai.education.implementation.application.StudentService;
 import com.shiyu.ai.education.implementation.web.dto.StudentResponse;
@@ -24,7 +24,6 @@ import org.springframework.web.bind.annotation.*;
 @RestController
 @RequestMapping("/students")
 @RequiredArgsConstructor
-@SaCheckPermission("edu:student:list")
 public class StudentController {
 
     /**
@@ -38,7 +37,8 @@ public class StudentController {
      * @param list 用于完成本次业务处理的 list 参数。
      * @return 返回 学生 相关操作生成的结果数据。
      */
-    @GetMapping("/list")
+    @SaCheckPermission("edu:student:list")
+    @GetMapping
     public Result<PageData<StudentResponse>> list(
             @RequestParam(defaultValue = "1") Integer pageNum,
             @RequestParam(defaultValue = "10") Integer pageSize) {
@@ -50,8 +50,9 @@ public class StudentController {
      *
      * @param detail 用于完成本次业务处理的 detail 参数。
      */
-    @GetMapping("/detail")
-    public Result<StudentResponse> getById(@RequestParam Long id) {
+    @SaCheckPermission("edu:student:list")
+    @GetMapping("/{id}")
+    public Result<StudentResponse> getById(@PathVariable Long id) {
         return Result.success(studentService.getById(actor(), id));
     }
 
@@ -60,6 +61,7 @@ public class StudentController {
      *
      * @param user 当前操作涉及的用户标识。
      */
+    @SaCheckPermission("edu:student:list")
     @GetMapping("/user")
     public Result<StudentResponse> getByUserId(@RequestParam Long userId) {
         return Result.success(studentService.getByUserId(actor(), userId));
@@ -70,8 +72,8 @@ public class StudentController {
      *
      * @param create 用于完成本次业务处理的 create 参数。
      */
-    @PostMapping("/create")
-    @SaCheckPermission("system:user:create")
+    @PostMapping
+    @SaCheckPermission("edu:student:create")
     public Result<StudentResponse> create(@Valid @RequestBody StudentRequest request) {
         return Result.success(studentService.create(actor(), request));
     }
@@ -81,9 +83,9 @@ public class StudentController {
      *
      * @param update 用于完成本次业务处理的 update 参数。
      */
-    @PostMapping("/update")
-    @SaCheckPermission("system:user:update")
-    public Result<Void> update(@RequestParam Long id, @Valid @RequestBody StudentRequest request) {
+    @PutMapping("/{id}")
+    @SaCheckPermission("edu:student:update")
+    public Result<Void> update(@PathVariable Long id, @Valid @RequestBody StudentRequest request) {
         request.setId(id);
         studentService.update(actor(), request);
         return Result.success();
@@ -94,9 +96,9 @@ public class StudentController {
      *
      * @param delete 用于完成本次业务处理的 delete 参数。
      */
-    @PostMapping("/delete")
-    @SaCheckPermission("system:user:delete")
-    public Result<Void> delete(@RequestParam Long id) {
+    @DeleteMapping("/{id}")
+    @SaCheckPermission("edu:student:delete")
+    public Result<Void> delete(@PathVariable Long id) {
         studentService.deleteById(actor(), id);
         return Result.success();
     }

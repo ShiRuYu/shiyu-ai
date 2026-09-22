@@ -1,6 +1,6 @@
 package com.shiyu.ai.model.implementation.web;
 
-import com.shiyu.ai.common.core.api.Result;
+import com.shiyu.ai.common.foundation.api.Result;
 import com.shiyu.ai.model.implementation.infrastructure.media.port.MediaProvider;
 import com.shiyu.ai.model.implementation.infrastructure.media.service.MediaProviderRegistry;
 

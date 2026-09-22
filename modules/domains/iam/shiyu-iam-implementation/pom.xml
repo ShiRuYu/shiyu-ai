@@ -39,7 +39,7 @@
         </dependency>
         <dependency>
             <groupId>com.shiyu.ai</groupId>
-            <artifactId>shiyu-common-core</artifactId>
+            <artifactId>shiyu-common-foundation</artifactId>
             <version>${revision}</version>
         </dependency>
         <dependency>

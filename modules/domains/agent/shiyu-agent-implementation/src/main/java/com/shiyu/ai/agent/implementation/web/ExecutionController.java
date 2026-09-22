@@ -5,8 +5,8 @@ import cn.dev33.satoken.annotation.SaCheckPermission;
 import com.shiyu.ai.agent.implementation.execution.Execution;
 import com.shiyu.ai.agent.implementation.execution.ExecutionStatus;
 import com.shiyu.ai.agent.implementation.runtime.port.AgentRuntime;
-import com.shiyu.ai.common.core.api.Result;
-import com.shiyu.ai.common.core.enums.BizResultCode;
+import com.shiyu.ai.common.foundation.api.Result;
+import com.shiyu.ai.common.foundation.enums.BizResultCode;
 import com.shiyu.ai.common.web.auth.ActorContextHttpAdapter;
 import com.shiyu.ai.kernel.context.ActorContext;
 
@@ -31,7 +31,6 @@ import java.util.stream.Collectors;
  */
 @Slf4j
 @Tag(name = "Execution", description = "Agent Execution")
-@SaCheckPermission("agent:admin:list")
 @RestController
 @RequestMapping("/api/agent/executions")
 public class ExecutionController {
@@ -49,6 +48,7 @@ public class ExecutionController {
     public ExecutionController(AgentRuntime agentRuntime) {
         this.agentRuntime = agentRuntime;
     }
+
 
     /**
      * {@code execute} 执行当前模块定义的业务流程。
@@ -193,6 +193,7 @@ public class ExecutionController {
      * @param Status 用于完成本次业务处理的 Status 参数。
      */
     @Operation(summary = "Get Execution Status")
+    @SaCheckPermission("agent:execute")
     @GetMapping("/status")
     public Result<Map<String, Object>> getStatus(@RequestParam String executionId) {
         ExecutionStatus status = agentRuntime.getStatus(actor(), executionId);
@@ -208,6 +209,7 @@ public class ExecutionController {
      * @param Details 用于完成本次业务处理的 Details 参数。
      */
     @Operation(summary = "Get Execution Details")
+    @SaCheckPermission("agent:execute")
     @GetMapping("/detail")
     public Result<Map<String, Object>> getExecution(@RequestParam String executionId) {
         Execution execution = agentRuntime.getExecution(actor(), executionId);
@@ -237,6 +239,7 @@ public class ExecutionController {
      * @return 返回当前操作产生的结果。
      */
     @Operation(summary = "Get Execution History")
+    @SaCheckPermission("agent:execute")
     @GetMapping("/history")
     public Result<List<Map<String, Object>>> getHistory(
             @RequestParam String agentId, @RequestParam(defaultValue = "20") int limit) {

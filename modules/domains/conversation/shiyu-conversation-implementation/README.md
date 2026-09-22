@@ -24,7 +24,7 @@ Conversation 会话实现模块，承载该领域的应用服务、领域模型�
 
 ## 内部模块依赖
 
-`shiyu-conversation-contract`、`shiyu-model-contract`、`shiyu-agent-contract`、`shiyu-common-core`、`shiyu-common-web`、`shiyu-common-mybatis`
+`shiyu-conversation-contract`、`shiyu-model-contract`、`shiyu-agent-contract`、`shiyu-common-foundation`、`shiyu-common-web`、`shiyu-common-mybatis`
 
 ## 验证
 

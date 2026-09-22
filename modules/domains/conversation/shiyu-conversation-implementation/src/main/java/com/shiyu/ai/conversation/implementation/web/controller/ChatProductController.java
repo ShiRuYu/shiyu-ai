@@ -24,7 +24,7 @@ import com.shiyu.ai.conversation.implementation.domain.chat.service.GroupTurnPla
 
 import com.shiyu.ai.conversation.implementation.domain.chat.model.PersonaAsset;
 
-import com.shiyu.ai.common.core.api.Result;
+import com.shiyu.ai.common.foundation.api.Result;
 import com.shiyu.ai.common.web.auth.ActorContextHttpAdapter;
 import com.shiyu.ai.conversation.contract.model.GenerationRun;
 import com.shiyu.ai.conversation.implementation.application.ConversationService;

@@ -188,7 +188,7 @@ An **AI-powered tutoring system** for K-12 education, covering the full "learn â
 
 | Module | Responsibility | Category |
 |--------|---------------|----------|
-| `shiyu-common-core` | Common core: Result, exceptions, SQL dialects, module conditions and shared utilities | Infrastructure |
+| `shiyu-common-foundation` | Common core: Result, exceptions, SQL dialects, module conditions and shared utilities | Infrastructure |
 | `shiyu-common-event` | Optional in-process, JDBC outbox and Kafka event providers | Infrastructure |
 | `shiyu-common-storage` | File/object storage, metadata, backups, Redis lease/rate-limit/idempotency adapters | Infrastructure |
 | `shiyu-common-vector` | Unified vector port for InMemory, JVector and pgvector | Infrastructure |

@@ -1,6 +1,6 @@
 package com.shiyu.ai.common.mybatis.handler;
 
-import com.shiyu.ai.common.core.domain.BaseEntity;
+import com.shiyu.ai.common.foundation.domain.BaseEntity;
 
 import lombok.extern.slf4j.Slf4j;
 

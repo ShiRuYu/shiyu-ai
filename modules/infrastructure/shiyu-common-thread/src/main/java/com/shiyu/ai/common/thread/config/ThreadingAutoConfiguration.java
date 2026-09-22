@@ -1,6 +1,6 @@
 package com.shiyu.ai.common.thread.config;
 
-import com.shiyu.ai.common.core.factory.YmlPropertySourceFactory;
+import com.shiyu.ai.common.foundation.factory.YmlPropertySourceFactory;
 import com.shiyu.ai.common.thread.api.TaskDecorator;
 import com.shiyu.ai.common.thread.api.ThreadPoolManager;
 import com.shiyu.ai.common.thread.context.CompositeTaskDecorator;

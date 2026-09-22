@@ -24,7 +24,7 @@ Memory 记忆实现模块，承载该领域的应用服务、领域模型和基�
 
 ## 内部模块依赖
 
-`shiyu-memory-contract`、`shiyu-shared-kernel`、`shiyu-model-contract`、`shiyu-common-core`、`shiyu-common-web`、`shiyu-common-mybatis`、`shiyu-common-vector`、`shiyu-agent-contract`
+`shiyu-memory-contract`、`shiyu-shared-kernel`、`shiyu-model-contract`、`shiyu-common-foundation`、`shiyu-common-web`、`shiyu-common-mybatis`、`shiyu-common-vector`、`shiyu-agent-contract`
 
 ## 验证
 

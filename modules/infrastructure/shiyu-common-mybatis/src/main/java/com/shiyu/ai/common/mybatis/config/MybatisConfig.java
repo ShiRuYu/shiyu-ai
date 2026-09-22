@@ -1,7 +1,7 @@
 package com.shiyu.ai.common.mybatis.config;
 
 import com.mybatisflex.spring.boot.MyBatisFlexCustomizer;
-import com.shiyu.ai.common.core.factory.YmlPropertySourceFactory;
+import com.shiyu.ai.common.foundation.factory.YmlPropertySourceFactory;
 import com.shiyu.ai.common.mybatis.handler.AuditFieldListener;
 import com.shiyu.ai.common.mybatis.handler.MybatisExceptionHandler;
 import com.shiyu.ai.common.mybatis.handler.TenantConsistencyListener;

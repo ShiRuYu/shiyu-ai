@@ -7,7 +7,7 @@ import com.shiyu.ai.agent.implementation.persistence.dataobject.AgentDefDO;
 import com.shiyu.ai.agent.implementation.persistence.dataobject.AgentVersionDO;
 import com.shiyu.ai.agent.implementation.persistence.mapper.AgentDefMapper;
 import com.shiyu.ai.agent.implementation.persistence.mapper.AgentVersionMapper;
-import com.shiyu.ai.common.core.utils.MapstructUtils;
+import com.shiyu.ai.common.foundation.utils.MapstructUtils;
 import com.shiyu.ai.kernel.context.TenantId;
 
 import jakarta.annotation.Resource;

@@ -14,6 +14,8 @@ import urllib.error
 import urllib.request
 from pathlib import Path
 
+from docs.openapi_contract import fetch_spec, sync_snapshot
+
 
 def parse_args() -> argparse.Namespace:
     parser = argparse.ArgumentParser(description=__doc__)
@@ -25,6 +27,11 @@ def parse_args() -> argparse.Namespace:
     )
     parser.add_argument("--port", type=int, default=19090)
     parser.add_argument("--timeout", type=float, default=90.0)
+    parser.add_argument(
+        "--openapi-snapshot", type=Path,
+        default=Path(__file__).resolve().parents[2] / "shiyu-ui/tests/contracts/shiyu-ai-openapi.json",
+    )
+    parser.add_argument("--update-openapi-snapshot", action="store_true")
     return parser.parse_args()
 
 
@@ -42,6 +49,9 @@ def main() -> int:
     if not jar.is_file():
         print(f"fresh startup failed: jar not found: {jar}", file=sys.stderr)
         return 2
+    if not args.update_openapi_snapshot and not args.openapi_snapshot.is_file():
+        print(f"OpenAPI snapshot missing: {args.openapi_snapshot}", file=sys.stderr)
+        return 2
 
     app_home = Path(tempfile.mkdtemp(prefix="shiyu-fresh-startup-"))
     env = os.environ.copy()
@@ -52,6 +62,7 @@ def main() -> int:
         str(jar),
         f"--server.port={args.port}",
         "--spring.profiles.active=dev",
+        "--shiyu.modules.education.enabled=true",
     ]
     log_path = app_home / "startup.log"
     log_file = log_path.open("w", encoding="utf-8")
@@ -87,6 +98,7 @@ def main() -> int:
                 if not data_files:
                     print("fresh startup failed: no files were created under APP_HOME/data", file=sys.stderr)
                     return 1
+                sync_snapshot(fetch_spec(url), args.openapi_snapshot, args.update_openapi_snapshot)
                 print(f"Fresh startup passed: OpenAPI 200, data files={len(data_files)}")
                 return 0
             time.sleep(1)

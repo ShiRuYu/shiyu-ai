@@ -1,6 +1,6 @@
 package com.shiyu.ai.web.module;
 
-import com.shiyu.ai.common.core.module.BusinessModuleDescriptor;
+import com.shiyu.ai.common.foundation.module.BusinessModuleDescriptor;
 import com.shiyu.ai.iam.contract.module.TenantModuleAccessPort;
 import com.shiyu.ai.kernel.context.TenantId;
 import com.shiyu.ai.kernel.context.TenantScope;
@@ -43,7 +43,7 @@ class ModuleAccessInterceptorTest {
         TenantScope.set(tenantId);
         when(access.isEnabled(tenantId, "education")).thenReturn(true);
 
-        assertTrue(interceptor.preHandle(request("/api/education/course/list"),
+        assertTrue(interceptor.preHandle(request("/api/education/course"),
                 new MockHttpServletResponse(), new Object()));
     }
 
@@ -54,7 +54,7 @@ class ModuleAccessInterceptorTest {
         when(access.isEnabled(tenantId, "education")).thenReturn(false);
         MockHttpServletResponse response = new MockHttpServletResponse();
 
-        assertFalse(interceptor.preHandle(request("/api/education/course/list"), response, new Object()));
+        assertFalse(interceptor.preHandle(request("/api/education/course"), response, new Object()));
         assertEquals(403, response.getStatus());
     }
 

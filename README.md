@@ -188,7 +188,7 @@ Governance：用量与配额
 
 | 模块 | 职责 | 类型 |
 |------|------|------|
-| `shiyu-common-core` | 公共核心：Result、异常、方言 SQL、事件总线和 outbox | 基础设施 |
+| `shiyu-common-foundation` | 公共核心：Result、异常、方言 SQL、事件总线和 outbox | 基础设施 |
 | `shiyu-common-storage` | 文件/对象存储、元数据、备份、Redis 租约/限流/幂等适配 | 基础设施 |
 | `shiyu-common-vector` | InMemory、JVector、pgvector 的统一向量端口 | 基础设施 |
 | `shiyu-common-thread` / `shiyu-common-web` | 线程池、HTTP 过滤器、异常与校验支持 | 基础设施 |
@@ -340,7 +340,7 @@ Linux 使用对应的 `scripts/package-cloud-linux.sh` 和
 | 认证授权 | `/api/iam/auth/**`、`/api/iam/users/**`、`/api/iam/roles/**`、`/api/iam/menus/**`、`/api/iam/tenants/**` | 登录、租户、角色与菜单 |
 | 平台治理 | `/api/iam/files/**`、`/api/governance/usage/**`、`/api/tooling/plugins/**`、`/api/tooling/tools/**` | 文件、用量、插件与工具 |
 
-完整的 377 条路径、413 个 operation 见 [API 接口参考](./docs/参考/API接口参考.md)；菜单、角色和权限见 [菜单角色权限矩阵](./docs/参考/菜单角色权限矩阵.md)。基础设施切换、迁移与回滚见 [外部基础设施切换](./docs/外部基础设施切换.md)。
+完整的 323 条路径、421 个 operation 见 [API 接口参考](./docs/参考/API接口参考.md)；菜单、角色和权限见 [菜单角色权限矩阵](./docs/参考/菜单角色权限矩阵.md)。基础设施切换、迁移与回滚见 [外部基础设施切换](./docs/外部基础设施切换.md)。
 
 ---
 

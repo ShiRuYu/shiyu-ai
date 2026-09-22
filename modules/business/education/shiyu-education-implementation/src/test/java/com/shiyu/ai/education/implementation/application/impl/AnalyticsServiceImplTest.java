@@ -9,7 +9,7 @@ import static org.mockito.Mockito.mockStatic;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
-import com.shiyu.ai.common.core.utils.MapstructUtils;
+import com.shiyu.ai.common.foundation.utils.MapstructUtils;
 import com.shiyu.ai.education.implementation.domain.model.AbilityBO;
 import com.shiyu.ai.education.implementation.domain.model.StudyRecordBO;
 import com.shiyu.ai.education.implementation.domain.port.repository.AbilityRepository;

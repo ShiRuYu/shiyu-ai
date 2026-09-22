@@ -1,7 +1,7 @@
 package com.shiyu.ai.education.implementation.persistence.repository;
 
 import com.mybatisflex.core.query.QueryWrapper;
-import com.shiyu.ai.common.core.utils.MapstructUtils;
+import com.shiyu.ai.common.foundation.utils.MapstructUtils;
 import com.shiyu.ai.education.implementation.domain.model.ChapterBO;
 import com.shiyu.ai.education.implementation.persistence.dataobject.ChapterDO;
 import com.shiyu.ai.education.implementation.persistence.mapper.ChapterMapper;

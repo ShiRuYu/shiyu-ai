@@ -3,29 +3,29 @@ package com.shiyu.ai.model.contract.api;
 import java.util.List;
 
 /**
- * 定义 模型 Routing 领域与外部能力交互的端口契约。
+ * 提供模型路由查询端口，解析可用模型、模型所属平台和默认平台。
  */
 public interface ModelRoutingPort {
     /**
-     * 执行 模型 Routing 相关业务数据，并返回处理结果。
+     * 返回当前运行环境可用的模型描述。
      *
-     * @return 返回符合条件的数据集合；没有匹配项时返回空集合。
+     * @return 可用模型列表；没有可用模型时返回空列表。
      */
     List<ModelDescriptor> availableModels();
 
     /**
-     * 解析平台。
+     * 根据模型标识解析其对应的平台编码。
      *
-     * @param model model 参数。
+     * @param model 模型标识。
      *
-     * @return 处理结果。
+     * @return 模型所属平台编码；模型未注册时返回空值。
      */
     String resolvePlatform(String model);
 
     /**
-     * 处理默认平台。
+     * 查询系统为模型调用选择的默认平台编码。
      *
-     * @return 处理结果。
+     * @return 默认平台编码；未配置默认平台时返回空值。
      */
     String defaultPlatform();
 

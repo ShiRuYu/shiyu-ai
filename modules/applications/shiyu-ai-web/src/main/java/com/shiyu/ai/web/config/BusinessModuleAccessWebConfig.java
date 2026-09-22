@@ -1,6 +1,6 @@
 package com.shiyu.ai.web.config;
 
-import com.shiyu.ai.common.core.module.BusinessModuleDescriptor;
+import com.shiyu.ai.common.foundation.module.BusinessModuleDescriptor;
 import com.shiyu.ai.iam.contract.module.TenantModuleAccessPort;
 import com.shiyu.ai.web.interceptor.BusinessModuleAccessInterceptor;
 import org.springframework.boot.autoconfigure.AutoConfiguration;

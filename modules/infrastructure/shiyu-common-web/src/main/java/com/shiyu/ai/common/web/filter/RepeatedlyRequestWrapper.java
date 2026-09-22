@@ -2,7 +2,7 @@ package com.shiyu.ai.common.web.filter;
 
 import cn.hutool.core.io.IoUtil;
 
-import com.shiyu.ai.common.core.CharConstants;
+import com.shiyu.ai.common.foundation.CharConstants;
 
 import jakarta.servlet.ReadListener;
 import jakarta.servlet.ServletInputStream;

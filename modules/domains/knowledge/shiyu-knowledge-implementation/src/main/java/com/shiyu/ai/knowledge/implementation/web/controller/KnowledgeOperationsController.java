@@ -4,7 +4,7 @@ import com.shiyu.ai.knowledge.implementation.web.api.KnowledgeApiVersion;
 
 import cn.dev33.satoken.annotation.SaCheckPermission;
 
-import com.shiyu.ai.common.core.api.Result;
+import com.shiyu.ai.common.foundation.api.Result;
 import com.shiyu.ai.common.storage.api.*;
 import com.shiyu.ai.common.storage.backup.*;
 import com.shiyu.ai.common.storage.config.*;
@@ -34,7 +34,6 @@ import java.util.Map;
 @RequestMapping("/api/knowledge/system")
 @RequiredArgsConstructor
 @Tag(name = "知识引擎运维")
-@SaCheckPermission("system:tenant:update")
 public class KnowledgeOperationsController {
 
     /**
@@ -48,6 +47,7 @@ public class KnowledgeOperationsController {
      * @param status 用于完成本次业务处理的 status 参数。
      * @return 返回 知识 Operations 相关操作生成的结果数据。
      */
+    @SaCheckPermission("knowledge:list")
     @GetMapping("/status")
     public Result<Map<String, Object>> status(
             @RequestHeader(
@@ -64,6 +64,7 @@ public class KnowledgeOperationsController {
      * @param backup 用于完成本次业务处理的 backup 参数。
      * @return 返回 知识 Operations 相关操作生成的结果数据。
      */
+    @SaCheckPermission("knowledge:edit")
     @PostMapping("/backup")
     public Result<EmbeddedBackupService.BackupResult> backup(
             @RequestHeader(
@@ -80,6 +81,7 @@ public class KnowledgeOperationsController {
      * @param check 用于完成本次业务处理的 check 参数。
      * @return 返回 知识 Operations 相关操作生成的结果数据。
      */
+    @SaCheckPermission("knowledge:list")
     @PostMapping("/restore-check")
     public Result<EmbeddedBackupService.RestoreCheckResult> restoreCheck(
             @RequestParam String fileName,

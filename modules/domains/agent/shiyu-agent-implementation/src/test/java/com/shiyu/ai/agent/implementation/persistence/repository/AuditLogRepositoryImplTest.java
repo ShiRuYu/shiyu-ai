@@ -7,7 +7,7 @@ import static org.mockito.Mockito.*;
 import com.shiyu.ai.agent.implementation.domain.model.AuditLogBO;
 import com.shiyu.ai.agent.implementation.persistence.dataobject.AuditLogDO;
 import com.shiyu.ai.agent.implementation.persistence.mapper.AuditLogMapper;
-import com.shiyu.ai.common.core.utils.MapstructUtils;
+import com.shiyu.ai.common.foundation.utils.MapstructUtils;
 import com.shiyu.ai.kernel.context.TenantId;
 import com.shiyu.ai.kernel.context.TenantScope;
 

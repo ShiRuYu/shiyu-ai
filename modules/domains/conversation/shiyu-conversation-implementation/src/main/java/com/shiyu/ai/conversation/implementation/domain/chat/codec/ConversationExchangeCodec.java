@@ -1,6 +1,6 @@
 package com.shiyu.ai.conversation.implementation.domain.chat.codec;
 
-import com.shiyu.ai.common.core.utils.JSONUtils;
+import com.shiyu.ai.common.foundation.utils.JSONUtils;
 import com.shiyu.ai.conversation.implementation.domain.model.ConversationMessage;
 
 import java.util.ArrayList;

@@ -7,7 +7,7 @@
 | 模块 | 当前能力包 | 边界决策 |
 | --- | --- | --- |
 | `shiyu-shared-kernel` | `context`、`error`、`event`、`page` | 只放跨领域身份、上下文、错误、事件和分页值对象；不放 Spring、Servlet、ORM 或领域实现。 |
-| `shiyu-common-core` | `api`、`auth`、`context`、`context.model`、`config`、`database`、`domain`、`enums`、`exception`、`factory`、`jdbc`、`manager`、`module`、`service`、`tx`、`utils`、`validate`、`vo` | 登录接口、身份上下文访问和上下文模型分别归属 `auth`、`context`、`context.model`；`domain` 保留公共实体基类。事件 provider 已独立，运行时日志实现由启动应用选择。 |
+| `shiyu-common-foundation` | `api`、`auth`、`context`、`context.model`、`config`、`database`、`domain`、`enums`、`exception`、`factory`、`jdbc`、`manager`、`module`、`service`、`tx`、`utils`、`validate`、`vo` | 登录接口、身份上下文访问和上下文模型分别归属 `auth`、`context`、`context.model`；`domain` 保留公共实体基类。事件 provider 已独立，运行时日志实现由启动应用选择。 |
 | `shiyu-common-event` | `com.shiyu.ai.common.event.{api,config,publisher,outbox,support}` | 可选事件 provider 模块，按契约、配置、进程内发布、outbox 实现和支撑能力分包；默认应用不自动依赖，启用时由应用显式引入。 |
 | `shiyu-common-mybatis` | `config`、`datasource`、`handler`、`mapper`、`model` | 只提供数据源、租户/异常处理、Mapper 和持久化基础模型。 |
 | `shiyu-common-web` | `auth`、`config`、`exception`、`file`、`filter`、`interceptor`、`servlet`、`validation` | 只提供可复用 HTTP 适配；领域 Controller 不进入该模块。 |
@@ -46,7 +46,7 @@
 
 ## 当前证据
 
-最近一次清单和门禁结果应以提交前命令输出为准；本次新增事件模块后，`common-core` 与 `common-event` 分别由各自 README 和 Maven 测试命令验证。Kafka 容器测试在无 Docker 环境中标记为跳过，不等同于通过。
+最近一次清单和门禁结果应以提交前命令输出为准；本次新增事件模块后，`common-foundation` 与 `common-event` 分别由各自 README 和 Maven 测试命令验证。Kafka 容器测试在无 Docker 环境中标记为跳过，不等同于通过。
 
 2026-09-19 本轮职责迁移验证：
 

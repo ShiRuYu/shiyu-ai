@@ -6,7 +6,7 @@ import com.shiyu.ai.agent.implementation.evaluation.model.EvalResult;
 import com.shiyu.ai.agent.implementation.evaluation.model.EvalRun;
 import com.shiyu.ai.agent.implementation.evaluation.port.EvaluationRepository;
 
-import com.shiyu.ai.common.core.utils.JSONUtils;
+import com.shiyu.ai.common.foundation.utils.JSONUtils;
 import com.shiyu.ai.kernel.context.TenantId;
 import com.shiyu.ai.kernel.context.TenantScope;
 

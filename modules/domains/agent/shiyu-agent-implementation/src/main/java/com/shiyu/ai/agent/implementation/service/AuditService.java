@@ -2,7 +2,7 @@ package com.shiyu.ai.agent.implementation.service;
 
 import com.shiyu.ai.agent.implementation.event.model.AuditEvent;
 import com.shiyu.ai.agent.implementation.event.publisher.EventPublisher;
-import com.shiyu.ai.common.core.utils.JSONUtils;
+import com.shiyu.ai.common.foundation.utils.JSONUtils;
 import com.shiyu.ai.kernel.context.TenantId;
 
 import lombok.extern.slf4j.Slf4j;

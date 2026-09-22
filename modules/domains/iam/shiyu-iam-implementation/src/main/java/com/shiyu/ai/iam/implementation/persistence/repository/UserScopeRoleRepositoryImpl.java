@@ -2,7 +2,7 @@ package com.shiyu.ai.iam.implementation.persistence.repository;
 
 import com.mybatisflex.core.query.QueryWrapper;
 import com.shiyu.ai.common.mybatis.tenant.TenantQueryExecutor;
-import com.shiyu.ai.common.core.utils.MapstructUtils;
+import com.shiyu.ai.common.foundation.utils.MapstructUtils;
 import com.shiyu.ai.iam.implementation.domain.model.UserScopeRoleBO;
 import com.shiyu.ai.iam.implementation.persistence.dataobject.UserScopeRoleDO;
 import com.shiyu.ai.iam.implementation.persistence.mapper.UserScopeRoleMapper;

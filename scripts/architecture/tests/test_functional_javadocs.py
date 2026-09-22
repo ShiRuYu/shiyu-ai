@@ -104,6 +104,107 @@ public interface AiModelService {
             self.assertEqual(2, len(issues))
             self.assertEqual({"template-type", "name-only"}, {issue.category for issue in issues})
 
+    def test_templates_emitted_by_rewrite_script_are_reported(self):
+        with tempfile.TemporaryDirectory() as raw_root:
+            root = Path(raw_root)
+            self.add_source(
+                root,
+                """/** 提供模型的查询、创建、更新及调用服务，协调业务变更和领域协作。 */
+public interface AiModelService {
+    /** 查询模型相关业务数据，并返回处理结果。
+     * @param platformId 用于完成本次业务处理的 platformId 参数。
+     * @return 返回 pageResponse 相关操作生成的结果数据。
+     */
+    String pageResponse(Long platformId);
+}
+""",
+            )
+
+            issues = MODULE.scan_paths([root])
+
+            self.assertEqual(
+                {"template-type", "template-method+template-param+template-return"},
+                {issue.category for issue in issues},
+            )
+
+    def test_remaining_role_templates_and_ambiguous_parameter_templates_are_reported(self):
+        with tempfile.TemporaryDirectory() as raw_root:
+            root = Path(raw_root)
+            self.add_source(
+                root,
+                """/** 启动平台应用并装配项目所需的运行基础设施。 */
+public class PlatformApplication {}
+
+/** 定义租户领域与外部能力交互的端口契约。 */
+interface TenantPort {}
+
+class EventConsumer {
+    /** 处理租户创建事件并保存租户记录。
+     * @param event 本次流程携带的事件或业务数据。
+     * @param id 用于定位目标业务对象的标识。
+     */
+    public void handle(Event event, Long id) {}
+}
+""",
+            )
+
+            issues = MODULE.scan_paths([root])
+
+            self.assertEqual(3, len(issues))
+            self.assertEqual(
+                {"template-type", "template-param"},
+                {issue.category for issue in issues},
+            )
+
+    def test_generic_interface_template_and_english_identifier_template_are_reported(self):
+        with tempfile.TemporaryDirectory() as raw_root:
+            root = Path(raw_root)
+            self.add_source(
+                root,
+                """/** 定义模型服务相关的协作契约和调用边界。 */
+public interface AiModelService {}
+
+/** 封装分页请求相关的不可变数据及其字段约束。 */
+record PageRequest(int pageNo) {}
+
+/** 定义适配器状态可用的枚举值及其业务语义。 */
+enum AdapterStatus { READY }
+
+class ModelQuery {
+    /** 根据平台标识查询模型。 @param platformId 用于定位platform的标识。 */
+    String query(Long platformId) { return "model"; }
+}
+""",
+            )
+
+            issues = MODULE.scan_paths([root])
+
+            self.assertEqual(2, len(issues))
+            self.assertEqual({"template-type", "template-param"}, {issue.category for issue in issues})
+
+    def test_anonymous_class_override_javadoc_is_scanned(self):
+        with tempfile.TemporaryDirectory() as raw_root:
+            root = Path(raw_root)
+            self.add_source(
+                root,
+                """public class SaInterceptorConfig {
+    public void addInterceptors(Registry registry) {
+        registry.addInterceptor(new Handler() {
+            /** 执行当前类型定义的业务操作。 */
+            @Override
+            public boolean preHandle(Request request) { return true; }
+        });
+    }
+}
+""",
+            )
+
+            issues = MODULE.scan_paths([root])
+
+            self.assertEqual(1, len(issues))
+            self.assertEqual("template-method", issues[0].category)
+            self.assertIn("preHandle", issues[0].member)
+
     def test_multiline_annotations_nested_types_and_overloads_are_scanned(self):
         with tempfile.TemporaryDirectory() as raw_root:
             root = Path(raw_root)
@@ -251,6 +352,24 @@ class Adapter implements Parent {
             issues = MODULE.scan_paths([root], include_tests=True)
 
             self.assertEqual({"production", "test"}, {issue.source_set for issue in issues})
+
+    def test_generated_test_description_is_observed_without_entering_production_gate(self):
+        with tempfile.TemporaryDirectory() as raw_root:
+            root = Path(raw_root)
+            test_source = root / "modules/sample/src/test/java/sample/GeneratedTest.java"
+            test_source.parent.mkdir(parents=True, exist_ok=True)
+            test_source.write_text(
+                "package sample;\n/** 验证 Generated Test 相关功能、边界条件、异常路径和协作行为。 */\n"
+                "class GeneratedTest {}\n",
+                encoding="utf-8",
+            )
+
+            issues = MODULE.scan_paths([root], include_tests=True)
+
+            self.assertEqual(1, len(issues))
+            self.assertEqual("test", issues[0].source_set)
+            self.assertEqual("review", issues[0].category)
+            self.assertEqual([], MODULE.new_issues(issues, {}))
 
     def test_baseline_allows_existing_issue_but_rejects_new_issue(self):
         with tempfile.TemporaryDirectory() as raw_root:

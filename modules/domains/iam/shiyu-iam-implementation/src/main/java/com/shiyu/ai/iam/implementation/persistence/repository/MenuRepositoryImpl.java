@@ -3,7 +3,7 @@ package com.shiyu.ai.iam.implementation.persistence.repository;
 import static com.mybatisflex.core.query.QueryMethods.column;
 
 import com.mybatisflex.core.query.QueryWrapper;
-import com.shiyu.ai.common.core.utils.MapstructUtils;
+import com.shiyu.ai.common.foundation.utils.MapstructUtils;
 import com.shiyu.ai.iam.implementation.domain.model.MenuBO;
 import com.shiyu.ai.iam.implementation.persistence.dataobject.MenuDO;
 import com.shiyu.ai.iam.implementation.persistence.dataobject.RoleDO;

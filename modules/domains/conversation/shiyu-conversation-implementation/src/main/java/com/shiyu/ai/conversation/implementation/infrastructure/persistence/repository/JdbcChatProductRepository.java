@@ -20,8 +20,8 @@ import com.shiyu.ai.conversation.implementation.domain.chat.model.CharacterAsset
 
 import com.shiyu.ai.conversation.implementation.domain.chat.model.PersonaAsset;
 
-import com.shiyu.ai.common.core.jdbc.JdbcDialect;
-import com.shiyu.ai.common.core.utils.JSONUtils;
+import com.shiyu.ai.common.foundation.jdbc.JdbcDialect;
+import com.shiyu.ai.common.foundation.utils.JSONUtils;
 import com.shiyu.ai.conversation.implementation.domain.port.ChatProductRepository;
 import com.shiyu.ai.kernel.context.TenantId;
 import com.shiyu.ai.kernel.context.TenantScope;

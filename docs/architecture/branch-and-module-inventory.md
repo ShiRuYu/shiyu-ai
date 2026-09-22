@@ -60,7 +60,7 @@
 | 领域实现 | `shiyu-model-implementation` | [`README.md`](../../modules/domains/model/shiyu-model-implementation/README.md) |
 | 领域契约 | `shiyu-tooling-contract` | [`README.md`](../../modules/domains/tooling/shiyu-tooling-contract/README.md) |
 | 领域实现 | `shiyu-tooling-implementation` | [`README.md`](../../modules/domains/tooling/shiyu-tooling-implementation/README.md) |
-| 基础设施 | `shiyu-common-core` | [`README.md`](../../modules/infrastructure/shiyu-common-core/README.md) |
+| 基础设施 | `shiyu-common-foundation` | [`README.md`](../../modules/infrastructure/shiyu-common-foundation/README.md) |
 | 基础设施 | `shiyu-common-event` | [`README.md`](../../modules/infrastructure/shiyu-common-event/README.md) |
 | 基础设施 | `shiyu-common-mybatis` | [`README.md`](../../modules/infrastructure/shiyu-common-mybatis/README.md) |
 | 基础设施 | `shiyu-common-storage` | [`README.md`](../../modules/infrastructure/shiyu-common-storage/README.md) |
@@ -71,6 +71,14 @@
 | 架构测试 | `shiyu-architecture-tests` | [`README.md`](../../tests/shiyu-architecture-tests/README.md) |
 
 ## 验证命令
+
+`check_legacy_routes.py` 扫描全部模块的生产 Java 源码，禁止项目旧 `/v1` 控制器入口回归；它不是 REST 风格检查器，不禁止供应商地址中的 `/v1`。
+
+OpenAPI 完整性由 Bootstrap 集成测试对比 Spring 实际注册路由与运行时文档，并验证各分组；文档检查对比方法与路径集合，不仅比较数量。路径变量的正则约束会规范化，例如 `{fileName:.+}` 与 `{fileName}` 等价。
+
+更新契约时先构建 Bootstrap jar，再运行 `python scripts/verify_fresh_startup.py --update-openapi-snapshot`。脚本使用临时独立 APP_HOME、显式启用教育模块，从实际应用导出快照；默认模式只校验，快照缺失或不一致时失败。快照默认位于相邻前端仓库，可用 `--openapi-snapshot` 指定其他位置。
+
+导出后运行 `python scripts/docs/generate_reference_docs.py --openapi-file ../shiyu-ui/tests/contracts/shiyu-ai-openapi.json`，并在前端执行 `pnpm generate:openapi` 和 `pnpm test:openapi`。`verify_documentation.py --frontend-root` 可指定前端根目录。CI 将两个仓库检出到相邻目录，前端默认 main，可通过变量 `SHIYU_UI_REF` 指定配套契约版本；私有前端仓库需配置只读 `CONTRACTS_READ_TOKEN`。前后端契约变更需配套交付，不允许在 CI 自动覆盖快照掩盖差异。
 
 ```powershell
 mvn --batch-mode --no-transfer-progress clean verify -Dmaven.compiler.useIncrementalCompilation=false -Ddependency-check.skip=true

@@ -1,8 +1,8 @@
 package com.shiyu.ai.governance.implementation.usage.persistence.repository;
 
-import com.shiyu.ai.common.core.jdbc.JdbcDialect;
-import com.shiyu.ai.common.core.utils.JSONUtils;
-import com.shiyu.ai.common.core.utils.MapstructUtils;
+import com.shiyu.ai.common.foundation.jdbc.JdbcDialect;
+import com.shiyu.ai.common.foundation.utils.JSONUtils;
+import com.shiyu.ai.common.foundation.utils.MapstructUtils;
 import com.shiyu.ai.governance.implementation.usage.domain.model.UsageRecordBO;
 import com.shiyu.ai.governance.implementation.usage.persistence.dataobject.UsageRecordDO;
 import com.shiyu.ai.governance.implementation.usage.persistence.mapper.UsageRecordMapper;

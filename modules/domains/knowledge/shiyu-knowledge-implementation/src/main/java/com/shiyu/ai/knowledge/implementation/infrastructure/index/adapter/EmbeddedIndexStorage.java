@@ -166,7 +166,7 @@ final class EmbeddedIndexStorage {
         try {
             return handles.get(key, this::open);
         } catch (RuntimeException exception) {
-            throw new com.shiyu.ai.common.core.exception.ServiceException(
+            throw new com.shiyu.ai.common.foundation.exception.ServiceException(
                     "索引版本不可用: " + key.version());
         }
     }

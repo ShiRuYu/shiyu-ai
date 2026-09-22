@@ -62,6 +62,36 @@ class DatabaseInitializerTest {
     }
 
     @Test
+    void upgradesExistingBaselineWithPermissionAlignment() throws Exception {
+        DataSource dataSource = newDataSource();
+        DatabaseInitializer initializer = newInitializer(dataSource);
+        initializer.initialize();
+        try (Connection connection = dataSource.getConnection(); Statement sql = connection.createStatement()) {
+            sql.executeUpdate("DELETE FROM AUTH_ROLE_SCOPE_AUTH_CODE WHERE AUTH_CODE_ID IN "
+                    + "(SELECT ID FROM AUTH_AUTH_CODE WHERE CODE IN ('model:admin','agent:intent:edit'))");
+            sql.executeUpdate("DELETE FROM AUTH_TENANT_AUTH_CODE WHERE AUTH_CODE_ID IN "
+                    + "(SELECT ID FROM AUTH_AUTH_CODE WHERE CODE IN ('model:admin','agent:intent:edit'))");
+            sql.executeUpdate("DELETE FROM AUTH_AUTH_CODE WHERE CODE IN ('model:admin','agent:intent:edit')");
+        }
+
+        initializer.initialize();
+
+        assertEquals(2, scalar(dataSource,
+                "SELECT COUNT(*) FROM AUTH_AUTH_CODE WHERE CODE IN ('model:admin','agent:intent:edit')"));
+        assertEquals(4, scalar(dataSource,
+                "SELECT COUNT(*) FROM AUTH_ROLE_SCOPE_AUTH_CODE G JOIN AUTH_AUTH_CODE C ON C.ID=G.AUTH_CODE_ID "
+                        + "JOIN AUTH_ROLE R ON R.ID=G.ROLE_ID WHERE C.CODE IN ('model:admin','agent:intent:edit') "
+                        + "AND G.TENANT_ID=1 AND R.TENANT_ID=1 AND R.CODE IN ('super','admin')"));
+        assertEquals(2, scalar(dataSource,
+                "SELECT COUNT(*) FROM AUTH_TENANT_AUTH_CODE G JOIN AUTH_AUTH_CODE C ON C.ID=G.AUTH_CODE_ID "
+                        + "WHERE C.CODE IN ('model:admin','agent:intent:edit') AND G.TENANT_ID=1"));
+
+        initializer.initialize();
+        assertEquals(2, scalar(dataSource,
+                "SELECT COUNT(*) FROM AUTH_AUTH_CODE WHERE CODE IN ('model:admin','agent:intent:edit')"));
+    }
+
+    @Test
     void platformCompositionDoesNotContainEducationBaseline() {
         DatabaseInitializer platformInitializer =
                 new DatabaseInitializer(Map.of(), new StaticApplicationContext());
@@ -172,11 +202,11 @@ class DatabaseInitializerTest {
                 1, scalar(dataSource, "SELECT COUNT(*) FROM AUTH_USER WHERE USERNAME='admin'"));
         assertEquals(3, scalar(dataSource, "SELECT COUNT(*) FROM AUTH_ROLE"));
         assertEquals(38, scalar(dataSource, "SELECT COUNT(*) FROM AUTH_MENU"));
-        assertEquals(112, scalar(dataSource, "SELECT COUNT(*) FROM AUTH_AUTH_CODE"));
+        assertEquals(114, scalar(dataSource, "SELECT COUNT(*) FROM AUTH_AUTH_CODE"));
         assertEquals(38, scalar(dataSource, "SELECT COUNT(*) FROM AUTH_TENANT_MENU"));
-        assertEquals(112, scalar(dataSource, "SELECT COUNT(*) FROM AUTH_TENANT_AUTH_CODE"));
+        assertEquals(114, scalar(dataSource, "SELECT COUNT(*) FROM AUTH_TENANT_AUTH_CODE"));
         assertTrue(scalar(dataSource, "SELECT COUNT(*) FROM AUTH_ROLE_SCOPE_MENU") >= 99);
-        assertEquals(223, scalar(dataSource, "SELECT COUNT(*) FROM AUTH_ROLE_SCOPE_AUTH_CODE"));
+        assertEquals(227, scalar(dataSource, "SELECT COUNT(*) FROM AUTH_ROLE_SCOPE_AUTH_CODE"));
         assertEquals(
                 1,
                 scalar(

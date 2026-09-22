@@ -2,7 +2,7 @@ package com.shiyu.ai.agent.implementation.checkpoint;
 
 import com.shiyu.ai.agent.implementation.domain.model.AgentCheckpointBO;
 import com.shiyu.ai.agent.implementation.port.repository.AgentCheckpointRepository;
-import com.shiyu.ai.common.core.utils.JSONUtils;
+import com.shiyu.ai.common.foundation.utils.JSONUtils;
 import com.shiyu.ai.kernel.context.TenantId;
 
 import lombok.extern.slf4j.Slf4j;

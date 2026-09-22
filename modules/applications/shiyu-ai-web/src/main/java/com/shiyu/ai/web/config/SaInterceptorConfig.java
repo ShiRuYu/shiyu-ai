@@ -1,8 +1,8 @@
 package com.shiyu.ai.web.config;
 
-import com.shiyu.ai.common.core.context.UserContextHolder;
+import com.shiyu.ai.common.foundation.context.UserContextHolder;
 
-import com.shiyu.ai.common.core.context.UserGlobalContext;
+import com.shiyu.ai.common.foundation.context.UserGlobalContext;
 
 import cn.dev33.satoken.interceptor.SaInterceptor;
 
@@ -22,29 +22,29 @@ import org.springframework.web.servlet.config.annotation.WebMvcConfigurer;
 import java.util.List;
 
 /**
- * 定义 Sa Interceptor 基础设施或应用能力的配置项及装配规则。
+ * 按用户上下文、租户模块访问和 Sa-Token 注解鉴权的顺序注册 MVC 拦截器。
  */
 @Configuration
 @Order(1)
 public class SaInterceptorConfig implements WebMvcConfigurer {
 
     /**
-     * userContextInterceptor 属性，保存当前对象中的业务数据或协作依赖。
+     * 在认证请求中绑定当前用户与租户上下文，并在请求结束时清理上下文。
      */
     private final UserContextInterceptor userContextInterceptor;
     /**
-     * publicPathContributors 属性，保存当前对象中的业务数据或协作依赖。
+     * 提供不需要经过用户上下文拦截器的公开路径。
      */
     private final List<WebPublicPathContributor> publicPathContributors;
-    /** 租户级业务模块授权拦截器。 */
+    /** 根据当前租户的启用状态限制业务模块访问。 */
     private final BusinessModuleAccessInterceptor businessModuleAccessInterceptor;
 
     /**
-     * 执行 Sa Interceptor 相关业务操作，并维护必要的状态和协作关系。
+     * 保存用户上下文拦截器、公开路径贡献者和租户模块访问拦截器，以便注册完整的 Web 授权链。
      *
-     * @param userContextInterceptor 用于完成本次业务处理的 userContextInterceptor 参数。
-     * @param publicPathContributors 用于完成本次业务处理的 publicPathContributors 参数。
-     * @param businessModuleAccessInterceptor 用于完成本次业务处理的 businessModuleAccessInterceptor 参数。
+     * @param userContextInterceptor 绑定并清理当前用户与租户上下文的拦截器。
+     * @param publicPathContributors 声明公开访问路径及其用户上下文排除规则的组件集合。
+     * @param businessModuleAccessInterceptor 检查当前租户是否启用目标业务模块的拦截器。
      */
     public SaInterceptorConfig(
             UserContextInterceptor userContextInterceptor,
@@ -56,34 +56,19 @@ public class SaInterceptorConfig implements WebMvcConfigurer {
     }
 
     /**
-     * 创建或保存 Sa Interceptor 相关业务操作，并维护必要的状态和协作关系。
+     * 注册用户上下文、租户模块访问和 Sa-Token 注解鉴权拦截器，并排除公开路径的用户上下文绑定。
      *
-     * @param registry 用于完成本次业务处理的 registry 参数。
+     * @param registry Spring MVC 用于注册和配置拦截器的注册表。
      */
     @Override
     public void addInterceptors(InterceptorRegistry registry) {
         // 注册用户上下文拦截器（将登录信息填充到 UserGlobalContext）
         var userContextRegistration =
                 registry.addInterceptor(userContextInterceptor)
-                .addPathPatterns("/**")
-                .excludePathPatterns(
-                        // 认证相关公开接口（无需登录即可访问）
-                        "/api/iam/auth/login",
-                        "/api/iam/auth/register",
-                        "/api/iam/auth/code-login",
-                        "/api/iam/auth/forget-password",
-                        "/api/iam/auth/refresh",
-                        "/api/iam/auth/captcha/**",
-                        // 文档和监控接口
-                        "/swagger-ui/**",
-                        "/v3/api-docs/**",
-                        "/webjars/**",
-                        "/h2/**");
-        publicPathContributors.stream()
-                .map(WebPublicPathContributor::publicPathPatterns)
-                .filter(java.util.Objects::nonNull)
-                .flatMap(java.util.Collection::stream)
-                .forEach(userContextRegistration::excludePathPatterns);
+                        .addPathPatterns("/**")
+                        .excludePathPatterns(
+                                WebPublicPathPatterns.all(publicPathContributors)
+                                        .toArray(String[]::new));
         // 用户上下文已经绑定 TenantScope 后，先检查租户是否启用业务模块，再执行细粒度权限注解。
         registry.addInterceptor(businessModuleAccessInterceptor).addPathPatterns("/api/**");
         // Sa-Token 拦截器，开启注解式鉴权功能
@@ -91,13 +76,14 @@ public class SaInterceptorConfig implements WebMvcConfigurer {
         registry.addInterceptor(
                         new SaInterceptor() {
                             /**
-                             * {@code preHandle} 执行当前类型定义的业务操作。
+                             * 对普通 HTTP 请求执行 Sa-Token 注解鉴权，并放行其他分派类型。
                              *
-                             * @param request 参数值，用于执行当前操作。
-                             * @param response 参数值，用于执行当前操作。
-                             * @param handler 参数值，用于执行当前操作。
+                             * @param request 当前 HTTP 请求，用于判断请求分派类型。
+                             * @param response 当前 HTTP 响应；此方法不直接写入响应内容。
+                             * @param handler Spring MVC 为当前请求选定的控制器或处理器对象。
                              *
-                             * @return 返回当前操作产生的结果。
+                             * @return 普通请求的注解鉴权结果；非普通请求分派返回 {@code true}。
+                             * @throws Exception Sa-Token 执行注解鉴权时发生错误。
                              */
                             @Override
                             public boolean preHandle(

@@ -1,6 +1,6 @@
 package com.shiyu.ai.common.storage.metadata;
 
-import com.shiyu.ai.common.core.jdbc.JdbcDialect;
+import com.shiyu.ai.common.foundation.jdbc.JdbcDialect;
 import com.shiyu.ai.common.storage.api.*;
 import com.shiyu.ai.common.storage.backup.*;
 import com.shiyu.ai.common.storage.config.*;

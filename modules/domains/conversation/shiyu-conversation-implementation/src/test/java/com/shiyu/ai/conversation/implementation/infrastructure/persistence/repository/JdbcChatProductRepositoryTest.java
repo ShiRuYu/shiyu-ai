@@ -133,9 +133,9 @@ class JdbcChatProductRepositoryTest {
         when(row.getBytes("PNG_DATA")).thenReturn(null);
         when(row.getString("PERSONA_JSON"))
                 .thenReturn(
-                        com.shiyu.ai.common.core.utils.JSONUtils.toJsonString(persona.persona()));
+                        com.shiyu.ai.common.foundation.utils.JSONUtils.toJsonString(persona.persona()));
         when(row.getString("ENTRY_JSON"))
-                .thenReturn(com.shiyu.ai.common.core.utils.JSONUtils.toJsonString(lore.entry()));
+                .thenReturn(com.shiyu.ai.common.foundation.utils.JSONUtils.toJsonString(lore.entry()));
         when(row.getString("TEMPLATE_ID")).thenReturn("welcome");
         when(row.getInt("VERSION")).thenReturn(1);
         when(row.getString("STATUS")).thenReturn("DRAFT");

@@ -1,6 +1,6 @@
 package com.shiyu.ai.conversation.implementation.web.controller;
 
-import com.shiyu.ai.common.core.api.Result;
+import com.shiyu.ai.common.foundation.api.Result;
 import com.shiyu.ai.common.web.auth.ActorContextHttpAdapter;
 import com.shiyu.ai.conversation.contract.model.GenerationRun;
 import com.shiyu.ai.conversation.implementation.application.ConversationService;

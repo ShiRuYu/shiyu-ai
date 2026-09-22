@@ -1,6 +1,6 @@
 package com.shiyu.ai.governance.implementation.usage.persistence.repository;
 
-import com.shiyu.ai.common.core.jdbc.JdbcDialect;
+import com.shiyu.ai.common.foundation.jdbc.JdbcDialect;
 import com.shiyu.ai.governance.implementation.usage.persistence.mapper.UsageRecordMapper;
 import com.shiyu.ai.governance.implementation.usage.port.repository.PlatformUsageRepository;
 import com.shiyu.ai.model.contract.api.ModelCatalogPort;

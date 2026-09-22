@@ -7,9 +7,9 @@ import cn.dev33.satoken.stp.StpUtil;
 import cn.dev33.satoken.strategy.SaStrategy;
 import cn.dev33.satoken.util.SaFoxUtil;
 
-import com.shiyu.ai.common.core.api.Result;
-import com.shiyu.ai.common.core.enums.BizResultCode;
-import com.shiyu.ai.common.core.utils.JSONUtils;
+import com.shiyu.ai.common.foundation.api.Result;
+import com.shiyu.ai.common.foundation.enums.BizResultCode;
+import com.shiyu.ai.common.foundation.utils.JSONUtils;
 import com.shiyu.ai.common.web.config.WebPublicPathContributor;
 
 import jakarta.annotation.PostConstruct;
@@ -63,29 +63,16 @@ public class SaTokenConfig {
     /**
      * Sa-Token 全局过滤器（Servlet 版） 替代 SaInterceptor 的路由拦截方式，对异步派发更友好
      *
-     * <p>注意：排除路径需要与 com.shiyu.ai.web.config.SaInterceptorConfig 保持一致
+     * <p>排除路径由 {@link WebPublicPathPatterns} 统一汇总，Servlet 过滤器与 MVC 拦截器共享同一份配置。
      */
     @Bean
     public SaServletFilter saServletFilter() {
         SaServletFilter filter =
                 new SaServletFilter()
                 .addInclude("/**")
-                // 认证相关公开接口（无需登录即可访问）
                 .addExclude(
-                        "/api/iam/auth/login",
-                        "/api/iam/auth/register",
-                        "/api/iam/auth/code-login",
-                        "/api/iam/auth/forget-password",
-                        "/api/iam/auth/refresh",
-                        "/api/iam/auth/captcha/**")
-                // 文档和监控接口
-                .addExclude("/swagger-ui/**", "/v3/api-docs/**")
-                .addExclude("/webjars/**", "/h2/**");
-        publicPathContributors.stream()
-                .map(WebPublicPathContributor::publicPathPatterns)
-                .filter(java.util.Objects::nonNull)
-                .flatMap(java.util.Collection::stream)
-                .forEach(filter::addExclude);
+                        WebPublicPathPatterns.all(publicPathContributors)
+                                .toArray(String[]::new));
         return filter
                 .setAuth(
                         obj -> {

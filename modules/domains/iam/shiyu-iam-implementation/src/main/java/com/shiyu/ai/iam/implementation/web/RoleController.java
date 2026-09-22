@@ -2,8 +2,8 @@ package com.shiyu.ai.iam.implementation.web;
 
 import cn.dev33.satoken.annotation.SaCheckPermission;
 
-import com.shiyu.ai.common.core.api.PageData;
-import com.shiyu.ai.common.core.api.Result;
+import com.shiyu.ai.common.foundation.api.PageData;
+import com.shiyu.ai.common.foundation.api.Result;
 import com.shiyu.ai.common.web.auth.ActorContextHttpAdapter;
 import com.shiyu.ai.iam.implementation.request.AssignUserRolesRequest;
 import com.shiyu.ai.iam.implementation.request.RolePageRequest;
@@ -38,7 +38,7 @@ public class RoleController {
      * @param list 用于完成本次业务处理的 list 参数。
      */
     @SaCheckPermission("system:role:list")
-    @GetMapping("/list")
+    @GetMapping
     public Result<PageData<RoleVO>> getRoleList(@Valid RolePageRequest r) {
         return Result.success(
                 roleService.getRoleList(
@@ -69,8 +69,9 @@ public class RoleController {
      * @param list 用于完成本次业务处理的 list 参数。
      */
     @SaCheckPermission("system:role:list")
-    @GetMapping("/detail")
-    public Result<RoleVO> getRoleDetail(@RequestParam Long id, @RequestParam Long tenantId) {
+    @GetMapping("/{id}")
+    public Result<RoleVO> getRoleDetail(
+            @PathVariable Long id, @RequestParam Long tenantId) {
         var v =
                 roleService.detailView(
                         ActorContextHttpAdapter.currentActor(), id, tenantId(tenantId));
@@ -83,7 +84,7 @@ public class RoleController {
      * @param create 用于完成本次业务处理的 create 参数。
      */
     @SaCheckPermission("system:role:create")
-    @PostMapping("/create")
+    @PostMapping
     public Result<Void> createRole(@Valid @RequestBody RoleRequest r) {
         return roleService.createRole(ActorContextHttpAdapter.currentActor(), r)
                 ? Result.success()
@@ -96,8 +97,9 @@ public class RoleController {
      * @param update 用于完成本次业务处理的 update 参数。
      */
     @SaCheckPermission("system:role:update")
-    @PostMapping("/update")
-    public Result<Void> updateRole(@RequestParam Long id, @Valid @RequestBody RoleRequest r) {
+    @PutMapping("/{id}")
+    public Result<Void> updateRole(
+            @PathVariable Long id, @Valid @RequestBody RoleRequest r) {
         return roleService.updateRole(ActorContextHttpAdapter.currentActor(), id, r)
                 ? Result.success()
                 : Result.fail("角色不存在");
@@ -124,8 +126,8 @@ public class RoleController {
      * @param delete 用于完成本次业务处理的 delete 参数。
      */
     @SaCheckPermission("system:role:delete")
-    @PostMapping("/delete")
-    public Result<Void> deleteRole(@RequestParam Long id) {
+    @DeleteMapping("/{id}")
+    public Result<Void> deleteRole(@PathVariable Long id) {
         return roleService.deleteRole(ActorContextHttpAdapter.currentActor(), id)
                 ? Result.success()
                 : Result.fail("角色不存在");

@@ -3,9 +3,9 @@ package com.shiyu.ai.common.web.interceptor;
 import cn.hutool.core.io.IoUtil;
 import cn.hutool.core.map.MapUtil;
 
-import com.shiyu.ai.common.core.context.UserGlobalContext;
-import com.shiyu.ai.common.core.utils.JSONUtils;
-import com.shiyu.ai.common.core.utils.LoggerUtil;
+import com.shiyu.ai.common.foundation.context.UserGlobalContext;
+import com.shiyu.ai.common.foundation.utils.JSONUtils;
+import com.shiyu.ai.common.foundation.utils.LoggerUtil;
 import com.shiyu.ai.common.web.filter.RepeatedlyRequestWrapper;
 
 import jakarta.servlet.http.HttpServletRequest;

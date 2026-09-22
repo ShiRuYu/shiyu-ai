@@ -586,14 +586,14 @@ public class ChatEngineImpl implements ChatEngine {
                         ? "{}"
                         : tool.parametersJson();
         String json =
-                com.shiyu.ai.common.core.utils.JSONUtils.toJsonString(
+                com.shiyu.ai.common.foundation.utils.JSONUtils.toJsonString(
                         java.util.Map.of(
                                 "name",
                                 tool.name(),
                                 "description",
                                 tool.description() == null ? "" : tool.description(),
                                 "parameters",
-                                com.shiyu.ai.common.core.utils.JSONUtils.parseObject(
+                                com.shiyu.ai.common.foundation.utils.JSONUtils.parseObject(
                                         parameters, java.util.Map.class)));
         return ToolSpecification.fromJson(json);
     }

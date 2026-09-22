@@ -46,7 +46,7 @@ com.shiyu.ai.<domain>
 
 依赖规则：web -> application -> domain；infrastructure 实现 domain 端口；跨领域只依赖对方 contract。application 可调用本领域端口和其他领域 contract，不依赖具体 JDBC/SDK 类。contract 与 domain 不依赖 Spring Web、ORM 或具体推理框架。框架装配配置可置于 implementation.infrastructure.config，由组合根导入。
 
-共享 kernel 只容纳跨领域稳定身份、上下文、错误和事件概念。common-core 的 HTTP、配置、事务、工具内容按实际依赖审查，不能为统一目录把一切迁入 kernel。
+共享 kernel 只容纳跨领域稳定身份、上下文、错误和事件概念。common-foundation 的 HTTP、配置、事务、工具内容按实际依赖审查，不能为统一目录把一切迁入 kernel。
 公共 web 模块只承担鉴权转换、过滤器、异常和通用配置；领域 Controller 留在领域实现的 web 包。组合根协调跨领域生命周期，不承载领域业务规则。
 
 ## 任务 1：生成归属清单并记录真实基线
@@ -122,9 +122,9 @@ com.shiyu.ai.<domain>
 
 本阶段覆盖全部 applications、infrastructure、shared 生产类及对应测试。每个模块必须提交逐类归属清单和验证结果；保留合理包结构也需记录依据，不能仅做抽样审查。公共模块不套用领域 contract/implementation 层级，按技术能力组织。
 
-### 6A：shared-kernel 与 common-core 的基础边界
+### 6A：shared-kernel 与 common-foundation 的基础边界
 
-文件范围：modules/shared/shiyu-shared-kernel/src、modules/infrastructure/shiyu-common-core/src 及全仓消费者；更新各受影响 pom.xml。
+文件范围：modules/shared/shiyu-shared-kernel/src、modules/infrastructure/shiyu-common-foundation/src 及全仓消费者；更新各受影响 pom.xml。
 
 - [x] kernel 保留 context、event、error、page；逐项确认 UserId/TenantId/RoleId、ActorContext 是稳定值对象。检查 TenantScope 是否携带线程状态：技术上下文与纯身份模型分离，迁移时同步入口、持久化和线程模块消费者。
 - [x] 为 core 的每个类确定能力包：api、exception、validation、text、time、reflection、transaction、config；现有 utils 逐类按用途归位，禁止生成新的通用 helper 收容包。

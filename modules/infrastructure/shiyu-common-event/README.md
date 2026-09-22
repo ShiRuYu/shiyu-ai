@@ -18,8 +18,8 @@
 
 ## 边界
 
-- 依赖 `shiyu-common-core` 的稳定接口和 `shiyu-shared-kernel` 的事件契约。
-- 直接携带 Spring JDBC、Spring Kafka；这些可选技术栈不再进入 common-core。
+- 依赖 `shiyu-common-foundation` 的稳定接口和 `shiyu-shared-kernel` 的事件契约。
+- 直接携带 Spring JDBC、Spring Kafka；这些可选技术栈不再进入 common-foundation。
 - 不加入默认 `shiyu-ai-bootstrap` 依赖。应用需要事件 provider 时，显式依赖本模块并通过自动配置入口装配。
 
 ## 验证

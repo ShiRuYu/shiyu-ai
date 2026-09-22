@@ -1,6 +1,6 @@
 package com.shiyu.ai.iam.implementation.web;
 
-import com.shiyu.ai.common.core.api.Result;
+import com.shiyu.ai.common.foundation.api.Result;
 import com.shiyu.ai.iam.implementation.service.CaptchaService;
 import com.shiyu.ai.iam.implementation.vo.CaptchaVO;
 

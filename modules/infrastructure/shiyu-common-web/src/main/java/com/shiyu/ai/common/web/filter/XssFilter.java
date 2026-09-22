@@ -1,6 +1,6 @@
 package com.shiyu.ai.common.web.filter;
 
-import com.shiyu.ai.common.core.CharConstants;
+import com.shiyu.ai.common.foundation.CharConstants;
 
 import jakarta.servlet.*;
 import jakarta.servlet.http.HttpServletRequest;

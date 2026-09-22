@@ -3,8 +3,8 @@ package com.shiyu.ai.knowledge.implementation.application.service;
 import com.shiyu.ai.knowledge.implementation.application.KnowledgeJobService.JobView;
 import com.shiyu.ai.knowledge.implementation.application.KnowledgeSpaceService.SpaceRole;
 
-import com.shiyu.ai.common.core.api.PageData;
-import com.shiyu.ai.common.core.exception.ServiceException;
+import com.shiyu.ai.common.foundation.api.PageData;
+import com.shiyu.ai.common.foundation.exception.ServiceException;
 import com.shiyu.ai.kernel.context.ActorContext;
 import com.shiyu.ai.knowledge.implementation.application.KnowledgeJobService;
 import com.shiyu.ai.knowledge.implementation.application.KnowledgeSpaceService;

@@ -4,9 +4,9 @@ import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.*;
 import static org.mockito.Mockito.*;
 
-import com.shiyu.ai.common.core.context.model.UserContext;
-import com.shiyu.ai.common.core.context.UserContextHolder;
-import com.shiyu.ai.common.core.exception.ServiceException;
+import com.shiyu.ai.common.foundation.context.model.UserContext;
+import com.shiyu.ai.common.foundation.context.UserContextHolder;
+import com.shiyu.ai.common.foundation.exception.ServiceException;
 import com.shiyu.ai.common.storage.api.*;
 import com.shiyu.ai.common.storage.backup.*;
 import com.shiyu.ai.common.storage.config.*;

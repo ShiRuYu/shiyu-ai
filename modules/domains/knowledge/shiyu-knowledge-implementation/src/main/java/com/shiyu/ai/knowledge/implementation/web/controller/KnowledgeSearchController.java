@@ -8,7 +8,7 @@ import com.shiyu.ai.knowledge.implementation.web.api.KnowledgeApiVersion;
 
 import cn.dev33.satoken.annotation.SaCheckPermission;
 
-import com.shiyu.ai.common.core.api.Result;
+import com.shiyu.ai.common.foundation.api.Result;
 import com.shiyu.ai.common.web.auth.ActorContextHttpAdapter;
 import com.shiyu.ai.kernel.context.ActorContext;
 import com.shiyu.ai.knowledge.implementation.application.KnowledgeSpaceService;
@@ -39,7 +39,6 @@ import java.util.List;
 @RequestMapping("/api/knowledge")
 @RequiredArgsConstructor
 @Tag(name = "知识检索")
-@SaCheckPermission("knowledge:list")
 public class KnowledgeSearchController {
 
     /**
@@ -57,6 +56,7 @@ public class KnowledgeSearchController {
      * @param search 用于完成本次业务处理的 search 参数。
      * @return 返回 知识 Search 相关操作生成的结果数据。
      */
+    @SaCheckPermission("knowledge:list")
     @PostMapping("/search")
     public Result<SearchResponse> search(
             @RequestBody @Valid SearchRequest request,

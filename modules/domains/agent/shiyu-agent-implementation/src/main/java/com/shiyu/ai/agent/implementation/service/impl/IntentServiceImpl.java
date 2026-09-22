@@ -3,7 +3,7 @@ package com.shiyu.ai.agent.implementation.service.impl;
 import com.shiyu.ai.agent.implementation.node.intent.IntentDefinition;
 import com.shiyu.ai.agent.implementation.node.intent.IntentDefinitionFactory;
 import com.shiyu.ai.agent.implementation.service.IntentService;
-import com.shiyu.ai.common.core.utils.JSONUtils;
+import com.shiyu.ai.common.foundation.utils.JSONUtils;
 import com.shiyu.ai.model.contract.api.ChatEngine;
 import com.shiyu.ai.model.contract.model.ChatMessage;
 import com.shiyu.ai.model.contract.model.ChatRequest;

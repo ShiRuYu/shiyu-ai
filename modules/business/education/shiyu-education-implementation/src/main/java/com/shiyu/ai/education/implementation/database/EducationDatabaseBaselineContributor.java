@@ -1,6 +1,6 @@
 package com.shiyu.ai.education.implementation.database;
 
-import com.shiyu.ai.common.core.database.DatabaseBaselineContributor;
+import com.shiyu.ai.common.foundation.database.DatabaseBaselineContributor;
 
 import org.springframework.stereotype.Component;
 

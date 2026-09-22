@@ -1,6 +1,6 @@
 package com.shiyu.ai.agent.implementation.domain.model;
 
-import com.shiyu.ai.common.core.domain.BaseEntity;
+import com.shiyu.ai.common.foundation.domain.BaseEntity;
 
 import lombok.Data;
 import lombok.EqualsAndHashCode;

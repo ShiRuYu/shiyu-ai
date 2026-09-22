@@ -26,7 +26,7 @@
 
 ## 内部模块依赖
 
-`shiyu-common-core`、`shiyu-common-web`
+`shiyu-common-foundation`、`shiyu-common-web`
 
 ## 验证
 

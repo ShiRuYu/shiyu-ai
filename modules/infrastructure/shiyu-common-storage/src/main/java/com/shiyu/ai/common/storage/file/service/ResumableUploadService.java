@@ -1,7 +1,7 @@
 package com.shiyu.ai.common.storage.file.service;
 import com.shiyu.ai.common.storage.file.port.ResumableUploadHandler;
 
-import com.shiyu.ai.common.core.exception.ServiceException;
+import com.shiyu.ai.common.foundation.exception.ServiceException;
 import com.shiyu.ai.common.storage.api.*;
 import com.shiyu.ai.common.storage.backup.*;
 import com.shiyu.ai.common.storage.config.*;

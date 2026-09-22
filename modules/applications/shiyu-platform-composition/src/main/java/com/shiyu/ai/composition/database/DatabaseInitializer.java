@@ -1,7 +1,7 @@
 package com.shiyu.ai.composition.database;
 
 import com.shiyu.ai.common.mybatis.config.DatabaseInfrastructureProperties;
-import com.shiyu.ai.common.core.database.DatabaseBaselineContributor;
+import com.shiyu.ai.common.foundation.database.DatabaseBaselineContributor;
 
 import jakarta.annotation.PostConstruct;
 
@@ -411,7 +411,8 @@ public class DatabaseInitializer {
             executeResources(connection,
                     List.of(
                             "classpath:db/updates/iam/20260914_platform_usage.sql",
-                            "classpath:db/updates/iam/20260916_tenant_module_access.sql"),
+                            "classpath:db/updates/iam/20260916_tenant_module_access.sql",
+                            "classpath:db/updates/iam/20260923_permission_alignment.sql"),
                     "permission update");
             connection.commit();
         } catch (Exception failure) {

@@ -2,7 +2,7 @@ package com.shiyu.ai.conversation.implementation.domain.chat.codec;
 
 import com.shiyu.ai.conversation.implementation.domain.chat.model.CharacterCardV2;
 
-import com.shiyu.ai.common.core.utils.JSONUtils;
+import com.shiyu.ai.common.foundation.utils.JSONUtils;
 
 import java.awt.image.BufferedImage;
 import java.io.ByteArrayInputStream;

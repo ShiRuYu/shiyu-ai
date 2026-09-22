@@ -1,9 +1,9 @@
 package com.shiyu.ai.iam.implementation.service.impl;
 
-import com.shiyu.ai.common.core.api.PageData;
-import com.shiyu.ai.common.core.utils.JSONUtils;
-import com.shiyu.ai.common.core.utils.MapstructUtils;
-import com.shiyu.ai.common.core.utils.PasswordUtils;
+import com.shiyu.ai.common.foundation.api.PageData;
+import com.shiyu.ai.common.foundation.utils.JSONUtils;
+import com.shiyu.ai.common.foundation.utils.MapstructUtils;
+import com.shiyu.ai.common.foundation.utils.PasswordUtils;
 import com.shiyu.ai.iam.implementation.domain.model.RoleBO;
 import com.shiyu.ai.iam.implementation.domain.model.UserBO;
 import com.shiyu.ai.iam.implementation.domain.model.UserScopeRoleBO;

@@ -40,7 +40,7 @@
         </dependency>
         <dependency>
             <groupId>com.shiyu.ai</groupId>
-            <artifactId>shiyu-common-core</artifactId>
+            <artifactId>shiyu-common-foundation</artifactId>
         </dependency>
         <dependency>
             <groupId>dev.langchain4j</groupId>

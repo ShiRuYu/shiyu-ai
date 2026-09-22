@@ -25,10 +25,10 @@
 ### Task 1: 建立通用业务模块契约
 
 **Files:**
-- Create: `modules/infrastructure/shiyu-common-core/src/main/java/com/shiyu/ai/common/core/module/BusinessModuleDescriptor.java`
-- Create: `modules/infrastructure/shiyu-common-core/src/main/java/com/shiyu/ai/common/core/module/ConditionalOnBusinessModule.java`
-- Create: `modules/infrastructure/shiyu-common-core/src/main/java/com/shiyu/ai/common/core/module/BusinessModuleCondition.java`
-- Test: `modules/infrastructure/shiyu-common-core/src/test/java/com/shiyu/ai/common/core/module/BusinessModuleConditionTest.java`
+- Create: `modules/infrastructure/shiyu-common-foundation/src/main/java/com/shiyu/ai/common/foundation/module/BusinessModuleDescriptor.java`
+- Create: `modules/infrastructure/shiyu-common-foundation/src/main/java/com/shiyu/ai/common/foundation/module/ConditionalOnBusinessModule.java`
+- Create: `modules/infrastructure/shiyu-common-foundation/src/main/java/com/shiyu/ai/common/foundation/module/BusinessModuleCondition.java`
+- Test: `modules/infrastructure/shiyu-common-foundation/src/test/java/com/shiyu/ai/common/foundation/module/BusinessModuleConditionTest.java`
 
 **Interfaces:**
 - `BusinessModuleDescriptor` 提供 `id()`、`displayName()`、`routePrefixes()` 和 `permissionPrefix()`，只表达模块元数据，不依赖任何业务实现。
@@ -41,7 +41,7 @@
 
 - [ ] **Step 2: Run test to verify it fails**
 
-Run: `mvn --batch-mode --no-transfer-progress -pl modules/infrastructure/shiyu-common-core -Dtest=BusinessModuleConditionTest test -Ddependency-check.skip=true`
+Run: `mvn --batch-mode --no-transfer-progress -pl modules/infrastructure/shiyu-common-foundation -Dtest=BusinessModuleConditionTest test -Ddependency-check.skip=true`
 
 Expected: FAIL because the annotation, condition and descriptor do not exist.
 
@@ -56,7 +56,7 @@ Run the same command and expect all module-condition tests to pass.
 - [ ] **Step 5: Commit**
 
 ```bash
-git add modules/infrastructure/shiyu-common-core/src/main/java/com/shiyu/ai/common/core/module modules/infrastructure/shiyu-common-core/src/test/java/com/shiyu/ai/common/core/module
+git add modules/infrastructure/shiyu-common-foundation/src/main/java/com/shiyu/ai/common/foundation/module modules/infrastructure/shiyu-common-foundation/src/test/java/com/shiyu/ai/common/foundation/module
 git commit -m "feat: add generic business module condition"
 ```
 

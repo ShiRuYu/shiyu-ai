@@ -7,7 +7,7 @@ import static org.mockito.ArgumentMatchers.*;
 import static org.mockito.Mockito.*;
 
 import com.mybatisflex.core.query.QueryWrapper;
-import com.shiyu.ai.common.core.utils.MapstructUtils;
+import com.shiyu.ai.common.foundation.utils.MapstructUtils;
 import com.shiyu.ai.iam.implementation.domain.model.TenantBO;
 import com.shiyu.ai.iam.implementation.persistence.dataobject.MenuDO;
 import com.shiyu.ai.iam.implementation.persistence.dataobject.RoleDO;

@@ -1,6 +1,6 @@
 package com.shiyu.ai.iam.implementation.request;
 
-import com.shiyu.ai.common.core.api.PageQuery;
+import com.shiyu.ai.common.foundation.api.PageQuery;
 
 import lombok.Data;
 import lombok.EqualsAndHashCode;

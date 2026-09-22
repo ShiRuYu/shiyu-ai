@@ -1,6 +1,6 @@
 package com.shiyu.ai.education.implementation.application.impl;
 
-import com.shiyu.ai.common.core.utils.MapstructUtils;
+import com.shiyu.ai.common.foundation.utils.MapstructUtils;
 import com.shiyu.ai.education.implementation.application.StudyPlanService;
 import com.shiyu.ai.education.implementation.domain.enums.StudyPlanStatus;
 import com.shiyu.ai.education.implementation.domain.model.StudyPlanBO;

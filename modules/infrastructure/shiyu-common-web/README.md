@@ -24,7 +24,7 @@
 
 ## 内部模块依赖
 
-`shiyu-common-core`、`shiyu-shared-kernel`
+`shiyu-common-foundation`、`shiyu-shared-kernel`
 
 ## 验证
 

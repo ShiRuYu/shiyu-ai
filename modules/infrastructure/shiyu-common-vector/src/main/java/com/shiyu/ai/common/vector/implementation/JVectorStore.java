@@ -8,8 +8,8 @@ import com.shiyu.ai.common.vector.model.VectorSearchType;
 
 import io.github.jbellis.jvector.graph.GraphIndexBuilder;
 import io.github.jbellis.jvector.graph.GraphSearcher;
+import io.github.jbellis.jvector.graph.ImmutableGraphIndex;
 import io.github.jbellis.jvector.graph.ListRandomAccessVectorValues;
-import io.github.jbellis.jvector.graph.OnHeapGraphIndex;
 import io.github.jbellis.jvector.graph.SearchResult;
 import io.github.jbellis.jvector.util.Bits;
 import io.github.jbellis.jvector.vector.VectorSimilarityFunction;
@@ -54,11 +54,6 @@ public class JVectorStore implements VectorStore {
      */
     private static final float ALPHA = 1.0f;
     /**
-     * ADD_HIERARCHY 属性，保存当前对象中的业务数据或协作依赖。
-     */
-    private static final boolean ADD_HIERARCHY = true;
-
-    /**
      * 维度，表示当前对象中的对应属性。
      */
     private final int dimension;
@@ -83,7 +78,7 @@ public class JVectorStore implements VectorStore {
     /**
      * 图结构索引，表示当前对象中的对应属性。
      */
-    private volatile OnHeapGraphIndex graphIndex;
+    private volatile ImmutableGraphIndex graphIndex;
 
     /**
      * 执行 J 向量 相关业务数据，并返回处理结果。
@@ -538,14 +533,11 @@ public class JVectorStore implements VectorStore {
                 if (vectors.isEmpty()) return;
                 var rav = new ListRandomAccessVectorValues(vectors, dimension);
                 var builder =
-                        new GraphIndexBuilder(
-                                rav,
-                                VectorSimilarityFunction.COSINE,
-                                M,
-                                BEAM_WIDTH,
-                                NEIGHBOR_OVERFLOW,
-                                ALPHA,
-                                ADD_HIERARCHY);
+                        GraphIndexBuilder.builder(rav, VectorSimilarityFunction.COSINE, M)
+                                .withBeamWidth(BEAM_WIDTH)
+                                .withNeighborOverflow(NEIGHBOR_OVERFLOW)
+                                .withAlpha(ALPHA)
+                                .build();
                 graphIndex = builder.build(rav);
                 log.debug("HNSW 图索引已重建: {} 节点", vectors.size());
             } catch (Exception e) {

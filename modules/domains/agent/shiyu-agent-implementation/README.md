@@ -24,7 +24,7 @@ Agent 智能体实现模块，承载该领域的应用服务、领域模型和�
 
 ## 内部模块依赖
 
-`shiyu-agent-contract`、`shiyu-shared-kernel`、`shiyu-common-core`、`shiyu-common-web`、`shiyu-common-mybatis`、`shiyu-model-contract`、`shiyu-knowledge-contract`、`shiyu-memory-contract`、`shiyu-tooling-contract`
+`shiyu-agent-contract`、`shiyu-shared-kernel`、`shiyu-common-foundation`、`shiyu-common-web`、`shiyu-common-mybatis`、`shiyu-model-contract`、`shiyu-knowledge-contract`、`shiyu-memory-contract`、`shiyu-tooling-contract`
 
 ## 验证
 

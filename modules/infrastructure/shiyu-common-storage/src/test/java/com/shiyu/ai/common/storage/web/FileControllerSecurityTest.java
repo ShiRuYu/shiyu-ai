@@ -16,6 +16,7 @@ import com.shiyu.ai.common.storage.vector.*;
 import org.junit.jupiter.api.Tag;
 import org.junit.jupiter.api.Test;
 import org.springframework.web.multipart.MultipartFile;
+import org.springframework.web.bind.annotation.GetMapping;
 
 /**
  * 验证 文件 Controller 安全 相关功能、边界条件、异常路径和协作行为。
@@ -51,5 +52,14 @@ class FileControllerSecurityTest {
         assertThat(configPermission.value()).containsExactly("file:list");
         assertThat(listPermission).isNotNull();
         assertThat(listPermission.value()).containsExactly("file:list");
+    }
+
+    @Test
+    void exposesFileListingAsTheCollectionResource() throws NoSuchMethodException {
+        GetMapping mapping = FileController.class.getMethod("list").getAnnotation(GetMapping.class);
+
+        assertThat(mapping).isNotNull();
+        assertThat(mapping.value()).isEmpty();
+        assertThat(mapping.path()).isEmpty();
     }
 }

@@ -103,12 +103,12 @@ class RoleServiceTenantScopeTest {
         when(roles.selectMenuIdsByRoleIds(ACTOR.tenantId(), List.of(20L)))
                 .thenReturn(java.util.Map.of(20L, List.of(99L)));
 
-        try (MockedStatic<com.shiyu.ai.common.core.utils.MapstructUtils> mapper =
+        try (MockedStatic<com.shiyu.ai.common.foundation.utils.MapstructUtils> mapper =
                 org.mockito.Mockito.mockStatic(
-                        com.shiyu.ai.common.core.utils.MapstructUtils.class)) {
+                        com.shiyu.ai.common.foundation.utils.MapstructUtils.class)) {
             mapper.when(
                             () ->
-                                    com.shiyu.ai.common.core.utils.MapstructUtils.convert(
+                                    com.shiyu.ai.common.foundation.utils.MapstructUtils.convert(
                                             any(List.class),
                                             eq(com.shiyu.ai.iam.implementation.vo.RoleVO.class)))
                     .thenReturn(List.of(mock(com.shiyu.ai.iam.implementation.vo.RoleVO.class)));

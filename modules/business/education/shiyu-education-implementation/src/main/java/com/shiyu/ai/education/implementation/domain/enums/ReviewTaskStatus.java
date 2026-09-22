@@ -1,6 +1,6 @@
 package com.shiyu.ai.education.implementation.domain.enums;
 
-import com.shiyu.ai.common.core.enums.IntEnum;
+import com.shiyu.ai.common.foundation.enums.IntEnum;
 
 import lombok.AllArgsConstructor;
 import lombok.Getter;

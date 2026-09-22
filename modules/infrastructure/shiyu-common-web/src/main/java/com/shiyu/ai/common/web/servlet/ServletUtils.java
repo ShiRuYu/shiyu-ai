@@ -4,7 +4,7 @@ import cn.hutool.core.convert.Convert;
 import cn.hutool.extra.servlet.JakartaServletUtil;
 import cn.hutool.http.HttpStatus;
 
-import com.shiyu.ai.common.core.utils.StringUtils;
+import com.shiyu.ai.common.foundation.utils.StringUtils;
 
 import jakarta.servlet.ServletRequest;
 import jakarta.servlet.http.HttpServletRequest;

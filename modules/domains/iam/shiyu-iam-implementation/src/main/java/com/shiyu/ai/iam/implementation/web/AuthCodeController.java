@@ -2,8 +2,8 @@ package com.shiyu.ai.iam.implementation.web;
 
 import cn.dev33.satoken.annotation.SaCheckPermission;
 
-import com.shiyu.ai.common.core.api.PageData;
-import com.shiyu.ai.common.core.api.Result;
+import com.shiyu.ai.common.foundation.api.PageData;
+import com.shiyu.ai.common.foundation.api.Result;
 import com.shiyu.ai.common.web.auth.ActorContextHttpAdapter;
 import com.shiyu.ai.iam.implementation.api.request.AuthCodeRequest;
 import com.shiyu.ai.iam.implementation.api.response.AuthCodeResponse;
@@ -34,18 +34,6 @@ public class AuthCodeController {
      * 服务，表示当前对象中的对应属性。
      */
     private final AuthCodeService service;
-
-    /**
-     * 执行 认证 Code 相关业务操作，并维护必要的状态和协作关系。
-     *
-     * @param Codes 用于完成本次业务处理的 Codes 参数。
-     */
-    @Operation(summary = "List Auth Codes")
-    @SaCheckPermission("system:auth-code:list")
-    @GetMapping("/list")
-    public Result<List<AuthCodeOptionVO>> list() {
-        return Result.success(service.list(ActorContextHttpAdapter.currentActor()));
-    }
 
     /**
      * 执行 认证 Code 相关业务操作，并维护必要的状态和协作关系。
@@ -81,7 +69,7 @@ public class AuthCodeController {
      */
     @Operation(summary = "Create Auth Code")
     @SaCheckPermission("system:auth-code:create")
-    @PostMapping("/create")
+    @PostMapping
     public Result<AuthCodeResponse> create(@RequestBody AuthCodeRequest authCode) {
         return Result.success(service.create(ActorContextHttpAdapter.currentActor(), authCode));
     }
@@ -93,8 +81,8 @@ public class AuthCodeController {
      */
     @Operation(summary = "Update Auth Code")
     @SaCheckPermission("system:auth-code:update")
-    @PostMapping("/update")
-    public Result<Void> update(@RequestParam Long id, @RequestBody AuthCodeRequest authCode) {
+    @PutMapping("/{id}")
+    public Result<Void> update(@PathVariable Long id, @RequestBody AuthCodeRequest authCode) {
         return service.update(ActorContextHttpAdapter.currentActor(), id, authCode)
                 ? Result.success()
                 : Result.fail("权限码不存在");
@@ -107,8 +95,8 @@ public class AuthCodeController {
      */
     @Operation(summary = "Delete Auth Code")
     @SaCheckPermission("system:auth-code:delete")
-    @PostMapping("/delete")
-    public Result<Void> delete(@RequestParam Long id) {
+    @DeleteMapping("/{id}")
+    public Result<Void> delete(@PathVariable Long id) {
         return service.delete(ActorContextHttpAdapter.currentActor(), id)
                 ? Result.success()
                 : Result.fail("权限码不存在");
@@ -182,7 +170,7 @@ public class AuthCodeController {
      */
     @Operation(summary = "Page Auth Codes")
     @SaCheckPermission("system:auth-code:list")
-    @GetMapping("/page")
+    @GetMapping
     public Result<PageData<AuthCodeOptionVO>> page(AuthCodePageRequest request) {
         return Result.success(service.page(ActorContextHttpAdapter.currentActor(), request));
     }

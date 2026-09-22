@@ -1,9 +1,9 @@
 package com.shiyu.ai.common.web.auth;
 
-import com.shiyu.ai.common.core.context.model.UserContext;
+import com.shiyu.ai.common.foundation.context.model.UserContext;
 
-import com.shiyu.ai.common.core.context.UserContextHolder;
-import com.shiyu.ai.common.core.exception.ServiceException;
+import com.shiyu.ai.common.foundation.context.UserContextHolder;
+import com.shiyu.ai.common.foundation.exception.ServiceException;
 import com.shiyu.ai.kernel.context.ActorContext;
 import com.shiyu.ai.kernel.context.RoleId;
 import com.shiyu.ai.kernel.context.TenantId;
@@ -111,13 +111,13 @@ public final class ActorContextHttpAdapter {
      * @param action action 参数。
      */
     public static void runWithContext(
-            com.shiyu.ai.common.core.context.model.UserContext context,
+            com.shiyu.ai.common.foundation.context.model.UserContext context,
             TenantId tenantId,
             Runnable action) {
         if (context == null || tenantId == null || action == null) {
             throw new IllegalArgumentException("context, tenantId and action are required");
         }
-        com.shiyu.ai.common.core.context.model.UserContext previousContext =
+        com.shiyu.ai.common.foundation.context.model.UserContext previousContext =
                 UserContextHolder.getContext();
         TenantId previousTenant = TenantScope.current().orElse(null);
         try {

@@ -26,7 +26,7 @@
         </dependency>
         <dependency>
             <groupId>com.shiyu.ai</groupId>
-            <artifactId>shiyu-common-core</artifactId>
+            <artifactId>shiyu-common-foundation</artifactId>
         </dependency>
 
         <!-- 事务在 Boot 4 被明确定位为：“数据访问的横切能力，而不是基础设施能力”
@@ -41,7 +41,7 @@
                 </exclusion>
             </exclusions>
         </dependency>
-        <!-- 异常处理器是 HTTP 适配，不再依赖 common-core 间接提供 Web MVC。 -->
+        <!-- 异常处理器是 HTTP 适配，不再依赖 common-foundation 间接提供 Web MVC。 -->
         <dependency>
             <groupId>org.springframework</groupId>
             <artifactId>spring-webmvc</artifactId>

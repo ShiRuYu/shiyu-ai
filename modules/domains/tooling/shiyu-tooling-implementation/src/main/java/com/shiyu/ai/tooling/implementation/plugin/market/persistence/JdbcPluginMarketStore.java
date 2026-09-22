@@ -1,6 +1,6 @@
 package com.shiyu.ai.tooling.implementation.plugin.market.persistence;
 
-import com.shiyu.ai.common.core.utils.JSONUtils;
+import com.shiyu.ai.common.foundation.utils.JSONUtils;
 import com.shiyu.ai.tooling.implementation.plugin.market.model.PluginMarketEntry;
 import com.shiyu.ai.tooling.implementation.plugin.market.port.PluginMarketStore;
 

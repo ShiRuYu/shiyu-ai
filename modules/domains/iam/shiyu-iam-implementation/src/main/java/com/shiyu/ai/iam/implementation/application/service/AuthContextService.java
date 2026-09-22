@@ -1,6 +1,6 @@
 package com.shiyu.ai.iam.implementation.application.service;
 
-import com.shiyu.ai.common.core.utils.MapstructUtils;
+import com.shiyu.ai.common.foundation.utils.MapstructUtils;
 import com.shiyu.ai.iam.implementation.api.response.AuthRoleResponse;
 import com.shiyu.ai.iam.implementation.api.response.AuthScopeRoleResponse;
 import com.shiyu.ai.iam.implementation.api.response.AuthTenantResponse;

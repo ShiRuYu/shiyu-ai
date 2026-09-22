@@ -7,7 +7,7 @@ import com.shiyu.ai.agent.implementation.runtime.model.AiAppVersion;
 import com.shiyu.ai.agent.implementation.runtime.port.AiAppRepository;
 
 import com.shiyu.ai.agent.contract.runtime.*;
-import com.shiyu.ai.common.core.utils.JSONUtils;
+import com.shiyu.ai.common.foundation.utils.JSONUtils;
 import com.shiyu.ai.kernel.context.TenantId;
 import com.shiyu.ai.kernel.context.UserId;
 

@@ -5,7 +5,7 @@ import com.shiyu.ai.agent.implementation.runtime.service.AiRuntimeService;
 import com.shiyu.ai.agent.implementation.runtime.service.ToolApprovalService;
 
 import com.shiyu.ai.agent.contract.runtime.*;
-import com.shiyu.ai.common.core.api.Result;
+import com.shiyu.ai.common.foundation.api.Result;
 import com.shiyu.ai.common.web.auth.ActorContextHttpAdapter;
 import com.shiyu.ai.kernel.context.TenantId;
 

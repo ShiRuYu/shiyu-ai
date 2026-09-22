@@ -1,9 +1,9 @@
 package com.shiyu.ai.common.web.exception;
 
-import com.shiyu.ai.common.core.api.Result;
-import com.shiyu.ai.common.core.enums.BizResultCode;
-import com.shiyu.ai.common.core.exception.BaseBizException;
-import com.shiyu.ai.common.core.exception.base.BaseException;
+import com.shiyu.ai.common.foundation.api.Result;
+import com.shiyu.ai.common.foundation.enums.BizResultCode;
+import com.shiyu.ai.common.foundation.exception.BaseBizException;
+import com.shiyu.ai.common.foundation.exception.base.BaseException;
 
 import jakarta.validation.ConstraintViolationException;
 

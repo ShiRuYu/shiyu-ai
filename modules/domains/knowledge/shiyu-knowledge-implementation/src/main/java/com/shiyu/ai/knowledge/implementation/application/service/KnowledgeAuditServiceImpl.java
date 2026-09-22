@@ -1,9 +1,9 @@
 package com.shiyu.ai.knowledge.implementation.application.service;
 
-import com.shiyu.ai.common.core.api.PageData;
-import com.shiyu.ai.common.core.exception.ServiceException;
-import com.shiyu.ai.common.core.utils.JSONUtils;
-import com.shiyu.ai.common.core.utils.MapstructUtils;
+import com.shiyu.ai.common.foundation.api.PageData;
+import com.shiyu.ai.common.foundation.exception.ServiceException;
+import com.shiyu.ai.common.foundation.utils.JSONUtils;
+import com.shiyu.ai.common.foundation.utils.MapstructUtils;
 import com.shiyu.ai.kernel.context.ActorContext;
 import com.shiyu.ai.knowledge.implementation.application.KnowledgeAuditService;
 import com.shiyu.ai.knowledge.implementation.domain.model.KnowledgeAuditLogBO;

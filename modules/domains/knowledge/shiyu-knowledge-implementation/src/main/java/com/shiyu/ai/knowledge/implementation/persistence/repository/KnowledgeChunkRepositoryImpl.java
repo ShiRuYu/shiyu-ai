@@ -3,7 +3,7 @@ package com.shiyu.ai.knowledge.implementation.persistence.repository;
 import com.shiyu.ai.knowledge.implementation.domain.port.repository.KnowledgeChunkRepository;
 
 import com.mybatisflex.core.query.QueryWrapper;
-import com.shiyu.ai.common.core.utils.MapstructUtils;
+import com.shiyu.ai.common.foundation.utils.MapstructUtils;
 import com.shiyu.ai.kernel.context.TenantId;
 import com.shiyu.ai.kernel.context.TenantScope;
 import com.shiyu.ai.knowledge.implementation.domain.model.KnowledgeChunkBO;

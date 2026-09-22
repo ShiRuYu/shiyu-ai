@@ -12,8 +12,8 @@ import com.shiyu.ai.agent.implementation.vo.AgentDetailVO;
 import com.shiyu.ai.agent.implementation.vo.AgentVO;
 import com.shiyu.ai.agent.implementation.vo.AgentVersionVO;
 import com.shiyu.ai.agent.implementation.vo.NodeTypeMetaVO;
-import com.shiyu.ai.common.core.utils.JSONUtils;
-import com.shiyu.ai.common.core.vo.IdNameOptionVO;
+import com.shiyu.ai.common.foundation.utils.JSONUtils;
+import com.shiyu.ai.common.foundation.vo.IdNameOptionVO;
 import com.shiyu.ai.kernel.context.ActorContext;
 
 import lombok.extern.slf4j.Slf4j;

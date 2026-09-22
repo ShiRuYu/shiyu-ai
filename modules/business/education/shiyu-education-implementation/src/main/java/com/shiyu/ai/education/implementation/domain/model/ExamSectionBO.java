@@ -1,6 +1,6 @@
 package com.shiyu.ai.education.implementation.domain.model;
 
-import com.shiyu.ai.common.core.domain.TenantModel;
+import com.shiyu.ai.common.foundation.domain.TenantModel;
 
 import lombok.Data;
 import lombok.EqualsAndHashCode;

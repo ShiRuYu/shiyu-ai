@@ -1,6 +1,6 @@
 package com.shiyu.ai.web.config;
 
-import com.shiyu.ai.common.core.CharConstants;
+import com.shiyu.ai.common.foundation.CharConstants;
 import com.shiyu.ai.common.web.filter.RepeatableFilter;
 import com.shiyu.ai.common.web.filter.XssFilter;
 import com.shiyu.ai.web.config.properties.XssProperties;

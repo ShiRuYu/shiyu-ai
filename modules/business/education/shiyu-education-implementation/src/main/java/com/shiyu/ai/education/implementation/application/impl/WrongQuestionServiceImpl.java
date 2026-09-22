@@ -1,6 +1,6 @@
 package com.shiyu.ai.education.implementation.application.impl;
 
-import com.shiyu.ai.common.core.utils.MapstructUtils;
+import com.shiyu.ai.common.foundation.utils.MapstructUtils;
 import com.shiyu.ai.education.implementation.application.WrongQuestionService;
 import com.shiyu.ai.education.implementation.domain.model.WrongQuestionBO;
 import com.shiyu.ai.education.implementation.domain.port.repository.WrongQuestionRepository;

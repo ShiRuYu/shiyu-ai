@@ -24,7 +24,7 @@ Model 模型实现模块，承载该领域的应用服务、领域模型和基�
 
 ## 内部模块依赖
 
-`shiyu-model-contract`、`shiyu-shared-kernel`、`shiyu-common-mybatis`、`shiyu-common-web`、`shiyu-common-core`
+`shiyu-model-contract`、`shiyu-shared-kernel`、`shiyu-common-mybatis`、`shiyu-common-web`、`shiyu-common-foundation`
 
 ## 验证
 

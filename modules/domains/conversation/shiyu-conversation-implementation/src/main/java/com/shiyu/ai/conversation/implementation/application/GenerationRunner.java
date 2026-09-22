@@ -1,7 +1,7 @@
 package com.shiyu.ai.conversation.implementation.application;
 
 import com.shiyu.ai.agent.contract.runtime.*;
-import com.shiyu.ai.common.core.utils.JSONUtils;
+import com.shiyu.ai.common.foundation.utils.JSONUtils;
 import com.shiyu.ai.conversation.contract.api.GenerationAdmission;
 import com.shiyu.ai.conversation.contract.api.GenerationUsageSink;
 import com.shiyu.ai.conversation.contract.model.GenerationRun;

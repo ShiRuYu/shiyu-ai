@@ -1,7 +1,7 @@
 package com.shiyu.ai.memory.implementation.persistence.service;
 
-import com.shiyu.ai.common.core.jdbc.JdbcDialect;
-import com.shiyu.ai.common.core.utils.JSONUtils;
+import com.shiyu.ai.common.foundation.jdbc.JdbcDialect;
+import com.shiyu.ai.common.foundation.utils.JSONUtils;
 import com.shiyu.ai.memory.contract.model.*;
 import com.shiyu.ai.kernel.context.TenantId;
 import com.shiyu.ai.kernel.context.TenantScope;

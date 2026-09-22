@@ -2,8 +2,8 @@ package com.shiyu.ai.iam.implementation.web;
 
 import cn.dev33.satoken.annotation.SaCheckPermission;
 
-import com.shiyu.ai.common.core.api.PageData;
-import com.shiyu.ai.common.core.api.Result;
+import com.shiyu.ai.common.foundation.api.PageData;
+import com.shiyu.ai.common.foundation.api.Result;
 import com.shiyu.ai.common.web.auth.ActorContextHttpAdapter;
 import com.shiyu.ai.iam.implementation.request.TenantPageRequest;
 import com.shiyu.ai.iam.implementation.request.TenantRequest;
@@ -47,7 +47,7 @@ public class TenantController {
      * @param list 用于完成本次业务处理的 list 参数。
      */
     @SaCheckPermission("system:tenant:list")
-    @GetMapping("/list")
+    @GetMapping("/tree")
     public Result<List<TenantVO>> getAllTenants() {
         return Result.success(tenantService.allTenantsView(ActorContextHttpAdapter.currentActor()));
     }
@@ -58,7 +58,7 @@ public class TenantController {
      * @param list 用于完成本次业务处理的 list 参数。
      */
     @SaCheckPermission("system:tenant:list")
-    @GetMapping("/page")
+    @GetMapping
     public Result<PageData<TenantVO>> getTenantPage(@Valid TenantPageRequest r) {
         return Result.success(
                 tenantService.getTenantPage(
@@ -76,8 +76,8 @@ public class TenantController {
      * @param list 用于完成本次业务处理的 list 参数。
      */
     @SaCheckPermission("system:tenant:list")
-    @GetMapping("/detail")
-    public Result<TenantVO> getTenantById(@RequestParam Long id) {
+    @GetMapping("/{id}")
+    public Result<TenantVO> getTenantById(@PathVariable Long id) {
         var v = tenantService.detailView(ActorContextHttpAdapter.currentActor(), id);
         return v == null ? Result.fail("租户不存在") : Result.success(v);
     }
@@ -88,7 +88,7 @@ public class TenantController {
      * @param create 用于完成本次业务处理的 create 参数。
      */
     @SaCheckPermission("system:tenant:create")
-    @PostMapping("/create")
+    @PostMapping
     public Result<Void> createTenant(@Valid @RequestBody TenantRequest r) {
         var actor = ActorContextHttpAdapter.currentActor();
         boolean ok = tenantService.createTenant(actor, r);
@@ -112,8 +112,8 @@ public class TenantController {
      * @param update 用于完成本次业务处理的 update 参数。
      */
     @SaCheckPermission("system:tenant:update")
-    @PostMapping("/update")
-    public Result<Void> updateTenant(@RequestParam Long id, @Valid @RequestBody TenantRequest r) {
+    @PutMapping("/{id}")
+    public Result<Void> updateTenant(@PathVariable Long id, @Valid @RequestBody TenantRequest r) {
         return tenantService.updateTenant(ActorContextHttpAdapter.currentActor(), id, r)
                 ? Result.success()
                 : Result.fail("修改失败");
@@ -125,8 +125,8 @@ public class TenantController {
      * @param delete 用于完成本次业务处理的 delete 参数。
      */
     @SaCheckPermission("system:tenant:delete")
-    @PostMapping("/delete")
-    public Result<Void> deleteTenant(@RequestParam Long id) {
+    @DeleteMapping("/{id}")
+    public Result<Void> deleteTenant(@PathVariable Long id) {
         return tenantService.deleteTenant(ActorContextHttpAdapter.currentActor(), id)
                 ? Result.success()
                 : Result.fail("删除失败");

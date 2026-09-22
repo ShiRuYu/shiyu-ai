@@ -1,6 +1,6 @@
 package com.shiyu.ai.iam.implementation.service.impl;
 
-import com.shiyu.ai.common.core.utils.JSONUtils;
+import com.shiyu.ai.common.foundation.utils.JSONUtils;
 import com.shiyu.ai.iam.implementation.domain.enums.TimezoneEnum;
 import com.shiyu.ai.iam.implementation.domain.model.UserBO;
 import com.shiyu.ai.iam.implementation.port.repository.UserRepository;

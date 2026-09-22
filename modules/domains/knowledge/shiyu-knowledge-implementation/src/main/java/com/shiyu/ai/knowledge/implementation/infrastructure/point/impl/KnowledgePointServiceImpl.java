@@ -5,8 +5,8 @@ import com.shiyu.ai.knowledge.implementation.infrastructure.point.KnowledgePoint
 import com.shiyu.ai.knowledge.implementation.infrastructure.point.KnowledgePointService.PointView;
 import com.shiyu.ai.knowledge.implementation.infrastructure.point.KnowledgePointService.UpdatePointRequest;
 
-import com.shiyu.ai.common.core.api.PageData;
-import com.shiyu.ai.common.core.exception.ServiceException;
+import com.shiyu.ai.common.foundation.api.PageData;
+import com.shiyu.ai.common.foundation.exception.ServiceException;
 import com.shiyu.ai.kernel.context.ActorContext;
 import com.shiyu.ai.knowledge.contract.api.KnowledgePointPort;
 import com.shiyu.ai.knowledge.contract.model.KnowledgeResponse;

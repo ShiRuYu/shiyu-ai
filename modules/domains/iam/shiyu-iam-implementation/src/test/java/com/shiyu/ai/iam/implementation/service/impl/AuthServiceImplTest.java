@@ -801,7 +801,7 @@ class AuthServiceImplTest {
         UserBO value = new UserBO();
         value.setId(id);
         value.setUsername(username);
-        value.setPassword(com.shiyu.ai.common.core.utils.PasswordUtils.encode(password));
+        value.setPassword(com.shiyu.ai.common.foundation.utils.PasswordUtils.encode(password));
         value.setStatus(status);
         return value;
     }

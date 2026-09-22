@@ -1,6 +1,6 @@
 package com.shiyu.ai.iam.implementation.application.module;
 
-import com.shiyu.ai.common.core.module.BusinessModuleDescriptor;
+import com.shiyu.ai.common.foundation.module.BusinessModuleDescriptor;
 import com.shiyu.ai.iam.implementation.port.repository.TenantModuleAccessRepository;
 import com.shiyu.ai.kernel.context.TenantId;
 import org.junit.jupiter.api.Test;

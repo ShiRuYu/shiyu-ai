@@ -1,6 +1,6 @@
 package com.shiyu.ai.model.implementation.infrastructure.config;
 
-import com.shiyu.ai.common.core.factory.YmlPropertySourceFactory;
+import com.shiyu.ai.common.foundation.factory.YmlPropertySourceFactory;
 
 import jakarta.annotation.PostConstruct;
 

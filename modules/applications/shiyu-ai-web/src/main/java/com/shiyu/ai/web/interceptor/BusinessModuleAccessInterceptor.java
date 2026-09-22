@@ -1,9 +1,9 @@
 package com.shiyu.ai.web.interceptor;
 
-import com.shiyu.ai.common.core.api.Result;
-import com.shiyu.ai.common.core.enums.BizResultCode;
-import com.shiyu.ai.common.core.module.BusinessModuleDescriptor;
-import com.shiyu.ai.common.core.utils.JSONUtils;
+import com.shiyu.ai.common.foundation.api.Result;
+import com.shiyu.ai.common.foundation.enums.BizResultCode;
+import com.shiyu.ai.common.foundation.module.BusinessModuleDescriptor;
+import com.shiyu.ai.common.foundation.utils.JSONUtils;
 import com.shiyu.ai.iam.contract.module.TenantModuleAccessPort;
 import com.shiyu.ai.kernel.context.TenantId;
 import com.shiyu.ai.kernel.context.TenantScope;

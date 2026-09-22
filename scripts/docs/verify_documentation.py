@@ -3,11 +3,14 @@
 
 from __future__ import annotations
 
+import argparse
 import json
 import os
 import re
 import sys
 from pathlib import Path
+
+from openapi_contract import document_differences
 
 
 BACKEND_REQUIRED = {
@@ -85,7 +88,7 @@ def count_openapi_operations(spec: dict) -> int:
 def baseline_owner_roots(backend: Path) -> list[Path]:
     return [
         backend / "modules/applications/shiyu-platform-composition/src/main/resources/db/baseline/h2",
-        backend / "modules/infrastructure/shiyu-common-core/src/main/resources/db/baseline/h2",
+        backend / "modules/infrastructure/shiyu-common-foundation/src/main/resources/db/baseline/h2",
         backend / "modules/infrastructure/shiyu-common-storage/src/main/resources/db/baseline/h2",
         backend / "modules/domains/iam/shiyu-iam-implementation/src/main/resources/db/baseline/h2",
         backend / "modules/domains/agent/shiyu-agent-implementation/src/main/resources/db/baseline/h2",
@@ -102,7 +105,7 @@ def baseline_owner_roots(backend: Path) -> list[Path]:
 def verify_final_baseline(backend: Path, failures: list[str]) -> int:
     owner_roots = [
         backend / "modules/applications/shiyu-platform-composition/src/main/resources/db/baseline/h2",
-        backend / "modules/infrastructure/shiyu-common-core/src/main/resources/db/baseline/h2",
+        backend / "modules/infrastructure/shiyu-common-foundation/src/main/resources/db/baseline/h2",
         backend / "modules/infrastructure/shiyu-common-storage/src/main/resources/db/baseline/h2",
         backend / "modules/domains/iam/shiyu-iam-implementation/src/main/resources/db/baseline/h2",
         backend / "modules/domains/agent/shiyu-agent-implementation/src/main/resources/db/baseline/h2",
@@ -140,6 +143,7 @@ def verify_counts(backend: Path, frontend: Path, failures: list[str]) -> dict[st
     documented_operations = len(re.findall(r"^\| (?:GET|POST|PUT|DELETE|PATCH|HEAD|OPTIONS) \|", api_doc, re.M))
     if documented_operations != operations:
         failures.append(f"API operation count mismatch: document={documented_operations}, snapshot={operations}")
+    failures.extend(document_differences(spec, api_doc))
 
     schema_roots = [root / "schema" for root in baseline_owner_roots(backend) if root.exists()]
     table_pattern = re.compile(r'CREATE\s+(?:CACHED\s+)?TABLE\s+"PUBLIC"\."', re.I)
@@ -178,7 +182,10 @@ def verify_counts(backend: Path, frontend: Path, failures: list[str]) -> dict[st
 
 def main() -> None:
     backend = Path(__file__).resolve().parents[2]
-    frontend = backend.parent / "shiyu-ui"
+    parser = argparse.ArgumentParser(description=__doc__)
+    parser.add_argument("--frontend-root", type=Path, default=backend.parent / "shiyu-ui")
+    args = parser.parse_args()
+    frontend = args.frontend_root.resolve()
     failures: list[str] = []
     verify_required(backend / "docs", BACKEND_REQUIRED, failures)
     verify_required(frontend / "docs", FRONTEND_REQUIRED, failures)

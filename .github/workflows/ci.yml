@@ -20,9 +20,23 @@ jobs:
     name: 编译并测试全部模块
     runs-on: ubuntu-latest
     timeout-minutes: 35
+    defaults:
+      run:
+        working-directory: shiyu-ai
     steps:
       - name: 检出代码
         uses: actions/checkout@v4
+        with:
+          path: shiyu-ai
+
+      - name: 检出前端契约与文档
+        uses: actions/checkout@v4
+        with:
+          repository: ShiRuYu/shiyu-ui
+          ref: ${{ vars.SHIYU_UI_REF || 'main' }}
+          token: ${{ secrets.CONTRACTS_READ_TOKEN || github.token }}
+          path: shiyu-ui
+          persist-credentials: false
 
       - name: 设置 Java 21
         uses: actions/setup-java@v4
@@ -51,15 +65,15 @@ jobs:
           git diff --exit-code -- scripts/architecture/package-migration.csv
 
       - name: 验证打包应用使用全新 APP_HOME 启动
-        run: python scripts/verify_fresh_startup.py
+        run: python scripts/verify_fresh_startup.py --openapi-snapshot ../shiyu-ui/tests/contracts/shiyu-ai-openapi.json
 
       - name: 执行领域 JaCoCo 阈值
         run: python scripts/architecture/check_domain_coverage.py
 
       - name: 验证生成文档和路由清单
-        run: python scripts/docs/verify_documentation.py
+        run: python scripts/docs/verify_documentation.py --frontend-root ../shiyu-ui
 
-      - name: 拒绝旧版 /v1 控制器路由
+      - name: 检查全部模块，禁止旧版 /v1 控制器路由回归（非 REST 风格检查）
         run: python scripts/architecture/check_legacy_routes.py
 
       - name: 拒绝已废弃的 Workspace 后端标识

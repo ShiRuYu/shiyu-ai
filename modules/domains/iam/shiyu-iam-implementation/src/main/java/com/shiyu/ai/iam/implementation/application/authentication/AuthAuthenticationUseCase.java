@@ -1,7 +1,7 @@
 package com.shiyu.ai.iam.implementation.application.authentication;
 
-import com.shiyu.ai.common.core.utils.JSONUtils;
-import com.shiyu.ai.common.core.utils.PasswordUtils;
+import com.shiyu.ai.common.foundation.utils.JSONUtils;
+import com.shiyu.ai.common.foundation.utils.PasswordUtils;
 import com.shiyu.ai.iam.implementation.application.identity.AuthTenantContextSupport;
 import com.shiyu.ai.iam.implementation.domain.model.RoleBO;
 import com.shiyu.ai.iam.implementation.domain.model.TenantBO;

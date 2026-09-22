@@ -2,8 +2,8 @@ package com.shiyu.ai.iam.implementation.web;
 
 import cn.dev33.satoken.annotation.SaCheckPermission;
 
-import com.shiyu.ai.common.core.api.PageData;
-import com.shiyu.ai.common.core.api.Result;
+import com.shiyu.ai.common.foundation.api.PageData;
+import com.shiyu.ai.common.foundation.api.Result;
 import com.shiyu.ai.common.web.auth.ActorContextHttpAdapter;
 import com.shiyu.ai.iam.implementation.request.DictPageRequest;
 import com.shiyu.ai.iam.implementation.request.DictRequest;
@@ -51,7 +51,7 @@ public class DictController {
      */
     @Operation(summary = "Get Dict List")
     @SaCheckPermission("system:dict:list")
-    @GetMapping("/list")
+    @GetMapping
     public Result<PageData<DictVO>> getDictList(@Valid DictPageRequest request) {
         log.info("获取字典列表，pageNum: {}, pageSize: {}", request.getPageNum(), request.getPageSize());
         var result =
@@ -83,7 +83,7 @@ public class DictController {
      */
     @Operation(summary = "Create Dict")
     @SaCheckPermission("system:dict:create")
-    @PostMapping("/create")
+    @PostMapping
     public Result<DictVO> createDict(@Valid @RequestBody DictRequest dictBO) {
         log.info("新增字典");
         return Result.success(dictService.create(ActorContextHttpAdapter.currentActor(), dictBO));
@@ -96,9 +96,9 @@ public class DictController {
      */
     @Operation(summary = "Update Dict")
     @SaCheckPermission("system:dict:update")
-    @PostMapping("/update")
+    @PutMapping("/{id}")
     public Result<DictVO> updateDict(
-            @RequestParam Long id, @Valid @RequestBody DictRequest dictBO) {
+            @PathVariable Long id, @Valid @RequestBody DictRequest dictBO) {
         log.info("修改字典，id: {}", id);
         return Result.success(
                 dictService.update(ActorContextHttpAdapter.currentActor(), id, dictBO));
@@ -111,8 +111,8 @@ public class DictController {
      */
     @Operation(summary = "Delete Dict")
     @SaCheckPermission("system:dict:delete")
-    @PostMapping("/delete")
-    public Result<Void> deleteDict(@RequestParam Long id) {
+    @DeleteMapping("/{id}")
+    public Result<Void> deleteDict(@PathVariable Long id) {
         log.info("删除字典，id: {}", id);
         dictService.deleteById(ActorContextHttpAdapter.currentActor(), id);
         return Result.success();

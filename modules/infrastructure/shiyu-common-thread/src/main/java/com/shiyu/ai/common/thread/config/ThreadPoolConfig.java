@@ -1,6 +1,6 @@
 package com.shiyu.ai.common.thread.config;
 
-import com.shiyu.ai.common.core.utils.Threads;
+import com.shiyu.ai.common.foundation.utils.Threads;
 
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;

@@ -6,7 +6,7 @@ import com.shiyu.ai.knowledge.implementation.infrastructure.index.port.VectorInd
 import com.shiyu.ai.knowledge.implementation.infrastructure.index.service.KnowledgeIndexService;
 import com.shiyu.ai.knowledge.implementation.infrastructure.index.service.KnowledgeIndexService.HybridHit;
 
-import com.shiyu.ai.common.core.exception.ServiceException;
+import com.shiyu.ai.common.foundation.exception.ServiceException;
 import com.shiyu.ai.common.vector.api.VectorStoreProvider;
 import com.shiyu.ai.kernel.context.ActorContext;
 import com.shiyu.ai.kernel.context.TenantId;

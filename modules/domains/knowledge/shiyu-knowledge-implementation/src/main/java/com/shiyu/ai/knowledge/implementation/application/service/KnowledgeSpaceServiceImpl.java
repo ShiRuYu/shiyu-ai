@@ -9,8 +9,8 @@ import com.shiyu.ai.knowledge.implementation.application.KnowledgeSpaceService.S
 import com.shiyu.ai.knowledge.implementation.application.KnowledgeSpaceService.SpaceView;
 import com.shiyu.ai.knowledge.implementation.application.KnowledgeSpaceService.UpdateSpaceRequest;
 
-import com.shiyu.ai.common.core.api.PageData;
-import com.shiyu.ai.common.core.exception.ServiceException;
+import com.shiyu.ai.common.foundation.api.PageData;
+import com.shiyu.ai.common.foundation.exception.ServiceException;
 import com.shiyu.ai.kernel.context.ActorContext;
 import com.shiyu.ai.kernel.context.TenantId;
 import com.shiyu.ai.knowledge.implementation.application.KnowledgeAuditService;

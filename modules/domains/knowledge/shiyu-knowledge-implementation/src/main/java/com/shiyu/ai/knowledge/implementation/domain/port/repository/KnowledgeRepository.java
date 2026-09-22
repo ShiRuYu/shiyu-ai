@@ -1,6 +1,6 @@
 package com.shiyu.ai.knowledge.implementation.domain.port.repository;
 
-import com.shiyu.ai.common.core.api.PageData;
+import com.shiyu.ai.common.foundation.api.PageData;
 import com.shiyu.ai.kernel.context.TenantId;
 import com.shiyu.ai.knowledge.implementation.domain.model.KnowledgeBO;
 

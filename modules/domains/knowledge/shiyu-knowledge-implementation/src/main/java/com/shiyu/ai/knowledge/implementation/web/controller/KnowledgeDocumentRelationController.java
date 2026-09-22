@@ -7,7 +7,7 @@ import com.shiyu.ai.knowledge.implementation.web.api.KnowledgeApiVersion;
 
 import cn.dev33.satoken.annotation.SaCheckPermission;
 
-import com.shiyu.ai.common.core.api.Result;
+import com.shiyu.ai.common.foundation.api.Result;
 import com.shiyu.ai.common.web.auth.ActorContextHttpAdapter;
 import com.shiyu.ai.kernel.context.ActorContext;
 import com.shiyu.ai.knowledge.implementation.application.KnowledgeDocumentRelationService;
@@ -36,7 +36,6 @@ import java.util.List;
 @RequestMapping("/api/knowledge")
 @RequiredArgsConstructor
 @Tag(name = "知识点文档关系")
-@SaCheckPermission("knowledge:list")
 public class KnowledgeDocumentRelationController {
 
     /**
@@ -50,6 +49,7 @@ public class KnowledgeDocumentRelationController {
      * @param documents 用于完成本次业务处理的 documents 参数。
      * @return 返回符合条件的数据集合；没有匹配项时返回空集合。
      */
+    @SaCheckPermission("knowledge:list")
     @GetMapping("/points/{pointId}/documents")
     public Result<List<KnowledgeDocumentRelationService.DocumentSummary>> list(
             @PathVariable Long pointId,
@@ -88,6 +88,7 @@ public class KnowledgeDocumentRelationController {
      * @param points 用于完成本次业务处理的 points 参数。
      * @return 返回符合条件的数据集合；没有匹配项时返回空集合。
      */
+    @SaCheckPermission("knowledge:list")
     @GetMapping("/documents/{documentId}/points")
     public Result<List<Long>> listPoints(
             @PathVariable Long documentId,
@@ -120,6 +121,7 @@ public class KnowledgeDocumentRelationController {
         return Result.success();
     }
 
+    @SaCheckPermission("knowledge:list")
     @GetMapping("/documents/{documentId}/relations")
     public Result<List<KnowledgeDocumentRelationService.DocumentRelationView>>
             listDocumentRelations(

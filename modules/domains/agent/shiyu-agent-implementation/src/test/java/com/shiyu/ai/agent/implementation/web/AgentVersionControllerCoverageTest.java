@@ -19,8 +19,6 @@ import com.shiyu.ai.kernel.context.UserId;
 
 import org.junit.jupiter.api.Test;
 
-import java.util.List;
-
 /**
  * 验证 智能体 Version Controller Coverage 相关功能、边界条件、异常路径和协作行为。
  */
@@ -31,11 +29,6 @@ class AgentVersionControllerCoverageTest {
         AgentVersionController controller = new AgentVersionController(service);
         ActorContext actor = new ActorContext(new TenantId(7L), new UserId(9L), false);
         AgentVersionDetailVO detail = new AgentVersionDetailVO();
-        when(service.getVersions(actor, "a1")).thenReturn(List.of(new AgentVersionVO()));
-        when(service.getVersionDetail(actor, "a1", 1L)).thenReturn(detail);
-        when(service.createVersion(eq(actor), eq("a1"), any())).thenReturn(new AgentVersionVO());
-        when(service.updateVersion(eq(actor), eq("a1"), eq(1L), any()))
-                .thenReturn(new AgentVersionVO());
         when(service.copyVersion(eq(actor), eq("a1"), any())).thenReturn(new AgentVersionVO());
         when(service.getGraphConfig(actor, "a1", 1L)).thenReturn(detail);
         when(service.updateGraphConfig(eq(actor), eq("a1"), eq(1L), any())).thenReturn(detail);
@@ -47,11 +40,6 @@ class AgentVersionControllerCoverageTest {
         EdgeRequest edge = new EdgeRequest();
         try (var ignored = mockStatic(ActorContextHttpAdapter.class)) {
             ignored.when(ActorContextHttpAdapter::currentActor).thenReturn(actor);
-            assertTrue(controller.getVersions("a1").isSuccess());
-            assertTrue(controller.getVersionDetail("a1", 1L).isSuccess());
-            assertTrue(controller.createVersion("a1", version).isSuccess());
-            assertTrue(controller.updateVersion("a1", 1L, version).isSuccess());
-            assertTrue(controller.deleteVersion("a1", 1L).isSuccess());
             assertTrue(controller.publish("a1", 1L).isSuccess());
             assertTrue(controller.archive("a1", 1L).isSuccess());
             assertTrue(controller.activate("a1", 1L).isSuccess());
@@ -74,13 +62,7 @@ class AgentVersionControllerCoverageTest {
         AgentVersionService service = mock(AgentVersionService.class);
         AgentVersionController controller = new AgentVersionController(service);
         ActorContext actor = new ActorContext(new TenantId(7L), new UserId(9L), false);
-        when(service.getVersionDetail(any(), anyString(), anyLong())).thenReturn(null);
         when(service.getGraphConfig(any(), anyString(), anyLong())).thenReturn(null);
-        when(service.createVersion(any(), anyString(), any()))
-                .thenThrow(new IllegalStateException());
-        doThrow(new IllegalStateException())
-                .when(service)
-                .deleteVersion(any(), anyString(), anyLong());
         doThrow(new IllegalStateException())
                 .when(service)
                 .publishVersion(any(), anyString(), anyLong());
@@ -90,8 +72,6 @@ class AgentVersionControllerCoverageTest {
         doThrow(new IllegalStateException())
                 .when(service)
                 .activateVersion(any(), anyString(), anyLong());
-        when(service.updateVersion(any(), anyString(), anyLong(), any()))
-                .thenThrow(new IllegalStateException());
         when(service.copyVersion(any(), anyString(), any())).thenThrow(new IllegalStateException());
         when(service.updateGraphConfig(any(), anyString(), anyLong(), any()))
                 .thenThrow(new IllegalStateException());
@@ -115,14 +95,10 @@ class AgentVersionControllerCoverageTest {
                 .updateCanvasConfig(any(), anyString(), anyLong(), anyString());
         try (var ignored = mockStatic(ActorContextHttpAdapter.class)) {
             ignored.when(ActorContextHttpAdapter::currentActor).thenReturn(actor);
-            assertFalse(controller.getVersionDetail("a", 1L).isSuccess());
             assertFalse(controller.getGraph("a", 1L).isSuccess());
-            assertFalse(controller.createVersion("a", new VersionRequest()).isSuccess());
-            assertFalse(controller.deleteVersion("a", 1L).isSuccess());
             assertFalse(controller.publish("a", 1L).isSuccess());
             assertFalse(controller.archive("a", 1L).isSuccess());
             assertFalse(controller.activate("a", 1L).isSuccess());
-            assertFalse(controller.updateVersion("a", 1L, new VersionRequest()).isSuccess());
             assertFalse(controller.copy("a", new VersionRequest()).isSuccess());
             assertFalse(controller.updateGraph("a", 1L, new GraphConfigRequest()).isSuccess());
             assertFalse(controller.addNode("a", 1L, new NodeConfigRequest()).isSuccess());

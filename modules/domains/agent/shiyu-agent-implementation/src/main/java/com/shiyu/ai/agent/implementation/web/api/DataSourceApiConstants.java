@@ -8,7 +8,7 @@ public final class DataSourceApiConstants {
     private DataSourceApiConstants() {}
 
     /** AI平台管理（已启用平台列表） */
-    public static final String PLATFORM_ENABLED = "/api/model/providers/enabled";
+    public static final String PLATFORM_ENABLED = "/api/model/platforms/enabled";
 
     /** 按平台编码获取模型列表 */
     public static final String MODEL_BY_PLATFORM = "/api/model/models/platform/by-code";

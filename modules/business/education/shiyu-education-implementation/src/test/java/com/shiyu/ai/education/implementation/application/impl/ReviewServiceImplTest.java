@@ -8,7 +8,7 @@ import static org.mockito.Mockito.mockStatic;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
-import com.shiyu.ai.common.core.utils.MapstructUtils;
+import com.shiyu.ai.common.foundation.utils.MapstructUtils;
 import com.shiyu.ai.education.implementation.domain.model.ReviewTaskBO;
 import com.shiyu.ai.education.implementation.domain.port.repository.ReviewTaskRepository;
 import com.shiyu.ai.education.implementation.web.dto.ReviewTaskResponse;

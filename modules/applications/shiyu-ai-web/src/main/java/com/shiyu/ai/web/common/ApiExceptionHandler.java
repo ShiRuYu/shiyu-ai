@@ -1,7 +1,7 @@
 package com.shiyu.ai.web.common;
 
-import com.shiyu.ai.common.core.api.Result;
-import com.shiyu.ai.common.core.enums.BizResultCode;
+import com.shiyu.ai.common.foundation.api.Result;
+import com.shiyu.ai.common.foundation.enums.BizResultCode;
 
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;

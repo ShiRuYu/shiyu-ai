@@ -1,6 +1,6 @@
 package com.shiyu.ai.education.implementation.application;
 
-import com.shiyu.ai.common.core.api.PageData;
+import com.shiyu.ai.common.foundation.api.PageData;
 import com.shiyu.ai.education.implementation.web.dto.SubjectResponse;
 import com.shiyu.ai.education.implementation.web.request.SubjectRequest;
 import com.shiyu.ai.kernel.context.ActorContext;

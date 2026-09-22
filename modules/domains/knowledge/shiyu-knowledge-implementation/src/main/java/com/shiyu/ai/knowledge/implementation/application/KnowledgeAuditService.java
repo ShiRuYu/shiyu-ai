@@ -1,6 +1,6 @@
 package com.shiyu.ai.knowledge.implementation.application;
 
-import com.shiyu.ai.common.core.api.PageData;
+import com.shiyu.ai.common.foundation.api.PageData;
 import com.shiyu.ai.kernel.context.ActorContext;
 import com.shiyu.ai.knowledge.implementation.web.response.KnowledgeAuditResponse;
 

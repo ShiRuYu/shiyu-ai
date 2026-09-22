@@ -1,0 +1,35 @@
+package com.shiyu.ai.common.foundation.config;
+
+import jakarta.validation.Validator;
+
+import org.hibernate.validator.HibernateValidator;
+import org.springframework.boot.autoconfigure.AutoConfiguration;
+import org.springframework.context.MessageSource;
+import org.springframework.context.annotation.Bean;
+import org.springframework.validation.beanvalidation.LocalValidatorFactoryBean;
+
+import java.util.Properties;
+
+/**
+ * 定义 Validator 基础设施或应用能力的配置项及装配规则。
+ */
+@AutoConfiguration
+public class ValidatorConfig {
+
+    /** 配置校验框架 */
+    @Bean
+    public Validator validator(MessageSource messageSource) {
+        LocalValidatorFactoryBean factoryBean = new LocalValidatorFactoryBean();
+        // 国际化
+        factoryBean.setValidationMessageSource(messageSource);
+        // 设置使用 HibernateValidator 校验器
+        factoryBean.setProviderClass(HibernateValidator.class);
+        Properties properties = new Properties();
+        // 快速失败模式（匹配到第一个错误即返回）
+        properties.setProperty("hibernate.validator.fail_fast", "false");
+        factoryBean.setValidationProperties(properties);
+        // 加载配置
+        factoryBean.afterPropertiesSet();
+        return factoryBean.getValidator();
+    }
+}

@@ -2,8 +2,8 @@ package com.shiyu.ai.iam.implementation.service.impl;
 
 import com.github.benmanes.caffeine.cache.Cache;
 import com.github.benmanes.caffeine.cache.Caffeine;
-import com.shiyu.ai.common.core.api.PageData;
-import com.shiyu.ai.common.core.utils.MapstructUtils;
+import com.shiyu.ai.common.foundation.api.PageData;
+import com.shiyu.ai.common.foundation.utils.MapstructUtils;
 import com.shiyu.ai.iam.implementation.domain.model.MenuBO;
 import com.shiyu.ai.iam.implementation.port.repository.MenuRepository;
 import com.shiyu.ai.iam.implementation.port.repository.TenantRepository;

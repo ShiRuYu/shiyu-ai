@@ -2,7 +2,7 @@ package com.shiyu.ai.governance.implementation.web.controller;
 
 import cn.dev33.satoken.annotation.SaCheckPermission;
 
-import com.shiyu.ai.common.core.api.Result;
+import com.shiyu.ai.common.foundation.api.Result;
 import com.shiyu.ai.governance.implementation.usage.port.UsageService;
 
 import io.swagger.v3.oas.annotations.Operation;

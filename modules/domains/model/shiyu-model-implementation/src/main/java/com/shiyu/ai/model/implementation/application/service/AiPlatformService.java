@@ -1,6 +1,6 @@
 package com.shiyu.ai.model.implementation.application.service;
 
-import com.shiyu.ai.common.core.vo.IdNameOptionVO;
+import com.shiyu.ai.common.foundation.vo.IdNameOptionVO;
 import com.shiyu.ai.kernel.context.ActorContext;
 import com.shiyu.ai.model.implementation.web.request.AiPlatformRequest;
 import com.shiyu.ai.model.implementation.web.response.AiPlatformResponse;
@@ -10,7 +10,7 @@ import org.apache.commons.lang3.tuple.Pair;
 import java.util.List;
 
 /**
- * 提供 AI 平台 的查询、创建、更新及调用服务，协调业务变更和领域协作。
+ * 定义 AI 平台应用服务契约，提供当前租户下平台的分页、详情、启用状态、创建、更新、删除、选项查询和默认平台设置。
  */
 public interface AiPlatformService {
     /**

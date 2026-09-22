@@ -4,8 +4,8 @@ import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.*;
 import static org.mockito.Mockito.*;
 
-import com.shiyu.ai.common.core.context.model.UserContext;
-import com.shiyu.ai.common.core.context.UserContextHolder;
+import com.shiyu.ai.common.foundation.context.model.UserContext;
+import com.shiyu.ai.common.foundation.context.UserContextHolder;
 import com.shiyu.ai.iam.implementation.request.DictPageRequest;
 import com.shiyu.ai.iam.implementation.request.DictRequest;
 import com.shiyu.ai.iam.implementation.service.DictService;

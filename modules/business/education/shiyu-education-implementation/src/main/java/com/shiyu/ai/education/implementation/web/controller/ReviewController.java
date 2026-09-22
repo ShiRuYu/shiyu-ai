@@ -2,7 +2,7 @@ package com.shiyu.ai.education.implementation.web.controller;
 
 import cn.dev33.satoken.annotation.SaCheckPermission;
 
-import com.shiyu.ai.common.core.api.Result;
+import com.shiyu.ai.common.foundation.api.Result;
 import com.shiyu.ai.common.web.auth.ActorContextHttpAdapter;
 import com.shiyu.ai.education.implementation.application.ReviewService;
 import com.shiyu.ai.education.implementation.web.dto.CompleteReviewRequest;
@@ -25,7 +25,6 @@ import java.util.List;
 @RestController
 @RequestMapping("/review")
 @RequiredArgsConstructor
-@SaCheckPermission("edu:review:list")
 public class ReviewController {
 
     /**
@@ -38,8 +37,9 @@ public class ReviewController {
      *
      * @param detail 用于完成本次业务处理的 detail 参数。
      */
-    @GetMapping("/detail")
-    public Result<ReviewTaskResponse> getById(@RequestParam Long id) {
+    @SaCheckPermission("edu:review:list")
+    @GetMapping("/{id}")
+    public Result<ReviewTaskResponse> getById(@PathVariable Long id) {
         return Result.success(reviewService.getById(ActorContextHttpAdapter.currentActor(), id));
     }
 
@@ -48,6 +48,7 @@ public class ReviewController {
      *
      * @param today 用于完成本次业务处理的 today 参数。
      */
+    @SaCheckPermission("edu:review:list")
     @GetMapping("/today")
     public Result<List<ReviewTaskResponse>> listTodayTasks(@RequestParam Long studentId) {
         return Result.success(
@@ -59,7 +60,8 @@ public class ReviewController {
      *
      * @param list 用于完成本次业务处理的 list 参数。
      */
-    @GetMapping("/list")
+    @SaCheckPermission("edu:review:list")
+    @GetMapping
     public Result<List<ReviewTaskResponse>> list(
             @RequestParam Long studentId, @RequestParam Integer status) {
         return Result.success(
@@ -72,7 +74,7 @@ public class ReviewController {
      *
      * @param create 用于完成本次业务处理的 create 参数。
      */
-    @PostMapping("/create")
+    @PostMapping
     @SaCheckPermission("edu:review:list")
     public Result<ReviewTaskResponse> create(@Valid @RequestBody ReviewRequest request) {
         return Result.success(
@@ -84,8 +86,9 @@ public class ReviewController {
      *
      * @param update 用于完成本次业务处理的 update 参数。
      */
-    @PostMapping("/update")
-    public Result<Void> update(@RequestParam Long id, @Valid @RequestBody ReviewRequest request) {
+    @SaCheckPermission("edu:review:list")
+    @PutMapping("/{id}")
+    public Result<Void> update(@PathVariable Long id, @Valid @RequestBody ReviewRequest request) {
         request.setId(id);
         reviewService.update(ActorContextHttpAdapter.currentActor(), request);
         return Result.success();
@@ -109,8 +112,9 @@ public class ReviewController {
      *
      * @param delete 用于完成本次业务处理的 delete 参数。
      */
-    @PostMapping("/delete")
-    public Result<Void> delete(@RequestParam Long id) {
+    @SaCheckPermission("edu:review:list")
+    @DeleteMapping("/{id}")
+    public Result<Void> delete(@PathVariable Long id) {
         reviewService.delete(ActorContextHttpAdapter.currentActor(), id);
         return Result.success();
     }

@@ -1,6 +1,6 @@
 package com.shiyu.ai.governance.implementation.usage.service;
 
-import com.shiyu.ai.common.core.utils.JSONUtils;
+import com.shiyu.ai.common.foundation.utils.JSONUtils;
 import com.shiyu.ai.governance.contract.UsageGovernance;
 import com.shiyu.ai.governance.contract.UsageMeasurement;
 import com.shiyu.ai.governance.contract.UsageRecordResult;

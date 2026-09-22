@@ -5,8 +5,8 @@ import com.shiyu.ai.knowledge.implementation.web.api.KnowledgeApiVersion;
 
 import cn.dev33.satoken.annotation.SaCheckPermission;
 
-import com.shiyu.ai.common.core.api.PageData;
-import com.shiyu.ai.common.core.api.Result;
+import com.shiyu.ai.common.foundation.api.PageData;
+import com.shiyu.ai.common.foundation.api.Result;
 import com.shiyu.ai.common.web.auth.ActorContextHttpAdapter;
 import com.shiyu.ai.kernel.context.ActorContext;
 import com.shiyu.ai.knowledge.implementation.application.KnowledgeJobService;
@@ -30,7 +30,6 @@ import org.springframework.web.bind.annotation.RestController;
 @RequestMapping("/api/knowledge/ingestion-jobs")
 @RequiredArgsConstructor
 @Tag(name = "知识任务")
-@SaCheckPermission("knowledge:document:list")
 public class KnowledgeJobController {
 
     /**
@@ -48,6 +47,7 @@ public class KnowledgeJobController {
      * @param version 用于完成本次业务处理的 version 参数。
      * @return 返回 知识 Job 相关操作生成的结果数据。
      */
+    @SaCheckPermission("knowledge:document:list")
     @GetMapping
     public Result<PageData<KnowledgeJobService.JobView>> page(
             @RequestParam(defaultValue = "1") int pageNum,
@@ -69,6 +69,7 @@ public class KnowledgeJobController {
      * @param id 用于定位目标业务对象的标识。
      * @return 返回 知识 Job 相关操作生成的结果数据。
      */
+    @SaCheckPermission("knowledge:document:list")
     @GetMapping("/{id}")
     public Result<KnowledgeJobService.JobView> get(
             @PathVariable Long id,

@@ -2,7 +2,7 @@ package com.shiyu.ai.education.implementation.web.controller;
 
 import cn.dev33.satoken.annotation.SaCheckPermission;
 
-import com.shiyu.ai.common.core.api.Result;
+import com.shiyu.ai.common.foundation.api.Result;
 import com.shiyu.ai.common.web.auth.ActorContextHttpAdapter;
 import com.shiyu.ai.education.implementation.application.StudyPlanService;
 import com.shiyu.ai.education.implementation.web.dto.DailyTaskResponse;
@@ -25,7 +25,6 @@ import java.util.List;
 @RestController
 @RequestMapping("/study-plan")
 @RequiredArgsConstructor
-@SaCheckPermission("edu:plan:list")
 public class StudyPlanController {
 
     /**
@@ -38,8 +37,9 @@ public class StudyPlanController {
      *
      * @param detail 用于完成本次业务处理的 detail 参数。
      */
-    @GetMapping("/detail")
-    public Result<StudyPlanResponse> getById(@RequestParam Long id) {
+    @SaCheckPermission("edu:plan:list")
+    @GetMapping("/{id}")
+    public Result<StudyPlanResponse> getById(@PathVariable Long id) {
         return Result.success(studyPlanService.getById(ActorContextHttpAdapter.currentActor(), id));
     }
 
@@ -48,6 +48,7 @@ public class StudyPlanController {
      *
      * @param student 用于完成本次业务处理的 student 参数。
      */
+    @SaCheckPermission("edu:plan:list")
     @GetMapping("/student")
     public Result<List<StudyPlanResponse>> listByStudentId(@RequestParam Long studentId) {
         return Result.success(
@@ -60,6 +61,7 @@ public class StudyPlanController {
      *
      * @param active 用于完成本次业务处理的 active 参数。
      */
+    @SaCheckPermission("edu:plan:list")
     @GetMapping("/active")
     public Result<List<StudyPlanResponse>> listActiveByStudent(@RequestParam Long studentId) {
         return Result.success(
@@ -72,6 +74,7 @@ public class StudyPlanController {
      *
      * @param tasks 用于完成本次业务处理的 tasks 参数。
      */
+    @SaCheckPermission("edu:plan:list")
     @GetMapping("/today-tasks")
     public Result<List<DailyTaskResponse>> getTodayTasks(@RequestParam Long studentId) {
         return Result.success(
@@ -83,7 +86,7 @@ public class StudyPlanController {
      *
      * @param create 用于完成本次业务处理的 create 参数。
      */
-    @PostMapping("/create")
+    @PostMapping
     @SaCheckPermission("edu:plan:list")
     public Result<StudyPlanResponse> create(@Valid @RequestBody StudyPlanRequest request) {
         return Result.success(
@@ -95,10 +98,10 @@ public class StudyPlanController {
      *
      * @param update 用于完成本次业务处理的 update 参数。
      */
-    @PostMapping("/update")
+    @PutMapping("/{id}")
     @SaCheckPermission("edu:plan:list")
     public Result<Void> update(
-            @RequestParam Long id, @Valid @RequestBody StudyPlanRequest request) {
+            @PathVariable Long id, @Valid @RequestBody StudyPlanRequest request) {
         request.setId(id);
         studyPlanService.update(ActorContextHttpAdapter.currentActor(), request);
         return Result.success();
@@ -109,9 +112,9 @@ public class StudyPlanController {
      *
      * @param delete 用于完成本次业务处理的 delete 参数。
      */
-    @PostMapping("/delete")
+    @DeleteMapping("/{id}")
     @SaCheckPermission("edu:plan:list")
-    public Result<Void> delete(@RequestParam Long id) {
+    public Result<Void> delete(@PathVariable Long id) {
         studyPlanService.deleteById(ActorContextHttpAdapter.currentActor(), id);
         return Result.success();
     }

@@ -5,7 +5,7 @@ import cn.dev33.satoken.session.SaSession;
 
 import com.github.benmanes.caffeine.cache.Cache;
 import com.github.benmanes.caffeine.cache.Caffeine;
-import com.shiyu.ai.common.core.utils.JSONUtils;
+import com.shiyu.ai.common.foundation.utils.JSONUtils;
 import com.shiyu.ai.iam.implementation.domain.model.UserBO;
 import com.shiyu.ai.iam.implementation.port.repository.SaTokenUserRepository;
 import com.shiyu.ai.iam.implementation.utils.UserLockManager;

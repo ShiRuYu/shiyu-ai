@@ -14,7 +14,7 @@ import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
-import com.shiyu.ai.common.core.exception.ServiceException;
+import com.shiyu.ai.common.foundation.exception.ServiceException;
 import com.shiyu.ai.common.vector.api.VectorStore;
 import com.shiyu.ai.common.vector.api.VectorStoreProvider;
 import com.shiyu.ai.kernel.context.ActorContext;

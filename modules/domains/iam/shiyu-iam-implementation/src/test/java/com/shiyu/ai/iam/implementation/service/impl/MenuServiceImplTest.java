@@ -4,7 +4,7 @@ import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.*;
 import static org.mockito.Mockito.*;
 
-import com.shiyu.ai.common.core.utils.MapstructUtils;
+import com.shiyu.ai.common.foundation.utils.MapstructUtils;
 import com.shiyu.ai.iam.implementation.domain.model.MenuBO;
 import com.shiyu.ai.iam.implementation.port.repository.MenuRepository;
 import com.shiyu.ai.iam.implementation.port.repository.TenantRepository;

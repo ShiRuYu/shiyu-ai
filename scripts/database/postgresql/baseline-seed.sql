@@ -1,5 +1,7 @@
+-- PostgreSQL 基线由经过验证的 H2 资源生成。
+-- 不要直接编辑生成区，请修改源基线后重新生成。
 
--- 来源：modules/infrastructure/shiyu-common-core/src/main/resources/db/baseline/h2/seed/common/01_common.sql
+-- 来源：modules/infrastructure/shiyu-common-foundation/src/main/resources/db/baseline/h2/seed/common/01_common.sql
 
 INSERT INTO common_dict VALUES(1, 'timezone', 'America/New_York (GMT-5)', 'America/New_York', 1, 1, NULL, NULL, 'N', 1, '美国纽约时区', 'system', CURRENT_TIMESTAMP, 'system', CURRENT_TIMESTAMP, 0);
 INSERT INTO common_dict VALUES(2, 'timezone', 'Europe/London (GMT0)', 'Europe/London', 1, 2, NULL, NULL, 'N', 1, '欧洲伦敦时区', 'system', CURRENT_TIMESTAMP, 'system', CURRENT_TIMESTAMP, 0);
@@ -127,6 +129,9 @@ INSERT INTO auth_auth_code VALUES(115, 'system:role:assign', '分配角色权限
 INSERT INTO auth_auth_code VALUES(116, 'system:user:password', '重置用户密码', 1, 0, 'system', CURRENT_TIMESTAMP, 'system', CURRENT_TIMESTAMP);
 INSERT INTO auth_auth_code VALUES(117, 'agent:execute', '执行 Agent', 1, 0, 'system', CURRENT_TIMESTAMP, 'system', CURRENT_TIMESTAMP);
 INSERT INTO auth_auth_code VALUES(118, 'file:list', '查看文件列表和配置', 1, 0, 'system', CURRENT_TIMESTAMP, 'system', CURRENT_TIMESTAMP);
+INSERT INTO auth_auth_code VALUES(119, 'platform:usage:read', '查看平台全租户用量', 1, 0, 'system', CURRENT_TIMESTAMP, 'system', CURRENT_TIMESTAMP);
+INSERT INTO auth_auth_code VALUES(120, 'model:admin', '管理模型网关', 1, 0, 'system', CURRENT_TIMESTAMP, 'system', CURRENT_TIMESTAMP);
+INSERT INTO auth_auth_code VALUES(121, 'agent:intent:edit', '编辑意图', 1, 0, 'system', CURRENT_TIMESTAMP, 'system', CURRENT_TIMESTAMP);
 INSERT INTO auth_role_scope_auth_code VALUES(1, 1, 1, 1, 0, 'system', CURRENT_TIMESTAMP, 'system', CURRENT_TIMESTAMP);
 INSERT INTO auth_role_scope_auth_code VALUES(2, 1, 1, 1, 0, 'system', CURRENT_TIMESTAMP, 'system', CURRENT_TIMESTAMP);
 INSERT INTO auth_role_scope_auth_code VALUES(1, 2, 1, 1, 0, 'system', CURRENT_TIMESTAMP, 'system', CURRENT_TIMESTAMP);
@@ -345,6 +350,11 @@ INSERT INTO auth_role_scope_auth_code VALUES(1, 117, 1, 1, 0, 'system', CURRENT_
 INSERT INTO auth_role_scope_auth_code VALUES(2, 117, 1, 1, 0, 'system', CURRENT_TIMESTAMP, 'system', CURRENT_TIMESTAMP);
 INSERT INTO auth_role_scope_auth_code VALUES(1, 118, 1, 1, 0, 'system', CURRENT_TIMESTAMP, 'system', CURRENT_TIMESTAMP);
 INSERT INTO auth_role_scope_auth_code VALUES(2, 118, 1, 1, 0, 'system', CURRENT_TIMESTAMP, 'system', CURRENT_TIMESTAMP);
+INSERT INTO auth_role_scope_auth_code VALUES(1, 119, 1, 1, 0, 'system', CURRENT_TIMESTAMP, 'system', CURRENT_TIMESTAMP);
+INSERT INTO auth_role_scope_auth_code VALUES(1, 120, 1, 1, 0, 'system', CURRENT_TIMESTAMP, 'system', CURRENT_TIMESTAMP);
+INSERT INTO auth_role_scope_auth_code VALUES(2, 120, 1, 1, 0, 'system', CURRENT_TIMESTAMP, 'system', CURRENT_TIMESTAMP);
+INSERT INTO auth_role_scope_auth_code VALUES(1, 121, 1, 1, 0, 'system', CURRENT_TIMESTAMP, 'system', CURRENT_TIMESTAMP);
+INSERT INTO auth_role_scope_auth_code VALUES(2, 121, 1, 1, 0, 'system', CURRENT_TIMESTAMP, 'system', CURRENT_TIMESTAMP);
 INSERT INTO auth_tenant_menu VALUES(1, 1, 1, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP);
 INSERT INTO auth_tenant_menu VALUES(1, 2, 1, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP);
 INSERT INTO auth_tenant_menu VALUES(1, 3, 1, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP);
@@ -428,6 +438,9 @@ INSERT INTO auth_tenant_auth_code VALUES(1, 115, 1, CURRENT_TIMESTAMP, CURRENT_T
 INSERT INTO auth_tenant_auth_code VALUES(1, 116, 1, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP);
 INSERT INTO auth_tenant_auth_code VALUES(1, 117, 1, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP);
 INSERT INTO auth_tenant_auth_code VALUES(1, 118, 1, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP);
+INSERT INTO auth_tenant_auth_code VALUES(1, 119, 1, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP);
+INSERT INTO auth_tenant_auth_code VALUES(1, 120, 1, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP);
+INSERT INTO auth_tenant_auth_code VALUES(1, 121, 1, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP);
 
 -- 来源：modules/domains/agent/shiyu-agent-implementation/src/main/resources/db/baseline/h2/seed/agent/03_agent.sql
 
@@ -585,6 +598,7 @@ SELECT 1, M.id, 1, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP
 FROM auth_menu M WHERE M.id BETWEEN 2000 AND 2074;
 
 -- 来源：modules/business/education/shiyu-education-implementation/src/main/resources/db/baseline/h2/seed/education/01_auth.sql
+-- 扩展模式：iam
 INSERT INTO auth_auth_code VALUES(53, 'edu:subject:list', '查看学科', 1, 0, 'system', CURRENT_TIMESTAMP, 'system', CURRENT_TIMESTAMP);
 INSERT INTO auth_auth_code VALUES(54, 'edu:subject:create', '创建学科', 1, 0, 'system', CURRENT_TIMESTAMP, 'system', CURRENT_TIMESTAMP);
 INSERT INTO auth_auth_code VALUES(55, 'edu:subject:edit', '编辑学科', 1, 0, 'system', CURRENT_TIMESTAMP, 'system', CURRENT_TIMESTAMP);
@@ -623,6 +637,7 @@ INSERT INTO auth_auth_code VALUES(84, 'edu:analytics', '查看学情分析', 1, 
 INSERT INTO auth_auth_code VALUES(85, 'edu:wrong-question', '查看错题管理', 1, 0, 'system', CURRENT_TIMESTAMP, 'system', CURRENT_TIMESTAMP);
 
 -- 来源：modules/business/education/shiyu-education-implementation/src/main/resources/db/baseline/h2/seed/education/02_navigation.sql
+-- 扩展模式：iam
 INSERT INTO auth_menu (id,name,code,type,parent_id,tenant_id,path,redirect,icon,component,description,show,status,order,del_flag,create_by,create_time,update_by,update_time) VALUES
 (2050,'教育中心','EducationCenter','CATALOG',NULL,1,'/education-center','/education-center/learning','lucide:graduation-cap','','学习、练习、复习与 AI 辅学',TRUE,1,6,0,'system',CURRENT_TIMESTAMP,'system',CURRENT_TIMESTAMP),
 (2051,'学习','EducationLearning','MENU',2050,1,'/education-center/learning',NULL,'lucide:book-open','feature:education.learning','课程与学习资源',TRUE,1,1,0,'system',CURRENT_TIMESTAMP,'system',CURRENT_TIMESTAMP),
@@ -867,4 +882,5 @@ VALUES ('edu-calculator', '1.0.0', 'https://plugins.example.invalid/edu-calculat
         NULL, NULL, '["calculator:read"]', 'demo-checksum-edu-calculator', 'MANUAL',
         TIMESTAMP '2026-09-08 08:00:00', FALSE);
 
+-- 校验器要求在全部 schema 和 seed 语句之后存在此标记。
 INSERT INTO common_schema_baseline (id, baseline_version, seed_profile) VALUES (1, '4', 'system-ai');

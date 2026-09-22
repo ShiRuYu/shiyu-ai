@@ -1,6 +1,6 @@
 package com.shiyu.ai.web.config;
 
-import com.shiyu.ai.common.core.factory.YmlPropertySourceFactory;
+import com.shiyu.ai.common.foundation.factory.YmlPropertySourceFactory;
 import com.shiyu.ai.common.web.interceptor.WebInvokeInterceptor;
 
 import org.springframework.beans.factory.annotation.Value;

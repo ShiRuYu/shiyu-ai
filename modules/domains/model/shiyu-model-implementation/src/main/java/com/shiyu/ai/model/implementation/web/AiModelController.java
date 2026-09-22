@@ -2,9 +2,9 @@ package com.shiyu.ai.model.implementation.web;
 
 import cn.dev33.satoken.annotation.SaCheckPermission;
 
-import com.shiyu.ai.common.core.api.PageData;
-import com.shiyu.ai.common.core.api.Result;
-import com.shiyu.ai.common.core.vo.IdNameOptionVO;
+import com.shiyu.ai.common.foundation.api.PageData;
+import com.shiyu.ai.common.foundation.api.Result;
+import com.shiyu.ai.common.foundation.vo.IdNameOptionVO;
 import com.shiyu.ai.common.web.auth.ActorContextHttpAdapter;
 import com.shiyu.ai.model.implementation.application.service.AiModelService;
 import com.shiyu.ai.model.implementation.infrastructure.service.ModelManager;
@@ -28,9 +28,8 @@ import java.util.List;
  */
 @Slf4j
 @Tag(name = "Ai Model", description = "Ai Model")
-@SaCheckPermission("agent:model:list")
 @RestController
-@RequestMapping("/api/model/models")
+@RequestMapping("/api/model/model-configurations")
 public class AiModelController {
 
     /**
@@ -63,7 +62,8 @@ public class AiModelController {
      * @return 返回当前操作产生的结果。
      */
     @Operation(summary = "Get Page")
-    @GetMapping("/page")
+    @SaCheckPermission("agent:model:list")
+    @GetMapping
     public Result<PageData<AiModelVO>> getPage(
             @RequestParam(required = false) Long platformId,
             @RequestParam(required = false, defaultValue = "1") Integer pageNo,
@@ -72,7 +72,7 @@ public class AiModelController {
                 aiModelService.pageResponse(
                         ActorContextHttpAdapter.currentActor(), platformId, pageNo, pageSize);
         var vos =
-                com.shiyu.ai.common.core.utils.MapstructUtils.convert(
+                com.shiyu.ai.common.foundation.utils.MapstructUtils.convert(
                         result.getRight(), AiModelVO.class);
         return Result.success(new PageData<>(vos, result.getLeft()));
     }
@@ -83,13 +83,14 @@ public class AiModelController {
      * @param Id 用于定位目标业务对象的标识。
      */
     @Operation(summary = "Get by Platform Id")
+    @SaCheckPermission("agent:model:list")
     @GetMapping("/platform")
     public Result<List<AiModelVO>> getByPlatformId(@RequestParam Long platformId) {
         var list =
                 aiModelService.byPlatformResponse(
                         ActorContextHttpAdapter.currentActor(), platformId);
         return Result.success(
-                com.shiyu.ai.common.core.utils.MapstructUtils.convert(list, AiModelVO.class));
+                com.shiyu.ai.common.foundation.utils.MapstructUtils.convert(list, AiModelVO.class));
     }
 
     /**
@@ -98,6 +99,7 @@ public class AiModelController {
      * @param Code 用于定位或筛选目标业务对象的业务值。
      */
     @Operation(summary = "Get by Platform Code")
+    @SaCheckPermission("agent:model:list")
     @GetMapping("/platform/by-code")
     public Result<List<AiModelResponse>> getByPlatformCode(@RequestParam String platformCode) {
         List<AiModelResponse> list =
@@ -114,6 +116,7 @@ public class AiModelController {
      * @return 返回当前操作产生的结果。
      */
     @Operation(summary = "Get Options")
+    @SaCheckPermission("agent:model:list")
     @GetMapping("/options")
     public Result<List<IdNameOptionVO>> getOptions(
             @RequestParam(required = false) Long platformId) {
@@ -128,13 +131,14 @@ public class AiModelController {
      * @param Id 用于定位目标业务对象的标识。
      */
     @Operation(summary = "Get by Id")
-    @GetMapping("/detail")
-    public Result<AiModelVO> getById(@RequestParam Long id) {
+    @SaCheckPermission("agent:model:list")
+    @GetMapping("/{id}")
+    public Result<AiModelVO> getById(@PathVariable Long id) {
         AiModelResponse response =
                 aiModelService.detailResponse(ActorContextHttpAdapter.currentActor(), id);
         if (response != null) {
             return Result.success(
-                    com.shiyu.ai.common.core.utils.MapstructUtils.convert(
+                    com.shiyu.ai.common.foundation.utils.MapstructUtils.convert(
                             response, AiModelVO.class));
         }
         return Result.fail("模型不存在");
@@ -146,13 +150,14 @@ public class AiModelController {
      * @param Id 用于定位目标业务对象的标识。
      */
     @Operation(summary = "Get Default By Platform Id")
+    @SaCheckPermission("agent:model:list")
     @GetMapping("/platform/default")
     public Result<AiModelVO> getDefaultByPlatformId(@RequestParam Long platformId) {
         AiModelResponse response =
                 aiModelService.defaultResponse(ActorContextHttpAdapter.currentActor(), platformId);
         if (response != null) {
             return Result.success(
-                    com.shiyu.ai.common.core.utils.MapstructUtils.convert(
+                    com.shiyu.ai.common.foundation.utils.MapstructUtils.convert(
                             response, AiModelVO.class));
         }
         return Result.fail("未配置默认模型");
@@ -165,14 +170,14 @@ public class AiModelController {
      */
     @Operation(summary = "Create")
     @SaCheckPermission("agent:model:create")
-    @PostMapping("/create")
+    @PostMapping
     public Result<AiModelVO> create(@Valid @RequestBody AiModelRequest request) {
         try {
             AiModelResponse created =
                     aiModelService.createResponse(ActorContextHttpAdapter.currentActor(), request);
             modelManager.markDirty();
             return Result.success(
-                    com.shiyu.ai.common.core.utils.MapstructUtils.convert(
+                    com.shiyu.ai.common.foundation.utils.MapstructUtils.convert(
                             created, AiModelVO.class));
         } catch (Exception e) {
             log.error("新增模型失败", e);
@@ -187,16 +192,16 @@ public class AiModelController {
      */
     @Operation(summary = "Update")
     @SaCheckPermission("agent:model:edit")
-    @PostMapping("/update")
+    @PutMapping("/{id}")
     public Result<AiModelVO> update(
-            @RequestParam Long id, @Valid @RequestBody AiModelRequest request) {
+            @PathVariable Long id, @Valid @RequestBody AiModelRequest request) {
         try {
             AiModelResponse updated =
                     aiModelService.updateResponse(
                             ActorContextHttpAdapter.currentActor(), id, request);
             modelManager.markDirty();
             return Result.success(
-                    com.shiyu.ai.common.core.utils.MapstructUtils.convert(
+                    com.shiyu.ai.common.foundation.utils.MapstructUtils.convert(
                             updated, AiModelVO.class));
         } catch (Exception e) {
             log.error("修改模型失败", e);
@@ -211,8 +216,8 @@ public class AiModelController {
      */
     @Operation(summary = "Delete")
     @SaCheckPermission("agent:model:delete")
-    @PostMapping("/delete")
-    public Result<Void> delete(@RequestParam Long id) {
+    @DeleteMapping("/{id}")
+    public Result<Void> delete(@PathVariable Long id) {
         try {
             aiModelService.deleteById(ActorContextHttpAdapter.currentActor(), id);
             modelManager.markDirty();
@@ -256,7 +261,7 @@ public class AiModelController {
                     aiModelService.setDefaultResponse(ActorContextHttpAdapter.currentActor(), id);
             modelManager.markDirty();
             return Result.success(
-                    com.shiyu.ai.common.core.utils.MapstructUtils.convert(
+                    com.shiyu.ai.common.foundation.utils.MapstructUtils.convert(
                             response, AiModelVO.class));
         } catch (Exception e) {
             log.error("设置默认模型失败", e);

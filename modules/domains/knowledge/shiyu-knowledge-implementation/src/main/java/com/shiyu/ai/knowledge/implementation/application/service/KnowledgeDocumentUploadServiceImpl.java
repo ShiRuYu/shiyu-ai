@@ -4,7 +4,7 @@ import com.shiyu.ai.knowledge.implementation.application.KnowledgeSpaceService.S
 import com.shiyu.ai.knowledge.implementation.application.EnterpriseDocumentService.StoredFileRequest;
 import com.shiyu.ai.knowledge.implementation.application.EnterpriseDocumentService.UploadResult;
 
-import com.shiyu.ai.common.core.exception.ServiceException;
+import com.shiyu.ai.common.foundation.exception.ServiceException;
 import com.shiyu.ai.common.storage.api.*;
 import com.shiyu.ai.common.storage.backup.*;
 import com.shiyu.ai.common.storage.config.*;

@@ -2,7 +2,7 @@ package com.shiyu.ai.tooling.implementation.web;
 
 import cn.dev33.satoken.annotation.SaCheckPermission;
 
-import com.shiyu.ai.common.core.api.Result;
+import com.shiyu.ai.common.foundation.api.Result;
 import com.shiyu.ai.tooling.contract.api.ToolService;
 import com.shiyu.ai.tooling.implementation.tool.mcp.McpToolDescriptor;
 import com.shiyu.ai.tooling.implementation.tool.mcp.McpToolRegistry;

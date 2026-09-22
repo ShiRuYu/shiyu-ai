@@ -17,7 +17,7 @@
     <dependencies>
         <dependency>
             <groupId>com.shiyu.ai</groupId>
-            <artifactId>shiyu-common-core</artifactId>
+            <artifactId>shiyu-common-foundation</artifactId>
         </dependency>
         <!-- 该配置用于当前模块的职责边界和运行约束。 -->
         <dependency>

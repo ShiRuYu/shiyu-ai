@@ -1,6 +1,6 @@
 package com.shiyu.ai.common.vector.implementation;
 
-import com.shiyu.ai.common.core.utils.JSONUtils;
+import com.shiyu.ai.common.foundation.utils.JSONUtils;
 import com.shiyu.ai.common.vector.api.VectorStore;
 import com.shiyu.ai.common.vector.model.VectorRecord;
 import com.shiyu.ai.common.vector.model.VectorSearchRequest;

@@ -4,9 +4,9 @@ import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.*;
 import static org.mockito.Mockito.*;
 
-import com.shiyu.ai.common.core.api.PageData;
-import com.shiyu.ai.common.core.utils.MapstructUtils;
-import com.shiyu.ai.common.core.utils.PasswordUtils;
+import com.shiyu.ai.common.foundation.api.PageData;
+import com.shiyu.ai.common.foundation.utils.MapstructUtils;
+import com.shiyu.ai.common.foundation.utils.PasswordUtils;
 import com.shiyu.ai.iam.implementation.domain.model.*;
 import com.shiyu.ai.iam.implementation.port.repository.*;
 import com.shiyu.ai.iam.implementation.request.UserRequest;

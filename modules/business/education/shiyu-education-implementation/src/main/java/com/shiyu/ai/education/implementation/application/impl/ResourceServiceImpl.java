@@ -1,7 +1,7 @@
 package com.shiyu.ai.education.implementation.application.impl;
 
-import com.shiyu.ai.common.core.api.PageData;
-import com.shiyu.ai.common.core.utils.MapstructUtils;
+import com.shiyu.ai.common.foundation.api.PageData;
+import com.shiyu.ai.common.foundation.utils.MapstructUtils;
 import com.shiyu.ai.education.implementation.application.ResourceService;
 import com.shiyu.ai.education.implementation.domain.model.ResourceBO;
 import com.shiyu.ai.education.implementation.domain.port.repository.ResourceRepository;

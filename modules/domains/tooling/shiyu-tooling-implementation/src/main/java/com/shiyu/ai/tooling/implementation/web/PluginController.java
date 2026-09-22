@@ -2,7 +2,7 @@ package com.shiyu.ai.tooling.implementation.web;
 
 import cn.dev33.satoken.annotation.SaCheckPermission;
 
-import com.shiyu.ai.common.core.api.Result;
+import com.shiyu.ai.common.foundation.api.Result;
 import com.shiyu.ai.tooling.implementation.plugin.market.model.PluginMarketEntry;
 import com.shiyu.ai.tooling.implementation.plugin.market.service.PluginMarketService;
 import com.shiyu.ai.tooling.implementation.plugin.registry.PluginRegistry;

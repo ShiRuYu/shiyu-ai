@@ -7,10 +7,10 @@ import com.shiyu.ai.knowledge.implementation.application.EnterpriseDocumentServi
 import com.shiyu.ai.knowledge.implementation.application.EnterpriseDocumentService.UploadResult;
 import com.shiyu.ai.knowledge.implementation.application.EnterpriseDocumentService.VersionView;
 
-import com.shiyu.ai.common.core.api.PageData;
-import com.shiyu.ai.common.core.exception.ServiceException;
-import com.shiyu.ai.common.core.tx.TransactionHookExecutor;
-import com.shiyu.ai.common.core.tx.TransactionTemplateExecutor;
+import com.shiyu.ai.common.foundation.api.PageData;
+import com.shiyu.ai.common.foundation.exception.ServiceException;
+import com.shiyu.ai.common.foundation.tx.TransactionHookExecutor;
+import com.shiyu.ai.common.foundation.tx.TransactionTemplateExecutor;
 import com.shiyu.ai.common.storage.api.*;
 import com.shiyu.ai.common.storage.backup.*;
 import com.shiyu.ai.common.storage.config.*;
@@ -533,7 +533,7 @@ public class EnterpriseDocumentServiceImpl implements EnterpriseDocumentService 
 
     private void scheduleIndexRebuild(com.shiyu.ai.kernel.context.TenantId tenantId, Long spaceId) {
         TransactionHookExecutor.register(
-                new com.shiyu.ai.common.core.tx.TransactionHook() {
+                new com.shiyu.ai.common.foundation.tx.TransactionHook() {
                     /**
                      * {@code afterCommit} 执行当前类型定义的业务操作。
                      */

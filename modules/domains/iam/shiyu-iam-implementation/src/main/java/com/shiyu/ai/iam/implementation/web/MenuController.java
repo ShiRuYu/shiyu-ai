@@ -2,8 +2,8 @@ package com.shiyu.ai.iam.implementation.web;
 
 import cn.dev33.satoken.annotation.SaCheckPermission;
 
-import com.shiyu.ai.common.core.api.PageData;
-import com.shiyu.ai.common.core.api.Result;
+import com.shiyu.ai.common.foundation.api.PageData;
+import com.shiyu.ai.common.foundation.api.Result;
 import com.shiyu.ai.common.web.auth.ActorContextHttpAdapter;
 import com.shiyu.ai.iam.implementation.request.MenuPageRequest;
 import com.shiyu.ai.iam.implementation.request.MenuRequest;
@@ -82,7 +82,7 @@ public class MenuController {
      */
     @Operation(summary = "Get System Menu Page")
     @SaCheckPermission("system:menu:list")
-    @GetMapping("/page")
+    @GetMapping
     public Result<PageData<MenuVO>> getMenuPage(@Valid MenuPageRequest request) {
         return Result.success(
                 menuService.getMenuPage(
@@ -151,8 +151,8 @@ public class MenuController {
      */
     @Operation(summary = "Delete Menu")
     @SaCheckPermission("system:menu:delete")
-    @PostMapping("/delete")
-    public Result<Void> deleteMenu(@RequestParam Long id) {
+    @DeleteMapping("/{id}")
+    public Result<Void> deleteMenu(@PathVariable Long id) {
         return menuService.deleteMenu(ActorContextHttpAdapter.currentActor(), id)
                 ? Result.success()
                 : Result.fail("delete fail");
@@ -165,7 +165,7 @@ public class MenuController {
      */
     @Operation(summary = "Create Menu")
     @SaCheckPermission("system:menu:create")
-    @PostMapping("/create")
+    @PostMapping
     public Result<Void> createMenu(@Valid @RequestBody MenuRequest request) {
         return menuService.createMenu(ActorContextHttpAdapter.currentActor(), request)
                 ? Result.success()
@@ -179,8 +179,9 @@ public class MenuController {
      */
     @Operation(summary = "Update Menu")
     @SaCheckPermission("system:menu:update")
-    @PostMapping("/update")
-    public Result<Void> updateMenu(@RequestParam Long id, @Valid @RequestBody MenuRequest request) {
+    @PutMapping("/{id}")
+    public Result<Void> updateMenu(
+            @PathVariable Long id, @Valid @RequestBody MenuRequest request) {
         return menuService.updateMenu(ActorContextHttpAdapter.currentActor(), id, request)
                 ? Result.success()
                 : Result.fail("update fail");

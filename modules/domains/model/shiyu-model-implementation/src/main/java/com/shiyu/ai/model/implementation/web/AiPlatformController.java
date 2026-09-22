@@ -2,10 +2,10 @@ package com.shiyu.ai.model.implementation.web;
 
 import cn.dev33.satoken.annotation.SaCheckPermission;
 
-import com.shiyu.ai.common.core.api.PageData;
-import com.shiyu.ai.common.core.api.Result;
-import com.shiyu.ai.common.core.enums.BizResultCode;
-import com.shiyu.ai.common.core.vo.IdNameOptionVO;
+import com.shiyu.ai.common.foundation.api.PageData;
+import com.shiyu.ai.common.foundation.api.Result;
+import com.shiyu.ai.common.foundation.enums.BizResultCode;
+import com.shiyu.ai.common.foundation.vo.IdNameOptionVO;
 import com.shiyu.ai.common.web.auth.ActorContextHttpAdapter;
 import com.shiyu.ai.model.implementation.application.service.AiPlatformService;
 import com.shiyu.ai.model.implementation.infrastructure.service.ModelManager;
@@ -29,9 +29,8 @@ import java.util.List;
  */
 @Slf4j
 @Tag(name = "Ai Platform", description = "Ai Platform")
-@SaCheckPermission("agent:platform:list")
 @RestController
-@RequestMapping("/api/model/providers")
+@RequestMapping("/api/model/platforms")
 public class AiPlatformController {
 
     /**
@@ -65,7 +64,8 @@ public class AiPlatformController {
      * @return 返回当前操作产生的结果。
      */
     @Operation(summary = "Get Page")
-    @GetMapping("/page")
+    @SaCheckPermission("agent:platform:list")
+    @GetMapping
     public Result<PageData<AiPlatformVO>> getPage(
             @RequestParam(required = false) String name,
             @RequestParam(required = false) String code,
@@ -75,7 +75,7 @@ public class AiPlatformController {
                 aiPlatformService.pageResponse(
                         ActorContextHttpAdapter.currentActor(), pageNo, pageSize, name, code);
         var vos =
-                com.shiyu.ai.common.core.utils.MapstructUtils.convert(
+                com.shiyu.ai.common.foundation.utils.MapstructUtils.convert(
                         result.getRight(), AiPlatformVO.class);
         return Result.success(new PageData<>(vos, result.getLeft()));
     }
@@ -86,11 +86,12 @@ public class AiPlatformController {
      * @param Enabled 用于完成本次业务处理的 Enabled 参数。
      */
     @Operation(summary = "Get All Enabled")
+    @SaCheckPermission("agent:platform:list")
     @GetMapping("/enabled")
     public Result<List<AiPlatformVO>> getAllEnabled() {
         var list = aiPlatformService.enabledResponse(ActorContextHttpAdapter.currentActor());
         return Result.success(
-                com.shiyu.ai.common.core.utils.MapstructUtils.convert(list, AiPlatformVO.class));
+                com.shiyu.ai.common.foundation.utils.MapstructUtils.convert(list, AiPlatformVO.class));
     }
 
     /**
@@ -99,6 +100,7 @@ public class AiPlatformController {
      * @param Options 用于完成本次业务处理的 Options 参数。
      */
     @Operation(summary = "Get Options")
+    @SaCheckPermission("agent:platform:list")
     @GetMapping("/options")
     public Result<List<IdNameOptionVO>> getOptions() {
         return Result.success(aiPlatformService.getOptions(ActorContextHttpAdapter.currentActor()));
@@ -110,8 +112,9 @@ public class AiPlatformController {
      * @param Id 用于定位目标业务对象的标识。
      */
     @Operation(summary = "Get by Id")
-    @GetMapping("/detail")
-    public Result<AiPlatformResponse> getById(@RequestParam Long id) {
+    @SaCheckPermission("agent:platform:list")
+    @GetMapping("/{id}")
+    public Result<AiPlatformResponse> getById(@PathVariable Long id) {
         AiPlatformResponse response =
                 aiPlatformService.detailResponse(ActorContextHttpAdapter.currentActor(), id);
         if (response != null) {
@@ -126,6 +129,7 @@ public class AiPlatformController {
      * @param Code 用于定位或筛选目标业务对象的业务值。
      */
     @Operation(summary = "Get by Code")
+    @SaCheckPermission("agent:platform:list")
     @GetMapping("/code")
     public Result<AiPlatformResponse> getByCode(@RequestParam String code) {
         AiPlatformResponse response =
@@ -142,6 +146,7 @@ public class AiPlatformController {
      * @param Default 用于完成本次业务处理的 Default 参数。
      */
     @Operation(summary = "Get Default")
+    @SaCheckPermission("agent:platform:list")
     @GetMapping("/default")
     public Result<AiPlatformResponse> getDefault() {
         AiPlatformResponse response =
@@ -159,7 +164,7 @@ public class AiPlatformController {
      */
     @Operation(summary = "Create")
     @SaCheckPermission("agent:platform:create")
-    @PostMapping("/create")
+    @PostMapping
     public Result<AiPlatformVO> create(@Valid @RequestBody AiPlatformRequest request) {
         try {
             AiPlatformResponse created =
@@ -167,7 +172,7 @@ public class AiPlatformController {
                             ActorContextHttpAdapter.currentActor(), request);
             modelManager.markDirty();
             return Result.success(
-                    com.shiyu.ai.common.core.utils.MapstructUtils.convert(
+                    com.shiyu.ai.common.foundation.utils.MapstructUtils.convert(
                             created, AiPlatformVO.class));
         } catch (Exception e) {
             log.error("新增平台失败", e);
@@ -182,16 +187,16 @@ public class AiPlatformController {
      */
     @Operation(summary = "Update")
     @SaCheckPermission("agent:platform:edit")
-    @PostMapping("/update")
+    @PutMapping("/{id}")
     public Result<AiPlatformVO> update(
-            @RequestParam Long id, @Valid @RequestBody AiPlatformRequest request) {
+            @PathVariable Long id, @Valid @RequestBody AiPlatformRequest request) {
         try {
             AiPlatformResponse updated =
                     aiPlatformService.updateResponse(
                             ActorContextHttpAdapter.currentActor(), id, request);
             modelManager.markDirty();
             return Result.success(
-                    com.shiyu.ai.common.core.utils.MapstructUtils.convert(
+                    com.shiyu.ai.common.foundation.utils.MapstructUtils.convert(
                             updated, AiPlatformVO.class));
         } catch (Exception e) {
             log.error("修改平台失败", e);
@@ -206,8 +211,8 @@ public class AiPlatformController {
      */
     @Operation(summary = "Delete")
     @SaCheckPermission("agent:platform:delete")
-    @PostMapping("/delete")
-    public Result<Void> delete(@RequestParam Long id) {
+    @DeleteMapping("/{id}")
+    public Result<Void> delete(@PathVariable Long id) {
         try {
             aiPlatformService.deleteById(ActorContextHttpAdapter.currentActor(), id);
             modelManager.markDirty();
@@ -233,7 +238,7 @@ public class AiPlatformController {
                             ActorContextHttpAdapter.currentActor(), id);
             modelManager.markDirty();
             return Result.success(
-                    com.shiyu.ai.common.core.utils.MapstructUtils.convert(
+                    com.shiyu.ai.common.foundation.utils.MapstructUtils.convert(
                             response, AiPlatformVO.class));
         } catch (Exception e) {
             log.error("设置默认平台失败", e);

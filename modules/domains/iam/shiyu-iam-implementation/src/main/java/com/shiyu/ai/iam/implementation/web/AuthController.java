@@ -1,8 +1,8 @@
 package com.shiyu.ai.iam.implementation.web;
 
-import com.shiyu.ai.common.core.api.Result;
-import com.shiyu.ai.common.core.context.model.UserContext;
-import com.shiyu.ai.common.core.enums.BizResultCode;
+import com.shiyu.ai.common.foundation.api.Result;
+import com.shiyu.ai.common.foundation.context.model.UserContext;
+import com.shiyu.ai.common.foundation.enums.BizResultCode;
 import com.shiyu.ai.common.web.auth.ActorContextHttpAdapter;
 import com.shiyu.ai.iam.implementation.handler.LoginRateLimiter;
 import com.shiyu.ai.iam.implementation.request.*;
@@ -257,7 +257,7 @@ public class AuthController {
                         authService.getUserTenants(ActorContextHttpAdapter.currentActor(), userId));
                 if (userVO.getExtInfo() != null) {
                     var extMap =
-                            com.shiyu.ai.common.core.utils.JSONUtils.parseObject(
+                            com.shiyu.ai.common.foundation.utils.JSONUtils.parseObject(
                                     userVO.getExtInfo(), java.util.Map.class);
                     if (extMap != null) {
                         Object tid = extMap.get("currentTenantId");

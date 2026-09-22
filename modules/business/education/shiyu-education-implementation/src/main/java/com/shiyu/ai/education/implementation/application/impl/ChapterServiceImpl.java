@@ -1,7 +1,7 @@
 package com.shiyu.ai.education.implementation.application.impl;
 
-import com.shiyu.ai.common.core.exception.ServiceException;
-import com.shiyu.ai.common.core.utils.MapstructUtils;
+import com.shiyu.ai.common.foundation.exception.ServiceException;
+import com.shiyu.ai.common.foundation.utils.MapstructUtils;
 import com.shiyu.ai.education.implementation.application.ChapterService;
 import com.shiyu.ai.education.implementation.domain.model.ChapterBO;
 import com.shiyu.ai.education.implementation.domain.model.KnowledgeTextbookBO;

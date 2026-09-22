@@ -1,8 +1,8 @@
 package com.shiyu.ai.model.implementation.persistence.repository;
 
 import com.mybatisflex.core.query.QueryWrapper;
-import com.shiyu.ai.common.core.utils.MapstructUtils;
-import com.shiyu.ai.common.core.vo.IdNameOptionVO;
+import com.shiyu.ai.common.foundation.utils.MapstructUtils;
+import com.shiyu.ai.common.foundation.vo.IdNameOptionVO;
 import com.shiyu.ai.kernel.context.TenantId;
 import com.shiyu.ai.model.implementation.domain.model.AiPlatformBO;
 import com.shiyu.ai.model.implementation.persistence.dataobject.AiPlatformDO;

@@ -24,7 +24,7 @@ Tooling 工具实现模块，承载该领域的应用服务、领域模型和基
 
 ## 内部模块依赖
 
-`shiyu-tooling-contract`、`shiyu-common-core`、`shiyu-common-web`
+`shiyu-tooling-contract`、`shiyu-common-foundation`、`shiyu-common-web`
 
 ## 验证
 

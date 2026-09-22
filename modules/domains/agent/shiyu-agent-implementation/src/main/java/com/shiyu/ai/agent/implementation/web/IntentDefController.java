@@ -5,9 +5,9 @@ import cn.dev33.satoken.annotation.SaCheckPermission;
 import com.shiyu.ai.agent.implementation.request.IntentDefRequest;
 import com.shiyu.ai.agent.implementation.service.IntentDefService;
 import com.shiyu.ai.agent.implementation.vo.IntentDefVO;
-import com.shiyu.ai.common.core.api.PageData;
-import com.shiyu.ai.common.core.api.Result;
-import com.shiyu.ai.common.core.vo.IdNameOptionVO;
+import com.shiyu.ai.common.foundation.api.PageData;
+import com.shiyu.ai.common.foundation.api.Result;
+import com.shiyu.ai.common.foundation.vo.IdNameOptionVO;
 import com.shiyu.ai.common.web.auth.ActorContextHttpAdapter;
 
 import jakarta.validation.Valid;
@@ -37,7 +37,7 @@ public class IntentDefController {
      * @return 返回 Intent Def 相关操作生成的结果数据。
      */
     @SaCheckPermission("agent:intent:list")
-    @GetMapping("/page")
+    @GetMapping
     public Result<PageData<IntentDefVO>> page(
             @RequestParam(required = false) String agentId,
             @RequestParam(required = false) String name,
@@ -63,8 +63,8 @@ public class IntentDefController {
      * @param list 用于完成本次业务处理的 list 参数。
      */
     @SaCheckPermission("agent:intent:list")
-    @GetMapping("/detail")
-    public Result<IntentDefVO> detail(@RequestParam Long id) {
+    @GetMapping("/{id}")
+    public Result<IntentDefVO> detail(@PathVariable Long id) {
         var v = service.detailView(ActorContextHttpAdapter.currentActor(), id);
         return v == null ? Result.fail("意图定义不存在") : Result.success(v);
     }
@@ -75,7 +75,7 @@ public class IntentDefController {
      * @param create 用于完成本次业务处理的 create 参数。
      */
     @SaCheckPermission("agent:intent:create")
-    @PostMapping("/create")
+    @PostMapping
     public Result<IntentDefVO> create(@Valid @RequestBody IntentDefRequest r) {
         return Result.success(service.create(ActorContextHttpAdapter.currentActor(), r));
     }
@@ -85,10 +85,10 @@ public class IntentDefController {
      *
      * @param create 用于完成本次业务处理的 create 参数。
      */
-    @SaCheckPermission("agent:intent:create")
-    @PostMapping("/update")
+    @SaCheckPermission("agent:intent:edit")
+    @PutMapping("/{id}")
     public Result<IntentDefVO> update(
-            @RequestParam Long id, @Valid @RequestBody IntentDefRequest r) {
+            @PathVariable Long id, @Valid @RequestBody IntentDefRequest r) {
         return Result.success(service.update(ActorContextHttpAdapter.currentActor(), id, r));
     }
 
@@ -98,8 +98,8 @@ public class IntentDefController {
      * @param delete 用于完成本次业务处理的 delete 参数。
      */
     @SaCheckPermission("agent:intent:delete")
-    @PostMapping("/delete")
-    public Result<Void> delete(@RequestParam Long id) {
+    @DeleteMapping("/{id}")
+    public Result<Void> delete(@PathVariable Long id) {
         service.deleteById(ActorContextHttpAdapter.currentActor(), id);
         return Result.success();
     }
@@ -110,7 +110,7 @@ public class IntentDefController {
      * @param delete 用于完成本次业务处理的 delete 参数。
      */
     @SaCheckPermission("agent:intent:delete")
-    @PostMapping("/batch-delete")
+    @DeleteMapping
     public Result<Void> deleteBatch(@RequestBody List<Long> ids) {
         service.deleteByIds(ActorContextHttpAdapter.currentActor(), ids);
         return Result.success();

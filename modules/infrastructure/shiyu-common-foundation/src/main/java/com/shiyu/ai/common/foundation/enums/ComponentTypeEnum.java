@@ -1,0 +1,73 @@
+package com.shiyu.ai.common.foundation.enums;
+
+import com.shiyu.ai.common.foundation.CharConstants;
+import com.shiyu.ai.common.foundation.utils.StringUtils;
+
+import lombok.AllArgsConstructor;
+import lombok.Getter;
+
+import java.util.Arrays;
+
+/**
+ * 定义 Component Type Enum 可用的枚举值及其业务语义。
+ */
+@Getter
+@AllArgsConstructor
+public enum ComponentTypeEnum {
+    /** Layout组件标识 主布局容器 @/layout/index.vue 一级菜单根节点 */
+    LAYOUT("Layout"),
+
+    /** ParentView组件标识 中间父级占位符 @/components/ParentView.vue 二级或三级嵌套菜单 */
+    PARENT_VIEW("ParentView"),
+
+    /** InnerLink组件标识 内嵌外链 @/components/InnerLink.vue 打开外部或内嵌页面 */
+    INNER_LINK("InnerLink");
+
+    /**
+     * 值，表示当前对象中的对应属性。
+     */
+    private final String value;
+
+    /** 根据值获取枚举 */
+    public static ComponentTypeEnum fromValue(String value) {
+        return Arrays.stream(values())
+                .filter(componentTypeEnum -> componentTypeEnum.getValue().equals(value))
+                .findFirst()
+                .orElse(null);
+    }
+
+    /**
+     * 校验或判断 Component Type Enum 相关业务数据，并返回处理结果。
+     *
+     * @return 返回本次条件判断是否成立。
+     */
+    public boolean isLayout() {
+        return this == LAYOUT;
+    }
+
+    /**
+     * 校验或判断 Component Type Enum 相关业务数据，并返回处理结果。
+     *
+     * @return 返回本次条件判断是否成立。
+     */
+    public boolean isParentView() {
+        return this == PARENT_VIEW;
+    }
+
+    /**
+     * 校验或判断 Component Type Enum 相关业务数据，并返回处理结果。
+     *
+     * @return 返回本次条件判断是否成立。
+     */
+    public boolean isInnerLink() {
+        return this == INNER_LINK;
+    }
+
+    /** 内链域名特殊字符替换 */
+    public static String innerLinkReplaceEach(String path) {
+        return StringUtils.replaceEach(
+                path,
+                new String[] {CharConstants.HTTP, CharConstants.HTTPS, CharConstants.WWW, "."},
+                new String[] {"", "", "", "/"});
+    }
+}

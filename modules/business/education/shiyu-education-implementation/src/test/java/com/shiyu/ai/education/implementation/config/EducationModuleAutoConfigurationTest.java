@@ -1,7 +1,7 @@
 package com.shiyu.ai.education.implementation.config;
 
-import com.shiyu.ai.common.core.module.ConditionalOnBusinessModule;
-import com.shiyu.ai.common.core.module.BusinessModuleDescriptor;
+import com.shiyu.ai.common.foundation.module.ConditionalOnBusinessModule;
+import com.shiyu.ai.common.foundation.module.BusinessModuleDescriptor;
 import org.junit.jupiter.api.Test;
 import org.springframework.boot.autoconfigure.AutoConfiguration;
 import org.springframework.boot.test.context.runner.ApplicationContextRunner;

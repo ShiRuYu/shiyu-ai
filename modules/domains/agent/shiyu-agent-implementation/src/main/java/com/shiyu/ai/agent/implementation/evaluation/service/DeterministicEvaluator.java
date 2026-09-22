@@ -4,7 +4,7 @@ import com.shiyu.ai.agent.implementation.evaluation.model.EvalMetric;
 import com.shiyu.ai.agent.implementation.evaluation.model.EvalResult;
 import com.shiyu.ai.agent.implementation.evaluation.port.Evaluator;
 
-import com.shiyu.ai.common.core.utils.JSONUtils;
+import com.shiyu.ai.common.foundation.utils.JSONUtils;
 
 import java.util.Locale;
 

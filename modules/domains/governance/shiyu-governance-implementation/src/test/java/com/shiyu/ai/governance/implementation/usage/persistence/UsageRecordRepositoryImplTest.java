@@ -12,7 +12,7 @@ import static org.mockito.Mockito.mockStatic;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
-import com.shiyu.ai.common.core.utils.MapstructUtils;
+import com.shiyu.ai.common.foundation.utils.MapstructUtils;
 import com.shiyu.ai.governance.implementation.usage.domain.model.UsageRecordBO;
 import com.shiyu.ai.governance.implementation.usage.persistence.dataobject.UsageRecordDO;
 import com.shiyu.ai.governance.implementation.usage.persistence.mapper.UsageRecordMapper;

@@ -3,8 +3,8 @@ import com.shiyu.ai.memory.implementation.domain.magma.model.MemoryEntity;
 import com.shiyu.ai.memory.implementation.domain.magma.model.MemoryRetrievalTrace;
 import com.shiyu.ai.memory.implementation.domain.magma.port.MagmaMemoryRepository;
 
-import com.shiyu.ai.common.core.jdbc.JdbcDialect;
-import com.shiyu.ai.common.core.utils.JSONUtils;
+import com.shiyu.ai.common.foundation.jdbc.JdbcDialect;
+import com.shiyu.ai.common.foundation.utils.JSONUtils;
 import com.shiyu.ai.kernel.context.TenantId;
 import com.shiyu.ai.kernel.context.TenantScope;
 import com.shiyu.ai.memory.contract.model.*;

@@ -7,7 +7,7 @@ import com.shiyu.ai.agent.contract.node.NodeInput;
 import com.shiyu.ai.agent.contract.node.NodeInputParam;
 import com.shiyu.ai.agent.contract.node.NodeOutput;
 import com.shiyu.ai.agent.contract.node.NodeType;
-import com.shiyu.ai.common.core.utils.JSONUtils;
+import com.shiyu.ai.common.foundation.utils.JSONUtils;
 
 import lombok.Getter;
 import lombok.Setter;

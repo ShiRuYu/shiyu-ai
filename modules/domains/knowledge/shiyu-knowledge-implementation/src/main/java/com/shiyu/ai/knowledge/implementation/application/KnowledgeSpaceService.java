@@ -1,6 +1,6 @@
 package com.shiyu.ai.knowledge.implementation.application;
 
-import com.shiyu.ai.common.core.api.PageData;
+import com.shiyu.ai.common.foundation.api.PageData;
 import com.shiyu.ai.kernel.context.ActorContext;
 import com.shiyu.ai.knowledge.contract.KnowledgeTenantProvisioning;
 
@@ -13,20 +13,20 @@ import java.time.LocalDateTime;
 import java.util.List;
 
 /**
- * 提供 知识 空间 的查询、创建、更新及调用服务，协调业务变更和领域协作。
+ * 定义知识空间应用服务，负责当前租户的空间初始化、CRUD、成员授权和空间级访问校验。
  */
 public interface KnowledgeSpaceService extends KnowledgeTenantProvisioning {
 
     /**
-     * 执行 知识 空间 相关业务数据，并返回处理结果。
+     * 确保当前租户存在默认知识空间并返回其视图。
      *
      * @param actor 当前操作主体上下文，用于确定租户、用户和访问权限。
-     * @return 返回 知识 空间 相关操作生成的结果数据。
+     * @return 当前租户的默认知识空间；初始化后仍不存在时由实现抛出业务异常。
      */
     SpaceView ensureDefaultSpace(ActorContext actor);
 
     /**
-     * 执行 知识 空间 相关业务操作，并维护必要的状态和协作关系。
+     * 为指定租户创建默认知识空间及其初始配置。
      *
      * @param tenantId 当前操作涉及的租户标识。
      */
@@ -34,43 +34,43 @@ public interface KnowledgeSpaceService extends KnowledgeTenantProvisioning {
     void initializeTenantDefaults(com.shiyu.ai.kernel.context.TenantId tenantId);
 
     /**
-     * 查询 知识 空间 相关业务数据，并返回处理结果。
+     * 查询当前租户可访问的知识空间详情。
      *
      * @param actor 当前操作主体上下文，用于确定租户、用户和访问权限。
-     * @param id 用于定位目标业务对象的标识。
-     * @return 返回 知识 空间 相关操作生成的结果数据。
+     * @param id 知识空间 ID。
+     * @return 知识空间详情；目标不存在或当前主体无权访问时由实现抛出业务异常。
      */
     SpaceView get(ActorContext actor, Long id);
 
     /**
-     * 执行 知识 空间 相关业务数据，并返回处理结果。
+     * 查询知识空间配置的难度量表及其等级定义。
      *
      * @param actor 当前操作主体上下文，用于确定租户、用户和访问权限。
-     * @param spaceId 用于定位space的标识。
-     * @return 返回 知识 空间 相关操作生成的结果数据。
+     * @param spaceId 知识空间 ID。
+     * @return 当前空间绑定的难度量表及等级列表。
      */
     DifficultyScaleView difficultyScale(ActorContext actor, Long spaceId);
 
     /**
-     * 查询 知识 空间 相关业务数据，并返回处理结果。
+     * 按名称关键字分页查询当前租户可访问的知识空间。
      *
      * @param actor 当前操作主体上下文，用于确定租户、用户和访问权限。
-     * @param pageNum 用于完成本次业务处理的 pageNum 参数。
+     * @param pageNum 页码，从 1 开始。
      * @param pageSize 每页返回的数据数量。
-     * @param keyword 用于完成本次业务处理的 keyword 参数。
-     * @return 返回 知识 空间 相关操作生成的结果数据。
+     * @param keyword 可选的空间名称或编码关键字。
+     * @return 当前页空间视图及总记录数。
      */
     PageData<SpaceView> page(ActorContext actor, int pageNum, int pageSize, String keyword);
 
     /**
-     * 查询 知识 空间 相关业务数据，并返回处理结果。
+     * 按名称和领域编码分页查询当前租户可访问的知识空间。
      *
      * @param actor 当前操作主体上下文，用于确定租户、用户和访问权限。
-     * @param pageNum 用于完成本次业务处理的 pageNum 参数。
+     * @param pageNum 页码，从 1 开始。
      * @param pageSize 每页返回的数据数量。
-     * @param keyword 用于完成本次业务处理的 keyword 参数。
-     * @param domainCode 用于完成本次业务处理的 domainCode 参数。
-     * @return 返回 知识 空间 相关操作生成的结果数据。
+     * @param keyword 可选的空间名称或编码关键字。
+     * @param domainCode 可选的领域编码。
+     * @return 当前页空间视图及总记录数。
      */
     PageData<SpaceView> page(
             ActorContext actor, int pageNum, int pageSize, String keyword, String domainCode);

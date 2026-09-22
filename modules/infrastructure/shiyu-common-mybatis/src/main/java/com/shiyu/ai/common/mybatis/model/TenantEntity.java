@@ -1,7 +1,7 @@
 package com.shiyu.ai.common.mybatis.model;
 
 import com.mybatisflex.annotation.Column;
-import com.shiyu.ai.common.core.domain.BaseEntity;
+import com.shiyu.ai.common.foundation.domain.BaseEntity;
 
 import lombok.Data;
 import lombok.EqualsAndHashCode;

@@ -1,7 +1,7 @@
 package com.shiyu.ai.agent.implementation.port.repository;
 
 import com.shiyu.ai.agent.implementation.domain.model.IntentDefBO;
-import com.shiyu.ai.common.core.vo.IdNameOptionVO;
+import com.shiyu.ai.common.foundation.vo.IdNameOptionVO;
 import com.shiyu.ai.kernel.context.TenantId;
 
 import org.apache.commons.lang3.tuple.Pair;

@@ -1,0 +1,3 @@
+com.shiyu.ai.common.foundation.config.AsyncConfig
+com.shiyu.ai.common.foundation.config.ShiYuConfig
+com.shiyu.ai.common.foundation.config.ValidatorConfig

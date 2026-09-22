@@ -4,7 +4,7 @@ import com.shiyu.ai.knowledge.implementation.application.port.rag.ChunkSplitter;
 
 import com.shiyu.ai.knowledge.implementation.infrastructure.rag.ChineseChunkSplitter;
 
-import com.shiyu.ai.common.core.utils.JSONUtils;
+import com.shiyu.ai.common.foundation.utils.JSONUtils;
 import com.shiyu.ai.kernel.context.ActorContext;
 import com.shiyu.ai.kernel.context.TenantId;
 import com.shiyu.ai.knowledge.implementation.application.port.document.DocumentParser;

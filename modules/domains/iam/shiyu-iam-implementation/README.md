@@ -24,7 +24,7 @@ IAM 身份与权限实现模块，承载该领域的应用服务、领域模型�
 
 ## 内部模块依赖
 
-`shiyu-iam-contract`、`shiyu-knowledge-contract`、`shiyu-shared-kernel`、`shiyu-common-web`、`shiyu-common-core`、`shiyu-common-mybatis`
+`shiyu-iam-contract`、`shiyu-knowledge-contract`、`shiyu-shared-kernel`、`shiyu-common-web`、`shiyu-common-foundation`、`shiyu-common-mybatis`
 
 ## 验证
 

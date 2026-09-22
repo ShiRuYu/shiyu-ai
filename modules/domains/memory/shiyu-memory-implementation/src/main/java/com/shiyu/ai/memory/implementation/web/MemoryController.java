@@ -6,7 +6,7 @@ import com.shiyu.ai.memory.implementation.domain.magma.service.MagmaMemoryServic
 
 import cn.dev33.satoken.annotation.SaCheckPermission;
 
-import com.shiyu.ai.common.core.api.Result;
+import com.shiyu.ai.common.foundation.api.Result;
 import com.shiyu.ai.common.web.auth.ActorContextHttpAdapter;
 import com.shiyu.ai.kernel.context.TenantId;
 import com.shiyu.ai.memory.contract.model.*;

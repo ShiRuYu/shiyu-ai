@@ -9,8 +9,8 @@ import com.shiyu.ai.knowledge.implementation.application.KnowledgeEvaluationServ
 import com.shiyu.ai.knowledge.implementation.application.KnowledgeSpaceService.SpaceRole;
 import com.shiyu.ai.knowledge.implementation.infrastructure.index.service.KnowledgeIndexService.HybridHit;
 
-import com.shiyu.ai.common.core.api.PageData;
-import com.shiyu.ai.common.core.exception.ServiceException;
+import com.shiyu.ai.common.foundation.api.PageData;
+import com.shiyu.ai.common.foundation.exception.ServiceException;
 import com.shiyu.ai.kernel.context.ActorContext;
 import com.shiyu.ai.knowledge.implementation.application.KnowledgeEvaluationService;
 import com.shiyu.ai.knowledge.implementation.application.KnowledgeSpaceService;

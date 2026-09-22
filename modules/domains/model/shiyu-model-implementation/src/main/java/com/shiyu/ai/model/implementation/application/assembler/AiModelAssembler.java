@@ -1,6 +1,6 @@
 package com.shiyu.ai.model.implementation.application.assembler;
 
-import com.shiyu.ai.common.core.utils.MapstructUtils;
+import com.shiyu.ai.common.foundation.utils.MapstructUtils;
 import com.shiyu.ai.model.implementation.domain.model.AiModelBO;
 import com.shiyu.ai.model.implementation.web.request.AiModelRequest;
 import com.shiyu.ai.model.implementation.web.response.AiModelResponse;

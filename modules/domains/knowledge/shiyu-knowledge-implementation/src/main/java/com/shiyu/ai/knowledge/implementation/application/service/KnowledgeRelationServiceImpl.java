@@ -3,7 +3,7 @@ package com.shiyu.ai.knowledge.implementation.application.service;
 import com.shiyu.ai.knowledge.implementation.application.KnowledgeRelationService.RelationView;
 import com.shiyu.ai.knowledge.implementation.application.KnowledgeSpaceService.SpaceRole;
 
-import com.shiyu.ai.common.core.exception.ServiceException;
+import com.shiyu.ai.common.foundation.exception.ServiceException;
 import com.shiyu.ai.kernel.context.ActorContext;
 import com.shiyu.ai.knowledge.contract.api.KnowledgeRelationPort;
 import com.shiyu.ai.knowledge.contract.model.KnowledgeResponse;

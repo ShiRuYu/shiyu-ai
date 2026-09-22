@@ -6,9 +6,9 @@ import com.shiyu.ai.agent.implementation.port.repository.IntentDefRepository;
 import com.shiyu.ai.agent.implementation.request.IntentDefRequest;
 import com.shiyu.ai.agent.implementation.service.IntentDefService;
 import com.shiyu.ai.agent.implementation.vo.IntentDefVO;
-import com.shiyu.ai.common.core.exception.ServiceException;
-import com.shiyu.ai.common.core.utils.MapstructUtils;
-import com.shiyu.ai.common.core.vo.IdNameOptionVO;
+import com.shiyu.ai.common.foundation.exception.ServiceException;
+import com.shiyu.ai.common.foundation.utils.MapstructUtils;
+import com.shiyu.ai.common.foundation.vo.IdNameOptionVO;
 import com.shiyu.ai.kernel.context.ActorContext;
 
 import jakarta.annotation.Resource;

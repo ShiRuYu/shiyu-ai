@@ -24,7 +24,7 @@ import com.shiyu.ai.agent.implementation.node.tool.ToolCallConfig;
 import com.shiyu.ai.agent.implementation.node.transform.TransformConfig;
 import com.shiyu.ai.agent.implementation.port.repository.AgentAdminRepository;
 import com.shiyu.ai.agent.implementation.request.GraphConfigRequest;
-import com.shiyu.ai.common.core.utils.JSONUtils;
+import com.shiyu.ai.common.foundation.utils.JSONUtils;
 import com.shiyu.ai.kernel.context.ActorContext;
 
 import lombok.extern.slf4j.Slf4j;
@@ -146,7 +146,7 @@ public class AgentLoader {
                 java.util.Map<String, Object> extInfoMap = new java.util.HashMap<>();
                 extInfoMap.put("requiredInputs", deduped.values());
                 String extInfoJson =
-                        com.shiyu.ai.common.core.utils.JSONUtils.toJsonString(extInfoMap);
+                        com.shiyu.ai.common.foundation.utils.JSONUtils.toJsonString(extInfoMap);
 
                 if (!extInfoJson.equals(versionBO.getExtInfo())) {
                     versionBO.setExtInfo(extInfoJson);
