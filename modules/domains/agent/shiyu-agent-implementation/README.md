@@ -26,6 +26,12 @@
 
 内存 Repository 用于明确选择的运行/测试场景，JDBC 仓储承载持久化场景；两者不是可随意互换的运行保障。Agent 的运行状态、外部模型调用、知识检索和工具权限要分别由各自边界负责。
 
+## 使用前提与示例
+
+- **前提**：应用装配 Agent 实现及数据库；图中的 LLM、知识、记忆、工具节点分别要求对应 contract 实现和可用资源。运行请求需携带认证主体，工具审批和对象权限不能由图结构代替。
+- **使用**：通过 `/api/agent/agents` 建立定义，配置节点与边并创建版本；发布后通过 `/api/agent/executions` 发起执行，随后查询运行事件/轨迹。评估数据集和结果使用 `/api/agent/evaluations` 入口。
+- **扩展**：新增节点时实现 contract 的 `NodeCreator` 并注册节点类型，先验证图构建、输入/输出和失败恢复，再让应用在组合层装配；不要将跨域 Repository 注入节点。
+
 ## 边界
 
 其他领域面向 Agent 的集成应依赖 `shiyu-agent-contract`；实现模块负责编排和执行，不应把数据库实体当作跨领域 API。
@@ -42,4 +48,4 @@
 
 运行本模块及其依赖模块的测试：
 
-`mvn --batch-mode --no-transfer-progress -pl modules/domains/agent/shiyu-agent-implementation -am test -Ddependency-check.skip=true`
+`mvn --batch-mode --no-transfer-progress -pl modules/domains/agent/shiyu-agent-implementation -am test '-Ddependency-check.skip=true'`

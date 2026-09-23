@@ -21,6 +21,12 @@
 - `CompositeTaskDecorator` 组合 `ContextTaskDecorator` 与可选的 `OtelTaskDecorator`；`MicrometerExecutorBinder` 在存在观测依赖时绑定指标。
 - `TaskContext` 只承载任务级上下文。将租户 ID 显式放入任务输入，在工作线程建立 `TenantScope`，任务结束清理，才构成完整的异步租户隔离。
 
+## 使用前提与示例
+
+- **前提**：应用装配本模块并配置 `thread-pool` / `shiyu.thread`；需要指标或追踪时，运行 classpath 还应包含对应 Micrometer/OpenTelemetry 组件。
+- **使用**：为异步场景从 `ThreadPoolManager` 获取受管执行器并提交任务；把可信租户 ID 放进任务输入，在工作线程用 `TenantScope.withTenant` 包住数据库/索引操作，任务结束恢复作用域。
+- **限制**：`TaskContext` 装饰器不会自动传播 `TenantScope`；不能以请求线程曾经有租户为由直接在复用线程执行租户查询。
+
 ## 边界
 
 业务模块可以依赖公共基础设施；基础设施不反向依赖领域 implementation。
@@ -37,4 +43,4 @@
 
 运行本模块及其依赖模块的测试：
 
-`mvn --batch-mode --no-transfer-progress -pl modules/infrastructure/shiyu-common-thread -am test -Ddependency-check.skip=true`
+`mvn --batch-mode --no-transfer-progress -pl modules/infrastructure/shiyu-common-thread -am test '-Ddependency-check.skip=true'`

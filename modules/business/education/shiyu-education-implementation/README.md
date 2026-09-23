@@ -27,6 +27,12 @@
 
 教育服务只处理课程与学习规则；认证、通用文件存储、模型推理、知识检索分别通过平台能力或对应 contract 协作。模块关闭不删除数据，重新启用前仍需核对权限、租户和数据库基线。
 
+## 使用前提与示例
+
+- **前提**：Bootstrap 已引入本模块，`shiyu.modules.education.enabled=true`（默认启用），教育表/种子已安装；请求主体已登录、具有当前租户的模块访问权及相应 `edu:*` 权限。课程资源还需文件/知识等依赖能力可用。
+- **使用**：`GET /api/education/course` 查询课程，`POST /api/education/course` 创建课程；前者要求 `edu:course:list`，后者要求 `edu:course:create`。课程建立后可通过 `/api/education/chapter` 维护章节，再使用题目、考试、学习计划、复习与分析入口。
+- **注意**：`EducationWebMvcConfig` 为教育 Controller 添加 `/api/education` 前缀；源码中 `@RequestMapping("/course")` 不是最终 URL。关闭模块不会删除已存数据，重新启用仍需核对租户和权限。
+
 ## 边界
 
 教育业务属于独立业务模块，不应迁入平台 IAM、模型或公共基础设施。跨领域复用只经 contract；对外 HTTP 路径仍由教育 Controller 声明。
@@ -43,4 +49,4 @@
 
 运行本模块及其依赖模块的测试：
 
-`mvn --batch-mode --no-transfer-progress -pl modules/business/education/shiyu-education-implementation -am test -Ddependency-check.skip=true`
+`mvn --batch-mode --no-transfer-progress -pl modules/business/education/shiyu-education-implementation -am test '-Ddependency-check.skip=true'`

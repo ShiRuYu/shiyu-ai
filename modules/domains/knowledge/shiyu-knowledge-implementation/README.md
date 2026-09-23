@@ -26,6 +26,12 @@
 
 文档上传成功、解析完成、索引可检索是不同状态。跨租户、跨空间访问必须由业务服务校验，不能只依赖向量过滤器或客户端传入的空间 ID。
 
+## 使用前提与示例
+
+- **前提**：知识表、文件存储、全文/向量索引和可用嵌入模型已就绪；用户必须属于允许访问的知识空间，并具有对应操作权限。上传成功后仍需等待解析和索引任务完成。
+- **使用**：`GET /api/knowledge/spaces` 查询空间（`knowledge:list`），`POST /api/knowledge/spaces` 创建空间（`knowledge:create`）；随后上传文档并在 `/api/knowledge/ingestion-jobs` 跟踪任务状态。Agent 检索使用 `KnowledgeRetrievalService`，并提供可信 `ActorContext` 和可访问空间列表。
+- **注意**：空间、文档、索引可能处于不同生命周期状态；重新选择向量 provider 或嵌入维度后需要重建索引。检索命中还需按空间和对象归属过滤。
+
 ## 边界
 
 空间成员和租户归属必须由知识服务验证；底层文件/向量 provider 不会替代这些对象权限检查。跨领域检索通过 contract 协作。
@@ -42,4 +48,4 @@
 
 运行本模块及其依赖模块的测试：
 
-`mvn --batch-mode --no-transfer-progress -pl modules/domains/knowledge/shiyu-knowledge-implementation -am test -Ddependency-check.skip=true`
+`mvn --batch-mode --no-transfer-progress -pl modules/domains/knowledge/shiyu-knowledge-implementation -am test '-Ddependency-check.skip=true'`

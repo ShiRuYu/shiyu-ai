@@ -27,6 +27,12 @@
 
 持久化接口与实现位于 IAM 域内；HTTP、Session 和数据库都只是身份状态的载体，跨领域调用使用 `shiyu-iam-contract`。对象级数据权限还必须由各业务服务独立验证。
 
+## 使用前提与示例
+
+- **前提**：IAM 表与种子权限已安装，Sa-Token 和应用 Web 拦截链已装配；管理请求必须有有效 Session、当前租户和对应权限码。匿名登录/验证码入口由公开路径配置单独处理。
+- **使用**：通过 `/api/iam/auth` 完成身份认证，随后在 `/api/iam/users`、`/api/iam/roles`、`/api/iam/tenants` 管理用户、角色与租户；例如 `GET /api/iam/tenants` 要求 `system:tenant:list`，`POST /api/iam/tenants` 要求 `system:tenant:create`。
+- **租户切换**：只调用服务端授权的切换流程，由其更新 Session 并重建当前租户/角色上下文；不能自行修改请求中的 tenantId 来切换。其他领域通过 IAM contract 查询模块可用性和平台统计授权。
+
 ## 边界
 
 认证身份、当前租户和有效角色由服务端验证，不由客户端提交的租户标识单独决定。领域服务仍须检查具体资源的归属与业务权限。
@@ -43,4 +49,4 @@
 
 运行本模块及其依赖模块的测试：
 
-`mvn --batch-mode --no-transfer-progress -pl modules/domains/iam/shiyu-iam-implementation -am test -Ddependency-check.skip=true`
+`mvn --batch-mode --no-transfer-progress -pl modules/domains/iam/shiyu-iam-implementation -am test '-Ddependency-check.skip=true'`

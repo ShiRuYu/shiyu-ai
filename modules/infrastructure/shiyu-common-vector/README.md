@@ -24,6 +24,12 @@
 
 本模块解决“向量存在哪里、如何检索”，不解决“哪些文档应入库、哪个用户可读取命中结果”。
 
+## 使用前提与示例
+
+- **前提**：写入向量的维度必须与 `shiyu.vector-store.dimension` 及嵌入模型一致；默认 JVector 需要可写本地数据目录，pgvector 需要 PostgreSQL 的 `vector` 扩展，进程内模式重启即丢失。
+- **使用**：通过 `shiyu.infrastructure.vector.provider` 选择 `jvector`、`pgvector` 或 `inmemory`；知识/记忆适配器由 `VectorStoreFactory` 打开带租户和业务标识的命名空间，再调用 `VectorStore` 写入与相似度检索。
+- **限制**：自动配置的 `global/default` 实例不保证多租户隔离；改变 provider 或嵌入维度后需按领域流程迁移或重建索引，不能只改配置。
+
 ## 边界
 
 业务模块可以依赖公共基础设施；基础设施不反向依赖领域 implementation。
@@ -40,4 +46,4 @@
 
 运行本模块及其依赖模块的测试：
 
-`mvn --batch-mode --no-transfer-progress -pl modules/infrastructure/shiyu-common-vector -am test -Ddependency-check.skip=true`
+`mvn --batch-mode --no-transfer-progress -pl modules/infrastructure/shiyu-common-vector -am test '-Ddependency-check.skip=true'`

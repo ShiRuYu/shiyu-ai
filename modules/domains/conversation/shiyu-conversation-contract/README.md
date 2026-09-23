@@ -20,6 +20,12 @@
 
 这个契约使组合层能够把会话生成与治理模块连接起来，而不用让 conversation implementation 依赖治理的 Repository 或 HTTP DTO。
 
+## 使用前提与示例
+
+- **前提**：生成调用方引入 contract；若要实际执行配额限制，应用还需装配治理实现与组合层的 `GenerationAdmission` 实现。接口中的默认方法是空操作，单独注入契约不代表已经启用限额。
+- **使用**：一次生成先经 `GenerationAdmission` 预留，再执行模型/Agent，成功后结算、失败时释放；生成完成后通过 `GenerationUsageSink` 上报实际用量。`GenerationRun` 和 `GenerationStatus` 用于传递运行状态，不负责持久化。
+- **限制**：会话与消息的 HTTP CRUD 属于实现模块；跨域调用不应直接依赖其 Controller 或实体。
+
 ## 边界
 
 治理等协作方通过这些类型参与生成准入和用量记录；契约不依赖 conversation implementation。
@@ -36,4 +42,4 @@
 
 运行本模块及其依赖模块的测试：
 
-`mvn --batch-mode --no-transfer-progress -pl modules/domains/conversation/shiyu-conversation-contract -am test -Ddependency-check.skip=true`
+`mvn --batch-mode --no-transfer-progress -pl modules/domains/conversation/shiyu-conversation-contract -am test '-Ddependency-check.skip=true'`

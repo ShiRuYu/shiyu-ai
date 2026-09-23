@@ -24,6 +24,12 @@
 
 这些类型是跨模块协议的一部分，修改其字段或语义需同步检查所有 contract 消费者，而不能仅按单一领域需要扩张内核。
 
+## 使用前提与示例
+
+- **前提**：调用方通过 Maven 依赖引入本模块；`TenantId`、`UserId` 等标识必须来自已验证的服务端上下文。`TenantScope` 是线程局部状态，不会自动跨线程传播。
+- **使用**：在已授权的后台任务中，以 `TenantScope.withTenant(new TenantId(tenantId), () -> repository.findById(id))` 包裹一次目标租户访问；退出时会恢复原作用域。普通 HTTP 请求由认证适配层绑定作用域，不应把请求参数直接传给 `withTenant`。
+- **分页**：跨领域查询可传 `new PageRequest(pageNumber, pageSize)`；它只表达分页请求，实际 SQL 分页仍由仓储实现。
+
 ## 边界
 
 领域 contract 可以依赖；本模块不依赖 Spring、数据库/ORM、Web 或任何业务实现。需要线程、HTTP、Session 或租户持久化机制的适配时，由上层模块实现。
@@ -40,4 +46,4 @@
 
 运行本模块及其依赖模块的测试：
 
-`mvn --batch-mode --no-transfer-progress -pl modules/shared/shiyu-shared-kernel -am test -Ddependency-check.skip=true`
+`mvn --batch-mode --no-transfer-progress -pl modules/shared/shiyu-shared-kernel -am test '-Ddependency-check.skip=true'`

@@ -27,6 +27,12 @@
 
 本模块依赖 IAM 实现来完成应用级认证装配，但其他业务领域应通过 IAM contract 获取授权能力。公共 Servlet 工具和通用过滤器属于 `shiyu-common-web`；本模块负责把它们接入唯一可运行应用。
 
+## 使用前提与示例
+
+- **前提**：由 Bootstrap 引入本模块，并装配 IAM 的认证/权限实现；请求必须经过应用拦截链，才能得到可信的用户与租户上下文。公开路径必须由 `WebPublicPathContributor` 明确声明。
+- **使用**：新 Controller 声明业务路由与 Sa-Token 权限，服务层继续校验对象归属；应用 Web 层统一处理认证、请求上下文、异常与 OpenAPI 分组。调用 `/v3/api-docs` 查看运行时实际暴露的接口，而非以静态路由清单代替。
+- **限制**：即使接口已通过权限码校验，也不能省略领域对象权限和租户范围检查；本模块不决定某个课程或知识空间是否属于当前主体。
+
 ## 边界
 
 本模块是应用层 Web 组合，不是独立启动程序；认证配置不能替代领域服务中的对象权限和租户范围校验。
@@ -43,4 +49,4 @@
 
 运行本模块及其依赖模块的测试：
 
-`mvn --batch-mode --no-transfer-progress -pl modules/applications/shiyu-ai-web -am test -Ddependency-check.skip=true`
+`mvn --batch-mode --no-transfer-progress -pl modules/applications/shiyu-ai-web -am test '-Ddependency-check.skip=true'`

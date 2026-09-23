@@ -23,6 +23,12 @@
 
 `spy.properties` 使用 P6Spy 自身提供的日志工厂和格式化类。数据库异常转 HTTP 响应属于应用 Web 层，位于 `shiyu-ai-web`，不由数据访问模块引入 MVC 依赖。
 
+## 使用前提与示例
+
+- **前提**：租户表在映射中标记租户字段，请求或任务边界先建立可信 `TenantScope`；数据库 provider 通过 `shiyu.infrastructure.database.provider` 配置，外部数据库 schema 需先迁移。
+- **使用**：普通 Mapper 按既有 Flex 查询/更新方法访问租户表，框架读取当前作用域追加租户条件；传入 `TenantId` 的仓储应调用 `TenantScope.requireMatches(tenantId)`，新增实体的租户归属由 `TenantConsistencyListener` 校验。
+- **豁免**：只有认证、平台管理或系统扫描等明确授权场景经 `TenantQueryExecutor` 执行受控跨租户查询；JDBC 原生 SQL 不经过 Flex 租户过滤，必须自行加入参数化租户条件。
+
 ## 边界
 
 业务模块可以依赖公共基础设施；基础设施不反向依赖领域 implementation。
@@ -39,4 +45,4 @@
 
 运行本模块及其依赖模块的测试：
 
-`mvn --batch-mode --no-transfer-progress -pl modules/infrastructure/shiyu-common-mybatis -am test -Ddependency-check.skip=true`
+`mvn --batch-mode --no-transfer-progress -pl modules/infrastructure/shiyu-common-mybatis -am test '-Ddependency-check.skip=true'`

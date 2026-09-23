@@ -25,6 +25,12 @@
 
 通用过滤器、校验注解和异常适配可由多个 Controller 复用；这个模块不拥有 URL 到权限码的业务映射表。
 
+## 使用前提与示例
+
+- **前提**：仅用于 Servlet Web 应用，需由应用层配置认证拦截器并在请求线程填充 `UserContextHolder`；普通后台任务不能直接假设存在当前 HTTP 主体。
+- **使用**：Controller/适配器调用 `ActorContextHttpAdapter.currentActor()` 获取可信 `ActorContext`，再传给领域服务；新增允许匿名访问的基础设施路径时，实现 `WebPublicPathContributor` 并交由应用安全配置汇总。
+- **限制**：`runWithContext()` 只在受控回调内绑定并恢复上下文，不代表线程池会自动继承租户；公开路径声明不是业务授权。
+
 ## 边界
 
 业务模块可以依赖公共基础设施；基础设施不反向依赖领域 implementation。
@@ -41,4 +47,4 @@
 
 运行本模块及其依赖模块的测试：
 
-`mvn --batch-mode --no-transfer-progress -pl modules/infrastructure/shiyu-common-web -am test -Ddependency-check.skip=true`
+`mvn --batch-mode --no-transfer-progress -pl modules/infrastructure/shiyu-common-web -am test '-Ddependency-check.skip=true'`

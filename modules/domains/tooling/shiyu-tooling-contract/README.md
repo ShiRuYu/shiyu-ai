@@ -19,6 +19,12 @@
 
 Agent 等消费者应依赖本 contract，并在执行前完成自身的用户授权与工具审批流程，不能通过直接调用插件管理器绕过这些边界。
 
+## 使用前提与示例
+
+- **前提**：调用方依赖工具 contract；运行时需装配工具实现并注册相应名称的工具。工具名称和参数必须经过调用方权限及输入校验。
+- **使用**：Agent 注入 `ToolService`，调用 `execute(toolName, arguments)` 得到 `ToolExecutionResult`，再将结果送回图执行流程；插件安装、启停和 MCP 连接管理由工具实现的管理入口处理。
+- **限制**：`ToolService` 不是工具发现接口；不能仅凭“工具名称存在”推断当前主体有权执行。
+
 ## 边界
 
 Agent 等工具消费者可依赖本模块；本模块不依赖 tooling implementation。
@@ -35,4 +41,4 @@ Agent 等工具消费者可依赖本模块；本模块不依赖 tooling implemen
 
 运行本模块及其依赖模块的测试：
 
-`mvn --batch-mode --no-transfer-progress -pl modules/domains/tooling/shiyu-tooling-contract -am test -Ddependency-check.skip=true`
+`mvn --batch-mode --no-transfer-progress -pl modules/domains/tooling/shiyu-tooling-contract -am test '-Ddependency-check.skip=true'`

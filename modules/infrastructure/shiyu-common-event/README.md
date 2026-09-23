@@ -31,6 +31,12 @@
 - `com.shiyu.ai.common.event.outbox`：JDBC outbox 和 Kafka relay 实现。
 - `com.shiyu.ai.common.event.support`：事件消费去重等支撑能力。
 
+## 使用前提与示例
+
+- **前提**：默认 Bootstrap 不依赖本模块，先显式加入 Maven 依赖及自动配置入口；使用 JDBC outbox 要准备表和数据源，Kafka relay 还要准备 broker 与消费者幂等策略。
+- **使用**：设置 `shiyu.infrastructure.event.provider` 选择 provider；业务方注入 `DomainEventPublisher` 发布 `DomainEventEnvelope`。单进程通知可选进程内 provider；需要可恢复投递时选 outbox 路径并配置 relay。
+- **限制**：进程内事件没有崩溃重放保证；outbox/Kafka 也不消除重复投递，消费者必须按事件标识去重。仅在 `application.yml` 写 provider、但不引入该模块，不会启用事件实现。
+
 ## 边界
 
 - 依赖 `shiyu-common-foundation` 的稳定接口和 `shiyu-shared-kernel` 的事件契约。
@@ -43,6 +49,6 @@
 
 ## 验证
 
-`mvn --batch-mode --no-transfer-progress -pl modules/infrastructure/shiyu-common-event -am test -Ddependency-check.skip=true`
+`mvn --batch-mode --no-transfer-progress -pl modules/infrastructure/shiyu-common-event -am test '-Ddependency-check.skip=true'`
 
 Kafka 容器测试在没有 Docker 时会跳过；JDBC、进程内和属性回归测试仍必须通过。

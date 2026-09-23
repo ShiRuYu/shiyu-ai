@@ -26,6 +26,12 @@
 
 工具目录、插件市场和插件执行安全是不同功能。打开 `shiyu.plugin.enabled` 只启用相关装配条件，不代表外部 Worker、签名信任链或市场数据已完成部署。
 
+## 使用前提与示例
+
+- **前提**：普通工具需注册工具 provider；插件能力由 `shiyu.plugin.enabled` 控制，外部 Worker、信任发布者与沙箱策略需按部署场景另行准备。启用开关本身不会创建安全执行环境。
+- **使用**：Agent 通过 contract 的 `ToolService.execute(toolName, parameters)` 调用已授权工具；管理端使用 `/api/tooling/tools/mcp` 查看或调用 MCP 工具，使用 `/api/tooling/plugins` 管理插件生命周期。
+- **注意**：插件扫描、市场上架、启动与执行是不同步骤；不可信插件不能直接以应用内 Bean 运行，执行前仍需权限、参数、签名/安全策略检查。
+
 ## 边界
 
 插件执行是受安全策略和运行环境约束的能力；contract 只提供工具调用边界，不承诺每个插件 provider 或 Worker 后端都已部署。
@@ -42,4 +48,4 @@
 
 运行本模块及其依赖模块的测试：
 
-`mvn --batch-mode --no-transfer-progress -pl modules/domains/tooling/shiyu-tooling-implementation -am test -Ddependency-check.skip=true`
+`mvn --batch-mode --no-transfer-progress -pl modules/domains/tooling/shiyu-tooling-implementation -am test '-Ddependency-check.skip=true'`

@@ -24,6 +24,12 @@
 
 该模块不依赖 Spring 或数据库，但源码使用 SLF4J API 和 provided Lombok；“框架无关”在这里特指不把应用容器、ORM 与 Web 类型带入跨领域协议。
 
+## 使用前提与示例
+
+- **前提**：调用方只需编译依赖 `shiyu-agent-contract`；真正运行 Agent 时还需在应用中装配 `shiyu-agent-implementation`、所需模型与持久化 provider。
+- **使用**：新增图节点时，实现 `NodeCreator`，声明对应 `NodeType` 并交由 Agent 图构建流程发现；调用方记录执行历史时注入 `ExecutionHistoryService`，而不是操作 Agent JDBC 表。
+- **上下文**：接入检索来源时实现 `ContextRetrievalPort`，由 `ContextAssemblyPort` 汇总候选内容；传入的主体/租户必须经服务端认证，端口本身不替代对象授权。
+
 ## 边界
 
 教育、会话、知识、记忆和工具等协作方可依赖这些契约；本模块不依赖 Agent implementation。
@@ -40,4 +46,4 @@
 
 运行本模块及其依赖模块的测试：
 
-`mvn --batch-mode --no-transfer-progress -pl modules/domains/agent/shiyu-agent-contract -am test -Ddependency-check.skip=true`
+`mvn --batch-mode --no-transfer-progress -pl modules/domains/agent/shiyu-agent-contract -am test '-Ddependency-check.skip=true'`

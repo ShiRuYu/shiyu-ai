@@ -27,6 +27,12 @@
 
 S3 SDK 在存储模块是可选依赖；可执行应用使用 S3/MinIO 时，还必须启用 Bootstrap 的 `s3` Maven profile。`VectorIndexStore` 只是存储侧端口，不能误认为本模块实现了向量检索引擎。
 
+## 使用前提与示例
+
+- **本地前提**：默认 `shiyu.storage.type=local`，准备可写的应用数据目录；文件元数据如需持久查询，还要提供可用 JDBC 元数据 store。Redis 默认禁用，本地短期状态只适合单实例。
+- **HTTP 使用**：认证后调用 `/api/iam/files` 的上传/列表/下载/删除接口；调用方需具备相应 `file:upload`、`file:list` 或 `file:delete` 权限，文件键必须处在当前租户命名空间。
+- **外部 provider**：启用 `shiyu.infrastructure.file.provider` 的 S3 兼容路径前准备对象存储及凭证，并在 Bootstrap 构建使用 `-Ps3`；Redis 路径设置 `shiyu.infrastructure.redis.provider=redis` 并提供连接信息。存储后端切换不自动迁移已有对象，迁移需显式开启。
+
 ## 边界
 
 业务模块可以依赖公共基础设施；基础设施不反向依赖领域 implementation。
@@ -43,4 +49,4 @@ S3 SDK 在存储模块是可选依赖；可执行应用使用 S3/MinIO 时，还
 
 运行本模块及其依赖模块的测试：
 
-`mvn --batch-mode --no-transfer-progress -pl modules/infrastructure/shiyu-common-storage -am test -Ddependency-check.skip=true`
+`mvn --batch-mode --no-transfer-progress -pl modules/infrastructure/shiyu-common-storage -am test '-Ddependency-check.skip=true'`

@@ -23,6 +23,12 @@
 
 使用方仍需传入服务端可信的租户范围，知识 implementation 负责空间成员、文档归属与检索结果的对象级校验。
 
+## 使用前提与示例
+
+- **前提**：调用方依赖知识 contract，运行时装配知识实现、数据库、文件/索引与可用的嵌入服务；检索请求必须携带认证适配层生成的 `ActorContext`。
+- **使用**：Agent 构造 `KnowledgeRetrievalRequest`，指定允许访问的空间、查询文本、检索模式和 topK，调用 `KnowledgeRetrievalService.retrieve` 获取命中与引用；新租户流程调用 `KnowledgeTenantProvisioning.initializeTenantDefaults(tenantId)` 创建默认设置。
+- **限制**：检索分数不是授权结论；空间权限和资源归属仍须由知识实现核验。
+
 ## 边界
 
 Agent 与教育等协作方可依赖这些接口；contract 不依赖知识 implementation、Spring、ORM 或供应商 SDK。
@@ -39,4 +45,4 @@ Agent 与教育等协作方可依赖这些接口；contract 不依赖知识 impl
 
 运行本模块及其依赖模块的测试：
 
-`mvn --batch-mode --no-transfer-progress -pl modules/domains/knowledge/shiyu-knowledge-contract -am test -Ddependency-check.skip=true`
+`mvn --batch-mode --no-transfer-progress -pl modules/domains/knowledge/shiyu-knowledge-contract -am test '-Ddependency-check.skip=true'`

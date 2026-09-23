@@ -20,6 +20,12 @@
 
 该模块直接依赖 `shiyu-agent-contract` 和 `shiyu-shared-kernel`。教育节点类型变化需同步检查图配置与教育节点工厂，不能只改常量名称。
 
+## 使用前提与示例
+
+- **前提**：调用方依赖 `shiyu-education-contract` 和其中的 Agent 节点协议；运行时必须装配教育实现，并启用 `shiyu.modules.education.enabled`。
+- **使用**：在 Agent 图节点注册或配置中引用 `EducationNodeTypes` 的常量，让教育实现提供对应节点；不要在平台模块复制这些字符串或直接依赖教育实现包。
+- **限制**：本模块只定义扩展标识，不会因引入 contract 自动创建课程、学生或学习计划；这些能力由教育实现及其数据库表提供。
+
 ## 边界
 
 Agent 等协作方可依赖本模块识别教育扩展类型；模块不反向依赖教育 implementation。
@@ -36,4 +42,4 @@ Agent 等协作方可依赖本模块识别教育扩展类型；模块不反向�
 
 运行本模块及其依赖模块的测试：
 
-`mvn --batch-mode --no-transfer-progress -pl modules/business/education/shiyu-education-contract -am test -Ddependency-check.skip=true`
+`mvn --batch-mode --no-transfer-progress -pl modules/business/education/shiyu-education-contract -am test '-Ddependency-check.skip=true'`

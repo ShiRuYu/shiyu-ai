@@ -23,6 +23,12 @@
 
 该模块只负责跨模块连线和生命周期编排。单一领域内的策略、Repository 与 HTTP Controller 留在对应 implementation。
 
+## 使用前提与示例
+
+- **前提**：作为库随 Bootstrap 装配，不能单独运行；H2 可由 `DatabaseInitializer` 安装基线，MySQL/PostgreSQL 要先按 `scripts/database` 准备和迁移，再启动应用校验。
+- **使用**：新增跨领域协作时在组合层提供桥接 Bean，例如将 conversation 的 `GenerationAdmission` 接到 governance 的 `QuotaGovernance`；领域实现只依赖对方 contract。数据保留通过 `shiyu.retention.data` 配置，由 `DataRetentionService` 执行。
+- **限制**：组合层负责连接，不应承载领域规则；数据库初始化也不能代替外部数据库迁移或备份。
+
 ## 边界
 
 组合库位于领域实现之上，为运行入口提供组合能力；本模块没有 `main` 方法，不单独监听端口，也不生成可执行 Boot 包。
@@ -39,4 +45,4 @@
 
 运行本模块及其依赖模块的测试：
 
-`mvn --batch-mode --no-transfer-progress -pl modules/applications/shiyu-platform-composition -am test -Ddependency-check.skip=true`
+`mvn --batch-mode --no-transfer-progress -pl modules/applications/shiyu-platform-composition -am test '-Ddependency-check.skip=true'`

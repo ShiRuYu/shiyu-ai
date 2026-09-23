@@ -22,6 +22,12 @@
 
 本 contract 不依赖具体模型 provider，但流式接口使用 Reactor `Flux`，因此它不是“零第三方依赖”的纯 Java 包；引入该模块的消费者需接受该响应式类型。
 
+## 使用前提与示例
+
+- **前提**：调用方引入 contract；应用运行时需装配模型实现，配置可用平台、模型与凭证。流式调用方还需处理 Reactor `Flux` 的取消和错误信号。
+- **使用**：注入 `ChatEngine` 后以 `chat(request)` 获取完整 `ChatResponse`，或以 `stream(request)` 处理逐段响应；知识索引注入 `EmbeddingService`，使用 `embed(tenantId, text)` 得到向量，并通过 `dimension()` 校验索引维度。
+- **路由**：需要列出可用模型或解析默认平台时使用 `ModelRoutingPort`/`ModelCatalogPort`，不要在 Agent、知识模块直接读取 provider 配置或密钥。
+
 ## 边界
 
 Agent、知识和会话等协作模块依赖这些类型；契约不依赖 model implementation。
@@ -38,4 +44,4 @@ Agent、知识和会话等协作模块依赖这些类型；契约不依赖 model
 
 运行本模块及其依赖模块的测试：
 
-`mvn --batch-mode --no-transfer-progress -pl modules/domains/model/shiyu-model-contract -am test -Ddependency-check.skip=true`
+`mvn --batch-mode --no-transfer-progress -pl modules/domains/model/shiyu-model-contract -am test '-Ddependency-check.skip=true'`

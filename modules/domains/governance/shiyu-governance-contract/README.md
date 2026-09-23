@@ -22,6 +22,12 @@
 
 调用方无需知道治理模块使用哪张表或怎样汇总统计，但必须提供可信主体和完整的测量数据。
 
+## 使用前提与示例
+
+- **前提**：调用方提供服务端确认的租户、资源和用量信息；运行时需有 `QuotaGovernance`、`UsageGovernance` 实现以及治理表。仅引入接口不会自动计费或限额。
+- **使用**：生成前调用 `reserve(actor, request)` 提交 `QuotaRequest` 并检查 `QuotaDecision`；完成后以实际 `QuotaUsage` 调用 `settle`，失败则 `release`。通过 `UsageGovernance.record(actor, DomainEventEnvelope<UsageMeasurement>)` 记录用量，避免业务模块直接写治理统计表。
+- **边界**：租户统计和全平台统计的 HTTP 授权在治理实现及 IAM 授权契约中，不由这些数据模型推断权限。
+
 ## 边界
 
 模型、会话等调用方可依赖这些接口；contract 不依赖治理 implementation。
@@ -38,4 +44,4 @@
 
 运行本模块及其依赖模块的测试：
 
-`mvn --batch-mode --no-transfer-progress -pl modules/domains/governance/shiyu-governance-contract -am test -Ddependency-check.skip=true`
+`mvn --batch-mode --no-transfer-progress -pl modules/domains/governance/shiyu-governance-contract -am test '-Ddependency-check.skip=true'`

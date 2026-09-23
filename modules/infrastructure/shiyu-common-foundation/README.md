@@ -27,6 +27,12 @@
 
 `common-foundation` 允许 Spring/JDBC 等基础技术依赖，不能被误当成纯领域内核；需要在 contract 中共享的无框架标识优先放在 `shiyu-shared-kernel`。
 
+## 使用前提与示例
+
+- **前提**：需要 Spring 事务、JDBC、校验等平台能力的模块才引入 `shiyu-common-foundation`；无框架的跨领域值类型应优先放在 `shiyu-shared-kernel`。
+- **使用**：业务服务通过公共异常/响应约定向 Web 层表达失败，需新事务边界时注入 `TransactionTemplateExecutor` 并调用 `executeNew(() -> operation())`；模块开关由 `BusinessModuleCondition` 读取 `shiyu.modules.<id>.enabled`。
+- **限制**：`executeNew` 会新建事务，不应被当作普通方法包装器；本模块不提供业务 Repository，也不会因为引入依赖而自动启用业务模块。
+
 ## 边界
 
 业务模块可以依赖公共基础设施；基础设施不反向依赖领域 implementation。
@@ -43,6 +49,6 @@
 
 运行本模块及其依赖模块的测试：
 
-`mvn --batch-mode --no-transfer-progress -pl modules/infrastructure/shiyu-common-foundation -am test -Ddependency-check.skip=true`
+`mvn --batch-mode --no-transfer-progress -pl modules/infrastructure/shiyu-common-foundation -am test '-Ddependency-check.skip=true'`
 
 事件能力需显式依赖 `shiyu-common-event` 才会装配。

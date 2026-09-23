@@ -25,6 +25,12 @@
 
 HTTP 流式传输、生成生命周期、会话持久化是三层不同职责。请求的用户和租户范围由服务端上下文决定，生成失败时仍需正确结束运行并释放已申请的准入资源。
 
+## 使用前提与示例
+
+- **前提**：应用已装配数据库、模型/Agent 实现；若要求配额生效，还需组合层提供真正的 `GenerationAdmission` 和用量接收器。请求主体必须能访问目标聊天产品和会话。
+- **使用**：先在 `/api/conversation/chat-products` 选择或配置产品，使用 `/api/conversation/conversations` 创建会话，再通过 `/api/conversation/messages` 管理消息；调用 `/api/conversation/generations` 开始生成并消费其事件/状态。
+- **注意**：导入预览与正式会话是两个阶段，确认前不能把预览数据当已持久化消息；流式响应失败时仍应结束运行并释放配额预留。
+
 ## 边界
 
 其他领域如需生成生命周期或用量协作，应依赖 `shiyu-conversation-contract`；会话存储模型和 Controller DTO 不作为跨领域契约。
@@ -41,4 +47,4 @@ HTTP 流式传输、生成生命周期、会话持久化是三层不同职责。
 
 运行本模块及其依赖模块的测试：
 
-`mvn --batch-mode --no-transfer-progress -pl modules/domains/conversation/shiyu-conversation-implementation -am test -Ddependency-check.skip=true`
+`mvn --batch-mode --no-transfer-progress -pl modules/domains/conversation/shiyu-conversation-implementation -am test '-Ddependency-check.skip=true'`

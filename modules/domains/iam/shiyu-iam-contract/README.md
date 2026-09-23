@@ -24,6 +24,12 @@
 
 这些端口只定义协作结果；实际角色有效性、默认租户身份及委派状态由 IAM implementation 校验。调用方不能把某个租户的 `super` 角色直接解释为全平台权限。
 
+## 使用前提与示例
+
+- **前提**：消费者依赖 `shiyu-iam-contract`；运行时由 IAM 实现提供 Bean，调用时使用已认证的主体和服务端确定的租户，而非客户端自报的管理员身份。
+- **使用**：教育等可选业务在处理请求前通过 `TenantModuleAccessPort.isEnabled` 判断该租户是否有模块使用权；新租户编排通过 `TenantModuleAccessProvisioning` 初始化模块记录。平台用量入口调用 `PlatformUsageAccess` 做专用授权。
+- **限制**：接口只表达跨模块能力；登录、角色分配、租户切换和 Session 校验仍由 IAM 实现负责。
+
 ## 边界
 
 治理和知识等领域可依赖这些协作接口；contract 不依赖 IAM implementation 或 Web 框架。
@@ -40,4 +46,4 @@
 
 运行本模块及其依赖模块的测试：
 
-`mvn --batch-mode --no-transfer-progress -pl modules/domains/iam/shiyu-iam-contract -am test -Ddependency-check.skip=true`
+`mvn --batch-mode --no-transfer-progress -pl modules/domains/iam/shiyu-iam-contract -am test '-Ddependency-check.skip=true'`

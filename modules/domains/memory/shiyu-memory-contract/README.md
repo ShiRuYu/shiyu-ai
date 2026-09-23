@@ -20,6 +20,12 @@
 
 这些模型没有承诺特定解析器、数据库或向量相似度算法。Agent 只应依据 contract 消费检索结果；记忆确认、替代与撤销的规则归 memory implementation 管理。
 
+## 使用前提与示例
+
+- **前提**：调用方依赖记忆 contract；运行时装配 MAGMA 实现、数据库/向量存储以及需要的模型嵌入能力。请求的租户和主体来自可信上下文。
+- **使用**：生成过程通过 `MemoryIngestionPort` 提交摄取命令；组装下一轮上下文时调用 `MemoryQueryPort.retrieve` 获取候选记忆与关系路径。业务模块不直接操作记忆索引表或向量引擎。
+- **权限**：接入对象级权限策略后再使用共享记忆；仅有租户隔离并不等于所有记忆对象都对租户内用户可见。
+
 ## 边界
 
 Agent 等需要记忆协作的模块可依赖该契约；本模块不依赖 memory implementation。
@@ -36,4 +42,4 @@ Agent 等需要记忆协作的模块可依赖该契约；本模块不依赖 memo
 
 运行本模块及其依赖模块的测试：
 
-`mvn --batch-mode --no-transfer-progress -pl modules/domains/memory/shiyu-memory-contract -am test -Ddependency-check.skip=true`
+`mvn --batch-mode --no-transfer-progress -pl modules/domains/memory/shiyu-memory-contract -am test '-Ddependency-check.skip=true'`

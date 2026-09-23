@@ -30,6 +30,12 @@
 - `-Ps3` 加入 S3 SDK；未启用时应用使用本地文件 provider，不能仅改配置就使用 S3/MinIO。
 - `shiyu-common-event` 不在默认应用依赖中；需要 outbox/Kafka 时必须明确装配和配置该可选模块。
 
+## 使用前提与示例
+
+- **本地前提**：JDK 21、Maven、可写的 `APP_HOME`（或 `-Dapp.home`）目录；默认 H2/JVector/本地文件模式不要求另起 MySQL、PostgreSQL、Redis 或 Kafka，但同一数据目录只能由一个实例写入。
+- **启动**：在仓库根目录执行 `mvn -pl modules/applications/shiyu-ai-bootstrap -am spring-boot:run`，或先构建可执行包再运行 `ShiyuBootstrapApplication`。默认监听端口与数据库等细节以 `src/main/resources/application.yml` 为准；开发环境可访问 `/v3/api-docs`。
+- **切换**：用 `SHIYU_MODULE_EDUCATION_ENABLED=false` 关闭教育装配；切换外部数据库或对象存储时，先准备对应服务、schema、凭证，再设置 provider 和相关环境变量。生产包使用 `-Pprod`，S3 兼容存储另加 `-Ps3`。
+
 ## 边界
 
 只有本模块生成可执行应用。部署通过依赖与模块开关组合功能，而不是为每个业务模块创建第二个 application。
@@ -46,4 +52,4 @@
 
 运行本模块及其依赖模块的测试：
 
-`mvn --batch-mode --no-transfer-progress -pl modules/applications/shiyu-ai-bootstrap -am test -Ddependency-check.skip=true`
+`mvn --batch-mode --no-transfer-progress -pl modules/applications/shiyu-ai-bootstrap -am test '-Ddependency-check.skip=true'`
