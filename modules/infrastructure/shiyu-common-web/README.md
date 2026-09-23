@@ -16,6 +16,15 @@
 - 不根据 URL 与权限码维护第二套路由映射，也不替代 Controller 声明的操作权限和服务层的资源/租户授权。
 - 仅承载可复用 Web 技术能力；不放具体领域 Controller、请求流程或业务数据访问代码。
 
+## 请求横切处理
+
+- 请求进入时，Servlet 适配负责取得可重复读取的请求体、请求关联信息和客户端地址；`WebInvokeInterceptor` 在请求结束时记录耗时、清理日志上下文并避免敏感参数原文进入日志。
+- `ActorContextHttpAdapter` 把应用认证上下文转换为 shared-kernel 的 `ActorContext`，在受控回调内绑定/恢复上下文；它不凭请求参数自行选择租户。
+- `ShiYuDefaultExceptionHandler` 处理通用 Web 错误；数据库异常、Sa-Token 异常和业务域异常的具体映射分别由应用或领域模块处理。
+- `WebPublicPathContributor` 仅声明公开路径，应用层汇总后接入安全配置；新增业务公开接口仍需审查其认证和对象权限要求。
+
+通用过滤器、校验注解和异常适配可由多个 Controller 复用；这个模块不拥有 URL 到权限码的业务映射表。
+
 ## 边界
 
 业务模块可以依赖公共基础设施；基础设施不反向依赖领域 implementation。

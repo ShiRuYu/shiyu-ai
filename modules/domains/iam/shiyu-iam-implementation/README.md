@@ -17,6 +17,16 @@
 - 辅助管理：维护时区、字典等 IAM 管理数据；H2 schema/seed 与数据库更新脚本提供基线和升级数据。
 - IAM Controller 对外提供身份与管理接口；其他领域应依赖 `shiyu-iam-contract`，不得直接依赖本模块的 Repository 或实体。
 
+## 身份、租户与授权链路
+
+1. `AuthController`、`CaptchaController` 和 `AuthCodeController` 接收认证相关请求；`AuthServiceImpl` 与对应仓储完成身份查找、凭据和令牌/Session 协作。
+2. `TenantServiceImpl` 管理租户树与切换，`UserScopeRoleRepository` 和 `TenantRoleRepository` 提供当前范围的有效角色数据；切换租户必须由服务端校验后写入 Session，不能只改客户端请求参数。
+3. `RoleController`、`MenuController`、`UserController` 与服务层维护角色、权限菜单和用户关系；应用 Web 模块据此接入 Sa-Token 权限提供者。
+4. `TenantModuleAccessPort` 的实现读取租户模块启用记录，`TenantModuleAccessProvisioning` 初始化新租户默认记录；模块未启用与用户无权限是两种不同的拒绝原因。
+5. `PlatformUsageAccess` 的实现为治理平台统计验证默认租户身份、当前角色和专用权限；普通租户的 `super` 不自动成为平台管理员。
+
+持久化接口与实现位于 IAM 域内；HTTP、Session 和数据库都只是身份状态的载体，跨领域调用使用 `shiyu-iam-contract`。对象级数据权限还必须由各业务服务独立验证。
+
 ## 边界
 
 认证身份、当前租户和有效角色由服务端验证，不由客户端提交的租户标识单独决定。领域服务仍须检查具体资源的归属与业务权限。

@@ -16,6 +16,16 @@
 - Web 与配置：Tooling Controller 暴露工具/插件/MCP 管理接口；`shiyu.plugin.enabled` 控制插件能力是否装配，缺省时按现有配置启用。
 - Agent 等调用方通过 `shiyu-tooling-contract` 执行工具，不直接依赖插件存储和 worker client。
 
+## 工具和插件的不同链路
+
+- 普通工具：`ToolServiceImpl` 维护工具注册与执行入口，`McpToolController` 暴露管理/调用接口；Agent 经 tooling contract 按工具名称与参数发起执行。
+- MCP 接入：`McpToolAutoConfiguration` 注册已装配的工具，具体可用性仍取决于当前应用启用的 provider 与工具配置。
+- 插件生命周期：`PluginManager` 负责扫描、启动、停止和卸载，`PluginController` 提供管理入口；安全扫描、签名及发布者策略在进入执行边界前应用。
+- 插件市场：`PluginMarketService` 面向 `PluginMarketStore`，可选 `JdbcPluginMarketStore` 或 `InMemoryPluginMarketStore`，并不保证两者具有相同的重启持久性。
+- 不可信执行：Worker RPC client 将插件执行交给隔离端，管理进程不应直接把上传插件代码当成可信组件装配。
+
+工具目录、插件市场和插件执行安全是不同功能。打开 `shiyu.plugin.enabled` 只启用相关装配条件，不代表外部 Worker、签名信任链或市场数据已完成部署。
+
 ## 边界
 
 插件执行是受安全策略和运行环境约束的能力；contract 只提供工具调用边界，不承诺每个插件 provider 或 Worker 后端都已部署。

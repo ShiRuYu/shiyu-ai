@@ -15,6 +15,18 @@
 - 在应用 Web 层统一处理数据库唯一约束和 MyBatis 系统异常，向客户端返回不包含底层连接信息的提示。
 - 依赖通用 Web/基础设施能力处理公共适配；具体接口、HTTP 路径和业务响应由领域实现模块提供。本模块本身不定义课程、知识、模型等业务 Controller。
 
+## 请求处理链路
+
+1. `SaInterceptorConfig` 与 `SaTokenConfig` 组织登录态校验；`WebPublicPathPatterns` 汇总允许匿名访问的路径贡献者。
+2. `UserContextInterceptor` 将认证后的身份接入请求上下文，供 `ActorContextHttpAdapter` 生成领域服务可用的 `ActorContext`；请求结束必须清理线程上下文。
+3. `BusinessModuleAccessInterceptor` 拦截已关闭业务模块的入口，`AuditInterceptor` 记录请求审计；它们不能替代 Controller 操作权限及服务层资源归属校验。
+4. `OpenApiConfig` 定义 API 文档分组；`ApiExceptionHandler`、`SaTokenExceptionHandler` 与优先处理数据库异常的 `MybatisExceptionHandler` 统一响应边界，避免把底层异常详情返回客户端。
+5. `AgentWebMvcConfig` 与 `ResourcesConfig` 分别承接 Agent Web 适配和静态资源映射，具体业务路由仍由领域 Controller 声明。
+
+## 协作边界
+
+本模块依赖 IAM 实现来完成应用级认证装配，但其他业务领域应通过 IAM contract 获取授权能力。公共 Servlet 工具和通用过滤器属于 `shiyu-common-web`；本模块负责把它们接入唯一可运行应用。
+
 ## 边界
 
 本模块是应用层 Web 组合，不是独立启动程序；认证配置不能替代领域服务中的对象权限和租户范围校验。

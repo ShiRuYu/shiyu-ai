@@ -16,6 +16,15 @@
 - 持久化与 API：conversation Controller 对外提供接口，关系数据由 MyBatis 持久化；H2 schema/seed 支持开发环境。
 - Agent 与模型协作通过 contract，聊天域不持有供应商 SDK 的跨模块公共接口。
 
+## 一次生成请求如何流转
+
+1. `ChatProductController`、`ConversationController`、`MessageController` 分别管理聊天产品、会话和消息；`JdbcChatProductRepository`、`JdbcConversationRepository` 保存对应关系数据。
+2. `GenerationController` 建立生成运行，`PromptAssemblyService` 与 `ConversationPromptService` 组装上下文，`GenerationRunner` 调用已装配的 Agent/模型能力执行生成。
+3. 准入、用量记录通过 conversation contract 的 `GenerationAdmission`、`GenerationUsageSink` 与平台组合层连接；`JdbcGenerationRepository` 保存运行和事件，便于查询生成状态。
+4. `OpenAiCompatibleController` 提供兼容协议入口；`CharacterImportPreviewStore`、`ConversationImportPreviewStore` 保存导入预览，确认前不应把预览内容当成正式会话数据。
+
+HTTP 流式传输、生成生命周期、会话持久化是三层不同职责。请求的用户和租户范围由服务端上下文决定，生成失败时仍需正确结束运行并释放已申请的准入资源。
+
 ## 边界
 
 其他领域如需生成生命周期或用量协作，应依赖 `shiyu-conversation-contract`；会话存储模型和 Controller DTO 不作为跨领域契约。

@@ -16,6 +16,15 @@
 - 实时与存储：用量 WebSocket 服务推送治理更新；实体与 Repository 将记录/价格等数据写入数据库，H2 schema/seed 提供开发基线。
 - 治理模块维护计量与统计，不负责模型供应商执行，也不对外暴露 IAM implementation 细节。
 
+## 计量与统计链路
+
+1. 调用方经治理 contract 提交用量或请求配额；`UsageRecordService` 记录测量数据，`UsageServiceImpl` 汇总查询，配额逻辑在 `quota` 包中处理预留、结算和释放。
+2. `UsageController` 仅查询当前租户数据；其仓储和手写统计 SQL 必须使用可信租户条件，不能因模型或时间过滤条件而丢失租户限制。
+3. `PlatformUsageController` 调用 IAM contract 的 `PlatformUsageAccess` 后，再由 `PlatformUsageService` 和 `PlatformUsageRepositoryImpl` 执行全平台只读汇总；普通租户接口不会通过参数切换为平台视图。
+4. `UsageWebSocketService` 推送用量更新；WebSocket 建连与消息订阅仍要服从应用安全配置，不能把实时推送视为绕过权限检查的路径。
+
+持久化由治理域维护价格和用量事实，平台组合模块把会话生成准入及用量事件接入这些接口。统计入口与计量写入入口承担不同的授权职责。
+
 ## 边界
 
 其他领域使用配额、测量和用量治理契约；平台只读权限通过 IAM contract 协作。租户和平台统计是不同授权边界，不由客户端开关决定数据范围。

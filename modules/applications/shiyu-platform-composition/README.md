@@ -14,6 +14,15 @@
 - `UsageEventListener` 接收治理用量事件并交给平台侧处理；`DataRetentionService` 执行按配置定义的数据保留工作。
 - 测试与资源包含 H2 平台基线；本模块不拥有 IAM、Agent、知识等领域业务规则。
 
+## 组合与数据链路
+
+- `PlatformCompositionAutoConfiguration` 是应用组合根，导入平台配置并扫描 Web 入口；它把各领域实现接入同一 Spring 应用，但不把领域类型搬进组合模块。
+- `DatabaseInitializer` 读取仓库内 H2 基线资源，检查数据库是否已经初始化并按版本安装种子；外部 MySQL/PostgreSQL 需要先执行独立迁移，再由应用校验结果。
+- `QuotaGenerationAdmission` 将会话生成准入接到治理配额契约；`ConversationUsageSink` 与 `UsageEventListener` 把生成/模型用量交给治理记录链路。
+- `DataRetentionService` 读取 `DataRetentionProperties` 对受保留策略约束的数据执行清理；它不是数据库备份或迁移工具。
+
+该模块只负责跨模块连线和生命周期编排。单一领域内的策略、Repository 与 HTTP Controller 留在对应 implementation。
+
 ## 边界
 
 组合库位于领域实现之上，为运行入口提供组合能力；本模块没有 `main` 方法，不单独监听端口，也不生成可执行 Boot 包。

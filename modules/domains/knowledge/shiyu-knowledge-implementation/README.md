@@ -16,6 +16,16 @@
 - Web 与持久化：知识 Controller 提供知识空间、文档、点/关系与检索管理入口；MyBatis 保存领域元数据，文件存储和向量索引使用公共存储契约。H2 schema/seed 提供开发基线。
 - Agent 等调用方通过 `shiyu-knowledge-contract` 查询内容，不依赖知识模块内部 Controller DTO、数据库实体或索引适配器。
 
+## 文档入库与检索链路
+
+1. `KnowledgeSpaceController` 和 `KnowledgeSpaceServiceImpl` 管理租户空间；文档、知识点、关系、路径 Controller 分别面向各自的业务对象，不能把空间管理权限等同于全部文档读取权限。
+2. `KnowledgeDocumentUploadServiceImpl` 接收文件并建立入库任务，`DocumentIngestionService` 执行解析与切块；`EmbeddedIngestionWorker` 负责嵌入式任务处理。
+3. `KnowledgeIndexService` 协调 `VectorIndex` 与 `FullTextIndex`，`EmbeddedIndexRegistry` 管理嵌入式索引；模型嵌入能力和通用向量存储由外部 contract/基础设施提供。
+4. `EmbeddedKnowledgeRetrievalService` 执行知识检索，`KnowledgeContextRetrievalAdapter` 将检索结果接入 Agent 上下文。结果应保留片段来源、引用及空间/租户范围。
+5. 审核、评估、任务和企业文档版本由相应服务与 Controller 管理；知识元数据的 JDBC Repository 与文件内容/向量索引分开存放。
+
+文档上传成功、解析完成、索引可检索是不同状态。跨租户、跨空间访问必须由业务服务校验，不能只依赖向量过滤器或客户端传入的空间 ID。
+
 ## 边界
 
 空间成员和租户归属必须由知识服务验证；底层文件/向量 provider 不会替代这些对象权限检查。跨领域检索通过 contract 协作。

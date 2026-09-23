@@ -9,7 +9,7 @@
 
 拾羽 AI（ShiYu AI）不是一个单一功能的 AI 应用，而是一个**可接入多 LLM 平台、以自定义 Agent 为核心、向多个业务方向扩展**的 AI 智能体平台。
 
-当前 Maven reactor 包含 30 个项目（根 POM 和 29 个叶子模块），其中 9 个业务域分别拆分为 Contract 和 Implementation。版本统一由根 POM 管理。
+当前 Maven reactor 包含 31 个项目（根 POM、29 个产品模块和 1 个架构测试模块），其中 9 个业务域分别拆分为 Contract 和 Implementation。版本统一由根 POM 管理。
 
 ```text
 模型平台 -> Model -> Agent 编排 -> Education
@@ -164,6 +164,8 @@ Governance：用量与配额
 
 ## 模块全景
 
+全部 29 个模块的职责、关键组件与调用链见[模块功能索引](docs/模块功能索引.md)，各模块可从索引进入对应 README。
+
 ### 🎯 业务层（面向场景的产品能力）
 
 | 模块 | 职责 | 类型 |
@@ -188,12 +190,13 @@ Governance：用量与配额
 
 | 模块 | 职责 | 类型 |
 |------|------|------|
-| `shiyu-common-foundation` | 公共核心：Result、异常、方言 SQL、事件总线和 outbox | 基础设施 |
+| `shiyu-common-foundation` | 平台基础：Result、异常、事务、JDBC 方言和模块条件 | 基础设施 |
+| `shiyu-common-event` | 可选的进程内事件、JDBC outbox 和 Kafka relay | 基础设施 |
 | `shiyu-common-storage` | 文件/对象存储、元数据、备份、Redis 租约/限流/幂等适配 | 基础设施 |
 | `shiyu-common-vector` | InMemory、JVector、pgvector 的统一向量端口 | 基础设施 |
 | `shiyu-common-thread` / `shiyu-common-web` | 线程池、HTTP 过滤器、异常与校验支持 | 基础设施 |
 | `shiyu-common-mybatis` | MyBatis 技术支持：租户数据源、拦截器与通用 Mapper 基础设施 | 基础设施 |
-| `shiyu-ai-web` | REST 接入层：Controller、DTO、WebSocket、OpenAPI | 基础设施 |
+| `shiyu-ai-web` | 应用 Web 组合：认证上下文、拦截器、OpenAPI 与异常处理 | 应用模块 |
 | `shiyu-ai-bootstrap` | 应用启动入口：日志/可观测/数据保留装配 | 基础设施 |
 
 ## 技术栈
@@ -201,7 +204,7 @@ Governance：用量与配额
 | 领域 | 技术 |
 |------|------|
 | 语言 | Java 21（虚拟线程） |
-| 框架 | Spring Boot 4.1 |
+| 框架 | Spring Boot 4.2.0-M1（以根 POM 为准） |
 | AI 框架 | Spring AI 2.0 + LangChain4j |
 | Agent 引擎 | LangGraph4j |
 | Agent 流程图 | LangGraph4j + BaseNode |

@@ -14,6 +14,15 @@
 - `shiyu.infrastructure.event` 配置选择并设置 provider；数据库与 Kafka broker 必须由应用环境提供。
 - 该模块是显式引入的可选基础设施，不代表所有事件默认持久化，也不替代领域事件契约。
 
+## 事件投递路径
+
+1. 调用方通过 `DomainEventPublisher` 发布 shared-kernel 的事件信封；`EventInfrastructureConfiguration` 根据 `EventInfrastructureProperties` 选择实际发布实现。
+2. `InProcessEventPublisher` 在单进程内分发，不提供进程崩溃后的持久重放保证。
+3. `JdbcOutboxEventPublisher` 先把待投递事件写入数据库；`KafkaOutboxEventPublisher` 在 Kafka 路径中接续投递，消费者可使用 `EventConsumptionDeduplicator` 处理重复消息。
+4. 业务处理方仍必须定义自己的事件语义、事务边界与幂等行为；选择 Kafka 也不能把“至少一次投递”误写成“恰好一次业务执行”。
+
+默认 Bootstrap 不依赖该模块。启用时需要应用显式引入依赖、配置事件 provider，并准备对应数据库/Kafka 基础设施。
+
 包职责按实现边界划分：
 
 - `com.shiyu.ai.common.event.api`：事件发布契约。

@@ -16,6 +16,15 @@
 - Web 与持久化：模型 Controller 暴露平台、模型与推理相关 API，MyBatis 存储平台和模型配置；H2 schema 提供开发基线。
 - 其他领域通过 `shiyu-model-contract` 使用聊天、目录、路由和嵌入能力，不依赖 provider adapter 或配置实体。
 
+## 模型调用路径
+
+1. `AiPlatformController`、`AiModelController` 管理平台连接和模型条目；`AiPlatformServiceImpl`、`AiModelServiceImpl` 使用领域 Repository 持久化配置。
+2. `ModelRouter` 根据 `ModelRoutePolicy` 与 `ModelProviderCapabilities` 选择可用平台和模型；路由不能把客户端模型名直接当成已授权的供应商调用。
+3. `DeepSeekHttpProvider`、`OllamaPlatformAdapter` 和 `GenericPlatformAdapter` 封装供应商协议；`ModelGatewayController` 对外接收模型调用请求，底层 adapter 决定实际 HTTP/本地执行方式。
+4. `LangChain4jEmbeddingService` 实现 contract 的嵌入服务；`MediaController` 负责多媒体能力入口。知识索引和 Agent 仅面向 contract，而非这些 provider 类。
+
+模型配置、路由决策与实际调用分别有独立职责；需要新增供应商时，应实现适配器和能力声明，并验证密钥保护、流式响应及调用用量，而不是在 Controller 中加入供应商分支。
+
 ## 边界
 
 provider 密钥、供应商协议和路由策略属于本模块实现；其他领域只依赖模型 contract，并按各自授权规则控制调用入口。

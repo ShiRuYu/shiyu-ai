@@ -14,6 +14,14 @@
 - 这些类型使调用方能请求准入或提交用量，而无需依赖治理的数据库模型、价格计算实现和 HTTP 层。
 - 本模块不执行配额判定、不计费、不查询统计，也不定义数据库表。
 
+## 配额与用量协作顺序
+
+1. 调用方以 `ActorContext` 和 `QuotaRequest` 调用 `QuotaGovernance.reserve`，使用 `QuotaDecision` 判断是否允许继续生成。
+2. 生成完成后调用 `settle` 提交 `QuotaUsage`；中止或失败时调用 `release` 释放预留，不能把预留当成最终用量。
+3. 用量事件由 `UsageGovernance.record` 接收 `DomainEventEnvelope<UsageMeasurement>`，返回 `UsageRecordResult`。事件来源由 `UsageSourceType` 表达，价格计算和统计查询留在 implementation。
+
+调用方无需知道治理模块使用哪张表或怎样汇总统计，但必须提供可信主体和完整的测量数据。
+
 ## 边界
 
 模型、会话等调用方可依赖这些接口；contract 不依赖治理 implementation。

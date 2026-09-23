@@ -14,6 +14,12 @@
 - 契约描述调用与数据含义，不实现 MAGMA 解析、存储、索引、合并或检索算法。
 - 保持框架无关，不暴露数据库、向量引擎或 Web DTO。
 
+## 写入与查询协议
+
+`MemoryIngestionPort` 接收 `IngestMemoryCommand`，把外部事件转为可管理的记忆写入；`MemoryQueryPort.retrieve` 根据 `MemoryQuery` 返回 `MemoryPath` 列表，调用方可沿路径理解实体和关系。`MemoryEventStatus`、`ConfirmationPolicy`、`GraphType` 和 `EdgeOrigin` 分别表达事件治理状态、确认要求、图类型与边的来源。
+
+这些模型没有承诺特定解析器、数据库或向量相似度算法。Agent 只应依据 contract 消费检索结果；记忆确认、替代与撤销的规则归 memory implementation 管理。
+
 ## 边界
 
 Agent 等需要记忆协作的模块可依赖该契约；本模块不依赖 memory implementation。

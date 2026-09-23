@@ -15,6 +15,15 @@
 - 执行历史契约：为调用方提供查询 Agent 执行历史所需的服务边界。
 - 本模块不创建图、执行节点、连接数据库或定义 HTTP 接口；具体实现由 `shiyu-agent-implementation` 提供，契约保持框架无关。
 
+## 扩展与运行协议
+
+- 自定义节点以 `NodeType`、`NodeConfig`、`NodeInput` 和 `NodeOutput` 表达输入输出，`NodeCreator` 根据配置创建 `BaseNode`；`NodeFields` 约束可用字段，避免图配置凭任意字符串猜测节点协议。
+- `AiRuntimePort` 管理运行创建、完成、事件追加及按租户/所有者查询；`AiRunRepository` 是持久化端口，具体 JDBC 或内存实现不属于 contract。
+- `ContextRetrievalPort` 提供单一来源的候选内容；`ContextAssemblyPort` 合并上下文并返回 `ContextTrace`。`ContextPolicy` 决定候选内容是否可读，但最终实现仍要维护租户和资源归属。
+- `ExecutionHistoryService` 为外部调用方记录执行开始与完成，图构建、节点执行和检查点留在 implementation。
+
+该模块不依赖 Spring 或数据库，但源码使用 SLF4J API 和 provided Lombok；“框架无关”在这里特指不把应用容器、ORM 与 Web 类型带入跨领域协议。
+
 ## 边界
 
 教育、会话、知识、记忆和工具等协作方可依赖这些契约；本模块不依赖 Agent implementation。

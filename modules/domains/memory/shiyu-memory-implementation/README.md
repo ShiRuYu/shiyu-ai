@@ -16,6 +16,15 @@
 - 持久化与向量能力：记忆元数据由领域持久化层管理，语义索引使用 common-vector；H2 schema/seed 支持本地开发验证。
 - 本模块实现记忆领域而非通用 Agent runtime、向量引擎或模型调用服务。
 
+## MAGMA 处理路径
+
+1. `MagmaMemoryService` 接收摄取/查询请求，`MemoryEntityResolver` 识别可复用实体，领域模型记录实体、事件、关系和检索轨迹。
+2. `JdbcMagmaMemoryRepository` 存储记忆实体与关系，`JVectorMemorySemanticIndex` 提供语义检索适配；数据库事实与可重建索引不是同一份状态。
+3. `MemoryAccessPolicy` 可限制可读范围，`MemoryRetrievalPolicyProvider` 控制召回策略；确认、撤销、替代等治理状态由 `MemoryGovernancePort` 等端口协作维护。当前 `MagmaMemoryConfiguration` 未取得策略 Bean 时会使用放行策略，因此部署方不能把该扩展点本身当作已生效的对象授权。
+4. `MagmaConsolidationWorker` 执行记忆整合任务，`MagmaContextRetrievalAdapter` 把授权后的记忆路径转换为 Agent 可用上下文。
+
+记忆摄取不等于立即可信。调用方需要区分原始事件、待确认事实和治理后的记忆；异步整合与向量索引不能绕过租户与主体访问策略。
+
 ## 边界
 
 其他模块依赖 `shiyu-memory-contract`；检索结果可追溯性与记忆确认/撤销状态由本模块维护，调用方不应直接操作存储实体。

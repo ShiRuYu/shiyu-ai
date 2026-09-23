@@ -14,6 +14,12 @@
 - 本模块不提供课程、题库、学习计划、Controller、Repository 或数据库 schema；这些行为属于 `shiyu-education-implementation`。
 - 契约保持轻量，不依赖 Spring、Web、ORM 或外部供应商实现。
 
+## Agent 扩展约定
+
+`EducationNodeTypes` 使用 Agent contract 的 `NodeType.custom` 定义六种节点标识：能力查询、教学讲解、生成练习、评分分析、复习安排和前置知识检查。Agent 图可识别这些类型；节点如何读写学生能力、题目与复习数据由教育 implementation 实现。`EducationContractModule` 只是边界标记，不会自行注册节点或开启教育功能。
+
+该模块直接依赖 `shiyu-agent-contract` 和 `shiyu-shared-kernel`。教育节点类型变化需同步检查图配置与教育节点工厂，不能只改常量名称。
+
 ## 边界
 
 Agent 等协作方可依赖本模块识别教育扩展类型；模块不反向依赖教育 implementation。

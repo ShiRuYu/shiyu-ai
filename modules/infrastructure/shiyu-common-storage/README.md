@@ -17,6 +17,16 @@
 - `VectorIndexStore` 定义按命名空间 upsert/search/delete 的接口；本模块没有该接口的实现。通用向量引擎适配位于 `shiyu-common-vector`。
 - 本模块提供存储适配而非租户授权。调用者必须使用可信租户上下文/命名空间；不能假设每种存储后端自动完成租户隔离。
 
+## 文件与短期状态调用链
+
+1. `FileStorageConfiguration` 读取文件 provider 配置；`FileStorageManager` 在 `LocalFileStorage` 和 `S3CompatibleFileStorage` 间选择对象内容存储，并通过 `FileStorageObjectStorage` 适配统一接口。
+2. `ResumableUploadService` 管理分片上传会话；`StorageMetadataStore` 的 JDBC/Noop 实现决定元数据是否可持久查询。Noop 不是数据库元数据的等价替代。
+3. `FileController` 接收 `/api/iam/files` 请求，在调用存储前执行接口权限和租户对象键检查；文件内容的存放位置不决定用户是否有权访问。
+4. `FileStorageMigrationRunner` 只在明确开启迁移配置时搬迁对象；`EmbeddedBackupService` 与 `BackupManifestContributor` 服务于嵌入式数据备份及恢复核对。
+5. `IdempotencyStore`、`LeaseStore`、`RateLimitStore` 分别有本地与 Redis 路径。本地实现适合单进程，不提供跨节点一致性。
+
+S3 SDK 在存储模块是可选依赖；可执行应用使用 S3/MinIO 时，还必须启用 Bootstrap 的 `s3` Maven profile。`VectorIndexStore` 只是存储侧端口，不能误认为本模块实现了向量检索引擎。
+
 ## 边界
 
 业务模块可以依赖公共基础设施；基础设施不反向依赖领域 implementation。

@@ -16,6 +16,20 @@
 - `shiyu.modules.<module-id>.enabled` 控制可选业务模块；本模块只提供唯一启动入口，不承载课程、模型、知识等领域规则。
 - 默认开发构建启用 Swagger UI；生产 profile 默认不包含 Swagger UI。S3 兼容对象存储需显式启用 `s3` Maven profile，本地文件存储无需该依赖。
 
+## 启动与运行链路
+
+1. `ShiyuBootstrapApplication` 是唯一的 `main` 入口，应用依赖引入平台组合、Web 入口以及各领域实现；业务模块开关决定可选模块是否装配，而不是启动另一个进程。
+2. `EmbeddedDataDirectoryLock` 解析 `APP_HOME` / `app.home`，为本地嵌入式数据目录建立进程锁；多实例部署不能共享同一份 H2、JVector 和本地任务目录。
+3. 平台组合层的 `DatabaseInitializer` 安装或校验数据库基线；`ApplicationStartupListener` 在应用就绪后记录可访问入口和启动状态。
+4. `LogRetentionService` 按配置执行应用日志保留。数据库、文件、向量等 provider 的实现和业务规则仍由相应模块负责。
+
+## 构建选项
+
+- 默认运行依赖包含 H2、PostgreSQL 和 MySQL 驱动；它们属于运行时依赖，不要求业务代码编译时直接使用驱动 API。
+- `-Pprod` 选择生产环境并关闭默认启用的 Swagger UI；显式组合 `-Pprod,api-docs-ui` 才在生产包中加入 UI。
+- `-Ps3` 加入 S3 SDK；未启用时应用使用本地文件 provider，不能仅改配置就使用 S3/MinIO。
+- `shiyu-common-event` 不在默认应用依赖中；需要 outbox/Kafka 时必须明确装配和配置该可选模块。
+
 ## 边界
 
 只有本模块生成可执行应用。部署通过依赖与模块开关组合功能，而不是为每个业务模块创建第二个 application。

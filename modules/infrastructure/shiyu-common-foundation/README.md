@@ -15,6 +15,18 @@
 - 认证抽象与公共上下文访问适配依赖 `shared-kernel` 的类型；稳定身份、租户值和领域事件契约仍属于 shared-kernel。
 - 事件发布、outbox 和 Kafka relay 位于可选的 `shiyu-common-event`；日志实现由可执行应用选型。本模块不放领域用例、业务实体或领域数据库表。
 
+## 公共能力与使用方式
+
+| 能力 | 主要类型 | 由谁使用 |
+| --- | --- | --- |
+| 统一响应和异常 | `Result`、公共异常及分页/排序模型 | Web 入口和应用服务统一表达处理结果，不在此决定领域错误码的业务含义。 |
+| 事务后协作 | `TransactionContext`、`TransactionHookExecutor`、`TransactionTemplateExecutor` | 需要提交/回滚钩子或显式事务边界的基础设施和领域实现。 |
+| 数据库通用协议 | `JdbcDialect`、数据库基线贡献接口 | 数据库初始化与 JDBC 适配器处理方言差异和资源归属。 |
+| 条件化装配 | `BusinessModuleCondition`、`ShiYuProperties`、`AppHomeEnvironmentPostProcessor` | 应用读取模块开关与运行目录配置；本模块不直接启动任何业务模块。 |
+| 校验与工具 | `ValidatorConfig`、JSON/字符串工具 | 多模块复用的技术性校验和转换。 |
+
+`common-foundation` 允许 Spring/JDBC 等基础技术依赖，不能被误当成纯领域内核；需要在 contract 中共享的无框架标识优先放在 `shiyu-shared-kernel`。
+
 ## 边界
 
 业务模块可以依赖公共基础设施；基础设施不反向依赖领域 implementation。
