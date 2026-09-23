@@ -2,21 +2,21 @@
 
 - **模块坐标**：`com.shiyu.ai:shiyu-knowledge-contract`
 - **分类**：领域模块 · Contract
-- **源码规模**：生产 Java 14 个，测试 Java 0 个
 
 ## 作用
 
-Knowledge 知识契约模块，定义跨模块可依赖的稳定 API、模型和 SPI 边界。
+定义知识检索、知识点与关系访问以及租户初始化的跨领域协作契约，不实现索引或知识库管理流程。
 
-## 职责
+## 契约内容
 
-- 负责知识文档、知识图谱、向量检索和 RAG 编排。
-- 只放框架无关的公共契约，避免把数据库、Web 框架或具体供应商实现泄漏到契约层。
-- 为对应 implementation 模块和组合根提供编译期依赖边界。
+- `KnowledgeRetrievalService` 及检索请求/结果模型表达检索模式、命中项、引用和来源类型，供 Agent 等协作方请求知识内容。
+- `KnowledgePointPort`、`KnowledgeRelationPort` 和 `KnowledgePathPort` 提供按知识点、关系及路径协作的接口。
+- `KnowledgeTenantProvisioning` 定义为指定租户初始化默认知识配置的入口；契约不规定由谁存储或如何创建默认空间。
+- 本模块不解析文件、不切分/嵌入文档、不查询向量数据库，也不提供知识管理 Controller。
 
 ## 边界
 
-下游模块可以依赖本模块；本模块不依赖同一领域 implementation。
+Agent 与教育等协作方可依赖这些接口；contract 不依赖知识 implementation、Spring、ORM 或供应商 SDK。
 
 ## 主要包
 
@@ -31,5 +31,3 @@ Knowledge 知识契约模块，定义跨模块可依赖的稳定 API、模型和
 运行本模块及其依赖模块的测试：
 
 `mvn --batch-mode --no-transfer-progress -pl modules/domains/knowledge/shiyu-knowledge-contract -am test -Ddependency-check.skip=true`
-
-根目录执行完整构建时，本模块由根 `pom.xml` 纳入 30 个项目的 Maven reactor。

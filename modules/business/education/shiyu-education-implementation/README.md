@@ -2,21 +2,24 @@
 
 - **模块坐标**：`com.shiyu.ai:shiyu-education-implementation`
 - **分类**：领域模块 · Implementation
-- **源码规模**：生产 Java 234 个，测试 Java 17 个
 
 ## 作用
 
-Education 教育实现模块，承载该领域的应用服务、领域模型和基础设施适配。
+实现教育产品中的课程学习、练习评估、学习管理与教育资源能力，并通过教育 Web API 对应用提供服务。
 
-## 职责
+## 功能说明
 
-- 负责课程、章节、知识学习、练习评估和学习进度等教育业务。
-- 在领域内部组织 application、domain、persistence、infrastructure 和 web 等实现职责。
-- 通过 contract、shared-kernel 与公共基础设施协作，对外暴露领域服务。
+- 课程教学：课程、章节、科目和教材内容维护，并将课程内容组织为可学习的教学结构。
+- 学习管理：学生档案、学习记录与进度、学习计划和任务、复习安排及完成状态。
+- 练习评估：题库与考试、教育 Agent 节点、错题整理、能力分析及学习建议。
+- 教育资源：学习资源上传和内容管理，并结合课程与学习状况生成混合推荐。
+- Web/API 与持久化：教育 Controller 通过 `/api/education/**` 暴露接口；MyBatis 持久化实现课程、练习和学习数据。仓库资源提供 H2 schema 与 seed。
+- 与 Agent、模型、知识能力的协作通过相应 contract；教育业务代码不直接取代平台 IAM、通用文件或向量基础设施。
+- 通过 `shiyu.modules.education.enabled` 控制该业务模块装配；该开关控制模块是否可用，不改变已存在的数据。
 
 ## 边界
 
-实现细节只在组合根和需要该能力的应用层装配；其他领域应依赖 contract。
+教育业务属于独立业务模块，不应迁入平台 IAM、模型或公共基础设施。跨领域复用只经 contract；对外 HTTP 路径仍由教育 Controller 声明。
 
 ## 主要包
 
@@ -31,5 +34,3 @@ Education 教育实现模块，承载该领域的应用服务、领域模型和�
 运行本模块及其依赖模块的测试：
 
 `mvn --batch-mode --no-transfer-progress -pl modules/business/education/shiyu-education-implementation -am test -Ddependency-check.skip=true`
-
-根目录执行完整构建时，本模块由根 `pom.xml` 纳入 31 个项目的 Maven reactor。

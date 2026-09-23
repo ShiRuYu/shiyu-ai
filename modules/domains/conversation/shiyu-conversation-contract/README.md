@@ -2,21 +2,21 @@
 
 - **模块坐标**：`com.shiyu.ai:shiyu-conversation-contract`
 - **分类**：领域模块 · Contract
-- **源码规模**：生产 Java 5 个，测试 Java 0 个
 
 ## 作用
 
-Conversation 会话契约模块，定义跨模块可依赖的稳定 API、模型和 SPI 边界。
+定义生成任务生命周期及会话域与配额/用量治理协作时使用的契约，不包含聊天接口和持久化实现。
 
-## 职责
+## 契约内容
 
-- 负责会话、消息树、生成运行和流式事件等交互事实。
-- 只放框架无关的公共契约，避免把数据库、Web 框架或具体供应商实现泄漏到契约层。
-- 为对应 implementation 模块和组合根提供编译期依赖边界。
+- `GenerationRun` 与 `GenerationStatus` 描述一次生成运行及其生命周期状态。
+- `GenerationAdmission` 表达生成请求进入执行前的准入结果；`GenerationUsageSink` 提供记录执行用量的协作边界。
+- 会话模块标识为组合代码提供稳定识别方式。
+- 本模块不实现会话/消息 CRUD、SSE 传输、模型调用或数据库访问；这些由 conversation implementation 与其协作者完成。
 
 ## 边界
 
-下游模块可以依赖本模块；本模块不依赖同一领域 implementation。
+治理等协作方通过这些类型参与生成准入和用量记录；契约不依赖 conversation implementation。
 
 ## 主要包
 
@@ -31,5 +31,3 @@ Conversation 会话契约模块，定义跨模块可依赖的稳定 API、模型
 运行本模块及其依赖模块的测试：
 
 `mvn --batch-mode --no-transfer-progress -pl modules/domains/conversation/shiyu-conversation-contract -am test -Ddependency-check.skip=true`
-
-根目录执行完整构建时，本模块由根 `pom.xml` 纳入 30 个项目的 Maven reactor。

@@ -2,21 +2,21 @@
 
 - **模块坐标**：`com.shiyu.ai:shiyu-governance-contract`
 - **分类**：领域模块 · Contract
-- **源码规模**：生产 Java 9 个，测试 Java 0 个
 
 ## 作用
 
-Governance 治理契约模块，定义跨模块可依赖的稳定 API、模型和 SPI 边界。
+定义生成准入、配额判断和用量记录的跨域类型，供会话、模型等模块与治理实现协作。
 
-## 职责
+## 契约内容
 
-- 负责用量记录、配额、统计和治理事件。
-- 只放框架无关的公共契约，避免把数据库、Web 框架或具体供应商实现泄漏到契约层。
-- 为对应 implementation 模块和组合根提供编译期依赖边界。
+- `QuotaRequest`、`QuotaDecision`、`QuotaUsage` 与 `QuotaGovernance` 描述配额申请、判断结果、用量和治理接口。
+- `UsageMeasurement`、`UsageRecordResult`、`UsageGovernance` 与 `UsageSourceType` 描述上报内容、记录结果、用量写入协作和来源类别。
+- 这些类型使调用方能请求准入或提交用量，而无需依赖治理的数据库模型、价格计算实现和 HTTP 层。
+- 本模块不执行配额判定、不计费、不查询统计，也不定义数据库表。
 
 ## 边界
 
-下游模块可以依赖本模块；本模块不依赖同一领域 implementation。
+模型、会话等调用方可依赖这些接口；contract 不依赖治理 implementation。
 
 ## 主要包
 
@@ -31,5 +31,3 @@ Governance 治理契约模块，定义跨模块可依赖的稳定 API、模型�
 运行本模块及其依赖模块的测试：
 
 `mvn --batch-mode --no-transfer-progress -pl modules/domains/governance/shiyu-governance-contract -am test -Ddependency-check.skip=true`
-
-根目录执行完整构建时，本模块由根 `pom.xml` 纳入 30 个项目的 Maven reactor。

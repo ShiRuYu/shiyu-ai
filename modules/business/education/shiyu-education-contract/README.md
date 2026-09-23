@@ -2,21 +2,21 @@
 
 - **模块坐标**：`com.shiyu.ai:shiyu-education-contract`
 - **分类**：领域模块 · Contract
-- **源码规模**：生产 Java 1 个，测试 Java 0 个
 
 ## 作用
 
-Education 教育契约模块，定义跨模块可依赖的稳定 API、模型和 SPI 边界。
+定义教育能力与其他领域协作时使用的稳定标识和契约入口，不包含教育业务流程实现。
 
-## 职责
+## 契约内容
 
-- 负责课程、章节、知识学习、练习评估和学习进度等教育业务。
-- 只放框架无关的公共契约，避免把数据库、Web 框架或具体供应商实现泄漏到契约层。
-- 为对应 implementation 模块和组合根提供编译期依赖边界。
+- `EducationContractModule` 标识教育 contract 边界，供组合与模块发现代码引用。
+- `EducationNodeTypes` 定义教育能力接入 Agent 图编排时使用的节点类型标识。
+- 本模块不提供课程、题库、学习计划、Controller、Repository 或数据库 schema；这些行为属于 `shiyu-education-implementation`。
+- 契约保持轻量，不依赖 Spring、Web、ORM 或外部供应商实现。
 
 ## 边界
 
-下游模块可以依赖本模块；本模块不依赖同一领域 implementation。
+Agent 等协作方可依赖本模块识别教育扩展类型；模块不反向依赖教育 implementation。
 
 ## 主要包
 
@@ -24,12 +24,10 @@ Education 教育契约模块，定义跨模块可依赖的稳定 API、模型和
 
 ## 内部模块依赖
 
-`shiyu-shared-kernel`
+`shiyu-agent-contract`、`shiyu-shared-kernel`
 
 ## 验证
 
 运行本模块及其依赖模块的测试：
 
 `mvn --batch-mode --no-transfer-progress -pl modules/business/education/shiyu-education-contract -am test -Ddependency-check.skip=true`
-
-根目录执行完整构建时，本模块由根 `pom.xml` 纳入 31 个项目的 Maven reactor。

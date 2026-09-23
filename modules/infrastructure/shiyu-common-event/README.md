@@ -2,11 +2,17 @@
 
 - **模块坐标**：`com.shiyu.ai:shiyu-common-event`
 - **分类**：可选基础设施模块
-- **源码规模**：生产 Java 8 个，测试 Java 4 个
 
 ## 作用
 
-承载进程内事件、JDBC outbox、Kafka outbox/relay 和消费去重实现。
+提供领域事件发布的基础设施实现，使应用可按部署要求选择进程内发布或持久化消息投递。
+
+## 功能说明
+
+- `DomainEventPublisher` 为发布侧提供统一入口；进程内 provider 通过 Spring 事件机制分发事件，适用于无需跨进程可靠投递的部署。
+- JDBC outbox 将事件记录持久化，再由 relay 投递到 Kafka；Kafka provider 复用 outbox 流程，并提供消费去重支撑。
+- `shiyu.infrastructure.event` 配置选择并设置 provider；数据库与 Kafka broker 必须由应用环境提供。
+- 该模块是显式引入的可选基础设施，不代表所有事件默认持久化，也不替代领域事件契约。
 
 包职责按实现边界划分：
 
@@ -21,6 +27,10 @@
 - 依赖 `shiyu-common-foundation` 的稳定接口和 `shiyu-shared-kernel` 的事件契约。
 - 直接携带 Spring JDBC、Spring Kafka；这些可选技术栈不再进入 common-foundation。
 - 不加入默认 `shiyu-ai-bootstrap` 依赖。应用需要事件 provider 时，显式依赖本模块并通过自动配置入口装配。
+
+## 内部模块依赖
+
+`shiyu-common-foundation`、`shiyu-shared-kernel`
 
 ## 验证
 

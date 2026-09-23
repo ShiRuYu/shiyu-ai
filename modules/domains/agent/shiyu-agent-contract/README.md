@@ -2,21 +2,22 @@
 
 - **模块坐标**：`com.shiyu.ai:shiyu-agent-contract`
 - **分类**：领域模块 · Contract
-- **源码规模**：生产 Java 26 个，测试 Java 0 个
 
 ## 作用
 
-Agent 智能体契约模块，定义跨模块可依赖的稳定 API、模型和 SPI 边界。
+定义 Agent 图节点、运行时和上下文协作接口，使其他领域可以接入 Agent 能力而不依赖其实现或存储技术。
 
-## 职责
+## 契约内容
 
-- 负责智能体定义、图编排、节点执行与运行时生命周期。
-- 只放框架无关的公共契约，避免把数据库、Web 框架或具体供应商实现泄漏到契约层。
-- 为对应 implementation 模块和组合根提供编译期依赖边界。
+- 节点扩展模型：`BaseNode` 以及节点输入、输出、配置、创建器和类型契约，用于声明图节点的配置与执行形态。
+- 运行接口：`AiRuntimePort`、AiRun 状态/事件/Repository 契约，定义图执行和运行生命周期的协作边界。
+- 上下文协作：`ContextAssemblyPort`、`ContextRetrievalPort` 及其请求/结果模型，供知识、记忆等领域向运行上下文提供能力。
+- 执行历史契约：为调用方提供查询 Agent 执行历史所需的服务边界。
+- 本模块不创建图、执行节点、连接数据库或定义 HTTP 接口；具体实现由 `shiyu-agent-implementation` 提供，契约保持框架无关。
 
 ## 边界
 
-下游模块可以依赖本模块；本模块不依赖同一领域 implementation。
+教育、会话、知识、记忆和工具等协作方可依赖这些契约；本模块不依赖 Agent implementation。
 
 ## 主要包
 
@@ -31,5 +32,3 @@ Agent 智能体契约模块，定义跨模块可依赖的稳定 API、模型和 
 运行本模块及其依赖模块的测试：
 
 `mvn --batch-mode --no-transfer-progress -pl modules/domains/agent/shiyu-agent-contract -am test -Ddependency-check.skip=true`
-
-根目录执行完整构建时，本模块由根 `pom.xml` 纳入 30 个项目的 Maven reactor。

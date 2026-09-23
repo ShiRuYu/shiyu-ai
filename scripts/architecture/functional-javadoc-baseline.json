@@ -9568,7 +9568,7 @@
     },
     {
       "path": "modules/domains/agent/shiyu-agent-implementation/src/main/java/com/shiyu/ai/agent/implementation/web/AgentDefinitionController.java",
-      "line": 350,
+      "line": 356,
       "source_set": "production",
       "module": "shiyu-agent-implementation",
       "owner": "com.shiyu.ai.agent.implementation.web.AgentDefinitionController.RegisterAgentRequest",
@@ -9592,7 +9592,7 @@
     },
     {
       "path": "modules/domains/agent/shiyu-agent-implementation/src/main/java/com/shiyu/ai/agent/implementation/web/AgentDefinitionController.java",
-      "line": 50,
+      "line": 49,
       "source_set": "production",
       "module": "shiyu-agent-implementation",
       "owner": "com.shiyu.ai.agent.implementation.web.AgentDefinitionController",
@@ -9604,7 +9604,7 @@
     },
     {
       "path": "modules/domains/agent/shiyu-agent-implementation/src/main/java/com/shiyu/ai/agent/implementation/web/AgentDefinitionController.java",
-      "line": 248,
+      "line": 250,
       "source_set": "production",
       "module": "shiyu-agent-implementation",
       "owner": "com.shiyu.ai.agent.implementation.web.AgentDefinitionController",
@@ -9628,7 +9628,7 @@
     },
     {
       "path": "modules/domains/agent/shiyu-agent-implementation/src/main/java/com/shiyu/ai/agent/implementation/web/AgentDefinitionController.java",
-      "line": 99,
+      "line": 100,
       "source_set": "production",
       "module": "shiyu-agent-implementation",
       "owner": "com.shiyu.ai.agent.implementation.web.AgentDefinitionController",
@@ -9640,7 +9640,7 @@
     },
     {
       "path": "modules/domains/agent/shiyu-agent-implementation/src/main/java/com/shiyu/ai/agent/implementation/web/AgentDefinitionController.java",
-      "line": 120,
+      "line": 121,
       "source_set": "production",
       "module": "shiyu-agent-implementation",
       "owner": "com.shiyu.ai.agent.implementation.web.AgentDefinitionController",
@@ -9652,7 +9652,7 @@
     },
     {
       "path": "modules/domains/agent/shiyu-agent-implementation/src/main/java/com/shiyu/ai/agent/implementation/web/AgentDefinitionController.java",
-      "line": 303,
+      "line": 306,
       "source_set": "production",
       "module": "shiyu-agent-implementation",
       "owner": "com.shiyu.ai.agent.implementation.web.AgentDefinitionController",
@@ -9664,7 +9664,7 @@
     },
     {
       "path": "modules/domains/agent/shiyu-agent-implementation/src/main/java/com/shiyu/ai/agent/implementation/web/AgentDefinitionController.java",
-      "line": 185,
+      "line": 186,
       "source_set": "production",
       "module": "shiyu-agent-implementation",
       "owner": "com.shiyu.ai.agent.implementation.web.AgentDefinitionController",
@@ -9676,7 +9676,7 @@
     },
     {
       "path": "modules/domains/agent/shiyu-agent-implementation/src/main/java/com/shiyu/ai/agent/implementation/web/AgentDefinitionController.java",
-      "line": 317,
+      "line": 321,
       "source_set": "production",
       "module": "shiyu-agent-implementation",
       "owner": "com.shiyu.ai.agent.implementation.web.AgentDefinitionController",
@@ -9688,7 +9688,7 @@
     },
     {
       "path": "modules/domains/agent/shiyu-agent-implementation/src/main/java/com/shiyu/ai/agent/implementation/web/AgentDefinitionController.java",
-      "line": 198,
+      "line": 200,
       "source_set": "production",
       "module": "shiyu-agent-implementation",
       "owner": "com.shiyu.ai.agent.implementation.web.AgentDefinitionController",
@@ -9700,7 +9700,7 @@
     },
     {
       "path": "modules/domains/agent/shiyu-agent-implementation/src/main/java/com/shiyu/ai/agent/implementation/web/AgentDefinitionController.java",
-      "line": 328,
+      "line": 333,
       "source_set": "production",
       "module": "shiyu-agent-implementation",
       "owner": "com.shiyu.ai.agent.implementation.web.AgentDefinitionController",
@@ -9712,7 +9712,7 @@
     },
     {
       "path": "modules/domains/agent/shiyu-agent-implementation/src/main/java/com/shiyu/ai/agent/implementation/web/AgentDefinitionController.java",
-      "line": 141,
+      "line": 142,
       "source_set": "production",
       "module": "shiyu-agent-implementation",
       "owner": "com.shiyu.ai.agent.implementation.web.AgentDefinitionController",
@@ -9724,7 +9724,7 @@
     },
     {
       "path": "modules/domains/agent/shiyu-agent-implementation/src/main/java/com/shiyu/ai/agent/implementation/web/AgentDefinitionController.java",
-      "line": 264,
+      "line": 267,
       "source_set": "production",
       "module": "shiyu-agent-implementation",
       "owner": "com.shiyu.ai.agent.implementation.web.AgentDefinitionController",
@@ -9736,7 +9736,7 @@
     },
     {
       "path": "modules/domains/agent/shiyu-agent-implementation/src/main/java/com/shiyu/ai/agent/implementation/web/AgentDefinitionController.java",
-      "line": 282,
+      "line": 285,
       "source_set": "production",
       "module": "shiyu-agent-implementation",
       "owner": "com.shiyu.ai.agent.implementation.web.AgentDefinitionController",
@@ -9748,7 +9748,7 @@
     },
     {
       "path": "modules/domains/agent/shiyu-agent-implementation/src/main/java/com/shiyu/ai/agent/implementation/web/AgentDefinitionController.java",
-      "line": 162,
+      "line": 163,
       "source_set": "production",
       "module": "shiyu-agent-implementation",
       "owner": "com.shiyu.ai.agent.implementation.web.AgentDefinitionController",
@@ -9760,7 +9760,7 @@
     },
     {
       "path": "modules/domains/agent/shiyu-agent-implementation/src/main/java/com/shiyu/ai/agent/implementation/web/AgentVersionController.java",
-      "line": 29,
+      "line": 27,
       "source_set": "production",
       "module": "shiyu-agent-implementation",
       "owner": "com.shiyu.ai.agent.implementation.web.AgentVersionController",
@@ -9772,7 +9772,7 @@
     },
     {
       "path": "modules/domains/agent/shiyu-agent-implementation/src/main/java/com/shiyu/ai/agent/implementation/web/AgentVersionController.java",
-      "line": 44,
+      "line": 41,
       "source_set": "production",
       "module": "shiyu-agent-implementation",
       "owner": "com.shiyu.ai.agent.implementation.web.AgentVersionController",
@@ -9784,7 +9784,7 @@
     },
     {
       "path": "modules/domains/agent/shiyu-agent-implementation/src/main/java/com/shiyu/ai/agent/implementation/web/AgentVersionController.java",
-      "line": 212,
+      "line": 130,
       "source_set": "production",
       "module": "shiyu-agent-implementation",
       "owner": "com.shiyu.ai.agent.implementation.web.AgentVersionController",
@@ -9796,19 +9796,7 @@
     },
     {
       "path": "modules/domains/agent/shiyu-agent-implementation/src/main/java/com/shiyu/ai/agent/implementation/web/AgentVersionController.java",
-      "line": 69,
-      "source_set": "production",
-      "module": "shiyu-agent-implementation",
-      "owner": "com.shiyu.ai.agent.implementation.web.AgentVersionController",
-      "member": "public Result<AgentVersionDetailVO> getVersionDetail( String agentId, Long versionId)",
-      "category": "template-method+template-param",
-      "message": "方法描述：方法注释使用泛化操作模板，未说明实际行为、条件或副作用；@param Detail：参数注释使用泛化模板，未说明参数的业务含义",
-      "summary": "执行 智能体 Version 相关业务操作，并维护必要的状态和协作关系。 @param Detail 用于完成本次业务处理的 Detail 参数。",
-      "key": "production|shiyu-agent-implementation|com.shiyu.ai.agent.implementation.web.AgentVersionController|public Result<AgentVersionDetailVO> getVersionDetail( String agentId, Long versionId)|template-method+template-param|执行 智能体 Version 相关业务操作，并维护必要的状态和协作关系。 @param Detail 用于完成本次业务处理的 Detail 参数。"
-    },
-    {
-      "path": "modules/domains/agent/shiyu-agent-implementation/src/main/java/com/shiyu/ai/agent/implementation/web/AgentVersionController.java",
-      "line": 226,
+      "line": 145,
       "source_set": "production",
       "module": "shiyu-agent-implementation",
       "owner": "com.shiyu.ai.agent.implementation.web.AgentVersionController",
@@ -9820,7 +9808,7 @@
     },
     {
       "path": "modules/domains/agent/shiyu-agent-implementation/src/main/java/com/shiyu/ai/agent/implementation/web/AgentVersionController.java",
-      "line": 192,
+      "line": 110,
       "source_set": "production",
       "module": "shiyu-agent-implementation",
       "owner": "com.shiyu.ai.agent.implementation.web.AgentVersionController",
@@ -9832,31 +9820,7 @@
     },
     {
       "path": "modules/domains/agent/shiyu-agent-implementation/src/main/java/com/shiyu/ai/agent/implementation/web/AgentVersionController.java",
-      "line": 82,
-      "source_set": "production",
-      "module": "shiyu-agent-implementation",
-      "owner": "com.shiyu.ai.agent.implementation.web.AgentVersionController",
-      "member": "public Result<AgentVersionVO> createVersion( String agentId, VersionRequest request)",
-      "category": "template-method+template-param",
-      "message": "方法描述：方法注释使用泛化操作模板，未说明实际行为、条件或副作用；@param Version：参数注释使用泛化模板，未说明参数的业务含义",
-      "summary": "执行 智能体 Version 相关业务操作，并维护必要的状态和协作关系。 @param Version 用于完成本次业务处理的 Version 参数。",
-      "key": "production|shiyu-agent-implementation|com.shiyu.ai.agent.implementation.web.AgentVersionController|public Result<AgentVersionVO> createVersion( String agentId, VersionRequest request)|template-method+template-param|执行 智能体 Version 相关业务操作，并维护必要的状态和协作关系。 @param Version 用于完成本次业务处理的 Version 参数。"
-    },
-    {
-      "path": "modules/domains/agent/shiyu-agent-implementation/src/main/java/com/shiyu/ai/agent/implementation/web/AgentVersionController.java",
-      "line": 99,
-      "source_set": "production",
-      "module": "shiyu-agent-implementation",
-      "owner": "com.shiyu.ai.agent.implementation.web.AgentVersionController",
-      "member": "public Result<AgentVersionVO> updateVersion( String agentId, Long versionId, VersionRequest request)",
-      "category": "template-method+template-param",
-      "message": "方法描述：方法注释使用泛化操作模板，未说明实际行为、条件或副作用；@param Version：参数注释使用泛化模板，未说明参数的业务含义",
-      "summary": "执行 智能体 Version 相关业务操作，并维护必要的状态和协作关系。 @param Version 用于完成本次业务处理的 Version 参数。",
-      "key": "production|shiyu-agent-implementation|com.shiyu.ai.agent.implementation.web.AgentVersionController|public Result<AgentVersionVO> updateVersion( String agentId, Long versionId, VersionRequest request)|template-method+template-param|执行 智能体 Version 相关业务操作，并维护必要的状态和协作关系。 @param Version 用于完成本次业务处理的 Version 参数。"
-    },
-    {
-      "path": "modules/domains/agent/shiyu-agent-implementation/src/main/java/com/shiyu/ai/agent/implementation/web/AgentVersionController.java",
-      "line": 247,
+      "line": 166,
       "source_set": "production",
       "module": "shiyu-agent-implementation",
       "owner": "com.shiyu.ai.agent.implementation.web.AgentVersionController",
@@ -9868,19 +9832,7 @@
     },
     {
       "path": "modules/domains/agent/shiyu-agent-implementation/src/main/java/com/shiyu/ai/agent/implementation/web/AgentVersionController.java",
-      "line": 59,
-      "source_set": "production",
-      "module": "shiyu-agent-implementation",
-      "owner": "com.shiyu.ai.agent.implementation.web.AgentVersionController",
-      "member": "public Result<List<AgentVersionVO>> getVersions( String agentId)",
-      "category": "template-method+template-param",
-      "message": "方法描述：方法注释使用泛化操作模板，未说明实际行为、条件或副作用；@param Versions：参数注释使用泛化模板，未说明参数的业务含义",
-      "summary": "执行 智能体 Version 相关业务操作，并维护必要的状态和协作关系。 @param Versions 用于完成本次业务处理的 Versions 参数。",
-      "key": "production|shiyu-agent-implementation|com.shiyu.ai.agent.implementation.web.AgentVersionController|public Result<List<AgentVersionVO>> getVersions( String agentId)|template-method+template-param|执行 智能体 Version 相关业务操作，并维护必要的状态和协作关系。 @param Versions 用于完成本次业务处理的 Versions 参数。"
-    },
-    {
-      "path": "modules/domains/agent/shiyu-agent-implementation/src/main/java/com/shiyu/ai/agent/implementation/web/AgentVersionController.java",
-      "line": 368,
+      "line": 288,
       "source_set": "production",
       "module": "shiyu-agent-implementation",
       "owner": "com.shiyu.ai.agent.implementation.web.AgentVersionController",
@@ -9892,7 +9844,7 @@
     },
     {
       "path": "modules/domains/agent/shiyu-agent-implementation/src/main/java/com/shiyu/ai/agent/implementation/web/AgentVersionController.java",
-      "line": 174,
+      "line": 92,
       "source_set": "production",
       "module": "shiyu-agent-implementation",
       "owner": "com.shiyu.ai.agent.implementation.web.AgentVersionController",
@@ -9904,7 +9856,7 @@
     },
     {
       "path": "modules/domains/agent/shiyu-agent-implementation/src/main/java/com/shiyu/ai/agent/implementation/web/AgentVersionController.java",
-      "line": 325,
+      "line": 245,
       "source_set": "production",
       "module": "shiyu-agent-implementation",
       "owner": "com.shiyu.ai.agent.implementation.web.AgentVersionController",
@@ -9916,7 +9868,7 @@
     },
     {
       "path": "modules/domains/agent/shiyu-agent-implementation/src/main/java/com/shiyu/ai/agent/implementation/web/AgentVersionController.java",
-      "line": 261,
+      "line": 181,
       "source_set": "production",
       "module": "shiyu-agent-implementation",
       "owner": "com.shiyu.ai.agent.implementation.web.AgentVersionController",
@@ -9928,7 +9880,7 @@
     },
     {
       "path": "modules/domains/agent/shiyu-agent-implementation/src/main/java/com/shiyu/ai/agent/implementation/web/AgentVersionController.java",
-      "line": 156,
+      "line": 74,
       "source_set": "production",
       "module": "shiyu-agent-implementation",
       "owner": "com.shiyu.ai.agent.implementation.web.AgentVersionController",
@@ -9940,7 +9892,7 @@
     },
     {
       "path": "modules/domains/agent/shiyu-agent-implementation/src/main/java/com/shiyu/ai/agent/implementation/web/AgentVersionController.java",
-      "line": 346,
+      "line": 266,
       "source_set": "production",
       "module": "shiyu-agent-implementation",
       "owner": "com.shiyu.ai.agent.implementation.web.AgentVersionController",
@@ -9952,7 +9904,7 @@
     },
     {
       "path": "modules/domains/agent/shiyu-agent-implementation/src/main/java/com/shiyu/ai/agent/implementation/web/AgentVersionController.java",
-      "line": 304,
+      "line": 224,
       "source_set": "production",
       "module": "shiyu-agent-implementation",
       "owner": "com.shiyu.ai.agent.implementation.web.AgentVersionController",
@@ -9964,19 +9916,7 @@
     },
     {
       "path": "modules/domains/agent/shiyu-agent-implementation/src/main/java/com/shiyu/ai/agent/implementation/web/AgentVersionController.java",
-      "line": 119,
-      "source_set": "production",
-      "module": "shiyu-agent-implementation",
-      "owner": "com.shiyu.ai.agent.implementation.web.AgentVersionController",
-      "member": "public Result<Void> deleteVersion( String agentId, Long versionId)",
-      "category": "template-method+template-param",
-      "message": "方法描述：方法注释使用泛化操作模板，未说明实际行为、条件或副作用；@param Version：参数注释使用泛化模板，未说明参数的业务含义",
-      "summary": "执行 智能体 Version 相关业务操作，并维护必要的状态和协作关系。 @param Version 用于完成本次业务处理的 Version 参数。",
-      "key": "production|shiyu-agent-implementation|com.shiyu.ai.agent.implementation.web.AgentVersionController|public Result<Void> deleteVersion( String agentId, Long versionId)|template-method+template-param|执行 智能体 Version 相关业务操作，并维护必要的状态和协作关系。 @param Version 用于完成本次业务处理的 Version 参数。"
-    },
-    {
-      "path": "modules/domains/agent/shiyu-agent-implementation/src/main/java/com/shiyu/ai/agent/implementation/web/AgentVersionController.java",
-      "line": 138,
+      "line": 56,
       "source_set": "production",
       "module": "shiyu-agent-implementation",
       "owner": "com.shiyu.ai.agent.implementation.web.AgentVersionController",
@@ -9988,7 +9928,7 @@
     },
     {
       "path": "modules/domains/agent/shiyu-agent-implementation/src/main/java/com/shiyu/ai/agent/implementation/web/AgentVersionController.java",
-      "line": 380,
+      "line": 301,
       "source_set": "production",
       "module": "shiyu-agent-implementation",
       "owner": "com.shiyu.ai.agent.implementation.web.AgentVersionController",
@@ -10000,7 +9940,7 @@
     },
     {
       "path": "modules/domains/agent/shiyu-agent-implementation/src/main/java/com/shiyu/ai/agent/implementation/web/AgentVersionController.java",
-      "line": 282,
+      "line": 202,
       "source_set": "production",
       "module": "shiyu-agent-implementation",
       "owner": "com.shiyu.ai.agent.implementation.web.AgentVersionController",
@@ -10408,7 +10348,7 @@
     },
     {
       "path": "modules/domains/agent/shiyu-agent-implementation/src/main/java/com/shiyu/ai/agent/implementation/web/ExecutionController.java",
-      "line": 44,
+      "line": 43,
       "source_set": "production",
       "module": "shiyu-agent-implementation",
       "owner": "com.shiyu.ai.agent.implementation.web.ExecutionController",
@@ -10420,7 +10360,7 @@
     },
     {
       "path": "modules/domains/agent/shiyu-agent-implementation/src/main/java/com/shiyu/ai/agent/implementation/web/ExecutionController.java",
-      "line": 205,
+      "line": 206,
       "source_set": "production",
       "module": "shiyu-agent-implementation",
       "owner": "com.shiyu.ai.agent.implementation.web.ExecutionController",
@@ -13996,7 +13936,7 @@
     },
     {
       "path": "modules/infrastructure/shiyu-common-mybatis/src/main/java/com/shiyu/ai/common/mybatis/config/MybatisConfig.java",
-      "line": 13,
+      "line": 12,
       "source_set": "production",
       "module": "shiyu-common-mybatis",
       "owner": "com.shiyu.ai.common.mybatis.config.MybatisConfig",
@@ -14008,7 +13948,7 @@
     },
     {
       "path": "modules/infrastructure/shiyu-common-mybatis/src/main/java/com/shiyu/ai/common/mybatis/config/MybatisConfig.java",
-      "line": 22,
+      "line": 21,
       "source_set": "production",
       "module": "shiyu-common-mybatis",
       "owner": "com.shiyu.ai.common.mybatis.config.MybatisConfig",
@@ -14017,18 +13957,6 @@
       "message": "方法描述：方法注释使用泛化操作模板，未说明实际行为、条件或副作用；@return：返回值注释使用泛化模板，未说明真实返回结果",
       "summary": "执行 Mybatis 相关业务数据，并返回处理结果。 @return 返回 Mybatis 相关操作生成的结果数据。",
       "key": "production|shiyu-common-mybatis|com.shiyu.ai.common.mybatis.config.MybatisConfig|public MyBatisFlexCustomizer mybatisFlexCustomizer()|template-method+template-return|执行 Mybatis 相关业务数据，并返回处理结果。 @return 返回 Mybatis 相关操作生成的结果数据。"
-    },
-    {
-      "path": "modules/infrastructure/shiyu-common-mybatis/src/main/java/com/shiyu/ai/common/mybatis/config/MybatisConfig.java",
-      "line": 39,
-      "source_set": "production",
-      "module": "shiyu-common-mybatis",
-      "owner": "com.shiyu.ai.common.mybatis.config.MybatisConfig",
-      "member": "public MybatisExceptionHandler mybatisExceptionHandler()",
-      "category": "template-method+template-return",
-      "message": "方法描述：方法注释使用泛化操作模板，未说明实际行为、条件或副作用；@return：返回值注释使用泛化模板，未说明真实返回结果",
-      "summary": "执行 Mybatis 相关业务数据，并返回处理结果。 @return 返回 Mybatis 相关操作生成的结果数据。",
-      "key": "production|shiyu-common-mybatis|com.shiyu.ai.common.mybatis.config.MybatisConfig|public MybatisExceptionHandler mybatisExceptionHandler()|template-method+template-return|执行 Mybatis 相关业务数据，并返回处理结果。 @return 返回 Mybatis 相关操作生成的结果数据。"
     },
     {
       "path": "modules/infrastructure/shiyu-common-mybatis/src/main/java/com/shiyu/ai/common/mybatis/config/TenantFlexConfig.java",
@@ -14089,18 +14017,6 @@
       "message": "类型注释使用泛化职责模板，未说明该类型的实际功能",
       "summary": "处理 Audit Field 相关事件或请求，并推进后续业务流程。",
       "key": "production|shiyu-common-mybatis|com.shiyu.ai.common.mybatis.handler.AuditFieldListener|<type>|template-type|处理 Audit Field 相关事件或请求，并推进后续业务流程。"
-    },
-    {
-      "path": "modules/infrastructure/shiyu-common-mybatis/src/main/java/com/shiyu/ai/common/mybatis/handler/MybatisExceptionHandler.java",
-      "line": 14,
-      "source_set": "production",
-      "module": "shiyu-common-mybatis",
-      "owner": "com.shiyu.ai.common.mybatis.handler.MybatisExceptionHandler",
-      "member": "<type>",
-      "category": "template-type",
-      "message": "类型注释使用泛化职责模板，未说明该类型的实际功能",
-      "summary": "处理 Mybatis Exception 相关事件或请求，并推进后续业务流程。",
-      "key": "production|shiyu-common-mybatis|com.shiyu.ai.common.mybatis.handler.MybatisExceptionHandler|<type>|template-type|处理 Mybatis Exception 相关事件或请求，并推进后续业务流程。"
     },
     {
       "path": "modules/infrastructure/shiyu-common-mybatis/src/main/java/com/shiyu/ai/common/mybatis/handler/TenantConsistencyListener.java",
@@ -17368,7 +17284,7 @@
     },
     {
       "path": "modules/infrastructure/shiyu-common-vector/src/main/java/com/shiyu/ai/common/vector/implementation/JVectorStore.java",
-      "line": 98,
+      "line": 93,
       "source_set": "production",
       "module": "shiyu-common-vector",
       "owner": "com.shiyu.ai.common.vector.implementation.JVectorStore",
@@ -17380,7 +17296,7 @@
     },
     {
       "path": "modules/infrastructure/shiyu-common-vector/src/main/java/com/shiyu/ai/common/vector/implementation/JVectorStore.java",
-      "line": 166,
+      "line": 161,
       "source_set": "production",
       "module": "shiyu-common-vector",
       "owner": "com.shiyu.ai.common.vector.implementation.JVectorStore",
@@ -17392,7 +17308,7 @@
     },
     {
       "path": "modules/infrastructure/shiyu-common-vector/src/main/java/com/shiyu/ai/common/vector/implementation/JVectorStore.java",
-      "line": 154,
+      "line": 149,
       "source_set": "production",
       "module": "shiyu-common-vector",
       "owner": "com.shiyu.ai.common.vector.implementation.JVectorStore",
@@ -17404,7 +17320,7 @@
     },
     {
       "path": "modules/infrastructure/shiyu-common-vector/src/main/java/com/shiyu/ai/common/vector/implementation/JVectorStore.java",
-      "line": 88,
+      "line": 83,
       "source_set": "production",
       "module": "shiyu-common-vector",
       "owner": "com.shiyu.ai.common.vector.implementation.JVectorStore",
@@ -17416,7 +17332,7 @@
     },
     {
       "path": "modules/infrastructure/shiyu-common-vector/src/main/java/com/shiyu/ai/common/vector/implementation/JVectorStore.java",
-      "line": 333,
+      "line": 328,
       "source_set": "production",
       "module": "shiyu-common-vector",
       "owner": "com.shiyu.ai.common.vector.implementation.JVectorStore",
@@ -17428,7 +17344,7 @@
     },
     {
       "path": "modules/infrastructure/shiyu-common-vector/src/main/java/com/shiyu/ai/common/vector/implementation/JVectorStore.java",
-      "line": 269,
+      "line": 264,
       "source_set": "production",
       "module": "shiyu-common-vector",
       "owner": "com.shiyu.ai.common.vector.implementation.JVectorStore",
@@ -17440,7 +17356,7 @@
     },
     {
       "path": "modules/infrastructure/shiyu-common-vector/src/main/java/com/shiyu/ai/common/vector/implementation/JVectorStore.java",
-      "line": 286,
+      "line": 281,
       "source_set": "production",
       "module": "shiyu-common-vector",
       "owner": "com.shiyu.ai.common.vector.implementation.JVectorStore",
@@ -17452,7 +17368,7 @@
     },
     {
       "path": "modules/infrastructure/shiyu-common-vector/src/main/java/com/shiyu/ai/common/vector/implementation/JVectorStore.java",
-      "line": 347,
+      "line": 342,
       "source_set": "production",
       "module": "shiyu-common-vector",
       "owner": "com.shiyu.ai.common.vector.implementation.JVectorStore",
@@ -17464,7 +17380,7 @@
     },
     {
       "path": "modules/infrastructure/shiyu-common-vector/src/main/java/com/shiyu/ai/common/vector/implementation/JVectorStore.java",
-      "line": 320,
+      "line": 315,
       "source_set": "production",
       "module": "shiyu-common-vector",
       "owner": "com.shiyu.ai.common.vector.implementation.JVectorStore",
@@ -17476,7 +17392,7 @@
     },
     {
       "path": "modules/infrastructure/shiyu-common-vector/src/main/java/com/shiyu/ai/common/vector/implementation/JVectorStore.java",
-      "line": 119,
+      "line": 114,
       "source_set": "production",
       "module": "shiyu-common-vector",
       "owner": "com.shiyu.ai.common.vector.implementation.JVectorStore",
@@ -17488,7 +17404,7 @@
     },
     {
       "path": "modules/infrastructure/shiyu-common-vector/src/main/java/com/shiyu/ai/common/vector/implementation/JVectorStore.java",
-      "line": 144,
+      "line": 139,
       "source_set": "production",
       "module": "shiyu-common-vector",
       "owner": "com.shiyu.ai.common.vector.implementation.JVectorStore",
@@ -26512,7 +26428,7 @@
     },
     {
       "path": "modules/business/education/shiyu-education-implementation/src/main/java/com/shiyu/ai/education/implementation/web/controller/ChapterController.java",
-      "line": 80,
+      "line": 83,
       "source_set": "production",
       "module": "shiyu-education-implementation",
       "owner": "com.shiyu.ai.education.implementation.web.controller.ChapterController",
@@ -26524,7 +26440,7 @@
     },
     {
       "path": "modules/business/education/shiyu-education-implementation/src/main/java/com/shiyu/ai/education/implementation/web/controller/ChapterController.java",
-      "line": 35,
+      "line": 34,
       "source_set": "production",
       "module": "shiyu-education-implementation",
       "owner": "com.shiyu.ai.education.implementation.web.controller.ChapterController",
@@ -26536,7 +26452,7 @@
     },
     {
       "path": "modules/business/education/shiyu-education-implementation/src/main/java/com/shiyu/ai/education/implementation/web/controller/ChapterController.java",
-      "line": 57,
+      "line": 58,
       "source_set": "production",
       "module": "shiyu-education-implementation",
       "owner": "com.shiyu.ai.education.implementation.web.controller.ChapterController",
@@ -26548,7 +26464,7 @@
     },
     {
       "path": "modules/business/education/shiyu-education-implementation/src/main/java/com/shiyu/ai/education/implementation/web/controller/ChapterController.java",
-      "line": 69,
+      "line": 71,
       "source_set": "production",
       "module": "shiyu-education-implementation",
       "owner": "com.shiyu.ai.education.implementation.web.controller.ChapterController",
@@ -26572,7 +26488,7 @@
     },
     {
       "path": "modules/business/education/shiyu-education-implementation/src/main/java/com/shiyu/ai/education/implementation/web/controller/ChapterController.java",
-      "line": 116,
+      "line": 119,
       "source_set": "production",
       "module": "shiyu-education-implementation",
       "owner": "com.shiyu.ai.education.implementation.web.controller.ChapterController",
@@ -26584,7 +26500,7 @@
     },
     {
       "path": "modules/business/education/shiyu-education-implementation/src/main/java/com/shiyu/ai/education/implementation/web/controller/ChapterController.java",
-      "line": 104,
+      "line": 107,
       "source_set": "production",
       "module": "shiyu-education-implementation",
       "owner": "com.shiyu.ai.education.implementation.web.controller.ChapterController",
@@ -26596,7 +26512,7 @@
     },
     {
       "path": "modules/business/education/shiyu-education-implementation/src/main/java/com/shiyu/ai/education/implementation/web/controller/ChapterController.java",
-      "line": 127,
+      "line": 131,
       "source_set": "production",
       "module": "shiyu-education-implementation",
       "owner": "com.shiyu.ai.education.implementation.web.controller.ChapterController",
@@ -26608,7 +26524,7 @@
     },
     {
       "path": "modules/business/education/shiyu-education-implementation/src/main/java/com/shiyu/ai/education/implementation/web/controller/ChapterController.java",
-      "line": 92,
+      "line": 95,
       "source_set": "production",
       "module": "shiyu-education-implementation",
       "owner": "com.shiyu.ai.education.implementation.web.controller.ChapterController",
@@ -26632,7 +26548,7 @@
     },
     {
       "path": "modules/business/education/shiyu-education-implementation/src/main/java/com/shiyu/ai/education/implementation/web/controller/CourseController.java",
-      "line": 83,
+      "line": 86,
       "source_set": "production",
       "module": "shiyu-education-implementation",
       "owner": "com.shiyu.ai.education.implementation.web.controller.CourseController",
@@ -26644,7 +26560,7 @@
     },
     {
       "path": "modules/business/education/shiyu-education-implementation/src/main/java/com/shiyu/ai/education/implementation/web/controller/CourseController.java",
-      "line": 36,
+      "line": 35,
       "source_set": "production",
       "module": "shiyu-education-implementation",
       "owner": "com.shiyu.ai.education.implementation.web.controller.CourseController",
@@ -26656,7 +26572,7 @@
     },
     {
       "path": "modules/business/education/shiyu-education-implementation/src/main/java/com/shiyu/ai/education/implementation/web/controller/CourseController.java",
-      "line": 108,
+      "line": 111,
       "source_set": "production",
       "module": "shiyu-education-implementation",
       "owner": "com.shiyu.ai.education.implementation.web.controller.CourseController",
@@ -26668,7 +26584,7 @@
     },
     {
       "path": "modules/business/education/shiyu-education-implementation/src/main/java/com/shiyu/ai/education/implementation/web/controller/CourseController.java",
-      "line": 72,
+      "line": 74,
       "source_set": "production",
       "module": "shiyu-education-implementation",
       "owner": "com.shiyu.ai.education.implementation.web.controller.CourseController",
@@ -26680,7 +26596,7 @@
     },
     {
       "path": "modules/business/education/shiyu-education-implementation/src/main/java/com/shiyu/ai/education/implementation/web/controller/CourseController.java",
-      "line": 60,
+      "line": 61,
       "source_set": "production",
       "module": "shiyu-education-implementation",
       "owner": "com.shiyu.ai.education.implementation.web.controller.CourseController",
@@ -26704,7 +26620,7 @@
     },
     {
       "path": "modules/business/education/shiyu-education-implementation/src/main/java/com/shiyu/ai/education/implementation/web/controller/CourseController.java",
-      "line": 121,
+      "line": 125,
       "source_set": "production",
       "module": "shiyu-education-implementation",
       "owner": "com.shiyu.ai.education.implementation.web.controller.CourseController",
@@ -26716,7 +26632,7 @@
     },
     {
       "path": "modules/business/education/shiyu-education-implementation/src/main/java/com/shiyu/ai/education/implementation/web/controller/CourseController.java",
-      "line": 95,
+      "line": 98,
       "source_set": "production",
       "module": "shiyu-education-implementation",
       "owner": "com.shiyu.ai.education.implementation.web.controller.CourseController",
@@ -26764,7 +26680,7 @@
     },
     {
       "path": "modules/business/education/shiyu-education-implementation/src/main/java/com/shiyu/ai/education/implementation/web/controller/ExamController.java",
-      "line": 82,
+      "line": 85,
       "source_set": "production",
       "module": "shiyu-education-implementation",
       "owner": "com.shiyu.ai.education.implementation.web.controller.ExamController",
@@ -26776,7 +26692,7 @@
     },
     {
       "path": "modules/business/education/shiyu-education-implementation/src/main/java/com/shiyu/ai/education/implementation/web/controller/ExamController.java",
-      "line": 36,
+      "line": 35,
       "source_set": "production",
       "module": "shiyu-education-implementation",
       "owner": "com.shiyu.ai.education.implementation.web.controller.ExamController",
@@ -26788,7 +26704,7 @@
     },
     {
       "path": "modules/business/education/shiyu-education-implementation/src/main/java/com/shiyu/ai/education/implementation/web/controller/ExamController.java",
-      "line": 60,
+      "line": 61,
       "source_set": "production",
       "module": "shiyu-education-implementation",
       "owner": "com.shiyu.ai.education.implementation.web.controller.ExamController",
@@ -26800,7 +26716,7 @@
     },
     {
       "path": "modules/business/education/shiyu-education-implementation/src/main/java/com/shiyu/ai/education/implementation/web/controller/ExamController.java",
-      "line": 71,
+      "line": 73,
       "source_set": "production",
       "module": "shiyu-education-implementation",
       "owner": "com.shiyu.ai.education.implementation.web.controller.ExamController",
@@ -26824,7 +26740,7 @@
     },
     {
       "path": "modules/business/education/shiyu-education-implementation/src/main/java/com/shiyu/ai/education/implementation/web/controller/ExamController.java",
-      "line": 106,
+      "line": 109,
       "source_set": "production",
       "module": "shiyu-education-implementation",
       "owner": "com.shiyu.ai.education.implementation.web.controller.ExamController",
@@ -26836,7 +26752,7 @@
     },
     {
       "path": "modules/business/education/shiyu-education-implementation/src/main/java/com/shiyu/ai/education/implementation/web/controller/ExamController.java",
-      "line": 93,
+      "line": 96,
       "source_set": "production",
       "module": "shiyu-education-implementation",
       "owner": "com.shiyu.ai.education.implementation.web.controller.ExamController",
@@ -26860,7 +26776,7 @@
     },
     {
       "path": "modules/business/education/shiyu-education-implementation/src/main/java/com/shiyu/ai/education/implementation/web/controller/QuestionController.java",
-      "line": 73,
+      "line": 75,
       "source_set": "production",
       "module": "shiyu-education-implementation",
       "owner": "com.shiyu.ai.education.implementation.web.controller.QuestionController",
@@ -26872,7 +26788,7 @@
     },
     {
       "path": "modules/business/education/shiyu-education-implementation/src/main/java/com/shiyu/ai/education/implementation/web/controller/QuestionController.java",
-      "line": 60,
+      "line": 61,
       "source_set": "production",
       "module": "shiyu-education-implementation",
       "owner": "com.shiyu.ai.education.implementation.web.controller.QuestionController",
@@ -26884,7 +26800,7 @@
     },
     {
       "path": "modules/business/education/shiyu-education-implementation/src/main/java/com/shiyu/ai/education/implementation/web/controller/QuestionController.java",
-      "line": 85,
+      "line": 88,
       "source_set": "production",
       "module": "shiyu-education-implementation",
       "owner": "com.shiyu.ai.education.implementation.web.controller.QuestionController",
@@ -26896,7 +26812,7 @@
     },
     {
       "path": "modules/business/education/shiyu-education-implementation/src/main/java/com/shiyu/ai/education/implementation/web/controller/QuestionController.java",
-      "line": 36,
+      "line": 35,
       "source_set": "production",
       "module": "shiyu-education-implementation",
       "owner": "com.shiyu.ai.education.implementation.web.controller.QuestionController",
@@ -26908,7 +26824,7 @@
     },
     {
       "path": "modules/business/education/shiyu-education-implementation/src/main/java/com/shiyu/ai/education/implementation/web/controller/QuestionController.java",
-      "line": 96,
+      "line": 100,
       "source_set": "production",
       "module": "shiyu-education-implementation",
       "owner": "com.shiyu.ai.education.implementation.web.controller.QuestionController",
@@ -26932,7 +26848,7 @@
     },
     {
       "path": "modules/business/education/shiyu-education-implementation/src/main/java/com/shiyu/ai/education/implementation/web/controller/QuestionController.java",
-      "line": 121,
+      "line": 125,
       "source_set": "production",
       "module": "shiyu-education-implementation",
       "owner": "com.shiyu.ai.education.implementation.web.controller.QuestionController",
@@ -26944,7 +26860,7 @@
     },
     {
       "path": "modules/business/education/shiyu-education-implementation/src/main/java/com/shiyu/ai/education/implementation/web/controller/QuestionController.java",
-      "line": 108,
+      "line": 112,
       "source_set": "production",
       "module": "shiyu-education-implementation",
       "owner": "com.shiyu.ai.education.implementation.web.controller.QuestionController",
@@ -26992,7 +26908,7 @@
     },
     {
       "path": "modules/business/education/shiyu-education-implementation/src/main/java/com/shiyu/ai/education/implementation/web/controller/ResourceController.java",
-      "line": 60,
+      "line": 61,
       "source_set": "production",
       "module": "shiyu-education-implementation",
       "owner": "com.shiyu.ai.education.implementation.web.controller.ResourceController",
@@ -27004,7 +26920,7 @@
     },
     {
       "path": "modules/business/education/shiyu-education-implementation/src/main/java/com/shiyu/ai/education/implementation/web/controller/ResourceController.java",
-      "line": 72,
+      "line": 74,
       "source_set": "production",
       "module": "shiyu-education-implementation",
       "owner": "com.shiyu.ai.education.implementation.web.controller.ResourceController",
@@ -27028,7 +26944,7 @@
     },
     {
       "path": "modules/business/education/shiyu-education-implementation/src/main/java/com/shiyu/ai/education/implementation/web/controller/ResourceController.java",
-      "line": 83,
+      "line": 86,
       "source_set": "production",
       "module": "shiyu-education-implementation",
       "owner": "com.shiyu.ai.education.implementation.web.controller.ResourceController",
@@ -27040,7 +26956,7 @@
     },
     {
       "path": "modules/business/education/shiyu-education-implementation/src/main/java/com/shiyu/ai/education/implementation/web/controller/ResourceController.java",
-      "line": 36,
+      "line": 35,
       "source_set": "production",
       "module": "shiyu-education-implementation",
       "owner": "com.shiyu.ai.education.implementation.web.controller.ResourceController",
@@ -27052,7 +26968,7 @@
     },
     {
       "path": "modules/business/education/shiyu-education-implementation/src/main/java/com/shiyu/ai/education/implementation/web/controller/ResourceController.java",
-      "line": 108,
+      "line": 111,
       "source_set": "production",
       "module": "shiyu-education-implementation",
       "owner": "com.shiyu.ai.education.implementation.web.controller.ResourceController",
@@ -27064,7 +26980,7 @@
     },
     {
       "path": "modules/business/education/shiyu-education-implementation/src/main/java/com/shiyu/ai/education/implementation/web/controller/ResourceController.java",
-      "line": 95,
+      "line": 98,
       "source_set": "production",
       "module": "shiyu-education-implementation",
       "owner": "com.shiyu.ai.education.implementation.web.controller.ResourceController",
@@ -27088,7 +27004,7 @@
     },
     {
       "path": "modules/business/education/shiyu-education-implementation/src/main/java/com/shiyu/ai/education/implementation/web/controller/ReviewController.java",
-      "line": 57,
+      "line": 58,
       "source_set": "production",
       "module": "shiyu-education-implementation",
       "owner": "com.shiyu.ai.education.implementation.web.controller.ReviewController",
@@ -27112,7 +27028,7 @@
     },
     {
       "path": "modules/business/education/shiyu-education-implementation/src/main/java/com/shiyu/ai/education/implementation/web/controller/ReviewController.java",
-      "line": 70,
+      "line": 72,
       "source_set": "production",
       "module": "shiyu-education-implementation",
       "owner": "com.shiyu.ai.education.implementation.web.controller.ReviewController",
@@ -27124,7 +27040,7 @@
     },
     {
       "path": "modules/business/education/shiyu-education-implementation/src/main/java/com/shiyu/ai/education/implementation/web/controller/ReviewController.java",
-      "line": 36,
+      "line": 35,
       "source_set": "production",
       "module": "shiyu-education-implementation",
       "owner": "com.shiyu.ai.education.implementation.web.controller.ReviewController",
@@ -27136,7 +27052,7 @@
     },
     {
       "path": "modules/business/education/shiyu-education-implementation/src/main/java/com/shiyu/ai/education/implementation/web/controller/ReviewController.java",
-      "line": 94,
+      "line": 97,
       "source_set": "production",
       "module": "shiyu-education-implementation",
       "owner": "com.shiyu.ai.education.implementation.web.controller.ReviewController",
@@ -27148,7 +27064,7 @@
     },
     {
       "path": "modules/business/education/shiyu-education-implementation/src/main/java/com/shiyu/ai/education/implementation/web/controller/ReviewController.java",
-      "line": 107,
+      "line": 110,
       "source_set": "production",
       "module": "shiyu-education-implementation",
       "owner": "com.shiyu.ai.education.implementation.web.controller.ReviewController",
@@ -27160,7 +27076,7 @@
     },
     {
       "path": "modules/business/education/shiyu-education-implementation/src/main/java/com/shiyu/ai/education/implementation/web/controller/ReviewController.java",
-      "line": 82,
+      "line": 84,
       "source_set": "production",
       "module": "shiyu-education-implementation",
       "owner": "com.shiyu.ai.education.implementation.web.controller.ReviewController",
@@ -27184,7 +27100,7 @@
     },
     {
       "path": "modules/business/education/shiyu-education-implementation/src/main/java/com/shiyu/ai/education/implementation/web/controller/StudentController.java",
-      "line": 35,
+      "line": 34,
       "source_set": "production",
       "module": "shiyu-education-implementation",
       "owner": "com.shiyu.ai.education.implementation.web.controller.StudentController",
@@ -27196,7 +27112,7 @@
     },
     {
       "path": "modules/business/education/shiyu-education-implementation/src/main/java/com/shiyu/ai/education/implementation/web/controller/StudentController.java",
-      "line": 68,
+      "line": 70,
       "source_set": "production",
       "module": "shiyu-education-implementation",
       "owner": "com.shiyu.ai.education.implementation.web.controller.StudentController",
@@ -27220,7 +27136,7 @@
     },
     {
       "path": "modules/business/education/shiyu-education-implementation/src/main/java/com/shiyu/ai/education/implementation/web/controller/StudentController.java",
-      "line": 58,
+      "line": 59,
       "source_set": "production",
       "module": "shiyu-education-implementation",
       "owner": "com.shiyu.ai.education.implementation.web.controller.StudentController",
@@ -27232,7 +27148,7 @@
     },
     {
       "path": "modules/business/education/shiyu-education-implementation/src/main/java/com/shiyu/ai/education/implementation/web/controller/StudentController.java",
-      "line": 92,
+      "line": 94,
       "source_set": "production",
       "module": "shiyu-education-implementation",
       "owner": "com.shiyu.ai.education.implementation.web.controller.StudentController",
@@ -27244,7 +27160,7 @@
     },
     {
       "path": "modules/business/education/shiyu-education-implementation/src/main/java/com/shiyu/ai/education/implementation/web/controller/StudentController.java",
-      "line": 79,
+      "line": 81,
       "source_set": "production",
       "module": "shiyu-education-implementation",
       "owner": "com.shiyu.ai.education.implementation.web.controller.StudentController",
@@ -27268,7 +27184,7 @@
     },
     {
       "path": "modules/business/education/shiyu-education-implementation/src/main/java/com/shiyu/ai/education/implementation/web/controller/StudyPlanController.java",
-      "line": 70,
+      "line": 72,
       "source_set": "production",
       "module": "shiyu-education-implementation",
       "owner": "com.shiyu.ai.education.implementation.web.controller.StudyPlanController",
@@ -27280,7 +27196,7 @@
     },
     {
       "path": "modules/business/education/shiyu-education-implementation/src/main/java/com/shiyu/ai/education/implementation/web/controller/StudyPlanController.java",
-      "line": 58,
+      "line": 59,
       "source_set": "production",
       "module": "shiyu-education-implementation",
       "owner": "com.shiyu.ai.education.implementation.web.controller.StudyPlanController",
@@ -27304,7 +27220,7 @@
     },
     {
       "path": "modules/business/education/shiyu-education-implementation/src/main/java/com/shiyu/ai/education/implementation/web/controller/StudyPlanController.java",
-      "line": 81,
+      "line": 84,
       "source_set": "production",
       "module": "shiyu-education-implementation",
       "owner": "com.shiyu.ai.education.implementation.web.controller.StudyPlanController",
@@ -27316,7 +27232,7 @@
     },
     {
       "path": "modules/business/education/shiyu-education-implementation/src/main/java/com/shiyu/ai/education/implementation/web/controller/StudyPlanController.java",
-      "line": 36,
+      "line": 35,
       "source_set": "production",
       "module": "shiyu-education-implementation",
       "owner": "com.shiyu.ai.education.implementation.web.controller.StudyPlanController",
@@ -27328,7 +27244,7 @@
     },
     {
       "path": "modules/business/education/shiyu-education-implementation/src/main/java/com/shiyu/ai/education/implementation/web/controller/StudyPlanController.java",
-      "line": 107,
+      "line": 110,
       "source_set": "production",
       "module": "shiyu-education-implementation",
       "owner": "com.shiyu.ai.education.implementation.web.controller.StudyPlanController",
@@ -27340,7 +27256,7 @@
     },
     {
       "path": "modules/business/education/shiyu-education-implementation/src/main/java/com/shiyu/ai/education/implementation/web/controller/StudyPlanController.java",
-      "line": 93,
+      "line": 96,
       "source_set": "production",
       "module": "shiyu-education-implementation",
       "owner": "com.shiyu.ai.education.implementation.web.controller.StudyPlanController",
@@ -27364,7 +27280,7 @@
     },
     {
       "path": "modules/business/education/shiyu-education-implementation/src/main/java/com/shiyu/ai/education/implementation/web/controller/SubjectController.java",
-      "line": 71,
+      "line": 73,
       "source_set": "production",
       "module": "shiyu-education-implementation",
       "owner": "com.shiyu.ai.education.implementation.web.controller.SubjectController",
@@ -27376,7 +27292,7 @@
     },
     {
       "path": "modules/business/education/shiyu-education-implementation/src/main/java/com/shiyu/ai/education/implementation/web/controller/SubjectController.java",
-      "line": 57,
+      "line": 58,
       "source_set": "production",
       "module": "shiyu-education-implementation",
       "owner": "com.shiyu.ai.education.implementation.web.controller.SubjectController",
@@ -27388,7 +27304,7 @@
     },
     {
       "path": "modules/business/education/shiyu-education-implementation/src/main/java/com/shiyu/ai/education/implementation/web/controller/SubjectController.java",
-      "line": 83,
+      "line": 86,
       "source_set": "production",
       "module": "shiyu-education-implementation",
       "owner": "com.shiyu.ai.education.implementation.web.controller.SubjectController",
@@ -27412,7 +27328,7 @@
     },
     {
       "path": "modules/business/education/shiyu-education-implementation/src/main/java/com/shiyu/ai/education/implementation/web/controller/SubjectController.java",
-      "line": 36,
+      "line": 35,
       "source_set": "production",
       "module": "shiyu-education-implementation",
       "owner": "com.shiyu.ai.education.implementation.web.controller.SubjectController",
@@ -27424,7 +27340,7 @@
     },
     {
       "path": "modules/business/education/shiyu-education-implementation/src/main/java/com/shiyu/ai/education/implementation/web/controller/SubjectController.java",
-      "line": 108,
+      "line": 111,
       "source_set": "production",
       "module": "shiyu-education-implementation",
       "owner": "com.shiyu.ai.education.implementation.web.controller.SubjectController",
@@ -27436,7 +27352,7 @@
     },
     {
       "path": "modules/business/education/shiyu-education-implementation/src/main/java/com/shiyu/ai/education/implementation/web/controller/SubjectController.java",
-      "line": 95,
+      "line": 98,
       "source_set": "production",
       "module": "shiyu-education-implementation",
       "owner": "com.shiyu.ai.education.implementation.web.controller.SubjectController",
@@ -27460,7 +27376,7 @@
     },
     {
       "path": "modules/business/education/shiyu-education-implementation/src/main/java/com/shiyu/ai/education/implementation/web/controller/TextbookController.java",
-      "line": 60,
+      "line": 61,
       "source_set": "production",
       "module": "shiyu-education-implementation",
       "owner": "com.shiyu.ai.education.implementation.web.controller.TextbookController",
@@ -27484,7 +27400,7 @@
     },
     {
       "path": "modules/business/education/shiyu-education-implementation/src/main/java/com/shiyu/ai/education/implementation/web/controller/TextbookController.java",
-      "line": 73,
+      "line": 75,
       "source_set": "production",
       "module": "shiyu-education-implementation",
       "owner": "com.shiyu.ai.education.implementation.web.controller.TextbookController",
@@ -27496,7 +27412,7 @@
     },
     {
       "path": "modules/business/education/shiyu-education-implementation/src/main/java/com/shiyu/ai/education/implementation/web/controller/TextbookController.java",
-      "line": 36,
+      "line": 35,
       "source_set": "production",
       "module": "shiyu-education-implementation",
       "owner": "com.shiyu.ai.education.implementation.web.controller.TextbookController",
@@ -27508,7 +27424,7 @@
     },
     {
       "path": "modules/business/education/shiyu-education-implementation/src/main/java/com/shiyu/ai/education/implementation/web/controller/TextbookController.java",
-      "line": 98,
+      "line": 100,
       "source_set": "production",
       "module": "shiyu-education-implementation",
       "owner": "com.shiyu.ai.education.implementation.web.controller.TextbookController",
@@ -27520,7 +27436,7 @@
     },
     {
       "path": "modules/business/education/shiyu-education-implementation/src/main/java/com/shiyu/ai/education/implementation/web/controller/TextbookController.java",
-      "line": 85,
+      "line": 87,
       "source_set": "production",
       "module": "shiyu-education-implementation",
       "owner": "com.shiyu.ai.education.implementation.web.controller.TextbookController",
@@ -34300,7 +34216,7 @@
     },
     {
       "path": "modules/domains/iam/shiyu-iam-implementation/src/main/java/com/shiyu/ai/iam/implementation/web/AuthCodeController.java",
-      "line": 77,
+      "line": 65,
       "source_set": "production",
       "module": "shiyu-iam-implementation",
       "owner": "com.shiyu.ai.iam.implementation.web.AuthCodeController",
@@ -34312,19 +34228,7 @@
     },
     {
       "path": "modules/domains/iam/shiyu-iam-implementation/src/main/java/com/shiyu/ai/iam/implementation/web/AuthCodeController.java",
-      "line": 38,
-      "source_set": "production",
-      "module": "shiyu-iam-implementation",
-      "owner": "com.shiyu.ai.iam.implementation.web.AuthCodeController",
-      "member": "public Result<List<AuthCodeOptionVO>> list()",
-      "category": "template-method+template-param",
-      "message": "方法描述：方法注释使用泛化操作模板，未说明实际行为、条件或副作用；@param Codes：参数注释使用泛化模板，未说明参数的业务含义",
-      "summary": "执行 认证 Code 相关业务操作，并维护必要的状态和协作关系。 @param Codes 用于完成本次业务处理的 Codes 参数。",
-      "key": "production|shiyu-iam-implementation|com.shiyu.ai.iam.implementation.web.AuthCodeController|public Result<List<AuthCodeOptionVO>> list()|template-method+template-param|执行 认证 Code 相关业务操作，并维护必要的状态和协作关系。 @param Codes 用于完成本次业务处理的 Codes 参数。"
-    },
-    {
-      "path": "modules/domains/iam/shiyu-iam-implementation/src/main/java/com/shiyu/ai/iam/implementation/web/AuthCodeController.java",
-      "line": 65,
+      "line": 53,
       "source_set": "production",
       "module": "shiyu-iam-implementation",
       "owner": "com.shiyu.ai.iam.implementation.web.AuthCodeController",
@@ -34336,7 +34240,7 @@
     },
     {
       "path": "modules/domains/iam/shiyu-iam-implementation/src/main/java/com/shiyu/ai/iam/implementation/web/AuthCodeController.java",
-      "line": 50,
+      "line": 38,
       "source_set": "production",
       "module": "shiyu-iam-implementation",
       "owner": "com.shiyu.ai.iam.implementation.web.AuthCodeController",
@@ -34348,7 +34252,7 @@
     },
     {
       "path": "modules/domains/iam/shiyu-iam-implementation/src/main/java/com/shiyu/ai/iam/implementation/web/AuthCodeController.java",
-      "line": 178,
+      "line": 166,
       "source_set": "production",
       "module": "shiyu-iam-implementation",
       "owner": "com.shiyu.ai.iam.implementation.web.AuthCodeController",
@@ -34360,7 +34264,7 @@
     },
     {
       "path": "modules/domains/iam/shiyu-iam-implementation/src/main/java/com/shiyu/ai/iam/implementation/web/AuthCodeController.java",
-      "line": 103,
+      "line": 91,
       "source_set": "production",
       "module": "shiyu-iam-implementation",
       "owner": "com.shiyu.ai.iam.implementation.web.AuthCodeController",
@@ -34372,7 +34276,7 @@
     },
     {
       "path": "modules/domains/iam/shiyu-iam-implementation/src/main/java/com/shiyu/ai/iam/implementation/web/AuthCodeController.java",
-      "line": 117,
+      "line": 105,
       "source_set": "production",
       "module": "shiyu-iam-implementation",
       "owner": "com.shiyu.ai.iam.implementation.web.AuthCodeController",
@@ -34384,7 +34288,7 @@
     },
     {
       "path": "modules/domains/iam/shiyu-iam-implementation/src/main/java/com/shiyu/ai/iam/implementation/web/AuthCodeController.java",
-      "line": 138,
+      "line": 126,
       "source_set": "production",
       "module": "shiyu-iam-implementation",
       "owner": "com.shiyu.ai.iam.implementation.web.AuthCodeController",
@@ -34396,7 +34300,7 @@
     },
     {
       "path": "modules/domains/iam/shiyu-iam-implementation/src/main/java/com/shiyu/ai/iam/implementation/web/AuthCodeController.java",
-      "line": 159,
+      "line": 147,
       "source_set": "production",
       "module": "shiyu-iam-implementation",
       "owner": "com.shiyu.ai.iam.implementation.web.AuthCodeController",
@@ -34408,7 +34312,7 @@
     },
     {
       "path": "modules/domains/iam/shiyu-iam-implementation/src/main/java/com/shiyu/ai/iam/implementation/web/AuthCodeController.java",
-      "line": 89,
+      "line": 77,
       "source_set": "production",
       "module": "shiyu-iam-implementation",
       "owner": "com.shiyu.ai.iam.implementation.web.AuthCodeController",
@@ -40456,7 +40360,7 @@
     },
     {
       "path": "modules/domains/knowledge/shiyu-knowledge-implementation/src/main/java/com/shiyu/ai/knowledge/implementation/web/controller/KnowledgeDocumentController.java",
-      "line": 456,
+      "line": 458,
       "source_set": "production",
       "module": "shiyu-knowledge-implementation",
       "owner": "com.shiyu.ai.knowledge.implementation.web.controller.KnowledgeDocumentController",
@@ -40468,7 +40372,7 @@
     },
     {
       "path": "modules/domains/knowledge/shiyu-knowledge-implementation/src/main/java/com/shiyu/ai/knowledge/implementation/web/controller/KnowledgeDocumentController.java",
-      "line": 342,
+      "line": 344,
       "source_set": "production",
       "module": "shiyu-knowledge-implementation",
       "owner": "com.shiyu.ai.knowledge.implementation.web.controller.KnowledgeDocumentController",
@@ -40480,7 +40384,7 @@
     },
     {
       "path": "modules/domains/knowledge/shiyu-knowledge-implementation/src/main/java/com/shiyu/ai/knowledge/implementation/web/controller/KnowledgeDocumentController.java",
-      "line": 399,
+      "line": 401,
       "source_set": "production",
       "module": "shiyu-knowledge-implementation",
       "owner": "com.shiyu.ai.knowledge.implementation.web.controller.KnowledgeDocumentController",
@@ -40504,7 +40408,7 @@
     },
     {
       "path": "modules/domains/knowledge/shiyu-knowledge-implementation/src/main/java/com/shiyu/ai/knowledge/implementation/web/controller/KnowledgeDocumentController.java",
-      "line": 380,
+      "line": 382,
       "source_set": "production",
       "module": "shiyu-knowledge-implementation",
       "owner": "com.shiyu.ai.knowledge.implementation.web.controller.KnowledgeDocumentController",
@@ -40516,7 +40420,7 @@
     },
     {
       "path": "modules/domains/knowledge/shiyu-knowledge-implementation/src/main/java/com/shiyu/ai/knowledge/implementation/web/controller/KnowledgeDocumentController.java",
-      "line": 361,
+      "line": 363,
       "source_set": "production",
       "module": "shiyu-knowledge-implementation",
       "owner": "com.shiyu.ai.knowledge.implementation.web.controller.KnowledgeDocumentController",
@@ -40528,7 +40432,7 @@
     },
     {
       "path": "modules/domains/knowledge/shiyu-knowledge-implementation/src/main/java/com/shiyu/ai/knowledge/implementation/web/controller/KnowledgeDocumentController.java",
-      "line": 418,
+      "line": 420,
       "source_set": "production",
       "module": "shiyu-knowledge-implementation",
       "owner": "com.shiyu.ai.knowledge.implementation.web.controller.KnowledgeDocumentController",
@@ -40540,7 +40444,7 @@
     },
     {
       "path": "modules/domains/knowledge/shiyu-knowledge-implementation/src/main/java/com/shiyu/ai/knowledge/implementation/web/controller/KnowledgeDocumentController.java",
-      "line": 323,
+      "line": 325,
       "source_set": "production",
       "module": "shiyu-knowledge-implementation",
       "owner": "com.shiyu.ai.knowledge.implementation.web.controller.KnowledgeDocumentController",
@@ -40576,7 +40480,7 @@
     },
     {
       "path": "modules/domains/knowledge/shiyu-knowledge-implementation/src/main/java/com/shiyu/ai/knowledge/implementation/web/controller/KnowledgeDocumentController.java",
-      "line": 306,
+      "line": 307,
       "source_set": "production",
       "module": "shiyu-knowledge-implementation",
       "owner": "com.shiyu.ai.knowledge.implementation.web.controller.KnowledgeDocumentController",
@@ -40588,7 +40492,7 @@
     },
     {
       "path": "modules/domains/knowledge/shiyu-knowledge-implementation/src/main/java/com/shiyu/ai/knowledge/implementation/web/controller/KnowledgeDocumentController.java",
-      "line": 82,
+      "line": 81,
       "source_set": "production",
       "module": "shiyu-knowledge-implementation",
       "owner": "com.shiyu.ai.knowledge.implementation.web.controller.KnowledgeDocumentController",
@@ -40636,7 +40540,7 @@
     },
     {
       "path": "modules/domains/knowledge/shiyu-knowledge-implementation/src/main/java/com/shiyu/ai/knowledge/implementation/web/controller/KnowledgeDocumentController.java",
-      "line": 437,
+      "line": 439,
       "source_set": "production",
       "module": "shiyu-knowledge-implementation",
       "owner": "com.shiyu.ai.knowledge.implementation.web.controller.KnowledgeDocumentController",
@@ -40660,7 +40564,7 @@
     },
     {
       "path": "modules/domains/knowledge/shiyu-knowledge-implementation/src/main/java/com/shiyu/ai/knowledge/implementation/web/controller/KnowledgeDocumentRelationController.java",
-      "line": 47,
+      "line": 46,
       "source_set": "production",
       "module": "shiyu-knowledge-implementation",
       "owner": "com.shiyu.ai.knowledge.implementation.web.controller.KnowledgeDocumentRelationController",
@@ -40696,7 +40600,7 @@
     },
     {
       "path": "modules/domains/knowledge/shiyu-knowledge-implementation/src/main/java/com/shiyu/ai/knowledge/implementation/web/controller/KnowledgeDocumentRelationController.java",
-      "line": 135,
+      "line": 137,
       "source_set": "production",
       "module": "shiyu-knowledge-implementation",
       "owner": "com.shiyu.ai.knowledge.implementation.web.controller.KnowledgeDocumentRelationController",
@@ -40708,7 +40612,7 @@
     },
     {
       "path": "modules/domains/knowledge/shiyu-knowledge-implementation/src/main/java/com/shiyu/ai/knowledge/implementation/web/controller/KnowledgeDocumentRelationController.java",
-      "line": 102,
+      "line": 103,
       "source_set": "production",
       "module": "shiyu-knowledge-implementation",
       "owner": "com.shiyu.ai.knowledge.implementation.web.controller.KnowledgeDocumentRelationController",
@@ -40756,7 +40660,7 @@
     },
     {
       "path": "modules/domains/knowledge/shiyu-knowledge-implementation/src/main/java/com/shiyu/ai/knowledge/implementation/web/controller/KnowledgeEvaluationController.java",
-      "line": 48,
+      "line": 47,
       "source_set": "production",
       "module": "shiyu-knowledge-implementation",
       "owner": "com.shiyu.ai.knowledge.implementation.web.controller.KnowledgeEvaluationController",
@@ -40804,7 +40708,7 @@
     },
     {
       "path": "modules/domains/knowledge/shiyu-knowledge-implementation/src/main/java/com/shiyu/ai/knowledge/implementation/web/controller/KnowledgeJobController.java",
-      "line": 41,
+      "line": 40,
       "source_set": "production",
       "module": "shiyu-knowledge-implementation",
       "owner": "com.shiyu.ai.knowledge.implementation.web.controller.KnowledgeJobController",
@@ -40816,7 +40720,7 @@
     },
     {
       "path": "modules/domains/knowledge/shiyu-knowledge-implementation/src/main/java/com/shiyu/ai/knowledge/implementation/web/controller/KnowledgeJobController.java",
-      "line": 83,
+      "line": 84,
       "source_set": "production",
       "module": "shiyu-knowledge-implementation",
       "owner": "com.shiyu.ai.knowledge.implementation.web.controller.KnowledgeJobController",
@@ -40828,7 +40732,7 @@
     },
     {
       "path": "modules/domains/knowledge/shiyu-knowledge-implementation/src/main/java/com/shiyu/ai/knowledge/implementation/web/controller/KnowledgeJobController.java",
-      "line": 102,
+      "line": 103,
       "source_set": "production",
       "module": "shiyu-knowledge-implementation",
       "owner": "com.shiyu.ai.knowledge.implementation.web.controller.KnowledgeJobController",
@@ -40864,7 +40768,7 @@
     },
     {
       "path": "modules/domains/knowledge/shiyu-knowledge-implementation/src/main/java/com/shiyu/ai/knowledge/implementation/web/controller/KnowledgeOperationsController.java",
-      "line": 77,
+      "line": 78,
       "source_set": "production",
       "module": "shiyu-knowledge-implementation",
       "owner": "com.shiyu.ai.knowledge.implementation.web.controller.KnowledgeOperationsController",
@@ -40876,7 +40780,7 @@
     },
     {
       "path": "modules/domains/knowledge/shiyu-knowledge-implementation/src/main/java/com/shiyu/ai/knowledge/implementation/web/controller/KnowledgeOperationsController.java",
-      "line": 45,
+      "line": 44,
       "source_set": "production",
       "module": "shiyu-knowledge-implementation",
       "owner": "com.shiyu.ai.knowledge.implementation.web.controller.KnowledgeOperationsController",
@@ -40948,7 +40852,7 @@
     },
     {
       "path": "modules/domains/knowledge/shiyu-knowledge-implementation/src/main/java/com/shiyu/ai/knowledge/implementation/web/controller/KnowledgePointController.java",
-      "line": 105,
+      "line": 107,
       "source_set": "production",
       "module": "shiyu-knowledge-implementation",
       "owner": "com.shiyu.ai.knowledge.implementation.web.controller.KnowledgePointController",
@@ -40972,7 +40876,7 @@
     },
     {
       "path": "modules/domains/knowledge/shiyu-knowledge-implementation/src/main/java/com/shiyu/ai/knowledge/implementation/web/controller/KnowledgePointController.java",
-      "line": 124,
+      "line": 126,
       "source_set": "production",
       "module": "shiyu-knowledge-implementation",
       "owner": "com.shiyu.ai.knowledge.implementation.web.controller.KnowledgePointController",
@@ -40984,7 +40888,7 @@
     },
     {
       "path": "modules/domains/knowledge/shiyu-knowledge-implementation/src/main/java/com/shiyu/ai/knowledge/implementation/web/controller/KnowledgePointController.java",
-      "line": 49,
+      "line": 48,
       "source_set": "production",
       "module": "shiyu-knowledge-implementation",
       "owner": "com.shiyu.ai.knowledge.implementation.web.controller.KnowledgePointController",
@@ -40996,7 +40900,7 @@
     },
     {
       "path": "modules/domains/knowledge/shiyu-knowledge-implementation/src/main/java/com/shiyu/ai/knowledge/implementation/web/controller/KnowledgePointController.java",
-      "line": 143,
+      "line": 145,
       "source_set": "production",
       "module": "shiyu-knowledge-implementation",
       "owner": "com.shiyu.ai.knowledge.implementation.web.controller.KnowledgePointController",
@@ -41008,7 +40912,7 @@
     },
     {
       "path": "modules/domains/knowledge/shiyu-knowledge-implementation/src/main/java/com/shiyu/ai/knowledge/implementation/web/controller/KnowledgePointController.java",
-      "line": 88,
+      "line": 89,
       "source_set": "production",
       "module": "shiyu-knowledge-implementation",
       "owner": "com.shiyu.ai.knowledge.implementation.web.controller.KnowledgePointController",
@@ -41032,7 +40936,7 @@
     },
     {
       "path": "modules/domains/knowledge/shiyu-knowledge-implementation/src/main/java/com/shiyu/ai/knowledge/implementation/web/controller/KnowledgeRelationController.java",
-      "line": 47,
+      "line": 46,
       "source_set": "production",
       "module": "shiyu-knowledge-implementation",
       "owner": "com.shiyu.ai.knowledge.implementation.web.controller.KnowledgeRelationController",
@@ -41092,7 +40996,7 @@
     },
     {
       "path": "modules/domains/knowledge/shiyu-knowledge-implementation/src/main/java/com/shiyu/ai/knowledge/implementation/web/controller/KnowledgeSearchController.java",
-      "line": 54,
+      "line": 53,
       "source_set": "production",
       "module": "shiyu-knowledge-implementation",
       "owner": "com.shiyu.ai.knowledge.implementation.web.controller.KnowledgeSearchController",
@@ -41116,7 +41020,7 @@
     },
     {
       "path": "modules/domains/knowledge/shiyu-knowledge-implementation/src/main/java/com/shiyu/ai/knowledge/implementation/web/controller/KnowledgeSpaceController.java",
-      "line": 106,
+      "line": 108,
       "source_set": "production",
       "module": "shiyu-knowledge-implementation",
       "owner": "com.shiyu.ai.knowledge.implementation.web.controller.KnowledgeSpaceController",
@@ -41128,7 +41032,7 @@
     },
     {
       "path": "modules/domains/knowledge/shiyu-knowledge-implementation/src/main/java/com/shiyu/ai/knowledge/implementation/web/controller/KnowledgeSpaceController.java",
-      "line": 123,
+      "line": 126,
       "source_set": "production",
       "module": "shiyu-knowledge-implementation",
       "owner": "com.shiyu.ai.knowledge.implementation.web.controller.KnowledgeSpaceController",
@@ -41140,7 +41044,7 @@
     },
     {
       "path": "modules/domains/knowledge/shiyu-knowledge-implementation/src/main/java/com/shiyu/ai/knowledge/implementation/web/controller/KnowledgeSpaceController.java",
-      "line": 216,
+      "line": 220,
       "source_set": "production",
       "module": "shiyu-knowledge-implementation",
       "owner": "com.shiyu.ai.knowledge.implementation.web.controller.KnowledgeSpaceController",
@@ -41152,7 +41056,7 @@
     },
     {
       "path": "modules/domains/knowledge/shiyu-knowledge-implementation/src/main/java/com/shiyu/ai/knowledge/implementation/web/controller/KnowledgeSpaceController.java",
-      "line": 89,
+      "line": 90,
       "source_set": "production",
       "module": "shiyu-knowledge-implementation",
       "owner": "com.shiyu.ai.knowledge.implementation.web.controller.KnowledgeSpaceController",
@@ -41164,7 +41068,7 @@
     },
     {
       "path": "modules/domains/knowledge/shiyu-knowledge-implementation/src/main/java/com/shiyu/ai/knowledge/implementation/web/controller/KnowledgeSpaceController.java",
-      "line": 141,
+      "line": 144,
       "source_set": "production",
       "module": "shiyu-knowledge-implementation",
       "owner": "com.shiyu.ai.knowledge.implementation.web.controller.KnowledgeSpaceController",
@@ -41176,7 +41080,7 @@
     },
     {
       "path": "modules/domains/knowledge/shiyu-knowledge-implementation/src/main/java/com/shiyu/ai/knowledge/implementation/web/controller/KnowledgeSpaceController.java",
-      "line": 179,
+      "line": 182,
       "source_set": "production",
       "module": "shiyu-knowledge-implementation",
       "owner": "com.shiyu.ai.knowledge.implementation.web.controller.KnowledgeSpaceController",
@@ -41200,7 +41104,7 @@
     },
     {
       "path": "modules/domains/knowledge/shiyu-knowledge-implementation/src/main/java/com/shiyu/ai/knowledge/implementation/web/controller/KnowledgeSpaceController.java",
-      "line": 53,
+      "line": 52,
       "source_set": "production",
       "module": "shiyu-knowledge-implementation",
       "owner": "com.shiyu.ai.knowledge.implementation.web.controller.KnowledgeSpaceController",
@@ -41212,7 +41116,7 @@
     },
     {
       "path": "modules/domains/knowledge/shiyu-knowledge-implementation/src/main/java/com/shiyu/ai/knowledge/implementation/web/controller/KnowledgeSpaceController.java",
-      "line": 160,
+      "line": 163,
       "source_set": "production",
       "module": "shiyu-knowledge-implementation",
       "owner": "com.shiyu.ai.knowledge.implementation.web.controller.KnowledgeSpaceController",
@@ -41224,7 +41128,7 @@
     },
     {
       "path": "modules/domains/knowledge/shiyu-knowledge-implementation/src/main/java/com/shiyu/ai/knowledge/implementation/web/controller/KnowledgeSpaceController.java",
-      "line": 196,
+      "line": 200,
       "source_set": "production",
       "module": "shiyu-knowledge-implementation",
       "owner": "com.shiyu.ai.knowledge.implementation.web.controller.KnowledgeSpaceController",
@@ -44872,7 +44776,7 @@
     },
     {
       "path": "modules/domains/model/shiyu-model-implementation/src/main/java/com/shiyu/ai/model/implementation/web/AiModelController.java",
-      "line": 45,
+      "line": 44,
       "source_set": "production",
       "module": "shiyu-model-implementation",
       "owner": "com.shiyu.ai.model.implementation.web.AiModelController",
@@ -44884,7 +44788,7 @@
     },
     {
       "path": "modules/domains/model/shiyu-model-implementation/src/main/java/com/shiyu/ai/model/implementation/web/AiModelController.java",
-      "line": 161,
+      "line": 166,
       "source_set": "production",
       "module": "shiyu-model-implementation",
       "owner": "com.shiyu.ai.model.implementation.web.AiModelController",
@@ -44896,7 +44800,7 @@
     },
     {
       "path": "modules/domains/model/shiyu-model-implementation/src/main/java/com/shiyu/ai/model/implementation/web/AiModelController.java",
-      "line": 125,
+      "line": 128,
       "source_set": "production",
       "module": "shiyu-model-implementation",
       "owner": "com.shiyu.ai.model.implementation.web.AiModelController",
@@ -44908,7 +44812,7 @@
     },
     {
       "path": "modules/domains/model/shiyu-model-implementation/src/main/java/com/shiyu/ai/model/implementation/web/AiModelController.java",
-      "line": 143,
+      "line": 147,
       "source_set": "production",
       "module": "shiyu-model-implementation",
       "owner": "com.shiyu.ai.model.implementation.web.AiModelController",
@@ -44920,7 +44824,7 @@
     },
     {
       "path": "modules/domains/model/shiyu-model-implementation/src/main/java/com/shiyu/ai/model/implementation/web/AiModelController.java",
-      "line": 245,
+      "line": 250,
       "source_set": "production",
       "module": "shiyu-model-implementation",
       "owner": "com.shiyu.ai.model.implementation.web.AiModelController",
@@ -44932,7 +44836,7 @@
     },
     {
       "path": "modules/domains/model/shiyu-model-implementation/src/main/java/com/shiyu/ai/model/implementation/web/AiModelController.java",
-      "line": 183,
+      "line": 188,
       "source_set": "production",
       "module": "shiyu-model-implementation",
       "owner": "com.shiyu.ai.model.implementation.web.AiModelController",
@@ -44944,7 +44848,7 @@
     },
     {
       "path": "modules/domains/model/shiyu-model-implementation/src/main/java/com/shiyu/ai/model/implementation/web/AiModelController.java",
-      "line": 95,
+      "line": 96,
       "source_set": "production",
       "module": "shiyu-model-implementation",
       "owner": "com.shiyu.ai.model.implementation.web.AiModelController",
@@ -44968,7 +44872,7 @@
     },
     {
       "path": "modules/domains/model/shiyu-model-implementation/src/main/java/com/shiyu/ai/model/implementation/web/AiModelController.java",
-      "line": 207,
+      "line": 212,
       "source_set": "production",
       "module": "shiyu-model-implementation",
       "owner": "com.shiyu.ai.model.implementation.web.AiModelController",
@@ -44980,7 +44884,7 @@
     },
     {
       "path": "modules/domains/model/shiyu-model-implementation/src/main/java/com/shiyu/ai/model/implementation/web/AiModelController.java",
-      "line": 226,
+      "line": 231,
       "source_set": "production",
       "module": "shiyu-model-implementation",
       "owner": "com.shiyu.ai.model.implementation.web.AiModelController",
@@ -45004,7 +44908,7 @@
     },
     {
       "path": "modules/domains/model/shiyu-model-implementation/src/main/java/com/shiyu/ai/model/implementation/web/AiPlatformController.java",
-      "line": 46,
+      "line": 45,
       "source_set": "production",
       "module": "shiyu-model-implementation",
       "owner": "com.shiyu.ai.model.implementation.web.AiPlatformController",
@@ -45016,7 +44920,7 @@
     },
     {
       "path": "modules/domains/model/shiyu-model-implementation/src/main/java/com/shiyu/ai/model/implementation/web/AiPlatformController.java",
-      "line": 123,
+      "line": 126,
       "source_set": "production",
       "module": "shiyu-model-implementation",
       "owner": "com.shiyu.ai.model.implementation.web.AiPlatformController",
@@ -45028,7 +44932,7 @@
     },
     {
       "path": "modules/domains/model/shiyu-model-implementation/src/main/java/com/shiyu/ai/model/implementation/web/AiPlatformController.java",
-      "line": 107,
+      "line": 109,
       "source_set": "production",
       "module": "shiyu-model-implementation",
       "owner": "com.shiyu.ai.model.implementation.web.AiPlatformController",
@@ -45040,7 +44944,7 @@
     },
     {
       "path": "modules/domains/model/shiyu-model-implementation/src/main/java/com/shiyu/ai/model/implementation/web/AiPlatformController.java",
-      "line": 139,
+      "line": 143,
       "source_set": "production",
       "module": "shiyu-model-implementation",
       "owner": "com.shiyu.ai.model.implementation.web.AiPlatformController",
@@ -45052,7 +44956,7 @@
     },
     {
       "path": "modules/domains/model/shiyu-model-implementation/src/main/java/com/shiyu/ai/model/implementation/web/AiPlatformController.java",
-      "line": 155,
+      "line": 160,
       "source_set": "production",
       "module": "shiyu-model-implementation",
       "owner": "com.shiyu.ai.model.implementation.web.AiPlatformController",
@@ -45064,7 +44968,7 @@
     },
     {
       "path": "modules/domains/model/shiyu-model-implementation/src/main/java/com/shiyu/ai/model/implementation/web/AiPlatformController.java",
-      "line": 221,
+      "line": 226,
       "source_set": "production",
       "module": "shiyu-model-implementation",
       "owner": "com.shiyu.ai.model.implementation.web.AiPlatformController",
@@ -45076,7 +44980,7 @@
     },
     {
       "path": "modules/domains/model/shiyu-model-implementation/src/main/java/com/shiyu/ai/model/implementation/web/AiPlatformController.java",
-      "line": 178,
+      "line": 183,
       "source_set": "production",
       "module": "shiyu-model-implementation",
       "owner": "com.shiyu.ai.model.implementation.web.AiPlatformController",
@@ -45100,7 +45004,7 @@
     },
     {
       "path": "modules/domains/model/shiyu-model-implementation/src/main/java/com/shiyu/ai/model/implementation/web/AiPlatformController.java",
-      "line": 96,
+      "line": 97,
       "source_set": "production",
       "module": "shiyu-model-implementation",
       "owner": "com.shiyu.ai.model.implementation.web.AiPlatformController",
@@ -45112,7 +45016,7 @@
     },
     {
       "path": "modules/domains/model/shiyu-model-implementation/src/main/java/com/shiyu/ai/model/implementation/web/AiPlatformController.java",
-      "line": 202,
+      "line": 207,
       "source_set": "production",
       "module": "shiyu-model-implementation",
       "owner": "com.shiyu.ai.model.implementation.web.AiPlatformController",
@@ -45124,7 +45028,7 @@
     },
     {
       "path": "modules/domains/model/shiyu-model-implementation/src/main/java/com/shiyu/ai/model/implementation/web/AiPlatformController.java",
-      "line": 244,
+      "line": 249,
       "source_set": "production",
       "module": "shiyu-model-implementation",
       "owner": "com.shiyu.ai.model.implementation.web.AiPlatformController",

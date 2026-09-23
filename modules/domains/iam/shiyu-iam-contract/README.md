@@ -2,21 +2,21 @@
 
 - **模块坐标**：`com.shiyu.ai:shiyu-iam-contract`
 - **分类**：领域模块 · Contract
-- **源码规模**：生产 Java 1 个，测试 Java 0 个
 
 ## 作用
 
-IAM 身份与权限契约模块，定义跨模块可依赖的稳定 API、模型和 SPI 边界。
+定义其他模块向 IAM 查询模块访问能力、租户配置和平台统计授权的契约边界。
 
-## 职责
+## 契约内容
 
-- 负责用户、租户、身份认证、授权和会话安全。
-- 只放框架无关的公共契约，避免把数据库、Web 框架或具体供应商实现泄漏到契约层。
-- 为对应 implementation 模块和组合根提供编译期依赖边界。
+- `TenantModuleAccessPort` 供调用方询问指定租户能否使用某个业务模块。
+- `TenantModuleAccessProvisioning` 用于初始化已装配模块的默认启用记录；知识默认设置初始化则由 `shiyu-knowledge-contract` 定义。
+- `PlatformUsageAccess` 为平台治理统计等受限操作定义授权检查入口。
+- 本模块不处理登录、不分配角色、不读取 Session，也不持有 IAM 数据库或 Sa-Token 实现；这些属于 `shiyu-iam-implementation`。
 
 ## 边界
 
-下游模块可以依赖本模块；本模块不依赖同一领域 implementation。
+治理和知识等领域可依赖这些协作接口；contract 不依赖 IAM implementation 或 Web 框架。
 
 ## 主要包
 
@@ -31,5 +31,3 @@ IAM 身份与权限契约模块，定义跨模块可依赖的稳定 API、模型
 运行本模块及其依赖模块的测试：
 
 `mvn --batch-mode --no-transfer-progress -pl modules/domains/iam/shiyu-iam-contract -am test -Ddependency-check.skip=true`
-
-根目录执行完整构建时，本模块由根 `pom.xml` 纳入 30 个项目的 Maven reactor。

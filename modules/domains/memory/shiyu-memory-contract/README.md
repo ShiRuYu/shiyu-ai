@@ -2,21 +2,21 @@
 
 - **模块坐标**：`com.shiyu.ai:shiyu-memory-contract`
 - **分类**：领域模块 · Contract
-- **源码规模**：生产 Java 13 个，测试 Java 0 个
 
 ## 作用
 
-Memory 记忆契约模块，定义跨模块可依赖的稳定 API、模型和 SPI 边界。
+定义长期记忆摄取、查询、图路径和治理状态所需的协作类型，供 Agent 等模块调用。
 
-## 职责
+## 契约内容
 
-- 负责 MAGMA 长期记忆、记忆检索、持久化和来源关联。
-- 只放框架无关的公共契约，避免把数据库、Web 框架或具体供应商实现泄漏到契约层。
-- 为对应 implementation 模块和组合根提供编译期依赖边界。
+- `MemoryIngestionPort` 与摄取命令表达记忆写入入口；`MemoryQueryPort` 与查询模型描述检索请求、结果和关系路径。
+- 模型包括记忆事件、实体/边及图关系、状态和确认策略，供调用者解释记忆来源与治理状态。
+- 契约描述调用与数据含义，不实现 MAGMA 解析、存储、索引、合并或检索算法。
+- 保持框架无关，不暴露数据库、向量引擎或 Web DTO。
 
 ## 边界
 
-下游模块可以依赖本模块；本模块不依赖同一领域 implementation。
+Agent 等需要记忆协作的模块可依赖该契约；本模块不依赖 memory implementation。
 
 ## 主要包
 
@@ -31,5 +31,3 @@ Memory 记忆契约模块，定义跨模块可依赖的稳定 API、模型和 SP
 运行本模块及其依赖模块的测试：
 
 `mvn --batch-mode --no-transfer-progress -pl modules/domains/memory/shiyu-memory-contract -am test -Ddependency-check.skip=true`
-
-根目录执行完整构建时，本模块由根 `pom.xml` 纳入 30 个项目的 Maven reactor。

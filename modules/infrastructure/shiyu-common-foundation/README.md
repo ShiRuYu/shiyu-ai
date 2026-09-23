@@ -2,19 +2,18 @@
 
 - **模块坐标**：`com.shiyu.ai:shiyu-common-foundation`
 - **分类**：基础设施模块
-- **源码规模**：生产 Java 71 个，测试 Java 2 个
 
 ## 作用
 
-提供异常、分页、响应对象、校验、工具、JDBC 方言、模块开关和基础配置等稳定公共能力。
+集中放置被多个应用和领域复用的平台基础设施原语；它是带 Spring/JDBC 等基础技术适配的公共模块，不是无框架的领域核心。
 
-## 职责
+## 功能说明
 
-- 提供异常、分页、响应对象、校验、工具、JDBC 方言、模块开关和基础配置等公共能力。
-- 事件 provider（进程内、PostgreSQL outbox、Kafka relay、去重）位于可选的 `shiyu-common-event` 模块，不再由 common-foundation 携带。
-- 日志 API 可随 Spring 基础依赖传递，但日志实现不由 common-foundation 选择；当前运行应用由 `shiyu-ai-bootstrap` 显式装配 Log4j2。
-- 保持与业务领域解耦，通过稳定接口为多个领域提供横切能力。
-- 避免把具体业务用例、领域实体或领域数据库表放入公共基础设施。
+- 提供 API 结果、分页与筛选/排序模型、公共异常和校验配置，供 Web 与应用服务复用。
+- 提供事务上下文及提交/回滚钩子、JDBC 方言识别和数据库基线贡献接口，支持公共基础设施协作。
+- 提供模块条件判断与通用 JSON、字符串等工具；业务模块开关通过环境属性读取，不依赖总模块属性对象。
+- 认证抽象与公共上下文访问适配依赖 `shared-kernel` 的类型；稳定身份、租户值和领域事件契约仍属于 shared-kernel。
+- 事件发布、outbox 和 Kafka relay 位于可选的 `shiyu-common-event`；日志实现由可执行应用选型。本模块不放领域用例、业务实体或领域数据库表。
 
 ## 边界
 
@@ -34,4 +33,4 @@
 
 `mvn --batch-mode --no-transfer-progress -pl modules/infrastructure/shiyu-common-foundation -am test -Ddependency-check.skip=true`
 
-根目录执行完整构建时，本模块由根 `pom.xml` 纳入 Maven reactor；事件能力需显式依赖 `shiyu-common-event` 才会装配。
+事件能力需显式依赖 `shiyu-common-event` 才会装配。

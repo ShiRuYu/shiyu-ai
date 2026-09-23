@@ -2,21 +2,21 @@
 
 - **模块坐标**：`com.shiyu.ai:shiyu-model-contract`
 - **分类**：领域模块 · Contract
-- **源码规模**：生产 Java 9 个，测试 Java 0 个
 
 ## 作用
 
-Model 模型契约模块，定义跨模块可依赖的稳定 API、模型和 SPI 边界。
+定义跨领域使用模型推理、路由、目录和嵌入能力时共享的数据结构与端口。
 
-## 职责
+## 契约内容
 
-- 负责多 LLM 平台、模型配置、路由、聊天和嵌入适配。
-- 只放框架无关的公共契约，避免把数据库、Web 框架或具体供应商实现泄漏到契约层。
-- 为对应 implementation 模块和组合根提供编译期依赖边界。
+- `ChatEngine` 与结构化聊天消息/请求/响应模型定义聊天调用契约。
+- `ModelRoutingPort` 和 `ModelCatalogPort` 提供模型选择与目录查询入口，隐藏 provider 选择和配置存储细节。
+- `EmbeddingService` 提供文本嵌入协作接口，供知识等模块构建索引或执行语义检索。
+- 契约不包含模型厂商 SDK、密钥、HTTP 适配、配置持久化和具体路由策略实现。
 
 ## 边界
 
-下游模块可以依赖本模块；本模块不依赖同一领域 implementation。
+Agent、知识和会话等协作模块依赖这些类型；契约不依赖 model implementation。
 
 ## 主要包
 
@@ -31,5 +31,3 @@ Model 模型契约模块，定义跨模块可依赖的稳定 API、模型和 SPI
 运行本模块及其依赖模块的测试：
 
 `mvn --batch-mode --no-transfer-progress -pl modules/domains/model/shiyu-model-contract -am test -Ddependency-check.skip=true`
-
-根目录执行完整构建时，本模块由根 `pom.xml` 纳入 30 个项目的 Maven reactor。

@@ -3,7 +3,6 @@ package com.shiyu.ai.common.mybatis.config;
 import com.mybatisflex.spring.boot.MyBatisFlexCustomizer;
 import com.shiyu.ai.common.foundation.factory.YmlPropertySourceFactory;
 import com.shiyu.ai.common.mybatis.handler.AuditFieldListener;
-import com.shiyu.ai.common.mybatis.handler.MybatisExceptionHandler;
 import com.shiyu.ai.common.mybatis.handler.TenantConsistencyListener;
 
 import org.springframework.context.annotation.Bean;
@@ -36,13 +35,4 @@ public class MybatisConfig {
         };
     }
 
-    /**
-     * 执行 Mybatis 相关业务数据，并返回处理结果。
-     *
-     * @return 返回 Mybatis 相关操作生成的结果数据。
-     */
-    @Bean
-    public MybatisExceptionHandler mybatisExceptionHandler() {
-        return new MybatisExceptionHandler();
-    }
 }

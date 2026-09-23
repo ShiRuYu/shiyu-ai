@@ -295,13 +295,13 @@ mvn -Pobservability,api-docs-ui,s3 spring-boot:run
 
 注意事项：
 
-1. **`api-docs-ui` 默认激活（`activeByDefault=true`）**：直接 `mvn spring-boot:run` 即可访问 Swagger UI；但一旦显式指定任意 `-P`（如 `-Pobservability` 或根 pom 的 `-Pprod`），它会自动被禁用，需要时须显式写回。
+1. **`api-docs-ui` 在默认开发构建中激活（`activeByDefault=true`）**：直接 `mvn spring-boot:run` 即可访问 Swagger UI；显式启用 Bootstrap 的其他 profile（如 `-Pobservability`、`-Ps3` 或 `-Pprod`）会关闭默认激活，需要时须显式加回 `-Papi-docs-ui`。`prod` 在 Bootstrap 中有同名 profile，以确保生产构建不会意外包含 UI。
 2. **Maven profile ≠ Spring profile**：`observability` 只负责把依赖加进 classpath；对应配置 `application-observability.yml` 通过 `spring.config.activate.on-profile: observability` 加载，运行时需同时指定 Spring profile：
    ```bash
    mvn -Pobservability spring-boot:run \
      -Dspring-boot.run.arguments="--spring.profiles.active=dev,observability"
    ```
-3. **与 `dev` / `prod` 的关系**：根 pom 的 `dev` / `prod` profile 只决定环境标识（`spring.profiles.active`，对应 `application-dev.yml` / `application-prod.yml`），与上述 3 个能力开关互不影响，可自由组合（如 `-Pprod,observability,api-docs-ui`）。
+3. **与 `dev` / `prod` 的关系**：根 pom 的 `dev` / `prod` profile 决定环境标识（`spring.profiles.active`，对应 `application-dev.yml` / `application-prod.yml`）；Bootstrap 的同名 `prod` profile 还会关闭默认激活的 Swagger UI。需要生产环境启用某项可选能力时可显式组合，例如 `-Pprod,observability,api-docs-ui`。
 
 ### 发行包
 

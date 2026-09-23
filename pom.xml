@@ -54,7 +54,6 @@
         <p6spy.version>3.9.1</p6spy.version>
         <mybatis.version>3.5.19</mybatis.version>
         <mybatis-flex.version>1.11.8</mybatis-flex.version>
-        <mybatis-plus.version>3.5.16</mybatis-plus.version>
 
         <!-- 规划中组件 -->
         <timefold-solver.version>1.27.0</timefold-solver.version>
@@ -252,14 +251,6 @@
                 <groupId>com.mybatis-flex</groupId>
                 <artifactId>mybatis-flex-dependencies</artifactId>
                 <version>${mybatis-flex.version}</version>
-                <type>pom</type>
-                <scope>import</scope>
-            </dependency>
-
-            <dependency>
-                <groupId>com.baomidou</groupId>
-                <artifactId>mybatis-plus-bom</artifactId>
-                <version>${mybatis-plus.version}</version>
                 <type>pom</type>
                 <scope>import</scope>
             </dependency>
@@ -496,11 +487,6 @@
                 <version>${revision}</version>
             </dependency>
 
-            <dependency>
-                <groupId>com.shiyu.ai</groupId>
-                <artifactId>shiyu-util</artifactId>
-                <version>${revision}</version>
-            </dependency>
             <dependency>
                 <groupId>com.shiyu.ai</groupId>
                 <artifactId>shiyu-iam-implementation</artifactId>
