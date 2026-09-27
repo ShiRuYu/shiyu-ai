@@ -2,6 +2,7 @@ package com.shiyu.ai.runtimeconsole.config;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -28,7 +29,7 @@ class ConfigServiceTest {
         try (Fixture fixture = new Fixture(environment)) {
             var invalid = fixture.service.validate(new ConfigChangeSet(
                     0,
-                    Map.of("server.port", "70000", "shiyu.vector-store.type", "pgvector"),
+                    Map.of("server.port", "70000", "shiyu.infrastructure.vector.provider", "pgvector"),
                     Map.of()));
 
             assertTrue(invalid.stream().anyMatch(issue -> issue.contains("端口")));
@@ -50,6 +51,77 @@ class ConfigServiceTest {
                     1, Map.of("server.port", "9001"), Map.of()));
             assertEquals("PENDING_RESTART", restart.status());
             assertTrue(restart.restartRequired());
+        }
+    }
+
+    @Test
+    void databaseEditsUseTheDatasourcePropertiesThatTheApplicationActuallyBinds() {
+        MockEnvironment environment = baseEnvironment()
+                .withProperty("mybatis-flex.datasource.agent.url", "jdbc:h2:mem:shiyu")
+                .withProperty("mybatis-flex.datasource.agent.username", "sa");
+        try (Fixture fixture = new Fixture(environment)) {
+            var fields = fixture.service.describe().fields();
+            assertTrue(fields.stream().anyMatch(field -> field.key().equals("mybatis-flex.datasource.agent.url")));
+            assertFalse(fields.stream().anyMatch(field -> field.key().equals("spring.datasource.url")));
+
+            var issues = fixture.service.validate(new ConfigChangeSet(
+                    0,
+                    Map.of("mybatis-flex.datasource.agent.url", "jdbc:h2:mem:next"),
+                    Map.of()));
+            assertTrue(issues.isEmpty(), () -> String.join("; ", issues));
+            assertTrue(fixture.service.validate(new ConfigChangeSet(
+                    0, Map.of("spring.datasource.url", "jdbc:h2:mem:ignored"), Map.of()))
+                    .stream().anyMatch(issue -> issue.contains("不允许修改字段")));
+        }
+    }
+
+    @Test
+    void fileAndVectorProviderDescriptorsReflectTheProviderOverridesUsedByComposition() {
+        MockEnvironment environment = baseEnvironment()
+                .withProperty("shiyu.infrastructure.database.provider", "postgresql")
+                .withProperty("shiyu.infrastructure.file.provider", "s3")
+                .withProperty("shiyu.infrastructure.vector.provider", "pgvector")
+                .withProperty("mybatis-flex.datasource.agent.url", "jdbc:postgresql://localhost/shiyu");
+        environment.setActiveProfiles("postgresql", "s3", "external-infra");
+        try (Fixture fixture = new Fixture(environment)) {
+            var fields = fixture.service.describe().fields();
+            assertEquals("s3", fields.stream()
+                    .filter(field -> field.key().equals("shiyu.infrastructure.file.provider"))
+                    .findFirst().orElseThrow().effectiveValue());
+            assertEquals("pgvector", fields.stream()
+                    .filter(field -> field.key().equals("shiyu.infrastructure.vector.provider"))
+                    .findFirst().orElseThrow().effectiveValue());
+        }
+    }
+
+    @Test
+    void rejectedImmediateSaveRestoresThePreviouslyAppliedRuntimeValue() {
+        MockEnvironment environment = baseEnvironment();
+        try (Fixture fixture = new Fixture(environment)) {
+            fixture.service.save(new ConfigChangeSet(
+                    0, Map.of("shiyu.console.sample-interval-ms", "10000"), Map.of()));
+
+            assertThrows(ConfigSnapshotStore.VersionConflictException.class, () -> fixture.service.save(
+                    new ConfigChangeSet(0, Map.of("shiyu.console.sample-interval-ms", "20000"), Map.of())));
+
+            assertEquals(10_000, fixture.sampler.sampleIntervalMillis());
+        }
+    }
+
+    @Test
+    void externalDatasourceOverrideIsReportedAndCannotBeEditedFromTheConsole() {
+        String previous = System.getProperty("mybatis-flex.datasource.agent.url");
+        System.setProperty("mybatis-flex.datasource.agent.url", "jdbc:postgresql://external/shiyu");
+        try (Fixture fixture = new Fixture(baseEnvironment())) {
+            ConfigFieldDescriptor url = fixture.service.describe().fields().stream()
+                    .filter(field -> field.key().equals("mybatis-flex.datasource.agent.url"))
+                    .findFirst().orElseThrow();
+
+            assertEquals("系统属性", url.source());
+            assertFalse(url.editable());
+        } finally {
+            if (previous == null) System.clearProperty("mybatis-flex.datasource.agent.url");
+            else System.setProperty("mybatis-flex.datasource.agent.url", previous);
         }
     }
 

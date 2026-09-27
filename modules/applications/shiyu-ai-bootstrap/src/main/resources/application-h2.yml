@@ -1,4 +1,7 @@
 spring:
+  config:
+    activate:
+      on-profile: "h2 & !mysql & !postgresql"
   h2:
     console:
       enabled: true

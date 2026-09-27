@@ -29,8 +29,8 @@ public class ShiyuBootstrapApplication {
                 .addShutdownHook(
                         new Thread(() -> dataDirectoryLock.close(), "embedded-data-lock-release"));
         try {
-            ConsoleBootstrapConfiguration.loadPersistedValues(args);
-            SpringApplication.run(ShiyuBootstrapApplication.class, args);
+            String[] applicationArgs = ConsoleBootstrapConfiguration.loadPersistedValues(args);
+            SpringApplication.run(ShiyuBootstrapApplication.class, applicationArgs);
         } catch (RuntimeException exception) {
             dataDirectoryLock.close();
             throw exception;

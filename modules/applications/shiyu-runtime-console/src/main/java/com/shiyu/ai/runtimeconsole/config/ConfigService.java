@@ -28,17 +28,53 @@ public final class ConfigService {
             new Field("shiyu.ai.deepseek.model", "启动模型名称 · DeepSeek", "text", "RESTART", false),
             new Field("shiyu.ai.deepseek.api-key", "启动模型密钥 · DeepSeek", "secret", "RESTART", true),
             new Field("shiyu.infrastructure.database.provider", "数据库 Provider", "select", "RESTART", false),
-            new Field("spring.datasource.url", "数据库连接 URL", "text", "RESTART", false),
-            new Field("spring.datasource.username", "数据库用户名", "text", "RESTART", false),
-            new Field("spring.datasource.password", "数据库密码", "secret", "RESTART", true),
-            new Field("shiyu.storage.type", "文件存储 Provider", "select", "RESTART", false),
-            new Field("shiyu.vector-store.type", "向量存储 Provider", "select", "RESTART", false),
+            new Field("mybatis-flex.datasource.agent.url", "数据库连接 URL", "text", "RESTART", false),
+            new Field("mybatis-flex.datasource.agent.username", "数据库用户名", "text", "RESTART", false),
+            new Field("mybatis-flex.datasource.agent.password", "数据库密码", "secret", "RESTART", true),
+            new Field("shiyu.infrastructure.file.provider", "文件存储 Provider", "select", "RESTART", false),
+            new Field("shiyu.storage.local.path", "本地文件目录", "text", "RESTART", false),
+            new Field("shiyu.storage.providers.s3.endpoint", "S3 兼容存储地址 · S3", "text", "RESTART", false),
+            new Field("shiyu.storage.providers.s3.region", "S3 区域 · S3", "text", "RESTART", false),
+            new Field("shiyu.storage.providers.s3.bucket", "S3 Bucket · S3", "text", "RESTART", false),
+            new Field("shiyu.storage.providers.s3.access-key", "S3 Access Key · S3", "secret", "RESTART", true),
+            new Field("shiyu.storage.providers.s3.secret-key", "S3 Secret Key · S3", "secret", "RESTART", true),
+            new Field("shiyu.storage.providers.s3.path-style-access", "S3 Path Style · S3", "boolean", "RESTART", false),
+            new Field("shiyu.storage.providers.s3.public-base-url", "S3 公共访问地址 · S3", "text", "RESTART", false),
+            new Field("shiyu.storage.providers.minio.endpoint", "MinIO 地址", "text", "RESTART", false),
+            new Field("shiyu.storage.providers.minio.region", "MinIO 区域", "text", "RESTART", false),
+            new Field("shiyu.storage.providers.minio.bucket", "MinIO Bucket", "text", "RESTART", false),
+            new Field("shiyu.storage.providers.minio.access-key", "MinIO Access Key", "secret", "RESTART", true),
+            new Field("shiyu.storage.providers.minio.secret-key", "MinIO Secret Key", "secret", "RESTART", true),
+            new Field("shiyu.storage.providers.minio.path-style-access", "MinIO Path Style", "boolean", "RESTART", false),
+            new Field("shiyu.storage.providers.minio.public-base-url", "MinIO 公共访问地址", "text", "RESTART", false),
+            new Field("shiyu.storage.providers.aliyun-oss.endpoint", "OSS 地址", "text", "RESTART", false),
+            new Field("shiyu.storage.providers.aliyun-oss.region", "OSS 区域", "text", "RESTART", false),
+            new Field("shiyu.storage.providers.aliyun-oss.bucket", "OSS Bucket", "text", "RESTART", false),
+            new Field("shiyu.storage.providers.aliyun-oss.access-key", "OSS Access Key", "secret", "RESTART", true),
+            new Field("shiyu.storage.providers.aliyun-oss.secret-key", "OSS Secret Key", "secret", "RESTART", true),
+            new Field("shiyu.storage.providers.aliyun-oss.path-style-access", "OSS Path Style", "boolean", "RESTART", false),
+            new Field("shiyu.storage.providers.aliyun-oss.public-base-url", "OSS 公共访问地址", "text", "RESTART", false),
+            new Field("shiyu.storage.providers.tencent-cos.endpoint", "COS 地址", "text", "RESTART", false),
+            new Field("shiyu.storage.providers.tencent-cos.region", "COS 区域", "text", "RESTART", false),
+            new Field("shiyu.storage.providers.tencent-cos.bucket", "COS Bucket", "text", "RESTART", false),
+            new Field("shiyu.storage.providers.tencent-cos.access-key", "COS Secret ID", "secret", "RESTART", true),
+            new Field("shiyu.storage.providers.tencent-cos.secret-key", "COS Secret Key", "secret", "RESTART", true),
+            new Field("shiyu.storage.providers.tencent-cos.path-style-access", "COS Path Style", "boolean", "RESTART", false),
+            new Field("shiyu.storage.providers.tencent-cos.public-base-url", "COS 公共访问地址", "text", "RESTART", false),
+            new Field("shiyu.infrastructure.vector.provider", "向量存储 Provider", "select", "RESTART", false),
+            new Field("shiyu.vector-store.dimension", "向量维度", "number", "RESTART", false),
+            new Field("shiyu.vector-store.data-dir", "向量数据目录", "text", "RESTART", false),
             new Field("shiyu.infrastructure.redis.provider", "Redis Provider", "select", "RESTART", false),
             new Field("shiyu.infrastructure.redis.url", "Redis 连接 URL", "text", "RESTART", false),
             new Field("shiyu.infrastructure.redis.password", "Redis 密码", "secret", "RESTART", true),
+            new Field("shiyu.infrastructure.redis.key-prefix", "Redis Key 前缀", "text", "RESTART", false),
             new Field("shiyu.infrastructure.event.provider", "事件 Provider", "select", "RESTART", false),
             new Field("shiyu.infrastructure.event.bootstrap-servers", "事件服务地址", "text", "RESTART", false),
-            new Field("shiyu.infrastructure.event.topic", "事件主题", "text", "RESTART", false));
+            new Field("shiyu.infrastructure.event.topic", "事件主题", "text", "RESTART", false),
+            new Field("shiyu.infrastructure.event.dead-letter-topic", "死信主题", "text", "RESTART", false),
+            new Field("shiyu.infrastructure.event.relay-interval-ms", "Relay 间隔（毫秒）", "number", "RESTART", false),
+            new Field("shiyu.infrastructure.event.relay-batch-size", "Relay 批大小", "number", "RESTART", false),
+            new Field("shiyu.infrastructure.event.max-attempts", "Relay 最大重试次数", "number", "RESTART", false));
 
     private static final Set<String> FIELD_KEYS = FIELDS.stream().map(Field::key).collect(java.util.stream.Collectors.toUnmodifiableSet());
     private static final Set<String> IMMEDIATE_KEYS = FIELDS.stream().filter(field -> field.applyMode().equals("IMMEDIATE")).map(Field::key).collect(java.util.stream.Collectors.toUnmodifiableSet());
@@ -57,21 +93,24 @@ public final class ConfigService {
         Snapshot snapshot = store.current();
         List<ConfigFieldDescriptor> descriptors = new ArrayList<>();
         for (Field field : FIELDS) {
-            String effective = applier.effectiveValue(field.key(), environment.getProperty(field.key(), ""));
+            String effective = effectiveValue(field);
             String saved = snapshot.values().getOrDefault(field.key(), effective);
             boolean savedSecret = snapshot.encryptedSecrets().containsKey(field.key());
             boolean configured = field.sensitive()
                     ? savedSecret || !effective.isBlank()
                     : !saved.isBlank();
             Support support = support(field, effective);
+            String source = configSource(field.key(), snapshot);
+            boolean providerSelector = isProviderSelector(field.key());
+            boolean externalOverride = Set.of("命令行", "系统属性", "环境变量").contains(source);
             descriptors.add(new ConfigFieldDescriptor(
                     field.key(),
                     field.label(),
                     field.type(),
                     field.applyMode(),
                     field.sensitive(),
-                    configSource(field.key(), snapshot),
-                    support.supported(),
+                    source,
+                    !externalOverride && (support.supported() || providerSelector),
                     field.sensitive() ? (configured ? "已设置" : "未设置") : effective,
                     field.sensitive() ? "" : saved,
                     configured,
@@ -96,25 +135,65 @@ public final class ConfigService {
         validateSecrets(change.secrets(), issues);
 
         String db = candidateValue("shiyu.infrastructure.database.provider", values);
-        String vector = candidateValue("shiyu.vector-store.type", values);
+        String vector = candidateValue("shiyu.infrastructure.vector.provider", values);
         if ("pgvector".equalsIgnoreCase(vector) && !"postgresql".equalsIgnoreCase(db)) {
             issues.add("pgvector 必须与 PostgreSQL 数据库组合使用");
+        }
+        if (Set.of("mysql", "postgresql").contains(db.toLowerCase(java.util.Locale.ROOT))) {
+            String jdbcUrl = candidateValue("mybatis-flex.datasource.agent.url", values);
+            String username = candidateValue("mybatis-flex.datasource.agent.username", values);
+            String requiredPrefix = "mysql".equalsIgnoreCase(db) ? "jdbc:mysql:" : "jdbc:postgresql:";
+            if (jdbcUrl.isBlank() || !jdbcUrl.toLowerCase(java.util.Locale.ROOT).startsWith(requiredPrefix)) {
+                issues.add(db + " 数据库必须配置匹配的 JDBC URL");
+            }
+            if (username.isBlank()) {
+                issues.add(db + " 数据库用户名不能为空");
+            }
         }
         String eventProvider = candidateValue("shiyu.infrastructure.event.provider", values);
         if ("kafka".equalsIgnoreCase(eventProvider) && !isProfileActive("external-infra")) {
             issues.add("Kafka 未装配：请使用 external-infra 发行配置后再提交");
         }
-        String fileProvider = candidateValue("shiyu.storage.type", values);
+        if ("postgres-outbox".equalsIgnoreCase(eventProvider) && !"postgresql".equalsIgnoreCase(db)) {
+            issues.add("postgres-outbox 必须与 PostgreSQL 数据库组合使用");
+        }
+        String fileProvider = candidateValue("shiyu.infrastructure.file.provider", values);
         if (!Set.of("local", "s3", "minio", "aliyun-oss", "tencent-cos").contains(fileProvider.toLowerCase(java.util.Locale.ROOT))) {
             issues.add("不支持的文件存储 Provider：" + fileProvider);
         }
-        if (!"local".equalsIgnoreCase(fileProvider) && !isProfileActive("s3")) {
+        if (!"local".equalsIgnoreCase(fileProvider) && !isS3Available()) {
             issues.add("当前发行包未装配该文件存储 Provider");
+        }
+        if (!"local".equalsIgnoreCase(fileProvider)) {
+            String prefix = storageProviderPrefix(fileProvider);
+            for (String required : List.of("endpoint", "bucket")) {
+                String value = candidateValue(prefix + "." + required, values);
+                if (value.isBlank()) issues.add(fileProvider + " 文件存储必须配置 " + required);
+            }
+            for (String required : List.of("access-key", "secret-key")) {
+                if (candidateSecret(prefix + "." + required, change).isBlank()) {
+                    issues.add(fileProvider + " 文件存储必须配置凭证");
+                    break;
+                }
+            }
+        }
+        if ("redis".equalsIgnoreCase(candidateValue("shiyu.infrastructure.redis.provider", values))) {
+            String redisUrl = candidateValue("shiyu.infrastructure.redis.url", values);
+            validateValue("shiyu.infrastructure.redis.url", redisUrl, issues);
+        }
+        if ("kafka".equalsIgnoreCase(eventProvider)) {
+            if (candidateValue("shiyu.infrastructure.event.bootstrap-servers", values).isBlank()) {
+                issues.add("Kafka bootstrap-servers 不能为空");
+            }
+            if (candidateValue("shiyu.infrastructure.event.topic", values).isBlank()
+                    || candidateValue("shiyu.infrastructure.event.dead-letter-topic", values).isBlank()) {
+                issues.add("Kafka topic 和 dead-letter-topic 不能为空");
+            }
         }
         return List.copyOf(new LinkedHashSet<>(issues));
     }
 
-    public ConfigApplyResult save(ConfigChangeSet change) {
+    public synchronized ConfigApplyResult save(ConfigChangeSet change) {
         List<String> issues = validate(change);
         if (!issues.isEmpty()) {
             throw new ConfigValidationException(issues);
@@ -129,7 +208,8 @@ public final class ConfigService {
         }
         Map<String, String> priorImmediate = new LinkedHashMap<>();
         for (String key : IMMEDIATE_KEYS) {
-            priorImmediate.put(key, environment.getProperty(key, key.equals("shiyu.console.sample-interval-ms") ? "5000" : "INFO"));
+            String fallback = environment.getProperty(key, key.equals("shiyu.console.sample-interval-ms") ? "5000" : "INFO");
+            priorImmediate.put(key, applier.effectiveValue(key, fallback));
         }
         if (!immediate.isEmpty()) {
             applier.apply(immediate);
@@ -213,27 +293,40 @@ public final class ConfigService {
                 case "shiyu.infrastructure.database.provider" -> {
                     if (!Set.of("h2", "mysql", "postgresql").contains(value.toLowerCase(java.util.Locale.ROOT))) issues.add("不支持的数据库 Provider");
                 }
-                case "shiyu.vector-store.type" -> {
+                case "shiyu.infrastructure.vector.provider" -> {
                     if (!Set.of("jvector", "pgvector", "inmemory").contains(value.toLowerCase(java.util.Locale.ROOT))) issues.add("不支持的向量 Provider");
                 }
                 case "shiyu.infrastructure.event.provider" -> {
-                    if (!Set.of("in-process", "kafka").contains(value.toLowerCase(java.util.Locale.ROOT))) issues.add("不支持的事件 Provider");
+                    if (!Set.of("in-process", "postgres-outbox", "kafka").contains(value.toLowerCase(java.util.Locale.ROOT))) issues.add("不支持的事件 Provider");
                 }
                 case "shiyu.infrastructure.redis.provider" -> {
                     if (!Set.of("disabled", "redis").contains(value.toLowerCase(java.util.Locale.ROOT))) issues.add("不支持的 Redis Provider");
                 }
-                case "shiyu.storage.type" -> {
-                    if (value.isBlank()) issues.add("文件存储 Provider 不能为空");
+                case "shiyu.storage.local.path", "shiyu.vector-store.data-dir" -> {
+                    if (value.isBlank()) issues.add(field.label() + " 不能为空");
+                }
+                case "shiyu.storage.providers.s3.path-style-access", "shiyu.storage.providers.minio.path-style-access",
+                        "shiyu.storage.providers.aliyun-oss.path-style-access", "shiyu.storage.providers.tencent-cos.path-style-access" -> {
+                    if (!Set.of("true", "false").contains(value.toLowerCase(java.util.Locale.ROOT))) {
+                        issues.add(field.label() + " 必须为 true 或 false");
+                    }
                 }
                 case "shiyu.ai.openai.base-url", "shiyu.ai.deepseek.base-url" -> validateHttpUrl(field.label(), value, issues);
-                case "spring.datasource.url" -> {
-                    if (value.isBlank()) issues.add("数据库连接 URL 不能为空");
-                }
                 case "shiyu.infrastructure.redis.url" -> {
                     URI uri = new URI(value);
                     if (!Set.of("redis", "rediss").contains(String.valueOf(uri.getScheme()).toLowerCase(java.util.Locale.ROOT)) || uri.getHost() == null) {
                         issues.add("Redis URL 必须为 redis:// 或 rediss:// 地址");
                     }
+                }
+                case "shiyu.vector-store.dimension", "shiyu.infrastructure.event.relay-interval-ms",
+                        "shiyu.infrastructure.event.relay-batch-size", "shiyu.infrastructure.event.max-attempts" -> {
+                    if (Long.parseLong(value) <= 0) issues.add(field.label() + " 必须大于 0");
+                }
+                case "shiyu.storage.providers.s3.endpoint", "shiyu.storage.providers.minio.endpoint",
+                        "shiyu.storage.providers.aliyun-oss.endpoint", "shiyu.storage.providers.tencent-cos.endpoint",
+                        "shiyu.storage.providers.s3.public-base-url", "shiyu.storage.providers.minio.public-base-url",
+                        "shiyu.storage.providers.aliyun-oss.public-base-url", "shiyu.storage.providers.tencent-cos.public-base-url" -> {
+                    if (!value.isBlank()) validateHttpUrl(field.label(), value, issues);
                 }
                 default -> { }
             }
@@ -257,15 +350,53 @@ public final class ConfigService {
     }
 
     private String candidateValue(String key, Map<String, String> values) {
-        return values.getOrDefault(key, store.current().values().getOrDefault(key, environment.getProperty(key, "")));
+        String explicit = values.get(key);
+        if (explicit != null) return explicit;
+        String saved = store.current().values().get(key);
+        if (saved != null) return saved;
+        String configured = environment.getProperty(key, "");
+        if (!configured.isBlank()) return configured;
+        return switch (key) {
+            case "shiyu.infrastructure.file.provider" -> environment.getProperty("shiyu.storage.type", "local");
+            case "shiyu.infrastructure.vector.provider" -> environment.getProperty("shiyu.vector-store.type", "jvector");
+            default -> "";
+        };
+    }
+
+    private String candidateSecret(String key, ConfigChangeSet change) {
+        ConfigChangeSet.SecretChange edit = change.secrets() == null ? null : change.secrets().get(key);
+        if (edit != null) {
+            if ("replace".equalsIgnoreCase(edit.action())) return edit.value() == null ? "" : edit.value();
+            if ("clear".equalsIgnoreCase(edit.action())) return "";
+        }
+        String configured = environment.getProperty(key, "");
+        if (!configured.isBlank()) return configured;
+        return store.readSecrets(store.current()).getOrDefault(key, "");
     }
 
     private boolean isProfileActive(String name) {
         return java.util.Arrays.asList(environment.getActiveProfiles()).contains(name);
     }
 
+    private static boolean isS3Available() {
+        try {
+            Class.forName("software.amazon.awssdk.services.s3.S3Client", false, ConfigService.class.getClassLoader());
+            return true;
+        } catch (ClassNotFoundException | LinkageError ignored) {
+            return false;
+        }
+    }
+
     private String configSource(String key, Snapshot snapshot) {
         String source = ConsoleBootstrapConfiguration.sourceOf(key);
+        if (source.equals("配置文件/默认值") && key.equals("shiyu.infrastructure.file.provider")
+                && environment.getProperty(key, "").isBlank()) {
+            source = ConsoleBootstrapConfiguration.sourceOf("shiyu.storage.type");
+        }
+        if (source.equals("配置文件/默认值") && key.equals("shiyu.infrastructure.vector.provider")
+                && environment.getProperty(key, "").isBlank()) {
+            source = ConsoleBootstrapConfiguration.sourceOf("shiyu.vector-store.type");
+        }
         if (source.equals("配置文件/默认值") && snapshot.values().containsKey(key)) {
             return "控制台配置";
         }
@@ -281,17 +412,40 @@ public final class ConfigService {
                 && !isProfileActive("external-infra")) {
             return new Support(false, "当前发行包未装配 Kafka");
         }
-        if (field.key().equals("shiyu.storage.type")
-                && !"local".equalsIgnoreCase(currentValue)
-                && !isProfileActive("s3")) {
+        if ((field.key().equals("shiyu.infrastructure.file.provider") || field.key().startsWith("shiyu.storage.providers."))
+                && !"local".equalsIgnoreCase(candidateValue("shiyu.infrastructure.file.provider", Map.of()))
+                && !isS3Available()) {
             return new Support(false, "当前发行包仅包含本地文件存储");
         }
-        if (field.key().equals("shiyu.vector-store.type")
+        if (field.key().startsWith("shiyu.storage.providers.") && !isS3Available()) {
+            return new Support(false, "当前发行包未装配 S3 兼容文件存储");
+        }
+        if (field.key().equals("shiyu.infrastructure.vector.provider")
                 && "pgvector".equalsIgnoreCase(currentValue)
-                && !"postgresql".equalsIgnoreCase(environment.getProperty("shiyu.infrastructure.database.provider", "h2"))) {
+                && !"postgresql".equalsIgnoreCase(candidateValue("shiyu.infrastructure.database.provider", Map.of()))) {
             return new Support(false, "pgvector 需要 PostgreSQL Provider");
         }
         return new Support(true, "");
+    }
+
+    private String effectiveValue(Field field) {
+        String configured = applier.effectiveValue(field.key(), environment.getProperty(field.key(), ""));
+        if (!configured.isBlank()) return configured;
+        return switch (field.key()) {
+            case "shiyu.infrastructure.file.provider" -> environment.getProperty("shiyu.storage.type", "local");
+            case "shiyu.infrastructure.vector.provider" -> environment.getProperty("shiyu.vector-store.type", "jvector");
+            default -> configured;
+        };
+    }
+
+    private static boolean isProviderSelector(String key) {
+        return Set.of("shiyu.infrastructure.database.provider", "shiyu.infrastructure.file.provider",
+                "shiyu.infrastructure.vector.provider", "shiyu.infrastructure.redis.provider",
+                "shiyu.infrastructure.event.provider").contains(key);
+    }
+
+    private static String storageProviderPrefix(String provider) {
+        return "shiyu.storage.providers." + provider;
     }
 
     private boolean hasRestartChange(Snapshot previous, Snapshot saved) {
@@ -300,8 +454,8 @@ public final class ConfigService {
             if (field.sensitive()) {
                 if (!java.util.Objects.equals(previous.encryptedSecrets().get(field.key()), saved.encryptedSecrets().get(field.key()))) return true;
             } else if (!java.util.Objects.equals(
-                    previous.values().getOrDefault(field.key(), environment.getProperty(field.key(), "")),
-                    saved.values().getOrDefault(field.key(), environment.getProperty(field.key(), "")))) {
+                    previous.values().getOrDefault(field.key(), effectiveValue(field)),
+                    saved.values().getOrDefault(field.key(), effectiveValue(field)))) {
                 return true;
             }
         }

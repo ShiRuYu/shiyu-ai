@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import { computed, onMounted, onUnmounted, ref, watch } from 'vue'
 import { ProjectApiClient } from './lib/projectApi'
+import { findKnowledgeJobListOperation, isEmptyBusinessCollection, parseKnowledgeJobPage, type KnowledgeJobObservation } from './lib/businessObservations'
 
 type Section = 'overview' | 'logs' | 'config' | 'api'
 type RuntimeStatus = { version: string; mode: string; pid: number; port: number; uptimeMillis: number; appHome: string; health: string; healthDetail: string; managed: boolean }
@@ -46,7 +47,7 @@ const selectedKey = ref('')
 const pathValues = ref<Record<string, string>>({})
 const queryValues = ref<Record<string, string>>({})
 const headerValues = ref<Record<string, string>>({})
-const requestBody = ref('{\n  \n}')
+const requestBody = ref('{}')
 const attachBusinessToken = ref(true)
 const requestTimeout = ref(20_000)
 const response = ref<{ status: number; elapsedMs: number; headers: Record<string, string>; body: string } | null>(null)
@@ -59,6 +60,8 @@ const businessLoginBusy = ref(false)
 const businessLoginError = ref('')
 const modelStatus = ref('尚未检查')
 const knowledgeStatus = ref('尚未检查')
+const knowledgeTasks = ref<KnowledgeJobObservation[]>([])
+const knowledgeTaskTotal = ref(0)
 const businessStatusBusy = ref(false)
 const operations = computed<Operation[]>(() => {
   const paths = openApiDoc.value?.paths as Record<string, Record<string, any>> | undefined
@@ -245,7 +248,7 @@ function selectOperation(operation: Operation): void {
   headerValues.value = Object.fromEntries((operation.operation.parameters ?? []).filter((item: any) => item.in === 'header').map((item: any) => [item.name, '']))
   response.value = null
   requestError.value = ''
-  requestBody.value = '{\n  \n}'
+  requestBody.value = '{}'
 }
 
 function parameters(location: string): Array<{ name: string; required: boolean; description?: string }> {
@@ -329,12 +332,16 @@ function logoutBusiness(): void {
   loginPassword.value = ''
   modelStatus.value = '需要业务登录'
   knowledgeStatus.value = '需要业务登录'
+  knowledgeTasks.value = []
+  knowledgeTaskTotal.value = 0
 }
 
 async function refreshBusinessStatus(): Promise<void> {
   if (!api.authenticated) {
     modelStatus.value = '需要业务登录'
     knowledgeStatus.value = '需要业务登录'
+    knowledgeTasks.value = []
+    knowledgeTaskTotal.value = 0
     return
   }
   businessStatusBusy.value = true
@@ -343,7 +350,7 @@ async function refreshBusinessStatus(): Promise<void> {
     && /models|platforms|providers|config|catalog/i.test(item.path)
     && !/health|probe|test|chat|completion|embedding|invoke|generate/i.test(item.path)
     && !/[{}]/.test(item.path))
-  const knowledge = operations.value.find(item => item.method === 'GET' && /knowledge/i.test(item.path + ' ' + item.tags.join(' ')) && /task/i.test(item.path) && !/[{}]/.test(item.path))
+  const knowledge = findKnowledgeJobListOperation(operations.value)
   const check = async (item: Operation | undefined): Promise<string> => {
     if (!item) return 'OpenAPI 未提供可直接读取的状态接口'
     const result = await api.request(item.path, { method: 'GET', timeoutMs: 8000 })
@@ -351,12 +358,27 @@ async function refreshBusinessStatus(): Promise<void> {
     if (result.status === 403) return '当前业务账号无权查看'
     if (!result.ok) return '接口不可用（HTTP ' + result.status + '）'
     try {
-      const value = JSON.parse(result.body)
-      return Array.isArray(value?.data) && value.data.length === 0 ? '接口正常，尚无配置/记录' : '已读取现有业务接口结果'
+      JSON.parse(result.body)
+      return isEmptyBusinessCollection(result.body) ? '接口正常，尚无配置/记录' : '已读取现有业务接口结果'
     } catch { return '接口正常，返回非 JSON 状态' }
   }
+  const readKnowledgeJobs = async (): Promise<string> => {
+    knowledgeTasks.value = []
+    knowledgeTaskTotal.value = 0
+    if (!knowledge) return 'OpenAPI 未提供知识任务列表接口'
+    const params = new URLSearchParams({ pageNum: '1', pageSize: '10' })
+    const result = await api.request(knowledge.path + '?' + params, { method: 'GET', timeoutMs: 8000 })
+    if (result.status === 401) return '登录态已失效，请重新登录'
+    if (result.status === 403) return '当前业务账号无权查看'
+    if (!result.ok) return '接口不可用（HTTP ' + result.status + '）'
+    const page = parseKnowledgeJobPage(result.body)
+    if (!page) return '知识任务接口返回格式不可识别'
+    knowledgeTasks.value = page.items
+    knowledgeTaskTotal.value = page.total
+    return page.total === 0 ? '接口正常，暂无知识任务' : `已读取 ${page.items.length} 条 / 共 ${page.total} 条`
+  }
   try {
-    const [modelResult, knowledgeResult] = await Promise.allSettled([check(model), check(knowledge)])
+    const [modelResult, knowledgeResult] = await Promise.allSettled([check(model), readKnowledgeJobs()])
     modelStatus.value = modelResult.status === 'fulfilled' ? modelResult.value : '模型状态不可用'
     knowledgeStatus.value = knowledgeResult.status === 'fulfilled' ? knowledgeResult.value : '知识任务状态不可用'
   } finally { businessStatusBusy.value = false }
@@ -483,7 +505,23 @@ onUnmounted(() => {
           <article class="panel chart-panel"><div class="panel-heading"><div><div class="eyebrow">MEMORY TREND</div><h2>堆内存轨迹</h2></div><span class="range-chip">采样点 {{ Math.min(snapshots.length, 360) }}</span></div><div class="chart-wrap"><div class="chart-y-labels"><span>峰值</span><span>50%</span><span>0</span></div><svg class="memory-chart" viewBox="0 0 100 70" preserveAspectRatio="none"><defs><linearGradient id="areaFill" x1="0" x2="0" y1="0" y2="1"><stop offset="0%" stop-color="#67dec1" stop-opacity=".23"/><stop offset="100%" stop-color="#67dec1" stop-opacity="0"/></linearGradient></defs><path :d="'M ' + chartPoints.replaceAll(' ', ' L ') + ' L 100,70 L 0,70 Z'" fill="url(#areaFill)"/><polyline :points="chartPoints" fill="none" stroke="#67dec1" stroke-width=".85" vector-effect="non-scaling-stroke"/></svg><div class="chart-grid"><i></i><i></i><i></i></div></div><div class="chart-caption"><span>30 分钟滚动窗口</span><span><i class="chart-legend"></i> JVM Heap Used</span></div></article>
           <article class="panel detail-panel"><div class="panel-heading"><div><div class="eyebrow">PROCESS DETAILS</div><h2>运行环境</h2></div><span class="detail-icon">⌘</span></div><dl class="detail-list"><div><dt>实际 APP_HOME</dt><dd class="mono path-value">{{ runtime?.appHome ?? '—' }}</dd></div><div><dt>系统内存使用</dt><dd>{{ formatBytes(snapshots.at(-1)?.values['system.memory.used'] ?? -1) }}</dd></div><div><dt>数据盘可用</dt><dd>{{ formatBytes(snapshots.at(-1)?.values['disk.free'] ?? -1) }}</dd></div><div><dt>数据库连接池</dt><dd>{{ snapshots.at(-1)?.values['db.active'] ?? '—' }} <small>活跃</small><span class="subtle-sep">/</span>{{ snapshots.at(-1)?.values['db.idle'] ?? '—' }} <small>空闲</small></dd></div></dl></article>
         </div>
-        <div class="content-grid status-grid"><article class="panel business-panel"><div class="panel-heading"><div><div class="eyebrow">BUSINESS OBSERVATIONS</div><h2>业务侧状态</h2></div><button v-if="api.authenticated" class="text-button" :disabled="businessStatusBusy" @click="refreshBusinessStatus">{{ businessStatusBusy ? '读取中…' : '从现有接口读取 ↻' }}</button></div><div class="business-states"><div><span class="state-dot neutral"></span><label>模型目录 / 已有观测</label><strong>{{ api.authenticated ? modelStatus : '需要业务登录' }}</strong></div><div><span class="state-dot neutral"></span><label>知识任务 / 已有记录</label><strong>{{ api.authenticated ? knowledgeStatus : '需要业务登录' }}</strong></div></div><p class="quiet-note">不会自动调用模型或触发计费请求。业务状态使用当前登录 Token 与原接口权限。</p></article><article class="panel health-panel"><div class="panel-heading"><div><div class="eyebrow">SYSTEM HEALTH</div><h2>资源与连接</h2></div></div><div class="health-row"><span>数据盘</span><b><i class="health-dot" :class="(snapshots.at(-1)?.values['disk.free'] ?? -1) >= 0 ? 'green' : 'gray'"></i>{{ (snapshots.at(-1)?.values['disk.free'] ?? -1) >= 0 ? '可观测' : '指标缺失' }}</b></div><div class="health-row"><span>数据库连接池</span><b><i class="health-dot" :class="(snapshots.at(-1)?.values['db.max'] ?? -1) >= 0 ? 'green' : 'gray'"></i>{{ (snapshots.at(-1)?.values['db.max'] ?? -1) >= 0 ? '已连接' : '未暴露池指标' }}</b></div><div class="health-row"><span>模型健康探测</span><b><i class="health-dot gray"></i>仅展示已有结果</b></div></article></div>
+        <div class="content-grid status-grid">
+          <article class="panel business-panel">
+            <div class="panel-heading"><div><div class="eyebrow">BUSINESS OBSERVATIONS</div><h2>业务侧状态</h2></div><button v-if="api.authenticated" class="text-button" :disabled="businessStatusBusy" @click="refreshBusinessStatus">{{ businessStatusBusy ? '读取中…' : '从现有接口读取 ↻' }}</button></div>
+            <div class="business-states">
+              <div><span class="state-dot neutral"></span><label>模型目录 / 已有观测</label><strong>{{ api.authenticated ? modelStatus : '需要业务登录' }}</strong></div>
+              <div><span class="state-dot neutral"></span><label>知识任务 / 已有记录</label><strong>{{ api.authenticated ? knowledgeStatus : '需要业务登录' }}</strong></div>
+            </div>
+            <div v-if="api.authenticated && knowledgeTasks.length" class="knowledge-job-list">
+              <div class="knowledge-job-list-heading"><span>最近任务</span><small>{{ knowledgeTaskTotal }} 条记录</small></div>
+              <div v-for="task in knowledgeTasks" :key="task.id" class="knowledge-job-row">
+                <code>{{ task.jobKey || task.id }}</code><span class="job-status">{{ task.status }}</span><small>{{ task.stage || '—' }} · {{ task.progress === null ? '—' : task.progress + '%' }}</small>
+              </div>
+            </div>
+            <p class="quiet-note">不会自动调用模型或触发计费请求。业务状态使用当前登录 Token 与原接口权限。</p>
+          </article>
+          <article class="panel health-panel"><div class="panel-heading"><div><div class="eyebrow">SYSTEM HEALTH</div><h2>资源与连接</h2></div></div><div class="health-row"><span>数据盘</span><b><i class="health-dot" :class="(snapshots.at(-1)?.values['disk.free'] ?? -1) >= 0 ? 'green' : 'gray'"></i>{{ (snapshots.at(-1)?.values['disk.free'] ?? -1) >= 0 ? '可观测' : '指标缺失' }}</b></div><div class="health-row"><span>数据库连接池</span><b><i class="health-dot" :class="(snapshots.at(-1)?.values['db.max'] ?? -1) >= 0 ? 'green' : 'gray'"></i>{{ (snapshots.at(-1)?.values['db.max'] ?? -1) >= 0 ? '池已初始化' : '未暴露池指标' }}</b></div><div class="health-row"><span>模型健康探测</span><b><i class="health-dot gray"></i>仅展示已有结果</b></div></article>
+        </div>
       </section>
 
       <section v-else-if="section === 'logs'" class="page-section logs-page">
@@ -497,7 +535,7 @@ onUnmounted(() => {
         <div class="page-heading"><div><div class="eyebrow">RUNTIME / CONFIGURATION</div><h1>配置管理<span class="title-period">.</span></h1><p>白名单字段、来源透明；敏感值仅可替换或清除，保存采用版本校验。</p></div><div class="heading-actions"><span class="version-chip">配置版本 <b>v{{ configVersion }}</b></span><button class="button ghost" @click="restoreLastApplied">恢复上次成功版本</button><button class="button primary" :disabled="busy" @click="saveConfiguration(false)">{{ busy ? '保存中…' : '保存变更' }} <span>↧</span></button></div></div>
         <div class="config-notice"><span class="notice-icon">i</span><div><strong>生效规则</strong><p>“即时生效”由当前进程应用；“重启生效”会显示待重启，不会伪装成已生效。命令行 / 系统属性 / 环境变量优先级高于控制台配置。</p></div></div>
         <div class="config-section"><div class="config-section-heading"><div><div class="eyebrow">LIVE CONTROLS</div><h2>运行时即时项</h2></div><span class="apply-badge immediate">即时生效</span></div><div class="config-table"><div class="config-row header"><span>字段</span><span>当前生效值</span><span>配置来源</span><span>待应用值</span></div><div v-for="field in configFields.filter(item => item.applyMode === 'IMMEDIATE')" :key="field.key" class="config-row"><div class="field-label"><b>{{ field.label }}</b><small class="mono">{{ field.key }}</small></div><code>{{ field.effectiveValue || '—' }}</code><span class="source-pill">{{ field.source }}</span><div class="config-input-cell"><select v-if="field.type === 'level'" v-model="configDraft[field.key]"><option v-for="level in ['TRACE','DEBUG','INFO','WARN','ERROR']" :key="level">{{ level }}</option></select><input v-else v-model="configDraft[field.key]" :type="field.type === 'number' ? 'number' : 'text'" :disabled="!field.editable"/></div></div></div></div>
-        <div class="config-section"><div class="config-section-heading"><div><div class="eyebrow">RESTART REQUIRED</div><h2>启动与基础设施</h2></div><span class="apply-badge restart">重启生效</span></div><div class="config-table"><div class="config-row header"><span>字段</span><span>当前生效值</span><span>配置来源</span><span>待应用值</span></div><div v-for="field in configFields.filter(item => item.applyMode === 'RESTART')" :key="field.key" class="config-row" :class="{ unsupported: !field.supported }"><div class="field-label"><b>{{ field.label }}</b><small class="mono">{{ field.key }}</small><small v-if="!field.supported" class="unsupported-reason">{{ field.unsupportedReason }}</small></div><code>{{ field.sensitive ? (field.configured ? '••••••（已设置）' : '未设置') : field.effectiveValue || '—' }}</code><span class="source-pill">{{ field.source }}</span><div v-if="field.sensitive" class="secret-editor"><input v-model="secretDraft[field.key]" type="password" :placeholder="field.configured ? '留空保留已保存值' : '输入新密钥'" :disabled="!field.editable || !field.supported" @input="secretAction[field.key] = secretDraft[field.key] ? 'replace' : 'keep'"/><button class="text-button danger-text" :disabled="!field.configured || !field.editable" @click="secretAction[field.key] = secretAction[field.key] === 'clear' ? 'keep' : 'clear'">{{ secretAction[field.key] === 'clear' ? '撤销清除' : '清除' }}</button></div><div v-else class="config-input-cell"><select v-if="field.type === 'select'" v-model="configDraft[field.key]" :disabled="!field.editable || !field.supported"><option v-for="option in (field.key.includes('database') ? ['h2','mysql','postgresql'] : field.key.includes('vector') ? ['jvector','pgvector'] : field.key.includes('event') ? ['in-process','kafka'] : field.key.includes('file') ? ['local','s3','minio'] : ['disabled','redis'])" :key="option">{{ option }}</option></select><label v-else-if="field.type === 'boolean'" class="toggle"><input v-model="configDraft[field.key]" type="checkbox" true-value="true" false-value="false" :disabled="!field.editable || !field.supported"/><i></i></label><input v-else v-model="configDraft[field.key]" :type="field.type === 'number' ? 'number' : 'text'" :disabled="!field.editable || !field.supported"/></div></div></div></div>
+        <div class="config-section"><div class="config-section-heading"><div><div class="eyebrow">RESTART REQUIRED</div><h2>启动与基础设施</h2></div><span class="apply-badge restart">重启生效</span></div><div class="config-table"><div class="config-row header"><span>字段</span><span>当前生效值</span><span>配置来源</span><span>待应用值</span></div><div v-for="field in configFields.filter(item => item.applyMode === 'RESTART')" :key="field.key" class="config-row" :class="{ unsupported: !field.supported }"><div class="field-label"><b>{{ field.label }}</b><small class="mono">{{ field.key }}</small><small v-if="!field.supported" class="unsupported-reason">{{ field.unsupportedReason }}</small></div><code>{{ field.sensitive ? (field.configured ? '••••••（已设置）' : '未设置') : field.effectiveValue || '—' }}</code><span class="source-pill">{{ field.source }}</span><div v-if="field.sensitive" class="secret-editor"><input v-model="secretDraft[field.key]" type="password" :placeholder="field.configured ? '留空保留已保存值' : '输入新密钥'" :disabled="!field.editable || !field.supported" @input="secretAction[field.key] = secretDraft[field.key] ? 'replace' : 'keep'"/><button class="text-button danger-text" :disabled="!field.configured || !field.editable" @click="secretAction[field.key] = secretAction[field.key] === 'clear' ? 'keep' : 'clear'">{{ secretAction[field.key] === 'clear' ? '撤销清除' : '清除' }}</button></div><div v-else class="config-input-cell"><select v-if="field.type === 'select'" v-model="configDraft[field.key]" :disabled="!field.editable"><option v-for="option in (field.key.includes('database') ? ['h2','mysql','postgresql'] : field.key.includes('vector') ? ['inmemory','jvector','pgvector'] : field.key.includes('event') ? ['in-process','postgres-outbox','kafka'] : field.key.includes('file') ? ['local','s3','minio','aliyun-oss','tencent-cos'] : ['disabled','redis'])" :key="option">{{ option }}</option></select><label v-else-if="field.type === 'boolean'" class="toggle"><input v-model="configDraft[field.key]" type="checkbox" true-value="true" false-value="false" :disabled="!field.editable || !field.supported"/><i></i></label><input v-else v-model="configDraft[field.key]" :type="field.type === 'number' ? 'number' : 'text'" :disabled="!field.editable || !field.supported"/></div></div></div></div>
         <div class="config-footer"><span><i class="health-dot" :class="runtime?.managed ? 'green' : 'amber-dot'"></i>{{ runtime?.managed ? 'Windows 启动器托管，可受控重启应用' : 'IDEA / 直接运行：保存后请手动重启' }}</span><button class="button primary" :disabled="busy || !runtime?.managed" @click="saveConfiguration(true)">保存并应用 <span>↻</span></button></div>
       </section>
 

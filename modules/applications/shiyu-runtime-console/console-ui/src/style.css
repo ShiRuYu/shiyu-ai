@@ -157,6 +157,13 @@ button:focus-visible, input:focus-visible, select:focus-visible, textarea:focus-
 .state-dot { position: absolute; left: -3px; top: 2px; width: 5px; height: 5px; border-radius: 50%; background: #71867b; }
 .business-states label { color: #77877f; font-size: 9px; }
 .business-states strong { color: #cbd8d1; font-size: 10px; font-weight: 500; }
+.knowledge-job-list { display: grid; gap: 5px; margin: 4px 0 12px; padding: 9px 10px; border: 1px solid #2d3b34; border-radius: 8px; background: rgba(15, 23, 19, .45); }
+.knowledge-job-list-heading { display: flex; justify-content: space-between; color: #9cac9f; font-size: 8px; }
+.knowledge-job-list-heading small { color: #66776d; }
+.knowledge-job-row { display: grid; grid-template-columns: minmax(0, 1fr) auto; gap: 3px 8px; align-items: center; padding-top: 5px; border-top: 1px solid #26332d; }
+.knowledge-job-row code { overflow: hidden; color: #b6c8bd; font-size: 8px; text-overflow: ellipsis; white-space: nowrap; }
+.knowledge-job-row .job-status { color: #82cdb1; font-size: 8px; }
+.knowledge-job-row small { grid-column: 1 / -1; color: #718078; font-size: 8px; }
 .quiet-note { color: #64746c; margin: 0; font-size: 8px; }
 .health-row { display: flex; justify-content: space-between; padding: 10px 0; border-bottom: 1px solid #26332d; font-size: 9px; }
 .health-row:last-child { border-bottom: 0; }
