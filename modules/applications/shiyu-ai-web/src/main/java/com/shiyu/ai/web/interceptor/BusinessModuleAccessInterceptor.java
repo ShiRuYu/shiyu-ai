@@ -12,6 +12,7 @@ import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import org.springframework.web.servlet.HandlerInterceptor;
 
+import java.net.URI;
 import java.util.List;
 
 /**
@@ -51,7 +52,7 @@ public final class BusinessModuleAccessInterceptor implements HandlerInterceptor
                 || "OPTIONS".equalsIgnoreCase(request.getMethod())) {
             return true;
         }
-        String path = request.getRequestURI();
+        String path = applicationPath(request);
         BusinessModuleDescriptor module = modules.stream()
                 .filter(candidate -> candidate.routePrefixes().stream()
                         .anyMatch(prefix -> matchesPath(path, prefix)))
@@ -79,5 +80,26 @@ public final class BusinessModuleAccessInterceptor implements HandlerInterceptor
     private boolean matchesPath(String path, String prefix) {
         return path != null && prefix != null
                 && (path.equals(prefix) || path.startsWith(prefix + "/"));
+    }
+
+    private String applicationPath(HttpServletRequest request) {
+        String path = request.getRequestURI();
+        String contextPath = request.getContextPath();
+        if (path == null) {
+            return path;
+        }
+        if (contextPath != null
+                && !contextPath.isEmpty()
+                && path.startsWith(contextPath)
+                && (path.length() == contextPath.length()
+                        || path.charAt(contextPath.length()) == '/')) {
+            path = path.substring(contextPath.length());
+        }
+        try {
+            path = URI.create(path).getPath();
+        } catch (IllegalArgumentException ignored) {
+            // Invalid encoded paths will not be promoted to an enabled business route.
+        }
+        return path.replaceAll(";[^/]*", "");
     }
 }

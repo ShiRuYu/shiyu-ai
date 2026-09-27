@@ -4,6 +4,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.shiyu.ai.runtimeconsole.auth.ConsoleSessionStore;
 
 import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.Test;
@@ -60,6 +61,7 @@ class CoreJourneyIntegrationTest {
         registry.add("app.home", () -> APP_HOME.toString());
         registry.add("spring.profiles.active", () -> "dev");
         registry.add("shiyu.modules.education.enabled", () -> "true");
+        registry.add("shiyu.console.announce-startup-link", () -> "false");
     }
 
     @Autowired @LocalServerPort private int port;
@@ -69,6 +71,8 @@ class CoreJourneyIntegrationTest {
     private final ObjectMapper objectMapper = new ObjectMapper();
 
     @Autowired private JdbcTemplate jdbcTemplate;
+
+    @Autowired private ConsoleSessionStore consoleSessions;
 
     @Autowired
     @Qualifier("requestMappingHandlerMapping")
@@ -81,13 +85,16 @@ class CoreJourneyIntegrationTest {
             if (handler.getBeanType().getPackageName().startsWith("com.shiyu.ai.")) {
                 assertThat(mapping.getMethodsCondition().getMethods())
                         .as("Explicit HTTP methods for %s", handler).isNotEmpty();
-                mapping.getPatternValues().forEach(path ->
-                        mapping.getMethodsCondition().getMethods().forEach(method ->
+                mapping.getPatternValues().stream()
+                        .filter(path -> path.startsWith("/api/"))
+                        .forEach(path -> mapping.getMethodsCondition().getMethods().forEach(method ->
                                 expected.add(method.name() + " " + normalizeRoute(path))));
             }
         });
         assertThat(expected).isNotEmpty();
-        Set<String> actual = openApiOperations("/v3/api-docs");
+        Set<String> actual = openApiOperations("/v3/api-docs").stream()
+                .filter(route -> route.substring(route.indexOf(' ') + 1).startsWith("/api/"))
+                .collect(java.util.stream.Collectors.toCollection(TreeSet::new));
         assertThat(actual).containsExactlyInAnyOrderElementsOf(expected);
         assertThat(openApiOperations("/v3/api-docs/default"))
                 .containsExactlyInAnyOrderElementsOf(expected);
@@ -106,7 +113,9 @@ class CoreJourneyIntegrationTest {
             Set<String> routes = new TreeSet<>();
             handlerMapping.getHandlerMethods().forEach((mapping, handler) -> {
                 if (handler.getBeanType().getPackageName().startsWith(group.getValue())) {
-                    mapping.getPatternValues().forEach(path ->
+                    mapping.getPatternValues().stream()
+                            .filter(path -> path.startsWith("/api/"))
+                            .forEach(path ->
                             mapping.getMethodsCondition().getMethods().forEach(method ->
                                     routes.add(method.name() + " " + normalizeRoute(path))));
                 }
@@ -460,6 +469,86 @@ class CoreJourneyIntegrationTest {
         JsonNode spaces = body(spacesResponse.body());
         assertSuccess(spaces);
         assertThat(spaces.path("data").toString()).contains(Long.toString(spaceId));
+    }
+
+    @Test
+    void servesBundledConsoleAndKeepsConsoleAndBusinessCredentialsSeparate() throws Exception {
+        URI base = URI.create("http://127.0.0.1:" + port);
+        HttpResponse<String> page = httpClient.send(
+                HttpRequest.newBuilder(base.resolve("/console/")).GET().build(),
+                HttpResponse.BodyHandlers.ofString());
+        assertThat(page.statusCode()).isEqualTo(200);
+        assertThat(page.headers().firstValue("content-type").orElse(""))
+                .contains("text/html");
+        assertThat(page.body()).contains("<div id=\"app\"></div>", "/console/assets/index-");
+
+        HttpResponse<String> unauthenticated = httpClient.send(
+                HttpRequest.newBuilder(base.resolve("/console/api/runtime")).GET().build(),
+                HttpResponse.BodyHandlers.ofString());
+        assertThat(unauthenticated.statusCode()).isEqualTo(401);
+
+        String grant = consoleSessions.issueOneTimeCode();
+        HttpResponse<String> exchange = httpClient.send(
+                HttpRequest.newBuilder(base.resolve("/console/api/session/exchange"))
+                        .header("Origin", base.toString())
+                        .header("Content-Type", "application/json")
+                        .POST(HttpRequest.BodyPublishers.ofString(objectMapper.writeValueAsString(Map.of("grant", grant))))
+                        .build(),
+                HttpResponse.BodyHandlers.ofString());
+        assertThat(exchange.statusCode()).isEqualTo(200);
+        String cookie = exchange.headers().firstValue("set-cookie").orElseThrow().split(";", 2)[0];
+        assertThat(exchange.headers().firstValue("set-cookie").orElseThrow().toLowerCase())
+                .contains("httponly", "samesite=strict", "path=/console")
+                .doesNotContain("max-age");
+        String csrf = body(exchange.body()).path("csrfToken").asText();
+        assertThat(csrf).isNotBlank();
+
+        HttpResponse<String> noCsrf = httpClient.send(
+                HttpRequest.newBuilder(base.resolve("/console/api/config/validate"))
+                        .header("Origin", base.toString())
+                        .header("Cookie", cookie)
+                        .header("Content-Type", "application/json")
+                        .POST(HttpRequest.BodyPublishers.ofString("{\"expectedVersion\":0,\"values\":{},\"secrets\":{}}"))
+                        .build(),
+                HttpResponse.BodyHandlers.ofString());
+        assertThat(noCsrf.statusCode()).isEqualTo(403);
+
+        HttpResponse<String> validCsrf = httpClient.send(
+                HttpRequest.newBuilder(base.resolve("/console/api/config/validate"))
+                        .header("Origin", base.toString())
+                        .header("Cookie", cookie)
+                        .header("X-ShiYu-Console-CSRF", csrf)
+                        .header("Content-Type", "application/json")
+                        .POST(HttpRequest.BodyPublishers.ofString("{\"expectedVersion\":0,\"values\":{},\"secrets\":{}}"))
+                        .build(),
+                HttpResponse.BodyHandlers.ofString());
+        assertThat(validCsrf.statusCode()).isEqualTo(200);
+        assertThat(body(validCsrf.body()).path("valid").asBoolean()).isTrue();
+
+        HttpResponse<String> runtime = httpClient.send(
+                HttpRequest.newBuilder(base.resolve("/console/api/runtime")).header("Cookie", cookie).GET().build(),
+                HttpResponse.BodyHandlers.ofString());
+        assertThat(runtime.statusCode()).isEqualTo(200);
+        assertThat(body(runtime.body()).path("port").asInt()).isEqualTo(port);
+
+        HttpResponse<String> login = request(
+                "POST", "/api/iam/auth/login", null, "{\"username\":\"admin\",\"password\":\"123456\"}");
+        assertThat(body(login.body()).path("success").asBoolean()).isTrue();
+        String businessToken = body(login.body()).path("data").path("accessToken").asText();
+        HttpResponse<String> businessTokenCannotManageConsole = httpClient.send(
+                HttpRequest.newBuilder(base.resolve("/console/api/runtime"))
+                        .header("Authorization", "Bearer " + businessToken)
+                        .GET().build(),
+                HttpResponse.BodyHandlers.ofString());
+        assertThat(businessTokenCannotManageConsole.statusCode()).isEqualTo(401);
+
+        HttpResponse<String> consoleSessionCannotAccessBusinessApi = httpClient.send(
+                HttpRequest.newBuilder(base.resolve("/api/iam/users"))
+                        .header("Cookie", cookie)
+                        .GET().build(),
+                HttpResponse.BodyHandlers.ofString());
+        assertThat(body(consoleSessionCannotAccessBusinessApi.body()).path("success").asBoolean()).isFalse();
+        assertThat(body(consoleSessionCannotAccessBusinessApi.body()).path("code").asInt()).isEqualTo(401);
     }
 
     private JsonNode body(String value) throws Exception {

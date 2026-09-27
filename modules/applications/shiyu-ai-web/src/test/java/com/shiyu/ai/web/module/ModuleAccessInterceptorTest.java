@@ -59,6 +59,34 @@ class ModuleAccessInterceptorTest {
     }
 
     @Test
+    void enforcesModuleAccessWhenApplicationUsesServletContextPath() throws Exception {
+        TenantId tenantId = new TenantId(7L);
+        TenantScope.set(tenantId);
+        when(access.isEnabled(tenantId, "education")).thenReturn(false);
+        MockHttpServletRequest request =
+                request("/shiyu/api/education/course");
+        request.setContextPath("/shiyu");
+        request.setServletPath("/api/education/course");
+        MockHttpServletResponse response = new MockHttpServletResponse();
+
+        assertFalse(interceptor.preHandle(request, response, new Object()));
+        assertEquals(403, response.getStatus());
+    }
+
+    @Test
+    void enforcesModuleAccessWhenRouteContainsMatrixParameters() throws Exception {
+        TenantId tenantId = new TenantId(7L);
+        TenantScope.set(tenantId);
+        when(access.isEnabled(tenantId, "education")).thenReturn(false);
+        MockHttpServletRequest request = request("/api/education;mode=preview/course");
+        request.setServletPath("/api/education;mode=preview/course");
+        MockHttpServletResponse response = new MockHttpServletResponse();
+
+        assertFalse(interceptor.preHandle(request, response, new Object()));
+        assertEquals(403, response.getStatus());
+    }
+
+    @Test
     void ignoresRoutesOwnedByAnotherModule() throws Exception {
         assertTrue(interceptor.preHandle(request("/api/knowledge/search"),
                 new MockHttpServletResponse(), new Object()));

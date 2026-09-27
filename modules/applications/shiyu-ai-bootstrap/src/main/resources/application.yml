@@ -3,6 +3,10 @@
 # 部署时应通过 APP_HOME 显式指定独立持久化目录
 
 shiyu:
+  console:
+    enabled: ${SHIYU_CONSOLE_ENABLED:true}
+    announce-startup-link: true
+    sample-interval-ms: 5000
   # 名称
   name: "shiyu-ai"
   # ModelManager/PlatformProperties 的统一 OpenAI-compatible 配置
@@ -212,6 +216,7 @@ spring:
     active: ${SPRING_PROFILES_ACTIVE:${profiles.active:dev}}
     group:
       dev: ai, h2 #,mcp
+      windows: ai, h2
 
 # Sa-Token 配置
 sa-token:

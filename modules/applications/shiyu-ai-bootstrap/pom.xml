@@ -34,6 +34,11 @@
             <artifactId>shiyu-ai-web</artifactId>
         </dependency>
         <dependency>
+            <groupId>com.shiyu.ai</groupId>
+            <artifactId>shiyu-runtime-console</artifactId>
+            <version>${revision}</version>
+        </dependency>
+        <dependency>
             <groupId>com.h2database</groupId>
             <artifactId>h2</artifactId>
             <scope>runtime</scope>

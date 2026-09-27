@@ -1,6 +1,7 @@
 package com.shiyu.ai.bootstrap;
 
 import com.shiyu.ai.bootstrap.lock.EmbeddedDataDirectoryLock;
+import com.shiyu.ai.runtimeconsole.config.ConsoleBootstrapConfiguration;
 
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
@@ -28,6 +29,7 @@ public class ShiyuBootstrapApplication {
                 .addShutdownHook(
                         new Thread(() -> dataDirectoryLock.close(), "embedded-data-lock-release"));
         try {
+            ConsoleBootstrapConfiguration.loadPersistedValues(args);
             SpringApplication.run(ShiyuBootstrapApplication.class, args);
         } catch (RuntimeException exception) {
             dataDirectoryLock.close();

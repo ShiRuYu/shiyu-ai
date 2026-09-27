@@ -1,0 +1,3 @@
+shiyu:
+  console:
+    enabled: ${SHIYU_CONSOLE_ENABLED:false}

@@ -57,14 +57,16 @@ public interface UsageRecordMapper extends BaseMapperFlex<UsageRecordDO> {
      * @return 按周和用量类型聚合的统计结果。
      */
     @Select(
-            "SELECT FORMATDATETIME(create_time, 'yyyy-ww') as usage_week, "
+            "SELECT CAST(ISO_YEAR(create_time) AS VARCHAR) || '-' || "
+                    + "LPAD(CAST(ISO_WEEK(create_time) AS VARCHAR), 2, '0') as usage_week, "
                     + "usage_type, "
                     + "COUNT(*) as call_count, "
                     + "AVG(latency_ms) as avg_latency_ms "
                     + "FROM governance_usage_record "
                     + "WHERE create_time >= DATEADD('WEEK', -#{weeks}, CURRENT_TIMESTAMP) "
                     + "AND tenant_id = #{tenantId} "
-                    + "GROUP BY FORMATDATETIME(create_time, 'yyyy-ww'), usage_type "
+                    + "GROUP BY CAST(ISO_YEAR(create_time) AS VARCHAR) || '-' || "
+                    + "LPAD(CAST(ISO_WEEK(create_time) AS VARCHAR), 2, '0'), usage_type "
                     + "ORDER BY usage_week DESC")
     List<Map<String, Object>> aggregateByWeek(
             @Param("weeks") int weeks, @Param("tenantId") long tenantId);
@@ -217,11 +219,14 @@ public interface UsageRecordMapper extends BaseMapperFlex<UsageRecordDO> {
 
     /** 查询全部租户的按周统计。 */
     @Select(
-            "SELECT FORMATDATETIME(create_time, 'yyyy-ww') as usage_week, usage_type, "
+            "SELECT CAST(ISO_YEAR(create_time) AS VARCHAR) || '-' || "
+                    + "LPAD(CAST(ISO_WEEK(create_time) AS VARCHAR), 2, '0') as usage_week, "
+                    + "usage_type, "
                     + "COUNT(*) as call_count, AVG(latency_ms) as avg_latency_ms "
                     + "FROM governance_usage_record "
                     + "WHERE create_time >= DATEADD('WEEK', -#{weeks}, CURRENT_TIMESTAMP) "
-                    + "GROUP BY FORMATDATETIME(create_time, 'yyyy-ww'), usage_type "
+                    + "GROUP BY CAST(ISO_YEAR(create_time) AS VARCHAR) || '-' || "
+                    + "LPAD(CAST(ISO_WEEK(create_time) AS VARCHAR), 2, '0'), usage_type "
                     + "ORDER BY usage_week DESC")
     List<Map<String, Object>> aggregateByWeekAllTenants(@Param("weeks") int weeks);
 
