@@ -1,0 +1,17 @@
+flowchart TB
+  application["应用装配 · 3 个模块"]
+  implementation["业务与领域实现 · 9 个模块"]
+  contracts["领域 Contract · 9 个模块"]
+  infrastructure["技术基础设施 · 7 个模块"]
+  kernel["共享内核 · 1 个模块"]
+  architectureTests["架构测试 · 1 个模块"]
+
+  application -->|"装配业务能力"| implementation
+  application -->|"依赖 Web 与基础支撑"| infrastructure
+  implementation -->|"依赖本域和跨域接口"| contracts
+  implementation -->|"使用技术组件"| infrastructure
+  contracts -->|"共享类型与上下文"| kernel
+  infrastructure -->|"公共基础能力"| kernel
+  architectureTests -.->|"检查边界规则"| application
+  architectureTests -.->|"检查边界规则"| implementation
+  architectureTests -.->|"检查边界规则"| infrastructure

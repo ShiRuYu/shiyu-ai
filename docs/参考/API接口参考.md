@@ -1,7 +1,7 @@
 # API 接口参考
 
 > 本文档由 `scripts/docs/generate_reference_docs.py` 从 SpringDoc OpenAPI 自动生成。
-> 生成源：`modules/applications/shiyu-ai-bootstrap/target/runtime-openapi.json`；OpenAPI：`3.1.0`；服务版本：`0.1`。
+> 生成源：`../shiyu-ui/tests/contracts/shiyu-ai-openapi.json`；OpenAPI：`3.1.0`；服务版本：`0.1`。
 
 ## 契约约定
 
@@ -25,17 +25,17 @@
 | GET | `/api/agent/agents` | Get Page | 登录态；细粒度权限见权限矩阵 | pageNo[query,可选]:integer/int32; pageSize[query,可选]:integer/int32; name[query,可选]:string; status[query,可选]:integer/int32 | 200=*/*:ResultPageDataAgentVO |
 | POST | `/api/agent/agents` | Create | 登录态；细粒度权限见权限矩阵 | body[必填]=application/json:AgentRequest | 200=*/*:ResultAgentVO |
 | GET | `/api/agent/agents/definitions` | List Agents | 登录态；细粒度权限见权限矩阵 | - | 200=*/*:ResultListAgentDefinition |
-| GET | `/api/agent/agents/definitions/{agentId}` | Get Agent | 登录态；细粒度权限见权限矩阵 | agentId[path,必填]:string | 200=*/*:ResultAgentDefinition |
 | DELETE | `/api/agent/agents/definitions/{agentId}` | Delete Agent | 登录态；细粒度权限见权限矩阵 | agentId[path,必填]:string | 200=*/*:ResultVoid |
+| GET | `/api/agent/agents/definitions/{agentId}` | Get Agent | 登录态；细粒度权限见权限矩阵 | agentId[path,必填]:string | 200=*/*:ResultAgentDefinition |
 | GET | `/api/agent/agents/node-types` | Get Node Types | 登录态；细粒度权限见权限矩阵 | - | 200=*/*:ResultListNodeTypeMetaVO |
 | GET | `/api/agent/agents/node-types/detail` | Get Node Type | 登录态；细粒度权限见权限矩阵 | nodeType[query,必填]:string | 200=*/*:ResultNodeTypeMetaVO |
 | GET | `/api/agent/agents/options` | List All Options | 登录态；细粒度权限见权限矩阵 | - | 200=*/*:ResultListIdNameOptionVO |
 | POST | `/api/agent/agents/register` | Register Agent | 登录态；细粒度权限见权限矩阵 | body[必填]=application/json:RegisterAgentRequest | 200=*/*:ResultMapStringObject |
 | POST | `/api/agent/agents/status` | Update Status | 登录态；细粒度权限见权限矩阵 | id[query,必填]:integer/int64; status[query,必填]:integer/int32 | 200=*/*:ResultVoid |
 | POST | `/api/agent/agents/version/switch` | Switch Version | 登录态；细粒度权限见权限矩阵 | agentId[query,必填]:string; version[query,必填]:string | 200=*/*:ResultVoid |
+| DELETE | `/api/agent/agents/{id}` | Delete | 登录态；细粒度权限见权限矩阵 | id[path,必填]:integer/int64 | 200=*/*:ResultVoid |
 | GET | `/api/agent/agents/{id}` | Get by Id | 登录态；细粒度权限见权限矩阵 | id[path,必填]:integer/int64 | 200=*/*:ResultAgentDetailVO |
 | PUT | `/api/agent/agents/{id}` | Update | 登录态；细粒度权限见权限矩阵 | id[path,必填]:integer/int64; body[必填]=application/json:AgentRequest | 200=*/*:ResultAgentVO |
-| DELETE | `/api/agent/agents/{id}` | Delete | 登录态；细粒度权限见权限矩阵 | id[path,必填]:integer/int64 | 200=*/*:ResultVoid |
 
 ### Agent Version
 
@@ -62,9 +62,9 @@
 |---|---|---|---|---|---|
 | GET | `/api/agent/agents/{agentId}/versions` | List Agent Versions | 登录态；细粒度权限见权限矩阵 | agentId[path,必填]:string | 200=*/*:ResultListAgentVersionVO |
 | POST | `/api/agent/agents/{agentId}/versions` | Create Agent Version | 登录态；细粒度权限见权限矩阵 | agentId[path,必填]:string; body[必填]=application/json:VersionRequest | 200=*/*:ResultAgentVersionVO |
+| DELETE | `/api/agent/agents/{agentId}/versions/{versionId}` | Delete Agent Version | 登录态；细粒度权限见权限矩阵 | agentId[path,必填]:string; versionId[path,必填]:integer/int64 | 200=*/*:ResultVoid |
 | GET | `/api/agent/agents/{agentId}/versions/{versionId}` | Get Agent Version | 登录态；细粒度权限见权限矩阵 | agentId[path,必填]:string; versionId[path,必填]:integer/int64 | 200=*/*:ResultAgentVersionDetailVO |
 | PUT | `/api/agent/agents/{agentId}/versions/{versionId}` | Update Agent Version | 登录态；细粒度权限见权限矩阵 | agentId[path,必填]:string; versionId[path,必填]:integer/int64; body[必填]=application/json:VersionRequest | 200=*/*:ResultAgentVersionVO |
-| DELETE | `/api/agent/agents/{agentId}/versions/{versionId}` | Delete Agent Version | 登录态；细粒度权限见权限矩阵 | agentId[path,必填]:string; versionId[path,必填]:integer/int64 | 200=*/*:ResultVoid |
 
 ### Ai Model
 
@@ -78,9 +78,9 @@
 | GET | `/api/model/model-configurations/platform/by-code` | Get by Platform Code | 登录态；细粒度权限见权限矩阵 | platformCode[query,必填]:string | 200=*/*:ResultListAiModelResponse |
 | GET | `/api/model/model-configurations/platform/default` | Get Default By Platform Id | 登录态；细粒度权限见权限矩阵 | platformId[query,必填]:integer/int64 | 200=*/*:ResultAiModelVO |
 | POST | `/api/model/model-configurations/set-default` | Set Default | 登录态；细粒度权限见权限矩阵 | id[query,必填]:integer/int64 | 200=*/*:ResultAiModelVO |
+| DELETE | `/api/model/model-configurations/{id}` | Delete | 登录态；细粒度权限见权限矩阵 | id[path,必填]:integer/int64 | 200=*/*:ResultVoid |
 | GET | `/api/model/model-configurations/{id}` | Get by Id | 登录态；细粒度权限见权限矩阵 | id[path,必填]:integer/int64 | 200=*/*:ResultAiModelVO |
 | PUT | `/api/model/model-configurations/{id}` | Update | 登录态；细粒度权限见权限矩阵 | id[path,必填]:integer/int64; body[必填]=application/json:AiModelRequest | 200=*/*:ResultAiModelVO |
-| DELETE | `/api/model/model-configurations/{id}` | Delete | 登录态；细粒度权限见权限矩阵 | id[path,必填]:integer/int64 | 200=*/*:ResultVoid |
 
 ### Ai Platform
 
@@ -94,9 +94,9 @@
 | GET | `/api/model/platforms/options` | Get Options | 登录态；细粒度权限见权限矩阵 | - | 200=*/*:ResultListIdNameOptionVO |
 | POST | `/api/model/platforms/reload` | Reload | 登录态；细粒度权限见权限矩阵 | - | 200=*/*:ResultVoid |
 | POST | `/api/model/platforms/set-default` | Set Default | 登录态；细粒度权限见权限矩阵 | id[query,必填]:integer/int64 | 200=*/*:ResultAiPlatformVO |
+| DELETE | `/api/model/platforms/{id}` | Delete | 登录态；细粒度权限见权限矩阵 | id[path,必填]:integer/int64 | 200=*/*:ResultVoid |
 | GET | `/api/model/platforms/{id}` | Get by Id | 登录态；细粒度权限见权限矩阵 | id[path,必填]:integer/int64 | 200=*/*:ResultAiPlatformResponse |
 | PUT | `/api/model/platforms/{id}` | Update | 登录态；细粒度权限见权限矩阵 | id[path,必填]:integer/int64; body[必填]=application/json:AiPlatformRequest | 200=*/*:ResultAiPlatformVO |
-| DELETE | `/api/model/platforms/{id}` | Delete | 登录态；细粒度权限见权限矩阵 | id[path,必填]:integer/int64 | 200=*/*:ResultVoid |
 
 ### Auth
 
@@ -124,8 +124,8 @@
 | GET | `/api/iam/auth-codes/roles/list` | List role auth codes | 登录态；细粒度权限见权限矩阵 | roleId[query,必填]:integer/int64; tenantId[query,必填]:integer/int64 | 200=*/*:ResultListString |
 | POST | `/api/iam/auth-codes/roles/replace` | Replace role auth codes | 登录态；细粒度权限见权限矩阵 | roleId[query,必填]:integer/int64; tenantId[query,必填]:integer/int64; body[必填]=application/json:array<string> | 200=*/*:ResultVoid |
 | POST | `/api/iam/auth-codes/roles/revoke` | Revoke role auth code | 登录态；细粒度权限见权限矩阵 | roleId[query,必填]:integer/int64; tenantId[query,必填]:integer/int64; authCodeId[query,必填]:integer/int64 | 200=*/*:ResultVoid |
-| PUT | `/api/iam/auth-codes/{id}` | Update Auth Code | 登录态；细粒度权限见权限矩阵 | id[path,必填]:integer/int64; body[必填]=application/json:AuthCodeRequest | 200=*/*:ResultVoid |
 | DELETE | `/api/iam/auth-codes/{id}` | Delete Auth Code | 登录态；细粒度权限见权限矩阵 | id[path,必填]:integer/int64 | 200=*/*:ResultVoid |
+| PUT | `/api/iam/auth-codes/{id}` | Update Auth Code | 登录态；细粒度权限见权限矩阵 | id[path,必填]:integer/int64; body[必填]=application/json:AuthCodeRequest | 200=*/*:ResultVoid |
 
 ### Captcha
 
@@ -142,23 +142,23 @@
 | POST | `/api/conversation/chat-products/characters` | createCharacter | 登录态；细粒度权限见权限矩阵 | body[必填]=application/json:CharacterRequest | 200=*/*:ResultCharacterAsset |
 | POST | `/api/conversation/chat-products/characters/import` | importCharacter | 登录态；细粒度权限见权限矩阵 | previewToken[query,必填]:string; body[可选]=multipart/form-data:object | 200=*/*:ResultCharacterAsset |
 | POST | `/api/conversation/chat-products/characters/import/preview` | previewCharacterImport | 登录态；细粒度权限见权限矩阵 | body[可选]=multipart/form-data:object | 200=*/*:ResultPreview |
-| GET | `/api/conversation/chat-products/characters/{id}` | character | 登录态；细粒度权限见权限矩阵 | id[path,必填]:string | 200=*/*:ResultCharacterAsset |
 | DELETE | `/api/conversation/chat-products/characters/{id}` | deleteCharacter | 登录态；细粒度权限见权限矩阵 | id[path,必填]:string | 200=*/*:ResultVoid |
+| GET | `/api/conversation/chat-products/characters/{id}` | character | 登录态；细粒度权限见权限矩阵 | id[path,必填]:string | 200=*/*:ResultCharacterAsset |
 | GET | `/api/conversation/chat-products/characters/{id}/png` | exportCharacter | 登录态；细粒度权限见权限矩阵 | id[path,必填]:string | 200=image/png:string/byte |
 | GET | `/api/conversation/chat-products/groups` | groups | 登录态；细粒度权限见权限矩阵 | - | 200=*/*:ResultListGroupChatAsset |
 | POST | `/api/conversation/chat-products/groups` | createGroup | 登录态；细粒度权限见权限矩阵 | body[必填]=application/json:GroupRequest | 200=*/*:ResultGroupChatAsset |
-| GET | `/api/conversation/chat-products/groups/{id}` | group | 登录态；细粒度权限见权限矩阵 | id[path,必填]:string | 200=*/*:ResultGroupChatAsset |
 | DELETE | `/api/conversation/chat-products/groups/{id}` | deleteGroup | 登录态；细粒度权限见权限矩阵 | id[path,必填]:string | 200=*/*:ResultVoid |
+| GET | `/api/conversation/chat-products/groups/{id}` | group | 登录态；细粒度权限见权限矩阵 | id[path,必填]:string | 200=*/*:ResultGroupChatAsset |
 | POST | `/api/conversation/chat-products/groups/{id}/next-speaker` | nextSpeaker | 登录态；细粒度权限见权限矩阵 | id[path,必填]:string; body[可选]=application/json:TurnRequest | 200=*/*:ResultTurnDecision |
 | POST | `/api/conversation/chat-products/groups/{id}/turn` | runTurn | 登录态；细粒度权限见权限矩阵 | id[path,必填]:string; body[必填]=application/json:TurnRunRequest | 200=*/*:ResultGroupTurnRun |
 | GET | `/api/conversation/chat-products/lorebooks` | lorebooks | 登录态；细粒度权限见权限矩阵 | - | 200=*/*:ResultListLorebookAsset |
 | POST | `/api/conversation/chat-products/lorebooks` | createLorebook | 登录态；细粒度权限见权限矩阵 | body[必填]=application/json:LorebookEntry | 200=*/*:ResultLorebookAsset |
-| GET | `/api/conversation/chat-products/lorebooks/{id}` | lorebook | 登录态；细粒度权限见权限矩阵 | id[path,必填]:string | 200=*/*:ResultLorebookAsset |
 | DELETE | `/api/conversation/chat-products/lorebooks/{id}` | deleteLorebook | 登录态；细粒度权限见权限矩阵 | id[path,必填]:string | 200=*/*:ResultVoid |
+| GET | `/api/conversation/chat-products/lorebooks/{id}` | lorebook | 登录态；细粒度权限见权限矩阵 | id[path,必填]:string | 200=*/*:ResultLorebookAsset |
 | GET | `/api/conversation/chat-products/personas` | personas | 登录态；细粒度权限见权限矩阵 | - | 200=*/*:ResultListPersonaAsset |
 | POST | `/api/conversation/chat-products/personas` | createPersona | 登录态；细粒度权限见权限矩阵 | body[必填]=application/json:Persona | 200=*/*:ResultPersonaAsset |
-| GET | `/api/conversation/chat-products/personas/{id}` | persona | 登录态；细粒度权限见权限矩阵 | id[path,必填]:string | 200=*/*:ResultPersonaAsset |
 | DELETE | `/api/conversation/chat-products/personas/{id}` | deletePersona | 登录态；细粒度权限见权限矩阵 | id[path,必填]:string | 200=*/*:ResultVoid |
+| GET | `/api/conversation/chat-products/personas/{id}` | persona | 登录态；细粒度权限见权限矩阵 | id[path,必填]:string | 200=*/*:ResultPersonaAsset |
 | POST | `/api/conversation/chat-products/prompt-studio/preview` | preview_1 | 登录态；细粒度权限见权限矩阵 | body[必填]=application/json:PromptPreviewRequest | 200=*/*:ResultPromptPreview |
 | GET | `/api/conversation/chat-products/prompt-studio/templates` | prompts | 登录态；细粒度权限见权限矩阵 | templateId[query,可选]:string | 200=*/*:ResultListPromptTemplateVersion |
 | POST | `/api/conversation/chat-products/prompt-studio/templates` | createPrompt | 登录态；细粒度权限见权限矩阵 | body[必填]=application/json:PromptRequest | 200=*/*:ResultPromptTemplateVersion |
@@ -174,8 +174,8 @@
 | POST | `/api/conversation/conversations` | create_19 | 登录态；细粒度权限见权限矩阵 | Idempotency-Key[header,可选]:string; body[必填]=application/json:CreateConversationRequest | 200=*/*:ResultConversation |
 | POST | `/api/conversation/conversations/import` | importConversation | 登录态；细粒度权限见权限矩阵 | body[必填]=application/json:ImportRequest/text/plain:ImportRequest | 200=*/*:ResultConversation |
 | POST | `/api/conversation/conversations/import/preview` | importPreview | 登录态；细粒度权限见权限矩阵 | body[必填]=application/json:ImportRequest | 200=*/*:ResultPreview |
-| GET | `/api/conversation/conversations/{id}` | detail_1 | 登录态；细粒度权限见权限矩阵 | id[path,必填]:string | 200=*/*:ResultConversation |
 | DELETE | `/api/conversation/conversations/{id}` | delete_18 | 登录态；细粒度权限见权限矩阵 | id[path,必填]:string | 200=*/*:ResultVoid |
+| GET | `/api/conversation/conversations/{id}` | detail_1 | 登录态；细粒度权限见权限矩阵 | id[path,必填]:string | 200=*/*:ResultConversation |
 | PATCH | `/api/conversation/conversations/{id}` | update_18 | 登录态；细粒度权限见权限矩阵 | id[path,必填]:string; body[必填]=application/json:UpdateConversationRequest | 200=*/*:ResultConversation |
 | POST | `/api/conversation/conversations/{id}/active-leaf` | activeLeaf | 登录态；细粒度权限见权限矩阵 | id[path,必填]:string; messageId[query,可选]:string; body[可选]=application/json:ActiveLeafRequest | 200=*/*:ResultVoid |
 | GET | `/api/conversation/conversations/{id}/branches` | branches | 登录态；细粒度权限见权限矩阵 | id[path,必填]:string | 200=*/*:ResultListConversation |
@@ -194,8 +194,8 @@
 | POST | `/api/iam/dicts` | Create Dict | 登录态；细粒度权限见权限矩阵 | body[必填]=application/json:DictRequest | 200=*/*:ResultDictVO |
 | POST | `/api/iam/dicts/batch-delete` | Delete Dicts | 登录态；细粒度权限见权限矩阵 | body[必填]=application/json:array<integer/int64> | 200=*/*:ResultVoid |
 | GET | `/api/iam/dicts/type` | Get Dict By Type | 登录态；细粒度权限见权限矩阵 | dictType[query,必填]:string | 200=*/*:ResultListDictVO |
-| PUT | `/api/iam/dicts/{id}` | Update Dict | 登录态；细粒度权限见权限矩阵 | id[path,必填]:integer/int64; body[必填]=application/json:DictRequest | 200=*/*:ResultDictVO |
 | DELETE | `/api/iam/dicts/{id}` | Delete Dict | 登录态；细粒度权限见权限矩阵 | id[path,必填]:integer/int64 | 200=*/*:ResultVoid |
+| PUT | `/api/iam/dicts/{id}` | Update Dict | 登录态；细粒度权限见权限矩阵 | id[path,必填]:integer/int64; body[必填]=application/json:DictRequest | 200=*/*:ResultDictVO |
 
 ### Execution
 
@@ -214,8 +214,8 @@
 
 | 方法 | 路径 | 摘要 | 鉴权 | 请求 | 响应 |
 |---|---|---|---|---|---|
-| GET | `/api/iam/files` | 获取文件列表 | 登录态；细粒度权限见权限矩阵 | - | 200=*/*:ResultListFileView |
 | DELETE | `/api/iam/files` | 删除文件 | 登录态；细粒度权限见权限矩阵 | key[query,必填]:string | 200=*/*:ResultBoolean |
+| GET | `/api/iam/files` | 获取文件列表 | 登录态；细粒度权限见权限矩阵 | - | 200=*/*:ResultListFileView |
 | GET | `/api/iam/files/config` | 获取文件存储配置 | 登录态；细粒度权限见权限矩阵 | - | 200=*/*:ResultMapStringObject |
 | GET | `/api/iam/files/download` | 下载文件 | 登录态；细粒度权限见权限矩阵 | key[query,必填]:string | 200=*/*:string/binary |
 | POST | `/api/iam/files/upload` | 上传文件 | 登录态；细粒度权限见权限矩阵 | body[可选]=application/json:object | 200=*/*:ResultFileView |
@@ -257,8 +257,8 @@
 | GET | `/api/iam/menus/permissions` | Get Menu Permissions Tree | 登录态；细粒度权限见权限矩阵 | - | 200=*/*:ResultListRouteMenuVO |
 | GET | `/api/iam/menus/roots` | Get Menu Roots | 登录态；细粒度权限见权限矩阵 | - | 200=*/*:ResultListRouteMenuVO |
 | GET | `/api/iam/menus/tree` | Get All Tree | 登录态；细粒度权限见权限矩阵 | - | 200=*/*:ResultListRouteMenuVO |
-| PUT | `/api/iam/menus/{id}` | Update Menu | 登录态；细粒度权限见权限矩阵 | id[path,必填]:integer/int64; body[必填]=application/json:MenuRequest | 200=*/*:ResultVoid |
 | DELETE | `/api/iam/menus/{id}` | Delete Menu | 登录态；细粒度权限见权限矩阵 | id[path,必填]:integer/int64 | 200=*/*:ResultVoid |
+| PUT | `/api/iam/menus/{id}` | Update Menu | 登录态；细粒度权限见权限矩阵 | id[path,必填]:integer/int64; body[必填]=application/json:MenuRequest | 200=*/*:ResultVoid |
 
 ### Platform Usage
 
@@ -332,9 +332,26 @@
 | GET | `/api/education/chapter/knowledge/list` | listKnowledgeIds | 登录态；细粒度权限见权限矩阵 | chapterId[query,必填]:integer/int64 | 200=*/*:ResultListLong |
 | GET | `/api/education/chapter/textbook` | listByTextbookId | 登录态；细粒度权限见权限矩阵 | textbookId[query,必填]:integer/int64 | 200=*/*:ResultListChapterResponse |
 | GET | `/api/education/chapter/tree` | getChapterTree | 登录态；细粒度权限见权限矩阵 | textbookId[query,必填]:integer/int64 | 200=*/*:ResultListChapterResponse |
+| DELETE | `/api/education/chapter/{id}` | delete_15 | 登录态；细粒度权限见权限矩阵 | id[path,必填]:integer/int64 | 200=*/*:ResultVoid |
 | GET | `/api/education/chapter/{id}` | getById_12 | 登录态；细粒度权限见权限矩阵 | id[path,必填]:integer/int64 | 200=*/*:ResultChapterResponse |
 | PUT | `/api/education/chapter/{id}` | update_15 | 登录态；细粒度权限见权限矩阵 | id[path,必填]:integer/int64; body[必填]=application/json:ChapterRequest | 200=*/*:ResultVoid |
-| DELETE | `/api/education/chapter/{id}` | delete_15 | 登录态；细粒度权限见权限矩阵 | id[path,必填]:integer/int64 | 200=*/*:ResultVoid |
+
+### config-console-controller
+
+| 方法 | 路径 | 摘要 | 鉴权 | 请求 | 响应 |
+|---|---|---|---|---|---|
+| GET | `/console/api/config` | describe | 登录态；细粒度权限见权限矩阵 | - | 200=*/*:ConfigResponse |
+| POST | `/console/api/config` | save | 登录态；细粒度权限见权限矩阵 | body[必填]=application/json:ConfigChangeSet | 200=*/*:ConfigApplyResult |
+| POST | `/console/api/config/restore-last-applied` | restore | 登录态；细粒度权限见权限矩阵 | body[必填]=application/json:RestoreRequest | 200=*/*:ConfigApplyResult |
+| POST | `/console/api/config/validate` | validate | 登录态；细粒度权限见权限矩阵 | body[必填]=application/json:ConfigChangeSet | 200=*/*:ValidationResponse |
+
+### console-session-controller
+
+| 方法 | 路径 | 摘要 | 鉴权 | 请求 | 响应 |
+|---|---|---|---|---|---|
+| GET | `/console/api/session` | status | 登录态；细粒度权限见权限矩阵 | - | 200=*/*:SessionResponse |
+| POST | `/console/api/session/exchange` | exchange | 登录态；细粒度权限见权限矩阵 | body[必填]=application/json:ExchangeRequest | 200=*/*:SessionResponse |
+| POST | `/console/api/session/logout` | logout | 登录态；细粒度权限见权限矩阵 | - | 200=OK |
 
 ### course-controller
 
@@ -345,9 +362,9 @@
 | GET | `/api/education/course/grade` | listByGrade | 登录态；细粒度权限见权限矩阵 | grade[query,必填]:integer/int32 | 200=*/*:ResultListCourseResponse |
 | POST | `/api/education/course/learn` | startLearning | 登录态；细粒度权限见权限矩阵 | courseId[query,必填]:integer/int64; studentId[query,必填]:integer/int64 | 200=*/*:ResultCourseResponse |
 | GET | `/api/education/course/subject` | listBySubjectCode_2 | 登录态；细粒度权限见权限矩阵 | subjectCode[query,必填]:string | 200=*/*:ResultListCourseResponse |
+| DELETE | `/api/education/course/{id}` | delete_14 | 登录态；细粒度权限见权限矩阵 | id[path,必填]:integer/int64 | 200=*/*:ResultVoid |
 | GET | `/api/education/course/{id}` | getById_11 | 登录态；细粒度权限见权限矩阵 | id[path,必填]:integer/int64 | 200=*/*:ResultCourseResponse |
 | PUT | `/api/education/course/{id}` | update_14 | 登录态；细粒度权限见权限矩阵 | id[path,必填]:integer/int64; body[必填]=application/json:CourseRequest | 200=*/*:ResultVoid |
-| DELETE | `/api/education/course/{id}` | delete_14 | 登录态；细粒度权限见权限矩阵 | id[path,必填]:integer/int64 | 200=*/*:ResultVoid |
 
 ### education-resource-content-controller
 
@@ -374,9 +391,9 @@
 | POST | `/api/education/exam` | create_15 | 登录态；细粒度权限见权限矩阵 | body[必填]=application/json:ExamRequest | 200=*/*:ResultExamResponse |
 | GET | `/api/education/exam/subject` | listBySubjectCode_1 | 登录态；细粒度权限见权限矩阵 | subjectCode[query,必填]:string | 200=*/*:ResultListExamResponse |
 | GET | `/api/education/exam/teacher` | listByTeacherId | 登录态；细粒度权限见权限矩阵 | teacherId[query,必填]:integer/int64 | 200=*/*:ResultListExamResponse |
+| DELETE | `/api/education/exam/{id}` | delete_13 | 登录态；细粒度权限见权限矩阵 | id[path,必填]:integer/int64 | 200=*/*:ResultVoid |
 | GET | `/api/education/exam/{id}` | getById_10 | 登录态；细粒度权限见权限矩阵 | id[path,必填]:integer/int64 | 200=*/*:ResultExamResponse |
 | PUT | `/api/education/exam/{id}` | update_13 | 登录态；细粒度权限见权限矩阵 | id[path,必填]:integer/int64; body[必填]=application/json:ExamRequest | 200=*/*:ResultVoid |
-| DELETE | `/api/education/exam/{id}` | delete_13 | 登录态；细粒度权限见权限矩阵 | id[path,必填]:integer/int64 | 200=*/*:ResultVoid |
 
 ### generation-controller
 
@@ -389,13 +406,13 @@
 
 | 方法 | 路径 | 摘要 | 鉴权 | 请求 | 响应 |
 |---|---|---|---|---|---|
+| DELETE | `/api/agent/intents` | deleteBatch_1 | 登录态；细粒度权限见权限矩阵 | body[必填]=application/json:array<integer/int64> | 200=*/*:ResultVoid |
 | GET | `/api/agent/intents` | page_5 | 登录态；细粒度权限见权限矩阵 | agentId[query,可选]:string; name[query,可选]:string; code[query,可选]:string; category[query,可选]:string; pageNo[query,可选]:integer/int32; pageSize[query,可选]:integer/int32 | 200=*/*:ResultPageDataIntentDefVO |
 | POST | `/api/agent/intents` | create_20 | 登录态；细粒度权限见权限矩阵 | body[必填]=application/json:IntentDefRequest | 200=*/*:ResultIntentDefVO |
-| DELETE | `/api/agent/intents` | deleteBatch_1 | 登录态；细粒度权限见权限矩阵 | body[必填]=application/json:array<integer/int64> | 200=*/*:ResultVoid |
 | GET | `/api/agent/intents/options` | options_2 | 登录态；细粒度权限见权限矩阵 | - | 200=*/*:ResultListIdNameOptionVO |
+| DELETE | `/api/agent/intents/{id}` | delete_16 | 登录态；细粒度权限见权限矩阵 | id[path,必填]:integer/int64 | 200=*/*:ResultVoid |
 | GET | `/api/agent/intents/{id}` | detail | 登录态；细粒度权限见权限矩阵 | id[path,必填]:integer/int64 | 200=*/*:ResultIntentDefVO |
 | PUT | `/api/agent/intents/{id}` | update_16 | 登录态；细粒度权限见权限矩阵 | id[path,必填]:integer/int64; body[必填]=application/json:IntentDefRequest | 200=*/*:ResultIntentDefVO |
-| DELETE | `/api/agent/intents/{id}` | delete_16 | 登录态；细粒度权限见权限矩阵 | id[path,必填]:integer/int64 | 200=*/*:ResultVoid |
 
 ### media-controller
 
@@ -421,7 +438,7 @@
 | GET | `/api/model/providers/{id}/health` | healthById | 登录态；细粒度权限见权限矩阵 | id[path,必填]:string | 200=*/*:ResultProviderHealth |
 | GET | `/api/model/providers/{provider}/{model}/health` | health | 登录态；细粒度权限见权限矩阵 | provider[path,必填]:string; model[path,必填]:string | 200=*/*:ResultProviderHealth |
 | GET | `/api/model/routes` | routes | 登录态；细粒度权限见权限矩阵 | - | 200=*/*:ResultListModelRoutePolicy |
-| POST | `/api/model/routes` | save | 登录态；细粒度权限见权限矩阵 | body[必填]=application/json:RouteRequest | 200=*/*:ResultModelRoutePolicy |
+| POST | `/api/model/routes` | save_1 | 登录态；细粒度权限见权限矩阵 | body[必填]=application/json:RouteRequest | 200=*/*:ResultModelRoutePolicy |
 | POST | `/api/model/routes/{id}/test` | test | 登录态；细粒度权限见权限矩阵 | id[path,必填]:string; body[可选]=application/json:TestRequest | 200=*/*:ResultModelProviderCapabilities |
 
 ### open-ai-compatible-controller
@@ -450,9 +467,9 @@
 | GET | `/api/education/question/difficulty` | listByDifficulty | 登录态；细粒度权限见权限矩阵 | difficulty[query,必填]:integer/int32 | 200=*/*:ResultListQuestionResponse |
 | GET | `/api/education/question/subject-grade` | listBySubjectAndGrade_1 | 登录态；细粒度权限见权限矩阵 | subjectCode[query,必填]:string; grade[query,必填]:integer/int32 | 200=*/*:ResultListQuestionResponse |
 | GET | `/api/education/question/type` | listByType_1 | 登录态；细粒度权限见权限矩阵 | type[query,必填]:string | 200=*/*:ResultListQuestionResponse |
+| DELETE | `/api/education/question/{id}` | delete_12 | 登录态；细粒度权限见权限矩阵 | id[path,必填]:integer/int64 | 200=*/*:ResultVoid |
 | GET | `/api/education/question/{id}` | getById_9 | 登录态；细粒度权限见权限矩阵 | id[path,必填]:integer/int64 | 200=*/*:ResultQuestionResponse |
 | PUT | `/api/education/question/{id}` | update_12 | 登录态；细粒度权限见权限矩阵 | id[path,必填]:integer/int64; body[必填]=application/json:QuestionRequest | 200=*/*:ResultVoid |
-| DELETE | `/api/education/question/{id}` | delete_12 | 登录态；细粒度权限见权限矩阵 | id[path,必填]:integer/int64 | 200=*/*:ResultVoid |
 
 ### resource-controller
 
@@ -462,9 +479,9 @@
 | POST | `/api/education/resource` | create_13 | 登录态；细粒度权限见权限矩阵 | body[必填]=application/json:ResourceRequest | 200=*/*:ResultResourceResponse |
 | GET | `/api/education/resource/subject` | listBySubjectCode | 登录态；细粒度权限见权限矩阵 | subjectCode[query,必填]:string | 200=*/*:ResultListResourceResponse |
 | GET | `/api/education/resource/type` | listByType | 登录态；细粒度权限见权限矩阵 | type[query,必填]:string | 200=*/*:ResultListResourceResponse |
+| DELETE | `/api/education/resource/{id}` | delete_11 | 登录态；细粒度权限见权限矩阵 | id[path,必填]:integer/int64 | 200=*/*:ResultVoid |
 | GET | `/api/education/resource/{id}` | getById_8 | 登录态；细粒度权限见权限矩阵 | id[path,必填]:integer/int64 | 200=*/*:ResultResourceResponse |
 | PUT | `/api/education/resource/{id}` | update_11 | 登录态；细粒度权限见权限矩阵 | id[path,必填]:integer/int64; body[必填]=application/json:ResourceRequest | 200=*/*:ResultVoid |
-| DELETE | `/api/education/resource/{id}` | delete_11 | 登录态；细粒度权限见权限矩阵 | id[path,必填]:integer/int64 | 200=*/*:ResultVoid |
 
 ### review-controller
 
@@ -474,9 +491,9 @@
 | POST | `/api/education/review` | create_12 | 登录态；细粒度权限见权限矩阵 | body[必填]=application/json:ReviewRequest | 200=*/*:ResultReviewTaskResponse |
 | POST | `/api/education/review/complete` | complete | 登录态；细粒度权限见权限矩阵 | id[query,必填]:integer/int64; body[必填]=application/json:CompleteReviewRequest | 200=*/*:ResultVoid |
 | GET | `/api/education/review/today` | listTodayTasks | 登录态；细粒度权限见权限矩阵 | studentId[query,必填]:integer/int64 | 200=*/*:ResultListReviewTaskResponse |
+| DELETE | `/api/education/review/{id}` | delete_10 | 登录态；细粒度权限见权限矩阵 | id[path,必填]:integer/int64 | 200=*/*:ResultVoid |
 | GET | `/api/education/review/{id}` | getById_7 | 登录态；细粒度权限见权限矩阵 | id[path,必填]:integer/int64 | 200=*/*:ResultReviewTaskResponse |
 | PUT | `/api/education/review/{id}` | update_10 | 登录态；细粒度权限见权限矩阵 | id[path,必填]:integer/int64; body[必填]=application/json:ReviewRequest | 200=*/*:ResultVoid |
-| DELETE | `/api/education/review/{id}` | delete_10 | 登录态；细粒度权限见权限矩阵 | id[path,必填]:integer/int64 | 200=*/*:ResultVoid |
 
 ### role-controller
 
@@ -488,9 +505,27 @@
 | POST | `/api/iam/roles/menus/replace` | replaceRoleMenus | 登录态；细粒度权限见权限矩阵 | id[query,必填]:integer/int64; tenantId[query,必填]:integer/int64; body[必填]=application/json:array<integer/int64> | 200=*/*:ResultVoid |
 | POST | `/api/iam/roles/users/add` | assignUserRoles | 登录态；细粒度权限见权限矩阵 | id[query,必填]:integer/int64; body[必填]=application/json:AssignUserRolesRequest | 200=*/*:ResultVoid |
 | POST | `/api/iam/roles/users/remove` | removeUserRoles | 登录态；细粒度权限见权限矩阵 | id[query,必填]:integer/int64; body[必填]=application/json:AssignUserRolesRequest | 200=*/*:ResultVoid |
+| DELETE | `/api/iam/roles/{id}` | deleteRole | 登录态；细粒度权限见权限矩阵 | id[path,必填]:integer/int64 | 200=*/*:ResultVoid |
 | GET | `/api/iam/roles/{id}` | getRoleDetail | 登录态；细粒度权限见权限矩阵 | id[path,必填]:integer/int64; tenantId[query,必填]:integer/int64 | 200=*/*:ResultRoleVO |
 | PUT | `/api/iam/roles/{id}` | updateRole | 登录态；细粒度权限见权限矩阵 | id[path,必填]:integer/int64; body[必填]=application/json:RoleRequest | 200=*/*:ResultVoid |
-| DELETE | `/api/iam/roles/{id}` | deleteRole | 登录态；细粒度权限见权限矩阵 | id[path,必填]:integer/int64 | 200=*/*:ResultVoid |
+
+### runtime-console-controller
+
+| 方法 | 路径 | 摘要 | 鉴权 | 请求 | 响应 |
+|---|---|---|---|---|---|
+| GET | `/console/api/logs/files` | logFiles | 登录态；细粒度权限见权限矩阵 | - | 200=*/*:LogFilesResponse |
+| GET | `/console/api/logs/tail` | tail | 登录态；细粒度权限见权限矩阵 | file[query,必填]:string; cursor[query,可选]:string; maxBytes[query,可选]:integer/int32; level[query,可选]:string; query[query,可选]:string | 200=*/*:LogChunk |
+| GET | `/console/api/metrics` | metrics | 登录态；细粒度权限见权限矩阵 | - | 200=*/*:MetricsResponse |
+| GET | `/console/api/runtime` | runtime | 登录态；细粒度权限见权限矩阵 | - | 200=*/*:RuntimeStatus |
+
+### runtime-lifecycle-controller
+
+| 方法 | 路径 | 摘要 | 鉴权 | 请求 | 响应 |
+|---|---|---|---|---|---|
+| GET | `/console/api/lifecycle/internal-link` | internalLink | 登录态；细粒度权限见权限矩阵 | - | 200=*/*:object |
+| POST | `/console/api/lifecycle/internal-shutdown` | internalShutdown | 登录态；细粒度权限见权限矩阵 | - | 200=*/*:object |
+| POST | `/console/api/lifecycle/restart` | restart | 登录态；细粒度权限见权限矩阵 | - | 200=*/*:object |
+| POST | `/console/api/lifecycle/stop` | stop | 登录态；细粒度权限见权限矩阵 | - | 200=*/*:object |
 
 ### student-controller
 
@@ -499,9 +534,9 @@
 | GET | `/api/education/students` | list_4 | 登录态；细粒度权限见权限矩阵 | pageNum[query,可选]:integer/int32; pageSize[query,可选]:integer/int32 | 200=*/*:ResultPageDataStudentResponse |
 | POST | `/api/education/students` | create_11 | 登录态；细粒度权限见权限矩阵 | body[必填]=application/json:StudentRequest | 200=*/*:ResultStudentResponse |
 | GET | `/api/education/students/user` | getByUserId | 登录态；细粒度权限见权限矩阵 | userId[query,必填]:integer/int64 | 200=*/*:ResultStudentResponse |
+| DELETE | `/api/education/students/{id}` | delete_9 | 登录态；细粒度权限见权限矩阵 | id[path,必填]:integer/int64 | 200=*/*:ResultVoid |
 | GET | `/api/education/students/{id}` | getById_6 | 登录态；细粒度权限见权限矩阵 | id[path,必填]:integer/int64 | 200=*/*:ResultStudentResponse |
 | PUT | `/api/education/students/{id}` | update_9 | 登录态；细粒度权限见权限矩阵 | id[path,必填]:integer/int64; body[必填]=application/json:StudentRequest | 200=*/*:ResultVoid |
-| DELETE | `/api/education/students/{id}` | delete_9 | 登录态；细粒度权限见权限矩阵 | id[path,必填]:integer/int64 | 200=*/*:ResultVoid |
 
 ### study-plan-controller
 
@@ -511,9 +546,9 @@
 | GET | `/api/education/study-plan/active` | listActiveByStudent | 登录态；细粒度权限见权限矩阵 | studentId[query,必填]:integer/int64 | 200=*/*:ResultListStudyPlanResponse |
 | GET | `/api/education/study-plan/student` | listByStudentId_1 | 登录态；细粒度权限见权限矩阵 | studentId[query,必填]:integer/int64 | 200=*/*:ResultListStudyPlanResponse |
 | GET | `/api/education/study-plan/today-tasks` | getTodayTasks | 登录态；细粒度权限见权限矩阵 | studentId[query,必填]:integer/int64 | 200=*/*:ResultListDailyTaskResponse |
+| DELETE | `/api/education/study-plan/{id}` | delete_8 | 登录态；细粒度权限见权限矩阵 | id[path,必填]:integer/int64 | 200=*/*:ResultVoid |
 | GET | `/api/education/study-plan/{id}` | getById_5 | 登录态；细粒度权限见权限矩阵 | id[path,必填]:integer/int64 | 200=*/*:ResultStudyPlanResponse |
 | PUT | `/api/education/study-plan/{id}` | update_8 | 登录态；细粒度权限见权限矩阵 | id[path,必填]:integer/int64; body[必填]=application/json:StudyPlanRequest | 200=*/*:ResultVoid |
-| DELETE | `/api/education/study-plan/{id}` | delete_8 | 登录态；细粒度权限见权限矩阵 | id[path,必填]:integer/int64 | 200=*/*:ResultVoid |
 
 ### subject-controller
 
@@ -523,9 +558,9 @@
 | POST | `/api/education/subject` | create_9 | 登录态；细粒度权限见权限矩阵 | body[必填]=application/json:SubjectRequest | 200=*/*:ResultSubjectResponse |
 | GET | `/api/education/subject/code` | getByCode_1 | 登录态；细粒度权限见权限矩阵 | code[query,必填]:string | 200=*/*:ResultSubjectResponse |
 | GET | `/api/education/subject/grade-level` | listByGradeLevel | 登录态；细粒度权限见权限矩阵 | gradeLevel[query,必填]:string | 200=*/*:ResultListSubjectResponse |
+| DELETE | `/api/education/subject/{id}` | delete_7 | 登录态；细粒度权限见权限矩阵 | id[path,必填]:integer/int64 | 200=*/*:ResultVoid |
 | GET | `/api/education/subject/{id}` | getById_4 | 登录态；细粒度权限见权限矩阵 | id[path,必填]:integer/int64 | 200=*/*:ResultSubjectResponse |
 | PUT | `/api/education/subject/{id}` | update_7 | 登录态；细粒度权限见权限矩阵 | id[path,必填]:integer/int64; body[必填]=application/json:SubjectRequest | 200=*/*:ResultVoid |
-| DELETE | `/api/education/subject/{id}` | delete_7 | 登录态；细粒度权限见权限矩阵 | id[path,必填]:integer/int64 | 200=*/*:ResultVoid |
 
 ### tenant-controller
 
@@ -534,9 +569,9 @@
 | GET | `/api/iam/tenants` | getTenantPage | 登录态；细粒度权限见权限矩阵 | r[query,必填]:TenantPageRequest | 200=*/*:ResultPageDataTenantVO |
 | POST | `/api/iam/tenants` | createTenant | 登录态；细粒度权限见权限矩阵 | body[必填]=application/json:TenantRequest | 200=*/*:ResultVoid |
 | GET | `/api/iam/tenants/tree` | getAllTenants | 登录态；细粒度权限见权限矩阵 | - | 200=*/*:ResultListTenantVO |
+| DELETE | `/api/iam/tenants/{id}` | deleteTenant | 登录态；细粒度权限见权限矩阵 | id[path,必填]:integer/int64 | 200=*/*:ResultVoid |
 | GET | `/api/iam/tenants/{id}` | getTenantById | 登录态；细粒度权限见权限矩阵 | id[path,必填]:integer/int64 | 200=*/*:ResultTenantVO |
 | PUT | `/api/iam/tenants/{id}` | updateTenant | 登录态；细粒度权限见权限矩阵 | id[path,必填]:integer/int64; body[必填]=application/json:TenantRequest | 200=*/*:ResultVoid |
-| DELETE | `/api/iam/tenants/{id}` | deleteTenant | 登录态；细粒度权限见权限矩阵 | id[path,必填]:integer/int64 | 200=*/*:ResultVoid |
 
 ### textbook-controller
 
@@ -545,9 +580,9 @@
 | GET | `/api/education/textbook` | list_2 | 登录态；细粒度权限见权限矩阵 | pageNum[query,可选]:integer/int32; pageSize[query,可选]:integer/int32 | 200=*/*:ResultPageDataTextbookResponse |
 | POST | `/api/education/textbook` | create_8 | 登录态；细粒度权限见权限矩阵 | body[必填]=application/json:TextbookRequest | 200=*/*:ResultTextbookResponse |
 | GET | `/api/education/textbook/subject-grade` | listBySubjectAndGrade | 登录态；细粒度权限见权限矩阵 | subjectCode[query,必填]:string; grade[query,必填]:integer/int32 | 200=*/*:ResultListTextbookResponse |
+| DELETE | `/api/education/textbook/{id}` | delete_6 | 登录态；细粒度权限见权限矩阵 | id[path,必填]:integer/int64 | 200=*/*:ResultVoid |
 | GET | `/api/education/textbook/{id}` | getById_3 | 登录态；细粒度权限见权限矩阵 | id[path,必填]:integer/int64 | 200=*/*:ResultTextbookResponse |
 | PUT | `/api/education/textbook/{id}` | update_6 | 登录态；细粒度权限见权限矩阵 | id[path,必填]:integer/int64; body[必填]=application/json:TextbookRequest | 200=*/*:ResultVoid |
-| DELETE | `/api/education/textbook/{id}` | delete_6 | 登录态；细粒度权限见权限矩阵 | id[path,必填]:integer/int64 | 200=*/*:ResultVoid |
 
 ### timezone-controller
 
@@ -578,8 +613,8 @@
 | POST | `/api/iam/users/password/reset` | resetPassword | 登录态；细粒度权限见权限矩阵 | userId[query,必填]:integer/int64; body[必填]=application/json:ResetPasswordRequest | 200=*/*:ResultVoid |
 | GET | `/api/iam/users/tenant-assignments` | getTenantAssignments | 登录态；细粒度权限见权限矩阵 | userId[query,必填]:integer/int64 | 200=*/*:ResultListUserTenantAssignmentVO |
 | POST | `/api/iam/users/tenant-assignments/replace` | replaceTenantAssignments | 登录态；细粒度权限见权限矩阵 | userId[query,必填]:integer/int64; body[必填]=application/json:array<UserTenantRoleRequest> | 200=*/*:ResultVoid |
-| PUT | `/api/iam/users/{id}` | updateUser | 登录态；细粒度权限见权限矩阵 | id[path,必填]:integer/int64; body[必填]=application/json:UserRequest | 200=*/*:ResultVoid |
 | DELETE | `/api/iam/users/{id}` | deleteUser | 登录态；细粒度权限见权限矩阵 | id[path,必填]:integer/int64 | 200=*/*:ResultVoid |
+| PUT | `/api/iam/users/{id}` | updateUser | 登录态；细粒度权限见权限矩阵 | id[path,必填]:integer/int64; body[必填]=application/json:UserRequest | 200=*/*:ResultVoid |
 
 ### wrong-question-controller
 
@@ -587,9 +622,9 @@
 |---|---|---|---|---|---|
 | POST | `/api/education/wrong-question` | create_7 | 登录态；细粒度权限见权限矩阵 | body[必填]=application/json:WrongQuestionRequest | 200=*/*:ResultWrongQuestionResponse |
 | GET | `/api/education/wrong-question/student` | listByStudentId | 登录态；细粒度权限见权限矩阵 | studentId[query,必填]:integer/int64 | 200=*/*:ResultListWrongQuestionResponse |
+| DELETE | `/api/education/wrong-question/{id}` | delete_5 | 登录态；细粒度权限见权限矩阵 | id[path,必填]:integer/int64 | 200=*/*:ResultVoid |
 | GET | `/api/education/wrong-question/{id}` | getById_2 | 登录态；细粒度权限见权限矩阵 | id[path,必填]:integer/int64 | 200=*/*:ResultWrongQuestionResponse |
 | PUT | `/api/education/wrong-question/{id}` | update_5 | 登录态；细粒度权限见权限矩阵 | id[path,必填]:integer/int64; body[必填]=application/json:WrongQuestionRequest | 200=*/*:ResultVoid |
-| DELETE | `/api/education/wrong-question/{id}` | delete_5 | 登录态；细粒度权限见权限矩阵 | id[path,必填]:integer/int64 | 200=*/*:ResultVoid |
 
 ### 插件系统
 
@@ -643,18 +678,18 @@
 |---|---|---|---|---|---|
 | POST | `/api/knowledge/system/backup` | backup | 登录态；细粒度权限见权限矩阵 | version[header,可选]:string | 200=*/*:ResultBackupResult |
 | POST | `/api/knowledge/system/restore-check` | restoreCheck | 登录态；细粒度权限见权限矩阵 | fileName[query,必填]:string; version[header,可选]:string | 200=*/*:ResultRestoreCheckResult |
-| GET | `/api/knowledge/system/status` | status | 登录态；细粒度权限见权限矩阵 | version[header,可选]:string | 200=*/*:ResultMapStringObject |
+| GET | `/api/knowledge/system/status` | status_1 | 登录态；细粒度权限见权限矩阵 | version[header,可选]:string | 200=*/*:ResultMapStringObject |
 
 ### 知识文档
 
 | 方法 | 路径 | 摘要 | 鉴权 | 请求 | 响应 |
 |---|---|---|---|---|---|
-| GET | `/api/knowledge/documents/upload-sessions/{sessionId}` | uploadStatus | 登录态；细粒度权限见权限矩阵 | sessionId[path,必填]:string; version[header,可选]:string | 200=*/*:ResultUploadSession |
 | DELETE | `/api/knowledge/documents/upload-sessions/{sessionId}` | cancelUpload | 登录态；细粒度权限见权限矩阵 | sessionId[path,必填]:string; version[header,可选]:string | 200=*/*:ResultVoid |
+| GET | `/api/knowledge/documents/upload-sessions/{sessionId}` | uploadStatus | 登录态；细粒度权限见权限矩阵 | sessionId[path,必填]:string; version[header,可选]:string | 200=*/*:ResultUploadSession |
 | POST | `/api/knowledge/documents/upload-sessions/{sessionId}/chunks/{index}` | uploadChunk | 登录态；细粒度权限见权限矩阵 | sessionId[path,必填]:string; index[path,必填]:integer/int32; totalChunks[query,必填]:integer/int32; version[header,可选]:string; body[可选]=multipart/form-data:object | 200=*/*:ResultUploadSession |
 | POST | `/api/knowledge/documents/upload-sessions/{sessionId}/complete` | completeUpload | 登录态；细粒度权限见权限矩阵 | sessionId[path,必填]:string; version[header,可选]:string | 200=*/*:ResultUploadResult |
-| GET | `/api/knowledge/documents/{id}` | get_3 | 登录态；细粒度权限见权限矩阵 | id[path,必填]:integer/int64; version[header,可选]:string | 200=*/*:ResultDocumentView |
 | DELETE | `/api/knowledge/documents/{id}` | delete_19 | 登录态；细粒度权限见权限矩阵 | id[path,必填]:integer/int64; version[header,可选]:string | 200=*/*:ResultVoid |
+| GET | `/api/knowledge/documents/{id}` | get_3 | 登录态；细粒度权限见权限矩阵 | id[path,必填]:integer/int64; version[header,可选]:string | 200=*/*:ResultDocumentView |
 | POST | `/api/knowledge/documents/{id}/approve` | approve | 登录态；细粒度权限见权限矩阵 | id[path,必填]:integer/int64; comment[query,可选]:string; version[header,可选]:string | 200=*/*:ResultDocumentView |
 | POST | `/api/knowledge/documents/{id}/archive` | archive | 登录态；细粒度权限见权限矩阵 | id[path,必填]:integer/int64; comment[query,可选]:string; version[header,可选]:string | 200=*/*:ResultDocumentView |
 | GET | `/api/knowledge/documents/{id}/preview` | preview_3 | 登录态；细粒度权限见权限矩阵 | id[path,必填]:integer/int64; version[header,可选]:string | 200=*/*:string/byte |
@@ -679,9 +714,9 @@
 
 | 方法 | 路径 | 摘要 | 鉴权 | 请求 | 响应 |
 |---|---|---|---|---|---|
+| DELETE | `/api/knowledge/points/{id}` | delete_3 | 登录态；细粒度权限见权限矩阵 | id[path,必填]:integer/int64; version[header,可选]:string | 200=*/*:ResultVoid |
 | GET | `/api/knowledge/points/{id}` | get_1 | 登录态；细粒度权限见权限矩阵 | id[path,必填]:integer/int64; version[header,可选]:string | 200=*/*:ResultPointView |
 | PUT | `/api/knowledge/points/{id}` | update_3 | 登录态；细粒度权限见权限矩阵 | id[path,必填]:integer/int64; version[header,可选]:string; body[必填]=application/json:UpdatePointRequest | 200=*/*:ResultPointView |
-| DELETE | `/api/knowledge/points/{id}` | delete_3 | 登录态；细粒度权限见权限矩阵 | id[path,必填]:integer/int64; version[header,可选]:string | 200=*/*:ResultVoid |
 | GET | `/api/knowledge/points/{id}/graph` | graph | 登录态；细粒度权限见权限矩阵 | id[path,必填]:integer/int64; version[header,可选]:string | 200=*/*:ResultKnowledgeGraphResponse |
 | GET | `/api/knowledge/spaces/{spaceId}/points` | page_1 | 登录态；细粒度权限见权限矩阵 | spaceId[path,必填]:integer/int64; pageNum[query,可选]:integer/int32; pageSize[query,可选]:integer/int32; keyword[query,可选]:string; category[query,可选]:string; version[header,可选]:string | 200=*/*:ResultPageDataPointView |
 | POST | `/api/knowledge/spaces/{spaceId}/points` | create_3 | 登录态；细粒度权限见权限矩阵 | spaceId[path,必填]:integer/int64; version[header,可选]:string; body[必填]=application/json:CreatePointRequest | 200=*/*:ResultPointView |
@@ -705,9 +740,9 @@
 | POST | `/api/knowledge/spaces` | create_2 | 登录态；细粒度权限见权限矩阵 | version[header,可选]:string; body[必填]=application/json:CreateSpaceRequest | 200=*/*:ResultSpaceView |
 | POST | `/api/knowledge/spaces/default` | ensureDefault | 登录态；细粒度权限见权限矩阵 | version[header,可选]:string | 200=*/*:ResultSpaceView |
 | GET | `/api/knowledge/spaces/options` | options | 登录态；细粒度权限见权限矩阵 | - | 200=*/*:ResultListSpaceView |
+| DELETE | `/api/knowledge/spaces/{id}` | delete_2 | 登录态；细粒度权限见权限矩阵 | id[path,必填]:integer/int64; version[header,可选]:string | 200=*/*:ResultVoid |
 | GET | `/api/knowledge/spaces/{id}` | get | 登录态；细粒度权限见权限矩阵 | id[path,必填]:integer/int64; version[header,可选]:string | 200=*/*:ResultSpaceView |
 | PUT | `/api/knowledge/spaces/{id}` | update_2 | 登录态；细粒度权限见权限矩阵 | id[path,必填]:integer/int64; version[header,可选]:string; body[必填]=application/json:UpdateSpaceRequest | 200=*/*:ResultSpaceView |
-| DELETE | `/api/knowledge/spaces/{id}` | delete_2 | 登录态；细粒度权限见权限矩阵 | id[path,必填]:integer/int64; version[header,可选]:string | 200=*/*:ResultVoid |
 | GET | `/api/knowledge/spaces/{id}/difficulty-scale` | difficultyScale | 登录态；细粒度权限见权限矩阵 | id[path,必填]:integer/int64; version[header,可选]:string | 200=*/*:ResultDifficultyScaleView |
 | GET | `/api/knowledge/spaces/{id}/members` | members | 登录态；细粒度权限见权限矩阵 | id[path,必填]:integer/int64; version[header,可选]:string | 200=*/*:ResultListMemberView |
 | PUT | `/api/knowledge/spaces/{id}/members` | replaceMembers | 登录态；细粒度权限见权限矩阵 | id[path,必填]:integer/int64; version[header,可选]:string; body[必填]=application/json:array<MemberRequest> | 200=*/*:ResultVoid |
@@ -733,145 +768,155 @@
 
 | Schema | 类型 | 必填字段 | 字段定义 |
 |---|---|---|---|
-| `AbilityRadarResponse` | object | - | studentId:integer/int64; knowledgeId:integer/int64; abilities:object; overallMastery:number/double |
+| `AbilityRadarResponse` | object | - | abilities:object; knowledgeId:integer/int64; overallMastery:number/double; studentId:integer/int64 |
 | `ActiveLeafRequest` | object | - | messageId:string |
-| `AgentDefinition` | object | - | agentId:string; name:string; description:string; extInfo:object; currentVersion:string; createdAt:integer/int64; updatedAt:integer/int64; startNodeId:string; versions:object |
-| `AgentDetailVO` | object | - | id:integer/int64; agentId:string; name:string; description:string; currentVersion:string; status:integer/int32; extInfo:object; versions:array<AgentVersionVO>; createTime:string/date-time; updateTime:string/date-time |
-| `AgentRequest` | object | agentId, name | agentId*:string; name*:string; description:string; status:integer/int32 |
+| `AgentDefinition` | object | - | agentId:string; createdAt:integer/int64; currentVersion:string; description:string; extInfo:object; name:string; startNodeId:string; updatedAt:integer/int64; versions:object |
+| `AgentDetailVO` | object | - | agentId:string; createTime:string/date-time; currentVersion:string; description:string; extInfo:object; id:integer/int64; name:string; status:integer/int32; updateTime:string/date-time; versions:array<AgentVersionVO> |
+| `AgentRequest` | object | agentId, name | agentId*:string; description:string; name*:string; status:integer/int32 |
 | `AgentStateFactoryAgentState` | - | - | - |
-| `AgentVO` | object | - | id:integer/int64; agentId:string; name:string; description:string; currentVersion:string; status:integer/int32; extInfo:object; createTime:string/date-time; updateTime:string/date-time |
-| `AgentVersion` | object | - | versionNumber:string; description:string; createdAt:integer/int64 |
-| `AgentVersionDetailVO` | object | - | id:integer/int64; agentId:string; versionNumber:string; description:string; status:integer/int32; statusDesc:string; graphConfig:GraphConfigVO; canvasConfig:string; createTime:string/date-time; updateTime:string/date-time |
-| `AgentVersionVO` | object | - | id:integer/int64; agentId:string; versionNumber:string; description:string; status:integer/int32; statusDesc:string; createTime:string/date-time; updateTime:string/date-time |
-| `AiApp` | object | - | id:string; tenantId:TenantId; ownerUserId:UserId; name:string; description:string; status:string; publishedVersionId:string; createdAt:string/date-time; updatedAt:string/date-time |
-| `AiAppPreview` | object | - | appId:string; appVersionId:string; status:string; promptHash:string; model:string; configuration:object; executable:boolean |
-| `AiAppVersion` | object | - | id:string; appId:string; tenantId:TenantId; version:string; configJson:string; status:string; createdAt:string/date-time; publishedAt:string/date-time |
-| `AiModelRequest` | object | modelName | platformId:integer/int64; modelName*:string; displayName:string; description:string; modelConfig:string; isDefault:string; sort:integer/int32; status:string |
-| `AiModelResponse` | object | - | id:integer/int64; platformId:integer/int64; modelName:string; displayName:string; description:string; modelConfig:string; platformName:string; isDefault:string; sort:integer/int32; status:string; createTime:string/date-time; updateTime:string/date-time |
-| `AiModelVO` | object | - | id:integer/int64; platformId:integer/int64; modelName:string; displayName:string; description:string; modelConfig:string; platformName:string; isDefault:string; sort:integer/int32; status:string; createTime:string/date-time; updateTime:string/date-time |
-| `AiPlatformRequest` | object | code, name | name*:string; code*:string; adapterType:string(OPENAI_COMPATIBLE,OLLAMA); baseUrl:string; apiKey:string; temperature:number/double; maxTokens:integer/int32; maxRetries:integer/int32; availableModels:string; extraConfig:string; isDefault:string; status:string; sort:integer/int32; remark:string |
-| `AiPlatformResponse` | object | - | id:integer/int64; name:string; code:string; adapterType:string(OPENAI_COMPATIBLE,OLLAMA); baseUrl:string; temperature:number/double; maxTokens:integer/int32; maxRetries:integer/int32; availableModels:string; extraConfig:string; isDefault:string; status:string; sort:integer/int32; remark:string; createTime:string/date-time; updateTime:string/date-time |
-| `AiPlatformVO` | object | - | id:integer/int64; name:string; code:string; adapterType:string(OPENAI_COMPATIBLE,OLLAMA); baseUrl:string; temperature:number/double; maxTokens:integer/int32; maxRetries:integer/int32; availableModels:string; extraConfig:string; isDefault:string; status:string; sort:integer/int32; remark:string; createTime:string/date-time; updateTime:string/date-time |
-| `AiRun` | object | - | id:string; tenantId:TenantId; ownerUserId:UserId; appId:string; appVersionId:string; sourceType:string(CONVERSATION,GENERATION,AGENT,KNOWLEDGE,MEMORY,TOOL,API); sourceId:string; parentRunId:string; traceId:string; conversationId:string; generationId:string; executionId:string; model:string; promptHash:string; status:string(CREATED,RUNNING,COMPLETED,FAILED,CANCELLED); promptTokens:integer/int64; completionTokens:integer/int64; estimatedUsage:boolean; costSnapshot:string; createdAt:string/date-time; completedAt:string/date-time; errorCode:string; version:integer/int64; lastEventSeq:integer/int64 |
-| `AiRunEvent` | object | - | runId:string; tenantId:TenantId; seq:integer/int64; type:string(RUN_STARTED,TURN_STARTED,TURN_COMPLETED,STEP_STARTED,STEP_COMPLETED,PROMPT_ASSEMBLED,RETRIEVAL_STARTED,RETRIEVAL_COMPLETED,MODEL_STARTED,MODEL_BLOCK_STARTED,MODEL_DELTA,MODEL_REASONING_DELTA,MODEL_TOOL_CALL_DELTA,MODEL_BLOCK_COMPLETED,TOOL_REQUESTED,TOOL_APPROVAL_REQUIRED,TOOL_APPROVAL_DECIDED,TOOL_COMPLETED,MEMORY_READ,MEMORY_WRITE,MODEL_USAGE,MODEL_COMPLETED,RUN_COMPLETED,RUN_FAILED,RUN_CANCELLED); schemaVersion:integer/int32; turnId:string; stepId:string; parentEventSeq:integer/int64; conversationId:string; generationId:string; executionId:string; appId:string; appVersionId:string; providerRequestId:string; traceId:string; payload:string; redacted:boolean; createdAt:string/date-time |
-| `AppExecutionRequest` | object | - | prompt:string; appVersionId:string; input:object |
-| `AppRequest` | object | - | name:string; description:string |
-| `AssignUserRolesRequest` | object | tenantId | userIds:array<integer/int64>; tenantId*:integer/int64 |
-| `AuthCodeOptionVO` | object | - | id:integer/int64; name:string; code:string; module:string; resource:string; action:string; status:integer/int32; createTime:string/date-time |
-| `AuthCodePageRequest` | object | - | pageSize:integer/int32; pageNum:integer/int32; orderByColumn:string; isAsc:string; orderFields:array<OrderField>; filterConditions:array<FilterCondition>; code:string; name:string |
+| `AgentVO` | object | - | agentId:string; createTime:string/date-time; currentVersion:string; description:string; extInfo:object; id:integer/int64; name:string; status:integer/int32; updateTime:string/date-time |
+| `AgentVersion` | object | - | createdAt:integer/int64; description:string; versionNumber:string |
+| `AgentVersionDetailVO` | object | - | agentId:string; canvasConfig:string; createTime:string/date-time; description:string; graphConfig:GraphConfigVO; id:integer/int64; status:integer/int32; statusDesc:string; updateTime:string/date-time; versionNumber:string |
+| `AgentVersionVO` | object | - | agentId:string; createTime:string/date-time; description:string; id:integer/int64; status:integer/int32; statusDesc:string; updateTime:string/date-time; versionNumber:string |
+| `AiApp` | object | - | createdAt:string/date-time; description:string; id:string; name:string; ownerUserId:UserId; publishedVersionId:string; status:string; tenantId:TenantId; updatedAt:string/date-time |
+| `AiAppPreview` | object | - | appId:string; appVersionId:string; configuration:object; executable:boolean; model:string; promptHash:string; status:string |
+| `AiAppVersion` | object | - | appId:string; configJson:string; createdAt:string/date-time; id:string; publishedAt:string/date-time; status:string; tenantId:TenantId; version:string |
+| `AiModelRequest` | object | modelName | description:string; displayName:string; isDefault:string; modelConfig:string; modelName*:string; platformId:integer/int64; sort:integer/int32; status:string |
+| `AiModelResponse` | object | - | createTime:string/date-time; description:string; displayName:string; id:integer/int64; isDefault:string; modelConfig:string; modelName:string; platformId:integer/int64; platformName:string; sort:integer/int32; status:string; updateTime:string/date-time |
+| `AiModelVO` | object | - | createTime:string/date-time; description:string; displayName:string; id:integer/int64; isDefault:string; modelConfig:string; modelName:string; platformId:integer/int64; platformName:string; sort:integer/int32; status:string; updateTime:string/date-time |
+| `AiPlatformRequest` | object | code, name | adapterType:string(OPENAI_COMPATIBLE,OLLAMA); apiKey:string; availableModels:string; baseUrl:string; code*:string; extraConfig:string; isDefault:string; maxRetries:integer/int32; maxTokens:integer/int32; name*:string; remark:string; sort:integer/int32; status:string; temperature:number/double |
+| `AiPlatformResponse` | object | - | adapterType:string(OPENAI_COMPATIBLE,OLLAMA); availableModels:string; baseUrl:string; code:string; createTime:string/date-time; extraConfig:string; id:integer/int64; isDefault:string; maxRetries:integer/int32; maxTokens:integer/int32; name:string; remark:string; sort:integer/int32; status:string; temperature:number/double; updateTime:string/date-time |
+| `AiPlatformVO` | object | - | adapterType:string(OPENAI_COMPATIBLE,OLLAMA); availableModels:string; baseUrl:string; code:string; createTime:string/date-time; extraConfig:string; id:integer/int64; isDefault:string; maxRetries:integer/int32; maxTokens:integer/int32; name:string; remark:string; sort:integer/int32; status:string; temperature:number/double; updateTime:string/date-time |
+| `AiRun` | object | - | appId:string; appVersionId:string; completedAt:string/date-time; completionTokens:integer/int64; conversationId:string; costSnapshot:string; createdAt:string/date-time; errorCode:string; estimatedUsage:boolean; executionId:string; generationId:string; id:string; lastEventSeq:integer/int64; model:string; ownerUserId:UserId; parentRunId:string; promptHash:string; promptTokens:integer/int64; sourceId:string; sourceType:string(CONVERSATION,GENERATION,AGENT,KNOWLEDGE,MEMORY,TOOL,API); status:string(CREATED,RUNNING,COMPLETED,FAILED,CANCELLED); tenantId:TenantId; traceId:string; version:integer/int64 |
+| `AiRunEvent` | object | - | appId:string; appVersionId:string; conversationId:string; createdAt:string/date-time; executionId:string; generationId:string; parentEventSeq:integer/int64; payload:string; providerRequestId:string; redacted:boolean; runId:string; schemaVersion:integer/int32; seq:integer/int64; stepId:string; tenantId:TenantId; traceId:string; turnId:string; type:string(RUN_STARTED,TURN_STARTED,TURN_COMPLETED,STEP_STARTED,STEP_COMPLETED,PROMPT_ASSEMBLED,RETRIEVAL_STARTED,RETRIEVAL_COMPLETED,MODEL_STARTED,MODEL_BLOCK_STARTED,MODEL_DELTA,MODEL_REASONING_DELTA,MODEL_TOOL_CALL_DELTA,MODEL_BLOCK_COMPLETED,TOOL_REQUESTED,TOOL_APPROVAL_REQUIRED,TOOL_APPROVAL_DECIDED,TOOL_COMPLETED,MEMORY_READ,MEMORY_WRITE,MODEL_USAGE,MODEL_COMPLETED,RUN_COMPLETED,RUN_FAILED,RUN_CANCELLED) |
+| `AppExecutionRequest` | object | - | appVersionId:string; input:object; prompt:string |
+| `AppRequest` | object | - | description:string; name:string |
+| `AssignUserRolesRequest` | object | tenantId | tenantId*:integer/int64; userIds:array<integer/int64> |
+| `AuthCodeOptionVO` | object | - | action:string; code:string; createTime:string/date-time; id:integer/int64; module:string; name:string; resource:string; status:integer/int32 |
+| `AuthCodePageRequest` | object | - | code:string; filterConditions:array<FilterCondition>; isAsc:string; name:string; orderByColumn:string; orderFields:array<OrderField>; pageNum:integer/int32; pageSize:integer/int32 |
 | `AuthCodeRequest` | object | code | code*:string; name:string |
-| `AuthCodeResponse` | object | - | id:integer/int64; code:string; name:string; status:integer/int32; createTime:string/date-time; updateTime:string/date-time |
-| `BackupResult` | object | - | fileName:string; size:integer/int64; createdAt:string |
+| `AuthCodeResponse` | object | - | code:string; createTime:string/date-time; id:integer/int64; name:string; status:integer/int32; updateTime:string/date-time |
+| `BackupResult` | object | - | createdAt:string; fileName:string; size:integer/int64 |
 | `BaseNode` | object | - | config:NodeConfig; executionHistoryService:ExecutionHistoryService; requiredInputs:array<NodeInputParam> |
-| `BeginRequest` | object | fileName | fileName*:string; contentType:string; size:integer/int64; checksum:string; title:string |
-| `CaptchaVO` | object | - | key:string; image:string; expireTime:integer/int64 |
-| `CaseRequest` | object | - | input:string; expected:string; metadata:object |
-| `CaseResult` | object | - | caseId:integer/int64; question:string; recallAtK:number/double; reciprocalRank:number/double; citationAccuracy:number/double; expectedDocumentIds:array<integer/int64>; returnedDocumentIds:array<integer/int64> |
-| `CaseView` | object | - | id:integer/int64; spaceId:integer/int64; question:string; expectedDocIds:string; expectedAnswer:string |
-| `ChangePasswordRequest` | object | newPassword, oldPassword | oldPassword*:string; newPassword*:string |
+| `BeginRequest` | object | fileName | checksum:string; contentType:string; fileName*:string; size:integer/int64; title:string |
+| `CaptchaVO` | object | - | expireTime:integer/int64; image:string; key:string |
+| `CaseRequest` | object | - | expected:string; input:string; metadata:object |
+| `CaseResult` | object | - | caseId:integer/int64; citationAccuracy:number/double; expectedDocumentIds:array<integer/int64>; question:string; recallAtK:number/double; reciprocalRank:number/double; returnedDocumentIds:array<integer/int64> |
+| `CaseView` | object | - | expectedAnswer:string; expectedDocIds:string; id:integer/int64; question:string; spaceId:integer/int64 |
+| `ChangePasswordRequest` | object | newPassword, oldPassword | newPassword*:string; oldPassword*:string |
 | `ChannelObject` | object | - | default:-; reducer:ReducerObject |
-| `ChapterRequest` | object | name, textbookId | id:integer/int64; textbookId*:integer/int64; name*:string; parentId:integer/int64; chapterOrder:integer/int32; status:integer/int32 |
-| `ChapterResponse` | object | - | id:integer/int64; textbookId:integer/int64; parentId:integer/int64; name:string; chapterOrder:integer/int32; children:array<ChapterResponse> |
-| `CharacterAsset` | object | - | id:string; tenantId:integer/int64; ownerUserId:integer/int64; card:CharacterCardV2; visibility:string; pngData:string/byte; createdAt:string/date-time; updatedAt:string/date-time |
-| `CharacterCardV2` | object | - | spec:string; name:string; description:string; scenario:string; firstMessage:string; exampleDialogues:array<string>; systemPrompt:string; extensions:object; version:integer/int32 |
+| `ChapterRequest` | object | name, textbookId | chapterOrder:integer/int32; id:integer/int64; name*:string; parentId:integer/int64; status:integer/int32; textbookId*:integer/int64 |
+| `ChapterResponse` | object | - | chapterOrder:integer/int32; children:array<ChapterResponse>; id:integer/int64; name:string; parentId:integer/int64; textbookId:integer/int64 |
+| `CharacterAsset` | object | - | card:CharacterCardV2; createdAt:string/date-time; id:string; ownerUserId:integer/int64; pngData:string/byte; tenantId:integer/int64; updatedAt:string/date-time; visibility:string |
+| `CharacterCardV2` | object | - | description:string; exampleDialogues:array<string>; extensions:object; firstMessage:string; name:string; scenario:string; spec:string; systemPrompt:string; version:integer/int32 |
 | `CharacterRequest` | object | - | card:CharacterCardV2; visibility:string |
-| `ChatCompletionRequest` | object | - | model:string; platform:string; messages:array<object>; stream:boolean; store:boolean; temperature:number/double; maxOutputTokens:integer/int32; tools:array<object>; conversationId:string; reasoningEffort:string |
-| `CodeLoginRequest` | object | captchaKey, code, phone | phone*:string; code*:string; captchaKey*:string |
+| `ChatCompletionRequest` | object | - | conversationId:string; maxOutputTokens:integer/int32; messages:array<object>; model:string; platform:string; reasoningEffort:string; store:boolean; stream:boolean; temperature:number/double; tools:array<object> |
+| `CodeLoginRequest` | object | captchaKey, code, phone | captchaKey*:string; code*:string; phone*:string |
 | `CompileConfig` | - | - | - |
-| `CompiledGraphAgentState` | object | - | stateGraph:StateGraphAgentState; maxIterations:integer/int32; compileConfig:CompileConfig |
-| `CompleteReviewRequest` | object | - | studentId:integer/int64; resultScore:number/double |
-| `ConditionEdge` | object | - | from:string; defaultTarget:string; functionCondition:-; nodeMappings:object; predicateConditions:array<PredicateCondition> |
-| `ConditionalEdgeDTO` | object | - | defaultTarget:string; nodeMappings:object; conditionType:string |
-| `ContentPart` | object | - | type:string; text:string; mediaUri:string; mimeType:string; metadata:object |
-| `Conversation` | object | - | id:string; tenantId:integer/int64; ownerUserId:integer/int64; sceneType:string; title:string; status:string(ACTIVE,ARCHIVED,DELETED); parentConversationId:string; branchFromMessageId:string; activeLeafMessageId:string; rollingSummary:string; platform:string; model:string; version:integer/int64; createdAt:string/date-time; updatedAt:string/date-time |
-| `ConversationMessage` | object | - | id:string; conversationId:string; parentMessageId:string; sourceMessageId:string; role:string(SYSTEM,USER,ASSISTANT,TOOL); contentParts:array<ContentPart>; toolCall:object; status:string(PENDING,STREAMING,COMPLETED,CANCELLED,FAILED,DELETED); sequence:integer/int32; generationId:string; createdAt:string/date-time; updatedAt:string/date-time |
-| `CourseRequest` | object | name | id:integer/int64; name*:string; subjectCode:string; grade:integer/int32; description:string; coverUrl:string; textbookId:integer/int64; teacherId:integer/int64; totalHours:integer/int32; status:integer/int32 |
-| `CourseResponse` | object | - | id:integer/int64; name:string; description:string; subjectCode:string; grade:integer/int32; textbookId:integer/int64; teacherId:integer/int64; coverUrl:string; totalHours:integer/int32; status:integer/int32 |
-| `CreateCaseRequest` | object | question | spaceId:integer/int64; question*:string; expectedDocIds:string; expectedAnswer:string |
-| `CreateConversationRequest` | object | - | sceneType:string; title:string; platform:string; model:string; systemPrompt:string |
-| `CreatePointRequest` | object | code, name | code*:string; name*:string; description:string; difficultyLevel:integer/int32; category:string; tags:string |
+| `CompiledGraphAgentState` | object | - | compileConfig:CompileConfig; maxIterations:integer/int32; stateGraph:StateGraphAgentState |
+| `CompleteReviewRequest` | object | - | resultScore:number/double; studentId:integer/int64 |
+| `ConditionEdge` | object | - | defaultTarget:string; from:string; functionCondition:-; nodeMappings:object; predicateConditions:array<PredicateCondition> |
+| `ConditionalEdgeDTO` | object | - | conditionType:string; defaultTarget:string; nodeMappings:object |
+| `ConfigApplyResult` | object | - | issues:array<string>; message:string; restartRequired:boolean; revision:integer/int64; status:string |
+| `ConfigChangeSet` | object | - | expectedVersion:integer/int64; secrets:object; values:object |
+| `ConfigFieldDescriptor` | object | - | applyMode:string; configured:boolean; editable:boolean; effectiveValue:string; key:string; label:string; savedValue:string; sensitive:boolean; source:string; supported:boolean; type:string; unsupportedReason:string |
+| `ConfigResponse` | object | - | fields:array<ConfigFieldDescriptor>; version:integer/int64 |
+| `ContentPart` | object | - | mediaUri:string; metadata:object; mimeType:string; text:string; type:string |
+| `Conversation` | object | - | activeLeafMessageId:string; branchFromMessageId:string; createdAt:string/date-time; id:string; model:string; ownerUserId:integer/int64; parentConversationId:string; platform:string; rollingSummary:string; sceneType:string; status:string(ACTIVE,ARCHIVED,DELETED); tenantId:integer/int64; title:string; updatedAt:string/date-time; version:integer/int64 |
+| `ConversationMessage` | object | - | contentParts:array<ContentPart>; conversationId:string; createdAt:string/date-time; generationId:string; id:string; parentMessageId:string; role:string(SYSTEM,USER,ASSISTANT,TOOL); sequence:integer/int32; sourceMessageId:string; status:string(PENDING,STREAMING,COMPLETED,CANCELLED,FAILED,DELETED); toolCall:object; updatedAt:string/date-time |
+| `CourseRequest` | object | name | coverUrl:string; description:string; grade:integer/int32; id:integer/int64; name*:string; status:integer/int32; subjectCode:string; teacherId:integer/int64; textbookId:integer/int64; totalHours:integer/int32 |
+| `CourseResponse` | object | - | coverUrl:string; description:string; grade:integer/int32; id:integer/int64; name:string; status:integer/int32; subjectCode:string; teacherId:integer/int64; textbookId:integer/int64; totalHours:integer/int32 |
+| `CreateCaseRequest` | object | question | expectedAnswer:string; expectedDocIds:string; question*:string; spaceId:integer/int64 |
+| `CreateConversationRequest` | object | - | model:string; platform:string; sceneType:string; systemPrompt:string; title:string |
+| `CreatePointRequest` | object | code, name | category:string; code*:string; description:string; difficultyLevel:integer/int32; name*:string; tags:string |
 | `CreateRequest` | object | - | name:string; template:string; variables:array<string> |
-| `CreateSpaceRequest` | object | code, name | code*:string; name*:string; domainCode:string; description:string; accessMode:string; reviewMode:string; bindingMode:string; difficultyScaleId:integer/int64; embeddingProfile:string; rerankProfile:string; chunkStrategy:string; chunkSize:integer/int32; chunkOverlap:integer/int32 |
-| `DailyTaskResponse` | object | - | id:integer/int64; knowledgeId:integer/int64; knowledgeName:string; planDate:string; status:integer/int32; statusDesc:string; orderNo:integer/int32 |
-| `DataSourceConfig` | object | - | type:string; url:string; dictType:string; labelKey:string; valueKey:string; dependsOn:string |
-| `DatasetRequest` | object | - | name:string; description:string |
-| `DictPageRequest` | object | - | pageSize:integer/int32; pageNum:integer/int32; orderByColumn:string; isAsc:string; orderFields:array<OrderField>; filterConditions:array<FilterCondition> |
-| `DictRequest` | object | - | dictType:string; dictLabel:string; dictValue:string; dictSort:integer/int32; cssClass:string; listClass:string; isDefault:string; remark:string; status:integer/int32 |
-| `DictVO` | object | - | id:integer/int64; tenantId:integer/int64; dictType:string; dictLabel:string; dictValue:string; dictSort:integer/int32; cssClass:string; listClass:string; isDefault:string; status:string; remark:string; createTime:string/date-time; updateTime:string/date-time |
+| `CreateSpaceRequest` | object | code, name | accessMode:string; bindingMode:string; chunkOverlap:integer/int32; chunkSize:integer/int32; chunkStrategy:string; code*:string; description:string; difficultyScaleId:integer/int64; domainCode:string; embeddingProfile:string; name*:string; rerankProfile:string; reviewMode:string |
+| `DailyTaskResponse` | object | - | id:integer/int64; knowledgeId:integer/int64; knowledgeName:string; orderNo:integer/int32; planDate:string; status:integer/int32; statusDesc:string |
+| `DataSourceConfig` | object | - | dependsOn:string; dictType:string; labelKey:string; type:string; url:string; valueKey:string |
+| `DatasetRequest` | object | - | description:string; name:string |
+| `DictPageRequest` | object | - | filterConditions:array<FilterCondition>; isAsc:string; orderByColumn:string; orderFields:array<OrderField>; pageNum:integer/int32; pageSize:integer/int32 |
+| `DictRequest` | object | - | cssClass:string; dictLabel:string; dictSort:integer/int32; dictType:string; dictValue:string; isDefault:string; listClass:string; remark:string; status:integer/int32 |
+| `DictVO` | object | - | createTime:string/date-time; cssClass:string; dictLabel:string; dictSort:integer/int32; dictType:string; dictValue:string; id:integer/int64; isDefault:string; listClass:string; remark:string; status:string; tenantId:integer/int64; updateTime:string/date-time |
 | `DiffRequest` | object | - | fromVersion:integer/int32; toVersion:integer/int32 |
-| `DifficultyLevelView` | object | - | level:integer/int32; label:string; description:string |
-| `DifficultyScaleView` | object | - | id:integer/int64; code:string; name:string; description:string; levelCount:integer/int32; levels:array<DifficultyLevelView> |
+| `DifficultyLevelView` | object | - | description:string; label:string; level:integer/int32 |
+| `DifficultyScaleView` | object | - | code:string; description:string; id:integer/int64; levelCount:integer/int32; levels:array<DifficultyLevelView>; name:string |
 | `DocumentRelationRequest` | object | - | documentId:integer/int64; relationType:string |
-| `DocumentRelationView` | object | - | id:integer/int64; sourceDocumentId:integer/int64; targetDocumentId:integer/int64; relationType:string; targetTitle:string |
-| `DocumentSummary` | object | - | id:integer/int64; spaceId:integer/int64; title:string; docType:string; lifecycleStatus:string; parseStatus:string |
-| `DocumentView` | object | - | id:integer/int64; spaceId:integer/int64; currentVersionId:integer/int64; title:string; docType:string; source:string; lifecycleStatus:string; parseStatus:string; objectKey:string; mimeType:string; fileSize:integer/int64; checksum:string; createTime:string/date-time; updateTime:string/date-time |
-| `EdgeRequest` | object | sourceNodeId, targetNodeId | sourceNodeId*:string; targetNodeId*:string; edgeType:string; conditionMappings:object; defaultTarget:string; conditionType:string |
+| `DocumentRelationView` | object | - | id:integer/int64; relationType:string; sourceDocumentId:integer/int64; targetDocumentId:integer/int64; targetTitle:string |
+| `DocumentSummary` | object | - | docType:string; id:integer/int64; lifecycleStatus:string; parseStatus:string; spaceId:integer/int64; title:string |
+| `DocumentView` | object | - | checksum:string; createTime:string/date-time; currentVersionId:integer/int64; docType:string; fileSize:integer/int64; id:integer/int64; lifecycleStatus:string; mimeType:string; objectKey:string; parseStatus:string; source:string; spaceId:integer/int64; title:string; updateTime:string/date-time |
+| `EdgeRequest` | object | sourceNodeId, targetNodeId | conditionMappings:object; conditionType:string; defaultTarget:string; edgeType:string; sourceNodeId*:string; targetNodeId*:string |
 | `EditRequest` | object | - | content:string |
-| `EvalCase` | object | - | id:string; datasetId:string; tenantId:integer/int64; input:string; expected:string; metadata:object; createdAt:string/date-time |
-| `EvalDataset` | object | - | id:string; tenantId:integer/int64; ownerUserId:integer/int64; name:string; description:string; createdAt:string/date-time |
-| `EvalResult` | object | - | caseId:string; metric:string(EXACT_MATCH,CONTAINS,JSON_SCHEMA,TOOL_CALL_SCHEMA,CITATION_COVERAGE,RETRIEVAL_HIT,TOKEN_BUDGET,COST_BUDGET); score:number/double; passed:boolean; detail:string |
-| `EvalRun` | object | - | id:string; datasetId:string; tenantId:integer/int64; ownerUserId:integer/int64; appVersionId:string; metric:string(EXACT_MATCH,CONTAINS,JSON_SCHEMA,TOOL_CALL_SCHEMA,CITATION_COVERAGE,RETRIEVAL_HIT,TOKEN_BUDGET,COST_BUDGET); status:string; passRate:number/double; results:array<EvalResult>; createdAt:string/date-time; completedAt:string/date-time |
-| `EventRequest` | object | - | namespace:string; subjectType:string; subjectId:string; eventType:string; content:string; occurredAt:string/date-time; sourceType:string; sourceId:string; attributes:object; confidence:number/double; importance:number/double; confirmationPolicy:string(AUTO,REQUIRED,DISABLED) |
-| `ExamRequest` | object | durationMin, grade, name, subjectCode, totalScore, type | id:integer/int64; name*:string; type*:string; subjectCode*:string; grade*:integer/int32; teacherId:integer/int64; durationMin*:integer/int32; totalScore*:integer/int32; status:integer/int32 |
-| `ExamResponse` | object | - | id:integer/int64; name:string; type:string; subjectCode:string; grade:integer/int32; teacherId:integer/int64; durationMin:integer/int32; totalScore:integer/int32; status:integer/int32 |
+| `EvalCase` | object | - | createdAt:string/date-time; datasetId:string; expected:string; id:string; input:string; metadata:object; tenantId:integer/int64 |
+| `EvalDataset` | object | - | createdAt:string/date-time; description:string; id:string; name:string; ownerUserId:integer/int64; tenantId:integer/int64 |
+| `EvalResult` | object | - | caseId:string; detail:string; metric:string(EXACT_MATCH,CONTAINS,JSON_SCHEMA,TOOL_CALL_SCHEMA,CITATION_COVERAGE,RETRIEVAL_HIT,TOKEN_BUDGET,COST_BUDGET); passed:boolean; score:number/double |
+| `EvalRun` | object | - | appVersionId:string; completedAt:string/date-time; createdAt:string/date-time; datasetId:string; id:string; metric:string(EXACT_MATCH,CONTAINS,JSON_SCHEMA,TOOL_CALL_SCHEMA,CITATION_COVERAGE,RETRIEVAL_HIT,TOKEN_BUDGET,COST_BUDGET); ownerUserId:integer/int64; passRate:number/double; results:array<EvalResult>; status:string; tenantId:integer/int64 |
+| `EventRequest` | object | - | attributes:object; confidence:number/double; confirmationPolicy:string(AUTO,REQUIRED,DISABLED); content:string; eventType:string; importance:number/double; namespace:string; occurredAt:string/date-time; sourceId:string; sourceType:string; subjectId:string; subjectType:string |
+| `ExamRequest` | object | durationMin, grade, name, subjectCode, totalScore, type | durationMin*:integer/int32; grade*:integer/int32; id:integer/int64; name*:string; status:integer/int32; subjectCode*:string; teacherId:integer/int64; totalScore*:integer/int32; type*:string |
+| `ExamResponse` | object | - | durationMin:integer/int32; grade:integer/int32; id:integer/int64; name:string; status:integer/int32; subjectCode:string; teacherId:integer/int64; totalScore:integer/int32; type:string |
+| `ExchangeRequest` | object | - | grant:string |
 | `ExecutionHistoryService` | - | - | - |
-| `FieldMeta` | object | - | key:string; label:string; type:string; defaultValue:-; required:boolean; options:object; description:string; source:DataSourceConfig |
-| `FileView` | object | - | key:string; name:string; size:integer/int64; contentType:string; lastModified:string/date-time; url:string; storageType:string |
+| `FieldMeta` | object | - | defaultValue:-; description:string; key:string; label:string; options:object; required:boolean; source:DataSourceConfig; type:string |
+| `FileView` | object | - | contentType:string; key:string; lastModified:string/date-time; name:string; size:integer/int64; storageType:string; url:string |
 | `FilterCondition` | object | - | field:string; operator:string(EQ,NE,GT,GE,LT,LE,LIKE,IN,NOT_IN,IS_NULL,IS_NOT_NULL); value:- |
-| `ForgetPasswordRequest` | object | captchaKey, code, email, newPassword | email*:string/email; newPassword*:string; code*:string; captchaKey*:string |
-| `GenerateRequest` | object | - | provider:string; prompt:string; format:string |
-| `GenerationRun` | object | - | id:string; conversationId:string; inputMessageId:string; assistantMessageId:string; speakerId:string; platform:string; model:string; status:string(CREATED,RUNNING,COMPLETED,CANCELLED,FAILED); promptTokens:integer/int64; completionTokens:integer/int64; latencyMs:integer/int64; errorCode:string; lastEventSequence:integer/int32; cancelRequested:boolean; version:integer/int64; createdAt:string/date-time; updatedAt:string/date-time; runtimeRunId:string |
-| `Graph` | object | - | name:string; description:string; nodes:object; edges:object; conditionalEdges:object; channels:object; startNode:string; endNode:string; compiledGraph:CompiledGraphAgentState; compiled:boolean |
-| `GraphConfigRequest` | object | - | name:string; description:string; startNode:string; endNode:string; nodes:object; edges:object; conditionalEdges:object |
-| `GraphConfigVO` | object | - | name:string; description:string; startNode:string; endNode:string; nodes:object; edges:object; conditionalEdges:object |
-| `GraphValidationVO` | object | - | valid:boolean; errors:array<string>; warnings:array<string> |
-| `GroupChat` | object | - | id:string; name:string; participants:array<Participant>; speakerPolicy:string(MANUAL,ROUND_ROBIN,MODEL_ROUTED); maxTurns:integer/int32; tokenBudget:integer/int32 |
-| `GroupChatAsset` | object | - | id:string; tenantId:integer/int64; ownerUserId:integer/int64; group:GroupChat; createdAt:string/date-time; updatedAt:string/date-time |
-| `GroupRequest` | object | - | name:string; participants:array<Participant>; speakerPolicy:string(MANUAL,ROUND_ROBIN,MODEL_ROUTED); maxTurns:integer/int32; tokenBudget:integer/int32 |
+| `ForgetPasswordRequest` | object | captchaKey, code, email, newPassword | captchaKey*:string; code*:string; email*:string/email; newPassword*:string |
+| `GenerateRequest` | object | - | format:string; prompt:string; provider:string |
+| `GenerationRun` | object | - | assistantMessageId:string; cancelRequested:boolean; completionTokens:integer/int64; conversationId:string; createdAt:string/date-time; errorCode:string; id:string; inputMessageId:string; lastEventSequence:integer/int32; latencyMs:integer/int64; model:string; platform:string; promptTokens:integer/int64; runtimeRunId:string; speakerId:string; status:string(CREATED,RUNNING,COMPLETED,CANCELLED,FAILED); updatedAt:string/date-time; version:integer/int64 |
+| `Graph` | object | - | channels:object; compiled:boolean; compiledGraph:CompiledGraphAgentState; conditionalEdges:object; description:string; edges:object; endNode:string; name:string; nodes:object; startNode:string |
+| `GraphConfigRequest` | object | - | conditionalEdges:object; description:string; edges:object; endNode:string; name:string; nodes:object; startNode:string |
+| `GraphConfigVO` | object | - | conditionalEdges:object; description:string; edges:object; endNode:string; name:string; nodes:object; startNode:string |
+| `GraphValidationVO` | object | - | errors:array<string>; valid:boolean; warnings:array<string> |
+| `GroupChat` | object | - | id:string; maxTurns:integer/int32; name:string; participants:array<Participant>; speakerPolicy:string(MANUAL,ROUND_ROBIN,MODEL_ROUTED); tokenBudget:integer/int32 |
+| `GroupChatAsset` | object | - | createdAt:string/date-time; group:GroupChat; id:string; ownerUserId:integer/int64; tenantId:integer/int64; updatedAt:string/date-time |
+| `GroupRequest` | object | - | maxTurns:integer/int32; name:string; participants:array<Participant>; speakerPolicy:string(MANUAL,ROUND_ROBIN,MODEL_ROUTED); tokenBudget:integer/int32 |
 | `GroupTurnRun` | object | - | decision:TurnDecision; generationId:string; speakerId:string |
-| `HybridHit` | object | - | chunkId:integer/int64; documentId:integer/int64; content:string; highlight:string; bm25Score:number/double; vectorScore:number/double; rrfScore:number/double; rerankScore:number/double |
-| `HybridRecommendResponse` | object | - | studentId:integer/int64; knowledgeTop:array<KnowledgeRecommendResponse>; questionTop:array<QuestionRecommendResponse>; resourceTop:array<ResourceRecommendResponse>; reviewTop:array<QuestionRecommendResponse>; overallAdvice:string; generateTime:integer/int64 |
-| `IdNameOptionVO` | object | - | id:integer/int64; name:string; code:string; value:string |
-| `ImageRequest` | object | - | provider:string; imageBase64:string; mimeType:string; instruction:string |
-| `ImageResult` | object | - | objectKey:string; mimeType:string; width:integer/int32; height:integer/int32 |
-| `ImportRequest` | object | - | format:string; previewToken:string; title:string; sceneType:string; platform:string; model:string; systemPrompt:string; content:string |
-| `ImportUrlRequest` | object | url | url*:string; title:string |
-| `ImportedMessage` | object | - | role:string; content:string |
-| `IntentDefRequest` | object | agentId, code, name | agentId*:string; code*:string; name*:string; description:string; category:string; priority:integer/int32; confidenceThreshold:number/double; targetNode:string; status:integer/int32 |
-| `IntentDefVO` | object | - | id:integer/int64; agentId:string; name:string; code:string; category:string; description:string; status:string; createTime:string/date-time; updateTime:string/date-time |
-| `JobView` | object | - | id:integer/int64; jobKey:string; jobType:string; spaceId:integer/int64; documentId:integer/int64; versionId:integer/int64; status:string; stage:string; progress:integer/int32; attempts:integer/int32; maxAttempts:integer/int32; errorMessage:string; heartbeatTime:string/date-time; startedTime:string/date-time; finishedTime:string/date-time; createTime:string/date-time |
-| `KnowledgeAuditResponse` | object | - | id:integer/int64; tenantId:integer/int64; spaceId:integer/int64; resourceType:string; resourceId:integer/int64; action:string; detailJson:string; status:integer/int32; delFlag:integer/int32; createTime:string/date-time; updateTime:string/date-time |
-| `KnowledgeDocumentDTO` | object | - | id:integer/int64; title:string; content:string; docType:string; source:string; knowledgeIds:array<integer/int64> |
-| `KnowledgeGraphResponse` | object | - | node:KnowledgeResponse; parentNodes:array<KnowledgeResponse>; childNodes:array<KnowledgeResponse>; relatedNodes:array<KnowledgeResponse> |
-| `KnowledgeRecommendResponse` | object | - | knowledgeId:integer/int64; knowledgeName:string; mastery:number/double; recommendType:string; reason:string; score:integer/int32 |
-| `KnowledgeResponse` | object | - | id:integer/int64; code:string; name:string; description:string; difficulty:integer/int32; category:string; tags:string; parentIds:array<integer/int64>; childIds:array<integer/int64>; documents:array<KnowledgeDocumentDTO> |
-| `LoginRequest` | object | password, username | username*:string; password*:string; captcha:string; captchaKey:string; roleId:integer/int64; email:string; phone:string |
-| `LoginResponseVO` | object | - | id:integer/int64; realName:string; roles:array<string>; username:string; homePath:string; accessToken:string; tokenType:string; expiresIn:integer/int64; currentTenantId:integer/int64; homeTenantId:integer/int64; switchMode:string; tenantName:string; tenants:array<TenantInfoVO>; subTenants:array<TenantContextVO> |
-| `LorebookAsset` | object | - | id:string; tenantId:integer/int64; ownerUserId:integer/int64; entry:LorebookEntry; createdAt:string/date-time; updatedAt:string/date-time |
-| `LorebookEntry` | object | - | id:string; keys:array<string>; content:string; priority:integer/int32; insertionPosition:string; tokenBudget:integer/int32; enabled:boolean |
-| `McpToolDescriptor` | object | - | name:string; description:string; serverId:string; parameters:object; tags:array<string>; category:string; builtin:boolean; registeredAt:integer/int64 |
-| `MemberRequest` | object | principalId, principalType, spaceRole | principalType*:string; principalId*:integer/int64; spaceRole*:string |
-| `MemberView` | object | - | id:integer/int64; spaceId:integer/int64; principalType:string; principalId:integer/int64; spaceRole:string |
-| `MemoryEdge` | object | - | id:string; tenantId:TenantId; sourceNodeId:string; targetNodeId:string; graphType:string(TEMPORAL,SEMANTIC,CAUSAL,ENTITY); relationType:string; directed:boolean; weight:number/double; confidence:number/double; origin:string(RULE,DOMAIN,MODEL); evidenceSource:string; active:boolean; createdAt:string/date-time |
-| `MemoryEvent` | object | - | id:string; tenantId:TenantId; namespace:string; subjectType:string; subjectId:string; eventType:string; content:string; occurredAt:string/date-time; sourceType:string; sourceId:string; attributes:object; confidence:number/double; importance:number/double; status:string(CANDIDATE,ACTIVE,SUPERSEDED,REVOKED); confirmationPolicy:string(AUTO,REQUIRED,DISABLED); createdAt:string/date-time; updatedAt:string/date-time |
-| `MemoryPath` | object | - | event:MemoryEvent; score:number/double; edges:array<MemoryEdge> |
+| `HybridHit` | object | - | bm25Score:number/double; chunkId:integer/int64; content:string; documentId:integer/int64; highlight:string; rerankScore:number/double; rrfScore:number/double; vectorScore:number/double |
+| `HybridRecommendResponse` | object | - | generateTime:integer/int64; knowledgeTop:array<KnowledgeRecommendResponse>; overallAdvice:string; questionTop:array<QuestionRecommendResponse>; resourceTop:array<ResourceRecommendResponse>; reviewTop:array<QuestionRecommendResponse>; studentId:integer/int64 |
+| `IdNameOptionVO` | object | - | code:string; id:integer/int64; name:string; value:string |
+| `ImageRequest` | object | - | imageBase64:string; instruction:string; mimeType:string; provider:string |
+| `ImageResult` | object | - | height:integer/int32; mimeType:string; objectKey:string; width:integer/int32 |
+| `ImportRequest` | object | - | content:string; format:string; model:string; platform:string; previewToken:string; sceneType:string; systemPrompt:string; title:string |
+| `ImportUrlRequest` | object | url | title:string; url*:string |
+| `ImportedMessage` | object | - | content:string; role:string |
+| `IntentDefRequest` | object | agentId, code, name | agentId*:string; category:string; code*:string; confidenceThreshold:number/double; description:string; name*:string; priority:integer/int32; status:integer/int32; targetNode:string |
+| `IntentDefVO` | object | - | agentId:string; category:string; code:string; createTime:string/date-time; description:string; id:integer/int64; name:string; status:string; updateTime:string/date-time |
+| `JobView` | object | - | attempts:integer/int32; createTime:string/date-time; documentId:integer/int64; errorMessage:string; finishedTime:string/date-time; heartbeatTime:string/date-time; id:integer/int64; jobKey:string; jobType:string; maxAttempts:integer/int32; progress:integer/int32; spaceId:integer/int64; stage:string; startedTime:string/date-time; status:string; versionId:integer/int64 |
+| `KnowledgeAuditResponse` | object | - | action:string; createTime:string/date-time; delFlag:integer/int32; detailJson:string; id:integer/int64; resourceId:integer/int64; resourceType:string; spaceId:integer/int64; status:integer/int32; tenantId:integer/int64; updateTime:string/date-time |
+| `KnowledgeDocumentDTO` | object | - | content:string; docType:string; id:integer/int64; knowledgeIds:array<integer/int64>; source:string; title:string |
+| `KnowledgeGraphResponse` | object | - | childNodes:array<KnowledgeResponse>; node:KnowledgeResponse; parentNodes:array<KnowledgeResponse>; relatedNodes:array<KnowledgeResponse> |
+| `KnowledgeRecommendResponse` | object | - | knowledgeId:integer/int64; knowledgeName:string; mastery:number/double; reason:string; recommendType:string; score:integer/int32 |
+| `KnowledgeResponse` | object | - | category:string; childIds:array<integer/int64>; code:string; description:string; difficulty:integer/int32; documents:array<KnowledgeDocumentDTO>; id:integer/int64; name:string; parentIds:array<integer/int64>; tags:string |
+| `LogChunk` | object | - | fileName:string; lines:array<string>; nextCursor:string; nextOffset:integer/int64; rotated:boolean; truncated:boolean |
+| `LogFile` | object | - | label:string; modifiedAt:string/date-time; name:string; sizeBytes:integer/int64 |
+| `LogFilesResponse` | object | - | files:array<LogFile> |
+| `LoginRequest` | object | password, username | captcha:string; captchaKey:string; email:string; password*:string; phone:string; roleId:integer/int64; username*:string |
+| `LoginResponseVO` | object | - | accessToken:string; currentTenantId:integer/int64; expiresIn:integer/int64; homePath:string; homeTenantId:integer/int64; id:integer/int64; realName:string; roles:array<string>; subTenants:array<TenantContextVO>; switchMode:string; tenantName:string; tenants:array<TenantInfoVO>; tokenType:string; username:string |
+| `LorebookAsset` | object | - | createdAt:string/date-time; entry:LorebookEntry; id:string; ownerUserId:integer/int64; tenantId:integer/int64; updatedAt:string/date-time |
+| `LorebookEntry` | object | - | content:string; enabled:boolean; id:string; insertionPosition:string; keys:array<string>; priority:integer/int32; tokenBudget:integer/int32 |
+| `McpToolDescriptor` | object | - | builtin:boolean; category:string; description:string; name:string; parameters:object; registeredAt:integer/int64; serverId:string; tags:array<string> |
+| `MemberRequest` | object | principalId, principalType, spaceRole | principalId*:integer/int64; principalType*:string; spaceRole*:string |
+| `MemberView` | object | - | id:integer/int64; principalId:integer/int64; principalType:string; spaceId:integer/int64; spaceRole:string |
+| `MemoryEdge` | object | - | active:boolean; confidence:number/double; createdAt:string/date-time; directed:boolean; evidenceSource:string; graphType:string(TEMPORAL,SEMANTIC,CAUSAL,ENTITY); id:string; origin:string(RULE,DOMAIN,MODEL); relationType:string; sourceNodeId:string; targetNodeId:string; tenantId:TenantId; weight:number/double |
+| `MemoryEvent` | object | - | attributes:object; confidence:number/double; confirmationPolicy:string(AUTO,REQUIRED,DISABLED); content:string; createdAt:string/date-time; eventType:string; id:string; importance:number/double; namespace:string; occurredAt:string/date-time; sourceId:string; sourceType:string; status:string(CANDIDATE,ACTIVE,SUPERSEDED,REVOKED); subjectId:string; subjectType:string; tenantId:TenantId; updatedAt:string/date-time |
+| `MemoryPath` | object | - | edges:array<MemoryEdge>; event:MemoryEvent; score:number/double |
 | `MemoryRetrievalResult` | object | - | paths:array<MemoryPath>; traceId:string |
-| `MemoryRetrievalTrace` | object | - | id:string; tenantId:TenantId; namespace:string; queryText:string; anchorEventIds:array<string>; graphWeights:object; relationPaths:array<array<string>>; filteredEventIds:array<string>; resultEventIds:array<string>; createdAt:string/date-time |
-| `MenuPageRequest` | object | - | pageSize:integer/int32; pageNum:integer/int32; orderByColumn:string; isAsc:string; orderFields:array<OrderField>; filterConditions:array<FilterCondition>; name:string; code:string; type:string; status:integer/int32 |
-| `MenuRequest` | object | name, type | name*:string; code:string; type*:string; path:string; redirect:string; icon:string; component:string; layout:string; keepAlive:boolean; method:string; description:string; show:boolean; status:string; order:integer/int32; pid:integer/int64 |
-| `MenuVO` | object | - | id:integer/int64; name:string; code:string; type:string; path:string; redirect:string; icon:string; component:string; layout:string; keepAlive:boolean; method:string; description:string; show:boolean; status:integer/int32; order:integer/int32; delFlag:integer/int32; createTime:string/date-time; updateTime:string/date-time; children:array<MenuVO>; pid:integer/int64 |
-| `MessageRequest` | object | - | content:string; platform:string; model:string |
-| `MetaVO` | object | - | title:string; activeIcon:string; activePath:string; affixTab:boolean; affixTabOrder:integer/int32; authority:array<string>; badge:string; badgeType:string; badgeVariants:string; fullPathKey:boolean; hideChildrenInMenu:boolean; hideInBreadcrumb:boolean; hideInMenu:boolean; hideInTab:boolean; icon:string; iframeSrc:string; ignoreAccess:boolean; keepAlive:boolean; link:string; loaded:boolean; maxNumOfOpenTab:integer/int32; menuVisibleWithForbidden:boolean; noBasicLayout:boolean; openInNewWindow:boolean; order:integer/int32; query:- |
-| `ModelProviderCapabilities` | object | - | provider:string; model:string; features:array<string>; contextWindow:integer/int32; streaming:boolean; tools:boolean; parallelTools:boolean; multimodal:boolean; jsonSchema:boolean; reasoningLevels:array<string>; maxOutputTokens:integer/int32; streamUsage:boolean; cacheUsage:boolean; cancellation:boolean |
-| `ModelRoutePolicy` | object | - | id:string; tenantId:integer/int64; name:string; orderedModels:array<string>; timeoutMs:integer/int32; fallbackOnError:boolean; maxTokens:integer/int64 |
-| `NodeConfig` | object | - | nodeId:string; nodeName:string; description:string; nodeType:NodeType; enabled:boolean; timeout:integer/int64; retryCount:integer/int32; retryInterval:integer/int64; properties:object; errorStrategy:string; logLevel:string |
-| `NodeConfigDTO` | object | - | nodeName:string; description:string; nodeType:string; enabled:boolean; timeout:integer/int64; retryCount:integer/int32; retryInterval:integer/int64; errorStrategy:string; logLevel:string; properties:object; config:object |
-| `NodeConfigRequest` | object | nodeId, nodeName, nodeType | nodeId*:string; nodeName*:string; nodeType*:string; description:string; enabled:boolean; timeout:integer/int64; retryCount:integer/int32; retryInterval:integer/int64; errorStrategy:string; logLevel:string; properties:object; config:object |
-| `NodeInputParam` | object | - | name:string; type:string; source:string(API_REQUEST,CONFIG_VALUE,PREVIOUS_NODE,DEFAULT_VALUE); required:boolean; description:string; defaultValue:- |
-| `NodeType` | object | - | code:string; name:string; description:string; builtIn:boolean |
-| `NodeTypeMetaVO` | object | - | code:string; name:string; description:string; icon:string; color:string; fields:array<FieldMeta> |
+| `MemoryRetrievalTrace` | object | - | anchorEventIds:array<string>; createdAt:string/date-time; filteredEventIds:array<string>; graphWeights:object; id:string; namespace:string; queryText:string; relationPaths:array<array<string>>; resultEventIds:array<string>; tenantId:TenantId |
+| `MenuPageRequest` | object | - | code:string; filterConditions:array<FilterCondition>; isAsc:string; name:string; orderByColumn:string; orderFields:array<OrderField>; pageNum:integer/int32; pageSize:integer/int32; status:integer/int32; type:string |
+| `MenuRequest` | object | name, type | code:string; component:string; description:string; icon:string; keepAlive:boolean; layout:string; method:string; name*:string; order:integer/int32; path:string; pid:integer/int64; redirect:string; show:boolean; status:string; type*:string |
+| `MenuVO` | object | - | children:array<MenuVO>; code:string; component:string; createTime:string/date-time; delFlag:integer/int32; description:string; icon:string; id:integer/int64; keepAlive:boolean; layout:string; method:string; name:string; order:integer/int32; path:string; pid:integer/int64; redirect:string; show:boolean; status:integer/int32; type:string; updateTime:string/date-time |
+| `MessageRequest` | object | - | content:string; model:string; platform:string |
+| `MetaVO` | object | - | activeIcon:string; activePath:string; affixTab:boolean; affixTabOrder:integer/int32; authority:array<string>; badge:string; badgeType:string; badgeVariants:string; fullPathKey:boolean; hideChildrenInMenu:boolean; hideInBreadcrumb:boolean; hideInMenu:boolean; hideInTab:boolean; icon:string; iframeSrc:string; ignoreAccess:boolean; keepAlive:boolean; link:string; loaded:boolean; maxNumOfOpenTab:integer/int32; menuVisibleWithForbidden:boolean; noBasicLayout:boolean; openInNewWindow:boolean; order:integer/int32; query:-; title:string |
+| `MetricSnapshot` | object | - | capturedAt:string/date-time; values:object |
+| `MetricsResponse` | object | - | samples:array<MetricSnapshot> |
+| `ModelProviderCapabilities` | object | - | cacheUsage:boolean; cancellation:boolean; contextWindow:integer/int32; features:array<string>; jsonSchema:boolean; maxOutputTokens:integer/int32; model:string; multimodal:boolean; parallelTools:boolean; provider:string; reasoningLevels:array<string>; streamUsage:boolean; streaming:boolean; tools:boolean |
+| `ModelRoutePolicy` | object | - | fallbackOnError:boolean; id:string; maxTokens:integer/int64; name:string; orderedModels:array<string>; tenantId:integer/int64; timeoutMs:integer/int32 |
+| `NodeConfig` | object | - | description:string; enabled:boolean; errorStrategy:string; logLevel:string; nodeId:string; nodeName:string; nodeType:NodeType; properties:object; retryCount:integer/int32; retryInterval:integer/int64; timeout:integer/int64 |
+| `NodeConfigDTO` | object | - | config:object; description:string; enabled:boolean; errorStrategy:string; logLevel:string; nodeName:string; nodeType:string; properties:object; retryCount:integer/int32; retryInterval:integer/int64; timeout:integer/int64 |
+| `NodeConfigRequest` | object | nodeId, nodeName, nodeType | config:object; description:string; enabled:boolean; errorStrategy:string; logLevel:string; nodeId*:string; nodeName*:string; nodeType*:string; properties:object; retryCount:integer/int32; retryInterval:integer/int64; timeout:integer/int64 |
+| `NodeInputParam` | object | - | defaultValue:-; description:string; name:string; required:boolean; source:string(API_REQUEST,CONFIG_VALUE,PREVIOUS_NODE,DEFAULT_VALUE); type:string |
+| `NodeType` | object | - | builtIn:boolean; code:string; description:string; name:string |
+| `NodeTypeMetaVO` | object | - | code:string; color:string; description:string; fields:array<FieldMeta>; icon:string; name:string |
 | `OrderField` | object | - | column:string; direction:string(ASC,DESC) |
-| `OverviewResponse` | object | - | totalStudyDays:integer/int32; totalKnowledge:integer/int32; masteredKnowledge:integer/int32; totalQuestions:integer/int32; accuracy:number/double; weeklyHours:number/double; streakDays:integer/int32 |
+| `OverviewResponse` | object | - | accuracy:number/double; masteredKnowledge:integer/int32; streakDays:integer/int32; totalKnowledge:integer/int32; totalQuestions:integer/int32; totalStudyDays:integer/int32; weeklyHours:number/double |
 | `PageDataAgentVO` | object | - | items:array<AgentVO>; total:integer/int64 |
 | `PageDataAiModelVO` | object | - | items:array<AiModelVO>; total:integer/int64 |
 | `PageDataAiPlatformVO` | object | - | items:array<AiPlatformVO>; total:integer/int64 |
@@ -895,288 +940,293 @@
 | `PageDataTenantVO` | object | - | items:array<TenantVO>; total:integer/int64 |
 | `PageDataTextbookResponse` | object | - | items:array<TextbookResponse>; total:integer/int64 |
 | `PageDataUserVO` | object | - | items:array<UserVO>; total:integer/int64 |
-| `ParameterInfo` | object | - | type:string; description:string; required:boolean; defaultValue:- |
-| `Participant` | object | - | id:string; displayName:string; characterId:string |
-| `Persona` | object | - | id:string; ownerUserId:integer/int64; name:string; identity:string; tone:string; visibility:string; attributes:object |
-| `PersonaAsset` | object | - | id:string; tenantId:integer/int64; ownerUserId:integer/int64; persona:Persona; createdAt:string/date-time; updatedAt:string/date-time |
-| `PluginInfoVO` | object | - | id:string; name:string; version:string; description:string; state:string; loadedAt:string |
-| `PluginMarketEntry` | object | - | id:string; version:string; source:string; manifest:string; signature:string; publisherKey:string; permissions:array<string>; checksum:string; updatePolicy:string; publishedAt:string/date-time; enabled:boolean |
-| `PointView` | object | - | id:integer/int64; spaceId:integer/int64; code:string; name:string; description:string; difficultyLevel:integer/int32; category:string; tags:string |
+| `ParameterInfo` | object | - | defaultValue:-; description:string; required:boolean; type:string |
+| `Participant` | object | - | characterId:string; displayName:string; id:string |
+| `Persona` | object | - | attributes:object; id:string; identity:string; name:string; ownerUserId:integer/int64; tone:string; visibility:string |
+| `PersonaAsset` | object | - | createdAt:string/date-time; id:string; ownerUserId:integer/int64; persona:Persona; tenantId:integer/int64; updatedAt:string/date-time |
+| `PluginInfoVO` | object | - | description:string; id:string; loadedAt:string; name:string; state:string; version:string |
+| `PluginMarketEntry` | object | - | checksum:string; enabled:boolean; id:string; manifest:string; permissions:array<string>; publishedAt:string/date-time; publisherKey:string; signature:string; source:string; updatePolicy:string; version:string |
+| `PointView` | object | - | category:string; code:string; description:string; difficultyLevel:integer/int32; id:integer/int64; name:string; spaceId:integer/int64; tags:string |
 | `PredicateCondition` | object | - | predicate:-; target:string |
-| `Preview` | object | - | token:string; expiresAt:string/date-time; messages:array<ImportedMessage> |
+| `Preview` | object | - | expiresAt:string/date-time; messages:array<ImportedMessage>; token:string |
 | `PreviewRequest` | object | - | template:string; variables:object |
-| `PromptDiff` | object | - | templateId:string; fromVersion:integer/int32; toVersion:integer/int32; changes:array<string> |
+| `PromptDiff` | object | - | changes:array<string>; fromVersion:integer/int32; templateId:string; toVersion:integer/int32 |
 | `PromptPreview` | object | - | content:string; estimatedTokens:integer/int64; variables:array<string> |
 | `PromptPreviewRequest` | object | - | body:string; variables:object |
-| `PromptRequest` | object | - | templateId:string; version:integer/int32; status:string; body:string; variableSchema:object; testCases:array<string> |
-| `PromptTemplate` | object | - | id:string; tenantId:integer/int64; ownerUserId:integer/int64; name:string; template:string; variables:array<string>; status:string; createdAt:string/date-time; updatedAt:string/date-time |
-| `PromptTemplateVersion` | object | - | id:string; templateId:string; version:integer/int32; status:string; body:string; variableSchema:object; testCases:array<string>; createdAt:string/date-time; publishedAt:string/date-time |
-| `PromptTestRequest` | object | - | version:integer/int32; variables:object |
-| `PromptTestRun` | object | - | templateId:string; version:integer/int32; renderedCases:array<string>; estimatedTokens:integer/int32 |
-| `ProviderHealth` | object | - | provider:string; model:string; healthy:boolean; consecutiveFailures:integer/int32; checkedAt:string/date-time; message:string |
+| `PromptRequest` | object | - | body:string; status:string; templateId:string; testCases:array<string>; variableSchema:object; version:integer/int32 |
+| `PromptTemplate` | object | - | createdAt:string/date-time; id:string; name:string; ownerUserId:integer/int64; status:string; template:string; tenantId:integer/int64; updatedAt:string/date-time; variables:array<string> |
+| `PromptTemplateVersion` | object | - | body:string; createdAt:string/date-time; id:string; publishedAt:string/date-time; status:string; templateId:string; testCases:array<string>; variableSchema:object; version:integer/int32 |
+| `PromptTestRequest` | object | - | variables:object; version:integer/int32 |
+| `PromptTestRun` | object | - | estimatedTokens:integer/int32; renderedCases:array<string>; templateId:string; version:integer/int32 |
+| `ProviderHealth` | object | - | checkedAt:string/date-time; consecutiveFailures:integer/int32; healthy:boolean; message:string; model:string; provider:string |
 | `PublishRequest` | object | - | version:integer/int32 |
-| `QueryRequest` | object | - | namespace:string; subjectType:string; subjectId:string; text:string; graphTypes:array<string(TEMPORAL,SEMANTIC,CAUSAL,ENTITY)>; from:string/date-time; to:string/date-time; maxDepth:integer/int32; maxNodes:integer/int32; maxTokens:integer/int32; intent:string(SEMANTIC,TEMPORAL,CAUSAL,ENTITY,HYBRID) |
-| `QuestionRecommendResponse` | object | - | questionId:integer/int64; title:string; type:string; difficulty:integer/int32; knowledgeId:integer/int64; knowledgeName:string; recommendType:string; reason:string; score:integer/int32 |
-| `QuestionRequest` | object | answer, difficulty, grade, subjectCode, title, type | id:integer/int64; title*:string; type*:string; code:string; subjectCode*:string; grade*:integer/int32; difficulty*:integer/int32; abilityDimension:string; options:string; answer*:string; analysis:string; tags:string; status:integer/int32 |
-| `QuestionResponse` | object | - | id:integer/int64; code:string; type:string; subjectCode:string; grade:integer/int32; difficulty:integer/int32; abilityDimension:string; title:string; options:string; answer:string; analysis:string; tags:string; usedCount:integer/int64 |
+| `QueryRequest` | object | - | from:string/date-time; graphTypes:array<string(TEMPORAL,SEMANTIC,CAUSAL,ENTITY)>; intent:string(SEMANTIC,TEMPORAL,CAUSAL,ENTITY,HYBRID); maxDepth:integer/int32; maxNodes:integer/int32; maxTokens:integer/int32; namespace:string; subjectId:string; subjectType:string; text:string; to:string/date-time |
+| `QuestionRecommendResponse` | object | - | difficulty:integer/int32; knowledgeId:integer/int64; knowledgeName:string; questionId:integer/int64; reason:string; recommendType:string; score:integer/int32; title:string; type:string |
+| `QuestionRequest` | object | answer, difficulty, grade, subjectCode, title, type | abilityDimension:string; analysis:string; answer*:string; code:string; difficulty*:integer/int32; grade*:integer/int32; id:integer/int64; options:string; status:integer/int32; subjectCode*:string; tags:string; title*:string; type*:string |
+| `QuestionResponse` | object | - | abilityDimension:string; analysis:string; answer:string; code:string; difficulty:integer/int32; grade:integer/int32; id:integer/int64; options:string; subjectCode:string; tags:string; title:string; type:string; usedCount:integer/int64 |
 | `RebuildRequest` | object | spaceId | spaceId*:integer/int64 |
 | `ReducerObject` | - | - | - |
 | `RefreshTokenRequest` | object | accessToken | accessToken*:string |
-| `RegisterAgentRequest` | object | - | agentId:string; name:string; description:string; versionNumber:string; versionDescription:string; graph:Graph |
+| `RegisterAgentRequest` | object | - | agentId:string; description:string; graph:Graph; name:string; versionDescription:string; versionNumber:string |
 | `RelationRequest` | object | sourceId, targetId, type | sourceId*:integer/int64; targetId*:integer/int64; type*:string(PRE,NEXT,INCLUDE,RELATED,SIMILAR,BELONG); weight:number/double |
-| `RelationView` | object | - | sourceId:integer/int64; targetId:integer/int64; relationType:string; weight:number/double; source:KnowledgeResponse; target:KnowledgeResponse |
+| `RelationView` | object | - | relationType:string; source:KnowledgeResponse; sourceId:integer/int64; target:KnowledgeResponse; targetId:integer/int64; weight:number/double |
 | `ReplaceDocumentRelationsRequest` | object | relations | relations*:array<DocumentRelationRequest> |
 | `ReplacePointsRequest` | object | pointIds | pointIds*:array<integer/int64>; relationType:string |
 | `ReplaceRequest` | object | documentIds | documentIds*:array<integer/int64>; relationType:string |
-| `Request` | object | - | toolName:string; argumentsRedacted:string |
+| `Request` | object | - | argumentsRedacted:string; toolName:string |
 | `ResetPasswordRequest` | object | - | password:string |
-| `ResourceRecommendResponse` | object | - | resourceId:integer/int64; title:string; type:string; knowledgeId:integer/int64; knowledgeName:string; recommendType:string; reason:string; score:integer/int32 |
-| `ResourceRequest` | object | name, type, url | id:integer/int64; name*:string; type*:string; subjectCode:string; grade:integer/int32; difficulty:integer/int32; coverUrl:string; url*:string; description:string; status:integer/int32 |
-| `ResourceResponse` | object | - | id:integer/int64; name:string; type:string; url:string; subjectCode:string; grade:integer/int32; difficulty:integer/int32; coverUrl:string; description:string; viewCount:integer/int64 |
-| `ResponsesRequest` | object | - | model:string; platform:string; input:-; stream:boolean; store:boolean; temperature:number/double; maxOutputTokens:integer/int32; tools:array<object>; conversationId:string; reasoningEffort:string |
-| `RestoreCheckResult` | object | - | valid:boolean; entries:integer/int64; errors:array<string> |
-| `ResultAbilityRadarResponse` | object | - | code:integer/int32; data:AbilityRadarResponse; message:string; error:string; success:boolean |
-| `ResultAgentDefinition` | object | - | code:integer/int32; data:AgentDefinition; message:string; error:string; success:boolean |
-| `ResultAgentDetailVO` | object | - | code:integer/int32; data:AgentDetailVO; message:string; error:string; success:boolean |
-| `ResultAgentVO` | object | - | code:integer/int32; data:AgentVO; message:string; error:string; success:boolean |
-| `ResultAgentVersionDetailVO` | object | - | code:integer/int32; data:AgentVersionDetailVO; message:string; error:string; success:boolean |
-| `ResultAgentVersionVO` | object | - | code:integer/int32; data:AgentVersionVO; message:string; error:string; success:boolean |
-| `ResultAiApp` | object | - | code:integer/int32; data:AiApp; message:string; error:string; success:boolean |
-| `ResultAiAppPreview` | object | - | code:integer/int32; data:AiAppPreview; message:string; error:string; success:boolean |
-| `ResultAiAppVersion` | object | - | code:integer/int32; data:AiAppVersion; message:string; error:string; success:boolean |
-| `ResultAiModelVO` | object | - | code:integer/int32; data:AiModelVO; message:string; error:string; success:boolean |
-| `ResultAiPlatformResponse` | object | - | code:integer/int32; data:AiPlatformResponse; message:string; error:string; success:boolean |
-| `ResultAiPlatformVO` | object | - | code:integer/int32; data:AiPlatformVO; message:string; error:string; success:boolean |
-| `ResultAiRun` | object | - | code:integer/int32; data:AiRun; message:string; error:string; success:boolean |
-| `ResultAuthCodeResponse` | object | - | code:integer/int32; data:AuthCodeResponse; message:string; error:string; success:boolean |
-| `ResultBackupResult` | object | - | code:integer/int32; data:BackupResult; message:string; error:string; success:boolean |
-| `ResultBoolean` | object | - | code:integer/int32; data:boolean; message:string; error:string; success:boolean |
-| `ResultCaptchaVO` | object | - | code:integer/int32; data:CaptchaVO; message:string; error:string; success:boolean |
-| `ResultCaseView` | object | - | code:integer/int32; data:CaseView; message:string; error:string; success:boolean |
-| `ResultChapterResponse` | object | - | code:integer/int32; data:ChapterResponse; message:string; error:string; success:boolean |
-| `ResultCharacterAsset` | object | - | code:integer/int32; data:CharacterAsset; message:string; error:string; success:boolean |
-| `ResultConversation` | object | - | code:integer/int32; data:Conversation; message:string; error:string; success:boolean |
-| `ResultConversationMessage` | object | - | code:integer/int32; data:ConversationMessage; message:string; error:string; success:boolean |
-| `ResultCourseResponse` | object | - | code:integer/int32; data:CourseResponse; message:string; error:string; success:boolean |
-| `ResultDictVO` | object | - | code:integer/int32; data:DictVO; message:string; error:string; success:boolean |
-| `ResultDifficultyScaleView` | object | - | code:integer/int32; data:DifficultyScaleView; message:string; error:string; success:boolean |
-| `ResultDocumentView` | object | - | code:integer/int32; data:DocumentView; message:string; error:string; success:boolean |
-| `ResultEvalCase` | object | - | code:integer/int32; data:EvalCase; message:string; error:string; success:boolean |
-| `ResultEvalDataset` | object | - | code:integer/int32; data:EvalDataset; message:string; error:string; success:boolean |
-| `ResultEvalRun` | object | - | code:integer/int32; data:EvalRun; message:string; error:string; success:boolean |
-| `ResultExamResponse` | object | - | code:integer/int32; data:ExamResponse; message:string; error:string; success:boolean |
-| `ResultFileView` | object | - | code:integer/int32; data:FileView; message:string; error:string; success:boolean |
-| `ResultGenerationRun` | object | - | code:integer/int32; data:GenerationRun; message:string; error:string; success:boolean |
-| `ResultGraphValidationVO` | object | - | code:integer/int32; data:GraphValidationVO; message:string; error:string; success:boolean |
-| `ResultGroupChatAsset` | object | - | code:integer/int32; data:GroupChatAsset; message:string; error:string; success:boolean |
-| `ResultGroupTurnRun` | object | - | code:integer/int32; data:GroupTurnRun; message:string; error:string; success:boolean |
-| `ResultHybridRecommendResponse` | object | - | code:integer/int32; data:HybridRecommendResponse; message:string; error:string; success:boolean |
-| `ResultImageResult` | object | - | code:integer/int32; data:ImageResult; message:string; error:string; success:boolean |
-| `ResultIntentDefVO` | object | - | code:integer/int32; data:IntentDefVO; message:string; error:string; success:boolean |
-| `ResultJobView` | object | - | code:integer/int32; data:JobView; message:string; error:string; success:boolean |
-| `ResultKnowledgeGraphResponse` | object | - | code:integer/int32; data:KnowledgeGraphResponse; message:string; error:string; success:boolean |
-| `ResultListAgentDefinition` | object | - | code:integer/int32; data:array<AgentDefinition>; message:string; error:string; success:boolean |
-| `ResultListAgentVersionVO` | object | - | code:integer/int32; data:array<AgentVersionVO>; message:string; error:string; success:boolean |
-| `ResultListAiApp` | object | - | code:integer/int32; data:array<AiApp>; message:string; error:string; success:boolean |
-| `ResultListAiAppVersion` | object | - | code:integer/int32; data:array<AiAppVersion>; message:string; error:string; success:boolean |
-| `ResultListAiModelResponse` | object | - | code:integer/int32; data:array<AiModelResponse>; message:string; error:string; success:boolean |
-| `ResultListAiModelVO` | object | - | code:integer/int32; data:array<AiModelVO>; message:string; error:string; success:boolean |
-| `ResultListAiPlatformVO` | object | - | code:integer/int32; data:array<AiPlatformVO>; message:string; error:string; success:boolean |
-| `ResultListAiRun` | object | - | code:integer/int32; data:array<AiRun>; message:string; error:string; success:boolean |
-| `ResultListAiRunEvent` | object | - | code:integer/int32; data:array<AiRunEvent>; message:string; error:string; success:boolean |
-| `ResultListAuthCodeOptionVO` | object | - | code:integer/int32; data:array<AuthCodeOptionVO>; message:string; error:string; success:boolean |
-| `ResultListChapterResponse` | object | - | code:integer/int32; data:array<ChapterResponse>; message:string; error:string; success:boolean |
-| `ResultListCharacterAsset` | object | - | code:integer/int32; data:array<CharacterAsset>; message:string; error:string; success:boolean |
-| `ResultListConversation` | object | - | code:integer/int32; data:array<Conversation>; message:string; error:string; success:boolean |
-| `ResultListConversationMessage` | object | - | code:integer/int32; data:array<ConversationMessage>; message:string; error:string; success:boolean |
-| `ResultListCourseResponse` | object | - | code:integer/int32; data:array<CourseResponse>; message:string; error:string; success:boolean |
-| `ResultListDailyTaskResponse` | object | - | code:integer/int32; data:array<DailyTaskResponse>; message:string; error:string; success:boolean |
-| `ResultListDictVO` | object | - | code:integer/int32; data:array<DictVO>; message:string; error:string; success:boolean |
-| `ResultListDocumentRelationView` | object | - | code:integer/int32; data:array<DocumentRelationView>; message:string; error:string; success:boolean |
-| `ResultListDocumentSummary` | object | - | code:integer/int32; data:array<DocumentSummary>; message:string; error:string; success:boolean |
-| `ResultListEvalCase` | object | - | code:integer/int32; data:array<EvalCase>; message:string; error:string; success:boolean |
-| `ResultListEvalResult` | object | - | code:integer/int32; data:array<EvalResult>; message:string; error:string; success:boolean |
-| `ResultListExamResponse` | object | - | code:integer/int32; data:array<ExamResponse>; message:string; error:string; success:boolean |
-| `ResultListFileView` | object | - | code:integer/int32; data:array<FileView>; message:string; error:string; success:boolean |
-| `ResultListGroupChatAsset` | object | - | code:integer/int32; data:array<GroupChatAsset>; message:string; error:string; success:boolean |
-| `ResultListIdNameOptionVO` | object | - | code:integer/int32; data:array<IdNameOptionVO>; message:string; error:string; success:boolean |
-| `ResultListKnowledgeRecommendResponse` | object | - | code:integer/int32; data:array<KnowledgeRecommendResponse>; message:string; error:string; success:boolean |
-| `ResultListLong` | object | - | code:integer/int32; data:array<integer/int64>; message:string; error:string; success:boolean |
-| `ResultListLorebookAsset` | object | - | code:integer/int32; data:array<LorebookAsset>; message:string; error:string; success:boolean |
-| `ResultListMapStringObject` | object | - | code:integer/int32; data:array<object>; message:string; error:string; success:boolean |
-| `ResultListMcpToolDescriptor` | object | - | code:integer/int32; data:array<McpToolDescriptor>; message:string; error:string; success:boolean |
-| `ResultListMemberView` | object | - | code:integer/int32; data:array<MemberView>; message:string; error:string; success:boolean |
-| `ResultListMemoryEdge` | object | - | code:integer/int32; data:array<MemoryEdge>; message:string; error:string; success:boolean |
-| `ResultListMenuVO` | object | - | code:integer/int32; data:array<MenuVO>; message:string; error:string; success:boolean |
-| `ResultListModelProviderCapabilities` | object | - | code:integer/int32; data:array<ModelProviderCapabilities>; message:string; error:string; success:boolean |
-| `ResultListModelRoutePolicy` | object | - | code:integer/int32; data:array<ModelRoutePolicy>; message:string; error:string; success:boolean |
-| `ResultListNodeTypeMetaVO` | object | - | code:integer/int32; data:array<NodeTypeMetaVO>; message:string; error:string; success:boolean |
-| `ResultListPersonaAsset` | object | - | code:integer/int32; data:array<PersonaAsset>; message:string; error:string; success:boolean |
-| `ResultListPluginInfoVO` | object | - | code:integer/int32; data:array<PluginInfoVO>; message:string; error:string; success:boolean |
-| `ResultListPluginMarketEntry` | object | - | code:integer/int32; data:array<PluginMarketEntry>; message:string; error:string; success:boolean |
-| `ResultListPromptTemplate` | object | - | code:integer/int32; data:array<PromptTemplate>; message:string; error:string; success:boolean |
-| `ResultListPromptTemplateVersion` | object | - | code:integer/int32; data:array<PromptTemplateVersion>; message:string; error:string; success:boolean |
-| `ResultListQuestionRecommendResponse` | object | - | code:integer/int32; data:array<QuestionRecommendResponse>; message:string; error:string; success:boolean |
-| `ResultListQuestionResponse` | object | - | code:integer/int32; data:array<QuestionResponse>; message:string; error:string; success:boolean |
-| `ResultListRelationView` | object | - | code:integer/int32; data:array<RelationView>; message:string; error:string; success:boolean |
-| `ResultListResourceRecommendResponse` | object | - | code:integer/int32; data:array<ResourceRecommendResponse>; message:string; error:string; success:boolean |
-| `ResultListResourceResponse` | object | - | code:integer/int32; data:array<ResourceResponse>; message:string; error:string; success:boolean |
-| `ResultListReviewTaskResponse` | object | - | code:integer/int32; data:array<ReviewTaskResponse>; message:string; error:string; success:boolean |
-| `ResultListRoleVO` | object | - | code:integer/int32; data:array<RoleVO>; message:string; error:string; success:boolean |
-| `ResultListRouteMenuVO` | object | - | code:integer/int32; data:array<RouteMenuVO>; message:string; error:string; success:boolean |
-| `ResultListSpaceView` | object | - | code:integer/int32; data:array<SpaceView>; message:string; error:string; success:boolean |
-| `ResultListString` | object | - | code:integer/int32; data:array<string>; message:string; error:string; success:boolean |
-| `ResultListStudyPlanResponse` | object | - | code:integer/int32; data:array<StudyPlanResponse>; message:string; error:string; success:boolean |
-| `ResultListStudyRecordResponse` | object | - | code:integer/int32; data:array<StudyRecordResponse>; message:string; error:string; success:boolean |
-| `ResultListSubjectResponse` | object | - | code:integer/int32; data:array<SubjectResponse>; message:string; error:string; success:boolean |
-| `ResultListTenantInfoVO` | object | - | code:integer/int32; data:array<TenantInfoVO>; message:string; error:string; success:boolean |
-| `ResultListTenantVO` | object | - | code:integer/int32; data:array<TenantVO>; message:string; error:string; success:boolean |
-| `ResultListTextbookResponse` | object | - | code:integer/int32; data:array<TextbookResponse>; message:string; error:string; success:boolean |
-| `ResultListTimezoneOptionVO` | object | - | code:integer/int32; data:array<TimezoneOptionVO>; message:string; error:string; success:boolean |
-| `ResultListToolApproval` | object | - | code:integer/int32; data:array<ToolApproval>; message:string; error:string; success:boolean |
-| `ResultListUserTenantAssignmentVO` | object | - | code:integer/int32; data:array<UserTenantAssignmentVO>; message:string; error:string; success:boolean |
-| `ResultListVersionView` | object | - | code:integer/int32; data:array<VersionView>; message:string; error:string; success:boolean |
-| `ResultListWeakPointResponse` | object | - | code:integer/int32; data:array<WeakPointResponse>; message:string; error:string; success:boolean |
-| `ResultListWrongQuestionResponse` | object | - | code:integer/int32; data:array<WrongQuestionResponse>; message:string; error:string; success:boolean |
-| `ResultLoginResponseVO` | object | - | code:integer/int32; data:LoginResponseVO; message:string; error:string; success:boolean |
-| `ResultLong` | object | - | code:integer/int32; data:integer/int64; message:string; error:string; success:boolean |
-| `ResultLorebookAsset` | object | - | code:integer/int32; data:LorebookAsset; message:string; error:string; success:boolean |
-| `ResultMapStringObject` | object | - | code:integer/int32; data:object; message:string; error:string; success:boolean |
-| `ResultMapStringString` | object | - | code:integer/int32; data:object; message:string; error:string; success:boolean |
-| `ResultMcpToolDescriptor` | object | - | code:integer/int32; data:McpToolDescriptor; message:string; error:string; success:boolean |
-| `ResultMemoryEvent` | object | - | code:integer/int32; data:MemoryEvent; message:string; error:string; success:boolean |
-| `ResultMemoryRetrievalResult` | object | - | code:integer/int32; data:MemoryRetrievalResult; message:string; error:string; success:boolean |
-| `ResultMemoryRetrievalTrace` | object | - | code:integer/int32; data:MemoryRetrievalTrace; message:string; error:string; success:boolean |
-| `ResultModelProviderCapabilities` | object | - | code:integer/int32; data:ModelProviderCapabilities; message:string; error:string; success:boolean |
-| `ResultModelRoutePolicy` | object | - | code:integer/int32; data:ModelRoutePolicy; message:string; error:string; success:boolean |
-| `ResultNodeTypeMetaVO` | object | - | code:integer/int32; data:NodeTypeMetaVO; message:string; error:string; success:boolean |
-| `ResultObject` | object | - | code:integer/int32; data:-; message:string; error:string; success:boolean |
-| `ResultOverviewResponse` | object | - | code:integer/int32; data:OverviewResponse; message:string; error:string; success:boolean |
-| `ResultPageDataAgentVO` | object | - | code:integer/int32; data:PageDataAgentVO; message:string; error:string; success:boolean |
-| `ResultPageDataAiModelVO` | object | - | code:integer/int32; data:PageDataAiModelVO; message:string; error:string; success:boolean |
-| `ResultPageDataAiPlatformVO` | object | - | code:integer/int32; data:PageDataAiPlatformVO; message:string; error:string; success:boolean |
-| `ResultPageDataAuthCodeOptionVO` | object | - | code:integer/int32; data:PageDataAuthCodeOptionVO; message:string; error:string; success:boolean |
-| `ResultPageDataCaseView` | object | - | code:integer/int32; data:PageDataCaseView; message:string; error:string; success:boolean |
-| `ResultPageDataCourseResponse` | object | - | code:integer/int32; data:PageDataCourseResponse; message:string; error:string; success:boolean |
-| `ResultPageDataDictVO` | object | - | code:integer/int32; data:PageDataDictVO; message:string; error:string; success:boolean |
-| `ResultPageDataDocumentView` | object | - | code:integer/int32; data:PageDataDocumentView; message:string; error:string; success:boolean |
-| `ResultPageDataExamResponse` | object | - | code:integer/int32; data:PageDataExamResponse; message:string; error:string; success:boolean |
-| `ResultPageDataIntentDefVO` | object | - | code:integer/int32; data:PageDataIntentDefVO; message:string; error:string; success:boolean |
-| `ResultPageDataJobView` | object | - | code:integer/int32; data:PageDataJobView; message:string; error:string; success:boolean |
-| `ResultPageDataKnowledgeAuditResponse` | object | - | code:integer/int32; data:PageDataKnowledgeAuditResponse; message:string; error:string; success:boolean |
-| `ResultPageDataMenuVO` | object | - | code:integer/int32; data:PageDataMenuVO; message:string; error:string; success:boolean |
-| `ResultPageDataPointView` | object | - | code:integer/int32; data:PageDataPointView; message:string; error:string; success:boolean |
-| `ResultPageDataQuestionResponse` | object | - | code:integer/int32; data:PageDataQuestionResponse; message:string; error:string; success:boolean |
-| `ResultPageDataResourceResponse` | object | - | code:integer/int32; data:PageDataResourceResponse; message:string; error:string; success:boolean |
-| `ResultPageDataRoleVO` | object | - | code:integer/int32; data:PageDataRoleVO; message:string; error:string; success:boolean |
-| `ResultPageDataSpaceView` | object | - | code:integer/int32; data:PageDataSpaceView; message:string; error:string; success:boolean |
-| `ResultPageDataStudentResponse` | object | - | code:integer/int32; data:PageDataStudentResponse; message:string; error:string; success:boolean |
-| `ResultPageDataSubjectResponse` | object | - | code:integer/int32; data:PageDataSubjectResponse; message:string; error:string; success:boolean |
-| `ResultPageDataTenantVO` | object | - | code:integer/int32; data:PageDataTenantVO; message:string; error:string; success:boolean |
-| `ResultPageDataTextbookResponse` | object | - | code:integer/int32; data:PageDataTextbookResponse; message:string; error:string; success:boolean |
-| `ResultPageDataUserVO` | object | - | code:integer/int32; data:PageDataUserVO; message:string; error:string; success:boolean |
-| `ResultPersonaAsset` | object | - | code:integer/int32; data:PersonaAsset; message:string; error:string; success:boolean |
-| `ResultPluginMarketEntry` | object | - | code:integer/int32; data:PluginMarketEntry; message:string; error:string; success:boolean |
-| `ResultPointView` | object | - | code:integer/int32; data:PointView; message:string; error:string; success:boolean |
-| `ResultPreview` | object | - | code:integer/int32; data:Preview; message:string; error:string; success:boolean |
-| `ResultPromptDiff` | object | - | code:integer/int32; data:PromptDiff; message:string; error:string; success:boolean |
-| `ResultPromptPreview` | object | - | code:integer/int32; data:PromptPreview; message:string; error:string; success:boolean |
-| `ResultPromptTemplate` | object | - | code:integer/int32; data:PromptTemplate; message:string; error:string; success:boolean |
-| `ResultPromptTemplateVersion` | object | - | code:integer/int32; data:PromptTemplateVersion; message:string; error:string; success:boolean |
-| `ResultPromptTestRun` | object | - | code:integer/int32; data:PromptTestRun; message:string; error:string; success:boolean |
-| `ResultProviderHealth` | object | - | code:integer/int32; data:ProviderHealth; message:string; error:string; success:boolean |
-| `ResultQuestionResponse` | object | - | code:integer/int32; data:QuestionResponse; message:string; error:string; success:boolean |
-| `ResultResourceResponse` | object | - | code:integer/int32; data:ResourceResponse; message:string; error:string; success:boolean |
-| `ResultRestoreCheckResult` | object | - | code:integer/int32; data:RestoreCheckResult; message:string; error:string; success:boolean |
-| `ResultReviewTaskResponse` | object | - | code:integer/int32; data:ReviewTaskResponse; message:string; error:string; success:boolean |
-| `ResultRoleVO` | object | - | code:integer/int32; data:RoleVO; message:string; error:string; success:boolean |
-| `ResultRunResult` | object | - | code:integer/int32; data:RunResult; message:string; error:string; success:boolean |
-| `ResultSearchResponse` | object | - | code:integer/int32; data:SearchResponse; message:string; error:string; success:boolean |
-| `ResultSetString` | object | - | code:integer/int32; data:array<string>; message:string; error:string; success:boolean |
-| `ResultSpaceView` | object | - | code:integer/int32; data:SpaceView; message:string; error:string; success:boolean |
-| `ResultString` | object | - | code:integer/int32; data:string; message:string; error:string; success:boolean |
-| `ResultStudentResponse` | object | - | code:integer/int32; data:StudentResponse; message:string; error:string; success:boolean |
-| `ResultStudyPlanResponse` | object | - | code:integer/int32; data:StudyPlanResponse; message:string; error:string; success:boolean |
-| `ResultStudyRecordResponse` | object | - | code:integer/int32; data:StudyRecordResponse; message:string; error:string; success:boolean |
-| `ResultSubjectResponse` | object | - | code:integer/int32; data:SubjectResponse; message:string; error:string; success:boolean |
-| `ResultSwitchContextResponse` | object | - | code:integer/int32; data:SwitchContextResponse; message:string; error:string; success:boolean |
-| `ResultTenantVO` | object | - | code:integer/int32; data:TenantVO; message:string; error:string; success:boolean |
-| `ResultTextbookResponse` | object | - | code:integer/int32; data:TextbookResponse; message:string; error:string; success:boolean |
-| `ResultToolApproval` | object | - | code:integer/int32; data:ToolApproval; message:string; error:string; success:boolean |
-| `ResultTrendResponse` | object | - | code:integer/int32; data:TrendResponse; message:string; error:string; success:boolean |
-| `ResultTurnDecision` | object | - | code:integer/int32; data:TurnDecision; message:string; error:string; success:boolean |
-| `ResultUploadResult` | object | - | code:integer/int32; data:UploadResult; message:string; error:string; success:boolean |
-| `ResultUploadSession` | object | - | code:integer/int32; data:UploadSession; message:string; error:string; success:boolean |
-| `ResultUserVO` | object | - | code:integer/int32; data:UserVO; message:string; error:string; success:boolean |
-| `ResultValidateCaptchaResponse` | object | - | code:integer/int32; data:ValidateCaptchaResponse; message:string; error:string; success:boolean |
-| `ResultVisionResult` | object | - | code:integer/int32; data:VisionResult; message:string; error:string; success:boolean |
-| `ResultVoid` | object | - | code:integer/int32; data:-; message:string; error:string; success:boolean |
-| `ResultWrongQuestionResponse` | object | - | code:integer/int32; data:WrongQuestionResponse; message:string; error:string; success:boolean |
-| `RetryRequest` | object | - | platform:string; model:string |
-| `ReviewRequest` | object | knowledgeId, studentId | id:integer/int64; studentId*:integer/int64; knowledgeId*:integer/int64; status:integer/int32; reviewDate:string/date; reviewRound:integer/int32; resultScore:number/double; completedAt:string/date-time |
-| `ReviewTaskResponse` | object | - | id:integer/int64; studentId:integer/int64; knowledgeId:integer/int64; knowledgeName:string; reviewRound:integer/int32; reviewDate:string; status:integer/int32; statusDesc:string; resultScore:number/double; completedAt:string/date-time |
-| `RolePageRequest` | object | - | pageSize:integer/int32; pageNum:integer/int32; orderByColumn:string; isAsc:string; orderFields:array<OrderField>; filterConditions:array<FilterCondition>; name:string |
-| `RoleRequest` | object | code, name, tenantId | code*:string; tenantId*:integer/int64; name*:string; status:string; remark:string; permissions:array<integer/int64> |
-| `RoleVO` | object | - | id:integer/int64; tenantId:integer/int64; code:string; name:string; status:integer/int32; remark:string; delFlag:integer/int32; createTime:string/date-time; updateTime:string/date-time; permissions:array<integer/int64> |
-| `RouteMenuVO` | object | - | id:integer/int64; pid:integer/int64; name:string; path:string; component:string; type:string; status:integer/int32; icon:string; redirect:string; meta:MetaVO; children:array<RouteMenuVO> |
-| `RouteRequest` | object | - | name:string; orderedModels:array<string>; timeoutMs:integer/int32; fallbackOnError:boolean; maxTokens:integer/int64 |
+| `ResourceRecommendResponse` | object | - | knowledgeId:integer/int64; knowledgeName:string; reason:string; recommendType:string; resourceId:integer/int64; score:integer/int32; title:string; type:string |
+| `ResourceRequest` | object | name, type, url | coverUrl:string; description:string; difficulty:integer/int32; grade:integer/int32; id:integer/int64; name*:string; status:integer/int32; subjectCode:string; type*:string; url*:string |
+| `ResourceResponse` | object | - | coverUrl:string; description:string; difficulty:integer/int32; grade:integer/int32; id:integer/int64; name:string; subjectCode:string; type:string; url:string; viewCount:integer/int64 |
+| `ResponsesRequest` | object | - | conversationId:string; input:-; maxOutputTokens:integer/int32; model:string; platform:string; reasoningEffort:string; store:boolean; stream:boolean; temperature:number/double; tools:array<object> |
+| `RestoreCheckResult` | object | - | entries:integer/int64; errors:array<string>; valid:boolean |
+| `RestoreRequest` | object | - | expectedVersion:integer/int64 |
+| `ResultAbilityRadarResponse` | object | - | code:integer/int32; data:AbilityRadarResponse; error:string; message:string; success:boolean |
+| `ResultAgentDefinition` | object | - | code:integer/int32; data:AgentDefinition; error:string; message:string; success:boolean |
+| `ResultAgentDetailVO` | object | - | code:integer/int32; data:AgentDetailVO; error:string; message:string; success:boolean |
+| `ResultAgentVO` | object | - | code:integer/int32; data:AgentVO; error:string; message:string; success:boolean |
+| `ResultAgentVersionDetailVO` | object | - | code:integer/int32; data:AgentVersionDetailVO; error:string; message:string; success:boolean |
+| `ResultAgentVersionVO` | object | - | code:integer/int32; data:AgentVersionVO; error:string; message:string; success:boolean |
+| `ResultAiApp` | object | - | code:integer/int32; data:AiApp; error:string; message:string; success:boolean |
+| `ResultAiAppPreview` | object | - | code:integer/int32; data:AiAppPreview; error:string; message:string; success:boolean |
+| `ResultAiAppVersion` | object | - | code:integer/int32; data:AiAppVersion; error:string; message:string; success:boolean |
+| `ResultAiModelVO` | object | - | code:integer/int32; data:AiModelVO; error:string; message:string; success:boolean |
+| `ResultAiPlatformResponse` | object | - | code:integer/int32; data:AiPlatformResponse; error:string; message:string; success:boolean |
+| `ResultAiPlatformVO` | object | - | code:integer/int32; data:AiPlatformVO; error:string; message:string; success:boolean |
+| `ResultAiRun` | object | - | code:integer/int32; data:AiRun; error:string; message:string; success:boolean |
+| `ResultAuthCodeResponse` | object | - | code:integer/int32; data:AuthCodeResponse; error:string; message:string; success:boolean |
+| `ResultBackupResult` | object | - | code:integer/int32; data:BackupResult; error:string; message:string; success:boolean |
+| `ResultBoolean` | object | - | code:integer/int32; data:boolean; error:string; message:string; success:boolean |
+| `ResultCaptchaVO` | object | - | code:integer/int32; data:CaptchaVO; error:string; message:string; success:boolean |
+| `ResultCaseView` | object | - | code:integer/int32; data:CaseView; error:string; message:string; success:boolean |
+| `ResultChapterResponse` | object | - | code:integer/int32; data:ChapterResponse; error:string; message:string; success:boolean |
+| `ResultCharacterAsset` | object | - | code:integer/int32; data:CharacterAsset; error:string; message:string; success:boolean |
+| `ResultConversation` | object | - | code:integer/int32; data:Conversation; error:string; message:string; success:boolean |
+| `ResultConversationMessage` | object | - | code:integer/int32; data:ConversationMessage; error:string; message:string; success:boolean |
+| `ResultCourseResponse` | object | - | code:integer/int32; data:CourseResponse; error:string; message:string; success:boolean |
+| `ResultDictVO` | object | - | code:integer/int32; data:DictVO; error:string; message:string; success:boolean |
+| `ResultDifficultyScaleView` | object | - | code:integer/int32; data:DifficultyScaleView; error:string; message:string; success:boolean |
+| `ResultDocumentView` | object | - | code:integer/int32; data:DocumentView; error:string; message:string; success:boolean |
+| `ResultEvalCase` | object | - | code:integer/int32; data:EvalCase; error:string; message:string; success:boolean |
+| `ResultEvalDataset` | object | - | code:integer/int32; data:EvalDataset; error:string; message:string; success:boolean |
+| `ResultEvalRun` | object | - | code:integer/int32; data:EvalRun; error:string; message:string; success:boolean |
+| `ResultExamResponse` | object | - | code:integer/int32; data:ExamResponse; error:string; message:string; success:boolean |
+| `ResultFileView` | object | - | code:integer/int32; data:FileView; error:string; message:string; success:boolean |
+| `ResultGenerationRun` | object | - | code:integer/int32; data:GenerationRun; error:string; message:string; success:boolean |
+| `ResultGraphValidationVO` | object | - | code:integer/int32; data:GraphValidationVO; error:string; message:string; success:boolean |
+| `ResultGroupChatAsset` | object | - | code:integer/int32; data:GroupChatAsset; error:string; message:string; success:boolean |
+| `ResultGroupTurnRun` | object | - | code:integer/int32; data:GroupTurnRun; error:string; message:string; success:boolean |
+| `ResultHybridRecommendResponse` | object | - | code:integer/int32; data:HybridRecommendResponse; error:string; message:string; success:boolean |
+| `ResultImageResult` | object | - | code:integer/int32; data:ImageResult; error:string; message:string; success:boolean |
+| `ResultIntentDefVO` | object | - | code:integer/int32; data:IntentDefVO; error:string; message:string; success:boolean |
+| `ResultJobView` | object | - | code:integer/int32; data:JobView; error:string; message:string; success:boolean |
+| `ResultKnowledgeGraphResponse` | object | - | code:integer/int32; data:KnowledgeGraphResponse; error:string; message:string; success:boolean |
+| `ResultListAgentDefinition` | object | - | code:integer/int32; data:array<AgentDefinition>; error:string; message:string; success:boolean |
+| `ResultListAgentVersionVO` | object | - | code:integer/int32; data:array<AgentVersionVO>; error:string; message:string; success:boolean |
+| `ResultListAiApp` | object | - | code:integer/int32; data:array<AiApp>; error:string; message:string; success:boolean |
+| `ResultListAiAppVersion` | object | - | code:integer/int32; data:array<AiAppVersion>; error:string; message:string; success:boolean |
+| `ResultListAiModelResponse` | object | - | code:integer/int32; data:array<AiModelResponse>; error:string; message:string; success:boolean |
+| `ResultListAiModelVO` | object | - | code:integer/int32; data:array<AiModelVO>; error:string; message:string; success:boolean |
+| `ResultListAiPlatformVO` | object | - | code:integer/int32; data:array<AiPlatformVO>; error:string; message:string; success:boolean |
+| `ResultListAiRun` | object | - | code:integer/int32; data:array<AiRun>; error:string; message:string; success:boolean |
+| `ResultListAiRunEvent` | object | - | code:integer/int32; data:array<AiRunEvent>; error:string; message:string; success:boolean |
+| `ResultListAuthCodeOptionVO` | object | - | code:integer/int32; data:array<AuthCodeOptionVO>; error:string; message:string; success:boolean |
+| `ResultListChapterResponse` | object | - | code:integer/int32; data:array<ChapterResponse>; error:string; message:string; success:boolean |
+| `ResultListCharacterAsset` | object | - | code:integer/int32; data:array<CharacterAsset>; error:string; message:string; success:boolean |
+| `ResultListConversation` | object | - | code:integer/int32; data:array<Conversation>; error:string; message:string; success:boolean |
+| `ResultListConversationMessage` | object | - | code:integer/int32; data:array<ConversationMessage>; error:string; message:string; success:boolean |
+| `ResultListCourseResponse` | object | - | code:integer/int32; data:array<CourseResponse>; error:string; message:string; success:boolean |
+| `ResultListDailyTaskResponse` | object | - | code:integer/int32; data:array<DailyTaskResponse>; error:string; message:string; success:boolean |
+| `ResultListDictVO` | object | - | code:integer/int32; data:array<DictVO>; error:string; message:string; success:boolean |
+| `ResultListDocumentRelationView` | object | - | code:integer/int32; data:array<DocumentRelationView>; error:string; message:string; success:boolean |
+| `ResultListDocumentSummary` | object | - | code:integer/int32; data:array<DocumentSummary>; error:string; message:string; success:boolean |
+| `ResultListEvalCase` | object | - | code:integer/int32; data:array<EvalCase>; error:string; message:string; success:boolean |
+| `ResultListEvalResult` | object | - | code:integer/int32; data:array<EvalResult>; error:string; message:string; success:boolean |
+| `ResultListExamResponse` | object | - | code:integer/int32; data:array<ExamResponse>; error:string; message:string; success:boolean |
+| `ResultListFileView` | object | - | code:integer/int32; data:array<FileView>; error:string; message:string; success:boolean |
+| `ResultListGroupChatAsset` | object | - | code:integer/int32; data:array<GroupChatAsset>; error:string; message:string; success:boolean |
+| `ResultListIdNameOptionVO` | object | - | code:integer/int32; data:array<IdNameOptionVO>; error:string; message:string; success:boolean |
+| `ResultListKnowledgeRecommendResponse` | object | - | code:integer/int32; data:array<KnowledgeRecommendResponse>; error:string; message:string; success:boolean |
+| `ResultListLong` | object | - | code:integer/int32; data:array<integer/int64>; error:string; message:string; success:boolean |
+| `ResultListLorebookAsset` | object | - | code:integer/int32; data:array<LorebookAsset>; error:string; message:string; success:boolean |
+| `ResultListMapStringObject` | object | - | code:integer/int32; data:array<object>; error:string; message:string; success:boolean |
+| `ResultListMcpToolDescriptor` | object | - | code:integer/int32; data:array<McpToolDescriptor>; error:string; message:string; success:boolean |
+| `ResultListMemberView` | object | - | code:integer/int32; data:array<MemberView>; error:string; message:string; success:boolean |
+| `ResultListMemoryEdge` | object | - | code:integer/int32; data:array<MemoryEdge>; error:string; message:string; success:boolean |
+| `ResultListMenuVO` | object | - | code:integer/int32; data:array<MenuVO>; error:string; message:string; success:boolean |
+| `ResultListModelProviderCapabilities` | object | - | code:integer/int32; data:array<ModelProviderCapabilities>; error:string; message:string; success:boolean |
+| `ResultListModelRoutePolicy` | object | - | code:integer/int32; data:array<ModelRoutePolicy>; error:string; message:string; success:boolean |
+| `ResultListNodeTypeMetaVO` | object | - | code:integer/int32; data:array<NodeTypeMetaVO>; error:string; message:string; success:boolean |
+| `ResultListPersonaAsset` | object | - | code:integer/int32; data:array<PersonaAsset>; error:string; message:string; success:boolean |
+| `ResultListPluginInfoVO` | object | - | code:integer/int32; data:array<PluginInfoVO>; error:string; message:string; success:boolean |
+| `ResultListPluginMarketEntry` | object | - | code:integer/int32; data:array<PluginMarketEntry>; error:string; message:string; success:boolean |
+| `ResultListPromptTemplate` | object | - | code:integer/int32; data:array<PromptTemplate>; error:string; message:string; success:boolean |
+| `ResultListPromptTemplateVersion` | object | - | code:integer/int32; data:array<PromptTemplateVersion>; error:string; message:string; success:boolean |
+| `ResultListQuestionRecommendResponse` | object | - | code:integer/int32; data:array<QuestionRecommendResponse>; error:string; message:string; success:boolean |
+| `ResultListQuestionResponse` | object | - | code:integer/int32; data:array<QuestionResponse>; error:string; message:string; success:boolean |
+| `ResultListRelationView` | object | - | code:integer/int32; data:array<RelationView>; error:string; message:string; success:boolean |
+| `ResultListResourceRecommendResponse` | object | - | code:integer/int32; data:array<ResourceRecommendResponse>; error:string; message:string; success:boolean |
+| `ResultListResourceResponse` | object | - | code:integer/int32; data:array<ResourceResponse>; error:string; message:string; success:boolean |
+| `ResultListReviewTaskResponse` | object | - | code:integer/int32; data:array<ReviewTaskResponse>; error:string; message:string; success:boolean |
+| `ResultListRoleVO` | object | - | code:integer/int32; data:array<RoleVO>; error:string; message:string; success:boolean |
+| `ResultListRouteMenuVO` | object | - | code:integer/int32; data:array<RouteMenuVO>; error:string; message:string; success:boolean |
+| `ResultListSpaceView` | object | - | code:integer/int32; data:array<SpaceView>; error:string; message:string; success:boolean |
+| `ResultListString` | object | - | code:integer/int32; data:array<string>; error:string; message:string; success:boolean |
+| `ResultListStudyPlanResponse` | object | - | code:integer/int32; data:array<StudyPlanResponse>; error:string; message:string; success:boolean |
+| `ResultListStudyRecordResponse` | object | - | code:integer/int32; data:array<StudyRecordResponse>; error:string; message:string; success:boolean |
+| `ResultListSubjectResponse` | object | - | code:integer/int32; data:array<SubjectResponse>; error:string; message:string; success:boolean |
+| `ResultListTenantInfoVO` | object | - | code:integer/int32; data:array<TenantInfoVO>; error:string; message:string; success:boolean |
+| `ResultListTenantVO` | object | - | code:integer/int32; data:array<TenantVO>; error:string; message:string; success:boolean |
+| `ResultListTextbookResponse` | object | - | code:integer/int32; data:array<TextbookResponse>; error:string; message:string; success:boolean |
+| `ResultListTimezoneOptionVO` | object | - | code:integer/int32; data:array<TimezoneOptionVO>; error:string; message:string; success:boolean |
+| `ResultListToolApproval` | object | - | code:integer/int32; data:array<ToolApproval>; error:string; message:string; success:boolean |
+| `ResultListUserTenantAssignmentVO` | object | - | code:integer/int32; data:array<UserTenantAssignmentVO>; error:string; message:string; success:boolean |
+| `ResultListVersionView` | object | - | code:integer/int32; data:array<VersionView>; error:string; message:string; success:boolean |
+| `ResultListWeakPointResponse` | object | - | code:integer/int32; data:array<WeakPointResponse>; error:string; message:string; success:boolean |
+| `ResultListWrongQuestionResponse` | object | - | code:integer/int32; data:array<WrongQuestionResponse>; error:string; message:string; success:boolean |
+| `ResultLoginResponseVO` | object | - | code:integer/int32; data:LoginResponseVO; error:string; message:string; success:boolean |
+| `ResultLong` | object | - | code:integer/int32; data:integer/int64; error:string; message:string; success:boolean |
+| `ResultLorebookAsset` | object | - | code:integer/int32; data:LorebookAsset; error:string; message:string; success:boolean |
+| `ResultMapStringObject` | object | - | code:integer/int32; data:object; error:string; message:string; success:boolean |
+| `ResultMapStringString` | object | - | code:integer/int32; data:object; error:string; message:string; success:boolean |
+| `ResultMcpToolDescriptor` | object | - | code:integer/int32; data:McpToolDescriptor; error:string; message:string; success:boolean |
+| `ResultMemoryEvent` | object | - | code:integer/int32; data:MemoryEvent; error:string; message:string; success:boolean |
+| `ResultMemoryRetrievalResult` | object | - | code:integer/int32; data:MemoryRetrievalResult; error:string; message:string; success:boolean |
+| `ResultMemoryRetrievalTrace` | object | - | code:integer/int32; data:MemoryRetrievalTrace; error:string; message:string; success:boolean |
+| `ResultModelProviderCapabilities` | object | - | code:integer/int32; data:ModelProviderCapabilities; error:string; message:string; success:boolean |
+| `ResultModelRoutePolicy` | object | - | code:integer/int32; data:ModelRoutePolicy; error:string; message:string; success:boolean |
+| `ResultNodeTypeMetaVO` | object | - | code:integer/int32; data:NodeTypeMetaVO; error:string; message:string; success:boolean |
+| `ResultObject` | object | - | code:integer/int32; data:-; error:string; message:string; success:boolean |
+| `ResultOverviewResponse` | object | - | code:integer/int32; data:OverviewResponse; error:string; message:string; success:boolean |
+| `ResultPageDataAgentVO` | object | - | code:integer/int32; data:PageDataAgentVO; error:string; message:string; success:boolean |
+| `ResultPageDataAiModelVO` | object | - | code:integer/int32; data:PageDataAiModelVO; error:string; message:string; success:boolean |
+| `ResultPageDataAiPlatformVO` | object | - | code:integer/int32; data:PageDataAiPlatformVO; error:string; message:string; success:boolean |
+| `ResultPageDataAuthCodeOptionVO` | object | - | code:integer/int32; data:PageDataAuthCodeOptionVO; error:string; message:string; success:boolean |
+| `ResultPageDataCaseView` | object | - | code:integer/int32; data:PageDataCaseView; error:string; message:string; success:boolean |
+| `ResultPageDataCourseResponse` | object | - | code:integer/int32; data:PageDataCourseResponse; error:string; message:string; success:boolean |
+| `ResultPageDataDictVO` | object | - | code:integer/int32; data:PageDataDictVO; error:string; message:string; success:boolean |
+| `ResultPageDataDocumentView` | object | - | code:integer/int32; data:PageDataDocumentView; error:string; message:string; success:boolean |
+| `ResultPageDataExamResponse` | object | - | code:integer/int32; data:PageDataExamResponse; error:string; message:string; success:boolean |
+| `ResultPageDataIntentDefVO` | object | - | code:integer/int32; data:PageDataIntentDefVO; error:string; message:string; success:boolean |
+| `ResultPageDataJobView` | object | - | code:integer/int32; data:PageDataJobView; error:string; message:string; success:boolean |
+| `ResultPageDataKnowledgeAuditResponse` | object | - | code:integer/int32; data:PageDataKnowledgeAuditResponse; error:string; message:string; success:boolean |
+| `ResultPageDataMenuVO` | object | - | code:integer/int32; data:PageDataMenuVO; error:string; message:string; success:boolean |
+| `ResultPageDataPointView` | object | - | code:integer/int32; data:PageDataPointView; error:string; message:string; success:boolean |
+| `ResultPageDataQuestionResponse` | object | - | code:integer/int32; data:PageDataQuestionResponse; error:string; message:string; success:boolean |
+| `ResultPageDataResourceResponse` | object | - | code:integer/int32; data:PageDataResourceResponse; error:string; message:string; success:boolean |
+| `ResultPageDataRoleVO` | object | - | code:integer/int32; data:PageDataRoleVO; error:string; message:string; success:boolean |
+| `ResultPageDataSpaceView` | object | - | code:integer/int32; data:PageDataSpaceView; error:string; message:string; success:boolean |
+| `ResultPageDataStudentResponse` | object | - | code:integer/int32; data:PageDataStudentResponse; error:string; message:string; success:boolean |
+| `ResultPageDataSubjectResponse` | object | - | code:integer/int32; data:PageDataSubjectResponse; error:string; message:string; success:boolean |
+| `ResultPageDataTenantVO` | object | - | code:integer/int32; data:PageDataTenantVO; error:string; message:string; success:boolean |
+| `ResultPageDataTextbookResponse` | object | - | code:integer/int32; data:PageDataTextbookResponse; error:string; message:string; success:boolean |
+| `ResultPageDataUserVO` | object | - | code:integer/int32; data:PageDataUserVO; error:string; message:string; success:boolean |
+| `ResultPersonaAsset` | object | - | code:integer/int32; data:PersonaAsset; error:string; message:string; success:boolean |
+| `ResultPluginMarketEntry` | object | - | code:integer/int32; data:PluginMarketEntry; error:string; message:string; success:boolean |
+| `ResultPointView` | object | - | code:integer/int32; data:PointView; error:string; message:string; success:boolean |
+| `ResultPreview` | object | - | code:integer/int32; data:Preview; error:string; message:string; success:boolean |
+| `ResultPromptDiff` | object | - | code:integer/int32; data:PromptDiff; error:string; message:string; success:boolean |
+| `ResultPromptPreview` | object | - | code:integer/int32; data:PromptPreview; error:string; message:string; success:boolean |
+| `ResultPromptTemplate` | object | - | code:integer/int32; data:PromptTemplate; error:string; message:string; success:boolean |
+| `ResultPromptTemplateVersion` | object | - | code:integer/int32; data:PromptTemplateVersion; error:string; message:string; success:boolean |
+| `ResultPromptTestRun` | object | - | code:integer/int32; data:PromptTestRun; error:string; message:string; success:boolean |
+| `ResultProviderHealth` | object | - | code:integer/int32; data:ProviderHealth; error:string; message:string; success:boolean |
+| `ResultQuestionResponse` | object | - | code:integer/int32; data:QuestionResponse; error:string; message:string; success:boolean |
+| `ResultResourceResponse` | object | - | code:integer/int32; data:ResourceResponse; error:string; message:string; success:boolean |
+| `ResultRestoreCheckResult` | object | - | code:integer/int32; data:RestoreCheckResult; error:string; message:string; success:boolean |
+| `ResultReviewTaskResponse` | object | - | code:integer/int32; data:ReviewTaskResponse; error:string; message:string; success:boolean |
+| `ResultRoleVO` | object | - | code:integer/int32; data:RoleVO; error:string; message:string; success:boolean |
+| `ResultRunResult` | object | - | code:integer/int32; data:RunResult; error:string; message:string; success:boolean |
+| `ResultSearchResponse` | object | - | code:integer/int32; data:SearchResponse; error:string; message:string; success:boolean |
+| `ResultSetString` | object | - | code:integer/int32; data:array<string>; error:string; message:string; success:boolean |
+| `ResultSpaceView` | object | - | code:integer/int32; data:SpaceView; error:string; message:string; success:boolean |
+| `ResultString` | object | - | code:integer/int32; data:string; error:string; message:string; success:boolean |
+| `ResultStudentResponse` | object | - | code:integer/int32; data:StudentResponse; error:string; message:string; success:boolean |
+| `ResultStudyPlanResponse` | object | - | code:integer/int32; data:StudyPlanResponse; error:string; message:string; success:boolean |
+| `ResultStudyRecordResponse` | object | - | code:integer/int32; data:StudyRecordResponse; error:string; message:string; success:boolean |
+| `ResultSubjectResponse` | object | - | code:integer/int32; data:SubjectResponse; error:string; message:string; success:boolean |
+| `ResultSwitchContextResponse` | object | - | code:integer/int32; data:SwitchContextResponse; error:string; message:string; success:boolean |
+| `ResultTenantVO` | object | - | code:integer/int32; data:TenantVO; error:string; message:string; success:boolean |
+| `ResultTextbookResponse` | object | - | code:integer/int32; data:TextbookResponse; error:string; message:string; success:boolean |
+| `ResultToolApproval` | object | - | code:integer/int32; data:ToolApproval; error:string; message:string; success:boolean |
+| `ResultTrendResponse` | object | - | code:integer/int32; data:TrendResponse; error:string; message:string; success:boolean |
+| `ResultTurnDecision` | object | - | code:integer/int32; data:TurnDecision; error:string; message:string; success:boolean |
+| `ResultUploadResult` | object | - | code:integer/int32; data:UploadResult; error:string; message:string; success:boolean |
+| `ResultUploadSession` | object | - | code:integer/int32; data:UploadSession; error:string; message:string; success:boolean |
+| `ResultUserVO` | object | - | code:integer/int32; data:UserVO; error:string; message:string; success:boolean |
+| `ResultValidateCaptchaResponse` | object | - | code:integer/int32; data:ValidateCaptchaResponse; error:string; message:string; success:boolean |
+| `ResultVisionResult` | object | - | code:integer/int32; data:VisionResult; error:string; message:string; success:boolean |
+| `ResultVoid` | object | - | code:integer/int32; data:-; error:string; message:string; success:boolean |
+| `ResultWrongQuestionResponse` | object | - | code:integer/int32; data:WrongQuestionResponse; error:string; message:string; success:boolean |
+| `RetryRequest` | object | - | model:string; platform:string |
+| `ReviewRequest` | object | knowledgeId, studentId | completedAt:string/date-time; id:integer/int64; knowledgeId*:integer/int64; resultScore:number/double; reviewDate:string/date; reviewRound:integer/int32; status:integer/int32; studentId*:integer/int64 |
+| `ReviewTaskResponse` | object | - | completedAt:string/date-time; id:integer/int64; knowledgeId:integer/int64; knowledgeName:string; resultScore:number/double; reviewDate:string; reviewRound:integer/int32; status:integer/int32; statusDesc:string; studentId:integer/int64 |
+| `RolePageRequest` | object | - | filterConditions:array<FilterCondition>; isAsc:string; name:string; orderByColumn:string; orderFields:array<OrderField>; pageNum:integer/int32; pageSize:integer/int32 |
+| `RoleRequest` | object | code, name, tenantId | code*:string; name*:string; permissions:array<integer/int64>; remark:string; status:string; tenantId*:integer/int64 |
+| `RoleVO` | object | - | code:string; createTime:string/date-time; delFlag:integer/int32; id:integer/int64; name:string; permissions:array<integer/int64>; remark:string; status:integer/int32; tenantId:integer/int64; updateTime:string/date-time |
+| `RouteMenuVO` | object | - | children:array<RouteMenuVO>; component:string; icon:string; id:integer/int64; meta:MetaVO; name:string; path:string; pid:integer/int64; redirect:string; status:integer/int32; type:string |
+| `RouteRequest` | object | - | fallbackOnError:boolean; maxTokens:integer/int64; name:string; orderedModels:array<string>; timeoutMs:integer/int32 |
 | `RunRequest` | object | - | spaceId:integer/int64; topK:integer/int32 |
-| `RunResult` | object | - | spaceId:integer/int64; caseCount:integer/int32; topK:integer/int32; recallAtK:number/double; mrr:number/double; citationAccuracy:number/double; cases:array<CaseResult> |
-| `SearchRequest` | object | query, spaceId | spaceId*:integer/int64; query*:string; mode:string; topK:integer/int32; threshold:number/double; rerank:boolean |
-| `SearchResponse` | object | - | spaceId:integer/int64; mode:string; hits:array<HybridHit> |
+| `RunResult` | object | - | caseCount:integer/int32; cases:array<CaseResult>; citationAccuracy:number/double; mrr:number/double; recallAtK:number/double; spaceId:integer/int64; topK:integer/int32 |
+| `RuntimeStatus` | object | - | appHome:string; health:string; healthDetail:string; managed:boolean; mode:string; pid:integer/int64; port:integer/int32; uptimeMillis:integer/int64; version:string |
+| `SearchRequest` | object | query, spaceId | mode:string; query*:string; rerank:boolean; spaceId*:integer/int64; threshold:number/double; topK:integer/int32 |
+| `SearchResponse` | object | - | hits:array<HybridHit>; mode:string; spaceId:integer/int64 |
+| `SecretChange` | object | - | action:string; value:string |
 | `ServerSentEventAiRunEvent` | - | - | - |
 | `ServerSentEventGenerationEvent` | - | - | - |
+| `SessionResponse` | object | - | authenticated:boolean; csrfToken:string |
 | `SetTimezoneRequest` | object | timezone | timezone*:string |
-| `SpaceView` | object | - | id:integer/int64; code:string; domainCode:string; name:string; description:string; accessMode:string; reviewMode:string; bindingMode:string; difficultyScaleId:integer/int64; embeddingProfile:string; rerankProfile:string; chunkStrategy:string; chunkSize:integer/int32; chunkOverlap:integer/int32; activeIndexVersion:integer/int64; status:integer/int32; createTime:string/date-time; updateTime:string/date-time |
-| `StateGraphAgentState` | object | - | channels:object; stateSerializer:StateSerializerAgentState; stateFactory:AgentStateFactoryAgentState |
+| `SpaceView` | object | - | accessMode:string; activeIndexVersion:integer/int64; bindingMode:string; chunkOverlap:integer/int32; chunkSize:integer/int32; chunkStrategy:string; code:string; createTime:string/date-time; description:string; difficultyScaleId:integer/int64; domainCode:string; embeddingProfile:string; id:integer/int64; name:string; rerankProfile:string; reviewMode:string; status:integer/int32; updateTime:string/date-time |
+| `StateGraphAgentState` | object | - | channels:object; stateFactory:AgentStateFactoryAgentState; stateSerializer:StateSerializerAgentState |
 | `StateSerializerAgentState` | - | - | - |
-| `StudentRequest` | object | grade, name, userId | id:integer/int64; name*:string; userId*:integer/int64; studentNo:string; grade*:integer/int32; gradeLevel:string; school:string; className:string; status:integer/int32 |
-| `StudentResponse` | object | - | id:integer/int64; userId:integer/int64; studentNo:string; name:string; gender:integer/int32; grade:integer/int32; gradeLevel:string; school:string; className:string |
-| `StudyPlanRequest` | object | studentId | id:integer/int64; studentId*:integer/int64; name:string; startDate:string/date; endDate:string/date; status:string |
-| `StudyPlanResponse` | object | - | id:integer/int64; studentId:integer/int64; name:string; startDate:string; endDate:string; status:integer/int32; statusDesc:string; totalItems:integer/int32; completedItems:integer/int32; items:array<DailyTaskResponse> |
-| `StudyRecordRequest` | object | knowledgeId, recordType, studentId | id:integer/int64; studentId*:integer/int64; knowledgeId*:integer/int64; recordType*:string; questionId:integer/int64; score:number/double; accuracy:number/double; durationSec:integer/int32 |
-| `StudyRecordResponse` | object | - | id:integer/int64; studentId:integer/int64; knowledgeId:integer/int64; recordType:string; questionId:integer/int64; score:number/double; accuracy:number/double; durationSec:integer/int32; createTime:string/date-time |
-| `SubjectRequest` | object | code, name | id:integer/int64; code*:string; name*:string; gradeLevel:string; description:string; icon:string; sortOrder:integer/int32; status:integer/int32 |
-| `SubjectResponse` | object | - | id:integer/int64; code:string; name:string; gradeLevel:string; icon:string; sortOrder:integer/int32 |
-| `SwitchContextResponse` | object | - | userInfo:UserVO; tenants:array<TenantInfoVO> |
+| `StudentRequest` | object | grade, name, userId | className:string; grade*:integer/int32; gradeLevel:string; id:integer/int64; name*:string; school:string; status:integer/int32; studentNo:string; userId*:integer/int64 |
+| `StudentResponse` | object | - | className:string; gender:integer/int32; grade:integer/int32; gradeLevel:string; id:integer/int64; name:string; school:string; studentNo:string; userId:integer/int64 |
+| `StudyPlanRequest` | object | studentId | endDate:string/date; id:integer/int64; name:string; startDate:string/date; status:string; studentId*:integer/int64 |
+| `StudyPlanResponse` | object | - | completedItems:integer/int32; endDate:string; id:integer/int64; items:array<DailyTaskResponse>; name:string; startDate:string; status:integer/int32; statusDesc:string; studentId:integer/int64; totalItems:integer/int32 |
+| `StudyRecordRequest` | object | knowledgeId, recordType, studentId | accuracy:number/double; durationSec:integer/int32; id:integer/int64; knowledgeId*:integer/int64; questionId:integer/int64; recordType*:string; score:number/double; studentId*:integer/int64 |
+| `StudyRecordResponse` | object | - | accuracy:number/double; createTime:string/date-time; durationSec:integer/int32; id:integer/int64; knowledgeId:integer/int64; questionId:integer/int64; recordType:string; score:number/double; studentId:integer/int64 |
+| `SubjectRequest` | object | code, name | code*:string; description:string; gradeLevel:string; icon:string; id:integer/int64; name*:string; sortOrder:integer/int32; status:integer/int32 |
+| `SubjectResponse` | object | - | code:string; gradeLevel:string; icon:string; id:integer/int64; name:string; sortOrder:integer/int32 |
+| `SwitchContextResponse` | object | - | tenants:array<TenantInfoVO>; userInfo:UserVO |
 | `SwitchRoleRequest` | object | roleId | roleId*:integer/int64 |
 | `SwitchTenantRequest` | object | tenantId | tenantId*:integer/int64 |
-| `TenantContextVO` | object | - | tenantId:integer/int64; tenantName:string; roleCode:string |
+| `TenantContextVO` | object | - | roleCode:string; tenantId:integer/int64; tenantName:string |
 | `TenantId` | object | - | value:integer/int64 |
-| `TenantInfoVO` | object | - | id:integer/int64; code:string; name:string; pathName:string |
-| `TenantPageRequest` | object | - | pageSize:integer/int32; pageNum:integer/int32; orderByColumn:string; isAsc:string; orderFields:array<OrderField>; filterConditions:array<FilterCondition>; name:string; code:string; status:integer/int32 |
-| `TenantRequest` | object | code, name | parentId:integer/int64; code*:string; name*:string; contactName:string; contactPhone:string; address:string; domain:string; intro:string; order:integer/int32; leader:string; email:string; remark:string; status:string; menuIds:array<integer/int64>; authCodeIds:array<integer/int64>; adminRoleName:string; adminUsername:string; adminPassword:string |
-| `TenantVO` | object | - | id:integer/int64; parentId:integer/int64; code:string; name:string; contactName:string; contactPhone:string; address:string; domain:string; intro:string; order:integer/int32; leader:string; phone:string; email:string; remark:string; status:integer/int32; createTime:string/date-time; updateTime:string/date-time; children:array<TenantVO> |
+| `TenantInfoVO` | object | - | code:string; id:integer/int64; name:string; pathName:string |
+| `TenantPageRequest` | object | - | code:string; filterConditions:array<FilterCondition>; isAsc:string; name:string; orderByColumn:string; orderFields:array<OrderField>; pageNum:integer/int32; pageSize:integer/int32; status:integer/int32 |
+| `TenantRequest` | object | code, name | address:string; adminPassword:string; adminRoleName:string; adminUsername:string; authCodeIds:array<integer/int64>; code*:string; contactName:string; contactPhone:string; domain:string; email:string; intro:string; leader:string; menuIds:array<integer/int64>; name*:string; order:integer/int32; parentId:integer/int64; remark:string; status:string |
+| `TenantVO` | object | - | address:string; children:array<TenantVO>; code:string; contactName:string; contactPhone:string; createTime:string/date-time; domain:string; email:string; id:integer/int64; intro:string; leader:string; name:string; order:integer/int32; parentId:integer/int64; phone:string; remark:string; status:integer/int32; updateTime:string/date-time |
 | `TestRequest` | object | - | requiredFeatures:array<string> |
-| `TextbookRequest` | object | grade, name, publisher, subjectCode | id:integer/int64; name*:string; subjectCode*:string; grade*:integer/int32; publisher*:string; author:string; edition:string; isbn:string; status:integer/int32 |
-| `TextbookResponse` | object | - | id:integer/int64; name:string; subjectCode:string; grade:integer/int32; publisher:string; isbn:string |
+| `TextbookRequest` | object | grade, name, publisher, subjectCode | author:string; edition:string; grade*:integer/int32; id:integer/int64; isbn:string; name*:string; publisher*:string; status:integer/int32; subjectCode*:string |
+| `TextbookResponse` | object | - | grade:integer/int32; id:integer/int64; isbn:string; name:string; publisher:string; subjectCode:string |
 | `TimezoneOptionVO` | object | - | label:string; value:string |
-| `ToolApproval` | object | - | id:string; runId:string; tenantId:integer/int64; ownerUserId:integer/int64; toolName:string; argumentsRedacted:string; status:string(PENDING,APPROVED,REJECTED,EXPIRED); createdAt:string/date-time; decidedAt:string/date-time; expiresAt:string/date-time |
-| `TranslateRequest` | object | - | provider:string; text:string; sourceLanguage:string; targetLanguage:string |
+| `ToolApproval` | object | - | argumentsRedacted:string; createdAt:string/date-time; decidedAt:string/date-time; expiresAt:string/date-time; id:string; ownerUserId:integer/int64; runId:string; status:string(PENDING,APPROVED,REJECTED,EXPIRED); tenantId:integer/int64; toolName:string |
+| `TranslateRequest` | object | - | provider:string; sourceLanguage:string; targetLanguage:string; text:string |
 | `TrendResponse` | object | - | dates:array<string>; values:array<number/double> |
-| `TtsRequest` | object | - | provider:string; text:string; voice:string; format:string |
-| `TurnDecision` | object | - | exhausted:boolean; reason:string; participant:Participant; remainingTurns:integer/int32; remainingTokens:integer/int32 |
-| `TurnRequest` | object | - | completedSpeakerIds:array<string>; requestedSpeakerId:string; consumedTokens:integer/int32 |
-| `TurnRunRequest` | object | - | conversationId:string; content:string; platform:string; model:string; completedSpeakerIds:array<string>; requestedSpeakerId:string; consumedTokens:integer/int32 |
-| `UpdateConversationRequest` | object | - | title:string; status:string |
-| `UpdatePointRequest` | object | - | name:string; description:string; difficultyLevel:integer/int32; category:string; tags:string |
-| `UpdateSpaceRequest` | object | - | name:string; description:string; domainCode:string; accessMode:string; reviewMode:string; bindingMode:string; difficultyScaleId:integer/int64; embeddingProfile:string; rerankProfile:string; chunkStrategy:string; chunkSize:integer/int32; chunkOverlap:integer/int32; status:integer/int32 |
-| `UploadResult` | object | - | document:DocumentView; versionId:integer/int64; jobId:integer/int64; duplicate:boolean |
-| `UploadSession` | object | - | sessionId:string; spaceId:integer/int64; fileName:string; size:integer/int64; totalChunks:integer/int32; uploadedChunks:array<integer/int32>; chunkSize:integer/int32 |
+| `TtsRequest` | object | - | format:string; provider:string; text:string; voice:string |
+| `TurnDecision` | object | - | exhausted:boolean; participant:Participant; reason:string; remainingTokens:integer/int32; remainingTurns:integer/int32 |
+| `TurnRequest` | object | - | completedSpeakerIds:array<string>; consumedTokens:integer/int32; requestedSpeakerId:string |
+| `TurnRunRequest` | object | - | completedSpeakerIds:array<string>; consumedTokens:integer/int32; content:string; conversationId:string; model:string; platform:string; requestedSpeakerId:string |
+| `UpdateConversationRequest` | object | - | status:string; title:string |
+| `UpdatePointRequest` | object | - | category:string; description:string; difficultyLevel:integer/int32; name:string; tags:string |
+| `UpdateSpaceRequest` | object | - | accessMode:string; bindingMode:string; chunkOverlap:integer/int32; chunkSize:integer/int32; chunkStrategy:string; description:string; difficultyScaleId:integer/int64; domainCode:string; embeddingProfile:string; name:string; rerankProfile:string; reviewMode:string; status:integer/int32 |
+| `UploadResult` | object | - | document:DocumentView; duplicate:boolean; jobId:integer/int64; versionId:integer/int64 |
+| `UploadSession` | object | - | chunkSize:integer/int32; fileName:string; sessionId:string; size:integer/int64; spaceId:integer/int64; totalChunks:integer/int32; uploadedChunks:array<integer/int32> |
 | `UserId` | object | - | value:integer/int64 |
-| `UserPageRequest` | object | - | pageSize:integer/int32; pageNum:integer/int32; orderByColumn:string; isAsc:string; orderFields:array<OrderField>; filterConditions:array<FilterCondition>; username:string |
-| `UserRequest` | object | tenantId, username | username*:string; password:string; nickName:string; email:string; phone:string; gender:string; avatar:string; address:string; status:string; remark:string; roleIds:array<integer/int64>; tenantId*:integer/int64; postIds:array<integer/int64> |
-| `UserTenantAssignmentVO` | object | - | tenantId:integer/int64; tenantName:string; roleId:integer/int64; roleName:string; roleCode:string |
-| `UserTenantRoleRequest` | object | roleId, tenantId | tenantId*:integer/int64; roleId*:integer/int64 |
-| `UserVO` | object | - | id:integer/int64; username:string; status:string; delFlag:integer/int32; createTime:string/date-time; updateTime:string/date-time; nickName:string; gender:string; avatar:string; address:string; email:string; phone:string; remark:string; roles:array<RoleVO>; roleIds:array<integer/int64>; currentRole:RoleVO; extInfo:string; tenants:array<TenantInfoVO>; subTenants:array<TenantContextVO>; currentTenantId:integer/int64; homeTenantId:integer/int64; switchMode:string |
-| `ValidateCaptchaRequest` | object | - | key:string; code:string |
-| `ValidateCaptchaResponse` | object | - | success:boolean; message:string |
-| `VersionRequest` | object | versionNumber | versionNumber*:string; description:string; copyFromVersionId:integer/int64 |
-| `VersionView` | object | - | id:integer/int64; documentId:integer/int64; spaceId:integer/int64; versionNo:integer/int32; title:string; lifecycleStatus:string; parseStatus:string; objectKey:string; mimeType:string; fileSize:integer/int64; checksum:string; modelProfile:string; publishedAt:string/date-time; createTime:string/date-time |
-| `VisionResult` | object | - | text:string; labels:array<string> |
+| `UserPageRequest` | object | - | filterConditions:array<FilterCondition>; isAsc:string; orderByColumn:string; orderFields:array<OrderField>; pageNum:integer/int32; pageSize:integer/int32; username:string |
+| `UserRequest` | object | tenantId, username | address:string; avatar:string; email:string; gender:string; nickName:string; password:string; phone:string; postIds:array<integer/int64>; remark:string; roleIds:array<integer/int64>; status:string; tenantId*:integer/int64; username*:string |
+| `UserTenantAssignmentVO` | object | - | roleCode:string; roleId:integer/int64; roleName:string; tenantId:integer/int64; tenantName:string |
+| `UserTenantRoleRequest` | object | roleId, tenantId | roleId*:integer/int64; tenantId*:integer/int64 |
+| `UserVO` | object | - | address:string; avatar:string; createTime:string/date-time; currentRole:RoleVO; currentTenantId:integer/int64; delFlag:integer/int32; email:string; extInfo:string; gender:string; homeTenantId:integer/int64; id:integer/int64; nickName:string; phone:string; remark:string; roleIds:array<integer/int64>; roles:array<RoleVO>; status:string; subTenants:array<TenantContextVO>; switchMode:string; tenants:array<TenantInfoVO>; updateTime:string/date-time; username:string |
+| `ValidateCaptchaRequest` | object | - | code:string; key:string |
+| `ValidateCaptchaResponse` | object | - | message:string; success:boolean |
+| `ValidationResponse` | object | - | issues:array<string>; valid:boolean |
+| `VersionRequest` | object | versionNumber | copyFromVersionId:integer/int64; description:string; versionNumber*:string |
+| `VersionView` | object | - | checksum:string; createTime:string/date-time; documentId:integer/int64; fileSize:integer/int64; id:integer/int64; lifecycleStatus:string; mimeType:string; modelProfile:string; objectKey:string; parseStatus:string; publishedAt:string/date-time; spaceId:integer/int64; title:string; versionNo:integer/int32 |
+| `VisionResult` | object | - | labels:array<string>; text:string |
 | `WeakPointResponse` | object | - | knowledgeId:integer/int64; knowledgeName:string; mastery:number/double |
-| `WrongQuestionRequest` | object | questionId, studentId | id:integer/int64; studentId*:integer/int64; questionId*:integer/int64; knowledgeId:integer/int64; studentAnswer:string; correctTimes:integer/int32; status:integer/int32 |
-| `WrongQuestionResponse` | object | - | id:integer/int64; studentId:integer/int64; questionId:integer/int64; knowledgeId:integer/int64; questionTitle:string; studentAnswer:string; correctAnswer:string; correctTimes:integer/int32 |
+| `WrongQuestionRequest` | object | questionId, studentId | correctTimes:integer/int32; id:integer/int64; knowledgeId:integer/int64; questionId*:integer/int64; status:integer/int32; studentAnswer:string; studentId*:integer/int64 |
+| `WrongQuestionResponse` | object | - | correctAnswer:string; correctTimes:integer/int32; id:integer/int64; knowledgeId:integer/int64; questionId:integer/int64; questionTitle:string; studentAnswer:string; studentId:integer/int64 |
 
 ## 维护与验证
 
