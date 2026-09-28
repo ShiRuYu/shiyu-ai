@@ -51,4 +51,19 @@ class LogTailServiceTest {
         assertEquals("new", after.lines().get(0));
         assertThrows(IllegalArgumentException.class, () -> service.read("../config/active-version", null, 4096, "ALL", ""));
     }
+
+    @Test
+    void detectsInPlaceReplacementWhenFileIdentityIsReused() throws Exception {
+        Path log = appHome.resolve("data/log/info.log");
+        Files.createDirectories(log.getParent());
+        Files.writeString(log, "old\n", StandardCharsets.UTF_8);
+        LogTailService service = new LogTailService(appHome);
+        LogTailService.LogChunk before = service.read("info.log", null, 4096, "ALL", "");
+        Files.writeString(log, "new\n", StandardCharsets.UTF_8);
+
+        LogTailService.LogChunk after = service.read("info.log", before.nextCursor(), 4096, "ALL", "");
+
+        assertTrue(after.rotated());
+        assertEquals("new", after.lines().get(0));
+    }
 }

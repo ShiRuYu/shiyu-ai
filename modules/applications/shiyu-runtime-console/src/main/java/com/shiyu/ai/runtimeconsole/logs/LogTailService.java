@@ -169,18 +169,18 @@ public final class LogTailService {
     }
 
     private static String fileKey(BasicFileAttributes attributes, Path file, String previousKey) throws IOException {
-        Object key = attributes.fileKey();
-        if (key != null) {
-            return "file:" + key;
-        }
+        int sampleLength = previousHeadLength(previousKey, attributes.size());
+        String identity = attributes.fileKey() == null
+                ? "none"
+                : Base64.getUrlEncoder().withoutPadding().encodeToString(
+                        attributes.fileKey().toString().getBytes(StandardCharsets.UTF_8));
         try {
             MessageDigest digest = MessageDigest.getInstance("SHA-256");
-            int sampleLength = previousHeadLength(previousKey, attributes.size());
             try (var stream = Files.newInputStream(file, LinkOption.NOFOLLOW_LINKS)) {
                 byte[] head = stream.readNBytes(sampleLength);
                 digest.update(head);
             }
-            return "head:" + attributes.creationTime().toMillis() + ":" + sampleLength + ":"
+            return "file:" + identity + ":" + attributes.creationTime().toMillis() + ":" + sampleLength + ":"
                     + Base64.getUrlEncoder().withoutPadding().encodeToString(digest.digest());
         } catch (NoSuchAlgorithmException impossible) {
             throw new IllegalStateException("SHA-256 is unavailable", impossible);
@@ -188,11 +188,12 @@ public final class LogTailService {
     }
 
     private static int previousHeadLength(String previousKey, long currentSize) {
-        if (previousKey != null && previousKey.startsWith("head:")) {
-            String[] parts = previousKey.split(":", 4);
-            if (parts.length == 4) {
+        if (previousKey != null && (previousKey.startsWith("head:") || previousKey.startsWith("file:"))) {
+            String[] parts = previousKey.split(":", 5);
+            int sampleIndex = previousKey.startsWith("file:") ? 3 : 2;
+            if (parts.length > sampleIndex) {
                 try {
-                    return Integer.parseInt(parts[2]);
+                    return Integer.parseInt(parts[sampleIndex]);
                 } catch (NumberFormatException ignored) {
                     // 旧游标格式错误时，回退到新的有界采样大小。
                 }
