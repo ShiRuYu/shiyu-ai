@@ -94,6 +94,17 @@ class PackageInventoryTest(unittest.TestCase):
         self.assertEqual("com.example.api.Greeting", rows[0]["target_fqcn"])
         self.assertEqual("contract", rows[0]["role"])
 
+    def test_writes_csv_with_platform_independent_line_endings(self):
+        self.add_module(
+            "alpha-contract",
+            {"src/main/java/com/example/api/Greeting.java": "package com.example.api; public interface Greeting {}"},
+        )
+        destination = self.root / "inventory.csv"
+
+        write_inventory(build_inventory(self.root), destination)
+
+        self.assertNotIn(b"\r\n", destination.read_bytes())
+
     def test_reports_cross_module_imports_and_wildcards_for_review(self):
         self.add_module(
             "alpha-contract",

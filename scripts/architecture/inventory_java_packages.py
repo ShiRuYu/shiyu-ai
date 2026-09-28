@@ -201,7 +201,8 @@ def build_inventory(root: Path) -> Inventory:
 def write_inventory(inventory: Inventory, destination: Path) -> None:
     destination.parent.mkdir(parents=True, exist_ok=True)
     with destination.open("w", encoding="utf-8", newline="") as stream:
-        writer = csv.DictWriter(stream, fieldnames=CSV_COLUMNS)
+        # 统一换行符，确保 Windows 与 Linux CI 的快照内容一致。
+        writer = csv.DictWriter(stream, fieldnames=CSV_COLUMNS, lineterminator="\n")
         writer.writeheader()
         for entry in sorted(inventory.entries, key=lambda item: item.source_path):
             writer.writerow({column: getattr(entry, column) for column in CSV_COLUMNS})
