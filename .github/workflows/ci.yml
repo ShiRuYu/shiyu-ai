@@ -124,6 +124,13 @@ jobs:
           restore-keys: |
             ${{ runner.os }}-owasp-nvd-data-
 
+      - name: 校验 NVD API 密钥
+        run: |
+          test -n "$NVD_API_KEY" || {
+            echo 'NVD_API_KEY secret is required for the dependency scan.' >&2
+            exit 1
+          }
+
       - name: 执行聚合 NVD 依赖扫描
         run: >-
           mvn --batch-mode --no-transfer-progress
