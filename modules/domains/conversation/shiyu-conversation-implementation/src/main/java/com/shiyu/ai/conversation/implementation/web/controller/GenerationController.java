@@ -12,6 +12,7 @@ import com.shiyu.ai.conversation.implementation.domain.model.*;
 import com.shiyu.ai.conversation.implementation.domain.port.GenerationRepository;
 import com.shiyu.ai.kernel.context.ActorContext;
 import com.shiyu.ai.kernel.context.TenantId;
+import com.shiyu.ai.kernel.context.TenantScope;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.MediaType;
@@ -102,7 +103,11 @@ public class GenerationController {
             AiRun run = runtime.requireGenerationRun(id, tenant(), user());
             return runtimeEventStream(run, cursor, follow, waitMs);
         }
-        return Flux.fromIterable(generations.listEvents(id, tenant(), cursor, 1000))
+        TenantId tenantId = tenant();
+        int eventCursor = cursor;
+        return Flux.fromIterable(
+                        TenantScope.withTenant(
+                                tenantId, () -> generations.listEvents(id, tenantId, eventCursor, 1000)))
                 .map(
                         e ->
                                 ServerSentEvent.<GenerationEvent>builder()
@@ -118,7 +123,15 @@ public class GenerationController {
         long ownerUserId = user();
         if (!follow) {
             return Flux.fromIterable(
-                            runtime.events(run.id(), tenantId, ownerUserId, afterSeq, 1000))
+                            TenantScope.withTenant(
+                                    tenantId,
+                                    () ->
+                                            runtime.events(
+                                                    run.id(),
+                                                    tenantId,
+                                                    ownerUserId,
+                                                    afterSeq,
+                                                    1000)))
                     .map(this::projectRuntimeEvent)
                     .map(this::sse);
         }
@@ -130,12 +143,15 @@ public class GenerationController {
                                         () -> {
                                             List<com.shiyu.ai.agent.contract.runtime.AiRunEvent>
                                                     events =
-                                                            runtime.events(
-                                                                    run.id(),
+                                                            TenantScope.withTenant(
                                                                     tenantId,
-                                                                    ownerUserId,
-                                                                    cursor.get(),
-                                                                    1000);
+                                                                    () ->
+                                                                            runtime.events(
+                                                                                    run.id(),
+                                                                                    tenantId,
+                                                                                    ownerUserId,
+                                                                                    cursor.get(),
+                                                                                    1000));
                                             if (events.isEmpty())
                                                 return Flux.just(
                                                         ServerSentEvent.<GenerationEvent>builder()

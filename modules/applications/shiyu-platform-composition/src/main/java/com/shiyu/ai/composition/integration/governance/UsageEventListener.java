@@ -6,6 +6,7 @@ import com.shiyu.ai.governance.contract.UsageSourceType;
 import com.shiyu.ai.kernel.context.ActorContext;
 import com.shiyu.ai.kernel.context.CorrelationId;
 import com.shiyu.ai.kernel.context.TenantId;
+import com.shiyu.ai.kernel.context.TenantScope;
 import com.shiyu.ai.kernel.context.UserId;
 import com.shiyu.ai.kernel.event.DomainEventEnvelope;
 import com.shiyu.ai.model.implementation.domain.event.EmbeddingCallEvent;
@@ -73,7 +74,12 @@ public class UsageEventListener {
                                 event.getPlatform(),
                                 "model",
                                 event.getModel()));
-        usageGovernance.record(actor, envelope(actor, event.getCorrelationId(), measurement));
+        TenantScope.withTenant(
+                actor.tenantId(),
+                () -> {
+                    usageGovernance.record(actor, envelope(actor, event.getCorrelationId(), measurement));
+                    return null;
+                });
     }
 
     /** 监听 Embedding 向量化调用事件 */
@@ -109,7 +115,12 @@ public class UsageEventListener {
                                 Integer.toString(event.getEstimatedTokens()),
                                 "vectorCount",
                                 Integer.toString(event.getVectorCount())));
-        usageGovernance.record(actor, envelope(actor, event.getCorrelationId(), measurement));
+        TenantScope.withTenant(
+                actor.tenantId(),
+                () -> {
+                    usageGovernance.record(actor, envelope(actor, event.getCorrelationId(), measurement));
+                    return null;
+                });
     }
 
     private static boolean attributable(TenantId tenantId, UserId userId) {

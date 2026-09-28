@@ -15,6 +15,7 @@ import com.shiyu.ai.conversation.implementation.domain.model.*;
 import com.shiyu.ai.conversation.implementation.domain.port.*;
 import com.shiyu.ai.conversation.implementation.domain.port.GenerationRepository;
 import com.shiyu.ai.kernel.context.TenantId;
+import com.shiyu.ai.kernel.context.TenantScope;
 import com.shiyu.ai.kernel.context.UserId;
 
 import org.junit.jupiter.api.AfterEach;
@@ -26,6 +27,7 @@ import java.time.Duration;
 import java.time.Instant;
 import java.util.List;
 import java.util.Optional;
+import java.util.concurrent.atomic.AtomicInteger;
 
 /**
  * 验证 生成 Controller Runtime 相关功能、边界条件、异常路径和协作行为。
@@ -215,8 +217,15 @@ class GenerationControllerRuntimeTest {
                         now);
         when(generations.find("g1", new TenantId(7), 8)).thenReturn(Optional.of(generation));
         when(runtime.requireGenerationRun("g1", new TenantId(7), 8)).thenReturn(run);
+        AtomicInteger eventCalls = new AtomicInteger();
         when(runtime.events(eq("r1"), eq(new TenantId(7L)), eq(8L), anyLong(), eq(1000)))
-                .thenReturn(List.of(), List.of(terminal));
+                .thenAnswer(
+                        invocation -> {
+                            assertEquals(Optional.of(new TenantId(7L)), TenantScope.current());
+                            return eventCalls.getAndIncrement() == 0
+                                    ? List.of()
+                                    : List.of(terminal);
+                        });
         var stream = controller.stream("g1", -1, true, 2000, null);
         UserContextHolder.clearContext();
         var result = stream.collectList().block(Duration.ofSeconds(3));

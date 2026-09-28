@@ -11,6 +11,7 @@ import com.shiyu.ai.conversation.implementation.domain.port.ConversationReposito
 import com.shiyu.ai.conversation.implementation.domain.port.GenerationRepository;
 import com.shiyu.ai.kernel.context.ActorContext;
 import com.shiyu.ai.kernel.context.TenantId;
+import com.shiyu.ai.kernel.context.TenantScope;
 import com.shiyu.ai.kernel.context.UserId;
 import com.shiyu.ai.model.contract.api.ChatEngine;
 import com.shiyu.ai.model.contract.model.ChatMessage;
@@ -365,6 +366,29 @@ public class GenerationRunner {
             long tenantId,
             long ownerUserId,
             AtomicInteger nextSequence) {
+        TenantScope.withTenant(
+                new TenantId(tenantId),
+                () -> {
+                    onEventInTenantScope(
+                                value,
+                                state,
+                                runtimeState,
+                                answer,
+                                tenantId,
+                                ownerUserId,
+                                nextSequence);
+                    return null;
+                });
+    }
+
+    private void onEventInTenantScope(
+            ChatResponse value,
+            AtomicReference<GenerationRun> state,
+            AtomicReference<AiRun> runtimeState,
+            StringBuilder answer,
+            long tenantId,
+            long ownerUserId,
+            AtomicInteger nextSequence) {
         GenerationRun persisted =
                 generations
                         .find(state.get().id(), new TenantId(tenantId), ownerUserId)
@@ -460,6 +484,29 @@ public class GenerationRunner {
             AtomicInteger nextSequence,
             GenerationStatus terminal,
             String errorCode) {
+        TenantScope.withTenant(
+                new TenantId(tenantId),
+                () -> {
+                    finishProviderTerminalInTenantScope(
+                                state,
+                                runtimeState,
+                                tenantId,
+                                ownerUserId,
+                                nextSequence,
+                                terminal,
+                                errorCode);
+                    return null;
+                });
+    }
+
+    private void finishProviderTerminalInTenantScope(
+            AtomicReference<GenerationRun> state,
+            AtomicReference<AiRun> runtimeState,
+            long tenantId,
+            long ownerUserId,
+            AtomicInteger nextSequence,
+            GenerationStatus terminal,
+            String errorCode) {
         GenerationRun current =
                 generations
                         .find(state.get().id(), new TenantId(tenantId), ownerUserId)
@@ -516,6 +563,27 @@ public class GenerationRunner {
     }
 
     private void finishSuccess(
+            AtomicReference<GenerationRun> state,
+            AtomicReference<AiRun> runtimeState,
+            long tenantId,
+            long ownerUserId,
+            AtomicInteger nextSequence,
+            String answer) {
+        TenantScope.withTenant(
+                new TenantId(tenantId),
+                () -> {
+                    finishSuccessInTenantScope(
+                                state,
+                                runtimeState,
+                                tenantId,
+                                ownerUserId,
+                                nextSequence,
+                                answer);
+                    return null;
+                });
+    }
+
+    private void finishSuccessInTenantScope(
             AtomicReference<GenerationRun> state,
             AtomicReference<AiRun> runtimeState,
             long tenantId,
@@ -660,6 +728,27 @@ public class GenerationRunner {
     }
 
     private void finishFailure(
+            AtomicReference<GenerationRun> state,
+            AtomicReference<AiRun> runtimeState,
+            long tenantId,
+            long ownerUserId,
+            AtomicInteger nextSequence,
+            Throwable error) {
+        TenantScope.withTenant(
+                new TenantId(tenantId),
+                () -> {
+                    finishFailureInTenantScope(
+                                state,
+                                runtimeState,
+                                tenantId,
+                                ownerUserId,
+                                nextSequence,
+                                error);
+                    return null;
+                });
+    }
+
+    private void finishFailureInTenantScope(
             AtomicReference<GenerationRun> state,
             AtomicReference<AiRun> runtimeState,
             long tenantId,

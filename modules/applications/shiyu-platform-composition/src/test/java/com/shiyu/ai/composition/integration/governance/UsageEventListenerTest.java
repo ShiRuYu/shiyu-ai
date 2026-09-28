@@ -2,6 +2,7 @@ package com.shiyu.ai.composition.integration.governance;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.Mockito.doAnswer;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.verifyNoInteractions;
@@ -9,6 +10,7 @@ import static org.mockito.Mockito.verifyNoInteractions;
 import com.shiyu.ai.governance.contract.UsageGovernance;
 import com.shiyu.ai.governance.contract.UsageMeasurement;
 import com.shiyu.ai.kernel.context.TenantId;
+import com.shiyu.ai.kernel.context.TenantScope;
 import com.shiyu.ai.kernel.context.UserId;
 import com.shiyu.ai.kernel.event.DomainEventEnvelope;
 import com.shiyu.ai.model.implementation.domain.event.EmbeddingCallEvent;
@@ -41,6 +43,13 @@ class UsageEventListenerTest {
         listener.onModelCall(event);
 
         ArgumentCaptor<DomainEventEnvelope<UsageMeasurement>> captor = ArgumentCaptor.captor();
+        doAnswer(
+                        invocation -> {
+                            assertEquals(java.util.Optional.of(new TenantId(7L)), TenantScope.current());
+                            return null;
+                        })
+                .when(usage)
+                .record(any(), any());
         verify(usage).record(any(), captor.capture());
         assertEquals(event.getSourceId(), captor.getValue().event().sourceId());
         assertEquals(event.getCorrelationId(), captor.getValue().correlationId());

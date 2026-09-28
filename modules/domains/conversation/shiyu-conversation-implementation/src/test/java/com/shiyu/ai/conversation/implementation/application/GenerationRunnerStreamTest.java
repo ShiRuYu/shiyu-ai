@@ -1,5 +1,6 @@
 package com.shiyu.ai.conversation.implementation.application;
 
+import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.mockito.ArgumentMatchers.*;
 import static org.mockito.Mockito.*;
 
@@ -9,6 +10,7 @@ import com.shiyu.ai.conversation.contract.model.*;
 import com.shiyu.ai.conversation.implementation.domain.model.*;
 import com.shiyu.ai.conversation.implementation.domain.port.*;
 import com.shiyu.ai.kernel.context.TenantId;
+import com.shiyu.ai.kernel.context.TenantScope;
 import com.shiyu.ai.kernel.context.UserId;
 import com.shiyu.ai.model.contract.api.ChatEngine;
 import com.shiyu.ai.model.contract.model.ChatResponse;
@@ -113,6 +115,15 @@ class GenerationRunnerStreamTest {
         when(generations.find("g1", new TenantId(1), 2)).thenReturn(Optional.of(running));
         when(engine.stream(any()))
                 .thenReturn(Flux.error(new IllegalStateException("provider down")));
+        doAnswer(
+                        invocation -> {
+                            assertEquals(Optional.of(new TenantId(1)), TenantScope.current());
+                            return null;
+                        })
+                .when(generations)
+                .appendEvent(
+                        argThat(event -> event.type() == GenerationEventType.FAILED),
+                        eq(new TenantId(1L)));
 
         new GenerationRunner(
                         engine,
