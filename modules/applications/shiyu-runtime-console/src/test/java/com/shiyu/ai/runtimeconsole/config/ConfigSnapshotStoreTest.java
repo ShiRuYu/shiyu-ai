@@ -15,6 +15,7 @@ import java.util.Set;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.io.TempDir;
 
+/** 覆盖配置快照版本控制、密钥保护和恢复行为。 */
 class ConfigSnapshotStoreTest {
 
     @TempDir Path temp;

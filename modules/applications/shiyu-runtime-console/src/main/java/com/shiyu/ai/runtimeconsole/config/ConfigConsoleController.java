@@ -8,6 +8,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.server.ResponseStatusException;
 
+/** 提供运行时配置查询、校验、保存和恢复的 HTTP 接口。 */
 @RestController
 @RequestMapping("/console/api/config")
 public final class ConfigConsoleController {
@@ -53,6 +54,8 @@ public final class ConfigConsoleController {
         }
     }
 
+    /** 表示运行时配置校验是否通过及对应问题列表。 */
     public record ValidationResponse(boolean valid, java.util.List<String> issues) {}
+    /** 封装恢复最近已应用配置时使用的版本号。 */
     public record RestoreRequest(long expectedVersion) {}
 }

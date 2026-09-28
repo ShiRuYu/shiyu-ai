@@ -17,7 +17,7 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import java.util.stream.Stream;
 
-/** Restores a previous successful encrypted snapshot while the backend is offline. */
+/** 后端离线时恢复此前成功应用的加密配置快照。 */
 public final class OfflineConfigRecovery {
 
     private static final Pattern SNAPSHOT_NAME = Pattern.compile("snapshot-(\\d+)\\.json");
@@ -106,5 +106,6 @@ public final class OfflineConfigRecovery {
         }
     }
 
+    /** 表示离线恢复操作使用的源版本和新版本。 */
     public record RestoreOutcome(long restoredFromRevision, long activeRevision) {}
 }

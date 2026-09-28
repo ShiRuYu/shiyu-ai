@@ -12,7 +12,7 @@ import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.function.Consumer;
 
-/** A random-port, loopback-only authenticated command channel between launcher and backend. */
+/** 为启动器与后端提供随机端口、本机回环限定且带认证的命令通道。 */
 final class LauncherCommandServer implements AutoCloseable {
 
     private final HttpServer server;

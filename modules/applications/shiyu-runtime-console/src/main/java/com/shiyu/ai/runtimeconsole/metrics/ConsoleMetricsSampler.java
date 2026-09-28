@@ -22,7 +22,7 @@ import javax.sql.DataSource;
 
 import io.micrometer.core.instrument.MeterRegistry;
 
-/** Samples the live process and retains no more than 30 minutes of bounded history. */
+/** 采集当前进程指标，并最多保留 30 分钟的有界历史。 */
 public final class ConsoleMetricsSampler implements AutoCloseable {
 
     private static final Duration RETENTION = Duration.ofMinutes(30);
@@ -205,5 +205,6 @@ public final class ConsoleMetricsSampler implements AutoCloseable {
         executor.shutdownNow();
     }
 
+    /** 表示 JVM 线程池在一次采样中的运行统计。 */
     private record PoolStats(int active, int idle, int max, int pending) {}
 }

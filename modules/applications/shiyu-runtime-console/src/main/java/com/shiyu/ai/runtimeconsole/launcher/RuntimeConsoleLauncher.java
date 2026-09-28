@@ -62,7 +62,7 @@ import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicReference;
 import java.util.concurrent.atomic.AtomicBoolean;
 
-/** jpackage entry point; the Spring Boot application remains the only business application. */
+/** jpackage 启动入口；Spring Boot 应用仍是唯一的业务应用。 */
 public final class RuntimeConsoleLauncher {
 
     private static final String TITLE = "ShiYu 本地运行控制台";
@@ -553,7 +553,7 @@ public final class RuntimeConsoleLauncher {
                 writer.newLine();
             }
         } catch (IOException ignored) {
-            // The in-memory launcher view remains available if the diagnostics disk is full.
+            // 诊断磁盘空间不足时，启动器内存视图仍保持可用。
         }
         SwingUtilities.invokeLater(() -> {
             if (logArea == null) return;
@@ -684,7 +684,7 @@ public final class RuntimeConsoleLauncher {
                 backendProcess.destroyForcibly();
             }
         } catch (RuntimeException ignored) {
-            // Windows closes the job handle on process teardown as the final safety net.
+            // 作为最后一道保护，Windows 会在进程清理时关闭 Job 句柄。
         }
         if (commandServer != null) commandServer.close();
         if (trayIcon != null && SystemTray.isSupported()) SystemTray.getSystemTray().remove(trayIcon);
@@ -692,10 +692,11 @@ public final class RuntimeConsoleLauncher {
             instanceLock.release();
             lockChannel.close();
         } catch (IOException ignored) {
-            // The OS releases the lock if the launcher exits unexpectedly.
+            // 启动器意外退出时由操作系统释放锁。
         }
     }
 
+    /** 表示运行时控制台检测到已有实例正在运行。 */
     private static final class AlreadyRunningException extends Exception {
         @java.io.Serial private static final long serialVersionUID = 1L;
     }

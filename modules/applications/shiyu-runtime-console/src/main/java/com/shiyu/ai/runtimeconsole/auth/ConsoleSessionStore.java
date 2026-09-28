@@ -11,7 +11,7 @@ import java.util.Base64;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 
-/** In-memory one-time browser grants and non-persistent console sessions. */
+/** 管理内存中的一次性浏览器授权凭据和非持久化控制台会话。 */
 public final class ConsoleSessionStore {
 
     private static final Duration GRANT_LIFETIME = Duration.ofMinutes(2);
@@ -31,7 +31,7 @@ public final class ConsoleSessionStore {
         this.secureRandom = secureRandom;
     }
 
-    /** Creates a URL-fragment credential. Only its digest is retained by the server. */
+    /** 创建 URL 片段凭据，服务端只保留其摘要。 */
     public String issueOneTimeCode() {
         byte[] secret = new byte[SECRET_BYTES];
         secureRandom.nextBytes(secret);
@@ -40,7 +40,7 @@ public final class ConsoleSessionStore {
         return code;
     }
 
-    /** Atomically consumes a valid grant and creates an in-memory browser session. */
+    /** 原子消费有效授权凭据并创建内存中的浏览器会话。 */
     public Session exchange(String code) {
         if (code == null || code.isBlank()) {
             return null;
@@ -87,5 +87,6 @@ public final class ConsoleSessionStore {
         }
     }
 
+    /** 保存控制台浏览器会话的标识、CSRF 令牌和签发时间。 */
     public record Session(String sessionId, String csrfToken, Instant issuedAt) {}
 }

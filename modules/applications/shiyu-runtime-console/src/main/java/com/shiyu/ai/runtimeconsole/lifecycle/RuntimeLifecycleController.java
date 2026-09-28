@@ -14,7 +14,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.server.ResponseStatusException;
 
-/** Lifecycle operations are accepted only for a process owned by the desktop launcher. */
+/** 仅允许桌面启动器托管的进程执行生命周期操作。 */
 @RestController
 @RequestMapping("/console/api/lifecycle")
 public final class RuntimeLifecycleController {

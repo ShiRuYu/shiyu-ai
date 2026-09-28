@@ -6,7 +6,7 @@ import java.nio.charset.StandardCharsets;
 import java.util.Base64;
 import java.util.Locale;
 
-/** Windows DPAPI CurrentUser protection; intentionally has no plaintext fallback. */
+/** 使用 Windows 当前用户 DPAPI 保护密钥，故意不提供明文回退。 */
 public final class DpapiSecretProtector implements ConfigSecretProtector {
 
     private static final String PREFIX = "dpapi-current-user:";
@@ -47,6 +47,7 @@ public final class DpapiSecretProtector implements ConfigSecretProtector {
         }
     }
 
+    /** 表示配置密钥加解密失败。 */
     public static final class SecretProtectionException extends RuntimeException {
         private static final long serialVersionUID = 1L;
 

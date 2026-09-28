@@ -2,6 +2,7 @@ package com.shiyu.ai.runtimeconsole.config;
 
 import java.util.List;
 
+/** 表示运行时配置保存或恢复操作的结果。 */
 public record ConfigApplyResult(
         String status,
         long revision,

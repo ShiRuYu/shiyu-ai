@@ -18,6 +18,7 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.server.ResponseStatusException;
 
+/** 提供运行时状态、日志和指标查询的 HTTP 接口。 */
 @RestController
 @RequestMapping("/console/api")
 public final class RuntimeConsoleController {
@@ -105,6 +106,8 @@ public final class RuntimeConsoleController {
         return "IDEA / 直接运行";
     }
 
+    /** 封装运行时控制台指标查询结果。 */
     public record MetricsResponse(List<MetricSnapshot> samples) {}
+    /** 封装可读取日志文件列表及其元数据。 */
     public record LogFilesResponse(List<LogTailService.LogFile> files) {}
 }

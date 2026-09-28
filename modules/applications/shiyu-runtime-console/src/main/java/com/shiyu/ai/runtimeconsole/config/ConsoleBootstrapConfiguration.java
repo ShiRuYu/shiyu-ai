@@ -12,7 +12,7 @@ import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 
-/** Loads persisted whitelisted values before Spring creates any application beans. */
+/** 在 Spring 创建应用 Bean 前加载已持久化且获准的配置值。 */
 public final class ConsoleBootstrapConfiguration {
 
     private static final Set<String> CONSOLE_LOADED_KEYS = ConcurrentHashMap.newKeySet();

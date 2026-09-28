@@ -12,6 +12,7 @@ import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.io.TempDir;
 
+/** 覆盖启动时持久化配置与命令行配置的合并规则。 */
 class ConsoleBootstrapConfigurationTest {
 
     @TempDir Path appHome;

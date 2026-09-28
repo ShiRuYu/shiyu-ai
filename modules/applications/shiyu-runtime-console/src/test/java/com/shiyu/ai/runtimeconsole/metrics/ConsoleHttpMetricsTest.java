@@ -6,6 +6,7 @@ import io.micrometer.core.instrument.simple.SimpleMeterRegistry;
 
 import org.junit.jupiter.api.Test;
 
+/** 覆盖业务请求指标聚合并排除控制台轮询。 */
 class ConsoleHttpMetricsTest {
 
     @Test

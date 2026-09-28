@@ -36,6 +36,7 @@ import org.springframework.core.annotation.Order;
 import org.springframework.core.env.Environment;
 import org.springframework.boot.web.server.context.WebServerApplicationContext;
 
+/** 装配本地运行时控制台的 Web、配置和生命周期组件。 */
 @AutoConfiguration
 @ConditionalOnProperty(prefix = "shiyu.console", name = "enabled", havingValue = "true")
 @Import({ConsoleSessionController.class, ConsoleWebController.class, RuntimeConsoleController.class, ConfigConsoleController.class, RuntimeLifecycleController.class})
@@ -132,8 +133,8 @@ public class RuntimeConsoleAutoConfiguration {
                     ? webContext.getWebServer().getPort()
                     : environment.getProperty("server.port", Integer.class, 9000);
             String link = "http://127.0.0.1:" + port + "/console/#grant=" + sessions.issueOneTimeCode();
-            // The Windows launcher consumes this machine-readable line to open the browser.
-            // It must never copy it into launcher diagnostics because the URL contains a grant.
+            // Windows 启动器读取这行机器可读文本以打开浏览器。
+            // 由于 URL 包含授权凭据，不得将其复制到启动器诊断日志。
             System.out.println("SHIYU_CONSOLE_URL=" + link);
         };
     }

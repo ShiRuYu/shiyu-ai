@@ -16,6 +16,7 @@ import java.util.concurrent.atomic.AtomicReference;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.io.TempDir;
 
+/** 覆盖 JVM 指标采样、过期清理和采样间隔校验。 */
 class ConsoleMetricsSamplerTest {
 
     @TempDir Path appHome;
@@ -43,6 +44,7 @@ class ConsoleMetricsSamplerTest {
         }
     }
 
+    /** 为指标采样测试提供可控的时间源。 */
     private static final class MutableClock extends Clock {
         private final AtomicReference<Instant> instant;
         private MutableClock(Instant start) { instant = new AtomicReference<>(start); }

@@ -12,7 +12,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.server.ResponseStatusException;
 
-/** Exchanges the URL-fragment grant for a local, non-persistent browser cookie. */
+/** 将 URL 片段中的授权凭据交换为本地、非持久化的浏览器 Cookie。 */
 @RestController
 @RequestMapping("/console/api/session")
 public final class ConsoleSessionController {
@@ -76,7 +76,11 @@ public final class ConsoleSessionController {
         return (contextPath == null ? "" : contextPath) + "/console";
     }
 
+    /**
+     * 封装控制台会话交换请求中的一次性授权片段。
+     */
     public record ExchangeRequest(String grant) {}
 
+    /** 表示控制台会话状态及其 CSRF 防护令牌。 */
     public record SessionResponse(boolean authenticated, String csrfToken) {}
 }

@@ -188,7 +188,12 @@ def _has_type_javadoc(lines: list[str], declaration_line: int) -> bool:
 
 
 def scan_file(path: Path) -> list[Violation]:
-    if path.suffix.lower() not in SUPPORTED_SUFFIXES or any(part in EXCLUDED_PARTS for part in path.parts):
+    normalized = path.as_posix()
+    if (
+        path.suffix.lower() not in SUPPORTED_SUFFIXES
+        or any(part in EXCLUDED_PARTS for part in path.parts)
+        or "/src/main/resources/META-INF/resources/console/assets/" in normalized
+    ):
         return []
     try:
         text = path.read_text(encoding="utf-8")

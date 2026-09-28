@@ -12,6 +12,7 @@ import java.nio.file.Path;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.io.TempDir;
 
+/** 覆盖日志增量读取、过滤、轮换和路径安全行为。 */
 class LogTailServiceTest {
 
     @TempDir Path appHome;

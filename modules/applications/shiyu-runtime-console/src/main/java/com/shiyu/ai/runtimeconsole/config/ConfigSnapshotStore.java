@@ -17,7 +17,7 @@ import java.util.LinkedHashMap;
 import java.util.Map;
 import java.util.Set;
 
-/** Versioned configuration persistence with an atomic active-version pointer. */
+/** 以版本快照和原子活动版本指针持久化运行时配置。 */
 public final class ConfigSnapshotStore {
 
     private final Path directory;
@@ -80,7 +80,7 @@ public final class ConfigSnapshotStore {
         return Map.copyOf(values);
     }
 
-    /** Records a version that completed application startup successfully. */
+    /** 记录已成功完成应用启动的配置版本。 */
     public synchronized void markCurrentApplied() {
         long currentVersion = readPointer("active-version");
         if (currentVersion > 0) {
@@ -88,7 +88,7 @@ public final class ConfigSnapshotStore {
         }
     }
 
-    /** Creates a new pending snapshot from the last successfully applied version. */
+    /** 根据最近成功应用的版本创建新的待处理快照。 */
     public synchronized Snapshot restoreLastApplied(long expectedVersion) {
         Snapshot current = current();
         requireExpected(expectedVersion, current.revision());
@@ -177,6 +177,7 @@ public final class ConfigSnapshotStore {
         }
     }
 
+    /** 表示持久化配置快照的版本、值和密钥内容。 */
     public record Snapshot(
             long schemaVersion,
             long revision,
@@ -190,6 +191,7 @@ public final class ConfigSnapshotStore {
         }
     }
 
+    /** 表示保存配置时提交版本已过期。 */
     public static final class VersionConflictException extends RuntimeException {
         @Serial private static final long serialVersionUID = 1L;
 

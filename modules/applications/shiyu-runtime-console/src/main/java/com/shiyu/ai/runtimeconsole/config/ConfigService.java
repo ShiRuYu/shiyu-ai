@@ -13,7 +13,7 @@ import java.util.Set;
 
 import org.springframework.core.env.Environment;
 
-/** Whitelist registry, source reporting, validation and versioned configuration changes. */
+/** 管理配置白名单、来源展示、校验和版本化变更。 */
 public final class ConfigService {
 
     private static final List<Field> FIELDS = List.of(
@@ -479,11 +479,16 @@ public final class ConfigService {
         return new SecretEdits(replacements, clears);
     }
 
+    /** 描述配置字段的元数据、当前值和编辑能力。 */
     private record Field(String key, String label, String type, String applyMode, boolean sensitive) {}
+    /** 表示配置项支持的运行时编辑能力。 */
     private record Support(boolean supported, String reason) {}
+    /** 封装密钥配置的读取和更新信息。 */
     private record SecretEdits(Map<String, String> replacements, Set<String> clears) {}
+    /** 表示运行时配置控制台展示的配置快照。 */
     public record ConfigResponse(long version, List<ConfigFieldDescriptor> fields) {}
 
+    /** 表示配置编辑内容未通过业务校验。 */
     public static final class ConfigValidationException extends RuntimeException {
         @java.io.Serial
         private static final long serialVersionUID = 1L;

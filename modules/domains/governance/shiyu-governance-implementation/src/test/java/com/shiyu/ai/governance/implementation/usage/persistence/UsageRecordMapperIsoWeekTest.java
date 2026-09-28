@@ -19,6 +19,7 @@ import java.util.Map;
 import java.util.Set;
 import java.util.stream.Collectors;
 
+/** 验证 usage 记录按 ISO 周计算和映射的边界行为。 */
 class UsageRecordMapperIsoWeekTest {
 
     @Test

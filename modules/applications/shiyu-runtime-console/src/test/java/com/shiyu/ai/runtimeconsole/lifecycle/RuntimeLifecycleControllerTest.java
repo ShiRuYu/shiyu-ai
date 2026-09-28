@@ -11,6 +11,7 @@ import com.shiyu.ai.runtimeconsole.auth.ConsoleSessionStore;
 import org.springframework.core.env.Environment;
 import org.springframework.web.server.ResponseStatusException;
 
+/** 覆盖运行时生命周期操作的启动器授权边界。 */
 class RuntimeLifecycleControllerTest {
 
     @AfterEach

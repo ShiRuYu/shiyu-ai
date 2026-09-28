@@ -9,7 +9,7 @@ import org.springframework.boot.logging.LogLevel;
 import org.springframework.boot.logging.LoggerConfiguration;
 import org.springframework.boot.logging.LoggingSystem;
 
-/** Applies the narrowly scoped immediate fields with rollback on any failure. */
+/** 应用限定范围内的即时配置字段，并在失败时回滚。 */
 public final class RuntimeConfigApplier {
 
     private final ConsoleMetricsSampler metrics;

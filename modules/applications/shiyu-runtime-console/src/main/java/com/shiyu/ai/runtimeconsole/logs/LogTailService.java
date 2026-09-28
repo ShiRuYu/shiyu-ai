@@ -17,7 +17,7 @@ import java.util.List;
 import java.util.Locale;
 import java.util.Map;
 
-/** Bounded tail reads from a fixed allowlist of current-runtime log files. */
+/** 从当前运行时日志白名单中执行有界的尾部读取。 */
 public final class LogTailService {
 
     private static final int MIN_READ_BYTES = 1024;
@@ -54,7 +54,7 @@ public final class LogTailService {
                     files.add(new LogFile(entry.getKey(), entry.getValue(), attributes.size(), attributes.lastModifiedTime().toInstant()));
                 }
             } catch (IOException ignored) {
-                // A missing or rotating log is simply absent until it can be read safely.
+                // 日志缺失或正在轮换时，暂不返回该文件，直到可以安全读取。
             }
         }
         return List.copyOf(files);
@@ -194,7 +194,7 @@ public final class LogTailService {
                 try {
                     return Integer.parseInt(parts[2]);
                 } catch (NumberFormatException ignored) {
-                    // Fall through to a new bounded sample size for malformed legacy cursors.
+                    // 旧游标格式错误时，回退到新的有界采样大小。
                 }
             }
         }
@@ -223,10 +223,13 @@ public final class LogTailService {
         }
     }
 
+    /** 表示日志增量读取位置及文件状态。 */
     private record Cursor(String fileKey, long offset) {}
 
+    /** 表示允许读取的日志文件及其元数据。 */
     public record LogFile(String name, String label, long sizeBytes, Instant modifiedAt) {}
 
+    /** 表示一次日志读取返回的行、游标和轮换状态。 */
     public record LogChunk(
             String fileName,
             List<String> lines,

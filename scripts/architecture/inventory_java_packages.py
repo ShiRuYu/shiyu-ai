@@ -74,6 +74,7 @@ def _role(artifact: str) -> str:
     if artifact in {
         "shiyu-ai-bootstrap",
         "shiyu-ai-web",
+        "shiyu-runtime-console",
     }:
         return "application"
     return "unclassified"
@@ -111,6 +112,7 @@ def _phase(module_path: Path, artifact: str) -> str:
         "shiyu-common-vector": "6F",
         "shiyu-platform-composition": "6G",
         "shiyu-ai-bootstrap": "6H",
+        "shiyu-runtime-console": "6H",
     }
     return non_domain.get(artifact, "manual-review")
 

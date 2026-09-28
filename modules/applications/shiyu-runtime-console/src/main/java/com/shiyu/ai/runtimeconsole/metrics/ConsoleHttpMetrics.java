@@ -5,7 +5,7 @@ import io.micrometer.core.instrument.Timer;
 
 import java.util.concurrent.atomic.LongAdder;
 
-/** Micrometer-backed request counters, deliberately excluding this console's own polling. */
+/** 基于 Micrometer 记录请求计数，并刻意排除控制台自身的轮询。 */
 public final class ConsoleHttpMetrics {
 
     private final MeterRegistry registry;
@@ -46,5 +46,6 @@ public final class ConsoleHttpMetrics {
         return method.length() > 12 ? "OTHER" : method.toUpperCase(java.util.Locale.ROOT);
     }
 
+    /** 表示控制台 HTTP 指标在一个采样窗口内的聚合值。 */
     public record Window(long requestCount, long errorCount, long totalDurationNanos) {}
 }

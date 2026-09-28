@@ -10,6 +10,7 @@ import java.nio.file.Path;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.io.TempDir;
 
+/** 覆盖离线恢复配置快照时的版本和密文保留行为。 */
 class OfflineConfigRecoveryTest {
 
     @TempDir Path appHome;

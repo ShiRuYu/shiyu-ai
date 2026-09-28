@@ -14,6 +14,7 @@ import org.springframework.boot.WebApplicationType;
 import org.springframework.context.ConfigurableApplicationContext;
 import org.springframework.context.annotation.Configuration;
 
+/** 覆盖数据库 provider 配置与 Spring profile 选择规则。 */
 class DatabaseProfileConfigurationTest {
 
     @TempDir Path appHome;
@@ -41,5 +42,6 @@ class DatabaseProfileConfigurationTest {
     }
 
     @Configuration(proxyBeanMethods = false)
+    /** 暴露测试上下文中最终生效的 profile 配置。 */
     static class ProfileProbe {}
 }

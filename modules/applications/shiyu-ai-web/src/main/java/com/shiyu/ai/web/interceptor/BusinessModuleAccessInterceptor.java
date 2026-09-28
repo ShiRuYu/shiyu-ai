@@ -98,7 +98,7 @@ public final class BusinessModuleAccessInterceptor implements HandlerInterceptor
         try {
             path = URI.create(path).getPath();
         } catch (IllegalArgumentException ignored) {
-            // Invalid encoded paths will not be promoted to an enabled business route.
+            // 编码无效的路径不得被提升为已启用的业务路由。
         }
         return path.replaceAll(";[^/]*", "");
     }

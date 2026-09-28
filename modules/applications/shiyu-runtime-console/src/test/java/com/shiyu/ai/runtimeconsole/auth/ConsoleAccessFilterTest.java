@@ -8,6 +8,7 @@ import org.junit.jupiter.api.Test;
 import org.springframework.mock.web.MockHttpServletRequest;
 import org.springframework.mock.web.MockHttpServletResponse;
 
+/** 覆盖控制台访问边界、会话校验和 CSRF 防护行为。 */
 class ConsoleAccessFilterTest {
 
     @Test

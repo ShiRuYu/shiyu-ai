@@ -16,6 +16,7 @@ import java.util.concurrent.atomic.AtomicReference;
 
 import org.junit.jupiter.api.Test;
 
+/** 覆盖一次性授权码和浏览器会话的生命周期行为。 */
 class ConsoleSessionStoreTest {
 
     @Test
@@ -55,6 +56,7 @@ class ConsoleSessionStoreTest {
         assertNull(store.findSession(session.sessionId()));
     }
 
+    /** 为会话生命周期测试提供可控的时间源。 */
     private static final class MutableClock extends Clock {
         private final AtomicReference<Instant> instant;
 

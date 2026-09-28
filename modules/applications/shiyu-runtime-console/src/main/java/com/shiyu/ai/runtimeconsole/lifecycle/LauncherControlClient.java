@@ -9,7 +9,7 @@ import java.net.http.HttpRequest;
 import java.net.http.HttpResponse;
 import java.time.Duration;
 
-/** Authenticated loopback client for the parent Windows launcher command channel. */
+/** 连接父级 Windows 启动器命令通道的认证回环客户端。 */
 public final class LauncherControlClient {
 
     private final int port;
@@ -65,7 +65,7 @@ public final class LauncherControlClient {
         }
     }
 
-    /** Rejects accidental non-loopback use even if an invalid port was supplied. */
+    /** 即使传入无效端口，也拒绝意外的非回环地址使用。 */
     static boolean isLoopbackAddress(InetSocketAddress address) {
         InetAddress inetAddress = address.getAddress();
         return inetAddress != null && inetAddress.isLoopbackAddress();

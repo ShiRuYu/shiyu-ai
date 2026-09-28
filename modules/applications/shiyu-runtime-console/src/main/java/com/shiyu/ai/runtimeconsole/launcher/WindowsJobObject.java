@@ -11,7 +11,7 @@ import com.sun.jna.platform.win32.WinNT;
 import com.sun.jna.win32.StdCallLibrary;
 import com.sun.jna.win32.W32APIOptions;
 
-/** Owns exactly one backend process tree; closing the job kills only assigned descendants. */
+/** 独占一个后端进程树，关闭 Job 时只终止已分配的子进程。 */
 final class WindowsJobObject implements AutoCloseable {
 
     private static final int JOB_OBJECT_EXTENDED_LIMIT_INFORMATION = 9;
@@ -63,12 +63,17 @@ final class WindowsJobObject implements AutoCloseable {
         }
     }
 
+    /** 声明 Windows Job Object 所需的内核进程管理调用。 */
     private interface JobApi extends StdCallLibrary {
+        /** 创建 Windows Job Object。 */
         WinNT.HANDLE CreateJobObjectW(Pointer securityAttributes, WString name);
+        /** 设置 Windows Job Object 的进程限制。 */
         boolean SetInformationJobObject(WinNT.HANDLE job, int informationClass, Pointer information, int informationLength);
+        /** 将后端进程加入 Windows Job Object。 */
         boolean AssignProcessToJobObject(WinNT.HANDLE job, WinNT.HANDLE process);
     }
 
+    /** 保存 Windows Job Object 的基础进程限制信息。 */
     @Structure.FieldOrder({"perProcessUserTimeLimit", "perJobUserTimeLimit", "limitFlags", "minimumWorkingSetSize",
             "maximumWorkingSetSize", "activeProcessLimit", "affinity", "priorityClass", "schedulingClass"})
     public static final class BasicLimitInformation extends Structure {
@@ -83,6 +88,7 @@ final class WindowsJobObject implements AutoCloseable {
         public WinDef.DWORD schedulingClass = new WinDef.DWORD();
     }
 
+    /** 保存 Windows Job Object 的 I/O 计数信息。 */
     @Structure.FieldOrder({"readOperationCount", "writeOperationCount", "otherOperationCount", "readTransferCount",
             "writeTransferCount", "otherTransferCount"})
     public static final class IoCounters extends Structure {
@@ -94,6 +100,7 @@ final class WindowsJobObject implements AutoCloseable {
         public long otherTransferCount;
     }
 
+    /** 组合 Windows Job Object 的限制和 I/O 统计信息。 */
     @Structure.FieldOrder({"basicLimitInformation", "ioInfo", "processMemoryLimit", "jobMemoryLimit",
             "peakProcessMemoryUsed", "peakJobMemoryUsed"})
     public static final class ExtendedLimitInformation extends Structure {

@@ -115,3 +115,12 @@ class ChineseCommentsTest(unittest.TestCase):
             generated.write_text("// This should be ignored.\n", encoding="utf-8")
 
             self.assertEqual(MODULE.scan_paths([root]), [])
+
+    def test_packaged_console_assets_are_excluded(self):
+        with tempfile.TemporaryDirectory() as raw_root:
+            root = Path(raw_root)
+            asset = root / "src" / "main" / "resources" / "META-INF" / "resources" / "console" / "assets" / "index.js"
+            asset.parent.mkdir(parents=True)
+            asset.write_text("/*! This vendor bundle is licensed for redistribution. */\n", encoding="utf-8")
+
+            self.assertEqual(MODULE.scan_file(asset), [])

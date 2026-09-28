@@ -19,6 +19,7 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.io.TempDir;
 import org.springframework.mock.env.MockEnvironment;
 
+/** 覆盖运行时配置校验、保存、恢复及密钥处理行为。 */
 class ConfigServiceTest {
 
     @TempDir Path appHome;
@@ -157,6 +158,7 @@ class ConfigServiceTest {
                 .withProperty("shiyu.infrastructure.redis.provider", "disabled");
     }
 
+    /** 为配置服务测试构造隔离的快照、环境和指标组件。 */
     private final class Fixture implements AutoCloseable {
         private final ConfigSnapshotStore store = new ConfigSnapshotStore(
                 appHome, new ObjectMapper(), new ConfigSecretProtector() {

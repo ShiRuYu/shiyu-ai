@@ -96,10 +96,9 @@
                 </configuration>
             </plugin>
             <!--
-                Keep a plain classpath jar alongside the executable Boot jar.
-                Downstream architecture tests compile against the bootstrap
-                application type, while the default artifact remains the
-                runnable package used by local scripts and deployment docs.
+                在可执行 Boot jar 旁保留普通 classpath jar。
+                下游架构测试依赖 bootstrap 应用类型编译，默认产物
+                仍保持为本地脚本和部署文档使用的可运行包。
             -->
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>

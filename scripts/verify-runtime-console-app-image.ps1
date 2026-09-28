@@ -60,12 +60,12 @@ try {
             if ($pageResponse.IsSuccessStatusCode) { break }
         }
         catch {
-            # Keep polling while the embedded database and application context initialize.
+            # 内嵌数据库和应用上下文初始化期间继续轮询。
         }
         Start-Sleep -Milliseconds 500
     }
     if ($null -eq $pageResponse -or !$pageResponse.IsSuccessStatusCode) {
-        throw "The packaged backend did not serve /console/ within 90 seconds."
+        throw "打包后的后端未能在 90 秒内提供 /console/。"
     }
     $html = $pageResponse.Content.ReadAsStringAsync().GetAwaiter().GetResult()
     if ($html -notmatch '<div id="app"></div>') {

@@ -13,7 +13,7 @@ import java.nio.charset.StandardCharsets;
 import java.security.MessageDigest;
 import org.springframework.web.filter.OncePerRequestFilter;
 
-/** Enforces loopback-only access and a separate session/CSRF boundary for the console. */
+/** 强制控制台只接受本机访问，并隔离会话与 CSRF 安全边界。 */
 public final class ConsoleAccessFilter extends OncePerRequestFilter {
 
     public static final String SESSION_COOKIE = "SHIYU_CONSOLE_SESSION";
@@ -144,7 +144,7 @@ public final class ConsoleAccessFilter extends OncePerRequestFilter {
         try {
             path = URI.create(path).getPath();
         } catch (IllegalArgumentException ignored) {
-            // Invalid encoded paths will not be promoted to a more permissive route.
+            // 编码无效的路径不得被提升为更宽松的路由。
         }
         return path.replaceAll(";[^/]*", "");
     }
