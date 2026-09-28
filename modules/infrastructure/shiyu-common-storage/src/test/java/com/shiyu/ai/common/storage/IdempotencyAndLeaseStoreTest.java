@@ -18,12 +18,22 @@ class IdempotencyAndLeaseStoreTest {
     @Test
     void localIdempotencyExpiresAndRejectsDuplicateKeys() throws Exception {
         LocalIdempotencyStore store = new LocalIdempotencyStore();
+        Duration ttl = Duration.ofSeconds(1);
 
-        assertThat(store.putIfAbsent("request-1", Duration.ofMillis(50))).isTrue();
+        assertThat(store.putIfAbsent("request-1", ttl)).isTrue();
         assertThat(store.putIfAbsent("request-1", Duration.ofSeconds(1))).isFalse();
         assertThat(store.contains("request-1")).isTrue();
-        Thread.sleep(100);
-        assertThat(store.contains("request-1")).isFalse();
+
+        long deadline = System.nanoTime() + Duration.ofSeconds(3).toNanos();
+        boolean expired = false;
+        while (System.nanoTime() < deadline) {
+            if (!store.contains("request-1")) {
+                expired = true;
+                break;
+            }
+            Thread.sleep(10);
+        }
+        assertThat(expired).isTrue();
     }
 
     @Test

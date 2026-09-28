@@ -23,25 +23,27 @@ import java.net.URI;
 import java.nio.charset.StandardCharsets;
 
 /**
- * 验证 Minio Container Smoke 相关功能、边界条件、异常路径和协作行为。
+ * 验证 RustFS 提供的 S3 兼容容器相关功能、边界条件、异常路径和协作行为。
  */
 @Testcontainers(disabledWithoutDocker = true)
 class MinioContainerSmokeTest {
 
-    private static final String ACCESS_KEY = "minioadmin";
-    private static final String SECRET_KEY = "minioadmin123";
+    private static final String ACCESS_KEY = "SHIYUACCESSKEY";
+    private static final String SECRET_KEY = "SHIYUSECRETKEY";
+    private static final String IMAGE =
+            "rustfs/rustfs:1.0.0-glibc@sha256:bffcab0c9d647aab0055d1c69d340b202d0909966b385932d4ead1aeb7602858";
 
     @Container
-    static final GenericContainer<?> MINIO =
-            new GenericContainer<>("minio/minio:RELEASE.2024-11-07T00-52-20Z")
-                    .withEnv("MINIO_ROOT_USER", ACCESS_KEY)
-                    .withEnv("MINIO_ROOT_PASSWORD", SECRET_KEY)
-                    .withCommand("server /data --console-address :9001")
+    static final GenericContainer<?> STORAGE =
+            new GenericContainer<>(IMAGE)
+                    .withEnv("RUSTFS_ACCESS_KEY", ACCESS_KEY)
+                    .withEnv("RUSTFS_SECRET_KEY", SECRET_KEY)
+                    .withCommand("/data")
                     .withExposedPorts(9000);
 
     @Test
     void preservesObjectKeysAcrossUploadReadListAndDelete() throws Exception {
-        String endpoint = "http://" + MINIO.getHost() + ":" + MINIO.getMappedPort(9000);
+        String endpoint = "http://" + STORAGE.getHost() + ":" + STORAGE.getMappedPort(9000);
         try (S3Client admin = s3Client(endpoint)) {
             admin.createBucket(CreateBucketRequest.builder().bucket("shiyu-test").build());
         }
