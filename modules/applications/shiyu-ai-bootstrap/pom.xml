@@ -95,6 +95,29 @@
                     <mainClass>com.shiyu.ai.bootstrap.ShiyuBootstrapApplication</mainClass>
                 </configuration>
             </plugin>
+            <!--
+                Keep a plain classpath jar alongside the executable Boot jar.
+                Downstream architecture tests compile against the bootstrap
+                application type, while the default artifact remains the
+                runnable package used by local scripts and deployment docs.
+            -->
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-jar-plugin</artifactId>
+                <version>${maven-jar-plugin.version}</version>
+                <executions>
+                    <execution>
+                        <id>attach-plain-jar</id>
+                        <phase>package</phase>
+                        <goals>
+                            <goal>jar</goal>
+                        </goals>
+                        <configuration>
+                            <classifier>plain</classifier>
+                        </configuration>
+                    </execution>
+                </executions>
+            </plugin>
         </plugins>
     </build>
     <profiles>

@@ -82,6 +82,7 @@
             <groupId>com.shiyu.ai</groupId>
             <artifactId>shiyu-ai-bootstrap</artifactId>
             <version>${revision}</version>
+            <classifier>plain</classifier>
         </dependency>
         <dependency>
             <groupId>com.tngtech.archunit</groupId>
