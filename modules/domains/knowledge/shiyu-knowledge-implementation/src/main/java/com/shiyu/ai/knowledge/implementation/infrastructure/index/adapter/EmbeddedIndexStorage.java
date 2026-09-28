@@ -348,6 +348,8 @@ final class EmbeddedIndexStorage {
     }
 
     void closeAll() {
+        // Caffeine 的移除通知可能异步调度；先同步关闭现有句柄，避免关闭时与目录清理竞态。
+        handles.asMap().values().forEach(this::close);
         handles.invalidateAll();
         handles.cleanUp();
     }
