@@ -41,7 +41,7 @@ class DatabaseProfileConfigurationTest {
         }
     }
 
-    @Configuration(proxyBeanMethods = false)
     /** 暴露测试上下文中最终生效的 profile 配置。 */
+    @Configuration(proxyBeanMethods = false)
     static class ProfileProbe {}
 }
