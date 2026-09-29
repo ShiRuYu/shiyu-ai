@@ -4,7 +4,7 @@
 
 **Goal:** Replace the backend CI job that hard-fails without `NVD_API_KEY` with an OSV-Scanner dependency scan that requires no repository secret.
 
-**Architecture:** Keep dependency scanning as a separate blocking job in the backend quality workflow. Remove the unused NVD environment and Maven Dependency-Check invocation, then call the official Google OSV-Scanner reusable workflow pinned to the immutable `v2.6.0` commit. The scanner will recursively inspect the backend repository's Maven manifests and publish SARIF results through GitHub code scanning permissions.
+**Architecture:** Keep dependency scanning as a separate blocking job in the backend quality workflow. Remove the unused NVD environment and Maven Dependency-Check invocation, then call the official Google OSV-Scanner reusable workflow pinned to the immutable `v2.6.0` commit. The scanner will recursively inspect the backend repository's Maven manifests without attempting to resolve private reactor artifacts, exclude the nested `console-ui` frontend lockfile so scope matches the former backend-only job, and publish SARIF results through GitHub code scanning permissions.
 
 **Tech Stack:** GitHub Actions, Google OSV-Scanner Action v2.6.0, Maven multi-module project, Python documentation verifier.
 
@@ -16,6 +16,7 @@
 - Preserve the backend quality gate as blocking when OSV-Scanner reports a vulnerability.
 - Keep the scan separate from the compile/test job so failures remain attributable.
 - Pin the reusable workflow to commit `a345acffa64b0eaede81a3d9aae6141214d9c8fc` (`v2.6.0`).
+- Use `--no-resolve` and `--experimental-exclude=console-ui` so private Maven reactor modules and the nested frontend lockfile do not create false scan failures in this backend-only gate.
 - Verify supported Maven manifest scanning and document the remaining coverage trade-off: OSV uses OSV.dev/deps.dev data and is not an NVD result-equivalent.
 
 ### Task 1: Replace the backend dependency-scan workflow job
@@ -47,6 +48,8 @@ Use this job shape:
       fail-on-vuln: true
       scan-args: |-
         --recursive
+        --no-resolve
+        --experimental-exclude=console-ui
         ./
 ```
 
@@ -98,7 +101,7 @@ Push the workflow change and inspect the resulting backend run. Expected results
 
 Confirm that no secrets, unrelated business code, or frontend behavior changed.
 
-- [ ] **Step 2: Commit the scanner migration**
+- [x] **Step 2: Commit the scanner migration**
 
 ```powershell
 git add .github/workflows/ci.yml docs/superpowers/plans/2026-09-29-replace-nvd-with-osv-scanner.md

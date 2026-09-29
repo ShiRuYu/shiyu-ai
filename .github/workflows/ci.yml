@@ -104,4 +104,6 @@ jobs:
       fail-on-vuln: true
       scan-args: |-
         --recursive
+        --no-resolve
+        --experimental-exclude=console-ui
         ./
