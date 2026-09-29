@@ -11,9 +11,6 @@ on:
 permissions:
   contents: read
 
-env:
-  NVD_API_KEY: ${{ secrets.NVD_API_KEY }}
-
 concurrency:
   group: backend-ci-${{ github.workflow }}-${{ github.ref }}
   cancel-in-progress: true
@@ -97,45 +94,14 @@ jobs:
         run: python scripts/architecture/check_backend_module_names.py
 
   dependency-scan:
-    name: OWASP NVD 依赖漏洞扫描
-    runs-on: ubuntu-latest
-    timeout-minutes: 35
-    defaults:
-      run:
-        working-directory: shiyu-ai
-    steps:
-      - name: 检出代码
-        uses: actions/checkout@v4
-        with:
-          path: shiyu-ai
-
-      - name: 设置 Java 21
-        uses: actions/setup-java@v4
-        with:
-          distribution: temurin
-          java-version: '21'
-          cache: maven
-
-      - name: 缓存 OWASP NVD 数据
-        uses: actions/cache@v4
-        with:
-          path: ~/.m2/repository/org/owasp/dependency-check-data
-          key: ${{ runner.os }}-owasp-nvd-data-v1
-          restore-keys: |
-            ${{ runner.os }}-owasp-nvd-data-
-
-      - name: 校验 NVD API 密钥
-        run: |
-          test -n "$NVD_API_KEY" || {
-            echo 'NVD_API_KEY secret is required for the dependency scan.' >&2
-            exit 1
-          }
-
-      - name: 执行聚合 NVD 依赖扫描
-        run: >-
-          mvn --batch-mode --no-transfer-progress
-          -DskipTests
-          -Ddependency-check.skip=false
-          -DnvdApiKeyEnvironmentVariable=NVD_API_KEY
-          -DnvdValidForHours=24
-          org.owasp:dependency-check-maven:11.1.1:aggregate
+    name: OSV 依赖漏洞扫描
+    permissions:
+      actions: read
+      contents: read
+      security-events: write
+    uses: google/osv-scanner-action/.github/workflows/osv-scanner-reusable.yml@a345acffa64b0eaede81a3d9aae6141214d9c8fc # v2.6.0
+    with:
+      fail-on-vuln: true
+      scan-args: |-
+        --recursive
+        ./
