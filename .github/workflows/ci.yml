@@ -105,5 +105,5 @@ jobs:
       scan-args: |-
         --recursive
         --no-resolve
-        --experimental-exclude=console-ui
+        --experimental-exclude=g:**/console-ui/**
         ./

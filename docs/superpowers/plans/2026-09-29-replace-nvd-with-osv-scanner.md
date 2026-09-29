@@ -16,7 +16,7 @@
 - Preserve the backend quality gate as blocking when OSV-Scanner reports a vulnerability.
 - Keep the scan separate from the compile/test job so failures remain attributable.
 - Pin the reusable workflow to commit `a345acffa64b0eaede81a3d9aae6141214d9c8fc` (`v2.6.0`).
-- Use `--no-resolve` and `--experimental-exclude=console-ui` so private Maven reactor modules and the nested frontend lockfile do not create false scan failures in this backend-only gate.
+- Use `--no-resolve` and `--experimental-exclude=g:**/console-ui/**` so private Maven reactor modules and the nested frontend lockfile do not create false scan failures in this backend-only gate.
 - Verify supported Maven manifest scanning and document the remaining coverage trade-off: OSV uses OSV.dev/deps.dev data and is not an NVD result-equivalent.
 
 ### Task 1: Replace the backend dependency-scan workflow job
@@ -49,7 +49,7 @@ Use this job shape:
       scan-args: |-
         --recursive
         --no-resolve
-        --experimental-exclude=console-ui
+        --experimental-exclude=g:**/console-ui/**
         ./
 ```
 
